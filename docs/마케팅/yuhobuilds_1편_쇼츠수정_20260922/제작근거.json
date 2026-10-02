@@ -1,0 +1,67 @@
+{
+  "createdAt": "2026-09-21T23:16:32.841Z",
+  "sources": [
+    {
+      "name": "yuho-head.png",
+      "source": "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/assets/yuho-head.png",
+      "sha256": "e5783cb74764689c713b3301e9fa8b0a6f644eb2056235580645c1cf82d52b0f",
+      "copiedSha256": "e5783cb74764689c713b3301e9fa8b0a6f644eb2056235580645c1cf82d52b0f"
+    },
+    {
+      "name": "receipt.png",
+      "source": "docs/마케팅/yuhobuilds_제작여정_202607-20260922/근거/결제내역/claude-first-payment-20260602.png",
+      "sha256": "c2d687020b5db53f212992f0cd594e46eff3a91e3c975cdc2657de780cfb906c",
+      "copiedSha256": "c2d687020b5db53f212992f0cd594e46eff3a91e3c975cdc2657de780cfb906c"
+    },
+    {
+      "name": "felt-dark.webp",
+      "source": "docs/홍보물/첫게시물_20260910/assets/felt-dark.webp",
+      "sha256": "b4b6000d659a2db651ce43a4e1e92b9ad6bd3dfa3fe93f01560a8b597b9be6a5",
+      "copiedSha256": "b4b6000d659a2db651ce43a4e1e92b9ad6bd3dfa3fe93f01560a8b597b9be6a5"
+    },
+    {
+      "name": "narration.wav",
+      "source": "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/audio/narration-master.wav",
+      "sha256": "8d01f52b58f5e7e2df2f1ed11504ec74a5f85fa20f8fdd2e07b98ae7775d8af8",
+      "copiedSha256": "8d01f52b58f5e7e2df2f1ed11504ec74a5f85fa20f8fdd2e07b98ae7775d8af8"
+    },
+    {
+      "name": "ending-portrait.jpg",
+      "source": "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/assets/ending-portrait.jpg",
+      "sha256": "0bd08d2c372f4a3914003e44037c477cfabd7a6c5921f8ac2a172000523f4450",
+      "copiedSha256": "0bd08d2c372f4a3914003e44037c477cfabd7a6c5921f8ac2a172000523f4450"
+    },
+    {
+      "name": "expressions/smile.png",
+      "source": "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/assets/expressions/smile.png",
+      "sha256": "68acdff6eaf4765f9592abc1c84b0d454b5260a7c39823ffc5ac0f837ba69be1",
+      "copiedSha256": "68acdff6eaf4765f9592abc1c84b0d454b5260a7c39823ffc5ac0f837ba69be1"
+    },
+    {
+      "name": "expressions/puzzled.png",
+      "source": "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/assets/expressions/puzzled.png",
+      "sha256": "2d2db71ee03dbbf53f97af87323b006e4f85faa1b2eb4cf1f13e1b763bc3116c",
+      "copiedSha256": "2d2db71ee03dbbf53f97af87323b006e4f85faa1b2eb4cf1f13e1b763bc3116c"
+    },
+    {
+      "name": "expressions/surprise.png",
+      "source": "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/assets/expressions/surprise.png",
+      "sha256": "f898d399a253190ec00c882a0344574f597f0363a1f388bd33c8c9051e3caf43",
+      "copiedSha256": "f898d399a253190ec00c882a0344574f597f0363a1f388bd33c8c9051e3caf43"
+    },
+    {
+      "name": "expressions/blink.png",
+      "source": "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/assets/expressions/blink.png",
+      "sha256": "61c659be5f1a2b89ba2d602668a30cbd7b39ab3b6e4c7aa2965dcd8768ff01dd",
+      "copiedSha256": "61c659be5f1a2b89ba2d602668a30cbd7b39ab3b6e4c7aa2965dcd8768ff01dd"
+    }
+  ],
+  "story": "../yuhobuilds_제작여정_202607-20260922/시작_사용자회고_20260922.md",
+  "narration": "원고.md",
+  "disclosure": "유호의 실제 경험을 바탕으로 일부 대사와 장면을 재구성했습니다.",
+  "recreatedScreens": "Conceptual visual explanations, not original June application or chat screenshots.",
+  "onScreenDisclosure": false,
+  "onScreenDisclosureRemovedAtUserRequest": true,
+  "face": "User-provided portrait head cutout on existing illustrated body",
+  "publicUpload": false
+}

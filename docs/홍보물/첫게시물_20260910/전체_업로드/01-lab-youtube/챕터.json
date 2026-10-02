@@ -1,0 +1,50 @@
+[
+  {
+    "startSeconds": 0,
+    "durationSeconds": 7,
+    "title": "Солонгосоор\nөөрийн бодлоо хэлье.",
+    "layout": "cover"
+  },
+  {
+    "startSeconds": 7,
+    "durationSeconds": 8,
+    "title": "Өнөөдөр хамт явах уу?",
+    "layout": "choices"
+  },
+  {
+    "startSeconds": 15,
+    "durationSeconds": 7,
+    "title": "Өнөөдөр хамт явъя",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 22,
+    "durationSeconds": 7,
+    "title": "Өөр өдөр санал болгоё",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 29,
+    "durationSeconds": 8,
+    "title": "Одоо өдрийг солиорой",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 37,
+    "durationSeconds": 7,
+    "title": "Таны сонголт,\nтаны өгүүлбэр",
+    "layout": "closing"
+  },
+  {
+    "startSeconds": 44,
+    "durationSeconds": 4,
+    "title": "Одоо нэг дуу сонсоё",
+    "layout": "statement"
+  },
+  {
+    "startSeconds": 48,
+    "durationSeconds": 61.6,
+    "title": "오늘 밤 제일 환한 사람",
+    "layout": "music"
+  }
+]

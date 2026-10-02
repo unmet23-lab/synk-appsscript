@@ -1,0 +1,15 @@
+{
+  "generator": "built-in image_gen",
+  "prompt": "synk-white-embroidered-cta-prompt.txt",
+  "master": "synk-white-embroidered-cta-master.png",
+  "output": "synk-white-embroidered-cta.webp",
+  "transform": "Resize to 1024px wide and encode WebP; preserve generated alpha, no recoloring or shape edits",
+  "input": {
+    "width": 2003,
+    "height": 785,
+    "hasAlpha": true,
+    "alphaMin": 0,
+    "alphaMax": 255
+  },
+  "bytes": 190628
+}

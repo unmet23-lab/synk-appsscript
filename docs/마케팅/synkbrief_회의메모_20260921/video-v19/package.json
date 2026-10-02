@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "@hyperframes/core": "0.8.78",
+    "hyperframes": "0.8.78"
+  },
+  "scripts": {
+    "build": "node build-v19.mjs",
+    "hf": "hyperframes"
+  },
+  "name": "synkbrief-meeting-v19",
+  "private": true
+}

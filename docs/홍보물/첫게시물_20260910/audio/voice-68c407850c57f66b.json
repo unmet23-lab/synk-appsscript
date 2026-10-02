@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "05455726-d984-403a-aa01-e6192135bb1f",
+  "narration": "저는 도서관이 좋아요.",
+  "narrationSha256": "68c407850c57f66b0285d511a0282dff59a456edbb3abfdcab2d5740bf625a63",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-68c407850c57f66b.wav",
+  "duration": 3.2,
+  "sha256": "75ff912a784fd0adab100acf79e06d27ce36ce71b25f5b436dcbff063ed669bf",
+  "humanListening": false,
+  "fullDecode": true
+}

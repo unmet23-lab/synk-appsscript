@@ -1,0 +1,11 @@
+{
+  "name": "synkbrief-meeting-v7",
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs",
+    "hf": "hyperframes"
+  },
+  "devDependencies": {
+    "hyperframes": "0.8.62"
+  }
+}

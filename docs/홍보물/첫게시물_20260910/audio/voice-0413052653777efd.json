@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "cc2eb98d-5799-4abb-afb3-f801a534a8f6",
+  "narration": "같이 갈까요?",
+  "narrationSha256": "0413052653777efddd8b3b7697a3e43002c46d76ae31e2e2edb242580b8acd0c",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-0413052653777efd.wav",
+  "duration": 1.36,
+  "sha256": "c92371b6b16bc67a7c8f8834afb14677f18cb75846572838efa9e46e053960ec",
+  "humanListening": false,
+  "fullDecode": true
+}

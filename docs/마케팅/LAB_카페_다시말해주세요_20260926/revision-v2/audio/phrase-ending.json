@@ -1,0 +1,92 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 1.863,
+  "words": [
+    {
+      "text": "다시",
+      "start": 0.283,
+      "end": 0.547
+    },
+    {
+      "text": "말해",
+      "start": 0.607,
+      "end": 0.81
+    },
+    {
+      "text": "주세요.",
+      "start": 0.992,
+      "end": 1.863
+    }
+  ],
+  "characters": [
+    {
+      "text": "다",
+      "start": 0.283,
+      "end": 0.445
+    },
+    {
+      "text": "시",
+      "start": 0.445,
+      "end": 0.547
+    },
+    {
+      "text": " ",
+      "start": 0.547,
+      "end": 0.607
+    },
+    {
+      "text": "말",
+      "start": 0.607,
+      "end": 0.749
+    },
+    {
+      "text": "해",
+      "start": 0.749,
+      "end": 0.81
+    },
+    {
+      "text": " ",
+      "start": 0.81,
+      "end": 0.992
+    },
+    {
+      "text": "주",
+      "start": 0.992,
+      "end": 1.154
+    },
+    {
+      "text": "세",
+      "start": 1.154,
+      "end": 1.296
+    },
+    {
+      "text": "요",
+      "start": 1.296,
+      "end": 1.843
+    },
+    {
+      "text": ".",
+      "start": 1.843,
+      "end": 1.863
+    }
+  ],
+  "request": {
+    "seed": 926,
+    "model": "ssfm-v30",
+    "voice_id": "tc_6a3350f8e5a50a4abe948fa8",
+    "text": "다시 말해 주세요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.02,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "영수증 드릴까요?",
+      "next_text": "영수증 필요하세요?"
+    }
+  },
+  "direction": "두 번째 부탁은 조금 더 편안하고 자신 있게.",
+  "voiceName": "도윤"
+}

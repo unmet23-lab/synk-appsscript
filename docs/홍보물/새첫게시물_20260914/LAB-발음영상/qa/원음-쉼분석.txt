@@ -1,0 +1,33 @@
+[aist#0:0/pcm_s16le @ 00000187f3b56480] Guessed Channel Layout: mono
+Input #0, wav, from 'C:\Users\q1212\Documents\SYNK-appsscript\docs\홍보물\새첫게시물_20260914\LAB-발음영상\원본\dive-나나-1789332200728.wav':
+  Duration: 00:00:19.00, bitrate: 768 kb/s
+  Stream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, mono, s16, 768 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (pcm_s16le (native) -> pcm_s16le (native))
+Press [q] to stop, [?] for help
+Output #0, null, to 'pipe:':
+  Metadata:
+    encoder         : Lavf62.12.102
+  Stream #0:0: Audio: pcm_s16le, 48000 Hz, mono, s16, 768 kb/s
+    Metadata:
+      encoder         : Lavc62.28.102 pcm_s16le
+[Parsed_silencedetect_0 @ 00000187f591f4c0] silence_start: 1.638125
+[Parsed_silencedetect_0 @ 00000187f591f4c0] silence_end: 2.132208 | silence_duration: 0.494083
+[Parsed_silencedetect_0 @ 00000187f591f4c0] silence_start: 3.588625
+[Parsed_silencedetect_0 @ 00000187f591f4c0] silence_end: 4.111646 | silence_duration: 0.523021
+[Parsed_silencedetect_0 @ 00000187f591f4c0] silence_start: 5.952042
+[Parsed_silencedetect_0 @ 00000187f591f4c0] silence_end: 6.471521 | silence_duration: 0.519479
+[Parsed_silencedetect_0 @ 00000187f591f4c0] silence_start: 7.39625
+[Parsed_silencedetect_0 @ 00000187f591f4c0] silence_end: 7.927083 | silence_duration: 0.530833
+[Parsed_silencedetect_0 @ 00000187f591f4c0] silence_start: 8.884187
+[Parsed_silencedetect_0 @ 00000187f591f4c0] silence_end: 9.443625 | silence_duration: 0.559438
+[Parsed_silencedetect_0 @ 00000187f591f4c0] silence_start: 10.183729
+[Parsed_silencedetect_0 @ 00000187f591f4c0] silence_end: 10.699 | silence_duration: 0.515271
+[Parsed_silencedetect_0 @ 00000187f591f4c0] silence_start: 12.105021
+[Parsed_silencedetect_0 @ 00000187f591f4c0] silence_end: 12.626854 | silence_duration: 0.521833
+[Parsed_silencedetect_0 @ 00000187f591f4c0] silence_start: 14.54075
+[Parsed_silencedetect_0 @ 00000187f591f4c0] silence_end: 15.064687 | silence_duration: 0.523937
+[Parsed_silencedetect_0 @ 00000187f591f4c0] silence_start: 16.48225
+[Parsed_silencedetect_0 @ 00000187f591f4c0] silence_end: 16.964979 | silence_duration: 0.482729
+[out#0/null @ 00000187f3adf340] video:0KiB audio:1781KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
+size=N/A time=00:00:18.99 bitrate=N/A speed=1.48e+03x elapsed=0:00:00.01    

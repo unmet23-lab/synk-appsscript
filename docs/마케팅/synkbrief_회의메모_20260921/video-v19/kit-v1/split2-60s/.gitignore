@@ -1,0 +1,12 @@
+assets/synk-kit/
+audio/
+snapshots/*.png
+snapshots/**/*.png
+renders/
+.hyperframes/
+.thumbnails/
+.waveform-cache/
+.media/
+node_modules/
+package-lock.json
+cover-out/*.png

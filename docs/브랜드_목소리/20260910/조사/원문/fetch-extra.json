@@ -1,0 +1,70 @@
+[
+  {
+    "name": "audio8-notice",
+    "url": "https://raw.githubusercontent.com/Audio8-AI/Audio8_TTS/master/NOTICE",
+    "finalUrl": "https://raw.githubusercontent.com/Audio8-AI/Audio8_TTS/master/NOTICE",
+    "sha256": "819129644b28fb066221d782dd27a6fe1d35f33f46718d4e61570614fb38854e",
+    "bytes": 95
+  },
+  {
+    "name": "audio8-onnx",
+    "url": "https://raw.githubusercontent.com/Audio8-AI/Audio8_TTS/master/onnx_runtime/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/Audio8-AI/Audio8_TTS/master/onnx_runtime/README.md",
+    "sha256": "d5ae63b363941de9b1ee09a9a9572bcc43fb427c084c094f7d95b48eebeab567",
+    "bytes": 5011
+  },
+  {
+    "name": "magpie-cpp",
+    "url": "https://raw.githubusercontent.com/NVIDIA/NeMo-Speech.cpp/main/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/NVIDIA/NeMo-Speech.cpp/main/README.md",
+    "sha256": "fc2a0208d90b37f6702ac9ffb263ba2b1421a5e98b10eb048ec3b66135f9c257",
+    "bytes": 7731
+  },
+  {
+    "name": "kani-ko-card",
+    "url": "https://huggingface.co/nineninesix/kani-tts-400m-ko/raw/main/README.md",
+    "finalUrl": "https://huggingface.co/nineninesix/kani-tts-400m-ko/raw/main/README.md",
+    "sha256": "4319e7112b466b0737b9a97db8ea28571ca6a61fa737a5419c4259953cca41d1",
+    "bytes": 7986
+  },
+  {
+    "name": "openaudio-newcard",
+    "url": "https://huggingface.co/fishaudio/s1-mini/raw/main/README.md",
+    "error": "HTTP Error 401: Unauthorized"
+  },
+  {
+    "name": "nvidia-license",
+    "url": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "finalUrl": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "sha256": "0f8c3d810ff153664c23947a5c08416aca96e9a0f17f64694718b092a021ef34",
+    "bytes": 307222
+  },
+  {
+    "name": "lfm-license",
+    "url": "https://www.liquid.ai/lfm-license",
+    "finalUrl": "https://www.liquid.ai/lfm-license",
+    "sha256": "cf2018cc7f0f4ab75748b833e8ae259d6b0de6e0d177ec478a1874c8b05a530c",
+    "bytes": 174114
+  },
+  {
+    "name": "kokoro-voices",
+    "url": "https://huggingface.co/hexgrad/Kokoro-82M/raw/main/VOICES.md",
+    "finalUrl": "https://huggingface.co/hexgrad/Kokoro-82M/raw/main/VOICES.md",
+    "sha256": "ec7e4941ad7e194af61e3455928528a9ff5360c7c505e412efab27d6a69ea106",
+    "bytes": 7625
+  },
+  {
+    "name": "melo-install",
+    "url": "https://raw.githubusercontent.com/myshell-ai/MeloTTS/main/docs/install.md",
+    "finalUrl": "https://raw.githubusercontent.com/myshell-ai/MeloTTS/main/docs/install.md",
+    "sha256": "5632c707cc39f1e46a9f3d5eae8237f6ef94b99e5ab745dadc170b5d740c52c6",
+    "bytes": 5290
+  },
+  {
+    "name": "cosy-example",
+    "url": "https://raw.githubusercontent.com/FunAudioLLM/CosyVoice/main/example.py",
+    "finalUrl": "https://raw.githubusercontent.com/FunAudioLLM/CosyVoice/main/example.py",
+    "sha256": "5285fe12f5a71a5225dcd06072496a8e31772d8e7fb0af5fe428c72c637691ec",
+    "bytes": 9116
+  }
+]

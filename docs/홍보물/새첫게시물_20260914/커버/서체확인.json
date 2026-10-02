@@ -1,0 +1,123 @@
+{
+  "checkedAt": "2026-09-13T18:29:17.792Z",
+  "scope": "Two Mongolian covers, actual local rendered fonts; no platform upload",
+  "passed": true,
+  "rows": [
+    {
+      "id": "lab-youtube",
+      "text": "한국어 · K-LOFI24",
+      "weight": "500",
+      "synthesis": "none",
+      "fonts": [
+        {
+          "familyName": "SUIT Variable Thin",
+          "postScriptName": "SUITVariable-Medium",
+          "isCustomFont": true,
+          "glyphCount": 3
+        },
+        {
+          "familyName": "Inter Tight Medium",
+          "postScriptName": "InterTight-Medium",
+          "isCustomFont": true,
+          "glyphCount": 11
+        }
+      ]
+    },
+    {
+      "id": "lab-youtube",
+      "text": "Хийж үзмээр зүйлээ",
+      "weight": "700",
+      "synthesis": "none",
+      "fonts": [
+        {
+          "familyName": "Inter Tight",
+          "postScriptName": "InterTight-Bold",
+          "isCustomFont": true,
+          "glyphCount": 18
+        }
+      ]
+    },
+    {
+      "id": "lab-youtube",
+      "text": "солонгосоор хэлж үзье.",
+      "weight": "700",
+      "synthesis": "none",
+      "fonts": [
+        {
+          "familyName": "Inter Tight",
+          "postScriptName": "InterTight-Bold",
+          "isCustomFont": true,
+          "glyphCount": 22
+        }
+      ]
+    },
+    {
+      "id": "lab-youtube",
+      "text": "가고 싶은 방향에 집중할 수 있는 환경을 만듭니다.",
+      "weight": "500",
+      "synthesis": "none",
+      "fonts": [
+        {
+          "familyName": "SUIT Variable Thin",
+          "postScriptName": "SUITVariable-Medium",
+          "isCustomFont": true,
+          "glyphCount": 20
+        },
+        {
+          "familyName": "Inter Tight Medium",
+          "postScriptName": "InterTight-Medium",
+          "isCustomFont": true,
+          "glyphCount": 8
+        }
+      ]
+    },
+    {
+      "id": "lab-facebook",
+      "text": "Хүүхэдтэйгээ сонирхол,",
+      "weight": "700",
+      "synthesis": "none",
+      "fonts": [
+        {
+          "familyName": "Inter Tight",
+          "postScriptName": "InterTight-Bold",
+          "isCustomFont": true,
+          "glyphCount": 22
+        }
+      ]
+    },
+    {
+      "id": "lab-facebook",
+      "text": "сурах чиглэлийн талаар ярилцъя.",
+      "weight": "700",
+      "synthesis": "none",
+      "fonts": [
+        {
+          "familyName": "Inter Tight",
+          "postScriptName": "InterTight-Bold",
+          "isCustomFont": true,
+          "glyphCount": 31
+        }
+      ]
+    },
+    {
+      "id": "lab-facebook",
+      "text": "가고 싶은 방향에 집중할 수 있는 환경을 만듭니다.",
+      "weight": "500",
+      "synthesis": "none",
+      "fonts": [
+        {
+          "familyName": "SUIT Variable Thin",
+          "postScriptName": "SUITVariable-Medium",
+          "isCustomFont": true,
+          "glyphCount": 20
+        },
+        {
+          "familyName": "Inter Tight Medium",
+          "postScriptName": "InterTight-Medium",
+          "isCustomFont": true,
+          "glyphCount": 8
+        }
+      ]
+    }
+  ]
+}

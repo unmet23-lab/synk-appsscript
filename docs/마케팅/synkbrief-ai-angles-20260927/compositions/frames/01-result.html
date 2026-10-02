@@ -1,0 +1,28 @@
+<!doctype html><html lang="ko"><head><meta charset="UTF-8"><title>result</title></head><body><template><style>
+  @font-face{font-family:SUIT;src:url('assets/fonts/SUIT.woff2') format('woff2');font-weight:100 900;font-display:block}@font-face{font-family:InterTight;src:url('assets/fonts/InterTight.ttf');font-weight:700 900;font-display:block}
+  *{box-sizing:border-box} #root{position:absolute;inset:0;width:1080px;height:1920px;overflow:hidden;background:#fff;color:#000;font-family:SUIT,sans-serif}
+  h1,h2,p{margin:0} img{display:block;object-fit:cover} .label{font:750 31px/1.2 SUIT;letter-spacing:.025em}
+  .step{position:absolute;left:76px;top:256px;font:800 36px/1 SUIT;letter-spacing:.04em;color:#274BDD}
+  .heading{position:absolute;left:72px;top:322px;font:900 106px/1.04 SUIT;letter-spacing:-.06em;width:930px}
+  .heading span{display:block}.blue{color:#274BDD}.rule{position:absolute;left:76px;right:104px;top:228px;height:3px;background:#000}
+  .photo{position:absolute;overflow:hidden;background:#efefef}.photo img{width:100%;height:100%}
+  .stamp{background:#274BDD;color:#fff;padding:14px 22px;font:800 34px/1 SUIT;display:inline-block}
+  .note{font:550 30px/1.35 SUIT;color:#464646}.line{height:3px;background:#000}
+
+.introtitle{position:absolute;left:70px;top:292px;font:900 136px/1.03 SUIT;letter-spacing:-.065em}.introtitle>span{display:block}.introtitle b{color:#274BDD;font-weight:900}.second{margin-top:12px}.original{position:absolute;left:76px;top:716px;width:258px}.original .label{margin-bottom:16px}.original img{width:258px;height:330px}.original .note{margin-top:15px}.arrow{position:absolute;left:345px;top:873px;font:400 64px SUIT}.result{left:426px;top:646px;width:550px;height:688px}.result img{position:absolute;inset:0}.result .stamp{position:absolute;left:18px;top:18px;font-size:28px}.thumbs{position:absolute;left:426px;top:646px;display:flex;gap:20px}.thumb{position:absolute;width:268px;height:424px;background:white;border:3px solid #000;padding:9px;box-shadow:8px 10px 0 #000}.thumb img{width:244px;height:340px}.thumb span{display:block;font:800 30px SUIT;padding:12px 4px}.t0{left:-65px;top:300px}.t1{left:180px;top:60px}.t2{left:360px;top:320px}.under{position:absolute;left:76px;top:1413px;font:700 36px SUIT;letter-spacing:-.02em}</style><div id="root" data-composition-id="scene-1" data-width="1080" data-height="1920" data-duration="6.6667">
+ <div class="rule"></div><div class="introtitle"><span class="first">사진 <b>1장</b>으로</span><span class="second">광고 <b>3컷</b></span></div>
+ <div class="original"><div class="label">원본</div><img class="" style="" src="assets/images/source.png" alt="AI로 만든 원본 예시"><div class="note">파란 머그컵</div></div>
+ <div class="arrow">→</div>
+ <div class="result photo"><img class="hero" style="" src="assets/images/hero.png" alt="전체 컷 실제 생성 결과"><img class="detail" style="" src="assets/images/detail.png" alt="디테일 컷 실제 생성 결과"><img class="lifestyle" style="" src="assets/images/lifestyle.png" alt="사용 장면 실제 생성 결과"><span class="stamp">AI 편집 결과</span></div>
+ <div class="thumbs"><div class="thumb t0"><img class="" style="" src="assets/images/hero.png" alt="전체 컷 실제 생성 결과"><span>전체</span></div><div class="thumb t1"><img class="" style="" src="assets/images/detail.png" alt="디테일 컷 실제 생성 결과"><span>디테일</span></div><div class="thumb t2"><img class="" style="" src="assets/images/lifestyle.png" alt="사용 장면 실제 생성 결과"><span>사용 장면</span></div></div>
+ <div class="under">제품은 하나. 보여주는 장면은 셋.</div></div><script>(function(){const tl=gsap.timeline({paused:true});
+tl.fromTo('.introtitle .first',{y:70},{y:0,duration:.42,ease:'power4.out'},0);tl.fromTo('.introtitle .second',{y:90},{y:0,duration:.48,ease:'power4.out'},.05);
+ tl.fromTo('.original',{x:-70,opacity:0},{x:0,opacity:1,duration:.42,ease:'power2.out'},0);
+ tl.fromTo('.result',{x:130},{x:0,duration:.45,ease:'power4.out'},0);
+ tl.fromTo('.detail',{opacity:0},{opacity:1,duration:.1},.93);tl.fromTo('.lifestyle',{opacity:0},{opacity:1,duration:.1},1.83);
+ tl.fromTo('.thumbs',{opacity:0},{opacity:1,duration:.05},3.02);tl.to('.result',{opacity:0,duration:.15},3.02);tl.to('.original,.arrow',{opacity:0,duration:.15},3.02);
+ tl.fromTo('.t0',{x:50,y:-50,rotation:0},{x:-205,y:0,rotation:-8,duration:.5,ease:'back.out(1.15)'},3.03);
+ tl.fromTo('.t1',{x:0,y:100,rotation:0},{x:-85,y:35,rotation:1,duration:.5,ease:'power3.out'},3.1);
+ tl.fromTo('.t2',{x:-100,y:-50,rotation:0},{x:-118,y:0,rotation:8,duration:.5,ease:'back.out(1.15)'},3.16);
+ tl.fromTo('.under',{opacity:0,y:15},{opacity:1,y:0,duration:.3},4.2);
+window.__timelines=window.__timelines||{};window.__timelines['scene-1']=tl;})();</script></template></body></html>

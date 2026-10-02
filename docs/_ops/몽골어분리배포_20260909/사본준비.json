@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-09-09T07:29:15.735Z",
+  "source": "C:/Users/q1212/Documents/SYNK-appsscript",
+  "clone": "C:/Users/q1212/Documents/SYNK-deploy-mn-20260909",
+  "remoteBase": "184fe8c5d6d30795fd479293e743f1a1f066d7e8",
+  "sourceCommit": "8e62344a2",
+  "files": [
+    "Code.js",
+    "엔진_운영배치.js",
+    "엔진_콘텐츠AI.js"
+  ],
+  "originalParentMatchesRemote": true,
+  "added": 71,
+  "deleted": 71,
+  "remoteMutation": false
+}

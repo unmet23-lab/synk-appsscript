@@ -1,0 +1,35 @@
+'use strict';
+// MN strings are exact excerpts from the current LAB student cards. No new translation.
+module.exports = {
+  fps:30,width:1080,height:1920,duration:65,file:'LAB-읽고-바꿔-말하기',
+  title:'아직 정하지 않았어요 — 읽고 바꿔 말하기',
+  mn:{
+    purpose:'Хийж үзмээр зүйлээ солонгосоор хэлж үзье.',
+    example:'Сургалтын жишээ', conversation:'Сургалтын жишээ яриа',
+    question:'Ямар мэргэжлээр сурахыг хүсэж байна вэ?',
+    undecided:'Одоохондоо шийдээгүй байна.',
+    then:'Дараа нь хийж үзмээр байгаа зүйлээ хэлээрэй.',
+    game:'Эхлээд тоглоом хийж үзмээр байна.',
+    video:'Видео хийж үзмээр байна.', drawing:'Зураг зурж үзмээр байна.',
+    change:'“게임을 만들어” гэдэг хэсгийг бүхэлд нь солино.',
+    yours:'Өөрийн өгүүлбэрээ хэлж үзье.',
+    insert:'Гурван хэсгээс нэгийг хоосон зайд оруулаад, бүтнээр нь хэлээрэй.',
+    solo:'Ганцаараа чангаар хэлж болно.',
+    private:'Сэтгэгдэл, дуу хоолойгоо нийтлэх шаардлагагүй.',
+    next:'Дараа нь хийж үзэх нэг жижиг зүйлээ сонгоорой.',
+    gameAction:'Тоглоомын нэг хэсгийг зурах',
+    videoAction:'Богино видеоны нэг хэсгийг бичиж авах',
+    drawAction:'Дуртай эд зүйлээ зурах',
+  },
+  phrases:['게임을 만들어','영상을 만들어','그림을 그려'],
+  scenes:[
+    {id:'purpose',start:0,end:6,why:'공식 비전과 기존 몽골어 연습 목적을 먼저 읽는다.'},
+    {id:'question',start:6,end:14,why:'질문과 몽골어 뜻을 읽는 8초. 번역은 1.4초 뒤 한 덩어리로 들어온다.'},
+    {id:'model',start:14,end:24,why:'미정이라는 말과 해보고 싶은 일을 연결한 완성 예시를 읽는다.'},
+    {id:'change',start:24,end:34,why:'원래 동사구를 표시하고 전체 구절 두 번의 교체를 보여준다. 글자별 타이핑 없음.'},
+    {id:'practice',start:34,end:48,why:'세 구절과 문장 틀을 고정한 14초의 자기 말하기 시간. 입력·평가·가짜 선택 없음.'},
+    {id:'examples',start:48,end:57,why:'가능한 완성 예문 두 가지를 확인한다. 정답 또는 학습자 선택 결과라는 뜻이 아니다.'},
+    {id:'next',start:57,end:65,why:'학생이 직접 고를 작은 실행 세 가지를 읽고 닫는다.'},
+  ],
+  boundaries:{nativeReviewed:false,published:false,audio:false,newTranslation:false,learner:'한글을 읽을 수 있는 몽골어 독자',scope:'무음 읽기·문장 응용의 별도 로컬 대안',notComplete:['발음·청취형 숏폼','원어민 감수','실학생 이해·학습 효과','YouTube 게시']},
+};

@@ -1,0 +1,79 @@
+[
+  {
+    "number": "A3",
+    "startSeconds": 0.0,
+    "start": "00:00.00",
+    "duration": 9.016875,
+    "file": "기준_A3.wav"
+  },
+  {
+    "number": "01",
+    "startSeconds": 9.816875,
+    "start": "00:09.82",
+    "duration": 9.096875,
+    "file": "01.wav"
+  },
+  {
+    "number": "02",
+    "startSeconds": 19.71375,
+    "start": "00:19.71",
+    "duration": 8.136875,
+    "file": "02.wav"
+  },
+  {
+    "number": "03",
+    "startSeconds": 28.650625,
+    "start": "00:28.65",
+    "duration": 8.056875,
+    "file": "03.wav"
+  },
+  {
+    "number": "04",
+    "startSeconds": 37.5075,
+    "start": "00:37.51",
+    "duration": 8.056875,
+    "file": "04.wav"
+  },
+  {
+    "number": "05",
+    "startSeconds": 46.364375,
+    "start": "00:46.36",
+    "duration": 8.136875,
+    "file": "05.wav"
+  },
+  {
+    "number": "06",
+    "startSeconds": 55.30125,
+    "start": "00:55.30",
+    "duration": 8.536875,
+    "file": "06.wav"
+  },
+  {
+    "number": "07",
+    "startSeconds": 64.638125,
+    "start": "01:04.64",
+    "duration": 8.136875,
+    "file": "07.wav"
+  },
+  {
+    "number": "08",
+    "startSeconds": 73.575,
+    "start": "01:13.58",
+    "duration": 8.536875,
+    "file": "08.wav"
+  },
+  {
+    "number": "09",
+    "startSeconds": 82.911875,
+    "start": "01:22.91",
+    "duration": 10.136875,
+    "file": "09.wav"
+  },
+  {
+    "number": "10",
+    "startSeconds": 93.84875,
+    "start": "01:33.85",
+    "duration": 10.867375,
+    "file": "10.wav"
+  }
+]

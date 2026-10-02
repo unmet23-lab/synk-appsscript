@@ -1,0 +1,79 @@
+{
+  "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+  "reference": "a-natural-flow",
+  "referenceRawSha256": "86371ee78632a9ac4a6612509651d46211ce6386f2008c0d6199a27ea19d149b",
+  "userPreference": "A3 is preferred; prepare about ten with more attention to sound quality and naturalness.",
+  "labelsDescribeIntentNotVerifiedListening": true,
+  "candidates": [
+    {
+      "number": "01",
+      "key": "a3-ten-01",
+      "direction": "A3와 같은 연출",
+      "method": "voice_design",
+      "prompt": "A bright young adult Korean female voice, clear and lightly smiling, with a smooth full tone. She speaks in quick, easy everyday conversation, with natural Korean intonation and connected, flowing pronunciation."
+    },
+    {
+      "number": "02",
+      "key": "a3-ten-02",
+      "direction": "편안한 미소",
+      "method": "voice_design",
+      "prompt": "A bright young adult Korean female voice with a clear, rounded tone and a relaxed smile. She talks to a friend in easy, lively Korean, linking words smoothly and letting each sentence follow its meaning."
+    },
+    {
+      "number": "03",
+      "key": "a3-ten-03",
+      "direction": "풍부하고 맑은 울림",
+      "method": "voice_design",
+      "prompt": "A bright young adult Korean female voice with a clear, full-bodied, smooth tone. Her delivery is fresh and lightly smiling, like a quick everyday conversation, with naturally connected Korean pronunciation."
+    },
+    {
+      "number": "04",
+      "key": "a3-ten-04",
+      "direction": "가볍고 또렷한 대화",
+      "method": "voice_design",
+      "prompt": "A clear young adult Korean female voice with a light smile and a smooth, rounded tone. She speaks in brisk, relaxed conversation with fluid Korean articulation and easy, expressive sentence endings."
+    },
+    {
+      "number": "05",
+      "key": "a3-ten-05",
+      "direction": "밝고 담백한 표현",
+      "method": "voice_design",
+      "prompt": "A bright young adult Korean female voice with a fresh, clear, smooth tone. She speaks casually and confidently to one listener, with a small smile, an easy conversational rhythm and natural Korean phrasing."
+    },
+    {
+      "number": "06",
+      "key": "a3-ten-06",
+      "direction": "따뜻한 상큼함",
+      "method": "voice_design",
+      "prompt": "A bright young adult Korean female voice, clear and gently warm, with a smooth full tone. She speaks in lively everyday Korean, smiling lightly, connecting syllables naturally and finishing each thought with relaxed confidence."
+    },
+    {
+      "number": "07",
+      "key": "a3-ten-07",
+      "direction": "유연한 말끝",
+      "method": "voice_design",
+      "prompt": "A bright young adult Korean female voice with a clear, rounded tone and a hint of a smile. Her Korean sounds like spontaneous conversation: fluid, lightly expressive and brisk, with sentence endings shaped by the meaning."
+    },
+    {
+      "number": "08",
+      "key": "a3-ten-08",
+      "direction": "친근한 진행",
+      "method": "voice_design",
+      "prompt": "A fresh, clear young adult Korean female voice with a smooth, full tone. She invites a friend to try something together, speaking in easy, lively Korean with a light smile and naturally flowing pronunciation."
+    },
+    {
+      "number": "09",
+      "key": "a3-ten-09",
+      "direction": "A3 음색 참조",
+      "method": "speaker_features",
+      "reference": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\a-natural-flow\\raw.wav"
+    },
+    {
+      "number": "10",
+      "key": "a3-ten-10",
+      "direction": "A3 음성과 대본 참조",
+      "method": "audio_and_transcript",
+      "reference": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\a-natural-flow\\raw.wav"
+    }
+  ]
+}

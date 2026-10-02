@@ -1,0 +1,77 @@
+{
+  "source": "SYNK_LAB_카페_유호_실사_Omni_첫장면_1080p.mp4",
+  "language": "ko",
+  "duration": 10.0053125,
+  "provider": "local faster-whisper-small",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 4.7,
+      "text": " 드시고 가세요 가지고 가세요 네 어느 쪽이요",
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.52,
+          "word": " 드시고",
+          "probability": 0.7212468534708023
+        },
+        {
+          "start": 0.52,
+          "end": 0.94,
+          "word": " 가세요",
+          "probability": 0.988847941160202
+        },
+        {
+          "start": 0.94,
+          "end": 1.26,
+          "word": " 가지고",
+          "probability": 0.38012006878852844
+        },
+        {
+          "start": 1.26,
+          "end": 1.88,
+          "word": " 가세요",
+          "probability": 0.9922272861003876
+        },
+        {
+          "start": 1.88,
+          "end": 2.96,
+          "word": " 네",
+          "probability": 0.47515663504600525
+        },
+        {
+          "start": 2.96,
+          "end": 3.88,
+          "word": " 어느",
+          "probability": 0.9201298952102661
+        },
+        {
+          "start": 3.88,
+          "end": 4.7,
+          "word": " 쪽이요",
+          "probability": 0.9465281168619791
+        }
+      ]
+    },
+    {
+      "start": 6.2,
+      "end": 7.16,
+      "text": " 다시 말해주세요",
+      "words": [
+        {
+          "start": 5.92,
+          "end": 6.54,
+          "word": " 다시",
+          "probability": 0.34860488772392273
+        },
+        {
+          "start": 6.54,
+          "end": 7.16,
+          "word": " 말해주세요",
+          "probability": 0.9131067395210266
+        }
+      ]
+    }
+  ],
+  "note": "Automatic transcript; not proof of acting quality or exact lip sync."
+}

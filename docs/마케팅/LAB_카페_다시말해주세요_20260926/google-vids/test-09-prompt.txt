@@ -1,0 +1,9 @@
+Create one continuous 10-second photoreal Korean cafe conversation from this reference image. Preserve this exact man's identity, natural apparent age, facial proportions, skin, cornrows, pale blue shirt and soft cafe lighting throughout speech and smiling. Match the reference depth and contrast of facial lines; never intensify under-eye shadows, wrinkles or skin sharpening. Keep the same camera angle and clearly visible face. Natural blinking, breath, lip and jaw motion, cheek lift and eye narrowing. Do not freeze the face, suppress the smile, change teeth or replace him with a generic actor.
+
+0-0.6s: he listens, briefly unsure.
+0.6-2.5s: he politely asks in Korean, "다시 말해 주세요."
+3-4.5s: an off-screen female barista kindly asks, "영수증 필요하세요?"
+5.1-7.8s: he understands, warmly replying, "아, 괜찮아요. 감사합니다!"
+7.8-10s: he gives a genuine relieved smile that naturally settles.
+
+Accurate lip sync to his own words only; he listens during the female line. Conversational emotional Korean, not robotic narration. Fixed camera, no cuts, no head turn, quiet cafe ambience, no music, no captions or text.

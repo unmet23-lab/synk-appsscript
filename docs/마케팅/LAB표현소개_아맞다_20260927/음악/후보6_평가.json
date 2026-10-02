@@ -1,0 +1,80 @@
+[
+ {
+  "file": "lyria-002_108.wav",
+  "dur": 32.77,
+  "LUFS": -22.6,
+  "LRA": 1.6,
+  "TP": -0.0,
+  "bpm": 136.0,
+  "beat_strength": 0.45,
+  "centroid_hz": 1241,
+  "lead_silence": 0.0,
+  "tail_quiet": 0.05,
+  "vocal_like_text": ""
+ },
+ {
+  "file": "lyria-002_2718.wav",
+  "dur": 32.77,
+  "LUFS": -22.5,
+  "LRA": 2.2,
+  "TP": -0.0,
+  "bpm": 129.2,
+  "beat_strength": 0.16,
+  "centroid_hz": 1851,
+  "lead_silence": 0.0,
+  "tail_quiet": 0.05,
+  "vocal_like_text": ""
+ },
+ {
+  "file": "lyria-002_31415.wav",
+  "dur": 32.77,
+  "LUFS": -22.5,
+  "LRA": 3.1,
+  "TP": -0.0,
+  "bpm": 161.5,
+  "beat_strength": 0.26,
+  "centroid_hz": 1277,
+  "lead_silence": 0.0,
+  "tail_quiet": 0.05,
+  "vocal_like_text": "You"
+ },
+ {
+  "file": "lyria3_a.mp3",
+  "dur": 30.77,
+  "LUFS": -11.7,
+  "LRA": 6.3,
+  "TP": 1.4,
+  "bpm": 107.7,
+  "beat_strength": 0.21,
+  "centroid_hz": 1663,
+  "lead_silence": 0.05,
+  "tail_quiet": 0.05,
+  "vocal_like_text": "You"
+ },
+ {
+  "file": "lyria3_b.mp3",
+  "dur": 30.77,
+  "LUFS": -11.9,
+  "LRA": 3.3,
+  "TP": 0.9,
+  "bpm": 73.8,
+  "beat_strength": 0.25,
+  "centroid_hz": 1784,
+  "lead_silence": 0.1,
+  "tail_quiet": 0.05,
+  "vocal_like_text": ""
+ },
+ {
+  "file": "lyria3_c.mp3",
+  "dur": 29.68,
+  "LUFS": -12.7,
+  "LRA": 11.6,
+  "TP": 0.0,
+  "bpm": 99.4,
+  "beat_strength": 0.18,
+  "centroid_hz": 1958,
+  "lead_silence": 0.05,
+  "tail_quiet": 2.5,
+  "vocal_like_text": ""
+ }
+]

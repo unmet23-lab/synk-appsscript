@@ -1,0 +1,39 @@
+[
+  {
+    "id": "result",
+    "offset": 1.5,
+    "state": [
+      {
+        "opacity": 1,
+        "clip": "none",
+        "height": 170.234375
+      },
+      {
+        "opacity": 1,
+        "clip": "none",
+        "height": 170.25
+      },
+      {
+        "opacity": 1,
+        "clip": "none",
+        "height": 170.234375
+      },
+      {
+        "opacity": 1,
+        "clip": "none",
+        "height": 170.25
+      }
+    ]
+  },
+  {
+    "id": "global",
+    "offset": 1.5,
+    "state": [
+      {
+        "opacity": 1,
+        "clip": "none",
+        "height": 286.14990234375
+      }
+    ]
+  }
+]

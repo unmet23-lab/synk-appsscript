@@ -1,0 +1,21 @@
+{
+  "campaign": "meeting-20260924",
+  "account": "@synkbrief",
+  "instagramAccountId": "17841433358976667",
+  "metaAppId": "2188817965852860",
+  "instagramAppId": "3931923747102965",
+  "state": "awaiting-instagram-login-and-token",
+  "enabled": false,
+  "keyword": "synk",
+  "match": "case-insensitive-whole-word",
+  "mediaIds": [],
+  "followRequest": true,
+  "followGate": false,
+  "directMessageKeywordEnabled": false,
+  "link": "https://synk.im/brief/meeting/",
+  "delivery": "single-private-reply",
+  "dedupe": "one-per-person-per-campaign",
+  "checkedAt": "2026-09-24",
+  "permissionsApproval": "user-approved",
+  "accountInvite": "pending-acceptance"
+}

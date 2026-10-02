@@ -1,0 +1,8 @@
+<!doctype html><html lang="ko"><body><template><div class="shot-root" id="shot-08-root" data-composition-id="shot-08" data-width="1080" data-height="1920" data-duration="3.233333"><div class="world blue"><div class="top"><span>yuhobuilds</span><span>EP.02</span></div><div class="kicker" style="left:76px;top:164px">제가 원한 건…</div><div class="reaction-title slam" style="left:70px;top:235px;width:940px">잠깐만요!</div><img class="face pop" src="assets/expressions/surprise.png" alt="유호 surprise" style="left:150px;top:535px;width:780px;height:960px"><div class="bang pop" style="right:50px;top:610px">!</div><div class="sticker pop" style="left:225px;top:1380px">학생 출석 하나요!</div></div></div><script>(function(){const root=document.getElementById('shot-08-root'),q=s=>root.querySelector(s),qAll=s=>Array.from(root.querySelectorAll(s));const tl=gsap.timeline({paused:true});
+ qAll('.rise').forEach((e,j)=>tl.fromTo(e,{y:45,opacity:0},{y:0,opacity:1,duration:.28,ease:'power4.out'},0.25+Math.min(j*.08,.24)));
+ qAll('.pop').forEach((e,j)=>tl.fromTo(e,{scale:.86,opacity:0},{scale:1,opacity:1,duration:.28,ease:'back.out(1.35)'},0.25+Math.min(j*.09,.27)));
+ qAll('.slam').forEach(e=>tl.fromTo(e,{opacity:0,scale:1.15},{opacity:1,scale:1,duration:.24,ease:'power4.out'},0.25));
+ tl.to(q('.face'),{scale:1.08,duration:1.4,ease:'power1.out'},.45);
+ tl.fromTo(q('.world'),{opacity:0,scale:1.12},{opacity:1,scale:1,duration:0.233333333,ease:'power3.out'},0);
+ tl.to(q('.world'),{x:-302,scale:.96,duration:0.233333333,ease:'power3.inOut'},3);
+ window.__timelines['shot-08']=tl;})();</script></template></body></html>

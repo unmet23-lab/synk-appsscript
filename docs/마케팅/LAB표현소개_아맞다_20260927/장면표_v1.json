@@ -1,0 +1,245 @@
+{
+ "id": "LAB표현소개_아맞다_20260927",
+ "line": "CL-6 LAB 표현 소개",
+ "character": "몽글",
+ "canvas": [
+  1080,
+  1920
+ ],
+ "fps": 30,
+ "duration": 22.0,
+ "expression": {
+  "ko": "아 맞다!",
+  "romanization": "a matda",
+  "meaning_en": "Oh, right! / Oh wait! - said when you suddenly remember something",
+  "meaning_ko": "잊고 있던 것이 갑자기 떠올랐을 때 쓰는 감탄",
+  "examples": [
+   {
+    "ko": "아 맞다, 우산!",
+    "en": "Oh right, my umbrella!"
+   },
+   {
+    "ko": "…아 맞다! 숙제!",
+    "en": "…Oh right! Homework!"
+   }
+  ],
+  "note": "몽글의 감탄사 지문(가이드 정본 §2-3)이라 첫 편은 몽글."
+ },
+ "segments": [
+  {
+   "id": "S1 훅",
+   "start": 0.0,
+   "end": 2.4,
+   "mongle_width": 780,
+   "mongle_bottom": 1800
+  },
+  {
+   "id": "S2 예문",
+   "start": 2.4,
+   "end": 8.6,
+   "mongle_width": 660,
+   "mongle_bottom": 1830
+  },
+  {
+   "id": "S3 캐릭터",
+   "start": 8.6,
+   "end": 15.2,
+   "mongle_width": 900,
+   "mongle_bottom": 1790
+  },
+  {
+   "id": "S4 따라 말하기",
+   "start": 15.2,
+   "end": 19.4,
+   "mongle_width": 780,
+   "mongle_bottom": 1800
+  },
+  {
+   "id": "S5 LAB 표시",
+   "start": 19.4,
+   "end": 22.0,
+   "mongle_width": 780,
+   "mongle_bottom": 1800
+  }
+ ],
+ "cuts": [
+  {
+   "t": 0.0,
+   "cut": "궁금함"
+  },
+  {
+   "t": 0.6,
+   "cut": "놀람"
+  },
+  {
+   "t": 2.4,
+   "cut": "본체"
+  },
+  {
+   "t": 3.0,
+   "cut": "놀람"
+  },
+  {
+   "t": 4.8,
+   "cut": "안도"
+  },
+  {
+   "t": 6.4,
+   "cut": "본체"
+  },
+  {
+   "t": 8.6,
+   "cut": "좌34"
+  },
+  {
+   "t": 11.0,
+   "cut": "놀람"
+  },
+  {
+   "t": 13.2,
+   "cut": "응원"
+  },
+  {
+   "t": 14.3,
+   "cut": "눈웃음"
+  },
+  {
+   "t": 15.2,
+   "cut": "응원"
+  },
+  {
+   "t": 19.4,
+   "cut": "눈웃음"
+  }
+ ],
+ "blinks": [
+  6.6,
+  12.5,
+  17.6
+ ],
+ "text": {
+  "en": {
+   "s1_top": "When you suddenly remember something…",
+   "s1_meaning": "“Oh, right!”",
+   "s1_sub": "a matda",
+   "s2_top": "For example…",
+   "s2_ko": "아 맞다, 우산!",
+   "s2_sub": "“Oh right, my umbrella!”",
+   "s3_top": "Mongle does it too…",
+   "s3_l1": [
+    "어? 창밖에 새!",
+    "Huh? A bird outside!"
+   ],
+   "s3_l2": [
+    "…아 맞다! 숙제!",
+    "…Oh right! Homework!"
+   ],
+   "s3_l3": [
+    "같이 하자!",
+    "Let’s do it together!"
+   ],
+   "s4_top": "Your turn — say it out loud",
+   "s4_sub": "a matda",
+   "s5_cta": "Tell us your 아 맞다 moment in the comments"
+  },
+  "ko": {
+   "s1_top": "갑자기 생각났을 때…",
+   "s1_meaning": "잊고 있던 게 떠오를 때 쓰는 말",
+   "s1_sub": "a matda",
+   "s2_top": "예를 들면…",
+   "s2_ko": "아 맞다, 우산!",
+   "s2_sub": "두고 나올 뻔했을 때",
+   "s3_top": "몽글도 그래요…",
+   "s3_l1": [
+    "어? 창밖에 새!",
+    null
+   ],
+   "s3_l2": [
+    "…아 맞다! 숙제!",
+    null
+   ],
+   "s3_l3": [
+    "같이 하자!",
+    null
+   ],
+   "s4_top": "따라 말해 보세요",
+   "s4_sub": "a matda",
+   "s5_cta": "당신의 ‘아 맞다’ 순간을 댓글로 알려 주세요"
+  }
+ },
+ "audio": [
+  {
+   "t": 0.15,
+   "file": "sounds/synk-voice-ppong.wav",
+   "gain_db": -8,
+   "what": "몽글 물음 「뽀옹」"
+  },
+  {
+   "t": 0.5,
+   "file": "sounds/synk-sound-earn.wav",
+   "gain_db": -14,
+   "what": "UI 획득 픽(카드 등장)"
+  },
+  {
+   "t": 0.6,
+   "file": "tts/hook.wav",
+   "gain_db": 0,
+   "what": "내레이션 「아 맞다!」"
+  },
+  {
+   "t": 3.0,
+   "file": "tts/umbrella.wav",
+   "gain_db": 0,
+   "what": "내레이션 「아 맞다, 우산!」"
+  },
+  {
+   "t": 5.0,
+   "file": "sounds/synk-voice-mii.wav",
+   "gain_db": -8,
+   "what": "몽글 안심 「미이」"
+  },
+  {
+   "t": 8.8,
+   "file": "sounds/synk-voice-ppoo.wav",
+   "gain_db": -8,
+   "what": "몽글 물음 「뽀오」"
+  },
+  {
+   "t": 11.0,
+   "file": "sounds/synk-sound-earn.wav",
+   "gain_db": -14,
+   "what": "UI 획득 픽"
+  },
+  {
+   "t": 11.05,
+   "file": "tts/beat.wav",
+   "gain_db": 0,
+   "what": "내레이션 「아 맞다!」"
+  },
+  {
+   "t": 13.3,
+   "file": "sounds/synk-voice-myang.wav",
+   "gain_db": -8,
+   "what": "몽글 기쁨 「먀앙」"
+  },
+  {
+   "t": 15.4,
+   "file": "tts/practice.wav",
+   "gain_db": 0,
+   "what": "내레이션 「아 맞다!」(천천히) → 2.6초 여백"
+  },
+  {
+   "t": 19.5,
+   "file": "sounds/synk-sound-achieve.wav",
+   "gain_db": -12,
+   "what": "UI 성취 화음(LAB 표시)"
+  },
+  {
+   "t": 20.3,
+   "file": "sounds/synk-voice-moong.wav",
+   "gain_db": -8,
+   "what": "몽글 완료축하 「모오옹」"
+  }
+ ],
+ "motion_rules": "페이드 0.2~0.3초 · 카드 팝 0.94→1.0(0.22초) · 표정 컷 · 눈 깜빡임 0.1초 · 회전·흔들림·이동 없음"
+}

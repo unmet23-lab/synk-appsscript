@@ -1,0 +1,240 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 3.894,
+  "words": [
+    {
+      "text": "회의",
+      "start": 0.098,
+      "end": 0.278
+    },
+    {
+      "text": "프로젝트의",
+      "start": 0.36,
+      "end": 0.949
+    },
+    {
+      "text": "점",
+      "start": 1.047,
+      "end": 1.244
+    },
+    {
+      "text": "세",
+      "start": 1.358,
+      "end": 1.44
+    },
+    {
+      "text": "개를",
+      "start": 1.505,
+      "end": 1.734
+    },
+    {
+      "text": "누르고,",
+      "start": 1.784,
+      "end": 2.111
+    },
+    {
+      "text": "프로젝트",
+      "start": 2.34,
+      "end": 2.782
+    },
+    {
+      "text": "설정을",
+      "start": 2.847,
+      "end": 3.24
+    },
+    {
+      "text": "여세요.",
+      "start": 3.289,
+      "end": 3.894
+    }
+  ],
+  "characters": [
+    {
+      "text": "회",
+      "start": 0.098,
+      "end": 0.229
+    },
+    {
+      "text": "의",
+      "start": 0.229,
+      "end": 0.278
+    },
+    {
+      "text": " ",
+      "start": 0.278,
+      "end": 0.36
+    },
+    {
+      "text": "프",
+      "start": 0.36,
+      "end": 0.442
+    },
+    {
+      "text": "로",
+      "start": 0.442,
+      "end": 0.573
+    },
+    {
+      "text": "젝",
+      "start": 0.573,
+      "end": 0.769
+    },
+    {
+      "text": "트",
+      "start": 0.769,
+      "end": 0.9
+    },
+    {
+      "text": "의",
+      "start": 0.9,
+      "end": 0.949
+    },
+    {
+      "text": " ",
+      "start": 0.949,
+      "end": 1.047
+    },
+    {
+      "text": "점",
+      "start": 1.047,
+      "end": 1.244
+    },
+    {
+      "text": " ",
+      "start": 1.244,
+      "end": 1.358
+    },
+    {
+      "text": "세",
+      "start": 1.358,
+      "end": 1.44
+    },
+    {
+      "text": " ",
+      "start": 1.44,
+      "end": 1.505
+    },
+    {
+      "text": "개",
+      "start": 1.505,
+      "end": 1.62
+    },
+    {
+      "text": "를",
+      "start": 1.62,
+      "end": 1.734
+    },
+    {
+      "text": " ",
+      "start": 1.734,
+      "end": 1.784
+    },
+    {
+      "text": "누",
+      "start": 1.784,
+      "end": 1.898
+    },
+    {
+      "text": "르",
+      "start": 1.898,
+      "end": 2.029
+    },
+    {
+      "text": "고",
+      "start": 2.029,
+      "end": 2.094
+    },
+    {
+      "text": ",",
+      "start": 2.094,
+      "end": 2.111
+    },
+    {
+      "text": " ",
+      "start": 2.111,
+      "end": 2.34
+    },
+    {
+      "text": "프",
+      "start": 2.34,
+      "end": 2.422
+    },
+    {
+      "text": "로",
+      "start": 2.422,
+      "end": 2.536
+    },
+    {
+      "text": "젝",
+      "start": 2.536,
+      "end": 2.716
+    },
+    {
+      "text": "트",
+      "start": 2.716,
+      "end": 2.782
+    },
+    {
+      "text": " ",
+      "start": 2.782,
+      "end": 2.847
+    },
+    {
+      "text": "설",
+      "start": 2.847,
+      "end": 3.011
+    },
+    {
+      "text": "정",
+      "start": 3.011,
+      "end": 3.191
+    },
+    {
+      "text": "을",
+      "start": 3.191,
+      "end": 3.24
+    },
+    {
+      "text": " ",
+      "start": 3.24,
+      "end": 3.289
+    },
+    {
+      "text": "여",
+      "start": 3.289,
+      "end": 3.42
+    },
+    {
+      "text": "세",
+      "start": 3.42,
+      "end": 3.551
+    },
+    {
+      "text": "요",
+      "start": 3.551,
+      "end": 3.878
+    },
+    {
+      "text": ".",
+      "start": 3.878,
+      "end": 3.894
+    }
+  ],
+  "request": {
+    "seed": 923,
+    "model": "ssfm-v30",
+    "voice_id": "tc_6a7446c19f2d7dfed990a900",
+    "text": "회의 프로젝트의 점 세 개를 누르고, 프로젝트 설정을 여세요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.04,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "tonedown",
+      "emotion_intensity": 0.5
+    }
+  }
+}

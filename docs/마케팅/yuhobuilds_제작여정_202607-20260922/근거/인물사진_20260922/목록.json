@@ -1,0 +1,69 @@
+{
+  "receivedAt": "2026-09-22",
+  "authorization": "사용자가 자신의 사진이라고 설명하며 앞으로 필요하면 사용하라고 요청함. 이번 회차는 프로필 얼굴만 캐릭터에 합성 요청.",
+  "entries": [
+    {
+      "name": "KakaoTalk_20260908_215815072.jpg",
+      "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\KakaoTalk_20260908_215815072.jpg",
+      "bytes": 547084,
+      "sha256": "0bd08d2c372f4a3914003e44037c477cfabd7a6c5921f8ac2a172000523f4450",
+      "visuallyReviewed": false
+    },
+    {
+      "name": "KakaoTalk_20260908_215815072_01.jpg",
+      "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\KakaoTalk_20260908_215815072_01.jpg",
+      "bytes": 1301233,
+      "sha256": "cf7db04b8343854980ca13a0e1621d2ddb00b7678f7192c4a8b8f0b41fef8a97",
+      "visuallyReviewed": false
+    },
+    {
+      "name": "KakaoTalk_20260908_215815072_02.jpg",
+      "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\KakaoTalk_20260908_215815072_02.jpg",
+      "bytes": 494939,
+      "sha256": "3f7dfb496f239c6d9aaee3a7931c5047c87360ef73328784ccdd38a7f882ee60",
+      "visuallyReviewed": false
+    },
+    {
+      "name": "KakaoTalk_20260908_215815072_03.jpg",
+      "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\KakaoTalk_20260908_215815072_03.jpg",
+      "bytes": 1096136,
+      "sha256": "cfe7713ae6c9190320b4157161ca9d598095fd9b605394efdfa94b8bbf845a29",
+      "visuallyReviewed": false
+    },
+    {
+      "name": "KakaoTalk_20260908_215815072_04.jpg",
+      "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\KakaoTalk_20260908_215815072_04.jpg",
+      "bytes": 333185,
+      "sha256": "7c4b65f08f9a86abe5b1955bd24dfc0eb964889ef891eca3e0cc4770a383fb4b",
+      "visuallyReviewed": false
+    },
+    {
+      "name": "KakaoTalk_20260908_215815072_05.jpg",
+      "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\KakaoTalk_20260908_215815072_05.jpg",
+      "bytes": 2105334,
+      "sha256": "3ac452d59b017526901e163ac41d70bf77f8a7b692c4a7a0712207c9099a25d5",
+      "visuallyReviewed": false
+    },
+    {
+      "name": "KakaoTalk_20260908_215815072_06.jpg",
+      "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\KakaoTalk_20260908_215815072_06.jpg",
+      "bytes": 3574816,
+      "sha256": "43f33e9dfa8ad84ad63ab2dc24ffad53f1701650948f82d4cf37ba58c9ecb45f",
+      "visuallyReviewed": false
+    },
+    {
+      "name": "사진_IMG_4814.jpg",
+      "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\사진_IMG_4814.jpg",
+      "bytes": 185248,
+      "sha256": "e9b5266724626245862df517f4c2f68628daeaae63667778d84a23f13dc7edd6",
+      "visuallyReviewed": false
+    },
+    {
+      "name": "유호_프로필_800.png",
+      "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\유호_프로필_800.png",
+      "bytes": 353235,
+      "sha256": "b8f7ecefae17124b34b0a4f82a19ff9f1f458b6a4e5323ed5b08f5e32f8d59d2",
+      "visuallyReviewed": true
+    }
+  ]
+}

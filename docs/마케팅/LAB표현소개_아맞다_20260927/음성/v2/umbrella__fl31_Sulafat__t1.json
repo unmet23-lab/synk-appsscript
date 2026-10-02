@@ -1,0 +1,28 @@
+{
+ "id": "umbrella__fl31_Sulafat__t1",
+ "line": "umbrella",
+ "model": "gemini-3.1-flash-tts-preview",
+ "voice": "Sulafat",
+ "style": "Say this in Korean like a friendly young woman who has just stepped outside, noticed the rain and realized she left her umbrella behind: surprised at first, then a quick, rueful realization",
+ "text": "아 맞다, 우산!",
+ "location": "global",
+ "usage": {
+  "promptTokenCount": 46,
+  "candidatesTokenCount": 46,
+  "totalTokenCount": 92,
+  "trafficType": "ON_DEMAND",
+  "promptTokensDetails": [
+   {
+    "modality": "TEXT",
+    "tokenCount": 46
+   }
+  ],
+  "candidatesTokensDetails": [
+   {
+    "modality": "AUDIO",
+    "tokenCount": 46
+   }
+  ]
+ },
+ "modelVersion": "gemini-3.1-flash-tts-preview"
+}

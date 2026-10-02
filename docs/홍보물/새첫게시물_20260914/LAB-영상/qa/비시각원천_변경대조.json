@@ -1,0 +1,254 @@
+{
+  "checkedAt": "2026-09-13T19:35:37.519Z",
+  "scope": "Earlier complete video unchanged; nonvisual source change impact verification, no new whole playback",
+  "sourceOwnerFinalConfirmed": true,
+  "changedSources": [
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/build.cjs",
+      "before": "31a63ed7dbba36a603603d78010dc97706472daf135f12497efb27f0b3bc6dd9",
+      "now": "c11375984683a9c80e8f15a1f667e2aa96abe8c82ea63fd09d397e24846b0f90",
+      "oldBytes": 25060,
+      "bytes": 25202
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/manifest.json",
+      "before": "65cf39eb0c2327ee82a1da677b64cf061cdd21c949458dbaff25aac7eb729249",
+      "now": "308735ee82b9e5b10cca4bcf80d782bed082d618714ecaa8302d771fb99df127",
+      "oldBytes": 13719,
+      "bytes": 13867
+    }
+  ],
+  "buildRestoration": {
+    "newMetadataFound": true,
+    "restoredHash": "31a63ed7dbba36a603603d78010dc97706472daf135f12497efb27f0b3bc6dd9",
+    "matchesOriginal": true
+  },
+  "consumers": {
+    "labBuild": "Only lines([...]) strings are extracted for MN source matching; changed alt and language-status metadata are not drawn.",
+    "labManifest": "Read for provenance/hash only; not parsed into the video renderer.",
+    "guardianCaption": "Not read by the video builder; student MN/KR captions remain byte-identical.",
+    "videoText": "Scene uses S.mn from unchanged 원고.cjs; 18/18 values still match current source.",
+    "visualAssets": "Notebook, font, logo, fabric input hashes unchanged."
+  },
+  "outputsUnchanged": 52,
+  "outputChanges": [],
+  "outputs": [
+    {
+      "file": "LAB-읽고-바꿔-말하기.mp4",
+      "sha256": "63f3f1fd05f1a8933ecd3323924c144188c19887a47503f0ebf11a011c808829"
+    },
+    {
+      "file": "LAB-읽고-바꿔-말하기.srt",
+      "sha256": "3fce872ac4bf6d2beaab2d32c97b0de0887b57e8c1b0d0fe112da5e781207480"
+    },
+    {
+      "file": "원고.cjs",
+      "sha256": "16eda2785f20dcace881cf9f8a475cee0dd829a8ab62250150128e2652fa5682"
+    },
+    {
+      "file": "장면.js",
+      "sha256": "fe5abf7217cf931ebf09e785ff45d1b679cad451f98352e6f53ca29fb0014b50"
+    },
+    {
+      "file": "qa/0030.png",
+      "sha256": "04a2ed863c97b8e9fc06cf7256fc31e98c2559c1282fdf9a7bfe0581041959ef"
+    },
+    {
+      "file": "qa/0030-390.png",
+      "sha256": "f3d6b0f308c8d9f0df04c58f7c1814132c8f94e2a25a027b0afd2494df8ae752"
+    },
+    {
+      "file": "qa/0030-encoded.png",
+      "sha256": "0accaa78dd7e6d2b67c03821fe9f96d369159d0523259300b299d74b2a763906"
+    },
+    {
+      "file": "qa/0030-encoded-390.png",
+      "sha256": "d1675ee8aaf417b508ec78dc09515d3b64ec3bf48ba90155e0ddb6933625d8ab"
+    },
+    {
+      "file": "qa/0240.png",
+      "sha256": "7bfa5ae7e5464bb968bb70890d1ce23bffcf26052cee0749680befc7645920c0"
+    },
+    {
+      "file": "qa/0240-390.png",
+      "sha256": "034ed102c0e48fc381dd906325b15420115088cc77d4c9dbf40ee0b87aa203f3"
+    },
+    {
+      "file": "qa/0240-encoded.png",
+      "sha256": "0766ae1fe0d160ccb402ad7ecb2d273cb60b0b94f113e36d8ea19e01b9672817"
+    },
+    {
+      "file": "qa/0240-encoded-390.png",
+      "sha256": "175a139981a504d2901310a82ce4ac1c1259521aad8503a6b6b27e6b3b4c3a07"
+    },
+    {
+      "file": "qa/0510.png",
+      "sha256": "c4a4d3b4ada5c167022770552e0e47385404c7736db7742e918904d088233875"
+    },
+    {
+      "file": "qa/0510-390.png",
+      "sha256": "287b1da6c3e6382d78b367974e5d99ef2f9db3f2f8f81479b603f35d54f0816b"
+    },
+    {
+      "file": "qa/0510-encoded.png",
+      "sha256": "381f2eb3f6de5110586ffbb3ace0974fcf657cf5c76e7ec0f6dbe27ac59cda0c"
+    },
+    {
+      "file": "qa/0510-encoded-390.png",
+      "sha256": "767905dc2f5010e5159fe16da0931b8f59c76116d097337df2169383c952347e"
+    },
+    {
+      "file": "qa/0750.png",
+      "sha256": "cca6239808859e90a4bc6fd5b924039f38bd15200a87155fc0697c2ce12b0dde"
+    },
+    {
+      "file": "qa/0750-390.png",
+      "sha256": "dd06b3fbc81ae7a0c6056212677f9ef5b6f674fed52eb930e50919ec6340611c"
+    },
+    {
+      "file": "qa/0750-encoded.png",
+      "sha256": "7a4a330bb11bbb6503fc00a1657c0198c3fa25f300428e5adff45715c016edc0"
+    },
+    {
+      "file": "qa/0750-encoded-390.png",
+      "sha256": "aa52455fa517ad28560c356436d143fb1ddec3c2b40e325f32d24a58c733c149"
+    },
+    {
+      "file": "qa/0855.png",
+      "sha256": "fca9f874019a6a99e53df3c73ba926720db869a14561e925ce908a96351c7df5"
+    },
+    {
+      "file": "qa/0855-390.png",
+      "sha256": "a5b1bd10668a1cf1300a3e277e2d7d7e68aff84ac599cffa363bfcb64443b571"
+    },
+    {
+      "file": "qa/0855-encoded.png",
+      "sha256": "d37c3432b73fe03abc15b5949529897d69ad0324591fb39894d6de7a394c6271"
+    },
+    {
+      "file": "qa/0855-encoded-390.png",
+      "sha256": "229ec9c8f2cda6b9114139735831f08b194bbf1cdf318ce76932b11a28beedb8"
+    },
+    {
+      "file": "qa/0960.png",
+      "sha256": "c06f13b9da1f6034557dddd6d688419288213f61108c1407955a6f387c36d907"
+    },
+    {
+      "file": "qa/0960-390.png",
+      "sha256": "50aa108c9135861b14f1e54febe27c1c37c0145547bcbfec0cc2688254c5ca35"
+    },
+    {
+      "file": "qa/0960-encoded.png",
+      "sha256": "7982dfb1b916017752c4e5f0c54a8fa1cf74033eea1ac526b1f8aeed558c3699"
+    },
+    {
+      "file": "qa/0960-encoded-390.png",
+      "sha256": "ae89f1054690ffb29a36314042a01517f886043e4e69daccfaa08f5ffa7d3b58"
+    },
+    {
+      "file": "qa/1140.png",
+      "sha256": "3a6702ee343f8f1ae1bdb73436d4fa49d937d16120dd0924b3e6c1b3fcbc09fb"
+    },
+    {
+      "file": "qa/1140-390.png",
+      "sha256": "65a5d98381a47b32d775e009146079a37938884f39f123bdc261b2c6d49fbce5"
+    },
+    {
+      "file": "qa/1140-encoded.png",
+      "sha256": "16c9948d92b0bee0240d59fb08dbe9447a2d02c3c60230bcda27eddb6c2721ad"
+    },
+    {
+      "file": "qa/1140-encoded-390.png",
+      "sha256": "89ca0a962fac798012359b162c2799f6adbeca1de0d537bfa627f89081d2e07d"
+    },
+    {
+      "file": "qa/1380.png",
+      "sha256": "3a6702ee343f8f1ae1bdb73436d4fa49d937d16120dd0924b3e6c1b3fcbc09fb"
+    },
+    {
+      "file": "qa/1380-390.png",
+      "sha256": "65a5d98381a47b32d775e009146079a37938884f39f123bdc261b2c6d49fbce5"
+    },
+    {
+      "file": "qa/1380-encoded.png",
+      "sha256": "5e41dbea589d8887564d6682ec2247f621b7674ed014114a70656cff32d9362d"
+    },
+    {
+      "file": "qa/1380-encoded-390.png",
+      "sha256": "64049bef21d796c3f3f71a5d27ebf9c0c3ee9160eb819cdc67cc462ec556a47b"
+    },
+    {
+      "file": "qa/1500.png",
+      "sha256": "43ada262ff428eeaf66f44d44bde25be5dee5337cce629bd402453c18c992cac"
+    },
+    {
+      "file": "qa/1500-390.png",
+      "sha256": "d88ec55b85df98951fc4432d39c9bd6ae68e74ac9f60c4e69ebe8edf1252e944"
+    },
+    {
+      "file": "qa/1500-encoded.png",
+      "sha256": "fbb50a1f0aebba059b9d51adece5d9c6bf703383ee722271a819f73401631eb9"
+    },
+    {
+      "file": "qa/1500-encoded-390.png",
+      "sha256": "42cde18f341ef9d67cf9622c503c7a7cde19b54651fe1ea2b132827fcf905737"
+    },
+    {
+      "file": "qa/1650.png",
+      "sha256": "f9ada4844ca6fb65a7912579b06c509565aade4dd8e8ce11394c68e1b45de070"
+    },
+    {
+      "file": "qa/1650-390.png",
+      "sha256": "b98411cc0029a0818e23b7df6b38b534cc4c17713fdf9be2a19579a06a81c0aa"
+    },
+    {
+      "file": "qa/1650-encoded.png",
+      "sha256": "bbccb1e3c39556ef7f9e4ad7559de700b631ca6bf04772a28f787bf8f22ac7b1"
+    },
+    {
+      "file": "qa/1650-encoded-390.png",
+      "sha256": "6f76419701db9f745097468ff2e2798ae2f389fde2b6db98fe837fe6d4d5cae5"
+    },
+    {
+      "file": "qa/1830.png",
+      "sha256": "0c7f1b2ccd2aa625d0700d8f67e945146232781df19bd71aec28c01e35128024"
+    },
+    {
+      "file": "qa/1830-390.png",
+      "sha256": "bca6dd133def3c21858594520d825f310917a0b83bf09eedb15a442897a02e29"
+    },
+    {
+      "file": "qa/1830-encoded.png",
+      "sha256": "51138d199d16bdfaa43d41c2ec1006f16ad0052b22acb86eca27f235cfb16887"
+    },
+    {
+      "file": "qa/1830-encoded-390.png",
+      "sha256": "6adb11b902a4a2bfbf466430a2fe58c82a256c43c79e6daeced8987f6562dd56"
+    },
+    {
+      "file": "qa/1947.png",
+      "sha256": "0c7f1b2ccd2aa625d0700d8f67e945146232781df19bd71aec28c01e35128024"
+    },
+    {
+      "file": "qa/1947-390.png",
+      "sha256": "bca6dd133def3c21858594520d825f310917a0b83bf09eedb15a442897a02e29"
+    },
+    {
+      "file": "qa/1947-encoded.png",
+      "sha256": "04f0cb027f7ec475b099534931ff5eb9ea6a807e4014ea8034325bbf3a586a41"
+    },
+    {
+      "file": "qa/1947-encoded-390.png",
+      "sha256": "a5e184d382034f9037bff100f711d60604358476123331d8c986cace24fda478"
+    }
+  ],
+  "earlierWholePlayback": {
+    "checkedAt": "2026-09-13T19:03:34.966Z",
+    "mp4Sha256": "63f3f1fd05f1a8933ecd3323924c144188c19887a47503f0ebf11a011c808829",
+    "evidence": "qa/verification-wholeplayback-20260914.json",
+    "newPlaybackRun": false
+  },
+  "newVerification": "node docs/홍보물/새첫게시물_20260914/LAB-영상/검증.cjs (without --play)",
+  "nativeReviewed": false,
+  "published": false
+}

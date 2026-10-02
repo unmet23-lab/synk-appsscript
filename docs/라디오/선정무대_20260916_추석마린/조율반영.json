@@ -1,0 +1,69 @@
+{
+  "at": "2026-09-16T15:03:45.991Z",
+  "applied": true,
+  "before": {
+    "service": {
+      "MainPID": "383626",
+      "NRestarts": "3",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+    },
+    "files": [
+      {
+        "pid": "383761",
+        "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+      },
+      {
+        "pid": "383761",
+        "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+      }
+    ],
+    "radioStream": {
+      "MainPID": "0",
+      "NRestarts": "0",
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "UnitFileState": "disabled"
+    }
+  },
+  "after": {
+    "service": {
+      "MainPID": "384141",
+      "NRestarts": "0",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+    },
+    "files": [
+      {
+        "pid": "384302",
+        "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+      },
+      {
+        "pid": "384302",
+        "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+      }
+    ],
+    "radioStream": {
+      "MainPID": "0",
+      "NRestarts": "0",
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "UnitFileState": "disabled"
+    }
+  },
+  "configSha": "7ce20813cb5d42e556dea066e5ac8fbb8f8087b209acdcdd39e1cbe9a5178950",
+  "backup": "/opt/synk-radio/송출/조율.json.before-chuseok-marine-20260917-4abcbb70ab80",
+  "changedKeys": [
+    "프레임 15→12",
+    "뜨기 6→4"
+  ],
+  "preservedKeys": [
+    "소리목록",
+    "무대목록",
+    "장면분",
+    "장면차례",
+    "연속소리"
+  ]
+}

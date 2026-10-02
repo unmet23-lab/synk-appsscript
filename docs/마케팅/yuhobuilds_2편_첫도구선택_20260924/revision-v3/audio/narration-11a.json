@@ -1,0 +1,189 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 2.923,
+  "words": [
+    {
+      "text": "다만",
+      "start": 0.081,
+      "end": 0.323
+    },
+    {
+      "text": "다른",
+      "start": 0.694,
+      "end": 0.904
+    },
+    {
+      "text": "AI의",
+      "start": 0.953,
+      "end": 1.26
+    },
+    {
+      "text": "답도",
+      "start": 1.308,
+      "end": 1.534
+    },
+    {
+      "text": "정답",
+      "start": 1.841,
+      "end": 2.116
+    },
+    {
+      "text": "보증서는",
+      "start": 2.164,
+      "end": 2.503
+    },
+    {
+      "text": "아니에요.",
+      "start": 2.552,
+      "end": 2.923
+    }
+  ],
+  "characters": [
+    {
+      "text": "다",
+      "start": 0.081,
+      "end": 0.194
+    },
+    {
+      "text": "만",
+      "start": 0.194,
+      "end": 0.323
+    },
+    {
+      "text": " ",
+      "start": 0.323,
+      "end": 0.694
+    },
+    {
+      "text": "다",
+      "start": 0.694,
+      "end": 0.791
+    },
+    {
+      "text": "른",
+      "start": 0.791,
+      "end": 0.904
+    },
+    {
+      "text": " ",
+      "start": 0.904,
+      "end": 0.953
+    },
+    {
+      "text": "A",
+      "start": 0.953,
+      "end": 1.074
+    },
+    {
+      "text": "I",
+      "start": 1.074,
+      "end": 1.227
+    },
+    {
+      "text": "의",
+      "start": 1.227,
+      "end": 1.26
+    },
+    {
+      "text": " ",
+      "start": 1.26,
+      "end": 1.308
+    },
+    {
+      "text": "답",
+      "start": 1.308,
+      "end": 1.453
+    },
+    {
+      "text": "도",
+      "start": 1.453,
+      "end": 1.534
+    },
+    {
+      "text": " ",
+      "start": 1.534,
+      "end": 1.841
+    },
+    {
+      "text": "정",
+      "start": 1.841,
+      "end": 2.035
+    },
+    {
+      "text": "답",
+      "start": 2.035,
+      "end": 2.116
+    },
+    {
+      "text": " ",
+      "start": 2.116,
+      "end": 2.164
+    },
+    {
+      "text": "보",
+      "start": 2.164,
+      "end": 2.245
+    },
+    {
+      "text": "증",
+      "start": 2.245,
+      "end": 2.358
+    },
+    {
+      "text": "서",
+      "start": 2.358,
+      "end": 2.422
+    },
+    {
+      "text": "는",
+      "start": 2.422,
+      "end": 2.503
+    },
+    {
+      "text": " ",
+      "start": 2.503,
+      "end": 2.552
+    },
+    {
+      "text": "아",
+      "start": 2.552,
+      "end": 2.584
+    },
+    {
+      "text": "니",
+      "start": 2.584,
+      "end": 2.649
+    },
+    {
+      "text": "에",
+      "start": 2.649,
+      "end": 2.697
+    },
+    {
+      "text": "요",
+      "start": 2.697,
+      "end": 2.907
+    },
+    {
+      "text": ".",
+      "start": 2.907,
+      "end": 2.923
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "다만 다른 AI의 답도 정답 보증서는 아니에요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.3,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal"
+    }
+  }
+}

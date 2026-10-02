@@ -1,0 +1,306 @@
+{
+  "errors": [],
+  "checks": [
+    {
+      "id": "open",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "open",
+      "dt": 3.949,
+      "tipOnTarget": true,
+      "transform": "translate(-300.444px, -8.6667px) scale(1.1556, 1.1556)",
+      "targetInside": true
+    },
+    {
+      "id": "open",
+      "dt": 4.8,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.0626px, 126.722px, 0px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "paste",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "paste",
+      "dt": 2.254,
+      "tipOnTarget": true,
+      "transform": "translate(-332.4px, -67.2px) scale(1.2, 1.2)",
+      "targetInside": true
+    },
+    {
+      "id": "paste",
+      "dt": 8.666666666666668,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.0692px, 126.71px, 0px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "request",
+      "dt": 0.6,
+      "tipOnTarget": true,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "request",
+      "dt": 2.972,
+      "tipOnTarget": true,
+      "transform": "translate(-332.4px, -138px) scale(1.2, 1.2)",
+      "targetInside": true
+    },
+    {
+      "id": "request",
+      "dt": 8.466666666666667,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.0692px, 126.695px, 0px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "send",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "send",
+      "dt": 3.436,
+      "tipOnTarget": true,
+      "transform": "translate3d(-2268.42px, -1030.7px, 0px) scale(2.7995, 2.7995)",
+      "targetInside": true
+    },
+    {
+      "id": "send",
+      "dt": 4.033333333333333,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.4725px, 126.509px, 0px) scale(0.7317, 0.7317)",
+      "targetInside": true
+    },
+    {
+      "id": "project-menu",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "project-menu",
+      "dt": 3.4499999999999997,
+      "tipOnTarget": true,
+      "transform": "translate(20px, -86px) scale(2.8, 2.8)",
+      "targetInside": true
+    },
+    {
+      "id": "project-menu",
+      "dt": 4.533333333333333,
+      "tipOnTarget": true,
+      "transform": "translate3d(0.0042px, 126.706px, 0px) scale(0.7317, 0.7317)",
+      "targetInside": true
+    },
+    {
+      "id": "create",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "create",
+      "dt": 2.9139999999999997,
+      "tipOnTarget": true,
+      "transform": "translate(-2092.68px, -39.9512px) scale(2.5366, 2.5366)",
+      "targetInside": true
+    },
+    {
+      "id": "create",
+      "dt": 4.817,
+      "tipOnTarget": true,
+      "transform": "translate(-641.333px, -242.667px) scale(1.7333, 1.7333)",
+      "targetInside": true
+    },
+    {
+      "id": "create",
+      "dt": 6.239000000000001,
+      "tipOnTarget": true,
+      "transform": "translate(-641.333px, -242.667px) scale(1.7333, 1.7333)",
+      "targetInside": true
+    },
+    {
+      "id": "create",
+      "dt": 7.066666666666666,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.1336px, 126.673px, 0px) scale(0.7315, 0.7315)",
+      "targetInside": true
+    },
+    {
+      "id": "settings",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "settings",
+      "dt": 2.154,
+      "tipOnTarget": true,
+      "transform": "translate(-2186.4px, -186.8px) scale(2.8, 2.8)",
+      "targetInside": true
+    },
+    {
+      "id": "settings",
+      "dt": 3.659,
+      "tipOnTarget": true,
+      "transform": "translate(-2217.2px, -203.6px) scale(2.8, 2.8)",
+      "targetInside": true
+    },
+    {
+      "id": "settings",
+      "dt": 4.8,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.4617px, 126.681px, 0px) scale(0.7317, 0.7317)",
+      "targetInside": true
+    },
+    {
+      "id": "save",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "save",
+      "dt": 5.541,
+      "tipOnTarget": true,
+      "transform": "translate(-730.72px, -103.424px) scale(1.8833, 1.8833)",
+      "targetInside": true
+    },
+    {
+      "id": "save",
+      "dt": 8.086,
+      "tipOnTarget": true,
+      "transform": "translate(-1802.8px, -1372.6px) scale(2.8, 2.8)",
+      "targetInside": true
+    },
+    {
+      "id": "save",
+      "dt": 9.133333333333335,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.3754px, 126.438px, 0px) scale(0.7317, 0.7317)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-menu",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-menu",
+      "dt": 2.85,
+      "tipOnTarget": true,
+      "transform": "translate(20px, -86px) scale(2.8, 2.8)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-menu",
+      "dt": 3.8999999999999995,
+      "tipOnTarget": true,
+      "transform": "translate3d(0.0042px, 126.706px, 0px) scale(0.7317, 0.7317)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-project",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-project",
+      "dt": 2.1999999999999997,
+      "tipOnTarget": true,
+      "transform": "translate(-426.041px, -81.2276px) scale(1.291, 1.291)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-project",
+      "dt": 3.1999999999999997,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.0887px, 126.707px, 0px) scale(0.7314, 0.7314)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-new",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-new",
+      "dt": 6.45,
+      "tipOnTarget": true,
+      "transform": "translate(-285.844px, 136.663px) scale(1.121, 1.121)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-new",
+      "dt": 9.600000000000001,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.0595px, 126.752px, 0px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-memo",
+      "dt": 0.6,
+      "tipOnTarget": true,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-memo",
+      "dt": 3.25,
+      "tipOnTarget": true,
+      "transform": "translate(-296.781px, 93.2195px) scale(1.1415, 1.1415)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-memo",
+      "dt": 7.8,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.0618px, 126.743px, 0px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-finish",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-finish",
+      "dt": 1.9,
+      "tipOnTarget": true,
+      "transform": "translate(-2315.2px, -508.8px) scale(2.8, 2.8)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-finish",
+      "dt": 2.7666666666666666,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.4821px, 126.618px, 0px) scale(0.7317, 0.7317)",
+      "targetInside": true
+    }
+  ]
+}

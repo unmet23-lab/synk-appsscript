@@ -1,0 +1,31 @@
+{
+  "createdAt": "2026-09-25T19:06:27.404Z",
+  "sourceMaster": "../../yuhobuilds_EP01.mp4",
+  "sourceSha256": "b0c2fb2fcebcbf2a4c4d19231ce23254d3217d65f657593bb702a3d5a38ca120",
+  "removedScene": {
+    "id": "15a",
+    "startFrame": 1993,
+    "frames": 94,
+    "text": "다음 편에서는 도구를 켜고, 설정하는 것부터 같이 해볼게요."
+  },
+  "reason": "Completed EP02 is about comparing AI recommendations; the former setup tutorial promise no longer matches the next episode.",
+  "picture": "Original Remotion scene designs retained; timeline, captions, progress bar rerendered to the new duration.",
+  "audio": "Retained narration blocks without the removed scene; continuous original BGM with ducking, keyboard SFX, and 0.65 s fade rebuilt to the new end.",
+  "newNarrationGenerated": false,
+  "totalFrames": 2188,
+  "durationSeconds": 72.93333333333334,
+  "gainDb": 0.16000000000000014,
+  "premixLoudness": {
+    "input_i": "-16.16",
+    "input_tp": "-2.81",
+    "input_lra": "1.20",
+    "input_thresh": "-26.38",
+    "output_i": "-16.02",
+    "output_tp": "-2.29",
+    "output_lra": "1.00",
+    "output_thresh": "-26.21",
+    "normalization_type": "dynamic",
+    "target_offset": "0.02"
+  },
+  "publicUpload": false
+}

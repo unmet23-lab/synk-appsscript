@@ -1,0 +1,79 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "여러분도 불편한 일 하나만 골라보세요. 거창한 아이디어 없어도, 시작은 거기서 됩니다.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.24,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 4.637,
+  "words": [
+    {
+      "text": "여러분도",
+      "start": 0.145,
+      "end": 0.465
+    },
+    {
+      "text": "불편한",
+      "start": 0.567,
+      "end": 0.959
+    },
+    {
+      "text": "일",
+      "start": 1.003,
+      "end": 1.032
+    },
+    {
+      "text": "하나만",
+      "start": 1.076,
+      "end": 1.308
+    },
+    {
+      "text": "골라보세요.",
+      "start": 1.352,
+      "end": 1.759
+    },
+    {
+      "text": "거창한",
+      "start": 2.282,
+      "end": 2.631
+    },
+    {
+      "text": "아이디어",
+      "start": 2.675,
+      "end": 2.893
+    },
+    {
+      "text": "없어도,",
+      "start": 2.936,
+      "end": 3.169
+    },
+    {
+      "text": "시작은",
+      "start": 3.532,
+      "end": 3.852
+    },
+    {
+      "text": "거기서",
+      "start": 3.925,
+      "end": 4.172
+    },
+    {
+      "text": "됩니다.",
+      "start": 4.216,
+      "end": 4.637
+    }
+  ],
+  "characters": null
+}

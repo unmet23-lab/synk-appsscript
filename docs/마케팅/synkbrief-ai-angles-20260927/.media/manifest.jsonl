@@ -1,0 +1,24 @@
+{"id":"bgm_001","type":"bgm","path":"assets/audio/chime.mp3","source":"existing","description":"chime","duration":2.5,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_002","type":"bgm","path":"assets/audio/click-soft.mp3","source":"existing","description":"click soft","duration":0.4,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_003","type":"bgm","path":"assets/audio/master.wav","source":"existing","description":"master","duration":56.5,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_004","type":"bgm","path":"assets/audio/music-bed.wav","source":"existing","description":"music bed","duration":56.5,"provenance":{"provider":"local","adopted":true}}
+{"id":"voice_001","type":"voice","path":"assets/audio/narration.wav","source":"existing","description":"narration","duration":56.5,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_005","type":"bgm","path":"assets/audio/pop.mp3","source":"existing","description":"pop","duration":0.7,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_006","type":"bgm","path":"assets/audio/premix.wav","source":"existing","description":"premix","duration":56.5,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_007","type":"bgm","path":"assets/audio/voice-01-block.wav","source":"existing","description":"voice 01 block","duration":6.7,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_008","type":"bgm","path":"assets/audio/voice-01.mp3","source":"existing","description":"voice 01","duration":6,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_009","type":"bgm","path":"assets/audio/voice-02-block.wav","source":"existing","description":"voice 02 block","duration":8.2,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_010","type":"bgm","path":"assets/audio/voice-02.mp3","source":"existing","description":"voice 02","duration":7.9,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_011","type":"bgm","path":"assets/audio/voice-03-block.wav","source":"existing","description":"voice 03 block","duration":10.5,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_012","type":"bgm","path":"assets/audio/voice-03.mp3","source":"existing","description":"voice 03","duration":10.2,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_013","type":"bgm","path":"assets/audio/voice-04-block.wav","source":"existing","description":"voice 04 block","duration":11.3,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_014","type":"bgm","path":"assets/audio/voice-04.mp3","source":"existing","description":"voice 04","duration":10.9,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_015","type":"bgm","path":"assets/audio/voice-05-block.wav","source":"existing","description":"voice 05 block","duration":9.4,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_016","type":"bgm","path":"assets/audio/voice-05.mp3","source":"existing","description":"voice 05","duration":9,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_017","type":"bgm","path":"assets/audio/voice-06-block.wav","source":"existing","description":"voice 06 block","duration":10.4,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_018","type":"bgm","path":"assets/audio/voice-06.mp3","source":"existing","description":"voice 06","duration":10.1,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_019","type":"bgm","path":"assets/audio/whoosh-short.mp3","source":"existing","description":"whoosh short","duration":0.6,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_001","type":"image","path":"assets/images/detail.png","source":"existing","description":"detail","width":1122,"height":1402,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_002","type":"image","path":"assets/images/hero.png","source":"existing","description":"hero","width":1122,"height":1402,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_003","type":"image","path":"assets/images/lifestyle.png","source":"existing","description":"lifestyle","width":1122,"height":1402,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_004","type":"image","path":"assets/images/source.png","source":"existing","description":"source","width":1122,"height":1402,"provenance":{"provider":"local","adopted":true}}

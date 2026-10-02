@@ -1,0 +1,86 @@
+{
+  "errors": [],
+  "report": [
+    {
+      "id": "hook",
+      "t": 3.9000000000000004,
+      "overflow": []
+    },
+    {
+      "id": "open",
+      "t": 9.9,
+      "overflow": []
+    },
+    {
+      "id": "paste",
+      "t": 16.55,
+      "overflow": [
+        {
+          "text": "prompt.txt 전체 복사 → ChatGPT 입력창에 붙여넣기.\n프롬프트는 AI에게 맡길 일을 적은 요청문이에요.",
+          "rect": {
+            "x": 76,
+            "y": 1500,
+            "width": 928,
+            "height": 200.625,
+            "top": 1500,
+            "right": 1004,
+            "bottom": 1700.625,
+            "left": 76
+          },
+          "scroll": 928,
+          "client": 928
+        }
+      ]
+    },
+    {
+      "id": "replace",
+      "t": 23.55,
+      "overflow": []
+    },
+    {
+      "id": "columns",
+      "t": 29.9,
+      "overflow": []
+    },
+    {
+      "id": "missing",
+      "t": 35.9,
+      "overflow": []
+    },
+    {
+      "id": "send",
+      "t": 41.25,
+      "overflow": []
+    },
+    {
+      "id": "result",
+      "t": 47.55,
+      "overflow": []
+    },
+    {
+      "id": "check",
+      "t": 54.55,
+      "overflow": []
+    },
+    {
+      "id": "proposal",
+      "t": 60.9,
+      "overflow": []
+    },
+    {
+      "id": "copy",
+      "t": 66.9,
+      "overflow": []
+    },
+    {
+      "id": "use",
+      "t": 72.9,
+      "overflow": []
+    },
+    {
+      "id": "ending",
+      "t": 80.2,
+      "overflow": []
+    }
+  ]
+}

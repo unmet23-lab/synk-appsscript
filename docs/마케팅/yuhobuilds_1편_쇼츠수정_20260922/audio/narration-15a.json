@@ -1,0 +1,64 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "다음 편에서는 도구를 켜고, 설정하는 것부터 같이 해볼게요.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.25,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 3.04,
+  "words": [
+    {
+      "text": "다음",
+      "start": 0.116,
+      "end": 0.283
+    },
+    {
+      "text": "편에서는",
+      "start": 0.322,
+      "end": 0.67
+    },
+    {
+      "text": "도구를",
+      "start": 0.76,
+      "end": 1.018
+    },
+    {
+      "text": "켜고,",
+      "start": 1.056,
+      "end": 1.211
+    },
+    {
+      "text": "설정하는",
+      "start": 1.597,
+      "end": 1.932
+    },
+    {
+      "text": "것부터",
+      "start": 1.971,
+      "end": 2.177
+    },
+    {
+      "text": "같이",
+      "start": 2.357,
+      "end": 2.512
+    },
+    {
+      "text": "해볼게요.",
+      "start": 2.551,
+      "end": 3.04
+    }
+  ],
+  "characters": null
+}

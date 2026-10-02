@@ -1,0 +1,29 @@
+{
+  "revision": "2026-09-20-jp-vn-fun-and-use-v2",
+  "messagePlacement": {"cover": "한국어가 재밌어지는 곳", "descriptionLead": "배워서 바로 쓰는 한국어", "name": "기존 유지"},
+  "profileImage": "kkamong-profile-v2.png",
+  "profileDirection": "사용자 후속 요청으로 까몽 한 캐릭터의 새 윙크 근접 정지 프로필을 두 채널에 공통 적용. 정본·앱 표정 세트는 변경하지 않음.",
+  "coverKorean": "한국어가 재밌어지는 곳",
+  "scope": "일본·베트남 YouTube만. 14개 신규 채널 생성은 이번 마감 뒤로 보류.",
+  "languageReview": "AI 작성·자체 검수. 원어민 감수는 하지 않음.",
+  "channels": [
+    {
+      "id": "lab-jp-youtube", "locale": "ja", "countryLabel": "JAPAN",
+      "channelId": "UCXpX-UiwswwUqoQkRVdJyow", "handle": "synklabjapan",
+      "name": "SYNK LAB Japan | 楽しい韓国語",
+      "headline": "韓国語が楽しくなる場所", "sub": "ハングル・日常会話・TOPIK",
+      "description": "学んですぐ使える韓国語。\n\nあいさつをしたり、カフェで注文したり、好きな動画にコメントしたり。\n覚えたひと言を、身近な場面で使ってみよう。\n\nSYNK LAB Japanは、韓国語を初めて学ぶ人のためのチャンネルです。\nハングルの読み方、日常で使える表現、TOPIKの基礎を、短い動画やクイズで紹介していきます。\n\n声に出して、答えを選んで、自分のペースで少しずつ。\n知りたい韓国語があったら、動画のコメントで教えてね。\n\n最初の韓国語レッスン動画を準備中です。\nSYNK LAB · https://synk.im/",
+      "descriptionKorean": "배워서 바로 쓰는 한국어. 인사하고, 카페에서 주문하고, 좋아하는 영상에 댓글을 남겨 봐요. 배운 한마디를 가까운 상황에서 써 보세요. 초보자를 위해 한글 읽기·일상 표현·TOPIK 기초를 짧은 영상과 퀴즈로 소개합니다. 소리 내어 말하고 답을 고르며 자기 속도로 배워요. 궁금한 표현은 영상 댓글로 알려 주세요. 첫 한국어 수업 영상 준비 중.",
+      "websiteLabel": "SYNK LAB", "website": "https://synk.im/"
+    },
+    {
+      "id": "lab-vn-youtube", "locale": "vi", "countryLabel": "VIETNAM",
+      "channelId": "UC7NbBUofc_ZK5qCSjzbUzGQ", "handle": "synklabvietnam",
+      "name": "SYNK LAB Vietnam | Tiếng Hàn thật vui",
+      "headline": "Nơi học tiếng Hàn thật vui", "sub": "Hangul · Giao tiếp · TOPIK",
+      "description": "Học tiếng Hàn, dùng ngay!\n\nChào hỏi, gọi đồ uống hay bình luận dưới video yêu thích — cùng thử dùng những câu vừa học vào các tình huống quen thuộc nhé.\n\nSYNK LAB Vietnam dành cho bạn mới bắt đầu học tiếng Hàn.\nCùng học cách đọc Hangul, những câu dùng hằng ngày và kiến thức TOPIK cơ bản qua video ngắn và câu đố.\n\nThử đọc thành tiếng, chọn đáp án rồi tập dùng câu vừa học. Cứ học từng chút một, theo nhịp của bạn.\nBạn muốn biết cách nói câu gì bằng tiếng Hàn? Hãy để lại bình luận dưới video nhé!\n\nVideo học tiếng Hàn đầu tiên đang được chuẩn bị. Hẹn gặp bạn sớm!\nSYNK LAB · https://synk.im/",
+      "descriptionKorean": "배워서 바로 쓰는 한국어. 인사하고, 음료를 주문하고, 좋아하는 영상에 댓글을 남겨 봐요. 배운 표현을 익숙한 상황에서 써 보세요. 초보자를 위해 한글 읽기·일상 표현·TOPIK 기초를 짧은 영상과 퀴즈로 소개합니다. 소리 내어 읽고 답을 고르며 자기 속도로 연습해요. 궁금한 표현은 영상 댓글로 알려 주세요. 첫 한국어 학습 영상 준비 중.",
+      "websiteLabel": "SYNK LAB", "website": "https://synk.im/"
+    }
+  ]
+}

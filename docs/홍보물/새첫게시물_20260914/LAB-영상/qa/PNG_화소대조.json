@@ -1,0 +1,90 @@
+{
+  "checkedAt": "2026-09-13T19:03:26.007Z",
+  "allRgbPixelsIdentical": true,
+  "items": [
+    {
+      "frame": 30,
+      "pngFileIdentical": false,
+      "rgbPixelIdentical": true,
+      "changedChannels": 0,
+      "maxChannelDifference": 0
+    },
+    {
+      "frame": 240,
+      "pngFileIdentical": false,
+      "rgbPixelIdentical": true,
+      "changedChannels": 0,
+      "maxChannelDifference": 0
+    },
+    {
+      "frame": 510,
+      "pngFileIdentical": false,
+      "rgbPixelIdentical": true,
+      "changedChannels": 0,
+      "maxChannelDifference": 0
+    },
+    {
+      "frame": 750,
+      "pngFileIdentical": false,
+      "rgbPixelIdentical": true,
+      "changedChannels": 0,
+      "maxChannelDifference": 0
+    },
+    {
+      "frame": 855,
+      "pngFileIdentical": false,
+      "rgbPixelIdentical": true,
+      "changedChannels": 0,
+      "maxChannelDifference": 0
+    },
+    {
+      "frame": 960,
+      "pngFileIdentical": false,
+      "rgbPixelIdentical": true,
+      "changedChannels": 0,
+      "maxChannelDifference": 0
+    },
+    {
+      "frame": 1140,
+      "pngFileIdentical": false,
+      "rgbPixelIdentical": true,
+      "changedChannels": 0,
+      "maxChannelDifference": 0
+    },
+    {
+      "frame": 1380,
+      "pngFileIdentical": false,
+      "rgbPixelIdentical": true,
+      "changedChannels": 0,
+      "maxChannelDifference": 0
+    },
+    {
+      "frame": 1500,
+      "pngFileIdentical": false,
+      "rgbPixelIdentical": true,
+      "changedChannels": 0,
+      "maxChannelDifference": 0
+    },
+    {
+      "frame": 1650,
+      "pngFileIdentical": false,
+      "rgbPixelIdentical": true,
+      "changedChannels": 0,
+      "maxChannelDifference": 0
+    },
+    {
+      "frame": 1830,
+      "pngFileIdentical": false,
+      "rgbPixelIdentical": true,
+      "changedChannels": 0,
+      "maxChannelDifference": 0
+    },
+    {
+      "frame": 1947,
+      "pngFileIdentical": false,
+      "rgbPixelIdentical": true,
+      "changedChannels": 0,
+      "maxChannelDifference": 0
+    }
+  ]
+}

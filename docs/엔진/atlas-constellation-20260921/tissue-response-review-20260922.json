@@ -1,0 +1,131 @@
+{
+  "date": "2026-09-22",
+  "artifact": "index.html",
+  "sha256": "5e40de5bd20144ed8b99826859a2c4fda4071ae0119ee911881d8576697fb29b",
+  "bytes": 1483491,
+  "change": "기능 hover를 흐르는 점선에서 국소 세포 같은 점·이웃·연결선의 탄성 변형으로 수정",
+  "behavior": {
+    "sourceDisplacementCssPx": 9,
+    "mobileSourceDisplacementCssPx": 6.5,
+    "slowMotionCssPx": 1.1,
+    "neighborWeight": 0.42,
+    "hubWeight": 0.16,
+    "secondNeighborWeight": 0.1,
+    "secondHubWeight": 0.04,
+    "sourceResponseSeconds": 0.16,
+    "firstNeighborResponseSeconds": 0.275,
+    "returnResponseSeconds": 0.3,
+    "sharedSpring": "tools/lib/loom-motion.js advanceSpring",
+    "integration": "frame에서 1회; baseP를 복사해 p 구성 후 변위 추가",
+    "renderer": "WebGL과 Canvas가 같은 p 사용",
+    "hitTesting": "원래 baseP와 현재 p, 기존 라벨 영역으로 유지 판정; 라벨이 없는 기능 점도 직접 판정",
+    "removed": [
+      "hover 실땀의 시간 기반 위상 이동",
+      "기능 점의 추가 고리"
+    ]
+  },
+  "browserQA": {
+    "viewport": [
+      1440,
+      1000
+    ],
+    "engine": "core",
+    "feature": "근거의 유효기간",
+    "dwellSeconds": 1.711,
+    "hoveredFeatureIds": [
+      4
+    ],
+    "peakDisplacementCssPx": 9.884,
+    "displacedNodes": 17,
+    "highlightedDirectEdges": 5,
+    "boundaryPointerMoves": 8,
+    "boundaryHoverIds": [
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "release": {
+      "seconds": 2.114,
+      "displacedNodes": 0,
+      "maxDisplacementRoundedTo3Decimals": 0
+    },
+    "paused": {
+      "timeBefore": 79.538,
+      "timeAfter": 79.538,
+      "displacementBefore": 5.032,
+      "displacementAfter": 5.032
+    },
+    "gpuLossAndRestore": {
+      "canvasFallbackConfirmed": true,
+      "restoredWebGL": true,
+      "pausedTime": 79.538,
+      "displacementCssPx": 5.032
+    },
+    "reducedMotionAfterActiveHover": {
+      "paused": true,
+      "activeEdges": 5,
+      "displacedNodes": 0,
+      "maxDisplacement": 0
+    },
+    "smallScreen": {
+      "viewport": [
+        390,
+        844
+      ],
+      "reducedMotion": true,
+      "time": 0,
+      "maxDisplacement": 0,
+      "horizontalOverflow": false
+    },
+    "consoleWarnings": 0,
+    "consoleErrors": 0,
+    "physicalPhoneTested": false
+  },
+  "numericalQA": {
+    "graph": "5-node fixture using actual advanceFeatureTissue and Loom spring, reviewed by independent agent",
+    "pausedAndZeroDtFrozen": true,
+    "reducedMotionZeroesPositionAndVelocity": true,
+    "baseCoordinatesPreserved": true,
+    "releaseAfter4SecondsMaxCssPx": 7.05e-10,
+    "rapidSwitches": 800,
+    "rapidSwitchPeakCssPx": 5.109,
+    "allFinite": true,
+    "frameRates": [
+      60,
+      120,
+      144
+    ],
+    "maxPositionDifferenceAfter3SecondsCssPx": 0.0062
+  },
+  "performance": {
+    "measuredBuild": "524ae3161663d5af2418b4da59502d3125400f253592f0c4168a99f13f51aba7",
+    "finalDifference": "index.src.html의 접근성/about 설명만 최종 표현에 맞게 변경",
+    "viewport": [
+      1920,
+      1080
+    ],
+    "dpr": 2,
+    "warmupFrames": 30,
+    "samples": 360,
+    "frameIntervalMs": {
+      "median": 16.7,
+      "p95": 16.8,
+      "max": 25.1,
+      "over25": 1
+    },
+    "projectionSpringAndRenderCpuMs": {
+      "median": 0.9,
+      "p95": 1.2,
+      "max": 1.5
+    },
+    "gpuDrawCalls": 4,
+    "scope": "로컬 브라우저 표본. GPU 완료 시간, 실제 휴대전화, 고주사율 실기기 미측정. 고정 60fps 보증 아님."
+  },
+  "syntax": "constellation.js 및 최종 빌드 통과",
+  "deployment": "local preview only"
+}

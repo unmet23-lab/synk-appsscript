@@ -1,0 +1,72 @@
+{
+  "verifiedAt": "2026-09-21T15:55:58.518Z",
+  "status": "second-subtitle-review-ready",
+  "coreVideos": 1,
+  "platformPackages": 3,
+  "platforms": [
+    "YouTube @synkbrief",
+    "Instagram @synkbrief",
+    "TikTok @synkbrief"
+  ],
+  "video": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "durationSeconds": 98,
+    "audioStreams": 0,
+    "decodePassed": true
+  },
+  "actualChatGPTDemo": true,
+  "fictionalInput": true,
+  "source": "New temporary chat using prompt-v2-demo.txt; exact response saved in demo-response-v2.txt",
+  "visualReview": "All 11 scene stills, 2 whole-screen context stills and 9 encoded samples inspected. Input location and combined prompt/memo visible. Full FFmpeg decode passed.",
+  "mobileWidth": 390,
+  "horizontalOverflow": false,
+  "postingPerformed": false,
+  "voiceSelected": false,
+  "browserPlayback": {
+    "format": "VP9 WebM",
+    "duration": 98,
+    "observedProgressSeconds": 64.04184,
+    "mediaError": null,
+    "readyState": 4
+  },
+  "previousVersion": "video/ and verification-v1.json preserved",
+  "assets": [
+    {
+      "path": "video-v2/synkbrief-01-meeting-tasks.mp4",
+      "bytes": 2004939,
+      "sha256": "25eecf48a4edaa204fb9a929f4ecc7f6d821cc2d1e6006c9e9eb437c97e99db6"
+    },
+    {
+      "path": "video-v2/preview.webm",
+      "bytes": 2669072,
+      "sha256": "b160777736619e9e7504255ef27f709e7ee903a3a4d2e551bc2941d0009d93eb"
+    },
+    {
+      "path": "video-v2/cover.png",
+      "bytes": 68888,
+      "sha256": "97a19de67638f92995a2f22e3e71412c34fa9f3b4f71fa00aa79d622d8711cb6"
+    },
+    {
+      "path": "posts/youtube.txt",
+      "bytes": 2053,
+      "sha256": "1364b0a3a1c0826d8c5123a429dbe5a523b3a8a1220998c1bf8ab9aec3b8458d"
+    },
+    {
+      "path": "posts/instagram.txt",
+      "bytes": 1614,
+      "sha256": "01afefe86a410ac552796f01b31e437bbd7a84791065de6d473738d645ba51c4"
+    },
+    {
+      "path": "posts/tiktok.txt",
+      "bytes": 1425,
+      "sha256": "5a4bc38a6c033fece4cf2b23c779815afda7d50cb7ea455bf19f71af157ada26"
+    },
+    {
+      "path": "prompt-template.txt",
+      "bytes": 431,
+      "sha256": "689bcf33a90e5cf29029f521e3fafcd055ffdea88944e7488fb3bea2ea09013b"
+    }
+  ]
+}

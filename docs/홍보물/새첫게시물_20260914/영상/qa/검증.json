@@ -1,0 +1,264 @@
+{
+  "at": "2026-09-13T18:50:38.796Z",
+  "sourceChanges": [],
+  "videos": [
+    {
+      "file": "유호-눈은-움직여도.mp4",
+      "checks": {
+        "width": true,
+        "height": true,
+        "framerate": true,
+        "frames": true,
+        "duration": true,
+        "videoCodec": true,
+        "pixelFormat": true,
+        "audio": true,
+        "fullDecode": true,
+        "hash": true,
+        "captionStart": true,
+        "captionEnd": true,
+        "captionContiguous": true,
+        "officialEnding": true
+      },
+      "passed": true,
+      "decodeErrors": "",
+      "bytes": 8309547
+    },
+    {
+      "file": "브리핑-먼저-고정할-세가지.mp4",
+      "checks": {
+        "width": true,
+        "height": true,
+        "framerate": true,
+        "frames": true,
+        "duration": true,
+        "videoCodec": true,
+        "pixelFormat": true,
+        "audio": true,
+        "fullDecode": true,
+        "hash": true,
+        "captionStart": true,
+        "captionEnd": true,
+        "captionContiguous": true,
+        "officialEnding": true
+      },
+      "passed": true,
+      "decodeErrors": "",
+      "bytes": 8361288
+    }
+  ],
+  "playback": [
+    {
+      "file": "브리핑-먼저-고정할-세가지.mp4",
+      "started": true,
+      "ended": true,
+      "seeking": 0,
+      "waiting": 0,
+      "errors": [],
+      "samples": [
+        {
+          "currentTime": 0,
+          "paused": false,
+          "ended": false,
+          "readyState": 4,
+          "file": "qa/brief-play-00.png"
+        },
+        {
+          "currentTime": 1.784239,
+          "paused": false,
+          "ended": false,
+          "readyState": 4,
+          "file": "qa/brief-play-02.png"
+        },
+        {
+          "currentTime": 7.787055,
+          "paused": false,
+          "ended": false,
+          "readyState": 4,
+          "file": "qa/brief-play-08.png"
+        },
+        {
+          "currentTime": 13.785259,
+          "paused": false,
+          "ended": false,
+          "readyState": 4,
+          "file": "qa/brief-play-14.png"
+        },
+        {
+          "currentTime": 19.785953,
+          "paused": false,
+          "ended": false,
+          "readyState": 4,
+          "file": "qa/brief-play-20.png"
+        },
+        {
+          "currentTime": 26.782982,
+          "paused": false,
+          "ended": false,
+          "readyState": 4,
+          "file": "qa/brief-play-27.png"
+        },
+        {
+          "currentTime": 32.784858,
+          "paused": false,
+          "ended": false,
+          "readyState": 4,
+          "file": "qa/brief-play-33.png"
+        },
+        {
+          "currentTime": 42.779511,
+          "paused": false,
+          "ended": false,
+          "readyState": 4,
+          "file": "qa/brief-play-43.png"
+        }
+      ],
+      "finalTime": 44,
+      "quality": {
+        "totalVideoFrames": 1320,
+        "droppedVideoFrames": 0
+      },
+      "mutedDuringMachinePlayback": true,
+      "method": "Continuous real-time 1x HTML video, zero seek, screenshot sampling; not a human audio listening test."
+    },
+    {
+      "file": "유호-눈은-움직여도.mp4",
+      "started": true,
+      "ended": true,
+      "seeking": 0,
+      "waiting": 0,
+      "errors": [],
+      "samples": [
+        {
+          "currentTime": 0,
+          "paused": false,
+          "ended": false,
+          "readyState": 4,
+          "file": "qa/yuho-play-00.png"
+        },
+        {
+          "currentTime": 1.763709,
+          "paused": false,
+          "ended": false,
+          "readyState": 4,
+          "file": "qa/yuho-play-02.png"
+        },
+        {
+          "currentTime": 7.76392,
+          "paused": false,
+          "ended": false,
+          "readyState": 4,
+          "file": "qa/yuho-play-08.png"
+        },
+        {
+          "currentTime": 13.763612,
+          "paused": false,
+          "ended": false,
+          "readyState": 4,
+          "file": "qa/yuho-play-14.png"
+        },
+        {
+          "currentTime": 19.76386,
+          "paused": false,
+          "ended": false,
+          "readyState": 4,
+          "file": "qa/yuho-play-20.png"
+        },
+        {
+          "currentTime": 26.770014,
+          "paused": false,
+          "ended": false,
+          "readyState": 4,
+          "file": "qa/yuho-play-27.png"
+        },
+        {
+          "currentTime": 32.762565,
+          "paused": false,
+          "ended": false,
+          "readyState": 4,
+          "file": "qa/yuho-play-33.png"
+        },
+        {
+          "currentTime": 44.772968,
+          "paused": false,
+          "ended": false,
+          "readyState": 4,
+          "file": "qa/yuho-play-45.png"
+        }
+      ],
+      "finalTime": 46,
+      "quality": {
+        "totalVideoFrames": 1380,
+        "droppedVideoFrames": 0
+      },
+      "mutedDuringMachinePlayback": true,
+      "method": "Continuous real-time 1x HTML video, zero seek, screenshot sampling; not a human audio listening test."
+    }
+  ],
+  "audioListeningVerified": false,
+  "publicUploadVerified": false,
+  "motion": {
+    "poseSamples": 135,
+    "maxBlink": 0.9949363425926011,
+    "maxWind": 0.32,
+    "restPresent": true,
+    "cameraValues": [
+      "fixed"
+    ],
+    "runtimeErrors": [],
+    "externalRequests": [],
+    "fonts": [
+      {
+        "family": "SUIT",
+        "weight": "400",
+        "status": "loaded"
+      },
+      {
+        "family": "SUIT",
+        "weight": "500",
+        "status": "loaded"
+      },
+      {
+        "family": "SUIT",
+        "weight": "600",
+        "status": "loaded"
+      },
+      {
+        "family": "SUIT",
+        "weight": "800",
+        "status": "loaded"
+      },
+      {
+        "family": "Inter Tight",
+        "weight": "400",
+        "status": "loaded"
+      },
+      {
+        "family": "Inter Tight",
+        "weight": "500",
+        "status": "loaded"
+      },
+      {
+        "family": "Inter Tight",
+        "weight": "600",
+        "status": "loaded"
+      },
+      {
+        "family": "Inter Tight",
+        "weight": "700",
+        "status": "loaded"
+      },
+      {
+        "family": "DM Mono",
+        "weight": "500",
+        "status": "loaded"
+      },
+      {
+        "family": "DM Mono",
+        "weight": "300",
+        "status": "loaded"
+      }
+    ]
+  },
+  "passed": true
+}

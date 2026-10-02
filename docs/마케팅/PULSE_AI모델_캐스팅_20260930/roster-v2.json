@@ -1,0 +1,432 @@
+{
+  "note": "2026-09-30 사용자 방향: K팝 아이돌 스타일이거나 매력 있게 생긴 10~30대. 상큼·섹시·지적 콘셉트. 사용자가 고른 얼굴만 여기에 올린다. 10대(19세)에는 섹시 콘셉트를 쓰지 않는다. prompt 값은 생성용 영어 묘사, 나머지는 사이트에 보이는 한국어 정보다. 실존 인물의 이름·사진을 참고하지 않는다.",
+  "models": [
+    {
+      "key": "M20b",
+      "code": "M01",
+      "name": "이안",
+      "ageBand": "20대",
+      "hero": "raw/M20-hero-b.png",
+      "heroEngine": "Higgsfield Soul 2.0",
+      "gender": "남",
+      "age": "20대 중반",
+      "concept": "지적",
+      "impression": [
+        "부드러운",
+        "지적인",
+        "배우 같은"
+      ],
+      "fits": [
+        "남성 뷰티·향수",
+        "패션·안경",
+        "카페·라이프스타일",
+        "테크·앱"
+      ],
+      "height": 182,
+      "build": "슬림 · 탄탄한 어깨",
+      "sizes": {
+        "top": "100 (L)",
+        "bottom": "30",
+        "shoe": "270"
+      },
+      "skin": "밝은 웜톤",
+      "eyes": "흑갈색, 속쌍꺼풀",
+      "hairBase": "갈색, 가운데 가르마 웨이브",
+      "outfit": "plain black cotton crew-neck t-shirt",
+      "hair": [
+        {
+          "label": "기본 · 가운데 가르마 웨이브",
+          "prompt": ""
+        },
+        {
+          "label": "넘긴 올백",
+          "prompt": "his hair combed back neatly from the forehead with a soft natural texture, forehead fully visible"
+        },
+        {
+          "label": "내린 댄디컷",
+          "prompt": "a short dandy cut with straight bangs falling softly over the forehead, neat and tidy sides"
+        }
+      ],
+      "looks": [
+        {
+          "label": "셔츠 오피스",
+          "prompt": "a crisp white oxford shirt with the sleeves rolled once, tucked into navy tailored slacks, a thin black leather belt"
+        },
+        {
+          "label": "레더 스트리트",
+          "prompt": "a black leather biker jacket over a white t-shirt with black straight jeans"
+        }
+      ],
+      "context": "sitting by the window of a sunlit minimalist cafe, holding a plain white ceramic coffee cup, glancing toward the camera with a soft smile",
+      "hands": "holding a plain unlabeled clear-glass perfume bottle",
+      "voiceBrief": "20대 남성, 부드럽고 차분한 중저음"
+    },
+    {
+      "key": "F20b",
+      "code": "F01",
+      "name": "유나",
+      "ageBand": "20대",
+      "hero": "raw/F20-hero-b-clean.png",
+      "heroEngine": "Higgsfield Soul 2.0 (티셔츠 글자만 로컬 보정)",
+      "gender": "여",
+      "age": "20대 중반",
+      "concept": "섹시",
+      "impression": [
+        "세련된",
+        "섹시한",
+        "도회적인"
+      ],
+      "fits": [
+        "색조·향수",
+        "패션·주얼리",
+        "뷰티 디바이스",
+        "라이프스타일"
+      ],
+      "height": 168,
+      "build": "슬림",
+      "sizes": {
+        "top": "55 (S)",
+        "bottom": "25",
+        "shoe": "240"
+      },
+      "skin": "밝은 뉴트럴 톤",
+      "eyes": "흑갈색, 윙 아이라인이 어울리는 눈매",
+      "hairBase": "짙은 갈색, 긴 웨이브",
+      "outfit": "fitted plain black short-sleeve t-shirt with no print",
+      "hair": [
+        {
+          "label": "기본 · 긴 웨이브",
+          "prompt": ""
+        },
+        {
+          "label": "슬릭 하이 포니테일",
+          "prompt": "her hair pulled back into a sleek glossy high ponytail, forehead and ears visible"
+        },
+        {
+          "label": "턱선 단발",
+          "prompt": "a sleek chin-length bob with a center part, glossy and straight"
+        }
+      ],
+      "looks": [
+        {
+          "label": "슬립 드레스",
+          "prompt": "a black satin slip midi dress with thin straps and a delicate thin gold necklace"
+        },
+        {
+          "label": "트렌치 캐주얼",
+          "prompt": "an oversized beige trench coat over a white t-shirt with straight blue jeans"
+        }
+      ],
+      "context": "sitting at a softly lit vanity table in the evening, applying a plain unbranded red lipstick while looking into the camera",
+      "hands": "holding a plain unlabeled gold lipstick case near her lips",
+      "voiceBrief": "20대 여성, 낮고 세련된 톤"
+    },
+    {
+      "key": "F20fa",
+      "code": "F02",
+      "name": "하린",
+      "ageBand": "20대",
+      "hero": "raw/F20-fresh-v3-1.png",
+      "heroEngine": "Google Nano Banana Pro (Vertex)",
+      "gender": "여",
+      "age": "20대 초반",
+      "concept": "상큼",
+      "impression": [
+        "상큼한",
+        "발랄한",
+        "친근한"
+      ],
+      "fits": [
+        "음료·디저트",
+        "스킨케어",
+        "캐주얼 패션",
+        "앱·게임"
+      ],
+      "height": 165,
+      "build": "슬림",
+      "sizes": {
+        "top": "55 (S)",
+        "bottom": "25",
+        "shoe": "235"
+      },
+      "skin": "밝은 웜톤",
+      "eyes": "흑갈색, 쌍꺼풀과 애교살",
+      "hairBase": "밝은 갈색, 어깨 길이 레이어드와 시스루뱅",
+      "outfit": "plain white cotton crew-neck t-shirt",
+      "hair": [
+        {
+          "label": "기본 · 어깨 길이 레이어드",
+          "prompt": ""
+        },
+        {
+          "label": "하이 포니테일",
+          "prompt": "her hair pulled up into a bouncy high ponytail, keeping the wispy see-through bangs"
+        },
+        {
+          "label": "긴 웨이브",
+          "prompt": "long loose soft waves falling past her shoulders, keeping the wispy see-through bangs"
+        }
+      ],
+      "looks": [
+        {
+          "label": "파스텔 캐주얼",
+          "prompt": "a pastel yellow knit cardigan over a white t-shirt with a light denim mini skirt"
+        },
+        {
+          "label": "스트라이프 원피스",
+          "prompt": "a light-blue and white striped cotton shirt dress with a thin belt"
+        }
+      ],
+      "context": "at a bright cafe counter, holding a plain clear cup of strawberry latte with a paper straw, laughing naturally",
+      "hands": "holding a plain unlabeled pink cosmetic compact",
+      "voiceBrief": "20대 여성, 밝고 상큼한 톤"
+    },
+    {
+      "key": "F20sb",
+      "code": "F03",
+      "name": "서진",
+      "ageBand": "20대",
+      "hero": "raw/F20-smart-v3-2.png",
+      "heroEngine": "Google Nano Banana Pro (Vertex)",
+      "gender": "여",
+      "age": "20대 후반",
+      "concept": "지적",
+      "impression": [
+        "지적인",
+        "단정한",
+        "차분한"
+      ],
+      "fits": [
+        "금융·보험",
+        "IT·B2B",
+        "교육",
+        "프리미엄 스킨케어"
+      ],
+      "height": 170,
+      "build": "슬림",
+      "sizes": {
+        "top": "55 (S)",
+        "bottom": "26",
+        "shoe": "240"
+      },
+      "skin": "밝은 뉴트럴 톤",
+      "eyes": "흑갈색, 길게 뻗은 눈매",
+      "hairBase": "흑발, 낮게 묶은 슬릭 포니테일",
+      "outfit": "crisp white collared cotton shirt",
+      "hair": [
+        {
+          "label": "기본 · 낮게 묶은 포니테일",
+          "prompt": ""
+        },
+        {
+          "label": "긴 생머리",
+          "prompt": "long straight black hair worn down past the shoulders, tucked behind one ear"
+        },
+        {
+          "label": "옆가르마 단발",
+          "prompt": "a sleek chin-length bob with a deep side part"
+        }
+      ],
+      "looks": [
+        {
+          "label": "네이비 수트",
+          "prompt": "a tailored navy pantsuit over a white silk blouse"
+        },
+        {
+          "label": "코트 포멀",
+          "prompt": "a camel wool coat over a black turtleneck and black trousers"
+        }
+      ],
+      "context": "in a bright modern meeting room, presenting in front of a blank glass wall while holding a plain silver pen, confident and calm",
+      "hands": "holding a plain unlabeled white skincare bottle",
+      "voiceBrief": "20대 여성, 또렷하고 신뢰감 있는 톤"
+    },
+    {
+      "key": "M30sa",
+      "code": "M02",
+      "name": "태준",
+      "ageBand": "30대",
+      "hero": "raw/M30-sexy-v3-1.png",
+      "heroEngine": "Google Nano Banana Pro (Vertex)",
+      "gender": "남",
+      "age": "30대 중반",
+      "concept": "섹시",
+      "impression": [
+        "강렬한",
+        "성숙한",
+        "남성적인"
+      ],
+      "fits": [
+        "향수·그루밍",
+        "위스키·주류",
+        "자동차",
+        "시계·정장"
+      ],
+      "height": 184,
+      "build": "탄탄한 근육형",
+      "sizes": {
+        "top": "105 (XL)",
+        "bottom": "32",
+        "shoe": "280"
+      },
+      "skin": "중간 웜톤, 짧은 수염",
+      "eyes": "흑갈색, 깊은 눈매",
+      "hairBase": "흑발, 흘러내리게 넘긴 머리",
+      "outfit": "black shirt with the top two buttons open",
+      "hair": [
+        {
+          "label": "기본 · 흘러내리게 넘긴 머리",
+          "prompt": ""
+        },
+        {
+          "label": "깔끔한 슬릭백",
+          "prompt": "neatly slicked-back hair with a clean side part and a light polished shine"
+        },
+        {
+          "label": "짧은 크롭컷",
+          "prompt": "a short textured crop cut with a short fringe and tapered sides"
+        }
+      ],
+      "looks": [
+        {
+          "label": "차콜 수트",
+          "prompt": "a tailored charcoal suit over a black shirt with no tie"
+        },
+        {
+          "label": "스웨이드 캐주얼",
+          "prompt": "a brown suede jacket over a white t-shirt with dark straight jeans"
+        }
+      ],
+      "context": "in a dim, warmly lit bar lounge, holding a plain unlabeled glass of whisky on ice and looking into the camera",
+      "hands": "adjusting a plain steel wristwatch with no logo or text on his wrist",
+      "voiceBrief": "30대 남성, 낮고 묵직한 톤"
+    },
+    {
+      "key": "F20fb",
+      "code": "F04",
+      "name": "지유",
+      "ageBand": "20대",
+      "hero": "raw/F20-fresh-v3-2-hairA.png",
+      "heroEngine": "Google Nano Banana Pro (Vertex) · 사용자 요청으로 머리만 바꿈(원본 F20-fresh-v3-2)",
+      "gender": "여",
+      "age": "20대 초반",
+      "concept": "상큼",
+      "impression": [
+        "청순한",
+        "상큼한",
+        "싱그러운"
+      ],
+      "fits": [
+        "스킨케어·클렌징",
+        "음료",
+        "여행·항공",
+        "교육·앱"
+      ],
+      "height": 166,
+      "build": "슬림",
+      "sizes": {
+        "top": "55 (S)",
+        "bottom": "25",
+        "shoe": "240"
+      },
+      "skin": "밝은 웜톤",
+      "eyes": "흑갈색, 속쌍꺼풀과 애교살",
+      "hairBase": "흑발, 가운데 가르마 긴 생머리",
+      "outfit": "plain white cotton crew-neck t-shirt",
+      "hair": [
+        {
+          "label": "기본 · 긴 흑발 생머리",
+          "prompt": ""
+        },
+        {
+          "label": "앞머리 단발",
+          "prompt": "a short dark-brown bob cut at the jawline with soft full bangs"
+        },
+        {
+          "label": "로우 번",
+          "prompt": "her black hair gathered into a soft low bun at the nape with a few face-framing strands"
+        }
+      ],
+      "looks": [
+        {
+          "label": "린넨 내추럴",
+          "prompt": "a white linen blouse with light-blue wide-leg jeans"
+        },
+        {
+          "label": "니트 스커트",
+          "prompt": "a mint cable-knit sweater with a white pleated midi skirt"
+        }
+      ],
+      "context": "on a sunny seaside boardwalk, holding a plain unlabeled bottle of sparkling water, hair moving in the breeze, bright natural smile",
+      "hands": "holding a plain unlabeled white cleansing foam tube",
+      "voiceBrief": "20대 여성, 맑고 싱그러운 톤"
+    },
+    {
+      "key": "Myuho",
+      "code": "M03",
+      "name": "유호",
+      "ageBand": "",
+      "hero": "raw/M-yuho-hero-v5.png",
+      "heroEngine": "Higgsfield Nano Banana Pro · 뮤직비디오에서 승인한 얼굴 세트(시안 B·C) 참조 · 2026-10-01 교체(예전 사진은 raw/_old_M03_20261001)",
+      "realPerson": true,
+      "gender": "남",
+      "age": "",
+      "concept": "개성",
+      "impression": [
+        "힙한",
+        "지적인",
+        "호감 가는"
+      ],
+      "fits": [
+        "스트리트 패션",
+        "음악·엔터",
+        "테크·스타트업",
+        "교육·강연"
+      ],
+      "height": 180,
+      "build": "",
+      "sizes": {
+        "top": "110 (XXL)",
+        "bottom": "30",
+        "shoe": "270"
+      },
+      "skin": "밝은 톤",
+      "eyes": "흑갈색",
+      "hairBase": "흑발 콘로우",
+      "outfit": "plain black crew-neck t-shirt with no logos",
+      "hair": [
+        {
+          "label": "기본 · 콘로우",
+          "prompt": ""
+        },
+        {
+          "label": "짧은 투블럭",
+          "prompt": "a clean short two-block haircut with natural black hair, the braids removed"
+        },
+        {
+          "label": "어깨 길이 생머리",
+          "prompt": "shoulder-length loose natural black hair tucked behind the ears, the braids undone"
+        }
+      ],
+      "looks": [
+        {
+          "label": "스트리트",
+          "prompt": "a black oversized hoodie with loose cargo pants and chunky sneakers"
+        },
+        {
+          "label": "세미 포멀",
+          "prompt": "a relaxed charcoal suit over a black crew-neck t-shirt"
+        }
+      ],
+      "context": "in a music studio with headphones around his neck, leaning over a mixing desk with no brand logos and glancing at the camera with a slight smile",
+      "hands": "holding a plain black wireless earbuds case with no logo",
+      "voiceBrief": "본인 실제 목소리(인터뷰 원음)",
+      "keepTraits": "Keep his eyelids and eye shape exactly as in the first reference photo. He looks youthful, mid-twenties, with smooth skin and minimal lines.",
+      "extraRefs": [
+        "raw/yuho-ref-0048.png",
+        "raw/yuho-ref-0112.png",
+        "raw/yuho-ref-0136.png"
+      ]
+    }
+  ]
+}

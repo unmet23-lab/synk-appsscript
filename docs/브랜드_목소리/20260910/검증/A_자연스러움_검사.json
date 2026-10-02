@@ -1,0 +1,65 @@
+{
+  "status": "file-and-transcription-checks-passed",
+  "humanListening": false,
+  "brandVoiceSelected": false,
+  "userDirection": "A tone is preferred; improve artificial sentence-final intonation and machine-like pronunciation/timbre",
+  "processing": "fixed gain only, no EQ, denoising, compression, tempo edits or resampling",
+  "samples": [
+    {
+      "label": "A_기준",
+      "candidate": "qwen-fresh-sparkle",
+      "rawSha256": "798eb1e01a4f99eaca44f939e596b07add412b4e181e864dfcf9309929263148",
+      "listenSha256": "d02d3b2cb56dd072994f64ee15a29236e05052b0db5a5e83fe3f6eaecf12e1c8",
+      "duration": 8.536875,
+      "sampleRate": 24000,
+      "LUFS": -23.0,
+      "truePeak": -7.3,
+      "actual": "같이 들어볼까요? 좋아요. 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면 우리만의 목소리가 돼요.",
+      "characterSimilarity": 1.0
+    },
+    {
+      "label": "A1_음색참조",
+      "candidate": "a-natural-identity",
+      "rawSha256": "8b71dc4d8492dace46968a803b6125810724e7dc6b41672db19e3a4d7b6d4882",
+      "listenSha256": "ada6e31f4adc5c713072816db9fc640a034e9569ed2a64c6f51931ef1fa8e65e",
+      "duration": 9.416875,
+      "sampleRate": 24000,
+      "LUFS": -22.99,
+      "truePeak": -6.5,
+      "actual": "같이 들어볼까요? 좋아요. 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면 우리만의 목소리가 돼요.",
+      "characterSimilarity": 1.0
+    },
+    {
+      "label": "A2_음성과대본참조",
+      "candidate": "a-natural-context",
+      "rawSha256": "38f46a01cb7a1ef1c0c620f4d7ca6f9100556a7db794bfc4ab7956882ba1f072",
+      "listenSha256": "1508300dbe6cf0ed16e1c8fdeba6fba9c79005279e94a0ea70f043a89aed0592",
+      "duration": 8.839292,
+      "sampleRate": 24000,
+      "LUFS": -23.0,
+      "truePeak": -7.73,
+      "actual": "같이 들어볼까요? 좋아요. 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면 우리만의 목소리가 돼요.",
+      "characterSimilarity": 1.0
+    },
+    {
+      "label": "A3_일상대화체",
+      "candidate": "a-natural-flow",
+      "rawSha256": "86371ee78632a9ac4a6612509651d46211ce6386f2008c0d6199a27ea19d149b",
+      "listenSha256": "540fd4c54a1f19a5a4e76063180f300b1c100fab86d9762221db650094dc057c",
+      "duration": 9.016875,
+      "sampleRate": 24000,
+      "LUFS": -23.0,
+      "truePeak": -7.66,
+      "actual": "같이 들어볼까요? 좋아요 이번에는 조금 다르게 해볼게요 작은 차이가 모이면 우리만의 목소리가 돼요",
+      "characterSimilarity": 1.0
+    }
+  ],
+  "zip": {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\A_자연스러움_비교.zip",
+    "bytes": 1465946,
+    "sha256": "a3301755b8d86dcfa8b0f8c1ffb6c20989c05004205b37f9aa5138769097d47e",
+    "roundTripVerified": true,
+    "newAudio": 3,
+    "baselineAudio": 1
+  }
+}

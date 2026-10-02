@@ -1,0 +1,182 @@
+[
+ {
+  "name": "F01-angle-front",
+  "model": "nano_banana_pro",
+  "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone, moles and hairstyle, same plain black cotton tank top. Upper body from the waist up, standing straight and facing the camera, arms relaxed at her sides, relaxed neutral expression. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "images": [
+   "raw/F01-hero-a.png"
+  ],
+  "args": {
+   "aspect_ratio": "3:4",
+   "resolution": "2k"
+  }
+ },
+ {
+  "name": "F01-angle-left",
+  "model": "nano_banana_pro",
+  "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone, moles and hairstyle, same plain black cotton tank top. Upper body from the waist up, standing and turned 90 degrees so the camera sees a clean side profile, her face and body pointing toward the left edge of the frame, relaxed neutral expression. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "images": [
+   "raw/F01-hero-a.png"
+  ],
+  "args": {
+   "aspect_ratio": "3:4",
+   "resolution": "2k"
+  }
+ },
+ {
+  "name": "F01-angle-right",
+  "model": "nano_banana_pro",
+  "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone, moles and hairstyle, same plain black cotton tank top. Upper body from the waist up, standing and turned 90 degrees so the camera sees a clean side profile, her face and body pointing toward the right edge of the frame, relaxed neutral expression. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "images": [
+   "raw/F01-hero-a.png"
+  ],
+  "args": {
+   "aspect_ratio": "3:4",
+   "resolution": "2k"
+  }
+ },
+ {
+  "name": "F01-angle-back",
+  "model": "nano_banana_pro",
+  "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone, moles and hairstyle, same plain black cotton tank top. Upper body from the waist up, seen directly from behind: the back of her head and hair, her shoulders and back facing the camera, face not visible. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "images": [
+   "raw/F01-hero-a.png"
+  ],
+  "args": {
+   "aspect_ratio": "3:4",
+   "resolution": "2k"
+  }
+ },
+ {
+  "name": "F01-exp-smile",
+  "model": "nano_banana_pro",
+  "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone, moles and hairstyle, same plain black cotton tank top. Head and shoulders facing the camera with a big genuine smile showing the upper teeth, eyes crinkling with natural creases, cheeks raised. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "images": [
+   "raw/F01-hero-a.png"
+  ],
+  "args": {
+   "aspect_ratio": "3:4",
+   "resolution": "2k"
+  }
+ },
+ {
+  "name": "F01-exp-angry",
+  "model": "nano_banana_pro",
+  "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone, moles and hairstyle, same plain black cotton tank top. Head and shoulders facing the camera, genuinely angry: brows pulled down and together, eyes narrowed in a hard glare, jaw clenched, nostrils slightly flared, lips pressed tight, tension across the forehead. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "images": [
+   "raw/F01-hero-a.png"
+  ],
+  "args": {
+   "aspect_ratio": "3:4",
+   "resolution": "2k"
+  }
+ },
+ {
+  "name": "F01-exp-surprised",
+  "model": "nano_banana_pro",
+  "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone, moles and hairstyle, same plain black cotton tank top. Head and shoulders facing the camera, genuinely surprised: eyebrows raised high with forehead creases, eyes wide open, mouth dropped open, head pulled slightly back. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "images": [
+   "raw/F01-hero-a.png"
+  ],
+  "args": {
+   "aspect_ratio": "3:4",
+   "resolution": "2k"
+  }
+ },
+ {
+  "name": "F01-hair-2",
+  "model": "nano_banana_pro",
+  "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone and moles. Same plain black cotton tank top. Change only the hairstyle to her hair pulled up into a sleek high ponytail, a few loose baby hairs at the temples. Head and shoulders facing the camera, relaxed neutral expression. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "images": [
+   "raw/F01-hero-a.png"
+  ],
+  "args": {
+   "aspect_ratio": "3:4",
+   "resolution": "2k"
+  }
+ },
+ {
+  "name": "F01-hair-3",
+  "model": "nano_banana_pro",
+  "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone and moles. Same plain black cotton tank top. Change only the hairstyle to a chin-length layered bob with soft face-framing layers. Head and shoulders facing the camera, relaxed neutral expression. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "images": [
+   "raw/F01-hero-a.png"
+  ],
+  "args": {
+   "aspect_ratio": "3:4",
+   "resolution": "2k"
+  }
+ },
+ {
+  "name": "F01-fullbody",
+  "model": "nano_banana_pro",
+  "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone and moles. Same hairstyle. Full-length head-to-toe photo, standing straight facing the camera with arms relaxed, feet visible, wearing a fitted plain black cotton tank top tucked into straight dark-blue jeans and plain white sneakers. Plain warm light-grey wall meeting a pale floor, soft window daylight. Unretouched model agency digitals, 50mm lens, true body proportions, real skin texture, natural color, fine film grain, no beauty filter.",
+  "images": [
+   "raw/F01-hero-a.png"
+  ],
+  "args": {
+   "aspect_ratio": "2:3",
+   "resolution": "2k"
+  }
+ },
+ {
+  "name": "F01-skin",
+  "model": "nano_banana_pro",
+  "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone and moles. Extreme close-up of her face from brow to chin filling the frame, soft window light raking across the skin, showing real pores, fine vellus hair, subtle natural unevenness and individually visible lashes. Beauty campaign macro photo, 100mm macro lens, natural color, no retouching, no smoothing.",
+  "images": [
+   "raw/F01-hero-a.png"
+  ],
+  "args": {
+   "aspect_ratio": "4:5",
+   "resolution": "2k"
+  }
+ },
+ {
+  "name": "F01-hands",
+  "model": "nano_banana_pro",
+  "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone and moles. Close-up at chest height of her hands holding a plain unlabeled white cosmetic tube near her chin, the lower half of her face softly visible above, same plain black cotton tank top. Natural nails, real knuckle creases, fine skin texture and veins, exactly five fingers on each hand, correct anatomy. Plain wall, soft window daylight, 85mm, natural color, fine film grain.",
+  "images": [
+   "raw/F01-hero-a.png"
+  ],
+  "args": {
+   "aspect_ratio": "4:5",
+   "resolution": "2k"
+  }
+ },
+ {
+  "name": "F01-look-1",
+  "model": "nano_banana_pro",
+  "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone and moles. Same hairstyle. Three-quarter length photo from mid-thigh up, standing in a relaxed natural pose, wearing a cream cable-knit cardigan over a white t-shirt with light-blue straight jeans. Plain warm light-grey wall, soft window daylight. Fashion lookbook photo, 70mm lens, real fabric texture and natural creases, real skin texture, natural color, fine film grain, no beauty filter.",
+  "images": [
+   "raw/F01-hero-a.png"
+  ],
+  "args": {
+   "aspect_ratio": "3:4",
+   "resolution": "2k"
+  }
+ },
+ {
+  "name": "F01-look-2",
+  "model": "nano_banana_pro",
+  "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone and moles. Same hairstyle. Three-quarter length photo from mid-thigh up, standing in a relaxed natural pose, wearing a simple sage-green linen midi dress with thin straps. Plain warm light-grey wall, soft window daylight. Fashion lookbook photo, 70mm lens, real fabric texture and natural creases, real skin texture, natural color, fine film grain, no beauty filter.",
+  "images": [
+   "raw/F01-hero-a.png"
+  ],
+  "args": {
+   "aspect_ratio": "3:4",
+   "resolution": "2k"
+  }
+ },
+ {
+  "name": "F01-context",
+  "model": "nano_banana_pro",
+  "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone and moles. Same hairstyle. Candid commercial lifestyle photo: in a bright minimal bathroom, gently patting her cheek with fingertips after skincare, soft morning window light. Natural unposed moment, 35mm lens, shallow depth of field, real skin texture, natural color, fine film grain, no text, no logos.",
+  "images": [
+   "raw/F01-hero-a.png"
+  ],
+  "args": {
+   "aspect_ratio": "4:5",
+   "resolution": "2k"
+  }
+ }
+]

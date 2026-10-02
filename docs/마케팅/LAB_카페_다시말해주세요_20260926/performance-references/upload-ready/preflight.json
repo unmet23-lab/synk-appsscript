@@ -1,0 +1,23 @@
+{
+  "date": "2026-09-27",
+  "source": "../interview/MVI_2550_01098.0_01108.0_three-quarter-teeth-smile.mp4",
+  "candidate": "yuho-genuine-smile-under10s.mp4",
+  "durationSeconds": 9.92,
+  "sizeBytes": 202510693,
+  "codec": "h264",
+  "profile": "High 4:4:4 Predictive",
+  "pixelFormat": "yuvj420p",
+  "width": 1920,
+  "height": 1080,
+  "frameRate": "60000/1001",
+  "sourceFrameCount": 599,
+  "candidateFrameCount": 593,
+  "sourcePrefixFrameHashMismatchCount": 0,
+  "sourcePreserved": true,
+  "audio": "Original AAC copied; no dialogue replacement",
+  "googleUploadVerified": false,
+  "newVideoGenerated": false,
+  "dynamicIdentityPassed": false,
+  "blocker": "Codex browser connection unavailable; no authenticated Google Vids UI access",
+  "next": "Upload in Google Vids Edit, select landscape 16:9, change background only, verify continuous speech and smile against source timestamps"
+}

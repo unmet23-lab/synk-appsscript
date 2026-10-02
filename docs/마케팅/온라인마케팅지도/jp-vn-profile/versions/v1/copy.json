@@ -1,0 +1,25 @@
+{
+  "revision": "2026-09-20-jp-vn-fun-korean-v1",
+  "scope": "일본·베트남 YouTube만. 14개 신규 채널 생성은 이번 마감 뒤로 보류.",
+  "languageReview": "AI 작성·자체 검수. 원어민 감수는 하지 않음.",
+  "channels": [
+    {
+      "id": "lab-jp-youtube", "locale": "ja", "countryLabel": "JAPAN",
+      "channelId": "UCXpX-UiwswwUqoQkRVdJyow", "handle": "synklabjapan",
+      "name": "SYNK LAB Japan | 楽しい韓国語",
+      "headline": "楽しい韓国語", "sub": "ハングル・日常会話・TOPIK",
+      "description": "韓国語が少しわかると、好きな曲もドラマももっと楽しい。\n\nSYNK LAB Japanは、韓国語を初めて学ぶ人のためのチャンネルです。\nハングルの読み方、日常で使えるひと言、TOPIKの基礎を、短い動画やクイズで紹介していきます。\n\n見るだけでなく、声に出したり、クイズに挑戦したり。\n自分のペースで、一緒に少しずつ覚えていこう。\n知りたい韓国語があったら、動画のコメントで教えてね。\n\n最初の動画を準備中です。\nSYNK LAB · https://synk.im/",
+      "descriptionKorean": "한국어를 조금 알면 좋아하는 노래와 드라마가 더 재미있어져요. 처음 배우는 사람을 위해 한글 읽기·일상 표현·TOPIK 기초를 짧은 영상과 퀴즈로 소개합니다. 소리 내어 말하고 퀴즈에 도전하며 자기 속도로 배워요. 궁금한 한국어는 영상 댓글로 알려 주세요. 첫 영상 준비 중.",
+      "websiteLabel": "SYNK LAB", "website": "https://synk.im/"
+    },
+    {
+      "id": "lab-vn-youtube", "locale": "vi", "countryLabel": "VIETNAM",
+      "channelId": "UC7NbBUofc_ZK5qCSjzbUzGQ", "handle": "synklabvietnam",
+      "name": "SYNK LAB Vietnam | Tiếng Hàn thật vui",
+      "headline": "Tiếng Hàn thật vui", "sub": "Hangul · Giao tiếp · TOPIK",
+      "description": "Biết thêm một chút tiếng Hàn, nghe nhạc hay xem phim cũng vui hơn!\n\nSYNK LAB Vietnam dành cho bạn mới bắt đầu học tiếng Hàn.\nCùng học cách đọc Hangul, những câu dùng hằng ngày và kiến thức TOPIK cơ bản qua video ngắn và câu đố nhé.\n\nKhông chỉ xem: thử đọc thành tiếng, chọn đáp án và dùng ngay câu vừa học. Cứ học từng chút một, theo nhịp của bạn.\nBạn muốn biết cách nói câu gì bằng tiếng Hàn? Hãy để lại bình luận dưới video nhé!\n\nVideo đầu tiên đang được chuẩn bị. Hẹn gặp bạn sớm!\nSYNK LAB · https://synk.im/",
+      "descriptionKorean": "한국어를 조금 더 알면 음악을 듣고 영화를 보는 것도 더 재미있어져요. 처음 배우는 사람을 위해 한글 읽기·일상 표현·TOPIK 기초를 짧은 영상과 퀴즈로 소개합니다. 소리 내어 읽고 답을 고르며 배운 표현을 써 봐요. 궁금한 표현은 영상 댓글로 알려 주세요. 첫 영상 준비 중.",
+      "websiteLabel": "SYNK LAB", "website": "https://synk.im/"
+    }
+  ]
+}

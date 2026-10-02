@@ -1,0 +1,240 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 4.16,
+  "words": [
+    {
+      "text": "오늘은",
+      "start": 0.166,
+      "end": 0.399
+    },
+    {
+      "text": "AI로",
+      "start": 0.799,
+      "end": 1.148
+    },
+    {
+      "text": "출석",
+      "start": 1.281,
+      "end": 1.548
+    },
+    {
+      "text": "앱",
+      "start": 1.597,
+      "end": 1.647
+    },
+    {
+      "text": "만들다,",
+      "start": 1.697,
+      "end": 1.98
+    },
+    {
+      "text": "정작",
+      "start": 2.446,
+      "end": 2.779
+    },
+    {
+      "text": "출석을",
+      "start": 2.862,
+      "end": 3.212
+    },
+    {
+      "text": "까먹은",
+      "start": 3.261,
+      "end": 3.594
+    },
+    {
+      "text": "얘깁니다.",
+      "start": 3.644,
+      "end": 4.16
+    }
+  ],
+  "characters": [
+    {
+      "text": "오",
+      "start": 0.166,
+      "end": 0.233
+    },
+    {
+      "text": "늘",
+      "start": 0.233,
+      "end": 0.333
+    },
+    {
+      "text": "은",
+      "start": 0.333,
+      "end": 0.399
+    },
+    {
+      "text": " ",
+      "start": 0.399,
+      "end": 0.799
+    },
+    {
+      "text": "A",
+      "start": 0.799,
+      "end": 0.915
+    },
+    {
+      "text": "I",
+      "start": 0.915,
+      "end": 1.082
+    },
+    {
+      "text": "로",
+      "start": 1.082,
+      "end": 1.148
+    },
+    {
+      "text": " ",
+      "start": 1.148,
+      "end": 1.281
+    },
+    {
+      "text": "출",
+      "start": 1.281,
+      "end": 1.464
+    },
+    {
+      "text": "석",
+      "start": 1.464,
+      "end": 1.548
+    },
+    {
+      "text": " ",
+      "start": 1.548,
+      "end": 1.597
+    },
+    {
+      "text": "앱",
+      "start": 1.597,
+      "end": 1.647
+    },
+    {
+      "text": " ",
+      "start": 1.647,
+      "end": 1.697
+    },
+    {
+      "text": "만",
+      "start": 1.697,
+      "end": 1.814
+    },
+    {
+      "text": "들",
+      "start": 1.814,
+      "end": 1.914
+    },
+    {
+      "text": "다",
+      "start": 1.914,
+      "end": 1.964
+    },
+    {
+      "text": ",",
+      "start": 1.964,
+      "end": 1.98
+    },
+    {
+      "text": " ",
+      "start": 1.98,
+      "end": 2.446
+    },
+    {
+      "text": "정",
+      "start": 2.446,
+      "end": 2.629
+    },
+    {
+      "text": "작",
+      "start": 2.629,
+      "end": 2.779
+    },
+    {
+      "text": " ",
+      "start": 2.779,
+      "end": 2.862
+    },
+    {
+      "text": "출",
+      "start": 2.862,
+      "end": 3.045
+    },
+    {
+      "text": "석",
+      "start": 3.045,
+      "end": 3.162
+    },
+    {
+      "text": "을",
+      "start": 3.162,
+      "end": 3.212
+    },
+    {
+      "text": " ",
+      "start": 3.212,
+      "end": 3.261
+    },
+    {
+      "text": "까",
+      "start": 3.261,
+      "end": 3.428
+    },
+    {
+      "text": "먹",
+      "start": 3.428,
+      "end": 3.544
+    },
+    {
+      "text": "은",
+      "start": 3.544,
+      "end": 3.594
+    },
+    {
+      "text": " ",
+      "start": 3.594,
+      "end": 3.644
+    },
+    {
+      "text": "얘",
+      "start": 3.644,
+      "end": 3.711
+    },
+    {
+      "text": "깁",
+      "start": 3.711,
+      "end": 3.794
+    },
+    {
+      "text": "니",
+      "start": 3.794,
+      "end": 3.844
+    },
+    {
+      "text": "다",
+      "start": 3.844,
+      "end": 4.143
+    },
+    {
+      "text": ".",
+      "start": 4.143,
+      "end": 4.16
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "오늘은 AI로 출석 앱 만들다, 정작 출석을 까먹은 얘깁니다.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.25,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.15
+    }
+  }
+}

@@ -1,0 +1,6 @@
+file 'voice-01-block.wav'
+file 'voice-02-block.wav'
+file 'voice-03-block.wav'
+file 'voice-04-block.wav'
+file 'voice-05-block.wav'
+file 'voice-06-block.wav'

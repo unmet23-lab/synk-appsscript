@@ -1,0 +1,104 @@
+{
+  "request": {
+    "seed": 923,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "처음엔 번역만 하려고 했죠. 그런데 어느새 출석 앱을 만들고 있더라고요. 문제는, 제가 코딩을 전혀 모른다는 거였습니다.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.2,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 6.792,
+  "words": [
+    {
+      "text": "처음엔",
+      "start": 0.082,
+      "end": 0.399
+    },
+    {
+      "text": "번역만",
+      "start": 0.467,
+      "end": 0.784
+    },
+    {
+      "text": "하려고",
+      "start": 0.825,
+      "end": 0.99
+    },
+    {
+      "text": "했죠.",
+      "start": 1.031,
+      "end": 1.196
+    },
+    {
+      "text": "그런데",
+      "start": 1.719,
+      "end": 1.966
+    },
+    {
+      "text": "어느새",
+      "start": 2.021,
+      "end": 2.241
+    },
+    {
+      "text": "출석",
+      "start": 2.612,
+      "end": 2.873
+    },
+    {
+      "text": "앱을",
+      "start": 2.928,
+      "end": 3.052
+    },
+    {
+      "text": "만들고",
+      "start": 3.093,
+      "end": 3.382
+    },
+    {
+      "text": "있더라고요.",
+      "start": 3.423,
+      "end": 3.767
+    },
+    {
+      "text": "문제는,",
+      "start": 4.289,
+      "end": 4.592
+    },
+    {
+      "text": "제가",
+      "start": 4.936,
+      "end": 5.114
+    },
+    {
+      "text": "코딩을",
+      "start": 5.197,
+      "end": 5.499
+    },
+    {
+      "text": "전혀",
+      "start": 5.541,
+      "end": 5.733
+    },
+    {
+      "text": "모른다는",
+      "start": 5.802,
+      "end": 6.159
+    },
+    {
+      "text": "거였습니다.",
+      "start": 6.201,
+      "end": 6.792
+    }
+  ],
+  "characters": null
+}

@@ -1,0 +1,58 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "클로드는 글라이드와 구글 시트로 웹앱부터 만들어 보세요.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.28,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal"
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 2.617,
+  "words": [
+    {
+      "text": "클로드는",
+      "start": 0.107,
+      "end": 0.44
+    },
+    {
+      "text": "글라이드와",
+      "start": 0.5,
+      "end": 0.88
+    },
+    {
+      "text": "구글",
+      "start": 1.059,
+      "end": 1.237
+    },
+    {
+      "text": "시트로",
+      "start": 1.273,
+      "end": 1.535
+    },
+    {
+      "text": "웹앱부터",
+      "start": 1.618,
+      "end": 1.975
+    },
+    {
+      "text": "만들어",
+      "start": 2.01,
+      "end": 2.225
+    },
+    {
+      "text": "보세요.",
+      "start": 2.26,
+      "end": 2.617
+    }
+  ],
+  "characters": null
+}

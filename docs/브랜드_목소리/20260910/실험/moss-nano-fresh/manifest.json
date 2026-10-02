@@ -1,0 +1,45 @@
+{
+  "candidate": "moss-nano-fresh",
+  "space": "OpenMOSS-Team/MOSS-TTS-Nano",
+  "api": "/run_inference",
+  "parameters": {
+    "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+    "prompt_audio_path": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\qwen-fresh-sparkle\\raw.wav",
+      "meta": {
+        "_type": "gradio.FileData"
+      },
+      "orig_name": "raw.wav"
+    },
+    "enable_wetext_processing": false,
+    "enable_normalize_tts_text": false,
+    "max_new_frames": 375,
+    "voice_clone_max_text_tokens": 75,
+    "do_sample": true,
+    "text_temperature": 1.0,
+    "text_top_p": 1.0,
+    "text_top_k": 50,
+    "audio_temperature": 0.8,
+    "audio_top_p": 0.95,
+    "audio_top_k": 25,
+    "audio_repetition_penalty": 1.2,
+    "seed": 42
+  },
+  "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+  "synthetic": true,
+  "privateReferenceUploaded": false,
+  "higgsfieldUsed": false,
+  "humanListening": false,
+  "startedAt": 1789031493.477588,
+  "reference": {
+    "type": "original synthetic voice created for this comparison; not an identified person",
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\qwen-fresh-sparkle\\raw.wav",
+    "sha256": "798eb1e01a4f99eaca44f939e596b07add412b4e181e864dfcf9309929263148",
+    "origin": "Qwen3-TTS VoiceDesign official demo"
+  },
+  "providerMessage": "Done | mode=voice_clone | ref=Uploaded reference audio: raw.wav | elapsed=8.12s | device=cuda | sample_rate=48000 | attn=sdpa | chunks=1 | normalization=none",
+  "status": "completed",
+  "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\moss-nano-fresh\\raw.wav",
+  "sha256": "4946a16b8d23c8f21899c7ebad307a43889c0d07dc13aef5c48eb7df7a9786e2",
+  "elapsedSeconds": 21.015000000000327
+}

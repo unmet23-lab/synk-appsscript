@@ -1,0 +1,148 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "결국 클로드 쪽을 골랐어요. 구글 시트는 출석을 적는 표, 글라이드는 그 표를 보여줄 앱 화면. 초보인 제겐 첫 화면을 빨리 볼 수 있다는 설명이 와닿았거든요.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.28,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal"
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 8.086,
+  "words": [
+    {
+      "text": "결국",
+      "start": 0.097,
+      "end": 0.329
+    },
+    {
+      "text": "클로드",
+      "start": 0.633,
+      "end": 0.852
+    },
+    {
+      "text": "쪽을",
+      "start": 0.889,
+      "end": 1.035
+    },
+    {
+      "text": "골랐어요.",
+      "start": 1.072,
+      "end": 1.388
+    },
+    {
+      "text": "구글",
+      "start": 1.766,
+      "end": 1.961
+    },
+    {
+      "text": "시트는",
+      "start": 1.997,
+      "end": 2.277
+    },
+    {
+      "text": "출석을",
+      "start": 2.362,
+      "end": 2.679
+    },
+    {
+      "text": "적는",
+      "start": 2.716,
+      "end": 2.91
+    },
+    {
+      "text": "표,",
+      "start": 2.947,
+      "end": 3.044
+    },
+    {
+      "text": "글라이드는",
+      "start": 3.41,
+      "end": 3.799
+    },
+    {
+      "text": "그",
+      "start": 3.885,
+      "end": 3.958
+    },
+    {
+      "text": "표를",
+      "start": 4.019,
+      "end": 4.201
+    },
+    {
+      "text": "보여줄",
+      "start": 4.238,
+      "end": 4.481
+    },
+    {
+      "text": "앱",
+      "start": 4.579,
+      "end": 4.676
+    },
+    {
+      "text": "화면.",
+      "start": 4.725,
+      "end": 4.895
+    },
+    {
+      "text": "초보인",
+      "start": 5.163,
+      "end": 5.431
+    },
+    {
+      "text": "제겐",
+      "start": 5.48,
+      "end": 5.65
+    },
+    {
+      "text": "첫",
+      "start": 5.906,
+      "end": 6.028
+    },
+    {
+      "text": "화면을",
+      "start": 6.101,
+      "end": 6.345
+    },
+    {
+      "text": "빨리",
+      "start": 6.381,
+      "end": 6.612
+    },
+    {
+      "text": "볼",
+      "start": 6.649,
+      "end": 6.722
+    },
+    {
+      "text": "수",
+      "start": 6.759,
+      "end": 6.807
+    },
+    {
+      "text": "있다는",
+      "start": 6.844,
+      "end": 7.051
+    },
+    {
+      "text": "설명이",
+      "start": 7.1,
+      "end": 7.331
+    },
+    {
+      "text": "와닿았거든요.",
+      "start": 7.367,
+      "end": 8.086
+    }
+  ],
+  "characters": null
+}

@@ -1,0 +1,303 @@
+{
+ "A": {
+  "name": "A_AI에_끌려간다",
+  "probe": {
+   "duration": 16.766667,
+   "MB": 9.2,
+   "video": {
+    "profile": "High",
+    "level": 41,
+    "refs": null,
+    "width": 1080,
+    "height": 1920,
+    "r_frame_rate": "30/1",
+    "nb_frames": "503",
+    "color_space": "bt709",
+    "color_primaries": "bt709",
+    "color_transfer": "bt709"
+   },
+   "audio": {
+    "codec_name": null,
+    "sample_rate": null,
+    "channels": null,
+    "bit_rate": "1"
+   }
+  },
+  "decode_ok": true,
+  "loudness": {
+   "I": -15.0,
+   "LRA": 4.9,
+   "TP": -1.5
+  },
+  "cuts_in_first_5s": [
+   1.867,
+   4.033
+  ],
+  "shots": 6,
+  "limiter": {
+   "max_gr_db": -3.13,
+   "over3db_pct": 0.146
+  },
+  "text": {
+   "union_box": [
+    206,
+    281,
+    873,
+    1238
+   ],
+   "violations": [],
+   "violation_frames": 0
+  }
+ },
+ "B": {
+  "name": "B_TOPIK에_도움_안되면_쓰레기",
+  "probe": {
+   "duration": 23.133333,
+   "MB": 13.5,
+   "video": {
+    "profile": "High",
+    "level": 41,
+    "refs": null,
+    "width": 1080,
+    "height": 1920,
+    "r_frame_rate": "30/1",
+    "nb_frames": "694",
+    "color_space": "bt709",
+    "color_primaries": "bt709",
+    "color_transfer": "bt709"
+   },
+   "audio": {
+    "codec_name": null,
+    "sample_rate": null,
+    "channels": null,
+    "bit_rate": "1"
+   }
+  },
+  "decode_ok": true,
+  "loudness": {
+   "I": -14.1,
+   "LRA": 2.9,
+   "TP": -2.3
+  },
+  "cuts_in_first_5s": [
+   1.833,
+   3.233,
+   4.333
+  ],
+  "shots": 9,
+  "limiter": {
+   "max_gr_db": -2.1,
+   "over3db_pct": 0.0
+  },
+  "text": {
+   "union_box": [
+    246,
+    281,
+    832,
+    1238
+   ],
+   "violations": [],
+   "violation_frames": 0
+  }
+ },
+ "C": {
+  "name": "C_잘만들었다_했는데_평가는",
+  "probe": {
+   "duration": 32.6,
+   "MB": 16.8,
+   "video": {
+    "profile": "High",
+    "level": 41,
+    "refs": null,
+    "width": 1080,
+    "height": 1920,
+    "r_frame_rate": "30/1",
+    "nb_frames": "978",
+    "color_space": "bt709",
+    "color_primaries": "bt709",
+    "color_transfer": "bt709"
+   },
+   "audio": {
+    "codec_name": null,
+    "sample_rate": null,
+    "channels": null,
+    "bit_rate": null
+   }
+  },
+  "decode_ok": true,
+  "loudness": {
+   "I": -15.1,
+   "LRA": 5.5,
+   "TP": -1.4
+  },
+  "cuts_in_first_5s": [
+   1.367,
+   4.233
+  ],
+  "shots": 11,
+  "limiter": {
+   "max_gr_db": -3.42,
+   "over3db_pct": 0.382
+  },
+  "text": {
+   "union_box": [
+    200,
+    281,
+    880,
+    1238
+   ],
+   "violations": [],
+   "violation_frames": 0
+  }
+ },
+ "D": {
+  "name": "D_기술이_만들어준_시간",
+  "probe": {
+   "duration": 30.2,
+   "MB": 14.4,
+   "video": {
+    "profile": "High",
+    "level": 41,
+    "refs": null,
+    "width": 1080,
+    "height": 1920,
+    "r_frame_rate": "30/1",
+    "nb_frames": "906",
+    "color_space": "bt709",
+    "color_primaries": "bt709",
+    "color_transfer": "bt709"
+   },
+   "audio": {
+    "codec_name": null,
+    "sample_rate": null,
+    "channels": null,
+    "bit_rate": "1"
+   }
+  },
+  "decode_ok": true,
+  "loudness": {
+   "I": -15.7,
+   "LRA": 6.3,
+   "TP": -1.4
+  },
+  "cuts_in_first_5s": [
+   2.067
+  ],
+  "shots": 10,
+  "limiter": {
+   "max_gr_db": -2.73,
+   "over3db_pct": 0.0
+  },
+  "text": {
+   "union_box": [
+    228,
+    281,
+    851,
+    1234
+   ],
+   "violations": [],
+   "violation_frames": 0
+  }
+ },
+ "E": {
+  "name": "E_한명한명_케어하고_싶은데",
+  "probe": {
+   "duration": 37.133333,
+   "MB": 20.9,
+   "video": {
+    "profile": "High",
+    "level": 41,
+    "refs": null,
+    "width": 1080,
+    "height": 1920,
+    "r_frame_rate": "30/1",
+    "nb_frames": "1114",
+    "color_space": "bt709",
+    "color_primaries": "bt709",
+    "color_transfer": "bt709"
+   },
+   "audio": {
+    "codec_name": null,
+    "sample_rate": null,
+    "channels": null,
+    "bit_rate": null
+   }
+  },
+  "decode_ok": true,
+  "loudness": {
+   "I": -14.2,
+   "LRA": 4.1,
+   "TP": -1.4
+  },
+  "cuts_in_first_5s": [
+   1.3,
+   2.967,
+   4.333
+  ],
+  "shots": 14,
+  "limiter": {
+   "max_gr_db": -2.99,
+   "over3db_pct": 0.0
+  },
+  "text": {
+   "union_box": [
+    200,
+    281,
+    876,
+    1238
+   ],
+   "violations": [],
+   "violation_frames": 0
+  }
+ },
+ "F": {
+  "name": "F_조종하는건_AI가_아니라_사람",
+  "probe": {
+   "duration": 15.6,
+   "MB": 8.7,
+   "video": {
+    "profile": "High",
+    "level": 41,
+    "refs": null,
+    "width": 1080,
+    "height": 1920,
+    "r_frame_rate": "30/1",
+    "nb_frames": "468",
+    "color_space": "bt709",
+    "color_primaries": "bt709",
+    "color_transfer": "bt709"
+   },
+   "audio": {
+    "codec_name": null,
+    "sample_rate": null,
+    "channels": null,
+    "bit_rate": "2"
+   }
+  },
+  "decode_ok": true,
+  "loudness": {
+   "I": -14.1,
+   "LRA": 3.3,
+   "TP": -2.2
+  },
+  "cuts_in_first_5s": [
+   1.9,
+   3.733
+  ],
+  "shots": 6,
+  "limiter": {
+   "max_gr_db": -1.6,
+   "over3db_pct": 0.0
+  },
+  "text": {
+   "union_box": [
+    213,
+    281,
+    864,
+    1234
+   ],
+   "violations": [],
+   "violation_frames": 0
+  }
+ }
+}

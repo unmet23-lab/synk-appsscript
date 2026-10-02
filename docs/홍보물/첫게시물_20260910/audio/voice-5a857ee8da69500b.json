@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "1034a824-e88b-4d54-a768-9c76e7e82021",
+  "narration": "누구에게, 어떤 일을, 무엇이 남는지 적습니다. 이 예시는 강사를 위한 강의 제안서입니다.",
+  "narrationSha256": "5a857ee8da69500bf83edf0d04e6e29a061a79191ca7af0214178af005cac020",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-5a857ee8da69500b.wav",
+  "duration": 10,
+  "sha256": "0e3efd8bb04723a14e24ce5fa89ca8051ad21722d5f18787469ce70656a9d392",
+  "humanListening": false,
+  "fullDecode": true
+}

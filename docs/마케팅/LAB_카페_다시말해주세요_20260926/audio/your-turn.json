@@ -1,0 +1,35 @@
+{
+  "id": "your-turn",
+  "role": "guide",
+  "text": "이번엔 직접 말해 보세요.",
+  "provider": "Microsoft Edge TTS",
+  "settings": {
+    "voice": "ko-KR-SunHiNeural",
+    "rate": "-3%",
+    "pitch": "-2Hz"
+  },
+  "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\your-turn.mp3",
+  "duration": 2.832,
+  "words": [
+    {
+      "text": "이번엔",
+      "start": 0.101541,
+      "end": 0.616999
+    },
+    {
+      "text": "직접",
+      "start": 0.629916,
+      "end": 1.042291
+    },
+    {
+      "text": "말해",
+      "start": 1.055166,
+      "end": 1.325791
+    },
+    {
+      "text": "보세요",
+      "start": 1.338666,
+      "end": 1.918582
+    }
+  ]
+}

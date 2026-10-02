@@ -1,0 +1,793 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/jyx0ra1s",
+    "id": "jyx0ra1s",
+    "slide": 4,
+    "layoutId": "/ppt/slideLayouts/slideLayout1.xml",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri Light",
+        "eastAsianTypeface": "Calibri Light",
+        "complexScriptTypeface": "Calibri Light"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri",
+        "eastAsianTypeface": "Calibri",
+        "complexScriptTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Calibri",
+      "Calibri Light",
+      "SUIT Variable"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout1.xml",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/gfm5gvit",
+      "id": "13",
+      "bbox": [
+        72,
+        38.18,
+        142,
+        37.63
+      ],
+      "contentType": "image/png",
+      "asset": {
+        "assetId": "/ppt/media/image7.png",
+        "contentType": "image/png",
+        "byteLength": 96771
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image7.png",
+        "contentType": "image/png",
+        "byteLength": 96771
+      }
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/1cj2d8b6",
+      "id": "2",
+      "name": "페이지 분류",
+      "bbox": [
+        760,
+        45,
+        448,
+        34
+      ],
+      "geometry": "rect",
+      "text": "PROFILE EXAMPLE",
+      "textPreview": "PROFILE EXAMPLE",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "PROFILE EXAMPLE"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "PROFILE EXAMPLE",
+          "resolvedTextStyle": {
+            "fontSize": 19,
+            "typeface": "SUIT Variable",
+            "color": "#675C6A",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "PROFILE EXAMPLE",
+              "fontSize": 19,
+              "typeface": "SUIT Variable",
+              "color": "#675C6A"
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 3,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/7ad43q1c",
+      "id": "14",
+      "bbox": [
+        72,
+        661.14,
+        236,
+        19.72
+      ],
+      "contentType": "image/png",
+      "asset": {
+        "assetId": "/ppt/media/image8.png",
+        "contentType": "image/png",
+        "byteLength": 89484
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image8.png",
+        "contentType": "image/png",
+        "byteLength": 89484
+      }
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/rm1k7yt4",
+      "id": "4",
+      "name": "하단 설명",
+      "bbox": [
+        332,
+        664,
+        740,
+        26
+      ],
+      "geometry": "rect",
+      "text": "유호 프로필 · AI 사진을 활용한 소개 자료 예시",
+      "textPreview": "유호 프로필 · AI 사진을 활용한 소개 자료 예시",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "유호 프로필 · AI 사진을 활용한 소개 자료 예시"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "유호 프로필 · AI 사진을 활용한 소개 자료 예시",
+          "resolvedTextStyle": {
+            "fontSize": 17,
+            "typeface": "SUIT Variable",
+            "color": "#675C6A",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "유호 프로필 · AI 사진을 활용한 소개 자료 예시",
+              "fontSize": 17,
+              "typeface": "SUIT Variable",
+              "color": "#675C6A"
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ql8jytsj",
+      "id": "5",
+      "name": "페이지 번호",
+      "bbox": [
+        1120,
+        663,
+        90,
+        26
+      ],
+      "geometry": "rect",
+      "text": "04 / 05",
+      "textPreview": "04 / 05",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "04 / 05"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "04 / 05",
+          "resolvedTextStyle": {
+            "fontSize": 17,
+            "typeface": "SUIT Variable",
+            "color": "#675C6A",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "04 / 05",
+              "fontSize": 17,
+              "typeface": "SUIT Variable",
+              "color": "#675C6A"
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/doj29oba",
+      "id": "6",
+      "name": "사례 제목",
+      "bbox": [
+        72,
+        128,
+        1100,
+        78
+      ],
+      "geometry": "rect",
+      "text": "인터뷰 사진으로 만든 프로필",
+      "textPreview": "인터뷰 사진으로 만든 프로필",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "인터뷰 사진으로 만든 프로필"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "인터뷰 사진으로 만든 프로필",
+          "resolvedTextStyle": {
+            "fontSize": 47,
+            "typeface": "SUIT Variable",
+            "color": "#251F29",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "인터뷰 사진으로 만든 프로필",
+              "fontSize": 47,
+              "typeface": "SUIT Variable",
+              "color": "#251F29",
+              "bold": true
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 7,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/694nal0r",
+      "id": "15",
+      "bbox": [
+        72,
+        247,
+        344,
+        344
+      ],
+      "contentType": "image/jpeg",
+      "asset": {
+        "assetId": "/ppt/media/image3.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 49937
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image3.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 49937
+      }
+    },
+    {
+      "order": 8,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/tcvm5gji",
+      "id": "16",
+      "bbox": [
+        493.45,
+        229,
+        277.1,
+        371
+      ],
+      "contentType": "image/jpeg",
+      "asset": {
+        "assetId": "/ppt/media/image4.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 118159
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image4.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 118159
+      }
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ih8ju9sn",
+      "id": "9",
+      "name": "원본 표기",
+      "bbox": [
+        72,
+        597,
+        340,
+        35
+      ],
+      "geometry": "rect",
+      "text": "인터뷰 원본",
+      "textPreview": "인터뷰 원본",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "인터뷰 원본"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "인터뷰 원본",
+          "resolvedTextStyle": {
+            "fontSize": 23,
+            "typeface": "SUIT Variable",
+            "color": "#675C6A",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "인터뷰 원본",
+              "fontSize": 23,
+              "typeface": "SUIT Variable",
+              "color": "#675C6A"
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/kbm987y5",
+      "id": "10",
+      "name": "AI 표기",
+      "bbox": [
+        493,
+        597,
+        300,
+        35
+      ],
+      "geometry": "rect",
+      "text": "AI 제작 시안",
+      "textPreview": "AI 제작 시안",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "AI 제작 시안"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "AI 제작 시안",
+          "resolvedTextStyle": {
+            "fontSize": 23,
+            "typeface": "SUIT Variable",
+            "color": "#9D3D6D",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "AI 제작 시안",
+              "fontSize": 23,
+              "typeface": "SUIT Variable",
+              "color": "#9D3D6D",
+              "bold": true
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/5cva1cfq",
+      "id": "11",
+      "name": "작업 설명 제목",
+      "bbox": [
+        835,
+        276,
+        380,
+        57
+      ],
+      "geometry": "rect",
+      "text": "원본 사진 3장 참조",
+      "textPreview": "원본 사진 3장 참조",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "원본 사진 3장 참조"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "원본 사진 3장 참조",
+          "resolvedTextStyle": {
+            "fontSize": 31,
+            "typeface": "SUIT Variable",
+            "color": "#251F29",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "원본 사진 3장 참조",
+              "fontSize": 31,
+              "typeface": "SUIT Variable",
+              "color": "#251F29",
+              "bold": true
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/i94r6xgz",
+      "id": "12",
+      "name": "작업 설명",
+      "bbox": [
+        835,
+        364,
+        365,
+        225
+      ],
+      "geometry": "rect",
+      "text": "의상과 배경을 바꾸고\n소개에 맞는 분위기를 만듭니다.\n\n본인 인상은 시안에서\n먼저 확인합니다.",
+      "textPreview": "의상과 배경을 바꾸고 | 소개에 맞는 분위기를 만듭니다. |  | 본인 인상은 시안에서 | 먼저 확인합니다.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 5,
+        "lines": [
+          {
+            "index": 1,
+            "text": "의상과 배경을 바꾸고"
+          },
+          {
+            "index": 2,
+            "text": "소개에 맞는 분위기를 만듭니다."
+          },
+          {
+            "index": 3,
+            "text": ""
+          },
+          {
+            "index": 4,
+            "text": "본인 인상은 시안에서"
+          },
+          {
+            "index": 5,
+            "text": "먼저 확인합니다."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "의상과 배경을 바꾸고",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "SUIT Variable",
+            "color": "#251F29",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "의상과 배경을 바꾸고",
+              "fontSize": 25,
+              "typeface": "SUIT Variable",
+              "color": "#251F29"
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "소개에 맞는 분위기를 만듭니다.",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "SUIT Variable",
+            "color": "#251F29",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "소개에 맞는 분위기를 만듭니다.",
+              "fontSize": 25,
+              "typeface": "SUIT Variable",
+              "color": "#251F29"
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        },
+        {
+          "index": 4,
+          "text": "본인 인상은 시안에서",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "SUIT Variable",
+            "color": "#251F29",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "본인 인상은 시안에서",
+              "fontSize": 25,
+              "typeface": "SUIT Variable",
+              "color": "#251F29"
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        },
+        {
+          "index": 5,
+          "text": "먼저 확인합니다.",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "SUIT Variable",
+            "color": "#251F29",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "먼저 확인합니다.",
+              "fontSize": 25,
+              "typeface": "SUIT Variable",
+              "color": "#251F29"
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}

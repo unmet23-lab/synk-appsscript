@@ -1,0 +1,10 @@
+Use case: precise-object-edit
+Asset type: SYNK felt business-card front; keep the same flat landscape 9:5 image.
+
+Image 1 is the complete current card design to edit. Image 2 is the AUTHORITATIVE approved synk logo geometry and material.
+
+Make one focused correction: replace ONLY the central dark lowercase synk wordmark with a faithful, proportionally scaled reproduction of Image 2. The current card's k ascender is too short and the whole wordmark is too horizontally stretched. Preserve Image 2's exact relative s/y/n/k contours, the strongly lifted vertical stem of k above the n, the descending y, and the original letter spacing. Scale Image 2 uniformly to roughly the same TOTAL visible logo height as the current card's logo, so the corrected wordmark becomes slightly narrower instead of compressing its height. Center it horizontally in the existing logo space. Preserve at least a small clear ivory gap between Marin's foot and the k, and between the y descender and the bottom business-name row. No letter touches a mascot. If spacing needs adjustment, move the corrected logo a few pixels only; do not redesign the card.
+
+Keep all three mascot identities, facial expressions, eye materials, existing limbs, fur, clothing details, intimate huddle, their current positions and sizes exactly as in Image 1. Keep the background, lighting, warm bright material quality, business-name text LAB SHIFT PULSE, their colors, stitches, spelling, order and positions unchanged. Keep synk dark warm Ink felt with rich delicate wool fibers and natural contact shadows, NO stitches on synk. Do not add new text or decorations.
+
+This is a precision logo-proportion restoration within an already successful design, not a new visual concept.

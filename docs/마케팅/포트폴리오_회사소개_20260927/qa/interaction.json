@@ -1,0 +1,64 @@
+[
+  {
+    "width": 1440,
+    "errors": [],
+    "brokenDownloads": [],
+    "fonts": [
+      {
+        "familyName": "SUIT Variable Thin",
+        "postScriptName": "SUITVariable-Bold",
+        "isCustomFont": true,
+        "glyphCount": 11
+      },
+      {
+        "familyName": "Inter Tight",
+        "postScriptName": "InterTight-Bold",
+        "isCustomFont": true,
+        "glyphCount": 1
+      }
+    ],
+    "verified": [
+      "correct-answer feedback",
+      "before-after toggle",
+      "keyboard range",
+      "pointer wipe",
+      "checklist completion",
+      "inquiry draft preservation",
+      "clipboard exact match",
+      "local downloads",
+      "channel disclosure",
+      "no horizontal overflow"
+    ]
+  },
+  {
+    "width": 390,
+    "errors": [],
+    "brokenDownloads": [],
+    "fonts": [
+      {
+        "familyName": "SUIT Variable Thin",
+        "postScriptName": "SUITVariable-Bold",
+        "isCustomFont": true,
+        "glyphCount": 11
+      },
+      {
+        "familyName": "Inter Tight",
+        "postScriptName": "InterTight-Bold",
+        "isCustomFont": true,
+        "glyphCount": 1
+      }
+    ],
+    "verified": [
+      "correct-answer feedback",
+      "before-after toggle",
+      "keyboard range",
+      "pointer wipe",
+      "checklist completion",
+      "inquiry draft preservation",
+      "clipboard exact match",
+      "local downloads",
+      "channel disclosure",
+      "no horizontal overflow"
+    ]
+  }
+]

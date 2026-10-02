@@ -1,0 +1,44 @@
+[
+ {
+  "name": "Myuho-exp-smile-s1",
+  "prompt": "Photo 1 is the studio portrait to match: keep its framing, head-and-shoulders crop, plain black t-shirt, warm-grey backdrop, soft key light, warm filmic color grade and film grain. Photos 2 to 7 are real video frames of the SAME man smiling in an interview: study exactly how his real face looks when he smiles — how his eyes narrow into gentle crescents, how his cheeks lift, the shape of his mouth, lips and teeth, and his face shape and jawline while smiling. Create photo 1 again with the same man facing the camera, now smiling naturally the way he smiles in photos 2 to 5, showing a little of his upper teeth, so that anyone who knows him would recognize him instantly. Keep his cornrow braids with the small gold bead. His face must keep the same width and soft cheeks as in the photos; do not make it longer or thinner. Real skin texture, no plastic skin, no heavy retouching, no text or logos.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-smile-ref-020.png",
+   "raw/yuho-smile-ref-022.png",
+   "raw/yuho-smile-ref-023.png",
+   "raw/yuho-smile-ref-125.png",
+   "raw/yuho-smile-ref-225.png",
+   "raw/yuho-smile-ref-226.png"
+  ]
+ },
+ {
+  "name": "Myuho-exp-smile-s2",
+  "prompt": "Photo 1 is the studio portrait to match: keep its framing, head-and-shoulders crop, plain black t-shirt, warm-grey backdrop, soft key light, warm filmic color grade and film grain. Photos 2 to 7 are real video frames of the SAME man smiling in an interview: study exactly how his real face looks when he smiles — how his eyes narrow into gentle crescents, how his cheeks lift, the shape of his mouth, lips and teeth, and his face shape and jawline while smiling. Create photo 1 again with the same man facing the camera, now smiling naturally the way he smiles in photos 2 to 5, showing a little of his upper teeth, so that anyone who knows him would recognize him instantly. Keep his cornrow braids with the small gold bead. His face must keep the same width and soft cheeks as in the photos; do not make it longer or thinner. Real skin texture, no plastic skin, no heavy retouching, no text or logos.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-smile-ref-020.png",
+   "raw/yuho-smile-ref-022.png",
+   "raw/yuho-smile-ref-023.png",
+   "raw/yuho-smile-ref-125.png",
+   "raw/yuho-smile-ref-225.png",
+   "raw/yuho-smile-ref-226.png"
+  ]
+ },
+ {
+  "name": "Myuho-exp-smile-s3",
+  "prompt": "Photo 1 is the studio portrait to match: keep its framing, head-and-shoulders crop, plain black t-shirt, warm-grey backdrop, soft key light, warm filmic color grade and film grain. Photos 2 to 7 are real video frames of the SAME man smiling in an interview: study exactly how his real face looks when he smiles — how his eyes narrow into gentle crescents, how his cheeks lift, the shape of his mouth, lips and teeth, and his face shape and jawline while smiling. Create photo 1 again with the same man facing the camera, now with the soft closed-mouth smile he has in photos 6 and 7, so that anyone who knows him would recognize him instantly. Keep his cornrow braids with the small gold bead. His face must keep the same width and soft cheeks as in the photos; do not make it longer or thinner. Real skin texture, no plastic skin, no heavy retouching, no text or logos.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-smile-ref-020.png",
+   "raw/yuho-smile-ref-022.png",
+   "raw/yuho-smile-ref-023.png",
+   "raw/yuho-smile-ref-125.png",
+   "raw/yuho-smile-ref-225.png",
+   "raw/yuho-smile-ref-226.png"
+  ]
+ }
+]

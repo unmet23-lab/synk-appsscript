@@ -1,0 +1,50 @@
+[
+  {
+    "file": "compositions/frames/01-result.html",
+    "id": "scene-1",
+    "start": 0,
+    "end": 6.6667,
+    "duration": 6.6667,
+    "text": "사진은 한 장인데, 광고는 세 컷. 이 머그컵으로 직접 만들어봤어요."
+  },
+  {
+    "file": "compositions/frames/02-source.html",
+    "id": "scene-2",
+    "start": 6.6667,
+    "end": 14.9,
+    "duration": 8.2333,
+    "text": "이미지 편집이 되는 AI에 제품 사진을 올리세요. 사진 속 제품의 모양이 잘 보여야 해요."
+  },
+  {
+    "file": "compositions/frames/03-prompt.html",
+    "id": "scene-3",
+    "start": 14.9,
+    "end": 25.4333,
+    "duration": 10.5333,
+    "text": "먼저 바꾸면 안 되는 걸 적습니다. 제품의 모양, 색, 재질은 그대로. 글자는 추가하지 말아 주세요."
+  },
+  {
+    "file": "compositions/frames/04-three-shots.html",
+    "id": "scene-4",
+    "start": 25.4333,
+    "end": 36.7333,
+    "duration": 11.3,
+    "text": "그다음 세 장을 따로 요청하세요. 전체 컷은 빛으로 분위기를, 가까운 컷은 질감을, 사용 컷은 손과 소품으로 상황을 보여주세요."
+  },
+  {
+    "file": "compositions/frames/05-compare.html",
+    "id": "scene-5",
+    "start": 36.7333,
+    "end": 46.1,
+    "duration": 9.3667,
+    "text": "예쁘게 나와도 바로 쓰진 마세요. 원본과 나란히 놓고 손잡이, 색, 테두리가 달라졌는지 확인해요."
+  },
+  {
+    "file": "compositions/frames/06-finish.html",
+    "id": "scene-6",
+    "start": 46.1,
+    "end": 56.5,
+    "duration": 10.4,
+    "text": "세 컷을 짧게 이어 붙이면 끝. 프롬프트와 확인표도 준비했어요. 필요하시면 팔로우하시고 댓글에 synk를 남겨주세요."
+  }
+]

@@ -1,0 +1,33 @@
+[
+  {
+    "created_at": "2026-09-09T09:05:20.60726Z",
+    "display_name": "GPT Image 2.5",
+    "id": "b562746d-ecf0-4275-9251-35c48ca98179",
+    "job_type": "gpt_image_2_5",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260909_090520_b562746d-ecf0-4275-9251-35c48ca98179_min.webp",
+    "params": {
+      "aspect_ratio": "21:9",
+      "background": "transparent",
+      "height": 1648,
+      "medias": [
+        {
+          "data": {
+            "id": "37ddff1b-5aea-4cb0-a725-b0c8200907ce",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/37ddff1b-5aea-4cb0-a725-b0c8200907ce_resize.jpg"
+          },
+          "role": "image"
+        }
+      ],
+      "model": "sunburst",
+      "prompt": "Edit the supplied existing lowercase synk embroidered wool wordmark into its light reverse colorway for use on dark backgrounds. This is a material colorway conversion, not a new logo. Keep the exact recognizable s y n k letters, tall k ascender, deep y descender, proportions, stitch rhythm, soft wool fibers and frontal presentation. Change ALL FOUR LETTER BODIES including the coral k to warm ivory Paper #FBF7F0 wool. No colored or dark letter remains. Keep clear natural warm wool shadowing and subtle three-dimensional thickness; the thread should be a delicately contrasting warm pale-beige stitch so embroidery is visible without looking like a dotted outline. Do not make a flat white silhouette. Do not add lettering, plaque, background or field shadow. Full logo isolated on genuine transparent alpha, generous clear margin around top of k and bottom of y. Preserve inner counters; no eroded bites, alpha holes in solid felt or torn fibers. Output a pristine high-resolution production cutout.\n[BRAND LOCK — DO NOT DEVIATE]\nBrand spelling: synk, lowercase, exactly four letters.\nAuthoritative logo: Image 1 is the existing official photographed wool logo; it controls recognizable anatomy and material.\nPalette: all letter bodies warm Paper #FBF7F0, physically plausible ivory shading and warm pale-beige stitches. No coral k, no colored letter.\nTypography: do not substitute a font or redesign the wordmark.\nLayout: existing horizontal silhouette fully in frame with safe margins.\nShape language: existing organic sewn felt, existing ascender and descender.\nMust preserve: identity, lettering, spacing character, wool, seam detail, transparency.\nNever: new symbol, added label, plastic, chrome, flat silhouette, opaque background, cropped fibers.",
+      "quality": "xhigh",
+      "reference_elements": [],
+      "remove_bg": false,
+      "resolution": "4k",
+      "width": 3840
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260909_090520_b562746d-ecf0-4275-9251-35c48ca98179.png",
+    "status": "completed"
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "title": "회의 메모를 담당자와 기한이 있는 할 일 표로",
+  "coverTitle": "회의 메모\n→ 할 일 표",
+  "scenes": [
+    {"kind":"opening","duration":4,"label":"AI 활용 01 · ChatGPT","title":"회의록은 있는데,\n누가 뭘 하죠?","titleSize":89},
+    {"kind":"memo","duration":6,"label":"01 · 메모 붙여넣기","title":"흩어진 메모를\n그대로 넣고","asset":"crop-input-memo.png","imageTop":1230,"imageHeight":210,"caption":"가상 회의 메모로 진행한 실제 시연","captionTop":1460,"captionSize":34},
+    {"kind":"columns","duration":7,"label":"02 · 정리할 칸 지정","title":"이 네 칸으로\n정리하세요","asset":"crop-input-columns.png","imageTop":1330,"imageHeight":130},
+    {"kind":"rules","duration":8,"label":"03 · 추측 막기","title":"없는 정보는\n확인 필요로","asset":"crop-input-rule.png","imageTop":860,"imageHeight":145},
+    {"kind":"result","duration":8,"label":"04 · 실제 응답 확인","title":"담당자와 기한이\n표로 나옵니다","titleSize":83,"asset":"crop-result-table.png","imageTop":735,"imageHeight":320,"caption":"실제 응답 일부 · 근거 열은 원본에 포함","captionTop":1470,"captionSize":31},
+    {"kind":"questions","duration":9,"label":"05 · 사람이 확인할 것","title":"확인할 건\n빈칸입니다","asset":"crop-result-questions.png","imageTop":1050,"imageHeight":285},
+    {"kind":"closing","duration":6,"label":"다음 회의에 써보세요","title":"메모를 붙여넣고\n이 문장부터.","titleSize":83,"prompt":"“확정된 할 일을\n담당자·기한·근거와 함께\n표로 정리해 줘.”","promptTop":750,"note":"입력문 전체는 게시글에","caption":"@synkbrief","captionTop":1450}
+  ]
+}

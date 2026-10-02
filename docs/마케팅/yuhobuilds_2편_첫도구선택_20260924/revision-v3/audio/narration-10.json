@@ -1,0 +1,254 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 3.577,
+  "words": [
+    {
+      "text": "이런",
+      "start": 0.124,
+      "end": 0.279
+    },
+    {
+      "text": "비교",
+      "start": 0.341,
+      "end": 0.526
+    },
+    {
+      "text": "질문은",
+      "start": 0.573,
+      "end": 0.867
+    },
+    {
+      "text": "무료로도",
+      "start": 1.316,
+      "end": 1.61
+    },
+    {
+      "text": "해볼",
+      "start": 1.657,
+      "end": 1.796
+    },
+    {
+      "text": "수",
+      "start": 1.843,
+      "end": 1.874
+    },
+    {
+      "text": "있어요.",
+      "start": 1.92,
+      "end": 2.121
+    },
+    {
+      "text": "이용",
+      "start": 2.663,
+      "end": 2.803
+    },
+    {
+      "text": "한도",
+      "start": 2.849,
+      "end": 3.019
+    },
+    {
+      "text": "안에서요.",
+      "start": 3.066,
+      "end": 3.577
+    }
+  ],
+  "characters": [
+    {
+      "text": "이",
+      "start": 0.124,
+      "end": 0.17
+    },
+    {
+      "text": "런",
+      "start": 0.17,
+      "end": 0.279
+    },
+    {
+      "text": " ",
+      "start": 0.279,
+      "end": 0.341
+    },
+    {
+      "text": "비",
+      "start": 0.341,
+      "end": 0.48
+    },
+    {
+      "text": "교",
+      "start": 0.48,
+      "end": 0.526
+    },
+    {
+      "text": " ",
+      "start": 0.526,
+      "end": 0.573
+    },
+    {
+      "text": "질",
+      "start": 0.573,
+      "end": 0.712
+    },
+    {
+      "text": "문",
+      "start": 0.712,
+      "end": 0.821
+    },
+    {
+      "text": "은",
+      "start": 0.821,
+      "end": 0.867
+    },
+    {
+      "text": " ",
+      "start": 0.867,
+      "end": 1.316
+    },
+    {
+      "text": "무",
+      "start": 1.316,
+      "end": 1.394
+    },
+    {
+      "text": "료",
+      "start": 1.394,
+      "end": 1.487
+    },
+    {
+      "text": "로",
+      "start": 1.487,
+      "end": 1.564
+    },
+    {
+      "text": "도",
+      "start": 1.564,
+      "end": 1.61
+    },
+    {
+      "text": " ",
+      "start": 1.61,
+      "end": 1.657
+    },
+    {
+      "text": "해",
+      "start": 1.657,
+      "end": 1.719
+    },
+    {
+      "text": "볼",
+      "start": 1.719,
+      "end": 1.796
+    },
+    {
+      "text": " ",
+      "start": 1.796,
+      "end": 1.843
+    },
+    {
+      "text": "수",
+      "start": 1.843,
+      "end": 1.874
+    },
+    {
+      "text": " ",
+      "start": 1.874,
+      "end": 1.92
+    },
+    {
+      "text": "있",
+      "start": 1.92,
+      "end": 2.028
+    },
+    {
+      "text": "어",
+      "start": 2.028,
+      "end": 2.075
+    },
+    {
+      "text": "요",
+      "start": 2.075,
+      "end": 2.106
+    },
+    {
+      "text": ".",
+      "start": 2.106,
+      "end": 2.121
+    },
+    {
+      "text": " ",
+      "start": 2.121,
+      "end": 2.663
+    },
+    {
+      "text": "이",
+      "start": 2.663,
+      "end": 2.725
+    },
+    {
+      "text": "용",
+      "start": 2.725,
+      "end": 2.803
+    },
+    {
+      "text": " ",
+      "start": 2.803,
+      "end": 2.849
+    },
+    {
+      "text": "한",
+      "start": 2.849,
+      "end": 2.973
+    },
+    {
+      "text": "도",
+      "start": 2.973,
+      "end": 3.019
+    },
+    {
+      "text": " ",
+      "start": 3.019,
+      "end": 3.066
+    },
+    {
+      "text": "안",
+      "start": 3.066,
+      "end": 3.159
+    },
+    {
+      "text": "에",
+      "start": 3.159,
+      "end": 3.19
+    },
+    {
+      "text": "서",
+      "start": 3.19,
+      "end": 3.283
+    },
+    {
+      "text": "요",
+      "start": 3.283,
+      "end": 3.561
+    },
+    {
+      "text": ".",
+      "start": 3.561,
+      "end": 3.577
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "이런 비교 질문은 무료로도 해볼 수 있어요. 이용 한도 안에서요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.3,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup"
+    }
+  }
+}

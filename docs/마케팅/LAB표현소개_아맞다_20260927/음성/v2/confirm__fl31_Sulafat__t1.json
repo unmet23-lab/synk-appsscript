@@ -1,0 +1,28 @@
+{
+ "id": "confirm__fl31_Sulafat__t1",
+ "line": "confirm",
+ "model": "gemini-3.1-flash-tts-preview",
+ "voice": "Sulafat",
+ "style": "Say this Korean exclamation naturally at normal speed, warm and encouraging, like a friend saying it in everyday conversation",
+ "text": "아 맞다!",
+ "location": "global",
+ "usage": {
+  "promptTokenCount": 27,
+  "candidatesTokenCount": 42,
+  "totalTokenCount": 69,
+  "trafficType": "ON_DEMAND",
+  "promptTokensDetails": [
+   {
+    "modality": "TEXT",
+    "tokenCount": 27
+   }
+  ],
+  "candidatesTokensDetails": [
+   {
+    "modality": "AUDIO",
+    "tokenCount": 42
+   }
+  ]
+ },
+ "modelVersion": "gemini-3.1-flash-tts-preview"
+}

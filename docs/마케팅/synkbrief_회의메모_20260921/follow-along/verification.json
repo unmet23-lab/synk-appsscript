@@ -1,0 +1,54 @@
+{
+  "date": "2026-09-22",
+  "pdfPages": 4,
+  "charactersPerPage": [
+    526,
+    636,
+    654,
+    856
+  ],
+  "fontsEmbedded": [
+    "/AAAAAA+SUITGuide-Bold",
+    "/AAAAAA+SUITGuide-Regular",
+    "/AAAAAB+SUITGuide-Regular"
+  ],
+  "promptMatchesOriginal": true,
+  "pdfPromptExtractableAndMatchesTxt": true,
+  "zipFiles": [
+    "guide.pdf",
+    "prompt.txt",
+    "practice-memo.txt",
+    "expected-result.txt",
+    "START-HERE.txt"
+  ],
+  "zipIntegrityPassed": true,
+  "newChatGPTRun": false,
+  "screenshotSource": "existing assets/v2/blank-input.png",
+  "sources": [
+    {
+      "url": "https://developers.openai.com/cookbook/examples/chatgpt/chatgpt_prompt_guide/chatgpt_prompt_guide",
+      "checked": "2026-09-22",
+      "usedFor": "output format, missing information, source review"
+    }
+  ],
+  "newVideoRendered": false,
+  "publicDownloadConfigured": false,
+  "commentDeliveryConfigured": false,
+  "files": [
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\output\\pdf\\synkbrief-meeting-guide.pdf",
+      "bytes": 77274,
+      "sha256": "81341a78318fcbb6273ce3c2956a674d3e027adfc1bbeee27636f30596f9def6"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\follow-along\\synkbrief-meeting-kit.zip",
+      "bytes": 70266,
+      "sha256": "87c8bd6fb840257469d0872b207efc0d81e2498f54d89e98e97c77675cdb54c9"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\follow-along\\ending.png",
+      "bytes": 185824,
+      "sha256": "d8e787aa7d8970e26b98eafa6962ab864d12dcf2b21dea50570dac74578245d3"
+    }
+  ]
+}

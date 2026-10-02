@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-01",
+  "workbook": "SYNK_회사전체_권리등록_출시_제작비_20261001.xlsx",
+  "sheets": [
+    "총괄",
+    "입력기준",
+    "비용목록",
+    "제작계산"
+  ],
+  "itemCount": 69,
+  "formulaCount": 244,
+  "formulaCachesPresent": true,
+  "errorCells": [],
+  "independentRightsCalculationKRW": 7233040,
+  "newScopePricedKRW": 30123635,
+  "formationIncludedPricedKRW": 46180196,
+  "unpricedOrMissingConditionCount": 15,
+  "fullBudgetStatus": "총액 미확정",
+  "editTests": "independent totals / old-fee removal / same-account multi-app / trademark zero quantity / volumes & quota / blank vs zero / FX / restored",
+  "localLinksVerified": 20,
+  "brokenLinks": [],
+  "academySHA256MatchesUpdatedBudget": "439df658531e84dc0838791245dd27ea5604eb3f09442e6e5d8f0fa7d9c095d4",
+  "visualReview": "four sheets rendered; summary, input values, item list and production reviewed; numeric formats corrected after first render",
+  "exportProcessNote": "artifact-tool completed assertions, export, inspect and four renders then process returned exit1 with no error text, matching prior local artifact-runtime behavior. ZIP/openpyxl read/cache/arithmetic independently passed. Native Excel execution not verified.",
+  "execution": "local research and files only; no filings, subscriptions, payments, vendor contacts or public release"
+}

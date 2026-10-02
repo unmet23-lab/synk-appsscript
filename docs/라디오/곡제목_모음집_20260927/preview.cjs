@@ -1,0 +1,8 @@
+'use strict';
+const fs=require('fs'),path=require('path'),http=require('http'),assert=require('assert/strict');
+const {createRequire}=require('module');const req=createRequire('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/package.json');const {chromium}=req('playwright');
+const root=path.resolve(__dirname,'../../..');
+(async()=>{const server=http.createServer((q,r)=>{const f=path.join(root,decodeURIComponent(q.url.split('?')[0]));try{r.setHeader('Content-Type',f.endsWith('.js')?'application/javascript':f.endsWith('.png')?'image/png':'text/html');r.end(fs.readFileSync(f));}catch{r.statusCode=404;r.end();}});await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
+const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});try{const page=await browser.newPage({viewport:{width:1920,height:1080},deviceScaleFactor:2/3});const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'/bots/오버레이/전광판.html');await page.evaluate(async()=>{await document.fonts.ready;document.body.style.background="url('/docs/라디오/곡제목_모음집_20260927/background.png') center/cover";});
+for(const [i,title] of ['불빛이 하나둘 켜질 때',"The Phantom's Lament"].entries()){await page.evaluate(t=>window.전광판사건({종류:'곡',제목:t}),title);await page.waitForTimeout(1400);assert.equal(await page.locator('#구석').innerText(),'♫ '+title);await page.screenshot({path:path.join(__dirname,'preview-'+i+'.png')});}
+assert.deepEqual(errors,[]);console.log('2 title changes visible; no browser errors');}finally{await browser.close();server.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

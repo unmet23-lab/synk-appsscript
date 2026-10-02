@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "204f3fdc-44f6-49b3-8b3b-6b11a4e5d3dc",
+  "narration": "내 일을 한 줄로 설명해 볼까요? 혼자 사업하는 분들을 위한 싱크 브리프입니다. 지금 쓸 예시와 원본을 펼칩니다.",
+  "narrationSha256": "5ed12c50471180a4a85eccd4ee510ab5a33c45b3a40e407e784bde42903b9fed",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-5ed12c50471180a4.wav",
+  "duration": 10,
+  "sha256": "8472671b99784ade9aa59b849bfebe84713844cbaf61a951f43399a440ba2ff1",
+  "humanListening": false,
+  "fullDecode": true
+}

@@ -1,0 +1,14 @@
+{
+  "fish-pvc": "https://fish.audio/blog/professional-voice-cloning/",
+  "fish-tts-api": "https://docs.fish.audio/api-reference/endpoint/openapi-v1/text-to-speech",
+  "fish-pricing-api": "https://docs.fish.audio/developer-guide/models-pricing/pricing-and-rate-limits",
+  "fish-plans": "https://fish.audio/plan/",
+  "minimax-pricing": "https://platform.minimax.io/docs/guides/pricing-paygo",
+  "minimax-clone-input": "https://platform.minimax.io/docs/api-reference/voice-cloning-uploadcloneaudio",
+  "cartesia-pvc": "https://docs.cartesia.ai/build-with-cartesia/capability-guides/clone-voices-pro",
+  "cartesia-2026-changelog": "https://docs.cartesia.ai/changelog/2026",
+  "cartesia-pricing": "https://www.cartesia.ai/pricing",
+  "fish-native-codec": "https://raw.githubusercontent.com/fishaudio/fish-speech/main/fish_speech/configs/modded_dac_vq.yaml",
+  "qwen-native-codec": "https://huggingface.co/Qwen/Qwen3-TTS-Tokenizer-12Hz/raw/main/config.json",
+  "cosyvoice3-card": "https://huggingface.co/FunAudioLLM/Fun-CosyVoice3-0.5B-2512/raw/main/README.md"
+}

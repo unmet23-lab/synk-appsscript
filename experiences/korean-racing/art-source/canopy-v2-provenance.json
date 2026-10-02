@@ -1,0 +1,49 @@
+{
+  "date": "2026-10-02",
+  "assets": [
+    {
+      "asset": "pine-canopy-v2.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: transparent foliage texture patch for a high quality real-time 3D coastal Korean racing game. Generate ONE compact irregular cluster of Korean maritime pine needles (Pinus thunbergii), a small bough tip 70 cm wide, NOT a complete tree and NOT a round canopy ball. Front orthographic natural photographic botanical detail, elegant layered needle sprays radiating along several fine brown twigs, dark emerald and sage green highlights, tiny natural gaps between needles, soft warm daylight from upper left, subtle diffuse illumination without hard baked shadows. Asymmetric airy horizontal fan with torn organic silhouette; realistic thin needles with fine visible texture. Cluster fills 85 percent of square image width, 65 percent height, isolated with substantial completely transparent empty space and real alpha between needle sprays. Needles and twigs only. No trunk, no roots, no ground, no pot, no tree shape, no white/background matte, no scenery, no text, no watermark, no repeated grid. It will be mapped onto many small bent 3D leaf planes, so true transparency and softly lit natural leaf detail matter.",
+      "source": "C:\\Users\\q1212\\.codex\\generated_images\\01a0f3a6-d765-7340-833d-201fc4caabf1\\exec-e61e5dca-6958-4d65-9e47-855777e30b61.png",
+      "sourceSha256": "dedb65c6c8b8946ddc08a0f9616b026bafd7285c032e97a351e298b39059fe2c",
+      "size": [
+        1254,
+        1254
+      ],
+      "bytes": 529224,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "method": "built-in image_gen with transparent_background true; WebP encoding only, full source dimensions and alpha preserved"
+    },
+    {
+      "asset": "blossom-canopy-v2.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: transparent blossom foliage patch for high quality real-time 3D Korean coastal racing game. Generate ONE small airy irregular branch tip of Korean cherry blossom, realistic botanical photography, pale ivory and very soft blush pink five-petal blossoms plus a few fresh sage green leaves and fine brown twigs. NOT a complete tree, NOT a spherical bouquet or pompom. Asymmetric horizontal spray, several small groups separated by genuine transparent gaps, beautiful delicate petal translucency, subtle centres, high detail fine foliage texture, soft diffuse warm daylight from upper left without hard baked shadows. Natural compact branch 60 cm wide, orthographic front view filling 85 percent of square width and 65 percent height. True alpha transparency all around and between blossoms and leaves. No tree trunk, no roots, no pot, no ground, no white/background matte, no landscape, no text, no logo, no watermark. Used across many small bent leaf planes in a real-time 3D game; airy irregular edges and softly lit fine botanical detail are crucial.",
+      "source": "C:\\Users\\q1212\\.codex\\generated_images\\01a0f3a6-d765-7340-833d-201fc4caabf1\\exec-c5f8117b-839c-4ffc-b650-02a98a85d363.png",
+      "sourceSha256": "1995e81c1a0d636c5be52373138db08d69a2bc2cda96e35c774aa76a851c876a",
+      "size": [
+        1254,
+        1254
+      ],
+      "bytes": 276406,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "method": "built-in image_gen with transparent_background true; WebP encoding only, full source dimensions and alpha preserved"
+    },
+    {
+      "asset": "meadow-v2.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless tileable ground albedo texture for a real time 3D Korean seaside landscape, square. Camera perfectly perpendicular overhead, flat texture without perspective. Dense short natural meadow grass with fine narrow blades in muted moss green, sage olive and a little dry straw, sparse tiny earthy gaps, evenly distributed organic variation on a very small scale. Realistic botanical surface detail, like a sunlit coastal meadow, richly textured yet calm. Uniform diffuse overcast lighting, NO baked sunlight, NO directional shadows, no horizon. Edge-to-edge full ground surface with seamless opposing edges. No flowers, no stones, no objects, no trees, no large grass clumps, no obvious repeating patch shapes, no text, no watermark. Natural restrained green, avoid neon lime and oversaturated emerald. This is a PBR base color texture, not a landscape picture.",
+      "source": "C:\\Users\\q1212\\.codex\\generated_images\\01a0f3a6-d765-7340-833d-201fc4caabf1\\exec-ac1fcc8a-ace0-48d4-9873-e8b8b0b0b187.png",
+      "sourceSha256": "a71874fdc7b8550eb46a0effa9e6349c911725bd632a9167d0041172b426b6f6",
+      "size": [
+        1254,
+        1254
+      ],
+      "bytes": 1120842,
+      "method": "built-in image_gen; JPEG encoding only, full source dimensions"
+    }
+  ]
+}

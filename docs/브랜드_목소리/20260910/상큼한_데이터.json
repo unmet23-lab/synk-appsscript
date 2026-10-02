@@ -1,0 +1,227 @@
+{
+  "createdAt": "2026-09-10T09:21:26.515Z",
+  "summary": "상큼한 말끝과 풍부한 음질을 찾는 두 번째 비교입니다. 새 A~F는 같은 대본으로 만들었고, 기존 01·05를 기준 음원으로 함께 두었습니다.",
+  "scope": "실제 생성 6개 · 기존 기준 2개. 체감 음량을 동일하게 맞추고 원래 음질을 보존했습니다. 모델명은 처음에 가립니다. 한국어 평가 상위 서비스 2곳은 별도로 안내합니다.",
+  "samples": [
+    {
+      "id": "qwen-fresh-sparkle",
+      "blindLabel": "새 A",
+      "label": "새 A · Qwen3-TTS VoiceDesign 1.7B",
+      "model": "Qwen3-TTS VoiceDesign 1.7B",
+      "provider": "Qwen/Qwen3-TTS 공식 데모",
+      "notes": "새 음색 설계: 밝게 웃는 중고음, 매끈한 울림, 가벼운 말끝.",
+      "file": "실험/qwen-fresh-sparkle/listen.wav",
+      "duration": 8.536875,
+      "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+      "scriptLabel": "같은 문장, 새 비교본 6개"
+    },
+    {
+      "id": "qwen-fresh-sunshine",
+      "blindLabel": "새 B",
+      "label": "새 B · Qwen3-TTS VoiceDesign 1.7B",
+      "model": "Qwen3-TTS VoiceDesign 1.7B",
+      "provider": "Qwen/Qwen3-TTS 공식 데모",
+      "notes": "별도 새 음색 설계: 둥근 모음과 공명, 편안한 자신감.",
+      "file": "실험/qwen-fresh-sunshine/listen.wav",
+      "duration": 10.696875,
+      "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+      "scriptLabel": "같은 문장, 새 비교본 6개"
+    },
+    {
+      "id": "qwen-sohee-sparkle",
+      "blindLabel": "새 C",
+      "label": "새 C · Qwen3-TTS CustomVoice 1.7B · Sohee",
+      "model": "Qwen3-TTS CustomVoice 1.7B · Sohee",
+      "provider": "Qwen/Qwen3-TTS 공식 데모",
+      "notes": "기존 05 화자. 새 한국어 연기 지시로 말끝의 에너지 유지.",
+      "file": "실험/qwen-sohee-sparkle/listen.wav",
+      "duration": 9.576875,
+      "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+      "scriptLabel": "같은 문장, 새 비교본 6개"
+    },
+    {
+      "id": "moss8-fresh-sparkle",
+      "blindLabel": "새 D",
+      "label": "새 D · MOSS-TTS v1.5 8B",
+      "model": "MOSS-TTS v1.5 8B",
+      "provider": "OpenMOSS-Team/MOSS-TTS-v1.5 공식 데모",
+      "notes": "새 A의 합성 음원을 참조. 처음 시험하는 8B 모델이며 출력은 24kHz.",
+      "file": "실험/moss8-fresh-sparkle/listen.wav",
+      "duration": 7.68,
+      "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+      "scriptLabel": "같은 문장, 새 비교본 6개"
+    },
+    {
+      "id": "moss-nano-fresh",
+      "blindLabel": "새 E",
+      "label": "새 E · MOSS-TTS-Nano-100M",
+      "model": "MOSS-TTS-Nano-100M",
+      "provider": "OpenMOSS-Team/MOSS-TTS-Nano 공식 데모",
+      "notes": "새 A의 합성 음원을 참조. 원래 출력이 48kHz인 별도 모델.",
+      "file": "실험/moss-nano-fresh/listen.wav",
+      "duration": 9.6,
+      "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+      "scriptLabel": "같은 문장, 새 비교본 6개"
+    },
+    {
+      "id": "chatterbox-fresh",
+      "blindLabel": "새 F",
+      "label": "새 F · Chatterbox Multilingual V3",
+      "model": "Chatterbox Multilingual V3",
+      "provider": "ResembleAI/Chatterbox-Multilingual-TTS-V3 공식 데모",
+      "notes": "새 A의 합성 음원을 참조. 다른 모델의 발음 질감과 말끝 비교.",
+      "file": "실험/chatterbox-fresh/listen.wav",
+      "duration": 7.68,
+      "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+      "scriptLabel": "같은 문장, 새 비교본 6개"
+    },
+    {
+      "id": "qwen-design",
+      "label": "기존 01 · Qwen3-TTS 1.7B VoiceDesign",
+      "model": "Qwen3-TTS 1.7B VoiceDesign",
+      "provider": "Qwen 공식 HF 데모",
+      "notes": "첫 비교에서 만든 동일 파일. 새 A~F와 비교하는 기준 음원.",
+      "file": "실험/qwen-design/listen.wav",
+      "duration": 8.456875,
+      "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+      "scriptLabel": "같은 문장, 다른 목소리",
+      "sampleRate": 24000,
+      "gainDb": -8.71,
+      "lufs": -22.96,
+      "truePeakDb": -8.65,
+      "rawSha256": "4729752ca903f37dfa427d60468a30dd1a5ce716ccef67dd01babf26a5b1fa25",
+      "listenSha256": "b4fc82705afcdbe26df5bfe4d0cdb95020a138290feab4ad5495020a354c503a",
+      "characterSimilarity": 1,
+      "humanListening": false,
+      "userApproved": false,
+      "blindLabel": "기존 01"
+    },
+    {
+      "id": "qwen-sohee",
+      "label": "기존 05 · Qwen3-TTS 1.7B CustomVoice · Sohee",
+      "model": "Qwen3-TTS 1.7B CustomVoice · Sohee",
+      "provider": "Qwen 공식 HF 데모",
+      "notes": "첫 비교에서 만든 동일 파일. 새 A~F와 비교하는 기준 음원.",
+      "file": "실험/qwen-sohee/listen.wav",
+      "duration": 10.08,
+      "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+      "scriptLabel": "같은 문장, 다른 목소리",
+      "sampleRate": 24000,
+      "gainDb": -5.449999999999999,
+      "lufs": -23,
+      "truePeakDb": -5.25,
+      "rawSha256": "56d698a7e4e3c3b350b9715b6cf87dd0b175c8bc26a60cb08957295c24757844",
+      "listenSha256": "f76bff97b7c1ccb15798050e379568d193ca63ed991b354420f0d26186c2ad0a",
+      "characterSimilarity": 1,
+      "humanListening": false,
+      "userApproved": false,
+      "blindLabel": "기존 05"
+    }
+  ],
+  "models": [
+    {
+      "name": "Qwen3-TTS 1.7B",
+      "korean": "공식 지원",
+      "commercial": "코드·가중치 Apache-2.0",
+      "fixedVoice": "Sohee ID / 설계 원본을 Base 참조로 재사용",
+      "status": "새 3개 생성 완료",
+      "url": "https://github.com/QwenLM/Qwen3-TTS",
+      "notes": "24kHz. VoiceDesign·CustomVoice·Base 기능 구분"
+    },
+    {
+      "name": "MOSS-TTS 8B v1.5",
+      "korean": "공식 지원",
+      "commercial": "코드·가중치 Apache-2.0",
+      "fixedVoice": "참조 음색·이어말하기",
+      "status": "새 참조 음색으로 생성 완료",
+      "url": "https://huggingface.co/OpenMOSS-Team/MOSS-TTS-v1.5",
+      "notes": "24kHz. Local 48kHz판과 구분"
+    },
+    {
+      "name": "MOSS-TTS-Nano-100M",
+      "korean": "공식 지원",
+      "commercial": "코드·가중치 Apache-2.0",
+      "fixedVoice": "참조 음색",
+      "status": "새 참조 음색으로 생성 완료",
+      "url": "https://huggingface.co/OpenMOSS-Team/MOSS-TTS-Nano-100M",
+      "notes": "48kHz. 같은 Qwen 가상 화자 참조 사용"
+    },
+    {
+      "name": "Chatterbox Multilingual V3",
+      "korean": "공식 지원",
+      "commercial": "코드·가중치 MIT",
+      "fixedVoice": "참조 음색",
+      "status": "새 참조 음색으로 생성 완료",
+      "url": "https://github.com/resemble-ai/chatterbox",
+      "notes": "24kHz. 새 가상 화자 참조 사용. Turbo 영어판과 구분"
+    },
+    {
+      "name": "Humelo DIVE · 나나",
+      "korean": "한국어 Arena 전체 1위 (참가 10모델)",
+      "commercial": "상용 서비스 조건 확인 필요",
+      "fixedVoice": "나나 프리셋",
+      "status": "공식 체험 생성 실패: 크레딧 부족",
+      "url": "https://console.humelo.com/playground?tab=dive",
+      "notes": "청년 여성 · 중고음. 동일 대본 비교 파일 없음."
+    },
+    {
+      "name": "Typecast v3 · 자인",
+      "korean": "한국어 Arena 전체 2위 (참가 10모델)",
+      "commercial": "상용 서비스 조건 확인 필요",
+      "fixedVoice": "자인 프리셋",
+      "status": "음색 목록 로그인 필요; 파일 생성 미확인",
+      "url": "https://typecast.ai/kr/",
+      "notes": "공식 첫 화면 기쁨 주하는 별도 음색. 순위 전이 금지."
+    },
+    {
+      "name": "VoxCPM2",
+      "korean": "공식 지원; 한국어 포함 연구 확인",
+      "commercial": "공개 코드·가중치 Apache-2.0",
+      "fixedVoice": "음색 설계·참조 음성",
+      "status": "공식 데모 대기열 포화; 로컬 실행 미완료",
+      "url": "https://github.com/OpenBMB/VoxCPM",
+      "notes": "48kHz. 새 청취 파일 확보하지 못함."
+    },
+    {
+      "name": "Breeze-TTS-2",
+      "korean": "영어·중국어만 공식 지원",
+      "commercial": "가중치 비상업 조건",
+      "fixedVoice": "음색 설계·참조 음성",
+      "status": "한국어 브랜드 후보 제외",
+      "url": "https://huggingface.co/BreezeBlue/Breeze-TTS-2",
+      "notes": "글로벌 순위와 한국어 품질을 구별."
+    }
+  ],
+  "sources": [
+    {
+      "title": "한국어 TTS Arena — 공개 전체 순위",
+      "url": "https://channelcorp-ko-tts-arena.hf.space/leaderboard",
+      "note": "2026-09-10 직접 조회. 나나 1686, 자인 1637. 10개 참가 모델에 한정."
+    },
+    {
+      "title": "한국어 TTS Arena — 평가 방식·운영·음원 조건",
+      "url": "https://channelcorp-ko-tts-arena.hf.space/about"
+    },
+    {
+      "title": "VoxCPM2 기술 보고서 — 청취 평가 §4.7",
+      "url": "https://arxiv.org/html/2606.06928v1"
+    },
+    {
+      "title": "한국어 추가 학습의 독립 청취 평가",
+      "url": "https://arxiv.org/html/2606.26618v1"
+    },
+    {
+      "title": "MOSS-TTS v1.5 8B 공식 모델",
+      "url": "https://huggingface.co/OpenMOSS-Team/MOSS-TTS-v1.5"
+    },
+    {
+      "title": "나나 공식 소개·예시 음성",
+      "url": "https://humelo.com/swcc2026"
+    },
+    {
+      "title": "타입캐스트 공식 체험·평가 소개",
+      "url": "https://typecast.ai/kr/"
+    }
+  ],
+  "reportMarkdown": "# 상큼함과 음질을 위한 두 번째 조사\n\n2026-09-10 확인. 앞선 10개에 대한 피드백을 받고 한국어 청취 평가, 최신 공개 모델, 실제 생성 가능 여부를 다시 확인했다.\n\n**새로 우선 들어볼 상용 후보는 휴멜로 DIVE ‘나나’와 타입캐스트 ‘자인’이다.** 공개 모델은 Qwen의 음색을 다시 설계하고, 처음 시험하는 MOSS-TTS v1.5 8B까지 넣어 같은 대본 6개를 새로 만들었다. 이번 작업자는 음성을 직접 청취하지 못했다. 상큼함·풍부함의 개선이나 최종 브랜드 목소리 채택을 완료했다고 말하지 않는다.\n\n## 한국어 평가를 보면 후보가 달라진다\n\nHugging Face의 **한국어 TTS Arena 공개 전체 순위**를 9월 10일 직접 조회했다. 당시 활성 모델은 10개, 전체 투표는 8,679건이었다. 아래 투표 수는 각 모델이 참여한 비교 횟수이며 사람 수가 아니다.\n\n| 전체 순위 | 모델·음색 | Elo | 해당 모델 투표 |\n|---|---|---:|---:|\n| 1 | Humelo DIVE · 나나 | 1686 | 1963 |\n| 2 | Typecast v3 · 자인 | 1637 | 1819 |\n| 3 | Gemini 2.5 Flash Preview TTS | 1614 | 1814 |\n| 4 | A.X TTS · 에밀리 | 1608 | 1554 |\n\nElo는 두 음성 중 어느 쪽을 선호하는지 누적한 상대 점수다. 모든 TTS를 포함한 순위가 아니며, Qwen·MOSS·VoxCPM2와의 직접 승패를 뜻하지 않는다. 운영자는 참가 모델도 가진 채널톡 AI팀이다. ‘상큼한 광고 여성 목소리’만 따로 평가한 결과도 아니다. [공개 순위](https://channelcorp-ko-tts-arena.hf.space/leaderboard) · [평가 방식과 운영 주체](https://channelcorp-ko-tts-arena.hf.space/about)\n\n**나나를 먼저 권하는 이유:** 공개 한국어 평가와 원하는 음색 방향이 함께 맞는다. 공식 소개는 청년 여성의 밝고 또렷한 중고음이다. 다만 이는 청취 우선순위에 대한 판단이고 사용자의 선호 확인은 남았다. 공식 체험에서 같은 대본으로 합성을 요청했지만 `Insufficient credits for DIVE`로 실패했다. 화면의 ‘익명 하루 500자’ 안내와 실제 실행 결과가 달랐으며, 결제·가입·다른 경로 재시도로 진행하지 않았다. [공식 나나 예시](https://humelo.com/swcc2026) · [공식 합성 화면](https://console.humelo.com/playground?tab=dive)\n\n**타입캐스트는 자인과 주하를 구분한다.** 위 순위를 얻은 음색은 자인이다. 공식 첫 화면의 ‘기쁨 주하’는 상큼한 연기 방향을 확인할 별도 후보이며 자인의 평가 점수를 물려받지 않는다. 동일 대본 입력 후 파일 생성은 확인하지 못했고 음색 목록은 로그인으로 연결됐다. 홈페이지는 외부 기관의 모국어 평가자 60명 평가도 소개하지만, 공개된 상세 원자료 없이 이를 모든 최신 모델보다 우수하다는 증거로 확대하지 않았다. [공식 체험](https://typecast.ai/kr/) · [API 문서](https://typecast.ai/docs/ko/quickstart)\n\n두 서비스는 상용 서비스다. HF에 평가 페이지가 있다는 사실을 공개 가중치 모델로 혼동하면 안 된다. 평가장에서 만든 음성은 비상업·재배포 금지이므로 가져오지 않았다. 실제 제작에는 공급자의 이용 조건과 계정 상태를 별도로 확인해야 한다.\n\n## 공개 모델을 다시 고른 근거\n\n- **Qwen VoiceDesign:** VoxCPM2 개발팀의 음색 설계 비교에서 자연스러움 평균 4.61, VoxCPM2는 4.48이었다. 반대로 지시 일치 점수는 VoxCPM2가 높았다. 한국어 단독 점수가 아닌 개발팀 평가이므로 절대 순위로 쓰지 않는다. 기존 Qwen 음색을 더 생기 있게 설계할 이유는 충분하다. [VoxCPM2 기술 보고서 §4.7, Table 14](https://arxiv.org/html/2606.06928v1)\n- **VoxCPM2:** 같은 보고서의 8개 언어 평균 자연스러움은 4.78, Qwen은 4.77로 오차 범위가 겹친다. 한국어 전용으로 더 낫다고 단정할 수 없다. 공식 데모는 이번에도 대기열 포화로 실패했다. CPU 지원과 GGUF 변환 경로는 확인했으나 로컬 실행·청취는 미완료다. [공식 코드·릴리스](https://github.com/OpenBMB/VoxCPM/releases) · [CrispASR용 변환판](https://huggingface.co/cstr/voxcpm2-GGUF)\n- **한국어 추가 학습판:** 별도 연구의 한국어 원어민 5명·시스템당 20문장 평가에서 VoxCPM2 기본판 자연스러움은 3.67이었다. 추가 학습판의 종합 개선은 통계적으로 뚜렷하지 않았고 일부 설정은 악화됐다. ‘한국어 튜닝’이라는 이름만으로 더 좋은 음질·말투를 기대하지 않는다. [독립 연구 원문 §4.3](https://arxiv.org/html/2606.26618v1)\n- **MOSS-TTS v1.5 8B:** 기존 Nano와 별개인 큰 모델을 공식 데모에서 처음 생성했다. 새로 설계한 합성 목소리 A를 참조해 모델을 바꿨을 때 발음 질감과 말끝이 어떻게 변하는지 비교한다. 크기 자체는 더 좋은 한국어 음질의 증거가 아니다. [공식 v1.5 데모](https://huggingface.co/spaces/OpenMOSS-Team/MOSS-TTS-v1.5) · [공식 저장소](https://github.com/OpenMOSS/MOSS-TTS)\n- **Breeze-TTS-2:** 최신 글로벌 순위의 유력 공개 가중치 후보까지 확인했으나 영어·중국어만 지원하고 가중치의 비상업 조건도 있어 제외했다. 전체 언어를 섞은 순위를 한국어 추천으로 바로 옮기지 않는다. [공식 모델 카드](https://huggingface.co/BreezeBlue/Breeze-TTS-2) · [글로벌 공개 순위](https://artificialanalysis.ai/text-to-speech/leaderboard/provider-voice)\n\n## 실제로 새로 만든 비교본\n\n공통 대본: “같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.”\n\n| 표시 | 모델 | 이번에 바꾼 내용 | 실제 파일 |\n|---|---|---|---|\n| 새 A | Qwen3-TTS VoiceDesign 1.7B | 밝게 웃는 중고음, 매끈한 울림, 가벼운 말끝으로 신규 설계 | `실험/qwen-fresh-sparkle/listen.wav` |\n| 새 B | Qwen3-TTS VoiceDesign 1.7B | 둥근 모음·공명·편안한 자신감 중심으로 별도 신규 설계 | `실험/qwen-fresh-sunshine/listen.wav` |\n| 새 C | Qwen3-TTS CustomVoice 1.7B · Sohee | 기존 05 화자에 새 한국어 연기 지시 | `실험/qwen-sohee-sparkle/listen.wav` |\n| 새 D | MOSS-TTS v1.5 8B | 새 A의 합성 참조를 사용해 다른 모델로 생성 | `실험/moss8-fresh-sparkle/listen.wav` |\n| 새 E | MOSS-TTS-Nano | 같은 새 A 참조로 48kHz 모델에서 생성 | `실험/moss-nano-fresh/listen.wav` |\n| 새 F | Chatterbox Multilingual V3 | 같은 새 A 참조로 다른 모델에서 생성 | `실험/chatterbox-fresh/listen.wav` |\n\nA·B는 새로운 음색, C는 기존 화자의 연기 변경, D·E·F는 A를 참조한 다른 합성 결과다. 여섯 개가 모두 다른 사람의 목소리인 것은 아니다. 실제 사람의 녹음이나 학생 자료를 참조로 업로드하지 않았다. 기존 01·05도 그대로 두어 비교한다.\n\n**음질을 만드는 조건:** 새 6개는 원래 출력된 주파수 규격을 유지하고 PCM WAV로 제공한다. 체감 음량은 약 −23 LUFS로 맞췄다. 고음 증폭, 강한 잡음 제거, 압축, 속도 조절, 48kHz로의 인위적 변환은 하지 않았다. 24비트 파일로 저장해도 원본에 없던 세부 소리가 생기는 것은 아니다. ‘스튜디오’라는 생성 지시나 48kHz 표기만으로 풍부한 음질이 보장되지 않는다.\n\n검증 결과는 `검증/상큼한_음성검사.json`에 남겼다. 6개 모두 대본을 힌트로 주지 않은 자동 받아쓰기에서 공백·문장부호를 제외한 글자가 일치했다. 이는 누락 검사이며 자연스러움·음질·상큼함의 사람 청취 점수가 아니다. 새 비교 페이지는 파일 참조·구문·표시 항목을 정적으로 검사했다. 자동 브라우저 보안 정책이 로컬 HTML 열기를 차단해 새 화면의 렌더·모바일·브라우저 재생 검증은 완료하지 못했다. `검증/상큼한_페이지검사.json`에 확인 범위와 미확인 범위를 기록한다.\n\n## 이번 판단과 남은 일\n\n현재 추천은 **나나의 공식 예시와 새 A·B·D·E를 먼저 비교**하는 것이다. 이는 평가 근거·생성 방식에 따른 청취 순서이며 음질 우승 판정이 아니다. 기존 10개 중 사용자가 선호한 번호는 아직 확인하지 못했다.\n\n마음에 드는 음색을 좁히면 LAB 설명·한국어 시범·최신 SHIFT 회사 이야기처럼 다른 문장에서도 같은 화자와 말끝을 유지하는지 확인한다. 그 뒤 브랜드별 템포·음량·엔딩에 통합한다. Higgsfield 음성 생성과 나머지 영상 확정은 계속 보류한다.\n\n이번 작업은 공개 정보 조사와 로컬 비교본 제작이다. 신규 결제·가입·SNS 업로드·브랜드 목소리 확정은 하지 않았다. 사용 기준은 현재 AI 운영 원칙, 사용자의 이번 음성 피드백, 첫 영상의 한정된 승인 범위다.\n"
+}

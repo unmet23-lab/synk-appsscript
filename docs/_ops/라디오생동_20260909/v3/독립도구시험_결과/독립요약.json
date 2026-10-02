@@ -1,0 +1,60 @@
+{
+  "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\라디오생동_20260909\\v3\\독립도구시험_입력.mp4",
+  "qa": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\라디오생동_20260909\\v3\\독립도구시험_결과",
+  "duration": 12.066667,
+  "frames_sampled": 24,
+  "sha256": "1713965336da192061a0be86f26ce7ded3efa0e758e395b562e22f4a40690d08",
+  "automatic_verdict": null,
+  "max_global_center_drift_px": 0.0031885298965079927,
+  "max_global_rotation_degrees": 0.000505401844327686,
+  "static_max_nonrigid_residual_p95": {
+    "left_roof": 0.018488043919205666,
+    "left_columns": 0.30636635422706604,
+    "right_roof_clear": 0.016039665788412094,
+    "right_columns": 0.30241772532463074,
+    "ground": 0.057697396725416183,
+    "logo": 0.019093403592705727,
+    "wall": 0.055437635630369186
+  },
+  "seam": {
+    "flow": {
+      "available": true,
+      "detected": 600,
+      "tracked": 600,
+      "tracked_fraction": 1.0,
+      "median_vector_px": [
+        -0.000804901123046875,
+        9.1552734375e-05
+      ],
+      "median_px": 0.008600953966379166,
+      "p95_px": 0.11471815407276154,
+      "rotation_degrees": -0.000167082781689231,
+      "scale": 1.0000009516037338,
+      "center_drift_px": [
+        -0.001094063565574288,
+        -0.000962437909208802
+      ],
+      "affine_inlier_fraction": 1.0,
+      "nonrigid_residual_p95_px": 0.11467386037111282,
+      "matrix": [
+        [
+          1.0000009515994819,
+          2.916147438877991e-06,
+          -0.0027529003119709443
+        ],
+        [
+          -2.916147438877991e-06,
+          1.0000009515994819,
+          0.0005613206381918617
+        ]
+      ]
+    },
+    "appearance": {
+      "rgb_mean_abs_delta_255": 2.067544460296631,
+      "luma_mean_delta_255": -0.1664581298828125,
+      "edge_mean_abs_delta": 1.3470518589019775,
+      "note": "Edge variation can include codec noise or legitimate light; inspect actual pixels."
+    }
+  },
+  "visual_review_required": true
+}

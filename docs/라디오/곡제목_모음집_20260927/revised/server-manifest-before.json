@@ -1,0 +1,83 @@
+{
+  "duration": 3521.127596546,
+  "playlistSha256": "7022e9e45c4ad55e746bc553c412dd5b0a49decf4f79a72fd038523b6db5f510",
+  "tracks": [
+    {
+      "start": 0,
+      "title": "불빛이 하나둘 켜질 때"
+    },
+    {
+      "start": 206.956372,
+      "title": "파란 신호가 켜지면"
+    },
+    {
+      "start": 406.636372,
+      "title": "커피가 식기 전에"
+    },
+    {
+      "start": 636.836372,
+      "title": "바다까지 한 시간"
+    },
+    {
+      "start": 865.436372,
+      "title": "창가의 작은 불"
+    },
+    {
+      "start": 1064.4363720000001,
+      "title": "오후 네 시의 약속"
+    },
+    {
+      "start": 1284.236372,
+      "title": "비 오는 숲의 책상"
+    },
+    {
+      "start": 1550.215397,
+      "title": "새벽 물가의 숨"
+    },
+    {
+      "start": 1819.935397,
+      "title": "오늘 밤 제일 환한 사람"
+    },
+    {
+      "start": 1869.535397,
+      "title": "The Phantom's Lament"
+    },
+    {
+      "start": 2025.879647,
+      "title": "Autumn Sea Hush"
+    },
+    {
+      "start": 2173.479647,
+      "title": "Quiet Morning Light"
+    },
+    {
+      "start": 2325.439647,
+      "title": "Autumn Sea Hush (Version 2)"
+    },
+    {
+      "start": 2477.839647,
+      "title": "Golden Autumn Light"
+    },
+    {
+      "start": 2629.959647,
+      "title": "Velvet Rain"
+    },
+    {
+      "start": 2853.959647,
+      "title": "시티팝 1"
+    },
+    {
+      "start": 3004.679647,
+      "title": "Golden Hour Beach"
+    },
+    {
+      "start": 3187.359647,
+      "title": "시티팝 2"
+    },
+    {
+      "start": 3343.519647,
+      "title": "Neon Bittersweet"
+    }
+  ],
+  "sourceNotes": "New8 normalized source durations minus 3s crossfades; old11 waveform correlation >0.993. Autumn Sea Hush starts at its already-trimmed 6s position."
+}

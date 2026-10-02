@@ -1,0 +1,23 @@
+[
+  {
+    "text": "제 생각은 조금 달라요.",
+    "startMs": 13300,
+    "endMs": 16440,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "저는 도서관이 좋아요.",
+    "startMs": 20300,
+    "endMs": 22780,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "저도 카페가 좋아요.",
+    "startMs": 27300,
+    "endMs": 28700,
+    "timestampMs": null,
+    "confidence": null
+  }
+]

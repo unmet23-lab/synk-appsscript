@@ -1,0 +1,97 @@
+{
+  "pages_before": 12,
+  "pages_after": 12,
+  "page_results": [
+    {
+      "page": 1,
+      "pixel_equal": true,
+      "difference_box": null,
+      "text_equal": true,
+      "size_equal": true
+    },
+    {
+      "page": 2,
+      "pixel_equal": true,
+      "difference_box": null,
+      "text_equal": true,
+      "size_equal": true
+    },
+    {
+      "page": 3,
+      "pixel_equal": true,
+      "difference_box": null,
+      "text_equal": true,
+      "size_equal": true
+    },
+    {
+      "page": 4,
+      "pixel_equal": true,
+      "difference_box": null,
+      "text_equal": true,
+      "size_equal": true
+    },
+    {
+      "page": 5,
+      "pixel_equal": true,
+      "difference_box": null,
+      "text_equal": true,
+      "size_equal": true
+    },
+    {
+      "page": 6,
+      "pixel_equal": true,
+      "difference_box": null,
+      "text_equal": true,
+      "size_equal": true
+    },
+    {
+      "page": 7,
+      "pixel_equal": true,
+      "difference_box": null,
+      "text_equal": true,
+      "size_equal": true
+    },
+    {
+      "page": 8,
+      "pixel_equal": true,
+      "difference_box": null,
+      "text_equal": true,
+      "size_equal": true
+    },
+    {
+      "page": 9,
+      "pixel_equal": true,
+      "difference_box": null,
+      "text_equal": true,
+      "size_equal": true
+    },
+    {
+      "page": 10,
+      "pixel_equal": true,
+      "difference_box": null,
+      "text_equal": true,
+      "size_equal": true
+    },
+    {
+      "page": 11,
+      "pixel_equal": false,
+      "difference_box": [
+        48,
+        101,
+        545,
+        404
+      ],
+      "text_equal": false,
+      "size_equal": true
+    },
+    {
+      "page": 12,
+      "pixel_equal": true,
+      "difference_box": null,
+      "text_equal": true,
+      "size_equal": true
+    }
+  ],
+  "eight_engines_present": true,
+  "old_six_engine_copy_absent": true
+}

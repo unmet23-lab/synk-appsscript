@@ -1,0 +1,164 @@
+{
+  "scope": "기존 레이어 합성 진단. 통합 GPT 차림/실제 방송 채택 아님.",
+  "characters": {
+    "몽글": {
+      "pairs": 120,
+      "expressions": [
+        "본체",
+        "눈감음",
+        "눈웃음",
+        "궁금함",
+        "집중",
+        "안도",
+        "응원",
+        "놀람"
+      ],
+      "diagnosticOutfit": [
+        "SYNK 후드",
+        "펠트 헤드폰"
+      ],
+      "bodyChanges": [
+        {
+          "expression": "눈감음",
+          "region": "y>=650/1024 body+clothing area",
+          "pixels": 140468,
+          "changedAbove12": 0,
+          "ratio": 0,
+          "meanMaxChannelDifference": 1.6503616482045733
+        },
+        {
+          "expression": "눈웃음",
+          "region": "y>=650/1024 body+clothing area",
+          "pixels": 140468,
+          "changedAbove12": 3,
+          "ratio": 0.000021357177435430134,
+          "meanMaxChannelDifference": 1.615791496995757
+        },
+        {
+          "expression": "궁금함",
+          "region": "y>=650/1024 body+clothing area",
+          "pixels": 140468,
+          "changedAbove12": 2,
+          "ratio": 0.000014238118290286756,
+          "meanMaxChannelDifference": 1.616332545490788
+        },
+        {
+          "expression": "집중",
+          "region": "y>=650/1024 body+clothing area",
+          "pixels": 140468,
+          "changedAbove12": 3,
+          "ratio": 0.000021357177435430134,
+          "meanMaxChannelDifference": 1.5806518210553293
+        },
+        {
+          "expression": "안도",
+          "region": "y>=650/1024 body+clothing area",
+          "pixels": 140468,
+          "changedAbove12": 3,
+          "ratio": 0.000021357177435430134,
+          "meanMaxChannelDifference": 1.6404875131702594
+        },
+        {
+          "expression": "응원",
+          "region": "y>=650/1024 body+clothing area",
+          "pixels": 140468,
+          "changedAbove12": 2,
+          "ratio": 0.000014238118290286756,
+          "meanMaxChannelDifference": 1.5760600279067118
+        },
+        {
+          "expression": "놀람",
+          "region": "y>=650/1024 body+clothing area",
+          "pixels": 140468,
+          "changedAbove12": 3,
+          "ratio": 0.000021357177435430134,
+          "meanMaxChannelDifference": 1.4249152831961729
+        }
+      ]
+    },
+    "마린": {
+      "pairs": 108,
+      "expressions": [
+        "본체",
+        "눈감음",
+        "눈웃음",
+        "궁금함",
+        "집중",
+        "안도",
+        "응원",
+        "놀람",
+        "인사"
+      ],
+      "diagnosticOutfit": [
+        "SYNK 후드",
+        "펠트 헤드폰"
+      ],
+      "bodyChanges": [
+        {
+          "expression": "눈감음",
+          "region": "y>=650/1024 body+clothing area",
+          "pixels": 66514,
+          "changedAbove12": 8,
+          "ratio": 0.00012027543073638632,
+          "meanMaxChannelDifference": 2.1065489972035962
+        },
+        {
+          "expression": "눈웃음",
+          "region": "y>=650/1024 body+clothing area",
+          "pixels": 66514,
+          "changedAbove12": 1,
+          "ratio": 0.00001503442884204829,
+          "meanMaxChannelDifference": 1.6698589770574617
+        },
+        {
+          "expression": "궁금함",
+          "region": "y>=650/1024 body+clothing area",
+          "pixels": 66514,
+          "changedAbove12": 4,
+          "ratio": 0.00006013771536819316,
+          "meanMaxChannelDifference": 2.2264034639324053
+        },
+        {
+          "expression": "집중",
+          "region": "y>=650/1024 body+clothing area",
+          "pixels": 66514,
+          "changedAbove12": 2,
+          "ratio": 0.00003006885768409658,
+          "meanMaxChannelDifference": 1.9871455633400488
+        },
+        {
+          "expression": "안도",
+          "region": "y>=650/1024 body+clothing area",
+          "pixels": 66514,
+          "changedAbove12": 3,
+          "ratio": 0.00004510328652614487,
+          "meanMaxChannelDifference": 2.0604384039450343
+        },
+        {
+          "expression": "응원",
+          "region": "y>=650/1024 body+clothing area",
+          "pixels": 66514,
+          "changedAbove12": 0,
+          "ratio": 0,
+          "meanMaxChannelDifference": 1.4837628168505879
+        },
+        {
+          "expression": "놀람",
+          "region": "y>=650/1024 body+clothing area",
+          "pixels": 66514,
+          "changedAbove12": 5,
+          "ratio": 0.00007517214421024145,
+          "meanMaxChannelDifference": 1.7505337222238928
+        },
+        {
+          "expression": "인사",
+          "region": "y>=650/1024 body+clothing area",
+          "pixels": 68387,
+          "changedAbove12": 25272,
+          "ratio": 0.36954391916592333,
+          "meanMaxChannelDifference": 43.07526284235308
+        }
+      ]
+    }
+  }
+}

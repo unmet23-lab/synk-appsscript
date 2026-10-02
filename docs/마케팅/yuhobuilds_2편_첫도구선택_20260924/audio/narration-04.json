@@ -1,0 +1,58 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "그런데 GPT는 슈파베이스와 엔에잇엔으로 처음부터 탄탄하게 만드세요.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.28,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal"
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 3.75,
+  "words": [
+    {
+      "text": "그런데",
+      "start": 0.015,
+      "end": 0.219
+    },
+    {
+      "text": "GPT는",
+      "start": 0.263,
+      "end": 0.657
+    },
+    {
+      "text": "슈파베이스와",
+      "start": 1.036,
+      "end": 1.59
+    },
+    {
+      "text": "엔에잇엔으로",
+      "start": 1.736,
+      "end": 2.189
+    },
+    {
+      "text": "처음부터",
+      "start": 2.437,
+      "end": 2.787
+    },
+    {
+      "text": "탄탄하게",
+      "start": 2.845,
+      "end": 3.181
+    },
+    {
+      "text": "만드세요.",
+      "start": 3.225,
+      "end": 3.75
+    }
+  ],
+  "characters": null
+}

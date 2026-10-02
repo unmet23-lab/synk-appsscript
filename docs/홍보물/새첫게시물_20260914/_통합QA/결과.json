@@ -1,0 +1,1125 @@
+{
+  "observedAt": "2026-09-13T18:58:28.478Z",
+  "targetsBefore": {
+    "index.html": "f863c9e354bcdf8e1cb818afc087d3887bd5a72f1b3337366218b6bdee12c7f2",
+    "미리보기_만들기.cjs": "e6fb4ae0953f9f778a7724ba26fcb0d848c8fbeccb3290dfdde28ddcd5cd2454"
+  },
+  "targetsAfter": {
+    "index.html": "f863c9e354bcdf8e1cb818afc087d3887bd5a72f1b3337366218b6bdee12c7f2",
+    "미리보기_만들기.cjs": "e6fb4ae0953f9f778a7724ba26fcb0d848c8fbeccb3290dfdde28ddcd5cd2454"
+  },
+  "changedDuring": [],
+  "pulseIndexExists": true,
+  "results": [
+    {
+      "width": 1280,
+      "errors": [],
+      "scrollWidth": 1280,
+      "unloadedImages": [],
+      "images": [
+        {
+          "src": "SYNK/01-%EB%B9%84%EC%A0%84.png",
+          "width": 2160,
+          "height": 2700,
+          "alt": "SYNK 새 시안"
+        },
+        {
+          "src": "SHIFT/01-%EB%B9%84%EC%A0%84.png",
+          "width": 2160,
+          "height": 2700,
+          "alt": "SYNK SHIFT 새 시안"
+        },
+        {
+          "src": "LAB/png/student-01.png",
+          "width": 2160,
+          "height": 2700,
+          "alt": "SYNK LAB 새 시안"
+        },
+        {
+          "src": "LAB-%EC%98%81%EC%83%81/qa/1140-encoded-390.png",
+          "width": 390,
+          "height": 693,
+          "alt": "LAB · 무음 연습 영상 새 시안"
+        },
+        {
+          "src": "%EC%9C%A0%ED%98%B8/01-%ED%84%B8%EA%B3%BC%EB%88%88.png",
+          "width": 2160,
+          "height": 2700,
+          "alt": "유호 새 시안"
+        },
+        {
+          "src": "%EB%B8%8C%EB%A6%AC%ED%95%91/01-%EC%84%B8%EA%B0%80%EC%A7%80.png",
+          "width": 2160,
+          "height": 2700,
+          "alt": "SYNK 브리핑 새 시안"
+        },
+        {
+          "src": "%EC%98%81%EC%83%81/qa/yuho-0015-encoded-390.png",
+          "width": 390,
+          "height": 693,
+          "alt": "새 세로 영상 새 시안"
+        },
+        {
+          "src": "%EA%B8%80%EA%B3%BC%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4/Pinterest-%ED%95%80.png",
+          "width": 1200,
+          "height": 1800,
+          "alt": "글과 포트폴리오 새 시안"
+        },
+        {
+          "src": "%EC%B9%B4%EC%B9%B4%EC%98%A4/%EB%8C%80%ED%91%9C.png",
+          "width": 2160,
+          "height": 2700,
+          "alt": "카카오 · SYNK SHIFT 새 시안"
+        },
+        {
+          "src": "LAB-%ED%85%94%EB%A0%88%EA%B7%B8%EB%9E%A8/qa/390-%EC%97%B0%EC%8A%B5.png",
+          "width": 390,
+          "height": 900,
+          "alt": "LAB · Telegram 새 시안"
+        },
+        {
+          "src": "PULSE/%EC%9E%91%EC%9D%80%EB%8F%8C_%EC%9E%A5%EB%A9%B401_%ED%9B%84%EB%B3%B4.png",
+          "width": 1672,
+          "height": 941,
+          "alt": "SYNK PULSE 새 시안"
+        }
+      ],
+      "links": [
+        {
+          "text": "SYNK 새 시안",
+          "href": "SYNK/index.html",
+          "resolves": true
+        },
+        {
+          "text": "같은 사람, 달라진 질문",
+          "href": "SYNK/index.html",
+          "resolves": true
+        },
+        {
+          "text": "SYNK SHIFT 새 시안",
+          "href": "SHIFT/index.html",
+          "resolves": true
+        },
+        {
+          "text": "배운 것을 펼칠 곳. 함께 성장할 사람.",
+          "href": "SHIFT/index.html",
+          "resolves": true
+        },
+        {
+          "text": "SYNK LAB 새 시안",
+          "href": "LAB/index.html",
+          "resolves": true
+        },
+        {
+          "text": "아직 정하지 않았어요. 먼저 해보고 싶어요.",
+          "href": "LAB/index.html",
+          "resolves": true
+        },
+        {
+          "text": "LAB · 무음 연습 영상 새 시안",
+          "href": "LAB-%EC%98%81%EC%83%81/index.html",
+          "resolves": true
+        },
+        {
+          "text": "아직 정하지 않았어요 — 읽고 바꿔 말하기",
+          "href": "LAB-%EC%98%81%EC%83%81/index.html",
+          "resolves": true
+        },
+        {
+          "text": "유호 새 시안",
+          "href": "%EC%9C%A0%ED%98%B8/index.html",
+          "resolves": true
+        },
+        {
+          "text": "움직일 눈, 남겨둘 털",
+          "href": "%EC%9C%A0%ED%98%B8/index.html",
+          "resolves": true
+        },
+        {
+          "text": "SYNK 브리핑 새 시안",
+          "href": "%EB%B8%8C%EB%A6%AC%ED%95%91/index.html",
+          "resolves": true
+        },
+        {
+          "text": "원본 · 움직일 곳 · 확인할 것",
+          "href": "%EB%B8%8C%EB%A6%AC%ED%95%91/index.html",
+          "resolves": true
+        },
+        {
+          "text": "새 세로 영상 새 시안",
+          "href": "%EC%98%81%EC%83%81/index.html",
+          "resolves": true
+        },
+        {
+          "text": "움직임도, 새로 확인합니다",
+          "href": "%EC%98%81%EC%83%81/index.html",
+          "resolves": true
+        },
+        {
+          "text": "글과 포트폴리오 새 시안",
+          "href": "%EA%B8%80%EA%B3%BC%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4/index.html",
+          "resolves": true
+        },
+        {
+          "text": "각 매체에 맞는 기록",
+          "href": "%EA%B8%80%EA%B3%BC%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4/index.html",
+          "resolves": true
+        },
+        {
+          "text": "카카오 · SYNK SHIFT 새 시안",
+          "href": "%EC%B9%B4%EC%B9%B4%EC%98%A4/index.html",
+          "resolves": true
+        },
+        {
+          "text": "협업은 구체적인 일에서 시작합니다",
+          "href": "%EC%B9%B4%EC%B9%B4%EC%98%A4/index.html",
+          "resolves": true
+        },
+        {
+          "text": "LAB · Telegram 새 시안",
+          "href": "LAB-%ED%85%94%EB%A0%88%EA%B7%B8%EB%9E%A8/index.html",
+          "resolves": true
+        },
+        {
+          "text": "내 문장으로 바꿔 말해요.",
+          "href": "LAB-%ED%85%94%EB%A0%88%EA%B7%B8%EB%9E%A8/index.html",
+          "resolves": true
+        },
+        {
+          "text": "SYNK PULSE 새 시안",
+          "href": "PULSE/index.html",
+          "resolves": true
+        },
+        {
+          "text": "마린의 작은 돌",
+          "href": "PULSE/index.html",
+          "resolves": true
+        },
+        {
+          "text": "새 커버 11종",
+          "href": "커버/index.html",
+          "resolves": true
+        },
+        {
+          "text": "실제 진행과 남은 일",
+          "href": "../../마케팅/전사새출발_20260914/진행과검증.md",
+          "resolves": true
+        },
+        {
+          "text": "콘텐츠 선택의 이유",
+          "href": "../../마케팅/전사새출발_20260914/제작선정.md",
+          "resolves": true
+        }
+      ],
+      "titles": [
+        {
+          "text": "새로운 첫 장면.",
+          "tag": "H1",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "62px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "같은 사람, 달라진 질문",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "배운 것을 펼칠 곳. 함께 성장할 사람.",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "아직 정하지 않았어요. 먼저 해보고 싶어요.",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "아직 정하지 않았어요 — 읽고 바꿔 말하기",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "움직일 눈, 남겨둘 털",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "원본 · 움직일 곳 · 확인할 것",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "움직임도, 새로 확인합니다",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "각 매체에 맞는 기록",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "협업은 구체적인 일에서 시작합니다",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "내 문장으로 바꿔 말해요.",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "마린의 작은 돌",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        }
+      ],
+      "statuses": [
+        "7장 · 로컬 제작본",
+        "7장 · 로컬 제작본",
+        "10장 · 원어민 감수 전",
+        "65초 · 무음 문장 응용 · 원어민 감수 전",
+        "6장 · 실제 작업 기록",
+        "6장 · 요청문 예시 포함",
+        "유호 46초 · 브리핑 44초 · 로컬 영상 · 청취 확인 전",
+        "9개 원고 · 정지 핀",
+        "전용 첫 소식 · 문의 안내",
+        "텍스트 고정 안내 · 원어민 감수 전",
+        "정지 시안 · 영상 미완료"
+      ],
+      "outside": [],
+      "fonts": [
+        {
+          "selector": ".eyebrow",
+          "actual": [
+            {
+              "familyName": "Inter Tight SemiBold",
+              "postScriptName": "InterTight-SemiBold",
+              "isCustomFont": true,
+              "glyphCount": 17
+            }
+          ]
+        },
+        {
+          "selector": "h1",
+          "actual": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 9
+            }
+          ]
+        },
+        {
+          "selector": ".lead",
+          "actual": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 30
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 12
+            }
+          ]
+        },
+        {
+          "selector": ".brand",
+          "actual": [
+            {
+              "familyName": "Inter Tight SemiBold",
+              "postScriptName": "InterTight-SemiBold",
+              "isCustomFont": true,
+              "glyphCount": 4
+            }
+          ]
+        },
+        {
+          "selector": ".copy>p:not([class])",
+          "actual": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 21
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "errors": [],
+      "scrollWidth": 768,
+      "unloadedImages": [],
+      "images": [
+        {
+          "src": "SYNK/01-%EB%B9%84%EC%A0%84.png",
+          "width": 2160,
+          "height": 2700,
+          "alt": "SYNK 새 시안"
+        },
+        {
+          "src": "SHIFT/01-%EB%B9%84%EC%A0%84.png",
+          "width": 2160,
+          "height": 2700,
+          "alt": "SYNK SHIFT 새 시안"
+        },
+        {
+          "src": "LAB/png/student-01.png",
+          "width": 2160,
+          "height": 2700,
+          "alt": "SYNK LAB 새 시안"
+        },
+        {
+          "src": "LAB-%EC%98%81%EC%83%81/qa/1140-encoded-390.png",
+          "width": 390,
+          "height": 693,
+          "alt": "LAB · 무음 연습 영상 새 시안"
+        },
+        {
+          "src": "%EC%9C%A0%ED%98%B8/01-%ED%84%B8%EA%B3%BC%EB%88%88.png",
+          "width": 2160,
+          "height": 2700,
+          "alt": "유호 새 시안"
+        },
+        {
+          "src": "%EB%B8%8C%EB%A6%AC%ED%95%91/01-%EC%84%B8%EA%B0%80%EC%A7%80.png",
+          "width": 2160,
+          "height": 2700,
+          "alt": "SYNK 브리핑 새 시안"
+        },
+        {
+          "src": "%EC%98%81%EC%83%81/qa/yuho-0015-encoded-390.png",
+          "width": 390,
+          "height": 693,
+          "alt": "새 세로 영상 새 시안"
+        },
+        {
+          "src": "%EA%B8%80%EA%B3%BC%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4/Pinterest-%ED%95%80.png",
+          "width": 1200,
+          "height": 1800,
+          "alt": "글과 포트폴리오 새 시안"
+        },
+        {
+          "src": "%EC%B9%B4%EC%B9%B4%EC%98%A4/%EB%8C%80%ED%91%9C.png",
+          "width": 2160,
+          "height": 2700,
+          "alt": "카카오 · SYNK SHIFT 새 시안"
+        },
+        {
+          "src": "LAB-%ED%85%94%EB%A0%88%EA%B7%B8%EB%9E%A8/qa/390-%EC%97%B0%EC%8A%B5.png",
+          "width": 390,
+          "height": 900,
+          "alt": "LAB · Telegram 새 시안"
+        },
+        {
+          "src": "PULSE/%EC%9E%91%EC%9D%80%EB%8F%8C_%EC%9E%A5%EB%A9%B401_%ED%9B%84%EB%B3%B4.png",
+          "width": 1672,
+          "height": 941,
+          "alt": "SYNK PULSE 새 시안"
+        }
+      ],
+      "links": [
+        {
+          "text": "SYNK 새 시안",
+          "href": "SYNK/index.html",
+          "resolves": true
+        },
+        {
+          "text": "같은 사람, 달라진 질문",
+          "href": "SYNK/index.html",
+          "resolves": true
+        },
+        {
+          "text": "SYNK SHIFT 새 시안",
+          "href": "SHIFT/index.html",
+          "resolves": true
+        },
+        {
+          "text": "배운 것을 펼칠 곳. 함께 성장할 사람.",
+          "href": "SHIFT/index.html",
+          "resolves": true
+        },
+        {
+          "text": "SYNK LAB 새 시안",
+          "href": "LAB/index.html",
+          "resolves": true
+        },
+        {
+          "text": "아직 정하지 않았어요. 먼저 해보고 싶어요.",
+          "href": "LAB/index.html",
+          "resolves": true
+        },
+        {
+          "text": "LAB · 무음 연습 영상 새 시안",
+          "href": "LAB-%EC%98%81%EC%83%81/index.html",
+          "resolves": true
+        },
+        {
+          "text": "아직 정하지 않았어요 — 읽고 바꿔 말하기",
+          "href": "LAB-%EC%98%81%EC%83%81/index.html",
+          "resolves": true
+        },
+        {
+          "text": "유호 새 시안",
+          "href": "%EC%9C%A0%ED%98%B8/index.html",
+          "resolves": true
+        },
+        {
+          "text": "움직일 눈, 남겨둘 털",
+          "href": "%EC%9C%A0%ED%98%B8/index.html",
+          "resolves": true
+        },
+        {
+          "text": "SYNK 브리핑 새 시안",
+          "href": "%EB%B8%8C%EB%A6%AC%ED%95%91/index.html",
+          "resolves": true
+        },
+        {
+          "text": "원본 · 움직일 곳 · 확인할 것",
+          "href": "%EB%B8%8C%EB%A6%AC%ED%95%91/index.html",
+          "resolves": true
+        },
+        {
+          "text": "새 세로 영상 새 시안",
+          "href": "%EC%98%81%EC%83%81/index.html",
+          "resolves": true
+        },
+        {
+          "text": "움직임도, 새로 확인합니다",
+          "href": "%EC%98%81%EC%83%81/index.html",
+          "resolves": true
+        },
+        {
+          "text": "글과 포트폴리오 새 시안",
+          "href": "%EA%B8%80%EA%B3%BC%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4/index.html",
+          "resolves": true
+        },
+        {
+          "text": "각 매체에 맞는 기록",
+          "href": "%EA%B8%80%EA%B3%BC%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4/index.html",
+          "resolves": true
+        },
+        {
+          "text": "카카오 · SYNK SHIFT 새 시안",
+          "href": "%EC%B9%B4%EC%B9%B4%EC%98%A4/index.html",
+          "resolves": true
+        },
+        {
+          "text": "협업은 구체적인 일에서 시작합니다",
+          "href": "%EC%B9%B4%EC%B9%B4%EC%98%A4/index.html",
+          "resolves": true
+        },
+        {
+          "text": "LAB · Telegram 새 시안",
+          "href": "LAB-%ED%85%94%EB%A0%88%EA%B7%B8%EB%9E%A8/index.html",
+          "resolves": true
+        },
+        {
+          "text": "내 문장으로 바꿔 말해요.",
+          "href": "LAB-%ED%85%94%EB%A0%88%EA%B7%B8%EB%9E%A8/index.html",
+          "resolves": true
+        },
+        {
+          "text": "SYNK PULSE 새 시안",
+          "href": "PULSE/index.html",
+          "resolves": true
+        },
+        {
+          "text": "마린의 작은 돌",
+          "href": "PULSE/index.html",
+          "resolves": true
+        },
+        {
+          "text": "새 커버 11종",
+          "href": "커버/index.html",
+          "resolves": true
+        },
+        {
+          "text": "실제 진행과 남은 일",
+          "href": "../../마케팅/전사새출발_20260914/진행과검증.md",
+          "resolves": true
+        },
+        {
+          "text": "콘텐츠 선택의 이유",
+          "href": "../../마케팅/전사새출발_20260914/제작선정.md",
+          "resolves": true
+        }
+      ],
+      "titles": [
+        {
+          "text": "새로운 첫 장면.",
+          "tag": "H1",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "38.4px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "같은 사람, 달라진 질문",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "배운 것을 펼칠 곳. 함께 성장할 사람.",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "아직 정하지 않았어요. 먼저 해보고 싶어요.",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "아직 정하지 않았어요 — 읽고 바꿔 말하기",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "움직일 눈, 남겨둘 털",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "원본 · 움직일 곳 · 확인할 것",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "움직임도, 새로 확인합니다",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "각 매체에 맞는 기록",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "협업은 구체적인 일에서 시작합니다",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "내 문장으로 바꿔 말해요.",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "마린의 작은 돌",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        }
+      ],
+      "statuses": [
+        "7장 · 로컬 제작본",
+        "7장 · 로컬 제작본",
+        "10장 · 원어민 감수 전",
+        "65초 · 무음 문장 응용 · 원어민 감수 전",
+        "6장 · 실제 작업 기록",
+        "6장 · 요청문 예시 포함",
+        "유호 46초 · 브리핑 44초 · 로컬 영상 · 청취 확인 전",
+        "9개 원고 · 정지 핀",
+        "전용 첫 소식 · 문의 안내",
+        "텍스트 고정 안내 · 원어민 감수 전",
+        "정지 시안 · 영상 미완료"
+      ],
+      "outside": [],
+      "fonts": [
+        {
+          "selector": ".eyebrow",
+          "actual": [
+            {
+              "familyName": "Inter Tight SemiBold",
+              "postScriptName": "InterTight-SemiBold",
+              "isCustomFont": true,
+              "glyphCount": 17
+            }
+          ]
+        },
+        {
+          "selector": "h1",
+          "actual": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 9
+            }
+          ]
+        },
+        {
+          "selector": ".lead",
+          "actual": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 30
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 12
+            }
+          ]
+        },
+        {
+          "selector": ".brand",
+          "actual": [
+            {
+              "familyName": "Inter Tight SemiBold",
+              "postScriptName": "InterTight-SemiBold",
+              "isCustomFont": true,
+              "glyphCount": 4
+            }
+          ]
+        },
+        {
+          "selector": ".copy>p:not([class])",
+          "actual": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 21
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "errors": [],
+      "scrollWidth": 390,
+      "unloadedImages": [],
+      "images": [
+        {
+          "src": "SYNK/01-%EB%B9%84%EC%A0%84.png",
+          "width": 2160,
+          "height": 2700,
+          "alt": "SYNK 새 시안"
+        },
+        {
+          "src": "SHIFT/01-%EB%B9%84%EC%A0%84.png",
+          "width": 2160,
+          "height": 2700,
+          "alt": "SYNK SHIFT 새 시안"
+        },
+        {
+          "src": "LAB/png/student-01.png",
+          "width": 2160,
+          "height": 2700,
+          "alt": "SYNK LAB 새 시안"
+        },
+        {
+          "src": "LAB-%EC%98%81%EC%83%81/qa/1140-encoded-390.png",
+          "width": 390,
+          "height": 693,
+          "alt": "LAB · 무음 연습 영상 새 시안"
+        },
+        {
+          "src": "%EC%9C%A0%ED%98%B8/01-%ED%84%B8%EA%B3%BC%EB%88%88.png",
+          "width": 2160,
+          "height": 2700,
+          "alt": "유호 새 시안"
+        },
+        {
+          "src": "%EB%B8%8C%EB%A6%AC%ED%95%91/01-%EC%84%B8%EA%B0%80%EC%A7%80.png",
+          "width": 2160,
+          "height": 2700,
+          "alt": "SYNK 브리핑 새 시안"
+        },
+        {
+          "src": "%EC%98%81%EC%83%81/qa/yuho-0015-encoded-390.png",
+          "width": 390,
+          "height": 693,
+          "alt": "새 세로 영상 새 시안"
+        },
+        {
+          "src": "%EA%B8%80%EA%B3%BC%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4/Pinterest-%ED%95%80.png",
+          "width": 1200,
+          "height": 1800,
+          "alt": "글과 포트폴리오 새 시안"
+        },
+        {
+          "src": "%EC%B9%B4%EC%B9%B4%EC%98%A4/%EB%8C%80%ED%91%9C.png",
+          "width": 2160,
+          "height": 2700,
+          "alt": "카카오 · SYNK SHIFT 새 시안"
+        },
+        {
+          "src": "LAB-%ED%85%94%EB%A0%88%EA%B7%B8%EB%9E%A8/qa/390-%EC%97%B0%EC%8A%B5.png",
+          "width": 390,
+          "height": 900,
+          "alt": "LAB · Telegram 새 시안"
+        },
+        {
+          "src": "PULSE/%EC%9E%91%EC%9D%80%EB%8F%8C_%EC%9E%A5%EB%A9%B401_%ED%9B%84%EB%B3%B4.png",
+          "width": 1672,
+          "height": 941,
+          "alt": "SYNK PULSE 새 시안"
+        }
+      ],
+      "links": [
+        {
+          "text": "SYNK 새 시안",
+          "href": "SYNK/index.html",
+          "resolves": true
+        },
+        {
+          "text": "같은 사람, 달라진 질문",
+          "href": "SYNK/index.html",
+          "resolves": true
+        },
+        {
+          "text": "SYNK SHIFT 새 시안",
+          "href": "SHIFT/index.html",
+          "resolves": true
+        },
+        {
+          "text": "배운 것을 펼칠 곳. 함께 성장할 사람.",
+          "href": "SHIFT/index.html",
+          "resolves": true
+        },
+        {
+          "text": "SYNK LAB 새 시안",
+          "href": "LAB/index.html",
+          "resolves": true
+        },
+        {
+          "text": "아직 정하지 않았어요. 먼저 해보고 싶어요.",
+          "href": "LAB/index.html",
+          "resolves": true
+        },
+        {
+          "text": "LAB · 무음 연습 영상 새 시안",
+          "href": "LAB-%EC%98%81%EC%83%81/index.html",
+          "resolves": true
+        },
+        {
+          "text": "아직 정하지 않았어요 — 읽고 바꿔 말하기",
+          "href": "LAB-%EC%98%81%EC%83%81/index.html",
+          "resolves": true
+        },
+        {
+          "text": "유호 새 시안",
+          "href": "%EC%9C%A0%ED%98%B8/index.html",
+          "resolves": true
+        },
+        {
+          "text": "움직일 눈, 남겨둘 털",
+          "href": "%EC%9C%A0%ED%98%B8/index.html",
+          "resolves": true
+        },
+        {
+          "text": "SYNK 브리핑 새 시안",
+          "href": "%EB%B8%8C%EB%A6%AC%ED%95%91/index.html",
+          "resolves": true
+        },
+        {
+          "text": "원본 · 움직일 곳 · 확인할 것",
+          "href": "%EB%B8%8C%EB%A6%AC%ED%95%91/index.html",
+          "resolves": true
+        },
+        {
+          "text": "새 세로 영상 새 시안",
+          "href": "%EC%98%81%EC%83%81/index.html",
+          "resolves": true
+        },
+        {
+          "text": "움직임도, 새로 확인합니다",
+          "href": "%EC%98%81%EC%83%81/index.html",
+          "resolves": true
+        },
+        {
+          "text": "글과 포트폴리오 새 시안",
+          "href": "%EA%B8%80%EA%B3%BC%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4/index.html",
+          "resolves": true
+        },
+        {
+          "text": "각 매체에 맞는 기록",
+          "href": "%EA%B8%80%EA%B3%BC%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4/index.html",
+          "resolves": true
+        },
+        {
+          "text": "카카오 · SYNK SHIFT 새 시안",
+          "href": "%EC%B9%B4%EC%B9%B4%EC%98%A4/index.html",
+          "resolves": true
+        },
+        {
+          "text": "협업은 구체적인 일에서 시작합니다",
+          "href": "%EC%B9%B4%EC%B9%B4%EC%98%A4/index.html",
+          "resolves": true
+        },
+        {
+          "text": "LAB · Telegram 새 시안",
+          "href": "LAB-%ED%85%94%EB%A0%88%EA%B7%B8%EB%9E%A8/index.html",
+          "resolves": true
+        },
+        {
+          "text": "내 문장으로 바꿔 말해요.",
+          "href": "LAB-%ED%85%94%EB%A0%88%EA%B7%B8%EB%9E%A8/index.html",
+          "resolves": true
+        },
+        {
+          "text": "SYNK PULSE 새 시안",
+          "href": "PULSE/index.html",
+          "resolves": true
+        },
+        {
+          "text": "마린의 작은 돌",
+          "href": "PULSE/index.html",
+          "resolves": true
+        },
+        {
+          "text": "새 커버 11종",
+          "href": "커버/index.html",
+          "resolves": true
+        },
+        {
+          "text": "실제 진행과 남은 일",
+          "href": "../../마케팅/전사새출발_20260914/진행과검증.md",
+          "resolves": true
+        },
+        {
+          "text": "콘텐츠 선택의 이유",
+          "href": "../../마케팅/전사새출발_20260914/제작선정.md",
+          "resolves": true
+        }
+      ],
+      "titles": [
+        {
+          "text": "새로운 첫 장면.",
+          "tag": "H1",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "같은 사람, 달라진 질문",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "배운 것을 펼칠 곳. 함께 성장할 사람.",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "아직 정하지 않았어요. 먼저 해보고 싶어요.",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "아직 정하지 않았어요 — 읽고 바꿔 말하기",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "움직일 눈, 남겨둘 털",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "원본 · 움직일 곳 · 확인할 것",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "움직임도, 새로 확인합니다",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "각 매체에 맞는 기록",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "협업은 구체적인 일에서 시작합니다",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "내 문장으로 바꿔 말해요.",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        },
+        {
+          "text": "마린의 작은 돌",
+          "tag": "H2",
+          "font": "\"SUIT Variable\", sans-serif",
+          "fontSize": "25px",
+          "fontWeight": "800"
+        }
+      ],
+      "statuses": [
+        "7장 · 로컬 제작본",
+        "7장 · 로컬 제작본",
+        "10장 · 원어민 감수 전",
+        "65초 · 무음 문장 응용 · 원어민 감수 전",
+        "6장 · 실제 작업 기록",
+        "6장 · 요청문 예시 포함",
+        "유호 46초 · 브리핑 44초 · 로컬 영상 · 청취 확인 전",
+        "9개 원고 · 정지 핀",
+        "전용 첫 소식 · 문의 안내",
+        "텍스트 고정 안내 · 원어민 감수 전",
+        "정지 시안 · 영상 미완료"
+      ],
+      "outside": [],
+      "fonts": [
+        {
+          "selector": ".eyebrow",
+          "actual": [
+            {
+              "familyName": "Inter Tight SemiBold",
+              "postScriptName": "InterTight-SemiBold",
+              "isCustomFont": true,
+              "glyphCount": 17
+            }
+          ]
+        },
+        {
+          "selector": "h1",
+          "actual": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 9
+            }
+          ]
+        },
+        {
+          "selector": ".lead",
+          "actual": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 30
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 11
+            }
+          ]
+        },
+        {
+          "selector": ".brand",
+          "actual": [
+            {
+              "familyName": "Inter Tight SemiBold",
+              "postScriptName": "InterTight-SemiBold",
+              "isCustomFont": true,
+              "glyphCount": 4
+            }
+          ]
+        },
+        {
+          "selector": ".copy>p:not([class])",
+          "actual": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 21
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 7
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

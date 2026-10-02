@@ -1,0 +1,27 @@
+{
+  "status": "completed",
+  "file": "voice-01-fresh-7cf83340454d74be.wav",
+  "narration": "이 노래는 어때요?",
+  "duration": 2.07,
+  "sha256": "43d6c5ca7921de93b6e2ad956aaa366f1cf9daad96c3a096b42438d8b03cd232",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "seed_audio",
+    "preset": "original female based on user-selected B",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "jobId": "c4042085-bc92-4a63-90dc-5d5bbbaea521",
+  "sourceFile": "freshpolish-sample-9fc9b026c31d75f0.wav",
+  "sourceSha256": "6880e6f35b07e763e2b7437601991e85021e2420003d41210e8afc0e429a9501",
+  "sourceRangeSeconds": [
+    1.1,
+    3.17
+  ],
+  "loudnessTargetLUFS": -23,
+  "truePeakLimitDb": -6,
+  "styleReferenceUserSelected": true,
+  "refinedAudioUserApproved": false,
+  "humanListening": false,
+  "fullDecode": true
+}

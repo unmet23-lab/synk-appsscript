@@ -1,0 +1,28 @@
+{
+  "status": "completed",
+  "file": "voice-01-studio-54ac15e659971f22.wav",
+  "narration": "이 노래는 어때요?",
+  "duration": 2.0999999999999996,
+  "sha256": "fd2e0ec7fda58a903a0b261c14dfc21e6890a48146fbe767076765a1712a6563",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "seed_audio",
+    "preset": "original female based on user-selected B",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "jobId": "46ef0df1-b7b8-40c1-9e3a-929a7ac5786f",
+  "sourceFile": "studio-reference-332d03b4930f8c73.wav",
+  "sourceSha256": "11608c84d252525445ab3ac542635efcfbab9fa730d1da009a9ffeefccbdc475",
+  "sourceRangeSeconds": [
+    1.18,
+    3.28
+  ],
+  "nativeGenerationSampleRate": 48000,
+  "loudnessTargetLUFS": -23,
+  "truePeakLimitDb": -6,
+  "styleReferenceUserSelected": true,
+  "refinedAudioUserApproved": false,
+  "humanListening": false,
+  "fullDecode": true
+}

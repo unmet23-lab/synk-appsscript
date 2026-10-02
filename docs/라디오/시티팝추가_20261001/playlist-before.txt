@@ -1,0 +1,5 @@
+ffconcat version 1.0
+file synk-radio-new8-20260926.flac
+duration 1819.935397
+file synk-radio-blok11-20260909-gapless.flac
+duration 1701.192199546

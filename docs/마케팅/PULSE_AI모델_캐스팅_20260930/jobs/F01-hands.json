@@ -1,0 +1,29 @@
+[
+  {
+    "created_at": "2026-09-30T12:51:52.641453Z",
+    "display_name": "Nano Banana Pro",
+    "id": "99bf20e5-a574-4c07-b298-cef161bc2cf0",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125152_99bf20e5-a574-4c07-b298-cef161bc2cf0_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "4:5",
+      "batch_size": 1,
+      "height": 2304,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "20341f47-0707-42d6-a19a-2989fe6742c3",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/20341f47-0707-42d6-a19a-2989fe6742c3.png"
+        }
+      ],
+      "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone and moles. Close-up at chest height of her hands holding a plain unlabeled white cosmetic tube near her chin, the lower half of her face softly visible above, same plain black cotton tank top. Natural nails, real knuckle creases, fine skin texture and veins, exactly five fingers on each hand, correct anatomy. Plain wall, soft window daylight, 85mm, natural color, fine film grain.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1856
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125152_99bf20e5-a574-4c07-b298-cef161bc2cf0.png",
+    "status": "completed"
+  }
+]

@@ -1,0 +1,74 @@
+{
+  "status": "completed",
+  "file": "voice-consistent-2acb9cf97b93cd67.wav",
+  "narration": "이 채널은 소개 문장부터 상품, 콘텐츠와 문의 답변까지, 직접 만든 결과와 선택한 이유를 다룹니다.",
+  "narrationSha256": "adaf6082182987ead5fe4e92be69aa45b07ec307391e52eeba374599c05df5db",
+  "duration": 11.5,
+  "sha256": "f1394a082465d6239123d06b76fbf66620e0136cc8e44f9c85b34b72602843ed",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "seed_audio",
+    "preset": "approved 01 B-series original female",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "jobId": "ab0dca6f-4f63-4e0e-998b-b80910b86408",
+  "outputField": "result_url",
+  "sourceFile": "voice-consistent-2acb9cf97b93cd67.source.wav",
+  "sourceSha256": "d7bc397ebd9c1d8b7cdc415f15270c502a83a0e5e09980a7b9e47ac97418f310",
+  "nativeProbe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "pcm_s16le",
+        "sample_rate": "48000",
+        "channels": 2,
+        "bits_per_sample": 16
+      }
+    ],
+    "format": {
+      "duration": "11.500000"
+    }
+  },
+  "nativeGenerationSampleRate": 48000,
+  "deliveryProbe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "pcm_s24le",
+        "sample_rate": "48000",
+        "channels": 1,
+        "bits_per_sample": 24
+      }
+    ],
+    "format": {
+      "duration": "11.500000"
+    }
+  },
+  "reference": "_검토/01-음성수정/studio-reference.wav",
+  "referenceSha256": "f3b061f8482d54c02390e08a38e0b8a8492b6cc07abbde91b50d53725f73cb7d",
+  "referenceApproval": "User accepted 01 final MP4 5c2701a46c7a405ba9c7ffa31d933db922bd29b735b8dc47f77eec76b2200f31; its B-series studio voice is the continuity reference.",
+  "instruction": "Use the reference only for the same original synthetic female voice identity, fresh cheerful character and clean studio quality. This is a Korean-native young adult woman with friendly conversational warmth, a lightly smiling bright voice and a rounded rich midrange. Keep gentle energy alive through sentence endings, including final 요 and 다. Questions are softly inviting; statements are confident and buoyant without a heavy falling or fading ending. Use natural connected Korean and short easy breaths. No forced high pitch, sing-song, baby voice, announcer cadence, theatrical acting, shouting or whispering. Adapt the comfortable pace to the complete supplied text; never rush or truncate it. Read Korean numerals and English brand words naturally in Korean. Record a pristine full-band dry studio voice, with full-bodied low-mid warmth, detailed smooth consonants and clean airy highs. No telephone bandwidth, metallic ringing, warble, distortion, harsh sibilance, background hiss, room echo, music, effects or extra words. Do not repeat the reference dialogue. Speak ONLY the supplied Korean text, once, exactly and completely.",
+  "loudness": {
+    "input_i": "-24.79",
+    "input_tp": "-8.14",
+    "input_lra": "3.00",
+    "input_thresh": "-35.43",
+    "output_i": "-22.85",
+    "output_tp": "-6.11",
+    "output_lra": "2.30",
+    "output_thresh": "-33.54",
+    "normalization_type": "dynamic",
+    "target_offset": "-0.15"
+  },
+  "loudnessTargetLUFS": -23,
+  "truePeakLimitDb": -6,
+  "gainAppliedForVideo": false,
+  "processing": "Native-request 48kHz generated download preserved; loudness normalization and 24-bit mono WAV delivery. 24-bit storage does not claim additional generated detail.",
+  "humanListening": false,
+  "fullDecode": true,
+  "asrReview": "pending",
+  "completedAt": "2026-09-10T08:14:58.843Z"
+}

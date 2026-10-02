@@ -1,0 +1,32 @@
+[
+  {
+    "batch": 1,
+    "title": "SYNK - Quiet Rhythm",
+    "style": "Create a new 3:30 instrumental using the attached reference, specifically the faint rhythmic accompaniment beneath the male spoken introduction. Preserve the feel of that underlying pulse, subtle bass movement, restrained percussion and soft texture. Ignore the speaking cadence and remove the voice completely; do not turn speech syllables into a melody. Keep texture, bass and drums evenly balanced, with only small changes from the backing's character. A steady, gently moving company background track with room for narration. Begin the useful groove immediately. Use subtle 8- and 16-bar variations, clean edit points and consistent energy, with no long empty intro or silent breakdown. Clean studio sound, smooth transients, a gentle resolved ending. Instrumental only throughout.",
+    "exclude": "vocals, speech, spoken word, singing, humming, whispers, rap, chants, ad-libs, vocal chops, vocal-like pads, choir, dramatic buildup, EDM drop, loud fills, cymbal crashes, long solos, sudden silence, lo-fi crackle, distortion"
+  },
+  {
+    "batch": 2,
+    "title": "SYNK - Soft Texture",
+    "style": "Develop the quiet rhythmic backing underneath the spoken male voice in the attached reference into a new 3:30 instrumental. Follow the backing's pulse and gentle forward movement, never the voice or its syllables. Keep the reference's bass and percussion balance, with a small increase in warm, smooth instrumental texture behind them. Rounded edges and soft sustained layers, without voice-like sounds or a dense wall of pads. Preserve clear space for narration. Establish the groove from the first bar and keep it steady, with restrained 8- and 16-bar variations and useful edit points. The track should work both under a short company video and as a continuous long background. Clean, detailed studio production and a calm resolved ending. Absolutely no human voice.",
+    "exclude": "vocals, speech, spoken word, singing, humming, whispers, rap, chants, ad-libs, vocal chops, vocal-like pads, choir, dramatic buildup, EDM drop, loud fills, cymbal crashes, long solos, sudden silence, lo-fi crackle, distortion"
+  },
+  {
+    "batch": 3,
+    "title": "SYNK - Warm Ground",
+    "style": "Use only the underlying rhythmic accompaniment of the attached spoken introduction as the musical reference for a new 3:30 instrumental. Completely omit the male voice and its speaking rhythm. Keep the backing's gentle pulse, soft texture and restrained drums, with the bass just a little more present, rounded and supportive. Small bass movement that anchors the groove without becoming a lead or adding heavy sub-bass. Leave ample room for narration and keep the arrangement close in character to the reference backing. Start with the groove immediately, sustain even energy, and make small 8- and 16-bar variations with clean edit points. Smooth, clear studio sound, controlled low end and a graceful resolved ending. No vocals of any kind at any point.",
+    "exclude": "vocals, speech, spoken word, singing, humming, whispers, rap, chants, ad-libs, vocal chops, vocal-like pads, choir, heavy sub-bass, bass solo, dramatic buildup, EDM drop, loud fills, cymbal crashes, sudden silence, lo-fi crackle, distortion"
+  },
+  {
+    "batch": 4,
+    "title": "SYNK - Light Motion",
+    "style": "Create a new 3:30 instrumental from the feel of the faint rhythmic backing beneath the male speech in the attached reference. Refer to its accompaniment, not the voice, speech timing or spoken melody. Keep the same gentle pulse and overall texture, with light percussion only slightly clearer and more defined. Small, clean rhythmic details with soft attacks; keep bass supportive and texture unobtrusive. No aggressive drums or dance-floor energy. A continuous, engaging company background with an open space for narration. Let the useful groove begin in the first bar, keep its energy steady, and introduce subtle 8- and 16-bar variations and clean edit points. Rich, clean studio sound and a natural, softly resolved ending. Entirely instrumental, with no human or synthetic voice sounds.",
+    "exclude": "vocals, speech, spoken word, singing, humming, whispers, rap, chants, ad-libs, vocal chops, vocal-like pads, choir, aggressive drums, dramatic buildup, EDM drop, loud fills, cymbal crashes, long solos, sudden silence, lo-fi crackle, distortion"
+  },
+  {
+    "batch": 5,
+    "title": "SYNK - Open Rhythm",
+    "style": "Extend the character of the quiet backing underneath the male spoken introduction in the attached reference into a new 3:30 instrumental composition. Preserve its underlying rhythmic feel and gentle bass movement while fully removing the voice; do not imitate its speaking cadence. Make only a small arrangement variation: slightly fewer texture layers and a little less drum weight, while keeping a clearly continuous pulse. Spacious and clean rather than empty or static. Leave room for narration without losing the musical flow. Start immediately, maintain steady energy, and use subtle 8- and 16-bar variations and clear edit points for short clips. Controlled transients, warm clean studio detail and a gentle resolved ending. No vocals, spoken phrases or voice-like sounds anywhere.",
+    "exclude": "vocals, speech, spoken word, singing, humming, whispers, rap, chants, ad-libs, vocal chops, vocal-like pads, choir, static drone, dramatic buildup, EDM drop, loud fills, cymbal crashes, long solos, sudden silence, lo-fi crackle, distortion"
+  }
+]

@@ -1,0 +1,1049 @@
+{
+  "scope": "Eight candidate decoded WebPs, old local radioDJ WebPs; not live rendered verification",
+  "new": [
+    {
+      "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_본체.webp",
+      "sha256": "eff5870074874ed22d64fef995ed6ef4acf5f9f10711ea895b7e5ea8be3b9713",
+      "size_wh": [
+        1024,
+        1024
+      ],
+      "bytes": 457084,
+      "bbox_xyxy_exclusive": {
+        "0": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "8": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "24": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "128": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "254": [
+          132,
+          147,
+          939,
+          907
+        ]
+      },
+      "alpha_weighted_centroid_xy": [
+        509.32450979686985,
+        517.4005534921672
+      ],
+      "approx_canvas96_alpha24_bbox": [
+        12,
+        13,
+        88,
+        86
+      ],
+      "approx_canvas96_height_fraction": 0.7604166666666666,
+      "approx_canvas96_bottom_fraction": 0.10416666666666667
+    },
+    {
+      "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_눈감음.webp",
+      "sha256": "7dcfe1f5edafcad44a2fa74b90254ecce153bad59ab7e5b2455804290b24dca9",
+      "size_wh": [
+        1024,
+        1024
+      ],
+      "bytes": 456234,
+      "bbox_xyxy_exclusive": {
+        "0": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "8": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "24": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "128": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "254": [
+          132,
+          147,
+          939,
+          907
+        ]
+      },
+      "alpha_weighted_centroid_xy": [
+        509.32450979686985,
+        517.4005534921672
+      ],
+      "approx_canvas96_alpha24_bbox": [
+        12,
+        13,
+        88,
+        86
+      ],
+      "approx_canvas96_height_fraction": 0.7604166666666666,
+      "approx_canvas96_bottom_fraction": 0.10416666666666667
+    },
+    {
+      "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_눈웃음.webp",
+      "sha256": "c19871e6eb72a57c9d0a75f8d5d62ef8408a42cb12b81c2ceea10770a408dc2d",
+      "size_wh": [
+        1024,
+        1024
+      ],
+      "bytes": 457202,
+      "bbox_xyxy_exclusive": {
+        "0": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "8": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "24": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "128": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "254": [
+          132,
+          147,
+          939,
+          907
+        ]
+      },
+      "alpha_weighted_centroid_xy": [
+        509.32450979686985,
+        517.4005534921672
+      ],
+      "approx_canvas96_alpha24_bbox": [
+        12,
+        13,
+        88,
+        86
+      ],
+      "approx_canvas96_height_fraction": 0.7604166666666666,
+      "approx_canvas96_bottom_fraction": 0.10416666666666667
+    },
+    {
+      "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_궁금함.webp",
+      "sha256": "4ceebec6a148a4c99cf8b67a31c831bd7fc1a04d327d79548ede6e55c6c351fc",
+      "size_wh": [
+        1024,
+        1024
+      ],
+      "bytes": 457348,
+      "bbox_xyxy_exclusive": {
+        "0": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "8": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "24": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "128": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "254": [
+          132,
+          147,
+          939,
+          907
+        ]
+      },
+      "alpha_weighted_centroid_xy": [
+        509.32450979686985,
+        517.4005534921672
+      ],
+      "approx_canvas96_alpha24_bbox": [
+        12,
+        13,
+        88,
+        86
+      ],
+      "approx_canvas96_height_fraction": 0.7604166666666666,
+      "approx_canvas96_bottom_fraction": 0.10416666666666667
+    },
+    {
+      "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_집중.webp",
+      "sha256": "b6fc3deb07db384e3d717089bf34ddddaa2e90e938674b3fe8d2e3685f101239",
+      "size_wh": [
+        1024,
+        1024
+      ],
+      "bytes": 455478,
+      "bbox_xyxy_exclusive": {
+        "0": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "8": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "24": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "128": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "254": [
+          132,
+          147,
+          939,
+          907
+        ]
+      },
+      "alpha_weighted_centroid_xy": [
+        509.32450979686985,
+        517.4005534921672
+      ],
+      "approx_canvas96_alpha24_bbox": [
+        12,
+        13,
+        88,
+        86
+      ],
+      "approx_canvas96_height_fraction": 0.7604166666666666,
+      "approx_canvas96_bottom_fraction": 0.10416666666666667
+    },
+    {
+      "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_안도.webp",
+      "sha256": "bdf7db3fa592ecfb86c5f5129e78402550d667faf18e9dbb63048d80f440d78e",
+      "size_wh": [
+        1024,
+        1024
+      ],
+      "bytes": 457462,
+      "bbox_xyxy_exclusive": {
+        "0": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "8": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "24": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "128": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "254": [
+          132,
+          147,
+          939,
+          907
+        ]
+      },
+      "alpha_weighted_centroid_xy": [
+        509.32450979686985,
+        517.4005534921672
+      ],
+      "approx_canvas96_alpha24_bbox": [
+        12,
+        13,
+        88,
+        86
+      ],
+      "approx_canvas96_height_fraction": 0.7604166666666666,
+      "approx_canvas96_bottom_fraction": 0.10416666666666667
+    },
+    {
+      "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_응원.webp",
+      "sha256": "15ac333084ecc1d69686be24e0572f41e5b896305c3f6b54cba76a7a8faf09cd",
+      "size_wh": [
+        1024,
+        1024
+      ],
+      "bytes": 459436,
+      "bbox_xyxy_exclusive": {
+        "0": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "8": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "24": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "128": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "254": [
+          132,
+          147,
+          939,
+          907
+        ]
+      },
+      "alpha_weighted_centroid_xy": [
+        509.32450979686985,
+        517.4005534921672
+      ],
+      "approx_canvas96_alpha24_bbox": [
+        12,
+        13,
+        88,
+        86
+      ],
+      "approx_canvas96_height_fraction": 0.7604166666666666,
+      "approx_canvas96_bottom_fraction": 0.10416666666666667
+    },
+    {
+      "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_놀람.webp",
+      "sha256": "e95361b7d5ebb7d14591266a5efefa205ec21fce904217270bc8a6386f534590",
+      "size_wh": [
+        1024,
+        1024
+      ],
+      "bytes": 459574,
+      "bbox_xyxy_exclusive": {
+        "0": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "8": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "24": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "128": [
+          129,
+          144,
+          939,
+          909
+        ],
+        "254": [
+          132,
+          147,
+          939,
+          907
+        ]
+      },
+      "alpha_weighted_centroid_xy": [
+        509.32450979686985,
+        517.4005534921672
+      ],
+      "approx_canvas96_alpha24_bbox": [
+        12,
+        13,
+        88,
+        86
+      ],
+      "approx_canvas96_height_fraction": 0.7604166666666666,
+      "approx_canvas96_bottom_fraction": 0.10416666666666667
+    }
+  ],
+  "old": [
+    {
+      "path": "docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_본체.webp",
+      "sha256": "d3b92020a6ca212a3fff355952c80cc5fc8599dc919bb479833919415904ffdf",
+      "size_wh": [
+        1024,
+        1024
+      ],
+      "bytes": 114744,
+      "bbox_xyxy_exclusive": {
+        "0": [
+          126,
+          142,
+          942,
+          912
+        ],
+        "8": [
+          129,
+          144,
+          940,
+          910
+        ],
+        "24": [
+          129,
+          144,
+          939,
+          910
+        ],
+        "128": [
+          129,
+          146,
+          939,
+          909
+        ],
+        "254": [
+          132,
+          148,
+          938,
+          907
+        ]
+      },
+      "alpha_weighted_centroid_xy": [
+        509.0727807401373,
+        517.8943741874504
+      ],
+      "approx_canvas96_alpha24_bbox": [
+        12,
+        14,
+        88,
+        86
+      ],
+      "approx_canvas96_height_fraction": 0.75,
+      "approx_canvas96_bottom_fraction": 0.10416666666666667
+    },
+    {
+      "path": "docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_눈감음.webp",
+      "sha256": "381bf0e6e491fdc99da61f47f03681ed171384d9fc2780f2638d67e11d6467ad",
+      "size_wh": [
+        1024,
+        1024
+      ],
+      "bytes": 118946,
+      "bbox_xyxy_exclusive": {
+        "0": [
+          126,
+          142,
+          942,
+          912
+        ],
+        "8": [
+          129,
+          144,
+          940,
+          910
+        ],
+        "24": [
+          129,
+          144,
+          939,
+          910
+        ],
+        "128": [
+          129,
+          146,
+          939,
+          909
+        ],
+        "254": [
+          132,
+          148,
+          938,
+          907
+        ]
+      },
+      "alpha_weighted_centroid_xy": [
+        509.0727807401373,
+        517.8943741874504
+      ],
+      "approx_canvas96_alpha24_bbox": [
+        12,
+        14,
+        88,
+        86
+      ],
+      "approx_canvas96_height_fraction": 0.75,
+      "approx_canvas96_bottom_fraction": 0.10416666666666667
+    },
+    {
+      "path": "docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_눈웃음.webp",
+      "sha256": "bb89f7333ac8f2145231f635dd5fe3462d10ec94338ec71f5129f9555126e654",
+      "size_wh": [
+        1024,
+        1024
+      ],
+      "bytes": 118826,
+      "bbox_xyxy_exclusive": {
+        "0": [
+          126,
+          142,
+          942,
+          912
+        ],
+        "8": [
+          129,
+          144,
+          940,
+          910
+        ],
+        "24": [
+          129,
+          144,
+          939,
+          910
+        ],
+        "128": [
+          129,
+          146,
+          939,
+          909
+        ],
+        "254": [
+          132,
+          148,
+          938,
+          907
+        ]
+      },
+      "alpha_weighted_centroid_xy": [
+        509.0727807401373,
+        517.8943741874504
+      ],
+      "approx_canvas96_alpha24_bbox": [
+        12,
+        14,
+        88,
+        86
+      ],
+      "approx_canvas96_height_fraction": 0.75,
+      "approx_canvas96_bottom_fraction": 0.10416666666666667
+    },
+    {
+      "path": "docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_궁금함.webp",
+      "sha256": "37c80c6e81642bf573ab6867a92b8a16242e9446f15a6a0bd04235a58e357fde",
+      "size_wh": [
+        1024,
+        1024
+      ],
+      "bytes": 115708,
+      "bbox_xyxy_exclusive": {
+        "0": [
+          126,
+          142,
+          942,
+          912
+        ],
+        "8": [
+          129,
+          144,
+          940,
+          910
+        ],
+        "24": [
+          129,
+          144,
+          939,
+          910
+        ],
+        "128": [
+          129,
+          146,
+          939,
+          909
+        ],
+        "254": [
+          132,
+          148,
+          938,
+          907
+        ]
+      },
+      "alpha_weighted_centroid_xy": [
+        509.0727807401373,
+        517.8943741874504
+      ],
+      "approx_canvas96_alpha24_bbox": [
+        12,
+        14,
+        88,
+        86
+      ],
+      "approx_canvas96_height_fraction": 0.75,
+      "approx_canvas96_bottom_fraction": 0.10416666666666667
+    },
+    {
+      "path": "docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_집중.webp",
+      "sha256": "775d5e0605f36e08b00c382d6837152c7eb6ef85c3a84a62ed841de1e4d941d9",
+      "size_wh": [
+        1024,
+        1024
+      ],
+      "bytes": 114526,
+      "bbox_xyxy_exclusive": {
+        "0": [
+          126,
+          142,
+          942,
+          912
+        ],
+        "8": [
+          129,
+          144,
+          940,
+          910
+        ],
+        "24": [
+          129,
+          144,
+          939,
+          910
+        ],
+        "128": [
+          129,
+          146,
+          939,
+          909
+        ],
+        "254": [
+          132,
+          148,
+          938,
+          907
+        ]
+      },
+      "alpha_weighted_centroid_xy": [
+        509.0727807401373,
+        517.8943741874504
+      ],
+      "approx_canvas96_alpha24_bbox": [
+        12,
+        14,
+        88,
+        86
+      ],
+      "approx_canvas96_height_fraction": 0.75,
+      "approx_canvas96_bottom_fraction": 0.10416666666666667
+    },
+    {
+      "path": "docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_안도.webp",
+      "sha256": "c6c3094b5b897b03745fb0459659af6f6180f7a1de22340be905cd4ddacf3499",
+      "size_wh": [
+        1024,
+        1024
+      ],
+      "bytes": 115908,
+      "bbox_xyxy_exclusive": {
+        "0": [
+          126,
+          142,
+          942,
+          912
+        ],
+        "8": [
+          129,
+          144,
+          940,
+          910
+        ],
+        "24": [
+          129,
+          144,
+          939,
+          910
+        ],
+        "128": [
+          129,
+          146,
+          939,
+          909
+        ],
+        "254": [
+          132,
+          148,
+          938,
+          907
+        ]
+      },
+      "alpha_weighted_centroid_xy": [
+        509.0727807401373,
+        517.8943741874504
+      ],
+      "approx_canvas96_alpha24_bbox": [
+        12,
+        14,
+        88,
+        86
+      ],
+      "approx_canvas96_height_fraction": 0.75,
+      "approx_canvas96_bottom_fraction": 0.10416666666666667
+    },
+    {
+      "path": "docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_응원.webp",
+      "sha256": "b9e630f237db119c77113d359934c4cfb6b57f739fe54c04d86097f2fcbec1ea",
+      "size_wh": [
+        1024,
+        1024
+      ],
+      "bytes": 118986,
+      "bbox_xyxy_exclusive": {
+        "0": [
+          126,
+          142,
+          942,
+          912
+        ],
+        "8": [
+          129,
+          144,
+          940,
+          910
+        ],
+        "24": [
+          129,
+          144,
+          939,
+          910
+        ],
+        "128": [
+          129,
+          146,
+          939,
+          909
+        ],
+        "254": [
+          132,
+          148,
+          938,
+          907
+        ]
+      },
+      "alpha_weighted_centroid_xy": [
+        509.0727807401373,
+        517.8943741874504
+      ],
+      "approx_canvas96_alpha24_bbox": [
+        12,
+        14,
+        88,
+        86
+      ],
+      "approx_canvas96_height_fraction": 0.75,
+      "approx_canvas96_bottom_fraction": 0.10416666666666667
+    },
+    {
+      "path": "docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_놀람.webp",
+      "sha256": "0c743f6664787bd2ca89d125b6829cac7b4e31cf68d625bb4794e1a3fb1d4634",
+      "size_wh": [
+        1024,
+        1024
+      ],
+      "bytes": 119386,
+      "bbox_xyxy_exclusive": {
+        "0": [
+          126,
+          142,
+          942,
+          912
+        ],
+        "8": [
+          129,
+          144,
+          940,
+          910
+        ],
+        "24": [
+          129,
+          144,
+          939,
+          910
+        ],
+        "128": [
+          129,
+          146,
+          939,
+          909
+        ],
+        "254": [
+          132,
+          148,
+          938,
+          907
+        ]
+      },
+      "alpha_weighted_centroid_xy": [
+        509.0727807401373,
+        517.8943741874504
+      ],
+      "approx_canvas96_alpha24_bbox": [
+        12,
+        14,
+        88,
+        86
+      ],
+      "approx_canvas96_height_fraction": 0.75,
+      "approx_canvas96_bottom_fraction": 0.10416666666666667
+    }
+  ],
+  "new_expression_changes": {
+    "본체": {
+      "rgba_diff_pixels_vs_base": 0,
+      "diff_bbox": null,
+      "alpha_diff_pixels_vs_base": 0
+    },
+    "눈감음": {
+      "rgba_diff_pixels_vs_base": 9937,
+      "diff_bbox": [
+        317,
+        326,
+        593,
+        409
+      ],
+      "alpha_diff_pixels_vs_base": 0
+    },
+    "눈웃음": {
+      "rgba_diff_pixels_vs_base": 9667,
+      "diff_bbox": [
+        324,
+        326,
+        587,
+        409
+      ],
+      "alpha_diff_pixels_vs_base": 0
+    },
+    "궁금함": {
+      "rgba_diff_pixels_vs_base": 10009,
+      "diff_bbox": [
+        329,
+        324,
+        587,
+        411
+      ],
+      "alpha_diff_pixels_vs_base": 0
+    },
+    "집중": {
+      "rgba_diff_pixels_vs_base": 9337,
+      "diff_bbox": [
+        329,
+        326,
+        583,
+        409
+      ],
+      "alpha_diff_pixels_vs_base": 0
+    },
+    "안도": {
+      "rgba_diff_pixels_vs_base": 9768,
+      "diff_bbox": [
+        324,
+        326,
+        586,
+        409
+      ],
+      "alpha_diff_pixels_vs_base": 0
+    },
+    "응원": {
+      "rgba_diff_pixels_vs_base": 12130,
+      "diff_bbox": [
+        324,
+        320,
+        587,
+        414
+      ],
+      "alpha_diff_pixels_vs_base": 0
+    },
+    "놀람": {
+      "rgba_diff_pixels_vs_base": 15551,
+      "diff_bbox": [
+        317,
+        315,
+        593,
+        420
+      ],
+      "alpha_diff_pixels_vs_base": 0
+    }
+  },
+  "new_diff_union_pixels": 15584,
+  "new_diff_union_bbox": [
+    317,
+    315,
+    593,
+    420
+  ],
+  "new_diff_connected_components_ge20": [
+    {
+      "bbox": [
+        317,
+        315,
+        415,
+        419
+      ],
+      "pixels": 7760
+    },
+    {
+      "bbox": [
+        494,
+        315,
+        593,
+        419
+      ],
+      "pixels": 7818
+    }
+  ],
+  "independent_two_eye_envelopes_xyxy": [
+    [
+      315,
+      313,
+      417,
+      422
+    ],
+    [
+      492,
+      313,
+      595,
+      422
+    ]
+  ],
+  "new_differing_pixels_outside_two_eye_envelopes": 0,
+  "new_pixels_equal_across_all_eight": 1032992,
+  "new_alpha_identical_across_all_eight": true,
+  "edge_diagnostics": {
+    "new": {
+      "partial_alpha_8_247": {
+        "pixels": 3844,
+        "mean_luma": 229.9885535900104,
+        "near_white_rgb_min_gt190_pixels": 3709,
+        "near_white_fraction": 0.9648803329864725
+      },
+      "opaque_inner_band_0_3": {
+        "pixels": 1189,
+        "mean_luma": 199.51051303616484,
+        "near_white_rgb_min_gt190_pixels": 581,
+        "near_white_fraction": 0.488645920941968
+      },
+      "opaque_inner_band_3_7": {
+        "pixels": 3590,
+        "mean_luma": 181.8632311977716,
+        "near_white_rgb_min_gt190_pixels": 362,
+        "near_white_fraction": 0.10083565459610028
+      },
+      "opaque_inner_band_7_14": {
+        "pixels": 5799,
+        "mean_luma": 137.69391274357648,
+        "near_white_rgb_min_gt190_pixels": 20,
+        "near_white_fraction": 0.003448870494912916
+      }
+    },
+    "old": {
+      "partial_alpha_8_247": {
+        "pixels": 3106,
+        "mean_luma": 138.70476497102382,
+        "near_white_rgb_min_gt190_pixels": 201,
+        "near_white_fraction": 0.06471345782356729
+      },
+      "opaque_inner_band_0_3": {
+        "pixels": 1508,
+        "mean_luma": 197.15450928381964,
+        "near_white_rgb_min_gt190_pixels": 569,
+        "near_white_fraction": 0.3773209549071618
+      },
+      "opaque_inner_band_3_7": {
+        "pixels": 3561,
+        "mean_luma": 177.56922212861556,
+        "near_white_rgb_min_gt190_pixels": 196,
+        "near_white_fraction": 0.055040718899185624
+      },
+      "opaque_inner_band_7_14": {
+        "pixels": 5771,
+        "mean_luma": 133.2587073297522,
+        "near_white_rgb_min_gt190_pixels": 8,
+        "near_white_fraction": 0.001386241552590539
+      }
+    }
+  },
+  "limitations": [
+    "Pixel equality outside expression changes does not mean candidate base equals the earlier approved image. See 12,772 source-pixel common-base repair in author report.",
+    "Approximate 96px alpha measurement uses OpenCV area sampling, not a claim of browser Canvas bit-exactness.",
+    "Edge brightness counts are diagnostic, not proof of the original matte process. Visual inspection required."
+  ],
+  "visual_findings": [
+    "Inspected the actual base assets and own alpha-composited contact sheet. Across eight expressions the ears, head silhouette, cheeks, outfit, arms, belly and tail retain identical decoded pixels; changes are confined to the two eye regions.",
+    "Both old and candidate assets have an obvious light cream rim at ears, hands and lower belly against a dark brown composite, already noticeable at a 384px-wide canvas. The candidate still needs edge-integration work.",
+    "Near-white RGB exists in partial-alpha outer pixels and also in the first opaque inner band. Therefore reducing only CSS shadow or blurring the whole character cannot specifically remove the baked bright edge.",
+    "The canvas and placement are essentially preserved: both 1024x1024, opaque alpha>128 width 810px, height old763/new765px. No recropping or per-expression scaling is warranted.",
+    "Local overlay img CSS has no outline/filter. The actual live browser/server state was not verified by this audit."
+  ],
+  "recommendations": [
+    "Preserve a single common RGBA base, one fixed canvas/anchor, and one alpha matte across all expression derivatives. Limit expressions to approved eye/eyelid contours; never regenerate full facial fur per expression.",
+    "For edge integration, derive one shared outer-fur edge correction from the accepted base, addressing bright edge RGB as well as matte if necessary; apply identical edge pixels to all eight. Preserve individual fur tips, blue clothing, cream ties, sign, eyes, and silhouette.",
+    "Do not globally erode the silhouette, add an outline, blur the whole character, repaint the entire fur, or process every expression independently. Inspect the corrected asset at actual live size on dark and light backgrounds before deployment.",
+    "Recheck actual browser Canvas size correction after replacement: 96px approximation gives old72/new73 high-alpha rows, which can alter runtime scale by about1.37%. Compare rendered physical body/booth alignment, not only 1024 canvas metadata.",
+    "This audit confirms only this outfit of Kamong. Do not extend the pass to other outfits or other mascots."
+  ]
+}

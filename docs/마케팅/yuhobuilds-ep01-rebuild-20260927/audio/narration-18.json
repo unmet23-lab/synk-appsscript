@@ -1,0 +1,215 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 3.16,
+  "words": [
+    {
+      "text": "왕초보에서",
+      "start": 0.058,
+      "end": 0.565
+    },
+    {
+      "text": "일인",
+      "start": 0.609,
+      "end": 0.754
+    },
+    {
+      "text": "기업가까지.",
+      "start": 0.87,
+      "end": 1.392
+    },
+    {
+      "text": "여러분의",
+      "start": 1.928,
+      "end": 2.174
+    },
+    {
+      "text": "시간을",
+      "start": 2.218,
+      "end": 2.479
+    },
+    {
+      "text": "아껴드립니다!",
+      "start": 2.551,
+      "end": 3.16
+    }
+  ],
+  "characters": [
+    {
+      "text": "왕",
+      "start": 0.058,
+      "end": 0.232
+    },
+    {
+      "text": "초",
+      "start": 0.232,
+      "end": 0.362
+    },
+    {
+      "text": "보",
+      "start": 0.362,
+      "end": 0.449
+    },
+    {
+      "text": "에",
+      "start": 0.449,
+      "end": 0.493
+    },
+    {
+      "text": "서",
+      "start": 0.493,
+      "end": 0.565
+    },
+    {
+      "text": " ",
+      "start": 0.565,
+      "end": 0.609
+    },
+    {
+      "text": "일",
+      "start": 0.609,
+      "end": 0.71
+    },
+    {
+      "text": "인",
+      "start": 0.71,
+      "end": 0.754
+    },
+    {
+      "text": " ",
+      "start": 0.754,
+      "end": 0.87
+    },
+    {
+      "text": "기",
+      "start": 0.87,
+      "end": 1.015
+    },
+    {
+      "text": "업",
+      "start": 1.015,
+      "end": 1.116
+    },
+    {
+      "text": "가",
+      "start": 1.116,
+      "end": 1.189
+    },
+    {
+      "text": "까",
+      "start": 1.189,
+      "end": 1.319
+    },
+    {
+      "text": "지",
+      "start": 1.319,
+      "end": 1.377
+    },
+    {
+      "text": ".",
+      "start": 1.377,
+      "end": 1.392
+    },
+    {
+      "text": " ",
+      "start": 1.392,
+      "end": 1.928
+    },
+    {
+      "text": "여",
+      "start": 1.928,
+      "end": 2
+    },
+    {
+      "text": "러",
+      "start": 2,
+      "end": 2.073
+    },
+    {
+      "text": "분",
+      "start": 2.073,
+      "end": 2.145
+    },
+    {
+      "text": "의",
+      "start": 2.145,
+      "end": 2.174
+    },
+    {
+      "text": " ",
+      "start": 2.174,
+      "end": 2.218
+    },
+    {
+      "text": "시",
+      "start": 2.218,
+      "end": 2.305
+    },
+    {
+      "text": "간",
+      "start": 2.305,
+      "end": 2.421
+    },
+    {
+      "text": "을",
+      "start": 2.421,
+      "end": 2.479
+    },
+    {
+      "text": " ",
+      "start": 2.479,
+      "end": 2.551
+    },
+    {
+      "text": "아",
+      "start": 2.551,
+      "end": 2.609
+    },
+    {
+      "text": "껴",
+      "start": 2.609,
+      "end": 2.754
+    },
+    {
+      "text": "드",
+      "start": 2.754,
+      "end": 2.812
+    },
+    {
+      "text": "립",
+      "start": 2.812,
+      "end": 2.885
+    },
+    {
+      "text": "니",
+      "start": 2.885,
+      "end": 2.928
+    },
+    {
+      "text": "다",
+      "start": 2.928,
+      "end": 3.146
+    },
+    {
+      "text": "!",
+      "start": 3.146,
+      "end": 3.16
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "왕초보에서 일인 기업가까지. 여러분의 시간을 아껴드립니다!",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.25,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.1
+    }
+  }
+}

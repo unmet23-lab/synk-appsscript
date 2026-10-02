@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "e5d5bd77-9cf8-48bb-8185-04b850a72b09",
+  "narration": "마지막으로 대상과 결과, 실제 맡을 범위, 새로 덧붙은 약속을 확인합니다. 예쁜 문장과 사실에 맞는 문장을 함께 봅니다.",
+  "narrationSha256": "b1c6557401bd4a40302db99f5e546c32c7914bb0a038dca7d44f63c9ba734902",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-b1c6557401bd4a40.wav",
+  "duration": 9.84,
+  "sha256": "8eb0f3da2563b75e56124d32f359df294ac7e14d441637ca619520fffb08b788",
+  "humanListening": false,
+  "fullDecode": true
+}

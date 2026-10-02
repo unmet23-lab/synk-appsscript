@@ -1,0 +1,18 @@
+[
+ {
+  "name": "F20-fresh-v3-2-hairA",
+  "prompt": "The exact same young woman as in the attached reference photo: keep her face, bone structure, eyes, brows, lips, makeup, skin tone, expression, white t-shirt, pose, framing, warm-grey backdrop, lighting and film grain exactly the same. Do not add any moles or marks that are not in the reference. Change ONLY her hairstyle to long glossy jet-black straight hair with a clean middle part and no bangs, falling past her shoulders. Real individual hair strands and a few flyaways, natural color, no plastic skin, no text or logos.",
+  "aspect": "3:4",
+  "images": [
+   "raw/F20-fresh-v3-2.png"
+  ]
+ },
+ {
+  "name": "F20-fresh-v3-2-hairB",
+  "prompt": "The exact same young woman as in the attached reference photo: keep her face, bone structure, eyes, brows, lips, makeup, skin tone, expression, white t-shirt, pose, framing, warm-grey backdrop, lighting and film grain exactly the same. Do not add any moles or marks that are not in the reference. Change ONLY her hairstyle to a short dark-brown bob cut at the jawline with soft full bangs. Real individual hair strands and a few flyaways, natural color, no plastic skin, no text or logos.",
+  "aspect": "3:4",
+  "images": [
+   "raw/F20-fresh-v3-2.png"
+  ]
+ }
+]

@@ -1,0 +1,51 @@
+{
+  "fps": 30,
+  "durationInFrames": 1037,
+  "audioFile": "shift-process-20260921/narration.wav",
+  "audioStartFrame": 9,
+  "status": "typecast-narrated-review",
+  "scenes": [
+    {
+      "id": "01",
+      "start": 0,
+      "duration": 130,
+      "text": "커버를 다 만들었는데, 올리려니 오른쪽 소품이 잘렸어요."
+    },
+    {
+      "id": "02",
+      "start": 130,
+      "duration": 153,
+      "text": "비핸스 업로드 미리보기에서 보니, 원본보다 보이는 폭이 좁더라고요."
+    },
+    {
+      "id": "03",
+      "start": 283,
+      "duration": 129,
+      "text": "그림과 문구는 그대로 두고, 배치를 다시 잡았습니다."
+    },
+    {
+      "id": "04",
+      "start": 412,
+      "duration": 118,
+      "text": "로고와 글자, 소품을 조금 줄여서 가운데로 모았어요."
+    },
+    {
+      "id": "05",
+      "start": 530,
+      "duration": 121,
+      "text": "위쪽 메뉴에 가리지 않도록, 전체 위치도 조금 내렸고요."
+    },
+    {
+      "id": "06",
+      "start": 651,
+      "duration": 196,
+      "text": "다시 올린 뒤에는 실제 프로필에서 로고와 글자, 소품이 다 보이는지 확인했습니다."
+    },
+    {
+      "id": "07",
+      "start": 847,
+      "duration": 190,
+      "text": "이번 커버는, 만들고 나서 어디에 어떻게 보이는지까지 확인하고 마무리했어요."
+    }
+  ]
+}

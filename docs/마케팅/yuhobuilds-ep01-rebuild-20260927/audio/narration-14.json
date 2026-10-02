@@ -1,0 +1,210 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 2.8,
+  "words": [
+    {
+      "text": "학생",
+      "start": 0.083,
+      "end": 0.317
+    },
+    {
+      "text": "한",
+      "start": 0.359,
+      "end": 0.455
+    },
+    {
+      "text": "명의",
+      "start": 0.497,
+      "end": 0.634
+    },
+    {
+      "text": "출석을",
+      "start": 0.69,
+      "end": 1.007
+    },
+    {
+      "text": "저장하고,",
+      "start": 1.048,
+      "end": 1.393
+    },
+    {
+      "text": "다시",
+      "start": 1.779,
+      "end": 1.986
+    },
+    {
+      "text": "확인하고",
+      "start": 2.055,
+      "end": 2.331
+    },
+    {
+      "text": "싶어.",
+      "start": 2.372,
+      "end": 2.8
+    }
+  ],
+  "characters": [
+    {
+      "text": "학",
+      "start": 0.083,
+      "end": 0.207
+    },
+    {
+      "text": "생",
+      "start": 0.207,
+      "end": 0.317
+    },
+    {
+      "text": " ",
+      "start": 0.317,
+      "end": 0.359
+    },
+    {
+      "text": "한",
+      "start": 0.359,
+      "end": 0.455
+    },
+    {
+      "text": " ",
+      "start": 0.455,
+      "end": 0.497
+    },
+    {
+      "text": "명",
+      "start": 0.497,
+      "end": 0.607
+    },
+    {
+      "text": "의",
+      "start": 0.607,
+      "end": 0.634
+    },
+    {
+      "text": " ",
+      "start": 0.634,
+      "end": 0.69
+    },
+    {
+      "text": "출",
+      "start": 0.69,
+      "end": 0.841
+    },
+    {
+      "text": "석",
+      "start": 0.841,
+      "end": 0.966
+    },
+    {
+      "text": "을",
+      "start": 0.966,
+      "end": 1.007
+    },
+    {
+      "text": " ",
+      "start": 1.007,
+      "end": 1.048
+    },
+    {
+      "text": "저",
+      "start": 1.048,
+      "end": 1.131
+    },
+    {
+      "text": "장",
+      "start": 1.131,
+      "end": 1.269
+    },
+    {
+      "text": "하",
+      "start": 1.269,
+      "end": 1.338
+    },
+    {
+      "text": "고",
+      "start": 1.338,
+      "end": 1.379
+    },
+    {
+      "text": ",",
+      "start": 1.379,
+      "end": 1.393
+    },
+    {
+      "text": " ",
+      "start": 1.393,
+      "end": 1.779
+    },
+    {
+      "text": "다",
+      "start": 1.779,
+      "end": 1.903
+    },
+    {
+      "text": "시",
+      "start": 1.903,
+      "end": 1.986
+    },
+    {
+      "text": " ",
+      "start": 1.986,
+      "end": 2.055
+    },
+    {
+      "text": "확",
+      "start": 2.055,
+      "end": 2.193
+    },
+    {
+      "text": "인",
+      "start": 2.193,
+      "end": 2.248
+    },
+    {
+      "text": "하",
+      "start": 2.248,
+      "end": 2.29
+    },
+    {
+      "text": "고",
+      "start": 2.29,
+      "end": 2.331
+    },
+    {
+      "text": " ",
+      "start": 2.331,
+      "end": 2.372
+    },
+    {
+      "text": "싶",
+      "start": 2.372,
+      "end": 2.497
+    },
+    {
+      "text": "어",
+      "start": 2.497,
+      "end": 2.786
+    },
+    {
+      "text": ".",
+      "start": 2.786,
+      "end": 2.8
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "학생 한 명의 출석을 저장하고, 다시 확인하고 싶어.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.25,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1.05
+    }
+  }
+}

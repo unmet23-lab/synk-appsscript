@@ -1,0 +1,28 @@
+{
+  "video": "docs/라디오/무대영상/추석_영상생성_20260909.mp4",
+  "sha256": "af2b83919d5b06758702829d1c36fcfb31fdcfa12453d944ffecbc6402956f50",
+  "duration_seconds": 60,
+  "frame_count": 1800,
+  "size_bytes": 16902079,
+  "full_decode": {"exit_code": 0, "error_output": "", "error_count": 0},
+  "examined_boundaries_seconds": [15, 30, 45, 60],
+  "all_four_boundary_measurements_identical": true,
+  "per_boundary_exact_last_to_next_first": {
+    "rgb_mean_absolute_difference_255": 2.552764415740967,
+    "static_center_drift_xy_px": [-0.043364319205579704, -0.09647913119925988],
+    "static_nonrigid_residual_p95_px": 0.068049855530262,
+    "moon_cloud_flow_p95_px": 0.6991528868675232,
+    "next_frame_matches_cycle_start_exactly": true
+  },
+  "corresponding_frames_15_seconds_apart_identical_at": [0, 0.1, 5, 10, 14.9],
+  "sampled_structure_max_center_drift_from_start_px": 0.13753549541234034,
+  "visually_examined_timestamps_seconds": [14.9, 15, 15.1, 29.9, 30, 30.1],
+  "visual_findings": [
+    "Decoded actual-size contact sheet shows no moon/roof silhouette jump at the sampled joins.",
+    "A small texture/brightness reset remains; decoded endpoints are not identical. Do not claim a mathematically perfect seam.",
+    "No new broad geometric warping or structural drift was found in this narrow final-output audit."
+  ],
+  "not_checked": ["Normal-speed continuous viewing by this independent agent", "Post-deployment YouTube reception"],
+  "contact_sheet": "docs/_ops/라디오생동_20260909/v3/최종반복_이음매비교.png",
+  "source_video_or_server_modified": false
+}

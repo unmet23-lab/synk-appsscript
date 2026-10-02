@@ -1,0 +1,51 @@
+{
+  "at": "2026-10-01T11:02:42.503Z",
+  "playlist": "ffconcat version 1.0\nfile synk-radio-new8-20260926.flac\nduration 1819.935397\nfile synk-radio-blok11-20260909-gapless.flac\nduration 1701.192199546\n",
+  "manifest": "{\r\n  \"duration\": 3521.127596546,\r\n  \"playlistSha256\": \"7022e9e45c4ad55e746bc553c412dd5b0a49decf4f79a72fd038523b6db5f510\",\r\n  \"tracks\": [\r\n    {\r\n      \"start\": 0,\r\n      \"title\": \"불빛이 하나둘 켜질 때\"\r\n    },\r\n    {\r\n      \"start\": 206.956372,\r\n      \"title\": \"파란 신호가 켜지면\"\r\n    },\r\n    {\r\n      \"start\": 406.636372,\r\n      \"title\": \"커피가 식기 전에\"\r\n    },\r\n    {\r\n      \"start\": 636.836372,\r\n      \"title\": \"바다까지 한 시간\"\r\n    },\r\n    {\r\n      \"start\": 865.436372,\r\n      \"title\": \"창가의 작은 불\"\r\n    },\r\n    {\r\n      \"start\": 1064.4363720000001,\r\n      \"title\": \"오후 네 시의 약속\"\r\n    },\r\n    {\r\n      \"start\": 1284.236372,\r\n      \"title\": \"비 오는 숲의 책상\"\r\n    },\r\n    {\r\n      \"start\": 1550.215397,\r\n      \"title\": \"새벽 물가의 숨\"\r\n    },\r\n    {\r\n      \"start\": 1819.935397,\r\n      \"title\": \"오늘 밤 제일 환한 사람\"\r\n    },\r\n    {\r\n      \"start\": 1869.535397,\r\n      \"title\": \"The Phantom's Lament\"\r\n    },\r\n    {\r\n      \"start\": 2025.879647,\r\n      \"title\": \"Autumn Sea Hush\"\r\n    },\r\n    {\r\n      \"start\": 2173.479647,\r\n      \"title\": \"Quiet Morning Light\"\r\n    },\r\n    {\r\n      \"start\": 2325.439647,\r\n      \"title\": \"Autumn Sea Hush (Version 2)\"\r\n    },\r\n    {\r\n      \"start\": 2477.839647,\r\n      \"title\": \"Golden Autumn Light\"\r\n    },\r\n    {\r\n      \"start\": 2629.959647,\r\n      \"title\": \"Velvet Rain\"\r\n    },\r\n    {\r\n      \"start\": 2853.959647,\r\n      \"title\": \"노을빛 드라이브\"\r\n    },\r\n    {\r\n      \"start\": 3004.679647,\r\n      \"title\": \"Golden Hour Beach\"\r\n    },\r\n    {\r\n      \"start\": 3187.359647,\r\n      \"title\": \"너와 걷던 여름밤\"\r\n    },\r\n    {\r\n      \"start\": 3343.519647,\r\n      \"title\": \"Neon Bittersweet\"\r\n    }\r\n  ],\r\n  \"sourceNotes\": \"New8 normalized source durations minus 3s crossfades; old11 waveform correlation >0.993. Autumn Sea Hush starts at its already-trimmed 6s position.\"\r\n}",
+  "playlistSha256": "7022e9e45c4ad55e746bc553c412dd5b0a49decf4f79a72fd038523b6db5f510",
+  "manifestSha256": "f547cab794c5fba1eed5902dfe5416bdbd76c87109edf28009ad48f2c27829f2",
+  "files": [
+    {
+      "name": "synk-radio-new8-20260926.flac",
+      "sha256": "631614067384f6952fc840c719a3c49b05e9b3f7f95db28e81b0b120ac444fd0",
+      "probe": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "flac",
+            "sample_fmt": "s32",
+            "sample_rate": "44100",
+            "channels": 2,
+            "bits_per_raw_sample": "24"
+          }
+        ],
+        "format": {
+          "duration": "1819.935397"
+        }
+      }
+    },
+    {
+      "name": "synk-radio-blok11-20260909-gapless.flac",
+      "sha256": "c9295db33abc8609bda2cdbc885dfce563b52cb6cc6a9db49f7ec276bf931f45",
+      "probe": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "flac",
+            "sample_fmt": "s32",
+            "sample_rate": "44100",
+            "channels": 2,
+            "bits_per_raw_sample": "24"
+          }
+        ],
+        "format": {
+          "duration": "1701.192200"
+        }
+      }
+    }
+  ],
+  "configSha256": "7ce20813cb5d42e556dea066e5ac8fbb8f8087b209acdcdd39e1cbe9a5178950",
+  "streamCodeSha256": "7cfe3f8b460a41d10f6105fc24111ec6b4a14ab00a94cead277262df04681625",
+  "titleCodeSha256": "ac3dec298bb460043808c40084f3748429abe6ee1aaa69ad8a4c40111d1b63c3",
+  "status": "MainPID=915681\nNRestarts=1\nActiveState=active\n"
+}

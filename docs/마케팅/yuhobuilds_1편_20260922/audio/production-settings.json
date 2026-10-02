@@ -1,0 +1,15 @@
+{
+  "voice": "윤성",
+  "voice_id": "tc_5ecbbc696b7c780008be50c4",
+  "model": "ssfm-v30",
+  "emotion": "smart with adjacent narration text",
+  "tempo": 1.02,
+  "seed": 922,
+  "currentRunRequestedCharacters": 1330,
+  "scriptCharacters": 1330,
+  "references": [
+    "https://typecast.ai/developers/api/",
+    "https://github.com/neosapience/typecast-api-mcp-server"
+  ],
+  "listeningStatus": "Agent has not directly listened; voice category verified from the live catalog."
+}

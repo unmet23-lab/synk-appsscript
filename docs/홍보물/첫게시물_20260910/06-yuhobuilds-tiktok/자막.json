@@ -1,0 +1,72 @@
+[
+  {
+    "text": "자기 일을 여러 사람에게 소개하는 1인\n사업자라면, 첫 줄을 읽는 상대부터",
+    "startMs": 300,
+    "endMs": 4700,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "골라보세요.",
+    "startMs": 4700,
+    "endMs": 5800,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "강사가 읽을 때는 첫 강의를 제안하는 데 필요한\n소개자료라는 점을 먼저",
+    "startMs": 8300,
+    "endMs": 12380,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "보여줍니다.",
+    "startMs": 12380,
+    "endMs": 13480,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "교육 담당자는 수업의 대상과 실습, 준비 조건을\n검토해야 합니다.",
+    "startMs": 17300,
+    "endMs": 23100,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "먼저 읽을 내용이 달라집니다.",
+    "startMs": 24780,
+    "endMs": 27040,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "자기 소개를 읽을 사람 둘과, 각자가 먼저 알아야\n할 한 가지를",
+    "startMs": 28333.333333333332,
+    "endMs": 32493.333333333332,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "적어보세요.",
+    "startMs": 32793.33333333333,
+    "endMs": 33893.33333333333,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "이곳에는 직접 만든 결과와 선택 이유, 고쳐 쓸\n원본을 남깁니다.",
+    "startMs": 36333.33333333333,
+    "endMs": 41273.33333333333,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "다음에 필요한 일에도 적용해보세요.",
+    "startMs": 41893.33333333333,
+    "endMs": 43853.33333333333,
+    "timestampMs": null,
+    "confidence": null
+  }
+]

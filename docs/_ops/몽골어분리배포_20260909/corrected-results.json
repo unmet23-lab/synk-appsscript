@@ -1,0 +1,192 @@
+{
+  "label": "corrected",
+  "start": "2026-09-09T07:32:55.226Z",
+  "finishedAt": "2026-09-09T07:35:31.304Z",
+  "repo": "C:/Users/q1212/Documents/SYNK-deploy-mn-20260909",
+  "head": "184fe8c5d6d30795fd479293e743f1a1f066d7e8",
+  "syntax": [
+    {
+      "file": "Code.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "contents_1기차시.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "contents_교안.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "contents_두뇌.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "contents_상담AI.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "contents_서클.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "contents_순간.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "contents_증서.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "contents_진단문항.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "_보류_두뇌_웹화면.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "교재연동.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "만족도팩.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "상담AI.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "엔진_궤적.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "엔진_두뇌.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "엔진_셋업확장.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "엔진_수집.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "엔진_운영배치.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "엔진_자율일.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "엔진_진단.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "엔진_콘텐츠AI.js",
+      "status": 0,
+      "error": null
+    },
+    {
+      "file": "엔진_폼리포트.js",
+      "status": 0,
+      "error": null
+    }
+  ],
+  "appsscriptJson": true,
+  "results": [
+    {
+      "name": "mongolian21",
+      "startedAt": "2026-09-09T07:33:02.579Z",
+      "finishedAt": "2026-09-09T07:33:03.319Z",
+      "status": 0,
+      "summary": [
+        "ℹ tests 21",
+        "ℹ suites 0",
+        "ℹ pass 21",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 451.8492"
+      ]
+    },
+    {
+      "name": "ci",
+      "startedAt": "2026-09-09T07:33:03.319Z",
+      "finishedAt": "2026-09-09T07:35:31.059Z",
+      "status": 1,
+      "summary": [
+        "[test-ci] CI 모사: TZ=UTC · HOME=C:\\Users\\q1212\\AppData\\Local\\Temp\\synk-ci-home-pwUHwS(빈 폴더) · plat=win32 · 테스트 118파일",
+        "✖ current checkout: local master snapshot, policy fingerprint, no write (2348.7784ms)",
+        "✖ old detached worktree sees canonical commits and missing current instructions (1794.7841ms)",
+        "✖ ahead and diverged worktrees retain their independent commits (3431.6611ms)",
+        "✖ tracked dirty count excludes untracked names and preserves all changes (2332.1185ms)",
+        "✖ inherited Git redirection is removed; commands use arrays and optional locks are off (1719.5322ms)",
+        "✖ origin/HEAD fallback uses only local refs; main fallback works without remote refs (2894.6021ms)",
+        "✖ Antigravity first invocation finds the first matching workspace and injects ephemeral metadata only (2188.6241ms)",
+        "✖ 실저장소 — 입은 지면 전량에 흐린 잉크 0건 (24192.9527ms)",
+        "✖ 현재 저장소 규칙이 실제 Gemini 프롬프트에 들어간다 (4.6687ms)",
+        "✖ 🔑 clasp-guard 가 block 판정을 **실제 deny 로** 옮긴다 (등록층 — 가드는 로직보다 여기서 샌다) (18395.9631ms)",
+        "✖ 🔑 실물 docs/GPT_정본.md 에 역할 넷의 마커와 공통지침 펜스가 다 있다 (146.8952ms)",
+        "ℹ tests 2030",
+        "ℹ suites 1",
+        "ℹ pass 2008",
+        "ℹ fail 11",
+        "ℹ cancelled 0",
+        "ℹ skipped 6",
+        "ℹ todo 5",
+        "ℹ duration_ms 141733.0489",
+        "✖ failing tests:",
+        "test at tests\\session-freshness.test.js:84:1",
+        "✖ current checkout: local master snapshot, policy fingerprint, no write (2348.7784ms)",
+        "test at tests\\session-freshness.test.js:101:1",
+        "✖ old detached worktree sees canonical commits and missing current instructions (1794.7841ms)",
+        "test at tests\\session-freshness.test.js:110:1",
+        "✖ ahead and diverged worktrees retain their independent commits (3431.6611ms)",
+        "test at tests\\session-freshness.test.js:119:1",
+        "✖ tracked dirty count excludes untracked names and preserves all changes (2332.1185ms)",
+        "test at tests\\session-freshness.test.js:208:1",
+        "✖ inherited Git redirection is removed; commands use arrays and optional locks are off (1719.5322ms)",
+        "test at tests\\session-freshness.test.js:246:1",
+        "✖ origin/HEAD fallback uses only local refs; main fallback works without remote refs (2894.6021ms)",
+        "test at tests\\session-freshness.test.js:259:1",
+        "✖ Antigravity first invocation finds the first matching workspace and injects ephemeral metadata only (2188.6241ms)",
+        "test at tests\\룸잉크.test.js:136:1",
+        "✖ 실저장소 — 입은 지면 전량에 흐린 잉크 0건 (24192.9527ms)",
+        "test at tests\\수용증거.test.js:75:1",
+        "✖ 현재 저장소 규칙이 실제 Gemini 프롬프트에 들어간다 (4.6687ms)",
+        "test at tests\\이종검수.test.js:504:1",
+        "✖ 🔑 clasp-guard 가 block 판정을 **실제 deny 로** 옮긴다 (등록층 — 가드는 로직보다 여기서 샌다) (18395.9631ms)",
+        "test at tests\\코덱스실행.test.js:108:1",
+        "✖ 🔑 실물 docs/GPT_정본.md 에 역할 넷의 마커와 공통지침 펜스가 다 있다 (146.8952ms)",
+        "[test-ci] ❌ CI 모사 실패 — 로컬에서는 통과해도 CI는 여기서 막힌다",
+        "[test-ci] ⚠ **이 적색은 못 믿을 수 있다** — 도는 동안 1개 파일의 **내용이** 달라졌다(밖에서 편집 중).",
+        "[test-ci] ℹ 이 런이 스스로 다시 구운 산출물 1벌 — **바이트 무변경**이라 적색과 무관하다: .claude\\skills\\외부반입_출처.md"
+      ]
+    }
+  ]
+}

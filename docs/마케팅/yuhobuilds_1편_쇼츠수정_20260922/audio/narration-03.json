@@ -1,0 +1,74 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "유월 이일, 클로드 첫 결제! 그때는 딱 번역만 하려고 했죠.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.25,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 3.52,
+  "words": [
+    {
+      "text": "유월",
+      "start": 0.156,
+      "end": 0.396
+    },
+    {
+      "text": "이일,",
+      "start": 0.467,
+      "end": 0.594
+    },
+    {
+      "text": "클로드",
+      "start": 0.891,
+      "end": 1.145
+    },
+    {
+      "text": "첫",
+      "start": 1.187,
+      "end": 1.315
+    },
+    {
+      "text": "결제!",
+      "start": 1.371,
+      "end": 1.626
+    },
+    {
+      "text": "그때는",
+      "start": 2.05,
+      "end": 2.333
+    },
+    {
+      "text": "딱",
+      "start": 2.389,
+      "end": 2.502
+    },
+    {
+      "text": "번역만",
+      "start": 2.573,
+      "end": 2.884
+    },
+    {
+      "text": "하려고",
+      "start": 2.926,
+      "end": 3.068
+    },
+    {
+      "text": "했죠.",
+      "start": 3.11,
+      "end": 3.52
+    }
+  ],
+  "characters": null
+}

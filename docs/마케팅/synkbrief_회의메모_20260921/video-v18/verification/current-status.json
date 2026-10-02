@@ -1,0 +1,43 @@
+{
+  "checkedAt": "2026-09-24",
+  "publicResources": {
+    "url": "https://synk.im/brief/meeting/",
+    "commit": "444baaed2ba7dfb6efe5e3dc224c82c38c7d6943",
+    "pagesRun": 35996827362,
+    "conclusion": "success",
+    "mobileCopy": true,
+    "pdfBytes": 207790,
+    "zipBytes": 182383,
+    "publicHashMatches": true
+  },
+  "instagram": {
+    "existingAccount": "synk.mn",
+    "target": "synkbrief",
+    "userApprovedConnection": true,
+    "inviteSaved": true,
+    "inviteStatus": "pending",
+    "login": "password-required",
+    "tokenConnected": false,
+    "backendDeployed": false,
+    "postId": null,
+    "realDeliveryTested": false,
+    "localFeatureTests": 7
+  },
+  "voice": {
+    "connected": true,
+    "newEndingGenerated": true,
+    "voice": "은경",
+    "model": "ssfm-v30",
+    "audioDuration": 8.654
+  },
+  "video": {
+    "duration": 159.7,
+    "captions": 53,
+    "fullDecode": true,
+    "desktop": "C:\\Users\\q1212\\OneDrive\\Desktop\\synkbrief_회의정리_1편_20260923\\회의정리_영상.mp4",
+    "bytes": 24338662,
+    "sha256": "94736790db0884de64a4dfd42f96c5f8f326de17e39e1b0e0f8b57e27bac9a21",
+    "previewDesktopMobile": true,
+    "finalRenderPending": false
+  }
+}

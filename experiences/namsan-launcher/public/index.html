@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light"><title>남산 열기 · SYNK</title>
+  <link rel="stylesheet" href="/style.css"><script type="module" src="/app.js"></script>
+</head>
+<body>
+<a class="skip" href="#versions">실행 버튼으로 이동</a>
+<main>
+  <header><a class="brand" href="/">SYNK <span>WORLDS</span></a><span class="local"><i></i> 이 컴퓨터에서 열기</span></header>
+  <section class="hero" aria-labelledby="heading">
+    <div class="hero-copy"><p class="eyebrow">남산, 빛이 머무는 곳</p><h1 id="heading">어떤 남산으로<br>들어가 볼까요?</h1><p class="intro">Unity와 Unreal, 두 버전을 준비하고 있어요.<br>아래 버튼으로 지금 필요한 창을 열어 보세요.</p><a class="web-link" href="http://127.0.0.1:5194/namsan.html">지금 바로 기존 웹 남산 산책하기 <span aria-hidden="true">↗</span></a></div>
+    <figure><img src="/assets/concept.png" width="1672" height="941" alt="구름 위 미래 남산의 숲과 빛나는 정원을 그린 목표 풍경"><figcaption>목표 풍경 참고 · 실제 엔진 실행 화면은 아니에요</figcaption></figure>
+  </section>
+  <section id="versions" aria-labelledby="version-title">
+    <div class="section-top"><h2 id="version-title">버전 열기</h2><p id="checked" aria-live="off">현재 준비 상태 확인 중</p></div>
+    <div class="cards">
+      <article class="card unity" id="unity-card" aria-labelledby="unity-title">
+        <div class="card-top"><span class="engine-mark" aria-hidden="true">U</span><span class="badge" id="unity-badge">확인 중</span></div>
+        <h3 id="unity-title"><a href="/unity" data-engine-link="unity">Unity <span>URP</span></a></h3><p class="purpose">휴대폰에서 즐길 풍경을 위한 버전</p>
+        <ol class="steps" id="unity-steps" aria-label="Unity 준비 단계"><li>엔진 설치</li><li>프로젝트 확인</li><li>게임 실행</li></ol>
+        <p class="status" id="unity-status">현재 설치와 게임 준비 상태를 확인하고 있어요.</p>
+        <button class="launch" id="unity-launch" data-engine="unity" disabled>상태 확인 중…</button>
+        <p class="result" id="unity-result" role="status" aria-live="polite"></p>
+        <details><summary>버튼을 누른 뒤에는?</summary><p>설치 창이 열리면 Windows 확인창에 직접 응답해 주세요. 설치와 라이선스 준비가 끝나면 같은 버튼으로 Unity 프로젝트를 열 수 있어요. 에디터의 Play로 게임을 확인하는 단계는 아직 남아 있어요.</p></details>
+      </article>
+      <article class="card unreal" id="unreal-card" aria-labelledby="unreal-title">
+        <div class="card-top"><span class="engine-mark" aria-hidden="true">U5</span><span class="badge" id="unreal-badge">확인 중</span></div>
+        <h3 id="unreal-title"><a href="/unreal" data-engine-link="unreal">Unreal <span>5</span></a></h3><p class="purpose">PC에서 풍경의 표현력을 비교할 버전</p>
+        <ol class="steps" id="unreal-steps" aria-label="Unreal 준비 단계"><li>엔진 설치</li><li>프로젝트 확인</li><li>게임 실행</li></ol>
+        <p class="status" id="unreal-status">현재 설치와 게임 준비 상태를 확인하고 있어요.</p>
+        <button class="launch" id="unreal-launch" data-engine="unreal" disabled>상태 확인 중…</button>
+        <p class="result" id="unreal-result" role="status" aria-live="polite"></p>
+        <details><summary>버튼을 누른 뒤에는?</summary><p>Epic Games Launcher가 열리면 직접 로그인해 주세요. Unreal Engine의 라이브러리에서 5.8 설치를 진행할 수 있어요. 프로젝트 컴파일과 게임 화면 확인은 그다음 단계예요.</p></details>
+      </article>
+    </div>
+    <p class="boundary" id="readiness">두 버전은 아직 실행 가능한 완성 게임이 아니에요. 이 화면에서 설치와 실행 준비를 이어갈 수 있어요.</p>
+    <p class="connection" id="connection" role="alert" hidden></p>
+  </section>
+  <section class="render-section" aria-labelledby="render-heading">
+    <div class="section-top"><h2 id="render-heading">실제 엔진으로 본 남산</h2><span class="render-context">PC 에디터 렌더</span></div>
+    <p class="render-intro">정원, 가까운 재질, 먼 풍경. 같은 세 시점의 실제 화면을 모으고 있어요.</p>
+    <div class="render-galleries">
+      <article class="render-gallery" aria-labelledby="unity-gallery-heading"><h3 id="unity-gallery-heading">Unity <span>URP</span></h3><p class="render-note" id="unity-render-note">실제 렌더 준비 중</p><div class="render-frames" id="unity-render-frames"></div></article>
+      <article class="render-gallery" aria-labelledby="unreal-gallery-heading"><h3 id="unreal-gallery-heading">Unreal <span>5</span></h3><p class="render-note" id="unreal-render-note">실제 렌더 준비 중</p><div class="render-frames" id="unreal-render-frames"></div></article>
+    </div>
+    <p class="render-boundary">그림을 누르면 큰 화면으로 볼 수 있어요. 이 렌더만으로 휴대폰 성능이나 실제 플레이 품질이 검증되는 것은 아니에요.</p>
+  </section>
+  <footer><span>가까이는 펠트의 온기, 멀리는 펼쳐지는 풍경.</span><button id="refresh" class="text-button">준비 상태 다시 확인 <span aria-hidden="true">↻</span></button></footer>
+</main>
+</body></html>

@@ -1,0 +1,43 @@
+{
+  "at": "2026-09-26T20:53:52.976Z",
+  "file": "yuhobuilds_EP01_V2_FINAL_1080x1920.mp4",
+  "sha256": "c8fcec80408a13d902cb8080f9a9c52e57837bb634c4092502aee956a48d5b85",
+  "duration": 47.066667,
+  "frames": 1412,
+  "playbackRate": 1.2,
+  "sourceDuration": 56.46666666666667,
+  "pitchPreserved": true,
+  "retimeFilter": "rubberband tempo=1.2 pitch=1",
+  "captions": {
+    "count": 32,
+    "displayUsesDigits": true,
+    "visibleLineOrphans": 0,
+    "overlappingIntervals": 0,
+    "maxEstimatedLineWidth": 781.3348800000001,
+    "preLaidOutWholePhrases": true,
+    "exportedMidpointCrops": 32,
+    "exportedBoundaryCrops": 115
+  },
+  "typing": {
+    "fixedLinePositions": true,
+    "characterTimingScaledBy": 1.2
+  },
+  "loudness": {
+    "LUFS": -18.3,
+    "truePeak": -2.46
+  },
+  "fullDecode": true,
+  "blackIntervals": 0,
+  "hyperframesCheck": true,
+  "browserPlaybackVerified": false,
+  "listeningVerified": false,
+  "browserToolError": "failed to write kernel assets (os error 3)",
+  "externalPublication": false,
+  "visualReview": {
+    "exportedCaptionBoundaryFrames": 115,
+    "inspected": true,
+    "note": "Actual MP4 crops inspected; direct listening and real-time browser playback remain unverified",
+    "exportedCaptionMidpoints": 32,
+    "captionNotOccludedBySceneSweep": true
+  }
+}

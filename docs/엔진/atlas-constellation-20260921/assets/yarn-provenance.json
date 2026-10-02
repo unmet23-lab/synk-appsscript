@@ -1,0 +1,15 @@
+{
+  "date": "2026-09-22",
+  "purpose": "User-requested Atlas wool-ball and branded stitches design study",
+  "generator": "built-in image_gen",
+  "prompt": "yarn-prompt.txt",
+  "master": "atlas-yarn-master.png",
+  "masterPixels": [1254, 1254],
+  "embedded": "atlas-yarn.webp",
+  "embeddedPixels": [1024, 1024],
+  "embeddedBytes": 382608,
+  "alphaMin": 0,
+  "alphaMax": 255,
+  "processing": "Resize and WebP quality 92 / alpha quality 100 only; master preserved",
+  "status": "New design-study asset, not an approved replacement for brand logos or characters"
+}

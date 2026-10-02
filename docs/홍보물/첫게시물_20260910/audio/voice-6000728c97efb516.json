@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "793a03f5-4c5f-4072-a8f7-09e32ef4accd",
+  "narration": "내일은 어때요?",
+  "narrationSha256": "6000728c97efb516896931f6f6b38140bf5a38f355a941cbece0c9660fc3766e",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-6000728c97efb516.wav",
+  "duration": 1.68,
+  "sha256": "7940786ebd8dedc95402801544697a3c8526a4edc94733fa1e83aa22cac29ce9",
+  "humanListening": false,
+  "fullDecode": true
+}

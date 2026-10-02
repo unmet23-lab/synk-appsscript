@@ -1,0 +1,47 @@
+{
+  "verifiedAt": "2026-09-20T07:21:00+09:00",
+  "scope": "Japan and Vietnam YouTube profiles only",
+  "copy": "copy.json",
+  "copyRevision": "2026-09-20-jp-vn-fun-and-use-v2",
+  "assets": "manifest.json",
+  "profileImage": "kkamong-profile-v2.png",
+  "profileSha256": "e43fc4fec8bf6fcb5f082eaa4c78b4e24396b2dc316a74bfc8eb505db2dfb8ad",
+  "imageGeneration": "내장 image_gen. 정본 까몽 참조로 새 정지 프로필 생성 후 왼쪽 눈의 검은 틈만 닫는 v2 편집. v1은 미업로드. 두 채널 모두 같은 v2 적용. 정본·앱 표정 세트는 불변.",
+  "languageReview": "AI 작성·자체 검수. 원어민 감수는 하지 않음.",
+  "channels": [
+    {
+      "id": "lab-jp-youtube",
+      "channelId": "UCXpX-UiwswwUqoQkRVdJyow",
+      "url": "https://www.youtube.com/@synklabjapan",
+      "displayName": "SYNK LAB Japan | 楽しい韓国語",
+      "studioSaveConfirmed": true,
+      "publicReloadVerified": true,
+      "coverHeadline": "韓国語が楽しくなる場所",
+      "descriptionLead": "学んですぐ使える韓国語。",
+      "publicNameAndFullDescriptionVerified": true,
+      "publicBannerAndProfileVisuallyVerified": true,
+      "publicWebsiteVerified": "https://synk.im/",
+      "preserved": "기존 영상·구독자 24명·핸들·소유권·연락처 유지. 홈에 예전 자기소개 영상이 노출되는 것도 보존함.",
+      "watermark": "기존 미설정 유지"
+    },
+    {
+      "id": "lab-vn-youtube",
+      "channelId": "UC7NbBUofc_ZK5qCSjzbUzGQ",
+      "url": "https://www.youtube.com/@synklabvietnam",
+      "displayName": "SYNK LAB Vietnam | Tiếng Hàn thật vui",
+      "studioSaveConfirmed": true,
+      "publicReloadVerified": true,
+      "coverHeadline": "Nơi học tiếng Hàn thật vui",
+      "descriptionLead": "Học tiếng Hàn, dùng ngay!",
+      "publicNameAndFullDescriptionVerified": true,
+      "publicBannerAndProfileVisuallyVerified": true,
+      "publicWebsiteVerified": "https://synk.im/",
+      "preserved": "기존 영상·핸들·소유권·연락처 유지. 개인 Instagram 링크는 SYNK 홈페이지로 교체함.",
+      "watermark": "이전 마감에서 저장한 순백 몽글·동영상 끝 표시 유지. 이번 까몽 변경은 채널 프로필만. 실제 동영상 재생 노출은 미검증.",
+      "bannerRetryHistory": "v1 첫 저장 후 배너 누락을 단독 재업로드로 해결함. 이번 v2 커버·소개를 먼저 저장한 뒤 까몽 프로필을 별도 저장, 모두 공개 확인."
+    }
+  ],
+  "visualChecks": "승인 LAB v4 SVG의 펠트·글래스 자산 재사용. 커버 2560×1440 PNG 각 6MB 미만, 1544×422 중앙 안전 영역, 글자 그룹 중심 y=720. 390px 로컬 크롭과 실제 공개 데스크톱 확인. 까몽 v2 1254×1254, 1979110바이트, 양쪽 Studio 원형 크롭 및 공개 사진 시각 확인. 소개 전문은 양쪽 공개 더보기와 copy.json 원고를 공백 정규화 후 대조. 실제 휴대폰 앱 검증은 하지 않음.",
+  "excluded": "나머지 YouTube 14개 생성·다른 SNS·보안·권한·연락처 변경·영상 게시·삭제·홈페이지 배포 없음.",
+  "latestDecision": "사용자가 선택한 한국어가 재밌어지는 곳은 커버, 배워서 바로 쓰는 한국어는 소개 첫 줄에 현지화 배치. 기존 이름·핸들은 유지. 마린·까몽 각각 대신 까몽 하나를 양쪽 프로필에 공통 적용. 왼쪽 눈을 조금 더 감아 달라는 후속 요청을 v2에 반영."
+}

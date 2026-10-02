@@ -1,0 +1,44 @@
+[
+  {
+    "startSeconds": 0,
+    "durationSeconds": 6,
+    "title": "Өөрийн бодлоо хэлээд,\nнэг дууг хамт сонсъё.",
+    "layout": "cover"
+  },
+  {
+    "startSeconds": 6,
+    "durationSeconds": 5.233333333333333,
+    "title": "Найздаа хөгжим\nсанал болгоё.",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 11.233333333333334,
+    "durationSeconds": 5.533333333333333,
+    "title": "Сонсох дуугаа\nсанал болгоорой.",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 16.766666666666666,
+    "durationSeconds": 5,
+    "title": "Тэгье.\nХамт сонсъё.",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 21.766666666666666,
+    "durationSeconds": 6,
+    "title": "Тэгвэл энэ дууг\nхамт сонсъё.",
+    "layout": "music-bridge"
+  },
+  {
+    "startSeconds": 27.766666666666666,
+    "durationSeconds": 60.4,
+    "title": "오늘 밤 제일 환한 사람",
+    "layout": "music"
+  },
+  {
+    "startSeconds": 88.16666666666666,
+    "durationSeconds": 7,
+    "title": "Солонгос хэл · K-LOFI24",
+    "layout": "ending"
+  }
+]

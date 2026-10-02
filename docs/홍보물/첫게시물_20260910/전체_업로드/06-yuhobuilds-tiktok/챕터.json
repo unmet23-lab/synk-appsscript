@@ -1,0 +1,32 @@
+[
+  {
+    "startSeconds": 0,
+    "durationSeconds": 8,
+    "title": "읽는 사람이 바뀌면,\n첫 줄도 달라집니다",
+    "layout": "cover"
+  },
+  {
+    "startSeconds": 8,
+    "durationSeconds": 9,
+    "title": "강사가 읽는 첫 줄",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 17,
+    "durationSeconds": 11.033333333333333,
+    "title": "교육 담당자가 읽으면",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 28.03333333333333,
+    "durationSeconds": 8,
+    "title": "내 독자 둘을 적어보세요",
+    "layout": "statement"
+  },
+  {
+    "startSeconds": 36.03333333333333,
+    "durationSeconds": 8.966666666666667,
+    "title": "결과와 이유를,\n내 일로 바꿔 쓰도록",
+    "layout": "closing"
+  }
+]

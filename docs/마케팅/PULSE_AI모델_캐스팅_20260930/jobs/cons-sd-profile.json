@@ -1,0 +1,33 @@
+[
+  {
+    "created_at": "2026-09-30T12:38:55.589501Z",
+    "display_name": "Seedream 5.0 Pro",
+    "id": "cdf6095d-7f47-4538-ac20-33497a50f868",
+    "job_type": "seedream_v5_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_123855_cdf6095d-7f47-4538-ac20-33497a50f868_min.webp",
+    "params": {
+      "aspect_ratio": "3:4",
+      "batch_size": 1,
+      "height": 2352,
+      "is_inpaint": false,
+      "medias": [
+        {
+          "data": {
+            "id": "90298634-3c22-42d0-8834-b9df2548c359",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/90298634-3c22-42d0-8834-b9df2548c359.png"
+          },
+          "role": "image"
+        }
+      ],
+      "prompt": "Same woman as the reference photo, identical face, identity, hair and black tank top. Change only the pose: a clean left side profile view (her face turned 90 degrees to her right so we see her left cheek and ear), upper body from the waist up, standing against the same plain warm light-grey wall, same soft window daylight. Unretouched model agency digitals, 85mm, real skin texture with visible pores and fine peach fuzz, natural color, fine grain, no beauty filter.",
+      "reference_elements": [],
+      "remove_bg": false,
+      "resolution": "2k",
+      "seed": 18045,
+      "width": 1760
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_123855_cdf6095d-7f47-4538-ac20-33497a50f868.png",
+    "status": "completed"
+  }
+]

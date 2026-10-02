@@ -1,0 +1,72 @@
+{
+  "source": "test-07-frontal-image-to-video.mp4",
+  "language": "ko",
+  "duration": 10.0053125,
+  "provider": "local faster-whisper-small",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 2.04,
+      "text": " 다시 말해주세요.",
+      "words": [
+        {
+          "start": 0.0,
+          "end": 1.18,
+          "word": " 다시",
+          "probability": 0.4794086515903473
+        },
+        {
+          "start": 1.18,
+          "end": 2.04,
+          "word": " 말해주세요.",
+          "probability": 0.9140030344327291
+        }
+      ]
+    },
+    {
+      "start": 2.78,
+      "end": 4.24,
+      "text": " 영수증 필요하세요?",
+      "words": [
+        {
+          "start": 2.78,
+          "end": 3.74,
+          "word": " 영수증",
+          "probability": 0.7909904221693674
+        },
+        {
+          "start": 3.74,
+          "end": 4.24,
+          "word": " 필요하세요?",
+          "probability": 0.9649698138237
+        }
+      ]
+    },
+    {
+      "start": 4.92,
+      "end": 6.16,
+      "text": " 아, 괜찮아요. 감사합니다.",
+      "words": [
+        {
+          "start": 4.92,
+          "end": 5.26,
+          "word": " 아,",
+          "probability": 0.795341968536377
+        },
+        {
+          "start": 5.38,
+          "end": 5.84,
+          "word": " 괜찮아요.",
+          "probability": 0.9865575730800629
+        },
+        {
+          "start": 5.94,
+          "end": 6.16,
+          "word": " 감사합니다.",
+          "probability": 0.9863807559013367
+        }
+      ]
+    }
+  ],
+  "note": "Automatic transcript; not proof of acting quality or exact lip sync."
+}

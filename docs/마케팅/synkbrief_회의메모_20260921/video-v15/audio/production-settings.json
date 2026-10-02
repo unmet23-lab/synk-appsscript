@@ -1,0 +1,18 @@
+{
+  "provider": "Typecast",
+  "voice": {
+    "name": "은경",
+    "id": "tc_6a7446c19f2d7dfed990a900",
+    "model": "ssfm-v30",
+    "tempo": 1.04,
+    "emotion": "tonedown",
+    "intensity": 0.5,
+    "direction": "차분하고 부드러운 여성 설명. 과장된 광고 톤과 속삭임을 피한다."
+  },
+  "segments": 18,
+  "characters": 930,
+  "accountPlanVerified": "lite",
+  "allSourceTextMatched": true,
+  "directListeningVerified": false,
+  "verification": "MP4/WebM full decode; 47 captions; 28 camera states; -17.06 LUFS / -2.77 dBTP; 1280/390 preview playback and downloads"
+}

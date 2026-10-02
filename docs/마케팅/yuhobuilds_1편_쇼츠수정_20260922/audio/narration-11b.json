@@ -1,0 +1,109 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "심심함은 해결됐습니다. 앱은요? 몇 번을 뜯어고쳤는지 깊은 한숨이 잦았답니다. 실제로 탈모 걸린 거 아닌지 가끔 머리를 만져봤어요.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.25,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 7.68,
+  "words": [
+    {
+      "text": "심심함은",
+      "start": 0.139,
+      "end": 0.569
+    },
+    {
+      "text": "해결됐습니다.",
+      "start": 0.611,
+      "end": 1.083
+    },
+    {
+      "text": "앱은요?",
+      "start": 1.639,
+      "end": 1.889
+    },
+    {
+      "text": "몇",
+      "start": 2.528,
+      "end": 2.666
+    },
+    {
+      "text": "번을",
+      "start": 2.722,
+      "end": 2.903
+    },
+    {
+      "text": "뜯어고쳤는지",
+      "start": 2.944,
+      "end": 3.444
+    },
+    {
+      "text": "깊은",
+      "start": 3.736,
+      "end": 4
+    },
+    {
+      "text": "한숨이",
+      "start": 4.041,
+      "end": 4.25
+    },
+    {
+      "text": "잦았답니다.",
+      "start": 4.291,
+      "end": 4.694
+    },
+    {
+      "text": "실제로",
+      "start": 5.125,
+      "end": 5.5
+    },
+    {
+      "text": "탈모",
+      "start": 5.611,
+      "end": 5.833
+    },
+    {
+      "text": "걸린",
+      "start": 5.875,
+      "end": 6.013
+    },
+    {
+      "text": "거",
+      "start": 6.055,
+      "end": 6.097
+    },
+    {
+      "text": "아닌지",
+      "start": 6.138,
+      "end": 6.333
+    },
+    {
+      "text": "가끔",
+      "start": 6.472,
+      "end": 6.722
+    },
+    {
+      "text": "머리를",
+      "start": 6.791,
+      "end": 7.041
+    },
+    {
+      "text": "만져봤어요.",
+      "start": 7.083,
+      "end": 7.68
+    }
+  ],
+  "characters": null
+}

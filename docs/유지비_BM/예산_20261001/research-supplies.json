@@ -1,0 +1,1494 @@
+{
+  "title": "SYNK 울란바토르 6안 소형 비품 예산 조사",
+  "checked_at": "2026-10-01",
+  "currency": "MNT",
+  "status": "담당 범위의 공개가격 조사·계획 예산. 구매·납품·설치·성능시험은 미실행",
+  "quantity_basis": [
+    "강의실4개×16석·사무실상주6~8명/8석",
+    "공기청정7=대형1+기타6, 가습7=큰방1+기타6",
+    "일반 쓰레기통7(컵통포함)+남녀화장실통2+여성위생폐기통1+잔음료통1"
+  ],
+  "source_documents": [
+    "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+    "docs/오프라인_공간설계/방별_인테리어_디자인_20260929.md §3·10·18·21~23"
+  ],
+  "budget_rules": [
+    "세 범위는 저가/기준/상향 계획이며 업체3곳의 확정 견적이 아니다. 기능 차이가 있는 항목은 개별 가정에 표시.",
+    "VAT 명시 포함가를 우선 사용. 포함 여부 미확인 항목에 일괄10%를 더하거나 세금 포함으로 확정하지 말 것. 세금 미확인분과 총괄 예비비는 상위 종합표에서 분리 조정.",
+    "배송/현장반입/설치비는 명시 조건 외 미포함 또는 미확인. 국제 직구·한국 렌탈 가격을 울란바토르 설치가로 쓰지 않음.",
+    "냉난방/환기/기본조명/간판/문표식/기록벽/맞춤장·싱크 등은 인테리어 담당으로 제외.",
+    "브랜드 프레임 디자인·사진부스 인화기·컴퓨터·카메라·마이크·통신은 다른 담당. 향·자동판매기·대형 굿즈·신규 대기실·불필요 추가기기 제외.",
+    "원두20잔×22일 등 월량은 예시이며 실제 등록/재실/운영일을 예측한 값이 아니다. 물·전기·인건비·식권·인터넷·청소 외주비 제외."
+  ],
+  "sources": [
+    {
+      "id": "ap_small",
+      "title": "Citymall Xiaomi Smart Air Purifier 4 Lite",
+      "url": "https://citymall.mn/product/mi_air_purifer_4_lite",
+      "observed": {
+        "online": 399000,
+        "vat_included": 438900,
+        "regular": 650000
+      },
+      "currency": "MNT",
+      "vat": "명시된 VAT 포함가는 438,900₮",
+      "delivery": "미확인",
+      "availability": "소량 재고 경고·판매자 재확인 요구",
+      "method": "웹 검색 결과의 판매자 상품 본문",
+      "notes": "가격 기준. 판매자 표기 25~43㎡를 학원 적합성 검증으로 해석하지 않음.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "ap_large",
+      "title": "Haus Build Material 판매 공고 Xiaomi 5 Pro",
+      "url": "https://barilga.mn/post/7635",
+      "observed": {
+        "price": 1640000
+      },
+      "currency": "MNT",
+      "vat": "미표기",
+      "delivery": "미표기",
+      "availability": "재고 확약 없음",
+      "method": "상품 원문 열람",
+      "published": "2026-02-09",
+      "notes": "현지 판매 공고 가격 기준. CADR/면적 등 판매자 설명은 제조사 검증 사양으로 채택하지 않음.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "humid",
+      "title": "Prime Electronics Xiaomi Smart Humidifier 2",
+      "url": "https://primeelectronics.zochil.shop/products/232153/553143",
+      "observed": {
+        "sale": 179000,
+        "regular": 209000
+      },
+      "currency": "MNT",
+      "vat": "미표기",
+      "delivery": "미표기",
+      "availability": "판매 페이지 존재·실재고 미확약",
+      "method": "상품 원문 열람",
+      "notes": "판매자가 4.5L/350mL/h로 소개. 기본 가격 기준일 뿐 큰방 수분 공급량·세척 적합성 미검증.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "coffee",
+      "title": "Nomin 커피 기기 공개 목록",
+      "url": "https://nomin.mn/t/38246?q=edeka",
+      "observed": {
+        "Tefal_CM533811_sale": 339970,
+        "Tefal_CM533811_regular": 399990,
+        "KRUPS_XP384G10_sale": 1429970,
+        "KRUPS_XP384G10_regular": 1599990,
+        "Krups_EA891C10_sale": 4849970,
+        "Krups_EA891C10_regular": 5499990
+      },
+      "currency": "MNT",
+      "vat": "미표기",
+      "delivery": "미확인",
+      "availability": "검색 색인 공개가·개별 모델 재고 미확인",
+      "method": "판매자 목록 검색 색인",
+      "notes": "드립·소형 에스프레소·전자동은 기능과 직원 관리량이 다른 대안. 서로 동급 모델의 세 견적이 아님.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "water",
+      "title": "Nomin Enjoy WP4F5LG 정수기",
+      "url": "https://nomin.mn/p/1291531",
+      "observed": {
+        "sale": 899970,
+        "regular": 1199990,
+        "replacement_filter": 119990
+      },
+      "currency": "MNT",
+      "vat": "미표기",
+      "delivery": "미확인",
+      "availability": "판매 페이지 존재·현장 납품 확약 아님",
+      "method": "상품 원문 열람",
+      "notes": "얼음 기능 확인 없음. 상판 외형·급배수·컵 높이·냉온수 피크 공급량은 선정 전 확인.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "water_alt",
+      "title": "Ospring Mongolia OS-1120C 공개가",
+      "url": "https://ospring.mn/?page=1",
+      "observed": {
+        "OS1120C": 2640000
+      },
+      "currency": "MNT",
+      "vat": "OS-1120C 2,640,000₮ VAT 포함으로 명시",
+      "delivery": "OS-1120C 무료 배송·설치 문구",
+      "availability": "웹 목록 In Stock 표기·납품 재확인 필요",
+      "method": "판매자 검색 색인",
+      "notes": "가격·세금·배송 표시만 참조. 판매자의 질병 예방·치료 등 건강 효능 주장은 예산 근거로 사용하지 않음.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "printer",
+      "title": "Best Computers Epson L4353",
+      "url": "https://bestcomputers.mn/products/28295",
+      "observed": {
+        "price": 1129900,
+        "stock_on_page": 7
+      },
+      "currency": "MNT",
+      "vat": "상품 페이지에 포함 여부 미표기",
+      "delivery": "지정 울란바토르 권역 100,000₮ 이상 무료 명시. 현장 권역 확인 필요.",
+      "availability": "조회 페이지 7대 표기; 예약·확보 아님",
+      "method": "상품 원문 열람",
+      "notes": "A4 양면/스캔/복사, ADF 없음. 대량 교재 제작용 생산장비로 계산하지 않음.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "printer_low",
+      "title": "Best Computers Epson L3256 비교가",
+      "url": "https://bestcomputers.mn/products/18615",
+      "observed": {
+        "price": 569900,
+        "stock_on_page": 0
+      },
+      "currency": "MNT",
+      "vat": "미표기",
+      "delivery": "미확인",
+      "availability": "품절",
+      "method": "상품 원문 열람",
+      "notes": "과거 저가 범위 참고만. 기준안은 재고 표시 L4353로 설정.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "first_aid",
+      "title": "Safety.mn 벽걸이 소형 구급함",
+      "url": "https://www.safety.mn/Product/19-0110",
+      "observed": {
+        "price": 176000
+      },
+      "currency": "MNT",
+      "vat": "상품 가격의 포함 여부는 명확하지 않음. 페이지 하단 장바구니에 VAT 10% 항목 존재.",
+      "delivery": "미확인",
+      "availability": "재고 있음 표기",
+      "method": "상품 원문 열람",
+      "notes": "내용물 상세에 품목 불일치가 있어 실제 구성·유효기간 확인 필요. 법정 적정성 판정 아님.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "fire",
+      "title": "Nano Impex 4kg 분말 소화기 판매 공고",
+      "url": "https://www.barilga.mn/p/5489/",
+      "observed": {
+        "price": 55000
+      },
+      "currency": "MNT",
+      "vat": "미표기",
+      "delivery": "미표기",
+      "availability": "구형 공고·현 재고 미확인",
+      "published": "2022-03-03",
+      "method": "판매자 공고 검색 본문",
+      "notes": "오래된 가격이므로 55,000₮를 현재 조달가로 확정하지 않고 별도 계획 여유 적용. 규격·수량은 현지 인허가 검토 전.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "bins",
+      "title": "Daiso Mongolia 쓰레기통 판매 목록",
+      "url": "https://daiso.mn/products/247451",
+      "observed": {
+        "small_bin": 13999
+      },
+      "currency": "MNT",
+      "vat": "미표기",
+      "delivery": "미확인",
+      "availability": "판매 목록·제품 용량 미확인",
+      "method": "판매자 목록 원문 열람",
+      "notes": "소형 생활용 통의 가격 하한 참고. 수거용량·뚜껑·세척·일관된 형태는 별도 선정.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "cleaner",
+      "title": "Nomin Urgana 바닥 세정제 1L",
+      "url": "https://nomin.mn/p/1218563",
+      "observed": {
+        "single": 13580,
+        "three_or_more": 11980
+      },
+      "currency": "MNT",
+      "vat": "미표기",
+      "delivery": "미확인",
+      "availability": "판매 페이지",
+      "method": "상품 검색 본문",
+      "notes": "청소 소모품 단가 기준. 실제 댄스 바닥·거울에 적합한 약품은 마감재 지침으로 선택.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "vacuum",
+      "title": "Nomin ENJOY 청소기 공개 목록",
+      "url": "https://nomin.mn/?trk=public_profile_project-title",
+      "observed": {
+        "VC2000WC2": 299990,
+        "VC2000WC3": 279990
+      },
+      "currency": "MNT",
+      "vat": "미표기",
+      "delivery": "미확인",
+      "availability": "검색 색인 공개가·재고 미확인",
+      "method": "판매자 목록 검색 색인",
+      "notes": "청소 세트 내 유선 청소기 가격 참고. 최종 제품 선정 아님.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "paper",
+      "title": "INK TOP A4 80g 500매",
+      "url": "https://inktop.mn/mn/product/50-800",
+      "observed": {
+        "ream_500": 17900,
+        "reams_per_carton": 5
+      },
+      "currency": "MNT",
+      "vat": "미표기",
+      "delivery": "미확인",
+      "availability": "판매 페이지",
+      "method": "상품 원문/검색 본문",
+      "notes": "비품표 2박스+예비1박스는 해당 포장 기준 15리임·7,500매로 계산. 교재 외주 인쇄와 중복하지 않음.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "pen",
+      "title": "INK TOP 0.7mm 파란 볼펜",
+      "url": "https://inktop.mn/mn/product/kr972870-bl",
+      "observed": {
+        "each": 1990
+      },
+      "currency": "MNT",
+      "vat": "미표기",
+      "delivery": "미확인",
+      "availability": "판매 페이지",
+      "method": "상품 검색 본문",
+      "notes": "학생 대여 8개 가격 기준. 기존 재고가 있으면 차감.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "print",
+      "title": "BizPrint 견적 예시",
+      "url": "https://bizprint.mn/quote",
+      "observed": {
+        "business_cards_500_from": 45000,
+        "A5_flyers_1000_from": 120000,
+        "A4_posters_100_from": 35000
+      },
+      "currency": "MNT",
+      "vat": "미표기",
+      "delivery": "미확인",
+      "availability": "맞춤 인쇄 견적 필요",
+      "method": "판매자 견적 페이지 검색 색인; 열린 본문은 동적 계산값 미노출",
+      "notes": "시작가·대량 인쇄 예시뿐이며 A6 양면/소량/용지/코팅 견적이 아님. 카드 계획 단가의 참고 범위만 제공.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "filter_small",
+      "title": "Citymall 4 Lite 호환 필터",
+      "url": "https://citymall.mn/product/xiaomi-filter",
+      "observed": {
+        "online": 89900,
+        "vat_included": 98890,
+        "regular": 125000
+      },
+      "currency": "MNT",
+      "vat": "98,890₮ VAT 포함 명시",
+      "delivery": "미확인",
+      "availability": "소량 재고 경고",
+      "method": "상품 원문 열람",
+      "notes": "정품 여부·선정 기기와 호환성 확인 필요. 5 Pro 필터 가격으로 사용하지 않음.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "beans",
+      "title": "Ecoffee Lavazza Rossa 원두 1kg",
+      "url": "https://ecoffee.mn/products/12692/363863",
+      "observed": {
+        "kg": 125000
+      },
+      "currency": "MNT",
+      "vat": "미표기",
+      "delivery": "미확인",
+      "availability": "판매 페이지",
+      "method": "상품 원문 열람",
+      "notes": "월 비용 산식용 현지 소매 기준. 벌크 계약·원두 종류·잔당 투입량에 따라 달라짐.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "tissue",
+      "title": "GOL 화장지 포장 판매가",
+      "url": "https://gol.mn/product/00-%D1%86%D0%B0%D0%B0%D1%81-%D0%BD%D0%BE%D0%B3%D0%BE%D0%BE%D0%BD-%D1%86%D0%B0%D0%B9%D1%82%D0%B0%D0%B9/",
+      "observed": {
+        "pack": 17330,
+        "carton_6": 103980
+      },
+      "currency": "MNT",
+      "vat": "미표기",
+      "delivery": "200,000₮ 이상 무료 표시",
+      "availability": "판매 페이지",
+      "method": "판매자 검색 본문",
+      "notes": "포장 단위와 롤 수 확인 필요. 학원 월사용량 확정 근거 아님.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "cups",
+      "title": "Nomin 종이컵 50개 상품",
+      "url": "https://nomin.mn/p/1118245",
+      "observed": null,
+      "currency": "MNT",
+      "vat": "미확인",
+      "delivery": "미확인",
+      "availability": "상품 존재만 확인",
+      "method": "상품 원문 열람",
+      "notes": "공개 도구 응답에서 가격을 확인하지 못함. 컵 단가는 계획 가정으로 분리.",
+      "checked_at": "2026-10-01"
+    },
+    {
+      "id": "storage",
+      "title": "Daiso 생활 보관 용기 가격 범위",
+      "url": "https://daiso.mn/products/247136",
+      "observed": {
+        "container_1_8_litre": 13999,
+        "container_3_6_litre": 21999
+      },
+      "currency": "MNT",
+      "vat": "미표기",
+      "delivery": "미확인",
+      "availability": "판매 목록",
+      "method": "판매자 검색 본문",
+      "notes": "일반 용기 하한 참고. 분실물함이나 잔음료 수거통을 이 제품으로 확정하지 않음.",
+      "checked_at": "2026-10-01"
+    }
+  ],
+  "initial_items": [
+    {
+      "id": "air_large",
+      "name": "큰 강의실용 대형 공기청정기",
+      "quantity": 1,
+      "unit": "대",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 1300000,
+        "base": 1640000,
+        "high": 2200000
+      },
+      "line_total": {
+        "low": 1300000,
+        "base": 1640000,
+        "high": 2200000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "ap_large"
+      ],
+      "sourceURL": [
+        "https://barilga.mn/post/7635"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "큰방 약66㎡용 1대 예산. 저가/고가는 동급 대형기 견적 미확보 계획 범위. 4 Pro 최대60㎡ 판매 설명만으로 대체하지 않음. 천장고·재실·환기·촬영 소음·필터 수급 확인 전 최종 모델 미정."
+    },
+    {
+      "id": "air_small",
+      "name": "나머지 6실 공기청정기",
+      "quantity": 6,
+      "unit": "대",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 438900,
+        "base": 600000,
+        "high": 800000
+      },
+      "line_total": {
+        "low": 2633400,
+        "base": 3600000,
+        "high": 4800000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "ap_small"
+      ],
+      "sourceURL": [
+        "https://citymall.mn/product/mi_air_purifer_4_lite"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "낮음 438,900₮는 명시 VAT 포함. 기준/높음은 세금 포함을 목표로 둔 예산 여유이지 판매자 확정 총액이 아님.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "B/C/D·사무실·상담실·포토실 6대. 낮음은 4 Lite 명시 VAT 포함 판매가, 기준/높음은 모델·재고·필터 수급 여유를 둔 계획 단가."
+    },
+    {
+      "id": "humid_large",
+      "name": "큰방 가습기",
+      "quantity": 1,
+      "unit": "대",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 250000,
+        "base": 400000,
+        "high": 700000
+      },
+      "line_total": {
+        "low": 250000,
+        "base": 400000,
+        "high": 700000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "humid"
+      ],
+      "sourceURL": [
+        "https://primeelectronics.zochil.shop/products/232153/553143"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "큰방용 공개 적합 모델을 확정하지 못해 4.5L 보급기보다 용량·세척 여유를 둔 계획가. 작은 모델의 탱크용량을 큰방 가습성능으로 환산하지 않음."
+    },
+    {
+      "id": "humid_small",
+      "name": "나머지 6실 가습기",
+      "quantity": 6,
+      "unit": "대",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 179000,
+        "base": 209000,
+        "high": 350000
+      },
+      "line_total": {
+        "low": 1074000,
+        "base": 1254000,
+        "high": 2100000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "humid"
+      ],
+      "sourceURL": [
+        "https://primeelectronics.zochil.shop/products/232153/553143"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "사용자 계획 총7대 중 작은6대. 저가/기준은 공개 행사/정상가, 높음은 세척·제어·용량 차이 가정. 물·전기·작업인건비 제외."
+    },
+    {
+      "id": "coffee",
+      "name": "공용 커피머신",
+      "quantity": 1,
+      "unit": "대",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 340000,
+        "base": 1600000,
+        "high": 5500000
+      },
+      "line_total": {
+        "low": 340000,
+        "base": 1600000,
+        "high": 5500000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "coffee"
+      ],
+      "sourceURL": [
+        "https://nomin.mn/t/38246?q=edeka"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "낮음=드립, 기준=소형 에스프레소, 높음=전자동 원두급의 서로 다른 서비스 방식. 기준안은 분쇄 커피 사용 및 직원 세척/추출 관리 필요, 자동 셀프서비스 확정 아님. 별도 그라인더·우유 냉장고·카페 설비 제외. 피크 잔수·세척·1.3m 편의대 실제 크기 확인 필요."
+    },
+    {
+      "id": "water",
+      "name": "공용 정수기",
+      "quantity": 1,
+      "unit": "대",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 899970,
+        "base": 1199990,
+        "high": 2640000
+      },
+      "line_total": {
+        "low": 899970,
+        "base": 1199990,
+        "high": 2640000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "water",
+        "water_alt"
+      ],
+      "sourceURL": [
+        "https://nomin.mn/p/1291531",
+        "https://ospring.mn/?page=1"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "OS1120C 2,640,000₮만 명시 포함. Enjoy 포함 여부 미확인.",
+      "transport_included": false,
+      "transport_note": "OS1120C에는 무료 배송·설치 문구, 그 외 미확인. 일반 건축 급배수 공사 포함 아님.",
+      "assumptions": "낮음/기준=Enjoy 공개 행사/정상가, 높음=OS1120C 가격 기준. 얼음 기능·렌탈·배관/전기 공사비 제외. 성능·수질·소모품·상판 적합성을 가격만으로 판정하지 않음."
+    },
+    {
+      "id": "printer",
+      "name": "사무실 A4 컬러 복합기",
+      "quantity": 1,
+      "unit": "대",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 700000,
+        "base": 1129900,
+        "high": 1600000
+      },
+      "line_total": {
+        "low": 700000,
+        "base": 1129900,
+        "high": 1600000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "printer",
+        "printer_low"
+      ],
+      "sourceURL": [
+        "https://bestcomputers.mn/products/28295",
+        "https://bestcomputers.mn/products/18615"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": "conditional",
+      "transport_note": "기준 판매처는 지정 울란바토르 권역 100,000₮ 이상 무료. 현장 주소/반입 조건 확인 필요.",
+      "assumptions": "기준 Epson L4353 공개가(조회7대 표시), 자동양면·복사·스캔 후보. 낮음은 보급형 재고 대체품 견적용 계획가이며 품절 L3256 구매 가능으로 계산하지 않음. 높은 출력량·ADF 필요 시 상향. 교재 대량 외주와 포토부스 인화기는 별도."
+    },
+    {
+      "id": "cleaning_kit",
+      "name": "공용 청소 장비 세트",
+      "quantity": 1,
+      "unit": "세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 400000,
+        "base": 550000,
+        "high": 800000
+      },
+      "line_total": {
+        "low": 400000,
+        "base": 550000,
+        "high": 800000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "vacuum",
+        "cleaner"
+      ],
+      "sourceURL": [
+        "https://nomin.mn/?trk=public_profile_project-title",
+        "https://nomin.mn/p/1218563"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "유선청소기1+밀대/버킷/빗자루/쓰레받기/유리닦이/걸레/장갑 등을 묶은 계획가. 아래 물통 전용 브러시·건조 도구는 제외해 중복 방지. 초기 청소약품은 위생 초도재고에서 계산. 잠금장·싱크는 인테리어 담당."
+    },
+    {
+      "id": "fire_extinguisher",
+      "name": "소화기",
+      "quantity": 2,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 80000,
+        "base": 120000,
+        "high": 180000
+      },
+      "line_total": {
+        "low": 160000,
+        "base": 240000,
+        "high": 360000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "fire"
+      ],
+      "sourceURL": [
+        "https://www.barilga.mn/p/5489/"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "비품표 2개 수량만 사용. 2022년 공개가55,000₮는 오래되어 현재 재견적을 전제로 계획 여유를 둠. 현지 승인 규격·형식·필요 수량·설치 위치는 전문가 확인 전; 2개로 인허가 충족 주장 없음."
+    },
+    {
+      "id": "first_aid",
+      "name": "구급함 및 기본 응급용품",
+      "quantity": 1,
+      "unit": "세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 176000,
+        "base": 220000,
+        "high": 300000
+      },
+      "line_total": {
+        "low": 176000,
+        "base": 220000,
+        "high": 300000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "first_aid"
+      ],
+      "sourceURL": [
+        "https://www.safety.mn/Product/19-0110"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "공개 벽걸이함176,000₮ 참고. 판매페이지 구성 설명이 불명확해 내용물·소모품·유효기간 확인 여유를 포함. 의약품 종류·법정 충분성은 이번 예산에서 확정하지 않음."
+    },
+    {
+      "id": "bins_general",
+      "name": "일반실 쓰레기통",
+      "quantity": 7,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 20000,
+        "base": 35000,
+        "high": 60000
+      },
+      "line_total": {
+        "low": 140000,
+        "base": 245000,
+        "high": 420000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "bins"
+      ],
+      "sourceURL": [
+        "https://daiso.mn/products/247451"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "교실4·사무실1·상담실1·포토/편의대1. 포토실 컵 수거통은 이7개 중1개로 포함하며 별도 컵통을 다시 더하지 않음. 통 용량·내부함·동선은 실물 선정."
+    },
+    {
+      "id": "bins_wc",
+      "name": "화장실 세면용 덮개 쓰레기통",
+      "quantity": 2,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 25000,
+        "base": 45000,
+        "high": 80000
+      },
+      "line_total": {
+        "low": 50000,
+        "base": 90000,
+        "high": 160000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "bins"
+      ],
+      "sourceURL": [
+        "https://daiso.mn/products/247451"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "남녀 각1개. 일반7개와 별도. 실제 문/세면대/발 공간에 맞는 세척 가능한 모델로 견적."
+    },
+    {
+      "id": "bin_feminine",
+      "name": "여성 위생 폐기통",
+      "quantity": 1,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 40000,
+        "base": 70000,
+        "high": 120000
+      },
+      "line_total": {
+        "low": 40000,
+        "base": 70000,
+        "high": 120000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "bins"
+      ],
+      "sourceURL": [
+        "https://daiso.mn/products/247451"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "여자 화장실1개. 일반통 가격은 하한 참고뿐, 위생 폐기용 뚜껑/수거 구조의 직접 공개가는 미확인."
+    },
+    {
+      "id": "office_stationery",
+      "name": "기본 사무·상담 필기/파일 세트",
+      "quantity": 1,
+      "unit": "세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 100000,
+        "base": 180000,
+        "high": 300000
+      },
+      "line_total": {
+        "low": 100000,
+        "base": 180000,
+        "high": 300000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "paper",
+        "pen"
+      ],
+      "sourceURL": [
+        "https://inktop.mn/mn/product/50-800",
+        "https://inktop.mn/mn/product/kr972870-bl"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "파일·바인더·상담 노트·필기구·스테이플러 등 최소 초도분 계획가. 세부 파일 수는 분류 확정 후 부족분만 구입. 아래 학생 대여 펜8개와 A4 15리임은 제외."
+    },
+    {
+      "id": "paper_opening",
+      "name": "A4 80g 초도 용지",
+      "quantity": 15,
+      "unit": "500매 리임",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 17900,
+        "base": 17900,
+        "high": 21900
+      },
+      "line_total": {
+        "low": 268500,
+        "base": 268500,
+        "high": 328500
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "paper"
+      ],
+      "sourceURL": [
+        "https://inktop.mn/mn/product/50-800"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "비품표2박스+예비1박스, 1박스5리임 기준 15리임. 외주 교재비와 별도이며 사무실/보조 출력용. 월사용량이 아니라 개원 초도 재고.",
+      "quantity_source": "06 비품표의 2+1박스 × 판매처 포장5리임"
+    },
+    {
+      "id": "sanitizer_opening",
+      "name": "손 소독제 초도",
+      "quantity": 6,
+      "unit": "병",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 10000,
+        "base": 16000,
+        "high": 25000
+      },
+      "line_total": {
+        "low": 60000,
+        "base": 96000,
+        "high": 150000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [],
+      "sourceURL": [],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "비품표 입구1+교실4+상담실1. 용량/제품 미정이고 공개 일치 모델가격 확보 전 계획가. 월보충은 위생 월소모품에 포함."
+    },
+    {
+      "id": "hygiene_opening",
+      "name": "화장실·청소 소모품 초도",
+      "quantity": 1,
+      "unit": "초도 묶음",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 150000,
+        "base": 250000,
+        "high": 400000
+      },
+      "line_total": {
+        "low": 150000,
+        "base": 250000,
+        "high": 400000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "cleaner",
+        "tissue"
+      ],
+      "sourceURL": [
+        "https://nomin.mn/p/1218563",
+        "https://gol.mn/product/00-%D1%86%D0%B0%D0%B0%D1%81-%D0%BD%D0%BE%D0%B3%D0%BE%D0%BE%D0%BD-%D1%86%D0%B0%D0%B9%D1%82%D0%B0%D0%B9/"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "휴지2박스의 실제 포장 확인, 손건조 종이·비누 리필·통 라이너·여성용품·유리/바닥 세정제 등 초기 준비. 손소독제6병은 별도행이므로 제외. 물품/용량 미확정 예산. 월 보충은 별도이며 초도재고를 첫달에 다시 이중 구매하지 않음."
+    },
+    {
+      "id": "loan_pens",
+      "name": "학생 대여 펜",
+      "quantity": 8,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 1500,
+        "base": 1990,
+        "high": 3500
+      },
+      "line_total": {
+        "low": 12000,
+        "base": 15920,
+        "high": 28000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "pen"
+      ],
+      "sourceURL": [
+        "https://inktop.mn/mn/product/kr972870-bl"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "교실별2개. 기존 굿즈/사무 재고 활용분은 차감."
+    },
+    {
+      "id": "lost_found",
+      "name": "닫힌 분실물함",
+      "quantity": 1,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 20000,
+        "base": 40000,
+        "high": 70000
+      },
+      "line_total": {
+        "low": 20000,
+        "base": 40000,
+        "high": 70000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "storage"
+      ],
+      "sourceURL": [
+        "https://daiso.mn/products/247136"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "사무실 기존장 내부 상자만. 새 수납장·별도 금고 미포함, 귀중품은 이미 계획한 잠금구획 사용."
+    },
+    {
+      "id": "leftover_drink",
+      "name": "잔음료 수거통",
+      "quantity": 1,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 30000,
+        "base": 60000,
+        "high": 120000
+      },
+      "line_total": {
+        "low": 30000,
+        "base": 60000,
+        "high": 120000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "storage"
+      ],
+      "sourceURL": [
+        "https://daiso.mn/products/247136"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "편의대 하부 뚜껑·분리세척·받이·비우기선 포함 계획가. 생활용기 공개가는 하한 참고뿐 목적 적합품 견적 아님. 일반7통 중 컵통과 별도1개. 맞춤장 제외."
+    },
+    {
+      "id": "humid_cleaning",
+      "name": "물통 전용 세척·건조 도구",
+      "quantity": 1,
+      "unit": "세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 20000,
+        "base": 40000,
+        "high": 80000
+      },
+      "line_total": {
+        "low": 20000,
+        "base": 40000,
+        "high": 80000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "storage"
+      ],
+      "sourceURL": [
+        "https://daiso.mn/products/247136"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "물통용 브러시·건조받침의 계획가. 기존 청소세트에서 겹치는 구성품은 차감. 7대 동시 건조대 또는 관리장 추가 아님."
+    },
+    {
+      "id": "operation_labels",
+      "name": "개점·마감·교실 운영 카드와 작은 라벨",
+      "quantity": 1,
+      "unit": "세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 30000,
+        "base": 60000,
+        "high": 120000
+      },
+      "line_total": {
+        "low": 30000,
+        "base": 60000,
+        "high": 120000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "print"
+      ],
+      "sourceURL": [
+        "https://bizprint.mn/quote"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "장 안쪽 개점/마감2장·교실4세트 및 소형 번호/전원 라벨의 출력/코팅/컷팅 예산. 긴 벽 규칙표·문 표식·간판·기록벽 물리제작은 인테리어 담당으로 전부 제외."
+    },
+    {
+      "id": "a3_print",
+      "name": "입구 A3 안내 출력물",
+      "quantity": 1,
+      "unit": "초도 출력 세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 5000,
+        "base": 10000,
+        "high": 20000
+      },
+      "line_total": {
+        "low": 5000,
+        "base": 10000,
+        "high": 20000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [
+        "print"
+      ],
+      "sourceURL": [
+        "https://bizprint.mn/quote"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "교체할 종이 출력물만. A3 프레임/벽패널/사인 제작은 인테리어 담당. 용지/언어/검수 확정 후 실제 부수만 출력."
+    },
+    {
+      "id": "entry_mat",
+      "name": "출입구 미끄럼 방지 발매트",
+      "quantity": 1,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 60000,
+        "base": 120000,
+        "high": 200000
+      },
+      "line_total": {
+        "low": 60000,
+        "base": 120000,
+        "high": 200000
+      },
+      "price_basis": "실제 크기·일치 제품 공개가격 미확보 계획 충당액",
+      "source_ids": [],
+      "sourceURL": [],
+      "checked_at": "2026-10-01",
+      "VAT": "미확인",
+      "transport_included": false,
+      "transport_note": "구매품 운송 미확인. 바닥 자리·단차 정리 공사는 건축 C06으로 별도.",
+      "assumptions": "6안 출입구 매트 1개만. 실측 통행 폭과 문 하부 여유에 맞춰 방습·미끄럼·모서리 말림·물/먼지 세척 조건을 확인. 매트 실물을 바닥과 평탄하게 맞추는 상세는 시공 견적 확인 전이며 복도 추가 매트나 신발장 없음."
+    }
+  ],
+  "initial_totals": {
+    "low": 8918870,
+    "base": 13379310,
+    "high": 23516500
+  },
+  "initial_totals_note": "화장실 소형 디스펜서2세트는 인테리어 담당 중복 확인 후 차감 가능. 부수 미정 카드/교재/명함과 선택 패드·포트·월보충 비용 제외. 초도 소모품은 포함.",
+  "optional_items": [
+    {
+      "id": "consult_tablet",
+      "name": "상담용 패드",
+      "quantity": 1,
+      "unit": "대",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 600000,
+        "base": 1000000,
+        "high": 1600000
+      },
+      "sourceURL": [],
+      "checked_at": "2026-10-01",
+      "VAT": "미확인",
+      "transport_included": false,
+      "price_basis": "사양 미정 계획가; 이번 공개가 조사 범위에서 일치 모델 미확보",
+      "reason": "기존 직원 노트북/기기로 브로셔가 가능하면 추가 구입 보류. 상담 동시 시연 필요가 확인될 때만 선택.",
+      "included_in_initial": false
+    },
+    {
+      "id": "kettle",
+      "name": "전기포트",
+      "quantity": 1,
+      "unit": "대",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 65000,
+        "base": 120000,
+        "high": 270000
+      },
+      "sourceURL": [
+        "https://www.barilga.mn/p/?business=gd&page=3&site=gd&view=list",
+        "https://nomin.mn/?trk=public_profile_project-title"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "미확인",
+      "transport_included": false,
+      "price_basis": "Xiaomi N1 공개65,000₮·Tefal 공개269,970₮ 사이 계획가",
+      "reason": "선정 정수기의 온수 온도/피크 공급량으로 차 제공이 충분하면 별도포트 불필요. 편의대 공간·안전 확인 후만 추가.",
+      "included_in_initial": false
+    }
+  ],
+  "quantity_unknown_unit_rates": [
+    {
+      "id": "first_class_card",
+      "name": "첫 수업 A6 양면 카드",
+      "quantity": null,
+      "unit": "신규 등록생1명당1장",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 500,
+        "base": 1000,
+        "high": 1500
+      },
+      "sourceURL": [
+        "https://bizprint.mn/quote"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "미확인",
+      "transport_included": false,
+      "price_basis": "A6 소량 양면·용지 직접 견적 미확보 계획가",
+      "formula": "첫 등록 인원 N × 장당단가",
+      "assumptions": "등록 인원 미정으로 초기 고정 합계에서 제외. 대량 A5 시작가를 A6 실견적으로 사용하지 않음."
+    },
+    {
+      "id": "past_words_card",
+      "name": "지나간 말들 A6 빈 카드",
+      "quantity": null,
+      "unit": "카드1장",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 300,
+        "base": 500,
+        "high": 1000
+      },
+      "sourceURL": [
+        "https://bizprint.mn/quote"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "미확인",
+      "transport_included": false,
+      "price_basis": "소량 카드 계획가",
+      "formula": "필요 카드 수 N × 장당단가",
+      "assumptions": "기록벽/슬리브 하드웨어는 인테리어 담당. 학생 게시 수를 임의로 정하지 않음."
+    },
+    {
+      "id": "textbook_bw",
+      "name": "교재 흑백 내지 외주 인쇄 산식용",
+      "quantity": null,
+      "unit": "A4 인쇄면1면",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 100,
+        "base": 150,
+        "high": 250
+      },
+      "sourceURL": [
+        "https://bizprint.mn/quote"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "미확인",
+      "transport_included": false,
+      "price_basis": "판매자 공개 동급 단가 없음·별도 견적용 가정",
+      "formula": "레벨별 인쇄면수 P × 인쇄부수 N × 면단가 + 표지·제본 별도",
+      "assumptions": "6레벨은 종류 수이며 총부수가 아님. 양면1매=2인쇄면, 컬러/용지/편집비 제외."
+    },
+    {
+      "id": "textbook_binding",
+      "name": "교재 표지·간단 제본 산식용",
+      "quantity": null,
+      "unit": "권",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 2000,
+        "base": 4000,
+        "high": 8000
+      },
+      "sourceURL": [
+        "https://bizprint.mn/quote"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "미확인",
+      "transport_included": false,
+      "price_basis": "페이지수·제본방식 미정의 계획가",
+      "formula": "인쇄부수 N × 권당 제본/표지 단가",
+      "assumptions": "본당 두께와 표지 컬러/코팅 견적 필요. 실제 권수 미정으로 합계 제외."
+    },
+    {
+      "id": "business_cards",
+      "name": "직원 명함 인쇄 산식",
+      "quantity": null,
+      "unit": "직원별500매 예시배치",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 45000,
+        "base": 60000,
+        "high": 90000
+      },
+      "sourceURL": [
+        "https://bizprint.mn/quote"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "미확인",
+      "transport_included": false,
+      "price_basis": "500매45,000₮부터 공개 예시·다른 범위는 가정",
+      "formula": "실제 발행 인원 × 개인별 확정 부수 견적; 500매씩13명으로 선택할 때만 해당 배치단가×13",
+      "assumptions": "직원13명과 상주8석 구분. 500매씩13세트를 임의 발주하지 않고 고정 합계에서 제외."
+    }
+  ],
+  "monthly_items": [
+    {
+      "id": "hygiene",
+      "name": "화장실·위생·청소 보충",
+      "quantity": 1,
+      "unit": "월",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 150000,
+        "base": 300000,
+        "high": 600000
+      },
+      "sourceURL": [
+        "https://nomin.mn/p/1218563",
+        "https://gol.mn/product/00-%D1%86%D0%B0%D0%B0%D1%81-%D0%BD%D0%BE%D0%B3%D0%BE%D0%BE%D0%BD-%D1%86%D0%B0%D0%B9%D1%82%D0%B0%D0%B9/"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "단품별 미확인",
+      "transport_included": false,
+      "price_basis": "사용량 미정 계획 충당액",
+      "assumptions": "휴지·손건조지·비누·손소독제·여성용품·통라이너·세정제. 초도재고 소진 이후 보충이며 이용자 수/운영일 기록 후 조정.",
+      "line_total": {
+        "low": 150000,
+        "base": 300000,
+        "high": 600000
+      }
+    },
+    {
+      "id": "coffee_example",
+      "name": "원두 월사용 예시",
+      "quantity": 4.4,
+      "unit": "kg/월",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 100000,
+        "base": 125000,
+        "high": 145000
+      },
+      "sourceURL": [
+        "https://ecoffee.mn/products/12692/363863"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "미확인",
+      "transport_included": false,
+      "price_basis": "기준1kg125,000₮ 공개가·낮음/높음 대체 원두 가정",
+      "formula": "예시 20잔/일 × 22일 × 10g/잔 ÷ 1000 = 4.4kg",
+      "assumptions": "20잔/일은 수요 예측이 아닌 비교 예시. 원두형 기준이며 캡슐 방식 선택 시 이 행 전체를 캡슐당 비용으로 대체. 우유·시럽 미포함. 기준 커피머신은 분쇄 커피를 사용하므로 공급사의 분쇄 옵션·가격을 확인해야 함. 인용 상품의 분쇄 제공 여부는 확인 전이며, 별도 그라인더 구매를 이 합계에 숨겨 포함하지 않음.",
+      "line_total": {
+        "low": 440000,
+        "base": 550000,
+        "high": 638000
+      }
+    },
+    {
+      "id": "cups_example",
+      "name": "음료용 종이컵 월사용 예시",
+      "quantity": 440,
+      "unit": "개/월",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 100,
+        "base": 200,
+        "high": 300
+      },
+      "sourceURL": [
+        "https://nomin.mn/p/1118245"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "미확인",
+      "transport_included": false,
+      "price_basis": "상품 공개 가격 미확인·계획 단가",
+      "formula": "예시20컵/일 × 22일",
+      "assumptions": "개인 텀블러 사용·실제 컵 소모에 따라 조정. 컵 크기/내열/뚜껑 선택 후 견적. 물 전용 추가컵 수요 미포함.",
+      "line_total": {
+        "low": 44000,
+        "base": 88000,
+        "high": 132000
+      }
+    },
+    {
+      "id": "tea_snacks",
+      "name": "포장 차·다과 월사용 예산",
+      "quantity": 1,
+      "unit": "월",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 100000,
+        "base": 200000,
+        "high": 400000
+      },
+      "sourceURL": [],
+      "checked_at": "2026-10-01",
+      "VAT": "미확인",
+      "transport_included": false,
+      "price_basis": "구성·제공량 미정 계획 충당액",
+      "assumptions": "상담 및 공용 제공량을 먼저 정하고 실소모로 보충. 직원 식권/외부 식사와 별개이며 냉장고 등 추가 구매 없음.",
+      "line_total": {
+        "low": 100000,
+        "base": 200000,
+        "high": 400000
+      }
+    },
+    {
+      "id": "filter_small_reserve",
+      "name": "소형 공청 필터 교체 월적립 예시",
+      "quantity": 1,
+      "unit": "6대분/월",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 49445,
+        "base": 98890,
+        "high": 138000
+      },
+      "sourceURL": [
+        "https://citymall.mn/product/xiaomi-filter"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "공개필터98,890₮ 포함가를 기준 사용",
+      "transport_included": false,
+      "price_basis": "필터 가격÷가정 교체주기",
+      "formula": "기준 6대 × 98,890₮ ÷ 6개월 ≈98,890₮/월",
+      "assumptions": "낮음12개월·기준6개월·높음은 다른 필터/단축주기 여유. 실제 교체주기는 제품지침·오염상태로 정하며 매달6개 구매 아님. 대형필터는 별도.",
+      "line_total": {
+        "low": 49445,
+        "base": 98890,
+        "high": 138000
+      }
+    },
+    {
+      "id": "filter_large_reserve",
+      "name": "대형 공청 필터 월적립",
+      "quantity": 1,
+      "unit": "월",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 15000,
+        "base": 30000,
+        "high": 50000
+      },
+      "sourceURL": [],
+      "checked_at": "2026-10-01",
+      "VAT": "미확인",
+      "transport_included": false,
+      "price_basis": "선정 모델별 필터 공개가 미확보 계획 충당액",
+      "assumptions": "소형4 Lite/4 Pro 필터가 대형5 Pro와 호환된다고 가정하지 않음.",
+      "line_total": {
+        "low": 15000,
+        "base": 30000,
+        "high": 50000
+      }
+    },
+    {
+      "id": "water_filter_reserve",
+      "name": "정수 필터 월적립 예시",
+      "quantity": 1,
+      "unit": "월",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 10000,
+        "base": 13332,
+        "high": 30000
+      },
+      "sourceURL": [
+        "https://nomin.mn/p/1291531"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "미확인",
+      "transport_included": false,
+      "price_basis": "Enjoy 교체필터 공개119,990₮÷9~12개월 예시",
+      "formula": "기준119,990÷9≈13,332₮/월",
+      "assumptions": "선정 모델·처리량·원수에 따라 재산정. 렌탈료나 서비스 계약비가 아님.",
+      "line_total": {
+        "low": 10000,
+        "base": 13332,
+        "high": 30000
+      }
+    },
+    {
+      "id": "printer_maintenance_reserve",
+      "name": "프린터 잉크·유지보수 월적립",
+      "quantity": 1,
+      "unit": "월",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 20000,
+        "base": 50000,
+        "high": 100000
+      },
+      "sourceURL": [
+        "https://bestcomputers.mn/products/28295"
+      ],
+      "checked_at": "2026-10-01",
+      "VAT": "미확인",
+      "transport_included": false,
+      "price_basis": "선정잉크 모델·월면수 미정 충당액",
+      "assumptions": "제품 기본 동봉 잉크 별도 중복구매 없음. 소모·유지보수만 예시이며 사무실 A4 용지 추가사용과 대량 외주 교재는 별도 산식.",
+      "line_total": {
+        "low": 20000,
+        "base": 50000,
+        "high": 100000
+      }
+    }
+  ],
+  "monthly_example_totals": {
+    "low": 828445,
+    "base": 1330222,
+    "high": 2088000
+  },
+  "monthly_totals_note": "월20잔×22일 음료 예시 포함. 초기구매합계와 단순 합산하지 말고 운영비로 구분. 첫달 초도재고와 중복 구매하지 않음.",
+  "manufacturer_vs_retail": "소매상의 탱크용량/CADR/면적/건강효능 홍보는 제조사 공인 성능 및 학원 현장 적합성 확인으로 사용하지 않았다. 방별 선정·소음·환기·세척·급배수·보수/필터 수급은 제품 매뉴얼과 현지 공급자로 별도 확정한다.",
+  "boundary_excluded_items": [
+    {
+      "id": "wc_accessories",
+      "name": "화장실 비누·손건조 종이 디스펜서·휴지걸이",
+      "quantity": 2,
+      "unit": "실별 세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 60000,
+        "base": 100000,
+        "high": 180000
+      },
+      "line_total": {
+        "low": 120000,
+        "base": 200000,
+        "high": 360000
+      },
+      "price_basis": "공개가를 참고한 예산 계획 범위; 확정 견적 아님",
+      "source_ids": [],
+      "sourceURL": [],
+      "checked_at": "2026-10-01",
+      "VAT": "출처에 포함가가 명시된 항목만 포함 확인. 그 외 미확인; 항목별 설명 참조.",
+      "transport_included": false,
+      "transport_note": "명시적 무료 권역 조건 외에는 배송·현장 반입 미포함/미확인",
+      "assumptions": "남녀 각실 비누 디스펜서1+종이 디스펜서1+휴지걸이1. 인테리어 담당과 조율해 C32로 반영하므로 본 합계 제외. 제시 범위는 직접 공개 견적 미확보 계획가이며 종합표에서 C32에 1회만 합산.",
+      "coordination_status": "인테리어 담당 중복 포함 여부 회신 대기",
+      "included_in_initial": false,
+      "budget_owner": "인테리어 C32"
+    }
+  ],
+  "excluded_items": [
+    {
+      "name": "향·자동판매기·대형 굿즈·추가 대기실",
+      "reason": "현 공간 설계에서 불필요하거나 제외되어 예산 합산하지 않음"
+    },
+    {
+      "name": "간판·문 표식·기록벽·A3 프레임 및 맞춤 수납장",
+      "reason": "인테리어 담당 합산; 이 문서는 교체 종이·카드·라벨만 반영"
+    },
+    {
+      "name": "냉난방·환기·기본조명·싱크·배관·전기 공사",
+      "reason": "인테리어 담당 합산"
+    },
+    {
+      "name": "교재 대량 인쇄 및 제본",
+      "reason": "페이지 수와 학생 수 미확정; 아래 단가 산식만 제공, 초기 합계 제외"
+    },
+    {
+      "name": "화장실 거울2·디스펜서/휴지걸이2세트·우산 물받이1",
+      "reason": "담당자 직접 조율 완료: 인테리어 C33·C32·F18에 각각 반영하므로 소형 비품 초기 합계 제외"
+    }
+  ],
+  "coordination": {
+    "checked_at": "2026-10-01",
+    "construction_owned": [
+      "C32 화장실 디스펜서·휴지걸이 2세트",
+      "C33 화장실 거울 2개",
+      "F18 포토 구역 우산 물받이 1개"
+    ],
+    "supplies_owned": [
+      "일반 쓰레기통7(컵통포함)",
+      "화장실통2+여성위생폐기통1",
+      "잔음료 수거통1"
+    ],
+    "rule": "종합표에서 각 항목을 한 번만 합산"
+  }
+}

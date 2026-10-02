@@ -1,0 +1,205 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 2.54,
+  "words": [
+    {
+      "text": "그런데",
+      "start": 0.1,
+      "end": 0.328
+    },
+    {
+      "text": "이",
+      "start": 0.442,
+      "end": 0.457
+    },
+    {
+      "text": "기능도",
+      "start": 0.528,
+      "end": 0.77
+    },
+    {
+      "text": "좋아",
+      "start": 0.813,
+      "end": 0.97
+    },
+    {
+      "text": "보이고,",
+      "start": 1.013,
+      "end": 1.227
+    },
+    {
+      "text": "저것도",
+      "start": 1.627,
+      "end": 1.883
+    },
+    {
+      "text": "넣고",
+      "start": 1.926,
+      "end": 2.069
+    },
+    {
+      "text": "싶고.",
+      "start": 2.112,
+      "end": 2.54
+    }
+  ],
+  "characters": [
+    {
+      "text": "그",
+      "start": 0.1,
+      "end": 0.171
+    },
+    {
+      "text": "런",
+      "start": 0.171,
+      "end": 0.285
+    },
+    {
+      "text": "데",
+      "start": 0.285,
+      "end": 0.328
+    },
+    {
+      "text": " ",
+      "start": 0.328,
+      "end": 0.442
+    },
+    {
+      "text": "이",
+      "start": 0.442,
+      "end": 0.457
+    },
+    {
+      "text": " ",
+      "start": 0.457,
+      "end": 0.528
+    },
+    {
+      "text": "기",
+      "start": 0.528,
+      "end": 0.628
+    },
+    {
+      "text": "능",
+      "start": 0.628,
+      "end": 0.742
+    },
+    {
+      "text": "도",
+      "start": 0.742,
+      "end": 0.77
+    },
+    {
+      "text": " ",
+      "start": 0.77,
+      "end": 0.813
+    },
+    {
+      "text": "좋",
+      "start": 0.813,
+      "end": 0.956
+    },
+    {
+      "text": "아",
+      "start": 0.956,
+      "end": 0.97
+    },
+    {
+      "text": " ",
+      "start": 0.97,
+      "end": 1.013
+    },
+    {
+      "text": "보",
+      "start": 1.013,
+      "end": 1.113
+    },
+    {
+      "text": "이",
+      "start": 1.113,
+      "end": 1.156
+    },
+    {
+      "text": "고",
+      "start": 1.156,
+      "end": 1.213
+    },
+    {
+      "text": ",",
+      "start": 1.213,
+      "end": 1.227
+    },
+    {
+      "text": " ",
+      "start": 1.227,
+      "end": 1.627
+    },
+    {
+      "text": "저",
+      "start": 1.627,
+      "end": 1.741
+    },
+    {
+      "text": "것",
+      "start": 1.741,
+      "end": 1.841
+    },
+    {
+      "text": "도",
+      "start": 1.841,
+      "end": 1.883
+    },
+    {
+      "text": " ",
+      "start": 1.883,
+      "end": 1.926
+    },
+    {
+      "text": "넣",
+      "start": 1.926,
+      "end": 2.026
+    },
+    {
+      "text": "고",
+      "start": 2.026,
+      "end": 2.069
+    },
+    {
+      "text": " ",
+      "start": 2.069,
+      "end": 2.112
+    },
+    {
+      "text": "싶",
+      "start": 2.112,
+      "end": 2.226
+    },
+    {
+      "text": "고",
+      "start": 2.226,
+      "end": 2.525
+    },
+    {
+      "text": ".",
+      "start": 2.525,
+      "end": 2.54
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "그런데 이 기능도 좋아 보이고, 저것도 넣고 싶고.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.26,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.15
+    }
+  }
+}

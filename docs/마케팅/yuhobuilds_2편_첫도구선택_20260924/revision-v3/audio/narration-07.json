@@ -1,0 +1,68 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "그런데 앱을 만들기도 전에, 이번엔 클로드 코드 설정에서 멈췄습니다.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.28,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "tonedown"
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 3.867,
+  "words": [
+    {
+      "text": "그런데",
+      "start": 0.11,
+      "end": 0.358
+    },
+    {
+      "text": "앱을",
+      "start": 0.702,
+      "end": 0.895
+    },
+    {
+      "text": "만들기도",
+      "start": 0.936,
+      "end": 1.239
+    },
+    {
+      "text": "전에,",
+      "start": 1.28,
+      "end": 1.445
+    },
+    {
+      "text": "이번엔",
+      "start": 1.968,
+      "end": 2.202
+    },
+    {
+      "text": "클로드",
+      "start": 2.353,
+      "end": 2.615
+    },
+    {
+      "text": "코드",
+      "start": 2.684,
+      "end": 2.821
+    },
+    {
+      "text": "설정에서",
+      "start": 2.863,
+      "end": 3.179
+    },
+    {
+      "text": "멈췄습니다.",
+      "start": 3.234,
+      "end": 3.867
+    }
+  ],
+  "characters": null
+}

@@ -1,0 +1,20 @@
+{
+  "output": "index.html",
+  "sha256": "2fd61d5a732123435b44286dd363dda9b1bbe5a74c72992c34d75c0b98f71c53",
+  "bytes": 1986579,
+  "sources": {
+    "index.src.html": "67e4dda8b72725b9095f5cc36dabe5658afd6ea5ecb8e7fe1ce22381af8b3071",
+    "style.css": "b616eba04f9045b2d05fb2d76fe2c825e5335f0b342775120d432c502647f4c2",
+    "atlas-data.js": "4918dc3c1ee758bcc6cfdf066dd90e84b0349a981b136db09af404fe0dc51dce",
+    "depth-field.js": "c6a38e7c214e0b4f55e25e44f4bac177369ced06b75a92f518d4c3f96d7fcf92",
+    "constellation.js": "681dbbc5c3ba6e2b57d23b01dcdc808121af9cfa0f90f662fd63320c9e0597b8",
+    "app.js": "e57ac6c21633b0b06a022fe3ff6f32c7dbabdac2302c7d58ecad20d35bbda086",
+    "portal.js": "9718a410563977c954be2705dd773d6ab6502563f3804ef12c849cf6213545f3",
+    "build.cjs": "63cd3521593c7d3e0cf8f6a50148c30dc07caada321e053a9d9c12648873444c",
+    "../../../tools/lib/loom-motion.js": "07e99bdd5257895935e305b201a03cfb9f852428706ccc745e93150ca078e73c",
+    "../../../tools/lib/loom-network-webgl.js": "d25e314cda3306e8eab1c7671f0cbca32b9fde22cddfdcf88f478c0013b4dd76"
+  },
+  "assets": {
+    "assets/synk-white-embroidered-cta.webp": "442f185dbf9e1cec46047437bcaf8cbf59e7da882e8440d5ccbafcfdff9527fa"
+  }
+}

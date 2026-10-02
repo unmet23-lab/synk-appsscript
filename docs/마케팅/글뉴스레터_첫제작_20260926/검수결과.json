@@ -1,0 +1,62 @@
+{
+  "date": "2026-09-26",
+  "drafts": 5,
+  "summaries": [
+    {
+      "file": "01_Threads.md",
+      "characters": 420,
+      "images": 0,
+      "editorNotesExcluded": true
+    },
+    {
+      "file": "02_X.md",
+      "characters": 127,
+      "images": 0,
+      "editorNotesExcluded": true,
+      "conservativeWeight": 210
+    },
+    {
+      "file": "03_네이버블로그.md",
+      "characters": 3985,
+      "images": 3,
+      "editorNotesExcluded": true
+    },
+    {
+      "file": "04_Tistory.md",
+      "characters": 1888,
+      "images": 1,
+      "editorNotesExcluded": true
+    },
+    {
+      "file": "05_Substack_한국어검토본.md",
+      "characters": 2002,
+      "images": 0,
+      "editorNotesExcluded": true
+    }
+  ],
+  "missingImages": [],
+  "imageCopies": [
+    {
+      "name": "회의메모_전후비교.png",
+      "sha256": "5d9c884d6de85b47c0c74802fc042b91b154033a0621ae80d535fe4b8479c365",
+      "matchesSource": true
+    },
+    {
+      "name": "프로젝트_지침저장.png",
+      "sha256": "3f1de422ca191ca153dce27644e1e8d62b485c1265d21dc2286af570506709ba",
+      "matchesSource": true
+    },
+    {
+      "name": "보완후_실제응답.png",
+      "sha256": "c160de10370f74187a1ae1da7046abd65fec9fd338a55d03ff42b4512e8dd1ba",
+      "matchesSource": true
+    },
+    {
+      "name": "도구선택_재구성.jpg",
+      "sha256": "d9d61cda3a785dde37dbccb10224e67a7d22acfedaa23cc6bbfff60313a17a75",
+      "matchesSource": true
+    }
+  ],
+  "externalPublication": false,
+  "labLanguage": "Korean review draft; Mongolian translation pending"
+}

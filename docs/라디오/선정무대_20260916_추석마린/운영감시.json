@@ -1,0 +1,725 @@
+{
+  "started": "2026-09-16T15:21:38.071Z",
+  "durationMinutes": 13,
+  "expectedVideoId": "eH0owfx9gCw",
+  "samples": [
+    {
+      "at": "2026-09-16T15:21:43.677Z",
+      "stream": {
+        "status": "active",
+        "health": "good"
+      },
+      "broadcast": {
+        "videoId": "eH0owfx9gCw",
+        "title": "K-LOFI 24 · lofi beats to chill",
+        "privacyStatus": "public"
+      },
+      "service": {
+        "MainPID": "385398",
+        "NRestarts": "1",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "radioStream": {
+        "MainPID": "0",
+        "NRestarts": "0",
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "UnitFileState": "disabled"
+      },
+      "opened": [
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+        },
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+        }
+      ],
+      "ffmpeg": "385528 RLl        05:07 38.2 ffmpeg",
+      "config": {
+        "프레임": 12,
+        "뜨기": 4,
+        "소리목록": "/opt/synk-radio/소리/playlist.txt",
+        "무대목록": "/opt/synk-radio/무대차례/목록.txt",
+        "장면분": 20,
+        "장면차례": "반딧불노을들판",
+        "연속소리": true
+      },
+      "progress": [
+        "[겹쳐송출 15:20:36] 층 718장 떴다(초당 3.0) · 내보낸 것 953(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.998x · 버린장 0 · 겹친장 0 · 방송시각 00:03:52.584000",
+        "[겹쳐송출 15:21:36] 층 896장 떴다(초당 3.0) · 내보낸 것 1193(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.999x · 버린장 0 · 겹친장 0 · 방송시각 00:04:52.525000"
+      ],
+      "validConfig": true,
+      "running": true,
+      "outputGood": true,
+      "noNewRestart": true,
+      "clean": true
+    },
+    {
+      "at": "2026-09-16T15:22:44.014Z",
+      "stream": {
+        "status": "active",
+        "health": "good"
+      },
+      "broadcast": {
+        "videoId": "eH0owfx9gCw",
+        "title": "K-LOFI 24 · lofi beats to chill",
+        "privacyStatus": "public"
+      },
+      "service": {
+        "MainPID": "385398",
+        "NRestarts": "1",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "radioStream": {
+        "MainPID": "0",
+        "NRestarts": "0",
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "UnitFileState": "disabled"
+      },
+      "opened": [
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+        },
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+        }
+      ],
+      "ffmpeg": "385528 RLl        06:07 38.9 ffmpeg",
+      "config": {
+        "프레임": 12,
+        "뜨기": 4,
+        "소리목록": "/opt/synk-radio/소리/playlist.txt",
+        "무대목록": "/opt/synk-radio/무대차례/목록.txt",
+        "장면분": 20,
+        "장면차례": "반딧불노을들판",
+        "연속소리": true
+      },
+      "progress": [
+        "[겹쳐송출 15:21:36] 층 896장 떴다(초당 3.0) · 내보낸 것 1193(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.999x · 버린장 0 · 겹친장 0 · 방송시각 00:04:52.525000",
+        "[겹쳐송출 15:22:36] 층 1070장 떴다(초당 2.9) · 내보낸 것 1433(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.999x · 버린장 0 · 겹친장 0 · 방송시각 00:05:52.595000"
+      ],
+      "validConfig": true,
+      "running": true,
+      "outputGood": true,
+      "noNewRestart": true,
+      "clean": true
+    },
+    {
+      "at": "2026-09-16T15:23:44.464Z",
+      "stream": {
+        "status": "active",
+        "health": "good"
+      },
+      "broadcast": {
+        "videoId": "eH0owfx9gCw",
+        "title": "K-LOFI 24 · lofi beats to chill",
+        "privacyStatus": "public"
+      },
+      "service": {
+        "MainPID": "385398",
+        "NRestarts": "1",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "radioStream": {
+        "MainPID": "0",
+        "NRestarts": "0",
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "UnitFileState": "disabled"
+      },
+      "opened": [
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+        },
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+        }
+      ],
+      "ffmpeg": "385528 RLl        07:08 39.3 ffmpeg",
+      "config": {
+        "프레임": 12,
+        "뜨기": 4,
+        "소리목록": "/opt/synk-radio/소리/playlist.txt",
+        "무대목록": "/opt/synk-radio/무대차례/목록.txt",
+        "장면분": 20,
+        "장면차례": "반딧불노을들판",
+        "연속소리": true
+      },
+      "progress": [
+        "[겹쳐송출 15:22:36] 층 1070장 떴다(초당 2.9) · 내보낸 것 1433(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.999x · 버린장 0 · 겹친장 0 · 방송시각 00:05:52.595000",
+        "[겹쳐송출 15:23:36] 층 1256장 떴다(초당 3.1) · 내보낸 것 1673(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.999x · 버린장 0 · 겹친장 0 · 방송시각 00:06:52.418000"
+      ],
+      "validConfig": true,
+      "running": true,
+      "outputGood": true,
+      "noNewRestart": true,
+      "clean": true
+    },
+    {
+      "at": "2026-09-16T15:24:44.212Z",
+      "stream": {
+        "status": "active",
+        "health": "good"
+      },
+      "broadcast": {
+        "videoId": "eH0owfx9gCw",
+        "title": "K-LOFI 24 · lofi beats to chill",
+        "privacyStatus": "public"
+      },
+      "service": {
+        "MainPID": "385398",
+        "NRestarts": "1",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "radioStream": {
+        "MainPID": "0",
+        "NRestarts": "0",
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "UnitFileState": "disabled"
+      },
+      "opened": [
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+        },
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+        }
+      ],
+      "ffmpeg": "385528 RLl        08:07 40.0 ffmpeg",
+      "config": {
+        "프레임": 12,
+        "뜨기": 4,
+        "소리목록": "/opt/synk-radio/소리/playlist.txt",
+        "무대목록": "/opt/synk-radio/무대차례/목록.txt",
+        "장면분": 20,
+        "장면차례": "반딧불노을들판",
+        "연속소리": true
+      },
+      "progress": [
+        "[겹쳐송출 15:23:36] 층 1256장 떴다(초당 3.1) · 내보낸 것 1673(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.999x · 버린장 0 · 겹친장 0 · 방송시각 00:06:52.418000",
+        "[겹쳐송출 15:24:36] 층 1438장 떴다(초당 3.0) · 내보낸 것 1913(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.999x · 버린장 0 · 겹친장 0 · 방송시각 00:07:52.457000"
+      ],
+      "validConfig": true,
+      "running": true,
+      "outputGood": true,
+      "noNewRestart": true,
+      "clean": true
+    },
+    {
+      "at": "2026-09-16T15:25:44.224Z",
+      "stream": {
+        "status": "active",
+        "health": "good"
+      },
+      "broadcast": {
+        "videoId": "eH0owfx9gCw",
+        "title": "K-LOFI 24 · lofi beats to chill",
+        "privacyStatus": "public"
+      },
+      "service": {
+        "MainPID": "385398",
+        "NRestarts": "1",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "radioStream": {
+        "MainPID": "0",
+        "NRestarts": "0",
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "UnitFileState": "disabled"
+      },
+      "opened": [
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+        },
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+        }
+      ],
+      "ffmpeg": "385528 RLl        09:07 40.3 ffmpeg",
+      "config": {
+        "프레임": 12,
+        "뜨기": 4,
+        "소리목록": "/opt/synk-radio/소리/playlist.txt",
+        "무대목록": "/opt/synk-radio/무대차례/목록.txt",
+        "장면분": 20,
+        "장면차례": "반딧불노을들판",
+        "연속소리": true
+      },
+      "progress": [
+        "[겹쳐송출 15:24:36] 층 1438장 떴다(초당 3.0) · 내보낸 것 1913(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.999x · 버린장 0 · 겹친장 0 · 방송시각 00:07:52.457000",
+        "[겹쳐송출 15:25:36] 층 1628장 떴다(초당 3.2) · 내보낸 것 2153(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.999x · 버린장 0 · 겹친장 0 · 방송시각 00:08:52.527000"
+      ],
+      "validConfig": true,
+      "running": true,
+      "outputGood": true,
+      "noNewRestart": true,
+      "clean": true
+    },
+    {
+      "at": "2026-09-16T15:26:46.463Z",
+      "stream": {
+        "status": "active",
+        "health": "good"
+      },
+      "broadcast": {
+        "videoId": "eH0owfx9gCw",
+        "title": "K-LOFI 24 · lofi beats to chill",
+        "privacyStatus": "public"
+      },
+      "service": {
+        "MainPID": "385398",
+        "NRestarts": "1",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "radioStream": {
+        "MainPID": "0",
+        "NRestarts": "0",
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "UnitFileState": "disabled"
+      },
+      "opened": [
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+        },
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+        }
+      ],
+      "ffmpeg": "385528 RLl        10:10 41.0 ffmpeg",
+      "config": {
+        "프레임": 12,
+        "뜨기": 4,
+        "소리목록": "/opt/synk-radio/소리/playlist.txt",
+        "무대목록": "/opt/synk-radio/무대차례/목록.txt",
+        "장면분": 20,
+        "장면차례": "반딧불노을들판",
+        "연속소리": true
+      },
+      "progress": [
+        "[겹쳐송출 15:25:36] 층 1628장 떴다(초당 3.2) · 내보낸 것 2153(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.999x · 버린장 0 · 겹친장 0 · 방송시각 00:08:52.527000",
+        "[겹쳐송출 15:26:36] 층 1815장 떴다(초당 3.1) · 내보낸 것 2393(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.999x · 버린장 0 · 겹친장 0 · 방송시각 00:09:52.619000"
+      ],
+      "validConfig": true,
+      "running": true,
+      "outputGood": true,
+      "noNewRestart": true,
+      "clean": true
+    },
+    {
+      "at": "2026-09-16T15:27:48.200Z",
+      "stream": {
+        "status": "active",
+        "health": "good"
+      },
+      "broadcast": {
+        "videoId": "eH0owfx9gCw",
+        "title": "K-LOFI 24 · lofi beats to chill",
+        "privacyStatus": "public"
+      },
+      "service": {
+        "MainPID": "385398",
+        "NRestarts": "1",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "radioStream": {
+        "MainPID": "0",
+        "NRestarts": "0",
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "UnitFileState": "disabled"
+      },
+      "opened": [
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+        },
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+        }
+      ],
+      "ffmpeg": "385528 RLl        11:09 43.0 ffmpeg",
+      "config": {
+        "프레임": 12,
+        "뜨기": 4,
+        "소리목록": "/opt/synk-radio/소리/playlist.txt",
+        "무대목록": "/opt/synk-radio/무대차례/목록.txt",
+        "장면분": 20,
+        "장면차례": "반딧불노을들판",
+        "연속소리": true
+      },
+      "progress": [
+        "[겹쳐송출 15:26:36] 층 1815장 떴다(초당 3.1) · 내보낸 것 2393(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.999x · 버린장 0 · 겹친장 0 · 방송시각 00:09:52.619000",
+        "[겹쳐송출 15:27:36] 층 1956장 떴다(초당 2.4) · 내보낸 것 2633(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.999x · 버린장 0 · 겹친장 0 · 방송시각 00:10:52.806000"
+      ],
+      "validConfig": true,
+      "running": true,
+      "outputGood": true,
+      "noNewRestart": true,
+      "clean": true
+    },
+    {
+      "at": "2026-09-16T15:28:45.010Z",
+      "stream": {
+        "status": "active",
+        "health": "good"
+      },
+      "broadcast": {
+        "videoId": "eH0owfx9gCw",
+        "title": "K-LOFI 24 · lofi beats to chill",
+        "privacyStatus": "public"
+      },
+      "service": {
+        "MainPID": "385398",
+        "NRestarts": "1",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "radioStream": {
+        "MainPID": "0",
+        "NRestarts": "0",
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "UnitFileState": "disabled"
+      },
+      "opened": [
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+        },
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+        }
+      ],
+      "ffmpeg": "385528 RLl        12:08 43.1 ffmpeg",
+      "config": {
+        "프레임": 12,
+        "뜨기": 4,
+        "소리목록": "/opt/synk-radio/소리/playlist.txt",
+        "무대목록": "/opt/synk-radio/무대차례/목록.txt",
+        "장면분": 20,
+        "장면차례": "반딧불노을들판",
+        "연속소리": true
+      },
+      "progress": [
+        "[겹쳐송출 15:27:36] 층 1956장 떴다(초당 2.4) · 내보낸 것 2633(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.999x · 버린장 0 · 겹친장 0 · 방송시각 00:10:52.806000",
+        "[겹쳐송출 15:28:36] 층 2147장 떴다(초당 3.2) · 내보낸 것 2873(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.999x · 버린장 0 · 겹친장 0 · 방송시각 00:11:52.501000"
+      ],
+      "validConfig": true,
+      "running": true,
+      "outputGood": true,
+      "noNewRestart": true,
+      "clean": true
+    },
+    {
+      "at": "2026-09-16T15:29:44.051Z",
+      "stream": {
+        "status": "active",
+        "health": "good"
+      },
+      "broadcast": {
+        "videoId": "eH0owfx9gCw",
+        "title": "K-LOFI 24 · lofi beats to chill",
+        "privacyStatus": "public"
+      },
+      "service": {
+        "MainPID": "385398",
+        "NRestarts": "1",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "radioStream": {
+        "MainPID": "0",
+        "NRestarts": "0",
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "UnitFileState": "disabled"
+      },
+      "opened": [
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+        },
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+        }
+      ],
+      "ffmpeg": "385528 RLl        13:07 42.8 ffmpeg",
+      "config": {
+        "프레임": 12,
+        "뜨기": 4,
+        "소리목록": "/opt/synk-radio/소리/playlist.txt",
+        "무대목록": "/opt/synk-radio/무대차례/목록.txt",
+        "장면분": 20,
+        "장면차례": "반딧불노을들판",
+        "연속소리": true
+      },
+      "progress": [
+        "[겹쳐송출 15:28:36] 층 2147장 떴다(초당 3.2) · 내보낸 것 2873(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.999x · 버린장 0 · 겹친장 0 · 방송시각 00:11:52.501000",
+        "[겹쳐송출 15:29:36] 층 2330장 떴다(초당 3.0) · 내보낸 것 3114(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 1x · 버린장 0 · 겹친장 0 · 방송시각 00:12:52.551000"
+      ],
+      "validConfig": true,
+      "running": true,
+      "outputGood": true,
+      "noNewRestart": true,
+      "clean": true
+    },
+    {
+      "at": "2026-09-16T15:30:44.259Z",
+      "stream": {
+        "status": "active",
+        "health": "good"
+      },
+      "broadcast": {
+        "videoId": "eH0owfx9gCw",
+        "title": "K-LOFI 24 · lofi beats to chill",
+        "privacyStatus": "public"
+      },
+      "service": {
+        "MainPID": "385398",
+        "NRestarts": "1",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "radioStream": {
+        "MainPID": "0",
+        "NRestarts": "0",
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "UnitFileState": "disabled"
+      },
+      "opened": [
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+        },
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+        }
+      ],
+      "ffmpeg": "385528 SLl        14:07 42.7 ffmpeg",
+      "config": {
+        "프레임": 12,
+        "뜨기": 4,
+        "소리목록": "/opt/synk-radio/소리/playlist.txt",
+        "무대목록": "/opt/synk-radio/무대차례/목록.txt",
+        "장면분": 20,
+        "장면차례": "반딧불노을들판",
+        "연속소리": true
+      },
+      "progress": [
+        "[겹쳐송출 15:29:36] 층 2330장 떴다(초당 3.0) · 내보낸 것 3114(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 1x · 버린장 0 · 겹친장 0 · 방송시각 00:12:52.551000",
+        "[겹쳐송출 15:30:36] 층 2511장 떴다(초당 3.0) · 내보낸 것 3354(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 1x · 버린장 0 · 겹친장 0 · 방송시각 00:13:52.528000"
+      ],
+      "validConfig": true,
+      "running": true,
+      "outputGood": true,
+      "noNewRestart": true,
+      "clean": true
+    },
+    {
+      "at": "2026-09-16T15:31:44.221Z",
+      "stream": {
+        "status": "active",
+        "health": "good"
+      },
+      "broadcast": {
+        "videoId": "eH0owfx9gCw",
+        "title": "K-LOFI 24 · lofi beats to chill",
+        "privacyStatus": "public"
+      },
+      "service": {
+        "MainPID": "385398",
+        "NRestarts": "1",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "radioStream": {
+        "MainPID": "0",
+        "NRestarts": "0",
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "UnitFileState": "disabled"
+      },
+      "opened": [
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+        },
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+        }
+      ],
+      "ffmpeg": "385528 SLl        15:07 42.5 ffmpeg",
+      "config": {
+        "프레임": 12,
+        "뜨기": 4,
+        "소리목록": "/opt/synk-radio/소리/playlist.txt",
+        "무대목록": "/opt/synk-radio/무대차례/목록.txt",
+        "장면분": 20,
+        "장면차례": "반딧불노을들판",
+        "연속소리": true
+      },
+      "progress": [
+        "[겹쳐송출 15:30:36] 층 2511장 떴다(초당 3.0) · 내보낸 것 3354(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 1x · 버린장 0 · 겹친장 0 · 방송시각 00:13:52.528000",
+        "[겹쳐송출 15:31:36] 층 2685장 떴다(초당 2.9) · 내보낸 것 3593(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 1x · 버린장 0 · 겹친장 0 · 방송시각 00:14:52.506000"
+      ],
+      "validConfig": true,
+      "running": true,
+      "outputGood": true,
+      "noNewRestart": true,
+      "clean": true
+    },
+    {
+      "at": "2026-09-16T15:32:44.269Z",
+      "stream": {
+        "status": "active",
+        "health": "good"
+      },
+      "broadcast": {
+        "videoId": "eH0owfx9gCw",
+        "title": "K-LOFI 24 · lofi beats to chill",
+        "privacyStatus": "public"
+      },
+      "service": {
+        "MainPID": "385398",
+        "NRestarts": "1",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "radioStream": {
+        "MainPID": "0",
+        "NRestarts": "0",
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "UnitFileState": "disabled"
+      },
+      "opened": [
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+        },
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+        }
+      ],
+      "ffmpeg": "385528 RLl        16:07 42.6 ffmpeg",
+      "config": {
+        "프레임": 12,
+        "뜨기": 4,
+        "소리목록": "/opt/synk-radio/소리/playlist.txt",
+        "무대목록": "/opt/synk-radio/무대차례/목록.txt",
+        "장면분": 20,
+        "장면차례": "반딧불노을들판",
+        "연속소리": true
+      },
+      "progress": [
+        "[겹쳐송출 15:31:36] 층 2685장 떴다(초당 2.9) · 내보낸 것 3593(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 1x · 버린장 0 · 겹친장 0 · 방송시각 00:14:52.506000",
+        "[겹쳐송출 15:32:36] 층 2858장 떴다(초당 2.9) · 내보낸 것 3833(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.999x · 버린장 0 · 겹친장 0 · 방송시각 00:15:52.367000"
+      ],
+      "validConfig": true,
+      "running": true,
+      "outputGood": true,
+      "noNewRestart": true,
+      "clean": true
+    },
+    {
+      "at": "2026-09-16T15:33:44.382Z",
+      "stream": {
+        "status": "active",
+        "health": "good"
+      },
+      "broadcast": {
+        "videoId": "eH0owfx9gCw",
+        "title": "K-LOFI 24 · lofi beats to chill",
+        "privacyStatus": "public"
+      },
+      "service": {
+        "MainPID": "385398",
+        "NRestarts": "1",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "radioStream": {
+        "MainPID": "0",
+        "NRestarts": "0",
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "UnitFileState": "disabled"
+      },
+      "opened": [
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+        },
+        {
+          "pid": "385528",
+          "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+        }
+      ],
+      "ffmpeg": "385528 SLl        17:08 42.5 ffmpeg",
+      "config": {
+        "프레임": 12,
+        "뜨기": 4,
+        "소리목록": "/opt/synk-radio/소리/playlist.txt",
+        "무대목록": "/opt/synk-radio/무대차례/목록.txt",
+        "장면분": 20,
+        "장면차례": "반딧불노을들판",
+        "연속소리": true
+      },
+      "progress": [
+        "[겹쳐송출 15:32:36] 층 2858장 떴다(초당 2.9) · 내보낸 것 3833(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.999x · 버린장 0 · 겹친장 0 · 방송시각 00:15:52.367000",
+        "[겹쳐송출 15:33:36] 층 3028장 떴다(초당 2.8) · 내보낸 것 4073(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 1x · 버린장 0 · 겹친장 0 · 방송시각 00:16:52.459000"
+      ],
+      "validConfig": true,
+      "running": true,
+      "outputGood": true,
+      "noNewRestart": true,
+      "clean": true
+    }
+  ],
+  "passed": true,
+  "finished": "2026-09-16T15:34:38.081Z",
+  "baselineRestarts": 1
+}

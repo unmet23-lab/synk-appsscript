@@ -1,0 +1,52 @@
+{
+  "date": "2026-09-22",
+  "variant": "silver at rest; spatial brand color reveal on preview and selection",
+  "htmlSha256": "d6a216fd0dcd0c436b0f71257c03edf0aa29776fe1d3f86a6a0df709308d3ead",
+  "htmlBytes": 1457990,
+  "performance": {
+    "browser": "Codex in-app browser",
+    "viewport": [1920, 1080],
+    "graphCssPixels": [1350, 802],
+    "devicePixelRatio": 2,
+    "rendererPixelRatio": 2,
+    "warmupFrames": 30,
+    "measuredFramesPerRun": 360,
+    "idle": {
+      "frameMs": {"median": 16.7, "p95": 16.8, "max": 25, "over25": 0},
+      "cpuRenderMs": {"median": 1.0, "p95": 1.4, "max": 1.6},
+      "gpuDrawCalls": 3,
+      "stitches": 0
+    },
+    "coreSelected": {
+      "frameMs": {"median": 16.7, "p95": 16.8, "max": 17, "over25": 0},
+      "cpuRenderMs": {"median": 1.0, "p95": 1.5, "max": 1.7},
+      "gpuDrawCalls": 4,
+      "stitchesAtLastFrame": 337
+    },
+    "scope": "CPU timing wraps render only, not total GPU completion. Loading and viewport changes excluded. About 60Hz observed; 120/144Hz hardware unmeasured."
+  },
+  "browserChecks": {
+    "silverAtRest": "visual review at 1440 and 1920; zero group chroma and zero stitches",
+    "hoverReveal": "Loom dock pointer preview: hub first, radial near segment next, far segment and central light later; click state stays null",
+    "graphHover": "Vellum canvas hub updates graph and dock preview",
+    "selection": "all eight engines show matching title, exact brand RGB and full reveal while paused; time remains 0.2",
+    "pinnedPreview": "Loom pinned, Core hover, leave returns to pinned Loom",
+    "selectionToggle": "second click clears selected, hover and preview class; paused group chroma is zero",
+    "keyboard": "arrow navigation produces focus-visible preview; pointer leave restores keyboard preview",
+    "contextLossAndRestore": "Core stays selected, RGB 249/104/89 and paused time 0.2 preserved through Canvas fallback and WebGL restore",
+    "mobile390": {"viewport": [390, 844], "overflow": false, "selected": "loom", "hovered": null, "paused": true, "time": 0},
+    "mobile320": {"viewport": [320, 740], "overflow": false, "selected": "vellum", "hovered": null, "paused": true, "time": 0},
+    "touchBranch": "synthetic pointerenter with pointerType touch leaves hover null; browser click toggles selection and clears preview. In-app browser does not support CDP Input.dispatchTouchEvent; physical touch is not claimed."
+  },
+  "numericalReview": {
+    "method": "Node VM against current advanceColor and Canvas painter code; independent read-only review",
+    "coreToStrata": "17ms both ends retain prior color; 300ms new-origin end is 74 percent changed while opposite end is unchanged; 800ms new-origin end 99.99 percent, opposite end 75 percent",
+    "releaseChromaAfter400ms": 0.0695,
+    "reducedMotion": "zero-dt selection and release immediately set reveal to one and zero",
+    "canvasCache": {"distinctRgbInputs": 1024, "maximumEntries": 192, "finalEntries": 192, "rawPixelMiB": 2.25},
+    "nucleusCompatibility": "seventh finish parameter omitted preserves five/six argument lapis API; silver uniform restored with context"
+  },
+  "validation": {"motionTestsPassed": 11, "javascriptSyntax": "passed", "additionalReproducibleReviewFindings": 0},
+  "preserved": ["variants/atlas-brand-light-20260922.html", "variants/atlas-yarn-20260922.html", "assets"],
+  "delivery": "local standalone HTML and loopback preview; no deployment"
+}

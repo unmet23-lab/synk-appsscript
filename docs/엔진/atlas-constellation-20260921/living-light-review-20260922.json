@@ -1,0 +1,48 @@
+{
+  "date": "2026-09-22",
+  "variant": "living glass nucleus, eight brand colors, selective stitches",
+  "htmlSha256": "a2086e41b7dd71dee87b63580a6b56c078e55e8eda2052ceb826156aebb50aa7",
+  "htmlBytes": 1449394,
+  "environment": {
+    "browser": "Codex in-app browser",
+    "viewport": [1920, 1080],
+    "graphCssPixels": [1350, 802],
+    "devicePixelRatio": 2,
+    "rendererPixelRatio": 2,
+    "measuredRefreshHz": 60
+  },
+  "measurement": {
+    "warmupFramesPerRun": 30,
+    "samplesPerRun": 360,
+    "excludes": ["initial loading", "viewport resize"],
+    "cpuMetric": "elapsed performance.now around AtlasConstellation.render; not total GPU completion time",
+    "idle": {
+      "intervalMs": {"median": 16.7, "p95": 16.8, "max": 16.9, "over25": 0},
+      "cpuRenderMs": {"median": 0.5, "p95": 0.7, "max": 1.0},
+      "gpuDrawCalls": 3,
+      "stitches": 0
+    },
+    "loomSelected": {
+      "intervalMs": {"median": 16.7, "p95": 16.8, "max": 17.0, "over25": 0},
+      "cpuRenderMs": {"median": 0.5, "p95": 0.7, "max": 1.2},
+      "gpuDrawCalls": 4,
+      "stitchesAtLastFrame": 176,
+      "nucleusTint": [245, 196, 69]
+    }
+  },
+  "checks": {
+    "desktopVisualReview": [1440, 1920],
+    "mobile390": {"viewport": [390, 844], "horizontalOverflow": false, "selected": "vellum", "paused": true, "sceneTime": 0},
+    "mobile320": {"viewport": [320, 740], "horizontalOverflow": false, "selected": "core", "paused": true, "sceneTime": 0},
+    "allEightEngines": "selection, corresponding title, exact palette RGB, four GPU draws and selective stitches verified while paused",
+    "pausedSelectionTimePreserved": 60.218,
+    "contextLoss": {"fallback": "Canvas 2D / living light fallback", "restored": "Loom WebGL / living light", "pausedSceneTimeBeforeDuringAfter": 33.325, "selected": "loom"},
+    "zoom": {"target": 1.15, "observedAfter40Frames": 1.149316508580382},
+    "reducedMotion": "time zero and selection responsive at both mobile widths; playback resumes after preference reset",
+    "motionUnitTestsPassed": 11,
+    "syntax": "constellation.js, app.js and loom-network-webgl.js passed node --check",
+    "readOnlyIntegrationReview": "no reproducible runtime regression found in renderer, fallback, state transitions or asset references"
+  },
+  "preservedComparison": "variants/atlas-yarn-20260922.html",
+  "limitations": ["120/144Hz physical display performance unmeasured", "physical mobile hardware unmeasured", "local preview; not deployed"]
+}

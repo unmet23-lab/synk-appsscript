@@ -1,0 +1,225 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 3.16,
+  "words": [
+    {
+      "text": "몽골",
+      "start": 0.101,
+      "end": 0.315
+    },
+    {
+      "text": "학원에서",
+      "start": 0.365,
+      "end": 0.629
+    },
+    {
+      "text": "일하던",
+      "start": 0.68,
+      "end": 0.906
+    },
+    {
+      "text": "유월.",
+      "start": 0.995,
+      "end": 1.171
+    },
+    {
+      "text": "번역하려고",
+      "start": 1.586,
+      "end": 2.052
+    },
+    {
+      "text": "클로드를",
+      "start": 2.153,
+      "end": 2.468
+    },
+    {
+      "text": "결제했어요.",
+      "start": 2.505,
+      "end": 3.16
+    }
+  ],
+  "characters": [
+    {
+      "text": "몽",
+      "start": 0.101,
+      "end": 0.252
+    },
+    {
+      "text": "골",
+      "start": 0.252,
+      "end": 0.315
+    },
+    {
+      "text": " ",
+      "start": 0.315,
+      "end": 0.365
+    },
+    {
+      "text": "학",
+      "start": 0.365,
+      "end": 0.453
+    },
+    {
+      "text": "원",
+      "start": 0.453,
+      "end": 0.541
+    },
+    {
+      "text": "에",
+      "start": 0.541,
+      "end": 0.579
+    },
+    {
+      "text": "서",
+      "start": 0.579,
+      "end": 0.629
+    },
+    {
+      "text": " ",
+      "start": 0.629,
+      "end": 0.68
+    },
+    {
+      "text": "일",
+      "start": 0.68,
+      "end": 0.743
+    },
+    {
+      "text": "하",
+      "start": 0.743,
+      "end": 0.806
+    },
+    {
+      "text": "던",
+      "start": 0.806,
+      "end": 0.906
+    },
+    {
+      "text": " ",
+      "start": 0.906,
+      "end": 0.995
+    },
+    {
+      "text": "유",
+      "start": 0.995,
+      "end": 1.083
+    },
+    {
+      "text": "월",
+      "start": 1.083,
+      "end": 1.158
+    },
+    {
+      "text": ".",
+      "start": 1.158,
+      "end": 1.171
+    },
+    {
+      "text": " ",
+      "start": 1.171,
+      "end": 1.586
+    },
+    {
+      "text": "번",
+      "start": 1.586,
+      "end": 1.75
+    },
+    {
+      "text": "역",
+      "start": 1.75,
+      "end": 1.863
+    },
+    {
+      "text": "하",
+      "start": 1.863,
+      "end": 1.914
+    },
+    {
+      "text": "려",
+      "start": 1.914,
+      "end": 2.002
+    },
+    {
+      "text": "고",
+      "start": 2.002,
+      "end": 2.052
+    },
+    {
+      "text": " ",
+      "start": 2.052,
+      "end": 2.153
+    },
+    {
+      "text": "클",
+      "start": 2.153,
+      "end": 2.266
+    },
+    {
+      "text": "로",
+      "start": 2.266,
+      "end": 2.342
+    },
+    {
+      "text": "드",
+      "start": 2.342,
+      "end": 2.405
+    },
+    {
+      "text": "를",
+      "start": 2.405,
+      "end": 2.468
+    },
+    {
+      "text": " ",
+      "start": 2.468,
+      "end": 2.505
+    },
+    {
+      "text": "결",
+      "start": 2.505,
+      "end": 2.644
+    },
+    {
+      "text": "제",
+      "start": 2.644,
+      "end": 2.719
+    },
+    {
+      "text": "했",
+      "start": 2.719,
+      "end": 2.858
+    },
+    {
+      "text": "어",
+      "start": 2.858,
+      "end": 2.896
+    },
+    {
+      "text": "요",
+      "start": 2.896,
+      "end": 3.147
+    },
+    {
+      "text": ".",
+      "start": 3.147,
+      "end": 3.16
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "몽골 학원에서 일하던 유월. 번역하려고 클로드를 결제했어요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.25,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1.05
+    }
+  }
+}

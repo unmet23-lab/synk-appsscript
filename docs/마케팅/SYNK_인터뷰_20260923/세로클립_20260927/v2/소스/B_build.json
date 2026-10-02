@@ -1,0 +1,114 @@
+{
+ "key": "B",
+ "name": "B_TOPIK에_도움_안되면_쓰레기",
+ "duration": 23.133,
+ "shots": 9,
+ "cuts_in_first_5s": [
+  1.833,
+  3.233,
+  4.333
+ ],
+ "audio": {
+  "input_I": -17.0,
+  "target": -14.0,
+  "I": -14.1,
+  "TP": -1.5,
+  "max_gr_db": -2.1,
+  "over3db_pct": 0.0,
+  "ceiling_dbtp": -2.5,
+  "TP_after_aac": -2.3
+ },
+ "captions": 16,
+ "shot_log": [
+  {
+   "clip_t": 0.0,
+   "film": [
+    56.9,
+    58.726
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 55
+  },
+  {
+   "clip_t": 1.833,
+   "film": [
+    58.726,
+    60.117
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 42
+  },
+  {
+   "clip_t": 3.233,
+   "film": [
+    60.117,
+    61.23
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 33
+  },
+  {
+   "clip_t": 4.333,
+   "film": [
+    74.25,
+    77.269
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 91
+  },
+  {
+   "clip_t": 7.367,
+   "film": [
+    77.269,
+    80.673
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 102
+  },
+  {
+   "clip_t": 10.767,
+   "film": [
+    80.673,
+    83.505
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 85
+  },
+  {
+   "clip_t": 13.6,
+   "film": [
+    83.505,
+    86.633
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 94
+  },
+  {
+   "clip_t": 16.733,
+   "film": [
+    86.633,
+    89.843
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 96
+  },
+  {
+   "clip_t": 19.933,
+   "film": [
+    89.843,
+    93.03
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 96
+  }
+ ]
+}

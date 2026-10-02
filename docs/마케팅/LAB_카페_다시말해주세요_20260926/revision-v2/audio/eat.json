@@ -1,0 +1,82 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 1.748,
+  "words": [
+    {
+      "text": "여기서",
+      "start": 0.422,
+      "end": 0.703
+    },
+    {
+      "text": "먹을게요.",
+      "start": 0.763,
+      "end": 1.748
+    }
+  ],
+  "characters": [
+    {
+      "text": "여",
+      "start": 0.422,
+      "end": 0.542
+    },
+    {
+      "text": "기",
+      "start": 0.542,
+      "end": 0.623
+    },
+    {
+      "text": "서",
+      "start": 0.623,
+      "end": 0.703
+    },
+    {
+      "text": " ",
+      "start": 0.703,
+      "end": 0.763
+    },
+    {
+      "text": "먹",
+      "start": 0.763,
+      "end": 0.884
+    },
+    {
+      "text": "을",
+      "start": 0.884,
+      "end": 1.004
+    },
+    {
+      "text": "게",
+      "start": 1.004,
+      "end": 1.165
+    },
+    {
+      "text": "요",
+      "start": 1.165,
+      "end": 1.727
+    },
+    {
+      "text": ".",
+      "start": 1.727,
+      "end": 1.748
+    }
+  ],
+  "request": {
+    "seed": 926,
+    "model": "ssfm-v30",
+    "voice_id": "tc_6a3350f8e5a50a4abe948fa8",
+    "text": "여기서 먹을게요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.03,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "happy",
+      "emotion_intensity": 0.85
+    }
+  },
+  "direction": "이제 알아들어서 표정이 밝아짐. 안도 섞인 짧은 답.",
+  "voiceName": "도윤"
+}

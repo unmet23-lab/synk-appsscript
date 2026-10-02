@@ -1,0 +1,31 @@
+{
+  "createdAt": "2026-09-25T19:00:23.713Z",
+  "input": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds_1편_쇼츠수정_20260922\\yuhobuilds_EP01.mp4",
+  "frames": 34,
+  "fullDecodePassed": true,
+  "blackIntervals": [],
+  "silenceIntervals": [],
+  "fastStart": true,
+  "boxes": [
+    {
+      "type": "ftyp",
+      "offset": 0,
+      "bytes": 32
+    },
+    {
+      "type": "moov",
+      "offset": 32,
+      "bytes": 84642
+    },
+    {
+      "type": "free",
+      "offset": 84674,
+      "bytes": 8
+    },
+    {
+      "type": "mdat",
+      "offset": 84682,
+      "bytes": 54948011
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "scene": "11",
+  "started": "2026-09-09T16:51:01.945Z",
+  "source": "docs/라디오/무대/dream_water.png",
+  "sourceSha256": "3086e9afb1124b7b9c6940619194cb8a4d00d3eb6b03a21a320cb8a21c4a47c0",
+  "model": "seedance_2_0",
+  "duration": 12,
+  "resolution": "1080p",
+  "audio": false,
+  "prompt": "A single locked-off tripod shot, an extremely calm seamless living miniature. Only the water moves: delicate broad ripples travel slowly across the lavender mirror surface, gently carrying the reflected warm light and coherent reflections. A faint wispy mist drifts almost imperceptibly along the far water. The arches, small door, floating wool spheres, sun, horizon and camera remain precisely still in the same positions and shapes. Preserve the original dry wool fibers, pastel palette, composition and stable soft exposure. Quiet continuous fluid motion with no splashes, no pulsing, no zoom, no new objects and no characters. Return smoothly to the starting water arrangement at the end.",
+  "startAndEndSameImage": true,
+  "status": "returned_needs_media_verification",
+  "finished": "2026-09-09T16:57:12.291Z",
+  "exitCode": 0,
+  "result": [
+    {
+      "created_at": "2026-09-09T16:51:32.547969Z",
+      "display_name": "Seedance 2.0",
+      "id": "8de5f7d6-a938-4638-bad3-04b487c55eb0",
+      "job_type": "seedance_2_0",
+      "min_result_url": null,
+      "params": {
+        "aspect_ratio": "16:9",
+        "bitrate_mode": "high",
+        "duration": 12,
+        "generate_audio": false,
+        "genre": "auto",
+        "height": 1080,
+        "medias": [
+          {
+            "data": {
+              "id": "7723a123-9942-4a6a-b1f2-69ec82b61756",
+              "type": "media_input",
+              "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/7723a123-9942-4a6a-b1f2-69ec82b61756_resize.jpg"
+            },
+            "role": "start_image"
+          },
+          {
+            "data": {
+              "id": "7723a123-9942-4a6a-b1f2-69ec82b61756",
+              "type": "media_input",
+              "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/7723a123-9942-4a6a-b1f2-69ec82b61756_resize.jpg"
+            },
+            "role": "end_image"
+          }
+        ],
+        "mode": "std",
+        "model": "seedance_2_0",
+        "multi_prompt": [],
+        "multi_shot_mode": "custom",
+        "multi_shots": false,
+        "prompt": "A single locked-off tripod shot, an extremely calm seamless living miniature. Only the water moves: delicate broad ripples travel slowly across the lavender mirror surface, gently carrying the reflected warm light and coherent reflections. A faint wispy mist drifts almost imperceptibly along the far water. The arches, small door, floating wool spheres, sun, horizon and camera remain precisely still in the same positions and shapes. Preserve the original dry wool fibers, pastel palette, composition and stable soft exposure. Quiet continuous fluid motion with no splashes, no pulsing, no zoom, no new objects and no characters. Return smoothly to the starting water arrangement at the end.",
+        "prompt_language": "en",
+        "reference_elements": [],
+        "resolution": "1080p",
+        "speedramp": "auto",
+        "width": 1920
+      },
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260909_165132_8de5f7d6-a938-4638-bad3-04b487c55eb0.mp4",
+      "status": "completed",
+      "thumbnail_url": "https://cdn.higgsfield.ai/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260909_165132_8de5f7d6-a938-4638-bad3-04b487c55eb0_thumbnail.webp"
+    }
+  ],
+  "log": ""
+}

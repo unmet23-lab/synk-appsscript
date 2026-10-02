@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "d6b20462-2ac7-491c-b71f-529acdad0727",
+  "narration": "문의에서도 필요한 범위를 먼저 확인합니다. 원고를 정리하는 일과 디자인 제작은 구분합니다.",
+  "narrationSha256": "61d31f6eec0cf63bf841127a0f5f7022b76bef123c74620dbb4765051d0f4966",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-61d31f6eec0cf63b.wav",
+  "duration": 7.04,
+  "sha256": "d7982debf6f2c07312ac11e35eb86eca1a441cc03716fb8d1ca487dd56c1eecb",
+  "humanListening": false,
+  "fullDecode": true
+}

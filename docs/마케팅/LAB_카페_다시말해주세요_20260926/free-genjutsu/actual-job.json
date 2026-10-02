@@ -1,0 +1,42 @@
+{
+  "created_at": "2026-09-26T09:29:24.560206Z",
+  "display_name": "Higgsfield Multiplier Motion Control",
+  "id": "66a1d917-b016-4949-ad91-a592b5079cb0",
+  "job_type": "hf_mult_motion_control",
+  "min_result_url": null,
+  "params": {
+    "aspect_ratio": "9:16",
+    "batch_size": 1,
+    "bitrate_mode": "high",
+    "duration": 6,
+    "folder_id": null,
+    "generate_audio": false,
+    "height": 1280,
+    "location_character_media_id": null,
+    "medias": [
+      {
+        "data": {
+          "id": "84ae55b9-9777-4070-b40b-a5a44a28f674",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/84ae55b9-9777-4070-b40b-a5a44a28f674.png"
+        },
+        "role": "image"
+      },
+      {
+        "data": {
+          "id": "4d48b380-c888-4ddd-9970-61daf85f90e7",
+          "type": "video_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/4d48b380-c888-4ddd-9970-61daf85f90e7.mp4"
+        },
+        "role": "video"
+      }
+    ],
+    "prompt": "Transform the source cafe animation into a photorealistic live-action cafe conversation using the two fictional adult people and the cafe setting in @image1. Replace the red felt mascot with the young adult male customer from @image1, on the left; the adult female barista remains behind the counter on the right. Match their faces, hair, wardrobe and soft daylight in the reference image. Keep the original source Korean dialogue audio, its timing, pauses and speaker order: the male customer politely says \"다시 말해 주세요.\"; the female barista warmly rephrases \"여기서 드세요? 가져가세요?\"; the male customer understands and answers \"여기서 먹을게요.\" The customer begins slightly embarrassed, then relaxes as he understands. The barista listens and responds with a small reassuring smile and subtle gesture toward the seats. Natural restrained adult acting, realistic lip movement matched to the existing dialogue. Keep it as one continuous eye-level two-shot with stable faces and coherent hands. Use the reference image composition for the live-action scene; remove the animated mascot, text overlays, subtitles, title cards and logos from the source. No new speech, music, exaggerated bouncing or cartoon motion. Preserve the source clip duration and 9:16 vertical framing.",
+    "resolution": "720p",
+    "scene_mode": "off",
+    "width": 720
+  },
+  "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260926_092924_66a1d917-b016-4949-ad91-a592b5079cb0.mp4",
+  "status": "completed",
+  "thumbnail_url": "https://cdn.higgsfield.ai/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260926_092924_66a1d917-b016-4949-ad91-a592b5079cb0_thumbnail.webp"
+}

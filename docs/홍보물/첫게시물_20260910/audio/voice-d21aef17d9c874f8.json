@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "92d9ebe5-1d24-469d-b4ef-4b398627971d",
+  "narration": "상품에는 실제 받는 것을 씁니다. 이 예시에서는 소개 원고와 읽는 순서, 수정 안내입니다.",
+  "narrationSha256": "d21aef17d9c874f85f1a33f49fc39f50d59f74d085aef4b310196b365d740301",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-d21aef17d9c874f8.wav",
+  "duration": 6.64,
+  "sha256": "6131aa6183f27941b875a54f3438df83c6a360ccd2d1a2c9e9e9b995cd2bd8e6",
+  "humanListening": false,
+  "fullDecode": true
+}

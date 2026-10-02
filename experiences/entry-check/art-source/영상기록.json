@@ -1,0 +1,12 @@
+[
+  {
+    "at": "2026-10-01T20:12:16.232Z",
+    "scene": "library",
+    "model": "veo-3.1-generate-001",
+    "resolution": "1080p",
+    "seconds": 8,
+    "job": "projects/synk-bake-unmet27/locations/us-central1/publishers/google/models/veo-3.1-generate-001/operations/3ef0ba8b-3d2e-4ae9-8aa0-184c67e4cf8b",
+    "maxUsd": 3.2,
+    "file": "art-source/video-raw/library_2026-10-01T20-14-36-489Z.mp4"
+  }
+]

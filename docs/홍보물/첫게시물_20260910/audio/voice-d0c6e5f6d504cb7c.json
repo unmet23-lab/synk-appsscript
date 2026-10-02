@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "fb06b1b4-2e62-43ad-9488-26f8dfd8c587",
+  "narration": "연습에는 가상 사례를 씁니다. 첫 강의를 제안하는 독립 강사를 위해, 강의의 대상과 실습을 정리하고, 제안서 한 장을 만듭니다.",
+  "narrationSha256": "d0c6e5f6d504cb7c697ec28630d5e7c1fa1e0db9962af2bc7b8b94e2a9d140f7",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-d0c6e5f6d504cb7c.wav",
+  "duration": 10.16,
+  "sha256": "b131b7ce9588d1902f59d2ed874a84fdbbe5c5b5132a24965616fb16ba6a855b",
+  "humanListening": false,
+  "fullDecode": true
+}

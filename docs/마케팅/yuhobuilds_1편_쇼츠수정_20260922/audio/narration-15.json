@@ -1,0 +1,79 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "다음 편은 앱보다 먼저 저를 막은 것. 도구 켜고, 설정하기부터 갑니다!",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.25,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 3.72,
+  "words": [
+    {
+      "text": "다음",
+      "start": 0.094,
+      "end": 0.256
+    },
+    {
+      "text": "편은",
+      "start": 0.297,
+      "end": 0.472
+    },
+    {
+      "text": "앱보다",
+      "start": 0.701,
+      "end": 0.957
+    },
+    {
+      "text": "먼저",
+      "start": 0.997,
+      "end": 1.146
+    },
+    {
+      "text": "저를",
+      "start": 1.186,
+      "end": 1.348
+    },
+    {
+      "text": "막은",
+      "start": 1.388,
+      "end": 1.55
+    },
+    {
+      "text": "것.",
+      "start": 1.59,
+      "end": 1.671
+    },
+    {
+      "text": "도구",
+      "start": 1.914,
+      "end": 2.089
+    },
+    {
+      "text": "켜고,",
+      "start": 2.143,
+      "end": 2.318
+    },
+    {
+      "text": "설정하기부터",
+      "start": 2.547,
+      "end": 3.1
+    },
+    {
+      "text": "갑니다!",
+      "start": 3.275,
+      "end": 3.72
+    }
+  ],
+  "characters": null
+}

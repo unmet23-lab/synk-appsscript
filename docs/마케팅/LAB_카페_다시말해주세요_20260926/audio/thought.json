@@ -1,0 +1,45 @@
+{
+  "id": "thought",
+  "role": "mongle",
+  "text": "어? 나 방금 뭐라고 한 거지?",
+  "provider": "Microsoft Edge TTS",
+  "settings": {
+    "voice": "ko-KR-InJoonNeural",
+    "rate": "+0%",
+    "pitch": "+8Hz"
+  },
+  "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\thought.mp3",
+  "duration": 4.44,
+  "words": [
+    {
+      "text": "어",
+      "start": 0.1,
+      "end": 0.6125
+    },
+    {
+      "text": "나",
+      "start": 1.5625,
+      "end": 1.9125
+    },
+    {
+      "text": "방금",
+      "start": 1.925,
+      "end": 2.2625
+    },
+    {
+      "text": "뭐라고",
+      "start": 2.275,
+      "end": 2.625
+    },
+    {
+      "text": "한",
+      "start": 2.6375,
+      "end": 2.75
+    },
+    {
+      "text": "거지",
+      "start": 2.7625,
+      "end": 3.45
+    }
+  ]
+}

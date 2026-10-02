@@ -1,0 +1,166 @@
+{
+  "checkedAt": "2026-09-10T08:53:38.521Z",
+  "status": "passed",
+  "checks": [
+    {
+      "width": 1440,
+      "start": {
+        "audio": [
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/qwen-design/listen.wav",
+            "duration": 8.456875,
+            "paused": true,
+            "error": null
+          },
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/chatterbox-v3/listen.wav",
+            "duration": 7.8,
+            "paused": true,
+            "error": null
+          },
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/magpie-aria/listen.wav",
+            "duration": 7.383946,
+            "paused": true,
+            "error": null
+          },
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/moss-nano/listen.wav",
+            "duration": 8.8,
+            "paused": true,
+            "error": null
+          },
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/qwen-sohee/listen.wav",
+            "duration": 10.08,
+            "paused": true,
+            "error": null
+          },
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/supertonic3/F1-listen.wav",
+            "duration": 9.125442,
+            "paused": true,
+            "error": null
+          },
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/supertonic3/F2-listen.wav",
+            "duration": 8.568163,
+            "paused": true,
+            "error": null
+          },
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/supertonic3/F3-listen.wav",
+            "duration": 9.404082,
+            "paused": true,
+            "error": null
+          },
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/supertonic3/F4-listen.wav",
+            "duration": 7.801905,
+            "paused": true,
+            "error": null
+          },
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/supertonic3/F5-listen.wav",
+            "duration": 8.846803,
+            "paused": true,
+            "error": null
+          }
+        ],
+        "identitiesHidden": true,
+        "scrollWidth": 1440,
+        "width": 1440
+      },
+      "expanded": {
+        "scrollWidth": 1440,
+        "width": 1440,
+        "rows": 29,
+        "reportVisible": true,
+        "errors": []
+      },
+      "exclusivePlayback": true,
+      "restartPlayedFromBeginning": true
+    },
+    {
+      "width": 390,
+      "start": {
+        "audio": [
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/qwen-design/listen.wav",
+            "duration": 8.456875,
+            "paused": true,
+            "error": null
+          },
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/chatterbox-v3/listen.wav",
+            "duration": 7.8,
+            "paused": true,
+            "error": null
+          },
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/magpie-aria/listen.wav",
+            "duration": 7.383946,
+            "paused": true,
+            "error": null
+          },
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/moss-nano/listen.wav",
+            "duration": 8.8,
+            "paused": true,
+            "error": null
+          },
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/qwen-sohee/listen.wav",
+            "duration": 10.08,
+            "paused": true,
+            "error": null
+          },
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/supertonic3/F1-listen.wav",
+            "duration": 9.125442,
+            "paused": true,
+            "error": null
+          },
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/supertonic3/F2-listen.wav",
+            "duration": 8.568163,
+            "paused": true,
+            "error": null
+          },
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/supertonic3/F3-listen.wav",
+            "duration": 9.404082,
+            "paused": true,
+            "error": null
+          },
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/supertonic3/F4-listen.wav",
+            "duration": 7.801905,
+            "paused": true,
+            "error": null
+          },
+          {
+            "src": "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EB%B8%8C%EB%9E%9C%EB%93%9C_%EB%AA%A9%EC%86%8C%EB%A6%AC/20260910/%EC%8B%A4%ED%97%98/supertonic3/F5-listen.wav",
+            "duration": 8.846803,
+            "paused": true,
+            "error": null
+          }
+        ],
+        "identitiesHidden": true,
+        "scrollWidth": 390,
+        "width": 390
+      },
+      "expanded": {
+        "scrollWidth": 390,
+        "width": 390,
+        "rows": 29,
+        "reportVisible": true,
+        "errors": []
+      },
+      "exclusivePlayback": true,
+      "restartPlayedFromBeginning": true
+    }
+  ],
+  "errors": [],
+  "humanListening": false
+}

@@ -1,0 +1,208 @@
+{
+ "file": "SYNK_LAB_아맞다_EP01_v2_EN.mp4",
+ "probe": {
+  "duration": 19.3,
+  "bytes": 5280123,
+  "total_kbps": 2189,
+  "video": {
+   "codec_name": "h264",
+   "profile": "High",
+   "width": 1080,
+   "height": 1920,
+   "r_frame_rate": "30/1",
+   "nb_frames": "579",
+   "pix_fmt": "yuv420p",
+   "color_space": "bt709",
+   "color_primaries": "bt709",
+   "color_transfer": "bt709",
+   "color_range": "tv"
+  },
+  "audio": {
+   "codec_name": "aac",
+   "sample_rate": "48000",
+   "channels": 2,
+   "bit_rate": "253775"
+  }
+ },
+ "decode": {
+  "ok": true,
+  "errors": ""
+ },
+ "black_segments": [],
+ "loudness": {
+  "I": -14.1,
+  "LRA": 5.7,
+  "TP": -1.5
+ },
+ "first_frame": {
+  "std": 57.8,
+  "dark_text_pixels_in_upper_zone": 0.1014,
+  "composed": true
+ },
+ "cuts": [
+  0,
+  1.58,
+  4.03,
+  10.3,
+  15.77,
+  19.31
+ ],
+ "longest_shot_s": 6.27,
+ "visual_change_points": [
+  0.0,
+  1.58,
+  2.68,
+  4.03,
+  4.13,
+  6.2,
+  8.14,
+  9.2,
+  10.3,
+  10.55,
+  11.62,
+  12.02,
+  12.62,
+  14.51,
+  15.77,
+  16.47,
+  16.95,
+  17.55
+ ],
+ "cue_rise": [
+  {
+   "t": 0.02,
+   "what": "UI 획득 픽 — 첫 카드",
+   "pre_db": -25.4,
+   "post_db": -11.6,
+   "rise_db": 13.8
+  },
+  {
+   "t": 0.07,
+   "what": "내레이션 「아 맞다!」",
+   "pre_db": -23.8,
+   "post_db": -9.8,
+   "rise_db": 14.0
+  },
+  {
+   "t": 1.22,
+   "what": "몽글 물음 「뽀옹」",
+   "pre_db": -30.6,
+   "post_db": -14.9,
+   "rise_db": 15.7
+  },
+  {
+   "t": 1.7,
+   "what": "UI 픽 — 예문 카드",
+   "pre_db": -19.3,
+   "post_db": -13.5,
+   "rise_db": 5.8
+  },
+  {
+   "t": 1.8,
+   "what": "내레이션 「아 맞다, 우산!」",
+   "pre_db": -25.4,
+   "post_db": -13.4,
+   "rise_db": 12.0
+  },
+  {
+   "t": 4.2,
+   "what": "몽글 물음 「뽀오」 — 새를 봄",
+   "pre_db": -20.6,
+   "post_db": -14.6,
+   "rise_db": 6.0
+  },
+  {
+   "t": 6.2,
+   "what": "UI 픽 — 알아차림",
+   "pre_db": -27.8,
+   "post_db": -12.7,
+   "rise_db": 15.1
+  },
+  {
+   "t": 6.27,
+   "what": "내레이션 「아 맞다!」",
+   "pre_db": -24.9,
+   "post_db": -12.8,
+   "rise_db": 12.0
+  },
+  {
+   "t": 8.25,
+   "what": "몽글 기쁨 「먀앙」 — 같이 하자",
+   "pre_db": -20.4,
+   "post_db": -15.6,
+   "rise_db": 4.8
+  },
+  {
+   "t": 10.52,
+   "what": "내레이션 「아… 맞다.」 천천히",
+   "pre_db": -25.6,
+   "post_db": -10.7,
+   "rise_db": 14.9
+  },
+  {
+   "t": 14.51,
+   "what": "내레이션 「아 맞다!」 다시 한 번",
+   "pre_db": -33.6,
+   "post_db": -9.9,
+   "rise_db": 23.7
+  },
+  {
+   "t": 15.79,
+   "what": "UI 성취 화음 — 댓글 유도",
+   "pre_db": -30.7,
+   "post_db": -19.5,
+   "rise_db": 11.2
+  },
+  {
+   "t": 16.4,
+   "what": "몽글 완료축하 「모오옹」",
+   "pre_db": -21.0,
+   "post_db": -14.5,
+   "rise_db": 6.5
+  }
+ ],
+ "sheet": "SYNK_LAB_아맞다_EP01_v2_EN_시트.jpg",
+ "safe_zone": {
+  "lang": "en",
+  "safe": [
+   65,
+   269,
+   1015,
+   1248
+  ],
+  "violations": {}
+ },
+ "asr": [
+  {
+   "line": "hook",
+   "expected_at": 0.1,
+   "heard": "아! 맞다!",
+   "ok": true
+  },
+  {
+   "line": "umbrella",
+   "expected_at": 1.83,
+   "heard": "아 맞다 우산",
+   "ok": true
+  },
+  {
+   "line": "beat",
+   "expected_at": 6.3,
+   "heard": "아 맞다",
+   "ok": true
+  },
+  {
+   "line": "slow",
+   "expected_at": 10.55,
+   "heard": "아, 맞다.",
+   "ok": true
+  },
+  {
+   "line": "confirm",
+   "expected_at": 14.54,
+   "heard": "아 맞다",
+   "ok": true
+  }
+ ],
+ "max_gap_between_visual_changes_s": 2.07
+}

@@ -1,0 +1,132 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 1.863,
+  "words": [
+    {
+      "text": "드시고",
+      "start": 0.142,
+      "end": 0.445
+    },
+    {
+      "text": "가세요?",
+      "start": 0.506,
+      "end": 0.79
+    },
+    {
+      "text": "가지고",
+      "start": 0.952,
+      "end": 1.255
+    },
+    {
+      "text": "가세요?",
+      "start": 1.316,
+      "end": 1.863
+    }
+  ],
+  "characters": [
+    {
+      "text": "드",
+      "start": 0.142,
+      "end": 0.263
+    },
+    {
+      "text": "시",
+      "start": 0.263,
+      "end": 0.385
+    },
+    {
+      "text": "고",
+      "start": 0.385,
+      "end": 0.445
+    },
+    {
+      "text": " ",
+      "start": 0.445,
+      "end": 0.506
+    },
+    {
+      "text": "가",
+      "start": 0.506,
+      "end": 0.628
+    },
+    {
+      "text": "세",
+      "start": 0.628,
+      "end": 0.729
+    },
+    {
+      "text": "요",
+      "start": 0.729,
+      "end": 0.769
+    },
+    {
+      "text": "?",
+      "start": 0.769,
+      "end": 0.79
+    },
+    {
+      "text": " ",
+      "start": 0.79,
+      "end": 0.952
+    },
+    {
+      "text": "가",
+      "start": 0.952,
+      "end": 1.093
+    },
+    {
+      "text": "지",
+      "start": 1.093,
+      "end": 1.195
+    },
+    {
+      "text": "고",
+      "start": 1.195,
+      "end": 1.255
+    },
+    {
+      "text": " ",
+      "start": 1.255,
+      "end": 1.316
+    },
+    {
+      "text": "가",
+      "start": 1.316,
+      "end": 1.397
+    },
+    {
+      "text": "세",
+      "start": 1.397,
+      "end": 1.498
+    },
+    {
+      "text": "요",
+      "start": 1.498,
+      "end": 1.843
+    },
+    {
+      "text": "?",
+      "start": 1.843,
+      "end": 1.863
+    }
+  ],
+  "request": {
+    "seed": 926,
+    "model": "ssfm-v30",
+    "voice_id": "tc_69f2e455ea79fd197aa0476f",
+    "text": "드시고 가세요? 가지고 가세요?",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.02,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "happy",
+      "emotion_intensity": 0.75
+    }
+  },
+  "direction": "자연스럽게 선택지를 묻고 뒤 질문을 조금 올림.",
+  "voiceName": "서현"
+}

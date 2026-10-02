@@ -1,0 +1,84 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "오늘은 번역만 하려고 AI를 결제했다가, 출석 앱까지 만들면서 제대로 삽질한 얘기를 해볼게요.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.24,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 5.161,
+  "words": [
+    {
+      "text": "오늘은",
+      "start": 0.104,
+      "end": 0.312
+    },
+    {
+      "text": "번역만",
+      "start": 0.403,
+      "end": 0.715
+    },
+    {
+      "text": "하려고",
+      "start": 0.754,
+      "end": 0.936
+    },
+    {
+      "text": "AI를",
+      "start": 1.248,
+      "end": 1.547
+    },
+    {
+      "text": "결제했다가,",
+      "start": 1.586,
+      "end": 2.002
+    },
+    {
+      "text": "출석",
+      "start": 2.444,
+      "end": 2.756
+    },
+    {
+      "text": "앱까지",
+      "start": 2.795,
+      "end": 3.029
+    },
+    {
+      "text": "만들면서",
+      "start": 3.068,
+      "end": 3.445
+    },
+    {
+      "text": "제대로",
+      "start": 3.848,
+      "end": 4.082
+    },
+    {
+      "text": "삽질한",
+      "start": 4.121,
+      "end": 4.407
+    },
+    {
+      "text": "얘기를",
+      "start": 4.459,
+      "end": 4.641
+    },
+    {
+      "text": "해볼게요.",
+      "start": 4.68,
+      "end": 5.161
+    }
+  ],
+  "characters": null
+}

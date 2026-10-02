@@ -1,0 +1,28 @@
+{
+  "status": "completed",
+  "file": "voice-01-studio-3d8f9f2d38950b1d.wav",
+  "narration": "같이 들을까요?",
+  "duration": 1.18,
+  "sha256": "f7237eb90201eb01911eeca34995acf766c9789e5c424311ae2e2e660005be3b",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "seed_audio",
+    "preset": "original female based on user-selected B",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "jobId": "46ef0df1-b7b8-40c1-9e3a-929a7ac5786f",
+  "sourceFile": "studio-reference-332d03b4930f8c73.wav",
+  "sourceSha256": "11608c84d252525445ab3ac542635efcfbab9fa730d1da009a9ffeefccbdc475",
+  "sourceRangeSeconds": [
+    0,
+    1.18
+  ],
+  "nativeGenerationSampleRate": 48000,
+  "loudnessTargetLUFS": -23,
+  "truePeakLimitDb": -6,
+  "styleReferenceUserSelected": true,
+  "refinedAudioUserApproved": false,
+  "humanListening": false,
+  "fullDecode": true
+}

@@ -1,0 +1,117 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 2.813,
+  "words": [
+    {
+      "text": "여기서",
+      "start": 0.422,
+      "end": 0.783
+    },
+    {
+      "text": "드세요?",
+      "start": 1.366,
+      "end": 1.688
+    },
+    {
+      "text": "가져가세요?",
+      "start": 1.808,
+      "end": 2.812
+    }
+  ],
+  "characters": [
+    {
+      "text": "여",
+      "start": 0.422,
+      "end": 0.583
+    },
+    {
+      "text": "기",
+      "start": 0.583,
+      "end": 0.683
+    },
+    {
+      "text": "서",
+      "start": 0.683,
+      "end": 0.783
+    },
+    {
+      "text": " ",
+      "start": 0.783,
+      "end": 1.366
+    },
+    {
+      "text": "드",
+      "start": 1.366,
+      "end": 1.487
+    },
+    {
+      "text": "세",
+      "start": 1.487,
+      "end": 1.627
+    },
+    {
+      "text": "요",
+      "start": 1.627,
+      "end": 1.667
+    },
+    {
+      "text": "?",
+      "start": 1.667,
+      "end": 1.688
+    },
+    {
+      "text": " ",
+      "start": 1.688,
+      "end": 1.808
+    },
+    {
+      "text": "가",
+      "start": 1.808,
+      "end": 1.949
+    },
+    {
+      "text": "져",
+      "start": 1.949,
+      "end": 2.069
+    },
+    {
+      "text": "가",
+      "start": 2.069,
+      "end": 2.17
+    },
+    {
+      "text": "세",
+      "start": 2.17,
+      "end": 2.29
+    },
+    {
+      "text": "요",
+      "start": 2.29,
+      "end": 2.792
+    },
+    {
+      "text": "?",
+      "start": 2.792,
+      "end": 2.812
+    }
+  ],
+  "request": {
+    "seed": 926,
+    "model": "ssfm-v30",
+    "voice_id": "tc_69f2e455ea79fd197aa0476f",
+    "text": "여기서 드세요? 가져가세요?",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 0.96,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "다시 말해 주세요.",
+      "next_text": "여기서 먹을게요."
+    }
+  },
+  "direction": "아, 못 들으셨구나. 알아듣도록 두 선택지를 부드럽게 분리.",
+  "voiceName": "서현"
+}

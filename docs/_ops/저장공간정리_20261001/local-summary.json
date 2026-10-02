@@ -1,0 +1,2576 @@
+{
+  "roots": [
+    {
+      "root": "C:\\Users\\q1212\\Downloads",
+      "files": 34,
+      "bytes": 997747628,
+      "allocated_estimate": 997797180,
+      "groups": [
+        {
+          "path": "SYNK-Blender-5.2.2",
+          "count": 1,
+          "bytes": 404453484,
+          "allocated": 404453484
+        },
+        {
+          "path": "yuhobuilds_EP01 (1).mp4",
+          "count": 1,
+          "bytes": 55032693,
+          "allocated": 55032693
+        },
+        {
+          "path": "yuhobuilds_EP01 (2).mp4",
+          "count": 1,
+          "bytes": 55032693,
+          "allocated": 55032693
+        },
+        {
+          "path": "yuhobuilds_EP01 (3).mp4",
+          "count": 1,
+          "bytes": 55032693,
+          "allocated": 55032693
+        },
+        {
+          "path": "새벽 물가의 숨.wav",
+          "count": 1,
+          "bytes": 51800080,
+          "allocated": 51800080
+        },
+        {
+          "path": "비 오는 숲의 책상 [0m00s-4m27s].wav",
+          "count": 1,
+          "bytes": 51644128,
+          "allocated": 51644128
+        },
+        {
+          "path": "yuhobuilds_EP01.mp4",
+          "count": 1,
+          "bytes": 48692420,
+          "allocated": 48692420
+        },
+        {
+          "path": "커피가 식기 전에.wav",
+          "count": 1,
+          "bytes": 44788240,
+          "allocated": 44788240
+        },
+        {
+          "path": "불빛이 하나둘 켜질 때 [0m00s-3m30s].wav",
+          "count": 1,
+          "bytes": 40311780,
+          "allocated": 40311780
+        },
+        {
+          "path": "창가의 작은 불.wav",
+          "count": 1,
+          "bytes": 38797840,
+          "allocated": 38797840
+        },
+        {
+          "path": "video (2).mp4",
+          "count": 1,
+          "bytes": 28858504,
+          "allocated": 28858504
+        },
+        {
+          "path": "video (1).mp4",
+          "count": 1,
+          "bytes": 18605617,
+          "allocated": 18605617
+        },
+        {
+          "path": "hf_20260930_135004_fe78b265-229c-43be-8825-0945c027120c.mp4",
+          "count": 1,
+          "bytes": 13726598,
+          "allocated": 13729792
+        },
+        {
+          "path": "GeminiSetup.exe",
+          "count": 1,
+          "bytes": 13288376,
+          "allocated": 13291520
+        },
+        {
+          "path": "video (5).mp4",
+          "count": 1,
+          "bytes": 12437770,
+          "allocated": 12439552
+        },
+        {
+          "path": "video (4).mp4",
+          "count": 1,
+          "bytes": 9166059,
+          "allocated": 9166848
+        },
+        {
+          "path": "video (3).mp4",
+          "count": 1,
+          "bytes": 8703804,
+          "allocated": 8704000
+        },
+        {
+          "path": "SYNK - Bright Perspective.mp3",
+          "count": 1,
+          "bytes": 7512490,
+          "allocated": 7516160
+        },
+        {
+          "path": "비 오는 숲의 책상.mp3",
+          "count": 1,
+          "bytes": 5972997,
+          "allocated": 5976064
+        },
+        {
+          "path": "video.mp4",
+          "count": 1,
+          "bytes": 5688045,
+          "allocated": 5689344
+        },
+        {
+          "path": "SYNK Interview - Quiet Resolve.mp3",
+          "count": 1,
+          "bytes": 4790753,
+          "allocated": 4792320
+        },
+        {
+          "path": "파란 신호가 켜지면.mp3",
+          "count": 1,
+          "bytes": 4731357,
+          "allocated": 4734976
+        },
+        {
+          "path": "video (7).mp4",
+          "count": 1,
+          "bytes": 3979371,
+          "allocated": 3981312
+        },
+        {
+          "path": "video (6).mp4",
+          "count": 1,
+          "bytes": 3761922,
+          "allocated": 3764224
+        },
+        {
+          "path": "video (8).mp4",
+          "count": 1,
+          "bytes": 3674915,
+          "allocated": 3678208
+        },
+        {
+          "path": "hf_20260930_143856_6ff88fd7-b0bd-40e8-a6c9-415766a7f205 (1).mp4",
+          "count": 1,
+          "bytes": 3478024,
+          "allocated": 3481600
+        },
+        {
+          "path": "hf_20260930_143856_6ff88fd7-b0bd-40e8-a6c9-415766a7f205.mp4",
+          "count": 1,
+          "bytes": 3478024,
+          "allocated": 3481600
+        },
+        {
+          "path": "SYNK_PULSE_LUNE 여름 셔츠 · 샘플_발주서.zip",
+          "count": 1,
+          "bytes": 161583,
+          "allocated": 163840
+        },
+        {
+          "path": "모두의 창업 2기(일반,기술분야) 요건검토 서류제출 안내.hwp",
+          "count": 1,
+          "bytes": 102400,
+          "allocated": 102400
+        },
+        {
+          "path": "Grata answers.docx",
+          "count": 1,
+          "bytes": 18790,
+          "allocated": 20480
+        }
+      ]
+    },
+    {
+      "root": "C:\\Users\\q1212\\Videos",
+      "files": 7846,
+      "bytes": 33355736709,
+      "allocated_estimate": 32236798932,
+      "groups": [
+        {
+          "path": "SYNK_1231_Interview_20260925/media",
+          "count": 90,
+          "bytes": 6152949140,
+          "allocated": 6152991016
+        },
+        {
+          "path": "SYNK_Premium_Interview_20260925/graphics",
+          "count": 37,
+          "bytes": 2819082238,
+          "allocated": 2819151827
+        },
+        {
+          "path": "SYNK_Premium_Interview_20260925/revision3",
+          "count": 293,
+          "bytes": 2807559938,
+          "allocated": 2808117436
+        },
+        {
+          "path": "SYNK_Interview_20260923/renders",
+          "count": 87,
+          "bytes": 2754089706,
+          "allocated": 2754176965
+        },
+        {
+          "path": "SYNK_1231_Interview_20260925/audio",
+          "count": 243,
+          "bytes": 2205452132,
+          "allocated": 2205787720
+        },
+        {
+          "path": "SYNK_Premium_Interview_20260925/revision5",
+          "count": 186,
+          "bytes": 1775261932,
+          "allocated": 1682656500
+        },
+        {
+          "path": "kkkk_4k_audio_natural_20260925",
+          "count": 32,
+          "bytes": 1442345739,
+          "allocated": 1442404586
+        },
+        {
+          "path": "zzdz_audio_20260925",
+          "count": 44,
+          "bytes": 1380391757,
+          "allocated": 1380462768
+        },
+        {
+          "path": "SYNK_Premium_Interview_20260925/revision7",
+          "count": 196,
+          "bytes": 1886102749,
+          "allocated": 1275130915
+        },
+        {
+          "path": "SYNK_Premium_Interview_20260925/portrait",
+          "count": 4289,
+          "bytes": 1250957407,
+          "allocated": 1260743832
+        },
+        {
+          "path": "SYNK_1231_Interview_20260925/graphics",
+          "count": 7,
+          "bytes": 1144405458,
+          "allocated": 1144416274
+        },
+        {
+          "path": "SYNK_Premium_Interview_20260925/revision8",
+          "count": 97,
+          "bytes": 1047862386,
+          "allocated": 974374111
+        },
+        {
+          "path": "SYNK_1231_Interview_20260925/review",
+          "count": 424,
+          "bytes": 925783134,
+          "allocated": 926670454
+        },
+        {
+          "path": "SYNK_Premium_Interview_20260925/revision9",
+          "count": 322,
+          "bytes": 1208027611,
+          "allocated": 874820958
+        },
+        {
+          "path": "SYNK_Premium_Interview_20260925/audio",
+          "count": 33,
+          "bytes": 681041117,
+          "allocated": 681097272
+        },
+        {
+          "path": "SYNK_1231_Interview_20260925/renders",
+          "count": 1,
+          "bytes": 489129884,
+          "allocated": 489129884
+        },
+        {
+          "path": "SYNK_Premium_Interview_20260925/revision6",
+          "count": 49,
+          "bytes": 484146077,
+          "allocated": 460607488
+        },
+        {
+          "path": "SYNK_Premium_Interview_20260925/review",
+          "count": 67,
+          "bytes": 459434440,
+          "allocated": 459568426
+        },
+        {
+          "path": "SYNK_Premium_Interview_20260925/revision4",
+          "count": 360,
+          "bytes": 456166098,
+          "allocated": 456843330
+        },
+        {
+          "path": "SYNK_Interview_20260923/short_v2",
+          "count": 33,
+          "bytes": 454584406,
+          "allocated": 454654473
+        },
+        {
+          "path": "OneDrive_video_local_20260924/Desktop",
+          "count": 12,
+          "bytes": 340539966,
+          "allocated": 340546823
+        },
+        {
+          "path": "zzdz_audio_20260925/denoised",
+          "count": 1,
+          "bytes": 149729808,
+          "allocated": 149729808
+        },
+        {
+          "path": "SYNK_Premium_Interview_20260925/revision2",
+          "count": 443,
+          "bytes": 146075941,
+          "allocated": 146990591
+        },
+        {
+          "path": "SYNK_Interview_20260923/audio",
+          "count": 54,
+          "bytes": 142784409,
+          "allocated": 142914904
+        },
+        {
+          "path": "SYNK_Premium_Interview_20260925/shorts_v1",
+          "count": 7,
+          "bytes": 92541333,
+          "allocated": 92550636
+        },
+        {
+          "path": "SYNK_Interview_20260923/review",
+          "count": 58,
+          "bytes": 88790557,
+          "allocated": 88903680
+        },
+        {
+          "path": "SYNK_Premium_Interview_20260925/shorts_v2",
+          "count": 7,
+          "bytes": 87546473,
+          "allocated": 87555477
+        },
+        {
+          "path": "SYNK_Interview_20260923/transcripts",
+          "count": 25,
+          "bytes": 79036637,
+          "allocated": 79092690
+        },
+        {
+          "path": "화면 녹화",
+          "count": 4,
+          "bytes": 72500751,
+          "allocated": 72505389
+        },
+        {
+          "path": "SYNK_Premium_Interview_20260925/transcript",
+          "count": 41,
+          "bytes": 60897262,
+          "allocated": 60972988
+        }
+      ]
+    },
+    {
+      "root": "C:\\Users\\q1212\\Pictures",
+      "files": 781,
+      "bytes": 711644738,
+      "allocated_estimate": 713233653,
+      "groups": [
+        {
+          "path": "OneDrive_Desktop_사진29_20260924",
+          "count": 29,
+          "bytes": 210986331,
+          "allocated": 211046400
+        },
+        {
+          "path": "OneDrive_인물_20260924/원본 사진",
+          "count": 86,
+          "bytes": 199968721,
+          "allocated": 200128959
+        },
+        {
+          "path": "OneDrive_인물_20260924/학습 자료",
+          "count": 349,
+          "bytes": 135218931,
+          "allocated": 135954432
+        },
+        {
+          "path": "OneDrive_스크린샷_20260924",
+          "count": 308,
+          "bytes": 107434991,
+          "allocated": 108048384
+        },
+        {
+          "path": "OneDrive_인물_20260924/선택 사진",
+          "count": 6,
+          "bytes": 29825261,
+          "allocated": 29839360
+        },
+        {
+          "path": "OneDrive_인물_20260924/완성 영상",
+          "count": 2,
+          "bytes": 28210313,
+          "allocated": 28212022
+        },
+        {
+          "path": "Screenshots",
+          "count": 1,
+          "bytes": 190,
+          "allocated": 4096
+        }
+      ]
+    },
+    {
+      "root": "C:\\Users\\q1212\\Documents",
+      "files": 329035,
+      "bytes": 103669626753,
+      "allocated_estimate": 104355498456,
+      "groups": [
+        {
+          "path": "SYNK-appsscript/docs",
+          "count": 125149,
+          "bytes": 32484341190,
+          "allocated": 32642773416
+        },
+        {
+          "path": "SYNK-appsscript/.git",
+          "count": 4397,
+          "bytes": 25895240908,
+          "allocated": 25905976708
+        },
+        {
+          "path": "SYNK-appsscript/artifacts",
+          "count": 7299,
+          "bytes": 13361387075,
+          "allocated": 13377872145
+        },
+        {
+          "path": "SYNK-appsscript/outputs",
+          "count": 9615,
+          "bytes": 6478591300,
+          "allocated": 6500694285
+        },
+        {
+          "path": "PC_공간정리_20260930",
+          "count": 27,
+          "bytes": 4832809197,
+          "allocated": 4832865426
+        },
+        {
+          "path": "SYNK-appsscript/영상",
+          "count": 15934,
+          "bytes": 3036612175,
+          "allocated": 3076814420
+        },
+        {
+          "path": "SYNK-appsscript/experiences",
+          "count": 19998,
+          "bytes": 2860153625,
+          "allocated": 2911688569
+        },
+        {
+          "path": "SYNK-worktrees/interview-83s-close",
+          "count": 4954,
+          "bytes": 2502146554,
+          "allocated": 2513175831
+        },
+        {
+          "path": "SYNK-worktrees/atlas-memory-release-20260922",
+          "count": 31426,
+          "bytes": 1189026918,
+          "allocated": 1277425156
+        },
+        {
+          "path": "SYNK-talk/node_modules",
+          "count": 35845,
+          "bytes": 1161965452,
+          "allocated": 1264178692
+        },
+        {
+          "path": "SYNK-worktrees/atlas-talk-release-20260918",
+          "count": 31337,
+          "bytes": 1168651676,
+          "allocated": 1256838660
+        },
+        {
+          "path": "synk-vendor/MOSS-TTS-Nano",
+          "count": 150,
+          "bytes": 794503504,
+          "allocated": 794914816
+        },
+        {
+          "path": "한울통합돌봄센터_홍보영상_20260921/asr_models",
+          "count": 7,
+          "bytes": 486213474,
+          "allocated": 486229782
+        },
+        {
+          "path": "SYNK-talk/팩4",
+          "count": 4,
+          "bytes": 318137736,
+          "allocated": 318137736
+        },
+        {
+          "path": "한울통합돌봄센터_홍보영상_20260921/.asr-venv",
+          "count": 5796,
+          "bytes": 301480679,
+          "allocated": 314925168
+        },
+        {
+          "path": "SYNK-marketing-share-20260909/.git",
+          "count": 118,
+          "bytes": 313584315,
+          "allocated": 313958797
+        },
+        {
+          "path": "SYNK-appsscript/node_modules",
+          "count": 306,
+          "bytes": 285695138,
+          "allocated": 286665728
+        },
+        {
+          "path": "Hanul_Care_Resolve_20260921",
+          "count": 40,
+          "bytes": 249854980,
+          "allocated": 249923914
+        },
+        {
+          "path": "SYNK-website/qa",
+          "count": 1912,
+          "bytes": 232854501,
+          "allocated": 236638208
+        },
+        {
+          "path": "SYNK-radio-20260923/원본",
+          "count": 5,
+          "bytes": 227342068,
+          "allocated": 227342068
+        },
+        {
+          "path": "SYNK-radio-20260923/WAV원본",
+          "count": 5,
+          "bytes": 227342068,
+          "allocated": 227342068
+        },
+        {
+          "path": "SYNK-marketing-share-20260909",
+          "count": 5,
+          "bytes": 194898766,
+          "allocated": 194911985
+        },
+        {
+          "path": "SYNK-talk/팩3",
+          "count": 4,
+          "bytes": 178556196,
+          "allocated": 178556196
+        },
+        {
+          "path": "SYNK-talk/팩",
+          "count": 4,
+          "bytes": 177226848,
+          "allocated": 177226848
+        },
+        {
+          "path": "SYNK-talk/팩2",
+          "count": 4,
+          "bytes": 174241972,
+          "allocated": 174241972
+        },
+        {
+          "path": "SYNK-radio-20260926/소리",
+          "count": 2,
+          "bytes": 172408954,
+          "allocated": 172412904
+        },
+        {
+          "path": "한울통합돌봄센터_홍보영상_20260921",
+          "count": 16,
+          "bytes": 171780112,
+          "allocated": 171820665
+        },
+        {
+          "path": "SYNK-radio-20260926/정규화FLAC",
+          "count": 8,
+          "bytes": 170474788,
+          "allocated": 170477760
+        },
+        {
+          "path": "SYNK-marketing-share-20260909/source",
+          "count": 244,
+          "bytes": 161907834,
+          "allocated": 162506768
+        },
+        {
+          "path": "SYNK-marketing-share-20260909/dist",
+          "count": 244,
+          "bytes": 161907834,
+          "allocated": 162506768
+        }
+      ]
+    },
+    {
+      "root": "C:\\Users\\q1212\\OneDrive",
+      "files": 1874,
+      "bytes": 1274918652,
+      "allocated_estimate": 1278943984,
+      "groups": [
+        {
+          "path": "Desktop/HappyGangster_20260930",
+          "count": 147,
+          "bytes": 480057887,
+          "allocated": 480371679
+        },
+        {
+          "path": "Desktop",
+          "count": 23,
+          "bytes": 252626247,
+          "allocated": 252670225
+        },
+        {
+          "path": "Desktop/SYNK_창업자_인터뷰_세로클립_v1",
+          "count": 7,
+          "bytes": 92541694,
+          "allocated": 92550636
+        },
+        {
+          "path": "Desktop/SYNK_창업자_인터뷰_세로클립_v2",
+          "count": 7,
+          "bytes": 87546600,
+          "allocated": 87555477
+        },
+        {
+          "path": "그림/Screenshots",
+          "count": 142,
+          "bytes": 57742310,
+          "allocated": 58044416
+        },
+        {
+          "path": "Desktop/synkbrief_회의정리_1편_20260923",
+          "count": 10,
+          "bytes": 55748278,
+          "allocated": 55769679
+        },
+        {
+          "path": "Desktop/새 폴더",
+          "count": 133,
+          "bytes": 47903566,
+          "allocated": 48189440
+        },
+        {
+          "path": "SYNK_현재백업",
+          "count": 2,
+          "bytes": 47479478,
+          "allocated": 47480880
+        },
+        {
+          "path": "Desktop/보관",
+          "count": 118,
+          "bytes": 20954788,
+          "allocated": 21200896
+        },
+        {
+          "path": "Desktop/SYNK_LAB_표현소개_EP01_아맞다",
+          "count": 9,
+          "bytes": 20412859,
+          "allocated": 20434944
+        },
+        {
+          "path": "문서/New project",
+          "count": 29,
+          "bytes": 15973975,
+          "allocated": 16035840
+        },
+        {
+          "path": "Desktop/bm 설계표",
+          "count": 35,
+          "bytes": 15166248,
+          "allocated": 15237120
+        },
+        {
+          "path": "Desktop/SYNK LAB",
+          "count": 8,
+          "bytes": 15065771,
+          "allocated": 15085568
+        },
+        {
+          "path": "문서",
+          "count": 10,
+          "bytes": 12918479,
+          "allocated": 12943360
+        },
+        {
+          "path": "SYNK",
+          "count": 3,
+          "bytes": 12311642,
+          "allocated": 12316672
+        },
+        {
+          "path": "문서/SYNK_보관",
+          "count": 1027,
+          "bytes": 10070129,
+          "allocated": 12242944
+        },
+        {
+          "path": "SYNK PULSE",
+          "count": 2,
+          "bytes": 8604249,
+          "allocated": 8609792
+        },
+        {
+          "path": "문서/카카오톡 받은 파일",
+          "count": 26,
+          "bytes": 5804049,
+          "allocated": 5857280
+        },
+        {
+          "path": "SYNK SHIFT",
+          "count": 2,
+          "bytes": 5490631,
+          "allocated": 5492736
+        },
+        {
+          "path": "SYNK LAB",
+          "count": 2,
+          "bytes": 5430582,
+          "allocated": 5435392
+        },
+        {
+          "path": "Desktop/SYNK",
+          "count": 21,
+          "bytes": 2225980,
+          "allocated": 2269184
+        },
+        {
+          "path": "문서/Synk",
+          "count": 22,
+          "bytes": 1181166,
+          "allocated": 1241088
+        },
+        {
+          "path": "그림",
+          "count": 2,
+          "bytes": 718303,
+          "allocated": 724992
+        },
+        {
+          "path": "SYNK/정본",
+          "count": 19,
+          "bytes": 472162,
+          "allocated": 512000
+        },
+        {
+          "path": "Desktop/도파민",
+          "count": 21,
+          "bytes": 242869,
+          "allocated": 307200
+        },
+        {
+          "path": "SYNK LAB/정본",
+          "count": 5,
+          "bytes": 143001,
+          "allocated": 155648
+        },
+        {
+          "path": "문서/ChatGPT",
+          "count": 18,
+          "bytes": 27254,
+          "allocated": 81920
+        },
+        {
+          "path": "Desktop/SYNK_창업자_인터뷰_v9",
+          "count": 12,
+          "bytes": 17518,
+          "allocated": 49152
+        },
+        {
+          "path": "SYNK SHIFT/정본",
+          "count": 3,
+          "bytes": 32201,
+          "allocated": 40960
+        },
+        {
+          "path": "Desktop/SYNK SHIFT",
+          "count": 2,
+          "bytes": 2741,
+          "allocated": 8192
+        }
+      ]
+    },
+    {
+      "root": "C:\\Users\\q1212\\DaVinci Resolve Media",
+      "files": 0,
+      "bytes": 0,
+      "allocated_estimate": 0,
+      "groups": []
+    },
+    {
+      "root": "C:\\Users\\q1212\\.cache",
+      "files": 23840,
+      "bytes": 6344240502,
+      "allocated_estimate": 6403728429,
+      "groups": [
+        {
+          "path": "huggingface/hub",
+          "count": 26,
+          "bytes": 3638467909,
+          "allocated": 3638525537
+        },
+        {
+          "path": "codex-runtimes/codex-primary-runtime",
+          "count": 21740,
+          "bytes": 1379261679,
+          "allocated": 1433376263
+        },
+        {
+          "path": "hyperframes/history",
+          "count": 1182,
+          "bytes": 827939755,
+          "allocated": 830478045
+        },
+        {
+          "path": "hyperframes/chrome",
+          "count": 291,
+          "bytes": 281678011,
+          "allocated": 282604032
+        },
+        {
+          "path": "codex-runtimes/codex-runtime-install-9Lc9Ec",
+          "count": 1,
+          "bytes": 108584864,
+          "allocated": 108584864
+        },
+        {
+          "path": "codex-runtimes/codex-primary-runtime.previous-afffe55f-7e2e-453e-a5b7-c589a640eae2",
+          "count": 1,
+          "bytes": 92825416,
+          "allocated": 92825416
+        },
+        {
+          "path": "hyperframes/fonts",
+          "count": 476,
+          "bytes": 14553640,
+          "allocated": 16031744
+        },
+        {
+          "path": "huggingface/xet",
+          "count": 102,
+          "bytes": 515304,
+          "allocated": 860160
+        },
+        {
+          "path": "huggingface/modules",
+          "count": 15,
+          "bytes": 404612,
+          "allocated": 421888
+        },
+        {
+          "path": "huggingface",
+          "count": 5,
+          "bytes": 7555,
+          "allocated": 16384
+        },
+        {
+          "path": "youtube-dl",
+          "count": 1,
+          "bytes": 1757,
+          "allocated": 4096
+        }
+      ]
+    },
+    {
+      "root": "C:\\Users\\q1212\\.codex",
+      "files": 10557,
+      "bytes": 10033813232,
+      "allocated_estimate": 10058470236,
+      "groups": [
+        {
+          "path": "archived_sessions",
+          "count": 151,
+          "bytes": 3494387303,
+          "allocated": 3494635918
+        },
+        {
+          "path": "thread_history_1.sqlite",
+          "count": 1,
+          "bytes": 2606551040,
+          "allocated": 2606551040
+        },
+        {
+          "path": "sessions/2026",
+          "count": 541,
+          "bytes": 856126383,
+          "allocated": 857190595
+        },
+        {
+          "path": "logs_2.sqlite",
+          "count": 1,
+          "bytes": 545628160,
+          "allocated": 545628160
+        },
+        {
+          "path": ".sandbox-bin",
+          "count": 26,
+          "bytes": 470212320,
+          "allocated": 470267184
+        },
+        {
+          "path": "plugins/.plugin-appserver",
+          "count": 4,
+          "bytes": 425263296,
+          "allocated": 425264016
+        },
+        {
+          "path": "cache/remote_plugin_catalog",
+          "count": 12,
+          "bytes": 243155282,
+          "allocated": 243166958
+        },
+        {
+          "path": "generated_images/01a0833a-8055-7a02-b5ff-c42c30652494",
+          "count": 113,
+          "bytes": 201909774,
+          "allocated": 202125312
+        },
+        {
+          "path": "generated_images/01a04d1a-b815-70d1-84a4-0b2972fdb072",
+          "count": 59,
+          "bytes": 118666901,
+          "allocated": 118784000
+        },
+        {
+          "path": "plugins/cache",
+          "count": 2084,
+          "bytes": 99077646,
+          "allocated": 103972864
+        },
+        {
+          "path": "generated_images/01a08bec-1f1d-7903-b772-c36f94a712f1",
+          "count": 44,
+          "bytes": 100609854,
+          "allocated": 100700160
+        },
+        {
+          "path": ".tmp/plugins",
+          "count": 5416,
+          "bytes": 79887355,
+          "allocated": 93155677
+        },
+        {
+          "path": "generated_images/01a0b07f-efb9-7001-9c7e-4c56fac442f5",
+          "count": 53,
+          "bytes": 90296508,
+          "allocated": 90402816
+        },
+        {
+          "path": "generated_images/01a0ee70-dff6-7ad0-9bd9-1142be18acd1",
+          "count": 34,
+          "bytes": 84057741,
+          "allocated": 84135936
+        },
+        {
+          "path": "generated_images/01a04ced-ba08-7192-8930-860845df4c36",
+          "count": 28,
+          "bytes": 63327219,
+          "allocated": 63377408
+        },
+        {
+          "path": "generated_images/01a0e247-e6df-7b72-af5d-20238b73ce68",
+          "count": 29,
+          "bytes": 56053414,
+          "allocated": 56102912
+        },
+        {
+          "path": ".tmp/bundled-marketplaces",
+          "count": 826,
+          "bytes": 48980159,
+          "allocated": 50819072
+        },
+        {
+          "path": "generated_images/01a0b650-38f0-7bd3-af82-1a55c3c7b0e3",
+          "count": 22,
+          "bytes": 47055358,
+          "allocated": 47099904
+        },
+        {
+          "path": "generated_images/01a0b63b-6ce1-7442-b9d3-426265d891df",
+          "count": 19,
+          "bytes": 40057191,
+          "allocated": 40095744
+        },
+        {
+          "path": "cache/codex_app_directory",
+          "count": 6,
+          "bytes": 35149363,
+          "allocated": 35160064
+        },
+        {
+          "path": ".sandbox",
+          "count": 43,
+          "bytes": 28860240,
+          "allocated": 28962816
+        },
+        {
+          "path": "generated_images/01a0e168-c254-7992-9d2b-4dafff96557b",
+          "count": 16,
+          "bytes": 28824931,
+          "allocated": 28860416
+        },
+        {
+          "path": "generated_images/01a0823c-a439-7c20-ac26-b90355ff5024",
+          "count": 8,
+          "bytes": 18236013,
+          "allocated": 18247680
+        },
+        {
+          "path": "generated_images/01a099f3-241b-7020-b992-42364187a761",
+          "count": 7,
+          "bytes": 16324676,
+          "allocated": 16343040
+        },
+        {
+          "path": "visualizations/2026",
+          "count": 22,
+          "bytes": 13144009,
+          "allocated": 13205504
+        },
+        {
+          "path": "generated_images/01a08a5b-7899-73f3-9c5c-f904823afa36",
+          "count": 6,
+          "bytes": 13025904,
+          "allocated": 13037568
+        },
+        {
+          "path": "state_5.sqlite",
+          "count": 1,
+          "bytes": 12943360,
+          "allocated": 12943360
+        },
+        {
+          "path": "generated_images/01a0d9f2-d2a5-7510-b895-1c08e568e9dd",
+          "count": 7,
+          "bytes": 12001780,
+          "allocated": 12017664
+        },
+        {
+          "path": "generated_images/01a0c452-0c2a-71d0-9ca8-03a86ad346b9",
+          "count": 5,
+          "bytes": 11859138,
+          "allocated": 11870208
+        },
+        {
+          "path": "generated_images/01a08d1f-cd76-7f60-9561-3758cf3c7f29",
+          "count": 5,
+          "bytes": 10321237,
+          "allocated": 10338304
+        }
+      ]
+    },
+    {
+      "root": "C:\\Users\\q1212\\.claude",
+      "files": 3208,
+      "bytes": 1062207016,
+      "allocated_estimate": 1070920666,
+      "groups": [
+        {
+          "path": "projects/C--Users-q1212-Documents-SYNK-appsscript",
+          "count": 304,
+          "bytes": 1026382031,
+          "allocated": 1027130330
+        },
+        {
+          "path": "file-history/b8f703ae-f546-4f4c-9445-ea8f2b005a68",
+          "count": 190,
+          "bytes": 5803479,
+          "allocated": 6164480
+        },
+        {
+          "path": "file-history/4de9b358-0f27-4cc6-ad8b-61cb161fdfaf",
+          "count": 41,
+          "bytes": 4953518,
+          "allocated": 5054464
+        },
+        {
+          "path": "file-history/36920f90-b34c-42e6-8258-9fc0a459715a",
+          "count": 288,
+          "bytes": 4144839,
+          "allocated": 4743168
+        },
+        {
+          "path": "file-history/c9dea990-e87e-476d-b417-5fdb94fe5c25",
+          "count": 36,
+          "bytes": 3292876,
+          "allocated": 3371008
+        },
+        {
+          "path": "file-history/3f68d929-100f-4dba-a9a7-2c399c92feb9",
+          "count": 5,
+          "bytes": 2104483,
+          "allocated": 2117632
+        },
+        {
+          "path": "skills/media-use",
+          "count": 104,
+          "bytes": 1775986,
+          "allocated": 1994752
+        },
+        {
+          "path": "telemetry",
+          "count": 12,
+          "bytes": 1725131,
+          "allocated": 1748992
+        },
+        {
+          "path": "skills/hyperframes-animation",
+          "count": 122,
+          "bytes": 1231035,
+          "allocated": 1482752
+        },
+        {
+          "path": "plugins/marketplaces",
+          "count": 188,
+          "bytes": 928889,
+          "allocated": 1441792
+        },
+        {
+          "path": "skills/hyperframes-creative",
+          "count": 79,
+          "bytes": 1207344,
+          "allocated": 1409024
+        },
+        {
+          "path": "file-history/03487efa-0f90-48c4-b94b-9b9def4c4705",
+          "count": 121,
+          "bytes": 976271,
+          "allocated": 1224704
+        },
+        {
+          "path": "file-history/c61edb40-2bce-4eac-8e50-86b919aee75c",
+          "count": 60,
+          "bytes": 1040747,
+          "allocated": 1179648
+        },
+        {
+          "path": "plugins/cache",
+          "count": 177,
+          "bytes": 683538,
+          "allocated": 1163264
+        },
+        {
+          "path": "cache",
+          "count": 2,
+          "bytes": 610187,
+          "allocated": 614400
+        },
+        {
+          "path": "file-history/970a5ccd-8700-4754-925d-947fb7b30d7d",
+          "count": 16,
+          "bytes": 565445,
+          "allocated": 593920
+        },
+        {
+          "path": "file-history/0df3c1ee-695e-4f70-a2ba-e12a53eee6c8",
+          "count": 1,
+          "bytes": 497622,
+          "allocated": 499712
+        },
+        {
+          "path": "backups",
+          "count": 5,
+          "bytes": 478159,
+          "allocated": 491520
+        },
+        {
+          "path": "shell-snapshots",
+          "count": 119,
+          "bytes": 397171,
+          "allocated": 487424
+        },
+        {
+          "path": "file-history/583122f7-0324-4124-8869-251c1fb6ccc6",
+          "count": 3,
+          "bytes": 478650,
+          "allocated": 483328
+        },
+        {
+          "path": "file-history/cf5c7291-dc01-4522-ba84-cdd60cff8233",
+          "count": 4,
+          "bytes": 448553,
+          "allocated": 458752
+        },
+        {
+          "path": "file-history/ae4d514f-9926-4d0f-a422-663b35e3b6e0",
+          "count": 32,
+          "bytes": 387869,
+          "allocated": 446464
+        },
+        {
+          "path": "file-history/59b971a7-9f65-4052-a4d8-c9398abfc25e",
+          "count": 34,
+          "bytes": 303515,
+          "allocated": 376832
+        },
+        {
+          "path": "file-history/56feddc8-0d42-45ab-96d8-a84f4c76bf9d",
+          "count": 35,
+          "bytes": 304290,
+          "allocated": 368640
+        },
+        {
+          "path": "skills/hyperframes",
+          "count": 29,
+          "bytes": 147615,
+          "allocated": 212992
+        },
+        {
+          "path": "cache/model-catalog",
+          "count": 20,
+          "bytes": 174388,
+          "allocated": 208896
+        },
+        {
+          "path": "projects/C--Users-q1212-AppData-Roaming-Claude-scratch-workspaces-4402d9ac-3f34-41a1-9ead-a3fa023640f8-81cef064-004c-4f04-b93c-7fdd9f3c00ba-scratch-2026-09-26-49dd2d",
+          "count": 3,
+          "bytes": 142585,
+          "allocated": 151552
+        },
+        {
+          "path": "skills/hyperframes-cli",
+          "count": 11,
+          "bytes": 120599,
+          "allocated": 147456
+        },
+        {
+          "path": "skills/hyperframes-registry",
+          "count": 12,
+          "bytes": 81107,
+          "allocated": 110592
+        },
+        {
+          "path": "skills/hyperframes-core",
+          "count": 11,
+          "bytes": 95041,
+          "allocated": 110592
+        }
+      ]
+    },
+    {
+      "root": "C:\\Users\\q1212\\.hyperframes",
+      "files": 424,
+      "bytes": 756265,
+      "allocated_estimate": 1925120,
+      "groups": [
+        {
+          "path": "cache",
+          "count": 418,
+          "bytes": 735381,
+          "allocated": 1884160
+        },
+        {
+          "path": "lint-streaks.json",
+          "count": 1,
+          "bytes": 18900,
+          "allocated": 20480
+        },
+        {
+          "path": "running",
+          "count": 2,
+          "bytes": 26,
+          "allocated": 8192
+        },
+        {
+          "path": "auto-update.log",
+          "count": 1,
+          "bytes": 804,
+          "allocated": 4096
+        },
+        {
+          "path": "config.json",
+          "count": 1,
+          "bytes": 1053,
+          "allocated": 4096
+        },
+        {
+          "path": "install-state.json",
+          "count": 1,
+          "bytes": 101,
+          "allocated": 4096
+        }
+      ]
+    },
+    {
+      "root": "C:\\Users\\q1212\\.media",
+      "files": 13,
+      "bytes": 21839066,
+      "allocated_estimate": 21846546,
+      "groups": [
+        {
+          "path": "mu-v1-615d4a3330aa4604",
+          "count": 2,
+          "bytes": 20519442,
+          "allocated": 20519442
+        },
+        {
+          "path": "mu-v1-27651002f3728c8c",
+          "count": 2,
+          "bytes": 1236410,
+          "allocated": 1236992
+        },
+        {
+          "path": "mu-v1-74823b1b27703c56",
+          "count": 2,
+          "bytes": 27309,
+          "allocated": 28672
+        },
+        {
+          "path": "mu-v1-19ab7193f626ff57",
+          "count": 2,
+          "bytes": 23040,
+          "allocated": 24576
+        },
+        {
+          "path": "mu-v1-c2efd9d902a59bf9",
+          "count": 2,
+          "bytes": 18390,
+          "allocated": 20480
+        },
+        {
+          "path": "mu-v1-075e17bdac5c1366",
+          "count": 2,
+          "bytes": 11702,
+          "allocated": 12288
+        },
+        {
+          "path": "manifest.jsonl",
+          "count": 1,
+          "bytes": 2773,
+          "allocated": 4096
+        }
+      ]
+    },
+    {
+      "root": "C:\\Users\\q1212\\.gradle",
+      "files": 465,
+      "bytes": 181970508,
+      "allocated_estimate": 183003872,
+      "groups": [
+        {
+          "path": "wrapper/dists",
+          "count": 317,
+          "bytes": 151910525,
+          "allocated": 152541920
+        },
+        {
+          "path": "daemon/9.3.1",
+          "count": 19,
+          "bytes": 27937433,
+          "allocated": 27967488
+        },
+        {
+          "path": ".tmp",
+          "count": 46,
+          "bytes": 1316202,
+          "allocated": 1429504
+        },
+        {
+          "path": "native/0.2.8",
+          "count": 2,
+          "bytes": 464385,
+          "allocated": 471040
+        },
+        {
+          "path": "kotlin-profile",
+          "count": 75,
+          "bytes": 69925,
+          "allocated": 307200
+        },
+        {
+          "path": "native/660c5614fbf4a5f2a75b1949f50a0caf5cd603558e7d8a26e50b933a0cfb79d1",
+          "count": 2,
+          "bytes": 141313,
+          "allocated": 147456
+        },
+        {
+          "path": "native/jansi",
+          "count": 1,
+          "bytes": 130522,
+          "allocated": 131072
+        },
+        {
+          "path": "daemon",
+          "count": 1,
+          "bytes": 181,
+          "allocated": 4096
+        },
+        {
+          "path": "android",
+          "count": 1,
+          "bytes": 22,
+          "allocated": 4096
+        },
+        {
+          "path": "notifications/9.3.1",
+          "count": 1,
+          "bytes": 0,
+          "allocated": 0
+        }
+      ]
+    },
+    {
+      "root": "C:\\Users\\q1212\\.android",
+      "files": 90,
+      "bytes": 6729834,
+      "allocated_estimate": 6983680,
+      "groups": [
+        {
+          "path": "cache",
+          "count": 82,
+          "bytes": 6721802,
+          "allocated": 6946816
+        },
+        {
+          "path": "emu-last-feature-flags.protobuf",
+          "count": 1,
+          "bytes": 5010,
+          "allocated": 8192
+        },
+        {
+          "path": "adbkey",
+          "count": 1,
+          "bytes": 1736,
+          "allocated": 4096
+        },
+        {
+          "path": "adbkey.pub",
+          "count": 1,
+          "bytes": 713,
+          "allocated": 4096
+        },
+        {
+          "path": "analytics.settings",
+          "count": 1,
+          "bytes": 127,
+          "allocated": 4096
+        },
+        {
+          "path": "emu-update-last-check.ini",
+          "count": 1,
+          "bytes": 68,
+          "allocated": 4096
+        },
+        {
+          "path": "modem-nv-ram-5554",
+          "count": 1,
+          "bytes": 171,
+          "allocated": 4096
+        },
+        {
+          "path": "modem-nv-ram-5556",
+          "count": 1,
+          "bytes": 171,
+          "allocated": 4096
+        },
+        {
+          "path": "userid",
+          "count": 1,
+          "bytes": 36,
+          "allocated": 4096
+        }
+      ]
+    },
+    {
+      "root": "C:\\Users\\q1212\\AppData\\Local",
+      "files": 300165,
+      "bytes": 57416908306,
+      "allocated_estimate": 57948006877,
+      "groups": [
+        {
+          "path": "Packages/Claude_pzs8sxrjxfjjc",
+          "count": 17237,
+          "bytes": 12186911305,
+          "allocated": 12238300035
+        },
+        {
+          "path": "Packages/OpenAI.Codex_2p2nqsd0c76g0",
+          "count": 42575,
+          "bytes": 5365407068,
+          "allocated": 5472952710
+        },
+        {
+          "path": "Temp/claude",
+          "count": 19235,
+          "bytes": 4989211487,
+          "allocated": 5031673897
+        },
+        {
+          "path": "Android/Sdk",
+          "count": 34320,
+          "bytes": 4177569606,
+          "allocated": 4276103647
+        },
+        {
+          "path": "Google/Chrome",
+          "count": 28726,
+          "bytes": 3885097678,
+          "allocated": 3952864107
+        },
+        {
+          "path": "Publishers/3c1yjt4zspk6g",
+          "count": 111,
+          "bytes": 2597021147,
+          "allocated": 2597208191
+        },
+        {
+          "path": "Python/pythoncore-3.14-64",
+          "count": 38102,
+          "bytes": 1661755480,
+          "allocated": 1750947881
+        },
+        {
+          "path": "CapCut/Apps",
+          "count": 4096,
+          "bytes": 1698514012,
+          "allocated": 1709593007
+        },
+        {
+          "path": "Microsoft/Office",
+          "count": 12621,
+          "bytes": 1443993781,
+          "allocated": 1475998694
+        },
+        {
+          "path": "Microsoft/Edge",
+          "count": 9497,
+          "bytes": 1325101100,
+          "allocated": 1349926187
+        },
+        {
+          "path": "Microsoft/WinGet",
+          "count": 62,
+          "bytes": 1097983639,
+          "allocated": 1098096944
+        },
+        {
+          "path": "Programs/Blender",
+          "count": 6949,
+          "bytes": 953462415,
+          "allocated": 970747352
+        },
+        {
+          "path": "Kakao/KakaoTalk",
+          "count": 5138,
+          "bytes": 912467697,
+          "allocated": 922496541
+        },
+        {
+          "path": "Microsoft/OneDrive",
+          "count": 6231,
+          "bytes": 1075009952,
+          "allocated": 883383271
+        },
+        {
+          "path": "UnrealEngine/Common",
+          "count": 112,
+          "bytes": 826380667,
+          "allocated": 826666937
+        },
+        {
+          "path": "Google/Gemini",
+          "count": 454,
+          "bytes": 789029915,
+          "allocated": 789997528
+        },
+        {
+          "path": "Programs/orca",
+          "count": 4232,
+          "bytes": 722294199,
+          "allocated": 732830023
+        },
+        {
+          "path": "OpenAI/Codex",
+          "count": 2384,
+          "bytes": 716127424,
+          "allocated": 722465968
+        },
+        {
+          "path": "Microsoft/Olk",
+          "count": 10151,
+          "bytes": 571592267,
+          "allocated": 592941056
+        },
+        {
+          "path": "npm-cache/_cacache",
+          "count": 432,
+          "bytes": 492424670,
+          "allocated": 493559176
+        },
+        {
+          "path": "dotslash/33",
+          "count": 76,
+          "bytes": 480986913,
+          "allocated": 481151904
+        },
+        {
+          "path": "Discord/app-1.0.9258",
+          "count": 1628,
+          "bytes": 464061700,
+          "allocated": 468878632
+        },
+        {
+          "path": "Google/GoogleUpdater",
+          "count": 9,
+          "bytes": 404220602,
+          "allocated": 404239566
+        },
+        {
+          "path": "agy/bin",
+          "count": 2,
+          "bytes": 391886128,
+          "allocated": 391886128
+        },
+        {
+          "path": "Programs/Obsidian",
+          "count": 84,
+          "bytes": 391039605,
+          "allocated": 391210956
+        },
+        {
+          "path": "Packages/UnityTechnologies.UnityHub_2vrhnee42bhxm",
+          "count": 160,
+          "bytes": 390666461,
+          "allocated": 391010293
+        },
+        {
+          "path": "Google/DriveFS",
+          "count": 525,
+          "bytes": 338929141,
+          "allocated": 339907366
+        },
+        {
+          "path": "Microsoft/Windows",
+          "count": 218,
+          "bytes": 339489800,
+          "allocated": 339902464
+        },
+        {
+          "path": "obsidian-updater",
+          "count": 1,
+          "bytes": 331012528,
+          "allocated": 331012528
+        },
+        {
+          "path": "npm-cache/_npx",
+          "count": 11237,
+          "bytes": 277965185,
+          "allocated": 308562944
+        }
+      ]
+    },
+    {
+      "root": "C:\\Users\\q1212\\AppData\\Roaming",
+      "files": 49458,
+      "bytes": 4470408599,
+      "allocated_estimate": 4594163402,
+      "groups": [
+        {
+          "path": "Codex/web",
+          "count": 18799,
+          "bytes": 1433678437,
+          "allocated": 1478345346
+        },
+        {
+          "path": "npm/node_modules",
+          "count": 12741,
+          "bytes": 827056145,
+          "allocated": 861918096
+        },
+        {
+          "path": "orca/codex-runtime-home",
+          "count": 456,
+          "bytes": 371284364,
+          "allocated": 372419393
+        },
+        {
+          "path": "uv/tools",
+          "count": 6579,
+          "bytes": 275888511,
+          "allocated": 290545152
+        },
+        {
+          "path": "HNC/User",
+          "count": 777,
+          "bytes": 240327275,
+          "allocated": 241945588
+        },
+        {
+          "path": "Telegram Desktop",
+          "count": 8,
+          "bytes": 222519177,
+          "allocated": 222531112
+        },
+        {
+          "path": "Blackmagic Design/DaVinci Resolve",
+          "count": 268,
+          "bytes": 158676635,
+          "allocated": 159416320
+        },
+        {
+          "path": "Riot Client/Cache",
+          "count": 85,
+          "bytes": 98943909,
+          "allocated": 99004416
+        },
+        {
+          "path": "uv/python",
+          "count": 4238,
+          "bytes": 75413789,
+          "allocated": 85884928
+        },
+        {
+          "path": "discord/Cache",
+          "count": 120,
+          "bytes": 77644051,
+          "allocated": 77914112
+        },
+        {
+          "path": "Framer/Partitions",
+          "count": 634,
+          "bytes": 76210065,
+          "allocated": 77910016
+        },
+        {
+          "path": "Telegram Desktop/tdata",
+          "count": 376,
+          "bytes": 69952088,
+          "allocated": 70778880
+        },
+        {
+          "path": "Wondershare/Wondershare Filmora",
+          "count": 569,
+          "bytes": 56200706,
+          "allocated": 57761792
+        },
+        {
+          "path": "4kdownload.com/4K Video Downloader+",
+          "count": 203,
+          "bytes": 56750980,
+          "allocated": 57204500
+        },
+        {
+          "path": "YettieSoft/Goji",
+          "count": 11,
+          "bytes": 47592324,
+          "allocated": 47611904
+        },
+        {
+          "path": "gemini/Cache",
+          "count": 103,
+          "bytes": 34851389,
+          "allocated": 35057664
+        },
+        {
+          "path": "Microsoft/Templates",
+          "count": 37,
+          "bytes": 32027793,
+          "allocated": 32104448
+        },
+        {
+          "path": "discord/Code Cache",
+          "count": 948,
+          "bytes": 23336760,
+          "allocated": 26611712
+        },
+        {
+          "path": "obsidian/Cache",
+          "count": 9,
+          "bytes": 26348840,
+          "allocated": 26361856
+        },
+        {
+          "path": "obsidian",
+          "count": 11,
+          "bytes": 25834889,
+          "allocated": 25865287
+        },
+        {
+          "path": "discord/Local Storage",
+          "count": 11,
+          "bytes": 22895008,
+          "allocated": 22925312
+        },
+        {
+          "path": "npm",
+          "count": 22,
+          "bytes": 19376236,
+          "allocated": 19450368
+        },
+        {
+          "path": "Microsoft/Windows",
+          "count": 1286,
+          "bytes": 10412493,
+          "allocated": 14725120
+        },
+        {
+          "path": "Framer/Cache",
+          "count": 9,
+          "bytes": 14028608,
+          "allocated": 14041088
+        },
+        {
+          "path": "orca/Partitions",
+          "count": 28,
+          "bytes": 13469111,
+          "allocated": 13533184
+        },
+        {
+          "path": "TransferSupport/TransferProcess",
+          "count": 7,
+          "bytes": 12304264,
+          "allocated": 12320768
+        },
+        {
+          "path": "orca",
+          "count": 13,
+          "bytes": 11973596,
+          "allocated": 12009472
+        },
+        {
+          "path": "Framer",
+          "count": 6,
+          "bytes": 11481300,
+          "allocated": 11497472
+        },
+        {
+          "path": "Riot Client/Dictionaries",
+          "count": 1,
+          "bytes": 11476456,
+          "allocated": 11476992
+        },
+        {
+          "path": "orca/Dictionaries",
+          "count": 1,
+          "bytes": 11476456,
+          "allocated": 11476992
+        }
+      ]
+    },
+    {
+      "root": "C:\\Users\\q1212\\hfup",
+      "files": 130,
+      "bytes": 25623865,
+      "allocated_estimate": 25870336,
+      "groups": [
+        {
+          "path": "1",
+          "count": 71,
+          "bytes": 9291117,
+          "allocated": 9433088
+        },
+        {
+          "path": "p",
+          "count": 30,
+          "bytes": 7489940,
+          "allocated": 7548928
+        },
+        {
+          "path": "mix",
+          "count": 20,
+          "bytes": 6181210,
+          "allocated": 6213632
+        },
+        {
+          "path": "2",
+          "count": 9,
+          "bytes": 2661598,
+          "allocated": 2674688
+        }
+      ]
+    },
+    {
+      "root": "C:\\Users\\q1212\\UnityEditors",
+      "files": 0,
+      "bytes": 0,
+      "allocated_estimate": 0,
+      "groups": []
+    },
+    {
+      "root": "C:\\Users\\q1212\\synk-night-bake",
+      "files": 3,
+      "bytes": 11341,
+      "allocated_estimate": 20480,
+      "groups": [
+        {
+          "path": "bake.py",
+          "count": 1,
+          "bytes": 11039,
+          "allocated": 12288
+        },
+        {
+          "path": "3d_gate.log",
+          "count": 1,
+          "bytes": 134,
+          "allocated": 4096
+        },
+        {
+          "path": "run.bat",
+          "count": 1,
+          "bytes": 168,
+          "allocated": 4096
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "path": "C:\\Users\\q1212\\AppData\\Local\\CoreAIPlatform.00\\UKP",
+      "error": "PermissionError"
+    }
+  ],
+  "largest": [
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.git\\objects\\pack\\pack-7ae3ec382580db733b587a55f24b00be49cd53b3.pack",
+      "root": "Documents",
+      "bytes": 10716726137,
+      "allocated": 10716726137,
+      "mtime_ns": 1790848556611141700,
+      "attributes": 33
+    },
+    {
+      "path": "C:\\Users\\q1212\\AppData\\Local\\Packages\\Claude_pzs8sxrjxfjjc\\LocalCache\\Roaming\\Claude\\vm_bundles\\claudevm.bundle\\rootfs.vhdx",
+      "root": "AppData/Local",
+      "bytes": 8447328256,
+      "allocated": 8447328256,
+      "mtime_ns": 1789748675179615400,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\PC_공간정리_20260930\\Videos_추가백업_20260930.zip",
+      "root": "Documents",
+      "bytes": 4807060626,
+      "allocated": 4807060626,
+      "mtime_ns": 1790778407034518600,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.git\\objects\\pack\\pack-609e40dfd4dc8432508ada284c2a6c216d9c6d36.pack",
+      "root": "Documents",
+      "bytes": 3557970209,
+      "allocated": 3557970209,
+      "mtime_ns": 1790848556606612900,
+      "attributes": 33
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.git\\objects\\pack\\pack-2b9e687db22b5bd7bece0000980e2d5ba7bbe86b.pack",
+      "root": "Documents",
+      "bytes": 3375290369,
+      "allocated": 3375290369,
+      "mtime_ns": 1790848556455378400,
+      "attributes": 33
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.git\\objects\\pack\\tmp_pack_EY5i1T",
+      "root": "Documents",
+      "bytes": 2632318976,
+      "allocated": 2632318976,
+      "mtime_ns": 1790366646378513100,
+      "attributes": 33
+    },
+    {
+      "path": "C:\\Users\\q1212\\.codex\\thread_history_1.sqlite",
+      "root": ".codex",
+      "bytes": 2606551040,
+      "allocated": 2606551040,
+      "mtime_ns": 1790848707415522000,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\graphics\\SYNK_Premium_Captions_Titles_4K60_alpha.mov",
+      "root": "Videos",
+      "bytes": 2557551246,
+      "allocated": 2557551246,
+      "mtime_ns": 1790344411555425900,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.git\\objects\\pack\\pack-f65e02a6e83f63c054021c705558fe6952130fb4.pack",
+      "root": "Documents",
+      "bytes": 1839704669,
+      "allocated": 1839704669,
+      "mtime_ns": 1789661294479485400,
+      "attributes": 33
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.git\\objects\\pack\\tmp_pack_3oviwr",
+      "root": "Documents",
+      "bytes": 1790312448,
+      "allocated": 1790312448,
+      "mtime_ns": 1790487606077197900,
+      "attributes": 33
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\artifacts\\interview_20260925\\transcripts\\models\\large-v3-turbo\\model.bin",
+      "root": "Documents",
+      "bytes": 1617884929,
+      "allocated": 1617884929,
+      "mtime_ns": 1790284819799555900,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\.cache\\huggingface\\hub\\models--mobiuslabsgmbh--faster-whisper-large-v3-turbo\\snapshots\\0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf\\model.bin",
+      "root": ".cache",
+      "bytes": 1617884929,
+      "allocated": 1617884929,
+      "mtime_ns": 1790459651924954800,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\.cache\\huggingface\\hub\\models--Systran--faster-whisper-medium\\snapshots\\08e178d48790749d25932bbc082711ddcfdfbc4f\\model.bin",
+      "root": ".cache",
+      "bytes": 1527906378,
+      "allocated": 1527906378,
+      "mtime_ns": 1790104094172375200,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision3\\graphics\\SYNK_v3_Additional_Captions_4K60_alpha.mov",
+      "root": "Videos",
+      "bytes": 1212747074,
+      "allocated": 1212747074,
+      "mtime_ns": 1790352894166772000,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision3\\graphics\\SYNK_v3_Additional_Captions_before_clarification.mov",
+      "root": "Videos",
+      "bytes": 1206760028,
+      "allocated": 1206760028,
+      "mtime_ns": 1790352375869118600,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\delivery\\양유호_인터뷰_무자막_1080p.mp4",
+      "root": "Documents",
+      "bytes": 1050001314,
+      "allocated": 1050001314,
+      "mtime_ns": 1790281673364136000,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\studio\\assets\\picture.mp4",
+      "root": "Documents",
+      "bytes": 1043002287,
+      "allocated": 1043002287,
+      "mtime_ns": 1790281624380973400,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\artifacts\\interview_20260925\\transcripts\\models\\large-v3-turbo\\.cache\\huggingface\\download\\mBG94Lz8EYH5gU8b5axgj2RF9Tk=.e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da.9a612644.incomplete",
+      "root": "Documents",
+      "bytes": 984450371,
+      "allocated": 984450371,
+      "mtime_ns": 1790284552224201200,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\studio\\assets\\graphics_overlay.mov",
+      "root": "Documents",
+      "bytes": 885618443,
+      "allocated": 885618443,
+      "mtime_ns": 1790283203482430000,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\artifacts\\interview_20260925\\media\\09_source.mov",
+      "root": "Documents",
+      "bytes": 856953244,
+      "allocated": 856953244,
+      "mtime_ns": 1790286681591455000,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\artifacts\\interview_20260925\\media\\07_source.mov",
+      "root": "Documents",
+      "bytes": 822087940,
+      "allocated": 822087940,
+      "mtime_ns": 1790286403191813000,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\artifacts\\interview_20260925\\graphics\\Interview_Titles_Captions.mov",
+      "root": "Documents",
+      "bytes": 804315189,
+      "allocated": 804315189,
+      "mtime_ns": 1790286442165568100,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\.claude\\projects\\C--Users-q1212-Documents-SYNK-appsscript\\36920f90-b34c-42e6-8258-9fc0a459715a.jsonl",
+      "root": ".claude",
+      "bytes": 658372970,
+      "allocated": 658372970,
+      "mtime_ns": 1790848660204279300,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\artifacts\\interview_20260925\\media\\15_source.mov",
+      "root": "Documents",
+      "bytes": 656936500,
+      "allocated": 656936500,
+      "mtime_ns": 1790286616041263000,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision8\\render\\SYNK_Founder_Film_4K60_v8.mp4",
+      "root": "Videos",
+      "bytes": 644008153,
+      "allocated": 644008153,
+      "mtime_ns": 1790442053082937900,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision9\\render\\SYNK_Founder_Film_4K60_v9.mp4",
+      "root": "Videos",
+      "bytes": 643988275,
+      "allocated": 643988275,
+      "mtime_ns": 1790446201507061100,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision7\\render\\SYNK_Founder_Film_4K60_v7.mp4",
+      "root": "Videos",
+      "bytes": 632188937,
+      "allocated": 632188937,
+      "mtime_ns": 1790440186718732700,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\.codex\\archived_sessions\\rollout-2026-09-30T03-32-50-01a0ee70-dff6-7ad0-9bd9-1142be18acd1.jsonl",
+      "root": ".codex",
+      "bytes": 631865257,
+      "allocated": 631865257,
+      "mtime_ns": 1790798548350629800,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_1231_Interview_20260925\\media\\06_source.mov",
+      "root": "Videos",
+      "bytes": 597298480,
+      "allocated": 597298480,
+      "mtime_ns": 1790330585159610000,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_1231_Interview_20260925\\graphics\\Titles_Captions_v2.mov",
+      "root": "Videos",
+      "bytes": 585469784,
+      "allocated": 585469784,
+      "mtime_ns": 1790332042438195300,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_1231_Interview_20260925\\graphics\\Titles_Captions.mov",
+      "root": "Videos",
+      "bytes": 557869242,
+      "allocated": 557869242,
+      "mtime_ns": 1790330910013059300,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\.codex\\logs_2.sqlite",
+      "root": ".codex",
+      "bytes": 545628160,
+      "allocated": 545628160,
+      "mtime_ns": 1790848643563364900,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\AppData\\Local\\Packages\\Claude_pzs8sxrjxfjjc\\LocalCache\\Roaming\\Claude\\vm_bundles\\claudevm.bundle\\sessiondata.vhdx",
+      "root": "AppData/Local",
+      "bytes": 507510784,
+      "allocated": 507510784,
+      "mtime_ns": 1789748675183557900,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_1231_Interview_20260925\\media\\02_source.mov",
+      "root": "Videos",
+      "bytes": 497290108,
+      "allocated": 497290108,
+      "mtime_ns": 1790330278090154900,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_1231_Interview_20260925\\renders\\SYNK_1231_FINAL_1080p.mp4",
+      "root": "Videos",
+      "bytes": 489129884,
+      "allocated": 489129884,
+      "mtime_ns": 1790332137579952600,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\한울통합돌봄센터_홍보영상_20260921\\asr_models\\models--Systran--faster-whisper-small\\snapshots\\536b0662742c02347bc0e980a01041f333bce120\\model.bin",
+      "root": "Documents",
+      "bytes": 483546902,
+      "allocated": 483546902,
+      "mtime_ns": 1789924661817273800,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\.cache\\huggingface\\hub\\models--Systran--faster-whisper-small\\snapshots\\536b0662742c02347bc0e980a01041f333bce120\\model.bin",
+      "root": ".cache",
+      "bytes": 483546902,
+      "allocated": 483546902,
+      "mtime_ns": 1790102552210198300,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_Interview_20260923\\renders\\interview_base.mp4",
+      "root": "Videos",
+      "bytes": 475570186,
+      "allocated": 475570186,
+      "mtime_ns": 1790105767234112100,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_1231_Interview_20260925\\review\\render_pass1\\SYNK_1231_pass1_not_delivery.mp4",
+      "root": "Videos",
+      "bytes": 473939404,
+      "allocated": 473939404,
+      "mtime_ns": 1790331449931190700,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\artifacts\\interview_20260925\\media\\18_source.mov",
+      "root": "Documents",
+      "bytes": 470682376,
+      "allocated": 470682376,
+      "mtime_ns": 1790286892070164900,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\artifacts\\interview_20260925\\media\\13_source.mov",
+      "root": "Documents",
+      "bytes": 469764868,
+      "allocated": 469764868,
+      "mtime_ns": 1790286458367155200,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\artifacts\\interview_20260925\\media\\01_source.mov",
+      "root": "Documents",
+      "bytes": 459672280,
+      "allocated": 459672280,
+      "mtime_ns": 1790285876041991700,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\AppData\\Local\\Publishers\\3c1yjt4zspk6g\\visionai\\VisionAICore.M76.v1\\VisionAICore.M76.v1.eonnx",
+      "root": "AppData/Local",
+      "bytes": 441498900,
+      "allocated": 441498900,
+      "mtime_ns": 1751062230000000000,
+      "attributes": 8224
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\synk-vendor\\MOSS-TTS-Nano\\models\\MOSS-TTS-Nano-100M-ONNX\\moss_tts_global_shared.data",
+      "root": "Documents",
+      "bytes": 440813568,
+      "allocated": 440813568,
+      "mtime_ns": 1788264590066982400,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\artifacts\\interview_20260925\\media\\08_source.mov",
+      "root": "Documents",
+      "bytes": 440404612,
+      "allocated": 440404612,
+      "mtime_ns": 1790286502947086800,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\첫게시물_20260910\\전체_업로드.zip",
+      "root": "Documents",
+      "bytes": 431480321,
+      "allocated": 431480321,
+      "mtime_ns": 1789075066869589500,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_1231_Interview_20260925\\media\\05_source.mov",
+      "root": "Videos",
+      "bytes": 428477008,
+      "allocated": 428477008,
+      "mtime_ns": 1790330455397633100,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\review\\Editorial_Review_1080p60.mp4",
+      "root": "Videos",
+      "bytes": 405291806,
+      "allocated": 405291806,
+      "mtime_ns": 1790344154967139800,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Downloads\\SYNK-Blender-5.2.2\\blender-5.2.2-windows-x64.zip",
+      "root": "Downloads",
+      "bytes": 404453484,
+      "allocated": 404453484,
+      "mtime_ns": 1790705200424952400,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\artifacts\\interview_20260925\\media\\17_source.mov",
+      "root": "Documents",
+      "bytes": 398199244,
+      "allocated": 398199244,
+      "mtime_ns": 1790286809020716200,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\AppData\\Local\\Google\\GoogleUpdater\\crx_cache\\ad1f8a3b2cf37c6c5ec03016e4821e3268b9e968a5f5788f51612ceeed332a04",
+      "root": "AppData/Local",
+      "bytes": 395031758,
+      "allocated": 395031758,
+      "mtime_ns": 1790845359550596300,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_Interview_20260923\\renders\\SYNK_Interview_FINAL_1080p.mp4",
+      "root": "Videos",
+      "bytes": 383065501,
+      "allocated": 383065501,
+      "mtime_ns": 1790105927566379000,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_1231_Interview_20260925\\media\\17_source.mov",
+      "root": "Videos",
+      "bytes": 382601608,
+      "allocated": 382601608,
+      "mtime_ns": 1790330552415685900,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\artifacts\\interview_20260925\\media\\20_source.mov",
+      "root": "Documents",
+      "bytes": 382601608,
+      "allocated": 382601608,
+      "mtime_ns": 1790286975266592200,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_1231_Interview_20260925\\media\\12_source.mov",
+      "root": "Videos",
+      "bytes": 381684100,
+      "allocated": 381684100,
+      "mtime_ns": 1790330265206934600,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\artifacts\\interview_20260925\\media\\06_source.mov",
+      "root": "Documents",
+      "bytes": 377096560,
+      "allocated": 377096560,
+      "mtime_ns": 1790286197877082200,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_1231_Interview_20260925\\media\\13_source.mov",
+      "root": "Videos",
+      "bytes": 376179052,
+      "allocated": 376179052,
+      "mtime_ns": 1790330337763369700,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\AppData\\Local\\Publishers\\3c1yjt4zspk6g\\visionai\\VisionAICore.M75.v2\\VisionAICore.M75.v2.eonnx",
+      "root": "AppData/Local",
+      "bytes": 373889428,
+      "allocated": 373889428,
+      "mtime_ns": 1770629452000000000,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\artifacts\\interview_20260925\\media\\12_source.mov",
+      "root": "Documents",
+      "bytes": 362416432,
+      "allocated": 362416432,
+      "mtime_ns": 1790286359775641000,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\artifacts\\interview_20260925\\media\\16a_source.mov",
+      "root": "Documents",
+      "bytes": 356911384,
+      "allocated": 356911384,
+      "mtime_ns": 1790286690524424700,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_1231_Interview_20260925\\media\\14_source.mov",
+      "root": "Videos",
+      "bytes": 348653812,
+      "allocated": 348653812,
+      "mtime_ns": 1790330407246450400,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\artifacts\\interview_20260925\\media\\04_source.mov",
+      "root": "Documents",
+      "bytes": 344066272,
+      "allocated": 344066272,
+      "mtime_ns": 1790286057117130500,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\AppData\\Local\\Packages\\UnityTechnologies.UnityHub_2vrhnee42bhxm\\LocalCache\\Roaming\\UnityHub\\Templates\\com.unity.template.get-started-4.0.1.tgz",
+      "root": "AppData/Local",
+      "bytes": 338499573,
+      "allocated": 338499573,
+      "mtime_ns": 1789835216033377100,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\.codex\\sessions\\2026\\09\\27\\rollout-2026-09-27T18-52-38-01a0e247-e6df-7b72-af5d-20238b73ce68.jsonl",
+      "root": ".codex",
+      "bytes": 333017934,
+      "allocated": 333017934,
+      "mtime_ns": 1790848583892171700,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\AppData\\Local\\obsidian-updater\\installer.exe",
+      "root": "AppData/Local",
+      "bytes": 331012528,
+      "allocated": 331012528,
+      "mtime_ns": 1790704695654876900,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\artifacts\\interview_20260925\\media\\11_source.mov",
+      "root": "Documents",
+      "bytes": 327551128,
+      "allocated": 327551128,
+      "mtime_ns": 1790286811091759600,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\.codex\\plugins\\.plugin-appserver\\codex.exe",
+      "root": ".codex",
+      "bytes": 324702000,
+      "allocated": 324702000,
+      "mtime_ns": 1790846997799693600,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\AppData\\Local\\OpenAI\\Codex\\bin\\de8a38d2100ae498\\codex.exe",
+      "root": "AppData/Local",
+      "bytes": 324702000,
+      "allocated": 324702000,
+      "mtime_ns": 1790846997799693600,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\AppData\\Roaming\\npm\\node_modules\\@openai\\codex\\node_modules\\@openai\\codex-win32-x64\\vendor\\x86_64-pc-windows-msvc\\bin\\codex.exe",
+      "root": "AppData/Roaming",
+      "bytes": 324702000,
+      "allocated": 324702000,
+      "mtime_ns": 1790762939490483200,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\.codex\\.sandbox-bin\\codex.exe",
+      "root": ".codex",
+      "bytes": 320288048,
+      "allocated": 320288048,
+      "mtime_ns": 1790278168602990800,
+      "attributes": 288
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\artifacts\\interview_20260925\\media\\03_source.mov",
+      "root": "Documents",
+      "bytes": 316541032,
+      "allocated": 316541032,
+      "mtime_ns": 1790285982041055500,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision7\\graphics\\SYNK_v7_Captions_4K60_alpha_14004f.mov",
+      "root": "Videos",
+      "bytes": 853258903,
+      "allocated": 314322944,
+      "mtime_ns": 1790439429040065500,
+      "attributes": 2080
+    },
+    {
+      "path": "C:\\Users\\q1212\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\site-packages\\torch\\lib\\torch_cpu.dll",
+      "root": "AppData/Local",
+      "bytes": 305887744,
+      "allocated": 305887744,
+      "mtime_ns": 1788722931093838700,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.git\\objects\\54\\26afdceed60c19f4c9091feed791e635145a29",
+      "root": "Documents",
+      "bytes": 302331734,
+      "allocated": 302331734,
+      "mtime_ns": 1790847784309835400,
+      "attributes": 33
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\곡제목_모음집_20260927\\old11.flac",
+      "root": "Documents",
+      "bytes": 302247928,
+      "allocated": 302247928,
+      "mtime_ns": 1790453204690208100,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\zzdz_audio_20260925\\delivered_audio.wav",
+      "root": "Videos",
+      "bytes": 299434076,
+      "allocated": 299434076,
+      "mtime_ns": 1790340501708697500,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\zzdz_audio_20260925\\levelled.wav",
+      "root": "Videos",
+      "bytes": 299432740,
+      "allocated": 299432740,
+      "mtime_ns": 1790340385745542400,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\zzdz_audio_20260925\\original_stereo.wav",
+      "root": "Videos",
+      "bytes": 299432740,
+      "allocated": 299432740,
+      "mtime_ns": 1790340049683911100,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\kkkk_4k_audio_natural_20260925\\gentle_denoise.wav",
+      "root": "Videos",
+      "bytes": 299432740,
+      "allocated": 299432740,
+      "mtime_ns": 1790340784785608800,
+      "attributes": 32
+    },
+    {
+      "path": "C:\\Users\\q1212\\Videos\\kkkk_4k_audio_natural_20260925\\mild_aligned.wav",
+      "root": "Videos",
+      "bytes": 299432740,
+      "allocated": 299432740,
+      "mtime_ns": 1790340886327428200,
+      "attributes": 32
+    }
+  ]
+}

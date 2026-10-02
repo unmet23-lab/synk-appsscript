@@ -1,0 +1,119 @@
+[
+  {
+    "id": "hook",
+    "duration": 6,
+    "step": "오늘 만들 결과",
+    "title": "회의 메모,<br>일일이 정리하고 계신가요?",
+    "caption": "ChatGPT로 할 일·담당자·기한을<br>한눈에 보는 표로 정리해볼게요.",
+    "body": "<img class=\"felt\" src=\"assets/meeting-scene.png\" alt=\"메모를 정리하는 회의 상황 일러스트\"><div class=\"hook-result\"><div class=\"explain-table\"><div class=\"tr th\"><span>할 일</span><span>담당자</span><span>기한</span></div><div class=\"tr\"><span>문구 수정</span><span>지수</span><span>9월 23일</span></div><div class=\"tr\"><span>설문 초안</span><span>민호</span><span class=\"yellow\">확인 필요</span></div></div></div><div class=\"label \" style=\"left:90px;top:1354px\">가상 회의 예시 · 결과를 읽기 쉽게 재구성</div>",
+    "start": 0
+  },
+  {
+    "id": "open",
+    "duration": 6,
+    "step": "1 / 5   ChatGPT 열기",
+    "title": "ChatGPT에서<br>새 채팅을 여세요.",
+    "caption": "chatgpt.com에 접속하세요.<br>글로 적힌 회의 메모를 준비하면 돼요.",
+    "body": "<div class=\"address\">chatgpt.com</div><div class=\"shot overview\" style=\"left:76px;top:578px;width:928px;height:471.73333333333335px\"><img data-layout-allow-overflow=\"true\" src=\"assets/current/01-start.png\" style=\"width:989.8666666666667px;height:556.8px;left:-46.4px;top:-23.2px\" alt=\"ChatGPT 실제 시연 화면\"></div><div class=\"label \" style=\"left:76px;top:1090px\">ChatGPT 실제 화면</div><div class=\"shot \" style=\"left:76px;top:1160px;width:928px;height:77.9328165374677px\"><img data-layout-allow-overflow=\"true\" src=\"assets/current/01-start.png\" style=\"width:1534.6770025839794px;height:863.2558139534884px;left:-335.7105943152455px;top:-358.4909560723514px\" alt=\"ChatGPT 실제 시연 화면\"></div><div class=\"label blue\" style=\"left:76px;top:1290px\">여기에 요청문과 메모를 함께 넣어요.</div><svg class=\"pointer\" style=\"left:494px;top:1210px\" viewBox=\"0 0 60 70\" aria-hidden=\"true\"><path d=\"M7 4L52 38L32 41L23 63Z\" fill=\"#fff\" stroke=\"#3D6BC9\" stroke-width=\"5\" stroke-linejoin=\"round\"/></svg>",
+    "start": 6
+  },
+  {
+    "id": "paste",
+    "duration": 7,
+    "step": "2 / 5   요청문 붙여넣기",
+    "title": "제공된 요청문을<br>통째로 복사하세요.",
+    "caption": "prompt.txt 전체 복사 → ChatGPT 입력창에 붙여넣기.<br>프롬프트는 AI에게 맡길 일을 적은 요청문이에요.",
+    "body": "<div class=\"prompt-file\"><div class=\"file-name\">prompt.txt <span>함께 드리는 파일</span></div><div class=\"prompt-text\">아래 회의 메모에서 확정된 할 일을 표로 정리해줘.<br>열은 할 일 / 담당자 / 기한 / 근거 문장.<br>메모에 없는 담당자나 기한은 추측하지 말고 \"확인 필요\"로 써줘.<br>제안만 나온 내용은 확정된 할 일에 넣지 말고, 마지막에 확인할 질문으로 따로 정리해줘.<br>다음 회의 날짜를 작업 기한으로 사용하지 마.<br><br>[여기에 회의 메모 붙여넣기]</div></div><div class=\"pasted\"><div class=\"label blue\" style=\"left:76px;top:539px\">붙여넣은 ChatGPT 입력창</div><div class=\"shot \" style=\"left:76px;top:619px;width:928px;height:322.5219638242894px\"><img data-layout-allow-overflow=\"true\" src=\"assets/current/02-template.png\" style=\"width:1534.6770025839794px;height:863.2558139534884px;left:-335.7105943152455px;top:-357.2919896640827px\" alt=\"ChatGPT 실제 시연 화면\"></div><div class=\"note \" style=\"left:76px;top:1070px;width:928px\">PC에서는 <b>Ctrl + C</b> → <b>Ctrl + V</b><br>휴대폰에서는 길게 눌러 복사·붙여넣기</div></div>",
+    "start": 12
+  },
+  {
+    "id": "replace",
+    "duration": 7,
+    "step": "3 / 5   내 메모로 바꾸기",
+    "title": "맨 아래 자리만<br>내 메모로 바꾸세요.",
+    "caption": "[여기에 회의 메모 붙여넣기]만 지우고 교체하세요.<br>위의 요청 문장은 그대로 두면 됩니다.",
+    "body": "<div class=\"label blue\" style=\"left:76px;top:520px\">이 부분만 선택</div><div class=\"shot \" style=\"left:76px;top:589px;width:900px;height:131.41592920353983px\"><img data-layout-allow-overflow=\"true\" src=\"assets/current/03-selected.png\" style=\"width:5097.345132743363px;height:2867.2566371681414px;left:-1178.7610619469026px;top:-1875.6637168141592px\" alt=\"ChatGPT 실제 시연 화면\"></div><div class=\"detail arrow\" style=\"left:499px;top:773px\">↓</div><div class=\"label blue\" style=\"left:76px;top:887px\">그 자리에 연습용 메모 붙여넣기</div><div class=\"shot \" style=\"left:76px;top:952px;width:928px;height:166.2089552238806px\"><img data-layout-allow-overflow=\"true\" src=\"assets/current/04-filled.png\" style=\"width:1611.7232021709633px;height:906.5943012211669px;left:-371.45183175033924px;top:-483.516960651289px\" alt=\"ChatGPT 실제 시연 화면\"></div><div class=\"note plain\" style=\"left:76px;top:1192px;width:928px\">지수: 9월 23일까지 문구 수정<br>민호: 설문 초안 담당 · 마감 미정</div>",
+    "start": 19
+  },
+  {
+    "id": "columns",
+    "duration": 6,
+    "step": "입력 조건이 필요한 이유",
+    "title": "네 칸으로 정리하면<br>확인하기 쉬워져요.",
+    "caption": "할 일·담당자·기한은 실행할 내용을 보여줘요.<br>근거 문장은 원문과 맞는지 확인할 때 필요해요.",
+    "body": "<div class=\"label blue\" style=\"left:76px;top:540px\">요청문에서 이 줄을 보세요.</div><div class=\"shot \" style=\"left:76px;top:605px;width:928px;height:74.75555555555556px\"><img data-layout-allow-overflow=\"true\" src=\"assets/current/02-template.png\" style=\"width:3299.5555555555557px;height:1856px;left:-763.0222222222222px;top:-886.7555555555556px\" alt=\"ChatGPT 실제 시연 화면\"></div><div class=\"column-list\"><div><b>할 일</b><span>무엇을 해야 하는지</span></div><div><b>담당자</b><span>누가 맡았는지</span></div><div><b>기한</b><span>언제까지인지</span></div><div class=\"focus-row\"><b>근거 문장</b><span>원래 메모의 어떤 말인지</span></div></div>",
+    "start": 26
+  },
+  {
+    "id": "missing",
+    "duration": 6,
+    "step": "입력 조건이 필요한 이유",
+    "title": "정하지 않은 기한은<br>따로 확인해야 해요.",
+    "caption": "없는 정보는 “확인 필요”로 쓰도록 요청하세요.<br>AI가 임의로 채우지 않게 하는 조건이에요.",
+    "body": "<div class=\"label \" style=\"left:76px;top:550px\">메모 속 민호의 말</div><div class=\"note quote\" style=\"left:76px;top:614px;width:928px\">“설문 초안은 제가 맡을게요.<br>마감은 아직 정하지 않았어요.”</div><div class=\"detail arrow\" style=\"left:501px;top:853px\">↓</div><div class=\"note big-note\" style=\"left:76px;top:976px;width:928px\">기한: <mark>확인 필요</mark></div><div class=\"detail muted\" style=\"left:76px;top:1209px\">결과가 나온 뒤에도 원문과 대조하세요.</div>",
+    "start": 32
+  },
+  {
+    "id": "send",
+    "duration": 5,
+    "step": "4 / 5   보내고 확인하기",
+    "title": "요청문과 메모를<br>함께 보내세요.",
+    "caption": "입력창 오른쪽의 위쪽 화살표를 누르세요.<br>답변이 끝나면 표를 확인합니다.",
+    "body": "<div class=\"label \" style=\"left:76px;top:550px\">메모까지 넣은 실제 입력창</div><div class=\"shot \" style=\"left:76px;top:620px;width:928px;height:316.52713178294573px\"><img data-layout-allow-overflow=\"true\" src=\"assets/current/04-filled.png\" style=\"width:1534.6770025839794px;height:863.2558139534884px;left:-335.7105943152455px;top:-359.68992248062017px\" alt=\"ChatGPT 실제 시연 화면\"></div><div class=\"label blue\" style=\"left:76px;top:1017px\">보내기 버튼 확대</div><div class=\"shot \" style=\"left:677px;top:1083px;width:237px;height:159px\"><img data-layout-allow-overflow=\"true\" src=\"assets/current/04-filled.png\" style=\"width:3840px;height:2160px;left:-2913px;top:-1527px\" alt=\"ChatGPT 실제 시연 화면\"></div><svg class=\"pointer\" style=\"left:816px;top:1174px\" viewBox=\"0 0 60 70\" aria-hidden=\"true\"><path d=\"M7 4L52 38L32 41L23 63Z\" fill=\"#fff\" stroke=\"#3D6BC9\" stroke-width=\"5\" stroke-linejoin=\"round\"/></svg><div class=\"detail strong\" style=\"left:76px;top:1132px\">위쪽 화살표</div>",
+    "start": 38
+  },
+  {
+    "id": "result",
+    "duration": 7,
+    "step": "4 / 5   결과와 원문 맞추기",
+    "title": "담당자와 날짜를<br>원문과 대조하세요.",
+    "caption": "지수는 문구 수정을 9월 23일까지 하기로 했죠.<br>표에도 같은 담당자와 날짜가 들어갔는지 보세요.",
+    "body": "<div class=\"label blue\" style=\"left:76px;top:534px\">ChatGPT가 실제로 만든 표</div><div class=\"shot \" style=\"left:76px;top:601px;width:928px;height:194.61892583120203px\"><img data-layout-allow-overflow=\"true\" src=\"assets/current/05-result.png\" style=\"width:1518.9769820971867px;height:854.4245524296675px;left:-325.15601023017905px;top:-256.32736572890025px\" alt=\"ChatGPT 실제 시연 화면\"></div><div class=\"result-explain\"><div class=\"explain-table\"><div class=\"tr th\"><span>할 일</span><span>담당자</span><span>기한</span></div><div class=\"tr\"><span>문구 수정</span><span>지수</span><span>9월 23일</span></div><div class=\"tr\"><span>설문 초안</span><span>민호</span><span class=\"yellow\">확인 필요</span></div></div></div><div class=\"note plain\" style=\"left:76px;top:1184px;width:928px\">원문  “소개 페이지 문구는 제가<br><b>9월 23일까지</b> 수정할게요.”</div>",
+    "start": 43
+  },
+  {
+    "id": "check",
+    "duration": 7,
+    "step": "4 / 5   미정인 내용 확인하기",
+    "title": "다음 회의 날짜가<br>작업 마감은 아니에요.",
+    "caption": "민호의 마감은 정하지 않았으니 “확인 필요”.<br>9월 25일은 다음 회의 날짜일 뿐이에요.",
+    "body": "<div class=\"note big-note\" style=\"left:76px;top:561px;width:928px\">민호의 기한  <mark>확인 필요</mark></div><div class=\"note plain\" style=\"left:76px;top:775px;width:928px\">다음 회의<br><b>9월 25일 오후 2시</b></div><div class=\"detail not-equal\" style=\"left:458px;top:976px\">≠</div><div class=\"note plain\" style=\"left:76px;top:1111px;width:928px\">설문 초안 마감<br><b>아직 정하지 않음</b></div>",
+    "start": 50
+  },
+  {
+    "id": "proposal",
+    "duration": 6,
+    "step": "4 / 5   의견과 확정 업무 구분하기",
+    "title": "“해보자”는 의견도<br>먼저 확인하세요.",
+    "caption": "고객 인터뷰는 아직 제안이라 확정 표에 넣지 않아요.<br>진행 여부와 담당자를 질문으로 확인합니다.",
+    "body": "<div class=\"note quote small-quote\" style=\"left:76px;top:558px;width:928px\">메모  “고객 인터뷰는 해보자는 의견만 나왔고,<br>진행 여부와 담당자는 미정이에요.”</div><div class=\"label blue\" style=\"left:76px;top:879px\">실제 응답의 확인할 질문</div><div class=\"shot \" style=\"left:76px;top:943px;width:928px;height:118.08383233532935px\"><img data-layout-allow-overflow=\"true\" src=\"assets/current/05-result.png\" style=\"width:1778.2035928143712px;height:1000.2395209580839px;left:-387.5928143712575px;top:-561.245508982036px\" alt=\"ChatGPT 실제 시연 화면\"></div><div class=\"detail strong\" style=\"left:76px;top:1222px\">제안 → 확인할 질문</div>",
+    "start": 57
+  },
+  {
+    "id": "use",
+    "duration": 6,
+    "step": "5 / 5   빠진 내용까지 확인하기",
+    "title": "빠진 기한은 물어보고<br>표를 마무리하세요.",
+    "caption": "“확인 필요”는 담당자에게 물어볼 항목이에요.<br>답을 받은 뒤 날짜를 고치고 팀에 공유하세요.",
+    "body": "<div class=\"label \" style=\"left:76px;top:548px\">팀에 보낼 질문 예시 · 아직 전송하지 않은 문안</div><div class=\"note quote\" style=\"left:76px;top:621px;width:928px\">민호님, 설문 초안은<br>언제까지 가능할까요?</div><div class=\"detail strong\" style=\"left:76px;top:915px\">답변 확인 → 기한 수정 → 공유</div><div class=\"work-note\"><span>공유 전 확인</span><p>담당자가 맞는지</p><p>기한이 실제로 정해졌는지</p><p>원문에 없는 일이 섞이지 않았는지</p></div>",
+    "start": 63
+  },
+  {
+    "id": "copy",
+    "duration": 6,
+    "step": "5 / 5   내 업무에 사용하기",
+    "title": "확인한 표를 복사해<br>팀 문서에 붙여넣으세요.",
+    "caption": "표 오른쪽 위에 나타나는 복사 버튼을 누르세요.<br>팀 문서에 붙여넣은 뒤 모양과 내용을 확인하세요.",
+    "body": "<div class=\"label blue\" style=\"left:76px;top:535px\">표 오른쪽 위의 복사 버튼</div><div class=\"shot \" style=\"left:76px;top:603px;width:928px;height:215.2577319587629px\"><img data-layout-allow-overflow=\"true\" src=\"assets/current/06-copied.png\" style=\"width:1530.721649484536px;height:861.0309278350516px;left:-332.45360824742266px;top:-251.1340206185567px\" alt=\"ChatGPT 실제 시연 화면\"></div><div class=\"shot \" style=\"left:733px;top:927px;width:168px;height:168px\"><img data-layout-allow-overflow=\"true\" src=\"assets/current/06-copied.png\" style=\"width:5120px;height:2880px;left:-4060px;top:-840px\" alt=\"ChatGPT 실제 시연 화면\"></div><svg class=\"pointer\" style=\"left:846px;top:1039px\" viewBox=\"0 0 60 70\" aria-hidden=\"true\"><path d=\"M7 4L52 38L32 41L23 63Z\" fill=\"#fff\" stroke=\"#3D6BC9\" stroke-width=\"5\" stroke-linejoin=\"round\"/></svg><div class=\"note \" style=\"left:76px;top:1173px;width:928px\">복사 → 팀 문서에 붙여넣기<br><span class=\"minor\">사용하는 문서 도구에 따라 표 모양은 달라질 수 있어요.</span></div>",
+    "start": 69
+  },
+  {
+    "id": "ending",
+    "duration": 8,
+    "step": "",
+    "title": "",
+    "caption": "",
+    "body": "<img class=\"ending-art\" src=\"assets/ending.png\" alt=\"회의 정리 PDF와 파일 안내. 필요하시면 댓글에 synk를 남겨주세요.\">",
+    "start": 75
+  }
+]

@@ -1,0 +1,144 @@
+{
+  "cards": [
+    {
+      "name": "01_main",
+      "font": true,
+      "brokenImages": 0,
+      "scrollWidth": 652,
+      "scrollHeight": 488,
+      "safe": [
+        {
+          "x": 54,
+          "y": 50,
+          "right": 214,
+          "bottom": 92.390625
+        },
+        {
+          "x": 54,
+          "y": 120,
+          "right": 226,
+          "bottom": 369.5625
+        },
+        {
+          "x": 360,
+          "y": 105,
+          "right": 598,
+          "bottom": 422
+        },
+        {
+          "x": 54,
+          "y": 423,
+          "right": 224.421875,
+          "bottom": 438
+        }
+      ]
+    },
+    {
+      "name": "02_before_after",
+      "font": true,
+      "brokenImages": 0,
+      "scrollWidth": 1304,
+      "scrollHeight": 1280,
+      "safe": [
+        {
+          "x": 74,
+          "y": 74,
+          "right": 319,
+          "bottom": 138.921875
+        }
+      ]
+    },
+    {
+      "name": "03_concepts",
+      "font": true,
+      "brokenImages": 0,
+      "scrollWidth": 1304,
+      "scrollHeight": 1280,
+      "safe": [
+        {
+          "x": 74,
+          "y": 74,
+          "right": 319,
+          "bottom": 138.921875
+        }
+      ]
+    },
+    {
+      "name": "04_process",
+      "font": true,
+      "brokenImages": 0,
+      "scrollWidth": 1304,
+      "scrollHeight": 1280,
+      "safe": [
+        {
+          "x": 74,
+          "y": 74,
+          "right": 319,
+          "bottom": 138.921875
+        }
+      ]
+    },
+    {
+      "name": "05_ppt",
+      "font": true,
+      "brokenImages": 0,
+      "scrollWidth": 1304,
+      "scrollHeight": 1280,
+      "safe": [
+        {
+          "x": 74,
+          "y": 74,
+          "right": 319,
+          "bottom": 138.921875
+        }
+      ]
+    }
+  ],
+  "preview": [
+    {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "font": true,
+      "brokenImages": 0
+    },
+    {
+      "width": 768,
+      "scrollWidth": 768,
+      "font": true,
+      "brokenImages": 0
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "font": true,
+      "brokenImages": 0
+    },
+    {
+      "width": 320,
+      "scrollWidth": 320,
+      "font": true,
+      "brokenImages": 0
+    }
+  ],
+  "interactions": [
+    {
+      "action": "switch business",
+      "label": "비즈니스 · 대표/강사 소개 · AI 시안",
+      "pressed": "true"
+    },
+    {
+      "action": "switch creator",
+      "label": "크리에이터 · 채널 소개 · AI 시안",
+      "pressed": "true"
+    },
+    {
+      "action": "copy intake",
+      "status": "고객 준비 안내를 복사했어요."
+    },
+    {
+      "action": "open registration copy",
+      "characters": 4934
+    }
+  ],
+  "pageErrors": []
+}

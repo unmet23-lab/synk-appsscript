@@ -1,0 +1,15 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process');
+const base=__dirname,assetRoot=path.join(base,'mongle-video/assets');
+const timing=JSON.parse(fs.readFileSync(path.join(base,'mongle-video/timing.json'),'utf8'));
+const inputs=timing.clips.map(c=>({file:path.join(assetRoot,c.id+'.wav'),start:c.start,duration:c.duration,volume:1}));
+inputs.push({file:path.join(assetRoot,'room-tone.wav'),start:0,duration:timing.duration,volume:1});
+inputs.push({file:path.join(assetRoot,'pop.mp3'),start:timing.scenes[0].nod,duration:.55,volume:.2});
+inputs.push({file:path.join(assetRoot,'whoosh-short.mp3'),start:timing.scenes[2].start,duration:.55,volume:.18});
+const filter=inputs.map((x,i)=>`[${i}:a]atrim=duration=${x.duration},asetpts=PTS-STARTPTS,volume=${x.volume},adelay=${Math.round(x.start*1000)}:all=1[a${i}]`).join(';')+';'+inputs.map((x,i)=>`[a${i}]`).join('')+`amix=inputs=${inputs.length}:normalize=0,apad,atrim=duration=${timing.duration},loudnorm=I=-16:TP=-1.5:LRA=11[aout]`;
+const out=path.join(base,'SYNK_LAB_카페_새목소리_v2.mp3');
+const result=cp.spawnSync('ffmpeg',['-y','-v','warning',...inputs.flatMap(x=>['-i',x.file]),'-filter_complex',filter,'-map','[aout]','-ar','48000','-ac','2','-c:a','libmp3lame','-b:a','192k',out],{encoding:'utf8',windowsHide:true,maxBuffer:2e6});
+if(result.status!==0)throw Error(result.stderr);
+const verify=cp.spawnSync('ffmpeg',['-v','error','-i',out,'-f','null','NUL'],{encoding:'utf8',windowsHide:true});
+if(verify.status!==0)throw Error(verify.stderr);
+console.log(JSON.stringify({file:out,bytes:fs.statSync(out).size,duration:timing.duration,fullDecodePassed:true}));

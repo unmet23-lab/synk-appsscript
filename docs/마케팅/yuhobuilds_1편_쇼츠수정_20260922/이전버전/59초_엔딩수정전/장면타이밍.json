@@ -1,0 +1,143 @@
+{
+  "fps": 30,
+  "durationInFrames": 1760,
+  "audioFile": "yuho-journey-01/narration.wav",
+  "audioStartFrame": 0,
+  "scenes": [
+    {
+      "id": "01",
+      "start": 0,
+      "duration": 107,
+      "visual": "hook",
+      "text": "오늘은 번역 좀 하려고 결제했다가, 출석 앱까지 만들게 된 얘기예요.",
+      "voiceStartFrame": 3,
+      "voiceDurationSeconds": 3.387098
+    },
+    {
+      "id": "02",
+      "start": 107,
+      "duration": 125,
+      "visual": "setting",
+      "text": "몽골 울란바토르, 학원 부원장. 친구도 없고, 솔직히 심심했습니다.",
+      "voiceStartFrame": 108,
+      "voiceDurationSeconds": 4.057392
+    },
+    {
+      "id": "03",
+      "start": 232,
+      "duration": 109,
+      "visual": "payment",
+      "text": "유월 이일, 클로드 첫 결제! 그때는 딱 번역만 하려고 했죠.",
+      "voiceStartFrame": 233,
+      "voiceDurationSeconds": 3.52
+    },
+    {
+      "id": "04",
+      "start": 341,
+      "duration": 108,
+      "visual": "inquiries",
+      "text": "그런데 학생 문의가 확 늘었어요. 잠깐, 이러면 관리가 어렵겠는데?",
+      "voiceStartFrame": 342,
+      "voiceDurationSeconds": 3.48
+    },
+    {
+      "id": "05",
+      "start": 449,
+      "duration": 142,
+      "visual": "purpose",
+      "text": "출석 앱을 만들면? 부모님께 등하원 알림도 가고, 선생님들도 편해지잖아요!",
+      "voiceStartFrame": 450,
+      "voiceDurationSeconds": 4.631156
+    },
+    {
+      "id": "06",
+      "start": 591,
+      "duration": 117,
+      "visual": "tools",
+      "text": "그래서 글라이드랑 구글 시트로 앱 만들기 시작! 그런데 제 개발 실력은?",
+      "voiceStartFrame": 592,
+      "voiceDurationSeconds": 3.790317
+    },
+    {
+      "id": "07",
+      "start": 708,
+      "duration": 111,
+      "visual": "zero",
+      "text": "제로. 클로드 코드가 뭔지도 몰랐어요. 설정부터 막혔죠.",
+      "voiceStartFrame": 709,
+      "voiceDurationSeconds": 3.583356
+    },
+    {
+      "id": "08",
+      "start": 819,
+      "duration": 77,
+      "visual": "screenshots",
+      "text": "방법은 하나. 화면 찍고! 물어보고! 따라 하고!",
+      "voiceStartFrame": 820,
+      "voiceDurationSeconds": 2.460952
+    },
+    {
+      "id": "09",
+      "start": 896,
+      "duration": 111,
+      "visual": "loop",
+      "text": "오, 다음 화면! 근데 이건 또 뭐야? 다시 찍고, 다시 질문!",
+      "voiceStartFrame": 897,
+      "voiceDurationSeconds": 3.593764
+    },
+    {
+      "id": "10",
+      "start": 1007,
+      "duration": 106,
+      "visual": "hours",
+      "text": "수업 시간 빼고, 하루 열일곱, 열여덟 시간은 붙잡았던 것 같아요.",
+      "voiceStartFrame": 1008,
+      "voiceDurationSeconds": 3.44
+    },
+    {
+      "id": "11",
+      "start": 1113,
+      "duration": 105,
+      "visual": "joke",
+      "text": "심심함은 해결됐습니다. 앱은요? 계속 만드는 중!",
+      "voiceStartFrame": 1114,
+      "voiceDurationSeconds": 3.208345
+    },
+    {
+      "id": "12",
+      "start": 1218,
+      "duration": 119,
+      "visual": "lesson",
+      "text": "지금 다시 시작하면, 처음부터 다 만들진 않을 거예요. 딱 출석 하나부터!",
+      "voiceStartFrame": 1219,
+      "voiceDurationSeconds": 3.852472
+    },
+    {
+      "id": "13",
+      "start": 1337,
+      "duration": 147,
+      "visual": "prompt",
+      "text": "나는 개발이 처음이야. 학생 출석을 기록하고 싶어. 가장 작은 첫 단계부터 알려줘.",
+      "voiceStartFrame": 1338,
+      "voiceDurationSeconds": 4.791678
+    },
+    {
+      "id": "14",
+      "start": 1484,
+      "duration": 142,
+      "visual": "action",
+      "text": "여러분도 불편한 일 하나만 골라보세요. 거창한 아이디어 없어도, 시작은 거기서 됩니다.",
+      "voiceStartFrame": 1485,
+      "voiceDurationSeconds": 4.637098
+    },
+    {
+      "id": "15",
+      "start": 1626,
+      "duration": 134,
+      "visual": "ending",
+      "text": "다음 편은 앱보다 먼저 저를 막은 것. 도구 켜고, 설정하기부터 갑니다!",
+      "voiceStartFrame": 1627,
+      "voiceDurationSeconds": 3.72
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "file": "synkbrief-photo-to-3cuts.mp4",
+  "duration": 56.5,
+  "sizeBytes": 14682922,
+  "streams": [
+    {
+      "codec_type": "video",
+      "codec_name": "h264",
+      "width": 1080,
+      "height": 1920,
+      "frame_rate": "30/1",
+      "nb_frames": "1695",
+      "sample_rate": null,
+      "channels": null,
+      "duration": "56.500000"
+    },
+    {
+      "codec_type": "audio",
+      "codec_name": "aac",
+      "width": null,
+      "height": null,
+      "frame_rate": "0/0",
+      "nb_frames": "2650",
+      "sample_rate": "48000",
+      "channels": 2,
+      "duration": "56.500000"
+    }
+  ],
+  "decode": {
+    "exitCode": 0,
+    "errorLogEmpty": true
+  },
+  "blackDetect": {
+    "minimumDuration": 0.08,
+    "pixelThreshold": 0.05,
+    "pictureRatioThreshold": 0.98,
+    "intervals": []
+  },
+  "loudness": {
+    "input_i": "-16.01",
+    "input_tp": "-4.21",
+    "input_lra": "3.00",
+    "input_thresh": "-27.20",
+    "output_i": "-16.11",
+    "output_tp": "-4.53",
+    "output_lra": "2.60",
+    "output_thresh": "-27.25",
+    "normalization_type": "dynamic",
+    "target_offset": "0.11"
+  },
+  "sampleFrames": [
+    0.6,
+    4.9,
+    10.5,
+    20,
+    23.5,
+    28,
+    31.7,
+    35,
+    41.8,
+    47.15,
+    53.9,
+    56.4
+  ],
+  "coverTime": 2.3,
+  "directListeningVerified": false,
+  "sha256": "79fd883854f7583094bf12418df44409d862bcdcaef2a79ac59f92a56c6f04fe",
+  "visualQA": {
+    "contactSheet": "qa/final-contact.jpg",
+    "frameCount": 12,
+    "inspected": true,
+    "titlePlateAt47_15s": "Black title on white panel verified; blue offset shadow visible; readable against cup image.",
+    "lastFrameAt56_4s": "Guide and comment CTA present; no black tail."
+  }
+}

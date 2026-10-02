@@ -1,0 +1,15 @@
+{
+ "id": "01-lab-youtube",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "title": "Forgot something? Koreans say 아 맞다! (Oh, right!) #learnkorean",
+ "caption": "아 맞다! (a matda) = “Oh, right!” — what Koreans say the moment they suddenly remember something.\n\n아 맞다, 우산! — Oh right, my umbrella!\n…아 맞다! 숙제! — …Oh right! Homework!\n\nPronunciation: 맞다 sounds like [mat-tta]. The ㅈ closes into a short “t”, and 다 becomes a tense 따.\n\nWhat do you always forget? Comment: 아 맞다, ____!\nSend this to a friend who always forgets 😅\n\nSYNK LAB · Korean expressions #1 — one everyday expression at a time, with Mongle.\n#learnkorean #koreanlanguage #studykorean",
+ "alt": [
+  "Felt mascot Mongle looks surprised under a white felt card reading 아 맞다! with the meaning “Oh, right!”"
+ ],
+ "_비고": "video.mp4 = v2 영어판(음성 있음, 18.5초, −14 LUFS). 계획 기본 공개 범위는 private. 발행은 사용자 승인 뒤 node tools/sns-발행.js --승인 → --발행. @synkkorean은 몽골 채널이라 영어판은 양식 규칙(검수자 없는 언어는 영어판 먼저)에 따른 게시다.",
+ "version": "v2"
+}

@@ -1,0 +1,39 @@
+{
+  "createdAt": "2026-09-21T19:42:16.352Z",
+  "premix": {
+    "input_i": "-17.02",
+    "input_tp": "-2.32",
+    "input_lra": "2.90",
+    "input_thresh": "-27.62",
+    "output_i": "-16.04",
+    "output_tp": "-1.50",
+    "output_lra": "2.90",
+    "output_thresh": "-26.63",
+    "normalization_type": "dynamic",
+    "target_offset": "0.04"
+  },
+  "master": {
+    "input_i": "-16.20",
+    "input_tp": "-1.50",
+    "input_lra": "3.00",
+    "input_thresh": "-26.80",
+    "output_i": "-16.04",
+    "output_tp": "-1.50",
+    "output_lra": "2.90",
+    "output_thresh": "-26.63",
+    "normalization_type": "dynamic",
+    "target_offset": "0.04"
+  },
+  "constantGainDb": 0.8199999999999998,
+  "bgm": {
+    "source": "docs/홍보물/BGM/따뜻_118.wav",
+    "sectionStart": 7,
+    "sectionDuration": 60,
+    "crossfadeSeconds": 3,
+    "gain": 0.105,
+    "punchlineGainFactor": 0.22
+  },
+  "durationSeconds": 179.9,
+  "voice": "Typecast 윤성 / ssfm-v30 / smart",
+  "directListeningVerified": false
+}

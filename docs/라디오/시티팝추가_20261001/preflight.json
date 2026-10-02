@@ -1,0 +1,39 @@
+{
+  "at": "2026-10-01T11:02:45.007Z",
+  "existingTitlesPreserved": true,
+  "existingAudioPreserved": true,
+  "format": "44.1kHz stereo FLAC 24-bit",
+  "joins": [
+    {
+      "name": "old19-to-citypop3",
+      "left": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\곡제목_모음집_20260927\\old11.flac",
+      "right": "C:\\Users\\q1212\\Documents\\SYNK-radio-20261001\\synk-radio-citypop3-20261001.flac",
+      "decodedSeconds": 30,
+      "errors": 0
+    },
+    {
+      "name": "citypop3-to-first-song",
+      "left": "C:\\Users\\q1212\\Documents\\SYNK-radio-20261001\\synk-radio-citypop3-20261001.flac",
+      "right": "C:\\Users\\q1212\\Documents\\SYNK-radio-20260926\\소리\\synk-radio-new8-20260926.flac",
+      "decodedSeconds": 30,
+      "errors": 0
+    }
+  ],
+  "newTracks": [
+    {
+      "start": 3521.127596546,
+      "title": "유영"
+    },
+    {
+      "start": 3745.287596546,
+      "title": "잔상"
+    },
+    {
+      "start": 3969.087596546,
+      "title": "밤의 온도"
+    }
+  ],
+  "duration": 4183.887596546,
+  "finalPlaylistSha256": "323ca495af7e15b8459e2a2f22e9f46265d10e785c4f28383b8fc65051a95310",
+  "trialPlaylistSha256": "ea5aca7f6c1382d480d9efcb504be5b220858d40fc24a13f751c6906d7bc9ae9"
+}

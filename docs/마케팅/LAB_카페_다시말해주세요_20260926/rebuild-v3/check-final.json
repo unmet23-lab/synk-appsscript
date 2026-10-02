@@ -1,0 +1,119 @@
+{
+  "ok": true,
+  "strict": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div id=\"brand\"> is a timeline element that contains nested <img>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#brand",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\rebuild-v3\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div id=\"brand\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      }
+    ],
+    "filesScanned": 6
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "duration": 35.5,
+    "samples": [
+      0.3,
+      1,
+      2.7,
+      4,
+      7,
+      8.6,
+      10,
+      12.7,
+      16.5,
+      18.8,
+      21.8,
+      25.8,
+      27.8,
+      30.8,
+      33
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 0,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      0.3,
+      4,
+      12.7,
+      21.8,
+      33
+    ],
+    "checked": 17,
+    "passed": 17
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": true,
+    "files": [
+      "snapshots\\frame-00-at-0.3s.png",
+      "snapshots\\frame-01-at-4.0s.png",
+      "snapshots\\frame-02-at-12.7s.png",
+      "snapshots\\frame-03-at-21.8s.png",
+      "snapshots\\frame-04-at-33.0s.png"
+    ],
+    "times": [
+      0.3,
+      4,
+      12.7,
+      21.8,
+      33
+    ],
+    "findingFiles": []
+  },
+  "_meta": {
+    "version": "0.8.78",
+    "latestVersion": "0.8.78",
+    "updateAvailable": false
+  }
+}

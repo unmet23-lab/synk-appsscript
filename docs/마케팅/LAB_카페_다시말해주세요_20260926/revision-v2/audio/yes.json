@@ -1,0 +1,42 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 0.694,
+  "words": [
+    {
+      "text": "네!",
+      "start": 0.204,
+      "end": 0.694
+    }
+  ],
+  "characters": [
+    {
+      "text": "네",
+      "start": 0.204,
+      "end": 0.674
+    },
+    {
+      "text": "!",
+      "start": 0.674,
+      "end": 0.694
+    }
+  ],
+  "request": {
+    "seed": 926,
+    "model": "ssfm-v30",
+    "voice_id": "tc_6a3350f8e5a50a4abe948fa8",
+    "text": "네!",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.08,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 0.95
+    }
+  },
+  "direction": "못 알아들었는데 반사적으로 짧고 밝게 대답.",
+  "voiceName": "도윤"
+}

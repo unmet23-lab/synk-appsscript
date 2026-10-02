@@ -1,0 +1,462 @@
+{
+  "status": "partially-published-see-execution-status",
+  "visionDigest": "61a85832a6e62daadf5d8039690de7efaf53dc5c37f95ae01e86fb8f42fe8c13",
+  "builtAt": "2026-09-18T21:49:12.629Z",
+  "outputs": [
+    {
+      "id": "synk-linkedin-company",
+      "brand": "synk",
+      "w": 1512,
+      "h": 256,
+      "mode": "company",
+      "label": "SYNK",
+      "role": "Brand map, without a campaign slogan",
+      "file": "synk-linkedin-company.png",
+      "bytes": 667861,
+      "sha256": "e9b30c1fb8cd868935d48283bab2f436dac460cdcab17d3b1c0d1b3e6683e9e7",
+      "qa": {
+        "fonts": [],
+        "text": []
+      },
+      "mobile": {
+        "file": "synk-linkedin-company.mobile.png",
+        "width": 390,
+        "height": 67,
+        "scope": "Simulated layout only, not actual platform UI",
+        "sha256": "5ab6e4ce54e1ddfa3df940ba225d921d4dd5bb64560015c4f660b26325947bdf"
+      },
+      "liveCropVerified": false,
+      "printedText": [],
+      "publication": "textPublishedCoverNeedsCorrection"
+    },
+    {
+      "id": "yuhobuilds-youtube",
+      "brand": "shift",
+      "w": 2560,
+      "h": 1440,
+      "mode": "youtube",
+      "label": "유호 · YUHO BUILDS",
+      "role": "SYNK SHIFT",
+      "file": "yuhobuilds-youtube.png",
+      "bytes": 4445537,
+      "sha256": "6478f54537894ee26740862c7acda452aa0cef94911bde8a779edb041fcd8d23",
+      "qa": {
+        "fonts": [],
+        "text": [],
+        "safeArea": {
+          "x": 508.125,
+          "y": 508.75,
+          "w": 1543.75,
+          "h": 422.5,
+          "basis": "Proportional calculation from official minimum size, not a live crop"
+        }
+      },
+      "mobile": {
+        "file": "yuhobuilds-youtube.mobile.png",
+        "width": 390,
+        "height": 107,
+        "scope": "Simulated layout only, not actual platform UI",
+        "sha256": "1f5fa98871a2377eaa57328dc337b7160c2fd5e442c650e46d8d8f1c642825a2"
+      },
+      "liveCropVerified": false,
+      "printedText": [],
+      "publication": "textPublishedCoverBlocked"
+    },
+    {
+      "id": "synkbrief-youtube",
+      "brand": "shift",
+      "w": 2560,
+      "h": 1440,
+      "mode": "youtube",
+      "label": "SYNK BRIEF",
+      "role": "짧고 정확한 실무 노트",
+      "file": "synkbrief-youtube.png",
+      "bytes": 4311810,
+      "sha256": "92af769a22e01eb4554160480405de2ab9eb31e8ee1e6a62443507f9abfbc6e3",
+      "qa": {
+        "fonts": [],
+        "text": [],
+        "safeArea": {
+          "x": 508.125,
+          "y": 508.75,
+          "w": 1543.75,
+          "h": 422.5,
+          "basis": "Proportional calculation from official minimum size, not a live crop"
+        }
+      },
+      "mobile": {
+        "file": "synkbrief-youtube.mobile.png",
+        "width": 390,
+        "height": 107,
+        "scope": "Simulated layout only, not actual platform UI",
+        "sha256": "61f0c5222341822ba9cf0746044594732e7f759551a85ae585bde677e5046fff"
+      },
+      "liveCropVerified": true,
+      "printedText": [],
+      "publication": "publishedVerified"
+    },
+    {
+      "id": "lab-youtube",
+      "brand": "lab",
+      "w": 2560,
+      "h": 1440,
+      "mode": "youtube",
+      "label": "한국어 학습 · K-LOFI24",
+      "role": "몽골어로 이해하고, 한국어로 직접 연습합니다.",
+      "languageStatus": "Existing public Mongolian direction retained; human native review remains incomplete",
+      "file": "lab-youtube.png",
+      "bytes": 4282235,
+      "sha256": "6716a4c47c030b6c1567469fcc03b26e2809ae951581877f0f693b6e24cbb6c5",
+      "qa": {
+        "fonts": [],
+        "text": [],
+        "safeArea": {
+          "x": 508.125,
+          "y": 508.75,
+          "w": 1543.75,
+          "h": 422.5,
+          "basis": "Proportional calculation from official minimum size, not a live crop"
+        }
+      },
+      "mobile": {
+        "file": "lab-youtube.mobile.png",
+        "width": 390,
+        "height": 107,
+        "scope": "Simulated layout only, not actual platform UI",
+        "sha256": "9546d4b0c77b245250f3661a50b7af68cc5ecd6f1e6f3c2d268117db17b5ea2f"
+      },
+      "liveCropVerified": true,
+      "printedText": [],
+      "publication": "publishedVerified"
+    },
+    {
+      "id": "yuhobuilds-x",
+      "brand": "shift",
+      "w": 1500,
+      "h": 500,
+      "mode": "profile",
+      "label": "유호 · YUHO BUILDS",
+      "role": "SYNK SHIFT",
+      "file": "yuhobuilds-x.png",
+      "bytes": 1122968,
+      "sha256": "9a02fd92752b29f2c0c7d788d2677753e7786f48a1f4f1819d264f8a51da183b",
+      "qa": {
+        "fonts": [],
+        "text": []
+      },
+      "mobile": {
+        "file": "yuhobuilds-x.mobile.png",
+        "width": 390,
+        "height": 130,
+        "scope": "Simulated layout only, not actual platform UI",
+        "sha256": "d88203e4ebe5df2d5ded18e3e0e457d12f76b0606f6d017b02514dcc27f95334"
+      },
+      "liveCropVerified": false,
+      "printedText": [],
+      "publication": "blockedLogin"
+    },
+    {
+      "id": "yuho-linkedin-primary",
+      "brand": "shift",
+      "w": 1584,
+      "h": 396,
+      "mode": "profile",
+      "label": "유호 · SYNK SHIFT",
+      "role": "SYNK FOUNDER",
+      "file": "yuho-linkedin-primary.png",
+      "bytes": 971187,
+      "sha256": "bdf4527ff5447c00b70da9ec6042f04caa1dc892f13a1fbc23ab12cc154cda73",
+      "qa": {
+        "fonts": [],
+        "text": []
+      },
+      "mobile": {
+        "file": "yuho-linkedin-primary.mobile.png",
+        "width": 390,
+        "height": 98,
+        "scope": "Simulated layout only, not actual platform UI",
+        "sha256": "7d62b765888c664ed0d4c5f3b27e279d3861111fd3a34f9d014111bcadc48652"
+      },
+      "liveCropVerified": false,
+      "printedText": [],
+      "publication": "textPublishedCoverBlocked"
+    },
+    {
+      "id": "shift-tistory",
+      "brand": "shift",
+      "w": 2400,
+      "h": 900,
+      "mode": "wide",
+      "label": "유호 · SYNK SHIFT",
+      "role": "만든 결과와 수정 과정을 기록합니다.",
+      "file": "shift-tistory.png",
+      "bytes": 2833444,
+      "sha256": "66b85ebdbf0103af7e16a672e1485c1232e09dda3dfc30b17cdbd26b2fd0c1e4",
+      "qa": {
+        "fonts": [],
+        "text": []
+      },
+      "mobile": {
+        "file": "shift-tistory.mobile.png",
+        "width": 390,
+        "height": 300,
+        "scope": "Dedicated mobile cover asset; local render only, not actual platform UI",
+        "layout": "dedicated-mobile-title",
+        "sha256": "1c95e5a7690dcca22b2337ff2866a306a70007dc8ecdfd83f671ba14274fdf9e",
+        "bytes": 152396,
+        "qa": {
+          "fonts": [],
+          "text": []
+        }
+      },
+      "liveCropVerified": false,
+      "printedText": [],
+      "publication": "textSavedAwaitingPublicVerification"
+    },
+    {
+      "id": "shift-naverblog",
+      "brand": "shift",
+      "w": 966,
+      "h": 360,
+      "mode": "naver-title",
+      "label": "유호 · SYNK SHIFT",
+      "role": "BUILD LOG",
+      "file": "shift-naverblog.png",
+      "bytes": 518052,
+      "sha256": "8780dc6f2369b8bdc467309d62063453c33392510376e55d9f7de625d0516ca1",
+      "qa": {
+        "fonts": [],
+        "text": [],
+        "uploadTarget": {
+          "width": 966,
+          "minHeight": 50,
+          "maxHeight": 600,
+          "basis": "Main agent observed Naver Remocon title upload UI on 2026-09-14; not a universal mobile-cover specification"
+        }
+      },
+      "mobile": {
+        "file": "shift-naverblog.mobile.png",
+        "width": 390,
+        "height": 146,
+        "scope": "Simulated layout only, not actual platform UI",
+        "sha256": "4b3e1975aab6f524eadc77b1714265cb2d19dedcfd79bf68cc79297b806f42c8"
+      },
+      "liveCropVerified": false,
+      "printedText": [],
+      "publication": "blockedLogin"
+    },
+    {
+      "id": "shift-pinterest",
+      "brand": "shift",
+      "w": 1600,
+      "h": 900,
+      "mode": "wide",
+      "label": "SYNK SHIFT",
+      "role": "만든 결과와 수정 과정",
+      "roleSize": 54,
+      "file": "shift-pinterest.png",
+      "bytes": 2143965,
+      "sha256": "ef51d87063e6132ead250ba9d350724c8e6db27a880d534f4fa2545541a8cbe8",
+      "qa": {
+        "fonts": [],
+        "text": []
+      },
+      "mobile": {
+        "file": "shift-pinterest.mobile.png",
+        "width": 390,
+        "height": 220,
+        "scope": "Simulated layout only, not actual platform UI",
+        "sha256": "fe4ca4789da54e2d197ce1f4ff74d56b62b1e1e91d2ef217065701cf031f8259"
+      },
+      "liveCropVerified": false,
+      "printedText": [],
+      "publication": "textPublishedCoverBlocked"
+    },
+    {
+      "id": "shift-behance",
+      "brand": "shift",
+      "w": 3200,
+      "h": 410,
+      "mode": "panorama",
+      "label": "유호 · SYNK SHIFT",
+      "role": "SYNK SHIFT",
+      "file": "shift-behance.png",
+      "bytes": 1765587,
+      "sha256": "aac269cdcb0c269a5c8b0ccf4673d735ca9744bb954f43073ac3e25ef8fb59d9",
+      "qa": {
+        "fonts": [],
+        "text": []
+      },
+      "mobile": {
+        "file": "shift-behance.mobile.png",
+        "width": 390,
+        "height": 50,
+        "scope": "Simulated layout only, not actual platform UI",
+        "sha256": "89c995a14522b7b0c1dc828c618ee688a18f8327fd8cad049c27e786adf19864"
+      },
+      "liveCropVerified": false,
+      "printedText": []
+    },
+    {
+      "id": "lab-facebook",
+      "brand": "lab",
+      "w": 1640,
+      "h": 924,
+      "mode": "wide",
+      "label": "SYNK LAB",
+      "role": "관심사 · 한국어 표현 · 유학 생활 준비",
+      "roleSize": 44,
+      "languageStatus": "Existing public Mongolian direction shortened; human native review remains incomplete",
+      "file": "lab-facebook.png",
+      "bytes": 2498419,
+      "sha256": "6bfcb10f3b7bcd559117671c8b4b67b5940bc91c2a383f22bfb5483bb7b4e797",
+      "qa": {
+        "fonts": [],
+        "text": []
+      },
+      "mobile": {
+        "file": "lab-facebook.mobile.png",
+        "width": 390,
+        "height": 220,
+        "scope": "Simulated layout only, not actual platform UI",
+        "sha256": "328b0b6b291817bf08cbaa051231ff11c616ea8b68a9cdc699771651e0fb64d7"
+      },
+      "liveCropVerified": true,
+      "printedText": [],
+      "publication": "publishedVerified"
+    }
+  ],
+  "sources": [
+    {
+      "file": "docs/비전_정본.md",
+      "sha256": "61a85832a6e62daadf5d8039690de7efaf53dc5c37f95ae01e86fb8f42fe8c13"
+    },
+    {
+      "file": "docs/마케팅/프로필최신화_20260919/계정별_문구.json",
+      "sha256": "884626d2bfcaee3723298c2500cec203bf014944ae72264f075b085aa3c89b9f"
+    },
+    {
+      "file": "docs/디자인_토큰.json",
+      "sha256": "2e08bde734635f8a6e2d1629cf6a8fe81da20a1f3b52f84dac04eec3dce6aae1"
+    },
+    {
+      "file": "docs/브랜드_폰트_정본.md",
+      "sha256": "889fc34358d6725e0b773504b388d0a9b52535c09170bb1192be00936e216ca6"
+    },
+    {
+      "file": "docs/브랜드_폰트/SUIT/SUIT-Variable.woff2",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+    },
+    {
+      "file": "docs/브랜드_폰트/InterTight/InterTight-Medium.ttf",
+      "sha256": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1"
+    },
+    {
+      "file": "docs/브랜드_폰트/InterTight/InterTight-Bold.ttf",
+      "sha256": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca"
+    },
+    {
+      "file": "docs/Loom_자산/구움/펠트_종이바탕.webp",
+      "sha256": "810e53b8ec11c0490c6ec4a33e0a7102f609c6ca1a5036448cbda6e86987cf18"
+    },
+    {
+      "file": "docs/홍보물/첫게시물_20260910/assets/felt-dark.webp",
+      "sha256": "b4b6000d659a2db651ce43a4e1e92b9ad6bd3dfa3fe93f01560a8b597b9be6a5"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/assets/stitch.webp",
+      "sha256": "4109d65ca82563989fe2490c1cb6d476cc1c2aca98991e453a64b67e904f3c9c"
+    },
+    {
+      "file": "docs/캐릭터/펠트패치_0815/Coral.png",
+      "sha256": "7c791859604274a2f6685d06f887c11127b14d642a642ebbec5d1e82c8b69b44"
+    },
+    {
+      "file": "docs/캐릭터/펠트패치_0815/Lapis.png",
+      "sha256": "146ce858562bf69f6de4738f377f06d2c0482a26e791e2630385d9eb0b5224cc"
+    },
+    {
+      "file": "docs/캐릭터/펠트패치_0815/Pop.png",
+      "sha256": "e3264fa0ed6f3690401def473b03eebe8f0d76c9ce608d7e94f3cea80ad6a6a1"
+    },
+    {
+      "file": "docs/캐릭터/펠트패치_0815/Meadow.png",
+      "sha256": "aecec25c01da11a1d7175eeaf31dfeaecbc728288ae1620563bdb2a435648cb9"
+    },
+    {
+      "file": "docs/캐릭터/펠트패치_0815/DeepWool.png",
+      "sha256": "58be350650bcf8abd057b02c71dfeb64fde903a787ea3ceb6acd4cc80cbd4533"
+    },
+    {
+      "file": "docs/마케팅/프로필최신화_20260919/커버/synk-linkedin-company-gpt.png",
+      "sha256": "ab9f5ce5e193e50177fa05412acd8434a0222fc544a9090b0465bcf9e384b1b4"
+    },
+    {
+      "file": "docs/마케팅/프로필최신화_20260919/커버/yuhobuilds-youtube-gpt.png",
+      "sha256": "296bc6de952d1e4ff31d2e09dbb87db198b36e22349914d890ade3fd31cac0b6"
+    },
+    {
+      "file": "docs/마케팅/프로필최신화_20260919/커버/synkbrief-youtube-gpt.png",
+      "sha256": "e590c5c0cd23722c190f50e68b67b8eaefe62901e87aa2b47fc9d5512c70ba6b"
+    },
+    {
+      "file": "docs/마케팅/프로필최신화_20260919/커버/lab-youtube-gpt.png",
+      "sha256": "d82dd956ee4461021b72b618b6fb8cf78348f651aa56a398d59033a7e1188540"
+    },
+    {
+      "file": "docs/마케팅/프로필최신화_20260919/커버/yuhobuilds-x-gpt.png",
+      "sha256": "8d996a0b367580fa39ae7316240b6a8f3bb6d319ab18bad15d1afe37838bd631"
+    },
+    {
+      "file": "docs/마케팅/프로필최신화_20260919/커버/yuho-linkedin-primary-gpt.png",
+      "sha256": "62352005c094d9dd672a8f8db3e463678f0782c874e21ebade7fbe0d3f711ca0"
+    },
+    {
+      "file": "docs/마케팅/프로필최신화_20260919/커버/shift-tistory-gpt.png",
+      "sha256": "df3aee940eaa82675aa26aa81afd3b92ecc196c2b7a27dde32e75f2fed9d7c7d"
+    },
+    {
+      "file": "docs/마케팅/프로필최신화_20260919/커버/shift-naverblog-gpt.png",
+      "sha256": "b685b80645461695003ca5b36ee50bc290853a2d894803b958f1e5470d47cb9e"
+    },
+    {
+      "file": "docs/마케팅/프로필최신화_20260919/커버/shift-pinterest-gpt.png",
+      "sha256": "0bee49bf2cfa08a0096a71e0f6915cdc23b799c02d948f64f948f21f5eb8d8e3"
+    },
+    {
+      "file": "docs/마케팅/프로필최신화_20260919/커버/shift-behance-gpt.png",
+      "sha256": "776df70db21c23b07d1c81a2f2d55c72e3f2889dc910cc43ea7085c19991906f"
+    },
+    {
+      "file": "docs/마케팅/프로필최신화_20260919/커버/lab-facebook-gpt.png",
+      "sha256": "0303e2ed38506e347cdb14a5f39e929b2be40e4a81ed5f720257a5a0a5c884b1"
+    },
+    {
+      "file": "docs/마케팅/프로필최신화_20260919/커버/shift-tistory-mobile-gpt.png",
+      "sha256": "44e3318e838e2be9b1fab6b22035b170ca80664667c62dacf3c07bfdd7ebc305"
+    },
+    {
+      "file": "docs/마케팅/프로필최신화_20260919/커버/synk-company-safe-gpt-source.png",
+      "sha256": "c08ac19369141e06f05bb2bfae47d1757d03fdd6decdbc9fa2187808af7c5669"
+    },
+    {
+      "file": "docs/마케팅/프로필최신화_20260919/커버/shift-centered-gpt-source.png",
+      "sha256": "d881d6eaa48ee2377c9cd3335d859cc05ceeb69095f212328f0a10a52141b779"
+    },
+    {
+      "file": "docs/마케팅/프로필최신화_20260919/커버/synk-linkedin-company-safe-gpt.png",
+      "sha256": "e9b30c1fb8cd868935d48283bab2f436dac460cdcab17d3b1c0d1b3e6683e9e7"
+    },
+    {
+      "file": "docs/마케팅/프로필최신화_20260919/커버/yuhobuilds-youtube-safe-gpt.png",
+      "sha256": "6478f54537894ee26740862c7acda452aa0cef94911bde8a779edb041fcd8d23"
+    },
+    {
+      "file": "docs/마케팅/프로필최신화_20260919/커버/shift-pinterest-safe-gpt.png",
+      "sha256": "ef51d87063e6132ead250ba9d350724c8e6db27a880d534f4fa2545541a8cbe8"
+    }
+  ],
+  "updatedAt": "2026-09-18T22:30:24.017Z",
+  "executionStatus": "../실행상태.json",
+  "promptRecord": "../반영기록_20260919.md"
+}

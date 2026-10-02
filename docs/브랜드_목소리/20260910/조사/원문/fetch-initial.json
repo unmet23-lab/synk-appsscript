@@ -1,0 +1,51 @@
+[
+  {
+    "name": "supertonic-card",
+    "url": "https://huggingface.co/Supertone/supertonic-3/raw/main/README.md",
+    "finalUrl": "https://huggingface.co/Supertone/supertonic-3/raw/main/README.md",
+    "bytes": 9189,
+    "sha256": "d414e4b085fb9989ebfd2b64f868ff861694022b4bdb805b09e702386dbdc7d5"
+  },
+  {
+    "name": "supertonic-license",
+    "url": "https://huggingface.co/Supertone/supertonic-3/raw/main/LICENSE",
+    "finalUrl": "https://huggingface.co/Supertone/supertonic-3/raw/main/LICENSE",
+    "bytes": 15007,
+    "sha256": "0d944a9110fed9a9602d60e0423a272903e7bd21ab060490774efc77c2275e9f"
+  },
+  {
+    "name": "supertonic-py-readme",
+    "url": "https://raw.githubusercontent.com/supertone-oss-archive/supertonic-py/main/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/supertone-oss-archive/supertonic-py/main/README.md",
+    "bytes": 25099,
+    "sha256": "6188727310ff62f7b57d6248f39040998097921293e23ca6724e1344eb08e0d5"
+  },
+  {
+    "name": "supertonic-py-license",
+    "url": "https://raw.githubusercontent.com/supertone-oss-archive/supertonic-py/main/LICENSE",
+    "finalUrl": "https://raw.githubusercontent.com/supertone-oss-archive/supertonic-py/main/LICENSE",
+    "bytes": 1071,
+    "sha256": "f41cb0ff617e2ed634215f3e62f7b33b3dc02b079c6379a2f1a9c7ce7bd84c03"
+  },
+  {
+    "name": "supertonic-py-project",
+    "url": "https://raw.githubusercontent.com/supertone-oss-archive/supertonic-py/main/pyproject.toml",
+    "finalUrl": "https://raw.githubusercontent.com/supertone-oss-archive/supertonic-py/main/pyproject.toml",
+    "bytes": 3797,
+    "sha256": "3974a614733b732682e2cd0d22ee28ad686274163dc64d3e687fcca9da2e344e"
+  },
+  {
+    "name": "magpie-card",
+    "url": "https://huggingface.co/nvidia/magpie_tts_multilingual_357m/raw/main/README.md",
+    "finalUrl": "https://huggingface.co/nvidia/magpie_tts_multilingual_357m/raw/main/README.md",
+    "bytes": 31738,
+    "sha256": "a819e61bcc4b1f39372e0085b7b90ef128eb8eb764cca2dc39f63895384eb1fa"
+  },
+  {
+    "name": "audio8-card",
+    "url": "https://huggingface.co/Edge0/Audio8-TTS-Preview-0.6b/raw/main/README.md",
+    "finalUrl": "https://huggingface.co/Edge0/Audio8-TTS-Preview-0.6b/raw/main/README.md",
+    "bytes": 10466,
+    "sha256": "c3252410cdce14fc206da10524cfaf7cc9112a1fe2d7e81549b2f059391281f3"
+  }
+]

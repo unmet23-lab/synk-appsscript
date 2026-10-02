@@ -1,0 +1,112 @@
+{
+  "verifiedAt": "2026-09-13T18:21:07.859Z",
+  "png": {
+    "width": 2160,
+    "height": 2700,
+    "hashMatches": true
+  },
+  "sourceCount": 22,
+  "sourceDrift": [],
+  "embeddedAssets": [
+    {
+      "mime": "font/woff2",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+    },
+    {
+      "mime": "font/ttf",
+      "sha256": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1"
+    },
+    {
+      "mime": "font/ttf",
+      "sha256": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca"
+    },
+    {
+      "mime": "image/webp",
+      "sha256": "b4b6000d659a2db651ce43a4e1e92b9ad6bd3dfa3fe93f01560a8b597b9be6a5"
+    },
+    {
+      "mime": "image/png",
+      "sha256": "1d7396f08c69af348e9a9764aca57bce3ef68441b785287c59507350b781eeda"
+    }
+  ],
+  "unverifiedEmbedded": [],
+  "missingLinks": [],
+  "copyMissing": [],
+  "svgFontNodes": 9,
+  "svgFallbackFonts": [],
+  "actualReadingFonts": [
+    {
+      "selector": "h1",
+      "fonts": [
+        {
+          "familyName": "Inter Tight",
+          "postScriptName": "InterTight-Bold",
+          "isCustomFont": true,
+          "glyphCount": 7
+        },
+        {
+          "familyName": "SUIT Variable Thin",
+          "postScriptName": "SUITVariable-ExtraBold",
+          "isCustomFont": true,
+          "glyphCount": 14
+        }
+      ]
+    },
+    {
+      "selector": ".vision",
+      "fonts": [
+        {
+          "familyName": "Inter Tight",
+          "postScriptName": "InterTight-Bold",
+          "isCustomFont": true,
+          "glyphCount": 7
+        },
+        {
+          "familyName": "SUIT Variable Thin",
+          "postScriptName": "SUITVariable-ExtraBold",
+          "isCustomFont": true,
+          "glyphCount": 24
+        }
+      ]
+    },
+    {
+      "selector": "article p:not(.vision)",
+      "fonts": [
+        {
+          "familyName": "SUIT Variable Thin",
+          "postScriptName": "SUITVariable-Medium",
+          "isCustomFont": true,
+          "glyphCount": 8
+        },
+        {
+          "familyName": "Inter Tight Medium",
+          "postScriptName": "InterTight-Medium",
+          "isCustomFont": true,
+          "glyphCount": 13
+        }
+      ]
+    },
+    {
+      "selector": "#inquiry p",
+      "fonts": [
+        {
+          "familyName": "SUIT Variable Thin",
+          "postScriptName": "SUITVariable-Medium",
+          "isCustomFont": true,
+          "glyphCount": 31
+        },
+        {
+          "familyName": "Inter Tight Medium",
+          "postScriptName": "InterTight-Medium",
+          "isCustomFont": true,
+          "glyphCount": 12
+        }
+      ]
+    }
+  ],
+  "readingFallbackFonts": [],
+  "externalRequests": [],
+  "publicURL": null,
+  "platformUploaderVerified": false,
+  "passed": true
+}

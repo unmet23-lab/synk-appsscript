@@ -1,0 +1,10 @@
+{
+  "audio/narration.wav": {
+    "sha256": "3ab86c4d2f8d747a70215b717496ddc3291e2e22f8c996e5b5636fe0d9ac1e27",
+    "same": true
+  },
+  ".media/audio/bgm/bgm_001.wav": {
+    "sha256": "615d4a3330aa46048992da75392144a3ffba78921990432edc2c4451981a42d8",
+    "same": true
+  }
+}

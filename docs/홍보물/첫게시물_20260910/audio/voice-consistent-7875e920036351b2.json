@@ -1,0 +1,23 @@
+{
+  "provider": "Higgsfield",
+  "model": "seed_audio",
+  "sampleRate": 48000,
+  "format": "wav",
+  "synthetic": true,
+  "imitatesUser": false,
+  "reference": "_검토/01-음성수정/studio-reference.wav",
+  "referenceSha256": "f3b061f8482d54c02390e08a38e0b8a8492b6cc07abbde91b50d53725f73cb7d",
+  "referenceApproval": "User accepted 01 final MP4 5c2701a46c7a405ba9c7ffa31d933db922bd29b735b8dc47f77eec76b2200f31; its B-series studio voice is the continuity reference.",
+  "instruction": "Use the reference only for the same original synthetic female voice identity, fresh cheerful character and clean studio quality. This is a Korean-native young adult woman with friendly conversational warmth, a lightly smiling bright voice and a rounded rich midrange. Keep gentle energy alive through sentence endings, including final 요 and 다. Questions are softly inviting; statements are confident and buoyant without a heavy falling or fading ending. Use natural connected Korean and short easy breaths. No forced high pitch, sing-song, baby voice, announcer cadence, theatrical acting, shouting or whispering. Adapt the comfortable pace to the complete supplied text; never rush or truncate it. Read Korean numerals and English brand words naturally in Korean. Record a pristine full-band dry studio voice, with full-bodied low-mid warmth, detailed smooth consonants and clean airy highs. No telephone bandwidth, metallic ringing, warble, distortion, harsh sibilance, background hiss, room echo, music, effects or extra words. Do not repeat the reference dialogue. Speak ONLY the supplied Korean text, once, exactly and completely.",
+  "delivery": {
+    "sampleRate": 48000,
+    "channels": 1,
+    "codec": "pcm_s24le",
+    "loudnessTargetLUFS": -23,
+    "truePeakLimitDb": -6,
+    "gainAppliedForVideo": false
+  },
+  "narration": "내 소개에도 누구에게, 어떤 일, 남길 것을 써보세요. 다음 업무에도 쓸 예시와 원본을 이어갑니다.",
+  "status": "submitting",
+  "startedAt": "2026-09-10T08:23:19.582Z"
+}

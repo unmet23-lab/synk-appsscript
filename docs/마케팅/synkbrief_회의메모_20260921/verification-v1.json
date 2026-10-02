@@ -1,0 +1,73 @@
+{
+  "verifiedAt": "2026-09-21T15:11:11.3034518Z",
+  "status": "subtitle-review-ready",
+  "coreVideos": 1,
+  "platformPackages": 3,
+  "platforms": [
+    "YouTube @synkbrief",
+    "Instagram @synkbrief",
+    "TikTok @synkbrief"
+  ],
+  "video": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "durationSeconds": 48,
+    "audioStreams": 0,
+    "decodePassed": true
+  },
+  "actualChatGPTDemo": true,
+  "fictionalInput": true,
+  "claimReview": "Prompt, observed response, script and three posts reviewed; no mismatch found",
+  "visualReview": "7 scenes and 9 animation samples inspected",
+  "mobileWidth": 390,
+  "horizontalOverflow": false,
+  "postingPerformed": false,
+  "voiceSelected": false,
+  "assets": [
+    {
+      "path": "video/synkbrief-01-meeting-tasks.mp4",
+      "bytes": 688366,
+      "sha256": "ea696320c13115c7425b8cc003e3eeeee23ea302946b0989ff7753aaac0aaee1"
+    },
+    {
+      "path": "video/preview.webm",
+      "bytes": 955895,
+      "sha256": "012ab4c24ad0af2427cb3145d3e91a0700a528eff583e82ae0a183a7aeb49f53"
+    },
+    {
+      "path": "video/cover.png",
+      "bytes": 60496,
+      "sha256": "9c3757476fd1dda064767e0e4859a6c6f95b21a72699e649a9860fdb08b3479e"
+    },
+    {
+      "path": "posts/youtube.txt",
+      "bytes": 1214,
+      "sha256": "65020be7ef4aeaccf15e71f341441b160bc4ec3cf23377a7c4966f7f8ef366ee"
+    },
+    {
+      "path": "posts/instagram.txt",
+      "bytes": 1070,
+      "sha256": "e5d444819838bca84825396198cf3d7f07f931f234891d945c27c822883a170a"
+    },
+    {
+      "path": "posts/tiktok.txt",
+      "bytes": 744,
+      "sha256": "4953617676a0f67d6674d1386cf34340ee49e20fc164b3bc11a12479c91e3caf"
+    },
+    {
+      "path": "prompt-template.txt",
+      "bytes": 431,
+      "sha256": "689bcf33a90e5cf29029f521e3fafcd055ffdea88944e7488fb3bea2ea09013b"
+    }
+  ],
+  "browserPlayback": {
+    "format": "VP9 WebM",
+    "observedProgressSeconds": 43.203922,
+    "mediaError": null,
+    "readyState": 4,
+    "scrubTo30SecondsPassed": true,
+    "nativeControls": "Replaced with HTML play and seek controls after in-app browser crash",
+    "clipboard": "Success feedback verified; automation clipboard readback was stale, exact OS clipboard content not verified"
+  }
+}

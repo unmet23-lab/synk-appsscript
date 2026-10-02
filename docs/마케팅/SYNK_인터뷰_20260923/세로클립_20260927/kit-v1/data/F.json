@@ -1,0 +1,101 @@
+{
+ "key": "F",
+ "name": "F_조종하는건_AI가_아니라_사람",
+ "fps": 30,
+ "speech_sec": 15.6,
+ "v2_sec": 15.6,
+ "total_sec": 18.4,
+ "end_start": 15.6,
+ "shots": [
+  {
+   "t": 0.0,
+   "framing": "base",
+   "film": [
+    0.0,
+    1.916
+   ]
+  },
+  {
+   "t": 1.9,
+   "framing": "punch",
+   "film": [
+    1.916,
+    3.751
+   ]
+  },
+  {
+   "t": 3.733,
+   "framing": "base",
+   "film": [
+    3.751,
+    7.297
+   ]
+  },
+  {
+   "t": 7.267,
+   "framing": "punch",
+   "film": [
+    7.297,
+    9.0
+   ]
+  },
+  {
+   "t": 8.967,
+   "framing": "base",
+   "film": [
+    107.63,
+    111.713
+   ]
+  },
+  {
+   "t": 13.033,
+   "framing": "punch",
+   "film": [
+    111.713,
+    114.27
+   ]
+  }
+ ],
+ "sentences": [
+  0.08,
+  5.44,
+  9.003,
+  13.083
+ ],
+ "audio": {
+  "input_I": -15.9,
+  "target": -14.0,
+  "I": -14.1,
+  "TP": -2.5,
+  "max_gr_db": -1.6,
+  "over3db_pct": 0.0,
+  "ceiling_dbtp": -2.5
+ },
+ "audio_vs_v2": {
+  "v2_mp4": "SYNK_인터뷰_세로_v2_F_조종하는건_AI가_아니라_사람_16s.mp4",
+  "v2_samples": 748800,
+  "kit_samples": 748800,
+  "corr": 0.99956,
+  "diff_db": -30.5
+ },
+ "first_frame_fixed_shots": [],
+ "video": {
+  "frames": 552,
+  "w": 1080,
+  "h": 1920,
+  "fps": "30/1",
+  "sec": 18.4,
+  "MB": 10.5,
+  "sha12": "41ba5fe6ee43"
+ },
+ "wav": {
+  "sec": 15.6,
+  "MB": 4.3,
+  "sha12": "0cb8b6e6d0dc"
+ },
+ "sources": {
+  "master": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision9\\render\\SYNK_Founder_Film_4K60_v9.mp4",
+  "v2_build": "../v2/소스/F_build.json",
+  "v2_script": "../v2/소스/make_clips_v2.py"
+ }
+}

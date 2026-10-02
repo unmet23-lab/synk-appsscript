@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "b5093e58-07eb-4bf9-9466-37aa4aff6aa1",
+  "narration": "제 생각은 조금 달라요.",
+  "narrationSha256": "783d5ae80bcb81d670c74b05ff8fcbd812f88e2187cd2731f17b7aef28c495c4",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-783d5ae80bcb81d6.wav",
+  "duration": 3.52,
+  "sha256": "37201f80cb3327ca881c5375cebb571528ce0a0a459f16d8c5ab382764af1955",
+  "humanListening": false,
+  "fullDecode": true
+}

@@ -1,0 +1,92 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 1.869,
+  "words": [
+    {
+      "text": "다시",
+      "start": 0.402,
+      "end": 0.663
+    },
+    {
+      "text": "말해",
+      "start": 0.723,
+      "end": 0.904
+    },
+    {
+      "text": "주세요.",
+      "start": 0.964,
+      "end": 1.869
+    }
+  ],
+  "characters": [
+    {
+      "text": "다",
+      "start": 0.402,
+      "end": 0.563
+    },
+    {
+      "text": "시",
+      "start": 0.563,
+      "end": 0.663
+    },
+    {
+      "text": " ",
+      "start": 0.663,
+      "end": 0.723
+    },
+    {
+      "text": "말",
+      "start": 0.723,
+      "end": 0.844
+    },
+    {
+      "text": "해",
+      "start": 0.844,
+      "end": 0.904
+    },
+    {
+      "text": " ",
+      "start": 0.904,
+      "end": 0.964
+    },
+    {
+      "text": "주",
+      "start": 0.964,
+      "end": 1.085
+    },
+    {
+      "text": "세",
+      "start": 1.085,
+      "end": 1.246
+    },
+    {
+      "text": "요",
+      "start": 1.246,
+      "end": 1.849
+    },
+    {
+      "text": ".",
+      "start": 1.849,
+      "end": 1.869
+    }
+  ],
+  "request": {
+    "seed": 926,
+    "model": "ssfm-v30",
+    "voice_id": "tc_6a3350f8e5a50a4abe948fa8",
+    "text": "다시 말해 주세요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 0.99,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "드시고 가세요? 가지고 가세요?",
+      "next_text": "여기서 드세요? 가져가세요?"
+    }
+  },
+  "direction": "직원 눈을 보고 조금 조심스럽게 실제로 부탁.",
+  "voiceName": "도윤"
+}

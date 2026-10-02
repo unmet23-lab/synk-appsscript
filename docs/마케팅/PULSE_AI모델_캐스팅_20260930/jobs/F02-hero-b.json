@@ -1,0 +1,30 @@
+[
+  {
+    "created_at": "2026-09-30T12:46:45.089556Z",
+    "display_name": "Higgsfield Soul 2.0",
+    "id": "85d34a41-3617-47e2-bbed-71a5159b5b4f",
+    "job_type": "text2image_soul_v2",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_124645_85d34a41-3617-47e2-bbed-71a5159b5b4f_min.webp",
+    "params": {
+      "batch_size": 1,
+      "enhance_prompt": false,
+      "height": 2048,
+      "prompt": "Unretouched model agency digitals photo of a 31-year-old Korean woman with a chic, sophisticated look: defined cheekbones, elongated almond-shaped eyes with a thin crease, straight dark brows, a small mole under her left eye, sleek chin-length black bob with a center part, light natural makeup, wearing a plain white cotton tank top. Head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores, fine vellus hair, natural unevenness and tiny imperfections, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+      "quality": "1080p",
+      "seed": 600294,
+      "style": {
+        "id": "3db34ab5-3439-4317-9e03-08dc30852e69",
+        "name": "General",
+        "strength": null,
+        "url": "https://cdn.higgsfield.ai/soul-v2-style/f33d85f2-6521-4fa8-8e8f-894cfbdee578.webp"
+      },
+      "style_id": "3db34ab5-3439-4317-9e03-08dc30852e69",
+      "style_strength": null,
+      "use_relax": false,
+      "use_sage_attention": false,
+      "width": 1536
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_124645_85d34a41-3617-47e2-bbed-71a5159b5b4f.png",
+    "status": "completed"
+  }
+]

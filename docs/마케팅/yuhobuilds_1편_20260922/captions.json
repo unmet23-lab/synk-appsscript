@@ -1,0 +1,401 @@
+[
+  {
+    "text": "오늘은 번역하려고 결제한 AI로,",
+    "startMs": 570,
+    "endMs": 2612,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "제가 어떻게 출석 앱을 만들기 시작했는지 이야기해볼게요.",
+    "startMs": 3053,
+    "endMs": 6276,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "시작할 때는 코딩이라는 걸 전혀 몰랐습니다.",
+    "startMs": 7017,
+    "endMs": 9960,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "2026년 6월 2일, 클로드를 처음 결제했습니다.",
+    "startMs": 10415,
+    "endMs": 13630,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "그날 제가 원했던 건 딱 하나였어요.",
+    "startMs": 14199,
+    "endMs": 16386,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "번역 기능을 쓰는 거였습니다.",
+    "startMs": 16939,
+    "endMs": 18718,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "당시 저는 몽골 울란바토르에 있는",
+    "startMs": 19153,
+    "endMs": 21736,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "스카이라인에듀라는 학원에서 부원장으로 일하고 있었어요.",
+    "startMs": 22176,
+    "endMs": 25760,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "솔직히 친구도 없고, 좀 심심했습니다.",
+    "startMs": 26461,
+    "endMs": 29984,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "그러다 요즘 AI가 화제라는 이야기를 들었고,",
+    "startMs": 30380,
+    "endMs": 32845,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "저도 써보기 시작한 거죠.",
+    "startMs": 33667,
+    "endMs": 35109,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "처음에는 번역이 필요할 때 가끔씩 썼습니다.",
+    "startMs": 35510,
+    "endMs": 38997,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "그러다 학생 문의가 갑자기 많아졌어요.",
+    "startMs": 39400,
+    "endMs": 41966,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "앞으로 관리가 어려워질 수도 있겠다는 생각이 들었습니다.",
+    "startMs": 42528,
+    "endMs": 45335,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "그때 출석 앱을 떠올렸어요.",
+    "startMs": 45976,
+    "endMs": 48242,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "당시 학원에는 출석을 관리하는 시스템이 없었거든요.",
+    "startMs": 48667,
+    "endMs": 52209,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "학생이 도착하고 수업을 마치고 나갈 때,",
+    "startMs": 52929,
+    "endMs": 55410,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "부모님께 알림이 가면 좋겠다고 생각했어요.",
+    "startMs": 55851,
+    "endMs": 58832,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "학생을 관리하기도 편하고, 학부모님도 학원을 더 믿을 수 있겠다고요.",
+    "startMs": 59248,
+    "endMs": 63466,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "함께 일하는 선생님들의 일도 조금 편해지면 좋겠고요.",
+    "startMs": 64115,
+    "endMs": 67388,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "그렇게 번역에 쓰던 클로드에게 물어보면서,",
+    "startMs": 67780,
+    "endMs": 70143,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "글라이드와 구글 시트로 출석 웹앱을 만들기 시작했습니다.",
+    "startMs": 70683,
+    "endMs": 74067,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "학원에서 쓸 걸 직접 만들어보자고요.",
+    "startMs": 74908,
+    "endMs": 77671,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "그런데 저는 개발도, 코딩도 전혀 몰랐습니다.",
+    "startMs": 78100,
+    "endMs": 81305,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "클로드 코드나 코덱스가 뭘 하는 건지도 모르는,",
+    "startMs": 82146,
+    "endMs": 84790,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "말 그대로 완전 초보였어요.",
+    "startMs": 85051,
+    "endMs": 87334,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "출석 앱을 만들겠다고 시작했는데,",
+    "startMs": 87767,
+    "endMs": 89709,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "정작 도구 설정부터 헤매고 있었던 거죠.",
+    "startMs": 90469,
+    "endMs": 93392,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "뭘 눌러야 다음으로 가는지부터 알아야 했습니다.",
+    "startMs": 94192,
+    "endMs": 97295,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "제가 할 수 있는 방법은 이랬어요.",
+    "startMs": 97660,
+    "endMs": 99323,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "화면을 찍습니다.",
+    "startMs": 99964,
+    "endMs": 100865,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "클로드한테 물어봅니다.",
+    "startMs": 101506,
+    "endMs": 102667,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "알려주는 대로 따라 해봅니다.",
+    "startMs": 102968,
+    "endMs": 104350,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "다음 화면이 나오면, 또 찍어요.",
+    "startMs": 104630,
+    "endMs": 106934,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "한 장 찍고, 또 한 장 찍으면서 한 단계씩 넘어갔습니다.",
+    "startMs": 107387,
+    "endMs": 111072,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "이것만 하면 다음으로 갈 수 있겠는데, 싶었어요.",
+    "startMs": 111814,
+    "endMs": 114357,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "그다음에는 또 다음이 있었고요.",
+    "startMs": 115279,
+    "endMs": 118022,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "돌이켜 보면, 수업 시간을 빼고도 하루에 열일곱,",
+    "startMs": 118413,
+    "endMs": 121698,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "열여덟 시간은 이 앱만 붙잡고 있었던 것 같아요.",
+    "startMs": 121698,
+    "endMs": 124742,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "어느새 시간을 거의 전부 여기에 쓰고 있었습니다.",
+    "startMs": 125082,
+    "endMs": 128647,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "심심함은 해결됐어요.",
+    "startMs": 129068,
+    "endMs": 130474,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "출석 앱은 계속 만드는 중이었고요.",
+    "startMs": 131238,
+    "endMs": 133889,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "지금 다시 시작한다면, 처음 요청은 이렇게 해보고 싶어요.",
+    "startMs": 134681,
+    "endMs": 138885,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "선생님이 학생의 출석을 기록하는 걸 만들고 싶어.",
+    "startMs": 139320,
+    "endMs": 142064,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "나는 개발을 처음 해.",
+    "startMs": 142985,
+    "endMs": 144306,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "가장 작은 첫 단계부터 설명해줘.",
+    "startMs": 144767,
+    "endMs": 147210,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "부모님께 알림도 보내고 싶지만,",
+    "startMs": 147633,
+    "endMs": 149438,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "우선 출석 하나를 남기는 것부터요.",
+    "startMs": 149779,
+    "endMs": 151964,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "여러분도 반복해서 불편했던 일을 하나 떠올려보세요.",
+    "startMs": 152525,
+    "endMs": 156033,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "누가 무엇을 할 수 있으면 좋겠는지 적고,",
+    "startMs": 156507,
+    "endMs": 158771,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "AI에게 첫 단계를 물어보는 겁니다.",
+    "startMs": 159492,
+    "endMs": 161535,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "답을 읽어도 뭘 해야 할지 모르겠다면,",
+    "startMs": 162056,
+    "endMs": 164160,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "그 부분부터 다시 물어봐도 되고요.",
+    "startMs": 164440,
+    "endMs": 167024,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "저는 이렇게 첫 앱을 만들기 시작했습니다.",
+    "startMs": 167437,
+    "endMs": 169680,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "앞으로 어디서 막혔고 어떻게 풀었는지,",
+    "startMs": 170086,
+    "endMs": 172130,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "여러분도 하나씩 따라 해볼 수 있게 이야기해볼게요.",
+    "startMs": 172474,
+    "endMs": 175008,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "다음 편은 도구를 켜고 설정하는 데서부터 헤맸던 이야기입니다.",
+    "startMs": 175291,
+    "endMs": 179510,
+    "timestampMs": null,
+    "confidence": null
+  }
+]

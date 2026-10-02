@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "1e0bf4f6-a9aa-4061-96f4-fcb3d2e15b0e",
+  "narration": "좋아요. 같이 가요.",
+  "narrationSha256": "37341c668e6eec93e41a0cfae182e8ae13bb04c2dc72413e15a9b93d464837ad",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-37341c668e6eec93.wav",
+  "duration": 2.72,
+  "sha256": "fe9b97a307ea4a385bb1166548392c8e91746778b30157965a54ac37551c6fef",
+  "humanListening": false,
+  "fullDecode": true
+}

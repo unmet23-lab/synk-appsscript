@@ -1,0 +1,24 @@
+{
+  "pages": 4,
+  "pdf_bytes": 897601,
+  "render_dpi": 120,
+  "rendered_all_pages": true,
+  "visual_review": "All four pages inspected after final render. No clipping, overlap, broken Korean glyphs, or missing images observed.",
+  "embedded_fonts": [
+    "SUIT-Regular",
+    "SUIT-Bold"
+  ],
+  "image_source": "Four actual AI-generated example images; original also AI-generated; content unchanged; PDF JPEG derivatives only.",
+  "text_characters_by_page": [
+    452,
+    744,
+    549,
+    614
+  ],
+  "preview": "guide-preview.png",
+  "font_embedding_verified": {
+    "/Helvetica": false,
+    "/AAAAAA+SUITVariable-Thin": true,
+    "/AAAAAB+SUITVariable-Thin": true
+  }
+}

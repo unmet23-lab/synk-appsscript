@@ -1,0 +1,38 @@
+{
+  "before": [
+    {
+      "name": "X74.png",
+      "size": [
+        128,
+        128
+      ],
+      "sha256": "4047bac8697ffe9c0e02d50dc5646c2c805697837704fce65a4aafa302d16a6e"
+    },
+    {
+      "name": "X189.png",
+      "size": [
+        256,
+        256
+      ],
+      "sha256": "adccf2fd4d9d061d2412df8dcb7c16d18236074c9f695abafdaa3a7e576bbb17"
+    }
+  ],
+  "after": [
+    {
+      "name": "X74.png",
+      "size": [
+        128,
+        128
+      ],
+      "sha256": "4047bac8697ffe9c0e02d50dc5646c2c805697837704fce65a4aafa302d16a6e"
+    },
+    {
+      "name": "X189.png",
+      "size": [
+        256,
+        256
+      ],
+      "sha256": "c4efe26c15299a0242ea95e984a1413cf6da5d6faafc51b9aee8210eae54fda6"
+    }
+  ]
+}

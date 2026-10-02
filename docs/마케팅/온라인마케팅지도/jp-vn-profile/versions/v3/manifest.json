@@ -1,0 +1,130 @@
+{
+  "revision": "2026-09-20-jp-vn-fun-and-use-v2",
+  "createdAt": "2026-09-19T22:13:37.433Z",
+  "sourceSvg": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\프로필최신화_20260919\\커버_펠트글래스_v4\\lab-youtube.svg",
+  "sourceSha256": "ff286fccadbad7dd5308d745f1b202f89c4b21e41cd8a8b26da5cb7405210e49",
+  "profileSource": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\온라인마케팅지도\\jp-vn-profile\\kkamong-profile-v3-closeup.png",
+  "profileRevision": "2026-09-20-kkamong-face-closeup-v3",
+  "profileSha256": "3419ae0f69c877d2e66a0347cc69382d7d693ab4359acc2c1308f7384214941f",
+  "profileBytes": 2353025,
+  "profileDimensions": [1254, 1254],
+  "fontNote": "Inter Tight and SUIT retained; Japanese-only glyphs use installed Yu Gothic Bold/Medium because the brand font set does not cover Japanese. Outlined, no OS fallback at export.",
+  "outputs": [
+    {
+      "id": "lab-jp-youtube",
+      "file": "lab-jp-youtube.png",
+      "sha256": "124eb53be195fa128e3d0a4dc42a83d7ca8d4fb095705ee8e932301c82cdb2fc",
+      "bytes": 490225,
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "visibleCenterY": 720,
+      "text": [
+        {
+          "text": "JAPAN",
+          "x": 878,
+          "y": 597.9207382674379,
+          "w": 105.3675,
+          "h": 23.59375,
+          "fonts": [
+            "latin500"
+          ]
+        },
+        {
+          "text": "韓国語が楽しくなる場所",
+          "x": 580,
+          "y": 675.667051469685,
+          "w": 830,
+          "h": 71.40305471512413,
+          "fonts": [
+            "ja700"
+          ]
+        },
+        {
+          "text": "한국어가 재밌어지는 곳",
+          "x": 580,
+          "y": 764.0701061848091,
+          "w": 442.821875,
+          "h": 45.150000000000006,
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "ハングル・日常会話・TOPIK",
+          "x": 580,
+          "y": 839.2201061848091,
+          "w": 447.75984374999985,
+          "h": 33.01171875,
+          "fonts": [
+            "ja500",
+            "latin500"
+          ]
+        }
+      ],
+      "profileSourceUnchanged": true
+    },
+    {
+      "id": "lab-vn-youtube",
+      "file": "lab-vn-youtube.png",
+      "sha256": "be9ce744f8b93c84427e780ecccdbc771858edcd2747d210dbd05204c3fd466f",
+      "bytes": 483053,
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "visibleCenterY": 720,
+      "text": [
+        {
+          "text": "VIETNAM",
+          "x": 878,
+          "y": 593.6351670358116,
+          "w": 146.30125,
+          "h": 23.28125,
+          "fonts": [
+            "latin500"
+          ]
+        },
+        {
+          "text": "Nơi học tiếng Hàn thật vui",
+          "x": 580,
+          "y": 671.2252302380589,
+          "w": 830,
+          "h": 76.0152128033767,
+          "fonts": [
+            "latin700"
+          ]
+        },
+        {
+          "text": "한국어가 재밌어지는 곳",
+          "x": 580,
+          "y": 764.2404430414356,
+          "w": 442.821875,
+          "h": 45.150000000000006,
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "Hangul · Giao tiếp · TOPIK",
+          "x": 580,
+          "y": 839.3904430414356,
+          "w": 382.6582031249999,
+          "h": 37.283203125,
+          "fonts": [
+            "latin500"
+          ]
+        }
+      ],
+      "profileSourceUnchanged": true
+    }
+  ],
+  "watermarkNote": "Existing Mongle watermark retained; new Kkamong image is only the requested channel profile photo."
+}

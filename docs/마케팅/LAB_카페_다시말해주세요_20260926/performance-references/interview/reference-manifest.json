@@ -1,0 +1,177 @@
+[
+  {
+    "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\새 폴더 (3)\\MVI_2548.MP4",
+    "startSeconds": 345.5,
+    "endSeconds": 355.5,
+    "output": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\performance-references\\interview\\MVI_2548_00345.5_00355.5_frontal-speaking-to-smile.mp4",
+    "processing": "trim only; no retiming, cropping, color correction, face or expression edits; H264/AAC compatibility transcode",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1920,
+          "height": 1080,
+          "avg_frame_rate": "60000/1001",
+          "nb_frames": "599"
+        },
+        {
+          "codec_name": "aac",
+          "avg_frame_rate": "0/0",
+          "nb_frames": "470"
+        },
+        {
+          "avg_frame_rate": "60000/1001",
+          "nb_frames": "1"
+        }
+      ],
+      "format": {
+        "duration": "10.009317",
+        "size": "16277306"
+      }
+    },
+    "fullDecodeOK": true,
+    "motionSheet": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\performance-references\\interview\\original-01-motion-sheet.jpg"
+  },
+  {
+    "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\새 폴더 (3)\\MVI_2550.MP4",
+    "startSeconds": 1098,
+    "endSeconds": 1108,
+    "output": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\performance-references\\interview\\MVI_2550_01098.0_01108.0_three-quarter-teeth-smile.mp4",
+    "processing": "trim only; no retiming, cropping, color correction, face or expression edits; H264/AAC compatibility transcode",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1920,
+          "height": 1080,
+          "avg_frame_rate": "60000/1001",
+          "nb_frames": "599"
+        },
+        {
+          "codec_name": "aac",
+          "avg_frame_rate": "0/0",
+          "nb_frames": "470"
+        },
+        {
+          "avg_frame_rate": "60000/1001",
+          "nb_frames": "1"
+        }
+      ],
+      "format": {
+        "duration": "10.009317",
+        "size": "18417089"
+      }
+    },
+    "fullDecodeOK": true,
+    "motionSheet": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\performance-references\\interview\\original-02-motion-sheet.jpg"
+  },
+  {
+    "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\새 폴더 (3)\\MVI_2548.MP4",
+    "startSeconds": 998,
+    "endSeconds": 1008,
+    "output": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\performance-references\\interview\\MVI_2548_00998.0_01008.0_frontal-ending-smile.mp4",
+    "processing": "trim only; no retiming, cropping, color correction, face or expression edits; H264/AAC compatibility transcode",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1920,
+          "height": 1080,
+          "avg_frame_rate": "60000/1001",
+          "nb_frames": "599"
+        },
+        {
+          "codec_name": "aac",
+          "avg_frame_rate": "0/0",
+          "nb_frames": "470"
+        },
+        {
+          "avg_frame_rate": "60000/1001",
+          "nb_frames": "1"
+        }
+      ],
+      "format": {
+        "duration": "10.009317",
+        "size": "13214580"
+      }
+    },
+    "fullDecodeOK": true,
+    "motionSheet": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\performance-references\\interview\\original-03-motion-sheet.jpg"
+  },
+  {
+    "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\새 폴더 (3)\\MVI_2550.MP4",
+    "startSeconds": 1110,
+    "endSeconds": 1120,
+    "output": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\performance-references\\interview\\MVI_2550_01110.0_01120.0_three-quarter-smiling-speech.mp4",
+    "processing": "trim only; no retiming, cropping, color correction, face or expression edits; H264/AAC compatibility transcode",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1920,
+          "height": 1080,
+          "avg_frame_rate": "60000/1001",
+          "nb_frames": "599"
+        },
+        {
+          "codec_name": "aac",
+          "avg_frame_rate": "0/0",
+          "nb_frames": "470"
+        },
+        {
+          "avg_frame_rate": "60000/1001",
+          "nb_frames": "1"
+        }
+      ],
+      "format": {
+        "duration": "10.009317",
+        "size": "18536472"
+      }
+    },
+    "fullDecodeOK": true,
+    "motionSheet": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\performance-references\\interview\\original-04-motion-sheet.jpg"
+  },
+  {
+    "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\새 폴더 (3)\\MVI_2548.MP4",
+    "startSeconds": 351.2,
+    "endSeconds": 358.2,
+    "output": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\performance-references\\interview\\MVI_2548_00351.2_00358.2_frontal-unoccluded-smiling-speech.mp4",
+    "processing": "trim only; no retiming, cropping, color correction, face or expression edits; H264/AAC compatibility transcode",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1920,
+          "height": 1080,
+          "avg_frame_rate": "60000/1001",
+          "nb_frames": "420"
+        },
+        {
+          "codec_name": "aac",
+          "avg_frame_rate": "0/0",
+          "nb_frames": "330"
+        },
+        {
+          "avg_frame_rate": "60000/1001",
+          "nb_frames": "1"
+        }
+      ],
+      "format": {
+        "duration": "7.007000",
+        "size": "11129624"
+      }
+    },
+    "fullDecodeOK": true,
+    "motionSheet": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\performance-references\\interview\\original-05-motion-sheet.jpg"
+  }
+]

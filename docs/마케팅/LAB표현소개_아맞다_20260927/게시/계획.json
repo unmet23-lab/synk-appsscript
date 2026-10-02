@@ -1,0 +1,84 @@
+{
+  "schema": "synk-sns-publish-plan/v1",
+  "createdAt": "2026-09-27T05:34:16.794Z",
+  "sourceRoot": "docs/마케팅/LAB표현소개_아맞다_20260927/게시",
+  "accountsFile": "docs/마케팅/sns-계정.json",
+  "accountsSha256": "6a688a7f073ca870636b2eec3b7ad33eb7fdbb7be075d8b587d15cfa9a9300b3",
+  "reviewPolicy": {
+    "defaultReview": "final-review",
+    "allowUnreviewedPublicPublishing": false,
+    "credentialStore": "windows-credential-manager",
+    "results": "next-to-plan"
+  },
+  "items": [
+    {
+      "id": "01-lab-youtube",
+      "accountKey": "lab-youtube",
+      "brand": "LAB",
+      "platform": "youtube",
+      "platformName": "YouTube",
+      "account": "@synkkorean",
+      "format": "shorts",
+      "language": "en",
+      "title": "Forgot something? Koreans say 아 맞다! (Oh, right!) #learnkorean",
+      "text": "아 맞다! (a matda) = “Oh, right!” — what Koreans say the moment they suddenly remember something.\r\n\r\n아 맞다, 우산! — Oh right, my umbrella!\r\n…아 맞다! 숙제! — …Oh right! Homework!\r\n\r\nPronunciation: 맞다 sounds like [mat-tta]. The ㅈ closes into a short “t”, and 다 becomes a tense 따.\r\n\r\nWhat do you always forget? Comment: 아 맞다, ____!\r\nSend this to a friend who always forgets 😅\r\n\r\nSYNK LAB · Korean expressions #1 — one everyday expression at a time, with Mongle.\r\n#learnkorean #koreanlanguage #studykorean",
+      "alt": [
+        "Felt mascot Mongle looks surprised under a white felt card reading 아 맞다! with the meaning “Oh, right!”"
+      ],
+      "link": "",
+      "folder": "docs/마케팅/LAB표현소개_아맞다_20260927/게시/01-lab-youtube",
+      "video": "docs/마케팅/LAB표현소개_아맞다_20260927/게시/01-lab-youtube/video.mp4",
+      "images": [],
+      "thumbnail": "docs/마케팅/LAB표현소개_아맞다_20260927/게시/01-lab-youtube/cover.png",
+      "document": null,
+      "subtitles": [],
+      "dependencies": [
+        {
+          "role": "metadata",
+          "path": "docs/마케팅/LAB표현소개_아맞다_20260927/게시/01-lab-youtube/원고.json",
+          "bytes": 1276,
+          "sha256": "460f14512dab20f99b38e1478d23671e5406cf351e3b953d527d636b50711b66",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "title",
+          "path": "docs/마케팅/LAB표현소개_아맞다_20260927/게시/01-lab-youtube/제목.txt",
+          "bytes": 67,
+          "sha256": "ad8728c4e42bef38ccdcd3e606409597aa440cecafffd3fe34f3611db1b45521",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "post-copy",
+          "path": "docs/마케팅/LAB표현소개_아맞다_20260927/게시/01-lab-youtube/게시문안.txt",
+          "bytes": 557,
+          "sha256": "10e66071aa7a45defa632daa82487549420e40c3a52bf1f2709f8d42597713c7",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "video",
+          "path": "docs/마케팅/LAB표현소개_아맞다_20260927/게시/01-lab-youtube/video.mp4",
+          "bytes": 5280123,
+          "sha256": "80ddf747b27d1fe0e5c444d64f5427eddd00794d5775f39561c18c58f97393d7",
+          "mime": "video/mp4"
+        },
+        {
+          "role": "thumbnail",
+          "path": "docs/마케팅/LAB표현소개_아맞다_20260927/게시/01-lab-youtube/cover.png",
+          "bytes": 625437,
+          "sha256": "ad534f00e9b722703e9269d5ae2d2b47ec8e58b9cd66b0466e40886d24fd2682",
+          "mime": "image/png"
+        }
+      ],
+      "contentHash": "276d8c053afe91c0710823aa4c4ab39cd3f5c664e4629e2dfd28a769b108fbe0",
+      "publisher": "direct",
+      "connection": "connected-existing",
+      "publish": {
+        "visibility": "private",
+        "publishAt": null,
+        "notifySubscribers": false
+      },
+      "approval": null,
+      "errors": []
+    }
+  ]
+}

@@ -1,0 +1,606 @@
+[
+  {
+    "id": "question",
+    "role": "barista",
+    "text": "드시고 가세요? 가지고 가세요?",
+    "provider": "Typecast",
+    "voiceName": "서현",
+    "settings": {
+      "model": "ssfm-v30",
+      "voice_id": "tc_69f2e455ea79fd197aa0476f",
+      "output": {
+        "audio_format": "wav",
+        "audio_tempo": 1.02,
+        "target_lufs": -17
+      },
+      "prompt": {
+        "emotion_type": "preset",
+        "emotion_preset": "happy",
+        "emotion_intensity": 0.75
+      }
+    },
+    "direction": "자연스럽게 선택지를 묻고 뒤 질문을 조금 올림.",
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\revision-v2\\audio\\question.wav",
+    "duration": 1.862766,
+    "words": [
+      {
+        "text": "드시고",
+        "start": 0.142,
+        "end": 0.445
+      },
+      {
+        "text": "가세요?",
+        "start": 0.506,
+        "end": 0.79
+      },
+      {
+        "text": "가지고",
+        "start": 0.952,
+        "end": 1.255
+      },
+      {
+        "text": "가세요?",
+        "start": 1.316,
+        "end": 1.863
+      }
+    ]
+  },
+  {
+    "id": "yes",
+    "role": "mongle",
+    "text": "네!",
+    "provider": "Typecast",
+    "voiceName": "도윤",
+    "settings": {
+      "model": "ssfm-v30",
+      "voice_id": "tc_6a3350f8e5a50a4abe948fa8",
+      "output": {
+        "audio_format": "wav",
+        "audio_tempo": 1.08,
+        "target_lufs": -17
+      },
+      "prompt": {
+        "emotion_type": "preset",
+        "emotion_preset": "toneup",
+        "emotion_intensity": 0.95
+      }
+    },
+    "direction": "못 알아들었는데 반사적으로 짧고 밝게 대답.",
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\revision-v2\\audio\\yes.wav",
+    "duration": 0.694444,
+    "words": [
+      {
+        "text": "네!",
+        "start": 0.204,
+        "end": 0.694
+      }
+    ]
+  },
+  {
+    "id": "thought",
+    "role": "mongle",
+    "text": "어? 나 방금 뭐라고 한 거지?",
+    "provider": "Typecast",
+    "voiceName": "도윤",
+    "settings": {
+      "model": "ssfm-v30",
+      "voice_id": "tc_6a3350f8e5a50a4abe948fa8",
+      "output": {
+        "audio_format": "wav",
+        "audio_tempo": 1,
+        "target_lufs": -17
+      },
+      "prompt": {
+        "emotion_type": "smart",
+        "previous_text": "드시고 가세요? 가지고 가세요? 네!",
+        "next_text": "잘 못 들었을 땐, 이렇게 말해 보세요."
+      }
+    },
+    "direction": "자기 대답을 뒤늦게 의심. 어? 뒤 잠깐 멈추고 작은 당황.",
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\revision-v2\\audio\\thought.wav",
+    "duration": 3,
+    "words": [
+      {
+        "text": "어?",
+        "start": 0.483,
+        "end": 0.523
+      },
+      {
+        "text": "나",
+        "start": 0.866,
+        "end": 0.966
+      },
+      {
+        "text": "방금",
+        "start": 1.168,
+        "end": 1.591
+      },
+      {
+        "text": "뭐라고",
+        "start": 1.953,
+        "end": 2.255
+      },
+      {
+        "text": "한",
+        "start": 2.315,
+        "end": 2.376
+      },
+      {
+        "text": "거지?",
+        "start": 2.436,
+        "end": 3
+      }
+    ]
+  },
+  {
+    "id": "guide",
+    "role": "guide",
+    "text": "잘 못 들었을 땐, 이렇게 말해 보세요.",
+    "provider": "Typecast",
+    "voiceName": "서현",
+    "settings": {
+      "model": "ssfm-v30",
+      "voice_id": "tc_69f2e455ea79fd197aa0476f",
+      "output": {
+        "audio_format": "wav",
+        "audio_tempo": 1,
+        "target_lufs": -17
+      },
+      "prompt": {
+        "emotion_type": "preset",
+        "emotion_preset": "happy",
+        "emotion_intensity": 0.7
+      }
+    },
+    "direction": "괜찮다는 미소와 도움의 의도.",
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\revision-v2\\audio\\guide.wav",
+    "duration": 3.55,
+    "words": [
+      {
+        "text": "잘",
+        "start": 0.201,
+        "end": 0.461
+      },
+      {
+        "text": "못",
+        "start": 0.562,
+        "end": 0.702
+      },
+      {
+        "text": "들었을",
+        "start": 0.762,
+        "end": 1.143
+      },
+      {
+        "text": "땐,",
+        "start": 1.203,
+        "end": 1.685
+      },
+      {
+        "text": "이렇게",
+        "start": 1.865,
+        "end": 2.166
+      },
+      {
+        "text": "말해",
+        "start": 2.226,
+        "end": 2.447
+      },
+      {
+        "text": "보세요.",
+        "start": 2.507,
+        "end": 3.55
+      }
+    ]
+  },
+  {
+    "id": "phrase-learn",
+    "role": "mongle",
+    "text": "다시 말해 주세요.",
+    "provider": "Typecast",
+    "voiceName": "도윤",
+    "settings": {
+      "model": "ssfm-v30",
+      "voice_id": "tc_6a3350f8e5a50a4abe948fa8",
+      "output": {
+        "audio_format": "wav",
+        "audio_tempo": 0.94,
+        "target_lufs": -17
+      },
+      "prompt": {
+        "emotion_type": "preset",
+        "emotion_preset": "normal",
+        "emotion_intensity": 1
+      }
+    },
+    "direction": "표현을 배우는 장면. 부드럽고 또렷하지만 음절별 끊기 없음.",
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\revision-v2\\audio\\phrase-learn.wav",
+    "duration": 1.59576,
+    "words": [
+      {
+        "text": "다시",
+        "start": 0.222,
+        "end": 0.485
+      },
+      {
+        "text": "말해",
+        "start": 0.545,
+        "end": 0.788
+      },
+      {
+        "text": "주세요.",
+        "start": 0.848,
+        "end": 1.596
+      }
+    ]
+  },
+  {
+    "id": "repeat",
+    "role": "guide",
+    "text": "한 번 따라 말해 볼까요?",
+    "provider": "Typecast",
+    "voiceName": "서현",
+    "settings": {
+      "model": "ssfm-v30",
+      "voice_id": "tc_69f2e455ea79fd197aa0476f",
+      "output": {
+        "audio_format": "wav",
+        "audio_tempo": 1.01,
+        "target_lufs": -17
+      },
+      "prompt": {
+        "emotion_type": "preset",
+        "emotion_preset": "happy",
+        "emotion_intensity": 0.85
+      }
+    },
+    "direction": "해볼 수 있다는 따뜻한 권유.",
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\revision-v2\\audio\\repeat.wav",
+    "duration": 1.584172,
+    "words": [
+      {
+        "text": "한",
+        "start": 0.183,
+        "end": 0.264
+      },
+      {
+        "text": "번",
+        "start": 0.325,
+        "end": 0.427
+      },
+      {
+        "text": "따라",
+        "start": 0.487,
+        "end": 0.63
+      },
+      {
+        "text": "말해",
+        "start": 0.691,
+        "end": 0.894
+      },
+      {
+        "text": "볼까요?",
+        "start": 0.955,
+        "end": 1.584
+      }
+    ]
+  },
+  {
+    "id": "phrase-retry",
+    "role": "mongle",
+    "text": "다시 말해 주세요.",
+    "provider": "Typecast",
+    "voiceName": "도윤",
+    "settings": {
+      "model": "ssfm-v30",
+      "voice_id": "tc_6a3350f8e5a50a4abe948fa8",
+      "output": {
+        "audio_format": "wav",
+        "audio_tempo": 0.99,
+        "target_lufs": -17
+      },
+      "prompt": {
+        "emotion_type": "smart",
+        "previous_text": "드시고 가세요? 가지고 가세요?",
+        "next_text": "여기서 드세요? 가져가세요?"
+      }
+    },
+    "direction": "직원 눈을 보고 조금 조심스럽게 실제로 부탁.",
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\revision-v2\\audio\\phrase-retry.wav",
+    "duration": 1.868707,
+    "words": [
+      {
+        "text": "다시",
+        "start": 0.402,
+        "end": 0.663
+      },
+      {
+        "text": "말해",
+        "start": 0.723,
+        "end": 0.904
+      },
+      {
+        "text": "주세요.",
+        "start": 0.964,
+        "end": 1.869
+      }
+    ]
+  },
+  {
+    "id": "easy-question",
+    "role": "barista",
+    "text": "여기서 드세요? 가져가세요?",
+    "provider": "Typecast",
+    "voiceName": "서현",
+    "settings": {
+      "model": "ssfm-v30",
+      "voice_id": "tc_69f2e455ea79fd197aa0476f",
+      "output": {
+        "audio_format": "wav",
+        "audio_tempo": 0.96,
+        "target_lufs": -17
+      },
+      "prompt": {
+        "emotion_type": "smart",
+        "previous_text": "다시 말해 주세요.",
+        "next_text": "여기서 먹을게요."
+      }
+    },
+    "direction": "아, 못 들으셨구나. 알아듣도록 두 선택지를 부드럽게 분리.",
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\revision-v2\\audio\\easy-question.wav",
+    "duration": 2.812517,
+    "words": [
+      {
+        "text": "여기서",
+        "start": 0.422,
+        "end": 0.783
+      },
+      {
+        "text": "드세요?",
+        "start": 1.366,
+        "end": 1.688
+      },
+      {
+        "text": "가져가세요?",
+        "start": 1.808,
+        "end": 2.812
+      }
+    ]
+  },
+  {
+    "id": "eat",
+    "role": "mongle",
+    "text": "여기서 먹을게요.",
+    "provider": "Typecast",
+    "voiceName": "도윤",
+    "settings": {
+      "model": "ssfm-v30",
+      "voice_id": "tc_6a3350f8e5a50a4abe948fa8",
+      "output": {
+        "audio_format": "wav",
+        "audio_tempo": 1.03,
+        "target_lufs": -17
+      },
+      "prompt": {
+        "emotion_type": "preset",
+        "emotion_preset": "happy",
+        "emotion_intensity": 0.85
+      }
+    },
+    "direction": "이제 알아들어서 표정이 밝아짐. 안도 섞인 짧은 답.",
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\revision-v2\\audio\\eat.wav",
+    "duration": 1.747574,
+    "words": [
+      {
+        "text": "여기서",
+        "start": 0.422,
+        "end": 0.703
+      },
+      {
+        "text": "먹을게요.",
+        "start": 0.763,
+        "end": 1.748
+      }
+    ]
+  },
+  {
+    "id": "receipt",
+    "role": "barista",
+    "text": "영수증 드릴까요?",
+    "provider": "Typecast",
+    "voiceName": "서현",
+    "settings": {
+      "model": "ssfm-v30",
+      "voice_id": "tc_69f2e455ea79fd197aa0476f",
+      "output": {
+        "audio_format": "wav",
+        "audio_tempo": 1.01,
+        "target_lufs": -17
+      },
+      "prompt": {
+        "emotion_type": "preset",
+        "emotion_preset": "happy",
+        "emotion_intensity": 0.75
+      }
+    },
+    "direction": "작은 배려가 담긴 서비스 질문.",
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\revision-v2\\audio\\receipt.wav",
+    "duration": 1.7822,
+    "words": [
+      {
+        "text": "영수증",
+        "start": 0.486,
+        "end": 0.952
+      },
+      {
+        "text": "드릴까요?",
+        "start": 1.013,
+        "end": 1.782
+      }
+    ]
+  },
+  {
+    "id": "your-turn",
+    "role": "guide",
+    "text": "이번엔 직접 말해 보세요.",
+    "provider": "Typecast",
+    "voiceName": "서현",
+    "settings": {
+      "model": "ssfm-v30",
+      "voice_id": "tc_69f2e455ea79fd197aa0476f",
+      "output": {
+        "audio_format": "wav",
+        "audio_tempo": 1,
+        "target_lufs": -17
+      },
+      "prompt": {
+        "emotion_type": "preset",
+        "emotion_preset": "happy",
+        "emotion_intensity": 0.8
+      }
+    },
+    "direction": "연습을 믿고 맡기는 밝고 편안한 격려.",
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\revision-v2\\audio\\your-turn.wav",
+    "duration": 2.3,
+    "words": [
+      {
+        "text": "이번엔",
+        "start": 0.323,
+        "end": 0.605
+      },
+      {
+        "text": "직접",
+        "start": 0.666,
+        "end": 0.989
+      },
+      {
+        "text": "말해",
+        "start": 1.049,
+        "end": 1.251
+      },
+      {
+        "text": "보세요.",
+        "start": 1.311,
+        "end": 2.3
+      }
+    ]
+  },
+  {
+    "id": "phrase-ending",
+    "role": "mongle",
+    "text": "다시 말해 주세요.",
+    "provider": "Typecast",
+    "voiceName": "도윤",
+    "settings": {
+      "model": "ssfm-v30",
+      "voice_id": "tc_6a3350f8e5a50a4abe948fa8",
+      "output": {
+        "audio_format": "wav",
+        "audio_tempo": 1.02,
+        "target_lufs": -17
+      },
+      "prompt": {
+        "emotion_type": "smart",
+        "previous_text": "영수증 드릴까요?",
+        "next_text": "영수증 필요하세요?"
+      }
+    },
+    "direction": "두 번째 부탁은 조금 더 편안하고 자신 있게.",
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\revision-v2\\audio\\phrase-ending.wav",
+    "duration": 1.862766,
+    "words": [
+      {
+        "text": "다시",
+        "start": 0.283,
+        "end": 0.547
+      },
+      {
+        "text": "말해",
+        "start": 0.607,
+        "end": 0.81
+      },
+      {
+        "text": "주세요.",
+        "start": 0.992,
+        "end": 1.863
+      }
+    ]
+  },
+  {
+    "id": "easy-receipt",
+    "role": "barista",
+    "text": "영수증 필요하세요?",
+    "provider": "Typecast",
+    "voiceName": "서현",
+    "settings": {
+      "model": "ssfm-v30",
+      "voice_id": "tc_69f2e455ea79fd197aa0476f",
+      "output": {
+        "audio_format": "wav",
+        "audio_tempo": 0.98,
+        "target_lufs": -17
+      },
+      "prompt": {
+        "emotion_type": "smart",
+        "previous_text": "다시 말해 주세요.",
+        "next_text": "아, 괜찮아요. 감사합니다!"
+      }
+    },
+    "direction": "핵심을 짚어 짧고 친절하게 풀어 묻기.",
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\revision-v2\\audio\\easy-receipt.wav",
+    "duration": 1.530635,
+    "words": [
+      {
+        "text": "영수증",
+        "start": 0.222,
+        "end": 0.624
+      },
+      {
+        "text": "필요하세요?",
+        "start": 0.685,
+        "end": 1.531
+      }
+    ]
+  },
+  {
+    "id": "thanks",
+    "role": "mongle",
+    "text": "아, 괜찮아요. 감사합니다!",
+    "provider": "Typecast",
+    "voiceName": "도윤",
+    "settings": {
+      "model": "ssfm-v30",
+      "voice_id": "tc_6a3350f8e5a50a4abe948fa8",
+      "output": {
+        "audio_format": "wav",
+        "audio_tempo": 1.04,
+        "target_lufs": -17
+      },
+      "prompt": {
+        "emotion_type": "preset",
+        "emotion_preset": "happy",
+        "emotion_intensity": 1.05
+      }
+    },
+    "direction": "아!에서 이해가 드러나고, 감사 인사에 안도와 미소.",
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\revision-v2\\audio\\thanks.wav",
+    "duration": 2.163469,
+    "words": [
+      {
+        "text": "아,",
+        "start": 0.202,
+        "end": 0.222
+      },
+      {
+        "text": "괜찮아요.",
+        "start": 0.586,
+        "end": 1.072
+      },
+      {
+        "text": "감사합니다!",
+        "start": 1.153,
+        "end": 2.163
+      }
+    ]
+  }
+]

@@ -1,0 +1,101 @@
+{
+  "pdf": {
+    "pages": 5,
+    "sizePoints": [
+      960,
+      540
+    ],
+    "sha256": "8b9edcbcf5c0f8f74d272660a4f7ff690df43ae69ca6e1985bbab4711fad6c40",
+    "kind": "공유용 이미지 기반 PDF. 편집과 텍스트 검색은 PPTX 사용.",
+    "renderedWith": "Poppler"
+  },
+  "pptx": [
+    {
+      "filename": "AI_프로필_소개자료_양식.pptx",
+      "slides": [
+        {
+          "part": "ppt/slides/slide1.xml",
+          "nativeTextBoxes": 7,
+          "nativePictures": 2,
+          "textCharacters": 101
+        },
+        {
+          "part": "ppt/slides/slide2.xml",
+          "nativeTextBoxes": 7,
+          "nativePictures": 2,
+          "textCharacters": 160
+        },
+        {
+          "part": "ppt/slides/slide3.xml",
+          "nativeTextBoxes": 13,
+          "nativePictures": 2,
+          "textCharacters": 212
+        },
+        {
+          "part": "ppt/slides/slide4.xml",
+          "nativeTextBoxes": 13,
+          "nativePictures": 2,
+          "textCharacters": 158
+        },
+        {
+          "part": "ppt/slides/slide5.xml",
+          "nativeTextBoxes": 7,
+          "nativePictures": 2,
+          "textCharacters": 120
+        },
+        {
+          "part": "ppt/slides/slide6.xml",
+          "nativeTextBoxes": 13,
+          "nativePictures": 2,
+          "textCharacters": 163
+        },
+        {
+          "part": "ppt/slides/slide7.xml",
+          "nativeTextBoxes": 6,
+          "nativePictures": 2,
+          "textCharacters": 108
+        }
+      ],
+      "notesCount": 7,
+      "sha256": "cb42fb7730a24ecd7eb4b1cf69df5d3c6956df540fe92e3e19a876b473524370"
+    },
+    {
+      "filename": "유호_프로필_소개자료_예시.pptx",
+      "slides": [
+        {
+          "part": "ppt/slides/slide1.xml",
+          "nativeTextBoxes": 6,
+          "nativePictures": 3,
+          "textCharacters": 85
+        },
+        {
+          "part": "ppt/slides/slide2.xml",
+          "nativeTextBoxes": 6,
+          "nativePictures": 3,
+          "textCharacters": 153
+        },
+        {
+          "part": "ppt/slides/slide3.xml",
+          "nativeTextBoxes": 13,
+          "nativePictures": 2,
+          "textCharacters": 174
+        },
+        {
+          "part": "ppt/slides/slide4.xml",
+          "nativeTextBoxes": 8,
+          "nativePictures": 4,
+          "textCharacters": 138
+        },
+        {
+          "part": "ppt/slides/slide5.xml",
+          "nativeTextBoxes": 6,
+          "nativePictures": 2,
+          "textCharacters": 76
+        }
+      ],
+      "notesCount": 5,
+      "sha256": "7ea03a3597d3fb82c29a83e613538d1fa2fdc4100541a7ad97df82d2d948e820"
+    }
+  ],
+  "nativePowerPointExecutionVerified": false
+}

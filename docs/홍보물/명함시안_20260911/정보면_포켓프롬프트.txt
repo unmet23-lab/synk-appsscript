@@ -1,0 +1,26 @@
+Use case: compositing
+Asset type: Background artwork for a premium SYNK business-card INFORMATION SIDE, flat horizontal 9:5 ratio. This is a precise design asset onto which real typography will be added separately.
+
+References:
+Image 1: existing information-side layout, scale and warm Paper color ONLY. REMOVE ALL its text and its existing top-right black logo. Leave the left area completely blank.
+Image 2: exact Mongle mascot identity: coral felt bell/ghost, black bead eyes, scalloped peach stitched hem, no mouth, no nose, no eyebrows, no arms.
+Image 3: exact Kkamong mascot identity: fluffy dark chestnut catlike creature, short ears, green-ringed glossy black bead eyes, little existing limbs, coral stitched tail patch. No mouth, no additional anatomy.
+Image 4: exact Marin identity: indigo felt helmet, two MATTE yellow oval felt lenses with no pupils and no glints, beige wool body, little limbs and flower at its shoulder pocket.
+Image 5: authoritative warm ivory Paper lowercase synk wordmark, preserve its distinctive geometry, tall k ascender and descending y. NO stitches on the four synk letters.
+
+Create ONE exquisite signature scene ONLY in the RIGHT THIRD of the card:
+A tailored dark warm Ink (#2B2320) needle-felt open-top pocket, like an artisanal fabric card sleeve, sits in the lower-right area. A simple tall rounded rectangle with substantial felt thickness, carefully sewn peach running stitches along its side and bottom edges, clean craft finish, softly rounded bottom corners. The pocket's front is beautiful dense matte wool with the small approved ivory synk wordmark applied to it, centered in its lower-middle. Keep the wordmark unstretched, unstitched, recognizable and crisp.
+The three official mascots are huddled affectionately INSIDE the top of this pocket, peeking over the rim. A small charming shared scene rather than a repeated big lineup: Kkamong slightly behind on the left, Mongle in the middle, Marin slightly higher on the right. All three complete faces remain clearly visible, unique and recognizable. Their upper bodies naturally disappear behind the pocket's front; rim and bodies have believable contact/occlusion. No dangling disembodied limbs, no extra hands, no forced cartoon facial expressions. Keep their wool, fur and eye materials distinct. The figures feel alive, familiar, lovable and hand-crafted.
+This should look like a sophisticated collector's textile detail on a contemporary identity card, with controlled warmth and character.
+
+Exact composition constraints:
+- Entire LEFT 58 percent of the canvas is EMPTY smooth warm ivory Paper (#FBF7F0). No letters, objects, lines, shadows, fibers, tint panels or decorations in this reserved text area.
+- ALL the pocket, characters and their soft shadows are inside x = 62% to 96% of the canvas. Maintain a calm ivory gap separating this scene from the blank left area.
+- Mascot heads can start around y = 14%, and the pocket ends around y = 89%. Pocket itself occupies roughly y = 44% to 89%, width about 31% of the full card.
+- All elements are contained within the card; no cropping at the outer edge. Pocket is not huge. It must not take over the information side.
+- Background is the same near-flat fine ivory matte Paper across the entire canvas, with no texture noise behind future text. No boxed panel behind the pocket.
+- Straight-on design plane, not an angled desk mockup. Unified warm broad softbox light from upper-left, delicate realistic contact shadows; everything feels gently grounded on the same plane.
+
+Rendering: Very high detail, premium tactile wool microfibers and real fine stitches, plush natural chestnut fur, gorgeous controlled neutral and brand colors. Dense needle-felt, NOT knitting/crochet/towel loops. Deep charcoal brown felt, not pure black. Ivory wordmark, not metallic white. Keep richly textured 3D volume without harsh contrast, over-sharpening, plasticky surfaces or cutout halos.
+
+ONLY allowed visible text: the small lowercase "synk" ONCE on the pocket. No name, role, contact data, LAB, SHIFT, PULSE, numbers, annotations, watermarks, gold or new emblem.

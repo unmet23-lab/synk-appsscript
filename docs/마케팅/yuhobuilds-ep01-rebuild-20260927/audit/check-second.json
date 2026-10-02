@@ -1,0 +1,1337 @@
+{
+  "ok": false,
+  "strict": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "filesScanned": 11
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": false,
+    "errorCount": 14,
+    "warningCount": 1,
+    "infoCount": 26,
+    "findings": [
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 2.374,
+        "selector": "#hook-app > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 133.92,
+          "top": 689.78,
+          "right": 335.35,
+          "bottom": 737.19,
+          "width": 201.43,
+          "height": 47.41
+        },
+        "containerSelector": "#hook-blank",
+        "text": "만들고 싶었던 것",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/hook.html",
+        "bbox": {
+          "x": 133.92,
+          "y": 689.78,
+          "width": 201.43,
+          "height": 47.41
+        },
+        "firstSeen": 2.374,
+        "lastSeen": 6.621,
+        "occurrences": 36,
+        "heldMs": 4247
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 2.374,
+        "selector": "#hook-app > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 136.91,
+          "top": 742.53,
+          "right": 420.9,
+          "bottom": 851.03,
+          "width": 283.99,
+          "height": 108.5
+        },
+        "containerSelector": "#hook-blank",
+        "text": "출석 기록",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/hook.html",
+        "bbox": {
+          "x": 136.91,
+          "y": 742.53,
+          "width": 283.99,
+          "height": 108.5
+        },
+        "firstSeen": 2.374,
+        "lastSeen": 6.621,
+        "occurrences": 36,
+        "heldMs": 4247
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 10.119,
+        "selector": "#origin-title > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 76,
+          "top": 254,
+          "right": 470.53,
+          "bottom": 374,
+          "width": 394.53,
+          "height": 120
+        },
+        "containerSelector": "#origin-inquiries > div:nth-of-type(1)",
+        "text": "번역하려고",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/origin.html",
+        "bbox": {
+          "x": 76,
+          "y": 254,
+          "width": 394.53,
+          "height": 120
+        },
+        "firstSeen": 10.119,
+        "lastSeen": 12.742,
+        "occurrences": 22,
+        "heldMs": 2623.000000000001
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 10.119,
+        "selector": "#origin-title > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 76,
+          "top": 362.47,
+          "right": 451.03,
+          "bottom": 482.47,
+          "width": 375.03,
+          "height": 120
+        },
+        "containerSelector": "#origin-inquiries > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "시작한 AI.",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/origin.html",
+        "bbox": {
+          "x": 76,
+          "y": 362.47,
+          "width": 375.03,
+          "height": 120
+        },
+        "firstSeen": 10.119,
+        "lastSeen": 12.742,
+        "occurrences": 22,
+        "heldMs": 2623.000000000001
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 10.119,
+        "selector": "#origin-receipt > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 154,
+          "top": 666,
+          "right": 552.59,
+          "bottom": 703,
+          "width": 398.59,
+          "height": 37
+        },
+        "containerSelector": "#origin-inquiries > div:nth-of-type(2)",
+        "text": "2026.06.02 · 첫 Claude 결제",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/origin.html",
+        "bbox": {
+          "x": 154,
+          "y": 666,
+          "width": 398.59,
+          "height": 37
+        },
+        "firstSeen": 10.119,
+        "lastSeen": 12.742,
+        "occurrences": 22,
+        "heldMs": 2623.000000000001
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 10.619,
+        "selector": "#origin-receipt > div:nth-of-type(2) > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 154,
+          "top": 749.5,
+          "right": 241.41,
+          "bottom": 874.5,
+          "width": 87.41,
+          "height": 125
+        },
+        "containerSelector": "#origin-note2",
+        "text": "가",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/origin.html",
+        "bbox": {
+          "x": 154,
+          "y": 749.5,
+          "width": 87.41,
+          "height": 125
+        },
+        "firstSeen": 10.619,
+        "lastSeen": 12.742,
+        "occurrences": 18,
+        "heldMs": 2123.000000000001
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 10.619,
+        "selector": "#origin-receipt > div:nth-of-type(2) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 268.41,
+          "top": 776.5,
+          "right": 325.41,
+          "bottom": 847.5,
+          "width": 57,
+          "height": 71
+        },
+        "containerSelector": "#origin-note2",
+        "text": "→",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/origin.html",
+        "bbox": {
+          "x": 268.41,
+          "y": 776.5,
+          "width": 57,
+          "height": 71
+        },
+        "firstSeen": 10.619,
+        "lastSeen": 12.742,
+        "occurrences": 18,
+        "heldMs": 2123.000000000001
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 10.619,
+        "selector": "#origin-receipt > div:nth-of-type(2) > div:nth-of-type(3)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 352.41,
+          "top": 758,
+          "right": 423.2,
+          "bottom": 872,
+          "width": 70.79,
+          "height": 114
+        },
+        "containerSelector": "#origin-note2",
+        "text": "А",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/origin.html",
+        "bbox": {
+          "x": 352.41,
+          "y": 758,
+          "width": 70.79,
+          "height": 114
+        },
+        "firstSeen": 10.619,
+        "lastSeen": 12.742,
+        "occurrences": 18,
+        "heldMs": 2123.000000000001
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 18.114,
+        "selector": "#monster-base > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 153,
+          "top": 723,
+          "right": 620.73,
+          "bottom": 825,
+          "width": 467.73,
+          "height": 102
+        },
+        "containerSelector": "#monster-f1 > span:nth-of-type(1)",
+        "text": "학생 출석 기록",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/monster.html",
+        "bbox": {
+          "x": 153,
+          "y": 723,
+          "width": 467.73,
+          "height": 102
+        },
+        "firstSeen": 18.114,
+        "lastSeen": 24.735,
+        "occurrences": 55,
+        "heldMs": 6620.999999999999
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 18.864,
+        "selector": "#monster-base > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 153,
+          "top": 723,
+          "right": 620.73,
+          "bottom": 825,
+          "width": 467.73,
+          "height": 102
+        },
+        "containerSelector": "#monster-f2 > span:nth-of-type(1)",
+        "text": "학생 출석 기록",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/monster.html",
+        "bbox": {
+          "x": 153,
+          "y": 723,
+          "width": 467.73,
+          "height": 102
+        },
+        "firstSeen": 18.864,
+        "lastSeen": 24.735,
+        "occurrences": 49,
+        "heldMs": 5870.999999999999
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 21.737,
+        "selector": "#monster-title > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 76,
+          "top": 254,
+          "right": 564.88,
+          "bottom": 374,
+          "width": 488.88,
+          "height": 120
+        },
+        "containerSelector": "#monster-stop > div:nth-of-type(1)",
+        "text": "이것도 넣고…",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/monster.html",
+        "bbox": {
+          "x": 76,
+          "y": 254,
+          "width": 488.88,
+          "height": 120
+        },
+        "firstSeen": 21.737,
+        "lastSeen": 24.735,
+        "occurrences": 26,
+        "heldMs": 2998.000000000001
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 21.737,
+        "selector": "#monster-title > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 76,
+          "top": 362.47,
+          "right": 564.88,
+          "bottom": 482.47,
+          "width": 488.88,
+          "height": 120
+        },
+        "containerSelector": "#monster-stop > div:nth-of-type(1)",
+        "text": "저것도 넣고…",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/monster.html",
+        "bbox": {
+          "x": 76,
+          "y": 362.47,
+          "width": 488.88,
+          "height": 120
+        },
+        "firstSeen": 21.737,
+        "lastSeen": 24.735,
+        "occurrences": 26,
+        "heldMs": 2998.000000000001
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 21.737,
+        "selector": "#monster-title > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 76,
+          "top": 362.47,
+          "right": 564.88,
+          "bottom": 482.47,
+          "width": 488.88,
+          "height": 120
+        },
+        "containerSelector": "#monster-stop > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "저것도 넣고…",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/monster.html",
+        "bbox": {
+          "x": 76,
+          "y": 362.47,
+          "width": 488.88,
+          "height": 120
+        },
+        "firstSeen": 21.737,
+        "lastSeen": 24.735,
+        "occurrences": 26,
+        "heldMs": 2998.000000000001
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 21.737,
+        "selector": "#monster-f3 > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 804.08,
+          "top": 903.75,
+          "right": 872.95,
+          "bottom": 1013.79,
+          "width": 68.87,
+          "height": 110.04
+        },
+        "containerSelector": "#monster-stop > div:nth-of-type(3)",
+        "text": "+",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/monster.html",
+        "bbox": {
+          "x": 804.08,
+          "y": 903.75,
+          "width": 68.87,
+          "height": 110.04
+        },
+        "firstSeen": 21.737,
+        "lastSeen": 24.735,
+        "occurrences": 26,
+        "heldMs": 2998.000000000001
+      },
+      {
+        "code": "content_overlap",
+        "severity": "warning",
+        "time": 34.355,
+        "selector": "#demo-button",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 417.02,
+          "top": 919,
+          "right": 580.97,
+          "bottom": 973,
+          "width": 163.95,
+          "height": 54
+        },
+        "containerSelector": "#demo-reopen > span:nth-of-type(1)",
+        "text": "출석 저장",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/demo.html",
+        "bbox": {
+          "x": 417.02,
+          "y": 919,
+          "width": 163.95,
+          "height": 54
+        },
+        "firstSeen": 34.355,
+        "lastSeen": 34.854,
+        "occurrences": 6,
+        "heldMs": 499.00000000000233
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3.137,
+        "selector": "#hook-app > div:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 133.92,
+          "top": 689.78,
+          "right": 335.35,
+          "bottom": 737.19,
+          "width": 201.43,
+          "height": 47.4
+        },
+        "containerSelector": "#hook-blank",
+        "text": "만들고 싶었던 것",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/hook.html",
+        "bbox": {
+          "x": 133.92,
+          "y": 689.78,
+          "width": 201.43,
+          "height": 47.4
+        },
+        "firstSeen": 3.137,
+        "lastSeen": 3.137,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3.137,
+        "selector": "#hook-app > div:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 136.91,
+          "top": 742.53,
+          "right": 420.9,
+          "bottom": 851.03,
+          "width": 283.99,
+          "height": 108.5
+        },
+        "containerSelector": "#hook-blank",
+        "text": "출석 기록",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 0.67,
+        "dataAttributes": {},
+        "sourceFile": "compositions/hook.html",
+        "bbox": {
+          "x": 136.91,
+          "y": 742.53,
+          "width": 283.99,
+          "height": 108.5
+        },
+        "firstSeen": 3.137,
+        "lastSeen": 3.137,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 10.119,
+        "selector": "#origin-title > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 76,
+          "top": 362.47,
+          "right": 451.03,
+          "bottom": 482.47,
+          "width": 375.03,
+          "height": 120
+        },
+        "containerSelector": "#origin-inquiries > div:nth-of-type(1)",
+        "text": "시작한 AI.",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/origin.html",
+        "bbox": {
+          "x": 76,
+          "y": 362.47,
+          "width": 375.03,
+          "height": 120
+        },
+        "firstSeen": 10.119,
+        "lastSeen": 10.119,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 21.959,
+        "selector": "#monster-title > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 76,
+          "top": 254,
+          "right": 564.88,
+          "bottom": 374,
+          "width": 488.88,
+          "height": 120
+        },
+        "containerSelector": "#monster-stop",
+        "text": "이것도 넣고…",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/monster.html",
+        "bbox": {
+          "x": 76,
+          "y": 254,
+          "width": 488.88,
+          "height": 120
+        },
+        "firstSeen": 21.959,
+        "lastSeen": 21.959,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 21.959,
+        "selector": "#monster-title > span:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 76,
+          "top": 362.47,
+          "right": 564.88,
+          "bottom": 482.47,
+          "width": 488.88,
+          "height": 120
+        },
+        "containerSelector": "#monster-stop",
+        "text": "저것도 넣고…",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/monster.html",
+        "bbox": {
+          "x": 76,
+          "y": 362.47,
+          "width": 488.88,
+          "height": 120
+        },
+        "firstSeen": 21.959,
+        "lastSeen": 21.959,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 21.959,
+        "selector": "#monster-base > div:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 153,
+          "top": 650,
+          "right": 266.06,
+          "bottom": 687,
+          "width": 113.06,
+          "height": 37
+        },
+        "containerSelector": "#monster-stop",
+        "text": "처음 목표",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/monster.html",
+        "bbox": {
+          "x": 153,
+          "y": 650,
+          "width": 113.06,
+          "height": 37
+        },
+        "firstSeen": 21.959,
+        "lastSeen": 21.959,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 21.959,
+        "selector": "#monster-base > div:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 153,
+          "top": 723,
+          "right": 620.73,
+          "bottom": 825,
+          "width": 467.73,
+          "height": 102
+        },
+        "containerSelector": "#monster-stop",
+        "text": "학생 출석 기록",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/monster.html",
+        "bbox": {
+          "x": 153,
+          "y": 723,
+          "width": 467.73,
+          "height": 102
+        },
+        "firstSeen": 21.959,
+        "lastSeen": 21.959,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 21.959,
+        "selector": "#monster-f1 > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 196.45,
+          "top": 701.15,
+          "right": 410.48,
+          "bottom": 803.32,
+          "width": 214.04,
+          "height": 102.16
+        },
+        "containerSelector": "#monster-stop",
+        "text": "기능 +1",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/monster.html",
+        "bbox": {
+          "x": 196.45,
+          "y": 701.15,
+          "width": 214.04,
+          "height": 102.16
+        },
+        "firstSeen": 21.959,
+        "lastSeen": 21.959,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 21.959,
+        "selector": "#monster-f1 > span:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 743.49,
+          "top": 646.25,
+          "right": 815.86,
+          "bottom": 758.11,
+          "width": 72.37,
+          "height": 111.86
+        },
+        "containerSelector": "#monster-stop",
+        "text": "+",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/monster.html",
+        "bbox": {
+          "x": 743.49,
+          "y": 646.25,
+          "width": 72.37,
+          "height": 111.86
+        },
+        "firstSeen": 21.959,
+        "lastSeen": 21.959,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 21.959,
+        "selector": "#monster-f2 > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 110.64,
+          "top": 784.94,
+          "right": 325.5,
+          "bottom": 883.81,
+          "width": 214.86,
+          "height": 98.87
+        },
+        "containerSelector": "#monster-stop",
+        "text": "이것도?",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/monster.html",
+        "bbox": {
+          "x": 110.64,
+          "y": 784.94,
+          "width": 214.86,
+          "height": 98.87
+        },
+        "firstSeen": 21.959,
+        "lastSeen": 21.959,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 21.959,
+        "selector": "#monster-f2 > span:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 658.82,
+          "top": 820.54,
+          "right": 729.45,
+          "bottom": 931.51,
+          "width": 70.63,
+          "height": 110.97
+        },
+        "containerSelector": "#monster-lost",
+        "text": "+",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/monster.html",
+        "bbox": {
+          "x": 658.82,
+          "y": 820.54,
+          "width": 70.63,
+          "height": 110.97
+        },
+        "firstSeen": 21.959,
+        "lastSeen": 21.959,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 21.959,
+        "selector": "#monster-f3 > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 254.92,
+          "top": 940.35,
+          "right": 526.95,
+          "bottom": 1039.78,
+          "width": 272.03,
+          "height": 99.43
+        },
+        "containerSelector": "#monster-stop",
+        "text": "하나만 더!",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/monster.html",
+        "bbox": {
+          "x": 254.92,
+          "y": 940.35,
+          "width": 272.03,
+          "height": 99.43
+        },
+        "firstSeen": 21.959,
+        "lastSeen": 21.959,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 21.959,
+        "selector": "#monster-f3 > span:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 804.08,
+          "top": 903.75,
+          "right": 872.95,
+          "bottom": 1013.79,
+          "width": 68.87,
+          "height": 110.04
+        },
+        "containerSelector": "#monster-stop",
+        "text": "+",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/monster.html",
+        "bbox": {
+          "x": 804.08,
+          "y": 903.75,
+          "width": 68.87,
+          "height": 110.04
+        },
+        "firstSeen": 21.959,
+        "lastSeen": 21.959,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 21.959,
+        "selector": "#monster-f4 > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 146.35,
+          "top": 1032.45,
+          "right": 437.06,
+          "bottom": 1147.33,
+          "width": 290.72,
+          "height": 114.88
+        },
+        "containerSelector": "#monster-stop",
+        "text": "이것까지…",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/monster.html",
+        "bbox": {
+          "x": 146.35,
+          "y": 1032.45,
+          "width": 290.72,
+          "height": 114.88
+        },
+        "firstSeen": 21.959,
+        "lastSeen": 21.959,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 21.959,
+        "selector": "#monster-f4 > span:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 692.09,
+          "top": 1087.24,
+          "right": 766.17,
+          "bottom": 1199.96,
+          "width": 74.08,
+          "height": 112.72
+        },
+        "containerSelector": "#monster-stop",
+        "text": "+",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/monster.html",
+        "bbox": {
+          "x": 692.09,
+          "y": 1087.24,
+          "width": 74.08,
+          "height": 112.72
+        },
+        "firstSeen": 21.959,
+        "lastSeen": 21.959,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 30.982,
+        "selector": "#slot-reset > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 76,
+          "top": 115,
+          "right": 142.72,
+          "bottom": 153,
+          "width": 66.72,
+          "height": 38
+        },
+        "containerSelector": "#slot-demo > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1)",
+        "text": "yuhobuilds",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/reset.html",
+        "bbox": {
+          "x": 76,
+          "y": 115,
+          "width": 66.72,
+          "height": 38
+        },
+        "firstSeen": 30.982,
+        "lastSeen": 30.982,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 30.982,
+        "selector": "#slot-reset > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 142.72,
+          "top": 115,
+          "right": 215.42,
+          "bottom": 153,
+          "width": 72.7,
+          "height": 38
+        },
+        "containerSelector": "#slot-demo > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "builds",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/reset.html",
+        "bbox": {
+          "x": 142.72,
+          "y": 115,
+          "width": 72.7,
+          "height": 38
+        },
+        "firstSeen": 30.982,
+        "lastSeen": 30.982,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 30.982,
+        "selector": "#slot-reset > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 698.22,
+          "top": 117.5,
+          "right": 970,
+          "bottom": 150.5,
+          "width": 271.78,
+          "height": 33
+        },
+        "containerSelector": "#slot-demo > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(2)",
+        "text": "EP.01 · 지금 다시 한다면",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/reset.html",
+        "bbox": {
+          "x": 698.22,
+          "y": 117.5,
+          "width": 271.78,
+          "height": 33
+        },
+        "firstSeen": 30.982,
+        "lastSeen": 30.982,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 34.507,
+        "selector": "#demo-form > div:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 142,
+          "top": 703,
+          "right": 246.33,
+          "bottom": 738,
+          "width": 104.33,
+          "height": 35
+        },
+        "containerSelector": "#demo-reopen",
+        "text": "학생 선택",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/demo.html",
+        "bbox": {
+          "x": 142,
+          "y": 703,
+          "width": 104.33,
+          "height": 35
+        },
+        "firstSeen": 34.507,
+        "lastSeen": 34.507,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 34.507,
+        "selector": "#demo-select > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 172,
+          "top": 781,
+          "right": 284.09,
+          "bottom": 831,
+          "width": 112.09,
+          "height": 50
+        },
+        "containerSelector": "#demo-reopen",
+        "text": "학생 A",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/demo.html",
+        "bbox": {
+          "x": 172,
+          "y": 781,
+          "width": 112.09,
+          "height": 50
+        },
+        "firstSeen": 34.507,
+        "lastSeen": 34.507,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 34.507,
+        "selector": "#demo-select > span:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 803.05,
+          "top": 781,
+          "right": 826,
+          "bottom": 831,
+          "width": 22.95,
+          "height": 50
+        },
+        "containerSelector": "#demo-reopen",
+        "text": "⌄",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/demo.html",
+        "bbox": {
+          "x": 803.05,
+          "y": 781,
+          "width": 22.95,
+          "height": 50
+        },
+        "firstSeen": 34.507,
+        "lastSeen": 34.507,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 34.507,
+        "selector": "#demo-button",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 417.02,
+          "top": 919,
+          "right": 580.97,
+          "bottom": 973,
+          "width": 163.95,
+          "height": 54
+        },
+        "containerSelector": "#demo-reopen",
+        "text": "출석 저장",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/demo.html",
+        "bbox": {
+          "x": 417.02,
+          "y": 919,
+          "width": 163.95,
+          "height": 54
+        },
+        "firstSeen": 34.507,
+        "lastSeen": 34.507,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 34.507,
+        "selector": "#demo-app > div:nth-of-type(3)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 142,
+          "top": 1039,
+          "right": 275.41,
+          "bottom": 1076,
+          "width": 133.41,
+          "height": 37
+        },
+        "containerSelector": "#demo-reopen",
+        "text": "저장된 기록",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/demo.html",
+        "bbox": {
+          "x": 142,
+          "y": 1039,
+          "width": 133.41,
+          "height": 37
+        },
+        "firstSeen": 34.507,
+        "lastSeen": 34.507,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 34.507,
+        "selector": "#demo-row > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 169,
+          "top": 1155.59,
+          "right": 270.17,
+          "bottom": 1200.59,
+          "width": 101.17,
+          "height": 45
+        },
+        "containerSelector": "#demo-reopen",
+        "text": "학생 A",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/demo.html",
+        "bbox": {
+          "x": 169,
+          "y": 1155.59,
+          "width": 101.17,
+          "height": 45
+        },
+        "firstSeen": 34.507,
+        "lastSeen": 34.507,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 34.507,
+        "selector": "#demo-row > span:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 444.67,
+          "top": 1159.59,
+          "right": 523.8,
+          "bottom": 1196.59,
+          "width": 79.13,
+          "height": 37
+        },
+        "containerSelector": "#demo-reopen",
+        "text": "06.02",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/demo.html",
+        "bbox": {
+          "x": 444.67,
+          "y": 1159.59,
+          "width": 79.13,
+          "height": 37
+        },
+        "firstSeen": 34.507,
+        "lastSeen": 34.507,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 34.507,
+        "selector": "span.chip",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 723.3,
+          "top": 1160,
+          "right": 804,
+          "bottom": 1195,
+          "width": 80.7,
+          "height": 35
+        },
+        "containerSelector": "#demo-reopen",
+        "text": "✓ 출석",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/demo.html",
+        "bbox": {
+          "x": 723.3,
+          "y": 1160,
+          "width": 80.7,
+          "height": 35
+        },
+        "firstSeen": 34.507,
+        "lastSeen": 34.507,
+        "occurrences": 1,
+        "heldMs": 0
+      }
+    ],
+    "duration": 56.46666666666667,
+    "samples": [
+      3.137,
+      9.411,
+      15.685,
+      21.959,
+      28.233,
+      34.507,
+      40.781,
+      47.056,
+      53.33
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 41,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      3.137,
+      15.685,
+      28.233,
+      40.781,
+      53.33
+    ],
+    "checked": 35,
+    "passed": 35
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  },
+  "_meta": {
+    "version": "0.8.78",
+    "latestVersion": "0.8.78",
+    "updateAvailable": false
+  }
+}

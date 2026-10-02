@@ -1,0 +1,15 @@
+'use strict';
+const fs=require('fs'),path=require('path'),cp=require('child_process');
+const dir=__dirname,sec=Number(process.argv[2]||20),name=process.argv[3]||'public';
+function run(cmd,args,ms=90000){return new Promise((resolve,reject)=>{const p=cp.spawn(cmd,args,{windowsHide:true});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);const timer=setTimeout(()=>{p.kill();reject(Error('Capture timeout'));},ms);p.on('error',reject);p.on('close',code=>{clearTimeout(timer);code===0?resolve({out,err}):reject(Error(err.replace(/https?:\/\/[^\s"']+/g,'[media URL omitted]').slice(-1500)));});});}
+(async()=>{
+ const info=await run('yt-dlp',['--no-playlist','--js-runtimes','node','-J','--skip-download','-f','bestvideo[height<=720]+bestaudio','https://www.youtube.com/watch?v=mP3T7Sabeh4']);
+ const j=JSON.parse(info.out),formats=j.requested_formats||[j];if(formats.some(f=>!f.url))throw Error('No media format');
+ const file=path.join(dir,name+'.mp4'),startedAt=new Date().toISOString();
+ console.log('Public reception started: '+startedAt);
+ const r=await run('ffmpeg',['-hide_banner','-loglevel','warning',...formats.flatMap(f=>['-rw_timeout','15000000','-i',f.url]),'-map','0:v:0','-map','1:a:0','-t',String(sec),'-c','copy','-y',file],(sec+80)*1000);
+ const probe=JSON.parse(cp.execFileSync('ffprobe',['-v','error','-show_entries','format=duration:stream=codec_name,width,height','-of','json',file],{encoding:'utf8'}));
+ fs.writeFileSync(path.join(dir,name+'.json'),JSON.stringify({id:j.id,startedAt,finishedAt:new Date().toISOString(),probe,warnings:r.err.replace(/https?:\/\/[^\s"']+/g,'[media URL omitted]')},null,2));
+ cp.execFileSync('ffmpeg',['-v','error','-ss','3','-i',file,'-frames:v','1','-y',path.join(dir,name+'.png')]);
+ console.log(JSON.stringify({file,probe}));
+})().catch(e=>{console.error(e.message);process.exitCode=1;});

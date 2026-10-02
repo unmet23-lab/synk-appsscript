@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "866799a5-31a8-485e-b7be-61e0ecd2bbcd",
+  "narration": "이곳에는 직접 만든 결과와 선택 이유, 고쳐 쓸 원본을 남깁니다. 다음에 필요한 일에도 적용해보세요.",
+  "narrationSha256": "b8e5ff3dc3ebf64f4adb361db375e9fa1a3a9cd4e04ec9bbc4611b3b654943ce",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-b8e5ff3dc3ebf64f.wav",
+  "duration": 8,
+  "sha256": "5c2bef78fd2722c8fb94521c3352f4f4a03871f4181e02dadba4914a9ffbac99",
+  "humanListening": false,
+  "fullDecode": true
+}

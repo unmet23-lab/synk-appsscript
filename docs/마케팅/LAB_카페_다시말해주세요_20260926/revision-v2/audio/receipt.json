@@ -1,0 +1,82 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 1.782,
+  "words": [
+    {
+      "text": "영수증",
+      "start": 0.486,
+      "end": 0.952
+    },
+    {
+      "text": "드릴까요?",
+      "start": 1.013,
+      "end": 1.782
+    }
+  ],
+  "characters": [
+    {
+      "text": "영",
+      "start": 0.486,
+      "end": 0.709
+    },
+    {
+      "text": "수",
+      "start": 0.709,
+      "end": 0.83
+    },
+    {
+      "text": "증",
+      "start": 0.83,
+      "end": 0.952
+    },
+    {
+      "text": " ",
+      "start": 0.952,
+      "end": 1.013
+    },
+    {
+      "text": "드",
+      "start": 1.013,
+      "end": 1.094
+    },
+    {
+      "text": "릴",
+      "start": 1.094,
+      "end": 1.195
+    },
+    {
+      "text": "까",
+      "start": 1.195,
+      "end": 1.357
+    },
+    {
+      "text": "요",
+      "start": 1.357,
+      "end": 1.762
+    },
+    {
+      "text": "?",
+      "start": 1.762,
+      "end": 1.782
+    }
+  ],
+  "request": {
+    "seed": 926,
+    "model": "ssfm-v30",
+    "voice_id": "tc_69f2e455ea79fd197aa0476f",
+    "text": "영수증 드릴까요?",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.01,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "happy",
+      "emotion_intensity": 0.75
+    }
+  },
+  "direction": "작은 배려가 담긴 서비스 질문.",
+  "voiceName": "서현"
+}

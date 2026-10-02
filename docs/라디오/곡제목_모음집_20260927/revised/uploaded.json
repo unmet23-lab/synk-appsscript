@@ -1,0 +1,52 @@
+{
+  "kind": "youtube#video",
+  "etag": "h-z5DBgEO-bGB6IbiiBuNk_-8vk",
+  "id": "_eZztHpxPeI",
+  "snippet": {
+    "publishedAt": "2026-09-26T20:39:30Z",
+    "channelId": "UCmZplYKuNHLPng4iL2AbLLg",
+    "title": "SYNK Radio | 음악은 켜 두고 · 19곡 모음집",
+    "description": "SYNK Radio에서 흐르는 19곡을 한 번씩 담았습니다.\n듣고 싶은 곡의 시간을 누르면 바로 이동할 수 있어요.\n\n🎧 24시간 라디오\nhttps://www.youtube.com/watch?v=mP3T7Sabeh4\n\n곡 목록 / Tracklist\n00:00 불빛이 하나둘 켜질 때\n03:26 파란 신호가 켜지면\n06:46 커피가 식기 전에\n10:36 바다까지 한 시간\n14:25 창가의 작은 불\n17:44 오후 네 시의 약속\n21:24 비 오는 숲의 책상\n25:50 새벽 물가의 숨\n30:19 오늘 밤 제일 환한 사람\n31:09 The Phantom's Lament\n33:45 Autumn Sea Hush\n36:13 Quiet Morning Light\n38:45 Autumn Sea Hush (Version 2)\n41:17 Golden Autumn Light\n43:49 Velvet Rain\n47:33 노을빛 드라이브\n50:04 Golden Hour Beach\n53:07 너와 걷던 여름밤\n55:43 Neon Bittersweet\n\n음악 · SYNK PULSE (Suno로 제작)\nhttps://synk.im/",
+    "thumbnails": {
+      "default": {
+        "url": "https://i.ytimg.com/vi/_eZztHpxPeI/default.jpg",
+        "width": 120,
+        "height": 90
+      },
+      "medium": {
+        "url": "https://i.ytimg.com/vi/_eZztHpxPeI/mqdefault.jpg",
+        "width": 320,
+        "height": 180
+      },
+      "high": {
+        "url": "https://i.ytimg.com/vi/_eZztHpxPeI/hqdefault.jpg",
+        "width": 480,
+        "height": 360
+      }
+    },
+    "channelTitle": "SYNK LAB Mongolia | Хөгжилтэй солонгос хэл",
+    "tags": [
+      "SYNK PULSE",
+      "SYNK Radio",
+      "chill",
+      "city pop",
+      "공부 음악",
+      "작업 음악"
+    ],
+    "categoryId": "10",
+    "liveBroadcastContent": "none",
+    "defaultLanguage": "ko",
+    "localized": {
+      "title": "SYNK Radio | 음악은 켜 두고 · 19곡 모음집",
+      "description": "SYNK Radio에서 흐르는 19곡을 한 번씩 담았습니다.\n듣고 싶은 곡의 시간을 누르면 바로 이동할 수 있어요.\n\n🎧 24시간 라디오\nhttps://www.youtube.com/watch?v=mP3T7Sabeh4\n\n곡 목록 / Tracklist\n00:00 불빛이 하나둘 켜질 때\n03:26 파란 신호가 켜지면\n06:46 커피가 식기 전에\n10:36 바다까지 한 시간\n14:25 창가의 작은 불\n17:44 오후 네 시의 약속\n21:24 비 오는 숲의 책상\n25:50 새벽 물가의 숨\n30:19 오늘 밤 제일 환한 사람\n31:09 The Phantom's Lament\n33:45 Autumn Sea Hush\n36:13 Quiet Morning Light\n38:45 Autumn Sea Hush (Version 2)\n41:17 Golden Autumn Light\n43:49 Velvet Rain\n47:33 노을빛 드라이브\n50:04 Golden Hour Beach\n53:07 너와 걷던 여름밤\n55:43 Neon Bittersweet\n\n음악 · SYNK PULSE (Suno로 제작)\nhttps://synk.im/"
+    }
+  },
+  "status": {
+    "uploadStatus": "uploaded",
+    "privacyStatus": "unlisted",
+    "license": "youtube",
+    "embeddable": true,
+    "publicStatsViewable": true,
+    "selfDeclaredMadeForKids": false
+  }
+}

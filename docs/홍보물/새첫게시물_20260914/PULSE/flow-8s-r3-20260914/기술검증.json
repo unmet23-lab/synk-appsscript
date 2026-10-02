@@ -1,0 +1,154 @@
+{
+  "checkedAt": "2026-09-14T07:30:33.977Z",
+  "scope": "Third candidate: original preservation, probe, full-stream decode and requested frame extraction only; no hearing, continuous playback or artistic pass claim",
+  "downloaded": "C:\\Users\\q1212\\Downloads\\Character_sliding_book_on_shelf_20260914162833.mp4",
+  "original": "Character_sliding_book_on_shelf_20260914162833.mp4",
+  "bytes": 2150950,
+  "sha256": "c1c9faf23d4a068c84bd676ef928bcc26148f1a7ac18fedad4568e7172458e3f",
+  "downloadPreserved": true,
+  "sources": [
+    {
+      "file": "pulse-slide-start.png",
+      "sha256": "39e31894f95347284c7ec0804b073813af9cf8668edd4c50c1a69afd4235794e"
+    },
+    {
+      "file": "pulse-slide-end.png",
+      "sha256": "9ca0697e38e9df5b9e7069fe61da52c5bcfe9d811878213344a9803a44e2f28c"
+    },
+    {
+      "file": "프롬프트.md",
+      "sha256": "a175143ff5d2d1767a82f48ef8924c7f1400b0d9631b0724359f59b9cf68b2aa"
+    }
+  ],
+  "fullDecode": {
+    "passed": true,
+    "command": "ffmpeg -nostdin -v error -xerror -i <original> -map 0 -f null -",
+    "exitCode": 0
+  },
+  "streams": [
+    {
+      "codec_type": "video",
+      "codec_name": "h264",
+      "width": 1280,
+      "height": 720,
+      "pix_fmt": "yuv420p",
+      "r_frame_rate": "24/1",
+      "nb_read_frames": "192",
+      "duration": "8.000000"
+    },
+    {
+      "codec_type": "audio",
+      "codec_name": "aac",
+      "r_frame_rate": "0/0",
+      "nb_read_frames": "375",
+      "duration": "8.000000",
+      "sample_rate": "48000",
+      "channels": 2
+    }
+  ],
+  "duration": "8.000000",
+  "frames": [
+    {
+      "seconds": 0,
+      "file": "frames/frame-0s.png",
+      "bytes": 1301165,
+      "sha256": "7e83a122ba88b69836053c77adf54a3683fcc9b0d69fa66a27774cc5dc3af9c7"
+    },
+    {
+      "seconds": 0.5,
+      "file": "frames/frame-0_5s.png",
+      "bytes": 1309205,
+      "sha256": "aa2a27838eb2ff0f83254fc5a7f4e394aa84803e30a0950c21f8772f75a28a69"
+    },
+    {
+      "seconds": 1,
+      "file": "frames/frame-1s.png",
+      "bytes": 1310347,
+      "sha256": "030b9ede3f995557e66b72d1a30f44aa0082cc519fc2c45f494d62ceb89b87b8"
+    },
+    {
+      "seconds": 1.5,
+      "file": "frames/frame-1_5s.png",
+      "bytes": 1315201,
+      "sha256": "008ffc44018487237b52cd69b7f4592d1fad745ccdf986d7af96a7257ed2e13a"
+    },
+    {
+      "seconds": 2,
+      "file": "frames/frame-2s.png",
+      "bytes": 1324562,
+      "sha256": "fd28fac92c3256fdbe0b71b242ae29824458f832736bfc2866239475d97e9a3b"
+    },
+    {
+      "seconds": 2.5,
+      "file": "frames/frame-2_5s.png",
+      "bytes": 1328508,
+      "sha256": "fbac0b4e9ef6e3b5a3518e85a59bee2f0460b2c421a3564753b0a987217fffae"
+    },
+    {
+      "seconds": 3,
+      "file": "frames/frame-3s.png",
+      "bytes": 1312845,
+      "sha256": "68ab37511a8f4ff40a2405977387b92bd7ed503b63d1d831ed732b95c1646b6b"
+    },
+    {
+      "seconds": 3.5,
+      "file": "frames/frame-3_5s.png",
+      "bytes": 1315599,
+      "sha256": "e65fc995b28a53827a8d43e454cadcffa2eacdcfa054b7569bb1e8608b1948e8"
+    },
+    {
+      "seconds": 4,
+      "file": "frames/frame-4s.png",
+      "bytes": 1322617,
+      "sha256": "e5da4ae72f21b03a0070000d9a988e52e2e1cf676d58e6402a85857242778d5b"
+    },
+    {
+      "seconds": 4.5,
+      "file": "frames/frame-4_5s.png",
+      "bytes": 1323930,
+      "sha256": "0a1be98eafbb07cb2cc1efb0b381d1383182708a6cb89fa5d7861078114cd13a"
+    },
+    {
+      "seconds": 5,
+      "file": "frames/frame-5s.png",
+      "bytes": 1327406,
+      "sha256": "b88179d586b489e83366f70cc37834c06cf0cc85d04a0915202d873ff0a95f07"
+    },
+    {
+      "seconds": 5.5,
+      "file": "frames/frame-5_5s.png",
+      "bytes": 1333217,
+      "sha256": "a44002f78d5f74be66eedae8636af7f794be3871bd44c1dc6b09a61cb5c443fe"
+    },
+    {
+      "seconds": 6,
+      "file": "frames/frame-6s.png",
+      "bytes": 1349942,
+      "sha256": "2c79e5fc6cd72d2a629368f0461c5e8e52d88868543f4796155cd0902969d387"
+    },
+    {
+      "seconds": 6.5,
+      "file": "frames/frame-6_5s.png",
+      "bytes": 1355569,
+      "sha256": "d63b5736350cfbfc2f97a6dfb8bb3f4150e80c8655c5b4bb9b9dc7a92bad066f"
+    },
+    {
+      "seconds": 7,
+      "file": "frames/frame-7s.png",
+      "bytes": 1348956,
+      "sha256": "8cfc67a1268e31f3585c7c55fbec0d76d78305f0ca7bf4578d3983b222325ef5"
+    },
+    {
+      "seconds": 7.5,
+      "file": "frames/frame-7_5s.png",
+      "bytes": 1327752,
+      "sha256": "e8d9859c8d5195bd7d595dc79ddfd977bd0c64c7b2127acb57fbfafac7259c77"
+    },
+    {
+      "seconds": 7.9,
+      "file": "frames/frame-7_9s.png",
+      "bytes": 1284553,
+      "sha256": "7a98f831e7de8fa4bbabcd5dc0a87df19be0f8c58961884cf5bd7eaa62edf2ff"
+    }
+  ]
+}

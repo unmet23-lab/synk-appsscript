@@ -1,0 +1,44 @@
+{
+  "at": "2026-09-16T14:42:22.779Z",
+  "mode": "--check",
+  "before": {
+    "service": {
+      "MainPID": "0",
+      "NRestarts": "1",
+      "ActiveState": "inactive",
+      "SubState": "dead",
+      "UnitFileState": "enabled"
+    },
+    "radioStream": {
+      "MainPID": "0",
+      "NRestarts": "0",
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "UnitFileState": "disabled"
+    },
+    "files": []
+  },
+  "applied": false,
+  "started": false,
+  "after": {
+    "service": {
+      "MainPID": "0",
+      "NRestarts": "1",
+      "ActiveState": "inactive",
+      "SubState": "dead",
+      "UnitFileState": "enabled"
+    },
+    "radioStream": {
+      "MainPID": "0",
+      "NRestarts": "0",
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "UnitFileState": "disabled"
+    },
+    "files": []
+  },
+  "overlaySha": "d3d21c4200e3db0ad5bb4fd8d51ad49eea9ad9adf7840883f4d410b930112428",
+  "stageListSha": "19552c7713584218a93a1e72b7b8f20f57d034ad453ea3394159d8176c9885bc",
+  "protectedUnchanged": 19,
+  "backups": []
+}

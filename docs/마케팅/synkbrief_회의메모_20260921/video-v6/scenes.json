@@ -1,0 +1,155 @@
+[
+  {
+    "id": "hook",
+    "duration": 6,
+    "step": "회의 정리를 반복한다면",
+    "title": "회의 정리할 때마다<br>같은 요청문 붙이세요?",
+    "caption": "정리 방법은 한 번 저장하고,<br>다음 회의부터는 새 메모만 넣어보세요.",
+    "body": "<img class=\"felt reveal\" src=\"assets/meeting-scene.png\" alt=\"회의 메모를 정리하는 모습\"><div class=\"note reveal hero-card\" style=\"left:76px;top:1100px;width:928px\">한 번 설정 → 회의마다 다시 사용</div>",
+    "start": 0
+  },
+  {
+    "id": "project",
+    "duration": 7,
+    "step": "먼저, 프로젝트란?",
+    "title": "회의 정리 전용<br>작업 공간을 만들어요.",
+    "caption": "프로젝트는 관련 대화·자료·지침을 모으는 공간.<br>그 안의 여러 채팅에서 같은 정리 규칙을 써요.",
+    "body": "<div class=\"rows\" style=\"top:580px\"><div class=\"reveal\"><b>프로젝트 지침</b><span>표의 형식과 정리 규칙을 저장</span></div><div class=\"reveal\"><b>첫 번째 회의 채팅</b><span>오늘 메모 → 오늘의 할 일</span></div><div class=\"reveal\"><b>다음 회의 채팅</b><span>새 메모 → 새 회의의 할 일</span></div></div><div class=\"label\" style=\"left:76px;top:1240px\">팀이나 목적이 다르면 프로젝트도 따로 만드세요.</div>",
+    "start": 6
+  },
+  {
+    "id": "global",
+    "duration": 8,
+    "step": "저장 위치를 구분하세요",
+    "title": "계정 전체 지침에는<br>이 규칙을 넣지 마세요.",
+    "caption": "계정 전체 맞춤 지침은 다른 대화에도 적용돼요.<br>회의 전용 규칙이 글쓰기·여행 질문에 섞일 수 있어요.",
+    "body": "<div class=\"note reveal caution\" style=\"left:76px;top:560px;width:928px\">계정 전체에 “항상 담당자·기한 표로”</div><div class=\"note reveal quote\" style=\"left:76px;top:820px;width:928px\">여행 계획을 물었는데…<br>필요 없는 담당자·기한 표가 나온다면?</div><div class=\"label\" style=\"left:76px;top:1090px\">범위 차이를 설명하는 가상 예시 · 실제 응답 아님</div><div class=\"note reveal hero-card\" style=\"left:76px;top:1200px;width:928px\">회의 규칙은 회의 프로젝트에만 저장</div>",
+    "start": 13
+  },
+  {
+    "id": "create",
+    "duration": 7,
+    "step": "1 / 5   프로젝트 만들기",
+    "title": "프로젝트에서<br>새 프로젝트를 누르세요.",
+    "caption": "ChatGPT에 로그인한 뒤 프로젝트 목록을 여세요.<br>“새 프로젝트”를 눌러 이름을 정합니다.",
+    "body": "<div class=\"shot reveal\" style=\"left:76px;top:560px;width:928px;height:179.8px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/01-projects.png\" style=\"width:1484.8px;height:835.2px;left:-435px;top:-116px\" alt=\"2026년 9월 23일 ChatGPT 실제 화면\"></div><div class=\"label\" style=\"left:76px;top:820px\">오른쪽의 새 프로젝트 버튼</div><div class=\"shot reveal\" style=\"left:280px;top:900px;width:520px;height:228px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/01-projects.png\" style=\"width:5120px;height:2880px;left:-4148px;top:-420px\" alt=\"2026년 9월 23일 ChatGPT 실제 화면\"></div><div class=\"note reveal \" style=\"left:76px;top:1160px;width:928px\">이름 예시<br><b>회의 정리 · 우리 팀</b></div>",
+    "start": 21
+  },
+  {
+    "id": "name",
+    "duration": 7,
+    "step": "1 / 5   용도에 맞게 이름 짓기",
+    "title": "이름을 정하고<br>프로젝트를 만드세요.",
+    "caption": "예시는 “회의 정리 · synkbrief 실습”이에요.<br>한 번 만든 뒤에는 같은 프로젝트를 계속 쓰면 돼요.",
+    "body": "<div class=\"shot reveal\" style=\"left:76px;top:595px;width:928px;height:478.5px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/02-create.png\" style=\"width:2320px;height:1305px;left:-696px;top:-413.25px\" alt=\"2026년 9월 23일 ChatGPT 실제 화면\"></div><div class=\"note reveal \" style=\"left:76px;top:1170px;width:928px\">프로젝트 이름을 적은 뒤<br>오른쪽 아래 ‘프로젝트 만들기’</div><div class=\"label\" style=\"left:76px;top:1350px\">메모리 옵션의 범위는 PDF에서 따로 설명해요.</div>",
+    "start": 28
+  },
+  {
+    "id": "settings",
+    "duration": 6,
+    "step": "2 / 5   프로젝트 지침 열기",
+    "title": "프로젝트의 ⋯에서<br>프로젝트 설정을 여세요.",
+    "caption": "현재 프로젝트 이름 옆의 ⋯ → 프로젝트 설정.<br>프로필의 계정 설정으로 들어가는 과정이 아니에요.",
+    "body": "<div class=\"shot reveal\" style=\"left:76px;top:560px;width:928px;height:205.56962025316454px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/04-menu.png\" style=\"width:1503.5949367088608px;height:845.7721518987341px;left:-328.9113924050633px;top:-117.46835443037975px\" alt=\"2026년 9월 23일 ChatGPT 실제 화면\"></div><div class=\"shot reveal\" style=\"left:215px;top:825px;width:650px;height:270.8333333333333px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/04-menu.png\" style=\"width:3466.6666666666665px;height:1950px;left:-2247.9166666666665px;top:-392.7083333333333px\" alt=\"2026년 9월 23일 ChatGPT 실제 화면\"></div><div class=\"note reveal hero-card\" style=\"left:76px;top:1100px;width:928px\">회의 정리 프로젝트<br>⋯ → 프로젝트 설정 → 지침</div>",
+    "start": 35
+  },
+  {
+    "id": "save",
+    "duration": 8,
+    "step": "2 / 5   지침을 한 번 저장하기",
+    "title": "제공한 지침 전체를<br>‘지침’ 칸에 붙여넣어요.",
+    "caption": "project-instructions.txt 전체 복사 → 지침 → 저장.<br>다시 열어 내용이 남아 있는지 확인하세요.",
+    "body": "<div class=\"shot reveal\" style=\"left:76px;top:520px;width:928px;height:480.3125px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/06-instructions.png\" style=\"width:2320px;height:1305px;left:-696px;top:-54.375px\" alt=\"2026년 9월 23일 ChatGPT 실제 화면\"></div><div class=\"label\" style=\"left:76px;top:1050px\">전체 내용을 붙인 뒤, 아래 저장 버튼을 눌러요.</div><div class=\"shot reveal\" style=\"left:548px;top:1175px;width:456px;height:174px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/06-instructions.png\" style=\"width:3840px;height:2160px;left:-2202px;top:-1860px\" alt=\"2026년 9월 23일 ChatGPT 실제 화면\"></div><div class=\"click-target\" style=\"left:880px;top:1270px\"><i></i><i></i><svg viewBox=\"0 0 60 70\"><path d=\"M7 4L52 38L32 41L23 63Z\" fill=\"white\" stroke=\"#3D6BC9\" stroke-width=\"5\" stroke-linejoin=\"round\"/></svg></div><div class=\"label\" style=\"left:76px;top:1360px\">파일을 첨부하는 대신, 내용 전체를 지침 칸에 넣어요.</div>",
+    "start": 41
+  },
+  {
+    "id": "why",
+    "duration": 8,
+    "step": "이 조건들이 필요한 이유",
+    "title": "표의 네 칸과<br>빈칸 처리법을 정해요.",
+    "caption": "담당자·기한이 없으면 “확인 필요”로 남겨요.<br>근거 문장은 원문과 맞는지 확인하는 데 필요해요.",
+    "body": "<div class=\"rows\" style=\"top:540px\"><div class=\"reveal\"><b>할 일 · 담당자 · 기한</b><span>누가 무엇을 언제까지 할지</span></div><div class=\"reveal\"><b>근거 문장</b><span>원래 메모의 어떤 말인지</span></div><div class=\"reveal\"><b>이번 메모만 사용</b><span>지난 회의의 이름·날짜를 섞지 않게</span></div><div class=\"reveal\"><b>제안은 질문으로</b><span>의견을 확정 업무로 만들지 않게</span></div></div>",
+    "start": 49
+  },
+  {
+    "id": "memo",
+    "duration": 8,
+    "step": "3 / 5   프로젝트 안에서 실행하기",
+    "title": "프로젝트 입력창에<br>이번 메모를 넣으세요.",
+    "caption": "“프로젝트 지침에 맞춰 이번 회의 메모를 정리해줘.”<br>아래에 메모를 붙이고 위쪽 화살표를 누르세요.",
+    "body": "<div class=\"shot reveal\" style=\"left:76px;top:520px;width:928px;height:571.0769230769231px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/07-first-input.png\" style=\"width:1522.871794871795px;height:856.6153846153846px;left:-333.12820512820514px;top:-113.02564102564102px\" alt=\"2026년 9월 23일 ChatGPT 실제 화면\"></div><div class=\"note reveal \" style=\"left:76px;top:1180px;width:928px\">긴 지침을 다시 붙일 필요는 없어요.<br>짧은 요청 + 이번 회의 메모</div>",
+    "start": 57
+  },
+  {
+    "id": "verify",
+    "duration": 7,
+    "step": "4 / 5   답변 형식 확인하기",
+    "title": "저장했어도<br>결과는 꼭 확인하세요.",
+    "caption": "실제 첫 답변에서는 근거 문장 열이 빠졌어요.<br>네 열이 모두 있는지 확인하고 보완을 요청합니다.",
+    "body": "<div class=\"shot reveal\" style=\"left:76px;top:560px;width:928px;height:416.4102564102564px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/08-first-result-before-check.png\" style=\"width:1522.871794871795px;height:856.6153846153846px;left:-329.55897435897435px;top:-243.89743589743588px\" alt=\"2026년 9월 23일 ChatGPT 실제 화면\"></div><div class=\"note reveal \" style=\"left:76px;top:1110px;width:928px\">확인할 것<br>할 일 / 담당자 / 기한 / <mark>근거 문장</mark></div>",
+    "start": 65
+  },
+  {
+    "id": "repair",
+    "duration": 7,
+    "step": "4 / 5   빠진 형식 바로잡기",
+    "title": "빠진 열은<br>짧게 다시 요청하세요.",
+    "caption": "“프로젝트 지침에 맞춰 네 열 표로 다시 정리해줘.<br>근거 문장을 넣고, 미정은 확인 필요로 표시해줘.”",
+    "body": "<div class=\"note reveal quote\" style=\"left:76px;top:570px;width:928px\">프로젝트 지침에 맞춰<br>다시 정리해줘.</div><div class=\"note reveal \" style=\"left:76px;top:845px;width:928px\">근거 문장 열을 포함한 네 열 표.<br>미정인 담당자·기한은 “확인 필요”.</div><div class=\"label\" style=\"left:76px;top:1250px\">같은 회의의 보완이므로, 지금 채팅에서 이어 말해요.</div>",
+    "start": 72
+  },
+  {
+    "id": "result",
+    "duration": 8,
+    "step": "4 / 5   원문과 결과 대조하기",
+    "title": "담당자·기한·근거를<br>원문과 맞춰보세요.",
+    "caption": "지수는 9월 23일까지, 민호의 기한은 확인 필요.<br>9월 25일은 다음 회의 날짜라 마감에 넣지 않아요.",
+    "body": "<div class=\"shot reveal\" style=\"left:76px;top:560px;width:928px;height:295.54140127388536px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/11-first-result.png\" style=\"width:1513.1719745222929px;height:851.1592356687898px;left:-325.09554140127386px;top:-301.45222929936307px\" alt=\"2026년 9월 23일 ChatGPT 실제 화면\"></div><div class=\"label\" style=\"left:76px;top:910px\">보완 요청 뒤 실제 응답 · 화면은 확대 편집</div><div class=\"rows\" style=\"top:1060px\"><div class=\"reveal\"><b>지수 → 9월 23일</b><span>메모에 직접 말한 날짜</span></div><div class=\"reveal\"><b>민호 → 확인 필요</b><span>아직 정하지 않은 작업 기한</span></div></div>",
+    "start": 79
+  },
+  {
+    "id": "pin",
+    "duration": 6,
+    "step": "5 / 5   다음 회의에 다시 쓰기",
+    "title": "프로젝트를 고정해<br>쉽게 다시 찾으세요.",
+    "caption": "프로젝트 이름 옆 ⋯ → 프로젝트 고정.<br>고정은 쉽게 찾는 기능이고, 지침 저장은 별도예요.",
+    "body": "<div class=\"shot reveal\" style=\"left:165px;top:610px;width:750px;height:406.25px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/04-menu.png\" style=\"width:4000px;height:2250px;left:-2593.75px;top:-359.375px\" alt=\"2026년 9월 23일 ChatGPT 실제 화면\"></div><div class=\"note reveal hero-card\" style=\"left:76px;top:1190px;width:928px\">다음 사용<br>프로젝트 열기 → 새 채팅</div>",
+    "start": 87
+  },
+  {
+    "id": "next",
+    "duration": 8,
+    "step": "5 / 5   회의마다 새 채팅",
+    "title": "다음 회의는<br>새 채팅에서 시작해요.",
+    "caption": "프로젝트 첫 화면의 입력창에 새 메모를 넣으세요.<br>지난 회의의 보완만 기존 채팅에서 이어갑니다.",
+    "body": "<div class=\"shot reveal\" style=\"left:76px;top:520px;width:928px;height:571.0769230769231px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/12-second-input.png\" style=\"width:1522.871794871795px;height:856.6153846153846px;left:-333.12820512820514px;top:-95.17948717948718px\" alt=\"2026년 9월 23일 ChatGPT 실제 화면\"></div><div class=\"note reveal \" style=\"left:76px;top:1180px;width:928px\">새 회의 → 새 채팅<br>같은 회의의 추가 질문 → 기존 채팅</div>",
+    "start": 93
+  },
+  {
+    "id": "second",
+    "duration": 7,
+    "step": "반복 사용도 확인하세요",
+    "title": "다른 메모로도<br>같은 규칙을 확인해요.",
+    "caption": "수진은 10월 2일, 도윤의 기한은 확인 필요.<br>첫 회의의 지수·민호가 섞이지 않았는지도 보세요.",
+    "body": "<div class=\"shot reveal\" style=\"left:76px;top:540px;width:928px;height:271.8980891719745px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/13-second-result.png\" style=\"width:1513.1719745222929px;height:851.1592356687898px;left:-325.09554140127386px;top:-307.3630573248408px\" alt=\"2026년 9월 23일 ChatGPT 실제 화면\"></div><div class=\"rows\" style=\"top:905px\"><div class=\"reveal\"><b>수진 → 10월 2일</b><span>도윤 → 확인 필요</span></div></div><div class=\"note reveal \" style=\"left:76px;top:1170px;width:928px\">새 채팅도 같은 프로젝트의 지침을 사용해요.<br>결과와 원문 대조는 매번 필요해요.</div>",
+    "start": 101
+  },
+  {
+    "id": "finish",
+    "duration": 6,
+    "step": "실제 업무에 쓰기 전",
+    "title": "빠진 기한을 확인한 뒤<br>팀 문서에 옮기세요.",
+    "caption": "“도윤님, 자료 조사는 언제까지 가능할까요?”<br>답을 받은 뒤 표를 고치고 복사해 공유하세요.",
+    "body": "<div class=\"rows\" style=\"top:580px\"><div class=\"reveal\"><b>01 원문과 대조</b><span>담당자 · 기한 · 근거가 맞는지</span></div><div class=\"reveal\"><b>02 미정 사항 확인</b><span>참여자에게 물어본 뒤 수정</span></div><div class=\"reveal\"><b>03 검토한 표 복사</b><span>팀 문서에 붙여넣고 모양 확인</span></div></div>",
+    "start": 108
+  },
+  {
+    "id": "ending",
+    "duration": 9,
+    "step": "직접 따라 할 자료까지",
+    "title": "회사에서 바로 쓰는<br>회의 정리 가이드",
+    "caption": "프로젝트 설정 PDF·복사용 지침·연습 메모까지.<br>필요하시면 댓글에 synk를 남겨주세요.",
+    "body": "<div class=\"pdf-fan\"><img src=\"assets/guide-1.png\" alt=\"실제 제공 PDF 표지\"><img src=\"assets/guide-3.png\" alt=\"실제 제공 프로젝트 설정 안내\"></div><div class=\"note reveal hero-card\" style=\"left:76px;top:1230px;width:928px\">댓글에 <b>synk</b></div>",
+    "start": 114
+  }
+]

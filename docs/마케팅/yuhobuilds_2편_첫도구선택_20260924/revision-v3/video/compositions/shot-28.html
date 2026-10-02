@@ -1,0 +1,8 @@
+<!DOCTYPE html><html lang="ko"><head></head><body><template><div data-hf-id="hf-amg4" class="shot-root" id="shot-28-root" data-composition-id="shot-28" data-width="1080" data-height="1920" data-duration="2.966667"><div data-hf-id="hf-epfc" class="world blue"><div data-hf-id="hf-sijt" class="top"><span data-hf-id="hf-kfgn">yuhobuilds</span><span data-hf-id="hf-lg60">EP.02</span></div><div data-hf-id="hf-o6si" class="kicker" style="left:76px;top:164px">추천 이유를 이해하려면</div><div data-hf-id="hf-kklk" class="verb-line verb1 rise" style="left:70px;top:390px;width:940px">비용</div><div data-hf-id="hf-2chp" class="verb-line verb2 rise" style="left:70px;top:720px;width:940px">난이도</div><div data-hf-id="hf-0a1z" class="verb-line verb3 rise" style="left:70px;top:1050px;width:940px">관리하기 쉬운지</div></div></div><script>(function(){const root=document.getElementById('shot-28-root'),q=s=>root.querySelector(s),qAll=s=>Array.from(root.querySelectorAll(s));const tl=gsap.timeline({paused:true});
+ qAll('.rise').forEach((e,j)=>tl.fromTo(e,{y:45,opacity:0},{y:0,opacity:1,duration:.28,ease:'power4.out'},0.25+Math.min(j*.08,.24)));
+ qAll('.pop').forEach((e,j)=>tl.fromTo(e,{scale:.86,opacity:0},{scale:1,opacity:1,duration:.28,ease:'back.out(1.35)'},0.25+Math.min(j*.09,.27)));
+ qAll('.slam').forEach(e=>tl.fromTo(e,{opacity:0,scale:1.15},{opacity:1,scale:1,duration:.24,ease:'power4.out'},0.25));
+ 
+ tl.fromTo(q('.world'),{x:1080},{x:0,duration:0.233333333,ease:'power3.inOut'},0);
+ tl.to(q('.world'),{y:-1920,duration:0.233333333,ease:'power3.inOut'},2.733333333333327);
+ window.__timelines['shot-28']=tl;})();</script></template></body></html>

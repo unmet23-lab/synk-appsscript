@@ -1,0 +1,18 @@
+{
+  "revision": "2026-09-19-role-copy-v1",
+  "status": "local-design-not-published",
+  "basis": "현재 사용자 요청: 펠트 이미지는 유지하고 플랫폼의 역할과 회사가 하는 일을 짧은 글로 함께 알린다.",
+  "covers": [
+    {"id":"synk-linkedin-company","role":"SYNK 전체 사업 소개","label":"SYNK","headline":["AI 교육과 콘텐츠를","만드는 SYNK"],"sub":"한국어 학습 · 기업 AI 활용 · 유학 준비","footer":"synk.im"},
+    {"id":"yuhobuilds-youtube","role":"유호의 회사 제작 과정","label":"유호 · YUHO BUILDS","headline":["AI로 회사를","만드는 과정"],"sub":"직접 만든 결과와 시행착오까지."},
+    {"id":"synkbrief-youtube","role":"회사에서 바로 이해할 수 있는 AI 활용 설명","label":"SYNK 브리핑","headline":["회사에서 AI를","쓰는 방법"],"sub":"소개서 · 홍보글 · 영상 · 반복 업무"},
+    {"id":"lab-youtube","role":"몽골어권 한국어 학습 자료와 K-LOFI","label":"SYNK LAB","headline":["Солонгос хэл · TOPIK","한국어를 직접 써 보는 공부"],"sub":"한국어 학습 · K-LOFI 24","languageReview":"몽골어 원어민 감수 미완료; 검수 완료로 표시하지 않음"},
+    {"id":"yuhobuilds-x","role":"짧은 제작 기록과 판단 공유","label":"유호 · SYNK SHIFT","headline":["AI로 회사를","만드는 중입니다."],"sub":"만든 결과, 시행착오, 다시 고친 이유."},
+    {"id":"yuho-linkedin-primary","role":"기업·기관 협업과 대표 전문 분야","label":"유호 · SYNK Founder","headline":["기업·기관","AI 교육·컨설팅"],"sub":"실제 업무에 맞춘 AI 활용과 기업 브랜딩"},
+    {"id":"shift-tistory","role":"제작 과정과 수정 이유를 자세히 읽는 작업 기록","label":"유호 · SYNK SHIFT","headline":["AI로 회사를","만드는 과정"],"sub":"무엇을 만들었고, 왜 고쳤는지 기록합니다."},
+    {"id":"shift-naverblog","role":"검색으로 찾아오는 구체적인 AI 활용 기록","label":"SYNK SHIFT","headline":["직접 만들며 배우는","AI 활용"],"sub":"홈페이지 · 콘텐츠 · 교육 자료 · 자동화"},
+    {"id":"shift-pinterest","role":"디자인 결과물과 제작 과정 모음","label":"SYNK SHIFT","headline":["AI와 함께 만든","브랜드·웹·콘텐츠"],"sub":"디자인 결과물과 제작 과정"},
+    {"id":"shift-behance","role":"디자인 포트폴리오","label":"SYNK SHIFT","headline":["BRAND, WEB & CONTENT"],"sub":"AI와 함께 만든 디자인 포트폴리오"},
+    {"id":"lab-facebook","role":"학습자·보호자를 위한 한국어 및 유학 생활 준비 안내","label":"SYNK LAB","headline":["Солонгос хэл · Солонгост суралцах"],"sub":"한국어 학습부터 유학 생활 준비까지","languageReview":"몽골어 원어민 감수 미완료; 검수 완료로 표시하지 않음"}
+  ]
+}

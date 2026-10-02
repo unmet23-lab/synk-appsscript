@@ -1,0 +1,33 @@
+[
+  {
+    "created_at": "2026-09-09T09:05:17.370087Z",
+    "display_name": "GPT Image 2.5",
+    "id": "15cf2018-945e-471e-945d-a75ebaeb256f",
+    "job_type": "gpt_image_2_5",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260909_090517_15cf2018-945e-471e-945d-a75ebaeb256f_min.webp",
+    "params": {
+      "aspect_ratio": "21:9",
+      "background": "transparent",
+      "height": 1648,
+      "medias": [
+        {
+          "data": {
+            "id": "0d0710a4-a4bf-4a8b-856f-df0b10f0e543",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/0d0710a4-a4bf-4a8b-856f-df0b10f0e543_resize.jpg"
+          },
+          "role": "image"
+        }
+      ],
+      "model": "sunburst",
+      "prompt": "Edit the supplied existing lowercase synk embroidered wool wordmark. This is an approved colorway conversion of this exact existing photograph, not a new logo concept. Keep the exact recognizable s y n k letters, tall k ascender, deep y descender, proportions, individual stitches, soft wool fibers and orthographic frontal presentation. Change the coral k to the SAME warm near-black ink wool as s y n, so ALL FOUR LETTER BODIES are neutral warm ink #2B2320. Refine the s y n dark wool to the same coherent warm-ink dye if needed. No colored letter remains. Preserve three-dimensional wool micro-shadows and subtle material highlights, legible warm light stitches, rounded sewn edges and the overall geometry. Do NOT flatten to a solid black silhouette. Do not add lettering, an outline, a plaque, a wall, a drop-shadow field, or a background. Full logo isolated on genuine transparent alpha, with generous clear margin around the top of k and bottom of y. Preserve all intentional inner counters; no eroded bites, missing thread, missing letter parts or alpha holes in the felt body. Output a pristine high-resolution production cutout.\n[BRAND LOCK — DO NOT DEVIATE]\nBrand spelling: synk, lowercase, exactly four letters.\nAuthoritative logo: Image 1 is the existing official photographed wool logo; it controls exact recognizable anatomy and material.\nPalette: all four letter bodies warm Ink #2B2320, with physically plausible darker and lighter wool shading; warm light stitch color. No coral k.\nTypography: do not substitute a font or redraw as a new wordmark.\nLayout: retain horizontal wordmark, full silhouette within frame and safe margins.\nShape language: existing organic sewn felt, existing ascender and descender.\nMust preserve: identity, lettering, spacing character, wool, seam detail, transparency.\nNever: new symbol, added label, plastic, chrome, flat solid silhouette, opaque background, cropped fibers.",
+      "quality": "xhigh",
+      "reference_elements": [],
+      "remove_bg": false,
+      "resolution": "4k",
+      "width": 3840
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260909_090517_15cf2018-945e-471e-945d-a75ebaeb256f.png",
+    "status": "completed"
+  }
+]

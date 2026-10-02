@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "881bc797-3963-470b-8be1-4a207e167d59",
+  "narration": "작성한 문장을 확인하고 텍스트 파일로 받습니다. 화면에서 바꾼 내용이 파일에도 들어갔는지 살펴보고, 다음 작업에 이어 씁니다.",
+  "narrationSha256": "2f6c0caa2f350c65188386b44cf9babb8818d287085dc349050bca64dc73c4b6",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-2f6c0caa2f350c65.wav",
+  "duration": 8.8,
+  "sha256": "d43f3829f5a4a3653179b8608d60640cec06a4f6096cd9f1187015cd8f3dbc33",
+  "humanListening": false,
+  "fullDecode": true
+}

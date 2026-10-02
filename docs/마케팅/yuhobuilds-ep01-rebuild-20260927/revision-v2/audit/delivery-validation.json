@@ -1,0 +1,51 @@
+{
+  "rangeStatus": 206,
+  "previewStatus": 200,
+  "browserPlaybackVerified": false,
+  "assets": [
+    {
+      "status": 200,
+      "path": "revision-v2/preview.html"
+    },
+    {
+      "status": 200,
+      "path": "revision-v2/practice.html"
+    },
+    {
+      "status": 200,
+      "path": "revision-v2/practice.js"
+    },
+    {
+      "status": 200,
+      "path": "revision-v2/cover.jpg"
+    },
+    {
+      "status": 200,
+      "path": "revision-v2/assets/SUIT-Variable.woff2"
+    },
+    {
+      "status": 200,
+      "path": "revision-v2/복사용_첫완성질문.txt"
+    },
+    {
+      "status": 200,
+      "path": "revision-v2/yuhobuilds_EP01_자막.srt"
+    }
+  ],
+  "contentRange": [
+    "bytes 0-1023/10357678"
+  ],
+  "zip": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\revision-v2\\yuhobuilds_EP01_V2_47초_영상과실습.zip",
+  "entries": [
+    "전달파일/먼저읽어주세요.txt",
+    "전달파일/복사용_첫완성질문.txt",
+    "전달파일/cover.jpg",
+    "전달파일/practice.html",
+    "전달파일/practice.js",
+    "전달파일/preview.html",
+    "전달파일/yuhobuilds_EP01_자막.srt",
+    "전달파일/yuhobuilds_EP01_V2_FINAL_1080x1920.mp4",
+    "전달파일/assets/SUIT-Variable.woff2"
+  ],
+  "zipVideoHashMatches": true
+}

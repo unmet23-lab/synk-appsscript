@@ -1,0 +1,215 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 3.702,
+  "words": [
+    {
+      "text": "두",
+      "start": 0.163,
+      "end": 0.245
+    },
+    {
+      "text": "내용이",
+      "start": 0.342,
+      "end": 0.652
+    },
+    {
+      "text": "들어갔다면,",
+      "start": 0.701,
+      "end": 1.37
+    },
+    {
+      "text": "오른쪽의",
+      "start": 1.631,
+      "end": 2.087
+    },
+    {
+      "text": "위쪽",
+      "start": 2.185,
+      "end": 2.446
+    },
+    {
+      "text": "화살표를",
+      "start": 2.495,
+      "end": 3.017
+    },
+    {
+      "text": "누르세요.",
+      "start": 3.066,
+      "end": 3.702
+    }
+  ],
+  "characters": [
+    {
+      "text": "두",
+      "start": 0.163,
+      "end": 0.245
+    },
+    {
+      "text": " ",
+      "start": 0.245,
+      "end": 0.342
+    },
+    {
+      "text": "내",
+      "start": 0.342,
+      "end": 0.473
+    },
+    {
+      "text": "용",
+      "start": 0.473,
+      "end": 0.636
+    },
+    {
+      "text": "이",
+      "start": 0.636,
+      "end": 0.652
+    },
+    {
+      "text": " ",
+      "start": 0.652,
+      "end": 0.701
+    },
+    {
+      "text": "들",
+      "start": 0.701,
+      "end": 0.832
+    },
+    {
+      "text": "어",
+      "start": 0.832,
+      "end": 0.897
+    },
+    {
+      "text": "갔",
+      "start": 0.897,
+      "end": 1.044
+    },
+    {
+      "text": "다",
+      "start": 1.044,
+      "end": 1.174
+    },
+    {
+      "text": "면",
+      "start": 1.174,
+      "end": 1.354
+    },
+    {
+      "text": ",",
+      "start": 1.354,
+      "end": 1.37
+    },
+    {
+      "text": " ",
+      "start": 1.37,
+      "end": 1.631
+    },
+    {
+      "text": "오",
+      "start": 1.631,
+      "end": 1.696
+    },
+    {
+      "text": "른",
+      "start": 1.696,
+      "end": 1.827
+    },
+    {
+      "text": "쪽",
+      "start": 1.827,
+      "end": 2.039
+    },
+    {
+      "text": "의",
+      "start": 2.039,
+      "end": 2.087
+    },
+    {
+      "text": " ",
+      "start": 2.087,
+      "end": 2.185
+    },
+    {
+      "text": "위",
+      "start": 2.185,
+      "end": 2.283
+    },
+    {
+      "text": "쪽",
+      "start": 2.283,
+      "end": 2.446
+    },
+    {
+      "text": " ",
+      "start": 2.446,
+      "end": 2.495
+    },
+    {
+      "text": "화",
+      "start": 2.495,
+      "end": 2.593
+    },
+    {
+      "text": "살",
+      "start": 2.593,
+      "end": 2.772
+    },
+    {
+      "text": "표",
+      "start": 2.772,
+      "end": 2.887
+    },
+    {
+      "text": "를",
+      "start": 2.887,
+      "end": 3.017
+    },
+    {
+      "text": " ",
+      "start": 3.017,
+      "end": 3.066
+    },
+    {
+      "text": "누",
+      "start": 3.066,
+      "end": 3.164
+    },
+    {
+      "text": "르",
+      "start": 3.164,
+      "end": 3.262
+    },
+    {
+      "text": "세",
+      "start": 3.262,
+      "end": 3.408
+    },
+    {
+      "text": "요",
+      "start": 3.408,
+      "end": 3.686
+    },
+    {
+      "text": ".",
+      "start": 3.686,
+      "end": 3.702
+    }
+  ],
+  "request": {
+    "seed": 923,
+    "model": "ssfm-v30",
+    "voice_id": "tc_6a7446c19f2d7dfed990a900",
+    "text": "두 내용이 들어갔다면, 오른쪽의 위쪽 화살표를 누르세요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.04,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "tonedown",
+      "emotion_intensity": 0.5
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+ "id": "beat__fl31_Sulafat__t1",
+ "line": "beat",
+ "model": "gemini-3.1-flash-tts-preview",
+ "voice": "Sulafat",
+ "style": "Say this Korean exclamation playfully and cutely, like someone who got distracted and then suddenly remembered their homework",
+ "text": "아 맞다!",
+ "location": "global",
+ "usage": {
+  "promptTokenCount": 26,
+  "candidatesTokenCount": 37,
+  "totalTokenCount": 63,
+  "trafficType": "ON_DEMAND",
+  "promptTokensDetails": [
+   {
+    "modality": "TEXT",
+    "tokenCount": 26
+   }
+  ],
+  "candidatesTokensDetails": [
+   {
+    "modality": "AUDIO",
+    "tokenCount": 37
+   }
+  ]
+ },
+ "modelVersion": "gemini-3.1-flash-tts-preview"
+}

@@ -1,0 +1,36 @@
+{
+  "files": [
+    {
+      "voice": "F1",
+      "fullDecode": true,
+      "stderr": "",
+      "shaMatch": true
+    },
+    {
+      "voice": "F2",
+      "fullDecode": true,
+      "stderr": "",
+      "shaMatch": true
+    },
+    {
+      "voice": "F3",
+      "fullDecode": true,
+      "stderr": "",
+      "shaMatch": true
+    },
+    {
+      "voice": "F4",
+      "fullDecode": true,
+      "stderr": "",
+      "shaMatch": true
+    },
+    {
+      "voice": "F5",
+      "fullDecode": true,
+      "stderr": "",
+      "shaMatch": true
+    }
+  ],
+  "modelBytes": 403521099,
+  "listened": false
+}

@@ -1,0 +1,36 @@
+{
+  "date": "2026-09-22",
+  "status": "full_silent_review",
+  "userApproved": false,
+  "published": false,
+  "requestedNoAudioBeforeApproval": true,
+  "duration": 83,
+  "sceneCount": 13,
+  "newChatGPTDemonstration": true,
+  "audioStreams": 0,
+  "completeDecodePassed": true,
+  "hyperframesVersion": "0.8.60",
+  "playerQA": "verification/player-qa.json",
+  "files": [
+    {
+      "path": "synkbrief-meeting-v4.mp4",
+      "bytes": 6986460,
+      "sha256": "4adcfa1120285932c7f3170d7509a16a1aa18044c26c38b3dc914025b6cedd6e"
+    },
+    {
+      "path": "preview.webm",
+      "bytes": 3031138,
+      "sha256": "5266264cac8df191c68d5dcbaba14c5e6c582147ef7800e8abadf21a3919e3d7"
+    },
+    {
+      "path": "index.html",
+      "bytes": 23462,
+      "sha256": "6dc4a56e154be9d2b2a6ce6d413fbbe4002147e2cda12dbaeb5ecd7cf99968b0"
+    },
+    {
+      "path": "scenes.json",
+      "bytes": 14378,
+      "sha256": "915eeacde0322e6370b049ed3a1559c829e3f269eb7685af9bd418fc4c836621"
+    }
+  ]
+}

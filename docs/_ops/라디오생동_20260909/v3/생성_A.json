@@ -1,0 +1,64 @@
+{
+  "started": "2026-09-09T11:12:19.514Z",
+  "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\라디오생동\\추석_기준.png",
+  "sourceSha256": "43f821108bfaf25aea8b660adb69f35f2dd2cc5a4685b3528c45be3fa4bd1b74",
+  "model": "seedance_2_0",
+  "duration": 12,
+  "resolution": "1080p",
+  "prompt": "Single uninterrupted locked-off tripod shot. A gentle night breeze passes through this wool miniature courtyard: the wispy wool clouds drift slowly as coherent soft forms, while persimmon twigs sway together from their joints with a little natural lag in the fruit. Warm window light breathes very softly and independently. The moon stays round and still. Roofs, ground, stars, foreground objects and embroidered lettering remain firmly in place. Preserve dry tactile fibers and every object shape, stable exposure and focus. Graceful, quiet motion for long contemplative viewing. The breeze gently returns to the starting arrangement for a seamless loop. Empty courtyard, fixed framing throughout.",
+  "startAndEndSameImage": true,
+  "audio": false,
+  "status": "completed",
+  "finished": "2026-09-09T11:17:53.894Z",
+  "exitCode": 0,
+  "result": [
+    {
+      "created_at": "2026-09-09T11:12:24.005194Z",
+      "display_name": "Seedance 2.0",
+      "id": "b938eff1-947a-4c6e-8b16-3b60cf66c1fd",
+      "job_type": "seedance_2_0",
+      "min_result_url": null,
+      "params": {
+        "aspect_ratio": "16:9",
+        "bitrate_mode": "high",
+        "duration": 12,
+        "generate_audio": false,
+        "genre": "auto",
+        "height": 1080,
+        "medias": [
+          {
+            "data": {
+              "id": "55af2681-ce97-4375-b11b-cc9ff1ff7a33",
+              "type": "media_input",
+              "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/55af2681-ce97-4375-b11b-cc9ff1ff7a33.png"
+            },
+            "role": "start_image"
+          },
+          {
+            "data": {
+              "id": "55af2681-ce97-4375-b11b-cc9ff1ff7a33",
+              "type": "media_input",
+              "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/55af2681-ce97-4375-b11b-cc9ff1ff7a33.png"
+            },
+            "role": "end_image"
+          }
+        ],
+        "mode": "std",
+        "model": "seedance_2_0",
+        "multi_prompt": [],
+        "multi_shot_mode": "custom",
+        "multi_shots": false,
+        "prompt": "Single uninterrupted locked-off tripod shot. A gentle night breeze passes through this wool miniature courtyard: the wispy wool clouds drift slowly as coherent soft forms, while persimmon twigs sway together from their joints with a little natural lag in the fruit. Warm window light breathes very softly and independently. The moon stays round and still. Roofs, ground, stars, foreground objects and embroidered lettering remain firmly in place. Preserve dry tactile fibers and every object shape, stable exposure and focus. Graceful, quiet motion for long contemplative viewing. The breeze gently returns to the starting arrangement for a seamless loop. Empty courtyard, fixed framing throughout.",
+        "prompt_language": "en",
+        "reference_elements": [],
+        "resolution": "1080p",
+        "speedramp": "auto",
+        "width": 1920
+      },
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260909_111224_b938eff1-947a-4c6e-8b16-3b60cf66c1fd.mp4",
+      "status": "completed",
+      "thumbnail_url": "https://cdn.higgsfield.ai/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260909_111224_b938eff1-947a-4c6e-8b16-3b60cf66c1fd_thumbnail.webp"
+    }
+  ],
+  "log": ""
+}

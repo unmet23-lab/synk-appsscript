@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=1080,height=1920"><title>synkbrief · 메모를 할 일 표로</title>
+<script src="vendor/gsap.min.js"></script>
+<style
+  data-composition-variables='[
+    { "id": "tint", "type": "enum", "role": "style", "label": "Tint", "description": "Marker colour. Green, blue and violet ride --brand, --accent and --accent-2.", "default": "yellow", "options": [{ "value": "yellow", "label": "Yellow" }, { "value": "green", "label": "Green" }, { "value": "blue", "label": "Blue" }, { "value": "violet", "label": "Violet" }] },
+    { "id": "thickness", "type": "enum", "role": "style", "label": "Thickness", "description": "Height of the marker band behind the text, as a share of the font size.", "default": "standard", "options": [{ "value": "thin", "label": "Thin" }, { "value": "standard", "label": "Standard" }, { "value": "thick", "label": "Thick" }] },
+    { "id": "origin", "type": "enum", "role": "motion", "label": "Origin", "description": "Edge the marker grows out of as the scale variable runs from 0 to 1.", "default": "left", "options": [{ "value": "left", "label": "Left" }, { "value": "right", "label": "Right" }, { "value": "center", "label": "Center" }] }
+  ]'
+>
+  .hf-inline-highlight {
+    --hf-highlight-scale: 0;
+    position: relative;
+    display: inline;
+    z-index: 0;
+  }
+  .hf-inline-highlight::after {
+    content: "";
+    position: absolute;
+    left: -0.08em;
+    right: -0.08em;
+    bottom: 0.05em;
+    height: var(--hf-highlight-height, 0.38em);
+    background: var(--hf-highlight-color, #fff06a);
+    transform: scaleX(var(--hf-highlight-scale));
+    transform-origin: var(--hf-highlight-origin, left center);
+    z-index: -1;
+  }
+</style>
+<style>
+@font-face{font-family:SUIT;src:url('assets/SUIT-Variable.woff2');font-weight:100 900;font-display:block}
+@font-face{font-family:InterTight;src:url('assets/InterTight-Bold.ttf');font-weight:700;font-display:block}
+*{box-sizing:border-box}html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#fff;color:#000;font-family:SUIT,sans-serif}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#fff}
+.clip{position:absolute;inset:0}.inner{position:absolute;inset:0;background:#fff}.brand{position:absolute;left:76px;top:110px;font-family:InterTight,SUIT,sans-serif;font-size:34px;font-weight:700;letter-spacing:-1px}
+.issue{position:absolute;right:76px;top:117px;font-size:27px;font-weight:650;color:#555;letter-spacing:-.6px}
+.bottom{position:absolute;bottom:185px;left:76px;right:76px;display:flex;justify-content:space-between;align-items:center;font-size:28px;line-height:1.4;color:#555}
+.intro-title{position:absolute;top:287px;left:76px;right:76px;margin:0;font-weight:650;line-height:1.22;letter-spacing:-3px;font-size:73px}
+.intro-title strong{display:block;margin-top:16px;font-size:114px;line-height:1.17;letter-spacing:-4px;font-weight:850}
+.blue{color:#3d6bc9}.hero-wrap{position:absolute;left:6px;top:560px;width:1068px;height:712px;transform-origin:52% 59%}
+.hero{display:block;width:100%;height:100%;object-fit:contain}
+.utterance{position:absolute;padding:23px 28px;border-radius:16px;background:#fff;box-shadow:0 15px 36px #14264a24;font-size:39px;font-weight:680;line-height:1.25;letter-spacing:-1px}
+#say1{left:74px;top:1264px;transform:rotate(-3deg)}#say2{right:80px;top:1373px;transform:rotate(3deg);background:#eaf0ff;color:#163b9c}
+.hook-line{position:absolute;left:76px;right:76px;top:1545px;font-size:43px;font-weight:600;letter-spacing:-1px}
+.headline{position:absolute;left:76px;top:280px;right:76px;margin:0;font-size:96px;line-height:1.15;letter-spacing:-3.6px;font-weight:830}
+.headline .line{display:block}.headline .sub{font-size:73px;font-weight:650}
+.memo{position:absolute;left:76px;top:600px;width:928px;height:382px;border-radius:20px;background:#f2f5ff;padding:32px 38px;box-shadow:0 20px 55px #163b9c0d}
+.memo-top{display:flex;justify-content:space-between;align-items:center;font-size:28px;font-weight:700;color:#3e517a;margin-bottom:27px}
+.memo-line{font-size:39px;line-height:1.48;letter-spacing:-.9px;margin:0 0 14px;font-weight:600}.memo-line .name{font-weight:800;color:#3d6bc9}.memo-line .highlight{--hf-highlight-color:#ccdbff;--hf-highlight-height:.98em;--hf-highlight-scale:0}
+.memo-line .unknown{--hf-highlight-color:#ffe28a;--hf-highlight-height:.98em;--hf-highlight-scale:0}
+.direction{position:absolute;left:484px;top:1009px;width:112px;height:66px;color:#3d6bc9}
+.table-wrap{position:absolute;left:76px;top:1118px;width:928px;height:344px;transform-origin:50% 0}
+.table{position:absolute;inset:0;border-radius:22px;overflow:hidden;background:white;box-shadow:0 26px 80px #12274b26;outline:2px solid #dce5f8}
+.table-head{height:86px;display:grid;grid-template-columns:452px 168px 308px;background:#3d6bc9;color:white;align-items:center;font-size:34px;font-weight:750;letter-spacing:-.7px}
+.table-head div{padding-left:30px}.row{height:129px;display:grid;grid-template-columns:452px 168px 308px;align-items:center;font-size:41px;font-weight:750;letter-spacing:-1px}.row>div{padding-left:30px}.row+.row{background:#f3f6fc}.task{font-size:36px}.date{font-size:37px}.empty-date{background:#fff0ba;color:#644411;padding:12px 16px!important;border-radius:12px;margin-left:12px;width:264px;white-space:nowrap;font-size:39px;font-weight:800;transform-origin:50% 50%}
+.token{position:absolute;top:0;left:0;padding:12px 20px;border-radius:14px;background:#3d6bc9;color:white;font-size:40px;font-weight:750;letter-spacing:-.8px;box-shadow:0 15px 40px #3d6bc926;opacity:0;z-index:4;white-space:nowrap}
+#token-task{left:273px;top:710px}#token-name{left:105px;top:710px}#token-date{left:555px;top:710px}
+.instruction{position:absolute;left:76px;top:1540px;right:76px;margin:0;font-size:40px;font-weight:650;line-height:1.4;letter-spacing:-1px}
+.result-title{position:absolute;left:76px;right:76px;top:291px;margin:0;font-size:104px;line-height:1.2;letter-spacing:-3.7px;font-weight:850;opacity:0}
+.result-title span{display:block}.rule{position:absolute;left:76px;right:76px;top:1182px;opacity:0}
+.rule p{font-size:45px;letter-spacing:-1.1px;font-weight:620;line-height:1.4;margin:0 0 15px}.rule strong{font-size:75px;line-height:1.15;letter-spacing:-2.5px;font-weight:850;display:block}.rule .rule-word{--hf-highlight-color:#ffe28a;--hf-highlight-height:.8em;--hf-highlight-scale:0}
+.rule-note{font-size:34px!important;color:#555;margin-top:30px!important}
+.number-label{position:absolute;right:76px;top:525px;font-size:27px;color:#555;font-weight:600}
+.progress{position:absolute;left:76px;top:1780px;width:928px;height:5px;background:#e9edf6;overflow:hidden}.progress div{height:100%;background:#3d6bc9;transform-origin:0 50%}
+</style></head><body>
+<main id="root" data-composition-id="main" data-start="0" data-duration="15" data-width="1080" data-height="1920">
+<section id="intro" class="clip" data-start="0" data-duration="3.8" data-track-index="1"><div id="intro-inner" class="inner">
+<div class="brand">synkbrief</div><div class="issue">AI 활용법</div>
+<h1 class="intro-title"><span id="hook-a">회의는 끝났는데,</span><strong id="hook-b"><span class="blue">누가 뭘</span> 하죠?</strong></h1>
+<div class="hero-wrap" id="hero-wrap"><img class="hero" src="assets/meeting-scene.png" alt="회의 후 메모를 살펴보는 사람을 표현한 펠트 일러스트"></div>
+<div class="utterance" id="say1">“문구는 제가 수정할게요.”</div><div class="utterance" id="say2">“마감은 아직 미정이에요.”</div>
+<div class="hook-line" id="hook-line">메모를 다시 뒤지고 있다면.</div>
+<div class="bottom"><span>회의 메모 → 할 일 표</span><span>예시 · 가상 회의</span></div>
+</div></section>
+<section id="demo" class="clip" data-start="3.4" data-duration="11.6" data-track-index="2"><div id="demo-inner" class="inner">
+<div class="brand">synkbrief</div><div class="issue">ChatGPT 활용</div>
+<h2 class="headline" id="demo-head"><span class="line sub">회의 메모를</span><span class="line blue">할 일 표로.</span></h2>
+<div class="memo" id="memo"><div class="memo-top"><span>회의 메모</span><span>가상 예시</span></div><p class="memo-line" id="line-jisu"><span class="name">지수</span>　<span id="hl-task" class="hf-inline-highlight highlight">소개 페이지 문구</span>는 제가<br><span id="hl-date" class="hf-inline-highlight highlight">9월 23일까지</span> 수정할게요.</p><p class="memo-line" id="line-minho"><span class="name">민호</span>　설문 초안은 제가 맡을게요.<br><span id="hl-unknown" class="hf-inline-highlight unknown">마감은 아직 정하지 않았어요.</span></p></div>
+<svg id="direction" class="direction" viewBox="0 0 112 66" aria-hidden="true"><path d="M56 3V55M35 36L56 57L77 36" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<div class="token" id="token-task">문구 수정</div><div class="token" id="token-name">지수</div><div class="token" id="token-date">9월 23일</div>
+<div class="table-wrap" id="table-wrap"><div class="table" id="table"><div class="table-head"><div>할 일</div><div>담당자</div><div>기한</div></div><div class="row" id="row1"><div class="task" id="cell-task">소개 페이지 문구 수정</div><div id="cell-name">지수</div><div class="date" id="cell-date">9월 23일</div></div><div class="row" id="row2"><div class="task">설문 초안 작성</div><div>민호</div><div class="empty-date" id="missing">확인 필요</div></div></div></div>
+<p class="instruction" id="instruction">“할 일·담당자·기한을 표로 정리해줘.”</p>
+<h2 class="result-title" id="result-title"><span>누가, 무엇을,</span><span class="blue">언제까지.</span></h2>
+<div class="rule" id="rule"><p>메모에 없는 기한은</p><strong><span class="hf-inline-highlight rule-word" id="rule-word">‘확인 필요’</span>로.</strong><p class="rule-note">빈칸을 추측하지 않도록 요청하세요.</p></div>
+<div class="bottom"><span>실제 응답을 읽기 쉽게 재구성</span><span>가상 회의 예시</span></div>
+</div></section>
+<div class="progress"><div id="progress-fill"></div></div>
+<audio id="sfx-start" src="assets/notify.wav" data-start="4.55" data-duration="0.27" data-track-index="8" data-volume="0.18"></audio>
+<audio id="sfx-done" src="assets/achieve.wav" data-start="9.7" data-duration="0.36" data-track-index="9" data-volume="0.20"></audio>
+</main>
+<script>
+const tl=gsap.timeline({paused:true});
+// Motion rules: waterfall-entry, scale-swap-transition. Coordinates fixed before playback.
+tl.fromTo('#hook-a',{opacity:0,y:45},{opacity:1,y:0,duration:.24,ease:'power4.out'},.05);
+tl.fromTo('#hook-b',{opacity:0,y:68},{opacity:1,y:0,duration:.32,ease:'power4.out'},.20);
+tl.fromTo('#hero-wrap',{scale:.88,y:75,opacity:0},{scale:1,y:0,opacity:1,duration:.66,ease:'power3.out'},.17);
+tl.to('#hero-wrap',{scale:1.038,y:-10,duration:2.25,ease:'sine.inOut'},.9);
+tl.fromTo('#say1',{x:-105,rotation:-8,opacity:0},{x:0,rotation:-3,opacity:1,duration:.43,ease:'back.out(1.3)'},.86);
+tl.fromTo('#say2',{x:100,rotation:8,opacity:0},{x:0,rotation:3,opacity:1,duration:.44,ease:'back.out(1.3)'},1.40);
+tl.fromTo('#hook-line',{y:22,opacity:0},{y:0,opacity:1,duration:.32,ease:'power3.out'},2.05);
+tl.to('#intro-inner',{y:-135,opacity:0,duration:.36,ease:'power3.in'},3.35);
+tl.fromTo('#demo-inner',{y:125,opacity:0},{y:0,opacity:1,duration:.4,ease:'power3.out'},3.4);
+tl.fromTo('#demo-head .line',{y:50,opacity:0},{y:0,opacity:1,duration:.33,stagger:.10,ease:'power4.out'},3.74);
+tl.fromTo('#memo',{x:-130,rotation:-4,opacity:0},{x:0,rotation:0,opacity:1,duration:.55,ease:'power3.out'},3.83);
+tl.fromTo('#table-wrap',{y:80,scale:.94,opacity:0},{y:0,scale:1,opacity:1,duration:.62,ease:'power3.out'},4.25);
+tl.fromTo('#direction',{scaleY:0,opacity:0},{scaleY:1,opacity:1,duration:.35,ease:'power3.out'},4.65);
+tl.fromTo('#instruction',{opacity:0,y:20},{opacity:1,y:0,duration:.3,ease:'power3.out'},4.55);
+tl.fromTo('#row1 > div',{opacity:0},{opacity:0,duration:.01},3.4);
+tl.to('#hl-task',{'--hf-highlight-scale':1,duration:.38,ease:'power2.out'},5.30);
+tl.to('#hl-date',{'--hf-highlight-scale':1,duration:.38,ease:'power2.out'},5.66);
+tl.to('#line-jisu,#line-minho',{opacity:0,duration:.12,ease:'power2.in'},6.04);
+tl.fromTo('#token-task',{opacity:0,scale:.9},{opacity:1,scale:1,duration:.22,ease:'power2.out'},6.20);
+tl.fromTo('#token-name',{opacity:0,scale:.9},{opacity:1,scale:1,duration:.22,ease:'power2.out'},6.32);
+tl.fromTo('#token-date',{opacity:0,scale:.9},{opacity:1,scale:1,duration:.22,ease:'power2.out'},6.44);
+tl.to('#token-task',{x:-170,y:515,scale:.88,duration:.78,ease:'power3.inOut'},6.45);
+tl.to('#token-name',{x:453,y:515,scale:.88,duration:.83,ease:'power3.inOut'},6.54);
+tl.to('#token-date',{x:165,y:515,scale:.88,duration:.87,ease:'power3.inOut'},6.67);
+tl.to('.token',{opacity:0,duration:.16,stagger:.05,ease:'power2.in'},7.21);
+tl.to('#row1 > div',{opacity:1,duration:.20,stagger:.11,ease:'power2.out'},7.31);
+tl.to('#line-jisu',{opacity:.32,duration:.30},7.8);
+tl.to('#line-minho',{opacity:1,duration:.30},7.8);
+tl.to('#hl-unknown',{'--hf-highlight-scale':1,duration:.55,ease:'power2.out'},8.05);
+tl.fromTo('#row2',{opacity:0,y:30},{opacity:1,y:0,duration:.46,ease:'power3.out'},8.72);
+tl.fromTo('#missing',{scale:.75,opacity:0},{scale:1,opacity:1,duration:.46,ease:'back.out(1.5)'},9.20);
+tl.to('#memo',{x:65,y:-120,scale:.88,opacity:0,duration:.55,ease:'power3.in'},10.35);
+tl.to('#demo-head',{y:-70,opacity:0,duration:.40,ease:'power3.in'},10.35);
+tl.to('#direction,#instruction',{opacity:0,duration:.25},10.50);
+tl.to('#table-wrap',{y:-366,scale:1,duration:.78,ease:'power3.inOut'},10.70);
+tl.fromTo('#result-title',{y:50,opacity:0},{y:0,opacity:1,duration:.48,ease:'power4.out'},10.87);
+tl.fromTo('#rule',{y:55,opacity:0},{y:0,opacity:1,duration:.46,ease:'power3.out'},11.75);
+tl.to('#rule-word',{'--hf-highlight-scale':1,duration:.55,ease:'power2.out'},12.28);
+tl.fromTo('#progress-fill',{scaleX:0},{scaleX:1,duration:15,ease:'none'},0);
+window.__timelines=window.__timelines||{};window.__timelines.main=tl;
+</script></body></html>

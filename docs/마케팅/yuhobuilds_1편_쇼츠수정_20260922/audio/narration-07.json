@@ -1,0 +1,59 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "제로. 클로드 코드가 뭔지도 몰랐어요. 설정부터 막혔죠.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.2,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "tonedown",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 3.583,
+  "words": [
+    {
+      "text": "제로.",
+      "start": 0.064,
+      "end": 0.305
+    },
+    {
+      "text": "클로드",
+      "start": 0.755,
+      "end": 1.044
+    },
+    {
+      "text": "코드가",
+      "start": 1.093,
+      "end": 1.334
+    },
+    {
+      "text": "뭔지도",
+      "start": 1.382,
+      "end": 1.639
+    },
+    {
+      "text": "몰랐어요.",
+      "start": 1.687,
+      "end": 2.073
+    },
+    {
+      "text": "설정부터",
+      "start": 2.555,
+      "end": 2.973
+    },
+    {
+      "text": "막혔죠.",
+      "start": 3.021,
+      "end": 3.583
+    }
+  ],
+  "characters": null
+}

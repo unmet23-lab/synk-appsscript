@@ -1,0 +1,51 @@
+{
+  "depth": {
+    "old": {
+      "minArea": 0.7422006666666661,
+      "maxArea": 1.2577993333333313,
+      "flipped": 0,
+      "states": 9,
+      "triangles": 336
+    },
+    "candidate": {
+      "minArea": 0.5151033333333325,
+      "maxArea": 1.484896666666665,
+      "flipped": 0,
+      "states": 9,
+      "triangles": 336
+    }
+  },
+  "images": [
+    [
+      4096,
+      4096
+    ],
+    [
+      1024,
+      1024
+    ]
+  ],
+  "fonts": "loaded",
+  "viewports": [
+    {
+      "width": 1200,
+      "scrollWidth": 1200
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390
+    }
+  ],
+  "states": [
+    "-0.30",
+    "0.00",
+    "0.30"
+  ],
+  "reset": {
+    "x": "0",
+    "depth": false
+  },
+  "errors": [],
+  "checkedAt": "2026-09-09T07:47:56.374Z",
+  "pass": true
+}

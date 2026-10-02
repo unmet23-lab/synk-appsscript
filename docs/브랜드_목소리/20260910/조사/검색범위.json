@@ -1,0 +1,36 @@
+{
+  "checkedAt": "2026-09-10T08:28:58.407Z",
+  "results": [
+    {
+      "id": "hf-korean-language",
+      "count": 781,
+      "pages": 2,
+      "paginationExhausted": true
+    },
+    {
+      "id": "hf-korean-name",
+      "count": 8,
+      "pages": 1,
+      "paginationExhausted": true
+    },
+    {
+      "id": "hf-tts-popular",
+      "count": 1000,
+      "pages": 10,
+      "paginationExhausted": false
+    },
+    {
+      "id": "gh-korean-tts",
+      "count": 100,
+      "pages": 1,
+      "paginationExhausted": false
+    },
+    {
+      "id": "gh-voice-design",
+      "count": 100,
+      "pages": 1,
+      "paginationExhausted": false
+    }
+  ],
+  "scope": "Public metadata inventory plus original-developer model-family review. Search ranking is discovery only, not a quality score. GitHub top100 per query is bounded; Korean-language HF pagination records show actual coverage."
+}

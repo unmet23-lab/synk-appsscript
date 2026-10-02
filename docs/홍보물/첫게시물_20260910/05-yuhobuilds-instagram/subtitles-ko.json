@@ -1,0 +1,79 @@
+[
+  {
+    "text": "1인 기업의 브랜드와 고객 접점을 이어봅니다.",
+    "startMs": 300,
+    "endMs": 3360,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "여기서는 완성본과 선택 이유, 고치는 원본을 함께\n펼칩니다.",
+    "startMs": 4100,
+    "endMs": 8840,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "가상 예시입니다.",
+    "startMs": 10066.666666666668,
+    "endMs": 11166.666666666668,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "독립 강사의 소개자료를 정리하는 일을 한 줄로\n말합니다.",
+    "startMs": 11466.666666666668,
+    "endMs": 14586.666666666668,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "상품에는 실제 받는 것을 씁니다.",
+    "startMs": 18066.666666666664,
+    "endMs": 20246.666666666664,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "이 예시에서는 소개 원고와 읽는 순서, 수정\n안내입니다.",
+    "startMs": 20726.666666666664,
+    "endMs": 24486.666666666664,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "문의에서도 필요한 범위를 먼저 확인합니다.",
+    "startMs": 26066.666666666664,
+    "endMs": 28866.666666666664,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "원고를 정리하는 일과 디자인 제작은 구분합니다.",
+    "startMs": 29366.666666666664,
+    "endMs": 32626.666666666664,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "소개 문장과 상품 안내, 문의 답변을 함께 놓고\n읽어보세요.",
+    "startMs": 35066.666666666664,
+    "endMs": 39726.666666666664,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "세 곳에서 설명하는 일이 같은가요?",
+    "startMs": 40586.666666666664,
+    "endMs": 42686.666666666664,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "다음 편에서는 한 곳의 원고를 완성해 봅니다.",
+    "startMs": 43486.666666666664,
+    "endMs": 46566.666666666664,
+    "timestampMs": null,
+    "confidence": null
+  }
+]

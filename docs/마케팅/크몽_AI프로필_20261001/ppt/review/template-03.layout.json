@@ -1,0 +1,1009 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/ofy9wn61",
+    "id": "ofy9wn61",
+    "slide": 3,
+    "layoutId": "/ppt/slideLayouts/slideLayout1.xml",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri Light",
+        "eastAsianTypeface": "Calibri Light",
+        "complexScriptTypeface": "Calibri Light"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri",
+        "eastAsianTypeface": "Calibri",
+        "complexScriptTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Calibri",
+      "Calibri Light",
+      "SUIT Variable"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout1.xml",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/ulcnalwf",
+      "id": "16",
+      "bbox": [
+        72,
+        38.18,
+        142,
+        37.63
+      ],
+      "contentType": "image/png",
+      "asset": {
+        "assetId": "/ppt/media/image5.png",
+        "contentType": "image/png",
+        "byteLength": 96771
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image5.png",
+        "contentType": "image/png",
+        "byteLength": 96771
+      }
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/cza94vmx",
+      "id": "2",
+      "name": "페이지 분류",
+      "bbox": [
+        760,
+        45,
+        448,
+        34
+      ],
+      "geometry": "rect",
+      "text": "EXPERIENCE",
+      "textPreview": "EXPERIENCE",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "EXPERIENCE"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "EXPERIENCE",
+          "resolvedTextStyle": {
+            "fontSize": 19,
+            "typeface": "SUIT Variable",
+            "color": "#675C6A",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "EXPERIENCE",
+              "fontSize": 19,
+              "typeface": "SUIT Variable",
+              "color": "#675C6A"
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 3,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/vmlojqd0",
+      "id": "17",
+      "bbox": [
+        72,
+        661.14,
+        236,
+        19.72
+      ],
+      "contentType": "image/png",
+      "asset": {
+        "assetId": "/ppt/media/image6.png",
+        "contentType": "image/png",
+        "byteLength": 89484
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image6.png",
+        "contentType": "image/png",
+        "byteLength": 89484
+      }
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/298ryl4v",
+      "id": "4",
+      "name": "하단 설명",
+      "bbox": [
+        332,
+        664,
+        740,
+        26
+      ],
+      "geometry": "rect",
+      "text": "편집용 양식 · 대괄호 안 문구와 사진을 바꿔주세요",
+      "textPreview": "편집용 양식 · 대괄호 안 문구와 사진을 바꿔주세요",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "편집용 양식 · 대괄호 안 문구와 사진을 바꿔주세요"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "편집용 양식 · 대괄호 안 문구와 사진을 바꿔주세요",
+          "resolvedTextStyle": {
+            "fontSize": 17,
+            "typeface": "SUIT Variable",
+            "color": "#675C6A",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "편집용 양식 · 대괄호 안 문구와 사진을 바꿔주세요",
+              "fontSize": 17,
+              "typeface": "SUIT Variable",
+              "color": "#675C6A"
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/3ah8rqlg",
+      "id": "5",
+      "name": "페이지 번호",
+      "bbox": [
+        1120,
+        663,
+        90,
+        26
+      ],
+      "geometry": "rect",
+      "text": "03 / 07",
+      "textPreview": "03 / 07",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "03 / 07"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "03 / 07",
+          "resolvedTextStyle": {
+            "fontSize": 17,
+            "typeface": "SUIT Variable",
+            "color": "#675C6A",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "03 / 07",
+              "fontSize": 17,
+              "typeface": "SUIT Variable",
+              "color": "#675C6A"
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/obq90bml",
+      "id": "6",
+      "name": "경력 제목",
+      "bbox": [
+        72,
+        132,
+        1136,
+        84
+      ],
+      "geometry": "rect",
+      "text": "주요 경력",
+      "textPreview": "주요 경력",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "주요 경력"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "주요 경력",
+          "resolvedTextStyle": {
+            "fontSize": 49,
+            "typeface": "SUIT Variable",
+            "color": "#251F29",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "주요 경력",
+              "fontSize": 49,
+              "typeface": "SUIT Variable",
+              "color": "#251F29",
+              "bold": true
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/pcjqtg36",
+      "id": "7",
+      "name": "기간 0",
+      "bbox": [
+        72,
+        255,
+        180,
+        54
+      ],
+      "geometry": "rect",
+      "text": "[기간]",
+      "textPreview": "[기간]",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "[기간]"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "[기간]",
+          "resolvedTextStyle": {
+            "fontSize": 30,
+            "typeface": "SUIT Variable",
+            "color": "#9D3D6D",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "[기간]",
+              "fontSize": 30,
+              "typeface": "SUIT Variable",
+              "color": "#9D3D6D",
+              "bold": true
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/m5cra54z",
+      "id": "8",
+      "name": "경력 0",
+      "bbox": [
+        298,
+        255,
+        850,
+        46
+      ],
+      "geometry": "rect",
+      "text": "[소속 또는 프로젝트 / 맡은 역할]",
+      "textPreview": "[소속 또는 프로젝트 / 맡은 역할]",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "[소속 또는 프로젝트 / 맡은 역할]"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "[소속 또는 프로젝트 / 맡은 역할]",
+          "resolvedTextStyle": {
+            "fontSize": 30,
+            "typeface": "SUIT Variable",
+            "color": "#251F29",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "[소속 또는 프로젝트 / 맡은 역할]",
+              "fontSize": 30,
+              "typeface": "SUIT Variable",
+              "color": "#251F29",
+              "bold": true
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/n6ls3alk",
+      "id": "9",
+      "name": "경력 설명 0",
+      "bbox": [
+        298,
+        303,
+        870,
+        52
+      ],
+      "geometry": "rect",
+      "text": "[담당한 일이나 확인된 결과를 한 문장으로 적습니다.]",
+      "textPreview": "[담당한 일이나 확인된 결과를 한 문장으로 적습니다.]",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "[담당한 일이나 확인된 결과를 한 문장으로 적습니다.]"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "[담당한 일이나 확인된 결과를 한 문장으로 적습니다.]",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "SUIT Variable",
+            "color": "#675C6A",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "[담당한 일이나 확인된 결과를 한 문장으로 적습니다.]",
+              "fontSize": 25,
+              "typeface": "SUIT Variable",
+              "color": "#675C6A"
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/n2l4fq98",
+      "id": "10",
+      "name": "기간 1",
+      "bbox": [
+        72,
+        373,
+        180,
+        54
+      ],
+      "geometry": "rect",
+      "text": "[기간]",
+      "textPreview": "[기간]",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "[기간]"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "[기간]",
+          "resolvedTextStyle": {
+            "fontSize": 30,
+            "typeface": "SUIT Variable",
+            "color": "#9D3D6D",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "[기간]",
+              "fontSize": 30,
+              "typeface": "SUIT Variable",
+              "color": "#9D3D6D",
+              "bold": true
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/m1c3mlsn",
+      "id": "11",
+      "name": "경력 1",
+      "bbox": [
+        298,
+        373,
+        850,
+        46
+      ],
+      "geometry": "rect",
+      "text": "[소속 또는 프로젝트 / 맡은 역할]",
+      "textPreview": "[소속 또는 프로젝트 / 맡은 역할]",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "[소속 또는 프로젝트 / 맡은 역할]"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "[소속 또는 프로젝트 / 맡은 역할]",
+          "resolvedTextStyle": {
+            "fontSize": 30,
+            "typeface": "SUIT Variable",
+            "color": "#251F29",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "[소속 또는 프로젝트 / 맡은 역할]",
+              "fontSize": 30,
+              "typeface": "SUIT Variable",
+              "color": "#251F29",
+              "bold": true
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/943mhgre",
+      "id": "12",
+      "name": "경력 설명 1",
+      "bbox": [
+        298,
+        421,
+        870,
+        52
+      ],
+      "geometry": "rect",
+      "text": "[담당한 일이나 확인된 결과를 한 문장으로 적습니다.]",
+      "textPreview": "[담당한 일이나 확인된 결과를 한 문장으로 적습니다.]",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "[담당한 일이나 확인된 결과를 한 문장으로 적습니다.]"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "[담당한 일이나 확인된 결과를 한 문장으로 적습니다.]",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "SUIT Variable",
+            "color": "#675C6A",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "[담당한 일이나 확인된 결과를 한 문장으로 적습니다.]",
+              "fontSize": 25,
+              "typeface": "SUIT Variable",
+              "color": "#675C6A"
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/83ulovat",
+      "id": "13",
+      "name": "기간 2",
+      "bbox": [
+        72,
+        491,
+        180,
+        54
+      ],
+      "geometry": "rect",
+      "text": "[기간]",
+      "textPreview": "[기간]",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "[기간]"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "[기간]",
+          "resolvedTextStyle": {
+            "fontSize": 30,
+            "typeface": "SUIT Variable",
+            "color": "#9D3D6D",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "[기간]",
+              "fontSize": 30,
+              "typeface": "SUIT Variable",
+              "color": "#9D3D6D",
+              "bold": true
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 14,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/v6l4jq94",
+      "id": "14",
+      "name": "경력 2",
+      "bbox": [
+        298,
+        491,
+        850,
+        46
+      ],
+      "geometry": "rect",
+      "text": "[소속 또는 프로젝트 / 맡은 역할]",
+      "textPreview": "[소속 또는 프로젝트 / 맡은 역할]",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "[소속 또는 프로젝트 / 맡은 역할]"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "[소속 또는 프로젝트 / 맡은 역할]",
+          "resolvedTextStyle": {
+            "fontSize": 30,
+            "typeface": "SUIT Variable",
+            "color": "#251F29",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "[소속 또는 프로젝트 / 맡은 역할]",
+              "fontSize": 30,
+              "typeface": "SUIT Variable",
+              "color": "#251F29",
+              "bold": true
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 15,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/a5c3ql8z",
+      "id": "15",
+      "name": "경력 설명 2",
+      "bbox": [
+        298,
+        539,
+        870,
+        52
+      ],
+      "geometry": "rect",
+      "text": "[담당한 일이나 확인된 결과를 한 문장으로 적습니다.]",
+      "textPreview": "[담당한 일이나 확인된 결과를 한 문장으로 적습니다.]",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "[담당한 일이나 확인된 결과를 한 문장으로 적습니다.]"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "[담당한 일이나 확인된 결과를 한 문장으로 적습니다.]",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "SUIT Variable",
+            "color": "#675C6A",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "[담당한 일이나 확인된 결과를 한 문장으로 적습니다.]",
+              "fontSize": 25,
+              "typeface": "SUIT Variable",
+              "color": "#675C6A"
+            }
+          ],
+          "bulletCharacter": "",
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}

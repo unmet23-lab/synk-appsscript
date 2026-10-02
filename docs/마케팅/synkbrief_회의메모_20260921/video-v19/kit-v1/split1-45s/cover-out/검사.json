@@ -1,0 +1,25 @@
+{
+ "원고": "docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\kit-v1\\split1-45s\\cover.html",
+ "시각": "2026-10-01T15:15:45.778Z",
+ "로드된서체": [
+  "SUIT Variable",
+  "Inter Tight",
+  "DM Mono"
+ ],
+ "결과": [
+  {
+   "i": 1,
+   "name": "표지",
+   "fmt": "cover916",
+   "acc": "brief",
+   "x": 40,
+   "y": 40,
+   "w": 1080,
+   "h": 1920,
+   "deco": 1,
+   "trend": [],
+   "문제": [],
+   "주의": []
+  }
+ ]
+}

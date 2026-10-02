@@ -1,0 +1,235 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 4.268,
+  "words": [
+    {
+      "text": "기능은",
+      "start": 0.08,
+      "end": 0.321
+    },
+    {
+      "text": "늘었는데,",
+      "start": 0.401,
+      "end": 0.802
+    },
+    {
+      "text": "정작",
+      "start": 1.262,
+      "end": 1.543
+    },
+    {
+      "text": "출석은",
+      "start": 1.623,
+      "end": 1.964
+    },
+    {
+      "text": "뒷전.",
+      "start": 2.024,
+      "end": 2.304
+    },
+    {
+      "text": "나",
+      "start": 2.906,
+      "end": 2.986
+    },
+    {
+      "text": "뭐",
+      "start": 3.206,
+      "end": 3.286
+    },
+    {
+      "text": "만들고",
+      "start": 3.387,
+      "end": 3.647
+    },
+    {
+      "text": "있었지?",
+      "start": 3.707,
+      "end": 4.268
+    }
+  ],
+  "characters": [
+    {
+      "text": "기",
+      "start": 0.08,
+      "end": 0.14
+    },
+    {
+      "text": "능",
+      "start": 0.14,
+      "end": 0.261
+    },
+    {
+      "text": "은",
+      "start": 0.261,
+      "end": 0.321
+    },
+    {
+      "text": " ",
+      "start": 0.321,
+      "end": 0.401
+    },
+    {
+      "text": "늘",
+      "start": 0.401,
+      "end": 0.501
+    },
+    {
+      "text": "었",
+      "start": 0.501,
+      "end": 0.621
+    },
+    {
+      "text": "는",
+      "start": 0.621,
+      "end": 0.721
+    },
+    {
+      "text": "데",
+      "start": 0.721,
+      "end": 0.782
+    },
+    {
+      "text": ",",
+      "start": 0.782,
+      "end": 0.802
+    },
+    {
+      "text": " ",
+      "start": 0.802,
+      "end": 1.262
+    },
+    {
+      "text": "정",
+      "start": 1.262,
+      "end": 1.443
+    },
+    {
+      "text": "작",
+      "start": 1.443,
+      "end": 1.543
+    },
+    {
+      "text": " ",
+      "start": 1.543,
+      "end": 1.623
+    },
+    {
+      "text": "출",
+      "start": 1.623,
+      "end": 1.763
+    },
+    {
+      "text": "석",
+      "start": 1.763,
+      "end": 1.904
+    },
+    {
+      "text": "은",
+      "start": 1.904,
+      "end": 1.964
+    },
+    {
+      "text": " ",
+      "start": 1.964,
+      "end": 2.024
+    },
+    {
+      "text": "뒷",
+      "start": 2.024,
+      "end": 2.144
+    },
+    {
+      "text": "전",
+      "start": 2.144,
+      "end": 2.284
+    },
+    {
+      "text": ".",
+      "start": 2.284,
+      "end": 2.304
+    },
+    {
+      "text": " ",
+      "start": 2.304,
+      "end": 2.906
+    },
+    {
+      "text": "나",
+      "start": 2.906,
+      "end": 2.986
+    },
+    {
+      "text": " ",
+      "start": 2.986,
+      "end": 3.206
+    },
+    {
+      "text": "뭐",
+      "start": 3.206,
+      "end": 3.286
+    },
+    {
+      "text": " ",
+      "start": 3.286,
+      "end": 3.387
+    },
+    {
+      "text": "만",
+      "start": 3.387,
+      "end": 3.507
+    },
+    {
+      "text": "들",
+      "start": 3.507,
+      "end": 3.607
+    },
+    {
+      "text": "고",
+      "start": 3.607,
+      "end": 3.647
+    },
+    {
+      "text": " ",
+      "start": 3.647,
+      "end": 3.707
+    },
+    {
+      "text": "있",
+      "start": 3.707,
+      "end": 3.807
+    },
+    {
+      "text": "었",
+      "start": 3.807,
+      "end": 3.928
+    },
+    {
+      "text": "지",
+      "start": 3.928,
+      "end": 4.248
+    },
+    {
+      "text": "?",
+      "start": 4.248,
+      "end": 4.268
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "기능은 늘었는데, 정작 출석은 뒷전. 나 뭐 만들고 있었지?",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.23,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "tonedown",
+      "emotion_intensity": 1.15
+    }
+  }
+}

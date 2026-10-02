@@ -1,0 +1,130 @@
+[
+  {
+    "id": "hook",
+    "duration": 5,
+    "step": "회의가 끝난 뒤",
+    "title": "메모는 남겼는데,<br>할 일 정리는 또 따로?",
+    "caption": "ChatGPT로 담당자와 기한을 정리해요.",
+    "theme": "blue",
+    "body": "<img class=\"felt\" src=\"assets/meeting-scene.png\" alt=\"메모가 남은 회의 상황\"><div class=\"loose a\">누가 맡았지?</div><div class=\"loose b\">언제까지지?</div><div class=\"loose c\">이건 확정인가?</div><div  class=\"card solid\" style=\"top:1195px\">메모 → 할 일 표</div>",
+    "start": 0
+  },
+  {
+    "id": "result",
+    "duration": 5,
+    "step": "오늘 얻을 결과",
+    "title": "해야 할 일,<br>표로 한눈에 봐요.",
+    "caption": "정리 규칙도 저장해 다음 회의에 다시 써요.",
+    "body": "<div class=\"memo-line\">지수: 문구는 9월 23일까지 수정할게요.</div><div class=\"tokens\"><b>문구 수정</b><b>지수</b><b>9월 23일</b></div><div class=\"result-table\"><div class=\"table\"><div class=\"tr head\"><b>할 일</b><b>담당자</b><b>기한</b></div><div class=\"tr data\"><b>문구 수정</b><b>지수</b><b>9월 23일</b></div><div class=\"tr data\"><b>설문 초안</b><b>민호</b><b class=\"unknown\">확인 필요</b></div></div></div><div class=\"label\" style=\"top:1305px\">실제 응답의 핵심 내용을 크게 재구성</div>",
+    "start": 5
+  },
+  {
+    "id": "project",
+    "duration": 6,
+    "step": "프로젝트란?",
+    "title": "회의 전용 공간에<br>정리 규칙을 저장해요.",
+    "caption": "관련 대화·자료·지침을 모아 두는 공간이에요.",
+    "body": "<div class=\"folder\"><span class=\"folder-tab\">회의 정리 프로젝트</span><div class=\"rule-file\">지침서<br><small>표 형식 · 빠진 정보 처리법</small></div><div class=\"chat-card one\">오늘 회의</div><div class=\"chat-card two\">다음 회의</div><svg class=\"links\" viewBox=\"0 0 800 300\"><path d=\"M400 20V135H190V270M400 135H610V270\"/></svg></div><div  class=\"card accent\" style=\"top:1250px\">한 번 저장 → 이 안의 새 채팅에 적용</div>",
+    "start": 10
+  },
+  {
+    "id": "global",
+    "duration": 7,
+    "step": "계정 전체와 구분하세요",
+    "title": "회의 규칙은<br>프로젝트에만 넣으세요.",
+    "caption": "계정 전체에 넣으면 다른 대화에도 영향을 줄 수 있어요.",
+    "body": "<div id=\"all-scope\" class=\"card amber\" style=\"top:510px\">계정 전체 맞춤 지침</div><div class=\"branch-row\"><div>회의 정리</div><div class=\"irrelevant\">여행 질문</div><div class=\"irrelevant\">글쓰기</div></div><div  class=\"card scenario\" style=\"top:915px\">여행 질문에도 담당자·기한 표가 나온다면?</div><div class=\"label\" style=\"top:1065px\">범위 차이를 설명하는 가상 예시</div><div id=\"right-scope\" class=\"card accent\" style=\"top:1190px\">회의 프로젝트 → 회의 전용 지침</div>",
+    "start": 16
+  },
+  {
+    "id": "create",
+    "duration": 6,
+    "step": "01   프로젝트 만들기",
+    "title": "ChatGPT에서<br>새 프로젝트를 만드세요.",
+    "caption": "프로젝트 목록 → 새 프로젝트 → 이름을 적고 만들기.",
+    "body": "<div class=\"label\" style=\"top:435px\">chatgpt.com · 로그인한 뒤 시작하세요</div><div class=\"shot\" id=\"create-over\" style=\"top:480px;height:270px;width:936px;left:72px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/01-projects.png\" style=\"width:1497.6px;height:842.4px;left:-438.75px;top:-117px\" alt=\"ChatGPT 실제 화면\"></div><div class=\"cursor\" id=\"create-cursor\" style=\"left:920px;top:520px\"><i></i><svg viewBox=\"0 0 24 24\"><path d=\"M3 2.8 20.6 14 12.8 15.5 9 22 3 2.8Z\" fill=\"white\" stroke=\"#2450ae\" stroke-width=\"1.4\"/></svg></div><div class=\"shot\" id=\"create-dialog\" style=\"top:840px;height:482px;width:936px;left:72px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/02-create.png\" style=\"width:2340px;height:1316.25px;left:-702px;top:-416.8125px\" alt=\"ChatGPT 실제 화면\"></div><div class=\"label\" style=\"top:1370px\">이름 예시: 회의 정리 · 우리 팀</div>",
+    "start": 23
+  },
+  {
+    "id": "settings",
+    "duration": 6,
+    "step": "02   지침 저장 위치",
+    "title": "프로젝트의 ⋯<br>→ 프로젝트 설정",
+    "caption": "프로필의 계정 설정과 구분하세요.",
+    "body": "<div class=\"shot\" id=\"settings-shot\" style=\"top:530px;height:570px;width:936px;left:72px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/04-menu.png\" style=\"width:1516.5569620253166px;height:853.0632911392406px;left:-331.746835443038px;top:-118.48101265822785px\" alt=\"ChatGPT 실제 화면\"></div><div class=\"cursor\" id=\"settings-cursor\" style=\"left:925px;top:590px\"><i></i><svg viewBox=\"0 0 24 24\"><path d=\"M3 2.8 20.6 14 12.8 15.5 9 22 3 2.8Z\" fill=\"white\" stroke=\"#2450ae\" stroke-width=\"1.4\"/></svg></div><div  class=\"card accent\" style=\"top:1210px\">프로젝트 설정 안의 ‘지침’ 칸</div>",
+    "start": 29
+  },
+  {
+    "id": "save",
+    "duration": 7,
+    "step": "03   한 번만 저장",
+    "title": "제공한 지침 전체를<br>복사해서 저장하세요.",
+    "caption": "저장한 뒤 다시 열어, 내용이 남아 있는지 확인해요.",
+    "body": "<div class=\"file-pill\">project-instructions.txt <b>전체 복사</b></div><div class=\"shot\" id=\"save-shot\" style=\"top:645px;height:490px;width:936px;left:72px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/06-instructions.png\" style=\"width:2340px;height:1316.25px;left:-702px;top:-54.84375px\" alt=\"ChatGPT 실제 화면\"></div><div class=\"shot\" id=\"save-button\" style=\"top:1195px;height:178px;width:456px;left:552px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/06-instructions.png\" style=\"width:3840px;height:2160px;left:-2202px;top:-1860px\" alt=\"ChatGPT 실제 화면\"></div><div class=\"cursor\" id=\"save-cursor\" style=\"left:875px;top:1270px\"><i></i><svg viewBox=\"0 0 24 24\"><path d=\"M3 2.8 20.6 14 12.8 15.5 9 22 3 2.8Z\" fill=\"white\" stroke=\"#2450ae\" stroke-width=\"1.4\"/></svg></div><div class=\"paste-chip\">Ctrl + V · 지침 칸에 붙여넣기</div>",
+    "start": 35
+  },
+  {
+    "id": "rules",
+    "duration": 6,
+    "step": "이 조건이 필요한 이유",
+    "title": "없는 기한은<br>‘확인 필요’로 남겨요.",
+    "caption": "근거 문장도 함께 받아 원문과 대조해요.",
+    "body": "<div  class=\"card quote\" style=\"top:510px\">민호: 설문 초안은 제가 맡을게요.<br>마감은 아직 정하지 않았어요.</div><div  class=\"card row-card\" style=\"top:860px\">설문 초안 <span>민호</span> <mark>확인 필요</mark></div><div class=\"reason-note\">근거 문장<br><b>“마감은 아직 정하지 않았어요.”</b></div><div class=\"label\" style=\"top:1335px\">다음 회의 날짜를 작업 마감으로 대신 넣지 않아요.</div>",
+    "start": 42
+  },
+  {
+    "id": "memo",
+    "duration": 7,
+    "step": "04   프로젝트에서 실행",
+    "title": "이번 메모만 넣고<br>화살표를 누르세요.",
+    "caption": "프로젝트 안의 새 채팅에서 시작하세요.",
+    "body": "<div class=\"shot\" id=\"memo-shot\" style=\"top:490px;height:595px;width:936px;left:72px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/07-first-input.png\" style=\"width:1536px;height:864px;left:-336px;top:-138px\" alt=\"ChatGPT 실제 화면\"></div><div class=\"cursor\" id=\"send-cursor\" style=\"left:958px;top:798px\"><i></i><svg viewBox=\"0 0 24 24\"><path d=\"M3 2.8 20.6 14 12.8 15.5 9 22 3 2.8Z\" fill=\"white\" stroke=\"#2450ae\" stroke-width=\"1.4\"/></svg></div><div  class=\"card quote\" style=\"top:1170px\">“프로젝트 지침에 맞춰<br>이번 회의 메모를 정리해줘.”<br><small>이 짧은 요청 아래에 메모를 붙여요.</small></div>",
+    "start": 48
+  },
+  {
+    "id": "verify",
+    "duration": 8,
+    "step": "05   결과 검토",
+    "title": "네 열이 있는지,<br>원문과 맞는지 확인해요.",
+    "caption": "첫 시연도 근거 열이 빠져, 보완 요청으로 바로잡았어요.",
+    "body": "<div class=\"shot\" id=\"before-table\" style=\"top:470px;height:195px;width:936px;left:72px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/08-first-result-before-check.png\" style=\"width:1539.9485861182518px;height:866.2210796915166px;left:-334.4575835475578px;top:-406.64267352185084px\" alt=\"ChatGPT 실제 화면\"></div><div class=\"missing-flag\">근거 열 누락</div><div id=\"repair-request\" class=\"card quote\" style=\"top:765px\">“근거 문장을 포함한<br>네 열 표로 다시 정리해줘.”</div><div class=\"shot\" id=\"after-table\" style=\"top:1100px;height:215px;width:936px;left:72px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/11-first-result.png\" style=\"width:1526.216560509554px;height:858.4968152866242px;left:-327.8980891719745px;top:-395.86242038216557px\" alt=\"ChatGPT 실제 화면\"></div><div class=\"label\" style=\"top:1360px\">할 일 · 담당자 · 기한 · 근거 문장</div>",
+    "start": 55
+  },
+  {
+    "id": "repeat",
+    "duration": 7,
+    "step": "다음 회의에도 다시 사용",
+    "title": "같은 프로젝트에서<br>새 채팅을 여세요.",
+    "caption": "짧은 요청과 새 메모만 넣으면 돼요.",
+    "body": "<div class=\"repeat-path\"><b>회의 프로젝트</b><span>↓</span><b>새 채팅</b></div><div class=\"shot\" id=\"repeat-shot\" style=\"top:810px;height:535px;width:936px;left:72px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/12-second-input.png\" style=\"width:1536px;height:864px;left:-336px;top:-138px\" alt=\"ChatGPT 실제 화면\"></div><div class=\"label\" style=\"top:1380px\">이전 회의의 추가 질문은 기존 채팅에서 이어가세요.</div>",
+    "start": 63
+  },
+  {
+    "id": "separate",
+    "duration": 6,
+    "step": "두 번째 메모로 확인",
+    "title": "지침은 재사용,<br>결과는 매번 확인.",
+    "caption": "새 채팅도 같은 프로젝트의 다른 대화를 참고할 수 있어요.",
+    "body": "<div class=\"result-table second\"><div class=\"table\"><div class=\"tr head\"><b>할 일</b><b>담당자</b><b>기한</b></div><div class=\"tr data\"><b>견적서 발송</b><b>수진</b><b>10월 2일</b></div><div class=\"tr data\"><b>자료 조사</b><b>도윤</b><b class=\"unknown\">확인 필요</b></div></div></div><div  class=\"card accent\" style=\"top:980px\">이번 메모만 사용하도록 지침에 명시</div><div  class=\"card \" style=\"top:1190px\">지난 회의의 이름·날짜가<br>섞이지 않았는지 확인하세요.</div><div class=\"label\" style=\"top:1400px\">실제 두 번째 응답의 핵심을 크게 재구성</div>",
+    "start": 70
+  },
+  {
+    "id": "use",
+    "duration": 5,
+    "step": "내 업무에 적용하기",
+    "title": "빠진 내용을 확인하고<br>팀 문서로 옮기세요.",
+    "caption": "미정인 기한은 담당자에게 물어본 뒤 수정하세요.",
+    "body": "<div class=\"checklist\"><div><i>1</i><b>담당자 · 기한 · 근거 대조</b></div><div><i>2</i><b>확인 필요 → 질문하고 수정</b></div><div><i>3</i><b>검토한 표 복사 → 팀 문서</b></div></div><div  class=\"card accent\" style=\"top:1250px\">프로젝트 ⋯ → 고정하면 다시 찾기 쉬워요.</div>",
+    "start": 76
+  },
+  {
+    "id": "ending",
+    "duration": 7,
+    "step": "직접 따라 할 자료까지",
+    "title": "회사에서 바로 쓰는<br>회의 정리 가이드",
+    "caption": "필요하시면 댓글에 synk를 남겨주세요.",
+    "theme": "blue",
+    "body": "<div class=\"pdf-fan\"><img src=\"assets/guide-1.png\" alt=\"제공 PDF 표지\"><img src=\"assets/guide-3.png\" alt=\"프로젝트 지침 설정 안내\"></div><div class=\"kit-tags\"><b>8쪽 PDF</b><b>복사용 지침</b><b>연습 메모 2종</b></div><div  class=\"card solid\" style=\"top:1270px\">댓글에 <strong>synk</strong></div>",
+    "start": 81
+  }
+]

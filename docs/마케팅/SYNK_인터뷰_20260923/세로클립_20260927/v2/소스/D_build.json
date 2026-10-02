@@ -1,0 +1,120 @@
+{
+ "key": "D",
+ "name": "D_기술이_만들어준_시간",
+ "duration": 30.2,
+ "shots": 10,
+ "cuts_in_first_5s": [
+  2.067
+ ],
+ "audio": {
+  "input_I": -18.1,
+  "target": -15.5,
+  "I": -15.6,
+  "TP": -1.5,
+  "max_gr_db": -2.73,
+  "over3db_pct": 0.0
+ },
+ "captions": 14,
+ "shot_log": [
+  {
+   "clip_t": 0.0,
+   "film": [
+    198.2,
+    200.26
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 62
+  },
+  {
+   "clip_t": 2.067,
+   "film": [
+    200.26,
+    203.394
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 94
+  },
+  {
+   "clip_t": 5.2,
+   "film": [
+    203.394,
+    205.677
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 68
+  },
+  {
+   "clip_t": 7.467,
+   "film": [
+    205.677,
+    208.525
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 85
+  },
+  {
+   "clip_t": 10.3,
+   "film": [
+    208.525,
+    211.01
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 75
+  },
+  {
+   "clip_t": 12.8,
+   "film": [
+    211.01,
+    214.143
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 94
+  },
+  {
+   "clip_t": 15.933,
+   "film": [
+    214.143,
+    218.75
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 138
+  },
+  {
+   "clip_t": 20.533,
+   "film": [
+    218.75,
+    222.598
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 115
+  },
+  {
+   "clip_t": 24.367,
+   "film": [
+    222.598,
+    225.43
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 85
+  },
+  {
+   "clip_t": 27.2,
+   "film": [
+    225.43,
+    228.43
+   ],
+   "kind": "endcard",
+   "framing": null,
+   "frames": 90
+  }
+ ]
+}

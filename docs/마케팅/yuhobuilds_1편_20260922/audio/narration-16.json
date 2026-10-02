@@ -1,0 +1,104 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "text": "선생님이 학생의 출석을 기록하는 걸 만들고 싶어. 나는 개발을 처음 해. 가장 작은 첫 단계부터 설명해줘.",
+    "voice_id": "tc_5ecbbc696b7c780008be50c4",
+    "language": "kor",
+    "output": {
+      "audio_tempo": 1.02,
+      "audio_format": "wav",
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "지금 다시 시작한다면, 처음 요청은 이렇게 해보고 싶어요.",
+      "next_text": "부모님께 알림도 보내고 싶지만, 우선 출석 하나를 남기는 것부터요. 여러분도 반복해서 불편했던 일을 하나 떠올려보세요."
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 7.99,
+  "words": [
+    {
+      "text": "선생님이",
+      "start": 0.2,
+      "end": 0.701
+    },
+    {
+      "text": "학생의",
+      "start": 0.761,
+      "end": 1.121
+    },
+    {
+      "text": "출석을",
+      "start": 1.182,
+      "end": 1.562
+    },
+    {
+      "text": "기록하는",
+      "start": 1.622,
+      "end": 1.983
+    },
+    {
+      "text": "걸",
+      "start": 2.043,
+      "end": 2.123
+    },
+    {
+      "text": "만들고",
+      "start": 2.183,
+      "end": 2.523
+    },
+    {
+      "text": "싶어.",
+      "start": 2.583,
+      "end": 2.844
+    },
+    {
+      "text": "나는",
+      "start": 3.865,
+      "end": 4.105
+    },
+    {
+      "text": "개발을",
+      "start": 4.165,
+      "end": 4.546
+    },
+    {
+      "text": "처음",
+      "start": 4.606,
+      "end": 4.886
+    },
+    {
+      "text": "해.",
+      "start": 5.026,
+      "end": 5.086
+    },
+    {
+      "text": "가장",
+      "start": 5.647,
+      "end": 5.928
+    },
+    {
+      "text": "작은",
+      "start": 5.988,
+      "end": 6.248
+    },
+    {
+      "text": "첫",
+      "start": 6.308,
+      "end": 6.428
+    },
+    {
+      "text": "단계부터",
+      "start": 6.488,
+      "end": 6.929
+    },
+    {
+      "text": "설명해줘.",
+      "start": 6.989,
+      "end": 7.99
+    }
+  ],
+  "characters": null
+}

@@ -1,0 +1,9 @@
+{
+  "photoSource": "docs/마케팅/yuhobuilds_제작여정_202607-20260922/근거/인물사진_20260922/유호_프로필_800.png",
+  "cliPhotoAsset": "3e867067-deda-4a50-a005-ed023ef32721",
+  "cliVideoAsset": "f4507fe4-46e7-45db-a3fd-5b57dec11111",
+  "sourceVideo": "cafe-source-7s.mp4",
+  "durationSeconds": 7,
+  "note": "Derived from the previous cafe sample with final-frame hold and silence padding to 7 seconds, to avoid the prior duration truncation. Existing dialogue unchanged.",
+  "status": "prepared; not submitted"
+}

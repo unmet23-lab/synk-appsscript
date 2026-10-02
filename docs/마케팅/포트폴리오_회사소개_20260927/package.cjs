@@ -1,0 +1,126 @@
+const fs=require('fs'),path=require('path');
+const copy={
+'Behance':`파일에서는 완성이었는데 — SYNK SNS 디자인의 수정 전후
+
+배너를 만들고 업로드 미리보기를 열었습니다. 오른쪽 소품이 잘렸습니다. 프로필 이미지에서는 다른 문제가 보였습니다. 흰 페이지 위에 놓자 이미지의 배경이 네모로 드러났습니다.
+
+이 프로젝트는 SYNK의 SNS 디자인을 만들며 실제로 고친 두 장면을 보여줍니다. 같은 창에 수정 전후를 놓고 보면 왜 배치와 배경을 다시 확인해야 하는지 알 수 있습니다.
+
+1. 원본과 실제 보이는 창
+Behance 커버의 첫 미리보기에서 소품이 잘려 저장을 취소했습니다. 문구와 소품을 중앙으로 모으고, 원본에서 전체 묶음을 아래로 40px 이동했습니다. 수정 후에는 공개 화면에서 로고·문구·소품을 확인했습니다. 40px는 당시 원본의 수정값이며 모든 배너에 적용하는 규칙은 아닙니다.
+
+2. 이미지 배경과 페이지 배경
+LAB 프로필 이미지의 배경을 흰 페이지에 맞췄습니다. 이미지만 열었을 때 놓치기 쉬운 차이를 실제 사용할 화면에서 확인했습니다. 다른 색의 배경에서 쓸 때는 다시 확인해야 합니다.
+
+내 작업에 적용하기
+• 업로드 미리보기에서 로고·제목·소품의 끝을 확인합니다.
+• 휴대폰에서 확대하지 않고 핵심 문장이 읽히는지 봅니다.
+• 실제 배경 위에 올려 이미지 경계가 남는지 확인합니다.
+• 저장하고 다시 열어 수정한 결과가 유지되는지 확인합니다.
+
+제작: 양유호 / SYNK SHIFT
+범위: 기획, 기존 브랜드 자산 및 AI 이미지 활용, 디지털 합성, 글자·배치 조정, 채널 적용 확인.
+SYNK의 자체 브랜드 프로젝트입니다. 고객 납품·매출·전환 성과를 나타내는 사례가 아닙니다.
+비교의 크롭 창은 원리를 설명하는 예시이며 실제 플랫폼 화면이나 고정 안전영역을 재현한 것이 아닙니다. 제작 및 수정 기록: 2026.09.19.
+https://synk.im/shift/`,
+'Pinterest':`핀 1
+제목: 배너를 올렸더니 소품이 사라졌다? 디자인 잘림 확인법
+설명: 같은 파일도 표시되는 창에 따라 일부가 잘릴 수 있습니다. 실제 수정 전후를 같은 예시 창에서 비교하고, 업로드 미리보기에서 로고·제목·소품의 끝을 확인해 보세요. SYNK 자체 제작 사례이며 중앙 크롭은 원리 설명용입니다.
+대상 링크: https://synk.im/shift/
+
+핀 2
+제목: 흰 배경인데 네모가 보이는 이유 — 프로필 배경 점검
+설명: 이미지와 페이지의 흰색이 다르면 경계가 보일 수 있습니다. LAB 프로필의 실제 수정 전후를 비교했습니다. 내 이미지도 실제 사용할 배경 위에 올려 보세요. 이 예시는 흰 화면에 맞춘 수정입니다.
+대상 링크: https://synk.im/shift/
+
+핀 3
+제목: 디자인 내보내기 전 저장해 둘 세 가지 점검
+설명: 업로드 화면에서 끝을 보고, 휴대폰에서 작게 읽고, 실제 배경에서 경계를 확인합니다. 직접 콘텐츠를 만드는 사람을 위한 SYNK의 내보내기 점검 카드입니다.
+대상 링크: https://synk.im/shift/`,
+'LinkedIn_개인':`완성했다고 생각한 배너를, 저장하지 않았습니다.
+
+업로드 미리보기에서 오른쪽 소품이 잘렸습니다. 원본 파일에서는 괜찮았지만 화면이 보여주는 영역은 달랐습니다.
+
+새 이미지를 만들기 전에 배치부터 바꿨습니다. 문구와 소품을 중앙으로 모으고, 전체 묶음을 원본 기준 40px 아래로 옮겼습니다. 수정한 파일을 올린 뒤 공개 화면에서 로고·문구·소품이 모두 보이는지 확인했습니다.
+
+프로필에서는 배경색이 문제였습니다. 흰색처럼 보이던 이미지가 흰 페이지에서는 네모로 드러났습니다. 페이지에 맞춰 배경을 고쳤습니다.
+
+두 번의 수정에서 배운 것은 단순합니다. 작업을 끝내기 전에 실제 사용 환경을 한 번 더 봐야 합니다.
+
+제가 다음 작업에 가져갈 확인 순서입니다.
+1. 파일에서 오탈자와 이미지 깨짐을 확인합니다.
+2. 실제 표시 크기에서 읽힘·잘림·배경 경계를 확인합니다.
+3. 저장한 화면을 다시 열어 수정 결과가 유지되는지 봅니다.
+
+SYNK를 운영하며 홈페이지·콘텐츠·업무 도구를 만들고 있습니다. 결과와 함께 이런 판단도 남기려고 합니다.
+
+첨부는 2026.09.19 자체 SNS 디자인 수정 원본으로 만든 비교입니다. 크롭 창은 설명용 예시이며 실제 플랫폼 화면은 아닙니다.`,
+'LinkedIn_회사':`SYNK는 교육·AI 활용·콘텐츠를 각자의 목표와 상황에 맞게 연결합니다.
+
+어떻게 만드는지 궁금한 분께, 작은 자체 제작 사례부터 보여드립니다.
+
+SNS 배너를 올리는 과정에서 소품이 잘리는 문제를 발견했습니다. 그림을 추가하기보다 로고·문구·소품이 실제로 보이는 자리에 들어가도록 배치를 고쳤습니다. 프로필도 이미지와 페이지의 배경을 대조해 수정했습니다.
+
+첨부는 방향 설정 → 제작 → 사용 화면 확인 → 수정의 과정을 담았습니다. 자체 브랜드 제작물이므로 고객 납품이나 사업 성과로 소개하지 않습니다.
+
+필요에 따라 연결되는 분야는 다음과 같습니다.
+• LAB: 한국어 학습과 한국에서의 공부·생활 준비
+• SHIFT: 기업·기관의 AI 교육·컨설팅·브랜딩 준비
+• PULSE: 음악·영상·캐릭터와 콘텐츠
+• PATH: 외국인의 한국 유학·취업 지원 준비
+
+정규 교육·앱 출시, 개별 서비스 제공 범위와 기관 협력은 준비 상태를 따로 확인합니다. 구체적인 요청은 하는 일, 막힌 부분, 원하는 결과를 알려주세요.
+
+기업·기관 문의: https://pf.kakao.com/_kvlrX
+SYNK: https://synk.im/
+
+배너 비교는 2026.09.19 실제 원본을 사용한 설명용 크롭이며 플랫폼 화면 캡처가 아닙니다.`,
+'카카오톡_SHIFT':`AI를 배웠는데 업무에 연결하기 어렵거나, 같은 자료를 매번 다시 정리하고 있나요? 회사의 강점을 고객에게 설명하기 어려울 때도 현재 상황부터 알려주세요.
+
+SYNK SHIFT는 기업·기관의 AI 교육·컨설팅·브랜딩을 준비합니다. 문의 내용을 보고 현재 도울 수 있는 범위부터 확인하겠습니다.
+
+아래 예시를 내 상황에 맞게 바꿔 보내주세요.
+
+하는 일: 매주 사내 교육 자료를 만듭니다.
+막힌 부분: 메모를 같은 양식에 옮기는 일이 반복됩니다.
+원하는 결과: 팀원이 함께 쓸 정리 순서와 양식이 필요합니다.
+
+가능하면 현재 사용하는 도구, 참여 인원, 희망 일정도 함께 알려주세요.
+카카오톡 SYNK SHIFT: https://pf.kakao.com/_kvlrX`
+};
+for(const [name,content]of Object.entries(copy))fs.writeFileSync(path.join(__dirname,'publish',name+'.txt'),content+'\n');
+const checklist=`디자인 내보내기 점검표 / SYNK
+
+[ ] 업로드 미리보기에서 로고·제목·소품의 끝을 봤다.
+    잘리면 실제 보이는 영역 안으로 옮긴다.
+[ ] 휴대폰에서 확대하지 않고 핵심 문장을 읽었다.
+    어렵다면 보조 설명을 본문으로 빼고 제목의 크기와 대비를 조정한다.
+[ ] 이미지가 놓일 실제 배경에서 경계를 봤다.
+    배경색을 맞추거나 용도에 맞는 투명 파일을 준비한다.
+[ ] 저장 후 화면을 다시 열어 결과가 유지되는지 확인했다.
+
+메모
+확인한 화면/기기:
+고친 부분:
+다시 확인할 것:
+`;
+fs.writeFileSync(path.join(__dirname,'publish/내보내기_점검표.txt'),checklist);
+const cards=JSON.parse(fs.readFileSync(path.join(__dirname,'images.json'),'utf8'));
+const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+const groups={'Behance':'Behance','Pinterest':'Pinterest','LinkedIn 개인':'LinkedIn_개인','LinkedIn 회사':'LinkedIn_회사','카카오톡 SHIFT':'카카오톡_SHIFT'};
+const gallery=Object.entries(groups).map(([channel,file],i)=>`<details class="channel" id="channel-${i}"><summary>${channel}<span>${cards.filter(c=>c.channel===channel).length}장 · 문안</span></summary><div class="gallery">${cards.filter(c=>c.channel===channel).map(c=>`<figure><a href="${c.file}" target="_blank" rel="noopener"><img loading="lazy" src="${c.file}" alt="${esc(c.alt)}"></a><figcaption>${esc(c.title)} <a href="${c.file}" download>PNG 받기</a></figcaption></figure>`).join('')}</div><details class="copy"><summary>게시 문안 읽기</summary><pre>${esc(copy[file])}</pre></details><a class="textlink" href="publish/${file}.txt" download>문안 파일 받기 ↓</a></details>`).join('');
+const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>파일에서는 완성이었는데 — SYNK</title><link rel="stylesheet" href="assets/fonts.css"><style>
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fff;color:#111;font:500 18px/1.65 'Inter Tight','SUIT Variable',sans-serif;letter-spacing:-.02em}a{color:#234e80;text-underline-offset:5px}button,input,textarea{font:inherit}button,a,input,summary,textarea{-webkit-tap-highlight-color:transparent}button,summary{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible,textarea:focus-visible{outline:3px solid #315a8b;outline-offset:5px}button{color:#15283e}h1,h2,h3,p{margin:0}h1,h2,h3{line-height:1.17;word-break:keep-all}h1{font-size:clamp(48px,6.5vw,88px);letter-spacing:-.06em}h2{font-size:clamp(33px,4.2vw,58px);letter-spacing:-.045em}h3{font-size:26px}main{max-width:1180px;margin:auto;padding:0 38px}.top{display:flex;align-items:center;justify-content:space-between;padding:26px 0}.logo{width:110px;height:62px;object-fit:contain}.top a{font-size:15px}.eyebrow{font-size:14px;font-weight:700;color:#315a8b;letter-spacing:.03em;margin-bottom:22px}.hero{padding:44px 0 65px}.lead{color:#515d68;font-size:21px;max-width:640px;margin-top:26px}.intro{display:grid;grid-template-columns:1.1fr .7fr;gap:38px;align-items:center}.hero-art{width:100%;filter:drop-shadow(0 20px 18px #18334b18)}.question{margin-top:40px}.question h3{font-size:21px;margin-bottom:18px}.whole{display:block;width:100%;height:auto}.choices{display:flex;gap:12px;margin:21px 0;flex-wrap:wrap}.glass{border:1px solid #c8d3df;border-radius:16px;padding:14px 22px;background:linear-gradient(130deg,#fff,#f4f8fc 45%,#fff 75%,#eaf0f7);box-shadow:inset 0 1px 2px white,inset 0 -3px 6px #93aabb25,0 6px 16px #193b6310;font-weight:700}.glass[aria-pressed=true]{background:#173e74;color:white;box-shadow:inset 0 1px 2px #6e90b5,0 5px 14px #15396530}.feedback{padding:14px 0;color:#315a8b;font-weight:700;min-height:58px}.jump{display:inline-block;margin-top:12px;font-weight:700}.section{padding:84px 0}.section .eyebrow{margin-bottom:18px}.section .desc{font-size:20px;max-width:760px;color:#515d68;margin:23px 0 30px}.stitch{width:200px;height:14px;object-fit:cover;object-position:left;display:block}.compare-stage{overflow:hidden;background:black;position:relative;width:100%;aspect-ratio:5;margin:23px 0}.compare-stage img{position:absolute;left:50%;top:50%;width:156.25%;max-width:none;transform:translate(-50%,-50%);height:auto}.controlbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}.controlbar .choices{margin:0}.status{font-size:15px;color:#515d68}.caption{font-size:14px;color:#616e7a;margin-top:14px;max-width:820px}.explain{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:35px}.explain p{margin-top:13px;color:#515d68}.takeaway{font-weight:700;color:#173e74;margin-top:26px}.profile-area{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center}.wipe{position:relative;width:100%;aspect-ratio:1;background:white}.wipe>img,.wipe .over img{display:block;width:100%;height:100%;object-fit:contain}.wipe .over{position:absolute;inset:0;clip-path:inset(0 50% 0 0)}.handle{position:absolute;left:50%;top:0;bottom:0;width:2px;background:#315a8b}.handle span{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;display:grid;place-items:center;background:white;border-radius:50%;box-shadow:0 2px 12px #20364b40;color:#173e74;font-size:24px}.range-label{display:flex;justify-content:space-between;font-size:14px;color:#53616e}.range{width:100%;accent-color:#315a8b;margin:20px 0}.profile-copy p{margin:20px 0;color:#515d68}.tiny-demo{display:flex;gap:20px;align-items:center;margin-top:26px}.tiny-demo img{width:74px;height:74px}.checklist{margin:34px 0;display:grid;gap:18px}.check{display:flex;gap:18px;align-items:flex-start;cursor:pointer;padding:15px 0}.check input{width:23px;height:23px;flex-shrink:0;margin-top:4px;accent-color:#173e74}.check strong{display:block;font-size:23px;line-height:1.3}.check small{display:block;font-size:17px;color:#515d68;margin-top:8px}.progress{font-weight:700;color:#315a8b;margin:15px 0}.links{display:flex;gap:18px;align-items:center;flex-wrap:wrap}.textlink{display:inline-block;margin:15px 0;font-weight:700}.company{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:32px}.company img{width:100%;height:auto}.company p{margin-top:18px;color:#515d68}.businesses{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:40px}.businesses article h3{font-size:20px;margin-bottom:9px;color:#173e74}.businesses article p{font-size:17px;color:#515d68}.inquiry{margin-top:40px}.inquiry h3{margin:20px 0}.inquiry textarea{display:block;width:100%;height:166px;padding:20px;border:1px solid #c7d1dc;border-radius:14px;background:#fff;color:#172431;resize:vertical;font-size:17px;line-height:1.6}.channel{padding:26px 0}.channel>summary{display:flex;justify-content:space-between;gap:15px;font-size:25px;font-weight:800;list-style:none}.channel>summary:before{content:'+';color:#315a8b}.channel[open]>summary:before{content:'−'}.channel>summary span{font-size:15px;font-weight:500;margin-left:auto;color:#616e7a}.gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin:25px 0}.gallery figure{margin:0}.gallery img{display:block;width:100%;height:auto;box-shadow:0 8px 30px #19395514}.gallery figcaption{font-size:14px;margin-top:14px}.gallery figcaption a{display:block}.copy{margin-top:25px}.copy summary{font-size:18px;font-weight:700}pre{font:16px/1.8 'Inter Tight','SUIT Variable',sans-serif;white-space:pre-wrap;overflow-wrap:anywhere;max-width:830px}.review{font-size:14px;color:#616e7a;margin-top:20px}footer{padding:40px 0 70px;font-size:14px;color:#616e7a}.noscript{background:#fff;padding:20px;color:#173e74}[hidden]{display:none!important}@media(max-width:760px){main{padding:0 22px}.top{padding:14px 0}.top a{font-size:13px}.logo{width:90px}.hero{padding:27px 0 46px}.intro{grid-template-columns:1fr;gap:14px}.hero-art{width:230px;justify-self:end;margin-top:-10px}.lead{font-size:18px}.question{margin-top:12px}.glass{padding:12px 15px;font-size:15px}.choices{gap:8px}.section{padding:55px 0}.section .desc{font-size:18px}.explain,.profile-area,.company{grid-template-columns:1fr;gap:25px}.profile-area{max-width:540px}.businesses{grid-template-columns:1fr;gap:25px}.gallery{grid-template-columns:1fr 1fr;gap:15px}.channel>summary{font-size:21px}.channel>summary span{font-size:12px}.check strong{font-size:21px}.check small{font-size:16px}.inquiry textarea{height:224px}.feedback{font-size:16px}.caption{font-size:13px}.compare-stage{min-height:0}.tiny-demo{margin-top:16px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style></head><body><main><header class="top"><img class="logo" src="assets/logo.png" alt="SYNK"><a href="#deliverables">채널별 결과물 보기 ↗</a></header><section class="hero"><div class="intro"><div><div class="eyebrow">SYNK DESIGN NOTES / 01</div><h1>파일에서는<br>완성이었는데.</h1><p class="lead">배너는 잘리고, 프로필에는 네모가 남았습니다.<br>직접 차이를 찾고, 내 작업에 쓸 점검법을 가져가세요.</p></div><img class="hero-art" src="assets/glass.png" alt="투명 유리 안의 SYNK SHIFT 로고"></div><div class="question"><h3>이 배너의 양옆이 잘리면, 무엇이 먼저 사라질까요?</h3><img class="whole" src="assets/before.png" alt="수정 전 배너. 중앙 왼쪽 로고와 제목, 오른쪽 끝 파란 소품."><div class="choices" role="group" aria-label="먼저 잘릴 부분 선택"><button class="glass guess" data-answer="logo" aria-pressed="false">로고</button><button class="glass guess" data-answer="title" aria-pressed="false">제목</button><button class="glass guess" data-answer="props" aria-pressed="false">오른쪽 소품</button></div><p id="feedback" class="feedback" aria-live="polite">하나 골라 보세요. 아래에서 같은 파일을 다른 창으로 봅니다.</p><a href="#crop" class="jump">같은 창에서 수정 전후 보기 ↓</a></div></section><img class="stitch" src="assets/stitch.webp" alt=""><section id="crop" class="section"><div class="eyebrow">01 / 잘림의 원인</div><h2>이미지는 같아도,<br>보이는 창은 다릅니다.</h2><p class="desc">아래는 원본의 중앙 일부만 보여주는 창입니다. 버튼을 눌러 같은 위치에서 수정 전후를 비교해 보세요.</p><div class="controlbar"><div class="choices" role="group" aria-label="배너 수정 전후"><button class="glass version" data-version="before" aria-pressed="true">수정 전</button><button class="glass version" data-version="after" aria-pressed="false">수정 후</button></div><span id="crop-status" class="status" aria-live="polite">오른쪽 소품의 끝이 잘립니다.</span></div><div class="compare-stage"><img id="crop-image" src="assets/before.png" alt="수정 전 배너의 중앙 일부. 오른쪽 소품이 잘린 상태."></div><p class="caption">중앙 64% 크롭은 원리를 보여주는 설명용 예시입니다. 실제 Behance 화면이나 플랫폼의 고정 안전영역이 아닙니다.</p><div class="explain"><div><h3>무엇을 바꿨나요?</h3><p>2026년 9월 19일, 업로드 미리보기에서 소품이 잘려 저장을 취소했습니다. 문구와 소품을 중앙으로 모으고 전체 묶음을 원본 기준 40px 아래로 옮겼습니다.</p></div><div><h3>내 작업에서는?</h3><p>업로드 미리보기에서 중요한 요소의 끝을 보세요. 잘리면 실제 보이는 영역 안으로 옮기세요. 글자까지 무조건 줄이면 읽기가 어려워질 수 있습니다.</p></div></div><p class="takeaway">40px를 외울 필요는 없어요. 내 화면에서 보이는 자리를 확인하세요.</p></section><img class="stitch" src="assets/stitch.webp" alt=""><section id="background" class="section"><div class="eyebrow">02 / 배경의 차이</div><h2>이번에는 캐릭터의<br>바깥을 보세요.</h2><p class="desc">가운데 손잡이 아래 슬라이더를 움직여 보세요. 같은 캐릭터의 배경을 흰 페이지에 맞춘 전후입니다.</p><div class="profile-area"><div><div class="wipe"><img src="assets/profileAfter.png" alt="흰 페이지에 배경색을 맞춘 몽글 프로필"><div class="over" id="profile-before"><img src="assets/profileBefore.png" alt="수정 전 크림색 배경의 몽글 프로필"></div><div class="handle" id="profile-handle" aria-hidden="true"><span>↔</span></div></div><label class="range-label" for="wipe"><span>왼쪽: 수정 전</span><span>오른쪽: 수정 후</span></label><input class="range" id="wipe" type="range" min="0" max="100" value="50" aria-label="수정 전 이미지 표시 비율" aria-valuetext="수정 전 50%, 수정 후 50%"></div><div class="profile-copy"><h3>흰색처럼 보였지만,<br>페이지의 흰색과 달랐습니다.</h3><p>원본만 보면 지나치기 쉬운 차이입니다. 흰 페이지에 놓자 네모난 배경이 드러났습니다. 이 사례에서는 이미지 배경을 흰색으로 맞췄습니다.</p><p>다른 색의 화면에 쓸 때는 그 배경에서 다시 확인하세요. 용도에 따라 투명 배경 파일이 필요할 수도 있습니다.</p><div class="tiny-demo"><img src="assets/profileBefore.png" alt="작은 크기의 수정 전 프로필"><img src="assets/profileAfter.png" alt="작은 크기의 수정 후 프로필"><span class="caption">작게 놓아도<br>바깥 경계는 남아요.</span></div></div></div></section><img class="stitch" src="assets/stitch.webp" alt=""><section id="check" class="section"><div class="eyebrow">03 / 내 작업에 가져가기</div><h2>다음에 내보낼 때는,<br>이 세 군데를 보세요.</h2><p class="desc">지금 작업 중인 이미지가 있다면 직접 확인하고 체크하세요.</p><div class="checklist"><label class="check"><input type="checkbox"><span><strong>끝 — 중요한 것이 잘리지 않나요?</strong><small>업로드 미리보기에서 로고·제목·소품의 끝을 확인합니다. 잘리면 실제 보이는 영역 안으로 옮깁니다.</small></span></label><label class="check"><input type="checkbox"><span><strong>크기 — 확대하지 않고 읽히나요?</strong><small>휴대폰에서 핵심 문장을 읽어 봅니다. 어렵다면 보조 설명을 본문으로 빼고 제목의 크기와 대비를 조정합니다.</small></span></label><label class="check"><input type="checkbox"><span><strong>배경 — 어색한 네모가 남지 않나요?</strong><small>실제 사용할 배경 위에 놓습니다. 배경색을 맞추거나 용도에 맞는 투명 파일을 준비합니다.</small></span></label></div><p id="progress" class="progress" aria-live="polite">0 / 3 확인했어요.</p><p class="caption">체크는 이 화면에서만 유지됩니다. 마지막으로 저장 후 다시 열어 수정 결과가 유지되는지도 확인하세요.</p><a class="textlink" href="publish/내보내기_점검표.txt" download>다음 작업에 쓸 점검표 받기 ↓</a></section><img class="stitch" src="assets/stitch.webp" alt=""><section id="company" class="section"><div class="eyebrow">이 사례를 만든 곳 / SYNK</div><h2>배운 것을 내 일에,<br>만든 것을 실제 화면에.</h2><div class="company"><img src="assets/hero.png" alt="완성된 SYNK SHIFT 펠트와 유리 SNS 디자인"><div><h3>작은 수정까지 공개하는 이유</h3><p>협업을 검토하는 분이 결과뿐 아니라 판단도 볼 수 있도록 하기 위해서입니다. 이 사례는 SYNK의 자체 SNS 디자인이며 기획·AI 이미지 활용·합성·배치 조정·채널 적용 확인을 담았습니다.</p><p>SYNK는 교육·AI 활용·콘텐츠를 각자의 목표와 상황에 맞게 연결합니다.</p></div></div><div class="businesses"><article><h3>LAB / 한국어와 한국 생활</h3><p>한국어 학습과 한국에서의 공부·생활 준비.</p></article><article><h3>SHIFT / 기업의 AI 활용</h3><p>기업·기관 AI 교육·컨설팅·브랜딩 준비.</p></article><article><h3>PULSE / 음악·영상·캐릭터</h3><p>함께 즐기고 다시 찾을 콘텐츠와 자체 IP.</p></article><article><h3>PATH / 한국 유학·취업 준비</h3><p>학교 선택·한국어·서류·면접 지원 준비.</p></article></div><p class="caption">자체 제작 증거와 서비스 제공 상태는 구분합니다. 정규 교육·앱 출시, 개별 제공 범위와 기관 협력은 별도 확인이 필요합니다.</p><div class="inquiry"><h3>기업·기관 문의라면, 어느 부분에서 막혔나요?</h3><div class="choices" role="group" aria-label="문의 예시 선택"><button class="glass inquiry-choice" data-kind="교육" aria-pressed="true">AI 교육</button><button class="glass inquiry-choice" data-kind="업무" aria-pressed="false">반복 업무</button><button class="glass inquiry-choice" data-kind="브랜딩" aria-pressed="false">브랜딩</button></div><label for="request" class="caption">선택한 예시를 내 상황에 맞게 고쳐 보세요.</label><textarea id="request" spellcheck="false"></textarea><div class="links"><button id="copy-request" class="glass">문의 예문 복사</button><a href="https://pf.kakao.com/_kvlrX" target="_blank" rel="noopener">카카오톡 SYNK SHIFT 열기 ↗</a></div><p id="copy-status" class="caption" aria-live="polite">작성한 내용은 자동으로 전송되지 않습니다. 제공 가능 범위부터 확인합니다.</p></div></section><img class="stitch" src="assets/stitch.webp" alt=""><section id="deliverables" class="section"><div class="eyebrow">채널별 새 이미지와 문안</div><h2>같은 사례를,<br>각 채널에서 볼 이유에 맞게.</h2><p class="desc">Behance의 사례 흐름부터 Pinterest의 저장 카드, LinkedIn의 판단과 회사 소개, 카카오톡 문의 안내까지.</p><a class="glass textlink" href="SYNK_새포트폴리오_20260927.zip" download>전체 이미지·문안·체험 페이지 받기 ↓</a><p class="review">2026.09.27 · 로컬 검토본 · 외부 미게시</p>${gallery}</section><footer>제작: 양유호 / SYNK SHIFT · 2026.09.19 자체 제작·수정 원본을 활용했습니다.<br>설명용 창과 실제 원본을 구분했습니다. AI 이미지와 기존 브랜드 자산, 디지털 합성을 사용한 작업입니다.</footer><noscript><p class="noscript">비교 조작에는 JavaScript가 필요합니다. 아래 채널별 이미지를 열면 수정 전후와 설명을 함께 볼 수 있습니다.</p></noscript></main><script>
+const guesses=document.querySelectorAll('.guess');guesses.forEach(b=>b.addEventListener('click',()=>{guesses.forEach(x=>x.setAttribute('aria-pressed',String(x===b)));document.getElementById('feedback').textContent=b.dataset.answer==='props'?'맞아요. 오른쪽 소품이 가장 바깥에 있어 먼저 잘립니다. 아래 창에서 확인해 보세요.':'로고와 제목보다 오른쪽 소품이 바깥에 있어 먼저 잘립니다. 아래 창에서 확인해 보세요.';}));
+document.querySelectorAll('.version').forEach(b=>b.addEventListener('click',()=>{const after=b.dataset.version==='after';document.querySelectorAll('.version').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));document.getElementById('crop-image').src='assets/'+b.dataset.version+'.png';document.getElementById('crop-image').alt=after?'수정 후 배너의 중앙 일부. 로고, 제목, 소품이 모두 창 안에 보이는 상태.':'수정 전 배너의 중앙 일부. 오른쪽 소품이 잘린 상태.';document.getElementById('crop-status').textContent=after?'같은 창 안에 로고·제목·소품이 들어왔습니다.':'오른쪽 소품의 끝이 잘립니다.';}));
+const wipe=document.getElementById('wipe');function updateWipe(){document.getElementById('profile-before').style.clipPath='inset(0 '+(100-wipe.value)+'% 0 0)';document.getElementById('profile-handle').style.left=wipe.value+'%';wipe.setAttribute('aria-valuetext','수정 전 '+wipe.value+'%, 수정 후 '+(100-wipe.value)+'%');}wipe.addEventListener('input',updateWipe);
+const wipeArea=document.querySelector('.wipe');wipeArea.style.touchAction='none';wipeArea.style.cursor='ew-resize';wipeArea.addEventListener('pointerdown',e=>{wipeArea.setPointerCapture(e.pointerId);setFromPointer(e);});wipeArea.addEventListener('pointermove',e=>{if(wipeArea.hasPointerCapture(e.pointerId))setFromPointer(e);});function setFromPointer(e){const r=wipeArea.getBoundingClientRect();wipe.value=Math.round(Math.max(0,Math.min(100,(e.clientX-r.left)/r.width*100)));updateWipe();}
+const checks=[...document.querySelectorAll('.check input')];checks.forEach(c=>c.addEventListener('change',()=>{const n=checks.filter(x=>x.checked).length;document.getElementById('progress').textContent=n===3?'3 / 3 확인했어요. 이제 저장한 화면을 다시 열어 보세요.':n+' / 3 확인했어요.';}));
+const examples={'교육':'하는 일: 사내 교육을 담당합니다.\\n막힌 부분: AI를 배워도 팀의 실제 업무로 연결하기 어렵습니다.\\n원하는 결과: 우리 업무 예제로 실습하고, 교육 후에도 쓸 양식이 필요합니다.','업무':'하는 일: 매주 사내 교육 자료를 만듭니다.\\n막힌 부분: 메모를 같은 양식에 옮기는 일이 반복됩니다.\\n원하는 결과: 팀원이 함께 쓸 정리 순서와 양식이 필요합니다.','브랜딩':'하는 일: 회사의 SNS와 소개 자료를 만듭니다.\\n막힌 부분: 채널마다 설명과 디자인이 달라 강점이 잘 보이지 않습니다.\\n원하는 결과: 핵심 소개와 채널별 적용 기준이 필요합니다.'};
+const request=document.getElementById('request');const drafts={};let currentKind='교육';request.value=examples[currentKind];document.querySelectorAll('.inquiry-choice').forEach(b=>b.addEventListener('click',()=>{drafts[currentKind]=request.value;currentKind=b.dataset.kind;document.querySelectorAll('.inquiry-choice').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));request.value=drafts[currentKind]??examples[currentKind];document.getElementById('copy-status').textContent='예시를 내 상황에 맞게 고쳐 보세요. 작성 내용은 자동 전송되지 않습니다.';}));document.getElementById('copy-request').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(request.value);document.getElementById('copy-status').textContent='복사했어요. 카카오톡 채널에서 붙여 넣을 수 있습니다.';}catch{request.focus();request.select();document.getElementById('copy-status').textContent='자동 복사를 사용할 수 없어 내용을 선택했어요. Ctrl+C 또는 길게 눌러 복사하세요.';}});
+</script></body></html>`;
+fs.writeFileSync(path.join(__dirname,'preview.html'),html.replace('<head>','<head><link rel="icon" href="data:,">'));
+fs.writeFileSync(path.join(__dirname,'README.md'),`# SYNK 포트폴리오·회사 소개 전면 재제작\n\n2026-09-27. 로컬 검토본, 외부 미게시. 사용자 승인과 독자 반응은 아직 확인하지 않았습니다.\n\n- preview.html: 선택 → 같은 창의 전후 비교 → 배경 비교 → 점검표 → 회사·문의 → 채널별 결과물.\n- images/: 새 이미지 ${cards.length}장.\n- publish/: 채널 문안 5개와 내보내기 점검표.\n- source/: 편집·다시 렌더할 원고 HTML. build.cjs가 생성합니다.\n- assets/: 원본 이미지 사본과 임베드 글꼴.\n- 기획.md: 독자가 볼 이유, 정보와 재미, 실제 증거와 예시의 구분.\n- sources.json: 원본 경로·SHA256. qa/: 실제 확인 기록.\n\n## 채널별 배치\n\nBehance: 00 표지와 본문 01–05. Pinterest: 3개 독립 핀. LinkedIn 개인: 4장 순서. LinkedIn 회사: 3장 순서. 카카오톡: 2장 순서. 각 publish/ 텍스트를 함께 사용합니다.\n\n## 재생성\n\nnode build.cjs → node package.cjs. ZIP은 미리보기·이미지·문안·원본 HTML·실행 소스·자료 기록을 포함합니다. 미리보기는 로컬 서버 또는 preview.html로 열 수 있습니다. 파일로 열면 클립보드 자동 복사가 제한될 수 있어 직접 선택·복사를 지원합니다.\n\n## 원본과 설명\n\n2026-09-19 실제 제작 기록의 Behance 배치 수정과 LAB 프로필 흰색 수정 사례를 사용합니다. 중앙 64%는 설명용 크롭이며 플랫폼 규격·화면 캡처가 아닙니다. 회사 소개의 준비 중 사업을 고객 실적·정식 출시로 표현하지 않았습니다. 이전 20260926 묶음은 보존하며 이번 결과는 별도 제작했습니다.\n`);
+fs.appendFileSync(path.join(__dirname,'README.md'),'\n미리보기와 이미지·문안은 압축을 풀어 바로 볼 수 있습니다. 이미지 재생성(build.cjs)은 SYNK 저장소의 브랜드 서체 도구·이전 원본 목록과 기존 Playwright 런타임이 있는 제작 환경에서 실행합니다. ZIP만으로 이미지 생성 환경을 설치하는 방식은 아닙니다.\n');
+console.log('Preview and copy ready');

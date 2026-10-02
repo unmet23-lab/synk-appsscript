@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "ef23cb9e-37d5-4fa5-83d9-35a666d5cbb6",
+  "narration": "누구를 위한 어떤 결과인지 문장으로 연결합니다. 이 예시가 남기는 것은 강의 제안서입니다. 계약 성사를 약속하지 않습니다.",
+  "narrationSha256": "a7292d93f9644d55581301ea7fcaf252a696a37dd420ee9a91e3c7be0f0ccbaf",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-a7292d93f9644d55.wav",
+  "duration": 9.6,
+  "sha256": "912353dbb0c8854596c2cd58050338abc2c73264ebbf09aa76cb44c72e791067",
+  "humanListening": false,
+  "fullDecode": true
+}

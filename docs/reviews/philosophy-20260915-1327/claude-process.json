@@ -1,0 +1,5 @@
+{
+  "exitCode": 1,
+  "stdout": "",
+  "stderr": "Claude 구독 검수가 실행 실패로 끝났다({\"subtype\":\"success\",\"apiStatus\":403,\"reason\":\"api_error\"}). 추가 크레딧·API·다른 모델로 전환하지 않는다.\n"
+}

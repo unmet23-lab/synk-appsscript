@@ -1,0 +1,44 @@
+[
+  {
+    "text": "Өөрийн бодлоо\nсолонгосоор хэлээрэй.\nСонголт, хэрэгтэй хэллэг,\nөөрийн нөхцөлдөө хэрэглэх дасгал.",
+    "startMs": 300,
+    "endMs": 5750,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "Амралтын өдөр\nхаашаа явах вэ?\nНайз тань кафег сонголоо.",
+    "startMs": 6300,
+    "endMs": 12750,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "Миний бодол арай өөр байна.",
+    "startMs": 13300,
+    "endMs": 16820,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "Надад номын сан таалагдаж байна.",
+    "startMs": 20300,
+    "endMs": 23500,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "Надад ч бас кафе таалагдаж байна.",
+    "startMs": 27300,
+    "endMs": 29300,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "Таны амьдралд\nхэрэглэх солонгос хэл\nНөхцөлөө сонгоод,\nөөрийн үгээр хэлж үзээрэй.",
+    "startMs": 34300,
+    "endMs": 40750,
+    "timestampMs": null,
+    "confidence": null
+  }
+]

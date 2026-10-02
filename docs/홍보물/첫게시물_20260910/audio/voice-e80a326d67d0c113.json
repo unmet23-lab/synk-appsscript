@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "f6a617f4-e74b-48de-8248-ebc74f9a45c1",
+  "narration": "자기 일을 한 줄로 설명하려는 1인 사업자를 위한 synkbrief입니다. 지금 쓸 예시와 원본을 펼칩니다.",
+  "narrationSha256": "e80a326d67d0c11304fdf2b3cab8244b597475c643bf6879c7b5df48161b9da0",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-e80a326d67d0c113.wav",
+  "duration": 8.56,
+  "sha256": "2ab0af1773e143946ff0b8d9cbb524d652cf68d894ba05c5ef9cbd2fe3a03f65",
+  "humanListening": false,
+  "fullDecode": true
+}

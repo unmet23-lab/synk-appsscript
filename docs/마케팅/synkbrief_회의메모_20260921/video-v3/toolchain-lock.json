@@ -1,0 +1,39 @@
+{
+  "recordedDate": "2026-09-22",
+  "scope": "synkbrief meeting-tasks video-v3 local workspace",
+  "installer": "Codex skill-installer install-skill-from-github.py --method download",
+  "hyperframes": {
+    "repository": "https://github.com/heygen-com/hyperframes",
+    "skillsCommit": "0641921558eadcee0a026fa6db39e3e9e5b76f62",
+    "cliVersion": "0.8.58",
+    "skills": [
+      "hyperframes",
+      "hyperframes-core",
+      "hyperframes-cli",
+      "hyperframes-creative",
+      "hyperframes-animation",
+      "hyperframes-keyframes",
+      "hyperframes-registry",
+      "hyperframes-audio",
+      "media-use",
+      "general-video"
+    ],
+    "verification": "CLI and local Chrome GPU render executed: 450 frames, 1080x1920, 30fps, 15 seconds; runtime errors 0; layout warnings 0; contrast 70/70. Doctor retains optional-tool omissions."
+  },
+  "impeccable": {
+    "repository": "https://github.com/pbakaus/impeccable",
+    "skillsCommit": "9f42da8e18dd52a529494141f3d63a70ba7e5d60",
+    "sourcePath": ".agents/skills/impeccable",
+    "skillVersion": "4.3.1",
+    "engineVersionOutput": "4.0.0",
+    "verification": "Project context loaded; design reference applied; final index.html detector returned no findings."
+  },
+  "newVideoRendered": true,
+  "newDesignQualityVerified": false,
+  "designReview": {
+    "renderedFramesInspected": true,
+    "stillFramePeerReview": "no actionable findings on three stills",
+    "userApproved": false,
+    "scope": "15-second opening sample; full tutorial and narration unfinished"
+  }
+}

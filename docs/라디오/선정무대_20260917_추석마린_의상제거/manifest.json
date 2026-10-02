@@ -1,0 +1,207 @@
+{
+  "at": "2026-09-17T08:59:22.592Z",
+  "scope": "이번 방송 프로필: 추석 자연생동 배경 + 마린 본체. 곡 경계에도 장면과 마린을 고정하고 DJ 부스와 의상 층은 숨긴다.",
+  "source": {
+    "path": "docs/라디오/선정무대_20260917_추석마린_한복_부스없음/after-마스코트.html",
+    "sha256": "4bcb322fa02e8dad1f5d37f343b1855b1df94c08ec76b5f5bcddfc603c2147ee"
+  },
+  "candidate": {
+    "path": "docs/라디오/선정무대_20260917_추석마린_의상제거/after-마스코트.html",
+    "sha256": "6df998dc9b026109f6538050dd6b054e5de8f1018c6476cc746a4249d348a751"
+  },
+  "stage": {
+    "localPath": "docs/라디오/무대영상/추석_자연생동_20260909_v2.mp4",
+    "remotePath": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+    "sha256": "c0e984f2ce771cabd1704c5ac25335c1b05519731566de7dfa98cf6622827df7",
+    "listPath": "docs/라디오/선정무대_20260917_추석마린_의상제거/무대차례.txt",
+    "entryCount": 80,
+    "listSha256": "5ea9dc8cff1729077a957e7e4bdc145ff7a45401a6e2fdc3381d29b15027d196"
+  },
+  "remotePrecondition": {
+    "overlaySha256": "4bcb322fa02e8dad1f5d37f343b1855b1df94c08ec76b5f5bcddfc603c2147ee",
+    "stageListSha256": "5ea9dc8cff1729077a957e7e4bdc145ff7a45401a6e2fdc3381d29b15027d196"
+  },
+  "protectedRemote": {
+    "/opt/synk-radio/지면/bots/오버레이/라디오표정리듬.js": "7d583cbb9334358ee4f5676dba9286ec37a3e6f5ad5adeea92d034aa0cc457c8",
+    "/opt/synk-radio/지면/bots/오버레이/라디오가장자리-b76f448ab55a.js": "b76f448ab55af135a5e2dc652683fc721edfc35ceaad7ae1af4bcac138a25a58",
+    "/opt/synk-radio/지면/bots/오버레이/radio13-06fdc6100afc.js": "06fdc6100afca914845cc53d3eb8dd6fca068460e367d7196f1cd0f629f74852",
+    "/opt/synk-radio/지면/docs/Loom_자산/라디오소품/부스.webp": "3beff72bd96adf9554d151874a14616e0585aaf57c720595dbbf846613c48d33",
+    "/opt/synk-radio/지면/docs/Loom_자산/라디오소품/디스크.webp": "05996b67558d1031c8578d4aa99e09857a2da9dd86a41e64730e25328a136839",
+    "/opt/synk-radio/지면/docs/캐릭터/화면_1024/마린_본체.webp": "65efc6beb75ba27a94da8d2fbab616236453e646ffcf3f1e9a5e21d7be2d024c",
+    "/opt/synk-radio/지면/docs/캐릭터/화면_1024/마린_눈감음.webp": "5c80ea55c74a6083b1801ce316413c6e15b0e7632057932ed659618c21920cf7",
+    "/opt/synk-radio/지면/docs/캐릭터/화면_1024/마린_눈웃음.webp": "9de17a519099ed03e36864d66a579d41b5fcf535accc54da00d8d0663e9f6944",
+    "/opt/synk-radio/지면/docs/캐릭터/화면_1024/마린_궁금함.webp": "fe7503e4970ba5cfa47c53a0243ca26ce2ef6aa78c1b594446a7398def149e9e",
+    "/opt/synk-radio/지면/docs/캐릭터/화면_1024/마린_집중.webp": "b80f1dd91cf5b69c55603baf56a930f5bc0c90866e4b3bb1f67bd7b5cee4c43c",
+    "/opt/synk-radio/지면/docs/캐릭터/화면_1024/마린_안도.webp": "acdd99d512917303954f920772ad09f2c857100c1b724f645ccad3d1f4018207",
+    "/opt/synk-radio/지면/docs/캐릭터/화면_1024/마린_응원.webp": "df788332b75fa44adc30236354f86a2007c3da36b68fd79ed882eebed55d5e6f",
+    "/opt/synk-radio/지면/docs/캐릭터/화면_1024/마린_놀람.webp": "b3deef46baf1bccf217d42cdd394f6bc20a1cf448e36e713c421a770043e7a43",
+    "/opt/synk-radio/지면/docs/캐릭터/화면_1024/마린_인사.webp": "839cc1062360058a04c969ade1b3561f78a095f358e7a48026c4c12cf791ed41",
+    "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4": "c0e984f2ce771cabd1704c5ac25335c1b05519731566de7dfa98cf6622827df7",
+    "/opt/synk-radio/무대차례/field-radio13-20260910-986177a55b4b.mp4": "986177a55b4bb21ae4d82c483f1c66a92e14d2e48d7a441a7ab76bd0f7e98a65",
+    "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac": "c9295db33abc8609bda2cdbc885dfce563b52cb6cc6a9db49f7ec276bf931f45",
+    "/opt/synk-radio/소리/playlist.txt": "374e9ce2cc0d6f81928c5639cf69ed0abb9252f2d9f8c2025a24ad330a0bee5c"
+  },
+  "sourceVisuals": {
+    "booth": "docs/Loom_자산/라디오소품/부스.webp",
+    "disc": "docs/Loom_자산/라디오소품/디스크.webp",
+    "headset": "docs/Loom_자산/옷층/옷_마린_펠트헤드폰.webp",
+    "marineAssetsComeFrom": "원격 라디오 서버의 기존 화면_1024 세트. 로컬의 다른 작업본은 이번 배포에 포함하지 않는다.",
+    "removedHanbok": "docs/Loom_자산/옷층/옷_마린_한복.webp"
+  },
+  "composition": {
+    "canvas": [
+      1280,
+      720
+    ],
+    "overlayQuery": "층=마스코트,전광판&크기=.32&자리=중하&바닥=2.5&부스=1",
+    "backgroundLoopSeconds": 60
+  },
+  "initialApplyPreserved": [
+    "기존 오디오 FLAC",
+    "재생목록",
+    "송출 자격증명",
+    "radio-live 서비스 파일",
+    "조율 설정",
+    "radio-stream 비활성 상태"
+  ],
+  "runtimeTuning": {
+    "path": "/opt/synk-radio/송출/조율.json",
+    "appliedAt": "2026-09-16T15:03:45.991Z",
+    "before": {
+      "프레임": 15,
+      "뜨기": 6
+    },
+    "after": {
+      "프레임": 12,
+      "뜨기": 4
+    },
+    "sha256": "7ce20813cb5d42e556dea066e5ac8fbb8f8087b209acdcdd39e1cbe9a5178950",
+    "backup": "/opt/synk-radio/송출/조율.json.before-chuseok-marine-20260917-4abcbb70ab80",
+    "preservedKeys": [
+      "소리목록",
+      "무대목록",
+      "장면분",
+      "장면차례",
+      "연속소리"
+    ],
+    "preservedByFollowup": true
+  },
+  "broadcast": {
+    "videoId": "eH0owfx9gCw",
+    "title": "K-LOFI 24 · lofi beats to chill",
+    "privacyStatus": "public",
+    "verifiedAt": "2026-09-17T09:18:49.814Z",
+    "note": "기존 공개 방송 자리를 유지하고, 의상 제거 후 공개 수신·실제 Chromium 층·최종 상태를 다시 확인했다.",
+    "followupLayerVerifiedAt": "2026-09-16T18:07:42.426Z"
+  },
+  "changes": {
+    "requestedAt": "2026-09-17",
+    "summary": "추석 마린의 한복 의상 층을 제거하고 DJ 부스 없이 본체만 보이게 한다. 배경 영상과 기존 오디오·표정·마린 본체는 유지한다.",
+    "booth": "추석보름달마당은 계속 부스결에서 제외되어 ?부스=1이어도 #부스가 숨겨진다.",
+    "costume": "추석보름달마당의 옷 배열을 비워 마린 본체를 그대로 표시한다."
+  },
+  "preservedUnusedRemote": {
+    "/opt/synk-radio/지면/docs/Loom_자산/옷층/옷_마린_펠트헤드폰.webp": "83ebff535f52449375973b08ff710f53f4605a9992c53a569434cdaba58a07b2",
+    "/opt/synk-radio/지면/docs/Loom_자산/라디오소품/부스.webp": "3beff72bd96adf9554d151874a14616e0585aaf57c720595dbbf846613c48d33",
+    "/opt/synk-radio/지면/docs/Loom_자산/라디오소품/디스크.webp": "05996b67558d1031c8578d4aa99e09857a2da9dd86a41e64730e25328a136839",
+    "/opt/synk-radio/지면/docs/Loom_자산/옷층/옷_마린_한복.webp": "fed5825831026c3c007f925716f04736dd4f3c5169615a4561ffee6f2aa18533"
+  },
+  "publicVerification": {
+    "capturePath": "docs/라디오/선정무대_20260917_추석마린_의상제거/공개수신.mp4",
+    "reportPath": "docs/라디오/선정무대_20260917_추석마린_의상제거/공개수신.json",
+    "framePath": "docs/라디오/선정무대_20260917_추석마린_의상제거/공개수신_확인프레임.png",
+    "seconds": 20.015601,
+    "video": "H.264 1280x720",
+    "audio": "AAC 44100Hz",
+    "silenceCount": 0,
+    "source": "YouTube public playback",
+    "startedAt": "2026-09-17T09:16:07.505Z",
+    "finishedAt": "2026-09-17T09:16:55.621Z",
+    "bytes": 1808938,
+    "captureWarnings": ""
+  },
+  "runtimeVerification": {
+    "reportPath": "docs/라디오/선정무대_20260917_추석마린_의상제거/서버실동작검증.json",
+    "seconds": 18,
+    "samples": 145,
+    "expressions": [
+      "안도",
+      "기본",
+      "깜빡",
+      "눈웃음"
+    ],
+    "clothesVisible": false,
+    "boothHidden": true,
+    "errors": 0,
+    "verifiedAt": "2026-09-17T09:18:39.631Z"
+  },
+  "finalStateVerification": {
+    "reportPath": "docs/라디오/선정무대_20260917_추석마린_의상제거/최종상태.json",
+    "verifiedAt": "2026-09-17T09:18:49.814Z",
+    "public": "active/good",
+    "service": "active/running/enabled",
+    "autoRestartCounter": 1,
+    "progressSamples": 2,
+    "failedFrames": 0,
+    "droppedFrames": 0,
+    "duplicateFrames": 0
+  },
+  "removedAsset": {
+    "path": "docs/Loom_자산/옷층/옷_마린_한복.webp",
+    "sha256": "fed5825831026c3c007f925716f04736dd4f3c5169615a4561ffee6f2aa18533",
+    "remotePath": "/opt/synk-radio/지면/docs/Loom_자산/옷층/옷_마린_한복.webp",
+    "action": "active 차림에서 제외하고 원격·로컬 파일은 기록용으로 보존"
+  },
+  "localVerification": {
+    "reportPath": "docs/라디오/선정무대_20260917_추석마린_의상제거/로컬검수.json",
+    "passed": true,
+    "clothesVisible": false,
+    "boothHidden": true,
+    "errors": 0,
+    "missing": 0
+  },
+  "applyVerification": {
+    "reportPath": "docs/라디오/선정무대_20260917_추석마린_의상제거/라이브반영.json",
+    "applied": true,
+    "restarted": true,
+    "oldOverlaySha": "6df998dc9b026109f6538050dd6b054e5de8f1018c6476cc746a4249d348a751",
+    "newOverlaySha": "6df998dc9b026109f6538050dd6b054e5de8f1018c6476cc746a4249d348a751",
+    "stageListSha": "5ea9dc8cff1729077a957e7e4bdc145ff7a45401a6e2fdc3381d29b15027d196",
+    "overlayBackup": "/opt/synk-radio/지면/bots/오버레이/마스코트.html.before-chuseok-marine-costume-removal-20260917-4bcb322fa02e",
+    "protectedUnchanged": 18,
+    "preservedUnusedUnchanged": 4
+  },
+  "rebootVerification": {
+    "reportPath": "docs/라디오/선정무대_20260917_추석마린_의상제거/라디오껐다켜기.json",
+    "stoppedAt": "2026-09-17T09:13:38.860Z",
+    "startedAt": "2026-09-17T09:13:41.336Z",
+    "stopStartConfirmed": true,
+    "stoppedState": {
+      "MainPID": "0",
+      "NRestarts": "1",
+      "ActiveState": "inactive",
+      "SubState": "dead",
+      "UnitFileState": "enabled"
+    },
+    "afterState": {
+      "MainPID": "414690",
+      "NRestarts": "0",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+    },
+    "afterFiles": [
+      {
+        "pid": "414863",
+        "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+      },
+      {
+        "pid": "414863",
+        "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+      }
+    ],
+    "overlaySha": "6df998dc9b026109f6538050dd6b054e5de8f1018c6476cc746a4249d348a751",
+    "stageListSha": "5ea9dc8cff1729077a957e7e4bdc145ff7a45401a6e2fdc3381d29b15027d196",
+    "hanbokSha": "fed5825831026c3c007f925716f04736dd4f3c5169615a4561ffee6f2aa18533"
+  }
+}

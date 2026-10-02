@@ -1,0 +1,41 @@
+{
+  "duration": 35.5,
+  "fps": 24,
+  "scenes": [
+    {
+      "scene": "hook",
+      "start": 0,
+      "end": 8.5,
+      "src": "shot-01.mp4",
+      "offset": 0
+    },
+    {
+      "scene": "practice",
+      "start": 8.5,
+      "end": 12.0,
+      "src": null,
+      "offset": null
+    },
+    {
+      "scene": "understand",
+      "start": 12.0,
+      "end": 19.85,
+      "src": "shot-02-fixed.mp4",
+      "offset": 0
+    },
+    {
+      "scene": "yourturn",
+      "start": 19.85,
+      "end": 24.35,
+      "src": null,
+      "offset": null
+    },
+    {
+      "scene": "answer",
+      "start": 24.35,
+      "end": 35.5,
+      "src": "shot-03-fixed.mp4",
+      "offset": 0
+    }
+  ]
+}

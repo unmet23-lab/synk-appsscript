@@ -1,0 +1,47 @@
+{
+  "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\pdf\\yuhobuilds_EP01_첫질문_가이드_v1.pdf",
+  "sha256": "32c04b8e749ccee91de952b46dc750453c3d7442e2bdab1079e35b6aca25cc31",
+  "bytes": 121525,
+  "pages": 4,
+  "pageSize": "A5 portrait",
+  "language": "ko-KR",
+  "selectableText": true,
+  "videoPromptExactMatch": true,
+  "plainTextCompanionMatches": true,
+  "allPageNumbersCorrect": true,
+  "fontEmbeddingPassed": true,
+  "fontResources": [
+    "/AAAAAA+DMMono-Regular",
+    "/AAAAAA+InterTight-Bold",
+    "/AAAAAA+InterTight-Medium",
+    "/AAAAAA+InterTight-Regular",
+    "/AAAAAA+InterTight-SemiBold",
+    "/AAAAAA+SUITVariable-ExtraBold",
+    "/AAAAAA+SUITVariable-Medium",
+    "/AAAAAA+SUITVariable-SemiBold",
+    "/AAAAAB+SUITVariable-Medium"
+  ],
+  "usedFonts": [
+    "AAAAAA+DMMono-Regular",
+    "AAAAAA+InterTight-Bold",
+    "AAAAAA+InterTight-Medium",
+    "AAAAAA+InterTight-Regular",
+    "AAAAAA+InterTight-SemiBold",
+    "AAAAAA+SUITVariable-ExtraBold",
+    "AAAAAA+SUITVariable-Medium",
+    "AAAAAA+SUITVariable-SemiBold",
+    "AAAAAB+SUITVariable-Medium"
+  ],
+  "textWithinPageMargins": true,
+  "missingReplacementCharacters": false,
+  "forms": "none; write in notes or on paper as explained in the PDF",
+  "visualReviewComplete": true,
+  "visualReview": {
+    "pagesReviewed": [1, 2, 3, 4],
+    "method": "Inspected all four final PDF pages rendered with pdftoppm at 120 dpi",
+    "findings": "No visible clipped text, overlaps, missing glyphs or broken page numbers; example, copy prompt and worksheet remain distinct",
+    "reviewStatus": "First draft ready for user review; not publication approval"
+  },
+  "publicDownloadPublished": false,
+  "videoCtaChanged": false
+}

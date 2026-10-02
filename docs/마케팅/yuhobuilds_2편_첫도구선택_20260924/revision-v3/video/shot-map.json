@@ -1,0 +1,326 @@
+[
+  {
+    "id": "shot-01",
+    "name": "목표는 출석 앱 하나",
+    "start": 0,
+    "end": 1.8333333333333333,
+    "duration": 1.8333333333333333,
+    "transition": "zoom",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-02",
+    "name": "두 AI에게 같은 질문",
+    "start": 1.8333333333333333,
+    "end": 4.666666666666667,
+    "duration": 2.833333333333334,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-03",
+    "name": "처음 듣는 도구 첫 두 개",
+    "start": 4.666666666666667,
+    "end": 6.666666666666667,
+    "duration": 2,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-04",
+    "name": "도구 네 개가 쌓임",
+    "start": 6.666666666666667,
+    "end": 9.233333333333333,
+    "duration": 2.5666666666666655,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-05",
+    "name": "Claude의 제안",
+    "start": 9.233333333333333,
+    "end": 11.533333333333333,
+    "duration": 2.3000000000000007,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-06",
+    "name": "Claude가 추천한 웹앱",
+    "start": 11.533333333333333,
+    "end": 13.1,
+    "duration": 1.5666666666666664,
+    "transition": "up",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-07",
+    "name": "GPT의 제안",
+    "start": 13.1,
+    "end": 15.433333333333334,
+    "duration": 2.333333333333334,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-08",
+    "name": "GPT가 추천한 방향",
+    "start": 15.433333333333334,
+    "end": 17.633333333333333,
+    "duration": 2.1999999999999993,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-09",
+    "name": "잠깐만요 리액션",
+    "start": 17.633333333333333,
+    "end": 18.866666666666667,
+    "duration": 1.2333333333333343,
+    "transition": "zoom",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-10",
+    "name": "양쪽 제안 사이에서",
+    "start": 18.866666666666667,
+    "end": 20.666666666666668,
+    "duration": 1.8000000000000007,
+    "transition": "zoom",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-11",
+    "name": "하나 대 네 개",
+    "start": 20.666666666666668,
+    "end": 22.366666666666667,
+    "duration": 1.6999999999999993,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-12",
+    "name": "Claude 쪽으로 선택",
+    "start": 22.366666666666667,
+    "end": 24.2,
+    "duration": 1.8333333333333321,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-13",
+    "name": "Sheets는 기록하는 표",
+    "start": 24.2,
+    "end": 25.833333333333332,
+    "duration": 1.6333333333333329,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-14",
+    "name": "Glide는 앱 화면",
+    "start": 25.833333333333332,
+    "end": 27.6,
+    "duration": 1.7666666666666693,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-15",
+    "name": "첫 화면의 기대",
+    "start": 27.6,
+    "end": 30.566666666666666,
+    "duration": 2.966666666666665,
+    "transition": "zoom",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-16",
+    "name": "만들기 전에 다음 난관",
+    "start": 30.566666666666666,
+    "end": 32.6,
+    "duration": 2.033333333333335,
+    "transition": "up",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-17",
+    "name": "설정에서 멈춤",
+    "start": 32.6,
+    "end": 34.56666666666667,
+    "duration": 1.9666666666666686,
+    "transition": "zoom",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-18",
+    "name": "검색 다시 보기 재설정",
+    "start": 34.56666666666667,
+    "end": 36.93333333333333,
+    "duration": 2.36666666666666,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-19",
+    "name": "한 시간쯤",
+    "start": 36.93333333333333,
+    "end": 39,
+    "duration": 2.06666666666667,
+    "transition": "zoom",
+    "motion": "counting-dynamic-scale"
+  },
+  {
+    "id": "shot-20",
+    "name": "출석 0건의 눈물",
+    "start": 39,
+    "end": 40.666666666666664,
+    "duration": 1.6666666666666643,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-21",
+    "name": "다른 모델에도 물어보기",
+    "start": 40.666666666666664,
+    "end": 43.733333333333334,
+    "duration": 3.06666666666667,
+    "transition": "up",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-22",
+    "name": "두 선택지를 함께 보여주기",
+    "start": 43.733333333333334,
+    "end": 45.1,
+    "duration": 1.3666666666666671,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-23",
+    "name": "내 경험 수준부터",
+    "start": 45.1,
+    "end": 46.6,
+    "duration": 1.5,
+    "transition": "zoom",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-24",
+    "name": "만들고 싶은 앱",
+    "start": 46.6,
+    "end": 48.266666666666666,
+    "duration": 1.6666666666666643,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-25",
+    "name": "비교할 첫 방법",
+    "start": 48.266666666666666,
+    "end": 49.833333333333336,
+    "duration": 1.56666666666667,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-26",
+    "name": "비교할 두 번째 방법",
+    "start": 49.833333333333336,
+    "end": 51.56666666666667,
+    "duration": 1.7333333333333343,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-27",
+    "name": "내게 맞는 추천 요청",
+    "start": 51.56666666666667,
+    "end": 52.7,
+    "duration": 1.1333333333333329,
+    "transition": "zoom",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-28",
+    "name": "비교 기준까지 함께",
+    "start": 52.7,
+    "end": 55.43333333333333,
+    "duration": 2.733333333333327,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-29",
+    "name": "완성된 비교 질문",
+    "start": 55.43333333333333,
+    "end": 57.56666666666667,
+    "duration": 2.13333333333334,
+    "transition": "up",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-30",
+    "name": "무료로 비교 시작",
+    "start": 57.56666666666667,
+    "end": 61.266666666666666,
+    "duration": 3.6999999999999957,
+    "transition": "zoom",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-31",
+    "name": "AI의 답은 참고 자료",
+    "start": 61.266666666666666,
+    "end": 64.3,
+    "duration": 3.0333333333333314,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-32",
+    "name": "마지막 선택은 나",
+    "start": 64.3,
+    "end": 66.23333333333333,
+    "duration": 1.9333333333333371,
+    "transition": "zoom",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-33",
+    "name": "내 돈과 시간",
+    "start": 66.23333333333333,
+    "end": 67.36666666666666,
+    "duration": 1.1333333333333258,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-34",
+    "name": "꼭 필요한 기능",
+    "start": 67.36666666666666,
+    "end": 69.2,
+    "duration": 1.8333333333333428,
+    "transition": "up",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-35",
+    "name": "다음 편 첫 질문",
+    "start": 69.2,
+    "end": 72.53333333333333,
+    "duration": 3.3333333333333286,
+    "transition": "up",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-36",
+    "name": "엔딩 채널 약속",
+    "start": 72.53333333333333,
+    "end": 75.23333333333333,
+    "duration": 2.700000000000003,
+    "transition": "zoom",
+    "motion": "kinetic-beat-slam"
+  }
+]

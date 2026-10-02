@@ -1,0 +1,618 @@
+{
+  "updatedAt": "2026-09-10T08:51:00.215Z",
+  "summary": "같은 문장으로 만든 합성음성 10개입니다. 음량만 비슷하게 맞췄습니다. 편안한 크기로 듣고, 가장 자연스럽고 계속 듣고 싶은 후보 번호 한두 개를 골라주세요.",
+  "scope": "한국어 TTS 태그 781개는 목록을 끝까지 수집했습니다. 주요 모델·변형 29개 항목을 비교했고, 5개 계열에서 실제 음성 10개를 생성했습니다. 모든 공개 모델을 설치·청취한 조사는 아닙니다. 모델 이름을 열면 실행 조건과 남은 확인을 볼 수 있습니다.",
+  "samples": [
+    {
+      "id": "qwen-design",
+      "label": "후보 01 · Qwen3-TTS 1.7B VoiceDesign",
+      "model": "Qwen3-TTS 1.7B VoiceDesign",
+      "provider": "Qwen 공식 HF 데모",
+      "notes": "설명문으로 새로 설계한 가상 화자. 아직 고정 화자 채택 전\n음량만 조절. 자동 문장 검사는 청취 평가가 아닙니다.",
+      "file": "실험/qwen-design/listen.wav",
+      "duration": 8.456875,
+      "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+      "scriptLabel": "같은 문장, 다른 목소리",
+      "sampleRate": 24000,
+      "gainDb": -8.71,
+      "lufs": -22.96,
+      "truePeakDb": -8.65,
+      "rawSha256": "4729752ca903f37dfa427d60468a30dd1a5ce716ccef67dd01babf26a5b1fa25",
+      "listenSha256": "b4fc82705afcdbe26df5bfe4d0cdb95020a138290feab4ad5495020a354c503a",
+      "characterSimilarity": 1,
+      "humanListening": false,
+      "userApproved": false
+    },
+    {
+      "id": "chatterbox-v3",
+      "label": "후보 02 · Chatterbox Multilingual V3",
+      "model": "Chatterbox Multilingual V3",
+      "provider": "Resemble AI 공식 HF 데모",
+      "notes": "후보 01의 새 가상 화자를 참조해 재생성. 독립 기본 화자 비교와 조건이 다름\n음량만 조절. 자동 문장 검사는 청취 평가가 아닙니다.",
+      "file": "실험/chatterbox-v3/listen.wav",
+      "duration": 7.8,
+      "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+      "scriptLabel": "같은 문장, 다른 목소리",
+      "sampleRate": 24000,
+      "gainDb": -8.76,
+      "lufs": -23.01,
+      "truePeakDb": -8.66,
+      "rawSha256": "8ed2bbb497fd4da6932faa1c385ef5888021b35d46448e2886e5a01894af2ece",
+      "listenSha256": "2e2a4f428d687cc6f364acfede0af321177ce880a9dac864a3ae7ef7783ac6ae",
+      "characterSimilarity": 1,
+      "humanListening": false,
+      "userApproved": false
+    },
+    {
+      "id": "magpie-aria",
+      "label": "후보 03 · Magpie v2607 · Aria",
+      "model": "Magpie v2607 · Aria",
+      "provider": "NVIDIA 공식 HF 데모",
+      "notes": "기본 여성 화자 Aria / Korean. 참조 음성 없음\n음량만 조절. 자동 문장 검사는 청취 평가가 아닙니다.",
+      "file": "실험/magpie-aria/listen.wav",
+      "duration": 7.383946,
+      "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+      "scriptLabel": "같은 문장, 다른 목소리",
+      "sampleRate": 22050,
+      "gainDb": -3.59,
+      "lufs": -22.99,
+      "truePeakDb": -3.41,
+      "rawSha256": "37731954548c643f3582844b1e123ac7f0b21e9c3e50feffe6aaf28bee2eadc3",
+      "listenSha256": "3e8bcda46d0bd7cc3b34e3b92b9d1c84730423c8f3390c22a405ef90927e775e",
+      "characterSimilarity": 1,
+      "humanListening": false,
+      "userApproved": false
+    },
+    {
+      "id": "moss-nano",
+      "label": "후보 04 · MOSS-TTS-Nano-100M",
+      "model": "MOSS-TTS-Nano-100M",
+      "provider": "OpenMOSS 공식 HF 데모",
+      "notes": "후보 01의 새 가상 화자를 참조해 재생성. 원생성 48kHz\n음량만 조절. 자동 문장 검사는 청취 평가가 아닙니다.",
+      "file": "실험/moss-nano/listen.wav",
+      "duration": 8.8,
+      "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+      "scriptLabel": "같은 문장, 다른 목소리",
+      "sampleRate": 48000,
+      "gainDb": -11.14,
+      "lufs": -23,
+      "truePeakDb": -11.14,
+      "rawSha256": "b1088d4fbb7052821f5f68d592d466811964b98a740b4652dbb3524e04bbd1a4",
+      "listenSha256": "40e4da55c3ab787ad4a3aa8ff013230958b5f3a6f3e990edd76344720e949032",
+      "characterSimilarity": 1,
+      "humanListening": false,
+      "userApproved": false
+    },
+    {
+      "id": "qwen-sohee",
+      "label": "후보 05 · Qwen3-TTS 1.7B CustomVoice · Sohee",
+      "model": "Qwen3-TTS 1.7B CustomVoice · Sohee",
+      "provider": "Qwen 공식 HF 데모",
+      "notes": "기본 한국어 여성 Sohee에 같은 밝은 스타일 지시\n음량만 조절. 자동 문장 검사는 청취 평가가 아닙니다.",
+      "file": "실험/qwen-sohee/listen.wav",
+      "duration": 10.08,
+      "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+      "scriptLabel": "같은 문장, 다른 목소리",
+      "sampleRate": 24000,
+      "gainDb": -5.449999999999999,
+      "lufs": -23,
+      "truePeakDb": -5.25,
+      "rawSha256": "56d698a7e4e3c3b350b9715b6cf87dd0b175c8bc26a60cb08957295c24757844",
+      "listenSha256": "f76bff97b7c1ccb15798050e379568d193ca63ed991b354420f0d26186c2ad0a",
+      "characterSimilarity": 1,
+      "humanListening": false,
+      "userApproved": false
+    },
+    {
+      "id": "supertonic3-F1",
+      "label": "후보 06 · Supertonic 3 · F1",
+      "model": "Supertonic 3 · F1",
+      "provider": "이 컴퓨터에서 ONNX 실행",
+      "notes": "여성 고정 프리셋 F1 / speed 1 / steps 8 / seed 42\n음량만 조절. 자동 문장 검사는 청취 평가가 아닙니다.",
+      "file": "실험/supertonic3/F1-listen.wav",
+      "duration": 9.125442,
+      "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+      "scriptLabel": "같은 문장, 다른 목소리",
+      "sampleRate": 44100,
+      "gainDb": 2.8099999999999987,
+      "lufs": -23,
+      "truePeakDb": -5.98,
+      "rawSha256": "defe9bc028de8a5e2b3e58ba19a093c665136c562237af049be3975277537d57",
+      "listenSha256": "2aebe678ebbbe8e84ce4f21a3507c3566f4cb1a300cd267f9554681c7edb0a51",
+      "characterSimilarity": 1,
+      "humanListening": false,
+      "userApproved": false
+    },
+    {
+      "id": "supertonic3-F2",
+      "label": "후보 07 · Supertonic 3 · F2",
+      "model": "Supertonic 3 · F2",
+      "provider": "이 컴퓨터에서 ONNX 실행",
+      "notes": "여성 고정 프리셋 F2 / speed 1 / steps 8 / seed 42\n음량만 조절. 자동 문장 검사는 청취 평가가 아닙니다.",
+      "file": "실험/supertonic3/F2-listen.wav",
+      "duration": 8.568163,
+      "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+      "scriptLabel": "같은 문장, 다른 목소리",
+      "sampleRate": 44100,
+      "gainDb": 3.84,
+      "lufs": -23,
+      "truePeakDb": -4.26,
+      "rawSha256": "5fc8e7b9c1dd1d7239558517643582f4bfcec9831815486f6db52e372e40010f",
+      "listenSha256": "936f11b3afb8002dc723015d7a1684c60411c241e6660627bcd862519289ef5e",
+      "characterSimilarity": 1,
+      "humanListening": false,
+      "userApproved": false
+    },
+    {
+      "id": "supertonic3-F3",
+      "label": "후보 08 · Supertonic 3 · F3",
+      "model": "Supertonic 3 · F3",
+      "provider": "이 컴퓨터에서 ONNX 실행",
+      "notes": "여성 고정 프리셋 F3 / speed 1 / steps 8 / seed 42\n음량만 조절. 자동 문장 검사는 청취 평가가 아닙니다.",
+      "file": "실험/supertonic3/F3-listen.wav",
+      "duration": 9.404082,
+      "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+      "scriptLabel": "같은 문장, 다른 목소리",
+      "sampleRate": 44100,
+      "gainDb": 2.6400000000000006,
+      "lufs": -23.01,
+      "truePeakDb": -7.88,
+      "rawSha256": "b338d11af2320547daa55e6882fcd3da50a3e07c76dbacd4164d87360229eb90",
+      "listenSha256": "8b42ab4c51e75fe31cf80bbbfe18b43921331e93f6da599a1357b8c3c398cc1c",
+      "characterSimilarity": 1,
+      "humanListening": false,
+      "userApproved": false
+    },
+    {
+      "id": "supertonic3-F4",
+      "label": "후보 09 · Supertonic 3 · F4",
+      "model": "Supertonic 3 · F4",
+      "provider": "이 컴퓨터에서 ONNX 실행",
+      "notes": "여성 고정 프리셋 F4 / speed 1 / steps 8 / seed 42\n음량만 조절. 자동 문장 검사는 청취 평가가 아닙니다.",
+      "file": "실험/supertonic3/F4-listen.wav",
+      "duration": 7.801905,
+      "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+      "scriptLabel": "같은 문장, 다른 목소리",
+      "sampleRate": 44100,
+      "gainDb": 4.199999999999999,
+      "lufs": -23,
+      "truePeakDb": -6.68,
+      "rawSha256": "327735cb8e285ef59b8fb57f42bf897b81be31918cc41a5da2c7def0ca5ae0f4",
+      "listenSha256": "3cd05a43851de3309c2e0bdf6b034a47c625f7df9aaae1933133720df9075900",
+      "characterSimilarity": 1,
+      "humanListening": false,
+      "userApproved": false
+    },
+    {
+      "id": "supertonic3-F5",
+      "label": "후보 10 · Supertonic 3 · F5",
+      "model": "Supertonic 3 · F5",
+      "provider": "이 컴퓨터에서 ONNX 실행",
+      "notes": "여성 고정 프리셋 F5 / speed 1 / steps 8 / seed 42\n음량만 조절. 자동 문장 검사는 청취 평가가 아닙니다.",
+      "file": "실험/supertonic3/F5-listen.wav",
+      "duration": 8.846803,
+      "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+      "scriptLabel": "같은 문장, 다른 목소리",
+      "sampleRate": 44100,
+      "gainDb": 2.8900000000000006,
+      "lufs": -22.99,
+      "truePeakDb": -7.59,
+      "rawSha256": "735091c62f9eebb23fc3d82bf7f5203549f8614221cd6e7d2485d42568aec684",
+      "listenSha256": "4e554cdb9bc430a8c29126cb135aa7d8051e735e9de55d83a076d68375a2e896",
+      "characterSimilarity": 1,
+      "humanListening": false,
+      "userApproved": false
+    }
+  ],
+  "models": [
+    {
+      "name": "Qwen3-TTS 1.7B",
+      "korean": "공식 지원",
+      "commercial": "코드·가중치 Apache-2.0",
+      "fixedVoice": "Sohee ID / 설계 원본을 Base 참조로 재사용",
+      "status": "2개 음원 생성",
+      "url": "https://github.com/QwenLM/Qwen3-TTS",
+      "notes": "24kHz. VoiceDesign·CustomVoice·Base 기능 구분"
+    },
+    {
+      "name": "VoxCPM2",
+      "korean": "공식 지원",
+      "commercial": "코드·가중치 Apache-2.0",
+      "fixedVoice": "새 음색 설계 + 참조 재사용",
+      "status": "공식 데모 대기열 포화 2회; 음원 없음",
+      "url": "https://huggingface.co/openbmb/VoxCPM2",
+      "notes": "모델 48kHz. 공식 데모는 MP3 경로"
+    },
+    {
+      "name": "Chatterbox Multilingual V3",
+      "korean": "공식 지원",
+      "commercial": "코드·가중치 MIT",
+      "fixedVoice": "참조 음색",
+      "status": "동일 대본 생성",
+      "url": "https://github.com/resemble-ai/chatterbox",
+      "notes": "24kHz. 새 가상 화자 참조 사용. Turbo 영어판과 구분"
+    },
+    {
+      "name": "MOSS-TTS-Nano-100M",
+      "korean": "공식 지원",
+      "commercial": "코드·가중치 Apache-2.0",
+      "fixedVoice": "참조 음색",
+      "status": "동일 대본 생성",
+      "url": "https://huggingface.co/OpenMOSS-Team/MOSS-TTS-Nano-100M",
+      "notes": "48kHz. 같은 Qwen 가상 화자 참조 사용"
+    },
+    {
+      "name": "Magpie 357M v2607",
+      "korean": "2026-07 추가",
+      "commercial": "코드 Apache-2.0 / NVIDIA Open Model License",
+      "fixedVoice": "Aria 등 고정 5명",
+      "status": "Aria 동일 대본 생성",
+      "url": "https://huggingface.co/nvidia/magpie_tts_multilingual_357m",
+      "notes": "22.05kHz. 현행판은 참조 복제 제거"
+    },
+    {
+      "name": "Supertonic 3",
+      "korean": "공식 지원",
+      "commercial": "코드 MIT / OpenRAIL-M; 합성 고지 등 조건",
+      "fixedVoice": "고정 F1–F5·M1–M5",
+      "status": "이 PC에서 여성 5개 생성",
+      "url": "https://github.com/supertone-oss-archive/supertonic",
+      "notes": "44.1kHz. 2026-09-09 개발·지원 종료 공지"
+    },
+    {
+      "name": "MOSS Local-Transformer v1.5",
+      "korean": "공식 지원",
+      "commercial": "코드·가중치 Apache-2.0",
+      "fixedVoice": "참조 음색",
+      "status": "공식 자료 확인; 생성 안 함",
+      "url": "https://huggingface.co/OpenMOSS-Team/MOSS-TTS-Local-Transformer-v1.5",
+      "notes": "48kHz stereo. 본체+codec 가중치 약17.6GB"
+    },
+    {
+      "name": "MOSS-TTS 8B v1.5",
+      "korean": "공식 지원",
+      "commercial": "코드·가중치 Apache-2.0",
+      "fixedVoice": "참조 음색·이어말하기",
+      "status": "공식 Space 설정 확인; 생성 안 함",
+      "url": "https://huggingface.co/OpenMOSS-Team/MOSS-TTS-v1.5",
+      "notes": "24kHz. Local 48kHz판과 구분"
+    },
+    {
+      "name": "MOSS-VoiceGenerator",
+      "korean": "영·중만 명시",
+      "commercial": "코드·가중치 Apache-2.0",
+      "fixedVoice": "설명문으로 새 음색",
+      "status": "한국어 직접 후보 후순위",
+      "url": "https://huggingface.co/OpenMOSS-Team/MOSS-VoiceGenerator",
+      "notes": "24kHz. MOSS-TTS의 한국어 지원을 전이하지 않음"
+    },
+    {
+      "name": "ZONOS2",
+      "korean": "Tier 2",
+      "commercial": "코드 MIT / 가중치 Apache-2.0",
+      "fixedVoice": "화자 임베딩 저장",
+      "status": "무료 실제 생성 미확인",
+      "url": "https://github.com/Zyphra/ZONOS2",
+      "notes": "44.1kHz. 감정·속도 제어; 한국어 소리 미검증"
+    },
+    {
+      "name": "Fun-CosyVoice3 0.5B-2512",
+      "korean": "공식 지원",
+      "commercial": "코드·가중치 Apache-2.0",
+      "fixedVoice": "참조 음색 + 표현 지시",
+      "status": "공식 자료 확인; 생성 안 함",
+      "url": "https://huggingface.co/FunAudioLLM/Fun-CosyVoice3-0.5B-2512",
+      "notes": "24kHz. 공개0.5B와 논문1.5B 결과 구분"
+    },
+    {
+      "name": "Audio8 Preview 0.6B",
+      "korean": "공식 지원",
+      "commercial": "코드·가중치 Apache-2.0 표기",
+      "fixedVoice": "참조 복제 / 참조 없이 생성",
+      "status": "공식 Space PAUSED; 생성 안 함",
+      "url": "https://huggingface.co/Edge0/Audio8-TTS-Preview-0.6b",
+      "notes": "44.1kHz. Windows ONNX 경로 공개; 실제 품질 미검증"
+    },
+    {
+      "name": "GPT-SoVITS v4 / v2Pro",
+      "korean": "공식 지원",
+      "commercial": "코드 MIT; 사용할 정확한 가중치·참조 권리 추가 특정",
+      "fixedVoice": "참조 복제·추가 학습",
+      "status": "공식 버전 안내 확인; 생성 안 함",
+      "url": "https://github.com/RVC-Boss/GPT-SoVITS",
+      "notes": "v4 원생성48kHz. v2Pro와 출력·구조 혼동 금지"
+    },
+    {
+      "name": "MeloTTS Korean",
+      "korean": "공식 한국어판",
+      "commercial": "코드·모델 카드 MIT",
+      "fixedVoice": "한국어 기본 화자",
+      "status": "공식 자료 확인; 생성 안 함",
+      "url": "https://huggingface.co/myshell-ai/MeloTTS-Korean",
+      "notes": "로컬 실행 비교 기준. 자유로운 감정 설계 후보와 구분"
+    },
+    {
+      "name": "Kani-TTS 400M Korean",
+      "korean": "공식 한국어판",
+      "commercial": "카드 LFM 조건과 본문 Apache 표기 상충; 확정 보류",
+      "fixedVoice": "선택한 모델 기능 추가 확인",
+      "status": "문서 불일치 확인; 생성 안 함",
+      "url": "https://huggingface.co/nineninesix/kani-tts-400m-ko",
+      "notes": "22kHz 표기. Kani 2 영어판 기능을 그대로 적용하지 않음"
+    },
+    {
+      "name": "IndexTTS2 / 한국어 포크",
+      "korean": "한국어는 비공식 적응판",
+      "commercial": "bilibili 조건 + 한국어 가중치·학습 자료 별도 확인",
+      "fixedVoice": "참조 음색·감정",
+      "status": "공식판·한국어 포크 문서 확인",
+      "url": "https://github.com/acidsound/index-tts-kr",
+      "notes": "한국어 tokenizer·48화자 학습 변경. 완성된 상업 한국어 화자로 미승인"
+    },
+    {
+      "name": "Bark",
+      "korean": "공식 예시 있음",
+      "commercial": "코드·가중치 MIT",
+      "fixedVoice": "history preset",
+      "status": "공식 자료 확인; 생성 안 함",
+      "url": "https://github.com/suno-ai/bark",
+      "notes": "음악·효과음도 생성하는 모델. 대본 이탈 가능성 개발자 명시"
+    },
+    {
+      "name": "OmniVoice",
+      "korean": "한국어·몽골어 명시",
+      "commercial": "코드 Apache-2.0 / 가중치 CC-BY-NC",
+      "fixedVoice": "참조 / 속성 설계",
+      "status": "상업 브랜드 후보 보류",
+      "url": "https://huggingface.co/k2-fsa/OmniVoice",
+      "notes": "24kHz. 음색 설계는 영·중 중심 학습"
+    },
+    {
+      "name": "Fish S2 Pro",
+      "korean": "한국어 Tier 2",
+      "commercial": "Fish Audio Research License; 상업 별도 계약",
+      "fixedVoice": "참조 음색·표현 태그",
+      "status": "무료 상업 후보 보류",
+      "url": "https://huggingface.co/fishaudio/s2-pro",
+      "notes": "표현 태그 기능 확인. 한국어 청취 순위 미판정"
+    },
+    {
+      "name": "Boson Higgs TTS 3",
+      "korean": "한국어·몽골어 명시",
+      "commercial": "Creator Use Grant 조건부 자사 콘텐츠; 앱/API 별도",
+      "fixedVoice": "참조 음색·표현 태그",
+      "status": "권리 검토만; 생성 안 함",
+      "url": "https://huggingface.co/bosonai/higgs-tts-3-4b",
+      "notes": "24kHz. Higgsfield와 별개. 눈에 띄는 Boson 출처 표시 조건"
+    },
+    {
+      "name": "F5-TTS",
+      "korean": "원판 영·중 중심; 한국어 파생 별도",
+      "commercial": "코드 MIT / 기본 가중치 CC-BY-NC",
+      "fixedVoice": "참조 음색",
+      "status": "무료 상업 후보 보류",
+      "url": "https://github.com/SWivid/F5-TTS",
+      "notes": "한국어 포크 권리·완성도는 원판 허용과 별개"
+    },
+    {
+      "name": "XTTS-v2",
+      "korean": "공식 지원",
+      "commercial": "가중치 CPML: 모델·출력 비상업 조건",
+      "fixedVoice": "참조 복제",
+      "status": "무료 상업 후보 보류",
+      "url": "https://huggingface.co/coqui/XTTS-v2/blob/main/LICENSE.txt",
+      "notes": "24kHz. 공개 코드와 출력 이용 조건을 분리"
+    },
+    {
+      "name": "OuteTTS 1.0 1B",
+      "korean": "공식 지원",
+      "commercial": "Llama3.2 기반 + CC-BY-NC-SA",
+      "fixedVoice": "화자 프로필 저장",
+      "status": "무료 상업 후보 보류",
+      "url": "https://huggingface.co/OuteAI/Llama-OuteTTS-1.0-1B",
+      "notes": "한국어 지원과 상업 이용 가능성을 구분"
+    },
+    {
+      "name": "FireRedTTS2",
+      "korean": "공식 지원",
+      "commercial": "Apache 표기와 복제의 학술 목적 안내가 공존; 해당 범위 확인",
+      "fixedVoice": "참조·대화 생성",
+      "status": "공식 자료 확인; 채택 보류",
+      "url": "https://huggingface.co/FireRedTeam/FireRedTTS2",
+      "notes": "24kHz. 긴 다화자 대화 기능"
+    },
+    {
+      "name": "VibeVoice 1.5B / Realtime0.5B",
+      "korean": "Realtime의 KR은 실험 화자",
+      "commercial": "MIT 표기; 1.5B 카드 연구 목적 제한과 적용판 구분 필요",
+      "fixedVoice": "참조·실험 프리셋",
+      "status": "공식 자료 확인; 채택 보류",
+      "url": "https://github.com/microsoft/VibeVoice",
+      "notes": "ASR의 언어 수를 TTS 지원으로 인용하지 않음"
+    },
+    {
+      "name": "Kokoro 82M 기본판",
+      "korean": "공식 한국어 화자 미확인",
+      "commercial": "코드·가중치 Apache-2.0",
+      "fixedVoice": "공식 화자 목록",
+      "status": "한국어 우선 후보에서 제외",
+      "url": "https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md",
+      "notes": "파생판의 ko 태그만으로 기본판 한국어 지원을 확정하지 않음"
+    },
+    {
+      "name": "Dia 1.6B / 0626",
+      "korean": "조사한 공식판 영어만",
+      "commercial": "코드·가중치 Apache-2.0",
+      "fixedVoice": "참조·시드",
+      "status": "한국어 우선 후보에서 제외",
+      "url": "https://github.com/nari-labs/dia",
+      "notes": "개발팀 이름이 한국어인 것과 한국어 생성 지원은 별개"
+    },
+    {
+      "name": "TADA 3B multilingual",
+      "korean": "조사한 공식 언어 목록에 없음",
+      "commercial": "코드 MIT / Llama3.2 Community 조건",
+      "fixedVoice": "참조 음색",
+      "status": "한국어 우선 후보에서 제외",
+      "url": "https://github.com/HumeAI/tada",
+      "notes": "ko 태그가 달린 파생 GGUF를 원 모델 지원 근거로 사용하지 않음"
+    },
+    {
+      "name": "Gwen-TTS 0.6B",
+      "korean": "목록 포함; 베트남어 최적화",
+      "commercial": "MIT 표기; 기반 Qwen 조건 함께 확인",
+      "fixedVoice": "참조 음색",
+      "status": "한국어 우선 후보 후순위",
+      "url": "https://huggingface.co/g-group-ai-lab/gwen-tts-0.6B",
+      "notes": "베트남어 학습 파생판. 한국어가 원판보다 좋아졌다는 검증 없음"
+    }
+  ],
+  "sources": [
+    {
+      "title": "Qwen3-TTS 1.7B",
+      "url": "https://github.com/QwenLM/Qwen3-TTS",
+      "note": "24kHz. VoiceDesign·CustomVoice·Base 기능 구분"
+    },
+    {
+      "title": "VoxCPM2",
+      "url": "https://huggingface.co/openbmb/VoxCPM2",
+      "note": "모델 48kHz. 공식 데모는 MP3 경로"
+    },
+    {
+      "title": "Chatterbox Multilingual V3",
+      "url": "https://github.com/resemble-ai/chatterbox",
+      "note": "24kHz. 새 가상 화자 참조 사용. Turbo 영어판과 구분"
+    },
+    {
+      "title": "MOSS-TTS-Nano-100M",
+      "url": "https://huggingface.co/OpenMOSS-Team/MOSS-TTS-Nano-100M",
+      "note": "48kHz. 같은 Qwen 가상 화자 참조 사용"
+    },
+    {
+      "title": "Magpie 357M v2607",
+      "url": "https://huggingface.co/nvidia/magpie_tts_multilingual_357m",
+      "note": "22.05kHz. 현행판은 참조 복제 제거"
+    },
+    {
+      "title": "Supertonic 3",
+      "url": "https://github.com/supertone-oss-archive/supertonic",
+      "note": "44.1kHz. 2026-09-09 개발·지원 종료 공지"
+    },
+    {
+      "title": "MOSS Local-Transformer v1.5",
+      "url": "https://huggingface.co/OpenMOSS-Team/MOSS-TTS-Local-Transformer-v1.5",
+      "note": "48kHz stereo. 본체+codec 가중치 약17.6GB"
+    },
+    {
+      "title": "MOSS-TTS 8B v1.5",
+      "url": "https://huggingface.co/OpenMOSS-Team/MOSS-TTS-v1.5",
+      "note": "24kHz. Local 48kHz판과 구분"
+    },
+    {
+      "title": "MOSS-VoiceGenerator",
+      "url": "https://huggingface.co/OpenMOSS-Team/MOSS-VoiceGenerator",
+      "note": "24kHz. MOSS-TTS의 한국어 지원을 전이하지 않음"
+    },
+    {
+      "title": "ZONOS2",
+      "url": "https://github.com/Zyphra/ZONOS2",
+      "note": "44.1kHz. 감정·속도 제어; 한국어 소리 미검증"
+    },
+    {
+      "title": "Fun-CosyVoice3 0.5B-2512",
+      "url": "https://huggingface.co/FunAudioLLM/Fun-CosyVoice3-0.5B-2512",
+      "note": "24kHz. 공개0.5B와 논문1.5B 결과 구분"
+    },
+    {
+      "title": "Audio8 Preview 0.6B",
+      "url": "https://huggingface.co/Edge0/Audio8-TTS-Preview-0.6b",
+      "note": "44.1kHz. Windows ONNX 경로 공개; 실제 품질 미검증"
+    },
+    {
+      "title": "GPT-SoVITS v4 / v2Pro",
+      "url": "https://github.com/RVC-Boss/GPT-SoVITS",
+      "note": "v4 원생성48kHz. v2Pro와 출력·구조 혼동 금지"
+    },
+    {
+      "title": "MeloTTS Korean",
+      "url": "https://huggingface.co/myshell-ai/MeloTTS-Korean",
+      "note": "로컬 실행 비교 기준. 자유로운 감정 설계 후보와 구분"
+    },
+    {
+      "title": "Kani-TTS 400M Korean",
+      "url": "https://huggingface.co/nineninesix/kani-tts-400m-ko",
+      "note": "22kHz 표기. Kani 2 영어판 기능을 그대로 적용하지 않음"
+    },
+    {
+      "title": "IndexTTS2 / 한국어 포크",
+      "url": "https://github.com/acidsound/index-tts-kr",
+      "note": "한국어 tokenizer·48화자 학습 변경. 완성된 상업 한국어 화자로 미승인"
+    },
+    {
+      "title": "Bark",
+      "url": "https://github.com/suno-ai/bark",
+      "note": "음악·효과음도 생성하는 모델. 대본 이탈 가능성 개발자 명시"
+    },
+    {
+      "title": "OmniVoice",
+      "url": "https://huggingface.co/k2-fsa/OmniVoice",
+      "note": "24kHz. 음색 설계는 영·중 중심 학습"
+    },
+    {
+      "title": "Fish S2 Pro",
+      "url": "https://huggingface.co/fishaudio/s2-pro",
+      "note": "표현 태그 기능 확인. 한국어 청취 순위 미판정"
+    },
+    {
+      "title": "Boson Higgs TTS 3",
+      "url": "https://huggingface.co/bosonai/higgs-tts-3-4b",
+      "note": "24kHz. Higgsfield와 별개. 눈에 띄는 Boson 출처 표시 조건"
+    },
+    {
+      "title": "F5-TTS",
+      "url": "https://github.com/SWivid/F5-TTS",
+      "note": "한국어 포크 권리·완성도는 원판 허용과 별개"
+    },
+    {
+      "title": "XTTS-v2",
+      "url": "https://huggingface.co/coqui/XTTS-v2/blob/main/LICENSE.txt",
+      "note": "24kHz. 공개 코드와 출력 이용 조건을 분리"
+    },
+    {
+      "title": "OuteTTS 1.0 1B",
+      "url": "https://huggingface.co/OuteAI/Llama-OuteTTS-1.0-1B",
+      "note": "한국어 지원과 상업 이용 가능성을 구분"
+    },
+    {
+      "title": "FireRedTTS2",
+      "url": "https://huggingface.co/FireRedTeam/FireRedTTS2",
+      "note": "24kHz. 긴 다화자 대화 기능"
+    },
+    {
+      "title": "VibeVoice 1.5B / Realtime0.5B",
+      "url": "https://github.com/microsoft/VibeVoice",
+      "note": "ASR의 언어 수를 TTS 지원으로 인용하지 않음"
+    },
+    {
+      "title": "Kokoro 82M 기본판",
+      "url": "https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md",
+      "note": "파생판의 ko 태그만으로 기본판 한국어 지원을 확정하지 않음"
+    },
+    {
+      "title": "Dia 1.6B / 0626",
+      "url": "https://github.com/nari-labs/dia",
+      "note": "개발팀 이름이 한국어인 것과 한국어 생성 지원은 별개"
+    },
+    {
+      "title": "TADA 3B multilingual",
+      "url": "https://github.com/HumeAI/tada",
+      "note": "ko 태그가 달린 파생 GGUF를 원 모델 지원 근거로 사용하지 않음"
+    },
+    {
+      "title": "Gwen-TTS 0.6B",
+      "url": "https://huggingface.co/g-group-ai-lab/gwen-tts-0.6B",
+      "note": "베트남어 학습 파생판. 한국어가 원판보다 좋아졌다는 검증 없음"
+    }
+  ],
+  "reportMarkdown": "# SYNK 브랜드 목소리 조사와 첫 청취\n\n2026년 9월 10일 조사 · 한국어 설명 화자 우선 · 합성음성 비교본\n\n**새 음색을 설계하고 재사용하는 주 후보는 Qwen3-TTS와 VoxCPM2로 좁혔다.** 당장 비교할 수 있는 Qwen 두 음색에 Chatterbox V3, MOSS Nano, Magpie, Supertonic의 실제 한국어 음성을 더했다. 이는 기능·사용 조건·실행 가능성을 종합한 후보군이며, 자연스러움의 최종 순위는 아직 정하지 않았다. 힉스필드 음성 생성과 나머지 영상의 최종 제작은 중단한 상태다.\n\n유호님이 말한 핵심은 **밝고 상큼한 에너지가 말끝까지 자연스럽게 이어지면서, 얇거나 깨지는 느낌 없이 풍부하게 들리는 목소리**다. 그러므로 모델의 인기나 샘플레이트보다 실제 음색을 먼저 고른다. 고른 음색은 LAB 학습 문장과 SHIFT 회사 이야기에서도 같은 사람처럼 들리는지 확인한 후 브랜드 화자로 확정한다.\n\n## 조사 범위와 신뢰 수준\n\nHugging Face에서 `text-to-speech`와 한국어 `ko`로 분류된 **781개 항목의 메타데이터를 마지막 페이지까지 수집**했다. 별도로 이름에 korean이 들어가는 TTS 8개, 다운로드 순 TTS 1,000개, GitHub의 한국어 TTS와 voice design 검색 결과 각 상위 100개를 수집했다. 검색 간 중복이 있으므로 이 숫자를 합쳐 고유 모델 수라고 하지 않는다. 조회 시각·검색식·페이지 수는 [검색 범위 기록](조사/검색범위.json)에 있다.\n\n한국어 태그가 없는 모델, 비공개·유료 서비스, 검색 순위 밖 GitHub 저장소까지 모두 확인했다는 뜻은 아니다. 781개를 전부 설치하거나 청취한 것도 아니다. 원 개발자의 모델 카드·코드·설정·라이선스를 따라 주요 계열과 변형을 추려 아래 비교표를 만들었다. 파생판의 한국어 태그가 원 모델의 한국어 지원을 증명하지 않는 사례도 확인했다.\n\n개발자가 발표한 발음 오류율과 선호도는 서로 대본·언어·평가자가 달라 하나의 음질 순위로 합치지 않았다. 이번에 직접 확보한 음원, 문서로만 확인한 후보, 실행이 막힌 후보를 구분한다. 자동 받아쓰기 일치는 문장 누락을 찾는 보조 검사이며, 음색·정확한 발음·자연스러움에 대한 사람의 청취를 대신하지 않는다.\n\n## 먼저 비교할 방향\n\n**Qwen3-TTS 1.7B VoiceDesign**은 말로 음색을 설명해 새 화자를 만들 수 있고, 한국어를 지원한다. 같은 모델 계열의 고정 한국어 여성 Sohee도 함께 생성했다. VoiceDesign의 설명문만 반복한다고 같은 목소리가 고정되는 것은 아니므로, 선택된 원본을 저장하고 Base의 참조 음성 재사용 경로로 다음 대본을 검증하는 방향이 맞다. 두 공식 데모 결과는 실제 24kHz WAV였다. [공식 코드와 화자 기능](https://github.com/QwenLM/Qwen3-TTS), [VoiceDesign 모델](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign).\n\n**VoxCPM2**는 한국어·음색 설계·참조 음색 유지·표현 지시를 함께 지원하고 모델 출력은 48kHz다. 우리 요구에 맞는 기능 조합이어서 주 후보로 유지한다. 다만 공식 무료 데모 두 번 모두 대기열이 꽉 차 음원을 받지 못했다. 따라서 이번 청취표에 가짜 비교본을 넣거나 Qwen보다 좋다고 판정하지 않았다. 공식 데모는 MP3를 반환하는 경로여서, 추후 데모 음원과 모델 원파형도 구별해야 한다. [공식 모델](https://huggingface.co/openbmb/VoxCPM2), [실제 호출한 데모](https://huggingface.co/spaces/openbmb/VoxCPM-Demo).\n\n**Chatterbox Multilingual V3와 MOSS Nano**에는 이번에 Qwen으로 새로 만든 가상 화자의 음성을 동일하게 참조시켰다. 실존 인물의 목소리를 가져오지 않았다. 이 두 결과는 참조가 있는 조건이므로, 기본 화자나 설명문만 쓰는 후보와의 비교는 순수한 모델 성능 시험이 아니다. 같은 음색을 다른 생성기로 옮겼을 때 말끝·질감·억양이 어떻게 달라지는지 듣는 실험이다. [Chatterbox 공식 코드](https://github.com/resemble-ai/chatterbox), [MOSS Nano 공식 코드](https://github.com/OpenMOSS/MOSS-TTS-Nano).\n\n**Magpie v2607과 Supertonic 3**는 고정 화자를 재사용하는 비교 기준이다. Magpie는 2026년 7월에 한국어를 추가했고 현재판은 참조 복제 기능을 제거했다. Supertonic은 이 컴퓨터에서 여성 프리셋 5개를 직접 생성했다. 다만 Supertonic 저장소는 9월 9일 보관 상태로 전환됐고 개발·지원 종료가 명시되어 있다. 당장 실행되는 것과 장기적으로 관리되는 것은 별개이므로, 브랜드의 유일한 제작 기반으로 바로 고정하지 않는다. [Magpie 현행 모델](https://huggingface.co/nvidia/magpie_tts_multilingual_357m), [Supertonic 보관 공지](https://github.com/supertone-oss-archive/supertonic).\n\n## 이번 실제 음원과 비교 방법\n\n모든 후보에게 아래 **동일 문장과 구두점**을 입력했다. 배경음·효과음은 넣지 않았다.\n\n> 같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.\n\n청취용 파일은 원본의 전체 음량만 일정하게 조절해 약 **−23 LUFS**로 맞췄다. LUFS는 사람이 느끼는 전체 음량을 비교하기 위한 측정값이다. 후보별로 다른 EQ, 잡음 제거, 속도 변경, 무음 삭제, 업샘플링은 적용하지 않았다. 원본과 조절값을 별도로 보존했다. 24비트 청취 파일로 저장한 사실을 원래 없던 음성 해상도가 생긴 것으로 설명하지 않는다.\n\n번호는 품질 순위가 아니다. 모델 이름을 가리고 먼저 듣도록 만들었다. 한 후보에 5개의 여성 프리셋이 있다고 해서 그 모델이 다섯 배 검증됐거나 더 좋다는 뜻도 아니다. 화자별 기본 리듬과 속도가 다르며, 이번 첫 비교에서는 시간 늘이기·줄이기로 강제 통일하지 않았다.\n\n| 후보 | 모델·화자 | 실제 길이 | 원본 표본/초 | 청취 음량 |\n|---|---|---:|---:|---:|\n| 01 | Qwen3-TTS 1.7B VoiceDesign | 8.46초 | 24,000Hz | -22.96 LUFS |\n| 02 | Chatterbox Multilingual V3 | 7.80초 | 24,000Hz | -23.01 LUFS |\n| 03 | Magpie v2607 · Aria | 7.38초 | 22,050Hz | -22.99 LUFS |\n| 04 | MOSS-TTS-Nano-100M | 8.80초 | 48,000Hz | -23.00 LUFS |\n| 05 | Qwen3-TTS 1.7B CustomVoice · Sohee | 10.08초 | 24,000Hz | -23.00 LUFS |\n| 06 | Supertonic 3 · F1 | 9.13초 | 44,100Hz | -23.00 LUFS |\n| 07 | Supertonic 3 · F2 | 8.57초 | 44,100Hz | -23.00 LUFS |\n| 08 | Supertonic 3 · F3 | 9.40초 | 44,100Hz | -23.01 LUFS |\n| 09 | Supertonic 3 · F4 | 7.80초 | 44,100Hz | -23.00 LUFS |\n| 10 | Supertonic 3 · F5 | 8.85초 | 44,100Hz | -22.99 LUFS |\n\n10개 파일을 해독하고 길이·실제 출력 주파수·음량을 확인했다. 자동 받아쓰기는 공백·문장부호를 제외한 문자 기준으로 10/10개가 입력과 일치했다. 뜻이 바뀐 문장이나 누락은 자동 검사에서 발견되지 않았다. 원본 대본을 받아쓰기 힌트로 넣지 않았다.\n\n**이번에는 파일·음량·문장 검사를 완료했으며, 사람의 청취 평가와 브랜드 채택은 미완료다.** 청취 때에는 ‘같이 들어볼까요’의 질문 억양, ‘해볼게요’의 말끝, ‘우리만의 목소리가 돼요’에서 에너지가 꺼지는지와 소리가 거칠어지는지를 비교하면 된다. 모두 마음에 들지 않으면 새 후보 설계가 필요한 결과로 기록한다.\n\n## 주요 모델 비교\n\n상업 이용 열은 조사한 공개 라이선스와 모델 카드의 내용을 요약한다. ‘검토 가능’은 회사 화자로 채택됐다는 뜻이 아니다. 코드의 라이선스와 가중치(학습된 모델 파일)의 라이선스를 분리했다. 세부 버전과 직접 읽은 원문 지문은 [표현력 모델 상세 기록](조사/표현력모델.json), [확보한 원문 목록](조사/원문/fetch-broad.json)에 남겼다.\n\n| 모델·변형 | 한국어 | 사용 조건 | 재사용 | 이번 확인 |\n|---|---|---|---|---|\n| [Qwen3-TTS 1.7B](https://github.com/QwenLM/Qwen3-TTS) | 공식 지원 | 코드·가중치 Apache-2.0 | Sohee ID / 설계 원본을 Base 참조로 재사용 | 2개 음원 생성. 24kHz. VoiceDesign·CustomVoice·Base 기능 구분 |\n| [VoxCPM2](https://huggingface.co/openbmb/VoxCPM2) | 공식 지원 | 코드·가중치 Apache-2.0 | 새 음색 설계 + 참조 재사용 | 공식 데모 대기열 포화 2회; 음원 없음. 모델 48kHz. 공식 데모는 MP3 경로 |\n| [Chatterbox Multilingual V3](https://github.com/resemble-ai/chatterbox) | 공식 지원 | 코드·가중치 MIT | 참조 음색 | 동일 대본 생성. 24kHz. 새 가상 화자 참조 사용. Turbo 영어판과 구분 |\n| [MOSS-TTS-Nano-100M](https://huggingface.co/OpenMOSS-Team/MOSS-TTS-Nano-100M) | 공식 지원 | 코드·가중치 Apache-2.0 | 참조 음색 | 동일 대본 생성. 48kHz. 같은 Qwen 가상 화자 참조 사용 |\n| [Magpie 357M v2607](https://huggingface.co/nvidia/magpie_tts_multilingual_357m) | 2026-07 추가 | 코드 Apache-2.0 / NVIDIA Open Model License | Aria 등 고정 5명 | Aria 동일 대본 생성. 22.05kHz. 현행판은 참조 복제 제거 |\n| [Supertonic 3](https://github.com/supertone-oss-archive/supertonic) | 공식 지원 | 코드 MIT / OpenRAIL-M; 합성 고지 등 조건 | 고정 F1–F5·M1–M5 | 이 PC에서 여성 5개 생성. 44.1kHz. 2026-09-09 개발·지원 종료 공지 |\n| [MOSS Local-Transformer v1.5](https://huggingface.co/OpenMOSS-Team/MOSS-TTS-Local-Transformer-v1.5) | 공식 지원 | 코드·가중치 Apache-2.0 | 참조 음색 | 공식 자료 확인; 생성 안 함. 48kHz stereo. 본체+codec 가중치 약17.6GB |\n| [MOSS-TTS 8B v1.5](https://huggingface.co/OpenMOSS-Team/MOSS-TTS-v1.5) | 공식 지원 | 코드·가중치 Apache-2.0 | 참조 음색·이어말하기 | 공식 Space 설정 확인; 생성 안 함. 24kHz. Local 48kHz판과 구분 |\n| [MOSS-VoiceGenerator](https://huggingface.co/OpenMOSS-Team/MOSS-VoiceGenerator) | 영·중만 명시 | 코드·가중치 Apache-2.0 | 설명문으로 새 음색 | 한국어 직접 후보 후순위. 24kHz. MOSS-TTS의 한국어 지원을 전이하지 않음 |\n| [ZONOS2](https://github.com/Zyphra/ZONOS2) | Tier 2 | 코드 MIT / 가중치 Apache-2.0 | 화자 임베딩 저장 | 무료 실제 생성 미확인. 44.1kHz. 감정·속도 제어; 한국어 소리 미검증 |\n| [Fun-CosyVoice3 0.5B-2512](https://huggingface.co/FunAudioLLM/Fun-CosyVoice3-0.5B-2512) | 공식 지원 | 코드·가중치 Apache-2.0 | 참조 음색 + 표현 지시 | 공식 자료 확인; 생성 안 함. 24kHz. 공개0.5B와 논문1.5B 결과 구분 |\n| [Audio8 Preview 0.6B](https://huggingface.co/Edge0/Audio8-TTS-Preview-0.6b) | 공식 지원 | 코드·가중치 Apache-2.0 표기 | 참조 복제 / 참조 없이 생성 | 공식 Space PAUSED; 생성 안 함. 44.1kHz. Windows ONNX 경로 공개; 실제 품질 미검증 |\n| [GPT-SoVITS v4 / v2Pro](https://github.com/RVC-Boss/GPT-SoVITS) | 공식 지원 | 코드 MIT; 사용할 정확한 가중치·참조 권리 추가 특정 | 참조 복제·추가 학습 | 공식 버전 안내 확인; 생성 안 함. v4 원생성48kHz. v2Pro와 출력·구조 혼동 금지 |\n| [MeloTTS Korean](https://huggingface.co/myshell-ai/MeloTTS-Korean) | 공식 한국어판 | 코드·모델 카드 MIT | 한국어 기본 화자 | 공식 자료 확인; 생성 안 함. 로컬 실행 비교 기준. 자유로운 감정 설계 후보와 구분 |\n| [Kani-TTS 400M Korean](https://huggingface.co/nineninesix/kani-tts-400m-ko) | 공식 한국어판 | 카드 LFM 조건과 본문 Apache 표기 상충; 확정 보류 | 선택한 모델 기능 추가 확인 | 문서 불일치 확인; 생성 안 함. 22kHz 표기. Kani 2 영어판 기능을 그대로 적용하지 않음 |\n| [IndexTTS2 / 한국어 포크](https://github.com/acidsound/index-tts-kr) | 한국어는 비공식 적응판 | bilibili 조건 + 한국어 가중치·학습 자료 별도 확인 | 참조 음색·감정 | 공식판·한국어 포크 문서 확인. 한국어 tokenizer·48화자 학습 변경. 완성된 상업 한국어 화자로 미승인 |\n| [Bark](https://github.com/suno-ai/bark) | 공식 예시 있음 | 코드·가중치 MIT | history preset | 공식 자료 확인; 생성 안 함. 음악·효과음도 생성하는 모델. 대본 이탈 가능성 개발자 명시 |\n| [OmniVoice](https://huggingface.co/k2-fsa/OmniVoice) | 한국어·몽골어 명시 | 코드 Apache-2.0 / 가중치 CC-BY-NC | 참조 / 속성 설계 | 상업 브랜드 후보 보류. 24kHz. 음색 설계는 영·중 중심 학습 |\n| [Fish S2 Pro](https://huggingface.co/fishaudio/s2-pro) | 한국어 Tier 2 | Fish Audio Research License; 상업 별도 계약 | 참조 음색·표현 태그 | 무료 상업 후보 보류. 표현 태그 기능 확인. 한국어 청취 순위 미판정 |\n| [Boson Higgs TTS 3](https://huggingface.co/bosonai/higgs-tts-3-4b) | 한국어·몽골어 명시 | Creator Use Grant 조건부 자사 콘텐츠; 앱/API 별도 | 참조 음색·표현 태그 | 권리 검토만; 생성 안 함. 24kHz. Higgsfield와 별개. 눈에 띄는 Boson 출처 표시 조건 |\n| [F5-TTS](https://github.com/SWivid/F5-TTS) | 원판 영·중 중심; 한국어 파생 별도 | 코드 MIT / 기본 가중치 CC-BY-NC | 참조 음색 | 무료 상업 후보 보류. 한국어 포크 권리·완성도는 원판 허용과 별개 |\n| [XTTS-v2](https://huggingface.co/coqui/XTTS-v2/blob/main/LICENSE.txt) | 공식 지원 | 가중치 CPML: 모델·출력 비상업 조건 | 참조 복제 | 무료 상업 후보 보류. 24kHz. 공개 코드와 출력 이용 조건을 분리 |\n| [OuteTTS 1.0 1B](https://huggingface.co/OuteAI/Llama-OuteTTS-1.0-1B) | 공식 지원 | Llama3.2 기반 + CC-BY-NC-SA | 화자 프로필 저장 | 무료 상업 후보 보류. 한국어 지원과 상업 이용 가능성을 구분 |\n| [FireRedTTS2](https://huggingface.co/FireRedTeam/FireRedTTS2) | 공식 지원 | Apache 표기와 복제의 학술 목적 안내가 공존; 해당 범위 확인 | 참조·대화 생성 | 공식 자료 확인; 채택 보류. 24kHz. 긴 다화자 대화 기능 |\n| [VibeVoice 1.5B / Realtime0.5B](https://github.com/microsoft/VibeVoice) | Realtime의 KR은 실험 화자 | MIT 표기; 1.5B 카드 연구 목적 제한과 적용판 구분 필요 | 참조·실험 프리셋 | 공식 자료 확인; 채택 보류. ASR의 언어 수를 TTS 지원으로 인용하지 않음 |\n| [Kokoro 82M 기본판](https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md) | 공식 한국어 화자 미확인 | 코드·가중치 Apache-2.0 | 공식 화자 목록 | 한국어 우선 후보에서 제외. 파생판의 ko 태그만으로 기본판 한국어 지원을 확정하지 않음 |\n| [Dia 1.6B / 0626](https://github.com/nari-labs/dia) | 조사한 공식판 영어만 | 코드·가중치 Apache-2.0 | 참조·시드 | 한국어 우선 후보에서 제외. 개발팀 이름이 한국어인 것과 한국어 생성 지원은 별개 |\n| [TADA 3B multilingual](https://github.com/HumeAI/tada) | 조사한 공식 언어 목록에 없음 | 코드 MIT / Llama3.2 Community 조건 | 참조 음색 | 한국어 우선 후보에서 제외. ko 태그가 달린 파생 GGUF를 원 모델 지원 근거로 사용하지 않음 |\n| [Gwen-TTS 0.6B](https://huggingface.co/g-group-ai-lab/gwen-tts-0.6B) | 목록 포함; 베트남어 최적화 | MIT 표기; 기반 Qwen 조건 함께 확인 | 참조 음색 | 한국어 우선 후보 후순위. 베트남어 학습 파생판. 한국어가 원판보다 좋아졌다는 검증 없음 |\n\n## 조사에서 걸러낸 혼동\n\n- **48kHz 파일 = 자연스러운 목소리**는 아니다. 24kHz 원본을 48kHz로 바꿔 저장해도 생성 과정의 거친 음색·부정확한 억양은 복원되지 않는다. 이번 비교는 원래 출력 주파수를 유지했다.\n- **MOSS라는 같은 이름** 아래에도 Local-Transformer v1.5는 48kHz, 다른 8B v1.5 공식 Space는 24kHz다. 48kHz Local판은 본체와 별도 코덱을 합쳐 가중치만 약 17.6GB여서, 모델 크기 4B만 보고 가벼운 설치라고 판단하지 않았다. [Local 모델](https://huggingface.co/OpenMOSS-Team/MOSS-TTS-Local-Transformer-v1.5), [별도 오디오 코덱](https://huggingface.co/OpenMOSS-Team/MOSS-Audio-Tokenizer-v2).\n- **오픈 코드 = 브랜드 영상에 무료 사용 가능**도 아니다. OmniVoice와 F5-TTS의 공개 가중치는 비상업 조건이다. Fish S2 Pro도 별도 상업 라이선스를 요구한다. [OmniVoice](https://huggingface.co/k2-fsa/OmniVoice#license), [F5-TTS](https://huggingface.co/SWivid/F5-TTS), [Fish S2 Pro](https://huggingface.co/fishaudio/s2-pro).\n- **Boson의 Higgs TTS 3는 Higgsfield 서비스와 별개**다. 비상업 표제만 보고 전부 제외하지 않았다. 자사 영상·소셜 콘텐츠 수익화에는 눈에 띄는 출처 표시를 조건으로 하는 Creator Use Grant가 있지만, 앱·API 제공까지 허용하는 일반 상업 라이선스는 아니다. 이번 음원 제작에는 사용하지 않았다. [모델 라이선스 II-A](https://huggingface.co/bosonai/higgs-tts-3-4b/blob/main/LICENSE).\n- **Kani 한국어판**은 카드 앞부분의 LFM 조건과 본문 Apache 표기가 서로 달랐다. 새 Kani 2 영어판의 기능도 한국어판에 그대로 옮겨 적지 않았다. 한국어 모델과 라이선스부터 특정해야 한다. [Kani 한국어 원문](https://huggingface.co/nineninesix/kani-tts-400m-ko).\n- **영어 데모가 좋은 모델**을 한국어 화자로 바로 채택하지 않았다. Dia와 Kokoro의 조사한 기본판은 한국어 공식 화자를 확인하지 못했고, MOSS VoiceGenerator는 영·중 중심이다. GPT-SoVITS v4처럼 한국어와 48kHz를 지원하는 별도 경로도 후속 후보에 남겼다. [Dia](https://github.com/nari-labs/dia), [Kokoro 화자 목록](https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md), [GPT-SoVITS 버전 안내](https://github.com/RVC-Boss/GPT-SoVITS).\n\n## 브랜드별 목소리에 적용할 방향\n\n| 브랜드·접점 | 목소리가 전달할 것 | 적용 방향 |\n|---|---|---|\n| SYNK LAB 학생 | 한국어를 알아듣고 자기 생각을 말할 수 있다는 편안함 | 밝고 따뜻한 성인 화자. 짧은 한국어 예문은 또렷하게, 설명 연결은 간결하게. 유아어와 큰 진행자 목소리는 피함 |\n| SYNK LAB 보호자·성인 | 수업과 지원의 실제 조건 | 같은 신뢰감 안에서 차분하고 정확하게. 숫자·조건이 흐려지지 않는지 별도 확인 |\n| SHIFT yuhobuilds | 유호가 AI로 회사를 만들고 발전시키는 실제 시도·선택·수정·결과와 제공 가치 | 과장된 광고 억양보다 판단의 이유를 들려주는 목소리. 합성 화자를 유호 본인 녹음처럼 소개하지 않음 |\n| SHIFT synkbrief | 같은 회사 작업에서 건진, 자기 일에 적용할 방법 | 짧고 명확한 설명. yuhobuilds와의 화자 공유 여부는 긴 대본 청취 후 결정 |\n| PULSE | 음악과 작품 자체의 감상 | 음성은 필요한 짧은 소개·마무리에만. 음악의 보컬과 여운을 설명 화자로 덮지 않음 |\n| SYNK 본체 | 완성물과 회사의 선택, 협업 상대가 알아야 할 사실 | 간결하고 풍부한 소리. 규모·성과를 과장하는 내레이션은 쓰지 않음 |\n\nSHIFT의 최근 수정 원문도 대조했다. 중심은 일반적인 1인 사업 강좌만이 아니라 **실제 회사를 만드는 과정과 그 결과의 제공 가치**, 그리고 이를 통해 쌓이는 신뢰가 유호의 AI 강사 활동·교육·지원으로 이어지는 흐름이다. 목소리 선정 후 기존 SHIFT 첫 게시물의 소개 문장부터 이 방향으로 손봐야 한다. 이번 조사에서 영상 본편까지 반영했다고 보고하지 않는다. [현재 SHIFT 원문](../../마케팅/SHIFT.md), [원문 대조와 브랜드별 대본](조사/브랜드별목소리와대본.md).\n\n몽글의 저장된 짧은 캐릭터 소리와 사람의 설명 화자는 역할이 다르다. 기존 몽글의 몸·털을 유지한 눈 깜빡임과 웃음, 편안한 음량, 문장 뒤 빈 시간을 줄이는 편집, 브랜드별 고급스러운 엔딩 방향은 이어간다. 새 화자의 음량과 발화 길이가 달라지므로 과거 0.7배나 7초 엔딩을 모든 브랜드에 기계적으로 고정하지 않는다.\n\n## 목소리를 확정하는 다음 단계\n\n먼저 이번 번호 중 가장 자연스럽고 계속 듣고 싶은 **한두 후보**를 고른다. 이어 같은 음색으로 LAB 학습 대본과 최신 SHIFT 대본을 생성해 긴 문장·브랜드명·말끝·재사용 일관성을 비교한다. 한국어 선정 결과를 몽골어 품질 승인으로 확대하지 않는다.\n\n채택할 때에는 모델 버전, 화자 ID 또는 승인 참조 원본, 음색 설명, 생성 설정, 사용 조건을 묶어 저장한다. 새 대본에도 같은 화자가 유지되는지 확인하고 나서 영상 템포·음량·음악 전환·각 브랜드 엔딩에 적용한다. 현재는 **공개 조사와 첫 청취 파일 준비가 완료됐고, 브랜드 목소리 결정과 나머지 영상 통합이 남아 있다.**\n\n## 재현 자료\n\n- [전체 메타데이터 검색 범위](조사/검색범위.json)\n- [표현력 모델 원문·revision·라이선스 기록](조사/표현력모델.json)\n- [최신 브랜드 원문 대조와 후속 대본](조사/브랜드별목소리와대본.md)\n- [실제 음원 검사 결과](조사/비교음성검사.json)\n- [공식 데모 생성 코드](compare-spaces.py), [로컬 Supertonic 생성 코드](실험/supertonic3/generate.py)\n- [청취용 음량 조절과 검사 코드](inspect-samples.py)\n\n무료 공식 데모는 당시 성공한 실행 통로이며 지속적인 무료 제작량이나 운영 가용성을 보장하지 않는다. 이번 작업에서 신규 결제·구독·영상 게시를 실행하지 않았다.\n"
+}

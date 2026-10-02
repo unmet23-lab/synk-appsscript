@@ -1,0 +1,91 @@
+{
+  "created_at_utc": "2026-09-11T13:40:18.729790+00:00",
+  "purpose": "네이버 클립 모바일 업로드용 권리 확인본. 영상은 유지하고 BGM만 교체.",
+  "rights": {
+    "track": "Joyful Happy Upbeat Background Music",
+    "creator": "alex-morgan",
+    "track_url": "https://pixabay.com/music/pop-joyful-happy-upbeat-background-music-587376/",
+    "license": "Pixabay Content License",
+    "license_url": "https://pixabay.com/service/license-summary/",
+    "verified_on": "2026-09-11",
+    "current_page_evidence": "Track page states free use under the Pixabay Content License. License summary permits free use, adaptation, and use without attribution, subject to prohibited uses.",
+    "use": "29.4초 SYNK SHIFT 소개 영상의 낮은 음량 배경음. 원곡 단독 재배포가 아님.",
+    "attribution_required": false
+  },
+  "music": {
+    "source": "docs/홍보물/BGM/01_Joyful-Happy-Upbeat_alex-morgan.mp3",
+    "source_sha256": "d617651b6c7ee0518299cc4c89397c0e1ec4bfc8a1824b67621b1e84a6fff758",
+    "source_range_seconds": [
+      6.0,
+      35.4
+    ],
+    "source_measurement": {
+      "integrated_lufs": -8.83,
+      "true_peak_dbtp": 0.21,
+      "loudness_range_lu": 1.1
+    },
+    "speech_target_lufs": -39.5,
+    "speech_gain_db": -30.67,
+    "free_target_lufs": -33.5,
+    "free_gain_db": -24.67,
+    "voice_to_music_rise_seconds": [
+      4.76,
+      5.38
+    ],
+    "ending_rise_seconds": [
+      25.8,
+      26.4
+    ],
+    "ending_fade_seconds": [
+      28.4,
+      29.4
+    ]
+  },
+  "voice": {
+    "source": "docs/홍보물/첫게시물_20260911/01-yuhobuilds/audio/voice.wav",
+    "source_sha256": "edbd1013ec12981c783c5e5f4e5c15a8522864e075c6358329f48ae7a8066519",
+    "copied_pcm_file_sha256_equal": true,
+    "after_4_88_seconds_digital_silence": true
+  },
+  "visual": {
+    "source": "docs/홍보물/첫게시물_20260911/01-yuhobuilds/render-muted.mp4",
+    "source_sha256": "c77ea3be7205ec458fdeb848b8aa9ba8d50b9c0f5ab9d8f1bf0638667502d89b",
+    "source_video_stream_sha256": "5ef3a6ff9260aabc9f09bc28b7cdc7c8f8f887a7bbda9682db2356cfbd06e260",
+    "output_video_stream_sha256": "5ef3a6ff9260aabc9f09bc28b7cdc7c8f8f887a7bbda9682db2356cfbd06e260",
+    "video_stream_exact_match": true
+  },
+  "files": {
+    "bed": {
+      "path": "audio-pixabay-safe/bed.wav",
+      "sha256": "ff372092c412bc3232f4ef7eaa439a9c79507f06e3b5a8a9af7cd189be01adcc",
+      "integrated_lufs": -33.39,
+      "true_peak_dbtp": -21.59,
+      "loudness_range_lu": 6.2,
+      "decoded_sample_frames": 1411200,
+      "clipped_samples": 0,
+      "full_decode_passed": true
+    },
+    "master": {
+      "path": "audio-pixabay-safe/master.wav",
+      "sha256": "4bb115edc5f421022ab9e908ff545ec7a0ec7ea938f1ce0828358c8c13c786c6",
+      "integrated_lufs": -28.84,
+      "true_peak_dbtp": -10.58,
+      "loudness_range_lu": 12.1,
+      "decoded_sample_frames": 1411200,
+      "clipped_samples": 0,
+      "full_decode_passed": true
+    },
+    "video": {
+      "path": "video_네이버클립_권리확인본.mp4",
+      "sha256": "b96ce4d09380cc81162472d0029ae516cd1c29a29e62e87c55ed8528e7f1f6b1",
+      "integrated_lufs": -28.86,
+      "true_peak_dbtp": -10.58,
+      "loudness_range_lu": 12.2,
+      "decoded_sample_frames": 1411200,
+      "clipped_samples": 0,
+      "full_decode_passed": true
+    }
+  },
+  "sources_unmodified": true,
+  "verification_limits": "권리 페이지·출처·해시·PCM·영상 스트림·음량·클리핑·전체 디코드는 확인. 직접 청취와 네이버 앱 실제 게시는 사용자 기기 단계."
+}

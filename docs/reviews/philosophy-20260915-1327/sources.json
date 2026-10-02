@@ -1,0 +1,59 @@
+{
+  "observedAt": "2026-09-15T13:33:26.649Z",
+  "sources": [
+    {
+      "file": "docs/SYNK_철학.md",
+      "first": 1,
+      "last": 133,
+      "sha256": "329f3b3e736a635566dc72d9961a32c897da360819e682cd8a64ef7212826d0b"
+    },
+    {
+      "file": "docs/철학_적용기준.md",
+      "first": 1,
+      "last": 65,
+      "sha256": "e2825f588937c04d126af7df08fe04ae7b7603c6f7db925a1df52cb2b29f0cd7"
+    },
+    {
+      "file": "docs/제품방향.md",
+      "first": 1,
+      "last": 75,
+      "sha256": "58b6eadb9f880663a73e6de1ffb5e77c371b7dcb120a92e8014b1df19935d6be"
+    },
+    {
+      "file": "docs/코어엔진_설계.md",
+      "first": 1,
+      "last": 139,
+      "sha256": "4d77331ebedc2e69df3c25659115d442b00329b2e8ed383bd19816cc749099e5"
+    },
+    {
+      "file": "docs/사업발전_정본.md",
+      "first": 1,
+      "last": 84,
+      "sha256": "dea113a3e847bcb0f544f5b244457de8085c8aedb4221c6a37772390ef511e0a"
+    },
+    {
+      "file": "docs/엔진7종_상향설계_v3.md",
+      "first": 102,
+      "last": 172,
+      "sha256": "124060420686569458af5caab0bf14cc6161c627cd8466a92d041c42c7806fe0"
+    },
+    {
+      "file": "docs/엔진7종_상향설계_v3.md",
+      "first": 348,
+      "last": 386,
+      "sha256": "124060420686569458af5caab0bf14cc6161c627cd8466a92d041c42c7806fe0"
+    },
+    {
+      "file": "../SYNK-talk/lib/과제요약.js",
+      "first": 1,
+      "last": 152,
+      "sha256": "cbac8b1d3d01dc0203a3d7def2f92a4dfa0c100de58231348fa3f3d1024b1520"
+    },
+    {
+      "file": "../SYNK-talk/supabase/functions/deliver/index.ts",
+      "first": 636,
+      "last": 667,
+      "sha256": "c2c74ab902aa845058c38bc345e09f92a699348bbce9a24888e7f0ad34ad2569"
+    }
+  ]
+}

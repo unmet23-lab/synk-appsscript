@@ -1,0 +1,222 @@
+{
+  "errors": [],
+  "checks": [
+    {
+      "id": "open",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "open",
+      "dt": 3.949,
+      "tipOnTarget": true,
+      "transform": "translate(-300.444px, -8.6667px) scale(1.1556, 1.1556)",
+      "targetInside": true
+    },
+    {
+      "id": "open",
+      "dt": 4.8,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.0626px, 126.722px, 0px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "paste",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "paste",
+      "dt": 2.254,
+      "tipOnTarget": true,
+      "transform": "translate(-332.4px, -67.2px) scale(1.2, 1.2)",
+      "targetInside": true
+    },
+    {
+      "id": "paste",
+      "dt": 8.666666666666668,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.0692px, 126.71px, 0px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "request",
+      "dt": 0.6,
+      "tipOnTarget": true,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "request",
+      "dt": 2.972,
+      "tipOnTarget": true,
+      "transform": "translate(-332.4px, -138px) scale(1.2, 1.2)",
+      "targetInside": true
+    },
+    {
+      "id": "request",
+      "dt": 8.466666666666667,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.0692px, 126.695px, 0px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "send",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "send",
+      "dt": 3.436,
+      "tipOnTarget": true,
+      "transform": "translate3d(-3561.66px, -1702.13px, 0px) scale(4.1224, 4.1224)",
+      "targetInside": true
+    },
+    {
+      "id": "send",
+      "dt": 4.033333333333333,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.7419px, 126.369px, 0px) scale(0.732, 0.732)",
+      "targetInside": true
+    },
+    {
+      "id": "project-menu",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "project-menu",
+      "dt": 3.4499999999999997,
+      "tipOnTarget": true,
+      "transform": "translate(0px, -107.25px) scale(2.925, 2.925)",
+      "targetInside": true
+    },
+    {
+      "id": "project-menu",
+      "dt": 4.533333333333333,
+      "tipOnTarget": true,
+      "transform": "translate3d(0px, 126.701px, 0px) scale(0.7317, 0.7317)",
+      "targetInside": true
+    },
+    {
+      "id": "create",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "create",
+      "dt": 2.9139999999999997,
+      "tipOnTarget": true,
+      "transform": "translate(-2092.68px, -39.9512px) scale(2.5366, 2.5366)",
+      "targetInside": true
+    },
+    {
+      "id": "create",
+      "dt": 4.817,
+      "tipOnTarget": true,
+      "transform": "translate(-641.333px, -242.667px) scale(1.7333, 1.7333)",
+      "targetInside": true
+    },
+    {
+      "id": "create",
+      "dt": 6.239000000000001,
+      "tipOnTarget": true,
+      "transform": "translate(-641.333px, -242.667px) scale(1.7333, 1.7333)",
+      "targetInside": true
+    },
+    {
+      "id": "create",
+      "dt": 7.066666666666666,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.1336px, 126.673px, 0px) scale(0.7315, 0.7315)",
+      "targetInside": true
+    },
+    {
+      "id": "settings",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "settings",
+      "dt": 2.154,
+      "tipOnTarget": true,
+      "transform": "translate(-2613px, -279.5px) scale(3.25, 3.25)",
+      "targetInside": true
+    },
+    {
+      "id": "settings",
+      "dt": 3.659,
+      "tipOnTarget": true,
+      "transform": "translate(-3151.45px, -410.129px) scale(3.7742, 3.7742)",
+      "targetInside": true
+    },
+    {
+      "id": "settings",
+      "dt": 4.8,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.6563px, 126.638px, 0px) scale(0.7319, 0.7319)",
+      "targetInside": true
+    },
+    {
+      "id": "save",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "save",
+      "dt": 5.541,
+      "tipOnTarget": true,
+      "transform": "translate(-730.72px, -103.424px) scale(1.8833, 1.8833)",
+      "targetInside": true
+    },
+    {
+      "id": "save",
+      "dt": 8.086,
+      "tipOnTarget": true,
+      "transform": "translate(-3657.52px, -2812.24px) scale(5.087, 5.087)",
+      "targetInside": true
+    },
+    {
+      "id": "save",
+      "dt": 9.133333333333335,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.7617px, 126.138px, 0px) scale(0.7322, 0.7322)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 126.75px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat",
+      "dt": 7.775,
+      "tipOnTarget": true,
+      "transform": "translate(-331.625px, 67.9872px) scale(1.2015, 1.2015)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat",
+      "dt": 8.933333333333334,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.0691px, 126.738px, 0px) scale(0.7313, 0.7313)",
+      "targetInside": true
+    }
+  ]
+}

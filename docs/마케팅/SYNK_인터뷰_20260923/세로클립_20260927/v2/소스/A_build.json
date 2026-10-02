@@ -1,0 +1,81 @@
+{
+ "key": "A",
+ "name": "A_AI에_끌려간다",
+ "duration": 16.767,
+ "shots": 6,
+ "cuts_in_first_5s": [
+  1.867,
+  4.033
+ ],
+ "audio": {
+  "input_I": -17.6,
+  "target": -15.0,
+  "I": -15.0,
+  "TP": -1.5,
+  "max_gr_db": -3.13,
+  "over3db_pct": 0.146
+ },
+ "captions": 9,
+ "shot_log": [
+  {
+   "clip_t": 0.0,
+   "film": [
+    114.35,
+    116.208
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 56
+  },
+  {
+   "clip_t": 1.867,
+   "film": [
+    116.208,
+    118.38
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 65
+  },
+  {
+   "clip_t": 4.033,
+   "film": [
+    118.38,
+    122.78
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 132
+  },
+  {
+   "clip_t": 8.433,
+   "film": [
+    122.78,
+    125.5
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 82
+  },
+  {
+   "clip_t": 11.167,
+   "film": [
+    125.5,
+    127.88
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 71
+  },
+  {
+   "clip_t": 13.533,
+   "film": [
+    127.88,
+    131.1
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 97
+  }
+ ]
+}

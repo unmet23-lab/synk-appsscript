@@ -1,0 +1,6 @@
+lyria-3-clip-preview (Vertex AI, global, generateContent, responseModalities AUDIO+TEXT) · 2026-09-27
+
+Instrumental only, no vocals, no singing. Playful, cozy background music for a cute Korean-language learning short with a needle-felt mascot: bright marimba melody, soft pizzicato strings, gentle ukulele, light claps, bouncy and cheerful but not busy, major key, around 110 BPM, loopable, clean sparse mix with room for a narrator.
+
+모델 응답 캡션: <instrumental> bright, playful instrumental piece in the style of Acoustic Pop or Children's Music.
+영상에는 음악 2.91초부터 18.5초를 쓴다(음악 브레이크 13.11초가 영상 10.30초 「따라 말하기」 컷에 떨어지게). 후보 6개(Lyria 3 셋·Lyria 2 셋) 중 보컬 흔적 없음·음량 폭 LRA 3.3으로 고정된 바닥·악기 구성으로 골랐다.

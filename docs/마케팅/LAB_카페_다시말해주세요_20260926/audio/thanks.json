@@ -1,0 +1,30 @@
+{
+  "id": "thanks",
+  "role": "mongle",
+  "text": "아, 괜찮아요. 감사합니다!",
+  "provider": "Microsoft Edge TTS",
+  "settings": {
+    "voice": "ko-KR-InJoonNeural",
+    "rate": "+0%",
+    "pitch": "+8Hz"
+  },
+  "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\thanks.mp3",
+  "duration": 4.896,
+  "words": [
+    {
+      "text": "아",
+      "start": 0.125,
+      "end": 0.575
+    },
+    {
+      "text": "괜찮아요",
+      "start": 0.675,
+      "end": 1.9
+    },
+    {
+      "text": "감사합니다",
+      "start": 2.8,
+      "end": 3.9625
+    }
+  ]
+}

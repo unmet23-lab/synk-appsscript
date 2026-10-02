@@ -1,0 +1,74 @@
+[
+ {
+  "file": "beat__fl31_Leda__t1.wav",
+  "asr": "아, 봤다!",
+  "match": false,
+  "logprob": -0.678,
+  "speech_s": 0.62,
+  "lead_s": 0.27,
+  "tail_s": 0.27,
+  "peak_db": -3.5,
+  "f0_med": 313.7,
+  "f0_range_st": 10.6
+ },
+ {
+  "file": "beat__fl31_Leda__t2.wav",
+  "asr": "아 맞다",
+  "match": true,
+  "logprob": -0.569,
+  "speech_s": 1.1,
+  "lead_s": 0.34,
+  "tail_s": 0.52,
+  "peak_db": -1.6,
+  "f0_med": 307.7,
+  "f0_range_st": 7.2
+ },
+ {
+  "file": "beat__fl31_Sulafat__t1.wav",
+  "asr": "아 맞다",
+  "match": true,
+  "logprob": -0.629,
+  "speech_s": 1.04,
+  "lead_s": 0.2,
+  "tail_s": 0.24,
+  "peak_db": 0.3,
+  "f0_med": 372.1,
+  "f0_range_st": 11.0
+ },
+ {
+  "file": "beat__fl31_Sulafat__t2.wav",
+  "asr": "아 맞다",
+  "match": true,
+  "logprob": -0.566,
+  "speech_s": 1.05,
+  "lead_s": 0.3,
+  "tail_s": 0.41,
+  "peak_db": 0.0,
+  "f0_med": 421.1,
+  "f0_range_st": 6.1
+ },
+ {
+  "file": "beat__pro_Zephyr__t1.wav",
+  "asr": "어바따",
+  "match": false,
+  "logprob": -0.799,
+  "speech_s": 0.74,
+  "lead_s": 0.15,
+  "tail_s": 0.001,
+  "peak_db": -1.2,
+  "f0_med": 217.7,
+  "f0_range_st": 9.2
+ },
+ {
+  "file": "beat__pro_Zephyr__t2.wav",
+  "asr": "아받까",
+  "match": false,
+  "logprob": -0.918,
+  "speech_s": 0.66,
+  "lead_s": 0.03,
+  "tail_s": 0.001,
+  "peak_db": -5.1,
+  "f0_med": 206.5,
+  "f0_range_st": 4.8
+ }
+]

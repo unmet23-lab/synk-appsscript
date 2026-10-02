@@ -1,0 +1,180 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 2.218,
+  "words": [
+    {
+      "text": "화면으로",
+      "start": 0.081,
+      "end": 0.349
+    },
+    {
+      "text": "볼게요.",
+      "start": 0.39,
+      "end": 0.632
+    },
+    {
+      "text": "이름을",
+      "start": 0.927,
+      "end": 1.116
+    },
+    {
+      "text": "고르고,",
+      "start": 1.156,
+      "end": 1.344
+    },
+    {
+      "text": "출석",
+      "start": 1.559,
+      "end": 1.815
+    },
+    {
+      "text": "저장.",
+      "start": 1.868,
+      "end": 2.218
+    }
+  ],
+  "characters": [
+    {
+      "text": "화",
+      "start": 0.081,
+      "end": 0.175
+    },
+    {
+      "text": "면",
+      "start": 0.175,
+      "end": 0.282
+    },
+    {
+      "text": "으",
+      "start": 0.282,
+      "end": 0.323
+    },
+    {
+      "text": "로",
+      "start": 0.323,
+      "end": 0.349
+    },
+    {
+      "text": " ",
+      "start": 0.349,
+      "end": 0.39
+    },
+    {
+      "text": "볼",
+      "start": 0.39,
+      "end": 0.484
+    },
+    {
+      "text": "게",
+      "start": 0.484,
+      "end": 0.578
+    },
+    {
+      "text": "요",
+      "start": 0.578,
+      "end": 0.618
+    },
+    {
+      "text": ".",
+      "start": 0.618,
+      "end": 0.632
+    },
+    {
+      "text": " ",
+      "start": 0.632,
+      "end": 0.927
+    },
+    {
+      "text": "이",
+      "start": 0.927,
+      "end": 0.981
+    },
+    {
+      "text": "름",
+      "start": 0.981,
+      "end": 1.075
+    },
+    {
+      "text": "을",
+      "start": 1.075,
+      "end": 1.116
+    },
+    {
+      "text": " ",
+      "start": 1.116,
+      "end": 1.156
+    },
+    {
+      "text": "고",
+      "start": 1.156,
+      "end": 1.223
+    },
+    {
+      "text": "르",
+      "start": 1.223,
+      "end": 1.304
+    },
+    {
+      "text": "고",
+      "start": 1.304,
+      "end": 1.331
+    },
+    {
+      "text": ",",
+      "start": 1.331,
+      "end": 1.344
+    },
+    {
+      "text": " ",
+      "start": 1.344,
+      "end": 1.559
+    },
+    {
+      "text": "출",
+      "start": 1.559,
+      "end": 1.707
+    },
+    {
+      "text": "석",
+      "start": 1.707,
+      "end": 1.815
+    },
+    {
+      "text": " ",
+      "start": 1.815,
+      "end": 1.868
+    },
+    {
+      "text": "저",
+      "start": 1.868,
+      "end": 1.935
+    },
+    {
+      "text": "장",
+      "start": 1.935,
+      "end": 2.204
+    },
+    {
+      "text": ".",
+      "start": 2.204,
+      "end": 2.218
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "화면으로 볼게요. 이름을 고르고, 출석 저장.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.24,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.1
+    }
+  }
+}

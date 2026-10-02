@@ -1,0 +1,93 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "그리고 도구를 켜기 전에, 작업을 둘 폴더 하나를 정해요. 앱을 만드는 작업대라고 생각하면 됩니다.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.27,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal"
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 5.118,
+  "words": [
+    {
+      "text": "그리고",
+      "start": 0.052,
+      "end": 0.247
+    },
+    {
+      "text": "도구를",
+      "start": 0.313,
+      "end": 0.612
+    },
+    {
+      "text": "켜기",
+      "start": 0.651,
+      "end": 0.82
+    },
+    {
+      "text": "전에,",
+      "start": 0.86,
+      "end": 1.042
+    },
+    {
+      "text": "작업을",
+      "start": 1.459,
+      "end": 1.784
+    },
+    {
+      "text": "둘",
+      "start": 1.823,
+      "end": 1.927
+    },
+    {
+      "text": "폴더",
+      "start": 1.98,
+      "end": 2.201
+    },
+    {
+      "text": "하나를",
+      "start": 2.253,
+      "end": 2.5
+    },
+    {
+      "text": "정해요.",
+      "start": 2.54,
+      "end": 2.761
+    },
+    {
+      "text": "앱을",
+      "start": 3.308,
+      "end": 3.503
+    },
+    {
+      "text": "만드는",
+      "start": 3.542,
+      "end": 3.816
+    },
+    {
+      "text": "작업대라고",
+      "start": 3.868,
+      "end": 4.298
+    },
+    {
+      "text": "생각하면",
+      "start": 4.337,
+      "end": 4.688
+    },
+    {
+      "text": "됩니다.",
+      "start": 4.727,
+      "end": 5.118
+    }
+  ],
+  "characters": null
+}

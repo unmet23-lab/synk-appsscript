@@ -1,0 +1,12 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const root=path.resolve(__dirname,'../../..'),shared=path.join(root,'영상/public/firstposts20260910');
+const read=p=>JSON.parse(fs.readFileSync(p,'utf8')),hash=x=>crypto.createHash('sha256').update(x).digest('hex'),sha=p=>hash(fs.readFileSync(p));
+const put=(p,data)=>{const tmp=p+'.pending',fd=fs.openSync(tmp,'w');try{fs.writeFileSync(fd,data);fs.fsyncSync(fd)}finally{fs.closeSync(fd)}fs.renameSync(tmp,p)};
+const rawPath=path.join(__dirname,'원고/video.json'),filmsPath=path.join(shared,'films.json'),raw=read(rawPath),films=read(filmsPath),item=raw.items.find(x=>x.id==='01-lab-youtube'),others=hash(JSON.stringify(films.filter(f=>f.id!==item.id)));
+const src=path.join(root,'docs/캐릭터/정본_4K/몽글_눈감음.png'),dest=path.join(shared,'mong-closed.png');put(dest,fs.readFileSync(src));
+const mapPath=path.join(shared,'assets.json'),map=read(mapPath);map['mong-closed']='mong-closed.png';put(mapPath,JSON.stringify(map,null,2));
+item.scenes[0].asset='mong';item.scenes[0].mascotAtSeconds=1.85;
+item.scenes[0].mascotAnimation={baseAsset:'mong',closedAsset:'mong-closed',smileAsset:'smile',blinks:[{atSeconds:.9,durationSeconds:.23},{atSeconds:4.72,durationSeconds:.23}],smile:{fromSeconds:1.65,toSeconds:3.65},bodyReactionAtSeconds:1.85,keepSharedBodyAndAlpha:true,expressionScope:'Narrow eye geometry only; no full-image expression crossfade'};
+put(rawPath,JSON.stringify(raw,null,2));put(filmsPath,JSON.stringify(films.map(f=>f.id===item.id?item:f),null,2));if(hash(JSON.stringify(read(filmsPath).filter(f=>f.id!==item.id)))!==others)throw Error('Other film changed');
+const qa=path.join(__dirname,'_검토/01-표정편집엔딩/입력변경.json'),record=read(qa);record.sourceScriptSha256=sha(rawPath);record.latestUserSteering='Static smile is not enough: natural blinking, smiling and lively reaction';record.mascot.animation=item.scenes[0].mascotAnimation;record.mascot.atSeconds=1.85;record.mascot.image='mong.png with locally composited approved eye variants';record.mascot.existingApprovedStaticExpression=false;record.mascot.animationValidationPending=true;record.sources.push({key:'mong-closed',file:'mong-closed.png',source:'docs/캐릭터/정본_4K/몽글_눈감음.png',sha256:sha(src),copiedSha256:sha(dest)});put(qa,JSON.stringify(record,null,2));console.log(JSON.stringify({sourceScriptSha256:record.sourceScriptSha256,animation:item.scenes[0].mascotAnimation,otherSixUnchanged:true}));

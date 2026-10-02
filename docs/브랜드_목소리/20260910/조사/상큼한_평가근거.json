@@ -1,0 +1,45 @@
+{
+  "checkedDate": "2026-09-10",
+  "koreanArena": {
+    "url": "https://channelcorp-ko-tts-arena.hf.space/leaderboard",
+    "snapshot": "ko-arena-leaderboard.html",
+    "view": "Public, 전체, current",
+    "activeModels": 10,
+    "totalVotes": 8679,
+    "rows": [
+      {"rank":1,"name":"Humelo DIVE (나나)","elo":1686,"modelVotes":1963},
+      {"rank":2,"name":"Typecast v3 (자인)","elo":1637,"modelVotes":1819},
+      {"rank":3,"name":"Gemini 2.5 Flash Preview TTS","elo":1614,"modelVotes":1814},
+      {"rank":4,"name":"A.X TTS (에밀리)","elo":1608,"modelVotes":1554}
+    ],
+    "limitations": ["Vote counts are not distinct listeners.","Not a ranking of all models.","No direct Qwen, VoxCPM2 or MOSS comparison here.","Not a freshness-only evaluation.","Operator Channel Corp also has participating models."],
+    "methodology": "https://channelcorp-ko-tts-arena.hf.space/about"
+  },
+  "commercialExperiments": [
+    {
+      "model":"Humelo DIVE",
+      "voice":"나나",
+      "url":"https://console.humelo.com/playground?tab=dive",
+      "method":"Official anonymous UI. Selected 나나 청년 · 중고음, entered the same 58-character comparison text, clicked DIVE 음성 생성 once.",
+      "displayedAllowance":"익명 사용자는 하루 500자까지 체험할 수 있습니다.",
+      "result":"Insufficient credits: Insufficient credits for DIVE",
+      "audioObtained":false,
+      "newPayment":false,
+      "newAccount":false
+    },
+    {
+      "model":"Typecast",
+      "voice":"주하 (homepage happy example; not the ranked 자인 voice)",
+      "url":"https://typecast.ai/kr/",
+      "method":"Entered common text in public homepage example; no generated output confirmed. Official voice-casting link navigated to sign-in.",
+      "audioObtained":false,
+      "newPayment":false,
+      "newAccount":false
+    }
+  ],
+  "newOpenModelAudio": ["qwen-fresh-sparkle","qwen-fresh-sunshine","qwen-sohee-sparkle","moss8-fresh-sparkle","moss-nano-fresh","chatterbox-fresh"],
+  "unavailableOpenModel": "voxcpm2-design: one new retry on this request, public queue full; no further submission",
+  "humanListening": false,
+  "higgsfieldUsed": false,
+  "brandVoiceSelected": false
+}

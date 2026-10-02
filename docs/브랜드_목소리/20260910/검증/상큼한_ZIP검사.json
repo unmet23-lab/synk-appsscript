@@ -1,0 +1,17 @@
+{
+  "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\상큼한_음원_6개.zip",
+  "sha256": "61f85d9a8f0a84fb470cd691b2d29a802f5a00090685cf35d90a101983823850",
+  "bytes": 3691058,
+  "audioCount": 6,
+  "entries": [
+    "새_A.wav",
+    "새_B.wav",
+    "새_C.wav",
+    "새_D.wav",
+    "새_E.wav",
+    "새_F.wav",
+    "안내.txt",
+    "조사보고서.md"
+  ],
+  "roundTripVerified": true
+}

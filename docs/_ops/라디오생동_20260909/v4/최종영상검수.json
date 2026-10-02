@@ -1,0 +1,332 @@
+{
+  "video": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대영상\\추석_나무고정_조명_20260909.mp4",
+  "sha256": "dcc5a8fef2e5efd9c0611166f53fac32846e16fb14f2d81a68a3c6d403ff3dfa",
+  "full_decode_exit_code": 0,
+  "full_decode_error_count": 0,
+  "sample_times_seconds": [
+    0,
+    3,
+    6,
+    9,
+    11,
+    12,
+    13.2,
+    16,
+    18,
+    19.5,
+    21,
+    30,
+    34,
+    35,
+    36,
+    37,
+    39,
+    40.75,
+    42.5,
+    59.9666667
+  ],
+  "tree": {
+    "top_fruit": {
+      "max_feature_flow_p95_px": 0.024216854944825172,
+      "max_nonrigid_residual_p95_px": 0.019327178597450256
+    },
+    "middle_branch": {
+      "max_feature_flow_p95_px": 0.017761413007974625,
+      "max_nonrigid_residual_p95_px": 0.01738363318145275
+    },
+    "lower_branch": {
+      "max_feature_flow_p95_px": 0.01911511830985546,
+      "max_nonrigid_residual_p95_px": 0.017753811553120613
+    }
+  },
+  "cloud_source_comparison": [
+    {
+      "time_s": 0,
+      "left": {
+        "flow_p95_px": 0.15883050858974457,
+        "rgb_mad": 2.25246000289917
+      },
+      "right": {
+        "flow_p95_px": 0.08635009080171585,
+        "rgb_mad": 2.294828176498413
+      }
+    },
+    {
+      "time_s": 3,
+      "left": {
+        "flow_p95_px": 0.2460193783044815,
+        "rgb_mad": 2.3837544918060303
+      },
+      "right": {
+        "flow_p95_px": 0.1319466084241867,
+        "rgb_mad": 2.4155960083007812
+      }
+    },
+    {
+      "time_s": 6,
+      "left": {
+        "flow_p95_px": 0.15305308997631073,
+        "rgb_mad": 2.2080230712890625
+      },
+      "right": {
+        "flow_p95_px": 0.15138712525367737,
+        "rgb_mad": 2.1938180923461914
+      }
+    },
+    {
+      "time_s": 9,
+      "left": {
+        "flow_p95_px": 0.21175432205200195,
+        "rgb_mad": 2.358067274093628
+      },
+      "right": {
+        "flow_p95_px": 0.13722841441631317,
+        "rgb_mad": 2.3406059741973877
+      }
+    },
+    {
+      "time_s": 12,
+      "left": {
+        "flow_p95_px": 0.2327648550271988,
+        "rgb_mad": 2.2332003116607666
+      },
+      "right": {
+        "flow_p95_px": 0.11471334844827652,
+        "rgb_mad": 2.296323299407959
+      }
+    },
+    {
+      "time_s": 16,
+      "left": {
+        "flow_p95_px": 0.20816735923290253,
+        "rgb_mad": 2.2774600982666016
+      },
+      "right": {
+        "flow_p95_px": 0.11890517175197601,
+        "rgb_mad": 2.3437576293945312
+      }
+    },
+    {
+      "time_s": 21,
+      "left": {
+        "flow_p95_px": 0.1708097606897354,
+        "rgb_mad": 2.4450576305389404
+      },
+      "right": {
+        "flow_p95_px": 0.14086467027664185,
+        "rgb_mad": 2.331474781036377
+      }
+    },
+    {
+      "time_s": 30,
+      "left": {
+        "flow_p95_px": 0.16238491237163544,
+        "rgb_mad": 2.2870123386383057
+      },
+      "right": {
+        "flow_p95_px": 0.10045435279607773,
+        "rgb_mad": 2.358989953994751
+      }
+    },
+    {
+      "time_s": 37,
+      "left": {
+        "flow_p95_px": 0.16140325367450714,
+        "rgb_mad": 2.3091089725494385
+      },
+      "right": {
+        "flow_p95_px": 0.15290826559066772,
+        "rgb_mad": 2.2574949264526367
+      }
+    },
+    {
+      "time_s": 42.5,
+      "left": {
+        "flow_p95_px": 0.2203092873096466,
+        "rgb_mad": 2.335970640182495
+      },
+      "right": {
+        "flow_p95_px": 0.10363233089447021,
+        "rgb_mad": 2.396484851837158
+      }
+    }
+  ],
+  "left_window_luma": [
+    {
+      "t": 0,
+      "mean": 127.75776397515529
+    },
+    {
+      "t": 3,
+      "mean": 127.89510006901311
+    },
+    {
+      "t": 6,
+      "mean": 127.78674948240166
+    },
+    {
+      "t": 9,
+      "mean": 127.81780538302277
+    },
+    {
+      "t": 11,
+      "mean": 127.83091787439614
+    },
+    {
+      "t": 12,
+      "mean": 84.71704623878537
+    },
+    {
+      "t": 13.2,
+      "mean": 24.102139406487233
+    },
+    {
+      "t": 16,
+      "mean": 24.11801242236025
+    },
+    {
+      "t": 18,
+      "mean": 24.04623878536922
+    },
+    {
+      "t": 19.5,
+      "mean": 76.2263630089717
+    },
+    {
+      "t": 21,
+      "mean": 127.68184955141477
+    },
+    {
+      "t": 30,
+      "mean": 127.85507246376811
+    },
+    {
+      "t": 34,
+      "mean": 127.86059351276742
+    },
+    {
+      "t": 35,
+      "mean": 127.86059351276742
+    },
+    {
+      "t": 36,
+      "mean": 127.79641131815045
+    },
+    {
+      "t": 37,
+      "mean": 127.79641131815045
+    },
+    {
+      "t": 39,
+      "mean": 127.83091787439614
+    },
+    {
+      "t": 40.75,
+      "mean": 127.83712905452036
+    },
+    {
+      "t": 42.5,
+      "mean": 127.8391994478951
+    },
+    {
+      "t": 59.9666667,
+      "mean": 127.82056590752244
+    }
+  ],
+  "right_window_luma": [
+    {
+      "t": 0,
+      "mean": 136.0056818181818
+    },
+    {
+      "t": 3,
+      "mean": 136.05823863636363
+    },
+    {
+      "t": 6,
+      "mean": 136.06392045454547
+    },
+    {
+      "t": 9,
+      "mean": 136.05539772727272
+    },
+    {
+      "t": 11,
+      "mean": 136.0525568181818
+    },
+    {
+      "t": 12,
+      "mean": 136.0681818181818
+    },
+    {
+      "t": 13.2,
+      "mean": 136.0681818181818
+    },
+    {
+      "t": 16,
+      "mean": 136.06107954545453
+    },
+    {
+      "t": 18,
+      "mean": 136.078125
+    },
+    {
+      "t": 19.5,
+      "mean": 136.078125
+    },
+    {
+      "t": 21,
+      "mean": 136.13210227272728
+    },
+    {
+      "t": 30,
+      "mean": 135.97301136363637
+    },
+    {
+      "t": 34,
+      "mean": 136.0909090909091
+    },
+    {
+      "t": 35,
+      "mean": 81.12926136363636
+    },
+    {
+      "t": 36,
+      "mean": 25.963068181818183
+    },
+    {
+      "t": 37,
+      "mean": 25.963068181818183
+    },
+    {
+      "t": 39,
+      "mean": 25.946022727272727
+    },
+    {
+      "t": 40.75,
+      "mean": 82.2528409090909
+    },
+    {
+      "t": 42.5,
+      "mean": 135.90198863636363
+    },
+    {
+      "t": 59.9666667,
+      "mean": 136.0625
+    }
+  ],
+  "visual_findings": [
+    "Actual decoded tree crops at 0, 3, 6, 9, 21 and 37 seconds retain the same fruit/branch silhouettes; the earlier trembling is not visible in these samples.",
+    "Both cloud regions match their source video at corresponding cycle times within subpixel feature differences from re-encoding. Cloud travel remains present beside the frozen tree.",
+    "Left windows visibly darken at 11-13.2 seconds, remain dark through 18 seconds, then return by 21 seconds. Right windows darken at 34-36 seconds, remain dark through 39 seconds, and return by 42.5 seconds.",
+    "Off windows look dark rather than emissive in the decoded comparison; ambient paper/frame detail remains visible instead of a pure-black rectangle.",
+    "No duplicate tree edge, cut-off cloud, large geometric boundary distortion, or new whole-screen exposure pulse was observed in the examined frames."
+  ],
+  "decoded_light_10fps_checks": {
+    "left": {"off_luma_fraction_of_on": 0.1963945412810019, "max_100ms_luma_change_255": 8.942057291666671, "fadeout_reversals_over_1_luma": 0, "fadein_reversals_over_1_luma": 0},
+    "right": {"off_luma_fraction_of_on": 0.1967024612753017, "max_100ms_luma_change_255": 10.481770833333329, "fadeout_reversals_over_1_luma": 0, "fadein_reversals_over_1_luma": 0}
+  },
+  "limits": ["Frame-based independent QA, not continuous normal-speed viewing", "No post-deployment reception check in this audit"],
+  "contact_sheet": "docs/_ops/라디오생동_20260909/v4/최종영상검수_비교.png",
+  "continuous_viewing_claim": false
+}

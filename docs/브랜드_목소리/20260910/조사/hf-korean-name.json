@@ -1,0 +1,618 @@
+{
+  "id": "hf-korean-name",
+  "checkedAt": "2026-09-10T08:28:55.979Z",
+  "pages": [
+    {
+      "url": "https://huggingface.co/api/models?search=korean&pipeline_tag=text-to-speech&sort=downloads&direction=-1&limit=500&full=true",
+      "returned": 8,
+      "totalCount": null
+    }
+  ],
+  "paginationExhausted": true,
+  "limitReached": false,
+  "records": [
+    {
+      "_id": "65e09ad7ef170bbfb0a433ab",
+      "id": "myshell-ai/MeloTTS-Korean",
+      "author": "myshell-ai",
+      "gated": false,
+      "lastModified": "2024-02-29T16:10:54.000Z",
+      "likes": 45,
+      "private": false,
+      "sha": "0207e5adfc90129a51b6b03d89be6d84360ed323",
+      "downloads": 83194,
+      "tags": [
+        "transformers",
+        "text-to-speech",
+        "ko",
+        "license:mit",
+        "endpoints_compatible",
+        "region:us"
+      ],
+      "pipeline_tag": "text-to-speech",
+      "library_name": "transformers",
+      "createdAt": "2024-02-29T14:55:19.000Z",
+      "modelId": "myshell-ai/MeloTTS-Korean",
+      "siblings": [
+        {
+          "rfilename": ".gitattributes"
+        },
+        {
+          "rfilename": "README.md"
+        },
+        {
+          "rfilename": "checkpoint.pth"
+        },
+        {
+          "rfilename": "config.json"
+        }
+      ]
+    },
+    {
+      "_id": "69fcb218ca5dbda9b9bc85e0",
+      "id": "daje/Qwen3-TTS-12Hz-0.6B-Korean",
+      "author": "daje",
+      "gated": false,
+      "lastModified": "2026-05-07T16:39:14.000Z",
+      "likes": 0,
+      "private": false,
+      "sha": "ae00d9d97923bbf4ad9423cfcf5ccbc3ba7c7095",
+      "downloads": 206,
+      "tags": [
+        "safetensors",
+        "qwen3_tts",
+        "text-to-speech",
+        "tts",
+        "qwen3-tts",
+        "korean",
+        "voice-cloning",
+        "ko",
+        "dataset:daje/korean-tts-training",
+        "base_model:Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "base_model:finetune:Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "region:us"
+      ],
+      "pipeline_tag": "text-to-speech",
+      "createdAt": "2026-05-07T15:39:04.000Z",
+      "modelId": "daje/Qwen3-TTS-12Hz-0.6B-Korean",
+      "siblings": [
+        {
+          "rfilename": ".gitattributes"
+        },
+        {
+          "rfilename": "README.md"
+        },
+        {
+          "rfilename": "config.json"
+        },
+        {
+          "rfilename": "generation_config.json"
+        },
+        {
+          "rfilename": "merges.txt"
+        },
+        {
+          "rfilename": "model.safetensors"
+        },
+        {
+          "rfilename": "preprocessor_config.json"
+        },
+        {
+          "rfilename": "speech_tokenizer/config.json"
+        },
+        {
+          "rfilename": "speech_tokenizer/configuration.json"
+        },
+        {
+          "rfilename": "speech_tokenizer/model.safetensors"
+        },
+        {
+          "rfilename": "speech_tokenizer/preprocessor_config.json"
+        },
+        {
+          "rfilename": "tokenizer_config.json"
+        },
+        {
+          "rfilename": "vocab.json"
+        }
+      ]
+    },
+    {
+      "_id": "6937d5f7ea5905958a3854d2",
+      "id": "mobilint/MeloTTS-Korean",
+      "author": "mobilint",
+      "gated": false,
+      "lastModified": "2026-07-08T08:46:54.000Z",
+      "likes": 2,
+      "private": false,
+      "sha": "069d90f1f326ace4b9b07d8dd289941f5ffd71db",
+      "downloads": 84,
+      "tags": [
+        "transformers",
+        "mobilint",
+        "text-to-speech",
+        "base_model:myshell-ai/MeloTTS-Korean",
+        "base_model:quantized:myshell-ai/MeloTTS-Korean",
+        "license:mit",
+        "endpoints_compatible",
+        "region:us"
+      ],
+      "pipeline_tag": "text-to-speech",
+      "library_name": "transformers",
+      "createdAt": "2025-12-09T07:55:35.000Z",
+      "modelId": "mobilint/MeloTTS-Korean",
+      "siblings": [
+        {
+          "rfilename": ".gitattributes"
+        },
+        {
+          "rfilename": "MeloTTS-Korean_decoder.mxq"
+        },
+        {
+          "rfilename": "MeloTTS-Korean_encoder.mxq"
+        },
+        {
+          "rfilename": "README.md"
+        },
+        {
+          "rfilename": "checkpoint.pth"
+        },
+        {
+          "rfilename": "config.json"
+        }
+      ]
+    },
+    {
+      "_id": "6801a3aa44f05134b90bc534",
+      "id": "lex-au/Orpheus-3b-Korean-FT-Q8_0.gguf",
+      "author": "lex-au",
+      "gated": false,
+      "lastModified": "2025-04-18T01:11:56.000Z",
+      "likes": 4,
+      "private": false,
+      "sha": "4cb664fd26550bf8318c2b0cc9aa5a572feaed5b",
+      "downloads": 48,
+      "tags": [
+        "gguf",
+        "text-to-speech",
+        "tts",
+        "audio",
+        "speech-synthesis",
+        "orpheus",
+        "ko",
+        "dataset:internal",
+        "license:apache-2.0",
+        "endpoints_compatible",
+        "region:us",
+        "conversational"
+      ],
+      "pipeline_tag": "text-to-speech",
+      "createdAt": "2025-04-18T00:58:18.000Z",
+      "modelId": "lex-au/Orpheus-3b-Korean-FT-Q8_0.gguf",
+      "siblings": [
+        {
+          "rfilename": ".gitattributes"
+        },
+        {
+          "rfilename": "Orpheus-3b-Korean-FT-Q8_0.gguf"
+        },
+        {
+          "rfilename": "README.md"
+        }
+      ]
+    },
+    {
+      "_id": "6294efafa1e875b26e9483e7",
+      "id": "imdanboy/kss_tts_train_jets_raw_phn_korean_cleaner_korean_jaso_train.total_count.ave",
+      "author": "imdanboy",
+      "gated": false,
+      "lastModified": "2022-05-30T16:27:50.000Z",
+      "likes": 0,
+      "private": false,
+      "sha": "c269c2478c4d6e29e644e8c6a568174d292caa38",
+      "downloads": 6,
+      "tags": [
+        "espnet",
+        "audio",
+        "text-to-speech",
+        "ko",
+        "dataset:kss",
+        "arxiv:1804.00015",
+        "license:cc-by-4.0",
+        "region:us"
+      ],
+      "pipeline_tag": "text-to-speech",
+      "library_name": "espnet",
+      "createdAt": "2022-05-30T16:24:15.000Z",
+      "modelId": "imdanboy/kss_tts_train_jets_raw_phn_korean_cleaner_korean_jaso_train.total_count.ave",
+      "siblings": [
+        {
+          "rfilename": ".gitattributes"
+        },
+        {
+          "rfilename": "README.md"
+        },
+        {
+          "rfilename": "exp/tts_stats_raw_phn_korean_cleaner_korean_jaso/train/energy_stats.npz"
+        },
+        {
+          "rfilename": "exp/tts_stats_raw_phn_korean_cleaner_korean_jaso/train/feats_stats.npz"
+        },
+        {
+          "rfilename": "exp/tts_stats_raw_phn_korean_cleaner_korean_jaso/train/pitch_stats.npz"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/config.yaml"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/discriminator_backward_time.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/discriminator_fake_loss.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/discriminator_forward_time.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/discriminator_loss.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/discriminator_optim_step_time.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/discriminator_real_loss.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/discriminator_train_time.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/generator_align_bin_loss.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/generator_align_forwardsum_loss.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/generator_align_loss.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/generator_backward_time.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/generator_forward_time.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/generator_g_adv_loss.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/generator_g_feat_match_loss.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/generator_g_loss.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/generator_g_mel_loss.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/generator_loss.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/generator_optim_step_time.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/generator_train_time.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/generator_var_dur_loss.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/generator_var_energy_loss.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/generator_var_loss.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/generator_var_pitch_loss.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/gpu_max_cached_mem_GB.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/iter_time.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/optim0_lr0.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/optim1_lr0.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/images/train_time.png"
+        },
+        {
+          "rfilename": "exp/tts_train_jets_raw_phn_korean_cleaner_korean_jaso/train.total_count.ave_5best.pth"
+        },
+        {
+          "rfilename": "meta.yaml"
+        }
+      ]
+    },
+    {
+      "_id": "6992d81a8c80e6ba836213db",
+      "id": "ahnhs2k/SpeechT5_MIKO_Korean",
+      "author": "ahnhs2k",
+      "gated": "manual",
+      "lastModified": "2026-02-24T23:29:04.000Z",
+      "likes": 0,
+      "private": false,
+      "sha": "18f23a405aef4a738edbc1ecbac384c9f91f5d67",
+      "downloads": 2,
+      "tags": [
+        "transformers",
+        "safetensors",
+        "speecht5",
+        "text-to-audio",
+        "text-to-speech",
+        "ko",
+        "dataset:simon3000/genshin-voice",
+        "base_model:microsoft/speecht5_tts",
+        "base_model:finetune:microsoft/speecht5_tts",
+        "license:apache-2.0",
+        "endpoints_compatible",
+        "region:us"
+      ],
+      "pipeline_tag": "text-to-speech",
+      "library_name": "transformers",
+      "createdAt": "2026-02-16T08:40:58.000Z",
+      "modelId": "ahnhs2k/SpeechT5_MIKO_Korean",
+      "siblings": [
+        {
+          "rfilename": ".gitattributes"
+        },
+        {
+          "rfilename": "README.md"
+        },
+        {
+          "rfilename": "best_model.pth"
+        },
+        {
+          "rfilename": "checkpoint_last.pt"
+        },
+        {
+          "rfilename": "checkpoints/epoch_000070.pt"
+        },
+        {
+          "rfilename": "checkpoints/epoch_000080.pt"
+        },
+        {
+          "rfilename": "checkpoints/epoch_000210/config.json"
+        },
+        {
+          "rfilename": "checkpoints/epoch_000210/generation_config.json"
+        },
+        {
+          "rfilename": "checkpoints/epoch_000210/model.safetensors"
+        },
+        {
+          "rfilename": "checkpoints/epoch_000220/config.json"
+        },
+        {
+          "rfilename": "checkpoints/epoch_000220/generation_config.json"
+        },
+        {
+          "rfilename": "checkpoints/epoch_000220/model.safetensors"
+        },
+        {
+          "rfilename": "checkpoints/epoch_000230/config.json"
+        },
+        {
+          "rfilename": "checkpoints/epoch_000230/generation_config.json"
+        },
+        {
+          "rfilename": "checkpoints/epoch_000230/model.safetensors"
+        },
+        {
+          "rfilename": "checkpoints/epoch_000240/config.json"
+        },
+        {
+          "rfilename": "checkpoints/epoch_000240/generation_config.json"
+        },
+        {
+          "rfilename": "checkpoints/epoch_000240/model.safetensors"
+        },
+        {
+          "rfilename": "checkpoints/epoch_000250/config.json"
+        },
+        {
+          "rfilename": "checkpoints/epoch_000250/generation_config.json"
+        },
+        {
+          "rfilename": "checkpoints/epoch_000250/model.safetensors"
+        },
+        {
+          "rfilename": "config.json"
+        },
+        {
+          "rfilename": "generation_config.json"
+        },
+        {
+          "rfilename": "korean_text_utils.py"
+        },
+        {
+          "rfilename": "model.safetensors"
+        },
+        {
+          "rfilename": "output.wav"
+        },
+        {
+          "rfilename": "speaker_embedding.pth"
+        },
+        {
+          "rfilename": "special_tokens_map.json"
+        },
+        {
+          "rfilename": "tokenizer.json"
+        },
+        {
+          "rfilename": "tokenizer_config.json"
+        },
+        {
+          "rfilename": "vocoder/config.json"
+        },
+        {
+          "rfilename": "vocoder/model.safetensors"
+        }
+      ]
+    },
+    {
+      "_id": "6a9067be23ecc45d2ef4c4c2",
+      "id": "seastar105/pocket-tts-korean-300m",
+      "author": "seastar105",
+      "gated": false,
+      "lastModified": "2026-08-28T07:04:22.000Z",
+      "likes": 0,
+      "private": false,
+      "sha": "f353349dbae42ff173d1e8421a1af3d1370f7841",
+      "downloads": 0,
+      "tags": [
+        "pocket-tts",
+        "safetensors",
+        "audio",
+        "text-to-speech",
+        "korean",
+        "voice-cloning",
+        "sentencepiece",
+        "ko",
+        "dataset:seastar105/emilia-yodas-ko-filtered-pocket-tts",
+        "arxiv:2509.06926",
+        "base_model:kyutai/pocket-tts",
+        "base_model:finetune:kyutai/pocket-tts",
+        "license:cc-by-4.0",
+        "region:us"
+      ],
+      "pipeline_tag": "text-to-speech",
+      "library_name": "pocket-tts",
+      "createdAt": "2026-08-27T16:37:18.000Z",
+      "modelId": "seastar105/pocket-tts-korean-300m",
+      "siblings": [
+        {
+          "rfilename": ".gitattributes"
+        },
+        {
+          "rfilename": "README.md"
+        },
+        {
+          "rfilename": "assets/cv3_ema_sweep.png"
+        },
+        {
+          "rfilename": "eval/cv3_ema_scores.csv"
+        },
+        {
+          "rfilename": "eval/cv3_ema_scores.json"
+        },
+        {
+          "rfilename": "eval/cv3_ko_raw_step10000.json"
+        },
+        {
+          "rfilename": "eval/cv3_ko_raw_step20000.json"
+        },
+        {
+          "rfilename": "eval/cv3_ko_raw_step30000.json"
+        },
+        {
+          "rfilename": "eval/cv3_ko_raw_step40000.json"
+        },
+        {
+          "rfilename": "eval/cv3_ko_raw_step50000.json"
+        },
+        {
+          "rfilename": "korean.yaml"
+        },
+        {
+          "rfilename": "model.safetensors"
+        },
+        {
+          "rfilename": "tokenizer.model"
+        },
+        {
+          "rfilename": "training_args.yaml"
+        }
+      ]
+    },
+    {
+      "_id": "6a90ae9a39a1c5ebc52db20a",
+      "id": "seastar105/pocket-tts-korean-100m",
+      "author": "seastar105",
+      "gated": false,
+      "lastModified": "2026-08-28T07:16:11.000Z",
+      "likes": 0,
+      "private": false,
+      "sha": "fed23331d461a7a0bfc6bfa30ca6b0099f4e9ad3",
+      "downloads": 0,
+      "tags": [
+        "pocket-tts",
+        "safetensors",
+        "audio",
+        "text-to-speech",
+        "korean",
+        "voice-cloning",
+        "sentencepiece",
+        "knowledge-distillation",
+        "ko",
+        "dataset:seastar105/emilia-yodas-ko-filtered-pocket-tts",
+        "arxiv:2509.06926",
+        "base_model:kyutai/pocket-tts",
+        "base_model:finetune:kyutai/pocket-tts",
+        "license:cc-by-4.0",
+        "region:us"
+      ],
+      "pipeline_tag": "text-to-speech",
+      "library_name": "pocket-tts",
+      "createdAt": "2026-08-27T21:39:38.000Z",
+      "modelId": "seastar105/pocket-tts-korean-100m",
+      "siblings": [
+        {
+          "rfilename": ".gitattributes"
+        },
+        {
+          "rfilename": "README.md"
+        },
+        {
+          "rfilename": "assets/cv3_ema_sweep.png"
+        },
+        {
+          "rfilename": "eval/cv3_ema_scores.csv"
+        },
+        {
+          "rfilename": "eval/cv3_ema_scores.json"
+        },
+        {
+          "rfilename": "eval/cv3_ko_raw_step10000.json"
+        },
+        {
+          "rfilename": "eval/cv3_ko_raw_step20000.json"
+        },
+        {
+          "rfilename": "eval/cv3_ko_raw_step30000.json"
+        },
+        {
+          "rfilename": "eval/cv3_ko_raw_step40000.json"
+        },
+        {
+          "rfilename": "eval/cv3_ko_raw_step50000.json"
+        },
+        {
+          "rfilename": "korean.yaml"
+        },
+        {
+          "rfilename": "model.safetensors"
+        },
+        {
+          "rfilename": "tokenizer.model"
+        },
+        {
+          "rfilename": "training_args.yaml"
+        }
+      ]
+    }
+  ]
+}

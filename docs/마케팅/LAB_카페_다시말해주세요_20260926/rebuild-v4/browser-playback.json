@@ -1,0 +1,16 @@
+{
+  "date": "2026-09-27",
+  "url": "http://127.0.0.1:5208/rebuild-v4/watch.html",
+  "file": "SYNK_LAB_CAFE_AGE_MATCH_v4.mp4",
+  "trigger": "Visible play button Enter",
+  "observedTimes": [0.024004, 11.924158, 15.208333],
+  "duration": 15.208333,
+  "ended": true,
+  "muted": false,
+  "readyState": 4,
+  "mediaError": null,
+  "statusText": "전체 영상 재생 완료 · 15.2 / 15.2초",
+  "visualProof": "Browser screenshots at start and final smile; sampled source and composition contact sheets viewed.",
+  "directListening": "not performed",
+  "userDynamicLikenessApproval": "pending"
+}

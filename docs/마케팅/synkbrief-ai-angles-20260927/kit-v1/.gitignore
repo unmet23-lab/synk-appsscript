@@ -1,0 +1,8 @@
+assets/synk-kit/
+assets/audio/*.wav
+snapshots/*.png
+renders/
+out/
+.hyperframes/
+.thumbnails/
+node_modules/

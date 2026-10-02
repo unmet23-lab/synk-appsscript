@@ -1,0 +1,25 @@
+{
+  "asOf": "2026-09-21",
+  "file": "SYNK_Atlas_엔진지도_20260921.html",
+  "sha256": "e84bbac213b374ddf40c1450852437f7a0f2e33146de76bac6c9f0ac66f04dd4",
+  "bytes": 4749415,
+  "engineCount": 8,
+  "sourceCount": 69,
+  "logoSha256": "645a8ce5ca3f9c8b71b07a05a7436f4e5fcd59fcd6d7d4b6efb761b017d6a4fc",
+  "embeddedCode": [
+    {
+      "path": "atlas/engine.js",
+      "sha256": "886258ae59a872a16a4eff6dad58a7c84647591090347952052e814bd39a6b66"
+    },
+    {
+      "path": "atlas/experiences.js",
+      "sha256": "acbe097161e914285b2469b2f9378a9f0cdc83cd5c7785d7694a5e535892bd4a"
+    },
+    {
+      "path": "atlas/preferences.js",
+      "sha256": "cd5a218c9e108b305e34e9b51382d731467ec4e85ff15ad91f1a03ae745a0bac"
+    }
+  ],
+  "offline": true,
+  "productDeployment": false
+}

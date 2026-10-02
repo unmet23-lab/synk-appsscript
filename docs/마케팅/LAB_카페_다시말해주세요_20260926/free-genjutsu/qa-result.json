@@ -1,0 +1,26 @@
+{
+  "job_id": "66a1d917-b016-4949-ad91-a592b5079cb0",
+  "status": "completed",
+  "credits_spent": 0,
+  "original_video_duration": 6.041667,
+  "review_video_duration": 6.625,
+  "review_audio_duration": 6.6,
+  "decode": "passed for original and review copy",
+  "browser": {
+    "currentTime": 6.625,
+    "duration": 6.625,
+    "ended": true,
+    "readyState": 4,
+    "width": 720,
+    "height": 1280,
+    "muted": false,
+    "error": null
+  },
+  "edit": "Original audio copied; generated final frame held for approximately 0.58 seconds to retain final dialogue.",
+  "limits": [
+    "No new voice performance generated",
+    "Final held frame is not newly generated motion or corrected lipsync",
+    "Subjective naturalness awaits user playback feedback"
+  ],
+  "published": false
+}

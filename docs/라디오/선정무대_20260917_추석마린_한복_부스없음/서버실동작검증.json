@@ -1,0 +1,129 @@
+{
+  "passed": true,
+  "at": "2026-09-16T18:23:20.028Z",
+  "sampleCount": 145,
+  "distinctDiscTransforms": 1,
+  "expressions": [
+    "기본",
+    "깜빡",
+    "눈웃음"
+  ],
+  "first": {
+    "ready": true,
+    "DJ": "마린",
+    "scene": "추석보름달마당",
+    "expression": "기본",
+    "visible": [
+      {
+        "file": "마린_본체.webp",
+        "width": 1024
+      },
+      {
+        "file": "옷_마린_한복.webp",
+        "width": 1024
+      }
+    ],
+    "hanbok": {
+      "loaded": true,
+      "width": 1024
+    },
+    "headset": {
+      "loaded": false
+    },
+    "boothHidden": true,
+    "boothRect": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0,
+      "top": 0,
+      "right": 0,
+      "bottom": 0,
+      "left": 0
+    },
+    "mascotRect": {
+      "x": 652.8125,
+      "y": 371.109375,
+      "width": 614.390625,
+      "height": 614.390625,
+      "top": 371.109375,
+      "right": 1267.203125,
+      "bottom": 985.5,
+      "left": 652.8125
+    },
+    "discs": [
+      {
+        "loaded": true,
+        "transform": "none"
+      },
+      {
+        "loaded": true,
+        "transform": "none"
+      }
+    ],
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    }
+  },
+  "last": {
+    "ready": true,
+    "DJ": "마린",
+    "scene": "추석보름달마당",
+    "expression": "기본",
+    "visible": [
+      {
+        "file": "마린_본체.webp",
+        "width": 1024
+      },
+      {
+        "file": "옷_마린_한복.webp",
+        "width": 1024
+      }
+    ],
+    "hanbok": {
+      "loaded": true,
+      "width": 1024
+    },
+    "headset": {
+      "loaded": false
+    },
+    "boothHidden": true,
+    "boothRect": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0,
+      "top": 0,
+      "right": 0,
+      "bottom": 0,
+      "left": 0
+    },
+    "mascotRect": {
+      "x": 652.8125,
+      "y": 371.109375,
+      "width": 614.390625,
+      "height": 614.390625,
+      "top": 371.109375,
+      "right": 1267.203125,
+      "bottom": 985.5,
+      "left": 652.8125
+    },
+    "discs": [
+      {
+        "loaded": true,
+        "transform": "none"
+      },
+      {
+        "loaded": true,
+        "transform": "none"
+      }
+    ],
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    }
+  },
+  "errors": [],
+  "scope": "실제 radio-live Chromium 오버레이의 18초 읽기 전용 확인 — 추석 마린 한복·부스 숨김"
+}

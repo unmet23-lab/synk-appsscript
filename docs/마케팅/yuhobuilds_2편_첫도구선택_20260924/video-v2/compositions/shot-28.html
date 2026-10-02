@@ -1,0 +1,8 @@
+<!doctype html><html lang="ko"><body><template><div class="shot-root" id="shot-28-root" data-composition-id="shot-28" data-width="1080" data-height="1920" data-duration="2.233333"><div class="world paper"><div class="top"><span>yuhobuilds</span><span>EP.02</span></div><div class="kicker" style="left:76px;top:164px">질문만 보내고 끝?</div><div class="headline rise" style="left:72px;right:72px;top:228px;">받은 답은<br><span class="accent">어디에 남을까요?</span></div><div class="answer-sheet pop" style="left:145px;top:630px;width:790px;height:705px"><div class="eyebrow">AI의 답변</div><div class="answer-line"></div><div class="answer-line"></div><div class="answer-line"></div><div class="answer-question">?</div></div><div class="sticker pop" style="left:215px;top:1395px">다음 편에서 같이 확인</div></div></div><script>(function(){const root=document.getElementById('shot-28-root'),q=s=>root.querySelector(s),qAll=s=>Array.from(root.querySelectorAll(s));const tl=gsap.timeline({paused:true});
+ qAll('.rise').forEach((e,j)=>tl.fromTo(e,{y:45,opacity:0},{y:0,opacity:1,duration:.28,ease:'power4.out'},0.25+Math.min(j*.08,.24)));
+ qAll('.pop').forEach((e,j)=>tl.fromTo(e,{scale:.86,opacity:0},{scale:1,opacity:1,duration:.28,ease:'back.out(1.35)'},0.25+Math.min(j*.09,.27)));
+ qAll('.slam').forEach(e=>tl.fromTo(e,{opacity:0,scale:1.15},{opacity:1,scale:1,duration:.24,ease:'power4.out'},0.25));
+ qAll('.answer-line').forEach((e,i)=>tl.fromTo(e,{scaleX:0},{scaleX:1,duration:.35,ease:'power2.out'},.35+i*.23));
+ tl.fromTo(q('.world'),{x:1080},{x:0,duration:0.233333333,ease:'power3.inOut'},0);
+ tl.to(q('.world'),{scale:1.10,opacity:0,duration:0.233333333,ease:'power3.in'},2.000000000000007);
+ window.__timelines['shot-28']=tl;})();</script></template></body></html>

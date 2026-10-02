@@ -1,0 +1,6621 @@
+{
+  "createdAt": "2026-09-13T18:55:43.598Z",
+  "provenanceRefresh": {
+    "reason": "LAB alt vocabulary and guardian-caption language correction; nonvisual source metadata only",
+    "record": "qa/비시각원천_변경대조.json",
+    "changedSourceCount": 2,
+    "unchangedOutputCount": 52,
+    "videoReencoded": false,
+    "newWholePlaybackRun": false,
+    "earlierWholePlaybackEvidence": "qa/verification-wholeplayback-20260914.json"
+  },
+  "status": "encoded-local-unpublished",
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "duration": 65,
+  "file": "LAB-읽고-바꿔-말하기",
+  "title": "아직 정하지 않았어요 — 읽고 바꿔 말하기",
+  "mn": {
+    "purpose": "Хийж үзмээр зүйлээ солонгосоор хэлж үзье.",
+    "example": "Сургалтын жишээ",
+    "conversation": "Сургалтын жишээ яриа",
+    "question": "Ямар мэргэжлээр сурахыг хүсэж байна вэ?",
+    "undecided": "Одоохондоо шийдээгүй байна.",
+    "then": "Дараа нь хийж үзмээр байгаа зүйлээ хэлээрэй.",
+    "game": "Эхлээд тоглоом хийж үзмээр байна.",
+    "video": "Видео хийж үзмээр байна.",
+    "drawing": "Зураг зурж үзмээр байна.",
+    "change": "“게임을 만들어” гэдэг хэсгийг бүхэлд нь солино.",
+    "yours": "Өөрийн өгүүлбэрээ хэлж үзье.",
+    "insert": "Гурван хэсгээс нэгийг хоосон зайд оруулаад, бүтнээр нь хэлээрэй.",
+    "solo": "Ганцаараа чангаар хэлж болно.",
+    "private": "Сэтгэгдэл, дуу хоолойгоо нийтлэх шаардлагагүй.",
+    "next": "Дараа нь хийж үзэх нэг жижиг зүйлээ сонгоорой.",
+    "gameAction": "Тоглоомын нэг хэсгийг зурах",
+    "videoAction": "Богино видеоны нэг хэсгийг бичиж авах",
+    "drawAction": "Дуртай эд зүйлээ зурах"
+  },
+  "phrases": [
+    "게임을 만들어",
+    "영상을 만들어",
+    "그림을 그려"
+  ],
+  "scenes": [
+    {
+      "id": "purpose",
+      "start": 0,
+      "end": 6,
+      "why": "공식 비전과 기존 몽골어 연습 목적을 먼저 읽는다."
+    },
+    {
+      "id": "question",
+      "start": 6,
+      "end": 14,
+      "why": "질문과 몽골어 뜻을 읽는 8초. 번역은 1.4초 뒤 한 덩어리로 들어온다."
+    },
+    {
+      "id": "model",
+      "start": 14,
+      "end": 24,
+      "why": "미정이라는 말과 해보고 싶은 일을 연결한 완성 예시를 읽는다."
+    },
+    {
+      "id": "change",
+      "start": 24,
+      "end": 34,
+      "why": "원래 동사구를 표시하고 전체 구절 두 번의 교체를 보여준다. 글자별 타이핑 없음."
+    },
+    {
+      "id": "practice",
+      "start": 34,
+      "end": 48,
+      "why": "세 구절과 문장 틀을 고정한 14초의 자기 말하기 시간. 입력·평가·가짜 선택 없음."
+    },
+    {
+      "id": "examples",
+      "start": 48,
+      "end": 57,
+      "why": "가능한 완성 예문 두 가지를 확인한다. 정답 또는 학습자 선택 결과라는 뜻이 아니다."
+    },
+    {
+      "id": "next",
+      "start": 57,
+      "end": 65,
+      "why": "학생이 직접 고를 작은 실행 세 가지를 읽고 닫는다."
+    }
+  ],
+  "boundaries": {
+    "nativeReviewed": false,
+    "published": false,
+    "audio": false,
+    "newTranslation": false,
+    "learner": "한글을 읽을 수 있는 몽골어 독자",
+    "scope": "무음 읽기·문장 응용의 별도 로컬 대안",
+    "notComplete": [
+      "발음·청취형 숏폼",
+      "원어민 감수",
+      "실학생 이해·학습 효과",
+      "YouTube 게시"
+    ]
+  },
+  "officialVision": "가고 싶은 방향에 집중할 수 있는 환경을 만듭니다.",
+  "method": "Independent deterministic local Canvas using current video-kit colors and local fonts → PNG stream → FFmpeg H.264. Not Remotion rendering; no installation.",
+  "audioTracks": 0,
+  "color": {
+    "range": "tv",
+    "matrix": "bt709",
+    "primaries": "bt709",
+    "transfer": "bt709",
+    "format": "yuv420p"
+  },
+  "nativeReviewed": false,
+  "published": false,
+  "publicUrl": null,
+  "newTranslation": false,
+  "newPaidCalls": 0,
+  "externalTransferBytes": 0,
+  "sources": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "32222dab4c650029ef561b258b0442f7a920fdd78b3a706727f4c9f8c4d28f0c",
+      "bytes": 3636
+    },
+    {
+      "path": "docs/AI_운영원칙.md",
+      "sha256": "e27974f0e18052d18084ea2db1c5c4b22ad109820be78628b95712ceaa8b58ab",
+      "bytes": 12368
+    },
+    {
+      "path": "DESIGN.md",
+      "sha256": "5e0673d1aaf62f7b9f4a4e3695ed5ab1eaa466bfce97da761220e62d229b876a",
+      "bytes": 15680
+    },
+    {
+      "path": "docs/마케팅/LAB.md",
+      "sha256": "2a9d8d728e328f0302bd9c55cdd7ec4b91c6ea675008c2027d22e9bfc8c47c49",
+      "bytes": 13428
+    },
+    {
+      "path": "docs/마케팅/제작_인수기준.md",
+      "sha256": "5717a3f8f9f7b1ec2ffee63c5aa3930cbb944dc1d609a40b523e4e4d31fa02c7",
+      "bytes": 23136
+    },
+    {
+      "path": "docs/브랜드_폰트_정본.md",
+      "sha256": "889fc34358d6725e0b773504b388d0a9b52535c09170bb1192be00936e216ca6",
+      "bytes": 10230
+    },
+    {
+      "path": "docs/비전_정본.md",
+      "sha256": "88adcf26fdfe18934a147ce76121d57b4f4eb4b5015c4f90a5ec8dda59da8786",
+      "bytes": 3035
+    },
+    {
+      "path": "docs/Loom_실시간장면_표현기준.md",
+      "sha256": "01e5473d14c42c136a8495b2ec3968679d87f5041f172338b37334c8139967f6",
+      "bytes": 8319
+    },
+    {
+      "path": "영상/src/킷/폰트.ts",
+      "sha256": "1869f95dbac81baf1a399f4d23545e6f69459aa18807f602ae01ab538325605b",
+      "bytes": 4902
+    },
+    {
+      "path": "영상/src/킷/폰트벌.json",
+      "sha256": "4eba12cc3d9042c4c2fd65d5165e7627d70021f92386729ec87c4b539dec9465",
+      "bytes": 2196
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/build.cjs",
+      "sha256": "c11375984683a9c80e8f15a1f667e2aa96abe8c82ea63fd09d397e24846b0f90",
+      "bytes": 25202
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/manifest.json",
+      "sha256": "308735ee82b9e5b10cca4bcf80d782bed082d618714ecaa8302d771fb99df127",
+      "bytes": 13867
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/assets/provenance.json",
+      "sha256": "9047c738db8de1ae7a1ed23baffe3e0d5f09f7dd3d326e6b0005995c1f53d982",
+      "bytes": 1720
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/caption-student-mn.txt",
+      "sha256": "dc83f0344d2a941a4fa14c3ed0c9e6a034ab3ba08483c91d2bbc07f861733138",
+      "bytes": 1147
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/caption-student-ko.txt",
+      "sha256": "ab234ba28370b57c817c06481147189fa1d35c73357f925972be87d6df48835a",
+      "bytes": 662
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB-영상/원고.cjs",
+      "sha256": "16eda2785f20dcace881cf9f8a475cee0dd829a8ab62250150128e2652fa5682",
+      "bytes": 3043
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB-영상/장면.js",
+      "sha256": "fe5abf7217cf931ebf09e785ff45d1b679cad451f98352e6f53ca29fb0014b50",
+      "bytes": 7737
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB-영상/만들기.cjs",
+      "sha256": "5ff05bf5bc45a03683f47dbe699352a8c8cfef7ba38057888ac917f0db6e1a4a",
+      "bytes": 14585
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB-영상/검증.cjs",
+      "sha256": "fb743ffb658dd81ab20b23dc2eb4ec58c8462021ace9159085c9e72c9c8c0c60",
+      "bytes": 5199
+    },
+    {
+      "path": "docs/디자인_토큰.json",
+      "sha256": "2e08bde734635f8a6e2d1629cf6a8fe81da20a1f3b52f84dac04eec3dce6aae1",
+      "bytes": 125922
+    },
+    {
+      "path": "영상/src/킷/색.ts",
+      "sha256": "b083db37eaa5d3424c3edb8f6fe9b7159266389dd42555da1fa735b92683f027",
+      "bytes": 7657
+    },
+    {
+      "path": "docs/브랜드_폰트/SUIT/SUIT-Variable.woff2",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "bytes": 624536
+    },
+    {
+      "path": "docs/브랜드_폰트/InterTight/InterTight-Medium.ttf",
+      "sha256": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1",
+      "bytes": 309140
+    },
+    {
+      "path": "docs/브랜드_폰트/InterTight/InterTight-Bold.ttf",
+      "sha256": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca",
+      "bytes": 310440
+    },
+    {
+      "path": "docs/브랜드_폰트/DM_Mono/DMMono-Medium.ttf",
+      "sha256": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
+      "bytes": 50360
+    },
+    {
+      "path": "docs/홍보물/마케팅실행_20260909/브랜드킷/배치명세.json",
+      "sha256": "df28bd6ca648457f99546804e41a1a3a145f0bb816baf4c3fb0069184de87ee2",
+      "bytes": 2927
+    },
+    {
+      "path": "docs/홍보물/마케팅실행_20260909/브랜드킷/배치용/SYNK-LAB-Ink.png",
+      "sha256": "7e014c4e4a121ac0ead8168a8b28fcd5c7f0d1353e751d97233b2ff09904d201",
+      "bytes": 3364367
+    },
+    {
+      "path": "docs/Loom_자산/구움/펠트_종이바탕.webp",
+      "sha256": "810e53b8ec11c0490c6ec4a33e0a7102f609c6ca1a5036448cbda6e86987cf18",
+      "bytes": 69386
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/assets/notebook.png",
+      "sha256": "977c4640935b1eee7ab39b1c912797e80d80791da320d940987d90028d98bcc9",
+      "bytes": 4157812
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB-영상/색표식_마감.cjs",
+      "sha256": "4273e60e0c24766bec83995d66a942a96f30ecd0c0ffdf6b98289067b216cc53",
+      "bytes": 4034
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB-영상/PNG_화소검증.cjs",
+      "sha256": "3ed1b233175fa9a26ab38db6d0c8c68296784cc6d6010d273a5374e9cc8cae27",
+      "bytes": 2028
+    }
+  ],
+  "keyframes": [
+    {
+      "frame": 30,
+      "time": 1,
+      "scene": "purpose",
+      "file": "qa/0030.png",
+      "mobile": "qa/0030-390.png",
+      "checks": [
+        {
+          "text": "01 / 07",
+          "x": 758,
+          "y": 318,
+          "width": 121.5198974609375,
+          "top": 296,
+          "bottom": 320,
+          "runs": [
+            {
+              "text": "01 / 07",
+              "family": "DM Mono",
+              "weight": 500,
+              "size": 28,
+              "width": 121.5198974609375,
+              "ascent": 22,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "text": "Хийж үзмээр зүйлээ",
+          "x": 88,
+          "y": 520,
+          "width": 667.1958770751953,
+          "top": 465,
+          "bottom": 535,
+          "runs": [
+            {
+              "text": "Хийж",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 71.76,
+              "width": 186.86892700195312,
+              "ascent": 55,
+              "descent": 0
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "үзмээр",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 71.76,
+              "width": 234.31463623046875,
+              "ascent": 40,
+              "descent": 15
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "зүйлээ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 71.76,
+              "width": 221.2801055908203,
+              "ascent": 55,
+              "descent": 15
+            }
+          ]
+        },
+        {
+          "text": "солонгосоор хэлж үзье.",
+          "x": 88,
+          "y": 615.22,
+          "width": 790.0335693359375,
+          "top": 575.22,
+          "bottom": 630.22,
+          "runs": [
+            {
+              "text": "солонгосоор",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 71.76,
+              "width": 426.5108947753906,
+              "ascent": 40,
+              "descent": 15
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хэлж",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 71.76,
+              "width": 172.39779663085938,
+              "ascent": 40,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "үзье",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 71.76,
+              "width": 146.7492218017578,
+              "ascent": 40,
+              "descent": 15
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 19.643447875976562,
+              "ascent": 11,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "가고 싶은 방향에 집중할 수 있는 환경을",
+          "x": 88,
+          "y": 880,
+          "width": 810.6622619628906,
+          "top": 834,
+          "bottom": 885,
+          "runs": [
+            {
+              "text": "가고",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 55,
+              "width": 93.94000244140625,
+              "ascent": 45,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 55,
+              "width": 9.857040405273438,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "싶은",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 55,
+              "width": 93.94000244140625,
+              "ascent": 45,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 55,
+              "width": 9.857040405273438,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "방향에",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 55,
+              "width": 140.91000366210938,
+              "ascent": 46,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 55,
+              "width": 9.857040405273438,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "집중할",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 55,
+              "width": 140.91000366210938,
+              "ascent": 46,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 55,
+              "width": 9.857040405273438,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "수",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 55,
+              "width": 46.970001220703125,
+              "ascent": 44,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 55,
+              "width": 9.857040405273438,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "있는",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 55,
+              "width": 93.94000244140625,
+              "ascent": 45,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 55,
+              "width": 9.857040405273438,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "환경을",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 55,
+              "width": 140.91000366210938,
+              "ascent": 45,
+              "descent": 5
+            }
+          ]
+        },
+        {
+          "text": "만듭니다.",
+          "x": 88,
+          "y": 955.9,
+          "width": 203.53782653808594,
+          "top": 910.9,
+          "bottom": 960.9,
+          "runs": [
+            {
+              "text": "만듭니다",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 55,
+              "width": 187.8800048828125,
+              "ascent": 45,
+              "descent": 5
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 55,
+              "width": 15.657821655273438,
+              "ascent": 9,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "Сургалтын жишээ",
+          "x": 88,
+          "y": 1460,
+          "width": 336.1646270751953,
+          "top": 1429,
+          "bottom": 1469,
+          "runs": [
+            {
+              "text": "Сургалтын",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 200.877685546875,
+              "ascent": 31,
+              "descent": 9
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 40,
+              "width": 8.10626220703125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "жишээ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 127.18067932128906,
+              "ascent": 23,
+              "descent": 1
+            }
+          ]
+        }
+      ],
+      "encoded": "qa/0030-encoded.png"
+    },
+    {
+      "frame": 240,
+      "time": 8,
+      "scene": "question",
+      "file": "qa/0240.png",
+      "mobile": "qa/0240-390.png",
+      "checks": [
+        {
+          "text": "02 / 07",
+          "x": 758,
+          "y": 318,
+          "width": 121.5198974609375,
+          "top": 296,
+          "bottom": 320,
+          "runs": [
+            {
+              "text": "02 / 07",
+              "family": "DM Mono",
+              "weight": 500,
+              "size": 28,
+              "width": 121.5198974609375,
+              "ascent": 22,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "text": "Сургалтын жишээ яриа",
+          "x": 88,
+          "y": 442,
+          "width": 431.9835510253906,
+          "top": 411,
+          "bottom": 451,
+          "runs": [
+            {
+              "text": "Сургалтын",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 200.877685546875,
+              "ascent": 31,
+              "descent": 9
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 40,
+              "width": 8.10626220703125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "жишээ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 127.18067932128906,
+              "ascent": 23,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 40,
+              "width": 8.10626220703125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "яриа",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 87.71266174316406,
+              "ascent": 23,
+              "descent": 9
+            }
+          ]
+        },
+        {
+          "text": "어떤 전공을",
+          "x": 116,
+          "y": 659,
+          "width": 364.8359375,
+          "top": 592,
+          "bottom": 667,
+          "runs": [
+            {
+              "text": "어떤",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 82,
+              "width": 140.05599975585938,
+              "ascent": 67,
+              "descent": 8
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 82,
+              "width": 14.695938110351562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "전공을",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 82,
+              "width": 210.08399963378906,
+              "ascent": 67,
+              "descent": 7
+            }
+          ]
+        },
+        {
+          "text": "배우고 싶어요?",
+          "x": 116,
+          "y": 777,
+          "width": 476.70635986328125,
+          "top": 710,
+          "bottom": 785,
+          "runs": [
+            {
+              "text": "배우고",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 82,
+              "width": 210.08399963378906,
+              "ascent": 67,
+              "descent": 7
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 82,
+              "width": 14.695938110351562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "싶어요",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 82,
+              "width": 210.08399963378906,
+              "ascent": 67,
+              "descent": 8
+            },
+            {
+              "text": "?",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 82,
+              "width": 41.84242248535156,
+              "ascent": 61,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "Ямар мэргэжлээр сурахыг",
+          "x": 88,
+          "y": 1092,
+          "width": 793.9315490722656,
+          "top": 1045,
+          "bottom": 1106,
+          "runs": [
+            {
+              "text": "Ямар",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 64.48,
+              "width": 158.62330627441406,
+              "ascent": 47,
+              "descent": 14
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 62,
+              "width": 11.111572265625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "мэргэжлээр",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 64.48,
+              "width": 364.2867431640625,
+              "ascent": 36,
+              "descent": 14
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 62,
+              "width": 11.111572265625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "сурахыг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 64.48,
+              "width": 248.79835510253906,
+              "ascent": 36,
+              "descent": 14
+            }
+          ]
+        },
+        {
+          "text": "хүсэж байна вэ?",
+          "x": 88,
+          "y": 1177.56,
+          "width": 478.34754943847656,
+          "top": 1128.56,
+          "bottom": 1191.56,
+          "runs": [
+            {
+              "text": "хүсэж",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 64.48,
+              "width": 182.9934844970703,
+              "ascent": 36,
+              "descent": 14
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 62,
+              "width": 11.111572265625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "байна",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 64.48,
+              "width": 175.43722534179688,
+              "ascent": 49,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 62,
+              "width": 11.111572265625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "вэ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 64.48,
+              "width": 66.05673217773438,
+              "ascent": 36,
+              "descent": 1
+            },
+            {
+              "text": "?",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 62,
+              "width": 31.636962890625,
+              "ascent": 46,
+              "descent": 1
+            }
+          ]
+        }
+      ],
+      "encoded": "qa/0240-encoded.png"
+    },
+    {
+      "frame": 510,
+      "time": 17,
+      "scene": "model",
+      "file": "qa/0510.png",
+      "mobile": "qa/0510-390.png",
+      "checks": [
+        {
+          "text": "03 / 07",
+          "x": 758,
+          "y": 318,
+          "width": 121.5198974609375,
+          "top": 296,
+          "bottom": 320,
+          "runs": [
+            {
+              "text": "03 / 07",
+              "family": "DM Mono",
+              "weight": 500,
+              "size": 28,
+              "width": 121.5198974609375,
+              "ascent": 22,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "text": "Дараа нь хийж үзмээр",
+          "x": 88,
+          "y": 465,
+          "width": 648.6940460205078,
+          "top": 417,
+          "bottom": 478,
+          "runs": [
+            {
+              "text": "Дараа",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 184.19281005859375,
+              "ascent": 47,
+              "descent": 13
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "нь",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 68.27481079101562,
+              "ascent": 35,
+              "descent": 0
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хийж",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 156.28167724609375,
+              "ascent": 48,
+              "descent": 0
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "үзмээр",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 207.14767456054688,
+              "ascent": 36,
+              "descent": 13
+            }
+          ]
+        },
+        {
+          "text": "байгаа зүйлээ хэлээрэй.",
+          "x": 88,
+          "y": 549.18,
+          "width": 699.0560913085938,
+          "top": 501.17999999999995,
+          "bottom": 562.18,
+          "runs": [
+            {
+              "text": "байгаа",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 196.80149841308594,
+              "ascent": 48,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "зүйлээ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 195.6243896484375,
+              "ascent": 48,
+              "descent": 13
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хэлээрэй",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 267.3995361328125,
+              "ascent": 48,
+              "descent": 13
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 17.365951538085938,
+              "ascent": 10,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "아직 정하지 않았어요.",
+          "x": 116,
+          "y": 785,
+          "width": 574.7097473144531,
+          "top": 728,
+          "bottom": 791,
+          "runs": [
+            {
+              "text": "아직",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "정하지",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "않았어요",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 235.70404052734375,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 19.643447875976562,
+              "ascent": 11,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "먼저",
+          "x": 116,
+          "y": 904,
+          "width": 117.85202026367188,
+          "top": 847,
+          "bottom": 910,
+          "runs": [
+            {
+              "text": "먼저",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 57,
+              "descent": 6
+            }
+          ]
+        },
+        {
+          "text": "게임을 만들어",
+          "x": 283,
+          "y": 904,
+          "width": 365.9221649169922,
+          "top": 847,
+          "bottom": 910,
+          "runs": [
+            {
+              "text": "게임을",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "만들어",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            }
+          ]
+        },
+        {
+          "text": "보고 싶어요.",
+          "x": 116,
+          "y": 1014,
+          "width": 326.6396026611328,
+          "top": 957,
+          "bottom": 1020,
+          "runs": [
+            {
+              "text": "보고",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 53,
+              "descent": -1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "싶어요",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 19.643447875976562,
+              "ascent": 11,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "Одоохондоо шийдээгүй байна.",
+          "x": 88,
+          "y": 1300,
+          "width": 734.2329864501953,
+          "top": 1259,
+          "bottom": 1311,
+          "runs": [
+            {
+              "text": "Одоохондоо",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 54.08,
+              "width": 299.2198486328125,
+              "ascent": 40,
+              "descent": 9
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 52,
+              "width": 10.538131713867188,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "шийдээгүй",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 54.08,
+              "width": 259.97906494140625,
+              "ascent": 41,
+              "descent": 11
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 52,
+              "width": 10.538131713867188,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "байна",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 54.08,
+              "width": 141.489990234375,
+              "ascent": 41,
+              "descent": 1
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 52,
+              "width": 12.467819213867188,
+              "ascent": 7,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "Эхлээд тоглоом хийж үзмээр",
+          "x": 88,
+          "y": 1435,
+          "width": 698.1589660644531,
+          "top": 1394,
+          "bottom": 1446,
+          "runs": [
+            {
+              "text": "Эхлээд",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 54.08,
+              "width": 172.20152282714844,
+              "ascent": 40,
+              "descent": 9
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 52,
+              "width": 10.538131713867188,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "тоглоом",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 54.08,
+              "width": 197.79025268554688,
+              "ascent": 30,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 52,
+              "width": 10.538131713867188,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хийж",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 54.08,
+              "width": 127.09751892089844,
+              "ascent": 41,
+              "descent": 0
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 52,
+              "width": 10.538131713867188,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "үзмээр",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 54.08,
+              "width": 169.4552764892578,
+              "ascent": 30,
+              "descent": 11
+            }
+          ]
+        },
+        {
+          "text": "байна.",
+          "x": 88,
+          "y": 1506.76,
+          "width": 153.9578094482422,
+          "top": 1465.76,
+          "bottom": 1507.76,
+          "runs": [
+            {
+              "text": "байна",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 54.08,
+              "width": 141.489990234375,
+              "ascent": 41,
+              "descent": 1
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 52,
+              "width": 12.467819213867188,
+              "ascent": 7,
+              "descent": 1
+            }
+          ]
+        }
+      ],
+      "encoded": "qa/0510-encoded.png"
+    },
+    {
+      "frame": 750,
+      "time": 25,
+      "scene": "change",
+      "file": "qa/0750.png",
+      "mobile": "qa/0750-390.png",
+      "checks": [
+        {
+          "text": "04 / 07",
+          "x": 758,
+          "y": 318,
+          "width": 121.5198974609375,
+          "top": 296,
+          "bottom": 320,
+          "runs": [
+            {
+              "text": "04 / 07",
+              "family": "DM Mono",
+              "weight": 500,
+              "size": 28,
+              "width": 121.5198974609375,
+              "ascent": 22,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "text": "“게임을 만들어” гэдэг хэсгийг",
+          "x": 88,
+          "y": 465,
+          "width": 787.5091552734375,
+          "top": 415,
+          "bottom": 476,
+          "runs": [
+            {
+              "text": "“",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 32.76487731933594,
+              "ascent": 45,
+              "descent": -25
+            },
+            {
+              "text": "게임을",
+              "family": "SUIT Variable",
+              "weight": 700,
+              "size": 61,
+              "width": 156.2820281982422,
+              "ascent": 50,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "만들어",
+              "family": "SUIT Variable",
+              "weight": 700,
+              "size": 61,
+              "width": 156.2820281982422,
+              "ascent": 50,
+              "descent": 5
+            },
+            {
+              "text": "” ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 43.161102294921875,
+              "ascent": 45,
+              "descent": -25
+            },
+            {
+              "text": "гэдэг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 155.13677978515625,
+              "ascent": 36,
+              "descent": 11
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хэсгийг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 222.0176239013672,
+              "ascent": 48,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "бүхэлд нь солино.",
+          "x": 88,
+          "y": 549.18,
+          "width": 523.7523498535156,
+          "top": 501.17999999999995,
+          "bottom": 562.18,
+          "runs": [
+            {
+              "text": "бүхэлд",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 206.0325164794922,
+              "ascent": 48,
+              "descent": 13
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "нь",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 68.27481079101562,
+              "ascent": 35,
+              "descent": 0
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "солино",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 210.21435546875,
+              "ascent": 35,
+              "descent": 1
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 17.365951538085938,
+              "ascent": 10,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "아직 정하지 않았어요.",
+          "x": 116,
+          "y": 785,
+          "width": 574.7097473144531,
+          "top": 728,
+          "bottom": 791,
+          "runs": [
+            {
+              "text": "아직",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "정하지",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "않았어요",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 235.70404052734375,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 19.643447875976562,
+              "ascent": 11,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "먼저",
+          "x": 116,
+          "y": 904,
+          "width": 117.85202026367188,
+          "top": 847,
+          "bottom": 910,
+          "runs": [
+            {
+              "text": "먼저",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 57,
+              "descent": 6
+            }
+          ]
+        },
+        {
+          "text": "게임을 만들어",
+          "x": 283,
+          "y": 904,
+          "width": 365.9221649169922,
+          "top": 847,
+          "bottom": 910,
+          "runs": [
+            {
+              "text": "게임을",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "만들어",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            }
+          ]
+        },
+        {
+          "text": "보고 싶어요.",
+          "x": 116,
+          "y": 1014,
+          "width": 326.6396026611328,
+          "top": 957,
+          "bottom": 1020,
+          "runs": [
+            {
+              "text": "보고",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 53,
+              "descent": -1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "싶어요",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 19.643447875976562,
+              "ascent": 11,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "Эхлээд тоглоом хийж үзмээр",
+          "x": 88,
+          "y": 1310,
+          "width": 794.3950958251953,
+          "top": 1265,
+          "bottom": 1322,
+          "runs": [
+            {
+              "text": "Эхлээд",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 59.28,
+              "width": 198.1665496826172,
+              "ascent": 44,
+              "descent": 10
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 57,
+              "width": 10.215469360351562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "тоглоом",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 59.28,
+              "width": 225.98416137695312,
+              "ascent": 33,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 57,
+              "width": 10.215469360351562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хийж",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 59.28,
+              "width": 146.03372192382812,
+              "ascent": 45,
+              "descent": 0
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 57,
+              "width": 10.215469360351562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "үзмээр",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 59.28,
+              "width": 193.5642547607422,
+              "ascent": 33,
+              "descent": 12
+            }
+          ]
+        },
+        {
+          "text": "байна.",
+          "x": 88,
+          "y": 1388.66,
+          "width": 177.51625061035156,
+          "top": 1343.66,
+          "bottom": 1389.66,
+          "runs": [
+            {
+              "text": "байна",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 59.28,
+              "width": 161.2890625,
+              "ascent": 45,
+              "descent": 1
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 57,
+              "width": 16.227188110351562,
+              "ascent": 10,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "Сургалтын жишээ",
+          "x": 88,
+          "y": 1480,
+          "width": 336.1646270751953,
+          "top": 1449,
+          "bottom": 1489,
+          "runs": [
+            {
+              "text": "Сургалтын",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 200.877685546875,
+              "ascent": 31,
+              "descent": 9
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 40,
+              "width": 8.10626220703125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "жишээ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 127.18067932128906,
+              "ascent": 23,
+              "descent": 1
+            }
+          ]
+        }
+      ],
+      "encoded": "qa/0750-encoded.png"
+    },
+    {
+      "frame": 855,
+      "time": 28.5,
+      "scene": "change",
+      "file": "qa/0855.png",
+      "mobile": "qa/0855-390.png",
+      "checks": [
+        {
+          "text": "04 / 07",
+          "x": 758,
+          "y": 318,
+          "width": 121.5198974609375,
+          "top": 296,
+          "bottom": 320,
+          "runs": [
+            {
+              "text": "04 / 07",
+              "family": "DM Mono",
+              "weight": 500,
+              "size": 28,
+              "width": 121.5198974609375,
+              "ascent": 22,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "text": "“게임을 만들어” гэдэг хэсгийг",
+          "x": 88,
+          "y": 465,
+          "width": 787.5091552734375,
+          "top": 415,
+          "bottom": 476,
+          "runs": [
+            {
+              "text": "“",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 32.76487731933594,
+              "ascent": 45,
+              "descent": -25
+            },
+            {
+              "text": "게임을",
+              "family": "SUIT Variable",
+              "weight": 700,
+              "size": 61,
+              "width": 156.2820281982422,
+              "ascent": 50,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "만들어",
+              "family": "SUIT Variable",
+              "weight": 700,
+              "size": 61,
+              "width": 156.2820281982422,
+              "ascent": 50,
+              "descent": 5
+            },
+            {
+              "text": "” ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 43.161102294921875,
+              "ascent": 45,
+              "descent": -25
+            },
+            {
+              "text": "гэдэг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 155.13677978515625,
+              "ascent": 36,
+              "descent": 11
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хэсгийг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 222.0176239013672,
+              "ascent": 48,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "бүхэлд нь солино.",
+          "x": 88,
+          "y": 549.18,
+          "width": 523.7523498535156,
+          "top": 501.17999999999995,
+          "bottom": 562.18,
+          "runs": [
+            {
+              "text": "бүхэлд",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 206.0325164794922,
+              "ascent": 48,
+              "descent": 13
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "нь",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 68.27481079101562,
+              "ascent": 35,
+              "descent": 0
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "солино",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 210.21435546875,
+              "ascent": 35,
+              "descent": 1
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 17.365951538085938,
+              "ascent": 10,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "아직 정하지 않았어요.",
+          "x": 116,
+          "y": 785,
+          "width": 574.7097473144531,
+          "top": 728,
+          "bottom": 791,
+          "runs": [
+            {
+              "text": "아직",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "정하지",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "않았어요",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 235.70404052734375,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 19.643447875976562,
+              "ascent": 11,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "먼저",
+          "x": 116,
+          "y": 904,
+          "width": 117.85202026367188,
+          "top": 847,
+          "bottom": 910,
+          "runs": [
+            {
+              "text": "먼저",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 57,
+              "descent": 6
+            }
+          ]
+        },
+        {
+          "text": "영상을 만들어",
+          "x": 283,
+          "y": 904,
+          "width": 365.9221649169922,
+          "top": 847,
+          "bottom": 910,
+          "runs": [
+            {
+              "text": "영상을",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "만들어",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            }
+          ]
+        },
+        {
+          "text": "보고 싶어요.",
+          "x": 116,
+          "y": 1014,
+          "width": 326.6396026611328,
+          "top": 957,
+          "bottom": 1020,
+          "runs": [
+            {
+              "text": "보고",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 53,
+              "descent": -1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "싶어요",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 19.643447875976562,
+              "ascent": 11,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "Видео хийж үзмээр байна.",
+          "x": 88,
+          "y": 1310,
+          "width": 719.0068817138672,
+          "top": 1265,
+          "bottom": 1322,
+          "runs": [
+            {
+              "text": "Видео",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 59.28,
+              "width": 171.24624633789062,
+              "ascent": 44,
+              "descent": 10
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 57,
+              "width": 10.215469360351562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хийж",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 59.28,
+              "width": 146.03372192382812,
+              "ascent": 45,
+              "descent": 0
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 57,
+              "width": 10.215469360351562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "үзмээр",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 59.28,
+              "width": 193.5642547607422,
+              "ascent": 33,
+              "descent": 12
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 57,
+              "width": 10.215469360351562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "байна",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 59.28,
+              "width": 161.2890625,
+              "ascent": 45,
+              "descent": 1
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 57,
+              "width": 16.227188110351562,
+              "ascent": 10,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "Сургалтын жишээ",
+          "x": 88,
+          "y": 1480,
+          "width": 336.1646270751953,
+          "top": 1449,
+          "bottom": 1489,
+          "runs": [
+            {
+              "text": "Сургалтын",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 200.877685546875,
+              "ascent": 31,
+              "descent": 9
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 40,
+              "width": 8.10626220703125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "жишээ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 127.18067932128906,
+              "ascent": 23,
+              "descent": 1
+            }
+          ]
+        }
+      ],
+      "encoded": "qa/0855-encoded.png"
+    },
+    {
+      "frame": 960,
+      "time": 32,
+      "scene": "change",
+      "file": "qa/0960.png",
+      "mobile": "qa/0960-390.png",
+      "checks": [
+        {
+          "text": "04 / 07",
+          "x": 758,
+          "y": 318,
+          "width": 121.5198974609375,
+          "top": 296,
+          "bottom": 320,
+          "runs": [
+            {
+              "text": "04 / 07",
+              "family": "DM Mono",
+              "weight": 500,
+              "size": 28,
+              "width": 121.5198974609375,
+              "ascent": 22,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "text": "“게임을 만들어” гэдэг хэсгийг",
+          "x": 88,
+          "y": 465,
+          "width": 787.5091552734375,
+          "top": 415,
+          "bottom": 476,
+          "runs": [
+            {
+              "text": "“",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 32.76487731933594,
+              "ascent": 45,
+              "descent": -25
+            },
+            {
+              "text": "게임을",
+              "family": "SUIT Variable",
+              "weight": 700,
+              "size": 61,
+              "width": 156.2820281982422,
+              "ascent": 50,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "만들어",
+              "family": "SUIT Variable",
+              "weight": 700,
+              "size": 61,
+              "width": 156.2820281982422,
+              "ascent": 50,
+              "descent": 5
+            },
+            {
+              "text": "” ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 43.161102294921875,
+              "ascent": 45,
+              "descent": -25
+            },
+            {
+              "text": "гэдэг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 155.13677978515625,
+              "ascent": 36,
+              "descent": 11
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хэсгийг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 222.0176239013672,
+              "ascent": 48,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "бүхэлд нь солино.",
+          "x": 88,
+          "y": 549.18,
+          "width": 523.7523498535156,
+          "top": 501.17999999999995,
+          "bottom": 562.18,
+          "runs": [
+            {
+              "text": "бүхэлд",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 206.0325164794922,
+              "ascent": 48,
+              "descent": 13
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "нь",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 68.27481079101562,
+              "ascent": 35,
+              "descent": 0
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "солино",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 210.21435546875,
+              "ascent": 35,
+              "descent": 1
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 17.365951538085938,
+              "ascent": 10,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "아직 정하지 않았어요.",
+          "x": 116,
+          "y": 785,
+          "width": 574.7097473144531,
+          "top": 728,
+          "bottom": 791,
+          "runs": [
+            {
+              "text": "아직",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "정하지",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "않았어요",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 235.70404052734375,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 19.643447875976562,
+              "ascent": 11,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "먼저",
+          "x": 116,
+          "y": 904,
+          "width": 117.85202026367188,
+          "top": 847,
+          "bottom": 910,
+          "runs": [
+            {
+              "text": "먼저",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 57,
+              "descent": 6
+            }
+          ]
+        },
+        {
+          "text": "그림을 그려",
+          "x": 283,
+          "y": 904,
+          "width": 306.99615478515625,
+          "top": 847,
+          "bottom": 910,
+          "runs": [
+            {
+              "text": "그림을",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "그려",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 57,
+              "descent": 6
+            }
+          ]
+        },
+        {
+          "text": "보고 싶어요.",
+          "x": 116,
+          "y": 1014,
+          "width": 326.6396026611328,
+          "top": 957,
+          "bottom": 1020,
+          "runs": [
+            {
+              "text": "보고",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 53,
+              "descent": -1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "싶어요",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 19.643447875976562,
+              "ascent": 11,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "Зураг зурж үзмээр байна.",
+          "x": 88,
+          "y": 1310,
+          "width": 701.2055358886719,
+          "top": 1265,
+          "bottom": 1323,
+          "runs": [
+            {
+              "text": "Зураг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 59.28,
+              "width": 157.78668212890625,
+              "ascent": 44,
+              "descent": 13
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 57,
+              "width": 10.215469360351562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "зурж",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 59.28,
+              "width": 141.6919403076172,
+              "ascent": 33,
+              "descent": 13
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 57,
+              "width": 10.215469360351562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "үзмээр",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 59.28,
+              "width": 193.5642547607422,
+              "ascent": 33,
+              "descent": 12
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 57,
+              "width": 10.215469360351562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "байна",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 59.28,
+              "width": 161.2890625,
+              "ascent": 45,
+              "descent": 1
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 57,
+              "width": 16.227188110351562,
+              "ascent": 10,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "Сургалтын жишээ",
+          "x": 88,
+          "y": 1480,
+          "width": 336.1646270751953,
+          "top": 1449,
+          "bottom": 1489,
+          "runs": [
+            {
+              "text": "Сургалтын",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 200.877685546875,
+              "ascent": 31,
+              "descent": 9
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 40,
+              "width": 8.10626220703125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "жишээ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 127.18067932128906,
+              "ascent": 23,
+              "descent": 1
+            }
+          ]
+        }
+      ],
+      "encoded": "qa/0960-encoded.png"
+    },
+    {
+      "frame": 1140,
+      "time": 38,
+      "scene": "practice",
+      "file": "qa/1140.png",
+      "mobile": "qa/1140-390.png",
+      "checks": [
+        {
+          "text": "05 / 07",
+          "x": 758,
+          "y": 318,
+          "width": 121.5198974609375,
+          "top": 296,
+          "bottom": 320,
+          "runs": [
+            {
+              "text": "05 / 07",
+              "family": "DM Mono",
+              "weight": 500,
+              "size": 28,
+              "width": 121.5198974609375,
+              "ascent": 22,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "text": "Өөрийн өгүүлбэрээ хэлж",
+          "x": 88,
+          "y": 465,
+          "width": 722.3623809814453,
+          "top": 417,
+          "bottom": 478,
+          "runs": [
+            {
+              "text": "Өөрийн",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 223.78207397460938,
+              "ascent": 48,
+              "descent": 13
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "өгүүлбэрээ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 324.30596923828125,
+              "ascent": 48,
+              "descent": 13
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хэлж",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 152.4096221923828,
+              "ascent": 36,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "үзье.",
+          "x": 88,
+          "y": 549.18,
+          "width": 147.10072326660156,
+          "top": 514.18,
+          "bottom": 562.18,
+          "runs": [
+            {
+              "text": "үзье",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 129.73477172851562,
+              "ascent": 35,
+              "descent": 13
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 17.365951538085938,
+              "ascent": 10,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "아직 정하지 않았어요.",
+          "x": 116,
+          "y": 718,
+          "width": 549.7222595214844,
+          "top": 664,
+          "bottom": 724,
+          "runs": [
+            {
+              "text": "아직",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 66,
+              "width": 112.72799682617188,
+              "ascent": 54,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 66,
+              "width": 11.828445434570312,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "정하지",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 66,
+              "width": 169.0919952392578,
+              "ascent": 54,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 66,
+              "width": 11.828445434570312,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "않았어요",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 66,
+              "width": 225.45599365234375,
+              "ascent": 54,
+              "descent": 6
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 66,
+              "width": 18.789382934570312,
+              "ascent": 11,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "먼저 ______ 보고 싶어요.",
+          "x": 116,
+          "y": 836,
+          "width": 607.3231201171875,
+          "top": 783,
+          "bottom": 844,
+          "runs": [
+            {
+              "text": "먼저",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 65,
+              "width": 111.02001953125,
+              "ascent": 53,
+              "descent": 6
+            },
+            {
+              "text": " ______ ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 65,
+              "width": 188.59912109375,
+              "ascent": 0,
+              "descent": 8
+            },
+            {
+              "text": "보고",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 65,
+              "width": 111.02001953125,
+              "ascent": 50,
+              "descent": -1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 65,
+              "width": 11.64923095703125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "싶어요",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 65,
+              "width": 166.530029296875,
+              "ascent": 53,
+              "descent": 6
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 65,
+              "width": 18.50469970703125,
+              "ascent": 11,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "게임을 만들어",
+          "x": 88,
+          "y": 1110,
+          "width": 323.4964141845703,
+          "top": 1060,
+          "bottom": 1116,
+          "runs": [
+            {
+              "text": "게임을",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 61,
+              "width": 156.2820281982422,
+              "ascent": 50,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "만들어",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 61,
+              "width": 156.2820281982422,
+              "ascent": 50,
+              "descent": 6
+            }
+          ]
+        },
+        {
+          "text": "영상을 만들어",
+          "x": 88,
+          "y": 1193,
+          "width": 323.4964141845703,
+          "top": 1143,
+          "bottom": 1199,
+          "runs": [
+            {
+              "text": "영상을",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 61,
+              "width": 156.2820281982422,
+              "ascent": 50,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "만들어",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 61,
+              "width": 156.2820281982422,
+              "ascent": 50,
+              "descent": 6
+            }
+          ]
+        },
+        {
+          "text": "그림을 그려",
+          "x": 88,
+          "y": 1276,
+          "width": 271.40240478515625,
+          "top": 1226,
+          "bottom": 1282,
+          "runs": [
+            {
+              "text": "그림을",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 61,
+              "width": 156.2820281982422,
+              "ascent": 50,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "그려",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 61,
+              "width": 104.18801879882812,
+              "ascent": 50,
+              "descent": 6
+            }
+          ]
+        },
+        {
+          "text": "Гурван хэсгээс нэгийг хоосон зайд",
+          "x": 88,
+          "y": 1400,
+          "width": 739.3590850830078,
+          "top": 1364,
+          "bottom": 1410,
+          "runs": [
+            {
+              "text": "Гурван",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 46.800000000000004,
+              "width": 148.56350708007812,
+              "ascent": 34,
+              "descent": 10
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45,
+              "width": 8.064849853515625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хэсгээс",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 46.800000000000004,
+              "width": 164.03492736816406,
+              "ascent": 26,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45,
+              "width": 8.064849853515625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "нэгийг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 46.800000000000004,
+              "width": 139.76568603515625,
+              "ascent": 36,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45,
+              "width": 8.064849853515625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хоосон",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 46.800000000000004,
+              "width": 152.631103515625,
+              "ascent": 26,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45,
+              "width": 8.064849853515625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "зайд",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 46.800000000000004,
+              "width": 102.10446166992188,
+              "ascent": 36,
+              "descent": 8
+            }
+          ]
+        },
+        {
+          "text": "оруулаад, бүтнээр нь хэлээрэй.",
+          "x": 88,
+          "y": 1462.1,
+          "width": 675.2813568115234,
+          "top": 1426.1,
+          "bottom": 1472.1,
+          "runs": [
+            {
+              "text": "оруулаад",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 46.800000000000004,
+              "width": 204.96299743652344,
+              "ascent": 26,
+              "descent": 10
+            },
+            {
+              "text": ", ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45,
+              "width": 21.57891845703125,
+              "ascent": 5,
+              "descent": 9
+            },
+            {
+              "text": "бүтнээр",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 46.800000000000004,
+              "width": 172.1700897216797,
+              "ascent": 35,
+              "descent": 10
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45,
+              "width": 8.064849853515625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "нь",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 46.800000000000004,
+              "width": 50.36668395996094,
+              "ascent": 26,
+              "descent": 0
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45,
+              "width": 8.064849853515625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хэлээрэй",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 46.800000000000004,
+              "width": 197.26202392578125,
+              "ascent": 36,
+              "descent": 10
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45,
+              "width": 12.810943603515625,
+              "ascent": 8,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "Ганцаараа чангаар хэлж болно.",
+          "x": 88,
+          "y": 1580,
+          "width": 578.5690002441406,
+          "top": 1548,
+          "bottom": 1589,
+          "runs": [
+            {
+              "text": "Ганцаараа",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 192.79331970214844,
+              "ascent": 31,
+              "descent": 9
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 40,
+              "width": 8.10626220703125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "чангаар",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 145.50418090820312,
+              "ascent": 23,
+              "descent": 9
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 40,
+              "width": 8.10626220703125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хэлж",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 95.16734313964844,
+              "ascent": 23,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 40,
+              "width": 8.10626220703125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "болно",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 111.19473266601562,
+              "ascent": 32,
+              "descent": 1
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 40,
+              "width": 9.59063720703125,
+              "ascent": 6,
+              "descent": 1
+            }
+          ]
+        }
+      ],
+      "encoded": "qa/1140-encoded.png"
+    },
+    {
+      "frame": 1380,
+      "time": 46,
+      "scene": "practice",
+      "file": "qa/1380.png",
+      "mobile": "qa/1380-390.png",
+      "checks": [
+        {
+          "text": "05 / 07",
+          "x": 758,
+          "y": 318,
+          "width": 121.5198974609375,
+          "top": 296,
+          "bottom": 320,
+          "runs": [
+            {
+              "text": "05 / 07",
+              "family": "DM Mono",
+              "weight": 500,
+              "size": 28,
+              "width": 121.5198974609375,
+              "ascent": 22,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "text": "Өөрийн өгүүлбэрээ хэлж",
+          "x": 88,
+          "y": 465,
+          "width": 722.3623809814453,
+          "top": 417,
+          "bottom": 478,
+          "runs": [
+            {
+              "text": "Өөрийн",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 223.78207397460938,
+              "ascent": 48,
+              "descent": 13
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "өгүүлбэрээ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 324.30596923828125,
+              "ascent": 48,
+              "descent": 13
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хэлж",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 152.4096221923828,
+              "ascent": 36,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "үзье.",
+          "x": 88,
+          "y": 549.18,
+          "width": 147.10072326660156,
+          "top": 514.18,
+          "bottom": 562.18,
+          "runs": [
+            {
+              "text": "үзье",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 129.73477172851562,
+              "ascent": 35,
+              "descent": 13
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 17.365951538085938,
+              "ascent": 10,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "아직 정하지 않았어요.",
+          "x": 116,
+          "y": 718,
+          "width": 549.7222595214844,
+          "top": 664,
+          "bottom": 724,
+          "runs": [
+            {
+              "text": "아직",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 66,
+              "width": 112.72799682617188,
+              "ascent": 54,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 66,
+              "width": 11.828445434570312,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "정하지",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 66,
+              "width": 169.0919952392578,
+              "ascent": 54,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 66,
+              "width": 11.828445434570312,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "않았어요",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 66,
+              "width": 225.45599365234375,
+              "ascent": 54,
+              "descent": 6
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 66,
+              "width": 18.789382934570312,
+              "ascent": 11,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "먼저 ______ 보고 싶어요.",
+          "x": 116,
+          "y": 836,
+          "width": 607.3231201171875,
+          "top": 783,
+          "bottom": 844,
+          "runs": [
+            {
+              "text": "먼저",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 65,
+              "width": 111.02001953125,
+              "ascent": 53,
+              "descent": 6
+            },
+            {
+              "text": " ______ ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 65,
+              "width": 188.59912109375,
+              "ascent": 0,
+              "descent": 8
+            },
+            {
+              "text": "보고",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 65,
+              "width": 111.02001953125,
+              "ascent": 50,
+              "descent": -1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 65,
+              "width": 11.64923095703125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "싶어요",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 65,
+              "width": 166.530029296875,
+              "ascent": 53,
+              "descent": 6
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 65,
+              "width": 18.50469970703125,
+              "ascent": 11,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "게임을 만들어",
+          "x": 88,
+          "y": 1110,
+          "width": 323.4964141845703,
+          "top": 1060,
+          "bottom": 1116,
+          "runs": [
+            {
+              "text": "게임을",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 61,
+              "width": 156.2820281982422,
+              "ascent": 50,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "만들어",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 61,
+              "width": 156.2820281982422,
+              "ascent": 50,
+              "descent": 6
+            }
+          ]
+        },
+        {
+          "text": "영상을 만들어",
+          "x": 88,
+          "y": 1193,
+          "width": 323.4964141845703,
+          "top": 1143,
+          "bottom": 1199,
+          "runs": [
+            {
+              "text": "영상을",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 61,
+              "width": 156.2820281982422,
+              "ascent": 50,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "만들어",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 61,
+              "width": 156.2820281982422,
+              "ascent": 50,
+              "descent": 6
+            }
+          ]
+        },
+        {
+          "text": "그림을 그려",
+          "x": 88,
+          "y": 1276,
+          "width": 271.40240478515625,
+          "top": 1226,
+          "bottom": 1282,
+          "runs": [
+            {
+              "text": "그림을",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 61,
+              "width": 156.2820281982422,
+              "ascent": 50,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "그려",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 61,
+              "width": 104.18801879882812,
+              "ascent": 50,
+              "descent": 6
+            }
+          ]
+        },
+        {
+          "text": "Гурван хэсгээс нэгийг хоосон зайд",
+          "x": 88,
+          "y": 1400,
+          "width": 739.3590850830078,
+          "top": 1364,
+          "bottom": 1410,
+          "runs": [
+            {
+              "text": "Гурван",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 46.800000000000004,
+              "width": 148.56350708007812,
+              "ascent": 34,
+              "descent": 10
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45,
+              "width": 8.064849853515625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хэсгээс",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 46.800000000000004,
+              "width": 164.03492736816406,
+              "ascent": 26,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45,
+              "width": 8.064849853515625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "нэгийг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 46.800000000000004,
+              "width": 139.76568603515625,
+              "ascent": 36,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45,
+              "width": 8.064849853515625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хоосон",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 46.800000000000004,
+              "width": 152.631103515625,
+              "ascent": 26,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45,
+              "width": 8.064849853515625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "зайд",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 46.800000000000004,
+              "width": 102.10446166992188,
+              "ascent": 36,
+              "descent": 8
+            }
+          ]
+        },
+        {
+          "text": "оруулаад, бүтнээр нь хэлээрэй.",
+          "x": 88,
+          "y": 1462.1,
+          "width": 675.2813568115234,
+          "top": 1426.1,
+          "bottom": 1472.1,
+          "runs": [
+            {
+              "text": "оруулаад",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 46.800000000000004,
+              "width": 204.96299743652344,
+              "ascent": 26,
+              "descent": 10
+            },
+            {
+              "text": ", ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45,
+              "width": 21.57891845703125,
+              "ascent": 5,
+              "descent": 9
+            },
+            {
+              "text": "бүтнээр",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 46.800000000000004,
+              "width": 172.1700897216797,
+              "ascent": 35,
+              "descent": 10
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45,
+              "width": 8.064849853515625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "нь",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 46.800000000000004,
+              "width": 50.36668395996094,
+              "ascent": 26,
+              "descent": 0
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45,
+              "width": 8.064849853515625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хэлээрэй",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 46.800000000000004,
+              "width": 197.26202392578125,
+              "ascent": 36,
+              "descent": 10
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45,
+              "width": 12.810943603515625,
+              "ascent": 8,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "Ганцаараа чангаар хэлж болно.",
+          "x": 88,
+          "y": 1580,
+          "width": 578.5690002441406,
+          "top": 1548,
+          "bottom": 1589,
+          "runs": [
+            {
+              "text": "Ганцаараа",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 192.79331970214844,
+              "ascent": 31,
+              "descent": 9
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 40,
+              "width": 8.10626220703125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "чангаар",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 145.50418090820312,
+              "ascent": 23,
+              "descent": 9
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 40,
+              "width": 8.10626220703125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хэлж",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 95.16734313964844,
+              "ascent": 23,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 40,
+              "width": 8.10626220703125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "болно",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 111.19473266601562,
+              "ascent": 32,
+              "descent": 1
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 40,
+              "width": 9.59063720703125,
+              "ascent": 6,
+              "descent": 1
+            }
+          ]
+        }
+      ],
+      "encoded": "qa/1380-encoded.png"
+    },
+    {
+      "frame": 1500,
+      "time": 50,
+      "scene": "examples",
+      "file": "qa/1500.png",
+      "mobile": "qa/1500-390.png",
+      "checks": [
+        {
+          "text": "06 / 07",
+          "x": 758,
+          "y": 318,
+          "width": 121.5198974609375,
+          "top": 296,
+          "bottom": 320,
+          "runs": [
+            {
+              "text": "06 / 07",
+              "family": "DM Mono",
+              "weight": 500,
+              "size": 28,
+              "width": 121.5198974609375,
+              "ascent": 22,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "text": "Сургалтын жишээ",
+          "x": 88,
+          "y": 442,
+          "width": 336.1646270751953,
+          "top": 411,
+          "bottom": 451,
+          "runs": [
+            {
+              "text": "Сургалтын",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 200.877685546875,
+              "ascent": 31,
+              "descent": 9
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 40,
+              "width": 8.10626220703125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "жишээ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 127.18067932128906,
+              "ascent": 23,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "아직 정하지 않았어요.",
+          "x": 116,
+          "y": 719,
+          "width": 574.7097473144531,
+          "top": 662,
+          "bottom": 725,
+          "runs": [
+            {
+              "text": "아직",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "정하지",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "않았어요",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 235.70404052734375,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 19.643447875976562,
+              "ascent": 11,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "먼저",
+          "x": 116,
+          "y": 838,
+          "width": 117.85202026367188,
+          "top": 781,
+          "bottom": 844,
+          "runs": [
+            {
+              "text": "먼저",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 57,
+              "descent": 6
+            }
+          ]
+        },
+        {
+          "text": "영상을 만들어",
+          "x": 283,
+          "y": 838,
+          "width": 365.9221649169922,
+          "top": 781,
+          "bottom": 844,
+          "runs": [
+            {
+              "text": "영상을",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "만들어",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            }
+          ]
+        },
+        {
+          "text": "보고 싶어요.",
+          "x": 116,
+          "y": 948,
+          "width": 326.6396026611328,
+          "top": 891,
+          "bottom": 954,
+          "runs": [
+            {
+              "text": "보고",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 53,
+              "descent": -1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "싶어요",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 19.643447875976562,
+              "ascent": 11,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "Одоохондоо шийдээгүй байна.",
+          "x": 88,
+          "y": 1240,
+          "width": 734.2329864501953,
+          "top": 1199,
+          "bottom": 1251,
+          "runs": [
+            {
+              "text": "Одоохондоо",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 54.08,
+              "width": 299.2198486328125,
+              "ascent": 40,
+              "descent": 9
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 52,
+              "width": 10.538131713867188,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "шийдээгүй",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 54.08,
+              "width": 259.97906494140625,
+              "ascent": 41,
+              "descent": 11
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 52,
+              "width": 10.538131713867188,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "байна",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 54.08,
+              "width": 141.489990234375,
+              "ascent": 41,
+              "descent": 1
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 52,
+              "width": 12.467819213867188,
+              "ascent": 7,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "Видео хийж үзмээр байна.",
+          "x": 88,
+          "y": 1390,
+          "width": 706.3927459716797,
+          "top": 1346,
+          "bottom": 1402,
+          "runs": [
+            {
+              "text": "Видео",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 58.24,
+              "width": 168.24192810058594,
+              "ascent": 43,
+              "descent": 10
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 56,
+              "width": 10.0362548828125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хийж",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 58.24,
+              "width": 143.4717254638672,
+              "ascent": 44,
+              "descent": 0
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 56,
+              "width": 10.0362548828125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "үзмээр",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 58.24,
+              "width": 190.1683807373047,
+              "ascent": 33,
+              "descent": 12
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 56,
+              "width": 10.0362548828125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "байна",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 58.24,
+              "width": 158.45944213867188,
+              "ascent": 44,
+              "descent": 1
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 56,
+              "width": 15.9425048828125,
+              "ascent": 9,
+              "descent": 1
+            }
+          ]
+        }
+      ],
+      "encoded": "qa/1500-encoded.png"
+    },
+    {
+      "frame": 1650,
+      "time": 55,
+      "scene": "examples",
+      "file": "qa/1650.png",
+      "mobile": "qa/1650-390.png",
+      "checks": [
+        {
+          "text": "06 / 07",
+          "x": 758,
+          "y": 318,
+          "width": 121.5198974609375,
+          "top": 296,
+          "bottom": 320,
+          "runs": [
+            {
+              "text": "06 / 07",
+              "family": "DM Mono",
+              "weight": 500,
+              "size": 28,
+              "width": 121.5198974609375,
+              "ascent": 22,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "text": "Сургалтын жишээ",
+          "x": 88,
+          "y": 442,
+          "width": 336.1646270751953,
+          "top": 411,
+          "bottom": 451,
+          "runs": [
+            {
+              "text": "Сургалтын",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 200.877685546875,
+              "ascent": 31,
+              "descent": 9
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 40,
+              "width": 8.10626220703125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "жишээ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 41.6,
+              "width": 127.18067932128906,
+              "ascent": 23,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "아직 정하지 않았어요.",
+          "x": 116,
+          "y": 719,
+          "width": 574.7097473144531,
+          "top": 662,
+          "bottom": 725,
+          "runs": [
+            {
+              "text": "아직",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "정하지",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "않았어요",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 235.70404052734375,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 19.643447875976562,
+              "ascent": 11,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "먼저",
+          "x": 116,
+          "y": 838,
+          "width": 117.85202026367188,
+          "top": 781,
+          "bottom": 844,
+          "runs": [
+            {
+              "text": "먼저",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 57,
+              "descent": 6
+            }
+          ]
+        },
+        {
+          "text": "그림을 그려",
+          "x": 283,
+          "y": 838,
+          "width": 306.99615478515625,
+          "top": 781,
+          "bottom": 844,
+          "runs": [
+            {
+              "text": "그림을",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "그려",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 57,
+              "descent": 6
+            }
+          ]
+        },
+        {
+          "text": "보고 싶어요.",
+          "x": 116,
+          "y": 948,
+          "width": 326.6396026611328,
+          "top": 891,
+          "bottom": 954,
+          "runs": [
+            {
+              "text": "보고",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 117.85202026367188,
+              "ascent": 53,
+              "descent": -1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 12.366104125976562,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "싶어요",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 69,
+              "width": 176.7780303955078,
+              "ascent": 57,
+              "descent": 6
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 69,
+              "width": 19.643447875976562,
+              "ascent": 11,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "Одоохондоо шийдээгүй байна.",
+          "x": 88,
+          "y": 1240,
+          "width": 734.2329864501953,
+          "top": 1199,
+          "bottom": 1251,
+          "runs": [
+            {
+              "text": "Одоохондоо",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 54.08,
+              "width": 299.2198486328125,
+              "ascent": 40,
+              "descent": 9
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 52,
+              "width": 10.538131713867188,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "шийдээгүй",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 54.08,
+              "width": 259.97906494140625,
+              "ascent": 41,
+              "descent": 11
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 52,
+              "width": 10.538131713867188,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "байна",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 54.08,
+              "width": 141.489990234375,
+              "ascent": 41,
+              "descent": 1
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 52,
+              "width": 12.467819213867188,
+              "ascent": 7,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "Зураг зурж үзмээр байна.",
+          "x": 88,
+          "y": 1390,
+          "width": 688.9037170410156,
+          "top": 1346,
+          "bottom": 1402,
+          "runs": [
+            {
+              "text": "Зураг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 58.24,
+              "width": 155.0185089111328,
+              "ascent": 43,
+              "descent": 12
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 56,
+              "width": 10.0362548828125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "зурж",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 58.24,
+              "width": 139.20611572265625,
+              "ascent": 33,
+              "descent": 12
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 56,
+              "width": 10.0362548828125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "үзмээр",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 58.24,
+              "width": 190.1683807373047,
+              "ascent": 33,
+              "descent": 12
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 56,
+              "width": 10.0362548828125,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "байна",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 58.24,
+              "width": 158.45944213867188,
+              "ascent": 44,
+              "descent": 1
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 56,
+              "width": 15.9425048828125,
+              "ascent": 9,
+              "descent": 1
+            }
+          ]
+        }
+      ],
+      "encoded": "qa/1650-encoded.png"
+    },
+    {
+      "frame": 1830,
+      "time": 61,
+      "scene": "next",
+      "file": "qa/1830.png",
+      "mobile": "qa/1830-390.png",
+      "checks": [
+        {
+          "text": "07 / 07",
+          "x": 758,
+          "y": 318,
+          "width": 121.5198974609375,
+          "top": 296,
+          "bottom": 320,
+          "runs": [
+            {
+              "text": "07 / 07",
+              "family": "DM Mono",
+              "weight": 500,
+              "size": 28,
+              "width": 121.5198974609375,
+              "ascent": 22,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "text": "Дараа нь хийж үзэх нэг",
+          "x": 88,
+          "y": 465,
+          "width": 669.8189239501953,
+          "top": 417,
+          "bottom": 478,
+          "runs": [
+            {
+              "text": "Дараа",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 184.19281005859375,
+              "ascent": 47,
+              "descent": 13
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "нь",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 68.27481079101562,
+              "ascent": 35,
+              "descent": 0
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хийж",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 156.28167724609375,
+              "ascent": 48,
+              "descent": 0
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "үзэх",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 124.96438598632812,
+              "ascent": 36,
+              "descent": 13
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "нэг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 92.37580871582031,
+              "ascent": 36,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "жижиг зүйлээ сонгоорой.",
+          "x": 88,
+          "y": 549.18,
+          "width": 744.3748016357422,
+          "top": 501.17999999999995,
+          "bottom": 562.18,
+          "runs": [
+            {
+              "text": "жижиг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 201.7874755859375,
+              "ascent": 35,
+              "descent": 0
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "зүйлээ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 195.6243896484375,
+              "ascent": 48,
+              "descent": 13
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "сонгоорой",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 307.7322692871094,
+              "ascent": 48,
+              "descent": 13
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 17.365951538085938,
+              "ascent": 10,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "게임 장면 하나 그리기",
+          "x": 309,
+          "y": 745,
+          "width": 394.7355651855469,
+          "top": 705,
+          "bottom": 750,
+          "runs": [
+            {
+              "text": "게임",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 81.9840087890625,
+              "ascent": 40,
+              "descent": 4
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 48,
+              "width": 8.602508544921875,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "장면",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 81.9840087890625,
+              "ascent": 39,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 48,
+              "width": 8.602508544921875,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "하나",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 81.9840087890625,
+              "ascent": 40,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 48,
+              "width": 8.602508544921875,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "그리기",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 122.97601318359375,
+              "ascent": 40,
+              "descent": 5
+            }
+          ]
+        },
+        {
+          "text": "Тоглоомын нэг хэсгийг",
+          "x": 309,
+          "y": 825,
+          "width": 479.2423095703125,
+          "top": 790,
+          "bottom": 826,
+          "runs": [
+            {
+              "text": "Тоглоомын",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 236.69537353515625,
+              "ascent": 34,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 44,
+              "width": 7.8856353759765625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "нэг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 66.63174438476562,
+              "ascent": 26,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 44,
+              "width": 7.8856353759765625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хэсгийг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 160.1439208984375,
+              "ascent": 35,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "зурах",
+          "x": 309,
+          "y": 885.72,
+          "width": 120.66070556640625,
+          "top": 859.72,
+          "bottom": 895.72,
+          "runs": [
+            {
+              "text": "зурах",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 120.66070556640625,
+              "ascent": 26,
+              "descent": 10
+            }
+          ]
+        },
+        {
+          "text": "짧은 영상 한 장면 찍기",
+          "x": 309,
+          "y": 980,
+          "width": 403.33807373046875,
+          "top": 940,
+          "bottom": 985,
+          "runs": [
+            {
+              "text": "짧은",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 81.9840087890625,
+              "ascent": 39,
+              "descent": 4
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 48,
+              "width": 8.602508544921875,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "영상",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 81.9840087890625,
+              "ascent": 39,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 48,
+              "width": 8.602508544921875,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "한",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 40.99200439453125,
+              "ascent": 40,
+              "descent": 4
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 48,
+              "width": 8.602508544921875,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "장면",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 81.9840087890625,
+              "ascent": 39,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 48,
+              "width": 8.602508544921875,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "찍기",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 81.9840087890625,
+              "ascent": 40,
+              "descent": 5
+            }
+          ]
+        },
+        {
+          "text": "Богино видеоны нэг хэсгийг",
+          "x": 309,
+          "y": 1060,
+          "width": 586.6952667236328,
+          "top": 1025,
+          "bottom": 1068,
+          "runs": [
+            {
+              "text": "Богино",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 148.05503845214844,
+              "ascent": 34,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 44,
+              "width": 7.8856353759765625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "видеоны",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 188.20765686035156,
+              "ascent": 26,
+              "descent": 8
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 44,
+              "width": 7.8856353759765625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "нэг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 66.63174438476562,
+              "ascent": 26,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 44,
+              "width": 7.8856353759765625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хэсгийг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 160.1439208984375,
+              "ascent": 35,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "бичиж авах",
+          "x": 309,
+          "y": 1120.72,
+          "width": 243.50851440429688,
+          "top": 1085.72,
+          "bottom": 1121.72,
+          "runs": [
+            {
+              "text": "бичиж",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 139.22837829589844,
+              "ascent": 35,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 44,
+              "width": 7.8856353759765625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "авах",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 96.39450073242188,
+              "ascent": 26,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "좋아하는 물건 그리기",
+          "x": 309,
+          "y": 1215,
+          "width": 386.133056640625,
+          "top": 1175,
+          "bottom": 1220,
+          "runs": [
+            {
+              "text": "좋아하는",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 163.968017578125,
+              "ascent": 39,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 48,
+              "width": 8.602508544921875,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "물건",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 81.9840087890625,
+              "ascent": 40,
+              "descent": 4
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 48,
+              "width": 8.602508544921875,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "그리기",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 122.97601318359375,
+              "ascent": 40,
+              "descent": 5
+            }
+          ]
+        },
+        {
+          "text": "Дуртай эд зүйлээ зурах",
+          "x": 309,
+          "y": 1295,
+          "width": 491.95420837402344,
+          "top": 1260,
+          "bottom": 1305,
+          "runs": [
+            {
+              "text": "Дуртай",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 155.339111328125,
+              "ascent": 35,
+              "descent": 10
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 44,
+              "width": 7.8856353759765625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "эд",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 51.19132995605469,
+              "ascent": 26,
+              "descent": 8
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 44,
+              "width": 7.8856353759765625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "зүйлээ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 141.1061553955078,
+              "ascent": 35,
+              "descent": 10
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 44,
+              "width": 7.8856353759765625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "зурах",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 120.66070556640625,
+              "ascent": 26,
+              "descent": 10
+            }
+          ]
+        },
+        {
+          "text": "Сэтгэгдэл, дуу хоолойгоо нийтлэх",
+          "x": 88,
+          "y": 1535,
+          "width": 590.7815093994141,
+          "top": 1505,
+          "bottom": 1543,
+          "runs": [
+            {
+              "text": "Сэтгэгдэл",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 39.52,
+              "width": 175.1454315185547,
+              "ascent": 30,
+              "descent": 7
+            },
+            {
+              "text": ", ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 38,
+              "width": 17.350128173828125,
+              "ascent": 4,
+              "descent": 8
+            },
+            {
+              "text": "дуу",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 39.52,
+              "width": 62.6978759765625,
+              "ascent": 22,
+              "descent": 8
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 38,
+              "width": 7.7009429931640625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хоолойгоо",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 39.52,
+              "width": 182.38177490234375,
+              "ascent": 30,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 38,
+              "width": 7.7009429931640625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "нийтлэх",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 39.52,
+              "width": 137.80441284179688,
+              "ascent": 30,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "шаардлагагүй.",
+          "x": 88,
+          "y": 1587.44,
+          "width": 256.448486328125,
+          "top": 1557.44,
+          "bottom": 1595.44,
+          "runs": [
+            {
+              "text": "шаардлагагүй",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 39.52,
+              "width": 247.33738708496094,
+              "ascent": 30,
+              "descent": 8
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 38,
+              "width": 9.111099243164062,
+              "ascent": 6,
+              "descent": 1
+            }
+          ]
+        }
+      ],
+      "encoded": "qa/1830-encoded.png"
+    },
+    {
+      "frame": 1947,
+      "time": 64.9,
+      "scene": "next",
+      "file": "qa/1947.png",
+      "mobile": "qa/1947-390.png",
+      "checks": [
+        {
+          "text": "07 / 07",
+          "x": 758,
+          "y": 318,
+          "width": 121.5198974609375,
+          "top": 296,
+          "bottom": 320,
+          "runs": [
+            {
+              "text": "07 / 07",
+              "family": "DM Mono",
+              "weight": 500,
+              "size": 28,
+              "width": 121.5198974609375,
+              "ascent": 22,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "text": "Дараа нь хийж үзэх нэг",
+          "x": 88,
+          "y": 465,
+          "width": 669.8189239501953,
+          "top": 417,
+          "bottom": 478,
+          "runs": [
+            {
+              "text": "Дараа",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 184.19281005859375,
+              "ascent": 47,
+              "descent": 13
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "нь",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 68.27481079101562,
+              "ascent": 35,
+              "descent": 0
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хийж",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 156.28167724609375,
+              "ascent": 48,
+              "descent": 0
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "үзэх",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 124.96438598632812,
+              "ascent": 36,
+              "descent": 13
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "нэг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 92.37580871582031,
+              "ascent": 36,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "жижиг зүйлээ сонгоорой.",
+          "x": 88,
+          "y": 549.18,
+          "width": 744.3748016357422,
+          "top": 501.17999999999995,
+          "bottom": 562.18,
+          "runs": [
+            {
+              "text": "жижиг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 201.7874755859375,
+              "ascent": 35,
+              "descent": 0
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "зүйлээ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 195.6243896484375,
+              "ascent": 48,
+              "descent": 13
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 10.932357788085938,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "сонгоорой",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 63.440000000000005,
+              "width": 307.7322692871094,
+              "ascent": 48,
+              "descent": 13
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 61,
+              "width": 17.365951538085938,
+              "ascent": 10,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "게임 장면 하나 그리기",
+          "x": 309,
+          "y": 745,
+          "width": 394.7355651855469,
+          "top": 705,
+          "bottom": 750,
+          "runs": [
+            {
+              "text": "게임",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 81.9840087890625,
+              "ascent": 40,
+              "descent": 4
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 48,
+              "width": 8.602508544921875,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "장면",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 81.9840087890625,
+              "ascent": 39,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 48,
+              "width": 8.602508544921875,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "하나",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 81.9840087890625,
+              "ascent": 40,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 48,
+              "width": 8.602508544921875,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "그리기",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 122.97601318359375,
+              "ascent": 40,
+              "descent": 5
+            }
+          ]
+        },
+        {
+          "text": "Тоглоомын нэг хэсгийг",
+          "x": 309,
+          "y": 825,
+          "width": 479.2423095703125,
+          "top": 790,
+          "bottom": 826,
+          "runs": [
+            {
+              "text": "Тоглоомын",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 236.69537353515625,
+              "ascent": 34,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 44,
+              "width": 7.8856353759765625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "нэг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 66.63174438476562,
+              "ascent": 26,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 44,
+              "width": 7.8856353759765625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хэсгийг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 160.1439208984375,
+              "ascent": 35,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "зурах",
+          "x": 309,
+          "y": 885.72,
+          "width": 120.66070556640625,
+          "top": 859.72,
+          "bottom": 895.72,
+          "runs": [
+            {
+              "text": "зурах",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 120.66070556640625,
+              "ascent": 26,
+              "descent": 10
+            }
+          ]
+        },
+        {
+          "text": "짧은 영상 한 장면 찍기",
+          "x": 309,
+          "y": 980,
+          "width": 403.33807373046875,
+          "top": 940,
+          "bottom": 985,
+          "runs": [
+            {
+              "text": "짧은",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 81.9840087890625,
+              "ascent": 39,
+              "descent": 4
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 48,
+              "width": 8.602508544921875,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "영상",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 81.9840087890625,
+              "ascent": 39,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 48,
+              "width": 8.602508544921875,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "한",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 40.99200439453125,
+              "ascent": 40,
+              "descent": 4
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 48,
+              "width": 8.602508544921875,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "장면",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 81.9840087890625,
+              "ascent": 39,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 48,
+              "width": 8.602508544921875,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "찍기",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 81.9840087890625,
+              "ascent": 40,
+              "descent": 5
+            }
+          ]
+        },
+        {
+          "text": "Богино видеоны нэг хэсгийг",
+          "x": 309,
+          "y": 1060,
+          "width": 586.6952667236328,
+          "top": 1025,
+          "bottom": 1068,
+          "runs": [
+            {
+              "text": "Богино",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 148.05503845214844,
+              "ascent": 34,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 44,
+              "width": 7.8856353759765625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "видеоны",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 188.20765686035156,
+              "ascent": 26,
+              "descent": 8
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 44,
+              "width": 7.8856353759765625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "нэг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 66.63174438476562,
+              "ascent": 26,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 44,
+              "width": 7.8856353759765625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хэсгийг",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 160.1439208984375,
+              "ascent": 35,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "бичиж авах",
+          "x": 309,
+          "y": 1120.72,
+          "width": 243.50851440429688,
+          "top": 1085.72,
+          "bottom": 1121.72,
+          "runs": [
+            {
+              "text": "бичиж",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 139.22837829589844,
+              "ascent": 35,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 44,
+              "width": 7.8856353759765625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "авах",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 96.39450073242188,
+              "ascent": 26,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "좋아하는 물건 그리기",
+          "x": 309,
+          "y": 1215,
+          "width": 386.133056640625,
+          "top": 1175,
+          "bottom": 1220,
+          "runs": [
+            {
+              "text": "좋아하는",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 163.968017578125,
+              "ascent": 39,
+              "descent": 5
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 48,
+              "width": 8.602508544921875,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "물건",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 81.9840087890625,
+              "ascent": 40,
+              "descent": 4
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 48,
+              "width": 8.602508544921875,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "그리기",
+              "family": "SUIT Variable",
+              "weight": 800,
+              "size": 48,
+              "width": 122.97601318359375,
+              "ascent": 40,
+              "descent": 5
+            }
+          ]
+        },
+        {
+          "text": "Дуртай эд зүйлээ зурах",
+          "x": 309,
+          "y": 1295,
+          "width": 491.95420837402344,
+          "top": 1260,
+          "bottom": 1305,
+          "runs": [
+            {
+              "text": "Дуртай",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 155.339111328125,
+              "ascent": 35,
+              "descent": 10
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 44,
+              "width": 7.8856353759765625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "эд",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 51.19132995605469,
+              "ascent": 26,
+              "descent": 8
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 44,
+              "width": 7.8856353759765625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "зүйлээ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 141.1061553955078,
+              "ascent": 35,
+              "descent": 10
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 44,
+              "width": 7.8856353759765625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "зурах",
+              "family": "Inter Tight",
+              "weight": 700,
+              "size": 45.760000000000005,
+              "width": 120.66070556640625,
+              "ascent": 26,
+              "descent": 10
+            }
+          ]
+        },
+        {
+          "text": "Сэтгэгдэл, дуу хоолойгоо нийтлэх",
+          "x": 88,
+          "y": 1535,
+          "width": 590.7815093994141,
+          "top": 1505,
+          "bottom": 1543,
+          "runs": [
+            {
+              "text": "Сэтгэгдэл",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 39.52,
+              "width": 175.1454315185547,
+              "ascent": 30,
+              "descent": 7
+            },
+            {
+              "text": ", ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 38,
+              "width": 17.350128173828125,
+              "ascent": 4,
+              "descent": 8
+            },
+            {
+              "text": "дуу",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 39.52,
+              "width": 62.6978759765625,
+              "ascent": 22,
+              "descent": 8
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 38,
+              "width": 7.7009429931640625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "хоолойгоо",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 39.52,
+              "width": 182.38177490234375,
+              "ascent": 30,
+              "descent": 1
+            },
+            {
+              "text": " ",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 38,
+              "width": 7.7009429931640625,
+              "ascent": 0,
+              "descent": 0
+            },
+            {
+              "text": "нийтлэх",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 39.52,
+              "width": 137.80441284179688,
+              "ascent": 30,
+              "descent": 1
+            }
+          ]
+        },
+        {
+          "text": "шаардлагагүй.",
+          "x": 88,
+          "y": 1587.44,
+          "width": 256.448486328125,
+          "top": 1557.44,
+          "bottom": 1595.44,
+          "runs": [
+            {
+              "text": "шаардлагагүй",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 39.52,
+              "width": 247.33738708496094,
+              "ascent": 30,
+              "descent": 8
+            },
+            {
+              "text": ".",
+              "family": "Inter Tight",
+              "weight": 500,
+              "size": 38,
+              "width": 9.111099243164062,
+              "ascent": 6,
+              "descent": 1
+            }
+          ]
+        }
+      ],
+      "encoded": "qa/1947-encoded.png"
+    }
+  ],
+  "mnChecks": [
+    {
+      "key": "purpose",
+      "value": "Хийж үзмээр зүйлээ солонгосоор хэлж үзье.",
+      "exactExisting": true
+    },
+    {
+      "key": "example",
+      "value": "Сургалтын жишээ",
+      "exactExisting": true
+    },
+    {
+      "key": "conversation",
+      "value": "Сургалтын жишээ яриа",
+      "exactExisting": true
+    },
+    {
+      "key": "question",
+      "value": "Ямар мэргэжлээр сурахыг хүсэж байна вэ?",
+      "exactExisting": true
+    },
+    {
+      "key": "undecided",
+      "value": "Одоохондоо шийдээгүй байна.",
+      "exactExisting": true
+    },
+    {
+      "key": "then",
+      "value": "Дараа нь хийж үзмээр байгаа зүйлээ хэлээрэй.",
+      "exactExisting": true
+    },
+    {
+      "key": "game",
+      "value": "Эхлээд тоглоом хийж үзмээр байна.",
+      "exactExisting": true
+    },
+    {
+      "key": "video",
+      "value": "Видео хийж үзмээр байна.",
+      "exactExisting": true
+    },
+    {
+      "key": "drawing",
+      "value": "Зураг зурж үзмээр байна.",
+      "exactExisting": true
+    },
+    {
+      "key": "change",
+      "value": "“게임을 만들어” гэдэг хэсгийг бүхэлд нь солино.",
+      "exactExisting": true
+    },
+    {
+      "key": "yours",
+      "value": "Өөрийн өгүүлбэрээ хэлж үзье.",
+      "exactExisting": true
+    },
+    {
+      "key": "insert",
+      "value": "Гурван хэсгээс нэгийг хоосон зайд оруулаад, бүтнээр нь хэлээрэй.",
+      "exactExisting": true
+    },
+    {
+      "key": "solo",
+      "value": "Ганцаараа чангаар хэлж болно.",
+      "exactExisting": true
+    },
+    {
+      "key": "private",
+      "value": "Сэтгэгдэл, дуу хоолойгоо нийтлэх шаардлагагүй.",
+      "exactExisting": true
+    },
+    {
+      "key": "next",
+      "value": "Дараа нь хийж үзэх нэг жижиг зүйлээ сонгоорой.",
+      "exactExisting": true
+    },
+    {
+      "key": "gameAction",
+      "value": "Тоглоомын нэг хэсгийг зурах",
+      "exactExisting": true
+    },
+    {
+      "key": "videoAction",
+      "value": "Богино видеоны нэг хэсгийг бичиж авах",
+      "exactExisting": true
+    },
+    {
+      "key": "drawAction",
+      "value": "Дуртай эд зүйлээ зурах",
+      "exactExisting": true
+    }
+  ],
+  "actualFonts": [
+    {
+      "lang": "mn",
+      "fonts": [
+        {
+          "familyName": "Inter Tight",
+          "postScriptName": "InterTight-Bold",
+          "isCustomFont": true,
+          "glyphCount": 16
+        }
+      ]
+    },
+    {
+      "lang": "ko",
+      "fonts": [
+        {
+          "familyName": "SUIT Variable Thin",
+          "postScriptName": "SUITVariable-ExtraBold",
+          "isCustomFont": true,
+          "glyphCount": 12
+        }
+      ]
+    }
+  ],
+  "fonts": [
+    {
+      "family": "SUIT Variable",
+      "weight": "100 900",
+      "status": "loaded"
+    },
+    {
+      "family": "Inter Tight",
+      "weight": "500",
+      "status": "loaded"
+    },
+    {
+      "family": "Inter Tight",
+      "weight": "700",
+      "status": "loaded"
+    },
+    {
+      "family": "DM Mono",
+      "weight": "500",
+      "status": "loaded"
+    }
+  ],
+  "uniqueRenderedFrames": 438,
+  "probe": {
+    "streams": [
+      {
+        "index": 0,
+        "codec_name": "h264",
+        "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+        "profile": "High",
+        "codec_type": "video",
+        "codec_tag_string": "avc1",
+        "codec_tag": "0x31637661",
+        "mime_codec_string": "avc1.640028",
+        "width": 1080,
+        "height": 1920,
+        "coded_width": 1080,
+        "coded_height": 1920,
+        "has_b_frames": 2,
+        "pix_fmt": "yuv420p",
+        "level": 40,
+        "color_range": "tv",
+        "color_space": "bt709",
+        "color_transfer": "bt709",
+        "color_primaries": "bt709",
+        "chroma_location": "left",
+        "field_order": "progressive",
+        "is_avc": "true",
+        "nal_length_size": "4",
+        "id": "0x1",
+        "r_frame_rate": "30/1",
+        "avg_frame_rate": "30/1",
+        "time_base": "1/15360",
+        "start_pts": 0,
+        "start_time": "0.000000",
+        "duration_ts": 998400,
+        "duration": "65.000000",
+        "bit_rate": "180638",
+        "bits_per_raw_sample": "8",
+        "nb_frames": "1950",
+        "extradata_size": 50,
+        "disposition": {
+          "default": 1,
+          "dub": 0,
+          "original": 0,
+          "comment": 0,
+          "lyrics": 0,
+          "karaoke": 0,
+          "forced": 0,
+          "hearing_impaired": 0,
+          "visual_impaired": 0,
+          "clean_effects": 0,
+          "attached_pic": 0,
+          "timed_thumbnails": 0,
+          "non_diegetic": 0,
+          "captions": 0,
+          "descriptions": 0,
+          "metadata": 0,
+          "dependent": 0,
+          "still_image": 0,
+          "multilayer": 0
+        },
+        "tags": {
+          "language": "und",
+          "handler_name": "VideoHandler",
+          "encoder": "Lavc62.28.102 libx264"
+        }
+      }
+    ],
+    "format": {
+      "filename": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\새첫게시물_20260914\\LAB-영상\\LAB-읽고-바꿔-말하기.mp4",
+      "nb_streams": 1,
+      "nb_programs": 0,
+      "nb_stream_groups": 0,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "start_time": "0.000000",
+      "duration": "65.000000",
+      "size": "1491570",
+      "bit_rate": "183577",
+      "probe_score": 100,
+      "tags": {
+        "major_brand": "isom",
+        "minor_version": "512",
+        "compatible_brands": "isomiso2avc1mp41",
+        "encoder": "Lavf62.12.102"
+      }
+    }
+  },
+  "mp4Sha256": "63f3f1fd05f1a8933ecd3323924c144188c19887a47503f0ebf11a011c808829",
+  "errors": [],
+  "blockedExternalRequests": [],
+  "sourceChanges": [],
+  "mp4Bytes": 1491570,
+  "colorLabelFinish": {
+    "checkedAt": "2026-09-13T19:02:05.985Z",
+    "mode": "H264 SPS labels only; stream copy; no re-encode",
+    "bsf": "h264_metadata=video_full_range_flag=0:colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1",
+    "backup": "qa/색표식전.mp4",
+    "beforeSha256": "7ce41f3e7462957a25cca47a00c0455f5a9767e015573b645c1540814f65e558",
+    "afterSha256": "63f3f1fd05f1a8933ecd3323924c144188c19887a47503f0ebf11a011c808829",
+    "rawBefore": "SHA256=256f04b3d857085a6f54ae8922f2b5983bda76c0fef2a03f9dca883a5508b579",
+    "rawAfter": "SHA256=256f04b3d857085a6f54ae8922f2b5983bda76c0fef2a03f9dca883a5508b579",
+    "decodedPixelsIdentical": true,
+    "encodedKeyframePngIdentical": false
+  },
+  "pngColorLabelComparison": {
+    "checkedAt": "2026-09-13T19:03:26.007Z",
+    "allRgbPixelsIdentical": true,
+    "items": [
+      {
+        "frame": 30,
+        "pngFileIdentical": false,
+        "rgbPixelIdentical": true,
+        "changedChannels": 0,
+        "maxChannelDifference": 0
+      },
+      {
+        "frame": 240,
+        "pngFileIdentical": false,
+        "rgbPixelIdentical": true,
+        "changedChannels": 0,
+        "maxChannelDifference": 0
+      },
+      {
+        "frame": 510,
+        "pngFileIdentical": false,
+        "rgbPixelIdentical": true,
+        "changedChannels": 0,
+        "maxChannelDifference": 0
+      },
+      {
+        "frame": 750,
+        "pngFileIdentical": false,
+        "rgbPixelIdentical": true,
+        "changedChannels": 0,
+        "maxChannelDifference": 0
+      },
+      {
+        "frame": 855,
+        "pngFileIdentical": false,
+        "rgbPixelIdentical": true,
+        "changedChannels": 0,
+        "maxChannelDifference": 0
+      },
+      {
+        "frame": 960,
+        "pngFileIdentical": false,
+        "rgbPixelIdentical": true,
+        "changedChannels": 0,
+        "maxChannelDifference": 0
+      },
+      {
+        "frame": 1140,
+        "pngFileIdentical": false,
+        "rgbPixelIdentical": true,
+        "changedChannels": 0,
+        "maxChannelDifference": 0
+      },
+      {
+        "frame": 1380,
+        "pngFileIdentical": false,
+        "rgbPixelIdentical": true,
+        "changedChannels": 0,
+        "maxChannelDifference": 0
+      },
+      {
+        "frame": 1500,
+        "pngFileIdentical": false,
+        "rgbPixelIdentical": true,
+        "changedChannels": 0,
+        "maxChannelDifference": 0
+      },
+      {
+        "frame": 1650,
+        "pngFileIdentical": false,
+        "rgbPixelIdentical": true,
+        "changedChannels": 0,
+        "maxChannelDifference": 0
+      },
+      {
+        "frame": 1830,
+        "pngFileIdentical": false,
+        "rgbPixelIdentical": true,
+        "changedChannels": 0,
+        "maxChannelDifference": 0
+      },
+      {
+        "frame": 1947,
+        "pngFileIdentical": false,
+        "rgbPixelIdentical": true,
+        "changedChannels": 0,
+        "maxChannelDifference": 0
+      }
+    ]
+  }
+}

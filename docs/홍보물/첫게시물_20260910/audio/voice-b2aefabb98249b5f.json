@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "30bd1fee-1359-4158-aab6-48bbb987b13b",
+  "narration": "전문적인 맞춤형 브랜딩. 여기에 누구의 어떤 일을 돕는지 더해봅니다.",
+  "narrationSha256": "b2aefabb98249b5f530fb9953363d2cb6a30f6d1f71405c2482296ea93cb2600",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-b2aefabb98249b5f.wav",
+  "duration": 5.04,
+  "sha256": "84f65334f4900448718a41653baae30637b60183d783692abcb19d785394efb8",
+  "humanListening": false,
+  "fullDecode": true
+}

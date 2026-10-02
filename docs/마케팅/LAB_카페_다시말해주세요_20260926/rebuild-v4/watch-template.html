@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>카페 한국어 · 다시 말해 주세요</title>
+<style>
+body{margin:0;padding:18px;background:#f4f2ed;color:#222;font-family:system-ui,sans-serif;text-align:center}
+video{display:block;margin:auto;max-height:76vh;max-width:100%;background:#111;border-radius:14px}
+p{margin:10px auto;max-width:640px;font-size:15px;line-height:1.45}
+button{margin:14px auto 2px;padding:12px 24px;border:0;border-radius:10px;background:#222;color:#fff;font:700 17px system-ui;cursor:pointer}
+button:focus-visible{outline:3px solid #c25748;outline-offset:4px}
+#playback-status{font-size:14px;color:#454545}
+</style>
+</head>
+<body>
+<video id="cafe-video" controls playsinline preload="metadata" src="SYNK_LAB_CAFE_AGE_MATCH_v4.mp4"></video>
+<button id="play-video" type="button" autofocus>영상 재생</button>
+<p>말할 때와 웃을 때의 얼굴을 확인해 주세요.</p>
+<p id="playback-status" role="status" aria-live="polite">재생 준비 중</p>
+<script>
+const video=document.getElementById('cafe-video');
+const button=document.getElementById('play-video');
+const status=document.getElementById('playback-status');
+const seconds=t=>Number.isFinite(t)?t.toFixed(1):'0.0';
+function updateStatus(){
+  const timing=`${seconds(video.currentTime)} / ${seconds(video.duration)}초`;
+  status.textContent=video.ended?`전체 영상 재생 완료 · ${timing}`:video.paused?`재생 대기 · ${timing}`:`재생 중 · ${timing}`;
+}
+button.addEventListener('click',async()=>{
+  video.currentTime=0;
+  try{await video.play();button.textContent='처음부터 다시 재생';}
+  catch{status.textContent='재생을 시작하지 못했습니다. 영상 재생 버튼을 다시 눌러 주세요.';}
+});
+for(const event of ['loadedmetadata','timeupdate','playing','pause','ended'])video.addEventListener(event,updateStatus);
+video.addEventListener('error',()=>{status.textContent='이 브라우저에서 영상을 불러오지 못했습니다.';});
+</script>
+</body>
+</html>

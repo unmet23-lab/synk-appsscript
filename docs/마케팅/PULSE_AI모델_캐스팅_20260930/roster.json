@@ -1,0 +1,173 @@
+{
+  "note": "PULSE AI 모델 캐스팅 1기 인물 설정. prompt 값은 생성용 영어 묘사이고, 나머지는 사이트에 보이는 한국어 정보다. 실존 인물의 이름·사진을 참고하지 않는다.",
+  "models": [
+    {
+      "code": "M01",
+      "name": "한결",
+      "gender": "남",
+      "age": "20대 중반",
+      "impression": ["청량한", "친근한", "깨끗한"],
+      "fits": ["음료·식품", "남성 스킨케어", "캐주얼 패션", "스포츠·앱"],
+      "height": 183,
+      "build": "슬림 근육형",
+      "sizes": { "top": "100 (L)", "bottom": "31", "shoe": "275" },
+      "skin": "밝은 웜톤",
+      "eyes": "흑갈색, 속쌍꺼풀",
+      "hairBase": "흑발, 앞머리를 내린 짧은 머리",
+      "outfit": "plain white cotton crew-neck t-shirt",
+      "prompt": "a 24-year-old Korean man with a fresh, clean-cut look: soft oval face, single eyelids with calm dark-brown eyes, straight natural brows, clear skin with a few tiny blemishes on the forehead, thick black hair in a natural short cut with a soft fringe falling over the forehead",
+      "hair": [
+        { "label": "기본 · 앞머리 내린 짧은 머리", "prompt": "" },
+        { "label": "쉼표 가르마 펌", "prompt": "a side-parted comma hairstyle with a soft perm, the fringe curling outward like a comma on one side of the forehead, forehead partly visible" },
+        { "label": "짧은 크롭컷", "prompt": "a very short textured crop cut with a short straight fringe and clean tapered sides" }
+      ],
+      "looks": [
+        { "label": "오피스", "prompt": "a light-blue oxford button-down shirt tucked into beige chinos, brown leather belt" },
+        { "label": "스트리트", "prompt": "an oversized olive-green hoodie, loose black cargo pants and white sneakers" }
+      ],
+      "context": "sitting at a sunlit outdoor cafe table, holding a plain clear glass of iced sparkling water with lemon, looking off-camera and about to laugh",
+      "hands": "holding a plain unlabeled frosted-glass skincare bottle",
+      "voiceBrief": "20대 남성, 밝고 가벼운 톤"
+    },
+    {
+      "code": "M02",
+      "name": "도현",
+      "gender": "남",
+      "age": "30대 초반",
+      "impression": ["지적인", "세련된", "단정한"],
+      "fits": ["IT·금융", "자동차", "B2B·기업 홍보", "남성 정장·시계"],
+      "height": 180,
+      "build": "슬림",
+      "sizes": { "top": "100 (L)", "bottom": "30", "shoe": "270" },
+      "skin": "중간 톤",
+      "eyes": "흑갈색, 얇은 쌍꺼풀",
+      "hairBase": "짙은 갈색, 옆가르마 넘긴 머리",
+      "outfit": "plain black cotton crew-neck t-shirt",
+      "prompt": "a 32-year-old Korean man with a sharp, intelligent look: defined jawline and cheekbones, narrow double eyelids, dark-brown eyes, neat dark-brown hair side-parted and swept back, faint beard shadow along the jaw",
+      "hair": [
+        { "label": "기본 · 옆가르마 넘긴 머리", "prompt": "" },
+        { "label": "포마드 올백", "prompt": "a slicked-back pomade hairstyle, all hair combed straight back with a light natural shine, forehead fully visible" },
+        { "label": "자연스럽게 내린 머리", "prompt": "a relaxed unstyled hairstyle with the hair falling naturally forward over the forehead in a loose fringe" }
+      ],
+      "looks": [
+        { "label": "정장", "prompt": "a tailored charcoal two-piece suit, crisp white shirt and a plain navy silk tie" },
+        { "label": "비즈니스 캐주얼", "prompt": "a fine-gauge navy knit polo shirt with grey wool trousers" }
+      ],
+      "context": "standing at a tall desk in a bright modern office with large windows, reviewing something on a plain silver laptop with no visible logo, city blurred behind",
+      "hands": "holding a plain matte-black smartphone with a blank screen facing the camera",
+      "voiceBrief": "30대 남성, 차분하고 신뢰감 있는 톤"
+    },
+    {
+      "code": "M03",
+      "name": "성민",
+      "gender": "남",
+      "age": "40대 중반",
+      "impression": ["믿음직한", "따뜻한", "편안한"],
+      "fits": ["건강식품", "보험·금융", "가전·리빙", "병원·약국"],
+      "height": 177,
+      "build": "보통 · 단단한 체형",
+      "sizes": { "top": "105 (XL)", "bottom": "33", "shoe": "270" },
+      "skin": "중간 웜톤",
+      "eyes": "흑갈색, 웃을 때 눈가 주름",
+      "hairBase": "흑발, 옆머리 흰머리가 섞인 짧은 머리",
+      "outfit": "plain charcoal-grey cotton crew-neck t-shirt",
+      "prompt": "a 46-year-old Korean man with a warm, trustworthy look: slightly square face, kind dark-brown eyes with smile lines, faint horizontal forehead lines, short black hair with grey at the temples, light salt-and-pepper stubble",
+      "hair": [
+        { "label": "기본 · 흰머리 섞인 짧은 머리", "prompt": "" },
+        { "label": "단정한 옆가르마", "prompt": "a neat side-parted short hairstyle combed smoothly to one side, clean and tidy" },
+        { "label": "짧은 스포츠 머리", "prompt": "a very short buzz-style cut, cropped close on the sides and top" }
+      ],
+      "looks": [
+        { "label": "주말 캐주얼", "prompt": "a soft beige cardigan over a white t-shirt with dark jeans" },
+        { "label": "세미 정장", "prompt": "a navy blazer over a light-blue open-collar shirt with grey trousers" }
+      ],
+      "context": "in a warm sunlit living room kitchen, pouring tea from a plain white teapot into a white mug, gentle smile",
+      "hands": "holding a plain unlabeled amber-glass supplement bottle",
+      "voiceBrief": "40대 남성, 낮고 따뜻한 톤"
+    },
+    {
+      "code": "F01",
+      "name": "서아",
+      "gender": "여",
+      "age": "20대 초반",
+      "impression": ["맑은", "내추럴한", "차분한"],
+      "fits": ["스킨케어·클렌징", "카페·식품", "캐주얼·여성 패션", "교육·앱"],
+      "height": 167,
+      "build": "슬림",
+      "sizes": { "top": "55 (S)", "bottom": "25", "shoe": "240" },
+      "skin": "밝은 뉴트럴 톤, 옅은 주근깨",
+      "eyes": "흑갈색, 속쌍꺼풀",
+      "hairBase": "흑갈색, 긴 생머리 가운데 가르마",
+      "outfit": "plain black cotton tank top",
+      "prompt": "a 23-year-old Korean woman with a fresh natural look: soft oval face, gentle eyes with a subtle inner-fold crease, soft natural brows, faint freckles across the nose, long straight dark-brown hair with a center part, minimal makeup",
+      "hair": [
+        { "label": "기본 · 긴 생머리", "prompt": "" },
+        { "label": "하이 포니테일", "prompt": "her hair pulled up into a sleek high ponytail, a few loose baby hairs at the temples" },
+        { "label": "단발 레이어드", "prompt": "a chin-length layered bob with soft face-framing layers" }
+      ],
+      "looks": [
+        { "label": "니트 캐주얼", "prompt": "a cream cable-knit cardigan over a white t-shirt with light-blue straight jeans" },
+        { "label": "원피스", "prompt": "a simple sage-green linen midi dress with thin straps" }
+      ],
+      "context": "in a bright minimal bathroom, gently patting her cheek with fingertips after skincare, soft morning window light",
+      "hands": "holding a plain unlabeled white cosmetic tube near her chin",
+      "voiceBrief": "20대 여성, 맑고 산뜻한 톤"
+    },
+    {
+      "code": "F02",
+      "name": "지안",
+      "gender": "여",
+      "age": "30대 초반",
+      "impression": ["시크한", "세련된", "도회적인"],
+      "fits": ["주얼리·시계", "향수·색조", "하이엔드 패션", "자동차·호텔"],
+      "height": 171,
+      "build": "슬림 · 긴 팔다리",
+      "sizes": { "top": "55 (S)", "bottom": "25", "shoe": "245" },
+      "skin": "밝은 쿨톤",
+      "eyes": "흑갈색, 길게 뻗은 눈매",
+      "hairBase": "흑발, 턱선 단발",
+      "outfit": "plain white cotton tank top",
+      "prompt": "a 31-year-old Korean woman with a chic, sophisticated look: defined cheekbones, elongated almond-shaped eyes with a thin crease, straight dark brows, a small mole under her left eye, sleek chin-length black bob with a center part, light natural makeup",
+      "hair": [
+        { "label": "기본 · 턱선 단발", "prompt": "" },
+        { "label": "슬릭 로우번", "prompt": "her hair slicked back tightly into a low bun at the nape, glossy and smooth, ears visible" },
+        { "label": "긴 C컬 웨이브", "prompt": "long black hair falling past her shoulders with soft glossy C-curl waves at the ends" }
+      ],
+      "looks": [
+        { "label": "블랙 드레스", "prompt": "a black satin slip dress with thin straps and a delicate thin gold necklace" },
+        { "label": "테일러드 수트", "prompt": "an oversized ivory tailored blazer and matching wide-leg trousers with a black top" }
+      ],
+      "context": "seated in the back of a dark luxury car at night, city lights bokeh through the window, looking out calmly",
+      "hands": "wearing a thin plain gold ring and holding a plain unlabeled glass perfume bottle",
+      "voiceBrief": "30대 여성, 낮고 세련된 톤"
+    },
+    {
+      "code": "F03",
+      "name": "은정",
+      "gender": "여",
+      "age": "40대 초반",
+      "impression": ["우아한", "다정한", "신뢰감 있는"],
+      "fits": ["리빙·가전", "건강·이너뷰티", "교육·육아", "금융·보험"],
+      "height": 163,
+      "build": "보통",
+      "sizes": { "top": "66 (M)", "bottom": "27", "shoe": "235" },
+      "skin": "밝은 웜톤, 자연스러운 눈가 주름",
+      "eyes": "흑갈색, 또렷한 쌍꺼풀",
+      "hairBase": "짙은 갈색, 어깨 길이 굵은 웨이브",
+      "outfit": "plain cream fine-knit crew-neck top",
+      "prompt": "a 43-year-old Korean woman with an elegant, warm look: soft oval face, clear double eyelids, fine lines at the corners of the eyes and soft smile lines, shoulder-length dark-brown hair with soft loose waves, natural makeup",
+      "hair": [
+        { "label": "기본 · 어깨 길이 웨이브", "prompt": "" },
+        { "label": "낮게 묶은 머리", "prompt": "her hair gathered into a soft low ponytail at the nape with a few loose strands framing the face" },
+        { "label": "짧은 숏컷", "prompt": "a short tidy pixie-bob haircut just above the ears with soft side-swept bangs" }
+      ],
+      "looks": [
+        { "label": "리빙 캐주얼", "prompt": "a soft oatmeal linen shirt with wide beige trousers" },
+        { "label": "세미 포멀", "prompt": "a camel wool coat over a black turtleneck and black trousers" }
+      ],
+      "context": "in a bright family kitchen, arranging fresh fruit into a white bowl on a wooden counter, warm natural smile",
+      "hands": "holding a plain white ceramic mug with both hands",
+      "voiceBrief": "40대 여성, 부드럽고 다정한 톤"
+    }
+  ]
+}

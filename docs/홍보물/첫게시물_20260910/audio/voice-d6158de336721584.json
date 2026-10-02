@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "31d0e110-125f-41f5-8798-ad06d2e797fc",
+  "narration": "싱크 브리프에서 상황별 예시와 원본, 확인법을 꺼내 쓰세요. 다음에 막힌 일이 생기면, 필요한 자료부터 찾아보세요.",
+  "narrationSha256": "d6158de33672158439c14e47d4048f3567195ffc31aebb6ec0a0ddb09c62f54f",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-d6158de336721584.wav",
+  "duration": 8.4,
+  "sha256": "c95d6e639bc810d87709c029594b254e41eadff94701dfa7d477a331454a7397",
+  "humanListening": false,
+  "fullDecode": true
+}

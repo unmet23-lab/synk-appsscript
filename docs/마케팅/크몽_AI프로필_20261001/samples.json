@@ -1,0 +1,14 @@
+{
+  "source": "../PULSE_AI모델_캐스팅_20260930/raw",
+  "references": ["yuho-ref-0048.png", "yuho-ref-0112.png", "yuho-ref-0136.png"],
+  "referenceKind": "유호 인터뷰 원본 프레임. 생성된 캐스팅 사진은 입력하지 않음.",
+  "model": "nano_banana_pro",
+  "aspectRatio": "3:4",
+  "resolution": "2k",
+  "identityInstruction": "Create a NEW professional photographic portrait of the exact same real adult man shown in all three attached original interview frames. They show one person with different expressions. Treat them as identity references, not a style reference. Preserve his facial proportions, face width, natural cheeks, eyes and their real asymmetry, brow shape, nose, lips, ears, natural skin tone, age and black cornrow braids pulled back. Do not beautify into a different person, slim his jaw, enlarge the eyes, make both eyelids symmetrical, change his age, invent moles, or add muscle. Keep a calm closed-mouth expression as in the originals; do not invent a toothy smile. The FIRST reference shows his face at rest and the other two clarify his identity. Remove the old interview background, sports jacket, lettering and lanyard. Realistic directional studio light with a real gentle shadow, skin pores, fine facial hair, realistic fabric, no airbrushed wax skin, no halos, no text, no watermark, no logos, no fake borders. Leave natural breathing room above his hair and show both shoulders. This is a new portrait composition, not an identity replacement.",
+  "samples": [
+    {"id":"01_studio", "label":"스튜디오 · 기본 프로필", "scene":"A warm-grey seamless photography studio backdrop, plain black cotton crew-neck t-shirt. Head and shoulders portrait, straight toward camera, relaxed lips, soft large key light from camera left and gentle fill from the right. 85mm portrait lens, restrained neutral color, quiet approachable confidence. Frame down to the upper chest."},
+    {"id":"02_business", "label":"비즈니스 · 대표/강사 소개", "scene":"A bright understated studio with a soft off-white-grey background. Wear a charcoal tailored blazer over a plain white cotton crew-neck t-shirt, no tie and no accessories. Seated relaxed, three-quarter torso with face facing camera, upper-body portrait from just above the waist. Hands are outside the frame. Soft daylight from camera left, credible natural business headshot with real skin and jacket fabric, 85mm lens."},
+    {"id":"03_editorial", "label":"크리에이터 · 채널 소개", "scene":"A restrained editorial photography studio with a deep muted blue-grey seamless backdrop. Wear a simple black cotton overshirt over a black t-shirt, no jewelry, no logos. Head and shoulders, body slightly angled, face looking directly at camera. A single soft directional key light from camera right with visible but gentle shadow on the opposite cheek, no colored neon and no rim glow. Confident relaxed neutral expression, 85mm lens, subtle rich tonal depth. Professional creator portrait, not a fashion model makeover."}
+  ]
+}

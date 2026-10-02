@@ -1,0 +1,13 @@
+{
+  "date": "2026-09-27",
+  "url": "http://127.0.0.1:5208/google-vids/motion-composite/watch.html",
+  "playbackRate": 1,
+  "source": {"duration": 9.92, "currentTime": 9.92, "ended": true, "muted": false},
+  "composite": {"duration": 9.92, "currentTime": 9.92, "ended": true, "muted": true},
+  "mediaErrors": [],
+  "statusText": "전체 공통 구간 재생 완료 · 원본 9.92 / 9.92초 · 원본 인물 합성 9.92 / 9.92초",
+  "visualReview": "Source/composite five-frame sheet and browser beginning/end verified. Original facial performance is retained; faint bright hair-edge halo remains.",
+  "directListening": "not performed",
+  "newCafeDialogue": false,
+  "userApproval": "pending"
+}

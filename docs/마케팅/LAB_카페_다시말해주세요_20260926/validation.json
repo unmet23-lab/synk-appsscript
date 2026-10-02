@@ -1,0 +1,115 @@
+{
+  "date": "2026-09-26",
+  "file": "SYNK_LAB_카페_몽글_한국어.mp4",
+  "sha256": "BCCEFCE3368A0DF4BA6176AB3E642B011778B948E0D815EE80700405867CC74F",
+  "metadata": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1080,
+        "height": 1920,
+        "r_frame_rate": "30/1",
+        "duration": "47.566667"
+      },
+      {
+        "codec_name": "aac",
+        "codec_type": "audio",
+        "sample_rate": "48000",
+        "channels": 2,
+        "r_frame_rate": "0/0",
+        "duration": "47.573000"
+      }
+    ],
+    "format": {
+      "duration": "47.573000",
+      "size": "79675903"
+    }
+  },
+  "fullDecodePassed": true,
+  "blackIntervals": [],
+  "loudnessMeasurement": {
+    "input_i": "-16.09",
+    "input_tp": "-3.11",
+    "input_lra": "6.30",
+    "input_thresh": "-28.63",
+    "output_i": "-15.86",
+    "output_tp": "-2.14",
+    "output_lra": "4.90",
+    "output_thresh": "-28.26",
+    "normalization_type": "dynamic",
+    "target_offset": "-0.14"
+  },
+  "subjectiveAudioListeningPerformed": false,
+  "hyperframesCheck": {
+    "warnings": 0,
+    "motionIssues": 0,
+    "runtimeIssues": 0,
+    "layoutIssues": 0,
+    "errors": 0,
+    "contrastAA": "13/13"
+  },
+  "browserPlayback": {
+    "readyState": 4,
+    "url": "http://127.0.0.1:5208/",
+    "firstTime": 0.078938,
+    "paused": false,
+    "visibleFrameConfirmed": true,
+    "laterTime": 20.678849
+  },
+  "humanVersion": {
+    "castReference": "human-cast-reference.png",
+    "url": "http://pi.co-nai.com:2999/#/public/workflows/h3",
+    "reason": "Public workflow not found",
+    "status": "blocked",
+    "motionVideoCreated": false
+  },
+  "published": false,
+  "previewWhiteScreenFix": {
+    "date": "2026-09-26",
+    "symptom": "User-visible in-app native video surface was white at 18.098 seconds while actual MP4 frames were normal.",
+    "change": "720p VP9/Opus preview with canvas frame display and playback controls",
+    "previewFile": "mongle-preview-720.webm",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp9",
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "codec_name": "opus"
+        }
+      ],
+      "format": {
+        "duration": "47.581000",
+        "size": "4714554"
+      }
+    },
+    "httpStatus": 206,
+    "contentType": [
+      "video/webm"
+    ],
+    "range": [
+      "bytes 0-1023/4714554"
+    ],
+    "fullDecodePassed": true,
+    "originalMp4HashUnchanged": true,
+    "browser": {
+      "source": "mongle-preview-720.webm?revision=2",
+      "visibleTabId": "3",
+      "visibleActualFrameConfirmed": true,
+      "seekPassed": true,
+      "playPausePassed": true,
+      "advancingPaintTimes": [
+        0.194,
+        1.714
+      ],
+      "originalFailingTimeRetested": 18.1
+    }
+  }
+}

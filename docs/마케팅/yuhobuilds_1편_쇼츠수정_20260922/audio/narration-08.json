@@ -1,0 +1,59 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "방법은 하나. 화면 찍고! 물어보고! 따라 하고!",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.28,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 2.461,
+  "words": [
+    {
+      "text": "방법은",
+      "start": 0.029,
+      "end": 0.317
+    },
+    {
+      "text": "하나.",
+      "start": 0.36,
+      "end": 0.475
+    },
+    {
+      "text": "화면",
+      "start": 0.82,
+      "end": 0.993
+    },
+    {
+      "text": "찍고!",
+      "start": 1.036,
+      "end": 1.194
+    },
+    {
+      "text": "물어보고!",
+      "start": 1.454,
+      "end": 1.741
+    },
+    {
+      "text": "따라",
+      "start": 1.9,
+      "end": 2.072
+    },
+    {
+      "text": "하고!",
+      "start": 2.116,
+      "end": 2.461
+    }
+  ],
+  "characters": null
+}

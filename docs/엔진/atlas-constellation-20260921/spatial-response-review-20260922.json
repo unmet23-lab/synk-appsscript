@@ -1,0 +1,56 @@
+{
+  "date": "2026-09-22",
+  "variant": "silver spatial depth, layered luminous nucleus, one return wave and short entrance",
+  "htmlSha256": "2cb02f7e40c25487937ea27bf7b4a1cd2b8688bc68abe73fb02805c58f0777e5",
+  "htmlBytes": 1474917,
+  "composition": {
+    "semanticGraph": {"engines": 8, "nodes": 292, "connections": 621, "relationships": 15},
+    "decorativeDepth": {"backgroundNodes": 150, "backgroundEdges": 201, "foregroundNodes": 10, "foregroundEdges": 7},
+    "depthMeaning": "Fixed decorative topology, excluded from engine counts and hit targets; not user data or measured activity.",
+    "nucleusRadiusCssPx": {"desktopMaximum": 76, "mobile390WithScrollbar": 40.5, "mobile320": 34},
+    "introSeconds": 2.15,
+    "stableActivationSeconds": 0.78,
+    "maximumConcurrentWaves": 2
+  },
+  "browserChecks": {
+    "visual": "Actual WebGL shader compiled; reviewed silver idle, Core and Loom color, return-wave peak, and 390/320px reduced-motion views.",
+    "intro": "Progress observed at scene times 0.067/0.533/1.017/1.516/2.233/2.983; completion after 2.15s. Early zoom completed intro at time 0.408; pause/resume/reset did not replay it.",
+    "oneResponse": "Core activation emitted once; wave expired while selection remained. Loom activation produced coreResponse 0.417 and a single wave.",
+    "keyboardAndPointer": "Strata keyboard focus, Vellum graph hover, pointer leave restored Strata preview while Loom stayed pinned.",
+    "contextRecovery": "Loom selection, RGB 245/196/69, intro completion and paused time 108.473 preserved through Canvas fallback and WebGL restoration.",
+    "mobile390": {"viewport": [390, 844], "horizontalOverflow": false, "selected": "loom", "paused": true, "time": 0, "introComplete": true, "activeWaves": 0},
+    "mobile320": {"viewport": [320, 740], "horizontalOverflow": false, "selected": "vellum", "paused": true, "time": 0, "introComplete": true, "activeWaves": 0},
+    "consoleErrorsOrWarnings": 0,
+    "mobileScope": "Browser viewport, clicks and reduced-motion emulation; physical phone and physical touch not measured."
+  },
+  "performance": {
+    "browser": "Codex in-app browser",
+    "viewport": [1920, 1080],
+    "graphCssPixels": [1350, 802],
+    "devicePixelRatio": 2,
+    "rendererPixelRatio": 2,
+    "warmupFrames": 30,
+    "measuredFramesPerRun": 360,
+    "firstIdle": {"frameMs": {"median": 16.7, "p95": 33.2, "max": 41.6, "over25": 24}, "cpuRenderMs": {"median": 0.7, "p95": 1.0, "max": 1.4}, "gpuDrawCalls": 3},
+    "firstCoreSelectionIncludingReturnWave": {"frameMs": {"median": 16.7, "p95": 16.8, "max": 66.5, "over25": 5}, "cpuRenderMs": {"median": 0.9, "p95": 1.3, "max": 2.7}, "gpuDrawCalls": 4},
+    "laterIdle": {"frameMs": {"median": 16.9, "p95": 33.4, "max": 41.7, "over25": 176}, "cpuRenderMs": {"median": 1.0, "p95": 1.4, "max": 1.7}},
+    "diagnosticDepthDisabled": {"frameMs": {"median": 33.3, "p95": 33.5, "over25": 358}, "cpuRenderMs": {"median": 1.5, "p95": 2.3}, "note": "Temporary prototype override restored immediately; no artifact modification."},
+    "freshHiddenPreview": {
+      "idle": {"frameMs": {"median": 33.3, "p95": 33.5, "max": 41.8, "over25": 333}, "cpuRenderMs": {"median": 1.3, "p95": 1.7}},
+      "coreSelected": {"frameMs": {"median": 33.3, "p95": 33.5, "max": 41.7, "over25": 334}, "cpuRenderMs": {"median": 1.6, "p95": 2.3}}
+    },
+    "preservedPreviousVersionSameSession": {
+      "earlier": {"frameMs": {"median": 16.7, "p95": 16.8, "max": 41.6, "over25": 2}, "cpuRenderMs": {"median": 0.6, "p95": 0.8}},
+      "later": {"frameMs": {"median": 33.3, "p95": 33.5, "max": 41.8, "over25": 351}, "cpuRenderMs": {"median": 1.0, "p95": 1.3}}
+    },
+    "interpretation": "Frame scheduling varied from about 60 to 30Hz in both the current and preserved previous version. Environment contribution is supported by the comparison; the exact cause was not established. No fixed-60fps or high-refresh hardware claim. CPU render timing excludes GPU completion."
+  },
+  "independentNumericalReview": {
+    "response": "Fixed scenario-preactivated engines emitting on first hover frame by adding a separate responseSince clock. Retest: short hover cancels, about 0.8s stable hover emits once, hold never repeats, pause freezes, reduced motion clears, maximum two waves.",
+    "depth": "Seeded fixed topology, finite coordinates, desktop/mobile culling and allocation reuse checked.",
+    "shader": "Existing five/six-argument lapis calls preserved. Outside-sphere early return matched original RGBA/discard in 30300 radius/DPR/energy/finish combinations; AA silhouette retained."
+  },
+  "validation": {"motionTestsPassed": 11, "javascriptSyntax": "passed", "additionalReproducibleReviewFindings": 0},
+  "preservedPreviousSilverSha256": "d6a216fd0dcd0c436b0f71257c03edf0aa29776fe1d3f86a6a0df709308d3ead",
+  "delivery": "Local standalone HTML and loopback preview. No production deployment."
+}

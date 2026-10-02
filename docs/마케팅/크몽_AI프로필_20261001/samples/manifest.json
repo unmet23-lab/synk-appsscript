@@ -1,0 +1,50 @@
+{
+  "preparedAt": "2026-10-01",
+  "inputKind": "유호 인터뷰 원본 프레임. 생성된 캐스팅 사진은 입력하지 않음.",
+  "references": [
+    {
+      "file": "..\\PULSE_AI모델_캐스팅_20260930\\raw\\yuho-ref-0048.png",
+      "sha256": "f8af6efbb5377c84b006bfcee58ce0420771d4aae77ff068024145d84a0d9fda"
+    },
+    {
+      "file": "..\\PULSE_AI모델_캐스팅_20260930\\raw\\yuho-ref-0112.png",
+      "sha256": "cdc7d3edac93f26f3d96bebd5d74692eb3e64355209b23062171f3a19abe1197"
+    },
+    {
+      "file": "..\\PULSE_AI모델_캐스팅_20260930\\raw\\yuho-ref-0136.png",
+      "sha256": "0c3a39d95049164957d80527381e993b38e35800cedba83599e5a916dfe3acd9"
+    }
+  ],
+  "results": [
+    {
+      "sample": "01_studio",
+      "label": "스튜디오 · 기본 프로필",
+      "jobId": "0932f89d-f172-4da9-aff0-9f567a635471",
+      "model": "nano_banana_pro",
+      "status": "completed",
+      "file": "samples/01_studio.png",
+      "bytes": 6251164,
+      "sha256": "34b040b052213028c23dfc3c825c2a649fe22bb25dd748b5cd18a7f2801ba0a4"
+    },
+    {
+      "sample": "02_business",
+      "label": "비즈니스 · 대표/강사 소개",
+      "jobId": "391b4025-4d0a-4802-9f3d-774cb67c1421",
+      "model": "nano_banana_pro",
+      "status": "completed",
+      "file": "samples/02_business.png",
+      "bytes": 6453982,
+      "sha256": "0320ce0d827d5d773f03f0b4772d967ad15c9e7aa93c0689fc8367a5629c6256"
+    },
+    {
+      "sample": "03_editorial",
+      "label": "크리에이터 · 채널 소개",
+      "jobId": "68791b4d-1a82-42f1-b4db-2a417deefb3d",
+      "model": "nano_banana_pro",
+      "status": "completed",
+      "file": "samples/03_editorial.png",
+      "bytes": 6516297,
+      "sha256": "c9b498167fa4aa40b65d4654f6e72f204a4aa4ed1e250363a4007f4fe179ea3f"
+    }
+  ]
+}

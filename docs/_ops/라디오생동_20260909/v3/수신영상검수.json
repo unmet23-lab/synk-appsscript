@@ -1,0 +1,49 @@
+{
+  "video": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\라디오생동_20260909\\v3\\유튜브수신_새배경.mp4",
+  "sha256": "35b49c5549eb09d04fbb0463fbd648f4b89be1f12c3d8aa7683d1c028259e8b6",
+  "cloud_frames_2fps": 240,
+  "face_frames_5fps": 600,
+  "master_match": {
+    "estimated_cycle_phase_offset_seconds": 2.0,
+    "mean_correlation_expected_15s_cycle_excluding_first5s": 0.9793433756606735,
+    "p10_correlation": 0.971625950068252,
+    "median_correlation": 0.9922080145189379,
+    "dynamic_mask_pixel_count": 8561,
+    "note": "Correlation on changing cloud pixels across expected real-time phase, not static-background similarity."
+  },
+  "exact_cloud_frame_hold_longest_seconds": 0.0,
+  "selected_face_times": [
+    3.0,
+    11.4,
+    15.2,
+    20.0,
+    32.4,
+    40.0,
+    42.4,
+    44.6,
+    52.2,
+    60.0,
+    67.4,
+    80.0,
+    80.2,
+    92.6,
+    100.0,
+    104.6,
+    115.0,
+    118.6
+  ],
+  "human_continuous_viewing_claim": false,
+  "visual_findings": [
+    "Received cloud positions visibly advance at 3, 6, and 9 seconds and follow the new master's expected 15-second cycle across the 120-second recording.",
+    "No abnormal long background stop was detected by the 2fps phase-correspondence screening. Exact image equality alone was not used as proof of motion.",
+    "Actual face pixels show narrow closed lids at 11.4 and 67.4 seconds, arched smiling eyes at 32.4 and 92.6 seconds, lowered/closed-eye shapes at 44.6 and 104.6 seconds, and open eyes at 20, 60, and 100 seconds.",
+    "At 15.2 seconds the mascot sits lower than its usual position. The cause is not established by this video audit. Parent reports existing greeting/changeover motion in unchanged server HTML; this is not classified as a new background defect."
+  ],
+  "limits": [
+    "Independent agent inspected decoded frames and time-series correspondence, not continuous normal-speed playback.",
+    "Sub-half-second rendering stalls and the comfort of long continuous viewing are not proven by the 2fps background sampling.",
+    "Expression labels are visual descriptions, not inferred runtime API state."
+  ],
+  "contact_sheet": "docs/_ops/라디오생동_20260909/v3/수신영상검수_비교.png",
+  "source_video_server_or_git_modified": false
+}

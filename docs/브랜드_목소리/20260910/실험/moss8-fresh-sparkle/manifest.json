@@ -1,0 +1,41 @@
+{
+  "candidate": "moss8-fresh-sparkle",
+  "space": "OpenMOSS-Team/MOSS-TTS-v1.5",
+  "api": "/run_inference",
+  "parameters": {
+    "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+    "reference_audio": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\qwen-fresh-sparkle\\raw.wav",
+      "meta": {
+        "_type": "gradio.FileData"
+      },
+      "orig_name": "raw.wav"
+    },
+    "mode_with_reference": "Clone",
+    "duration_control_enabled": false,
+    "duration_tokens": 1,
+    "language_tag": "Korean",
+    "temperature": 1.7,
+    "top_p": 0.8,
+    "top_k": 25,
+    "repetition_penalty": 1.0,
+    "max_new_tokens": 4096
+  },
+  "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+  "synthetic": true,
+  "privateReferenceUploaded": false,
+  "higgsfieldUsed": false,
+  "humanListening": false,
+  "startedAt": 1789031469.8735018,
+  "reference": {
+    "type": "original synthetic voice created for this comparison; not an identified person",
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\qwen-fresh-sparkle\\raw.wav",
+    "sha256": "798eb1e01a4f99eaca44f939e596b07add412b4e181e864dfcf9309929263148",
+    "origin": "Qwen3-TTS VoiceDesign official demo"
+  },
+  "providerMessage": "Done | mode: Clone | language=Korean | elapsed: 14.54s | max_new_tokens=4096, expected_tokens=off, audio_temperature=1.70, audio_top_p=0.80, audio_top_k=25, audio_repetition_penalty=1.00",
+  "status": "completed",
+  "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\moss8-fresh-sparkle\\raw.wav",
+  "sha256": "b4330a7e450f6eeecea46dab88ba80a2865e14e41b5fbff62f9bb733860d01d6",
+  "elapsedSeconds": 21.01600000000053
+}

@@ -1,0 +1,21 @@
+{
+  "candidate": "a3-ten-06",
+  "space": "Qwen/Qwen3-TTS",
+  "api": "/generate_voice_design",
+  "parameters": {
+    "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+    "language": "Korean",
+    "voice_description": "A bright young adult Korean female voice, clear and gently warm, with a smooth full tone. She speaks in lively everyday Korean, smiling lightly, connecting syllables naturally and finishing each thought with relaxed confidence."
+  },
+  "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+  "synthetic": true,
+  "privateReferenceUploaded": false,
+  "higgsfieldUsed": false,
+  "humanListening": false,
+  "startedAt": 1789033704.8501377,
+  "providerMessage": "Voice design generation completed successfully!",
+  "status": "completed",
+  "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\a3-ten-06\\raw.wav",
+  "sha256": "1c8f7a7a9c9d77fb77c6ddafe185aef21d62d1effee4d653797964dd6a13ee3a",
+  "elapsedSeconds": 15.0
+}

@@ -1,0 +1,119 @@
+[
+  {
+    "id": "behance-00-cover",
+    "channel": "Behance",
+    "w": 1616,
+    "h": 1264,
+    "title": "프로젝트 표지",
+    "alt": "SYNK 로고와 Felt & Glass 제목 아래 검은 펠트 바탕, 파란 소품과 유리 로고를 사용한 SNS 커버",
+    "file": "images/behance-00-cover.png"
+  },
+  {
+    "id": "behance-01-overview",
+    "channel": "Behance",
+    "w": 1400,
+    "h": 1310,
+    "title": "완성 작품",
+    "alt": "검정 펠트 바탕에 유리 로고, 파란 웹·콘텐츠 소품을 배치한 SYNK SHIFT 완성 커버",
+    "file": "images/behance-01-overview.png"
+  },
+  {
+    "id": "behance-02-channels",
+    "channel": "Behance",
+    "w": 1400,
+    "h": 1540,
+    "title": "채널별 설명",
+    "alt": "한국어 교육, AI 업무 활용, 유호의 제작 기록에 맞춰 문구와 소품을 달리한 실제 커버 세 개",
+    "file": "images/behance-02-channels.png"
+  },
+  {
+    "id": "behance-03-material",
+    "channel": "Behance",
+    "w": 1400,
+    "h": 1400,
+    "title": "재질과 가독성",
+    "alt": "SNS 커버에 사용한 밝은 배경의 유리 로고와 파란 펠트 소품 원본을 보여주는 재질 상세",
+    "file": "images/behance-03-material.png"
+  },
+  {
+    "id": "behance-04-before-after",
+    "channel": "Behance",
+    "w": 1400,
+    "h": 1610,
+    "title": "실제 수정 전후",
+    "alt": "위쪽은 Behance 커버 배치 수정 전후 업로드 원본. 아래쪽은 몽글 프로필의 크림색 배경을 흰색으로 바꾼 실제 원본 비교",
+    "file": "images/behance-04-before-after.png"
+  },
+  {
+    "id": "behance-05-process",
+    "channel": "Behance",
+    "w": 1400,
+    "h": 1100,
+    "title": "제작 과정과 크레딧",
+    "alt": "방문자와 내용 정하기, 브랜드 자산 조합하기, 실제 크기 확인하기의 세 단계와 제작 크레딧",
+    "file": "images/behance-05-process.png"
+  },
+  {
+    "id": "pinterest-01-overview",
+    "channel": "Pinterest",
+    "w": 1000,
+    "h": 1500,
+    "title": "대표 디자인 핀",
+    "alt": "흰 바탕의 Felt & Glass 제목과 검정 펠트에 파란 소품을 배치한 SYNK 커버 디자인",
+    "file": "images/pinterest-01-overview.png"
+  },
+  {
+    "id": "pinterest-02-light-dark",
+    "channel": "Pinterest",
+    "w": 1000,
+    "h": 1500,
+    "title": "밝고 어두운 바탕 핀",
+    "alt": "위쪽 흰 바탕의 LAB 커버와 아래쪽 검정 바탕의 SHIFT 커버를 비교한 디자인 핀",
+    "file": "images/pinterest-02-light-dark.png"
+  },
+  {
+    "id": "pinterest-03-detail",
+    "channel": "Pinterest",
+    "w": 1000,
+    "h": 1500,
+    "title": "재질 상세 핀",
+    "alt": "SNS 커버에 사용한 투명 유리 로고 원본과 파란 펠트 소품의 섬유·실땀 상세",
+    "file": "images/pinterest-03-detail.png"
+  },
+  {
+    "id": "linkedin-personal-01",
+    "channel": "LinkedIn 개인",
+    "w": 1200,
+    "h": 1500,
+    "title": "유호의 제작 판단",
+    "alt": "양유호의 SNS 디자인 판단. 공통으로 유지한 로고와 재질, 채널별로 조정한 설명과 소품을 완성 커버와 함께 소개",
+    "file": "images/linkedin-personal-01.png"
+  },
+  {
+    "id": "linkedin-company-01",
+    "channel": "LinkedIn 회사",
+    "w": 1200,
+    "h": 1500,
+    "title": "회사 소개와 제작 사례",
+    "alt": "펠트 서울 풍경 속 세 캐릭터와 SYNK의 LAB, SHIFT, PULSE, PATH 사업 소개",
+    "file": "images/linkedin-company-01.png"
+  },
+  {
+    "id": "kakao-shift-01",
+    "channel": "카카오톡 SHIFT",
+    "w": 1080,
+    "h": 1080,
+    "title": "상담 분야 안내",
+    "alt": "AI 교육, 업무 활용 상담, 브랜딩 세 분야를 서비스 설명용 펠트 이미지와 함께 소개. 준비 중이며 채널 채팅으로 문의 안내",
+    "file": "images/kakao-shift-01.png"
+  },
+  {
+    "id": "kakao-shift-02",
+    "channel": "카카오톡 SHIFT",
+    "w": 1080,
+    "h": 1080,
+    "title": "문의 방법",
+    "alt": "카카오톡 채팅 문의에 적을 세 가지: 지금 하는 일, 불편한 부분, 필요한 결과. 각 항목에 짧은 예시",
+    "file": "images/kakao-shift-02.png"
+  }
+]

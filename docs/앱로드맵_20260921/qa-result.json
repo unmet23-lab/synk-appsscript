@@ -1,0 +1,53 @@
+{
+  "date": "2026-09-21",
+  "browser": "Microsoft Edge headless",
+  "offline": true,
+  "chapters": 14,
+  "featureChapters": 12,
+  "features": 50,
+  "images": 23,
+  "fonts": [
+    {
+      "font": "16px SUIT",
+      "loaded": true
+    },
+    {
+      "font": "16px \"Inter Tight\"",
+      "loaded": true
+    },
+    {
+      "font": "12px \"DM Mono\"",
+      "loaded": true
+    }
+  ],
+  "widths": [
+    {
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "viewport": 390,
+      "document": 390
+    },
+    {
+      "viewport": 320,
+      "document": 320
+    }
+  ],
+  "errors": [],
+  "network": [],
+  "checks": [
+    "all chapter and source targets",
+    "feature expansion/collapse",
+    "search empty/results",
+    "status filter",
+    "search result opens feature",
+    "help explanation selection",
+    "five activity scenes",
+    "four nearby action explanations",
+    "mobile section selector",
+    "offline fonts and images",
+    "print expansion/restoration",
+    "responsive 320/390/1440"
+  ]
+}

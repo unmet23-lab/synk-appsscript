@@ -1,0 +1,21 @@
+{
+  "candidate": "a-natural-conversation",
+  "space": "Qwen/Qwen3-TTS",
+  "api": "/generate_voice_design",
+  "parameters": {
+    "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+    "language": "Korean",
+    "voice_description": "밝고 맑은 중고음의 한국인 성인 여성. 가까운 사람에게 웃으며 이야기하는 자연스러운 대화체. 음색은 산뜻하고 울림은 충분하다. 문장의 뜻에 따라 말끝을 편안하게 맺고, 자음과 모음을 부드럽게 연결한다."
+  },
+  "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+  "synthetic": true,
+  "privateReferenceUploaded": false,
+  "higgsfieldUsed": false,
+  "humanListening": false,
+  "startedAt": 1789032575.520133,
+  "providerMessage": "Voice design generation completed successfully!",
+  "status": "completed",
+  "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\a-natural-conversation\\raw.wav",
+  "sha256": "173db6e1ba4e3463a7184c5c449e137709e59dcc425e7290113d8f5f0706128a",
+  "elapsedSeconds": 24.0
+}

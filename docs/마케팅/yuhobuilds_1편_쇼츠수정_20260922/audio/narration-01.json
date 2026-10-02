@@ -1,0 +1,74 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "오늘은 번역 좀 하려고 결제했다가, 출석 앱까지 만들게 된 얘기예요.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.24,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 3.387,
+  "words": [
+    {
+      "text": "오늘은",
+      "start": 0.073,
+      "end": 0.279
+    },
+    {
+      "text": "번역",
+      "start": 0.401,
+      "end": 0.607
+    },
+    {
+      "text": "좀",
+      "start": 0.643,
+      "end": 0.728
+    },
+    {
+      "text": "하려고",
+      "start": 0.765,
+      "end": 0.947
+    },
+    {
+      "text": "결제했다가,",
+      "start": 0.983,
+      "end": 1.42
+    },
+    {
+      "text": "출석",
+      "start": 1.809,
+      "end": 2.125
+    },
+    {
+      "text": "앱까지",
+      "start": 2.161,
+      "end": 2.452
+    },
+    {
+      "text": "만들게",
+      "start": 2.501,
+      "end": 2.768
+    },
+    {
+      "text": "된",
+      "start": 2.804,
+      "end": 2.902
+    },
+    {
+      "text": "얘기예요.",
+      "start": 2.938,
+      "end": 3.387
+    }
+  ],
+  "characters": null
+}

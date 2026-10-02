@@ -1,0 +1,185 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 4.423,
+  "words": [
+    {
+      "text": "회의할",
+      "start": 0.422,
+      "end": 0.804
+    },
+    {
+      "text": "때,",
+      "start": 0.865,
+      "end": 1.025
+    },
+    {
+      "text": "컴퓨터나",
+      "start": 1.548,
+      "end": 2.131
+    },
+    {
+      "text": "메모장에",
+      "start": 2.292,
+      "end": 2.915
+    },
+    {
+      "text": "내용",
+      "start": 3.096,
+      "end": 3.358
+    },
+    {
+      "text": "적어두시죠?",
+      "start": 3.418,
+      "end": 4.423
+    }
+  ],
+  "characters": [
+    {
+      "text": "회",
+      "start": 0.422,
+      "end": 0.563
+    },
+    {
+      "text": "의",
+      "start": 0.563,
+      "end": 0.643
+    },
+    {
+      "text": "할",
+      "start": 0.643,
+      "end": 0.804
+    },
+    {
+      "text": " ",
+      "start": 0.804,
+      "end": 0.865
+    },
+    {
+      "text": "때",
+      "start": 0.865,
+      "end": 1.005
+    },
+    {
+      "text": ",",
+      "start": 1.005,
+      "end": 1.025
+    },
+    {
+      "text": " ",
+      "start": 1.025,
+      "end": 1.548
+    },
+    {
+      "text": "컴",
+      "start": 1.548,
+      "end": 1.709
+    },
+    {
+      "text": "퓨",
+      "start": 1.709,
+      "end": 1.87
+    },
+    {
+      "text": "터",
+      "start": 1.87,
+      "end": 2.031
+    },
+    {
+      "text": "나",
+      "start": 2.031,
+      "end": 2.131
+    },
+    {
+      "text": " ",
+      "start": 2.131,
+      "end": 2.292
+    },
+    {
+      "text": "메",
+      "start": 2.292,
+      "end": 2.433
+    },
+    {
+      "text": "모",
+      "start": 2.433,
+      "end": 2.614
+    },
+    {
+      "text": "장",
+      "start": 2.614,
+      "end": 2.895
+    },
+    {
+      "text": "에",
+      "start": 2.895,
+      "end": 2.915
+    },
+    {
+      "text": " ",
+      "start": 2.915,
+      "end": 3.096
+    },
+    {
+      "text": "내",
+      "start": 3.096,
+      "end": 3.217
+    },
+    {
+      "text": "용",
+      "start": 3.217,
+      "end": 3.358
+    },
+    {
+      "text": " ",
+      "start": 3.358,
+      "end": 3.418
+    },
+    {
+      "text": "적",
+      "start": 3.418,
+      "end": 3.579
+    },
+    {
+      "text": "어",
+      "start": 3.579,
+      "end": 3.659
+    },
+    {
+      "text": "두",
+      "start": 3.659,
+      "end": 3.78
+    },
+    {
+      "text": "시",
+      "start": 3.78,
+      "end": 3.9
+    },
+    {
+      "text": "죠",
+      "start": 3.9,
+      "end": 4.403
+    },
+    {
+      "text": "?",
+      "start": 4.403,
+      "end": 4.423
+    }
+  ],
+  "request": {
+    "seed": 923,
+    "model": "ssfm-v30",
+    "voice_id": "tc_6a7446c19f2d7dfed990a900",
+    "text": "회의할 때, 컴퓨터나 메모장에 내용 적어두시죠?",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.04,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "tonedown",
+      "emotion_intensity": 0.5
+    }
+  }
+}

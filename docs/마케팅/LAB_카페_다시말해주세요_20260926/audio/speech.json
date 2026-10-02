@@ -1,0 +1,392 @@
+[
+  {
+    "id": "question",
+    "role": "barista",
+    "text": "드시고 가세요, 가지고 가세요?",
+    "provider": "Microsoft Edge TTS",
+    "settings": {
+      "voice": "ko-KR-SunHiNeural",
+      "rate": "+0%",
+      "pitch": "+0Hz"
+    },
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\question.mp3",
+    "duration": 3.144,
+    "words": [
+      {
+        "text": "드시고",
+        "start": 0.1,
+        "end": 0.525
+      },
+      {
+        "text": "가세요",
+        "start": 0.5375,
+        "end": 1.175
+      },
+      {
+        "text": "가지고",
+        "start": 1.3,
+        "end": 1.7
+      },
+      {
+        "text": "가세요",
+        "start": 1.7125,
+        "end": 2.2625
+      }
+    ]
+  },
+  {
+    "id": "yes",
+    "role": "mongle",
+    "text": "네!",
+    "provider": "Microsoft Edge TTS",
+    "settings": {
+      "voice": "ko-KR-InJoonNeural",
+      "rate": "+0%",
+      "pitch": "+8Hz"
+    },
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\yes.mp3",
+    "duration": 1.872,
+    "words": [
+      {
+        "text": "네",
+        "start": 0.1,
+        "end": 0.825
+      }
+    ]
+  },
+  {
+    "id": "thought",
+    "role": "mongle",
+    "text": "어? 나 방금 뭐라고 한 거지?",
+    "provider": "Microsoft Edge TTS",
+    "settings": {
+      "voice": "ko-KR-InJoonNeural",
+      "rate": "+0%",
+      "pitch": "+8Hz"
+    },
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\thought.mp3",
+    "duration": 4.44,
+    "words": [
+      {
+        "text": "어",
+        "start": 0.1,
+        "end": 0.6125
+      },
+      {
+        "text": "나",
+        "start": 1.5625,
+        "end": 1.9125
+      },
+      {
+        "text": "방금",
+        "start": 1.925,
+        "end": 2.2625
+      },
+      {
+        "text": "뭐라고",
+        "start": 2.275,
+        "end": 2.625
+      },
+      {
+        "text": "한",
+        "start": 2.6375,
+        "end": 2.75
+      },
+      {
+        "text": "거지",
+        "start": 2.7625,
+        "end": 3.45
+      }
+    ]
+  },
+  {
+    "id": "guide",
+    "role": "guide",
+    "text": "잘 못 들었을 땐, 이렇게 말해 보세요.",
+    "provider": "Microsoft Edge TTS",
+    "settings": {
+      "voice": "ko-KR-SunHiNeural",
+      "rate": "-3%",
+      "pitch": "-2Hz"
+    },
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\guide.mp3",
+    "duration": 3.816,
+    "words": [
+      {
+        "text": "잘",
+        "start": 0.101541,
+        "end": 0.372166
+      },
+      {
+        "text": "못",
+        "start": 0.385041,
+        "end": 0.539666
+      },
+      {
+        "text": "들었을",
+        "start": 0.552583,
+        "end": 1.029374
+      },
+      {
+        "text": "땐",
+        "start": 1.04225,
+        "end": 1.454625
+      },
+      {
+        "text": "이렇게",
+        "start": 1.647958,
+        "end": 2.034541
+      },
+      {
+        "text": "말해",
+        "start": 2.047416,
+        "end": 2.330916
+      },
+      {
+        "text": "보세요",
+        "start": 2.343833,
+        "end": 2.910833
+      }
+    ]
+  },
+  {
+    "id": "phrase",
+    "role": "mongle",
+    "text": "다시 말해 주세요.",
+    "provider": "Microsoft Edge TTS",
+    "settings": {
+      "voice": "ko-KR-InJoonNeural",
+      "rate": "-10%",
+      "pitch": "+8Hz"
+    },
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\phrase.mp3",
+    "duration": 2.928,
+    "words": [
+      {
+        "text": "다시",
+        "start": 0.105541,
+        "end": 0.633332
+      },
+      {
+        "text": "말해",
+        "start": 0.647208,
+        "end": 0.952749
+      },
+      {
+        "text": "주세요",
+        "start": 0.966666,
+        "end": 1.897207
+      }
+    ]
+  },
+  {
+    "id": "repeat",
+    "role": "guide",
+    "text": "한 번 따라 말해 볼까요?",
+    "provider": "Microsoft Edge TTS",
+    "settings": {
+      "voice": "ko-KR-SunHiNeural",
+      "rate": "-3%",
+      "pitch": "-2Hz"
+    },
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\repeat.mp3",
+    "duration": 2.712,
+    "words": [
+      {
+        "text": "한",
+        "start": 0.101541,
+        "end": 0.320624
+      },
+      {
+        "text": "번",
+        "start": 0.3335,
+        "end": 0.578333
+      },
+      {
+        "text": "따라",
+        "start": 0.59125,
+        "end": 0.87475
+      },
+      {
+        "text": "말해",
+        "start": 0.887625,
+        "end": 1.15825
+      },
+      {
+        "text": "볼까요",
+        "start": 1.171125,
+        "end": 1.802583
+      }
+    ]
+  },
+  {
+    "id": "easy-question",
+    "role": "barista",
+    "text": "여기서 드세요? 가져가세요?",
+    "provider": "Microsoft Edge TTS",
+    "settings": {
+      "voice": "ko-KR-SunHiNeural",
+      "rate": "+0%",
+      "pitch": "+0Hz"
+    },
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\easy-question.mp3",
+    "duration": 3.744,
+    "words": [
+      {
+        "text": "여기서",
+        "start": 0.1,
+        "end": 0.55
+      },
+      {
+        "text": "드세요",
+        "start": 0.5625,
+        "end": 1.1125
+      },
+      {
+        "text": "가져가세요",
+        "start": 1.975,
+        "end": 2.875
+      }
+    ]
+  },
+  {
+    "id": "eat",
+    "role": "mongle",
+    "text": "여기서 먹을게요.",
+    "provider": "Microsoft Edge TTS",
+    "settings": {
+      "voice": "ko-KR-InJoonNeural",
+      "rate": "+0%",
+      "pitch": "+8Hz"
+    },
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\eat.mp3",
+    "duration": 2.664,
+    "words": [
+      {
+        "text": "여기서",
+        "start": 0.1,
+        "end": 0.6875
+      },
+      {
+        "text": "먹을게요",
+        "start": 0.7,
+        "end": 1.7375
+      }
+    ]
+  },
+  {
+    "id": "receipt",
+    "role": "barista",
+    "text": "영수증 드릴까요?",
+    "provider": "Microsoft Edge TTS",
+    "settings": {
+      "voice": "ko-KR-SunHiNeural",
+      "rate": "+0%",
+      "pitch": "+0Hz"
+    },
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\receipt.mp3",
+    "duration": 2.256,
+    "words": [
+      {
+        "text": "영수증",
+        "start": 0.1,
+        "end": 0.6625
+      },
+      {
+        "text": "드릴까요",
+        "start": 0.675,
+        "end": 1.3875
+      }
+    ]
+  },
+  {
+    "id": "your-turn",
+    "role": "guide",
+    "text": "이번엔 직접 말해 보세요.",
+    "provider": "Microsoft Edge TTS",
+    "settings": {
+      "voice": "ko-KR-SunHiNeural",
+      "rate": "-3%",
+      "pitch": "-2Hz"
+    },
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\your-turn.mp3",
+    "duration": 2.832,
+    "words": [
+      {
+        "text": "이번엔",
+        "start": 0.101541,
+        "end": 0.616999
+      },
+      {
+        "text": "직접",
+        "start": 0.629916,
+        "end": 1.042291
+      },
+      {
+        "text": "말해",
+        "start": 1.055166,
+        "end": 1.325791
+      },
+      {
+        "text": "보세요",
+        "start": 1.338666,
+        "end": 1.918582
+      }
+    ]
+  },
+  {
+    "id": "easy-receipt",
+    "role": "barista",
+    "text": "영수증 필요하세요?",
+    "provider": "Microsoft Edge TTS",
+    "settings": {
+      "voice": "ko-KR-SunHiNeural",
+      "rate": "+0%",
+      "pitch": "+0Hz"
+    },
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\easy-receipt.mp3",
+    "duration": 2.352,
+    "words": [
+      {
+        "text": "영수증",
+        "start": 0.1,
+        "end": 0.65
+      },
+      {
+        "text": "필요하세요",
+        "start": 0.6625,
+        "end": 1.475
+      }
+    ]
+  },
+  {
+    "id": "thanks",
+    "role": "mongle",
+    "text": "아, 괜찮아요. 감사합니다!",
+    "provider": "Microsoft Edge TTS",
+    "settings": {
+      "voice": "ko-KR-InJoonNeural",
+      "rate": "+0%",
+      "pitch": "+8Hz"
+    },
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\thanks.mp3",
+    "duration": 4.896,
+    "words": [
+      {
+        "text": "아",
+        "start": 0.125,
+        "end": 0.575
+      },
+      {
+        "text": "괜찮아요",
+        "start": 0.675,
+        "end": 1.9
+      },
+      {
+        "text": "감사합니다",
+        "start": 2.8,
+        "end": 3.9625
+      }
+    ]
+  }
+]

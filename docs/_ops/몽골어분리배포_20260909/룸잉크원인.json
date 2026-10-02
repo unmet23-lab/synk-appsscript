@@ -1,0 +1,693 @@
+{
+  "checkedAt": "2026-09-09T07:34:12.814Z",
+  "reports": [
+    {
+      "file": "docs/엔진/SYNK_Core_소개서.html",
+      "findings": [
+        {
+          "선택자": ".엔진전시 .번호",
+          "부품": "번호",
+          "태그": "span",
+          "색": "#2B2320",
+          "특정도": [
+            0,
+            2,
+            0
+          ],
+          "대비": 1.0957871990796428,
+          "판정": "🔴"
+        }
+      ],
+      "numberCount": 6,
+      "allImageOnly": true,
+      "css": [
+        {
+          "line": 880,
+          "rule": ".엔진전시 .번호{color:#2B2320;text-shadow:none}"
+        },
+        {
+          "line": 881,
+          "rule": ".엔진전시 .번호.구운번호{width:var(--장);height:var(--장);flex:0 0 var(--장);background:none!important;box-shadow:none!important;border:none;padding:0;border-radius:0;font-size:0;line-height:0;overflow:visible}"
+        },
+        {
+          "line": 882,
+          "rule": ".엔진전시 .번호.구운번호::before,.엔진전시 .번호.구운번호::after{content:none!important;display:none!important}"
+        },
+        {
+          "line": 883,
+          "rule": ".엔진전시 .구운번호 img{display:block;width:100%;height:100%;object-fit:contain;max-width:none}"
+        }
+      ],
+      "numbers": [
+        {
+          "line": 968,
+          "attributes": "class=\"번호 구운번호\" data-n=\"01\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"01\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 972,
+          "attributes": "class=\"번호 구운번호\" data-n=\"02\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"02\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 973,
+          "attributes": "class=\"번호 구운번호\" data-n=\"03\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"03\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 975,
+          "attributes": "class=\"번호 구운번호\" data-n=\"04\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"04\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 976,
+          "attributes": "class=\"번호 구운번호\" data-n=\"05\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"05\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 978,
+          "attributes": "class=\"번호 구운번호\" data-n=\"06\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"06\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        }
+      ]
+    },
+    {
+      "file": "docs/엔진/SYNK_Loom_소개서.html",
+      "findings": [
+        {
+          "선택자": ".엔진전시 .번호",
+          "부품": "번호",
+          "태그": "span",
+          "색": "#2B2320",
+          "특정도": [
+            0,
+            2,
+            0
+          ],
+          "대비": 1.0957871990796428,
+          "판정": "🔴"
+        }
+      ],
+      "numberCount": 6,
+      "allImageOnly": true,
+      "css": [
+        {
+          "line": 880,
+          "rule": ".엔진전시 .번호{color:#2B2320;text-shadow:none}"
+        },
+        {
+          "line": 881,
+          "rule": ".엔진전시 .번호.구운번호{width:var(--장);height:var(--장);flex:0 0 var(--장);background:none!important;box-shadow:none!important;border:none;padding:0;border-radius:0;font-size:0;line-height:0;overflow:visible}"
+        },
+        {
+          "line": 882,
+          "rule": ".엔진전시 .번호.구운번호::before,.엔진전시 .번호.구운번호::after{content:none!important;display:none!important}"
+        },
+        {
+          "line": 883,
+          "rule": ".엔진전시 .구운번호 img{display:block;width:100%;height:100%;object-fit:contain;max-width:none}"
+        }
+      ],
+      "numbers": [
+        {
+          "line": 968,
+          "attributes": "class=\"번호 구운번호\" data-n=\"01\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"01\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 971,
+          "attributes": "class=\"번호 구운번호\" data-n=\"02\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"02\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 972,
+          "attributes": "class=\"번호 구운번호\" data-n=\"03\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"03\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 974,
+          "attributes": "class=\"번호 구운번호\" data-n=\"04\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"04\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 975,
+          "attributes": "class=\"번호 구운번호\" data-n=\"05\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"05\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 977,
+          "attributes": "class=\"번호 구운번호\" data-n=\"06\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"06\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        }
+      ]
+    },
+    {
+      "file": "docs/엔진/SYNK_Prism_소개서.html",
+      "findings": [
+        {
+          "선택자": ".엔진전시 .번호",
+          "부품": "번호",
+          "태그": "span",
+          "색": "#2B2320",
+          "특정도": [
+            0,
+            2,
+            0
+          ],
+          "대비": 1.0957871990796428,
+          "판정": "🔴"
+        }
+      ],
+      "numberCount": 6,
+      "allImageOnly": true,
+      "css": [
+        {
+          "line": 880,
+          "rule": ".엔진전시 .번호{color:#2B2320;text-shadow:none}"
+        },
+        {
+          "line": 881,
+          "rule": ".엔진전시 .번호.구운번호{width:var(--장);height:var(--장);flex:0 0 var(--장);background:none!important;box-shadow:none!important;border:none;padding:0;border-radius:0;font-size:0;line-height:0;overflow:visible}"
+        },
+        {
+          "line": 882,
+          "rule": ".엔진전시 .번호.구운번호::before,.엔진전시 .번호.구운번호::after{content:none!important;display:none!important}"
+        },
+        {
+          "line": 883,
+          "rule": ".엔진전시 .구운번호 img{display:block;width:100%;height:100%;object-fit:contain;max-width:none}"
+        }
+      ],
+      "numbers": [
+        {
+          "line": 968,
+          "attributes": "class=\"번호 구운번호\" data-n=\"01\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"01\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 971,
+          "attributes": "class=\"번호 구운번호\" data-n=\"02\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"02\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 972,
+          "attributes": "class=\"번호 구운번호\" data-n=\"03\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"03\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 974,
+          "attributes": "class=\"번호 구운번호\" data-n=\"04\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"04\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 975,
+          "attributes": "class=\"번호 구운번호\" data-n=\"05\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"05\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 977,
+          "attributes": "class=\"번호 구운번호\" data-n=\"06\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"06\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        }
+      ]
+    },
+    {
+      "file": "docs/엔진/SYNK_Reed_소개서.html",
+      "findings": [
+        {
+          "선택자": ".엔진전시 .번호",
+          "부품": "번호",
+          "태그": "span",
+          "색": "#2B2320",
+          "특정도": [
+            0,
+            2,
+            0
+          ],
+          "대비": 1.0957871990796428,
+          "판정": "🔴"
+        }
+      ],
+      "numberCount": 6,
+      "allImageOnly": true,
+      "css": [
+        {
+          "line": 880,
+          "rule": ".엔진전시 .번호{color:#2B2320;text-shadow:none}"
+        },
+        {
+          "line": 881,
+          "rule": ".엔진전시 .번호.구운번호{width:var(--장);height:var(--장);flex:0 0 var(--장);background:none!important;box-shadow:none!important;border:none;padding:0;border-radius:0;font-size:0;line-height:0;overflow:visible}"
+        },
+        {
+          "line": 882,
+          "rule": ".엔진전시 .번호.구운번호::before,.엔진전시 .번호.구운번호::after{content:none!important;display:none!important}"
+        },
+        {
+          "line": 883,
+          "rule": ".엔진전시 .구운번호 img{display:block;width:100%;height:100%;object-fit:contain;max-width:none}"
+        }
+      ],
+      "numbers": [
+        {
+          "line": 968,
+          "attributes": "class=\"번호 구운번호\" data-n=\"01\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"01\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 972,
+          "attributes": "class=\"번호 구운번호\" data-n=\"02\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"02\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 973,
+          "attributes": "class=\"번호 구운번호\" data-n=\"03\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"03\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 975,
+          "attributes": "class=\"번호 구운번호\" data-n=\"04\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"04\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 976,
+          "attributes": "class=\"번호 구운번호\" data-n=\"05\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"05\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 978,
+          "attributes": "class=\"번호 구운번호\" data-n=\"06\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"06\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        }
+      ]
+    },
+    {
+      "file": "docs/엔진/SYNK_Temper_소개서.html",
+      "findings": [
+        {
+          "선택자": ".엔진전시 .번호",
+          "부품": "번호",
+          "태그": "span",
+          "색": "#2B2320",
+          "특정도": [
+            0,
+            2,
+            0
+          ],
+          "대비": 1.0957871990796428,
+          "판정": "🔴"
+        }
+      ],
+      "numberCount": 6,
+      "allImageOnly": true,
+      "css": [
+        {
+          "line": 880,
+          "rule": ".엔진전시 .번호{color:#2B2320;text-shadow:none}"
+        },
+        {
+          "line": 881,
+          "rule": ".엔진전시 .번호.구운번호{width:var(--장);height:var(--장);flex:0 0 var(--장);background:none!important;box-shadow:none!important;border:none;padding:0;border-radius:0;font-size:0;line-height:0;overflow:visible}"
+        },
+        {
+          "line": 882,
+          "rule": ".엔진전시 .번호.구운번호::before,.엔진전시 .번호.구운번호::after{content:none!important;display:none!important}"
+        },
+        {
+          "line": 883,
+          "rule": ".엔진전시 .구운번호 img{display:block;width:100%;height:100%;object-fit:contain;max-width:none}"
+        }
+      ],
+      "numbers": [
+        {
+          "line": 968,
+          "attributes": "class=\"번호 구운번호\" data-n=\"01\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"01\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 971,
+          "attributes": "class=\"번호 구운번호\" data-n=\"02\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"02\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 972,
+          "attributes": "class=\"번호 구운번호\" data-n=\"03\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"03\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 974,
+          "attributes": "class=\"번호 구운번호\" data-n=\"04\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"04\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 975,
+          "attributes": "class=\"번호 구운번호\" data-n=\"05\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"05\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 977,
+          "attributes": "class=\"번호 구운번호\" data-n=\"06\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"06\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        }
+      ]
+    },
+    {
+      "file": "docs/엔진/SYNK_Trail_소개서.html",
+      "findings": [
+        {
+          "선택자": ".엔진전시 .번호",
+          "부품": "번호",
+          "태그": "span",
+          "색": "#2B2320",
+          "특정도": [
+            0,
+            2,
+            0
+          ],
+          "대비": 1.0957871990796428,
+          "판정": "🔴"
+        }
+      ],
+      "numberCount": 6,
+      "allImageOnly": true,
+      "css": [
+        {
+          "line": 880,
+          "rule": ".엔진전시 .번호{color:#2B2320;text-shadow:none}"
+        },
+        {
+          "line": 881,
+          "rule": ".엔진전시 .번호.구운번호{width:var(--장);height:var(--장);flex:0 0 var(--장);background:none!important;box-shadow:none!important;border:none;padding:0;border-radius:0;font-size:0;line-height:0;overflow:visible}"
+        },
+        {
+          "line": 882,
+          "rule": ".엔진전시 .번호.구운번호::before,.엔진전시 .번호.구운번호::after{content:none!important;display:none!important}"
+        },
+        {
+          "line": 883,
+          "rule": ".엔진전시 .구운번호 img{display:block;width:100%;height:100%;object-fit:contain;max-width:none}"
+        }
+      ],
+      "numbers": [
+        {
+          "line": 968,
+          "attributes": "class=\"번호 구운번호\" data-n=\"01\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"01\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 971,
+          "attributes": "class=\"번호 구운번호\" data-n=\"02\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"02\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 972,
+          "attributes": "class=\"번호 구운번호\" data-n=\"03\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"03\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 974,
+          "attributes": "class=\"번호 구운번호\" data-n=\"04\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"04\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 975,
+          "attributes": "class=\"번호 구운번호\" data-n=\"05\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"05\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 977,
+          "attributes": "class=\"번호 구운번호\" data-n=\"06\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"06\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        }
+      ]
+    },
+    {
+      "file": "docs/엔진/SYNK_Vellum_소개서.html",
+      "findings": [
+        {
+          "선택자": ".엔진전시 .번호",
+          "부품": "번호",
+          "태그": "span",
+          "색": "#2B2320",
+          "특정도": [
+            0,
+            2,
+            0
+          ],
+          "대비": 1.0957871990796428,
+          "판정": "🔴"
+        }
+      ],
+      "numberCount": 6,
+      "allImageOnly": true,
+      "css": [
+        {
+          "line": 880,
+          "rule": ".엔진전시 .번호{color:#2B2320;text-shadow:none}"
+        },
+        {
+          "line": 881,
+          "rule": ".엔진전시 .번호.구운번호{width:var(--장);height:var(--장);flex:0 0 var(--장);background:none!important;box-shadow:none!important;border:none;padding:0;border-radius:0;font-size:0;line-height:0;overflow:visible}"
+        },
+        {
+          "line": 882,
+          "rule": ".엔진전시 .번호.구운번호::before,.엔진전시 .번호.구운번호::after{content:none!important;display:none!important}"
+        },
+        {
+          "line": 883,
+          "rule": ".엔진전시 .구운번호 img{display:block;width:100%;height:100%;object-fit:contain;max-width:none}"
+        }
+      ],
+      "numbers": [
+        {
+          "line": 968,
+          "attributes": "class=\"번호 구운번호\" data-n=\"01\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"01\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 971,
+          "attributes": "class=\"번호 구운번호\" data-n=\"02\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"02\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 972,
+          "attributes": "class=\"번호 구운번호\" data-n=\"03\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"03\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 974,
+          "attributes": "class=\"번호 구운번호\" data-n=\"04\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"04\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 975,
+          "attributes": "class=\"번호 구운번호\" data-n=\"05\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"05\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 977,
+          "attributes": "class=\"번호 구운번호\" data-n=\"06\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"06\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        }
+      ]
+    },
+    {
+      "file": "docs/엔진/SYNK_엔진_지도.html",
+      "findings": [
+        {
+          "선택자": ".엔진전시 .번호",
+          "부품": "번호",
+          "태그": "span",
+          "색": "#2B2320",
+          "특정도": [
+            0,
+            2,
+            0
+          ],
+          "대비": 1.0957871990796428,
+          "판정": "🔴"
+        }
+      ],
+      "numberCount": 4,
+      "allImageOnly": true,
+      "css": [
+        {
+          "line": 877,
+          "rule": ".엔진전시 .번호{color:#2B2320;text-shadow:none}"
+        },
+        {
+          "line": 878,
+          "rule": ".엔진전시 .번호.구운번호{width:var(--장);height:var(--장);flex:0 0 var(--장);background:none!important;box-shadow:none!important;border:none;padding:0;border-radius:0;font-size:0;line-height:0;overflow:visible}"
+        },
+        {
+          "line": 879,
+          "rule": ".엔진전시 .번호.구운번호::before,.엔진전시 .번호.구운번호::after{content:none!important;display:none!important}"
+        },
+        {
+          "line": 880,
+          "rule": ".엔진전시 .구운번호 img{display:block;width:100%;height:100%;object-fit:contain;max-width:none}"
+        }
+      ],
+      "numbers": [
+        {
+          "line": 952,
+          "attributes": "class=\"번호 구운번호\" data-n=\"01\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"01\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 955,
+          "attributes": "class=\"번호 구운번호\" data-n=\"02\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"02\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 958,
+          "attributes": "class=\"번호 구운번호\" data-n=\"03\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"03\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        },
+        {
+          "line": 960,
+          "attributes": "class=\"번호 구운번호\" data-n=\"04\"",
+          "content": "<img src=\"[embedded asset]\" alt=\"04\" width=\"1254\" height=\"1254\" decoding=\"async\">",
+          "hasImage": true,
+          "baked": true,
+          "text": ""
+        }
+      ]
+    }
+  ]
+}

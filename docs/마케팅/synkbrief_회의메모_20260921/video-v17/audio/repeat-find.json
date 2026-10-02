@@ -1,0 +1,310 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 6.971,
+  "words": [
+    {
+      "text": "다음",
+      "start": 0.381,
+      "end": 0.641
+    },
+    {
+      "text": "회의가",
+      "start": 0.721,
+      "end": 1.002
+    },
+    {
+      "text": "끝나면,",
+      "start": 1.062,
+      "end": 1.663
+    },
+    {
+      "text": "챗지피티",
+      "start": 1.743,
+      "end": 2.304
+    },
+    {
+      "text": "왼쪽을",
+      "start": 2.364,
+      "end": 2.784
+    },
+    {
+      "text": "보세요.",
+      "start": 2.845,
+      "end": 3.225
+    },
+    {
+      "text": "프로젝트",
+      "start": 4.387,
+      "end": 4.888
+    },
+    {
+      "text": "아래의",
+      "start": 4.968,
+      "end": 5.329
+    },
+    {
+      "text": "회의",
+      "start": 5.489,
+      "end": 5.629
+    },
+    {
+      "text": "정리를",
+      "start": 5.749,
+      "end": 6.17
+    },
+    {
+      "text": "눌러요.",
+      "start": 6.23,
+      "end": 6.971
+    }
+  ],
+  "characters": [
+    {
+      "text": "다",
+      "start": 0.381,
+      "end": 0.581
+    },
+    {
+      "text": "음",
+      "start": 0.581,
+      "end": 0.641
+    },
+    {
+      "text": " ",
+      "start": 0.641,
+      "end": 0.721
+    },
+    {
+      "text": "회",
+      "start": 0.721,
+      "end": 0.841
+    },
+    {
+      "text": "의",
+      "start": 0.841,
+      "end": 0.942
+    },
+    {
+      "text": "가",
+      "start": 0.942,
+      "end": 1.002
+    },
+    {
+      "text": " ",
+      "start": 1.002,
+      "end": 1.062
+    },
+    {
+      "text": "끝",
+      "start": 1.062,
+      "end": 1.262
+    },
+    {
+      "text": "나",
+      "start": 1.262,
+      "end": 1.402
+    },
+    {
+      "text": "면",
+      "start": 1.402,
+      "end": 1.643
+    },
+    {
+      "text": ",",
+      "start": 1.643,
+      "end": 1.663
+    },
+    {
+      "text": " ",
+      "start": 1.663,
+      "end": 1.743
+    },
+    {
+      "text": "챗",
+      "start": 1.743,
+      "end": 1.883
+    },
+    {
+      "text": "지",
+      "start": 1.883,
+      "end": 2.043
+    },
+    {
+      "text": "피",
+      "start": 2.043,
+      "end": 2.204
+    },
+    {
+      "text": "티",
+      "start": 2.204,
+      "end": 2.304
+    },
+    {
+      "text": " ",
+      "start": 2.304,
+      "end": 2.364
+    },
+    {
+      "text": "왼",
+      "start": 2.364,
+      "end": 2.524
+    },
+    {
+      "text": "쪽",
+      "start": 2.524,
+      "end": 2.724
+    },
+    {
+      "text": "을",
+      "start": 2.724,
+      "end": 2.784
+    },
+    {
+      "text": " ",
+      "start": 2.784,
+      "end": 2.845
+    },
+    {
+      "text": "보",
+      "start": 2.845,
+      "end": 2.965
+    },
+    {
+      "text": "세",
+      "start": 2.965,
+      "end": 3.125
+    },
+    {
+      "text": "요",
+      "start": 3.125,
+      "end": 3.205
+    },
+    {
+      "text": ".",
+      "start": 3.205,
+      "end": 3.225
+    },
+    {
+      "text": " ",
+      "start": 3.225,
+      "end": 4.387
+    },
+    {
+      "text": "프",
+      "start": 4.387,
+      "end": 4.487
+    },
+    {
+      "text": "로",
+      "start": 4.487,
+      "end": 4.607
+    },
+    {
+      "text": "젝",
+      "start": 4.607,
+      "end": 4.808
+    },
+    {
+      "text": "트",
+      "start": 4.808,
+      "end": 4.888
+    },
+    {
+      "text": " ",
+      "start": 4.888,
+      "end": 4.968
+    },
+    {
+      "text": "아",
+      "start": 4.968,
+      "end": 5.068
+    },
+    {
+      "text": "래",
+      "start": 5.068,
+      "end": 5.248
+    },
+    {
+      "text": "의",
+      "start": 5.248,
+      "end": 5.329
+    },
+    {
+      "text": " ",
+      "start": 5.329,
+      "end": 5.489
+    },
+    {
+      "text": "회",
+      "start": 5.489,
+      "end": 5.569
+    },
+    {
+      "text": "의",
+      "start": 5.569,
+      "end": 5.629
+    },
+    {
+      "text": " ",
+      "start": 5.629,
+      "end": 5.749
+    },
+    {
+      "text": "정",
+      "start": 5.749,
+      "end": 5.95
+    },
+    {
+      "text": "리",
+      "start": 5.95,
+      "end": 6.07
+    },
+    {
+      "text": "를",
+      "start": 6.07,
+      "end": 6.17
+    },
+    {
+      "text": " ",
+      "start": 6.17,
+      "end": 6.23
+    },
+    {
+      "text": "눌",
+      "start": 6.23,
+      "end": 6.37
+    },
+    {
+      "text": "러",
+      "start": 6.37,
+      "end": 6.51
+    },
+    {
+      "text": "요",
+      "start": 6.51,
+      "end": 6.951
+    },
+    {
+      "text": ".",
+      "start": 6.951,
+      "end": 6.971
+    }
+  ],
+  "request": {
+    "seed": 923,
+    "model": "ssfm-v30",
+    "voice_id": "tc_6a7446c19f2d7dfed990a900",
+    "text": "다음 회의가 끝나면, 챗지피티 왼쪽을 보세요. 프로젝트 아래의 회의 정리를 눌러요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.04,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "tonedown",
+      "emotion_intensity": 0.5
+    }
+  }
+}

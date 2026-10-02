@@ -1,0 +1,47 @@
+{
+  "verifiedAt": "2026-09-26T20:27:35.241594+00:00",
+  "liveVideoId": "mP3T7Sabeh4",
+  "compilationVideoId": "HStZY2xuUdM",
+  "compilationPrivacy": "unlisted",
+  "processingStatus": "succeeded",
+  "trackCount": 19,
+  "durationSeconds": 3521.127596546,
+  "display": "bottom right, continuously visible, changes by FFmpeg output time",
+  "publicTransition": {
+    "capture": "public-final-transition.mp4",
+    "beforeFrame": "public-final-transition.png",
+    "afterFrame": "public-final-after.png",
+    "from": "불빛이 하나둘 켜질 때",
+    "to": "파란 신호가 켜지면",
+    "audioMatches": [
+      {
+        "captureSeconds": 0,
+        "sourceSeconds": 177.457,
+        "correlation": 0.9793362808734402
+      },
+      {
+        "captureSeconds": 45,
+        "sourceSeconds": 222.457,
+        "correlation": 0.9744252824731374
+      }
+    ]
+  },
+  "browserChecks": [
+    "YouTube some-public badge shown (unlisted)",
+    "19 clickable timestamp links and chapter cards shown",
+    "03:26 click moved to second song and player chapter name",
+    "Live description contains https://youtu.be/HStZY2xuUdM"
+  ],
+  "tests": {
+    "passed": 13,
+    "fullCompilationDecode": "passed"
+  },
+  "finalService": {
+    "ActiveState": "active",
+    "NRestarts": 0,
+    "speed": "0.998x",
+    "dropFrames": 0,
+    "dupFrames": 0
+  },
+  "note": "One output-stall auto-recovery occurred during initial validation; after final layout restart, live song transition verified without restarts. Entire 58-minute live cycle was not observed."
+}

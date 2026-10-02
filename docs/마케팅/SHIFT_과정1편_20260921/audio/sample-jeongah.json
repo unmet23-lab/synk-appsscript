@@ -1,0 +1,94 @@
+{
+  "request": {
+    "text": "커버를 다 만들었는데, 올리려니 오른쪽 소품이 잘렸어요. 로고와 글자, 소품을 조금 줄여서 가운데로 모았어요.",
+    "language": "kor",
+    "prompt": {
+      "emotion_preset": "happy",
+      "emotion_intensity": 1.5,
+      "emotion_type": "preset"
+    },
+    "output": {
+      "target_lufs": -16,
+      "audio_format": "wav",
+      "audio_tempo": 1.03
+    },
+    "voice_id": "tc_641c10c956c8ba415e6a1101",
+    "model": "ssfm-v30",
+    "seed": 921
+  },
+  "audio_format": "wav",
+  "audio_duration": 6.602,
+  "words": [
+    {
+      "text": "커버를",
+      "start": 0.093,
+      "end": 0.452
+    },
+    {
+      "text": "다",
+      "start": 0.498,
+      "end": 0.576
+    },
+    {
+      "text": "만들었는데,",
+      "start": 0.638,
+      "end": 1.215
+    },
+    {
+      "text": "올리려니",
+      "start": 1.51,
+      "end": 1.9
+    },
+    {
+      "text": "오른쪽",
+      "start": 2.024,
+      "end": 2.351
+    },
+    {
+      "text": "소품이",
+      "start": 2.413,
+      "end": 2.694
+    },
+    {
+      "text": "잘렸어요.",
+      "start": 2.756,
+      "end": 3.239
+    },
+    {
+      "text": "로고와",
+      "start": 3.472,
+      "end": 3.815
+    },
+    {
+      "text": "글자,",
+      "start": 3.893,
+      "end": 4.173
+    },
+    {
+      "text": "소품을",
+      "start": 4.344,
+      "end": 4.733
+    },
+    {
+      "text": "조금",
+      "start": 4.78,
+      "end": 5.014
+    },
+    {
+      "text": "줄여서",
+      "start": 5.092,
+      "end": 5.434
+    },
+    {
+      "text": "가운데로",
+      "start": 5.528,
+      "end": 5.932
+    },
+    {
+      "text": "모았어요.",
+      "start": 5.979,
+      "end": 6.602
+    }
+  ],
+  "characters": null
+}

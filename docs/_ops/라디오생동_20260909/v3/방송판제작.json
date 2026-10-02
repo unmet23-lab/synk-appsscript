@@ -1,0 +1,117 @@
+{
+  "at": "2026-09-09T11:23:24.491Z",
+  "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\라디오생동_20260909\\v3\\생성_A_원본.mp4",
+  "sourceSha256": "056b811c2256704537a7e713dde632450a04f0e8e1b98a9642bccf854f9fdb60",
+  "sourceProbe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1920,
+        "height": 1080,
+        "r_frame_rate": "24/1",
+        "nb_read_frames": "289"
+      }
+    ],
+    "format": {
+      "duration": "12.041667",
+      "size": "24531028"
+    }
+  },
+  "cycle": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\라디오생동_20260909\\v3\\생성_A_15초.mp4",
+  "cycleSha256": "f647e4bb1e2b33a4f96cdb69d0ce970b14525479ce7f45e23d96f4b562e96c28",
+  "cycleProbe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "30/1",
+        "nb_read_frames": "450"
+      }
+    ],
+    "format": {
+      "duration": "15.000000",
+      "size": "4226173"
+    }
+  },
+  "target": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대영상\\추석_영상생성_20260909.mp4",
+  "targetSha256": "af2b83919d5b06758702829d1c36fcfb31fdcfa12453d944ffecbc6402956f50",
+  "finalProbe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "30/1",
+        "nb_read_frames": "1800"
+      }
+    ],
+    "format": {
+      "duration": "60.000000",
+      "size": "16902079"
+    }
+  },
+  "playbackSpeed": 0.8027777777777778,
+  "method": "Entire generated clip retimed to 15s, four exact repeats. Lanczos downscale and ordinary fps conversion. No regional warp, no optical-flow interpolation, no synthetic camera movement.",
+  "encodeArgs": [
+    "-hide_banner",
+    "-loglevel",
+    "warning",
+    "-i",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\라디오생동_20260909\\v3\\생성_A_원본.mp4",
+    "-map",
+    "0:v",
+    "-an",
+    "-vf",
+    "scale=1280:720:flags=lanczos,setpts=(360/289)*(PTS-STARTPTS),fps=30",
+    "-t",
+    "15",
+    "-c:v",
+    "libx264",
+    "-preset",
+    "medium",
+    "-crf",
+    "17",
+    "-pix_fmt",
+    "yuv420p",
+    "-g",
+    "60",
+    "-keyint_min",
+    "60",
+    "-sc_threshold",
+    "0",
+    "-movflags",
+    "+faststart",
+    "-y",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\라디오생동_20260909\\v3\\생성_A_15초.mp4"
+  ],
+  "repeatArgs": [
+    "-hide_banner",
+    "-loglevel",
+    "warning",
+    "-stream_loop",
+    "3",
+    "-i",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\라디오생동_20260909\\v3\\생성_A_15초.mp4",
+    "-map",
+    "0:v",
+    "-an",
+    "-t",
+    "60",
+    "-c",
+    "copy",
+    "-movflags",
+    "+faststart",
+    "-y",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대영상\\추석_영상생성_20260909.mp4"
+  ]
+}

@@ -1,0 +1,166 @@
+{
+  "revision": 2,
+  "status": "video-rendered-context-improvement-requested",
+  "userReview": "전보다 훨씬 낫다. 다만 아직 약간 어색하며, 상황을 알려주는 방식으로 개선 가능한지 질문함.",
+  "userFeedback": "Actual skit delivery is flat and artificial. Increase female emotional delivery and replace male actor entirely.",
+  "model": "ssfm-v30",
+  "voices": {
+    "mongle": {
+      "name": "도윤",
+      "id": "tc_6a3350f8e5a50a4abe948fa8",
+      "direction": "가벼운 청년 대화체. 대본을 읽기보다 상대에게 즉각 반응. 과장된 캐릭터 목소리·피치 변조 없음."
+    },
+    "barista": {
+      "name": "서현",
+      "id": "tc_69f2e455ea79fd197aa0476f",
+      "direction": "미소를 머금은 친근한 직원. 못 들은 손님에게 짜증 없이 질문을 풀어 말함."
+    },
+    "guide": {
+      "name": "서현",
+      "id": "tc_69f2e455ea79fd197aa0476f",
+      "direction": "옆에서 도와주는 말투. 연습을 권할 때 약간 기대와 격려."
+    }
+  },
+  "segments": [
+    {
+      "id": "question",
+      "role": "barista",
+      "text": "드시고 가세요? 가지고 가세요?",
+      "direction": "자연스럽게 선택지를 묻고 뒤 질문을 조금 올림.",
+      "emotion": "happy",
+      "intensity": 0.75,
+      "tempo": 1.02
+    },
+    {
+      "id": "yes",
+      "role": "mongle",
+      "text": "네!",
+      "direction": "못 알아들었는데 반사적으로 짧고 밝게 대답.",
+      "emotion": "toneup",
+      "intensity": 0.95,
+      "tempo": 1.08
+    },
+    {
+      "id": "thought",
+      "role": "mongle",
+      "text": "어? 나 방금 뭐라고 한 거지?",
+      "direction": "자기 대답을 뒤늦게 의심. 어? 뒤 잠깐 멈추고 작은 당황.",
+      "smart": true,
+      "previous": "드시고 가세요? 가지고 가세요? 네!",
+      "next": "잘 못 들었을 땐, 이렇게 말해 보세요.",
+      "tempo": 1
+    },
+    {
+      "id": "guide",
+      "role": "guide",
+      "text": "잘 못 들었을 땐, 이렇게 말해 보세요.",
+      "direction": "괜찮다는 미소와 도움의 의도.",
+      "emotion": "happy",
+      "intensity": 0.7,
+      "tempo": 1
+    },
+    {
+      "id": "phrase-learn",
+      "role": "mongle",
+      "text": "다시 말해 주세요.",
+      "direction": "표현을 배우는 장면. 부드럽고 또렷하지만 음절별 끊기 없음.",
+      "emotion": "normal",
+      "intensity": 1,
+      "tempo": 0.94
+    },
+    {
+      "id": "repeat",
+      "role": "guide",
+      "text": "한 번 따라 말해 볼까요?",
+      "direction": "해볼 수 있다는 따뜻한 권유.",
+      "emotion": "happy",
+      "intensity": 0.85,
+      "tempo": 1.01
+    },
+    {
+      "id": "phrase-retry",
+      "role": "mongle",
+      "text": "다시 말해 주세요.",
+      "direction": "직원 눈을 보고 조금 조심스럽게 실제로 부탁.",
+      "smart": true,
+      "previous": "드시고 가세요? 가지고 가세요?",
+      "next": "여기서 드세요? 가져가세요?",
+      "tempo": 0.99
+    },
+    {
+      "id": "easy-question",
+      "role": "barista",
+      "text": "여기서 드세요? 가져가세요?",
+      "direction": "아, 못 들으셨구나. 알아듣도록 두 선택지를 부드럽게 분리.",
+      "smart": true,
+      "previous": "다시 말해 주세요.",
+      "next": "여기서 먹을게요.",
+      "tempo": 0.96
+    },
+    {
+      "id": "eat",
+      "role": "mongle",
+      "text": "여기서 먹을게요.",
+      "direction": "이제 알아들어서 표정이 밝아짐. 안도 섞인 짧은 답.",
+      "emotion": "happy",
+      "intensity": 0.85,
+      "tempo": 1.03
+    },
+    {
+      "id": "receipt",
+      "role": "barista",
+      "text": "영수증 드릴까요?",
+      "direction": "작은 배려가 담긴 서비스 질문.",
+      "emotion": "happy",
+      "intensity": 0.75,
+      "tempo": 1.01
+    },
+    {
+      "id": "your-turn",
+      "role": "guide",
+      "text": "이번엔 직접 말해 보세요.",
+      "direction": "연습을 믿고 맡기는 밝고 편안한 격려.",
+      "emotion": "happy",
+      "intensity": 0.8,
+      "tempo": 1
+    },
+    {
+      "id": "phrase-ending",
+      "role": "mongle",
+      "text": "다시 말해 주세요.",
+      "direction": "두 번째 부탁은 조금 더 편안하고 자신 있게.",
+      "smart": true,
+      "previous": "영수증 드릴까요?",
+      "next": "영수증 필요하세요?",
+      "tempo": 1.02
+    },
+    {
+      "id": "easy-receipt",
+      "role": "barista",
+      "text": "영수증 필요하세요?",
+      "direction": "핵심을 짚어 짧고 친절하게 풀어 묻기.",
+      "smart": true,
+      "previous": "다시 말해 주세요.",
+      "next": "아, 괜찮아요. 감사합니다!",
+      "tempo": 0.98
+    },
+    {
+      "id": "thanks",
+      "role": "mongle",
+      "text": "아, 괜찮아요. 감사합니다!",
+      "direction": "아!에서 이해가 드러나고, 감사 인사에 안도와 미소.",
+      "emotion": "happy",
+      "intensity": 1.05,
+      "tempo": 1.04
+    }
+  ],
+  "rules": [
+    "Keep original approved visuals and learning objective.",
+    "Separate target-phrase takes for learning, retry, and confident ending.",
+    "Keep 2.5-second repeat space and 5-second answer-free practice.",
+    "Do not time-compress speech or pitch-shift a rejected male voice.",
+    "Update captions and reactions to generated timings.",
+    "Do not call generated speech naturally acted until listening/user review verifies it.",
+    "Use only existing plan credits; stop if balance is missing or insufficient."
+  ]
+}

@@ -1,0 +1,24 @@
+[
+ {
+  "name": "M-yuho-hero-7-asym1",
+  "prompt": "Edit the FIRST attached photo only. Keep everything in it identical: his face, smile, expression, skin, cornrow braids with the small gold bead, black t-shirt, framing, backdrop, lighting and film grain. Change ONLY his eyelids to match his real asymmetric eyes shown in the other attached reference photos: the eye on the LEFT side of the image (his right eye) has a thin, natural double-eyelid crease; the eye on the RIGHT side of the image (his left eye) is a monolid with no crease at all. Do not change eye size, eye shape, gaze or anything else. No text or logos.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-7-fix2.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0088.png",
+   "raw/yuho-ref-0048.png"
+  ]
+ },
+ {
+  "name": "M-yuho-hero-7-asym2",
+  "prompt": "Edit the FIRST attached photo only. Keep everything in it identical: his face, smile, expression, skin, cornrow braids with the small gold bead, black t-shirt, framing, backdrop, lighting and film grain. Change ONLY his eyelids to match his real asymmetric eyes shown in the other attached reference photos: the eye on the LEFT side of the image (his right eye) has a thin, natural double-eyelid crease; the eye on the RIGHT side of the image (his left eye) is a monolid with no crease at all. Do not change eye size, eye shape, gaze or anything else. No text or logos.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-7-fix2.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0088.png",
+   "raw/yuho-ref-0048.png"
+  ]
+ }
+]

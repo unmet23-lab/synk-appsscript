@@ -1,0 +1,32 @@
+{
+  "at": "2026-09-26T20:44:39.577Z",
+  "live": "mP3T7Sabeh4",
+  "compilation": "_eZztHpxPeI",
+  "processing": "succeeded",
+  "privacy": "unlisted",
+  "titles": {
+    "47:33": "노을빛 드라이브",
+    "53:07": "너와 걷던 여름밤"
+  },
+  "checks": [
+    "19 browser title layouts without clipping",
+    "Full rendered video decoded without errors",
+    "Rendered 47m and 53m title screenshots",
+    "Public live screenshots first and second songs show new upper-right design and original logo",
+    "YouTube page both chapter links clicked and chapter names verified",
+    "YouTube descriptions reread after update",
+    "radio-live active, NRestarts=0"
+  ],
+  "limits": [
+    "Renamed tracks loaded and checked against exact runtime positions; not observed 53 minutes of live playback"
+  ],
+  "proof": [
+    "public-live-final.png",
+    "public-live-second.png",
+    "rendered-47m.png",
+    "rendered-53m.png",
+    "links-verified.json",
+    "youtube-verified.json",
+    "deployed.json"
+  ]
+}

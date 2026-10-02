@@ -1,0 +1,17 @@
+{
+  "voice": {
+    "name": "은경",
+    "id": "tc_6a7446c19f2d7dfed990a900",
+    "model": "ssfm-v30",
+    "tempo": 1.04,
+    "emotion": "tonedown",
+    "intensity": 0.5,
+    "direction": "차분하고 부드러운 여성 설명. 한 단계씩 또렷하게 안내한다."
+  },
+  "segments": [
+    {
+      "id": "ending-follow",
+      "text": "따라 할 피디에프와 복사용 문장, 연습 메모까지 준비했어요. 필요하신 분은 팔로우하시고, 댓글에 싱크를 남겨주세요."
+    }
+  ]
+}

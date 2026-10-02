@@ -1,0 +1,135 @@
+{
+  "fps": 5,
+  "frames": 600,
+  "min_green": 0,
+  "max_green": 306,
+  "low_green_intervals": [
+    {
+      "start_s": 10.4,
+      "end_s": 15.4,
+      "frame": 64,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 17.6,
+      "end_s": 20.6,
+      "frame": 95,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 21.4,
+      "end_s": 21.8,
+      "frame": 107,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 24.2,
+      "end_s": 24.6,
+      "frame": 121,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 27.4,
+      "end_s": 30.8,
+      "frame": 145,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 33.6,
+      "end_s": 36.0,
+      "frame": 173,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 38.4,
+      "end_s": 40.8,
+      "frame": 197,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 46.4,
+      "end_s": 50.0,
+      "frame": 240,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 54.8,
+      "end_s": 56.4,
+      "frame": 277,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 61.4,
+      "end_s": 61.6,
+      "frame": 307,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 62.0,
+      "end_s": 66.8,
+      "frame": 321,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 67.4,
+      "end_s": 71.0,
+      "frame": 345,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 76.0,
+      "end_s": 77.0,
+      "frame": 382,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 80.6,
+      "end_s": 82.2,
+      "frame": 406,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 83.0,
+      "end_s": 87.2,
+      "frame": 425,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 89.4,
+      "end_s": 92.0,
+      "frame": 453,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 98.0,
+      "end_s": 98.2,
+      "frame": 490,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 104.8,
+      "end_s": 107.4,
+      "frame": 530,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 108.8,
+      "end_s": 112.4,
+      "frame": 552,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 116.8,
+      "end_s": 117.4,
+      "frame": 585,
+      "min_green_count": 0
+    },
+    {
+      "start_s": 118.0,
+      "end_s": 118.2,
+      "frame": 590,
+      "min_green_count": 0
+    }
+  ],
+  "caveat": "Candidate selection only: open eyes can also have low green after encoding. Intervals are NOT blink or expression durations. Visually verified crops: 61.0/61.2 open, 61.4/61.6/61.8 closed, 62.0 open; 81.2 arched smile."
+}

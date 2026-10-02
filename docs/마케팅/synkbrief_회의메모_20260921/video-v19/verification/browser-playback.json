@@ -1,0 +1,27 @@
+{
+  "url": "http://127.0.0.1:5197/video-v19/preview.html?revision=26",
+  "duration": 159.709,
+  "playback": {
+    "from": 12.90513,
+    "to": 18.549897,
+    "canvasFrame": 18.534,
+    "paused": false,
+    "readyState": 4
+  },
+  "ending": {
+    "from": 153.8,
+    "to": 159.709,
+    "canvasFrame": 159.709
+  },
+  "resultSeek": 57.4,
+  "mediaError": null,
+  "consoleErrors": [],
+  "horizontalOverflow": false,
+  "guideHttp": 200,
+  "kitHttp": 200,
+  "notes": [
+    "실제 브라우저에서 화면과 재생 시간 진행 확인",
+    "구간 바로 재생은 키보드로도 검증",
+    "직접 청취 평가는 별도"
+  ]
+}

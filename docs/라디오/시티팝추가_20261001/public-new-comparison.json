@@ -1,0 +1,11 @@
+{
+  "publicCapture": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\\ub77c\ub514\uc624\\\uc2dc\ud2f0\ud31d\ucd94\uac00_20261001\\public-new.mp4",
+  "source": "C:\\Users\\q1212\\Documents\\SYNK-radio-20261001\\01.flac",
+  "sampleRate": 4000,
+  "comparedSeconds": 12,
+  "sourcePositionSeconds": 17.9795,
+  "normalizedCorrelation": 0.26876923888593957,
+  "rms": 0.17508666346887838,
+  "passed": false,
+  "scope": "Public live audio matches the exact source; this is not a subjective music review."
+}

@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "584f1461-63bd-4ec7-b19a-33fab7724de7",
+  "narration": "이 채널은 소개 문장부터 상품, 콘텐츠와 문의 답변까지, 직접 만든 결과와 선택한 이유를 다룹니다.",
+  "narrationSha256": "adaf6082182987ead5fe4e92be69aa45b07ec307391e52eeba374599c05df5db",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-adaf6082182987ea.wav",
+  "duration": 7.84,
+  "sha256": "8639d8b526dbd5bdaab5c8f6880990a5c44d9cfc383bfcd14d03592a1bf96c5e",
+  "humanListening": false,
+  "fullDecode": true
+}

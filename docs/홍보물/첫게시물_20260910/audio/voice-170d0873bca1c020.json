@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "7684dea7-4d39-42b7-9f98-3d71c17f6805",
+  "narration": "1인 기업의 브랜드와 고객 접점을 이어봅니다. 여기서는 완성본과 선택 이유, 고치는 원본을 함께 펼칩니다.",
+  "narrationSha256": "170d0873bca1c020f63609f132faa0580326c1b9146adcd0c7fd080d64356fff",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-170d0873bca1c020.wav",
+  "duration": 8.8,
+  "sha256": "171905c217c79e04c4ddd3d939cb4a9a22fe64f461241a94c954edbc34739b64",
+  "humanListening": false,
+  "fullDecode": true
+}

@@ -1,0 +1,23 @@
+{
+  "id": "mP3T7Sabeh4",
+  "startedAt": "2026-10-01T11:06:30.627Z",
+  "finishedAt": "2026-10-01T11:06:41.337Z",
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "codec_name": "aac"
+      }
+    ],
+    "format": {
+      "duration": "20.015601"
+    }
+  },
+  "warnings": "[in#0/hls @ 00000280a8931f40] keepalive request failed for '[media URL omitted]' with error: 'Invalid argument' when opening url, retrying with new connection\r\n    Last message repeated 3 times\r\n"
+}

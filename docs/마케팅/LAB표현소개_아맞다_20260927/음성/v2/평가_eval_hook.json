@@ -1,0 +1,74 @@
+[
+ {
+  "file": "hook__fl31_Leda__t1.wav",
+  "asr": "아, 봤다!",
+  "match": false,
+  "logprob": -0.653,
+  "speech_s": 0.52,
+  "lead_s": 0.29,
+  "tail_s": 0.35,
+  "peak_db": -1.9,
+  "f0_med": 336.9,
+  "f0_range_st": 10.1
+ },
+ {
+  "file": "hook__fl31_Leda__t2.wav",
+  "asr": "아 맞다",
+  "match": true,
+  "logprob": -0.427,
+  "speech_s": 0.74,
+  "lead_s": 0.32,
+  "tail_s": 0.54,
+  "peak_db": 0.2,
+  "f0_med": 333.3,
+  "f0_range_st": 12.1
+ },
+ {
+  "file": "hook__fl31_Sulafat__t1.wav",
+  "asr": "아멘 아멘",
+  "match": false,
+  "logprob": -0.956,
+  "speech_s": 0.54,
+  "lead_s": 0.27,
+  "tail_s": 0.39,
+  "peak_db": -2.3,
+  "f0_med": 355.6,
+  "f0_range_st": 9.8
+ },
+ {
+  "file": "hook__fl31_Sulafat__t2.wav",
+  "asr": "아! 맞다!",
+  "match": true,
+  "logprob": -0.684,
+  "speech_s": 1.4,
+  "lead_s": 0.28,
+  "tail_s": 0.32,
+  "peak_db": 0.2,
+  "f0_med": 355.6,
+  "f0_range_st": 15.3
+ },
+ {
+  "file": "hook__pro_Zephyr__t1.wav",
+  "asr": "아! 아!",
+  "match": false,
+  "logprob": -0.81,
+  "speech_s": 1.11,
+  "lead_s": 0.02,
+  "tail_s": 0.001,
+  "peak_db": 0.1,
+  "f0_med": 444.4,
+  "f0_range_st": 10.3
+ },
+ {
+  "file": "hook__pro_Zephyr__t2.wav",
+  "asr": "아 맞다!",
+  "match": true,
+  "logprob": -0.566,
+  "speech_s": 0.66,
+  "lead_s": 0.27,
+  "tail_s": 0.081,
+  "peak_db": 0.1,
+  "f0_med": 271.2,
+  "f0_range_st": 12.1
+ }
+]

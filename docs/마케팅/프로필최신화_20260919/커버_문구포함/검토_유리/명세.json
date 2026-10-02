@@ -1,0 +1,78 @@
+{
+  "revision": "2026-09-19-glass-review-only",
+  "createdAt": "2026-09-19T07:43:52.914Z",
+  "status": "local-not-published",
+  "globalBrandCanonChanged": false,
+  "glassBadgeSource": "imagegen-source.png",
+  "fontMethod": "Exact SUIT/Inter Tight glyph outlines; no font fallback",
+  "outputs": [
+    {
+      "id": "shift-pinterest",
+      "role": "디자인 결과물과 제작 과정 모음",
+      "file": "shift-pinterest.png",
+      "svg": "shift-pinterest.svg",
+      "w": 1600,
+      "h": 900,
+      "bytes": 1847741,
+      "sha256": "b9aeac9a79013d6804dbb9fac77970d180fe5bf2ce1b677b075970cd41224aae",
+      "status": "local-not-published",
+      "alignmentOffsetY": 0,
+      "text": [
+        {
+          "text": "AI와 함께 만든",
+          "x": 106.6005859375,
+          "y": 168.678,
+          "w": 440.63020312500004,
+          "h": 74.37400000000001,
+          "size": 82,
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "브랜드·웹·콘텐츠",
+          "x": 108.79,
+          "y": 269.205,
+          "w": 590.3988750000001,
+          "h": 82.863,
+          "size": 93,
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "디자인 결과물과 제작 과정",
+          "x": 114.94800000000001,
+          "y": 387.19,
+          "w": 412.43868750000007,
+          "h": 37.044000000000004,
+          "size": 42,
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        }
+      ],
+      "photos": [
+        {
+          "file": "shift-centered-gpt-source.png",
+          "crop": [
+            160,
+            300,
+            1355,
+            310
+          ],
+          "x": 105,
+          "y": 482,
+          "w": 1390,
+          "h": 325
+        }
+      ],
+      "logo": null,
+      "safe": null,
+      "languageReview": null
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "durationSeconds": 101,
+  "fullDecodeMP4": "passed",
+  "audio": {
+    "integratedLUFS": -22.85,
+    "truePeakDBTP": -9.22,
+    "voiceIncluded": false
+  },
+  "blackSegmentsOver0_3s": [],
+  "visualReview": "17 rendered scene samples, 18 motion samples and all 10 PDF pages inspected",
+  "guide": "text and ZIP validation passed",
+  "fullDecodeWebM": "passed",
+  "preview": "1280px and 390px playback, mute, chapter seek, visible canvas, PDF/ZIP/MP4 download passed",
+  "inAppBrowser": "new URL loaded; playback and chapter control observed; canvas content visible",
+  "files": {
+    "synkbrief-meeting-v8.mp4": {
+      "bytes": 13695100,
+      "sha256": "e13c557fbcd8d84b3e7688a283a7e00d49ee891a1112aca41a57d0e3db0db031"
+    },
+    "preview.webm": {
+      "bytes": 4955171,
+      "sha256": "a1746b42a770b2881ac2d5c2d5c365ba8bff3be05157322dfe62b8aac931fbd5"
+    }
+  }
+}

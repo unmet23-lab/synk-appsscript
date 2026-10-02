@@ -1,0 +1,257 @@
+{
+  "ok": true,
+  "strict": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "overlapping_gsap_tweens",
+        "severity": "warning",
+        "message": "GSAP tweens overlap on \"#monster-stage\" for scale, y between 0.20s and 0.35s.",
+        "selector": "#monster-stage",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\revision-v2\\compositions\\monster.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Shorten the earlier tween, move the later tween, or add `overwrite: \"auto\"`."
+      }
+    ],
+    "filesScanned": 11
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 4,
+    "findings": [
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 2.615,
+        "selector": "#hook-stage",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": -40.7,
+          "top": -77.5,
+          "right": 1098.7,
+          "bottom": 1948.1,
+          "width": 1139.4,
+          "height": 2025.6
+        },
+        "containerSelector": "div.frame",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1080,
+          "bottom": 1920,
+          "width": 1080,
+          "height": 1920
+        },
+        "overflow": {
+          "left": 40.7,
+          "right": 18.7,
+          "top": 77.5,
+          "bottom": 28.1
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/hook.html",
+        "bbox": {
+          "x": -40.7,
+          "y": -77.5,
+          "width": 1139.4,
+          "height": 2025.6
+        },
+        "firstSeen": 2.615,
+        "lastSeen": 2.615,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 25.843,
+        "selector": "#demo-title > span:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 67.65,
+          "top": 399.87,
+          "right": 623.22,
+          "bottom": 410.97,
+          "width": 555.57,
+          "height": 11.1
+        },
+        "containerSelector": "#demo-title > span:nth-of-type(2) > span:nth-of-type(1)",
+        "text": "한 번 저장하고,",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/demo.html",
+        "bbox": {
+          "x": 67.65,
+          "y": 399.87,
+          "width": 555.57,
+          "height": 11.1
+        },
+        "firstSeen": 25.843,
+        "lastSeen": 25.843,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 39.222,
+        "selector": "#payoff-stage",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": -4.16,
+          "top": -0.73,
+          "right": 1084.16,
+          "bottom": 1934.05,
+          "width": 1088.32,
+          "height": 1934.78
+        },
+        "containerSelector": "div.frame.blue",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1080,
+          "bottom": 1920,
+          "width": 1080,
+          "height": 1920
+        },
+        "overflow": {
+          "left": 4.16,
+          "right": 4.16,
+          "bottom": 14.05
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/payoff.html",
+        "bbox": {
+          "x": -4.16,
+          "y": -0.73,
+          "width": 1088.32,
+          "height": 1934.78
+        },
+        "firstSeen": 39.222,
+        "lastSeen": 39.222,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 39.222,
+        "selector": "span.line",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 72.43,
+          "top": 319.55,
+          "right": 939.05,
+          "bottom": 433.11,
+          "width": 866.62,
+          "height": 113.56
+        },
+        "containerSelector": "span.line-mask",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 72.43,
+          "top": 273.6,
+          "right": 939.05,
+          "bottom": 392.2,
+          "width": 866.62,
+          "height": 118.59
+        },
+        "overflow": {
+          "bottom": 40.91
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/hook.html",
+        "bbox": {
+          "x": 72.43,
+          "y": 319.55,
+          "width": 866.62,
+          "height": 113.56
+        },
+        "firstSeen": 39.222,
+        "lastSeen": 39.222,
+        "occurrences": 1,
+        "heldMs": 0
+      }
+    ],
+    "duration": 47.06666666666667,
+    "samples": [
+      2.615,
+      7.844,
+      13.074,
+      18.304,
+      23.533,
+      28.763,
+      33.993,
+      39.222,
+      44.452
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 4,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      2.615,
+      13.074,
+      23.533,
+      33.993,
+      44.452
+    ],
+    "checked": 53,
+    "passed": 53
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  },
+  "_meta": {
+    "version": "0.8.78",
+    "latestVersion": "0.8.78",
+    "updateAvailable": false
+  }
+}

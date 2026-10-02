@@ -1,0 +1,1024 @@
+{
+  "schema_version": 1,
+  "status": "research_complete_with_explicit_allowances_and_quote_gaps",
+  "checked_on": "2026-10-01",
+  "region": "울란바토르",
+  "price_policy": "원통화. 관측 판매가와 기획 충당액을 구분. 해외 운송·관세·수입VAT는 root 공통 충당. null은 별도견적이며 0원이 아님.",
+  "scope": "강의실4/직원8/포토1/VR1/네트워크·저장",
+  "items": [
+    {
+      "id": "AV-TV",
+      "category": "강의실",
+      "name": "75형 일반 4K TV",
+      "quantity": 4,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 2499900,
+        "base": 3599900,
+        "high": 3999900
+      },
+      "source_url": "https://arina.mn/productm/104/40",
+      "checked_on": "2026-10-01",
+      "included": "교실마다 일반TV1대. 기준 LG75UT81009LB; 하한 Skyworth75G66H, 상한 LG75QNED83B6A. 작은 교실의 기본 음향은 내장 스피커 사용.",
+      "uncertainty": "75형은 예산가정. 마지막 열 글자 가독성 시험 후 크기 결정. 타제품 가격범위.",
+      "price_basis": "온라인표시가와 명시된 상한충당",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인",
+      "alternative_source_urls": [
+        "https://arina.mn/products/3/1/75"
+      ]
+    },
+    {
+      "id": "AV-PEN",
+      "category": "강의실",
+      "name": "USB 필기 펜 타블렛",
+      "quantity": 4,
+      "unit": "개/세트",
+      "currency": "KRW",
+      "unit_price": {
+        "low": 62000,
+        "base": 139000,
+        "high": 189000
+      },
+      "source_url": "https://estore.wacom.kr/ko-kr/pen-tablet.html",
+      "checked_on": "2026-10-01",
+      "included": "기준 Wacom One 소형 USB-C 케이블 패키지. 하한은 Intuos 소형 유선 제품. PC에서 디지털 필기를 입력한다.",
+      "uncertainty": "기준·하한은 공식 판매가, 상한은 중형 후보 계획값. 전자칠판으로 바꾸면 제외. 해외 운송·몽골 세금 별도.",
+      "price_basis": "온라인표시가와 명시된 상한충당",
+      "budget_role": "base",
+      "procurement": "해외수입",
+      "tax": "상품원가만; 몽골운송/관세/수입VAT제외"
+    },
+    {
+      "id": "AV-STAND-A",
+      "category": "강의실",
+      "name": "A TV 이동식 스탠드",
+      "quantity": 1,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 280000,
+        "base": 280000,
+        "high": 400000
+      },
+      "source_url": "https://electron.mn/products/203606/97718",
+      "checked_on": "2026-10-01",
+      "included": "60~100형 이동식 스탠드. VAT포함명시. 할인/정상가격 범위.",
+      "uncertainty": "75형 무게·VESA·전도안정·바퀴잠금 확인 필요.",
+      "price_basis": "온라인표시가와 명시된 상한충당",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "상품 상세에 VAT 포함 명시"
+    },
+    {
+      "id": "AV-MOUNT",
+      "category": "강의실",
+      "name": "BCD TV 벽걸이 브래킷",
+      "quantity": 3,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 70000,
+        "base": 120000,
+        "high": 200000
+      },
+      "source_url": null,
+      "checked_on": "2026-10-01",
+      "included": "호환 브래킷·체결부속.",
+      "uncertainty": "기획충당, 실제견적 아님. 벽보강/설치노무는 인테리어 별도.",
+      "price_basis": "기획충당; 온라인견적 아님",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "AV-PC",
+      "category": "강의실",
+      "name": "수업·OBS용 PC 본체",
+      "quantity": 4,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 2799900,
+        "base": 2849900,
+        "high": 3999900
+      },
+      "source_url": "https://bestcomputers.mn/products/25933",
+      "checked_on": "2026-10-01",
+      "included": "기준 HP Pro Tower 280 G9: i5-14500 / 8GB / 512GB / Windows 11 Home / 키보드·마우스 + 8GB RAM 증설로 총16GB. RAM을 추가한 구성 금액.",
+      "uncertainty": "HP 본체 관측가 2,649,900₮ + RAM 증설 충당 150,000~200,000₮. 증설 호환·공임·보증은 견적 필요. 상한은 Acer XC1860 Ultra5-225 / 16GB / 512GB / Win11 완제품 정상가 3,999,900₮. 할인 상세가 3,799,900₮. 수업용 1TB 확보는 AV-SSD 4개를 필수로 함께 계상. 실제1080p 송출·녹화 동시 시험 필요.",
+      "price_basis": "본체 온라인 판매가 + 별도 RAM 기획 충당. 상한은 확인한 16GB 완제품 정상가.",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인",
+      "source_observations": [
+        {
+          "url": "https://bestcomputers.mn/products/25933",
+          "model": "HP Pro Tower 280 G9 i5-14500/8GB/512GB/Win11",
+          "price": 2649900,
+          "currency": "MNT",
+          "date": "2026-10-01"
+        },
+        {
+          "url": "https://bestcomputers.mn/products/26555",
+          "model": "Acer XC1860 Ultra5-225/16GB/512GB/Win11",
+          "price": 3799900,
+          "regular_price": 3999900,
+          "currency": "MNT",
+          "date": "2026-10-01",
+          "warning": "앞선 조회 2,799,900₮와 재조회 3,799,900₮가 달라 HP+RAM 증설을 기준으로 변경"
+        }
+      ]
+    },
+    {
+      "id": "AV-SSD",
+      "category": "강의실",
+      "name": "로컬 녹화용 1TB SSD",
+      "quantity": 4,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 180000,
+        "base": 250000,
+        "high": 380000
+      },
+      "source_url": null,
+      "checked_on": "2026-10-01",
+      "included": "수업 PC 4대 각각 1TB SSD로 교체하거나 1TB 녹화 드라이브 추가. 512GB 그대로 사용하는 안이 아님.",
+      "uncertainty": "제품·확장 슬롯·설치 보증 미확정인 필수 충당액. 총수량4를 수업PC와 함께 합산. 기존512GB 재판매 차감은 하지 않음.",
+      "price_basis": "기획충당; 온라인견적 아님",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "AV-MONITOR",
+      "category": "강의실",
+      "name": "교사 조작 모니터 24형",
+      "quantity": 4,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 567900,
+        "base": 567900,
+        "high": 650000
+      },
+      "source_url": "https://digipay.itstore.mn/products/dell-pro-24-plus-monitor-p2425h-23-8-inch-1920-x-1080-at-100hz-hdmi-port-dp-port-vga-port-usb-3-2-gen1-type-b-upstream-a-downstream-c-downstream-power-cord-dp-cable-usb-type-a-to-b-cable",
+      "checked_on": "2026-10-01",
+      "included": "DellP2425H; 기본DP/전원/USB케이블 포함.",
+      "uncertainty": "기준현지판매가/상한변동충당. TV와조작모니터는별개.",
+      "price_basis": "온라인표시가와 명시된 상한충당",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "AV-PTZ",
+      "category": "강의실",
+      "name": "수업용 광학 줌 PTZ 카메라",
+      "quantity": 4,
+      "unit": "개/세트",
+      "currency": "USD",
+      "unit_price": {
+        "low": 1199,
+        "base": 1199,
+        "high": 1499
+      },
+      "source_url": "https://www.adorama.com/ptzoptics-move-se-sdi-hdmi-usb-ip-indoor-ptz-camera-auto-tracking/p/ptzmovese",
+      "checked_on": "2026-10-01",
+      "included": "PTZOptics Move SE 12배 광학 줌 기준, 30배 제품을 상한으로 제시. USB·HDMI·SDI·IP 입력 지원. 교실 천장에 각1대.",
+      "uncertainty": "해외 상품가. 12배가 적절한지는 실제 거리에서 시험한다. CCTV PTZ나 디지털 줌 웹캠과 다른 제품이다.",
+      "price_basis": "온라인표시가와 명시된 상한충당",
+      "budget_role": "base",
+      "procurement": "해외수입",
+      "tax": "상품원가만; 몽골운송/관세/수입VAT제외"
+    },
+    {
+      "id": "AV-PTZ-MOUNT",
+      "category": "강의실",
+      "name": "PTZ 천장 브래킷·안전 와이어",
+      "quantity": 4,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 150000,
+        "base": 230000,
+        "high": 350000
+      },
+      "source_url": null,
+      "checked_on": "2026-10-01",
+      "included": "전용호환브래킷·낙하방지부속.",
+      "uncertainty": "기획충당. 천장보강·설치노무는 인테리어. 매달기방향/체결규격확인.",
+      "price_basis": "기획충당; 온라인견적 아님",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "AV-CABLE",
+      "category": "강의실",
+      "name": "능동 USB·HDMI·오디오 패치 세트",
+      "quantity": 4,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 150000,
+        "base": 280000,
+        "high": 450000
+      },
+      "source_url": null,
+      "checked_on": "2026-10-01",
+      "included": "방마다 카메라 능동 USB 연장, TV HDMI, 오디오 패치, 필요한 허브·젠더·충전 전원 소품을 묶은 충당액.",
+      "uncertainty": "장비 사이 연결만 포함. 벽속 Cat6·전기배선·몰딩은 인테리어 담당. 실제 길이에서1080p 입력을 시험해야 한다.",
+      "price_basis": "기획충당; 온라인견적 아님",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "AV-MIC",
+      "category": "강의실",
+      "name": "착용 무선 마이크 완전 세트",
+      "quantity": 4,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 440000,
+        "base": 440000,
+        "high": 650000
+      },
+      "source_url": "https://www.cinestore.mn/collections/dji",
+      "checked_on": "2026-10-01",
+      "included": "DJI Mic Mini 2TX + 1RX + 충전함. 총 송신기8 / 수신기4 / 충전함4. 교사4명과 예비 송신기4개.",
+      "uncertainty": "할인440000/정상650000. 표준RX USB오디오연결. 모바일전용RX제외. 교실간간섭시험.",
+      "price_basis": "온라인표시가와 명시된 상한충당",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인",
+      "spec_source_url": "https://repair.dji.com/help/content?customId=01700011680&spaceId=17"
+    },
+    {
+      "id": "AV-SPEAKER-BCD",
+      "category": "강의실",
+      "name": "소형 교실 액티브 스피커 한 쌍",
+      "quantity": 3,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 289900,
+        "base": 299900,
+        "high": 380000
+      },
+      "source_url": "https://bestcomputers.mn/products/18559",
+      "checked_on": "2026-10-01",
+      "included": "작은 교실의 TV 내장 스피커가 부족할 때 추가하는 Edifier R1280DB 액티브 한 쌍. 앰프 내장.",
+      "uncertainty": "TV 내장 스피커와 같은 용도이므로 기본 합계에서는 제외. 현장 청취 시험 후 필요할 때만 3쌍 이하 추가. 검색 할인289,900 / 상세299,900₮ 차이; 상한은 충당.",
+      "price_basis": "온라인표시가와 명시된 상한충당",
+      "budget_role": "optional_upgrade",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "AV-SPEAKER-A",
+      "category": "강의실",
+      "name": "A실 댄스·수업 액티브 음향 세트",
+      "quantity": 1,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 600000,
+        "base": 1000000,
+        "high": 1800000
+      },
+      "source_url": null,
+      "checked_on": "2026-10-01",
+      "included": "20평 A실에서 댄스 음악과 수업 음원을 재생할 액티브 음향 한 세트. 고정부와 연결 부속 포함 충당.",
+      "uncertainty": "제품 미정. 작은 교실 스피커와 중복하지 않는다. 잔향·음압·하울링을 확인한 후 선정한다.",
+      "price_basis": "기획충당; 온라인견적 아님",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "AV-HEADPHONE",
+      "category": "강의실",
+      "name": "유선 점검 헤드폰",
+      "quantity": 4,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 35000,
+        "base": 60000,
+        "high": 100000
+      },
+      "source_url": null,
+      "checked_on": "2026-10-01",
+      "included": "OBS소리점검 교실별1개.",
+      "uncertainty": "기획충당.",
+      "price_basis": "기획충당; 온라인견적 아님",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "AV-UPS",
+      "category": "강의실",
+      "name": "PC·조작화면 UPS",
+      "quantity": 4,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 199900,
+        "base": 439900,
+        "high": 639900
+      },
+      "source_url": "https://bestcomputers.mn/products/20214",
+      "checked_on": "2026-10-01",
+      "included": "교실 PC와 조작 모니터의 안전 종료용. 기준 Hikvision1200VA/720W, 하한1000VA/600W, 상한 Santak1500VA/900W.",
+      "uncertainty": "같은 판매처의 용량별 상품 가격이다. TV·가습기·고출력 음향을 제외한다. 지속시간은 실제 부하 시험이 필요하다.",
+      "price_basis": "온라인표시가와 명시된 상한충당",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "OFF-PC",
+      "category": "사무실",
+      "name": "직원 업무용 PC 본체",
+      "quantity": 8,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 2799900,
+        "base": 2849900,
+        "high": 3999900
+      },
+      "source_url": "https://bestcomputers.mn/products/25933",
+      "checked_on": "2026-10-01",
+      "included": "기준 HP Pro Tower 280 G9: i5-14500 / 8GB / 512GB / Windows 11 Home / 키보드·마우스 + 8GB RAM 증설로 총16GB. RAM을 추가한 구성 금액.",
+      "uncertainty": "HP 본체 관측가 2,649,900₮ + RAM 증설 충당 150,000~200,000₮. 증설 호환·공임·보증은 견적 필요. 상한은 Acer XC1860 Ultra5-225 / 16GB / 512GB / Win11 완제품 정상가 3,999,900₮. 할인 상세가 3,799,900₮. 문서·상담·운영 업무용이며 고성능 편집 GPU는 포함하지 않음.",
+      "price_basis": "본체 온라인 판매가 + 별도 RAM 기획 충당. 상한은 확인한 16GB 완제품 정상가.",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인",
+      "source_observations": [
+        {
+          "url": "https://bestcomputers.mn/products/25933",
+          "model": "HP Pro Tower 280 G9 i5-14500/8GB/512GB/Win11",
+          "price": 2649900,
+          "currency": "MNT",
+          "date": "2026-10-01"
+        },
+        {
+          "url": "https://bestcomputers.mn/products/26555",
+          "model": "Acer XC1860 Ultra5-225/16GB/512GB/Win11",
+          "price": 3799900,
+          "regular_price": 3999900,
+          "currency": "MNT",
+          "date": "2026-10-01",
+          "warning": "앞선 조회 2,799,900₮와 재조회 3,799,900₮가 달라 HP+RAM 증설을 기준으로 변경"
+        }
+      ]
+    },
+    {
+      "id": "OFF-MONITOR",
+      "category": "사무실",
+      "name": "직원 24형 모니터",
+      "quantity": 8,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 567900,
+        "base": 567900,
+        "high": 650000
+      },
+      "source_url": "https://digipay.itstore.mn/products/dell-pro-24-plus-monitor-p2425h-23-8-inch-1920-x-1080-at-100hz-hdmi-port-dp-port-vga-port-usb-3-2-gen1-type-b-upstream-a-downstream-c-downstream-power-cord-dp-cable-usb-type-a-to-b-cable",
+      "checked_on": "2026-10-01",
+      "included": "DellP2425H 1인1대.",
+      "uncertainty": "기준표시판매가/상한변동충당. 모니터암은 가구예산 중복확인.",
+      "price_basis": "온라인표시가와 명시된 상한충당",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "NET-ROUTER",
+      "category": "네트워크·저장",
+      "name": "업무용 라우터",
+      "quantity": 1,
+      "unit": "개/세트",
+      "currency": "USD",
+      "unit_price": {
+        "low": 49.98,
+        "base": 49.98,
+        "high": 59.98
+      },
+      "source_url": "https://www.bhphotovideo.com/c/product/1716315-REG/tp_link_er605_v2_er605_multi_wan_wired_vpn.html",
+      "checked_on": "2026-10-01",
+      "included": "TP-LinkER605V2. 망분리구성후보.",
+      "uncertainty": "할인/정상가. ISP장비가동등기능제공시제거. 별도하드웨어컨트롤러기본없음.",
+      "price_basis": "온라인표시가와 명시된 상한충당",
+      "budget_role": "base",
+      "procurement": "해외수입",
+      "tax": "상품원가만; 몽골운송/관세/수입VAT제외"
+    },
+    {
+      "id": "NET-SWITCH",
+      "category": "네트워크·저장",
+      "name": "24포트 기가비트 PoE 스위치",
+      "quantity": 1,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 799900,
+        "base": 799900,
+        "high": 1199900
+      },
+      "source_url": "https://bestcomputers.mn/products/19690",
+      "checked_on": "2026-10-01",
+      "included": "TP-Link SG1428PE 기준. PC 유선망과 AP·PTZ의 PoE 전원 공급용.",
+      "uncertainty": "상한 SG3428MP 관리형 제품. 전체 PoE 부하와 포트 여유를 확인한다. 별도 인젝터를 더하지 않는다.",
+      "price_basis": "온라인표시가와 명시된 상한충당",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "NET-AP",
+      "category": "네트워크·저장",
+      "name": "실내용 Wi-Fi6 천장 AP",
+      "quantity": 3,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 349900,
+        "base": 349900,
+        "high": 529900
+      },
+      "source_url": "https://bestcomputers.mn/products/24938",
+      "checked_on": "2026-10-01",
+      "included": "Hikvision DS-3WAP622G-SI AX1800 PoE 기준. 실내 천장 설치 AP3대.",
+      "uncertainty": "3대는 기획 수량으로 벽체 전파 실측 후2~4대로 조정한다. 조회 시2대 재고여서 추가 수량 확인 필요. 상한은 AX3000급.",
+      "price_basis": "온라인표시가와 명시된 상한충당",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "NET-UPS",
+      "category": "네트워크·저장",
+      "name": "네트워크·NAS UPS",
+      "quantity": 1,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 439900,
+        "base": 639900,
+        "high": 899900
+      },
+      "source_url": "https://bestcomputers.mn/products/20214",
+      "checked_on": "2026-10-01",
+      "included": "라우터·PoE스위치·NAS 안전종료용1500VA/900W급기준.",
+      "uncertainty": "교실4UPS와별개. 실제PoE부하/백업시간검증.",
+      "price_basis": "온라인표시가와 명시된 상한충당",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "REC-NAS",
+      "category": "네트워크·저장",
+      "name": "2베이 녹화·파일 NAS 본체",
+      "quantity": 1,
+      "unit": "개/세트",
+      "currency": "USD",
+      "unit_price": {
+        "low": 364.99,
+        "base": 364.99,
+        "high": 364.99
+      },
+      "source_url": "https://www.bhphotovideo.com/c/product/1908413-REG/synology_diskstation_ds225_2_bay_nas.html",
+      "checked_on": "2026-10-01",
+      "included": "Synology DS225+ 디스크 미포함 본체. 교실 PC에서 녹화한 파일을 옮겨 저장한다.",
+      "uncertainty": "영상 합성·인코딩용 PC가 아니다. 접근 권한과 녹화 보존기간을 별도로 설정해야 한다.",
+      "price_basis": "온라인표시가와 명시된 상한충당",
+      "budget_role": "base",
+      "procurement": "해외수입",
+      "tax": "상품원가만; 몽골운송/관세/수입VAT제외"
+    },
+    {
+      "id": "REC-HDD",
+      "category": "네트워크·저장",
+      "name": "NAS용 8TB HDD",
+      "quantity": 2,
+      "unit": "개/세트",
+      "currency": "USD",
+      "unit_price": {
+        "low": 419.99,
+        "base": 419.99,
+        "high": 419.99
+      },
+      "source_url": "https://www.bhphotovideo.com/c/product/1910774-REG/synology_hat3320_8t_8tb_hat3320_plus_series.html",
+      "checked_on": "2026-10-01",
+      "included": "Synology HAT3320-8T 2개. RAID1이면 명목8TB를 사용할 수 있다.",
+      "uncertainty": "16TB 사용 용량으로 합산하지 않는다. DS225+와 DSM의 호환목록 확인 필요. RAID는 별도 백업을 대신하지 않는다.",
+      "price_basis": "온라인표시가와 명시된 상한충당",
+      "budget_role": "base",
+      "procurement": "해외수입",
+      "tax": "상품원가만; 몽골운송/관세/수입VAT제외"
+    },
+    {
+      "id": "REC-BACKUP",
+      "category": "네트워크·저장",
+      "name": "분리보관용 외장 백업 HDD 8TB급",
+      "quantity": 1,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 450000,
+        "base": 650000,
+        "high": 900000
+      },
+      "source_url": null,
+      "checked_on": "2026-10-01",
+      "included": "NAS와분리보관할외장백업1개.",
+      "uncertainty": "제품미정충당. 보존정책따라교대매체1개추가가능.",
+      "price_basis": "기획충당; 온라인견적 아님",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "NET-SETUP",
+      "category": "네트워크·저장",
+      "name": "4실 AV·망 설정 및 현장시험",
+      "quantity": 1,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 600000,
+        "base": 1200000,
+        "high": 2200000
+      },
+      "source_url": null,
+      "checked_on": "2026-10-01",
+      "included": "OBS 장면, 마이크 음량, 파일 전송, 망 분리, UPS 안전 종료, 교실4개 동시 송출을 설정·시험하는 노무 충당액.",
+      "uncertainty": "현지 확정 견적이 아니다. 전기·통신 패시브 공사와 앱 개발은 제외한다.",
+      "price_basis": "기획충당; 온라인견적 아님",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "PHOTO-PC",
+      "category": "포토부스",
+      "name": "포토부스 전용 PC",
+      "quantity": 1,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 2799900,
+        "base": 2849900,
+        "high": 3999900
+      },
+      "source_url": "https://bestcomputers.mn/products/25933",
+      "checked_on": "2026-10-01",
+      "included": "기준 HP Pro Tower 280 G9: i5-14500 / 8GB / 512GB / Windows 11 Home / 키보드·마우스 + 8GB RAM 증설로 총16GB. RAM을 추가한 구성 금액.",
+      "uncertainty": "HP 본체 관측가 2,649,900₮ + RAM 증설 충당 150,000~200,000₮. 증설 호환·공임·보증은 견적 필요. 상한은 Acer XC1860 Ultra5-225 / 16GB / 512GB / Win11 완제품 정상가 3,999,900₮. 할인 상세가 3,799,900₮. 포토 앱 개발은 SW-PHOTO 별도 견적.",
+      "price_basis": "본체 온라인 판매가 + 별도 RAM 기획 충당. 상한은 확인한 16GB 완제품 정상가.",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인",
+      "source_observations": [
+        {
+          "url": "https://bestcomputers.mn/products/25933",
+          "model": "HP Pro Tower 280 G9 i5-14500/8GB/512GB/Win11",
+          "price": 2649900,
+          "currency": "MNT",
+          "date": "2026-10-01"
+        },
+        {
+          "url": "https://bestcomputers.mn/products/26555",
+          "model": "Acer XC1860 Ultra5-225/16GB/512GB/Win11",
+          "price": 3799900,
+          "regular_price": 3999900,
+          "currency": "MNT",
+          "date": "2026-10-01",
+          "warning": "앞선 조회 2,799,900₮와 재조회 3,799,900₮가 달라 HP+RAM 증설을 기준으로 변경"
+        }
+      ]
+    },
+    {
+      "id": "PHOTO-CAMERA",
+      "category": "포토부스",
+      "name": "4K USB 촬영 카메라",
+      "quantity": 1,
+      "unit": "개/세트",
+      "currency": "USD",
+      "unit_price": {
+        "low": 199.99,
+        "base": 199.99,
+        "high": 199.99
+      },
+      "source_url": "https://www.logitech.com/en-us/shop/p/mx-brio-4k-webcam",
+      "checked_on": "2026-10-01",
+      "included": "Logitech MX Brio. 디지털 네컷 촬영에 사용하는4K USB 카메라 후보. 직접 USB 입력이므로 캡처보드를 더하지 않는다.",
+      "uncertainty": "DSLR급 결과를 보장하지 않는다. 실제 다인 구도·피부톤·조명과 인화 샘플로 채택 여부를 정한다.",
+      "price_basis": "온라인표시가와 명시된 상한충당",
+      "budget_role": "base",
+      "procurement": "해외수입",
+      "tax": "상품원가만; 몽골운송/관세/수입VAT제외"
+    },
+    {
+      "id": "PHOTO-TOUCH",
+      "category": "포토부스",
+      "name": "22형 터치 모니터",
+      "quantity": 1,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 849900,
+        "base": 849900,
+        "high": 1099900
+      },
+      "source_url": "https://bestcomputers.mn/products/20040",
+      "checked_on": "2026-10-01",
+      "included": "ViewSonicTD2230 10점터치. 할인/정상가.",
+      "uncertainty": "USB터치·영상연결. 기존기구외장과치수검증.",
+      "price_basis": "온라인표시가와 명시된 상한충당",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "PHOTO-LIGHT",
+      "category": "포토부스",
+      "name": "촬영용 LED 확산조명 세트",
+      "quantity": 1,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 200000,
+        "base": 350000,
+        "high": 600000
+      },
+      "source_url": null,
+      "checked_on": "2026-10-01",
+      "included": "촬영용 LED 연속광, 디퓨저와 기구 고정부를 위한 충당액.",
+      "uncertainty": "일반 천장 조명과 별개다. 눈부심·피부톤·전원 주파수에 따른 플리커를 시험한다.",
+      "price_basis": "기획충당; 온라인견적 아님",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "PHOTO-CABLE",
+      "category": "포토부스",
+      "name": "카메라·화면 고정 및 연결 소품",
+      "quantity": 1,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 100000,
+        "base": 180000,
+        "high": 300000
+      },
+      "source_url": null,
+      "checked_on": "2026-10-01",
+      "included": "각도조절마운트·화면고정부·USB/전원소품.",
+      "uncertainty": "목공외장/배경/조명기구와중복없음.",
+      "price_basis": "기획충당; 온라인견적 아님",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "VR-HEADSET",
+      "category": "상담실 VR",
+      "name": "독립형 VR 헤드셋·컨트롤러",
+      "quantity": 1,
+      "unit": "개/세트",
+      "currency": "USD",
+      "unit_price": {
+        "low": 349.99,
+        "base": 599.99,
+        "high": 599.99
+      },
+      "source_url": "https://www.meta.com/quest/family/",
+      "checked_on": "2026-10-01",
+      "included": "기준 Meta Quest3 512GB와 기본 컨트롤러. 독립형이라 별도 게이밍PC를 더하지 않는다.",
+      "uncertainty": "하한 Quest3S128GB는 광학·착용 품질이 다른 제품이다. 몽골 배송·지원·보증을 확인하고 콘텐츠 이용권을 별도로 선정한다.",
+      "price_basis": "온라인표시가와 명시된 상한충당",
+      "budget_role": "base",
+      "procurement": "해외수입",
+      "tax": "상품원가만; 몽골운송/관세/수입VAT제외"
+    },
+    {
+      "id": "VR-HYGIENE",
+      "category": "상담실 VR",
+      "name": "교대용 접촉패드·보관·소품",
+      "quantity": 1,
+      "unit": "개/세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 150000,
+        "base": 250000,
+        "high": 400000
+      },
+      "source_url": null,
+      "checked_on": "2026-10-01",
+      "included": "세척가능접촉면·렌즈보호·컨트롤러스트랩·케이스후보.",
+      "uncertainty": "상담실수납장/바닥매트와중복없음. 소모품모델·세척방법확인.",
+      "price_basis": "기획충당; 온라인견적 아님",
+      "budget_role": "base",
+      "procurement": "몽골현지",
+      "tax": "표시판매가; VAT포함여부 상세확인"
+    },
+    {
+      "id": "AV-CAPTURE",
+      "category": "중복 제외",
+      "name": "외장 캡처·별도 오디오 인터페이스",
+      "quantity": 0,
+      "unit": "개/세트/프로젝트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 0,
+        "base": 0,
+        "high": 0
+      },
+      "source_url": "https://ptzoptics.com/ptz-cameras/move-se-12x",
+      "checked_on": "2026-10-01",
+      "included": "PTZ의 USB 영상과 DJI 표준 수신기의 USB 오디오를 PC가 직접 입력한다.",
+      "uncertainty": "0원은기본구성에서추가제품이없다는뜻. HDMI장거리방식으로변경하면캡처4개견적필요.",
+      "price_basis": "온라인표시가",
+      "budget_role": "included_elsewhere",
+      "procurement": "몽골현지 또는 미정",
+      "tax": "표시가/충당액의 상세 VAT조건 미확정"
+    },
+    {
+      "id": "OPTION-BOARD",
+      "category": "전자칠판 대체",
+      "name": "75형 Android 전자칠판",
+      "quantity": 4,
+      "unit": "개/세트/프로젝트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 4800000,
+        "base": 4800000,
+        "high": 5500000
+      },
+      "source_url": "https://electron.mn/products/168506/698598",
+      "checked_on": "2026-10-01",
+      "included": "Electron X7S 75형 Android 패키지. 전자칠판·디지털펜·이동식 스탠드·벽걸이·리모컨·내장2×15W 스피커를 포함. 프린터를 끼운 M패키지는 제외.",
+      "uncertainty": "기준은 할인판매가, 상한은 동일S패키지 정상가. VAT 포함 여부는 미명시. 기존TV·USB펜타블렛·A이동스탠드·BCD벽걸이를 제거하고 차액 계산. 수업PC/교사PTZ/마이크는 유지. 내장 카메라는 교사 광학줌 촬영을 대체한다고 가정하지 않음.",
+      "price_basis": "확인한 동일 X7S 패키지 할인/정상 판매가",
+      "budget_role": "replacement_option",
+      "procurement": "몽골현지 또는 미정",
+      "tax": "표시가/충당액의 상세 VAT조건 미확정",
+      "replaces": [
+        "AV-TV",
+        "AV-PEN",
+        "AV-STAND-A",
+        "AV-MOUNT"
+      ]
+    },
+    {
+      "id": "PHOTO-PRINT",
+      "category": "인화 추가",
+      "name": "염료승화 사진 프린터",
+      "quantity": 1,
+      "unit": "개/세트/프로젝트",
+      "currency": "USD",
+      "unit_price": {
+        "low": 695,
+        "base": 695,
+        "high": 695
+      },
+      "source_url": "https://www.bhphotovideo.com/c/product/1264019-REG/dnp_ds_rx1hs_dye_sublimation_printer.html",
+      "checked_on": "2026-10-01",
+      "included": "DNP DS-RX1HS 본체, USB·전원 케이블. 디지털 기본안에 인화를 추가할 때만 구매하는 옵션.",
+      "uncertainty": "종이·리본은 별도 행이다. USB 연결이므로 무선 모듈을 더하지 않는다. 출력함 목공과 연동 시험을 확인한다.",
+      "price_basis": "온라인표시가",
+      "budget_role": "option_print",
+      "procurement": "해외수입",
+      "tax": "상품원가만; 몽골운송/관세/수입VAT제외"
+    },
+    {
+      "id": "PHOTO-MEDIA",
+      "category": "인화 추가",
+      "name": "인화지·리본 시작 팩 1400장",
+      "quantity": 1,
+      "unit": "개/세트/프로젝트",
+      "currency": "USD",
+      "unit_price": {
+        "low": 201,
+        "base": 201,
+        "high": 201
+      },
+      "source_url": "https://www.fotoclubinc.com/products/DNP-DS-RX1HS-4x6-Media-2-Rolls-(1400-prints-total)__RX1HS(46).aspx",
+      "checked_on": "2026-10-01",
+      "included": "4×6인치1400장 분량의 종이·리본2롤. 한 장에서2×6인치 두 줄을 출력할 수 있다.",
+      "uncertainty": "소재비는4×6 한 장당0.1436USD. 운송·세금·손실·전력 제외. 실제 배부 수량에 따라 소모량이 달라진다.",
+      "price_basis": "온라인표시가",
+      "budget_role": "option_print",
+      "procurement": "해외수입",
+      "tax": "상품원가만; 몽골운송/관세/수입VAT제외",
+      "cost_per_4x6_usd": 0.14357142857142857
+    },
+    {
+      "id": "PHOTO-PRINT-INTEGRATION",
+      "category": "인화 추가",
+      "name": "프린터 설치·출력 연동 시험",
+      "quantity": 1,
+      "unit": "개/세트/프로젝트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 200000,
+        "base": 400000,
+        "high": 700000
+      },
+      "source_url": null,
+      "checked_on": "2026-10-01",
+      "included": "드라이버/절단/컬러/배출시험과장비부속여유.",
+      "uncertainty": "기획충당. 앱개발로포함되면이항목을제거해중복방지.",
+      "price_basis": "기획충당; 온라인견적 아님",
+      "budget_role": "option_print",
+      "procurement": "몽골현지 또는 미정",
+      "tax": "표시가/충당액의 상세 VAT조건 미확정"
+    },
+    {
+      "id": "SW-PHOTO",
+      "category": "개발 별도견적",
+      "name": "포토 촬영·SYNK 월 이용권 연동",
+      "quantity": 1,
+      "unit": "개/세트/프로젝트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": null,
+        "base": null,
+        "high": null
+      },
+      "source_url": null,
+      "checked_on": "2026-10-01",
+      "included": "촬영·합성·미리보기·QR 다운로드·보관 및 삭제와 대표 학생 월1회 이용권의 서버 차감·실패 복구.",
+      "uncertainty": "현재 미구현. 장비 구매만으로 앱 연동이 동작하지 않는다. 로그인·API·유지보수 범위를 확정한 뒤 별도 견적.",
+      "price_basis": "미구현/미선정 별도견적",
+      "budget_role": "quote_required",
+      "procurement": "몽골현지 또는 미정",
+      "tax": "표시가/충당액의 상세 VAT조건 미확정"
+    },
+    {
+      "id": "SW-VIEW",
+      "category": "개발 별도견적",
+      "name": "학생별 자료·선생님 화면 선택",
+      "quantity": 1,
+      "unit": "개/세트/프로젝트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": null,
+        "base": null,
+        "high": null
+      },
+      "source_url": null,
+      "checked_on": "2026-10-01",
+      "included": "복수 영상의 동기 재생, 학생별 화면 배치, SYNK WORLD 접근 권한, 녹화 재생 기능 설계·개발.",
+      "uncertainty": "YouTube 단일 합성영상만으로 학생별 레이아웃 변경은 되지 않는다. 시안 UI는 실서비스 구현 증거가 아니며 개발·전송·서버비를 별도로 산정한다.",
+      "price_basis": "미구현/미선정 별도견적",
+      "budget_role": "quote_required",
+      "procurement": "몽골현지 또는 미정",
+      "tax": "표시가/충당액의 상세 VAT조건 미확정"
+    },
+    {
+      "id": "OPEX-INTERNET",
+      "category": "운영비 별도견적",
+      "name": "업로드 회선·인터넷",
+      "quantity": 1,
+      "unit": "개/세트/프로젝트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": null,
+        "base": null,
+        "high": null
+      },
+      "source_url": null,
+      "checked_on": "2026-10-01",
+      "included": "교실4개가 동시에 송출할 수 있는 업무용 인터넷 회선.",
+      "uncertainty": "건물에서 제공되는 실제 업로드 속도·SLA·현지 요금 견적이 필요하다. 일반 다운로드 상품 속도만으로 송출 품질을 보장하지 않는다.",
+      "price_basis": "미구현/미선정 별도견적",
+      "budget_role": "recurring_quote_required",
+      "procurement": "몽골현지 또는 미정",
+      "tax": "표시가/충당액의 상세 VAT조건 미확정"
+    },
+    {
+      "id": "OPEX-VR",
+      "category": "운영비 별도견적",
+      "name": "VR 콘텐츠·기관 이용권",
+      "quantity": 1,
+      "unit": "개/세트/프로젝트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": null,
+        "base": null,
+        "high": null
+      },
+      "source_url": null,
+      "checked_on": "2026-10-01",
+      "included": "선정한 게임·체험의 기관 공용 이용권과 계정 운영.",
+      "uncertainty": "콘텐츠 미선정. 소비자용 게임 구매만으로 학원 공용 이용권을 얻는다고 가정하지 않는다.",
+      "price_basis": "미구현/미선정 별도견적",
+      "budget_role": "recurring_quote_required",
+      "procurement": "몽골현지 또는 미정",
+      "tax": "표시가/충당액의 상세 VAT조건 미확정"
+    },
+    {
+      "id": "OPTION-TINY",
+      "category": "근접 촬영 대안",
+      "name": "OBSBOT Tiny 2 Lite 근접 배치 대안",
+      "quantity": 4,
+      "unit": "대",
+      "currency": "USD",
+      "unit_price": {
+        "low": 159,
+        "base": 159,
+        "high": 179
+      },
+      "source_url": "https://www.obsbot.com/store/products/tiny-2-lite",
+      "checked_on": "2026-10-01",
+      "included": "Tiny2Lite 본체·USB-C케이블·USB-A어댑터. 기존 교실세팅 문서의 보급형 후보.",
+      "uncertainty": "광학 줌이 아닌 디지털 줌 웹캠. 선생님 가까운 천장 위치로 바꾸고 프레이밍/얼굴왜곡/화질을 시험한 후에만 PTZ 대체 가능. 지금 후면 천장 광학 줌과 동일 성능으로 비교하지 않음. 마운트/USB 배선도 다시 산정.",
+      "budget_role": "replacement_option",
+      "replaces": [
+        "AV-PTZ"
+      ],
+      "price_basis": "공식 미국 스토어 할인159 / 정상179USD",
+      "procurement": "해외수입",
+      "tax": "몽골 운송·관세·수입VAT 미포함"
+    },
+    {
+      "id": "SW-OBS",
+      "category": "송출 소프트웨어",
+      "name": "OBS Studio 기본 라이선스",
+      "quantity": 4,
+      "unit": "설치",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 0,
+        "base": 0,
+        "high": 0
+      },
+      "source_url": "https://obsproject.com/",
+      "checked_on": "2026-10-01",
+      "included": "공식 무료 오픈소스 녹화·송출 소프트웨어. 기본 합성영상 송출용.",
+      "uncertainty": "무료 라이선스와 초기 설정 노무는 다르다. 노무는 NET-SETUP, SYNK 맞춤 개발은 SW-PHOTO/SW-VIEW에 분리. 유료 플러그인은 기본안에서 사용하지 않는다.",
+      "budget_role": "included_elsewhere",
+      "price_basis": "공식 무료 라이선스",
+      "procurement": "공식 무료 다운로드",
+      "tax": "해당 없음"
+    }
+  ],
+  "assumptions": [
+    "PC는 총13대: 수업4 + 직원8 + 포토1. 각각 정품 Windows와 키보드·마우스를 포함한다. RAM16GB 증설 충당을 본체 행에 합산했다.",
+    "수업 PC는 AV-SSD 4개를 함께 구매하여 각각1TB 녹화 공간을 확보하는 가정이다. 사무실과 포토 PC는16GB/512GB 기준이다.",
+    "교사 조작 모니터4, 직원 모니터8, 포토 터치1, TV4는 용도가 서로 다르다.",
+    "교실 카메라4, 마이크 완전세트4. USB 직접 입력으로 별도 영상캡처·오디오인터페이스 기본 수량은0이다.",
+    "전자칠판 S패키지는 일반TV4·펜타블렛4·A이동스탠드1·BCD벽걸이3을 대체한다. 포함 스탠드를 다시 합산하지 않는다.",
+    "작은 교실의 기본 음향은 TV 내장 스피커이다. 외장 액티브스피커3쌍은 현장 청취 후 선택하는 옵션이며 기본 합계에서 제외했다. A실은 댄스용 별도 음향을 포함한다.",
+    "AP3·PTZ4는 PoE 전원 공급 후보이며 개별 PoE 인젝터를 중복 계상하지 않았다. 스위치의 총전력과 실제 케이블 길이를 확인해야 한다.",
+    "촬영용 LED는 장비 예산이다. 방 천장 일반조명, 부스 목공, 간판, 전기·Cat6 패시브 배선, 구조 보강은 인테리어 예산이다.",
+    "포토 촬영 앱·월 이용권 및 학생별 화면 선택 기능은 미구현 개발이며 금액을 null 별도견적으로 표시했다. 하드웨어 합계만으로 연동 시스템이 완성되지 않는다.",
+    "OBS 초기 세팅과 SYNK 개발은 다른 항목이다. 기본 하드웨어는 YouTube 단일 합성영상 송출 기준이다.",
+    "VR 기기는 독립형으로 별도 게이밍PC를 더하지 않았다. 체험 콘텐츠의 기관 공용 이용권은 별도 선정·견적이 필요하다.",
+    "현지 전문 장비 가격을 확보하지 못한 품목은 한국 공식 스토어 또는 미국 제조사·공인 판매처 원통화로 적었다. 해외 운송과 몽골 수입 부대비는 포함하지 않았다."
+  ],
+  "exclusions": [
+    "실제 구매 없음",
+    "운송·관세·수입VAT 공통 충당은 root 담당",
+    "통신 패시브 배선·목공·전기·방음 공사 제외",
+    "Office 기업 라이선스, 사진저장 클라우드, 백업 구독, 앱 유지보수, VR 콘텐츠료는 운영방식 확정 후 별도"
+  ],
+  "validation": {
+    "ids_unique": true,
+    "priced_rows": 39,
+    "unpriced_rows": 4,
+    "base_totals": {
+      "MNT": {
+        "low": 63562100,
+        "base": 72672100,
+        "high": 98067300
+      },
+      "KRW": {
+        "low": 248000,
+        "base": 556000,
+        "high": 756000
+      },
+      "USD": {
+        "low": 6600.93,
+        "base": 6850.93,
+        "high": 8060.93
+      }
+    },
+    "total_rows": 43
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "at": "2026-09-09T12:25:44.071Z",
+  "scope": "CUA browser: local real decoded/rendered sprites; not YouTube compression",
+  "page": "합성검수.html",
+  "count": 8,
+  "expressions": ["본체", "눈감음", "눈웃음", "궁금함", "집중", "안도", "응원", "놀람"],
+  "eachExpression": {
+    "outsideEyeRGBA": 0,
+    "alphaDifference": 0,
+    "edgeDisplayChangedPixels": 10685,
+    "protectedInnerChangedPixels": 0
+  },
+  "independentEyeBounds": [[315,313,417,422],[492,313,595,422]],
+  "edgeRecipeSelectedPixels": 10707,
+  "beforeAndAfterTransform": "translateY(-4.17%) scale(1)",
+  "naturalWidth": 1024,
+  "opacity": 1,
+  "filter": "none",
+  "visual": "Eight expression buttons clicked and screenshots inspected in the real browser. Eye expressions change while forehead, cheeks, ears, fur contour, blue garment, cream ties, sign and tail stay fixed. Edge band is softer, not removed wholesale. Ground shadow raised toward body. 640 preview and 1280 view inspected.",
+  "limit": "Not a claim that every legacy outfit or other mascot has been repaired. Pixel test compares browser sprites before final stream compression. Background videos continue independently during this local comparison."
+}

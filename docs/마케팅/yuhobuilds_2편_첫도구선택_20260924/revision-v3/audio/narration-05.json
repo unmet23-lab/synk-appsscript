@@ -1,0 +1,93 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "잠깐만요. 저는 학생 출석 하나 찍고 싶은데, 모르는 이름이 왜 네 개나 나오는 거죠?",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.3,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup"
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 4.538,
+  "words": [
+    {
+      "text": "잠깐만요.",
+      "start": 0.096,
+      "end": 0.468
+    },
+    {
+      "text": "저는",
+      "start": 1.169,
+      "end": 1.362
+    },
+    {
+      "text": "학생",
+      "start": 1.403,
+      "end": 1.595
+    },
+    {
+      "text": "출석",
+      "start": 1.637,
+      "end": 1.829
+    },
+    {
+      "text": "하나",
+      "start": 1.87,
+      "end": 1.98
+    },
+    {
+      "text": "찍고",
+      "start": 2.022,
+      "end": 2.159
+    },
+    {
+      "text": "싶은데,",
+      "start": 2.2,
+      "end": 2.434
+    },
+    {
+      "text": "모르는",
+      "start": 2.971,
+      "end": 3.246
+    },
+    {
+      "text": "이름이",
+      "start": 3.287,
+      "end": 3.466
+    },
+    {
+      "text": "왜",
+      "start": 3.535,
+      "end": 3.59
+    },
+    {
+      "text": "네",
+      "start": 3.7,
+      "end": 3.768
+    },
+    {
+      "text": "개나",
+      "start": 3.823,
+      "end": 3.947
+    },
+    {
+      "text": "나오는",
+      "start": 3.988,
+      "end": 4.167
+    },
+    {
+      "text": "거죠?",
+      "start": 4.208,
+      "end": 4.538
+    }
+  ],
+  "characters": null
+}

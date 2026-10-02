@@ -1,0 +1,11 @@
+{
+  "name": "synkbrief-meeting-tasks-v3",
+  "private": true,
+  "description": "synkbrief 회의 메모 편의 HyperFrames 제작 작업본",
+  "scripts": {
+    "hf": "hyperframes"
+  },
+  "devDependencies": {
+    "hyperframes": "0.8.58"
+  }
+}

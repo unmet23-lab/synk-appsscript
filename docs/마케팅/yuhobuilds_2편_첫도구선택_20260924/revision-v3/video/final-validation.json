@@ -1,0 +1,38 @@
+{
+  "checkedAt": "2026-09-25T10:34:18.464Z",
+  "file": "../../yuhobuilds_EP02_v3.mp4",
+  "width": 1080,
+  "height": 1920,
+  "fps": "30/1",
+  "frames": 2257,
+  "durationSeconds": 75.233333,
+  "sizeBytes": 24875146,
+  "sha256": "b6d043f299b71832e73bb75dfd9ce9d044c79f46e7c941b45c782ca90ca33815",
+  "fullDecodeExitCode": 0,
+  "blackSegmentsAtLeast0_15Seconds": [],
+  "integratedLufs": -16.09,
+  "truePeakDbtp": -2.44,
+  "cuts": 36,
+  "averageCutSeconds": 2.0898148055555557,
+  "maxCutSeconds": 3.6999999999999957,
+  "browserPlayback": {
+    "verified": true,
+    "timeProgressSeconds": [
+      18.299378,
+      28.977046
+    ],
+    "paused": false,
+    "readyState": 4,
+    "mediaError": null,
+    "visibleFrameConfirmed": true
+  },
+  "visibleFramesInspected": true,
+  "userFinalApproval": "pending",
+  "published": false,
+  "render": {
+    "hyperframesVersion": "0.8.75",
+    "capture": "screenshot",
+    "browserGpu": "hardware",
+    "seconds": 179.7
+  }
+}

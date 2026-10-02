@@ -1,0 +1,29 @@
+{
+  "date": "2026-09-22",
+  "revision": "괴상한 앱 대사·눈물 수정",
+  "url": "http://127.0.0.1:4374/preview.html",
+  "durationSeconds": 76.125,
+  "changedSceneSeekVerified": true,
+  "observedPlaybackSeconds": [
+    32.4,
+    32.515256
+  ],
+  "mediaError": null,
+  "accentStillsReviewed": [
+    "scene-09a",
+    "expression-loop-puzzled"
+  ],
+  "directListeningVerified": false,
+  "userFinalApproval": false,
+  "publicUpload": false,
+  "recoveryDate": "2026-09-23",
+  "recoveryCause": "Local preview server was not running; media files intact.",
+  "previewHttpStatus": 200,
+  "videoRangeHttpStatus": 206,
+  "playbackVerifiedAfterRecovery": true,
+  "blackScreenRecoveryDate": "2026-09-23",
+  "blackScreenFinding": "In-app browser played VP9 WebM with a black visible frame although media readyState was 4; decoded file frames were valid.",
+  "previewSourceNow": "yuhobuilds_EP01.mp4 / H.264",
+  "visibleFrameVerifiedAtSeconds": 5.509,
+  "blackScreenFixedInBrowser": true
+}

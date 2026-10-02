@@ -1,0 +1,12 @@
+const fs=require('node:fs');
+const {spawnSync}=require('node:child_process');
+const run=(args,file)=>{const r=spawnSync('ffmpeg',args,{encoding:'utf8',maxBuffer:5e6});fs.writeFileSync('verification/'+file,r.stderr||'');if(r.status!==0)throw Error(file+': '+r.stderr);return r.stderr;};
+const meta=JSON.parse(spawnSync('ffprobe',['-v','error','-show_format','-show_streams','-of','json','synkbrief-meeting-v12.mp4'],{encoding:'utf8'}).stdout);fs.writeFileSync('verification/video-metadata.json',JSON.stringify(meta,null,2));
+run(['-hide_banner','-v','error','-i','synkbrief-meeting-v12.mp4','-f','null','NUL'],'full-decode.log');
+run(['-hide_banner','-i','synkbrief-meeting-v12.mp4','-af','loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json','-f','null','NUL'],'audio-loudness.log');
+run(['-hide_banner','-i','synkbrief-meeting-v12.mp4','-vf','blackdetect=d=0.3:pix_th=0.1','-an','-f','null','NUL'],'blackdetect.log');
+run(['-y','-hide_banner','-v','error','-ss','1.4','-i','synkbrief-meeting-v12.mp4','-frames:v','1','verification/poster.jpg'],'poster.log');
+const scenes=JSON.parse(fs.readFileSync('scenes.json','utf8'));
+for(const s of scenes)run(['-y','-hide_banner','-v','error','-ss',String(s.start+Math.min(s.duration-1,3.5)),'-i','synkbrief-meeting-v12.mp4','-frames:v','1','-vf','scale=270:480','verification/render-'+s.id+'.png'],'frame-'+s.id+'.log');
+for(const t of [1.5,6,9,13,15,20,24.5,30,32,36.5,39,43,48,56,67,77,91,96])run(['-y','-hide_banner','-v','error','-ss',String(t),'-i','synkbrief-meeting-v12.mp4','-frames:v','1','-vf','scale=270:480','verification/motion-'+t+'.png'],'motion-'+t+'.log');
+console.log({duration:meta.format.duration,streams:meta.streams.map(s=>({type:s.codec_type,codec:s.codec_name,width:s.width,height:s.height})),fullDecode:true});

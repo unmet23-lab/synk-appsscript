@@ -1,0 +1,43 @@
+{
+  "createdAt": "2026-09-25T18:55:59.649Z",
+  "captionTextMatches": true,
+  "captionCount": 57,
+  "captionBoundsAndOverlapPassed": true,
+  "jokeHeadingFrameAudit": {
+    "frames": 203,
+    "minBrightPixels": 243,
+    "passed": true
+  },
+  "shortPunchlines": [
+    {
+      "text": "제로.",
+      "durationMs": 411
+    },
+    {
+      "text": "앱은요?",
+      "durationMs": 589
+    }
+  ],
+  "finalAac": {
+    "input_i": "-16.03",
+    "input_tp": "-2.57",
+    "input_lra": "1.00",
+    "input_thresh": "-26.25",
+    "output_i": "-16.00",
+    "output_tp": "-2.11",
+    "output_lra": "1.00",
+    "output_thresh": "-26.18",
+    "normalization_type": "dynamic",
+    "target_offset": "0.00"
+  },
+  "directListeningVerified": false,
+  "publicUpload": false,
+  "typing": {
+    "voiceEndSeconds": 58.94933333333333,
+    "typingEndSeconds": 58.93333333333333,
+    "errorMs": -16,
+    "keystrokes": 12,
+    "soundEndsOnLastKey": true
+  },
+  "opening100HoursOnlyOnce": true
+}

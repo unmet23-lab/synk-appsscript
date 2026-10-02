@@ -1,0 +1,31 @@
+{
+  "checkedOn": "2026-09-22",
+  "narration": {
+    "scriptFile": "narration-script.txt",
+    "status": "blocked_existing_connection_unavailable",
+    "audioFile": null,
+    "durationSeconds": null,
+    "directListeningVerified": false,
+    "existingProvider": "Typecast API",
+    "existingLoopbackBridge": "http://127.0.0.1:4371/status",
+    "bridgeReachable": false,
+    "credentialPresenceCheckedWithoutValues": true,
+    "credentialEnvironmentScopes": ["Process", "User", "Machine"],
+    "supportedVoiceEnvironmentCredentialFound": false,
+    "existingTypecastBrowserTabFound": false,
+    "browserFallback": "New Chrome tabs could not be created through either documented tab entry point. The one requested IAB fallback returned browser unavailable. Existing user tabs were left unchanged.",
+    "newGenerationRequests": 0,
+    "newChargesOrSubscriptions": false,
+    "credentialRequestedFromUser": false,
+    "osTtsFallbackUsed": false
+  },
+  "sourceInspection": [
+    "docs/마케팅/yuhobuilds_1편_20260922/synthesize.cjs",
+    "docs/마케팅/yuhobuilds_1편_20260922/README.md",
+    "scratchpad/yuho-ep01-typecast-session.cjs",
+    "scratchpad/shift-typecast-session.cjs"
+  ],
+  "otherProjectFilesModified": false,
+  "musicOrSfxGenerated": false,
+  "remoteMediaDownloaded": false
+}

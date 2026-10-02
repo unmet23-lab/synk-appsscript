@@ -1,0 +1,92 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 1.596,
+  "words": [
+    {
+      "text": "다시",
+      "start": 0.222,
+      "end": 0.485
+    },
+    {
+      "text": "말해",
+      "start": 0.545,
+      "end": 0.788
+    },
+    {
+      "text": "주세요.",
+      "start": 0.848,
+      "end": 1.596
+    }
+  ],
+  "characters": [
+    {
+      "text": "다",
+      "start": 0.222,
+      "end": 0.384
+    },
+    {
+      "text": "시",
+      "start": 0.384,
+      "end": 0.485
+    },
+    {
+      "text": " ",
+      "start": 0.485,
+      "end": 0.545
+    },
+    {
+      "text": "말",
+      "start": 0.545,
+      "end": 0.727
+    },
+    {
+      "text": "해",
+      "start": 0.727,
+      "end": 0.788
+    },
+    {
+      "text": " ",
+      "start": 0.788,
+      "end": 0.848
+    },
+    {
+      "text": "주",
+      "start": 0.848,
+      "end": 0.97
+    },
+    {
+      "text": "세",
+      "start": 0.97,
+      "end": 1.131
+    },
+    {
+      "text": "요",
+      "start": 1.131,
+      "end": 1.576
+    },
+    {
+      "text": ".",
+      "start": 1.576,
+      "end": 1.596
+    }
+  ],
+  "request": {
+    "seed": 926,
+    "model": "ssfm-v30",
+    "voice_id": "tc_6a3350f8e5a50a4abe948fa8",
+    "text": "다시 말해 주세요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 0.94,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1
+    }
+  },
+  "direction": "표현을 배우는 장면. 부드럽고 또렷하지만 음절별 끊기 없음.",
+  "voiceName": "도윤"
+}

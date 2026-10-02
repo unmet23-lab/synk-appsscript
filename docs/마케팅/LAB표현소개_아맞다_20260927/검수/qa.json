@@ -1,0 +1,86 @@
+{
+ "SYNK_LAB_아맞다_EP01_EN_음성.mp4": {
+  "probe": {
+   "duration": 22.0,
+   "bytes": 2904288,
+   "video": "h264",
+   "size": [
+    1080,
+    1920
+   ],
+   "fps": "30/1",
+   "frames": 660,
+   "audio": "aac",
+   "sample_rate": "48000",
+   "channels": 1
+  },
+  "decode": {
+   "ok": true,
+   "errors": ""
+  },
+  "black_segments": [],
+  "loudness": {
+   "input_i": -15.99,
+   "input_tp": -0.98,
+   "input_lra": 9.5,
+   "input_thresh": -26.72
+  },
+  "sheet": "SYNK_LAB_아맞다_EP01_EN_음성_시트.jpg"
+ },
+ "SYNK_LAB_아맞다_EP01_EN_무음성.mp4": {
+  "probe": {
+   "duration": 22.0,
+   "bytes": 2795449,
+   "video": "h264",
+   "size": [
+    1080,
+    1920
+   ],
+   "fps": "30/1",
+   "frames": 660,
+   "audio": "aac",
+   "sample_rate": "48000",
+   "channels": 1
+  },
+  "decode": {
+   "ok": true,
+   "errors": ""
+  },
+  "black_segments": [],
+  "loudness": {
+   "input_i": -15.99,
+   "input_tp": -2.87,
+   "input_lra": 6.4,
+   "input_thresh": -27.09
+  },
+  "sheet": "SYNK_LAB_아맞다_EP01_EN_무음성_시트.jpg"
+ },
+ "SYNK_LAB_아맞다_EP01_KO_음성.mp4": {
+  "probe": {
+   "duration": 22.0,
+   "bytes": 2841803,
+   "video": "h264",
+   "size": [
+    1080,
+    1920
+   ],
+   "fps": "30/1",
+   "frames": 660,
+   "audio": "aac",
+   "sample_rate": "48000",
+   "channels": 1
+  },
+  "decode": {
+   "ok": true,
+   "errors": ""
+  },
+  "black_segments": [],
+  "loudness": {
+   "input_i": -15.99,
+   "input_tp": -0.98,
+   "input_lra": 9.5,
+   "input_thresh": -26.72
+  },
+  "sheet": "SYNK_LAB_아맞다_EP01_KO_음성_시트.jpg"
+ }
+}

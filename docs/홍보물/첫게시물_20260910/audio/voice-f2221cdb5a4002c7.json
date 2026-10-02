@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "a3d38d10-960a-48f6-b38a-1cf4ba0195d2",
+  "narration": "강사가 읽을 때는 첫 강의를 제안하는 데 필요한 소개자료라는 점을 먼저 보여줍니다.",
+  "narrationSha256": "f2221cdb5a4002c770c933a94fabe8faaa94034d36349259dcf1e919cd9ec064",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-f2221cdb5a4002c7.wav",
+  "duration": 5.04,
+  "sha256": "508ff33434110e044a1e1744665b0b7b06339e3f5310ecc9d675d82951bd5663",
+  "humanListening": false,
+  "fullDecode": true
+}

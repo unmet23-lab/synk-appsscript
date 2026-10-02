@@ -1,0 +1,111 @@
+{
+  "source": "SYNK_LAB_CAFE_AGE_MATCH_v4.mp4",
+  "language": "ko",
+  "duration": 15.2106875,
+  "provider": "local faster-whisper-small",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 2.08,
+      "text": " 다시 말해주세요.",
+      "words": [
+        {
+          "start": 0.0,
+          "end": 1.24,
+          "word": " 다시",
+          "probability": 0.6691159605979919
+        },
+        {
+          "start": 1.24,
+          "end": 2.08,
+          "word": " 말해주세요.",
+          "probability": 0.9147936503092448
+        }
+      ]
+    },
+    {
+      "start": 2.38,
+      "end": 4.2,
+      "text": " 영수증 필요하세요?",
+      "words": [
+        {
+          "start": 2.38,
+          "end": 3.68,
+          "word": " 영수증",
+          "probability": 0.7774537205696106
+        },
+        {
+          "start": 3.68,
+          "end": 4.2,
+          "word": " 필요하세요?",
+          "probability": 0.960779070854187
+        }
+      ]
+    },
+    {
+      "start": 4.92,
+      "end": 5.94,
+      "text": " 아, 괜찮아요.",
+      "words": [
+        {
+          "start": 4.92,
+          "end": 5.32,
+          "word": " 아,",
+          "probability": 0.8685625791549683
+        },
+        {
+          "start": 5.42,
+          "end": 5.94,
+          "word": " 괜찮아요.",
+          "probability": 0.9902373254299164
+        }
+      ]
+    },
+    {
+      "start": 6.6,
+      "end": 6.94,
+      "text": " 감사합니다.",
+      "words": [
+        {
+          "start": 6.6,
+          "end": 6.94,
+          "word": " 감사합니다.",
+          "probability": 0.99319988489151
+        }
+      ]
+    },
+    {
+      "start": 9.920000000000002,
+      "end": 11.9,
+      "text": " 다시 말해주세요.",
+      "words": [
+        {
+          "start": 9.920000000000002,
+          "end": 11.24,
+          "word": " 다시",
+          "probability": 0.9663032293319702
+        },
+        {
+          "start": 11.24,
+          "end": 11.9,
+          "word": " 말해주세요.",
+          "probability": 0.9947031537691752
+        }
+      ]
+    },
+    {
+      "start": 12.26,
+      "end": 12.44,
+      "text": " 안녕.",
+      "words": [
+        {
+          "start": 12.26,
+          "end": 12.44,
+          "word": " 안녕.",
+          "probability": 0.2672412395477295
+        }
+      ]
+    }
+  ],
+  "note": "Automatic transcript; not proof of acting quality or exact lip sync."
+}

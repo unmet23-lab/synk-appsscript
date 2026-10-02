@@ -1,0 +1,162 @@
+{
+  "date": "2026-09-22",
+  "artifact": "index.html",
+  "sha256": "f846ffd21196a0dbc0c36a593b95204173ecab014c7a7946b0fd6f27069375bb",
+  "bytes": 1479432,
+  "scope": "독립 로컬 시안. 운영 배포 및 실제 학습 효과 검증 아님.",
+  "implementation": {
+    "engines": 8,
+    "featureLabels": 40,
+    "sourceMap": "feature-sources-20260922.md",
+    "nodes": 292,
+    "connections": 621,
+    "featureHover": "기능 노드와 직접 연결된 local edges에만 감쇠된 실땀 위상 이동; 이웃 점은 약하게 강조",
+    "removed": "중앙에서 주변으로 퍼지는 응답 파동",
+    "preservedVariant": "variants/atlas-calm-depth-20260922.html"
+  },
+  "featureQA": {
+    "browser": "Codex in-app browser",
+    "desktop": [
+      1440,
+      1000
+    ],
+    "labels": "8엔진 선택 확인. Vellum/Temper/Reed는 긴 이름용 배치 보완 후 5개 노출 재확인.",
+    "stableHover": {
+      "label": "근거의 유효기간",
+      "index": 4,
+      "durationSeconds": 1.425,
+      "featureIds": [
+        4
+      ],
+      "directConnections": 5,
+      "activeEdges": 5,
+      "phaseFrom": 329.98,
+      "phaseTo": 340.665
+    },
+    "click": "긴 기능 라벨 클릭 후 Core 선택 유지",
+    "pause": {
+      "label": "근거의 유효기간",
+      "timeBefore": 27.51,
+      "timeAfter": 27.51,
+      "phaseBefore": 206.324,
+      "phaseAfter": 206.324,
+      "activeEdges": 5
+    },
+    "leave": {
+      "hoveredFeature": null,
+      "activeEdges": 0,
+      "selected": "core"
+    },
+    "reducedMotion": {
+      "viewport": [
+        390,
+        844
+      ],
+      "label": "성격을 따른 반응",
+      "time": 0,
+      "phase": 0,
+      "directConnections": 7,
+      "activeEdges": 7,
+      "innerLight": 0
+    },
+    "smallScreens": {
+      "widths": [
+        320,
+        390
+      ],
+      "overflow": false,
+      "labelDensity": "충돌 방지를 위해 일부 기능만 노출. 실제 휴대전화 검증 아님."
+    },
+    "consoleWarnings": 0,
+    "consoleErrors": 0
+  },
+  "performance": {
+    "measuredBuildSha256": "7037312fbc64b310ab4be33cb8318a99791ff986e66406c006fc2bf7ed2c3803",
+    "finalDifference": "측정 뒤 index.src.html의 접근성 설명과 about 문구에 기능 hover 안내만 추가. 렌더러 변경 없음.",
+    "viewport": [
+      1920,
+      1080
+    ],
+    "canvas": [
+      1350,
+      802
+    ],
+    "dpr": 2,
+    "warmupFrames": 30,
+    "samples": 360,
+    "feature": "근거의 유효기간",
+    "activeEdges": 5,
+    "frameMs": {
+      "median": 16.7,
+      "p95": 16.8,
+      "max": 25.1,
+      "over25": 1
+    },
+    "cpuRenderMs": {
+      "median": 0.8,
+      "p95": 1.2,
+      "max": 1.4
+    },
+    "gpuDrawCalls": 4,
+    "stitchesLastFrame": 371,
+    "limitations": [
+      "로딩·리사이즈 제외",
+      "GPU 완료 시간 미측정",
+      "120/144Hz 실기기 미측정",
+      "고정 60fps 보증 아님"
+    ]
+  },
+  "entranceAndInnerLightQA": {
+    "measuredBeforeFeatureChangesSha256": "c256fc6309812d5b2dce5305d9c5b6b31b77215e2c6fb64f1f4b6c6489937b21",
+    "trace": [
+      {
+        "time": 0.25,
+        "canvasOpacity": 0.540869,
+        "innerLight": 0.154,
+        "labelAppearance": 0
+      },
+      {
+        "time": 0.55,
+        "canvasOpacity": 1,
+        "innerLight": 0.231,
+        "labelAppearance": 0
+      },
+      {
+        "time": 1,
+        "innerLight": 0.069,
+        "labelAppearance": 0
+      },
+      {
+        "time": 1.4,
+        "innerLight": 0,
+        "labelAppearance": 0.334
+      },
+      {
+        "time": 1.8,
+        "innerLight": 0,
+        "labelAppearance": 0.892
+      },
+      {
+        "time": 2.266,
+        "introComplete": true,
+        "labelAppearance": 1
+      }
+    ],
+    "earlyInput": "Loom 클릭으로 .875초 시점 첫 등장 즉시 완료",
+    "steadySelection": "Core 내부 밝기 약 .734까지 상승 후 0 복귀. 같은 엔진 유지 시 재발사 없음.",
+    "pauseAndGpuRestore": {
+      "engine": "loom",
+      "frozenTime": 89.803,
+      "innerLight": 0.538,
+      "restoredUniform": 0.5384411215782166,
+      "canvasFallback": true
+    },
+    "api": "기존 nucleus 5/6/7인자 호출 기본 내부 밝기0. 선택적 8인자 유한값0–1 제한.",
+    "note": "해당 내부 발광 및 첫 등장 코드는 최종판에도 유지. 기능 변경 후 같은 GPU 복구 시험을 중복 실행하지 않음."
+  },
+  "checks": {
+    "syntax": "atlas-data.js, constellation.js, app.js, loom-network-webgl.js 통과",
+    "motionTests": "node --test tests/loom-motion.test.js: 11/11 통과",
+    "review": "별도 읽기 전용 리뷰가 지적한 기능 라벨 클릭 판정을 수정하고 실제 UI에서 재확인"
+  }
+}

@@ -1,0 +1,29 @@
+[
+  {
+    "created_at": "2026-09-30T12:49:45.749344Z",
+    "display_name": "Nano Banana Pro",
+    "id": "567c1e65-3a57-4d57-b060-cbf8ef3724b3",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_124945_567c1e65-3a57-4d57-b060-cbf8ef3724b3_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "3:4",
+      "batch_size": 1,
+      "height": 2400,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "cd7e0b40-9463-4c6d-ac13-76198e1933a3",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/cd7e0b40-9463-4c6d-ac13-76198e1933a3.png"
+        }
+      ],
+      "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone and moles. Same plain black cotton tank top. Change only the hairstyle to a chin-length layered bob with soft face-framing layers. Head and shoulders facing the camera, relaxed neutral expression. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1792
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_124945_567c1e65-3a57-4d57-b060-cbf8ef3724b3.png",
+    "status": "completed"
+  }
+]

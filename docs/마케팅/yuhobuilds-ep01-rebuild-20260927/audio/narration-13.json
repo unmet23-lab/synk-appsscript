@@ -1,0 +1,200 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 3,
+  "words": [
+    {
+      "text": "AI에게는",
+      "start": 0.096,
+      "end": 0.67
+    },
+    {
+      "text": "이렇게",
+      "start": 0.862,
+      "end": 1.069
+    },
+    {
+      "text": "말해보세요.",
+      "start": 1.117,
+      "end": 1.484
+    },
+    {
+      "text": "나는",
+      "start": 1.947,
+      "end": 2.138
+    },
+    {
+      "text": "개발이",
+      "start": 2.186,
+      "end": 2.441
+    },
+    {
+      "text": "처음이야.",
+      "start": 2.489,
+      "end": 3
+    }
+  ],
+  "characters": [
+    {
+      "text": "A",
+      "start": 0.096,
+      "end": 0.231
+    },
+    {
+      "text": "I",
+      "start": 0.231,
+      "end": 0.431
+    },
+    {
+      "text": "에",
+      "start": 0.431,
+      "end": 0.479
+    },
+    {
+      "text": "게",
+      "start": 0.479,
+      "end": 0.559
+    },
+    {
+      "text": "는",
+      "start": 0.559,
+      "end": 0.67
+    },
+    {
+      "text": " ",
+      "start": 0.67,
+      "end": 0.862
+    },
+    {
+      "text": "이",
+      "start": 0.862,
+      "end": 0.91
+    },
+    {
+      "text": "렇",
+      "start": 0.91,
+      "end": 1.005
+    },
+    {
+      "text": "게",
+      "start": 1.005,
+      "end": 1.069
+    },
+    {
+      "text": " ",
+      "start": 1.069,
+      "end": 1.117
+    },
+    {
+      "text": "말",
+      "start": 1.117,
+      "end": 1.213
+    },
+    {
+      "text": "해",
+      "start": 1.213,
+      "end": 1.277
+    },
+    {
+      "text": "보",
+      "start": 1.277,
+      "end": 1.356
+    },
+    {
+      "text": "세",
+      "start": 1.356,
+      "end": 1.436
+    },
+    {
+      "text": "요",
+      "start": 1.436,
+      "end": 1.468
+    },
+    {
+      "text": ".",
+      "start": 1.468,
+      "end": 1.484
+    },
+    {
+      "text": " ",
+      "start": 1.484,
+      "end": 1.947
+    },
+    {
+      "text": "나",
+      "start": 1.947,
+      "end": 2.043
+    },
+    {
+      "text": "는",
+      "start": 2.043,
+      "end": 2.138
+    },
+    {
+      "text": " ",
+      "start": 2.138,
+      "end": 2.186
+    },
+    {
+      "text": "개",
+      "start": 2.186,
+      "end": 2.314
+    },
+    {
+      "text": "발",
+      "start": 2.314,
+      "end": 2.426
+    },
+    {
+      "text": "이",
+      "start": 2.426,
+      "end": 2.441
+    },
+    {
+      "text": " ",
+      "start": 2.441,
+      "end": 2.489
+    },
+    {
+      "text": "처",
+      "start": 2.489,
+      "end": 2.665
+    },
+    {
+      "text": "음",
+      "start": 2.665,
+      "end": 2.745
+    },
+    {
+      "text": "이",
+      "start": 2.745,
+      "end": 2.777
+    },
+    {
+      "text": "야",
+      "start": 2.777,
+      "end": 2.984
+    },
+    {
+      "text": ".",
+      "start": 2.984,
+      "end": 3
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "AI에게는 이렇게 말해보세요. 나는 개발이 처음이야.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.25,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1.05
+    }
+  }
+}

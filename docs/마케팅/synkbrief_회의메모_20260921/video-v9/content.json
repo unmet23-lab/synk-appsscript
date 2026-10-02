@@ -1,0 +1,147 @@
+[
+  {
+    "id": "hook",
+    "duration": 5,
+    "step": "회의할 때 이렇게 기록하죠",
+    "title": "회의 내용,<br>어디에 적어두세요?",
+    "caption": "회의할 때 보통 컴퓨터나 메모장에 적어두잖아요.",
+    "body": "<img class=\"felt\" src=\"assets/meeting-scene.png\" alt=\"회의 내용을 메모하는 사람\"><div class=\"card solid\" style=\"top:1210px\">컴퓨터 문서 · 메모 앱 · 종이 메모</div>",
+    "theme": "blue"
+  },
+  {
+    "id": "record",
+    "duration": 7,
+    "step": "기록하는 방법은 여러 가지",
+    "title": "요즘은 녹음으로<br>기록하기도 하죠.",
+    "caption": "조용하고 목소리가 또렷하면 편리해요.\n필요한 내용은 직접 메모하기도 하고요.",
+    "body": "<div class=\"audio-note\"><div class=\"wave\"><i style=\"height:28px\"></i><i style=\"height:65px\"></i><i style=\"height:105px\"></i><i style=\"height:48px\"></i><i style=\"height:130px\"></i><i style=\"height:78px\"></i><i style=\"height:112px\"></i><i style=\"height:44px\"></i><i style=\"height:88px\"></i><i style=\"height:35px\"></i></div><b>음성 기록</b></div><div class=\"card accent\" style=\"top:1110px\">핵심 내용은 직접 메모해도 좋아요.</div>",
+    "theme": ""
+  },
+  {
+    "id": "common",
+    "duration": 6,
+    "step": "오늘은 둘 다 쓸 수 있어요",
+    "title": "직접 쓴 메모도,<br>녹음을 글로 푼 내용도.",
+    "caption": "두서없는 기록을 읽기 쉬운 회의록으로 정리해볼게요.",
+    "body": "<div class=\"routes\"><b>직접 쓴 메모</b><b>녹음 → 글로 변환</b></div><div class=\"merge-arrow\">↓</div><div class=\"card accent\" style=\"top:1000px\">두서없는 기록 → 읽기 쉬운 회의록</div><div class=\"label\" style=\"top:1300px\">녹음 파일은 사용 중인 기록 앱에서 글로 변환해 준비해요.</div>",
+    "theme": ""
+  },
+  {
+    "id": "prepare",
+    "duration": 6,
+    "step": "01   기록 준비하기",
+    "title": "적어둔 내용을<br>그대로 복사하세요.",
+    "caption": "순서를 바꾸거나 문장을 다듬을 필요 없어요.\n정리는 AI가 해요.",
+    "body": "<div class=\"notepad\"><div class=\"note-top\">정리 전 · 내가 적어둔 메모</div><p>오늘 회의 메모. 소개 페이지 문구가 길다는 얘기 나옴. 짧게 고치기로. 지수가 9월 23일까지 수정하겠다고 함. 설문 얘기도 했는데 초안은 민호가 맡기로 했고 마감은 안 정함. 고객 인터뷰 해보자는 말도 나왔지만 할지는 아직 미정. 아 다음 회의는 9월 25일 오후 2시.</p></div><div class=\"card accent\" style=\"top:1245px\">그대로 선택 → 복사</div>",
+    "theme": ""
+  },
+  {
+    "id": "open",
+    "duration": 5,
+    "step": "02   ChatGPT 열기",
+    "title": "ChatGPT를 열고<br>표시한 입력창을 누르세요.",
+    "caption": "파란 테두리로 표시한 긴 입력창을 클릭하세요.",
+    "body": "<div class=\"shot\" id=\"open-shot\" style=\"top:690px;height:185px\"><img data-layout-allow-overflow=\"true\" src=\"assets/current/01-start.png\" style=\"width:1536.0px;height:864.0px;left:-333.59999999999997px;top:-351.59999999999997px\" alt=\"실제 ChatGPT 시연 화면\"></div><div class=\"input-outline\"></div><svg class=\"input-arrow\" viewBox=\"0 0 210 240\"><path d=\"M175 215C55 215 35 130 95 30\"/><path d=\"M54 51 96 27 110 76\"/></svg><div class=\"input-callout\">여기를 클릭</div><div class=\"cursor\" id=\"input-cursor\" style=\"left:400px;top:720px\"><i></i><svg viewBox=\"0 0 24 24\"><path d=\"M3 2.8 20.6 14 12.8 15.5 9 22 3 2.8Z\" fill=\"white\" stroke=\"#2450ae\" stroke-width=\"1.4\"/></svg></div><div class=\"label\" style=\"top:1040px\">실제 ChatGPT 화면 · 입력창을 직접 표시했어요.</div>",
+    "theme": ""
+  },
+  {
+    "id": "paste",
+    "duration": 7,
+    "step": "03   AI에게 부탁할 문장",
+    "title": "AI에게 이렇게<br>부탁하면 돼요.",
+    "caption": "화면의 문장을 입력하세요. 같은 문장은 마지막에 드릴 가이드에도 있어요.",
+    "body": "<div class=\"request-box\"><b>아래 회의 기록을 읽기 쉬운 회의록으로 정리해줘.</b><p>핵심 요약 / 결정된 내용 / 할 일 / 확인할 내용으로 나눠줘.</p><p>기록에 없는 내용은 추측하지 말고,<br>모르면 확인 필요로 표시해줘.</p></div><div class=\"label\" style=\"top:1300px\">이 문장이 AI에게 정리 방법을 알려주는 부탁이에요.</div>",
+    "theme": ""
+  },
+  {
+    "id": "request",
+    "duration": 6,
+    "step": "04   회의 기록 붙여넣기",
+    "title": "그 문장 바로 아래에<br>회의 기록을 붙여넣으세요.",
+    "caption": "직접 적은 메모도, 녹음을 글로 옮긴 내용도 그대로 넣어요.",
+    "body": "<div class=\"together\"><div class=\"instruction-part\"><b>① AI에게 부탁할 문장</b><p>아래 회의 기록을 읽기 쉬운 회의록으로 정리해줘. …</p></div><div class=\"note-part\"><b>② 정리할 회의 기록</b><p>오늘 회의 메모. 소개 페이지 문구가 길다는 얘기 나옴. 짧게 고치기로. 지수가 9월 23일까지 수정하겠다고 함. 설문 얘기도 했는데 초안은 민호가 맡기로 했고 마감은 안 정함. 고객 인터뷰 해보자는 말도 나왔지만 할지는 아직 미정. 아 다음 회의는 9월 25일 오후 2시.</p></div></div><div class=\"label\" style=\"top:1390px\">둘 다 같은 입력창에 넣습니다.</div>",
+    "theme": ""
+  },
+  {
+    "id": "send",
+    "duration": 4,
+    "step": "05   보내기",
+    "title": "두 내용이 들어갔다면<br>표시한 ↑ 버튼을 누르세요.",
+    "caption": "정리해달라는 문장과 회의 기록을 한 번에 보내세요.",
+    "body": "<div class=\"shot\" id=\"send-shot\" style=\"top:590px;height:415px\"><img data-layout-allow-overflow=\"true\" src=\"assets/current/04-filled.png\" style=\"width:1536.0px;height:864.0px;left:-336.0px;top:-354.0px\" alt=\"실제 ChatGPT 시연 화면\"></div><div class=\"card accent\" style=\"top:1210px\">① 부탁할 문장 + ② 회의 기록<small style=\"display:block;color:white\">직접 쓴 메모 · 녹음을 글로 옮긴 내용</small></div><div class=\"cursor\" id=\"send-cursor\" style=\"left:952px;top:858px\"><i></i><svg viewBox=\"0 0 24 24\"><path d=\"M3 2.8 20.6 14 12.8 15.5 9 22 3 2.8Z\" fill=\"white\" stroke=\"#2450ae\" stroke-width=\"1.4\"/></svg></div><div class=\"send-outline\"></div>",
+    "theme": ""
+  },
+  {
+    "id": "result",
+    "duration": 10,
+    "step": "같은 기록으로 전후 비교",
+    "title": "같은 기록,<br>이렇게 달라졌어요.",
+    "caption": "섞여 있던 내용이 항목별로 나뉘어, 필요한 내용을 바로 찾을 수 있어요.",
+    "body": "<div class=\"before-notes\"><b>정리 전 · 원문 일부</b><p>문구가 길다는 얘기 나옴. <span class=\"match-blue\">짧게 고치기로. 지수가 9월 23일까지 수정</span>하겠다고 함. 설문 초안은 민호가 맡기로 했고 <span class=\"match-amber\">마감은 안 정함. 고객 인터뷰 할지는 미정.</span></p></div><div class=\"compare-command\">“읽기 쉬운 회의록으로 정리해줘” ↓</div><div class=\"after-label\">정리 후 · 항목별 회의록</div><div class=\"after-notes\"><div><b>핵심 요약</b><span>소개 문구 개선과 설문 초안 준비 논의</span></div><div class=\"match-blue\"><b>결정된 내용</b><span>소개 페이지 문구를 짧게 수정</span></div><div class=\"match-blue\"><b>할 일</b><span>지수 · 문구 수정 · 9월 23일까지</span></div><div class=\"match-amber\"><b>확인할 내용</b><span>설문 마감일 · 고객 인터뷰 진행 여부</span></div></div><div class=\"label\" style=\"top:1420px\">실제 원문·응답을 짧게 줄여 표시 · 전체 예시는 가이드에</div>"
+  },
+  {
+    "id": "rules",
+    "duration": 6,
+    "step": "마지막 확인만 하면 돼요",
+    "title": "다 정리된 뒤에<br>중요한 내용만 확인해요.",
+    "caption": "이름·날짜가 맞는지 보고, 정하지 않은 내용은 확인 필요로 남겨요.",
+    "body": "<div  class=\"card quote\" style=\"top:510px\">원문: “초안은 민호가 맡기로 했고<br>마감은 안 정함.”</div><div  class=\"card row-card\" style=\"top:860px\">설문 초안 <span>민호</span> <mark>확인 필요</mark></div><div class=\"reason-note\">근거 문장<br><b>“마감은 안 정함.”</b></div><div class=\"label\" style=\"top:1335px\">다음 회의 날짜를 작업 마감으로 대신 넣지 않아요.</div>"
+  },
+  {
+    "id": "project",
+    "duration": 6,
+    "step": "다음 회의에도 쓰고 싶다면",
+    "title": "같은 요청을 매번<br>붙여넣기 번거롭죠?",
+    "caption": "프로젝트라는 회의 전용 폴더에 규칙을 저장해 두세요.",
+    "body": "<div class=\"folder\"><span class=\"folder-tab\">회의 정리 프로젝트</span><div class=\"rule-file\">지침 = 정리 규칙<br><small>회의록 구성 · 모르는 내용 처리법</small></div><div class=\"chat-card one\">오늘 회의</div><div class=\"chat-card two\">다음 회의</div><svg class=\"links\" viewBox=\"0 0 800 300\"><path d=\"M400 20V135H190V270M400 135H610V270\"/></svg></div><div  class=\"card accent\" style=\"top:1250px\">한 번 저장 → 이 안의 새 채팅에 적용</div>"
+  },
+  {
+    "id": "create",
+    "duration": 6,
+    "step": "08   회의 전용 폴더 만들기",
+    "title": "프로젝트 → 새 프로젝트,<br>이름은 ‘회의 정리’.",
+    "caption": "이 폴더 안에 회의별 대화와 정리 규칙을 모아둘 거예요.",
+    "body": "<div class=\"label\" style=\"top:435px\">chatgpt.com · 로그인한 뒤 시작하세요</div><div class=\"shot\" id=\"create-over\" style=\"top:480px;height:270px;width:936px;left:72px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/01-projects.png\" style=\"width:1497.6px;height:842.4px;left:-438.75px;top:-117px\" alt=\"ChatGPT 실제 화면\"></div><div class=\"cursor\" id=\"create-cursor\" style=\"left:920px;top:520px\"><i></i><svg viewBox=\"0 0 24 24\"><path d=\"M3 2.8 20.6 14 12.8 15.5 9 22 3 2.8Z\" fill=\"white\" stroke=\"#2450ae\" stroke-width=\"1.4\"/></svg></div><div class=\"shot\" id=\"create-dialog\" style=\"top:840px;height:482px;width:936px;left:72px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/02-create.png\" style=\"width:2340px;height:1316.25px;left:-702px;top:-416.8125px\" alt=\"ChatGPT 실제 화면\"></div><div class=\"label\" style=\"top:1370px\">이름 예시: 회의 정리 · 우리 팀</div>"
+  },
+  {
+    "id": "settings",
+    "duration": 5,
+    "step": "09   규칙을 저장할 곳",
+    "title": "회의 프로젝트의 ⋯<br>→ 프로젝트 설정",
+    "caption": "‘지침’은 ChatGPT가 이 폴더 안에서 따를 정리 규칙이에요.",
+    "body": "<div class=\"shot\" id=\"settings-shot\" style=\"top:530px;height:570px;width:936px;left:72px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/04-menu.png\" style=\"width:1516.5569620253166px;height:853.0632911392406px;left:-331.746835443038px;top:-118.48101265822785px\" alt=\"ChatGPT 실제 화면\"></div><div class=\"cursor\" id=\"settings-cursor\" style=\"left:925px;top:590px\"><i></i><svg viewBox=\"0 0 24 24\"><path d=\"M3 2.8 20.6 14 12.8 15.5 9 22 3 2.8Z\" fill=\"white\" stroke=\"#2450ae\" stroke-width=\"1.4\"/></svg></div><div  class=\"card accent\" style=\"top:1210px\">프로젝트 설정 안의 ‘지침’ 칸</div>"
+  },
+  {
+    "id": "save",
+    "duration": 6,
+    "step": "10   규칙 한 번 저장하기",
+    "title": "가이드의 ‘저장할 규칙’을<br>복사해서 여기에 넣으세요.",
+    "caption": "가이드에서 ‘프로젝트에 저장할 규칙’을 복사하고, 표시한 지침 칸에 붙여넣으세요.",
+    "body": "<div class=\"file-pill\">가이드의 ‘프로젝트에 저장할 규칙’ <b>전체 복사</b></div><div class=\"shot\" id=\"save-shot\" style=\"top:645px;height:490px;width:936px;left:72px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/06-instructions.png\" style=\"width:2340px;height:1316.25px;left:-702px;top:-54.84375px\" alt=\"ChatGPT 실제 화면\"></div><div class=\"shot\" id=\"save-button\" style=\"top:1195px;height:178px;width:456px;left:552px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/06-instructions.png\" style=\"width:3840px;height:2160px;left:-2202px;top:-1860px\" alt=\"ChatGPT 실제 화면\"></div><div class=\"cursor\" id=\"save-cursor\" style=\"left:875px;top:1270px\"><i></i><svg viewBox=\"0 0 24 24\"><path d=\"M3 2.8 20.6 14 12.8 15.5 9 22 3 2.8Z\" fill=\"white\" stroke=\"#2450ae\" stroke-width=\"1.4\"/></svg></div><div class=\"paste-chip\">Ctrl + V · 지침 칸에 붙여넣기</div><div class=\"instruction-outline\"></div>"
+  },
+  {
+    "id": "global",
+    "duration": 6,
+    "step": "저장 위치만 주의하세요",
+    "title": "회의 규칙은<br>계정 전체에 넣지 마세요.",
+    "caption": "다른 글쓰기나 여행 질문에도 영향을 줄 수 있기 때문이에요.",
+    "body": "<div id=\"all-scope\" class=\"card amber\" style=\"top:510px\">계정 전체 맞춤 지침</div><div class=\"branch-row\"><div>회의 정리</div><div class=\"irrelevant\">여행 질문</div><div class=\"irrelevant\">글쓰기</div></div><div  class=\"card scenario\" style=\"top:915px\">여행 질문도 회의록처럼 정리된다면?</div><div class=\"label\" style=\"top:1065px\">범위 차이를 설명하는 가상 예시</div><div id=\"right-scope\" class=\"card accent\" style=\"top:1190px\">회의 프로젝트 → 회의 전용 지침</div>"
+  },
+  {
+    "id": "repeat",
+    "duration": 7,
+    "step": "11   다음 회의에는",
+    "title": "같은 프로젝트를 열고<br>새 채팅에 새 메모만.",
+    "caption": "“이번 회의도 정리해줘”라고 쓰고 새 기록을 붙이면 돼요.",
+    "body": "<div class=\"repeat-path\"><b>회의 프로젝트</b><span>↓</span><b>새 채팅</b></div><div class=\"shot\" id=\"repeat-shot\" style=\"top:810px;height:535px;width:936px;left:72px\"><img data-layout-allow-overflow=\"true\" src=\"assets/project/12-second-input.png\" style=\"width:1536px;height:864px;left:-336px;top:-138px\" alt=\"ChatGPT 실제 화면\"></div><div class=\"label\" style=\"top:1380px\">결과에 지난 회의의 이름·날짜가 섞이지 않았는지 확인하세요.</div>"
+  },
+  {
+    "id": "ending",
+    "duration": 7,
+    "step": "직접 따라 할 자료까지",
+    "title": "처음부터 따라 하는<br>회의 정리 가이드",
+    "caption": "그대로 따라 할 가이드와 예시가 필요하면 댓글에 synk를 남겨주세요.",
+    "theme": "blue",
+    "body": "<div class=\"pdf-fan\"><img src=\"assets/guide-1.png\" alt=\"제공 PDF 표지\"><img src=\"assets/guide-3.png\" alt=\"프로젝트 지침 설정 안내\"></div><div class=\"kit-tags\"><b>10쪽 PDF</b><b>복사할 문장</b><b>정리 전·후 예시</b></div><div  class=\"card solid\" style=\"top:1270px\">댓글에 <strong>synk</strong></div>"
+  }
+]

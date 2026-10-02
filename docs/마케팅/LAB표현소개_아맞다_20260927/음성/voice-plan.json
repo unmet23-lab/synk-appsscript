@@ -1,0 +1,62 @@
+{
+ "_왜": "v2 내레이션은 Gemini TTS(Sulafat, 무료 크레딧)다. 사용자가 Typecast 서현으로 바꾸기로 하면 이 계획으로 5줄을 생성한다 — 키는 사용자가 붙여 넣고 메모리에만 2시간 둔다(카페 편과 같은 절차).",
+ "model": "ssfm-v30",
+ "voices": {
+  "narrator": {
+   "id": "tc_69f2e455ea79fd197aa0476f",
+   "name": "서현"
+  }
+ },
+ "segments": [
+  {
+   "id": "hook",
+   "role": "narrator",
+   "text": "아 맞다!",
+   "emotion": "happy",
+   "intensity": 0.8,
+   "tempo": 1.0,
+   "smart": false,
+   "direction": "방금 생각난 듯 밝고 짧게. 첫 1초의 소리 훅."
+  },
+  {
+   "id": "umbrella",
+   "role": "narrator",
+   "text": "아 맞다, 우산!",
+   "emotion": "toneup",
+   "intensity": 0.7,
+   "tempo": 1.0,
+   "smart": false,
+   "direction": "현관에서 비를 보고 우산이 떠오른 순간. 쉼표에서 아주 짧게 끊는다."
+  },
+  {
+   "id": "beat",
+   "role": "narrator",
+   "text": "아 맞다!",
+   "emotion": "happy",
+   "intensity": 0.7,
+   "tempo": 1.0,
+   "smart": false,
+   "direction": "몽글이 숙제를 떠올리는 자리. 장난스럽게."
+  },
+  {
+   "id": "slow",
+   "role": "narrator",
+   "text": "아… 맞다.",
+   "emotion": "normal",
+   "intensity": 0.5,
+   "tempo": 0.85,
+   "smart": false,
+   "direction": "따라 말하기 본보기. 아 뒤에 짧게 쉬고 [맏따]로 또렷하게. 음절 시각을 다시 재서 화면 채움에 맞춘다."
+  },
+  {
+   "id": "confirm",
+   "role": "narrator",
+   "text": "아 맞다!",
+   "emotion": "happy",
+   "intensity": 0.6,
+   "tempo": 1.0,
+   "smart": false,
+   "direction": "여백 뒤 다시 한 번. 보통 속도, 따뜻하게."
+  }
+ ]
+}

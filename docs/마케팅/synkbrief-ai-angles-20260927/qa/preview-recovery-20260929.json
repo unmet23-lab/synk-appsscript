@@ -1,0 +1,20 @@
+{
+  "date": "2026-09-29",
+  "reported": "Video area white at 5.0 seconds in existing IAB tab",
+  "file": "synkbrief-photo-to-3cuts-series.mp4",
+  "fileFiveSecondFrame": "qa/white-screen-5s.jpg",
+  "http": {
+    "html": 200,
+    "poster": 200,
+    "rangeEnd": 206,
+    "video": 200,
+    "rangeStart": 206
+  },
+  "oldTab": "Reload restored poster but play controls did not advance playback",
+  "recovery": "Opened fresh IAB tab, verified live playback and visible moving content, closed frozen tab",
+  "url": "http://127.0.0.1:4387/watch.html",
+  "observedPlayingAtSeconds": 25.7,
+  "screenshot": "qa/preview-recovered-20260929.png",
+  "videoChanged": false,
+  "serverRestarted": false
+}

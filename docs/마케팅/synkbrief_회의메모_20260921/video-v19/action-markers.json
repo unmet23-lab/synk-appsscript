@@ -1,0 +1,42 @@
+{
+  "open": {
+    "actionAt": 3.799,
+    "nextAt": null,
+    "confirmAt": null
+  },
+  "paste": {
+    "actionAt": 2.104,
+    "nextAt": null,
+    "confirmAt": null
+  },
+  "request": {
+    "actionAt": 2.822,
+    "nextAt": null,
+    "confirmAt": null
+  },
+  "send": {
+    "actionAt": 3.286,
+    "nextAt": null,
+    "confirmAt": null
+  },
+  "create": {
+    "actionAt": 2.764,
+    "nextAt": 4.667,
+    "confirmAt": 6.089
+  },
+  "settings": {
+    "actionAt": 2.004,
+    "nextAt": 3.509,
+    "confirmAt": null
+  },
+  "save": {
+    "actionAt": 5.391,
+    "nextAt": 7.936,
+    "confirmAt": null
+  },
+  "repeat": {
+    "actionAt": 7.625,
+    "nextAt": null,
+    "confirmAt": null
+  }
+}

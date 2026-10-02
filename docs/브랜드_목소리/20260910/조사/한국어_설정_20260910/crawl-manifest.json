@@ -1,0 +1,134 @@
+{
+  "dateKst": "2026-09-10",
+  "purpose": "Current Korean narration voice/model/settings guidance; no speech generation or account change",
+  "scope": "Eleven allowlisted public primary-source pages, not an exhaustive internet crawl",
+  "sources": [
+    {
+      "source": "eleven-voice-library",
+      "requestedUrl": "https://elevenlabs.io/docs/eleven-creative/voices/voice-library.md",
+      "requestedAtUtc": "2026-09-10T10:07:29.152914+00:00",
+      "status": 200,
+      "finalUrl": "https://elevenlabs.io/docs/eleven-creative/voices/voice-library.md",
+      "responseDate": "Thu, 10 Sep 2026 05:06:00 GMT",
+      "contentType": "text/markdown; charset=utf-8",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\조사\\한국어_설정_20260910\\eleven-voice-library.md",
+      "bytes": 29458,
+      "sha256": "8b609b84ea79f55ae138a18a2c62785ee6771b2d9fb6e73f9bc61b127dc33b70"
+    },
+    {
+      "source": "eleven-tts-settings",
+      "requestedUrl": "https://elevenlabs.io/docs/eleven-creative/playground/text-to-speech.md",
+      "requestedAtUtc": "2026-09-10T10:07:29.153937+00:00",
+      "status": 200,
+      "finalUrl": "https://elevenlabs.io/docs/eleven-creative/playground/text-to-speech.md",
+      "responseDate": "Thu, 10 Sep 2026 06:03:52 GMT",
+      "contentType": "text/markdown; charset=utf-8",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\조사\\한국어_설정_20260910\\eleven-tts-settings.md",
+      "bytes": 47056,
+      "sha256": "7fc237658e9223225c5042a41ee9ee902b6a286203411cacee27a5e0ce575200"
+    },
+    {
+      "source": "eleven-best-practices",
+      "requestedUrl": "https://elevenlabs.io/docs/overview/capabilities/text-to-speech/best-practices.md",
+      "requestedAtUtc": "2026-09-10T10:07:29.153937+00:00",
+      "status": 200,
+      "finalUrl": "https://elevenlabs.io/docs/overview/capabilities/text-to-speech/best-practices.md",
+      "responseDate": "Thu, 10 Sep 2026 05:56:41 GMT",
+      "contentType": "text/markdown; charset=utf-8",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\조사\\한국어_설정_20260910\\eleven-best-practices.md",
+      "bytes": 40078,
+      "sha256": "404b0d7cd5e46611cc89d91c44652a795902e6ac46254794dcef7bfd25143ab0"
+    },
+    {
+      "source": "eleven-models",
+      "requestedUrl": "https://elevenlabs.io/docs/overview/models.md",
+      "requestedAtUtc": "2026-09-10T10:07:29.383159+00:00",
+      "status": 200,
+      "finalUrl": "https://elevenlabs.io/docs/overview/models.md",
+      "responseDate": "Thu, 10 Sep 2026 05:02:07 GMT",
+      "contentType": "text/markdown; charset=utf-8",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\조사\\한국어_설정_20260910\\eleven-models.md",
+      "bytes": 38963,
+      "sha256": "c02b98451e508c593e29ef6263c946d4d4c1769ac72e4663883943d91eaadbe5"
+    },
+    {
+      "source": "eleven-voice-design",
+      "requestedUrl": "https://elevenlabs.io/docs/eleven-creative/voices/voice-design.md",
+      "requestedAtUtc": "2026-09-10T10:07:29.383159+00:00",
+      "status": 200,
+      "finalUrl": "https://elevenlabs.io/docs/eleven-creative/voices/voice-design.md",
+      "responseDate": "Thu, 10 Sep 2026 05:28:20 GMT",
+      "contentType": "text/markdown; charset=utf-8",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\조사\\한국어_설정_20260910\\eleven-voice-design.md",
+      "bytes": 30661,
+      "sha256": "5b75c1c03d6fed863da7bfea7e9d4e9e80db69ebbdd8e546836500310375428f"
+    },
+    {
+      "source": "eleven-output-api",
+      "requestedUrl": "https://elevenlabs.io/docs/api-reference/text-to-speech/convert.md",
+      "requestedAtUtc": "2026-09-10T10:07:29.394167+00:00",
+      "status": 200,
+      "finalUrl": "https://elevenlabs.io/docs/api-reference/text-to-speech/convert.md",
+      "responseDate": "Thu, 10 Sep 2026 05:09:24 GMT",
+      "contentType": "text/markdown; charset=utf-8",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\조사\\한국어_설정_20260910\\eleven-output-api.md",
+      "bytes": 12951,
+      "sha256": "63c4d29554d0e6f37e7953b6fc9ef0369f1f03bccadd8edc0ca2e40cff9d16c6"
+    },
+    {
+      "source": "eleven-v3-ga",
+      "requestedUrl": "https://elevenlabs.io/blog/eleven-v3-is-now-generally-available",
+      "requestedAtUtc": "2026-09-10T10:07:29.507943+00:00",
+      "status": 200,
+      "finalUrl": "https://elevenlabs.io/blog/eleven-v3-is-now-generally-available",
+      "responseDate": "Thu, 10 Sep 2026 10:07:29 GMT",
+      "contentType": "text/html; charset=utf-8",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\조사\\한국어_설정_20260910\\eleven-v3-ga.html",
+      "bytes": 484248,
+      "sha256": "88601163f850387c312c787df8b055480dba0f65c7f0379d67cb554c78f24908"
+    },
+    {
+      "source": "korean-arena",
+      "requestedUrl": "https://channelcorp-ko-tts-arena.hf.space/leaderboard",
+      "requestedAtUtc": "2026-09-10T10:07:29.512936+00:00",
+      "status": 200,
+      "finalUrl": "https://channelcorp-ko-tts-arena.hf.space/leaderboard",
+      "responseDate": "Thu, 10 Sep 2026 10:07:30 GMT",
+      "contentType": "text/html; charset=utf-8",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\조사\\한국어_설정_20260910\\korean-arena.html",
+      "bytes": 115228,
+      "sha256": "71576b742a35528d5df3b9eea1b04f851ca771152f24b086f8fd0a886061950c"
+    },
+    {
+      "source": "korean-arena-method",
+      "requestedUrl": "https://channelcorp-ko-tts-arena.hf.space/about",
+      "requestedAtUtc": "2026-09-10T10:07:29.526117+00:00",
+      "status": 200,
+      "finalUrl": "https://channelcorp-ko-tts-arena.hf.space/about",
+      "responseDate": "Thu, 10 Sep 2026 10:07:30 GMT",
+      "contentType": "text/html; charset=utf-8",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\조사\\한국어_설정_20260910\\korean-arena-method.html",
+      "bytes": 49792,
+      "sha256": "4e00a1ab303a5edc3fa7f8acc40b7bbc106ebbd6a422361444fb27d647681ecf"
+    },
+    {
+      "source": "humelo-dive",
+      "requestedUrl": "https://console.humelo.com/docs/dive",
+      "requestedAtUtc": "2026-09-10T10:10:08.120221+00:00",
+      "status": "unavailable",
+      "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get issuer certificate (_ssl.c:1010)>"
+    },
+    {
+      "source": "typecast-tts",
+      "requestedUrl": "https://typecast.ai/docs/api-reference/text-to-speech/text-to-speech.md",
+      "requestedAtUtc": "2026-09-10T10:10:08.122576+00:00",
+      "status": 200,
+      "finalUrl": "https://typecast.ai/docs/api-reference/text-to-speech/text-to-speech.md",
+      "responseDate": "Thu, 10 Sep 2026 10:10:08 GMT",
+      "contentType": "text/markdown; charset=utf-8",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\조사\\한국어_설정_20260910\\typecast-tts.md",
+      "bytes": 86704,
+      "sha256": "b168e7f2c10eec649e07ac1ac908853e81f2120af49c386600bf0881ece1b158"
+    }
+  ]
+}

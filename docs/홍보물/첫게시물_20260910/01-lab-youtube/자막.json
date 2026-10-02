@@ -1,0 +1,44 @@
+[
+  {
+    "text": "Өөрийн бодлоо хэлээд,\nнэг дууг хамт сонсъё.\nLAB — өөрийн бодлоо хэлэх солонгос хэл.\nK-LOFI24 — дуу, дүрслэлтэй өнгөрүүлэх цаг.",
+    "startMs": 300,
+    "endMs": 5750,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "Хамт сонсох уу?",
+    "startMs": 6300,
+    "endMs": 7480,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "Энэ дуу ямар байна?",
+    "startMs": 11533.333333333334,
+    "endMs": 13633.333333333334,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "Тэгье. Хамт сонсъё.",
+    "startMs": 17066.666666666664,
+    "endMs": 19616.666666666664,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "Тэгвэл энэ дууг\nхамт сонсъё.\nБүтэн дуу · 1 минут 1.6 секунд",
+    "startMs": 22066.666666666664,
+    "endMs": 26466.666666666664,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "[Хөгжим: 오늘 밤 제일 환한 사람]",
+    "startMs": 26566.666666666664,
+    "endMs": 88166.66666666666,
+    "timestampMs": null,
+    "confidence": null
+  }
+]

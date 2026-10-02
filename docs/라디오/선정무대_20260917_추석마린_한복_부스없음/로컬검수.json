@@ -1,0 +1,63 @@
+{
+  "at": "2026-09-16T17:54:34.073Z",
+  "scope": "실제 1280×720 방송 크기에서 추석 마린 한복과 부스 숨김을 12초 확인",
+  "errors": [],
+  "missing": [],
+  "checks": {
+    "initial": {
+      "DJ": "마린",
+      "scene": "추석보름달마당",
+      "ready": true,
+      "hanbok": {
+        "loaded": true,
+        "width": 1024,
+        "rect": {
+          "x": 652.8125,
+          "y": 371.109375,
+          "width": 614.390625,
+          "height": 614.390625,
+          "top": 371.109375,
+          "right": 1267.203125,
+          "bottom": 985.5,
+          "left": 652.8125
+        }
+      },
+      "headset": {
+        "present": false
+      },
+      "booth": {
+        "hidden": true,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "children": 3
+      },
+      "mascotRect": {
+        "x": 652.8125,
+        "y": 371.109375,
+        "width": 614.390625,
+        "height": 614.390625,
+        "top": 371.109375,
+        "right": 1267.203125,
+        "bottom": 985.5,
+        "left": 652.8125
+      },
+      "videoTime": 1.007444
+    },
+    "afterBoundarySignal": {
+      "DJ": "마린",
+      "scene": "추석보름달마당",
+      "boothHidden": true,
+      "hanbokLoaded": true,
+      "expression": "기본"
+    }
+  },
+  "passed": true
+}

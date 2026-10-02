@@ -1,0 +1,79 @@
+{
+  "source": "test-04-identity-fix.mp4",
+  "language": "ko",
+  "duration": 10.0053125,
+  "provider": "local faster-whisper-small",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 2.0,
+      "text": " 다시 말해주세요.",
+      "words": [
+        {
+          "start": 0.0,
+          "end": 1.72,
+          "word": " 다시",
+          "probability": 0.4497053623199463
+        },
+        {
+          "start": 1.72,
+          "end": 2.3999999999999995,
+          "word": " 말해주세요.",
+          "probability": 0.9108684659004211
+        }
+      ]
+    },
+    {
+      "start": 2.88,
+      "end": 4.14,
+      "text": " 영수증 필요하세요?",
+      "words": [
+        {
+          "start": 2.88,
+          "end": 3.66,
+          "word": " 영수증",
+          "probability": 0.7405963838100433
+        },
+        {
+          "start": 3.66,
+          "end": 4.14,
+          "word": " 필요하세요?",
+          "probability": 0.9638424217700958
+        }
+      ]
+    },
+    {
+      "start": 5.02,
+      "end": 6.18,
+      "text": " 아 괜찮아요.",
+      "words": [
+        {
+          "start": 5.02,
+          "end": 5.5,
+          "word": " 아",
+          "probability": 0.7918098568916321
+        },
+        {
+          "start": 5.5,
+          "end": 6.18,
+          "word": " 괜찮아요.",
+          "probability": 0.7941976487636566
+        }
+      ]
+    },
+    {
+      "start": 6.54,
+      "end": 6.92,
+      "text": " 감사합니다.",
+      "words": [
+        {
+          "start": 6.54,
+          "end": 6.92,
+          "word": " 감사합니다.",
+          "probability": 0.9932981133460999
+        }
+      ]
+    }
+  ],
+  "note": "Automatic transcript; not proof of acting quality or exact lip sync."
+}

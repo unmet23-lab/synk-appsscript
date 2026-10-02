@@ -1,0 +1,37 @@
+[
+  {
+    "file": "assets/face.png",
+    "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds_1편_쇼츠수정_20260922\\runtime-public\\yuho-journey-01\\yuho-head.png",
+    "sha256": "e5783cb74764689c713b3301e9fa8b0a6f644eb2056235580645c1cf82d52b0f"
+  },
+  {
+    "file": "assets/portrait.jpg",
+    "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds_1편_쇼츠수정_20260922\\runtime-public\\yuho-journey-01\\ending-portrait.jpg",
+    "sha256": "0bd08d2c372f4a3914003e44037c477cfabd7a6c5921f8ac2a172000523f4450"
+  },
+  {
+    "file": "assets/smile.png",
+    "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds_1편_쇼츠수정_20260922\\assets\\expressions\\smile.png",
+    "sha256": "68acdff6eaf4765f9592abc1c84b0d454b5260a7c39823ffc5ac0f837ba69be1"
+  },
+  {
+    "file": "assets/puzzled.png",
+    "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds_1편_쇼츠수정_20260922\\assets\\expressions\\puzzled.png",
+    "sha256": "2d2db71ee03dbbf53f97af87323b006e4f85faa1b2eb4cf1f13e1b763bc3116c"
+  },
+  {
+    "file": "assets/surprise.png",
+    "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds_1편_쇼츠수정_20260922\\assets\\expressions\\surprise.png",
+    "sha256": "f898d399a253190ec00c882a0344574f597f0363a1f388bd33c8c9051e3caf43"
+  },
+  {
+    "file": "assets/blink.png",
+    "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds_1편_쇼츠수정_20260922\\assets\\expressions\\blink.png",
+    "sha256": "61c659be5f1a2b89ba2d602668a30cbd7b39ab3b6e4c7aa2965dcd8768ff01dd"
+  },
+  {
+    "file": "assets/music-source.wav",
+    "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds_1편_쇼츠수정_20260922\\audio\\music-bed.wav",
+    "sha256": "da1c306c3e8f1ada9405f5f999da22956dd9621523b2ec8010095eb75eea0c8f"
+  }
+]

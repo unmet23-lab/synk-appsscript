@@ -1,0 +1,182 @@
+[
+  {
+    "id": "behance-00-cover",
+    "channel": "Behance",
+    "w": 1616,
+    "h": 1264,
+    "title": "파일에서는 완성이었는데",
+    "alt": "잘린 오른쪽 소품이 보이는 설명용 크롭과 파일에서는 완성이었는데라는 질문.",
+    "theme": "",
+    "file": "images/behance-00-cover.png"
+  },
+  {
+    "id": "behance-01-problem",
+    "channel": "Behance",
+    "w": 1400,
+    "h": 1460,
+    "title": "원본과 보이는 창은 다릅니다",
+    "alt": "수정 전 업로드 원본 전체와 중앙 64%만 표시한 설명 예시. 오른쪽 소품이 잘리는 원리를 설명.",
+    "theme": "",
+    "file": "images/behance-01-problem.png"
+  },
+  {
+    "id": "behance-02-repair",
+    "channel": "Behance",
+    "w": 1400,
+    "h": 1570,
+    "title": "같은 창, 다른 배치",
+    "alt": "같은 설명용 창에서 전후 배치를 비교. 수정 후 소품이 보이며 실제 40px 이동은 사례의 수치임을 안내.",
+    "theme": "",
+    "file": "images/behance-02-repair.png"
+  },
+  {
+    "id": "behance-03-background",
+    "channel": "Behance",
+    "w": 1400,
+    "h": 1530,
+    "title": "흰색처럼 보여도 경계가 남습니다",
+    "alt": "동일한 몽글 캐릭터의 크림색 배경 원본과 순백 배경 수정본을 흰 페이지 위에서 비교.",
+    "theme": "",
+    "file": "images/behance-03-background.png"
+  },
+  {
+    "id": "behance-04-checklist",
+    "channel": "Behance",
+    "w": 1400,
+    "h": 1500,
+    "title": "내 디자인에 바로 쓰는 세 가지 확인",
+    "alt": "잘림, 실제 크기 읽힘, 배경 경계 세 가지에 대해 확인법과 고치는 행동을 안내.",
+    "theme": "",
+    "file": "images/behance-04-checklist.png"
+  },
+  {
+    "id": "behance-05-result",
+    "channel": "Behance",
+    "w": 1400,
+    "h": 1370,
+    "title": "완성본과 작업 범위",
+    "alt": "완성된 검정 펠트와 투명 유리 SNS 커버 및 실제 제작 범위.",
+    "theme": "",
+    "file": "images/behance-05-result.png"
+  },
+  {
+    "id": "pinterest-01-crop",
+    "channel": "Pinterest",
+    "w": 1000,
+    "h": 1500,
+    "title": "배너가 잘릴 때 확인할 것",
+    "alt": "원본 중앙 일부만 표시한 전후 배너 비교와 업로드 미리보기 점검법.",
+    "theme": "",
+    "file": "images/pinterest-01-crop.png"
+  },
+  {
+    "id": "pinterest-02-background",
+    "channel": "Pinterest",
+    "w": 1000,
+    "h": 1500,
+    "title": "흰 배경인데 네모가 보이는 이유",
+    "alt": "크림색 배경과 순백 배경 프로필 비교를 통해 배경 경계 원인을 설명하는 저장용 핀.",
+    "theme": "",
+    "file": "images/pinterest-02-background.png"
+  },
+  {
+    "id": "pinterest-03-save",
+    "channel": "Pinterest",
+    "w": 1000,
+    "h": 1500,
+    "title": "저장용 내보내기 점검 카드",
+    "alt": "끝, 크기, 배경을 확인하는 세 가지 저장용 디자인 체크리스트.",
+    "theme": "",
+    "file": "images/pinterest-03-save.png"
+  },
+  {
+    "id": "linkedin-personal-01",
+    "channel": "LinkedIn 개인",
+    "w": 1200,
+    "h": 1500,
+    "title": "처음에는 저장하지 않았습니다",
+    "alt": "잘린 배너를 먼저 보여주며 업로드 미리보기에서 발견한 문제를 소개.",
+    "theme": "",
+    "file": "images/linkedin-personal-01.png"
+  },
+  {
+    "id": "linkedin-personal-02",
+    "channel": "LinkedIn 개인",
+    "w": 1200,
+    "h": 1500,
+    "title": "무엇을 바꿨는지",
+    "alt": "중앙 배치와 아래 이동으로 고친 실제 업로드 원본 두 개를 같은 예시 창에 표시.",
+    "theme": "",
+    "file": "images/linkedin-personal-02.png"
+  },
+  {
+    "id": "linkedin-personal-03",
+    "channel": "LinkedIn 개인",
+    "w": 1200,
+    "h": 1500,
+    "title": "작업 종료 기준",
+    "alt": "원본 파일, 실제 표시 크기, 저장 후 화면까지 확인하는 작업 순서.",
+    "theme": "",
+    "file": "images/linkedin-personal-03.png"
+  },
+  {
+    "id": "linkedin-personal-04",
+    "channel": "LinkedIn 개인",
+    "w": 1200,
+    "h": 1500,
+    "title": "제작자의 소개",
+    "alt": "양유호의 제작 분야와 자체 브랜드 커버 완성본을 소개.",
+    "theme": "",
+    "file": "images/linkedin-personal-04.png"
+  },
+  {
+    "id": "linkedin-company-01",
+    "channel": "LinkedIn 회사",
+    "w": 1200,
+    "h": 1500,
+    "title": "SYNK 소개",
+    "alt": "SYNK의 목적과 실제 자체 캐릭터 작품을 함께 보여주는 회사 소개.",
+    "theme": "",
+    "file": "images/linkedin-company-01.png"
+  },
+  {
+    "id": "linkedin-company-02",
+    "channel": "LinkedIn 회사",
+    "w": 1200,
+    "h": 1500,
+    "title": "협업 판단을 돕는 실제 사례",
+    "alt": "SYNK의 제작 및 수정 절차를 실제 사례로 보여주는 회사 카드.",
+    "theme": "",
+    "file": "images/linkedin-company-02.png"
+  },
+  {
+    "id": "linkedin-company-03",
+    "channel": "LinkedIn 회사",
+    "w": 1200,
+    "h": 1500,
+    "title": "어떤 일로 연결되는지",
+    "alt": "네 브랜드를 방문자의 필요에 연결하고 SHIFT 및 PATH 준비 상태를 명시.",
+    "theme": "",
+    "file": "images/linkedin-company-03.png"
+  },
+  {
+    "id": "kakao-shift-01",
+    "channel": "카카오톡 SHIFT",
+    "w": 1080,
+    "h": 1080,
+    "title": "어느 부분에서 막혔나요",
+    "alt": "고객이 겪는 세 가지 문제를 시작점으로 교육·컨설팅·브랜딩 준비 범위 안내.",
+    "theme": "",
+    "file": "images/kakao-shift-01.png"
+  },
+  {
+    "id": "kakao-shift-02",
+    "channel": "카카오톡 SHIFT",
+    "w": 1080,
+    "h": 1080,
+    "title": "막연한 문의를 구체적인 요청으로",
+    "alt": "실제 업무, 반복 문제, 원하는 결과를 담은 교육자료 제작 문의 예문.",
+    "theme": "",
+    "file": "images/kakao-shift-02.png"
+  }
+]

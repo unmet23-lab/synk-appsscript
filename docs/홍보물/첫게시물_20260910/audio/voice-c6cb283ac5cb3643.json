@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "02454717-6a3c-4b9b-84c2-fc28b6a9ac5a",
+  "narration": "내 소개에도 누구에게, 어떤 일, 남길 것을 써보세요. 다음 업무에도 쓸 예시와 원본을 이어갑니다.",
+  "narrationSha256": "c6cb283ac5cb36436d3922e32a4a5eda143a24cb263e87fb15aaa88e7dc0ba76",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-c6cb283ac5cb3643.wav",
+  "duration": 7.6,
+  "sha256": "a6be9b3ed2406bd2594b31aaba221bb78a381ca258f1b5b58bf42715cd458348",
+  "humanListening": false,
+  "fullDecode": true
+}

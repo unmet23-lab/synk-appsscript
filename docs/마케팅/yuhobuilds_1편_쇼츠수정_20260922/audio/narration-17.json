@@ -1,0 +1,49 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "제가 헤맨 길, 여러분은 건너뛰세요.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.23,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 2.236,
+  "words": [
+    {
+      "text": "제가",
+      "start": 0.081,
+      "end": 0.34
+    },
+    {
+      "text": "헤맨",
+      "start": 0.405,
+      "end": 0.599
+    },
+    {
+      "text": "길,",
+      "start": 0.648,
+      "end": 0.761
+    },
+    {
+      "text": "여러분은",
+      "start": 1.215,
+      "end": 1.507
+    },
+    {
+      "text": "건너뛰세요.",
+      "start": 1.555,
+      "end": 2.236
+    }
+  ],
+  "characters": null
+}

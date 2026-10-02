@@ -1,0 +1,72 @@
+{
+  "source": "test-05-identity-fix.mp4",
+  "language": "ko",
+  "duration": 10.0053125,
+  "provider": "local faster-whisper-small",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 2.46,
+      "text": " 여기서 드세요. 가져가세요.",
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.92,
+          "word": " 여기서",
+          "probability": 0.6704392433166504
+        },
+        {
+          "start": 0.92,
+          "end": 1.4,
+          "word": " 드세요.",
+          "probability": 0.9889427125453949
+        },
+        {
+          "start": 1.8,
+          "end": 2.46,
+          "word": " 가져가세요.",
+          "probability": 0.9814142187436422
+        }
+      ]
+    },
+    {
+      "start": 4.0,
+      "end": 5.16,
+      "text": " 여기서 먹을게요.",
+      "words": [
+        {
+          "start": 4.0,
+          "end": 4.68,
+          "word": " 여기서",
+          "probability": 0.8421503305435181
+        },
+        {
+          "start": 4.68,
+          "end": 5.16,
+          "word": " 먹을게요.",
+          "probability": 0.9850289523601532
+        }
+      ]
+    },
+    {
+      "start": 5.98,
+      "end": 7.28,
+      "text": " 영수증 드릴까요?",
+      "words": [
+        {
+          "start": 5.98,
+          "end": 6.92,
+          "word": " 영수증",
+          "probability": 0.9210142890612284
+        },
+        {
+          "start": 6.92,
+          "end": 7.28,
+          "word": " 드릴까요?",
+          "probability": 0.9938748677571615
+        }
+      ]
+    }
+  ],
+  "note": "Automatic transcript; not proof of acting quality or exact lip sync."
+}

@@ -1,0 +1,31 @@
+{
+  "links": [
+    {
+      "label": "편집용 양식 PPTX",
+      "href": "ppt/output/AI_프로필_소개자료_양식.pptx",
+      "exists": true
+    },
+    {
+      "label": "유호 완성 예시 PPTX",
+      "href": "ppt/output/유호_프로필_소개자료_예시.pptx",
+      "exists": true
+    },
+    {
+      "label": "예시 PDF",
+      "href": "ppt/output/유호_프로필_소개자료_예시.pdf",
+      "exists": true
+    }
+  ],
+  "records": [
+    {
+      "width": 1440,
+      "overflow": false,
+      "pptImages": 2
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "pptImages": 2
+    }
+  ]
+}

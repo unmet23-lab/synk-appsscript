@@ -1,0 +1,20 @@
+[
+ {
+  "name": "M-yuho-hero-3",
+  "prompt": "The exact same real man as in the two attached reference photos (front view and three-quarter view): keep his identity exactly: face shape with the slightly fuller, soft cheeks and rounded jaw seen in the front reference, eyes, brows, nose, lips, ears, skin tone and his black cornrow braids pulled back. Make him look his real youthful age, mid-twenties, exactly as young as in the references: smooth, youthful skin with minimal lines, no forehead wrinkles, no deep nasolabial folds, no under-eye bags or dark circles, no gaunt or hollow cheeks. Ignore the original background, clothing and any text. New photo: Korean entertainment agency profile portrait, head and shoulders, facing the camera with a relaxed, calm expression, wearing a plain black crew-neck t-shirt with no logos. Plain warm-grey seamless studio backdrop, soft flattering key light from camera left with gentle falloff, warm filmic color grade, fine film grain, 85mm lens at f/2. Real skin texture with fine pores and vellus hair, a few flyaway hairs. No plastic skin, no heavy retouching, no text or logos anywhere.",
+  "aspect": "3:4",
+  "images": [
+   "raw/yuho-ref-front.png",
+   "raw/yuho-ref-34.png"
+  ]
+ },
+ {
+  "name": "M-yuho-hero-4",
+  "prompt": "The exact same real man as in the two attached reference photos (front view and three-quarter view): keep his identity exactly: face shape with the slightly fuller, soft cheeks and rounded jaw seen in the front reference, eyes, brows, nose, lips, ears, skin tone and his black cornrow braids pulled back. Make him look his real youthful age, mid-twenties, exactly as young as in the references: smooth, youthful skin with minimal lines, no forehead wrinkles, no deep nasolabial folds, no under-eye bags or dark circles, no gaunt or hollow cheeks. Ignore the original background, clothing and any text. New photo: Korean entertainment agency profile portrait, head and shoulders, facing the camera with a relaxed, calm expression, wearing a plain black crew-neck t-shirt with no logos. Plain warm-grey seamless studio backdrop, soft flattering key light from camera left with gentle falloff, warm filmic color grade, fine film grain, 85mm lens at f/2. Real skin texture with fine pores and vellus hair, a few flyaway hairs. No plastic skin, no heavy retouching, no text or logos anywhere.",
+  "aspect": "3:4",
+  "images": [
+   "raw/yuho-ref-front.png",
+   "raw/yuho-ref-34.png"
+  ]
+ }
+]

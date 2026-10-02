@@ -1,0 +1,37 @@
+{
+  "verifiedAt": "2026-09-20T06:58:25+09:00",
+  "scope": "Japan and Vietnam YouTube profiles only",
+  "copy": "copy.json",
+  "assets": "manifest.json",
+  "languageReview": "AI 작성·자체 검수. 원어민 감수는 하지 않음.",
+  "channels": [
+    {
+      "id": "lab-jp-youtube",
+      "channelId": "UCXpX-UiwswwUqoQkRVdJyow",
+      "url": "https://www.youtube.com/@synklabjapan",
+      "displayName": "SYNK LAB Japan | 楽しい韓国語",
+      "studioReloadVerified": true,
+      "publicNameAndFullDescriptionVerified": true,
+      "publicBannerAndProfileVisuallyVerified": true,
+      "publicWebsiteVerified": "https://synk.im/",
+      "preserved": "기존 영상·구독자 24명·핸들·소유권·연락처 유지. 홈에 예전 자기소개 영상이 노출되는 것도 보존함.",
+      "watermark": "기존 미설정 유지"
+    },
+    {
+      "id": "lab-vn-youtube",
+      "channelId": "UC7NbBUofc_ZK5qCSjzbUzGQ",
+      "url": "https://www.youtube.com/@synklabvietnam",
+      "displayName": "SYNK LAB Vietnam | Tiếng Hàn thật vui",
+      "studioReloadVerified": true,
+      "publicNameAndFullDescriptionVerified": true,
+      "publicBannerAndProfileVisuallyVerified": true,
+      "publicWebsiteVerified": "https://synk.im/",
+      "preserved": "기존 영상·핸들·소유권·연락처 유지. 개인 Instagram 링크는 SYNK 홈페이지로 교체함.",
+      "watermark": "기존 인물 이미지를 승인 순백 몽글로 업로드·저장. 동영상 끝 표시 유지. 실제 동영상 재생 노출은 미검증.",
+      "bannerRetry": "첫 저장 후 배너 누락 발견. 배너 단독 재업로드·크롭·게시 후 독립 공개 탭 새로고침으로 확인함."
+    }
+  ],
+  "visualChecks": "승인 LAB v4 SVG·순백 몽글 원본 재사용, 2560×1440 PNG 각 6MB 미만, 1544×422 중앙 안전 영역, 글자 그룹 중심 y=720, 390px 크롭과 실제 공개 데스크톱 확인. 실제 휴대폰 앱 검증은 하지 않음.",
+  "excluded": "나머지 YouTube 14개 생성·다른 SNS·보안·권한·연락처 변경·영상 게시·삭제·홈페이지 배포 없음.",
+  "latestDiscussion": "사용자가 놀면서 배우는 한국어 문구의 의견을 요청함. 아직 해당 문구로 재변경하지 않음."
+}

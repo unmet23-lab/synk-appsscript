@@ -1,0 +1,2102 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-01",
+  "location": "Ulaanbaatar, Mongolia",
+  "currency": "MNT",
+  "purpose": "6안 전체 공사·가구 계획 예산 연구. 견적/구매 아님.",
+  "scope": "공사 노무 포함, 학원 직원 급여/임대보증금/월세 제외",
+  "source_plan": "../평면도_20260929/공간과_편의시설_좌표_6안.json",
+  "source_design": "../방별_인테리어_디자인_20260929.md",
+  "basis": {
+    "gross_m2": 267.9,
+    "gross_pyeong": 81.03975303899072,
+    "net_finished_floor_m2": 242.8225,
+    "A_dance_m2": 66,
+    "normal_floor_m2": 166.18,
+    "wc_floor_m2": 10.6425,
+    "wall_height_assumed_m": 2.8,
+    "door_height_assumed_m": 2.1,
+    "internal_wall_solid_length_m": 68.6,
+    "door_opening_total_m": 8.75,
+    "partition_single_face_m2": 198.205,
+    "mirror_m2": 22.56,
+    "coat_frontage_m": 12.1,
+    "student_desks": 64,
+    "student_chairs": 64,
+    "staff_desks": 8,
+    "staff_chairs": 8,
+    "consult_table": 1,
+    "consult_chairs": 4
+  },
+  "price_method": {
+    "all_budget_rows": "3단가는 본 프로젝트 범위에 맞춘 계획충당액. 공개판매가 자체와 분리. 계약견적 필요.",
+    "tax": "합산용3단가는 VAT 별도 계획액으로 정의. 원자료 판매가의 VAT 포함은 미확인이라 확정 세액으로 역산하지 않음. root 전체표에서 비중복 VAT충당/민감도를 한 번만 적용.",
+    "transport": "공사와 맞춤장의 현장취급/설치는 각 단가 포함 가정. 기성가구 시내배송만F21. 국제수입 운송/관세는 포함하지 않음.",
+    "contingency": "이 파일 소계에는 예비비 없음. 전체 예산에서 한 번만 적용.",
+    "labor": "시공자/설치 노무는 포함. 학원 직원 급여·운영비는 제외.",
+    "scenario": "동일 계획 수량을 유지한 단가범위. 낮음도 기존시설 활용 등 조건부이며 최저 확정견적이나 충분성 보증 아님."
+  },
+  "assumptions": [
+    "기존 외곽/슬래브/창호·중앙난방과 가까운 급배수/외기 연결을 사용할 수 있는 임차상가를 전제로 한다.",
+    "주수전·급배수스택·환기샤프트·중앙난방 신규 인입이나 구조진동 대수선은 별도 재견적이며 본 높은값도 상한 보증이 아니다.",
+    "PC/TV/보드/카메라/마이크/스피커/촬영광/네트워크 능동장비/UPS/공청7/가습7/VR/커피·정수/포토장비/프린터·소형비품은 다른 담당표에 포함한다.",
+    "AV브래킷 설치·촬영용광은 장비 예산, 기본건물조명/전원은 본표. 고정 물리 사인은 본표, 카드·라벨 인쇄는 소형비품표.",
+    "겨울옷·가방/PC열·적재카트/댄스바닥·환기풍량은 실물/현장 조건 미검증. 가격을 확보했다는 사실이 적합 제품 선정 또는 공사승인 뜻이 아님."
+  ],
+  "sources": [
+    {
+      "id": "C-S01",
+      "title": "Barilga 2026년8월 시공 인건비 조사",
+      "url": "https://barilga.mn/news/1645576",
+      "type": "labor_survey",
+      "retrieved_date": "2026-10-01",
+      "currency": "MNT",
+      "observed_prices": {
+        "gypsum_wall_m2": [
+          16500,
+          33000
+        ],
+        "vinyl_install_m2": [
+          26000,
+          28000
+        ],
+        "wall_paint_m2": [
+          5750,
+          8050
+        ],
+        "putty_m2": [
+          16000,
+          18000
+        ],
+        "wc_waterproof_m2": [
+          16500,
+          19800
+        ],
+        "indoor_door_install_each": [
+          44500,
+          58500
+        ],
+        "tile_wall_m2": [
+          28000,
+          30000
+        ]
+      },
+      "vat": "not_stated",
+      "delivery": "not_stated",
+      "installation": "labor_only",
+      "notes": "2026-09-29 게시. 표본 사업자/작업반 산술평균. 해당 학원 계약견적 아님. 자재·운송·VAT를 포함한 완성 공종가로 쓰지 않음.",
+      "verification": {
+        "method": "기사 HTML 본문 표를 직접 읽음; 2026-10-01 재검증은 Invoke-WebRequest로 원문 취득 후 태그 제거. 이미지 OCR 아님.",
+        "web_tool_status": "동일 URL web open 재호출은 unavailable, 공식사이트 HTTP 원문은 접근됨",
+        "published_date": "2026-09-29",
+        "survey_period": "2026-08"
+      }
+    },
+    {
+      "id": "C-S02",
+      "title": "Barilga 2026년8월 자재 가격 조사",
+      "url": "https://barilga.mn/news/1645573",
+      "type": "material_survey",
+      "retrieved_date": "2026-10-01",
+      "currency": "MNT",
+      "observed_prices": {
+        "gypsum_1200x2500x12_5mm_sheet": 21000,
+        "rockwool_50mm_m2": 14000,
+        "commercial_quality_unspecified_sheet_floor_m2": 15000,
+        "wall_floor_tile_120x60_m2": 25000,
+        "toilet": [
+          270250,
+          290000
+        ],
+        "basin_60x45": 116500,
+        "basin_faucet": 51000,
+        "water_heater_100L": 750000
+      },
+      "vat": "not_stated",
+      "delivery": "not_stated",
+      "installation": "not_stated",
+      "notes": "2026-09-29 게시. 표본 평균 자재가격. 일반 시트 바닥은 댄스용 탄성/스프링 바닥의 성능·가격 근거가 아님. 시공비 별도.",
+      "verification": {
+        "method": "기사 HTML 본문 표를 직접 읽음; 2026-10-01 재검증은 Invoke-WebRequest로 원문 취득 후 태그 제거. 이미지 OCR 아님.",
+        "web_tool_status": "동일 URL web open 재호출은 unavailable, 공식사이트 HTTP 원문은 접근됨",
+        "published_date": "2026-09-29",
+        "survey_period": "2026-08"
+      }
+    },
+    {
+      "id": "C-S03",
+      "title": "Үржих ST300WH 접이책상",
+      "url": "https://urjikhtawilga.zochil.shop/products/270147/884812",
+      "type": "retailer",
+      "retrieved_date": "2026-10-01",
+      "currency": "MNT",
+      "observed_prices": {
+        "each": 265000
+      },
+      "vat": "not_stated",
+      "delivery": "not_stated",
+      "installation": "not_stated",
+      "notes": "울란바토르 현지 판매점 표시가. 치수·접힘·하중 상세 미확인; 600×450mm 개인책상의 확정 제품 아님. 배송·조립 서비스 제공 문구는 있으나 포함 가격 불명."
+    },
+    {
+      "id": "C-S04",
+      "title": "Үржих ST220WH 접이책상",
+      "url": "https://urjikhtawilga.zochil.shop/products/270147/744859",
+      "type": "retailer",
+      "retrieved_date": "2026-10-01",
+      "currency": "MNT",
+      "observed_prices": {
+        "each": 225000
+      },
+      "vat": "not_stated",
+      "delivery": "not_stated",
+      "installation": "not_stated",
+      "notes": "상판120×50cm, 상판을 세워 접는 바퀴형. A의600×450mm 다리접이 적재 방식과 다르므로 가격 비교만. 상담실120×70cm 계획과도 동일 제품 아님."
+    },
+    {
+      "id": "C-S05",
+      "title": "Үржих CO24GY 일반 의자",
+      "url": "https://urjikhtawilga.zochil.shop/products/215583/884808",
+      "type": "retailer",
+      "retrieved_date": "2026-10-01",
+      "currency": "MNT",
+      "observed_prices": {
+        "each": 85000
+      },
+      "vat": "not_stated",
+      "delivery": "not_stated",
+      "installation": "not_stated",
+      "notes": "현지 일반 학습/회의 의자 가격 기준점. 제품 적재 가능·450×450 외곽·연속 착석 적합성 미확인."
+    },
+    {
+      "id": "C-S06",
+      "title": "Үржих C011WE 접이의자",
+      "url": "https://urjikhtawilga.zochil.shop/products/215584/884801",
+      "type": "retailer",
+      "retrieved_date": "2026-10-01",
+      "currency": "MNT",
+      "observed_prices": {
+        "each": 55000
+      },
+      "vat": "not_stated",
+      "delivery": "not_stated",
+      "installation": "not_stated",
+      "notes": "접이의자 표시가. 상담실 사용 제품 최종 선정 아님."
+    },
+    {
+      "id": "C-S07",
+      "title": "Үржих CT01BK 접이의자",
+      "url": "https://urjikhtawilga.zochil.shop/products/215584/884803",
+      "type": "retailer",
+      "retrieved_date": "2026-10-01",
+      "currency": "MNT",
+      "observed_prices": {
+        "each": 140000
+      },
+      "vat": "not_stated",
+      "delivery": "not_stated",
+      "installation": "not_stated",
+      "notes": "접이의자 비교 표시가. 재고·치수·내구 확인 전."
+    },
+    {
+      "id": "C-S08",
+      "title": "Үржих HC03GY819 사무용 의자",
+      "url": "https://urjikhtawilga.zochil.shop/products/215589/743372",
+      "type": "retailer",
+      "retrieved_date": "2026-10-01",
+      "currency": "MNT",
+      "observed_prices": {
+        "each": 220000,
+        "related_low": 150000
+      },
+      "vat": "not_stated",
+      "delivery": "not_stated",
+      "installation": "not_stated",
+      "notes": "표시 설명의 팔걸이 사이70cm는 현재 의자 기호보다 큼. 가격 근거만 사용하며 실제 반입 후보 확정 아님. 발받침 모델을 통로에 펼치는 계획 없음."
+    },
+    {
+      "id": "C-S09",
+      "title": "Үржих FC05BK WX05 사무용 의자",
+      "url": "https://urjikhtawilga.zochil.shop/products/215589/884796",
+      "type": "retailer",
+      "retrieved_date": "2026-10-01",
+      "currency": "MNT",
+      "observed_prices": {
+        "each": 495000
+      },
+      "vat": "not_stated",
+      "delivery": "not_stated",
+      "installation": "not_stated",
+      "notes": "상위 가격 비교용. 책상·통로 적합 모델은 실물 선정 필요."
+    },
+    {
+      "id": "C-S10",
+      "title": "Үржих 2인 오피스책상 OTD03BR",
+      "url": "https://urjikhtawilga.zochil.shop/products/215344/957091",
+      "type": "retailer",
+      "retrieved_date": "2026-10-01",
+      "currency": "MNT",
+      "observed_prices": {
+        "two_person_set": 750000,
+        "related_two_person_set": 650000
+      },
+      "vat": "not_stated",
+      "delivery": "not_stated",
+      "installation": "not_stated",
+      "notes": "120×120×75cm 2인형. 1인당325000~375000 환산은 비교일 뿐 사용자 개인책상8개를 이 공용테이블로 교체하지 않음. 개인 수납 제작비를 별도로 가정한8개 책상 단가 사용."
+    },
+    {
+      "id": "C-S11",
+      "title": "Үржих 보조 목재장 406-1",
+      "url": "https://urjikhtawilga.zochil.shop/products/269804/884823",
+      "type": "retailer",
+      "retrieved_date": "2026-10-01",
+      "currency": "MNT",
+      "observed_prices": {
+        "each": 310000
+      },
+      "vat": "not_stated",
+      "delivery": "not_stated",
+      "installation": "not_stated",
+      "notes": "목재 보조장 가격 비교점. 목록에서 품절 표시를 확인해 즉시 조달가/맞춤장 가격으로 확정하지 않음."
+    },
+    {
+      "id": "C-S12",
+      "title": "울란바토르 인테리어 도면 서비스 광고",
+      "url": "https://www.unegui.mn/adv/3107764_interer-eksterer-zurag-tosol-chanaryn-ondor-tuvshind-gargana/",
+      "type": "provider_advertisement",
+      "retrieved_date": "2026-10-01",
+      "currency": "MNT",
+      "observed_prices": {
+        "design_per_m2": [
+          10000,
+          20000
+        ]
+      },
+      "vat": "not_stated",
+      "delivery": "not_stated",
+      "installation": "not_stated",
+      "notes": "조회시 최근1주 광고 표시. 실측/인테리어 범위의 광고가이며 설비·피난·구조·현장감리 포함 불명. 완전한 학원 실시설계 견적은 별도."
+    },
+    {
+      "id": "C-S13",
+      "title": "울란바토르 유리·거울 제작 광고",
+      "url": "https://www.unegui.mn/adv/4719452_shilen-khiits-10-12-sm/",
+      "type": "provider_advertisement",
+      "retrieved_date": "2026-10-01",
+      "currency": "MNT",
+      "observed_prices": {
+        "advertised_amount": 135000
+      },
+      "vat": "not_stated",
+      "delivery": "not_stated",
+      "installation": "not_stated",
+      "notes": "유리벽·문·거울 여러 제품을 한 광고에 제시. 단위와 거울 규격이 불명확해㎡거울 단가로 환산하지 않음. 현지 공급 경로 참고만."
+    },
+    {
+      "id": "C-S14",
+      "title": "BSB 18000BTU 에어컨 현지 판매 페이지",
+      "url": "https://bsb.mn/products/by-code/BSB-AC-18CWS_B2",
+      "type": "retailer",
+      "retrieved_date": "2026-10-01",
+      "currency": "MNT",
+      "observed_prices": {},
+      "vat": "not_stated",
+      "delivery": "not_stated",
+      "installation": "not_stated",
+      "notes": "현지 제품·50~60㎡ 안내는 확인되나 가격이 대시로 표시됨. 학원 냉난방 부하·혹한기 난방 성능을 보장하지 않으며 단가 근거로 사용하지 않음."
+    }
+  ],
+  "items": [
+    {
+      "id": "C01",
+      "category": "공사",
+      "name": "현장 실측·인테리어/설비 도면·공종표",
+      "quantity": 267.9,
+      "unit": "㎡",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 15000,
+        "base": 25000,
+        "high": 40000
+      },
+      "total": {
+        "low": 4018500,
+        "base": 6697500,
+        "high": 10716000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S12"
+      ],
+      "sourceURLs": [
+        "https://www.unegui.mn/adv/3107764_interer-eksterer-zurag-tosol-chanaryn-ondor-tuvshind-gargana/"
+      ],
+      "quantity_basis": "총 임차외곽19×14.1m",
+      "estimate_note": "현지 광고1만~2만/㎡는 인테리어 도면 범위. 본 단가는 설비 조율을 더한 예산 가정이며 정식 설계사 견적 필요.",
+      "included_scope": "현장 실측, 가구·마감·전기/급배수/환기 협의 도면",
+      "excluded_scope": "허가 수수료, 구조 대수선, 별도 장기 감리",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C02",
+      "category": "공사",
+      "name": "기존 마감 철거·보양·폐기물 반출",
+      "quantity": 267.9,
+      "unit": "㎡",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 8000,
+        "base": 18000,
+        "high": 35000
+      },
+      "total": {
+        "low": 2143200,
+        "base": 4822200,
+        "high": 9376500
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "전체267.9㎡에 적용한 리노베이션 가정",
+      "estimate_note": "현재 건물 상태/폐기량 불명. 현지 공개 완성 단가 미확인; 계획 충당액. 기존 신축 공실이면 줄이고 중철거면 재견적.",
+      "included_scope": "경량 마감 철거·공용부 보양·현장 반출",
+      "excluded_scope": "구조체 철거, 유해물질 처리, 건물 외 대규모 공사",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C03",
+      "category": "공사",
+      "name": "경량 칸막이·차음 충진·관통부 밀폐",
+      "quantity": 198.205,
+      "unit": "㎡ 한면투영",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 80000,
+        "base": 125000,
+        "high": 185000
+      },
+      "total": {
+        "low": 15856400,
+        "base": 24775625,
+        "high": 36667925
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S01",
+        "C-S02"
+      ],
+      "sourceURLs": [
+        "https://barilga.mn/news/1645576",
+        "https://barilga.mn/news/1645573"
+      ],
+      "quantity_basis": "6안 내부벽 실체길이68.6m×2.8m + 문8.75m×상부0.7m=198.205㎡; 높이/문높이 가정",
+      "estimate_note": "공개 인건비와 판재/충진재를 출발점으로 양면 구성·골조·이음부를 포함한 별도 계획가. 차음 성능 보증값 아님.",
+      "included_scope": "내벽 골조·판재 양면·흡음 충진·실링·방습부 보강",
+      "excluded_scope": "벽 최종 도장/타일·문·실내 장식 흡음패널",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C04",
+      "category": "공사",
+      "name": "여닫이 내부문·프레임·기밀 부속",
+      "quantity": 6,
+      "unit": "세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 400000,
+        "base": 650000,
+        "high": 1100000
+      },
+      "total": {
+        "low": 2400000,
+        "base": 3900000,
+        "high": 6600000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S01"
+      ],
+      "sourceURLs": [
+        "https://barilga.mn/news/1645576"
+      ],
+      "quantity_basis": "A/B/C/D/office/consult 6개",
+      "estimate_note": "문 설치 인건비만 공개됨. 문짝·씰·하드웨어 포함 단가는 계획 가정.",
+      "included_scope": "문짝/문틀/손잡이/기밀 부속·설치",
+      "excluded_scope": "법정 방화문 여부/등급에 따른 증액은 현장견적",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C05",
+      "category": "공사",
+      "name": "미닫이문·포켓/레일·잠금",
+      "quantity": 3,
+      "unit": "세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 650000,
+        "base": 1000000,
+        "high": 1600000
+      },
+      "total": {
+        "low": 1950000,
+        "base": 3000000,
+        "high": 4800000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "photo1·남녀WC2",
+      "estimate_note": "각 문 폭/습기/프라이버시·벽 속 간섭 확인 전 맞춤 제작 가정.",
+      "included_scope": "3개 문·포켓/레일·잠금·설치",
+      "excluded_scope": "자동문 구동장치, 출입통제 전자장치",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C06",
+      "category": "공사",
+      "name": "주출입문·문턱·매트 자리 정리",
+      "quantity": 1,
+      "unit": "식",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 400000,
+        "base": 900000,
+        "high": 1800000
+      },
+      "total": {
+        "low": 400000,
+        "base": 900000,
+        "high": 1800000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "6안 주출입구1곳",
+      "estimate_note": "기존 주출입문 재사용/보수 전제. 신규 전체 자동문 가격 아님.",
+      "included_scope": "기존문 조정·문턱/매트 바탕·마감",
+      "excluded_scope": "독립 키오스크·스마트도어록, 주출입문 전체 교체",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C07",
+      "category": "공사",
+      "name": "벽 바탕 보수·무광 도장",
+      "quantity": 480,
+      "unit": "㎡",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 18000,
+        "base": 25000,
+        "high": 38000
+      },
+      "total": {
+        "low": 8640000,
+        "base": 12000000,
+        "high": 18240000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S01",
+        "C-S02"
+      ],
+      "sourceURLs": [
+        "https://barilga.mn/news/1645576",
+        "https://barilga.mn/news/1645573"
+      ],
+      "quantity_basis": "양면 내벽+외벽 안쪽에서 거울·타일·패널 면을 제외한 임시 수량480㎡",
+      "estimate_note": "정확 도장면 실측 전. 공개 퍼티/도장 노무에 재료·부분바탕 보수 합산 범위 가정. 낮음은 기존 양호면 재도장·국부 퍼티만 하는 조건이며, 전면 퍼티 시 공개 퍼티 노무+도장 노무부터 재산정.",
+      "included_scope": "벽 도장·소규모 바탕·하부 닦임 대응",
+      "excluded_scope": "천장, 거울22.56㎡, WC타일40.2㎡, 흡음패널40㎡",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C08",
+      "category": "공사",
+      "name": "천장 정리·부분 재시공·무광 마감",
+      "quantity": 242.8225,
+      "unit": "㎡",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 20000,
+        "base": 35000,
+        "high": 55000
+      },
+      "total": {
+        "low": 4856450,
+        "base": 8498788,
+        "high": 13355238
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S01"
+      ],
+      "sourceURLs": [
+        "https://barilga.mn/news/1645576"
+      ],
+      "quantity_basis": "순실면적206.8225+통로36=242.8225㎡",
+      "estimate_note": "기존 천장 재사용 중심. 전체 신설/천장고 변화·대규모 설비 은폐는 재견적.",
+      "included_scope": "천장 부분 보수·점검구·도장",
+      "excluded_scope": "전체 신규 방음천장, 등기구, 덕트",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C09",
+      "category": "공사",
+      "name": "바닥 바탕·국부 레벨링",
+      "quantity": 242.8225,
+      "unit": "㎡",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 8000,
+        "base": 15000,
+        "high": 25000
+      },
+      "total": {
+        "low": 1942580,
+        "base": 3642338,
+        "high": 6070563
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S01"
+      ],
+      "sourceURLs": [
+        "https://barilga.mn/news/1645576"
+      ],
+      "quantity_basis": "마감 실제바닥242.8225㎡",
+      "estimate_note": "기존 슬래브 양호 전제의 부분 평탄화. 전면 두꺼운 모르타르/구조보강은 미포함.",
+      "included_scope": "부분 레벨링·프라이머",
+      "excluded_scope": "바닥재·WC방수·A탄성 시스템",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C10",
+      "category": "공사",
+      "name": "A 무광 댄스 탄성바닥 시스템",
+      "quantity": 66,
+      "unit": "㎡",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 90000,
+        "base": 150000,
+        "high": 240000
+      },
+      "total": {
+        "low": 5940000,
+        "base": 9900000,
+        "high": 15840000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "A10×6.6=66㎡",
+      "estimate_note": "댄스용 완성 시스템의 현지 공개가격 미확인. 일반15,000₮ 시트바닥을 대체 근거로 사용하지 않음. 탄성층+표면+접착/이음 예산 가정, 충격흡수/마찰 실물 검토.",
+      "included_scope": "탄성 하부와 무광 표면·걸레받이·설치",
+      "excluded_scope": "C09 바탕, 구조 진동 절연 대수선",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C11",
+      "category": "공사",
+      "name": "B/C/D·사무·상담·포토·통로 바닥",
+      "quantity": 166.18,
+      "unit": "㎡",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 45000,
+        "base": 65000,
+        "high": 100000
+      },
+      "total": {
+        "low": 7478100,
+        "base": 10801700,
+        "high": 16618000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S01",
+        "C-S02"
+      ],
+      "sourceURLs": [
+        "https://barilga.mn/news/1645576",
+        "https://barilga.mn/news/1645573"
+      ],
+      "quantity_basis": "242.8225−A66−WC10.6425=166.18㎡",
+      "estimate_note": "일반 시트재15,000/㎡와 비닐 시공26~28천은 하한 비교점. 상업용 품질/내구에 따른 계획 단가.",
+      "included_scope": "일반 바닥재·접착/이음·걸레받이·설치",
+      "excluded_scope": "C09 바탕, A탄성, 화장실바닥",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C12",
+      "category": "공사",
+      "name": "남녀WC 바닥 방수·미끄럼 대응 타일",
+      "quantity": 10.6425,
+      "unit": "㎡",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 70000,
+        "base": 110000,
+        "high": 160000
+      },
+      "total": {
+        "low": 744975,
+        "base": 1170675,
+        "high": 1702800
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S01",
+        "C-S02"
+      ],
+      "sourceURLs": [
+        "https://barilga.mn/news/1645576",
+        "https://barilga.mn/news/1645573"
+      ],
+      "quantity_basis": "2×2.15×2.475",
+      "estimate_note": "바닥 방수/타일 자재/시공을 합산한 계획 가정. 배수 구배/문턱상세 실측 필요.",
+      "included_scope": "WC바닥 방수·타일·구배 국부정리",
+      "excluded_scope": "내벽 골조, 배관, 위생기구, WC벽타일",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C13",
+      "category": "공사",
+      "name": "남녀WC 벽 방수·타일",
+      "quantity": 40.2,
+      "unit": "㎡",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 45000,
+        "base": 65000,
+        "high": 100000
+      },
+      "total": {
+        "low": 1809000,
+        "base": 2613000,
+        "high": 4020000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S01",
+        "C-S02"
+      ],
+      "sourceURLs": [
+        "https://barilga.mn/news/1645576",
+        "https://barilga.mn/news/1645573"
+      ],
+      "quantity_basis": "두실 둘레18.5m×타일높이2.4−문2×1×2.1=40.2㎡",
+      "estimate_note": "타일높이2.4m/문높이2.1m 예산용 가정. 현장 확정 전.",
+      "included_scope": "벽 타일·접착/줄눈·필요 습식부 방수",
+      "excluded_scope": "칸막이 골조·C07도장과 동일면 중복 제외",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C14",
+      "category": "공사",
+      "name": "A 안전 거울·바탕·모서리·고정",
+      "quantity": 22.56,
+      "unit": "㎡",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 120000,
+        "base": 180000,
+        "high": 280000
+      },
+      "total": {
+        "low": 2707200,
+        "base": 4060800,
+        "high": 6316800
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S13"
+      ],
+      "sourceURLs": [
+        "https://www.unegui.mn/adv/4719452_shilen-khiits-10-12-sm/"
+      ],
+      "quantity_basis": "9.4×2.4=22.56㎡",
+      "estimate_note": "현지 유리/거울 광고는 단위/사양 불명으로 단가환산 금지. 표시 단가는 안전 배면·정렬·고정을 포함한 계획 가정.",
+      "included_scope": "거울·보호 배면·바탕 보강·고정·모서리",
+      "excluded_scope": "거울커튼, TV, 별도 구조 대수선",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C15",
+      "category": "공사",
+      "name": "A 거울 가림커튼·레일·봉제",
+      "quantity": 9.4,
+      "unit": "완성 폭 m",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 160000,
+        "base": 250000,
+        "high": 400000
+      },
+      "total": {
+        "low": 1504000,
+        "base": 2350000,
+        "high": 3760000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "거울 유효폭9.4m",
+      "estimate_note": "높이 약2.4m·주름/양끝 수납을 포함한 완성폭 단가 가정. 원단 시험·레일하중 견적 필요.",
+      "included_scope": "원단·레일·봉제·설치",
+      "excluded_scope": "창블라인드, 전동화",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C16",
+      "category": "공사",
+      "name": "기존 창 차광·블라인드 예산",
+      "quantity": 1,
+      "unit": "잠정식",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 800000,
+        "base": 1600000,
+        "high": 3000000
+      },
+      "total": {
+        "low": 800000,
+        "base": 1600000,
+        "high": 3000000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "창 위치/면적이 6안에 없음",
+      "estimate_note": "창 실측 전 누락 방지 충당액. 실제 창이 없거나 기존 재사용 시 감액.",
+      "included_scope": "필요한 창의 차광 원단/블라인드 설치",
+      "excluded_scope": "A 거울커튼",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C17",
+      "category": "공사",
+      "name": "실내 흡음패널·핀보드 면",
+      "quantity": 40,
+      "unit": "잠정㎡",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 70000,
+        "base": 110000,
+        "high": 170000
+      },
+      "total": {
+        "low": 2800000,
+        "base": 4400000,
+        "high": 6800000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "A/B/C/D/상담/사무 면별 합계40㎡ 임시",
+      "estimate_note": "내벽 차음충진과 다른 실내 울림 저감 마감. 현지 완성 단가 미확인. 제품 성능/실측 후 수량 확정.",
+      "included_scope": "패널 재료·기초틀·고정",
+      "excluded_scope": "C03 내부충진, 커튼, 음향장비",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C18",
+      "category": "공사",
+      "name": "A 코랄 LED 채널 워드마크",
+      "quantity": 1,
+      "unit": "세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 800000,
+        "base": 1400000,
+        "high": 2400000
+      },
+      "total": {
+        "low": 800000,
+        "base": 1400000,
+        "high": 2400000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "A 남쪽 촬영배경 승인 로고1곳",
+      "estimate_note": "치수/소재 견본 미정. 물리 제작/전원부 포함 현지 견적 필요.",
+      "included_scope": "아크릴 글자·LED/전원·설치",
+      "excluded_scope": "브랜드 개발·촬영장비",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C19",
+      "category": "공사",
+      "name": "방문·입구 안내·기록벽 고정사인",
+      "quantity": 1,
+      "unit": "세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 600000,
+        "base": 1200000,
+        "high": 2200000
+      },
+      "total": {
+        "low": 600000,
+        "base": 1200000,
+        "high": 2200000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "방9곳 문자/용도, 입구1, 지나간말들2.4m 패널",
+      "estimate_note": "물리 사인/슬리브 제작 합계 가정. 상시 콘텐츠 인쇄물은 supplies 담당.",
+      "included_scope": "고정 표식·슬리브·입구판·설치",
+      "excluded_scope": "종이카드/운영 라벨/개점마감 인쇄, 디지털 사이니지; 외부 간판 C34",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C20",
+      "category": "공사",
+      "name": "분전·전원 회로·콘센트·접지",
+      "quantity": 267.9,
+      "unit": "㎡ 예산환산",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 20000,
+        "base": 32000,
+        "high": 52000
+      },
+      "total": {
+        "low": 5358000,
+        "base": 8572800,
+        "high": 13930800
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S01"
+      ],
+      "sourceURLs": [
+        "https://barilga.mn/news/1645576"
+      ],
+      "quantity_basis": "전체267.9㎡",
+      "estimate_note": "전기점수 미확정의 예산환산. 가격표의 콘센트 교체만으로 신규회로 전체를 계산하지 않음.",
+      "included_scope": "분전반 국부개선·일반/장비회로·전선·콘센트·접지",
+      "excluded_scope": "한전/건물 수전 증설, 등기구, AV기기, 통신케이블",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C21",
+      "category": "공사",
+      "name": "기본 수업·업무 조명·스위칭",
+      "quantity": 36,
+      "unit": "잠정 등기구",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 80000,
+        "base": 130000,
+        "high": 220000
+      },
+      "total": {
+        "low": 2880000,
+        "base": 4680000,
+        "high": 7920000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S01"
+      ],
+      "sourceURLs": [
+        "https://barilga.mn/news/1645576"
+      ],
+      "quantity_basis": "전체 방/통로/화장실36개를 시작 수량으로 가정",
+      "estimate_note": "조도설계 전의 등기구 수량. 현지 설치 노무를 참고하되 제품/디밍 포함 단가는 계획가.",
+      "included_scope": "기본 백색 조명·최종 접속·설치·구역 제어",
+      "excluded_scope": "촬영용 소프트라이트/무대RGB, 간선전원 C20",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C22",
+      "category": "공사",
+      "name": "수동 LAN 배선·단자·정리",
+      "quantity": 24,
+      "unit": "잠정 포트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 60000,
+        "base": 90000,
+        "high": 140000
+      },
+      "total": {
+        "low": 1440000,
+        "base": 2160000,
+        "high": 3360000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "교실장비/업무8/포토/무선AP 등24포트 가정",
+      "estimate_note": "포트 수·경로 실측 전. 능동장비 미포함.",
+      "included_scope": "CAT6 케이블·단자·수동패치·측정",
+      "excluded_scope": "라우터/스위치/무선AP/UPS/AV케이블",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C23",
+      "category": "공사",
+      "name": "급수·배수 분기·연결·시험",
+      "quantity": 1,
+      "unit": "식",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 3000000,
+        "base": 5000000,
+        "high": 8500000
+      },
+      "total": {
+        "low": 3000000,
+        "base": 5000000,
+        "high": 8500000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S01",
+        "C-S02"
+      ],
+      "sourceURLs": [
+        "https://barilga.mn/news/1645576",
+        "https://barilga.mn/news/1645573"
+      ],
+      "quantity_basis": "WC2곳+관리싱크1+편의대 필요분",
+      "estimate_note": "기존 급배수/스택을 임차구역 가까이 활용하는 가정. 허용 관통/기울기/연결거리 미확인.",
+      "included_scope": "구역 안 배관·트랩/밸브·소규모 관통·누수시험",
+      "excluded_scope": "건물 주배관/외부 스택 신설, 위생기구·수납장",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C24",
+      "category": "공사",
+      "name": "WC 위생기구 세트",
+      "quantity": 2,
+      "unit": "실 세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 600000,
+        "base": 900000,
+        "high": 1500000
+      },
+      "total": {
+        "low": 1200000,
+        "base": 1800000,
+        "high": 3000000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S02",
+        "C-S01"
+      ],
+      "sourceURLs": [
+        "https://barilga.mn/news/1645573",
+        "https://barilga.mn/news/1645576"
+      ],
+      "quantity_basis": "WC별 변기1·세면1·수전1",
+      "estimate_note": "공개 도기/수전 자재가에 설치/소형부속을 포함한 예산. 모델 미정.",
+      "included_scope": "변기2·세면2·수전2·연결 부속·설치",
+      "excluded_scope": "거울 C33·디스펜서/휴지걸이 C32, 배관 C23, 기타 쓰레기통/소모품 supplies",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C25",
+      "category": "공사",
+      "name": "관리싱크·수전·소형 온수 마련",
+      "quantity": 1,
+      "unit": "식",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 450000,
+        "base": 1200000,
+        "high": 2000000
+      },
+      "total": {
+        "low": 450000,
+        "base": 1200000,
+        "high": 2000000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S02"
+      ],
+      "sourceURLs": [
+        "https://barilga.mn/news/1645573"
+      ],
+      "quantity_basis": "CARE-SINK 1곳",
+      "estimate_note": "낮음은 기존 온수 연결, 기준/높음은 소형 온수기 추가 여유. 공개100L750000은 가격비교만, 100L를 설치 확정하지 않음.",
+      "included_scope": "싱크 볼·수전·필요 온수기·연결",
+      "excluded_scope": "잠금 목공장은 F14, 장거리 배관C23",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C26",
+      "category": "공사",
+      "name": "신선외기·배기·열회수 환기",
+      "quantity": 1,
+      "unit": "설비식",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 10000000,
+        "base": 18000000,
+        "high": 30000000
+      },
+      "total": {
+        "low": 10000000,
+        "base": 18000000,
+        "high": 30000000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "전체267.9㎡, 강의실4/업무8/부속실",
+      "estimate_note": "현지 상세 공개 견적 미확인. 기존 외기연결을 활용한 팬·덕트·필터·열회수/동절기 검토 예산. 풍량/동파방지·소음 선정 전.",
+      "included_scope": "구역 환기 설비·덕트·분배/소음대응·설치",
+      "excluded_scope": "건물 공용 샤프트 신설/전면 교체, 냉방, 화장실 독립배기",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C27",
+      "category": "공사",
+      "name": "남녀WC 독립배기",
+      "quantity": 2,
+      "unit": "실",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 350000,
+        "base": 600000,
+        "high": 1000000
+      },
+      "total": {
+        "low": 700000,
+        "base": 1200000,
+        "high": 2000000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "WC2곳",
+      "estimate_note": "가까운 허용 배기경로 연결 가정. 장거리/외벽 코어 추가는 견적.",
+      "included_scope": "팬·역류방지·덕트 분기·설치",
+      "excluded_scope": "건물 주 샤프트 대수선",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C28",
+      "category": "공사",
+      "name": "7개 사용실 냉방 설비·설치 예산",
+      "quantity": 1,
+      "unit": "설비식",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 10000000,
+        "base": 16000000,
+        "high": 26000000
+      },
+      "total": {
+        "low": 10000000,
+        "base": 16000000,
+        "high": 26000000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S14"
+      ],
+      "sourceURLs": [
+        "https://bsb.mn/products/by-code/BSB-AC-18CWS_B2"
+      ],
+      "quantity_basis": "A/B/C/D/office/consult/photo 7공간; 장비대수 부하설계 후",
+      "estimate_note": "현지 판매 페이지 가격 미표시. 방당 가정기 합계가 아닌 잠정 설비 충당액. 인원/발열/실외기 자리 검토 전.",
+      "included_scope": "실내/실외 냉방 기기·배관·드레인·시공",
+      "excluded_scope": "혹한기 주난방 기능 보증, 중앙난방 대수선, 수전 증설",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C29",
+      "category": "공사",
+      "name": "기존 중앙난방 점검·밸브/배관 조정",
+      "quantity": 1,
+      "unit": "식",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 1000000,
+        "base": 3000000,
+        "high": 6000000
+      },
+      "total": {
+        "low": 1000000,
+        "base": 3000000,
+        "high": 6000000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S01"
+      ],
+      "sourceURLs": [
+        "https://barilga.mn/news/1645576"
+      ],
+      "quantity_basis": "기존 건물 중앙난방 활용",
+      "estimate_note": "기존 난방 용량·겨울 운영 확인 전. 신규보일러/건물 난방계통 전체 교체 비용 아님.",
+      "included_scope": "라디에이터/밸브 점검·국부 변경·밸런싱",
+      "excluded_scope": "난방 신규 인입·전체 라디에이터 교체·독립보일러",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C30",
+      "category": "공사",
+      "name": "완공 청소·인수 준비",
+      "quantity": 267.9,
+      "unit": "㎡",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 4000,
+        "base": 6000,
+        "high": 9000
+      },
+      "total": {
+        "low": 1071600,
+        "base": 1607400,
+        "high": 2411100
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "전체267.9㎡",
+      "estimate_note": "현지 전용 견적 필요. 일반 완공청소 충당액.",
+      "included_scope": "분진/마감 청소·폐포장 정리",
+      "excluded_scope": "일상 직원 청소인건비",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "C31",
+      "category": "공사",
+      "name": "전기·수도·공조 종합 시험/조정",
+      "quantity": 1,
+      "unit": "식",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 1500000,
+        "base": 3000000,
+        "high": 5000000
+      },
+      "total": {
+        "low": 1500000,
+        "base": 3000000,
+        "high": 5000000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "학원 전체 인수1회",
+      "estimate_note": "시공자 개별 시험과 겹치면 차감. 종합 부하/소음/누수·하자 확인 예산.",
+      "included_scope": "공종 간 연동·조정·하자 확인",
+      "excluded_scope": "법정 인증 수수료/장기관리 계약",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "category": "공사",
+      "currency": "MNT",
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true,
+      "id": "C32",
+      "name": "WC 비누·손건조 종이·휴지 디스펜서",
+      "quantity": 2,
+      "unit": "실 세트",
+      "unit_price": {
+        "low": 60000,
+        "base": 100000,
+        "high": 180000
+      },
+      "quantity_basis": "남녀 WC 각 비누 디스펜서1·종이타월 디스펜서1·휴지걸이1, 총 각2개",
+      "estimate_note": "공개 현지 동일구성 가격 미확보. 소형 비품 담당과 경계 조정한 계획충당액으로 계약 견적 필요.",
+      "included_scope": "벽부 부속3종×2세트·일반 고정부품·설치",
+      "excluded_scope": "비누/종이 초기 소모품, 쓰레기통, 손건조기, 별도 구조보강",
+      "total": {
+        "low": 120000,
+        "base": 200000,
+        "high": 360000
+      }
+    },
+    {
+      "category": "공사",
+      "currency": "MNT",
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true,
+      "id": "C33",
+      "name": "WC 세면 거울",
+      "quantity": 2,
+      "unit": "개",
+      "unit_price": {
+        "low": 60000,
+        "base": 100000,
+        "high": 180000
+      },
+      "quantity_basis": "남녀 WC 세면대 위 각1개, 대략600×800mm 가정으로 최종 실측 필요",
+      "estimate_note": "현지 동일규격 직접 판매가 미확보. 비조명형 작은 거울의 계획충당액이며 A 댄스 거울 C14와 별개.",
+      "included_scope": "거울2·모서리 마감·기본 고정부품·일반 벽면 설치",
+      "excluded_scope": "LED/열선/장일체형 거울, 특수 벽체 보강",
+      "total": {
+        "low": 120000,
+        "base": 200000,
+        "high": 360000
+      }
+    },
+    {
+      "category": "공사",
+      "currency": "MNT",
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true,
+      "id": "C34",
+      "name": "외부 SYNK 벽부 간판",
+      "quantity": 1,
+      "unit": "개",
+      "unit_price": {
+        "low": 600000,
+        "base": 1200000,
+        "high": 2400000
+      },
+      "quantity_basis": "기존 비품표 외부간판1개. 단순 비조명 벽부판 약2.4×0.6m를 예산 가정으로만 사용",
+      "estimate_note": "현지 동일범위 공개 제작가 미확보. 실제 크기·소유자 승인·설치 높이 미정인 계획충당액. 높이작업/특수 고정이 필요한 현장은 재견적.",
+      "included_scope": "옥외용 평판·로고 제작·일반 벽부 고정·기본 설치",
+      "excluded_scope": "빌딩 대형 채널/옥상 간판, 독립 지주, 전기 인입·조명, 고소 장비, 허가/임대료",
+      "total": {
+        "low": 600000,
+        "base": 1200000,
+        "high": 2400000
+      }
+    },
+    {
+      "id": "F01",
+      "category": "가구",
+      "name": "A 접이식 개인책상",
+      "quantity": 16,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 180000,
+        "base": 250000,
+        "high": 350000
+      },
+      "total": {
+        "low": 2880000,
+        "base": 4000000,
+        "high": 5600000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S03",
+        "C-S04"
+      ],
+      "sourceURLs": [
+        "https://urjikhtawilga.zochil.shop/products/270147/884812",
+        "https://urjikhtawilga.zochil.shop/products/270147/744859"
+      ],
+      "quantity_basis": "A16석·600×450mm·가정접힘두께120mm",
+      "estimate_note": "현지 접이책상225~265천은 다른 크기/접힘 모델. 개별600×450 다리접이 적재 검증 제품 제작/조달 예산.",
+      "included_scope": "책상·기본 조립",
+      "excluded_scope": "카트 별도, 학생 가방걸이F20",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "separate_F21",
+      "installation": "basic_assembly_included",
+      "included_in_total": true
+    },
+    {
+      "id": "F02",
+      "category": "가구",
+      "name": "B/C/D 개인책상",
+      "quantity": 48,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 120000,
+        "base": 180000,
+        "high": 260000
+      },
+      "total": {
+        "low": 5760000,
+        "base": 8640000,
+        "high": 12480000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S03",
+        "C-S04"
+      ],
+      "sourceURLs": [
+        "https://urjikhtawilga.zochil.shop/products/270147/884812",
+        "https://urjikhtawilga.zochil.shop/products/270147/744859"
+      ],
+      "quantity_basis": "3실×16=48·600×450mm",
+      "estimate_note": "정확 규격 현재판매가 미확인. 현지 유사 학습책상을 참고한 고정 개인책상 예산.",
+      "included_scope": "책상·기본 조립",
+      "excluded_scope": "학생 가방걸이F20",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "separate_F21",
+      "installation": "basic_assembly_included",
+      "included_in_total": true
+    },
+    {
+      "id": "F03",
+      "category": "가구",
+      "name": "학생 의자",
+      "quantity": 64,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 85000,
+        "base": 120000,
+        "high": 180000
+      },
+      "total": {
+        "low": 5440000,
+        "base": 7680000,
+        "high": 11520000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S05"
+      ],
+      "sourceURLs": [
+        "https://urjikhtawilga.zochil.shop/products/215583/884808"
+      ],
+      "quantity_basis": "4실×16=64",
+      "estimate_note": "85천 현지 표시가를 하한 비교점으로 사용. A16개는4개씩 적재 가능한 모델 실물 검증 필요.",
+      "included_scope": "학생용 의자64",
+      "excluded_scope": "새 의자카트",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "separate_F21",
+      "installation": "not_required_or_basic_assembly",
+      "included_in_total": true
+    },
+    {
+      "id": "F04",
+      "category": "가구",
+      "name": "A 접은 책상 수납카트",
+      "quantity": 2,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 300000,
+        "base": 500000,
+        "high": 900000
+      },
+      "total": {
+        "low": 600000,
+        "base": 1000000,
+        "high": 1800000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "각8책상 수납카트2개·.75×.70×1.20m 후보",
+      "estimate_note": "현지 동일품 가격 미확인. 하중·전도·통로 회전/적재 적합성 확인 전 제작 가정.",
+      "included_scope": "카트 프레임·잠금바퀴·보호/묶음",
+      "excluded_scope": "책상 포함 아님",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "F05",
+      "category": "가구",
+      "name": "A 의자 적재 보호/묶음 부속",
+      "quantity": 4,
+      "unit": "묶음",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 30000,
+        "base": 80000,
+        "high": 150000
+      },
+      "total": {
+        "low": 120000,
+        "base": 320000,
+        "high": 600000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "16의자÷4개 적재=4묶음",
+      "estimate_note": "별도 이동형 의자카트 추가 아님. 적재형 의자용 보호·고정 부속만.",
+      "included_scope": "패드·안정적 보관 부속",
+      "excluded_scope": "학생 의자 본체F03",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "F06",
+      "category": "가구",
+      "name": "직원 개인책상·내부 개인수납",
+      "quantity": 8,
+      "unit": "자리",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 500000,
+        "base": 750000,
+        "high": 1100000
+      },
+      "total": {
+        "low": 4000000,
+        "base": 6000000,
+        "high": 8800000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S10",
+        "C-S11"
+      ],
+      "sourceURLs": [
+        "https://urjikhtawilga.zochil.shop/products/215344/957091",
+        "https://urjikhtawilga.zochil.shop/products/269804/884823"
+      ],
+      "quantity_basis": "8개·1200×600×720mm 및 내부 가방/잠금/PC 구획",
+      "estimate_note": "2인책상 가격은 비교점만. 사용자 개인책상 형태 유지하고 개인구획 제작 포함 가정. 겨울옷 동시적재·PC열/무릎 실물 확인.",
+      "included_scope": "개인책상8·내부 구획/잠금·조립",
+      "excluded_scope": "독립 사물함, 의자, 학생공용서류장F13",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "F07",
+      "category": "가구",
+      "name": "직원 업무의자",
+      "quantity": 8,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 150000,
+        "base": 220000,
+        "high": 495000
+      },
+      "total": {
+        "low": 1200000,
+        "base": 1760000,
+        "high": 3960000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S08",
+        "C-S09"
+      ],
+      "sourceURLs": [
+        "https://urjikhtawilga.zochil.shop/products/215589/743372",
+        "https://urjikhtawilga.zochil.shop/products/215589/884796"
+      ],
+      "quantity_basis": "직원8자리",
+      "estimate_note": "공개 현지 가격 범위. 참조모델 폭이 계획기호보다 커서 제품채택이 아니라 예산기준임.",
+      "included_scope": "업무의자8",
+      "excluded_scope": "책상/추가라운지의자",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "separate_F21",
+      "installation": "basic_assembly_included",
+      "included_in_total": true
+    },
+    {
+      "id": "F08",
+      "category": "가구",
+      "name": "접이식 상담 테이블",
+      "quantity": 1,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 225000,
+        "base": 300000,
+        "high": 450000
+      },
+      "total": {
+        "low": 225000,
+        "base": 300000,
+        "high": 450000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S03",
+        "C-S04"
+      ],
+      "sourceURLs": [
+        "https://urjikhtawilga.zochil.shop/products/270147/884812",
+        "https://urjikhtawilga.zochil.shop/products/270147/744859"
+      ],
+      "quantity_basis": "상담실1200×700mm1개",
+      "estimate_note": "판매참조1200×500 등과 정확히 같지 않음. 벽수납 두께 검증.",
+      "included_scope": "접이테이블1",
+      "excluded_scope": "새 상시상담 책상",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "separate_F21",
+      "installation": "basic_assembly_included",
+      "included_in_total": true
+    },
+    {
+      "id": "F09",
+      "category": "가구",
+      "name": "상담 접이의자",
+      "quantity": 4,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 55000,
+        "base": 100000,
+        "high": 140000
+      },
+      "total": {
+        "low": 220000,
+        "base": 400000,
+        "high": 560000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S06",
+        "C-S07"
+      ],
+      "sourceURLs": [
+        "https://urjikhtawilga.zochil.shop/products/215584/884801",
+        "https://urjikhtawilga.zochil.shop/products/215584/884803"
+      ],
+      "quantity_basis": "상담모드4명",
+      "estimate_note": "현지 접이의자 실제표시가55~140천, 기준100천은 중간 예산 가정.",
+      "included_scope": "접이의자4",
+      "excluded_scope": "의자 수납틀F10",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "separate_F21",
+      "installation": "not_required",
+      "included_in_total": true
+    },
+    {
+      "id": "F10",
+      "category": "맞춤수납",
+      "name": "상담 가구 수납/VR 상부선반",
+      "quantity": 1,
+      "unit": "세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 250000,
+        "base": 500000,
+        "high": 900000
+      },
+      "total": {
+        "low": 250000,
+        "base": 500000,
+        "high": 900000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "상담테이블/의자4 수납+VR선반",
+      "estimate_note": "실제 접힘·충전 발열·벽체 지지 확인 전 맞춤제작 예산.",
+      "included_scope": "수납 고정구·의자틀·상부선반",
+      "excluded_scope": "VR장치/충전기/접이테이블·의자",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "F11",
+      "category": "맞춤수납",
+      "name": "교실 접은 외투·신발 수납",
+      "quantity": 12.1,
+      "unit": "전면길이 m",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 400000,
+        "base": 650000,
+        "high": 950000
+      },
+      "total": {
+        "low": 4840000,
+        "base": 7865000,
+        "high": 11495000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S11"
+      ],
+      "sourceURLs": [
+        "https://urjikhtawilga.zochil.shop/products/269804/884823"
+      ],
+      "quantity_basis": "A2.8+B2.6+C2.6+D4.1=12.1m, 6개 바닥장, 각교실16칸목표",
+      "estimate_note": "높이1.85m·깊이.35~.50m 내부분리 제작 가정. 기성310천 보조장을12.1m가구 단가로 환산한 값 아님.",
+      "included_scope": "외투칸·신발받이·판재·설치·고정",
+      "excluded_scope": "겨울외투/신발64세트 실물수용 보증",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "F12",
+      "category": "맞춤수납",
+      "name": "교사 장비·마이크 잠금장",
+      "quantity": 4,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 250000,
+        "base": 450000,
+        "high": 700000
+      },
+      "total": {
+        "low": 1000000,
+        "base": 1800000,
+        "high": 2800000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S11"
+      ],
+      "sourceURLs": [
+        "https://urjikhtawilga.zochil.shop/products/269804/884823"
+      ],
+      "quantity_basis": "TEACH-A/B/C/D 4개",
+      "estimate_note": "유사 보조장 가격을 참고한 장비공간/배선구/서랍 맞춤 가정.",
+      "included_scope": "장4·대여펜 트레이 자리",
+      "excluded_scope": "마이크/송출기기·펜8개",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "F13",
+      "category": "맞춤수납",
+      "name": "사무실 공용 출력·잠금 재고장",
+      "quantity": 1,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 400000,
+        "base": 650000,
+        "high": 1000000
+      },
+      "total": {
+        "low": 400000,
+        "base": 650000,
+        "high": 1000000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S11"
+      ],
+      "sourceURLs": [
+        "https://urjikhtawilga.zochil.shop/products/269804/884823"
+      ],
+      "quantity_basis": "PRINT-O 1.3×.6×.8m",
+      "estimate_note": "분실물·귀중품·학생서류·용지/식품분리 구획 포함 제작 가정.",
+      "included_scope": "목공장·잠금/칸막이",
+      "excluded_scope": "프린터·분실물상자·토너/종이",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "F14",
+      "category": "맞춤수납",
+      "name": "상담 관리싱크장·청소잠금장",
+      "quantity": 1.3,
+      "unit": "전면길이 m",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 600000,
+        "base": 900000,
+        "high": 1400000
+      },
+      "total": {
+        "low": 780000,
+        "base": 1170000,
+        "high": 1820000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "CARE-SINK .7 + CARE-LOCK .6=1.3m, 높이1.85m",
+      "estimate_note": "방습재·잠금·세척도구와약품 분리 포함. 실제싱크볼/물통 크기 검증 전.",
+      "included_scope": "잠금 목공장2개·선반·물받이 구획",
+      "excluded_scope": "싱크/수전/온수기 C25, 세척도구세트",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "F15",
+      "category": "맞춤수납",
+      "name": "포토 편의대·하부 수거구획",
+      "quantity": 1.3,
+      "unit": "전면길이 m",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 500000,
+        "base": 800000,
+        "high": 1200000
+      },
+      "total": {
+        "low": 650000,
+        "base": 1040000,
+        "high": 1560000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "coffee-counter .55×1.30m",
+      "estimate_note": "방습 상판과 잔음료/컵통 분리구획 포함 맞춤 가정.",
+      "included_scope": "편의대·상판·칸막이·설치",
+      "excluded_scope": "정수/커피 기기·잔음료통·컵통",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "F16",
+      "category": "맞춤수납",
+      "name": "포토 건식 장비·소품장",
+      "quantity": 2,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 250000,
+        "base": 400000,
+        "high": 650000
+      },
+      "total": {
+        "low": 500000,
+        "base": 800000,
+        "high": 1300000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S11"
+      ],
+      "sourceURLs": [
+        "https://urjikhtawilga.zochil.shop/products/269804/884823"
+      ],
+      "quantity_basis": "dry-cabinet1·supply-cabinet1",
+      "estimate_note": "기기 인출/통풍 치수 확인 전 소형장 제작 가정.",
+      "included_scope": "소형장2·고정",
+      "excluded_scope": "사진 프린터/카메라·소모품",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "F17",
+      "category": "맞춤수납",
+      "name": "포토 분리판·중립 촬영배경 마감",
+      "quantity": 1,
+      "unit": "세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 350000,
+        "base": 650000,
+        "high": 1100000
+      },
+      "total": {
+        "low": 350000,
+        "base": 650000,
+        "high": 1100000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "기기분리판1.2m·후면1m중립배경",
+      "estimate_note": "제작 고정 마감만. AI이미지 소품 재현 추가하지 않음.",
+      "included_scope": "고정 분리판·평활 배경 마감",
+      "excluded_scope": "포토 전자장치·별도 렌탈부스",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "F18",
+      "category": "맞춤수납",
+      "name": "사진실 우산 물받이",
+      "quantity": 1,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 50000,
+        "base": 100000,
+        "high": 180000
+      },
+      "total": {
+        "low": 50000,
+        "base": 100000,
+        "high": 180000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "UMBRELLA-P .25×.30×.65m",
+      "estimate_note": "기존 계획의 작은 물받이1개. 현지 동등품/부속 구성 견적 필요.",
+      "included_scope": "우산 수거함/물받이1",
+      "excluded_scope": "출입구 추가행거",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "F19",
+      "category": "가구",
+      "name": "교사 수업용 간이 의자",
+      "quantity": 4,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 55000,
+        "base": 85000,
+        "high": 140000
+      },
+      "total": {
+        "low": 220000,
+        "base": 340000,
+        "high": 560000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S05",
+        "C-S06",
+        "C-S07"
+      ],
+      "sourceURLs": [
+        "https://urjikhtawilga.zochil.shop/products/215583/884808",
+        "https://urjikhtawilga.zochil.shop/products/215584/884801",
+        "https://urjikhtawilga.zochil.shop/products/215584/884803"
+      ],
+      "quantity_basis": "교실당1개 추가 검토수량; 현재6안에 고정 좌표 없음",
+      "estimate_note": "담당 범위 누락검토용 선택행. 평면은 서서 강의하는 기본안이라 합계에 포함하지 않음.",
+      "included_scope": "선택 시 교사용 의자",
+      "excluded_scope": "학생64의자와 중복 금지",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": false,
+      "priority": "optional_needs_layout"
+    },
+    {
+      "id": "F20",
+      "category": "가구",
+      "name": "학생 책상 안쪽 가방걸이/받침",
+      "quantity": 64,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 5000,
+        "base": 12000,
+        "high": 20000
+      },
+      "total": {
+        "low": 320000,
+        "base": 768000,
+        "high": 1280000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [],
+      "sourceURLs": [],
+      "quantity_basis": "6안 deskAccessories 학생64개",
+      "estimate_note": "책상제품 기본제공이면 차감. 별도 바닥바구니로 통로를 줄이지 않음.",
+      "included_scope": "가방걸이/받침·체결",
+      "excluded_scope": "학생 책상 본체F01/F02",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    },
+    {
+      "id": "F21",
+      "category": "가구",
+      "name": "기성 가구 현지배송·반입",
+      "quantity": 1,
+      "unit": "식",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 300000,
+        "base": 700000,
+        "high": 1500000
+      },
+      "total": {
+        "low": 300000,
+        "base": 700000,
+        "high": 1500000
+      },
+      "price_status": "planning_allowance_quote_required",
+      "source_ids": [
+        "C-S03"
+      ],
+      "sourceURLs": [
+        "https://urjikhtawilga.zochil.shop/products/270147/884812"
+      ],
+      "quantity_basis": "기성 책상·의자 배송/반입 합계",
+      "estimate_note": "판매점 배송·조립비 포함여부 미표시. 맞춤장 설치비와 중복하지 않고 기성 가구 운반만 충당.",
+      "included_scope": "울란바토르 시내 배송·건물 안 반입",
+      "excluded_scope": "국제운송·관세·기성 기본조립·맞춤장 설치",
+      "vat": "excluded_from_planning_allowance_source_tax_status_unverified",
+      "delivery": "local_handling_included_unless_separate_line",
+      "installation": "included_in_planning_allowance",
+      "included_in_total": true
+    }
+  ],
+  "totals_ex_vat_no_contingency": {
+    "low": 136715005,
+    "base": 221695826,
+    "high": 354230726
+  },
+  "category_totals_ex_vat_no_contingency": {
+    "공사": {
+      "low": 106830005,
+      "base": 175552826,
+      "high": 283525726
+    },
+    "가구": {
+      "low": 21065000,
+      "base": 31568000,
+      "high": 48550000
+    },
+    "맞춤수납": {
+      "low": 8820000,
+      "base": 14575000,
+      "high": 22155000
+    }
+  },
+  "unpriced_site_dependent": [
+    "법정 인허가/승인·특수검사 비용",
+    "기존건물 주수전 증설·공용소방설비 변경",
+    "신규 급배수 스택·정화/외부공사",
+    "혹한기 중앙난방 대수선/독립보일러",
+    "외부 샤프트/옥상 환기경로 신규 허가·시공",
+    "구조체 진동 절연/장애물 철거/유해물질 처리"
+  ],
+  "validation": {
+    "sources_have_url": true,
+    "all_three_rates_nondecreasing": true,
+    "total_calculation": "각 수량×단가, 원 단위 반올림 후 합산",
+    "row_count": 55,
+    "included_row_count": 54,
+    "contacted_suppliers": false,
+    "purchased": false,
+    "boundaries_confirmed": {
+      "supplies": "WC 고정 디스펜서 C32·세면거울 C33·우산 물받이 F18은 construction 한 곳만. 초기 종이/비누/쓰레기통은 supplies.",
+      "signs": "내부 C18/C19; 외부 C34. 인쇄 카드/운영 라벨은 supplies.",
+      "fire": "건물 소방/유도등/비상조명 현장확인·별도견적 항목은 root 통합표에서 처리."
+    }
+  }
+}

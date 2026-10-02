@@ -1,0 +1,22 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"></head><body><template>
+<style>
+@font-face{font-family:SUIT;src:url('assets/fonts/SUIT-Regular.otf')}@font-face{font-family:SUIT;src:url('assets/fonts/SUIT-Heavy.otf');font-weight:900}
+#root{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;font-family:SUIT,Arial,sans-serif}
+.world{position:absolute;inset:0;background:#ffffff;color:#000000;overflow:hidden}
+.world::before{content:'';position:absolute;inset:0;opacity:.10;background-image:radial-gradient(#000000 1.7px,transparent 1.7px);background-size:30px 30px}
+.top{position:absolute;top:64px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center;font-size:31px;font-weight:900;z-index:3}
+.top span:last-child{font-size:28px}.kicker{position:absolute;top:175px;left:76px;color:#3D6BC9;font-size:34px;font-weight:900;letter-spacing:-.02em}
+.title{position:absolute;top:250px;left:72px;right:72px;font-size:86px;font-weight:900;line-height:1.10;letter-spacing:-.06em;z-index:2}
+.blue{color:#3D6BC9}.card{background:#ffffff;color:#000000;border:5px solid #000000;border-radius:28px;box-shadow:12px 13px 0 #3D6BC9;padding:38px;box-sizing:border-box}
+.bubble{background:#3D6BC9;color:#ffffff;border:4px solid #000000;border-radius:20px;padding:18px 28px;font-weight:900}
+.persona{position:absolute;width:385px;height:515px;z-index:2}.persona svg{position:absolute;bottom:0;width:100%;height:100%}.persona img{position:absolute;top:0;left:28px;width:330px;height:380px;object-fit:contain;z-index:2}
+.eyebrow{font-size:28px;font-weight:900;color:#3D6BC9}.large{font-size:70px;font-weight:900;line-height:1.13;letter-spacing:-.05em}.medium{font-size:49px;font-weight:900;line-height:1.22;letter-spacing:-.045em}.small{font-size:31px;font-weight:700;line-height:1.32}
+.muted{color:#59616f}.enter{will-change:transform,opacity}.stamp{display:inline-block;transform:rotate(-6deg);border:5px solid #3D6BC9;color:#3D6BC9;background:#ffffff;border-radius:15px;padding:12px 20px;font-size:42px;font-weight:900}
+</style>
+<div id="root" data-composition-id="scene-07" data-width="1080" data-height="1920" data-duration="7.967">
+<div class="world"><div class="top"><span>yuhobuilds</span><span>EP.02</span></div><div class="kicker enter">현재 따라 하기 · Windows</div><div class="title enter">Claude Desktop에서<br><span class="blue">여기까지만.</span></div><div class="card enter" style="position:absolute;left:67px;top:630px;width:946px;height:740px;padding:28px"><div style="height:70px;border-radius:16px;background:#e9efff;display:flex;gap:16px;align-items:center;padding:0 28px;font-weight:900;font-size:32px"><span>Chat</span><span style="background:#3D6BC9;color:#fff;border-radius:13px;padding:8px 22px">Code</span><span>Cowork</span></div><div class="small" style="margin:38px 15px 20px">새 작업을 열 때</div><div class="medium" id="step1" style="border:4px solid #3D6BC9;border-radius:18px;padding:21px 25px;margin:16px;opacity:0">① Environment → Local</div><div class="medium" id="step2" style="border:4px solid #000;border-radius:18px;padding:21px 25px;margin:16px;opacity:0">② Project folder → 내_출석앱</div><div class="small muted" style="margin:40px 18px">Claude Code 이용 가능 요금제 필요<br>공식 안내를 단순화한 경로 · 당시 화면 재현 아님</div></div></div></div>
+<script>(function(){const root=document.querySelector('[data-composition-id="scene-07"]');const tl=gsap.timeline({paused:true});
+root.querySelectorAll('.enter').forEach((e,i)=>{const delay=Math.min(i*.12,.62);tl.fromTo(e,{opacity:0,y:56,scale:.96},{opacity:1,y:0,scale:1,duration:.38,ease:'power4.out'},delay)});
+tl.fromTo(root.querySelector('#step1'),{opacity:0,x:-75},{opacity:1,x:0,duration:.38,ease:'power4.out'},2.15);tl.fromTo(root.querySelector('#step2'),{opacity:0,x:75},{opacity:1,x:0,duration:.38,ease:'power4.out'},4.75);
+window.__timelines['scene-07']=tl;})();</script>
+</template></body></html>

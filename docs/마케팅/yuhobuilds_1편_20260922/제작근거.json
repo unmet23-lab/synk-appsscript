@@ -1,0 +1,28 @@
+{
+  "createdAt": "2026-09-21T19:42:44.847Z",
+  "sources": [
+    {
+      "name": "receipt.png",
+      "source": "docs/마케팅/yuhobuilds_제작여정_202607-20260922/근거/결제내역/claude-first-payment-20260602.png",
+      "sha256": "c2d687020b5db53f212992f0cd594e46eff3a91e3c975cdc2657de780cfb906c",
+      "copiedSha256": "c2d687020b5db53f212992f0cd594e46eff3a91e3c975cdc2657de780cfb906c"
+    },
+    {
+      "name": "felt-dark.webp",
+      "source": "docs/홍보물/첫게시물_20260910/assets/felt-dark.webp",
+      "sha256": "b4b6000d659a2db651ce43a4e1e92b9ad6bd3dfa3fe93f01560a8b597b9be6a5",
+      "copiedSha256": "b4b6000d659a2db651ce43a4e1e92b9ad6bd3dfa3fe93f01560a8b597b9be6a5"
+    },
+    {
+      "name": "narration.wav",
+      "source": "docs/마케팅/yuhobuilds_1편_20260922/audio/narration-master.wav",
+      "sha256": "5b991937333fc6fc3e1699b491aad682038b3156c3cb439b88a769258182f945",
+      "copiedSha256": "5b991937333fc6fc3e1699b491aad682038b3156c3cb439b88a769258182f945"
+    }
+  ],
+  "story": "../yuhobuilds_제작여정_202607-20260922/시작_사용자회고_20260922.md",
+  "narration": "원고.md",
+  "disclosure": "유호의 실제 경험을 바탕으로 일부 대사와 장면을 재구성했습니다.",
+  "recreatedScreens": "Conceptual visual explanations, not original June application or chat screenshots.",
+  "publicUpload": false
+}

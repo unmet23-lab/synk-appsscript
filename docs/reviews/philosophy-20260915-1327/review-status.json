@@ -1,0 +1,16 @@
+[
+  {
+    "status": "fulfilled",
+    "value": {
+      "name": "claude",
+      "exitCode": 1
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "name": "gemini",
+      "exitCode": 0
+    }
+  }
+]

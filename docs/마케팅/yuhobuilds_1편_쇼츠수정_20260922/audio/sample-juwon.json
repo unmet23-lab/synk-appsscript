@@ -1,0 +1,94 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_5c547545fcfee90007fed459",
+    "language": "kor",
+    "text": "번역만 하려던 제가, 출석 앱을 만들겠다고요? 개발 실력은 제로! 화면 찍고, 물어보고, 또 찍고!",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.24,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.4
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 7.46,
+  "words": [
+    {
+      "text": "번역만",
+      "start": 0.14,
+      "end": 0.541
+    },
+    {
+      "text": "하려던",
+      "start": 0.602,
+      "end": 0.882
+    },
+    {
+      "text": "제가,",
+      "start": 0.942,
+      "end": 1.223
+    },
+    {
+      "text": "출석",
+      "start": 1.564,
+      "end": 1.925
+    },
+    {
+      "text": "앱을",
+      "start": 1.985,
+      "end": 2.126
+    },
+    {
+      "text": "만들겠다고요?",
+      "start": 2.186,
+      "end": 2.807
+    },
+    {
+      "text": "개발",
+      "start": 3.249,
+      "end": 3.489
+    },
+    {
+      "text": "실력은",
+      "start": 3.549,
+      "end": 3.89
+    },
+    {
+      "text": "제로!",
+      "start": 3.97,
+      "end": 4.211
+    },
+    {
+      "text": "화면",
+      "start": 4.552,
+      "end": 4.853
+    },
+    {
+      "text": "찍고,",
+      "start": 4.913,
+      "end": 5.194
+    },
+    {
+      "text": "물어보고,",
+      "start": 5.515,
+      "end": 5.916
+    },
+    {
+      "text": "또",
+      "start": 6.317,
+      "end": 6.457
+    },
+    {
+      "text": "찍고!",
+      "start": 6.557,
+      "end": 7.46
+    }
+  ],
+  "characters": null
+}

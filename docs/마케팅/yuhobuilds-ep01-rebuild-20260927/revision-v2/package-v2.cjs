@@ -1,0 +1,15 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+const root=__dirname,parent=path.dirname(root),video='yuhobuilds_EP01_V2_FINAL_1080x1920.mp4';
+const qa=JSON.parse(fs.readFileSync(path.join(root,'audit/final-validation.json'),'utf8'));
+assert.equal(qa.file,video);assert.equal(qa.sha256,crypto.createHash('sha256').update(fs.readFileSync(path.join(root,video))).digest('hex'));
+const archived=path.join(parent,'preview-v1.html');if(!fs.existsSync(archived))fs.copyFileSync(path.join(parent,'preview.html'),archived);
+let html=fs.readFileSync(archived,'utf8').replaceAll('yuhobuilds_EP01_REBUILD_FINAL_1080x1920.mp4',video).replaceAll('새 버전','V2 · 템포 1.2배').replace('56초 ·','47.1초 ·').replace(/data-seek="([\d.]+)"/g,(_,n)=>`data-seek="${(Number(n)/1.2).toFixed(3)}"`);
+html=html.replace('<b>고생담에서 직접 해볼 수 있는 첫 단계까지.</b><br>기능을 늘리다 목표를 놓친 이야기 뒤에, 출석을 저장하고 다시 확인하는 시연을 붙였어요.','<b>자막과 움직임을 다듬은 47초 수정본.</b><br>말과 장면을 1.2배 빠르게 맞추고, 6월 표기·자막 줄바꿈·발화에 맞춘 타이핑·전환을 수정했어요.');
+fs.writeFileSync(path.join(root,'preview.html'),html);
+const relative=[video,'cover.jpg','practice.html','복사용_첫완성질문.txt','yuhobuilds_EP01_자막.srt'];let latest=html;for(const name of relative)latest=latest.replaceAll(`="${name}"`,`="revision-v2/${name}"`);fs.writeFileSync(path.join(parent,'preview.html'),latest);
+let server=fs.readFileSync(path.join(parent,'serve.cjs'),'utf8');const routes=['preview.html','practice.html','practice.js','cover.jpg',video,'복사용_첫완성질문.txt','yuhobuilds_EP01_자막.srt','assets/SUIT-Variable.woff2'].map(n=>'revision-v2/'+n);if(!server.includes('revision-v2/preview.html'))server=server.replace('const mime=',`for(const name of ${JSON.stringify(routes)})allowed.add(name);allowed.add('preview-v1.html');\nconst mime=`);fs.writeFileSync(path.join(parent,'serve.cjs'),server);
+const readme=`yuhobuilds EP01 · V2 (2026-09-27)\n\n영상: ${video}\n47.1초 / 1080×1920 / 30fps\n\n1. MP4 파일을 열면 서버 없이 영상을 볼 수 있어요.\n2. preview.html은 영상과 실습을 함께 보는 페이지예요.\n3. practice.html에서 학생 A의 출석을 저장하고 다시 열어 확인해 보세요. 실제 학생 정보는 넣지 마세요.\n4. 복사용_첫완성질문.txt는 AI에 붙여넣을 수 있는 질문과 설명이에요.\n5. SRT는 필요할 때 편집기에 넣는 별도 자막이에요. MP4에는 자막이 이미 들어 있어요.\n\n정의로 임시 보이스 / 기존 음성 음높이를 유지하며 속도 1.2배 적용.\n실습은 같은 브라우저에만 저장하는 학습용 예시예요.\n사용자 검토용 파일이며 공개 업로드는 하지 않았어요.\n`;
+fs.writeFileSync(path.join(root,'먼저읽어주세요.txt'),readme);
+const pack=path.join(root,'전달파일');fs.mkdirSync(path.join(pack,'assets'),{recursive:true});
+for(const name of [video,'preview.html','practice.html','practice.js','cover.jpg','복사용_첫완성질문.txt','yuhobuilds_EP01_자막.srt','먼저읽어주세요.txt','assets/SUIT-Variable.woff2'])fs.copyFileSync(path.join(root,name),path.join(pack,name));
+console.log(JSON.stringify({preview:path.join(root,'preview.html'),delivery:pack,video,sha256:qa.sha256}));

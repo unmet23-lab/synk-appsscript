@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-11",
+  "status": "passed",
+  "scope": "LAB 1 and SHIFT 1,3 as promotional scenes; approved visions unchanged",
+  "canonical": {
+    "path": "docs/비전_정본.md",
+    "sha256": "0abc1deb54eb38bea58f3f119a43412fa507e9ecfc79289ca955fc9cdc3a68e5",
+    "unchanged": true
+  },
+  "copySource": {
+    "path": "docs/홍보물/첫게시물_20260911/비전_소개문안.json",
+    "sha256": "1dce5fb7dd733418a4ce73ad42dfb5d7ca5d9412179b93813db5dad579766ee0",
+    "checksPassed": 10,
+    "labCaptionCharacters": 1211,
+    "shiftCaptionCharacters": 865,
+    "evidence": "tmp/vision-scenes-20260911/copy-check.json"
+  },
+  "labDerivatives": {
+    "command": "node docs/홍보물/첫게시물_20260910/build.cjs --captions-only --id=02-lab-instagram",
+    "checkedFiles": 702,
+    "changedFiles": 14,
+    "unchangedFiles": 688,
+    "changedZipEntries": 6,
+    "unchangedZipEntries": 362,
+    "captionAndKoreanMeaningMatchSource": true,
+    "otherFieldsAndAccountsPreserved": true,
+    "deliveryAndChecksumsMatch": true,
+    "dryRunAfterApplyChanges": 0,
+    "defaultBuildReadsNewSource": true,
+    "preexistingCatalogDifferencesPreserved": ["01-lab-youtube"],
+    "evidence": "tmp/lab-caption-sync-20260911/verification-after.json",
+    "sourceReaderEvidence": "tmp/lab-caption-sync-20260911/default-reader-result.json",
+    "applyEvidence": "tmp/firstpost-caption-sync/20260910T211744451346Z/report.json"
+  },
+  "mobile": {
+    "browser": "Edge",
+    "viewportWidth": 390,
+    "documentWidth": 390,
+    "captionMatches": true,
+    "horizontalOverflow": false,
+    "actualScreenshotReviewed": true,
+    "evidence": "tmp/lab-caption-sync-20260911/mobile-result.json",
+    "screenshot": "tmp/lab-caption-sync-20260911/lab-caption-390px.png"
+  },
+  "shift": {
+    "caption": "docs/홍보물/첫게시물_20260911/01-yuhobuilds/업로드문안.txt",
+    "captionMatchesSource": true,
+    "approvedVisionAndFullSubtextExact": true,
+    "currentVideoAndCoverUnchanged": true,
+    "previousZip": "Preserved as a previous caption and BGM version; current upload text is recorded separately"
+  },
+  "sharedMarketingCanon": {
+    "source": "docs/마케팅_정본.md",
+    "payloadBytes": 13331,
+    "payloadSha256": "dd9061de1c09bf3394b2be998b2e9ca741ef7224ba70b900e33b16df2210ece5",
+    "oneDriveContentVerified": true,
+    "driveFileId": "1aWICtONITCZg8xKmF19VTr9WBqpFxW9j",
+    "driveCheckedAt": "2026-09-10T21:17:33.490Z",
+    "driveContentMatchesPayload": true,
+    "existingFileParentOwnerAndSharingPreserved": true,
+    "evidence": "tmp/vision-scenes-20260911/shared-copy.json"
+  },
+  "limits": {
+    "mongolianReview": "Independent AI translation and Korean meaning comparison",
+    "humanNativeReview": false,
+    "snsPublishedOrScheduled": false,
+    "newImageOrVideoRendered": false,
+    "existingOfficialVisionPublicationsChanged": false
+  }
+}

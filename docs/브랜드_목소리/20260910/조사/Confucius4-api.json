@@ -1,0 +1,732 @@
+{
+  "named_endpoints": {
+    "/_preview_voice": {
+      "parameters": [
+        {
+          "label": "Reference Audio / 参考音频",
+          "parameter_name": "voice_name",
+          "parameter_has_default": false,
+          "parameter_default": null,
+          "type": {
+            "enum": [
+              "英文男声",
+              "中文女声",
+              "中文男声",
+              "请录制音频"
+            ],
+            "title": "Radio",
+            "type": "string"
+          },
+          "python_type": {
+            "type": "Literal['英文男声', '中文女声', '中文男声', '请录制音频']",
+            "description": ""
+          },
+          "component": "Radio",
+          "example_input": "英文男声"
+        }
+      ],
+      "returns": [
+        {
+          "label": "value_22",
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Markdown"
+        },
+        {
+          "label": "value_24",
+          "type": {
+            "properties": {
+              "path": {
+                "title": "Path",
+                "type": "string"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "size": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Size"
+              },
+              "orig_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Orig Name"
+              },
+              "mime_type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Mime Type"
+              },
+              "is_stream": {
+                "default": false,
+                "title": "Is Stream",
+                "type": "boolean"
+              },
+              "meta": {
+                "additionalProperties": true,
+                "default": {
+                  "_type": "gradio.FileData"
+                },
+                "title": "Meta",
+                "type": "object"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "title": "FileData",
+            "type": "object"
+          },
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Audio"
+        },
+        {
+          "label": "Status / 状态",
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Textbox"
+        },
+        {
+          "label": "Text to Synthesize / 待合成文本",
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Textbox"
+        },
+        {
+          "label": "Language / 语种",
+          "type": {
+            "type": "string",
+            "enum": [
+              "zh",
+              "en",
+              "ja",
+              "ko",
+              "de",
+              "fr",
+              "th",
+              "id",
+              "vi",
+              "es",
+              "pt",
+              "it",
+              "ru",
+              "ms"
+            ]
+          },
+          "python_type": {
+            "type": "Literal['zh', 'en', 'ja', 'ko', 'de', 'fr', 'th', 'id', 'vi', 'es', 'pt', 'it', 'ru', 'ms']",
+            "description": ""
+          },
+          "component": "Dropdown"
+        }
+      ]
+    },
+    "/_recorded_reference_uploaded": {
+      "parameters": [
+        {
+          "label": "parameter_24",
+          "parameter_name": "recorded_audio",
+          "parameter_has_default": false,
+          "parameter_default": null,
+          "type": {
+            "properties": {
+              "path": {
+                "title": "Path",
+                "type": "string"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "size": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Size"
+              },
+              "orig_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Orig Name"
+              },
+              "mime_type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Mime Type"
+              },
+              "is_stream": {
+                "default": false,
+                "title": "Is Stream",
+                "type": "boolean"
+              },
+              "meta": {
+                "additionalProperties": true,
+                "default": {
+                  "_type": "gradio.FileData"
+                },
+                "title": "Meta",
+                "type": "object"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "title": "FileData",
+            "type": "object"
+          },
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Audio",
+          "example_input": {
+            "path": "https://github.com/gradio-app/gradio/raw/main/test/test_files/audio_sample.wav",
+            "meta": {
+              "_type": "gradio.FileData"
+            },
+            "orig_name": "audio_sample.wav",
+            "url": "https://github.com/gradio-app/gradio/raw/main/test/test_files/audio_sample.wav"
+          }
+        },
+        {
+          "label": "Reference Audio / 参考音频",
+          "parameter_name": "voice_name",
+          "parameter_has_default": false,
+          "parameter_default": null,
+          "type": {
+            "enum": [
+              "英文男声",
+              "中文女声",
+              "中文男声",
+              "请录制音频"
+            ],
+            "title": "Radio",
+            "type": "string"
+          },
+          "python_type": {
+            "type": "Literal['英文男声', '中文女声', '中文男声', '请录制音频']",
+            "description": ""
+          },
+          "component": "Radio",
+          "example_input": "英文男声"
+        }
+      ],
+      "returns": [
+        {
+          "label": "Status / 状态",
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Textbox"
+        }
+      ]
+    },
+    "/_clear_reference_audio": {
+      "parameters": [],
+      "returns": [
+        {
+          "label": "value_22",
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Markdown"
+        },
+        {
+          "label": "value_24",
+          "type": {
+            "properties": {
+              "path": {
+                "title": "Path",
+                "type": "string"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "size": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Size"
+              },
+              "orig_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Orig Name"
+              },
+              "mime_type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Mime Type"
+              },
+              "is_stream": {
+                "default": false,
+                "title": "Is Stream",
+                "type": "boolean"
+              },
+              "meta": {
+                "additionalProperties": true,
+                "default": {
+                  "_type": "gradio.FileData"
+                },
+                "title": "Meta",
+                "type": "object"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "title": "FileData",
+            "type": "object"
+          },
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Audio"
+        },
+        {
+          "label": "Status / 状态",
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Textbox"
+        },
+        {
+          "label": "Reference Audio / 参考音频",
+          "type": {
+            "enum": [
+              "英文男声",
+              "中文女声",
+              "中文男声",
+              "请录制音频"
+            ],
+            "title": "Radio",
+            "type": "string"
+          },
+          "python_type": {
+            "type": "Literal['英文男声', '中文女声', '中文男声', '请录制音频']",
+            "description": ""
+          },
+          "component": "Radio"
+        },
+        {
+          "label": "Text to Synthesize / 待合成文本",
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Textbox"
+        },
+        {
+          "label": "Language / 语种",
+          "type": {
+            "type": "string",
+            "enum": [
+              "zh",
+              "en",
+              "ja",
+              "ko",
+              "de",
+              "fr",
+              "th",
+              "id",
+              "vi",
+              "es",
+              "pt",
+              "it",
+              "ru",
+              "ms"
+            ]
+          },
+          "python_type": {
+            "type": "Literal['zh', 'en', 'ja', 'ko', 'de', 'fr', 'th', 'id', 'vi', 'es', 'pt', 'it', 'ru', 'ms']",
+            "description": ""
+          },
+          "component": "Dropdown"
+        }
+      ]
+    },
+    "/_preset_gradio_predict": {
+      "parameters": [
+        {
+          "label": "Text to Synthesize / 待合成文本",
+          "parameter_name": "text",
+          "parameter_has_default": true,
+          "parameter_default": "支持多种语言，轻松实现跨语种朗读。",
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Textbox",
+          "example_input": "Hello!!"
+        },
+        {
+          "label": "Language / 语种",
+          "parameter_name": "language",
+          "parameter_has_default": true,
+          "parameter_default": "zh",
+          "type": {
+            "type": "string",
+            "enum": [
+              "zh",
+              "en",
+              "ja",
+              "ko",
+              "de",
+              "fr",
+              "th",
+              "id",
+              "vi",
+              "es",
+              "pt",
+              "it",
+              "ru",
+              "ms"
+            ]
+          },
+          "python_type": {
+            "type": "Literal['zh', 'en', 'ja', 'ko', 'de', 'fr', 'th', 'id', 'vi', 'es', 'pt', 'it', 'ru', 'ms']",
+            "description": ""
+          },
+          "component": "Dropdown",
+          "example_input": "zh"
+        },
+        {
+          "label": "Reference Audio / 参考音频",
+          "parameter_name": "voice_name",
+          "parameter_has_default": false,
+          "parameter_default": null,
+          "type": {
+            "enum": [
+              "英文男声",
+              "中文女声",
+              "中文男声",
+              "请录制音频"
+            ],
+            "title": "Radio",
+            "type": "string"
+          },
+          "python_type": {
+            "type": "Literal['英文男声', '中文女声', '中文男声', '请录制音频']",
+            "description": ""
+          },
+          "component": "Radio",
+          "example_input": "英文男声"
+        },
+        {
+          "label": "parameter_24",
+          "parameter_name": "recorded_audio",
+          "parameter_has_default": false,
+          "parameter_default": null,
+          "type": {
+            "properties": {
+              "path": {
+                "title": "Path",
+                "type": "string"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "size": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Size"
+              },
+              "orig_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Orig Name"
+              },
+              "mime_type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Mime Type"
+              },
+              "is_stream": {
+                "default": false,
+                "title": "Is Stream",
+                "type": "boolean"
+              },
+              "meta": {
+                "additionalProperties": true,
+                "default": {
+                  "_type": "gradio.FileData"
+                },
+                "title": "Meta",
+                "type": "object"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "title": "FileData",
+            "type": "object"
+          },
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Audio",
+          "example_input": {
+            "path": "https://github.com/gradio-app/gradio/raw/main/test/test_files/audio_sample.wav",
+            "meta": {
+              "_type": "gradio.FileData"
+            },
+            "orig_name": "audio_sample.wav",
+            "url": "https://github.com/gradio-app/gradio/raw/main/test/test_files/audio_sample.wav"
+          }
+        }
+      ],
+      "returns": [
+        {
+          "label": "Output Audio / 合成结果",
+          "type": {
+            "properties": {
+              "path": {
+                "title": "Path",
+                "type": "string"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "size": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Size"
+              },
+              "orig_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Orig Name"
+              },
+              "mime_type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Mime Type"
+              },
+              "is_stream": {
+                "default": false,
+                "title": "Is Stream",
+                "type": "boolean"
+              },
+              "meta": {
+                "additionalProperties": true,
+                "default": {
+                  "_type": "gradio.FileData"
+                },
+                "title": "Meta",
+                "type": "object"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "title": "FileData",
+            "type": "object"
+          },
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Audio"
+        },
+        {
+          "label": "Status / 状态",
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Textbox"
+        }
+      ]
+    }
+  },
+  "unnamed_endpoints": {}
+}

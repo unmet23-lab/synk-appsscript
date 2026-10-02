@@ -1,0 +1,306 @@
+{
+  "errors": [],
+  "checks": [
+    {
+      "id": "open",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 112.125px) scale(0.7469, 0.7469)",
+      "targetInside": true
+    },
+    {
+      "id": "open",
+      "dt": 3.949,
+      "tipOnTarget": true,
+      "transform": "translate(-306.864px, -26.1852px) scale(1.1802, 1.1802)",
+      "targetInside": true
+    },
+    {
+      "id": "open",
+      "dt": 4.8,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.0639px, 112.096px, 0px) scale(0.747, 0.747)",
+      "targetInside": true
+    },
+    {
+      "id": "paste",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 112.125px) scale(0.7469, 0.7469)",
+      "targetInside": true
+    },
+    {
+      "id": "paste",
+      "dt": 2.254,
+      "tipOnTarget": true,
+      "transform": "translate(-339.503px, -85.9692px) scale(1.2256, 1.2256)",
+      "targetInside": true
+    },
+    {
+      "id": "paste",
+      "dt": 8.666666666666668,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.0707px, 112.084px, 0px) scale(0.747, 0.747)",
+      "targetInside": true
+    },
+    {
+      "id": "request",
+      "dt": 0.6,
+      "tipOnTarget": true,
+      "transform": "translate(0px, 112.125px) scale(0.7469, 0.7469)",
+      "targetInside": true
+    },
+    {
+      "id": "request",
+      "dt": 2.972,
+      "tipOnTarget": true,
+      "transform": "translate(-339.503px, -158.282px) scale(1.2256, 1.2256)",
+      "targetInside": true
+    },
+    {
+      "id": "request",
+      "dt": 8.466666666666667,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.0707px, 112.069px, 0px) scale(0.747, 0.747)",
+      "targetInside": true
+    },
+    {
+      "id": "send",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 112.125px) scale(0.7469, 0.7469)",
+      "targetInside": true
+    },
+    {
+      "id": "send",
+      "dt": 3.436,
+      "tipOnTarget": true,
+      "transform": "translate3d(-2258.42px, -1039.7px, 0px) scale(2.7995, 2.7995)",
+      "targetInside": true
+    },
+    {
+      "id": "send",
+      "dt": 4.033333333333333,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.4704px, 111.885px, 0px) scale(0.7473, 0.7473)",
+      "targetInside": true
+    },
+    {
+      "id": "project-menu",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 112.125px) scale(0.7469, 0.7469)",
+      "targetInside": true
+    },
+    {
+      "id": "project-menu",
+      "dt": 3.4499999999999997,
+      "tipOnTarget": true,
+      "transform": "translate(30px, -95px) scale(2.8, 2.8)",
+      "targetInside": true
+    },
+    {
+      "id": "project-menu",
+      "dt": 4.533333333333333,
+      "tipOnTarget": true,
+      "transform": "translate3d(0.0062px, 112.082px, 0px) scale(0.7473, 0.7473)",
+      "targetInside": true
+    },
+    {
+      "id": "create",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 112.125px) scale(0.7469, 0.7469)",
+      "targetInside": true
+    },
+    {
+      "id": "create",
+      "dt": 2.9139999999999997,
+      "tipOnTarget": true,
+      "transform": "translate(-2137.4px, -58.1382px) scale(2.5908, 2.5908)",
+      "targetInside": true
+    },
+    {
+      "id": "create",
+      "dt": 4.817,
+      "tipOnTarget": true,
+      "transform": "translate(-655.037px, -265.185px) scale(1.7704, 1.7704)",
+      "targetInside": true
+    },
+    {
+      "id": "create",
+      "dt": 6.239000000000001,
+      "tipOnTarget": true,
+      "transform": "translate(-655.037px, -265.185px) scale(1.7704, 1.7704)",
+      "targetInside": true
+    },
+    {
+      "id": "create",
+      "dt": 7.066666666666666,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.1364px, 112.046px, 0px) scale(0.7471, 0.7471)",
+      "targetInside": true
+    },
+    {
+      "id": "settings",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 112.125px) scale(0.7469, 0.7469)",
+      "targetInside": true
+    },
+    {
+      "id": "settings",
+      "dt": 2.154,
+      "tipOnTarget": true,
+      "transform": "translate(-2176.4px, -195.8px) scale(2.8, 2.8)",
+      "targetInside": true
+    },
+    {
+      "id": "settings",
+      "dt": 3.659,
+      "tipOnTarget": true,
+      "transform": "translate(-2207.2px, -212.6px) scale(2.8, 2.8)",
+      "targetInside": true
+    },
+    {
+      "id": "settings",
+      "dt": 4.8,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.4596px, 112.057px, 0px) scale(0.7473, 0.7473)",
+      "targetInside": true
+    },
+    {
+      "id": "save",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 112.125px) scale(0.7469, 0.7469)",
+      "targetInside": true
+    },
+    {
+      "id": "save",
+      "dt": 5.541,
+      "tipOnTarget": true,
+      "transform": "translate(-746.334px, -122.968px) scale(1.9235, 1.9235)",
+      "targetInside": true
+    },
+    {
+      "id": "save",
+      "dt": 8.086,
+      "tipOnTarget": true,
+      "transform": "translate(-1792.8px, -1381.6px) scale(2.8, 2.8)",
+      "targetInside": true
+    },
+    {
+      "id": "save",
+      "dt": 9.133333333333335,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.3733px, 111.814px, 0px) scale(0.7473, 0.7473)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-menu",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 112.125px) scale(0.7469, 0.7469)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-menu",
+      "dt": 2.85,
+      "tipOnTarget": true,
+      "transform": "translate(30px, -95px) scale(2.8, 2.8)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-menu",
+      "dt": 3.8999999999999995,
+      "tipOnTarget": true,
+      "transform": "translate3d(0.0062px, 112.082px, 0px) scale(0.7473, 0.7473)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-project",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 112.125px) scale(0.7469, 0.7469)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-project",
+      "dt": 2.1999999999999997,
+      "tipOnTarget": true,
+      "transform": "translate(-435.145px, -100.297px) scale(1.3186, 1.3186)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-project",
+      "dt": 3.1999999999999997,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.0906px, 112.081px, 0px) scale(0.747, 0.747)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-new",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 112.125px) scale(0.7469, 0.7469)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-new",
+      "dt": 6.45,
+      "tipOnTarget": true,
+      "transform": "translate(-291.952px, 122.25px) scale(1.1449, 1.1449)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-new",
+      "dt": 9.600000000000001,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.0608px, 112.127px, 0px) scale(0.747, 0.747)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-memo",
+      "dt": 0.6,
+      "tipOnTarget": true,
+      "transform": "translate(0px, 112.125px) scale(0.7469, 0.7469)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-memo",
+      "dt": 3.25,
+      "tipOnTarget": true,
+      "transform": "translate(-303.122px, 77.878px) scale(1.1659, 1.1659)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-memo",
+      "dt": 7.8,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.0631px, 112.118px, 0px) scale(0.747, 0.747)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-finish",
+      "dt": 0.6,
+      "tipOnTarget": false,
+      "transform": "translate(0px, 112.125px) scale(0.7469, 0.7469)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-finish",
+      "dt": 1.9,
+      "tipOnTarget": true,
+      "transform": "translate(-2305.2px, -517.8px) scale(2.8, 2.8)",
+      "targetInside": true
+    },
+    {
+      "id": "repeat-finish",
+      "dt": 2.7666666666666666,
+      "tipOnTarget": true,
+      "transform": "translate3d(-0.48px, 111.994px, 0px) scale(0.7473, 0.7473)",
+      "targetInside": true
+    }
+  ]
+}

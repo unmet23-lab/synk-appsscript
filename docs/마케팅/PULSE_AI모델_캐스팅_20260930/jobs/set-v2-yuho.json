@@ -1,0 +1,167 @@
+[
+ {
+  "name": "Myuho-angle-front",
+  "prompt": "The exact same man as in the first attached reference photo: identical face, bone structure, eyes, brows, lips, skin tone and hairstyle, same plain black crew-neck t-shirt with no logos. Do not add any moles, marks or blemishes that are not in the reference. Keep his eyelids and eye shape exactly as in the first reference photo. He looks youthful, mid-twenties, with smooth skin and minimal lines. The other attached photos show the same real person from other angles; use them only to keep his or her identity accurate. Upper body from the waist up, standing straight and facing the camera, arms relaxed at his sides, relaxed confident expression. Same plain studio wall and soft window daylight as the reference photo, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no heavy retouching, no plastic skin, opaque clothing, no text or logos anywhere.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0136.png"
+  ]
+ },
+ {
+  "name": "Myuho-angle-left",
+  "prompt": "The exact same man as in the first attached reference photo: identical face, bone structure, eyes, brows, lips, skin tone and hairstyle, same plain black crew-neck t-shirt with no logos. Do not add any moles, marks or blemishes that are not in the reference. Keep his eyelids and eye shape exactly as in the first reference photo. He looks youthful, mid-twenties, with smooth skin and minimal lines. The other attached photos show the same real person from other angles; use them only to keep his or her identity accurate. Upper body from the waist up, standing and turned 90 degrees so the camera sees a clean side profile, his face and body pointing toward the left edge of the frame, relaxed expression. Same plain studio wall and soft window daylight as the reference photo, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no heavy retouching, no plastic skin, opaque clothing, no text or logos anywhere.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0136.png"
+  ]
+ },
+ {
+  "name": "Myuho-angle-right",
+  "prompt": "The exact same man as in the first attached reference photo: identical face, bone structure, eyes, brows, lips, skin tone and hairstyle, same plain black crew-neck t-shirt with no logos. Do not add any moles, marks or blemishes that are not in the reference. Keep his eyelids and eye shape exactly as in the first reference photo. He looks youthful, mid-twenties, with smooth skin and minimal lines. The other attached photos show the same real person from other angles; use them only to keep his or her identity accurate. Upper body from the waist up, standing and turned 90 degrees so the camera sees a clean side profile, his face and body pointing toward the right edge of the frame, relaxed expression. Same plain studio wall and soft window daylight as the reference photo, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no heavy retouching, no plastic skin, opaque clothing, no text or logos anywhere.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0136.png"
+  ]
+ },
+ {
+  "name": "Myuho-angle-back",
+  "prompt": "The exact same man as in the first attached reference photo: identical face, bone structure, eyes, brows, lips, skin tone and hairstyle, same plain black crew-neck t-shirt with no logos. Do not add any moles, marks or blemishes that are not in the reference. Keep his eyelids and eye shape exactly as in the first reference photo. He looks youthful, mid-twenties, with smooth skin and minimal lines. The other attached photos show the same real person from other angles; use them only to keep his or her identity accurate. Upper body from the waist up, seen directly from behind: the back of his head and hair, his shoulders and back facing the camera, face not visible. Same plain studio wall and soft window daylight as the reference photo, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no heavy retouching, no plastic skin, opaque clothing, no text or logos anywhere.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0136.png"
+  ]
+ },
+ {
+  "name": "Myuho-exp-smile",
+  "prompt": "The exact same man as in the first attached reference photo: identical face, bone structure, eyes, brows, lips, skin tone and hairstyle, same plain black crew-neck t-shirt with no logos. Do not add any moles, marks or blemishes that are not in the reference. Keep his eyelids and eye shape exactly as in the first reference photo. He looks youthful, mid-twenties, with smooth skin and minimal lines. The other attached photos show the same real person from other angles; use them only to keep his or her identity accurate. Head and shoulders facing the camera with a big genuine smile showing the upper teeth, eyes crinkling with natural creases, cheeks raised. Same plain studio wall and soft window daylight as the reference photo, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no heavy retouching, no plastic skin, opaque clothing, no text or logos anywhere.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0136.png"
+  ]
+ },
+ {
+  "name": "Myuho-exp-angry",
+  "prompt": "The exact same man as in the first attached reference photo: identical face, bone structure, eyes, brows, lips, skin tone and hairstyle, same plain black crew-neck t-shirt with no logos. Do not add any moles, marks or blemishes that are not in the reference. Keep his eyelids and eye shape exactly as in the first reference photo. He looks youthful, mid-twenties, with smooth skin and minimal lines. The other attached photos show the same real person from other angles; use them only to keep his or her identity accurate. Head and shoulders facing the camera, genuinely angry: brows pulled down and together, eyes narrowed in a hard glare, jaw clenched, lips pressed tight, tension across the forehead. Same plain studio wall and soft window daylight as the reference photo, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no heavy retouching, no plastic skin, opaque clothing, no text or logos anywhere.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0136.png"
+  ]
+ },
+ {
+  "name": "Myuho-exp-surprised",
+  "prompt": "The exact same man as in the first attached reference photo: identical face, bone structure, eyes, brows, lips, skin tone and hairstyle, same plain black crew-neck t-shirt with no logos. Do not add any moles, marks or blemishes that are not in the reference. Keep his eyelids and eye shape exactly as in the first reference photo. He looks youthful, mid-twenties, with smooth skin and minimal lines. The other attached photos show the same real person from other angles; use them only to keep his or her identity accurate. Head and shoulders facing the camera, genuinely surprised: eyebrows raised high with forehead creases, eyes wide open, mouth dropped open, head pulled slightly back. Same plain studio wall and soft window daylight as the reference photo, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no heavy retouching, no plastic skin, opaque clothing, no text or logos anywhere.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0136.png"
+  ]
+ },
+ {
+  "name": "Myuho-hair-2",
+  "prompt": "The exact same man as in the first attached reference photo: identical face, bone structure, eyes, brows, lips and skin tone. Do not add any moles, marks or blemishes that are not in the reference. Keep his eyelids and eye shape exactly as in the first reference photo. He looks youthful, mid-twenties, with smooth skin and minimal lines. The other attached photos show the same real person from other angles; use them only to keep his or her identity accurate. Same plain black crew-neck t-shirt with no logos. Change only the hairstyle to a clean short two-block haircut with natural black hair, the braids removed. Head and shoulders facing the camera, relaxed confident expression. Same plain studio wall and soft window daylight as the reference photo, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no heavy retouching, no plastic skin, opaque clothing, no text or logos anywhere.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0136.png"
+  ]
+ },
+ {
+  "name": "Myuho-hair-3",
+  "prompt": "The exact same man as in the first attached reference photo: identical face, bone structure, eyes, brows, lips and skin tone. Do not add any moles, marks or blemishes that are not in the reference. Keep his eyelids and eye shape exactly as in the first reference photo. He looks youthful, mid-twenties, with smooth skin and minimal lines. The other attached photos show the same real person from other angles; use them only to keep his or her identity accurate. Same plain black crew-neck t-shirt with no logos. Change only the hairstyle to shoulder-length loose natural black hair tucked behind the ears, the braids undone. Head and shoulders facing the camera, relaxed confident expression. Same plain studio wall and soft window daylight as the reference photo, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no heavy retouching, no plastic skin, opaque clothing, no text or logos anywhere.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0136.png"
+  ]
+ },
+ {
+  "name": "Myuho-fullbody",
+  "prompt": "The exact same man as in the first attached reference photo: identical face, bone structure, eyes, brows, lips and skin tone. Do not add any moles, marks or blemishes that are not in the reference. Keep his eyelids and eye shape exactly as in the first reference photo. He looks youthful, mid-twenties, with smooth skin and minimal lines. The other attached photos show the same real person from other angles; use them only to keep his or her identity accurate. Same hairstyle. Full-length head-to-toe photo, standing straight facing the camera with arms relaxed, feet visible, wearing a plain black crew-neck t-shirt with no logos tucked into straight dark-blue jeans and plain white sneakers. Plain light-grey studio wall meeting a pale floor, soft window daylight. Model agency digitals, 50mm lens, true body proportions, real skin texture, natural color, fine film grain, no text or logos.",
+  "aspect": "2:3",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0136.png"
+  ]
+ },
+ {
+  "name": "Myuho-skin",
+  "prompt": "The exact same man as in the first attached reference photo: identical face, bone structure, eyes, brows, lips and skin tone. Do not add any moles, marks or blemishes that are not in the reference. Keep his eyelids and eye shape exactly as in the first reference photo. He looks youthful, mid-twenties, with smooth skin and minimal lines. The other attached photos show the same real person from other angles; use them only to keep his or her identity accurate. Extreme close-up of his face from brow to chin filling the frame, soft window light raking across the skin, showing real pores, fine vellus hair, subtle natural unevenness and individually visible lashes. Beauty campaign macro photo, 100mm macro lens, natural color, no heavy retouching.",
+  "aspect": "4:5",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0136.png"
+  ]
+ },
+ {
+  "name": "Myuho-hands",
+  "prompt": "The exact same man as in the first attached reference photo: identical face, bone structure, eyes, brows, lips and skin tone. Do not add any moles, marks or blemishes that are not in the reference. Keep his eyelids and eye shape exactly as in the first reference photo. He looks youthful, mid-twenties, with smooth skin and minimal lines. The other attached photos show the same real person from other angles; use them only to keep his or her identity accurate. Close-up at chest height of his hands holding a plain black wireless earbuds case with no logo, the lower half of his face softly visible above, same plain black crew-neck t-shirt with no logos. Natural nails, real knuckle creases, fine skin texture, exactly five fingers on each hand, correct anatomy. Plain wall, soft window daylight, 85mm, natural color, fine film grain, no text or logos.",
+  "aspect": "4:5",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0136.png"
+  ]
+ },
+ {
+  "name": "Myuho-look-1",
+  "prompt": "The exact same man as in the first attached reference photo: identical face, bone structure, eyes, brows, lips and skin tone. Do not add any moles, marks or blemishes that are not in the reference. Keep his eyelids and eye shape exactly as in the first reference photo. He looks youthful, mid-twenties, with smooth skin and minimal lines. The other attached photos show the same real person from other angles; use them only to keep his or her identity accurate. Same hairstyle. Three-quarter length fashion lookbook photo from mid-thigh up, standing in a relaxed natural pose, wearing a black oversized hoodie with loose cargo pants and chunky sneakers. Plain light-grey studio wall, soft window daylight, 70mm lens, real fabric texture and natural creases, real skin texture, natural color, fine film grain, no text or logos.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0136.png"
+  ]
+ },
+ {
+  "name": "Myuho-look-2",
+  "prompt": "The exact same man as in the first attached reference photo: identical face, bone structure, eyes, brows, lips and skin tone. Do not add any moles, marks or blemishes that are not in the reference. Keep his eyelids and eye shape exactly as in the first reference photo. He looks youthful, mid-twenties, with smooth skin and minimal lines. The other attached photos show the same real person from other angles; use them only to keep his or her identity accurate. Same hairstyle. Three-quarter length fashion lookbook photo from mid-thigh up, standing in a relaxed natural pose, wearing a relaxed charcoal suit over a black crew-neck t-shirt. Plain light-grey studio wall, soft window daylight, 70mm lens, real fabric texture and natural creases, real skin texture, natural color, fine film grain, no text or logos.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0136.png"
+  ]
+ },
+ {
+  "name": "Myuho-context",
+  "prompt": "The exact same man as in the first attached reference photo: identical face, bone structure, eyes, brows, lips and skin tone. Do not add any moles, marks or blemishes that are not in the reference. Keep his eyelids and eye shape exactly as in the first reference photo. He looks youthful, mid-twenties, with smooth skin and minimal lines. The other attached photos show the same real person from other angles; use them only to keep his or her identity accurate. Same hairstyle. Candid commercial lifestyle photo: in a music studio with headphones around his neck, leaning over a mixing desk with no brand logos and glancing at the camera with a slight smile. Natural unposed moment, 35mm lens, shallow depth of field, real skin texture, natural color, fine film grain, no text, no logos.",
+  "aspect": "4:5",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0136.png"
+  ]
+ }
+]

@@ -1,0 +1,113 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "다음 편엔 그 폴더에서 첫 질문을 보내고, 받은 답이 어디에 남는지 같이 볼게요. 제가 헤맨 길, 여러분은 건너뛰세요.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.28,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup"
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 6.602,
+  "words": [
+    {
+      "text": "다음",
+      "start": 0.15,
+      "end": 0.331
+    },
+    {
+      "text": "편엔",
+      "start": 0.376,
+      "end": 0.556
+    },
+    {
+      "text": "그",
+      "start": 0.887,
+      "end": 0.962
+    },
+    {
+      "text": "폴더에서",
+      "start": 1.038,
+      "end": 1.414
+    },
+    {
+      "text": "첫",
+      "start": 1.534,
+      "end": 1.684
+    },
+    {
+      "text": "질문을",
+      "start": 1.729,
+      "end": 2.015
+    },
+    {
+      "text": "보내고,",
+      "start": 2.075,
+      "end": 2.241
+    },
+    {
+      "text": "받은",
+      "start": 2.586,
+      "end": 2.812
+    },
+    {
+      "text": "답이",
+      "start": 2.857,
+      "end": 3.023
+    },
+    {
+      "text": "어디에",
+      "start": 3.098,
+      "end": 3.293
+    },
+    {
+      "text": "남는지",
+      "start": 3.338,
+      "end": 3.579
+    },
+    {
+      "text": "같이",
+      "start": 3.805,
+      "end": 3.97
+    },
+    {
+      "text": "볼게요.",
+      "start": 4.015,
+      "end": 4.241
+    },
+    {
+      "text": "제가",
+      "start": 4.556,
+      "end": 4.827
+    },
+    {
+      "text": "헤맨",
+      "start": 4.872,
+      "end": 5.053
+    },
+    {
+      "text": "길,",
+      "start": 5.098,
+      "end": 5.203
+    },
+    {
+      "text": "여러분은",
+      "start": 5.489,
+      "end": 5.774
+    },
+    {
+      "text": "건너뛰세요.",
+      "start": 5.895,
+      "end": 6.602
+    }
+  ],
+  "characters": null
+}

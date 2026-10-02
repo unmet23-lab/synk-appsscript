@@ -1,0 +1,74 @@
+{
+  "kind": "youtube#video",
+  "etag": "IVn5oC0O733EAohilgP2uvvfolY",
+  "id": "mP3T7Sabeh4",
+  "snippet": {
+    "publishedAt": "2026-09-24T08:56:48Z",
+    "channelId": "UCmZplYKuNHLPng4iL2AbLLg",
+    "title": "SYNK Radio | 음악은 켜 두고 · lofi & chill",
+    "description": "🎵 라디오 노래 모음집 · 곡별 시간표\nhttps://youtu.be/_eZztHpxPeI\n\n일할 때도, 쉴 때도 가볍게 틀어두는 음악.\n몽글·까몽·마린과 해 질 녘 마당에서 잠시 쉬어가요.\n\nLo-fi and mellow grooves for work, rest, and quiet moments.\n\nSYNK PULSE\nhttps://synk.im/",
+    "thumbnails": {
+      "default": {
+        "url": "https://i.ytimg.com/vi/mP3T7Sabeh4/default_live.jpg",
+        "width": 120,
+        "height": 90
+      },
+      "medium": {
+        "url": "https://i.ytimg.com/vi/mP3T7Sabeh4/mqdefault_live.jpg",
+        "width": 320,
+        "height": 180
+      },
+      "high": {
+        "url": "https://i.ytimg.com/vi/mP3T7Sabeh4/hqdefault_live.jpg",
+        "width": 480,
+        "height": 360
+      },
+      "standard": {
+        "url": "https://i.ytimg.com/vi/mP3T7Sabeh4/sddefault_live.jpg",
+        "width": 640,
+        "height": 480
+      },
+      "maxres": {
+        "url": "https://i.ytimg.com/vi/mP3T7Sabeh4/maxresdefault_live.jpg",
+        "width": 1280,
+        "height": 720
+      }
+    },
+    "channelTitle": "SYNK LAB Mongolia | Хөгжилтэй солонгос хэл",
+    "tags": [
+      "SYNK PULSE",
+      "SYNK Radio",
+      "cafe music",
+      "chill beats",
+      "k-lofi",
+      "lofi",
+      "lofi hip hop",
+      "lofi radio",
+      "mellow music",
+      "night music",
+      "relaxing music",
+      "study music",
+      "work music",
+      "로파이",
+      "카페 음악",
+      "편하게 듣는 음악"
+    ],
+    "categoryId": "27",
+    "liveBroadcastContent": "live",
+    "defaultLanguage": "ko",
+    "localized": {
+      "title": "SYNK Radio | 음악은 켜 두고 · lofi & chill",
+      "description": "🎵 라디오 노래 모음집 · 곡별 시간표\nhttps://youtu.be/_eZztHpxPeI\n\n일할 때도, 쉴 때도 가볍게 틀어두는 음악.\n몽글·까몽·마린과 해 질 녘 마당에서 잠시 쉬어가요.\n\nLo-fi and mellow grooves for work, rest, and quiet moments.\n\nSYNK PULSE\nhttps://synk.im/"
+    },
+    "defaultAudioLanguage": "en-US"
+  },
+  "status": {
+    "uploadStatus": "uploaded",
+    "privacyStatus": "public",
+    "license": "youtube",
+    "embeddable": true,
+    "publicStatsViewable": true,
+    "madeForKids": false,
+    "selfDeclaredMadeForKids": false
+  }
+}

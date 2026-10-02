@@ -1,0 +1,74 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "수업 시간 빼고, 하루 열일곱, 열여덟 시간은 붙잡았던 것 같아요.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.25,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 3.44,
+  "words": [
+    {
+      "text": "수업",
+      "start": 0.081,
+      "end": 0.255
+    },
+    {
+      "text": "시간",
+      "start": 0.296,
+      "end": 0.47
+    },
+    {
+      "text": "빼고,",
+      "start": 0.511,
+      "end": 0.699
+    },
+    {
+      "text": "하루",
+      "start": 1.062,
+      "end": 1.223
+    },
+    {
+      "text": "열일곱,",
+      "start": 1.29,
+      "end": 1.586
+    },
+    {
+      "text": "열여덟",
+      "start": 1.908,
+      "end": 2.204
+    },
+    {
+      "text": "시간은",
+      "start": 2.257,
+      "end": 2.459
+    },
+    {
+      "text": "붙잡았던",
+      "start": 2.526,
+      "end": 2.902
+    },
+    {
+      "text": "것",
+      "start": 2.943,
+      "end": 2.997
+    },
+    {
+      "text": "같아요.",
+      "start": 3.037,
+      "end": 3.44
+    }
+  ],
+  "characters": null
+}

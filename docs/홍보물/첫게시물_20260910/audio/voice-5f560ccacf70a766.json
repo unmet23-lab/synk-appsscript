@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "a9e58345-13b7-4876-ac8e-8ae6560a5ef9",
+  "narration": "내 소개, 받는 결과, 문의 답변을 나란히 읽어보세요. 다음에는 그 한 접점을 실제 원고로 완성합니다.",
+  "narrationSha256": "5f560ccacf70a766caaadd5925b00a02e613684ced3190c55e0ccffebd9de3b3",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-5f560ccacf70a766.wav",
+  "duration": 9.6,
+  "sha256": "02f078d76018e7717e6f83ad3873476e0817c11e680380812645d7c3ffcbfb1e",
+  "humanListening": false,
+  "fullDecode": true
+}

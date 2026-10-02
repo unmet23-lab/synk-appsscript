@@ -1,0 +1,50 @@
+{
+  "id": "guide",
+  "role": "guide",
+  "text": "잘 못 들었을 땐, 이렇게 말해 보세요.",
+  "provider": "Microsoft Edge TTS",
+  "settings": {
+    "voice": "ko-KR-SunHiNeural",
+    "rate": "-3%",
+    "pitch": "-2Hz"
+  },
+  "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\guide.mp3",
+  "duration": 3.816,
+  "words": [
+    {
+      "text": "잘",
+      "start": 0.101541,
+      "end": 0.372166
+    },
+    {
+      "text": "못",
+      "start": 0.385041,
+      "end": 0.539666
+    },
+    {
+      "text": "들었을",
+      "start": 0.552583,
+      "end": 1.029374
+    },
+    {
+      "text": "땐",
+      "start": 1.04225,
+      "end": 1.454625
+    },
+    {
+      "text": "이렇게",
+      "start": 1.647958,
+      "end": 2.034541
+    },
+    {
+      "text": "말해",
+      "start": 2.047416,
+      "end": 2.330916
+    },
+    {
+      "text": "보세요",
+      "start": 2.343833,
+      "end": 2.910833
+    }
+  ]
+}

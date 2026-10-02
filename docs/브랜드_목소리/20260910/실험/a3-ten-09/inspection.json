@@ -1,0 +1,143 @@
+{
+  "candidate": "a3-ten-09",
+  "rawFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\a3-ten-09\\raw.wav",
+  "rawSha256": "bee602396fb138fa1c88bc78039df6bfaebe3ee5fb4f0dc5be27693fee6c99ab",
+  "listenFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\a3-ten-09\\listen.wav",
+  "listenSha256": "8919248c1562f27a5eb4084ddc0c2d2c627e78534b9d1d940ab9ed925b12bd8e",
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "pcm_s16le",
+        "sample_rate": "24000",
+        "channels": 1,
+        "bits_per_sample": 16
+      }
+    ],
+    "format": {
+      "duration": "11.336875"
+    }
+  },
+  "expected": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+  "actual": "같이 들어볼까요? 좋아요. 이번에는 조금 바르기에 해볼게요. 작은 차이가 모이면 우리만의 목소리가 돼요.",
+  "characterSimilarity": 0.9397590361445783,
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 1.26,
+      "text": " 같이 들어볼까요?",
+      "words": [
+        {
+          "word": " 같이",
+          "start": 0.0,
+          "end": 0.46
+        },
+        {
+          "word": " 들어볼까요?",
+          "start": 0.46,
+          "end": 1.26
+        }
+      ]
+    },
+    {
+      "start": 2.18,
+      "end": 5.66,
+      "text": " 좋아요. 이번에는 조금 바르기에 해볼게요.",
+      "words": [
+        {
+          "word": " 좋아요.",
+          "start": 2.18,
+          "end": 2.72
+        },
+        {
+          "word": " 이번에는",
+          "start": 3.52,
+          "end": 4.04
+        },
+        {
+          "word": " 조금",
+          "start": 4.04,
+          "end": 4.46
+        },
+        {
+          "word": " 바르기에",
+          "start": 4.46,
+          "end": 5.12
+        },
+        {
+          "word": " 해볼게요.",
+          "start": 5.12,
+          "end": 5.66
+        }
+      ]
+    },
+    {
+      "start": 6.78,
+      "end": 10.28,
+      "text": " 작은 차이가 모이면 우리만의 목소리가 돼요.",
+      "words": [
+        {
+          "word": " 작은",
+          "start": 6.78,
+          "end": 7.18
+        },
+        {
+          "word": " 차이가",
+          "start": 7.18,
+          "end": 7.68
+        },
+        {
+          "word": " 모이면",
+          "start": 7.68,
+          "end": 8.18
+        },
+        {
+          "word": " 우리만의",
+          "start": 8.18,
+          "end": 9.3
+        },
+        {
+          "word": " 목소리가",
+          "start": 9.3,
+          "end": 9.96
+        },
+        {
+          "word": " 돼요.",
+          "start": 9.96,
+          "end": 10.28
+        }
+      ]
+    }
+  ],
+  "rawLoudness": {
+    "input_i": "-16.61",
+    "input_tp": "0.01",
+    "input_lra": "2.60",
+    "input_thresh": "-27.04",
+    "output_i": "-23.16",
+    "output_tp": "-5.87",
+    "output_lra": "2.10",
+    "output_thresh": "-33.59",
+    "normalization_type": "dynamic",
+    "target_offset": "0.16"
+  },
+  "gainDb": -6.390000000000001,
+  "listenLoudness": {
+    "input_i": "-23.00",
+    "input_tp": "-6.38",
+    "input_lra": "2.60",
+    "input_thresh": "-33.43",
+    "output_i": "-23.16",
+    "output_tp": "-5.87",
+    "output_lra": "2.10",
+    "output_thresh": "-33.59",
+    "normalization_type": "dynamic",
+    "target_offset": "0.16"
+  },
+  "sampleRatePreserved": true,
+  "processing": "fixed gain only; native sample rate; 24-bit comparison container does not increase source detail",
+  "humanListening": false,
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "expectedUsedAsASRPrompt": false
+}

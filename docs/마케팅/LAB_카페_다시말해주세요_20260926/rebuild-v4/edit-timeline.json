@@ -1,0 +1,83 @@
+{
+  "fps": 24,
+  "duration": 15.208333333333334,
+  "videoFrames": 365,
+  "source": "test-09-age-match-cafe.mp4",
+  "note": "ASR-guided boundaries. Auditory review and continuous-playback appearance verification pending.",
+  "scenes": [
+    {
+      "id": "dialogue",
+      "label": "카페 대화",
+      "startFrame": 0,
+      "durationFrames": 240,
+      "sourceStartFrame": 0,
+      "start": 0,
+      "duration": 10,
+      "sourceStart": 0
+    },
+    {
+      "id": "repeat",
+      "label": "핵심 문장 다시 듣기",
+      "startFrame": 240,
+      "durationFrames": 56,
+      "sourceStartFrame": 0,
+      "start": 10,
+      "duration": 2.3333333333333335,
+      "sourceStart": 0
+    },
+    {
+      "id": "practice",
+      "label": "직접 말하기",
+      "startFrame": 296,
+      "durationFrames": 69,
+      "sourceStartFrame": 171,
+      "start": 12.333333333333334,
+      "duration": 2.875,
+      "sourceStart": 7.125
+    }
+  ],
+  "captions": [
+    {
+      "id": "say-again",
+      "start": 0,
+      "end": 2.23,
+      "text": "다시 말해 주세요.",
+      "speaker": "customer"
+    },
+    {
+      "id": "receipt",
+      "start": 2.4,
+      "end": 4.3,
+      "text": "영수증 필요하세요?",
+      "speaker": "barista"
+    },
+    {
+      "id": "decline",
+      "start": 5,
+      "end": 6.08,
+      "text": "아, 괜찮아요.",
+      "speaker": "customer"
+    },
+    {
+      "id": "thanks",
+      "start": 6.45,
+      "end": 7.25,
+      "text": "감사합니다!",
+      "speaker": "customer"
+    },
+    {
+      "id": "repeat-phrase",
+      "start": 10,
+      "end": 12.333333333333334,
+      "text": "다시 말해 주세요.",
+      "speaker": "customer"
+    },
+    {
+      "id": "practice-phrase",
+      "start": 12.333333333333334,
+      "end": 15.208333333333334,
+      "text": "다시 말해 주세요.",
+      "speaker": "customer"
+    }
+  ]
+}

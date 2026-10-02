@@ -1,0 +1,142 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 3,
+  "words": [
+    {
+      "text": "어?",
+      "start": 0.483,
+      "end": 0.523
+    },
+    {
+      "text": "나",
+      "start": 0.866,
+      "end": 0.966
+    },
+    {
+      "text": "방금",
+      "start": 1.168,
+      "end": 1.591
+    },
+    {
+      "text": "뭐라고",
+      "start": 1.953,
+      "end": 2.255
+    },
+    {
+      "text": "한",
+      "start": 2.315,
+      "end": 2.376
+    },
+    {
+      "text": "거지?",
+      "start": 2.436,
+      "end": 3
+    }
+  ],
+  "characters": [
+    {
+      "text": "어",
+      "start": 0.483,
+      "end": 0.503
+    },
+    {
+      "text": "?",
+      "start": 0.503,
+      "end": 0.523
+    },
+    {
+      "text": " ",
+      "start": 0.523,
+      "end": 0.866
+    },
+    {
+      "text": "나",
+      "start": 0.866,
+      "end": 0.966
+    },
+    {
+      "text": " ",
+      "start": 0.966,
+      "end": 1.168
+    },
+    {
+      "text": "방",
+      "start": 1.168,
+      "end": 1.389
+    },
+    {
+      "text": "금",
+      "start": 1.389,
+      "end": 1.591
+    },
+    {
+      "text": " ",
+      "start": 1.591,
+      "end": 1.953
+    },
+    {
+      "text": "뭐",
+      "start": 1.953,
+      "end": 2.094
+    },
+    {
+      "text": "라",
+      "start": 2.094,
+      "end": 2.215
+    },
+    {
+      "text": "고",
+      "start": 2.215,
+      "end": 2.255
+    },
+    {
+      "text": " ",
+      "start": 2.255,
+      "end": 2.315
+    },
+    {
+      "text": "한",
+      "start": 2.315,
+      "end": 2.376
+    },
+    {
+      "text": " ",
+      "start": 2.376,
+      "end": 2.436
+    },
+    {
+      "text": "거",
+      "start": 2.436,
+      "end": 2.557
+    },
+    {
+      "text": "지",
+      "start": 2.557,
+      "end": 2.98
+    },
+    {
+      "text": "?",
+      "start": 2.98,
+      "end": 3
+    }
+  ],
+  "request": {
+    "seed": 926,
+    "model": "ssfm-v30",
+    "voice_id": "tc_6a3350f8e5a50a4abe948fa8",
+    "text": "어? 나 방금 뭐라고 한 거지?",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "드시고 가세요? 가지고 가세요? 네!",
+      "next_text": "잘 못 들었을 땐, 이렇게 말해 보세요."
+    }
+  },
+  "direction": "자기 대답을 뒤늦게 의심. 어? 뒤 잠깐 멈추고 작은 당황.",
+  "voiceName": "도윤"
+}

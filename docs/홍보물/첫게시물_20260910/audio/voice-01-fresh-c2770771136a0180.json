@@ -1,0 +1,27 @@
+{
+  "status": "completed",
+  "file": "voice-01-fresh-c2770771136a0180.wav",
+  "narration": "좋아요. 같이 들어요.",
+  "duration": 2.7,
+  "sha256": "c024e53ee858a1e3003cb073beb6d6eb4ada831c9f308844928bd705a7be4a49",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "seed_audio",
+    "preset": "original female based on user-selected B",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "jobId": "c4042085-bc92-4a63-90dc-5d5bbbaea521",
+  "sourceFile": "freshpolish-sample-9fc9b026c31d75f0.wav",
+  "sourceSha256": "6880e6f35b07e763e2b7437601991e85021e2420003d41210e8afc0e429a9501",
+  "sourceRangeSeconds": [
+    3.3,
+    6
+  ],
+  "loudnessTargetLUFS": -23,
+  "truePeakLimitDb": -6,
+  "styleReferenceUserSelected": true,
+  "refinedAudioUserApproved": false,
+  "humanListening": false,
+  "fullDecode": true
+}

@@ -1,0 +1,45 @@
+{
+  "results": [
+    {
+      "width": 1440,
+      "status": 200,
+      "errors": [],
+      "broken": [],
+      "overflow": {
+        "document": 1440,
+        "viewport": 1440
+      },
+      "inquiry": true,
+      "imageCount": 13
+    },
+    {
+      "width": 390,
+      "status": 200,
+      "errors": [],
+      "broken": [],
+      "overflow": {
+        "document": 390,
+        "viewport": 390
+      },
+      "inquiry": true,
+      "imageCount": 13
+    }
+  ],
+  "actualKoreanFonts": {
+    "fonts": [
+      {
+        "familyName": "Inter Tight",
+        "postScriptName": "InterTight-Bold",
+        "isCustomFont": true,
+        "glyphCount": 3
+      },
+      {
+        "familyName": "SUIT Variable Thin",
+        "postScriptName": "SUITVariable-ExtraBold",
+        "isCustomFont": true,
+        "glyphCount": 14
+      }
+    ]
+  },
+  "visualReview": "13 images individually reviewed; material-detail images revised using original source assets; no publication"
+}

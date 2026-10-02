@@ -1,0 +1,354 @@
+{
+  "created_at_utc": "2026-09-10T17:05:49.193154+00:00",
+  "purpose": "29.4초 SHIFT 첫 게시물. 승인된 임시 남성 음성의 소개 부분만 사용.",
+  "source_voice": {
+    "path": "docs/브랜드_목소리/20260910/수노_유호보컬/말하기_시험01/A_음질보정_v1.wav",
+    "sha256": "367b6013e5595abdf90d869c9bcb6938cf07002e55d507c23357dd0415770e53",
+    "unmodified_after_run": true
+  },
+  "source_music": {
+    "path": "영상/public/firstposts20260910/bed-shift.wav",
+    "sha256": "09fba871e084d47f79dd159f4ad4071ff0ac13f3235b6867502b655919985e62",
+    "unmodified_after_run": true
+  },
+  "voice_edit": {
+    "cut_seconds": 4.88,
+    "fade_seconds": 0.01,
+    "measured_low_energy_phrase_boundary_seconds": [
+      4.854604,
+      4.891979
+    ],
+    "silence_detection": "ffmpeg silencedetect, noise=-32dB, duration=0.018s; low-energy phrase boundary, not digital silence",
+    "final_fade_region_peak_dbfs": -33.94370739805922,
+    "unmodified_pcm_until_seconds": 4.87,
+    "unmodified_pcm_exact_match": true,
+    "tone_pitch_speed_gain_eq_compression_changes": "none",
+    "padding_after_cut": "digital silence to 29.4 seconds",
+    "retained_sentence": "안녕하세요. 유호입니다. 저는 AI와 함께 회사를 만들고 있어요.",
+    "excluded_sentences": [
+      "직접 해보고, 막히면 고치고",
+      "쓸 만한 방법을 함께 나눌게요",
+      "오늘은 우리 목소리부터 만들어볼까요?"
+    ],
+    "excluded_sentences_absent_from_trimmed_asr": true
+  },
+  "music_edit": {
+    "status": "approved rendered bed preserved without writing or processing",
+    "approved_rendered_sha256": "0c58485b9b973b2dfc6d1bba00eb8310f20a99b56b183c488baf79467c4f0b26",
+    "backup_pcm_exact_match": true,
+    "source_range_seconds": [
+      0,
+      29.4
+    ],
+    "initial_fade_in_seconds": 0.1,
+    "initial_gain_db": -29.4,
+    "narration_to_music_rise_seconds": [
+      9.4,
+      10.6
+    ],
+    "plateau_seconds": [
+      10.6,
+      25.8
+    ],
+    "plateau_source_measurement": {
+      "integrated_lufs": -17.67,
+      "true_peak_dbtp": -5.53,
+      "loudness_range_lu": 1.9
+    },
+    "plateau_target_lufs": -33.5,
+    "plateau_gain_db": -15.829999999999998,
+    "plateau_rendered_measurement": {
+      "integrated_lufs": -33.5,
+      "true_peak_dbtp": -21.36,
+      "loudness_range_lu": 1.9
+    },
+    "ending_rise_seconds": [
+      25.8,
+      26.4
+    ],
+    "ending_additional_gain_db": 3.0,
+    "ending_hold_seconds": [
+      26.4,
+      28.4
+    ],
+    "cosine_fade_out_seconds": [
+      28.4,
+      29.4
+    ],
+    "rise_curve": "raised cosine in dB",
+    "normalization_or_compression_applied": false
+  },
+  "asr": {
+    "engine": "faster-whisper small, cached locally, CPU int8",
+    "source_segments": [
+      {
+        "start": 0.0,
+        "end": 4.64,
+        "text": " 안녕하세요 요호입니다 저는 AI와 함께 회사를 만들고 있어요",
+        "words": [
+          {
+            "start": 0.0,
+            "end": 0.46,
+            "word": " 안녕하세요",
+            "probability": 0.9079607129096985
+          },
+          {
+            "start": 0.46,
+            "end": 1.4,
+            "word": " 요호입니다",
+            "probability": 0.5761732558409373
+          },
+          {
+            "start": 1.4,
+            "end": 2.24,
+            "word": " 저는",
+            "probability": 0.5773912668228149
+          },
+          {
+            "start": 2.24,
+            "end": 3.04,
+            "word": " AI와",
+            "probability": 0.8979966044425964
+          },
+          {
+            "start": 3.04,
+            "end": 3.36,
+            "word": " 함께",
+            "probability": 0.9925755262374878
+          },
+          {
+            "start": 3.36,
+            "end": 3.82,
+            "word": " 회사를",
+            "probability": 0.9899420738220215
+          },
+          {
+            "start": 3.82,
+            "end": 4.34,
+            "word": " 만들고",
+            "probability": 0.9935489594936371
+          },
+          {
+            "start": 4.34,
+            "end": 4.64,
+            "word": " 있어요",
+            "probability": 0.9672231078147888
+          }
+        ]
+      },
+      {
+        "start": 4.64,
+        "end": 9.02,
+        "text": " 직접 해보고 막히면 고치고 쓸만한 방법을 함께 나눌게요",
+        "words": [
+          {
+            "start": 4.64,
+            "end": 5.42,
+            "word": " 직접",
+            "probability": 0.951902449131012
+          },
+          {
+            "start": 5.42,
+            "end": 5.88,
+            "word": " 해보고",
+            "probability": 0.9076719284057617
+          },
+          {
+            "start": 5.88,
+            "end": 6.5,
+            "word": " 막히면",
+            "probability": 0.941843643784523
+          },
+          {
+            "start": 6.5,
+            "end": 7.12,
+            "word": " 고치고",
+            "probability": 0.9834377566973368
+          },
+          {
+            "start": 7.12,
+            "end": 7.76,
+            "word": " 쓸만한",
+            "probability": 0.9545943140983582
+          },
+          {
+            "start": 7.76,
+            "end": 8.22,
+            "word": " 방법을",
+            "probability": 0.9977494180202484
+          },
+          {
+            "start": 8.22,
+            "end": 8.48,
+            "word": " 함께",
+            "probability": 0.9895630478858948
+          },
+          {
+            "start": 8.48,
+            "end": 9.02,
+            "word": " 나눌게요",
+            "probability": 0.9377883672714233
+          }
+        ]
+      },
+      {
+        "start": 9.68,
+        "end": 11.94,
+        "text": " 오늘은 우리 목소리부터 만들어 볼까요",
+        "words": [
+          {
+            "start": 9.46,
+            "end": 10.0,
+            "word": " 오늘은",
+            "probability": 0.953740656375885
+          },
+          {
+            "start": 10.0,
+            "end": 10.54,
+            "word": " 우리",
+            "probability": 0.9314714074134827
+          },
+          {
+            "start": 10.54,
+            "end": 11.22,
+            "word": " 목소리부터",
+            "probability": 0.9904639571905136
+          },
+          {
+            "start": 11.22,
+            "end": 11.5,
+            "word": " 만들어",
+            "probability": 0.8326637148857117
+          },
+          {
+            "start": 11.5,
+            "end": 11.94,
+            "word": " 볼까요",
+            "probability": 0.9960527420043945
+          }
+        ]
+      }
+    ],
+    "trimmed_segments": [
+      {
+        "start": 0.0,
+        "end": 1.38,
+        "text": " 안녕하세요. 요호입니다.",
+        "words": [
+          {
+            "start": 0.0,
+            "end": 0.48,
+            "word": " 안녕하세요.",
+            "probability": 0.9225181341171265
+          },
+          {
+            "start": 0.78,
+            "end": 1.38,
+            "word": " 요호입니다.",
+            "probability": 0.7175472378730774
+          }
+        ]
+      },
+      {
+        "start": 2.08,
+        "end": 4.58,
+        "text": " 저는 AI와 함께 회사를 만들고 있어요.",
+        "words": [
+          {
+            "start": 2.08,
+            "end": 2.24,
+            "word": " 저는",
+            "probability": 0.9889811277389526
+          },
+          {
+            "start": 2.24,
+            "end": 3.04,
+            "word": " AI와",
+            "probability": 0.9404230117797852
+          },
+          {
+            "start": 3.04,
+            "end": 3.38,
+            "word": " 함께",
+            "probability": 0.992694616317749
+          },
+          {
+            "start": 3.38,
+            "end": 3.82,
+            "word": " 회사를",
+            "probability": 0.9899365305900574
+          },
+          {
+            "start": 3.82,
+            "end": 4.34,
+            "word": " 만들고",
+            "probability": 0.9922890365123749
+          },
+          {
+            "start": 4.34,
+            "end": 4.58,
+            "word": " 있어요.",
+            "probability": 0.9715554714202881
+          }
+        ]
+      }
+    ],
+    "trimmed_text": "안녕하세요. 요호입니다. 저는 AI와 함께 회사를 만들고 있어요.",
+    "limitations": "ASR는 단어와 대략적 경계 확인에만 사용. 원본의 유호를 요호로 인식한 부분은 이름 변경 또는 음성 변경을 뜻하지 않음."
+  },
+  "files": {
+    "voice": {
+      "path": "audio/voice.wav",
+      "sha256": "edbd1013ec12981c783c5e5f4e5c15a8522864e075c6358329f48ae7a8066519",
+      "sample_rate": 48000,
+      "channels": 2,
+      "bits_per_sample": 24,
+      "sample_frames": 1411200,
+      "duration_seconds": 29.4,
+      "integrated_lufs": -22.49,
+      "true_peak_dbtp": -10.96,
+      "loudness_range_lu": 7.5,
+      "sample_peak_dbfs": -10.98733789259957,
+      "clipped_samples": 0,
+      "last_sample_both_channels_zero": true,
+      "full_decode_passed": true
+    },
+    "bed": {
+      "path": "audio/bed.wav",
+      "sha256": "0c58485b9b973b2dfc6d1bba00eb8310f20a99b56b183c488baf79467c4f0b26",
+      "sample_rate": 48000,
+      "channels": 2,
+      "bits_per_sample": 24,
+      "sample_frames": 1411200,
+      "duration_seconds": 29.4,
+      "integrated_lufs": -33.09,
+      "true_peak_dbtp": -17.92,
+      "loudness_range_lu": 14.6,
+      "sample_peak_dbfs": -17.91564777777718,
+      "clipped_samples": 0,
+      "last_sample_both_channels_zero": true,
+      "full_decode_passed": true
+    },
+    "master": {
+      "path": "audio/master.wav",
+      "sha256": "39fa1106aab9b701fe4bf991b77e89aacbcd68f880d0e4d259b9ae4caa6326af",
+      "sample_rate": 48000,
+      "channels": 2,
+      "bits_per_sample": 24,
+      "sample_frames": 1411200,
+      "duration_seconds": 29.4,
+      "integrated_lufs": -28.5,
+      "true_peak_dbtp": -10.84,
+      "loudness_range_lu": 16.1,
+      "sample_peak_dbfs": -10.87513029875949,
+      "clipped_samples": 0,
+      "last_sample_both_channels_zero": true,
+      "full_decode_passed": true
+    }
+  },
+  "quality_limits": {
+    "direct_listening": "확인 불가: 이 하네스에서는 음성 입력을 직접 청취할 수 없음.",
+    "naturalness_and_studio_quality": "추가 향상했다고 주장하지 않음. 사용자가 승인한 음질·말투를 그대로 보존함.",
+    "verified": "원본 해시, 승인 발화의 PCM 동일성, 낮은 음량의 문장 절단 경계, ASR에서 제외 문장 부재, 승인 음악의 해시·PCM 동일성, 길이·형식·LUFS·true peak·클리핑·전체 디코드"
+  }
+}

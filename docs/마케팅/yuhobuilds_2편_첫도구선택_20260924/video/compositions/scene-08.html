@@ -1,0 +1,22 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"></head><body><template>
+<style>
+@font-face{font-family:SUIT;src:url('assets/fonts/SUIT-Regular.otf')}@font-face{font-family:SUIT;src:url('assets/fonts/SUIT-Heavy.otf');font-weight:900}
+#root{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;font-family:SUIT,Arial,sans-serif}
+.world{position:absolute;inset:0;background:#050505;color:#ffffff;overflow:hidden}
+.world::before{content:'';position:absolute;inset:0;opacity:.13;background-image:radial-gradient(#ffffff 1.7px,transparent 1.7px);background-size:30px 30px}
+.top{position:absolute;top:64px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center;font-size:31px;font-weight:900;z-index:3}
+.top span:last-child{font-size:28px}.kicker{position:absolute;top:175px;left:76px;color:#3D6BC9;font-size:34px;font-weight:900;letter-spacing:-.02em}
+.title{position:absolute;top:250px;left:72px;right:72px;font-size:86px;font-weight:900;line-height:1.10;letter-spacing:-.06em;z-index:2}
+.blue{color:#3D6BC9}.card{background:#ffffff;color:#000000;border:5px solid #000000;border-radius:28px;box-shadow:12px 13px 0 #3D6BC9;padding:38px;box-sizing:border-box}
+.bubble{background:#3D6BC9;color:#ffffff;border:4px solid #000000;border-radius:20px;padding:18px 28px;font-weight:900}
+.persona{position:absolute;width:385px;height:515px;z-index:2}.persona svg{position:absolute;bottom:0;width:100%;height:100%}.persona img{position:absolute;top:0;left:28px;width:330px;height:380px;object-fit:contain;z-index:2}
+.eyebrow{font-size:28px;font-weight:900;color:#3D6BC9}.large{font-size:70px;font-weight:900;line-height:1.13;letter-spacing:-.05em}.medium{font-size:49px;font-weight:900;line-height:1.22;letter-spacing:-.045em}.small{font-size:31px;font-weight:700;line-height:1.32}
+.muted{color:#59616f}.enter{will-change:transform,opacity}.stamp{display:inline-block;transform:rotate(-6deg);border:5px solid #3D6BC9;color:#3D6BC9;background:#ffffff;border-radius:15px;padding:12px 20px;font-size:42px;font-weight:900}
+</style>
+<div id="root" data-composition-id="scene-08" data-width="1080" data-height="1920" data-duration="7.233">
+<div class="world"><div class="top"><span>yuhobuilds</span><span>EP.02</span></div><div class="kicker enter">다음 편에서</div><div class="title enter">이 폴더에서<br><span class="blue">첫 질문을 보내요.</span></div><div id="portraitGlow" style="position:absolute;left:155px;top:610px;width:770px;height:770px;border-radius:50%;background:radial-gradient(circle,#3D6BC9 0%,transparent 70%);opacity:0"></div><img class="enter" src="assets/ending-portrait.jpg" alt="유호 사진" style="position:absolute;left:268px;top:650px;width:545px;height:560px;object-fit:cover;border:8px solid #ffffff;border-radius:50%;box-shadow:20px 20px 0 #3D6BC9"><div class="large enter" style="position:absolute;top:1290px;left:76px;right:76px;text-align:center">제가 헤맨 길,<br><span class="blue">여러분은 건너뛰세요.</span></div></div></div>
+<script>(function(){const root=document.querySelector('[data-composition-id="scene-08"]');const tl=gsap.timeline({paused:true});
+root.querySelectorAll('.enter').forEach((e,i)=>{const delay=Math.min(i*.12,.62);tl.fromTo(e,{opacity:0,y:56,scale:.96},{opacity:1,y:0,scale:1,duration:.38,ease:'power4.out'},delay)});
+tl.fromTo(root.querySelector('#portraitGlow'),{opacity:0,scale:.7},{opacity:.30,scale:1,duration:.62,ease:'power2.out'},.28);
+window.__timelines['scene-08']=tl;})();</script>
+</template></body></html>

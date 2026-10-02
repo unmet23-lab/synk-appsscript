@@ -1,0 +1,79 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "지금 다시 시작하면, 처음부터 다 만들진 않을 거예요. 딱 출석 하나부터!",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.22,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 3.852,
+  "words": [
+    {
+      "text": "지금",
+      "start": 0.124,
+      "end": 0.331
+    },
+    {
+      "text": "다시",
+      "start": 0.373,
+      "end": 0.525
+    },
+    {
+      "text": "시작하면,",
+      "start": 0.566,
+      "end": 0.953
+    },
+    {
+      "text": "처음부터",
+      "start": 1.326,
+      "end": 1.643
+    },
+    {
+      "text": "다",
+      "start": 1.685,
+      "end": 1.726
+    },
+    {
+      "text": "만들진",
+      "start": 1.781,
+      "end": 2.099
+    },
+    {
+      "text": "않을",
+      "start": 2.14,
+      "end": 2.278
+    },
+    {
+      "text": "거예요.",
+      "start": 2.32,
+      "end": 2.499
+    },
+    {
+      "text": "딱",
+      "start": 2.9,
+      "end": 3.052
+    },
+    {
+      "text": "출석",
+      "start": 3.093,
+      "end": 3.286
+    },
+    {
+      "text": "하나부터!",
+      "start": 3.342,
+      "end": 3.853
+    }
+  ],
+  "characters": null
+}

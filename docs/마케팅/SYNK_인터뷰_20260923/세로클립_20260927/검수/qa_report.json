@@ -1,0 +1,191 @@
+{
+ "A": {
+  "file": "C:\\Users\\q1212\\AppData\\Local\\Temp\\claude\\C--Users-q1212-Documents-SYNK-appsscript\\56feddc8-0d42-45ab-96d8-a84f4c76bf9d\\scratchpad\\clips\\work\\out\\clip_A.mp4",
+  "bytes": 8758344,
+  "duration": 16.75,
+  "video": "h264 1080x1920 30/1",
+  "audio": "aac 48000Hz 2ch",
+  "full_decode_rc": 0,
+  "decode_errors": "",
+  "black_segments": [],
+  "loudness_I_LUFS": "-16.0",
+  "true_peak_dBFS": "-0.9",
+  "boundary": {
+   "first150ms_dB": -14.4,
+   "last150ms_dB": -33.9,
+   "overall_dB": -19.8
+  },
+  "sheet": "C:\\Users\\q1212\\AppData\\Local\\Temp\\claude\\C--Users-q1212-Documents-SYNK-appsscript\\56feddc8-0d42-45ab-96d8-a84f4c76bf9d\\scratchpad\\clips\\work\\qa\\sheet_A.jpg",
+  "sheet_times": [
+   0.84,
+   2.51,
+   4.19,
+   5.86,
+   7.54,
+   9.21,
+   10.89,
+   12.56,
+   14.24,
+   15.91
+  ]
+ },
+ "B": {
+  "file": "C:\\Users\\q1212\\AppData\\Local\\Temp\\claude\\C--Users-q1212-Documents-SYNK-appsscript\\56feddc8-0d42-45ab-96d8-a84f4c76bf9d\\scratchpad\\clips\\work\\out\\clip_B.mp4",
+  "bytes": 22465086,
+  "duration": 40.86,
+  "video": "h264 1080x1920 30/1",
+  "audio": "aac 48000Hz 2ch",
+  "full_decode_rc": 0,
+  "decode_errors": "",
+  "black_segments": [],
+  "loudness_I_LUFS": "-16.0",
+  "true_peak_dBFS": "-1.0",
+  "boundary": {
+   "first150ms_dB": -30.8,
+   "last150ms_dB": -38.5,
+   "overall_dB": -20.2
+  },
+  "sheet": "C:\\Users\\q1212\\AppData\\Local\\Temp\\claude\\C--Users-q1212-Documents-SYNK-appsscript\\56feddc8-0d42-45ab-96d8-a84f4c76bf9d\\scratchpad\\clips\\work\\qa\\sheet_B.jpg",
+  "sheet_times": [
+   2.04,
+   6.13,
+   10.21,
+   14.3,
+   18.39,
+   22.47,
+   26.56,
+   30.64,
+   34.73,
+   38.82
+  ]
+ },
+ "C": {
+  "file": "C:\\Users\\q1212\\AppData\\Local\\Temp\\claude\\C--Users-q1212-Documents-SYNK-appsscript\\56feddc8-0d42-45ab-96d8-a84f4c76bf9d\\scratchpad\\clips\\work\\out\\clip_C.mp4",
+  "bytes": 15781589,
+  "duration": 32.62,
+  "video": "h264 1080x1920 30/1",
+  "audio": "aac 48000Hz 2ch",
+  "full_decode_rc": 0,
+  "decode_errors": "",
+  "black_segments": [],
+  "loudness_I_LUFS": "-16.1",
+  "true_peak_dBFS": "-0.9",
+  "boundary": {
+   "first150ms_dB": -34.8,
+   "last150ms_dB": -29.7,
+   "overall_dB": -20.0
+  },
+  "sheet": "C:\\Users\\q1212\\AppData\\Local\\Temp\\claude\\C--Users-q1212-Documents-SYNK-appsscript\\56feddc8-0d42-45ab-96d8-a84f4c76bf9d\\scratchpad\\clips\\work\\qa\\sheet_C.jpg",
+  "sheet_times": [
+   1.63,
+   4.89,
+   8.15,
+   11.42,
+   14.68,
+   17.94,
+   21.2,
+   24.46,
+   27.73,
+   30.99
+  ]
+ },
+ "D": {
+  "file": "C:\\Users\\q1212\\AppData\\Local\\Temp\\claude\\C--Users-q1212-Documents-SYNK-appsscript\\56feddc8-0d42-45ab-96d8-a84f4c76bf9d\\scratchpad\\clips\\work\\out\\clip_D.mp4",
+  "bytes": 16812025,
+  "duration": 41.717,
+  "video": "h264 1080x1920 30/1",
+  "audio": "aac 48000Hz 2ch",
+  "full_decode_rc": 0,
+  "decode_errors": "",
+  "black_segments": [
+   [
+    "31.5",
+    "36.666667"
+   ],
+   [
+    "41.466667",
+    "41.666667"
+   ]
+  ],
+  "loudness_I_LUFS": "-16.3",
+  "true_peak_dBFS": "-0.9",
+  "boundary": {
+   "first150ms_dB": -28.9,
+   "last150ms_dB": -73.8,
+   "overall_dB": -20.0
+  },
+  "sheet": "C:\\Users\\q1212\\AppData\\Local\\Temp\\claude\\C--Users-q1212-Documents-SYNK-appsscript\\56feddc8-0d42-45ab-96d8-a84f4c76bf9d\\scratchpad\\clips\\work\\qa\\sheet_D.jpg",
+  "sheet_times": [
+   2.09,
+   6.26,
+   10.43,
+   14.6,
+   18.77,
+   22.94,
+   27.12,
+   31.29,
+   35.46,
+   39.63
+  ]
+ },
+ "E": {
+  "file": "C:\\Users\\q1212\\AppData\\Local\\Temp\\claude\\C--Users-q1212-Documents-SYNK-appsscript\\56feddc8-0d42-45ab-96d8-a84f4c76bf9d\\scratchpad\\clips\\work\\out\\clip_E.mp4",
+  "bytes": 20128693,
+  "duration": 37.17,
+  "video": "h264 1080x1920 30/1",
+  "audio": "aac 48000Hz 2ch",
+  "full_decode_rc": 0,
+  "decode_errors": "",
+  "black_segments": [],
+  "loudness_I_LUFS": "-16.0",
+  "true_peak_dBFS": "-0.9",
+  "boundary": {
+   "first150ms_dB": -23.2,
+   "last150ms_dB": -33.3,
+   "overall_dB": -20.3
+  },
+  "sheet": "C:\\Users\\q1212\\AppData\\Local\\Temp\\claude\\C--Users-q1212-Documents-SYNK-appsscript\\56feddc8-0d42-45ab-96d8-a84f4c76bf9d\\scratchpad\\clips\\work\\qa\\sheet_E.jpg",
+  "sheet_times": [
+   1.86,
+   5.58,
+   9.29,
+   13.01,
+   16.73,
+   20.44,
+   24.16,
+   27.88,
+   31.59,
+   35.31
+  ]
+ },
+ "F": {
+  "file": "C:\\Users\\q1212\\AppData\\Local\\Temp\\claude\\C--Users-q1212-Documents-SYNK-appsscript\\56feddc8-0d42-45ab-96d8-a84f4c76bf9d\\scratchpad\\clips\\work\\out\\clip_F.mp4",
+  "bytes": 8594427,
+  "duration": 15.64,
+  "video": "h264 1080x1920 30/1",
+  "audio": "aac 48000Hz 2ch",
+  "full_decode_rc": 0,
+  "decode_errors": "",
+  "black_segments": [],
+  "loudness_I_LUFS": "-16.2",
+  "true_peak_dBFS": "-1.9",
+  "boundary": {
+   "first150ms_dB": -41.1,
+   "last150ms_dB": -34.9,
+   "overall_dB": -20.9
+  },
+  "sheet": "C:\\Users\\q1212\\AppData\\Local\\Temp\\claude\\C--Users-q1212-Documents-SYNK-appsscript\\56feddc8-0d42-45ab-96d8-a84f4c76bf9d\\scratchpad\\clips\\work\\qa\\sheet_F.jpg",
+  "sheet_times": [
+   0.78,
+   2.35,
+   3.91,
+   5.47,
+   7.04,
+   8.6,
+   10.17,
+   11.73,
+   13.29,
+   14.86
+  ]
+ }
+}

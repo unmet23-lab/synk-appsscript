@@ -1,0 +1,40 @@
+{
+  "createdAt": "2026-09-21T23:16:26.497Z",
+  "premix": {
+    "input_i": "-16.15",
+    "input_tp": "-2.78",
+    "input_lra": "1.10",
+    "input_thresh": "-26.37",
+    "output_i": "-16.01",
+    "output_tp": "-2.29",
+    "output_lra": "1.00",
+    "output_thresh": "-26.20",
+    "normalization_type": "dynamic",
+    "target_offset": "0.01"
+  },
+  "master": {
+    "input_i": "-16.00",
+    "input_tp": "-2.63",
+    "input_lra": "1.00",
+    "input_thresh": "-26.22",
+    "output_i": "-16.01",
+    "output_tp": "-2.29",
+    "output_lra": "1.00",
+    "output_thresh": "-26.20",
+    "normalization_type": "dynamic",
+    "target_offset": "0.01"
+  },
+  "constantGainDb": 0.14999999999999858,
+  "bgm": {
+    "source": "docs/홍보물/BGM/시티팝_147.wav",
+    "sectionStart": 25,
+    "sectionDuration": 76.06666666666666,
+    "looped": false,
+    "gain": 0.25,
+    "punchlineGainFactor": 0.08,
+    "sidechainCompression": true
+  },
+  "durationSeconds": 76.06666666666666,
+  "voice": "Typecast 정의로 / ssfm-v30 / preset by segment",
+  "directListeningVerified": false
+}

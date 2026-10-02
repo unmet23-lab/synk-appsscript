@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "99e7992b-1f75-420b-9acb-2b5481308c07",
+  "narration": "자기 일을 설명할 자료가 필요한 1인 사업자를 위한 첫 공개 실습입니다. 완성 예시와 고쳐 쓸 원본을 함께 펼칩니다.",
+  "narrationSha256": "af05bca924c2516b466f5e53273f69aec5697fcbe6423c130a5a1df251311810",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-af05bca924c2516b.wav",
+  "duration": 8.48,
+  "sha256": "4288862cf414949f6d5f55a0b4db7c625df5d3d053bc76bdbeeb947c9dbb0fa8",
+  "humanListening": false,
+  "fullDecode": true
+}

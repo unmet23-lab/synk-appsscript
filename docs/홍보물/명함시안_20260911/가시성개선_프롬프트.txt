@@ -1,0 +1,19 @@
+Use case: compositing / focused layout refinement.
+Asset type: final refined BRAND FRONT of a two-sided SYNK business-card concept. Single flat landscape 90 x 50 mm ratio, 9:5. Edge-to-edge artwork, no mockup, perspective, contact details or additional text.
+
+Image 1 is the current felt card concept that the user likes. They now request better visibility at real business-card size, more legible scaling and a trendier, premium layout.
+Image 2 is the authoritative exact dark lowercase synk logo: correct original proportions, tall k ascender and descending y.
+Image 3 is the official business-name reference sheet, with LAB coral, SHIFT lapis blue and PULSE berry plus their existing stitches. Use each business name ONCE, and synk ONLY ONCE in the final.
+
+Preserve the current three recognizable mascots and their warm adorable intimate huddle from Image 1. Retain every core identity: chestnut fluffy Kkamong with green bead eyes and coral patched tail, coral Mongle with black bead eyes and peach scalloped hem seam, indigo-helmet Marin with yellow MATTE felt lenses, beige body and its pocket flower. No mouths or added body parts.
+
+Refine the hierarchy for real small-scale visibility:
+- Enlarge the huddle and the centered synk logo by about 15 percent relative to the previous reduced version, using the available margins intelligently. Keep the huddle close and centered above synk as one connected visual unit; preserve proportion and provide genuine clear gaps, especially below Marin's feet and above the tall k. Three faces must be readable at small size.
+- synk is the strongest dark graphic anchor. Uniformly scale the exact logo from Image 2; never stretch it or shorten the k ascender to fit. The k must rise clearly above n. Preserve the letter silhouette with subtly dimensional fine wool, not noisy curls.
+- Keep LAB, SHIFT, PULSE in one centered orderly row underneath, equal visible cap-height and equal optical gaps. Strong saturated felt surface and clean thick letter counters make each word read immediately. Their small peach running stitches remain visible but must not visually overwhelm the letter bodies. Their row can remain broad; use enough negative space between it and the logo.
+- Reduce the visible background fiber texture drastically: smooth very fine warm ivory cotton-felt Paper #FBF7F0, almost quiet paper at normal viewing distance. No mottled yellow flecks, diagonal stripes, strong fibers, fabric creases or embossed panel. The subject's felt stays tactile and luxuriant while the background is calm.
+- Strong warm Ink #2B2320 logo contrast, saturated but tasteful brand colors, crisp edges, clean unified soft contact shadows, soft broad studio light. Do not bleach colors or make the fibers plasticky.
+
+All text exactly: synk / LAB / SHIFT / PULSE.
+Only synk has NO stitches; preserve stitched business letters and the mascots' original seams.
+Keep the gentle humor and exquisite materials. Improve size, hierarchy, contrast and breathing room. The result should look like an intentional boutique brand business card, instantly readable, with no dense texture noise or tiny decorative marks.

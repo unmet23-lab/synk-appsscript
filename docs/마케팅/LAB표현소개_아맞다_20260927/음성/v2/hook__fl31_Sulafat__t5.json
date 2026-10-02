@@ -1,0 +1,28 @@
+{
+ "id": "hook__fl31_Sulafat__t5",
+ "line": "hook",
+ "model": "gemini-3.1-flash-tts-preview",
+ "voice": "Sulafat",
+ "style": "Say this Korean exclamation like a friendly young Korean woman who has just suddenly remembered something, bright, quick and a little surprised",
+ "text": "아 맞다!",
+ "location": "global",
+ "usage": {
+  "promptTokenCount": 30,
+  "candidatesTokenCount": 41,
+  "totalTokenCount": 71,
+  "trafficType": "ON_DEMAND",
+  "promptTokensDetails": [
+   {
+    "modality": "TEXT",
+    "tokenCount": 30
+   }
+  ],
+  "candidatesTokensDetails": [
+   {
+    "modality": "AUDIO",
+    "tokenCount": 41
+   }
+  ]
+ },
+ "modelVersion": "gemini-3.1-flash-tts-preview"
+}

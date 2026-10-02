@@ -1,0 +1,68 @@
+{
+  "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds_1편_쇼츠수정_20260922\\audio\\keyboard-sfx.wav",
+  "events": [
+    {
+      "timeSeconds": 57.833333333333336,
+      "frame": 1735,
+      "char": "학"
+    },
+    {
+      "timeSeconds": 58.03333333333333,
+      "frame": 1741,
+      "char": "원"
+    },
+    {
+      "timeSeconds": 58.06666666666667,
+      "frame": 1742,
+      "char": "출"
+    },
+    {
+      "timeSeconds": 58.3,
+      "frame": 1749,
+      "char": "석"
+    },
+    {
+      "timeSeconds": 58.333333333333336,
+      "frame": 1750,
+      "char": "앱"
+    },
+    {
+      "timeSeconds": 58.46666666666667,
+      "frame": 1754,
+      "char": "을"
+    },
+    {
+      "timeSeconds": 58.5,
+      "frame": 1755,
+      "char": "만"
+    },
+    {
+      "timeSeconds": 58.63333333333333,
+      "frame": 1759,
+      "char": "들"
+    },
+    {
+      "timeSeconds": 58.766666666666666,
+      "frame": 1763,
+      "char": "고"
+    },
+    {
+      "timeSeconds": 58.8,
+      "frame": 1764,
+      "char": "싶"
+    },
+    {
+      "timeSeconds": 58.86666666666667,
+      "frame": 1766,
+      "char": "어"
+    },
+    {
+      "timeSeconds": 58.93333333333333,
+      "frame": 1768,
+      "char": "."
+    }
+  ],
+  "peakDbfs": -17.56887620303565,
+  "source": "Original procedural key press and release sounds; no external sample",
+  "voiceAligned": true
+}

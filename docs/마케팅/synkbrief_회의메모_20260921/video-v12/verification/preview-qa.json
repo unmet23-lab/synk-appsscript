@@ -1,0 +1,80 @@
+[
+  {
+    "size": {
+      "width": 1280,
+      "height": 900
+    },
+    "errors": [],
+    "playback": {
+      "time": 0.72022,
+      "paused": false,
+      "muted": false,
+      "duration": 140.36,
+      "width": 720,
+      "height": 1280
+    },
+    "muteToggle": true,
+    "chapter": 33.783333,
+    "visibleFrame": {
+      "darkPixels": 308848,
+      "totalPixels": 921600
+    },
+    "horizontalOverflow": false,
+    "downloads": [
+      {
+        "href": "../follow-along-v11/synkbrief-meeting-kit-v11.zip",
+        "status": 200,
+        "bytes": 149081
+      },
+      {
+        "href": "../output/pdf/synkbrief-meeting-guide-v11.pdf",
+        "status": 200,
+        "bytes": 172848
+      },
+      {
+        "href": "synkbrief-meeting-v12.mp4",
+        "status": 200,
+        "bytes": 19518007
+      }
+    ]
+  },
+  {
+    "size": {
+      "width": 390,
+      "height": 844
+    },
+    "errors": [],
+    "playback": {
+      "time": 0.718535,
+      "paused": false,
+      "muted": false,
+      "duration": 140.36,
+      "width": 720,
+      "height": 1280
+    },
+    "muteToggle": true,
+    "chapter": 33.783333,
+    "visibleFrame": {
+      "darkPixels": 308848,
+      "totalPixels": 921600
+    },
+    "horizontalOverflow": false,
+    "downloads": [
+      {
+        "href": "../follow-along-v11/synkbrief-meeting-kit-v11.zip",
+        "status": 200,
+        "bytes": 149081
+      },
+      {
+        "href": "../output/pdf/synkbrief-meeting-guide-v11.pdf",
+        "status": 200,
+        "bytes": 172848
+      },
+      {
+        "href": "synkbrief-meeting-v12.mp4",
+        "status": 200,
+        "bytes": 19518007
+      }
+    ]
+  }
+]

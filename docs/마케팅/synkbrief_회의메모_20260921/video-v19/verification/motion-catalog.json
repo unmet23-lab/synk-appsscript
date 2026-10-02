@@ -1,0 +1,1799 @@
+{
+  "query": "clean slide transition subtle focus ripple confirmation",
+  "tier": "words",
+  "tier_detail": "local word match",
+  "dropped": 0,
+  "unindexed": 0,
+  "shown": 111,
+  "total": 387,
+  "report_gap": "npx hyperframes feedback --search-miss \"clean slide transition subtle focus ripple confirmation\" --wanted \"<the move you needed>\" --tier words",
+  "results": [
+    {
+      "name": "ripple-waves",
+      "type": "block",
+      "title": "Ripple Waves",
+      "description": "Shader transition with concentric ripple wave distortion",
+      "tags": [
+        "transition",
+        "shader"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/ripple-waves.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/ripple-waves.png"
+      }
+    },
+    {
+      "name": "transitions-push",
+      "type": "block",
+      "title": "Push Transitions",
+      "description": "Showcase of push and slide transitions",
+      "tags": [
+        "transition",
+        "showcase"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 24,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-push.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-push.png"
+      }
+    },
+    {
+      "name": "transitions-cover",
+      "type": "block",
+      "title": "Cover Transitions",
+      "description": "Showcase of cover/uncover slide transitions",
+      "tags": [
+        "transition",
+        "showcase"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 21,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-cover.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-cover.png"
+      }
+    },
+    {
+      "name": "tabs-slide-indicator",
+      "type": "component",
+      "title": "Tabs Slide Indicator",
+      "description": "A pill indicator transition that slides between active tabs",
+      "tags": [
+        "transition-primitive",
+        "transitions-dev-port",
+        "tabs",
+        "indicator"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/tabs-slide-indicator.png"
+      }
+    },
+    {
+      "name": "page-slide",
+      "type": "component",
+      "title": "Page Slide",
+      "description": "A transitions.dev-inspired page slide primitive with outgoing and incoming panels",
+      "tags": [
+        "video-primitive",
+        "transition-primitive",
+        "transitions-dev-port",
+        "page",
+        "slide"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/page-slide.png"
+      }
+    },
+    {
+      "name": "transitions-scale",
+      "type": "block",
+      "title": "Scale Transitions",
+      "description": "Showcase of scale and zoom transitions",
+      "tags": [
+        "transition",
+        "showcase"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 15,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-scale.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-scale.png"
+      }
+    },
+    {
+      "name": "transitions-other",
+      "type": "block",
+      "title": "Other Transitions",
+      "description": "Showcase of miscellaneous creative transitions",
+      "tags": [
+        "transition",
+        "showcase"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 20,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-other.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-other.png"
+      }
+    },
+    {
+      "name": "transitions-distortion",
+      "type": "block",
+      "title": "Distortion Transitions",
+      "description": "Showcase of warp and distortion transitions",
+      "tags": [
+        "transition",
+        "showcase"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 21,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-distortion.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-distortion.png"
+      }
+    },
+    {
+      "name": "transitions-dissolve",
+      "type": "block",
+      "title": "Dissolve Transitions",
+      "description": "Showcase of dissolve and fade transitions",
+      "tags": [
+        "transition",
+        "showcase"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 24,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-dissolve.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-dissolve.png"
+      }
+    },
+    {
+      "name": "line-by-line-slide",
+      "type": "component",
+      "title": "Line-by-Line Slide",
+      "description": "Each line enters from the left with staggered slide and exits to the right.",
+      "tags": [
+        "motion-primitive",
+        "typography"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/line-by-line-slide.png"
+      }
+    },
+    {
+      "name": "transitions-radial",
+      "type": "block",
+      "title": "Radial Transitions",
+      "description": "Showcase of radial wipe and reveal transitions",
+      "tags": [
+        "transition",
+        "showcase"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 20,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-radial.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-radial.png"
+      }
+    },
+    {
+      "name": "transitions-mechanical",
+      "type": "block",
+      "title": "Mechanical Transitions",
+      "description": "Showcase of mechanical shutter and iris transitions",
+      "tags": [
+        "transition",
+        "showcase"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 15,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-mechanical.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-mechanical.png"
+      }
+    },
+    {
+      "name": "transitions-grid",
+      "type": "block",
+      "title": "Grid Transitions",
+      "description": "Showcase of grid-based tile transitions",
+      "tags": [
+        "transition",
+        "showcase"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 11,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-grid.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-grid.png"
+      }
+    },
+    {
+      "name": "transitions-3d",
+      "type": "block",
+      "title": "3D Transitions",
+      "description": "Showcase of 3D perspective flip and rotate transitions",
+      "tags": [
+        "transition",
+        "showcase"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 11,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-3d.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-3d.png"
+      }
+    },
+    {
+      "name": "focus-blur-resolve",
+      "type": "component",
+      "title": "Focus Blur Resolve",
+      "description": "A premium focus pull from heavy blur to crisp text, then a soft blur-out exit.",
+      "tags": [
+        "motion-primitive",
+        "typography"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/focus-blur-resolve.png"
+      }
+    },
+    {
+      "name": "press-ripple",
+      "type": "component",
+      "title": "Press Ripple",
+      "description": "A cursor decel-arrives from off-stage, lands slightly off-center on a caller-positioned target, compresses with it in lockstep, releases with ink ripple rings, then exits off-stage while the pressed state holds.",
+      "tags": [
+        "motion-primitive",
+        "product-demo",
+        "cursor",
+        "press",
+        "ripple",
+        "payoff"
+      ]
+    },
+    {
+      "name": "transitions-light",
+      "type": "block",
+      "title": "Light Transitions",
+      "description": "Showcase of light-based glow and flash transitions",
+      "tags": [
+        "transition",
+        "showcase"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 21,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-light.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-light.png"
+      }
+    },
+    {
+      "name": "transitions-destruction",
+      "type": "block",
+      "title": "Destruction Transitions",
+      "description": "Showcase of destructive break-apart transitions",
+      "tags": [
+        "transition",
+        "showcase"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 14,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-destruction.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-destruction.png"
+      }
+    },
+    {
+      "name": "transitions-blur",
+      "type": "block",
+      "title": "Blur Transitions",
+      "description": "Showcase of blur-based transitions between scenes",
+      "tags": [
+        "transition",
+        "showcase"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 20,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-blur.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-blur.png"
+      }
+    },
+    {
+      "name": "focus-swap",
+      "type": "component",
+      "title": "Focus Swap",
+      "description": "Moves attention between two side-by-side cards as one recedes with scale, blur, and dimming while the other advances to full focus.",
+      "tags": [
+        "effect",
+        "ui-props",
+        "focus",
+        "blur",
+        "attention",
+        "demonstrate"
+      ]
+    },
+    {
+      "name": "lt-clean-bar",
+      "type": "block",
+      "title": "Lower Third — Clean Bar",
+      "description": "Minimal white-card lower third for podcasts/interviews: accent tab, name + role, clip-wipe entrance",
+      "tags": [
+        "lower-third",
+        "overlay",
+        "podcast",
+        "interview"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4.8
+    },
+    {
+      "name": "focus-rack",
+      "type": "component",
+      "title": "Focus Rack",
+      "description": "Focus shifts once between two cards at different apparent depths through synchronized blur, dimming, scale, and parallax.",
+      "tags": [
+        "motion-primitive",
+        "camera",
+        "focus",
+        "focus-rack",
+        "depth",
+        "parallax",
+        "emphasize"
+      ]
+    },
+    {
+      "name": "zoom-through-transition",
+      "type": "component",
+      "title": "Zoom Through Transition",
+      "description": "A transition that zooms through a focal card into the next scene.",
+      "tags": [
+        "transition-primitive"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/zoom-through-transition.png"
+      }
+    },
+    {
+      "name": "ui-focus-zoom",
+      "type": "component",
+      "title": "UI Focus Zoom",
+      "description": "A full app surface establishes with one settle, then the camera zooms and pans to an anchored region on its cue and holds the zoomed state, with an optional soft focus halo at the anchor. The surface is a slot with a token-styled skeleton default.",
+      "tags": [
+        "camera",
+        "product-demo",
+        "zoom",
+        "focus",
+        "pan",
+        "slot",
+        "servo"
+      ]
+    },
+    {
+      "name": "directional-wipe",
+      "type": "component",
+      "title": "Directional Wipe",
+      "description": "A directional scene push that slides one panel over another.",
+      "tags": [
+        "transition-primitive"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/directional-wipe.png"
+      }
+    },
+    {
+      "name": "hw-scribble-transition",
+      "type": "block",
+      "title": "Scribble Transition",
+      "description": "Overlay transition: scribble bands accumulate to cover the frame with a solid backstop, the host cuts beneath, and the scribble clears",
+      "tags": [
+        "handwritten",
+        "transition",
+        "wipe"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 2.2
+    },
+    {
+      "name": "shared-axis-z",
+      "type": "component",
+      "title": "Shared Axis Z",
+      "description": "Scale-based shared-axis transition for focus shifts and context depth.",
+      "tags": [
+        "motion-primitive",
+        "typography"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/shared-axis-z.png"
+      }
+    },
+    {
+      "name": "success-check",
+      "type": "component",
+      "title": "Success Check",
+      "description": "A success check primitive with ring pop, path draw, and subtle rotate blur",
+      "tags": [
+        "video-primitive",
+        "transition-primitive",
+        "transitions-dev-port",
+        "success",
+        "check"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/success-check.png"
+      }
+    },
+    {
+      "name": "micro-transitions",
+      "type": "component",
+      "title": "Micro Transitions",
+      "description": "A transitions.dev-inspired pack of badge, dropdown, modal, tabs, tooltip, and success-check micro transitions",
+      "tags": [
+        "transition-primitive",
+        "motion-primitive",
+        "transitions-dev-port",
+        "ui",
+        "transition",
+        "microinteraction"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/micro-transitions.png"
+      }
+    },
+    {
+      "name": "rack-focus",
+      "type": "block",
+      "title": "Rack Focus",
+      "description": "A focus pull with real aperture bokeh: the focal plane travels from a near subject to a far one, so one resolves as the other blows into hard-edged polygon discs that clip to a cat's eye toward the corners. A focus pull only reads against content at two clearly separated depths, so this block carries its own depth-layered night exterior and puts both subject depths on variables.",
+      "tags": [
+        "webgl",
+        "shader",
+        "camera",
+        "depth",
+        "cinematic",
+        "showcase"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 6
+    },
+    {
+      "name": "chromatic-aberration-wipe",
+      "type": "component",
+      "title": "Chromatic Aberration Wipe",
+      "description": "A fast slide wipe with RGB channel split on peak frames.",
+      "tags": [
+        "video-primitive",
+        "transition-primitive"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/chromatic-aberration-wipe.png"
+      }
+    },
+    {
+      "name": "notification-stack",
+      "type": "component",
+      "title": "Notification Stack",
+      "description": "1 to 5 token notification cards slide-settle into a vertical stack on cues, newest on top; one card grows slightly and brightens as the focus while the rest dim by position.",
+      "tags": [
+        "motion-primitive",
+        "product-demo",
+        "notification",
+        "stack",
+        "stagger"
+      ]
+    },
+    {
+      "name": "mk-clone-wall-transition",
+      "type": "block",
+      "title": "Text Clone Wall Transition",
+      "description": "Overlay transition: a tiled word wall covers the frame, inverts via difference blending, and clears — hard-cut the content beneath while covered",
+      "tags": [
+        "transition",
+        "typography",
+        "wipe"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 2.4
+    },
+    {
+      "name": "parallax-unzoom",
+      "type": "component",
+      "title": "Parallax Unzoom",
+      "description": "Reveal transition — focus card scales down from full frame as siblings parallax in to form a grid (reverse of parallax-zoom)",
+      "tags": [
+        "transition",
+        "reveal",
+        "unzoom",
+        "parallax",
+        "grid",
+        "hero"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/parallax-unzoom.png"
+      }
+    },
+    {
+      "name": "camera-scan-gate",
+      "type": "component",
+      "title": "Camera Scan Gate",
+      "description": "A camera and QR recognition moment with a viewfinder sweep, bracket lock, confirmation pulse, and verified next beat.",
+      "tags": [
+        "prop",
+        "ui-props",
+        "camera",
+        "qr",
+        "scan",
+        "recognition",
+        "interaction",
+        "demonstrate"
+      ]
+    },
+    {
+      "name": "text-match-cut",
+      "type": "component",
+      "title": "Text Match Cut",
+      "description": "One line of text becomes another mid-move: both ride a single 85 % easy-ease curve and hard-swap at the speed peak, as scale, tracking, or a same-direction slide.",
+      "tags": [
+        "motion-primitive",
+        "transition",
+        "typography",
+        "match-cut",
+        "hard-cut",
+        "continuity"
+      ]
+    },
+    {
+      "name": "ordered-dither-pass",
+      "type": "component",
+      "title": "Ordered Dither Pass",
+      "description": "Bayer-matrix ordered dithering quantizes a slotted scene (rasterized once at mount): the image emerges from pure 2-tone noise to clean, or dissolves the reverse. Stateless per frame, never error diffusion.",
+      "tags": [
+        "motion-primitive",
+        "experiment",
+        "texture",
+        "dither",
+        "transition",
+        "quantize"
+      ]
+    },
+    {
+      "name": "staggered-fade-up",
+      "type": "component",
+      "title": "Staggered Fade Up",
+      "description": "Words fade in and slide up one after another with configurable delay.",
+      "tags": [
+        "video-primitive",
+        "motion-primitive",
+        "typography"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/staggered-fade-up.png"
+      }
+    },
+    {
+      "name": "blur-out-up",
+      "type": "component",
+      "title": "Blur Out Up",
+      "description": "Words arrive clean and depart upward with increasing blur for airy exits.",
+      "tags": [
+        "motion-primitive",
+        "typography"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/blur-out-up.png"
+      }
+    },
+    {
+      "name": "camera-rig-depth-stack",
+      "type": "component",
+      "title": "Camera Rig Depth Stack",
+      "description": "A 3D camera-rig-style card stack with depth, parallax, and focus shift.",
+      "tags": [
+        "advanced-motion",
+        "hyperframes-native"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/camera-rig-depth-stack.png"
+      }
+    },
+    {
+      "name": "glitch",
+      "type": "block",
+      "title": "Glitch",
+      "description": "Shader transition with digital glitch artifacts",
+      "tags": [
+        "transition",
+        "shader"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/glitch.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/glitch.png"
+      }
+    },
+    {
+      "name": "scroll-feed",
+      "type": "component",
+      "title": "Scroll Feed",
+      "description": "A loop-friendly column of varied skeleton post cards scrolls upward with subtle motion trails and an agitated pace.",
+      "tags": [
+        "motion-primitive",
+        "effects",
+        "scroll",
+        "feed",
+        "loop",
+        "agitation"
+      ]
+    },
+    {
+      "name": "inline-highlight",
+      "type": "component",
+      "title": "Inline Highlight",
+      "description": "A clean marker-style inline highlight that animates behind text using a CSS scale variable",
+      "tags": [
+        "motion-primitive",
+        "text",
+        "highlight",
+        "caption"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/inline-highlight.png"
+      }
+    },
+    {
+      "name": "svg-stroke-trace",
+      "type": "component",
+      "title": "SVG Stroke Trace",
+      "description": "An authored SVG path draws from its measured length, holds with subtle drift, and optionally fills when the path is closed.",
+      "tags": [
+        "motion-primitive",
+        "intro",
+        "reveal",
+        "svg",
+        "stroke",
+        "line-draw"
+      ]
+    },
+    {
+      "name": "multi-device-splay",
+      "type": "component",
+      "title": "Multi Device Splay",
+      "description": "Phone, tablet, and desktop product mockups fan from a centered stack into a proud splayed arrangement with a subtle idle float.",
+      "tags": [
+        "motion-primitive",
+        "device",
+        "phone",
+        "tablet",
+        "desktop",
+        "splay"
+      ]
+    },
+    {
+      "name": "grain-field",
+      "type": "component",
+      "title": "Grain Field",
+      "description": "A clearly visible accent-tinted dot field drifts over a subtle luminance gradient in an exact ambient loop.",
+      "tags": [
+        "motion-primitive",
+        "background",
+        "grain",
+        "dots",
+        "texture",
+        "ambient",
+        "loopable"
+      ]
+    },
+    {
+      "name": "vignette",
+      "type": "component",
+      "title": "Vignette",
+      "description": "Cinematic radial vignette overlay using a pure-CSS gradient — darkens the edges to pull focus toward the center",
+      "tags": [
+        "vignette",
+        "overlay",
+        "cinematic",
+        "effect"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/vignette.png"
+      }
+    },
+    {
+      "name": "headline-slam",
+      "type": "component",
+      "title": "Headline Slam",
+      "description": "A heavyweight headline scales down into frame, lands with a deterministic three-frame shake, holds with subtle drift, and whips upward on exit.",
+      "tags": [
+        "motion-primitive",
+        "typography",
+        "headline",
+        "slam",
+        "impact",
+        "exit"
+      ]
+    },
+    {
+      "name": "thermal-distortion",
+      "type": "block",
+      "title": "Thermal Distortion",
+      "description": "Shader transition with heat haze thermal distortion",
+      "tags": [
+        "transition",
+        "shader"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/thermal-distortion.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/thermal-distortion.png"
+      }
+    },
+    {
+      "name": "swirl-vortex",
+      "type": "block",
+      "title": "Swirl Vortex",
+      "description": "Shader transition with swirling vortex distortion",
+      "tags": [
+        "transition",
+        "shader"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/swirl-vortex.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/swirl-vortex.png"
+      }
+    },
+    {
+      "name": "ridged-burn",
+      "type": "block",
+      "title": "Ridged Burn",
+      "description": "Shader transition with ridged turbulence burn effect",
+      "tags": [
+        "transition",
+        "shader"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/ridged-burn.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/ridged-burn.png"
+      }
+    },
+    {
+      "name": "light-leak",
+      "type": "block",
+      "title": "Light Leak",
+      "description": "Shader transition with cinematic light leak overlay",
+      "tags": [
+        "transition",
+        "shader"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/light-leak.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/light-leak.png"
+      }
+    },
+    {
+      "name": "gravitational-lens",
+      "type": "block",
+      "title": "Gravitational Lens",
+      "description": "Shader transition with gravitational lensing distortion",
+      "tags": [
+        "transition",
+        "shader"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/gravitational-lens.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/gravitational-lens.png"
+      }
+    },
+    {
+      "name": "flash-through-white",
+      "type": "block",
+      "title": "Flash Through White",
+      "description": "Shader transition with white flash crossfade",
+      "tags": [
+        "transition",
+        "shader"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/flash-through-white.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/flash-through-white.png"
+      }
+    },
+    {
+      "name": "cinematic-zoom",
+      "type": "block",
+      "title": "Cinematic Zoom",
+      "description": "Shader transition with dramatic zoom blur",
+      "tags": [
+        "transition",
+        "shader"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/cinematic-zoom.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/cinematic-zoom.png"
+      }
+    },
+    {
+      "name": "chromatic-radial-split",
+      "type": "block",
+      "title": "Chromatic Radial Split",
+      "description": "Shader transition with chromatic aberration radial split",
+      "tags": [
+        "transition",
+        "shader"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/chromatic-radial-split.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/chromatic-radial-split.png"
+      }
+    },
+    {
+      "name": "push-in",
+      "type": "component",
+      "title": "Push In",
+      "description": "A centered headline gains focus through one slow, continuous camera push and a gentle fade out.",
+      "tags": [
+        "motion-primitive",
+        "camera",
+        "push-in",
+        "focus",
+        "emphasize",
+        "holdable"
+      ]
+    },
+    {
+      "name": "text-shimmer",
+      "type": "component",
+      "title": "Text Shimmer",
+      "description": "A static headline receives one clean specular gradient sweep through its glyphs, then returns to its ordinary text color.",
+      "tags": [
+        "motion-primitive",
+        "text-effects",
+        "shimmer",
+        "specular",
+        "emphasis"
+      ]
+    },
+    {
+      "name": "outline-draw",
+      "type": "component",
+      "title": "Outline Draw",
+      "description": "A rounded outline that proves a callout by drawing clockwise as a hollow conic-gradient border with a clean closure.",
+      "tags": [
+        "motion-primitive",
+        "effects",
+        "outline",
+        "border",
+        "mask",
+        "proof"
+      ]
+    },
+    {
+      "name": "whip-pan",
+      "type": "block",
+      "title": "Whip Pan",
+      "description": "Shader transition simulating a fast camera whip pan",
+      "tags": [
+        "transition",
+        "shader"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/whip-pan.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/whip-pan.png"
+      }
+    },
+    {
+      "name": "cross-warp-morph",
+      "type": "block",
+      "title": "Cross Warp Morph",
+      "description": "Shader transition with cross-warped morphing",
+      "tags": [
+        "transition",
+        "shader"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/cross-warp-morph.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/cross-warp-morph.png"
+      }
+    },
+    {
+      "name": "testimonial-card",
+      "type": "component",
+      "title": "Testimonial Card",
+      "description": "Reveals a customer quote at reading pace, then settles its avatar, author name, and handle beneath as a clean proof beat.",
+      "tags": [
+        "prop",
+        "ui-props",
+        "testimonial",
+        "social-proof",
+        "quote",
+        "prove"
+      ]
+    },
+    {
+      "name": "particle-image-reveal",
+      "type": "component",
+      "title": "Particle Image Reveal",
+      "description": "A seeded deterministic particle field converges and settles while a slotted image reveals beneath it, the trail thinning until the image holds clean.",
+      "tags": [
+        "motion-primitive",
+        "intros-reveals",
+        "particles",
+        "reveal",
+        "canvas",
+        "deterministic"
+      ]
+    },
+    {
+      "name": "lt-dark-card",
+      "type": "block",
+      "title": "Lower Third — Dark Card",
+      "description": "Charcoal card lower third for bright footage: name, drawn accent underline, role; slide-up entrance",
+      "tags": [
+        "lower-third",
+        "overlay",
+        "podcast",
+        "interview",
+        "dark"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4.8
+    },
+    {
+      "name": "lt-color-block",
+      "type": "block",
+      "title": "Lower Third — Color Block",
+      "description": "High-energy lower third: bold accent-color block slides in with overshoot, condensed name + mono role",
+      "tags": [
+        "lower-third",
+        "overlay",
+        "podcast",
+        "interview",
+        "bold"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4.8
+    },
+    {
+      "name": "scan-band",
+      "type": "component",
+      "title": "Scan Band",
+      "description": "A diagonal distortion band sweeps once across a clean wordmark, revealing clipped red and cyan offsets only inside the moving band.",
+      "tags": [
+        "motion-primitive",
+        "typography",
+        "scan",
+        "chromatic",
+        "distortion",
+        "wordmark"
+      ]
+    },
+    {
+      "name": "radial-surround",
+      "type": "component",
+      "title": "Radial Surround",
+      "description": "Labeled hairline chips assemble around a centered subject on an elliptical ring, then optionally converge inward with a subtle edge dim. The center never moves: surrounded, not zoomed.",
+      "tags": [
+        "motion-primitive",
+        "problem-setup",
+        "radial",
+        "ring",
+        "surround",
+        "converge"
+      ]
+    },
+    {
+      "name": "sdf-iris",
+      "type": "block",
+      "title": "SDF Iris",
+      "description": "Shader transition with signed distance field iris reveal",
+      "tags": [
+        "transition",
+        "shader"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/sdf-iris.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/sdf-iris.png"
+      }
+    },
+    {
+      "name": "domain-warp-dissolve",
+      "type": "block",
+      "title": "Domain Warp Dissolve",
+      "description": "Shader transition with fractal noise domain warping",
+      "tags": [
+        "transition",
+        "shader"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/domain-warp-dissolve.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/domain-warp-dissolve.png"
+      }
+    },
+    {
+      "name": "physical-exit",
+      "type": "component",
+      "title": "Physical Exit",
+      "description": "A card exits with physical momentum in toss, drop, or slide mode, carrying acceleration and rotation through the final offscreen pose without fading.",
+      "tags": [
+        "motion-primitive",
+        "exit",
+        "momentum",
+        "toss",
+        "drop",
+        "slide"
+      ]
+    },
+    {
+      "name": "yt-prism-title",
+      "type": "block",
+      "title": "Chromatic Fringe Title",
+      "description": "Display title on a transparent root: blur-focus entrance, red/blue fringe that settles then breathes, perspective bow, slow scale drift",
+      "tags": [
+        "typography",
+        "title-card",
+        "creator"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 6
+    },
+    {
+      "name": "yt-lcd-background",
+      "type": "block",
+      "title": "Scanline Board Background",
+      "description": "Textured paper board: scanlines with slow drift, optional pixel grid, static grain, and display text with a blur-focus entrance and chromatic-fringe title",
+      "tags": [
+        "background",
+        "texture",
+        "creator"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 10
+    },
+    {
+      "name": "mk-specs-list",
+      "type": "block",
+      "title": "Specs Checklist",
+      "description": "Left-aligned specs/traits checklist over footage or a board: rows slide in staggered with an accent underline sweep; light and dark schemes",
+      "tags": [
+        "data-viz",
+        "list",
+        "minimal",
+        "professional"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 8
+    },
+    {
+      "name": "yt-camera-move",
+      "type": "component",
+      "title": "Camera Punch-In",
+      "description": "Dynamic zoom, slide, and 3D tilt-pan helpers for any wrapper (video, include, card) with cubic-easing defaults and an edge-defocus pulse overlay",
+      "tags": [
+        "camera",
+        "zoom",
+        "effect",
+        "creator"
+      ]
+    },
+    {
+      "name": "panel-reveal",
+      "type": "component",
+      "title": "Panel Reveal",
+      "description": "A panel reveal primitive with height expansion and content fade",
+      "tags": [
+        "transition-primitive",
+        "transitions-dev-port",
+        "panel",
+        "reveal"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/panel-reveal.png"
+      }
+    },
+    {
+      "name": "marker-checklist-card",
+      "type": "component",
+      "title": "Marker Checklist Card",
+      "description": "A hand-lettered paper card: marker headline with an underline and a drawn ellipse around one word, then three checklist rows whose checks draw themselves on - typewriter labels, marker values. The paper-and-marker sibling of mk-specs-list's clean professional rows",
+      "tags": [
+        "motion-primitive",
+        "handwritten",
+        "checklist",
+        "paper",
+        "marker"
+      ]
+    },
+    {
+      "name": "colorama-wipe",
+      "type": "component",
+      "title": "Colorama Wipe",
+      "description": "Headline reveal through a feathered, leaning wipe front that is blurred and colour-mapped as it passes, then settles to clean type and wipes off again — the After Effects masked-text + Compound Blur + Colorama 'shiny wipe' as a deterministic canvas effect on any text element",
+      "tags": [
+        "text",
+        "reveal",
+        "wipe",
+        "colorama",
+        "gradient",
+        "blur",
+        "headline",
+        "saas"
+      ]
+    },
+    {
+      "name": "caption-weight-shift",
+      "type": "component",
+      "title": "Weight Shift",
+      "description": "Elegant font-weight transition between caption lines",
+      "tags": [
+        "captions",
+        "caption-style",
+        "minimal",
+        "typography"
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/registry/components/caption-weight-shift/preview-v2.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/caption-weight-shift.png"
+      }
+    },
+    {
+      "name": "text-state-swap",
+      "type": "component",
+      "title": "Text State Swap",
+      "description": "A text state swap primitive with outgoing blur and incoming lift",
+      "tags": [
+        "video-primitive",
+        "transition-primitive",
+        "transitions-dev-port",
+        "text",
+        "swap"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/text-state-swap.png"
+      }
+    },
+    {
+      "name": "skeleton-reveal",
+      "type": "component",
+      "title": "Skeleton Reveal",
+      "description": "A skeleton loader transition that pulses, then cross-fades into content",
+      "tags": [
+        "video-primitive",
+        "transition-primitive",
+        "transitions-dev-port",
+        "skeleton",
+        "reveal"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/skeleton-reveal.png"
+      }
+    },
+    {
+      "name": "shared-axis-y",
+      "type": "component",
+      "title": "Shared Axis Y",
+      "description": "Per-word vertical shared-axis transition for sharp editorial swaps.",
+      "tags": [
+        "motion-primitive",
+        "typography"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/shared-axis-y.png"
+      }
+    },
+    {
+      "name": "input-feedback",
+      "type": "component",
+      "title": "Input Feedback",
+      "description": "A transitions.dev-inspired input feedback primitive with shake, clear affordance, and success state",
+      "tags": [
+        "transition-primitive",
+        "transitions-dev-port",
+        "input",
+        "feedback"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/input-feedback.png"
+      }
+    },
+    {
+      "name": "grid-card-assemble",
+      "type": "component",
+      "title": "Grid Card Assemble",
+      "description": "N capability cards (thin-line icon that draws on, mono label, optional muted body) stagger-assemble into a grid or vertical list with a fade plus short slide into slot, then hold perfectly still.",
+      "tags": [
+        "motion-primitive",
+        "layout",
+        "grid",
+        "list",
+        "stagger",
+        "assemble",
+        "feature-tour"
+      ]
+    },
+    {
+      "name": "segmentation-flood",
+      "type": "component",
+      "title": "Segmentation Flood",
+      "description": "Machine-vision read of a slotted subject: translucent accent segmentation masks flood on in quantized scanline steps, each region gets a thin bracket and mono label chip, a deterministic 2-frame HUD flicker rides the pass, then the labeled read settles clean.",
+      "tags": [
+        "motion-primitive",
+        "product-demo",
+        "ai",
+        "hud",
+        "canvas",
+        "deterministic",
+        "experiment"
+      ]
+    },
+    {
+      "name": "tilt-card",
+      "type": "component",
+      "title": "Tilt Card",
+      "description": "A transitions.dev-inspired tilt card primitive with depth layers and hover-style parallax",
+      "tags": [
+        "video-primitive",
+        "transition-primitive",
+        "transitions-dev-port",
+        "card",
+        "tilt"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/tilt-card.png"
+      }
+    },
+    {
+      "name": "text-stagger",
+      "type": "component",
+      "title": "Text Stagger",
+      "description": "A transitions.dev-inspired text stagger primitive with enter, shimmer, and exit-ready words",
+      "tags": [
+        "video-primitive",
+        "transition-primitive",
+        "transitions-dev-port",
+        "text",
+        "stagger"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/text-stagger.png"
+      }
+    },
+    {
+      "name": "organic-light-leak-overlay",
+      "type": "block",
+      "title": "Organic Light Leak Overlay",
+      "description": "Finite CSS light-leak overlay for memory beats and motivated transitions",
+      "tags": [
+        "light-leak",
+        "film",
+        "memory",
+        "transition",
+        "overlay",
+        "media-treatment-overlay"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4,
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/organic-light-leak-overlay.png",
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/organic-light-leak-overlay.mp4"
+      }
+    },
+    {
+      "name": "menu-morph",
+      "type": "component",
+      "title": "Menu Morph",
+      "description": "A transitions.dev-inspired hamburger and plus-menu morph primitive for compact action menus",
+      "tags": [
+        "video-primitive",
+        "transition-primitive",
+        "transitions-dev-port",
+        "menu",
+        "morph"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/menu-morph.png"
+      }
+    },
+    {
+      "name": "icon-swap",
+      "type": "component",
+      "title": "Icon Swap",
+      "description": "A scale-and-blur icon swap primitive for toolbar and action state changes",
+      "tags": [
+        "video-primitive",
+        "transition-primitive",
+        "transitions-dev-port",
+        "icon",
+        "swap"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/icon-swap.png"
+      }
+    },
+    {
+      "name": "fade-through",
+      "type": "component",
+      "title": "Fade Through",
+      "description": "A calm transition primitive that fades one layer out, passes through a wash, and reveals the next layer",
+      "tags": [
+        "motion-primitive",
+        "transition",
+        "fade",
+        "scene"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/fade-through.png"
+      }
+    },
+    {
+      "name": "card-resize",
+      "type": "component",
+      "title": "Card Resize",
+      "description": "A transitions.dev-inspired card resize primitive that expands a compact card into a detail panel",
+      "tags": [
+        "video-primitive",
+        "transition-primitive",
+        "transitions-dev-port",
+        "card",
+        "layout"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/card-resize.png"
+      }
+    },
+    {
+      "name": "avatar-group-hover",
+      "type": "component",
+      "title": "Avatar Group Hover",
+      "description": "A distance-falloff avatar group lift with bouncy hover return",
+      "tags": [
+        "video-primitive",
+        "transition-primitive",
+        "transitions-dev-port",
+        "avatar",
+        "hover"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/avatar-group-hover.png"
+      }
+    },
+    {
+      "name": "number-pop-in",
+      "type": "component",
+      "title": "Number Pop In",
+      "description": "A transitions.dev-inspired digit pop-in with blur, lift, and staggered value reveal",
+      "tags": [
+        "video-primitive",
+        "transition-primitive",
+        "transitions-dev-port",
+        "number",
+        "pop"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/number-pop-in.png"
+      }
+    },
+    {
+      "name": "badge-pop",
+      "type": "component",
+      "title": "Badge Pop",
+      "description": "A transitions.dev-inspired notification badge pop with elastic scale and count reveal",
+      "tags": [
+        "video-primitive",
+        "transition-primitive",
+        "transitions-dev-port",
+        "badge",
+        "microinteraction"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/badge-pop.png"
+      }
+    },
+    {
+      "name": "parallax-zoom",
+      "type": "component",
+      "title": "Parallax Zoom",
+      "description": "Center card scales up to fill the frame while siblings parallax outward — inspired by the eBay Playbook hero transition",
+      "tags": [
+        "transition",
+        "zoom",
+        "parallax",
+        "grid",
+        "hero"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/parallax-zoom.png"
+      }
+    },
+    {
+      "name": "grid-pixelate-wipe",
+      "type": "component",
+      "title": "Grid Pixelate Wipe",
+      "description": "Transition effect where the screen dissolves into a grid of squares that fade out with staggered timing — use between scenes",
+      "tags": [
+        "transition",
+        "wipe",
+        "grid",
+        "pixelate"
+      ],
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/grid-pixelate-wipe.png"
+      }
+    },
+    {
+      "name": "beat-freeze-cut",
+      "type": "block",
+      "title": "Beat Freeze Cut",
+      "description": "A beat-driven speed ramp, freeze-frame hit, and hard-cut sequence for music-led promos and montages.",
+      "tags": [
+        "transition",
+        "music",
+        "beat-driven",
+        "freeze-frame"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 6
+    },
+    {
+      "name": "extended-keyframe",
+      "type": "component",
+      "title": "Extended Keyframe",
+      "description": "The never-fully-lands arrival: an element covers most of its move in the first fifth of the duration and creeps the rest to the last frame, exits along its arrival vector, and carries shutter motion blur — from any side or by scale, one call per element, plus the ease on its own for any tween",
+      "tags": [
+        "motion",
+        "ease",
+        "arrival",
+        "kinetic-type",
+        "text",
+        "motion-blur",
+        "after-effects",
+        "slide-in",
+        "scale-in"
+      ]
+    },
+    {
+      "name": "editorial-flash-overlay",
+      "type": "block",
+      "title": "Editorial Flash Overlay",
+      "description": "Finite neutral-warm light layers for a seek-safe camera-flash cut or social reveal",
+      "tags": [
+        "flash",
+        "editorial",
+        "social",
+        "light",
+        "transition",
+        "overlay",
+        "media-treatment-overlay"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4,
+      "preview": {
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/editorial-flash-overlay.png",
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/editorial-flash-overlay.mp4"
+      }
+    },
+    {
+      "name": "match-cut",
+      "type": "component",
+      "title": "Match Cut",
+      "description": "A circle accelerates into a hard single-frame scene swap, matches the incoming circle exactly, and continues into a smaller resting pose.",
+      "tags": [
+        "motion-primitive",
+        "transition",
+        "match-cut",
+        "hard-cut",
+        "continuity"
+      ]
+    },
+    {
+      "name": "code-slice-hero",
+      "type": "block",
+      "title": "Code Slice Hero",
+      "description": "A tiled headline surface flips cell by cell under a sweeping depth field to reveal the rear headline.",
+      "tags": [
+        "3d-motion",
+        "transition",
+        "typography",
+        "tiles",
+        "flip",
+        "webgl2",
+        "shadows",
+        "two-headlines"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 8,
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/code-slice-hero.mp4",
+        "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/code-slice-hero.png"
+      }
+    },
+    {
+      "name": "parallax-device-dive",
+      "type": "component",
+      "title": "Parallax Device Dive",
+      "description": "A canonical phone rises into view before the camera pushes through its screen and layered app UI expands to fill the frame.",
+      "tags": [
+        "motion-primitive",
+        "camera",
+        "device",
+        "phone",
+        "parallax",
+        "transition"
+      ]
+    },
+    {
+      "name": "rubber-band-bumper",
+      "type": "component",
+      "title": "Rubber Band Bumper",
+      "description": "An outgoing panel pulls against increasing resistance, holds at tension, then snaps past an edge with overshoot as the incoming panel settles behind it.",
+      "tags": [
+        "motion-primitive",
+        "transition",
+        "rubber-band",
+        "resistance",
+        "overshoot"
+      ]
+    },
+    {
+      "name": "morph-text",
+      "type": "component",
+      "title": "Morph Text",
+      "description": "Gooey text morph — cycles through an editable word list using SVG threshold + GSAP-driven blur for a fluid, satisfying transition effect",
+      "tags": [
+        "text",
+        "text-effect",
+        "typography",
+        "morph",
+        "gooey",
+        "kinetic",
+        "animation"
+      ],
+      "preview": {
+        "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/morph-text.mp4"
+      }
+    },
+    {
+      "name": "cut-the-curve",
+      "type": "component",
+      "title": "Cut the Curve",
+      "description": "A velocity-matched directional hard cut: the outgoing subject accelerates with power4.in, swaps at peak velocity, and the incoming subject continues in the same direction with power4.out.",
+      "tags": [
+        "transition",
+        "directional-cut",
+        "velocity-match",
+        "whip",
+        "bridge",
+        "demonstrate"
+      ]
+    },
+    {
+      "name": "beat-timeline",
+      "type": "component",
+      "title": "Beat Timeline",
+      "description": "A paused master-timeline orchestration spine that pins titled beat rows to evenly spaced named labels. Each row enters on its label, holds with the sequence, then exits with the group.",
+      "tags": [
+        "orchestration",
+        "transitions",
+        "sequencing",
+        "bridge",
+        "timeline"
+      ]
+    },
+    {
+      "name": "type-match-cut",
+      "type": "component",
+      "title": "Type Match Cut",
+      "description": "A headline splits vertically around an incoming panel, which grows from the negative space and takes the frame as the words exit through opposite edges.",
+      "tags": [
+        "motion-primitive",
+        "transition",
+        "typography",
+        "match-cut",
+        "continuity"
+      ]
+    },
+    {
+      "name": "halftone-dissolve",
+      "type": "component",
+      "title": "Halftone Dissolve",
+      "description": "Scene A dissolves into scene B through a growing halftone dot field: accent ink dots pop onto a fixed grid smallest-first, each opens into a window onto B, until the windows merge and B fully replaces A.",
+      "tags": [
+        "motion-primitive",
+        "transition",
+        "texture",
+        "halftone",
+        "dissolve"
+      ]
+    },
+    {
+      "name": "morph-swap",
+      "type": "component",
+      "title": "Morph Swap",
+      "description": "Two slotted siblings stacked at one shared center: A holds, then condenses or reshapes into B on a shared 50% 50% transform origin. Condense shrink-fades A exactly as B scales up; reshape morphs the silhouette on scaleX/scaleY, never width or height tweens. Token card defaults render when a slot is left empty.",
+      "tags": [
+        "transition",
+        "morph",
+        "swap",
+        "condense",
+        "reshape",
+        "holdable",
+        "slots"
+      ]
+    },
+    {
+      "name": "iris-reveal",
+      "type": "component",
+      "title": "Iris Reveal",
+      "description": "A circle clip-path opens from an authored origin revealing state B over state A in one confident pass, then holds on B. Classic register dims and desaturates the before state so the after state lands in full color; a thin accent rim rides the iris edge. Callers fill the named before/after slot panels; token-styled defaults render when a slot is left empty.",
+      "tags": [
+        "transition",
+        "iris",
+        "circle-reveal",
+        "clip-path",
+        "bridge",
+        "slots"
+      ]
+    },
+    {
+      "name": "whip-pan-cut",
+      "type": "component",
+      "title": "Whip Pan Cut",
+      "description": "A full-frame whip pan: scene A whips off laterally with capped directional motion blur while scene B enters in the same direction at matched velocity, on a speed-ramp profile with a decelerating catch. Both scenes ride one strip, so seam velocity is exact by construction. Callers fill the named before/after slot panels; token-styled defaults render when a slot is left empty.",
+      "tags": [
+        "transition",
+        "whip-pan",
+        "motion-blur",
+        "velocity-match",
+        "speed-ramp",
+        "bridge",
+        "slots"
+      ]
+    }
+  ]
+}

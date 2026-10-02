@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SYNK LAB · 다시 말해 주세요</title>
+<style>
+@font-face{font-family:SUIT;src:url('mongle-video/assets/SUIT-Variable.woff2');font-display:swap}*{box-sizing:border-box}body{margin:0;background:#fff;color:#000;font-family:SUIT,sans-serif}main{max-width:1120px;margin:0 auto;padding:28px 26px 65px}.logo{width:185px}h1{font-size:clamp(28px,5vw,42px);letter-spacing:-.045em;line-height:1.18;margin:24px 0 12px}.intro{color:#555;line-height:1.6;margin-bottom:26px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:42px}article{min-width:0}h2{font-size:22px;margin:0 0 9px}.status{font-size:14px;color:#555;margin-bottom:18px}
+.player{position:relative;width:min(100%,370px,calc(66svh * 9 / 16));aspect-ratio:9/16;background:#f3f3f3;border-radius:16px;overflow:hidden}.player video,.player canvas,.poster{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:contain}.player video{opacity:0;pointer-events:none}.player canvas{z-index:1}.poster{z-index:2}.poster[hidden]{display:none}
+.controls{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:14px;max-width:430px}button,.download{display:inline-block;background:#000;border:0;color:#fff;font:650 14px SUIT,sans-serif;border-radius:10px;padding:12px 15px;text-decoration:none;cursor:pointer}button.secondary,.download{background:#eee;color:#000}.download{margin-top:14px}time{font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap;color:#555}.seek{display:block;width:min(100%,430px);margin:14px 0;accent-color:#a53d38}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #a53d38;outline-offset:3px}p{line-height:1.65}.reference{display:block;max-width:300px;width:100%;border-radius:16px}.note{font-size:14px;color:#555;max-width:430px}a{color:inherit}.pending{color:#864637}.error{color:#a3322d}.error[hidden]{display:none}@media(max-width:700px){.grid{grid-template-columns:1fr;gap:44px}.reference{max-width:370px}.player{margin-inline:auto}main{padding:22px 20px 45px}}
+</style></head><body><main>
+<img class="logo" src="mongle-video/assets/lab-logo.webp" alt="SYNK LAB"><h1>못 들었는데 “네”부터 나왔다</h1><p class="intro">카페에서 배우는 한국어 한마디, “다시 말해 주세요.”</p><div class="grid"><article>
+<h2>몽글 캐릭터판 · 새 목소리</h2><p class="status">감정 연기 수정본 · 40.4초 · 세로 1080p<br>몽글: 도윤 · 카페 직원: 서현</p>
+<div class="player"><video id="mongle" playsinline preload="auto" aria-hidden="true"><source src="revision-v2/mongle-preview-v2.webm?revision=3" type="video/webm"><source src="revision-v2/SYNK_LAB_카페_몽글_감정연기_v2.mp4" type="video/mp4"></video><canvas id="screen" width="720" height="1280" role="img" aria-label="몽글의 카페 상황극 영상"></canvas><img id="poster" class="poster" src="revision-v2/mongle-cover-v2.jpg" alt="카페에서 다시 말해 주세요를 연습하는 몽글"></div>
+<div class="controls"><button id="play">영상 재생</button><button id="restart" class="secondary">처음부터</button><button id="sound" class="secondary" aria-pressed="false">소리 켜짐</button><time id="time">0:00 / 0:40</time></div><input id="seek" class="seek" type="range" min="0" max="40.456" step="0.05" value="0" aria-label="영상 재생 위치">
+<p id="play-error" class="note error" role="alert" hidden>영상 재생을 시작하지 못했습니다. 다시 재생하거나 아래 MP4 원본을 열어 주세요.</p><a class="download" href="revision-v2/SYNK_LAB_카페_몽글_감정연기_v2.mp4" download>수정본 1080p MP4 저장</a><p class="note">마지막에는 화면의 답을 보지 않고 직접 말할 시간이 있습니다. 국가별 번역과 채널 게시 전 한국어 원본입니다.</p><p class="note"><a href="SYNK_LAB_카페_몽글_한국어.mp4" download>이전 음성 버전 저장</a></p>
+</article><article><h2>AI 실사 인물판</h2><p class="status pending">영상 생성 경로 확인 대기</p><img class="reference" src="human-cast-reference.png" alt="실사판 제작용 가상 성인 등장인물 참고 이미지"><p class="note">위 이미지는 등장인물 참고 자료입니다. 실사 영상은 아직 완성되지 않았습니다. 지정하신 Co-NAI 제작 페이지가 복구되면 준비된 대본과 장면 지시문으로 이어갑니다.</p><p class="note"><a href="실사판_제작준비.md">실사판 대본과 준비 상태</a></p></article></div></main>
+<script>
+const video=document.querySelector('#mongle'),canvas=document.querySelector('#screen'),context=canvas.getContext('2d',{alpha:false}),poster=document.querySelector('#poster');
+const play=document.querySelector('#play'),seek=document.querySelector('#seek'),time=document.querySelector('#time'),error=document.querySelector('#play-error');
+const format=seconds=>Math.floor(seconds/60)+':'+String(Math.floor(seconds%60)).padStart(2,'0');
+let frameLoop=0;
+function paint(){if(video.readyState<2||!video.videoWidth)return;try{context.drawImage(video,0,0,canvas.width,canvas.height);poster.hidden=true;canvas.dataset.frameTime=video.currentTime.toFixed(3);}catch{poster.hidden=false;}}
+function sync(){seek.value=video.currentTime;time.textContent=format(video.currentTime)+' / '+format(Number.isFinite(video.duration)?video.duration:40.456);}
+function loop(){paint();sync();frameLoop=video.paused||video.ended?0:requestAnimationFrame(loop);}
+async function start(){try{error.hidden=true;if(video.ended)video.currentTime=0;await video.play();}catch{error.hidden=false;}}
+play.addEventListener('click',()=>video.paused?start():video.pause());
+document.querySelector('#restart').addEventListener('click',()=>{video.currentTime=0;start();});
+document.querySelector('#sound').addEventListener('click',event=>{video.muted=!video.muted;event.currentTarget.textContent=video.muted?'소리 꺼짐':'소리 켜짐';event.currentTarget.setAttribute('aria-pressed',String(video.muted));});
+seek.addEventListener('input',()=>{video.currentTime=Number(seek.value);sync();});
+video.addEventListener('loadedmetadata',()=>{seek.max=video.duration;sync();});
+for(const name of ['loadeddata','seeked'])video.addEventListener(name,()=>{paint();sync();});
+video.addEventListener('play',()=>{play.textContent='일시 정지';if(!frameLoop)loop();});
+video.addEventListener('pause',()=>{play.textContent='영상 재생';if(frameLoop)cancelAnimationFrame(frameLoop);frameLoop=0;paint();sync();});
+video.addEventListener('ended',()=>{play.textContent='다시 재생';paint();sync();});
+video.addEventListener('error',()=>{error.hidden=false;});
+</script></body></html>

@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-09-13T19:02:05.985Z",
+  "mode": "H264 SPS labels only; stream copy; no re-encode",
+  "bsf": "h264_metadata=video_full_range_flag=0:colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1",
+  "backup": "qa/색표식전.mp4",
+  "beforeSha256": "7ce41f3e7462957a25cca47a00c0455f5a9767e015573b645c1540814f65e558",
+  "afterSha256": "63f3f1fd05f1a8933ecd3323924c144188c19887a47503f0ebf11a011c808829",
+  "rawBefore": "SHA256=256f04b3d857085a6f54ae8922f2b5983bda76c0fef2a03f9dca883a5508b579",
+  "rawAfter": "SHA256=256f04b3d857085a6f54ae8922f2b5983bda76c0fef2a03f9dca883a5508b579",
+  "decodedPixelsIdentical": true,
+  "encodedKeyframePngIdentical": false
+}

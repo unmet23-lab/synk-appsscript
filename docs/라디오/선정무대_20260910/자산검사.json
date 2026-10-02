@@ -1,0 +1,45 @@
+{
+  "at": "2026-09-09T17:21:34.397Z",
+  "head": "a1d64fb04f8766dbef1cd3607c99577062f30f18",
+  "inputs": [
+    {
+      "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_본체.webp",
+      "sha256": "eff5870074874ed22d64fef995ed6ef4acf5f9f10711ea895b7e5ea8be3b9713",
+      "copy": "water-0.webp"
+    },
+    {
+      "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_눈감음.webp",
+      "sha256": "7dcfe1f5edafcad44a2fa74b90254ecce153bad59ab7e5b2455804290b24dca9",
+      "copy": "water-1.webp"
+    },
+    {
+      "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_눈웃음.webp",
+      "sha256": "c19871e6eb72a57c9d0a75f8d5d62ef8408a42cb12b81c2ceea10770a408dc2d",
+      "copy": "water-2.webp"
+    },
+    {
+      "path": "docs/Loom_자산/라디오차림/까몽/3개월출석잎망토_본체.webp",
+      "sha256": "48823c235151fb0d7859883205f7f6c3bd2040ebfe6b1f85631186b7563379c6",
+      "copy": "leaf-base.webp"
+    },
+    {
+      "path": "docs/라디오/무대/dream_water.png",
+      "sha256": "3086e9afb1124b7b9c6940619194cb8a4d00d3eb6b03a21a320cb8a21c4a47c0",
+      "copy": "water-still.png"
+    },
+    {
+      "path": "docs/라디오/무대/dream_field.png",
+      "sha256": "c3d6fb508a9244ca34e83de4631f5c1757b1f21b6045b06112dc469b71b10b1a",
+      "copy": "field-still.png"
+    }
+  ],
+  "stats": {
+    "maskPixels": 11609,
+    "waterEdgePixels": 29213,
+    "leafEdgePixels": 35434,
+    "expressionAlphaEqual": true,
+    "outsideEyeDifference": 0
+  },
+  "method": "Display-time composition: approved three water eyes reused only within non-rectangular eye support on a fixed leaf body. Common edge recipe per body. No new wardrobe image generation; no original asset edits.",
+  "visualQA": "pending"
+}

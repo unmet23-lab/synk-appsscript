@@ -1,0 +1,79 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "그래서 글라이드랑 구글 시트로 앱 만들기 시작! 그런데 제 개발 실력은?",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.24,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 3.79,
+  "words": [
+    {
+      "text": "그래서",
+      "start": 0.027,
+      "end": 0.228
+    },
+    {
+      "text": "글라이드랑",
+      "start": 0.482,
+      "end": 0.951
+    },
+    {
+      "text": "구글",
+      "start": 1.004,
+      "end": 1.205
+    },
+    {
+      "text": "시트로",
+      "start": 1.246,
+      "end": 1.46
+    },
+    {
+      "text": "앱",
+      "start": 1.554,
+      "end": 1.634
+    },
+    {
+      "text": "만들기",
+      "start": 1.674,
+      "end": 1.902
+    },
+    {
+      "text": "시작!",
+      "start": 1.955,
+      "end": 2.143
+    },
+    {
+      "text": "그런데",
+      "start": 2.424,
+      "end": 2.652
+    },
+    {
+      "text": "제",
+      "start": 2.92,
+      "end": 3.013
+    },
+    {
+      "text": "개발",
+      "start": 3.107,
+      "end": 3.308
+    },
+    {
+      "text": "실력은?",
+      "start": 3.348,
+      "end": 3.79
+    }
+  ],
+  "characters": null
+}

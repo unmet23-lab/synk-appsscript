@@ -1,0 +1,33 @@
+{
+  "skipped": [],
+  "verifiedBeforeApiAttempt": [
+    {
+      "id": "1sfzTT-BCtsMG8FkUleLsbsTBT0notUo1",
+      "path": "PC_백업_20260926/Downloads/yuhobuilds_EP01 (3).mp4",
+      "bytes": 55032693,
+      "md5": "36291ce185564033a02b4032cba291f6",
+      "keepId": "1TYEUtWhVXy8Jm2dAP_Xf62yaG9k0vMx3",
+      "keepPath": "PC_백업_20260926/Downloads/yuhobuilds_EP01 (1).mp4",
+      "reason": "identical_test_or_numbered_copy",
+      "state": "verified_before_deletion",
+      "verifiedAt": 1790849092.9318714
+    }
+  ],
+  "apiDeletionSucceeded": false,
+  "apiFailure": {
+    "http": 403,
+    "reason": "Application lacks file write permission"
+  },
+  "browserCleanup": {
+    "trashedFilesVerified": 90,
+    "trashedBytesVerified": 762271056,
+    "trashVerification": "drive-trash-verification.json"
+  },
+  "permanentDeletion": {
+    "method": "Google Drive browser UI",
+    "userConfirmed": true,
+    "status": "complete",
+    "remainingFiles": 0,
+    "checkedAt": "2026-10-01T10:34:27.449134+00:00"
+  }
+}

@@ -1,0 +1,304 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 4.423,
+  "words": [
+    {
+      "text": "GPT는",
+      "start": 0.082,
+      "end": 0.467
+    },
+    {
+      "text": "슈파베이스와",
+      "start": 0.756,
+      "end": 1.305
+    },
+    {
+      "text": "엔에잇엔으로,",
+      "start": 1.47,
+      "end": 1.937
+    },
+    {
+      "text": "처음부터",
+      "start": 2.267,
+      "end": 2.651
+    },
+    {
+      "text": "구조를",
+      "start": 2.72,
+      "end": 2.953
+    },
+    {
+      "text": "탄탄하게",
+      "start": 2.995,
+      "end": 3.324
+    },
+    {
+      "text": "만들라고",
+      "start": 3.365,
+      "end": 3.681
+    },
+    {
+      "text": "추천해",
+      "start": 3.736,
+      "end": 3.97
+    },
+    {
+      "text": "줬어요.",
+      "start": 4.011,
+      "end": 4.423
+    }
+  ],
+  "characters": [
+    {
+      "text": "G",
+      "start": 0.082,
+      "end": 0.165
+    },
+    {
+      "text": "P",
+      "start": 0.165,
+      "end": 0.247
+    },
+    {
+      "text": "T",
+      "start": 0.247,
+      "end": 0.371
+    },
+    {
+      "text": "는",
+      "start": 0.371,
+      "end": 0.467
+    },
+    {
+      "text": " ",
+      "start": 0.467,
+      "end": 0.756
+    },
+    {
+      "text": "슈",
+      "start": 0.756,
+      "end": 0.879
+    },
+    {
+      "text": "파",
+      "start": 0.879,
+      "end": 0.989
+    },
+    {
+      "text": "베",
+      "start": 0.989,
+      "end": 1.099
+    },
+    {
+      "text": "이",
+      "start": 1.099,
+      "end": 1.154
+    },
+    {
+      "text": "스",
+      "start": 1.154,
+      "end": 1.25
+    },
+    {
+      "text": "와",
+      "start": 1.25,
+      "end": 1.305
+    },
+    {
+      "text": " ",
+      "start": 1.305,
+      "end": 1.47
+    },
+    {
+      "text": "엔",
+      "start": 1.47,
+      "end": 1.58
+    },
+    {
+      "text": "에",
+      "start": 1.58,
+      "end": 1.648
+    },
+    {
+      "text": "잇",
+      "start": 1.648,
+      "end": 1.772
+    },
+    {
+      "text": "엔",
+      "start": 1.772,
+      "end": 1.841
+    },
+    {
+      "text": "으",
+      "start": 1.841,
+      "end": 1.882
+    },
+    {
+      "text": "로",
+      "start": 1.882,
+      "end": 1.923
+    },
+    {
+      "text": ",",
+      "start": 1.923,
+      "end": 1.937
+    },
+    {
+      "text": " ",
+      "start": 1.937,
+      "end": 2.267
+    },
+    {
+      "text": "처",
+      "start": 2.267,
+      "end": 2.431
+    },
+    {
+      "text": "음",
+      "start": 2.431,
+      "end": 2.5
+    },
+    {
+      "text": "부",
+      "start": 2.5,
+      "end": 2.582
+    },
+    {
+      "text": "터",
+      "start": 2.582,
+      "end": 2.651
+    },
+    {
+      "text": " ",
+      "start": 2.651,
+      "end": 2.72
+    },
+    {
+      "text": "구",
+      "start": 2.72,
+      "end": 2.802
+    },
+    {
+      "text": "조",
+      "start": 2.802,
+      "end": 2.871
+    },
+    {
+      "text": "를",
+      "start": 2.871,
+      "end": 2.953
+    },
+    {
+      "text": " ",
+      "start": 2.953,
+      "end": 2.995
+    },
+    {
+      "text": "탄",
+      "start": 2.995,
+      "end": 3.132
+    },
+    {
+      "text": "탄",
+      "start": 3.132,
+      "end": 3.228
+    },
+    {
+      "text": "하",
+      "start": 3.228,
+      "end": 3.283
+    },
+    {
+      "text": "게",
+      "start": 3.283,
+      "end": 3.324
+    },
+    {
+      "text": " ",
+      "start": 3.324,
+      "end": 3.365
+    },
+    {
+      "text": "만",
+      "start": 3.365,
+      "end": 3.462
+    },
+    {
+      "text": "들",
+      "start": 3.462,
+      "end": 3.558
+    },
+    {
+      "text": "라",
+      "start": 3.558,
+      "end": 3.626
+    },
+    {
+      "text": "고",
+      "start": 3.626,
+      "end": 3.681
+    },
+    {
+      "text": " ",
+      "start": 3.681,
+      "end": 3.736
+    },
+    {
+      "text": "추",
+      "start": 3.736,
+      "end": 3.832
+    },
+    {
+      "text": "천",
+      "start": 3.832,
+      "end": 3.929
+    },
+    {
+      "text": "해",
+      "start": 3.929,
+      "end": 3.97
+    },
+    {
+      "text": " ",
+      "start": 3.97,
+      "end": 4.011
+    },
+    {
+      "text": "줬",
+      "start": 4.011,
+      "end": 4.148
+    },
+    {
+      "text": "어",
+      "start": 4.148,
+      "end": 4.19
+    },
+    {
+      "text": "요",
+      "start": 4.19,
+      "end": 4.409
+    },
+    {
+      "text": ".",
+      "start": 4.409,
+      "end": 4.423
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "GPT는 슈파베이스와 엔에잇엔으로, 처음부터 구조를 탄탄하게 만들라고 추천해 줬어요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.3,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal"
+    }
+  }
+}

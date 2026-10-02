@@ -1,0 +1,12 @@
+[
+  {
+    "antipattern": "dark-glow",
+    "name": "Glowing shadow accents",
+    "description": "Colored glow shadows — a zero-offset chromatic halo (box- or text-shadow) on any background, or any colored blurred shadow on a dark background — are the default \"cool\" look of AI-generated UIs. Use neutral elevation shadows and subtle, purposeful lighting instead.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v4\\index.html",
+    "line": 0,
+    "snippet": "Colored box-shadow glow (#18274a) on dark page"
+  }
+]

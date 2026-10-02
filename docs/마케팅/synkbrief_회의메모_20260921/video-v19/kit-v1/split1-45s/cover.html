@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>synkbrief ① 붙여넣기 → 회의록 · 릴스 표지(cover916)</title>
+<!-- 영상 첫 프레임과 같은 표지. 굽기: node tools/SNS키트굽기.js <이 파일> --out <이 폴더>/cover-out → cover.png로 복사 -->
+<link rel="stylesheet" href="../../../../../디자인/SNS키트/kit.css">
+<style>
+  body{margin:0;background:#d9dbe0;padding:40px}
+  .k-slide[data-fmt="cover916"] .k-in{right:160px}
+  .crop{position:relative;overflow:hidden;background:#0d0d0d}
+  .crop img{position:absolute;display:block;max-width:none}
+  .memo{margin:0;font:500 25px/1.45 var(--k-sans);color:var(--k-ink);letter-spacing:-.015em}
+  .memo-label{display:block;margin-bottom:10px;font:500 24px/1.2 var(--k-mono);color:var(--k-muted)}
+</style>
+</head>
+<body data-acc="brief">
+<section class="k-slide k-field k-corners" data-fmt="cover916" data-name="표지">
+  <div class="k-head"><b>synkbrief 활용</b><span>ChatGPT · 회의 메모</span></div>
+  <div class="k-in">
+    <h1 class="k-title" style="font-size:96px;line-height:1.08"><span class="ln">이 메모가</span><span class="ln">붙여넣기 한 번에</span><span class="ln"><span class="k-mark">회의록</span>으로</span></h1>
+    <p class="k-sub" style="margin-top:24px">메모를 다듬지 않고 그대로 · 실제 화면</p>
+  </div>
+  <figure class="k-photo" style="position:absolute;left:330px;top:770px;width:590px;height:400px;--r:3deg;padding:12px">
+    <div class="crop" style="width:566px;height:376px"><img src="assets/ui/05-result.png" alt="실제 ChatGPT 정리 결과" style="width:917px;left:-193px;top:-11px"></div>
+  </figure>
+  <figure class="k-photo" style="position:absolute;left:84px;top:850px;width:290px;height:280px;--r:-7deg;padding:16px">
+    <span class="memo-label">정리 전 메모</span>
+    <p class="memo">오늘 회의 메모. 소개 페이지 문구가 길다는 얘기 나옴. 짧게 고치기로. 지수가 9월 23일까지…</p>
+  </figure>
+  <span class="k-tape white" data-deco style="left:150px;top:834px;--r:-9deg;width:120px;height:38px"></span>
+  <div class="k-foot"><span class="k-logo-tag"><img class="k-logo" src="../../../../../디자인/SNS키트/assets/logo-shift.webp" alt="synk SHIFT"></span><span class="k-handle">@synkbrief</span></div>
+</section>
+</body>
+</html>

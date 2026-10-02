@@ -1,0 +1,916 @@
+{
+  "passed": true,
+  "at": "2026-09-09T09:28:35.531Z",
+  "mainPid": "137314",
+  "expressions": [
+    "기본",
+    "깜빡",
+    "집중"
+  ],
+  "sampleCount": 89,
+  "mediaFiles": [
+    "/opt/synk-radio/소리/playlist.txt",
+    "/opt/synk-radio/소리/synk-radio-blok11-20260909-air.aac",
+    "/opt/synk-radio/무대차례/목록.txt",
+    "/opt/synk-radio/무대차례/chuseok-natural-20260909.mp4"
+  ],
+  "journal": [
+    "[겹쳐송출 09:24:35] 첫 장이 떴다 — 150KB",
+    "[겹쳐송출 09:24:37] 장면 1/1 → 결 추석보름달마당 (20분)",
+    "[겹쳐송출 09:25:35] 층 225장 떴다(초당 3.8) · 내보낸 것 358(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.5/6 · 거른 박자 0 · 실시간대비 0.993x · 버린장 0 · 겹친장 0",
+    "[겹쳐송출 09:26:35] 층 435장 떴다(초당 3.5) · 내보낸 것 717(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.3/6 · 거른 박자 0 · 실시간대비 0.997x · 버린장 0 · 겹친장 0",
+    "[겹쳐송출 09:27:35] 층 659장 떴다(초당 3.7) · 내보낸 것 1077(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.4/6 · 거른 박자 0 · 실시간대비 0.998x · 버린장 0 · 겹친장 0"
+  ],
+  "samples": [
+    {
+      "ready": true,
+      "ms": 219051.90000000596,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 219262.30000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 219464.30000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 219691.40000000596,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 219957,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 220218.59999999404,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_눈감음.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 220431.19999998808,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_눈감음.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 220672.40000000596,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 220934.19999998808,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 221171.30000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 221427.90000000596,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 221679.30000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 221916.19999998808,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 222171.59999999404,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 222419.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 222668.09999999404,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 222922.59999999404,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 223178.80000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 223415.90000000596,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 223669.40000000596,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 223916.69999998808,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 224185.40000000596,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_눈감음.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 224418.69999998808,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 224667.40000000596,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 224918.69999998808,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 225171.09999999404,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 225420.30000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 225666.40000000596,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 225881.80000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 226188.59999999404,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 226417.90000000596,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 226718.90000000596,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 227005.30000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 227215.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 227425.80000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 227692.30000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 227895.30000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 228228.59999999404,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 228447.5,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_눈감음.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 228665.09999999404,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_눈감음.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 228928.19999998808,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 229203.59999999404,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 229428.69999998808,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 229694.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 229899.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 230199.09999999404,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 230461.19999998808,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 230716.59999999404,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 230970,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 231214.09999999404,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_눈감음.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 231425.30000001192,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_눈감음.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 231664.5,
+      "DJ": "까몽",
+      "expression": "집중",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_집중.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 231927.59999999404,
+      "DJ": "까몽",
+      "expression": "집중",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_집중.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 232165.90000000596,
+      "DJ": "까몽",
+      "expression": "집중",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_집중.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 232483.40000000596,
+      "DJ": "까몽",
+      "expression": "집중",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_집중.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 232735.40000000596,
+      "DJ": "까몽",
+      "expression": "집중",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_집중.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 232965.30000001192,
+      "DJ": "까몽",
+      "expression": "집중",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_집중.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 233187.30000001192,
+      "DJ": "까몽",
+      "expression": "집중",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_집중.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 233424.19999998808,
+      "DJ": "까몽",
+      "expression": "집중",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_집중.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 233684.09999999404,
+      "DJ": "까몽",
+      "expression": "집중",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_집중.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 233923.69999998808,
+      "DJ": "까몽",
+      "expression": "집중",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_집중.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 234170.40000000596,
+      "DJ": "까몽",
+      "expression": "집중",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_집중.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 234421.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 234667,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 234923.30000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 235166.69999998808,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 235414.90000000596,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 235688.30000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 235922.90000000596,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 236207.90000000596,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 236421.59999999404,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 236717.80000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 236922.69999998808,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 237220.80000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 237438.30000001192,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_눈감음.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 237665.19999998808,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_눈감음.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 237919.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 238183.30000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 238415.69999998808,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 238678.09999999404,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 238925.69999998808,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 239174,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 239427.30000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 239676.59999999404,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 239891.19999998808,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 240202.80000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 240456.69999998808,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 240714.30000001192,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    },
+    {
+      "ready": true,
+      "ms": 240921.69999998808,
+      "DJ": "까몽",
+      "expression": "기본",
+      "outfit": "추석보름달마당",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "asset": "까몽_여름델+전설의팻말_본체.webp",
+      "rhythmLoaded": true
+    }
+  ]
+}

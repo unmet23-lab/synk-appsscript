@@ -1,0 +1,133 @@
+{
+  "observedAtUTC": "2026-09-09T11:35:49.442958+00:00",
+  "scope": "v3 반영 후 서버 읽기 전용 안정성 검사. 공개 수신 캡처는 주담당 범위.",
+  "verifiedWindowSeconds": 403.442958,
+  "passed": true,
+  "service": {
+    "MainPID": "142078",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Wed 2026-09-09 11:29:06 UTC",
+    "ActiveState": "active",
+    "SubState": "running"
+  },
+  "progress": [
+    {
+      "atUTC": "2026-09-09T11:30:14.560878+00:00",
+      "pid": "142078",
+      "speed": "0.99x",
+      "outTime": "00:00:53.468000",
+      "captureFps": "3.4",
+      "sentFps": "6.0",
+      "drop": "0",
+      "dup": "0",
+      "captureFail": "0"
+    },
+    {
+      "atUTC": "2026-09-09T11:31:14.560418+00:00",
+      "pid": "142078",
+      "speed": "0.997x",
+      "outTime": "00:01:53.639000",
+      "captureFps": "3.5",
+      "sentFps": "6.0",
+      "drop": "0",
+      "dup": "0",
+      "captureFail": "0"
+    },
+    {
+      "atUTC": "2026-09-09T11:32:14.563376+00:00",
+      "pid": "142078",
+      "speed": "0.998x",
+      "outTime": "00:02:53.499000",
+      "captureFps": "3.5",
+      "sentFps": "6.0",
+      "drop": "0",
+      "dup": "0",
+      "captureFail": "0"
+    },
+    {
+      "atUTC": "2026-09-09T11:33:14.560492+00:00",
+      "pid": "142078",
+      "speed": "0.999x",
+      "outTime": "00:03:53.476000",
+      "captureFps": "3.6",
+      "sentFps": "6.0",
+      "drop": "0",
+      "dup": "0",
+      "captureFail": "0"
+    },
+    {
+      "atUTC": "2026-09-09T11:34:14.567523+00:00",
+      "pid": "142078",
+      "speed": "0.999x",
+      "outTime": "00:04:53.361000",
+      "captureFps": "3.6",
+      "sentFps": "6.0",
+      "drop": "0",
+      "dup": "0",
+      "captureFail": "0"
+    },
+    {
+      "atUTC": "2026-09-09T11:35:14.570679+00:00",
+      "pid": "142078",
+      "speed": "0.999x",
+      "outTime": "00:05:53.431000",
+      "captureFps": "3.6",
+      "sentFps": "6.0",
+      "drop": "0",
+      "dup": "0",
+      "captureFail": "0"
+    }
+  ],
+  "outTimeAdvancePerMinuteSeconds": [
+    60.17100000000001,
+    59.859999999999985,
+    59.977000000000004,
+    59.88499999999999,
+    60.06999999999999
+  ],
+  "incidents": {
+    "captureFailure": 0,
+    "watchdogRestart": 0,
+    "ffmpegExit": 0,
+    "brokenPipe": 0,
+    "timestampWarning": 0,
+    "queueWarning": 0,
+    "systemdAutomaticRestart": 0
+  },
+  "youtubeHealth": {
+    "checkedAtUTC": "2026-09-09 11:35:52 UTC",
+    "stream": "active",
+    "health": "good",
+    "broadcast": "eI-5vSy5mjY",
+    "lifecycle": "live",
+    "privacy": "public"
+  },
+  "preservation": {
+    "unchangedFiles": 15,
+    "checkedFiles": 15,
+    "mismatches": [],
+    "stagePlaylistSha256": "0e7c7c6d29e2d5545f05d239cef178fac7325d6f449a8dcf0be0fa914f23daa0",
+    "activeMedia": [
+      {
+        "pid": "142223",
+        "path": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+      },
+      {
+        "pid": "142223",
+        "path": "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4"
+      }
+    ],
+    "expectedStageOpened": true
+  },
+  "localRegression": {
+    "command": "node --test tests/라디오송출진척.test.js tests/라디오표정리듬.test.js tests/라디오오버레이층.test.js",
+    "passed": 20,
+    "failed": 0,
+    "note": "로컬 검수이며 공개 수신 품질 검증을 대신하지 않음"
+  },
+  "limits": [
+    "이 검사는 재시작 후 6분 43초 관찰이며 장시간 무중단을 보장하지 않는다.",
+    "이번 담당은 서버 진행·상태·해시만 확인했으며 공개 수신 영상/음향을 중복 캡처하지 않았다.",
+    "서버 변경·서비스 재시작은 수행하지 않았다."
+  ]
+}

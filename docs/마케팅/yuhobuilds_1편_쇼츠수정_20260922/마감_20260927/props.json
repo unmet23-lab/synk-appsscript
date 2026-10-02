@@ -1,0 +1,2750 @@
+{
+  "timing": {
+    "fps": 30,
+    "durationInFrames": 2188,
+    "audioFile": "yuho-journey-01/narration-finish-20260927.wav",
+    "audioStartFrame": 0,
+    "scenes": [
+      {
+        "id": "16a",
+        "start": 0,
+        "duration": 125,
+        "visual": "timesaved",
+        "text": "개발을 처음 시작할 때, 이 순서만 알았어도 100시간은 아꼈을 것 같아요.",
+        "voiceStartFrame": 3,
+        "voiceDurationSeconds": 3.8,
+        "wordCues": [
+          {
+            "text": "개발을",
+            "startFrame": 6,
+            "endFrame": 14
+          },
+          {
+            "text": "처음",
+            "startFrame": 15,
+            "endFrame": 21
+          },
+          {
+            "text": "시작할",
+            "startFrame": 22,
+            "endFrame": 30
+          },
+          {
+            "text": "때,",
+            "startFrame": 31,
+            "endFrame": 33
+          },
+          {
+            "text": "이",
+            "startFrame": 49,
+            "endFrame": 49
+          },
+          {
+            "text": "순서만",
+            "startFrame": 52,
+            "endFrame": 61
+          },
+          {
+            "text": "알았어도",
+            "startFrame": 62,
+            "endFrame": 70
+          },
+          {
+            "text": "백",
+            "startFrame": 79,
+            "endFrame": 83
+          },
+          {
+            "text": "시간은",
+            "startFrame": 85,
+            "endFrame": 92
+          },
+          {
+            "text": "아꼈을",
+            "startFrame": 93,
+            "endFrame": 101
+          },
+          {
+            "text": "것",
+            "startFrame": 102,
+            "endFrame": 103
+          },
+          {
+            "text": "같아요.",
+            "startFrame": 104,
+            "endFrame": 117
+          }
+        ],
+        "transition": {
+          "kind": "none",
+          "frames": 0
+        },
+        "motionCue": null
+      },
+      {
+        "id": "01a",
+        "start": 125,
+        "duration": 158,
+        "visual": "hook",
+        "text": "오늘은 번역만 하려고 AI를 결제했다가, 출석 앱까지 만들면서 제대로 삽질한 얘기를 해볼게요.",
+        "voiceStartFrame": 126,
+        "voiceDurationSeconds": 5.161293,
+        "wordCues": [
+          {
+            "text": "오늘은",
+            "startFrame": 4,
+            "endFrame": 11
+          },
+          {
+            "text": "번역만",
+            "startFrame": 13,
+            "endFrame": 23
+          },
+          {
+            "text": "하려고",
+            "startFrame": 24,
+            "endFrame": 29
+          },
+          {
+            "text": "AI를",
+            "startFrame": 39,
+            "endFrame": 48
+          },
+          {
+            "text": "결제했다가,",
+            "startFrame": 49,
+            "endFrame": 61
+          },
+          {
+            "text": "출석",
+            "startFrame": 75,
+            "endFrame": 84
+          },
+          {
+            "text": "앱까지",
+            "startFrame": 85,
+            "endFrame": 92
+          },
+          {
+            "text": "만들면서",
+            "startFrame": 93,
+            "endFrame": 105
+          },
+          {
+            "text": "제대로",
+            "startFrame": 117,
+            "endFrame": 124
+          },
+          {
+            "text": "삽질한",
+            "startFrame": 125,
+            "endFrame": 133
+          },
+          {
+            "text": "얘기를",
+            "startFrame": 135,
+            "endFrame": 140
+          },
+          {
+            "text": "해볼게요.",
+            "startFrame": 142,
+            "endFrame": 156
+          }
+        ],
+        "transition": {
+          "kind": "reveal-up",
+          "frames": 9
+        },
+        "motionCue": {
+          "at": 75,
+          "scale": 1.035,
+          "y": -8
+        }
+      },
+      {
+        "id": "02",
+        "start": 283,
+        "duration": 125,
+        "visual": "setting",
+        "text": "몽골 울란바토르, 학원 부원장. 친구도 없고, 솔직히 심심했습니다.",
+        "voiceStartFrame": 284,
+        "voiceDurationSeconds": 4.057392,
+        "wordCues": [
+          {
+            "text": "몽골",
+            "startFrame": 5,
+            "endFrame": 13
+          },
+          {
+            "text": "울란바토르,",
+            "startFrame": 14,
+            "endFrame": 27
+          },
+          {
+            "text": "학원",
+            "startFrame": 39,
+            "endFrame": 45
+          },
+          {
+            "text": "부원장.",
+            "startFrame": 46,
+            "endFrame": 55
+          },
+          {
+            "text": "친구도",
+            "startFrame": 67,
+            "endFrame": 77
+          },
+          {
+            "text": "없고,",
+            "startFrame": 78,
+            "endFrame": 84
+          },
+          {
+            "text": "솔직히",
+            "startFrame": 90,
+            "endFrame": 99
+          },
+          {
+            "text": "심심했습니다.",
+            "startFrame": 100,
+            "endFrame": 123
+          }
+        ],
+        "transition": {
+          "kind": "reveal-left",
+          "frames": 9
+        },
+        "motionCue": {
+          "at": 67,
+          "scale": 1.025,
+          "x": -7
+        }
+      },
+      {
+        "id": "03",
+        "start": 408,
+        "duration": 109,
+        "visual": "payment",
+        "text": "유월 이일, 클로드 첫 결제! 그때는 딱 번역만 하려고 했죠.",
+        "voiceStartFrame": 409,
+        "voiceDurationSeconds": 3.52,
+        "wordCues": [
+          {
+            "text": "유월",
+            "startFrame": 6,
+            "endFrame": 13
+          },
+          {
+            "text": "이일,",
+            "startFrame": 15,
+            "endFrame": 19
+          },
+          {
+            "text": "클로드",
+            "startFrame": 28,
+            "endFrame": 36
+          },
+          {
+            "text": "첫",
+            "startFrame": 37,
+            "endFrame": 41
+          },
+          {
+            "text": "결제!",
+            "startFrame": 42,
+            "endFrame": 50
+          },
+          {
+            "text": "그때는",
+            "startFrame": 63,
+            "endFrame": 71
+          },
+          {
+            "text": "딱",
+            "startFrame": 73,
+            "endFrame": 76
+          },
+          {
+            "text": "번역만",
+            "startFrame": 78,
+            "endFrame": 88
+          },
+          {
+            "text": "하려고",
+            "startFrame": 89,
+            "endFrame": 93
+          },
+          {
+            "text": "했죠.",
+            "startFrame": 95,
+            "endFrame": 107
+          }
+        ],
+        "transition": {
+          "kind": "reveal-left",
+          "frames": 9
+        },
+        "motionCue": {
+          "at": 42,
+          "scale": 1.04
+        }
+      },
+      {
+        "id": "04",
+        "start": 517,
+        "duration": 108,
+        "visual": "inquiries",
+        "text": "그런데 학생 문의가 확 늘었어요. 잠깐, 이러면 관리가 어렵겠는데?",
+        "voiceStartFrame": 518,
+        "voiceDurationSeconds": 3.48,
+        "wordCues": [
+          {
+            "text": "그런데",
+            "startFrame": 3,
+            "endFrame": 10
+          },
+          {
+            "text": "학생",
+            "startFrame": 11,
+            "endFrame": 18
+          },
+          {
+            "text": "문의가",
+            "startFrame": 19,
+            "endFrame": 24
+          },
+          {
+            "text": "확",
+            "startFrame": 26,
+            "endFrame": 30
+          },
+          {
+            "text": "늘었어요.",
+            "startFrame": 31,
+            "endFrame": 41
+          },
+          {
+            "text": "잠깐,",
+            "startFrame": 49,
+            "endFrame": 56
+          },
+          {
+            "text": "이러면",
+            "startFrame": 69,
+            "endFrame": 76
+          },
+          {
+            "text": "관리가",
+            "startFrame": 78,
+            "endFrame": 87
+          },
+          {
+            "text": "어렵겠는데?",
+            "startFrame": 88,
+            "endFrame": 106
+          }
+        ],
+        "transition": {
+          "kind": "reveal-up",
+          "frames": 9
+        },
+        "motionCue": {
+          "at": 49,
+          "scale": 1.03,
+          "y": -8
+        }
+      },
+      {
+        "id": "05",
+        "start": 625,
+        "duration": 119,
+        "visual": "purpose",
+        "text": "출석 앱을 만들면? 부모님께 등하원 알림도 가고, 선생님들도 편해지잖아요!",
+        "voiceStartFrame": 626,
+        "voiceDurationSeconds": 3.850476,
+        "wordCues": [
+          {
+            "text": "출석",
+            "startFrame": 5,
+            "endFrame": 14
+          },
+          {
+            "text": "앱을",
+            "startFrame": 15,
+            "endFrame": 19
+          },
+          {
+            "text": "만들면?",
+            "startFrame": 21,
+            "endFrame": 30
+          },
+          {
+            "text": "부모님께",
+            "startFrame": 35,
+            "endFrame": 48
+          },
+          {
+            "text": "등하원",
+            "startFrame": 50,
+            "endFrame": 59
+          },
+          {
+            "text": "알림도",
+            "startFrame": 60,
+            "endFrame": 68
+          },
+          {
+            "text": "가고,",
+            "startFrame": 69,
+            "endFrame": 74
+          },
+          {
+            "text": "선생님들도",
+            "startFrame": 81,
+            "endFrame": 95
+          },
+          {
+            "text": "편해지잖아요!",
+            "startFrame": 97,
+            "endFrame": 117
+          }
+        ],
+        "transition": {
+          "kind": "reveal-right",
+          "frames": 9
+        },
+        "motionCue": {
+          "at": 81,
+          "scale": 1.035,
+          "y": -9
+        }
+      },
+      {
+        "id": "06",
+        "start": 744,
+        "duration": 117,
+        "visual": "tools",
+        "text": "그래서 글라이드랑 구글 시트로 앱 만들기 시작! 그런데 제 개발 실력은?",
+        "voiceStartFrame": 745,
+        "voiceDurationSeconds": 3.790317,
+        "wordCues": [
+          {
+            "text": "그래서",
+            "startFrame": 2,
+            "endFrame": 8
+          },
+          {
+            "text": "글라이드랑",
+            "startFrame": 16,
+            "endFrame": 30
+          },
+          {
+            "text": "구글",
+            "startFrame": 31,
+            "endFrame": 37
+          },
+          {
+            "text": "시트로",
+            "startFrame": 39,
+            "endFrame": 45
+          },
+          {
+            "text": "앱",
+            "startFrame": 48,
+            "endFrame": 50
+          },
+          {
+            "text": "만들기",
+            "startFrame": 51,
+            "endFrame": 58
+          },
+          {
+            "text": "시작!",
+            "startFrame": 60,
+            "endFrame": 65
+          },
+          {
+            "text": "그런데",
+            "startFrame": 74,
+            "endFrame": 81
+          },
+          {
+            "text": "제",
+            "startFrame": 89,
+            "endFrame": 92
+          },
+          {
+            "text": "개발",
+            "startFrame": 94,
+            "endFrame": 100
+          },
+          {
+            "text": "실력은?",
+            "startFrame": 102,
+            "endFrame": 115
+          }
+        ],
+        "transition": {
+          "kind": "reveal-left",
+          "frames": 9
+        },
+        "motionCue": {
+          "at": 74,
+          "scale": 1.035
+        }
+      },
+      {
+        "id": "07",
+        "start": 861,
+        "duration": 111,
+        "visual": "zero",
+        "text": "제로. 클로드 코드가 뭔지도 몰랐어요. 설정부터 막혔죠.",
+        "voiceStartFrame": 862,
+        "voiceDurationSeconds": 3.583356,
+        "wordCues": [
+          {
+            "text": "제로.",
+            "startFrame": 3,
+            "endFrame": 10
+          },
+          {
+            "text": "클로드",
+            "startFrame": 24,
+            "endFrame": 33
+          },
+          {
+            "text": "코드가",
+            "startFrame": 34,
+            "endFrame": 41
+          },
+          {
+            "text": "뭔지도",
+            "startFrame": 43,
+            "endFrame": 50
+          },
+          {
+            "text": "몰랐어요.",
+            "startFrame": 52,
+            "endFrame": 63
+          },
+          {
+            "text": "설정부터",
+            "startFrame": 78,
+            "endFrame": 90
+          },
+          {
+            "text": "막혔죠.",
+            "startFrame": 92,
+            "endFrame": 109
+          }
+        ],
+        "transition": {
+          "kind": "soft-zoom",
+          "frames": 6
+        },
+        "motionCue": {
+          "at": 78,
+          "scale": 1.025
+        }
+      },
+      {
+        "id": "08",
+        "start": 972,
+        "duration": 77,
+        "visual": "screenshots",
+        "text": "방법은 하나. 화면 찍고! 물어보고! 따라 하고!",
+        "voiceStartFrame": 973,
+        "voiceDurationSeconds": 2.460952,
+        "wordCues": [
+          {
+            "text": "방법은",
+            "startFrame": 2,
+            "endFrame": 11
+          },
+          {
+            "text": "하나.",
+            "startFrame": 12,
+            "endFrame": 15
+          },
+          {
+            "text": "화면",
+            "startFrame": 26,
+            "endFrame": 31
+          },
+          {
+            "text": "찍고!",
+            "startFrame": 32,
+            "endFrame": 37
+          },
+          {
+            "text": "물어보고!",
+            "startFrame": 45,
+            "endFrame": 53
+          },
+          {
+            "text": "따라",
+            "startFrame": 58,
+            "endFrame": 63
+          },
+          {
+            "text": "하고!",
+            "startFrame": 65,
+            "endFrame": 75
+          }
+        ],
+        "transition": {
+          "kind": "reveal-up",
+          "frames": 9
+        },
+        "motionCue": null
+      },
+      {
+        "id": "09a",
+        "start": 1049,
+        "duration": 125,
+        "visual": "loop",
+        "text": "그렇게 따라 하다 보니, 출석 앱이 아니라 뭔가 괴상한 걸 만들고 있더라고요.",
+        "voiceStartFrame": 1050,
+        "voiceDurationSeconds": 4.055147,
+        "wordCues": [
+          {
+            "text": "그렇게",
+            "startFrame": 5,
+            "endFrame": 12
+          },
+          {
+            "text": "따라",
+            "startFrame": 13,
+            "endFrame": 18
+          },
+          {
+            "text": "하다",
+            "startFrame": 19,
+            "endFrame": 23
+          },
+          {
+            "text": "보니,",
+            "startFrame": 24,
+            "endFrame": 28
+          },
+          {
+            "text": "출석",
+            "startFrame": 42,
+            "endFrame": 51
+          },
+          {
+            "text": "앱이",
+            "startFrame": 52,
+            "endFrame": 55
+          },
+          {
+            "text": "아니라",
+            "startFrame": 56,
+            "endFrame": 61
+          },
+          {
+            "text": "뭔가",
+            "startFrame": 73,
+            "endFrame": 80
+          },
+          {
+            "text": "괴상한",
+            "startFrame": 83,
+            "endFrame": 93
+          },
+          {
+            "text": "걸",
+            "startFrame": 94,
+            "endFrame": 96
+          },
+          {
+            "text": "만들고",
+            "startFrame": 97,
+            "endFrame": 105
+          },
+          {
+            "text": "있더라고요.",
+            "startFrame": 106,
+            "endFrame": 123
+          }
+        ],
+        "transition": {
+          "kind": "reveal-left",
+          "frames": 9
+        },
+        "motionCue": {
+          "at": 83,
+          "scale": 1.035,
+          "y": -8
+        }
+      },
+      {
+        "id": "10",
+        "start": 1174,
+        "duration": 106,
+        "visual": "hours",
+        "text": "수업 시간 빼고, 하루 열일곱, 열여덟 시간은 붙잡았던 것 같아요.",
+        "voiceStartFrame": 1175,
+        "voiceDurationSeconds": 3.44,
+        "wordCues": [
+          {
+            "text": "수업",
+            "startFrame": 4,
+            "endFrame": 9
+          },
+          {
+            "text": "시간",
+            "startFrame": 10,
+            "endFrame": 15
+          },
+          {
+            "text": "빼고,",
+            "startFrame": 17,
+            "endFrame": 22
+          },
+          {
+            "text": "하루",
+            "startFrame": 33,
+            "endFrame": 38
+          },
+          {
+            "text": "열일곱,",
+            "startFrame": 40,
+            "endFrame": 49
+          },
+          {
+            "text": "열여덟",
+            "startFrame": 58,
+            "endFrame": 67
+          },
+          {
+            "text": "시간은",
+            "startFrame": 69,
+            "endFrame": 75
+          },
+          {
+            "text": "붙잡았던",
+            "startFrame": 77,
+            "endFrame": 88
+          },
+          {
+            "text": "것",
+            "startFrame": 89,
+            "endFrame": 91
+          },
+          {
+            "text": "같아요.",
+            "startFrame": 92,
+            "endFrame": 104
+          }
+        ],
+        "transition": {
+          "kind": "soft-zoom",
+          "frames": 6
+        },
+        "motionCue": {
+          "at": 40,
+          "scale": 1.035
+        }
+      },
+      {
+        "id": "11b",
+        "start": 1280,
+        "duration": 222,
+        "visual": "joke",
+        "text": "심심함은 해결됐습니다. 앱은요? 몇 번을 뜯어고쳤는지 깊은 한숨이 잦았답니다. 실제로 탈모 걸린 거 아닌지 가끔 머리를 만져봤어요.",
+        "voiceStartFrame": 1281,
+        "voiceDurationSeconds": 7.13,
+        "wordCues": [
+          {
+            "text": "심심함은",
+            "startFrame": 5,
+            "endFrame": 18
+          },
+          {
+            "text": "해결됐습니다.",
+            "startFrame": 20,
+            "endFrame": 34
+          },
+          {
+            "text": "앱은요?",
+            "startFrame": 43,
+            "endFrame": 50
+          },
+          {
+            "text": "몇",
+            "startFrame": 61,
+            "endFrame": 65
+          },
+          {
+            "text": "번을",
+            "startFrame": 66,
+            "endFrame": 72
+          },
+          {
+            "text": "뜯어고쳤는지",
+            "startFrame": 73,
+            "endFrame": 88
+          },
+          {
+            "text": "깊은",
+            "startFrame": 97,
+            "endFrame": 105
+          },
+          {
+            "text": "한숨이",
+            "startFrame": 106,
+            "endFrame": 112
+          },
+          {
+            "text": "잦았답니다.",
+            "startFrame": 113,
+            "endFrame": 126
+          },
+          {
+            "text": "실제로",
+            "startFrame": 138,
+            "endFrame": 150
+          },
+          {
+            "text": "탈모",
+            "startFrame": 153,
+            "endFrame": 160
+          },
+          {
+            "text": "걸린",
+            "startFrame": 161,
+            "endFrame": 165
+          },
+          {
+            "text": "거",
+            "startFrame": 166,
+            "endFrame": 168
+          },
+          {
+            "text": "아닌지",
+            "startFrame": 169,
+            "endFrame": 175
+          },
+          {
+            "text": "가끔",
+            "startFrame": 179,
+            "endFrame": 186
+          },
+          {
+            "text": "머리를",
+            "startFrame": 188,
+            "endFrame": 196
+          },
+          {
+            "text": "만져봤어요.",
+            "startFrame": 197,
+            "endFrame": 215
+          }
+        ],
+        "transition": {
+          "kind": "reveal-up",
+          "frames": 9
+        },
+        "motionCue": {
+          "at": 138,
+          "scale": 1.045,
+          "y": -10
+        }
+      },
+      {
+        "id": "12",
+        "start": 1502,
+        "duration": 119,
+        "visual": "lesson",
+        "text": "지금 다시 시작하면, 처음부터 다 만들진 않을 거예요. 딱 출석 하나부터!",
+        "voiceStartFrame": 1503,
+        "voiceDurationSeconds": 3.852472,
+        "wordCues": [
+          {
+            "text": "지금",
+            "startFrame": 5,
+            "endFrame": 11
+          },
+          {
+            "text": "다시",
+            "startFrame": 12,
+            "endFrame": 17
+          },
+          {
+            "text": "시작하면,",
+            "startFrame": 18,
+            "endFrame": 30
+          },
+          {
+            "text": "처음부터",
+            "startFrame": 41,
+            "endFrame": 50
+          },
+          {
+            "text": "다",
+            "startFrame": 52,
+            "endFrame": 53
+          },
+          {
+            "text": "만들진",
+            "startFrame": 55,
+            "endFrame": 64
+          },
+          {
+            "text": "않을",
+            "startFrame": 65,
+            "endFrame": 70
+          },
+          {
+            "text": "거예요.",
+            "startFrame": 71,
+            "endFrame": 76
+          },
+          {
+            "text": "딱",
+            "startFrame": 88,
+            "endFrame": 93
+          },
+          {
+            "text": "출석",
+            "startFrame": 94,
+            "endFrame": 100
+          },
+          {
+            "text": "하나부터!",
+            "startFrame": 101,
+            "endFrame": 117
+          }
+        ],
+        "transition": {
+          "kind": "reveal-left",
+          "frames": 9
+        },
+        "motionCue": null
+      },
+      {
+        "id": "13a",
+        "start": 1621,
+        "duration": 230,
+        "visual": "prompt",
+        "text": "만들고 싶은 걸 넣고, 이렇게 물어보세요. 나는 개발이 처음이야. 학원 출석 앱을 만들고 싶어. 가장 효율적으로 만들 수 있는 로드맵을 추천해 줘.",
+        "voiceStartFrame": 1622,
+        "voiceDurationSeconds": 7.56,
+        "wordCues": [
+          {
+            "text": "만들고",
+            "startFrame": 5,
+            "endFrame": 14
+          },
+          {
+            "text": "싶은",
+            "startFrame": 15,
+            "endFrame": 19
+          },
+          {
+            "text": "걸",
+            "startFrame": 20,
+            "endFrame": 22
+          },
+          {
+            "text": "넣고,",
+            "startFrame": 23,
+            "endFrame": 29
+          },
+          {
+            "text": "이렇게",
+            "startFrame": 40,
+            "endFrame": 46
+          },
+          {
+            "text": "물어보세요.",
+            "startFrame": 48,
+            "endFrame": 58
+          },
+          {
+            "text": "나는",
+            "startFrame": 71,
+            "endFrame": 77
+          },
+          {
+            "text": "개발이",
+            "startFrame": 80,
+            "endFrame": 87
+          },
+          {
+            "text": "처음이야.",
+            "startFrame": 89,
+            "endFrame": 98
+          },
+          {
+            "text": "학원",
+            "startFrame": 114,
+            "endFrame": 120
+          },
+          {
+            "text": "출석",
+            "startFrame": 121,
+            "endFrame": 128
+          },
+          {
+            "text": "앱을",
+            "startFrame": 129,
+            "endFrame": 133
+          },
+          {
+            "text": "만들고",
+            "startFrame": 134,
+            "endFrame": 142
+          },
+          {
+            "text": "싶어.",
+            "startFrame": 143,
+            "endFrame": 147
+          },
+          {
+            "text": "가장",
+            "startFrame": 160,
+            "endFrame": 167
+          },
+          {
+            "text": "효율적으로",
+            "startFrame": 169,
+            "endFrame": 183
+          },
+          {
+            "text": "만들",
+            "startFrame": 184,
+            "endFrame": 190
+          },
+          {
+            "text": "수",
+            "startFrame": 191,
+            "endFrame": 192
+          },
+          {
+            "text": "있는",
+            "startFrame": 193,
+            "endFrame": 197
+          },
+          {
+            "text": "로드맵을",
+            "startFrame": 199,
+            "endFrame": 209
+          },
+          {
+            "text": "추천해",
+            "startFrame": 210,
+            "endFrame": 216
+          },
+          {
+            "text": "줘.",
+            "startFrame": 218,
+            "endFrame": 228
+          }
+        ],
+        "typing": {
+          "text": "학원 출석 앱을 만들고 싶어.",
+          "startFrame": 114,
+          "endFrame": 147,
+          "keys": [
+            {
+              "frame": 114,
+              "count": 1,
+              "char": "학"
+            },
+            {
+              "frame": 120,
+              "count": 2,
+              "char": "원"
+            },
+            {
+              "frame": 121,
+              "count": 4,
+              "char": "출"
+            },
+            {
+              "frame": 128,
+              "count": 5,
+              "char": "석"
+            },
+            {
+              "frame": 129,
+              "count": 7,
+              "char": "앱"
+            },
+            {
+              "frame": 133,
+              "count": 8,
+              "char": "을"
+            },
+            {
+              "frame": 134,
+              "count": 10,
+              "char": "만"
+            },
+            {
+              "frame": 138,
+              "count": 11,
+              "char": "들"
+            },
+            {
+              "frame": 142,
+              "count": 12,
+              "char": "고"
+            },
+            {
+              "frame": 143,
+              "count": 14,
+              "char": "싶"
+            },
+            {
+              "frame": 145,
+              "count": 15,
+              "char": "어"
+            },
+            {
+              "frame": 147,
+              "count": 16,
+              "char": "."
+            }
+          ]
+        },
+        "transition": {
+          "kind": "reveal-up",
+          "frames": 9
+        },
+        "motionCue": null
+      },
+      {
+        "id": "14",
+        "start": 1851,
+        "duration": 142,
+        "visual": "action",
+        "text": "여러분도 불편한 일 하나만 골라보세요. 거창한 아이디어 없어도, 시작은 거기서 됩니다.",
+        "voiceStartFrame": 1852,
+        "voiceDurationSeconds": 4.637098,
+        "wordCues": [
+          {
+            "text": "여러분도",
+            "startFrame": 6,
+            "endFrame": 15
+          },
+          {
+            "text": "불편한",
+            "startFrame": 18,
+            "endFrame": 30
+          },
+          {
+            "text": "일",
+            "startFrame": 31,
+            "endFrame": 32
+          },
+          {
+            "text": "하나만",
+            "startFrame": 33,
+            "endFrame": 40
+          },
+          {
+            "text": "골라보세요.",
+            "startFrame": 42,
+            "endFrame": 54
+          },
+          {
+            "text": "거창한",
+            "startFrame": 70,
+            "endFrame": 80
+          },
+          {
+            "text": "아이디어",
+            "startFrame": 81,
+            "endFrame": 88
+          },
+          {
+            "text": "없어도,",
+            "startFrame": 89,
+            "endFrame": 96
+          },
+          {
+            "text": "시작은",
+            "startFrame": 107,
+            "endFrame": 117
+          },
+          {
+            "text": "거기서",
+            "startFrame": 119,
+            "endFrame": 126
+          },
+          {
+            "text": "됩니다.",
+            "startFrame": 128,
+            "endFrame": 140
+          }
+        ],
+        "transition": {
+          "kind": "reveal-right",
+          "frames": 9
+        },
+        "motionCue": {
+          "at": 70,
+          "scale": 1.03
+        }
+      },
+      {
+        "id": "17",
+        "start": 1993,
+        "duration": 70,
+        "visual": "shortcut",
+        "text": "제가 헤맨 길, 여러분은 건너뛰세요.",
+        "voiceStartFrame": 1994,
+        "voiceDurationSeconds": 2.235782,
+        "wordCues": [
+          {
+            "text": "제가",
+            "startFrame": 4,
+            "endFrame": 11
+          },
+          {
+            "text": "헤맨",
+            "startFrame": 13,
+            "endFrame": 19
+          },
+          {
+            "text": "길,",
+            "startFrame": 21,
+            "endFrame": 24
+          },
+          {
+            "text": "여러분은",
+            "startFrame": 38,
+            "endFrame": 46
+          },
+          {
+            "text": "건너뛰세요.",
+            "startFrame": 48,
+            "endFrame": 68
+          }
+        ],
+        "transition": {
+          "kind": "reveal-left",
+          "frames": 9
+        },
+        "motionCue": null
+      },
+      {
+        "id": "18",
+        "start": 2063,
+        "duration": 125,
+        "visual": "signoff",
+        "text": "왕초보에서 1인 기업가까지. 여러분의 시간을 아껴드립니다!",
+        "voiceStartFrame": 2070,
+        "voiceDurationSeconds": 3.225828,
+        "wordCues": [
+          {
+            "text": "왕초보에서",
+            "startFrame": 8,
+            "endFrame": 23
+          },
+          {
+            "text": "일인",
+            "startFrame": 25,
+            "endFrame": 30
+          },
+          {
+            "text": "기업가까지.",
+            "startFrame": 31,
+            "endFrame": 45
+          },
+          {
+            "text": "여러분의",
+            "startFrame": 62,
+            "endFrame": 71
+          },
+          {
+            "text": "시간을",
+            "startFrame": 72,
+            "endFrame": 79
+          },
+          {
+            "text": "아껴드립니다!",
+            "startFrame": 84,
+            "endFrame": 103
+          }
+        ],
+        "transition": {
+          "kind": "soft-zoom",
+          "frames": 6
+        },
+        "motionCue": {
+          "at": 62,
+          "scale": 1.025,
+          "y": -8
+        }
+      }
+    ]
+  },
+  "captions": [
+    {
+      "text": "개발을 처음 시작할 때,",
+      "startMs": 204,
+      "endMs": 1262,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "이 순서만 알았어도",
+      "startMs": 1628,
+      "endMs": 2646,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "100시간은\n아꼈을 것 같아요.",
+      "startMs": 2646,
+      "endMs": 4311,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "오늘은 번역만 하려고",
+      "startMs": 4311,
+      "endMs": 5455,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "AI를 결제했다가,",
+      "startMs": 5455,
+      "endMs": 6379,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "출석 앱까지 만들면서",
+      "startMs": 6651,
+      "endMs": 8055,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "제대로 삽질한 얘기를\n해볼게요.",
+      "startMs": 8055,
+      "endMs": 9599,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "몽골 울란바토르,\n학원 부원장.",
+      "startMs": 9599,
+      "endMs": 11667,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "친구도 없고,",
+      "startMs": 11667,
+      "endMs": 12441,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "솔직히 심심했습니다.",
+      "startMs": 12441,
+      "endMs": 13796,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "6월 2일,\n클로드 첫 결제!",
+      "startMs": 13796,
+      "endMs": 15690,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "그때는 딱 번역만\n하려고 했죠.",
+      "startMs": 15690,
+      "endMs": 17336,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "그런데 학생 문의가\n확 늘었어요.",
+      "startMs": 17336,
+      "endMs": 18862,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "잠깐, 이러면\n관리가 어렵겠는데?",
+      "startMs": 18862,
+      "endMs": 20991,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "출석 앱을 만들면?",
+      "startMs": 20991,
+      "endMs": 21994,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "부모님께 등하원 알림도 가고,",
+      "startMs": 21994,
+      "endMs": 23530,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "선생님들도 편해지잖아요!",
+      "startMs": 23530,
+      "endMs": 24867,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "그래서 글라이드랑\n구글 시트로",
+      "startMs": 24867,
+      "endMs": 26394,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "앱 만들기 시작!",
+      "startMs": 26394,
+      "endMs": 27264,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "그런데 제 개발 실력은?",
+      "startMs": 27264,
+      "endMs": 28804,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "제로.",
+      "startMs": 28804,
+      "endMs": 29215,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "클로드 코드가 뭔지도\n몰랐어요.",
+      "startMs": 29495,
+      "endMs": 30983,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "설정부터 막혔죠.",
+      "startMs": 31295,
+      "endMs": 32469,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "방법은 하나.",
+      "startMs": 32469,
+      "endMs": 33260,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "화면 찍고! 물어보고!",
+      "startMs": 33260,
+      "endMs": 34340,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "따라 하고!",
+      "startMs": 34340,
+      "endMs": 35144,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "그렇게 따라 하다 보니,",
+      "startMs": 35144,
+      "endMs": 36057,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "출석 앱이 아니라",
+      "startMs": 36354,
+      "endMs": 37385,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "뭔가 괴상한 걸",
+      "startMs": 37385,
+      "endMs": 38210,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "만들고 있더라고요.",
+      "startMs": 38210,
+      "endMs": 39254,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "수업 시간 빼고,",
+      "startMs": 39254,
+      "endMs": 40235,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "하루 열일곱, 열여덟 시간은",
+      "startMs": 40235,
+      "endMs": 41699,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "붙잡았던 것 같아요.",
+      "startMs": 41699,
+      "endMs": 42846,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "심심함은 해결됐습니다.",
+      "startMs": 42846,
+      "endMs": 44096,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "앱은요?",
+      "startMs": 44096,
+      "endMs": 44685,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "몇 번을 뜯어고쳤는지",
+      "startMs": 44685,
+      "endMs": 45893,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "깊은 한숨이 잦았답니다.",
+      "startMs": 45893,
+      "endMs": 47021,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "실제로 탈모 걸린 거 아닌지",
+      "startMs": 47282,
+      "endMs": 48629,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "가끔 머리를 만져봤어요.",
+      "startMs": 48629,
+      "endMs": 50231,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "지금 다시 시작하면,",
+      "startMs": 50231,
+      "endMs": 51433,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "처음부터 다 만들진\n않을 거예요.",
+      "startMs": 51433,
+      "endMs": 53007,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "딱 출석 하나부터!",
+      "startMs": 53007,
+      "endMs": 54193,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "만들고 싶은 걸 넣고,",
+      "startMs": 54193,
+      "endMs": 55362,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "이렇게 물어보세요.",
+      "startMs": 55362,
+      "endMs": 56385,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "나는 개발이 처음이야.",
+      "startMs": 56385,
+      "endMs": 57485,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "학원 출석 앱을 만들고 싶어.",
+      "startMs": 57833,
+      "endMs": 59361,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "가장 효율적으로\n만들 수 있는",
+      "startMs": 59361,
+      "endMs": 60663,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "로드맵을 추천해 줘.",
+      "startMs": 60663,
+      "endMs": 61885,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "여러분도 불편한 일\n하나만 골라보세요.",
+      "startMs": 61885,
+      "endMs": 63669,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "거창한 아이디어 없어도,",
+      "startMs": 64022,
+      "endMs": 65272,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "시작은 거기서 됩니다.",
+      "startMs": 65272,
+      "endMs": 66433,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "제가 헤맨 길,",
+      "startMs": 66555,
+      "endMs": 67405,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "여러분은 건너뛰세요.",
+      "startMs": 67689,
+      "endMs": 68767,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "왕초보에서\n1인 기업가까지.",
+      "startMs": 69046,
+      "endMs": 70453,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "여러분의 시간을\n아껴드립니다!",
+      "startMs": 70828,
+      "endMs": 72383,
+      "timestampMs": null,
+      "confidence": null
+    }
+  ],
+  "words": [
+    {
+      "text": "개발을",
+      "start": 0.20400000000000001,
+      "end": 0.46599999999999997,
+      "segment": "16a"
+    },
+    {
+      "text": "처음",
+      "start": 0.505,
+      "end": 0.701,
+      "segment": "16a"
+    },
+    {
+      "text": "시작할",
+      "start": 0.74,
+      "end": 0.988,
+      "segment": "16a"
+    },
+    {
+      "text": "때,",
+      "start": 1.0270000000000001,
+      "end": 1.092,
+      "segment": "16a"
+    },
+    {
+      "text": "이",
+      "start": 1.6280000000000001,
+      "end": 1.641,
+      "segment": "16a"
+    },
+    {
+      "text": "순서만",
+      "start": 1.719,
+      "end": 2.02,
+      "segment": "16a"
+    },
+    {
+      "text": "알았어도",
+      "start": 2.059,
+      "end": 2.333,
+      "segment": "16a"
+    },
+    {
+      "text": "백",
+      "start": 2.646,
+      "end": 2.777,
+      "segment": "16a"
+    },
+    {
+      "text": "시간은",
+      "start": 2.829,
+      "end": 3.064,
+      "segment": "16a"
+    },
+    {
+      "text": "아꼈을",
+      "start": 3.103,
+      "end": 3.352,
+      "segment": "16a"
+    },
+    {
+      "text": "것",
+      "start": 3.391,
+      "end": 3.443,
+      "segment": "16a"
+    },
+    {
+      "text": "같아요.",
+      "start": 3.482,
+      "end": 3.9,
+      "segment": "16a"
+    },
+    {
+      "text": "오늘은",
+      "start": 4.310666666666667,
+      "end": 4.518666666666667,
+      "segment": "01a"
+    },
+    {
+      "text": "번역만",
+      "start": 4.609666666666667,
+      "end": 4.921666666666667,
+      "segment": "01a"
+    },
+    {
+      "text": "하려고",
+      "start": 4.9606666666666674,
+      "end": 5.142666666666667,
+      "segment": "01a"
+    },
+    {
+      "text": "AI를",
+      "start": 5.454666666666667,
+      "end": 5.753666666666667,
+      "segment": "01a"
+    },
+    {
+      "text": "결제했다가,",
+      "start": 5.792666666666667,
+      "end": 6.208666666666667,
+      "segment": "01a"
+    },
+    {
+      "text": "출석",
+      "start": 6.650666666666667,
+      "end": 6.962666666666666,
+      "segment": "01a"
+    },
+    {
+      "text": "앱까지",
+      "start": 7.001666666666667,
+      "end": 7.235666666666667,
+      "segment": "01a"
+    },
+    {
+      "text": "만들면서",
+      "start": 7.2746666666666675,
+      "end": 7.651666666666666,
+      "segment": "01a"
+    },
+    {
+      "text": "제대로",
+      "start": 8.054666666666666,
+      "end": 8.288666666666666,
+      "segment": "01a"
+    },
+    {
+      "text": "삽질한",
+      "start": 8.327666666666666,
+      "end": 8.613666666666667,
+      "segment": "01a"
+    },
+    {
+      "text": "얘기를",
+      "start": 8.665666666666667,
+      "end": 8.847666666666665,
+      "segment": "01a"
+    },
+    {
+      "text": "해볼게요.",
+      "start": 8.886666666666667,
+      "end": 9.367666666666665,
+      "segment": "01a"
+    },
+    {
+      "text": "몽골",
+      "start": 9.599333333333332,
+      "end": 9.852333333333332,
+      "segment": "02"
+    },
+    {
+      "text": "울란바토르,",
+      "start": 9.899333333333333,
+      "end": 10.341333333333333,
+      "segment": "02"
+    },
+    {
+      "text": "학원",
+      "start": 10.720333333333333,
+      "end": 10.925333333333333,
+      "segment": "02"
+    },
+    {
+      "text": "부원장.",
+      "start": 10.973333333333333,
+      "end": 11.257333333333333,
+      "segment": "02"
+    },
+    {
+      "text": "친구도",
+      "start": 11.667333333333332,
+      "end": 11.983333333333333,
+      "segment": "02"
+    },
+    {
+      "text": "없고,",
+      "start": 12.031333333333333,
+      "end": 12.220333333333333,
+      "segment": "02"
+    },
+    {
+      "text": "솔직히",
+      "start": 12.441333333333333,
+      "end": 12.725333333333332,
+      "segment": "02"
+    },
+    {
+      "text": "심심했습니다.",
+      "start": 12.773333333333333,
+      "end": 13.530333333333333,
+      "segment": "02"
+    },
+    {
+      "text": "유월",
+      "start": 13.796,
+      "end": 14.036,
+      "segment": "03"
+    },
+    {
+      "text": "이일,",
+      "start": 14.107,
+      "end": 14.233999999999998,
+      "segment": "03"
+    },
+    {
+      "text": "클로드",
+      "start": 14.530999999999999,
+      "end": 14.784999999999998,
+      "segment": "03"
+    },
+    {
+      "text": "첫",
+      "start": 14.826999999999998,
+      "end": 14.954999999999998,
+      "segment": "03"
+    },
+    {
+      "text": "결제!",
+      "start": 15.011,
+      "end": 15.265999999999998,
+      "segment": "03"
+    },
+    {
+      "text": "그때는",
+      "start": 15.689999999999998,
+      "end": 15.972999999999999,
+      "segment": "03"
+    },
+    {
+      "text": "딱",
+      "start": 16.029,
+      "end": 16.142,
+      "segment": "03"
+    },
+    {
+      "text": "번역만",
+      "start": 16.212999999999997,
+      "end": 16.523999999999997,
+      "segment": "03"
+    },
+    {
+      "text": "하려고",
+      "start": 16.566,
+      "end": 16.708,
+      "segment": "03"
+    },
+    {
+      "text": "했죠.",
+      "start": 16.75,
+      "end": 17.16,
+      "segment": "03"
+    },
+    {
+      "text": "그런데",
+      "start": 17.336333333333332,
+      "end": 17.563333333333333,
+      "segment": "04"
+    },
+    {
+      "text": "학생",
+      "start": 17.601333333333333,
+      "end": 17.840333333333334,
+      "segment": "04"
+    },
+    {
+      "text": "문의가",
+      "start": 17.878333333333334,
+      "end": 18.042333333333332,
+      "segment": "04"
+    },
+    {
+      "text": "확",
+      "start": 18.105333333333334,
+      "end": 18.231333333333332,
+      "segment": "04"
+    },
+    {
+      "text": "늘었어요.",
+      "start": 18.269333333333332,
+      "end": 18.584333333333333,
+      "segment": "04"
+    },
+    {
+      "text": "잠깐,",
+      "start": 18.862333333333332,
+      "end": 19.101333333333333,
+      "segment": "04"
+    },
+    {
+      "text": "이러면",
+      "start": 19.543333333333333,
+      "end": 19.770333333333333,
+      "segment": "04"
+    },
+    {
+      "text": "관리가",
+      "start": 19.845333333333333,
+      "end": 20.123333333333335,
+      "segment": "04"
+    },
+    {
+      "text": "어렵겠는데?",
+      "start": 20.160333333333334,
+      "end": 20.753333333333334,
+      "segment": "04"
+    },
+    {
+      "text": "출석",
+      "start": 20.990809061488672,
+      "end": 21.285954692556633,
+      "segment": "05"
+    },
+    {
+      "text": "앱을",
+      "start": 21.345177993527507,
+      "end": 21.47818770226537,
+      "segment": "05"
+    },
+    {
+      "text": "만들면?",
+      "start": 21.52187702265372,
+      "end": 21.81702265372168,
+      "segment": "05"
+    },
+    {
+      "text": "부모님께",
+      "start": 21.993721682847895,
+      "end": 22.436440129449835,
+      "segment": "05"
+    },
+    {
+      "text": "등하원",
+      "start": 22.510226537216827,
+      "end": 22.80440129449838,
+      "segment": "05"
+    },
+    {
+      "text": "알림도",
+      "start": 22.849061488673136,
+      "end": 23.084983818770226,
+      "segment": "05"
+    },
+    {
+      "text": "가고,",
+      "start": 23.129644012944983,
+      "end": 23.29177993527508,
+      "segment": "05"
+    },
+    {
+      "text": "선생님들도",
+      "start": 23.52964401294498,
+      "end": 24.016051779935275,
+      "segment": "05"
+    },
+    {
+      "text": "편해지잖아요!",
+      "start": 24.06071197411003,
+      "end": 24.723818770226536,
+      "segment": "05"
+    },
+    {
+      "text": "그래서",
+      "start": 24.867,
+      "end": 25.068,
+      "segment": "06"
+    },
+    {
+      "text": "글라이드랑",
+      "start": 25.322,
+      "end": 25.791,
+      "segment": "06"
+    },
+    {
+      "text": "구글",
+      "start": 25.844,
+      "end": 26.045,
+      "segment": "06"
+    },
+    {
+      "text": "시트로",
+      "start": 26.086,
+      "end": 26.3,
+      "segment": "06"
+    },
+    {
+      "text": "앱",
+      "start": 26.394,
+      "end": 26.474,
+      "segment": "06"
+    },
+    {
+      "text": "만들기",
+      "start": 26.514,
+      "end": 26.742,
+      "segment": "06"
+    },
+    {
+      "text": "시작!",
+      "start": 26.795,
+      "end": 26.983,
+      "segment": "06"
+    },
+    {
+      "text": "그런데",
+      "start": 27.264,
+      "end": 27.492,
+      "segment": "06"
+    },
+    {
+      "text": "제",
+      "start": 27.759999999999998,
+      "end": 27.853,
+      "segment": "06"
+    },
+    {
+      "text": "개발",
+      "start": 27.947,
+      "end": 28.148,
+      "segment": "06"
+    },
+    {
+      "text": "실력은?",
+      "start": 28.188,
+      "end": 28.63,
+      "segment": "06"
+    },
+    {
+      "text": "제로.",
+      "start": 28.804,
+      "end": 29.044999999999998,
+      "segment": "07"
+    },
+    {
+      "text": "클로드",
+      "start": 29.494999999999997,
+      "end": 29.784,
+      "segment": "07"
+    },
+    {
+      "text": "코드가",
+      "start": 29.833,
+      "end": 30.073999999999998,
+      "segment": "07"
+    },
+    {
+      "text": "뭔지도",
+      "start": 30.122,
+      "end": 30.378999999999998,
+      "segment": "07"
+    },
+    {
+      "text": "몰랐어요.",
+      "start": 30.427,
+      "end": 30.813,
+      "segment": "07"
+    },
+    {
+      "text": "설정부터",
+      "start": 31.294999999999998,
+      "end": 31.712999999999997,
+      "segment": "07"
+    },
+    {
+      "text": "막혔죠.",
+      "start": 31.761,
+      "end": 32.323,
+      "segment": "07"
+    },
+    {
+      "text": "방법은",
+      "start": 32.469,
+      "end": 32.757,
+      "segment": "08"
+    },
+    {
+      "text": "하나.",
+      "start": 32.8,
+      "end": 32.915,
+      "segment": "08"
+    },
+    {
+      "text": "화면",
+      "start": 33.26,
+      "end": 33.433,
+      "segment": "08"
+    },
+    {
+      "text": "찍고!",
+      "start": 33.476,
+      "end": 33.634,
+      "segment": "08"
+    },
+    {
+      "text": "물어보고!",
+      "start": 33.894,
+      "end": 34.181,
+      "segment": "08"
+    },
+    {
+      "text": "따라",
+      "start": 34.339999999999996,
+      "end": 34.512,
+      "segment": "08"
+    },
+    {
+      "text": "하고!",
+      "start": 34.556,
+      "end": 34.900999999999996,
+      "segment": "08"
+    },
+    {
+      "text": "그렇게",
+      "start": 35.14366666666667,
+      "end": 35.36366666666667,
+      "segment": "09a"
+    },
+    {
+      "text": "따라",
+      "start": 35.40566666666667,
+      "end": 35.57066666666667,
+      "segment": "09a"
+    },
+    {
+      "text": "하다",
+      "start": 35.611666666666665,
+      "end": 35.72166666666667,
+      "segment": "09a"
+    },
+    {
+      "text": "보니,",
+      "start": 35.76266666666667,
+      "end": 35.88666666666667,
+      "segment": "09a"
+    },
+    {
+      "text": "출석",
+      "start": 36.35366666666667,
+      "end": 36.656666666666666,
+      "segment": "09a"
+    },
+    {
+      "text": "앱이",
+      "start": 36.69766666666667,
+      "end": 36.80766666666667,
+      "segment": "09a"
+    },
+    {
+      "text": "아니라",
+      "start": 36.84866666666667,
+      "end": 37.013666666666666,
+      "segment": "09a"
+    },
+    {
+      "text": "뭔가",
+      "start": 37.38466666666667,
+      "end": 37.64566666666667,
+      "segment": "09a"
+    },
+    {
+      "text": "괴상한",
+      "start": 37.72866666666667,
+      "end": 38.05866666666667,
+      "segment": "09a"
+    },
+    {
+      "text": "걸",
+      "start": 38.09966666666667,
+      "end": 38.16866666666667,
+      "segment": "09a"
+    },
+    {
+      "text": "만들고",
+      "start": 38.20966666666667,
+      "end": 38.45666666666667,
+      "segment": "09a"
+    },
+    {
+      "text": "있더라고요.",
+      "start": 38.498666666666665,
+      "end": 39.06166666666667,
+      "segment": "09a"
+    },
+    {
+      "text": "수업",
+      "start": 39.254333333333335,
+      "end": 39.428333333333335,
+      "segment": "10"
+    },
+    {
+      "text": "시간",
+      "start": 39.46933333333333,
+      "end": 39.64333333333333,
+      "segment": "10"
+    },
+    {
+      "text": "빼고,",
+      "start": 39.684333333333335,
+      "end": 39.87233333333333,
+      "segment": "10"
+    },
+    {
+      "text": "하루",
+      "start": 40.23533333333333,
+      "end": 40.39633333333333,
+      "segment": "10"
+    },
+    {
+      "text": "열일곱,",
+      "start": 40.46333333333333,
+      "end": 40.75933333333333,
+      "segment": "10"
+    },
+    {
+      "text": "열여덟",
+      "start": 41.08133333333333,
+      "end": 41.37733333333333,
+      "segment": "10"
+    },
+    {
+      "text": "시간은",
+      "start": 41.43033333333333,
+      "end": 41.632333333333335,
+      "segment": "10"
+    },
+    {
+      "text": "붙잡았던",
+      "start": 41.699333333333335,
+      "end": 42.07533333333333,
+      "segment": "10"
+    },
+    {
+      "text": "것",
+      "start": 42.11633333333333,
+      "end": 42.17033333333333,
+      "segment": "10"
+    },
+    {
+      "text": "같아요.",
+      "start": 42.21033333333333,
+      "end": 42.61333333333333,
+      "segment": "10"
+    },
+    {
+      "text": "심심함은",
+      "start": 42.845666666666666,
+      "end": 43.275666666666666,
+      "segment": "11b"
+    },
+    {
+      "text": "해결됐습니다.",
+      "start": 43.31766666666666,
+      "end": 43.78966666666666,
+      "segment": "11b"
+    },
+    {
+      "text": "앱은요?",
+      "start": 44.095666666666666,
+      "end": 44.345666666666666,
+      "segment": "11b"
+    },
+    {
+      "text": "몇",
+      "start": 44.684666666666665,
+      "end": 44.82266666666666,
+      "segment": "11b"
+    },
+    {
+      "text": "번을",
+      "start": 44.87866666666666,
+      "end": 45.059666666666665,
+      "segment": "11b"
+    },
+    {
+      "text": "뜯어고쳤는지",
+      "start": 45.10066666666666,
+      "end": 45.60066666666666,
+      "segment": "11b"
+    },
+    {
+      "text": "깊은",
+      "start": 45.89266666666666,
+      "end": 46.156666666666666,
+      "segment": "11b"
+    },
+    {
+      "text": "한숨이",
+      "start": 46.19766666666666,
+      "end": 46.406666666666666,
+      "segment": "11b"
+    },
+    {
+      "text": "잦았답니다.",
+      "start": 46.44766666666666,
+      "end": 46.85066666666666,
+      "segment": "11b"
+    },
+    {
+      "text": "실제로",
+      "start": 47.28166666666666,
+      "end": 47.65666666666666,
+      "segment": "11b"
+    },
+    {
+      "text": "탈모",
+      "start": 47.76766666666666,
+      "end": 47.989666666666665,
+      "segment": "11b"
+    },
+    {
+      "text": "걸린",
+      "start": 48.03166666666666,
+      "end": 48.169666666666664,
+      "segment": "11b"
+    },
+    {
+      "text": "거",
+      "start": 48.211666666666666,
+      "end": 48.25366666666667,
+      "segment": "11b"
+    },
+    {
+      "text": "아닌지",
+      "start": 48.294666666666664,
+      "end": 48.489666666666665,
+      "segment": "11b"
+    },
+    {
+      "text": "가끔",
+      "start": 48.62866666666667,
+      "end": 48.87866666666667,
+      "segment": "11b"
+    },
+    {
+      "text": "머리를",
+      "start": 48.94766666666666,
+      "end": 49.19766666666666,
+      "segment": "11b"
+    },
+    {
+      "text": "만져봤어요.",
+      "start": 49.239666666666665,
+      "end": 49.836666666666666,
+      "segment": "11b"
+    },
+    {
+      "text": "지금",
+      "start": 50.23066666666667,
+      "end": 50.43766666666667,
+      "segment": "12"
+    },
+    {
+      "text": "다시",
+      "start": 50.47966666666667,
+      "end": 50.63166666666667,
+      "segment": "12"
+    },
+    {
+      "text": "시작하면,",
+      "start": 50.67266666666667,
+      "end": 51.05966666666667,
+      "segment": "12"
+    },
+    {
+      "text": "처음부터",
+      "start": 51.43266666666667,
+      "end": 51.74966666666667,
+      "segment": "12"
+    },
+    {
+      "text": "다",
+      "start": 51.79166666666667,
+      "end": 51.83266666666667,
+      "segment": "12"
+    },
+    {
+      "text": "만들진",
+      "start": 51.88766666666667,
+      "end": 52.205666666666666,
+      "segment": "12"
+    },
+    {
+      "text": "않을",
+      "start": 52.24666666666667,
+      "end": 52.38466666666667,
+      "segment": "12"
+    },
+    {
+      "text": "거예요.",
+      "start": 52.42666666666667,
+      "end": 52.60566666666667,
+      "segment": "12"
+    },
+    {
+      "text": "딱",
+      "start": 53.00666666666667,
+      "end": 53.15866666666667,
+      "segment": "12"
+    },
+    {
+      "text": "출석",
+      "start": 53.199666666666666,
+      "end": 53.39266666666667,
+      "segment": "12"
+    },
+    {
+      "text": "하나부터!",
+      "start": 53.44866666666667,
+      "end": 53.95966666666667,
+      "segment": "12"
+    },
+    {
+      "text": "만들고",
+      "start": 54.19333333333333,
+      "end": 54.48533333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "싶은",
+      "start": 54.52533333333333,
+      "end": 54.67133333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "걸",
+      "start": 54.71133333333333,
+      "end": 54.76433333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "넣고,",
+      "start": 54.80433333333333,
+      "end": 54.99033333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "이렇게",
+      "start": 55.36233333333333,
+      "end": 55.56133333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "물어보세요.",
+      "start": 55.62833333333333,
+      "end": 55.96033333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "나는",
+      "start": 56.38533333333333,
+      "end": 56.59733333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "개발이",
+      "start": 56.69033333333333,
+      "end": 56.93033333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "처음이야.",
+      "start": 56.98333333333333,
+      "end": 57.31533333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "학원",
+      "start": 57.83333333333333,
+      "end": 58.01933333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "출석",
+      "start": 58.05933333333333,
+      "end": 58.285333333333334,
+      "segment": "13a"
+    },
+    {
+      "text": "앱을",
+      "start": 58.33833333333333,
+      "end": 58.47133333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "만들고",
+      "start": 58.51133333333333,
+      "end": 58.76333333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "싶어.",
+      "start": 58.803333333333335,
+      "end": 58.94933333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "가장",
+      "start": 59.36133333333333,
+      "end": 59.60033333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "효율적으로",
+      "start": 59.65333333333333,
+      "end": 60.11833333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "만들",
+      "start": 60.15833333333333,
+      "end": 60.35733333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "수",
+      "start": 60.39733333333333,
+      "end": 60.43733333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "있는",
+      "start": 60.47733333333333,
+      "end": 60.61033333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "로드맵을",
+      "start": 60.663333333333334,
+      "end": 60.99533333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "추천해",
+      "start": 61.035333333333334,
+      "end": 61.24833333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "줘.",
+      "start": 61.288333333333334,
+      "end": 61.63333333333333,
+      "segment": "13a"
+    },
+    {
+      "text": "여러분도",
+      "start": 61.885000000000005,
+      "end": 62.205000000000005,
+      "segment": "14"
+    },
+    {
+      "text": "불편한",
+      "start": 62.307,
+      "end": 62.699000000000005,
+      "segment": "14"
+    },
+    {
+      "text": "일",
+      "start": 62.743,
+      "end": 62.772,
+      "segment": "14"
+    },
+    {
+      "text": "하나만",
+      "start": 62.816,
+      "end": 63.048,
+      "segment": "14"
+    },
+    {
+      "text": "골라보세요.",
+      "start": 63.092,
+      "end": 63.499,
+      "segment": "14"
+    },
+    {
+      "text": "거창한",
+      "start": 64.022,
+      "end": 64.37100000000001,
+      "segment": "14"
+    },
+    {
+      "text": "아이디어",
+      "start": 64.415,
+      "end": 64.63300000000001,
+      "segment": "14"
+    },
+    {
+      "text": "없어도,",
+      "start": 64.676,
+      "end": 64.909,
+      "segment": "14"
+    },
+    {
+      "text": "시작은",
+      "start": 65.272,
+      "end": 65.59200000000001,
+      "segment": "14"
+    },
+    {
+      "text": "거기서",
+      "start": 65.665,
+      "end": 65.912,
+      "segment": "14"
+    },
+    {
+      "text": "됩니다.",
+      "start": 65.956,
+      "end": 66.37700000000001,
+      "segment": "14"
+    },
+    {
+      "text": "제가",
+      "start": 66.55433333333333,
+      "end": 66.81333333333333,
+      "segment": "17"
+    },
+    {
+      "text": "헤맨",
+      "start": 66.87833333333333,
+      "end": 67.07233333333333,
+      "segment": "17"
+    },
+    {
+      "text": "길,",
+      "start": 67.12133333333333,
+      "end": 67.23433333333332,
+      "segment": "17"
+    },
+    {
+      "text": "여러분은",
+      "start": 67.68833333333333,
+      "end": 67.98033333333333,
+      "segment": "17"
+    },
+    {
+      "text": "건너뛰세요.",
+      "start": 68.02833333333334,
+      "end": 68.70933333333333,
+      "segment": "17"
+    },
+    {
+      "text": "왕초보에서",
+      "start": 69.04566666666666,
+      "end": 69.54666666666667,
+      "segment": "18"
+    },
+    {
+      "text": "일인",
+      "start": 69.60566666666666,
+      "end": 69.76766666666667,
+      "segment": "18"
+    },
+    {
+      "text": "기업가까지.",
+      "start": 69.81166666666667,
+      "end": 70.28266666666667,
+      "segment": "18"
+    },
+    {
+      "text": "여러분의",
+      "start": 70.82766666666666,
+      "end": 71.12266666666666,
+      "segment": "18"
+    },
+    {
+      "text": "시간을",
+      "start": 71.16666666666667,
+      "end": 71.40266666666666,
+      "segment": "18"
+    },
+    {
+      "text": "아껴드립니다!",
+      "start": 71.57866666666666,
+      "end": 72.21266666666666,
+      "segment": "18"
+    }
+  ]
+}

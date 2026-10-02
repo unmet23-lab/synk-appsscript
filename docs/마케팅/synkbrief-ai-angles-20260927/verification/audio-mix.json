@@ -1,0 +1,57 @@
+{
+  "duration": 56.5,
+  "premix": {
+    "input_i": "-17.71",
+    "input_tp": "-5.90",
+    "input_lra": "3.00",
+    "input_thresh": "-28.89",
+    "output_i": "-16.11",
+    "output_tp": "-4.52",
+    "output_lra": "2.60",
+    "output_thresh": "-27.25",
+    "normalization_type": "dynamic",
+    "target_offset": "0.11"
+  },
+  "final": {
+    "input_i": "-16.00",
+    "input_tp": "-4.19",
+    "input_lra": "3.00",
+    "input_thresh": "-27.18",
+    "output_i": "-16.11",
+    "output_tp": "-4.52",
+    "output_lra": "2.60",
+    "output_thresh": "-27.25",
+    "normalization_type": "dynamic",
+    "target_offset": "0.11"
+  },
+  "constantGainDb": 1.7100000000000009,
+  "voice": "Edge ko-KR-SunHiNeural",
+  "sourceBgm": "docs/홍보물/BGM/시티팝_147.wav",
+  "bgmStart": 25,
+  "bgmGain": 0.14,
+  "duckedUnderNarration": true,
+  "sfxSource": "media-use bundled library",
+  "sfxCues": [
+    {
+      "name": "pop",
+      "time": 0.3,
+      "gain": 0.11
+    },
+    {
+      "name": "click-soft",
+      "time": 10.0,
+      "gain": 0.14
+    },
+    {
+      "name": "whoosh-short",
+      "time": 25.4333,
+      "gain": 0.11
+    },
+    {
+      "name": "chime",
+      "time": 46.1,
+      "gain": 0.06
+    }
+  ],
+  "directListeningVerified": false
+}

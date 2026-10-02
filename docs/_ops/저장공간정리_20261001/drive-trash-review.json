@@ -1,0 +1,238 @@
+{
+  "count": 3941,
+  "bytes": 10695924290,
+  "groups": {
+    "SYNK LAB": {
+      "count": 62,
+      "bytes": 6814439
+    },
+    "SYNK 팀 메신저": {
+      "count": 2,
+      "bytes": 6291581
+    },
+    "SYNK_이어하기": {
+      "count": 3848,
+      "bytes": 10625394510
+    },
+    "SYNK_제미나이LM": {
+      "count": 28,
+      "bytes": 57422736
+    },
+    "SYNK_시험_열옮기기_0907": {
+      "count": 1,
+      "bytes": 1024
+    }
+  },
+  "largest": [
+    {
+      "md5Checksum": "ff0bced945e2f79599e612c8b2be36eb",
+      "mimeType": "application/octet-stream",
+      "parents": [
+        "1xhMv2MRu1shNcmnPpjSKAjJklX02Y1-o"
+      ],
+      "size": "6207095948",
+      "id": "1YOCE1pkolOqjQWv8s69EVK6ZY9f5Lxij",
+      "name": "synk-appsscript.bundle",
+      "trashed": true,
+      "createdTime": "2026-09-05T05:30:14.814Z",
+      "modifiedTime": "2026-09-05T19:22:39.516Z",
+      "quotaBytesUsed": "6207095948",
+      "ownedByMe": true,
+      "capabilities": {
+        "canDelete": true,
+        "canTrash": true
+      },
+      "sha256Checksum": "867f6338772e6902d9fba3b6ea30312bae0250abeda2d2d3770ae05b5df6e958",
+      "path": "SYNK_이어하기/3_저장소사본/synk-appsscript.bundle"
+    },
+    {
+      "md5Checksum": "14a3dff3d7c294c82768c003632b4e2c",
+      "mimeType": "image/png",
+      "parents": [
+        "1t3hTSV4cbiTXz81maQPvMZipy--zM9Ee"
+      ],
+      "size": "23621357",
+      "id": "19zW7Wi7HfLhcqZFXvxYbqRxGL1XDci5v",
+      "name": "귀엽3_둘다.png",
+      "trashed": true,
+      "createdTime": "2026-09-05T07:20:20.672Z",
+      "modifiedTime": "2026-09-05T02:40:56.760Z",
+      "quotaBytesUsed": "23621357",
+      "ownedByMe": true,
+      "capabilities": {
+        "canDelete": true,
+        "canTrash": true
+      },
+      "sha256Checksum": "09ca24a08d6406802398d98f0f0f3d722fbd53fa2e3ed09d0ab08957236572d5",
+      "path": "SYNK_이어하기/4_아직깃밖/docs/캐릭터/마린_후보/귀엽3_둘다.png"
+    },
+    {
+      "md5Checksum": "58242101300031d9b9d5d5b65e14bd39",
+      "mimeType": "image/png",
+      "parents": [
+        "1t3hTSV4cbiTXz81maQPvMZipy--zM9Ee"
+      ],
+      "size": "23448888",
+      "id": "1uvrJyYY6ynB6DSifPxxQXdXzXj0whgYt",
+      "name": "확정5b_목덜미_꽃주머니.png",
+      "trashed": true,
+      "createdTime": "2026-09-05T07:20:22.264Z",
+      "modifiedTime": "2026-09-05T01:07:23.039Z",
+      "quotaBytesUsed": "23448888",
+      "ownedByMe": true,
+      "capabilities": {
+        "canDelete": true,
+        "canTrash": true
+      },
+      "sha256Checksum": "64dec199fda0abf6b61615c5ce8d8e62c63365fd6d75834b4d116dc12af1c44b",
+      "path": "SYNK_이어하기/4_아직깃밖/docs/캐릭터/마린_후보/확정5b_목덜미_꽃주머니.png"
+    },
+    {
+      "md5Checksum": "1c9533e42b7dab717b2d41bd0417dbeb",
+      "mimeType": "image/png",
+      "parents": [
+        "1t3hTSV4cbiTXz81maQPvMZipy--zM9Ee"
+      ],
+      "size": "22982498",
+      "id": "1S-WNUAoKyhKQ4E1kui_tSfXbPPb7b8fN",
+      "name": "확정6a_두색_밝은파랑.png",
+      "trashed": true,
+      "createdTime": "2026-09-05T07:20:22.380Z",
+      "modifiedTime": "2026-09-05T01:32:14.300Z",
+      "quotaBytesUsed": "22982498",
+      "ownedByMe": true,
+      "capabilities": {
+        "canDelete": true,
+        "canTrash": true
+      },
+      "sha256Checksum": "c45b942119ae214c08fdd4521a0e349536136509f6d91b7204e98277d2756861",
+      "path": "SYNK_이어하기/4_아직깃밖/docs/캐릭터/마린_후보/확정6a_두색_밝은파랑.png"
+    },
+    {
+      "md5Checksum": "4c5413f576dfb7a8b84d42d225e17985",
+      "mimeType": "image/png",
+      "parents": [
+        "1c3wgW75ePI5B8r8PmvVZWqVzqo2WqAIQ"
+      ],
+      "size": "22981187",
+      "id": "1MQTJ0uaJQS0quV9pjbymKfydZxYf9eZ5",
+      "name": "chuseok.png",
+      "trashed": true,
+      "createdTime": "2026-09-08T18:12:46.852Z",
+      "modifiedTime": "2026-09-08T18:12:46.852Z",
+      "quotaBytesUsed": "22981187",
+      "ownedByMe": true,
+      "capabilities": {
+        "canDelete": true,
+        "canTrash": true
+      },
+      "sha256Checksum": "35f4a1985b3b3b22915e2a1fc49e187d4c66ce59bf032b635c8ff054061b88f5",
+      "path": "SYNK_이어하기/2_확정자산/docs/라디오/무대/chuseok.png"
+    },
+    {
+      "md5Checksum": "16f6b2b6032b5ed9e183b42d9631647a",
+      "mimeType": "image/png",
+      "parents": [
+        "1_jUGshySbMXQIHvOpms0_VgtNZdoXiHH"
+      ],
+      "size": "22981187",
+      "id": "1_ZHKn8mySLXw9md6izNrctUgGEblQ062",
+      "name": "chuseok.png",
+      "trashed": true,
+      "createdTime": "2026-09-07T18:10:44.811Z",
+      "modifiedTime": "2026-09-07T13:29:51.704Z",
+      "quotaBytesUsed": "22981187",
+      "ownedByMe": true,
+      "capabilities": {
+        "canDelete": true,
+        "canTrash": true
+      },
+      "sha256Checksum": "77f06b4d6c24d8cf75d11af15807d89d27eb8e0a2546591c9bd8364bfbb3d4d5",
+      "path": "SYNK_이어하기/4_아직깃밖/docs/라디오/무대/chuseok.png"
+    },
+    {
+      "md5Checksum": "62210020d7826b018c04dbe2c0136b63",
+      "mimeType": "application/octet-stream",
+      "parents": [
+        "1xhMv2MRu1shNcmnPpjSKAjJklX02Y1-o"
+      ],
+      "size": "22855210",
+      "id": "1cr0-YYF12W1du0BQLLn7c4sgrSyOyERW",
+      "name": "SYNK-talk.bundle",
+      "trashed": true,
+      "createdTime": "2026-09-05T05:30:32.130Z",
+      "modifiedTime": "2026-09-05T19:22:45.367Z",
+      "quotaBytesUsed": "22855210",
+      "ownedByMe": true,
+      "capabilities": {
+        "canDelete": true,
+        "canTrash": true
+      },
+      "sha256Checksum": "69e83577c1490ca01af9b1ecb4c4ab5e475e1f2ec755e7080775e1bc168c33d7",
+      "path": "SYNK_이어하기/3_저장소사본/SYNK-talk.bundle"
+    },
+    {
+      "md5Checksum": "67ac97acc158799be59069043566533d",
+      "mimeType": "image/png",
+      "parents": [
+        "1c3wgW75ePI5B8r8PmvVZWqVzqo2WqAIQ"
+      ],
+      "size": "22834606",
+      "id": "1VtD8ZAuT_SWswgkhMSnOxsc7QxtP0z3B",
+      "name": "citypop.png",
+      "trashed": true,
+      "createdTime": "2026-09-05T05:27:41.662Z",
+      "modifiedTime": "2026-09-05T02:53:00.329Z",
+      "quotaBytesUsed": "22834606",
+      "ownedByMe": true,
+      "capabilities": {
+        "canDelete": true,
+        "canTrash": true
+      },
+      "sha256Checksum": "d75bcc1e0cd99a42ef25850cd7328839b126b40415efc2911167ce7895c3f6ad",
+      "path": "SYNK_이어하기/2_확정자산/docs/라디오/무대/citypop.png"
+    },
+    {
+      "md5Checksum": "3091a19a1c8b75e4c0c32c89cc1b6c9d",
+      "mimeType": "image/png",
+      "parents": [
+        "1t3hTSV4cbiTXz81maQPvMZipy--zM9Ee"
+      ],
+      "size": "22553146",
+      "id": "1NM0p7TohpCXv6r7SeYS0deTaEIi9UpwF",
+      "name": "색눈3a_청금석_반달.png",
+      "trashed": true,
+      "createdTime": "2026-09-05T07:20:20.894Z",
+      "modifiedTime": "2026-09-05T03:23:53.354Z",
+      "quotaBytesUsed": "22553146",
+      "ownedByMe": true,
+      "capabilities": {
+        "canDelete": true,
+        "canTrash": true
+      },
+      "sha256Checksum": "8644e94157abcf9a12cc95460011e50ec6288be8dfefd813e149ad2e94f9c2f6",
+      "path": "SYNK_이어하기/4_아직깃밖/docs/캐릭터/마린_후보/색눈3a_청금석_반달.png"
+    },
+    {
+      "md5Checksum": "7cffd35134146c67c8e28061f1feccb8",
+      "mimeType": "image/png",
+      "parents": [
+        "1c3wgW75ePI5B8r8PmvVZWqVzqo2WqAIQ"
+      ],
+      "size": "22473926",
+      "id": "1HCWWMcGXFjkraF5Pk6pqXH2ZgqKRBO0Y",
+      "name": "calm.png",
+      "trashed": true,
+      "createdTime": "2026-09-05T05:27:41.567Z",
+      "modifiedTime": "2026-09-05T02:54:15.389Z",
+      "quotaBytesUsed": "22473926",
+      "ownedByMe": true,
+      "capabilities": {
+        "canDelete": true,
+        "canTrash": true
+      },
+      "sha256Checksum": "9a4d188c1d71bbc0a367ca5134f0cdec79d84f8c122ddd50b071f8ba97ed068b",
+      "path": "SYNK_이어하기/2_확정자산/docs/라디오/무대/calm.png"
+    }
+  ]
+}

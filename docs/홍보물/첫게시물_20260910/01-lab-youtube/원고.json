@@ -1,0 +1,157 @@
+{
+  "id": "01-lab-youtube",
+  "brand": "LAB",
+  "platform": "YouTube",
+  "account": "@synkkorean",
+  "orientation": "landscape",
+  "format": "video",
+  "language": "mn",
+  "title": "Дуртай дуугаа хамт сонсъё · SYNK LAB × K-LOFI24",
+  "target": "좋아하는 것을 한국어로 제안하고 함께 나누고 싶은 몽골 10대 후반, 음악과 장면을 감상하려는 시청자",
+  "need": "함께 들을 노래를 제안하는 한국어를 써보고, 이어서 그 곡을 실제로 함께 감상하기",
+  "promise": "같이 듣자고 권하기 → 곡 제안하기 → 응답하기의 한국어 세 문장과, 그 대화에서 소개한 61.6초 전곡",
+  "philosophy": "자기 취향을 말하고 함께 나누는 경험. 학습과 감상을 같은 노래를 권하는 한 장면으로 연결합니다.",
+  "slides": [
+    {
+      "layout": "cover",
+      "kicker": "SYNK LAB · K-LOFI24",
+      "title": "Дуртай дуугаа\nхамт сонсъё.",
+      "body": "Солонгосоор санал болгоод,\nнэг дууг хамт сонсоно.",
+      "asset": "smile"
+    }
+  ],
+  "thumbnail": {
+    "layout": "cover",
+    "kicker": "SYNK LAB · K-LOFI24",
+    "title": "Дуртай дуугаа\nхамт сонсъё.",
+    "body": "같이 들을까요?\nСолонгос хэл + хамт сонсох нэг дуу",
+    "asset": "smile"
+  },
+  "scenes": [
+    {
+      "layout": "cover",
+      "duration": 6,
+      "kicker": "SYNK LAB · K-LOFI24",
+      "title": "Өөрийн бодлоо хэлээд,\nнэг дууг хамт сонсъё.",
+      "body": "LAB — өөрийн бодлоо хэлэх солонгос хэл.\nK-LOFI24 — дуу, дүрслэлтэй өнгөрүүлэх цаг.",
+      "asset": "mong",
+      "narration": "",
+      "mascotAudio": "mong-joy.wav",
+      "mascotAtSeconds": 1.85,
+      "mascotAnimation": {
+        "baseAsset": "mong",
+        "closedAsset": "mong-closed",
+        "smileAsset": "smile",
+        "blinks": [
+          {
+            "atSeconds": 0.9,
+            "durationSeconds": 0.23
+          },
+          {
+            "atSeconds": 4.72,
+            "durationSeconds": 0.23
+          }
+        ],
+        "smile": {
+          "fromSeconds": 1.65,
+          "toSeconds": 3.65
+        },
+        "bodyReactionAtSeconds": 1.85,
+        "keepSharedBodyAndAlpha": true,
+        "expressionScope": "Narrow eye geometry only; no full-image expression crossfade"
+      }
+    },
+    {
+      "layout": "example",
+      "duration": 5.233333333333333,
+      "kicker": "01 · ХАМТ СОНСОХЫГ УРИХ",
+      "title": "Найздаа хөгжим\nсанал болгоё.",
+      "primary": "같이 들을까요?",
+      "secondary": "Хамт сонсох уу?",
+      "asset": "pulse-frame",
+      "narration": "같이 들을까요?",
+      "audio": "voice-01-studio-3d8f9f2d38950b1d.wav",
+      "audioRecord": "audio/voice-01-studio-3d8f9f2d38950b1d.json"
+    },
+    {
+      "layout": "example",
+      "duration": 5.533333333333333,
+      "kicker": "02 · ДУУ САНАЛ БОЛГОХ",
+      "title": "Сонсох дуугаа\nсанал болгоорой.",
+      "primary": "이 노래는 어때요?",
+      "secondary": "Энэ дуу ямар байна?",
+      "note": "이 노래 → дуртай дууныхаа нэр",
+      "asset": "pulse-frame",
+      "narration": "이 노래는 어때요?",
+      "audio": "voice-01-studio-54ac15e659971f22.wav",
+      "audioRecord": "audio/voice-01-studio-54ac15e659971f22.json"
+    },
+    {
+      "layout": "example",
+      "duration": 5,
+      "kicker": "03 · ХАРИУ ХЭЛЭХ",
+      "title": "Тэгье.\nХамт сонсъё.",
+      "primary": "좋아요. 같이 들어요.",
+      "secondary": "Тэгье. Хамт сонсъё.",
+      "asset": "pulse-frame",
+      "narration": "좋아요. 같이 들어요.",
+      "audio": "voice-01-studio-ec6b8a18e0e9751a.wav",
+      "audioRecord": "audio/voice-01-studio-ec6b8a18e0e9751a.json"
+    },
+    {
+      "layout": "music-bridge",
+      "duration": 6,
+      "kicker": "K-LOFI24 · ӨНӨӨДРИЙН ДУУ",
+      "title": "Тэгвэл энэ дууг\nхамт сонсъё.",
+      "primary": "오늘 밤 제일 환한 사람",
+      "body": "Бүтэн дуу · 1 минут 1.6 секунд",
+      "note": "AI хөгжим: Suno · Дүрслэл: SYNK PULSE",
+      "asset": "pulse-frame",
+      "narration": "",
+      "musicLeadSeconds": 1.2
+    },
+    {
+      "layout": "music",
+      "title": "",
+      "duration": 60.4,
+      "kicker": "",
+      "asset": "night",
+      "narration": "",
+      "musicTitle": "오늘 밤 제일 환한 사람",
+      "musicCredit": "AI 음악 제작 · Suno / 장면·편집 · SYNK PULSE",
+      "fullTrack": true,
+      "sourceStartSeconds": 1.2
+    },
+    {
+      "layout": "ending",
+      "duration": 7,
+      "title": "Солонгос хэл · K-LOFI24",
+      "body": "@synkkorean",
+      "asset": "felt-dark",
+      "logoAsset": "logo-lab-paper",
+      "transitionFromAsset": "pulse-last",
+      "narration": "",
+      "reference": "영상/out/홍보_4K_v2/SYNK_홍보_4K.mp4"
+    }
+  ],
+  "caption": "Та дуртай дуугаа найздаа санал болгохдоо солонгосоор юу гэж хэлэх вэ?\n\nSYNK LAB-д тавтай морил. Энд өдөр тутмын нөхцөлд өөрийн бодлоо хэлэх солонгос хэл, хэрэгтэй хэллэг, өөртөө тохируулж бичих материалыг хуваалцана. K-LOFI24-өөр дуу, дүрслэлтэй өнгөрүүлэх цагийг бүтээнэ.\n\nЭнэ удаа дуу хамт сонсох харилцан яриа хийж үзье.\n\n1. Хамт сонсохыг урих\n«같이 들을까요?» — Хамт сонсох уу?\n\n2. Дуу санал болгох\n«이 노래는 어때요?» — Энэ дуу ямар байна?\n«이 노래»-г дуртай дууныхаа нэрээр сольж болно.\n\n3. Хариу хэлэх\n«좋아요. 같이 들어요.» — Тэгье. Хамт сонсъё.\n\nДараа нь энэ ярианд санал болгосон «오늘 밤 제일 환한 사람» дууг бүтнээр нь хамт сонсоно. Ярианд гарсан орчин хөгжмийн видео болж үргэлжилнэ.\n\nӨөрөө давтаж болно. Сэтгэгдэл бичих шаардлагагүй. Энэ нь зохиомол дасгалын нөхцөл; бодит сурагчийн яриа биш.\n\nK-LOFI24 — «오늘 밤 제일 환한 사람»\nБүтэн дуу: 1 минут 1.6 секунд\nAI хөгжмийн бүтээл: Suno\nДүрслэл, эвлүүлэг: SYNK PULSE\n\nТусгайлан бүтээсэн хөгжмийн видео; шууд дамжуулалт эсвэл бодит газрын бичлэг биш.",
+  "captionKo": "좋아하는 노래를 친구에게 권할 때, 한국어로 어떻게 말할까요?\n\nSYNK LAB에 오신 것을 환영합니다. 생활 장면에서 자기 생각을 말하는 한국어, 필요한 표현과 자기 상황에 맞게 고쳐 쓰는 자료를 나눕니다. K-LOFI24에서는 음악과 장면을 곁에 두는 시간을 만듭니다.\n\n이번에는 한 곡을 함께 듣는 대화를 해봅니다.\n\n1. 같이 듣자고 권하기\n같이 들을까요?\n\n2. 곡 제안하기\n이 노래는 어때요?\n‘이 노래’를 좋아하는 곡 이름으로 바꿔 말할 수 있습니다.\n\n3. 응답하기\n좋아요. 같이 들어요.\n\n이어 방금 대화에서 소개한 ‘오늘 밤 제일 환한 사람’을 실제로 함께 듣습니다. 대화 중 보인 공간이 같은 음악 영상으로 이어집니다.\n\n혼자 연습해도 되며 댓글은 조건이 아닙니다. 실제 학생의 대화가 아닌 가상 학습 상황입니다.\n\nK-LOFI24 · 오늘 밤 제일 환한 사람\n61.6초 전곡\nAI 음악 제작: Suno / 장면·편집: SYNK PULSE\n별도로 제작한 감상 영상이며 실시간 방송·실제 장소 촬영이 아닙니다.",
+  "alt": [
+    "좋아하는 노래를 한국어로 권하고 함께 듣는 SYNK LAB와 K-LOFI24의 첫 영상 표지."
+  ],
+  "nextAction": "같이 듣자고 권하고, 좋아하는 곡을 제안하는 한국어를 자기 말로 바꿔 사용합니다. 영상에서 소개한 곡은 이어서 전곡으로 감상합니다.",
+  "relationship": "공용 @synkkorean의 첫 안내 영상입니다. SYNK LAB의 한국어 경험과 K-LOFI24의 감상을 같은 곡을 권하는 장면으로 연결합니다. PULSE는 별도 신규 계정으로 세지 않습니다.",
+  "musicReuse": {
+    "source": "영상/public/klofi20260909/song.wav",
+    "duration": 61.6,
+    "renderPolicy": "전환 장면 마지막 1.2초에 원곡 0초부터 재생하고 음악 장면은 원곡 1.2초부터 이어 재생. 원곡 시간 중복·누락 없이 61.6초 보존. 기존 음악 장면에 새 해설·장식은 겹치지 않음."
+  },
+  "revision": "2026-09-10-expression-pacing-ending-v3",
+  "audioMix": {
+    "narration": 0.7,
+    "bedSpeech": 0.055,
+    "bedSilent": 0.11,
+    "music": 0.56,
+    "mascot": 0.2
+  }
+}

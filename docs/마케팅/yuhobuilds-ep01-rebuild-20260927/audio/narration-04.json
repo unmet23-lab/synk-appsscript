@@ -1,0 +1,190 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 2.76,
+  "words": [
+    {
+      "text": "학생",
+      "start": 0.131,
+      "end": 0.392
+    },
+    {
+      "text": "문의가",
+      "start": 0.436,
+      "end": 0.596
+    },
+    {
+      "text": "늘자,",
+      "start": 0.639,
+      "end": 0.828
+    },
+    {
+      "text": "출석",
+      "start": 1.177,
+      "end": 1.453
+    },
+    {
+      "text": "앱도",
+      "start": 1.511,
+      "end": 1.671
+    },
+    {
+      "text": "만들고",
+      "start": 1.845,
+      "end": 2.121
+    },
+    {
+      "text": "싶어졌죠.",
+      "start": 2.164,
+      "end": 2.76
+    }
+  ],
+  "characters": [
+    {
+      "text": "학",
+      "start": 0.131,
+      "end": 0.261
+    },
+    {
+      "text": "생",
+      "start": 0.261,
+      "end": 0.392
+    },
+    {
+      "text": " ",
+      "start": 0.392,
+      "end": 0.436
+    },
+    {
+      "text": "문",
+      "start": 0.436,
+      "end": 0.508
+    },
+    {
+      "text": "의",
+      "start": 0.508,
+      "end": 0.567
+    },
+    {
+      "text": "가",
+      "start": 0.567,
+      "end": 0.596
+    },
+    {
+      "text": " ",
+      "start": 0.596,
+      "end": 0.639
+    },
+    {
+      "text": "늘",
+      "start": 0.639,
+      "end": 0.755
+    },
+    {
+      "text": "자",
+      "start": 0.755,
+      "end": 0.813
+    },
+    {
+      "text": ",",
+      "start": 0.813,
+      "end": 0.828
+    },
+    {
+      "text": " ",
+      "start": 0.828,
+      "end": 1.177
+    },
+    {
+      "text": "출",
+      "start": 1.177,
+      "end": 1.365
+    },
+    {
+      "text": "석",
+      "start": 1.365,
+      "end": 1.453
+    },
+    {
+      "text": " ",
+      "start": 1.453,
+      "end": 1.511
+    },
+    {
+      "text": "앱",
+      "start": 1.511,
+      "end": 1.612
+    },
+    {
+      "text": "도",
+      "start": 1.612,
+      "end": 1.671
+    },
+    {
+      "text": " ",
+      "start": 1.671,
+      "end": 1.845
+    },
+    {
+      "text": "만",
+      "start": 1.845,
+      "end": 1.99
+    },
+    {
+      "text": "들",
+      "start": 1.99,
+      "end": 2.092
+    },
+    {
+      "text": "고",
+      "start": 2.092,
+      "end": 2.121
+    },
+    {
+      "text": " ",
+      "start": 2.121,
+      "end": 2.164
+    },
+    {
+      "text": "싶",
+      "start": 2.164,
+      "end": 2.266
+    },
+    {
+      "text": "어",
+      "start": 2.266,
+      "end": 2.324
+    },
+    {
+      "text": "졌",
+      "start": 2.324,
+      "end": 2.44
+    },
+    {
+      "text": "죠",
+      "start": 2.44,
+      "end": 2.745
+    },
+    {
+      "text": ".",
+      "start": 2.745,
+      "end": 2.76
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "학생 문의가 늘자, 출석 앱도 만들고 싶어졌죠.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.25,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.1
+    }
+  }
+}

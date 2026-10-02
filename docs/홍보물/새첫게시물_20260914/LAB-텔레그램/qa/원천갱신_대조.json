@@ -1,0 +1,113 @@
+{
+  "checkedAt": "2026-09-13T20:11:29.068Z",
+  "scope": "Current source and output comparison only; no render, browser, translation, publication, audio, or model call",
+  "originalBuiltAt": "2026-09-13T18:30:35.154Z",
+  "originalManifestSha256": "0ef6eae8f6f8d5ad9dea6024306a1dccd71e1c50c8e0f9509de4c89ad19c7924",
+  "sourcesTotal": 22,
+  "sourceChanges": [
+    {
+      "path": "docs/마케팅/채널과_발행.md",
+      "before": "88796e1a644bfdfb43beb71d95ad8aba1a8be4469138fed533da516c1eb33d87",
+      "after": "a44c2a252728c832b58f2b5024cf2387f44f385fd82b6dd503ed882ff842fdf5",
+      "bytesBefore": 32719,
+      "bytesAfter": 34138,
+      "usage": "provenance collection only; not parsed into displayed text"
+    }
+  ],
+  "currentSourceDrift": [],
+  "inMemoryComposition": {
+    "mode": "in-memory string composition only; filesystem writes intercepted; stopped before browser require",
+    "matched": 5,
+    "outputs": [
+      {
+        "file": "licenses/SUIT-OFL.txt",
+        "same": true,
+        "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9"
+      },
+      {
+        "file": "licenses/InterTight-OFL.txt",
+        "same": true,
+        "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58"
+      },
+      {
+        "file": "고정안내.txt",
+        "same": true,
+        "sha256": "3012265a5bc9b261ebe1a803be8b3f65576c71221434d6b22ae3aad5815838b8"
+      },
+      {
+        "file": "고정안내.md",
+        "same": true,
+        "sha256": "933d9d6bffae2b2e449cc236777871b8e525231dce79d939fbee5f0b611b6656"
+      },
+      {
+        "file": "index.html",
+        "same": true,
+        "sha256": "66198ffd4c9b5f319f9be36a2e6055e3e49fb526748aadd35cad99c9a359286e"
+      }
+    ],
+    "realWrites": 0,
+    "browserLaunched": false,
+    "errors": [
+      "expected stop before browser"
+    ]
+  },
+  "unchangedOutputs": [
+    {
+      "file": "index.html",
+      "sha256": "66198ffd4c9b5f319f9be36a2e6055e3e49fb526748aadd35cad99c9a359286e"
+    },
+    {
+      "file": "licenses/InterTight-OFL.txt",
+      "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58"
+    },
+    {
+      "file": "licenses/SUIT-OFL.txt",
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9"
+    },
+    {
+      "file": "qa/1280-연습.png",
+      "sha256": "63f827df590ab624db3cea7349696bd6ab75fe9f15e98ca68800d3d6a0de69fb"
+    },
+    {
+      "file": "qa/1280-전체.png",
+      "sha256": "6206fb873c10a511b7ed39c4db40be965f955236448526f1ba1760e72317312f"
+    },
+    {
+      "file": "qa/1280-첫화면.png",
+      "sha256": "5747116fd8f28d5010532ead70bf497aab757bde0b9a0313d9734163f9d86478"
+    },
+    {
+      "file": "qa/390-연습.png",
+      "sha256": "80f08df8600a8cd6616719e66856a0ffc4a0fe2b9d1e0ba8bc04a253d7e75c0e"
+    },
+    {
+      "file": "qa/390-전체.png",
+      "sha256": "3d37177f4f4401ec7d571921b2256af365c7a4abc2c4c8a90d0b89864566a0a9"
+    },
+    {
+      "file": "qa/390-첫화면.png",
+      "sha256": "64f4c14596ab661180f4f0b8e9e3a10c5122e377b98ab59f48fecabd663f6ba7"
+    },
+    {
+      "file": "고정안내.md",
+      "sha256": "933d9d6bffae2b2e449cc236777871b8e525231dce79d939fbee5f0b611b6656"
+    },
+    {
+      "file": "고정안내.txt",
+      "sha256": "3012265a5bc9b261ebe1a803be8b3f65576c71221434d6b22ae3aad5815838b8"
+    }
+  ],
+  "documentationChanges": [
+    {
+      "file": "검증결과.md",
+      "before": "ef4639430e36232c3ea62b921310c134e0da26f7df5988ee55e8783394004eec",
+      "after": "6bc4ceaa8f23f8d5a6d15baad3477af2c5d04b8db49be7f507fb075bc1f42410",
+      "reason": "append dated provenance-only QA explanation"
+    }
+  ],
+  "generatorEvidenceRetentionSha256": "8ddb77d942f144b1def99d2f239626472933af38ddfeb8f6d9aed44599c63e8f",
+  "originalRenderEvidenceReused": true,
+  "newRenderPerformed": false,
+  "published": false,
+  "nativeReviewed": false
+}

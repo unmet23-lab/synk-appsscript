@@ -1,0 +1,40 @@
+{
+  "id": "repeat",
+  "role": "guide",
+  "text": "한 번 따라 말해 볼까요?",
+  "provider": "Microsoft Edge TTS",
+  "settings": {
+    "voice": "ko-KR-SunHiNeural",
+    "rate": "-3%",
+    "pitch": "-2Hz"
+  },
+  "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\repeat.mp3",
+  "duration": 2.712,
+  "words": [
+    {
+      "text": "한",
+      "start": 0.101541,
+      "end": 0.320624
+    },
+    {
+      "text": "번",
+      "start": 0.3335,
+      "end": 0.578333
+    },
+    {
+      "text": "따라",
+      "start": 0.59125,
+      "end": 0.87475
+    },
+    {
+      "text": "말해",
+      "start": 0.887625,
+      "end": 1.15825
+    },
+    {
+      "text": "볼까요",
+      "start": 1.171125,
+      "end": 1.802583
+    }
+  ]
+}

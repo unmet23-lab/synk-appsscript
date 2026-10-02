@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "6754b8bf-91f3-4772-a9e7-c78b8dbe3684",
+  "narration": "교육 담당자는 수업의 대상과 실습, 준비 조건을 검토해야 합니다. 먼저 읽을 내용이 달라집니다.",
+  "narrationSha256": "8185d5feb102612e46dd9ffe42dc6eec7fb0a86860683ce5bbf6616e7ddfcc7a",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-8185d5feb102612e.wav",
+  "duration": 10.08,
+  "sha256": "1c7b7c6e5e23307dd211b0d8ec0bb5dd3252fb7fb2f2be647d6c0b727ad5ccca",
+  "humanListening": false,
+  "fullDecode": true
+}

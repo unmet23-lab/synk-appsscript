@@ -1,0 +1,32 @@
+{
+ "hook": {
+  "text": "아 맞다!",
+  "voice": "ko-KR-SunHiNeural",
+  "rate": "-8%",
+  "duration": 0.901
+ },
+ "umbrella": {
+  "text": "아 맞다, 우산!",
+  "voice": "ko-KR-SunHiNeural",
+  "rate": "-8%",
+  "duration": 1.832
+ },
+ "beat": {
+  "text": "아 맞다!",
+  "voice": "ko-KR-SunHiNeural",
+  "rate": "-8%",
+  "duration": 0.9
+ },
+ "practice": {
+  "text": "아 맞다!",
+  "voice": "ko-KR-SunHiNeural",
+  "rate": "-16%",
+  "duration": 0.97
+ },
+ "homework": {
+  "text": "아 맞다, 숙제!",
+  "voice": "ko-KR-SunHiNeural",
+  "rate": "-8%",
+  "duration": 1.721
+ }
+}

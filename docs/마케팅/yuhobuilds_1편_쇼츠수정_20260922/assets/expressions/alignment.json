@@ -1,0 +1,15 @@
+{
+  "crop": {
+    "left": 210,
+    "top": 31,
+    "width": 840,
+    "height": 1100
+  },
+  "method": "Shared neutral-head crop; all expressions keep the same canvas alignment.",
+  "variants": [
+    "smile",
+    "puzzled",
+    "surprise",
+    "blink"
+  ]
+}

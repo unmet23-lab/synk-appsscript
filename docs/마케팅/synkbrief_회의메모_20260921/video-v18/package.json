@@ -1,0 +1,12 @@
+{
+  "name": "synkbrief-meeting-v18",
+  "private": true,
+  "scripts": {
+    "build": "node build-v18.mjs && node C:/Users/q1212/.agents/skills/hyperframes-audio/scripts/carve.mjs --comp index.html --bed music --voice narration --strength 0.45 && node C:/Users/q1212/.agents/skills/hyperframes-audio/scripts/carve.mjs --comp index.html --bed music-tail --voice narration --strength 0.45",
+    "hf": "hyperframes"
+  },
+  "devDependencies": {
+    "@hyperframes/core": "0.8.71",
+    "hyperframes": "0.8.71"
+  }
+}

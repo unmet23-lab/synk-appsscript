@@ -1,0 +1,166 @@
+{
+  "date": "2026-09-27",
+  "pieces": 9,
+  "channels": 5,
+  "counts": [
+    {
+      "channel": "Threads",
+      "piece": 1,
+      "file": "01_Threads_01.txt",
+      "characters": 412
+    },
+    {
+      "channel": "Threads",
+      "piece": 2,
+      "file": "01_Threads_02.txt",
+      "characters": 371
+    },
+    {
+      "channel": "Threads",
+      "piece": 3,
+      "file": "01_Threads_03.txt",
+      "characters": 338
+    },
+    {
+      "channel": "X",
+      "piece": 1,
+      "file": "02_X_01.txt",
+      "characters": 139,
+      "conservativeWeight": 233
+    },
+    {
+      "channel": "X",
+      "piece": 2,
+      "file": "02_X_02.txt",
+      "characters": 109,
+      "conservativeWeight": 180
+    },
+    {
+      "channel": "X",
+      "piece": 3,
+      "file": "02_X_03.txt",
+      "characters": 142,
+      "conservativeWeight": 229
+    },
+    {
+      "channel": "네이버 블로그",
+      "piece": 1,
+      "file": "03_네이버블로그.txt",
+      "characters": 4257
+    },
+    {
+      "channel": "Tistory",
+      "piece": 1,
+      "file": "04_Tistory.txt",
+      "characters": 2847
+    },
+    {
+      "channel": "Substack",
+      "piece": 1,
+      "file": "05_Substack_한국어검토본.txt",
+      "characters": 2374
+    }
+  ],
+  "filesGenerated": true,
+  "platformPosted": false,
+  "newsletterTranslated": false,
+  "officialSource": "https://learn.chatgpt.com/docs/projects",
+  "publicAssetsHeadStatus": 200,
+  "preview": {
+    "layouts": [
+      {
+        "width": 1440,
+        "id": "threads",
+        "viewport": 1440,
+        "document": 1440,
+        "font": true,
+        "brokenImages": 0,
+        "overflow": []
+      },
+      {
+        "width": 1440,
+        "id": "x",
+        "viewport": 1440,
+        "document": 1440,
+        "font": true,
+        "brokenImages": 0,
+        "overflow": []
+      },
+      {
+        "width": 1440,
+        "id": "naver",
+        "viewport": 1440,
+        "document": 1440,
+        "font": true,
+        "brokenImages": 0,
+        "overflow": []
+      },
+      {
+        "width": 1440,
+        "id": "tistory",
+        "viewport": 1440,
+        "document": 1440,
+        "font": true,
+        "brokenImages": 0,
+        "overflow": []
+      },
+      {
+        "width": 1440,
+        "id": "substack",
+        "viewport": 1440,
+        "document": 1440,
+        "font": true,
+        "brokenImages": 0,
+        "overflow": []
+      },
+      {
+        "width": 390,
+        "id": "threads",
+        "viewport": 390,
+        "document": 390,
+        "font": true,
+        "brokenImages": 0,
+        "overflow": []
+      },
+      {
+        "width": 390,
+        "id": "x",
+        "viewport": 390,
+        "document": 390,
+        "font": true,
+        "brokenImages": 0,
+        "overflow": []
+      },
+      {
+        "width": 390,
+        "id": "naver",
+        "viewport": 390,
+        "document": 390,
+        "font": true,
+        "brokenImages": 0,
+        "overflow": []
+      },
+      {
+        "width": 390,
+        "id": "tistory",
+        "viewport": 390,
+        "document": 390,
+        "font": true,
+        "brokenImages": 0,
+        "overflow": []
+      },
+      {
+        "width": 390,
+        "id": "substack",
+        "viewport": 390,
+        "document": 390,
+        "font": true,
+        "brokenImages": 0,
+        "overflow": []
+      }
+    ],
+    "clipboard": true,
+    "keyboard": true,
+    "errors": []
+  }
+}

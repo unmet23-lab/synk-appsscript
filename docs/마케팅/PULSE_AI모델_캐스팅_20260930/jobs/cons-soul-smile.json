@@ -1,0 +1,35 @@
+[
+  {
+    "created_at": "2026-09-30T12:38:53.335707Z",
+    "display_name": "Higgsfield Soul 2.0",
+    "id": "c9e1fe6d-b4a6-4cdd-9dfd-5847b2e3c015",
+    "job_type": "text2image_soul_v2",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_123853_c9e1fe6d-b4a6-4cdd-9dfd-5847b2e3c015_min.webp",
+    "params": {
+      "batch_size": 1,
+      "enhance_prompt": true,
+      "height": 2048,
+      "image_reference": {
+        "id": "fd3df47c-6325-4abc-a667-cb43fdb4d843",
+        "type": "media_input",
+        "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/fd3df47c-6325-4abc-a667-cb43fdb4d843.png"
+      },
+      "prompt": "A straight-on, close-up portrait shot depicts a young East Asian woman, likely in her late teens or twenties, with long, straight, dark hair that frames her face and falls softly across her left shoulder. Her complexion is smooth and clear, and she displays delicate, model-like facial features with a calm, neutral expression. She wears a sleeveless, black ribbed-knit top with visible stitching and a scooped neckline, contrasting against her softly illuminated skin. The background features a softly blurred pale gray wall and a window, with subtle highlights on the woman's hair and face from diffused, natural daylight entering from the left, creating gentle shadows and enhancing skin translucency. The overall color palette is muted and minimal, with dominant cool grays, natural skin tones, and simple black. The composition is clean, with the subject centered and the top of her head carefully framed in the upper section. The image displays high resolution and clarity, suggesting it was captured with a digital or high-quality 35mm camera, offering a contemporary and contemplative mood.\nHEX VALUES: [\"#261c1b\", \"#bdbbb8\", \"#cec7c0\", \"#41322e\", \"#e9e8e2\", \"#89827a\", \"#aeadaa\", \"#6b402a\", \"#c8ab91\", \"#9c9993\", \"#9c7559\", \"#b49071\", \"#d9d6d2\", \"#845b42\", \"#5b4c4a\"]",
+      "quality": "1080p",
+      "seed": 562534,
+      "style": {
+        "id": "3db34ab5-3439-4317-9e03-08dc30852e69",
+        "name": "General",
+        "strength": null,
+        "url": "https://cdn.higgsfield.ai/soul-v2-style/f33d85f2-6521-4fa8-8e8f-894cfbdee578.webp"
+      },
+      "style_id": "3db34ab5-3439-4317-9e03-08dc30852e69",
+      "style_strength": null,
+      "use_relax": false,
+      "use_sage_attention": false,
+      "width": 1536
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_123853_c9e1fe6d-b4a6-4cdd-9dfd-5847b2e3c015.png",
+    "status": "completed"
+  }
+]

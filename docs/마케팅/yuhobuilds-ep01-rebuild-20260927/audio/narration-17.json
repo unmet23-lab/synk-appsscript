@@ -1,0 +1,150 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 2.137,
+  "words": [
+    {
+      "text": "제가",
+      "start": 0.123,
+      "end": 0.338
+    },
+    {
+      "text": "헤맨",
+      "start": 0.384,
+      "end": 0.569
+    },
+    {
+      "text": "길,",
+      "start": 0.615,
+      "end": 0.723
+    },
+    {
+      "text": "여러분은",
+      "start": 0.999,
+      "end": 1.276
+    },
+    {
+      "text": "건너뛰세요.",
+      "start": 1.384,
+      "end": 2.137
+    }
+  ],
+  "characters": [
+    {
+      "text": "제",
+      "start": 0.123,
+      "end": 0.277
+    },
+    {
+      "text": "가",
+      "start": 0.277,
+      "end": 0.338
+    },
+    {
+      "text": " ",
+      "start": 0.338,
+      "end": 0.384
+    },
+    {
+      "text": "헤",
+      "start": 0.384,
+      "end": 0.477
+    },
+    {
+      "text": "맨",
+      "start": 0.477,
+      "end": 0.569
+    },
+    {
+      "text": " ",
+      "start": 0.569,
+      "end": 0.615
+    },
+    {
+      "text": "길",
+      "start": 0.615,
+      "end": 0.707
+    },
+    {
+      "text": ",",
+      "start": 0.707,
+      "end": 0.723
+    },
+    {
+      "text": " ",
+      "start": 0.723,
+      "end": 0.999
+    },
+    {
+      "text": "여",
+      "start": 0.999,
+      "end": 1.076
+    },
+    {
+      "text": "러",
+      "start": 1.076,
+      "end": 1.138
+    },
+    {
+      "text": "분",
+      "start": 1.138,
+      "end": 1.23
+    },
+    {
+      "text": "은",
+      "start": 1.23,
+      "end": 1.276
+    },
+    {
+      "text": " ",
+      "start": 1.276,
+      "end": 1.384
+    },
+    {
+      "text": "건",
+      "start": 1.384,
+      "end": 1.507
+    },
+    {
+      "text": "너",
+      "start": 1.507,
+      "end": 1.584
+    },
+    {
+      "text": "뛰",
+      "start": 1.584,
+      "end": 1.753
+    },
+    {
+      "text": "세",
+      "start": 1.753,
+      "end": 1.845
+    },
+    {
+      "text": "요",
+      "start": 1.845,
+      "end": 2.122
+    },
+    {
+      "text": ".",
+      "start": 2.122,
+      "end": 2.137
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "제가 헤맨 길, 여러분은 건너뛰세요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.24,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.1
+    }
+  }
+}

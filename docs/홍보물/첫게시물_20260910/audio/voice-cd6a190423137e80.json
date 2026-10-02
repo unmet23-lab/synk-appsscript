@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "53bfc69f-7899-4e8d-9d64-6680a1ae9718",
+  "narration": "저도 카페가 좋아요.",
+  "narrationSha256": "cd6a190423137e805fc12db7c36c928949805e67b852d6759786c2546fb91e3f",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-cd6a190423137e80.wav",
+  "duration": 2,
+  "sha256": "a47d02639e6c2c2883fbdea5693969e3c53c6f3e29fa55c3a0901985a1d8758f",
+  "humanListening": false,
+  "fullDecode": true
+}

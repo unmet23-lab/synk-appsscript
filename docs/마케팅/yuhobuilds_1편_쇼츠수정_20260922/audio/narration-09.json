@@ -1,0 +1,79 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "오, 다음 화면! 근데 이건 또 뭐야? 다시 찍고, 다시 질문!",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.28,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 3.594,
+  "words": [
+    {
+      "text": "오,",
+      "start": 0.12,
+      "end": 0.141
+    },
+    {
+      "text": "다음",
+      "start": 0.381,
+      "end": 0.562
+    },
+    {
+      "text": "화면!",
+      "start": 0.622,
+      "end": 0.843
+    },
+    {
+      "text": "근데",
+      "start": 1.365,
+      "end": 1.546
+    },
+    {
+      "text": "이건",
+      "start": 1.606,
+      "end": 1.727
+    },
+    {
+      "text": "또",
+      "start": 1.807,
+      "end": 1.907
+    },
+    {
+      "text": "뭐야?",
+      "start": 2.008,
+      "end": 2.349
+    },
+    {
+      "text": "다시",
+      "start": 2.409,
+      "end": 2.53
+    },
+    {
+      "text": "찍고,",
+      "start": 2.61,
+      "end": 2.811
+    },
+    {
+      "text": "다시",
+      "start": 2.971,
+      "end": 3.132
+    },
+    {
+      "text": "질문!",
+      "start": 3.192,
+      "end": 3.594
+    }
+  ],
+  "characters": null
+}

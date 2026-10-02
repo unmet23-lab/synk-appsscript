@@ -1,0 +1,46 @@
+{
+  "date": "2026-09-22",
+  "version": "brand-yarn-and-stitches",
+  "snapshot": "variants/atlas-yarn-20260922.html",
+  "assetProvenance": "assets/yarn-provenance.json",
+  "rendering": {
+    "connections": 621,
+    "nodes": 292,
+    "visibleStitchesAtMeasurement": 6490,
+    "gpuDrawCalls": 2,
+    "nucleus": "Raster wool asset with subtle continuous rotation; not a 3D mesh",
+    "fallback": "Canvas textured stitches and the same alpha yarn asset"
+  },
+  "performance": {
+    "browser": "Codex in-app Chromium",
+    "viewportCssPx": [1920, 1080],
+    "devicePixelRatio": 2,
+    "warmupFrames": 30,
+    "measuredFrames": 360,
+    "frameMedianMs": 16.7,
+    "frameP95Ms": 16.8,
+    "frameMaxMs": 17,
+    "framesOver25ms": 0,
+    "cpuRenderMedianMs": 1.1,
+    "cpuRenderP95Ms": 1.5,
+    "cpuRenderMaxMs": 2.5,
+    "limitations": "Excludes load/resize interval and asynchronous GPU completion; no physical phone or 120/144 Hz measurement"
+  },
+  "checks": {
+    "desktopWidth": 1440,
+    "mobileWidths": [390, 320],
+    "horizontalOverflow": false,
+    "allEightEngineSelections": true,
+    "approvedPaletteValues": true,
+    "reducedMotionSelection": true,
+    "zoomInterpolation": true,
+    "webglLossAndCanvasFallback": true,
+    "webglRestoreAndPausedTimePreserved": true,
+    "alphaAssetLoaded": true,
+    "motionUnitTestsPassed": 11,
+    "javascriptSyntax": true,
+    "embeddedAssetMarkerResolved": true,
+    "outputHashMatchesManifest": true
+  },
+  "release": "Local preview only; engine palette is scoped to this visualization"
+}

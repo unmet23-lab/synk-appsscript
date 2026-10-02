@@ -1,0 +1,65 @@
+{
+  "at": "2026-09-17T09:03:30.621Z",
+  "mode": "--apply",
+  "before": {
+    "service": {
+      "MainPID": "394526",
+      "NRestarts": "6",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+    },
+    "radioStream": {
+      "MainPID": "0",
+      "NRestarts": "0",
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "UnitFileState": "disabled"
+    },
+    "files": [
+      {
+        "pid": "394656",
+        "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+      },
+      {
+        "pid": "394656",
+        "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+      }
+    ]
+  },
+  "after": {
+    "service": {
+      "MainPID": "413458",
+      "NRestarts": "0",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+    },
+    "radioStream": {
+      "MainPID": "0",
+      "NRestarts": "0",
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "UnitFileState": "disabled"
+    },
+    "files": [
+      {
+        "pid": "413664",
+        "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+      },
+      {
+        "pid": "413664",
+        "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+      }
+    ]
+  },
+  "applied": true,
+  "restarted": true,
+  "finalState": {
+    "overlaySha": "6df998dc9b026109f6538050dd6b054e5de8f1018c6476cc746a4249d348a751",
+    "stageListSha": "5ea9dc8cff1729077a957e7e4bdc145ff7a45401a6e2fdc3381d29b15027d196"
+  },
+  "overlayBackup": "/opt/synk-radio/지면/bots/오버레이/마스코트.html.before-chuseok-marine-costume-removal-20260917-4bcb322fa02e",
+  "protectedUnchanged": 18,
+  "preservedUnusedUnchanged": 4
+}

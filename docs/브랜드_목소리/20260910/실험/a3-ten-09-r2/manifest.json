@@ -1,0 +1,36 @@
+{
+  "candidate": "a3-ten-09-r2",
+  "space": "Qwen/Qwen3-TTS",
+  "api": "/generate_voice_clone",
+  "parameters": {
+    "ref_audio": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\a-natural-flow\\raw.wav",
+      "meta": {
+        "_type": "gradio.FileData"
+      },
+      "orig_name": "raw.wav"
+    },
+    "ref_text": "",
+    "target_text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+    "language": "Korean",
+    "use_xvector_only": true,
+    "model_size": "1.7B"
+  },
+  "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+  "synthetic": true,
+  "privateReferenceUploaded": false,
+  "higgsfieldUsed": false,
+  "humanListening": false,
+  "startedAt": 1789033925.6964087,
+  "reference": {
+    "type": "original synthetic voice created for this comparison; not an identified person",
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\a-natural-flow\\raw.wav",
+    "sha256": "86371ee78632a9ac4a6612509651d46211ce6386f2008c0d6199a27ea19d149b",
+    "origin": "Qwen3-TTS VoiceDesign official demo"
+  },
+  "providerMessage": "Voice clone generation completed successfully!",
+  "status": "completed",
+  "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\a3-ten-09-r2\\raw.wav",
+  "sha256": "893772c91d6a82855909b02abd5c51149926692b78ea742bc599e7b19fdb2c11",
+  "elapsedSeconds": 18.0
+}

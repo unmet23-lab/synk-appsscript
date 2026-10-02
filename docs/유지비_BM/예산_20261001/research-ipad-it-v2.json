@@ -1,0 +1,445 @@
+{
+  "schema_version": 2,
+  "title": "상담 iPad 필수 복구와 IT 개원비용 누락 감사",
+  "checked_on": "2026-10-01",
+  "location": "울란바토르, 몽골",
+  "status": "온라인 가격·공식 사양 검증 및 예산 가정. 구매·설치·실제 송출 검증 없음",
+  "instructions": [
+    "이 파일만 신규 작성. 기존 research-media.json의 43개 행은 수정하지 않음.",
+    "금액은 공개가격 관찰 또는 명시한 예산충당이다. 최종 공급견적과 계약금액이 아니다.",
+    "공간 미정. 카메라 4대 광학 PTZ는 보수적 예산충당으로 유지하며 실제 구도시험 전 구매확정하지 않는다.",
+    "iPad 1대는 사용자의 상담 방식 확정에 따른 필수 복구. Cellular·Pencil·키보드·추가 태블릿 자동 합산 없음."
+  ],
+  "sources": {
+    "apple_specs": "https://support.apple.com/en-us/122240",
+    "ipad_local": "https://pc-mall.mn/products/17444630815694",
+    "ipad_local_comparison": "https://bestcomputers.mn/products/25554",
+    "ipad_low_unconfirmed_promotion": "https://itstore.mn/mn/EduT",
+    "apple_reseller_locator": "https://locate.apple.com/mn/en/sales?address=Ulaanbaatar&lat=47.918801&lon=106.917615&pt=all",
+    "case": "https://wiwu.mn/products/136589/390784",
+    "film": "https://wiwu.mn/products/136571/372917",
+    "guided_access": "https://support.apple.com/en-nz/111795",
+    "pdf": "https://support.apple.com/en-mide/guide/ipad/ipade2917f90/ipados",
+    "business": "https://support.apple.com/en-tm/guide/business/axmef1c47twq/web",
+    "telephone": "https://bestcomputers.mn/products/18686",
+    "telephone_in_box": "https://www.grandstream.com/hubfs/Product_Documentation/gxp1620_1625_quick_installation_guide.pdf",
+    "power_strip": "https://eshogol.mn/shop/300071-3-6-monel-es6o-monel-3222?category=164",
+    "pc": "https://bestcomputers.mn/products/25933",
+    "pc_high": "https://bestcomputers.mn/products/26555",
+    "pc_family_ports": "https://support.hp.com/in-en/product/product-specs/hp-pro-tower-280-g9-pci-desktop-pc/model/2102166913?sku=C1TM8AT",
+    "tv": "https://arina.mn/productm/104/40",
+    "ptz": "https://www.adorama.com/ptzoptics-move-se-sdi-hdmi-usb-ip-indoor-ptz-camera-auto-tracking/p/ptzmovese",
+    "ptz_specs": "https://ptzoptics.com/ptz-cameras/move-se-12x",
+    "youtube_bitrate": "https://support.google.com/youtube/answer/2853702?hl=en",
+    "youtube_enable": "https://support.google.com/youtube/answer/2474026?hl=en",
+    "remote_desktop": "https://support.microsoft.com/en-us/windows/experience/connectivity-networking/how-to-use-remote-desktop",
+    "customs": "https://customs.gov.mn/гаалийн-бүрдүүлэлт/",
+    "tariff": "https://customs.gov.mn/гаалийн-тариф/"
+  },
+  "items": [
+    {
+      "id": "CONSULT-IPAD",
+      "category": "상담 필수",
+      "name": "iPad A16 11형 128GB Wi-Fi",
+      "quantity": 1,
+      "unit": "대",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 1799900,
+        "base": 2099900,
+        "high": 2399900
+      },
+      "budget_role": "base_addition",
+      "price_basis": "하한은 Best Computers 품절 표시가. 기준은 PC Mall 동일 128GB SKU 정가 충당. 상한은 재입고/가격변동 300,000₮ 가정이며 판매가 아님.",
+      "source_url": "https://pc-mall.mn/products/17444630815694",
+      "checked_on": "2026-10-01",
+      "observed_sale_price": 1999900,
+      "observed_regular_price": 2099900,
+      "stock_status": "PC Mall MD4A4ZA/A 품절. Best Computers MD4A4도 1,799,900₮ 품절",
+      "included": "본체 Wi-Fi 128GB. Apple 미국 사양상 USB-C 1m 충전 케이블과 20W USB-C 어댑터 포함. 몽골 공급 SKU의 박스 구성은 발주서로 재확인.",
+      "tax": "현지 표시가. VAT 포함/eBarimt 발급 여부 미명시. 수입비를 이 현지가에 다시 붙이지 않음.",
+      "shipping": "PC Mall 울란바토르 무료 48~72시간 배송 표기. 품절이므로 납기 확정 아님.",
+      "uncertainty": "PC Mall의 공식유통·12개월 보증은 판매처 자체 표기. Apple 공식 판매점 조회의 개별 점포 결과는 이번 도구로 확인하지 못함. 소매 페이지의 CPU/해상도 표에는 Apple 공식 사양과 다른 값이 있어 사양 근거로 사용하지 않음."
+    },
+    {
+      "id": "CONSULT-IPAD-CASE",
+      "category": "상담 필수",
+      "name": "A16 호환 케이스 겸 거치대",
+      "quantity": 1,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 33000,
+        "base": 33000,
+        "high": 66000
+      },
+      "budget_role": "base_addition",
+      "price_basis": "Classic III 표시가 33,000₮. 상한은 다른 Defender 모델 정가 66,000₮ 비교범위.",
+      "source_url": "https://wiwu.mn/products/136589/390784",
+      "checked_on": "2026-10-01",
+      "included": "WiWU Classic III, A16 옵션과 2가지 거치방식 표시.",
+      "tax": "현지 표시가; VAT·배송 상세 확인",
+      "uncertainty": "페이지 전체 잔여3개가 A16 색상별 재고라는 보장은 없음. 상담 테이블 각도/미끄럼/케이스 닫힘 실제 시험."
+    },
+    {
+      "id": "CONSULT-IPAD-FILM",
+      "category": "상담 보호",
+      "name": "A16 호환 화면 보호필름",
+      "quantity": 1,
+      "unit": "장",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 25000,
+        "base": 35000,
+        "high": 35000
+      },
+      "budget_role": "base_addition",
+      "price_basis": "직접 상품은25,000₮, 동일 페이지 관련카드와 분류에서는35,000₮. 차이를 숨기지 않고35,000₮ 충당.",
+      "source_url": "https://wiwu.mn/products/136571/372917",
+      "checked_on": "2026-10-01",
+      "included": "A16 옵션 표시. PET 보호필름. 강화유리로 오기하지 않음.",
+      "tax": "현지 표시가; 부착작업 포함 미확인",
+      "uncertainty": "정확한 A16 옵션 최종가와 부착비 확인. 브로셔 선명도에 불리한 종이질감 필름이면 투명제품으로 교체하되 확정견적 필요."
+    },
+    {
+      "id": "CONSULT-IPAD-CHARGER",
+      "category": "중복 제외",
+      "name": "USB-C 20W 어댑터·1m 케이블",
+      "quantity": 0,
+      "unit": "추가 세트",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 0,
+        "base": 0,
+        "high": 0
+      },
+      "budget_role": "included_elsewhere",
+      "price_basis": "Apple 공식 본체 동봉품",
+      "source_url": "https://support.apple.com/en-us/122240",
+      "checked_on": "2026-10-01",
+      "included": "본체와 함께 제공되는 구성일 때 별도 구매하지 않음.",
+      "uncertainty": "지역별 패키지·플러그 형상 확인. 실제 공급 SKU에 어댑터가 빠져 있거나 케이블 길이가 부족할 때만 차액견적. 예비 충전기는 필수 자동추가하지 않음."
+    },
+    {
+      "id": "CONSULT-IPAD-LOCK",
+      "category": "상담 보관",
+      "name": "기존 건식 잠금수납장 내 태블릿 보관 구획",
+      "quantity": 1,
+      "unit": "구획",
+      "currency": "MNT",
+      "unit_price": {
+        "low": null,
+        "base": null,
+        "high": null
+      },
+      "budget_role": "scope_check_not_additive",
+      "price_basis": "기존 가구의 잠금/치수/구획 활용 가능 여부 확인 후 중복 제거",
+      "source_url": null,
+      "checked_on": "2026-10-01",
+      "included": "퇴근 때 케이스 낀 기기를 넣을 건식 잠금구획과 관리자 키 보관.",
+      "uncertainty": "상담실의 세척·청소약품장과 혼용하지 않음. 기존 가구 행이 잠금장치와 적합한 구획을 포함하면 추가0. 없다면 잠금구획/장치 증설 견적 필요; 현재 0원 완료로 간주하지 않음."
+    },
+    {
+      "id": "OPS-PHONE",
+      "category": "운영 누락 복구",
+      "name": "대표전화 수신용 기본 SIP 전화기 후보",
+      "quantity": 1,
+      "unit": "대",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 159900,
+        "base": 159900,
+        "high": 199900
+      },
+      "budget_role": "base_addition",
+      "price_basis": "Grandstream GXP1620 공개가159,900₮. 상한40,000₮는 모델/납기변동 충당.",
+      "source_url": "https://bestcomputers.mn/products/18686",
+      "checked_on": "2026-10-01",
+      "stock_status": "재고7 표시",
+      "included": "제조사 패키지는 본체·수화기·수화기선·받침·5V 전원어댑터·LAN케이블. 어댑터 중복구매 없음.",
+      "tax": "현지 표시가; VAT 별도 확인",
+      "shipping": "100,000₮ 이상 지정 울란바토르 배송범위 무료 표기.",
+      "uncertainty": "번호 방식 미정이라 확정 구매모델 아님. 일반 아날로그 전화선/휴대전화 SIM에 바로 꽂는 제품이 아니다. SIP 번호·호스티드 회선 호환/개통/월요금 미견적. 통신사가 전화기를 제공하거나 기관폰을 선택하면 이 행 대체; IP-PBX 본체를 자동 추가하지 않음."
+    },
+    {
+      "id": "OPS-POWER-STRIP",
+      "category": "운영 누락 복구",
+      "name": "멀티탭 7개 가격기준 후보",
+      "quantity": 7,
+      "unit": "개",
+      "currency": "MNT",
+      "unit_price": {
+        "low": 40100,
+        "base": 40100,
+        "high": 65000
+      },
+      "budget_role": "base_addition",
+      "price_basis": "MONEL eS6o 3m 6구40,100₮ 공개가. 상한65,000₮는 적합한 접지/차단제품으로 변경할 충당값.",
+      "source_url": "https://eshogol.mn/shop/300071-3-6-monel-es6o-monel-3222?category=164",
+      "checked_on": "2026-10-01",
+      "included": "3m 6구 멀티탭7개를 가격표에 복구. 벽 콘센트 증설 공사와 별도.",
+      "tax": "현지 표시가. VAT/배송 조건 확인",
+      "uncertainty": "공개문서에서 접지·차단·허용전류/정격전력 확인 불가, 적합성 확인 전 구매모델로 확정하지 않음. 페이지 조합선택 경고가 있어 7개 실재고 확인 필요. 고전력 커피기기 등을 PC용 멀티탭과 무조건 공유하지 않으며 전기부하계산에서 용도/수량 재확정. AV-CABLE/전기견적에 동일7개가 포함되면 그만큼 차감."
+    }
+  ],
+  "ipad_assessment": {
+    "sufficient": "브로셔 PDF·사진·일반 웹 상담폼·짧은 소개영상 위주라면 A16/128GB/Wi-Fi가 합리적인 기본안이라는 판단. 실제 SYNK 폼 호환성·대용량 영상 재생 완료를 뜻하지 않음.",
+    "official_features": [
+      "A16, 11형 마케팅명(대각 실제10.86형),2360×1640,500nit,Touch ID,Wi-Fi6,USB-C",
+      "128GB는 운영자료 중심 선택이며 학생기록 원본이나 수업영상 전체 보관장치로 쓰지 않음."
+    ],
+    "acceptance": [
+      "실제 상담폼을 Safari에서 열어 한국어·몽골어 키보드, 폼 제출, 첨부, 뒤로가기, 서명 필요여부, 로그아웃 후 다음 학생 상태 초기화를 시험.",
+      "공개 브로셔·시간표·가격표 PDF와 허가된 짧은 영상을 기기에 내려받고 비행기모드에서 열기. Safari에서 링크만 즐겨찾기해 두는 것으로 오프라인 준비완료라 하지 않음.",
+      "오프라인 PDF 열람은 가능해도 웹폼의 오프라인 작성·동기화는 별도 구현. 인터넷 장애 시 최소 종이 접수→담당자 입력 절차를 마련하고 중복 접수 방지.",
+      "케이스를 포함한 보관치수, 건식 잠금구획, 충전위치와 케이블 동선을 확정. 문 닫힌 청소약품장에 충전기를 넣지 않음."
+    ],
+    "account_management": [
+      "학원 소유 자산번호/구입증빙/보증/담당자/복구 수단을 기록. 퇴사자 개인 Apple 계정에 기기를 종속시키지 않음.",
+      "기기 암호·관리자 통제·자동 잠금·업데이트 시간을 지정. 상담 웹서비스는 권한 제한된 직원 계정/상담 세션으로 운영하고 비밀번호 공유를 기본으로 삼지 않음.",
+      "학생에게 직접 입력하게 할 때 Guided Access로 앱 이탈을 제한할 수 있으나 이전 학생의 폼/계정/개인정보 초기화는 앱 절차로 별도 보장.",
+      "Apple 공식 2026-04-14 지역표에 몽골은 Built-in device management·Managed Apple Accounts·Zero-touch deployment 표시. Get Apps/Get Books는 해당 그룹에 미표시. 실제 기관등록·판매자 자동등록·관리비/지원범위는 미확인, 유료 MDM을 자동 합산하지 않음."
+    ],
+    "native_app_note": "docs/공개판_설계.md의 talk 공개판은 첫출시 iPhone 전용 방향이므로 이를 상담 iPad용 완성 앱으로 간주할 근거가 없다. 상담은 검증된 Safari 웹폼/PDF를 시작점으로 하고 네이티브 SYNK iPad 화면은 별도 호환성 확인.",
+    "exclusions": [
+      "Cellular와 월 데이터요금",
+      "Apple Pencil",
+      "물리 키보드",
+      "iPad Air/Pro 업그레이드",
+      "추가 태블릿",
+      "자동으로 가입하는 유료 MDM·iCloud 요금제"
+    ]
+  },
+  "source_price_audit": [
+    {
+      "ids": [
+        "AV-PC",
+        "OFF-PC",
+        "PHOTO-PC"
+      ],
+      "quantity": 13,
+      "model": "HP Pro Tower280 G9 IDS i5-14500/8GB DDR5/512GB/Win11Home/K&M",
+      "observed_price": 2649900,
+      "currency": "MNT",
+      "source_key": "pc",
+      "result": "현재 페이지에서 가격·8GB·512GB·Windows11Home·키보드/마우스 확인. +10 재고 표시는13대 확보 증거가 아님.",
+      "budget_adjustment": "기존16GB 기준2,849,900₮는 본체2,649,900+RAM충당200,000이다. 완성16GB 온라인 판매가로 설명하지 않음. 13대 RAM의 규격/장착/보증을 일괄 공급견적에 포함."
+    },
+    {
+      "ids": [
+        "AV-SSD"
+      ],
+      "quantity": 4,
+      "result": "수업PC1TB 확보용 증설/교체250,000₮씩은 기획충당. NVMe슬롯 수, 기존512GB 유지/교체 여부, 데이터이관, OS재설치/복구 노무 미확정. 기본512+추가1TB를 무조건 가능한구성으로 단정하지 않음."
+    },
+    {
+      "ids": [
+        "PC_HIGH"
+      ],
+      "source_key": "pc_high",
+      "result": "Acer XC1860 Ultra5-225/16GB/512GB/Win11Home/K&M는 현재 연결카드3,799,900₮/정가3,999,900₮. 앞선2,799,900₮ 관찰과 충돌하므로 최저 캐시가격을 적용하지 않고 기존상한3,999,900 유지. 사무실8명 전원 고급편집PC로 증액하지 않음."
+    },
+    {
+      "ids": [
+        "AV-TV"
+      ],
+      "quantity": 4,
+      "model": "LG75UT81009LB",
+      "observed_price": 3599900,
+      "currency": "MNT",
+      "source_key": "tv",
+      "result": "기존기준가 재확인. 작은교실 포함75형4대는 확정치수 아닌 예산 가정. 실제 뒤쪽석 자료글자·빛반사·댄스이동 스탠드/VESA/하중·화면입력 시험 전 확정하지 않음. 현지 운반·층간양중·설치·보강 포함 미확인."
+    },
+    {
+      "ids": [
+        "AV-PTZ"
+      ],
+      "quantity": 4,
+      "model": "PTZOptics MoveSE12x PT12X-SE-WH-G3",
+      "observed_price": 1199,
+      "currency": "USD",
+      "source_key": "ptz",
+      "result": "Adorama12×가격1,199USD 재확인.30×1,499USD는동일제품설정의대안으로중복X. 미국상품가만이며 몽골착지가 아님.",
+      "specs": "제조사:1080p60,12×광학,USB2.0/HDMI/SDI/IP,DC12V/PoE. 최신G3·구형재고·NDI기능/라이선스 포함을 SKU로 일치시켜 발주."
+    },
+    {
+      "ids": [
+        "OPTION-TINY"
+      ],
+      "result": "앞쪽USB카메라는 절감대안으로 유지. 기존 Tiny2Lite159USD 대안이면 본체만(1199-159)×4=4,160USD 절감 비교이나 화질/구도 동일성 미입증. 천장/벽마운트·USB거리·카메라 위치가 바뀌어 부속비도 재견적. 공간·1실 구도시험 확정 전 보수적PTZ충당을 낮추지 않음."
+    }
+  ],
+  "engineering_audit": [
+    {
+      "id": "IT-01",
+      "priority": "개원 전 필수",
+      "topic": "4개 교실 동시 송출",
+      "finding": "교실별 PC·카메라·마이크·유선LAN·OBS·독립 스트림키4개가 필요. 한 OBS의 장면전환은4개수업동시전송과 다름.",
+      "action": "현지 회선에서4실동시90~120분 수업동작+녹화+자료스크롤+음성, YouTube원격학생 재생, 끊김/싱크/재연결 확인.",
+      "budget_status": "OPEX-INTERNET 월요금/설치 미견적; NET-SETUP 충당으로 실제시운전노무포함 계약 필요."
+    },
+    {
+      "id": "IT-02",
+      "priority": "개원 전 필수",
+      "topic": "회선 업로드 기준",
+      "finding": "YouTube공식 H.2641080p30 최소5Mbps/권장14Mbps,1080p60권장17Mbps.4실×(14+.128)=56.512Mbps.",
+      "action": "50%운영여유를 제안값으로 더하면84.768Mbps. 현장 실효 유선업로드100Mbps급을 출발점으로 사업자견적/피크시간측정. 보장속도/일시단절/백업회선선택을 확인. 기존6~8Mbps운영은실제동작·글자가독성시험후채택.",
+      "budget_status": "회선비0으로 간주하지 않음. 학생별두영상 독립전송 개발 시 업로드/저장량 재산정."
+    },
+    {
+      "id": "IT-03",
+      "priority": "개원 전 필수",
+      "topic": "YouTube 준비",
+      "finding": "공식안내는 채널당 활성스트림10개/키당3개 한도 표기.4실은서로다른키/방송으로사전검증. 첫라이브활성화대기와채널검증필요.",
+      "action": "교실명/방송링크/키 매핑·담당권한·재발급/보관·연령/제한상태 확인. 비공개/일부공개를 택하되 일부공개URL은학생별접근제어아님.",
+      "budget_status": "YouTube방송기본기능과 SYNK수강권별보호·개인화플레이어 개발비를 구별."
+    },
+    {
+      "id": "IT-04",
+      "priority": "구매 전 필수",
+      "topic": "카메라 위치 미결",
+      "finding": "교실세팅의앞쪽교사촬영방향과사용자천장통로선호/6안광학PTZ는선택미결. 건물도미정.",
+      "action": "실제1실에서교사얼굴/칠판원본/학생가림/고개시선/댄스거울반사를 시험 후 천장위치·12×화각확정. PTZ4충당유지, USB대안절감액별도.",
+      "budget_status": "광학PTZ 구매확정 아님. 1실대여/반품가능시연 비용은공급업체견적."
+    },
+    {
+      "id": "IT-05",
+      "priority": "설치 전 필수",
+      "topic": "장착·거리·수신",
+      "finding": "장거리USB케이블수량·길이·영상규격 검증이 없음. 카메라USB내장만으로천장→PC연결이성립하지 않음.",
+      "action": "카메라근처PC+짧은USB와긴LAN, 검증된액티브/광USB, IP수신, HDMI/SDI+캡처 중1경로선정. 바닥통로거치피하고구조하중·낙하방지·고정브래킷·천장점검접근·전원/PoE 확인.",
+      "budget_status": "기존AV-CABLE/BRACKET충당은실측견적아님. HDMI/SDI경로면AV-CAPTURE0을최대4개견적으로교체하고USB장거리부속과중복제거."
+    },
+    {
+      "id": "IT-06",
+      "priority": "구매 전 필수",
+      "topic": "13PC 공급 사양",
+      "finding": "기준금액에추가RAM13개가포함되지만원상품은8GB.13대납기,동일부품,Windows정품인수확인필요.",
+      "action": "직원8/포토1은16GB512GB,수업4는16GB1TB를서면BOM으로명시. 키보드/마우스동봉13세트중복구매X. 모니터DP/TVHDMI출력동시지원은현지정확SKU후면사진과실물로검증.",
+      "budget_status": "공급자가RAM/SSD장착비를별도청구하면현재충당범위내인지확인. 단순외장GPU추가예산을자동계상하지 않음."
+    },
+    {
+      "id": "IT-07",
+      "priority": "개원 전 필수",
+      "topic": "13PC OS·앱·계정",
+      "finding": "13대Windows11Home는포함. Office라이선스·각PC설치/복구/업데이트·업무계정준비는별개. Home는Microsoft원격데스크톱호스트가되지않음.",
+      "action": "13대자산표,정품활성화,관리자/직원계정분리,언어/키보드,업데이트창,드라이버,브라우저,프린터/NAS권한,백업복구/장애원격절차를준비. Office파일편집이필요하면업무용라이선스 또는검증된웹/무료대안선정. 무인원격은허용된도구/서비스또는필요PC의Pro차액견적.",
+      "budget_status": "Windows13라이선스 재구매X. Office13석·원격13석을근거없이추가X. NET-SETUP1,200,000₮의기존노무충당에이13대범위포함여부견적필요."
+    },
+    {
+      "id": "IT-08",
+      "priority": "개원 전 필수",
+      "topic": "수업 소프트웨어 인수",
+      "finding": "OBS무료라이선스와기관맞춤서비스완료는다름. 기존classroom-media자동화도구가존재해도현장4실배포/교사운영검증은별도.",
+      "action": "OBS4장면·마이크입력1개·데스크톱소리중복방지·자막/폰트·하드웨어인코더·녹화MKV·재부팅복구를검증. 방송과학생자료가잘못된교실로연결되지않는지확인.",
+      "budget_status": "자동일정/교사원클릭UI·학생별레이아웃·포토월이용권·원격운영은요구범위별개발견적. 시안/로컬도구를운영완료로표기하지 않음."
+    },
+    {
+      "id": "IT-09",
+      "priority": "보관정책 확정",
+      "topic": "저장·백업 실제용량",
+      "finding": "8TB2개 RAID1은명목8TB이며복제되어16TB사용공간아님. RAID는별도백업아님.",
+      "action": "14Mbps영상+128kbps음성,하루6시간×26일×4실이면월약3.967TB(소수TB).시스템/여유20%가정6.4TB가용이면약1.61개월. 실제CQ녹화비트레이트/수업시간에따라달라짐. 보관기간/자동삭제/학생원본노출/외장백업교대와1개파일실제복원시험.",
+      "budget_status": "외장8TB1개는NAS전체의다세대무한보관불가. 장기보관·오프사이트/클라우드·복구전송료는미견적."
+    },
+    {
+      "id": "IT-10",
+      "priority": "동시작동 시험",
+      "topic": "마이크·스피커·충전",
+      "finding": "교사착용무선마이크4세트와표준수신기4개가필요. 실제SKU는원래MicMini와교실문서MicMini2/2S가다름.",
+      "action": "모델세대/동봉RXUSB케이블/충전원/필요USB포트확인.4실동시혼선·교실잘못페어링·배터리교대·유튜브립싱크·현장스피커피드백시험. 포토/PC/TVUSB포트충전을당연하게가정하지 않음.",
+      "budget_status": "기존4세트는2TX짜리라총8송신기·4수신기. 여분TX를다시4개더하지않음. 음성USB직접입력시별도오디오인터페이스0유지."
+    },
+    {
+      "id": "IT-11",
+      "priority": "시설 결정 후",
+      "topic": "PoE·UPS·전기",
+      "finding": "PoE스위치/AP3/PTZ4와UPS배치·전력소비·실제런타임은미검증. 멀티탭7개추가만으로안정전원설계완료아님.",
+      "action": "장비소비전력합계/PoE규격/전력예산,UPS정격W와배터리런타임·PC안전종료,지역220V50Hz/플러그·접지,장비가구환기/물기분리확인. TV·커피머신·히터까지작은UPS에연결하지 않음.",
+      "budget_status": "스위치PoE충분하면인젝터중복X. 패시브배선/벽콘센트/누전차단/구조보강은인테리어견적범위."
+    },
+    {
+      "id": "IT-12",
+      "priority": "개원 전 필수",
+      "topic": "포토·VR 운영",
+      "finding": "디지털포토하드웨어/VR은기본공간포함이지만촬영앱·월1회대표학생차감과VR기관콘텐츠권리는하드웨어가격에포함되지 않음.",
+      "action": "실패촬영권복구·QR유효기간·삭제·오프라인장애·기기재부팅·공용계정/콘텐츠선정·VR위생교대운영을인수범위로정함.",
+      "budget_status": "SW-PHOTO/SW-VIEW/OPEX-VR은null견적항목으로유지. 별도맞춤개발/호스팅을0원으로합계에숨기지 않음."
+    }
+  ],
+  "import_shipping_audit": {
+    "conclusion": "기존 판매가격은 착지가 총액이 아니다. 실제 장소/구매수량/포장과 최종HS별 견적이 없어 완성총액 확정 불가.",
+    "local": [
+      "PC·TV·iPad 등 몽골 현지 구매는 공급업체 수입비가 포함된 현지가로 취급하고 별도 직접수입 관세를 중복가산하지 않음.",
+      "eBarimt/VAT 포함·보증주체·재고·할인기간·법인대량견적 확인. 무료배송이 벽걸이시공/천장보강/층간양중/반품운임 포함은 아님."
+    ],
+    "overseas": [
+      "USD 상품은 Adorama/B&H/미국제조사 가격. 한국→몽골 kg요금을 미국상품에 곧바로 붙이면 미국→한국운송/미국내배송·판매세/환적·보험/배대지수수료가 빠짐. 미국→몽골직송 또는 미국→경유지→몽골의 전체운송견적 필요.",
+      "관세청 공개자료는 HS품목분류로 세율 결정. 이 감사는 PC/태블릿/TV/PTZ/NAS/HDD 각각의 최종HS코드와세율을 확정하지 않음. 일괄5%는예산가정일뿐 확정납부세액아님.",
+      "견적요청표에 모델·원산지·수량·송장가·포장무게/치수·보험·Incoterms·거래통화·국제운송·현지배송·통관료·HS·관세·VAT를 구분.",
+      "공식관세청 FAQ는수입VAT10% 안내. 품목별면제/과세가격은최종신고확인. VAT환급을받는다고자동차감하지 않음."
+    ],
+    "hs_status": "unresolved_require_broker_quote",
+    "landed_cost_formula": "해외 상품금액 + 전구간 운송/보험/핸들링 + 확정HS 관세 + 확정과세표준 VAT + 통관/현지배송. 이미 포함된 항목을 다시 더하지 않는다."
+  },
+  "unpriced_exposure": [
+    {
+      "id": "Q-IPAD-STORAGE",
+      "scope": "기존 건식 잠금구획의 iPad 수납 가능 여부/없을 때 잠금 보완",
+      "reason": "장치·치수·기존가구 포함 여부 미확정"
+    },
+    {
+      "id": "Q-PHONE-SERVICE",
+      "scope": "대표번호 개통·호스티드 SIP 또는 기관폰 회선·월 사용료",
+      "reason": "전화방식/통신사/주소 미확정"
+    },
+    {
+      "id": "Q-INTERNET",
+      "scope": "현장 업무용 업로드회선 설치·월료·선택적 백업회선",
+      "reason": "건물/통신서비스범위 미정"
+    },
+    {
+      "id": "Q-INSTALL",
+      "scope": "13PC+태블릿 초기설정, 4실동시시운전, 사용자교육/인수",
+      "reason": "기존NET-SETUP충당의견적범위미확정; 무조건별도재합산X"
+    },
+    {
+      "id": "Q-CAMERA-CABLE",
+      "scope": "실측에 따른 카메라거리/장착/캡처/배선 차액",
+      "reason": "1실구도시험/천장구조미정"
+    },
+    {
+      "id": "Q-LICENSE",
+      "scope": "업무문서 편집·원격관리·계정관리·필요 시 OS Pro 차액",
+      "reason": "실사용직원/기기·허용업무·선정도구미정"
+    },
+    {
+      "id": "Q-DEVELOP",
+      "scope": "SYNK 포토이용권·학생별화면·교사일정/원격운영 개발·서버·유지보수",
+      "reason": "맞춤기능수준·기존도구현장배포미검증"
+    },
+    {
+      "id": "Q-ARCHIVE",
+      "scope": "장기보관·별도백업/클라우드·장비장애교체대응",
+      "reason": "녹화보관기간/용량·장애허용시간미정"
+    },
+    {
+      "id": "Q-LANDED",
+      "scope": "미국/KRW 장비 전구간운송·HS·세금·현지납품",
+      "reason": "상품가와공통충당만있고공급완성견적없음"
+    }
+  ],
+  "validation": {
+    "file_scope": "research-ipad-it-v2.json only",
+    "existing_files_changed": false,
+    "actual_purchase": false,
+    "ipad_quantity": 1,
+    "pc_count": 13,
+    "additional_base_rows": 5,
+    "base_addition_mnt": 2608500,
+    "low_addition_mnt": 2298500,
+    "high_addition_mnt": 3155800,
+    "ipad_bundle_base_mnt": 2167900,
+    "monetary_warning": "base_addition은iPad+케이스+필름+전화+멀티탭만. 잠금보관/설정/회선/미국운송/개발/기타미견적을포함한완성개원총액이아님. 하한iPad품절가격은현재구입보장가아님."
+  }
+}

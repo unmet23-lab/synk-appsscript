@@ -1,0 +1,28 @@
+[aist#0:0/pcm_s16le @ 000002237bacdcc0] Guessed Channel Layout: mono
+Input #0, wav, from 'C:\Users\q1212\Documents\SYNK-appsscript\docs\홍보물\새첫게시물_20260914\LAB-발음영상\원본\dive-나나-1789332200728.wav':
+  Duration: 00:00:19.00, bitrate: 768 kb/s
+  Stream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, mono, s16, 768 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (pcm_s16le (native) -> pcm_s16le (native))
+Press [q] to stop, [?] for help
+Output #0, null, to 'pipe:':
+  Metadata:
+    encoder         : Lavf62.12.102
+  Stream #0:0: Audio: pcm_s16le, 192000 Hz, mono, s16, 3072 kb/s
+    Metadata:
+      encoder         : Lavc62.28.102 pcm_s16le
+[Parsed_loudnorm_0 @ 000002237d8e13c0] 
+{
+	"input_i" : "-23.52",
+	"input_tp" : "-4.48",
+	"input_lra" : "1.90",
+	"input_thresh" : "-33.89",
+	"output_i" : "-24.07",
+	"output_tp" : "-4.96",
+	"output_lra" : "1.90",
+	"output_thresh" : "-34.42",
+	"normalization_type" : "dynamic",
+	"target_offset" : "0.07"
+}
+[out#0/null @ 000002237ba4e9c0] video:0KiB audio:7124KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
+size=N/A time=00:00:19.00 bitrate=N/A speed=77.2x elapsed=0:00:00.24    

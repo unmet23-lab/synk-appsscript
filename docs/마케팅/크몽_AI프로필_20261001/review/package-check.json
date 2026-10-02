@@ -1,0 +1,25 @@
+{
+  "entries": [
+    "먼저_읽어주세요.txt",
+    "미리보기.html",
+    "등록_붙여넣기.txt",
+    "고객_준비안내.txt",
+    "service.json",
+    "검증_기록.md",
+    "images/01_main.png",
+    "images/02_before_after.png",
+    "images/03_concepts.png",
+    "images/04_process.png",
+    "images/05_ppt.png",
+    "ppt/output/AI_프로필_소개자료_양식.pptx",
+    "ppt/output/유호_프로필_소개자료_예시.pptx",
+    "ppt/output/유호_프로필_소개자료_예시.pdf",
+    "ppt/output/PPT_사용안내.txt",
+    "ppt/output/fonts/SUIT-Variable.ttf",
+    "ppt/output/fonts/LICENSE_OFL.txt"
+  ],
+  "allCRCValid": true,
+  "matchesCurrentFiles": true,
+  "fileBytes": 11482433,
+  "sha256": "6393474f938967240651e6f595a941509211d6f7d474c744a9746760c72ed31c"
+}

@@ -1,0 +1,202 @@
+{
+  "checkedAt": "2026-09-13T20:05:16.230Z",
+  "scope": "SHIFT card 3 cover-publication status and its derived copy; no feed publishing",
+  "status": "local-rendered-unpublished",
+  "published": false,
+  "livePlatformVerified": false,
+  "sourceCoverPubliclyApplied": {
+    "basis": "Main agent live account verification; current 진행과검증.md and direct handoff",
+    "source": "docs/홍보물/새첫게시물_20260914/커버/yuhobuilds-youtube.png",
+    "sha256": "97926098c2fcd6cd2738217de010f2fa2ffbe7a3ea0d198153dea6ec891d839b"
+  },
+  "changed": [
+    {
+      "file": "03-브랜딩과광고.html",
+      "before": "e6a88f72634e1f9d4f8049cb26ed38e466695b73e8b697abddcf4c86fb0b0405",
+      "after": "caa1c69cd6130f8489a86713fb23f993118c9c638e34caabb417bcf70540feda"
+    },
+    {
+      "file": "03-브랜딩과광고.png",
+      "before": "b1c5c1772636da0c508f0d885539734039c4202cb3cc4e5ded37ff2d13eec6a7",
+      "after": "94e72252a3c42491d099c8fc54ade96425eef9fd933a0c3f74e7814dd9ee609b"
+    },
+    {
+      "file": "03-브랜딩과광고.svg",
+      "before": "7b098243ef7a13f2a051f562bdaae0cddbf9da8275f18c8a15e202ec74c0bbf3",
+      "after": "0f2c0983b7fcaf71483d9565c58f7761cf33c27535dd5e0c8d62d958127701d1"
+    },
+    {
+      "file": "index.html",
+      "before": "9f6441f9b7ba7e26b9b2e694810b830f938b87ae21bac30d5ef37d5a1eff2de0",
+      "after": "d21a996203583707a8408919cb9041e820d33a816f631d508d6d925a8e251517"
+    },
+    {
+      "file": "manifest.json",
+      "before": "5c916328473aaaf2b9001a040c784d724833b6d76ea51651dd99808b6ee875e7",
+      "after": "f2535c0548470c0b45839d37e84c50972a1a372cb6b87368771cc8e9394c63a7"
+    },
+    {
+      "file": "qa/03-브랜딩과광고-390.png",
+      "before": "029c0de06994348a4d71df8feac7cd3805e018cb810dd1a599accea09c0aa49e",
+      "after": "bc7120195f66ff109d73aef0474f4a4206dc3c6c4eca57d78e3d084fe0a89a1f"
+    },
+    {
+      "file": "게시문.md",
+      "before": "3808a3ea4fb3b96cf91876af2410ccdc3b590104fc9b19e264a0046a9ed22bde",
+      "after": "55f45b7f07c4a7091b69422a86227534805c0d6e77b2f9b02de0a817e325b09d"
+    },
+    {
+      "file": "대체텍스트.md",
+      "before": "ee52280d95c1945af0a1c9aeb5682ba25b959e415c7f680e2d78c77aeb8ecfa1",
+      "after": "69bfc131e47374b1fd04781bcf9a3560e7c836affd713f2aa4e0dae0e1ec329d"
+    },
+    {
+      "file": "만들기.cjs",
+      "before": "7c52c985abcf25244ea67b44874504e3393095a06c1eb0b3490c025a01fce7bd",
+      "after": "5970169384f00b83b59f3cbf0b30aecde9b7a9fe4e57cd339470548154c9d1b6"
+    }
+  ],
+  "otherSixCards": {
+    "count": 6,
+    "files": [
+      {
+        "file": "01-비전.png",
+        "before": "84fbc4e010b42a9c14b872552aec7fb8b300d8fb255a97438badd046ec145df2",
+        "after": "84fbc4e010b42a9c14b872552aec7fb8b300d8fb255a97438badd046ec145df2"
+      },
+      {
+        "file": "01-비전.svg",
+        "before": "6e099d900942f8c16c5cb63d447a437d6562f07919bd8fb94ec2e6284cbb5999",
+        "after": "6e099d900942f8c16c5cb63d447a437d6562f07919bd8fb94ec2e6284cbb5999"
+      },
+      {
+        "file": "01-비전.html",
+        "before": "1b61fc6e71f1ec75724b22cc6ab9462214cd8658f2ec5c03b4ece800d8ee66ce",
+        "after": "1b61fc6e71f1ec75724b22cc6ab9462214cd8658f2ec5c03b4ece800d8ee66ce"
+      },
+      {
+        "file": "qa/01-비전-390.png",
+        "before": "dbf86528b5c551a1acebcc4c59d98cb7ab55827ca75aa09d549cccdb6b704d8e",
+        "after": "dbf86528b5c551a1acebcc4c59d98cb7ab55827ca75aa09d549cccdb6b704d8e"
+      },
+      {
+        "file": "02-기관교육.png",
+        "before": "fc84387f85435a88164fff7ff677d692c58a92ac747752e588206d4b321cd589",
+        "after": "fc84387f85435a88164fff7ff677d692c58a92ac747752e588206d4b321cd589"
+      },
+      {
+        "file": "02-기관교육.svg",
+        "before": "c14eaba4a39c9d839f4026c222e991cd0fa2da5ac8409a236cbe75a45ee3a6c8",
+        "after": "c14eaba4a39c9d839f4026c222e991cd0fa2da5ac8409a236cbe75a45ee3a6c8"
+      },
+      {
+        "file": "02-기관교육.html",
+        "before": "fa6e4e2a0bcc1ce1afe904f739774a64e24b10d923c6ea7577c85e80cd06cee1",
+        "after": "fa6e4e2a0bcc1ce1afe904f739774a64e24b10d923c6ea7577c85e80cd06cee1"
+      },
+      {
+        "file": "qa/02-기관교육-390.png",
+        "before": "120895576de1be3f374f45d3a6ff3ace34d3080a71bca569ca74b47d4ac41ad2",
+        "after": "120895576de1be3f374f45d3a6ff3ace34d3080a71bca569ca74b47d4ac41ad2"
+      },
+      {
+        "file": "04-유학과취업.png",
+        "before": "2f6ef9bfef256122e1a7de5a8b335023908b41c5afae27109ca2883611cfa2a9",
+        "after": "2f6ef9bfef256122e1a7de5a8b335023908b41c5afae27109ca2883611cfa2a9"
+      },
+      {
+        "file": "04-유학과취업.svg",
+        "before": "33f068c0f342609dfcedaebd7eb48be17fb58b308baefc24c4d81ae9be2b06ec",
+        "after": "33f068c0f342609dfcedaebd7eb48be17fb58b308baefc24c4d81ae9be2b06ec"
+      },
+      {
+        "file": "04-유학과취업.html",
+        "before": "d8c5bc0c0361adb2e8ac20781b4afb9ff74bce10e321593145805b55de1b6764",
+        "after": "d8c5bc0c0361adb2e8ac20781b4afb9ff74bce10e321593145805b55de1b6764"
+      },
+      {
+        "file": "qa/04-유학과취업-390.png",
+        "before": "6cc55f22dd97171614b6053c00957ae4ea744eb20b6fb49fce91b403cc7acc87",
+        "after": "6cc55f22dd97171614b6053c00957ae4ea744eb20b6fb49fce91b403cc7acc87"
+      },
+      {
+        "file": "05-협업의첫질문.png",
+        "before": "ebaf09556c41f26f623566081375a217b64c376ee805f34bf6a274b942defd40",
+        "after": "ebaf09556c41f26f623566081375a217b64c376ee805f34bf6a274b942defd40"
+      },
+      {
+        "file": "05-협업의첫질문.svg",
+        "before": "54f0ccd7c82af4840697c3fd00b9179166de88bc5370efae95b001278f8d040e",
+        "after": "54f0ccd7c82af4840697c3fd00b9179166de88bc5370efae95b001278f8d040e"
+      },
+      {
+        "file": "05-협업의첫질문.html",
+        "before": "39631308aecf4a609e9b21349f4b8db18d438b5beac0e22d741254c9139c7599",
+        "after": "39631308aecf4a609e9b21349f4b8db18d438b5beac0e22d741254c9139c7599"
+      },
+      {
+        "file": "qa/05-협업의첫질문-390.png",
+        "before": "c8956afeaa25fe6c3aa2fe4c8d6026e9f7fb5a3c0f20a4f565e1cc157fab7dcb",
+        "after": "c8956afeaa25fe6c3aa2fe4c8d6026e9f7fb5a3c0f20a4f565e1cc157fab7dcb"
+      },
+      {
+        "file": "06-현재준비.png",
+        "before": "5779a9eaec5c645fd292136d503da6fd767cb9bbd7d64cfe06896da07a7ae127",
+        "after": "5779a9eaec5c645fd292136d503da6fd767cb9bbd7d64cfe06896da07a7ae127"
+      },
+      {
+        "file": "06-현재준비.svg",
+        "before": "19130107951f37d012aa1a4d060c8e277c34554cfc2f4cd947f8af242c464038",
+        "after": "19130107951f37d012aa1a4d060c8e277c34554cfc2f4cd947f8af242c464038"
+      },
+      {
+        "file": "06-현재준비.html",
+        "before": "94f32111a4d1dbbd420b30c052da70930bf831423b5fae9534b71b71fcc60a07",
+        "after": "94f32111a4d1dbbd420b30c052da70930bf831423b5fae9534b71b71fcc60a07"
+      },
+      {
+        "file": "qa/06-현재준비-390.png",
+        "before": "1fccb2335d33e3c4947a10e8f8b4dcfcc1a9f75acfa8bd820ec35f446f6f704c",
+        "after": "1fccb2335d33e3c4947a10e8f8b4dcfcc1a9f75acfa8bd820ec35f446f6f704c"
+      },
+      {
+        "file": "07-함께성장할미래.png",
+        "before": "ff312817369d0924cedb5b8ff49b9f6a8ddfd8ccfabfb53a9045e57becb8c596",
+        "after": "ff312817369d0924cedb5b8ff49b9f6a8ddfd8ccfabfb53a9045e57becb8c596"
+      },
+      {
+        "file": "07-함께성장할미래.svg",
+        "before": "11cf40ee5ae044b2aca52999949b05b9bcb7db3410ca0bee9378140c296c95b3",
+        "after": "11cf40ee5ae044b2aca52999949b05b9bcb7db3410ca0bee9378140c296c95b3"
+      },
+      {
+        "file": "07-함께성장할미래.html",
+        "before": "058a1f2f3056e246a765dc45ba2dbf23613814fa65cafcbdc56b795c11fbb723",
+        "after": "058a1f2f3056e246a765dc45ba2dbf23613814fa65cafcbdc56b795c11fbb723"
+      },
+      {
+        "file": "qa/07-함께성장할미래-390.png",
+        "before": "d2d62c61724449f94497636d440c34d515baf125e05d102727bde2d59ebed3d3",
+        "after": "d2d62c61724449f94497636d440c34d515baf125e05d102727bde2d59ebed3d3"
+      }
+    ],
+    "sameBytes": true
+  },
+  "sourceCount": 30,
+  "sourceDrift": [],
+  "verification": {
+    "command": "node docs/홍보물/새첫게시물_20260914/SHIFT/검증.cjs",
+    "passed": true,
+    "issues": [],
+    "officialCopyMatches": 6
+  },
+  "manualReview": {
+    "changedCardOriginal": true,
+    "changedCard390": true,
+    "otherSixNotRepeated": "byte identical; prior visual review retained"
+  },
+  "remaining": [
+    "New carousel platform upload and publication",
+    "Customer reaction or business outcomes"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "date": "2026-09-27",
+  "url": "http://127.0.0.1:5208/google-vids/motion-review/watch.html",
+  "sourceDuration": 9.92,
+  "testDuration": 9.834,
+  "checkedPlaybackRates": [1, 0.5],
+  "commonEndTime": 9.834,
+  "originalMuted": false,
+  "generatedMuted": true,
+  "generatedEnded": true,
+  "bothPausedAtCommonEnd": true,
+  "mediaErrors": [],
+  "directListening": "not performed",
+  "matchedFrameAlsoViewedAt": 2.94,
+  "verdict": "Background changed, but generated smile and speaking shapes are not identical to the original. Do not mark dynamic facial preservation as passed."
+}

@@ -1,0 +1,613 @@
+[
+  {
+    "created_at": "2026-09-30T12:59:33.974164Z",
+    "display_name": "Nano Banana Pro",
+    "id": "bd69102c-b9cb-468e-9851-3d88f4299c75",
+    "job_type": "nano_banana_pro",
+    "min_result_url": null,
+    "params": {
+      "application": null,
+      "aspect_ratio": "3:4",
+      "batch_size": 1,
+      "height": 1184,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "0420ec42-63ec-498e-8e4e-0df766900a65",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/0420ec42-63ec-498e-8e4e-0df766900a65.png"
+        }
+      ],
+      "prompt": "The exact same man as the reference photo: identical face, bone structure, eyes, brows, skin tone and hairstyle, same plain white cotton crew-neck t-shirt. Do not add any moles, marks or blemishes that are not in the reference. Upper body from the waist up, standing and turned 90 degrees so the camera sees a clean side profile, his face and body pointing toward the right edge of the frame, relaxed neutral expression. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 864
+    },
+    "result_url": null,
+    "status": "in_progress"
+  },
+  {
+    "created_at": "2026-09-30T12:59:33.968512Z",
+    "display_name": "Nano Banana Pro",
+    "id": "bd9c1219-b901-4932-933d-7cd71f8cd5ef",
+    "job_type": "nano_banana_pro",
+    "min_result_url": null,
+    "params": {
+      "application": null,
+      "aspect_ratio": "3:4",
+      "batch_size": 1,
+      "height": 1184,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "5779889d-9c0e-41bc-b952-475d68bb0902",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/5779889d-9c0e-41bc-b952-475d68bb0902.png"
+        }
+      ],
+      "prompt": "The exact same man as the reference photo: identical face, bone structure, eyes, brows, skin tone and hairstyle, same plain white cotton crew-neck t-shirt. Do not add any moles, marks or blemishes that are not in the reference. Head and shoulders facing the camera, genuinely angry: brows pulled down and together, eyes narrowed in a hard glare, jaw clenched, nostrils slightly flared, lips pressed tight, tension across the forehead. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 864
+    },
+    "result_url": null,
+    "status": "in_progress"
+  },
+  {
+    "created_at": "2026-09-30T12:58:38.913723Z",
+    "display_name": "Seedance 2.5",
+    "id": "ccb1545c-08c1-4388-bb9c-233acf9f303a",
+    "job_type": "seedance_2_5",
+    "min_result_url": null,
+    "params": {
+      "aspect_ratio": "9:16",
+      "bitrate_mode": "high",
+      "draft": false,
+      "draft_job_id": null,
+      "duration": 5,
+      "extension_mode": null,
+      "generate_audio": true,
+      "genre": "auto",
+      "height": 1920,
+      "medias": [
+        {
+          "data": {
+            "id": "de6e9bba-25be-41a0-a2c8-4e25656da8fe",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/de6e9bba-25be-41a0-a2c8-4e25656da8fe.png"
+          },
+          "role": "image"
+        },
+        {
+          "data": {
+            "id": "19cd14d6-d6d0-40b4-90db-5927c32a3cd2",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/19cd14d6-d6d0-40b4-90db-5927c32a3cd2_resize.jpg"
+          },
+          "role": "image"
+        }
+      ],
+      "model": "default",
+      "multi_prompt": [],
+      "multi_shot_mode": "custom",
+      "multi_shots": false,
+      "prompt": "Vertical 9:16 five-second live-action film footage photographed with actual adult performers, natural shaded cheeks and unretouched skin, irregular real cloth folds, physical materials and ordinary believable movement. No beautification, synthetic dolls or glossy architectural render.\nTwo brisk editorial shots in a Korean Han River creative campus in 2126. Use reference 1 only for the white short-felt three-storey building architecture and reference 2 only for the Mongle robot silhouette; never derive any human faces from reference art.\nSHOT A 0.0-2.8 seconds: handheld shoulder-height tracking behind a real adult Korean woman with bob haircut, olive cotton jacket and cream trousers as she walks through an already open bronze entrance door. Exterior physical sign reads only lowercase 'synk'. The camera crosses the threshold into the ground-floor PULSE creation studio. Berry colored felt #99295D curved wall; real character animators and a male music creator with pen displays and MIDI keyboard. One coral Mongle practical rolling robot briefly passes beside the woman and brakes to give way: bell-shaped fuzzy coral body, black bead eyes, scalloped stitched hem, no mouth, no arms, no ears, no legs, tiny hidden wheeled base. Warm felt physical sign lowercase dark synk and berry uppercase PULSE. Activities recognizable quickly, no screen text.\nSHOT B 2.8-5.0 seconds: motivated hard cut on her step to a medium rear tracking view of the same woman briskly ascending exactly one curved wooden stair flight from this berry ground-floor studio toward a blue felt second-floor landing. Her feet plant on each real tread and hand brushes the bronze handrail. Camera rises behind at walking pace. Narrow late-afternoon sun mixed with soft neutral skylight. Architecture has plants and felt acoustics, human faces remain incidental, no frozen smiles, no floating holographic letters, no generated Korean text, no extra floors. No slow motion. Clean footsteps, soft studio ambience and three distant music keyboard notes; no speech or music bed.",
+      "prompt_language": "en",
+      "reference_elements": [],
+      "resolution": "1080p",
+      "speedramp": "auto",
+      "width": 1080
+    },
+    "result_url": null,
+    "status": "in_progress"
+  },
+  {
+    "created_at": "2026-09-30T12:54:08.257578Z",
+    "display_name": "Nano Banana Pro",
+    "id": "64e07742-a66a-42c3-996e-4b910e885b1c",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125408_64e07742-a66a-42c3-996e-4b910e885b1c_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "4:5",
+      "batch_size": 1,
+      "height": 2304,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "648e9e26-3e06-407f-bfea-4d8011ccd03f",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/648e9e26-3e06-407f-bfea-4d8011ccd03f.png"
+        }
+      ],
+      "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone and moles. Same hairstyle. Candid commercial lifestyle photo: in a bright minimal bathroom, gently patting her cheek with fingertips after skincare, soft morning window light. Natural unposed moment, 35mm lens, shallow depth of field, real skin texture, natural color, fine film grain, no text, no logos.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1856
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125408_64e07742-a66a-42c3-996e-4b910e885b1c.png",
+    "status": "completed"
+  },
+  {
+    "created_at": "2026-09-30T12:53:36.116416Z",
+    "display_name": "Seedance 2.5",
+    "id": "470d4856-cf82-41db-b4d7-69f06b214b77",
+    "job_type": "seedance_2_5",
+    "min_result_url": null,
+    "params": {
+      "aspect_ratio": "9:16",
+      "bitrate_mode": "high",
+      "draft": false,
+      "draft_job_id": null,
+      "duration": 8,
+      "extension_mode": null,
+      "generate_audio": true,
+      "genre": "auto",
+      "height": 1920,
+      "medias": [
+        {
+          "data": {
+            "id": "19cd14d6-d6d0-40b4-90db-5927c32a3cd2",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/19cd14d6-d6d0-40b4-90db-5927c32a3cd2_resize.jpg"
+          },
+          "role": "image"
+        }
+      ],
+      "model": "default",
+      "multi_prompt": [],
+      "multi_shot_mode": "custom",
+      "multi_shots": false,
+      "prompt": "Vertical 9:16 live-action footage from a Korean science-fiction feature film. Photograph actual adult performers on a physical set: natural facial volume and proportions, ordinary unretouched skin with slight color variation, shaded cheeks, stray hair, real cloth folds, believable weight and contact. Use neutral soft skylight on faces and a narrow directional afternoon sun edge, never orange beauty lighting across every face. A real camera observes people doing something; restrained natural expressions, no posed grins, no cosmetic smoothing or doll-like faces. The year is 2126 beside the Han River in a beautiful garden city. Purposeful cuts and ordinary human speed. No captions, no written Korean, no explanatory overlays, no floating text, no fantasy glow on skin. References define only the specified nonhuman objects and architecture, not the appearance or rendering style of people.\n\nEight-second THIRD-floor SYNK LAB + PATH arrival and payoff with three clear shots. Use the provided Mongle reference only as the design of a small practical coral felt robot in the far background: same bell body, two black bead eyes, scalloped stitched lower edge, no mouth/limbs/ears. Human actors are independently photographed-looking ordinary adults, no picture-book rendering.\n\nThe room is inside the same three-storey river building, with one open bronze-framed window, warm cream walls, coral LAB felt arch and sage PATH felt arch further right. Physical lettering reads small \"synk LAB\" on cream backing (lowercase dark synk, coral uppercase LAB) and \"synk PATH\" (lowercase dark synk, sage uppercase PATH). Fine short felt, not oversized wool. A real stone learning table has a small water channel and two opaque ceramic connector pieces, one pale blue and one coral. Window-side shade gives human faces honest neutral skin and one naturally dark cheek; sunlight catches sleeves and hair only.\n\n0–1.0s: Forward-looking camera comes through the OPEN third-floor window, bronze frame briefly crosses the foreground and conceals a cut into the room. No penetration through solid glass and no additional floor.\n1.0–5.8s: Medium close two-shot of two real adult learners beside the water table: a Korean woman in a simple cream shirt and muted coral vest, and an international adult male learner in a dark sage knit top. She naturally says in Korean, \"파란 거 줘.\" He briefly checks the two solid pieces, picks up the BLUE one and replies \"이거?\" She takes it and slides it FLAT into a matching shallow recess along the channel edge. It fits with one click and a tiny inset blue indicator turns on. The real water begins running a little further along the channel. Their eyes follow the task; a brief spontaneous half-smile, not a staged grin. Film visible hand-to-object contact and ordinary facial muscle motion, without glowing figures or floating Korean text.\n5.8–8.0s: Hard cut into the nearby sage PATH work bay in the same room. A real adult woman wearing simple slate workwear tests a small physical biomimetic water-research device above a shallow water tray, guided by an adult instructor beside her. She adjusts one real control and the little device responds with a small fin motion; the instructor watches her result and nods. This is hands-on career exploration, with \"synk PATH\" softly readable behind them. Finish promptly on her engaged reaction and the moving device. Keep the river visible through the same wall of windows, with no otter transported indoors.\n\nNatural Korean dialogue, ceramic tap/click, a little water and quiet room ambience. No background music, captions, documents, menus, conventional classroom lecture, gleaming holograms, plastic faces or exaggerated facial expressions.",
+      "prompt_language": "en",
+      "reference_elements": [],
+      "resolution": "1080p",
+      "speedramp": "auto",
+      "width": 1080
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125336_470d4856-cf82-41db-b4d7-69f06b214b77.mp4",
+    "status": "completed",
+    "thumbnail_url": "https://cdn.higgsfield.ai/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125336_470d4856-cf82-41db-b4d7-69f06b214b77_thumbnail.webp"
+  },
+  {
+    "created_at": "2026-09-30T12:53:35.317595Z",
+    "display_name": "Seedance 2.5",
+    "id": "f4e67492-13bc-42d2-817a-18655fd18118",
+    "job_type": "seedance_2_5",
+    "min_result_url": null,
+    "params": {
+      "aspect_ratio": "9:16",
+      "bitrate_mode": "high",
+      "draft": false,
+      "draft_job_id": null,
+      "duration": 7,
+      "extension_mode": null,
+      "generate_audio": true,
+      "genre": "auto",
+      "height": 1920,
+      "medias": [
+        {
+          "data": {
+            "id": "a7532477-af53-414f-ba05-c84323de4b7b",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/a7532477-af53-414f-ba05-c84323de4b7b_resize.jpg"
+          },
+          "role": "image"
+        }
+      ],
+      "model": "default",
+      "multi_prompt": [],
+      "multi_shot_mode": "custom",
+      "multi_shots": false,
+      "prompt": "Vertical 9:16 live-action footage from a Korean science-fiction feature film. Photograph actual adult performers on a physical set: natural facial volume and proportions, ordinary unretouched skin with slight color variation, shaded cheeks, stray hair, real cloth folds, believable weight and contact. Use neutral soft skylight on faces and a narrow directional afternoon sun edge, never orange beauty lighting across every face. A real camera observes people doing something; restrained natural expressions, no posed grins, no cosmetic smoothing or doll-like faces. The year is 2126 beside the Han River in a beautiful garden city. Purposeful cuts and ordinary human speed. No captions, no written Korean, no explanatory overlays, no floating text, no fantasy glow on skin. References define only the specified nonhuman objects and architecture, not the appearance or rendering style of people.\n\nSeven seconds in the SECOND floor SYNK SHIFT AI practice studio. Use the provided mascot photograph only to preserve the Marin service robot's design: oversized navy felt hood, two solid matte yellow eye shapes with NO pupils, small beige body and short limbs, little cross-body flower bag. A 60cm physical robot, not an actor costume. Its felt body stays identical and sits on a small unobtrusive mobility base.\n\nDeep lapis blue felt acoustic wall (#24448C), small real dimensional \"synk SHIFT\" sign (warm dark lowercase synk and blue uppercase SHIFT on cream backing), bronze window frames overlooking the Han River. Real stone-and-glass worktable, plants, warm practical task lights. Camera remains close to real adults and physical interactions, not a luminous virtual exhibition. Two adults in their thirties, an ordinary Korean woman in an olive jacket and a male colleague in a faded navy work shirt, have natural skin, slightly untidy hair and focused restrained expressions. No old stylized character references.\n\n0–2.8s: Close over-shoulder shot of their hands solving a visible AI logistics exercise on an INSET tabletop display: a simple three-dimensional route map, one blocked red segment, small parcel icons and a small preview of a robot route. No written words. The woman traces ONE alternate path with a finger and the colleague taps to confirm; the path changes to clean blue, the parcel begins moving along it and the blockage stays behind. Physical finger contact, the action has an obvious result. A small \"synk SHIFT\" felt sign stays visible deeper in the shot.\n2.8–5.2s: Hard cut to an eye-level medium view as the canonical navy Marin robot stops beside the table carrying one small beige parcel on a practical tray. The colleague lifts the parcel normally with both hands, looks to the woman, and gives a small satisfied nod. Correct hands, real object weight; Marin's yellow eyes remain solid, no mouth or new facial feature. This is AI workflow selection followed by a real-world delivery, not a lecture or paperwork.\n5.2–7.0s: The woman hears a quiet boat horn and turns toward the right-hand river window. The camera follows her eyeline and moves forward toward the already open window until the Han River and a passing white cruise boat fill most of the frame. End before going through glass. One swift motivated move, no slow panoramic hold.\n\nAudio: one small confirmation click, soft robot wheel/parcel sounds, room ambience and distant boat horn. No narration, subtitles or music. Natural body weight, skin, facial shadows and cloth response throughout.",
+      "prompt_language": "en",
+      "reference_elements": [],
+      "resolution": "1080p",
+      "speedramp": "auto",
+      "width": 1080
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125335_f4e67492-13bc-42d2-817a-18655fd18118.mp4",
+    "status": "completed",
+    "thumbnail_url": "https://cdn.higgsfield.ai/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125335_f4e67492-13bc-42d2-817a-18655fd18118_thumbnail.webp"
+  },
+  {
+    "created_at": "2026-09-30T12:53:35.161485Z",
+    "display_name": "Seedance 2.5",
+    "id": "ad25a3e0-9782-4174-a338-e24d75c39c25",
+    "job_type": "seedance_2_5",
+    "min_result_url": null,
+    "params": {
+      "aspect_ratio": "9:16",
+      "bitrate_mode": "high",
+      "draft": false,
+      "draft_job_id": null,
+      "duration": 6,
+      "extension_mode": null,
+      "generate_audio": true,
+      "genre": "auto",
+      "height": 1920,
+      "medias": [
+        {
+          "data": {
+            "id": "8002d01c-17ef-4559-9d4e-67dc992c36d2",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/8002d01c-17ef-4559-9d4e-67dc992c36d2_resize.jpg"
+          },
+          "role": "image"
+        },
+        {
+          "data": {
+            "id": "de6e9bba-25be-41a0-a2c8-4e25656da8fe",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/de6e9bba-25be-41a0-a2c8-4e25656da8fe.png"
+          },
+          "role": "image"
+        }
+      ],
+      "model": "default",
+      "multi_prompt": [],
+      "multi_shot_mode": "custom",
+      "multi_shots": false,
+      "prompt": "Vertical 9:16 live-action footage from a Korean science-fiction feature film. Photograph actual adult performers on a physical set: natural facial volume and proportions, ordinary unretouched skin with slight color variation, shaded cheeks, stray hair, real cloth folds, believable weight and contact. Use neutral soft skylight on faces and a narrow directional afternoon sun edge, never orange beauty lighting across every face. A real camera observes people doing something; restrained natural expressions, no posed grins, no cosmetic smoothing or doll-like faces. The year is 2126 beside the Han River in a beautiful garden city. Purposeful cuts and ordinary human speed. No captions, no written Korean, no explanatory overlays, no floating text, no fantasy glow on skin. References define only the specified nonhuman objects and architecture, not the appearance or rendering style of people.\n\nCreate a six-second practical comedy action beat which follows a VR racing-game shot. The reference brown mascot image defines exactly one small Kkamong plush clipped to a black backpack. The building reference defines the distant three-storey white felt SYNK building, only lowercase synk on its exterior. Do not animate the reference photographs as flat cards.\n\nA real adult Korean man with black cornrow braids wears a charcoal overshirt, plain white T-shirt, dark trousers, white sneakers and a black backpack. One black opaque VR headset is strapped securely OVER BOTH EYES throughout, never on his forehead. His RIGHT hand holds one takeaway iced-coffee cup and his LEFT holds one dark portrait smartphone. The brown mouthless green-eyed Kkamong plush stays clipped to the bag. Preserve his anatomy, clothing, prop count and left/right hand continuity.\n\n0–2.0s: Low three-quarter medium tracking shot on the promenade. He leans into an imagined racing turn while walking, lightly bumps the shoulder of a passing adult at the edge of frame, and loses his balance. Start on movement immediately.\n2.0–3.5s: His weight shifts forward and he drops briefly onto one knee in a small controlled comic stumble. His right wrist tips the cup; coffee makes ONE short falling arc with normal gravity. The phone remains in his left hand. The body and fabric have real momentum. No injury, flying body, extra hands or endless suspended liquid. Use a single very short impact-time accent, under half a second, then return to ordinary speed.\n3.5–6.0s: Hard cut to a close view of the SAME headset still covering his eyes, braided hair and cheek as he raises his head in surprise and steadies himself. Real sky reflections on the dark headset surface, shallow optical focus, a natural breath. He does not remove the headset or look into camera. Finish promptly, ready to cut to the backpack mascot.\n\nNatural footstep, brief clothing contact, cup slosh and coffee hitting paving. No music or dialogue. The physical world must look genuinely filmed and unretouched; the headset and plush are ordinary physical props.",
+      "prompt_language": "en",
+      "reference_elements": [],
+      "resolution": "1080p",
+      "speedramp": "auto",
+      "width": 1080
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125335_ad25a3e0-9782-4174-a338-e24d75c39c25.mp4",
+    "status": "completed",
+    "thumbnail_url": "https://cdn.higgsfield.ai/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125335_ad25a3e0-9782-4174-a338-e24d75c39c25_thumbnail.webp"
+  },
+  {
+    "created_at": "2026-09-30T12:53:19.924968Z",
+    "display_name": "Nano Banana Pro",
+    "id": "f8b243f5-ae3d-460f-8f28-104045b9baf7",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125319_f8b243f5-ae3d-460f-8f28-104045b9baf7_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "3:4",
+      "batch_size": 1,
+      "height": 2400,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "35037706-6f51-47c1-8d50-d10b284b2c67",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/35037706-6f51-47c1-8d50-d10b284b2c67.png"
+        }
+      ],
+      "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone and moles. Same hairstyle. Three-quarter length photo from mid-thigh up, standing in a relaxed natural pose, wearing a simple sage-green linen midi dress with thin straps. Plain warm light-grey wall, soft window daylight. Fashion lookbook photo, 70mm lens, real fabric texture and natural creases, real skin texture, natural color, fine film grain, no beauty filter.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1792
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125319_f8b243f5-ae3d-460f-8f28-104045b9baf7.png",
+    "status": "completed"
+  },
+  {
+    "created_at": "2026-09-30T12:52:34.404559Z",
+    "display_name": "Nano Banana Pro",
+    "id": "5f05bcf6-7bae-49f4-ab68-0248f64e18b4",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125234_5f05bcf6-7bae-49f4-ab68-0248f64e18b4_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "3:4",
+      "batch_size": 1,
+      "height": 2400,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "b9c1f1ff-b49a-4a61-ad9c-94d2d6fa8d5a",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/b9c1f1ff-b49a-4a61-ad9c-94d2d6fa8d5a.png"
+        }
+      ],
+      "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone and moles. Same hairstyle. Three-quarter length photo from mid-thigh up, standing in a relaxed natural pose, wearing a cream cable-knit cardigan over a white t-shirt with light-blue straight jeans. Plain warm light-grey wall, soft window daylight. Fashion lookbook photo, 70mm lens, real fabric texture and natural creases, real skin texture, natural color, fine film grain, no beauty filter.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1792
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125234_5f05bcf6-7bae-49f4-ab68-0248f64e18b4.png",
+    "status": "completed"
+  },
+  {
+    "created_at": "2026-09-30T12:51:52.641453Z",
+    "display_name": "Nano Banana Pro",
+    "id": "99bf20e5-a574-4c07-b298-cef161bc2cf0",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125152_99bf20e5-a574-4c07-b298-cef161bc2cf0_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "4:5",
+      "batch_size": 1,
+      "height": 2304,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "20341f47-0707-42d6-a19a-2989fe6742c3",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/20341f47-0707-42d6-a19a-2989fe6742c3.png"
+        }
+      ],
+      "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone and moles. Close-up at chest height of her hands holding a plain unlabeled white cosmetic tube near her chin, the lower half of her face softly visible above, same plain black cotton tank top. Natural nails, real knuckle creases, fine skin texture and veins, exactly five fingers on each hand, correct anatomy. Plain wall, soft window daylight, 85mm, natural color, fine film grain.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1856
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125152_99bf20e5-a574-4c07-b298-cef161bc2cf0.png",
+    "status": "completed"
+  },
+  {
+    "created_at": "2026-09-30T12:50:59.009831Z",
+    "display_name": "Nano Banana Pro",
+    "id": "96545db2-ece9-49ae-b59c-6d9583b96df5",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125059_96545db2-ece9-49ae-b59c-6d9583b96df5_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "4:5",
+      "batch_size": 1,
+      "height": 2304,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "03f3cb1a-9ce6-4511-a655-2801abdcdcbd",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/03f3cb1a-9ce6-4511-a655-2801abdcdcbd.png"
+        }
+      ],
+      "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone and moles. Extreme close-up of her face from brow to chin filling the frame, soft window light raking across the skin, showing real pores, fine vellus hair, subtle natural unevenness and individually visible lashes. Beauty campaign macro photo, 100mm macro lens, natural color, no retouching, no smoothing.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1856
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125059_96545db2-ece9-49ae-b59c-6d9583b96df5.png",
+    "status": "completed"
+  },
+  {
+    "created_at": "2026-09-30T12:50:10.859548Z",
+    "display_name": "Nano Banana Pro",
+    "id": "6ac5a6bd-5eab-4638-8c0d-3322a924fd7f",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125010_6ac5a6bd-5eab-4638-8c0d-3322a924fd7f_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "2:3",
+      "batch_size": 1,
+      "height": 2528,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "88b163f2-cb53-4020-a834-438f9b9c7009",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/88b163f2-cb53-4020-a834-438f9b9c7009.png"
+        }
+      ],
+      "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone and moles. Same hairstyle. Full-length head-to-toe photo, standing straight facing the camera with arms relaxed, feet visible, wearing a fitted plain black cotton tank top tucked into straight dark-blue jeans and plain white sneakers. Plain warm light-grey wall meeting a pale floor, soft window daylight. Unretouched model agency digitals, 50mm lens, true body proportions, real skin texture, natural color, fine film grain, no beauty filter.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1696
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_125010_6ac5a6bd-5eab-4638-8c0d-3322a924fd7f.png",
+    "status": "completed"
+  },
+  {
+    "created_at": "2026-09-30T12:49:45.749344Z",
+    "display_name": "Nano Banana Pro",
+    "id": "567c1e65-3a57-4d57-b060-cbf8ef3724b3",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_124945_567c1e65-3a57-4d57-b060-cbf8ef3724b3_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "3:4",
+      "batch_size": 1,
+      "height": 2400,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "cd7e0b40-9463-4c6d-ac13-76198e1933a3",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/cd7e0b40-9463-4c6d-ac13-76198e1933a3.png"
+        }
+      ],
+      "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone and moles. Same plain black cotton tank top. Change only the hairstyle to a chin-length layered bob with soft face-framing layers. Head and shoulders facing the camera, relaxed neutral expression. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1792
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_124945_567c1e65-3a57-4d57-b060-cbf8ef3724b3.png",
+    "status": "completed"
+  },
+  {
+    "created_at": "2026-09-30T12:49:39.890063Z",
+    "display_name": "Nano Banana Pro",
+    "id": "dad7cc1e-6e22-4b74-9a09-9d8ef4ee4bcd",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_124939_dad7cc1e-6e22-4b74-9a09-9d8ef4ee4bcd_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "3:4",
+      "batch_size": 1,
+      "height": 2400,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "5ee9a8dd-0880-4740-a456-79958c5826d6",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/5ee9a8dd-0880-4740-a456-79958c5826d6.png"
+        }
+      ],
+      "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone and moles. Same plain black cotton tank top. Change only the hairstyle to her hair pulled up into a sleek high ponytail, a few loose baby hairs at the temples. Head and shoulders facing the camera, relaxed neutral expression. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1792
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_124939_dad7cc1e-6e22-4b74-9a09-9d8ef4ee4bcd.png",
+    "status": "completed"
+  },
+  {
+    "created_at": "2026-09-30T12:49:37.898868Z",
+    "display_name": "Nano Banana Pro",
+    "id": "265353f7-6813-47ac-94d1-8e004c4bd121",
+    "job_type": "nano_banana_pro",
+    "min_result_url": null,
+    "params": {
+      "application": null,
+      "aspect_ratio": "3:4",
+      "batch_size": 1,
+      "height": 1184,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "8a029d71-315f-4e91-af82-5d9a1e627b39",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/8a029d71-315f-4e91-af82-5d9a1e627b39.png"
+        }
+      ],
+      "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone, moles and hairstyle, same plain black cotton tank top. Head and shoulders facing the camera, genuinely surprised: eyebrows raised high with forehead creases, eyes wide open, mouth dropped open, head pulled slightly back. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 864
+    },
+    "result_url": null,
+    "status": "in_progress"
+  },
+  {
+    "created_at": "2026-09-30T12:49:33.872511Z",
+    "display_name": "Nano Banana Pro",
+    "id": "529eb78d-81d9-4b01-9b00-2312af43e266",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_124933_529eb78d-81d9-4b01-9b00-2312af43e266_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "3:4",
+      "batch_size": 1,
+      "height": 2400,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "3bb13dee-d20e-4841-bba1-9ac15b939286",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/3bb13dee-d20e-4841-bba1-9ac15b939286.png"
+        }
+      ],
+      "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone, moles and hairstyle, same plain black cotton tank top. Head and shoulders facing the camera, genuinely angry: brows pulled down and together, eyes narrowed in a hard glare, jaw clenched, nostrils slightly flared, lips pressed tight, tension across the forehead. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1792
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_124933_529eb78d-81d9-4b01-9b00-2312af43e266.png",
+    "status": "completed"
+  },
+  {
+    "created_at": "2026-09-30T12:48:51.167734Z",
+    "display_name": "Nano Banana Pro",
+    "id": "190aa797-dfb1-4249-ab72-fab02ca1f000",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_124851_190aa797-dfb1-4249-ab72-fab02ca1f000_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "3:4",
+      "batch_size": 1,
+      "height": 2400,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "cb48ab26-985d-4746-ac50-77ebb2f40d71",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/cb48ab26-985d-4746-ac50-77ebb2f40d71.png"
+        }
+      ],
+      "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone, moles and hairstyle, same plain black cotton tank top. Upper body from the waist up, seen directly from behind: the back of her head and hair, her shoulders and back facing the camera, face not visible. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1792
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_124851_190aa797-dfb1-4249-ab72-fab02ca1f000.png",
+    "status": "completed"
+  },
+  {
+    "created_at": "2026-09-30T12:48:50.29814Z",
+    "display_name": "Nano Banana Pro",
+    "id": "f36ca870-d9ac-4579-b7a9-2bf56e4d3296",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_124850_f36ca870-d9ac-4579-b7a9-2bf56e4d3296_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "3:4",
+      "batch_size": 1,
+      "height": 2400,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "e9513e95-2da2-4525-98b7-cd1cb7f66258",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/e9513e95-2da2-4525-98b7-cd1cb7f66258.png"
+        }
+      ],
+      "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone, moles and hairstyle, same plain black cotton tank top. Head and shoulders facing the camera with a big genuine smile showing the upper teeth, eyes crinkling with natural creases, cheeks raised. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1792
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_124850_f36ca870-d9ac-4579-b7a9-2bf56e4d3296.png",
+    "status": "completed"
+  },
+  {
+    "created_at": "2026-09-30T12:48:49.355078Z",
+    "display_name": "Nano Banana Pro",
+    "id": "1087bf03-6e24-4e67-97a1-c90e542a9bde",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_124849_1087bf03-6e24-4e67-97a1-c90e542a9bde_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "3:4",
+      "batch_size": 1,
+      "height": 2400,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "abe871d5-fa25-4815-85a7-afb4d5f4db54",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/abe871d5-fa25-4815-85a7-afb4d5f4db54.png"
+        }
+      ],
+      "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone, moles and hairstyle, same plain black cotton tank top. Upper body from the waist up, standing and turned 90 degrees so the camera sees a clean side profile, her face and body pointing toward the right edge of the frame, relaxed neutral expression. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1792
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_124849_1087bf03-6e24-4e67-97a1-c90e542a9bde.png",
+    "status": "completed"
+  },
+  {
+    "created_at": "2026-09-30T12:48:49.341801Z",
+    "display_name": "Nano Banana Pro",
+    "id": "e4dd9d24-d9be-4744-ab5c-d98ebfa9219a",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_124849_e4dd9d24-d9be-4744-ab5c-d98ebfa9219a_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "3:4",
+      "batch_size": 1,
+      "height": 2400,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "374695da-77f6-4c52-b09d-82acd95e0af4",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/374695da-77f6-4c52-b09d-82acd95e0af4.png"
+        }
+      ],
+      "prompt": "The exact same woman as the reference photo: identical face, bone structure, eyes, brows, skin tone, moles and hairstyle, same plain black cotton tank top. Upper body from the waist up, standing and turned 90 degrees so the camera sees a clean side profile, her face and body pointing toward the left edge of the frame, relaxed neutral expression. Unretouched model agency digitals, same plain warm light-grey wall and soft window daylight as the reference, 85mm lens, real skin texture with visible pores and fine vellus hair, natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1792
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_124849_e4dd9d24-d9be-4744-ab5c-d98ebfa9219a.png",
+    "status": "completed"
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-01",
+  "localLinksChecked": 112,
+  "missingLinks": [],
+  "arithmetic": "passed: tax thresholds, FX, package inclusions, VAT allowance, maintenance, parent funding and capital double count",
+  "workbookSHA256": "af0d534a2150516eb58416644678fe39bb7616a00be78bcfa7401f8a81d80cbb",
+  "workbookUnchanged": true,
+  "retiredWorkbookLinkCheck": "passed",
+  "limits": "공개가/내부충당의 계산 검증. 현지 견적·법적 구조 승인·은행 순수취·실제 송금·교육업/체류 승인 검증 아님."
+}

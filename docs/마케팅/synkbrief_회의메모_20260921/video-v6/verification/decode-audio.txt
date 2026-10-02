@@ -1,0 +1,51 @@
+Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'synkbrief-meeting-v6.mp4':
+  Metadata:
+    minor_version   : 512
+    major_brand     : isom
+    compatible_brands: isomiso2avc1mp41
+    hyperframes_version: 0.0.0-dev
+    hyperframes_renderer: hyperframes
+    encoder         : Lavf62.12.102
+  Duration: 00:02:03.00, start: 0.000000, bitrate: 731 kb/s
+  Stream #0:0[0x1](und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(tv, bt709, progressive), 1080x1920 [SAR 1:1 DAR 9:16], 700 kb/s, 30 fps, 30 tbr, 15360 tbn (default)
+    Metadata:
+      handler_name    : VideoHandler
+      encoder         : Lavc62.28.102 libx264
+  Stream #0:1[0x2](und): Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 23 kb/s (default)
+    Metadata:
+      handler_name    : SoundHandler
+[Parsed_volumedetect_0 @ 000001a81a995a40] n_samples: 0
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> wrapped_avframe (native))
+  Stream #0:1 -> #0:1 (aac (native) -> pcm_s16le (native))
+Press [q] to stop, [?] for help
+Output #0, null, to 'NUL':
+  Metadata:
+    minor_version   : 512
+    major_brand     : isom
+    compatible_brands: isomiso2avc1mp41
+    hyperframes_version: 0.0.0-dev
+    hyperframes_renderer: hyperframes
+    encoder         : Lavf62.12.102
+  Stream #0:0(und): Video: wrapped_avframe, yuv420p(tv, bt709, progressive), 1080x1920 [SAR 1:1 DAR 9:16], q=2-31, 200 kb/s, 30 fps, 30 tbn (default)
+    Metadata:
+      encoder         : Lavc62.28.102 wrapped_avframe
+      handler_name    : VideoHandler
+  Stream #0:1(und): Audio: pcm_s16le, 48000 Hz, stereo, s16, 1536 kb/s (default)
+    Metadata:
+      encoder         : Lavc62.28.102 pcm_s16le
+      handler_name    : SoundHandler
+frame= 2486 fps=0.0 q=-0.0 size=N/A time=00:01:22.80 bitrate=N/A speed= 161x elapsed=0:00:00.51    
+[Parsed_volumedetect_0 @ 000001a81b4b3900] n_samples: 11808768
+[Parsed_volumedetect_0 @ 000001a81b4b3900] mean_volume: -43.3 dB
+[Parsed_volumedetect_0 @ 000001a81b4b3900] max_volume: -12.8 dB
+[Parsed_volumedetect_0 @ 000001a81b4b3900] histogram_12db: 6
+[Parsed_volumedetect_0 @ 000001a81b4b3900] histogram_13db: 14
+[Parsed_volumedetect_0 @ 000001a81b4b3900] histogram_14db: 40
+[Parsed_volumedetect_0 @ 000001a81b4b3900] histogram_15db: 626
+[Parsed_volumedetect_0 @ 000001a81b4b3900] histogram_16db: 1228
+[Parsed_volumedetect_0 @ 000001a81b4b3900] histogram_17db: 2515
+[Parsed_volumedetect_0 @ 000001a81b4b3900] histogram_18db: 4097
+[Parsed_volumedetect_0 @ 000001a81b4b3900] histogram_19db: 5333
+[out#0/null @ 000001a818eafa40] video:1528KiB audio:23064KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
+frame= 3690 fps=0.0 q=-0.0 Lsize=N/A time=00:02:03.00 bitrate=N/A speed= 158x elapsed=0:00:00.77    

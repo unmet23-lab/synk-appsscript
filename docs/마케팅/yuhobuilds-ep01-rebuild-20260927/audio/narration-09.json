@@ -1,0 +1,220 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 3.44,
+  "words": [
+    {
+      "text": "지금",
+      "start": 0.126,
+      "end": 0.346
+    },
+    {
+      "text": "다시",
+      "start": 0.393,
+      "end": 0.565
+    },
+    {
+      "text": "한다면,",
+      "start": 0.613,
+      "end": 0.895
+    },
+    {
+      "text": "완성의",
+      "start": 1.398,
+      "end": 1.744
+    },
+    {
+      "text": "기준부터",
+      "start": 1.791,
+      "end": 2.168
+    },
+    {
+      "text": "한",
+      "start": 2.435,
+      "end": 2.513
+    },
+    {
+      "text": "줄로",
+      "start": 2.56,
+      "end": 2.702
+    },
+    {
+      "text": "정하겠어요.",
+      "start": 2.749,
+      "end": 3.44
+    }
+  ],
+  "characters": [
+    {
+      "text": "지",
+      "start": 0.126,
+      "end": 0.251
+    },
+    {
+      "text": "금",
+      "start": 0.251,
+      "end": 0.346
+    },
+    {
+      "text": " ",
+      "start": 0.346,
+      "end": 0.393
+    },
+    {
+      "text": "다",
+      "start": 0.393,
+      "end": 0.503
+    },
+    {
+      "text": "시",
+      "start": 0.503,
+      "end": 0.565
+    },
+    {
+      "text": " ",
+      "start": 0.565,
+      "end": 0.613
+    },
+    {
+      "text": "한",
+      "start": 0.613,
+      "end": 0.691
+    },
+    {
+      "text": "다",
+      "start": 0.691,
+      "end": 0.77
+    },
+    {
+      "text": "면",
+      "start": 0.77,
+      "end": 0.88
+    },
+    {
+      "text": ",",
+      "start": 0.88,
+      "end": 0.895
+    },
+    {
+      "text": " ",
+      "start": 0.895,
+      "end": 1.398
+    },
+    {
+      "text": "완",
+      "start": 1.398,
+      "end": 1.571
+    },
+    {
+      "text": "성",
+      "start": 1.571,
+      "end": 1.712
+    },
+    {
+      "text": "의",
+      "start": 1.712,
+      "end": 1.744
+    },
+    {
+      "text": " ",
+      "start": 1.744,
+      "end": 1.791
+    },
+    {
+      "text": "기",
+      "start": 1.791,
+      "end": 1.885
+    },
+    {
+      "text": "준",
+      "start": 1.885,
+      "end": 2.011
+    },
+    {
+      "text": "부",
+      "start": 2.011,
+      "end": 2.089
+    },
+    {
+      "text": "터",
+      "start": 2.089,
+      "end": 2.168
+    },
+    {
+      "text": " ",
+      "start": 2.168,
+      "end": 2.435
+    },
+    {
+      "text": "한",
+      "start": 2.435,
+      "end": 2.513
+    },
+    {
+      "text": " ",
+      "start": 2.513,
+      "end": 2.56
+    },
+    {
+      "text": "줄",
+      "start": 2.56,
+      "end": 2.67
+    },
+    {
+      "text": "로",
+      "start": 2.67,
+      "end": 2.702
+    },
+    {
+      "text": " ",
+      "start": 2.702,
+      "end": 2.749
+    },
+    {
+      "text": "정",
+      "start": 2.749,
+      "end": 2.89
+    },
+    {
+      "text": "하",
+      "start": 2.89,
+      "end": 2.953
+    },
+    {
+      "text": "겠",
+      "start": 2.953,
+      "end": 3.094
+    },
+    {
+      "text": "어",
+      "start": 3.094,
+      "end": 3.142
+    },
+    {
+      "text": "요",
+      "start": 3.142,
+      "end": 3.424
+    },
+    {
+      "text": ".",
+      "start": 3.424,
+      "end": 3.44
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "지금 다시 한다면, 완성의 기준부터 한 줄로 정하겠어요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.25,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1.1
+    }
+  }
+}

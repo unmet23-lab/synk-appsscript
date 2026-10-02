@@ -1,0 +1,39 @@
+{
+  "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\pdf\\yuhobuilds_EP01_그림으로_따라하는_첫질문_v2.pdf",
+  "sha256": "8bb6bacb1f0eb612e9119ac332028ff89aa97827a97f2a4e34766a8719c691a4",
+  "bytes": 234538,
+  "pages": 6,
+  "pageSize": "A5 portrait",
+  "language": "ko-KR",
+  "videoPromptExactMatch": true,
+  "selectableKoreanText": true,
+  "companionMatches": true,
+  "originalV1Preserved": true,
+  "pageNumbersCorrect": true,
+  "textWithinMargins": true,
+  "embeddedFonts": [
+    "/AAAAAA+DMMono-Regular",
+    "/AAAAAA+InterTight-Bold",
+    "/AAAAAA+InterTight-Medium",
+    "/AAAAAA+InterTight-Regular",
+    "/AAAAAA+InterTight-SemiBold",
+    "/AAAAAA+SUITVariable-ExtraBold",
+    "/AAAAAA+SUITVariable-Medium",
+    "/AAAAAA+SUITVariable-SemiBold"
+  ],
+  "rasterImages": 1,
+  "vectorWalkthroughs": [
+    "editable idea and send button",
+    "highlighted roadmap",
+    "follow-up conversation",
+    "empty and filled attendance table",
+    "transfer to own idea"
+  ],
+  "mockScreensLabeled": true,
+  "forms": "none; notes app or printed worksheet",
+  "visualReviewComplete": true,
+  "visualReview": "All six pages rendered at 130 dpi and visually inspected; no clipping or overlap found",
+  "userReviewPending": true,
+  "publicDownloadPublished": false,
+  "videoCtaChanged": false
+}

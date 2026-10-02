@@ -1,0 +1,16 @@
+{
+  "pages": 10,
+  "firstUseTextMatches": true,
+  "projectInstructionsMatch": true,
+  "zipIntegrity": true,
+  "files": [
+    "every-meeting.txt",
+    "first-use.txt",
+    "practice-1.txt",
+    "practice-2.txt",
+    "project-instructions.txt",
+    "repair-format.txt",
+    "README.md",
+    "synkbrief-meeting-guide-v8.pdf"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "74b76a55-92c8-4219-8639-269328efcb6d",
+  "narration": "synkbrief에는 상황별 예시와 원본, 확인법을 남깁니다. 다음에 막힌 일에서도 필요한 자료부터 찾아보세요.",
+  "narrationSha256": "0123ef94ee185386d4f752efacdd95ac012ebd7b40104aacdbbcce9a4d27eb4b",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-0123ef94ee185386.wav",
+  "duration": 9.12,
+  "sha256": "7f32bb5191a0a229ef36a59be341a70f7971c60d5e5a9486dc78c9526f6c0cbe",
+  "humanListening": false,
+  "fullDecode": true
+}

@@ -1,0 +1,110 @@
+{
+  "createdAt": "2026-10-01T11:02:11.682658+00:00",
+  "tracks": [
+    {
+      "title": "유영",
+      "sourceId": "145ffb62-6e5a-4d41-a85a-293a47437d0b",
+      "url": "https://suno.com/song/145ffb62-6e5a-4d41-a85a-293a47437d0b",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\korean-rhythm\\qa\\citypop-20261001\\유영.mp3",
+      "duration": 227.16,
+      "bytes": 5284951,
+      "sha256": "995c330839fc40c7d872097a2721eab453c72b668828ec92688a2eb9d7c35dde",
+      "sampleRate": 48000,
+      "channels": 2,
+      "completeDecode": true,
+      "koreanLyricsMetadata": true,
+      "normalized": "C:\\Users\\q1212\\Documents\\SYNK-radio-20261001\\01.flac",
+      "normalizedSha256": "5eb5a76830f26eab02d79066efc5fb81e0eafec90f81a4c3955bb21656df6ab5",
+      "normalizedDuration": 227.16,
+      "loudnessMeasurement": {
+        "input_i": "-15.43",
+        "input_tp": "-3.85",
+        "input_lra": "5.40",
+        "input_thresh": "-25.51",
+        "output_i": "-12.88",
+        "output_tp": "-1.87",
+        "output_lra": "3.90",
+        "output_thresh": "-22.92",
+        "normalization_type": "dynamic",
+        "target_offset": "-1.12"
+      }
+    },
+    {
+      "title": "잔상",
+      "sourceId": "41cee495-d5d8-4961-8ae5-c207d0e528b9",
+      "url": "https://suno.com/song/41cee495-d5d8-4961-8ae5-c207d0e528b9",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\korean-rhythm\\qa\\citypop-20261001\\잔상.mp3",
+      "duration": 226.8,
+      "bytes": 5490426,
+      "sha256": "aa3fb1b9f8b90cb3a93a47a20e686e666f7e145cdc57a85ed4f94a184bc96cdc",
+      "sampleRate": 48000,
+      "channels": 2,
+      "completeDecode": true,
+      "koreanLyricsMetadata": true,
+      "normalized": "C:\\Users\\q1212\\Documents\\SYNK-radio-20261001\\02.flac",
+      "normalizedSha256": "f708b956e8df40a1a10b07ad283132279468e3b196fe1be625ac9e0bf1dc4d45",
+      "normalizedDuration": 226.8,
+      "loudnessMeasurement": {
+        "input_i": "-15.79",
+        "input_tp": "-3.48",
+        "input_lra": "4.70",
+        "input_thresh": "-25.82",
+        "output_i": "-13.22",
+        "output_tp": "-1.51",
+        "output_lra": "3.60",
+        "output_thresh": "-23.25",
+        "normalization_type": "dynamic",
+        "target_offset": "-0.78"
+      }
+    },
+    {
+      "title": "밤의 온도",
+      "sourceId": "a88e7cc4-e9f7-4e61-9d31-c73e0d537ede",
+      "url": "https://suno.com/song/a88e7cc4-e9f7-4e61-9d31-c73e0d537ede",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\korean-rhythm\\qa\\citypop-20261001\\밤의 온도.mp3",
+      "duration": 214.8,
+      "bytes": 5076143,
+      "sha256": "ef5f719fb78497f758597ae21134f62535ff2010c4373a9c64b281dbcbb2a6d7",
+      "sampleRate": 48000,
+      "channels": 2,
+      "completeDecode": true,
+      "koreanLyricsMetadata": true,
+      "normalized": "C:\\Users\\q1212\\Documents\\SYNK-radio-20261001\\03.flac",
+      "normalizedSha256": "e7d4fa23aac811512ab4633e857e9d01c5a2827072c046342da84a9aaa95e654",
+      "normalizedDuration": 214.8,
+      "loudnessMeasurement": {
+        "input_i": "-16.01",
+        "input_tp": "-4.10",
+        "input_lra": "3.80",
+        "input_thresh": "-26.07",
+        "output_i": "-13.19",
+        "output_tp": "-1.50",
+        "output_lra": "2.60",
+        "output_thresh": "-23.23",
+        "normalization_type": "dynamic",
+        "target_offset": "-0.81"
+      }
+    }
+  ],
+  "crossfadeSeconds": 3,
+  "output": "C:\\Users\\q1212\\Documents\\SYNK-radio-20261001\\synk-radio-citypop3-20261001.flac",
+  "outputSha256": "3bac435befabd3f73ecb69b6a885795ab41a8d9ff4784abb247cb0fcb5d34a87",
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "flac",
+        "sample_fmt": "s32",
+        "sample_rate": "44100",
+        "channels": 2,
+        "bits_per_raw_sample": "24"
+      }
+    ],
+    "format": {
+      "duration": "662.760000"
+    }
+  },
+  "duration": 662.76,
+  "completeDecode": true
+}

@@ -1,0 +1,33 @@
+{"id":"image_001","type":"image","path":"assets/base.png","source":"existing","description":"base","width":4096,"height":4096,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_002","type":"image","path":"assets/base.webp","source":"existing","description":"base","width":1200,"height":1200,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_003","type":"image","path":"assets/blink.png","source":"existing","description":"blink","width":4096,"height":4096,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_004","type":"image","path":"assets/blink.webp","source":"existing","description":"blink","width":1200,"height":1200,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_005","type":"image","path":"assets/cafe.png","source":"existing","description":"cafe","width":941,"height":1672,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_001","type":"bgm","path":"assets/click-soft.mp3","source":"existing","description":"click soft","duration":0.4,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_006","type":"image","path":"assets/curious.png","source":"existing","description":"curious","width":4096,"height":4096,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_007","type":"image","path":"assets/curious.webp","source":"existing","description":"curious","width":1200,"height":1200,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_002","type":"bgm","path":"assets/easy-question.wav","source":"existing","description":"easy question","duration":3,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_003","type":"bgm","path":"assets/easy-receipt.wav","source":"existing","description":"easy receipt","duration":1.6,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_004","type":"bgm","path":"assets/eat.wav","source":"existing","description":"eat","duration":1.8,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_005","type":"bgm","path":"assets/guide.wav","source":"existing","description":"guide","duration":3,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_008","type":"image","path":"assets/lab-logo.png","source":"existing","description":"lab logo","width":3468,"height":1064,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_009","type":"image","path":"assets/lab-logo.webp","source":"existing","description":"lab logo","width":1200,"height":368,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_006","type":"bgm","path":"assets/phrase.wav","source":"existing","description":"phrase","duration":2,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_007","type":"bgm","path":"assets/pop.mp3","source":"existing","description":"pop","duration":0.7,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_008","type":"bgm","path":"assets/question.wav","source":"existing","description":"question","duration":2.4,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_009","type":"bgm","path":"assets/receipt.wav","source":"existing","description":"receipt","duration":1.5,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_010","type":"image","path":"assets/relief.png","source":"existing","description":"relief","width":4096,"height":4096,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_011","type":"image","path":"assets/relief.webp","source":"existing","description":"relief","width":1200,"height":1200,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_010","type":"bgm","path":"assets/repeat.wav","source":"existing","description":"repeat","duration":1.9,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_012","type":"image","path":"assets/right.png","source":"existing","description":"right","width":4096,"height":4096,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_013","type":"image","path":"assets/right.webp","source":"existing","description":"right","width":1200,"height":1200,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_011","type":"bgm","path":"assets/room-tone.wav","source":"existing","description":"room tone","duration":47.6,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_014","type":"image","path":"assets/shy.png","source":"existing","description":"shy","width":4096,"height":4096,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_015","type":"image","path":"assets/shy.webp","source":"existing","description":"shy","width":1200,"height":1200,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_016","type":"image","path":"assets/smile.png","source":"existing","description":"smile","width":4096,"height":4096,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_017","type":"image","path":"assets/smile.webp","source":"existing","description":"smile","width":1200,"height":1200,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_012","type":"bgm","path":"assets/thanks.wav","source":"existing","description":"thanks","duration":4,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_013","type":"bgm","path":"assets/thought.wav","source":"existing","description":"thought","duration":3.5,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_014","type":"bgm","path":"assets/whoosh-short.mp3","source":"existing","description":"whoosh short","duration":0.6,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_015","type":"bgm","path":"assets/yes.wav","source":"existing","description":"yes","duration":0.9,"provenance":{"provider":"local","adopted":true}}
+{"id":"bgm_016","type":"bgm","path":"assets/your-turn.wav","source":"existing","description":"your turn","duration":2,"provenance":{"provider":"local","adopted":true}}

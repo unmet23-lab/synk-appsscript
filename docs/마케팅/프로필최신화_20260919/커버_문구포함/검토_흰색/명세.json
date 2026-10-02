@@ -1,0 +1,210 @@
+{
+  "revision": "2026-09-19-white-review-only",
+  "createdAt": "2026-09-19T07:38:58.376Z",
+  "status": "local-not-published",
+  "globalBrandCanonChanged": false,
+  "fontMethod": "Exact SUIT/Inter Tight glyph outlines; no font fallback",
+  "outputs": [
+    {
+      "id": "lab-youtube",
+      "role": "몽골어권 한국어 학습 자료와 K-LOFI",
+      "file": "lab-youtube.png",
+      "svg": "lab-youtube.svg",
+      "w": 2560,
+      "h": 1440,
+      "bytes": 411575,
+      "sha256": "985d801bfb726fa0e662b971c012c6ae5d57e9e1f40e5a919120c632cd3a08bc",
+      "status": "local-not-published",
+      "alignmentOffsetY": 23,
+      "text": [
+        {
+          "text": "Солонгос хэл · TOPIK",
+          "x": 582.032265625,
+          "y": 665.52578125,
+          "w": 550.2851953124999,
+          "h": 45.122187499999995,
+          "size": 58,
+          "fonts": [
+            "latin700"
+          ]
+        },
+        {
+          "text": "한국어 회화 · TOPIK 준비",
+          "x": 581.56,
+          "y": 741.568,
+          "w": 486.531296875,
+          "h": 46.955999999999996,
+          "size": 52,
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "학습 자료 · K-LOFI 음악",
+          "x": 585.6,
+          "y": 835.6,
+          "w": 362.91656249999994,
+          "h": 35.44,
+          "size": 40,
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        }
+      ],
+      "photos": [
+        {
+          "file": "lab-master-gpt-source.png",
+          "crop": [
+            15,
+            245,
+            960,
+            420
+          ],
+          "x": 1480,
+          "y": 581,
+          "w": 500,
+          "h": 295
+        }
+      ],
+      "logo": {
+        "brand": "LAB",
+        "x": 580,
+        "y": 562,
+        "w": 230
+      },
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "languageReview": "몽골어 AI 검토; 원어민 감수 미완료"
+    },
+    {
+      "id": "shift-tistory",
+      "role": "제작 과정과 수정 이유를 자세히 읽는 작업 기록",
+      "file": "shift-tistory.png",
+      "svg": "shift-tistory.svg",
+      "w": 2400,
+      "h": 900,
+      "bytes": 921697,
+      "sha256": "c16a9fd864d0c9eb1ee6b23a7a1adb6482a64e8f16f6e51702656d5d3836b39f",
+      "status": "local-not-published",
+      "alignmentOffsetY": 64,
+      "text": [
+        {
+          "text": "AI로 회사를",
+          "x": 130.90087890625,
+          "y": 254.52469335937502,
+          "w": 538.7793984375,
+          "h": 110.7,
+          "size": 123,
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "만드는 과정",
+          "x": 136.888,
+          "y": 399.40169335937503,
+          "w": 519.70190625,
+          "h": 110.946,
+          "size": 123,
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "무엇을 만들었고, 왜 고쳤는지 기록합니다.",
+          "x": 141.862,
+          "y": 596.809693359375,
+          "w": 771.54041015625,
+          "h": 48.66561328125,
+          "size": 49,
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        }
+      ],
+      "photos": [
+        {
+          "file": "shift-master-gpt-source.png",
+          "crop": [
+            645,
+            170,
+            665,
+            360
+          ],
+          "x": 1420,
+          "y": 213,
+          "w": 850,
+          "h": 470
+        }
+      ],
+      "logo": null,
+      "safe": null,
+      "languageReview": null
+    },
+    {
+      "id": "shift-tistory-mobile",
+      "role": "제작 과정과 수정 이유를 자세히 읽는 작업 기록",
+      "file": "shift-tistory-mobile.png",
+      "svg": "shift-tistory-mobile.svg",
+      "w": 390,
+      "h": 300,
+      "bytes": 81659,
+      "sha256": "191d286e7129f98fce4e6a240618014d1295a847717a81033afee2be3e93e5c4",
+      "status": "local-not-published",
+      "alignmentOffsetY": 0,
+      "text": [
+        {
+          "text": "AI로 회사를 만드는 과정",
+          "x": 24.19775390625,
+          "y": 43.995000000000005,
+          "w": 237.8634609375,
+          "h": 24.354,
+          "size": 27,
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "무엇을 만들었고, 왜 고쳤는지.",
+          "x": 26.608,
+          "y": 95.072,
+          "w": 180.36906249999998,
+          "h": 15.8108125,
+          "size": 16,
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        }
+      ],
+      "photos": [
+        {
+          "file": "shift-master-gpt-source.png",
+          "crop": [
+            560,
+            180,
+            1450,
+            370
+          ],
+          "x": 24,
+          "y": 155,
+          "w": 342,
+          "h": 108
+        }
+      ],
+      "logo": null,
+      "safe": null,
+      "languageReview": null
+    }
+  ]
+}

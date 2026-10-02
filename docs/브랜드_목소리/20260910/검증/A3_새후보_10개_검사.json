@@ -1,0 +1,365 @@
+{
+  "status": "file-signal-and-transcription-checks-passed",
+  "humanListening": false,
+  "naturalnessImprovementConfirmed": false,
+  "brandVoiceSelected": false,
+  "newAudioCount": 10,
+  "baselineCount": 1,
+  "excluded": [
+    {
+      "key": "a3-ten-01",
+      "reason": "An unrequested laugh appeared in automatic transcription; preserved outside the delivered pack."
+    },
+    {
+      "key": "a3-ten-09",
+      "reason": "Automatic transcription did not match a word; excluded as uncertain, not a confirmed listening diagnosis."
+    }
+  ],
+  "samples": [
+    {
+      "number": "A3",
+      "key": "a-natural-flow",
+      "direction": "이전에 가장 선호한 기준",
+      "method": "baseline",
+      "file": "기준_A3.wav",
+      "rawSha256": "86371ee78632a9ac4a6612509651d46211ce6386f2008c0d6199a27ea19d149b",
+      "listenSha256": "540fd4c54a1f19a5a4e76063180f300b1c100fab86d9762221db650094dc057c",
+      "duration": 9.016875,
+      "sampleRate": 24000,
+      "LUFS": -23.0,
+      "truePeak": -7.66,
+      "actual": "같이 들어볼까요? 좋아요 이번에는 조금 다르게 해볼게요 작은 차이가 모이면 우리만의 목소리가 돼요",
+      "characterSimilarity": 1.0,
+      "rawSignal": {
+        "fullScaleSamples": 1,
+        "longestFullScaleRunSamples": 1,
+        "maxAbsoluteAmplitude": 0.999969482421875,
+        "doesNotProveAbsenceOfAudibleDistortion": true
+      },
+      "nativeSampleRateAndDurationVerifiedFromBothFiles": true
+    },
+    {
+      "number": "01",
+      "key": "a3-ten-01-r2",
+      "direction": "A3와 같은 연출",
+      "method": "voice_design",
+      "prompt": "A bright young adult Korean female voice, clear and lightly smiling, with a smooth full tone. She speaks in quick, easy everyday conversation, with natural Korean intonation and connected, flowing pronunciation.",
+      "file": "01.wav",
+      "rawSha256": "770d12ccdb550ab484bb178ddb111e2f9ea59da885b7edc4a2efa59a2f27034a",
+      "listenSha256": "10bb8bbd3c438d3c97ef0bdc3d706cb918c8cfc443fedaf73a28d3106bf65d41",
+      "duration": 9.096875,
+      "sampleRate": 24000,
+      "LUFS": -23.01,
+      "truePeak": -7.45,
+      "actual": "같이 들어볼까요? 좋아요! 이번에는 조금 다르게 해볼게요 작은 차이가 모이면 우리만의 목소리가 돼요",
+      "characterSimilarity": 1.0,
+      "rawSignal": {
+        "fullScaleSamples": 1,
+        "longestFullScaleRunSamples": 1,
+        "maxAbsoluteAmplitude": 0.999969482421875,
+        "doesNotProveAbsenceOfAudibleDistortion": true
+      },
+      "nativeSampleRateAndDurationVerifiedFromBothFiles": true
+    },
+    {
+      "number": "02",
+      "key": "a3-ten-02",
+      "direction": "편안한 미소",
+      "method": "voice_design",
+      "prompt": "A bright young adult Korean female voice with a clear, rounded tone and a relaxed smile. She talks to a friend in easy, lively Korean, linking words smoothly and letting each sentence follow its meaning.",
+      "file": "02.wav",
+      "rawSha256": "c7a482fc4b17039dbe4f4fbb646e270a9ae882caae00a8095259340104697a3c",
+      "listenSha256": "16d0ca1b17c9e693e6fe79a2776cd2354ba349ea57f0794f4b5a435de86d0405",
+      "duration": 8.136875,
+      "sampleRate": 24000,
+      "LUFS": -22.99,
+      "truePeak": -5.72,
+      "actual": "같이 들어볼까요? 좋아요. 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면 우리만의 목소리가 돼요.",
+      "characterSimilarity": 1.0,
+      "rawSignal": {
+        "fullScaleSamples": 1,
+        "longestFullScaleRunSamples": 1,
+        "maxAbsoluteAmplitude": 0.999969482421875,
+        "doesNotProveAbsenceOfAudibleDistortion": true
+      },
+      "nativeSampleRateAndDurationVerifiedFromBothFiles": true
+    },
+    {
+      "number": "03",
+      "key": "a3-ten-03",
+      "direction": "풍부하고 맑은 울림",
+      "method": "voice_design",
+      "prompt": "A bright young adult Korean female voice with a clear, full-bodied, smooth tone. Her delivery is fresh and lightly smiling, like a quick everyday conversation, with naturally connected Korean pronunciation.",
+      "file": "03.wav",
+      "rawSha256": "ea6758a0f5fbfaad2db5d8bd05d4a055ce7847f990f4df46a7547494377415f3",
+      "listenSha256": "8b5ec4cdb78c56cc6a7f95a37700c49c9f5459f988df86a1ab3a678f432fca66",
+      "duration": 8.056875,
+      "sampleRate": 24000,
+      "LUFS": -22.99,
+      "truePeak": -6.77,
+      "actual": "같이 들어볼까요? 좋아요. 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면 우리만의 목소리가 돼요.",
+      "characterSimilarity": 1.0,
+      "rawSignal": {
+        "fullScaleSamples": 0,
+        "longestFullScaleRunSamples": 0,
+        "maxAbsoluteAmplitude": 0.999969482421875,
+        "doesNotProveAbsenceOfAudibleDistortion": true
+      },
+      "nativeSampleRateAndDurationVerifiedFromBothFiles": true
+    },
+    {
+      "number": "04",
+      "key": "a3-ten-04",
+      "direction": "가볍고 또렷한 대화",
+      "method": "voice_design",
+      "prompt": "A clear young adult Korean female voice with a light smile and a smooth, rounded tone. She speaks in brisk, relaxed conversation with fluid Korean articulation and easy, expressive sentence endings.",
+      "file": "04.wav",
+      "rawSha256": "31a0b2f7858aa253a810bfb4bb9a9ae3f90bed3825d4b43d489791ec6b679e5b",
+      "listenSha256": "896e441b37135adcd41bf53a2a59829d7be0c2bc3d87ea564c24d47d3b885245",
+      "duration": 8.056875,
+      "sampleRate": 24000,
+      "LUFS": -23.0,
+      "truePeak": -10.69,
+      "actual": "같이 들어볼까요? 좋아요 이번에는 조금 다르게 해볼게요 작은 차이가 모이면 우리만의 목소리가 돼요",
+      "characterSimilarity": 1.0,
+      "rawSignal": {
+        "fullScaleSamples": 0,
+        "longestFullScaleRunSamples": 0,
+        "maxAbsoluteAmplitude": 0.999969482421875,
+        "doesNotProveAbsenceOfAudibleDistortion": true
+      },
+      "nativeSampleRateAndDurationVerifiedFromBothFiles": true
+    },
+    {
+      "number": "05",
+      "key": "a3-ten-05",
+      "direction": "밝고 담백한 표현",
+      "method": "voice_design",
+      "prompt": "A bright young adult Korean female voice with a fresh, clear, smooth tone. She speaks casually and confidently to one listener, with a small smile, an easy conversational rhythm and natural Korean phrasing.",
+      "file": "05.wav",
+      "rawSha256": "4f3dcb256b106552026e36fabca91321d8990f2cc70f42a89ae32f1718d7cbc0",
+      "listenSha256": "0156663f8bb849df0d2dc7c450f1e44b8102cfa593e701b78ca403215a7b5593",
+      "duration": 8.136875,
+      "sampleRate": 24000,
+      "LUFS": -23.0,
+      "truePeak": -7.28,
+      "actual": "같이 들어볼까요? 좋아요. 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면 우리만의 목소리가 돼요.",
+      "characterSimilarity": 1.0,
+      "rawSignal": {
+        "fullScaleSamples": 0,
+        "longestFullScaleRunSamples": 0,
+        "maxAbsoluteAmplitude": 0.999969482421875,
+        "doesNotProveAbsenceOfAudibleDistortion": true
+      },
+      "nativeSampleRateAndDurationVerifiedFromBothFiles": true
+    },
+    {
+      "number": "06",
+      "key": "a3-ten-06",
+      "direction": "따뜻한 상큼함",
+      "method": "voice_design",
+      "prompt": "A bright young adult Korean female voice, clear and gently warm, with a smooth full tone. She speaks in lively everyday Korean, smiling lightly, connecting syllables naturally and finishing each thought with relaxed confidence.",
+      "file": "06.wav",
+      "rawSha256": "1c8f7a7a9c9d77fb77c6ddafe185aef21d62d1effee4d653797964dd6a13ee3a",
+      "listenSha256": "9d9c0b0790ed35521d59eea7c97e0aaaa31e3ce9c0cab6ff1c7b00ec05092994",
+      "duration": 8.536875,
+      "sampleRate": 24000,
+      "LUFS": -23.01,
+      "truePeak": -8.8,
+      "actual": "같이 들어볼까요? 좋아요. 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면 우리만의 목소리가 돼요.",
+      "characterSimilarity": 1.0,
+      "rawSignal": {
+        "fullScaleSamples": 1,
+        "longestFullScaleRunSamples": 1,
+        "maxAbsoluteAmplitude": 0.999969482421875,
+        "doesNotProveAbsenceOfAudibleDistortion": true
+      },
+      "nativeSampleRateAndDurationVerifiedFromBothFiles": true
+    },
+    {
+      "number": "07",
+      "key": "a3-ten-07",
+      "direction": "유연한 말끝",
+      "method": "voice_design",
+      "prompt": "A bright young adult Korean female voice with a clear, rounded tone and a hint of a smile. Her Korean sounds like spontaneous conversation: fluid, lightly expressive and brisk, with sentence endings shaped by the meaning.",
+      "file": "07.wav",
+      "rawSha256": "4f1a4f15813c22132e78c1c59cc1af48c293ff19b8f505562cfbb31ce2d45660",
+      "listenSha256": "00dbe2108ff58d2d140e2335a1852ea30ff1b5f3ab7edef0b84c578b98d883f1",
+      "duration": 8.136875,
+      "sampleRate": 24000,
+      "LUFS": -23.0,
+      "truePeak": -5.52,
+      "actual": "같이 들어볼까요? 좋아요 이번에는 조금 다르게 해볼게요 작은 차이가 모이면 우리만의 목소리가 돼요",
+      "characterSimilarity": 1.0,
+      "rawSignal": {
+        "fullScaleSamples": 1,
+        "longestFullScaleRunSamples": 1,
+        "maxAbsoluteAmplitude": 0.999969482421875,
+        "doesNotProveAbsenceOfAudibleDistortion": true
+      },
+      "nativeSampleRateAndDurationVerifiedFromBothFiles": true
+    },
+    {
+      "number": "08",
+      "key": "a3-ten-08",
+      "direction": "친근한 진행",
+      "method": "voice_design",
+      "prompt": "A fresh, clear young adult Korean female voice with a smooth, full tone. She invites a friend to try something together, speaking in easy, lively Korean with a light smile and naturally flowing pronunciation.",
+      "file": "08.wav",
+      "rawSha256": "956678a2b156b59d029c8e7c49403e3cb2c6c1109bda9d427f97cb481e46a96a",
+      "listenSha256": "ba021615ebdd5034acb49335f8ce90bb21d43fb0cf8be99d2e816085c5bcd404",
+      "duration": 8.536875,
+      "sampleRate": 24000,
+      "LUFS": -23.0,
+      "truePeak": -10.0,
+      "actual": "같이 들어볼까요? 좋아요. 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면 우리만의 목소리가 돼요.",
+      "characterSimilarity": 1.0,
+      "rawSignal": {
+        "fullScaleSamples": 0,
+        "longestFullScaleRunSamples": 0,
+        "maxAbsoluteAmplitude": 0.999969482421875,
+        "doesNotProveAbsenceOfAudibleDistortion": true
+      },
+      "nativeSampleRateAndDurationVerifiedFromBothFiles": true
+    },
+    {
+      "number": "09",
+      "key": "a3-ten-09-r2",
+      "direction": "A3 음색 참조",
+      "method": "speaker_features",
+      "reference": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\a-natural-flow\\raw.wav",
+      "file": "09.wav",
+      "rawSha256": "893772c91d6a82855909b02abd5c51149926692b78ea742bc599e7b19fdb2c11",
+      "listenSha256": "a91e941767e09a9919ecf8136b3009fd67d76fe63615ed81583edf333fe3f8f3",
+      "duration": 10.136875,
+      "sampleRate": 24000,
+      "LUFS": -23.0,
+      "truePeak": -9.59,
+      "actual": "같이 들어볼까요? 좋아요. 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면 우리만의 목소리가 돼요.",
+      "characterSimilarity": 1.0,
+      "rawSignal": {
+        "fullScaleSamples": 1,
+        "longestFullScaleRunSamples": 1,
+        "maxAbsoluteAmplitude": 0.999969482421875,
+        "doesNotProveAbsenceOfAudibleDistortion": true
+      },
+      "nativeSampleRateAndDurationVerifiedFromBothFiles": true
+    },
+    {
+      "number": "10",
+      "key": "a3-ten-10",
+      "direction": "A3 음성과 대본 참조",
+      "method": "audio_and_transcript",
+      "reference": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\a-natural-flow\\raw.wav",
+      "file": "10.wav",
+      "rawSha256": "ed622675a410de189580d2e04121fb4197f020f8d0ced597542c2467dcf8fa01",
+      "listenSha256": "4b32b594c02bab62dbe52530e3d4668dd0f39b4f8339b10ca13b3a893dcb2606",
+      "duration": 10.867375,
+      "sampleRate": 24000,
+      "LUFS": -23.0,
+      "truePeak": -6.17,
+      "actual": "같이 들어볼까요? 좋아요. 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면 우리만의 목소리가 돼요.",
+      "characterSimilarity": 1.0,
+      "rawSignal": {
+        "fullScaleSamples": 1,
+        "longestFullScaleRunSamples": 1,
+        "maxAbsoluteAmplitude": 0.999969482421875,
+        "doesNotProveAbsenceOfAudibleDistortion": true
+      },
+      "nativeSampleRateAndDurationVerifiedFromBothFiles": true
+    }
+  ],
+  "continuous": {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\A3_새후보_10개\\한번에_듣기.wav",
+    "sha256": "4aeca0b469a06cc3c9aae91b29a08b6a08f49bbb6afb8407050ff01f0eeff026",
+    "duration": 104.716125,
+    "gapSeconds": 0.8,
+    "exactPcmConcatenationVerified": true,
+    "cues": [
+      {
+        "number": "A3",
+        "startSeconds": 0.0,
+        "start": "00:00.00",
+        "duration": 9.016875,
+        "file": "기준_A3.wav"
+      },
+      {
+        "number": "01",
+        "startSeconds": 9.816875,
+        "start": "00:09.82",
+        "duration": 9.096875,
+        "file": "01.wav"
+      },
+      {
+        "number": "02",
+        "startSeconds": 19.71375,
+        "start": "00:19.71",
+        "duration": 8.136875,
+        "file": "02.wav"
+      },
+      {
+        "number": "03",
+        "startSeconds": 28.650625,
+        "start": "00:28.65",
+        "duration": 8.056875,
+        "file": "03.wav"
+      },
+      {
+        "number": "04",
+        "startSeconds": 37.5075,
+        "start": "00:37.51",
+        "duration": 8.056875,
+        "file": "04.wav"
+      },
+      {
+        "number": "05",
+        "startSeconds": 46.364375,
+        "start": "00:46.36",
+        "duration": 8.136875,
+        "file": "05.wav"
+      },
+      {
+        "number": "06",
+        "startSeconds": 55.30125,
+        "start": "00:55.30",
+        "duration": 8.536875,
+        "file": "06.wav"
+      },
+      {
+        "number": "07",
+        "startSeconds": 64.638125,
+        "start": "01:04.64",
+        "duration": 8.136875,
+        "file": "07.wav"
+      },
+      {
+        "number": "08",
+        "startSeconds": 73.575,
+        "start": "01:13.58",
+        "duration": 8.536875,
+        "file": "08.wav"
+      },
+      {
+        "number": "09",
+        "startSeconds": 82.911875,
+        "start": "01:22.91",
+        "duration": 10.136875,
+        "file": "09.wav"
+      },
+      {
+        "number": "10",
+        "startSeconds": 93.84875,
+        "start": "01:33.85",
+        "duration": 10.867375,
+        "file": "10.wav"
+      }
+    ]
+  },
+  "zip": {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\A3_새후보_10개.zip",
+    "bytes": 11354423,
+    "sha256": "239f9725c5d58f1775b72a1ca0dbe83ea15ede95348f9ae5b8f71225a2c90209",
+    "roundTripVerified": true,
+    "entries": 25
+  }
+}

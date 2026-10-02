@@ -1,0 +1,50 @@
+{
+ "A": {
+  "input_I": -17.6,
+  "target": -15.0,
+  "I": -15.0,
+  "TP": -1.5,
+  "max_gr_db": -3.13,
+  "over3db_pct": 0.146
+ },
+ "B": {
+  "input_I": -17.0,
+  "target": -14.0,
+  "I": -14.1,
+  "TP": -1.5,
+  "max_gr_db": -3.53,
+  "over3db_pct": 0.355
+ },
+ "C": {
+  "input_I": -18.2,
+  "target": -15.0,
+  "I": -15.1,
+  "TP": -1.5,
+  "max_gr_db": -3.42,
+  "over3db_pct": 0.382
+ },
+ "D": {
+  "input_I": -18.1,
+  "target": -15.5,
+  "I": -15.6,
+  "TP": -1.5,
+  "max_gr_db": -2.73,
+  "over3db_pct": 0.0
+ },
+ "E": {
+  "input_I": -16.6,
+  "target": -14.0,
+  "I": -14.1,
+  "TP": -1.5,
+  "max_gr_db": -2.99,
+  "over3db_pct": 0.0
+ },
+ "F": {
+  "input_I": -15.9,
+  "target": -14.0,
+  "I": -14.1,
+  "TP": -1.5,
+  "max_gr_db": -2.15,
+  "over3db_pct": 0.0
+ }
+}

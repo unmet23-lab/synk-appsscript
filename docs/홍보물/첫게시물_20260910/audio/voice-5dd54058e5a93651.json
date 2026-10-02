@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "b6eb6fa6-782a-435b-bb7d-d2793e4b57cb",
+  "narration": "강사의 소개글을 정리합니다. 이제 받을 결과가 보이나요? 맡길 일이 드러나는 문장입니다.",
+  "narrationSha256": "5dd54058e5a93651048834ec3a1c07e926404ca6a7d4bd815bd4929c8370a6ec",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-5dd54058e5a93651.wav",
+  "duration": 7.84,
+  "sha256": "0863fbdbefba21f27c374f63ac2f1b348426c22898e348660a6b2fd68198c791",
+  "humanListening": false,
+  "fullDecode": true
+}

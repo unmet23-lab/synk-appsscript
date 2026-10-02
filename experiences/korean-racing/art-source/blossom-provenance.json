@@ -1,0 +1,7 @@
+{
+  "tool": "built-in image_gen",
+  "transparent_background": true,
+  "original": "blossom-tree-generated.png",
+  "runtime": "../assets/blossom-tree.webp",
+  "prompt": "Use case: photorealistic-natural. Asset type: transparent billboard foliage for a high quality mobile 3D coastal racing game. Generate ONE isolated mature Korean flowering cherry tree, entire tree from trunk base to crown tip, truly transparent RGBA background. Broad asymmetric spreading crown of pale blush pink and warm ivory blossom clusters, airy gaps with intricate dark branches visible through canopy, realistic small individual petals, naturally uneven non-spherical branching. Lean slightly windswept, credible gray-brown textured trunk and roots, afternoon directional sunlight from upper right. Fine natural detail and clear alpha edges; photorealistic plant asset not illustration or concept art. Portrait 2:3 frame tree fills 90 percent with margins, no clipping, no ground plane, no sky, no scenery, no rectangle, no text, no outside shadow, no uniform round cotton-candy blobs. Restrained soft pinks, believable light and depth, suitable as an alpha-tested crossed-card tree near a seaside roadway."
+}

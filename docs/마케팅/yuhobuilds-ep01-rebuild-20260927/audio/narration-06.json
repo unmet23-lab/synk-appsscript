@@ -1,0 +1,180 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 2.165,
+  "words": [
+    {
+      "text": "화면",
+      "start": 0.063,
+      "end": 0.263
+    },
+    {
+      "text": "찍고,",
+      "start": 0.313,
+      "end": 0.501
+    },
+    {
+      "text": "물어보고,",
+      "start": 0.801,
+      "end": 1.101
+    },
+    {
+      "text": "그대로",
+      "start": 1.314,
+      "end": 1.515
+    },
+    {
+      "text": "따라",
+      "start": 1.565,
+      "end": 1.677
+    },
+    {
+      "text": "했습니다.",
+      "start": 1.715,
+      "end": 2.165
+    }
+  ],
+  "characters": [
+    {
+      "text": "화",
+      "start": 0.063,
+      "end": 0.163
+    },
+    {
+      "text": "면",
+      "start": 0.163,
+      "end": 0.263
+    },
+    {
+      "text": " ",
+      "start": 0.263,
+      "end": 0.313
+    },
+    {
+      "text": "찍",
+      "start": 0.313,
+      "end": 0.451
+    },
+    {
+      "text": "고",
+      "start": 0.451,
+      "end": 0.488
+    },
+    {
+      "text": ",",
+      "start": 0.488,
+      "end": 0.501
+    },
+    {
+      "text": " ",
+      "start": 0.501,
+      "end": 0.801
+    },
+    {
+      "text": "물",
+      "start": 0.801,
+      "end": 0.901
+    },
+    {
+      "text": "어",
+      "start": 0.901,
+      "end": 0.964
+    },
+    {
+      "text": "보",
+      "start": 0.964,
+      "end": 1.039
+    },
+    {
+      "text": "고",
+      "start": 1.039,
+      "end": 1.089
+    },
+    {
+      "text": ",",
+      "start": 1.089,
+      "end": 1.101
+    },
+    {
+      "text": " ",
+      "start": 1.101,
+      "end": 1.314
+    },
+    {
+      "text": "그",
+      "start": 1.314,
+      "end": 1.402
+    },
+    {
+      "text": "대",
+      "start": 1.402,
+      "end": 1.489
+    },
+    {
+      "text": "로",
+      "start": 1.489,
+      "end": 1.515
+    },
+    {
+      "text": " ",
+      "start": 1.515,
+      "end": 1.565
+    },
+    {
+      "text": "따",
+      "start": 1.565,
+      "end": 1.652
+    },
+    {
+      "text": "라",
+      "start": 1.652,
+      "end": 1.677
+    },
+    {
+      "text": " ",
+      "start": 1.677,
+      "end": 1.715
+    },
+    {
+      "text": "했",
+      "start": 1.715,
+      "end": 1.827
+    },
+    {
+      "text": "습",
+      "start": 1.827,
+      "end": 1.89
+    },
+    {
+      "text": "니",
+      "start": 1.89,
+      "end": 1.94
+    },
+    {
+      "text": "다",
+      "start": 1.94,
+      "end": 2.153
+    },
+    {
+      "text": ".",
+      "start": 2.153,
+      "end": 2.165
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "화면 찍고, 물어보고, 그대로 따라 했습니다.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.27,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.1
+    }
+  }
+}

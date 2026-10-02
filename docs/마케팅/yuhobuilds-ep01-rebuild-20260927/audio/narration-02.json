@@ -1,0 +1,180 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 2.379,
+  "words": [
+    {
+      "text": "이",
+      "start": 0.081,
+      "end": 0.095
+    },
+    {
+      "text": "한",
+      "start": 0.189,
+      "end": 0.297
+    },
+    {
+      "text": "줄부터",
+      "start": 0.338,
+      "end": 0.581
+    },
+    {
+      "text": "정했다면,",
+      "start": 0.622,
+      "end": 1.027
+    },
+    {
+      "text": "덜",
+      "start": 1.392,
+      "end": 1.555
+    },
+    {
+      "text": "헤맸을",
+      "start": 1.595,
+      "end": 1.879
+    },
+    {
+      "text": "거예요.",
+      "start": 1.919,
+      "end": 2.379
+    }
+  ],
+  "characters": [
+    {
+      "text": "이",
+      "start": 0.081,
+      "end": 0.095
+    },
+    {
+      "text": " ",
+      "start": 0.095,
+      "end": 0.189
+    },
+    {
+      "text": "한",
+      "start": 0.189,
+      "end": 0.297
+    },
+    {
+      "text": " ",
+      "start": 0.297,
+      "end": 0.338
+    },
+    {
+      "text": "줄",
+      "start": 0.338,
+      "end": 0.446
+    },
+    {
+      "text": "부",
+      "start": 0.446,
+      "end": 0.527
+    },
+    {
+      "text": "터",
+      "start": 0.527,
+      "end": 0.581
+    },
+    {
+      "text": " ",
+      "start": 0.581,
+      "end": 0.622
+    },
+    {
+      "text": "정",
+      "start": 0.622,
+      "end": 0.743
+    },
+    {
+      "text": "했",
+      "start": 0.743,
+      "end": 0.852
+    },
+    {
+      "text": "다",
+      "start": 0.852,
+      "end": 0.906
+    },
+    {
+      "text": "면",
+      "start": 0.906,
+      "end": 1.014
+    },
+    {
+      "text": ",",
+      "start": 1.014,
+      "end": 1.027
+    },
+    {
+      "text": " ",
+      "start": 1.027,
+      "end": 1.392
+    },
+    {
+      "text": "덜",
+      "start": 1.392,
+      "end": 1.555
+    },
+    {
+      "text": " ",
+      "start": 1.555,
+      "end": 1.595
+    },
+    {
+      "text": "헤",
+      "start": 1.595,
+      "end": 1.69
+    },
+    {
+      "text": "맸",
+      "start": 1.69,
+      "end": 1.811
+    },
+    {
+      "text": "을",
+      "start": 1.811,
+      "end": 1.879
+    },
+    {
+      "text": " ",
+      "start": 1.879,
+      "end": 1.919
+    },
+    {
+      "text": "거",
+      "start": 1.919,
+      "end": 2.001
+    },
+    {
+      "text": "예",
+      "start": 2.001,
+      "end": 2.068
+    },
+    {
+      "text": "요",
+      "start": 2.068,
+      "end": 2.366
+    },
+    {
+      "text": ".",
+      "start": 2.366,
+      "end": 2.379
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "이 한 줄부터 정했다면, 덜 헤맸을 거예요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.24,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1.05
+    }
+  }
+}

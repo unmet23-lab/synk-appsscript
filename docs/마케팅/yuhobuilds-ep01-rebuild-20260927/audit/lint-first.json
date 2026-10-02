@@ -1,0 +1,539 @@
+{
+  "ok": false,
+  "errorCount": 14,
+  "warningCount": 41,
+  "infoCount": 0,
+  "findings": [
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-0\"> is a timeline element that contains nested <div id=\"caption-inner-0\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-0",
+      "fixHint": "Move <div id=\"caption-0\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 9,
+      "column": 197
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-1\"> is a timeline element that contains nested <div id=\"caption-inner-1\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-1",
+      "fixHint": "Move <div id=\"caption-1\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 10,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-2\"> is a timeline element that contains nested <div id=\"caption-inner-2\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-2",
+      "fixHint": "Move <div id=\"caption-2\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 11,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-3\"> is a timeline element that contains nested <div id=\"caption-inner-3\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-3",
+      "fixHint": "Move <div id=\"caption-3\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 12,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-4\"> is a timeline element that contains nested <div id=\"caption-inner-4\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-4",
+      "fixHint": "Move <div id=\"caption-4\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 13,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-5\"> is a timeline element that contains nested <div id=\"caption-inner-5\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-5",
+      "fixHint": "Move <div id=\"caption-5\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 14,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-6\"> is a timeline element that contains nested <div id=\"caption-inner-6\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-6",
+      "fixHint": "Move <div id=\"caption-6\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 15,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-7\"> is a timeline element that contains nested <div id=\"caption-inner-7\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-7",
+      "fixHint": "Move <div id=\"caption-7\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 16,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-8\"> is a timeline element that contains nested <div id=\"caption-inner-8\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-8",
+      "fixHint": "Move <div id=\"caption-8\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 17,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-9\"> is a timeline element that contains nested <div id=\"caption-inner-9\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-9",
+      "fixHint": "Move <div id=\"caption-9\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 18,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-10\"> is a timeline element that contains nested <div id=\"caption-inner-10\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-10",
+      "fixHint": "Move <div id=\"caption-10\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 19,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-11\"> is a timeline element that contains nested <div id=\"caption-inner-11\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-11",
+      "fixHint": "Move <div id=\"caption-11\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 20,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-12\"> is a timeline element that contains nested <div id=\"caption-inner-12\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-12",
+      "fixHint": "Move <div id=\"caption-12\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 21,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-13\"> is a timeline element that contains nested <div id=\"caption-inner-13\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-13",
+      "fixHint": "Move <div id=\"caption-13\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 22,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-14\"> is a timeline element that contains nested <div id=\"caption-inner-14\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-14",
+      "fixHint": "Move <div id=\"caption-14\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 23,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-15\"> is a timeline element that contains nested <div id=\"caption-inner-15\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-15",
+      "fixHint": "Move <div id=\"caption-15\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 24,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-16\"> is a timeline element that contains nested <div id=\"caption-inner-16\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-16",
+      "fixHint": "Move <div id=\"caption-16\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 25,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-17\"> is a timeline element that contains nested <div id=\"caption-inner-17\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-17",
+      "fixHint": "Move <div id=\"caption-17\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 26,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-18\"> is a timeline element that contains nested <div id=\"caption-inner-18\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-18",
+      "fixHint": "Move <div id=\"caption-18\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 27,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-19\"> is a timeline element that contains nested <div id=\"caption-inner-19\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-19",
+      "fixHint": "Move <div id=\"caption-19\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 28,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-20\"> is a timeline element that contains nested <div id=\"caption-inner-20\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-20",
+      "fixHint": "Move <div id=\"caption-20\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 29,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-21\"> is a timeline element that contains nested <div id=\"caption-inner-21\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-21",
+      "fixHint": "Move <div id=\"caption-21\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 30,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-22\"> is a timeline element that contains nested <div id=\"caption-inner-22\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-22",
+      "fixHint": "Move <div id=\"caption-22\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 31,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-23\"> is a timeline element that contains nested <div id=\"caption-inner-23\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-23",
+      "fixHint": "Move <div id=\"caption-23\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 32,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-24\"> is a timeline element that contains nested <div id=\"caption-inner-24\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-24",
+      "fixHint": "Move <div id=\"caption-24\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 33,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-25\"> is a timeline element that contains nested <div id=\"caption-inner-25\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-25",
+      "fixHint": "Move <div id=\"caption-25\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 34,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-26\"> is a timeline element that contains nested <div id=\"caption-inner-26\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-26",
+      "fixHint": "Move <div id=\"caption-26\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 35,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-27\"> is a timeline element that contains nested <div id=\"caption-inner-27\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-27",
+      "fixHint": "Move <div id=\"caption-27\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 36,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-28\"> is a timeline element that contains nested <div id=\"caption-inner-28\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-28",
+      "fixHint": "Move <div id=\"caption-28\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 37,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-29\"> is a timeline element that contains nested <div id=\"caption-inner-29\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-29",
+      "fixHint": "Move <div id=\"caption-29\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 38,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-30\"> is a timeline element that contains nested <div id=\"caption-inner-30\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-30",
+      "fixHint": "Move <div id=\"caption-30\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 39,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-31\"> is a timeline element that contains nested <div id=\"caption-inner-31\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-31",
+      "fixHint": "Move <div id=\"caption-31\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 40,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-32\"> is a timeline element that contains nested <div id=\"caption-inner-32\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-32",
+      "fixHint": "Move <div id=\"caption-32\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 41,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-33\"> is a timeline element that contains nested <div id=\"caption-inner-33\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-33",
+      "fixHint": "Move <div id=\"caption-33\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 42,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-34\"> is a timeline element that contains nested <div id=\"caption-inner-34\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-34",
+      "fixHint": "Move <div id=\"caption-34\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 43,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-35\"> is a timeline element that contains nested <div id=\"caption-inner-35\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-35",
+      "fixHint": "Move <div id=\"caption-35\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 44,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-36\"> is a timeline element that contains nested <div id=\"caption-inner-36\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-36",
+      "fixHint": "Move <div id=\"caption-36\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 45,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-37\"> is a timeline element that contains nested <div id=\"caption-inner-37\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-37",
+      "fixHint": "Move <div id=\"caption-37\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 46,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-38\"> is a timeline element that contains nested <div id=\"caption-inner-38\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-38",
+      "fixHint": "Move <div id=\"caption-38\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 47,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-39\"> is a timeline element that contains nested <div id=\"caption-inner-39\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-39",
+      "fixHint": "Move <div id=\"caption-39\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 48,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"caption-40\"> is a timeline element that contains nested <div id=\"caption-inner-40\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "caption-40",
+      "fixHint": "Move <div id=\"caption-40\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\index.html",
+      "line": 49,
+      "column": 1
+    },
+    {
+      "code": "audio_src_not_found",
+      "severity": "error",
+      "message": "<audio> element references file(s) not found in the project: assets/music.wav, assets/sfx.wav. The rendered video will be silent.",
+      "fixHint": "Add the missing files to the project directory, or update the src attributes to point to existing files."
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\compositions\\demo.html",
+      "line": 1,
+      "column": 204,
+      "code": "font_family_without_font_face",
+      "severity": "error",
+      "message": "Font family used without @font-face declaration: suit. These are not in the auto-resolved font list, so the renderer cannot supply them automatically. Text will fall back to a generic font, producing incorrect typography in the video.",
+      "fixHint": "Add @font-face { font-family: '...'; src: url('capture/assets/fonts/...woff2'); } for each font family, pointing to the captured .woff2 files. For an OS-bundled system font (e.g. Hiragino Sans, Microsoft YaHei) that has no downloadable file, use src: local('Exact Font Name') instead — the declaration alone satisfies this check without needing a font file."
+    },
+    {
+      "code": "invalid_parent_traversal_in_asset_path",
+      "severity": "error",
+      "message": "Found 1 asset path(s) traversing above the project root with \"../\" (../assets/). Renders rewrite this against each sub-composition's source path, but Studio preview and other live consumers resolve against the project root and 404.",
+      "fixHint": "Use plain root-relative paths (e.g. \"assets/...\", \"capture/...\", \"fonts/...\") — compositions are served with the project root as their base URL, so paths must be root-relative, not relative to the compositions/ directory.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\compositions\\ending.html"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\compositions\\ending.html",
+      "line": 1,
+      "column": 210,
+      "code": "font_family_without_font_face",
+      "severity": "error",
+      "message": "Font family used without @font-face declaration: suit. These are not in the auto-resolved font list, so the renderer cannot supply them automatically. Text will fall back to a generic font, producing incorrect typography in the video.",
+      "fixHint": "Add @font-face { font-family: '...'; src: url('capture/assets/fonts/...woff2'); } for each font family, pointing to the captured .woff2 files. For an OS-bundled system font (e.g. Hiragino Sans, Microsoft YaHei) that has no downloadable file, use src: local('Exact Font Name') instead — the declaration alone satisfies this check without needing a font file."
+    },
+    {
+      "code": "invalid_parent_traversal_in_asset_path",
+      "severity": "error",
+      "message": "Found 1 asset path(s) traversing above the project root with \"../\" (../assets/). Renders rewrite this against each sub-composition's source path, but Studio preview and other live consumers resolve against the project root and 404.",
+      "fixHint": "Use plain root-relative paths (e.g. \"assets/...\", \"capture/...\", \"fonts/...\") — compositions are served with the project root as their base URL, so paths must be root-relative, not relative to the compositions/ directory.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\compositions\\hook.html"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\compositions\\hook.html",
+      "line": 1,
+      "column": 190,
+      "code": "font_family_without_font_face",
+      "severity": "error",
+      "message": "Font family used without @font-face declaration: suit. These are not in the auto-resolved font list, so the renderer cannot supply them automatically. Text will fall back to a generic font, producing incorrect typography in the video.",
+      "fixHint": "Add @font-face { font-family: '...'; src: url('capture/assets/fonts/...woff2'); } for each font family, pointing to the captured .woff2 files. For an OS-bundled system font (e.g. Hiragino Sans, Microsoft YaHei) that has no downloadable file, use src: local('Exact Font Name') instead — the declaration alone satisfies this check without needing a font file."
+    },
+    {
+      "code": "invalid_parent_traversal_in_asset_path",
+      "severity": "error",
+      "message": "Found 1 asset path(s) traversing above the project root with \"../\" (../assets/). Renders rewrite this against each sub-composition's source path, but Studio preview and other live consumers resolve against the project root and 404.",
+      "fixHint": "Use plain root-relative paths (e.g. \"assets/...\", \"capture/...\", \"fonts/...\") — compositions are served with the project root as their base URL, so paths must be root-relative, not relative to the compositions/ directory.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\compositions\\loop.html"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\compositions\\loop.html",
+      "line": 1,
+      "column": 204,
+      "code": "font_family_without_font_face",
+      "severity": "error",
+      "message": "Font family used without @font-face declaration: suit. These are not in the auto-resolved font list, so the renderer cannot supply them automatically. Text will fall back to a generic font, producing incorrect typography in the video.",
+      "fixHint": "Add @font-face { font-family: '...'; src: url('capture/assets/fonts/...woff2'); } for each font family, pointing to the captured .woff2 files. For an OS-bundled system font (e.g. Hiragino Sans, Microsoft YaHei) that has no downloadable file, use src: local('Exact Font Name') instead — the declaration alone satisfies this check without needing a font file."
+    },
+    {
+      "code": "invalid_parent_traversal_in_asset_path",
+      "severity": "error",
+      "message": "Found 1 asset path(s) traversing above the project root with \"../\" (../assets/). Renders rewrite this against each sub-composition's source path, but Studio preview and other live consumers resolve against the project root and 404.",
+      "fixHint": "Use plain root-relative paths (e.g. \"assets/...\", \"capture/...\", \"fonts/...\") — compositions are served with the project root as their base URL, so paths must be root-relative, not relative to the compositions/ directory.",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\compositions\\monster.html"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\compositions\\monster.html",
+      "line": 1,
+      "column": 213,
+      "code": "font_family_without_font_face",
+      "severity": "error",
+      "message": "Font family used without @font-face declaration: suit. These are not in the auto-resolved font list, so the renderer cannot supply them automatically. Text will fall back to a generic font, producing incorrect typography in the video.",
+      "fixHint": "Add @font-face { font-family: '...'; src: url('capture/assets/fonts/...woff2'); } for each font family, pointing to the captured .woff2 files. For an OS-bundled system font (e.g. Hiragino Sans, Microsoft YaHei) that has no downloadable file, use src: local('Exact Font Name') instead — the declaration alone satisfies this check without needing a font file."
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\compositions\\origin.html",
+      "line": 1,
+      "column": 196,
+      "code": "font_family_without_font_face",
+      "severity": "error",
+      "message": "Font family used without @font-face declaration: suit. These are not in the auto-resolved font list, so the renderer cannot supply them automatically. Text will fall back to a generic font, producing incorrect typography in the video.",
+      "fixHint": "Add @font-face { font-family: '...'; src: url('capture/assets/fonts/...woff2'); } for each font family, pointing to the captured .woff2 files. For an OS-bundled system font (e.g. Hiragino Sans, Microsoft YaHei) that has no downloadable file, use src: local('Exact Font Name') instead — the declaration alone satisfies this check without needing a font file."
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\compositions\\payoff.html",
+      "line": 1,
+      "column": 211,
+      "code": "font_family_without_font_face",
+      "severity": "error",
+      "message": "Font family used without @font-face declaration: suit. These are not in the auto-resolved font list, so the renderer cannot supply them automatically. Text will fall back to a generic font, producing incorrect typography in the video.",
+      "fixHint": "Add @font-face { font-family: '...'; src: url('capture/assets/fonts/...woff2'); } for each font family, pointing to the captured .woff2 files. For an OS-bundled system font (e.g. Hiragino Sans, Microsoft YaHei) that has no downloadable file, use src: local('Exact Font Name') instead — the declaration alone satisfies this check without needing a font file."
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\compositions\\prompt.html",
+      "line": 1,
+      "column": 211,
+      "code": "font_family_without_font_face",
+      "severity": "error",
+      "message": "Font family used without @font-face declaration: suit. These are not in the auto-resolved font list, so the renderer cannot supply them automatically. Text will fall back to a generic font, producing incorrect typography in the video.",
+      "fixHint": "Add @font-face { font-family: '...'; src: url('capture/assets/fonts/...woff2'); } for each font family, pointing to the captured .woff2 files. For an OS-bundled system font (e.g. Hiragino Sans, Microsoft YaHei) that has no downloadable file, use src: local('Exact Font Name') instead — the declaration alone satisfies this check without needing a font file."
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds-ep01-rebuild-20260927\\compositions\\reset.html",
+      "line": 1,
+      "column": 207,
+      "code": "font_family_without_font_face",
+      "severity": "error",
+      "message": "Font family used without @font-face declaration: suit. These are not in the auto-resolved font list, so the renderer cannot supply them automatically. Text will fall back to a generic font, producing incorrect typography in the video.",
+      "fixHint": "Add @font-face { font-family: '...'; src: url('capture/assets/fonts/...woff2'); } for each font family, pointing to the captured .woff2 files. For an OS-bundled system font (e.g. Hiragino Sans, Microsoft YaHei) that has no downloadable file, use src: local('Exact Font Name') instead — the declaration alone satisfies this check without needing a font file."
+    }
+  ],
+  "filesScanned": 10,
+  "_meta": {
+    "version": "0.8.78",
+    "latestVersion": "0.8.78",
+    "updateAvailable": false
+  }
+}

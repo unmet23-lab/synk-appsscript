@@ -1,0 +1,235 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 3.211,
+  "words": [
+    {
+      "text": "목록에",
+      "start": 0.211,
+      "end": 0.467
+    },
+    {
+      "text": "남았죠?",
+      "start": 0.513,
+      "end": 0.769
+    },
+    {
+      "text": "다시",
+      "start": 1.07,
+      "end": 1.266
+    },
+    {
+      "text": "열어도",
+      "start": 1.312,
+      "end": 1.493
+    },
+    {
+      "text": "기록이",
+      "start": 1.538,
+      "end": 1.734
+    },
+    {
+      "text": "보이면,",
+      "start": 1.779,
+      "end": 2.02
+    },
+    {
+      "text": "첫",
+      "start": 2.246,
+      "end": 2.352
+    },
+    {
+      "text": "단계",
+      "start": 2.397,
+      "end": 2.578
+    },
+    {
+      "text": "완료!",
+      "start": 2.759,
+      "end": 3.211
+    }
+  ],
+  "characters": [
+    {
+      "text": "목",
+      "start": 0.211,
+      "end": 0.362
+    },
+    {
+      "text": "록",
+      "start": 0.362,
+      "end": 0.452
+    },
+    {
+      "text": "에",
+      "start": 0.452,
+      "end": 0.467
+    },
+    {
+      "text": " ",
+      "start": 0.467,
+      "end": 0.513
+    },
+    {
+      "text": "남",
+      "start": 0.513,
+      "end": 0.603
+    },
+    {
+      "text": "았",
+      "start": 0.603,
+      "end": 0.694
+    },
+    {
+      "text": "죠",
+      "start": 0.694,
+      "end": 0.754
+    },
+    {
+      "text": "?",
+      "start": 0.754,
+      "end": 0.769
+    },
+    {
+      "text": " ",
+      "start": 0.769,
+      "end": 1.07
+    },
+    {
+      "text": "다",
+      "start": 1.07,
+      "end": 1.206
+    },
+    {
+      "text": "시",
+      "start": 1.206,
+      "end": 1.266
+    },
+    {
+      "text": " ",
+      "start": 1.266,
+      "end": 1.312
+    },
+    {
+      "text": "열",
+      "start": 1.312,
+      "end": 1.402
+    },
+    {
+      "text": "어",
+      "start": 1.402,
+      "end": 1.447
+    },
+    {
+      "text": "도",
+      "start": 1.447,
+      "end": 1.493
+    },
+    {
+      "text": " ",
+      "start": 1.493,
+      "end": 1.538
+    },
+    {
+      "text": "기",
+      "start": 1.538,
+      "end": 1.613
+    },
+    {
+      "text": "록",
+      "start": 1.613,
+      "end": 1.719
+    },
+    {
+      "text": "이",
+      "start": 1.719,
+      "end": 1.734
+    },
+    {
+      "text": " ",
+      "start": 1.734,
+      "end": 1.779
+    },
+    {
+      "text": "보",
+      "start": 1.779,
+      "end": 1.854
+    },
+    {
+      "text": "이",
+      "start": 1.854,
+      "end": 1.915
+    },
+    {
+      "text": "면",
+      "start": 1.915,
+      "end": 2.005
+    },
+    {
+      "text": ",",
+      "start": 2.005,
+      "end": 2.02
+    },
+    {
+      "text": " ",
+      "start": 2.02,
+      "end": 2.246
+    },
+    {
+      "text": "첫",
+      "start": 2.246,
+      "end": 2.352
+    },
+    {
+      "text": " ",
+      "start": 2.352,
+      "end": 2.397
+    },
+    {
+      "text": "단",
+      "start": 2.397,
+      "end": 2.518
+    },
+    {
+      "text": "계",
+      "start": 2.518,
+      "end": 2.578
+    },
+    {
+      "text": " ",
+      "start": 2.578,
+      "end": 2.759
+    },
+    {
+      "text": "완",
+      "start": 2.759,
+      "end": 2.88
+    },
+    {
+      "text": "료",
+      "start": 2.88,
+      "end": 3.196
+    },
+    {
+      "text": "!",
+      "start": 3.196,
+      "end": 3.211
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "목록에 남았죠? 다시 열어도 기록이 보이면, 첫 단계 완료!",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.23,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.15
+    }
+  }
+}

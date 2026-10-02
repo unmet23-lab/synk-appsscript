@@ -1,0 +1,574 @@
+{
+  "checkedAt": "2026-09-13T20:11:29.068Z",
+  "scope": "Current source and output comparison only; no render, browser, translation, publication, audio, or model call",
+  "originalBuiltAt": "2026-09-13T18:21:54.835Z",
+  "originalManifestSha256": "f27c0bede3ee8d86eb027ede5b88c2e0eaeda3a433909fac80db0a34b0914772",
+  "sourcesTotal": 44,
+  "sourceChanges": [
+    {
+      "path": "docs/마케팅/채널과_발행.md",
+      "before": "88796e1a644bfdfb43beb71d95ad8aba1a8be4469138fed533da516c1eb33d87",
+      "after": "a44c2a252728c832b58f2b5024cf2387f44f385fd82b6dd503ed882ff842fdf5",
+      "bytesBefore": 32719,
+      "bytesAfter": 34138,
+      "usage": "provenance collection only; not parsed into displayed text"
+    },
+    {
+      "path": "docs/마케팅/전사새출발_20260914/LAB_몽골어_초안.md",
+      "before": "001efda83a3bfba2167437964d4767b75df0510f7b6bb7c95ee2115a1c4ccdbb",
+      "after": "33617fdfbdda2770fea266f9864dfe2dcaab3f9138d131ea77329852c6280912",
+      "bytesBefore": 25679,
+      "bytesAfter": 25684,
+      "usage": "provenance collection only; not parsed into displayed text"
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/manifest.json",
+      "before": "65cf39eb0c2327ee82a1da677b64cf061cdd21c949458dbaff25aac7eb729249",
+      "after": "308735ee82b9e5b10cca4bcf80d782bed082d618714ecaa8302d771fb99df127",
+      "bytesBefore": 13719,
+      "bytesAfter": 13867,
+      "usage": "provenance collection only; not parsed into displayed text"
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/build.cjs",
+      "before": "31a63ed7dbba36a603603d78010dc97706472daf135f12497efb27f0b3bc6dd9",
+      "after": "c11375984683a9c80e8f15a1f667e2aa96abe8c82ea63fd09d397e24846b0f90",
+      "bytesBefore": 25060,
+      "bytesAfter": 25202,
+      "usage": "provenance collection only; not parsed into displayed text"
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/caption-guardian-mn.txt",
+      "before": "dac4f4723c987f52e9bb9631534f541e93c7dc73f1d70088c3fded27859cb929",
+      "after": "496be7f2ff49ee2c3f8a4a66861b5e4e0ed5382e2edb8e0122a6a5751c911351",
+      "bytesBefore": 1887,
+      "bytesAfter": 1892,
+      "usage": "provenance collection only; not parsed into displayed text"
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/글과포트폴리오/만들기.cjs",
+      "before": "7fe96044693daa9fe21988409cd4cd928749dc263c4c0ae56bd6a1d6804b0834",
+      "after": "73befdb29809d97baec4dc8a285ad5d54beb742f4daef125ed45cb5bee47bf83",
+      "bytesBefore": 24686,
+      "bytesAfter": 25100,
+      "usage": "retain follow-up evidence in future builds"
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/글과포트폴리오/검증.cjs",
+      "before": "4e7cc6c633cd223836190c07cd28988c025d1875eef370cd2571e1af06c246c5",
+      "after": "4d284879dbec937172d684dab8cacc1c65b6355ec44d48c0a3efff60b07853cf",
+      "bytesBefore": 3800,
+      "bytesAfter": 6020,
+      "usage": "current-only verifier contract"
+    }
+  ],
+  "currentSourceDrift": [],
+  "inMemoryComposition": {
+    "mode": "in-memory string composition only; filesystem writes intercepted; stopped before browser require",
+    "matched": 24,
+    "outputs": [
+      {
+        "file": "01-tistory.html",
+        "same": true,
+        "sha256": "248d42dfd72d9f78317a2eeffb36d85250e3d317d5580da0d9647d3ebc092ca2"
+      },
+      {
+        "file": "01-tistory.md",
+        "same": true,
+        "sha256": "ea09faf2035d07d064382be1c66f7866b0e615aaf9b0ed68995a4285ee92059f"
+      },
+      {
+        "file": "02-substack-shift.html",
+        "same": true,
+        "sha256": "ba3d3c45d7e2dd1e6231435fb047106db7c986fc408f790ea3f13b567faac426"
+      },
+      {
+        "file": "02-substack-shift.md",
+        "same": true,
+        "sha256": "c501d1990e72bb65ffc703743fc33bf4763be873edf2fead3cd68a7b5581cc16"
+      },
+      {
+        "file": "03-naver-blog.html",
+        "same": true,
+        "sha256": "7989e3939c27a918a915c446c8def9b42de17e90f9c16afb2aa2a6b061ebaa27"
+      },
+      {
+        "file": "03-naver-blog.md",
+        "same": true,
+        "sha256": "33921499bc945be144221d4289b21f9afece3564cd98bb257f97997b60b819bc"
+      },
+      {
+        "file": "04-behance.html",
+        "same": true,
+        "sha256": "172327903749d3089c61c3d052fdd6009fb9f81d3a5eb36b24ebfe91bff7f10a"
+      },
+      {
+        "file": "04-behance.md",
+        "same": true,
+        "sha256": "59d9d29c1061291ac7488bd390c70a42d3cd7a651d2a77eabe5f8e222798f807"
+      },
+      {
+        "file": "05-threads.html",
+        "same": true,
+        "sha256": "83157c9709394e4e8f3b4d9cf01ede37d022acefef17fa9c38bb592792bdb70e"
+      },
+      {
+        "file": "05-threads.md",
+        "same": true,
+        "sha256": "5bafbbe1076c35a017ce70b10f84dffe704971e35ce60493c466ff04837b47f7"
+      },
+      {
+        "file": "05-threads-게시본문.txt",
+        "same": true,
+        "sha256": "2561a2d1e513f0dd7048fe1425ca08a64977bfaaad5a9e748cdfc7877704208a"
+      },
+      {
+        "file": "06-x.html",
+        "same": true,
+        "sha256": "9dad63727faa0983a214396045d37d59c60f289d653257483b5f2762aafd1b6a"
+      },
+      {
+        "file": "06-x.md",
+        "same": true,
+        "sha256": "9498506abe9b8e997bfa6dcc7ab4b12c7555ab779c5c28b4f5aa67f92f1377da"
+      },
+      {
+        "file": "06-x-게시본문.txt",
+        "same": true,
+        "sha256": "c24429a807a6b4412a5d7ec2c89f3256de5fda49e7fd26eac2a3c2232edf22ca"
+      },
+      {
+        "file": "07-linkedin-personal.html",
+        "same": true,
+        "sha256": "6da931affa19beab4cd90486b93143e669577b9d59edbfc80b58b909ad28421f"
+      },
+      {
+        "file": "07-linkedin-personal.md",
+        "same": true,
+        "sha256": "07608b655efb6371e8740db2df9edb5cec910cb97c051097e29dc7223d54e2af"
+      },
+      {
+        "file": "07-linkedin-personal-게시본문.txt",
+        "same": true,
+        "sha256": "23714ae70e988acf278843e03d3782f9c2da2b54c428aec14eb7642bc3982636"
+      },
+      {
+        "file": "08-pinterest.html",
+        "same": true,
+        "sha256": "37b779ec0e77c1e9c9c61dfd20b3d4b4ee05205c93dfaac164963a1e64602c82"
+      },
+      {
+        "file": "08-pinterest.md",
+        "same": true,
+        "sha256": "968e67a0b5877d878228b91eb75e7144d1261e1a0e19ce7a973060ae4e993f32"
+      },
+      {
+        "file": "08-pinterest-게시본문.txt",
+        "same": true,
+        "sha256": "fd0863b413909a311b148abb230c5d2a46bfdb18a3a654b521c3198a841f8174"
+      },
+      {
+        "file": "09-Substack-LAB.html",
+        "same": true,
+        "sha256": "f7d48c218f5369354b929dd6c858ce99291c59183776ceab2c515dd23c48d36d"
+      },
+      {
+        "file": "09-Substack-LAB.md",
+        "same": true,
+        "sha256": "ffc6e8d9792f923b980860b755cc4bc132729e316e3f9d10c7ae5b062cf8fd2e"
+      },
+      {
+        "file": "index.html",
+        "same": true,
+        "sha256": "adbcec7359d8dc0ec0a3034dcafde27ebbded81ef03f736ecd352b820f41ff1c"
+      },
+      {
+        "file": "Pinterest-핀.html",
+        "same": true,
+        "sha256": "d643790918e46f9cd072ec8aac7614035c8b7c308ca688e64cc0704e26f69f1f"
+      }
+    ],
+    "realWrites": 0,
+    "browserLaunched": false,
+    "errors": [
+      "expected stop before browser"
+    ]
+  },
+  "unchangedOutputs": [
+    {
+      "file": "01-tistory.html",
+      "sha256": "248d42dfd72d9f78317a2eeffb36d85250e3d317d5580da0d9647d3ebc092ca2"
+    },
+    {
+      "file": "01-tistory.md",
+      "sha256": "ea09faf2035d07d064382be1c66f7866b0e615aaf9b0ed68995a4285ee92059f"
+    },
+    {
+      "file": "02-substack-shift.html",
+      "sha256": "ba3d3c45d7e2dd1e6231435fb047106db7c986fc408f790ea3f13b567faac426"
+    },
+    {
+      "file": "02-substack-shift.md",
+      "sha256": "c501d1990e72bb65ffc703743fc33bf4763be873edf2fead3cd68a7b5581cc16"
+    },
+    {
+      "file": "03-naver-blog.html",
+      "sha256": "7989e3939c27a918a915c446c8def9b42de17e90f9c16afb2aa2a6b061ebaa27"
+    },
+    {
+      "file": "03-naver-blog.md",
+      "sha256": "33921499bc945be144221d4289b21f9afece3564cd98bb257f97997b60b819bc"
+    },
+    {
+      "file": "04-behance.html",
+      "sha256": "172327903749d3089c61c3d052fdd6009fb9f81d3a5eb36b24ebfe91bff7f10a"
+    },
+    {
+      "file": "04-behance.md",
+      "sha256": "59d9d29c1061291ac7488bd390c70a42d3cd7a651d2a77eabe5f8e222798f807"
+    },
+    {
+      "file": "05-threads-게시본문.txt",
+      "sha256": "2561a2d1e513f0dd7048fe1425ca08a64977bfaaad5a9e748cdfc7877704208a"
+    },
+    {
+      "file": "05-threads.html",
+      "sha256": "83157c9709394e4e8f3b4d9cf01ede37d022acefef17fa9c38bb592792bdb70e"
+    },
+    {
+      "file": "05-threads.md",
+      "sha256": "5bafbbe1076c35a017ce70b10f84dffe704971e35ce60493c466ff04837b47f7"
+    },
+    {
+      "file": "06-x-게시본문.txt",
+      "sha256": "c24429a807a6b4412a5d7ec2c89f3256de5fda49e7fd26eac2a3c2232edf22ca"
+    },
+    {
+      "file": "06-x.html",
+      "sha256": "9dad63727faa0983a214396045d37d59c60f289d653257483b5f2762aafd1b6a"
+    },
+    {
+      "file": "06-x.md",
+      "sha256": "9498506abe9b8e997bfa6dcc7ab4b12c7555ab779c5c28b4f5aa67f92f1377da"
+    },
+    {
+      "file": "07-linkedin-personal-게시본문.txt",
+      "sha256": "23714ae70e988acf278843e03d3782f9c2da2b54c428aec14eb7642bc3982636"
+    },
+    {
+      "file": "07-linkedin-personal.html",
+      "sha256": "6da931affa19beab4cd90486b93143e669577b9d59edbfc80b58b909ad28421f"
+    },
+    {
+      "file": "07-linkedin-personal.md",
+      "sha256": "07608b655efb6371e8740db2df9edb5cec910cb97c051097e29dc7223d54e2af"
+    },
+    {
+      "file": "08-pinterest-게시본문.txt",
+      "sha256": "fd0863b413909a311b148abb230c5d2a46bfdb18a3a654b521c3198a841f8174"
+    },
+    {
+      "file": "08-pinterest.html",
+      "sha256": "37b779ec0e77c1e9c9c61dfd20b3d4b4ee05205c93dfaac164963a1e64602c82"
+    },
+    {
+      "file": "08-pinterest.md",
+      "sha256": "968e67a0b5877d878228b91eb75e7144d1261e1a0e19ce7a973060ae4e993f32"
+    },
+    {
+      "file": "09-Substack-LAB.html",
+      "sha256": "f7d48c218f5369354b929dd6c858ce99291c59183776ceab2c515dd23c48d36d"
+    },
+    {
+      "file": "09-Substack-LAB.md",
+      "sha256": "ffc6e8d9792f923b980860b755cc4bc132729e316e3f9d10c7ae5b062cf8fd2e"
+    },
+    {
+      "file": "09-검증결과.md",
+      "sha256": "1bf3cea05655db2f6c7c7e74c6aa648892b2d67654573ed35f11a5d4706bcb4f"
+    },
+    {
+      "file": "index.html",
+      "sha256": "adbcec7359d8dc0ec0a3034dcafde27ebbded81ef03f736ecd352b820f41ff1c"
+    },
+    {
+      "file": "InterTight-OFL.txt",
+      "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58"
+    },
+    {
+      "file": "Pinterest-핀.html",
+      "sha256": "d643790918e46f9cd072ec8aac7614035c8b7c308ca688e64cc0704e26f69f1f"
+    },
+    {
+      "file": "Pinterest-핀.png",
+      "sha256": "45e082b3219867902ecf06410d50f1742bcbf39ecf89f46da1d455162e90f485"
+    },
+    {
+      "file": "qa/01-tistory-1280.png",
+      "sha256": "0718fa6eb1c30bc5e4fc88f272ddcc2516d907c7d44087bb5d6de03098fd2905"
+    },
+    {
+      "file": "qa/01-tistory-390.png",
+      "sha256": "bbb05ff50ff96be5331bf8a3a61db190947764a01ad036b71c0c50d12611866e"
+    },
+    {
+      "file": "qa/01-tistory-comparison-390.png",
+      "sha256": "a37008c7b7c10e371f773a073f5863f4cb20c3ec80c6ab7c528eab648677395d"
+    },
+    {
+      "file": "qa/01-tistory-example-390.png",
+      "sha256": "66689933eff08f6c3dbf720c257e74ad7955a4f45de5e5d9ea542b8b1b8dbdf4"
+    },
+    {
+      "file": "qa/02-substack-shift-1280.png",
+      "sha256": "31ada0858081701d195f7636e308fe1fb921240adbd4f7c92bdf0cae1a723a46"
+    },
+    {
+      "file": "qa/02-substack-shift-390.png",
+      "sha256": "20d31d456c5774d704f02dfda045861e618998d7ea83d906ef614ee584715943"
+    },
+    {
+      "file": "qa/02-substack-shift-comparison-390.png",
+      "sha256": "3068fb03593d17a23b47bc117f3a11eb205a68c1ade4f889434327f557e06ad8"
+    },
+    {
+      "file": "qa/02-substack-shift-example-390.png",
+      "sha256": "800796be7260e7d70ad9ba555b3108fdc7038f80b3ba8fdbf01c8e2da4ecc198"
+    },
+    {
+      "file": "qa/03-naver-blog-1280.png",
+      "sha256": "e892fd8e348df9172f06ac48c35ae0cabf9d34e8db347d3f46fdc0d896c9fbf1"
+    },
+    {
+      "file": "qa/03-naver-blog-390.png",
+      "sha256": "eb5a33dec0fd560beb057eee6a923f438fe36d60df647e9c3419739add71673f"
+    },
+    {
+      "file": "qa/03-naver-blog-comparison-390.png",
+      "sha256": "cfa87853da8c1f4b55bc1dc03ce9e2ee8e0172068aaee771fd90cf515c3954fa"
+    },
+    {
+      "file": "qa/03-naver-blog-example-390.png",
+      "sha256": "319dcb583ff6cd41915883fd29b15496213d04665275a5316bfb967e978c9f70"
+    },
+    {
+      "file": "qa/04-behance-1280.png",
+      "sha256": "3069b3b727b34b50c153b006024dd46d3ec124720e588c6e8e425bef380153c8"
+    },
+    {
+      "file": "qa/04-behance-390.png",
+      "sha256": "eea8ab028b2cbd1cb1bf15f3aea75762dfd1899b8ed6c7949f619d5bb6ebc161"
+    },
+    {
+      "file": "qa/04-behance-comparison-390.png",
+      "sha256": "3068fb03593d17a23b47bc117f3a11eb205a68c1ade4f889434327f557e06ad8"
+    },
+    {
+      "file": "qa/05-threads-1280.png",
+      "sha256": "4e30f905a30bc8acb2eeae17161f12878cb39e52398ad670757a7a0628b73f36"
+    },
+    {
+      "file": "qa/05-threads-390.png",
+      "sha256": "0bd825809cf728559996dfdcdc8f5009ef18d4d8963e5effc8230485a5c8542f"
+    },
+    {
+      "file": "qa/06-x-1280.png",
+      "sha256": "035047c800223f99f0addf573280103c53d8ba927abbf9bd12b38070563aa76e"
+    },
+    {
+      "file": "qa/06-x-390.png",
+      "sha256": "4aece3a130b283013ea67b4b127bfaa99522df8850f7684cc460dc0d937aa028"
+    },
+    {
+      "file": "qa/07-linkedin-personal-1280.png",
+      "sha256": "308e3200cfe36b6384e1a9f1cbd82bd757dacbb864986b81a6810637b95bebfe"
+    },
+    {
+      "file": "qa/07-linkedin-personal-390.png",
+      "sha256": "b904b09e0bf639b7d4ce9f866ffe3f24f3e4a67dde1ecc739789340157f59c2b"
+    },
+    {
+      "file": "qa/08-pinterest-1280.png",
+      "sha256": "05b7e380d43af80f3a575129e7fecd9b6749149cb9115f08e0079e544ec0da99"
+    },
+    {
+      "file": "qa/08-pinterest-390.png",
+      "sha256": "7aef2852c8169c045427ae0e2aecaf28e4147ea4c98bbc901d9d5aa9b0c8d787"
+    },
+    {
+      "file": "qa/09-Substack-LAB-1280.png",
+      "sha256": "77aa138b429cb5d0606aebc9259a6087fc36651c369ad446b1e8035a7283b4b1"
+    },
+    {
+      "file": "qa/09-Substack-LAB-390.png",
+      "sha256": "33e90a5c33679f794f72c9ffc792f19d17fbe17fba6de199d9d56752f68b1ebb"
+    },
+    {
+      "file": "qa/09-Substack-LAB-구절교체-390.png",
+      "sha256": "d5cb5978e6b8443733a7c088527b0bc4f87680794fda415ad0983bd8d377b96d"
+    },
+    {
+      "file": "qa/09-Substack-LAB-대화-390.png",
+      "sha256": "dbe5d78b9a97dc63e300bd10ec759c50baf24b8077d10f4e71cc3ce365ca840a"
+    },
+    {
+      "file": "qa/09-Substack-LAB-보호자-390.png",
+      "sha256": "287d700dc708a9f6bd343aff138a03c506a2178308dc80202f09f6aef26cb763"
+    },
+    {
+      "file": "qa/09-Substack-LAB-연습-390.png",
+      "sha256": "a2a18bc05ff93b6fbbb2a6c07020544938947dd85f263ef7f5c43588a30c4dcf"
+    },
+    {
+      "file": "qa/index-1280.png",
+      "sha256": "9a79875cc97d088d73630a5b956c1c58fa564a30af0933d16185df5f0ec0b592"
+    },
+    {
+      "file": "qa/index-390.png",
+      "sha256": "b0a2c208e4a594a34b9e1814d54f187d57fd7fdea550258cf11be62052a0a068"
+    },
+    {
+      "file": "qa/Pinterest-핀-390.png",
+      "sha256": "ae3c596765678fde054e4b684578fbcfc6994d5d1370dc4f9f234a4d256414cb"
+    },
+    {
+      "file": "README.md",
+      "sha256": "eeb7890bce64069d50a4950021148f52beee90a609dcaae2076d45d168b7a3e0"
+    },
+    {
+      "file": "SUIT-OFL.txt",
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9"
+    }
+  ],
+  "documentationChanges": [
+    {
+      "file": "검증결과.md",
+      "before": "8444bbaceeba0bbc32a87cbe97fa10b839f68888320c060b9e0e438deae55c7b",
+      "after": "12afc2c4b96ab583a5b94facbd6a62bc205d83fed41777351a6c845ce92cd366",
+      "reason": "append dated provenance-only QA explanation"
+    }
+  ],
+  "generatorEvidenceRetentionSha256": "73befdb29809d97baec4dc8a285ad5d54beb742f4daef125ed45cb5bee47bf83",
+  "originalRenderEvidenceReused": true,
+  "newRenderPerformed": false,
+  "published": false,
+  "nativeReviewed": false,
+  "historicalBaselineSha256": "d557fa2faf8a75e85cc8ed3a6c885facdfcc183d7db6737d6412d9d07cd73a03",
+  "historicalPreservedEntriesSha256": "2de5a0a5eaff87bfad499c816c6a1ae3f3ec34e1a976b5ebe9ddd8b36cb86016",
+  "historicalPreservedCount": 90,
+  "currentUnchangedPreservedCount": 80,
+  "preservedFileChanges": [
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/alttext.json",
+      "before": "22af8a8d78a24d574651cd7cf6bcac00c6bb5d2db3ae17b214c22c1d7498522d",
+      "after": "770af20b105e7fba913537c1c1ef2c7e14af04f644c91bfd10c8b427f7cc79f9"
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/build.cjs",
+      "before": "31a63ed7dbba36a603603d78010dc97706472daf135f12497efb27f0b3bc6dd9",
+      "after": "c11375984683a9c80e8f15a1f667e2aa96abe8c82ea63fd09d397e24846b0f90"
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/caption-guardian-mn.txt",
+      "before": "dac4f4723c987f52e9bb9631534f541e93c7dc73f1d70088c3fded27859cb929",
+      "after": "496be7f2ff49ee2c3f8a4a66861b5e4e0ed5382e2edb8e0122a6a5751c911351"
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/html/guardian-01.html",
+      "before": "6f600f7ba61b75cba7ac632e5851cd4c43d6ffe86f8b17d6a5662bf6076dfee8",
+      "after": "c0cfcba2c9e396e4a74e06b7aa0f8e9fd2d5e514d960a8c01efbcf06230c2bcc"
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/html/student-01.html",
+      "before": "08e7e96c41f9a41587dfae7c74823846ca9d8a0a089292a7176ed41d7550b023",
+      "after": "acd3b88a30216733903d5ed57d653944e0ca322917e483d93f9d9e72e64c8f83"
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/manifest.json",
+      "before": "65cf39eb0c2327ee82a1da677b64cf061cdd21c949458dbaff25aac7eb729249",
+      "after": "308735ee82b9e5b10cca4bcf80d782bed082d618714ecaa8302d771fb99df127"
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/qa.json",
+      "before": "4480d71a609c2a6bc858ec449d8a36fddf62c0ba6ea5b8c9f6fb70e96be10202",
+      "after": "0caa05fc0550385a4ba90e5c252fa4bdb92cd436cd29def2773206170875904f"
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/QA.md",
+      "before": "e7a8c2f8674014f8d05bb5ca66a2a917c91a83b5cadec8123bb13720787f31f9",
+      "after": "270b8cfba0565347e0c9099b5c095c45fe4e639a2f3be3629d3eeebf66a4d5e0"
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/svg/guardian-01.svg",
+      "before": "6d14ddcdbea71d99dfcc49477cb30d83f749f049681b0c4eab2d8ab6295c7d9b",
+      "after": "4b6b3a3cc25db818d1fadc4b92eed2cbcc935bf025f9d658634949b02e80538e"
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/svg/student-01.svg",
+      "before": "d8bd2bcc0e81c289d8e0e435a53203ad7eadc6e8fd3aafe8612b8695f0f7b97f",
+      "after": "de6bf5e0ad48d4073c635bca7ba4bcba307c5ab10f2fcfe66ee1a9201b544dee"
+    }
+  ],
+  "correctionEvidence": {
+    "path": "docs/홍보물/새첫게시물_20260914/LAB/언어수정_검증.json",
+    "sha256": "a83b1a28c42adbda790515747ada7b972c31648111f5cde0b9f58c5c91628f49"
+  },
+  "correctionMatches": [
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/alttext.json",
+      "matchesReportBeforeAfter": true,
+      "qaFollowup": false
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/build.cjs",
+      "matchesReportBeforeAfter": true,
+      "qaFollowup": false
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/caption-guardian-mn.txt",
+      "matchesReportBeforeAfter": true,
+      "qaFollowup": false
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/html/guardian-01.html",
+      "matchesReportBeforeAfter": true,
+      "qaFollowup": false
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/html/student-01.html",
+      "matchesReportBeforeAfter": true,
+      "qaFollowup": false
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/manifest.json",
+      "matchesReportBeforeAfter": true,
+      "qaFollowup": false
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/qa.json",
+      "matchesReportBeforeAfter": true,
+      "qaFollowup": false
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/QA.md",
+      "matchesReportBeforeAfter": false,
+      "qaFollowup": true
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/svg/guardian-01.svg",
+      "matchesReportBeforeAfter": true,
+      "qaFollowup": false
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/svg/student-01.svg",
+      "matchesReportBeforeAfter": true,
+      "qaFollowup": false
+    }
+  ],
+  "scopeNotes": [
+    "Channel publishing status and four LAB source changes are read only by source().",
+    "The independent LAB letter already contains the corrected question ending вэ.",
+    "Nine of the ten inherited LAB changes match the language correction report exactly; LAB/QA.md is its separate non-rendered QA follow-up.",
+    "Original 90 paths, hashes and build-time unchanged observations remain unchanged."
+  ]
+}

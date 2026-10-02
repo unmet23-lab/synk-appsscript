@@ -1,0 +1,30 @@
+[
+  {
+    "created_at": "2026-09-30T13:01:48.167506Z",
+    "display_name": "Higgsfield Soul 2.0",
+    "id": "7fc7b3f3-8a6c-4185-a48e-da8793244d19",
+    "job_type": "text2image_soul_v2",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_130148_7fc7b3f3-8a6c-4185-a48e-da8793244d19_min.webp",
+    "params": {
+      "batch_size": 1,
+      "enhance_prompt": false,
+      "height": 2048,
+      "prompt": "Korean entertainment agency profile photo of a 25-year-old Korean man with a striking K-pop idol visual: sharp V-line jaw, deep-set eyes with a thin crease, high nose bridge, full lips, ash-brown hair in a soft wavy comma cut, wearing a plain black cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed, confident expression. Clean light-grey studio wall, soft large window light from camera left, gentle falloff, catchlights in the eyes. Full-frame camera, 85mm lens at f/2.8, eye level. Real skin texture even with light makeup: visible pores, fine vellus hair, subtle natural unevenness, a few flyaway hairs. Natural color, fine film grain, no heavy retouching, no plastic skin.",
+      "quality": "1080p",
+      "seed": 371878,
+      "style": {
+        "id": "3db34ab5-3439-4317-9e03-08dc30852e69",
+        "name": "General",
+        "strength": null,
+        "url": "https://cdn.higgsfield.ai/soul-v2-style/f33d85f2-6521-4fa8-8e8f-894cfbdee578.webp"
+      },
+      "style_id": "3db34ab5-3439-4317-9e03-08dc30852e69",
+      "style_strength": null,
+      "use_relax": false,
+      "use_sage_attention": false,
+      "width": 1536
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_130148_7fc7b3f3-8a6c-4185-a48e-da8793244d19.png",
+    "status": "completed"
+  }
+]

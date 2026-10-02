@@ -1,0 +1,83 @@
+{
+ "key": "F",
+ "name": "F_조종하는건_AI가_아니라_사람",
+ "duration": 15.6,
+ "shots": 6,
+ "cuts_in_first_5s": [
+  1.9,
+  3.733
+ ],
+ "audio": {
+  "input_I": -15.9,
+  "target": -14.0,
+  "I": -14.1,
+  "TP": -1.5,
+  "max_gr_db": -1.6,
+  "over3db_pct": 0.0,
+  "ceiling_dbtp": -2.5,
+  "TP_after_aac": -2.2
+ },
+ "captions": 7,
+ "shot_log": [
+  {
+   "clip_t": 0.0,
+   "film": [
+    0.0,
+    1.916
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 57
+  },
+  {
+   "clip_t": 1.9,
+   "film": [
+    1.916,
+    3.751
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 55
+  },
+  {
+   "clip_t": 3.733,
+   "film": [
+    3.751,
+    7.297
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 106
+  },
+  {
+   "clip_t": 7.267,
+   "film": [
+    7.297,
+    9.0
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 51
+  },
+  {
+   "clip_t": 8.967,
+   "film": [
+    107.63,
+    111.713
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 122
+  },
+  {
+   "clip_t": 13.033,
+   "film": [
+    111.713,
+    114.27
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 77
+  }
+ ]
+}

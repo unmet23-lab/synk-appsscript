@@ -1,0 +1,60 @@
+{
+  "at": "2026-09-10T18:24:25.026Z",
+  "url": "https://synk-field-notes.unmet23.chatgpt.site",
+  "results": [
+    {
+      "width": 1440,
+      "visions": [
+        {
+          "key": "synk",
+          "headline": true,
+          "subtext": true
+        },
+        {
+          "key": "lab",
+          "headline": true,
+          "subtext": true
+        },
+        {
+          "key": "shift",
+          "headline": true,
+          "subtext": true
+        },
+        {
+          "key": "pulse",
+          "headline": true,
+          "subtext": true
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "visions": [
+        {
+          "key": "synk",
+          "headline": true,
+          "subtext": true
+        },
+        {
+          "key": "lab",
+          "headline": true,
+          "subtext": true
+        },
+        {
+          "key": "shift",
+          "headline": true,
+          "subtext": true
+        },
+        {
+          "key": "pulse",
+          "headline": true,
+          "subtext": true
+        }
+      ],
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "passed": true
+}

@@ -1,0 +1,84 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "개발을 처음 시작할 때, 이 순서만 알았어도 백 시간은 아꼈을 것 같아요.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.25,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 3.8,
+  "words": [
+    {
+      "text": "개발을",
+      "start": 0.104,
+      "end": 0.366
+    },
+    {
+      "text": "처음",
+      "start": 0.405,
+      "end": 0.601
+    },
+    {
+      "text": "시작할",
+      "start": 0.64,
+      "end": 0.888
+    },
+    {
+      "text": "때,",
+      "start": 0.927,
+      "end": 0.992
+    },
+    {
+      "text": "이",
+      "start": 1.528,
+      "end": 1.541
+    },
+    {
+      "text": "순서만",
+      "start": 1.619,
+      "end": 1.92
+    },
+    {
+      "text": "알았어도",
+      "start": 1.959,
+      "end": 2.233
+    },
+    {
+      "text": "백",
+      "start": 2.546,
+      "end": 2.677
+    },
+    {
+      "text": "시간은",
+      "start": 2.729,
+      "end": 2.964
+    },
+    {
+      "text": "아꼈을",
+      "start": 3.003,
+      "end": 3.252
+    },
+    {
+      "text": "것",
+      "start": 3.291,
+      "end": 3.343
+    },
+    {
+      "text": "같아요.",
+      "start": 3.382,
+      "end": 3.8
+    }
+  ],
+  "characters": null
+}

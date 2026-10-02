@@ -1,0 +1,260 @@
+{
+  "open": {
+    "file": "current/01-start.png",
+    "focus": [
+      260,
+      240,
+      810,
+      210
+    ],
+    "rect": [
+      282,
+      302,
+      767,
+      57
+    ],
+    "point": [
+      470,
+      325
+    ],
+    "label": "화면 가운데 긴 입력창",
+    "action": "입력창 클릭"
+  },
+  "paste": {
+    "file": "current/02-request-only.png",
+    "focus": [
+      277,
+      276,
+      780,
+      210
+    ],
+    "rect": [
+      294,
+      313,
+      722,
+      86
+    ],
+    "point": [
+      355,
+      340
+    ],
+    "label": "입력창 맨 위 · 부탁할 문장",
+    "action": "Ctrl + V · 부탁할 문장 붙여넣기",
+    "mask": [
+      297,
+      315,
+      705,
+      82
+    ]
+  },
+  "request": {
+    "file": "current/04-filled.png",
+    "focus": [
+      277,
+      315,
+      780,
+      250
+    ],
+    "rect": [
+      293,
+      409,
+      717,
+      112
+    ],
+    "point": [
+      352,
+      445
+    ],
+    "label": "부탁할 문장 바로 아래",
+    "action": "Ctrl + V · 회의 기록 붙여넣기",
+    "mask": [
+      298,
+      416,
+      707,
+      100
+    ]
+  },
+  "send": {
+    "file": "current/04-filled.png",
+    "focus": [
+      864,
+      413,
+      227,
+      189
+    ],
+    "rect": [
+      1003,
+      511,
+      43,
+      44
+    ],
+    "point": [
+      1024,
+      531
+    ],
+    "label": "입력창 오른쪽 아래 ↑",
+    "action": "↑ 보내기 클릭"
+  },
+  "create": {
+    "file": "project/01-projects.png",
+    "focus": [
+      825,
+      77,
+      369,
+      185
+    ],
+    "rect": [
+      1053,
+      114,
+      103,
+      41
+    ],
+    "point": [
+      1102,
+      135
+    ],
+    "label": "오른쪽 위 · 새 프로젝트",
+    "action": "새 프로젝트 클릭",
+    "nextFile": "project/02-create.png",
+    "nextFocus": [
+      370,
+      215,
+      540,
+      300
+    ],
+    "nextRect": [
+      397,
+      308,
+      484,
+      44
+    ],
+    "nextPoint": [
+      507,
+      332
+    ],
+    "nextLabel": "프로젝트 이름 입력란",
+    "nextAction": "이름 입력 → 프로젝트 만들기",
+    "confirmPoint": [
+      815,
+      459
+    ],
+    "confirmRect": [
+      750,
+      438,
+      132,
+      39
+    ]
+  },
+  "settings": {
+    "file": "project/03-project-home.png",
+    "focus": [
+      813,
+      86,
+      270,
+      240
+    ],
+    "rect": [
+      1009,
+      114,
+      43,
+      40
+    ],
+    "point": [
+      1032,
+      133
+    ],
+    "label": "회의 프로젝트 이름 오른쪽 ⋯",
+    "action": "⋯ 메뉴 클릭",
+    "nextFile": "project/04-menu.png",
+    "nextFocus": [
+      835,
+      122,
+      248,
+      180
+    ],
+    "nextRect": [
+      855,
+      168,
+      187,
+      39
+    ],
+    "nextPoint": [
+      936,
+      184
+    ],
+    "nextLabel": "열린 메뉴의 프로젝트 설정",
+    "nextAction": "프로젝트 설정 클릭"
+  },
+  "save": {
+    "file": "project/06-instructions.png",
+    "focus": [
+      388,
+      174,
+      497,
+      176
+    ],
+    "rect": [
+      398,
+      225,
+      482,
+      61
+    ],
+    "point": [
+      520,
+      247
+    ],
+    "label": "프로젝트 설정 안의 지침 입력란",
+    "action": "Ctrl + V · 정리 규칙 붙여넣기",
+    "mask": [
+      412,
+      234,
+      452,
+      51
+    ],
+    "nextFocus": [
+      719,
+      567,
+      184,
+      125
+    ],
+    "nextRect": [
+      816,
+      628,
+      65,
+      41
+    ],
+    "nextPoint": [
+      848,
+      650
+    ],
+    "nextLabel": "설정 창 오른쪽 아래 · 저장",
+    "nextAction": "저장 클릭"
+  },
+  "repeat": {
+    "file": "project/12-second-input.png",
+    "focus": [
+      276,
+      153,
+      779,
+      230
+    ],
+    "rect": [
+      297,
+      184,
+      713,
+      92
+    ],
+    "point": [
+      410,
+      207
+    ],
+    "label": "같은 프로젝트의 새 채팅 입력창",
+    "action": "짧은 부탁 + 이번 회의 기록",
+    "mask": [
+      298,
+      186,
+      716,
+      95
+    ]
+  }
+}

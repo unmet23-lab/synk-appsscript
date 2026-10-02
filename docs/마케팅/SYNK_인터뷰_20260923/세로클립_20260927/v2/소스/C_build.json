@@ -1,0 +1,131 @@
+{
+ "key": "C",
+ "name": "C_잘만들었다_했는데_평가는",
+ "duration": 32.6,
+ "shots": 11,
+ "cuts_in_first_5s": [
+  1.367,
+  4.233
+ ],
+ "audio": {
+  "input_I": -18.2,
+  "target": -15.0,
+  "I": -15.1,
+  "TP": -1.5,
+  "max_gr_db": -3.42,
+  "over3db_pct": 0.382
+ },
+ "captions": 17,
+ "shot_log": [
+  {
+   "clip_t": 0.0,
+   "film": [
+    145.08,
+    146.439
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 41
+  },
+  {
+   "clip_t": 1.367,
+   "film": [
+    146.439,
+    149.312
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 86
+  },
+  {
+   "clip_t": 4.233,
+   "film": [
+    149.312,
+    153.007
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 111
+  },
+  {
+   "clip_t": 7.933,
+   "film": [
+    153.007,
+    155.647
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 79
+  },
+  {
+   "clip_t": 10.567,
+   "film": [
+    155.647,
+    160.327
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 140
+  },
+  {
+   "clip_t": 15.233,
+   "film": [
+    160.327,
+    164.143
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 114
+  },
+  {
+   "clip_t": 19.033,
+   "film": [
+    164.143,
+    166.7
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 77
+  },
+  {
+   "clip_t": 21.6,
+   "film": [
+    166.7,
+    170.466
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 113
+  },
+  {
+   "clip_t": 25.367,
+   "film": [
+    170.466,
+    173.3
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 85
+  },
+  {
+   "clip_t": 28.2,
+   "film": [
+    173.3,
+    176.193
+   ],
+   "kind": "crop",
+   "framing": "punch",
+   "frames": 87
+  },
+  {
+   "clip_t": 31.1,
+   "film": [
+    176.193,
+    177.7
+   ],
+   "kind": "crop",
+   "framing": "base",
+   "frames": 45
+  }
+ ]
+}

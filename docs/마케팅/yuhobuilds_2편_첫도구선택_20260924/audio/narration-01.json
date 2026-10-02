@@ -1,0 +1,83 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "오늘은 출석 앱을 만들려다, AI 두 명에게 물어보고 더 혼란스러워진 이야기를 해볼게요.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.26,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup"
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 5.079,
+  "words": [
+    {
+      "text": "오늘은",
+      "start": 0.175,
+      "end": 0.394
+    },
+    {
+      "text": "출석",
+      "start": 0.759,
+      "end": 1.051
+    },
+    {
+      "text": "앱을",
+      "start": 1.095,
+      "end": 1.211
+    },
+    {
+      "text": "만들려다,",
+      "start": 1.255,
+      "end": 1.591
+    },
+    {
+      "text": "AI",
+      "start": 2.043,
+      "end": 2.306
+    },
+    {
+      "text": "두",
+      "start": 2.365,
+      "end": 2.423
+    },
+    {
+      "text": "명에게",
+      "start": 2.467,
+      "end": 2.671
+    },
+    {
+      "text": "물어보고",
+      "start": 2.715,
+      "end": 2.992
+    },
+    {
+      "text": "더",
+      "start": 3.415,
+      "end": 3.503
+    },
+    {
+      "text": "혼란스러워진",
+      "start": 3.591,
+      "end": 4.16
+    },
+    {
+      "text": "이야기를",
+      "start": 4.218,
+      "end": 4.466
+    },
+    {
+      "text": "해볼게요.",
+      "start": 4.51,
+      "end": 5.079
+    }
+  ],
+  "characters": null
+}

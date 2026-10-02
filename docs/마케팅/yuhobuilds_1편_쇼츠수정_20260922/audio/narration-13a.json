@@ -1,0 +1,134 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "만들고 싶은 걸 넣고, 이렇게 물어보세요. 나는 개발이 처음이야. 학원 출석 앱을 만들고 싶어. 가장 효율적으로 만들 수 있는 로드맵을 추천해 줘.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.25,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 7.56,
+  "words": [
+    {
+      "text": "만들고",
+      "start": 0.12,
+      "end": 0.412
+    },
+    {
+      "text": "싶은",
+      "start": 0.452,
+      "end": 0.598
+    },
+    {
+      "text": "걸",
+      "start": 0.638,
+      "end": 0.691
+    },
+    {
+      "text": "넣고,",
+      "start": 0.731,
+      "end": 0.917
+    },
+    {
+      "text": "이렇게",
+      "start": 1.289,
+      "end": 1.488
+    },
+    {
+      "text": "물어보세요.",
+      "start": 1.555,
+      "end": 1.887
+    },
+    {
+      "text": "나는",
+      "start": 2.312,
+      "end": 2.524
+    },
+    {
+      "text": "개발이",
+      "start": 2.617,
+      "end": 2.857
+    },
+    {
+      "text": "처음이야.",
+      "start": 2.91,
+      "end": 3.242
+    },
+    {
+      "text": "학원",
+      "start": 3.76,
+      "end": 3.946
+    },
+    {
+      "text": "출석",
+      "start": 3.986,
+      "end": 4.212
+    },
+    {
+      "text": "앱을",
+      "start": 4.265,
+      "end": 4.398
+    },
+    {
+      "text": "만들고",
+      "start": 4.438,
+      "end": 4.69
+    },
+    {
+      "text": "싶어.",
+      "start": 4.73,
+      "end": 4.876
+    },
+    {
+      "text": "가장",
+      "start": 5.288,
+      "end": 5.527
+    },
+    {
+      "text": "효율적으로",
+      "start": 5.58,
+      "end": 6.045
+    },
+    {
+      "text": "만들",
+      "start": 6.085,
+      "end": 6.284
+    },
+    {
+      "text": "수",
+      "start": 6.324,
+      "end": 6.364
+    },
+    {
+      "text": "있는",
+      "start": 6.404,
+      "end": 6.537
+    },
+    {
+      "text": "로드맵을",
+      "start": 6.59,
+      "end": 6.922
+    },
+    {
+      "text": "추천해",
+      "start": 6.962,
+      "end": 7.175
+    },
+    {
+      "text": "줘.",
+      "start": 7.215,
+      "end": 7.56
+    }
+  ],
+  "characters": null
+}

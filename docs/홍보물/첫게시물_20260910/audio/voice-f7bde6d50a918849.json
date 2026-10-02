@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "c22b90d9-111e-47c8-ba13-6f19fc07f744",
+  "narration": "자기 일을 여러 사람에게 소개하는 1인 사업자라면, 첫 줄을 읽는 상대부터 골라보세요.",
+  "narrationSha256": "f7bde6d50a9188491eb3838280d157281881a420925f66bf461b17d4751899b8",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-f7bde6d50a918849.wav",
+  "duration": 5.44,
+  "sha256": "2cd2ed0eef838cf2a92ba84ccd8c5d6a6df4c11a82821a01710589ba36a9534f",
+  "humanListening": false,
+  "fullDecode": true
+}

@@ -1,0 +1,24 @@
+[
+ {
+  "name": "M-yuho-hero-7-fix1",
+  "prompt": "Edit the FIRST attached photo only. Keep everything in it identical: his face, smile, expression, skin, cornrow braids with the small gold bead, black t-shirt, framing, backdrop, lighting and film grain. Change ONLY his eyelids: both eyes must be monolids (single eyelids) with no double-eyelid crease at all, exactly like his real eyes in the other attached reference photos. The eye on the right side of the image currently shows a double-eyelid fold; remove that fold so both eyes match. Do not change eye size, eye shape, gaze or anything else. No text or logos.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-7.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0088.png",
+   "raw/yuho-ref-0112.png"
+  ]
+ },
+ {
+  "name": "M-yuho-hero-7-fix2",
+  "prompt": "Edit the FIRST attached photo only. Keep everything in it identical: his face, smile, expression, skin, cornrow braids with the small gold bead, black t-shirt, framing, backdrop, lighting and film grain. Change ONLY his eyelids: both eyes must be monolids (single eyelids) with no double-eyelid crease at all, exactly like his real eyes in the other attached reference photos. The eye on the right side of the image currently shows a double-eyelid fold; remove that fold so both eyes match. Do not change eye size, eye shape, gaze or anything else. No text or logos.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-7.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0088.png",
+   "raw/yuho-ref-0112.png"
+  ]
+ }
+]

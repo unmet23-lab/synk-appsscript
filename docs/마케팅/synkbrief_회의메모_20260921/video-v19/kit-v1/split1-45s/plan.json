@@ -1,0 +1,49 @@
+{
+  "_": "synkbrief ① 붙여넣기 → 회의록 (45초 분할판). 문장은 v19 Typecast 은경 구간(audio/<seg>.json)의 낱말 번호 [from, to). text는 화면 자막 표기, *…*는 강조",
+  "lead": 0.15,
+  "gap": 0.32,
+  "hold": 1.9,
+  "voiceVolume": 0.708,
+  "bgm": { "volume": 0.43 },
+  "lines": [
+    { "id": "r1", "seg": "result", "from": 0, "to": 4, "scene": "s1", "text": "같은 기록인데 *차이가* 보이죠?" },
+    { "id": "r2", "seg": "result", "from": 4, "to": 13, "scene": "s2", "gap": 0.36, "text": "뒤섞였던 내용이 요약, 결정, 할 일, 확인할 내용으로 *나뉘었어요.*" },
+    { "id": "r3", "seg": "result", "from": 13, "to": 19, "scene": "s3", "text": "필요한 내용을 *바로* 찾을 수 있죠." },
+    { "id": "p1", "seg": "prepare", "from": 0, "to": 4, "scene": "s4", "gap": 0.36, "text": "적어둔 내용을 *그대로* 복사하세요." },
+    { "id": "p2", "seg": "prepare", "from": 4, "to": 12, "scene": "s5", "gap": 0.2, "text": "미리 다듬을 필요 없어요. 정리는 *AI가* 할 거예요." },
+    { "id": "q1", "seg": "paste", "from": 0, "to": 4, "scene": "s6", "text": "가이드의 *복사용 문장을* 붙여넣어요." },
+    { "id": "q2", "seg": "paste", "from": 4, "to": 15, "scene": "s7", "text": "회의 기록을 요약, 결정, 할 일, 확인할 내용으로 나눠 달라는 *부탁이에요.*" },
+    { "id": "m1", "seg": "request", "from": 0, "to": 7, "scene": "s8", "text": "그 문장 *바로 아래에* 회의 기록을 붙여넣어요." },
+    { "id": "sd", "seg": "send", "from": 0, "to": 7, "scene": "s9", "gap": 0.2, "text": "두 내용이 들어갔다면, 오른쪽의 *위쪽 화살표를* 누르세요." },
+    { "id": "k1", "seg": "rules", "from": 0, "to": 5, "scene": "s10", "gap": 0.36, "text": "마지막으로 *이름과 날짜만* 원문과 비교해요." },
+    { "id": "k2", "seg": "rules", "from": 5, "to": 12, "scene": "s11", "text": "아직 정하지 않은 기한은, *확인 필요로* 남겨둡니다." },
+    { "id": "e1", "seg": "ending-follow", "from": 0, "to": 8, "scene": "s12", "gap": 0.36, "text": "따라 할 PDF와 복사용 문장, *연습 메모까지* 준비했어요." }
+  ],
+  "scenes": [
+    { "id": "s1" },
+    { "id": "s2", "line": "r2", "tr": "patch" },
+    { "id": "s3", "line": "r3", "tr": "arch" },
+    { "id": "s4", "line": "p1", "tr": "seam" },
+    { "id": "s5", "line": "p2", "tr": "cut" },
+    { "id": "s6", "line": "q1", "tr": "seam" },
+    { "id": "s7", "line": "q2", "tr": "paper" },
+    { "id": "s8", "line": "m1", "tr": "seam" },
+    { "id": "s9", "line": "sd", "tr": "cut" },
+    { "id": "s10", "line": "k1", "tr": "patch" },
+    { "id": "s11", "line": "k2", "tr": "arch" },
+    { "id": "s12", "line": "e1", "tr": "paper" }
+  ],
+  "cues": [
+    { "type": "pop", "line": "r2", "word": 2, "why": "핵심 요약 칸" },
+    { "type": "pop", "line": "r2", "word": 3, "why": "결정된 내용 칸" },
+    { "type": "pop", "line": "r2", "word": 4, "why": "할 일 칸" },
+    { "type": "pop", "line": "r2", "word": 6, "why": "확인할 내용 칸" },
+    { "type": "pop", "scene": "s3", "d": 0.5, "why": "날짜 도장" },
+    { "type": "pop", "line": "p2", "word": 4, "why": "체크 스티커" },
+    { "type": "click", "line": "q1", "word": 3, "why": "붙여넣기" },
+    { "type": "click", "line": "m1", "word": 6, "why": "붙여넣기" },
+    { "type": "click", "line": "sd", "word": 6, "why": "보내기 버튼" },
+    { "type": "pop", "line": "k1", "word": 4, "why": "확인 스티커" },
+    { "type": "chime", "line": "e1", "word": 7, "d": 0.4, "why": "자료 받기 단추" }
+  ]
+}

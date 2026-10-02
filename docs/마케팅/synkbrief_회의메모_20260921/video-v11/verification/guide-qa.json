@@ -1,0 +1,15 @@
+{
+  "pages": 10,
+  "project_definition_page": 5,
+  "zip_integrity": true,
+  "zip_files": [
+    "그대로 복사할 문장.txt",
+    "다음 회의 연습 메모.txt",
+    "다음 회의에 쓸 문장.txt",
+    "정리 전 원본 메모.txt",
+    "정리 후 회의록 예시.txt",
+    "프로젝트에 저장할 규칙.txt",
+    "읽어주세요.md",
+    "synkbrief-meeting-guide-v11.pdf"
+  ]
+}

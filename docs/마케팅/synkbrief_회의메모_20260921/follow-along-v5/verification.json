@@ -1,0 +1,25 @@
+{
+  "date": "2026-09-23",
+  "pdfPages": 8,
+  "embeddedFonts": [
+    "/AAAAAA+SUITGuide-Bold",
+    "/AAAAAA+SUITGuide-Regular",
+    "/AAAAAB+SUITGuide-Regular"
+  ],
+  "copyTextMatchesPdf": true,
+  "zipIntegrity": true,
+  "desktopWorkSkillInstalled": false,
+  "skillSchemaValidated": true,
+  "files": [
+    {
+      "name": "synkbrief-meeting-guide-v5.pdf",
+      "bytes": 96978,
+      "sha256": "d0724da9fec2b43facbe8142d86cb6b985b9132868f4287592043c8e6b8535d4"
+    },
+    {
+      "name": "synkbrief-meeting-kit-v5.zip",
+      "bytes": 89165,
+      "sha256": "f5e35f5c49321054d8d036f07289f8c562698afe8fc351832ba7960146267137"
+    }
+  ]
+}

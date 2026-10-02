@@ -1,0 +1,32 @@
+{
+  "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\음원_10개.zip",
+  "bytes": 6606557,
+  "sha256": "a57a5ec0c7c2586660c20715950790869509ebd00bd4183d124e5e4f10a19d60",
+  "entries": [
+    "비교안내.txt",
+    "후보01.wav",
+    "후보02.wav",
+    "후보03.wav",
+    "후보04.wav",
+    "후보05.wav",
+    "후보06.wav",
+    "후보07.wav",
+    "후보08.wav",
+    "후보09.wav",
+    "후보10.wav",
+    "들은뒤_후보정보.json"
+  ],
+  "audioRoundtripSha256": {
+    "후보01.wav": "b4fc82705afcdbe26df5bfe4d0cdb95020a138290feab4ad5495020a354c503a",
+    "후보02.wav": "2e2a4f428d687cc6f364acfede0af321177ce880a9dac864a3ae7ef7783ac6ae",
+    "후보03.wav": "3e8bcda46d0bd7cc3b34e3b92b9d1c84730423c8f3390c22a405ef90927e775e",
+    "후보04.wav": "40e4da55c3ab787ad4a3aa8ff013230958b5f3a6f3e990edd76344720e949032",
+    "후보05.wav": "f76bff97b7c1ccb15798050e379568d193ca63ed991b354420f0d26186c2ad0a",
+    "후보06.wav": "2aebe678ebbbe8e84ce4f21a3507c3566f4cb1a300cd267f9554681c7edb0a51",
+    "후보07.wav": "936f11b3afb8002dc723015d7a1684c60411c241e6660627bcd862519289ef5e",
+    "후보08.wav": "8b42ab4c51e75fe31cf80bbbfe18b43921331e93f6da599a1357b8c3c398cc1c",
+    "후보09.wav": "3cd05a43851de3309c2e0bdf6b034a47c625f7df9aaae1933133720df9075900",
+    "후보10.wav": "4e554cdb9bc430a8c29126cb135aa7d8051e735e9de55d83a076d68375a2e896"
+  },
+  "status": "passed"
+}

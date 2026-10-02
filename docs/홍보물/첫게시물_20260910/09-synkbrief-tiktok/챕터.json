@@ -1,0 +1,32 @@
+[
+  {
+    "startSeconds": 0,
+    "durationSeconds": 10.966666666666667,
+    "title": "멋진 문장을,\n맡길 수 있는 일로",
+    "layout": "cover"
+  },
+  {
+    "startSeconds": 10.966666666666667,
+    "durationSeconds": 7,
+    "title": "이 소개에 사실을 더하면",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 17.96666666666667,
+    "durationSeconds": 9,
+    "title": "세 가지를 고릅니다",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 26.96666666666667,
+    "durationSeconds": 8.8,
+    "title": "이제 어떤 일인지 보입니다",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 35.766666666666666,
+    "durationSeconds": 8.566666666666666,
+    "title": "내 소개에도\n세 칸을 붙여보세요",
+    "layout": "closing"
+  }
+]

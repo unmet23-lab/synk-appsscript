@@ -1,0 +1,356 @@
+{
+  "provenanceRefresh": {
+    "record": "qa/원천갱신_대조.json",
+    "sha256": "5c7b9118d675cb617d1b5951ebb4fd73ed0c67ab82393958b0578b6418d9a864",
+    "checkedAt": "2026-09-13T20:11:29.068Z",
+    "mode": "metadata-only-current-source-and-output-check; original-render-evidence-retained"
+  },
+  "builtAt": "2026-09-13T18:30:35.154Z",
+  "title": {
+    "mn": "Одоо өөрийн өгүүлбэрээ хэлээрэй.",
+    "ko": "내 문장으로 바꿔 말해요."
+  },
+  "brand": "SYNK LAB",
+  "channel": "Telegram @synkmn",
+  "status": "local-text-complete-unpublished",
+  "published": false,
+  "pinned": false,
+  "publicURL": null,
+  "image": "none; text alone contains the exercise",
+  "officialVision": "가고 싶은 방향에 집중할 수 있는 환경을 만듭니다.",
+  "bodyFile": "고정안내.txt",
+  "characters": 714,
+  "mongolianSourceFragments": {
+    "title": "Одоо өөрийн өгүүлбэрээ хэлээрэй.",
+    "context": "Сурах мэргэжлээ сонгож байгаа бол эхлээд хийж үзмээр зүйлээ хэлээрэй.",
+    "example": "Сургалтын жишээ яриа.",
+    "speaker": "Ярилцаж буй хүн",
+    "question": "Ямар мэргэжлээр сурахыг хүсэж байна вэ?",
+    "me": "Би",
+    "answer": "Одоохондоо шийдээгүй байна. Эхлээд тоглоом хийж үзмээр байна.",
+    "replace": "“게임을 만들어” гэдэг хэсгийг бүхэлд нь солино.",
+    "choose": "Доорх гурван хэсгээс нэгийг нь хоосон зайд оруулаад, өгүүлбэрээ бүтнээр нь хэлээрэй.",
+    "game": "Эхлээд тоглоом хийж үзмээр байна.",
+    "video": "Эхлээд видео хийж үзмээр байна.",
+    "picture": "Эхлээд зураг зурж үзмээр байна.",
+    "solo": "Ганцаараа чангаар хэлж болно.",
+    "privacy": "Хариугаа сэтгэгдэлд бичих, дуу хоолойгоо бичиж нийтлэх шаардлагагүй."
+  },
+  "allMongolianFragmentsExistInCurrentSource": true,
+  "newMongolianTranslation": false,
+  "mongolianReview": {
+    "native": false,
+    "thisCompletePostSeparatelyReviewedByGemini": false,
+    "scope": "source core phrases had a focused Gemini AI review; not this complete final Telegram edit"
+  },
+  "sources": [
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/글과포트폴리오/09-Substack-LAB.md",
+      "sha256": "ffc6e8d9792f923b980860b755cc4bc132729e316e3f9d10c7ae5b062cf8fd2e",
+      "bytes": 5026
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "32222dab4c650029ef561b258b0442f7a920fdd78b3a706727f4c9f8c4d28f0c",
+      "bytes": 3636
+    },
+    {
+      "path": "docs/AI_운영원칙.md",
+      "sha256": "e27974f0e18052d18084ea2db1c5c4b22ad109820be78628b95712ceaa8b58ab",
+      "bytes": 12368
+    },
+    {
+      "path": "DESIGN.md",
+      "sha256": "5e0673d1aaf62f7b9f4a4e3695ed5ab1eaa466bfce97da761220e62d229b876a",
+      "bytes": 15680
+    },
+    {
+      "path": "docs/비전_정본.md",
+      "sha256": "88adcf26fdfe18934a147ce76121d57b4f4eb4b5015c4f90a5ec8dda59da8786",
+      "bytes": 3035
+    },
+    {
+      "path": "docs/SYNK_철학.md",
+      "sha256": "659782929914aae588cd5cf2227d51b9b1688f8c17e19e3957e2155e52ddb645",
+      "bytes": 18953
+    },
+    {
+      "path": "docs/디자인_토큰.json",
+      "sha256": "2e08bde734635f8a6e2d1629cf6a8fe81da20a1f3b52f84dac04eec3dce6aae1",
+      "bytes": 125922
+    },
+    {
+      "path": "docs/브랜드_폰트_정본.md",
+      "sha256": "889fc34358d6725e0b773504b388d0a9b52535c09170bb1192be00936e216ca6",
+      "bytes": 10230
+    },
+    {
+      "path": "docs/마케팅_정본.md",
+      "sha256": "2eb7b1d41e37cd6797a772ef3fa3a9a8355a3aa6bcd5ade8bbd9759312c0ed4a",
+      "bytes": 11009
+    },
+    {
+      "path": "docs/마케팅/LAB.md",
+      "sha256": "2a9d8d728e328f0302bd9c55cdd7ec4b91c6ea675008c2027d22e9bfc8c47c49",
+      "bytes": 13428
+    },
+    {
+      "path": "docs/마케팅/채널과_발행.md",
+      "sha256": "a44c2a252728c832b58f2b5024cf2387f44f385fd82b6dd503ed882ff842fdf5",
+      "bytes": 34138
+    },
+    {
+      "path": "docs/마케팅/제작_인수기준.md",
+      "sha256": "5717a3f8f9f7b1ec2ffee63c5aa3930cbb944dc1d609a40b523e4e4d31fa02c7",
+      "bytes": 23136
+    },
+    {
+      "path": "docs/명품_기준_v1.md",
+      "sha256": "9c2815309d8a4ebedd1745d3986a4b57f325265eee0ddd290864c3205da9f769",
+      "bytes": 12985
+    },
+    {
+      "path": "docs/정본/SYNK/SYNK 집필 규범.txt",
+      "sha256": "356765f1199847278dd31de05b9a4cc49af1babd77440574b251286246c34296",
+      "bytes": 100317
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/caption-student-mn.txt",
+      "sha256": "dc83f0344d2a941a4fa14c3ed0c9e6a034ab3ba08483c91d2bbc07f861733138",
+      "bytes": 1147
+    },
+    {
+      "path": "docs/홍보물/새첫게시물_20260914/LAB/caption-student-ko.txt",
+      "sha256": "ab234ba28370b57c817c06481147189fa1d35c73357f925972be87d6df48835a",
+      "bytes": 662
+    },
+    {
+      "path": "docs/마케팅/전사새출발_20260914/제미나이_언어_결과.json",
+      "sha256": "7f87be01575cf1edf324ed54e958c0bdf7f4b45e01ed5df298aa2e6e73de2552",
+      "bytes": 3913
+    },
+    {
+      "path": "docs/브랜드_폰트/InterTight/InterTight-Medium.ttf",
+      "sha256": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1",
+      "bytes": 309140
+    },
+    {
+      "path": "docs/브랜드_폰트/InterTight/InterTight-Bold.ttf",
+      "sha256": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca",
+      "bytes": 310440
+    },
+    {
+      "path": "docs/브랜드_폰트/SUIT/SUIT-Variable.woff2",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "bytes": 624536
+    },
+    {
+      "path": "docs/브랜드_폰트/SUIT/LICENSE_OFL.txt",
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9",
+      "bytes": 4380
+    },
+    {
+      "path": "docs/브랜드_폰트/InterTight/OFL.txt",
+      "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58",
+      "bytes": 4383
+    }
+  ],
+  "sourceDrift": [],
+  "checks": [
+    {
+      "width": 1280,
+      "scrollWidth": 1280,
+      "links": [
+        "고정안내.txt",
+        "고정안내.md",
+        "검증결과.md"
+      ],
+      "visibleText": "SYNK LAB · Telegram 고정 안내 원고\n로컬 읽기 확인용 · 미게시 · 몽골어 AI 초안\n\nОдоо өөрийн өгүүлбэрээ хэлээрэй.\n\n가고 싶은 방향에 집중할 수 있는 환경을 만듭니다.\n\nСурах мэргэжлээ сонгож байгаа бол эхлээд хийж үзмээр зүйлээ хэлээрэй.\n\nСургалтын жишээ яриа.\n\nЯрилцаж буй хүн\n\n어떤 전공을 배우고 싶어요?\n\nЯмар мэргэжлээр сурахыг хүсэж байна вэ?\n\nБи\n\n아직 정하지 않았어요.\n먼저 게임을 만들어 보고 싶어요.\n\nОдоохондоо шийдээгүй байна. Эхлээд тоглоом хийж үзмээр байна.\n\n“게임을 만들어” гэдэг хэсгийг бүхэлд нь солино.\n\n아직 정하지 않았어요.\n먼저 [선택한 구절] 보고 싶어요.\n\nДоорх гурван хэсгээс нэгийг нь хоосон зайд оруулаад, өгүүлбэрээ бүтнээр нь хэлээрэй.\n\n게임을 만들어\nЭхлээд тоглоом хийж үзмээр байна.\n영상을 만들어\nЭхлээд видео хийж үзмээр байна.\n그림을 그려\nЭхлээд зураг зурж үзмээр байна.\n\nГанцаараа чангаар хэлж болно.\n\nХариугаа сэтгэгдэлд бичих, дуу хоолойгоо бичиж нийтлэх шаардлагагүй.\n\n게시 본문 TXT문안과 한국어 뜻검증 범위\n\n문장 원천 일부에 대한 Gemini 집중 검토가 있었지만 이 고정 안내 전체의 별도 감수는 아닙니다. 원어민 감수·실제 Telegram 입력·게시·고정은 하지 않았습니다.",
+      "actualFonts": [
+        {
+          "selector": "h1 [lang=mn]",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 32
+            }
+          ]
+        },
+        {
+          "selector": ".vision",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 8
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 20
+            }
+          ]
+        },
+        {
+          "selector": ".spoken [lang=ko]",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 4
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 11
+            }
+          ]
+        },
+        {
+          "selector": ".meaning [lang=mn]",
+          "fonts": [
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 39
+            }
+          ]
+        },
+        {
+          "selector": ".choices .phrase",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 1
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 6
+            }
+          ]
+        },
+        {
+          "selector": ".choices .meaning",
+          "fonts": [
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 33
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "links": [
+        "고정안내.txt",
+        "고정안내.md",
+        "검증결과.md"
+      ],
+      "visibleText": "SYNK LAB · Telegram 고정 안내 원고\n로컬 읽기 확인용 · 미게시 · 몽골어 AI 초안\n\nОдоо өөрийн өгүүлбэрээ хэлээрэй.\n\n가고 싶은 방향에 집중할 수 있는 환경을 만듭니다.\n\nСурах мэргэжлээ сонгож байгаа бол эхлээд хийж үзмээр зүйлээ хэлээрэй.\n\nСургалтын жишээ яриа.\n\nЯрилцаж буй хүн\n\n어떤 전공을 배우고 싶어요?\n\nЯмар мэргэжлээр сурахыг хүсэж байна вэ?\n\nБи\n\n아직 정하지 않았어요.\n먼저 게임을 만들어 보고 싶어요.\n\nОдоохондоо шийдээгүй байна. Эхлээд тоглоом хийж үзмээр байна.\n\n“게임을 만들어” гэдэг хэсгийг бүхэлд нь солино.\n\n아직 정하지 않았어요.\n먼저 [선택한 구절] 보고 싶어요.\n\nДоорх гурван хэсгээс нэгийг нь хоосон зайд оруулаад, өгүүлбэрээ бүтнээр нь хэлээрэй.\n\n게임을 만들어\nЭхлээд тоглоом хийж үзмээр байна.\n영상을 만들어\nЭхлээд видео хийж үзмээр байна.\n그림을 그려\nЭхлээд зураг зурж үзмээр байна.\n\nГанцаараа чангаар хэлж болно.\n\nХариугаа сэтгэгдэлд бичих, дуу хоолойгоо бичиж нийтлэх шаардлагагүй.\n\n게시 본문 TXT문안과 한국어 뜻검증 범위\n\n문장 원천 일부에 대한 Gemini 집중 검토가 있었지만 이 고정 안내 전체의 별도 감수는 아닙니다. 원어민 감수·실제 Telegram 입력·게시·고정은 하지 않았습니다.",
+      "actualFonts": [
+        {
+          "selector": "h1 [lang=mn]",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 31
+            }
+          ]
+        },
+        {
+          "selector": ".vision",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 7
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 20
+            }
+          ]
+        },
+        {
+          "selector": ".spoken [lang=ko]",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 4
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 11
+            }
+          ]
+        },
+        {
+          "selector": ".meaning [lang=mn]",
+          "fonts": [
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 38
+            }
+          ]
+        },
+        {
+          "selector": ".choices .phrase",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 1
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 6
+            }
+          ]
+        },
+        {
+          "selector": ".choices .meaning",
+          "fonts": [
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 33
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "externalRequests": [],
+  "platformInputVerified": false,
+  "passed": true
+}

@@ -1,0 +1,84 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "나는 개발이 처음이야. 학생 출석을 기록하고 싶어. 가장 작은 첫 단계부터 알려줘.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.2,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 4.792,
+  "words": [
+    {
+      "text": "나는",
+      "start": 0.09,
+      "end": 0.301
+    },
+    {
+      "text": "개발이",
+      "start": 0.362,
+      "end": 0.633
+    },
+    {
+      "text": "처음이야.",
+      "start": 0.678,
+      "end": 0.995
+    },
+    {
+      "text": "학생",
+      "start": 1.597,
+      "end": 1.838
+    },
+    {
+      "text": "출석을",
+      "start": 1.884,
+      "end": 2.17
+    },
+    {
+      "text": "기록하고",
+      "start": 2.215,
+      "end": 2.486
+    },
+    {
+      "text": "싶어.",
+      "start": 2.531,
+      "end": 2.682
+    },
+    {
+      "text": "가장",
+      "start": 3.21,
+      "end": 3.451
+    },
+    {
+      "text": "작은",
+      "start": 3.496,
+      "end": 3.737
+    },
+    {
+      "text": "첫",
+      "start": 3.782,
+      "end": 3.903
+    },
+    {
+      "text": "단계부터",
+      "start": 3.948,
+      "end": 4.249
+    },
+    {
+      "text": "알려줘.",
+      "start": 4.31,
+      "end": 4.792
+    }
+  ],
+  "characters": null
+}

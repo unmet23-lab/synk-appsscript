@@ -1,0 +1,44 @@
+[
+  {
+    "text": "같이 갈까요?",
+    "startMs": 7300,
+    "endMs": 8400,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "좋아요.",
+    "startMs": 15300,
+    "endMs": 16400,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "같이 가요.",
+    "startMs": 16920,
+    "endMs": 18020,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "내일은 어때요?",
+    "startMs": 22300,
+    "endMs": 23740,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "토요일은 어때요?",
+    "startMs": 29300,
+    "endMs": 31780,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "[음악: 오늘 밤 제일 환한 사람 · 노래가 재생됩니다]",
+    "startMs": 48000,
+    "endMs": 109600,
+    "timestampMs": null,
+    "confidence": null
+  }
+]

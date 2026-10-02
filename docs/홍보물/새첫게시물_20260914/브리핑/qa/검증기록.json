@@ -1,0 +1,1091 @@
+{
+  "observedAt": "2026-09-13T17:51:28.009Z",
+  "manifestSha256": "3a0878b2299c45e1e388b0a1af882c35bf797684ee6be4c9cece429cdb6dae35",
+  "sourceDrift": [],
+  "officialVision": true,
+  "visionRenderedExactly": true,
+  "slides": [
+    {
+      "number": 1,
+      "pngMatches": true,
+      "pngSize": [
+        2160,
+        2700
+      ],
+      "mobileSize": [
+        390,
+        488
+      ],
+      "bboxMaxDelta": 0,
+      "embedded": [
+        {
+          "id": "asset-1",
+          "source": "docs/홍보물/새첫게시물_20260914/유호/실물/몽글-공통바탕.png",
+          "matched": true
+        }
+      ],
+      "fonts": [
+        {
+          "id": "text-1",
+          "text": "SYNK 브리핑",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 3
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 5
+            }
+          ]
+        },
+        {
+          "id": "text-2",
+          "text": "AI 캐릭터 영상,",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 5
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 5
+            }
+          ]
+        },
+        {
+          "id": "text-3",
+          "text": "먼저 고정할 세 가지",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 3
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 8
+            }
+          ]
+        },
+        {
+          "id": "text-4",
+          "text": "원본 · 바꿀 곳 · 유지할 것",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 8
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 9
+            }
+          ]
+        },
+        {
+          "id": "text-5",
+          "text": "이번에 만든 적용 안내",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 9
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 3
+            }
+          ]
+        },
+        {
+          "id": "text-6",
+          "text": "01 / 06",
+          "fonts": [
+            {
+              "familyName": "DM Mono Medium",
+              "postScriptName": "DMMono-Medium",
+              "isCustomFont": true,
+              "glyphCount": 6
+            },
+            {
+              "familyName": "DM Mono Light",
+              "postScriptName": "DMMono-Light",
+              "isCustomFont": true,
+              "glyphCount": 1
+            }
+          ]
+        }
+      ],
+      "systemFallback": [],
+      "missingFonts": [],
+      "clipped": []
+    },
+    {
+      "number": 2,
+      "pngMatches": true,
+      "pngSize": [
+        2160,
+        2700
+      ],
+      "mobileSize": [
+        390,
+        488
+      ],
+      "bboxMaxDelta": 0,
+      "embedded": [
+        {
+          "id": "asset-1",
+          "source": "docs/홍보물/새첫게시물_20260914/유호/실물/몽글-공통바탕.png",
+          "matched": true
+        }
+      ],
+      "fonts": [
+        {
+          "id": "text-1",
+          "text": "원본을 먼저",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 1
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 5
+            }
+          ]
+        },
+        {
+          "id": "text-2",
+          "text": "함께 보냅니다.",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 2
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 6
+            }
+          ]
+        },
+        {
+          "id": "text-3",
+          "text": "사용할 이미지 한 장을 고르고,",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 12
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 5
+            }
+          ]
+        },
+        {
+          "id": "text-4",
+          "text": "지킬 배경·빛·형태도 적습니다.",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 12
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 5
+            }
+          ]
+        },
+        {
+          "id": "text-5",
+          "text": "예시 · 이 이미지를 기준으로 작업해 주세요.",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 17
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 8
+            }
+          ]
+        },
+        {
+          "id": "text-6",
+          "text": "02 / 06",
+          "fonts": [
+            {
+              "familyName": "DM Mono Medium",
+              "postScriptName": "DMMono-Medium",
+              "isCustomFont": true,
+              "glyphCount": 6
+            },
+            {
+              "familyName": "DM Mono Light",
+              "postScriptName": "DMMono-Light",
+              "isCustomFont": true,
+              "glyphCount": 1
+            }
+          ]
+        }
+      ],
+      "systemFallback": [],
+      "missingFonts": [],
+      "clipped": []
+    },
+    {
+      "number": 3,
+      "pngMatches": true,
+      "pngSize": [
+        2160,
+        2700
+      ],
+      "mobileSize": [
+        390,
+        488
+      ],
+      "bboxMaxDelta": 0,
+      "embedded": [
+        {
+          "id": "asset-1",
+          "source": "docs/홍보물/새첫게시물_20260914/유호/실물/몽글-공통바탕.png",
+          "matched": true
+        }
+      ],
+      "fonts": [
+        {
+          "id": "text-1",
+          "text": "바꿀 곳과",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 1
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 4
+            }
+          ]
+        },
+        {
+          "id": "text-2",
+          "text": "남길 것을 나눕니다.",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 3
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 8
+            }
+          ]
+        },
+        {
+          "id": "text-3",
+          "text": "바꿀 곳 · 눈 주변",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 5
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 6
+            }
+          ]
+        },
+        {
+          "id": "text-4",
+          "text": "유지할 것 · 털·몸·색·조명·배경",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 11
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 8
+            }
+          ]
+        },
+        {
+          "id": "text-5",
+          "text": "점선은 범위를 보여 주는 설명용 표시",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 15
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 5
+            }
+          ]
+        },
+        {
+          "id": "text-6",
+          "text": "03 / 06",
+          "fonts": [
+            {
+              "familyName": "DM Mono Medium",
+              "postScriptName": "DMMono-Medium",
+              "isCustomFont": true,
+              "glyphCount": 6
+            },
+            {
+              "familyName": "DM Mono Light",
+              "postScriptName": "DMMono-Light",
+              "isCustomFont": true,
+              "glyphCount": 1
+            }
+          ]
+        }
+      ],
+      "systemFallback": [],
+      "missingFonts": [],
+      "clipped": []
+    },
+    {
+      "number": 4,
+      "pngMatches": true,
+      "pngSize": [
+        2160,
+        2700
+      ],
+      "mobileSize": [
+        390,
+        488
+      ],
+      "bboxMaxDelta": 0,
+      "embedded": [],
+      "fonts": [
+        {
+          "id": "text-1",
+          "text": "끝나는 모습까지",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 1
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 7
+            }
+          ]
+        },
+        {
+          "id": "text-2",
+          "text": "요청에 넣습니다.",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 2
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 7
+            }
+          ]
+        },
+        {
+          "id": "text-3",
+          "text": "읽어야 할 글자는",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 2
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 7
+            }
+          ]
+        },
+        {
+          "id": "text-4",
+          "text": "움직이지 않게.",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 2
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 6
+            }
+          ]
+        },
+        {
+          "id": "text-5",
+          "text": "움직임이 끝나면",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 1
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 7
+            }
+          ]
+        },
+        {
+          "id": "text-6",
+          "text": "자연스럽게 정지하게.",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 2
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 9
+            }
+          ]
+        },
+        {
+          "id": "text-7",
+          "text": "원본과 같은 크기·배경에서",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 3
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 11
+            }
+          ]
+        },
+        {
+          "id": "text-8",
+          "text": "비교할 수 있게.",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 3
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 6
+            }
+          ]
+        },
+        {
+          "id": "text-9",
+          "text": "이 정원의 바람 주기를 다른 장면에",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 14
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 5
+            }
+          ]
+        },
+        {
+          "id": "text-10",
+          "text": "그대로 복사하지는 않습니다.",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 12
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 3
+            }
+          ]
+        },
+        {
+          "id": "text-11",
+          "text": "04 / 06",
+          "fonts": [
+            {
+              "familyName": "DM Mono Medium",
+              "postScriptName": "DMMono-Medium",
+              "isCustomFont": true,
+              "glyphCount": 6
+            },
+            {
+              "familyName": "DM Mono Light",
+              "postScriptName": "DMMono-Light",
+              "isCustomFont": true,
+              "glyphCount": 1
+            }
+          ]
+        }
+      ],
+      "systemFallback": [],
+      "missingFonts": [],
+      "clipped": []
+    },
+    {
+      "number": 5,
+      "pngMatches": true,
+      "pngSize": [
+        2160,
+        2700
+      ],
+      "mobileSize": [
+        390,
+        488
+      ],
+      "bboxMaxDelta": 0,
+      "embedded": [],
+      "fonts": [
+        {
+          "id": "text-1",
+          "text": "복사해 고쳐 쓸",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 2
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 6
+            }
+          ]
+        },
+        {
+          "id": "text-2",
+          "text": "요청 예시",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 1
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 4
+            }
+          ]
+        },
+        {
+          "id": "text-3",
+          "text": "이 이미지를 기준으로 작업해 주세요.",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 15
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 5
+            }
+          ]
+        },
+        {
+          "id": "text-4",
+          "text": "털, 몸의 형태, 색, 조명과 배경은",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 12
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 8
+            }
+          ]
+        },
+        {
+          "id": "text-5",
+          "text": "보존해 주세요.",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 6
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 2
+            }
+          ]
+        },
+        {
+          "id": "text-6",
+          "text": "이번에는 눈 주변만 움직이게 해 주세요.",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 16
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 6
+            }
+          ]
+        },
+        {
+          "id": "text-7",
+          "text": "읽어야 할 글자는 움직이지 않게 해 주세요.",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 17
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 7
+            }
+          ]
+        },
+        {
+          "id": "text-8",
+          "text": "움직임이 끝나면 자연스럽게",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 12
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 2
+            }
+          ]
+        },
+        {
+          "id": "text-9",
+          "text": "정지하게 해 주세요.",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 8
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 3
+            }
+          ]
+        },
+        {
+          "id": "text-10",
+          "text": "결과는 원본과 같은 크기, 같은 배경에서",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 16
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 6
+            }
+          ]
+        },
+        {
+          "id": "text-11",
+          "text": "비교할 수 있게 보여 주세요.",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 11
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 5
+            }
+          ]
+        },
+        {
+          "id": "text-12",
+          "text": "이번에 만든 예시입니다.",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 10
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 3
+            }
+          ]
+        },
+        {
+          "id": "text-13",
+          "text": "당시 AI 입력문이 아닙니다.",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 10
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 6
+            }
+          ]
+        },
+        {
+          "id": "text-14",
+          "text": "05 / 06",
+          "fonts": [
+            {
+              "familyName": "DM Mono Medium",
+              "postScriptName": "DMMono-Medium",
+              "isCustomFont": true,
+              "glyphCount": 6
+            },
+            {
+              "familyName": "DM Mono Light",
+              "postScriptName": "DMMono-Light",
+              "isCustomFont": true,
+              "glyphCount": 1
+            }
+          ]
+        }
+      ],
+      "systemFallback": [],
+      "missingFonts": [],
+      "clipped": []
+    },
+    {
+      "number": 6,
+      "pngMatches": true,
+      "pngSize": [
+        2160,
+        2700
+      ],
+      "mobileSize": [
+        390,
+        488
+      ],
+      "bboxMaxDelta": 0,
+      "embedded": [
+        {
+          "id": "asset-1",
+          "source": "docs/홍보물/새첫게시물_20260914/유호/실물/몽글-공통바탕.png",
+          "matched": true
+        },
+        {
+          "id": "asset-2",
+          "source": "docs/홍보물/새첫게시물_20260914/유호/실물/몽글-눈영역합성.png",
+          "matched": true
+        }
+      ],
+      "fonts": [
+        {
+          "id": "text-1",
+          "text": "요청한 것과,",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 2
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 5
+            }
+          ]
+        },
+        {
+          "id": "text-2",
+          "text": "나온 결과는 다릅니다.",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 3
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-ExtraBold",
+              "isCustomFont": true,
+              "glyphCount": 9
+            }
+          ]
+        },
+        {
+          "id": "text-3",
+          "text": "이 사례도 눈 안의 결 차이는 남습니다.",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 15
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 7
+            }
+          ]
+        },
+        {
+          "id": "text-4",
+          "text": "결과를 보고, 바꿀 범위를",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 10
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 4
+            }
+          ]
+        },
+        {
+          "id": "text-5",
+          "text": "다시 좁혀 보세요.",
+          "fonts": [
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Medium",
+              "isCustomFont": true,
+              "glyphCount": 7
+            },
+            {
+              "familyName": "Inter Tight Medium",
+              "postScriptName": "InterTight-Medium",
+              "isCustomFont": true,
+              "glyphCount": 3
+            }
+          ]
+        },
+        {
+          "id": "text-6",
+          "text": "개인과 조직의 성장이",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 2
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Heavy",
+              "isCustomFont": true,
+              "glyphCount": 9
+            }
+          ]
+        },
+        {
+          "id": "text-7",
+          "text": "서로의 기회가 되는",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 2
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Heavy",
+              "isCustomFont": true,
+              "glyphCount": 8
+            }
+          ]
+        },
+        {
+          "id": "text-8",
+          "text": "미래를 만듭니다.",
+          "fonts": [
+            {
+              "familyName": "Inter Tight",
+              "postScriptName": "InterTight-Bold",
+              "isCustomFont": true,
+              "glyphCount": 2
+            },
+            {
+              "familyName": "SUIT Variable Thin",
+              "postScriptName": "SUITVariable-Heavy",
+              "isCustomFont": true,
+              "glyphCount": 7
+            }
+          ]
+        },
+        {
+          "id": "text-9",
+          "text": "06 / 06",
+          "fonts": [
+            {
+              "familyName": "DM Mono Medium",
+              "postScriptName": "DMMono-Medium",
+              "isCustomFont": true,
+              "glyphCount": 6
+            },
+            {
+              "familyName": "DM Mono Light",
+              "postScriptName": "DMMono-Light",
+              "isCustomFont": true,
+              "glyphCount": 1
+            }
+          ]
+        }
+      ],
+      "systemFallback": [],
+      "missingFonts": [],
+      "clipped": []
+    }
+  ],
+  "externalNetworkAttempts": [],
+  "newRequestExact": true,
+  "mechanicalChecksPassed": true
+}

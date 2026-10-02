@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "b7cca7e5-fb02-4ec8-b53e-2a7c2b9d55ee",
+  "narration": "SYNK SHIFT는 한 일을 끝낼 재료를 남깁니다. 다음에 정리할 상품이나 문의 답변도, 필요한 예시와 원본부터 펼쳐보세요.",
+  "narrationSha256": "1ddf253ca9254a2b3b8f4fbf292c7850f11235ef0b8aaa6d054eabff0bb5d650",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-1ddf253ca9254a2b.wav",
+  "duration": 8.88,
+  "sha256": "d26e867f4ad4e441a7c0cb7b5bc2709160b095975e00c2e4f20a45ba04e7738d",
+  "humanListening": false,
+  "fullDecode": true
+}

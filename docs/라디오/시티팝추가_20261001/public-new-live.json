@@ -1,0 +1,23 @@
+{
+  "id": "mP3T7Sabeh4",
+  "startedAt": "2026-10-01T11:07:54.919Z",
+  "finishedAt": "2026-10-01T11:08:08.627Z",
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "codec_name": "aac"
+      }
+    ],
+    "format": {
+      "duration": "20.015601"
+    }
+  },
+  "warnings": ""
+}

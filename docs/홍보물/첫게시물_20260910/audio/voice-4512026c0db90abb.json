@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "b51e5ca3-f096-4545-876e-8ed87e20eb36",
+  "narration": "독립 강사의 소개 원고를 정리합니다. 무엇을 받을지 읽히는 문장이 됐습니다.",
+  "narrationSha256": "4512026c0db90abb6c4dd67c22758a9c53275d8ac33b4deca0a20f750e068346",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-4512026c0db90abb.wav",
+  "duration": 6.24,
+  "sha256": "2da2afd7704fa4401f839f66e3d70b43fdf819d9e40f6ba15d44b9d2590c5881",
+  "humanListening": false,
+  "fullDecode": true
+}

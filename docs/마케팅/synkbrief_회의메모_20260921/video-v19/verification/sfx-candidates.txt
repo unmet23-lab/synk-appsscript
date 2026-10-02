@@ -1,0 +1,14 @@
+6 reuse candidates:
+
+  [project] Soft melodic chime — gentle positive beat: success/confirmation or a lighthearted transition. Sync to the visual moment. (2.5s, bundled.sfx)
+          .media/audio/sfx/sfx_003.mp3
+  [project] Punchy whoosh/impact — fast reveal or hard transition accent. Sync to the motion. (0.6s, bundled.sfx)
+          .media/audio/sfx/sfx_002.mp3
+  [project] Crisp UI click — button press, toggle, selection. Short accent, sync exactly to the on-screen action. (0.4s, bundled.sfx)
+          .media/audio/sfx/sfx_001.mp3
+  [global] Soft melodic chime — gentle positive beat: success/confirmation or a lighthearted transition. Sync to the visual moment. (2.5s, bundled.sfx)
+          --reuse 74823b1b27703c56
+  [global] Punchy whoosh/impact — fast reveal or hard transition accent. Sync to the motion. (0.6s, bundled.sfx)
+          --reuse c2efd9d902a59bf9
+  [global] Crisp UI click — button press, toggle, selection. Short accent, sync exactly to the on-screen action. (0.4s, bundled.sfx)
+          --reuse 075e17bdac5c1366

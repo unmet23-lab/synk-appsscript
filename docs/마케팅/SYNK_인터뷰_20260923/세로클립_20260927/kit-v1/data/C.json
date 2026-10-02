@@ -1,0 +1,145 @@
+{
+ "key": "C",
+ "name": "C_잘만들었다_했는데_평가는",
+ "fps": 30,
+ "speech_sec": 32.6,
+ "v2_sec": 32.6,
+ "total_sec": 35.4,
+ "end_start": 32.6,
+ "shots": [
+  {
+   "t": 0.0,
+   "framing": "base",
+   "film": [
+    145.08,
+    146.439
+   ]
+  },
+  {
+   "t": 1.367,
+   "framing": "punch",
+   "film": [
+    146.439,
+    149.312
+   ]
+  },
+  {
+   "t": 4.233,
+   "framing": "base",
+   "film": [
+    149.312,
+    153.007
+   ]
+  },
+  {
+   "t": 7.933,
+   "framing": "punch",
+   "film": [
+    153.007,
+    155.647
+   ]
+  },
+  {
+   "t": 10.567,
+   "framing": "base",
+   "film": [
+    155.647,
+    160.327
+   ]
+  },
+  {
+   "t": 15.233,
+   "framing": "punch",
+   "film": [
+    160.327,
+    164.143
+   ]
+  },
+  {
+   "t": 19.033,
+   "framing": "base",
+   "film": [
+    164.143,
+    166.7
+   ]
+  },
+  {
+   "t": 21.6,
+   "framing": "punch",
+   "film": [
+    166.7,
+    170.466
+   ]
+  },
+  {
+   "t": 25.367,
+   "framing": "base",
+   "film": [
+    170.466,
+    173.3
+   ]
+  },
+  {
+   "t": 28.2,
+   "framing": "punch",
+   "film": [
+    173.3,
+    176.193
+   ]
+  },
+  {
+   "t": 31.1,
+   "framing": "base",
+   "film": [
+    176.193,
+    177.7
+   ]
+  }
+ ],
+ "sentences": [
+  0.007,
+  2.487,
+  6.227,
+  7.927,
+  12.487,
+  15.247,
+  21.62,
+  23.6,
+  28.22
+ ],
+ "audio": {
+  "input_I": -18.2,
+  "target": -15.0,
+  "I": -15.1,
+  "TP": -1.5,
+  "max_gr_db": -3.42,
+  "over3db_pct": 0.382
+ },
+ "audio_vs_v2": {
+  "v2_mp4": "SYNK_인터뷰_세로_v2_C_잘만들었다_했는데_평가는_33s.mp4",
+  "v2_samples": 1564800,
+  "kit_samples": 1564800,
+  "corr": 0.99948,
+  "diff_db": -29.8
+ },
+ "first_frame_fixed_shots": [],
+ "video": {
+  "frames": 1062,
+  "w": 1080,
+  "h": 1920,
+  "fps": "30/1",
+  "sec": 35.4,
+  "MB": 19.8,
+  "sha12": "cba9aa1301ff"
+ },
+ "wav": {
+  "sec": 32.6,
+  "MB": 9.0,
+  "sha12": "959554872c70"
+ },
+ "sources": {
+  "master": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision9\\render\\SYNK_Founder_Film_4K60_v9.mp4",
+  "v2_build": "../v2/소스/C_build.json",
+  "v2_script": "../v2/소스/make_clips_v2.py"
+ }
+}

@@ -1,0 +1,78 @@
+{
+  "date": "2026-09-22",
+  "status": "opening_sample_for_review",
+  "userApproved": false,
+  "published": false,
+  "media": [
+    {
+      "path": "synkbrief-opening-v3.mp4",
+      "bytes": 5309374,
+      "sha256": "7a20cb9f3f94c88385b4feac08161d5af4c6dbe9e64e83cf51fdf0d8c16dfc06"
+    },
+    {
+      "path": "preview.webm",
+      "bytes": 1379065,
+      "sha256": "317db690a8c311e7762bd893d621f494bfbea9d7fb9439bad556bbb1572bf136"
+    }
+  ],
+  "source": [
+    {
+      "path": "build.mjs",
+      "bytes": 13335,
+      "sha256": "7d1d7e890ec5a763787a41649f555e0bc13cbc2f259e4a66b736cfb73304f092"
+    },
+    {
+      "path": "index.html",
+      "bytes": 14251,
+      "sha256": "01dbdfc56f477cc06974343dbfa01dbbf0f194e5b9ba14585c955b0266681d36"
+    }
+  ],
+  "image": {
+    "path": "assets/meeting-scene.png",
+    "bytes": 2063759,
+    "sha256": "aded4c0fa257137f002157f763cd6dbc20c72f596a5b51d60f76b843b4480b96",
+    "generator": "builtin image_gen.imagegen",
+    "modelReported": null,
+    "original": "C:/Users/q1212/.codex/generated_images/01a0c46e-7048-71e1-a26f-aac5b2f19111/exec-b360d1ec-faa7-403a-96e0-8bf2fd12f0bd.png",
+    "prompt": "assets/image-prompt.txt",
+    "use": "conceptual felt meeting scene, not documentary footage"
+  },
+  "sfx": [
+    {
+      "path": "assets/notify.wav",
+      "bytes": 23858,
+      "sha256": "edee940640f1263b913ffc954bb353ac77424c507b25320193a65fdeec9ba3c8",
+      "source": "docs/브랜드_사운드킷/synk-sound-notify.wav",
+      "start": 4.55,
+      "gain": 0.18
+    },
+    {
+      "path": "assets/achieve.wav",
+      "bytes": 31796,
+      "sha256": "8ed08659fbaca6cf923b8409d6ca338f187d3f5526df3d0f29927f83258aa30a",
+      "source": "docs/브랜드_사운드킷/synk-sound-achieve.wav",
+      "start": 9.7,
+      "gain": 0.2
+    }
+  ],
+  "audio": {
+    "narration": false,
+    "music": false,
+    "directListeningVerified": false,
+    "signalOnsetsSeconds": [
+      4.55,
+      9.7
+    ],
+    "maxVolumeDb": -17
+  },
+  "verification": {
+    "ffprobe": "verification/ffprobe.json",
+    "completeDecodePassed": true,
+    "hyperframes": "verification/hyperframes-check.json",
+    "impeccable": "verification/impeccable-detect.json",
+    "player": "verification/player-qa.json",
+    "motionAssertionsEnabled": false,
+    "realMobileDeviceChecked": false
+  },
+  "research": "research.md"
+}

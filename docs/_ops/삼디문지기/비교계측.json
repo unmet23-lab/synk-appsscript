@@ -1,0 +1,41 @@
+{
+  "images": [
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\캐릭터\\정본_4K\\까몽_본체.png",
+      "size": [
+        4096,
+        4096
+      ],
+      "bbox": [
+        524,
+        586,
+        3760,
+        3638
+      ],
+      "sha256": "fea5f2b66db16a1089f4475492c59fb8273bfcf80b18fbcde4909a950e3796ab",
+      "bottomEdgeOpaquePixels": 0
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\삼디문지기\\까몽_블렌더_누끼.png",
+      "size": [
+        1024,
+        839
+      ],
+      "bbox": [
+        112,
+        47,
+        985,
+        839
+      ],
+      "sha256": "720d1f75abc8d69fab1faece3aa8127f4211e0717b96c97e6a6c847cf0e9b6cf",
+      "bottomEdgeOpaquePixels": 96
+    }
+  ],
+  "intersection": 122878,
+  "union": 137860,
+  "iou": 0.891324532134049,
+  "threshold": 0.8,
+  "checkedAt": "2026-09-09T07:44:39.991Z",
+  "overlaySha256": "bb79825cbc5e9e6177427f302e7b4164fe39f9f2bf9d0f8926f7794c0e733e91",
+  "purpose": "실물 설명을 위한 읽기 전용 재계산; 원본 이미지와 기존 판정 무변경"
+}

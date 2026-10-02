@@ -1,0 +1,58 @@
+{
+  "date": "2026-09-22",
+  "environment": {
+    "browser": "Codex in-app Chromium",
+    "viewportCssPx": [1920, 1080],
+    "graphCssPx": [1350, 802],
+    "devicePixelRatio": 2,
+    "observedRefreshHz": 60,
+    "url": "http://127.0.0.1:4327/"
+  },
+  "measurement": "requestAnimationFrame intervals and performance.now() around AtlasConstellation.render; separate sequential samples in the same browser",
+  "before": {
+    "renderer": "Canvas 2D",
+    "frames": 240,
+    "frameMedianMs": 16.7,
+    "frameP95Ms": 16.8,
+    "frameMaxMs": 16.9,
+    "framesOver25ms": 0,
+    "cpuRenderMedianMs": 1.5,
+    "cpuRenderP95Ms": 2,
+    "cpuRenderMaxMs": 3
+  },
+  "after": {
+    "renderer": "Loom WebGL with cached Canvas text overlay",
+    "frames": 360,
+    "frameMedianMs": 16.7,
+    "frameP95Ms": 16.8,
+    "frameMaxMs": 16.9,
+    "framesOver25ms": 0,
+    "cpuRenderMedianMs": 0.5,
+    "cpuRenderP95Ms": 0.8,
+    "cpuRenderMaxMs": 0.9,
+    "gpuDrawCalls": 3
+  },
+  "checks": {
+    "motionUnitTestsPassed": 11,
+    "mathematicalRefreshRatesHz": [60, 120, 144],
+    "engineSelection": 8,
+    "scenarios": 3,
+    "scenarioSteps": 14,
+    "scenarioFinals": 3,
+    "toolbarPointerHitTargets": 4,
+    "dragChangesProjectedPositions": true,
+    "zoomTargetDiffersFromInterpolatingPosition": true,
+    "pauseAndResume": true,
+    "webglContextLossFallsBackToCanvas": true,
+    "webglContextRestoreReturnsToGpu": true,
+    "contextRecoveryPreservesPausedTime": true,
+    "mobileViewportWidths": [390, 320],
+    "reducedMotionAllowsSelection": true
+  },
+  "limitations": [
+    "CPU rendering time excludes asynchronous GPU execution.",
+    "No physical 120 Hz or 144 Hz display or phone performance measurement.",
+    "Both baseline and updated renderer sustained about 60 fps in this environment; no measured doubling of frame rate is claimed.",
+    "This is a local design preview, not a deployed production integration."
+  ]
+}

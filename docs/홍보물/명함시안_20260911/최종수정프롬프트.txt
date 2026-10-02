@@ -1,0 +1,10 @@
+Use case: precise-object-edit. Final precision geometry correction of an existing landscape felt business-card image, not a redesign.
+
+Input 1: card artwork to edit. Input 2: correct source wordmark showing the tall k ascender.
+
+Keep the same landscape card, background, colors, felt photography, all text spelling, all mascot identities and adorable poses.
+
+Do these closely related spacing corrections ONLY:
+1. Scale the THREE mascots TOGETHER as one intact huddled group to 85% of their current size. Keep the compact group centered horizontally, and its TOP at the same top margin as now (around 65 pixels from the top for the current 1682 x 935 canvas). This makes room immediately above the synk wordmark. Preserve all faces, their shape, eyes, existing tiny limbs, tail patch, flower and shared contact exactly; do not invent new features.
+2. Restore the k ascender: extend ONLY the top of the k's vertical felt stem upward so that it rises about 65 pixels above the top of n in a 935-pixel-tall canvas, instead of the current roughly 30 pixels. A noticeably taller k ascender is essential and must match the silhouette relationship in Input 2. Preserve the k baseline and diagonal arms, and the rest of the wordmark's current position, size, letter spacing, deep warm Ink felt, and unstitched surface. There must be a clear ivory gap between the smaller mascot group and the now-taller k.
+Keep the s, y, n shapes and their wool shading intact. Keep LAB SHIFT PULSE with all their existing colored felt and stitches in the same lower-row positions. Preserve warm delicate microfibers and dimensional shadows; no knitted loops, no smooth plastic. Absolutely no stitches on synk. No new content, no watermarks.

@@ -1,0 +1,651 @@
+{
+  "query": "smooth zoom into screenshot cursor click target",
+  "tier": "words",
+  "tier_detail": "local word match",
+  "dropped": 0,
+  "unindexed": 0,
+  "shown": 44,
+  "total": 382,
+  "report_gap": "npx hyperframes feedback --search-miss \"smooth zoom into screenshot cursor click target\" --wanted \"<the move you needed>\" --tier words",
+  "results": [
+    {
+      "name": "cinematic-zoom",
+      "type": "block",
+      "title": "Cinematic Zoom",
+      "description": "Shader transition with dramatic zoom blur",
+      "tags": [
+        "transition",
+        "shader"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4
+    },
+    {
+      "name": "oversized-cursor",
+      "type": "component",
+      "title": "Oversized Cursor",
+      "description": "A deliberately oversized macOS-style pointer that enters off-screen, travels to a target, clicks to ignite a visible response, then exits",
+      "tags": [
+        "motion-primitive",
+        "actor",
+        "cursor",
+        "pointer",
+        "interaction"
+      ]
+    },
+    {
+      "name": "simulated-cursor",
+      "type": "component",
+      "title": "Simulated Cursor",
+      "description": "A lightweight cursor pointer and click pulse for product walkthroughs and agent UI demos",
+      "tags": [
+        "video-primitive",
+        "motion-primitive",
+        "cursor",
+        "ui",
+        "walkthrough"
+      ]
+    },
+    {
+      "name": "zoom-through-transition",
+      "type": "component",
+      "title": "Zoom Through Transition",
+      "description": "A transition that zooms through a focal card into the next scene.",
+      "tags": [
+        "transition-primitive"
+      ]
+    },
+    {
+      "name": "parallax-zoom",
+      "type": "component",
+      "title": "Parallax Zoom",
+      "description": "Center card scales up to fill the frame while siblings parallax outward — inspired by the eBay Playbook hero transition",
+      "tags": [
+        "transition",
+        "zoom",
+        "parallax",
+        "grid",
+        "hero"
+      ]
+    },
+    {
+      "name": "camera-dolly-zoom",
+      "type": "block",
+      "title": "Dolly Zoom (Vertigo Shot)",
+      "description": "Camera tracks toward or away from the subject while the field of view changes the opposite way, so the subject holds its frame size while the background collapses behind it or rushes in. Focal length is solved from dolly distance every frame against d * tan(FOV/2) = const, not keyframed beside it. Requires depth: the subject sits on the z = 0 plane and the content behind it must be layered or genuinely 3D (translateZ at two or more distinct depths) -- a flat element gains nothing from this move.",
+      "tags": [
+        "camera",
+        "depth",
+        "3d",
+        "cinematic"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 4
+    },
+    {
+      "name": "vfx-text-cursor",
+      "type": "block",
+      "title": "VFX Text Cursor",
+      "description": "Dramatic text reveal with cursor glow, chromatic shadow rays, and directional lighting on a black stage. Canvas-based shader post-processing with spectral color edges.",
+      "tags": [
+        "html-in-canvas",
+        "text",
+        "shader",
+        "cursor",
+        "chromatic"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 8
+    },
+    {
+      "name": "multiplayer-cursors",
+      "type": "component",
+      "title": "Multiplayer Cursors",
+      "description": "Labeled collaborator cursors with token-derived colors and soft glows drift from spread positions into a shared center zone, proving live multiplayer presence.",
+      "tags": [
+        "cursor",
+        "pointer",
+        "multiplayer",
+        "collaboration",
+        "presence",
+        "loop",
+        "prove"
+      ]
+    },
+    {
+      "name": "cursor-glyph-trail",
+      "type": "component",
+      "title": "Cursor Glyph Trail",
+      "description": "An actor travels an authored path depositing small dithered glyphs at its past positions, each popping in and decaying in place, stamp rate scaling with the actor's velocity.",
+      "tags": [
+        "motion-primitive",
+        "demonstrate",
+        "trail",
+        "cursor",
+        "glyphs",
+        "deterministic"
+      ]
+    },
+    {
+      "name": "ui-focus-zoom",
+      "type": "component",
+      "title": "UI Focus Zoom",
+      "description": "A full app surface establishes with one settle, then the camera zooms and pans to an anchored region on its cue and holds the zoomed state, with an optional soft focus halo at the anchor. The surface is a slot with a token-styled skeleton default.",
+      "tags": [
+        "camera",
+        "product-demo",
+        "zoom",
+        "focus",
+        "pan",
+        "slot",
+        "servo"
+      ]
+    },
+    {
+      "name": "transitions-scale",
+      "type": "block",
+      "title": "Scale Transitions",
+      "description": "Showcase of scale and zoom transitions",
+      "tags": [
+        "transition",
+        "showcase"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 15
+    },
+    {
+      "name": "screen-flow-carousel",
+      "type": "component",
+      "title": "Screen Flow Carousel",
+      "description": "Two to five app screens ride a horizontal rail: one primary at center, neighbors receded, advancing on cues with a velocity-matched throw and a smooth long-tail catch while a mono caption swaps with each advance. Screens are slots with token skeleton defaults.",
+      "tags": [
+        "product-demo",
+        "feature-tour",
+        "carousel",
+        "rail",
+        "slot",
+        "screens"
+      ]
+    },
+    {
+      "name": "press-ripple",
+      "type": "component",
+      "title": "Press Ripple",
+      "description": "A cursor decel-arrives from off-stage, lands slightly off-center on a caller-positioned target, compresses with it in lockstep, releases with ink ripple rings, then exits off-stage while the pressed state holds.",
+      "tags": [
+        "motion-primitive",
+        "product-demo",
+        "cursor",
+        "press",
+        "ripple",
+        "payoff"
+      ]
+    },
+    {
+      "name": "spotlight-card",
+      "type": "component",
+      "title": "Spotlight Card",
+      "description": "A card with a scripted cursor spotlight and lit border.",
+      "tags": [
+        "effect"
+      ]
+    },
+    {
+      "name": "typewriter",
+      "type": "component",
+      "title": "Typewriter",
+      "description": "Character-by-character text reveal with a deterministic blinking cursor.",
+      "tags": [
+        "video-primitive",
+        "motion-primitive",
+        "typography"
+      ]
+    },
+    {
+      "name": "matrix-decode",
+      "type": "component",
+      "title": "Matrix Decode",
+      "description": "Random scramble resolves left-to-right into the target text.",
+      "tags": [
+        "motion-primitive",
+        "typography"
+      ]
+    },
+    {
+      "name": "yt-circle-pointer",
+      "type": "component",
+      "title": "Pointer Circle + Countdown",
+      "description": "Draw-on annotation ellipse around a target plus a countdown chip that pulses each tick",
+      "tags": [
+        "annotation",
+        "countdown",
+        "overlay"
+      ]
+    },
+    {
+      "name": "code-highlight",
+      "type": "block",
+      "title": "Code Highlight Sweep",
+      "description": "A highlight band sweeps across a target line while the surrounding context dims — draws the eye to one line.",
+      "tags": [
+        "code",
+        "code-animation",
+        "highlight",
+        "developer"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 5
+    },
+    {
+      "name": "parallax-unzoom",
+      "type": "component",
+      "title": "Parallax Unzoom",
+      "description": "Reveal transition — focus card scales down from full frame as siblings parallax in to form a grid (reverse of parallax-zoom)",
+      "tags": [
+        "transition",
+        "reveal",
+        "unzoom",
+        "parallax",
+        "grid",
+        "hero"
+      ]
+    },
+    {
+      "name": "flowchart",
+      "type": "block",
+      "title": "Flowchart",
+      "description": "Animated decision tree with SVG connectors, sticky-note nodes, cursor interaction, and typing correction",
+      "tags": [
+        "diagram",
+        "flowchart",
+        "interactive"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 12
+    },
+    {
+      "name": "code-scroll",
+      "type": "block",
+      "title": "Code Scroll To Line",
+      "description": "The camera scrolls a long file to bring a target line to center and spotlights it — for walking through real modules.",
+      "tags": [
+        "code",
+        "code-animation",
+        "scroll",
+        "developer"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 6
+    },
+    {
+      "name": "flowchart-vertical",
+      "type": "block",
+      "title": "Flowchart Vertical",
+      "description": "Portrait animated decision tree with SVG connectors, sticky-note nodes, cursor interaction, and typing correction",
+      "tags": [
+        "diagram",
+        "flowchart",
+        "interactive",
+        "portrait"
+      ],
+      "dimensions": {
+        "width": 1440,
+        "height": 2560
+      },
+      "duration": 12
+    },
+    {
+      "name": "yt-screen-warp",
+      "type": "component",
+      "title": "On-Screen Display Effect",
+      "description": "Grid, scanline, vignette, and sheen overlay plus a 3D-warp wrapper class that makes footage read as if playing on a physical display",
+      "tags": [
+        "effect",
+        "overlay",
+        "texture"
+      ]
+    },
+    {
+      "name": "north-korea-locked-down",
+      "type": "block",
+      "title": "North Korea Locked Down",
+      "description": "Realistic map zoom into North Korea with a red scribble circle, locked-down pop-up label, and reddish editorial wash.",
+      "tags": [
+        "showcase",
+        "map",
+        "annotation",
+        "youtube",
+        "kinetic"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 7
+    },
+    {
+      "name": "scramble-reveal",
+      "type": "component",
+      "title": "Scramble Reveal",
+      "description": "A deterministic hacker-style text reveal that cycles fixed glyph rows and locks the target string from left to right.",
+      "tags": [
+        "motion-primitive",
+        "text-effects",
+        "scramble",
+        "reveal",
+        "deterministic"
+      ]
+    },
+    {
+      "name": "yt-feather-highlight",
+      "type": "component",
+      "title": "Feathered Spotlight",
+      "description": "Dims the frame except a feathered ellipse; the hole's position and size are CSS variables, so helpers glide the spotlight between targets",
+      "tags": [
+        "highlight",
+        "spotlight",
+        "effect",
+        "overlay"
+      ]
+    },
+    {
+      "name": "yt-camera-move",
+      "type": "component",
+      "title": "Camera Punch-In",
+      "description": "Dynamic zoom, slide, and 3D tilt-pan helpers for any wrapper (video, include, card) with cubic-easing defaults and an edge-defocus pulse overlay",
+      "tags": [
+        "camera",
+        "zoom",
+        "effect",
+        "creator"
+      ]
+    },
+    {
+      "name": "code-snippet-apple-terminal-pro",
+      "type": "block",
+      "title": "Code Snippet - Apple Terminal Pro",
+      "description": "Apple Terminal Pro profile: black background with grey text and lime green cursor, per-character typing animation of a shell session.",
+      "tags": [
+        "code",
+        "developer",
+        "showcase",
+        "terminal",
+        "apple",
+        "apple-terminal"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 12
+    },
+    {
+      "name": "ios26-liquid-glass",
+      "type": "block",
+      "title": "iOS 26 Liquid Glass Home Screen",
+      "description": "3D iPhone with a normal iOS 26 home screen, liquid glass app icons, shader wallpaper, dock, and fluid glass notifications that drop from the status area onto a GLTF device model.",
+      "tags": [
+        "liquid-glass-html-in-canvas",
+        "webgpu",
+        "3d",
+        "iphone",
+        "ios26",
+        "notifications",
+        "gltf",
+        "html-in-canvas"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 15
+    },
+    {
+      "name": "particle-text-dissolve",
+      "type": "component",
+      "title": "Particle Text Dissolve",
+      "description": "Text assembles from a seeded particle cloud (or dissolves into it): per-particle targets sampled once from the rendered text bitmap at mount, table-driven particles, zero per-particle tweens, one onUpdate painter.",
+      "tags": [
+        "motion-primitive",
+        "text-effects",
+        "particles",
+        "canvas",
+        "deterministic",
+        "experiment"
+      ]
+    },
+    {
+      "name": "split-flap-board",
+      "type": "block",
+      "title": "Split-Flap Board",
+      "description": "Solari-style departure board: every cell walks its drum forward through the intervening characters of a fixed alphabet until it lands on its target, so the text resolves as a mechanical cascade instead of a fade.",
+      "tags": [
+        "text",
+        "kinetic",
+        "mechanical",
+        "split-flap",
+        "solari",
+        "departure-board",
+        "reveal"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 3.5
+    },
+    {
+      "name": "hw-callout-circle",
+      "type": "component",
+      "title": "Scribble Callout Circle",
+      "description": "Wobbled ellipse draws around a target with optional scribble fill and curved connector; the handwritten label pops in WITH momentum and the drawn shapes absorb the arrival with a volume-preserving contact squash; outline and connector take the family stroke matrix (plain/soft/sharp/spray); boils",
+      "tags": [
+        "handwritten",
+        "annotation",
+        "callout",
+        "overlay"
+      ]
+    },
+    {
+      "name": "modal-morph",
+      "type": "component",
+      "title": "Modal Morph",
+      "description": "A small card expands into a full panel, shared-element style: both layouts measured once at mount, the container morphs by transform only (never width/height tweens) while keyed children counter-scale and re-flow onto their own measured targets as pure functions of time.",
+      "tags": [
+        "motion-primitive",
+        "structure",
+        "flip",
+        "shared-element",
+        "modal",
+        "deterministic",
+        "experiment"
+      ]
+    },
+    {
+      "name": "app-showcase",
+      "type": "block",
+      "title": "App Showcase",
+      "description": "Fitness app product showcase with three floating smartphone screens",
+      "tags": [
+        "showcase",
+        "app",
+        "3d"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 5.5
+    },
+    {
+      "name": "velocity-throw-snap",
+      "type": "component",
+      "title": "Velocity Throw Snap",
+      "description": "A five-shot rail whips past on a fast decaying curve, then overshoots and snaps the selected hero shot exactly to center.",
+      "tags": [
+        "motion-primitive",
+        "feature-tour",
+        "rail",
+        "velocity",
+        "throw",
+        "snap",
+        "physics"
+      ]
+    },
+    {
+      "name": "caption-kinetic-slam",
+      "type": "component",
+      "title": "Kinetic Slam",
+      "description": "Full-screen single-word display with alternating entrance directions",
+      "tags": [
+        "captions",
+        "caption-style",
+        "kinetic",
+        "typography",
+        "slam"
+      ]
+    },
+    {
+      "name": "grid-pixelate-wipe",
+      "type": "component",
+      "title": "Grid Pixelate Wipe",
+      "description": "Transition effect where the screen dissolves into a grid of squares that fade out with staggered timing — use between scenes",
+      "tags": [
+        "transition",
+        "wipe",
+        "grid",
+        "pixelate"
+      ]
+    },
+    {
+      "name": "slack-notification-ad",
+      "type": "block",
+      "title": "Slack Notification Ad",
+      "description": "A portrait lock screen fills with escalating Slack video requests before HeyGen delivers the payoff",
+      "tags": [
+        "showcase",
+        "mock-ui",
+        "notification",
+        "vertical",
+        "ad-template"
+      ],
+      "dimensions": {
+        "width": 1080,
+        "height": 1920
+      },
+      "duration": 12
+    },
+    {
+      "name": "parallax-device-dive",
+      "type": "component",
+      "title": "Parallax Device Dive",
+      "description": "A canonical phone rises into view before the camera pushes through its screen and layered app UI expands to fill the frame.",
+      "tags": [
+        "motion-primitive",
+        "camera",
+        "device",
+        "phone",
+        "parallax",
+        "transition"
+      ]
+    },
+    {
+      "name": "spiral-galaxy",
+      "type": "block",
+      "title": "Spiral Galaxy",
+      "description": "A spiral galaxy seen from outside, turning with real differential rotation: inner stars orbit faster than outer ones, so the arms wind up over the shot instead of spinning rigidly. 20,000 additive GPU sprites, seeded once and solved directly from time, so any frame can be rendered on its own.",
+      "tags": [
+        "hero",
+        "space",
+        "particles",
+        "webgl",
+        "background"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "duration": 10
+    },
+    {
+      "name": "notification-cascade",
+      "type": "block",
+      "title": "Notification Cascade",
+      "description": "Phone notifications land one after another and stack up the screen, each banner pushing the pile down as it arrives, before the whole stack lifts away into a closing card",
+      "tags": [
+        "showcase",
+        "mock-ui",
+        "notification",
+        "vertical",
+        "ad-template"
+      ],
+      "dimensions": {
+        "width": 1080,
+        "height": 1920
+      },
+      "duration": 14
+    },
+    {
+      "name": "device-frame-stage",
+      "type": "component",
+      "title": "Device Frame Stage",
+      "description": "A phone or tablet mockup staged as a physical scene prop with a screen slot for arbitrary reconstructed UI, rising onto the stage, settling, and holding an idle float",
+      "tags": [
+        "prop",
+        "device",
+        "mobile",
+        "tablet",
+        "ui-props",
+        "holdable"
+      ]
+    },
+    {
+      "name": "browser-device-stage",
+      "type": "component",
+      "title": "Browser Device Stage",
+      "description": "A generic app surface in token-native device chrome (browser, window, or phone). The screen is a slot for caller img/video/HTML with a token-styled skeleton default; one settle entrance, a readable hold, and an optional screen swap.",
+      "tags": [
+        "stage",
+        "product-demo",
+        "device",
+        "browser",
+        "phone",
+        "slot",
+        "chrome"
+      ]
+    },
+    {
+      "name": "hw-arrow",
+      "type": "component",
+      "title": "Hand-Drawn Arrow",
+      "description": "Wobbled draw-on arrow with straight, gentle, and swoop curve poses, a four-way stroke texture matrix (plain/soft/sharp/spray), and a travel-aligned head-arrival stretch pulse with spring recovery; boils while on screen",
+      "tags": [
+        "handwritten",
+        "annotation",
+        "arrow",
+        "overlay"
+      ]
+    }
+  ]
+}

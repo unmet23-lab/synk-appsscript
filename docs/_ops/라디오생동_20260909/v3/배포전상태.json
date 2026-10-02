@@ -1,0 +1,446 @@
+{
+  "scope": "읽기 전용 v3 배경 배포 전 기준. 서버 쓰기, 재시작, 자산 변경 없음.",
+  "sourceHead": "23dd675233aa14b7974a6b299f6e0b7649d15be6",
+  "observedAtUTC": "2026-09-09T11:12:04.213136+00:00",
+  "server": {
+    "observedAtUTC": "2026-09-09T11:12:04.213136+00:00",
+    "service": {
+      "MainPID": "140581",
+      "NRestarts": "0",
+      "ExecMainStartTimestamp": "Wed 2026-09-09 10:50:13 UTC",
+      "ActiveState": "active",
+      "SubState": "running"
+    },
+    "tuningFile": {
+      "path": "/opt/synk-radio/송출/조율.json",
+      "exists": true,
+      "bytes": 241,
+      "sha256": "28b153e214d0ee59f498696202f2f8237600ae3630fa998679d07053bb48a4c2"
+    },
+    "tuning": {
+      "프레임": 15,
+      "뜨기": 6,
+      "소리목록": "/opt/synk-radio/소리/playlist.txt",
+      "무대목록": "/opt/synk-radio/무대차례/목록.txt",
+      "연속소리": true,
+      "장면분": 20,
+      "장면차례": "추석보름달마당"
+    },
+    "audioPlaylist": {
+      "path": "/opt/synk-radio/소리/playlist.txt",
+      "exists": true,
+      "bytes": 92,
+      "sha256": "374e9ce2cc0d6f81928c5639cf69ed0abb9252f2d9f8c2025a24ad330a0bee5c",
+      "entries": [
+        "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+      ],
+      "uniqueCounts": {
+        "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac": 1
+      },
+      "media": [
+        {
+          "path": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac",
+          "exists": true,
+          "bytes": 302247928
+        }
+      ]
+    },
+    "stagePlaylist": {
+      "path": "/opt/synk-radio/무대차례/목록.txt",
+      "exists": true,
+      "bytes": 801,
+      "sha256": "30423ecda63e7a76e6b98261cf30e727275649e463b4700a7a8da6a36cbbed3c",
+      "entries": [
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+      ],
+      "uniqueCounts": {
+        "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4": 20
+      },
+      "media": [
+        {
+          "path": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+          "exists": true,
+          "bytes": 11567797
+        }
+      ]
+    },
+    "codeFiles": {
+      "bots/오버레이/겹쳐송출.js": {
+        "path": "/opt/synk-radio/지면/bots/오버레이/겹쳐송출.js",
+        "exists": true,
+        "bytes": 41072,
+        "sha256": "a1598529a10daac4fb25b7b0dfac3c139b2823198503f6e7723a86d12228f261"
+      },
+      "bots/오버레이/송출진척.js": {
+        "path": "/opt/synk-radio/지면/bots/오버레이/송출진척.js",
+        "exists": true,
+        "bytes": 1791,
+        "sha256": "41cbe7c860f66452ef3c2fe89d78210fa2a21f4570558a54e791a7a9b86b6524"
+      },
+      "bots/오버레이/마스코트.html": {
+        "path": "/opt/synk-radio/지면/bots/오버레이/마스코트.html",
+        "exists": true,
+        "bytes": 58438,
+        "sha256": "64a55da4e3cc1443e217481726acd898d192f1b3a780b8222f999a069238b4a2"
+      },
+      "bots/오버레이/라디오표정리듬.js": {
+        "path": "/opt/synk-radio/지면/bots/오버레이/라디오표정리듬.js",
+        "exists": true,
+        "bytes": 7109,
+        "sha256": "7d583cbb9334358ee4f5676dba9286ec37a3e6f5ad5adeea92d034aa0cc457c8"
+      },
+      "bots/오버레이/방송층.html": {
+        "path": "/opt/synk-radio/지면/bots/오버레이/방송층.html",
+        "exists": true,
+        "bytes": 4185,
+        "sha256": "b4a4a0f9e2236bd29cc2ccf116d5d7162aaf390e5f8fea6232051ace5b9466ff"
+      }
+    },
+    "currentDJAssets": {
+      "본체": {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_본체.webp",
+        "exists": true,
+        "bytes": 114744,
+        "sha256": "d3b92020a6ca212a3fff355952c80cc5fc8599dc919bb479833919415904ffdf"
+      },
+      "눈감음": {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_눈감음.webp",
+        "exists": true,
+        "bytes": 118946,
+        "sha256": "381bf0e6e491fdc99da61f47f03681ed171384d9fc2780f2638d67e11d6467ad"
+      },
+      "눈웃음": {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_눈웃음.webp",
+        "exists": true,
+        "bytes": 118826,
+        "sha256": "bb89f7333ac8f2145231f635dd5fe3462d10ec94338ec71f5129f9555126e654"
+      },
+      "궁금함": {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_궁금함.webp",
+        "exists": true,
+        "bytes": 115708,
+        "sha256": "37c80c6e81642bf573ab6867a92b8a16242e9446f15a6a0bd04235a58e357fde"
+      },
+      "집중": {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_집중.webp",
+        "exists": true,
+        "bytes": 114526,
+        "sha256": "775d5e0605f36e08b00c382d6837152c7eb6ef85c3a84a62ed841de1e4d941d9"
+      },
+      "안도": {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_안도.webp",
+        "exists": true,
+        "bytes": 115908,
+        "sha256": "c6c3094b5b897b03745fb0459659af6f6180f7a1de22340be905cd4ddacf3499"
+      },
+      "응원": {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_응원.webp",
+        "exists": true,
+        "bytes": 118986,
+        "sha256": "b9e630f237db119c77113d359934c4cfb6b57f739fe54c04d86097f2fcbec1ea"
+      },
+      "놀람": {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_놀람.webp",
+        "exists": true,
+        "bytes": 119386,
+        "sha256": "0c743f6664787bd2ca89d125b6829cac7b4e31cf68d625bb4794e1a3fb1d4634"
+      }
+    },
+    "recentProgress": [
+      {
+        "timeUTC": "2026-09-09T10:57:23.300293+00:00",
+        "pid": "140581",
+        "speed": "0.999x",
+        "outTime": "00:06:53.524000",
+        "captureFps": "3.2",
+        "drop": "0",
+        "fail": "0"
+      },
+      {
+        "timeUTC": "2026-09-09T10:58:23.300393+00:00",
+        "pid": "140581",
+        "speed": "0.999x",
+        "outTime": "00:07:53.502000",
+        "captureFps": "3.6",
+        "drop": "0",
+        "fail": "0"
+      },
+      {
+        "timeUTC": "2026-09-09T10:59:23.300345+00:00",
+        "pid": "140581",
+        "speed": "0.999x",
+        "outTime": "00:08:53.270000",
+        "captureFps": "3.8",
+        "drop": "0",
+        "fail": "0"
+      },
+      {
+        "timeUTC": "2026-09-09T11:00:23.300498+00:00",
+        "pid": "140581",
+        "speed": "0.999x",
+        "outTime": "00:09:53.246000",
+        "captureFps": "3.8",
+        "drop": "0",
+        "fail": "0"
+      },
+      {
+        "timeUTC": "2026-09-09T11:01:23.300698+00:00",
+        "pid": "140581",
+        "speed": "1x",
+        "outTime": "00:10:53.107000",
+        "captureFps": "3.6",
+        "drop": "0",
+        "fail": "0"
+      },
+      {
+        "timeUTC": "2026-09-09T11:02:23.300719+00:00",
+        "pid": "140581",
+        "speed": "1x",
+        "outTime": "00:11:53.201000",
+        "captureFps": "3.5",
+        "drop": "0",
+        "fail": "0"
+      },
+      {
+        "timeUTC": "2026-09-09T11:03:23.300340+00:00",
+        "pid": "140581",
+        "speed": "1x",
+        "outTime": "00:12:52.969000",
+        "captureFps": "3.6",
+        "drop": "0",
+        "fail": "0"
+      },
+      {
+        "timeUTC": "2026-09-09T11:04:23.300641+00:00",
+        "pid": "140581",
+        "speed": "1x",
+        "outTime": "00:13:53.039000",
+        "captureFps": "3.6",
+        "drop": "0",
+        "fail": "0"
+      },
+      {
+        "timeUTC": "2026-09-09T11:05:23.300295+00:00",
+        "pid": "140581",
+        "speed": "1x",
+        "outTime": "00:14:53.434000",
+        "captureFps": "3.5",
+        "drop": "0",
+        "fail": "0"
+      },
+      {
+        "timeUTC": "2026-09-09T11:06:23.300975+00:00",
+        "pid": "140581",
+        "speed": "1x",
+        "outTime": "00:15:53.528000",
+        "captureFps": "3.7",
+        "drop": "0",
+        "fail": "0"
+      },
+      {
+        "timeUTC": "2026-09-09T11:07:23.301429+00:00",
+        "pid": "140581",
+        "speed": "1x",
+        "outTime": "00:16:53.295000",
+        "captureFps": "3.7",
+        "drop": "0",
+        "fail": "0"
+      },
+      {
+        "timeUTC": "2026-09-09T11:08:23.301908+00:00",
+        "pid": "140581",
+        "speed": "1x",
+        "outTime": "00:17:53.273000",
+        "captureFps": "3.8",
+        "drop": "0",
+        "fail": "0"
+      },
+      {
+        "timeUTC": "2026-09-09T11:09:23.301370+00:00",
+        "pid": "140581",
+        "speed": "1x",
+        "outTime": "00:18:53.250000",
+        "captureFps": "3.6",
+        "drop": "0",
+        "fail": "0"
+      },
+      {
+        "timeUTC": "2026-09-09T11:10:23.301143+00:00",
+        "pid": "140581",
+        "speed": "1x",
+        "outTime": "00:19:53.320000",
+        "captureFps": "2.9",
+        "drop": "0",
+        "fail": "0"
+      },
+      {
+        "timeUTC": "2026-09-09T11:11:23.374653+00:00",
+        "pid": "140581",
+        "speed": "1x",
+        "outTime": "00:20:53.506000",
+        "captureFps": "3.4",
+        "drop": "0",
+        "fail": "0"
+      }
+    ]
+  },
+  "youtubeHealth": {
+    "checkedAtUTC": "2026-09-09T11:10Z (minute precision)",
+    "tool": "node tools/라디오방송건강.js",
+    "streamStatus": "active",
+    "healthStatus": "good",
+    "broadcastStatus": "live",
+    "broadcastId": "eI-5vSy5mjY",
+    "privacyStatus": "public"
+  },
+  "comparisons": {
+    "code": {
+      "겹쳐송출.js": {
+        "localSha256": "a1598529a10daac4fb25b7b0dfac3c139b2823198503f6e7723a86d12228f261",
+        "serverSha256": "a1598529a10daac4fb25b7b0dfac3c139b2823198503f6e7723a86d12228f261",
+        "match": true
+      },
+      "송출진척.js": {
+        "localSha256": "41cbe7c860f66452ef3c2fe89d78210fa2a21f4570558a54e791a7a9b86b6524",
+        "serverSha256": "41cbe7c860f66452ef3c2fe89d78210fa2a21f4570558a54e791a7a9b86b6524",
+        "match": true
+      },
+      "마스코트.html": {
+        "localSha256": "452da3ded095e23ca04939b45e1b066720e235693d629a8b4602e3d176689ead",
+        "serverSha256": "64a55da4e3cc1443e217481726acd898d192f1b3a780b8222f999a069238b4a2",
+        "match": false
+      },
+      "라디오표정리듬.js": {
+        "localSha256": "7d583cbb9334358ee4f5676dba9286ec37a3e6f5ad5adeea92d034aa0cc457c8",
+        "serverSha256": "7d583cbb9334358ee4f5676dba9286ec37a3e6f5ad5adeea92d034aa0cc457c8",
+        "match": true
+      },
+      "방송층.html": {
+        "localSha256": "b4a4a0f9e2236bd29cc2ccf116d5d7162aaf390e5f8fea6232051ace5b9466ff",
+        "serverSha256": "b4a4a0f9e2236bd29cc2ccf116d5d7162aaf390e5f8fea6232051ace5b9466ff",
+        "match": true
+      }
+    },
+    "serverDJHtmlMatchesCommit": {
+      "commit": "ab260e6",
+      "sha256": "64a55da4e3cc1443e217481726acd898d192f1b3a780b8222f999a069238b4a2",
+      "match": true
+    },
+    "djAssets": {
+      "본체": {
+        "serverSha256": "d3b92020a6ca212a3fff355952c80cc5fc8599dc919bb479833919415904ffdf",
+        "localRadioDjSha256": "d3b92020a6ca212a3fff355952c80cc5fc8599dc919bb479833919415904ffdf",
+        "currentMatchesLocalRadioDJ": true,
+        "furCandidateCommit": "c542baa7a",
+        "furCandidatePath": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_본체.webp",
+        "furCandidateSha256": "eff5870074874ed22d64fef995ed6ef4acf5f9f10711ea895b7e5ea8be3b9713",
+        "serverMatchesFurCandidate": false
+      },
+      "눈감음": {
+        "serverSha256": "381bf0e6e491fdc99da61f47f03681ed171384d9fc2780f2638d67e11d6467ad",
+        "localRadioDjSha256": "381bf0e6e491fdc99da61f47f03681ed171384d9fc2780f2638d67e11d6467ad",
+        "currentMatchesLocalRadioDJ": true,
+        "furCandidateCommit": "c542baa7a",
+        "furCandidatePath": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_눈감음.webp",
+        "furCandidateSha256": "7dcfe1f5edafcad44a2fa74b90254ecce153bad59ab7e5b2455804290b24dca9",
+        "serverMatchesFurCandidate": false
+      },
+      "눈웃음": {
+        "serverSha256": "bb89f7333ac8f2145231f635dd5fe3462d10ec94338ec71f5129f9555126e654",
+        "localRadioDjSha256": "bb89f7333ac8f2145231f635dd5fe3462d10ec94338ec71f5129f9555126e654",
+        "currentMatchesLocalRadioDJ": true,
+        "furCandidateCommit": "c542baa7a",
+        "furCandidatePath": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_눈웃음.webp",
+        "furCandidateSha256": "c19871e6eb72a57c9d0a75f8d5d62ef8408a42cb12b81c2ceea10770a408dc2d",
+        "serverMatchesFurCandidate": false
+      },
+      "궁금함": {
+        "serverSha256": "37c80c6e81642bf573ab6867a92b8a16242e9446f15a6a0bd04235a58e357fde",
+        "localRadioDjSha256": "37c80c6e81642bf573ab6867a92b8a16242e9446f15a6a0bd04235a58e357fde",
+        "currentMatchesLocalRadioDJ": true,
+        "furCandidateCommit": "c542baa7a",
+        "furCandidatePath": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_궁금함.webp",
+        "furCandidateSha256": "4ceebec6a148a4c99cf8b67a31c831bd7fc1a04d327d79548ede6e55c6c351fc",
+        "serverMatchesFurCandidate": false
+      },
+      "집중": {
+        "serverSha256": "775d5e0605f36e08b00c382d6837152c7eb6ef85c3a84a62ed841de1e4d941d9",
+        "localRadioDjSha256": "775d5e0605f36e08b00c382d6837152c7eb6ef85c3a84a62ed841de1e4d941d9",
+        "currentMatchesLocalRadioDJ": true,
+        "furCandidateCommit": "c542baa7a",
+        "furCandidatePath": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_집중.webp",
+        "furCandidateSha256": "b6fc3deb07db384e3d717089bf34ddddaa2e90e938674b3fe8d2e3685f101239",
+        "serverMatchesFurCandidate": false
+      },
+      "안도": {
+        "serverSha256": "c6c3094b5b897b03745fb0459659af6f6180f7a1de22340be905cd4ddacf3499",
+        "localRadioDjSha256": "c6c3094b5b897b03745fb0459659af6f6180f7a1de22340be905cd4ddacf3499",
+        "currentMatchesLocalRadioDJ": true,
+        "furCandidateCommit": "c542baa7a",
+        "furCandidatePath": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_안도.webp",
+        "furCandidateSha256": "bdf7db3fa592ecfb86c5f5129e78402550d667faf18e9dbb63048d80f440d78e",
+        "serverMatchesFurCandidate": false
+      },
+      "응원": {
+        "serverSha256": "b9e630f237db119c77113d359934c4cfb6b57f739fe54c04d86097f2fcbec1ea",
+        "localRadioDjSha256": "b9e630f237db119c77113d359934c4cfb6b57f739fe54c04d86097f2fcbec1ea",
+        "currentMatchesLocalRadioDJ": true,
+        "furCandidateCommit": "c542baa7a",
+        "furCandidatePath": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_응원.webp",
+        "furCandidateSha256": "15ac333084ecc1d69686be24e0572f41e5b896305c3f6b54cba76a7a8faf09cd",
+        "serverMatchesFurCandidate": false
+      },
+      "놀람": {
+        "serverSha256": "0c743f6664787bd2ca89d125b6829cac7b4e31cf68d625bb4794e1a3fb1d4634",
+        "localRadioDjSha256": "0c743f6664787bd2ca89d125b6829cac7b4e31cf68d625bb4794e1a3fb1d4634",
+        "currentMatchesLocalRadioDJ": true,
+        "furCandidateCommit": "c542baa7a",
+        "furCandidatePath": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_놀람.webp",
+        "furCandidateSha256": "e95361b7d5ebb7d14591266a5efefa205ec21fce904217270bc8a6386f534590",
+        "serverMatchesFurCandidate": false
+      }
+    }
+  },
+  "findings": [
+    "현재 무대는 chuseok-natural-20260909-v2.mp4를 20번 나열한 목록. v3 배경만 별도 파일로 업로드하고 이 목록만 좁게 교체할 기준이다.",
+    "소리는 11곡 gapless FLAC 한 파일, 연속소리 true. 소리 목록과 조율 설정은 유지해야 한다.",
+    "main/helper/표정리듬/방송층 HTML은 로컬과 서버 동일. DJ HTML은 로컬 최신과 다르지만 승인 배포 커밋 ab260e6와 정확히 같다. 로컬 오버레이 전체 폴더 업로드 금지.",
+    "서버 DJ 8컷은 기존 로컬 라디오DJ 8컷과 전부 동일하며 c542baa7a 털 고정 후보 8컷과는 전부 다르다. 털 수정 후보는 현재 DJ 경로에 반영되지 않았다.",
+    "MainPID 140581, 10:50:13 UTC 시작, 자동 재시작 0. 최근 15분 진행 시각 계속 증가, speed 0.999~1x, drop 0, 실패 0.",
+    "생성·반영 전 기준이며 새로운 v3 영상 품질이나 실제 반영 결과를 검증한 기록은 아니다."
+  ],
+  "unchecked": [
+    "302MB FLAC 미디어 전체 SHA는 읽지 않음. 재생목록 SHA, 파일 존재·크기, 연속소리 설정만 확인.",
+    "서버의 파일 해시 기준이며 이번 조회에서 공개 화면의 표정·음향을 다시 시청하지 않음.",
+    "털 고정 후보가 서버 다른 비활성 경로에 복사됐는지는 조회하지 않음. 활성 라디오DJ 경로 8컷과 DJ HTML은 비교함."
+  ],
+  "sourceFilesRead": [
+    "AGENTS.md",
+    "docs/AI_운영원칙.md",
+    "bots/오버레이/송출진척.js",
+    "bots/오버레이/겹쳐송출.js 해당 조율/진척/소리 옵션",
+    "bots/오버레이/마스코트.html 해당 DJ 경로",
+    "docs/_ops/의상라디오검수_20260909/털일관성/수정보고.md",
+    "docs/Loom_자산/라디오차림/_기록/여름델+전설의팻말.json 앞부분",
+    "ed8ce91e8 및 c542baa7a 변경 경로와 후보 자산 해시"
+  ]
+}

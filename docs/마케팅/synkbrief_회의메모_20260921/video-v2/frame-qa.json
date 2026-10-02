@@ -1,0 +1,425 @@
+{
+  "scenes": [
+    {
+      "scene": 1,
+      "fonts": "loaded",
+      "fontFaces": [
+        {
+          "family": "SUIT",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        }
+      ],
+      "brokenImages": [],
+      "reveals": [
+        {
+          "start": 3.2,
+          "x": 75,
+          "y": 1137,
+          "w": 888,
+          "h": 70
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "scene": 2,
+      "fonts": "loaded",
+      "fontFaces": [
+        {
+          "family": "SUIT",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        }
+      ],
+      "brokenImages": [],
+      "reveals": [
+        {
+          "start": 0.7,
+          "x": 75,
+          "y": 1167,
+          "w": 888,
+          "h": 146
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "scene": 3,
+      "fonts": "loaded",
+      "fontFaces": [
+        {
+          "family": "SUIT",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        }
+      ],
+      "brokenImages": [],
+      "reveals": [
+        {
+          "start": 2,
+          "x": 75,
+          "y": 1092,
+          "w": 888,
+          "h": 70
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "scene": 4,
+      "fonts": "loaded",
+      "fontFaces": [
+        {
+          "family": "SUIT",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        }
+      ],
+      "brokenImages": [],
+      "reveals": [
+        {
+          "start": 3,
+          "x": 75,
+          "y": 1287,
+          "w": 888,
+          "h": 72
+        }
+      ],
+      "overflow": [],
+      "context": {
+        "fonts": "loaded",
+        "fontFaces": [
+          {
+            "family": "SUIT",
+            "status": "loaded"
+          },
+          {
+            "family": "Inter",
+            "status": "loaded"
+          },
+          {
+            "family": "Inter",
+            "status": "loaded"
+          }
+        ],
+        "brokenImages": [],
+        "reveals": [],
+        "overflow": []
+      }
+    },
+    {
+      "scene": 5,
+      "fonts": "loaded",
+      "fontFaces": [
+        {
+          "family": "SUIT",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        }
+      ],
+      "brokenImages": [],
+      "reveals": [
+        {
+          "start": 2,
+          "x": 75,
+          "y": 882,
+          "w": 888,
+          "h": 72
+        }
+      ],
+      "overflow": [],
+      "context": {
+        "fonts": "loaded",
+        "fontFaces": [
+          {
+            "family": "SUIT",
+            "status": "loaded"
+          },
+          {
+            "family": "Inter",
+            "status": "loaded"
+          },
+          {
+            "family": "Inter",
+            "status": "loaded"
+          }
+        ],
+        "brokenImages": [],
+        "reveals": [],
+        "overflow": []
+      }
+    },
+    {
+      "scene": 6,
+      "fonts": "loaded",
+      "fontFaces": [
+        {
+          "family": "SUIT",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        }
+      ],
+      "brokenImages": [],
+      "reveals": [
+        {
+          "start": 0.5,
+          "x": 75,
+          "y": 802,
+          "w": 888,
+          "h": 80
+        },
+        {
+          "start": 1.5,
+          "x": 75,
+          "y": 917,
+          "w": 888,
+          "h": 80
+        },
+        {
+          "start": 2.5,
+          "x": 75,
+          "y": 1032,
+          "w": 888,
+          "h": 80
+        },
+        {
+          "start": 3.5,
+          "x": 75,
+          "y": 1147,
+          "w": 888,
+          "h": 72
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "scene": 7,
+      "fonts": "loaded",
+      "fontFaces": [
+        {
+          "family": "SUIT",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        }
+      ],
+      "brokenImages": [],
+      "reveals": [
+        {
+          "start": 2,
+          "x": 75,
+          "y": 917,
+          "w": 888,
+          "h": 152
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "scene": 8,
+      "fonts": "loaded",
+      "fontFaces": [
+        {
+          "family": "SUIT",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        }
+      ],
+      "brokenImages": [],
+      "reveals": [
+        {
+          "start": 0.5,
+          "x": 75,
+          "y": 1057,
+          "w": 888,
+          "h": 70
+        },
+        {
+          "start": 4.5,
+          "x": 75,
+          "y": 1187,
+          "w": 888,
+          "h": 70
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "scene": 9,
+      "fonts": "loaded",
+      "fontFaces": [
+        {
+          "family": "SUIT",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        }
+      ],
+      "brokenImages": [],
+      "reveals": [
+        {
+          "start": 2,
+          "x": 75,
+          "y": 1137,
+          "w": 888,
+          "h": 79
+        },
+        {
+          "start": 3.5,
+          "x": 75,
+          "y": 1247,
+          "w": 888,
+          "h": 72
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "scene": 10,
+      "fonts": "loaded",
+      "fontFaces": [
+        {
+          "family": "SUIT",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        }
+      ],
+      "brokenImages": [],
+      "reveals": [
+        {
+          "start": 3,
+          "x": 75,
+          "y": 1237,
+          "w": 888,
+          "h": 76
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "scene": 11,
+      "fonts": "loaded",
+      "fontFaces": [
+        {
+          "family": "SUIT",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter",
+          "status": "loaded"
+        }
+      ],
+      "brokenImages": [],
+      "reveals": [
+        {
+          "start": 4,
+          "x": 75,
+          "y": 1137,
+          "w": 888,
+          "h": 66
+        },
+        {
+          "start": 5.5,
+          "x": 75,
+          "y": 1222,
+          "w": 888,
+          "h": 78
+        }
+      ],
+      "overflow": []
+    }
+  ],
+  "cover": {
+    "fonts": "loaded",
+    "fontFaces": [
+      {
+        "family": "SUIT",
+        "status": "loaded"
+      },
+      {
+        "family": "Inter",
+        "status": "loaded"
+      },
+      {
+        "family": "Inter",
+        "status": "loaded"
+      }
+    ],
+    "brokenImages": [],
+    "reveals": [],
+    "overflow": []
+  }
+}

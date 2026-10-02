@@ -1,0 +1,9 @@
+{
+  "durationSeconds": 75.23333333333333,
+  "shotCount": 36,
+  "averageShotSeconds": 2.089814814814815,
+  "maxShotSeconds": 3.6999999999999957,
+  "within3Seconds": 32,
+  "within5Seconds": true,
+  "transitionSeconds": 0.233333333
+}

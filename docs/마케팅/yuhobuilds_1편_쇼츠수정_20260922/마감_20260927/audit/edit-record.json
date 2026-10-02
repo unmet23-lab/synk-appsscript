@@ -1,0 +1,112 @@
+{
+  "date": "2026-09-27",
+  "sourceMaster": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds_1편_쇼츠수정_20260922\\업로드_최종_20260926\\yuhobuilds_EP01_FINAL_1080x1920.mp4",
+  "sourceSha256": "442ff97952719339558396aa2023d9fe2690309b0e0cc0167ae9f9ddaaf52ea7",
+  "narrationSourceSha256": "82c2f8955e6253b6c2ab026ce92f6aebc93ba6a0861bd2db90658288f9aed271",
+  "originalPremixSha256": "f127546da8c3b0ee57c0e49e855c91dd28e6e67a756dcfa372da4133a5129e9c",
+  "subtitleSourceSha256": "b6777adf073f3398e7b159c87dd421c4f9a6877fc30d4339a5e97cf25c8f64dd",
+  "narrationChanged": false,
+  "newNarration": false,
+  "newSounds": 30,
+  "visualTransitions": 16,
+  "transitionFrames": [
+    {
+      "id": "01a",
+      "kind": "reveal-up",
+      "frames": 9
+    },
+    {
+      "id": "02",
+      "kind": "reveal-left",
+      "frames": 9
+    },
+    {
+      "id": "03",
+      "kind": "reveal-left",
+      "frames": 9
+    },
+    {
+      "id": "04",
+      "kind": "reveal-up",
+      "frames": 9
+    },
+    {
+      "id": "05",
+      "kind": "reveal-right",
+      "frames": 9
+    },
+    {
+      "id": "06",
+      "kind": "reveal-left",
+      "frames": 9
+    },
+    {
+      "id": "07",
+      "kind": "soft-zoom",
+      "frames": 6
+    },
+    {
+      "id": "08",
+      "kind": "reveal-up",
+      "frames": 9
+    },
+    {
+      "id": "09a",
+      "kind": "reveal-left",
+      "frames": 9
+    },
+    {
+      "id": "10",
+      "kind": "soft-zoom",
+      "frames": 6
+    },
+    {
+      "id": "11b",
+      "kind": "reveal-up",
+      "frames": 9
+    },
+    {
+      "id": "12",
+      "kind": "reveal-left",
+      "frames": 9
+    },
+    {
+      "id": "13a",
+      "kind": "reveal-up",
+      "frames": 9
+    },
+    {
+      "id": "14",
+      "kind": "reveal-right",
+      "frames": 9
+    },
+    {
+      "id": "17",
+      "kind": "reveal-left",
+      "frames": 9
+    },
+    {
+      "id": "18",
+      "kind": "soft-zoom",
+      "frames": 6
+    }
+  ],
+  "registryReference": "refs/compositions/components/directional-wipe.html",
+  "registryAdaptation": "Restrained reveal + small depth movement, frame driven in existing Remotion project; removed RGB split and light flashes.",
+  "timingUnchanged": true,
+  "gainDb": 0.16000000000000014,
+  "loudness": {
+    "input_i": "-16.00",
+    "input_tp": "-2.63",
+    "input_lra": "1.20",
+    "input_thresh": "-26.22",
+    "output_i": "-16.02",
+    "output_tp": "-2.30",
+    "output_lra": "1.00",
+    "output_thresh": "-26.21",
+    "normalization_type": "dynamic",
+    "target_offset": "0.02"
+  },
+  "directListeningVerified": false,
+  "publicUpload": false
+}

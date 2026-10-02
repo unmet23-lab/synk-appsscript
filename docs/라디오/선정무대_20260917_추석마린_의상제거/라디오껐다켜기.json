@@ -1,0 +1,84 @@
+{
+  "at": "2026-09-17T09:13:49.339Z",
+  "stoppedAt": "2026-09-17T09:13:38.860Z",
+  "startedAt": "2026-09-17T09:13:41.336Z",
+  "before": {
+    "service": {
+      "MainPID": "414021",
+      "NRestarts": "1",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+    },
+    "radioStream": {
+      "MainPID": "0",
+      "NRestarts": "0",
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "UnitFileState": "disabled"
+    },
+    "files": [
+      {
+        "pid": "414155",
+        "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+      },
+      {
+        "pid": "414155",
+        "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+      }
+    ],
+    "overlaySha": "6df998dc9b026109f6538050dd6b054e5de8f1018c6476cc746a4249d348a751",
+    "stageListSha": "5ea9dc8cff1729077a957e7e4bdc145ff7a45401a6e2fdc3381d29b15027d196",
+    "hanbokSha": "fed5825831026c3c007f925716f04736dd4f3c5169615a4561ffee6f2aa18533"
+  },
+  "stopped": {
+    "service": {
+      "MainPID": "0",
+      "NRestarts": "1",
+      "ActiveState": "inactive",
+      "SubState": "dead",
+      "UnitFileState": "enabled"
+    },
+    "radioStream": {
+      "MainPID": "0",
+      "NRestarts": "0",
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "UnitFileState": "disabled"
+    },
+    "files": [],
+    "overlaySha": "6df998dc9b026109f6538050dd6b054e5de8f1018c6476cc746a4249d348a751",
+    "stageListSha": "5ea9dc8cff1729077a957e7e4bdc145ff7a45401a6e2fdc3381d29b15027d196",
+    "hanbokSha": "fed5825831026c3c007f925716f04736dd4f3c5169615a4561ffee6f2aa18533"
+  },
+  "after": {
+    "service": {
+      "MainPID": "414690",
+      "NRestarts": "0",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+    },
+    "radioStream": {
+      "MainPID": "0",
+      "NRestarts": "0",
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "UnitFileState": "disabled"
+    },
+    "files": [
+      {
+        "pid": "414863",
+        "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+      },
+      {
+        "pid": "414863",
+        "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+      }
+    ],
+    "overlaySha": "6df998dc9b026109f6538050dd6b054e5de8f1018c6476cc746a4249d348a751",
+    "stageListSha": "5ea9dc8cff1729077a957e7e4bdc145ff7a45401a6e2fdc3381d29b15027d196",
+    "hanbokSha": "fed5825831026c3c007f925716f04736dd4f3c5169615a4561ffee6f2aa18533"
+  },
+  "stopStartConfirmed": true
+}

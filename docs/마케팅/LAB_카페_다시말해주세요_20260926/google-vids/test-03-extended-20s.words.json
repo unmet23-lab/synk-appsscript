@@ -1,0 +1,135 @@
+{
+  "source": "test-03-extended-20s.mp4",
+  "language": "ko",
+  "duration": 20.0106875,
+  "provider": "local faster-whisper-small",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 2.46,
+      "text": " 여기서 드세요. 가져가세요.",
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.92,
+          "word": " 여기서",
+          "probability": 0.593576192855835
+        },
+        {
+          "start": 0.92,
+          "end": 1.4,
+          "word": " 드세요.",
+          "probability": 0.9819645285606384
+        },
+        {
+          "start": 1.8,
+          "end": 2.46,
+          "word": " 가져가세요.",
+          "probability": 0.9832669695218405
+        }
+      ]
+    },
+    {
+      "start": 4.0,
+      "end": 5.16,
+      "text": " 여기서 먹을게요.",
+      "words": [
+        {
+          "start": 4.0,
+          "end": 4.68,
+          "word": " 여기서",
+          "probability": 0.7378382086753845
+        },
+        {
+          "start": 4.68,
+          "end": 5.16,
+          "word": " 먹을게요.",
+          "probability": 0.9922192990779877
+        }
+      ]
+    },
+    {
+      "start": 6.18,
+      "end": 7.28,
+      "text": " 영수증 드릴까요?",
+      "words": [
+        {
+          "start": 6.18,
+          "end": 6.9,
+          "word": " 영수증",
+          "probability": 0.9128879904747009
+        },
+        {
+          "start": 6.9,
+          "end": 7.28,
+          "word": " 드릴까요?",
+          "probability": 0.9942525227864584
+        }
+      ]
+    },
+    {
+      "start": 11.0,
+      "end": 12.34,
+      "text": " 다시 말해주세요.",
+      "words": [
+        {
+          "start": 11.0,
+          "end": 11.72,
+          "word": " 다시",
+          "probability": 0.9717100858688354
+        },
+        {
+          "start": 11.72,
+          "end": 12.34,
+          "word": " 말해주세요.",
+          "probability": 0.8922514120737711
+        }
+      ]
+    },
+    {
+      "start": 13.1,
+      "end": 14.14,
+      "text": " 영수증 필요하세요?",
+      "words": [
+        {
+          "start": 13.1,
+          "end": 13.66,
+          "word": " 영수증",
+          "probability": 0.9849928816159567
+        },
+        {
+          "start": 13.66,
+          "end": 14.14,
+          "word": " 필요하세요?",
+          "probability": 0.958949863910675
+        }
+      ]
+    },
+    {
+      "start": 14.98,
+      "end": 16.94,
+      "text": " 아, 괜찮아요. 감사합니다.",
+      "words": [
+        {
+          "start": 14.98,
+          "end": 15.5,
+          "word": " 아,",
+          "probability": 0.7607403993606567
+        },
+        {
+          "start": 15.6,
+          "end": 16.12,
+          "word": " 괜찮아요.",
+          "probability": 0.9928969740867615
+        },
+        {
+          "start": 16.62,
+          "end": 16.94,
+          "word": " 감사합니다.",
+          "probability": 0.9952446818351746
+        }
+      ]
+    }
+  ],
+  "note": "Automatic transcript; not proof of acting quality or exact lip sync."
+}

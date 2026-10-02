@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="여덟 개의 엔진이 한 사람의 경험으로 연결되는 과정. SYNK Atlas 인터랙티브 연결 시각화.">
+  <title>Atlas — 연결이 경험이 되는 곳 · SYNK</title>
+  <link rel="icon" href="data:,">
+  <!--FONTS-->
+  <style>/*STYLES*/</style>
+</head>
+<body>
+  <a class="skip-link" href="#engine-nav">엔진 선택으로 건너뛰기</a>
+  <main class="observatory" id="observatory">
+    <header class="masthead">
+      <div class="signature"><span class="mono">ATLAS<span class="signature-detail"> / ENGINE SYSTEM</span></span></div>
+
+        <div class="portal-dock">
+      <a class="synk-portal" href="https://synk.im/" aria-label="SYNK 살펴보기, SYNK 홈페이지로 이동">
+        <span class="portal-rim" aria-hidden="true"></span>
+        <span class="portal-thread">
+          <img class="portal-embroidery" src="{{PORTAL_EMBROIDERY}}" width="138" height="54" alt="SYNK">
+          <img class="portal-thread-light" src="{{PORTAL_EMBROIDERY}}" width="138" height="54" alt="" aria-hidden="true">
+        </span>
+        <span class="portal-label">살펴보기</span>
+        <span class="portal-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 18 18 6M6 6h12v12"/></svg></span>
+      </a>
+        </div>
+    </header>
+
+    <section class="workspace" aria-label="Atlas 엔진 연결망">
+      <div class="intro">
+        <p class="eyebrow mono"><span></span> CONNECTED, AROUND YOU.</p>
+        <h1>Atlas</h1>
+        <h2>여덟 개의 엔진.<br>당신을 향한 하나의 경험.</h2>
+        <p class="intro-copy">배움과 기억, 표현과 감각을 연결해<br>지금 필요한 경험으로 구현합니다.</p>
+      </div>
+
+      <div class="visual-stage" id="visual-stage">
+        <canvas id="constellation" role="img" aria-label="중앙에서 빛이 흐르는 Atlas 광원과 Core, Strata, Loom, Vellum, Trail, Prism, Temper, Reed를 잇는 은백색 입체 연결망. 엔진에 포인터를 올리거나 아래 버튼으로 키보드 초점을 옮기면 해당 브랜드색이 연결을 따라 번집니다. 클릭하거나 터치하면 선택이 고정되고 선택한 관계에만 스티치가 나타납니다. 기능 점이나 이름에 포인터를 올리면 점이 살짝 움직이고, 연결된 주변 점과 선이 탄력 있게 따라옵니다."></canvas>
+        <div class="stage-caption"><span class="hairline"></span><span class="mono" id="stage-caption">EIGHT ENGINES. ONE EXPERIENCE.</span></div>
+        <div class="graph-tools" role="group" aria-label="연결망 조작">
+          <button type="button" id="zoom-out" aria-label="축소" title="축소">−</button>
+          <button type="button" id="reset-view" aria-label="시점과 선택 초기화" title="시점과 선택 초기화"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M8 21H3v-5"/></svg></button>
+          <button type="button" id="zoom-in" aria-label="확대" title="확대">+</button>
+        </div>
+
+      </div>
+
+      <aside class="inspector" id="inspector" aria-label="선택한 연결 설명">
+        <div id="explore-panel">
+          <p class="panel-index mono" id="panel-index">01 — 08 / CONNECTED SYSTEM</p>
+          <div id="engine-detail" aria-live="polite" aria-atomic="true">
+            <h3 id="detail-title">연결이 경험이 되는 곳</h3>
+            <p id="detail-description">각자의 역할을 가진 엔진들이 Atlas에서 만나 한 사람에게 맞는<br>경험으로 이어집니다.</p>
+          </div>
+          <div class="related" id="related"><button type="button" class="text-action" id="start-exploring">Core부터 살펴보기 <span aria-hidden="true">↗</span></button></div>
+        </div>
+        <div id="story-panel" hidden>
+          <div class="story-heading"><p class="panel-index mono">FOLLOW THE CONNECTION</p><button type="button" id="story-back" aria-label="다른 경험 고르기" hidden>다른 경험</button></div>
+          <div id="scenario-picker"></div>
+          <div id="story-player" hidden>
+            <p class="story-name" id="story-name"></p>
+            <div class="story-progress" id="story-progress" role="group" aria-label="경험 단계"></div>
+            <div id="story-step" aria-live="polite" aria-atomic="true"></div>
+            <button type="button" class="glass-action" id="next-step">다음 연결 <span aria-hidden="true">→</span></button>
+          </div>
+        </div>
+      </aside>
+
+      <p class="gesture-hint"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M8 3v10M3 8l2-2M3 8l2 2M13 8l-2-2M13 8l-2 2"/></svg><span>드래그해 둘러보고, 연결을 선택하세요</span></p>
+    </section>
+
+    <nav class="engine-dock" id="engine-nav" aria-label="여덟 엔진 선택"></nav>
+    <footer class="colophon"><p><span class="mono">SYNK ATLAS</span><span class="footer-dot">·</span>엔진 설계 기반 인터랙티브 시안</p><button type="button" id="about-open">이 연결망에 대하여 <span aria-hidden="true">↗</span></button><span class="mono edition">CONNECTION STUDY / 01</span></footer>
+  </main>
+  <dialog id="about-dialog" aria-labelledby="about-title">
+    <button type="button" id="about-close" aria-label="설명 닫기">×</button>
+    <p class="eyebrow mono">BEHIND THE CONNECTIONS</p>
+    <h2 id="about-title">여덟 개의 능력.<br>하나의 Atlas.</h2>
+    <p>Atlas는 Core·Strata·Loom·Vellum·Trail·Prism·Temper·Reed의 능력을 연결하고, 한 사람에게 필요한 경험에 적용하는 중심입니다.</p>
+    <p>이 화면은 현재 엔진 설계에서 중요한 관계를 골라 표현한 시안입니다. 중앙에서 빛이 흐르는 광원은 Atlas를 나타냅니다. 평소에는 은백색으로 이어지며, 엔진에 포인터를 올리거나 키보드 초점을 옮기면 해당 브랜드색이 연결을 따라 번졌다가 벗어나면 돌아옵니다. 클릭하거나 터치하면 선택이 고정되고, 선택한 관계에만 스티치가 나타납니다. 기능 점이나 이름에 포인터를 올리면 점이 살짝 움직이고, 연결된 주변 점과 선이 탄력 있게 따라옵니다. 점의 수와 움직임은 실제 이용자 수나 실시간 처리량을 뜻하지 않습니다. 작은 점은 주변 개념을 표현하는 시각 요소입니다.</p>
+    <p>화면 가장자리의 옅은 연결은 공간의 깊이를 표현하며 별도 엔진이나 데이터를 뜻하지 않습니다. Strata는 설계·준비 단계이며, 전체 연결의 라이브 운영을 나타내지 않습니다.</p>
+  </dialog>
+  <noscript><p class="no-script">이 시각화에는 JavaScript가 필요합니다. Atlas는 Core·Strata·Loom·Vellum·Trail·Prism·Temper·Reed를 연결해 개인에게 맞는 경험을 구현합니다.</p></noscript>
+  <script>/*DATA*/</script>
+  <script>/*LOOM_MOTION*/</script>
+  <script>/*LOOM_NETWORK*/</script>
+  <script>/*DEPTH_FIELD*/</script>
+  <script>/*RENDERER*/</script>
+  <script>/*APP*/</script>
+  <script>/*PORTAL*/</script>
+</body>
+</html>

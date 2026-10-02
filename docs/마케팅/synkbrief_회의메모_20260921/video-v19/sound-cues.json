@@ -1,0 +1,182 @@
+[
+  {
+    "at": 13.787,
+    "type": "swish",
+    "gain": 0.16,
+    "reason": "chapter common"
+  },
+  {
+    "at": 28.553,
+    "type": "swish",
+    "gain": 0.16,
+    "reason": "chapter open"
+  },
+  {
+    "at": 32.432,
+    "type": "click",
+    "gain": 0.25,
+    "reason": "click open"
+  },
+  {
+    "at": 35.737,
+    "type": "click",
+    "gain": 0.25,
+    "reason": "click paste"
+  },
+  {
+    "at": 45.322,
+    "type": "click",
+    "gain": 0.25,
+    "reason": "click request"
+  },
+  {
+    "at": 54.453,
+    "type": "click",
+    "gain": 0.25,
+    "reason": "click send"
+  },
+  {
+    "at": 55.32,
+    "type": "swish",
+    "gain": 0.16,
+    "reason": "chapter result"
+  },
+  {
+    "at": 73.253,
+    "type": "swish",
+    "gain": 0.16,
+    "reason": "chapter project-menu"
+  },
+  {
+    "at": 76.633,
+    "type": "click",
+    "gain": 0.25,
+    "reason": "click project-menu"
+  },
+  {
+    "at": 94.897,
+    "type": "click",
+    "gain": 0.25,
+    "reason": "click create"
+  },
+  {
+    "at": 96.8,
+    "type": "click",
+    "gain": 0.25,
+    "reason": "next control create"
+  },
+  {
+    "at": 98.222,
+    "type": "click",
+    "gain": 0.25,
+    "reason": "confirm create"
+  },
+  {
+    "at": 101.404,
+    "type": "click",
+    "gain": 0.25,
+    "reason": "click settings"
+  },
+  {
+    "at": 102.909,
+    "type": "click",
+    "gain": 0.25,
+    "reason": "next control settings"
+  },
+  {
+    "at": 109.791,
+    "type": "click",
+    "gain": 0.25,
+    "reason": "click save"
+  },
+  {
+    "at": 112.336,
+    "type": "click",
+    "gain": 0.25,
+    "reason": "next control save"
+  },
+  {
+    "at": 122.12,
+    "type": "swish",
+    "gain": 0.16,
+    "reason": "chapter repeat-menu"
+  },
+  {
+    "at": 124.9,
+    "type": "click",
+    "gain": 0.25,
+    "reason": "click repeat-menu"
+  },
+  {
+    "at": 128.35,
+    "type": "click",
+    "gain": 0.25,
+    "reason": "click repeat-project"
+  },
+  {
+    "at": 136,
+    "type": "click",
+    "gain": 0.25,
+    "reason": "click repeat-new"
+  },
+  {
+    "at": 142.6,
+    "type": "click",
+    "gain": 0.25,
+    "reason": "click repeat-memo"
+  },
+  {
+    "at": 149.25,
+    "type": "click",
+    "gain": 0.25,
+    "reason": "click repeat-finish"
+  },
+  {
+    "at": 150.387,
+    "type": "swish",
+    "gain": 0.16,
+    "reason": "chapter ending"
+  },
+  {
+    "at": 15.967,
+    "type": "pop",
+    "gain": 0.12,
+    "reason": "common semantic reveal"
+  },
+  {
+    "at": 58.1,
+    "type": "pop",
+    "gain": 0.15,
+    "reason": "result semantic reveal"
+  },
+  {
+    "at": 59.18,
+    "type": "pop",
+    "gain": 0.12,
+    "reason": "result semantic reveal"
+  },
+  {
+    "at": 85.2,
+    "type": "pop",
+    "gain": 0.13,
+    "reason": "project-reuse semantic reveal"
+  },
+  {
+    "at": 85.55,
+    "type": "pop",
+    "gain": 0.12,
+    "reason": "project-reuse semantic reveal"
+  },
+  {
+    "at": 151.667,
+    "type": "pop",
+    "gain": 0.1,
+    "reason": "ending semantic reveal"
+  },
+  {
+    "at": 155.347,
+    "type": "chime",
+    "gain": 0.085,
+    "reason": "follow and comment invitation"
+  }
+]

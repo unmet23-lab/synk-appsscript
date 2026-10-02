@@ -1,0 +1,31 @@
+{
+  "durationSeconds": 88,
+  "fullDecodeMP4": "passed",
+  "fullDecodeWebM": "passed",
+  "blackSegmentsOver0_3s": [],
+  "audio": {
+    "integratedLUFS": -22.77,
+    "truePeakDBTP": -8.3,
+    "loudnessRangeLU": 3.5,
+    "normalizationApplied": false,
+    "voiceIncluded": false
+  },
+  "visualReview": "14 rendered scene samples and 14 intermediate animation samples inspected",
+  "files": {
+    "synkbrief-meeting-v7.mp4": {
+      "bytes": 12191892,
+      "sha256": "54dbdde0a7f2566ba9f8b082537802b5f46a3f91c066475af6fb0a4e2c0cecdf"
+    },
+    "preview.webm": {
+      "bytes": 4307645,
+      "sha256": "47f8e0695998913ca0bca8799e19e47e8c950ba789dde9e0ff24fb79bd7af5ad"
+    }
+  },
+  "inAppBrowser": {
+    "url": "http://127.0.0.1:5197/video-v7/preview.html?revision=9",
+    "observedPlaybackSeconds": 37,
+    "endingChapterSeconds": 83,
+    "actualFrameVisible": true,
+    "leftAtStartPaused": true
+  }
+}

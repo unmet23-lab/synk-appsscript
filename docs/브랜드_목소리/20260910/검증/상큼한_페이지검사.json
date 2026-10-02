@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-09-10T09:21:27.209Z",
+  "status": "static-checks-passed; browser-review-unavailable",
+  "newSamples": 6,
+  "totalAudioElements": 8,
+  "modelRows": 8,
+  "inlineScriptSyntax": "passed; compiled only, not executed",
+  "localAudioPaths": "all exist inside comparison directory",
+  "labels": "new A-F and original 01/05 are distinct",
+  "zip": "exists; separately round-trip verified",
+  "originalIndexHash": "3dec03aca98248738f336149fa074557e57029578eb5f4f77731f4c06a6c51fb",
+  "browserReview": {
+    "status": "blocked",
+    "reason": "CUA browser security URL policy rejected opening the new file:// page; no alternate browser or server workaround attempted",
+    "renderChecked": false,
+    "mobileChecked": false,
+    "playbackChecked": false
+  },
+  "humanListening": false
+}

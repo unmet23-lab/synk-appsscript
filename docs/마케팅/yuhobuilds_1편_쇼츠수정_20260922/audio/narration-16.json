@@ -1,0 +1,79 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "초보였던 제가 이걸 처음부터 알았더라면, 적어도 백 시간은 아꼈을 것 같아요.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.25,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 3.92,
+  "words": [
+    {
+      "text": "초보였던",
+      "start": 0.099,
+      "end": 0.533
+    },
+    {
+      "text": "제가",
+      "start": 0.571,
+      "end": 0.744
+    },
+    {
+      "text": "이걸",
+      "start": 1.042,
+      "end": 1.191
+    },
+    {
+      "text": "처음부터",
+      "start": 1.228,
+      "end": 1.588
+    },
+    {
+      "text": "알았더라면,",
+      "start": 1.637,
+      "end": 2.022
+    },
+    {
+      "text": "적어도",
+      "start": 2.382,
+      "end": 2.63
+    },
+    {
+      "text": "백",
+      "start": 2.692,
+      "end": 2.804
+    },
+    {
+      "text": "시간은",
+      "start": 2.841,
+      "end": 3.064
+    },
+    {
+      "text": "아꼈을",
+      "start": 3.101,
+      "end": 3.337
+    },
+    {
+      "text": "것",
+      "start": 3.374,
+      "end": 3.424
+    },
+    {
+      "text": "같아요.",
+      "start": 3.473,
+      "end": 3.92
+    }
+  ],
+  "characters": null
+}

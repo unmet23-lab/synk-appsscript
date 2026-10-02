@@ -1,0 +1,29 @@
+{
+  "render": "review version; face identity correction pending",
+  "file": "SYNK_LAB_CAFE_REAL_v3.mp4",
+  "durationSeconds": 35.5,
+  "videoFrames": 852,
+  "resolution": "1080x1920",
+  "fps": 24,
+  "audio": "AAC 48000Hz stereo",
+  "fileBytes": "45499934",
+  "fullDecode": "passed",
+  "check": {
+    "runtimeErrors": 0,
+    "layoutErrors": 0,
+    "layoutSamples": 15,
+    "contrastPasses": 17,
+    "warnings": 1
+  },
+  "transcript": "all expected Korean lines and practice repeat confirmed by offline ASR",
+  "visual": "rendered contact sheet and scene snapshots reviewed",
+  "loudness": {
+    "integratedLUFS": -20.3,
+    "truePeakDBFS": -1.1
+  },
+  "browserPlayback": "in progress",
+  "publication": "not posted",
+  "spending": "no new payment or subscription",
+  "limits": "Automatic transcription does not prove emotional naturalness or exact lip sync.",
+  "userFeedback": "Profile resembles Yuho; frontal view does not. Do not regard v3 as approved likeness."
+}

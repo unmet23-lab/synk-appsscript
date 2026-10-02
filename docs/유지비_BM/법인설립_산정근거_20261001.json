@@ -1,0 +1,143 @@
+{
+  "date": "2026-10-01",
+  "confirmed": {
+    "koreaLocation": "과밀억제권역 밖",
+    "foreignInvestorCount": 1,
+    "ownership": "미정",
+    "site": "미선정"
+  },
+  "fx": {
+    "MNT_per_KRW": 2.65,
+    "MNT_per_USD": 3600,
+    "KRW_per_USD": 1358.4905660377358,
+    "kind": "2026-10-01 학원 예산과 동일한 계획 환율, 실거래환율 아님"
+  },
+  "mongolia": {
+    "capitalUSD": 100100,
+    "capitalMNT": 360360000,
+    "capitalKRW": 135984905.66037735,
+    "capitalBasis": "투자법3.1.5 몽골어의 100,000USD 초과 표현에 맞춘 100USD 내부 여유분; 법정 최저액을100,100으로 단정하지 않음",
+    "officialRegistrationMNT": 750000,
+    "core": {
+      "incorporationUSD": 3500,
+      "bankAssistanceUSD": 1500,
+      "complianceUSD": 440
+    },
+    "coreNetMNT": 19584000,
+    "vatReserveRate": 0.1,
+    "cases": [
+      {
+        "label": "낮은 충당",
+        "docsMNT": 800000,
+        "courierMNT": 150000,
+        "bankExtrasMNT": 50000,
+        "fxMarginRate": 0.003,
+        "wireKRW": 50000,
+        "serviceAndVATMNT": 21542400,
+        "localSubtotalMNT": 22542400,
+        "fxMarginKRW": 407954.71698113205,
+        "totalKRW": 8964520.754716981
+      },
+      {
+        "label": "기준 충당",
+        "docsMNT": 1500000,
+        "courierMNT": 300000,
+        "bankExtrasMNT": 150000,
+        "fxMarginRate": 0.01,
+        "wireKRW": 100000,
+        "serviceAndVATMNT": 21542400,
+        "localSubtotalMNT": 23492400,
+        "fxMarginKRW": 1359849.0566037735,
+        "totalKRW": 10324905.660377357
+      },
+      {
+        "label": "높은 충당",
+        "docsMNT": 3000000,
+        "courierMNT": 500000,
+        "bankExtrasMNT": 300000,
+        "fxMarginRate": 0.015,
+        "wireKRW": 200000,
+        "serviceAndVATMNT": 21542400,
+        "localSubtotalMNT": 25342400,
+        "fxMarginKRW": 2039773.5849056602,
+        "totalKRW": 11802943.396226415
+      }
+    ],
+    "annualRegisteredAddressUSD": 4225,
+    "annualRegisteredAddressReserveKRW": 6313584.905660377,
+    "parentComplianceExtraUSD": 265,
+    "parentComplianceExtraReserveKRW": 396000
+  },
+  "korea": {
+    "assumedCapitalKRW": 10000000,
+    "officialFeesKRW": 155000,
+    "agentNetKRW": 219000,
+    "agentVATKRW": 21900,
+    "packageKRW": 395900,
+    "balanceCertAllowanceKRW": 5000,
+    "investigationAndResignationAllowanceKRW": 250000,
+    "budgetKRW": 650900
+  },
+  "krCapitalScenarios": [
+    {
+      "capitalKRW": 1000000,
+      "registrationTaxKRW": 112500,
+      "educationTaxKRW": 22500,
+      "electronicFeeKRW": 20000,
+      "governmentTotalKRW": 155000
+    },
+    {
+      "capitalKRW": 10000000,
+      "registrationTaxKRW": 112500,
+      "educationTaxKRW": 22500,
+      "electronicFeeKRW": 20000,
+      "governmentTotalKRW": 155000
+    },
+    {
+      "capitalKRW": 30000000,
+      "registrationTaxKRW": 120000,
+      "educationTaxKRW": 24000,
+      "electronicFeeKRW": 20000,
+      "governmentTotalKRW": 164000
+    },
+    {
+      "capitalKRW": 100000000,
+      "registrationTaxKRW": 400000,
+      "educationTaxKRW": 80000,
+      "electronicFeeKRW": 20000,
+      "governmentTotalKRW": 500000
+    },
+    {
+      "capitalKRW": 150000000,
+      "registrationTaxKRW": 600000,
+      "educationTaxKRW": 120000,
+      "electronicFeeKRW": 20000,
+      "governmentTotalKRW": 740000
+    }
+  ],
+  "fees": {
+    "personalBaseKRW": 10975805.660377357,
+    "parentBaseKRW": 11371805.660377357
+  },
+  "maintenance": {
+    "koreaDirectAnnualKRW": 1760000.0000000002,
+    "koreaParentAsset150MAnnualKRW": 2238500,
+    "mongoliaAllowanceAnnualMNT": 8800000,
+    "mongoliaAllowanceAnnualKRW": 3320754.716981132,
+    "personalCombinedAnnualKRW": 5080754.7169811325,
+    "parentCombinedAnnualKRW": 5559254.716981132
+  },
+  "academy": {
+    "baseMNT": 434584724.506,
+    "baseKRW": 163994235.6626415,
+    "unpricedCount": 26,
+    "baseFacilityOverCapitalKRW": 28009330.002264142
+  },
+  "cash": {
+    "personalSeparateFormationCommitmentKRW": 156960711.3207547,
+    "parentFormationCommitmentKRW": 147356711.3207547,
+    "personalFacilityAndSetupKnownKRW": 184970041.32301885,
+    "parentFacilityAndSetupKnownKRW": 175366041.32301885,
+    "condition": "회사자금의 회사사업 지출 사용/회사 간 자금경로/수수료회사부담/한국잔여자금별도 확인. 둘 다 개원총자금 아님."
+  }
+}

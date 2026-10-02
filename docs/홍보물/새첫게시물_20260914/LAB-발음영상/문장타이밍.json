@@ -1,0 +1,286 @@
+{
+  "method": "Nine measured quiet gaps; inserted silence only; every original PCM sample preserved once; no speed/pitch/gain/filter change",
+  "cues": [
+    {
+      "id": 1,
+      "text": "어떤 전공을 배우고 싶어요?",
+      "sourceStart": 0,
+      "sourceEnd": 1.8851666666666667,
+      "start": 6.15,
+      "end": 8.035166666666667,
+      "soundStart": 6.15,
+      "soundEnd": 7.788125000000001,
+      "scene": "질문",
+      "visualWindow": [
+        6,
+        14
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "087055c540a6c2baf8e13623f57ea1d4e43d0f27a1724bad989ae05531c8edd3"
+    },
+    {
+      "id": 2,
+      "text": "아직 정하지 않았어요.",
+      "sourceStart": 1.8851666666666667,
+      "sourceEnd": 3.8501458333333334,
+      "start": 14.1,
+      "end": 16.064979166666667,
+      "soundStart": 14.347041333333333,
+      "soundEnd": 15.803458333333332,
+      "scene": "완성 예문",
+      "visualWindow": [
+        14,
+        24
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "2d5c037fd3e8ba07e97ebc8769c91c5402a730d6afcca102be12090bb47f2ac9"
+    },
+    {
+      "id": 3,
+      "text": "먼저 게임을 만들어 보고 싶어요.",
+      "sourceStart": 3.8501458333333334,
+      "sourceEnd": 6.211791666666667,
+      "start": 16.064979166666667,
+      "end": 18.426625,
+      "soundStart": 16.326479333333335,
+      "soundEnd": 18.166875333333333,
+      "scene": "완성 예문",
+      "visualWindow": [
+        14,
+        24
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "0fc8c6dcb8625b4b53dc2350b777ac690ff824d0ce0dd7d733ada0a62e425fcf"
+    },
+    {
+      "id": 4,
+      "text": "게임을 만들어.",
+      "sourceStart": 6.211791666666667,
+      "sourceEnd": 7.661666666666667,
+      "start": 24.35,
+      "end": 25.799875,
+      "soundStart": 24.609729333333334,
+      "soundEnd": 25.534458333333337,
+      "scene": "게임 동사구",
+      "visualWindow": [
+        24,
+        27
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "16ab3db75ebec812f800b92961b25290d9a04fd8de1c88ea95f45720a387e2d5"
+    },
+    {
+      "id": 5,
+      "text": "영상을 만들어.",
+      "sourceStart": 7.661666666666667,
+      "sourceEnd": 9.163895833333333,
+      "start": 27.35,
+      "end": 28.852229166666667,
+      "soundStart": 27.615416333333336,
+      "soundEnd": 28.572520333333337,
+      "scene": "영상 동사구",
+      "visualWindow": [
+        27,
+        30.5
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "3dab16a2eb8f0de0d70f2c993130f54730801ecb8d0c2e38a6d39a1987361448"
+    },
+    {
+      "id": 6,
+      "text": "그림을 그려.",
+      "sourceStart": 9.163895833333333,
+      "sourceEnd": 10.441354166666667,
+      "start": 30.85,
+      "end": 32.12745833333334,
+      "soundStart": 31.12972916666667,
+      "soundEnd": 31.869833166666666,
+      "scene": "그림 동사구",
+      "visualWindow": [
+        30.5,
+        34
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "377a1fa2e1493f2c9b96d7961aa519e0c603f2c18e48e8ee97c9d8e840f9ebf6"
+    },
+    {
+      "id": 7,
+      "text": "아직 정하지 않았어요.",
+      "sourceStart": 10.441354166666667,
+      "sourceEnd": 12.3659375,
+      "start": 48.02,
+      "end": 49.944583333333334,
+      "soundStart": 48.27764583333334,
+      "soundEnd": 49.683666833333334,
+      "scene": "영상 완성 예문",
+      "visualWindow": [
+        48,
+        52.5
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "22fc8869dcec059e55e0b98ce8d535704094034b362f02c5e6d2345a9bcaf327"
+    },
+    {
+      "id": 8,
+      "text": "먼저 영상을 만들어 보고 싶어요.",
+      "sourceStart": 12.3659375,
+      "sourceEnd": 14.802708333333333,
+      "start": 49.944583333333334,
+      "end": 52.38135416666667,
+      "soundStart": 50.205499833333334,
+      "soundEnd": 52.11939583333333,
+      "scene": "영상 완성 예문",
+      "visualWindow": [
+        48,
+        52.5
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "d197425adc7a8b57a45cb37c328a10df94035096c806bbd3cb9f35f26f6943a9"
+    },
+    {
+      "id": 9,
+      "text": "아직 정하지 않았어요.",
+      "sourceStart": 14.802708333333333,
+      "sourceEnd": 16.723604166666668,
+      "start": 52.52,
+      "end": 54.440895833333336,
+      "soundStart": 52.78197866666667,
+      "soundEnd": 54.19954166666667,
+      "scene": "그림 완성 예문",
+      "visualWindow": [
+        52.5,
+        57
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "b92f39eee312b9a0084461818719fe8b054e1d986c3d64645842724b18b93d0c"
+    },
+    {
+      "id": 10,
+      "text": "먼저 그림을 그려 보고 싶어요.",
+      "sourceStart": 16.723604166666668,
+      "sourceEnd": 18.996,
+      "start": 54.440895833333336,
+      "end": 56.71329166666667,
+      "soundStart": 54.682270666666675,
+      "soundEnd": 56.71329166666667,
+      "scene": "그림 완성 예문",
+      "visualWindow": [
+        52.5,
+        57
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "c8146ed4e2d84ecb499cb9e82e4380c38a150b34e2878cbc04250ef320dfc4e7"
+    }
+  ],
+  "groups": [
+    {
+      "first": 0,
+      "last": 0,
+      "start": 6.15,
+      "window": [
+        6,
+        14
+      ],
+      "role": "질문",
+      "sourceStart": 0,
+      "sourceEnd": 1.8851666666666667,
+      "outputEnd": 8.035166666666667,
+      "pcmSha256": "087055c540a6c2baf8e13623f57ea1d4e43d0f27a1724bad989ae05531c8edd3"
+    },
+    {
+      "first": 1,
+      "last": 2,
+      "start": 14.1,
+      "window": [
+        14,
+        24
+      ],
+      "role": "완성 예문",
+      "sourceStart": 1.8851666666666667,
+      "sourceEnd": 6.211791666666667,
+      "outputEnd": 18.426625,
+      "pcmSha256": "18aa18e81915cfa9d68b9244f855234634dce1931f8620b57e4aaed1fac4171b"
+    },
+    {
+      "first": 3,
+      "last": 3,
+      "start": 24.35,
+      "window": [
+        24,
+        27
+      ],
+      "role": "게임 동사구",
+      "sourceStart": 6.211791666666667,
+      "sourceEnd": 7.661666666666667,
+      "outputEnd": 25.799875,
+      "pcmSha256": "16ab3db75ebec812f800b92961b25290d9a04fd8de1c88ea95f45720a387e2d5"
+    },
+    {
+      "first": 4,
+      "last": 4,
+      "start": 27.35,
+      "window": [
+        27,
+        30.5
+      ],
+      "role": "영상 동사구",
+      "sourceStart": 7.661666666666667,
+      "sourceEnd": 9.163895833333333,
+      "outputEnd": 28.852229166666667,
+      "pcmSha256": "3dab16a2eb8f0de0d70f2c993130f54730801ecb8d0c2e38a6d39a1987361448"
+    },
+    {
+      "first": 5,
+      "last": 5,
+      "start": 30.85,
+      "window": [
+        30.5,
+        34
+      ],
+      "role": "그림 동사구",
+      "sourceStart": 9.163895833333333,
+      "sourceEnd": 10.441354166666667,
+      "outputEnd": 32.12745833333334,
+      "pcmSha256": "377a1fa2e1493f2c9b96d7961aa519e0c603f2c18e48e8ee97c9d8e840f9ebf6"
+    },
+    {
+      "first": 6,
+      "last": 7,
+      "start": 48.02,
+      "window": [
+        48,
+        52.5
+      ],
+      "role": "영상 완성 예문",
+      "sourceStart": 10.441354166666667,
+      "sourceEnd": 14.802708333333333,
+      "outputEnd": 52.38135416666667,
+      "pcmSha256": "a0b9a97b06e23a9dd66eff0a363ea87c8942e2a78c317f668cb9f299aa85fe78"
+    },
+    {
+      "first": 8,
+      "last": 9,
+      "start": 52.52,
+      "window": [
+        52.5,
+        57
+      ],
+      "role": "그림 완성 예문",
+      "sourceStart": 14.802708333333333,
+      "sourceEnd": 18.996,
+      "outputEnd": 56.71329166666667,
+      "pcmSha256": "80eccb0b224b8c6a94627966a003dd1e75d9960d68bf8daf7c1f1424b87166dd"
+    }
+  ],
+  "humanListeningVerified": false
+}

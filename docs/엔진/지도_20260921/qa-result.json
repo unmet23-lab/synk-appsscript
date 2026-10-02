@@ -1,0 +1,48 @@
+{
+  "date": "2026-09-21",
+  "browser": "Microsoft Edge headless",
+  "offline": true,
+  "widths": [
+    {
+      "view": 1440,
+      "scroll": 1440
+    },
+    {
+      "view": 390,
+      "scroll": 390
+    },
+    {
+      "view": 320,
+      "scroll": 320
+    }
+  ],
+  "engines": 8,
+  "sourceCount": 69,
+  "fonts": [
+    {
+      "f": "16px SUIT",
+      "loaded": true
+    },
+    {
+      "f": "16px \"Inter Tight\"",
+      "loaded": true
+    },
+    {
+      "f": "12px \"DM Mono\"",
+      "loaded": true
+    }
+  ],
+  "errors": [],
+  "network": [],
+  "checks": [
+    "8-engine selection",
+    "search results and empty state",
+    "expand/collapse all",
+    "real Atlas guidance changes",
+    "support restore and time reset",
+    "standalone image and fonts",
+    "320/390/1440 responsive overflow",
+    "print expansion and restoration",
+    "internal anchor targets"
+  ]
+}

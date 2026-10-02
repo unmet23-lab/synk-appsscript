@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "f102f262-9637-4878-8a2d-3ea28e015922",
+  "narration": "첫 강의를 제안하는 강사를 위해, 수업 정보를 정리하고, 소개 원고 한 장을 남깁니다.",
+  "narrationSha256": "f4684e4959bfe23717e6ecb410894c5304cb7f4904759a7d7d50c2351aa22036",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-f4684e4959bfe237.wav",
+  "duration": 6.08,
+  "sha256": "4fc0a2331f85d0ffcef6bc4225bf4b944461035224a5398f9e118cec6f47b4d3",
+  "humanListening": false,
+  "fullDecode": true
+}

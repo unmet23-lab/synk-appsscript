@@ -1,0 +1,32 @@
+[
+  {
+    "startSeconds": 0,
+    "durationSeconds": 9.766666666666667,
+    "title": "혼자 만드는 일의\n앞과 뒤",
+    "layout": "cover"
+  },
+  {
+    "startSeconds": 9.766666666666667,
+    "durationSeconds": 8,
+    "title": "소개는 한 줄",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 17.766666666666666,
+    "durationSeconds": 8,
+    "title": "상품에는 받는 것",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 25.766666666666666,
+    "durationSeconds": 9,
+    "title": "문의에도 같은 범위",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 34.766666666666666,
+    "durationSeconds": 12.8,
+    "title": "한 약속이\n끝까지 이어지도록",
+    "layout": "closing"
+  }
+]

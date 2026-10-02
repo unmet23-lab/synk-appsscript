@@ -1,0 +1,109 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "text": "오늘은 번역하려고 결제한 에이아이로, 제가 어떻게 출석 앱을 만들기 시작했는지 이야기해볼게요. 시작할 때는 코딩이라는 걸 전혀 몰랐습니다.",
+    "voice_id": "tc_5ecbbc696b7c780008be50c4",
+    "language": "kor",
+    "output": {
+      "audio_tempo": 1.02,
+      "audio_format": "wav",
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "",
+      "next_text": "이천이십육년 유월 이일, 클로드를 처음 결제했습니다. 그날 제가 원했던 건 딱 하나였어요. 번역 기능을 쓰는 거였습니다."
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 9.51,
+  "words": [
+    {
+      "text": "오늘은",
+      "start": 0.22,
+      "end": 0.541
+    },
+    {
+      "text": "번역하려고",
+      "start": 0.621,
+      "end": 1.161
+    },
+    {
+      "text": "결제한",
+      "start": 1.221,
+      "end": 1.642
+    },
+    {
+      "text": "에이아이로,",
+      "start": 1.742,
+      "end": 2.162
+    },
+    {
+      "text": "제가",
+      "start": 2.703,
+      "end": 2.943
+    },
+    {
+      "text": "어떻게",
+      "start": 3.023,
+      "end": 3.383
+    },
+    {
+      "text": "출석",
+      "start": 3.444,
+      "end": 3.784
+    },
+    {
+      "text": "앱을",
+      "start": 3.844,
+      "end": 3.984
+    },
+    {
+      "text": "만들기",
+      "start": 4.044,
+      "end": 4.385
+    },
+    {
+      "text": "시작했는지",
+      "start": 4.445,
+      "end": 5.025
+    },
+    {
+      "text": "이야기해볼게요.",
+      "start": 5.145,
+      "end": 5.826
+    },
+    {
+      "text": "시작할",
+      "start": 6.667,
+      "end": 7.027
+    },
+    {
+      "text": "때는",
+      "start": 7.087,
+      "end": 7.328
+    },
+    {
+      "text": "코딩이라는",
+      "start": 7.628,
+      "end": 8.168
+    },
+    {
+      "text": "걸",
+      "start": 8.228,
+      "end": 8.309
+    },
+    {
+      "text": "전혀",
+      "start": 8.369,
+      "end": 8.609
+    },
+    {
+      "text": "몰랐습니다.",
+      "start": 8.669,
+      "end": 9.51
+    }
+  ],
+  "characters": null
+}

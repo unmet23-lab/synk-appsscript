@@ -1,0 +1,19 @@
+{
+  "date": "2026-09-22",
+  "url": "http://127.0.0.1:4373/preview.html",
+  "browser": "Codex In-app Browser",
+  "preview": "preview-720.webm",
+  "width": 720,
+  "height": 1280,
+  "durationSeconds": 180.033,
+  "initialNativeControlsAutomation": "Tab crashed on the native play control. Added a separate HTML play button and chapter buttons.",
+  "verifiedPlaybackPointsSeconds": [5.99901, 102.834568, 167.346698],
+  "verifiedPausedSeekSeconds": 97.4,
+  "readyStateDuringPlayback": 4,
+  "observedMediaError": null,
+  "pageVisuallyChecked": true,
+  "returnedToStartPaused": true,
+  "directListeningVerified": false,
+  "wholeFileDecode": "passed separately with FFmpeg",
+  "platformUploadVerified": false
+}

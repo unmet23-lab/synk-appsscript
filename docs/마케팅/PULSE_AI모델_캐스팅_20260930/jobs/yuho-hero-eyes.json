@@ -1,0 +1,54 @@
+[
+ {
+  "name": "M-yuho-hero-12",
+  "prompt": "The exact same real man as in all six attached reference photos (front, three-quarter and turned views of one person): keep his identity exactly: his face shape with soft, slightly full cheeks, his eyes, brows, nose, lips, ears, skin tone and his black cornrow braids pulled back. His eyes are asymmetric: in this front-facing photo, the eye on the LEFT side of the image has a thin, natural double-eyelid crease, and the eye on the RIGHT side of the image is a monolid with no crease at all. Make him look exactly as young as in the references, mid-twenties: smooth youthful skin with minimal lines, no forehead wrinkles, no deep nasolabial folds, no under-eye bags, no gaunt cheeks. Ignore the original backgrounds, clothing and any text. New photo: Korean entertainment agency profile portrait, head and shoulders, facing the camera, a relaxed, calm expression with lips closed, wearing a plain black crew-neck t-shirt with no logos. Plain warm-grey seamless studio backdrop, soft flattering key light from camera left with gentle falloff, warm filmic color grade, fine film grain, 85mm lens at f/2. Real skin texture with fine pores and vellus hair, a few flyaway hairs. No plastic skin, no heavy retouching, no text or logos anywhere.",
+  "aspect": "3:4",
+  "images": [
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0088.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0016.png",
+   "raw/yuho-ref-0136.png",
+   "raw/yuho-ref-0064.png"
+  ]
+ },
+ {
+  "name": "M-yuho-hero-13",
+  "prompt": "The exact same real man as in all six attached reference photos (front, three-quarter and turned views of one person): keep his identity exactly: his face shape with soft, slightly full cheeks, his eyes, brows, nose, lips, ears, skin tone and his black cornrow braids pulled back. His eyes are asymmetric: in this front-facing photo, the eye on the LEFT side of the image has a thin, natural double-eyelid crease, and the eye on the RIGHT side of the image is a monolid with no crease at all. Make him look exactly as young as in the references, mid-twenties: smooth youthful skin with minimal lines, no forehead wrinkles, no deep nasolabial folds, no under-eye bags, no gaunt cheeks. Ignore the original backgrounds, clothing and any text. New photo: Korean entertainment agency profile portrait, head and shoulders, facing the camera, a relaxed, calm expression with lips closed, wearing a plain black crew-neck t-shirt with no logos. Plain warm-grey seamless studio backdrop, soft flattering key light from camera left with gentle falloff, warm filmic color grade, fine film grain, 85mm lens at f/2. Real skin texture with fine pores and vellus hair, a few flyaway hairs. No plastic skin, no heavy retouching, no text or logos anywhere.",
+  "aspect": "3:4",
+  "images": [
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0088.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0016.png",
+   "raw/yuho-ref-0136.png",
+   "raw/yuho-ref-0064.png"
+  ]
+ },
+ {
+  "name": "M-yuho-hero-14",
+  "prompt": "The exact same real man as in all six attached reference photos (front, three-quarter and turned views of one person): keep his identity exactly: his face shape with soft, slightly full cheeks, his eyes, brows, nose, lips, ears, skin tone and his black cornrow braids pulled back. His eyes are asymmetric: in this front-facing photo, the eye on the LEFT side of the image has a thin, natural double-eyelid crease, and the eye on the RIGHT side of the image is a monolid with no crease at all. Make him look exactly as young as in the references, mid-twenties: smooth youthful skin with minimal lines, no forehead wrinkles, no deep nasolabial folds, no under-eye bags, no gaunt cheeks. Ignore the original backgrounds, clothing and any text. New photo: Korean entertainment agency profile portrait, head and shoulders, facing the camera, a gentle natural closed-mouth smile, wearing a plain black crew-neck t-shirt with no logos. Plain warm-grey seamless studio backdrop, soft flattering key light from camera left with gentle falloff, warm filmic color grade, fine film grain, 85mm lens at f/2. Real skin texture with fine pores and vellus hair, a few flyaway hairs. No plastic skin, no heavy retouching, no text or logos anywhere.",
+  "aspect": "3:4",
+  "images": [
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0088.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0016.png",
+   "raw/yuho-ref-0136.png",
+   "raw/yuho-ref-0064.png"
+  ]
+ },
+ {
+  "name": "M-yuho-hero-15",
+  "prompt": "The exact same real man as in all six attached reference photos (front, three-quarter and turned views of one person): keep his identity exactly: his face shape with soft, slightly full cheeks, his eyes, brows, nose, lips, ears, skin tone and his black cornrow braids pulled back. His eyes are asymmetric: in this front-facing photo, the eye on the LEFT side of the image has a thin, natural double-eyelid crease, and the eye on the RIGHT side of the image is a monolid with no crease at all. Make him look exactly as young as in the references, mid-twenties: smooth youthful skin with minimal lines, no forehead wrinkles, no deep nasolabial folds, no under-eye bags, no gaunt cheeks. Ignore the original backgrounds, clothing and any text. New photo: Korean entertainment agency profile portrait, head and shoulders, facing the camera, a gentle natural closed-mouth smile, wearing a plain black crew-neck t-shirt with no logos. Plain warm-grey seamless studio backdrop, soft flattering key light from camera left with gentle falloff, warm filmic color grade, fine film grain, 85mm lens at f/2. Real skin texture with fine pores and vellus hair, a few flyaway hairs. No plastic skin, no heavy retouching, no text or logos anywhere.",
+  "aspect": "3:4",
+  "images": [
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0088.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0016.png",
+   "raw/yuho-ref-0136.png",
+   "raw/yuho-ref-0064.png"
+  ]
+ }
+]

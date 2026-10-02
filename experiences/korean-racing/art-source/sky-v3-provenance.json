@@ -1,0 +1,29 @@
+{
+  "version": 3,
+  "createdAt": "2026-10-01T21:55:39.902Z",
+  "method": "Built-in image_gen; original PNG preserved. JPEG encoding and mobile-only downsampling; no artistic edits or upscaling.",
+  "assets": [
+    {
+      "source": "C:/Users/q1212/.codex/generated_images/01a0f3a6-d765-7340-833d-201fc4caabf1/exec-60561c86-0a02-4392-81b9-dcb4504faa74.png",
+      "runtime": "azure-sky-v3.jpg",
+      "mobile": "azure-sky-v3-mobile.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset type: game sky dome texture, a full seamless 360-degree equirectangular 2:1 spherical panorama, maximum available native resolution. Only sky, no land, no sea, no buildings, no text, no sun disc. The horizon runs exactly through the horizontal center, entire bottom half is a smooth pale atmospheric blue, not black. Above the horizon is an exquisitely beautiful crystal-clear coastal summer sky photographed in clean ocean air around late afternoon, rich but natural azure zenith graduating to luminous gentle powder-blue at the horizon. A few spacious layered ivory cumulus cloud islands, delicate feathery cirrus trails, exquisitely detailed translucent sunlit cloud edges, warm ivory light at the clouds' upper left, gently cool soft shadows inside the clouds. Lots of open blue sky, about 22% cloud coverage, the clouds gathered in loose asymmetric compositions at 10-35 degrees elevation. Fine wispy cirrus higher up creates depth. Bright optimistic cinematic natural beauty, clear visibility, no hazy milky wash, no storm clouds, no grey overcast, no exaggerated saturation, no fantasy, no lens flare, no stars. Cloud shapes have natural scale and subtle variety and do not repeat like wallpaper. Left and right image edges join seamlessly in azimuth, poles have appropriate equirectangular stretching. Image is a usable spherical sky texture, not a perspective landscape photograph.",
+      "sourceSha256": "a9d5aa709b1b8d6880c738da2f30d441bdbb33037bd10b4b76a39536275dddfa",
+      "runtimeBytes": 480193,
+      "runtimeSha256": "6938f9d76fb6ed6b5afa4eee1cb1927404f01cd617513a470bea7427d0424e9c",
+      "mobileBytes": 78521,
+      "mobileSha256": "dc4c2b928345fd64aaba62952f8450324cedfdd95b28062511c7c9fe029bcfa7"
+    },
+    {
+      "source": "C:/Users/q1212/.codex/generated_images/01a0f3a6-d765-7340-833d-201fc4caabf1/exec-ef6b5a71-35c7-4681-8aac-0e940a9089bd.png",
+      "runtime": "golden-sky-v3.jpg",
+      "mobile": "golden-sky-v3-mobile.jpg",
+      "prompt": "Use case: photorealistic-natural. Asset type: game sky dome texture, full seamless 360-degree equirectangular spherical panorama, strict wide 2:1 image, maximum native resolution. Sky only; no land, water, text, buildings or sun disc. Exact horizon through the horizontal middle; bottom half repeats a smooth desaturated horizon-coloured sky only. Exquisitely beautiful calm coastal golden-hour sky minutes before sunset. Large open areas of softly graded cobalt and periwinkle high sky, luminous apricot and peach light along the horizon, a few magnificent delicate high cirrus veils and broken small ivory cumulus cloud groups with rose gold illuminated edges. A warm light direction toward the center-left low horizon. Clouds have real fine translucency and irregular wispy detail, sparse and spacious about 20% coverage. The atmosphere remains clear and elegant, there is no milky haze or grey wet weather. A believable cinematic photographic sunset, natural pastel light without oversaturation, purple fantasy nebulae, black contrast, lens flare or stars. Left and right panorama edges must join invisibly in azimuth; poles stretched appropriately. This is a spherical sky texture, not a framed perspective landscape photo.",
+      "sourceSha256": "32a4baeed1ce6f1b20b4d806ec872e3224db67c90361c77c4180a9f1c3bc4aa4",
+      "runtimeBytes": 439689,
+      "runtimeSha256": "4d4fd46eee775ba31c466cce42171299f3c5e7356be4b5938d9c517768795c36",
+      "mobileBytes": 71139,
+      "mobileSha256": "aef854bc8b045d83d801ab354ac32659e236d3d6f912e829d722926d49bdcf2b"
+    }
+  ]
+}

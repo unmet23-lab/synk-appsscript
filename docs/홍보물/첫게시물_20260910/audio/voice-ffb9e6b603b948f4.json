@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "6ef3957c-438c-4445-8474-f58e9dcb13ab",
+  "narration": "이번에는 첫 메뉴를 소개하는 작은 카페로 바꿉니다. 음료 사진과 설명을 정리해, 온라인 메뉴 안내문을 만드는 일입니다.",
+  "narrationSha256": "ffb9e6b603b948f42f125acd8673c81a08663dad1509cc32f034074ccd37d86c",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-ffb9e6b603b948f4.wav",
+  "duration": 10.08,
+  "sha256": "23a69717c5570f2a3bfd49bdd4d2c9e3788bc555ce14f56ef0271187d01a611a",
+  "humanListening": false,
+  "fullDecode": true
+}

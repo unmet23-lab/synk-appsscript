@@ -1,0 +1,12 @@
+﻿회의 메모 → 할 일 표 | synkbrief v5
+
+1. guide.pdf 1~4쪽: ChatGPT에 prompt.txt와 practice-memo.txt를 넣어 첫 표 만들기.
+2. guide.pdf 5~8쪽: ChatGPT Work와 스킬이 무엇인지, 한 번 저장하고 다시 쓰는 방법.
+3. 데스크톱 Work에서 @skill-creator를 선택하고 work-setup.txt의 요청 보내기.
+4. 지침 검토·저장·설치 뒤 Skills와 새 작업의 @ 목록에서 meeting-actions 확인하기.
+5. work-reuse.txt의 짧은 요청 + 새 메모로 다시 사용하기.
+6. second-practice.txt로 이전 회의 내용이 섞이지 않는지 확인하기.
+
+meeting-actions/SKILL.md는 검토·설치용 지침 원본입니다. ZIP을 받거나 압축을 푸는 것만으로 앱에 설치되지 않습니다.
+Work 웹 진입 화면을 확인했으며, 데스크톱 생성·설치는 공식 문서 기반 안내입니다. 계정에서 설치 완료를 검증한 패키지가 아닙니다.
+자료 확인일: 2026-09-23. 댓글 전달·공개 다운로드 설정은 아직 미완료입니다.

@@ -1,0 +1,51 @@
+{
+  "ok": true,
+  "checks": [
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1050
+      },
+      "played": {
+        "duration": 83,
+        "time": 1.047406,
+        "paused": true,
+        "source": "http://127.0.0.1:5197/video-v4/preview.webm"
+      },
+      "positions": [
+        19.5,
+        38.5,
+        75.5
+      ],
+      "horizontalOverflow": false,
+      "errors": [],
+      "downloads": [
+        "http://127.0.0.1:5197/follow-along/synkbrief-meeting-kit.zip",
+        "http://127.0.0.1:5197/output/pdf/synkbrief-meeting-guide.pdf"
+      ]
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "played": {
+        "duration": 83,
+        "time": 1.051004,
+        "paused": true,
+        "source": "http://127.0.0.1:5197/video-v4/preview.webm"
+      },
+      "positions": [
+        19.5,
+        38.5,
+        75.5
+      ],
+      "horizontalOverflow": false,
+      "errors": [],
+      "downloads": [
+        "http://127.0.0.1:5197/follow-along/synkbrief-meeting-kit.zip",
+        "http://127.0.0.1:5197/output/pdf/synkbrief-meeting-guide.pdf"
+      ]
+    }
+  ]
+}

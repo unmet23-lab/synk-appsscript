@@ -1,0 +1,83 @@
+[
+  {
+    "id": "hook",
+    "start": 0,
+    "duration": 6.7,
+    "segments": [
+      "01",
+      "02"
+    ]
+  },
+  {
+    "id": "origin",
+    "start": 6.7,
+    "duration": 6.1,
+    "segments": [
+      "03",
+      "04"
+    ]
+  },
+  {
+    "id": "loop",
+    "start": 12.8,
+    "duration": 4.933333333333334,
+    "segments": [
+      "05",
+      "06"
+    ]
+  },
+  {
+    "id": "monster",
+    "start": 17.733333333333334,
+    "duration": 7.066666666666666,
+    "segments": [
+      "07",
+      "08"
+    ]
+  },
+  {
+    "id": "reset",
+    "start": 24.8,
+    "duration": 6.166666666666666,
+    "segments": [
+      "09",
+      "10"
+    ]
+  },
+  {
+    "id": "demo",
+    "start": 30.966666666666665,
+    "duration": 5.933333333333334,
+    "segments": [
+      "11",
+      "12"
+    ]
+  },
+  {
+    "id": "prompt",
+    "start": 36.9,
+    "duration": 10.033333333333333,
+    "segments": [
+      "13",
+      "14",
+      "15"
+    ]
+  },
+  {
+    "id": "payoff",
+    "start": 46.93333333333333,
+    "duration": 3.3666666666666667,
+    "segments": [
+      "16"
+    ]
+  },
+  {
+    "id": "ending",
+    "start": 50.3,
+    "duration": 6.166666666666667,
+    "segments": [
+      "17",
+      "18"
+    ]
+  }
+]

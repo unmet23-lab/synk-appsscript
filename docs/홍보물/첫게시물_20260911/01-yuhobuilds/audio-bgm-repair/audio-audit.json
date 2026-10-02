@@ -1,0 +1,334 @@
+{
+  "created_at_utc": "2026-09-10T17:38:08.154746+00:00",
+  "status": "BGM 연결 수정 중간본. 섹션별 남성 내레이션 추가 전.",
+  "pending": "4.88초 이후 새 내레이션은 아직 없으며 추가 내레이션 완료본이 아님.",
+  "narration_ranges_seconds": [
+    [
+      0,
+      4.88
+    ]
+  ],
+  "voice_preservation": {
+    "reference": "audio/voice.wav",
+    "sha256": "edbd1013ec12981c783c5e5f4e5c15a8522864e075c6358329f48ae7a8066519",
+    "full_file_sha256_equal": true,
+    "full_pcm_equal": true,
+    "first_4_88_seconds_pcm_equal": true,
+    "after_4_88_seconds_digital_silence": true,
+    "voice_tone_gain_speed_eq_changes": "none"
+  },
+  "music": {
+    "source": "영상/public/firstposts20260910/bed-shift.wav",
+    "source_sha256": "09fba871e084d47f79dd159f4ad4071ff0ac13f3235b6867502b655919985e62",
+    "source_range_seconds": [
+      0,
+      29.4
+    ],
+    "speech_target_lufs": -39.5,
+    "speech_source_measurement": {
+      "integrated_lufs": -17.17,
+      "true_peak_dbtp": -5.61,
+      "loudness_range_lu": 0.3
+    },
+    "speech_gain_db": -22.33,
+    "free_target_lufs": -33.5,
+    "free_source_measurement": {
+      "integrated_lufs": -17.67,
+      "true_peak_dbtp": -5.53,
+      "loudness_range_lu": 1.9
+    },
+    "free_gain_db": -15.829999999999998,
+    "intro_fade_seconds": 0.1,
+    "voice_to_music_rise_seconds": [
+      4.76,
+      5.38
+    ],
+    "ending_rise_seconds": [
+      25.8,
+      26.4
+    ],
+    "ending_gain_db": 3,
+    "ending_hold_seconds": [
+      26.4,
+      28.4
+    ],
+    "ending_fade_seconds": [
+      28.4,
+      29.4
+    ],
+    "envelope_reusable_for_narration_map": true
+  },
+  "problem_interval_check": {
+    "seconds": [
+      4.88,
+      9.4
+    ],
+    "previous_video_lufs": -46.56,
+    "repaired_video_lufs": -33.03,
+    "repaired_master_rms_dbfs": -35.80290431218816,
+    "digital_zero_sample_frames": 0
+  },
+  "sources_unmodified": [
+    {
+      "path": "docs/홍보물/첫게시물_20260911/01-yuhobuilds/audio/voice.wav",
+      "sha256": "edbd1013ec12981c783c5e5f4e5c15a8522864e075c6358329f48ae7a8066519",
+      "unchanged_after_run": true
+    },
+    {
+      "path": "docs/브랜드_목소리/20260910/수노_유호보컬/말하기_시험01/A_음질보정_v1.wav",
+      "sha256": "367b6013e5595abdf90d869c9bcb6938cf07002e55d507c23357dd0415770e53",
+      "unchanged_after_run": true
+    },
+    {
+      "path": "영상/public/firstposts20260910/bed-shift.wav",
+      "sha256": "09fba871e084d47f79dd159f4ad4071ff0ac13f3235b6867502b655919985e62",
+      "unchanged_after_run": true
+    },
+    {
+      "path": "docs/홍보물/첫게시물_20260911/01-yuhobuilds/render-muted.mp4",
+      "sha256": "c77ea3be7205ec458fdeb848b8aa9ba8d50b9c0f5ab9d8f1bf0638667502d89b",
+      "unchanged_after_run": true
+    }
+  ],
+  "files": {
+    "voice": {
+      "path": "audio-bgm-repair/voice.wav",
+      "sha256": "edbd1013ec12981c783c5e5f4e5c15a8522864e075c6358329f48ae7a8066519",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "pcm_s24le",
+            "codec_type": "audio",
+            "sample_rate": "48000",
+            "channels": 2,
+            "bits_per_sample": 24
+          }
+        ],
+        "format": {
+          "duration": "29.400000"
+        }
+      },
+      "integrated_lufs": -22.49,
+      "true_peak_dbtp": -10.96,
+      "loudness_range_lu": 7.5,
+      "decoded_sample_frames": 1411200,
+      "clipped_samples": 0,
+      "full_decode_passed": true
+    },
+    "bed": {
+      "path": "audio-bgm-repair/bed.wav",
+      "sha256": "3aafab5dd1e6a34d3ce3234136c08402c8b7275ddda5b89bf656fe619909328d",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "pcm_s24le",
+            "codec_type": "audio",
+            "sample_rate": "48000",
+            "channels": 2,
+            "bits_per_sample": 24
+          }
+        ],
+        "format": {
+          "duration": "29.400000"
+        }
+      },
+      "integrated_lufs": -33.56,
+      "true_peak_dbtp": -17.92,
+      "loudness_range_lu": 5.1,
+      "decoded_sample_frames": 1411200,
+      "clipped_samples": 0,
+      "full_decode_passed": true
+    },
+    "master": {
+      "path": "audio-bgm-repair/master.wav",
+      "sha256": "6dfab58ad39455d5a2c5daec17dd57b9aaf545457592d36e18be12956ed283cb",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "pcm_s24le",
+            "codec_type": "audio",
+            "sample_rate": "48000",
+            "channels": 2,
+            "bits_per_sample": 24
+          }
+        ],
+        "format": {
+          "duration": "29.400000"
+        }
+      },
+      "integrated_lufs": -28.9,
+      "true_peak_dbtp": -10.7,
+      "loudness_range_lu": 12.3,
+      "decoded_sample_frames": 1411200,
+      "clipped_samples": 0,
+      "full_decode_passed": true
+    },
+    "intermediate_video": {
+      "path": "video_BGM연결수정_내레이션추가전.mp4",
+      "sha256": "03d86caf713eb22a10f48672bec6206c6adf13af25ba2a17853ca01a9d21c8ef",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "sample_rate": "48000",
+            "channels": 2,
+            "bits_per_sample": 0
+          }
+        ],
+        "format": {
+          "duration": "29.400000"
+        }
+      },
+      "integrated_lufs": -28.92,
+      "true_peak_dbtp": -10.72,
+      "loudness_range_lu": 12.3,
+      "decoded_sample_frames": 1411200,
+      "clipped_samples": 0,
+      "full_decode_passed": true
+    }
+  },
+  "segments": [
+    {
+      "seconds": [
+        0,
+        4.88
+      ],
+      "bed": {
+        "integrated_lufs": -39.56,
+        "true_peak_dbtp": -27.94,
+        "loudness_range_lu": 0.4
+      },
+      "master": {
+        "integrated_lufs": -22.2,
+        "true_peak_dbtp": -10.7,
+        "loudness_range_lu": 0.3
+      },
+      "video": {
+        "integrated_lufs": -22.21,
+        "true_peak_dbtp": -10.72,
+        "loudness_range_lu": 0.3
+      }
+    },
+    {
+      "seconds": [
+        4.88,
+        9.4
+      ],
+      "bed": {
+        "integrated_lufs": -32.99,
+        "true_peak_dbtp": -21.61,
+        "loudness_range_lu": 1.0
+      },
+      "master": {
+        "integrated_lufs": -32.99,
+        "true_peak_dbtp": -21.61,
+        "loudness_range_lu": 1.0
+      },
+      "video": {
+        "integrated_lufs": -33.03,
+        "true_peak_dbtp": -21.55,
+        "loudness_range_lu": 0.9
+      }
+    },
+    {
+      "seconds": [
+        9.4,
+        13.9
+      ],
+      "bed": {
+        "integrated_lufs": -33.01,
+        "true_peak_dbtp": -21.69,
+        "loudness_range_lu": 0.1
+      },
+      "master": {
+        "integrated_lufs": -33.01,
+        "true_peak_dbtp": -21.69,
+        "loudness_range_lu": 0.1
+      },
+      "video": {
+        "integrated_lufs": -33.04,
+        "true_peak_dbtp": -21.68,
+        "loudness_range_lu": 0.1
+      }
+    },
+    {
+      "seconds": [
+        13.9,
+        22
+      ],
+      "bed": {
+        "integrated_lufs": -33.47,
+        "true_peak_dbtp": -21.36,
+        "loudness_range_lu": 2.1
+      },
+      "master": {
+        "integrated_lufs": -33.47,
+        "true_peak_dbtp": -21.36,
+        "loudness_range_lu": 2.1
+      },
+      "video": {
+        "integrated_lufs": -33.49,
+        "true_peak_dbtp": -21.42,
+        "loudness_range_lu": 2.1
+      }
+    },
+    {
+      "seconds": [
+        22,
+        25.8
+      ],
+      "bed": {
+        "integrated_lufs": -34.2,
+        "true_peak_dbtp": -21.38,
+        "loudness_range_lu": 0.2
+      },
+      "master": {
+        "integrated_lufs": -34.2,
+        "true_peak_dbtp": -21.38,
+        "loudness_range_lu": 0.2
+      },
+      "video": {
+        "integrated_lufs": -34.23,
+        "true_peak_dbtp": -21.47,
+        "loudness_range_lu": 0.2
+      }
+    },
+    {
+      "seconds": [
+        25.8,
+        29.4
+      ],
+      "bed": {
+        "integrated_lufs": -32.16,
+        "true_peak_dbtp": -17.92,
+        "loudness_range_lu": 0.4
+      },
+      "master": {
+        "integrated_lufs": -32.16,
+        "true_peak_dbtp": -17.92,
+        "loudness_range_lu": 0.4
+      },
+      "video": {
+        "integrated_lufs": -32.19,
+        "true_peak_dbtp": -17.93,
+        "loudness_range_lu": 0.5
+      }
+    }
+  ],
+  "verification_limits": "수치·파형·디코드·원본 보존 검사는 완료. 이 하네스에서는 직접 청취 확인 불가. 음질·자연스러움이 개선되었다거나 추가 내레이션을 완료했다고 주장하지 않음."
+}

@@ -1,0 +1,387 @@
+{
+ "id": "LAB표현소개_아맞다_20260927",
+ "version": "v2",
+ "line": "CL-6 LAB 표현 소개",
+ "character": "몽글",
+ "canvas": [
+  1080,
+  1920
+ ],
+ "fps": 30,
+ "duration": 19.31,
+ "safe_zone": {
+  "x0": 65,
+  "y0": 269,
+  "x1": 1015,
+  "y1": 1248,
+  "source": "Meta 통합 9:16 안전 영역(2026-03) — 위 269·아래 672·좌우 65px"
+ },
+ "music": {
+  "file": "음악/lyria3_b.mp3",
+  "model": "lyria-3-clip-preview (Vertex)",
+  "offset": 2.91,
+  "bpm": 110,
+  "break_music_time": 13.11,
+  "break_video_time": 10.3
+ },
+ "cuts": {
+  "B1 훅": [
+   0,
+   1.58
+  ],
+  "B2 예문(Veo 전체 화면)": [
+   1.58,
+   4.03
+  ],
+  "B2 펀치인(1.15배, 「우산」)": [
+   2.68,
+   4.03
+  ],
+  "B3 몽글": [
+   4.03,
+   10.3
+  ],
+  "B4 따라 말하기": [
+   10.3,
+   15.77
+  ],
+  "B5 빈칸 댓글": [
+   15.77,
+   19.31
+  ]
+ },
+ "veo": {
+  "file": "소스/veo_우산_장면_원본.mp4",
+  "source_start": 2.4
+ },
+ "voice": {
+  "hook": {
+   "at": 0.07,
+   "speech": 0.1,
+   "take": "hook__fl31_Sulafat__t5",
+   "trim_start": 0.22,
+   "speech_onset": 0.03,
+   "duration": 1.18,
+   "gain_db": -1.8,
+   "peak_db": -3.36
+  },
+  "umbrella": {
+   "at": 1.8,
+   "speech": 1.83,
+   "take": "umbrella__fl31_Sulafat__t1",
+   "trim_start": 0.16,
+   "speech_onset": 0.03,
+   "duration": 1.54,
+   "gain_db": -2.4,
+   "peak_db": -3.33
+  },
+  "beat": {
+   "at": 6.27,
+   "speech": 6.3,
+   "take": "beat__fl31_Sulafat__t1",
+   "trim_start": 0.17,
+   "speech_onset": 0.03,
+   "duration": 1.21,
+   "gain_db": -5.0,
+   "peak_db": -4.73
+  },
+  "slow": {
+   "at": 10.52,
+   "speech": 10.55,
+   "take": "slow__fl31_Sulafat__t2",
+   "trim_start": 0.24,
+   "speech_onset": 0.03,
+   "duration": 2.2,
+   "gain_db": -2.9,
+   "peak_db": -2.73,
+   "syllables": [
+    {
+     "syl": "아",
+     "start": 0.03,
+     "end": 0.56
+    },
+    {
+     "syl": "맞",
+     "start": 1.1,
+     "end": 1.29
+    },
+    {
+     "syl": "다",
+     "start": 1.5,
+     "end": 2.03
+    }
+   ]
+  },
+  "confirm": {
+   "at": 14.51,
+   "speech": 14.54,
+   "take": "confirm__fl31_Sulafat__t1",
+   "trim_start": 0.22,
+   "speech_onset": 0.03,
+   "duration": 1.31,
+   "gain_db": -1.1,
+   "peak_db": -4.38
+  }
+ },
+ "syllable_highlight": [
+  10.55,
+  11.62,
+  12.02
+ ],
+ "now_you": 12.62,
+ "nice": 14.51,
+ "send_cta": 16.47,
+ "punch_box": [
+  0,
+  250,
+  939,
+  1920
+ ],
+ "bubbles": [
+  {
+   "key": "s3_l1",
+   "start": 4.13,
+   "end": 6.2
+  },
+  {
+   "key": "s3_l2",
+   "start": 6.2,
+   "end": 8.14
+  },
+  {
+   "key": "s3_l3",
+   "start": 8.14,
+   "end": 10.3
+  }
+ ],
+ "mongle_cuts": [
+  {
+   "t": 0.0,
+   "cut": "놀람"
+  },
+  {
+   "t": 4.03,
+   "cut": "좌34"
+  },
+  {
+   "t": 6.2,
+   "cut": "놀람"
+  },
+  {
+   "t": 8.14,
+   "cut": "응원"
+  },
+  {
+   "t": 9.2,
+   "cut": "눈웃음"
+  },
+  {
+   "t": 10.3,
+   "cut": "본체"
+  },
+  {
+   "t": 12.62,
+   "cut": "집중"
+  },
+  {
+   "t": 14.51,
+   "cut": "눈웃음"
+  },
+  {
+   "t": 15.77,
+   "cut": "눈웃음"
+  },
+  {
+   "t": 16.95,
+   "cut": "윙크"
+  },
+  {
+   "t": 17.55,
+   "cut": "눈웃음"
+  }
+ ],
+ "blinks": [
+  8.7,
+  11.2
+ ],
+ "mongle_width": {
+  "B1": 660,
+  "B3": 860,
+  "B4": 560,
+  "B5": 600
+ },
+ "body_bottom": 1600,
+ "text": {
+  "en": {
+   "b1_l1": "Forgot something?",
+   "b1_l2": "Koreans say…",
+   "b1_meaning": "“Oh, right!”",
+   "rom": "a matda",
+   "b2_ko": "아 맞다, 우산!",
+   "b2_sub": "Oh right — my umbrella!",
+   "b3_top": "Mongle does it too…",
+   "s3_l1": [
+    "어? 창밖에 새!",
+    "Huh? A bird outside!"
+   ],
+   "s3_l2": [
+    "…아 맞다! 숙제!",
+    "…Oh right! Homework!"
+   ],
+   "s3_l3": [
+    "같이 하자!",
+    "Let’s do it together!"
+   ],
+   "b4_top": "Your turn — say it with me",
+   "b4_label": "sounds like",
+   "b4_pron": [
+    "a",
+    " · ",
+    "mat",
+    " · ",
+    "tta"
+   ],
+   "b4_now": "Now you!",
+   "b4_nice": "Nice!",
+   "b5_q": "What do you always forget?",
+   "b5_card": "아 맞다, ____!",
+   "b5_cta": "Comment yours below ↓",
+   "b5_send": "Send this to a friend who always forgets"
+  },
+  "ko": {
+   "b1_l1": "뭔가 깜빡했다면?",
+   "b1_l2": "이렇게 말해요",
+   "b1_meaning": "잊고 있던 게 떠올랐을 때",
+   "rom": "a matda",
+   "b2_ko": "아 맞다, 우산!",
+   "b2_sub": "우산을 두고 나올 뻔했을 때",
+   "b3_top": "몽글도 그래요…",
+   "s3_l1": [
+    "어? 창밖에 새!",
+    null
+   ],
+   "s3_l2": [
+    "…아 맞다! 숙제!",
+    null
+   ],
+   "s3_l3": [
+    "같이 하자!",
+    null
+   ],
+   "b4_top": "따라 말해 보세요",
+   "b4_label": "소리 나는 대로",
+   "b4_pron": [
+    "아",
+    " · ",
+    "맏",
+    " · ",
+    "따"
+   ],
+   "b4_now": "따라 해 보세요!",
+   "b4_nice": "좋아요!",
+   "b5_q": "늘 깜빡하는 게 뭐예요?",
+   "b5_card": "아 맞다, ____!",
+   "b5_cta": "댓글로 채워 주세요",
+   "b5_send": "늘 깜빡하는 친구에게 보내 주세요"
+  }
+ },
+ "audio": [
+  {
+   "t": 0.02,
+   "bus": "sfx",
+   "file": "sounds/synk-sound-earn.wav",
+   "gain_db": -17,
+   "what": "UI 획득 픽 — 첫 카드"
+  },
+  {
+   "t": 0.07,
+   "bus": "voice",
+   "file": "v2/voice/trim/hook.wav",
+   "gain_db": 0,
+   "what": "내레이션 「아 맞다!」"
+  },
+  {
+   "t": 1.22,
+   "bus": "mascot",
+   "file": "sounds/synk-voice-ppong.wav",
+   "gain_db": -7,
+   "what": "몽글 물음 「뽀옹」"
+  },
+  {
+   "t": 1.7,
+   "bus": "sfx",
+   "file": "sounds/synk-sound-earn.wav",
+   "gain_db": -19,
+   "what": "UI 픽 — 예문 카드"
+  },
+  {
+   "t": 1.8,
+   "bus": "voice",
+   "file": "v2/voice/trim/umbrella.wav",
+   "gain_db": 0,
+   "what": "내레이션 「아 맞다, 우산!」"
+  },
+  {
+   "t": 4.2,
+   "bus": "mascot",
+   "file": "sounds/synk-voice-ppoo.wav",
+   "gain_db": -7,
+   "what": "몽글 물음 「뽀오」 — 새를 봄"
+  },
+  {
+   "t": 6.2,
+   "bus": "sfx",
+   "file": "sounds/synk-sound-earn.wav",
+   "gain_db": -19,
+   "what": "UI 픽 — 알아차림"
+  },
+  {
+   "t": 6.27,
+   "bus": "voice",
+   "file": "v2/voice/trim/beat.wav",
+   "gain_db": 0,
+   "what": "내레이션 「아 맞다!」"
+  },
+  {
+   "t": 8.25,
+   "bus": "mascot",
+   "file": "sounds/synk-voice-myang.wav",
+   "gain_db": -7,
+   "what": "몽글 기쁨 「먀앙」 — 같이 하자"
+  },
+  {
+   "t": 10.52,
+   "bus": "voice",
+   "file": "v2/voice/trim/slow.wav",
+   "gain_db": 0,
+   "what": "내레이션 「아… 맞다.」 천천히"
+  },
+  {
+   "t": 14.51,
+   "bus": "voice",
+   "file": "v2/voice/trim/confirm.wav",
+   "gain_db": 0,
+   "what": "내레이션 「아 맞다!」 다시 한 번"
+  },
+  {
+   "t": 15.79,
+   "bus": "sfx",
+   "file": "sounds/synk-sound-achieve.wav",
+   "gain_db": -15,
+   "what": "UI 성취 화음 — 댓글 유도"
+  },
+  {
+   "t": 16.4,
+   "bus": "mascot",
+   "file": "sounds/synk-voice-moong.wav",
+   "gain_db": -7,
+   "what": "몽글 완료축하 「모오옹」"
+  }
+ ],
+ "duck_db": {
+  "voice": -6.0,
+  "mascot": -4.0,
+  "practice": -4.0
+ },
+ "motion_rules": "몽글: 표정 컷·눈 깜빡임만(회전·흔들림·이동·크기 애니메이션 없음) · 글자·카드: 0.94→1.0 튀어나옴 0.18초 · 구간 사이는 박자 하드 컷"
+}

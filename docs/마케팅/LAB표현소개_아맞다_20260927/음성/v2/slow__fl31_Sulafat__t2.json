@@ -1,0 +1,28 @@
+{
+ "id": "slow__fl31_Sulafat__t2",
+ "line": "slow",
+ "model": "gemini-3.1-flash-tts-preview",
+ "voice": "Sulafat",
+ "style": "Say this slowly and very clearly, like a kind Korean teacher modelling the phrase for a beginner to repeat, with natural native pronunciation and a short pause after 아",
+ "text": "아… 맞다.",
+ "location": "global",
+ "usage": {
+  "promptTokenCount": 38,
+  "candidatesTokenCount": 65,
+  "totalTokenCount": 103,
+  "trafficType": "ON_DEMAND",
+  "promptTokensDetails": [
+   {
+    "modality": "TEXT",
+    "tokenCount": 38
+   }
+  ],
+  "candidatesTokensDetails": [
+   {
+    "modality": "AUDIO",
+    "tokenCount": 65
+   }
+  ]
+ },
+ "modelVersion": "gemini-3.1-flash-tts-preview"
+}

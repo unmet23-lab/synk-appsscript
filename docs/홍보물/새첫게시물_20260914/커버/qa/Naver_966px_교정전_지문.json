@@ -1,0 +1,280 @@
+{
+  "scope": "Before Naver-only 966px title cover correction; 11 covers with five derivatives each",
+  "files": [
+    {
+      "file": "lab-facebook.html",
+      "bytes": 6238911,
+      "sha256": "12a8cab8f5dc1af7635b1a77348724a7357606f56bee1503910699ef41573fb9"
+    },
+    {
+      "file": "lab-facebook.mobile.html",
+      "bytes": 6238935,
+      "sha256": "b10c351decca67eb45604c084f737dbb3892505fbd9e0b19e80d9a1de27b1274"
+    },
+    {
+      "file": "lab-facebook.mobile.png",
+      "bytes": 50985,
+      "sha256": "fc52669d25d5bb3f6e9d583c84503aa95be771114e244c1c771d346f153e5847"
+    },
+    {
+      "file": "lab-facebook.png",
+      "bytes": 354966,
+      "sha256": "dcee4e32bc29f29625451a901f6b1d36111ee927173f0f6622f7e64f95836cc0"
+    },
+    {
+      "file": "lab-facebook.svg",
+      "bytes": 6238780,
+      "sha256": "a8d5f787374bc384fdeba6925b87cbb22410be5a331212c88b31a4e7d0fda944"
+    },
+    {
+      "file": "lab-youtube.html",
+      "bytes": 6238955,
+      "sha256": "377b72bb85ce6c84ac1d6303cc306a740e2f76533ad8d40c1b5905b710cc692d"
+    },
+    {
+      "file": "lab-youtube.mobile.html",
+      "bytes": 6238993,
+      "sha256": "dae4b3376b44721a465a8640357a5d3df34e02f41501fa539803a03f02e31a1c"
+    },
+    {
+      "file": "lab-youtube.mobile.png",
+      "bytes": 13173,
+      "sha256": "09a85f4aef641c2ff20f22157d7cc82dc200cd9f00de9e8512727f067d054da8"
+    },
+    {
+      "file": "lab-youtube.png",
+      "bytes": 511431,
+      "sha256": "a5db01387a6126494362f207a3b9d66530e9d0aad20c67617f67fa1e4c675ab4"
+    },
+    {
+      "file": "lab-youtube.svg",
+      "bytes": 6238823,
+      "sha256": "e35881b8defdc81f5fd850e741abe8435d17bd92b47d2464d27044cd6d90f2ad"
+    },
+    {
+      "file": "shift-behance.html",
+      "bytes": 6753536,
+      "sha256": "16f1878d64f87489ac81708f4339a1a8b8cd7d28adb72b945a9306f4746f9a20"
+    },
+    {
+      "file": "shift-behance.mobile.html",
+      "bytes": 6753558,
+      "sha256": "20f4c282975613fa76ab901c7a451eb7efa07dc0a4648006fb6c9993e41e5f1d"
+    },
+    {
+      "file": "shift-behance.mobile.png",
+      "bytes": 15635,
+      "sha256": "789856dcc4f514c3ef954ceb254803fbd0b64fd205090764952c46764b668872"
+    },
+    {
+      "file": "shift-behance.png",
+      "bytes": 215281,
+      "sha256": "f8c53a851140668fe65c11857eb34b228614bd64b152de171bcddf1bfe7ac943"
+    },
+    {
+      "file": "shift-behance.svg",
+      "bytes": 6753405,
+      "sha256": "07025388235ba3718f7031c9a9e76a5c95120ad1314074411586ab30c1cb1426"
+    },
+    {
+      "file": "shift-naverblog.html",
+      "bytes": 6753841,
+      "sha256": "bc12c6a7858c455c7c91006c9575a90c9814303490c03775097270fce0a4e6d2"
+    },
+    {
+      "file": "shift-naverblog.mobile.html",
+      "bytes": 6753865,
+      "sha256": "c6db80cb4a705bb8a2d0c4dd8514285915554b2ef8e0b50a60c248b575119056"
+    },
+    {
+      "file": "shift-naverblog.mobile.png",
+      "bytes": 32783,
+      "sha256": "b8517a1ca6cbc505303db00bc88a288298c5630ccadb84ba5eb95006b2b69184"
+    },
+    {
+      "file": "shift-naverblog.png",
+      "bytes": 259581,
+      "sha256": "e9388f548a4c03ca3dc4cb40977b11e089790815bfb40e6d9a6c86e4b88a24ef"
+    },
+    {
+      "file": "shift-naverblog.svg",
+      "bytes": 6753710,
+      "sha256": "25b154ff0093f3921e14c221d586d01ae281e8271eb7c381edd933474f8c1fb6"
+    },
+    {
+      "file": "shift-pinterest.html",
+      "bytes": 6753613,
+      "sha256": "426e3a1fb5301f804574358b01a9bd3dd871f9ae3c63b46ef62066ab63bd87f9"
+    },
+    {
+      "file": "shift-pinterest.mobile.html",
+      "bytes": 6753637,
+      "sha256": "126f3c525cc3c217c4550f1225b602b73dce69483ab480880a18807e18e21ed7"
+    },
+    {
+      "file": "shift-pinterest.mobile.png",
+      "bytes": 50041,
+      "sha256": "5f1ae1915b1ebe1d3889b6b006d99e28c1347f91207167c9c7ffab85e2e0d7ef"
+    },
+    {
+      "file": "shift-pinterest.png",
+      "bytes": 331766,
+      "sha256": "89658dfc4d5fed95e375702432cbe70b603c8ade95bbdcf8401a7d4cd2b27e95"
+    },
+    {
+      "file": "shift-pinterest.svg",
+      "bytes": 6753482,
+      "sha256": "3a3ff799f105cb868196f33d4bfc1669b2e4b7f682d30eaf1fbb65ca057ba1b4"
+    },
+    {
+      "file": "shift-tistory.html",
+      "bytes": 6753867,
+      "sha256": "41f1dc4c2326e860b8d509d9fca10804342ad9247d9779c3e146723a653a89c4"
+    },
+    {
+      "file": "shift-tistory.mobile.html",
+      "bytes": 6753891,
+      "sha256": "1daa1a3b30b93d449a9db11e32e395804b3183d3592e2fb0c75b2a32d9bbaeb9"
+    },
+    {
+      "file": "shift-tistory.mobile.png",
+      "bytes": 36329,
+      "sha256": "fe4937dd26433c1482f48af57f21e5fb0684a6ba6cf73d2230746412a201b4f2"
+    },
+    {
+      "file": "shift-tistory.png",
+      "bytes": 359249,
+      "sha256": "c4b446d344eec6bc845b092f902ba36ff1ea1428b8b71db0d2d3d002438643e3"
+    },
+    {
+      "file": "shift-tistory.svg",
+      "bytes": 6753736,
+      "sha256": "f4d1c48cc8570a6625e3e7bebf05d38a1abf9231421dde2fec10a5b4ed49409d"
+    },
+    {
+      "file": "synk-linkedin-company.html",
+      "bytes": 4627239,
+      "sha256": "5b68a5b4db7a7206f759b0c532f7f6b93b73baf132fd81aeb7ea51547b25b552"
+    },
+    {
+      "file": "synk-linkedin-company.mobile.html",
+      "bytes": 4627261,
+      "sha256": "5811f0022b80d624621148595db70aed8a55a59b050155a08d3225e6ef57e77e"
+    },
+    {
+      "file": "synk-linkedin-company.mobile.png",
+      "bytes": 19979,
+      "sha256": "3c6867098f03937cd396648047680d85d02704a3d141a5f4bf75a263a510c5b7"
+    },
+    {
+      "file": "synk-linkedin-company.png",
+      "bytes": 118935,
+      "sha256": "2d0b5ce70c6c4e2000e8f18088af4f8842410ef447adb1940988acbc97615999"
+    },
+    {
+      "file": "synk-linkedin-company.svg",
+      "bytes": 4627108,
+      "sha256": "caa8c7fa60ad44a4cfcf54ad9e9633d0456a97c93f5db586b9ce5b167f924788"
+    },
+    {
+      "file": "synkbrief-youtube.html",
+      "bytes": 6753703,
+      "sha256": "c3d675a31163eecec6e8e6bc6350085da8626c4299abeadcc10969cc01dd8d96"
+    },
+    {
+      "file": "synkbrief-youtube.mobile.html",
+      "bytes": 6753741,
+      "sha256": "f0f649350119ce3b2a620b8722b12a7ccf77e45b83dce7535a247d00481f6800"
+    },
+    {
+      "file": "synkbrief-youtube.mobile.png",
+      "bytes": 11664,
+      "sha256": "acb89a455d7fb6e3afeb3f0c2343ddb00d5853aafc351327caeef8ce2996f438"
+    },
+    {
+      "file": "synkbrief-youtube.png",
+      "bytes": 493625,
+      "sha256": "72a0df986b7199604b0a958b689d4d44f594385e9cf39bb6ca73f6cd55a879b4"
+    },
+    {
+      "file": "synkbrief-youtube.svg",
+      "bytes": 6753571,
+      "sha256": "aceaca2c4d674eb667590d139b5ce9c31e8806e3a15b0c0b5a0b0ba91fff7fb9"
+    },
+    {
+      "file": "yuho-linkedin-primary.html",
+      "bytes": 6753542,
+      "sha256": "b0769512a00ef836f112fe9dcfb95300fad01b72282eedd03739e170ab61911c"
+    },
+    {
+      "file": "yuho-linkedin-primary.mobile.html",
+      "bytes": 6753564,
+      "sha256": "4b319919f36ef5f2d60d9e55810618acf8fd71703c0f69623060dd48d4bdc39f"
+    },
+    {
+      "file": "yuho-linkedin-primary.mobile.png",
+      "bytes": 25230,
+      "sha256": "beaaaa9ea380ad92e8954fe457a9fd4483e111d50bda337a8799392bb6ca60d2"
+    },
+    {
+      "file": "yuho-linkedin-primary.png",
+      "bytes": 157958,
+      "sha256": "452abfa74d3f6d00eb59c7e74d1dd20b71a7b64ac45c0a795f36e24615bf6695"
+    },
+    {
+      "file": "yuho-linkedin-primary.svg",
+      "bytes": 6753411,
+      "sha256": "a639f86a733a8628398e998e9c86b1ed80000dc55ff37db86b4e06f52e74d327"
+    },
+    {
+      "file": "yuhobuilds-x.html",
+      "bytes": 6753570,
+      "sha256": "b2da98912c6fbedbfc873473f9d9230030331a971169a2c59cf4334106cff39e"
+    },
+    {
+      "file": "yuhobuilds-x.mobile.html",
+      "bytes": 6753594,
+      "sha256": "80317195dfdd5299c78d0a356aeb35ac517ca8563f76acdbba6457a4d8ea2b23"
+    },
+    {
+      "file": "yuhobuilds-x.mobile.png",
+      "bytes": 31466,
+      "sha256": "7a3c49883909808baa22f45aad46ac5bd1bc022ec5a6b33f1e13a5cfc451ac7a"
+    },
+    {
+      "file": "yuhobuilds-x.png",
+      "bytes": 185316,
+      "sha256": "de2986a15775d7331942b8bc1fbd756a9551f42711e74d653b9ca45af686117d"
+    },
+    {
+      "file": "yuhobuilds-x.svg",
+      "bytes": 6753439,
+      "sha256": "d6b698181f2b5b011d30cac5b48066ae56038fc7ba1ef5c482b6eb4ca152cf6e"
+    },
+    {
+      "file": "yuhobuilds-youtube.html",
+      "bytes": 6753752,
+      "sha256": "1af4ecfc137d906b9124dc9aec13f1bb13b8877d893ab2346f97cd694689a3f7"
+    },
+    {
+      "file": "yuhobuilds-youtube.mobile.html",
+      "bytes": 6753790,
+      "sha256": "9b50b9cdd055f39d84e2a454fce5184c0ed41d7f3bb7e954243ac10bf3b1f401"
+    },
+    {
+      "file": "yuhobuilds-youtube.mobile.png",
+      "bytes": 12920,
+      "sha256": "feb58627d9975d3918cb7c479927dae2b7fd1aa6dd4f60e9f258c7b83c44d06a"
+    },
+    {
+      "file": "yuhobuilds-youtube.png",
+      "bytes": 495968,
+      "sha256": "97926098c2fcd6cd2738217de010f2fa2ffbe7a3ea0d198153dea6ec891d839b"
+    },
+    {
+      "file": "yuhobuilds-youtube.svg",
+      "bytes": 6753620,
+      "sha256": "0a26c8380efbb4f824d459fe3cccbf0c44165aac375baae2967213b81f74ca74"
+    }
+  ]
+}

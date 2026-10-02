@@ -1,0 +1,38 @@
+[
+  {
+    "startSeconds": 0,
+    "durationSeconds": 6,
+    "title": "Өөрийн бодлоо\nсолонгосоор хэлээрэй.",
+    "layout": "cover"
+  },
+  {
+    "startSeconds": 6,
+    "durationSeconds": 7,
+    "title": "Амралтын өдөр\nхаашаа явах вэ?",
+    "layout": "choices"
+  },
+  {
+    "startSeconds": 13,
+    "durationSeconds": 7,
+    "title": "Өөр сонголттой бол",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 20,
+    "durationSeconds": 7,
+    "title": "Сонголтоо хэлээрэй",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 27,
+    "durationSeconds": 7,
+    "title": "Ижил сонголттой бол",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 34,
+    "durationSeconds": 7,
+    "title": "Таны амьдралд\nхэрэглэх солонгос хэл",
+    "layout": "closing"
+  }
+]

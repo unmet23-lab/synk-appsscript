@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-09-09T07:32:54.829Z",
+  "clone": "C:/Users/q1212/Documents/SYNK-deploy-mn-20260909",
+  "base": "184fe8c5d6d30795fd479293e743f1a1f066d7e8",
+  "sourceCommit": "8e62344a2",
+  "sourceChecks": [
+    {
+      "file": "Code.js",
+      "changedLiterals": 1,
+      "sourceCommitMatch": true,
+      "unchangedCodeStructure": true
+    },
+    {
+      "file": "엔진_운영배치.js",
+      "changedLiterals": 2,
+      "sourceCommitMatch": true,
+      "unchangedCodeStructure": true
+    },
+    {
+      "file": "엔진_콘텐츠AI.js",
+      "changedLiterals": 68,
+      "sourceCommitMatch": true,
+      "unchangedCodeStructure": true
+    }
+  ],
+  "totalUnique": 875,
+  "correctedFingerprints": 71,
+  "missingCorrectedEvidence": 0,
+  "ledgerRecordsPrepared": 0,
+  "dictionarySuspectStrings": 13,
+  "nativeReview": false,
+  "reverseTranslation": false
+}

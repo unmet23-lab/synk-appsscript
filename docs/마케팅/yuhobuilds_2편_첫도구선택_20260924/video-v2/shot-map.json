@@ -1,0 +1,263 @@
+[
+  {
+    "id": "shot-01",
+    "name": "목표는 출석 앱 하나",
+    "start": 0,
+    "end": 2.1666666666666665,
+    "duration": 2.1666666666666665,
+    "transition": "zoom",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-02",
+    "name": "두 AI에게 같은 질문",
+    "start": 2.1666666666666665,
+    "end": 5.266666666666667,
+    "duration": 3.1,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-03",
+    "name": "처음 듣는 도구 첫 두 개",
+    "start": 5.266666666666667,
+    "end": 7.266666666666667,
+    "duration": 2,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-04",
+    "name": "도구 네 개가 쌓임",
+    "start": 7.266666666666667,
+    "end": 9.833333333333334,
+    "duration": 2.5666666666666673,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-05",
+    "name": "Claude의 제안",
+    "start": 9.833333333333334,
+    "end": 12.566666666666666,
+    "duration": 2.7333333333333325,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-06",
+    "name": "GPT의 제안",
+    "start": 12.566666666666666,
+    "end": 14.366666666666667,
+    "duration": 1.8000000000000007,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-07",
+    "name": "양쪽 제안 사이에서",
+    "start": 14.366666666666667,
+    "end": 16.433333333333334,
+    "duration": 2.0666666666666664,
+    "transition": "zoom",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-08",
+    "name": "잠깐만요 리액션",
+    "start": 16.433333333333334,
+    "end": 19.433333333333334,
+    "duration": 3,
+    "transition": "zoom",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-09",
+    "name": "하나 대 네 개",
+    "start": 19.433333333333334,
+    "end": 21.166666666666668,
+    "duration": 1.7333333333333343,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-10",
+    "name": "Claude 쪽으로 선택",
+    "start": 21.166666666666668,
+    "end": 23,
+    "duration": 1.8333333333333321,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-11",
+    "name": "Sheets는 기록하는 표",
+    "start": 23,
+    "end": 24.633333333333333,
+    "duration": 1.6333333333333329,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-12",
+    "name": "Glide는 앱 화면",
+    "start": 24.633333333333333,
+    "end": 26.366666666666667,
+    "duration": 1.7333333333333343,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-13",
+    "name": "첫 화면의 기대",
+    "start": 26.366666666666667,
+    "end": 29.366666666666667,
+    "duration": 3,
+    "transition": "zoom",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-14",
+    "name": "만들기 전에 다음 난관",
+    "start": 29.366666666666667,
+    "end": 31.4,
+    "duration": 2.0333333333333314,
+    "transition": "up",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-15",
+    "name": "설정에서 멈춤",
+    "start": 31.4,
+    "end": 33.36666666666667,
+    "duration": 1.9666666666666686,
+    "transition": "zoom",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-16",
+    "name": "검색 다시 보기 재설정",
+    "start": 33.36666666666667,
+    "end": 35.7,
+    "duration": 2.3333333333333357,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-17",
+    "name": "한 시간쯤",
+    "start": 35.7,
+    "end": 37.8,
+    "duration": 2.0999999999999943,
+    "transition": "zoom",
+    "motion": "counting-dynamic-scale"
+  },
+  {
+    "id": "shot-18",
+    "name": "출석 0건의 눈물",
+    "start": 37.8,
+    "end": 39.46666666666667,
+    "duration": 1.6666666666666714,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-19",
+    "name": "지금 다시 묻는다면",
+    "start": 39.46666666666667,
+    "end": 41.9,
+    "duration": 2.43333333333333,
+    "transition": "up",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-20",
+    "name": "첫 단계 한 개를 비교",
+    "start": 41.9,
+    "end": 44.53333333333333,
+    "duration": 2.633333333333333,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-21",
+    "name": "그대로 바꿔 쓸 프롬프트",
+    "start": 44.53333333333333,
+    "end": 47.333333333333336,
+    "duration": 2.8000000000000043,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-22",
+    "name": "폴더 하나 정하기",
+    "start": 47.333333333333336,
+    "end": 49.86666666666667,
+    "duration": 2.5333333333333314,
+    "transition": "up",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-23",
+    "name": "폴더는 작업대",
+    "start": 49.86666666666667,
+    "end": 52.56666666666667,
+    "duration": 2.700000000000003,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-24",
+    "name": "현재 Code 탭",
+    "start": 52.56666666666667,
+    "end": 54.7,
+    "duration": 2.133333333333333,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-25",
+    "name": "Local과 폴더 고르기",
+    "start": 54.7,
+    "end": 57.166666666666664,
+    "duration": 2.4666666666666615,
+    "transition": "zoom",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-26",
+    "name": "현재 따라 하기 전체 경로",
+    "start": 57.166666666666664,
+    "end": 60.53333333333333,
+    "duration": 3.366666666666667,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-27",
+    "name": "다음 편 첫 질문",
+    "start": 60.53333333333333,
+    "end": 63.13333333333333,
+    "duration": 2.6000000000000014,
+    "transition": "up",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-28",
+    "name": "답이 남는 곳 예고",
+    "start": 63.13333333333333,
+    "end": 65.13333333333334,
+    "duration": 2.000000000000007,
+    "transition": "slide",
+    "motion": "kinetic-beat-slam"
+  },
+  {
+    "id": "shot-29",
+    "name": "엔딩 채널 약속",
+    "start": 65.13333333333334,
+    "end": 67.76666666666667,
+    "duration": 2.6333333333333258,
+    "transition": "zoom",
+    "motion": "kinetic-beat-slam"
+  }
+]

@@ -1,0 +1,352 @@
+[
+  {
+    "id": "raw2547",
+    "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\새 폴더 (3)\\MVI_2547.MP4",
+    "exists": true,
+    "bytes": 8180378492,
+    "modified": "2026-09-24T23:12:03",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "hevc",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "r_frame_rate": "60000/1001"
+        },
+        {
+          "index": 1,
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "r_frame_rate": "0/0"
+        },
+        {
+          "index": 2,
+          "codec_type": "data",
+          "r_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "723.489433"
+      }
+    }
+  },
+  {
+    "id": "raw2548",
+    "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\새 폴더 (3)\\MVI_2548.MP4",
+    "exists": true,
+    "bytes": 11550754424,
+    "modified": "2026-09-24T23:30:46",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "hevc",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "r_frame_rate": "60000/1001"
+        },
+        {
+          "index": 1,
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "r_frame_rate": "0/0"
+        },
+        {
+          "index": 2,
+          "codec_type": "data",
+          "r_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "1021.587233"
+      }
+    }
+  },
+  {
+    "id": "raw2549",
+    "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\새 폴더 (3)\\MVI_2549.MP4",
+    "exists": true,
+    "bytes": 1341669740,
+    "modified": "2026-09-24T23:53:38",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "hevc",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "r_frame_rate": "60000/1001"
+        },
+        {
+          "index": 1,
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "r_frame_rate": "0/0"
+        },
+        {
+          "index": 2,
+          "codec_type": "data",
+          "r_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "118.585133"
+      }
+    }
+  },
+  {
+    "id": "raw2550",
+    "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\새 폴더 (3)\\MVI_2550.MP4",
+    "exists": true,
+    "bytes": 12928886804,
+    "modified": "2026-09-25T00:12:43",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "hevc",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "r_frame_rate": "60000/1001"
+        },
+        {
+          "index": 1,
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "r_frame_rate": "0/0"
+        },
+        {
+          "index": 2,
+          "codec_type": "data",
+          "r_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "1143.475667"
+      }
+    }
+  },
+  {
+    "id": "interview0923-front",
+    "source": "C:\\Users\\q1212\\Videos\\SYNK_Interview_20260923\\renders\\ResolveClean\\04.mp4",
+    "exists": true,
+    "bytes": 28874651,
+    "modified": "2026-09-23T05:09:08.740119",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "r_frame_rate": "30/1"
+        },
+        {
+          "index": 1,
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "r_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "10.433333"
+      }
+    },
+    "sample": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\performance-references\\inventory-interview0923-front.jpg"
+  },
+  {
+    "id": "interview0923-full",
+    "source": "C:\\Users\\q1212\\Videos\\SYNK_Interview_20260923\\renders\\SYNK_Interview_FINAL_1080p.mp4",
+    "exists": true,
+    "bytes": 383065501,
+    "modified": "2026-09-23T04:38:47.566379",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "r_frame_rate": "30/1"
+        },
+        {
+          "index": 1,
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "r_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "165.300000"
+      }
+    }
+  },
+  {
+    "id": "pulse-source-natural",
+    "source": "C:\\Users\\q1212\\Videos\\OneDrive_video_local_20260924\\Desktop\\SYNK PULSE\\인물\\완성 영상\\source-natural-5s.mp4",
+    "exists": true,
+    "bytes": 11777350,
+    "modified": "2026-09-09T03:25:22.232811",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "r_frame_rate": "30000/1001",
+          "side_data_list": [
+            {}
+          ]
+        }
+      ],
+      "format": {
+        "duration": "5.005000"
+      }
+    },
+    "sample": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\performance-references\\inventory-pulse-source-natural.jpg"
+  },
+  {
+    "id": "pulse-yuho-cafe",
+    "source": "C:\\Users\\q1212\\Videos\\OneDrive_video_local_20260924\\Desktop\\SYNK PULSE\\인물\\완성 영상\\yuho-cafe-5s-final.mp4",
+    "exists": true,
+    "bytes": 6948031,
+    "modified": "2026-09-09T03:43:35.894109",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "r_frame_rate": "24/1"
+        }
+      ],
+      "format": {
+        "duration": "5.000000"
+      }
+    },
+    "sample": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\performance-references\\inventory-pulse-yuho-cafe.jpg"
+  },
+  {
+    "id": "kakao0911",
+    "source": "C:\\Users\\q1212\\Videos\\OneDrive_video_local_20260924\\문서\\카카오톡 받은 파일\\KakaoTalk_20260911_183823135.mp4",
+    "exists": true,
+    "bytes": 42504429,
+    "modified": "2026-09-11T19:22:10.622967",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "hevc",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "r_frame_rate": "30/1"
+        },
+        {
+          "index": 1,
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "r_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "206.400000"
+      }
+    },
+    "sample": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\performance-references\\inventory-kakao0911.jpg"
+  },
+  {
+    "id": "kakao0905",
+    "source": "C:\\Users\\q1212\\Videos\\OneDrive_video_local_20260924\\문서\\카카오톡 받은 파일\\KakaoTalk_20260905_164441733.mp4",
+    "exists": true,
+    "bytes": 8583662,
+    "modified": "2026-09-05T16:45:33.009460",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "hevc",
+          "codec_type": "video",
+          "width": 884,
+          "height": 1920,
+          "r_frame_rate": "60/1",
+          "side_data_list": [
+            {}
+          ]
+        },
+        {
+          "index": 1,
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "r_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "26.136667"
+      }
+    },
+    "sample": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\performance-references\\inventory-kakao0905.jpg"
+  },
+  {
+    "id": "kakao0921",
+    "source": "C:\\Users\\q1212\\Videos\\OneDrive_video_local_20260924\\문서\\카카오톡 받은 파일\\KakaoTalk_20260921_183737975.mp4",
+    "exists": true,
+    "bytes": 1336169,
+    "modified": "2026-09-22T04:27:52.494324",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1280,
+          "height": 720,
+          "r_frame_rate": "24/1"
+        },
+        {
+          "index": 1,
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "r_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "10.000000"
+      }
+    },
+    "sample": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\performance-references\\inventory-kakao0921.jpg"
+  }
+]

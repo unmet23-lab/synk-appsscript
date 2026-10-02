@@ -1,0 +1,37 @@
+{
+  "candidate": "chatterbox-v3",
+  "space": "ResembleAI/Chatterbox-Multilingual-TTS-V3",
+  "api": "/generate_tts_audio",
+  "parameters": {
+    "text_input": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+    "audio_prompt_path_input": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\qwen-design\\raw.wav",
+      "meta": {
+        "_type": "gradio.FileData"
+      },
+      "orig_name": "raw.wav"
+    },
+    "language_id_input": "ko",
+    "exaggeration_input": 0.5,
+    "temperature_input": 0.8,
+    "seed_num_input": 42,
+    "cfgw_input": 0.5
+  },
+  "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+  "synthetic": true,
+  "privateReferenceUploaded": false,
+  "higgsfieldUsed": false,
+  "humanListening": false,
+  "startedAt": 1789029441.588833,
+  "reference": {
+    "type": "original synthetic voice created for this comparison; not an identified person",
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\qwen-design\\raw.wav",
+    "sha256": "4729752ca903f37dfa427d60468a30dd1a5ce716ccef67dd01babf26a5b1fa25",
+    "origin": "Qwen3-TTS VoiceDesign official demo"
+  },
+  "providerMessage": null,
+  "status": "completed",
+  "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\chatterbox-v3\\raw.wav",
+  "sha256": "8ed2bbb497fd4da6932faa1c385ef5888021b35d46448e2886e5a01894af2ece",
+  "elapsedSeconds": 12.016000000000076
+}

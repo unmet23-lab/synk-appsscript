@@ -1,0 +1,133 @@
+{
+  "title": "번역만 하려던 사람의 첫 앱 도전",
+  "revision": "쇼츠 호흡 수정본",
+  "voice": {
+    "name": "정의로",
+    "id": "tc_608820eb05b71bc949df989d",
+    "model": "ssfm-v30",
+    "status": "사용자가 임시 선택. 추후 육성 교체 예정"
+  },
+  "segments": [
+    {
+      "id": "01",
+      "visual": "hook",
+      "emotion": "toneup",
+      "intensity": 1.05,
+      "tempo": 1.24,
+      "text": "오늘은 번역 좀 하려고 결제했다가, 출석 앱까지 만들게 된 얘기예요."
+    },
+    {
+      "id": "02",
+      "visual": "setting",
+      "emotion": "normal",
+      "intensity": 1.05,
+      "tempo": 1.22,
+      "text": "몽골 울란바토르, 학원 부원장. 친구도 없고, 솔직히 심심했습니다."
+    },
+    {
+      "id": "03",
+      "visual": "payment",
+      "emotion": "toneup",
+      "intensity": 1.05,
+      "tempo": 1.25,
+      "text": "유월 이일, 클로드 첫 결제! 그때는 딱 번역만 하려고 했죠."
+    },
+    {
+      "id": "04",
+      "visual": "inquiries",
+      "emotion": "toneup",
+      "intensity": 1.05,
+      "tempo": 1.25,
+      "text": "그런데 학생 문의가 확 늘었어요. 잠깐, 이러면 관리가 어렵겠는데?"
+    },
+    {
+      "id": "05",
+      "visual": "purpose",
+      "emotion": "normal",
+      "intensity": 1.05,
+      "tempo": 1.22,
+      "text": "출석 앱을 만들면? 부모님께 등하원 알림도 가고, 선생님들도 편해지잖아요!"
+    },
+    {
+      "id": "06",
+      "visual": "tools",
+      "emotion": "toneup",
+      "intensity": 1.05,
+      "tempo": 1.24,
+      "text": "그래서 글라이드랑 구글 시트로 앱 만들기 시작! 그런데 제 개발 실력은?"
+    },
+    {
+      "id": "07",
+      "visual": "zero",
+      "emotion": "tonedown",
+      "intensity": 1.05,
+      "tempo": 1.2,
+      "text": "제로. 클로드 코드가 뭔지도 몰랐어요. 설정부터 막혔죠."
+    },
+    {
+      "id": "08",
+      "visual": "screenshots",
+      "emotion": "toneup",
+      "intensity": 1.05,
+      "tempo": 1.28,
+      "text": "방법은 하나. 화면 찍고! 물어보고! 따라 하고!"
+    },
+    {
+      "id": "09",
+      "visual": "loop",
+      "emotion": "toneup",
+      "intensity": 1.05,
+      "tempo": 1.28,
+      "text": "오, 다음 화면! 근데 이건 또 뭐야? 다시 찍고, 다시 질문!"
+    },
+    {
+      "id": "10",
+      "visual": "hours",
+      "emotion": "toneup",
+      "intensity": 1.05,
+      "tempo": 1.25,
+      "text": "수업 시간 빼고, 하루 열일곱, 열여덟 시간은 붙잡았던 것 같아요."
+    },
+    {
+      "id": "11",
+      "visual": "joke",
+      "emotion": "normal",
+      "intensity": 1.05,
+      "tempo": 1.2,
+      "text": "심심함은 해결됐습니다. 앱은요? 계속 만드는 중!"
+    },
+    {
+      "id": "12",
+      "visual": "lesson",
+      "emotion": "toneup",
+      "intensity": 1.05,
+      "tempo": 1.22,
+      "text": "지금 다시 시작하면, 처음부터 다 만들진 않을 거예요. 딱 출석 하나부터!"
+    },
+    {
+      "id": "13",
+      "visual": "prompt",
+      "emotion": "normal",
+      "intensity": 1,
+      "tempo": 1.2,
+      "text": "나는 개발이 처음이야. 학생 출석을 기록하고 싶어. 가장 작은 첫 단계부터 알려줘."
+    },
+    {
+      "id": "14",
+      "visual": "action",
+      "emotion": "normal",
+      "intensity": 1.05,
+      "tempo": 1.24,
+      "text": "여러분도 불편한 일 하나만 골라보세요. 거창한 아이디어 없어도, 시작은 거기서 됩니다."
+    },
+    {
+      "id": "15",
+      "visual": "ending",
+      "emotion": "toneup",
+      "intensity": 1.05,
+      "tempo": 1.25,
+      "text": "다음 편은 앱보다 먼저 저를 막은 것. 도구 켜고, 설정하기부터 갑니다!"
+    }
+  ],
+  "provenance": "사용자 회고와 2026-06-02 청구서. 속말과 웃음의 박자는 각색. 부모 알림은 구상이며 운영 성과가 아님. 현재의 첫 요청 예시는 당시 실제 프롬프트가 아님."
+}

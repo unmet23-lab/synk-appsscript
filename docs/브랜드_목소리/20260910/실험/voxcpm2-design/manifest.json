@@ -1,0 +1,23 @@
+{
+  "candidate": "voxcpm2-design",
+  "space": "openbmb/VoxCPM-Demo",
+  "api": "/generate",
+  "parameters": {
+    "text_input": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+    "control_instruction": "A native Korean adult woman with a naturally bright, fresh, lightly smiling conversational voice. Warm rounded vocal body and clear smooth consonants. Keep lively gentle energy through sentence endings, with short natural breaths and an engaging comfortable pace. Friendly and confident, never childish, shrill, theatrical, whispery or like a loud announcer. A clean dry close studio recording, with no music or sound effects.",
+    "reference_wav_path_input": null,
+    "use_prompt_text": false,
+    "prompt_text_input": "",
+    "cfg_value_input": 2,
+    "do_normalize": false,
+    "denoise": false
+  },
+  "text": "같이 들어볼까요? 좋아요, 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면, 우리만의 목소리가 돼요.",
+  "synthetic": true,
+  "privateReferenceUploaded": false,
+  "higgsfieldUsed": false,
+  "humanListening": false,
+  "startedAt": 1789031065.1531136,
+  "status": "unavailable",
+  "error": "Queue is full! Please try again."
+}

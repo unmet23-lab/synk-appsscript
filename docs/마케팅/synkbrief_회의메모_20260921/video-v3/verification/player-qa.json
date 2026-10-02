@@ -1,0 +1,48 @@
+{
+  "date": "2026-09-22",
+  "ok": true,
+  "checks": [
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "playback": {
+        "paused": true,
+        "currentTime": 1.23916,
+        "duration": 15.026,
+        "width": 1080,
+        "height": 1920,
+        "source": "http://127.0.0.1:5197/video-v3/preview.webm",
+        "muted": false,
+        "error": null
+      },
+      "jumped": 12.8,
+      "mute": true,
+      "seek": 6.9,
+      "horizontalOverflow": false,
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "playback": {
+        "paused": true,
+        "currentTime": 1.248566,
+        "duration": 15.026,
+        "width": 1080,
+        "height": 1920,
+        "source": "http://127.0.0.1:5197/video-v3/preview.webm",
+        "muted": false,
+        "error": null
+      },
+      "jumped": 12.8,
+      "mute": true,
+      "seek": 6.9,
+      "horizontalOverflow": false,
+      "errors": []
+    }
+  ]
+}

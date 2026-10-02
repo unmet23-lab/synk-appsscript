@@ -1,0 +1,155 @@
+[
+ {
+  "name": "M01-hero-a",
+  "model": "text2image_soul_v2",
+  "prompt": "Unretouched model agency digitals photo of a 24-year-old Korean man with a fresh, clean-cut look: soft oval face, single eyelids with calm dark-brown eyes, straight natural brows, clear skin with a few tiny blemishes on the forehead, thick black hair in a natural short cut with a soft fringe falling over the forehead, wearing a plain white cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores, fine vellus hair, natural unevenness and tiny imperfections, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "M01-hero-b",
+  "model": "text2image_soul_v2",
+  "prompt": "Unretouched model agency digitals photo of a 24-year-old Korean man with a fresh, clean-cut look: soft oval face, single eyelids with calm dark-brown eyes, straight natural brows, clear skin with a few tiny blemishes on the forehead, thick black hair in a natural short cut with a soft fringe falling over the forehead, wearing a plain white cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores, fine vellus hair, natural unevenness and tiny imperfections, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "M01-hero-c",
+  "model": "text2image_soul_v2",
+  "prompt": "Unretouched model agency digitals photo of a 24-year-old Korean man with a fresh, clean-cut look: soft oval face, single eyelids with calm dark-brown eyes, straight natural brows, clear skin with a few tiny blemishes on the forehead, thick black hair in a natural short cut with a soft fringe falling over the forehead, wearing a plain white cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores, fine vellus hair, natural unevenness and tiny imperfections, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "M02-hero-a",
+  "model": "text2image_soul_v2",
+  "prompt": "Unretouched model agency digitals photo of a 32-year-old Korean man with a sharp, intelligent look: defined jawline and cheekbones, narrow double eyelids, dark-brown eyes, neat dark-brown hair side-parted and swept back, faint beard shadow along the jaw, wearing a plain black cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores, fine vellus hair, natural unevenness and tiny imperfections, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "M02-hero-b",
+  "model": "text2image_soul_v2",
+  "prompt": "Unretouched model agency digitals photo of a 32-year-old Korean man with a sharp, intelligent look: defined jawline and cheekbones, narrow double eyelids, dark-brown eyes, neat dark-brown hair side-parted and swept back, faint beard shadow along the jaw, wearing a plain black cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores, fine vellus hair, natural unevenness and tiny imperfections, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "M02-hero-c",
+  "model": "text2image_soul_v2",
+  "prompt": "Unretouched model agency digitals photo of a 32-year-old Korean man with a sharp, intelligent look: defined jawline and cheekbones, narrow double eyelids, dark-brown eyes, neat dark-brown hair side-parted and swept back, faint beard shadow along the jaw, wearing a plain black cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores, fine vellus hair, natural unevenness and tiny imperfections, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "M03-hero-a",
+  "model": "text2image_soul_v2",
+  "prompt": "Unretouched model agency digitals photo of a 46-year-old Korean man with a warm, trustworthy look: slightly square face, kind dark-brown eyes with smile lines, faint horizontal forehead lines, short black hair with grey at the temples, light salt-and-pepper stubble, wearing a plain charcoal-grey cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores, fine vellus hair, natural unevenness and tiny imperfections, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "M03-hero-b",
+  "model": "text2image_soul_v2",
+  "prompt": "Unretouched model agency digitals photo of a 46-year-old Korean man with a warm, trustworthy look: slightly square face, kind dark-brown eyes with smile lines, faint horizontal forehead lines, short black hair with grey at the temples, light salt-and-pepper stubble, wearing a plain charcoal-grey cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores, fine vellus hair, natural unevenness and tiny imperfections, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "M03-hero-c",
+  "model": "text2image_soul_v2",
+  "prompt": "Unretouched model agency digitals photo of a 46-year-old Korean man with a warm, trustworthy look: slightly square face, kind dark-brown eyes with smile lines, faint horizontal forehead lines, short black hair with grey at the temples, light salt-and-pepper stubble, wearing a plain charcoal-grey cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores, fine vellus hair, natural unevenness and tiny imperfections, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "F01-hero-b",
+  "model": "text2image_soul_v2",
+  "prompt": "Unretouched model agency digitals photo of a 23-year-old Korean woman with a fresh natural look: soft oval face, gentle eyes with a subtle inner-fold crease, soft natural brows, faint freckles across the nose, long straight dark-brown hair with a center part, minimal makeup, wearing a plain black cotton tank top. Head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores, fine vellus hair, natural unevenness and tiny imperfections, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "F01-hero-c",
+  "model": "text2image_soul_v2",
+  "prompt": "Unretouched model agency digitals photo of a 23-year-old Korean woman with a fresh natural look: soft oval face, gentle eyes with a subtle inner-fold crease, soft natural brows, faint freckles across the nose, long straight dark-brown hair with a center part, minimal makeup, wearing a plain black cotton tank top. Head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores, fine vellus hair, natural unevenness and tiny imperfections, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "F02-hero-a",
+  "model": "text2image_soul_v2",
+  "prompt": "Unretouched model agency digitals photo of a 31-year-old Korean woman with a chic, sophisticated look: defined cheekbones, elongated almond-shaped eyes with a thin crease, straight dark brows, a small mole under her left eye, sleek chin-length black bob with a center part, light natural makeup, wearing a plain white cotton tank top. Head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores, fine vellus hair, natural unevenness and tiny imperfections, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "F02-hero-b",
+  "model": "text2image_soul_v2",
+  "prompt": "Unretouched model agency digitals photo of a 31-year-old Korean woman with a chic, sophisticated look: defined cheekbones, elongated almond-shaped eyes with a thin crease, straight dark brows, a small mole under her left eye, sleek chin-length black bob with a center part, light natural makeup, wearing a plain white cotton tank top. Head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores, fine vellus hair, natural unevenness and tiny imperfections, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "F02-hero-c",
+  "model": "text2image_soul_v2",
+  "prompt": "Unretouched model agency digitals photo of a 31-year-old Korean woman with a chic, sophisticated look: defined cheekbones, elongated almond-shaped eyes with a thin crease, straight dark brows, a small mole under her left eye, sleek chin-length black bob with a center part, light natural makeup, wearing a plain white cotton tank top. Head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores, fine vellus hair, natural unevenness and tiny imperfections, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "F03-hero-a",
+  "model": "text2image_soul_v2",
+  "prompt": "Unretouched model agency digitals photo of a 43-year-old Korean woman with an elegant, warm look: soft oval face, clear double eyelids, fine lines at the corners of the eyes and soft smile lines, shoulder-length dark-brown hair with soft loose waves, natural makeup, wearing a plain cream fine-knit crew-neck top. Head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores, fine vellus hair, natural unevenness and tiny imperfections, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "F03-hero-b",
+  "model": "text2image_soul_v2",
+  "prompt": "Unretouched model agency digitals photo of a 43-year-old Korean woman with an elegant, warm look: soft oval face, clear double eyelids, fine lines at the corners of the eyes and soft smile lines, shoulder-length dark-brown hair with soft loose waves, natural makeup, wearing a plain cream fine-knit crew-neck top. Head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores, fine vellus hair, natural unevenness and tiny imperfections, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "F03-hero-c",
+  "model": "text2image_soul_v2",
+  "prompt": "Unretouched model agency digitals photo of a 43-year-old Korean woman with an elegant, warm look: soft oval face, clear double eyelids, fine lines at the corners of the eyes and soft smile lines, shoulder-length dark-brown hair with soft loose waves, natural makeup, wearing a plain cream fine-knit crew-neck top. Head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores, fine vellus hair, natural unevenness and tiny imperfections, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ }
+]

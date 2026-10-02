@@ -1,0 +1,37 @@
+{
+  "observedAt": "2026-09-13T17:50:30.793Z",
+  "method": "Independent browser PNG decode and RGBA comparison of current exported common body and exact in-memory eye composite",
+  "notEvidenceOf": "Final rendered scene identity, full 4K source identity, visual perfection, comfort or user outcome",
+  "sources": [
+    {
+      "path": "실물/몽글-공통바탕.png",
+      "sha256": "6cd29b55367320c867b68dfb4c46822eee8dbb3716f0202700158ac541246f2d"
+    },
+    {
+      "path": "실물/몽글-눈영역합성.png",
+      "sha256": "421ee720423f4a11f23b21071615cf19b9082cb75f6c0fc513d990761678e202"
+    },
+    {
+      "path": "experiences/loom-living/scene.json",
+      "sha256": "fa048d994c8a239f56dce2e8cf03bac0616f6737058c29ace59f7df67097b1de"
+    }
+  ],
+  "width": 1536,
+  "height": 1536,
+  "changedPixels": 33387,
+  "alphaChanges": 0,
+  "outsideStrictEllipse": 486,
+  "outsideWithBoundaryAllowance": 0,
+  "changedBoundingBox": {
+    "minX": 505,
+    "minY": 471,
+    "maxX": 1040,
+    "maxY": 625
+  },
+  "boundaryAllowance": {
+    "referenceCoordinateSpace": 1024,
+    "referenceRadiusAllowance": 2,
+    "exportPixelRadiusAllowance": 3
+  },
+  "passed": true
+}

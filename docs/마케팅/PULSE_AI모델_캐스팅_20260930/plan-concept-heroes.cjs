@@ -1,0 +1,20 @@
+// 상큼·섹시·지적 콘셉트 얼굴 후보(구글 Nano Banana Pro). 10대(19세)는 상큼·지적만 만든다.
+// 사용: node plan-concept-heroes.cjs > jobs-concept-heroes.json
+const TAIL = 'Head and shoulders, facing the camera. Clean light-grey studio wall, soft large window light from camera left, gentle falloff, catchlights in the eyes. Korean entertainment agency profile photo, full-frame camera, 85mm lens at f/2.8, eye level. Real skin texture even with makeup: visible pores, fine vellus hair, subtle natural unevenness, a few flyaway hairs. Natural color, fine film grain, no heavy retouching, no plastic skin, opaque clothing, no text or logos on clothing.';
+const c = {
+  'M10-fresh': 'a 19-year-old Korean young man with a bright, refreshing boy-next-door K-pop idol visual: small face, big clear double-lidded eyes with soft aegyo-sal, soft black hair with airy see-through bangs, clean glowing skin, a light fresh smile; wearing a plain white crew-neck t-shirt',
+  'M10-smart': 'a 19-year-old Korean young man with a neat, intelligent model-student visual: calm clear eyes behind thin round metal-frame glasses, straight brows, tidy black hair with a soft side part, clean skin, calm composed expression; wearing a crisp white oxford shirt with the top button open',
+  'F10-fresh': 'a 19-year-old Korean young woman with a bright, refreshing K-pop idol visual: small face, big sparkling eyes with soft aegyo-sal, rosy cheeks, a high ponytail with wispy see-through bangs, light coral lip tint, a small bright smile; wearing a plain white crew-neck t-shirt',
+  'F10-smart': 'a 19-year-old Korean young woman with a calm, intelligent visual: clear gentle eyes, straight natural brows, long straight black hair tucked behind her ears, clean bare skin, subtle rose lip tint, calm composed expression; wearing a light-blue oxford shirt',
+  'M20-fresh': 'a 24-year-old Korean man with a fresh, sunny K-pop idol visual: small face, bright double-lidded eyes, straight high nose, a warm open smile, light-brown fluffy hair with soft bangs; wearing a plain white crew-neck t-shirt',
+  'M20-sexy': 'a 27-year-old Korean man with a sultry, charismatic K-pop idol visual: sharp jawline, intense hooded eyes with a direct gaze, full lips, dark tousled hair falling over the forehead; wearing a fitted black crew-neck t-shirt',
+  'F20-fresh': 'a 23-year-old Korean woman with a fresh, lively K-pop idol visual: small oval face, bright almond eyes with aegyo-sal, peachy blush, glossy coral lips, shoulder-length light-brown hair with airy bangs, a soft smile; wearing a plain white crew-neck t-shirt',
+  'F20-smart': 'a 26-year-old Korean woman with a sleek, intelligent visual: calm confident almond eyes, clean straight brows, hair in a sleek low ponytail, subtle nude makeup, thin gold hoop earrings; wearing a crisp white collared shirt',
+  'M30-smart': 'a 33-year-old Korean man with a refined, intellectual actor-like visual: defined jaw, calm focused eyes behind thin black rectangular glasses, neat side-parted black hair, clean-shaven; wearing a navy crew-neck knit sweater',
+  'M30-sexy': 'a 34-year-old Korean man with a mature, sensual actor-like visual: strong jaw with light stubble, deep-set confident eyes with an intense gaze, black hair loosely swept back with a few strands falling; wearing a black shirt with the top two buttons open',
+  'F30-smart': 'a 32-year-old Korean woman with an elegant, intelligent news-anchor-like visual: refined features, clear confident eyes, a sleek chin-length bob, subtle makeup, small pearl earrings; wearing an ivory silk blouse',
+  'F30-sexy': 'a 31-year-old Korean woman with a glamorous, alluring actress-like visual: sharp almond cat eyes with soft smoky liner, high cheekbones, full rosewood lips, long glossy black hair in loose waves over one shoulder; wearing a fitted black square-neck top',
+};
+const jobs = [];
+for (const [k, d] of Object.entries(c)) for (const n of [1, 2]) jobs.push({ name: `${k}-${n}`, prompt: `Photo of ${d}. ${TAIL}`, aspect: '3:4' });
+process.stdout.write(JSON.stringify(jobs, null, 1));

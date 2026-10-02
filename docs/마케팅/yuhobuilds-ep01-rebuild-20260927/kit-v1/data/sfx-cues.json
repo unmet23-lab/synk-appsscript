@@ -1,0 +1,429 @@
+[
+ {
+  "time": 2.638,
+  "name": "error",
+  "peak": -26,
+  "dur": 0.3,
+  "why": "c02.w2"
+ },
+ {
+  "time": 3.14,
+  "name": "whoosh-short",
+  "peak": -30,
+  "dur": 0.23,
+  "why": "s2 patch"
+ },
+ {
+  "time": 3.621,
+  "name": "pop",
+  "peak": -29,
+  "dur": 0.16,
+  "why": "c03.w1"
+ },
+ {
+  "time": 5.313,
+  "name": "whoosh-short",
+  "peak": -31,
+  "dur": 0.23,
+  "why": "s3 seam"
+ },
+ {
+  "time": 6.143,
+  "name": "click",
+  "peak": -27,
+  "dur": 0.12,
+  "why": "s3+0.55"
+ },
+ {
+  "time": 6.593,
+  "name": "pop",
+  "peak": -30,
+  "dur": 0.14,
+  "why": "s3+1.0"
+ },
+ {
+  "time": 7.352,
+  "name": "ping",
+  "peak": -30,
+  "dur": 0.24,
+  "why": "c05.w1"
+ },
+ {
+  "time": 8.293,
+  "name": "click",
+  "peak": -29,
+  "dur": 0.12,
+  "why": "s4 cut"
+ },
+ {
+  "time": 8.336,
+  "name": "pop",
+  "peak": -29,
+  "dur": 0.16,
+  "why": "c06.w0"
+ },
+ {
+  "time": 9.208,
+  "name": "pop",
+  "peak": -28.6,
+  "dur": 0.16,
+  "why": "c06.w3"
+ },
+ {
+  "time": 9.764,
+  "name": "pop",
+  "peak": -28.2,
+  "dur": 0.16,
+  "why": "c06.w5"
+ },
+ {
+  "time": 10.34,
+  "name": "whoosh-short",
+  "peak": -30,
+  "dur": 0.23,
+  "why": "s5 patch"
+ },
+ {
+  "time": 11.868,
+  "name": "impact-bass-1",
+  "peak": -27,
+  "dur": 0.26,
+  "why": "c07.w2"
+ },
+ {
+  "time": 12.827,
+  "name": "click",
+  "peak": -29,
+  "dur": 0.12,
+  "why": "s6 cut"
+ },
+ {
+  "time": 12.886,
+  "name": "click-soft",
+  "peak": -28,
+  "dur": 0.12,
+  "why": "c08.w0"
+ },
+ {
+  "time": 13.501,
+  "name": "click-soft",
+  "peak": -28,
+  "dur": 0.12,
+  "why": "c08.w2"
+ },
+ {
+  "time": 13.928,
+  "name": "click-soft",
+  "peak": -27.5,
+  "dur": 0.12,
+  "why": "c09.w0"
+ },
+ {
+  "time": 14.513,
+  "name": "whoosh-short",
+  "peak": -31,
+  "dur": 0.23,
+  "why": "s7 seam"
+ },
+ {
+  "time": 15.121,
+  "name": "pop",
+  "peak": -28,
+  "dur": 0.16,
+  "why": "c10.w1"
+ },
+ {
+  "time": 16.109,
+  "name": "pop",
+  "peak": -27.6,
+  "dur": 0.16,
+  "why": "c11.w0"
+ },
+ {
+  "time": 17.031,
+  "name": "pop",
+  "peak": -27.2,
+  "dur": 0.16,
+  "why": "c12.w0"
+ },
+ {
+  "time": 18.016,
+  "name": "error",
+  "peak": -26,
+  "dur": 0.32,
+  "why": "c13.w0"
+ },
+ {
+  "time": 19.327,
+  "name": "click",
+  "peak": -29,
+  "dur": 0.12,
+  "why": "s8 cut"
+ },
+ {
+  "time": 20.725,
+  "name": "pop",
+  "peak": -29,
+  "dur": 0.16,
+  "why": "c15.w0"
+ },
+ {
+  "time": 21.427,
+  "name": "whoosh-short",
+  "peak": -30,
+  "dur": 0.26,
+  "why": "s9 arch"
+ },
+ {
+  "time": 24.343,
+  "name": "ping",
+  "peak": -29,
+  "dur": 0.24,
+  "why": "c17.w4"
+ },
+ {
+  "time": 25.046,
+  "name": "ping",
+  "peak": -29,
+  "dur": 0.24,
+  "why": "c18.w1"
+ },
+ {
+  "time": 25.513,
+  "name": "whoosh-short",
+  "peak": -31,
+  "dur": 0.23,
+  "why": "s10 seam"
+ },
+ {
+  "time": 27.096,
+  "name": "click",
+  "peak": -25,
+  "dur": 0.13,
+  "why": "c20.w2"
+ },
+ {
+  "time": 27.353,
+  "name": "ping",
+  "peak": -28,
+  "dur": 0.25,
+  "why": "c20.w3"
+ },
+ {
+  "time": 27.76,
+  "name": "click",
+  "peak": -29,
+  "dur": 0.12,
+  "why": "s11 cut"
+ },
+ {
+  "time": 29.504,
+  "name": "synk:synk-sound-achieve",
+  "peak": -24,
+  "dur": 0.36,
+  "why": "c22.w0"
+ },
+ {
+  "time": 30.44,
+  "name": "whoosh-short",
+  "peak": -30,
+  "dur": 0.23,
+  "why": "s12 patch"
+ },
+ {
+  "time": 31.11,
+  "name": "pop",
+  "peak": -29,
+  "dur": 0.16,
+  "why": "s12+0.35"
+ },
+ {
+  "time": 32.293,
+  "name": "click",
+  "peak": -29,
+  "dur": 0.12,
+  "why": "s13 cut"
+ },
+ {
+  "time": 32.371,
+  "name": "key-press",
+  "peak": -33,
+  "dur": 0.07,
+  "why": "c24.w0"
+ },
+ {
+  "time": 32.57,
+  "name": "key-press",
+  "peak": -34.5,
+  "dur": 0.07,
+  "why": "c24.w1"
+ },
+ {
+  "time": 32.823,
+  "name": "key-press",
+  "peak": -33,
+  "dur": 0.07,
+  "why": "c24.w2"
+ },
+ {
+  "time": 33.412,
+  "name": "key-press",
+  "peak": -33,
+  "dur": 0.07,
+  "why": "c25.w0"
+ },
+ {
+  "time": 33.642,
+  "name": "key-press",
+  "peak": -34.5,
+  "dur": 0.07,
+  "why": "c25.w1"
+ },
+ {
+  "time": 33.757,
+  "name": "key-press",
+  "peak": -33,
+  "dur": 0.07,
+  "why": "c25.w2"
+ },
+ {
+  "time": 33.918,
+  "name": "key-press",
+  "peak": -34.5,
+  "dur": 0.07,
+  "why": "c25.w3"
+ },
+ {
+  "time": 34.216,
+  "name": "key-press",
+  "peak": -33,
+  "dur": 0.07,
+  "why": "c25.w4"
+ },
+ {
+  "time": 34.825,
+  "name": "key-press",
+  "peak": -34.5,
+  "dur": 0.07,
+  "why": "c25.w5"
+ },
+ {
+  "time": 35.055,
+  "name": "key-press",
+  "peak": -33,
+  "dur": 0.07,
+  "why": "c25.w6"
+ },
+ {
+  "time": 35.319,
+  "name": "key-press",
+  "peak": -34.5,
+  "dur": 0.07,
+  "why": "c25.w7"
+ },
+ {
+  "time": 35.828,
+  "name": "key-press",
+  "peak": -33,
+  "dur": 0.07,
+  "why": "c26.w0"
+ },
+ {
+  "time": 36.017,
+  "name": "key-press",
+  "peak": -34.5,
+  "dur": 0.07,
+  "why": "c26.w1"
+ },
+ {
+  "time": 36.254,
+  "name": "key-press",
+  "peak": -33,
+  "dur": 0.07,
+  "why": "c26.w2"
+ },
+ {
+  "time": 36.857,
+  "name": "key-press",
+  "peak": -33,
+  "dur": 0.07,
+  "why": "c27.w0"
+ },
+ {
+  "time": 37.093,
+  "name": "key-press",
+  "peak": -34.5,
+  "dur": 0.07,
+  "why": "c27.w1"
+ },
+ {
+  "time": 37.294,
+  "name": "key-press",
+  "peak": -33,
+  "dur": 0.07,
+  "why": "c27.w2"
+ },
+ {
+  "time": 37.649,
+  "name": "key-press",
+  "peak": -34.5,
+  "dur": 0.07,
+  "why": "c27.w3"
+ },
+ {
+  "time": 37.838,
+  "name": "key-press",
+  "peak": -33,
+  "dur": 0.07,
+  "why": "c27.w4"
+ },
+ {
+  "time": 38.098,
+  "name": "key-press",
+  "peak": -34.5,
+  "dur": 0.07,
+  "why": "c27.w5"
+ },
+ {
+  "time": 38.813,
+  "name": "whoosh-short",
+  "peak": -31,
+  "dur": 0.23,
+  "why": "s14 seam"
+ },
+ {
+  "time": 39.16,
+  "name": "pop",
+  "peak": -28,
+  "dur": 0.13,
+  "why": "c28.w0"
+ },
+ {
+  "time": 39.926,
+  "name": "pop",
+  "peak": -28,
+  "dur": 0.13,
+  "why": "c28.w2"
+ },
+ {
+  "time": 40.432,
+  "name": "pop",
+  "peak": -28,
+  "dur": 0.13,
+  "why": "c28.w4"
+ },
+ {
+  "time": 41.667,
+  "name": "whoosh-short",
+  "peak": -30,
+  "dur": 0.23,
+  "why": "s15 paper"
+ },
+ {
+  "time": 45.876,
+  "name": "chime",
+  "peak": -29,
+  "dur": 0.53,
+  "why": "c32.w2"
+ }
+]

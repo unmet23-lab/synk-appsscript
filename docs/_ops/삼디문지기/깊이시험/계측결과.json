@@ -1,0 +1,392 @@
+{
+  "images": [
+    {
+      "path": "docs/캐릭터/정본_4K/까몽_본체.png",
+      "sha256": "fea5f2b66db16a1089f4475492c59fb8273bfcf80b18fbcde4909a950e3796ab",
+      "size": [
+        4096,
+        4096
+      ],
+      "bbox": [
+        524,
+        586,
+        3760,
+        3638
+      ],
+      "edge_pixels": {
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "aspect": 1.0602883355176933,
+      "widest_band_percent": 60,
+      "widest_bands_percent": [
+        60
+      ],
+      "eye_sample_stride": 4,
+      "width_profile": [
+        1363,
+        1506,
+        1503,
+        1723,
+        1855,
+        2494,
+        2635,
+        2632,
+        2449,
+        2187,
+        1838,
+        2185,
+        2677,
+        2653,
+        2624,
+        2493,
+        2349,
+        2239,
+        474,
+        382
+      ],
+      "eyes": [
+        {
+          "center": [
+            1425.0335403726708,
+            1463.1503105590061
+          ],
+          "box": [
+            1332,
+            1328,
+            1584,
+            1616
+          ]
+        },
+        {
+          "center": [
+            2214.5792610250296,
+            1474.7699642431467
+          ],
+          "box": [
+            2048,
+            1332,
+            2312,
+            1620
+          ]
+        }
+      ],
+      "eye_width_to_body_width": 0.08003708281829419,
+      "eye_span_to_width": 3.048439075877833,
+      "eye_gap_to_width": 1.7915057915057915,
+      "eye_height_percent": 28.93054185455689
+    },
+    {
+      "path": "docs/_ops/삼디문지기/까몽_블렌더_누끼.png",
+      "sha256": "720d1f75abc8d69fab1faece3aa8127f4211e0717b96c97e6a6c847cf0e9b6cf",
+      "size": [
+        1024,
+        839
+      ],
+      "bbox": [
+        112,
+        47,
+        985,
+        839
+      ],
+      "edge_pixels": {
+        "top": 0,
+        "bottom": 96,
+        "left": 0,
+        "right": 0
+      },
+      "aspect": 1.1022727272727273,
+      "widest_band_percent": 35,
+      "widest_bands_percent": [
+        35
+      ],
+      "eye_sample_stride": 1,
+      "width_profile": [
+        391,
+        411,
+        415,
+        447,
+        490,
+        609,
+        707,
+        722,
+        695,
+        654,
+        568,
+        561,
+        705,
+        717,
+        717,
+        699,
+        667,
+        631,
+        602,
+        124
+      ],
+      "eyes": [
+        {
+          "center": [
+            369.3077794561934,
+            293.8889728096677
+          ],
+          "box": [
+            337,
+            253,
+            412,
+            336
+          ]
+        },
+        {
+          "center": [
+            567.9284294234592,
+            295.3948310139165
+          ],
+          "box": [
+            526,
+            256,
+            601,
+            335
+          ]
+        }
+      ],
+      "eye_width_to_body_width": 0.08705612829324169,
+      "eye_span_to_width": 2.613429604832445,
+      "eye_gap_to_width": 1.5,
+      "eye_height_percent": 31.267916908054552
+    },
+    {
+      "path": "docs/_ops/삼디문지기/깊이시험/까몽_전체프레임.png",
+      "sha256": "b8f9e27244d13ea415c81e1d331c5832be1b2487fcd324e5d788c1bf1ed52bb2",
+      "size": [
+        1024,
+        1024
+      ],
+      "bbox": [
+        116,
+        137,
+        985,
+        964
+      ],
+      "edge_pixels": {
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "aspect": 1.0507859733978235,
+      "widest_band_percent": 35,
+      "widest_bands_percent": [
+        35,
+        60
+      ],
+      "eye_sample_stride": 1,
+      "width_profile": [
+        386,
+        413,
+        421,
+        458,
+        496,
+        660,
+        714,
+        716,
+        688,
+        629,
+        531,
+        588,
+        716,
+        714,
+        709,
+        678,
+        650,
+        626,
+        128,
+        103
+      ],
+      "eyes": [
+        {
+          "center": [
+            368.3338467462457,
+            386.9306892568348
+          ],
+          "box": [
+            335,
+            348,
+            412,
+            428
+          ]
+        },
+        {
+          "center": [
+            568.0467511885895,
+            388.0225832012678
+          ],
+          "box": [
+            526,
+            349,
+            601,
+            428
+          ]
+        }
+      ],
+      "eye_width_to_body_width": 0.08860759493670886,
+      "eye_span_to_width": 2.593674083666803,
+      "eye_gap_to_width": 1.4805194805194806,
+      "eye_height_percent": 30.287380438821202
+    }
+  ],
+  "iou": 0.9548125255985405,
+  "measurement_note": "alpha>128, bbox uniform scale/center only; no geometry/image deformation used for alignment",
+  "landmark_note": "Eye green-iris connected components use canonical key; ears/wings/tail are silhouette extrema in explicit regions, not hand-segmented anatomical centers.",
+  "landmarks": [
+    {
+      "name": "눈왼",
+      "reference": [
+        0.2784405254550899,
+        0.2994902072184815
+      ],
+      "model": [
+        0.2903726659910767,
+        0.3117729450596488
+      ],
+      "error_body_long_percent": 1.71242993037783
+    },
+    {
+      "name": "눈오른",
+      "reference": [
+        0.5224286962376482,
+        0.3030809531035682
+      ],
+      "model": [
+        0.5201918885944643,
+        0.3130294398173393
+      ],
+      "error_body_long_percent": 1.019684737194225
+    },
+    {
+      "name": "귀왼",
+      "reference": [
+        0.23207663782447469,
+        0.029666254635352274
+      ],
+      "model": [
+        0.26524741081703107,
+        0.03222094361334865
+      ],
+      "error_body_long_percent": 3.3269003842886615
+    },
+    {
+      "name": "귀오른",
+      "reference": [
+        0.5633498145859085,
+        0.030284301606922137
+      ],
+      "model": [
+        0.5753739930955121,
+        0.025316455696202556
+      ],
+      "error_body_long_percent": 1.3010010062389106
+    },
+    {
+      "name": "날개왼",
+      "reference": [
+        0.0015451174289246028,
+        0.3541409147095179
+      ],
+      "model": [
+        0.0011507479861910253,
+        0.3693901035673187
+      ],
+      "error_body_long_percent": 1.5254287530993969
+    },
+    {
+      "name": "날개오른",
+      "reference": [
+        0.8130407911001236,
+        0.3587762669962917
+      ],
+      "model": [
+        0.8227848101265822,
+        0.35443037974683544
+      ],
+      "error_body_long_percent": 1.06692381533535
+    },
+    {
+      "name": "꼬리끝",
+      "reference": [
+        0.9641532756489493,
+        0.9700247218788628
+      ],
+      "model": [
+        0.9631760644418872,
+        0.9735327963176064
+      ],
+      "error_body_long_percent": 0.36416380944533344
+    }
+  ],
+  "canonical_checks": [
+    {
+      "name": "가로세로비",
+      "relative_error": 0.00896205475582279,
+      "limit": 0.05,
+      "pass": true
+    },
+    {
+      "name": "눈폭/몸폭",
+      "relative_error": 0.10708176530961344,
+      "limit": 0.1,
+      "pass": false
+    },
+    {
+      "name": "눈사이/눈폭",
+      "relative_error": 0.14917962304366383,
+      "limit": 0.1,
+      "pass": false
+    },
+    {
+      "name": "눈틈/눈폭",
+      "relative_error": 0.17358934169278994,
+      "limit": 0.1,
+      "pass": false
+    },
+    {
+      "name": "눈높이",
+      "error_percentage_points": 1.3568385842643131,
+      "limit": 3,
+      "pass": true
+    },
+    {
+      "name": "가장넓은띠",
+      "error_percentage_points": 0,
+      "limit": 5,
+      "note": "최댓값 동률 띠는 모두 유지한다. 첫 argmax만 선택해 없는 오차를 만들지 않는다.",
+      "pass": true
+    }
+  ],
+  "depth": {
+    "raw_camera_range": [
+      6.774502277374268,
+      7.9198994636535645
+    ],
+    "mesh_hit_pixels": 73828,
+    "reference_grid_vertices_with_model": 194,
+    "reference_grid_vertices_missing_model": 52,
+    "grid_coverage": 0.7886178861788617,
+    "old": {
+      "positive_vertices": 244,
+      "max": 1.048,
+      "mean": 0.8221680327868853,
+      "eye_to_body_proxy": 2.151216964378982,
+      "max_positive_horizontal_neighbor_jump": 0.09499999999999997
+    },
+    "candidate": {
+      "positive_vertices": 194,
+      "max": 1.138,
+      "mean": 0.7894175257731958,
+      "eye_to_body_proxy": 1.9139131022366378,
+      "max_positive_horizontal_neighbor_jump": 0.23500000000000004
+    }
+  },
+  "verdict": "현 모델 깊이 비채택으로 시험 완료: 눈 간격 불일치와 깊이 빈칸이 남아 기존 정본 및 앱 깊이 유지"
+}

@@ -1,0 +1,63 @@
+ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers
+  built with gcc 16.1.0 (Rev2, Built by MSYS2 project)
+  configuration: --enable-gpl --enable-version3 --enable-static --disable-w32threads --disable-autodetect --enable-cairo --enable-fontconfig --enable-iconv --enable-gnutls --enable-lcms2 --enable-libxml2 --enable-gmp --enable-bzlib --enable-lzma --enable-libsnappy --enable-zlib --enable-librist --enable-libsrt --enable-libssh --enable-libzmq --enable-avisynth --enable-libbluray --enable-libcaca --enable-libdvdnav --enable-libdvdread --enable-sdl2 --enable-libaribb24 --enable-libaribcaption --enable-libdav1d --enable-libdavs2 --enable-libopenjpeg --enable-libquirc --enable-libuavs3d --enable-libxevd --enable-libzvbi --enable-liboapv --enable-libqrencode --enable-librav1e --enable-libsvtav1 --enable-libvvenc --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxavs2 --enable-libxeve --enable-libxvid --enable-libaom --enable-libjxl --enable-libsvtjpegxs --enable-libvpx --enable-mediafoundation --enable-libass --enable-frei0r --enable-libfreetype --enable-libfribidi --enable-libharfbuzz --enable-liblensfun --enable-libvidstab --enable-libvmaf --enable-libzimg --enable-amf --enable-cuda-llvm --enable-cuvid --enable-dxva2 --enable-d3d11va --enable-d3d12va --enable-ffnvcodec --enable-libvpl --enable-nvdec --enable-nvenc --enable-vaapi --enable-libshaderc --enable-vulkan --enable-libplacebo --enable-opencl --enable-libcdio --enable-openal --enable-libgme --enable-libmodplug --enable-libopenmpt --enable-libopencore-amrwb --enable-libmp3lame --enable-libshine --enable-libtheora --enable-libtwolame --enable-libvo-amrwbenc --enable-libcodec2 --enable-libilbc --enable-libgsm --enable-liblc3 --enable-libopencore-amrnb --enable-libopus --enable-libspeex --enable-libvorbis --enable-ladspa --enable-libbs2b --enable-libflite --enable-libmysofa --enable-librubberband --enable-libsoxr --enable-chromaprint --enable-whisper
+  libavutil      60. 26.102 / 60. 26.102
+  libavcodec     62. 28.102 / 62. 28.102
+  libavformat    62. 12.102 / 62. 12.102
+  libavdevice    62.  3.102 / 62.  3.102
+  libavfilter    11. 14.102 / 11. 14.102
+  libswscale      9.  5.102 /  9.  5.102
+  libswresample   6.  3.102 /  6.  3.102
+Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'C:\Users\q1212\Documents\SYNK-appsscript\docs\마케팅\yuhobuilds_1편_쇼츠수정_20260922\마감_20260927\yuhobuilds_EP01_FINISH_1080x1920.mp4':
+  Metadata:
+    major_brand     : isom
+    minor_version   : 512
+    compatible_brands: isomiso2avc1mp41
+    encoder         : Lavf61.7.100
+    comment         : Made with Remotion 4.0.517
+  Duration: 00:01:12.98, start: 0.000000, bitrate: 6819 kb/s
+  Stream #0:0[0x1](und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(tv, bt709/unknown/unknown, progressive), 1080x1920 [SAR 1:1 DAR 9:16], 6561 kb/s, 30 fps, 30 tbr, 90k tbn (default)
+    Metadata:
+      handler_name    : VideoHandler
+      encoder         : Lavc61.19.100 libx264
+    Side data:
+      ICC Profile: (456 bytes)
+  Stream #0:1[0x2](und): Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 253 kb/s (default)
+    Metadata:
+      handler_name    : SoundHandler
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> wrapped_avframe (native))
+  Stream #0:1 -> #0:1 (aac (native) -> pcm_s16le (native))
+Press [q] to stop, [?] for help
+Output #0, null, to 'pipe:':
+  Metadata:
+    major_brand     : isom
+    minor_version   : 512
+    compatible_brands: isomiso2avc1mp41
+    comment         : Made with Remotion 4.0.517
+    encoder         : Lavf62.12.102
+  Stream #0:0(und): Video: wrapped_avframe, yuv420p(tv, bt709/unknown/unknown, progressive), 1080x1920 [SAR 1:1 DAR 9:16], q=2-31, 200 kb/s, 30 fps, 30 tbn (default)
+    Metadata:
+      encoder         : Lavc62.28.102 wrapped_avframe
+      handler_name    : VideoHandler
+    Side data:
+      ICC Profile: (456 bytes)
+  Stream #0:1(und): Audio: pcm_s16le, 192000 Hz, stereo, s16, 6144 kb/s (default)
+    Metadata:
+      encoder         : Lavc62.28.102 pcm_s16le
+      handler_name    : SoundHandler
+frame=  290 fps=0.0 q=-0.0 size=N/A time=00:00:07.50 bitrate=N/A speed=14.6x elapsed=0:00:00.51    frame=  560 fps=542 q=-0.0 size=N/A time=00:00:15.90 bitrate=N/A speed=15.4x elapsed=0:00:01.03    frame=  806 fps=519 q=-0.0 size=N/A time=00:00:24.10 bitrate=N/A speed=15.5x elapsed=0:00:01.55    frame= 1068 fps=516 q=-0.0 size=N/A time=00:00:32.90 bitrate=N/A speed=15.9x elapsed=0:00:02.06    frame= 1289 fps=498 q=-0.0 size=N/A time=00:00:40.20 bitrate=N/A speed=15.5x elapsed=0:00:02.58    frame= 1595 fps=515 q=-0.0 size=N/A time=00:00:50.40 bitrate=N/A speed=16.3x elapsed=0:00:03.09    frame= 1835 fps=507 q=-0.0 size=N/A time=00:00:58.70 bitrate=N/A speed=16.2x elapsed=0:00:03.62    frame= 1881 fps=454 q=-0.0 size=N/A time=00:01:00.10 bitrate=N/A speed=14.5x elapsed=0:00:04.14    frame= 2099 fps=450 q=-0.0 size=N/A time=00:01:07.20 bitrate=N/A speed=14.4x elapsed=0:00:04.66    [Parsed_loudnorm_0 @ 000001fef80eb8c0] 
+{
+	"input_i" : "-16.02",
+	"input_tp" : "-2.59",
+	"input_lra" : "1.20",
+	"input_thresh" : "-26.24",
+	"output_i" : "-16.01",
+	"output_tp" : "-2.10",
+	"output_lra" : "1.10",
+	"output_thresh" : "-26.19",
+	"normalization_type" : "dynamic",
+	"target_offset" : "0.01"
+}
+[out#0/null @ 000001fef81465c0] video:906KiB audio:54736KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
+frame= 2188 fps=454 q=-0.0 Lsize=N/A time=00:01:12.93 bitrate=N/A speed=15.1x elapsed=0:00:04.82    

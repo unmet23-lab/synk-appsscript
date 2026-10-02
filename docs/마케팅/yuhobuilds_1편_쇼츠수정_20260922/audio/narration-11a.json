@@ -1,0 +1,64 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "심심함은 해결됐습니다. 앱은요? 몇 번 뜯어고쳤는지 정신이 혼미해졌습니다.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.25,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 4.76,
+  "words": [
+    {
+      "text": "심심함은",
+      "start": 0.129,
+      "end": 0.588
+    },
+    {
+      "text": "해결됐습니다.",
+      "start": 0.631,
+      "end": 1.133
+    },
+    {
+      "text": "앱은요?",
+      "start": 1.448,
+      "end": 1.735
+    },
+    {
+      "text": "몇",
+      "start": 2.38,
+      "end": 2.523
+    },
+    {
+      "text": "번",
+      "start": 2.595,
+      "end": 2.695
+    },
+    {
+      "text": "뜯어고쳤는지",
+      "start": 2.738,
+      "end": 3.283
+    },
+    {
+      "text": "정신이",
+      "start": 3.584,
+      "end": 3.943
+    },
+    {
+      "text": "혼미해졌습니다.",
+      "start": 4.014,
+      "end": 4.76
+    }
+  ],
+  "characters": null
+}

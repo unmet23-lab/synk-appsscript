@@ -1,0 +1,54 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "왕초보에서 일인 기업가까지. 여러분의 시간을 아껴드립니다!",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.24,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "toneup",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 3.226,
+  "words": [
+    {
+      "text": "왕초보에서",
+      "start": 0.059,
+      "end": 0.56
+    },
+    {
+      "text": "일인",
+      "start": 0.619,
+      "end": 0.781
+    },
+    {
+      "text": "기업가까지.",
+      "start": 0.825,
+      "end": 1.296
+    },
+    {
+      "text": "여러분의",
+      "start": 1.841,
+      "end": 2.136
+    },
+    {
+      "text": "시간을",
+      "start": 2.18,
+      "end": 2.416
+    },
+    {
+      "text": "아껴드립니다!",
+      "start": 2.592,
+      "end": 3.226
+    }
+  ],
+  "characters": null
+}

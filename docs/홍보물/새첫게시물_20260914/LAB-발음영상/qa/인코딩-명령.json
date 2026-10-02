@@ -1,0 +1,32 @@
+{
+  "executable": "C:/Users/q1212/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-8.1.2-full_build/bin/ffmpeg.exe",
+  "args": [
+    "-y",
+    "-hide_banner",
+    "-loglevel",
+    "error",
+    "-i",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\새첫게시물_20260914\\LAB-영상\\LAB-읽고-바꿔-말하기.mp4",
+    "-i",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\새첫게시물_20260914\\LAB-발음영상\\나나-장면배치.wav",
+    "-map",
+    "0:v:0",
+    "-map",
+    "1:a:0",
+    "-c:v",
+    "copy",
+    "-c:a",
+    "aac",
+    "-b:a",
+    "192k",
+    "-ar",
+    "48000",
+    "-t",
+    "65",
+    "-movflags",
+    "+faststart",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\새첫게시물_20260914\\LAB-발음영상\\LAB-듣고-바꿔-말하기.mp4"
+  ],
+  "videoReencoded": false,
+  "newTTSCalls": 0
+}

@@ -1,0 +1,92 @@
+[
+ {
+  "name": "M10-hero-a",
+  "model": "text2image_soul_v2",
+  "prompt": "Korean entertainment agency profile photo of a 19-year-old Korean young man with a bright, boyish K-pop idol visual: small face, clear double eyelids with big bright eyes and soft aegyo-sal, soft straight nose, fluffy black hair with light see-through bangs, clean fresh skin, wearing a plain white cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed, confident expression. Clean light-grey studio wall, soft large window light from camera left, gentle falloff, catchlights in the eyes. Full-frame camera, 85mm lens at f/2.8, eye level. Real skin texture even with light makeup: visible pores, fine vellus hair, subtle natural unevenness, a few flyaway hairs. Natural color, fine film grain, no heavy retouching, no plastic skin.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "M10-hero-b",
+  "model": "text2image_soul_v2",
+  "prompt": "Korean entertainment agency profile photo of a 19-year-old Korean young man with a bright, boyish K-pop idol visual: small face, clear double eyelids with big bright eyes and soft aegyo-sal, soft straight nose, fluffy black hair with light see-through bangs, clean fresh skin, wearing a plain white cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed, confident expression. Clean light-grey studio wall, soft large window light from camera left, gentle falloff, catchlights in the eyes. Full-frame camera, 85mm lens at f/2.8, eye level. Real skin texture even with light makeup: visible pores, fine vellus hair, subtle natural unevenness, a few flyaway hairs. Natural color, fine film grain, no heavy retouching, no plastic skin.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "M20-hero-a",
+  "model": "text2image_soul_v2",
+  "prompt": "Korean entertainment agency profile photo of a 25-year-old Korean man with a striking K-pop idol visual: sharp V-line jaw, deep-set eyes with a thin crease, high nose bridge, full lips, ash-brown hair in a soft wavy comma cut, wearing a plain black cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed, confident expression. Clean light-grey studio wall, soft large window light from camera left, gentle falloff, catchlights in the eyes. Full-frame camera, 85mm lens at f/2.8, eye level. Real skin texture even with light makeup: visible pores, fine vellus hair, subtle natural unevenness, a few flyaway hairs. Natural color, fine film grain, no heavy retouching, no plastic skin.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "M20-hero-b",
+  "model": "text2image_soul_v2",
+  "prompt": "Korean entertainment agency profile photo of a 25-year-old Korean man with a striking K-pop idol visual: sharp V-line jaw, deep-set eyes with a thin crease, high nose bridge, full lips, ash-brown hair in a soft wavy comma cut, wearing a plain black cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed, confident expression. Clean light-grey studio wall, soft large window light from camera left, gentle falloff, catchlights in the eyes. Full-frame camera, 85mm lens at f/2.8, eye level. Real skin texture even with light makeup: visible pores, fine vellus hair, subtle natural unevenness, a few flyaway hairs. Natural color, fine film grain, no heavy retouching, no plastic skin.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "M30-hero-a",
+  "model": "text2image_soul_v2",
+  "prompt": "Korean entertainment agency profile photo of a 33-year-old Korean man with a charismatic actor-like visual: defined jaw and cheekbones, calm confident eyes, thick straight brows, neat black hair styled up and back, faint stubble, wearing a plain white cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed, confident expression. Clean light-grey studio wall, soft large window light from camera left, gentle falloff, catchlights in the eyes. Full-frame camera, 85mm lens at f/2.8, eye level. Real skin texture even with light makeup: visible pores, fine vellus hair, subtle natural unevenness, a few flyaway hairs. Natural color, fine film grain, no heavy retouching, no plastic skin.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "F10-hero-a",
+  "model": "text2image_soul_v2",
+  "prompt": "Korean entertainment agency profile photo of a 19-year-old Korean young woman with a bright, lovely K-pop idol visual: small oval face, big clear eyes with soft aegyo-sal, soft rosy cheeks, long straight black hair with wispy see-through bangs, light glossy lips, wearing a plain white cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed, confident expression. Clean light-grey studio wall, soft large window light from camera left, gentle falloff, catchlights in the eyes. Full-frame camera, 85mm lens at f/2.8, eye level. Real skin texture even with light makeup: visible pores, fine vellus hair, subtle natural unevenness, a few flyaway hairs. Natural color, fine film grain, no heavy retouching, no plastic skin.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "F10-hero-b",
+  "model": "text2image_soul_v2",
+  "prompt": "Korean entertainment agency profile photo of a 19-year-old Korean young woman with a bright, lovely K-pop idol visual: small oval face, big clear eyes with soft aegyo-sal, soft rosy cheeks, long straight black hair with wispy see-through bangs, light glossy lips, wearing a plain white cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed, confident expression. Clean light-grey studio wall, soft large window light from camera left, gentle falloff, catchlights in the eyes. Full-frame camera, 85mm lens at f/2.8, eye level. Real skin texture even with light makeup: visible pores, fine vellus hair, subtle natural unevenness, a few flyaway hairs. Natural color, fine film grain, no heavy retouching, no plastic skin.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "F20-hero-a",
+  "model": "text2image_soul_v2",
+  "prompt": "Korean entertainment agency profile photo of a 25-year-old Korean woman with a glamorous K-pop idol visual: small V-line face, cat-like almond eyes with subtle eyeliner, high nose bridge, full glossy lips, long glossy dark hair with soft waves, wearing a plain black cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed, confident expression. Clean light-grey studio wall, soft large window light from camera left, gentle falloff, catchlights in the eyes. Full-frame camera, 85mm lens at f/2.8, eye level. Real skin texture even with light makeup: visible pores, fine vellus hair, subtle natural unevenness, a few flyaway hairs. Natural color, fine film grain, no heavy retouching, no plastic skin.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "F20-hero-b",
+  "model": "text2image_soul_v2",
+  "prompt": "Korean entertainment agency profile photo of a 25-year-old Korean woman with a glamorous K-pop idol visual: small V-line face, cat-like almond eyes with subtle eyeliner, high nose bridge, full glossy lips, long glossy dark hair with soft waves, wearing a plain black cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed, confident expression. Clean light-grey studio wall, soft large window light from camera left, gentle falloff, catchlights in the eyes. Full-frame camera, 85mm lens at f/2.8, eye level. Real skin texture even with light makeup: visible pores, fine vellus hair, subtle natural unevenness, a few flyaway hairs. Natural color, fine film grain, no heavy retouching, no plastic skin.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ },
+ {
+  "name": "F30-hero-a",
+  "model": "text2image_soul_v2",
+  "prompt": "Korean entertainment agency profile photo of a 32-year-old Korean woman with an elegant actress-like visual: refined features, calm confident almond eyes, clean straight brows, collarbone-length sleek dark-brown hair tucked behind one ear, soft nude lips, wearing a plain white cotton crew-neck t-shirt. Head and shoulders, facing the camera straight on with a relaxed, confident expression. Clean light-grey studio wall, soft large window light from camera left, gentle falloff, catchlights in the eyes. Full-frame camera, 85mm lens at f/2.8, eye level. Real skin texture even with light makeup: visible pores, fine vellus hair, subtle natural unevenness, a few flyaway hairs. Natural color, fine film grain, no heavy retouching, no plastic skin.",
+  "args": {
+   "aspect_ratio": "3:4",
+   "quality": "2k"
+  }
+ }
+]

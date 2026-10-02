@@ -1,0 +1,80 @@
+{
+  "pdf": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\pdf\\yuhobuilds_EP01_첫질문_가이드_v3\\그림으로_따라하는_첫질문.pdf",
+  "pdfSha256": "cd04baf752f2f6be8729c044361c1636c6e7aedbd75aa569b16298e1eea59529",
+  "pdfBytes": 260499,
+  "pages": 9,
+  "zip": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\pdf\\yuhobuilds_EP01_첫질문_가이드_v3.zip",
+  "zipSha256": "d04abbb4301cc0e1e73b418db910791f9d553289888d699fb880366ad1512cf1",
+  "zipBytes": 229676,
+  "zipMembers": 11,
+  "allPromptsMatchPdfAndTxt": true,
+  "promptCount": 7,
+  "individualTxtContainsOnlyPrompt": true,
+  "fullTextIncludesAllPdfBodyTextAndDiagramDescriptions": true,
+  "utf8BomRoundTrip": true,
+  "videoPromptExactMatch": true,
+  "v1AndV2Preserved": true,
+  "textWithinMargins": true,
+  "fontsEmbedded": [
+    "/AAAAAA+DMMono-Regular",
+    "/AAAAAA+InterTight-Bold",
+    "/AAAAAA+InterTight-Medium",
+    "/AAAAAA+InterTight-Regular",
+    "/AAAAAA+InterTight-SemiBold",
+    "/AAAAAA+SUITVariable-ExtraBold",
+    "/AAAAAA+SUITVariable-Medium",
+    "/AAAAAA+SUITVariable-SemiBold",
+    "/AAAAAB+SUITVariable-Medium"
+  ],
+  "visualReviewComplete": true,
+  "userReviewPending": true,
+  "videoChanged": false,
+  "published": false,
+  "files": [
+    {
+      "file": "그림으로_따라하는_첫질문.pdf",
+      "sha256": "cd04baf752f2f6be8729c044361c1636c6e7aedbd75aa569b16298e1eea59529"
+    },
+    {
+      "file": "먼저_읽어주세요.txt",
+      "sha256": "8ce7b82db244c4916f1d28fb1463904b7ecf863375e6a9f4a2cf76c91f517f3f"
+    },
+    {
+      "file": "처음부터_읽는_가이드.txt",
+      "sha256": "5dde3aff2b13aa58d16092370b184e1236bd468c66c5f2aa55fa738336c755b9"
+    },
+    {
+      "file": "프롬프트/01_내아이디어로_시작.txt",
+      "sha256": "f1f8c9ff8d05e698ed8238ae1ac7862430fde70627ef98f3620416f343441cc0"
+    },
+    {
+      "file": "프롬프트/02_출석앱으로_연습.txt",
+      "sha256": "9860bdcdaa73a3800855aa90d034c0e994c38ddb2a4c1657315078f7f270a952"
+    },
+    {
+      "file": "프롬프트/03_첫작업_하나만.txt",
+      "sha256": "80526a0e03e84ab7279d12a1d61963358304df4e4efc7a712b5fd34c1970b790"
+    },
+    {
+      "file": "프롬프트/04_종이표_예시보기.txt",
+      "sha256": "b0fff94348eb1a52a5d70d6d14272edc1f6456cdc4f09b79cdda2e17717586e8"
+    },
+    {
+      "file": "프롬프트/05_어려운말_풀어보기.txt",
+      "sha256": "e2c10bfc2ed0d2abbfdb6d1e351e7be907cb4bf3b6bdcecc55f27fb4c9ed917c"
+    },
+    {
+      "file": "프롬프트/06_잘됐는지_확인.txt",
+      "sha256": "64e6b47d0b1746568206793a95beaf91005d8bcfdc0e78c42d93b60a53cef818"
+    },
+    {
+      "file": "프롬프트/07_설명과_화면이_다를때.txt",
+      "sha256": "a1fd23e8d893399ee560d545cf113974631c44e414e4b37e9bbc09b5e6b7a120"
+    },
+    {
+      "file": "프롬프트_모음.txt",
+      "sha256": "510a744325d0852177b334234593bdfffb167b1315f0e068ec9594a2f5ee5b03"
+    }
+  ],
+  "visualReview": "All nine final PDF pages rendered at 120 dpi and inspected; no clipped text, overlapping content or broken glyphs found."
+}

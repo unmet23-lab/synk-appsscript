@@ -1,0 +1,8 @@
+<!doctype html><html lang="ko"><body><template><div class="shot-root" id="shot-05-root" data-composition-id="shot-05" data-width="1080" data-height="1920" data-duration="2.966667"><div class="world paper"><div class="top"><span>yuhobuilds</span><span>EP.02</span></div><div class="kicker" style="left:76px;top:164px">당시 대화 요지 · CLAUDE</div><div class="headline rise" style="left:72px;right:72px;top:228px;"><span class="accent">첫 웹앱</span>부터<br>만들어 보세요.</div><div class="recommendation pop" style="left:80px;top:625px;width:920px;height:660px"><div class="ai-name">CLAUDE</div><div class="stack-name">Glide</div><div class="plus">＋</div><div class="stack-name smaller">Google Sheets</div><div class="path-arrow">→ 웹에서 보는 앱</div></div><div class="sticker pop" style="left:250px;top:1375px">한 번 만들어 보기</div></div></div><script>(function(){const root=document.getElementById('shot-05-root'),q=s=>root.querySelector(s),qAll=s=>Array.from(root.querySelectorAll(s));const tl=gsap.timeline({paused:true});
+ qAll('.rise').forEach((e,j)=>tl.fromTo(e,{y:45,opacity:0},{y:0,opacity:1,duration:.28,ease:'power4.out'},0.25+Math.min(j*.08,.24)));
+ qAll('.pop').forEach((e,j)=>tl.fromTo(e,{scale:.86,opacity:0},{scale:1,opacity:1,duration:.28,ease:'back.out(1.35)'},0.25+Math.min(j*.09,.27)));
+ qAll('.slam').forEach(e=>tl.fromTo(e,{opacity:0,scale:1.15},{opacity:1,scale:1,duration:.24,ease:'power4.out'},0.25));
+ tl.fromTo(q('.path-arrow'),{x:-120,opacity:0},{x:0,opacity:1,duration:.3,ease:'expo.out'},1.45);
+ tl.fromTo(q('.world'),{x:1080},{x:0,duration:0.233333333,ease:'power3.inOut'},0);
+ tl.to(q('.world'),{x:-302,scale:.96,duration:0.233333333,ease:'power3.inOut'},2.7333333333333325);
+ window.__timelines['shot-05']=tl;})();</script></template></body></html>

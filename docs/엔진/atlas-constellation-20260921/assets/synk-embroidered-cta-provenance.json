@@ -1,0 +1,25 @@
+{
+  "generator": "built-in image_gen",
+  "prompt": "synk-embroidered-cta-prompt.txt",
+  "master": "synk-embroidered-cta-master.png",
+  "output": "synk-embroidered-cta.webp",
+  "transform": "Resize to 1024px wide and encode WebP; preserve source alpha, no recoloring or shape edits",
+  "input": {
+    "width": 2004,
+    "height": 785,
+    "hasAlpha": true,
+    "alpha": {
+      "min": 0,
+      "max": 255,
+      "sum": 192818392,
+      "squaresSum": 48186231544,
+      "mean": 122.56912417203809,
+      "stdev": 124.9296831595415,
+      "minX": 0,
+      "minY": 32,
+      "maxX": 1133,
+      "maxY": 123
+    }
+  },
+  "bytes": 206930
+}

@@ -1,0 +1,113 @@
+{
+  "checkedAt": "2026-10-01",
+  "reviewType": "독립 읽기 전용 검산·코드 검토",
+  "scope": [
+    "budget-data.json revision2 156행",
+    "budget-results.json",
+    "build-opening-sheets.mjs",
+    "build-budget.mjs 계산/합산 관련 구간"
+  ],
+  "notReviewed": [
+    "엑셀 ZIP 및 실제 렌더 검증은 루트 담당",
+    "현지 견적·법정 세율/인허가 적용 재확인",
+    "실제 시공/입고/제품 시험"
+  ],
+  "checks": {
+    "items": 156,
+    "scopeCounts": {
+      "current": 122,
+      "optional": 8,
+      "monthly": 8,
+      "quoteRequired": 18
+    },
+    "duplicateItemIds": [],
+    "independentlyCalculatedMNT": [
+      291030536.984,
+      434483549.806,
+      688160701.728
+    ],
+    "previousReconstructedMNT": [
+      286108861.984,
+      427904537.806,
+      678009901.728
+    ],
+    "deltaMNT": [
+      4921675,
+      6579012,
+      10150800
+    ],
+    "monthlyMNT": [
+      828445,
+      1330222,
+      2088000
+    ],
+    "totalsMatch": true,
+    "baselineWeeks": 14,
+    "baselineStages": {
+      "preparationWeeks": 4,
+      "constructionWeeks": 8,
+      "acceptanceWeeks": 2
+    },
+    "capitalRows": {
+      "total": 26,
+      "apply1": 15,
+      "applyUndecided": 11,
+      "detailLinked": 12
+    },
+    "capitalInitialFullTotal": "미확정 유지",
+    "knownTaxIncluded": {
+      "smallPurifiers": "vatReserve false",
+      "water": "혼합 세금 상태를 단가로 정규화한 후 vatReserve false"
+    },
+    "linkedCapitalScopeMove": "detailId가 있는12행은 세부목록 현설계 전환시 추가개원자금 가격0으로 바뀌므로 같은 원금/VAT를 양쪽에서 가산하지 않음",
+    "initialVsMonthly": "현재 공사/비품 합산은 현설계만 포함하고 월운영8행은 별도. 커피/컵/차 초도재고와 월 소모품이 현재 합계에 이중 합산되는 동작은 없음",
+    "scheduleLabel": "제목이 공간·장비 준비 일정이며 시작일 공란, 공간탐색/개발납기 미정과 지연시 개원가능일 변경을 명시.14주 확정개원으로 표기하지 않음"
+  },
+  "findings": [
+    {
+      "id": "R1",
+      "priority": "P2",
+      "file": "docs/오프라인_공간설계/예산_20261001/budget-data.json",
+      "line": 4356,
+      "title": "S13 화장실 설치의 납품 선행조건 누락",
+      "reproduction": "S13은 S12만 선행으로 가져 W10~11에 설치되지만, 설치 대상인 맞춤 거울/문 제작 S10은 W11에 끝남. 조달 S09 지연도 S13 시작에 반영되지 않음.",
+      "impact": "전체14주 합계는 우연히 유지되지만 화장실 설치 시작일이 필요한 납품보다 앞설 수 있음.",
+      "recommended": "S13 predecessors를 S12+S09+S10으로 변경. 기준 설치 W11~12, 인수완료14주 유지.",
+      "status": "루트가 수정한다고 응답; 이 검토자는 원본 미수정"
+    },
+    {
+      "id": "R2",
+      "priority": "P2",
+      "file": "docs/오프라인_공간설계/예산_20261001/budget-data.json",
+      "line": 2629,
+      "title": "VAT 포함 필터 월적립 행의 재가산 플래그",
+      "reproduction": "S-filter_small_reserve 기준98,890₮는 출처 설명3928행 및 research-supplies.json의 VAT 포함가격 기반인데 vatReserve:true. 현설계로 바꾸면 현지 VAT9,889₮가 다시 붙음.",
+      "impact": "현재 월운영 합계에는 영향 없음. 편집형 집계 변경 시 중복 세금·예비비 발생.",
+      "recommended": "해당 행 vatReserve:false, 전 범위를 세금 포함 계획단가로 취급함을 주석으로 명시.",
+      "status": "루트 전달, 재빌드 전 확인 필요"
+    },
+    {
+      "id": "R3",
+      "priority": "P2",
+      "file": ".tmp/academy-budget-20261001/build-opening-sheets.mjs",
+      "line": 52,
+      "title": "첫 달 재고 차감이 월수만큼 반복되지 않도록 입력 정의 필요",
+      "relatedFile": "docs/오프라인_공간설계/예산_20261001/budget-data.json:4491",
+      "reproduction": "K05 입력문은 월 현금부족액에 초도재고 잔량 차감을 안내하고 수식은 해당 월액×3개월. 월1,000,000₮·첫달 재고200,000₮이면 월액800,000을 넣어2,400,000으로 계산되지만 기간 차감은3,000,000-200,000=2,800,000임.",
+      "impact": "현재 단가가 공란이라 현합계 오류는 없음. 첫 달만의 공제를 매월 차감한 평균액으로 오해하면 운영자금 과소 산정.",
+      "recommended": "선택 기간 총 순지출에서 초도재고 잔량을 한 번만 차감하고 월수로 나눈 평균액을 입력한다고 명시하거나 별도 일회 차감칸 사용.",
+      "status": "루트 전달, 입력문/계산 수정 확인 필요"
+    }
+  ],
+  "changesMade": "이 검토 결과 JSON만 저장. 원문·계산기·엑셀은 수정하지 않음",
+  "rootResolution": {
+    "checkedOn": "2026-10-01",
+    "status": "3 findings corrected and workbook rebuilt",
+    "corrections": [
+      "S13 depends on S12+S09+S10, total remains14 weeks",
+      "VAT-inclusive small-filter reserve flag=false",
+      "K05 one-time inventory offset over selected period, then divide by months; free pilot and pre-opening gap included from handover next day"
+    ],
+    "verification": "budget-results.json and export-validation.json"
+  }
+}

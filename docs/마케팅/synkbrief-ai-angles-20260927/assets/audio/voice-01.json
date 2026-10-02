@@ -1,0 +1,64 @@
+{
+  "text": "사진은 한 장인데, 광고는 세 컷. 이 머그컵으로 직접 만들어봤어요.",
+  "spokenText": "사진은 한 장인데, 광고는 세 컷. 이 머그컵으로 직접 만들어봤어요.",
+  "provider": "edge-tts",
+  "settings": {
+    "voice": "ko-KR-SunHiNeural",
+    "rate": "+0%",
+    "pitch": "+1Hz",
+    "boundary": "WordBoundary"
+  },
+  "duration": 6.0,
+  "words": [
+    {
+      "text": "사진은",
+      "start": 0.1,
+      "end": 0.5875
+    },
+    {
+      "text": "한",
+      "start": 0.6,
+      "end": 0.7625
+    },
+    {
+      "text": "장인데",
+      "start": 0.775,
+      "end": 1.4125
+    },
+    {
+      "text": "광고는",
+      "start": 1.55,
+      "end": 2.1375
+    },
+    {
+      "text": "세",
+      "start": 2.15,
+      "end": 2.3375
+    },
+    {
+      "text": "컷",
+      "start": 2.35,
+      "end": 2.5875
+    },
+    {
+      "text": "이",
+      "start": 2.6375,
+      "end": 2.8375
+    },
+    {
+      "text": "머그컵으로",
+      "start": 2.85,
+      "end": 3.5375
+    },
+    {
+      "text": "직접",
+      "start": 3.55,
+      "end": 4.0375
+    },
+    {
+      "text": "만들어봤어요",
+      "start": 4.05,
+      "end": 5.1125
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+[
+ {
+  "file": "slow__fl31_Leda__t1.wav",
+  "asr": "아, 맞다.",
+  "match": true,
+  "logprob": -0.333,
+  "speech_s": 1.95,
+  "lead_s": 0.29,
+  "tail_s": 0.32,
+  "peak_db": -0.2,
+  "f0_med": 220.7,
+  "f0_range_st": 7.7
+ },
+ {
+  "file": "slow__fl31_Leda__t2.wav",
+  "asr": "아, 맞다",
+  "match": true,
+  "logprob": -0.193,
+  "speech_s": 2.79,
+  "lead_s": 0.3,
+  "tail_s": 0.35,
+  "peak_db": 0.0,
+  "f0_med": 213.3,
+  "f0_range_st": 7.7
+ },
+ {
+  "file": "slow__fl31_Sulafat__t1.wav",
+  "asr": "아 맞다",
+  "match": true,
+  "logprob": -0.597,
+  "speech_s": 2.0,
+  "lead_s": 0.29,
+  "tail_s": 0.39,
+  "peak_db": 0.1,
+  "f0_med": 192.8,
+  "f0_range_st": 5.4
+ },
+ {
+  "file": "slow__fl31_Sulafat__t2.wav",
+  "asr": "아, 맞다.",
+  "match": true,
+  "logprob": -0.681,
+  "speech_s": 2.02,
+  "lead_s": 0.27,
+  "tail_s": 0.31,
+  "peak_db": 0.1,
+  "f0_med": 301.9,
+  "f0_range_st": 13.6
+ },
+ {
+  "file": "slow__pro_Zephyr__t1.wav",
+  "asr": "아 맞다.",
+  "match": true,
+  "logprob": -0.429,
+  "speech_s": 2.7,
+  "lead_s": 0.03,
+  "tail_s": 0.001,
+  "peak_db": -10.4,
+  "f0_med": 172.0,
+  "f0_range_st": 3.1
+ },
+ {
+  "file": "slow__pro_Zephyr__t2.wav",
+  "asr": "아, 맞다.",
+  "match": true,
+  "logprob": -0.419,
+  "speech_s": 1.98,
+  "lead_s": 0.03,
+  "tail_s": 0.001,
+  "peak_db": -3.0,
+  "f0_med": 200.0,
+  "f0_range_st": 7.8
+ }
+]

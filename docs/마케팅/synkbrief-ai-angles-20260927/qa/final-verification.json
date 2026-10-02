@@ -1,0 +1,91 @@
+{
+  "video": "synkbrief-photo-to-3cuts-series.mp4",
+  "duration": 56.5,
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "encoding": "H.264 yuv420p BT.709 + AAC 48kHz stereo",
+  "source": "Actual image_gen source + 3 reference-based edits; six HyperFrames scenes",
+  "hyperframes": {
+    "fullCheck": "qa/check.json",
+    "finalChangedSceneCheck": "qa/check-final.json",
+    "errors": 0,
+    "lintWarnings": 2,
+    "warningReview": "Persistent identity grouping and intentional duplicate images in opening montage.",
+    "seriesCheck": "qa/check-series.json"
+  },
+  "visual": {
+    "seriesVisibleAtSeconds": [
+      0.6,
+      28,
+      53.9
+    ],
+    "inspected": true,
+    "actualEncodedFrames": 3,
+    "frames": [
+      "qa/series-start.jpg",
+      "qa/series-middle.jpg",
+      "qa/series-end.jpg"
+    ],
+    "cover": "cover-series.jpg"
+  },
+  "browserPlayback": {
+    "observedPlayingAt": 33.9,
+    "observation": "Updated MP4 played from start through 33.9s to 56.5s playback complete, without seeking. Refreshed cover and download link visually verified.",
+    "url": "http://127.0.0.1:4387/",
+    "duration": 56.5,
+    "currentTime": 56.5,
+    "ended": true
+  },
+  "audio": {
+    "provider": "Edge TTS ko-KR-SunHiNeural",
+    "integratedLUFS": -16.01,
+    "truePeakDBTP": -4.21,
+    "asrVerified": true,
+    "directListeningVerified": false
+  },
+  "guide": {
+    "pages": 4,
+    "renderedAllPages": true,
+    "pdf": "guide.pdf",
+    "practicePackage": "synkbrief-practice.zip",
+    "downloadEndpointsHTTP": 200
+  },
+  "state": {
+    "localRenderComplete": true,
+    "userApproval": false,
+    "published": false,
+    "commentDMAutomationChanged": false,
+    "newPurchase": false
+  },
+  "sha256": "20cad63db299745c9173f0c226c99d941875c427f5658275603b93d5c677a6f1",
+  "previousRender": {
+    "browserPlayback": {
+      "url": "http://127.0.0.1:4387/",
+      "currentTime": 56.5,
+      "duration": 56.5,
+      "ended": true,
+      "paused": true,
+      "error": null,
+      "readyState": 4,
+      "videoWidth": 1080,
+      "videoHeight": 1920,
+      "observedPlayingAt": 21.965035,
+      "observation": "Native video played from start to ended without seeking; screenshot observed mid-playback."
+    },
+    "sha256": "79fd883854f7583094bf12418df44409d862bcdcaef2a79ac59f92a56c6f04fe",
+    "video": "synkbrief-photo-to-3cuts.mp4",
+    "visual": {
+      "actualEncodedFrames": 12,
+      "contact": "qa/final-contact.jpg",
+      "inspected": true
+    }
+  },
+  "series": "synkbrief 활용",
+  "seriesRevision": {
+    "audioPacketsIdentical": true,
+    "decodeErrorBytes": 0,
+    "initialOverwriteBlocked": "Existing output was locked; final revision saved as a separate MP4.",
+    "renderLog": "qa/render-series-final.log"
+  }
+}

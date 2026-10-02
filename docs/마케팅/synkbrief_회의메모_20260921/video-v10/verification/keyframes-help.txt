@@ -1,0 +1,24 @@
+See, debug, and refine keyframes — surface GSAP, CSS @keyframes, Anime.js, paths, and onion-shot diagnostics (hyperframes keyframes v0.8.64)
+
+USAGE hyperframes keyframes [OPTIONS] [TARGET]
+
+ARGUMENTS
+
+  TARGET    Project dir or composition .html
+
+OPTIONS
+
+  --selector=<selector>    Only keyframes matching this CSS selector                                                                                                                                                                                                                                                                                  
+    --runtime=<runtime>    Runtime filter hint: gsap|css|anime|all. Surfaces GSAP tweens, CSS @keyframes, and Anime.js timelines when detectable.                                                                                                                                                                                                     
+                 --json    Machine-readable JSON (for agents) (Default: false)                                                                                                                                                                                                                                                                        
+          --shot=<shot>    Onion-skin screenshot to PNG: the real element sampled over the timeline (true 3D, every channel) for visual self-verify. Pair with --selector to focus one element.                                                                                                                                                       
+    --samples=<samples>    Onion samples (equal-time steps) for --shot. Default 9.                                                                                                                                                                                                                                                                    
+      --layout=<layout>    --shot layout: 'path' (ghosts at real positions + path, default) or 'strip' (for in-place/overlapping motion). 'strip' captures a real per-time pixel filmstrip only when --selector targets an SVG element; any other selector (e.g. a DOM/sub-composition host) instead gets one live frame plus vector position markers.
+          --from=<from>    --shot: sample only from this time (seconds).                                                                                                                                                                                                                                                                              
+              --to=<to>    --shot: sample only up to this time (seconds).                                                                                                                                                                                                                                                                             
+        --angle=<angle>    --shot orbit camera: a preset (front|iso|top|side|rear-iso) or 'yaw,pitch' degrees — view 3D motion from the angle that reveals it.                                                                                                                                                                                        
+                  --fit    --shot: zoom the motion to fill the frame (default true; --no-fit to disable). (Default: true)                                                                                                                                                                                                                             
+               --no-fit                                                                                                                                                                                                                                                                                                                               
+                --ghost    --shot: rendered onion-skin — composite the real canvas/WebGL frames as translucent ghosts (older fainter), instead of bbox markers. For the canvas-internal 3D motion the marker onion can't see (requires a <canvas>). (Default: false)                                                                                  
+
+

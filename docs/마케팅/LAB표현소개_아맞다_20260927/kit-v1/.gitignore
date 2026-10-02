@@ -1,0 +1,8 @@
+assets/synk-kit/
+snapshots/*.png
+snapshots/pair-*.jpg
+snapshots/frames/
+renders/
+.hyperframes/
+.thumbnails/
+node_modules/

@@ -1,0 +1,42 @@
+{
+  "createdAt": "2026-09-21T15:06:42.453Z",
+  "evidence": [
+    {
+      "name": "before.png",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\프로필최신화_20260919\\커버_펠트글래스_v4\\이전_Behance_공개크롭보정전\\shift-behance.png",
+      "sha256": "ad5e51e106618f23d53cfc6c2f28cf2fa8d0c3d4c636e7390f35a02327c42042",
+      "copiedSha256": "ad5e51e106618f23d53cfc6c2f28cf2fa8d0c3d4c636e7390f35a02327c42042"
+    },
+    {
+      "name": "after.png",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\프로필최신화_20260919\\커버_펠트글래스_v4\\shift-behance.png",
+      "sha256": "b5a08f7a5035b90fa1749ecc5a85f652960248d4f5c03f103bc57beb066bbce2",
+      "copiedSha256": "b5a08f7a5035b90fa1749ecc5a85f652960248d4f5c03f103bc57beb066bbce2"
+    },
+    {
+      "name": "hero.png",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\프로필최신화_20260919\\커버_펠트글래스_v4\\shift-pinterest.png",
+      "sha256": "22cccbbeb840d9180db9b6e988791bd949d801b1609524b2ea3e62e1f3529075",
+      "copiedSha256": "22cccbbeb840d9180db9b6e988791bd949d801b1609524b2ea3e62e1f3529075"
+    },
+    {
+      "name": "felt-dark.webp",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\첫게시물_20260910\\assets\\felt-dark.webp",
+      "sha256": "b4b6000d659a2db651ce43a4e1e92b9ad6bd3dfa3fe93f01560a8b597b9be6a5",
+      "copiedSha256": "b4b6000d659a2db651ce43a4e1e92b9ad6bd3dfa3fe93f01560a8b597b9be6a5"
+    },
+    {
+      "name": "after-content.png",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\프로필최신화_20260919\\커버_펠트글래스_v4\\shift-behance.svg",
+      "sha256": "ca5fff390a29585e997435ad46b1a6f63843a0508cb1017aaf213e96ec5e328e",
+      "method": "Removed only the full-canvas background; extracted x1050 y30 w1520 h380. Content geometry preserved. Used only in explicitly labelled repositioning reconstruction."
+    }
+  ],
+  "record": "docs/마케팅/프로필최신화_20260919/커버_펠트글래스_v4/제작기록.md:61-65",
+  "labels": {
+    "originals": "수정 전/후 원본 또는 부분 확대",
+    "reconstruction": "Scene 05 only: 위치 이동 설명 · 배치 변화 재구성"
+  },
+  "failureScreenshotAvailable": false,
+  "publicUpload": false
+}

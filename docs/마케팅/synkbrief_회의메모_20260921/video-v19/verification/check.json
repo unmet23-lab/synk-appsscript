@@ -1,0 +1,3217 @@
+{
+  "ok": true,
+  "strict": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 27,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "duplicate_media_discovery_risk",
+        "severity": "warning",
+        "message": "Detected 2 matching img entries with the same source/start/duration.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Avoid duplicated media nodes that can be discovered twice during compilation."
+      },
+      {
+        "code": "duplicate_media_discovery_risk",
+        "severity": "warning",
+        "message": "Detected 4 matching img entries with the same source/start/duration.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Avoid duplicated media nodes that can be discovered twice during compilation."
+      },
+      {
+        "code": "timeline_track_too_dense",
+        "severity": "warning",
+        "message": "Track 1 has 23 timed elements in this HTML file. Smaller sub-compositions keep timelines easier to read, iterate on, and diff.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move coherent scene groups into separate .html files under compositions/ and mount them from the parent with data-composition-src so the timeline stays easier to inspect, revise, and validate."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"hook\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#hook",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"hook\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"record\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#record",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"record\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"common\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#common",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"common\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"prepare\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#prepare",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"prepare\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"open\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#open",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"open\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"paste\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#paste",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"paste\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"request\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#request",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"request\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"send\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#send",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"send\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"result\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#result",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"result\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"rules\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#rules",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"rules\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"project-menu\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#project-menu",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"project-menu\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"project\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#project",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"project\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"project-reuse\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#project-reuse",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"project-reuse\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"create\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#create",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"create\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"settings\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#settings",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"settings\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"save\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#save",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"save\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"global\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#global",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"global\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"repeat-menu\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#repeat-menu",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"repeat-menu\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"repeat-project\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#repeat-project",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"repeat-project\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"repeat-new\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#repeat-new",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"repeat-new\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"repeat-memo\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#repeat-memo",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"repeat-memo\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"repeat-finish\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#repeat-finish",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"repeat-finish\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"ending\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#ending",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\synkbrief_회의메모_20260921\\video-v19\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"ending\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple <audio> elements on track 14 overlap (.media/audio/sfx/pop-soft.wav at 85.2-85.9s, .media/audio/sfx/pop-soft.wav at 85.55-86.3s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 80,
+    "findings": [
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 5.066,
+        "selector": "#hook > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60,
+          "top": 68.9,
+          "right": 216.73,
+          "bottom": 112.9,
+          "width": 156.73,
+          "height": 44
+        },
+        "containerSelector": "#record > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1)",
+        "text": "synkbrief",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60,
+          "y": 68.9,
+          "width": 156.73,
+          "height": 44
+        },
+        "firstSeen": 5.066,
+        "lastSeen": 5.066,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 5.066,
+        "selector": "#hook > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 762.39,
+          "top": 74.9,
+          "right": 1020,
+          "bottom": 106.9,
+          "width": 257.61,
+          "height": 32
+        },
+        "containerSelector": "#record > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "회의할 때 이렇게 기록하죠",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 762.39,
+          "y": 74.9,
+          "width": 257.61,
+          "height": 32
+        },
+        "firstSeen": 5.066,
+        "lastSeen": 5.066,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 5.066,
+        "selector": "#hook > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60,
+          "top": 1758.9,
+          "right": 364.06,
+          "bottom": 1786.9,
+          "width": 304.06,
+          "height": 28
+        },
+        "containerSelector": "#record > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+        "text": "가상 메모 실습 · 2026.09.23 화면",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60,
+          "y": 1758.9,
+          "width": 304.06,
+          "height": 28
+        },
+        "firstSeen": 5.066,
+        "lastSeen": 5.066,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 5.066,
+        "selector": "#hook > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 954.41,
+          "top": 1758.9,
+          "right": 1020,
+          "bottom": 1786.9,
+          "width": 65.59,
+          "height": 28
+        },
+        "containerSelector": "#record > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(2)",
+        "text": "01 / 23",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 954.41,
+          "y": 1758.9,
+          "width": 65.59,
+          "height": 28
+        },
+        "firstSeen": 5.066,
+        "lastSeen": 5.066,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 21.595,
+        "selector": "#common > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.96,
+          "top": 58.83,
+          "right": 217.38,
+          "bottom": 102.75,
+          "width": 156.42,
+          "height": 43.92
+        },
+        "containerSelector": "#prepare > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1)",
+        "text": "synkbrief",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.96,
+          "y": 58.83,
+          "width": 156.42,
+          "height": 43.92
+        },
+        "firstSeen": 21.595,
+        "lastSeen": 21.595,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 21.595,
+        "selector": "#common > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 772.28,
+          "top": 64.82,
+          "right": 1019.04,
+          "bottom": 96.76,
+          "width": 246.76,
+          "height": 31.94
+        },
+        "containerSelector": "#prepare > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "오늘은 둘 다 쓸 수 있어요",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 772.28,
+          "y": 64.82,
+          "width": 246.76,
+          "height": 31.94
+        },
+        "firstSeen": 21.595,
+        "lastSeen": 21.595,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 21.595,
+        "selector": "#common > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(1) > em:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.96,
+          "top": 161.63,
+          "right": 510.57,
+          "bottom": 251.92,
+          "width": 449.61,
+          "height": 90.29
+        },
+        "containerSelector": "#prepare > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(1) > em:nth-of-type(1)",
+        "text": "직접 쓴 메모도,",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.96,
+          "y": 161.63,
+          "width": 449.61,
+          "height": 90.29
+        },
+        "firstSeen": 21.595,
+        "lastSeen": 21.595,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 21.595,
+        "selector": "#common > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(2) > em:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.96,
+          "top": 251.92,
+          "right": 722.34,
+          "bottom": 342.2,
+          "width": 661.38,
+          "height": 90.28
+        },
+        "containerSelector": "#prepare > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(2) > em:nth-of-type(1)",
+        "text": "녹음을 글로 푼 내용도.",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.96,
+          "y": 251.92,
+          "width": 661.38,
+          "height": 90.28
+        },
+        "firstSeen": 21.595,
+        "lastSeen": 21.595,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 21.595,
+        "selector": "#common > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.96,
+          "top": 1745.45,
+          "right": 364.41,
+          "bottom": 1773.4,
+          "width": 303.45,
+          "height": 27.95
+        },
+        "containerSelector": "#prepare > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+        "text": "가상 메모 실습 · 2026.09.23 화면",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.96,
+          "y": 1745.45,
+          "width": 303.45,
+          "height": 27.95
+        },
+        "firstSeen": 21.595,
+        "lastSeen": 21.595,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 21.595,
+        "selector": "#common > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 949.15,
+          "top": 1745.45,
+          "right": 1019.04,
+          "bottom": 1773.4,
+          "width": 69.89,
+          "height": 27.95
+        },
+        "containerSelector": "#prepare > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(2)",
+        "text": "03 / 23",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 949.15,
+          "y": 1745.45,
+          "width": 69.89,
+          "height": 27.95
+        },
+        "firstSeen": 21.595,
+        "lastSeen": 21.595,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 29.061,
+        "selector": "#prepare > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(1) > em:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 0,
+          "top": 191.7,
+          "right": 214.79,
+          "bottom": 279.91,
+          "width": 214.79,
+          "height": 88.21
+        },
+        "containerSelector": "#open > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(1) > em:nth-of-type(1)",
+        "text": "적어둔 내용을",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 191.7,
+          "width": 214.79,
+          "height": 88.21
+        },
+        "firstSeen": 29.061,
+        "lastSeen": 29.061,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 29.061,
+        "selector": "#prepare > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(1) > em:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 0,
+          "top": 191.7,
+          "right": 214.79,
+          "bottom": 279.91,
+          "width": 214.79,
+          "height": 88.21
+        },
+        "containerSelector": "#open > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(2) > em:nth-of-type(1)",
+        "text": "적어둔 내용을",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 191.7,
+          "width": 214.79,
+          "height": 88.21
+        },
+        "firstSeen": 29.061,
+        "lastSeen": 29.061,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 29.061,
+        "selector": "#prepare > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(2) > em:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 0,
+          "top": 279.91,
+          "right": 363.62,
+          "bottom": 368.11,
+          "width": 363.62,
+          "height": 88.2
+        },
+        "containerSelector": "#open > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(2) > em:nth-of-type(1)",
+        "text": "그대로 복사하세요.",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 279.91,
+          "width": 363.62,
+          "height": 88.2
+        },
+        "firstSeen": 29.061,
+        "lastSeen": 29.061,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 29.061,
+        "selector": "span.raw-text",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 0,
+          "top": 533.86,
+          "right": 708.64,
+          "bottom": 1119.78,
+          "width": 708.64,
+          "height": 585.92
+        },
+        "containerSelector": "#open > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1)",
+        "text": "오늘 회의 메모. 소개 페이지 문구가 길다는 얘기 나옴. 짧게 고치기로. 지수가 9월 23일까지 수정하겠다고 함. 설문 얘기도 했는데 초안은 민호가 맡기로 했고 마감은 안 정함. 고객 인터뷰 해보자는 말도 나왔지만 할지는 아직 미정. 아 다음 회의는 9월 25일 오후 2시.",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 533.86,
+          "width": 708.64,
+          "height": 585.92
+        },
+        "firstSeen": 29.061,
+        "lastSeen": 29.061,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 33.86,
+        "selector": "#open > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.91,
+          "top": 59.28,
+          "right": 217.35,
+          "bottom": 103.2,
+          "width": 156.44,
+          "height": 43.92
+        },
+        "containerSelector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1)",
+        "text": "synkbrief",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.91,
+          "y": 59.28,
+          "width": 156.44,
+          "height": 43.92
+        },
+        "firstSeen": 33.86,
+        "lastSeen": 33.86,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 33.86,
+        "selector": "#open > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 823.27,
+          "top": 65.27,
+          "right": 1019.09,
+          "bottom": 97.21,
+          "width": 195.82,
+          "height": 31.94
+        },
+        "containerSelector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "02 ChatGPT 열기",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 823.27,
+          "y": 65.27,
+          "width": 195.82,
+          "height": 31.94
+        },
+        "firstSeen": 33.86,
+        "lastSeen": 33.86,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 33.86,
+        "selector": "#open > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(1) > em:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.91,
+          "top": 162.09,
+          "right": 424.8,
+          "bottom": 244.29,
+          "width": 363.89,
+          "height": 82.2
+        },
+        "containerSelector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(1) > em:nth-of-type(1)",
+        "text": "ChatGPT의",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.91,
+          "y": 162.09,
+          "width": 363.89,
+          "height": 82.2
+        },
+        "firstSeen": 33.86,
+        "lastSeen": 33.86,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 33.86,
+        "selector": "#open > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(2) > em:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.91,
+          "top": 244.29,
+          "right": 646.34,
+          "bottom": 326.49,
+          "width": 585.43,
+          "height": 82.2
+        },
+        "containerSelector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(1) > em:nth-of-type(1)",
+        "text": "긴 입력창을 누르세요.",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.91,
+          "y": 244.29,
+          "width": 585.43,
+          "height": 82.2
+        },
+        "firstSeen": 33.86,
+        "lastSeen": 33.86,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 33.86,
+        "selector": "#open > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(2) > em:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.91,
+          "top": 244.29,
+          "right": 646.34,
+          "bottom": 326.49,
+          "width": 585.43,
+          "height": 82.2
+        },
+        "containerSelector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(2) > em:nth-of-type(1)",
+        "text": "긴 입력창을 누르세요.",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.91,
+          "y": 244.29,
+          "width": 585.43,
+          "height": 82.2
+        },
+        "firstSeen": 33.86,
+        "lastSeen": 33.86,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 33.86,
+        "selector": "#open > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 78.88,
+          "top": 455.89,
+          "right": 168.15,
+          "bottom": 485.83,
+          "width": 89.27,
+          "height": 29.94
+        },
+        "containerSelector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(1)",
+        "text": "전체 화면",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 78.88,
+          "y": 455.89,
+          "width": 89.27,
+          "height": 29.94
+        },
+        "firstSeen": 33.86,
+        "lastSeen": 33.86,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 33.86,
+        "selector": "#open > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 312.95,
+          "top": 455.89,
+          "right": 336.9,
+          "bottom": 485.83,
+          "width": 23.95,
+          "height": 29.94
+        },
+        "containerSelector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "→",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 312.95,
+          "y": 455.89,
+          "width": 23.95,
+          "height": 29.94
+        },
+        "firstSeen": 33.86,
+        "lastSeen": 33.86,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 33.86,
+        "selector": "#open > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 481.72,
+          "top": 455.89,
+          "right": 570.99,
+          "bottom": 485.83,
+          "width": 89.27,
+          "height": 29.94
+        },
+        "containerSelector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(2)",
+        "text": "위치 확대",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 481.72,
+          "y": 455.89,
+          "width": 89.27,
+          "height": 29.94
+        },
+        "firstSeen": 33.86,
+        "lastSeen": 33.86,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 33.86,
+        "selector": "#open > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 715.79,
+          "top": 455.89,
+          "right": 739.74,
+          "bottom": 485.83,
+          "width": 23.95,
+          "height": 29.94
+        },
+        "containerSelector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "text": "→",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 715.79,
+          "y": 455.89,
+          "width": 23.95,
+          "height": 29.94
+        },
+        "firstSeen": 33.86,
+        "lastSeen": 33.86,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 33.86,
+        "selector": "#open > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(3)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 884.55,
+          "top": 455.89,
+          "right": 1001.12,
+          "bottom": 485.83,
+          "width": 116.57,
+          "height": 29.94
+        },
+        "containerSelector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(3)",
+        "text": "누르기·입력",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 884.55,
+          "y": 455.89,
+          "width": 116.57,
+          "height": 29.94
+        },
+        "firstSeen": 33.86,
+        "lastSeen": 33.86,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 33.86,
+        "selector": "#open > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 87.86,
+          "top": 530.74,
+          "right": 318.44,
+          "bottom": 564.68,
+          "width": 230.58,
+          "height": 33.94
+        },
+        "containerSelector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1)",
+        "text": "화면 가운데 긴 입력창",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 87.86,
+          "y": 530.74,
+          "width": 230.58,
+          "height": 33.94
+        },
+        "firstSeen": 33.86,
+        "lastSeen": 33.86,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 33.86,
+        "selector": "#open > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 90.85,
+          "top": 1375.14,
+          "right": 256.15,
+          "bottom": 1420.05,
+          "width": 165.3,
+          "height": 44.91
+        },
+        "containerSelector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3)",
+        "text": "입력창 클릭",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90.85,
+          "y": 1375.14,
+          "width": 165.3,
+          "height": 44.91
+        },
+        "firstSeen": 33.86,
+        "lastSeen": 33.86,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 33.86,
+        "selector": "#open > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.91,
+          "top": 1746.07,
+          "right": 364.4,
+          "bottom": 1774.02,
+          "width": 303.49,
+          "height": 27.95
+        },
+        "containerSelector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+        "text": "가상 메모 실습 · 2026.09.23 화면",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.91,
+          "y": 1746.07,
+          "width": 303.49,
+          "height": 27.95
+        },
+        "firstSeen": 33.86,
+        "lastSeen": 33.86,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 33.86,
+        "selector": "#open > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 948.92,
+          "top": 1746.07,
+          "right": 1019.09,
+          "bottom": 1774.02,
+          "width": 70.17,
+          "height": 27.95
+        },
+        "containerSelector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(2)",
+        "text": "05 / 23",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 948.92,
+          "y": 1746.07,
+          "width": 70.17,
+          "height": 27.95
+        },
+        "firstSeen": 33.86,
+        "lastSeen": 33.86,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 42.658,
+        "selector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.53,
+          "top": 63.53,
+          "right": 217.09,
+          "bottom": 107.48,
+          "width": 156.56,
+          "height": 43.95
+        },
+        "containerSelector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1)",
+        "text": "synkbrief",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.53,
+          "y": 63.53,
+          "width": 156.56,
+          "height": 43.95
+        },
+        "firstSeen": 42.658,
+        "lastSeen": 42.658,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 42.658,
+        "selector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 791.64,
+          "top": 69.52,
+          "right": 1019.47,
+          "bottom": 101.49,
+          "width": 227.83,
+          "height": 31.97
+        },
+        "containerSelector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "03 AI에게 부탁할 문장",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 791.64,
+          "y": 69.52,
+          "width": 227.83,
+          "height": 31.97
+        },
+        "firstSeen": 42.658,
+        "lastSeen": 42.658,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 42.658,
+        "selector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(1) > em:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.53,
+          "top": 166.42,
+          "right": 488.1,
+          "bottom": 256.79,
+          "width": 427.57,
+          "height": 90.37
+        },
+        "containerSelector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(1) > em:nth-of-type(1)",
+        "text": "AI에게 이렇게",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.53,
+          "y": 166.42,
+          "width": 427.57,
+          "height": 90.37
+        },
+        "firstSeen": 42.658,
+        "lastSeen": 42.658,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 42.658,
+        "selector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 78.51,
+          "top": 468.55,
+          "right": 167.85,
+          "bottom": 498.52,
+          "width": 89.34,
+          "height": 29.97
+        },
+        "containerSelector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(1)",
+        "text": "전체 화면",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 78.51,
+          "y": 468.55,
+          "width": 89.34,
+          "height": 29.97
+        },
+        "firstSeen": 42.658,
+        "lastSeen": 42.658,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 42.658,
+        "selector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 312.77,
+          "top": 468.55,
+          "right": 336.74,
+          "bottom": 498.52,
+          "width": 23.97,
+          "height": 29.97
+        },
+        "containerSelector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "→",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 312.77,
+          "y": 468.55,
+          "width": 23.97,
+          "height": 29.97
+        },
+        "firstSeen": 42.658,
+        "lastSeen": 42.658,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 42.658,
+        "selector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 481.67,
+          "top": 468.55,
+          "right": 571.01,
+          "bottom": 498.52,
+          "width": 89.34,
+          "height": 29.97
+        },
+        "containerSelector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(2)",
+        "text": "위치 확대",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 481.67,
+          "y": 468.55,
+          "width": 89.34,
+          "height": 29.97
+        },
+        "firstSeen": 42.658,
+        "lastSeen": 42.658,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 42.658,
+        "selector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 715.93,
+          "top": 468.55,
+          "right": 739.9,
+          "bottom": 498.52,
+          "width": 23.97,
+          "height": 29.97
+        },
+        "containerSelector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "text": "→",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 715.93,
+          "y": 468.55,
+          "width": 23.97,
+          "height": 29.97
+        },
+        "firstSeen": 42.658,
+        "lastSeen": 42.658,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 42.658,
+        "selector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(3)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 884.82,
+          "top": 468.55,
+          "right": 1001.49,
+          "bottom": 498.52,
+          "width": 116.67,
+          "height": 29.97
+        },
+        "containerSelector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(3)",
+        "text": "누르기·입력",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 884.82,
+          "y": 468.55,
+          "width": 116.67,
+          "height": 29.97
+        },
+        "firstSeen": 42.658,
+        "lastSeen": 42.658,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 42.658,
+        "selector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 87.5,
+          "top": 543.47,
+          "right": 367.72,
+          "bottom": 577.43,
+          "width": 280.22,
+          "height": 33.96
+        },
+        "containerSelector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1)",
+        "text": "입력창 맨 위 · 부탁할 문장",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 87.5,
+          "y": 543.47,
+          "width": 280.22,
+          "height": 33.96
+        },
+        "firstSeen": 42.658,
+        "lastSeen": 42.658,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 42.658,
+        "selector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 90.49,
+          "top": 1388.54,
+          "right": 557.73,
+          "bottom": 1433.49,
+          "width": 467.24,
+          "height": 44.95
+        },
+        "containerSelector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3)",
+        "text": "Ctrl + V · 부탁할 문장 붙여넣기",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90.49,
+          "y": 1388.54,
+          "width": 467.24,
+          "height": 44.95
+        },
+        "firstSeen": 42.658,
+        "lastSeen": 42.658,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 42.658,
+        "selector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.53,
+          "top": 1751.67,
+          "right": 364.26,
+          "bottom": 1779.64,
+          "width": 303.73,
+          "height": 27.97
+        },
+        "containerSelector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+        "text": "가상 메모 실습 · 2026.09.23 화면",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.53,
+          "y": 1751.67,
+          "width": 303.73,
+          "height": 27.97
+        },
+        "firstSeen": 42.658,
+        "lastSeen": 42.658,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 42.658,
+        "selector": "#paste > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 949.25,
+          "top": 1751.67,
+          "right": 1019.47,
+          "bottom": 1779.64,
+          "width": 70.22,
+          "height": 27.97
+        },
+        "containerSelector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(2)",
+        "text": "06 / 23",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 949.25,
+          "y": 1751.67,
+          "width": 70.22,
+          "height": 27.97
+        },
+        "firstSeen": 42.658,
+        "lastSeen": 42.658,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 44.361,
+        "selector": "div.camera-world",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": -277.5,
+          "top": 436.47,
+          "right": 1291.27,
+          "bottom": 1318.9,
+          "width": 1568.77,
+          "height": 882.43
+        },
+        "containerSelector": "div.camera-frame",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 62,
+          "top": 594.75,
+          "right": 1018,
+          "bottom": 1356.36,
+          "width": 956,
+          "height": 761.61
+        },
+        "overflow": {
+          "left": 339.5,
+          "right": 273.27,
+          "top": 158.28
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": -277.5,
+          "y": 436.47,
+          "width": 1568.77,
+          "height": 882.43
+        },
+        "firstSeen": 44.361,
+        "lastSeen": 44.361,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 51.456,
+        "selector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.96,
+          "top": 58.78,
+          "right": 217.38,
+          "bottom": 102.69,
+          "width": 156.42,
+          "height": 43.91
+        },
+        "containerSelector": "#send > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1)",
+        "text": "synkbrief",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.96,
+          "y": 58.78,
+          "width": 156.42,
+          "height": 43.91
+        },
+        "firstSeen": 51.456,
+        "lastSeen": 51.456,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 51.456,
+        "selector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 795.74,
+          "top": 64.77,
+          "right": 1019.04,
+          "bottom": 96.71,
+          "width": 223.3,
+          "height": 31.94
+        },
+        "containerSelector": "#send > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "04 회의 기록 붙여넣기",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 795.74,
+          "y": 64.77,
+          "width": 223.3,
+          "height": 31.94
+        },
+        "firstSeen": 51.456,
+        "lastSeen": 51.456,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 51.456,
+        "selector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(1) > em:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.96,
+          "top": 161.58,
+          "right": 582.24,
+          "bottom": 243.77,
+          "width": 521.28,
+          "height": 82.19
+        },
+        "containerSelector": "#send > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(1) > em:nth-of-type(1)",
+        "text": "그 문장 바로 아래에",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.96,
+          "y": 161.58,
+          "width": 521.28,
+          "height": 82.19
+        },
+        "firstSeen": 51.456,
+        "lastSeen": 51.456,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 51.456,
+        "selector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(2) > em:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.96,
+          "top": 243.77,
+          "right": 766,
+          "bottom": 325.97,
+          "width": 705.04,
+          "height": 82.2
+        },
+        "containerSelector": "#send > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(2) > em:nth-of-type(1)",
+        "text": "회의 기록을 붙여넣으세요.",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.96,
+          "y": 243.77,
+          "width": 705.04,
+          "height": 82.2
+        },
+        "firstSeen": 51.456,
+        "lastSeen": 51.456,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 51.456,
+        "selector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 78.92,
+          "top": 455.35,
+          "right": 168.18,
+          "bottom": 485.29,
+          "width": 89.26,
+          "height": 29.94
+        },
+        "containerSelector": "#send > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(1)",
+        "text": "전체 화면",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 78.92,
+          "y": 455.35,
+          "width": 89.26,
+          "height": 29.94
+        },
+        "firstSeen": 51.456,
+        "lastSeen": 51.456,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 51.456,
+        "selector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 312.97,
+          "top": 455.35,
+          "right": 336.92,
+          "bottom": 485.29,
+          "width": 23.95,
+          "height": 29.94
+        },
+        "containerSelector": "#send > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "→",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 312.97,
+          "y": 455.35,
+          "width": 23.95,
+          "height": 29.94
+        },
+        "firstSeen": 51.456,
+        "lastSeen": 51.456,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 51.456,
+        "selector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 481.73,
+          "top": 455.35,
+          "right": 570.98,
+          "bottom": 485.29,
+          "width": 89.25,
+          "height": 29.94
+        },
+        "containerSelector": "#send > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(2)",
+        "text": "위치 확대",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 481.73,
+          "y": 455.35,
+          "width": 89.25,
+          "height": 29.94
+        },
+        "firstSeen": 51.456,
+        "lastSeen": 51.456,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 51.456,
+        "selector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 715.77,
+          "top": 455.35,
+          "right": 739.72,
+          "bottom": 485.29,
+          "width": 23.95,
+          "height": 29.94
+        },
+        "containerSelector": "#send > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "text": "→",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 715.77,
+          "y": 455.35,
+          "width": 23.95,
+          "height": 29.94
+        },
+        "firstSeen": 51.456,
+        "lastSeen": 51.456,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 51.456,
+        "selector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(3)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 884.51,
+          "top": 455.35,
+          "right": 1001.08,
+          "bottom": 485.29,
+          "width": 116.57,
+          "height": 29.94
+        },
+        "containerSelector": "#send > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(3)",
+        "text": "누르기·입력",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 884.51,
+          "y": 455.35,
+          "width": 116.57,
+          "height": 29.94
+        },
+        "firstSeen": 51.456,
+        "lastSeen": 51.456,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 51.456,
+        "selector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 87.91,
+          "top": 530.2,
+          "right": 318.46,
+          "bottom": 564.13,
+          "width": 230.55,
+          "height": 33.93
+        },
+        "containerSelector": "#send > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1)",
+        "text": "부탁할 문장 바로 아래",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 87.91,
+          "y": 530.2,
+          "width": 230.55,
+          "height": 33.93
+        },
+        "firstSeen": 51.456,
+        "lastSeen": 51.456,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 51.456,
+        "selector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 90.9,
+          "top": 1374.5,
+          "right": 526.31,
+          "bottom": 1419.41,
+          "width": 435.41,
+          "height": 44.91
+        },
+        "containerSelector": "#send > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3)",
+        "text": "Ctrl + V · 회의 기록 붙여넣기",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90.9,
+          "y": 1374.5,
+          "width": 435.41,
+          "height": 44.91
+        },
+        "firstSeen": 51.456,
+        "lastSeen": 51.456,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 51.456,
+        "selector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.96,
+          "top": 1745.4,
+          "right": 364.41,
+          "bottom": 1773.35,
+          "width": 303.45,
+          "height": 27.95
+        },
+        "containerSelector": "#send > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+        "text": "가상 메모 실습 · 2026.09.23 화면",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.96,
+          "y": 1745.4,
+          "width": 303.45,
+          "height": 27.95
+        },
+        "firstSeen": 51.456,
+        "lastSeen": 51.456,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 51.456,
+        "selector": "#request > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 949.65,
+          "top": 1745.4,
+          "right": 1019.04,
+          "bottom": 1773.35,
+          "width": 69.39,
+          "height": 27.95
+        },
+        "containerSelector": "#send > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(2)",
+        "text": "07 / 23",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 949.65,
+          "y": 1745.4,
+          "width": 69.39,
+          "height": 27.95
+        },
+        "firstSeen": 51.456,
+        "lastSeen": 51.456,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 55.722,
+        "selector": "#send > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(1) > em:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 0,
+          "top": 190.68,
+          "right": 380.58,
+          "bottom": 271.08,
+          "width": 380.58,
+          "height": 80.4
+        },
+        "containerSelector": "#result > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(1) > em:nth-of-type(1)",
+        "text": "두 내용이 들어갔다면",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 190.68,
+          "width": 380.58,
+          "height": 80.4
+        },
+        "firstSeen": 55.722,
+        "lastSeen": 55.722,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 55.722,
+        "selector": "#send > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(2) > em:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 0,
+          "top": 271.08,
+          "right": 538.33,
+          "bottom": 351.49,
+          "width": 538.33,
+          "height": 80.41
+        },
+        "containerSelector": "#result > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(2) > em:nth-of-type(1)",
+        "text": "표시한 ↑ 버튼을 누르세요.",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 271.08,
+          "width": 538.33,
+          "height": 80.41
+        },
+        "firstSeen": 55.722,
+        "lastSeen": 55.722,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 55.722,
+        "selector": "#send > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 237.61,
+          "top": 478.06,
+          "right": 324.93,
+          "bottom": 507.35,
+          "width": 87.32,
+          "height": 29.29
+        },
+        "containerSelector": "div.before-notes > p:nth-of-type(1)",
+        "text": "위치 확대",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 237.61,
+          "y": 478.06,
+          "width": 87.32,
+          "height": 29.29
+        },
+        "firstSeen": 55.722,
+        "lastSeen": 55.722,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 55.722,
+        "selector": "#send > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 466.57,
+          "top": 478.06,
+          "right": 490,
+          "bottom": 507.35,
+          "width": 23.43,
+          "height": 29.29
+        },
+        "containerSelector": "div.before-notes > p:nth-of-type(1)",
+        "text": "→",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 466.57,
+          "y": 478.06,
+          "width": 23.43,
+          "height": 29.29
+        },
+        "firstSeen": 55.722,
+        "lastSeen": 55.722,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 55.722,
+        "selector": "#send > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(3)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 631.64,
+          "top": 478.06,
+          "right": 745.67,
+          "bottom": 507.35,
+          "width": 114.03,
+          "height": 29.29
+        },
+        "containerSelector": "span.match-blue",
+        "text": "누르기·입력",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 631.64,
+          "y": 478.06,
+          "width": 114.03,
+          "height": 29.29
+        },
+        "firstSeen": 55.722,
+        "lastSeen": 55.722,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 65.586,
+        "selector": "#result > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.77,
+          "top": 60.65,
+          "right": 217.25,
+          "bottom": 104.58,
+          "width": 156.48,
+          "height": 43.93
+        },
+        "containerSelector": "#rules > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1)",
+        "text": "synkbrief",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.77,
+          "y": 60.65,
+          "width": 156.48,
+          "height": 43.93
+        },
+        "firstSeen": 65.586,
+        "lastSeen": 65.586,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 65.586,
+        "selector": "#result > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 783.86,
+          "top": 66.64,
+          "right": 1019.23,
+          "bottom": 98.59,
+          "width": 235.37,
+          "height": 31.95
+        },
+        "containerSelector": "#rules > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "같은 기록으로 전후 비교",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 783.86,
+          "y": 66.64,
+          "width": 235.37,
+          "height": 31.95
+        },
+        "firstSeen": 65.586,
+        "lastSeen": 65.586,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 65.586,
+        "selector": "#result > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(1) > em:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.77,
+          "top": 163.48,
+          "right": 362.82,
+          "bottom": 253.81,
+          "width": 302.05,
+          "height": 90.33
+        },
+        "containerSelector": "#rules > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(1) > em:nth-of-type(1)",
+        "text": "같은 기록,",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.77,
+          "y": 163.48,
+          "width": 302.05,
+          "height": 90.33
+        },
+        "firstSeen": 65.586,
+        "lastSeen": 65.586,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 65.586,
+        "selector": "div.after-notes > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 306.37,
+          "top": 847,
+          "right": 750.33,
+          "bottom": 891.92,
+          "width": 443.96,
+          "height": 44.92
+        },
+        "containerSelector": "div.review-arrow",
+        "text": "소개 문구 개선 · 설문 초안 준비",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 306.37,
+          "y": 847,
+          "width": 443.96,
+          "height": 44.92
+        },
+        "firstSeen": 65.586,
+        "lastSeen": 65.586,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 65.586,
+        "selector": "div.after-notes > div:nth-of-type(2) > b:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 86.73,
+          "top": 1032.43,
+          "right": 229.11,
+          "bottom": 1071.37,
+          "width": 142.38,
+          "height": 38.94
+        },
+        "containerSelector": "div.row-head > span:nth-of-type(1)",
+        "text": "결정된 내용",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 86.73,
+          "y": 1032.43,
+          "width": 142.38,
+          "height": 38.94
+        },
+        "firstSeen": 65.586,
+        "lastSeen": 65.586,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 65.586,
+        "selector": "div.after-notes > div:nth-of-type(2) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 306.37,
+          "top": 1028.94,
+          "right": 716.42,
+          "bottom": 1073.87,
+          "width": 410.05,
+          "height": 44.93
+        },
+        "containerSelector": "div.row-head > span:nth-of-type(2)",
+        "text": "소개 페이지 문구를 짧게 수정",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 306.37,
+          "y": 1028.94,
+          "width": 410.05,
+          "height": 44.93
+        },
+        "firstSeen": 65.586,
+        "lastSeen": 65.586,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 65.586,
+        "selector": "div.after-notes > div:nth-of-type(2) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 306.37,
+          "top": 1028.94,
+          "right": 716.42,
+          "bottom": 1073.87,
+          "width": 410.05,
+          "height": 44.93
+        },
+        "containerSelector": "div.row-head > span:nth-of-type(3)",
+        "text": "소개 페이지 문구를 짧게 수정",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 306.37,
+          "y": 1028.94,
+          "width": 410.05,
+          "height": 44.93
+        },
+        "firstSeen": 65.586,
+        "lastSeen": 65.586,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 65.586,
+        "selector": "#result > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.77,
+          "top": 1747.94,
+          "right": 364.34,
+          "bottom": 1775.9,
+          "width": 303.57,
+          "height": 27.96
+        },
+        "containerSelector": "#rules > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+        "text": "가상 메모 실습 · 2026.09.23 화면",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.77,
+          "y": 1747.94,
+          "width": 303.57,
+          "height": 27.96
+        },
+        "firstSeen": 65.586,
+        "lastSeen": 65.586,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 65.586,
+        "selector": "#result > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 949.05,
+          "top": 1747.94,
+          "right": 1019.23,
+          "bottom": 1775.9,
+          "width": 70.18,
+          "height": 27.96
+        },
+        "containerSelector": "#rules > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(2)",
+        "text": "09 / 23",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 949.05,
+          "y": 1747.94,
+          "width": 70.18,
+          "height": 27.96
+        },
+        "firstSeen": 65.586,
+        "lastSeen": 65.586,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 78.117,
+        "selector": "#project-menu > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60,
+          "top": 68.9,
+          "right": 216.73,
+          "bottom": 112.9,
+          "width": 156.73,
+          "height": 44
+        },
+        "containerSelector": "#project > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1)",
+        "text": "synkbrief",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60,
+          "y": 68.9,
+          "width": 156.73,
+          "height": 44
+        },
+        "firstSeen": 78.117,
+        "lastSeen": 78.117,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 78.117,
+        "selector": "#project-menu > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 723.39,
+          "top": 74.9,
+          "right": 1020,
+          "bottom": 106.9,
+          "width": 296.61,
+          "height": 32
+        },
+        "containerSelector": "#project > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "ChatGPT에서 프로젝트 찾기",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 723.39,
+          "y": 74.9,
+          "width": 296.61,
+          "height": 32
+        },
+        "firstSeen": 78.117,
+        "lastSeen": 78.117,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 78.117,
+        "selector": "#project-menu > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60,
+          "top": 1758.9,
+          "right": 364.06,
+          "bottom": 1786.9,
+          "width": 304.06,
+          "height": 28
+        },
+        "containerSelector": "#project > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+        "text": "가상 메모 실습 · 2026.09.23 화면",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60,
+          "y": 1758.9,
+          "width": 304.06,
+          "height": 28
+        },
+        "firstSeen": 78.117,
+        "lastSeen": 78.117,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 78.117,
+        "selector": "#project-menu > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 959.02,
+          "top": 1758.9,
+          "right": 1020,
+          "bottom": 1786.9,
+          "width": 60.98,
+          "height": 28
+        },
+        "containerSelector": "#project > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(2)",
+        "text": "11 / 23",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 959.02,
+          "y": 1758.9,
+          "width": 60.98,
+          "height": 28
+        },
+        "firstSeen": 78.117,
+        "lastSeen": 78.117,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 83.449,
+        "selector": "#project > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.96,
+          "top": 58.83,
+          "right": 217.38,
+          "bottom": 102.75,
+          "width": 156.42,
+          "height": 43.92
+        },
+        "containerSelector": "#project-reuse > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1)",
+        "text": "synkbrief",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.96,
+          "y": 58.83,
+          "width": 156.42,
+          "height": 43.92
+        },
+        "firstSeen": 83.449,
+        "lastSeen": 83.449,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 83.449,
+        "selector": "#project > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 781.14,
+          "top": 64.82,
+          "right": 1019.04,
+          "bottom": 96.76,
+          "width": 237.9,
+          "height": 31.94
+        },
+        "containerSelector": "#project-reuse > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "프로젝트는 무엇인가요?",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 781.14,
+          "y": 64.82,
+          "width": 237.9,
+          "height": 31.94
+        },
+        "firstSeen": 83.449,
+        "lastSeen": 83.449,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 83.449,
+        "selector": "#project > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(1) > em:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.96,
+          "top": 161.63,
+          "right": 390.67,
+          "bottom": 251.92,
+          "width": 329.71,
+          "height": 90.29
+        },
+        "containerSelector": "#project-reuse > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(1) > em:nth-of-type(1)",
+        "text": "프로젝트는",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.96,
+          "y": 161.63,
+          "width": 329.71,
+          "height": 90.29
+        },
+        "firstSeen": 83.449,
+        "lastSeen": 83.449,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 83.449,
+        "selector": "#project > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(2) > em:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.96,
+          "top": 251.92,
+          "right": 772.46,
+          "bottom": 342.2,
+          "width": 711.5,
+          "height": 90.28
+        },
+        "containerSelector": "#project-reuse > div:nth-of-type(1) > div:nth-of-type(1) > h1:nth-of-type(1) > span:nth-of-type(2) > em:nth-of-type(1)",
+        "text": "업무별 작업 공간이에요.",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.96,
+          "y": 251.92,
+          "width": 711.5,
+          "height": 90.28
+        },
+        "firstSeen": 83.449,
+        "lastSeen": 83.449,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 83.449,
+        "selector": "#project > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.96,
+          "top": 1745.45,
+          "right": 364.41,
+          "bottom": 1773.4,
+          "width": 303.45,
+          "height": 27.95
+        },
+        "containerSelector": "#project-reuse > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+        "text": "가상 메모 실습 · 2026.09.23 화면",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.96,
+          "y": 1745.45,
+          "width": 303.45,
+          "height": 27.95
+        },
+        "firstSeen": 83.449,
+        "lastSeen": 83.449,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 83.449,
+        "selector": "#project > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 954.98,
+          "top": 1745.45,
+          "right": 1019.04,
+          "bottom": 1773.4,
+          "width": 64.06,
+          "height": 27.95
+        },
+        "containerSelector": "#project-reuse > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(2)",
+        "text": "12 / 23",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 954.98,
+          "y": 1745.45,
+          "width": 64.06,
+          "height": 27.95
+        },
+        "firstSeen": 83.449,
+        "lastSeen": 83.449,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 92.247,
+        "selector": "#project-reuse > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 60.24,
+          "top": 66.71,
+          "right": 216.9,
+          "bottom": 110.69,
+          "width": 156.66,
+          "height": 43.98
+        },
+        "containerSelector": "#create > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1)",
+        "text": "synkbrief",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 60.24,
+          "y": 66.71,
+          "width": 156.66,
+          "height": 43.98
+        },
+        "firstSeen": 92.247,
+        "lastSeen": 92.247,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 92.247,
+        "selector": "#project-reuse > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 696.77,
+          "top": 72.71,
+          "right": 1019.76,
+          "bottom": 104.7,
+          "width": 322.99,
+          "height": 31.99
+        },
+        "containerSelector": "#create > div:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "프로젝트와 채팅은 이렇게 달라요",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 696.77,
+          "y": 72.71,
+          "width": 322.99,
+          "height": 31.99
+        },
+        "firstSeen": 92.247,
+        "lastSeen": 92.247,
+        "occurrences": 1,
+        "heldMs": 0
+      }
+    ],
+    "duration": 159.70000000000002,
+    "samples": [
+      8.872,
+      26.617,
+      44.361,
+      62.106,
+      79.85,
+      97.594,
+      115.339,
+      133.083,
+      150.828
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 181,
+    "truncated": true
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 13,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.38:1; WCAG AA requires 3:1.",
+        "text": "자료",
+        "fg": "rgb(255,255,255)",
+        "bg": "rgb(208,220,244)",
+        "ratio": 1.38,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(124,124,124)",
+        "large": true,
+        "selector": "main > section:nth-of-type(12) > div > div > div:nth-of-type(2) > div > div:nth-of-type(3) > b",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 199.38929748535156,
+          "y": 929.859375,
+          "width": 125.99998474121094,
+          "height": 104.796875
+        },
+        "time": 79.85
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.27:1; WCAG AA requires 3:1.",
+        "text": "다음 회의 5/5 · 보내기",
+        "fg": "rgb(49,95,190)",
+        "bg": "rgb(36,79,169)",
+        "ratio": 1.27,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(137,163,218)",
+        "large": true,
+        "selector": "main > section:nth-of-type(22) > div > div > header > div:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 528.6685791015625,
+          "y": 96.77102661132812,
+          "width": 224.0828857421875,
+          "height": 31.212799072265625
+        },
+        "time": 150.828
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 2.23:1; WCAG AA requires 3:1.",
+        "text": "오른쪽 ↑를 눌러",
+        "fg": "rgb(17,28,51)",
+        "bg": "rgb(36,79,169)",
+        "ratio": 2.23,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(159,163,173)",
+        "large": true,
+        "selector": "main > section:nth-of-type(22) > div > div > h1 > span:nth-of-type(1) > em",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": -183.6324920654297,
+          "y": 191.38482666015625,
+          "width": 936.3839721679688,
+          "height": 88.24322509765625
+        },
+        "time": 150.828
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 2.23:1; WCAG AA requires 3:1.",
+        "text": "메모를 보내세요.",
+        "fg": "rgb(17,28,51)",
+        "bg": "rgb(36,79,169)",
+        "ratio": 2.23,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(159,163,173)",
+        "large": true,
+        "selector": "main > section:nth-of-type(22) > div > div > h1 > span:nth-of-type(2) > em",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": -183.6324920654297,
+          "y": 279.6280517578125,
+          "width": 936.3839721679688,
+          "height": 88.24319458007812
+        },
+        "time": 150.828
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.75:1; WCAG AA requires 3:1.",
+        "text": "→",
+        "fg": "rgb(98,123,159)",
+        "bg": "rgb(36,79,169)",
+        "ratio": 1.75,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(148,165,189)",
+        "large": true,
+        "selector": "main > section:nth-of-type(22) > div > div > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 75.80865478515625,
+          "y": 486.412841796875,
+          "width": 23.40960693359375,
+          "height": 29.261962890625
+        },
+        "time": 150.828
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.06:1; WCAG AA requires 3:1.",
+        "text": "위치 확대",
+        "fg": "rgb(33,86,164)",
+        "bg": "rgb(36,79,169)",
+        "ratio": 1.06,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(137,165,206)",
+        "large": true,
+        "selector": "main > section:nth-of-type(22) > div > div > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 236.30767822265625,
+          "y": 478.609619140625,
+          "width": 122.35174560546875,
+          "height": 44.868408203125
+        },
+        "time": 150.828
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.75:1; WCAG AA requires 3:1.",
+        "text": "→",
+        "fg": "rgb(98,123,159)",
+        "bg": "rgb(36,79,169)",
+        "ratio": 1.75,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(148,165,189)",
+        "large": true,
+        "selector": "main > section:nth-of-type(22) > div > div > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 495.74884033203125,
+          "y": 486.412841796875,
+          "width": 23.40960693359375,
+          "height": 29.261962890625
+        },
+        "time": 150.828
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.06:1; WCAG AA requires 3:1.",
+        "text": "누르기",
+        "fg": "rgb(33,86,164)",
+        "bg": "rgb(36,79,169)",
+        "ratio": 1.06,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(137,165,206)",
+        "large": true,
+        "selector": "main > section:nth-of-type(22) > div > div > div:nth-of-type(2) > div:nth-of-type(1) > b:nth-of-type(3)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 656.2478637695312,
+          "y": 478.609619140625,
+          "width": 96.50360107421875,
+          "height": 44.868408203125
+        },
+        "time": 150.828
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.03:1; WCAG AA requires 3:1.",
+        "text": "입력창 오른쪽 아래 · ↑ 보내기",
+        "fg": "rgb(49,87,136)",
+        "bg": "rgb(36,79,169)",
+        "ratio": 1.03,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(144,165,191)",
+        "large": true,
+        "selector": "main > section:nth-of-type(22) > div > div > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": -181.68170166015625,
+          "y": 541.0352172851562,
+          "width": 932.4823608398438,
+          "height": 70.60980224609375
+        },
+        "time": 150.828
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.23:1; WCAG AA requires 4.5:1.",
+        "text": "가상 메모 실습 · 2026.09.23 화면",
+        "fg": "rgb(82,98,123)",
+        "bg": "rgb(36,79,169)",
+        "ratio": 1.23,
+        "requiredRatio": 4.5,
+        "suggestedColor": "rgb(194,200,208)",
+        "large": false,
+        "selector": "main > section:nth-of-type(22) > div > div > div:nth-of-type(4) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": -183.6324920654297,
+          "y": 1739.344482421875,
+          "width": 296.58251953125,
+          "height": 27.311279296875
+        },
+        "time": 150.828
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.23:1; WCAG AA requires 4.5:1.",
+        "text": "22 / 23",
+        "fg": "rgb(82,98,123)",
+        "bg": "rgb(36,79,169)",
+        "ratio": 1.23,
+        "requiredRatio": 4.5,
+        "suggestedColor": "rgb(194,200,208)",
+        "large": false,
+        "selector": "main > section:nth-of-type(22) > div > div > div:nth-of-type(4) > span:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 686.180419921875,
+          "y": 1739.344482421875,
+          "width": 66.571044921875,
+          "height": 27.311279296875
+        },
+        "time": 150.828
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 2.21:1; WCAG AA requires 3:1.",
+        "text": "팔로우하시고",
+        "fg": "rgb(35,76,156)",
+        "bg": "rgb(103,133,195)",
+        "ratio": 2.21,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(26,57,117)",
+        "large": true,
+        "selector": "main > section:nth-of-type(23) > div > div > div:nth-of-type(2) > div:nth-of-type(3) > span",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 490.2143249511719,
+          "y": 1293.031494140625,
+          "width": 130.88748168945312,
+          "height": 37.1124267578125
+        },
+        "time": 150.828
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 2.21:1; WCAG AA requires 3:1.",
+        "text": "댓글에 synk남겨주세요",
+        "fg": "rgb(35,76,156)",
+        "bg": "rgb(103,133,195)",
+        "ratio": 2.21,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(26,57,117)",
+        "large": true,
+        "selector": "main > section:nth-of-type(23) > div > div > div:nth-of-type(2) > div:nth-of-type(3) > b",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 420.73931884765625,
+          "y": 1340.5439453125,
+          "width": 269.8499755859375,
+          "height": 120
+        },
+        "time": 150.828
+      }
+    ],
+    "enabled": true,
+    "samples": [
+      8.872,
+      44.361,
+      79.85,
+      115.339,
+      150.828
+    ],
+    "checked": 77,
+    "passed": 64
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  },
+  "_meta": {
+    "version": "0.8.78",
+    "latestVersion": "0.8.78",
+    "updateAvailable": false
+  }
+}

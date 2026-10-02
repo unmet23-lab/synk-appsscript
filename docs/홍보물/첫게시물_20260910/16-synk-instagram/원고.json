@@ -1,0 +1,85 @@
+{
+  "id": "16-synk-instagram",
+  "brand": "SYNK",
+  "platform": "Instagram",
+  "account": "SYNK Instagram · 준비 계정",
+  "displayAccount": "SYNK",
+  "title": "당신에게 남을 것을 만듭니다",
+  "target": "SYNK가 어떤 회사인지 처음 살펴보는 브랜드 팬·잠재 협업자·다른 브랜드 콘텐츠에서 넘어온 독자",
+  "need": "LAB·SHIFT·PULSE의 관계와 자신에게 맞는 입구를 짧게 이해하고 제작 기준을 실제 예로 본다.",
+  "promise": "한 회사의 세 브랜드를 구별하는 길잡이와 지금 필요한 것을 골라볼 세 갈래",
+  "philosophy": "추상적인 가치 대신 LAB의 자기 문장, SHIFT의 고쳐 쓰는 원본, PULSE의 감상할 작품으로 각 브랜드의 뜻을 보여준다.",
+  "format": "carousel",
+  "language": "ko",
+  "caption": "SYNK는 배움과 방법, 작품을 만듭니다. 각각의 경험 뒤에 당신에게 남을 것을 생각합니다.\n\nSYNK LAB에서는 몽골 학생이 한국어로 자기 이야기를 시작하도록 장면과 문장을 만듭니다.\nSYNK SHIFT에서는 1인 기업이 자기 브랜드와 일을 설명하고 직접 고쳐 쓸 수 있도록 예시와 원본을 만듭니다.\nSYNK PULSE에서는 음악과 장면을 감상할 작품을 만듭니다.\n\n오늘 필요한 것 하나를 골라보세요.\n말하고 싶은 일이 있다면: 누구에게 어떤 말을 하고 싶은지 먼저 두 단어로 적어보세요.\n만들어야 할 일이 있다면: 읽을 사람·사용할 자리·남길 결과를 세 칸으로 나눠보세요.\n그냥 듣고 싶은 순간이라면: K-LOFI24의 이번 감상곡 「오늘 밤 제일 환한 사람」을 천천히 들어보세요. 전곡 61.6초입니다.\n감상곡: https://synk-field-notes.unmet23.chatgpt.site/01-lab-youtube/index.html\n\n공개 자료실에는 바로 읽고 고칠 수 있는 SHIFT 자료 여섯 가지가 있습니다.\nhttps://synk-field-notes.unmet23.chatgpt.site/자료실/index.html\n\n이 계정에서는 세 브랜드를 만드는 선택과 완성한 모습을 함께 보여드립니다. 한 회사의 결이 어떤 작품과 자료로 이어지는지 살펴보세요.",
+  "alt": [
+    "SYNK 첫 소개. 배움과 방법, 작품을 만들며 당신에게 남을 것을 생각한다.",
+    "SYNK LAB은 몽골 학생이 자기 이야기를 한국어로 시작하도록 돕는 장면과 문장을 만든다. 누구에게 어떤 말을 하고 싶은지 묻는다.",
+    "SYNK SHIFT는 1인 기업의 브랜드와 일하는 방법을 완성 예시·편집 원본·확인 기준으로 제공한다.",
+    "SYNK PULSE는 음악과 장면을 감상하는 작품을 만든다. 이번 감상곡은 오늘 밤 제일 환한 사람, K-LOFI24, 전곡 61.6초.",
+    "세 갈래에서 지금 필요한 것을 고르는 카드. 말하고 싶은 일은 상대와 말, 만들고 싶은 일은 대상과 결과, 듣고 싶은 순간은 작품 감상으로 잇는다.",
+    "무엇을 골랐는지, 무엇이 남았는지. 완성물과 그 선택을 남기는 SYNK 계정의 첫 소개를 마무리한다."
+  ],
+  "slides": [
+    {
+      "layout": "cover",
+      "kicker": "HELLO, SYNK",
+      "title": "당신에게 남을 것을\n만듭니다.",
+      "body": "배움과 방법, 작품.\nSYNK의 세 가지 시작.",
+      "asset": "compass"
+    },
+    {
+      "layout": "statement",
+      "kicker": "01 · SYNK LAB",
+      "title": "자기 이야기를\n시작하는 말.",
+      "body": "몽골 학생을 위한\n한국어 장면과 문장.",
+      "primary": "누구에게,\n어떤 말을 하고 싶나요?",
+      "asset": "mong"
+    },
+    {
+      "layout": "statement",
+      "kicker": "02 · SYNK SHIFT",
+      "title": "내 일에\n다시 쓸 수 있는 방법.",
+      "body": "1인 기업을 위한\n브랜드와 일하는 방법.",
+      "primary": "완성 예시 · 편집 원본\n사용법 · 확인 기준",
+      "asset": "notebook"
+    },
+    {
+      "layout": "statement",
+      "kicker": "03 · SYNK PULSE",
+      "title": "듣고, 보고,\n머물 수 있는 작품.",
+      "body": "K-LOFI24\n「오늘 밤 제일 환한 사람」",
+      "primary": "이번 감상곡 전곡 · 61.6초",
+      "note": "음악과 별도로 만든 장면을 함께 감상합니다.",
+      "asset": "pulse-frame"
+    },
+    {
+      "layout": "choices",
+      "kicker": "지금 필요한 것부터",
+      "title": "오늘은\n어느 쪽인가요?",
+      "items": [
+        {
+          "label": "말하고 싶은 일",
+          "text": "상대와 하고 싶은 말 적기"
+        },
+        {
+          "label": "만들고 싶은 일",
+          "text": "읽을 사람과 남길 결과 적기"
+        },
+        {
+          "label": "듣고 싶은 순간",
+          "text": "작품 한 곡 감상하기"
+        }
+      ]
+    },
+    {
+      "layout": "closing",
+      "kicker": "한 회사, 세 가지 시작",
+      "title": "무엇을 골랐는지,\n무엇이 남았는지.",
+      "body": "이곳에 완성물과\n그 선택을 남깁니다.",
+      "asset": "letter"
+    }
+  ],
+  "nextAction": "카드 5에서 말·일·감상 중 지금 필요한 것을 고른다. 더 필요한 독자는 본문의 현재 공개 자료실로 간다. 미확정 Instagram 핸들은 공개 이미지에 쓰지 않는다.",
+  "relationship": "SYNK 전체의 첫 정체성 안내다. LAB·SHIFT·PULSE가 별도 회사인 듯 나열하지 않고, 이후 각 작업의 제작 선택을 전체 회사의 기준과 연결한다. 게임 제작은 이번 범위에서 제외한다."
+}

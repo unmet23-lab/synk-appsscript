@@ -1,0 +1,1099 @@
+{
+  "schemaVersion": 2,
+  "checkedAt": "2026-10-01",
+  "title": "SYNK 울란바토르 학원 개원 전 공정 일정 검토",
+  "status": "공간 미선정 상태의 조건부 계획. 현장 실측·계약·발주·공사·행정 승인 미실행",
+  "scope": {
+    "conceptGrossM2": 267.9,
+    "actualMeasuredM2": null,
+    "mainDanceRoomM2": 66,
+    "classrooms": 4,
+    "toilets": 2,
+    "notes": "6안 개념 규모를 공정 검토에 사용. 실제 공간에 따라 면적·배치·설비·공사 범위와 기간 재산정."
+  },
+  "sourceDocuments": [
+    {
+      "path": "docs/오프라인_공간설계/방별_인테리어_디자인_20260929.md",
+      "lines": "3,15~16,67~75,88~124,300~338,413~418",
+      "use": "공간·방수/환기·댄스/거울·검수 범위"
+    },
+    {
+      "path": "docs/오프라인_공간설계/예산_20261001/research-construction.json",
+      "use": "267.9㎡·A66㎡·화장실2곳·맞춤가구 공정 범위"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+      "lines": "39,528",
+      "use": "기존 개원/무료 파일럿 날짜는 현재 확정으로 간주하지 않고 조건부 역산 참고만"
+    }
+  ],
+  "timeOrigin": {
+    "date": null,
+    "label": "T0 = 적합한 공간 확보·임대인 공사권한 확인·실측 접근 가능 시점",
+    "beforeT0": "공간 찾기·계약 전 용도/입지/소음/설비·공사 가능성 선별·임대 협상 기간은 미정이며 12/14/20주에 포함하지 않음.",
+    "notConstructionStart": "T0는 실제 착공일이 아님. 착공은 S03·S04가 모두 끝난 뒤이며 낙관/기준에서는 T0+4주, 지연에서는 T0+6주.",
+    "notCalendarCommitment": "2026-10-01을 자동 착공일이나 T0로 사용하지 않음."
+  },
+  "summary": {
+    "recommendedPlanningWeeks": 14,
+    "optimisticWeeks": 12,
+    "delayedScenarioWeeks": 20,
+    "rangeLabel": "공간 확보 이후 조건이 맞으면12주, 기준14주, 지연 시20주 이상",
+    "baseBreakdown": "설계/현장·승인/견적4주 + 시공/병행조달8주 + 검수/직원 폐쇄 시범운영2주 =14주",
+    "optimisticBreakdown": "설계/확정4주 + 시공/병행조달6주 + 인수2주 =12주",
+    "delayedBreakdown": "승인/설계6주 + 시공/지연조달12주 + 인수2주 =20주",
+    "warning": "20주는 지연 시나리오이지 상한 보장이 아님. 용도 불가/큰 구조·급배수 변경/공급 지연/검사 불합격이면 더 길어질 수 있음."
+  },
+  "calculationRules": {
+    "unit": "달력 경과 주(1주=7일); 매일7일 작업을 뜻하지 않음",
+    "formula": "각 공정 시작=MAX(선행 공정 완료), 완료=시작+durationWeeks. 최종 완료=S16 완료.",
+    "baselineResourceAssumption": "주당 약5일 작업 가능·공종별 팀 예약·구역 분리·정상 자재 공급을 전제로 한 개략 공정. 실제 근무일/공휴일/건물 공사시간으로 날짜를 다시 계산해야 함.",
+    "noDoubleCounting": "조달6주·가구4주·화장실4주는 기본 시공8주에 겹쳐 진행한다. 모든 공정 durationWeeks의 합을 전체 소요기간으로 쓰지 않음.",
+    "partialHandover": false,
+    "trialDefinition": "마지막2주는 시설 검수와 직원 폐쇄 시범운영. 공개 학생 무료 파일럿이나 이미 정규 운영 중인 상태가 아님."
+  },
+  "phases": [
+    {
+      "id": "S01",
+      "name": "실측·기존 설비 조사·용도 적합성 재확인",
+      "durationWeeks": 1,
+      "predecessors": [],
+      "parallelNote": "T0 전 계약 전 적합성 선별을 통과한 공간에서 실제 치수·배관·전력·환기·소음·피난 조건을 기록한다.",
+      "completeCondition": "실측 평면과 설비 실태, 화장실2곳의 배수/배기 가능성, A 66㎡ 댄스와 아래층 소음 조건, 구조·출입·난방 제약을 설계자가 확인",
+      "owner": "현지 설계자·설비 담당·임대인",
+      "sourceIds": [
+        "MN-CONSTRUCTION"
+      ],
+      "scenarioWeeks": {
+        "optimistic": 1,
+        "base": 1,
+        "delayed": 1
+      }
+    },
+    {
+      "id": "S02",
+      "name": "평면·설비·마감·가구 상세 설계와 제품 조건 확정",
+      "durationWeeks": 2,
+      "predecessors": [
+        "S01"
+      ],
+      "parallelNote": "S03 승인 검토와 병행. 6안은 개념안이므로 선정 공간에 맞게 재설계한다.",
+      "completeCondition": "칸막이·문·화장실·냉난방/외기/독립배기·전기/통신·댄스바닥/거울·가구 상세와 시방, 자재별 온습도/양생/하중 조건을 발주용으로 정리",
+      "owner": "현지 설계자·시공 후보·SYNK",
+      "sourceIds": [
+        "MN-CONSTRUCTION",
+        "FORBO",
+        "SIKA"
+      ],
+      "scenarioWeeks": {
+        "optimistic": 2,
+        "base": 2,
+        "delayed": 2
+      }
+    },
+    {
+      "id": "S03",
+      "name": "공사 범위별 임대인·관리주체 승인과 필요한 행정 절차",
+      "durationWeeks": 3,
+      "predecessors": [
+        "S01"
+      ],
+      "parallelNote": "S02·S04와 병행하는 계획 충당기간. 법정 처리기간·자동 허가를 뜻하지 않는다.",
+      "completeCondition": "현지 전문가가 용도/공사 분류·필요 허가/신고·소방/피난·위생·학원 운영 요건을 판단하고, 착공에 필요한 조건과 문서가 충족됨. 미충족이면 착공 금지",
+      "owner": "임대인·관리주체·현지 설계/허가 담당",
+      "sourceIds": [
+        "MN-CONSTRUCTION"
+      ],
+      "scenarioWeeks": {
+        "optimistic": 3,
+        "base": 3,
+        "delayed": 5
+      }
+    },
+    {
+      "id": "S04",
+      "name": "동일 도면 견적 비교·금액/범위·발주 사양 확정",
+      "durationWeeks": 1,
+      "predecessors": [
+        "S02"
+      ],
+      "parallelNote": "S03과 병행. 견적 요청은 앞서 진행할 수 있으나 최종 수량/제품/시공 범위와 계약은 이 단계에서 고정.",
+      "completeCondition": "시공 책임/현장 설치/세금/운송/보증/검사/납기와 변경단가, 핵심 자재 대체품·공급 일정을 서면으로 확정",
+      "owner": "SYNK·시공사·공급사",
+      "sourceIds": [],
+      "scenarioWeeks": {
+        "optimistic": 1,
+        "base": 1,
+        "delayed": 1
+      }
+    },
+    {
+      "id": "S05",
+      "name": "현장 보양·필요 철거·먹매김·반입 준비",
+      "durationWeeks": 1,
+      "predecessors": [
+        "S03",
+        "S04"
+      ],
+      "parallelNote": "S09 핵심 자재 발주·조달이 같은 시점에 시작한다. 난방·전력·환기·적재/반입 조건이 준비돼야 함.",
+      "completeCondition": "필요 철거와 폐기물 반출, 기준선과 실별 벽 위치, 유지 설비 보호, 공사구역·물품 보관/반입 동선 확인",
+      "owner": "시공사·건물 관리주체",
+      "sourceIds": [],
+      "scenarioWeeks": {
+        "optimistic": 1,
+        "base": 1,
+        "delayed": 1
+      }
+    },
+    {
+      "id": "S06",
+      "name": "칸막이 골조·급배수·전기/통신·공조 1차 공사",
+      "durationWeeks": 2,
+      "predecessors": [
+        "S05"
+      ],
+      "parallelNote": "구역별로 칸막이와 배관·덕트·배선을 조정한다. 거울/화면/흡음/수납 고정 보강과 문 위치를 닫기 전에 확인.",
+      "completeCondition": "배수 경사·누수/압력·회로/접지·배기 경로 확인, 은폐부 사진/검사 기록과 시공 치수 확정. 불합격 구간은 덮지 않음",
+      "owner": "시공사·설비/전기 전문 공종·설계자",
+      "sourceIds": [
+        "MN-CONSTRUCTION"
+      ],
+      "scenarioWeeks": {
+        "optimistic": 2,
+        "base": 2,
+        "delayed": 3
+      }
+    },
+    {
+      "id": "S07",
+      "name": "벽·천장 닫기·흡음 바탕·퍼티와 건조",
+      "durationWeeks": 2,
+      "predecessors": [
+        "S06"
+      ],
+      "parallelNote": "S10 맞춤가구 제작, S11 화장실 방수와 다른 구역에서 병행. 현장 인력·먼지·수분 분리 가능성이 전제.",
+      "completeCondition": "은폐부 검사 이후 벽/천장 바탕과 흡음 구성이 완료되고, 퍼티/접착/기초 마감이 다음 도장을 받을 조건 충족",
+      "owner": "시공사·내장/흡음 공종",
+      "sourceIds": [],
+      "scenarioWeeks": {
+        "optimistic": 1,
+        "base": 2,
+        "delayed": 3
+      }
+    },
+    {
+      "id": "S08",
+      "name": "도장·일반 바닥 바탕·A 바닥 수분 검사와 설치 환경 준비",
+      "durationWeeks": 2,
+      "predecessors": [
+        "S07"
+      ],
+      "parallelNote": "전체 바탕을 무조건 새 콘크리트로 타설하는 계획이 아니다. 보수·레벨링·건조와 제조사 수분 기준 통과를 포함한 계획 시간.",
+      "completeCondition": "바탕 강도/평탄/수분 합격, 젖는 공정 완료, 난방·습도 조건 기록, 바닥재·접착제 순응 보관. 실패하면 S14를 뒤로 이동",
+      "owner": "바닥/도장 공종·설계자·현장 책임자",
+      "sourceIds": [
+        "SIKA",
+        "FORBO"
+      ],
+      "scenarioWeeks": {
+        "optimistic": 1,
+        "base": 2,
+        "delayed": 3
+      }
+    },
+    {
+      "id": "S09",
+      "name": "핵심 바닥·공조·장비 발주 및 수입/현지 조달",
+      "durationWeeks": 6,
+      "predecessors": [
+        "S03",
+        "S04"
+      ],
+      "parallelNote": "S05~S08과 병행. 업체 제작·집하·출발 대기·통관·현지 반입을 묶은 우리 계획 가정이며 운송사의 구간 운송일수와 다르다.",
+      "completeCondition": "설치에 필요한 수량·제품·부품이 입고돼 파손/누락 검사 통과, 미입고 시 서면 승인된 동급 대체품 또는 일정 재산정",
+      "owner": "공급사·물류사·SYNK 구매 담당",
+      "sourceIds": [
+        "LANDBRIDGE"
+      ],
+      "scenarioWeeks": {
+        "optimistic": 4,
+        "base": 6,
+        "delayed": 10
+      }
+    },
+    {
+      "id": "S10",
+      "name": "시공 치수 확인 후 맞춤 수납·문·거울·커튼 제작",
+      "durationWeeks": 4,
+      "predecessors": [
+        "S06"
+      ],
+      "parallelNote": "샵도면과 재료 준비는 설계 때 진행하되 제작 치수 승인은 골조/설비 실측 후. 벽 완성 치수 오차를 수용할 상세가 전제.",
+      "completeCondition": "맞춤장/문/거울/레일/커튼이 승인 치수와 현장 조건에 맞아 설치 가능. 제작업체 공개 확약 납기는 아직 없음",
+      "owner": "가구·금속/유리·커튼 공급사·시공사",
+      "sourceIds": [],
+      "scenarioWeeks": {
+        "optimistic": 2,
+        "base": 4,
+        "delayed": 6
+      }
+    },
+    {
+      "id": "S11",
+      "name": "화장실2곳 바탕·방수·제품별 양생 및 누수 검사",
+      "durationWeeks": 2,
+      "predecessors": [
+        "S06"
+      ],
+      "parallelNote": "일반실 내장과 병행. 방수재 도포 후 대기와 물 채움 검사 지속시간은 별도이며 선택 시스템 지침에 따라 결정.",
+      "completeCondition": "배수/관통부/모서리 방수와 두께·양생 확인, 담당자가 승인한 방법의 누수 검사 통과·기록 확보",
+      "owner": "방수/배관 공종·현장 감독",
+      "sourceIds": [
+        "LATICRETE"
+      ],
+      "scenarioWeeks": {
+        "optimistic": 1,
+        "base": 2,
+        "delayed": 4
+      }
+    },
+    {
+      "id": "S12",
+      "name": "화장실 타일·줄눈·실링과 양생",
+      "durationWeeks": 1,
+      "predecessors": [
+        "S11"
+      ],
+      "parallelNote": "방수 검사 합격 후 시작. 양생 중에는 변기·세면대·다른 공종의 통행 하중을 재료 지침대로 제한.",
+      "completeCondition": "타일·줄눈·실링·바닥 경사와 문 하부 여유가 확인되고 기구 설치/통행에 필요한 재료별 경화 조건 충족",
+      "owner": "타일/실링 공종",
+      "sourceIds": [
+        "LATICRETE"
+      ],
+      "scenarioWeeks": {
+        "optimistic": 1,
+        "base": 1,
+        "delayed": 2
+      }
+    },
+    {
+      "id": "S13",
+      "name": "위생기구·환기·거울·디스펜서 설치 및 작동 확인",
+      "durationWeeks": 1,
+      "predecessors": [
+        "S12",
+        "S09",
+        "S10"
+      ],
+      "parallelNote": "공통 최종 설치와 병행. 남녀 각1실 기구 수는 현지 검토 뒤 바뀔 수 있다.",
+      "completeCondition": "변기·세면대·수전·배기·잠금·비상시 접근과 접근 동선, 누수·배수·소모품 수납 확인",
+      "owner": "설비·전기·시공사",
+      "sourceIds": [],
+      "scenarioWeeks": {
+        "optimistic": 1,
+        "base": 1,
+        "delayed": 1
+      }
+    },
+    {
+      "id": "S14",
+      "name": "댄스/일반 바닥 마감·거울·가구·장비 최종 설치",
+      "durationWeeks": 1,
+      "predecessors": [
+        "S08",
+        "S09",
+        "S10"
+      ],
+      "parallelNote": "실별 팀 분리로 병행하는 계획. 바닥 접착/경화 구간은 다른 공종을 들이지 않고, 허용 하중 확인 후 가구·이동형 화면을 반입.",
+      "completeCondition": "A 66㎡ 탄성 바닥/거울/커튼과 4교실·사무실·상담/VR·포토실 설비 설치, 가구 수납·이동 하중·고정/전도·배선·공조 기능의 1차 확인",
+      "owner": "바닥·가구·유리·공조·AV 각 공급사·시공사",
+      "sourceIds": [
+        "FORBO",
+        "HARLEQUIN-FLEXITY"
+      ],
+      "scenarioWeeks": {
+        "optimistic": 1,
+        "base": 1,
+        "delayed": 2
+      }
+    },
+    {
+      "id": "S15",
+      "name": "준공 청소·종합 검수·성능 조정·하자 1차 보수",
+      "durationWeeks": 1,
+      "predecessors": [
+        "S13",
+        "S14"
+      ],
+      "parallelNote": "설치 완료 뒤 인수 단계. 공사 중 은폐부/방수 검사를 대신하는 최종 일괄 검사가 아니다.",
+      "completeCondition": "도면 대조, 수업/댄스 소음·환기/온습도·전기·급배수·화장실·인터넷/송출·카메라/마이크 확인, 불합격 항목 보수. 필요한 공식 검사·사용 승인은 별도 충족",
+      "owner": "시공사·설계자·SYNK·필요한 검사 담당",
+      "sourceIds": [
+        "MN-CONSTRUCTION"
+      ],
+      "scenarioWeeks": {
+        "optimistic": 1,
+        "base": 1,
+        "delayed": 1
+      }
+    },
+    {
+      "id": "S16",
+      "name": "직원 폐쇄 시범 운영·재검수·인수",
+      "durationWeeks": 1,
+      "predecessors": [
+        "S15"
+      ],
+      "parallelNote": "직원만으로 개점→모의수업/댄스전환→교대/짐회수→물통관리→퇴실/마감을 재현. 기존 문서의 공개 무료 파일럿2주와 별개.",
+      "completeCondition": "잔여 결함 해소, 운영 담당 인계·장비/보증/유지관리 자료·실시설계 변경 기록·검사 기록 인수. 시설과 운영 자격 조건을 충족했을 때만 학생 이용",
+      "owner": "SYNK 운영진·강사·시공사/공급사",
+      "sourceIds": [],
+      "scenarioWeeks": {
+        "optimistic": 1,
+        "base": 1,
+        "delayed": 1
+      }
+    }
+  ],
+  "scenarioCalculations": {
+    "optimistic": {
+      "totalWeeks": 12,
+      "totalCalendarDays": 84,
+      "constructionStartWeek": 4,
+      "installationCompleteWeek": 10,
+      "handoverWeeks": 2,
+      "windows": [
+        {
+          "id": "S01",
+          "start": 0,
+          "finish": 1,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S02",
+          "start": 1,
+          "finish": 3,
+          "duration": 2,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S03",
+          "start": 1,
+          "finish": 4,
+          "duration": 3,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S04",
+          "start": 3,
+          "finish": 4,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S05",
+          "start": 4,
+          "finish": 5,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S06",
+          "start": 5,
+          "finish": 7,
+          "duration": 2,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S07",
+          "start": 7,
+          "finish": 8,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S08",
+          "start": 8,
+          "finish": 9,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S09",
+          "start": 4,
+          "finish": 8,
+          "duration": 4,
+          "totalFloatWeeks": 1
+        },
+        {
+          "id": "S10",
+          "start": 7,
+          "finish": 9,
+          "duration": 2,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S11",
+          "start": 7,
+          "finish": 8,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S12",
+          "start": 8,
+          "finish": 9,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S13",
+          "start": 9,
+          "finish": 10,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S14",
+          "start": 9,
+          "finish": 10,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S15",
+          "start": 10,
+          "finish": 11,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S16",
+          "start": 11,
+          "finish": 12,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        }
+      ],
+      "criticalPaths": [
+        [
+          "S01",
+          "S03",
+          "S05",
+          "S06",
+          "S11",
+          "S12",
+          "S13",
+          "S15",
+          "S16"
+        ],
+        [
+          "S01",
+          "S02",
+          "S04",
+          "S05",
+          "S06",
+          "S11",
+          "S12",
+          "S13",
+          "S15",
+          "S16"
+        ],
+        [
+          "S01",
+          "S03",
+          "S05",
+          "S06",
+          "S07",
+          "S08",
+          "S14",
+          "S15",
+          "S16"
+        ],
+        [
+          "S01",
+          "S02",
+          "S04",
+          "S05",
+          "S06",
+          "S07",
+          "S08",
+          "S14",
+          "S15",
+          "S16"
+        ],
+        [
+          "S01",
+          "S03",
+          "S05",
+          "S06",
+          "S10",
+          "S14",
+          "S15",
+          "S16"
+        ],
+        [
+          "S01",
+          "S02",
+          "S04",
+          "S05",
+          "S06",
+          "S10",
+          "S14",
+          "S15",
+          "S16"
+        ]
+      ]
+    },
+    "base": {
+      "totalWeeks": 14,
+      "totalCalendarDays": 98,
+      "constructionStartWeek": 4,
+      "installationCompleteWeek": 12,
+      "handoverWeeks": 2,
+      "windows": [
+        {
+          "id": "S01",
+          "start": 0,
+          "finish": 1,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S02",
+          "start": 1,
+          "finish": 3,
+          "duration": 2,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S03",
+          "start": 1,
+          "finish": 4,
+          "duration": 3,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S04",
+          "start": 3,
+          "finish": 4,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S05",
+          "start": 4,
+          "finish": 5,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S06",
+          "start": 5,
+          "finish": 7,
+          "duration": 2,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S07",
+          "start": 7,
+          "finish": 9,
+          "duration": 2,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S08",
+          "start": 9,
+          "finish": 11,
+          "duration": 2,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S09",
+          "start": 4,
+          "finish": 10,
+          "duration": 6,
+          "totalFloatWeeks": 1
+        },
+        {
+          "id": "S10",
+          "start": 7,
+          "finish": 11,
+          "duration": 4,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S11",
+          "start": 7,
+          "finish": 9,
+          "duration": 2,
+          "totalFloatWeeks": 1
+        },
+        {
+          "id": "S12",
+          "start": 9,
+          "finish": 10,
+          "duration": 1,
+          "totalFloatWeeks": 1
+        },
+        {
+          "id": "S13",
+          "start": 10,
+          "finish": 11,
+          "duration": 1,
+          "totalFloatWeeks": 1
+        },
+        {
+          "id": "S14",
+          "start": 11,
+          "finish": 12,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S15",
+          "start": 12,
+          "finish": 13,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S16",
+          "start": 13,
+          "finish": 14,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        }
+      ],
+      "criticalPaths": [
+        [
+          "S01",
+          "S03",
+          "S05",
+          "S06",
+          "S07",
+          "S08",
+          "S14",
+          "S15",
+          "S16"
+        ],
+        [
+          "S01",
+          "S02",
+          "S04",
+          "S05",
+          "S06",
+          "S07",
+          "S08",
+          "S14",
+          "S15",
+          "S16"
+        ],
+        [
+          "S01",
+          "S03",
+          "S05",
+          "S06",
+          "S10",
+          "S14",
+          "S15",
+          "S16"
+        ],
+        [
+          "S01",
+          "S02",
+          "S04",
+          "S05",
+          "S06",
+          "S10",
+          "S14",
+          "S15",
+          "S16"
+        ]
+      ]
+    },
+    "delayed": {
+      "totalWeeks": 20,
+      "totalCalendarDays": 140,
+      "constructionStartWeek": 6,
+      "installationCompleteWeek": 18,
+      "handoverWeeks": 2,
+      "windows": [
+        {
+          "id": "S01",
+          "start": 0,
+          "finish": 1,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S02",
+          "start": 1,
+          "finish": 3,
+          "duration": 2,
+          "totalFloatWeeks": 2
+        },
+        {
+          "id": "S03",
+          "start": 1,
+          "finish": 6,
+          "duration": 5,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S04",
+          "start": 3,
+          "finish": 4,
+          "duration": 1,
+          "totalFloatWeeks": 2
+        },
+        {
+          "id": "S05",
+          "start": 6,
+          "finish": 7,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S06",
+          "start": 7,
+          "finish": 10,
+          "duration": 3,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S07",
+          "start": 10,
+          "finish": 13,
+          "duration": 3,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S08",
+          "start": 13,
+          "finish": 16,
+          "duration": 3,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S09",
+          "start": 6,
+          "finish": 16,
+          "duration": 10,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S10",
+          "start": 10,
+          "finish": 16,
+          "duration": 6,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S11",
+          "start": 10,
+          "finish": 14,
+          "duration": 4,
+          "totalFloatWeeks": 1
+        },
+        {
+          "id": "S12",
+          "start": 14,
+          "finish": 16,
+          "duration": 2,
+          "totalFloatWeeks": 1
+        },
+        {
+          "id": "S13",
+          "start": 16,
+          "finish": 17,
+          "duration": 1,
+          "totalFloatWeeks": 1
+        },
+        {
+          "id": "S14",
+          "start": 16,
+          "finish": 18,
+          "duration": 2,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S15",
+          "start": 18,
+          "finish": 19,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        },
+        {
+          "id": "S16",
+          "start": 19,
+          "finish": 20,
+          "duration": 1,
+          "totalFloatWeeks": 0
+        }
+      ],
+      "criticalPaths": [
+        [
+          "S01",
+          "S03",
+          "S05",
+          "S06",
+          "S07",
+          "S08",
+          "S14",
+          "S15",
+          "S16"
+        ],
+        [
+          "S01",
+          "S03",
+          "S09",
+          "S14",
+          "S15",
+          "S16"
+        ],
+        [
+          "S01",
+          "S03",
+          "S05",
+          "S06",
+          "S10",
+          "S14",
+          "S15",
+          "S16"
+        ]
+      ]
+    }
+  },
+  "sources": [
+    {
+      "id": "MN-CONSTRUCTION",
+      "title": "Mongolia Law on Construction — Legalinfo 정부 법령 데이터베이스",
+      "url": "https://legalinfo.mn/en/edtl/16532502207681",
+      "type": "government_primary",
+      "observed": "제9~10조는 공사 종류/복잡도 분류, 제12조는 설계·피난·접근성 등 요구를 다룬다. 영어 페이지는 2022-12-07 검토된 unofficial translation으로 표시돼 있음.",
+      "use": "현지 공사 분류·설계·승인 확인을 착공 선행 조건으로 둔 근거. 이 학원에 적용되는 허가 종류/법정 처리기간을 확정한 자료가 아님.",
+      "limitations": "현행 몽골어 원문과 관할기관/현지 설계자 해석 우선. 3주·5주 일정은 법정 기한이 아닌 계획 가정.",
+      "checkedAt": "2026-10-01"
+    },
+    {
+      "id": "LANDBRIDGE",
+      "title": "Landbridge LLC — 집하 화물 운송 공개 안내",
+      "url": "https://landbridge.mn/collected-load/",
+      "type": "local_supplier_primary",
+      "observed": "공개 구간 운송시간: 에렌호트→울란바토르 5~7일, 홍콩→울란바토르 19~22일. 홍콩 출발 집하편 월2회 안내.",
+      "use": "수입 조달에 발주/생산·집하·출발 대기·통관·현지 반입을 분리해 확인해야 함. 구간 운송일수만으로 전체 납기를 정하지 않음.",
+      "limitations": "페이지의 갱신일 불명, 실제 출발/통관/한랭 운송 조건·공급사 재고를 확인하지 않음. 본 프로젝트 계약/배송 약속이 아니며 4/6/10주 조달은 우리 계획 가정.",
+      "checkedAt": "2026-10-01"
+    },
+    {
+      "id": "SIKA",
+      "title": "Sikafloor-200 Level Product Data Sheet, February 2025 Version 04.02",
+      "url": "https://irl.sika.com/dam/dms/ie01/h/pds-sikafloor-200level.pdf",
+      "type": "manufacturer_primary",
+      "observed": "덮는 바닥재별 수분 조건 충족을 먼저 요구. ≤5mm층의 일반 덮음 대기24시간, ≤10mm층72시간. 기준 주변20℃·바탕15℃·상대습도65%; 온습도에 따라 달라짐.",
+      "use": "레벨링의 도보 가능/덮기 가능/완전 건조를 구분하고 바탕 수분 검사 후 다음 공정으로 넘김.",
+      "limitations": "특정 Sika 제품/조건의 예시이며 현지 공급·선정 제품 확정 아님. 새 두꺼운 콘크리트 바탕에도 24~72시간을 적용할 수 없음.",
+      "checkedAt": "2026-10-01"
+    },
+    {
+      "id": "FORBO",
+      "title": "Forbo Flooring — The Critical Role of Acclimatisation",
+      "url": "https://www.forbo.com/flooring/en-uk/inspiration-references/making-spaces-into-places-blog/tech-talk-acclimatisation/ptuv0x",
+      "type": "manufacturer_primary",
+      "observed": "시공 장소18~27℃를 설치48시간 전부터 설치중·후24시간 유지, 자재/접착제는24시간 순응을 안내. 직전10℃ 미만 운송/보관 제품은48시간 순응. 접착 바닥은 설치후24~48시간 안정화 안내.",
+      "use": "겨울 운송품을 바로 펼쳐 붙이지 않고, 난방된 실내에서 순응·접착 경화 시간을 계획에 넣음.",
+      "limitations": "Forbo의 일반 탄성 바닥 시공 설명. SYNK 댄스바닥에 채택한 특정제품 시방이 아니며 현지 법규를 대신하지 않음.",
+      "checkedAt": "2026-10-01"
+    },
+    {
+      "id": "LATICRETE",
+      "title": "LATICRETE 제조사 방수 FAQ",
+      "url": "https://www.laticrete.com/support-and-training/downloads-and-faq/faqs/troubleshooting-a-project/waterproofing",
+      "type": "manufacturer_primary",
+      "observed": "HYDRO BAN 예시에서 두번째 코트의 완전 색변화/건조 후21℃에서2시간,10~21℃에서24시간 뒤 누수 시험 가능으로 안내. 9235 제품은21℃에서7일을 안내하며 낮은 온도는 더 길어짐.",
+      "use": "방수는 모든 재료에 동일한 하루 양생을 가정하지 않으며, 시험 시작 가능한 시간과 시험을 유지하는 시간을 구분.",
+      "limitations": "선정하지 않은 시스템 예시. 현지 조달재의 정확한 방수층/타일/줄눈/실링 시방을 승인받아야 하고 본 자료로 시험시간·법적 합격을 확정하지 않음.",
+      "checkedAt": "2026-10-01"
+    },
+    {
+      "id": "HARLEQUIN-FLEXITY",
+      "title": "Harlequin Flexity Plus permanent installation guide",
+      "url": "https://xjmmyp.infiniteuploads.cloud/sites/7/2025/07/Harlequin_Flexity_Plus_Sprung_Floor_Installation_Guide_4pp_WEB1-Perm.pdf",
+      "discoveryUrl": "https://euro.harlequinfloors.com/en/faqs/downloads/",
+      "type": "manufacturer_primary",
+      "observed": "설치 전 현장을 먼저 준비하고 이후 다른 필수 작업이 있으면 바닥을 보호하도록 안내. 접착제가 마른 뒤 이음부 정리, 상부 바닥을 깔기 전 청소 순서.",
+      "use": "바닥을 완성한 뒤 먼지/젖는 공종이 다시 무방비로 통과하지 않도록 공정과 보양을 분리.",
+      "limitations": "공식 다운로드 목록을 거쳐 열람한 2018년 제품 가이드. SYNK 바닥제품 선정·현지 납기·실제 성능 검증 자료가 아님.",
+      "checkedAt": "2026-10-01"
+    },
+    {
+      "id": "JICA-CLIMATE",
+      "title": "JICA/Ulaanbaatar City Ajilchin Flyover Preparatory Survey Final Report, June 2013",
+      "url": "https://openjicareport.jica.go.jp/pdf/12122024_01.pdf",
+      "type": "public_agency_primary",
+      "observed": "보고서 요약4.1은 울란바토르의10월~4월 한랭한 계절 특성을 설명한다.",
+      "use": "가을/겨울 시공은 실내 난방·수분 관리·동결 보호 조건을 먼저 확인할 이유.",
+      "limitations": "2013년의 도시 기후 배경이며 2026/2027 특정 주의 날씨나 실내 온습도를 예측하지 않음. 야외 상대습도를 난방된 실내 상대습도로 사용하지 않음.",
+      "checkedAt": "2026-10-01"
+    }
+  ],
+  "procurement": {
+    "publishedTimes": "Landbridge 공개 구간 운송5~7일/19~22일은 전체 발주 납기가 아니다.",
+    "planningOnly": [
+      {
+        "category": "핵심 조달 패키지",
+        "weeks": {
+          "optimistic": 4,
+          "base": 6,
+          "delayed": 10
+        },
+        "start": "공사 조건·계약/발주 사양 확정 뒤",
+        "basis": "제품선정/공장 일정/집하/운송/통관/반입 미확정의 계획 가정"
+      },
+      {
+        "category": "맞춤장·문·거울·커튼",
+        "weeks": {
+          "optimistic": 2,
+          "base": 4,
+          "delayed": 6
+        },
+        "start": "S06 시공 치수 확인 뒤",
+        "basis": "현지 제작업체 확약을 받지 않은 일정 가정"
+      }
+    ],
+    "longLeadWatch": [
+      "댄스 탄성바닥 시스템/접착제",
+      "공조·환기 주요 기기와 부품",
+      "맞춤장·특수 문/레일·거울",
+      "교실 화면/스탠드·카메라/마이크·네트워크 장비"
+    ],
+    "orderCheckpoints": [
+      "서면 품번·수량·재고·제작 시작/완료일",
+      "실제 출발편·경로·통관 담당·현장 도착일",
+      "겨울 운송·보관 온도와 자재 손상 시 교체 일정",
+      "공종별 설치일과 대체 모델 승인 기준"
+    ]
+  },
+  "winterRisks": [
+    {
+      "risk": "기존 건물 난방/급수가 불안정하거나 공사 중 차단됨",
+      "effect": "도장·방수·접착·바닥 순응 작업을 시작/지속할 수 없어 후속 공정 지연",
+      "action": "계약 전 겨울 난방 유지 권한/공급과 임시 난방·전력 용량을 확인. 실내/바탕 온도·습도 기록 후 제품 지침을 충족한 구역부터 진행",
+      "sourceIds": [
+        "FORBO",
+        "SIKA",
+        "JICA-CLIMATE"
+      ]
+    },
+    {
+      "risk": "물기 있는 바탕·새 미장/방수/도장과 난방 건조가 겹침",
+      "effect": "겉이 마른 것과 덮기 가능 상태가 다를 수 있어 바닥·가구 손상 및 재시공",
+      "action": "바탕 수분 측정과 제품별 재도장/덮기/통행 조건을 별도 승인. 가습기7대가 공사 중 적정 습도 관리 능력을 보증하지 않음",
+      "sourceIds": [
+        "SIKA",
+        "LATICRETE"
+      ]
+    },
+    {
+      "risk": "차가운 창고/트럭에서 자재 반입",
+      "effect": "바닥재·접착제 온도 순응과 손상 검사 시간이 추가됨",
+      "action": "난방된 보관 장소·반입 순서 확보. 제조사 지침대로 순응하고 공사 통로에 자재를 쌓아 임시 적응시키지 않음",
+      "sourceIds": [
+        "FORBO",
+        "LANDBRIDGE"
+      ]
+    },
+    {
+      "risk": "수입 부품·맞춤 가구·연휴/통관·출발편 지연",
+      "effect": "마감까지 끝나도 장비 설치/검수/개원을 못 할 수 있음",
+      "action": "장기납기 품목을 설계 초기에 정하고 실제 출발/입고 증거로 갱신. 2027년 명절·건물 휴무·업체 휴무는 미확인으로 실제 계약 일정에 별도 반영",
+      "sourceIds": [
+        "LANDBRIDGE"
+      ]
+    },
+    {
+      "risk": "거울·바닥 시공 뒤 사다리/가구·장비 반입",
+      "effect": "바닥 접착 불량·찌그러짐·거울 파손·재작업으로 인수 지연",
+      "action": "무거운 고정 보강과 위쪽 먼지 공종을 앞서 끝내고 보호/경화 조건을 승인한 뒤 정해진 구역 순서로 반입",
+      "sourceIds": [
+        "FORBO",
+        "HARLEQUIN-FLEXITY"
+      ]
+    }
+  ],
+  "stageGates": [
+    {
+      "gate": "공간 계약 전",
+      "mustConfirm": "학원 용도/공사권한·건물 난방/전력·배수/배기·피난/접근·아래층 소음 가능성. 불리하면 공정을 압축하기보다 공간 선택을 재검토"
+    },
+    {
+      "gate": "착공 전",
+      "mustConfirm": "현장용 도면/시방·관할 적용 절차·임대인/관리주체 승인·공사계약/발주 사양·핵심 납기"
+    },
+    {
+      "gate": "벽·천장 닫기 전",
+      "mustConfirm": "급배수/전기/덕트/고정 보강 은폐 검사·사진·실측"
+    },
+    {
+      "gate": "화장실 타일 전",
+      "mustConfirm": "선정 방수 시스템의 바탕·양생·누수 검사"
+    },
+    {
+      "gate": "댄스/일반 바닥 설치 전",
+      "mustConfirm": "바탕 수분/평탄·상태·실내 온습도·자재 순응·접착제 조건·다른 공종 차단"
+    },
+    {
+      "gate": "학생 입실 전",
+      "mustConfirm": "필요 승인/운영 자격·설비 성능/위생/안전·하자 보수·청소·직원 폐쇄 시범운영·운영 인계"
+    }
+  ],
+  "reversePlanningReference": {
+    "legacyOfficialOpening": "2027-02-25",
+    "legacyPublicPilotStart": "2027-02-11",
+    "status": "기존 문서 날짜이며 사용자 최신 확정일 아님. 실제 일정을 약속하거나 고지하기 위한 역산이 아니다.",
+    "facilityReadyForOfficialOpeningOnly": {
+      "optimistic": {
+        "target": "2027-02-25",
+        "latestTheoreticalT0": "2026-12-03",
+        "weeks": 12
+      },
+      "base": {
+        "target": "2027-02-25",
+        "latestTheoreticalT0": "2026-11-19",
+        "weeks": 14
+      },
+      "delayed": {
+        "target": "2027-02-25",
+        "latestTheoreticalT0": "2026-10-08",
+        "weeks": 20
+      }
+    },
+    "facilityReadyForLegacyPublicPilot": {
+      "optimistic": {
+        "target": "2027-02-11",
+        "latestTheoreticalT0": "2026-11-19",
+        "weeks": 12
+      },
+      "base": {
+        "target": "2027-02-11",
+        "latestTheoreticalT0": "2026-11-05",
+        "weeks": 14
+      },
+      "delayed": {
+        "target": "2027-02-11",
+        "latestTheoreticalT0": "2026-09-24",
+        "weeks": 20
+      }
+    },
+    "calendarLimit": "단순7일×주 역산. 2027년 명절/건물/공급사 휴무와 공간검색·계약 전 조사시간 미포함. 파일럿2주를 이 일정 마지막 인수2주와 겹쳐 계산하지 않음."
+  },
+  "limitations": [
+    "확보된 공간·건물 도면·도급 견적·현지 시공팀 확약이 없다. 실제 공기나 인허가 완료를 보증할 수 없음.",
+    "3~5주 승인 검토 가정은 관청 처리기간이 아니다. 용도 변경이나 큰 설비 변경이 필요하면 별도 일정이 생긴다.",
+    "현지 맞춤가구/거울 제작사의 본 프로젝트 공개 확약 납기는 확보하지 못했다. 제작2/4/6주와 조달4/6/10주는 계획값이다.",
+    "제조사 자료는 선정 제품의 지침을 만들기 위한 참고 예시다. 실제 납품 자재의 버전·온습도·두께·수분 조건을 확인해야 한다.",
+    "직원/강사 채용, 교재 제작, 출결/포토 앱 개발, 마케팅, 등록 모집, 사업/교육 운영 자격 취득의 전체 기간은 별도이며 시설 완료만으로 자동 개원되지 않는다."
+  ]
+}

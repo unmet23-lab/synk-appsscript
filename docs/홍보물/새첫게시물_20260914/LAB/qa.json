@@ -1,0 +1,345 @@
+{
+  "createdAt": "2026-09-13T19:31:00.522Z",
+  "screens": [
+    {
+      "id": "student-01",
+      "fonts": [
+        {
+          "family": "SUIT Variable",
+          "weight": "100 900",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "500",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "700",
+          "status": "loaded"
+        },
+        {
+          "family": "DM Mono",
+          "weight": "500",
+          "status": "loaded"
+        }
+      ],
+      "overflow": [],
+      "textOverlaps": [],
+      "textCount": 8
+    },
+    {
+      "id": "student-02",
+      "fonts": [
+        {
+          "family": "SUIT Variable",
+          "weight": "100 900",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "500",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "700",
+          "status": "loaded"
+        },
+        {
+          "family": "DM Mono",
+          "weight": "500",
+          "status": "loaded"
+        }
+      ],
+      "overflow": [],
+      "textOverlaps": [],
+      "textCount": 10
+    },
+    {
+      "id": "student-03",
+      "fonts": [
+        {
+          "family": "SUIT Variable",
+          "weight": "100 900",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "500",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "700",
+          "status": "loaded"
+        },
+        {
+          "family": "DM Mono",
+          "weight": "500",
+          "status": "loaded"
+        }
+      ],
+      "overflow": [],
+      "textOverlaps": [],
+      "textCount": 10
+    },
+    {
+      "id": "student-04",
+      "fonts": [
+        {
+          "family": "SUIT Variable",
+          "weight": "100 900",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "500",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "700",
+          "status": "loaded"
+        },
+        {
+          "family": "DM Mono",
+          "weight": "500",
+          "status": "loaded"
+        }
+      ],
+      "overflow": [],
+      "textOverlaps": [],
+      "textCount": 13
+    },
+    {
+      "id": "student-05",
+      "fonts": [
+        {
+          "family": "SUIT Variable",
+          "weight": "100 900",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "500",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "700",
+          "status": "loaded"
+        },
+        {
+          "family": "DM Mono",
+          "weight": "500",
+          "status": "loaded"
+        }
+      ],
+      "overflow": [],
+      "textOverlaps": [],
+      "textCount": 17
+    },
+    {
+      "id": "student-06",
+      "fonts": [
+        {
+          "family": "SUIT Variable",
+          "weight": "100 900",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "500",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "700",
+          "status": "loaded"
+        },
+        {
+          "family": "DM Mono",
+          "weight": "500",
+          "status": "loaded"
+        }
+      ],
+      "overflow": [],
+      "textOverlaps": [],
+      "textCount": 15
+    },
+    {
+      "id": "guardian-01",
+      "fonts": [
+        {
+          "family": "SUIT Variable",
+          "weight": "100 900",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "500",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "700",
+          "status": "loaded"
+        },
+        {
+          "family": "DM Mono",
+          "weight": "500",
+          "status": "loaded"
+        }
+      ],
+      "overflow": [],
+      "textOverlaps": [],
+      "textCount": 8
+    },
+    {
+      "id": "guardian-02",
+      "fonts": [
+        {
+          "family": "SUIT Variable",
+          "weight": "100 900",
+          "status": "unloaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "500",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "700",
+          "status": "loaded"
+        },
+        {
+          "family": "DM Mono",
+          "weight": "500",
+          "status": "loaded"
+        }
+      ],
+      "overflow": [],
+      "textOverlaps": [],
+      "textCount": 10
+    },
+    {
+      "id": "guardian-03",
+      "fonts": [
+        {
+          "family": "SUIT Variable",
+          "weight": "100 900",
+          "status": "unloaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "500",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "700",
+          "status": "loaded"
+        },
+        {
+          "family": "DM Mono",
+          "weight": "500",
+          "status": "loaded"
+        }
+      ],
+      "overflow": [],
+      "textOverlaps": [],
+      "textCount": 11
+    },
+    {
+      "id": "guardian-04",
+      "fonts": [
+        {
+          "family": "SUIT Variable",
+          "weight": "100 900",
+          "status": "unloaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "500",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "weight": "700",
+          "status": "loaded"
+        },
+        {
+          "family": "DM Mono",
+          "weight": "500",
+          "status": "loaded"
+        }
+      ],
+      "overflow": [],
+      "textOverlaps": [],
+      "textCount": 10
+    }
+  ],
+  "fontEvidence": [
+    {
+      "selector": "text.ko",
+      "fonts": [
+        {
+          "familyName": "SUIT Variable Thin",
+          "postScriptName": "SUITVariable-Medium",
+          "isCustomFont": true,
+          "glyphCount": 4
+        },
+        {
+          "familyName": "Inter Tight Medium",
+          "postScriptName": "InterTight-Medium",
+          "isCustomFont": true,
+          "glyphCount": 19
+        }
+      ]
+    },
+    {
+      "selector": "text.ko[font-weight=\"800\"]",
+      "fonts": [
+        {
+          "familyName": "Inter Tight",
+          "postScriptName": "InterTight-Bold",
+          "isCustomFont": true,
+          "glyphCount": 1
+        },
+        {
+          "familyName": "SUIT Variable Thin",
+          "postScriptName": "SUITVariable-ExtraBold",
+          "isCustomFont": true,
+          "glyphCount": 5
+        }
+      ]
+    },
+    {
+      "selector": "text.mn",
+      "fonts": [
+        {
+          "familyName": "Inter Tight Medium",
+          "postScriptName": "InterTight-Medium",
+          "isCustomFont": true,
+          "glyphCount": 20
+        }
+      ]
+    },
+    {
+      "selector": "text.mono",
+      "fonts": [
+        {
+          "familyName": "DM Mono Medium",
+          "postScriptName": "DMMono-Medium",
+          "isCustomFont": true,
+          "glyphCount": 5
+        }
+      ]
+    }
+  ],
+  "render": "Chromium 1080×1350 @2x; 390px proportional PNG preview (390×488)",
+  "visualReview": "See QA.md for direct image review; regenerated files require re-review"
+}

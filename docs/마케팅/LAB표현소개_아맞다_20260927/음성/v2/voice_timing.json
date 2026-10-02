@@ -1,0 +1,63 @@
+{
+ "sr": 48000,
+ "target_lufs": -18.0,
+ "lines": {
+  "hook": {
+   "take": "hook__fl31_Sulafat__t5",
+   "trim_start": 0.22,
+   "speech_onset": 0.03,
+   "duration": 1.18,
+   "gain_db": -1.8,
+   "peak_db": -3.36
+  },
+  "umbrella": {
+   "take": "umbrella__fl31_Sulafat__t1",
+   "trim_start": 0.16,
+   "speech_onset": 0.03,
+   "duration": 1.54,
+   "gain_db": -2.4,
+   "peak_db": -3.33
+  },
+  "beat": {
+   "take": "beat__fl31_Sulafat__t1",
+   "trim_start": 0.17,
+   "speech_onset": 0.03,
+   "duration": 1.21,
+   "gain_db": -5.0,
+   "peak_db": -4.73
+  },
+  "slow": {
+   "take": "slow__fl31_Sulafat__t2",
+   "trim_start": 0.24,
+   "speech_onset": 0.03,
+   "duration": 2.2,
+   "gain_db": -2.9,
+   "peak_db": -2.73,
+   "syllables": [
+    {
+     "syl": "아",
+     "start": 0.03,
+     "end": 0.56
+    },
+    {
+     "syl": "맞",
+     "start": 1.1,
+     "end": 1.29
+    },
+    {
+     "syl": "다",
+     "start": 1.5,
+     "end": 2.03
+    }
+   ]
+  },
+  "confirm": {
+   "take": "confirm__fl31_Sulafat__t1",
+   "trim_start": 0.22,
+   "speech_onset": 0.03,
+   "duration": 1.31,
+   "gain_db": -1.1,
+   "peak_db": -4.38
+  }
+ }
+}

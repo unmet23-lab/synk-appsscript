@@ -1,0 +1,230 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 3.32,
+  "words": [
+    {
+      "text": "추가",
+      "start": 0.085,
+      "end": 0.27
+    },
+    {
+      "text": "기능은",
+      "start": 0.312,
+      "end": 0.553
+    },
+    {
+      "text": "빼고,",
+      "start": 0.596,
+      "end": 0.837
+    },
+    {
+      "text": "가장",
+      "start": 1.319,
+      "end": 1.532
+    },
+    {
+      "text": "쉬운",
+      "start": 1.603,
+      "end": 1.802
+    },
+    {
+      "text": "방법과",
+      "start": 1.844,
+      "end": 2.185
+    },
+    {
+      "text": "확인",
+      "start": 2.27,
+      "end": 2.455
+    },
+    {
+      "text": "순서를",
+      "start": 2.497,
+      "end": 2.767
+    },
+    {
+      "text": "알려줘.",
+      "start": 2.809,
+      "end": 3.32
+    }
+  ],
+  "characters": [
+    {
+      "text": "추",
+      "start": 0.085,
+      "end": 0.227
+    },
+    {
+      "text": "가",
+      "start": 0.227,
+      "end": 0.27
+    },
+    {
+      "text": " ",
+      "start": 0.27,
+      "end": 0.312
+    },
+    {
+      "text": "기",
+      "start": 0.312,
+      "end": 0.397
+    },
+    {
+      "text": "능",
+      "start": 0.397,
+      "end": 0.511
+    },
+    {
+      "text": "은",
+      "start": 0.511,
+      "end": 0.553
+    },
+    {
+      "text": " ",
+      "start": 0.553,
+      "end": 0.596
+    },
+    {
+      "text": "빼",
+      "start": 0.596,
+      "end": 0.766
+    },
+    {
+      "text": "고",
+      "start": 0.766,
+      "end": 0.823
+    },
+    {
+      "text": ",",
+      "start": 0.823,
+      "end": 0.837
+    },
+    {
+      "text": " ",
+      "start": 0.837,
+      "end": 1.319
+    },
+    {
+      "text": "가",
+      "start": 1.319,
+      "end": 1.419
+    },
+    {
+      "text": "장",
+      "start": 1.419,
+      "end": 1.532
+    },
+    {
+      "text": " ",
+      "start": 1.532,
+      "end": 1.603
+    },
+    {
+      "text": "쉬",
+      "start": 1.603,
+      "end": 1.774
+    },
+    {
+      "text": "운",
+      "start": 1.774,
+      "end": 1.802
+    },
+    {
+      "text": " ",
+      "start": 1.802,
+      "end": 1.844
+    },
+    {
+      "text": "방",
+      "start": 1.844,
+      "end": 1.972
+    },
+    {
+      "text": "법",
+      "start": 1.972,
+      "end": 2.114
+    },
+    {
+      "text": "과",
+      "start": 2.114,
+      "end": 2.185
+    },
+    {
+      "text": " ",
+      "start": 2.185,
+      "end": 2.27
+    },
+    {
+      "text": "확",
+      "start": 2.27,
+      "end": 2.412
+    },
+    {
+      "text": "인",
+      "start": 2.412,
+      "end": 2.455
+    },
+    {
+      "text": " ",
+      "start": 2.455,
+      "end": 2.497
+    },
+    {
+      "text": "순",
+      "start": 2.497,
+      "end": 2.611
+    },
+    {
+      "text": "서",
+      "start": 2.611,
+      "end": 2.696
+    },
+    {
+      "text": "를",
+      "start": 2.696,
+      "end": 2.767
+    },
+    {
+      "text": " ",
+      "start": 2.767,
+      "end": 2.809
+    },
+    {
+      "text": "알",
+      "start": 2.809,
+      "end": 2.88
+    },
+    {
+      "text": "려",
+      "start": 2.88,
+      "end": 2.951
+    },
+    {
+      "text": "줘",
+      "start": 2.951,
+      "end": 3.306
+    },
+    {
+      "text": ".",
+      "start": 3.306,
+      "end": 3.32
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "추가 기능은 빼고, 가장 쉬운 방법과 확인 순서를 알려줘.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.25,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1.05
+    }
+  }
+}

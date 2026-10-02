@@ -1,0 +1,178 @@
+{
+  "passed": true,
+  "sourceFiles": 19,
+  "changed": [],
+  "mismatched": [],
+  "errors": [],
+  "externalRequests": [],
+  "results": [
+    {
+      "width": 390,
+      "states": [
+        {
+          "count": "01 / 05",
+          "title": "선반 위의 돌",
+          "speech": "",
+          "overflow": false,
+          "previousDisabled": true
+        },
+        {
+          "count": "02 / 05",
+          "title": "마린의 확인",
+          "speech": "위치. 다시 확인.",
+          "overflow": false,
+          "previousDisabled": false
+        },
+        {
+          "count": "03 / 05",
+          "title": "다시 만난 자리",
+          "speech": "어? 아직 여기 있네!",
+          "overflow": false,
+          "previousDisabled": false
+        },
+        {
+          "count": "04 / 05",
+          "title": "보관 중",
+          "speech": "보관 중. …네가 준 거다.",
+          "overflow": false,
+          "previousDisabled": false
+        },
+        {
+          "count": "05 / 05",
+          "title": "같은 창빛 아래",
+          "speech": "",
+          "overflow": false,
+          "previousDisabled": false
+        }
+      ],
+      "reset": "01 / 05",
+      "keyboardNext": "02 / 05",
+      "keyboardPrev": "01 / 05",
+      "detailsOpen": true,
+      "loaded": true,
+      "missingLinks": [],
+      "fonts": {
+        "h1": [
+          {
+            "familyName": "Inter Tight",
+            "postScriptName": "InterTight-Bold",
+            "isCustomFont": true,
+            "glyphCount": 2
+          },
+          {
+            "familyName": "SUIT Variable Thin",
+            "postScriptName": "SUITVariable-ExtraBold",
+            "isCustomFont": true,
+            "glyphCount": 6
+          }
+        ],
+        "#narrative": [
+          {
+            "familyName": "SUIT Variable Thin",
+            "postScriptName": "SUITVariable-Medium",
+            "isCustomFont": true,
+            "glyphCount": 28
+          },
+          {
+            "familyName": "Inter Tight Medium",
+            "postScriptName": "InterTight-Medium",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ],
+        "#page-count": [
+          {
+            "familyName": "DM Mono Medium",
+            "postScriptName": "DMMono-Medium",
+            "isCustomFont": true,
+            "glyphCount": 7
+          }
+        ]
+      }
+    },
+    {
+      "width": 1440,
+      "states": [
+        {
+          "count": "01 / 05",
+          "title": "선반 위의 돌",
+          "speech": "",
+          "overflow": false,
+          "previousDisabled": true
+        },
+        {
+          "count": "02 / 05",
+          "title": "마린의 확인",
+          "speech": "위치. 다시 확인.",
+          "overflow": false,
+          "previousDisabled": false
+        },
+        {
+          "count": "03 / 05",
+          "title": "다시 만난 자리",
+          "speech": "어? 아직 여기 있네!",
+          "overflow": false,
+          "previousDisabled": false
+        },
+        {
+          "count": "04 / 05",
+          "title": "보관 중",
+          "speech": "보관 중. …네가 준 거다.",
+          "overflow": false,
+          "previousDisabled": false
+        },
+        {
+          "count": "05 / 05",
+          "title": "같은 창빛 아래",
+          "speech": "",
+          "overflow": false,
+          "previousDisabled": false
+        }
+      ],
+      "reset": "01 / 05",
+      "keyboardNext": "02 / 05",
+      "keyboardPrev": "01 / 05",
+      "detailsOpen": true,
+      "loaded": true,
+      "missingLinks": [],
+      "fonts": {
+        "h1": [
+          {
+            "familyName": "Inter Tight",
+            "postScriptName": "InterTight-Bold",
+            "isCustomFont": true,
+            "glyphCount": 2
+          },
+          {
+            "familyName": "SUIT Variable Thin",
+            "postScriptName": "SUITVariable-ExtraBold",
+            "isCustomFont": true,
+            "glyphCount": 6
+          }
+        ],
+        "#narrative": [
+          {
+            "familyName": "SUIT Variable Thin",
+            "postScriptName": "SUITVariable-Medium",
+            "isCustomFont": true,
+            "glyphCount": 28
+          },
+          {
+            "familyName": "Inter Tight Medium",
+            "postScriptName": "InterTight-Medium",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ],
+        "#page-count": [
+          {
+            "familyName": "DM Mono Medium",
+            "postScriptName": "DMMono-Medium",
+            "isCustomFont": true,
+            "glyphCount": 7
+          }
+        ]
+      }
+    }
+  ]
+}

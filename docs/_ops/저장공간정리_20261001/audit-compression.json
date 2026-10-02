@@ -1,0 +1,23 @@
+[
+  {
+    "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\저장공간정리_20261001\\local-files.json",
+    "compressed": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\저장공간정리_20261001\\local-files.json.gz",
+    "sha256": "e8fe4a48f8316ce0f919df62a0dbf8fdd7e1ae37d2025061813c6ecfc94f4f13",
+    "originalBytes": 221456105,
+    "compressedBytes": 13428661
+  },
+  {
+    "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\저장공간정리_20261001\\drive-files.json",
+    "compressed": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\저장공간정리_20261001\\drive-files.json.gz",
+    "sha256": "50d57d7dab6e8473ef0e4bdb22e3ee279b5c179656ebbd00012408ec317476a7",
+    "originalBytes": 32772605,
+    "compressedBytes": 5562476
+  },
+  {
+    "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\저장공간정리_20261001\\drive-summary.json",
+    "compressed": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\저장공간정리_20261001\\drive-summary.json.gz",
+    "sha256": "032c2077419dc10e82b3381dd7afa8d6c4a719dd5371e8838ca82fde7ecaa7ad",
+    "originalBytes": 17245539,
+    "compressedBytes": 1879198
+  }
+]

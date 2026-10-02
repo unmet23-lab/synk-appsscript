@@ -1,0 +1,175 @@
+{
+  "ok": true,
+  "strict": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "filesScanned": 11
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 3,
+    "findings": [
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 30.982,
+        "selector": "#slot-reset > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 76,
+          "top": 115,
+          "right": 142.72,
+          "bottom": 153,
+          "width": 66.72,
+          "height": 38
+        },
+        "containerSelector": "#slot-demo > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1)",
+        "text": "yuhobuilds",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/reset.html",
+        "bbox": {
+          "x": 76,
+          "y": 115,
+          "width": 66.72,
+          "height": 38
+        },
+        "firstSeen": 30.982,
+        "lastSeen": 30.982,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 30.982,
+        "selector": "#slot-reset > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 142.72,
+          "top": 115,
+          "right": 215.42,
+          "bottom": 153,
+          "width": 72.7,
+          "height": 38
+        },
+        "containerSelector": "#slot-demo > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "builds",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/reset.html",
+        "bbox": {
+          "x": 142.72,
+          "y": 115,
+          "width": 72.7,
+          "height": 38
+        },
+        "firstSeen": 30.982,
+        "lastSeen": 30.982,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 30.982,
+        "selector": "#slot-reset > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 698.22,
+          "top": 117.5,
+          "right": 970,
+          "bottom": 150.5,
+          "width": 271.78,
+          "height": 33
+        },
+        "containerSelector": "#slot-demo > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(2)",
+        "text": "EP.01 · 지금 다시 한다면",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/reset.html",
+        "bbox": {
+          "x": 698.22,
+          "y": 117.5,
+          "width": 271.78,
+          "height": 33
+        },
+        "firstSeen": 30.982,
+        "lastSeen": 30.982,
+        "occurrences": 1,
+        "heldMs": 0
+      }
+    ],
+    "duration": 56.46666666666667,
+    "samples": [
+      3.137,
+      9.411,
+      15.685,
+      21.959,
+      28.233,
+      34.507,
+      40.781,
+      47.056,
+      53.33
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 3,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      3.137,
+      15.685,
+      28.233,
+      40.781,
+      53.33
+    ],
+    "checked": 34,
+    "passed": 34
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  },
+  "_meta": {
+    "version": "0.8.78",
+    "latestVersion": "0.8.78",
+    "updateAvailable": false
+  }
+}

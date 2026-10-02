@@ -1,0 +1,15 @@
+const fs=require('node:fs'),path=require('node:path'),{spawnSync}=require('node:child_process');
+const source=__dirname,root=path.join(source,'revision-v2');
+for(const d of ['assets','compositions/components','audit','audio'])fs.mkdirSync(path.join(root,d),{recursive:true});
+const copy=(a,b=a)=>fs.copyFileSync(path.join(source,a),path.join(root,b));
+for(const f of ['build-scenes.cjs','finalize-html.cjs','audio-mix.cjs','package.json','hyperframes.json','AGENTS.md','BRIEF.md','design.md','practice.html','practice.js','복사용_첫완성질문.txt'])copy(f);
+for(const f of ['SUIT-Variable.woff2','face.png','portrait.jpg','smile.png','puzzled.png','surprise.png','blink.png','music-source.wav'])copy('assets/'+f);
+for(const f of ['text-stagger.html','zoom-through-transition.html'])copy('compositions/components/'+f);
+const original=JSON.parse(fs.readFileSync(path.join(source,'timing.json'),'utf8'));
+const retime=x=>Array.isArray(x)?x.map(retime):x&&typeof x==='object'?Object.fromEntries(Object.entries(x).map(([k,v])=>[k,typeof v==='number'&&['start','end','local','duration','trim'].includes(k)?v/1.2:typeof v==='number'&&['frame','frames'].includes(k)?Math.round(v/1.2):retime(v)])):x;
+const T=retime(original);T.frames=Math.ceil(original.frames/1.2);T.duration=T.frames/30;T.playbackRate=1.2;T.sourceDuration=original.duration;
+fs.writeFileSync(path.join(root,'timing.json'),JSON.stringify(T,null,2));
+const voice=spawnSync('ffmpeg',['-v','error','-y','-i',path.join(source,'assets/narration.wav'),'-af',`rubberband=tempo=1.2:pitch=1,apad,atrim=duration=${T.duration}`,'-ar','48000','-ac','2',path.join(root,'assets/narration.wav')],{encoding:'utf8',windowsHide:true});if(voice.status)throw Error(voice.stderr);
+let mix=fs.readFileSync(path.join(root,'audio-mix.cjs'),'utf8').replace('monster+.26+i*.5','monster+.19+i*.36').replace('loudnorm=I=-29','rubberband=tempo=1.2:pitch=1,loudnorm=I=-28.5');
+fs.writeFileSync(path.join(root,'audio-mix.cjs'),mix);
+console.log(JSON.stringify({root,duration:T.duration,frames:T.frames,rate:T.playbackRate}));

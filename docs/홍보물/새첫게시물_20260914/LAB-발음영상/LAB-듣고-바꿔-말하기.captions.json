@@ -1,0 +1,82 @@
+[
+  {
+    "text": "어떤 전공을 배우고 싶어요?",
+    "startMs": 6150,
+    "endMs": 7788,
+    "timestampMs": null,
+    "confidence": null,
+    "alignment": "pause-and-text-order-estimate-not-listened"
+  },
+  {
+    "text": "아직 정하지 않았어요.",
+    "startMs": 14347,
+    "endMs": 15803,
+    "timestampMs": null,
+    "confidence": null,
+    "alignment": "pause-and-text-order-estimate-not-listened"
+  },
+  {
+    "text": "먼저 게임을 만들어 보고 싶어요.",
+    "startMs": 16326,
+    "endMs": 18167,
+    "timestampMs": null,
+    "confidence": null,
+    "alignment": "pause-and-text-order-estimate-not-listened"
+  },
+  {
+    "text": "게임을 만들어.",
+    "startMs": 24610,
+    "endMs": 25534,
+    "timestampMs": null,
+    "confidence": null,
+    "alignment": "pause-and-text-order-estimate-not-listened"
+  },
+  {
+    "text": "영상을 만들어.",
+    "startMs": 27615,
+    "endMs": 28573,
+    "timestampMs": null,
+    "confidence": null,
+    "alignment": "pause-and-text-order-estimate-not-listened"
+  },
+  {
+    "text": "그림을 그려.",
+    "startMs": 31130,
+    "endMs": 31870,
+    "timestampMs": null,
+    "confidence": null,
+    "alignment": "pause-and-text-order-estimate-not-listened"
+  },
+  {
+    "text": "아직 정하지 않았어요.",
+    "startMs": 48278,
+    "endMs": 49684,
+    "timestampMs": null,
+    "confidence": null,
+    "alignment": "pause-and-text-order-estimate-not-listened"
+  },
+  {
+    "text": "먼저 영상을 만들어 보고 싶어요.",
+    "startMs": 50205,
+    "endMs": 52119,
+    "timestampMs": null,
+    "confidence": null,
+    "alignment": "pause-and-text-order-estimate-not-listened"
+  },
+  {
+    "text": "아직 정하지 않았어요.",
+    "startMs": 52782,
+    "endMs": 54200,
+    "timestampMs": null,
+    "confidence": null,
+    "alignment": "pause-and-text-order-estimate-not-listened"
+  },
+  {
+    "text": "먼저 그림을 그려 보고 싶어요.",
+    "startMs": 54682,
+    "endMs": 56713,
+    "timestampMs": null,
+    "confidence": null,
+    "alignment": "pause-and-text-order-estimate-not-listened"
+  }
+]

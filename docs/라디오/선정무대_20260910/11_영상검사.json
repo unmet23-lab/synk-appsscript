@@ -1,0 +1,28 @@
+{
+  "at": "2026-09-09T17:50:06.623Z",
+  "original": "docs\\라디오\\선정무대_20260910\\11_생성원본.mp4",
+  "originalSha256": "d415cb75f8d9e23d68954b41d89d1116277b5b4a8d56634f8bf37038e5e490c8",
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 1920,
+        "height": 1080,
+        "r_frame_rate": "24/1",
+        "nb_read_frames": "289"
+      }
+    ],
+    "format": {
+      "duration": "12.041667"
+    }
+  },
+  "output": "영상\\public\\radioDreams20260910\\water-loop.mp4",
+  "outputSha256": "f650860ab7202f5f357c05bce6b45be13171833b457130fb4ba1d395010818b6",
+  "playbackSpeed": 0.7083333333333333,
+  "cycleSeconds": 15,
+  "frames": 450,
+  "method": "Whole generated scene retimed to 17s, 2s cosine-weight cyclic overlap, yielding 15s continuous loop. No camera transform, optical flow, region warp or generated mascot.",
+  "visualQA": "pending"
+}

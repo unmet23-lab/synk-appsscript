@@ -1,0 +1,7 @@
+assets/synk-kit/
+snapshots/*.png
+renders/
+.hyperframes/
+.thumbnails/
+node_modules/
+out/

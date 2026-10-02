@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "70d56bb9-bd3d-4e73-8427-bfa534527a97",
+  "narration": "가상 예시입니다. 독립 강사의 소개자료를 정리하는 일을 한 줄로 말합니다.",
+  "narrationSha256": "94dfc3a04cdf93ff248da7905b0049ad861f9017f09d1753344edd9c87c17bda",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-94dfc3a04cdf93ff.wav",
+  "duration": 4.88,
+  "sha256": "f39551436f92c97c3c606663d668208955835616d0ee0cbe06b9e77e64da3711",
+  "humanListening": false,
+  "fullDecode": true
+}

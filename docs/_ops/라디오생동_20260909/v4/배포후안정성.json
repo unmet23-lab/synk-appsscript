@@ -1,0 +1,83 @@
+{
+  "observedAtUTC": "2026-09-09T11:58:20.638740+00:00",
+  "scope": "v4 배경만 변경한 뒤 짧은 서버 안정성 재확인. 서버 쓰기·재시작 없음.",
+  "observationSeconds": 157.63874,
+  "passed": true,
+  "service": {
+    "MainPID": "143182",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Wed 2026-09-09 11:55:43 UTC",
+    "ActiveState": "active",
+    "SubState": "running"
+  },
+  "progress": [
+    {
+      "atUTC": "2026-09-09T11:56:51.638359+00:00",
+      "pid": "143182",
+      "speed": "0.995x",
+      "outTime": "00:00:53.244000",
+      "captureFps": "3.1",
+      "sentFps": "5.9",
+      "drop": "0",
+      "dup": "0",
+      "captureFail": "0"
+    },
+    {
+      "atUTC": "2026-09-09T11:57:51.638041+00:00",
+      "pid": "143182",
+      "speed": "0.997x",
+      "outTime": "00:01:53.105000",
+      "captureFps": "3.3",
+      "sentFps": "6.0",
+      "drop": "0",
+      "dup": "0",
+      "captureFail": "0"
+    }
+  ],
+  "outTimeAdvanceSeconds": [
+    59.86099999999999
+  ],
+  "incidents": {
+    "captureFailure": 0,
+    "watchdogRestart": 0,
+    "ffmpegExit": 0,
+    "brokenPipe": 0,
+    "timestampWarning": 0,
+    "queueWarning": 0,
+    "automaticRestart": 0
+  },
+  "protection": {
+    "checked": 15,
+    "unchanged": 15,
+    "mismatches": [],
+    "stagePlaylistSha256": "074f092875f989c75d6fb0e9ed4549554eddb2db0e55fcc8e93dff44bc246db9",
+    "activeMedia": [
+      {
+        "pid": "143319",
+        "path": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+      },
+      {
+        "pid": "143319",
+        "path": "/opt/synk-radio/무대차례/chuseok-tree-light-20260909-dcc5a8fef2e5.mp4"
+      }
+    ],
+    "expectedStageOpened": true
+  },
+  "youtubeHealth": {
+    "checkedAtUTC": "2026-09-09 11:58:23 UTC",
+    "stream": "active",
+    "health": "good",
+    "broadcast": "eI-5vSy5mjY",
+    "lifecycle": "live",
+    "privacy": "public"
+  },
+  "reusedEvidence": {
+    "file": "docs/_ops/라디오생동_20260909/v3/배포후안정성.json",
+    "basis": "송출 코드·진척 helper·소리 목록을 포함한 보호 15개 SHA가 그대로임을 현재 재조회. 이전 20개 로컬 회귀 검수와 6분 43초 서버 검사를 재사용하되 v4의 짧은 관찰과 혼동하지 않음."
+  },
+  "limits": [
+    "이번 관찰은 2분 37초이며 장시간 무중단 보장이 아니다.",
+    "공개 수신 화면·음향 검수는 주담당이 따로 수행 중이며 이 담당은 중복 캡처하지 않음.",
+    "오디오 원본 전체 SHA가 아니라 소리 목록 SHA와 실제 열린 FLAC 경로를 확인함."
+  ]
+}

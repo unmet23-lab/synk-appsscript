@@ -1,0 +1,86 @@
+{
+  "text": "드시고 가세요 가지고 가세요 네 어느 쪽이요 다시 말해주세요",
+  "alternatives": [
+    {
+      "text": "드시고 가세요 가지고 가세요 네 어느 쪽이요 다시 말해주세요"
+    }
+  ],
+  "provider": "local",
+  "model": "Systran/faster-whisper-small@536b0662742c02347bc0e980a01041f333bce120",
+  "raw": {
+    "request": {
+      "audioSha256": "4cb8b1f5abf27928a7905458dbc730a6041907e96a23238e270d9adf7b39b72d",
+      "audioRef": "sha256:4cb8b1f5abf27928a7905458dbc730a6041907e96a23238e270d9adf7b39b72d",
+      "audioBytes": 30568,
+      "mimeType": "audio/mpeg",
+      "settings": {
+        "language": "ko",
+        "device": "cpu",
+        "computeType": "int8",
+        "beamSize": 5,
+        "temperature": 0,
+        "conditionOnPreviousText": false,
+        "vadFilter": false,
+        "initialPrompt": null,
+        "prefix": null
+      },
+      "modelFingerprint": "c8b62d0a7b817ecd103eff60e1ec0bb4b0338890f5d8e05f7671c12c7c9bc724",
+      "workerSha256": "22deb86ee8d46c6cef0923ba31b70ee183c491f6a4abc95c2cc9db8b156e5e1a"
+    },
+    "response": {
+      "type": "result",
+      "id": "2a5e3b61-b1c7-45db-bef7-a4b2c66f88a9",
+      "audioSha256": "4cb8b1f5abf27928a7905458dbc730a6041907e96a23238e270d9adf7b39b72d",
+      "text": "드시고 가세요 가지고 가세요 네 어느 쪽이요 다시 말해주세요",
+      "segments": [
+        {
+          "start": 0,
+          "end": 9.16,
+          "text": " 드시고 가세요 가지고 가세요 네 어느 쪽이요 다시 말해주세요",
+          "avgLogprob": -0.3488322935606304,
+          "noSpeechProbability": 0.013409198261797428
+        }
+      ],
+      "durationSeconds": 10.0053125,
+      "language": "ko",
+      "elapsedMs": 6578,
+      "networkAttempts": 0
+    },
+    "runtime": {
+      "type": "ready",
+      "loadMs": 2656,
+      "engine": "faster-whisper",
+      "version": "1.2.1",
+      "ctranslate2": "4.8.2",
+      "python": "3.12.14",
+      "networkAttempts": 0,
+      "modelFiles": [
+        {
+          "name": "model.bin",
+          "bytes": 483546902,
+          "sha256": "3e305921506d8872816023e4c273e75d2419fb89b24da97b4fe7bce14170d671"
+        },
+        {
+          "name": "config.json",
+          "bytes": 2370,
+          "sha256": "b55496ac7940a7ae47d2c01eab40edfd8701feec1229d9cce3b40014383fb828"
+        },
+        {
+          "name": "tokenizer.json",
+          "bytes": 2203239,
+          "sha256": "fb7b63191e9bb045082c79fd742a3106a12c99513ab30df4a0d47fa6cb6fd0ab"
+        },
+        {
+          "name": "vocabulary.txt",
+          "bytes": 459861,
+          "sha256": "34ce3fe1c5041027b3f8d42912270993f986dbc4bb34cf27f951e34a1e453913"
+        }
+      ]
+    },
+    "alternativesKind": "single_decoder_result",
+    "coverage": "not_complete",
+    "needsHumanVerification": true,
+    "offline": true,
+    "networkAttempts": 0
+  }
+}

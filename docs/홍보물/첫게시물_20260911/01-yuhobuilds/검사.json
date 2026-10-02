@@ -1,0 +1,55 @@
+{
+  "revision": "plain-language-v2",
+  "durationSeconds": 29.4,
+  "resolution": [
+    1080,
+    1920
+  ],
+  "fps": 30,
+  "frames": 882,
+  "videoCodec": "h264",
+  "audioCodec": "aac",
+  "audioSampleRate": 48000,
+  "audioChannels": 2,
+  "integratedLufs": -28.51,
+  "truePeakDbtp": -10.83,
+  "fullDecodePassed": true,
+  "audioEncodedOnceFromPcm": true,
+  "filmSha256": "7445861e99d5686485ce68b0250d13805129c9c616c80a2dba73f5117631ca54",
+  "approvedMusicUnchanged": true,
+  "voiceIntroSeconds": 4.88,
+  "originalApprovedFilmUnchanged": true,
+  "visualReview": {
+    "status": "representative final frames inspected",
+    "frames": [
+      15,
+      90,
+      218,
+      370,
+      642,
+      726,
+      818,
+      881
+    ],
+    "phoneFrameSize": [
+      360,
+      640
+    ],
+    "coverInspected": true,
+    "textClippingOrOverlapObserved": false,
+    "continuousBrowserPlaybackVerified": false,
+    "audienceComprehensionStudyPerformed": false
+  },
+  "audioListening": "Direct model listening unavailable; prior user-approved voice reused. See audio-audit.json.",
+  "socialPublishing": "Not requested; not performed.",
+  "zipVerified": {
+    "file": "SHIFT_첫게시물_업로드.zip",
+    "files": [
+      "video.mp4",
+      "cover.png",
+      "업로드문안.txt"
+    ],
+    "crcAndSha256Match": true,
+    "bytes": 30216324
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "status": "completed",
+  "file": "voice-01-studio-ec6b8a18e0e9751a.wav",
+  "narration": "좋아요. 같이 들어요.",
+  "duration": 2.55,
+  "sha256": "61397cadefd21e03cf3991c9410de21bd8a47d0a8b69c857847e58bf68901a57",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "seed_audio",
+    "preset": "original female based on user-selected B",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "jobId": "46ef0df1-b7b8-40c1-9e3a-929a7ac5786f",
+  "sourceFile": "studio-reference-332d03b4930f8c73.wav",
+  "sourceSha256": "11608c84d252525445ab3ac542635efcfbab9fa730d1da009a9ffeefccbdc475",
+  "sourceRangeSeconds": [
+    3.45,
+    6
+  ],
+  "nativeGenerationSampleRate": 48000,
+  "loudnessTargetLUFS": -23,
+  "truePeakLimitDb": -6,
+  "styleReferenceUserSelected": true,
+  "refinedAudioUserApproved": false,
+  "humanListening": false,
+  "fullDecode": true
+}

@@ -1,0 +1,30 @@
+{
+  "id": "phrase",
+  "role": "mongle",
+  "text": "다시 말해 주세요.",
+  "provider": "Microsoft Edge TTS",
+  "settings": {
+    "voice": "ko-KR-InJoonNeural",
+    "rate": "-10%",
+    "pitch": "+8Hz"
+  },
+  "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\phrase.mp3",
+  "duration": 2.928,
+  "words": [
+    {
+      "text": "다시",
+      "start": 0.105541,
+      "end": 0.633332
+    },
+    {
+      "text": "말해",
+      "start": 0.647208,
+      "end": 0.952749
+    },
+    {
+      "text": "주세요",
+      "start": 0.966666,
+      "end": 1.897207
+    }
+  ]
+}

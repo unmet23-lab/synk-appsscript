@@ -1,0 +1,1138 @@
+{
+  "createdAt": "2026-09-13T20:57:15.453Z",
+  "title": "아직 정하지 않았어요 — 듣고 바꿔 말하기",
+  "file": "LAB-듣고-바꿔-말하기",
+  "duration": 65,
+  "fps": 30,
+  "officialVision": "가고 싶은 방향에 집중할 수 있는 환경을 만듭니다.",
+  "status": "local-voiced-edit-technical-validation-passed-listening-pending-not-published",
+  "sourceAudio": {
+    "path": "C:/Users/q1212/Downloads/dive-나나-1789332200728.wav",
+    "sha256": "0c1f75fcee0fe6efe1e37cdc0aa24b3fee910c8c38148d046f1a91490702052b",
+    "bytes": 1823660,
+    "probe": {
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "pcm_s16le",
+          "codec_long_name": "PCM signed 16-bit little-endian",
+          "codec_type": "audio",
+          "codec_tag_string": "[1][0][0][0]",
+          "codec_tag": "0x0001",
+          "sample_fmt": "s16",
+          "sample_rate": "48000",
+          "channels": 1,
+          "bits_per_sample": 16,
+          "initial_padding": 0,
+          "r_frame_rate": "0/0",
+          "avg_frame_rate": "0/0",
+          "time_base": "1/48000",
+          "duration_ts": 911808,
+          "duration": "18.996000",
+          "bit_rate": "768000",
+          "disposition": {
+            "default": 0,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0,
+            "multilayer": 0
+          }
+        }
+      ],
+      "format": {
+        "filename": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\새첫게시물_20260914\\LAB-발음영상\\원본\\dive-나나-1789332200728.wav",
+        "nb_streams": 1,
+        "nb_programs": 0,
+        "nb_stream_groups": 0,
+        "format_name": "wav",
+        "format_long_name": "WAV / WAVE (Waveform Audio)",
+        "duration": "18.996000",
+        "size": "1823660",
+        "bit_rate": "768018",
+        "probe_score": 99
+      }
+    },
+    "retained": "원본/dive-나나-1789332200728.wav"
+  },
+  "generationRecord": {
+    "source": "Root observed official DIVE UI and official download button",
+    "voice": "나나",
+    "language": "ko",
+    "speed": 1,
+    "pitch": 0,
+    "volume": 50,
+    "sentenceSilenceSec": 0.4,
+    "streaming": false,
+    "characters": 136,
+    "successfulGenerations": 1,
+    "reportedAccountPlan": "FREE",
+    "reportedMeterBefore": "0/30000",
+    "reportedMeterAfter": "381/30000",
+    "reportedEstimate": 408,
+    "newPayment": 0,
+    "downloadTimeKST": "2026-09-14 05:43:21",
+    "downloadButtonCalls": 1,
+    "downloadToolTimeoutButActualFileConfirmed": true
+  },
+  "boundaries": {
+    "humanListeningVerified": false,
+    "pronunciationVerified": false,
+    "wordAlignmentVerified": false,
+    "nativeMongolianReview": false,
+    "studentEffectVerified": false,
+    "publiclyPosted": false,
+    "commercialRedistributionConditionsVerified": false,
+    "newTTSCallsInThisBuild": 0,
+    "newPaidCallsInThisBuild": 0,
+    "externalTransferBytesInThisBuild": 0
+  },
+  "cues": [
+    {
+      "id": 1,
+      "text": "어떤 전공을 배우고 싶어요?",
+      "sourceStart": 0,
+      "sourceEnd": 1.8851666666666667,
+      "start": 6.15,
+      "end": 8.035166666666667,
+      "soundStart": 6.15,
+      "soundEnd": 7.788125000000001,
+      "scene": "질문",
+      "visualWindow": [
+        6,
+        14
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "087055c540a6c2baf8e13623f57ea1d4e43d0f27a1724bad989ae05531c8edd3"
+    },
+    {
+      "id": 2,
+      "text": "아직 정하지 않았어요.",
+      "sourceStart": 1.8851666666666667,
+      "sourceEnd": 3.8501458333333334,
+      "start": 14.1,
+      "end": 16.064979166666667,
+      "soundStart": 14.347041333333333,
+      "soundEnd": 15.803458333333332,
+      "scene": "완성 예문",
+      "visualWindow": [
+        14,
+        24
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "2d5c037fd3e8ba07e97ebc8769c91c5402a730d6afcca102be12090bb47f2ac9"
+    },
+    {
+      "id": 3,
+      "text": "먼저 게임을 만들어 보고 싶어요.",
+      "sourceStart": 3.8501458333333334,
+      "sourceEnd": 6.211791666666667,
+      "start": 16.064979166666667,
+      "end": 18.426625,
+      "soundStart": 16.326479333333335,
+      "soundEnd": 18.166875333333333,
+      "scene": "완성 예문",
+      "visualWindow": [
+        14,
+        24
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "0fc8c6dcb8625b4b53dc2350b777ac690ff824d0ce0dd7d733ada0a62e425fcf"
+    },
+    {
+      "id": 4,
+      "text": "게임을 만들어.",
+      "sourceStart": 6.211791666666667,
+      "sourceEnd": 7.661666666666667,
+      "start": 24.35,
+      "end": 25.799875,
+      "soundStart": 24.609729333333334,
+      "soundEnd": 25.534458333333337,
+      "scene": "게임 동사구",
+      "visualWindow": [
+        24,
+        27
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "16ab3db75ebec812f800b92961b25290d9a04fd8de1c88ea95f45720a387e2d5"
+    },
+    {
+      "id": 5,
+      "text": "영상을 만들어.",
+      "sourceStart": 7.661666666666667,
+      "sourceEnd": 9.163895833333333,
+      "start": 27.35,
+      "end": 28.852229166666667,
+      "soundStart": 27.615416333333336,
+      "soundEnd": 28.572520333333337,
+      "scene": "영상 동사구",
+      "visualWindow": [
+        27,
+        30.5
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "3dab16a2eb8f0de0d70f2c993130f54730801ecb8d0c2e38a6d39a1987361448"
+    },
+    {
+      "id": 6,
+      "text": "그림을 그려.",
+      "sourceStart": 9.163895833333333,
+      "sourceEnd": 10.441354166666667,
+      "start": 30.85,
+      "end": 32.12745833333334,
+      "soundStart": 31.12972916666667,
+      "soundEnd": 31.869833166666666,
+      "scene": "그림 동사구",
+      "visualWindow": [
+        30.5,
+        34
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "377a1fa2e1493f2c9b96d7961aa519e0c603f2c18e48e8ee97c9d8e840f9ebf6"
+    },
+    {
+      "id": 7,
+      "text": "아직 정하지 않았어요.",
+      "sourceStart": 10.441354166666667,
+      "sourceEnd": 12.3659375,
+      "start": 48.02,
+      "end": 49.944583333333334,
+      "soundStart": 48.27764583333334,
+      "soundEnd": 49.683666833333334,
+      "scene": "영상 완성 예문",
+      "visualWindow": [
+        48,
+        52.5
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "22fc8869dcec059e55e0b98ce8d535704094034b362f02c5e6d2345a9bcaf327"
+    },
+    {
+      "id": 8,
+      "text": "먼저 영상을 만들어 보고 싶어요.",
+      "sourceStart": 12.3659375,
+      "sourceEnd": 14.802708333333333,
+      "start": 49.944583333333334,
+      "end": 52.38135416666667,
+      "soundStart": 50.205499833333334,
+      "soundEnd": 52.11939583333333,
+      "scene": "영상 완성 예문",
+      "visualWindow": [
+        48,
+        52.5
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "d197425adc7a8b57a45cb37c328a10df94035096c806bbd3cb9f35f26f6943a9"
+    },
+    {
+      "id": 9,
+      "text": "아직 정하지 않았어요.",
+      "sourceStart": 14.802708333333333,
+      "sourceEnd": 16.723604166666668,
+      "start": 52.52,
+      "end": 54.440895833333336,
+      "soundStart": 52.78197866666667,
+      "soundEnd": 54.19954166666667,
+      "scene": "그림 완성 예문",
+      "visualWindow": [
+        52.5,
+        57
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "b92f39eee312b9a0084461818719fe8b054e1d986c3d64645842724b18b93d0c"
+    },
+    {
+      "id": 10,
+      "text": "먼저 그림을 그려 보고 싶어요.",
+      "sourceStart": 16.723604166666668,
+      "sourceEnd": 18.996,
+      "start": 54.440895833333336,
+      "end": 56.71329166666667,
+      "soundStart": 54.682270666666675,
+      "soundEnd": 56.71329166666667,
+      "scene": "그림 완성 예문",
+      "visualWindow": [
+        52.5,
+        57
+      ],
+      "alignmentBasis": "Detected inter-sentence quiet gap midpoint + source text order; not phonetic recognition",
+      "lexicalListeningVerified": false,
+      "sourcePcmSha256": "c8146ed4e2d84ecb499cb9e82e4380c38a150b34e2878cbc04250ef320dfc4e7"
+    }
+  ],
+  "groups": [
+    {
+      "first": 0,
+      "last": 0,
+      "start": 6.15,
+      "window": [
+        6,
+        14
+      ],
+      "role": "질문",
+      "sourceStart": 0,
+      "sourceEnd": 1.8851666666666667,
+      "outputEnd": 8.035166666666667,
+      "pcmSha256": "087055c540a6c2baf8e13623f57ea1d4e43d0f27a1724bad989ae05531c8edd3"
+    },
+    {
+      "first": 1,
+      "last": 2,
+      "start": 14.1,
+      "window": [
+        14,
+        24
+      ],
+      "role": "완성 예문",
+      "sourceStart": 1.8851666666666667,
+      "sourceEnd": 6.211791666666667,
+      "outputEnd": 18.426625,
+      "pcmSha256": "18aa18e81915cfa9d68b9244f855234634dce1931f8620b57e4aaed1fac4171b"
+    },
+    {
+      "first": 3,
+      "last": 3,
+      "start": 24.35,
+      "window": [
+        24,
+        27
+      ],
+      "role": "게임 동사구",
+      "sourceStart": 6.211791666666667,
+      "sourceEnd": 7.661666666666667,
+      "outputEnd": 25.799875,
+      "pcmSha256": "16ab3db75ebec812f800b92961b25290d9a04fd8de1c88ea95f45720a387e2d5"
+    },
+    {
+      "first": 4,
+      "last": 4,
+      "start": 27.35,
+      "window": [
+        27,
+        30.5
+      ],
+      "role": "영상 동사구",
+      "sourceStart": 7.661666666666667,
+      "sourceEnd": 9.163895833333333,
+      "outputEnd": 28.852229166666667,
+      "pcmSha256": "3dab16a2eb8f0de0d70f2c993130f54730801ecb8d0c2e38a6d39a1987361448"
+    },
+    {
+      "first": 5,
+      "last": 5,
+      "start": 30.85,
+      "window": [
+        30.5,
+        34
+      ],
+      "role": "그림 동사구",
+      "sourceStart": 9.163895833333333,
+      "sourceEnd": 10.441354166666667,
+      "outputEnd": 32.12745833333334,
+      "pcmSha256": "377a1fa2e1493f2c9b96d7961aa519e0c603f2c18e48e8ee97c9d8e840f9ebf6"
+    },
+    {
+      "first": 6,
+      "last": 7,
+      "start": 48.02,
+      "window": [
+        48,
+        52.5
+      ],
+      "role": "영상 완성 예문",
+      "sourceStart": 10.441354166666667,
+      "sourceEnd": 14.802708333333333,
+      "outputEnd": 52.38135416666667,
+      "pcmSha256": "a0b9a97b06e23a9dd66eff0a363ea87c8942e2a78c317f668cb9f299aa85fe78"
+    },
+    {
+      "first": 8,
+      "last": 9,
+      "start": 52.52,
+      "window": [
+        52.5,
+        57
+      ],
+      "role": "그림 완성 예문",
+      "sourceStart": 14.802708333333333,
+      "sourceEnd": 18.996,
+      "outputEnd": 56.71329166666667,
+      "pcmSha256": "80eccb0b224b8c6a94627966a003dd1e75d9960d68bf8daf7c1f1424b87166dd"
+    }
+  ],
+  "sourceSamples": 911808,
+  "samplesPreservedExactlyOnce": true,
+  "speed": 1,
+  "pitchShift": 0,
+  "gain": 1,
+  "practiceSilence": [
+    34,
+    48
+  ],
+  "visualMethod": "Existing approved-local LAB motion video stream copied exactly; no visual rerender or substitute scene",
+  "visualBitstream": {
+    "source": "SHA256=9dfdc683abd3019ca8ac6f97d89f13fca10c05da3b4391f7e3ad698f389fe350",
+    "output": "SHA256=9dfdc683abd3019ca8ac6f97d89f13fca10c05da3b4391f7e3ad698f389fe350"
+  },
+  "sourceSilentPackage": {
+    "files": [
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/index.html",
+        "sha256": "1eb0c3241177a487d3dacc82416a20ba1c4266bc609ac920fdf962d00a30f4d8"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/LAB-읽고-바꿔-말하기.captions.json",
+        "sha256": "166b6b298e9071d2abee107a1fe89a0f876778c149c739339c947b4bfbc1d89e"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/LAB-읽고-바꿔-말하기.mp4",
+        "sha256": "63f3f1fd05f1a8933ecd3323924c144188c19887a47503f0ebf11a011c808829"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/LAB-읽고-바꿔-말하기.srt",
+        "sha256": "3fce872ac4bf6d2beaab2d32c97b0de0887b57e8c1b0d0fe112da5e781207480"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/manifest.json",
+        "sha256": "213c50132a21173dd6fe14bc5f3cbba6474d13a4f59d18f0c145df0717ae557e"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/PNG_화소검증.cjs",
+        "sha256": "3ed1b233175fa9a26ab38db6d0c8c68296784cc6d6010d273a5374e9cc8cae27"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0030-390.png",
+        "sha256": "f3d6b0f308c8d9f0df04c58f7c1814132c8f94e2a25a027b0afd2494df8ae752"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0030-before-tags.png",
+        "sha256": "dc5dbd74fabc4c8868b44fe23de6cfcf4f3c4ab64ab69c4ec913bcd6e1a8f6b7"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0030-encoded-390.png",
+        "sha256": "d1675ee8aaf417b508ec78dc09515d3b64ec3bf48ba90155e0ddb6933625d8ab"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0030-encoded.png",
+        "sha256": "0accaa78dd7e6d2b67c03821fe9f96d369159d0523259300b299d74b2a763906"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0030.png",
+        "sha256": "04a2ed863c97b8e9fc06cf7256fc31e98c2559c1282fdf9a7bfe0581041959ef"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0240-390.png",
+        "sha256": "034ed102c0e48fc381dd906325b15420115088cc77d4c9dbf40ee0b87aa203f3"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0240-before-tags.png",
+        "sha256": "22ada78dd3054df3b351ba7dec5f81cd7c774f2b5f08a3045ab899b3fb11c8b5"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0240-encoded-390.png",
+        "sha256": "175a139981a504d2901310a82ce4ac1c1259521aad8503a6b6b27e6b3b4c3a07"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0240-encoded.png",
+        "sha256": "0766ae1fe0d160ccb402ad7ecb2d273cb60b0b94f113e36d8ea19e01b9672817"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0240.png",
+        "sha256": "7bfa5ae7e5464bb968bb70890d1ce23bffcf26052cee0749680befc7645920c0"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0510-390.png",
+        "sha256": "287b1da6c3e6382d78b367974e5d99ef2f9db3f2f8f81479b603f35d54f0816b"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0510-before-tags.png",
+        "sha256": "6fc12d888f2cd075120de33e76fdd141d3de7202503be2d0f33689fd3e8e55ca"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0510-encoded-390.png",
+        "sha256": "767905dc2f5010e5159fe16da0931b8f59c76116d097337df2169383c952347e"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0510-encoded.png",
+        "sha256": "381f2eb3f6de5110586ffbb3ace0974fcf657cf5c76e7ec0f6dbe27ac59cda0c"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0510.png",
+        "sha256": "c4a4d3b4ada5c167022770552e0e47385404c7736db7742e918904d088233875"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0750-390.png",
+        "sha256": "dd06b3fbc81ae7a0c6056212677f9ef5b6f674fed52eb930e50919ec6340611c"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0750-before-tags.png",
+        "sha256": "ae93bcce6fed92509434b2102e40aeda52a484be4bc3b764de31c763ee8e7b6a"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0750-encoded-390.png",
+        "sha256": "aa52455fa517ad28560c356436d143fb1ddec3c2b40e325f32d24a58c733c149"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0750-encoded.png",
+        "sha256": "7a4a330bb11bbb6503fc00a1657c0198c3fa25f300428e5adff45715c016edc0"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0750.png",
+        "sha256": "cca6239808859e90a4bc6fd5b924039f38bd15200a87155fc0697c2ce12b0dde"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0855-390.png",
+        "sha256": "a5b1bd10668a1cf1300a3e277e2d7d7e68aff84ac599cffa363bfcb64443b571"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0855-before-tags.png",
+        "sha256": "cf6ec7b7013980c0fc335bbc5fb200c882af2603df51f91f11d2e8e23a734a20"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0855-encoded-390.png",
+        "sha256": "229ec9c8f2cda6b9114139735831f08b194bbf1cdf318ce76932b11a28beedb8"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0855-encoded.png",
+        "sha256": "d37c3432b73fe03abc15b5949529897d69ad0324591fb39894d6de7a394c6271"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0855.png",
+        "sha256": "fca9f874019a6a99e53df3c73ba926720db869a14561e925ce908a96351c7df5"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0960-390.png",
+        "sha256": "50aa108c9135861b14f1e54febe27c1c37c0145547bcbfec0cc2688254c5ca35"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0960-before-tags.png",
+        "sha256": "c6a28e6400ebd5393202c3345a80f55e9a9063e5d238140374828f7523384b77"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0960-encoded-390.png",
+        "sha256": "ae89f1054690ffb29a36314042a01517f886043e4e69daccfaa08f5ffa7d3b58"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0960-encoded.png",
+        "sha256": "7982dfb1b916017752c4e5f0c54a8fa1cf74033eea1ac526b1f8aeed558c3699"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/0960.png",
+        "sha256": "c06f13b9da1f6034557dddd6d688419288213f61108c1407955a6f387c36d907"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1140-390.png",
+        "sha256": "65a5d98381a47b32d775e009146079a37938884f39f123bdc261b2c6d49fbce5"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1140-before-tags.png",
+        "sha256": "6544b7475875d74cd51a761bab0e7054e225b3cebcbc6afff315fdae9e9a9aef"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1140-encoded-390.png",
+        "sha256": "89ca0a962fac798012359b162c2799f6adbeca1de0d537bfa627f89081d2e07d"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1140-encoded.png",
+        "sha256": "16c9948d92b0bee0240d59fb08dbe9447a2d02c3c60230bcda27eddb6c2721ad"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1140.png",
+        "sha256": "3a6702ee343f8f1ae1bdb73436d4fa49d937d16120dd0924b3e6c1b3fcbc09fb"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1380-390.png",
+        "sha256": "65a5d98381a47b32d775e009146079a37938884f39f123bdc261b2c6d49fbce5"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1380-before-tags.png",
+        "sha256": "047bdc87d5f39510fc48b90f09b42142af2d74a7ea329c9b7e01a48db37e0fa9"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1380-encoded-390.png",
+        "sha256": "64049bef21d796c3f3f71a5d27ebf9c0c3ee9160eb819cdc67cc462ec556a47b"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1380-encoded.png",
+        "sha256": "5e41dbea589d8887564d6682ec2247f621b7674ed014114a70656cff32d9362d"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1380.png",
+        "sha256": "3a6702ee343f8f1ae1bdb73436d4fa49d937d16120dd0924b3e6c1b3fcbc09fb"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1500-390.png",
+        "sha256": "d88ec55b85df98951fc4432d39c9bd6ae68e74ac9f60c4e69ebe8edf1252e944"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1500-before-tags.png",
+        "sha256": "ba8c702ab6929cab654d5e3abbf4fe3b0f7067547480ab6320524e79db7662f6"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1500-encoded-390.png",
+        "sha256": "42cde18f341ef9d67cf9622c503c7a7cde19b54651fe1ea2b132827fcf905737"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1500-encoded.png",
+        "sha256": "fbb50a1f0aebba059b9d51adece5d9c6bf703383ee722271a819f73401631eb9"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1500.png",
+        "sha256": "43ada262ff428eeaf66f44d44bde25be5dee5337cce629bd402453c18c992cac"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1650-390.png",
+        "sha256": "b98411cc0029a0818e23b7df6b38b534cc4c17713fdf9be2a19579a06a81c0aa"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1650-before-tags.png",
+        "sha256": "9c5094ccbfb69a300087c60871523aafa1d8061f73a2950610a4a65024a37975"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1650-encoded-390.png",
+        "sha256": "6f76419701db9f745097468ff2e2798ae2f389fde2b6db98fe837fe6d4d5cae5"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1650-encoded.png",
+        "sha256": "bbccb1e3c39556ef7f9e4ad7559de700b631ca6bf04772a28f787bf8f22ac7b1"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1650.png",
+        "sha256": "f9ada4844ca6fb65a7912579b06c509565aade4dd8e8ce11394c68e1b45de070"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1830-390.png",
+        "sha256": "bca6dd133def3c21858594520d825f310917a0b83bf09eedb15a442897a02e29"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1830-before-tags.png",
+        "sha256": "aa36bdafc9f36a99f4153676527b68714c9faa75f603431675fe26ea88fd7e58"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1830-encoded-390.png",
+        "sha256": "6adb11b902a4a2bfbf466430a2fe58c82a256c43c79e6daeced8987f6562dd56"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1830-encoded.png",
+        "sha256": "51138d199d16bdfaa43d41c2ec1006f16ad0052b22acb86eca27f235cfb16887"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1830.png",
+        "sha256": "0c7f1b2ccd2aa625d0700d8f67e945146232781df19bd71aec28c01e35128024"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1947-390.png",
+        "sha256": "bca6dd133def3c21858594520d825f310917a0b83bf09eedb15a442897a02e29"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1947-before-tags.png",
+        "sha256": "71e7bed2d3e60d96a56444984f70ed3a566482db008e7ee19fe77a3ccd5af848"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1947-encoded-390.png",
+        "sha256": "a5e184d382034f9037bff100f711d60604358476123331d8c986cace24fda478"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1947-encoded.png",
+        "sha256": "04f0cb027f7ec475b099534931ff5eb9ea6a807e4014ea8034325bbf3a586a41"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/1947.png",
+        "sha256": "0c7f1b2ccd2aa625d0700d8f67e945146232781df19bd71aec28c01e35128024"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/encode.txt",
+        "sha256": "a75b11035bad02651306ee3c81318df5b5d70d1ffbc21072fda6fc37ae38d0a6"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/play-11-390.png",
+        "sha256": "bdfb1ca627fb2e4901df6701c51557eae1f00a6bdefe9271f42929f10e6c5f1b"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/play-3-390.png",
+        "sha256": "add13d73f83fe9b4876f1e00bef209dd70af5cc36e81e2b2fd03e5d9f3b7b00b"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/play-7-390.png",
+        "sha256": "89d6955d3f2fb507626e0cba9b3f8b730a6bf5517bd874171409f919c74e2f31"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/PNG_화소대조.json",
+        "sha256": "2425618175c2fc8a5125d98e3bbfc028c56b5e6211d548f9252cd1063015955b"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/verification-wholeplayback-20260914.json",
+        "sha256": "c6118d29f2e820ae247c6db6622e08e86cc841dfad11ba52ce1d7060d985b658"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/비시각원천_변경대조.json",
+        "sha256": "90a6ede33eff0ec14883e803ee44e4701061d962636b0704d0cee5b6bfbb660a"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/색표식_대조.json",
+        "sha256": "89b39a0ba1cfec04296a3a053f2e6e073931521a2c9d25b66a45453309fe14bb"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/색표식전.mp4",
+        "sha256": "7ce41f3e7462957a25cca47a00c0455f5a9767e015573b645c1540814f65e558"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/qa/색표식후.mp4",
+        "sha256": "63f3f1fd05f1a8933ecd3323924c144188c19887a47503f0ebf11a011c808829"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/README.md",
+        "sha256": "bb87fe180bcc8c822e760049b5a1cff11b5f1ce04edbe99f67c781c486771c37"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/verification.json",
+        "sha256": "1686de444fb0b8b69f49fc84952f23b0720c380811f9c0357bc988972cd176a2"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/검증.cjs",
+        "sha256": "fb743ffb658dd81ab20b23dc2eb4ec58c8462021ace9159085c9e72c9c8c0c60"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/검증결과.md",
+        "sha256": "e6ffbf7c7d8540b1b1b65dd4c9f243f9be622191b47efbf4f3bb5da377729863"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/게시문.md",
+        "sha256": "c526cdddbdbf97996e4a9b63fc80a55a12c2d3a968f90571e96105fcf8c70648"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/대체설명.md",
+        "sha256": "c3172a4a3d707304d1129f81a63630ec3a7a877f044e02d5495086f0d134cfc7"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/만들기.cjs",
+        "sha256": "5ff05bf5bc45a03683f47dbe699352a8c8cfef7ba38057888ac917f0db6e1a4a"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/색표식_마감.cjs",
+        "sha256": "4273e60e0c24766bec83995d66a942a96f30ecd0c0ffdf6b98289067b216cc53"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/원고.cjs",
+        "sha256": "16eda2785f20dcace881cf9f8a475cee0dd829a8ab62250150128e2652fa5682"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/장면.js",
+        "sha256": "fe5abf7217cf931ebf09e785ff45d1b679cad451f98352e6f53ca29fb0014b50"
+      },
+      {
+        "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/편집.html",
+        "sha256": "0313f97d833768513446fbb595f024da2ec02777c71223a5a8b47be4ef2dd9ff"
+      }
+    ],
+    "unchanged": true
+  },
+  "probe": {
+    "streams": [
+      {
+        "index": 0,
+        "codec_name": "h264",
+        "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+        "profile": "High",
+        "codec_type": "video",
+        "codec_tag_string": "avc1",
+        "codec_tag": "0x31637661",
+        "mime_codec_string": "avc1.640028",
+        "width": 1080,
+        "height": 1920,
+        "coded_width": 1080,
+        "coded_height": 1920,
+        "has_b_frames": 2,
+        "pix_fmt": "yuv420p",
+        "level": 40,
+        "color_range": "tv",
+        "color_space": "bt709",
+        "color_transfer": "bt709",
+        "color_primaries": "bt709",
+        "chroma_location": "left",
+        "field_order": "progressive",
+        "is_avc": "true",
+        "nal_length_size": "4",
+        "id": "0x1",
+        "r_frame_rate": "30/1",
+        "avg_frame_rate": "30/1",
+        "time_base": "1/15360",
+        "start_pts": 0,
+        "start_time": "0.000000",
+        "duration_ts": 998400,
+        "duration": "65.000000",
+        "bit_rate": "180638",
+        "bits_per_raw_sample": "8",
+        "nb_frames": "1950",
+        "extradata_size": 50,
+        "disposition": {
+          "default": 1,
+          "dub": 0,
+          "original": 0,
+          "comment": 0,
+          "lyrics": 0,
+          "karaoke": 0,
+          "forced": 0,
+          "hearing_impaired": 0,
+          "visual_impaired": 0,
+          "clean_effects": 0,
+          "attached_pic": 0,
+          "timed_thumbnails": 0,
+          "non_diegetic": 0,
+          "captions": 0,
+          "descriptions": 0,
+          "metadata": 0,
+          "dependent": 0,
+          "still_image": 0,
+          "multilayer": 0
+        },
+        "tags": {
+          "language": "und",
+          "handler_name": "VideoHandler",
+          "encoder": "Lavc62.28.102 libx264"
+        }
+      },
+      {
+        "index": 1,
+        "codec_name": "aac",
+        "codec_long_name": "AAC (Advanced Audio Coding)",
+        "profile": "LC",
+        "codec_type": "audio",
+        "codec_tag_string": "mp4a",
+        "codec_tag": "0x6134706d",
+        "mime_codec_string": "mp4a.40.2",
+        "sample_fmt": "fltp",
+        "sample_rate": "48000",
+        "channels": 1,
+        "channel_layout": "mono",
+        "bits_per_sample": 0,
+        "initial_padding": 0,
+        "id": "0x2",
+        "r_frame_rate": "0/0",
+        "avg_frame_rate": "0/0",
+        "time_base": "1/48000",
+        "start_pts": 0,
+        "start_time": "0.000000",
+        "duration_ts": 3120000,
+        "duration": "65.000000",
+        "bit_rate": "39711",
+        "nb_frames": "3048",
+        "extradata_size": 5,
+        "disposition": {
+          "default": 1,
+          "dub": 0,
+          "original": 0,
+          "comment": 0,
+          "lyrics": 0,
+          "karaoke": 0,
+          "forced": 0,
+          "hearing_impaired": 0,
+          "visual_impaired": 0,
+          "clean_effects": 0,
+          "attached_pic": 0,
+          "timed_thumbnails": 0,
+          "non_diegetic": 0,
+          "captions": 0,
+          "descriptions": 0,
+          "metadata": 0,
+          "dependent": 0,
+          "still_image": 0,
+          "multilayer": 0
+        },
+        "tags": {
+          "language": "und",
+          "handler_name": "SoundHandler"
+        }
+      }
+    ],
+    "format": {
+      "filename": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\새첫게시물_20260914\\LAB-발음영상\\LAB-듣고-바꿔-말하기.mp4",
+      "nb_streams": 2,
+      "nb_programs": 0,
+      "nb_stream_groups": 0,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "start_time": "0.000000",
+      "duration": "65.000000",
+      "size": "1863137",
+      "bit_rate": "229309",
+      "probe_score": 100,
+      "tags": {
+        "major_brand": "isom",
+        "minor_version": "512",
+        "compatible_brands": "isomiso2avc1mp41",
+        "encoder": "Lavf62.12.102"
+      }
+    }
+  },
+  "mp4Sha256": "8e22059b1ebad248bdca5a775b9616b7f6bec5c8cc1e69087687219d8f8a5911",
+  "mp4Bytes": 1863137,
+  "alignedWavSha256": "dafe93ba5193cc17a0b87486a6493e8ea17c4a0ad5458bd843da3b37e1c1432b",
+  "frames": [
+    {
+      "time": 1,
+      "frame": 30,
+      "file": "qa/0030-encoded.png",
+      "mobile": "qa/0030-encoded-390.png"
+    },
+    {
+      "time": 7,
+      "frame": 210,
+      "file": "qa/0210-encoded.png",
+      "mobile": "qa/0210-encoded-390.png"
+    },
+    {
+      "time": 15,
+      "frame": 450,
+      "file": "qa/0450-encoded.png",
+      "mobile": "qa/0450-encoded-390.png"
+    },
+    {
+      "time": 17.5,
+      "frame": 525,
+      "file": "qa/0525-encoded.png",
+      "mobile": "qa/0525-encoded-390.png"
+    },
+    {
+      "time": 25,
+      "frame": 750,
+      "file": "qa/0750-encoded.png",
+      "mobile": "qa/0750-encoded-390.png"
+    },
+    {
+      "time": 28,
+      "frame": 840,
+      "file": "qa/0840-encoded.png",
+      "mobile": "qa/0840-encoded-390.png"
+    },
+    {
+      "time": 31.5,
+      "frame": 945,
+      "file": "qa/0945-encoded.png",
+      "mobile": "qa/0945-encoded-390.png"
+    },
+    {
+      "time": 40,
+      "frame": 1200,
+      "file": "qa/1200-encoded.png",
+      "mobile": "qa/1200-encoded-390.png"
+    },
+    {
+      "time": 49,
+      "frame": 1470,
+      "file": "qa/1470-encoded.png",
+      "mobile": "qa/1470-encoded-390.png"
+    },
+    {
+      "time": 51,
+      "frame": 1530,
+      "file": "qa/1530-encoded.png",
+      "mobile": "qa/1530-encoded-390.png"
+    },
+    {
+      "time": 53.5,
+      "frame": 1605,
+      "file": "qa/1605-encoded.png",
+      "mobile": "qa/1605-encoded-390.png"
+    },
+    {
+      "time": 55.5,
+      "frame": 1665,
+      "file": "qa/1665-encoded.png",
+      "mobile": "qa/1665-encoded-390.png"
+    },
+    {
+      "time": 61,
+      "frame": 1830,
+      "file": "qa/1830-encoded.png",
+      "mobile": "qa/1830-encoded-390.png"
+    },
+    {
+      "time": 64.9,
+      "frame": 1947,
+      "file": "qa/1947-encoded.png",
+      "mobile": "qa/1947-encoded-390.png"
+    }
+  ],
+  "sources": [
+    {
+      "path": "C:/Users/q1212/Downloads/dive-나나-1789332200728.wav",
+      "sha256": "0c1f75fcee0fe6efe1e37cdc0aa24b3fee910c8c38148d046f1a91490702052b",
+      "bytes": 1823660
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/LAB-읽고-바꿔-말하기.mp4",
+      "sha256": "63f3f1fd05f1a8933ecd3323924c144188c19887a47503f0ebf11a011c808829",
+      "bytes": 1491570
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-음성/생성대사.txt",
+      "sha256": "8dd4f4975b99a0f29ca26874677b60537374fb448ada7263edc822a1ff6a4e75",
+      "bytes": 323
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/AGENTS.md",
+      "sha256": "32222dab4c650029ef561b258b0442f7a920fdd78b3a706727f4c9f8c4d28f0c",
+      "bytes": 3636
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/AI_운영원칙.md",
+      "sha256": "e27974f0e18052d18084ea2db1c5c4b22ad109820be78628b95712ceaa8b58ab",
+      "bytes": 12368
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/DESIGN.md",
+      "sha256": "5e0673d1aaf62f7b9f4a4e3695ed5ab1eaa466bfce97da761220e62d229b876a",
+      "bytes": 15680
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/브랜드_폰트_정본.md",
+      "sha256": "889fc34358d6725e0b773504b388d0a9b52535c09170bb1192be00936e216ca6",
+      "bytes": 10230
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/비전_정본.md",
+      "sha256": "88adcf26fdfe18934a147ce76121d57b4f4eb4b5015c4f90a5ec8dda59da8786",
+      "bytes": 3035
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/마케팅/LAB.md",
+      "sha256": "2a9d8d728e328f0302bd9c55cdd7ec4b91c6ea675008c2027d22e9bfc8c47c49",
+      "bytes": 13428
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/마케팅/제작_인수기준.md",
+      "sha256": "5717a3f8f9f7b1ec2ffee63c5aa3930cbb944dc1d609a40b523e4e4d31fa02c7",
+      "bytes": 23136
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/브랜드_목소리/20260910/한국어_자연스러운_음성_설정.md",
+      "sha256": "aedd1a7f6072eeb9804dd94dc624e3f9d20e98f8f7cfcabd35862df9d9e99576",
+      "bytes": 12044
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/영상/src/킷/폰트.ts",
+      "sha256": "1869f95dbac81baf1a399f4d23545e6f69459aa18807f602ae01ab538325605b",
+      "bytes": 4902
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/영상/src/킷/폰트벌.json",
+      "sha256": "4eba12cc3d9042c4c2fd65d5165e7627d70021f92386729ec87c4b539dec9465",
+      "bytes": 2196
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/원고.cjs",
+      "sha256": "16eda2785f20dcace881cf9f8a475cee0dd829a8ab62250150128e2652fa5682",
+      "bytes": 3043
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/장면.js",
+      "sha256": "fe5abf7217cf931ebf09e785ff45d1b679cad451f98352e6f53ca29fb0014b50",
+      "bytes": 7737
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/manifest.json",
+      "sha256": "213c50132a21173dd6fe14bc5f3cbba6474d13a4f59d18f0c145df0717ae557e",
+      "bytes": 183225
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/만들기.cjs",
+      "sha256": "5ff05bf5bc45a03683f47dbe699352a8c8cfef7ba38057888ac917f0db6e1a4a",
+      "bytes": 14585
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/검증결과.md",
+      "sha256": "e6ffbf7c7d8540b1b1b65dd4c9f243f9be622191b47efbf4f3bb5da377729863",
+      "bytes": 6427
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-발음영상/편집설정.cjs",
+      "sha256": "dfd873a626e4ef657f342bc54ae5c5f019342218390e2347fa13581d4e70b370",
+      "bytes": 2528
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-발음영상/만들기.cjs",
+      "sha256": "53c7f162b5c2dd7fa870523314e9d9fbc26dc4b43058cb5b27a7d508b1ddecf8",
+      "bytes": 17446
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-발음영상/검증.cjs",
+      "sha256": "0d9e65b62af92a57c0164255fa056cd5a00f94af002d033b8505bb14ab09b031",
+      "bytes": 6826
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/LAB-읽고-바꿔-말하기.srt",
+      "sha256": "3fce872ac4bf6d2beaab2d32c97b0de0887b57e8c1b0d0fe112da5e781207480",
+      "bytes": 2537
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB/caption-student-ko.txt",
+      "sha256": "ab234ba28370b57c817c06481147189fa1d35c73357f925972be87d6df48835a",
+      "bytes": 662
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB/caption-student-mn.txt",
+      "sha256": "dc83f0344d2a941a4fa14c3ed0c9e6a034ab3ba08483c91d2bbc07f861733138",
+      "bytes": 1147
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/새첫게시물_20260914/LAB-영상/대체설명.md",
+      "sha256": "c3172a4a3d707304d1129f81a63630ec3a7a877f044e02d5495086f0d134cfc7",
+      "bytes": 3548
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/디자인_토큰.json",
+      "sha256": "2e08bde734635f8a6e2d1629cf6a8fe81da20a1f3b52f84dac04eec3dce6aae1",
+      "bytes": 125922
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/영상/src/킷/색.ts",
+      "sha256": "b083db37eaa5d3424c3edb8f6fe9b7159266389dd42555da1fa735b92683f027",
+      "bytes": 7657
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/브랜드_폰트/InterTight/InterTight-Medium.ttf",
+      "sha256": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1",
+      "bytes": 309140
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/브랜드_폰트/InterTight/InterTight-Bold.ttf",
+      "sha256": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca",
+      "bytes": 310440
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/브랜드_폰트/SUIT/SUIT-Variable.woff2",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "bytes": 624536
+    }
+  ],
+  "verification": {
+    "path": "verification.json",
+    "checkedAt": "2026-09-13T20:57:23.033Z",
+    "passed": true,
+    "technicalOnly": true,
+    "humanListeningVerified": false
+  }
+}

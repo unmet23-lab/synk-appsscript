@@ -1,0 +1,22 @@
+{
+  "id": "mP3T7Sabeh4",
+  "at": "2026-09-26T20:42:09.385Z",
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "codec_name": "aac"
+      }
+    ],
+    "format": {
+      "duration": "10.007800"
+    }
+  },
+  "warnings": ""
+}

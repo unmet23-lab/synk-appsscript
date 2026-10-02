@@ -1,0 +1,25 @@
+{
+  "id": "eat",
+  "role": "mongle",
+  "text": "여기서 먹을게요.",
+  "provider": "Microsoft Edge TTS",
+  "settings": {
+    "voice": "ko-KR-InJoonNeural",
+    "rate": "+0%",
+    "pitch": "+8Hz"
+  },
+  "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\eat.mp3",
+  "duration": 2.664,
+  "words": [
+    {
+      "text": "여기서",
+      "start": 0.1,
+      "end": 0.6875
+    },
+    {
+      "text": "먹을게요",
+      "start": 0.7,
+      "end": 1.7375
+    }
+  ]
+}

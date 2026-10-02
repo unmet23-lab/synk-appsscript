@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "8ecaa4e5-08fe-4c5e-be8c-bffe5da89760",
+  "narration": "혼자 사업하는 분들을 위한 실무 노트입니다. 소개글과 상품 안내, 문의 답변에 쓸 자료를 나눕니다. 싱크 브리프입니다.",
+  "narrationSha256": "92e1be9f7aac686ddee3dae7296cc867e27545f9844b7d3adc8af4eefbf68718",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-92e1be9f7aac686d.wav",
+  "duration": 9.6,
+  "sha256": "882c2665e9e2d83bdfdbb682ea79996fec516fa13cfcc95fe2b6c30d86977da4",
+  "humanListening": false,
+  "fullDecode": true
+}

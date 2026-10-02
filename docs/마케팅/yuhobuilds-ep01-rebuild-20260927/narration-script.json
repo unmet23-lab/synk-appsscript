@@ -1,0 +1,25 @@
+{
+  "title":"출석 앱 만들다 출석을 까먹었습니다",
+  "voice":{"name":"정의로","id":"tc_608820eb05b71bc949df989d","model":"ssfm-v30"},
+  "segments":[
+    {"id":"01","scene":"hook","text":"오늘은 AI로 출석 앱 만들다, 정작 출석을 까먹은 얘깁니다.","emotion":"toneup","intensity":1.15,"tempo":1.25},
+    {"id":"02","scene":"hook","text":"이 한 줄부터 정했다면, 덜 헤맸을 거예요.","emotion":"normal","intensity":1.05,"tempo":1.24},
+    {"id":"03","scene":"origin","text":"몽골 학원에서 일하던 유월. 번역하려고 클로드를 결제했어요.","emotion":"normal","intensity":1.05,"tempo":1.25},
+    {"id":"04","scene":"origin","text":"학생 문의가 늘자, 출석 앱도 만들고 싶어졌죠.","emotion":"toneup","intensity":1.10,"tempo":1.25},
+    {"id":"05","scene":"loop","text":"문제는, 개발을 하나도 몰랐다는 거.","emotion":"tonedown","intensity":1.05,"tempo":1.24},
+    {"id":"06","scene":"loop","text":"화면 찍고, 물어보고, 그대로 따라 했습니다.","emotion":"toneup","intensity":1.10,"tempo":1.27},
+    {"id":"07","scene":"monster","text":"그런데 이 기능도 좋아 보이고, 저것도 넣고 싶고.","emotion":"toneup","intensity":1.15,"tempo":1.26},
+    {"id":"08","scene":"monster","text":"기능은 늘었는데, 정작 출석은 뒷전. 나 뭐 만들고 있었지?", "emotion":"tonedown","intensity":1.15,"tempo":1.23},
+    {"id":"09","scene":"reset","text":"지금 다시 한다면, 완성의 기준부터 한 줄로 정하겠어요.","emotion":"normal","intensity":1.10,"tempo":1.25},
+    {"id":"10","scene":"reset","text":"학생 한 명의 출석을 저장하고, 다시 확인할 수 있게.","emotion":"normal","intensity":1.05,"tempo":1.23},
+    {"id":"11","scene":"demo","text":"화면으로 볼게요. 이름을 고르고, 출석 저장.","emotion":"toneup","intensity":1.10,"tempo":1.24},
+    {"id":"12","scene":"demo","text":"목록에 남았죠? 다시 열어도 기록이 보이면, 첫 단계 완료!", "emotion":"toneup","intensity":1.15,"tempo":1.23},
+    {"id":"13","scene":"prompt","text":"AI에게는 이렇게 말해보세요. 나는 개발이 처음이야.","emotion":"normal","intensity":1.05,"tempo":1.25},
+    {"id":"14","scene":"prompt","text":"학생 한 명의 출석을 저장하고, 다시 확인하고 싶어.","emotion":"normal","intensity":1.05,"tempo":1.25},
+    {"id":"15","scene":"prompt","text":"추가 기능은 빼고, 가장 쉬운 방법과 확인 순서를 알려줘.","emotion":"normal","intensity":1.05,"tempo":1.25},
+    {"id":"16","scene":"payoff","text":"작게 완성하고, 확인한 뒤, 다음 기능. 순서가 생겼죠?", "emotion":"toneup","intensity":1.15,"tempo":1.24},
+    {"id":"17","scene":"ending","text":"제가 헤맨 길, 여러분은 건너뛰세요.","emotion":"toneup","intensity":1.10,"tempo":1.24},
+    {"id":"18","scene":"ending","text":"왕초보에서 일인 기업가까지. 여러분의 시간을 아껴드립니다!", "emotion":"toneup","intensity":1.10,"tempo":1.25}
+  ],
+  "provenance":"6월 번역용 Claude 결제, 몽골 학원 부원장 근무, 문의 증가와 출석 앱 도전, 기능을 늘리다 출석 목적을 놓친 과정은 사용자 회고. 한 줄의 완성 기준과 저장·재확인 예시는 현재의 조언 및 새로 만든 가상 학생 학습용 예시다. 실제 당시 앱이나 학원 운영 성과로 주장하지 않는다."
+}

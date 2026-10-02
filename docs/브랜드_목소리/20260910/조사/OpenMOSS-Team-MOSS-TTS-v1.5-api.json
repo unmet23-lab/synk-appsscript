@@ -1,0 +1,1239 @@
+{
+  "named_endpoints": {
+    "/render_mode_hint": {
+      "parameters": [
+        {
+          "label": "Reference Audio (Optional)",
+          "parameter_name": "reference_audio",
+          "parameter_has_default": false,
+          "parameter_default": null,
+          "type": {
+            "$defs": {
+              "FileDataMeta": {
+                "properties": {
+                  "_type": {
+                    "const": "gradio.FileData",
+                    "title": "Type",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "_type"
+                ],
+                "title": "FileDataMeta",
+                "type": "object"
+              }
+            },
+            "properties": {
+              "path": {
+                "title": "Path",
+                "type": "string"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "size": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Size"
+              },
+              "orig_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Orig Name"
+              },
+              "mime_type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Mime Type"
+              },
+              "is_stream": {
+                "default": false,
+                "title": "Is Stream",
+                "type": "boolean"
+              },
+              "meta": {
+                "$ref": "#/$defs/FileDataMeta"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "title": "FileData",
+            "type": "object",
+            "additional_description": "The FileData class is a subclass of the GradioModel class that represents a file object within a Gradio interface. It is used to store file data and metadata when a file is uploaded.\n\nAttributes:\n    path: The server file path where the file is stored.\n    url: The normalized server URL pointing to the file.\n    size: The size of the file in bytes.\n    orig_name: The original filename before upload.\n    mime_type: The MIME type of the file.\n    is_stream: Indicates whether the file is a stream.\n    meta: Additional metadata used internally (should not be changed)."
+          },
+          "python_type": {
+            "type": "filepath",
+            "description": "The FileData class is a subclass of the GradioModel class that represents a file object within a Gradio interface. It is used to store file data and metadata when a file is uploaded.\n\nAttributes:\n    path: The server file path where the file is stored.\n    url: The normalized server URL pointing to the file.\n    size: The size of the file in bytes.\n    orig_name: The original filename before upload.\n    mime_type: The MIME type of the file.\n    is_stream: Indicates whether the file is a stream.\n    meta: Additional metadata used internally (should not be changed)."
+          },
+          "component": "Audio",
+          "example_input": {
+            "path": "https://github.com/gradio-app/gradio/raw/main/test/test_files/audio_sample.wav",
+            "meta": {
+              "_type": "gradio.FileData"
+            },
+            "orig_name": "audio_sample.wav",
+            "url": "https://github.com/gradio-app/gradio/raw/main/test/test_files/audio_sample.wav"
+          }
+        },
+        {
+          "label": "Mode with Reference Audio",
+          "parameter_name": "mode_with_reference",
+          "parameter_has_default": true,
+          "parameter_default": "Clone",
+          "type": {
+            "enum": [
+              "Clone",
+              "Continuation",
+              "Continuation + Clone"
+            ],
+            "title": "Radio",
+            "type": "string"
+          },
+          "python_type": {
+            "type": "Literal['Clone', 'Continuation', 'Continuation + Clone']",
+            "description": ""
+          },
+          "component": "Radio",
+          "example_input": "Clone"
+        }
+      ],
+      "returns": [
+        {
+          "label": "value_7",
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Markdown"
+        }
+      ],
+      "description": ""
+    },
+    "/render_mode_hint_1": {
+      "parameters": [
+        {
+          "label": "Reference Audio (Optional)",
+          "parameter_name": "reference_audio",
+          "parameter_has_default": false,
+          "parameter_default": null,
+          "type": {
+            "$defs": {
+              "FileDataMeta": {
+                "properties": {
+                  "_type": {
+                    "const": "gradio.FileData",
+                    "title": "Type",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "_type"
+                ],
+                "title": "FileDataMeta",
+                "type": "object"
+              }
+            },
+            "properties": {
+              "path": {
+                "title": "Path",
+                "type": "string"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "size": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Size"
+              },
+              "orig_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Orig Name"
+              },
+              "mime_type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Mime Type"
+              },
+              "is_stream": {
+                "default": false,
+                "title": "Is Stream",
+                "type": "boolean"
+              },
+              "meta": {
+                "$ref": "#/$defs/FileDataMeta"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "title": "FileData",
+            "type": "object",
+            "additional_description": "The FileData class is a subclass of the GradioModel class that represents a file object within a Gradio interface. It is used to store file data and metadata when a file is uploaded.\n\nAttributes:\n    path: The server file path where the file is stored.\n    url: The normalized server URL pointing to the file.\n    size: The size of the file in bytes.\n    orig_name: The original filename before upload.\n    mime_type: The MIME type of the file.\n    is_stream: Indicates whether the file is a stream.\n    meta: Additional metadata used internally (should not be changed)."
+          },
+          "python_type": {
+            "type": "filepath",
+            "description": "The FileData class is a subclass of the GradioModel class that represents a file object within a Gradio interface. It is used to store file data and metadata when a file is uploaded.\n\nAttributes:\n    path: The server file path where the file is stored.\n    url: The normalized server URL pointing to the file.\n    size: The size of the file in bytes.\n    orig_name: The original filename before upload.\n    mime_type: The MIME type of the file.\n    is_stream: Indicates whether the file is a stream.\n    meta: Additional metadata used internally (should not be changed)."
+          },
+          "component": "Audio",
+          "example_input": {
+            "path": "https://github.com/gradio-app/gradio/raw/main/test/test_files/audio_sample.wav",
+            "meta": {
+              "_type": "gradio.FileData"
+            },
+            "orig_name": "audio_sample.wav",
+            "url": "https://github.com/gradio-app/gradio/raw/main/test/test_files/audio_sample.wav"
+          }
+        },
+        {
+          "label": "Mode with Reference Audio",
+          "parameter_name": "mode_with_reference",
+          "parameter_has_default": true,
+          "parameter_default": "Clone",
+          "type": {
+            "enum": [
+              "Clone",
+              "Continuation",
+              "Continuation + Clone"
+            ],
+            "title": "Radio",
+            "type": "string"
+          },
+          "python_type": {
+            "type": "Literal['Clone', 'Continuation', 'Continuation + Clone']",
+            "description": ""
+          },
+          "component": "Radio",
+          "example_input": "Clone"
+        }
+      ],
+      "returns": [
+        {
+          "label": "value_7",
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Markdown"
+        }
+      ],
+      "description": ""
+    },
+    "/update_duration_controls": {
+      "parameters": [
+        {
+          "label": "Enable Duration Control (Expected Audio Tokens)",
+          "parameter_name": "enabled",
+          "parameter_has_default": true,
+          "parameter_default": false,
+          "type": {
+            "type": "boolean"
+          },
+          "python_type": {
+            "type": "bool",
+            "description": ""
+          },
+          "component": "Checkbox",
+          "example_input": true
+        },
+        {
+          "label": "Text",
+          "parameter_name": "text",
+          "parameter_has_default": false,
+          "parameter_default": null,
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Textbox",
+          "example_input": "Hello!!"
+        },
+        {
+          "label": "expected_tokens",
+          "parameter_name": "current_tokens",
+          "parameter_has_default": true,
+          "parameter_default": 1,
+          "type": {
+            "type": "number",
+            "description": "numeric value between 1 and 2"
+          },
+          "python_type": {
+            "type": "float",
+            "description": ""
+          },
+          "component": "Slider",
+          "example_input": 1
+        },
+        {
+          "label": "Mode with Reference Audio",
+          "parameter_name": "mode_with_reference",
+          "parameter_has_default": true,
+          "parameter_default": "Clone",
+          "type": {
+            "enum": [
+              "Clone",
+              "Continuation",
+              "Continuation + Clone"
+            ],
+            "title": "Radio",
+            "type": "string"
+          },
+          "python_type": {
+            "type": "Literal['Clone', 'Continuation', 'Continuation + Clone']",
+            "description": ""
+          },
+          "component": "Radio",
+          "example_input": "Clone"
+        }
+      ],
+      "returns": [
+        {
+          "label": "expected_tokens",
+          "type": {
+            "type": "number",
+            "description": "numeric value between 1 and 2"
+          },
+          "python_type": {
+            "type": "float",
+            "description": "numeric value between 1 and 2"
+          },
+          "component": "Slider"
+        },
+        {
+          "label": "value_11",
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Markdown"
+        },
+        {
+          "label": "Enable Duration Control (Expected Audio Tokens)",
+          "type": {
+            "type": "boolean"
+          },
+          "python_type": {
+            "type": "bool",
+            "description": ""
+          },
+          "component": "Checkbox"
+        }
+      ],
+      "description": ""
+    },
+    "/update_duration_controls_1": {
+      "parameters": [
+        {
+          "label": "Enable Duration Control (Expected Audio Tokens)",
+          "parameter_name": "enabled",
+          "parameter_has_default": true,
+          "parameter_default": false,
+          "type": {
+            "type": "boolean"
+          },
+          "python_type": {
+            "type": "bool",
+            "description": ""
+          },
+          "component": "Checkbox",
+          "example_input": true
+        },
+        {
+          "label": "Text",
+          "parameter_name": "text",
+          "parameter_has_default": false,
+          "parameter_default": null,
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Textbox",
+          "example_input": "Hello!!"
+        },
+        {
+          "label": "expected_tokens",
+          "parameter_name": "current_tokens",
+          "parameter_has_default": true,
+          "parameter_default": 1,
+          "type": {
+            "type": "number",
+            "description": "numeric value between 1 and 2"
+          },
+          "python_type": {
+            "type": "float",
+            "description": ""
+          },
+          "component": "Slider",
+          "example_input": 1
+        },
+        {
+          "label": "Mode with Reference Audio",
+          "parameter_name": "mode_with_reference",
+          "parameter_has_default": true,
+          "parameter_default": "Clone",
+          "type": {
+            "enum": [
+              "Clone",
+              "Continuation",
+              "Continuation + Clone"
+            ],
+            "title": "Radio",
+            "type": "string"
+          },
+          "python_type": {
+            "type": "Literal['Clone', 'Continuation', 'Continuation + Clone']",
+            "description": ""
+          },
+          "component": "Radio",
+          "example_input": "Clone"
+        }
+      ],
+      "returns": [
+        {
+          "label": "expected_tokens",
+          "type": {
+            "type": "number",
+            "description": "numeric value between 1 and 2"
+          },
+          "python_type": {
+            "type": "float",
+            "description": "numeric value between 1 and 2"
+          },
+          "component": "Slider"
+        },
+        {
+          "label": "value_11",
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Markdown"
+        },
+        {
+          "label": "Enable Duration Control (Expected Audio Tokens)",
+          "type": {
+            "type": "boolean"
+          },
+          "python_type": {
+            "type": "bool",
+            "description": ""
+          },
+          "component": "Checkbox"
+        }
+      ],
+      "description": ""
+    },
+    "/update_duration_controls_2": {
+      "parameters": [
+        {
+          "label": "Enable Duration Control (Expected Audio Tokens)",
+          "parameter_name": "enabled",
+          "parameter_has_default": true,
+          "parameter_default": false,
+          "type": {
+            "type": "boolean"
+          },
+          "python_type": {
+            "type": "bool",
+            "description": ""
+          },
+          "component": "Checkbox",
+          "example_input": true
+        },
+        {
+          "label": "Text",
+          "parameter_name": "text",
+          "parameter_has_default": false,
+          "parameter_default": null,
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Textbox",
+          "example_input": "Hello!!"
+        },
+        {
+          "label": "expected_tokens",
+          "parameter_name": "current_tokens",
+          "parameter_has_default": true,
+          "parameter_default": 1,
+          "type": {
+            "type": "number",
+            "description": "numeric value between 1 and 2"
+          },
+          "python_type": {
+            "type": "float",
+            "description": ""
+          },
+          "component": "Slider",
+          "example_input": 1
+        },
+        {
+          "label": "Mode with Reference Audio",
+          "parameter_name": "mode_with_reference",
+          "parameter_has_default": true,
+          "parameter_default": "Clone",
+          "type": {
+            "enum": [
+              "Clone",
+              "Continuation",
+              "Continuation + Clone"
+            ],
+            "title": "Radio",
+            "type": "string"
+          },
+          "python_type": {
+            "type": "Literal['Clone', 'Continuation', 'Continuation + Clone']",
+            "description": ""
+          },
+          "component": "Radio",
+          "example_input": "Clone"
+        }
+      ],
+      "returns": [
+        {
+          "label": "expected_tokens",
+          "type": {
+            "type": "number",
+            "description": "numeric value between 1 and 2"
+          },
+          "python_type": {
+            "type": "float",
+            "description": "numeric value between 1 and 2"
+          },
+          "component": "Slider"
+        },
+        {
+          "label": "value_11",
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Markdown"
+        },
+        {
+          "label": "Enable Duration Control (Expected Audio Tokens)",
+          "type": {
+            "type": "boolean"
+          },
+          "python_type": {
+            "type": "bool",
+            "description": ""
+          },
+          "component": "Checkbox"
+        }
+      ],
+      "description": ""
+    },
+    "/apply_example_selection": {
+      "parameters": [
+        {
+          "label": "Mode with Reference Audio",
+          "parameter_name": "mode_with_reference",
+          "parameter_has_default": true,
+          "parameter_default": "Clone",
+          "type": {
+            "enum": [
+              "Clone",
+              "Continuation",
+              "Continuation + Clone"
+            ],
+            "title": "Radio",
+            "type": "string"
+          },
+          "python_type": {
+            "type": "Literal['Clone', 'Continuation', 'Continuation + Clone']",
+            "description": ""
+          },
+          "component": "Radio",
+          "example_input": "Clone"
+        },
+        {
+          "label": "Enable Duration Control (Expected Audio Tokens)",
+          "parameter_name": "duration_control_enabled",
+          "parameter_has_default": true,
+          "parameter_default": false,
+          "type": {
+            "type": "boolean"
+          },
+          "python_type": {
+            "type": "bool",
+            "description": ""
+          },
+          "component": "Checkbox",
+          "example_input": true
+        },
+        {
+          "label": "expected_tokens",
+          "parameter_name": "duration_tokens",
+          "parameter_has_default": true,
+          "parameter_default": 1,
+          "type": {
+            "type": "number",
+            "description": "numeric value between 1 and 2"
+          },
+          "python_type": {
+            "type": "float",
+            "description": ""
+          },
+          "component": "Slider",
+          "example_input": 1
+        }
+      ],
+      "returns": [
+        {
+          "label": "Reference Audio (Optional)",
+          "type": {
+            "$defs": {
+              "FileDataMeta": {
+                "properties": {
+                  "_type": {
+                    "const": "gradio.FileData",
+                    "title": "Type",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "_type"
+                ],
+                "title": "FileDataMeta",
+                "type": "object"
+              }
+            },
+            "properties": {
+              "path": {
+                "title": "Path",
+                "type": "string"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "size": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Size"
+              },
+              "orig_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Orig Name"
+              },
+              "mime_type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Mime Type"
+              },
+              "is_stream": {
+                "default": false,
+                "title": "Is Stream",
+                "type": "boolean"
+              },
+              "meta": {
+                "$ref": "#/$defs/FileDataMeta"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "title": "FileData",
+            "type": "object",
+            "additional_description": "The FileData class is a subclass of the GradioModel class that represents a file object within a Gradio interface. It is used to store file data and metadata when a file is uploaded.\n\nAttributes:\n    path: The server file path where the file is stored.\n    url: The normalized server URL pointing to the file.\n    size: The size of the file in bytes.\n    orig_name: The original filename before upload.\n    mime_type: The MIME type of the file.\n    is_stream: Indicates whether the file is a stream.\n    meta: Additional metadata used internally (should not be changed)."
+          },
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Audio"
+        },
+        {
+          "label": "Text",
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Textbox"
+        },
+        {
+          "label": "value_7",
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Markdown"
+        },
+        {
+          "label": "expected_tokens",
+          "type": {
+            "type": "number",
+            "description": "numeric value between 1 and 2"
+          },
+          "python_type": {
+            "type": "float",
+            "description": "numeric value between 1 and 2"
+          },
+          "component": "Slider"
+        },
+        {
+          "label": "value_11",
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Markdown"
+        },
+        {
+          "label": "Enable Duration Control (Expected Audio Tokens)",
+          "type": {
+            "type": "boolean"
+          },
+          "python_type": {
+            "type": "bool",
+            "description": ""
+          },
+          "component": "Checkbox"
+        }
+      ],
+      "description": ""
+    },
+    "/run_inference": {
+      "parameters": [
+        {
+          "label": "Text",
+          "parameter_name": "text",
+          "parameter_has_default": false,
+          "parameter_default": null,
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Textbox",
+          "example_input": "Hello!!"
+        },
+        {
+          "label": "Reference Audio (Optional)",
+          "parameter_name": "reference_audio",
+          "parameter_has_default": false,
+          "parameter_default": null,
+          "type": {
+            "$defs": {
+              "FileDataMeta": {
+                "properties": {
+                  "_type": {
+                    "const": "gradio.FileData",
+                    "title": "Type",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "_type"
+                ],
+                "title": "FileDataMeta",
+                "type": "object"
+              }
+            },
+            "properties": {
+              "path": {
+                "title": "Path",
+                "type": "string"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "size": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Size"
+              },
+              "orig_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Orig Name"
+              },
+              "mime_type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Mime Type"
+              },
+              "is_stream": {
+                "default": false,
+                "title": "Is Stream",
+                "type": "boolean"
+              },
+              "meta": {
+                "$ref": "#/$defs/FileDataMeta"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "title": "FileData",
+            "type": "object",
+            "additional_description": "The FileData class is a subclass of the GradioModel class that represents a file object within a Gradio interface. It is used to store file data and metadata when a file is uploaded.\n\nAttributes:\n    path: The server file path where the file is stored.\n    url: The normalized server URL pointing to the file.\n    size: The size of the file in bytes.\n    orig_name: The original filename before upload.\n    mime_type: The MIME type of the file.\n    is_stream: Indicates whether the file is a stream.\n    meta: Additional metadata used internally (should not be changed)."
+          },
+          "python_type": {
+            "type": "filepath",
+            "description": "The FileData class is a subclass of the GradioModel class that represents a file object within a Gradio interface. It is used to store file data and metadata when a file is uploaded.\n\nAttributes:\n    path: The server file path where the file is stored.\n    url: The normalized server URL pointing to the file.\n    size: The size of the file in bytes.\n    orig_name: The original filename before upload.\n    mime_type: The MIME type of the file.\n    is_stream: Indicates whether the file is a stream.\n    meta: Additional metadata used internally (should not be changed)."
+          },
+          "component": "Audio",
+          "example_input": {
+            "path": "https://github.com/gradio-app/gradio/raw/main/test/test_files/audio_sample.wav",
+            "meta": {
+              "_type": "gradio.FileData"
+            },
+            "orig_name": "audio_sample.wav",
+            "url": "https://github.com/gradio-app/gradio/raw/main/test/test_files/audio_sample.wav"
+          }
+        },
+        {
+          "label": "Mode with Reference Audio",
+          "parameter_name": "mode_with_reference",
+          "parameter_has_default": true,
+          "parameter_default": "Clone",
+          "type": {
+            "enum": [
+              "Clone",
+              "Continuation",
+              "Continuation + Clone"
+            ],
+            "title": "Radio",
+            "type": "string"
+          },
+          "python_type": {
+            "type": "Literal['Clone', 'Continuation', 'Continuation + Clone']",
+            "description": ""
+          },
+          "component": "Radio",
+          "example_input": "Clone"
+        },
+        {
+          "label": "Enable Duration Control (Expected Audio Tokens)",
+          "parameter_name": "duration_control_enabled",
+          "parameter_has_default": true,
+          "parameter_default": false,
+          "type": {
+            "type": "boolean"
+          },
+          "python_type": {
+            "type": "bool",
+            "description": ""
+          },
+          "component": "Checkbox",
+          "example_input": true
+        },
+        {
+          "label": "expected_tokens",
+          "parameter_name": "duration_tokens",
+          "parameter_has_default": true,
+          "parameter_default": 1,
+          "type": {
+            "type": "number",
+            "description": "numeric value between 1 and 2"
+          },
+          "python_type": {
+            "type": "float",
+            "description": ""
+          },
+          "component": "Slider",
+          "example_input": 1
+        },
+        {
+          "label": "Language Tag",
+          "parameter_name": "language_tag",
+          "parameter_has_default": true,
+          "parameter_default": "Auto (omit)",
+          "type": {
+            "type": "string",
+            "enum": [
+              "Auto (omit)",
+              "Chinese",
+              "Cantonese",
+              "English",
+              "Arabic",
+              "Czech",
+              "Danish",
+              "Dutch",
+              "Finnish",
+              "French",
+              "German",
+              "Greek",
+              "Hebrew",
+              "Hindi",
+              "Hungarian",
+              "Italian",
+              "Japanese",
+              "Korean",
+              "Macedonian",
+              "Malay",
+              "Persian (Farsi)",
+              "Polish",
+              "Portuguese",
+              "Romanian",
+              "Russian",
+              "Spanish",
+              "Swahili",
+              "Swedish",
+              "Tagalog",
+              "Thai",
+              "Turkish",
+              "Vietnamese"
+            ]
+          },
+          "python_type": {
+            "type": "Literal['Auto (omit)', 'Chinese', 'Cantonese', 'English', 'Arabic', 'Czech', 'Danish', 'Dutch', 'Finnish', 'French', 'German', 'Greek', 'Hebrew', 'Hindi', 'Hungarian', 'Italian', 'Japanese', 'Korean', 'Macedonian', 'Malay', 'Persian (Farsi)', 'Polish', 'Portuguese', 'Romanian', 'Russian', 'Spanish', 'Swahili', 'Swedish', 'Tagalog', 'Thai', 'Turkish', 'Vietnamese']",
+            "description": ""
+          },
+          "component": "Dropdown",
+          "example_input": "Auto (omit)"
+        },
+        {
+          "label": "temperature",
+          "parameter_name": "temperature",
+          "parameter_has_default": true,
+          "parameter_default": 1.7,
+          "type": {
+            "type": "number",
+            "description": "numeric value between 0.1 and 3.0"
+          },
+          "python_type": {
+            "type": "float",
+            "description": ""
+          },
+          "component": "Slider",
+          "example_input": 0.1
+        },
+        {
+          "label": "top_p",
+          "parameter_name": "top_p",
+          "parameter_has_default": true,
+          "parameter_default": 0.8,
+          "type": {
+            "type": "number",
+            "description": "numeric value between 0.1 and 1.0"
+          },
+          "python_type": {
+            "type": "float",
+            "description": ""
+          },
+          "component": "Slider",
+          "example_input": 0.1
+        },
+        {
+          "label": "top_k",
+          "parameter_name": "top_k",
+          "parameter_has_default": true,
+          "parameter_default": 25,
+          "type": {
+            "type": "number",
+            "description": "numeric value between 1 and 200"
+          },
+          "python_type": {
+            "type": "float",
+            "description": ""
+          },
+          "component": "Slider",
+          "example_input": 1
+        },
+        {
+          "label": "repetition_penalty",
+          "parameter_name": "repetition_penalty",
+          "parameter_has_default": true,
+          "parameter_default": 1.0,
+          "type": {
+            "type": "number",
+            "description": "numeric value between 0.8 and 2.0"
+          },
+          "python_type": {
+            "type": "float",
+            "description": ""
+          },
+          "component": "Slider",
+          "example_input": 0.8
+        },
+        {
+          "label": "max_new_tokens",
+          "parameter_name": "max_new_tokens",
+          "parameter_has_default": true,
+          "parameter_default": 4096,
+          "type": {
+            "type": "number",
+            "description": "numeric value between 256 and 8192"
+          },
+          "python_type": {
+            "type": "float",
+            "description": ""
+          },
+          "component": "Slider",
+          "example_input": 256
+        }
+      ],
+      "returns": [
+        {
+          "label": "Output Audio",
+          "type": {
+            "$defs": {
+              "FileDataMeta": {
+                "properties": {
+                  "_type": {
+                    "const": "gradio.FileData",
+                    "title": "Type",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "_type"
+                ],
+                "title": "FileDataMeta",
+                "type": "object"
+              }
+            },
+            "properties": {
+              "path": {
+                "title": "Path",
+                "type": "string"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "size": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Size"
+              },
+              "orig_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Orig Name"
+              },
+              "mime_type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Mime Type"
+              },
+              "is_stream": {
+                "default": false,
+                "title": "Is Stream",
+                "type": "boolean"
+              },
+              "meta": {
+                "$ref": "#/$defs/FileDataMeta"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "title": "FileData",
+            "type": "object",
+            "additional_description": "The FileData class is a subclass of the GradioModel class that represents a file object within a Gradio interface. It is used to store file data and metadata when a file is uploaded.\n\nAttributes:\n    path: The server file path where the file is stored.\n    url: The normalized server URL pointing to the file.\n    size: The size of the file in bytes.\n    orig_name: The original filename before upload.\n    mime_type: The MIME type of the file.\n    is_stream: Indicates whether the file is a stream.\n    meta: Additional metadata used internally (should not be changed)."
+          },
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Audio"
+        },
+        {
+          "label": "Status",
+          "type": {
+            "type": "string"
+          },
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Textbox"
+        }
+      ],
+      "description": ""
+    }
+  },
+  "unnamed_endpoints": {}
+}

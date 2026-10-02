@@ -1,0 +1,87 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 1.531,
+  "words": [
+    {
+      "text": "영수증",
+      "start": 0.222,
+      "end": 0.624
+    },
+    {
+      "text": "필요하세요?",
+      "start": 0.685,
+      "end": 1.531
+    }
+  ],
+  "characters": [
+    {
+      "text": "영",
+      "start": 0.222,
+      "end": 0.383
+    },
+    {
+      "text": "수",
+      "start": 0.383,
+      "end": 0.503
+    },
+    {
+      "text": "증",
+      "start": 0.503,
+      "end": 0.624
+    },
+    {
+      "text": " ",
+      "start": 0.624,
+      "end": 0.685
+    },
+    {
+      "text": "필",
+      "start": 0.685,
+      "end": 0.765
+    },
+    {
+      "text": "요",
+      "start": 0.765,
+      "end": 0.826
+    },
+    {
+      "text": "하",
+      "start": 0.826,
+      "end": 0.906
+    },
+    {
+      "text": "세",
+      "start": 0.906,
+      "end": 1.007
+    },
+    {
+      "text": "요",
+      "start": 1.007,
+      "end": 1.51
+    },
+    {
+      "text": "?",
+      "start": 1.51,
+      "end": 1.531
+    }
+  ],
+  "request": {
+    "seed": 926,
+    "model": "ssfm-v30",
+    "voice_id": "tc_69f2e455ea79fd197aa0476f",
+    "text": "영수증 필요하세요?",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 0.98,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "다시 말해 주세요.",
+      "next_text": "아, 괜찮아요. 감사합니다!"
+    }
+  },
+  "direction": "핵심을 짚어 짧고 친절하게 풀어 묻기.",
+  "voiceName": "서현"
+}

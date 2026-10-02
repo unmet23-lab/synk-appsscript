@@ -1,0 +1,18 @@
+[
+ {
+  "name": "F20-fresh-v2-1",
+  "prompt": "Use the attached photo ONLY as a reference for photographic style: the lighting, plain grey studio backdrop, warm filmic color grade, film grain, head-and-shoulders framing and lens. The person must be a completely different individual who does not resemble the person in the reference at all. New person: a 23-year-old Korean woman with a fresh, lively K-pop girl-group visual: small oval face, bright almond eyes with aegyo-sal, peachy blush, glossy coral lips, shoulder-length light-brown hair with airy bangs. A soft playful smile. Wearing a plain white crew-neck t-shirt. Styled by a professional hair and makeup team for a K-pop entertainment agency profile and fashion magazine beauty portrait: strikingly attractive with model-like facial proportions, yet clearly a real human with visible pores, fine vellus hair, subtle natural unevenness, individual lashes and a few flyaway hairs. Shot on Kodak Portra 400, 85mm lens at f/2, soft key light with gentle falloff. No plastic skin, no heavy retouching, opaque clothing, no text or logos.",
+  "aspect": "3:4",
+  "images": [
+   "raw/F20-hero-b-clean.png"
+  ]
+ },
+ {
+  "name": "M30-sexy-v2-1",
+  "prompt": "Use the attached photo ONLY as a reference for photographic style: the lighting, plain grey studio backdrop, warm filmic color grade, film grain, head-and-shoulders framing and lens. The person must be a completely different individual who does not resemble the person in the reference at all. New person: a 34-year-old Korean man with a mature, sensual K-drama lead actor visual: strong jaw with light stubble, deep-set confident eyes with an intense gaze, black hair loosely swept back with a few strands falling. Confident, magnetic look. Wearing a black shirt with the top two buttons open. Styled by a professional hair and makeup team for a K-pop entertainment agency profile and fashion magazine beauty portrait: strikingly attractive with model-like facial proportions, yet clearly a real human with visible pores, fine vellus hair, subtle natural unevenness, individual lashes and a few flyaway hairs. Shot on Kodak Portra 400, 85mm lens at f/2, soft key light with gentle falloff. No plastic skin, no heavy retouching, opaque clothing, no text or logos.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M20-hero-b.png"
+  ]
+ }
+]

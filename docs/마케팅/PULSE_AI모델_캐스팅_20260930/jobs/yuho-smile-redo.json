@@ -1,0 +1,35 @@
+[
+ {
+  "name": "Myuho-exp-smile-a",
+  "prompt": "The exact same real man as in the first attached photo, who is also the man in the other attached photos. Keep his identity exactly: the same face shape and width, the same soft cheeks and jawline, the same nose, lips, ears, brows, skin tone, the same eyelids and eye shape, and the same cornrow braids with the small gold bead, the same plain black t-shirt, framing, warm-grey backdrop, lighting and film grain as the first photo. Change only his expression: a warm, natural smile showing just a little of his upper teeth. When he smiles his eyes narrow naturally, but his face must not become longer, thinner or wider, his cheekbones must not change, and he must still be clearly recognizable as the same person. Head and shoulders facing the camera. Real skin texture, no plastic skin, no heavy retouching, no text or logos.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0088.png"
+  ]
+ },
+ {
+  "name": "Myuho-exp-smile-b",
+  "prompt": "The exact same real man as in the first attached photo, who is also the man in the other attached photos. Keep his identity exactly: the same face shape and width, the same soft cheeks and jawline, the same nose, lips, ears, brows, skin tone, the same eyelids and eye shape, and the same cornrow braids with the small gold bead, the same plain black t-shirt, framing, warm-grey backdrop, lighting and film grain as the first photo. Change only his expression: a warm, natural smile showing just a little of his upper teeth. When he smiles his eyes narrow naturally, but his face must not become longer, thinner or wider, his cheekbones must not change, and he must still be clearly recognizable as the same person. Head and shoulders facing the camera. Real skin texture, no plastic skin, no heavy retouching, no text or logos.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0088.png"
+  ]
+ },
+ {
+  "name": "Myuho-exp-smile-c",
+  "prompt": "The exact same real man as in the first attached photo, who is also the man in the other attached photos. Keep his identity exactly: the same face shape and width, the same soft cheeks and jawline, the same nose, lips, ears, brows, skin tone, the same eyelids and eye shape, and the same cornrow braids with the small gold bead, the same plain black t-shirt, framing, warm-grey backdrop, lighting and film grain as the first photo. Change only his expression: a relaxed, friendly closed-mouth smile with slightly raised cheeks. When he smiles his eyes narrow naturally, but his face must not become longer, thinner or wider, his cheekbones must not change, and he must still be clearly recognizable as the same person. Head and shoulders facing the camera. Real skin texture, no plastic skin, no heavy retouching, no text or logos.",
+  "aspect": "3:4",
+  "images": [
+   "raw/M-yuho-hero-5.png",
+   "raw/yuho-ref-0048.png",
+   "raw/yuho-ref-0112.png",
+   "raw/yuho-ref-0088.png"
+  ]
+ }
+]

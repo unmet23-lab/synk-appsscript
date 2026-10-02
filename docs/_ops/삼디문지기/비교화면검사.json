@@ -1,0 +1,95 @@
+{
+  "checkedAt": "2026-09-09T07:44:42.371Z",
+  "results": [
+    {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "fonts": [
+        {
+          "family": "SYNK Bracket",
+          "status": "unloaded"
+        },
+        {
+          "family": "SUIT Variable",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "status": "loaded"
+        }
+      ],
+      "images": [
+        {
+          "naturalWidth": 4096,
+          "naturalHeight": 4096,
+          "loaded": true
+        },
+        {
+          "naturalWidth": 1024,
+          "naturalHeight": 839,
+          "loaded": true
+        },
+        {
+          "naturalWidth": 512,
+          "naturalHeight": 512,
+          "loaded": true
+        }
+      ],
+      "links": [
+        "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/_ops/%EC%82%BC%EB%94%94%EB%AC%B8%EC%A7%80%EA%B8%B0/%EA%B9%8A%EC%9D%B4%EC%8B%9C%ED%97%98/%EC%8B%A4%ED%97%98%EB%B3%B4%EA%B8%B0.html",
+        "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EC%BA%90%EB%A6%AD%ED%84%B0/%EC%A0%95%EB%B3%B8_4K/%EA%B9%8C%EB%AA%BD_%EB%B3%B8%EC%B2%B4.png",
+        "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/_ops/%EC%82%BC%EB%94%94%EB%AC%B8%EC%A7%80%EA%B8%B0/%EA%B9%8C%EB%AA%BD_%EB%B8%94%EB%A0%8C%EB%8D%94_%EB%88%84%EB%81%BC.png",
+        "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/_ops/%EC%82%BC%EB%94%94%EB%AC%B8%EC%A7%80%EA%B8%B0/%ED%8C%90%EC%A0%95.md",
+        "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/_ops/%EC%82%BC%EB%94%94%EB%AC%B8%EC%A7%80%EA%B8%B0/%EB%88%88%EA%B2%80%EC%88%98.md",
+        "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/_ops/%EC%82%BC%EB%94%94%EB%AC%B8%EC%A7%80%EA%B8%B0/%EB%B8%94%EB%A0%8C%EB%8D%94%EC%8B%A4%ED%96%89.log",
+        "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/_ops/%EC%82%BC%EB%94%94%EB%AC%B8%EC%A7%80%EA%B8%B0/%EB%B9%84%EA%B5%90%EA%B3%84%EC%B8%A1.json"
+      ],
+      "errors": []
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "fonts": [
+        {
+          "family": "SYNK Bracket",
+          "status": "unloaded"
+        },
+        {
+          "family": "SUIT Variable",
+          "status": "loaded"
+        },
+        {
+          "family": "Inter Tight",
+          "status": "loaded"
+        }
+      ],
+      "images": [
+        {
+          "naturalWidth": 4096,
+          "naturalHeight": 4096,
+          "loaded": true
+        },
+        {
+          "naturalWidth": 1024,
+          "naturalHeight": 839,
+          "loaded": true
+        },
+        {
+          "naturalWidth": 512,
+          "naturalHeight": 512,
+          "loaded": true
+        }
+      ],
+      "links": [
+        "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/_ops/%EC%82%BC%EB%94%94%EB%AC%B8%EC%A7%80%EA%B8%B0/%EA%B9%8A%EC%9D%B4%EC%8B%9C%ED%97%98/%EC%8B%A4%ED%97%98%EB%B3%B4%EA%B8%B0.html",
+        "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/%EC%BA%90%EB%A6%AD%ED%84%B0/%EC%A0%95%EB%B3%B8_4K/%EA%B9%8C%EB%AA%BD_%EB%B3%B8%EC%B2%B4.png",
+        "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/_ops/%EC%82%BC%EB%94%94%EB%AC%B8%EC%A7%80%EA%B8%B0/%EA%B9%8C%EB%AA%BD_%EB%B8%94%EB%A0%8C%EB%8D%94_%EB%88%84%EB%81%BC.png",
+        "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/_ops/%EC%82%BC%EB%94%94%EB%AC%B8%EC%A7%80%EA%B8%B0/%ED%8C%90%EC%A0%95.md",
+        "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/_ops/%EC%82%BC%EB%94%94%EB%AC%B8%EC%A7%80%EA%B8%B0/%EB%88%88%EA%B2%80%EC%88%98.md",
+        "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/_ops/%EC%82%BC%EB%94%94%EB%AC%B8%EC%A7%80%EA%B8%B0/%EB%B8%94%EB%A0%8C%EB%8D%94%EC%8B%A4%ED%96%89.log",
+        "file:///C:/Users/q1212/Documents/SYNK-appsscript/docs/_ops/%EC%82%BC%EB%94%94%EB%AC%B8%EC%A7%80%EA%B8%B0/%EB%B9%84%EA%B5%90%EA%B3%84%EC%B8%A1.json"
+      ],
+      "errors": []
+    }
+  ]
+}

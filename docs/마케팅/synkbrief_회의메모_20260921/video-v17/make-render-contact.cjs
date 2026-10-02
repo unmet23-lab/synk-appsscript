@@ -1,0 +1,4 @@
+const fs=require('node:fs');
+const {chromium}=require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+(async()=>{const scenes=JSON.parse(fs.readFileSync('scenes.json'));const html=`<html><body style="margin:0;background:#c6ceda;display:grid;grid-template-columns:repeat(6,270px);gap:12px;padding:12px">${scenes.map(s=>`<figure style="margin:0"><div style="height:28px;font:18px sans-serif">${s.id}</div><img width="270" height="480" src="render-${s.id}.png"></figure>`).join('')}</body></html>`;fs.writeFileSync('verification/render-contact.html',html);const b=await chromium.launch({channel:'chrome',headless:true});const p=await b.newPage({viewport:{width:1704,height:2104}});await p.goto('http://127.0.0.1:5197/video-v17/verification/render-contact.html');await p.screenshot({path:'verification/render-contact-sheet.png',fullPage:true});await b.close();})();
+

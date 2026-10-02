@@ -1,0 +1,199 @@
+{
+  "status": "one-second local foreground preservation trial; not new cafe dialogue",
+  "input": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\performance-references\\upload-ready\\yuho-genuine-smile-under10s-compatible.mp4",
+  "background_input": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\google-vids\\test-10-motion-preservation.mp4",
+  "output": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\google-vids\\motion-composite\\yuho-original-face-cafe-1s.mp4",
+  "source_start_seconds": 2.0,
+  "duration_seconds": 1,
+  "fps": 24,
+  "background_crop_xywh": [
+    1050,
+    200,
+    870,
+    490
+  ],
+  "background_adjustment": {
+    "saturation": 0.7,
+    "brightness_multiplier": 0.9,
+    "blur_sigma": 2.2
+  },
+  "foreground_rgb_adjustment": "none",
+  "cached_model": "C:\\Users\\q1212\\.rembg\\models\\isnet-general-use\\isnet-general-use.onnx",
+  "provider": "CPUExecutionProvider",
+  "intra_op_threads": 4,
+  "processing_seconds_excluding_encode": 48.50356950000014,
+  "inference_mean_seconds_per_frame": 1.3047813541666642,
+  "inference_max_seconds_per_frame": 1.5357546000000184,
+  "all_opaque_rgb_deltas_zero": true,
+  "central_face_all_opaque": true,
+  "frames": [
+    {
+      "frame": 0,
+      "source_time": 2.0,
+      "opaque_pixel_count": 470032,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 1,
+      "source_time": 2.0416666666666665,
+      "opaque_pixel_count": 469044,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 2,
+      "source_time": 2.0833333333333335,
+      "opaque_pixel_count": 470031,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 3,
+      "source_time": 2.125,
+      "opaque_pixel_count": 469536,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 4,
+      "source_time": 2.1666666666666665,
+      "opaque_pixel_count": 471113,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 5,
+      "source_time": 2.2083333333333335,
+      "opaque_pixel_count": 471422,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 6,
+      "source_time": 2.25,
+      "opaque_pixel_count": 470984,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 7,
+      "source_time": 2.2916666666666665,
+      "opaque_pixel_count": 470763,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 8,
+      "source_time": 2.3333333333333335,
+      "opaque_pixel_count": 471296,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 9,
+      "source_time": 2.375,
+      "opaque_pixel_count": 471479,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 10,
+      "source_time": 2.4166666666666665,
+      "opaque_pixel_count": 472334,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 11,
+      "source_time": 2.4583333333333335,
+      "opaque_pixel_count": 472647,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 12,
+      "source_time": 2.5,
+      "opaque_pixel_count": 472121,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 13,
+      "source_time": 2.5416666666666665,
+      "opaque_pixel_count": 472144,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 14,
+      "source_time": 2.5833333333333335,
+      "opaque_pixel_count": 471843,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 15,
+      "source_time": 2.625,
+      "opaque_pixel_count": 471478,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 16,
+      "source_time": 2.6666666666666665,
+      "opaque_pixel_count": 471140,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 17,
+      "source_time": 2.7083333333333335,
+      "opaque_pixel_count": 470280,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 18,
+      "source_time": 2.75,
+      "opaque_pixel_count": 469945,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 19,
+      "source_time": 2.7916666666666665,
+      "opaque_pixel_count": 469947,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 20,
+      "source_time": 2.8333333333333335,
+      "opaque_pixel_count": 470360,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 21,
+      "source_time": 2.875,
+      "opaque_pixel_count": 470761,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 22,
+      "source_time": 2.9166666666666665,
+      "opaque_pixel_count": 470182,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    },
+    {
+      "frame": 23,
+      "source_time": 2.9583333333333335,
+      "opaque_pixel_count": 470109,
+      "opaque_rgb_max_diff": 0,
+      "central_face_alpha_min": 1.0
+    }
+  ]
+}

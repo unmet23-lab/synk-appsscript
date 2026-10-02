@@ -1,0 +1,243 @@
+{
+  "source": "SYNK_LAB_CAFE_REAL_v3.mp4",
+  "language": "ko",
+  "duration": 35.52,
+  "provider": "local faster-whisper-small",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 2.0,
+      "text": " 드시고 가세요, 가지고 가세요.",
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.5,
+          "word": " 드시고",
+          "probability": 0.5478272475302219
+        },
+        {
+          "start": 0.5,
+          "end": 0.92,
+          "word": " 가세요,",
+          "probability": 0.9864405989646912
+        },
+        {
+          "start": 1.04,
+          "end": 1.28,
+          "word": " 가지고",
+          "probability": 0.9734911322593689
+        },
+        {
+          "start": 1.28,
+          "end": 2.0,
+          "word": " 가세요.",
+          "probability": 0.9945799708366394
+        }
+      ]
+    },
+    {
+      "start": 2.6,
+      "end": 2.96,
+      "text": " 네.",
+      "words": [
+        {
+          "start": 2.3499999999999996,
+          "end": 2.96,
+          "word": " 네.",
+          "probability": 0.8573639988899231
+        }
+      ]
+    },
+    {
+      "start": 3.5,
+      "end": 4.42,
+      "text": " 어느 쪽이요?",
+      "words": [
+        {
+          "start": 3.5,
+          "end": 3.9,
+          "word": " 어느",
+          "probability": 0.9745185375213623
+        },
+        {
+          "start": 3.9,
+          "end": 4.42,
+          "word": " 쪽이요?",
+          "probability": 0.9495854179064432
+        }
+      ]
+    },
+    {
+      "start": 6.16,
+      "end": 7.2,
+      "text": " 다시 말해주세요.",
+      "words": [
+        {
+          "start": 6.16,
+          "end": 6.54,
+          "word": " 다시",
+          "probability": 0.963029146194458
+        },
+        {
+          "start": 6.54,
+          "end": 7.2,
+          "word": " 말해주세요.",
+          "probability": 0.9171475966771444
+        }
+      ]
+    },
+    {
+      "start": 9.1,
+      "end": 10.42,
+      "text": " 다시 말해주세요.",
+      "words": [
+        {
+          "start": 8.870000000000001,
+          "end": 9.48,
+          "word": " 다시",
+          "probability": 0.9538915157318115
+        },
+        {
+          "start": 9.48,
+          "end": 10.42,
+          "word": " 말해주세요.",
+          "probability": 0.9959564407666525
+        }
+      ]
+    },
+    {
+      "start": 12.5,
+      "end": 14.44,
+      "text": " 여기서 드세요, 가져가세요.",
+      "words": [
+        {
+          "start": 12.29,
+          "end": 12.9,
+          "word": " 여기서",
+          "probability": 0.8665294051170349
+        },
+        {
+          "start": 12.9,
+          "end": 13.42,
+          "word": " 드세요,",
+          "probability": 0.9940180778503418
+        },
+        {
+          "start": 13.82,
+          "end": 14.44,
+          "word": " 가져가세요.",
+          "probability": 0.9761450886726379
+        }
+      ]
+    },
+    {
+      "start": 16.3,
+      "end": 17.16,
+      "text": " 여기서 먹을게요.",
+      "words": [
+        {
+          "start": 16.09,
+          "end": 16.7,
+          "word": " 여기서",
+          "probability": 0.9845284819602966
+        },
+        {
+          "start": 16.7,
+          "end": 17.16,
+          "word": " 먹을게요.",
+          "probability": 0.9919027090072632
+        }
+      ]
+    },
+    {
+      "start": 18.38,
+      "end": 19.28,
+      "text": " 영수증 드릴까요?",
+      "words": [
+        {
+          "start": 18.38,
+          "end": 18.9,
+          "word": " 영수증",
+          "probability": 0.9401382207870483
+        },
+        {
+          "start": 18.9,
+          "end": 19.28,
+          "word": " 드릴까요?",
+          "probability": 0.9912131230036417
+        }
+      ]
+    },
+    {
+      "start": 25.7,
+      "end": 26.66,
+      "text": " 다시 말해주세요.",
+      "words": [
+        {
+          "start": 25.43,
+          "end": 26.04,
+          "word": " 다시",
+          "probability": 0.9874628186225891
+        },
+        {
+          "start": 26.04,
+          "end": 26.66,
+          "word": " 말해주세요.",
+          "probability": 0.9951959451039633
+        }
+      ]
+    },
+    {
+      "start": 27.26,
+      "end": 28.46,
+      "text": " 영수증 필요하세요?",
+      "words": [
+        {
+          "start": 27.26,
+          "end": 28.0,
+          "word": " 영수증",
+          "probability": 0.9919821818669637
+        },
+        {
+          "start": 28.0,
+          "end": 28.46,
+          "word": " 필요하세요?",
+          "probability": 0.9835406541824341
+        }
+      ]
+    },
+    {
+      "start": 28.46,
+      "end": 30.56,
+      "text": " 아, 괜찮아요.",
+      "words": [
+        {
+          "start": 28.46,
+          "end": 29.84,
+          "word": " 아,",
+          "probability": 0.10889270901679993
+        },
+        {
+          "start": 29.94,
+          "end": 30.56,
+          "word": " 괜찮아요.",
+          "probability": 0.9871609508991241
+        }
+      ]
+    },
+    {
+      "start": 30.96,
+      "end": 31.28,
+      "text": " 감사합니다.",
+      "words": [
+        {
+          "start": 30.96,
+          "end": 31.28,
+          "word": " 감사합니다.",
+          "probability": 0.9921898245811462
+        }
+      ]
+    }
+  ],
+  "note": "Automatic transcript; not proof of acting quality or exact lip sync."
+}

@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "1e0891e7-26cf-4a46-8175-a71e097d7cf8",
+  "narration": "자기 소개를 읽을 사람 둘과, 각자가 먼저 알아야 할 한 가지를 적어보세요.",
+  "narrationSha256": "fa531ceff615e7265ea1da4bea28f754dd81f75c1b3ad88c5f43d590152e9309",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-fa531ceff615e726.wav",
+  "duration": 5.04,
+  "sha256": "abc0b66902b0f8add35c73a346d2c7453b6b89d6d5302b534dc6c19fa44670c2",
+  "humanListening": false,
+  "fullDecode": true
+}

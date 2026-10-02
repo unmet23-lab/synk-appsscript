@@ -1,0 +1,150 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 2.54,
+  "words": [
+    {
+      "text": "문제는,",
+      "start": 0.121,
+      "end": 0.504
+    },
+    {
+      "text": "개발을",
+      "start": 1.069,
+      "end": 1.431
+    },
+    {
+      "text": "하나도",
+      "start": 1.492,
+      "end": 1.754
+    },
+    {
+      "text": "몰랐다는",
+      "start": 1.815,
+      "end": 2.238
+    },
+    {
+      "text": "거.",
+      "start": 2.359,
+      "end": 2.54
+    }
+  ],
+  "characters": [
+    {
+      "text": "문",
+      "start": 0.121,
+      "end": 0.282
+    },
+    {
+      "text": "제",
+      "start": 0.282,
+      "end": 0.383
+    },
+    {
+      "text": "는",
+      "start": 0.383,
+      "end": 0.484
+    },
+    {
+      "text": ",",
+      "start": 0.484,
+      "end": 0.504
+    },
+    {
+      "text": " ",
+      "start": 0.504,
+      "end": 1.069
+    },
+    {
+      "text": "개",
+      "start": 1.069,
+      "end": 1.25
+    },
+    {
+      "text": "발",
+      "start": 1.25,
+      "end": 1.371
+    },
+    {
+      "text": "을",
+      "start": 1.371,
+      "end": 1.431
+    },
+    {
+      "text": " ",
+      "start": 1.431,
+      "end": 1.492
+    },
+    {
+      "text": "하",
+      "start": 1.492,
+      "end": 1.593
+    },
+    {
+      "text": "나",
+      "start": 1.593,
+      "end": 1.694
+    },
+    {
+      "text": "도",
+      "start": 1.694,
+      "end": 1.754
+    },
+    {
+      "text": " ",
+      "start": 1.754,
+      "end": 1.815
+    },
+    {
+      "text": "몰",
+      "start": 1.815,
+      "end": 1.956
+    },
+    {
+      "text": "랐",
+      "start": 1.956,
+      "end": 2.097
+    },
+    {
+      "text": "다",
+      "start": 2.097,
+      "end": 2.157
+    },
+    {
+      "text": "는",
+      "start": 2.157,
+      "end": 2.238
+    },
+    {
+      "text": " ",
+      "start": 2.238,
+      "end": 2.359
+    },
+    {
+      "text": "거",
+      "start": 2.359,
+      "end": 2.52
+    },
+    {
+      "text": ".",
+      "start": 2.52,
+      "end": 2.54
+    }
+  ],
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "text": "문제는, 개발을 하나도 몰랐다는 거.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.24,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "tonedown",
+      "emotion_intensity": 1.05
+    }
+  }
+}

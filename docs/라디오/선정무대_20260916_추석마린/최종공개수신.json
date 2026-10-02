@@ -1,0 +1,29 @@
+{
+  "started": "2026-09-16T15:15:49.014Z",
+  "finished": "2026-09-16T15:16:53.800Z",
+  "videoId": "eH0owfx9gCw",
+  "formatId": "232+234",
+  "secondsRequested": 20,
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "codec_name": "aac",
+        "sample_rate": "44100"
+      }
+    ],
+    "format": {
+      "duration": "20.015601",
+      "size": "1752955"
+    }
+  },
+  "silence": [],
+  "captureWarnings": "",
+  "source": "YouTube public playback, not local preview"
+}

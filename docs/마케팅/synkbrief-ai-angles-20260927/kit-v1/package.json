@@ -1,0 +1,13 @@
+{
+  "name": "synkbrief-photo-to-3cuts-kit-v1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "kit": "node ../../../../tools/SNS키트_영상연결.js .",
+    "media": "node -e \"require('fs').copyFileSync('../assets/audio/master.wav','assets/audio/master.wav')\"",
+    "dev": "npx --yes hyperframes@0.8.104 preview",
+    "check": "npx --yes hyperframes@0.8.104 check",
+    "render": "npx --yes hyperframes@0.8.104 render",
+    "publish": "npx --yes hyperframes@0.8.104 publish"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "date": "2026-09-22",
+  "segment": "05",
+  "sourcePreserved": true,
+  "tempoMultiplier": 1.03,
+  "cutRangesSeconds": [
+    [
+      1.06,
+      1.5
+    ],
+    [
+      3.075,
+      3.3
+    ]
+  ],
+  "cutRangesDoNotOverlapAlignedWords": true,
+  "measuredSilenceBeforeSeconds": [
+    0.607528,
+    0.365805
+  ],
+  "measuredSilenceAfterSeconds": [
+    0.15907,
+    0.136871
+  ],
+  "silenceThresholdDb": -38,
+  "phraseDurationBefore": 4.631,
+  "phraseDurationAfter": 3.850476,
+  "captionAndSceneTimingsRegenerated": true,
+  "accentScenes": [
+    "hook",
+    "loop",
+    "joke"
+  ],
+  "directListeningVerified": false
+}

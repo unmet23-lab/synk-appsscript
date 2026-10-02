@@ -1,0 +1,210 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 4.423,
+  "words": [
+    {
+      "text": "챗지피티를",
+      "start": 0.402,
+      "end": 1.045
+    },
+    {
+      "text": "열고,",
+      "start": 1.106,
+      "end": 1.407
+    },
+    {
+      "text": "지금",
+      "start": 1.769,
+      "end": 2.011
+    },
+    {
+      "text": "표시한",
+      "start": 2.071,
+      "end": 2.473
+    },
+    {
+      "text": "긴",
+      "start": 2.573,
+      "end": 2.754
+    },
+    {
+      "text": "입력창을",
+      "start": 2.835,
+      "end": 3.478
+    },
+    {
+      "text": "클릭하세요.",
+      "start": 3.579,
+      "end": 4.423
+    }
+  ],
+  "characters": [
+    {
+      "text": "챗",
+      "start": 0.402,
+      "end": 0.583
+    },
+    {
+      "text": "지",
+      "start": 0.583,
+      "end": 0.724
+    },
+    {
+      "text": "피",
+      "start": 0.724,
+      "end": 0.844
+    },
+    {
+      "text": "티",
+      "start": 0.844,
+      "end": 0.965
+    },
+    {
+      "text": "를",
+      "start": 0.965,
+      "end": 1.045
+    },
+    {
+      "text": " ",
+      "start": 1.045,
+      "end": 1.106
+    },
+    {
+      "text": "열",
+      "start": 1.106,
+      "end": 1.307
+    },
+    {
+      "text": "고",
+      "start": 1.307,
+      "end": 1.387
+    },
+    {
+      "text": ",",
+      "start": 1.387,
+      "end": 1.407
+    },
+    {
+      "text": " ",
+      "start": 1.407,
+      "end": 1.769
+    },
+    {
+      "text": "지",
+      "start": 1.769,
+      "end": 1.91
+    },
+    {
+      "text": "금",
+      "start": 1.91,
+      "end": 2.011
+    },
+    {
+      "text": " ",
+      "start": 2.011,
+      "end": 2.071
+    },
+    {
+      "text": "표",
+      "start": 2.071,
+      "end": 2.191
+    },
+    {
+      "text": "시",
+      "start": 2.191,
+      "end": 2.332
+    },
+    {
+      "text": "한",
+      "start": 2.332,
+      "end": 2.473
+    },
+    {
+      "text": " ",
+      "start": 2.473,
+      "end": 2.573
+    },
+    {
+      "text": "긴",
+      "start": 2.573,
+      "end": 2.754
+    },
+    {
+      "text": " ",
+      "start": 2.754,
+      "end": 2.835
+    },
+    {
+      "text": "입",
+      "start": 2.835,
+      "end": 2.976
+    },
+    {
+      "text": "력",
+      "start": 2.976,
+      "end": 3.157
+    },
+    {
+      "text": "창",
+      "start": 3.157,
+      "end": 3.378
+    },
+    {
+      "text": "을",
+      "start": 3.378,
+      "end": 3.478
+    },
+    {
+      "text": " ",
+      "start": 3.478,
+      "end": 3.579
+    },
+    {
+      "text": "클",
+      "start": 3.579,
+      "end": 3.699
+    },
+    {
+      "text": "릭",
+      "start": 3.699,
+      "end": 3.86
+    },
+    {
+      "text": "하",
+      "start": 3.86,
+      "end": 3.961
+    },
+    {
+      "text": "세",
+      "start": 3.961,
+      "end": 4.081
+    },
+    {
+      "text": "요",
+      "start": 4.081,
+      "end": 4.403
+    },
+    {
+      "text": ".",
+      "start": 4.403,
+      "end": 4.423
+    }
+  ],
+  "request": {
+    "seed": 923,
+    "model": "ssfm-v30",
+    "voice_id": "tc_6a7446c19f2d7dfed990a900",
+    "text": "챗지피티를 열고, 지금 표시한 긴 입력창을 클릭하세요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.04,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "tonedown",
+      "emotion_intensity": 0.5
+    }
+  }
+}

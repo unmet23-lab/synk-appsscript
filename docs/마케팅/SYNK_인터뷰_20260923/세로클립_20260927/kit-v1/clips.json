@@ -1,0 +1,92 @@
+{
+  "_설명": "창업자 인터뷰 세로 클립 키트판의 편별 자료. build.mjs가 이 파일 + data/<키>.json(make_clean_clips.py 결과) + v2 ASS 자막으로 clips/<키>[-<테마>]/index.html을 만든다. 끝 장 줄의 [ ]는 형광펜(k-mark) 자리다.",
+  "speaker": { "name": "양유호", "role": "SYNK 창업자" },
+  "defaultTheme": "builds",
+  "nameOutSec": 4.0,
+  "themes": {
+    "builds": {
+      "acc": "builds",
+      "chip": "yuhobuilds · 창업자 인터뷰",
+      "head": ["yuhobuilds", "SYNK 창업자 인터뷰"],
+      "handle": "@yuhobuilds",
+      "end": { "label": "양유호 · SYNK 창업자", "size": "l" }
+    },
+    "synk": {
+      "acc": "synk",
+      "chip": "SYNK · 창업자 인터뷰",
+      "head": ["SYNK", "창업자 인터뷰"],
+      "handle": null,
+      "_handle": "링크드인 회사 페이지 영상이라 발에는 로고만 둔다. synk.im은 행동 단추에 있다",
+      "end": {
+        "label": "양유호 · SYNK 창업자",
+        "size": "l",
+        "lines": ["각자의 목표에 맞는", "[개인화 기술]을", "만듭니다"],
+        "cta": { "kw": "synk.im", "post": "에서 더 보기" },
+        "sticker": null
+      }
+    }
+  },
+  "clips": {
+    "A": {
+      "name": "AI에_끌려간다",
+      "hook": ["AI 쓰다 보면", "진짜 끌려가게 돼요"],
+      "hookSize": 76,
+      "ass": "../v2/소스/A.ass",
+      "transition": "paper",
+      "themes": ["builds"],
+      "end": { "builds": { "lines": ["AI로 뭔가 만드는", "친구에게", "[보내 주세요]"], "sticker": "sticker-envelope" } }
+    },
+    "B": {
+      "name": "TOPIK에_도움_안되면_쓰레기",
+      "hook": ["TOPIK에 도움이 안 된다면", "사실 쓰레기니까"],
+      "hookSize": 76,
+      "ass": "../v2/소스/B.ass",
+      "transition": "patch",
+      "themes": ["builds", "synk"],
+      "end": { "builds": { "lines": ["한국어 공부하는", "친구에게", "[보내 주세요]"], "sticker": "sticker-envelope" } }
+    },
+    "C": {
+      "name": "잘만들었다_했는데_평가는",
+      "hook": ["잘 만들었다 했는데", "막상 평가는 되게 나쁘고"],
+      "hookSize": 76,
+      "ass": "../v2/소스/C.ass",
+      "transition": "paper",
+      "themes": ["builds"],
+      "end": { "builds": { "lines": ["뭔가 만들고 있는", "친구에게", "[보내 주세요]"], "sticker": "sticker-envelope" } }
+    },
+    "D": {
+      "name": "기술이_만들어준_시간",
+      "hook": ["기술이 만들어 준 시간,", "사람은 어디에 써야 할까요?"],
+      "hookSize": 76,
+      "ass": "../v2/소스/D.ass",
+      "transition": "patch",
+      "themes": ["builds"],
+      "_끝장": "v2 엔드카드 문구(각자의 목표에 맞는 개인화 기술을 만듭니다)를 그대로 두고, 본인이 한 말(저를 지켜봐 주셨으면)에 맞춰 행동 하나를 팔로우로 둔다. 「감사합니다」 말자막은 끝 장 위에 남는다",
+      "end": {
+        "builds": {
+          "lines": ["각자의 목표에 맞는", "[개인화 기술]을", "만듭니다"],
+          "cta": { "pre": "팔로우", "kw": "@yuhobuilds" },
+          "sticker": null
+        }
+      }
+    },
+    "E": {
+      "name": "한명한명_케어하고_싶은데",
+      "hook": ["한 명 한 명 다 케어하고 싶은데", "시간이 부족하더라고요"],
+      "hookSize": 70,
+      "ass": "../v2/소스/E.ass",
+      "transition": "paper",
+      "themes": ["builds"],
+      "end": { "builds": { "lines": ["가르치는 일을 하는", "친구에게", "[보내 주세요]"], "sticker": "sticker-envelope" } }
+    },
+    "F": {
+      "name": "조종하는건_AI가_아니라_사람",
+      "hook": ["누구나 압도적으로 만드는 시대", "조종하는 건 AI가 아니라 사람"],
+      "hookSize": 68,
+      "ass": "../v2/소스/F.ass",
+      "transition": "patch",
+      "themes": ["builds"],
+      "end": { "builds": { "lines": ["AI로 뭔가 만드는", "친구에게", "[보내 주세요]"], "sticker": "sticker-envelope" } }
+    }
+  }
+}

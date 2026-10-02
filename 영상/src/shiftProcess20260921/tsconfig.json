@@ -1,0 +1,1 @@
+{"extends":"../../tsconfig.json","include":["./**/*.ts","./**/*.tsx","./**/*.json","../킷/색.ts","../킷/폰트.ts"]}

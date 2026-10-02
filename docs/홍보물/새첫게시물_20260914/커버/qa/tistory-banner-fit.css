@@ -1,0 +1,21 @@
+/* SYNK approved cover fit · 2026-09-14
+   Append to the current Odyssey CSS; preserve all existing skin rules.
+   The uploaded 2400x900 cover already contains the logo and exact copy. */
+.header .area-promotion {
+  height: 37.5vw;
+  min-height: 0;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+.header .area-promotion:before {
+  background-color: transparent;
+}
+.header .area-promotion .inner-promotion {
+  display: none;
+}
+@media screen and (max-width: 600px) {
+  .header .area-promotion {
+    height: calc(100vw * 300 / 390);
+    background-image: url('https://tistory1.daumcdn.net/tistory/9014836/skin/images/shift-tistory.mobile.png') !important;
+  }
+}

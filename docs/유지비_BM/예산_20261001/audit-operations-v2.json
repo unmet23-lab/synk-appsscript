@@ -1,0 +1,5764 @@
+{
+  "version": 2,
+  "date": "2026-10-01",
+  "audit_type": "운영 문서→예산 추적 감사; 실사용관찰/구매완료/현지법규검증 아님",
+  "budget_snapshot": {
+    "file": "docs/오프라인_공간설계/예산_20261001/budget-data.json",
+    "sha256": "e63ae87d8a0bfef473ec5c4428889260737c4ecf0c38209c181fd0741ce06cf1",
+    "item_count": 140,
+    "scope_counts": {
+      "현설계": 109,
+      "선택": 9,
+      "별도견적": 14,
+      "월운영": 8
+    }
+  },
+  "status_legend": {
+    "포함": "현재 예산에 물품/공종/기존수단이 포함. 세부 규격/발주량 검증과 구매완료를 뜻하지 않음",
+    "누락": "원문 준비물 또는 초기필수의 항목/금액이 없거나 선택/월운영으로 빠짐",
+    "중복": "문서의 같은 물품 재등장. 예산 이중합산 지적과 구분",
+    "미견적": "별도 검토·대체/수량·범위·가격을 정해야 함. 필수 요구의 우선순위를 선택으로 낮추는 뜻 아님",
+    "범위외": "인테리어/비품 초기합계 밖 운영비·후순위·사용자 제외·기존소프트웨어 기능"
+  },
+  "source_files": [
+    {
+      "key": "B",
+      "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+      "line_count": 237,
+      "read_scope": "전체 준비물/관련 항목 대조"
+    },
+    {
+      "key": "O",
+      "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+      "line_count": 537,
+      "read_scope": "전체 읽음. 131개 앱/엔진 기능을 물품131개로 전환하지 않고 개원준비/비용연관 항목 추적"
+    },
+    {
+      "key": "C",
+      "file": "tools/classroom-media/교실세팅.md",
+      "line_count": 171,
+      "read_scope": "전체 준비물/관련 항목 대조"
+    },
+    {
+      "key": "P",
+      "file": "docs/포토부스_설계.md",
+      "line_count": 113,
+      "read_scope": "전체 준비물/관련 항목 대조"
+    },
+    {
+      "key": "D",
+      "file": "docs/오프라인_공간설계/방별_인테리어_디자인_20260929.md",
+      "line_count": 539,
+      "read_scope": "공통 설비·운영 및6안수량 관련 절/행 읽음; 색채 문장 전체 감사 대상 아님"
+    },
+    {
+      "key": "G",
+      "file": "docs/오프라인_공간설계/평면도_20260929/공간과_촬영_통합설계.md",
+      "line_count": 310,
+      "read_scope": "전체 준비물/관련 항목 대조"
+    },
+    {
+      "key": "J",
+      "file": "docs/오프라인_공간설계/평면도_20260929/공간과_편의시설_좌표_6안.json",
+      "line_count": 4823,
+      "read_scope": "주요수량/room·furniture·camera·appliance·operations·전환 수납 대조"
+    },
+    {
+      "key": "FIN",
+      "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 급여 인센티브 정본.txt",
+      "line_count": 951,
+      "read_scope": "현재 공간 미정과 충돌한 임대/고정비 문구 195~238행만 대조. 급여 정본 전체 감사 아님."
+    }
+  ],
+  "method": {
+    "existing_requirements_first": true,
+    "proposal_not_auto_purchase": true,
+    "no_files_changed_except_this_audit": true,
+    "external_prices_not_researched_again": "이번은 기존자료 추적 감사. 가격이나 법규를 새로 확정하지 않음",
+    "prior_audit_limit": "앞선 합산 검산은140행 안의 계산/중복 검토였고, 원문 P0 전체 적재 감사가 아니었다. 이 표가 그 누락 범위를 보완한다.",
+    "unknown_cost_handling": "미견적·범위외 필수 개원자금은 무료나 불필요를 뜻하지 않는다. 인테리어/비품 합계에서 제외되었으며 해당 값이 채워지기 전 실제 개원 총자금은 미확정이다.",
+    "current_property_status": "실제 공간 미정. 267.9㎡는 개념설계, 과거254.5㎡·월1,500만₮를 현 임대계약값으로 사용하지 않는다."
+  },
+  "entries": [
+    {
+      "id": "B35",
+      "item": "소화기",
+      "source_priority": "P0-법정(원문 분류)",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0-법정(원문 분류)",
+      "budget_ids": [
+        "S-fire_extinguisher"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-fire_extinguisher",
+          "line": 2091,
+          "scope": "현설계",
+          "qty": 2,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 120000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 35,
+          "line_end": 35,
+          "excerpt": "| 소화기 | 2개 | 개원 인허가 점검 대상. P0 최종 점검(D-7)이 아니라 **인허가 신청 전에** 끝낸다 |"
+        }
+      ],
+      "assessment": "2개 계상. 이 감사는 법정 필요수량이나 현지 적합 판정이 아님.",
+      "minimal_action": "현지 확인은 SITE-FIRE와 별개로 완료",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B43",
+      "item": "실내/외 간판",
+      "source_priority": "P0",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "C18",
+        "C19",
+        "C34"
+      ],
+      "budget_matches": [
+        {
+          "id": "C18",
+          "line": 376,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 1400000
+        },
+        {
+          "id": "C19",
+          "line": 394,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 1200000
+        },
+        {
+          "id": "C34",
+          "line": 680,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 1200000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 43,
+          "line_end": 43,
+          "excerpt": "| 학원 간판 실내/실외 | 각 1 | 네온사인 또는 LED 사이니지. 제작·허가 리드타임이 가장 길다 — 최우선 발주 |"
+        }
+      ],
+      "assessment": "실내 A LED1·안내표식·외부벽부1 포함. 외부는 비조명 계획가라 원문 네온/LED 선택은 제작 전 확정.",
+      "minimal_action": "제작형태 확정 후 견적 갱신",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B44",
+      "item": "시냅스 코어 6레벨 교재",
+      "source_priority": "P0",
+      "status": "미견적",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "S-textbook_bw",
+        "S-textbook_binding"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-textbook_bw",
+          "line": 2487,
+          "scope": "별도견적",
+          "qty": null,
+          "unit": "A4 인쇄면1면",
+          "currency": "MNT",
+          "base": 150
+        },
+        {
+          "id": "S-textbook_binding",
+          "line": 2507,
+          "scope": "별도견적",
+          "qty": null,
+          "unit": "권",
+          "currency": "MNT",
+          "base": 4000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 44,
+          "line_end": 44,
+          "excerpt": "| 자체 교재 시냅스 코어 | 6레벨 | 정규 수업 교재. 인쇄 리드타임 확인 후 오픈 최소 2주 전 입고 |"
+        }
+      ],
+      "assessment": "단가 산식만 있고 qty=null로 초기 총액에서 제외. 첫 수업 필수 비용은 아직 채워지지 않음. 6레벨은6부가 아님.",
+      "minimal_action": "레벨별 실제 개강 인원·교사용·검수용·예비부수와 최종 면수 확정",
+      "issue": true,
+      "gap_type": "수량·대체·견적 미완료",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B45",
+      "item": "학생 책걸상64세트+예비 미정",
+      "source_priority": "P0",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "F01",
+        "F02",
+        "F03"
+      ],
+      "budget_matches": [
+        {
+          "id": "F01",
+          "line": 698,
+          "scope": "현설계",
+          "qty": 16,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 250000
+        },
+        {
+          "id": "F02",
+          "line": 719,
+          "scope": "현설계",
+          "qty": 48,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 180000
+        },
+        {
+          "id": "F03",
+          "line": 740,
+          "scope": "현설계",
+          "qty": 64,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 120000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 45,
+          "line_end": 45,
+          "excerpt": "| 학생용 책걸상 | 64세트 + 예비 미정 | 동시 가동 좌석 = 4실 × 16석 = 64. 배송·조립 기간 여유 확보 |"
+        }
+      ],
+      "assessment": "16+48책상/64의자 포함. 예비는 원문부터 미정.",
+      "minimal_action": "예비를 임의64세트에 추가하지 말고 고장 운영 기준만 결정",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B46",
+      "item": "직원 개인 책걸상8세트",
+      "source_priority": "P0",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "F06",
+        "F07"
+      ],
+      "budget_matches": [
+        {
+          "id": "F06",
+          "line": 796,
+          "scope": "현설계",
+          "qty": 8,
+          "unit": "자리",
+          "currency": "MNT",
+          "base": 750000
+        },
+        {
+          "id": "F07",
+          "line": 817,
+          "scope": "현설계",
+          "qty": 8,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 220000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 46,
+          "line_end": 46,
+          "excerpt": "| 직원용 책걸상 | 8세트 | 사무실 상주6~8명·개인 업무책상8자리 계획(2026-09-29 사용자 조건). 전체 직원 수와 동시 상주 좌석 수를 구분 |"
+        }
+      ],
+      "assessment": "동시 상주8자리 포함; 직원13명분 명함과 다른 수량.",
+      "minimal_action": "동일 책상 내 개인수납 유지",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B47",
+      "item": "상담 접이테이블1+의자4",
+      "source_priority": "P0·수량 제안",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0·수량 제안",
+      "budget_ids": [
+        "F08",
+        "F09",
+        "F10"
+      ],
+      "budget_matches": [
+        {
+          "id": "F08",
+          "line": 838,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 300000
+        },
+        {
+          "id": "F09",
+          "line": 859,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 100000
+        },
+        {
+          "id": "F10",
+          "line": 880,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 500000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 47,
+          "line_end": 47,
+          "excerpt": "| 상담 테이블+의자 | 접이 테이블1+의자4개 제안 | 6안 약13.52㎡/4.1평. 상담/VR 전환 및 접은 가구 지정 수납. 수납 외형은 가정이며 실제 제품·출입·VR영역과 함께 확인. 첫 상담일 전 입고 |"
+        }
+      ],
+      "assessment": "가구와 수납 모두 포함.",
+      "minimal_action": "실물 접힘·VR전환 검증",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B48",
+      "item": "직원 명함13명분",
+      "source_priority": "P0",
+      "status": "미견적",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "S-business_cards"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-business_cards",
+          "line": 2527,
+          "scope": "별도견적",
+          "qty": null,
+          "unit": "직원별500매 예시배치",
+          "currency": "MNT",
+          "base": 60000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 48,
+          "line_end": 48,
+          "excerpt": "| 정직원 명함 | 13명분 | 브랜드 디자인 확정 후 일괄 제작 |"
+        }
+      ],
+      "assessment": "13명 근거는 note에 있으나 qty=null. 인당500매 확정은 없으므로 현재 총액에 미계상.",
+      "minimal_action": "실제 발행13명 및 인당 부수를 정해 초기 인쇄비 반영",
+      "issue": true,
+      "gap_type": "수량·대체·견적 미완료",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B49",
+      "item": "사무 복합기1",
+      "source_priority": "P0",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "S-printer",
+        "F13",
+        "S-paper_opening"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-printer",
+          "line": 2049,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "대",
+          "currency": "MNT",
+          "base": 1129900
+        },
+        {
+          "id": "F13",
+          "line": 938,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 650000
+        },
+        {
+          "id": "S-paper_opening",
+          "line": 2212,
+          "scope": "현설계",
+          "qty": 15,
+          "unit": "500매 리임",
+          "currency": "MNT",
+          "base": 17900
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 49,
+          "line_end": 49,
+          "excerpt": "| 프린터 또는 복합기 | 1대 | 2026-10-01 사무실 공용 출력 지점에 용지·출력물·소모품 수납과 함께 배치. 용지함 인출/덮개 열림 여유와 실제 크기 확인 후 제품 결정 |"
+        }
+      ],
+      "assessment": "기기·장·용지 포함. 동봉잉크는 다시 구매하지 않음.",
+      "minimal_action": "실제 인출·초기 동봉잉크 확인",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B50",
+      "item": "공용 정수기1",
+      "source_priority": "P0·얼음 미정",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0·얼음 미정",
+      "budget_ids": [
+        "S-water",
+        "C23",
+        "F15"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-water",
+          "line": 2028,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "대",
+          "currency": "MNT",
+          "base": 1319989
+        },
+        {
+          "id": "C23",
+          "line": 470,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": 5000000
+        },
+        {
+          "id": "F15",
+          "line": 976,
+          "scope": "현설계",
+          "qty": 1.3,
+          "unit": "전면길이 m",
+          "currency": "MNT",
+          "base": 800000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 50,
+          "line_end": 50,
+          "excerpt": "| 얼음 정수기 | 1대 후보 | 포토실 앞 공용 편의구역에 물병 채움·컵 수거와 함께 배치. 냉온수/얼음 여부·렌탈/구매는 미정. 커피머신과 실제 외형·정비 여유·급배수 확인 |"
+        }
+      ],
+      "assessment": "1대와 필요 연결/대 포함. 얼음 기능은 확정 요구 아님.",
+      "minimal_action": "선정 후 급수 방식·피크 공급량 확인",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B51",
+      "item": "CCTV 기존5대안",
+      "source_priority": "P0·별도 검토",
+      "status": "미견적",
+      "confirmed_vs_proposed": "P0·별도 검토",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 51,
+          "line_end": 51,
+          "excerpt": "| CCTV | 기존5대안·별도 검토 | 기존 사무실1+강의실4 계획은 수업 촬영용 카메라4대와 구분한다. 화장실에는 카메라를 두지 않는다. 설치 위치·안내와 현지 요건 확인 전 |"
+        }
+      ],
+      "assessment": "AV-PTZ4는 수업촬영이며 CCTV 대체로 확정되지 않음. 보안 카메라·저장·권한/표시·배선·유지 비용을 따로 검토할 행 자체 없음.",
+      "minimal_action": "5대를 확정 구매로 올리지 말고 보안 범위/저장기간/위치 확정 후 별도견적 행",
+      "issue": true,
+      "gap_type": "수량·대체·견적 미완료",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B52",
+      "item": "Wi-Fi 공유/확장1세트",
+      "source_priority": "P0",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "NET-ROUTER",
+        "NET-SWITCH",
+        "NET-AP",
+        "NET-UPS",
+        "C22"
+      ],
+      "budget_matches": [
+        {
+          "id": "NET-ROUTER",
+          "line": 1448,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "USD",
+          "base": 49.98
+        },
+        {
+          "id": "NET-SWITCH",
+          "line": 1468,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 799900
+        },
+        {
+          "id": "NET-AP",
+          "line": 1488,
+          "scope": "현설계",
+          "qty": 3,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 349900
+        },
+        {
+          "id": "NET-UPS",
+          "line": 1508,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 639900
+        },
+        {
+          "id": "C22",
+          "line": 452,
+          "scope": "현설계",
+          "qty": 24,
+          "unit": "잠정 포트",
+          "currency": "MNT",
+          "base": 90000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 52,
+          "line_end": 52,
+          "excerpt": "| 와이파이 공유기+확장기 | 1세트 | 전 공간 속도 테스트 후 인수 |"
+        }
+      ],
+      "assessment": "라우터1·스위치1·AP3·배선·UPS로 기능 포함.",
+      "minimal_action": "4실 동시 실제 업로드 테스트",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B53",
+      "item": "수신 전화기1·대표번호",
+      "source_priority": "P0",
+      "status": "누락",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 53,
+          "line_end": 53,
+          "excerpt": "| 수신용 전화기 | 1대 | 학원 대표 번호. 번호 개통 일정과 함께 진행 |"
+        }
+      ],
+      "assessment": "전화 단말·대표번호 개통·통신료 대응 행 없음. 직원 개인폰 사용으로 대체 결정한 기록 없음.",
+      "minimal_action": "단말1과 번호 개통/월요금을 각각 준비항목으로 반영",
+      "issue": true,
+      "gap_type": "초기준비 미계상 또는 분류 오류",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B54",
+      "item": "TV 연결용 패드1",
+      "source_priority": "P0·후속 방식 대조 필요",
+      "status": "미견적",
+      "confirmed_vs_proposed": "P0·후속 방식 대조 필요",
+      "budget_ids": [
+        "AV-PC",
+        "AV-PEN",
+        "AV-CABLE",
+        "AV-TV"
+      ],
+      "budget_matches": [
+        {
+          "id": "AV-PC",
+          "line": 1188,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 2849900
+        },
+        {
+          "id": "AV-PEN",
+          "line": 1128,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "KRW",
+          "base": 139000
+        },
+        {
+          "id": "AV-CABLE",
+          "line": 1288,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 280000
+        },
+        {
+          "id": "AV-TV",
+          "line": 1108,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 3599900
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 54,
+          "line_end": 54,
+          "excerpt": "| TV 연결용 패드 | 1대 | 수업 자료 송출. 강의실 TV와 연결 테스트 후 인수 |"
+        }
+      ],
+      "assessment": "원문 독립 패드1은 미계상. 후속 교실세팅의 PC직접출력+펜태블릿4로 자료송출 기능은 충족하는 설계. 펜태블릿은 iPad 같은 독립 단말이 아님.",
+      "minimal_action": "기존1대가 PC방식으로 대체된 것인지 문서 일치; 이동형 송출단말 필요가 남으면1대 별도",
+      "issue": true,
+      "gap_type": "수량·대체·견적 미완료",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B55",
+      "item": "상담용 아이패드/패드1",
+      "source_priority": "P0",
+      "status": "누락",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "S-consult_tablet"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-consult_tablet",
+          "line": 2409,
+          "scope": "선택",
+          "qty": 1,
+          "unit": "대",
+          "currency": "MNT",
+          "base": 1000000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 55,
+          "line_end": 55,
+          "excerpt": "| 상담용 패드 | 1대 | 디지털 브로셔 시연. 첫 상담부터 쓴다 — 브로셔 사전 탑재 |"
+        }
+      ],
+      "assessment": "선택(scope=선택)으로 빠져 현설계 초기 합계에서 제외. 첫 상담 디지털 브로셔 시연에 필수라고 원문 명시.",
+      "minimal_action": "현설계 필수1대로 분류하고 브로셔 사전탑재·잠금·충전/케이스 필요분 확인",
+      "issue": true,
+      "gap_type": "초기준비 미계상 또는 분류 오류",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B56",
+      "item": "멀티탭7",
+      "source_priority": "P0",
+      "status": "누락",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "C20",
+        "AV-CABLE",
+        "AV-UPS"
+      ],
+      "budget_matches": [
+        {
+          "id": "C20",
+          "line": 412,
+          "scope": "현설계",
+          "qty": 267.9,
+          "unit": "㎡ 예산환산",
+          "currency": "MNT",
+          "base": 32000
+        },
+        {
+          "id": "AV-CABLE",
+          "line": 1288,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 280000
+        },
+        {
+          "id": "AV-UPS",
+          "line": 1388,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 439900
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 56,
+          "line_end": 56,
+          "excerpt": "| 멀티탭 | 7개 | 공간별 배치도 기준 |"
+        }
+      ],
+      "assessment": "C20은 고정회로·콘센트, AV-CABLE은 신호패치, UPS는 정전 보호. 멀티탭7개를 포함한다는 명시 없음.",
+      "minimal_action": "7개 기준 회로부하·접지·현지 플러그 확인 후 별도행 또는 기존행에 명시",
+      "issue": true,
+      "gap_type": "초기준비 미계상 또는 분류 오류",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B57",
+      "item": "A4용지2+예비1박스",
+      "source_priority": "P0",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "S-paper_opening"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-paper_opening",
+          "line": 2212,
+          "scope": "현설계",
+          "qty": 15,
+          "unit": "500매 리임",
+          "currency": "MNT",
+          "base": 17900
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 57,
+          "line_end": 57,
+          "excerpt": "| A4 용지 | 2박스 + 여유 1박스 | 교재·시험지·안내문 출력. 여유분 소진 시 즉시 보충 |"
+        }
+      ],
+      "assessment": "5리임/박스 가정15리임 포함. 개강 교재 외주 인쇄와 별개.",
+      "minimal_action": "실물 박스 구성/장내 보관량 확인",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B58",
+      "item": "문서 파일·바인더",
+      "source_priority": "P0·수량 미정",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0·수량 미정",
+      "budget_ids": [
+        "S-office_stationery",
+        "F13"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-office_stationery",
+          "line": 2191,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 180000
+        },
+        {
+          "id": "F13",
+          "line": 938,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 650000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 58,
+          "line_end": 58,
+          "excerpt": "| 문서 보관 파일·바인더 | 미정 | 계약서·행정 문서. 분류 체계를 먼저 정하고 구매 |"
+        }
+      ],
+      "assessment": "사무필기/파일 세트에 묶여 있음. 실제 바인더 수량은 미정.",
+      "minimal_action": "분류 체계/세트 세부내역 확정",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B59",
+      "item": "상담 노트·펜 초도",
+      "source_priority": "P0",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "S-office_stationery"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-office_stationery",
+          "line": 2191,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 180000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 59,
+          "line_end": 59,
+          "excerpt": "| 상담용 필기 세트 | 월 소요분 1회치 | 노트+펜. 상담실 테이블마다 배치 |"
+        }
+      ],
+      "assessment": "상담 필기 세트1에 포괄. 교실 대여펜8과 중복 구매하지 않음.",
+      "minimal_action": "묶음 발주서에 상담용 노트/펜 수량 명시",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B60",
+      "item": "입구 미끄럼 방지",
+      "source_priority": "P0",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "S-entry_mat",
+        "C06"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-entry_mat",
+          "line": 2391,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 120000
+        },
+        {
+          "id": "C06",
+          "line": 142,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": 900000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 60,
+          "line_end": 60,
+          "excerpt": "| 입구 미끄럼 방지 세트 | 1세트 | 출입구 배치. 2026-09-29 로비·라운지 삭제 조건 반영 |"
+        }
+      ],
+      "assessment": "매트1과 문턱/바탕공사 구분 포함.",
+      "minimal_action": "겨울 물기·매트 걸림 실물 점검",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B61",
+      "item": "가습기7",
+      "source_priority": "P0·사용자 배치확정",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0·사용자 배치확정",
+      "budget_ids": [
+        "S-humid_large",
+        "S-humid_small"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-humid_large",
+          "line": 1968,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "대",
+          "currency": "MNT",
+          "base": 400000
+        },
+        {
+          "id": "S-humid_small",
+          "line": 1988,
+          "scope": "현설계",
+          "qty": 6,
+          "unit": "대",
+          "currency": "MNT",
+          "base": 209000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 61,
+          "line_end": 61,
+          "excerpt": "| 가습기 | 7대 기본 계획 | 사용자 모든 방 배치 요청(2026-09-29): 강의실4·사무실1·상담실1·포토실1. 방 크기별 용량·제품 치수·물 보충/세척 동선 확인. 실제 구매 전 |"
+        }
+      ],
+      "assessment": "1+6=7. 용량/정비 검증은 남음.",
+      "minimal_action": "구매 수량 충분성의 근거로 오해 금지",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B62",
+      "item": "구급함1",
+      "source_priority": "P0",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "S-first_aid"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-first_aid",
+          "line": 2111,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 220000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 62,
+          "line_end": 62,
+          "excerpt": "| 구급상자 | 1개 | 유효기간 있는 약품은 점검 주기 설정. 현지 인허가 요건이면 P0-법정 승격 [확인 필요] |"
+        }
+      ],
+      "assessment": "구급함과 기초응급품1 포함. 현지법정 여부는 이 감사 범위 아님.",
+      "minimal_action": "내용물·유효기한 점검",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B63",
+      "item": "여성용품 비치함1",
+      "source_priority": "P0",
+      "status": "누락",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "S-hygiene_opening",
+        "S-bin_feminine"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-hygiene_opening",
+          "line": 2250,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "초도 묶음",
+          "currency": "MNT",
+          "base": 250000
+        },
+        {
+          "id": "S-bin_feminine",
+          "line": 2171,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 70000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 63,
+          "line_end": 63,
+          "excerpt": "| 여성용품 비치함 | 1세트 | 6안 여자 화장실의 물기 닿지 않는 닫힌 수납 위치 제안 |"
+        }
+      ],
+      "assessment": "소모 여성용품은 위생초도 묶음이나 닫힌 비치함은 누락. S-bin_feminine은 사용한 위생품 폐기통이라 다른 물품.",
+      "minimal_action": "건조한 닫힌 비치함1 또는 WC수납 내부 전용칸 명시",
+      "issue": true,
+      "gap_type": "초기준비 미계상 또는 분류 오류",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B64",
+      "item": "전기포트1",
+      "source_priority": "P0",
+      "status": "누락",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "S-kettle"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-kettle",
+          "line": 2427,
+          "scope": "선택",
+          "qty": 1,
+          "unit": "대",
+          "currency": "MNT",
+          "base": 120000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 64,
+          "line_end": 64,
+          "excerpt": "| 전기포트 | 1대 | 차 제공. 상담 다과와 세트 운영 |"
+        }
+      ],
+      "assessment": "선택으로 빠짐. 정수기 온수로 차 제공을 대체한다는 확정 없음.",
+      "minimal_action": "필수1로 정정하거나 정수기 실제 온수 기능으로 대체를 문서화",
+      "issue": true,
+      "gap_type": "초기준비 미계상 또는 분류 오류",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B65",
+      "item": "상담 차 초도1개월분",
+      "source_priority": "P0",
+      "status": "누락",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "S-tea_snacks"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-tea_snacks",
+          "line": 2607,
+          "scope": "월운영",
+          "qty": 1,
+          "unit": "월",
+          "currency": "MNT",
+          "base": 200000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 65,
+          "line_end": 65,
+          "excerpt": "| 상담용 차 | 월 소요분 1회치 | 캐모마일·페퍼민트·유자차. 유자차는 K문화 소개 겸용 |"
+        }
+      ],
+      "assessment": "월운영만 있음. 초기 재고를 초기자금에 포함하지 않아 첫 상담 제공분 비용이 미계상.",
+      "minimal_action": "차 종류·초도량 정해 개원재고에 반영; 첫 달 재구매와 중복 금지",
+      "issue": true,
+      "gap_type": "초기준비 미계상 또는 분류 오류",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B66",
+      "item": "상담 간식 초도1개월분",
+      "source_priority": "P0",
+      "status": "누락",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "S-tea_snacks"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-tea_snacks",
+          "line": 2607,
+          "scope": "월운영",
+          "qty": 1,
+          "unit": "월",
+          "currency": "MNT",
+          "base": 200000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 66,
+          "line_end": 66,
+          "excerpt": "| 상담실 간식 | 월 소요분 1회치 | 빼빼로·꼬깔콘·새우깡·약과·초코파이. 재고 소진 전 보충 담당 지정 |"
+        }
+      ],
+      "assessment": "월운영만 있음. 매월 보충과 첫 채움 구분 필요.",
+      "minimal_action": "포장 다과 초도량을 개원재고에 반영",
+      "issue": true,
+      "gap_type": "초기준비 미계상 또는 분류 오류",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B67",
+      "item": "청소도구1세트",
+      "source_priority": "P0",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "S-cleaning_kit",
+        "F14",
+        "C25"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-cleaning_kit",
+          "line": 2070,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 550000
+        },
+        {
+          "id": "F14",
+          "line": 958,
+          "scope": "현설계",
+          "qty": 1.3,
+          "unit": "전면길이 m",
+          "currency": "MNT",
+          "base": 900000
+        },
+        {
+          "id": "C25",
+          "line": 512,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": 1200000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 67,
+          "line_end": 67,
+          "excerpt": "| 청소 장비 | 1세트 | 잠금 관리장과 물통 세척 위치를6안에 반영(2026-10-01). 도구·약품·물받이·건조 수납을 구분. 상담/VR 사용 중 관리 작업 금지, 실제 수전·배수 연결은 현장 확인 |"
+        }
+      ],
+      "assessment": "장비1·잠금장·싱크 포함. 전용 물통키트는 별도.",
+      "minimal_action": "버킷/밀대 실제 장내 적재 검증",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B68",
+      "item": "거울용 유리세정제·걸레",
+      "source_priority": "P0·수량미정",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0·수량미정",
+      "budget_ids": [
+        "S-cleaning_kit",
+        "S-hygiene_opening"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-cleaning_kit",
+          "line": 2070,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 550000
+        },
+        {
+          "id": "S-hygiene_opening",
+          "line": 2250,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "초도 묶음",
+          "currency": "MNT",
+          "base": 250000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 68,
+          "line_end": 68,
+          "excerpt": "| 유리 세정제·걸레 | 미정 | 거울·유리 관리. 메인 룸 풀월 미러 관리용 포함 |"
+        }
+      ],
+      "assessment": "세정도구와 초도약품 묶음에 포함.",
+      "minimal_action": "거울코팅 적합 세정제·수량 명시",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B69",
+      "item": "쓰레기통7",
+      "source_priority": "P0",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "S-bins_general"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-bins_general",
+          "line": 2131,
+          "scope": "현설계",
+          "qty": 7,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 35000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 69,
+          "line_end": 69,
+          "excerpt": "| 쓰레기통 | 7개 | 강의실4·사무실·상담실·포토/공용 편의코너. 로비 삭제 반영. 편의대 확정 시 물기·컵 수거 방식 확인 |"
+        }
+      ],
+      "assessment": "일반7실 합7; 포토 컵통이 이중1, 추가컵통 아님.",
+      "minimal_action": "실물 용량/인출 확인",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B70",
+      "item": "휴지2박스",
+      "source_priority": "P0",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "S-hygiene_opening"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-hygiene_opening",
+          "line": 2250,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "초도 묶음",
+          "currency": "MNT",
+          "base": 250000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 70,
+          "line_end": 70,
+          "excerpt": "| 휴지 | 2박스 | |"
+        }
+      ],
+      "assessment": "위생 초도 묶음 설명에 휴지2박스가 명시되어 있다. 박스별 포장/용량은 실제 발주 전 확인 사항이다.",
+      "minimal_action": "실제 포장과 용량을 확인하되 초도 휴지를 중복 추가하지 않는다.",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B71",
+      "item": "손소독제6",
+      "source_priority": "P0",
+      "status": "포함",
+      "confirmed_vs_proposed": "P0",
+      "budget_ids": [
+        "S-sanitizer_opening"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-sanitizer_opening",
+          "line": 2232,
+          "scope": "현설계",
+          "qty": 6,
+          "unit": "병",
+          "currency": "MNT",
+          "base": 16000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 71,
+          "line_end": 71,
+          "excerpt": "| 손 소독제 | 6개 | 입구 1 · 강의실 4 · 상담실 1 |"
+        }
+      ],
+      "assessment": "6병 포함.",
+      "minimal_action": "비치6지점과 공급규격 확인",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B81",
+      "item": "WC 양변기2",
+      "source_priority": "6안 제안",
+      "status": "포함",
+      "confirmed_vs_proposed": "6안 제안",
+      "budget_ids": [
+        "C24"
+      ],
+      "budget_matches": [
+        {
+          "id": "C24",
+          "line": 491,
+          "scope": "현설계",
+          "qty": 2,
+          "unit": "실 세트",
+          "currency": "MNT",
+          "base": 900000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 81,
+          "line_end": 81,
+          "excerpt": "| 양변기 | 2개 | 남녀 각1개. 배관 위치·수압·정비 공간 확인 |"
+        }
+      ],
+      "assessment": "2개 포함. 기구수 적정 확정 아님.",
+      "minimal_action": "현장 확인",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B82",
+      "item": "WC 세면대·수전·내수 세면장 각2",
+      "source_priority": "6안 제안",
+      "status": "누락",
+      "confirmed_vs_proposed": "6안 제안",
+      "budget_ids": [
+        "C24"
+      ],
+      "budget_matches": [
+        {
+          "id": "C24",
+          "line": 491,
+          "scope": "현설계",
+          "qty": 2,
+          "unit": "실 세트",
+          "currency": "MNT",
+          "base": 900000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 82,
+          "line_end": 82,
+          "excerpt": "| 세면대·수전·내수 세면장 | 각2개 | 남녀 각1세트. 원목 노출 대신 내수 마감, 제품 외형 확인 |"
+        }
+      ],
+      "assessment": "세면대/수전2는 있으나 C24 범위는 도기/수전/연결 부속. 내수 세면장2는 맞춤가구행에 없음.",
+      "minimal_action": "세면장2를 C24 또는 독립 목공항목에 명시",
+      "issue": true,
+      "gap_type": "초기준비 미계상 또는 분류 오류",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B83",
+      "item": "WC 거울·세면 조명 각2",
+      "source_priority": "6안 제안",
+      "status": "포함",
+      "confirmed_vs_proposed": "6안 제안",
+      "budget_ids": [
+        "C33",
+        "C21"
+      ],
+      "budget_matches": [
+        {
+          "id": "C33",
+          "line": 662,
+          "scope": "현설계",
+          "qty": 2,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 100000
+        },
+        {
+          "id": "C21",
+          "line": 432,
+          "scope": "현설계",
+          "qty": 36,
+          "unit": "잠정 등기구",
+          "currency": "MNT",
+          "base": 130000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 83,
+          "line_end": 83,
+          "excerpt": "| 거울·세면 조명 | 각2개 | 얼굴 그림자·눈부심 확인, 전기 위치는 설비 도면에서 확정 |"
+        }
+      ],
+      "assessment": "거울2와 기본36등에 화장실 포함. 세면용 조명2의 세부분담은 확인 필요.",
+      "minimal_action": "36등 내 세면광2의 규격/수량 명시",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B84",
+      "item": "WC 실별 독립배기",
+      "source_priority": "6안 제안",
+      "status": "포함",
+      "confirmed_vs_proposed": "6안 제안",
+      "budget_ids": [
+        "C27"
+      ],
+      "budget_matches": [
+        {
+          "id": "C27",
+          "line": 550,
+          "scope": "현설계",
+          "qty": 2,
+          "unit": "실",
+          "currency": "MNT",
+          "base": 600000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 84,
+          "line_end": 84,
+          "excerpt": "| 배기·덕트 | 실별1계통 제안 | 외부 배출 경로·역류 방지·보충 공기·점검 접근 확인. 일반7실 공청/가습 수량과 별개 |"
+        }
+      ],
+      "assessment": "2실 배기 포함. 일반열회수환기와 별도.",
+      "minimal_action": "외부배출/보충공기 검토",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B85",
+      "item": "WC 문·잠금·비상해제2",
+      "source_priority": "6안 제안",
+      "status": "포함",
+      "confirmed_vs_proposed": "6안 제안",
+      "budget_ids": [
+        "C05"
+      ],
+      "budget_matches": [
+        {
+          "id": "C05",
+          "line": 124,
+          "scope": "현설계",
+          "qty": 3,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 1000000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 85,
+          "line_end": 85,
+          "excerpt": "| 미닫이문·사용중 잠금·비상 해제 | 2세트 제안 | 실제 프레임·유효 개구·프라이버시·정비 검토 후 선택 |"
+        }
+      ],
+      "assessment": "WC2+포토1문으로 총3세트 포함. 비상해제는 일반잠금과 다른 발주세부.",
+      "minimal_action": "C05 WC2세트에 외부비상해제·사용중 표시 명시",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B86",
+      "item": "WC 디스펜서3종 각2",
+      "source_priority": "6안 제안",
+      "status": "포함",
+      "confirmed_vs_proposed": "6안 제안",
+      "budget_ids": [
+        "C32"
+      ],
+      "budget_matches": [
+        {
+          "id": "C32",
+          "line": 644,
+          "scope": "현설계",
+          "qty": 2,
+          "unit": "실 세트",
+          "currency": "MNT",
+          "base": 100000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 86,
+          "line_end": 86,
+          "excerpt": "| 비누·손수건 디스펜서·휴지걸이 | 각2개 | 손 닿는 위치와 물기 분리 |"
+        }
+      ],
+      "assessment": "비누/타월/휴지걸이2세트 포함.",
+      "minimal_action": "소모품 별도S-hygiene_opening",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B87",
+      "item": "WC 세면 덮개통2",
+      "source_priority": "6안 제안",
+      "status": "포함",
+      "confirmed_vs_proposed": "6안 제안",
+      "budget_ids": [
+        "S-bins_wc"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-bins_wc",
+          "line": 2151,
+          "scope": "현설계",
+          "qty": 2,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 45000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 87,
+          "line_end": 87,
+          "excerpt": "| 세면용 덮개 휴지통 | 2개 | 각 세면대 아래, 발 디딤·회전 동선을 피함. 일반7실 쓰레기통과 별도 |"
+        }
+      ],
+      "assessment": "일반7통과 별도2.",
+      "minimal_action": "실물 인출 확인",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B88",
+      "item": "여성 위생폐기함1",
+      "source_priority": "6안 제안",
+      "status": "포함",
+      "confirmed_vs_proposed": "6안 제안",
+      "budget_ids": [
+        "S-bin_feminine"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-bin_feminine",
+          "line": 2171,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 70000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 88,
+          "line_end": 88,
+          "excerpt": "| 여성 위생 폐기함 | 1개 | 여자 화장실 변기 옆, 사용·수거 공간 확보 |"
+        }
+      ],
+      "assessment": "폐기통1 포함. 비치함과 구별.",
+      "minimal_action": "라이너/수거 루틴 연결",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B89",
+      "item": "WC 닫힌 소모품 수납2곳",
+      "source_priority": "6안 제안",
+      "status": "누락",
+      "confirmed_vs_proposed": "6안 제안",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 89,
+          "line_end": 89,
+          "excerpt": "| 닫힌 소모품 수납 | 실별1곳 제안 | 상부 벽 수납 후보. 청소약품과 개인 위생용품 분리 |"
+        },
+        {
+          "file": "docs/오프라인_공간설계/평면도_20260929/공간과_편의시설_좌표_6안.json",
+          "line_start": 2781,
+          "line_end": 2788,
+          "excerpt": "        \"room\": \"WC-M\",\n        \"kind\": \"closed-supply-storage\",\n        \"x\": 16.85,\n        \"y\": 10.98,\n        \"w\": 0.8,\n        \"h\": 0.195,\n        \"floorOccupancy\": false,\n        \"label\": \"상부 닫힌 소모품 수납 후보\""
+        },
+        {
+          "file": "docs/오프라인_공간설계/평면도_20260929/공간과_편의시설_좌표_6안.json",
+          "line_start": 2791,
+          "line_end": 2798,
+          "excerpt": "        \"room\": \"WC-F\",\n        \"kind\": \"closed-supply-storage\",\n        \"x\": 16.85,\n        \"y\": 11.425,\n        \"w\": 0.8,\n        \"h\": 0.195,\n        \"floorOccupancy\": false,\n        \"label\": \"상부 닫힌 소모품 수납 후보\""
+        }
+      ],
+      "assessment": "화장실 상부 벽수납2곳이 예산 가구 범위에 없음. 상담실 CARE-LOCK은 WC수납의 대체가 아님.",
+      "minimal_action": "세면장과 합쳐 구현할지 결정하고 중복 없이2곳 반영",
+      "issue": true,
+      "gap_type": "초기준비 미계상 또는 분류 오류",
+      "quantity": {
+        "value": 2,
+        "unit": "곳",
+        "status": "6안 벽수납 후보, 제품 미선정"
+      },
+      "duplicate_of": null
+    },
+    {
+      "id": "B90",
+      "item": "남녀·사용중 안내2",
+      "source_priority": "6안 제안",
+      "status": "포함",
+      "confirmed_vs_proposed": "6안 제안",
+      "budget_ids": [
+        "C19",
+        "C05"
+      ],
+      "budget_matches": [
+        {
+          "id": "C19",
+          "line": 394,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 1200000
+        },
+        {
+          "id": "C05",
+          "line": 124,
+          "scope": "현설계",
+          "qty": 3,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 1000000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 90,
+          "line_end": 90,
+          "excerpt": "| 남녀·사용중 안내 | 2세트 | 입구에서 알아보기 쉬운 글자와 픽토그램. 최종 언어·제작은 미정 |"
+        }
+      ],
+      "assessment": "방9곳 사인에 남녀2 포함. 사용중은 문 잠금표시와 동시발주할 내용.",
+      "minimal_action": "2세트에 포함 명시",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B98",
+      "item": "교실 외투·신발 수납",
+      "source_priority": "사용자 반영 승인",
+      "status": "포함",
+      "confirmed_vs_proposed": "사용자 반영 승인",
+      "budget_ids": [
+        "F11"
+      ],
+      "budget_matches": [
+        {
+          "id": "F11",
+          "line": 898,
+          "scope": "현설계",
+          "qty": 12.1,
+          "unit": "전면길이 m",
+          "currency": "MNT",
+          "base": 650000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 98,
+          "line_end": 98,
+          "excerpt": "| 외투·신발 수납 | 교실4실, 각16석 기준 적재 목표 | 교실 안 지정 가구. 실제 겨울 코트/신발과 사람이 꺼내는 공간 확인. 복도 행거 추가 없음 |"
+        }
+      ],
+      "assessment": "6개장 전면12.1m로4실16칸목표 반영.",
+      "minimal_action": "실물겨울짐 용량 검증",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B99",
+      "item": "책상 가방부속64",
+      "source_priority": "사용자 반영 승인",
+      "status": "포함",
+      "confirmed_vs_proposed": "사용자 반영 승인",
+      "budget_ids": [
+        "F20"
+      ],
+      "budget_matches": [
+        {
+          "id": "F20",
+          "line": 1072,
+          "scope": "현설계",
+          "qty": 64,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 12000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 99,
+          "line_end": 99,
+          "excerpt": "| 책상 가방 후크/하부 바구니 | 개인책상64개에 맞춰 선택 | 책상 안쪽으로 가방을 넣고 하중·모서리·다리/의자/통로 간섭 확인 |"
+        }
+      ],
+      "assessment": "64개 포함. 기본 제공책상 선택시 차감.",
+      "minimal_action": "이중계상 방지",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B100",
+      "item": "우산 물받이·매트",
+      "source_priority": "사용자 반영 승인",
+      "status": "포함",
+      "confirmed_vs_proposed": "사용자 반영 승인",
+      "budget_ids": [
+        "F18",
+        "S-entry_mat"
+      ],
+      "budget_matches": [
+        {
+          "id": "F18",
+          "line": 1032,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 100000
+        },
+        {
+          "id": "S-entry_mat",
+          "line": 2391,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 120000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 100,
+          "line_end": 100,
+          "excerpt": "| 우산 물받이·입구 매트 | 입구1세트 | 아래 기존 P2 우산꽂이와 같은 품목. 통행 폭·문턱·배수/건조 관리 확인 |"
+        }
+      ],
+      "assessment": "각1개. 실제 우산물받이는 포토문 옆이며 주출입구 매트와 구별.",
+      "minimal_action": "06의 입구1세트 표현을 위치 기준과 맞춤",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B101",
+      "item": "관리장·세척자리1",
+      "source_priority": "사용자 반영 승인",
+      "status": "포함",
+      "confirmed_vs_proposed": "사용자 반영 승인",
+      "budget_ids": [
+        "F14",
+        "C25",
+        "C23"
+      ],
+      "budget_matches": [
+        {
+          "id": "F14",
+          "line": 958,
+          "scope": "현설계",
+          "qty": 1.3,
+          "unit": "전면길이 m",
+          "currency": "MNT",
+          "base": 900000
+        },
+        {
+          "id": "C25",
+          "line": 512,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": 1200000
+        },
+        {
+          "id": "C23",
+          "line": 470,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": 5000000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 101,
+          "line_end": 101,
+          "excerpt": "| 잠금 관리장·세척 자리 | 관리 구역1곳 | 상담실 남쪽 가구 후보. 상담·VR 중 관리 금지, 청소약품/식품/위생용품 분리. 실제 가습기 물통 크기와 급배수 확인 |"
+        }
+      ],
+      "assessment": "관리장·싱크·분기 포함.",
+      "minimal_action": "상담중 사용금지 유지",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B102",
+      "item": "교사 장비구역4",
+      "source_priority": "사용자 반영 승인",
+      "status": "포함",
+      "confirmed_vs_proposed": "사용자 반영 승인",
+      "budget_ids": [
+        "F12",
+        "AV-PC",
+        "AV-MIC"
+      ],
+      "budget_matches": [
+        {
+          "id": "F12",
+          "line": 918,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 450000
+        },
+        {
+          "id": "AV-PC",
+          "line": 1188,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 2849900
+        },
+        {
+          "id": "AV-MIC",
+          "line": 1308,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 440000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 102,
+          "line_end": 102,
+          "excerpt": "| 교사 장비·충전/보관 구역 | 교실4곳 | 기존 PC/수신기/마이크용이며 장비 추가4세트를 뜻하지 않음. 통풍·충전표시·예비 소모품·물기 분리 |"
+        }
+      ],
+      "assessment": "4개장·4세트 기기; 새로운 추가4세트 아님.",
+      "minimal_action": "장비 발열/보관 확인",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B103",
+      "item": "교실 운영카드·문상태4",
+      "source_priority": "사용자 반영 승인",
+      "status": "포함",
+      "confirmed_vs_proposed": "사용자 반영 승인",
+      "budget_ids": [
+        "S-operation_labels",
+        "C19"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-operation_labels",
+          "line": 2351,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 60000
+        },
+        {
+          "id": "C19",
+          "line": 394,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 1200000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 103,
+          "line_end": 103,
+          "excerpt": "| 교실 운영 카드·문 상태 표식 | 교실4세트 | 준비/시작/종료 카드와 수동 촬영 표시. OBS/앱 자동연동 기능 아님 |"
+        }
+      ],
+      "assessment": "카드4·작은라벨1묶음과 물리 표식 연결. 자동 연동 아님.",
+      "minimal_action": "촬영상태 수동표식4를 C19 제작내역에 명시",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B104",
+      "item": "입구 교체형안내1",
+      "source_priority": "사용자 반영 승인",
+      "status": "포함",
+      "confirmed_vs_proposed": "사용자 반영 승인",
+      "budget_ids": [
+        "C19",
+        "S-a3_print"
+      ],
+      "budget_matches": [
+        {
+          "id": "C19",
+          "line": 394,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 1200000
+        },
+        {
+          "id": "S-a3_print",
+          "line": 2371,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "초도 출력 세트",
+          "currency": "MNT",
+          "base": 10000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 104,
+          "line_end": 104,
+          "excerpt": "| 입구 교체형 안내 | 1세트 | A3 안내면 시작안, 시간/방/직원 도움/화장실. 학생 개인정보 표시 없음 |"
+        }
+      ],
+      "assessment": "프레임과 인쇄물 구분 포함.",
+      "minimal_action": "실주소·운영연락처 기입",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B105",
+      "item": "방이름/용도9곳",
+      "source_priority": "사용자 반영 승인",
+      "status": "포함",
+      "confirmed_vs_proposed": "사용자 반영 승인",
+      "budget_ids": [
+        "C19"
+      ],
+      "budget_matches": [
+        {
+          "id": "C19",
+          "line": 394,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 1200000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 105,
+          "line_end": 105,
+          "excerpt": "| 방 이름·용도 표식 | 일반7실+남녀 화장실 | 승인 서체·문자/픽토그램·작은 실색 표식. 화장실 표식 기존2세트와 중복 산정하지 않음 |"
+        }
+      ],
+      "assessment": "일반7+WC2 일치.",
+      "minimal_action": "화장실 표식 추가2 중복 금지",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B106",
+      "item": "첫수업카드A6",
+      "source_priority": "사용자 반영 승인",
+      "status": "미견적",
+      "confirmed_vs_proposed": "사용자 반영 승인",
+      "budget_ids": [
+        "S-first_class_card"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-first_class_card",
+          "line": 2447,
+          "scope": "별도견적",
+          "qty": null,
+          "unit": "신규 등록생1명당1장",
+          "currency": "MNT",
+          "base": 1000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 106,
+          "line_end": 106,
+          "excerpt": "| 첫 수업 카드 | A6 양면, 첫 등록 인원 기준 | 자리/준비/한 문장/도움/실제 복습 경로. 실제 기능이 없는 QR은 인쇄하지 않음 |"
+        }
+      ],
+      "assessment": "단가는 있으나 초도수량null. 첫 학생에게 제공할 인쇄비 미계상.",
+      "minimal_action": "개강 신규등록 인원으로 초도 산정",
+      "issue": true,
+      "gap_type": "수량·대체·견적 미완료",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B107",
+      "item": "기본+월/시즌 포토프레임",
+      "source_priority": "사용자 반영 승인",
+      "status": "미견적",
+      "confirmed_vs_proposed": "사용자 반영 승인",
+      "budget_ids": [
+        "SW-PHOTO"
+      ],
+      "budget_matches": [
+        {
+          "id": "SW-PHOTO",
+          "line": 1828,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "개/세트/프로젝트",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 107,
+          "line_end": 107,
+          "excerpt": "| 사진 프레임 디자인 | 기본1+월별/시즌별1종 | 사진부스 결과물용. 기존 사진부스1세트에 적용, 별도 촬영방 추가 아님 |"
+        }
+      ],
+      "assessment": "디지털 시안은 있지만 실규격 개발/운영 배포 비용 미산정. 별도 인쇄간판 비용은 아님.",
+      "minimal_action": "SW-PHOTO의 기본1+교체1 및 후속 갱신 담당 명시",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B117",
+      "item": "대여펜8",
+      "source_priority": "사용자 반영 승인",
+      "status": "포함",
+      "confirmed_vs_proposed": "사용자 반영 승인",
+      "budget_ids": [
+        "S-loan_pens"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-loan_pens",
+          "line": 2271,
+          "scope": "현설계",
+          "qty": 8,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 1990
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 117,
+          "line_end": 117,
+          "excerpt": "| 학생 대여 펜 | 교실별2개, 총8개 | 교사 장 안의 작은 트레이. 굿즈 재고를 활용하면 대여분만 구분하고 별도8개를 다시 사지 않음 |"
+        }
+      ],
+      "assessment": "8개 정확히 포함. 굿즈 재고 사용 시 차감.",
+      "minimal_action": "교사서랍 보관",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B118",
+      "item": "분실물함1",
+      "source_priority": "사용자 반영 승인",
+      "status": "포함",
+      "confirmed_vs_proposed": "사용자 반영 승인",
+      "budget_ids": [
+        "S-lost_found",
+        "F13"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-lost_found",
+          "line": 2291,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 40000
+        },
+        {
+          "id": "F13",
+          "line": 938,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 650000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 118,
+          "line_end": 118,
+          "excerpt": "| 닫힌 분실물함 | 1개 | 사무실 공용 출력/수납장 안. 날짜·습득 장소 기록, 귀중품은 별도 잠금 구획. 학생 이름을 공개하지 않고 보관/미수령 처리 기준은 개원 전 지정 |"
+        }
+      ],
+      "assessment": "상자1+잠금 귀중품 구획.",
+      "minimal_action": "운영정책만 별도 확정",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B119",
+      "item": "잔음료통1",
+      "source_priority": "사용자 반영 승인",
+      "status": "포함",
+      "confirmed_vs_proposed": "사용자 반영 승인",
+      "budget_ids": [
+        "S-leftover_drink",
+        "F15"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-leftover_drink",
+          "line": 2311,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 60000
+        },
+        {
+          "id": "F15",
+          "line": 976,
+          "scope": "현설계",
+          "qty": 1.3,
+          "unit": "전면길이 m",
+          "currency": "MNT",
+          "base": 800000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 119,
+          "line_end": 119,
+          "excerpt": "| 잔음료 수거통 | 1개 | 포토 편의대 하부, 기존 컵 수거함과 별도 구획. 뚜껑·분리 세척·물받이·수거선·꺼낼 여유 확인. 컵 쓰레기통 추가1개를 뜻하지 않음 |"
+        }
+      ],
+      "assessment": "잔음료통1, 컵통은7통중1.",
+      "minimal_action": "수거선/세척 확인",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B120",
+      "item": "물통세척도구1",
+      "source_priority": "사용자 반영 승인",
+      "status": "포함",
+      "confirmed_vs_proposed": "사용자 반영 승인",
+      "budget_ids": [
+        "S-humid_cleaning"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-humid_cleaning",
+          "line": 2331,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 40000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 120,
+          "line_end": 120,
+          "excerpt": "| 물통 세척·건조 도구 | 1세트 | 상담실 남측 관리 자리의 전용 솔·건조 받침. 바닥 걸레·약품과 분리. 기존 청소장비 구성품 활용, 실제 물통 크기·순차 작업 확인. 물통7개 동시 건조로 계산하지 않음 |"
+        }
+      ],
+      "assessment": "전용솔/건조받침1세트.",
+      "minimal_action": "7물통 동시건조 아님",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B121",
+      "item": "최소운영라벨1세트",
+      "source_priority": "사용자 반영 승인",
+      "status": "포함",
+      "confirmed_vs_proposed": "사용자 반영 승인",
+      "budget_ids": [
+        "S-operation_labels"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-operation_labels",
+          "line": 2351,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 60000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 121,
+          "line_end": 121,
+          "excerpt": "| 최소 운영 라벨·카드 | 1세트 | 기존 장 안쪽의 개점/마감 카드, 물통/수납 식별, 장비 전원 유지/종료 구분. 위 교실 운영 카드와 중복 제작하지 않고 부족한 내용만 보완 |"
+        }
+      ],
+      "assessment": "교실카드와 합쳐 중복제작 없음.",
+      "minimal_action": "실제 전원 회로 식별",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B129",
+      "item": "창커튼/블라인드",
+      "source_priority": "P1",
+      "status": "포함",
+      "confirmed_vs_proposed": "P1",
+      "budget_ids": [
+        "C16"
+      ],
+      "budget_matches": [
+        {
+          "id": "C16",
+          "line": 340,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "잠정식",
+          "currency": "MNT",
+          "base": 1600000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 129,
+          "line_end": 129,
+          "excerpt": "| 커튼 또는 블라인드 | 창 1개당 1 (실측 후 확정) | 빔프로젝터 빛 차단. 인테리어 일정과 병행 |"
+        }
+      ],
+      "assessment": "창 면적미정 잠정식 포함; A거울커튼과 별개.",
+      "minimal_action": "창 실측",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B130",
+      "item": "K콘텐츠 촬영카메라1",
+      "source_priority": "P1",
+      "status": "미견적",
+      "confirmed_vs_proposed": "P1",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 130,
+          "line_end": 130,
+          "excerpt": "| 촬영용 카메라 | 1대 | K콘텐츠 제작. 발주서에는 **「촬영 스튜디오」**로 적는다 — 「STUDIO」 명칭은 대외 노출 금지 |"
+        }
+      ],
+      "assessment": "교실교사PTZ4/포토USB1은 별도 역할. 콘텐츠용은 현재예산에서 제외 결정이나 재사용 시험이 없음.",
+      "minimal_action": "기존기기 재사용 우선 검토 후 권장품/별도견적으로 표시",
+      "issue": true,
+      "gap_type": "수량·대체·견적 미완료",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B131",
+      "item": "전자키보드1",
+      "source_priority": "P1",
+      "status": "범위외",
+      "confirmed_vs_proposed": "P1",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 131,
+          "line_end": 131,
+          "excerpt": "| 전자 키보드 | 1대 | K팝·음악 수업 · K컬처 워밍업 |"
+        }
+      ],
+      "assessment": "수업 필수P0가 아닌 음악/K문화 권장품. 현재140행에 없음.",
+      "minimal_action": "초기필수로 자동추가 말고 권장품 대장에 남김",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B132",
+      "item": "코팅기1",
+      "source_priority": "P1",
+      "status": "범위외",
+      "confirmed_vs_proposed": "P1",
+      "budget_ids": [
+        "S-operation_labels"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-operation_labels",
+          "line": 2351,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 60000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 132,
+          "line_end": 132,
+          "excerpt": "| 코팅기(라미네이터) | 1대 | 자주 쓰는 안내물부터 |"
+        }
+      ],
+      "assessment": "카드 외주코팅 포함은 코팅기 본체1과 다름.",
+      "minimal_action": "외주 유지/자체 기기 필요를 선택사항으로 표시",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B133",
+      "item": "사무 USB허브1",
+      "source_priority": "P1",
+      "status": "누락",
+      "confirmed_vs_proposed": "P1",
+      "budget_ids": [
+        "AV-CABLE"
+      ],
+      "budget_matches": [
+        {
+          "id": "AV-CABLE",
+          "line": 1288,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 280000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 133,
+          "line_end": 133,
+          "excerpt": "| USB 허브 | 1개 | 사무실 데스크 |"
+        }
+      ],
+      "assessment": "AV-CABLE은4교실만. 사무실1개는 들어 있지 않음.",
+      "minimal_action": "사무PC포트로 충분한지 확인 후 권장1행; 무조건 8개 구매 금지",
+      "issue": true,
+      "gap_type": "초기준비 미계상 또는 분류 오류",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B134",
+      "item": "강사용 포인터1",
+      "source_priority": "P1·선호 확인",
+      "status": "범위외",
+      "confirmed_vs_proposed": "P1·선호 확인",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 134,
+          "line_end": 134,
+          "excerpt": "| 강사용 포인터 | 1개 | 레이저 또는 막대형. 강사 선호 확인 후 |"
+        }
+      ],
+      "assessment": "교사 선호 확인 전 권장품. 예산없음.",
+      "minimal_action": "선택항목 표시",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B135",
+      "item": "학생 방석64",
+      "source_priority": "P1",
+      "status": "범위외",
+      "confirmed_vs_proposed": "P1",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 135,
+          "line_end": 135,
+          "excerpt": "| 쿠션 또는 방석 | 64개 | 학생 좌석과 동수. 책걸상과 발주 시점 맞춤 |"
+        }
+      ],
+      "assessment": "64개 권장 수량은 있으나 초기예산에 없음.",
+      "minimal_action": "의자 착석시험 후 유지여부 결정; 자동필수화 금지",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B136",
+      "item": "로비소파/라운지의자",
+      "source_priority": "사용자 제외 확정",
+      "status": "범위외",
+      "confirmed_vs_proposed": "사용자 제외 확정",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 136,
+          "line_end": 136,
+          "excerpt": "| 로비 소파 또는 편안한 의자 | 현 계획 제외 | 2026-09-29 사용자 로비·라운지 삭제. 상담실 좌석과 구분 |"
+        }
+      ],
+      "assessment": "사용자가 로비·라운지 삭제, 제외 정상.",
+      "minimal_action": "추가하지 않음",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B137",
+      "item": "겨울 담요",
+      "source_priority": "P1·수량미정",
+      "status": "미견적",
+      "confirmed_vs_proposed": "P1·수량미정",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 137,
+          "line_end": 137,
+          "excerpt": "| 담요·무릎담요 | 미정 | **몽골 특화** — 혹한기 창가 자리 체감온도. 창가 좌석 수 확인 후 |"
+        }
+      ],
+      "assessment": "창가 좌석 수/체감온도 확인 전.",
+      "minimal_action": "필수물품을 늘리지 말고 겨울 운영 후보로 남김",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B138",
+      "item": "몽골·한국국기각1",
+      "source_priority": "P1",
+      "status": "범위외",
+      "confirmed_vs_proposed": "P1",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 138,
+          "line_end": 138,
+          "excerpt": "| 몽골·한국 국기 | 각 1 | 두 나라를 잇는 학원이라는 표시 |"
+        }
+      ],
+      "assessment": "내부사인 C19는 국기 구입을 명시하지 않음.",
+      "minimal_action": "브랜드 권장품 제외 여부 표시",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B139",
+      "item": "명함트레이",
+      "source_priority": "P1·수량미정",
+      "status": "미견적",
+      "confirmed_vs_proposed": "P1·수량미정",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 139,
+          "line_end": 139,
+          "excerpt": "| 명함 트레이·꽂이 | 미정 | 데스크 수 확정 후. 명함 제작과 동시 진행 |"
+        }
+      ],
+      "assessment": "명함 제작비도 미견적이며 트레이 없음.",
+      "minimal_action": "실제 명함비치 위치/개수 확인",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B140",
+      "item": "오픈배너스탠드",
+      "source_priority": "P1·수량미정",
+      "status": "미견적",
+      "confirmed_vs_proposed": "P1·수량미정",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 140,
+          "line_end": 140,
+          "excerpt": "| 배너 스탠드 | 미정 | 오픈 이벤트용 1종은 오픈 전 확보 |"
+        }
+      ],
+      "assessment": "고정 간판과 이동 배너는 다른 항목.",
+      "minimal_action": "오픈 이벤트1종 운영 여부와 거치장소 결정 후 견적",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B141",
+      "item": "포토부스1세트",
+      "source_priority": "P1·사용자 배치/월제한확정",
+      "status": "포함",
+      "confirmed_vs_proposed": "P1·사용자 배치/월제한확정",
+      "budget_ids": [
+        "PHOTO-PC",
+        "PHOTO-CAMERA",
+        "PHOTO-TOUCH",
+        "PHOTO-LIGHT",
+        "PHOTO-CABLE",
+        "F16",
+        "F17",
+        "SW-PHOTO"
+      ],
+      "budget_matches": [
+        {
+          "id": "PHOTO-PC",
+          "line": 1608,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 2849900
+        },
+        {
+          "id": "PHOTO-CAMERA",
+          "line": 1628,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "USD",
+          "base": 199.99
+        },
+        {
+          "id": "PHOTO-TOUCH",
+          "line": 1648,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 849900
+        },
+        {
+          "id": "PHOTO-LIGHT",
+          "line": 1668,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 350000
+        },
+        {
+          "id": "PHOTO-CABLE",
+          "line": 1688,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 180000
+        },
+        {
+          "id": "F16",
+          "line": 994,
+          "scope": "현설계",
+          "qty": 2,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 400000
+        },
+        {
+          "id": "F17",
+          "line": 1014,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 650000
+        },
+        {
+          "id": "SW-PHOTO",
+          "line": 1828,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "개/세트/프로젝트",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 141,
+          "line_end": 141,
+          "excerpt": "| 즉석 사진 부스 | 1세트 | 중립 촬영 배경+승인 로고·마스코트가 작게 들어간 사진 프레임/조작 화면으로 정정(2026-10-01 반영 요청). 기본1종+월별/시즌별1종 구성. 학생별 월1회, 대표만 차감·동반 친구 차감 없음. 자동 SNS 게시 없음. 앱 연결·장비·인화 여부는 docs/포토부스_설계.md 참고 |"
+        }
+      ],
+      "assessment": "장비는 포함. 월1회연동/휴대폰수령 SW는 별도미견적. 인화는 미정선택으로 정상.",
+      "minimal_action": "장비비로서비스완성을 주장하지 않음",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B142",
+      "item": "건의함1",
+      "source_priority": "P1",
+      "status": "범위외",
+      "confirmed_vs_proposed": "P1",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 142,
+          "line_end": 142,
+          "excerpt": "| 건의함 | 1개 | 브랜드 팔레트 준수 |"
+        }
+      ],
+      "assessment": "예산행 없음. 온라인 대체 확정 기록도 없음.",
+      "minimal_action": "권장1개 또는 기존디지털 접점 대체 결정 표시",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B143",
+      "item": "지나간말들벽틀1",
+      "source_priority": "개원전틀 사용자 승인",
+      "status": "포함",
+      "confirmed_vs_proposed": "개원전틀 사용자 승인",
+      "budget_ids": [
+        "C19",
+        "S-past_words_card"
+      ],
+      "budget_matches": [
+        {
+          "id": "C19",
+          "line": 394,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 1200000
+        },
+        {
+          "id": "S-past_words_card",
+          "line": 2467,
+          "scope": "별도견적",
+          "qty": null,
+          "unit": "카드1장",
+          "currency": "MNT",
+          "base": 500
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 143,
+          "line_end": 143,
+          "excerpt": "| 「지나간 말들」 벽 틀 | 1세트 | 복도의 얕은 교체형 카드 슬리브. A6 가로 카드 출발안, **틀만 개원 전에 설치**하고 떠나는 학생이 자발적으로 남기는 마지막 날 한 줄+「몇 번째 시즌」만 게시. 이름·반·급수·순위 없음. 찬 슬롯은 오래된 카드 보관 후 교체. 2026-09-03 승인 유지,2026-10-01 위치/운영 반영. 명예의 전당·합격자 전시는 폐기. 현재 상세는 docs/오프라인_공간설계/방별_인테리어_디자인_20260929.md §19 |"
+        }
+      ],
+      "assessment": "틀 포함/빈카드수량미정 별도. 상점·명예의전당 아님.",
+      "minimal_action": "초기 빈카드 소량 준비량 확정",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B144",
+      "item": "공기청정기7",
+      "source_priority": "P1·사용자배치확정",
+      "status": "포함",
+      "confirmed_vs_proposed": "P1·사용자배치확정",
+      "budget_ids": [
+        "S-air_large",
+        "S-air_small"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-air_large",
+          "line": 1928,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "대",
+          "currency": "MNT",
+          "base": 1640000
+        },
+        {
+          "id": "S-air_small",
+          "line": 1948,
+          "scope": "현설계",
+          "qty": 6,
+          "unit": "대",
+          "currency": "MNT",
+          "base": 600000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 144,
+          "line_end": 144,
+          "excerpt": "| 공기청정기 | 7대 기본 계획 | 사용자 모든 방 배치 요청(2026-09-29): 강의실4·사무실1·상담실1·포토실1. 각 방 면적에 맞는 용량·흡배기 여유·수업 중 소음 확인. 실제 구매 전 |"
+        }
+      ],
+      "assessment": "1+6=7 반영.",
+      "minimal_action": "면적/인원 성능검증",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B145",
+      "item": "커피머신1",
+      "source_priority": "P1·사용자배치확정",
+      "status": "포함",
+      "confirmed_vs_proposed": "P1·사용자배치확정",
+      "budget_ids": [
+        "S-coffee",
+        "F15"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-coffee",
+          "line": 2008,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "대",
+          "currency": "MNT",
+          "base": 1600000
+        },
+        {
+          "id": "F15",
+          "line": 976,
+          "scope": "현설계",
+          "qty": 1.3,
+          "unit": "전면길이 m",
+          "currency": "MNT",
+          "base": 800000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 145,
+          "line_end": 145,
+          "excerpt": "| 공용 커피머신 | 1대 | 직원·학생 공용. 6안도 포토실 앞 깊이1.5m 편의구역 유지. 사진장비와 상판·물기를 분리하고 재고는 사무실 보관. 제품·급배수는 미정이며 라운지 좌석 추가 아님 |"
+        }
+      ],
+      "assessment": "기기1과대 포함. 초도커피/컵은 별도공백.",
+      "minimal_action": "종류·실크기·분쇄커피 공급 확인",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B146",
+      "item": "상담VR1세트",
+      "source_priority": "P1·서서체험사용자확인",
+      "status": "포함",
+      "confirmed_vs_proposed": "P1·서서체험사용자확인",
+      "budget_ids": [
+        "VR-HEADSET",
+        "VR-HYGIENE",
+        "F10",
+        "OPEX-VR"
+      ],
+      "budget_matches": [
+        {
+          "id": "VR-HEADSET",
+          "line": 1708,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "USD",
+          "base": 599.99
+        },
+        {
+          "id": "VR-HYGIENE",
+          "line": 1728,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 250000
+        },
+        {
+          "id": "F10",
+          "line": 880,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 500000
+        },
+        {
+          "id": "OPEX-VR",
+          "line": 1888,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "개/세트/프로젝트",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 146,
+          "line_end": 146,
+          "excerpt": "| 상담실 VR 기기 | 1세트 제안 | 서서 움직이는 게임/체험은 사용자 확인(2026-09-29). 6안도 상담/VR 시간 분리, 가구를 접어 수납하고2×2m 활동영역 비움. 제품·콘텐츠 적합성·팔 뻗음과 출입은 실제 확인 전. 보관·충전함은 별도 |"
+        }
+      ],
+      "assessment": "헤드셋/컨트롤러/위생/선반 포함. 기관콘텐츠비 별도미견적.",
+      "minimal_action": "헤드셋구매가 콘텐츠이용료 포함 뜻 아님",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B147",
+      "item": "CU복지카드월6매",
+      "source_priority": "P1·운영복지",
+      "status": "범위외",
+      "confirmed_vs_proposed": "P1·운영복지",
+      "budget_ids": [
+        "WORKING-CAPITAL"
+      ],
+      "budget_matches": [
+        {
+          "id": "WORKING-CAPITAL",
+          "line": 2757,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 147,
+          "line_end": 147,
+          "excerpt": "| 학생복지 CU카드 | 5만₮ 권종 × 월 6매 | 02B 장학 ①③ 각 3명 기준. 현금성 문화상품권 개념으로 지급하며, 지급 절차는 장학 운영 규칙(02B)과 연동 |"
+        }
+      ],
+      "assessment": "권종5만×6=월30만₮ 원문조건, 인테리어/비품총액 제외.",
+      "minimal_action": "운영자금표에 기존복지비로 연결; 초도비품화 금지",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B153",
+      "item": "세계지도1",
+      "source_priority": "P2",
+      "status": "범위외",
+      "confirmed_vs_proposed": "P2",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 153,
+          "line_end": 153,
+          "excerpt": "| 세계 지도 포스터 | 1 | 학생들의 「5년 뒤」 대화 소재 |"
+        }
+      ],
+      "assessment": "오픈후1~3개월 후보.",
+      "minimal_action": "초기필수구매 제외 유지",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B154",
+      "item": "관엽식물",
+      "source_priority": "P2",
+      "status": "범위외",
+      "confirmed_vs_proposed": "P2",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 154,
+          "line_end": 154,
+          "excerpt": "| 관엽식물 | 미정 | 건조 기후에 강한 수종으로 |"
+        }
+      ],
+      "assessment": "수종/수량미정.",
+      "minimal_action": "초기필수구매 제외 유지",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B155",
+      "item": "우산꽂이+물받이",
+      "source_priority": "P2→운영보완승인",
+      "status": "중복",
+      "confirmed_vs_proposed": "P2→운영보완승인",
+      "budget_ids": [
+        "F18"
+      ],
+      "budget_matches": [
+        {
+          "id": "F18",
+          "line": 1032,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 100000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 155,
+          "line_end": 155,
+          "excerpt": "| 우산꽂이 + 물받이 | 위 운영 보완의 입구1세트와 동일 | 2026-10-01 입구 운영 배치로 앞당겨 반영. 중복 구매하지 않음. 비닐 디스펜서 추가 여부는 별도 선택 |"
+        }
+      ],
+      "assessment": "B100과 같은1개를 앞당긴 기록이며 예산F18 한 번만 있음.",
+      "minimal_action": "중복 구매 금지",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": "B100"
+    },
+    {
+      "id": "B156",
+      "item": "공간향1종",
+      "source_priority": "P2",
+      "status": "범위외",
+      "confirmed_vs_proposed": "P2",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 156,
+          "line_end": 156,
+          "excerpt": "| 공간 향 | 1종 | 오픈 후 공간 분위기를 보고 선정 |"
+        }
+      ],
+      "assessment": "오픈후선정.",
+      "minimal_action": "초기필수구매 제외 유지",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B157",
+      "item": "자판기1",
+      "source_priority": "P2",
+      "status": "범위외",
+      "confirmed_vs_proposed": "P2",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 157,
+          "line_end": 157,
+          "excerpt": "| 자판기 | 1대 | 핫초코·레몬에이드·율무차. 율무차의 몽골 시장성은 오픈 후 데이터로 본다 |"
+        }
+      ],
+      "assessment": "오픈후수요검토이며커피머신과별도.",
+      "minimal_action": "초기필수구매 제외 유지",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B167",
+      "item": "굿즈 노트·펜",
+      "source_priority": "P1",
+      "status": "미견적",
+      "confirmed_vs_proposed": "P1",
+      "budget_ids": [
+        "WORKING-CAPITAL"
+      ],
+      "budget_matches": [
+        {
+          "id": "WORKING-CAPITAL",
+          "line": 2757,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 167,
+          "line_end": 167,
+          "excerpt": "| 노트+볼펜 세트 | P1 | 미정 | 저가 구간. 첫 달 교환 수요가 가장 몰린다 |"
+        }
+      ],
+      "assessment": "포인트교환 재고이며 단순장식/사무소모품과 다름. 실제 초도량 미정, 견적문 예시량은 발주확정량 아님.",
+      "minimal_action": "P1은 상점 오픈일/교환수요와 초도물량·원가를 따로 확정; P2는 발생시점에 반영",
+      "issue": true,
+      "gap_type": "상점 운영 초도재고 미견적",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B168",
+      "item": "굿즈 스티커",
+      "source_priority": "P1",
+      "status": "미견적",
+      "confirmed_vs_proposed": "P1",
+      "budget_ids": [
+        "WORKING-CAPITAL"
+      ],
+      "budget_matches": [
+        {
+          "id": "WORKING-CAPITAL",
+          "line": 2757,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 168,
+          "line_end": 168,
+          "excerpt": "| 스티커 | P1 | 미정 | 저가 구간. 노트 세트와 동시 제작 시 단가 절감 |"
+        }
+      ],
+      "assessment": "포인트교환 재고이며 단순장식/사무소모품과 다름. 실제 초도량 미정, 견적문 예시량은 발주확정량 아님.",
+      "minimal_action": "P1은 상점 오픈일/교환수요와 초도물량·원가를 따로 확정; P2는 발생시점에 반영",
+      "issue": true,
+      "gap_type": "상점 운영 초도재고 미견적",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B169",
+      "item": "굿즈 인형·키링",
+      "source_priority": "P1",
+      "status": "미견적",
+      "confirmed_vs_proposed": "P1",
+      "budget_ids": [
+        "WORKING-CAPITAL"
+      ],
+      "budget_matches": [
+        {
+          "id": "WORKING-CAPITAL",
+          "line": 2757,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 169,
+          "line_end": 169,
+          "excerpt": "| 인형·가방키링 | P1 | 미정 (상점 400P) | 중가 구간. 상점 라이브 품목 — 모자·양말은 상점에 없다(v9.83 실측 교정) |"
+        }
+      ],
+      "assessment": "포인트교환 재고이며 단순장식/사무소모품과 다름. 실제 초도량 미정, 견적문 예시량은 발주확정량 아님.",
+      "minimal_action": "P1은 상점 오픈일/교환수요와 초도물량·원가를 따로 확정; P2는 발생시점에 반영",
+      "issue": true,
+      "gap_type": "상점 운영 초도재고 미견적",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B170",
+      "item": "굿즈 텀블러",
+      "source_priority": "P1",
+      "status": "미견적",
+      "confirmed_vs_proposed": "P1",
+      "budget_ids": [
+        "WORKING-CAPITAL"
+      ],
+      "budget_matches": [
+        {
+          "id": "WORKING-CAPITAL",
+          "line": 2757,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 170,
+          "line_end": 170,
+          "excerpt": "| 텀블러 | P1 | 미정 | 중가 구간. 겨울 학기 수요 높음 |"
+        }
+      ],
+      "assessment": "포인트교환 재고이며 단순장식/사무소모품과 다름. 실제 초도량 미정, 견적문 예시량은 발주확정량 아님.",
+      "minimal_action": "P1은 상점 오픈일/교환수요와 초도물량·원가를 따로 확정; P2는 발생시점에 반영",
+      "issue": true,
+      "gap_type": "상점 운영 초도재고 미견적",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B171",
+      "item": "굿즈 반팔·카라티",
+      "source_priority": "P1",
+      "status": "미견적",
+      "confirmed_vs_proposed": "P1",
+      "budget_ids": [
+        "WORKING-CAPITAL"
+      ],
+      "budget_matches": [
+        {
+          "id": "WORKING-CAPITAL",
+          "line": 2757,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 171,
+          "line_end": 171,
+          "excerpt": "| 반팔·카라티 | P1 | 미정 | 중가 구간. 사이즈별 수요 예측이 어려워 소량 시작 |"
+        }
+      ],
+      "assessment": "포인트교환 재고이며 단순장식/사무소모품과 다름. 실제 초도량 미정, 견적문 예시량은 발주확정량 아님.",
+      "minimal_action": "P1은 상점 오픈일/교환수요와 초도물량·원가를 따로 확정; P2는 발생시점에 반영",
+      "issue": true,
+      "gap_type": "상점 운영 초도재고 미견적",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B172",
+      "item": "굿즈 패딩조끼",
+      "source_priority": "P2",
+      "status": "범위외",
+      "confirmed_vs_proposed": "P2",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 172,
+          "line_end": 172,
+          "excerpt": "| 패딩 조끼 | P2 | 수요 확인 후 (상점 1,400P) | 고포인트 교환자가 나오는 시점에 맞춰 제작 |"
+        }
+      ],
+      "assessment": "포인트교환 재고이며 단순장식/사무소모품과 다름. 실제 초도량 미정, 견적문 예시량은 발주확정량 아님.",
+      "minimal_action": "P1은 상점 오픈일/교환수요와 초도물량·원가를 따로 확정; P2는 발생시점에 반영",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B173",
+      "item": "12개월재원 과잠",
+      "source_priority": "P2",
+      "status": "범위외",
+      "confirmed_vs_proposed": "P2",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 173,
+          "line_end": 173,
+          "excerpt": "| 과잠 | P2 | 판매 아님 | 재원 12개월 + 누적 1,200P 무료 지급분. 첫 지급 대상 발생 시점(개원 12개월 후)에 맞춰 제작 |"
+        }
+      ],
+      "assessment": "포인트교환 재고이며 단순장식/사무소모품과 다름. 실제 초도량 미정, 견적문 예시량은 발주확정량 아님.",
+      "minimal_action": "P1은 상점 오픈일/교환수요와 초도물량·원가를 따로 확정; P2는 발생시점에 반영",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B174",
+      "item": "마스코트 인형·걸이",
+      "source_priority": "P2",
+      "status": "범위외",
+      "confirmed_vs_proposed": "P2",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 174,
+          "line_end": 174,
+          "excerpt": "| 마스코트 인형·가방 걸이 | P2 | 수요 확인 후 | 마스코트 인지도가 쌓인 뒤가 효율적 |"
+        }
+      ],
+      "assessment": "포인트교환 재고이며 단순장식/사무소모품과 다름. 실제 초도량 미정, 견적문 예시량은 발주확정량 아님.",
+      "minimal_action": "P1은 상점 오픈일/교환수요와 초도물량·원가를 따로 확정; P2는 발생시점에 반영",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B175",
+      "item": "패치·에코백",
+      "source_priority": "P2",
+      "status": "범위외",
+      "confirmed_vs_proposed": "P2",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 175,
+          "line_end": 175,
+          "excerpt": "| 로고 패치·에코백 | P2 | 수요 확인 후 | 2차 제작 라운드 |"
+        }
+      ],
+      "assessment": "포인트교환 재고이며 단순장식/사무소모품과 다름. 실제 초도량 미정, 견적문 예시량은 발주확정량 아님.",
+      "minimal_action": "P1은 상점 오픈일/교환수요와 초도물량·원가를 따로 확정; P2는 발생시점에 반영",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "B176",
+      "item": "대학입학 자체가방",
+      "source_priority": "P2",
+      "status": "범위외",
+      "confirmed_vs_proposed": "P2",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 176,
+          "line_end": 176,
+          "excerpt": "| 자체 제작 가방 | P2 | 소량 | 대학 입학 시 지급. 첫 대학 합격자 배출 전까지 여유가 있다 — 대신 디자인은 미리 |"
+        }
+      ],
+      "assessment": "포인트교환 재고이며 단순장식/사무소모품과 다름. 실제 초도량 미정, 견적문 예시량은 발주확정량 아님.",
+      "minimal_action": "P1은 상점 오픈일/교환수요와 초도물량·원가를 따로 확정; P2는 발생시점에 반영",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "O-BOOKS",
+      "item": "코어6+톡2 교재/원어민검수",
+      "source_priority": "개원 준비",
+      "status": "미견적",
+      "confirmed_vs_proposed": "개원 준비",
+      "budget_ids": [
+        "S-textbook_bw",
+        "S-textbook_binding"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-textbook_bw",
+          "line": 2487,
+          "scope": "별도견적",
+          "qty": null,
+          "unit": "A4 인쇄면1면",
+          "currency": "MNT",
+          "base": 150
+        },
+        {
+          "id": "S-textbook_binding",
+          "line": 2507,
+          "scope": "별도견적",
+          "qty": null,
+          "unit": "권",
+          "currency": "MNT",
+          "base": 4000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+          "line_start": 276,
+          "line_end": 279,
+          "excerpt": "| 시냅스 코어 1~6권 | 문법 본줄기. 1권 = 1레벨 = 1시즌(8주). 전 6권으로 TOPIK 5급까지 — 이것이 과정 상한이다 |\n| 시냅스 톡 1~2권 | 회화 트랙. 톡1 = TOPIK 1~2급(Lv1~2) · 톡2 = TOPIK 3~4급(Lv3~5). 유호 확정 09-04 로 4권에서 2권으로 압축. ⚠ Lv6 의 5급 구간에는 대응 회화 교재가 없다 |\n\n제작 상태는 이렇다. 문법 6권과 회화 2권 원고가 모두 완성됐고, 원어민 검수는 아직이다. 「검수 완료」라고 쓰지 않는다. **[짓는 중]**"
+        },
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+          "line_start": 289,
+          "line_end": 289,
+          "excerpt": "- 종이는 수업 코어만 담는다. 1과(1주) 표준 16페이지: 시즌 서사 도입 → 코어 어휘 25~30개 → 문법(몽골어 대조 팁 박스) → 발음 코너(권1~2) 또는 한자어 어원 코너(권3~) → 통합 과업 → 자가 점검(can-do 체크와 「다음에 맞힐 문제」 칸)."
+        },
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 44,
+          "line_end": 44,
+          "excerpt": "| 자체 교재 시냅스 코어 | 6레벨 | 정규 수업 교재. 인쇄 리드타임 확인 후 오픈 최소 2주 전 입고 |"
+        }
+      ],
+      "assessment": "6종 코어만 기준으로 쓰면 회화 톡2종 준비가 가려짐. 원고완성과 원어민검수완료는 별개.",
+      "minimal_action": "8종 중 실제 개강급수의 원고검수·최종면수·인쇄권수 결정",
+      "issue": true,
+      "gap_type": "개원준비 추적/비용 범위 공백",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "O-CATALOG",
+      "item": "오프라인브로셔·디지털카탈로그/입소계약서",
+      "source_priority": "개원 준비",
+      "status": "미견적",
+      "confirmed_vs_proposed": "개원 준비",
+      "budget_ids": [
+        "S-consult_tablet",
+        "S-paper_opening",
+        "LICENSE"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-consult_tablet",
+          "line": 2409,
+          "scope": "선택",
+          "qty": 1,
+          "unit": "대",
+          "currency": "MNT",
+          "base": 1000000
+        },
+        {
+          "id": "S-paper_opening",
+          "line": 2212,
+          "scope": "현설계",
+          "qty": 15,
+          "unit": "500매 리임",
+          "currency": "MNT",
+          "base": 17900
+        },
+        {
+          "id": "LICENSE",
+          "line": 2775,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+          "line_start": 352,
+          "line_end": 353,
+          "excerpt": "- 데모 모드를 상담 시연 도구로 — 상담실에서 앱 실물 화면을 가짜 데이터로 보여주는 클로징 장치. **[이미 돈다]**\n- 입소 계약서와 상담 도구 — 오프라인 브로셔 + 아이패드 디지털 카탈로그. **[짓는 중]**"
+        },
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 55,
+          "line_end": 55,
+          "excerpt": "| 상담용 패드 | 1대 | 디지털 브로셔 시연. 첫 상담부터 쓴다 — 브로셔 사전 탑재 |"
+        }
+      ],
+      "assessment": "패드 선택오분류 외에 브로셔인쇄·계약서양식/인쇄·브로셔탑재 확인이 없고 A4백지구매만으로 완성아님.",
+      "minimal_action": "기존자산재사용·필요인쇄량/검수/단말탑재 작업 분리",
+      "issue": true,
+      "gap_type": "개원준비 추적/비용 범위 공백",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "O-CONSENT",
+      "item": "수업녹화동의·초대권한운영",
+      "source_priority": "개원 필수 운영",
+      "status": "범위외",
+      "confirmed_vs_proposed": "개원 필수 운영",
+      "budget_ids": [
+        "LICENSE",
+        "NET-SETUP"
+      ],
+      "budget_matches": [
+        {
+          "id": "LICENSE",
+          "line": 2775,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        },
+        {
+          "id": "NET-SETUP",
+          "line": 1588,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 1200000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+          "line_start": 334,
+          "line_end": 336,
+          "excerpt": "## 4-2. 개원 전 필수 [짓는 중]\n\n수업 녹화 동의 v18.7 — 수집 항목 「수업 영상」, 제공 목적 「주말반 학습 자료」, 법정대리인 동의, 거부 학생 화면 제외, 소급 불가. **동의 없이 녹화 게시는 하지 않는다.**"
+        },
+        {
+          "file": "tools/classroom-media/교실세팅.md",
+          "line_start": 145,
+          "line_end": 148,
+          "excerpt": "| 운영자 / 수업 전 | 교실·반·수업 일시를 지정해 `prepare`. 성공 출력 확인. 비공개는 학생 계정 초대와 앱의 초대 확인도 완료 | 방송 생성, 해당 반 목록 연결, OBS가 읽을 교실 수업 파일 준비 |\n| 선생님 / 시작 | 마이크 착용, 교재·필기 캡처와 기본 장면·음량 확인, OBS **방송 시작** | 라이브 시작, 로컬 녹화, 앱의 해당 반 라이브 상태 반영 |\n| 선생님 / 수업 중 | 필요할 때 기본·발음·판서 전체 장면을 직접 전환 | 선택한 합성 화면을 같은 방송과 로컬 녹화에 반영 |\n| 선생님 / 종료 | OBS **방송 종료**, 녹화 종료까지 확인, 마이크 충전 | YouTube 아카이브 처리, 처리 성공 후 앱에서 복습 제공. 로컬 파일은 백업 |"
+        }
+      ],
+      "assessment": "동의수취/초대 업무는 별도운영. 새스캐너/키오스크 필수 아님.",
+      "minimal_action": "기존문서/직원단말로 동의/학생제외·접근권한 실행 확인",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "O-ATTEND",
+      "item": "휴대폰없는학생/인터넷장애 수동출석",
+      "source_priority": "승인 운영",
+      "status": "포함",
+      "confirmed_vs_proposed": "승인 운영",
+      "budget_ids": [
+        "S-paper_opening",
+        "S-office_stationery",
+        "OFF-PC"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-paper_opening",
+          "line": 2212,
+          "scope": "현설계",
+          "qty": 15,
+          "unit": "500매 리임",
+          "currency": "MNT",
+          "base": 17900
+        },
+        {
+          "id": "S-office_stationery",
+          "line": 2191,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 180000
+        },
+        {
+          "id": "OFF-PC",
+          "line": 1408,
+          "scope": "현설계",
+          "qty": 8,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 2849900
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+          "line_start": 427,
+          "line_end": 429,
+          "excerpt": "- 첫 방문 안내는 주소·검증한 지도/출입구·층/호수·수업방·입실 시각·연락처를 채워 등록 확인 때 전달한다. 앱 로그인이나 휴대폰 소지를 입실 조건으로 두지 않는다. 실제 안내 발송 전이다.\n- 출결 예외는 교사가 실제 도착 시각을 기존 명부에 기록한다. 인터넷 장애 때는 종이/직원용 오프라인 기록 후 지정 담당1명이 학생·반·날짜와 중복/포인트를 대조해 복구한다. 폼을 오프라인 기능으로 간주하거나 늦게 입력한 시각을 지각으로 처리하지 않는다.\n- 반 교대는 앞 반의 짐 회수·퇴실 후 다음 반 입실 순서다. 일반10분·A 수업/댄스 전환20분은 실측 전 시간표 가정이다. 겨울 짐16세트와 실제 전환을 재어 조정하고, 전실 사용 중에는 입실 시각/시간표를 조정한다. 복도·외부 대기를 별도 라운지로 계산하지 않는다."
+        }
+      ],
+      "assessment": "기존종이/직원단말로 가능. 전용출석단말 구매 필요 없음.",
+      "minimal_action": "명부/임시기록 양식·담당1명 사후대조",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "O-OPEN",
+      "item": "개점/마감·대체자·출입수단",
+      "source_priority": "승인 운영",
+      "status": "미견적",
+      "confirmed_vs_proposed": "승인 운영",
+      "budget_ids": [
+        "WORKING-CAPITAL",
+        "C06"
+      ],
+      "budget_matches": [
+        {
+          "id": "WORKING-CAPITAL",
+          "line": 2757,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        },
+        {
+          "id": "C06",
+          "line": 142,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": 900000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+          "line_start": 430,
+          "line_end": 432,
+          "excerpt": "- 개점·시설관리·시간대 응대·최종 마감 담당과 대체자를 배정 근무시간 안에 지정한다. 먼저/마지막에 온 직원에게 관행적으로 떠넘기지 않는다. 식권 계약의 운영 시간·휴무/야간 대안과 식사 교대도 근무표에 포함한다.\n- 상담/VR 예약 전에 물통 세척·건조 관리 시간을 확보한다. 예약 중 작업하지 않는다. 관리 시간이 확보되지 않으면 위치/예약을 재검토한다. 가습기7대의 순차 작업·건조 용량·실제 소요 시간은 현장에서 확인한다.\n- 기존 인계에는 **남은 학생/예약 · 사용 금지 장비/시설 · 아직 처리할 일** 세 가지만 적는다. 최종 담당자가9개 실과 통로, 방송/녹화/업로드, 물·창·장비별 전원·출입문을 직접 확인한다. 진행 중인 업로드와 상시 유지 장비까지 일괄 차단하지 않는다."
+        },
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 123,
+          "line_end": 123,
+          "excerpt": "직원 개인8자리의 가방·잠금 소품 구획은 기존 개인책상 구성으로 확인한다. PC·무릎 공간·학생 서류와 분리하며 새 독립 사물함8개를 추가하지 않는다. 식사는 기존 식권 계약과 근무표의 교대 시간을 먼저 확정한다. 별도 출석 키오스크·휴대폰 충전탑·대기 벤치·냉장고·전자레인지는 이번 최소 준비물에 추가하지 않는다. 건물 출입 수단과 쓰레기 배출 시간/위치는 개원 전 실제 조건을 확인한다."
+        }
+      ],
+      "assessment": "담당/시간은근무표업무. 열쇠·출입카드 발급/복제·분실비용 및 실제 건물접근 조건은 미정. C06은 문보수만.",
+      "minimal_action": "기존건물 방식 확인 후 필요한 발급비만; 스마트도어록 추가 금지",
+      "issue": true,
+      "gap_type": "개원준비 추적/비용 범위 공백",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "O-HANDOVER",
+      "item": "잔류학생/고장장비/미처리업무 인계",
+      "source_priority": "승인 운영",
+      "status": "포함",
+      "confirmed_vs_proposed": "승인 운영",
+      "budget_ids": [
+        "S-operation_labels"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-operation_labels",
+          "line": 2351,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 60000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+          "line_start": 432,
+          "line_end": 434,
+          "excerpt": "- 기존 인계에는 **남은 학생/예약 · 사용 금지 장비/시설 · 아직 처리할 일** 세 가지만 적는다. 최종 담당자가9개 실과 통로, 방송/녹화/업로드, 물·창·장비별 전원·출입문을 직접 확인한다. 진행 중인 업로드와 상시 유지 장비까지 일괄 차단하지 않는다.\n\n카드 양식과 상세 절차는 위 담당 원문과 디자인북에서 함께 본다. 새로운 별도 앱·중복 업무 일지·독립 대기 가구는 추가하지 않는다."
+        }
+      ],
+      "assessment": "인쇄카드로 구현할 운영안. 새기기 필요없음.",
+      "minimal_action": "양식과 담당을 실제 사용",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "O-FAIL",
+      "item": "정전/고장 대응·복구업체",
+      "source_priority": "개원 운영",
+      "status": "미견적",
+      "confirmed_vs_proposed": "개원 운영",
+      "budget_ids": [
+        "AV-UPS",
+        "NET-UPS",
+        "REC-BACKUP",
+        "NET-SETUP",
+        "WORKING-CAPITAL"
+      ],
+      "budget_matches": [
+        {
+          "id": "AV-UPS",
+          "line": 1388,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 439900
+        },
+        {
+          "id": "NET-UPS",
+          "line": 1508,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 639900
+        },
+        {
+          "id": "REC-BACKUP",
+          "line": 1568,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 650000
+        },
+        {
+          "id": "NET-SETUP",
+          "line": 1588,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 1200000
+        },
+        {
+          "id": "WORKING-CAPITAL",
+          "line": 2757,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+          "line_start": 467,
+          "line_end": 471,
+          "excerpt": "| 강사 당일 결근 | 대체 강사 연락(우선순위 리스트) | 자습 전환 + 학생 사과 공지 · 기록 |\n| 학생 부상 | 응급처치 + 보호자 즉시 연락 | 필요 시 병원 이송 · 사고 보고서 |\n| 수강료 환불 🔴 | **규정이 아직 없다** — 그 자리에서 액수를 말하지 않는다. 서면 신청만 받고 원장에게 올린다 | 원장 판정 + 계좌 이체 · CRM 업데이트 |\n| SNS 악성 리뷰 | 24시간 내 정중한 공식 답변 | 내부 검토 + 개선 조치 · 리뷰 관리 시트 |\n| 정전·시스템 오류 | 임시 운영(수동 출석 등) | 복구 업체 연락 · 장애 로그 |"
+        },
+        {
+          "file": "tools/classroom-media/교실세팅.md",
+          "line_start": 169,
+          "line_end": 170,
+          "excerpt": "5. 인터넷 단절·OBS 종료·마이크 배터리 부족을 시험한다. 라이브 자동 종료가 작동하면 짧게 잘린 영상도 YouTube에서 처리 성공할 수 있다. **현재 도구는 전체 수업 길이의 완전성을 판정하거나 이미 ready인 일부 영상에 완본을 자동 대체하지 않는다.** 장애 수업은 운영자가 전체 로컬 녹화와 비교해야 한다. `--fallback`은 failed 상태만 허용하며 ready에 억지로 적용하지 않는다.\n6. PC 재부팅 후 worker·OBS·카메라 복귀, 기록 폴더 여유, 백업 재생을 확인한다. 실파일과 실제 학생 계정의 확인 전까지는 설치 완료로 보고하지 않는다."
+        }
+      ],
+      "assessment": "UPS와파일백업·초기시험은있으나 현지수리연락처/SLA·출장·대체기/소모케이블은확정없음. 예비비는 실제복구수단이아님.",
+      "minimal_action": "현지보증·수리/대여경로·예비케이블 최소목록 확보; PC4대 예비추가 금지",
+      "issue": true,
+      "gap_type": "개원준비 추적/비용 범위 공백",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "O-STAFF",
+      "item": "개원전부트캠프·파일럿·직원교육급여",
+      "source_priority": "운영자금 범위",
+      "status": "범위외",
+      "confirmed_vs_proposed": "운영자금 범위",
+      "budget_ids": [
+        "WORKING-CAPITAL"
+      ],
+      "budget_matches": [
+        {
+          "id": "WORKING-CAPITAL",
+          "line": 2757,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+          "line_start": 414,
+          "line_end": 421,
+          "excerpt": "이 갈래의 첫 실사용은 11월 강사 부트캠프와 12월 파일럿 코호트다. 코드와 양식은 서 있고, 크루가 서는 날부터 돈다.\n\n- 인사카드 DB · 근무 스케줄표(시프트 · 토요일 배정 · 야간). 토요일은 무보상 로테이션이 아니라 시즌 심사 선발과 수당이다. **[짓는 중]**\n- 출퇴근 기록 + 요일 인사 브리핑 · 퇴근 응원 메일. **[이미 돈다]**\n- 강사 지표 자동 집계(담당 반 8종) — 평가의 정량 근거. **[이미 돈다]**\n- 시즌 평가 — 8주 시즌 절대평가, 연 약 6회, 1:1 코칭 면담 기록지, 신입 온보딩 체크리스트. 상세 기준은 크루 핸드북이 쥔다. **[짓는 중]**\n- 업무 루틴 — 데일리(출근 10분 내 할 일 공유)와 위클리(월요일 회의, 엔진의 월요일 리포트가 안건을 미리 깔아 준다). **[짓는 중]**\n- 식권 계약 · 미용실 계약 · 정직원 명함. **[짓는 중]**"
+        },
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+          "line_start": 515,
+          "line_end": 528,
+          "excerpt": "- 11월 강사 부트캠프 · 12월 파일럿 코호트 — 교실을 엔진에 잇는 첫 벌(관찰 태그와 서클 20분)\n- 입소 계약서와 상담 도구 / 온라인 결제와 납부 알림 / 인사카드·온보딩·업무 루틴\n- 출석 방식 최종 판정 / 굿즈 초도 제작 / SOP 인쇄 · CCTV · 구급함\n- 수업 녹화 동의 v18.7 수취 / 업로드 플랫폼과 공개 범위 확정\n\n**2단계 · 개원 후 1개월**\n\n- 재등록 D-단계 시나리오 / 시험 운영 체크리스트 정착 / 콘텐츠 캘린더 가동 / 메신저 자동 응대\n\n**3단계 · 개원 후 3개월**\n\n- 강좌·캠페인 수익성 분석 고도화 / 포인트 경제 수치 확정(운영 검증) / 교안 앱 데이터화\n\n파일럿은 2027-02-11에 2주 무료로 시작해 2027-02-25 정식 개원으로 이어진다. 첫 시즌은 유료 구간이 6주라, 매출 계산을 정상 시즌과 같게 잡으면 안 된다."
+        }
+      ],
+      "assessment": "급여제외는명시됐으나 교육/리허설/무료파일럿 유급시간과 운영물량은금액미정.",
+      "minimal_action": "별도개원자금에 교육·시험운영·오픈전 근무일수산식; 기존교육시점표는정합확인",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "O-RENT",
+      "item": "공사/반입/시운전/무료파일럿기간 임차료·관리비",
+      "source_priority": "개원자금 범위",
+      "status": "범위외",
+      "confirmed_vs_proposed": "개원자금 범위",
+      "budget_ids": [
+        "RENT",
+        "WORKING-CAPITAL"
+      ],
+      "budget_matches": [
+        {
+          "id": "RENT",
+          "line": 2739,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        },
+        {
+          "id": "WORKING-CAPITAL",
+          "line": 2757,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 24,
+          "line_end": 24,
+          "excerpt": "- **P0는 사기 전에 발주 마감일부터 역산한다** — 오픈일 − 제작·배송 리드타임. 아래 P0 표는 리드타임이 긴 것부터 세워 두었다."
+        },
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+          "line_start": 528,
+          "line_end": 528,
+          "excerpt": "파일럿은 2027-02-11에 2주 무료로 시작해 2027-02-25 정식 개원으로 이어진다. 첫 시즌은 유료 구간이 6주라, 매출 계산을 정상 시즌과 같게 잡으면 안 된다."
+        }
+      ],
+      "assessment": "인테리어외비용으로명시제외. 계약기간 미정, 영업개시월만 세면 공사/준비기간 비용을 놓침.",
+      "minimal_action": "인도일→공사→파일럿→개원 일정을 임대기산일과 맞춰 별도산식",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "O-MEAL",
+      "item": "직원식권·미용복지 계약",
+      "source_priority": "운영복지",
+      "status": "범위외",
+      "confirmed_vs_proposed": "운영복지",
+      "budget_ids": [
+        "WORKING-CAPITAL"
+      ],
+      "budget_matches": [
+        {
+          "id": "WORKING-CAPITAL",
+          "line": 2757,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+          "line_start": 421,
+          "line_end": 421,
+          "excerpt": "- 식권 계약 · 미용실 계약 · 정직원 명함. **[짓는 중]**"
+        },
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+          "line_start": 430,
+          "line_end": 430,
+          "excerpt": "- 개점·시설관리·시간대 응대·최종 마감 담당과 대체자를 배정 근무시간 안에 지정한다. 먼저/마지막에 온 직원에게 관행적으로 떠넘기지 않는다. 식권 계약의 운영 시간·휴무/야간 대안과 식사 교대도 근무표에 포함한다."
+        }
+      ],
+      "assessment": "새휴게실/냉장고 대신기존계약 운영. 직원식권은학생차/다과와다름.",
+      "minimal_action": "근무표·야간/휴무대안과운영자금에 반영",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "O-SOFTWARE",
+      "item": "Workspace/API/앱/DB·결제 비용",
+      "source_priority": "디지털운영",
+      "status": "범위외",
+      "confirmed_vs_proposed": "디지털운영",
+      "budget_ids": [
+        "LICENSE",
+        "WORKING-CAPITAL"
+      ],
+      "budget_matches": [
+        {
+          "id": "LICENSE",
+          "line": 2775,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        },
+        {
+          "id": "WORKING-CAPITAL",
+          "line": 2757,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+          "line_start": 438,
+          "line_end": 451,
+          "excerpt": "**플랫폼 스택**\n\n| 무엇 | 어디에 쓰나 | 상태 |\n|---|---|---|\n| 자체 Apps Script 엔진 | 동기화 · 계산 · 알림 · 백업 · AI 중추 | [이미 돈다] |\n| Google Workspace | 폼 · 시트 · 메일 — 데이터 시작점 | [이미 돈다] |\n| ~~Notion~~ | 2026-08-04 워크스페이스 전량 삭제 · 동기화 코드 08-26 소각 | ❌ 안 쓴다 |\n| Claude API | AI 기능군 (키는 분리 보관) | [이미 돈다] |\n| Facebook Messenger | 학부모·학생 소통 (현지 표준) | [이미 돈다] |\n| Canva | 브랜드 콘텐츠 제작 | [이미 돈다] |\n| SYNK-talk (Expo) | 학생·강사·원장 앱 | [짓는 중] |\n| Supabase + Postgres | 핵심 원본 데이터 | [짓는 중] |\n| Meta API 직결 | 메신저 1차 응대 | [짓는 중] |\n| QPay | 온라인 결제 인보이스와 웹훅 | [짓는 중] |"
+        }
+      ],
+      "assessment": "원문의이미돈다는개별서비스 비용0/가입완료증거로 재검증하지않음. 인테리어비에서제외.",
+      "minimal_action": "기존계약/보유계정 재사용, 새구독을자동발주하지않음",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "O-SOP",
+      "item": "현장 SOP 인쇄/실행교육",
+      "source_priority": "개원 준비",
+      "status": "포함",
+      "confirmed_vs_proposed": "개원 준비",
+      "budget_ids": [
+        "S-operation_labels",
+        "S-paper_opening",
+        "WORKING-CAPITAL"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-operation_labels",
+          "line": 2351,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 60000
+        },
+        {
+          "id": "S-paper_opening",
+          "line": 2212,
+          "scope": "현설계",
+          "qty": 15,
+          "unit": "500매 리임",
+          "currency": "MNT",
+          "base": 17900
+        },
+        {
+          "id": "WORKING-CAPITAL",
+          "line": 2757,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+          "line_start": 517,
+          "line_end": 517,
+          "excerpt": "- 출석 방식 최종 판정 / 굿즈 초도 제작 / SOP 인쇄 · CCTV · 구급함"
+        },
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+          "line_start": 465,
+          "line_end": 471,
+          "excerpt": "| 상황 | 1차 | 2차 |\n|---|---|---|\n| 강사 당일 결근 | 대체 강사 연락(우선순위 리스트) | 자습 전환 + 학생 사과 공지 · 기록 |\n| 학생 부상 | 응급처치 + 보호자 즉시 연락 | 필요 시 병원 이송 · 사고 보고서 |\n| 수강료 환불 🔴 | **규정이 아직 없다** — 그 자리에서 액수를 말하지 않는다. 서면 신청만 받고 원장에게 올린다 | 원장 판정 + 계좌 이체 · CRM 업데이트 |\n| SNS 악성 리뷰 | 24시간 내 정중한 공식 답변 | 내부 검토 + 개선 조치 · 리뷰 관리 시트 |\n| 정전·시스템 오류 | 임시 운영(수동 출석 등) | 복구 업체 연락 · 장애 로그 |"
+        }
+      ],
+      "assessment": "최소카드·종이비는있음; 사고/정전상황 전부를 카드한장으로대체했다고볼수없음.",
+      "minimal_action": "기존SOP필요본 출력과담당교육 체크",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "P-LIMIT",
+      "item": "포토 월1회·대표학생차감·복구",
+      "source_priority": "사용자 확정+구현 미완료",
+      "status": "미견적",
+      "confirmed_vs_proposed": "사용자 확정+구현 미완료",
+      "budget_ids": [
+        "SW-PHOTO"
+      ],
+      "budget_matches": [
+        {
+          "id": "SW-PHOTO",
+          "line": 1828,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "개/세트/프로젝트",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/포토부스_설계.md",
+          "line_start": 9,
+          "line_end": 14,
+          "excerpt": "- 학생마다 월 1회 촬영을 시작할 수 있다.\n- 여러 명이 함께 찍어도 **촬영을 시작한 대표 학생 1명의 이용권만 사용**한다.\n- 동반 친구의 이용권은 차감하지 않는다. 다른 친구가 대표가 되어 촬영할 때 다시 함께 나오는 것은 허용한다.\n- 대표 학생의 이용권 사용은 사용자 확정이다. 촬영에 나온 사람 모두를 식별하는 방식으로 확대하지 않는다.\n- 앱 또는 학생 계정과 연결해 편하게 구분하는 방향이다. 사용자는 엔씨소프트 PURPLE처럼 만들려던 회사 플랫폼을 연결 대상으로 다시 짚었다. 아래 QR 흐름은 구현 제안이다.\n- 종이 인화+QR과 QR 전용 중 최종 선택, 인화 매수, 장비, 설치 크기, 예산은 미정이다."
+        },
+        {
+          "file": "docs/포토부스_설계.md",
+          "line_start": 104,
+          "line_end": 110,
+          "excerpt": "1. 혜택 대상과 현지 월 기준을 확정하고 현재 학생 계정 연결을 확인한다.\n2. 서버 이용권·일회용 부스 연결·예약/완료/복구를 구현한다.\n3. 앱에 이번 달 이용권과 QR 확인 화면을 연결한다.\n4. 부스 프로그램에서 승인된 세션만 촬영할 수 있게 만든다.\n5. 장비에서 실제 촬영·휴대폰 수령을 확인하고, 인화를 선택하면 실물 출력까지 확인한다.\n\n필수 확인: 첫 이용 허용, 같은 학생 두 번째 이용 거절, 동반 친구 이용권 유지, 계정 복구 후 횟수 유지, 동시 요청 하나만 성공, 만료/재사용 QR 거절, 월 변경, 카메라·네트워크·인쇄 오류 후 복구, 비대상 학생 이용 거절, 다음 이용자에게 이전 사진이 보이지 않음."
+        }
+      ],
+      "assessment": "소프트웨어별도견적은있으나 금액없음. 장비만구매해도월제한실행불가.",
+      "minimal_action": "서버/앱/부스/실패복구/수령을한범위로견적",
+      "issue": true,
+      "gap_type": "개원준비 추적/비용 범위 공백",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "P-STORAGE",
+      "item": "사진 임시저장·만료링크·삭제",
+      "source_priority": "연결 제안",
+      "status": "미견적",
+      "confirmed_vs_proposed": "연결 제안",
+      "budget_ids": [
+        "SW-PHOTO",
+        "WORKING-CAPITAL"
+      ],
+      "budget_matches": [
+        {
+          "id": "SW-PHOTO",
+          "line": 1828,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "개/세트/프로젝트",
+          "currency": "MNT",
+          "base": null
+        },
+        {
+          "id": "WORKING-CAPITAL",
+          "line": 2757,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/포토부스_설계.md",
+          "line_start": 98,
+          "line_end": 100,
+          "excerpt": "월 횟수 제한에는 대표 학생 키, 기준 연월, 부스·세션, 예약/사용/복구 상태와 시각을 사용한다. 동반 친구의 이름·계정·얼굴 인식은 이 기능에 필요하지 않다.\n\n사진은 접근이 제한된 임시 저장소와 만료되는 다운로드 링크로 제공한다. 사진 보관 기간은 따로 정하며, 사진을 삭제했다고 월 이용 기록까지 초기화하지 않는다. 앱 앨범에 장기 보관하는 기능은 별도 선택 사항이다. 다음 이용자에게 이전 사진·학생 정보가 남지 않게 화면을 초기화한다."
+        }
+      ],
+      "assessment": "개발범위에는연결될수있으나 사진저장량/기간/월전송비 미정. NAS녹화백업과자동동일목적아님.",
+      "minimal_action": "보관기간/예상촬영수/용량 산정 후 기존스토리지 활용여부확인",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "P-PRINT",
+      "item": "사진인화 선택",
+      "source_priority": "사용자 미결정",
+      "status": "범위외",
+      "confirmed_vs_proposed": "사용자 미결정",
+      "budget_ids": [
+        "PHOTO-PRINT",
+        "PHOTO-MEDIA",
+        "PHOTO-PRINT-INTEGRATION"
+      ],
+      "budget_matches": [
+        {
+          "id": "PHOTO-PRINT",
+          "line": 1768,
+          "scope": "선택",
+          "qty": 1,
+          "unit": "개/세트/프로젝트",
+          "currency": "USD",
+          "base": 695
+        },
+        {
+          "id": "PHOTO-MEDIA",
+          "line": 1788,
+          "scope": "선택",
+          "qty": 1,
+          "unit": "개/세트/프로젝트",
+          "currency": "USD",
+          "base": 201
+        },
+        {
+          "id": "PHOTO-PRINT-INTEGRATION",
+          "line": 1808,
+          "scope": "선택",
+          "qty": 1,
+          "unit": "개/세트/프로젝트",
+          "currency": "MNT",
+          "base": 400000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/포토부스_설계.md",
+          "line_start": 14,
+          "line_end": 14,
+          "excerpt": "- 종이 인화+QR과 QR 전용 중 최종 선택, 인화 매수, 장비, 설치 크기, 예산은 미정이다."
+        },
+        {
+          "file": "docs/포토부스_설계.md",
+          "line_start": 54,
+          "line_end": 54,
+          "excerpt": "6. 완성본을 제공하고 사용 완료로 기록한다. 인화를 도입하면 같은 결과물의 출력 단계를 붙인다."
+        },
+        {
+          "file": "docs/포토부스_설계.md",
+          "line_start": 90,
+          "line_end": 90,
+          "excerpt": "| 인쇄 실패 | 완성본이 있으면 같은 사진만 재출력. 새 촬영권은 자동 지급하지 않음. 직원 복구는 사유와 처리 기록을 남김 |"
+        }
+      ],
+      "assessment": "선택분리정상. 인쇄실패 재출력정책은선택시필요.",
+      "minimal_action": "인화채택전필수총액추가금지",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "P-QR",
+      "item": "QR/학생무휴대폰직원승인",
+      "source_priority": "구현 제안",
+      "status": "포함",
+      "confirmed_vs_proposed": "구현 제안",
+      "budget_ids": [
+        "PHOTO-TOUCH",
+        "SW-PHOTO",
+        "OFF-PC"
+      ],
+      "budget_matches": [
+        {
+          "id": "PHOTO-TOUCH",
+          "line": 1648,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 849900
+        },
+        {
+          "id": "SW-PHOTO",
+          "line": 1828,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "개/세트/프로젝트",
+          "currency": "MNT",
+          "base": null
+        },
+        {
+          "id": "OFF-PC",
+          "line": 1408,
+          "scope": "현설계",
+          "qty": 8,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 2849900
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/포토부스_설계.md",
+          "line_start": 49,
+          "line_end": 58,
+          "excerpt": "1. 포토부스 대기 화면에 짧은 시간만 유효한 QR을 표시한다.\n2. 대표 학생이 자기 휴대폰으로 QR을 읽고, 로그인된 SYNK 플랫폼의 포토부스 혜택 화면 또는 같은 계정의 웹 화면을 연다. SYNK WORLD 안에서도 같은 흐름을 열 수 있게 하는 방안을 검토한다.\n3. 부스 이름과 이번 달 남은 이용권을 보여준다. 학생이 ‘이용권 사용하고 촬영 시작’을 누른다.\n4. 서버가 학생 자격·이번 달 사용 여부·부스 상태를 확인하고 그 학생과 부스에 촬영 세션 하나를 예약한다.\n5. 해당 부스에서 프레임 선택 → 연속 촬영 → 사진 선택 → 네컷 완성을 진행한다.\n6. 완성본을 제공하고 사용 완료로 기록한다. 인화를 도입하면 같은 결과물의 출력 단계를 붙인다.\n\n학생 계정은 본인의 휴대폰에서만 로그인한다. 이 방식이면 부스에 별도 QR 스캐너를 추가할 필요가 없다. 앱을 열거나 웹 로그인 후 원래 부스 확인 화면으로 돌아오는 경로는 실제 휴대폰에서 검증해야 한다.\n\n앱에는 ‘이번 달 촬영권 1회 / 사용 완료 / 진행 중’과 다음 이용 가능일을 보여주는 작은 화면을 추가한다. 휴대폰이 없을 때는 직원이 기존 학생 확인 절차로 같은 이용권을 대신 승인하는 방식을 제안한다. 직원 경로도 횟수 제한과 기록을 공유한다."
+        }
+      ],
+      "assessment": "QR은부스화면표시+학생폰스캔경로. 스캐너기계추가필요없음. 직원승인은기존단말사용.",
+      "minimal_action": "기기중복금지/직원경로구현시험",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "P-FRAME",
+      "item": "네컷프레임/브랜딩교체",
+      "source_priority": "사용자 반영 승인",
+      "status": "미견적",
+      "confirmed_vs_proposed": "사용자 반영 승인",
+      "budget_ids": [
+        "SW-PHOTO"
+      ],
+      "budget_matches": [
+        {
+          "id": "SW-PHOTO",
+          "line": 1828,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "개/세트/프로젝트",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/포토부스_설계.md",
+          "line_start": 24,
+          "line_end": 31,
+          "excerpt": "- **결과물:** 사진4칸이 중심이고 승인된 학원 로고·마스코트·촬영 날짜는 바깥 여백에 둔다. 학생 이름·계정 ID·학생번호는 넣지 않는다. 옛 ‘포토월에 로고·마스코트 필수’는 결과물과 조작 화면에서 브랜드를 보여주는 방식으로 정정한다.\n- **선택:** 기본 프레임1종+월별 또는 시즌별1종의 구성으로 시작한다. 틀을 바꾸는 것으로 재촬영권을 추가하지 않으며 기존 월1회/대표만 차감을 유지한다. 실제 인화 규격·해상도·재단 여유는 프린터 또는 디지털 저장 규격을 정한 후 확정한다.\n- **촬영 전 문구:** ‘이번 달 촬영권 1회’ → ‘대표 학생의 이용권 1회를 사용해요. 함께 찍는 친구의 이용권은 사용하지 않아요.’ → ‘이용권 사용하고 촬영 시작’ 순서로 설계한다. 이용 가능 여부는 서버 확인값을 표시해야 한다.\n- **진행/완료 문구:** ‘촬영 진행 중’과 ‘이번 달 사용 완료’를 구분한다. 실제 결과물이 만들어지기 전에 완료로 표시하지 않는다. 오류 복구는 아래 §5의 같은 예약/세션을 따르고 중복 차감하지 않는다.\n- **저장 안내:** 종이 인화+QR 또는 QR 전용 선택은 보류다. 결정·구현·실제 기기 검증 후 해당 방법만 안내한다. 디자인 시안에는 작동하지 않는 QR을 그려 놓거나 사진 저장 완료로 표시하지 않는다. 앱에서 개인 결과물 접근을 구현할 때 다른 학생의 사진이 노출되지 않게 한다.\n- **공유:** 사진 다운로드/인화와 SNS 공개는 다른 행동이다. 자동 게시를 추가하지 않고 학생이 원하는 결과물을 가져가는 데서 기본 흐름을 끝낸다.\n\n이 반영은 공간·화면·사진 결과물의 설계다. 월 이용권 서버, 부스 소프트웨어, SYNK WORLD 연결, 실제 촬영/인화는 별도 구현 단계다."
+        }
+      ],
+      "assessment": "기본1+시즌1 실제출력규격및적용작업은개발견적범위에넣어야함.",
+      "minimal_action": "별도포토월/마스코트조형물추가아님",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "C-FOUR",
+      "item": "4실 독립 PC·카메라·마이크·화면",
+      "source_priority": "승인 구성",
+      "status": "포함",
+      "confirmed_vs_proposed": "승인 구성",
+      "budget_ids": [
+        "AV-PC",
+        "AV-PTZ",
+        "AV-MIC",
+        "AV-TV",
+        "AV-PEN",
+        "AV-MONITOR"
+      ],
+      "budget_matches": [
+        {
+          "id": "AV-PC",
+          "line": 1188,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 2849900
+        },
+        {
+          "id": "AV-PTZ",
+          "line": 1248,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "USD",
+          "base": 1199
+        },
+        {
+          "id": "AV-MIC",
+          "line": 1308,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 440000
+        },
+        {
+          "id": "AV-TV",
+          "line": 1108,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 3599900
+        },
+        {
+          "id": "AV-PEN",
+          "line": 1128,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "KRW",
+          "base": 139000
+        },
+        {
+          "id": "AV-MONITOR",
+          "line": 1228,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 567900
+        }
+      ],
+      "evidence": [
+        {
+          "file": "tools/classroom-media/교실세팅.md",
+          "line_start": 11,
+          "line_end": 22,
+          "excerpt": "교실마다 교사용 카메라 1대, PC 1대, 교사용 무선 핀마이크 1세트, 유선 인터넷과 현장 학생이 볼 TV 또는 전자칠판을 둔다. **PC의 교재·판서 앱 화면과 교사 카메라를 OBS의 별도 소스로 합성**한다. OBS와 YouTube를 사용하며 Meet·Zoom은 이번 운영에 필요 없다. 앱의 `meeting_url`은 비워 둔다.\n\n| 항목 | 교실 1개 기준 | 선택 기준 |\n|---|---|---|\n| 카메라 | 기존 스마트폰 또는 USB 카메라 1대 | 교사 얼굴·입 모양·상반신 촬영용. 기존 폰이 있으면 먼저 재사용 시험. 모두 새로 마련한다면 상시 전원·USB 연결이 간단한 고정 카메라를 우선 검토 |\n| 송출 PC | 기존 PC/노트북 우선, 없으면 소형 PC 검토 | 유선 LAN, 카메라·마이크·필요 시 터치용 USB, 교실 화면과 운영 모니터 연결, H.264 하드웨어 인코더 지원. 메모리 16GB·SSD 1TB는 초기 기준이며 교재 앱·화면 캡처·카메라 합성·1080p 송출/녹화 동시 부하 시험으로 결정 |\n| 교실 화면·필기 입력 | TV + PC 입력 도구 또는 전자칠판 + PC 판서 앱 | 화면 크기·뒷자리 가독성·펜 입력·연결 방식을 현장에서 확인. 아래 촬영 장비 예산에 TV·전자칠판·펜 입력 도구 가격은 포함하지 않음 |\n| 마이크 | 착용 송신기 1개 + PC에 연결할 수신기 1개 | USB 오디오 출력 지원, 수업 시간 이상 배터리, 물리적 음소거·연결 표시. 송신기만 파는 제품과 구분 |\n| 고정·전원 | 거치대, 데이터 케이블, 전원 | 화면 옆 교사 설명 위치와 카메라 시선을 맞추고 상반신 동선을 확인. 매 수업 케이블을 다시 연결하지 않는 배치 |\n| 네트워크 | 교실 PC 유선 LAN | 네 교실 동시 업로드 속도 실측. 스마트폰 무선 입력을 쓰면 가까운 5GHz AP와 별도 부하 시험 |\n\n4교실이면 위 구성을 4세트로 복제한다. 처음에는 1세트를 실제 교실에서 한 수업 길이로 시험한 뒤 같은 구성으로 늘린다. 하드웨어 구매·인터넷·전기·저장공간까지 무료라는 뜻은 아니다. 특정 제품 구매나 유료 구독은 실행하지 않았다."
+        }
+      ],
+      "assessment": "4개실 독립구성포함. 제품은확정아님.",
+      "minimal_action": "첫1실실증후복제",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "C-PCINPUT",
+      "item": "PC OS·RAM·SSD·모니터·입력주변",
+      "source_priority": "설치 기준",
+      "status": "포함",
+      "confirmed_vs_proposed": "설치 기준",
+      "budget_ids": [
+        "AV-PC",
+        "AV-SSD",
+        "AV-MONITOR",
+        "OFF-PC",
+        "OFF-MONITOR",
+        "PHOTO-PC"
+      ],
+      "budget_matches": [
+        {
+          "id": "AV-PC",
+          "line": 1188,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 2849900
+        },
+        {
+          "id": "AV-SSD",
+          "line": 1208,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 250000
+        },
+        {
+          "id": "AV-MONITOR",
+          "line": 1228,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 567900
+        },
+        {
+          "id": "OFF-PC",
+          "line": 1408,
+          "scope": "현설계",
+          "qty": 8,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 2849900
+        },
+        {
+          "id": "OFF-MONITOR",
+          "line": 1428,
+          "scope": "현설계",
+          "qty": 8,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 567900
+        },
+        {
+          "id": "PHOTO-PC",
+          "line": 1608,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 2849900
+        }
+      ],
+      "evidence": [
+        {
+          "file": "tools/classroom-media/교실세팅.md",
+          "line_start": 16,
+          "line_end": 16,
+          "excerpt": "| 송출 PC | 기존 PC/노트북 우선, 없으면 소형 PC 검토 | 유선 LAN, 카메라·마이크·필요 시 터치용 USB, 교실 화면과 운영 모니터 연결, H.264 하드웨어 인코더 지원. 메모리 16GB·SSD 1TB는 초기 기준이며 교재 앱·화면 캡처·카메라 합성·1080p 송출/녹화 동시 부하 시험으로 결정 |"
+        },
+        {
+          "file": "tools/classroom-media/교실세팅.md",
+          "line_start": 30,
+          "line_end": 34,
+          "excerpt": "| TV + PC | PC 교재를 TV에 표시. 필기는 PC에 연결한 펜 태블릿 등 입력 도구로 PC 판서 앱에 작성 | 교재와 필기가 함께 들어 있는 PC 앱 창 | TV는 표시 장치이며 펜 입력 기능을 자동으로 갖는 것이 아님. 글씨 크기·입력 도구·교사 조작 동선을 확인 |\n| 전자칠판 + PC 판서 앱 | PC 영상을 전자칠판에 표시하고 전자칠판의 터치 입력을 PC로 전달 | 필기를 포함한 PC 판서 앱 창 | HDMI 영상 연결과 모델에 맞는 USB 터치 연결, 또는 영상·터치를 모두 지원하는 USB-C 경로. HDMI 케이블만 연결하고 터치가 된다고 가정하지 않음 |\n| 전자칠판 자체 OS/필기 앱 | 전자칠판 내부에서 교재·필기 실행 | 검증된 화면 공유 경로 또는 실제 영상 출력 → 캡처 장치 → PC/OBS | 모델별 HDMI OUT 등 영상 출력 존재, 자체 OS·필기·주석 레이어가 실제 출력되는지, 지연·해상도·오디오를 확인. PC 화면 캡처만으로 내부 필기가 잡힌다고 가정하지 않음 |\n\n**HDMI IN은 화면이 영상을 받는 입력이고 HDMI OUT은 외부로 내보내는 출력이다.** TV·전자칠판에 HDMI 단자가 있다는 이유만으로 영상을 PC로 가져올 수 있는 것은 아니다. 전자칠판 출력을 받는 경우 PC의 영상 출력 단자에 다시 연결하지 않고 호환 캡처 장치 등 입력 경로를 설계한다. 전자칠판 위에 자체 도구로 얹은 주석은 PC 앱의 원본과 다를 수 있으므로, 실제 사용할 방식으로 쓰기·지우기·페이지 넘김을 수행해 온라인 화면까지 비교한다. [BenQ의 HDMI·터치·영상 출력 연결 예시](https://www.benq.com/en-us/education/user-manual/benq-board-interactive-displays/re04a-essential-series-board/basic-operations.html)는 한 모델의 예시이며 모든 전자칠판에 같은 출력 기능을 보장하지 않는다."
+        },
+        {
+          "file": "tools/classroom-media/교실세팅.md",
+          "line_start": 51,
+          "line_end": 51,
+          "excerpt": "| 모니터·키보드·마우스 | 기본 FHD 표시·조작용 | 100,000 | 확보 예산, 기존 장비 재사용 우선 |"
+        }
+      ],
+      "assessment": "PC주석에정품OS/키보드마우스/16GBRAM증설명시. 수업SSD1TB4추가. 대체상위모델동봉구성은재확인.",
+      "minimal_action": "13대에키보드마우스13세트를또더하지않음",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "C-CABLE",
+      "item": "데이터/전원/고정부속",
+      "source_priority": "설치 기준",
+      "status": "포함",
+      "confirmed_vs_proposed": "설치 기준",
+      "budget_ids": [
+        "AV-CABLE",
+        "C22",
+        "C20",
+        "AV-MOUNT",
+        "AV-PTZ-MOUNT",
+        "C35"
+      ],
+      "budget_matches": [
+        {
+          "id": "AV-CABLE",
+          "line": 1288,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 280000
+        },
+        {
+          "id": "C22",
+          "line": 452,
+          "scope": "현설계",
+          "qty": 24,
+          "unit": "잠정 포트",
+          "currency": "MNT",
+          "base": 90000
+        },
+        {
+          "id": "C20",
+          "line": 412,
+          "scope": "현설계",
+          "qty": 267.9,
+          "unit": "㎡ 예산환산",
+          "currency": "MNT",
+          "base": 32000
+        },
+        {
+          "id": "AV-MOUNT",
+          "line": 1168,
+          "scope": "현설계",
+          "qty": 3,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 120000
+        },
+        {
+          "id": "AV-PTZ-MOUNT",
+          "line": 1268,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 230000
+        },
+        {
+          "id": "C35",
+          "line": 1090,
+          "scope": "현설계",
+          "qty": 7,
+          "unit": "지점",
+          "currency": "MNT",
+          "base": 160000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "tools/classroom-media/교실세팅.md",
+          "line_start": 19,
+          "line_end": 20,
+          "excerpt": "| 고정·전원 | 거치대, 데이터 케이블, 전원 | 화면 옆 교사 설명 위치와 카메라 시선을 맞추고 상반신 동선을 확인. 매 수업 케이블을 다시 연결하지 않는 배치 |\n| 네트워크 | 교실 PC 유선 LAN | 네 교실 동시 업로드 속도 실측. 스마트폰 무선 입력을 쓰면 가까운 5GHz AP와 별도 부하 시험 |"
+        },
+        {
+          "file": "tools/classroom-media/교실세팅.md",
+          "line_start": 80,
+          "line_end": 80,
+          "excerpt": "- 가능한 한 PC도 카메라 근처에 두고 LAN을 길게 배선해 불필요하게 긴 USB 전송 구간을 줄인다. 긴 USB 케이블은 카메라의 실제 해상도에서 검증한다. 케이블이 끼이거나 학생 동선을 가리지 않는 고정 위치를 선택한다."
+        }
+      ],
+      "assessment": "신호/수동LAN/고정전원/브래킷과 C35하중보강포함. 멀티탭/여분과는다름.",
+      "minimal_action": "실길이·연장안정성·플러그 확인",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "C-FACE",
+      "item": "교사 얼굴 보조광",
+      "source_priority": "필요시 설치 제안",
+      "status": "미견적",
+      "confirmed_vs_proposed": "필요시 설치 제안",
+      "budget_ids": [
+        "C21",
+        "PHOTO-LIGHT"
+      ],
+      "budget_matches": [
+        {
+          "id": "C21",
+          "line": 432,
+          "scope": "현설계",
+          "qty": 36,
+          "unit": "잠정 등기구",
+          "currency": "MNT",
+          "base": 130000
+        },
+        {
+          "id": "PHOTO-LIGHT",
+          "line": 1668,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 350000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "tools/classroom-media/교실세팅.md",
+          "line_start": 53,
+          "line_end": 53,
+          "excerpt": "| 조명 보완 | 기존 교실 조명을 우선 조정, 필요 시 LED 보조 | 60,000 | 확보 예산 |"
+        },
+        {
+          "file": "tools/classroom-media/교실세팅.md",
+          "line_start": 82,
+          "line_end": 82,
+          "excerpt": "- TV·전자칠판은 현장 학생의 반사·눈부심·뒷자리 가독성을 확인하고, 교사 얼굴은 별도 조명·커튼으로 맞춘다. 온라인 판서는 카메라 조명으로 개선하는 대신 원본 글씨·펜 굵기·배율을 조정한다. 강의 전체를 녹화하고 학생 휴대전화의 실제 YouTube 1080p 재생에서 디지털 글씨·교사 얼굴·음성·동기화를 판정한다."
+        },
+        {
+          "file": "docs/오프라인_공간설계/방별_인테리어_디자인_20260929.md",
+          "line_start": 58,
+          "line_end": 58,
+          "excerpt": "| 인물 촬영광 | 얼굴 앞·옆에서 부드럽게 비추고 화면·거울 반사를 피함. 원본의 약5000K 촬영광은 시험 출발점으로 보존 | 카메라 화이트밸런스와의 조합, 빛의 방향·높이·확산, 실카메라 플리커 |"
+        },
+        {
+          "file": "docs/오프라인_공간설계/방별_인테리어_디자인_20260929.md",
+          "line_start": 101,
+          "line_end": 101,
+          "excerpt": "| 수업 | 거울 커튼 닫음. 북쪽 기준점에 디지털보드 도킹·바퀴 잠금. 개인 책상16개 사용 | PC 원본 교재를 보드로, OBS 합성은 온라인으로. 교사는 정해진 설명 자리에 서고 수업 카메라는 북쪽 교사를 봄. 기본광과 얼굴 보조광 |"
+        }
+      ],
+      "assessment": "C21은촬영광제외, PHOTO-LIGHT는포토실1개만. 교실얼굴광부족시대응항목없음.",
+      "minimal_action": "기본광실증 후 부족한방만 조건부LED/거치견적; 확정4개추가금지",
+      "issue": true,
+      "gap_type": "개원준비 추적/비용 범위 공백",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "C-SPARES",
+      "item": "예비 케이블/충전·전원부속",
+      "source_priority": "승인 장비운영 제안",
+      "status": "누락",
+      "confirmed_vs_proposed": "승인 장비운영 제안",
+      "budget_ids": [
+        "AV-CABLE",
+        "AV-MIC"
+      ],
+      "budget_matches": [
+        {
+          "id": "AV-CABLE",
+          "line": 1288,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 280000
+        },
+        {
+          "id": "AV-MIC",
+          "line": 1308,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 440000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "tools/classroom-media/교실세팅.md",
+          "line_start": 135,
+          "line_end": 135,
+          "excerpt": "[오프라인 방별 설계 §18~20](../../docs/오프라인_공간설계/방별_인테리어_디자인_20260929.md)의 교실별 장비 구역에 수신기·마이크 충전/보관·예비 케이블과 간단한 운영 카드를 모은다. PC/장비함은 열 배출과 손 접근을 남기고 가습기·급수 동선과 분리한다. 아래 안내는 실물 운영안이며 자동화 기능 추가가 아니다."
+        },
+        {
+          "file": "docs/오프라인_공간설계/방별_인테리어_디자인_20260929.md",
+          "line_start": 352,
+          "line_end": 352,
+          "excerpt": "| 수업 장비 | 교실마다 PC/연결부·무선마이크 수신기·충전 자리를 한 장비 구역으로 묶는다. 충전 표시 확인, 예비 케이블/배터리 보관, 라벨을 같은 순서로 구성 | 환기와 손 접근을 유지하는 닫힌 수납. 장비와 가습기 물 보충·세척 경로를 분리 |"
+        }
+      ],
+      "assessment": "AV-CABLE4는사용중패치이고예비수량불명. 마이크는2TX세트라여분송신기4는이미있음. 별도배터리를사용하는지미정.",
+      "minimal_action": "예비USB/HDMI 등 공용최소목록·동봉충전기 확인; 송신기추가금지",
+      "issue": true,
+      "gap_type": "개원준비 추적/비용 범위 공백",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "C-NET",
+      "item": "4실 동시 실측 업로드·회선",
+      "source_priority": "운영 필수/회선목표",
+      "status": "미견적",
+      "confirmed_vs_proposed": "운영 필수/회선목표",
+      "budget_ids": [
+        "OPEX-INTERNET",
+        "NET-SETUP"
+      ],
+      "budget_matches": [
+        {
+          "id": "OPEX-INTERNET",
+          "line": 1868,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "개/세트/프로젝트",
+          "currency": "MNT",
+          "base": null
+        },
+        {
+          "id": "NET-SETUP",
+          "line": 1588,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 1200000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "tools/classroom-media/교실세팅.md",
+          "line_start": 127,
+          "line_end": 127,
+          "excerpt": "네 교실을 위 1080p 설정으로 보내면 영상·음성 합계 약 40.5Mbps다. 전송 여유 1.5~2배를 적용하면 약 61~81Mbps이며, 다른 사용량까지 고려해 **안정적인 실측 업로드 100Mbps 이상**을 초기 회선 목표로 삼는다. 광고상의 다운로드 속도가 아니다. 이는 [YouTube의 전송 여유 안내](https://support.google.com/youtube/answer/16404722?hl=en)를 네 스트림에 적용한 계산이다."
+        }
+      ],
+      "assessment": "망장비+테스트는포함, 회선개통/월요금은별도금액없음.",
+      "minimal_action": "다운로드광고가아닌업로드견적과설치일확인",
+      "issue": true,
+      "gap_type": "개원준비 추적/비용 범위 공백",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "C-BACKUP",
+      "item": "수업로컬녹화·중앙백업·복구",
+      "source_priority": "운영 필수",
+      "status": "포함",
+      "confirmed_vs_proposed": "운영 필수",
+      "budget_ids": [
+        "AV-SSD",
+        "REC-NAS",
+        "REC-HDD",
+        "REC-BACKUP",
+        "NET-UPS",
+        "NET-SETUP"
+      ],
+      "budget_matches": [
+        {
+          "id": "AV-SSD",
+          "line": 1208,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 250000
+        },
+        {
+          "id": "REC-NAS",
+          "line": 1528,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "USD",
+          "base": 364.99
+        },
+        {
+          "id": "REC-HDD",
+          "line": 1548,
+          "scope": "현설계",
+          "qty": 2,
+          "unit": "개/세트",
+          "currency": "USD",
+          "base": 419.99
+        },
+        {
+          "id": "REC-BACKUP",
+          "line": 1568,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 650000
+        },
+        {
+          "id": "NET-UPS",
+          "line": 1508,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 639900
+        },
+        {
+          "id": "NET-SETUP",
+          "line": 1588,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 1200000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "tools/classroom-media/교실세팅.md",
+          "line_start": 122,
+          "line_end": 129,
+          "excerpt": "- 일반 → 출력의 **방송 시 자동 녹화**를 켜고 **방송 종료 후 녹화 유지**는 끈다. 정상 수업은 방송 시작·방송 종료가 로컬 녹화 시작·종료도 처리한다. [OBS 공식 옵션 원문](https://github.com/obsproject/obs-studio/blob/master/frontend/data/locale/en-US.ini)\n- 녹화 형식 MKV, 녹화 인코더는 송출 인코더 공유로 시작한다. **자동 remux·자동 파일 분할은 끈다.** [OBS 녹화 안내](https://obsproject.com/kb/standard-recording-output-guide)\n- [obs-completed.lua](obs-completed.lua)에 해당 교실의 고정 active JSON과 완료 폴더를 지정한다. 서버·인증·폴더 설정은 [README](README.md)를 따른다.\n- 교실마다 자기 config·state·inbox·녹화 폴더와 worker를 둔다. 다른 PC의 `D:/...` 파일은 중앙 worker에서 읽을 수 없다. 한 중앙 worker로 통합하려면 공유 경로·접근 권한·완료 파일 전달을 별도로 검증해야 한다.\n\n네 교실을 위 1080p 설정으로 보내면 영상·음성 합계 약 40.5Mbps다. 전송 여유 1.5~2배를 적용하면 약 61~81Mbps이며, 다른 사용량까지 고려해 **안정적인 실측 업로드 100Mbps 이상**을 초기 회선 목표로 삼는다. 광고상의 다운로드 속도가 아니다. 이는 [YouTube의 전송 여유 안내](https://support.google.com/youtube/answer/16404722?hl=en)를 네 스트림에 적용한 계산이다.\n\n같은 비트레이트로 녹화하면 교실당 시간당 약 4.6GB, 하루 8시간 약 37GB, 4교실 약 146GB가 쌓인다. 저장기간은 별도 확정하며 도구는 원본을 자동 삭제하지 않는다."
+        },
+        {
+          "file": "tools/classroom-media/교실세팅.md",
+          "line_start": 170,
+          "line_end": 170,
+          "excerpt": "6. PC 재부팅 후 worker·OBS·카메라 복귀, 기록 폴더 여유, 백업 재생을 확인한다. 실파일과 실제 학생 계정의 확인 전까지는 설치 완료로 보고하지 않는다."
+        }
+      ],
+      "assessment": "SSD4/NAS/HDD2/분리백업1 포함. 기간/실제수업시간에따른보관용량은확정전.",
+      "minimal_action": "삭제기간·백업인계·복원시험",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "C-LICENSE",
+      "item": "OBS·YouTube·무료기본필터",
+      "source_priority": "승인 유료서비스 미사용",
+      "status": "범위외",
+      "confirmed_vs_proposed": "승인 유료서비스 미사용",
+      "budget_ids": [
+        "LICENSE"
+      ],
+      "budget_matches": [
+        {
+          "id": "LICENSE",
+          "line": 2775,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "tools/classroom-media/교실세팅.md",
+          "line_start": 11,
+          "line_end": 11,
+          "excerpt": "교실마다 교사용 카메라 1대, PC 1대, 교사용 무선 핀마이크 1세트, 유선 인터넷과 현장 학생이 볼 TV 또는 전자칠판을 둔다. **PC의 교재·판서 앱 화면과 교사 카메라를 OBS의 별도 소스로 합성**한다. OBS와 YouTube를 사용하며 Meet·Zoom은 이번 운영에 필요 없다. 앱의 `meeting_url`은 비워 둔다."
+        },
+        {
+          "file": "tools/classroom-media/교실세팅.md",
+          "line_start": 59,
+          "line_end": 59,
+          "excerpt": "4교실의 장비 및 부속 합계는 7,374,800원, 전체 목표 8,000,000원 대비 여유금은 625,200원이다. **TV·전자칠판·펜 태블릿·화면 거치대·필요 시 캡처 장치와 추가 영상/터치 배선은 이 가격표에 포함하지 않았다.** 표의 10만원 모니터 예산은 PC 조작용이며 교실 대형 화면 예산이 아니다. 학원 공용 인터넷 개통·월 요금, 큰 규모의 LAN/전기 공사와 장기 백업 서버도 별도다. 새 방향의 전체 설치비가 반당200만원 안에 든다고 보장하지 않으며, 추가 필기 앱 유료 구독을 전제하지 않는다."
+        },
+        {
+          "file": "tools/classroom-media/교실세팅.md",
+          "line_start": 108,
+          "line_end": 108,
+          "excerpt": "색보정과 음성 정리를 기본값으로 저장해 라이브·녹화에 함께 적용하는 방법은 [실시간 보정 안내](실시간보정.md)를 따른다. 무료 내장 필터부터 사용하며 교실·장비를 실제로 본 뒤 수치를 맞춘다. 현재는 설정안이고 실장비 적용 전이다."
+        }
+      ],
+      "assessment": "별도유료영상서비스/유료필기구독을새로계상할근거없음.",
+      "minimal_action": "기존무료구성; 기관콘텐츠권리는별도확인",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "C-VIEW",
+      "item": "학생별 화면 선택",
+      "source_priority": "제안·미구현",
+      "status": "미견적",
+      "confirmed_vs_proposed": "제안·미구현",
+      "budget_ids": [
+        "SW-VIEW"
+      ],
+      "budget_matches": [
+        {
+          "id": "SW-VIEW",
+          "line": 1848,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "개/세트/프로젝트",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/오프라인_공간설계/평면도_20260929/공간과_촬영_통합설계.md",
+          "line_start": 221,
+          "line_end": 225,
+          "excerpt": "사용자는 학생이 취향에 따라 실시간으로 화면을 바꿀 수 있는지 확인했다. **현재 구현되어 있지 않으며, 기존 단일 YouTube 합성 영상에 메뉴만 붙여서는 교재와 교사 영상을 독립적으로 재배치할 수 없다.** 합성 후 작은 교사 부분만 확대해도 원본 얼굴의 세부 정보가 복원되지는 않는다.\n\n학생별 선택을 지원하려면 교재/판서 영상과 교사 카메라 영상을 각각 학생 앱에 전달하고, SYNK WORLD에서 학생마다 화면 크기·배치·숨김을 조절하도록 설계한다. 교사 음성은 한 경로로 유지하고 두 영상과 동기화한다. 학생의 변경은 본인 화면에만 적용되며 송출 화면이나 다른 학생 화면을 바꾸지 않는다. 기본값은 자료 크게+교사 작게로 두고 발음/자료 집중을 개인 선택으로 제공하는 방향을 제안한다.\n\n이 방식은 송출·학생 플레이어·접근권한·복습 저장까지 별도 검토가 필요하다. 두 개의 독립 라이브 재생기를 나란히 켜기만 하면 시차가 생길 수 있으므로 재연결·일시정지·복습 탐색까지 동기화를 시험한다. 복습에서도 선택하려면 분리된 원본과 시간 정보도 보존해야 한다. 기존 한 개 YouTube 영상 중심 어댑터는 아직 이 구조가 아니며, 회선·서버·저장 비용을 다시 산정해야 한다. 추가 유료 영상 서비스 미사용 조건을 유지한 구현 가능성은 미검증이다. 플랫폼 변경·유료 서비스 채택·실기기 설정을 완료하거나 확정한 것은 아니다."
+        }
+      ],
+      "assessment": "별도개발행적절. UI메뉴만으로구현된기능아님.",
+      "minimal_action": "선택플레이어/동기화/저장·회선비검토",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "D-HYGRO",
+      "item": "온습도계·기기관리",
+      "source_priority": "설계 제안·수량 미정",
+      "status": "미견적",
+      "confirmed_vs_proposed": "설계 제안·수량 미정",
+      "budget_ids": [],
+      "budget_matches": [],
+      "evidence": [
+        {
+          "file": "docs/오프라인_공간설계/방별_인테리어_디자인_20260929.md",
+          "line_start": 75,
+          "line_end": 75,
+          "excerpt": "- 온습도계와 관리 담당을 두고 물 보충·배수·세척·필터 교체 동선을 표시한다. 장비를 넣는 것만으로 환기·소음·습도 조절이 끝난다고 보지 않는다."
+        },
+        {
+          "file": "docs/오프라인_공간설계/평면도_20260929/공간과_촬영_통합설계.md",
+          "line_start": 96,
+          "line_end": 96,
+          "excerpt": "방별 온습도계를 두는 것을 제안한다. 가습기는 상시 최대 가동을 뜻하지 않으며 습도를 보고 조절하고 물 교체·세척 동선을 마련한다. 일반 관리 참고는 상대습도30~50%이며 추운 창가에 결로가 생기면 더 낮춰야 할 수 있다. 이는 현장에 맞춰 조절할 관리 기준이고 건강 효과를 보장하는 값은 아니다. [EPA 가습기 관리 안내](https://www.epa.gov/indoor-air-quality-iaq/use-and-care-home-humidifiers)"
+        }
+      ],
+      "assessment": "방별 온습도 확인을 제안했으나 별도 단말 수량과 기기 내장 센서 재사용 여부는 미정이다. 7대 일괄 필수구매로 확정할 근거는 없다.",
+      "minimal_action": "선정 가습기/공기청정기의 내장 센서를 확인한 뒤 관리에 실제 필요한 단말만 견적에 반영한다.",
+      "issue": true,
+      "gap_type": "개원준비 추적/비용 범위 공백",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "D-AFURN",
+      "item": "A수업/댄스16세트 수납",
+      "source_priority": "사용자승인개념안",
+      "status": "포함",
+      "confirmed_vs_proposed": "사용자승인개념안",
+      "budget_ids": [
+        "F01",
+        "F03",
+        "F04",
+        "F05",
+        "AV-STAND-A"
+      ],
+      "budget_matches": [
+        {
+          "id": "F01",
+          "line": 698,
+          "scope": "현설계",
+          "qty": 16,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 250000
+        },
+        {
+          "id": "F03",
+          "line": 740,
+          "scope": "현설계",
+          "qty": 64,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 120000
+        },
+        {
+          "id": "F04",
+          "line": 760,
+          "scope": "현설계",
+          "qty": 2,
+          "unit": "개",
+          "currency": "MNT",
+          "base": 500000
+        },
+        {
+          "id": "F05",
+          "line": 778,
+          "scope": "현설계",
+          "qty": 4,
+          "unit": "묶음",
+          "currency": "MNT",
+          "base": 80000
+        },
+        {
+          "id": "AV-STAND-A",
+          "line": 1148,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "개/세트",
+          "currency": "MNT",
+          "base": 280000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/오프라인_공간설계/방별_인테리어_디자인_20260929.md",
+          "line_start": 112,
+          "line_end": 115,
+          "excerpt": "- 책상은 **1인용16개**를 유지하면서 접이·중첩 보관이 가능한 형식을 우선 검토하고, 의자는 안전하게 적재할 수 있는 제품을 함께 고른다. 기존600×450mm 평면 사각형은 실제 접힘 크기·적재 안정성·수납 대수의 증거가 아니다.\n- 6안 `mainRoom.modes`에 수업/댄스를 나눠 **수납 후보를 실제 좌표로 추가**했다. 수업 모드는 원래 개인 책상16개·의자16개, 댄스 모드는 책상카트2개에8개씩·의자4묶음에4개씩을 표시한다. 가구16개씩을 단순히 모델에서 삭제해 빈 방으로 만든 것이 아니다. 수업 때는 책상카트2개가 빈 상태로 남는 후보까지 구분한다.\n- **후보 외곽과 총량은 제품 미선정 가정이다.** 책상카트는 각0.75×0.70m·높이1.20m, 접은600×450mm 책상 두께0.12m를8개 쌓고 카트 높이0.20m를 더한 약1.16m를 표현한 것이다. 의자 묶음은 각0.65×0.75m·높이1.30m 안에4개 적재되는 제품을 가정한다. 실제 접힘 크기·제조사 허용 적재·하중·운반·전도 안정성은 검증하지 않았다. 따라서 현재 후보가 실제16개씩 보관 가능하다는 확정은 아니다.\n- TV 동쪽 도킹 후보는 전체 좌표(9.05,0.50)의0.95×2.00m 외곽이며 화면은 서쪽을 향한다. 이 외곽에는 가정 받침이 포함되지만 화면2m는 구매 규격이 아니다. 책상카트2개는 x8.45/9.35, y2.65에, 의자4묶음은 같은x와 y3.65/5.65 조합에 둔다. 가정 외형끼리·기존 AP/H·출입문 회전과 겹치지 않는 것은 확인했다. 앞쪽0.85m 접근 띠는 후보이며 일부2열 수납은 앞 묶음을 먼저 꺼내야 하므로 카트 회전·이동 순서를 실물로 시험한다."
+        }
+      ],
+      "assessment": "책상16/의자16와카트2/보호4/이동스탠드1 포함.",
+      "minimal_action": "제품적재/전도/전환시간 검증",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "D-ACOUSTIC",
+      "item": "차음·흡음·외기/냉난방",
+      "source_priority": "설계 범위",
+      "status": "포함",
+      "confirmed_vs_proposed": "설계 범위",
+      "budget_ids": [
+        "C03",
+        "C04",
+        "C17",
+        "C26",
+        "C27",
+        "C28",
+        "C29"
+      ],
+      "budget_matches": [
+        {
+          "id": "C03",
+          "line": 83,
+          "scope": "현설계",
+          "qty": 198.205,
+          "unit": "㎡ 한면투영",
+          "currency": "MNT",
+          "base": 125000
+        },
+        {
+          "id": "C04",
+          "line": 104,
+          "scope": "현설계",
+          "qty": 6,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 650000
+        },
+        {
+          "id": "C17",
+          "line": 358,
+          "scope": "현설계",
+          "qty": 40,
+          "unit": "잠정㎡",
+          "currency": "MNT",
+          "base": 110000
+        },
+        {
+          "id": "C26",
+          "line": 532,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "설비식",
+          "currency": "MNT",
+          "base": 18000000
+        },
+        {
+          "id": "C27",
+          "line": 550,
+          "scope": "현설계",
+          "qty": 2,
+          "unit": "실",
+          "currency": "MNT",
+          "base": 600000
+        },
+        {
+          "id": "C28",
+          "line": 568,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "설비식",
+          "currency": "MNT",
+          "base": 16000000
+        },
+        {
+          "id": "C29",
+          "line": 588,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": 3000000
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/오프라인_공간설계/방별_인테리어_디자인_20260929.md",
+          "line_start": 65,
+          "line_end": 67,
+          "excerpt": "- 흡음은 실내 울림을 줄이기 위한 패널·천장·커튼의 조합으로 계획한다. 옆방 수업 소리가 넘어오는 문제는 벽체·문·틈·설비 관통부의 차음 검토가 별도로 필요하다.\n- 패널은 도어 스윙·화면·콘센트·설비 점검구를 피해 모듈로 배치한다. 시공 전 실제 재료의 성능 자료와 현지 적용 조건을 확인한다. 패브릭·도장·접착제·커튼·바닥의 실내 사용 적합성도 현지 시공업체와 확인한다.\n- 공조는 사람 수·기존 건물·조명 발열을 반영해 산정한다. 촬영 배경 안에 실내기·배수관이 들어오지 않게 배치 후보를 잡되, 조용한 화면을 위해 필요한 환기를 무조건 끄는 운영은 채택하지 않는다. 마이크 위치·저소음 운전·설비 진동 전달부터 시험한다."
+        }
+      ],
+      "assessment": "내벽/문차음과실내흡음·공조구분포함. 공청기가대체아님.",
+      "minimal_action": "현장부하/인접실진동·소음시험,대수선SITE-MAJOR별도",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "D-CLEAN",
+      "item": "물통순차세척·건조작업시간",
+      "source_priority": "승인 운영",
+      "status": "포함",
+      "confirmed_vs_proposed": "승인 운영",
+      "budget_ids": [
+        "F14",
+        "C25",
+        "S-humid_cleaning",
+        "WORKING-CAPITAL"
+      ],
+      "budget_matches": [
+        {
+          "id": "F14",
+          "line": 958,
+          "scope": "현설계",
+          "qty": 1.3,
+          "unit": "전면길이 m",
+          "currency": "MNT",
+          "base": 900000
+        },
+        {
+          "id": "C25",
+          "line": 512,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": 1200000
+        },
+        {
+          "id": "S-humid_cleaning",
+          "line": 2331,
+          "scope": "현설계",
+          "qty": 1,
+          "unit": "세트",
+          "currency": "MNT",
+          "base": 40000
+        },
+        {
+          "id": "WORKING-CAPITAL",
+          "line": 2757,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/오프라인_공간설계/방별_인테리어_디자인_20260929.md",
+          "line_start": 349,
+          "line_end": 349,
+          "excerpt": "| 청소·세척 | 잠금 청소장에 도구·약품을 보관하고, 실제 물통을 넣을 세척 위치와 급수·배수 연결 후보를 별도로 지정한다. 음료 상판·화장실 통로·VR 바닥을 관리 작업대처럼 사용하지 않음 | 젖는 부분은 내수 마감, 청소도구 건조/환기와 물받이 계획. 세제는 컵·식품·학생 물품과 다른 잠금 구획 |"
+        },
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+          "line_start": 431,
+          "line_end": 431,
+          "excerpt": "- 상담/VR 예약 전에 물통 세척·건조 관리 시간을 확보한다. 예약 중 작업하지 않는다. 관리 시간이 확보되지 않으면 위치/예약을 재검토한다. 가습기7대의 순차 작업·건조 용량·실제 소요 시간은 현장에서 확인한다."
+        }
+      ],
+      "assessment": "시설/도구포함. 작업시간은직원배정근무표. 상담중사용금지.",
+      "minimal_action": "7개동시건조설비자동추가금지",
+      "issue": false,
+      "gap_type": null,
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "D-FOOD",
+      "item": "커피·컵 최초 채움",
+      "source_priority": "사용자편의시설운영",
+      "status": "누락",
+      "confirmed_vs_proposed": "사용자편의시설운영",
+      "budget_ids": [
+        "S-coffee_example",
+        "S-cups_example"
+      ],
+      "budget_matches": [
+        {
+          "id": "S-coffee_example",
+          "line": 2567,
+          "scope": "월운영",
+          "qty": 4.4,
+          "unit": "kg/월",
+          "currency": "MNT",
+          "base": 125000
+        },
+        {
+          "id": "S-cups_example",
+          "line": 2587,
+          "scope": "월운영",
+          "qty": 440,
+          "unit": "개/월",
+          "currency": "MNT",
+          "base": 200
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/오프라인_공간설계/방별_인테리어_디자인_20260929.md",
+          "line_start": 350,
+          "line_end": 350,
+          "excerpt": "| 정수기·음료 | 포토실 앞 편의구역에서 커피·포장 다과와 함께 이용하되 물병 채우는 높이, 컵을 놓는 자리, 물받이·컵 수거·문 여는 정비 공간을 함께 잡는다 | 제품이 기존 작은 편의대에 모두 들어간다고 가정하지 않는다. 사진 장비·종이와 상판·물기를 분리 |"
+        },
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+          "line_start": 145,
+          "line_end": 145,
+          "excerpt": "| 공용 커피머신 | 1대 | 직원·학생 공용. 6안도 포토실 앞 깊이1.5m 편의구역 유지. 사진장비와 상판·물기를 분리하고 재고는 사무실 보관. 제품·급배수는 미정이며 라운지 좌석 추가 아님 |"
+        }
+      ],
+      "assessment": "커피/컵은월사용예시만있고초도 재고는 합계에서 제외. 기계만구매하면첫제공불가.",
+      "minimal_action": "머신방식맞는분쇄커피/캡슐·컵 초도량반영, 보충주기와중복금지",
+      "issue": true,
+      "gap_type": "개원준비 추적/비용 범위 공백",
+      "quantity": null,
+      "duplicate_of": null
+    },
+    {
+      "id": "FIN-RENT-CONFLICT",
+      "item": "공간 미정과 과거 임대 실계약 문구의 불일치",
+      "source_priority": "현재 사용자 직접 확인 우선",
+      "status": "미견적",
+      "confirmed_vs_proposed": "실제 공간/임대 조건 미정. 267.9㎡는 개념설계 면적.",
+      "budget_ids": [
+        "RENT",
+        "WORKING-CAPITAL"
+      ],
+      "budget_matches": [
+        {
+          "id": "RENT",
+          "line": 2739,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        },
+        {
+          "id": "WORKING-CAPITAL",
+          "line": 2757,
+          "scope": "별도견적",
+          "qty": 1,
+          "unit": "식",
+          "currency": "MNT",
+          "base": null
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 급여 인센티브 정본.txt",
+          "line_start": 209,
+          "line_end": 209,
+          "excerpt": "| 임대료 (254.5㎡ · 실계약) | 1,500 | 586 |"
+        },
+        {
+          "file": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 급여 인센티브 정본.txt",
+          "line_start": 223,
+          "line_end": 223,
+          "excerpt": "- 임대료 1,500만₮은 추정이 아니라 **실계약가**입니다 (2026-08-01 확정)"
+        },
+        {
+          "file": "docs/오프라인_공간설계/평면도_20260929/공간과_촬영_통합설계.md",
+          "line_start": 22,
+          "line_end": 22,
+          "excerpt": "외곽 **19.0×14.1m = 267.90㎡ = 약81.04평**, 벽 포함 개념 면적이다. 내부 화장실이 빠져 있던5안247㎡보다 **20.90㎡·약6.32평** 늘렸다. 큰 강의실 A와 B/C, 주복도를 유지하면서 남쪽 실을 조정했으며 로비·라운지는 추가하지 않는다. 1안342.3㎡보다는74.40㎡·약22.51평 작다. 임대 계약 면적이나 법적 수용인원·최소면적 산정값은 아니다."
+        },
+        {
+          "file": "docs/오프라인_공간설계/평면도_20260929/공간과_촬영_통합설계.md",
+          "line_start": 154,
+          "line_end": 156,
+          "excerpt": "## 가정과 확인 범위\n\n실측 전 개념도다. **내부 남녀 화장실2실을 포함**하며 공용 계단·승강기 면적은 제외했다. 기둥, 창, 실제 출입구, 천장 높이 및 현장 급배수·배기는 미반영이다. 외벽200mm·일반 내벽150mm·화장실 공유 배관벽250mm, 주복도1.60m·화장실 접근통로1.20m는 가정이며 기준 충족을 판정하지 않았다. 작은방 의자 사용 여유, 실제 통행과 피난 조건, 화장실 기구 수·접근성·설비는 현장과 적용 기준에 맞춰 다시 검토해야 한다."
+        }
+      ],
+      "trusted_context": {
+        "source": "부모 에이전트가 전달한 현재 사용자 직접 답변",
+        "received_date": "2026-10-01",
+        "statement": "사용자가 실제 공간은 아직 미정이라고 확인했다."
+      },
+      "assessment": "급여 정본의 254.5㎡·월1,500만₮ 실계약/2026-08-01 확정 문구는 현재 사용자 답변과 불일치한다. 이 금액을 새 267.9㎡ 개념 공간의 현 계약가로 재사용할 수 없다. 과거 손익모델 입력으로만 보존하고 현재 임대조건은 미정으로 둔다.",
+      "minimal_action": "보증금·임대료·관리비·공사/시운전/무료 파일럿 동안 비용이 발생하는 기간을 실제 계약 후보로 입력한다. 값이 없으면 개원 총자금은 미확정으로 표시한다. 재무 원문 상태 주석 수정은 부모 담당.",
+      "issue": true,
+      "gap_type": "상충한 과거 근거 / 필수 개원자금 미정",
+      "quantity": null,
+      "duplicate_of": null
+    }
+  ],
+  "summary": {
+    "entry_count": 121,
+    "status_counts": {
+      "포함": 57,
+      "미견적": 27,
+      "누락": 12,
+      "범위외": 24,
+      "중복": 1
+    },
+    "actionable_entry_ids": [
+      "B44",
+      "B48",
+      "B51",
+      "B53",
+      "B54",
+      "B55",
+      "B56",
+      "B63",
+      "B64",
+      "B65",
+      "B66",
+      "B82",
+      "B89",
+      "B106",
+      "B130",
+      "B133",
+      "B167",
+      "B168",
+      "B169",
+      "B170",
+      "B171",
+      "O-BOOKS",
+      "O-CATALOG",
+      "O-OPEN",
+      "O-FAIL",
+      "P-LIMIT",
+      "C-FACE",
+      "C-SPARES",
+      "C-NET",
+      "D-HYGRO",
+      "D-FOOD",
+      "FIN-RENT-CONFLICT"
+    ],
+    "no_purchase_required_items": [
+      "출석키오스크",
+      "학생충전타워",
+      "추가라운지/대기벤치",
+      "직원독립사물함8",
+      "냉장고/전자레인지",
+      "별도QR스캐너",
+      "PC동봉키보드마우스중복",
+      "마이크예비송신기추가"
+    ]
+  },
+  "validation": {
+    "budget_refs_resolve": true,
+    "evidence_line_ranges_valid": true,
+    "unique_entry_ids": true,
+    "snapshot_matches_at_completion": true,
+    "plan_quantity_check_count": 20
+  },
+  "plan_quantity_checks": {
+    "source": "docs/오프라인_공간설계/평면도_20260929/공간과_편의시설_좌표_6안.json",
+    "status": "수량과 역할 대조이며 실제 설치/제품 용량 검증 아님",
+    "checks": [
+      {
+        "item": "학생 개인 책상",
+        "plan_quantity": 64,
+        "budget_ids": [
+          "F01",
+          "F02"
+        ],
+        "unit": "개",
+        "result": "일치 16+48",
+        "budget_rows": [
+          {
+            "id": "F01",
+            "qty": 16,
+            "unit": "개",
+            "scope": "현설계"
+          },
+          {
+            "id": "F02",
+            "qty": 48,
+            "unit": "개",
+            "scope": "현설계"
+          }
+        ]
+      },
+      {
+        "item": "학생 의자",
+        "plan_quantity": 64,
+        "budget_ids": [
+          "F03"
+        ],
+        "unit": "개",
+        "result": "일치",
+        "budget_rows": [
+          {
+            "id": "F03",
+            "qty": 64,
+            "unit": "개",
+            "scope": "현설계"
+          }
+        ]
+      },
+      {
+        "item": "직원 개인 책상/의자",
+        "plan_quantity": 8,
+        "budget_ids": [
+          "F06",
+          "F07"
+        ],
+        "unit": "세트",
+        "result": "각8 일치, 직원 총원13과 상주자리8 구분",
+        "budget_rows": [
+          {
+            "id": "F06",
+            "qty": 8,
+            "unit": "자리",
+            "scope": "현설계"
+          },
+          {
+            "id": "F07",
+            "qty": 8,
+            "unit": "개",
+            "scope": "현설계"
+          }
+        ]
+      },
+      {
+        "item": "수업 카메라",
+        "plan_quantity": 4,
+        "budget_ids": [
+          "AV-PTZ"
+        ],
+        "unit": "대",
+        "result": "일치, 보안 CCTV 대체 아님",
+        "budget_rows": [
+          {
+            "id": "AV-PTZ",
+            "qty": 4,
+            "unit": "개/세트",
+            "scope": "현설계"
+          }
+        ]
+      },
+      {
+        "item": "수업 TV/화면",
+        "plan_quantity": 4,
+        "budget_ids": [
+          "AV-TV"
+        ],
+        "unit": "대",
+        "result": "일치, 전자칠판 선택안은 대체품",
+        "budget_rows": [
+          {
+            "id": "AV-TV",
+            "qty": 4,
+            "unit": "개/세트",
+            "scope": "현설계"
+          }
+        ]
+      },
+      {
+        "item": "공기청정기",
+        "plan_quantity": 7,
+        "budget_ids": [
+          "S-air_large",
+          "S-air_small"
+        ],
+        "unit": "대",
+        "result": "1+6 일치",
+        "budget_rows": [
+          {
+            "id": "S-air_large",
+            "qty": 1,
+            "unit": "대",
+            "scope": "현설계"
+          },
+          {
+            "id": "S-air_small",
+            "qty": 6,
+            "unit": "대",
+            "scope": "현설계"
+          }
+        ]
+      },
+      {
+        "item": "가습기",
+        "plan_quantity": 7,
+        "budget_ids": [
+          "S-humid_large",
+          "S-humid_small"
+        ],
+        "unit": "대",
+        "result": "1+6 일치",
+        "budget_rows": [
+          {
+            "id": "S-humid_large",
+            "qty": 1,
+            "unit": "대",
+            "scope": "현설계"
+          },
+          {
+            "id": "S-humid_small",
+            "qty": 6,
+            "unit": "대",
+            "scope": "현설계"
+          }
+        ]
+      },
+      {
+        "item": "변기·세면대·수전",
+        "plan_quantity": 2,
+        "budget_ids": [
+          "C24"
+        ],
+        "unit": "실 세트",
+        "result": "변기2/세면대2 일치; 내수 세면장은 C24에 없음",
+        "budget_rows": [
+          {
+            "id": "C24",
+            "qty": 2,
+            "unit": "실 세트",
+            "scope": "현설계"
+          }
+        ]
+      },
+      {
+        "item": "화장실 거울",
+        "plan_quantity": 2,
+        "budget_ids": [
+          "C33"
+        ],
+        "unit": "개",
+        "result": "일치",
+        "budget_rows": [
+          {
+            "id": "C33",
+            "qty": 2,
+            "unit": "개",
+            "scope": "현설계"
+          }
+        ]
+      },
+      {
+        "item": "화장실 상부 닫힌 소모품 수납",
+        "plan_quantity": 2,
+        "budget_ids": [],
+        "unit": "곳",
+        "result": "예산 누락; B89에서 추적",
+        "budget_rows": []
+      },
+      {
+        "item": "상담 접이테이블",
+        "plan_quantity": 1,
+        "budget_ids": [
+          "F08"
+        ],
+        "unit": "개",
+        "result": "일치",
+        "budget_rows": [
+          {
+            "id": "F08",
+            "qty": 1,
+            "unit": "개",
+            "scope": "현설계"
+          }
+        ]
+      },
+      {
+        "item": "상담 접이의자",
+        "plan_quantity": 4,
+        "budget_ids": [
+          "F09"
+        ],
+        "unit": "개",
+        "result": "일치",
+        "budget_rows": [
+          {
+            "id": "F09",
+            "qty": 4,
+            "unit": "개",
+            "scope": "현설계"
+          }
+        ]
+      },
+      {
+        "item": "A 책상 수납카트",
+        "plan_quantity": 2,
+        "budget_ids": [
+          "F04"
+        ],
+        "unit": "개",
+        "result": "일치, 실제16개 수용 검증 전",
+        "budget_rows": [
+          {
+            "id": "F04",
+            "qty": 2,
+            "unit": "개",
+            "scope": "현설계"
+          }
+        ]
+      },
+      {
+        "item": "A 의자 적재 보호",
+        "plan_quantity": 4,
+        "budget_ids": [
+          "F05"
+        ],
+        "unit": "묶음",
+        "result": "일치, 실제4개씩 적재 검증 전",
+        "budget_rows": [
+          {
+            "id": "F05",
+            "qty": 4,
+            "unit": "묶음",
+            "scope": "현설계"
+          }
+        ]
+      },
+      {
+        "item": "외투·신발장",
+        "plan_quantity": 6,
+        "budget_ids": [
+          "F11"
+        ],
+        "unit": "장",
+        "result": "6장 포함, 예산 단위는 합산 제작 전면길이12.1m; 수납용량 미검증",
+        "budget_rows": [
+          {
+            "id": "F11",
+            "qty": 12.1,
+            "unit": "전면길이 m",
+            "scope": "현설계"
+          }
+        ]
+      },
+      {
+        "item": "학생 가방 수납 부속",
+        "plan_quantity": 64,
+        "budget_ids": [
+          "F20"
+        ],
+        "unit": "곳",
+        "result": "64 일치",
+        "budget_rows": [
+          {
+            "id": "F20",
+            "qty": 64,
+            "unit": "개",
+            "scope": "현설계"
+          }
+        ]
+      },
+      {
+        "item": "대여 필기펜",
+        "plan_quantity": 8,
+        "budget_ids": [
+          "S-loan_pens"
+        ],
+        "unit": "개",
+        "result": "8 일치",
+        "budget_rows": [
+          {
+            "id": "S-loan_pens",
+            "qty": 8,
+            "unit": "개",
+            "scope": "현설계"
+          }
+        ]
+      },
+      {
+        "item": "닫힌 분실물 상자",
+        "plan_quantity": 1,
+        "budget_ids": [
+          "S-lost_found"
+        ],
+        "unit": "개",
+        "result": "1 일치",
+        "budget_rows": [
+          {
+            "id": "S-lost_found",
+            "qty": 1,
+            "unit": "개",
+            "scope": "현설계"
+          }
+        ]
+      },
+      {
+        "item": "잔음료 수거통",
+        "plan_quantity": 1,
+        "budget_ids": [
+          "S-leftover_drink"
+        ],
+        "unit": "개",
+        "result": "1 일치; 사용한 컵통은 일반통7에 포함",
+        "budget_rows": [
+          {
+            "id": "S-leftover_drink",
+            "qty": 1,
+            "unit": "개",
+            "scope": "현설계"
+          }
+        ]
+      },
+      {
+        "item": "물통 세척/건조 도구",
+        "plan_quantity": 1,
+        "budget_ids": [
+          "S-humid_cleaning"
+        ],
+        "unit": "세트",
+        "result": "1 일치;7개 물통 동시건조 보장 아님",
+        "budget_rows": [
+          {
+            "id": "S-humid_cleaning",
+            "qty": 1,
+            "unit": "세트",
+            "scope": "현설계"
+          }
+        ]
+      }
+    ]
+  }
+}

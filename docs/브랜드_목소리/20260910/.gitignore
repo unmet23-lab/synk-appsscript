@@ -1,0 +1,8 @@
+/_runtime/
+/실험/**/.venv/
+/실험/**/model/
+/실험/**/download/
+/실험/hf-downloads/
+**/__pycache__/
+*.pending.zip
+*.pending-*

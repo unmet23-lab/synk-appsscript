@@ -1,0 +1,18 @@
+<!doctype html><html lang="ko"><head><meta charset="UTF-8"><title>source</title></head><body><template><style>
+  @font-face{font-family:SUIT;src:url('assets/fonts/SUIT.woff2') format('woff2');font-weight:100 900;font-display:block}@font-face{font-family:InterTight;src:url('assets/fonts/InterTight.ttf');font-weight:700 900;font-display:block}
+  *{box-sizing:border-box} #root{position:absolute;inset:0;width:1080px;height:1920px;overflow:hidden;background:#fff;color:#000;font-family:SUIT,sans-serif}
+  h1,h2,p{margin:0} img{display:block;object-fit:cover} .label{font:750 31px/1.2 SUIT;letter-spacing:.025em}
+  .step{position:absolute;left:76px;top:256px;font:800 36px/1 SUIT;letter-spacing:.04em;color:#274BDD}
+  .heading{position:absolute;left:72px;top:322px;font:900 106px/1.04 SUIT;letter-spacing:-.06em;width:930px}
+  .heading span{display:block}.blue{color:#274BDD}.rule{position:absolute;left:76px;right:104px;top:228px;height:3px;background:#000}
+  .photo{position:absolute;overflow:hidden;background:#efefef}.photo img{width:100%;height:100%}
+  .stamp{background:#274BDD;color:#fff;padding:14px 22px;font:800 34px/1 SUIT;display:inline-block}
+  .note{font:550 30px/1.35 SUIT;color:#464646}.line{height:3px;background:#000}
+
+.sourcepaper{position:absolute;left:206px;top:602px;width:610px;background:#fff;border:3px solid #000;box-shadow:12px 14px 0 #d9dff7}.sourcepaper img{width:604px;height:755px}.fileline{padding:20px 26px;display:flex;justify-content:space-between;align-items:center;font:700 32px SUIT;border-top:3px solid #000}.fileline b{font-size:42px;color:#274BDD}.attach{position:absolute;left:161px;top:1450px;width:700px;height:82px;display:flex;align-items:center;justify-content:space-between;padding:0 34px;background:#274BDD;color:#fff;font:800 36px SUIT;box-shadow:8px 9px 0 #000}.up{width:54px;height:54px;border:2px solid white;display:grid;place-items:center;font:600 51px SUIT}.side{position:absolute;left:660px;top:1158px;background:#fff;border:3px solid #274BDD;padding:14px 22px;font:800 31px SUIT;color:#274BDD}</style><div id="root" data-composition-id="scene-2" data-width="1080" data-height="1920" data-duration="8.2333">
+ <div class="rule"></div><div class="step">01 / 사진 준비</div><h2 class="heading"><span>제품이 잘 보이는</span><span>사진 한 장</span></h2>
+ <div class="sourcepaper"><img class="" style="" src="assets/images/source.png" alt="AI로 만든 원본 예시"><div class="fileline"><span>머그컵_원본.png</span><b>＋</b></div></div>
+ <div class="attach"><span>이미지 편집 AI에 첨부</span><span class="up">↑</span></div>
+ <div class="side">모양이 선명하게</div></div><script>(function(){const tl=gsap.timeline({paused:true});
+tl.fromTo('.heading span',{y:55,opacity:0},{y:0,opacity:1,duration:.4,stagger:.1,ease:'power3.out'},0);tl.fromTo('.sourcepaper',{y:90,rotation:-4},{y:0,rotation:0,duration:.65,ease:'power3.out'},.1);tl.fromTo('.attach',{y:100,opacity:0},{y:0,opacity:1,duration:.5,ease:'back.out(1.05)'},2.6);tl.fromTo('.up',{y:10},{y:-7,duration:.5,repeat:1,yoyo:true,ease:'power2.inOut'},3.15);tl.fromTo('.side',{scale:.7,opacity:0},{scale:1,opacity:1,duration:.32,ease:'back.out(1.7)'},5.15);
+window.__timelines=window.__timelines||{};window.__timelines['scene-2']=tl;})();</script></template></body></html>

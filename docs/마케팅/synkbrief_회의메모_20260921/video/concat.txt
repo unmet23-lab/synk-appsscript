@@ -1,0 +1,7 @@
+file 'C:/Users/q1212/Documents/SYNK-appsscript/docs/마케팅/synkbrief_회의메모_20260921/video/scene-01.mp4'
+file 'C:/Users/q1212/Documents/SYNK-appsscript/docs/마케팅/synkbrief_회의메모_20260921/video/scene-02.mp4'
+file 'C:/Users/q1212/Documents/SYNK-appsscript/docs/마케팅/synkbrief_회의메모_20260921/video/scene-03.mp4'
+file 'C:/Users/q1212/Documents/SYNK-appsscript/docs/마케팅/synkbrief_회의메모_20260921/video/scene-04.mp4'
+file 'C:/Users/q1212/Documents/SYNK-appsscript/docs/마케팅/synkbrief_회의메모_20260921/video/scene-05.mp4'
+file 'C:/Users/q1212/Documents/SYNK-appsscript/docs/마케팅/synkbrief_회의메모_20260921/video/scene-06.mp4'
+file 'C:/Users/q1212/Documents/SYNK-appsscript/docs/마케팅/synkbrief_회의메모_20260921/video/scene-07.mp4'

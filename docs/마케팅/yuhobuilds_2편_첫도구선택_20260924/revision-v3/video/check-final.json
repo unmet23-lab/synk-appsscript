@@ -1,0 +1,1222 @@
+{
+  "ok": true,
+  "strict": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "filesScanned": 37
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 37,
+    "findings": [
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 4.773,
+        "selector": "#shot-02 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 844.48,
+          "top": 69.72,
+          "right": 921.44,
+          "bottom": 103.35,
+          "width": 76.96,
+          "height": 33.63
+        },
+        "containerSelector": "#shot-03 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "EP.02",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-02.html",
+        "bbox": {
+          "x": 844.48,
+          "y": 69.72,
+          "width": 76.96,
+          "height": 33.63
+        },
+        "firstSeen": 4.773,
+        "lastSeen": 4.773,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 6.782,
+        "selector": "#shot-03 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 844.48,
+          "top": 69.72,
+          "right": 921.44,
+          "bottom": 103.35,
+          "width": 76.96,
+          "height": 33.63
+        },
+        "containerSelector": "#shot-04 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "EP.02",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-03.html",
+        "bbox": {
+          "x": 844.48,
+          "y": 69.72,
+          "width": 76.96,
+          "height": 33.63
+        },
+        "firstSeen": 6.782,
+        "lastSeen": 6.782,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 17.709,
+        "selector": "#shot-08 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 71.67,
+          "top": 59.37,
+          "right": 232.14,
+          "bottom": 97.4,
+          "width": 160.47,
+          "height": 38.03
+        },
+        "containerSelector": "#shot-09 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "yuhobuilds",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-08.html",
+        "bbox": {
+          "x": 71.67,
+          "y": 59.37,
+          "width": 160.47,
+          "height": 38.03
+        },
+        "firstSeen": 17.709,
+        "lastSeen": 17.709,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 17.709,
+        "selector": "#shot-08 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 75.68,
+          "top": 163.44,
+          "right": 374.17,
+          "bottom": 203.47,
+          "width": 298.49,
+          "height": 40.03
+        },
+        "containerSelector": "#shot-09 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "GPT의 추천을 풀어 보면",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-08.html",
+        "bbox": {
+          "x": 75.68,
+          "y": 163.44,
+          "width": 298.49,
+          "height": 40.03
+        },
+        "firstSeen": 17.709,
+        "lastSeen": 17.709,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 17.835,
+        "selector": "#shot-08 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 46.73,
+          "top": 181.09,
+          "right": 609.56,
+          "bottom": 301.25,
+          "width": 562.83,
+          "height": 120.16
+        },
+        "containerSelector": "#shot-09 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "처음부터 구조를 탄탄하게 만들기",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-08.html",
+        "bbox": {
+          "x": 46.73,
+          "y": 181.09,
+          "width": 562.83,
+          "height": 120.16
+        },
+        "firstSeen": 17.835,
+        "lastSeen": 17.835,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 18.965,
+        "selector": "#shot-09 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 71.67,
+          "top": 59.37,
+          "right": 232.14,
+          "bottom": 97.4,
+          "width": 160.47,
+          "height": 38.03
+        },
+        "containerSelector": "#shot-10 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "yuhobuilds",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-09.html",
+        "bbox": {
+          "x": 71.67,
+          "y": 59.37,
+          "width": 160.47,
+          "height": 38.03
+        },
+        "firstSeen": 18.965,
+        "lastSeen": 18.965,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 18.965,
+        "selector": "#shot-09 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 75.68,
+          "top": 163.44,
+          "right": 248.83,
+          "bottom": 203.47,
+          "width": 173.15,
+          "height": 40.03
+        },
+        "containerSelector": "#shot-10 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "제가 원한 건…",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-09.html",
+        "bbox": {
+          "x": 75.68,
+          "y": 163.44,
+          "width": 173.15,
+          "height": 40.03
+        },
+        "firstSeen": 18.965,
+        "lastSeen": 18.965,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 19.091,
+        "selector": "div.reaction-title.slam",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 44.62,
+          "top": 175.82,
+          "right": 661.9,
+          "bottom": 394,
+          "width": 617.28,
+          "height": 218.18
+        },
+        "containerSelector": "#shot-10 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "잠깐만요!",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-09.html",
+        "bbox": {
+          "x": 44.62,
+          "y": 175.82,
+          "width": 617.28,
+          "height": 218.18
+        },
+        "firstSeen": 19.091,
+        "lastSeen": 19.091,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 22.482,
+        "selector": "#shot-11 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 844.48,
+          "top": 69.72,
+          "right": 921.44,
+          "bottom": 103.35,
+          "width": 76.96,
+          "height": 33.63
+        },
+        "containerSelector": "#shot-12 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "EP.02",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-11.html",
+        "bbox": {
+          "x": 844.48,
+          "y": 69.72,
+          "width": 76.96,
+          "height": 33.63
+        },
+        "firstSeen": 22.482,
+        "lastSeen": 22.482,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 27.757,
+        "selector": "#shot-14 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 66.99,
+          "top": 50.37,
+          "right": 229.07,
+          "bottom": 88.78,
+          "width": 162.08,
+          "height": 38.41
+        },
+        "containerSelector": "#shot-15 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "yuhobuilds",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-14.html",
+        "bbox": {
+          "x": 66.99,
+          "y": 50.37,
+          "width": 162.08,
+          "height": 38.41
+        },
+        "firstSeen": 27.757,
+        "lastSeen": 27.757,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 27.757,
+        "selector": "#shot-14 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 934.38,
+          "top": 50.37,
+          "right": 1013.01,
+          "bottom": 84.73,
+          "width": 78.63,
+          "height": 34.36
+        },
+        "containerSelector": "#shot-15 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "text": "EP.02",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-14.html",
+        "bbox": {
+          "x": 934.38,
+          "y": 50.37,
+          "width": 78.63,
+          "height": 34.36
+        },
+        "firstSeen": 27.757,
+        "lastSeen": 27.757,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 27.757,
+        "selector": "#shot-14 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 71.04,
+          "top": 155.48,
+          "right": 300.73,
+          "bottom": 195.91,
+          "width": 229.69,
+          "height": 40.43
+        },
+        "containerSelector": "#shot-15 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "같은 정보를 앱으로",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-14.html",
+        "bbox": {
+          "x": 71.04,
+          "y": 155.48,
+          "width": 229.69,
+          "height": 40.43
+        },
+        "firstSeen": 27.757,
+        "lastSeen": 27.757,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 32.781,
+        "selector": "#shot-16 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 59.83,
+          "top": 36.6,
+          "right": 224.36,
+          "bottom": 75.59,
+          "width": 164.53,
+          "height": 38.99
+        },
+        "containerSelector": "#shot-17 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "yuhobuilds",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-16.html",
+        "bbox": {
+          "x": 59.83,
+          "y": 36.6,
+          "width": 164.53,
+          "height": 38.99
+        },
+        "firstSeen": 32.781,
+        "lastSeen": 32.781,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 32.781,
+        "selector": "#shot-16 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 940.35,
+          "top": 36.6,
+          "right": 1020.17,
+          "bottom": 71.48,
+          "width": 79.82,
+          "height": 34.88
+        },
+        "containerSelector": "#shot-17 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "text": "EP.02",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-16.html",
+        "bbox": {
+          "x": 940.35,
+          "y": 36.6,
+          "width": 79.82,
+          "height": 34.88
+        },
+        "firstSeen": 32.781,
+        "lastSeen": 32.781,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 32.781,
+        "selector": "#shot-16 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 63.94,
+          "top": 143.3,
+          "right": 173.57,
+          "bottom": 184.34,
+          "width": 109.63,
+          "height": 41.04
+        },
+        "containerSelector": "#shot-17 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "그런데…",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-16.html",
+        "bbox": {
+          "x": 63.94,
+          "y": 143.3,
+          "width": 109.63,
+          "height": 41.04
+        },
+        "firstSeen": 32.781,
+        "lastSeen": 32.781,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 34.791,
+        "selector": "#shot-17 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 0,
+          "top": 346.59,
+          "right": 165.9,
+          "bottom": 456.04,
+          "width": 165.9,
+          "height": 109.45
+        },
+        "containerSelector": "#shot-18 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3)",
+        "text": "멈췄습니다.",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-17.html",
+        "bbox": {
+          "x": 0,
+          "y": 346.59,
+          "width": 165.9,
+          "height": 109.45
+        },
+        "firstSeen": 34.791,
+        "lastSeen": 34.791,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 37.051,
+        "selector": "#shot-18 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 70.41,
+          "top": 56.94,
+          "right": 231.31,
+          "bottom": 95.07,
+          "width": 160.9,
+          "height": 38.13
+        },
+        "containerSelector": "#shot-19 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "yuhobuilds",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-18.html",
+        "bbox": {
+          "x": 70.41,
+          "y": 56.94,
+          "width": 160.9,
+          "height": 38.13
+        },
+        "firstSeen": 37.051,
+        "lastSeen": 37.051,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 37.051,
+        "selector": "#shot-18 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 931.53,
+          "top": 56.94,
+          "right": 1009.59,
+          "bottom": 91.06,
+          "width": 78.06,
+          "height": 34.12
+        },
+        "containerSelector": "#shot-19 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "text": "EP.02",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-18.html",
+        "bbox": {
+          "x": 931.53,
+          "y": 56.94,
+          "width": 78.06,
+          "height": 34.12
+        },
+        "firstSeen": 37.051,
+        "lastSeen": 37.051,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 37.051,
+        "selector": "#shot-18 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 74.42,
+          "top": 161.29,
+          "right": 257.87,
+          "bottom": 201.43,
+          "width": 183.45,
+          "height": 40.14
+        },
+        "containerSelector": "#shot-19 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "한 단계씩, 다시",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-18.html",
+        "bbox": {
+          "x": 74.42,
+          "y": 161.29,
+          "width": 183.45,
+          "height": 40.14
+        },
+        "firstSeen": 37.051,
+        "lastSeen": 37.051,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 37.051,
+        "selector": "#shot-18 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 68.4,
+          "top": 706.14,
+          "right": 587.11,
+          "bottom": 896.79,
+          "width": 518.71,
+          "height": 190.65
+        },
+        "containerSelector": "#shot-19 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > span:nth-of-type(1)",
+        "text": "다시 보고",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-18.html",
+        "bbox": {
+          "x": 68.4,
+          "y": 706.14,
+          "width": 518.71,
+          "height": 190.65
+        },
+        "firstSeen": 37.051,
+        "lastSeen": 37.051,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 43.834,
+        "selector": "#shot-21 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 844.48,
+          "top": 69.72,
+          "right": 921.44,
+          "bottom": 103.35,
+          "width": 76.96,
+          "height": 33.63
+        },
+        "containerSelector": "#shot-22 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "EP.02",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-21.html",
+        "bbox": {
+          "x": 844.48,
+          "y": 69.72,
+          "width": 76.96,
+          "height": 33.63
+        },
+        "firstSeen": 43.834,
+        "lastSeen": 43.834,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 45.215,
+        "selector": "#shot-22 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 70.41,
+          "top": 56.94,
+          "right": 231.31,
+          "bottom": 95.07,
+          "width": 160.9,
+          "height": 38.13
+        },
+        "containerSelector": "#shot-23 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "yuhobuilds",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-22.html",
+        "bbox": {
+          "x": 70.41,
+          "y": 56.94,
+          "width": 160.9,
+          "height": 38.13
+        },
+        "firstSeen": 45.215,
+        "lastSeen": 45.215,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 45.215,
+        "selector": "#shot-22 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 931.53,
+          "top": 56.94,
+          "right": 1009.59,
+          "bottom": 91.06,
+          "width": 78.06,
+          "height": 34.12
+        },
+        "containerSelector": "#shot-23 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "text": "EP.02",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-22.html",
+        "bbox": {
+          "x": 931.53,
+          "y": 56.94,
+          "width": 78.06,
+          "height": 34.12
+        },
+        "firstSeen": 45.215,
+        "lastSeen": 45.215,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 45.215,
+        "selector": "#shot-22 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 74.42,
+          "top": 161.29,
+          "right": 362.6,
+          "bottom": 201.43,
+          "width": 288.18,
+          "height": 40.14
+        },
+        "containerSelector": "#shot-23 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "한쪽 답만 보여주지 말고",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-22.html",
+        "bbox": {
+          "x": 74.42,
+          "y": 161.29,
+          "width": 288.18,
+          "height": 40.14
+        },
+        "firstSeen": 45.215,
+        "lastSeen": 45.215,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 46.723,
+        "selector": "#shot-23 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 844.48,
+          "top": 69.72,
+          "right": 921.44,
+          "bottom": 103.35,
+          "width": 76.96,
+          "height": 33.63
+        },
+        "containerSelector": "#shot-24 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "EP.02",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-23.html",
+        "bbox": {
+          "x": 844.48,
+          "y": 69.72,
+          "width": 76.96,
+          "height": 33.63
+        },
+        "firstSeen": 46.723,
+        "lastSeen": 46.723,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 51.746,
+        "selector": "#shot-26 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 59.83,
+          "top": 36.6,
+          "right": 224.36,
+          "bottom": 75.59,
+          "width": 164.53,
+          "height": 38.99
+        },
+        "containerSelector": "#shot-27 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "yuhobuilds",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-26.html",
+        "bbox": {
+          "x": 59.83,
+          "y": 36.6,
+          "width": 164.53,
+          "height": 38.99
+        },
+        "firstSeen": 51.746,
+        "lastSeen": 51.746,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 51.746,
+        "selector": "#shot-26 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 940.35,
+          "top": 36.6,
+          "right": 1020.17,
+          "bottom": 71.48,
+          "width": 79.82,
+          "height": 34.88
+        },
+        "containerSelector": "#shot-27 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "text": "EP.02",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-26.html",
+        "bbox": {
+          "x": 940.35,
+          "y": 36.6,
+          "width": 79.82,
+          "height": 34.88
+        },
+        "firstSeen": 51.746,
+        "lastSeen": 51.746,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 51.746,
+        "selector": "#shot-26 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 63.94,
+          "top": 143.3,
+          "right": 289.14,
+          "bottom": 184.34,
+          "width": 225.2,
+          "height": 41.04
+        },
+        "containerSelector": "#shot-27 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "예시 질문 · 방법 2",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-26.html",
+        "bbox": {
+          "x": 63.94,
+          "y": 143.3,
+          "width": 225.2,
+          "height": 41.04
+        },
+        "firstSeen": 51.746,
+        "lastSeen": 51.746,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 57.65,
+        "selector": "#shot-29 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 71.67,
+          "top": 59.37,
+          "right": 232.14,
+          "bottom": 97.4,
+          "width": 160.47,
+          "height": 38.03
+        },
+        "containerSelector": "#shot-30 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "yuhobuilds",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-29.html",
+        "bbox": {
+          "x": 71.67,
+          "y": 59.37,
+          "width": 160.47,
+          "height": 38.03
+        },
+        "firstSeen": 57.65,
+        "lastSeen": 57.65,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 57.65,
+        "selector": "#shot-29 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 75.68,
+          "top": 163.44,
+          "right": 389.96,
+          "bottom": 203.47,
+          "width": 314.28,
+          "height": 40.03
+        },
+        "containerSelector": "#shot-30 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "내 아이디어로 바꿔 쓰세요",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-29.html",
+        "bbox": {
+          "x": 75.68,
+          "y": 163.44,
+          "width": 314.28,
+          "height": 40.03
+        },
+        "firstSeen": 57.65,
+        "lastSeen": 57.65,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 57.775,
+        "selector": "#shot-29 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 46.73,
+          "top": 182.15,
+          "right": 638.94,
+          "bottom": 289.66,
+          "width": 592.21,
+          "height": 107.51
+        },
+        "containerSelector": "#shot-30 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "추천보다 중요한 건 이유를 이해하는 것",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-29.html",
+        "bbox": {
+          "x": 46.73,
+          "y": 182.15,
+          "width": 592.21,
+          "height": 107.51
+        },
+        "firstSeen": 57.775,
+        "lastSeen": 57.775,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 64.432,
+        "selector": "#shot-31 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 70.41,
+          "top": 56.94,
+          "right": 231.31,
+          "bottom": 95.07,
+          "width": 160.9,
+          "height": 38.13
+        },
+        "containerSelector": "#shot-32 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "yuhobuilds",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-31.html",
+        "bbox": {
+          "x": 70.41,
+          "y": 56.94,
+          "width": 160.9,
+          "height": 38.13
+        },
+        "firstSeen": 64.432,
+        "lastSeen": 64.432,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 64.432,
+        "selector": "#shot-31 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 931.53,
+          "top": 56.94,
+          "right": 1009.59,
+          "bottom": 91.06,
+          "width": 78.06,
+          "height": 34.12
+        },
+        "containerSelector": "#shot-32 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "text": "EP.02",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-31.html",
+        "bbox": {
+          "x": 931.53,
+          "y": 56.94,
+          "width": 78.06,
+          "height": 34.12
+        },
+        "firstSeen": 64.432,
+        "lastSeen": 64.432,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 64.432,
+        "selector": "#shot-31 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 74.42,
+          "top": 161.29,
+          "right": 308.73,
+          "bottom": 201.43,
+          "width": 234.31,
+          "height": 40.14
+        },
+        "containerSelector": "#shot-32 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "하지만 꼭 기억할 것",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-31.html",
+        "bbox": {
+          "x": 74.42,
+          "y": 161.29,
+          "width": 234.31,
+          "height": 40.14
+        },
+        "firstSeen": 64.432,
+        "lastSeen": 64.432,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 72.721,
+        "selector": "#shot-35 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 59.83,
+          "top": 36.6,
+          "right": 224.36,
+          "bottom": 75.59,
+          "width": 164.53,
+          "height": 38.99
+        },
+        "containerSelector": "#shot-36 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "yuhobuilds",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-35.html",
+        "bbox": {
+          "x": 59.83,
+          "y": 36.6,
+          "width": 164.53,
+          "height": 38.99
+        },
+        "firstSeen": 72.721,
+        "lastSeen": 72.721,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 72.721,
+        "selector": "#shot-35 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 940.35,
+          "top": 36.6,
+          "right": 1020.17,
+          "bottom": 71.48,
+          "width": 79.82,
+          "height": 34.88
+        },
+        "containerSelector": "#shot-36 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "text": "EP.02",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-35.html",
+        "bbox": {
+          "x": 940.35,
+          "y": 36.6,
+          "width": 79.82,
+          "height": 34.88
+        },
+        "firstSeen": 72.721,
+        "lastSeen": 72.721,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 72.721,
+        "selector": "#shot-35 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 63.94,
+          "top": 143.3,
+          "right": 235.61,
+          "bottom": 184.34,
+          "width": 171.67,
+          "height": 41.04
+        },
+        "containerSelector": "#shot-36 > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2)",
+        "text": "다음 편에서는",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/shot-35.html",
+        "bbox": {
+          "x": 63.94,
+          "y": 143.3,
+          "width": 171.67,
+          "height": 41.04
+        },
+        "firstSeen": 72.721,
+        "lastSeen": 72.721,
+        "occurrences": 1,
+        "heldMs": 0
+      }
+    ],
+    "duration": 75.233333,
+    "samples": [
+      0.917,
+      3.25,
+      5.667,
+      7.95,
+      10.383,
+      12.317,
+      14.267,
+      16.533,
+      18.25,
+      19.767,
+      21.517,
+      23.283,
+      25.017,
+      26.717,
+      29.083,
+      31.583,
+      33.583,
+      35.75,
+      37.967,
+      39.833,
+      42.2,
+      44.417,
+      45.85,
+      47.433,
+      49.05,
+      50.7,
+      52.133,
+      54.067,
+      56.5,
+      59.417,
+      62.783,
+      65.267,
+      66.8,
+      68.283,
+      70.867,
+      73.883
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 37,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      0.917,
+      18.25,
+      35.75,
+      52.133,
+      73.883
+    ],
+    "checked": 42,
+    "passed": 42
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  },
+  "_meta": {
+    "version": "0.8.75",
+    "latestVersion": "0.8.75",
+    "updateAvailable": false
+  }
+}

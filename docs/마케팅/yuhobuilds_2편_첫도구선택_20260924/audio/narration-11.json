@@ -1,0 +1,143 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "지금 윈도우라면 클로드 데스크톱에서 코드 탭을 열고, 로컬과 그 폴더를 고르면 돼요. 당시 제 설정 화면을 재현한 건 아니고, 지금 따라 하기 쉬운 방법입니다.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.27,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal"
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 7.835,
+  "words": [
+    {
+      "text": "지금",
+      "start": 0.098,
+      "end": 0.32
+    },
+    {
+      "text": "윈도우라면",
+      "start": 0.369,
+      "end": 0.849
+    },
+    {
+      "text": "클로드",
+      "start": 1.095,
+      "end": 1.341
+    },
+    {
+      "text": "데스크톱에서",
+      "start": 1.378,
+      "end": 1.845
+    },
+    {
+      "text": "코드",
+      "start": 2.066,
+      "end": 2.263
+    },
+    {
+      "text": "탭을",
+      "start": 2.3,
+      "end": 2.448
+    },
+    {
+      "text": "열고,",
+      "start": 2.484,
+      "end": 2.657
+    },
+    {
+      "text": "로컬과",
+      "start": 3.063,
+      "end": 3.382
+    },
+    {
+      "text": "그",
+      "start": 3.444,
+      "end": 3.518
+    },
+    {
+      "text": "폴더를",
+      "start": 3.579,
+      "end": 3.862
+    },
+    {
+      "text": "고르면",
+      "start": 3.899,
+      "end": 4.108
+    },
+    {
+      "text": "돼요.",
+      "start": 4.145,
+      "end": 4.256
+    },
+    {
+      "text": "당시",
+      "start": 4.538,
+      "end": 4.784
+    },
+    {
+      "text": "제",
+      "start": 4.858,
+      "end": 4.92
+    },
+    {
+      "text": "설정",
+      "start": 4.981,
+      "end": 5.24
+    },
+    {
+      "text": "화면을",
+      "start": 5.276,
+      "end": 5.461
+    },
+    {
+      "text": "재현한",
+      "start": 5.498,
+      "end": 5.719
+    },
+    {
+      "text": "건",
+      "start": 5.756,
+      "end": 5.805
+    },
+    {
+      "text": "아니고,",
+      "start": 5.842,
+      "end": 6.002
+    },
+    {
+      "text": "지금",
+      "start": 6.445,
+      "end": 6.642
+    },
+    {
+      "text": "따라",
+      "start": 6.679,
+      "end": 6.826
+    },
+    {
+      "text": "하기",
+      "start": 6.863,
+      "end": 6.974
+    },
+    {
+      "text": "쉬운",
+      "start": 7.023,
+      "end": 7.195
+    },
+    {
+      "text": "방법입니다.",
+      "start": 7.232,
+      "end": 7.835
+    }
+  ],
+  "characters": null
+}

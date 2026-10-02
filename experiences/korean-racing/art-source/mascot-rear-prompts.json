@@ -1,0 +1,15 @@
+{
+  "method": "Built-in image_gen, identity-preserve rear views from approved canonical 4K references, transparent_background=true. Original assets unchanged.",
+  "prompts": [
+    {
+      "key": "marin",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\캐릭터\\정본_4K\\마린_본체.png",
+      "prompt": "Use case: identity-preserve. Asset type: transparent rear-view game character sprite. Image 1 is the approved character identity reference, Marin. Create the SAME character seen directly FROM BEHIND, facing away from the camera toward the road. Show only the back of the rounded deep navy blue needle-felt helmet and back of the creamy ivory coat/body, same wool fibers, original proportions, short arms and tiny feet. Turn the entire character 180 degrees; head aligned with body, absolutely NO looking back, NO eyes or face visible, NO yellow eyes on the back, NO new antenna or mechanical parts. Back of helmet retains the rounded sculptural volume and felt material. The flower pin remains on the front and is not visible from the rear. Neutral upright pose for sitting in a convertible, hands forward out of view, torso and head aligned forward. Camera slightly elevated but predominantly straight rear view. Full body isolated, centered in a square canvas, occupies about 80% of canvas height, preserve reference scale and margins, no clipping. Soft natural daylight, photographic needle-felt texture, not flat illustration, no text, no logos, no ground, no drawn drop shadow. TRUE transparent alpha background."
+    },
+    {
+      "key": "kkamong",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\캐릭터\\정본_4K\\까몽_본체.png",
+      "prompt": "Use case: identity-preserve. Asset type: transparent rear-view game character sprite. Image 1 is the approved character identity reference, Kkamong. Create the SAME brown needle-felt cat-like mascot seen directly FROM BEHIND, facing away toward the road. Preserve same soft rounded plump body, two short pointed rounded ears, dense natural brown wool fibers, original proportions, short limbs, existing tail. Turn entire character 180 degrees: head aligned with body and absolutely NO looking back. NO green eyes, nose or face visible from the rear. No new clothing, collar, accessories, large cat muzzle, or changes to color or material. Neutral upright seated posture for a convertible, paws forward, lower body can be tucked slightly while preserving shape, head looking straight forward away from camera. Camera slightly elevated but predominantly straight rear view. Full character isolated and centered in a square canvas, occupies about 80% of height, preserve reference margins and scale, no clipping. Soft natural daylight, photographic needle-felt texture, not cartoon illustration. TRUE transparent alpha, no ground, no shadow outside the character, no text, logo or frame."
+    }
+  ]
+}

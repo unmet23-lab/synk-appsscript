@@ -1,0 +1,74 @@
+[
+ {
+  "file": "hook__fl31_Sulafat__t1.wav",
+  "asr": "아파트",
+  "match": false,
+  "logprob": -1.098,
+  "speech_s": 0.54,
+  "lead_s": 0.27,
+  "tail_s": 0.39,
+  "peak_db": -2.3,
+  "f0_med": 355.6,
+  "f0_range_st": 9.8
+ },
+ {
+  "file": "hook__fl31_Sulafat__t2.wav",
+  "asr": "아! 맞다!",
+  "match": true,
+  "logprob": -0.684,
+  "speech_s": 1.4,
+  "lead_s": 0.28,
+  "tail_s": 0.32,
+  "peak_db": 0.2,
+  "f0_med": 355.6,
+  "f0_range_st": 15.3
+ },
+ {
+  "file": "hook__fl31_Sulafat__t3.wav",
+  "asr": "아 맞다",
+  "match": true,
+  "logprob": -0.574,
+  "speech_s": 0.91,
+  "lead_s": 0.25,
+  "tail_s": 0.4,
+  "peak_db": -0.5,
+  "f0_med": 307.7,
+  "f0_range_st": 11.1
+ },
+ {
+  "file": "hook__fl31_Sulafat__t4.wav",
+  "asr": "아, 와따!",
+  "match": false,
+  "logprob": -0.645,
+  "speech_s": 0.65,
+  "lead_s": 0.32,
+  "tail_s": 0.39,
+  "peak_db": -0.4,
+  "f0_med": 381.0,
+  "f0_range_st": 10.6
+ },
+ {
+  "file": "hook__fl31_Sulafat__t5.wav",
+  "asr": "아 맞다",
+  "match": true,
+  "logprob": -0.45,
+  "speech_s": 0.99,
+  "lead_s": 0.25,
+  "tail_s": 0.4,
+  "peak_db": -1.6,
+  "f0_med": 421.1,
+  "f0_range_st": 16.1
+ },
+ {
+  "file": "hook__fl31_Sulafat__t6.wav",
+  "asr": "아 맞다",
+  "match": true,
+  "logprob": -0.529,
+  "speech_s": 1.09,
+  "lead_s": 0.26,
+  "tail_s": 0.41,
+  "peak_db": -2.6,
+  "f0_med": 421.1,
+  "f0_range_st": 10.8
+ }
+]

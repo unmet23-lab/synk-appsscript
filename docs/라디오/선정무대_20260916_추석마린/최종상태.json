@@ -1,0 +1,43 @@
+{
+  "at": "2026-09-16T15:39:05.308Z",
+  "broadcast": {
+    "videoId": "eH0owfx9gCw",
+    "title": "K-LOFI 24 · lofi beats to chill",
+    "privacyStatus": "public"
+  },
+  "stream": {
+    "status": "active",
+    "health": "good"
+  },
+  "service": {
+    "MainPID": "385398",
+    "NRestarts": "1",
+    "ActiveState": "active",
+    "SubState": "running",
+    "UnitFileState": "enabled"
+  },
+  "radioStream": {
+    "MainPID": "0",
+    "NRestarts": "0",
+    "ActiveState": "failed",
+    "SubState": "failed",
+    "UnitFileState": "disabled"
+  },
+  "ffmpeg": "385528 SLl        22:28 42.2  3.9 ffmpeg",
+  "opened": [
+    {
+      "pid": "385528",
+      "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+    },
+    {
+      "pid": "385528",
+      "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+    }
+  ],
+  "recentProgress": [
+    "[겹쳐송출 15:35:36] 층 3382장 떴다(초당 2.9) · 내보낸 것 4553(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 1x · 버린장 0 · 겹친장 0 · 방송시각 00:18:52.507000",
+    "[겹쳐송출 15:36:36] 층 3558장 떴다(초당 2.9) · 내보낸 것 4793(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 1x · 버린장 0 · 겹친장 0 · 방송시각 00:19:52.484000",
+    "[겹쳐송출 15:37:36] 층 3728장 떴다(초당 2.8) · 내보낸 것 5033(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 1x · 버린장 0 · 겹친장 0 · 방송시각 00:20:52.368000",
+    "[겹쳐송출 15:38:36] 층 3894장 떴다(초당 2.8) · 내보낸 것 5274(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 1x · 버린장 0 · 겹친장 0 · 방송시각 00:21:52.764000"
+  ]
+}

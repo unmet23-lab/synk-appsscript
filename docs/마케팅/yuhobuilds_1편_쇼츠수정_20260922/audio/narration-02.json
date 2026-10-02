@@ -1,0 +1,64 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "몽골 울란바토르, 학원 부원장. 친구도 없고, 솔직히 심심했습니다.",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.22,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 4.057,
+  "words": [
+    {
+      "text": "몽골",
+      "start": 0.126,
+      "end": 0.379
+    },
+    {
+      "text": "울란바토르,",
+      "start": 0.426,
+      "end": 0.868
+    },
+    {
+      "text": "학원",
+      "start": 1.247,
+      "end": 1.452
+    },
+    {
+      "text": "부원장.",
+      "start": 1.5,
+      "end": 1.784
+    },
+    {
+      "text": "친구도",
+      "start": 2.194,
+      "end": 2.51
+    },
+    {
+      "text": "없고,",
+      "start": 2.558,
+      "end": 2.747
+    },
+    {
+      "text": "솔직히",
+      "start": 2.968,
+      "end": 3.252
+    },
+    {
+      "text": "심심했습니다.",
+      "start": 3.3,
+      "end": 4.057
+    }
+  ],
+  "characters": null
+}

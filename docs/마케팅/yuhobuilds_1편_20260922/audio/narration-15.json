@@ -1,0 +1,64 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "text": "지금 다시 시작한다면, 처음 요청은 이렇게 해보고 싶어요.",
+    "voice_id": "tc_5ecbbc696b7c780008be50c4",
+    "language": "kor",
+    "output": {
+      "audio_tempo": 1.02,
+      "audio_format": "wav",
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "심심함은 해결됐어요. 출석 앱은 계속 만드는 중이었고요.",
+      "next_text": "선생님이 학생의 출석을 기록하는 걸 만들고 싶어. 나는 개발을 처음 해. 가장 작은 첫 단계부터 설명해줘."
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 4.265,
+  "words": [
+    {
+      "text": "지금",
+      "start": 0.161,
+      "end": 0.422
+    },
+    {
+      "text": "다시",
+      "start": 0.483,
+      "end": 0.684
+    },
+    {
+      "text": "시작한다면,",
+      "start": 0.744,
+      "end": 1.448
+    },
+    {
+      "text": "처음",
+      "start": 1.992,
+      "end": 2.293
+    },
+    {
+      "text": "요청은",
+      "start": 2.374,
+      "end": 2.776
+    },
+    {
+      "text": "이렇게",
+      "start": 2.897,
+      "end": 3.118
+    },
+    {
+      "text": "해보고",
+      "start": 3.178,
+      "end": 3.4
+    },
+    {
+      "text": "싶어요.",
+      "start": 3.46,
+      "end": 4.265
+    }
+  ],
+  "characters": null
+}

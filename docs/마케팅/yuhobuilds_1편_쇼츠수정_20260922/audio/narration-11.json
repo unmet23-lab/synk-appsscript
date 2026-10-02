@@ -1,0 +1,54 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "심심함은 해결됐습니다. 앱은요? 계속 만드는 중!",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.2,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 3.208,
+  "words": [
+    {
+      "text": "심심함은",
+      "start": 0.159,
+      "end": 0.572
+    },
+    {
+      "text": "해결됐습니다.",
+      "start": 0.619,
+      "end": 1.096
+    },
+    {
+      "text": "앱은요?",
+      "start": 1.588,
+      "end": 1.89
+    },
+    {
+      "text": "계속",
+      "start": 2.255,
+      "end": 2.541
+    },
+    {
+      "text": "만드는",
+      "start": 2.589,
+      "end": 2.859
+    },
+    {
+      "text": "중!",
+      "start": 2.907,
+      "end": 3.208
+    }
+  ],
+  "characters": null
+}

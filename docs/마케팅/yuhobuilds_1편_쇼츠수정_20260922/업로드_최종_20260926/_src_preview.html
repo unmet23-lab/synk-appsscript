@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>1편 업로드 최종본 · yuhobuilds</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #fff; color: #000; font-family: 'SUIT Variable', sans-serif; -webkit-font-smoothing: antialiased; }
+    main { width: min(100%, 1160px); margin: 0 auto; padding: 48px 32px 72px; display: grid; grid-template-columns: minmax(280px, 400px) minmax(0, 1fr); gap: clamp(36px, 6vw, 80px); align-items: start; }
+    .screen { position: sticky; top: 32px; }
+    .playback { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .playback button { font: inherit; font-size: 14px; padding: 10px 14px; border: 1px solid #ddd; background: white; color: black; border-radius: 8px; cursor: pointer; }
+    .playback button:first-child { background: black; color: white; border-color: black; }
+    video { display: block; width: 100%; max-height: calc(100dvh - 150px); aspect-ratio: 9 / 16; object-fit: contain; background: #000; }
+    article { padding-top: 36px; }
+    .eyebrow { margin: 0; font-size: 14px; font-weight: 650; letter-spacing: .12em; }
+    h1 { margin: 24px 0; font-size: clamp(32px, 3.7vw, 48px); font-weight: 750; line-height: 1.26; letter-spacing: -.055em; word-break: keep-all; text-wrap: balance; }
+    .intro { margin: 0; font-size: 20px; line-height: 1.75; letter-spacing: -.02em; word-break: keep-all; }
+    .spec { margin: 28px 0 0; font-size: 15px; line-height: 1.6; color: #555; }
+    a { color: inherit; text-underline-offset: 5px; text-decoration-thickness: 1px; }
+    a:hover { text-decoration-thickness: 2px; }
+    a:focus-visible, summary:focus-visible, video:focus-visible { outline: 2px solid #000; outline-offset: 6px; }
+    nav { display: flex; flex-wrap: wrap; column-gap: 24px; row-gap: 8px; margin-top: 24px; }
+    nav a { display: inline-flex; align-items: center; min-height: 44px; font-size: 16px; font-weight: 650; }
+    details { margin-top: 30px; }
+    summary { width: fit-content; padding: 12px 0; cursor: pointer; font-size: 17px; font-weight: 650; }
+    .captions { margin-top: 14px; }
+    .caption { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 16px; margin: 0 0 16px; font-size: 16px; line-height: 1.7; white-space: pre-line; word-break: keep-all; }
+    .caption-time { padding-top: 2px; color: #666; font-size: 13px; font-variant-numeric: tabular-nums; }
+    .caption-empty { color: #666; font-size: 16px; line-height: 1.7; }
+    footer { margin-top: 36px; color: #666; font-size: 13px; line-height: 1.8; word-break: keep-all; }
+    @media (max-width: 720px) {
+      main { display: flex; flex-direction: column; gap: 28px; padding: 20px 22px 44px; }
+      .screen { position: static; width: min(100%, 400px); align-self: center; }
+      video { max-height: 72dvh; }
+      article { width: 100%; padding-top: 0; }
+      h1 { max-width: 540px; margin-top: 18px; font-size: clamp(30px, 8.4vw, 42px); }
+      .intro { font-size: 18px; }
+      .spec { margin-top: 24px; }
+      nav { column-gap: 20px; margin-top: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="screen" aria-label="1편 영상">
+      <video controls playsinline preload="metadata" poster="yuhobuilds_EP01_COVER.png" aria-label="번역만 하려던 사람의 첫 앱 도전">
+        <source src="yuhobuilds_EP01_FINAL_1080x1920.mp4" type="video/mp4">
+        영상을 재생할 수 없으면 <a href="yuhobuilds_EP01_FINAL_1080x1920.mp4" download>영상 파일을 내려받아 주세요.</a>
+      </video>
+      <div class="playback" aria-label="재생 구간">
+        <button type="button" id="play-toggle">영상 재생</button>
+        <button type="button" data-time="0">처음부터</button><button type="button" data-time="32.4">고군분투 장면</button><button type="button" data-time="54.03333333333333">입력 예시</button>
+        <button type="button" data-time="28.7">표정·눈물</button>
+        <button type="button" data-time="66.43333333333334">마무리</button>
+      </div>
+    </section>
+    <article>
+      <p class="eyebrow">YUHO BUILDS · EP.01</p>
+      <h1>번역만 하려다,<br>앱 만드는 사람 됨.</h1>
+      <p class="intro">처음엔 번역을 도와줄 AI가 필요했어요.<br>그런데 어느새, 학원 출석을 관리할 앱을 만들고 있었습니다.</p>
+      <p class="spec">73초 · 1080 × 1920 · 업로드용 최종본 · 2026.09.26</p>
+      <nav aria-label="영상 자료">
+        <a href="yuhobuilds_EP01_FINAL_1080x1920.mp4" download>업로드할 MP4</a>
+        <a href="yuhobuilds_EP01_COVER.png" download>표지 다운로드</a>
+        <a href="yuhobuilds_EP01_자막.srt" download>자막 파일</a>
+      </nav>
+      <details>
+        <summary>자막 열기</summary>
+        <div class="captions" aria-label="영상 자막">
+          <p class="caption"><span class="caption-time">00:00</span><span>개발을 처음 시작할 때,</span></p>
+<p class="caption"><span class="caption-time">00:01</span><span>이 순서만 알았어도</span></p>
+<p class="caption"><span class="caption-time">00:02</span><span>100시간은
+아꼈을 것 같아요.</span></p>
+<p class="caption"><span class="caption-time">00:04</span><span>오늘은 번역만 하려고</span></p>
+<p class="caption"><span class="caption-time">00:05</span><span>AI를 결제했다가,</span></p>
+<p class="caption"><span class="caption-time">00:06</span><span>출석 앱까지 만들면서</span></p>
+<p class="caption"><span class="caption-time">00:08</span><span>제대로 삽질한 얘기를
+해볼게요.</span></p>
+<p class="caption"><span class="caption-time">00:09</span><span>몽골 울란바토르,
+학원 부원장.</span></p>
+<p class="caption"><span class="caption-time">00:11</span><span>친구도 없고,</span></p>
+<p class="caption"><span class="caption-time">00:12</span><span>솔직히 심심했습니다.</span></p>
+<p class="caption"><span class="caption-time">00:13</span><span>6월 2일,
+클로드 첫 결제!</span></p>
+<p class="caption"><span class="caption-time">00:15</span><span>그때는 딱 번역만
+하려고 했죠.</span></p>
+<p class="caption"><span class="caption-time">00:17</span><span>그런데 학생 문의가
+확 늘었어요.</span></p>
+<p class="caption"><span class="caption-time">00:18</span><span>잠깐, 이러면
+관리가 어렵겠는데?</span></p>
+<p class="caption"><span class="caption-time">00:20</span><span>출석 앱을 만들면?</span></p>
+<p class="caption"><span class="caption-time">00:21</span><span>부모님께 등하원 알림도 가고,</span></p>
+<p class="caption"><span class="caption-time">00:23</span><span>선생님들도 편해지잖아요!</span></p>
+<p class="caption"><span class="caption-time">00:24</span><span>그래서 글라이드랑
+구글 시트로</span></p>
+<p class="caption"><span class="caption-time">00:26</span><span>앱 만들기 시작!</span></p>
+<p class="caption"><span class="caption-time">00:27</span><span>그런데 제 개발 실력은?</span></p>
+<p class="caption"><span class="caption-time">00:28</span><span>제로.</span></p>
+<p class="caption"><span class="caption-time">00:29</span><span>클로드 코드가 뭔지도
+몰랐어요.</span></p>
+<p class="caption"><span class="caption-time">00:31</span><span>설정부터 막혔죠.</span></p>
+<p class="caption"><span class="caption-time">00:32</span><span>방법은 하나.</span></p>
+<p class="caption"><span class="caption-time">00:33</span><span>화면 찍고! 물어보고!</span></p>
+<p class="caption"><span class="caption-time">00:34</span><span>따라 하고!</span></p>
+<p class="caption"><span class="caption-time">00:35</span><span>그렇게 따라 하다 보니,</span></p>
+<p class="caption"><span class="caption-time">00:36</span><span>출석 앱이 아니라</span></p>
+<p class="caption"><span class="caption-time">00:37</span><span>뭔가 괴상한 걸</span></p>
+<p class="caption"><span class="caption-time">00:38</span><span>만들고 있더라고요.</span></p>
+<p class="caption"><span class="caption-time">00:39</span><span>수업 시간 빼고,</span></p>
+<p class="caption"><span class="caption-time">00:40</span><span>하루 열일곱, 열여덟 시간은</span></p>
+<p class="caption"><span class="caption-time">00:41</span><span>붙잡았던 것 같아요.</span></p>
+<p class="caption"><span class="caption-time">00:42</span><span>심심함은 해결됐습니다.</span></p>
+<p class="caption"><span class="caption-time">00:44</span><span>앱은요?</span></p>
+<p class="caption"><span class="caption-time">00:44</span><span>몇 번을 뜯어고쳤는지</span></p>
+<p class="caption"><span class="caption-time">00:45</span><span>깊은 한숨이 잦았답니다.</span></p>
+<p class="caption"><span class="caption-time">00:47</span><span>실제로 탈모 걸린 거 아닌지</span></p>
+<p class="caption"><span class="caption-time">00:48</span><span>가끔 머리를 만져봤어요.</span></p>
+<p class="caption"><span class="caption-time">00:50</span><span>지금 다시 시작하면,</span></p>
+<p class="caption"><span class="caption-time">00:51</span><span>처음부터 다 만들진
+않을 거예요.</span></p>
+<p class="caption"><span class="caption-time">00:53</span><span>딱 출석 하나부터!</span></p>
+<p class="caption"><span class="caption-time">00:54</span><span>만들고 싶은 걸 넣고,</span></p>
+<p class="caption"><span class="caption-time">00:55</span><span>이렇게 물어보세요.</span></p>
+<p class="caption"><span class="caption-time">00:56</span><span>나는 개발이 처음이야.</span></p>
+<p class="caption"><span class="caption-time">00:57</span><span>학원 출석 앱을 만들고 싶어.</span></p>
+<p class="caption"><span class="caption-time">00:59</span><span>가장 효율적으로
+만들 수 있는</span></p>
+<p class="caption"><span class="caption-time">01:00</span><span>로드맵을 추천해 줘.</span></p>
+<p class="caption"><span class="caption-time">01:01</span><span>여러분도 불편한 일
+하나만 골라보세요.</span></p>
+<p class="caption"><span class="caption-time">01:04</span><span>거창한 아이디어 없어도,</span></p>
+<p class="caption"><span class="caption-time">01:05</span><span>시작은 거기서 됩니다.</span></p>
+<p class="caption"><span class="caption-time">01:06</span><span>제가 헤맨 길,</span></p>
+<p class="caption"><span class="caption-time">01:07</span><span>여러분은 건너뛰세요.</span></p>
+<p class="caption"><span class="caption-time">01:09</span><span>왕초보에서
+1인 기업가까지.</span></p>
+<p class="caption"><span class="caption-time">01:10</span><span>여러분의 시간을
+아껴드립니다!</span></p>
+        </div>
+      </details>
+      <footer>유호의 실제 경험을 바탕으로 재구성한 이야기입니다.</footer>
+    </article>
+  </main>
+  <script>
+    const video = document.querySelector('video');
+    const toggle = document.querySelector('#play-toggle');
+    toggle.addEventListener('click', () => {
+      if (video.paused) video.play().catch(() => { toggle.textContent = '다시 재생'; });
+      else video.pause();
+    });
+    video.addEventListener('play', () => { toggle.textContent = '일시 정지'; });
+    video.addEventListener('pause', () => { toggle.textContent = '영상 재생'; });
+    document.querySelectorAll('[data-time]').forEach(button => button.addEventListener('click', () => {
+      video.currentTime = Number(button.dataset.time);
+    }));
+  </script>
+</body>
+</html>

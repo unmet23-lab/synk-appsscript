@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "95fd25ff-35f7-422f-a9e4-c4e699c72fb4",
+  "narration": "대상이 달라지면 그 사람이 하려는 일과 받을 결과도 다시 봅니다. 세 칸이 같은 상황을 설명하는지 확인합니다.",
+  "narrationSha256": "aa77ac9c1761b61eeaec82e9c664b8e7382147123c1471f7b2edd43e50913522",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-aa77ac9c1761b61e.wav",
+  "duration": 8.48,
+  "sha256": "a15a4998bd4f7cc1a536a315952910f5e653a036db09a7bbe12cd717a8f13c88",
+  "humanListening": false,
+  "fullDecode": true
+}

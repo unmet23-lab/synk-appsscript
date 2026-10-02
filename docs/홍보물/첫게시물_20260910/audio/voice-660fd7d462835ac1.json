@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "a0f59fda-9e04-4aac-96e1-a36aad674a7a",
+  "narration": "소개를 쓰고, 상품을 정리하고, 문의에 답하는 1인 사업자를 위한 실무 노트, synkbrief입니다.",
+  "narrationSha256": "660fd7d462835ac198c9c0b29bb38e4ae41ecbb8f75a088b0252f0381bf32016",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-660fd7d462835ac1.wav",
+  "duration": 7.44,
+  "sha256": "4b60febb617994ad42111bddeed0bb0cee803ee85bfe4b8abd803bd8b88788f4",
+  "humanListening": false,
+  "fullDecode": true
+}

@@ -1,0 +1,110 @@
+{
+ "note": "카드에 마우스를 올리면 보이는 웃음 사진의 맞춤 값. heroEye·smileEye는 두 눈 가운데(가로·세로 0~1), scale은 웃음 컷을 대표 사진 크기로 맞추는 배율. 얼굴 점 203개 측정으로 2026-10-02에 잼. 사진을 바꾸면 다시 재야 한다.",
+ "models": [
+  {
+   "code": "M01",
+   "key": "M20b",
+   "hero": "raw/M20-hero-b.png",
+   "smile": "raw/M20b-exp-smile.png",
+   "heroEye": [
+    0.4987,
+    0.3771
+   ],
+   "smileEye": [
+    0.5023,
+    0.3813
+   ],
+   "scale": 0.9934
+  },
+  {
+   "code": "F01",
+   "key": "F20b",
+   "hero": "raw/F20-hero-b-clean.png",
+   "smile": "raw/F20b-exp-smile.png",
+   "heroEye": [
+    0.4931,
+    0.3331
+   ],
+   "smileEye": [
+    0.5025,
+    0.3378
+   ],
+   "scale": 0.9619
+  },
+  {
+   "code": "F02",
+   "key": "F20fa",
+   "hero": "raw/F20-fresh-v3-1.png",
+   "smile": "raw/F20fa-exp-smile.png",
+   "heroEye": [
+    0.4901,
+    0.3673
+   ],
+   "smileEye": [
+    0.4935,
+    0.3658
+   ],
+   "scale": 0.9908
+  },
+  {
+   "code": "F03",
+   "key": "F20sb",
+   "hero": "raw/F20-smart-v3-2.png",
+   "smile": "raw/F20sb-exp-smile.png",
+   "heroEye": [
+    0.4271,
+    0.3677
+   ],
+   "smileEye": [
+    0.4571,
+    0.3751
+   ],
+   "scale": 1.0
+  },
+  {
+   "code": "M02",
+   "key": "M30sa",
+   "hero": "raw/M30-sexy-v3-1.png",
+   "smile": "raw/M30sa-exp-smile.png",
+   "heroEye": [
+    0.4181,
+    0.3565
+   ],
+   "smileEye": [
+    0.4515,
+    0.3553
+   ],
+   "scale": 1.0061
+  },
+  {
+   "code": "F04",
+   "key": "F20fb",
+   "hero": "raw/F20-fresh-v3-2-hairA.png",
+   "smile": "raw/F20fb-exp-smile.png",
+   "heroEye": [
+    0.4382,
+    0.3503
+   ],
+   "smileEye": [
+    0.4801,
+    0.3451
+   ],
+   "scale": 1.0228
+  },
+  {
+   "code": "M03",
+   "key": "Myuho",
+   "hero": "raw/M-yuho-hero-v5.png",
+   "smile": "raw/Myuho-smile-card.png",
+   "heroEye": [
+    0.5002,
+    0.3409
+   ],
+   "smileEye": [
+    0.5002,
+    0.3409
+   ],
+   "scale": 1.0
+  }
+ ]
+}

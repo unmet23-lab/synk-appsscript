@@ -1,0 +1,5 @@
+data/
+.test-data/
+qa-output/
+*.log
+*.pid

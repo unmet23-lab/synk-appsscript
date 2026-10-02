@@ -1,0 +1,80 @@
+{
+  "at": "2026-09-16T14:43:31.271Z",
+  "scope": "실제 1280×720 방송 크기, 서버에 현재 배포된 마린 그림으로 12초 확인",
+  "errors": [],
+  "missing": [],
+  "checks": {
+    "initialDiscTransforms": [
+      "matrix(0.697895, 0.7162, -0.7162, 0.697895, 0, 0)",
+      "matrix(0.736683, 0.676238, -0.676238, 0.736683, 0, 0)"
+    ],
+    "after": {
+      "DJ": "마린",
+      "scene": "추석보름달마당",
+      "ready": true,
+      "videoTime": 2.440881,
+      "visibleMascot": [
+        {
+          "name": "마린_본체.webp",
+          "width": 1024
+        },
+        {
+          "name": "옷_마린_펠트헤드폰.webp",
+          "width": 1024
+        }
+      ],
+      "headset": {
+        "loaded": true,
+        "width": 1024,
+        "rect": {
+          "x": 652.8125,
+          "y": 371.109375,
+          "width": 614.390625,
+          "height": 614.390625,
+          "top": 371.109375,
+          "right": 1267.203125,
+          "bottom": 985.5,
+          "left": 652.8125
+        }
+      },
+      "booth": {
+        "hidden": false,
+        "rect": {
+          "x": 748.8046875,
+          "y": 846.90625,
+          "width": 422.390625,
+          "height": 270.890625,
+          "top": 846.90625,
+          "right": 1171.1953125,
+          "bottom": 1117.796875,
+          "left": 748.8046875
+        }
+      },
+      "mascotRect": {
+        "x": 652.8125,
+        "y": 371.109375,
+        "width": 614.390625,
+        "height": 614.390625,
+        "top": 371.109375,
+        "right": 1267.203125,
+        "bottom": 985.5,
+        "left": 652.8125
+      },
+      "discTransforms": [
+        "matrix(-0.321227, 0.947002, -0.947002, -0.321227, 0, 0)",
+        "matrix(-0.193392, 0.981121, -0.981121, -0.193392, 0, 0)"
+      ],
+      "discsLoaded": [
+        true,
+        true
+      ]
+    },
+    "discsRotated": true,
+    "afterSongBoundarySignal": {
+      "DJ": "마린",
+      "scene": "추석보름달마당",
+      "boothHidden": false
+    }
+  },
+  "passed": true
+}

@@ -1,0 +1,15 @@
+{
+  "xlsx": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\유지비_BM\\SYNK_울란바토르_인테리어_비품_예산_20261001.xlsx",
+  "sheets": 6,
+  "zipIntegrity": "passed",
+  "formulaCells": 934,
+  "cachedTotalsMNT": [
+    291103112.784,
+    434584724.506,
+    688319075.3280001
+  ],
+  "cellErrors": [],
+  "sha256": "439df658531e84dc0838791245dd27ea5604eb3f09442e6e5d8f0fa7d9c095d4",
+  "nativeExcelOpened": false,
+  "note": "Builder completed exports and checks but Node returned exit1 without error text; independent ZIP/XML cached-formula validation passed."
+}

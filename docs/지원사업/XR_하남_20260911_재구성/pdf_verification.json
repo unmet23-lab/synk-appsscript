@@ -1,0 +1,96 @@
+{
+  "scope": "Local artifact validation, not submission or learning-effect validation",
+  "files": [
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\pdf\\XR_하남_20260911\\XR_부문2_아이디어제안서_교체본_20260911.pdf",
+      "pages": 4,
+      "bytes": 169671,
+      "sha256": "22177eee8ffbf45ca54a68b9aa7c0930e90ead32c9fe37df2be9b6b35e644a48",
+      "fonts": {
+        "/Helvetica": false,
+        "/AAAAAA+MalgunGothic": true,
+        "/AAAAAB+MalgunGothic": true,
+        "/AAAAAA+MalgunGothicBold": true,
+        "/AAAAAB+MalgunGothicBold": true
+      }
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\pdf\\XR_하남_20260911\\XR_첨부1_이해공존감_구조도_교체본_20260911.pdf",
+      "pages": 1,
+      "bytes": 98055,
+      "sha256": "74e7fc3dbf9eebeb6ebf79fd7f36a77cbbacb66ee3d2574f71feb0671a33bcb1",
+      "fonts": {
+        "/Helvetica": false,
+        "/AAAAAA+MalgunGothic": true,
+        "/AAAAAB+MalgunGothic": true,
+        "/AAAAAA+MalgunGothicBold": true
+      }
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\pdf\\XR_하남_20260911\\하남 창업경진대회_예비_양유호_기본신청서류.pdf",
+      "pages": 3,
+      "bytes": 131516,
+      "sha256": "612dce7be236629d1807dc467a1a95de914d7000e7e2a47d38dcb518dd006eab",
+      "fonts": {
+        "/Helvetica": false,
+        "/AAAAAA+MalgunGothic": true,
+        "/AAAAAB+MalgunGothic": true,
+        "/AAAAAA+MalgunGothicBold": true
+      }
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\pdf\\XR_하남_20260911\\하남 창업경진대회_양유호_사업계획서.pdf",
+      "pages": 14,
+      "bytes": 5593129,
+      "sha256": "aeb9d3020dcac772af8d5d58d942d823f2846350918c3cd78d3e74b6cb8f695a",
+      "fonts": {
+        "Type3": true,
+        "/CAAAAA+InterTight-Regular": true,
+        "/EAAAAA+InterTight-Bold": true,
+        "/GAAAAA+InterTight-SemiBold": true
+      }
+    }
+  ],
+  "sources": [
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\AI_운영원칙.md",
+      "sha256": "e27974f0e18052d18084ea2db1c5c4b22ad109820be78628b95712ceaa8b58ab"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\SYNK_철학.md",
+      "sha256": "27148750cb6de202cf6bdd3849c31342807d56931c9180b3dae05cbb9a49c93b"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\제품방향.md",
+      "sha256": "e15aa5f89735593dc7c5fcfe96fce4c111785298bad9984d9d21ca3a5293df8b"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\비전_정본.md",
+      "sha256": "0abc1deb54eb38bea58f3f119a43412fa507e9ecfc79289ca955fc9cdc3a68e5"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\개원전판매_설계_v1.md",
+      "sha256": "c4fabfad01b13e4a541cdef6bfe80ac4fb2baa228bfe00906e483476e73d1145"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\디자인_토큰.json",
+      "sha256": "3bd08216ed6885490112daa5c8f4bb295cfbd6b407b828720c5d5cc08b608b44"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tmp\\xr_official_notice_20260911.pdf",
+      "sha256": "3d73e6bb92b346979ae7fbaa1006b450064a8fbb6f75a39a8f2fa94515b03372"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tmp\\xr_official_features_20260911.pdf",
+      "sha256": "3f6f568fe4d1b9c7c7d3cb6a7706910f3708d3ffe27266dc380ed3ef3217f813"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tmp\\xr_official_form_20260911.hwpx",
+      "sha256": "ef67e6e16885fa1bdab4d98b2dfa1a673c549037e68c7d1c5c2ab30c063ba37a"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tmp\\hanam_official_notice_20260911.hwpx",
+      "sha256": "55f92b64280934d163c24d7b151a46770fdbc00f3f9c820db09912c058272740"
+    }
+  ]
+}

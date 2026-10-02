@@ -1,0 +1,10 @@
+# 굽기 원본(판 PNG, 판마다 5MB 안팎)과 중간 오린 파일·참조 사본은 크다. 게임은 assets/만 쓴다.
+art-source/raw/
+art-source/cut/
+art-source/cut-fixed/
+art-source/ref/
+# 확인 캡처 원본(수십 MB). 묶은 시트(qa/시트_*.jpg)와 결과(qa/capture-results.json)만 남긴다.
+qa/shots/
+art-source/video-raw/
+art-source/voice-raw/
+qa/demo/

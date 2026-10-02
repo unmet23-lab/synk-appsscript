@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "7bee9470-4082-4a4f-a10f-16b98e281bb0",
+  "narration": "소개 문장과 상품 안내, 문의 답변을 함께 놓고 읽어보세요. 세 곳에서 설명하는 일이 같은가요? 다음 편에서는 한 곳의 원고를 완성해 봅니다.",
+  "narrationSha256": "059d25a7eee00b9ec6e25f55121548f766fddd2eb0cda4b18edc65a460f3280c",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-059d25a7eee00b9e.wav",
+  "duration": 11.84,
+  "sha256": "41ef9d025f1f775d2fb707d440b0d937a335e1d13e09b8acdb1e9726c6e6c134",
+  "humanListening": false,
+  "fullDecode": true
+}

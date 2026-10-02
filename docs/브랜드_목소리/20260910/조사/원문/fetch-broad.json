@@ -1,0 +1,488 @@
+[
+  {
+    "name": "chatterbox-api",
+    "url": "https://huggingface.co/api/models/ResembleAI/chatterbox",
+    "finalUrl": "https://huggingface.co/api/models/ResembleAI/chatterbox",
+    "bytes": 4948,
+    "sha256": "aec90369421ec419e984acd731e728adaf1fcaff7d44ce55d10fd9ae9e71bd3c",
+    "revision": "5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18"
+  },
+  {
+    "name": "chatterbox-model-README.md",
+    "url": "https://huggingface.co/ResembleAI/chatterbox/raw/5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18/README.md",
+    "finalUrl": "https://huggingface.co/ResembleAI/chatterbox/raw/5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18/README.md",
+    "bytes": 10081,
+    "sha256": "6ac86d5ec7e85a9cf6566a34c6aae60ac1d50a6fceccade4c2aa57cfa6f590b4"
+  },
+  {
+    "name": "melo-api",
+    "url": "https://huggingface.co/api/models/myshell-ai/MeloTTS-Korean",
+    "finalUrl": "https://huggingface.co/api/models/myshell-ai/MeloTTS-Korean",
+    "bytes": 1307,
+    "sha256": "e5f7325e9d8fbf7c7161fb17c60e8efb53f9cccc05747ec3ab45449e9151fb6a",
+    "revision": "0207e5adfc90129a51b6b03d89be6d84360ed323"
+  },
+  {
+    "name": "melo-model-README.md",
+    "url": "https://huggingface.co/myshell-ai/MeloTTS-Korean/raw/0207e5adfc90129a51b6b03d89be6d84360ed323/README.md",
+    "finalUrl": "https://huggingface.co/myshell-ai/MeloTTS-Korean/raw/0207e5adfc90129a51b6b03d89be6d84360ed323/README.md",
+    "bytes": 4394,
+    "sha256": "3cde1b0324d511f8cc4b2976e6ed77734d1bcaa49cf4be6c482885bb8ee35de8"
+  },
+  {
+    "name": "kokoro-api",
+    "url": "https://huggingface.co/api/models/hexgrad/Kokoro-82M",
+    "finalUrl": "https://huggingface.co/api/models/hexgrad/Kokoro-82M",
+    "bytes": 6234,
+    "sha256": "01f5eb53942dc7266e47cb784620719cb83403a7c501024961bf3f100c5a2859",
+    "revision": "f3ff3571791e39611d31c381e3a41a3af07b4987"
+  },
+  {
+    "name": "kokoro-model-README.md",
+    "url": "https://huggingface.co/hexgrad/Kokoro-82M/raw/f3ff3571791e39611d31c381e3a41a3af07b4987/README.md",
+    "finalUrl": "https://huggingface.co/hexgrad/Kokoro-82M/raw/f3ff3571791e39611d31c381e3a41a3af07b4987/README.md",
+    "bytes": 6348,
+    "sha256": "91dcabced89db6f109b8786642f50402d3ee87450e8189589b6f85520e7f4d78"
+  },
+  {
+    "name": "kani-api",
+    "url": "https://huggingface.co/api/models/nineninesix/kani-tts-370m",
+    "finalUrl": "https://huggingface.co/api/models/nineninesix/kani-tts-370m",
+    "bytes": 3307,
+    "sha256": "5c7c5f737a5e2a408caabbce254ec5ceeeb32277c510f70749a1572b9607f8d7",
+    "revision": "4ed48fcb2e25c6abea57a3e1655545e2fead66f8"
+  },
+  {
+    "name": "kani-model-README.md",
+    "url": "https://huggingface.co/nineninesix/kani-tts-370m/raw/4ed48fcb2e25c6abea57a3e1655545e2fead66f8/README.md",
+    "finalUrl": "https://huggingface.co/nineninesix/kani-tts-370m/raw/4ed48fcb2e25c6abea57a3e1655545e2fead66f8/README.md",
+    "bytes": 10527,
+    "sha256": "0068b002cc1b3f23600ce56b3193656ec0c0ccf8172c5fe50b51d66f3a3b8119"
+  },
+  {
+    "name": "kani2-api",
+    "url": "https://huggingface.co/api/models/nineninesix/kani-tts-2-en",
+    "finalUrl": "https://huggingface.co/api/models/nineninesix/kani-tts-2-en",
+    "bytes": 3694,
+    "sha256": "88f37faef3f0fa6f4cee4a3b62138e5b6d9a651a9e82bea172f96027f846986d",
+    "revision": "733435d9229fb6d5d2cdf23a44399a155ca2ab78"
+  },
+  {
+    "name": "kani2-model-README.md",
+    "url": "https://huggingface.co/nineninesix/kani-tts-2-en/raw/733435d9229fb6d5d2cdf23a44399a155ca2ab78/README.md",
+    "finalUrl": "https://huggingface.co/nineninesix/kani-tts-2-en/raw/733435d9229fb6d5d2cdf23a44399a155ca2ab78/README.md",
+    "bytes": 7218,
+    "sha256": "bbfbd8092c63e79c5698bcee4434d90d99ecc13340b41f175fe5f9d8d689108c"
+  },
+  {
+    "name": "index-api",
+    "url": "https://huggingface.co/api/models/IndexTeam/IndexTTS-2",
+    "finalUrl": "https://huggingface.co/api/models/IndexTeam/IndexTTS-2",
+    "bytes": 2588,
+    "sha256": "8c522c27ccbbf4cb82b675abd6cd29edaa766c08ba459da2419ffbb5e6e51ec7",
+    "revision": "740dcaff396282ffb241903d150ac011cd4b1ede"
+  },
+  {
+    "name": "index-model-README.md",
+    "url": "https://huggingface.co/IndexTeam/IndexTTS-2/raw/740dcaff396282ffb241903d150ac011cd4b1ede/README.md",
+    "finalUrl": "https://huggingface.co/IndexTeam/IndexTTS-2/raw/740dcaff396282ffb241903d150ac011cd4b1ede/README.md",
+    "bytes": 2511,
+    "sha256": "3e3225d4ec5fd95737613ec0e3f8ed64a5cde48a435ac21bce29b5ad4abc27a2"
+  },
+  {
+    "name": "index-model-LICENSE.txt",
+    "url": "https://huggingface.co/IndexTeam/IndexTTS-2/raw/740dcaff396282ffb241903d150ac011cd4b1ede/LICENSE.txt",
+    "finalUrl": "https://huggingface.co/IndexTeam/IndexTTS-2/raw/740dcaff396282ffb241903d150ac011cd4b1ede/LICENSE.txt",
+    "bytes": 10554,
+    "sha256": "53875532237e0a97b17a41721556ff57e93193fc566e48c3a0febe6e35bb5343"
+  },
+  {
+    "name": "index-model-LICENSE_ZH.txt",
+    "url": "https://huggingface.co/IndexTeam/IndexTTS-2/raw/740dcaff396282ffb241903d150ac011cd4b1ede/LICENSE_ZH.txt",
+    "finalUrl": "https://huggingface.co/IndexTeam/IndexTTS-2/raw/740dcaff396282ffb241903d150ac011cd4b1ede/LICENSE_ZH.txt",
+    "bytes": 7336,
+    "sha256": "366175ecf329274358801b8365922677c52f25e643dcf00f0bc15857b5b2777f"
+  },
+  {
+    "name": "f5-api",
+    "url": "https://huggingface.co/api/models/SWivid/F5-TTS",
+    "finalUrl": "https://huggingface.co/api/models/SWivid/F5-TTS",
+    "bytes": 3806,
+    "sha256": "bf8b73cf78df5a634654d4b373709fcfd7e0ec6320e8185a6c35a4afe6365949",
+    "revision": "84e5a410d9cead4de2f847e7c9369a6440bdfaca"
+  },
+  {
+    "name": "f5-model-README.md",
+    "url": "https://huggingface.co/SWivid/F5-TTS/raw/84e5a410d9cead4de2f847e7c9369a6440bdfaca/README.md",
+    "finalUrl": "https://huggingface.co/SWivid/F5-TTS/raw/84e5a410d9cead4de2f847e7c9369a6440bdfaca/README.md",
+    "bytes": 630,
+    "sha256": "cf3354feaf4020527b3642b12a5a382de13d0af6bc99e8d37bee84425c1ca224"
+  },
+  {
+    "name": "f5ko-api",
+    "url": "https://huggingface.co/api/models/DavidVita/F5TTS-Korean-Training",
+    "error": "HTTP Error 401: Unauthorized"
+  },
+  {
+    "name": "fishs2-api",
+    "url": "https://huggingface.co/api/models/fishaudio/s2-pro",
+    "finalUrl": "https://huggingface.co/api/models/fishaudio/s2-pro",
+    "bytes": 7916,
+    "sha256": "f13ce698bec37e8545cd620b3daaec74d19dc88b0a7259ef2b778e52ff6b20f2",
+    "revision": "1de9996b6be38b745688de084d87a5633f714e4e"
+  },
+  {
+    "name": "fishs2-model-README.md",
+    "url": "https://huggingface.co/fishaudio/s2-pro/raw/1de9996b6be38b745688de084d87a5633f714e4e/README.md",
+    "finalUrl": "https://huggingface.co/fishaudio/s2-pro/raw/1de9996b6be38b745688de084d87a5633f714e4e/README.md",
+    "bytes": 5117,
+    "sha256": "3c2d78af0f3991ef6047272d4df18f204b4340e1e5fcc975d0e720d4312c4b29"
+  },
+  {
+    "name": "fishs2-model-LICENSE.md",
+    "url": "https://huggingface.co/fishaudio/s2-pro/raw/1de9996b6be38b745688de084d87a5633f714e4e/LICENSE.md",
+    "finalUrl": "https://huggingface.co/fishaudio/s2-pro/raw/1de9996b6be38b745688de084d87a5633f714e4e/LICENSE.md",
+    "bytes": 10360,
+    "sha256": "aa7d9206e9d710590987a3636934f643529c00cd490323594e6206aaa0c32d80"
+  },
+  {
+    "name": "openaudio-api",
+    "url": "https://huggingface.co/api/models/fishaudio/openaudio-s1-mini",
+    "finalUrl": "https://huggingface.co/api/models/fishaudio/s1-mini",
+    "bytes": 2397,
+    "sha256": "cbb7c5fe0c5943508eef971137d30ef8b1f8ef14d3ae158a7ae681f4cbf89ffd",
+    "revision": "f4b445029346701e082b60bb63fcc2d1bb17a0e2"
+  },
+  {
+    "name": "openaudio-model-README.md",
+    "url": "https://huggingface.co/fishaudio/openaudio-s1-mini/raw/f4b445029346701e082b60bb63fcc2d1bb17a0e2/README.md",
+    "error": "HTTP Error 401: Unauthorized"
+  },
+  {
+    "name": "dia-api",
+    "url": "https://huggingface.co/api/models/nari-labs/Dia-1.6B",
+    "finalUrl": "https://huggingface.co/api/models/nari-labs/Dia-1.6B",
+    "bytes": 5268,
+    "sha256": "5553dca55cd0c917faf0a0ec77b5ff4127d5c7ff8598584eb97edda1b10055ef",
+    "revision": "257bc72f9b78182ccc6fa07675a9ae4c1a44e2cd"
+  },
+  {
+    "name": "dia-model-README.md",
+    "url": "https://huggingface.co/nari-labs/Dia-1.6B/raw/257bc72f9b78182ccc6fa07675a9ae4c1a44e2cd/README.md",
+    "finalUrl": "https://huggingface.co/nari-labs/Dia-1.6B/raw/257bc72f9b78182ccc6fa07675a9ae4c1a44e2cd/README.md",
+    "bytes": 6551,
+    "sha256": "ba8921486a0a601d65b9445a449b799c338a1a80943c8c0669eaba9ea4404b21"
+  },
+  {
+    "name": "vibevoice-api",
+    "url": "https://huggingface.co/api/models/microsoft/VibeVoice-1.5B",
+    "finalUrl": "https://huggingface.co/api/models/microsoft/VibeVoice-1.5B",
+    "bytes": 4406,
+    "sha256": "11068cdbb6ba5485c05bc7fe6cff02b7e75a19274a0777ee9dbb57810ecb79af",
+    "revision": "c00898d257e6b46004e3e2866a47534085fb685a"
+  },
+  {
+    "name": "vibevoice-model-README.md",
+    "url": "https://huggingface.co/microsoft/VibeVoice-1.5B/raw/c00898d257e6b46004e3e2866a47534085fb685a/README.md",
+    "finalUrl": "https://huggingface.co/microsoft/VibeVoice-1.5B/raw/c00898d257e6b46004e3e2866a47534085fb685a/README.md",
+    "bytes": 7279,
+    "sha256": "9a881db6567b6091dae09a56fc31edc6647ba04f74c575fa99c838b72c68879d"
+  },
+  {
+    "name": "voxcpm-api",
+    "url": "https://huggingface.co/api/models/openbmb/VoxCPM2",
+    "finalUrl": "https://huggingface.co/api/models/openbmb/VoxCPM2",
+    "bytes": 5017,
+    "sha256": "4a518412da6edf1cfb3de9b1ad0feab0147e17e3d6b0de88c489f610d2998e8f",
+    "revision": "32279effe8c19989596f05d353d1447f51d9e915"
+  },
+  {
+    "name": "voxcpm-model-README.md",
+    "url": "https://huggingface.co/openbmb/VoxCPM2/raw/32279effe8c19989596f05d353d1447f51d9e915/README.md",
+    "finalUrl": "https://huggingface.co/openbmb/VoxCPM2/raw/32279effe8c19989596f05d353d1447f51d9e915/README.md",
+    "bytes": 7939,
+    "sha256": "c18d2ffbfb2f0aec770481c967842aee6c200cde65f6b033efd892a849986fda"
+  },
+  {
+    "name": "cosyvoice-api",
+    "url": "https://huggingface.co/api/models/FunAudioLLM/Fun-CosyVoice3-0.5B-2512",
+    "finalUrl": "https://huggingface.co/api/models/FunAudioLLM/Fun-CosyVoice3-0.5B-2512",
+    "bytes": 2360,
+    "sha256": "1ab1f0cd5590180b898729dc8fc04be7e82de50183eb927ee2ceef83adbda072",
+    "revision": "29e01c4e8d000f4bcd70751be16fa94bf3d85a18"
+  },
+  {
+    "name": "cosyvoice-model-README.md",
+    "url": "https://huggingface.co/FunAudioLLM/Fun-CosyVoice3-0.5B-2512/raw/29e01c4e8d000f4bcd70751be16fa94bf3d85a18/README.md",
+    "finalUrl": "https://huggingface.co/FunAudioLLM/Fun-CosyVoice3-0.5B-2512/raw/29e01c4e8d000f4bcd70751be16fa94bf3d85a18/README.md",
+    "bytes": 11982,
+    "sha256": "d4ec0fe1342b60a424ce1cd8971c670d26be38068a96148bcb6a1b8a334c3088"
+  },
+  {
+    "name": "qwen-api",
+    "url": "https://huggingface.co/api/models/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice",
+    "finalUrl": "https://huggingface.co/api/models/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice",
+    "bytes": 3977,
+    "sha256": "b31bbe248e8f9e0fc02635428a175c865a6d5da63927c98a8f8bb4938316612c",
+    "revision": "0c0e3051f131929182e2c023b9537f8b1c68adfe"
+  },
+  {
+    "name": "qwen-model-README.md",
+    "url": "https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice/raw/0c0e3051f131929182e2c023b9537f8b1c68adfe/README.md",
+    "finalUrl": "https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice/raw/0c0e3051f131929182e2c023b9537f8b1c68adfe/README.md",
+    "bytes": 57846,
+    "sha256": "64f65e809b51cc0c35f393fbbfcc2d735c0cb3fdbbc6f3fdc4a5e6ce55e9d088"
+  },
+  {
+    "name": "magpie-api",
+    "url": "https://huggingface.co/api/models/nvidia/magpie_tts_multilingual_357m",
+    "finalUrl": "https://huggingface.co/api/models/nvidia/magpie_tts_multilingual_357m",
+    "bytes": 2721,
+    "sha256": "06f8c5820c4f1030da885bb5189c418eb9b143708b1bd6d317f48c4dbf09faea",
+    "revision": "19806879b16d3f2ccf28fb112b1bcd16a3c7923e"
+  },
+  {
+    "name": "magpie-model-README.md",
+    "url": "https://huggingface.co/nvidia/magpie_tts_multilingual_357m/raw/19806879b16d3f2ccf28fb112b1bcd16a3c7923e/README.md",
+    "finalUrl": "https://huggingface.co/nvidia/magpie_tts_multilingual_357m/raw/19806879b16d3f2ccf28fb112b1bcd16a3c7923e/README.md",
+    "bytes": 31738,
+    "sha256": "a819e61bcc4b1f39372e0085b7b90ef128eb8eb764cca2dc39f63895384eb1fa"
+  },
+  {
+    "name": "audio8-api",
+    "url": "https://huggingface.co/api/models/Edge0/Audio8-TTS-Preview-0.6b",
+    "finalUrl": "https://huggingface.co/api/models/Edge0/Audio8-TTS-Preview-0.6b",
+    "bytes": 2289,
+    "sha256": "bbff1989df8a276c79b02307cd15eccc4455128495d5ef0b3d4da6fc2a90ee8e",
+    "revision": "f07040f3d151f1ba0253bfb92cb2f5dd38b44594"
+  },
+  {
+    "name": "audio8-model-README.md",
+    "url": "https://huggingface.co/Edge0/Audio8-TTS-Preview-0.6b/raw/f07040f3d151f1ba0253bfb92cb2f5dd38b44594/README.md",
+    "finalUrl": "https://huggingface.co/Edge0/Audio8-TTS-Preview-0.6b/raw/f07040f3d151f1ba0253bfb92cb2f5dd38b44594/README.md",
+    "bytes": 10466,
+    "sha256": "c3252410cdce14fc206da10524cfaf7cc9112a1fe2d7e81549b2f059391281f3"
+  },
+  {
+    "name": "chatterbox-code-README.md",
+    "url": "https://raw.githubusercontent.com/resemble-ai/chatterbox/master/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/resemble-ai/chatterbox/master/README.md",
+    "bytes": 15301,
+    "sha256": "fd9315cc529c65d46ddd21ded05ba3372b6f6f39242bd015f770145bf5e0448f"
+  },
+  {
+    "name": "chatterbox-code-LICENSE",
+    "url": "https://raw.githubusercontent.com/resemble-ai/chatterbox/master/LICENSE",
+    "finalUrl": "https://raw.githubusercontent.com/resemble-ai/chatterbox/master/LICENSE",
+    "bytes": 1067,
+    "sha256": "4248e910a928849fe5815a0f9236e17fa07768d95b9193212752c464b93d6caa"
+  },
+  {
+    "name": "melo-code-README.md",
+    "url": "https://raw.githubusercontent.com/myshell-ai/MeloTTS/main/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/myshell-ai/MeloTTS/main/README.md",
+    "bytes": 3492,
+    "sha256": "ee0722f303183c227dc2008069d2fe6cd2c72867d4062c61598a5435b1b55205"
+  },
+  {
+    "name": "melo-code-LICENSE",
+    "url": "https://raw.githubusercontent.com/myshell-ai/MeloTTS/main/LICENSE",
+    "finalUrl": "https://raw.githubusercontent.com/myshell-ai/MeloTTS/main/LICENSE",
+    "bytes": 1053,
+    "sha256": "88a50e5a02bbc2a5c2f084dc19da751aa97b1690f5fda76cd8005c8634d1ca70"
+  },
+  {
+    "name": "kokoro-code-README.md",
+    "url": "https://raw.githubusercontent.com/hexgrad/kokoro/main/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/hexgrad/kokoro/main/README.md",
+    "bytes": 8355,
+    "sha256": "b50b84220668f8247a2405b249c34c7083acc24114279ff1429fd79f46a2c04b"
+  },
+  {
+    "name": "kokoro-code-LICENSE",
+    "url": "https://raw.githubusercontent.com/hexgrad/kokoro/main/LICENSE",
+    "finalUrl": "https://raw.githubusercontent.com/hexgrad/kokoro/main/LICENSE",
+    "bytes": 11357,
+    "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+  },
+  {
+    "name": "kani-code-README.md",
+    "url": "https://raw.githubusercontent.com/nineninesix-ai/kani-tts/main/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/nineninesix-ai/kani-tts/main/README.md",
+    "bytes": 7701,
+    "sha256": "5f621a1833926a9354a57de49931b7f118b7758f6deac6c30bb3a77a0e94751c"
+  },
+  {
+    "name": "kani-code-LICENSE",
+    "url": "https://raw.githubusercontent.com/nineninesix-ai/kani-tts/main/LICENSE",
+    "finalUrl": "https://raw.githubusercontent.com/nineninesix-ai/kani-tts/main/LICENSE",
+    "bytes": 10184,
+    "sha256": "05ad27368135ec248f478dcf1b748327c8b567d1adc0138a82ba955d0971842e"
+  },
+  {
+    "name": "kani2-code-README.md",
+    "url": "https://raw.githubusercontent.com/nineninesix-ai/kani-tts-2/main/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/nineninesix-ai/kani-tts-2/main/README.md",
+    "bytes": 23756,
+    "sha256": "5d1c40644423519a8c1efcc9f590834815f67b660ca6a55712889ccb69a37d3a"
+  },
+  {
+    "name": "kani2-code-LICENSE",
+    "url": "https://raw.githubusercontent.com/nineninesix-ai/kani-tts-2/main/LICENSE",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "name": "index-code-README.md",
+    "url": "https://raw.githubusercontent.com/index-tts/index-tts/main/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/index-tts/index-tts/main/README.md",
+    "bytes": 25219,
+    "sha256": "92b151affa037f36aaf16d2bc979489f49eeb42695891a5b9c35f28b3a458a24"
+  },
+  {
+    "name": "index-code-LICENSE",
+    "url": "https://raw.githubusercontent.com/index-tts/index-tts/main/LICENSE",
+    "finalUrl": "https://raw.githubusercontent.com/index-tts/index-tts/main/LICENSE",
+    "bytes": 10554,
+    "sha256": "53875532237e0a97b17a41721556ff57e93193fc566e48c3a0febe6e35bb5343"
+  },
+  {
+    "name": "indexko-code-README.md",
+    "url": "https://raw.githubusercontent.com/acidsound/index-tts-kr/main/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/acidsound/index-tts-kr/main/README.md",
+    "bytes": 25713,
+    "sha256": "1982ea853a4fb160594397b0e867bb674fdf8f27e205c6d58bfb36fb6289c6fb"
+  },
+  {
+    "name": "indexko-code-LICENSE",
+    "url": "https://raw.githubusercontent.com/acidsound/index-tts-kr/main/LICENSE",
+    "finalUrl": "https://raw.githubusercontent.com/acidsound/index-tts-kr/main/LICENSE",
+    "bytes": 10554,
+    "sha256": "53875532237e0a97b17a41721556ff57e93193fc566e48c3a0febe6e35bb5343"
+  },
+  {
+    "name": "f5-code-README.md",
+    "url": "https://raw.githubusercontent.com/SWivid/F5-TTS/main/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/SWivid/F5-TTS/main/README.md",
+    "bytes": 10449,
+    "sha256": "3c74da9760857de03a0fe22d6124fd50000b986c6aeba6c23bb14635e20e4ae1"
+  },
+  {
+    "name": "f5-code-LICENSE",
+    "url": "https://raw.githubusercontent.com/SWivid/F5-TTS/main/LICENSE",
+    "finalUrl": "https://raw.githubusercontent.com/SWivid/F5-TTS/main/LICENSE",
+    "bytes": 1068,
+    "sha256": "c70811d1402134de900e811d3eaa349eb60f4d38a8f635b27b1e378c630facd2"
+  },
+  {
+    "name": "fish-code-README.md",
+    "url": "https://raw.githubusercontent.com/fishaudio/fish-speech/main/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/fishaudio/fish-speech/main/README.md",
+    "bytes": 12065,
+    "sha256": "23193581f6c9a0dd174cd1427e670d64a0aeda11394f627a124b78876a23d544"
+  },
+  {
+    "name": "fish-code-LICENSE",
+    "url": "https://raw.githubusercontent.com/fishaudio/fish-speech/main/LICENSE",
+    "finalUrl": "https://raw.githubusercontent.com/fishaudio/fish-speech/main/LICENSE",
+    "bytes": 10360,
+    "sha256": "aa7d9206e9d710590987a3636934f643529c00cd490323594e6206aaa0c32d80"
+  },
+  {
+    "name": "dia-code-README.md",
+    "url": "https://raw.githubusercontent.com/nari-labs/dia/main/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/nari-labs/dia/main/README.md",
+    "bytes": 9882,
+    "sha256": "f7ea33778b5cea923670fecc6327a392ac795b19d8dba6391e1e50048f64c44c"
+  },
+  {
+    "name": "dia-code-LICENSE",
+    "url": "https://raw.githubusercontent.com/nari-labs/dia/main/LICENSE",
+    "finalUrl": "https://raw.githubusercontent.com/nari-labs/dia/main/LICENSE",
+    "bytes": 11338,
+    "sha256": "34c1659a3495220f85dffebd4d3a930bcbfd9f216f8a3c5f880a1d4a59a5358d"
+  },
+  {
+    "name": "vibevoice-code-README.md",
+    "url": "https://raw.githubusercontent.com/microsoft/VibeVoice/main/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/microsoft/VibeVoice/main/README.md",
+    "bytes": 13031,
+    "sha256": "b1fe27ee5b77e30b4a82b76e0f279157ffddc43f782b094ffe07f90383e62537"
+  },
+  {
+    "name": "vibevoice-code-LICENSE",
+    "url": "https://raw.githubusercontent.com/microsoft/VibeVoice/main/LICENSE",
+    "finalUrl": "https://raw.githubusercontent.com/microsoft/VibeVoice/main/LICENSE",
+    "bytes": 1066,
+    "sha256": "98a96c38494df4963951e32b81ec4effebe4c8a812ab8d9e7d185d59e86fe2fc"
+  },
+  {
+    "name": "voxcpm-code-README.md",
+    "url": "https://raw.githubusercontent.com/OpenBMB/VoxCPM/main/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/OpenBMB/VoxCPM/main/README.md",
+    "bytes": 42395,
+    "sha256": "f670fdf5f3faea03a71f717d25057b3bc100742edd9feb24d375443b091cc61f"
+  },
+  {
+    "name": "voxcpm-code-LICENSE",
+    "url": "https://raw.githubusercontent.com/OpenBMB/VoxCPM/main/LICENSE",
+    "finalUrl": "https://raw.githubusercontent.com/OpenBMB/VoxCPM/main/LICENSE",
+    "bytes": 11298,
+    "sha256": "4f10acc209addacfad28293315c74c4cd648f771ee1263a748f1781d1e0265e4"
+  },
+  {
+    "name": "cosyvoice-code-README.md",
+    "url": "https://raw.githubusercontent.com/FunAudioLLM/CosyVoice/main/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/FunAudioLLM/CosyVoice/main/README.md",
+    "bytes": 13764,
+    "sha256": "66436370172c2830ed98aa643b31898c65e16eee14ade68f00828d21fae602e0"
+  },
+  {
+    "name": "cosyvoice-code-LICENSE",
+    "url": "https://raw.githubusercontent.com/FunAudioLLM/CosyVoice/main/LICENSE",
+    "finalUrl": "https://raw.githubusercontent.com/FunAudioLLM/CosyVoice/main/LICENSE",
+    "bytes": 11357,
+    "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+  },
+  {
+    "name": "qwen-code-README.md",
+    "url": "https://raw.githubusercontent.com/QwenLM/Qwen3-TTS/main/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/QwenLM/Qwen3-TTS/main/README.md",
+    "bytes": 60501,
+    "sha256": "51f4497e70e9ae024b10ee4bbcb470366f10592edeab56c58d2194ba2dadb745"
+  },
+  {
+    "name": "qwen-code-LICENSE",
+    "url": "https://raw.githubusercontent.com/QwenLM/Qwen3-TTS/main/LICENSE",
+    "finalUrl": "https://raw.githubusercontent.com/QwenLM/Qwen3-TTS/main/LICENSE",
+    "bytes": 11343,
+    "sha256": "a44a6081c73ad75f0255bb2bb5cab74ef1829565a895a24e53a4f11290ab7655"
+  },
+  {
+    "name": "magpie-code-README.md",
+    "url": "https://raw.githubusercontent.com/NVIDIA-NeMo/Speech/main/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/NVIDIA-NeMo/Speech/main/README.md",
+    "bytes": 10646,
+    "sha256": "f7f63002e9f9fc053094e26f6828687dccdfda41a2e13c13cf2587fcacf556f8"
+  },
+  {
+    "name": "magpie-code-LICENSE",
+    "url": "https://raw.githubusercontent.com/NVIDIA-NeMo/Speech/main/LICENSE",
+    "finalUrl": "https://raw.githubusercontent.com/NVIDIA-NeMo/Speech/main/LICENSE",
+    "bytes": 11357,
+    "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+  },
+  {
+    "name": "audio8-code-README.md",
+    "url": "https://raw.githubusercontent.com/Audio8-AI/Audio8_TTS/master/README.md",
+    "finalUrl": "https://raw.githubusercontent.com/Audio8-AI/Audio8_TTS/master/README.md",
+    "bytes": 20143,
+    "sha256": "6eff5a9a3b259cda5cbb115a228ac0cbf538a426f2d8f627dad040a45c9d4f4e"
+  },
+  {
+    "name": "audio8-code-LICENSE",
+    "url": "https://raw.githubusercontent.com/Audio8-AI/Audio8_TTS/master/LICENSE",
+    "finalUrl": "https://raw.githubusercontent.com/Audio8-AI/Audio8_TTS/master/LICENSE",
+    "bytes": 11357,
+    "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+  }
+]

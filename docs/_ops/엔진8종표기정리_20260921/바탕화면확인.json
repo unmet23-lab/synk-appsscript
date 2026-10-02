@@ -1,0 +1,23 @@
+[
+  {
+    "source": "docs/엔진/지도_20260921/SYNK_Atlas_엔진지도_20260921.html",
+    "desktop": "C:\\Users\\q1212\\OneDrive\\Desktop\\SYNK_Atlas_엔진지도_20260921.html",
+    "sha256": "aa6e6e8d7315af5cc5b9c262c5450aecb17c817f5b6dfad9cbcd4e548474e1b3",
+    "match": true,
+    "changed": true
+  },
+  {
+    "source": "docs/SYNK_로드맵.html",
+    "desktop": "C:\\Users\\q1212\\OneDrive\\Desktop\\SYNK_로드맵.html",
+    "sha256": "69b58adc83ac56088cd11cf298a388e2c343c6b76d950cf817b43ce9bb90d312",
+    "match": true,
+    "changed": true
+  },
+  {
+    "source": "docs/앱로드맵_20260921/SYNK_WORLD_앱로드맵_20260921.html",
+    "desktop": "C:\\Users\\q1212\\OneDrive\\Desktop\\SYNK_WORLD_앱로드맵_20260921.html",
+    "sha256": "c842576d94568d2a3c9e7c6380357c743c7e9a8216d6a83820f4992ed23bf99f",
+    "match": true,
+    "changed": false
+  }
+]

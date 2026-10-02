@@ -1,0 +1,109 @@
+{
+  "checkedAt": "2026-09-10T09:21:26.616Z",
+  "status": "passed",
+  "samples": [
+    {
+      "id": "qwen-fresh-sparkle",
+      "label": "새 A",
+      "duration": 8.536875,
+      "nativeSampleRate": 24000,
+      "sourceBits": 16,
+      "actual": "같이 들어볼까요? 좋아요. 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면 우리만의 목소리가 돼요.",
+      "characterSimilarity": 1,
+      "LUFS": -23,
+      "truePeak": -7.3,
+      "rawSha256": "798eb1e01a4f99eaca44f939e596b07add412b4e181e864dfcf9309929263148",
+      "listenSha256": "d02d3b2cb56dd072994f64ee15a29236e05052b0db5a5e83fe3f6eaecf12e1c8",
+      "reference": null
+    },
+    {
+      "id": "qwen-fresh-sunshine",
+      "label": "새 B",
+      "duration": 10.696875,
+      "nativeSampleRate": 24000,
+      "sourceBits": 16,
+      "actual": "같이 들어볼까요? 좋아요. 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면 우리만의 목소리가 돼요.",
+      "characterSimilarity": 1,
+      "LUFS": -23.01,
+      "truePeak": -6.13,
+      "rawSha256": "2a1536419de38b31568be0941ec32f943bfafd966cc64bdaf38d2ffc1caa58ff",
+      "listenSha256": "24be3507f8fd5ac8e3e84b89f8ebdcd8d731d1a390dccfb3666985e1e45ca6a4",
+      "reference": null
+    },
+    {
+      "id": "qwen-sohee-sparkle",
+      "label": "새 C",
+      "duration": 9.576875,
+      "nativeSampleRate": 24000,
+      "sourceBits": 16,
+      "actual": "같이 들어볼까요? 좋아요 이번에는 조금 다르게 해볼게요 작은 차이가 모이면 우리만의 목소리가 돼요",
+      "characterSimilarity": 1,
+      "LUFS": -23,
+      "truePeak": -7.01,
+      "rawSha256": "e9e0f1dce183a4a94ea467e9cf473b99f5b618230083e86e80d221df5a7df1a2",
+      "listenSha256": "c4f2368a38cecf28b5b9d9c4457bce61f205f500b7ef80a8bab0d6e5d65c5c0b",
+      "reference": null
+    },
+    {
+      "id": "moss8-fresh-sparkle",
+      "label": "새 D",
+      "duration": 7.68,
+      "nativeSampleRate": 24000,
+      "sourceBits": 16,
+      "actual": "같이 들어볼까요? 좋아요. 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면 우리만의 목소리가 돼요.",
+      "characterSimilarity": 1,
+      "LUFS": -23,
+      "truePeak": -6.64,
+      "rawSha256": "b4330a7e450f6eeecea46dab88ba80a2865e14e41b5fbff62f9bb733860d01d6",
+      "listenSha256": "61a6eb4571c7c90c98ea31f15b9e2c13791625996e54a076adeb14b13216a749",
+      "reference": {
+        "type": "original synthetic voice created for this comparison; not an identified person",
+        "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\qwen-fresh-sparkle\\raw.wav",
+        "sha256": "798eb1e01a4f99eaca44f939e596b07add412b4e181e864dfcf9309929263148",
+        "origin": "Qwen3-TTS VoiceDesign official demo"
+      }
+    },
+    {
+      "id": "moss-nano-fresh",
+      "label": "새 E",
+      "duration": 9.6,
+      "nativeSampleRate": 48000,
+      "sourceBits": 16,
+      "actual": "같이 들어볼까요? 좋아요. 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면 우리 만의 목소리가 돼요.",
+      "characterSimilarity": 1,
+      "LUFS": -22.96,
+      "truePeak": -10.77,
+      "rawSha256": "4946a16b8d23c8f21899c7ebad307a43889c0d07dc13aef5c48eb7df7a9786e2",
+      "listenSha256": "570e19faf72f330db7d7b0a8f5180fbf68c2671c196243629e326e2084ed4348",
+      "reference": {
+        "type": "original synthetic voice created for this comparison; not an identified person",
+        "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\qwen-fresh-sparkle\\raw.wav",
+        "sha256": "798eb1e01a4f99eaca44f939e596b07add412b4e181e864dfcf9309929263148",
+        "origin": "Qwen3-TTS VoiceDesign official demo"
+      }
+    },
+    {
+      "id": "chatterbox-fresh",
+      "label": "새 F",
+      "duration": 7.68,
+      "nativeSampleRate": 24000,
+      "sourceBits": 16,
+      "actual": "같이 들어볼까요? 좋아요. 이번에는 조금 다르게 해볼게요. 작은 차이가 모이면 우리만의 목소리가 돼요.",
+      "characterSimilarity": 1,
+      "LUFS": -23,
+      "truePeak": -7.25,
+      "rawSha256": "cc0117a56424afc86a8a13a8d0c00a66d3a1b5f33a6e1956895d1f93676ea626",
+      "listenSha256": "7597e49d283bb317a78ac8136b906d8966da51fcac0e73df2e8ad24a1bbe649b",
+      "reference": {
+        "type": "original synthetic voice created for this comparison; not an identified person",
+        "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\브랜드_목소리\\20260910\\실험\\qwen-fresh-sparkle\\raw.wav",
+        "sha256": "798eb1e01a4f99eaca44f939e596b07add412b4e181e864dfcf9309929263148",
+        "origin": "Qwen3-TTS VoiceDesign official demo"
+      }
+    }
+  ],
+  "humanListening": false,
+  "processing": "Fixed gain only. No resampling, EQ, compression, denoising, speed or silence edits.",
+  "baselineDataSha256": "8ca67b9dd7a6cbbc4bbbe64c43e7c92f2f780c97d3f412a50f5413cb5e3b9200",
+  "originalIndexSha256": "3dec03aca98248738f336149fa074557e57029578eb5f4f77731f4c06a6c51fb"
+}

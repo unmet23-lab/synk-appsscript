@@ -1,0 +1,32 @@
+[
+  {
+    "startSeconds": 0,
+    "durationSeconds": 10.566666666666666,
+    "title": "지금 막힌 일,\n하나부터",
+    "layout": "cover"
+  },
+  {
+    "startSeconds": 10.566666666666666,
+    "durationSeconds": 7,
+    "title": "오늘은 어떤 일인가요?",
+    "layout": "choices"
+  },
+  {
+    "startSeconds": 17.566666666666666,
+    "durationSeconds": 10.966666666666667,
+    "title": "첫 소개는 세 칸",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 28.53333333333333,
+    "durationSeconds": 9,
+    "title": "내 문장으로 연결",
+    "layout": "example"
+  },
+  {
+    "startSeconds": 37.53333333333333,
+    "durationSeconds": 9.366666666666667,
+    "title": "쓸 수 있는 예시,\n고쳐 쓰는 원본",
+    "layout": "closing"
+  }
+]

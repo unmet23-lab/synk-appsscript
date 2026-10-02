@@ -1,0 +1,10 @@
+Create a 10-second photorealistic vertical 9:16 Korean cafe comedy scene. Use the supplied cafe reference image to maintain the same two adult characters, clothing, hair, counter, and daylight. Natural skin texture, restrained acting, realistic conversational timing. No subtitles, logos, music, or invented written text.
+
+0.0-2.6s: Medium two-shot. The adult female barista asks briskly but warmly in Korean, "드시고 가세요, 가지고 가세요?" Her two options run together naturally, as in a real busy cafe. She looks at the male customer.
+2.6-3.3s: Cut closer to the male customer. He gives a small confident nod and answers "네!" a little too quickly.
+3.3-4.8s: Cut to the barista. She pauses, tilts her head slightly, and gently asks "어느 쪽이요?" She is friendly and genuinely waiting for a choice, never mocking him.
+4.8-6.2s: Cut to the customer. His smile falters as he realizes he answered a choice question with yes. A brief awkward breath and restrained eyebrow movement make the moment funny. Do not exaggerate or distort his face.
+6.2-8.8s: He relaxes and politely asks, "다시 말해 주세요." Deliver this as an actual request to the barista, not as a classroom narrator. Clear Korean, natural breathing, a small rising request intonation.
+8.8-10.0s: The barista nods with a reassuring smile. End on the two-shot, ready for her clearer explanation in the next clip.
+
+One speaker at a time. Each quoted line is spoken once, exactly as written, by the specified speaker. Keep lips synchronized to Korean dialogue. Subtle cafe ambience only, clear dry voices in the foreground. No laughter track and no artificial slow motion.

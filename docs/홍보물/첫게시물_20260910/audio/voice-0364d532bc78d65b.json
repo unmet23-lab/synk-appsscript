@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "df5a27f1-92bd-4c32-8496-03a975decc1f",
+  "narration": "오늘 할 일부터 고르세요. 이번에는 소개가 필요한 순간을 펼칩니다.",
+  "narrationSha256": "0364d532bc78d65b37a5f73ef563be82047733a1cdf728724d49ff2cae0babc3",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-0364d532bc78d65b.wav",
+  "duration": 4.32,
+  "sha256": "cf8188fcb921801b41eebe8bb1fb507434148abd141aa2e89caad742040b7df9",
+  "humanListening": false,
+  "fullDecode": true
+}

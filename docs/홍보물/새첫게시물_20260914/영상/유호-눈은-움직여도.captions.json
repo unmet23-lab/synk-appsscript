@@ -1,0 +1,51 @@
+[
+  {
+    "text": "눈은 움직여도,\n털은 그대로\n몽글의 깜빡임 하나를\n다시 봤습니다.",
+    "startMs": 0,
+    "endMs": 5000,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "몸 전체 대신,\n눈 주변만.\n같은 바탕 위에 눈 주변만 합성해\n바꾸는 범위를 좁혔습니다.",
+    "startMs": 5000,
+    "endMs": 11000,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "땅과 카메라는\n움직이지 않게.\n배경 이동과 전체 밝기 흔들림을 걷고,\n바람은 풀 주변에만 남겼습니다.",
+    "startMs": 11000,
+    "endMs": 17000,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "더 크게보다,\n더 자연스럽게.\n오른쪽 풀이 겹쳐 보이던 표현을 고쳤습니다.\n같은 곳에 놓인 장면인지 다시 봅니다.",
+    "startMs": 17000,
+    "endMs": 24000,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "눈 안쪽의 결은\n아직 다릅니다.\n확대하면 결 차이가 남아 있습니다.\n이 부분까지 해결했다고 닫지는 않았습니다.",
+    "startMs": 24000,
+    "endMs": 31000,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "무엇을 만들었나,\n왜 고쳤나.\n잘된 장면과 남은 한계를 함께 남깁니다.\n이번 기록은 실제 로컬 제작 과정입니다.",
+    "startMs": 31000,
+    "endMs": 39000,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "개인과 조직의 성장이 서로의 기회가 되는 미래를 만듭니다.",
+    "startMs": 39000,
+    "endMs": 46000,
+    "timestampMs": null,
+    "confidence": null
+  }
+]

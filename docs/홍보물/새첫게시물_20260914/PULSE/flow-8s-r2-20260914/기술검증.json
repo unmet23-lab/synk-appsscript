@@ -1,0 +1,102 @@
+{
+  "checkedAt": "2026-09-14T07:07:30.233Z",
+  "scope": "Second candidate: original preservation, probe, full-stream decode and requested frame extraction only; no hearing, continuous playback or artistic pass claim",
+  "downloaded": "C:\\Users\\q1212\\Downloads\\Felt_character_placing_book_on_20260914160638.mp4",
+  "original": "Felt_character_placing_book_on_20260914160638.mp4",
+  "bytes": 2131501,
+  "sha256": "eea0a306234677a1bc9876825f5f008b3c21821b967ec5c06ba23212d2adf55b",
+  "downloadPreserved": true,
+  "sources": [
+    {
+      "file": "pulse-start-short-arms-synk.png",
+      "sha256": "9016797e9ce75d07d5c6d5b987df9c1aaf5e5b9da19027a133cdd187c744d045"
+    },
+    {
+      "file": "프롬프트.md",
+      "sha256": "2467270481eef414d99cead9d11dcb46119255c907f5b1908c3c1653f9f0b9f3"
+    }
+  ],
+  "fullDecode": {
+    "passed": true,
+    "command": "ffmpeg -nostdin -v error -xerror -i <original> -map 0 -f null -",
+    "exitCode": 0
+  },
+  "streams": [
+    {
+      "codec_type": "video",
+      "codec_name": "h264",
+      "width": 1280,
+      "height": 720,
+      "pix_fmt": "yuv420p",
+      "r_frame_rate": "24/1",
+      "nb_read_frames": "192",
+      "duration": "8.000000"
+    },
+    {
+      "codec_type": "audio",
+      "codec_name": "aac",
+      "r_frame_rate": "0/0",
+      "nb_read_frames": "375",
+      "duration": "8.000000",
+      "sample_rate": "48000",
+      "channels": 2
+    }
+  ],
+  "duration": "8.000000",
+  "frames": [
+    {
+      "seconds": 0,
+      "file": "frames/frame-0s.png",
+      "bytes": 1245660,
+      "sha256": "fe31f8fb34b5d61d16f654e2c02e3956a8102b2bcf6ab798189bd34f610dce27"
+    },
+    {
+      "seconds": 1,
+      "file": "frames/frame-1s.png",
+      "bytes": 1239656,
+      "sha256": "d801239ab70a30137b59d61198353f2e863f73d4447f559d0a5324f1dc15d30a"
+    },
+    {
+      "seconds": 2,
+      "file": "frames/frame-2s.png",
+      "bytes": 1246678,
+      "sha256": "1cb0f659e061f0d8c9424537fb33e52d278520efcd18d669327c33cb2a8e5bd6"
+    },
+    {
+      "seconds": 3,
+      "file": "frames/frame-3s.png",
+      "bytes": 1257013,
+      "sha256": "56c90669563385b91a55cc593ea33a16ebf8142563dc0513592e1571c4a0954f"
+    },
+    {
+      "seconds": 4,
+      "file": "frames/frame-4s.png",
+      "bytes": 1245828,
+      "sha256": "719773512155598c3b17ca4e04db34e6cd7d5b28cda28bfcdda686b34e6aff8f"
+    },
+    {
+      "seconds": 5,
+      "file": "frames/frame-5s.png",
+      "bytes": 1246622,
+      "sha256": "5372e2853f0817c963506645c31d9f2297b78af0643e593a0b34f4cdf624e89c"
+    },
+    {
+      "seconds": 6,
+      "file": "frames/frame-6s.png",
+      "bytes": 1268827,
+      "sha256": "1d0f4207d8f63a7208b7a8dd81e288278b073176a3f9fa73192b65c2b982b584"
+    },
+    {
+      "seconds": 7,
+      "file": "frames/frame-7s.png",
+      "bytes": 1277550,
+      "sha256": "18d481ab84e2ce0427164e3f809c5f8fcd81258561cd5a2bc18a6a840abd074e"
+    },
+    {
+      "seconds": 7.9,
+      "file": "frames/frame-7_9s.png",
+      "bytes": 1242956,
+      "sha256": "0fc188a53d2918d5dca82a083c279869b18af1f6710ce5c43440a72b13e48ec8"
+    }
+  ]
+}

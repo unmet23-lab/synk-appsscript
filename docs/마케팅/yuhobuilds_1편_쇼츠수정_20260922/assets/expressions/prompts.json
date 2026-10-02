@@ -1,0 +1,18 @@
+[
+  {
+    "name": "smile",
+    "prompt": "Edit this reference photographic head. Preserve exact same person's identity, head angle, hairstyle, silhouette, ears, nose, cheekbones, jawline, lighting, skin texture, face proportions, camera framing and head placement. Change ONLY facial expression as specified, like one frame of natural live acting. Keep pure flat #00ff00 green background, no neck/body, no text or new objects. Keep head pixel aligned to reference as closely as possible, same size and positioning on square canvas. No beautification, no cartoon face, no exaggerated meme distortion. Warm natural small smile, lips gently closed or very slightly parted, mouth corners lifted, cheeks subtly raised, eyes visibly smiling. Friendly confident amusement, subtle and adult."
+  },
+  {
+    "name": "puzzled",
+    "prompt": "Edit this reference photographic head. Preserve exact same person's identity, head angle, hairstyle, silhouette, ears, nose, cheekbones, jawline, lighting, skin texture, face proportions, camera framing and head placement. Change ONLY facial expression as specified, like one frame of natural live acting. Keep pure flat #00ff00 green background, no neck/body, no text or new objects. Keep head pixel aligned to reference as closely as possible, same size and positioning on square canvas. No beautification, no cartoon face, no exaggerated meme distortion. Mildly puzzled and a little defeated: eyebrows slightly pulled up at inner ends and furrowed, eyes questioning, lips gently pressed with a very subtle asymmetric downturn. A relatable 'I am stuck, what is this?' face. Do not add tears."
+  },
+  {
+    "name": "surprise",
+    "prompt": "Edit this reference photographic head. Preserve exact same person's identity, head angle, hairstyle, silhouette, ears, nose, cheekbones, jawline, lighting, skin texture, face proportions, camera framing and head placement. Change ONLY facial expression as specified, like one frame of natural live acting. Keep pure flat #00ff00 green background, no neck/body, no text or new objects. Keep head pixel aligned to reference as closely as possible, same size and positioning on square canvas. No beautification, no cartoon face, no exaggerated meme distortion. Natural pleasant surprise: eyes open slightly wider, eyebrows lifted, lips gently parted in a small 'oh!'. Engaged and interested, not scared or huge mouth."
+  },
+  {
+    "name": "blink",
+    "prompt": "Edit this reference photographic head. Preserve exact same person's identity, head angle, hairstyle, silhouette, ears, nose, cheekbones, jawline, lighting, skin texture, face proportions, camera framing and head placement. Change ONLY facial expression as specified, like one frame of natural live acting. Keep pure flat #00ff00 green background, no neck/body, no text or new objects. Keep head pixel aligned to reference as closely as possible, same size and positioning on square canvas. No beautification, no cartoon face, no exaggerated meme distortion. A single mid-blink frame: both eyelids fully but gently closed. Keep the mouth, eyebrows, cheeks and all other details exactly unchanged from reference. Not sleeping or squinting; normal eyelid anatomy."
+  }
+]

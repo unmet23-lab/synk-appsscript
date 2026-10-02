@@ -1,0 +1,85 @@
+{
+  "request": {
+    "seed": 922,
+    "model": "ssfm-v30",
+    "voice_id": "tc_608820eb05b71bc949df989d",
+    "language": "kor",
+    "text": "출석 앱을 만들면? 부모님께 등하원 알림도 가고, 선생님들도 편해지잖아요!",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.22,
+      "target_lufs": -16
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "normal",
+      "emotion_intensity": 1.05
+    }
+  },
+  "audio_format": "wav",
+  "audio_duration": 3.850485436893204,
+  "words": [
+    {
+      "text": "출석",
+      "start": 0.1174757281553398,
+      "end": 0.41262135922330095
+    },
+    {
+      "text": "앱을",
+      "start": 0.47184466019417476,
+      "end": 0.6048543689320388
+    },
+    {
+      "text": "만들면?",
+      "start": 0.6485436893203884,
+      "end": 0.9436893203883495
+    },
+    {
+      "text": "부모님께",
+      "start": 1.1203883495145632,
+      "end": 1.5631067961165046
+    },
+    {
+      "text": "등하원",
+      "start": 1.6368932038834951,
+      "end": 1.9310679611650483
+    },
+    {
+      "text": "알림도",
+      "start": 1.9757281553398058,
+      "end": 2.211650485436893
+    },
+    {
+      "text": "가고,",
+      "start": 2.25631067961165,
+      "end": 2.4184466019417474
+    },
+    {
+      "text": "선생님들도",
+      "start": 2.6563106796116505,
+      "end": 3.142718446601942
+    },
+    {
+      "text": "편해지잖아요!",
+      "start": 3.187378640776699,
+      "end": 3.850485436893204
+    }
+  ],
+  "characters": null,
+  "postProductionEdit": {
+    "reason": "사용자가 만들면? 뒤 붕 뜨는 간격과 주변 템포 수정을 요청함",
+    "removeSilence": [
+      [
+        1.06,
+        1.5
+      ],
+      [
+        3.075,
+        3.3
+      ]
+    ],
+    "tempo": 1.03,
+    "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\yuhobuilds_1편_쇼츠수정_20260922\\audio\\narration-05.wav",
+    "originalDuration": 4.631
+  }
+}

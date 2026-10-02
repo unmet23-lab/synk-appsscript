@@ -1,0 +1,27 @@
+{
+  "date": "2026-09-22",
+  "master": "SHIFT_과정1편_내레이션.mp4",
+  "masterSha256": "e9c28e6449339eeb6367f680d2b57e80985aabad834c5cc70a51bf9f2dd14dd6",
+  "fullDecode": "passed; ffmpeg reported no decode errors",
+  "visualReview": "Seven scene frames, final frame and poster inspected; Scene03 source and crop corrected before final render",
+  "audio": {
+    "voice": "Typecast 하나 / ssfm-v30 / happy / intensity 1.5",
+    "integratedLufs": -16.9,
+    "truePeakDbfs": -4.5,
+    "bgm": false,
+    "subjectiveListening": "Not performed by agent; audio input unavailable. User voice and pronunciation review pending."
+  },
+  "browserPreview": {
+    "url": "http://127.0.0.1:4372/preview.html",
+    "source": "preview.webm",
+    "width": 720,
+    "height": 1280,
+    "observedPlayingAtSeconds": 11.764575,
+    "observedEndedAtSeconds": 34.632,
+    "ended": true,
+    "readyState": 4,
+    "mediaError": null,
+    "note": "WebM preview completed in the in-app browser. MP4 preview had crashed a tab; the upload master passed full local decode."
+  },
+  "platformPublications": 0
+}

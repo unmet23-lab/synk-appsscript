@@ -1,0 +1,12 @@
+{
+ "input_i": "-15.75",
+ "input_tp": "-1.56",
+ "input_lra": "3.30",
+ "input_thresh": "-26.87",
+ "output_i": "-16.36",
+ "output_tp": "-1.65",
+ "output_lra": "3.00",
+ "output_thresh": "-27.36",
+ "normalization_type": "dynamic",
+ "target_offset": "0.36"
+}

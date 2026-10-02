@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "jobId": "f4b942f7-df72-4757-a0a4-a01e51fbc23d",
+  "narration": "빈칸을 연결해 자기 문장을 쓰세요. 대상과 활동, 결과가 같은 상황을 설명하는지 확인합니다.",
+  "narrationSha256": "3636e69afd6b7612d20dcd849736946b0b29bbd197b4870363b261995da8c4b0",
+  "voice": {
+    "provider": "Higgsfield",
+    "model": "qwen_audio_tts",
+    "preset": "Kevin",
+    "voiceId": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "synthetic": true,
+    "imitatesUser": false
+  },
+  "file": "voice-3636e69afd6b7612.wav",
+  "duration": 7.6,
+  "sha256": "f64f5a1924ce0b3ff314de2c83590919dba84b2dd1be8bba740fa9fe7a91c700",
+  "humanListening": false,
+  "fullDecode": true
+}

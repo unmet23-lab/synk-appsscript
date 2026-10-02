@@ -1,0 +1,2046 @@
+<!DOCTYPE html><!-- Last Published: Fri Sep 04 2026 22:11:03 GMT+0000 (Coordinated Universal Time) --><html data-wf-domain="www.resemble.ai" data-wf-page="69df5cc82a466943498e66a2" data-wf-site="69bc3de63d285e297507b3ef" lang="en" data-wf-collection="69df5cc82a466943498e666d" data-wf-item-slug="chatterbox-multilingual-v3-tts-with-embedded-watermarking-for-25-languages"><head><meta charset="utf-8"/><link href="https://cdn.prod.website-files.com" rel="preconnect" crossorigin="anonymous"/><title>Chatterbox Multilingual v3: TTS with embedded watermarking for 21 languages and 4 dialects</title><meta content="The release we are sharing today is Chatterbox Multilingual v3, the next general-purpose multilingual model in the Chatterbox family. v3 continues the Chatterbox tradition of MIT licensing, keeps the same 0.5B Llama backbone as Multilingual v2, and ships meaningful improvements in speaker similarity and hallucination rate. Alongside v3 we are releasing a Single-Language Pack of six smaller, language-specific models for the deployments where one general model is leaving quality on the table." name="description"/><meta content="Chatterbox Multilingual v3: TTS with embedded watermarking for 21 languages and 4 dialects" property="og:title"/><meta content="The release we are sharing today is Chatterbox Multilingual v3, the next general-purpose multilingual model in the Chatterbox family. v3 continues the Chatterbox tradition of MIT licensing, keeps the same 0.5B Llama backbone as Multilingual v2, and ships meaningful improvements in speaker similarity and hallucination rate. Alongside v3 we are releasing a Single-Language Pack of six smaller, language-specific models for the deployments where one general model is leaving quality on the table." property="og:description"/><meta content="https://cdn.prod.website-files.com/69d6774372a7b569dc02a034/6a4bcaebafec0b347a61066c_6a4bcaea3a79b7f12abab340_chatterbox-multilingual-v3-tts-with-embedded-watermarking-for-25-langu-og.jpeg" property="og:image"/><meta content="Chatterbox Multilingual v3: TTS with embedded watermarking for 21 languages and 4 dialects" name="twitter:title"/><meta content="The release we are sharing today is Chatterbox Multilingual v3, the next general-purpose multilingual model in the Chatterbox family. v3 continues the Chatterbox tradition of MIT licensing, keeps the same 0.5B Llama backbone as Multilingual v2, and ships meaningful improvements in speaker similarity and hallucination rate. Alongside v3 we are releasing a Single-Language Pack of six smaller, language-specific models for the deployments where one general model is leaving quality on the table." name="twitter:description"/><meta content="https://cdn.prod.website-files.com/69d6774372a7b569dc02a034/6a4bcaebafec0b347a61066c_6a4bcaea3a79b7f12abab340_chatterbox-multilingual-v3-tts-with-embedded-watermarking-for-25-langu-og.jpeg" name="twitter:image"/><meta property="og:type" content="website"/><meta content="summary_large_image" name="twitter:card"/><meta content="width=device-width, initial-scale=1" name="viewport"/><link href="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/css/resemble-ai-marketing-site.webflow.shared.fec4702c5.min.css" rel="stylesheet" type="text/css" integrity="sha384-/sRwLFBQ4nF0b0dxcrBeaw0co+IUExnZcTe3nSPrL9Sow1BV1UzI3mIDuawxHq4E" crossorigin="anonymous"/><link href="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/css/resemble-ai-marketing-site.webflow.69df5cc82a466943498e66a2.3353e386e.opt.min.css" rel="stylesheet" type="text/css" integrity="sha384-M1PjhuHvwgkqf6DAShBO4oS+z728C6noKf4vNUEv5ygcO5sdpL2nplZVe7LZ1bNu" crossorigin="anonymous"/><script type="text/javascript">!function(o,c){var n=c.documentElement,t=" w-mod-";n.className+=t+"js",("ontouchstart"in o||o.DocumentTouch&&c instanceof DocumentTouch)&&(n.className+=t+"touch")}(window,document);</script><link href="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69c2960ee70ed6776049e2fe_favicon.jpg" rel="icon" type="image/png" sizes="32x32" media="(prefers-color-scheme: light)"/><link href="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69f90eac2f7e51c0948be634_resemble%20logo%20on%20green%20stacked%20for%20small.png" rel="icon" type="image/png" sizes="32x32" media="(prefers-color-scheme: dark)"/><link href="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69f9281cd4ec730e8ac7d678_resemble%20logo%20for%20webclip.png" rel="apple-touch-icon" sizes="180x180"/><link href="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69f9281c44e5a5a3607079b6_resemble%20logo%20for%20webclip.png" rel="icon" type="image/png" sizes="192x192"/><link href="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69f9281c2c5c772bf25ee8c3_resemble%20logo%20for%20webclip.png" rel="icon" type="image/png" sizes="512x512"/><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Chatterbox Multilingual v3: TTS with embedded watermarking for 25 languages",
+  "description": "Chatterbox Multilingual v3 open source ships with PerTh watermarking embedded by default on every self-hosted audio output, across every supported language. Provenance and the ability to automatically watermark outputs is a major component of this release as regulation like the EU AI Act Article 50 loom, and as voice AI and text-to-speech models strive to be more trustworthy and verifiable at generation time.",
+  "url": "/resources/chatterbox-multilingual-v3-tts-with-embedded-watermarking-for-25-languages",
+  "datePublished": "2026-06-10",
+  "dateModified": "2026-07-08T22:10:56.320Z",
+  "inLanguage": "en",
+  "image": {
+    "@type": "ImageObject",
+    "url": "https://cdn.prod.website-files.com/69d6774372a7b569dc02a034/6a293191600689d2de36a83e_6a29318f49510fcb45280c7d_6a10bee21cad632db909d93c_Resemble%252520AI%252520Chatterbox%252520Multilingual-1%252520-%252520previ.avif",
+    "caption": ""
+  },
+  "author": {
+    "@type": "Organization",
+    "name": "Resemble AI"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Resemble AI",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69c27862161f0ac544733a65_resemble-ai-logo.svg"
+    }
+  },
+  "articleSection": "Research",
+  "keywords": "Research"
+}
+</script><!-- Consent Pro script -->
+<script src="https://api.consentpro.com/v2/cdn/runtime/69bc3de63d285e297507b3ef.js" type="text/javascript" finsweet="consentpro" siteid="69bc3de63d285e297507b3ef" async></script>
+
+<link rel="preload" as="font" type="font/woff2" href="https://cdn.resemble.ai/fonts/Inter.woff2" crossorigin />
+
+<!-- Load custom fonts from Resemble CDN, override Webflow's -->
+<style>
+  @font-face {
+    font-family: 'Geist Mono';
+    src: url('https://cdn.resemble.ai/fonts/GeistMono.woff2') format('woff2');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Inter';
+    src: url('https://cdn.resemble.ai/fonts/Inter.woff2') format('woff2');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'FontAwesome';
+    src: url('https://cdn.resemble.ai/fonts/fa-thin-100.woff2') format('woff2');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'FontAwesome';
+    src: url('https://cdn.resemble.ai/fonts/fa-light-300.woff2') format('woff2');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+  }
+</style>
+
+<script>
+  (function () {
+    var enableRedirect = location.hostname.endsWith('resemble.ai');
+
+    if (!enableRedirect) return;
+
+    // Font families to redirect away from Webflow's CDN
+    const FAMILIES_TO_OVERRIDE = ['FontAwesome', 'Geist Mono', 'Inter'];
+
+    for (const sheet of document.styleSheets) {
+      try {
+        const rules = sheet.cssRules || sheet.rules;
+        if (!rules) continue;
+        for (let i = rules.length - 1; i >= 0; i--) {
+          const rule = rules[i];
+          if (rule.type === CSSRule.FONT_FACE_RULE) {
+            const src = rule.style.getPropertyValue('src');
+            const family = rule.style.getPropertyValue('font-family');
+            const matchesFamily = FAMILIES_TO_OVERRIDE.some((f) => family.includes(f));
+            if (matchesFamily && src.includes('website-files.com')) {
+              sheet.deleteRule(i);
+            }
+          }
+        }
+      } catch (e) {
+        // Cross-origin stylesheets will throw; ignore
+      }
+    }
+  })();
+</script>
+
+<link rel="preconnect" href="https://cdn.resemble.ai" crossorigin />
+<link rel="preconnect" href="https://d3e54v103j8qbb.cloudfront.net" crossorigin />
+<!-- HubSpot assets load lazily on scroll, so a preconnect here wastes a connection
+     slot during startup; dns-prefetch is enough. Lighthouse also flags >4 preconnects. -->
+<link rel="dns-prefetch" href="https://48752163.fs1.hubspotusercontent-na1.net" />
+<link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+<!-- Data Layer initialization -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  dataLayer.push({
+    platform: 'webflow',
+    siteVersion: '2.0',
+  });
+</script>
+
+<!-- Google Tag Manager -->
+<script>
+  (function (w, d, s, l, i) {
+    w[l] = w[l] || [];
+    w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+    var f = d.getElementsByTagName(s)[0],
+      j = d.createElement(s);
+    j.async = true;
+    j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i;
+    f.parentNode.insertBefore(j, f);
+  })(window, document, 'script', 'dataLayer', 'GTM-KTGRWZW');
+</script>
+<!-- End Google Tag Manager -->
+
+<script>
+  // Load BugHerd only on staging (*.webflow.io) or when ?bugherd=1 is used.
+  // The param is latched in sessionStorage so it persists across navigation.
+  (function () {
+    var params = new URLSearchParams(location.search);
+    if (params.get('bugherd') === '1') {
+      sessionStorage.setItem('bugherd', '1');
+    }
+
+    var enableBugherd = location.hostname.endsWith('.webflow.io') || sessionStorage.getItem('bugherd') === '1';
+
+    if (!enableBugherd) return;
+
+    var isProduction = location.hostname === 'www.resemble.ai' || location.hostname === 'resemble.ai';
+    var apiKey = isProduction ? 'r5wxaaezt5v3zytejp5dlg' : 'xxxthknfplhxxyyeu0t08a';
+
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://www.bugherd.com/sidebarv2.js?apikey=' + apiKey;
+    script.async = true;
+    document.head.appendChild(script);
+  })();
+</script>
+
+<!-- PostHog (installed via API 2026-07-24; source of truth: gtm-data-architecture/docs/posthog-marketing-snippet-v1.html) -->
+<script>
+  (function () {
+    // ---- Guard: only run on production resemble.ai (mirrors GTM hostname guard;
+    //      keeps Webflow staging + scraper clones out of the data) ----
+    if (!location.hostname.endsWith('resemble.ai')) return;
+
+    // ---- Identity bridge: share the anonymous ID with Segment (.resemble.ai cookie).
+    //      App events arrive in PostHog keyed by Segment's anonymousId; seeding
+    //      posthog's distinct_id from the same cookie makes marketing->app journeys
+    //      one person. If no cookie exists yet, mint one HERE so the app inherits it. ----
+    function readCookie(name) {
+      var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+      return m ? decodeURIComponent(m[1]) : null;
+    }
+    function uuidv4() {
+      return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, function (c) {
+        return (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16);
+      });
+    }
+    function writeAjsCookie(v) {
+      document.cookie =
+        'ajs_anonymous_id=' + encodeURIComponent(v) +
+        '; domain=.resemble.ai; path=/; max-age=31536000; SameSite=Lax; Secure';
+    }
+    var anonId = readCookie('ajs_anonymous_id');
+    if (anonId) anonId = anonId.replace(/^"|"$/g, ''); // older analytics.js wrote the id JSON-quoted
+    if (!anonId) {
+      // v1.3: no cookie write before consent — the id lives in-memory (bootstrap)
+      // and the cookie is minted in the opt-in branch below.
+      anonId = uuidv4();
+    }
+
+    // ---- Official posthog-js snippet loader (served via our reverse proxy) ----
+    !(function (t, e) {
+      var o, n, p, r;
+      e.__SV ||
+        ((window.posthog = e),
+        (e._i = []),
+        (e.init = function (i, s, a) {
+          function g(t, e) {
+            var o = e.split('.');
+            2 == o.length && ((t = t[o[0]]), (e = o[1])),
+              (t[e] = function () {
+                t.push([e].concat(Array.prototype.slice.call(arguments, 0)));
+              });
+          }
+          ((p = t.createElement('script')).type = 'text/javascript'),
+            (p.crossOrigin = 'anonymous'),
+            (p.async = !0),
+            (p.src = s.api_host + '/static/array.js'),
+            (r = t.getElementsByTagName('script')[0]).parentNode.insertBefore(p, r);
+          var u = e;
+          for (
+            void 0 !== a ? (u = e[a] = []) : (a = 'posthog'),
+              u.people = u.people || [],
+              u.toString = function (t) {
+                var e = 'posthog';
+                return 'posthog' !== a && (e += '.' + a), t || (e += ' (stub)'), e;
+              },
+              u.people.toString = function () {
+                return u.toString(1) + '.people (stub)';
+              },
+              o = 'init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey canRenderSurveyAsync identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug getPageViewId captureTraceFeedback captureTraceMetric'.split(
+                ' '
+              ),
+              n = 0;
+            n < o.length;
+            n++
+          )
+            g(u, o[n]);
+          e._i.push([i, s, a]);
+        }),
+        (e.__SV = 1));
+    })(document, window.posthog || []);
+
+    posthog.init('phc_v2TJXNG02gPXuDr7LAET9wnZJ3yJK8Q7Q5N7WQnqLyz', {
+      api_host: 'https://ph.resemble.ai',
+      ui_host: 'https://us.posthog.com',
+      defaults: '2026-06-25',
+
+      // Consent: nothing captured until a consent state is known.
+      // Rejectors are counted via privacy-safe server-side daily hash
+      // (no cookies, no session, not reversible). Requires the project
+      // setting "cookieless" to be enabled (see rollout step 2).
+      cookieless_mode: 'on_reject',
+
+      // Marketing traffic stays anonymous (~4x cheaper) until the app identifies.
+      person_profiles: 'identified_only',
+
+      // Identity bridge --------------------------------------------------
+      bootstrap: { distinctID: anonId },
+      // v1.2: reset() (fired internally on the cookieless->opted-in transition)
+      // mints its new id via get_device_id, NOT bootstrap — overriding it keeps
+      // the ajs id through reject->accept flows. Same hook PostHog's own Segment
+      // integration uses.
+      get_device_id: function (uuid) { return readCookie('ajs_anonymous_id') || uuid; },
+
+      // Capture ----------------------------------------------------------
+      autocapture: true,
+      capture_pageleave: true, // bounce rate / time-on-page accuracy
+      capture_performance: { web_vitals: true },
+
+      // Session replay (project-side controls add sampling + billing cap)
+      session_recording: {
+        maskAllInputs: true,
+        maskInputOptions: { password: true, email: true },
+      },
+    });
+
+    // ---- ConsentPro wiring ---------------------------------------------
+    // ConsentPro pushes dataLayer events: 'analytics-activated' fires on load
+    // in granted regions AND on user Accept; on Reject it writes the
+    // fs-consent cookie with choices.analytics=false and pushes 'consent-updated'.
+    function applyConsent(eventName) {
+      if (eventName === 'analytics-activated') {
+        posthog.opt_in_capturing();
+        // v1.2/v1.3: keep the shared ajs id and posthog's distinct_id converged,
+        // and mint the ajs cookie only now that analytics consent exists.
+        // Pre-load (stub) fallback: bootstrap value IS the eventual distinct_id.
+        var loaded = !!(posthog.__loaded && posthog.get_distinct_id);
+        var pid = loaded ? posthog.get_distinct_id() : anonId;
+        var ajsNow = readCookie('ajs_anonymous_id');
+        if (!ajsNow && pid) {
+          writeAjsCookie(pid);
+        } else if (ajsNow && loaded && pid !== ajsNow) {
+          // re-key without touching person profiles (register = super-property write)
+          posthog.register({ distinct_id: ajsNow, $device_id: ajsNow });
+        }
+        return;
+      }
+      if (eventName === 'consent-updated') {
+        try {
+          var fs = readCookie('fs-consent');
+          if (fs && JSON.parse(fs).choices.analytics === false) {
+            posthog.opt_out_capturing(); // -> cookieless counting kicks in
+          }
+        } catch (e) {}
+      }
+    }
+    // Process events already pushed before this script ran (ConsentPro loads first)
+    window.dataLayer = window.dataLayer || [];
+    for (var i = 0; i < window.dataLayer.length; i++) {
+      if (window.dataLayer[i] && window.dataLayer[i].event) applyConsent(window.dataLayer[i].event);
+    }
+    // Hook future pushes. NOTE: when gtm.js loads it REPLACES dataLayer.push,
+    // discarding this wrapper — so this hook only covers (a) events before GTM
+    // loads and (b) ad-blocked visitors where GTM never loads. Post-GTM consent
+    // changes (user clicking Accept/Reject on the banner) are covered by the
+    // companion GTM tag "PostHog Consent Bridge" (see install notes below).
+    var origPush = window.dataLayer.push;
+    window.dataLayer.push = function () {
+      for (var j = 0; j < arguments.length; j++) {
+        if (arguments[j] && arguments[j].event) applyConsent(arguments[j].event);
+      }
+      return origPush.apply(window.dataLayer, arguments);
+    };
+    // Expose for the GTM bridge tag
+    window.__phApplyConsent = applyConsent;
+
+    // ---- HubSpot form submissions -> PostHog (mirrors the GTM dataLayer listener) ----
+    window.addEventListener('message', function (event) {
+      if (event.origin === 'https://forms.hsforms.com' && event.data && event.data.accepted === true && event.data.formGuid) {
+        posthog.capture('hubspot_form_submitted', { form_id: event.data.formGuid, page: location.pathname });
+      }
+    });
+  })();
+</script>
+<style>
+  .blog-main-content .blog-cta-wrapper a.button {
+    color: white;
+  }
+  .side-nav .active:before {
+    content: '';
+    border-radius: 1px;
+    display: block;
+    height: 6px;
+    width: 6px;
+    background-color: var(--teal-400);
+    position: absolute;
+    top: 12px;
+    left: 0;
+    margin-top: -3px;
+  }
+  .clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  #post-main .card {
+    max-width: none;
+    min-height: 0;
+  }
+  #post-main .blog-main-content ol,
+  #post-main .blog-main-content ul {
+    max-width: 720px;
+    overflow: visible;
+  }
+
+  #post-main .blog-main-content h2 + ol,
+  #post-main .blog-main-content h2 + ul,
+  #post-main .blog-main-content h3 + ol,
+  #post-main .blog-main-content h3 + ul {
+    margin-top: 0;
+  }
+</style></head><body class="body"><header data-wf--nav-menu--variant="base" class="header"><div data-animation="default" data-collapse="medium" data-duration="0" data-easing="ease" data-easing2="ease" role="banner" class="navbar w-nav"><a href="/" class="header-branding mobile w-nav-brand"><img src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69c27862161f0ac544733a65_resemble-ai-logo.svg" loading="eager" width="231" height="38" alt="" class="navbar-logo"/><img src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69d6144be16e150759697b2d_resemble-ai-logo-white.svg" loading="lazy" alt="" class="navbar-logo-white"/></a><nav role="navigation" class="nav-menu-wrapper w-nav-menu"><a ro="" data-track="logo-click" href="/" class="header-branding desktop w-nav-brand"><img src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69c27862161f0ac544733a65_resemble-ai-logo.svg" loading="eager" width="231" height="38" alt="Resemble AI" class="navbar-logo"/><img src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69d6144be16e150759697b2d_resemble-ai-logo-white.svg" loading="lazy" alt="" class="navbar-logo-white"/></a><div class="nav"><div class="location-square"></div><div data-hover="true" data-delay="160" class="navigation-dropdown w-dropdown"><div class="navigation-dropdown-toggle w-dropdown-toggle"><div class="navigation-dropdown-link">Products</div></div><nav class="navigation-mega-dropdown w-dropdown-list"><div class="mega-menu pt-40-desktop"><div class="mega-menu-wrapper"><div class="nm2-products-left"><div class="mega-menu-header"><div class="mega-menu-header-wrapper"><div class="mega-menu-header-content"><div class="mega-menu-header-content-heading">Real-time deepfake detection</div><a href="/products" class="mega-menu-link-block text-arrow-link w-inline-block"><div class="text-arrow-link_copy text-lg">Product overview</div><img width="18" height="18" alt="" loading="lazy" src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69c3b188470ca9955d46892f_arrow-right.svg"/></a></div></div></div><div class="nm2-columns"><div class="mega-menu_links-column"><div class="mega-menu_links-heading">APIs</div><div class="mega-menu_links nm2-links"><a href="/products/detect" class="mega-menu-link nm2-item w-inline-block"><div class="nm2-item-title">Deepfake detection</div><div class="category-description nm2-item-desc">Detect synthetic audio, video, and images</div></a><a href="/products/intelligence" class="mega-menu-link nm2-item w-inline-block"><div class="nm2-item-title">Intelligence</div><div class="category-description nm2-item-desc">Get structured insights and a plain-language result</div></a><a href="/products/watermarker" class="mega-menu-link nm2-item w-inline-block"><div class="nm2-item-title">Watermarking</div><div class="category-description nm2-item-desc">Provenance and C2PA compliance</div></a><a href="/products/identity" class="mega-menu-link nm2-item w-inline-block"><div class="nm2-item-title">Identity registration</div><div class="category-description nm2-item-desc">Enroll and authenticate a voice</div></a></div></div><div class="mega-menu_links-column"><div class="mega-menu_links-heading">READY-TO-USE</div><div class="mega-menu_links nm2-links"><a href="/products/meetings" class="mega-menu-link nm2-item w-inline-block"><div class="nm2-item-title">Meetings protection</div><div class="category-description nm2-item-desc">Detect synthetic voices and faces.</div></a><a href="/products/deepfake-detection-chrome-extension" class="mega-menu-link nm2-item w-inline-block"><div class="nm2-item-title">Deepfake Detection Chrome extension</div><div class="category-description nm2-item-desc">Detect deepfakes directly in your browser</div></a></div></div><div class="mega-menu_links-column"><div class="mega-menu_links-heading">INTEGRATIONS</div><div class="mega-menu_links nm2-links"><a href="/integrations-and-environments" class="mega-menu-link small lg-shrink">Integrations and environments</a></div></div></div></div><div class="promo-card no-stretch"><div class="promo-card-header">FEATURED PARTNER</div><div id="w-node-cf5bf883-ce56-8323-c672-8c419c707462-8cf7fcd7" class="promo-content short"><div class="category-links"><div class="promo-card-content"><div class="mega-menu-link">Microsoft Teams</div><div class="category-description promo-description">Now Microsoft Teams users can get Resemble detection in Teams in just one click.</div></div><a href="/products/meetings" class="button-mini w-button">LEARN MORE →</a></div></div><img src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/6a84088ac4f397d6e14aae97_nm2-products-promo.avif" loading="lazy" width="549" height="Auto" alt="" id="w-node-cf5bf883-ce56-8323-c672-8c419c70746b-8cf7fcd7" class="promo-image"/></div></div></div></nav></div><div data-hover="true" data-delay="0" class="navigation-dropdown w-dropdown"><div class="navigation-dropdown-toggle w-dropdown-toggle"><div class="navigation-dropdown-link">Research</div></div><nav class="navigation-mega-dropdown w-dropdown-list"><div class="mega-menu pt-40-desktop"><div class="mega-menu-wrapper"><div class="mega-menu_links-wrapper"><div class="mega-menu_links-column"><div class="mega-menu_links-heading">LATEST MODELS</div><div class="mega-menu_links nm2-links"><a href="/learn/models/detect-world" class="mega-menu-link nm2-item w-inline-block"><div class="nm2-item-title">DETECT-World</div><div class="category-description nm2-item-desc">The first world model architecture for detection</div></a><a href="/learn/models/perth-multimodal" class="mega-menu-link nm2-item w-inline-block"><div class="nm2-item-title">PerTh Multimodal</div><div class="category-description nm2-item-desc">Imperceptible, multimodal watermarks</div></a><a href="/products/intelligence" class="mega-menu-link nm2-item w-inline-block"><div class="nm2-item-title">Intelligence</div><div class="category-description nm2-item-desc">Human-readable explainability for deterministic results</div></a><a href="/products/identity" class="mega-menu-link nm2-item w-inline-block"><div class="nm2-item-title">Identity</div><div class="category-description nm2-item-desc">Enroll and detect voice and likeness for identity matching</div></a><a href="/learn/models" class="mega-menu-link nm2-item">Models overview</a></div></div><div class="mega-menu_links-column"><div class="mega-menu_links-heading">FINDINGS</div><div class="mega-menu_links nm2-links"><a href="/benchmarks" class="mega-menu-link small">Benchmarks</a><a href="/resources/research" class="mega-menu-link small">Research articles</a></div></div></div><div class="promo-card no-stretch"><div class="promo-content short"><div class="promo-card-header">LATEST MODEL</div><div class="category-links"><div class="promo-card-content"><div class="mega-menu-link">DETECT-World</div><div class="category-description promo-description">The first world model for deepfake detection offering both artifact- and physics-based detection.</div></div><a href="/learn/models/detect-world" class="button-mini">VIEW MODEL →</a></div></div><img src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/6a84088b25c9fa82b64909ba_nm2-research-promo-p-3200.avif" loading="lazy" width="654" alt="DETECT-World" class="promo-image"/></div></div></div></nav></div><div data-hover="true" data-delay="160" class="navigation-dropdown w-dropdown"><div class="navigation-dropdown-toggle w-dropdown-toggle"><div class="navigation-dropdown-link">Solutions</div></div><nav class="navigation-mega-dropdown w-dropdown-list"><div class="mega-menu pt-40-desktop"><div class="mega-menu-wrapper"><div class="mega-menu_links-wrapper"><div class="mega-menu_links-column"><div class="mega-menu_links-heading">USE CASE</div><div class="mega-menu_links"><a href="/solutions/voice-agents" class="mega-menu-link small">Voice agents</a><a href="/solutions/dispute-claim-verification" class="mega-menu-link small">Dispute &amp; claim verification</a><a href="/solutions/executive-impersonation" class="mega-menu-link small">Executive impersonation</a><a href="/solutions/media-watermarking" class="mega-menu-link small">Media watermarking</a><a href="/solutions/contact-center-fraud" class="mega-menu-link small">Contact center fraud</a><a href="/solutions/identity-verification-and-kyc" class="mega-menu-link small">Identity verification &amp; KYC</a></div></div><div class="mega-menu_links-column"><div class="mega-menu_links-heading">INDUSTRY</div><div class="mega-menu_links"><a href="/solutions/telco" class="mega-menu-link small">Telco</a><a href="/solutions/marketplace" class="mega-menu-link small">Marketplace</a><a href="/solutions/finance" class="mega-menu-link small">Finance</a><a href="/solutions/media-and-entertainment" class="mega-menu-link small">Media &amp; entertainment</a><a href="/solutions/healthtech" class="mega-menu-link small">HealthTech</a><a href="/solutions/public-sector" class="mega-menu-link small">Public sector</a></div></div></div><div class="promo-card no-stretch"><div class="promo-card-header">ON DEMAND WEBINAR</div><div id="w-node-cf5bf883-ce56-8323-c672-8c419c707514-8cf7fcd7" class="promo-content short"><div class="category-links"><div class="promo-card-content"><div class="mega-menu-link">Deepfake Fraud at Work</div><div class="category-description promo-description">62% of orgs experienced a deepfake attack in the last 12 months. Learn what these attacks look like and what stops them.</div></div><a href="https://youtu.be/m-Vsv_Z2F-Q" class="button-mini w-button">VIEW ON DEMAND →</a></div></div><img src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/6a84088bff6d80e23921ccfc_nm2-solutions-promo.avif" loading="lazy" width="702" id="w-node-cf5bf883-ce56-8323-c672-8c419c70751d-8cf7fcd7" alt="" class="promo-image"/></div></div></div></nav></div><div data-hover="true" data-delay="160" class="navigation-dropdown w-dropdown"><div class="navigation-dropdown-toggle w-dropdown-toggle"><div class="navigation-dropdown-link">Learn</div></div><nav class="navigation-mega-dropdown w-dropdown-list"><div class="mega-menu pt-40-desktop"><div class="mega-menu-wrapper"><div class="mega-menu_links-wrapper"><div class="mega-menu_links-column"><div class="mega-menu_links-heading">MONITOR</div><div class="mega-menu_links"><a href="/learn/deepfake-incident-database" class="mega-menu-link small">Deepfake Incident database</a><a href="/learn/laws-and-regulations" class="mega-menu-link small">Laws &amp; regulations</a><a href="/learn/attack-vectors" class="mega-menu-link small">Attack vectors</a></div></div><div class="mega-menu_links-column"><div class="mega-menu_links-heading">RESOURCES</div><div class="mega-menu_links"><a href="/resources" class="mega-menu-link small">Blog</a><a href="/resources/case-studies" class="mega-menu-link small">Case studies</a><a href="https://trust.resemble.ai/" target="_blank" class="mega-menu-link small">Trust center</a></div></div></div><div class="promo-card no-stretch"><div id="w-node-cf5bf883-ce56-8323-c672-8c419c70754b-8cf7fcd7" class="promo-card-header">NOW AVAILABLE</div><div id="w-node-cf5bf883-ce56-8323-c672-8c419c70754d-8cf7fcd7" class="promo-content short"><div class="category-links"><div class="promo-card-content"><div class="mega-menu-link">2026 Deepfake Threat Report Midyear Review</div><div class="category-description promo-description">A breakdown of global incidents, their impact, and the implications of the growing AI deepfake crisis</div></div><a href="https://www.resemble.ai/resources/h1-2026-deepfake-threat-report" class="button-mini w-button">DOWNLOAD →</a></div></div><img src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/6a84099a254f3617d2a5adf3_2026%20DF%20Threat%20Report%20Midyear.avif" loading="lazy" width="717" id="w-node-cf5bf883-ce56-8323-c672-8c419c707556-8cf7fcd7" alt="" class="promo-image"/></div></div></div></nav></div><div data-hover="true" data-delay="160" class="navigation-dropdown w-dropdown"><div class="navigation-dropdown-toggle w-dropdown-toggle"><div class="navigation-dropdown-link">Developers</div></div><nav class="navigation-mega-dropdown w-dropdown-list"><div class="mega-menu pt-40-desktop"><div class="mega-menu-wrapper"><div class="mega-menu_links-wrapper"><div class="mega-menu_links-column"><div class="mega-menu_links"><a href="https://docs.resemble.ai/welcome" class="mega-menu-link small w-inline-block"><div class="w-layout-hflex gap-4 align-center"><div class="bold">Start here</div><img src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69e631876eebafc33ccbdc35_cfebcb2952099128e68e9c8416a1ebb7_teal-sparkles.svg" loading="lazy" width="18" height="18" alt=""/></div></a><a href="https://docs.resemble.ai/libraries" target="_blank" class="mega-menu-link small">SDKs</a><a href="https://docs.resemble.ai/welcome" target="_blank" class="mega-menu-link small">Docs</a><a href="https://discord.com/invite/ktZMcfH4ms" target="_blank" class="mega-menu-link small">Discord</a><a href="#" class="mega-menu-link small hidden">Build an agent</a><a href="https://status.resemble.ai/" target="_blank" class="mega-menu-link small">Status</a><a href="/changelog" class="mega-menu-link small">Changelog</a><a href="/start/builders-grant-startup-program" class="mega-menu-link small">Builder’s Grant</a><a href="#" class="mega-menu-link small hidden">Changelog</a></div></div></div><div class="promo-card no-header long no-stretch pr-0"><div id="w-node-cf5bf883-ce56-8323-c672-8c419c707583-8cf7fcd7" class="promo-content short"><div class="category-links"><div class="promo-card-content"><div class="mega-menu-link promo-card-header-small">Get an API key</div><div class="category-description promo-description">Start free. Put real-time detection in your workflow or app now.</div></div><a href="https://app.resemble.ai/" class="button-mini w-button">START FREE →</a></div></div><img src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/6a840976015c2d01456f8cde_nm2-developers-promo.avif" loading="lazy" width="558" id="w-node-cf5bf883-ce56-8323-c672-8c419c70758c-8cf7fcd7" alt="" class="promo-image no-padding-desktop"/></div></div></div></nav></div><a href="/pricing" class="navigation-dropdown-link">Pricing</a></div><div class="nav-actions desktop"><a data-track="nav-login" href="https://app.resemble.ai/users/sign_in" target="_blank" class="navigation-dropdown-link black pr-10 pl-10">Log in</a><a data-track="cta-contact" href="https://app.resemble.ai/" class="button secondary button-md main-cta-button w-button">Start free</a><a data-track="cta-contact" href="/contact-us" class="button button-md w-button">Contact us</a></div><div class="nav-actions mobile"><a id="w-node-cf5bf883-ce56-8323-c672-8c419c707597-8cf7fcd7" href="/contact-us" class="button full-width w-button">Contact us</a><a href="https://app.resemble.ai/" class="button secondary full-width w-button">Start free</a><a href="https://app.resemble.ai/users/sign_in" class="button full-width secondary w-button">Log in</a></div></nav><div data-track="menu-hamburger" class="menu-button _w--open w-nav-button"><div class="burger w-embed"><svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+  <line class="top" x1="3" y1="6" x2="21" y2="6" stroke="#494B4A" stroke-linecap="round" stroke-width="2"/>
+  <line class="middle" x1="3" y1="12" x2="21" y2="12" stroke="#494B4A" stroke-linecap="round" stroke-width="2"/>
+  <line class="bottom" x1="3" y1="18" x2="21" y2="18" stroke="#494B4A" stroke-linecap="round" stroke-width="2"/>
+</svg></div></div></div><div id="page-indicator" class="page-indicator hidden"></div><div class="hidden w-embed w-script"><style>
+  @media screen and (min-width: 992px) {
+    a.mega-menu-link {
+      width: fit-content;
+      align-items: center;
+    }
+
+    a.mega-menu-link.small {
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+  }
+
+  .text-arrow-link {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .text-arrow-link .body-text-code,
+  .text-arrow-link .text-arrow-link_copy {
+    position: relative;
+    display: inline-block;
+  }
+
+  .text-arrow-link .body-text-code::after,
+  .text-arrow-link .text-arrow-link_copy::after,
+  .mega-menu-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: currentColor;
+    transform: scaleX(0);
+    transform-origin: right center;
+    transition: transform 0.3s ease;
+  }
+
+  .text-arrow-link:hover .body-text-code::after,
+  .text-arrow-link:hover .text-arrow-link_copy::after,
+  .mega-menu-link:hover::after {
+    transform: scaleX(1);
+    transform-origin: left center;
+  }
+
+  .text-arrow-link .body-text-code::after,
+  .text-arrow-link .text-arrow-link_copy::after,
+  .mega-menu-link::after {
+    transition: transform 0.4s ease;
+  }
+
+  .text-arrow-link:hover .body-text-code::after,
+  .text-arrow-link:hover .text-arrow-link_copy::after,
+  .mega-menu-link:hover::after {
+    transition: transform 0.3s ease;
+  }
+
+  /* ============================================================
+     SMOOTH MEGA MENU v4
+  ============================================================ */
+
+  /* ── Hamburger icon ── */
+  .menu-icon line {
+    transition:
+      transform 0.3s ease,
+      opacity 0.3s ease;
+    transform-origin: 12px 12px; /* center of the 24×24 viewBox */
+  }
+  .w--open .menu-icon .top {
+    transform: rotate(45deg) translateY(6px);
+  }
+  .w--open .menu-icon .middle {
+    opacity: 0;
+  }
+  .w--open .menu-icon .bottom {
+    transform: rotate(-45deg) translateY(-6px);
+  }
+
+  /* ================================================================
+     DESKTOP (≥ 992px)
+     ================================================================ */
+  @media (min-width: 992px) {
+    /* ── FULL-PAGE OVERLAY — blurred tinted backdrop ── */
+    .mega-page-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(182, 178, 173, 0.5);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      pointer-events: none;
+      opacity: 0;
+      z-index: 89;
+      transition: opacity 400ms ease-in-out;
+    }
+
+    .mega-page-overlay.is-visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ── BACKDROP — folds open via clip-path ── */
+    .mega-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      background: #ffffff;
+      pointer-events: none;
+      z-index: 90;
+      box-shadow:
+        0 12px 16px -4px #0a0d120a,
+        0 2px 2px -1px #0a0d120a,
+        0 4px 6px -2px #0a0d120a;
+      border-radius: 0 0 12px 12px;
+      will-change: clip-path, opacity;
+      opacity: 0;
+      /* Collapsed: clip from bottom. Negative insets on sides/bottom
+         leave room for box-shadow to render outside the box. */
+      clip-path: inset(0 -20px 100% -20px);
+      /* Exit transition */
+      transition:
+        clip-path 400ms cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 300ms ease-in-out;
+    }
+
+    .mega-backdrop.is-visible {
+      opacity: 1;
+      /* Fully open: negative insets preserve shadow on all sides */
+      clip-path: inset(0 -20px -20px -20px);
+      /* Enter transition */
+      transition:
+        clip-path 500ms cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 350ms ease-in-out;
+    }
+
+    /* Morphing between menus */
+    .mega-backdrop.is-morphing {
+      transition:
+        clip-path 500ms cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 300ms ease-in-out,
+        width 450ms ease-in-out,
+        height 450ms ease-in-out,
+        left 450ms ease-in-out;
+    }
+
+    /* ── DROPDOWN PANELS — 3 JS-managed states ── */
+
+    /* Base: hidden */
+    .navigation-mega-dropdown {
+      display: block !important;
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      background: transparent !important;
+      box-shadow: none !important;
+      overflow: hidden;
+      transition: none;
+    }
+
+    /* Shared layout for active + exiting —
+       mirrors .navigation-mega-dropdown.w--open exactly */
+    .navigation-mega-dropdown.is-active,
+    .navigation-mega-dropdown.is-exiting {
+      display: flex !important;
+      z-index: 110;
+      justify-content: center;
+      align-items: center;
+      width: 100vw;
+      padding-top: 0;
+      top: 75px;
+      left: 0;
+      right: 0;
+      background: transparent !important;
+      box-shadow: none !important;
+      overflow: hidden;
+    }
+
+    /* ACTIVE: visible, entering */
+    .navigation-mega-dropdown.is-active {
+      visibility: visible;
+      opacity: 1;
+      pointer-events: auto;
+      transition: opacity 400ms ease-in-out;
+    }
+
+    /* EXITING: visible during exit animation, then hides */
+    .navigation-mega-dropdown.is-exiting {
+      visibility: visible;
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        opacity 350ms ease-in-out,
+        visibility 0ms linear 350ms;
+    }
+
+    /* ── INNER CONTENT — slides from / to left ── */
+    .navigation-mega-dropdown .mega-menu {
+      opacity: 0;
+      transform: translateX(-28px);
+      transition:
+        opacity 300ms ease-in-out,
+        transform 300ms ease-in-out;
+    }
+
+    .navigation-mega-dropdown.is-active .mega-menu {
+      opacity: 1;
+      transform: translateX(0);
+      transition:
+        opacity 450ms ease-in-out 60ms,
+        transform 500ms ease-in-out 60ms;
+    }
+
+    .navigation-mega-dropdown.is-exiting .mega-menu {
+      opacity: 0;
+      transform: translateX(-28px);
+      transition:
+        opacity 280ms ease-in-out,
+        transform 320ms ease-in-out;
+    }
+
+    /* ── STAGGERED CHILDREN — cascade from left ── */
+    .navigation-mega-dropdown .mega-menu-header,
+    .navigation-mega-dropdown .categories > *,
+    .navigation-mega-dropdown .mega-menu-wrapper > * {
+      opacity: 0;
+      transform: translateX(-18px);
+      transition:
+        opacity 250ms ease-in-out,
+        transform 250ms ease-in-out;
+    }
+
+    .navigation-mega-dropdown.is-exiting .mega-menu-header,
+    .navigation-mega-dropdown.is-exiting .categories > *,
+    .navigation-mega-dropdown.is-exiting .mega-menu-wrapper > * {
+      opacity: 0;
+      transform: translateX(-18px);
+      transition:
+        opacity 250ms ease-in-out,
+        transform 280ms ease-in-out;
+    }
+
+    .navigation-mega-dropdown.is-active .mega-menu-header {
+      opacity: 1;
+      transform: translateX(0);
+      transition:
+        opacity 400ms ease-in-out 100ms,
+        transform 450ms ease-in-out 100ms;
+    }
+    .navigation-mega-dropdown.is-active .categories > *:nth-child(1),
+    .navigation-mega-dropdown.is-active .mega-menu-wrapper > *:nth-child(1) {
+      opacity: 1;
+      transform: translateX(0);
+      transition:
+        opacity 400ms ease-in-out 140ms,
+        transform 450ms ease-in-out 140ms;
+    }
+    .navigation-mega-dropdown.is-active .categories > *:nth-child(2),
+    .navigation-mega-dropdown.is-active .mega-menu-wrapper > *:nth-child(2) {
+      opacity: 1;
+      transform: translateX(0);
+      transition:
+        opacity 400ms ease-in-out 200ms,
+        transform 450ms ease-in-out 200ms;
+    }
+    .navigation-mega-dropdown.is-active .categories > *:nth-child(3),
+    .navigation-mega-dropdown.is-active .mega-menu-wrapper > *:nth-child(3) {
+      opacity: 1;
+      transform: translateX(0);
+      transition:
+        opacity 400ms ease-in-out 260ms,
+        transform 450ms ease-in-out 260ms;
+    }
+    .navigation-mega-dropdown.is-active .categories > *:nth-child(4),
+    .navigation-mega-dropdown.is-active .mega-menu-wrapper > *:nth-child(4) {
+      opacity: 1;
+      transform: translateX(0);
+      transition:
+        opacity 400ms ease-in-out 320ms,
+        transform 450ms ease-in-out 320ms;
+    }
+    .navigation-mega-dropdown.is-active .categories > *:nth-child(5),
+    .navigation-mega-dropdown.is-active .mega-menu-wrapper > *:nth-child(5) {
+      opacity: 1;
+      transform: translateX(0);
+      transition:
+        opacity 400ms ease-in-out 380ms,
+        transform 450ms ease-in-out 380ms;
+    }
+
+    /* ── INDIVIDUAL LINKS — fine stagger ── */
+    .navigation-mega-dropdown .category-links a,
+    .navigation-mega-dropdown .mega-menu_links a {
+      opacity: 0;
+      transform: translateX(-12px);
+      transition:
+        opacity 200ms ease-in-out,
+        transform 200ms ease-in-out;
+    }
+
+    .navigation-mega-dropdown.is-exiting .category-links a,
+    .navigation-mega-dropdown.is-exiting .mega-menu_links a {
+      opacity: 0;
+      transform: translateX(-12px);
+      transition:
+        opacity 200ms ease-in-out,
+        transform 220ms ease-in-out;
+    }
+
+    .navigation-mega-dropdown.is-active .category-links a,
+    .navigation-mega-dropdown.is-active .mega-menu_links a {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .navigation-mega-dropdown.is-active .category-links a:nth-child(1),
+    .navigation-mega-dropdown.is-active .mega-menu_links a:nth-child(1) {
+      transition:
+        opacity 350ms ease-in-out 180ms,
+        transform 400ms ease-in-out 180ms;
+    }
+    .navigation-mega-dropdown.is-active .category-links a:nth-child(2),
+    .navigation-mega-dropdown.is-active .mega-menu_links a:nth-child(2) {
+      transition:
+        opacity 350ms ease-in-out 220ms,
+        transform 400ms ease-in-out 220ms;
+    }
+    .navigation-mega-dropdown.is-active .category-links a:nth-child(3),
+    .navigation-mega-dropdown.is-active .mega-menu_links a:nth-child(3) {
+      transition:
+        opacity 350ms ease-in-out 260ms,
+        transform 400ms ease-in-out 260ms;
+    }
+    .navigation-mega-dropdown.is-active .category-links a:nth-child(4),
+    .navigation-mega-dropdown.is-active .mega-menu_links a:nth-child(4) {
+      transition:
+        opacity 350ms ease-in-out 300ms,
+        transform 400ms ease-in-out 300ms;
+    }
+    .navigation-mega-dropdown.is-active .category-links a:nth-child(5),
+    .navigation-mega-dropdown.is-active .mega-menu_links a:nth-child(5) {
+      transition:
+        opacity 350ms ease-in-out 340ms,
+        transform 400ms ease-in-out 340ms;
+    }
+    .navigation-mega-dropdown.is-active .category-links a:nth-child(6),
+    .navigation-mega-dropdown.is-active .mega-menu_links a:nth-child(6) {
+      transition:
+        opacity 350ms ease-in-out 380ms,
+        transform 400ms ease-in-out 380ms;
+    }
+
+    /* ── PROMO CARD — enters last ── */
+    .navigation-mega-dropdown .promo-card {
+      opacity: 0;
+      transform: translateX(-14px);
+      transition:
+        opacity 200ms ease-in-out,
+        transform 200ms ease-in-out;
+    }
+
+    .navigation-mega-dropdown.is-exiting .promo-card {
+      opacity: 0;
+      transform: translateX(-14px);
+      transition:
+        opacity 220ms ease-in-out,
+        transform 250ms ease-in-out;
+    }
+
+    .navigation-mega-dropdown.is-active .promo-card {
+      opacity: 1;
+      transform: translateX(0);
+      transition:
+        opacity 420ms ease-in-out 350ms,
+        transform 480ms ease-in-out 350ms;
+    }
+
+    /* ── Active dropdown link color + dim siblings on hover ── */
+    .nav:hover .navigation-dropdown-link {
+      color: var(--gray-400);
+      transition: color 0.2s ease;
+    }
+
+    header[data-wf--nav-menu--variant='base'] .nav .navigation-dropdown-link:hover,
+    header[data-wf--nav-menu--variant='base'] .nav .w--open .navigation-dropdown-link {
+      color: var(--black);
+      transition: color 0.2s ease;
+    }
+
+    header:not([data-wf--nav-menu--variant='base']) .nav .navigation-dropdown-link:hover,
+    header:not([data-wf--nav-menu--variant='base']) .nav .w--open .navigation-dropdown-link {
+      color: var(--white);
+      transition: color 0.2s ease;
+    }
+
+    /* ── Page indicator ── */
+    #page-indicator {
+      display: flex;
+      justify-content: center;
+      position: absolute;
+      pointer-events: none;
+      opacity: 0;
+      transform: scale(0);
+      transition:
+        left 400ms cubic-bezier(0.34, -0.05, 0.25, 1.2),
+        width 400ms cubic-bezier(0.34, -0.05, 0.25, 1.2),
+        transform 400ms cubic-bezier(0.34, -0.05, 0.25, 1.2),
+        opacity 400ms ease-in-out;
+    }
+    #page-indicator.is-visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .player.pointing::after {
+      content: '';
+      position: absolute;
+      background: url(https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69ca6b9a659d4fdd02ea3dd5_arrow-thin.svg);
+      right: -28px;
+      width: 24px;
+      height: 8px;
+    }
+  }
+
+  /* ================================================================
+     TABLET + MOBILE (≤ 991px)
+     ================================================================ */
+  @media (max-width: 991px) {
+    /* Neutralize desktop classes if window resized down */
+    .navigation-mega-dropdown.is-active,
+    .navigation-mega-dropdown.is-exiting {
+      display: revert !important;
+      visibility: revert;
+      opacity: revert;
+      pointer-events: revert;
+      z-index: revert;
+      justify-content: revert;
+      align-items: revert;
+      width: revert;
+      top: revert;
+      left: revert;
+      right: revert;
+      transform: none;
+      transition: none;
+    }
+
+    .w--open .navigation-dropdown-link {
+      background-color: var(--gray-50);
+    }
+
+    .navigation-dropdown-link:not(a)::after {
+      display: block;
+      width: 16px;
+      height: 16px;
+      background: url(https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69c52fdde3768990c001bf58_chevron-down.svg);
+      content: '';
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .w--open .navigation-dropdown-link::after {
+      transform: rotate(180deg);
+    }
+
+    .player.pointing::after {
+      content: '';
+      display: block;
+      position: absolute;
+      background: url(https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69ca6b9a659d4fdd02ea3dd5_arrow-thin.svg);
+      right: -22px;
+      width: 18px;
+      height: 8px;
+      background-position: right;
+    }
+  }
+
+  @media (max-width: 479px) {
+    .player.pointing::after {
+      content: '';
+      display: block;
+      position: absolute;
+      right: 50%;
+      bottom: -20px;
+      width: 22px;
+      margin-right: -11px;
+      height: 8px;
+      background-position: right;
+      transform: rotate(90deg);
+    }
+  }
+</style>
+
+<script>
+  /* ============================================================
+     DESKTOP MEGA MENU v4 — JAVASCRIPT
+     ============================================================ */
+  (function () {
+    'use strict';
+
+    var EXIT_DURATION = 400;
+    var CLOSE_DELAY = 160;
+    var initialized = false;
+
+    /* matchMedia doesn't force a synchronous layout the way reading
+       window.innerWidth does, which Lighthouse flagged as a 31ms forced
+       reflow during startup. */
+    var mqDesktop = window.matchMedia('(min-width: 992px)');
+
+    function init() {
+      if (initialized) return;
+      initialized = true;
+
+      var navbar = document.querySelector('.navbar');
+      var nav = document.querySelector('.nav');
+      if (!navbar || !nav) return;
+
+      var indicator = document.getElementById('page-indicator');
+
+      var backdrop = document.createElement('div');
+      backdrop.className = 'mega-backdrop';
+      document.body.appendChild(backdrop);
+
+      /* ── Full-page overlay ── */
+      var pageOverlay = document.createElement('div');
+      pageOverlay.className = 'mega-page-overlay';
+      document.body.appendChild(pageOverlay);
+
+      var dropdowns = navbar.querySelectorAll('.navigation-dropdown.w-dropdown');
+      var standaloneLinks = nav.querySelectorAll(':scope > a.navigation-dropdown-link');
+
+      var activeDropdown = null;
+      var activePanel = null;
+      var isOpen = false;
+      var closeTimer = null;
+      var indicatorTimer = null;
+      var exitTimers = new Map();
+
+      var isDesktop = function () {
+        return mqDesktop.matches;
+      };
+
+      /* ── Backdrop ── */
+
+      function showBackdrop(rect, isSwitching) {
+        if (!isSwitching) {
+          backdrop.classList.remove('is-morphing', 'is-visible');
+          backdrop.style.left = rect.left + 'px';
+          backdrop.style.top = '0px';
+          backdrop.style.width = rect.width + 'px';
+          backdrop.style.height = rect.top + rect.height + 'px';
+          void backdrop.offsetHeight;
+          backdrop.classList.add('is-visible');
+        } else {
+          backdrop.classList.add('is-morphing', 'is-visible');
+          backdrop.style.left = rect.left + 'px';
+          backdrop.style.top = '0px';
+          backdrop.style.width = rect.width + 'px';
+          backdrop.style.height = rect.top + rect.height + 'px';
+        }
+
+        /* Show the full-page overlay */
+        pageOverlay.classList.add('is-visible');
+      }
+
+      function hideBackdrop() {
+        backdrop.classList.remove('is-morphing', 'is-visible');
+        isOpen = false;
+        activeDropdown = null;
+
+        /* Hide the full-page overlay */
+        pageOverlay.classList.remove('is-visible');
+      }
+
+      /* ── Panel state ── */
+
+      function activatePanel(panel) {
+        if (exitTimers.has(panel)) {
+          clearTimeout(exitTimers.get(panel));
+          exitTimers.delete(panel);
+        }
+        if (activePanel && activePanel !== panel) {
+          exitPanel(activePanel);
+        }
+        panel.classList.remove('is-exiting');
+        panel.classList.add('is-active');
+        activePanel = panel;
+      }
+
+      function exitPanel(panel) {
+        if (!panel.classList.contains('is-active')) return;
+        panel.classList.remove('is-active');
+        panel.classList.add('is-exiting');
+
+        var timer = setTimeout(function () {
+          panel.classList.remove('is-exiting');
+          exitTimers.delete(panel);
+        }, EXIT_DURATION);
+        exitTimers.set(panel, timer);
+
+        if (activePanel === panel) activePanel = null;
+      }
+
+      function exitAllPanels() {
+        dropdowns.forEach(function (dd) {
+          var panel = dd.querySelector('.navigation-mega-dropdown');
+          if (panel && panel.classList.contains('is-active')) {
+            exitPanel(panel);
+          }
+        });
+      }
+
+      /* ── Page indicator ── */
+
+      function positionIndicator(linkEl, animate) {
+        if (!indicator) return;
+        var lr = linkEl.getBoundingClientRect();
+        var pr = indicator.offsetParent.getBoundingClientRect();
+        if (!animate) indicator.style.transition = 'none';
+        indicator.style.left = lr.left - pr.left + 'px';
+        indicator.style.width = lr.width + 'px';
+        indicator.style.top = lr.bottom - pr.top - 36 + 'px';
+        if (!animate) {
+          void indicator.offsetHeight;
+          indicator.style.transition = '';
+        }
+        indicator.classList.add('is-visible');
+      }
+
+      function hideIndicator() {
+        if (!indicator) return;
+        indicatorTimer = setTimeout(function () {
+          indicator.classList.remove('is-visible');
+        }, 100);
+      }
+
+      /* ── Close scheduling ── */
+
+      function scheduleClose() {
+        closeTimer = setTimeout(function () {
+          exitAllPanels();
+          hideBackdrop();
+        }, CLOSE_DELAY);
+        indicatorTimer = setTimeout(function () {
+          hideIndicator();
+        }, CLOSE_DELAY);
+      }
+
+      function cancelClose() {
+        clearTimeout(closeTimer);
+        clearTimeout(indicatorTimer);
+      }
+
+      /* ── Click overlay to close ── */
+      pageOverlay.addEventListener('click', function () {
+        cancelClose();
+        exitAllPanels();
+        hideBackdrop();
+        hideIndicator();
+
+        /* Also close any Webflow w--open dropdowns so state stays in sync */
+        dropdowns.forEach(function (dd) {
+          var toggle = dd.querySelector('.w-dropdown-toggle');
+          if (dd.classList.contains('w--open') && toggle) {
+            toggle.dispatchEvent(new MouseEvent('tap', { bubbles: true }));
+          }
+        });
+      });
+
+      /* ── Bind dropdowns ── */
+
+      dropdowns.forEach(function (dropdown) {
+        var toggle = dropdown.querySelector('.w-dropdown-toggle');
+        var navLink = toggle ? toggle.querySelector('.navigation-dropdown-link') : null;
+        var panel = dropdown.querySelector('.navigation-mega-dropdown');
+
+        var observer = new MutationObserver(function (mutations) {
+          if (!isDesktop()) return;
+          mutations.forEach(function (m) {
+            if (m.attributeName !== 'class') return;
+            var nowOpen = dropdown.classList.contains('w--open') || (toggle && toggle.getAttribute('aria-expanded') === 'true');
+
+            if (nowOpen && panel) {
+              cancelClose();
+              requestAnimationFrame(function () {
+                var rect = panel.getBoundingClientRect();
+                if (!rect || rect.height === 0) return;
+                var isSwitching = isOpen && activeDropdown !== dropdown;
+                activeDropdown = dropdown;
+                activatePanel(panel);
+                showBackdrop(rect, isSwitching);
+                isOpen = true;
+              });
+            }
+          });
+        });
+
+        observer.observe(dropdown, { attributes: true });
+        if (toggle) observer.observe(toggle, { attributes: true });
+
+        dropdown.addEventListener('mouseenter', function () {
+          if (!isDesktop()) return;
+          cancelClose();
+          if (navLink) {
+            var isFirst = !indicator || !indicator.classList.contains('is-visible');
+            positionIndicator(navLink, !isFirst);
+          }
+        });
+
+        dropdown.addEventListener('mouseleave', scheduleClose);
+      });
+
+      /* ── Standalone links ── */
+
+      standaloneLinks.forEach(function (link) {
+        link.addEventListener('mouseenter', function () {
+          if (!isDesktop()) return;
+          cancelClose();
+          exitAllPanels();
+          hideBackdrop();
+          var isFirst = !indicator || !indicator.classList.contains('is-visible');
+          positionIndicator(link, !isFirst);
+        });
+
+        link.addEventListener('mouseleave', function () {
+          indicatorTimer = setTimeout(function () {
+            if (indicator) indicator.classList.remove('is-visible');
+          }, 100);
+        });
+      });
+    }
+
+    /* ── Init ── */
+
+    function checkAndInit() {
+      if (mqDesktop.matches) init();
+    }
+
+    var resizeTimer = null;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(checkAndInit, 500);
+    });
+
+    /* Defer init to idle time: it appends the backdrop/overlay divs and binds
+       listeners, none of which is needed before the user can hover the nav.
+       Running it inside DOMContentLoaded forced an early layout pass. */
+    function scheduleInit() {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(checkAndInit, { timeout: 2000 });
+      } else {
+        setTimeout(checkAndInit, 200);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', scheduleInit);
+    } else {
+      scheduleInit();
+    }
+
+    /* Prevent accidental close when clicking inside open dropdown
+       (original used bare $ — wrapped in DOMContentLoaded for safety) */
+    document.addEventListener('DOMContentLoaded', function () {
+      var $ = window.jQuery;
+      if (!$) return;
+      $('.navigation-dropdown-link').on('mouseup', function (e) {
+        if (mqDesktop.matches && $(this).closest('.w--open').length) {
+          e.stopPropagation();
+        }
+      });
+    });
+  })();
+</script>
+
+<!-- ============================================================
+     MOBILE MENU — SLIDE DOWN / SLIDE UP ANIMATION (CSS)
+     ============================================================ -->
+
+<style>
+  @media screen and (max-width: 991px) {
+    /* ── Prevent header layout shift ── */
+    .w-nav {
+      position: relative;
+      transition: background-color 0.35s ease;
+    }
+
+    .w-nav:has(.slide-open) {
+      background-color: #fff;
+    }
+
+    /* ── Nav menu: slide down / up ── */
+    .w-nav-menu {
+      display: block !important;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      width: 100% !important;
+      left: 0 !important;
+      right: 0 !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      padding-left: 0;
+      padding-right: 0;
+      box-sizing: border-box !important;
+      transition:
+        max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.35s ease,
+        padding 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .w-nav-menu.slide-open {
+      max-height: calc(100vh - 72px);
+      opacity: 1;
+      overflow-y: auto;
+    }
+
+    /* ── Fix the overlay (prevents right-side gap) ── */
+    .w-nav-overlay {
+      width: 100% !important;
+      max-width: 100% !important;
+      left: 0 !important;
+      right: 0 !important;
+      overflow: hidden !important;
+      box-sizing: border-box !important;
+    }
+
+    .navigation-mega-dropdown.w--open {
+      top: 0;
+    }
+
+    /* ── Staggered link entrance ── */
+    .w-nav-menu > .w-nav-link,
+    .w-nav-menu > .w-dropdown,
+    .w-nav-menu > .w-nav-item,
+    .w-nav-menu > a,
+    .w-nav-menu > div {
+      opacity: 0;
+      transform: translateY(-10px);
+      transition:
+        opacity 0.3s ease,
+        transform 0.3s ease;
+    }
+
+    .w-nav-menu.slide-open > .w-nav-link,
+    .w-nav-menu.slide-open > .w-dropdown,
+    .w-nav-menu.slide-open > .w-nav-item,
+    .w-nav-menu.slide-open > a,
+    .w-nav-menu.slide-open > div {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .w-nav-menu.slide-open > :nth-child(1) {
+      transition-delay: 0.05s;
+    }
+    .w-nav-menu.slide-open > :nth-child(2) {
+      transition-delay: 0.1s;
+    }
+    .w-nav-menu.slide-open > :nth-child(3) {
+      transition-delay: 0.15s;
+    }
+    .w-nav-menu.slide-open > :nth-child(4) {
+      transition-delay: 0.2s;
+    }
+    .w-nav-menu.slide-open > :nth-child(5) {
+      transition-delay: 0.25s;
+    }
+    .w-nav-menu.slide-open > :nth-child(6) {
+      transition-delay: 0.3s;
+    }
+    .w-nav-menu.slide-open > :nth-child(7) {
+      transition-delay: 0.35s;
+    }
+    .w-nav-menu.slide-open > :nth-child(8) {
+      transition-delay: 0.4s;
+    }
+    .w-nav-menu.slide-open > :nth-child(9) {
+      transition-delay: 0.45s;
+    }
+    .w-nav-menu.slide-open > :nth-child(10) {
+      transition-delay: 0.5s;
+    }
+
+    /* ── Subdropdowns: slide down / up ── */
+    .w-dropdown-list {
+      display: block !important;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      width: 100% !important;
+      position: relative !important;
+      box-sizing: border-box !important;
+      transition:
+        max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.3s ease,
+        padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+    }
+
+    .w-dropdown-list.w--open,
+    .w-dropdown.w--open .w-dropdown-list {
+      max-height: 1000px;
+      opacity: 1;
+      overflow-y: auto;
+    }
+
+    /* Stagger subdropdown children */
+    .w-dropdown-list .w-dropdown-link,
+    .w-dropdown-list > a,
+    .w-dropdown-list > div {
+      opacity: 0;
+      transform: translateY(-8px);
+      transition:
+        opacity 0.25s ease,
+        transform 0.25s ease;
+    }
+
+    .w-dropdown-list.w--open .w-dropdown-link,
+    .w-dropdown-list.w--open > a,
+    .w-dropdown-list.w--open > div,
+    .w-dropdown.w--open .w-dropdown-list .w-dropdown-link,
+    .w-dropdown.w--open .w-dropdown-list > a,
+    .w-dropdown.w--open .w-dropdown-list > div {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .w-dropdown-list.w--open > :nth-child(1),
+    .w-dropdown.w--open .w-dropdown-list > :nth-child(1) {
+      transition-delay: 0.04s;
+    }
+    .w-dropdown-list.w--open > :nth-child(2),
+    .w-dropdown.w--open .w-dropdown-list > :nth-child(2) {
+      transition-delay: 0.08s;
+    }
+    .w-dropdown-list.w--open > :nth-child(3),
+    .w-dropdown.w--open .w-dropdown-list > :nth-child(3) {
+      transition-delay: 0.12s;
+    }
+    .w-dropdown-list.w--open > :nth-child(4),
+    .w-dropdown.w--open .w-dropdown-list > :nth-child(4) {
+      transition-delay: 0.16s;
+    }
+    .w-dropdown-list.w--open > :nth-child(5),
+    .w-dropdown.w--open .w-dropdown-list > :nth-child(5) {
+      transition-delay: 0.2s;
+    }
+    .w-dropdown-list.w--open > :nth-child(6),
+    .w-dropdown.w--open .w-dropdown-list > :nth-child(6) {
+      transition-delay: 0.24s;
+    }
+    .w-dropdown-list.w--open > :nth-child(7),
+    .w-dropdown.w--open .w-dropdown-list > :nth-child(7) {
+      transition-delay: 0.28s;
+    }
+    .w-dropdown-list.w--open > :nth-child(8),
+    .w-dropdown.w--open .w-dropdown-list > :nth-child(8) {
+      transition-delay: 0.32s;
+    }
+
+    /* ── Prevent body scroll when menu is open ── */
+    body.nav-menu-open {
+      overflow: hidden;
+    }
+  }
+</style>
+
+<script>
+  /* ============================================================
+     MOBILE MENU — SLIDE DOWN / SLIDE UP (JS)
+     ============================================================ */
+  (function () {
+    'use strict';
+
+    var TRANSITION_MS = 500;
+
+    /* matchMedia avoids the forced layout that reading innerWidth causes */
+    var mqMobile = window.matchMedia('(max-width: 991px)');
+
+    var nav, menuBtn, navMenu;
+    var observer = null;
+    var closeTimer = null;
+    var isActive = false;
+
+    function openMenu() {
+      if (closeTimer) {
+        clearTimeout(closeTimer);
+        closeTimer = null;
+      }
+      requestAnimationFrame(function () {
+        navMenu.classList.add('slide-open');
+        document.body.classList.add('nav-menu-open');
+      });
+    }
+
+    function closeMenu() {
+      navMenu.classList.remove('slide-open');
+      document.body.classList.remove('nav-menu-open');
+      closeTimer = setTimeout(function () {
+        closeTimer = null;
+      }, TRANSITION_MS);
+    }
+
+    function resetMenu() {
+      navMenu.classList.remove('slide-open');
+      document.body.classList.remove('nav-menu-open');
+      if (closeTimer) {
+        clearTimeout(closeTimer);
+        closeTimer = null;
+      }
+    }
+
+    function onMutation(mutations) {
+      mutations.forEach(function (m) {
+        if (m.type === 'attributes' && m.attributeName === 'class') {
+          if (menuBtn.classList.contains('w--open')) {
+            openMenu();
+          } else {
+            closeMenu();
+          }
+        }
+      });
+    }
+
+    function startObserver() {
+      if (observer) return;
+      observer = new MutationObserver(onMutation);
+      observer.observe(menuBtn, { attributes: true });
+      if (menuBtn.classList.contains('w--open')) {
+        openMenu();
+      }
+    }
+
+    function stopObserver() {
+      if (!observer) return;
+      observer.disconnect();
+      observer = null;
+    }
+
+    function activate() {
+      if (isActive) return;
+      isActive = true;
+      startObserver();
+    }
+
+    function deactivate() {
+      if (!isActive) return;
+      isActive = false;
+      stopObserver();
+      resetMenu();
+    }
+
+    function checkBreakpoint() {
+      if (mqMobile.matches) {
+        activate();
+      } else {
+        deactivate();
+      }
+    }
+
+    var resizeRaf = null;
+
+    function onResize() {
+      if (resizeRaf) return;
+      resizeRaf = requestAnimationFrame(function () {
+        resizeRaf = null;
+        checkBreakpoint();
+      });
+    }
+
+    function init() {
+      nav = document.querySelector('.w-nav');
+      menuBtn = document.querySelector('.w-nav-button');
+      navMenu = document.querySelector('.w-nav-menu');
+      if (!nav || !menuBtn || !navMenu) return;
+      checkBreakpoint();
+      window.addEventListener('resize', onResize);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+</script></div></header><div class="w-embed w-script"><textarea id="rlp-src" hidden></textarea>
+  <div id="rlp-mount"></div>
+  <script>
+  (function(){
+    var s=document.getElementById('rlp-src'), m=document.getElementById('rlp-mount');
+    if(!s||!s.value.trim())return;
+    m.innerHTML=s.value;
+    s.remove();
+    m.querySelectorAll('script').forEach(function(o){
+      var n=document.createElement('script');
+      [].forEach.call(o.attributes,function(a){n.setAttribute(a.name,a.value);});
+      n.textContent=o.textContent;
+      o.replaceWith(n);
+    });
+  })();
+  </script></div><div class="w-embed w-script"><script>
+window.dataLayer = window.dataLayer || [];
+window.dataLayer.push({
+  'event': 'resource_page_view',
+  'resource_category': 'research'
+});
+</script></div><section id="post-hero" class="section padded-section md-padding"><div class="container"><div class="blog-header"><div><a href="/resources" class="text-arrow-link mb-16 pr-16 w-inline-block"><img src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69c3b1893d58b0850125ff9d_arrow-left.svg" loading="lazy" width="20" height="20" alt=""/><div class="body-text-code">Back</div></a></div><div><div class="section-header mb-32"><div class="w-layout-hflex blog-meta"><div>Research</div><div>•</div><div>Jun 10, 2026</div></div><h1 class="display-lg sm-display-md mt-0 mb-0">Chatterbox Multilingual v3: TTS with embedded watermarking for 25 languages</h1></div><img src="https://cdn.prod.website-files.com/69d6774372a7b569dc02a034/6a293191600689d2de36a83e_6a29318f49510fcb45280c7d_6a10bee21cad632db909d93c_Resemble%252520AI%252520Chatterbox%252520Multilingual-1%252520-%252520previ.avif" loading="lazy" alt="" class="mb-12"/><div class="text-sm align-right w-dyn-bind-empty"></div></div><div class="md-hide"></div></div></div></section><section id="post-main" class="section pt-32 pb-96"><div class="container"><div class="blog-main-wrapper"><div class="blog-sidebar"><div><div class="eyebrow mb-24">CONTENTS</div><div class="side-nav toc"><div class="text-md gray-500 active">Active heading</div><div class="text-md gray-500 pointer">Section heading</div></div></div><div><div class="eyebrow mb-24">CONTRIBUTORS</div><div class="w-dyn-list"><div role="list" class="contributors-list w-dyn-items"><div role="listitem" class="contributor-wrapper w-dyn-item"><img src="https://cdn.prod.website-files.com/69d6774372a7b569dc02a034/6a10a47679219aa383c056d1_Zihan.jpg" loading="lazy" alt="" class="contributor-avatar"/><div><div class="text-md semibold gray-900">Zihan Jin</div><div class="text-md gray-600">Machine Learning Engineer</div></div></div></div></div></div></div><div class="blog-main"><div class="blog-main-content w-richtext"><p>Voice AI has reached the point where listener-level detection of synthetic speech is unreliable for most languages. We can no longer definitively say &quot;this sounds synthetic&quot; vs &quot;this sounds real&quot; by ear alone, and our own evaluation work for this release is part of how we know it.</p><p>Today, June 10, 2026, we are releasing <a href="https://www.resemble.ai/learn/models/chatterbox-multilingual">Chatterbox Multilingual v3</a> following the launch of an NVIDIA NIM - now available in the <a href="https://build.nvidia.com/resembleai/chatterbox-multilingual-tts">NVIDIA build catalog</a>. </p><p>Chatterbox Multilingual v3 is the next general-purpose multilingual TTS model in the Chatterbox family. It supports 25 total languages (including 4 dialects and 6 tuned Language Pack models), keeps the same 0.5B Llama backbone as v2 under MIT license, and ships meaningful improvements in speaker similarity, hallucination rate, and conversational naturalness.</p><p>Chatterbox Multilingual v3 open source ships with PerTh watermarking embedded by default on every self-hosted audio output, across every supported language. Provenance and the ability to automatically watermark outputs is a major component of this release as regulation like the EU AI Act Article 50 loom, and as voice AI and text-to-speech models strive to be more trustworthy and verifiable at generation time.</p><p>This post covers the watermarking architecture first, then walks through the v3 model improvements, the language-by-language evaluation, the <a href="https://build.nvidia.com/resembleai/chatterbox-multilingual-tts">NVIDIA NIM</a> deployment path, and the limitations we know about.</p><h2>Why Watermark Voice AI Outputs</h2><p>Every audio file generated by v3 and the Single-Language Pack is PerTh watermark ready. PerTh is a neural watermarking system that encodes an imperceptible signal into the audio waveform at generation time. It is designed to survive the manipulations that strip metadata-based provenance: MP3 and Opus compression, telephony codecs, audio editing, format conversion, partial clipping, and the resampling that happens when audio moves between platforms. The watermark is detectable with near 100% accuracy on unmodified outputs and degrades gracefully under manipulation.</p><p>We made the decision early in Chatterbox&#x27;s development to ship watermarking by default in the open source repo, and that decision matters more for v3 than it did for earlier releases. v2 was good enough that synthetic outputs were already difficult to distinguish from real recordings without forensic tool results. </p><p>The v1 Hugging Face TTS Arena results were the first signal that we were past the listener-level distinguishability threshold on English). v3 is meaningfully better than v2. The ability to confidently state &quot;this sounds synthetic&quot; vs &quot;this sounds real&quot; is now low enough on most supported languages that listener-level detection is unreliable, which puts more pressure on technical provenance signals like watermarking.</p><p>On-by-default watermarking, applied at the final stage of text-to-speech generation, is what produces a useful provenance signal at the scale audio AI now operates at. The argument is not that detection will fail, it is that provenance and detection together cover more of the threat surface than either alone, and the marginal cost of embedding a watermark at generation time is small enough that we see no reason to leave it off.</p><p>The PerTh detection library is on GitHub under permissive license, so any developer integrating Chatterbox can verify provenance downstream without paying for or licensing additional tooling.  To add watermarking to Chatterbox Multilingual outputs deployed via NVIDIA NIM, <a href="https://www.resemble.ai/contact-us">contact us </a>for a Watermarker API key.</p><h2>Watermarking + coming regulation </h2><p>Regulators have started to converge on the answer that the field has been converging on for a few years. The <a href="https://artificialintelligenceact.eu/article/50/">EU AI Act Article 50</a> requires that AI-generated audio be marked in a machine-readable format starting in August 2026. The <a href="https://www.congress.gov/bill/119th-congress/senate-bill/146">TAKE IT DOWN Act</a> signed into law in the US last year creates new content-traceability requirements for synthetic media. PerTh was designed before either of those frameworks existed, but the design choices that made it useful in 2023 (imperceptibility, robustness to manipulation, frame-level encoding) are the same ones that make it compliant with the emerging regulatory environment.</p><h3>What&#x27;s new in v3</h3><p>Chatterbox Multilingual v3 uses the same 0.5B Llama-based backbone as v2. The improvements come primarily from data, training, and language-specific specialization rather than from any increase in model size.</p><p>For v3, we expanded and rebalanced the multilingual training mixture with a stronger focus on high-quality, expressive, conversational data. The data recipe places more emphasis on priority languages and regional variants where users need stronger pronunciation control and more stable speaker transfer. We expanded the multilingual training mixture from 25.6k hours to 36.7k hours, and improved balancing across script reading, narration, and conversational data to better match real-world usage patterns we observed in the v2 deployment.</p><p>The training updates were aimed at the main reliability issues we observed in earlier multilingual checkpoints. We targeted off-prompt continuation, repetition, accent drift, and degraded speaker similarity in cross-language voice cloning specifically. v3 uses a cleaner and more controlled fine-tuning regime with fine-grained data labeling, stricter sample filtering, and language-specific refinement for the Single-Language Pack. The Single-Language Pack is designed to complement the general multilingual model by giving selected languages and dialects dedicated capacity and tighter quality control.</p><p>The result is a model that is more stable, more expressive, and more conversational while keeping the same 0.5B footprint. In our internal testing, v3 shows improved speaker similarity across languages, fewer hallucination-style failures, and more natural delivery for both long-form narration and short voice-agent prompts. v3 is a stronger general-purpose multilingual model for developers building voice agents, creator tools, audiobook workflows, and multilingual speech applications. For priority languages where regional pronunciation or specialized behavior matters most, the Single-Language Pack provides dedicated checkpoints.</p><h2>Languages supported in v3</h2><ol role="list"><li><strong>Arabic</strong> (ar)</li><li><strong>Chinese</strong> (zh) - Language Pack</li><li><strong>Czech</strong> (cs)</li><li><strong>Dutch</strong> (nl)</li><li><strong>English</strong> (en)</li><li><strong>Finnish</strong> (fi)</li><li><strong>French</strong> (fr)</li><li><strong>German</strong> (de)</li><li><strong>Hebrew</strong> (he)</li><li><strong>Hindi</strong> (hi) - Language Pack</li><li><strong>Italian</strong> (it)</li><li><strong>Japanese</strong> (ja)</li><li><strong>Korean</strong> (ko)</li><li><strong>Norwegian</strong> (no)</li><li><strong>Polish</strong> (pl)</li><li><strong>Portuguese</strong> (pt)</li><li><strong>Portuguese Brazilian</strong> (pt-br) Language Pack - Dialect</li><li><strong>Portuguese Portugal</strong> (pt-pt) Language Pack - Dialect</li><li><strong>Russian</strong> (ru)</li><li><strong>Spanish</strong> (es)</li><li><strong>Spanish Mexico / LATAM</strong> (es-mx) Language Pack - Dialect </li><li><strong>Spanish Spain</strong> (es-es) Language Pack - Dialect</li><li><strong>Swedish</strong> (sv)</li><li><strong>Turkish</strong> (tr)</li><li><strong>Vietnamese</strong> (vi)</li></ol><h3>How we evaluated v3</h3><p>We measured v3 across all supported languages using a transcription-based Character Error Rate (CER) protocol. For each language, we generated 100 samples from held-out prompts, transcribed the synthesized audio with `whisper-large-v3` set to the target language, and computed CER against the source text. The intuition is straightforward: if a TTS model hallucinates content, drifts into another language, or repeats itself, an ASR system attempting to transcribe its output back to text will introduce character-level errors that compound visibly. Lower CER on this protocol means the model is saying what it was asked to say.</p><p>We chose CER rather than the more common Word Error Rate because it is more sensitive to the failure modes we most wanted to address from v2: small mispronunciations, partial repetitions, and character-level drift in languages where word boundaries are ambiguous, like Chinese and Japanese. WER tends to mask these failures because a single garbled syllable inside an otherwise correct word can register as a full word error or no error depending on tokenization.</p><p>CER is still an imperfect proxy for what we actually care about. It captures intelligibility and stability, but it does not measure prosody, speaker similarity, or expressive delivery, all of which matter for the conversational and voice-agent use cases v3 is built for. The results in this post should be read as evidence of v3&#x27;s intelligibility and stability, not as a complete picture of quality. We are working on an extended evaluation suite that adds subjective Mean Opinion Score (MOS) ratings and objective speaker similarity benchmarks, and we will publish those numbers when they are ready.</p><h2>Benchmark Results</h2><h3>CER by Language</h3><figure class="w-richtext-align-center w-richtext-figure-type-image"><div><img alt="" src="https://cdn.prod.website-files.com/69d6774372a7b569dc02a034/6a289d0091b3f651fa5459ca_7e7e69d2.png" loading="lazy"/></div></figure><p>The strongest pattern in the data is at the top. Italian and German base v3 land under 0.20% CER, and the Single-Language Pack variants for Latin American Spanish (0.28%), Mandarin Chinese (0.41%), and European Spanish (0.55%) sit alongside them in the sub-1% band. English (0.65%) and Hebrew (0.93%) round out the languages where v3 reaches the measurement floor of our transcription-based protocol. For all of these, the next round of improvements will need to come from prosody and speaker-similarity work rather than from reducing transcription errors.</p><p>The middle band is roughly 1% to 5% CER and covers Dutch, Russian, base Spanish, European Portuguese, Brazilian Portuguese, base Portuguese, Norwegian, and Turkish. These are languages where v3 is production-ready for general use, with the dialect-specific Single-Language Pack models pulling Spanish from 2.89% base to 0.28-0.55% in the dialect variants. Portuguese shows a more modest improvement from the base model (3.85%) to the dialect packs (3.01-3.77%), which is consistent with the underlying point about specialization: the headroom for the dedicated models is largest where the base model has the most distance left to travel.</p><p>Hindi, French, Polish, and Arabic land in the 6-8% range, which is meaningfully worse than the front-runners but still usable in production with appropriate testing. Hindi is in the Single-Language Pack at 2.55 - 6.72% CER, which is roughly where the base Hindi performance was in earlier checkpoints. The dedicated capacity is doing the work of preventing degradation rather than driving large gains, and we are continuing to invest in Hindi-specific data work for future releases.</p><p>The bottom of the table tells a different story, and we discuss the languages that did not reach production quality in the limitations section below.</p><h3>Results — Latency and deployment</h3><p>On a single H100 with our unoptimized PyTorch implementation, v3 measures the following on our internal benchmark:</p><figure class="w-richtext-align-center w-richtext-figure-type-image"><div><img alt="" src="https://cdn.prod.website-files.com/69d6774372a7b569dc02a034/6a10a5b05650e4a1358957b7_6ac98c5a.png" loading="lazy"/></div></figure><p>For voice-agent and conversational deployments, TTFB is the number that matters: it determines how quickly the first audible response reaches the user. Under 300ms is at the threshold of what feels like natural conversational pacing, which v3 clears with headroom. The RTF of approximately 5 means v3 generates audio roughly five times faster than real time on a single H100, leaving room for batching multiple concurrent streams on the same GPU.</p><p>These are the unoptimized PyTorch numbers. The NVIDIA NIM release covered in the next section ships with TensorRT-LLM acceleration, optimized batching, and dynamic shape support, which lower TTFB and raise concurrent throughput substantially relative to this baseline.  This means quicker round trip latencies when deployed as part of a voice AI agent, or faster responses in a one way use case where the voice output is the end goal.</p><h3>For Enterprise-Scale Deployment: NVIDIA NIM Available</h3><p><a href="https://build.nvidia.com/resembleai/chatterbox-multilingual-tts/modelcard">NVIDIA NIM</a>, is an optimized, containerized inference endpoint with TensorRT-LLM acceleration,of the <a href="https://huggingface.co/ResembleAI/chatterbox">model</a>. In the table below, you can see NVIDIA NIM delivers 2x-39x throughput vs unoptimized PyTorch while supporting enterprise-scale concurrent inference. </p><figure class="w-richtext-align-center w-richtext-figure-type-image"><div><img alt="" src="https://cdn.prod.website-files.com/69d6774372a7b569dc02a034/6a289d0091b3f651fa5459c7_35f7ef6a.png" loading="lazy"/></div></figure><p>NVIDIA NIM  provides optimized batching, autoscaling, and the deployment plumbing that enterprise voice-agent infrastructure typically needs. </p><p>For Chatterbox v3 specifically, that means meaningfully lower latency than the unoptimized PyTorch numbers in the table above, dynamic batching for concurrent streams, and a deployment path that fits cleanly into existing NVIDIA enterprise stacks.</p><p>The way we think about the choice between the two: use the open-weight model when you want full control over the deployment, are running at moderate volume, or are doing research, fine-tuning, or evaluation work. Use NVIDIA NIM for production when you want: </p><ul role="list"><li>Full control over the deployment </li><li>Security patches on the NIM container</li><li>Free API for evaluation available with <a href="https://build.nvidia.com/resembleai/chatterbox-multilingual-tts">build.nvidia here</a></li></ul><p>All at the scale where the optimization and operational plumbing pay for themselves. Both options ship from the same v3 weights and produce equivalent output quality. The difference is in the inference layer and how much of the production engineering you want to own.</p><h3>Why ship a general model and a Single-Language Pack at the same time</h3><p>The architectural decision behind this release was not technical, it was about how developers actually deploy multilingual TTS. We started with the assumption that one good general model should be enough, but the v2 deployment data disputed that assumption in two specific ways.</p><p>First, the highest-volume single-language users of v2 were not deploying it in English. They were deploying it in Hindi, Brazilian Portuguese, and Latin American Spanish, and they were running into quality ceilings that the general multilingual model could not break through no matter how much fine-tuning they did at the application layer. These were languages where v2 had measurable headroom against what a dedicated model could achieve, and where the deployment economics justified a larger, language-specific model.</p><p>Second, the dialect question turned out to matter more than we initially expected. European Portuguese and Brazilian Portuguese share most of their grammar and a large fraction of their vocabulary, but they have substantially different phonologies, and Portuguese-speaking listeners can distinguish them effortlessly. A model trained on broadly-balanced Portuguese data produces speech that sounds technically correct but slightly off to native ears of either variant. The same applies, less dramatically, to European Spanish and Latin American Spanish. The Single-Language Pack lets us serve each variant from a model that has only ever seen that variant, which is the closest we can get to native-sounding output without language-specific architectural changes.</p><p>The tradeoff is parameter efficiency. Six dedicated models cost more to host than one general model, and they only make sense when the deployment volume justifies the additional infrastructure. We expect most developers will use v3 base for breadth and reach for a Single-Language Pack model only when the language matters enough commercially to be worth a dedicated GPU footprint.</p><p><strong>Model Cards on Hugging Face</strong></p><div class="w-embed"><!-- ============================================================
+     Chatterbox Multilingual — CER benchmark table
+     Paste this whole block into a Webflow "Embed" element.
+     To change the accent color, edit --rsmbl-accent below.
+     ============================================================ -->
+<div class="rsmbl-cb-table" style="--rsmbl-accent:#5A47E6;">
+  <style>
+    /* Scoped to .rsmbl-cb-table so it won't touch the rest of your page */
+    .rsmbl-cb-table *{box-sizing:border-box;}
+    .rsmbl-cb-table{
+      font-family:inherit,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      color:#1a1a2e;
+      margin:1.5rem 0;
+      -webkit-font-smoothing:antialiased;
+    }
+    .rsmbl-cb-scroll{
+      width:100%;
+      overflow-x:auto;
+      border:1px solid #e7e7ef;
+      border-radius:12px;
+      box-shadow:0 1px 2px rgba(20,20,50,.04);
+    }
+    .rsmbl-cb-table table{
+      width:100%;
+      border-collapse:collapse;
+      border-spacing:0;
+      min-width:560px;
+      font-size:15px;
+      line-height:1.45;
+    }
+    .rsmbl-cb-table thead th{
+      text-align:left;
+      font-weight:600;
+      font-size:12px;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      color:#6b6b80;
+      background:#fafafc;
+      padding:14px 18px;
+      border-bottom:1px solid #e7e7ef;
+      white-space:nowrap;
+    }
+    .rsmbl-cb-table thead th.rsmbl-num{text-align:right;}
+    .rsmbl-cb-table tbody td{
+      padding:15px 18px;
+      border-bottom:1px solid #f0f0f5;
+      vertical-align:middle;
+    }
+    .rsmbl-cb-table tbody tr:last-child td{border-bottom:none;}
+    .rsmbl-cb-table tbody tr:hover td{background:#fbfaff;}
+    .rsmbl-cb-model{font-weight:500;color:#1a1a2e;}
+    .rsmbl-cb-code{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      font-size:13px;
+      color:var(--rsmbl-accent);
+      background:rgba(90,71,230,.07);
+      padding:1px 6px;
+      border-radius:5px;
+      margin-left:2px;
+      white-space:nowrap;
+    }
+    .rsmbl-cb-lang{color:#3a3a4d;}
+    .rsmbl-num{
+      text-align:right;
+      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      font-variant-numeric:tabular-nums;
+      font-size:14px;
+      color:#1a1a2e;
+      white-space:nowrap;
+    }
+    .rsmbl-cb-table a.rsmbl-cb-link{
+      color:var(--rsmbl-accent);
+      text-decoration:none;
+      font-weight:500;
+      white-space:nowrap;
+      border-bottom:1px solid transparent;
+      transition:border-color .15s ease;
+    }
+    .rsmbl-cb-table a.rsmbl-cb-link:hover{border-bottom-color:var(--rsmbl-accent);}
+    .rsmbl-cb-caption{
+      font-size:13px;
+      color:#8888a0;
+      margin-top:10px;
+      line-height:1.5;
+    }
+    @media (max-width:600px){
+      .rsmbl-cb-table thead th,
+      .rsmbl-cb-table tbody td{padding:12px 14px;}
+    }
+  </style>
+
+  <div class="rsmbl-cb-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Language</th>
+          <th class="rsmbl-num">CER %</th>
+          <th>Model card</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="rsmbl-cb-model">Chatterbox Multilingual <span class="rsmbl-cb-code">zh-cmn</span></td>
+          <td class="rsmbl-cb-lang">Mandarin Chinese</td>
+          <td class="rsmbl-num">0.69</td>
+          <td><a class="rsmbl-cb-link" href="https://huggingface.co/spaces/ResembleAI/Chatterbox-Multilingual-TTS-zh-cmn" target="_blank" rel="noopener">Hugging Face ↗</a></td>
+        </tr>
+        <tr>
+          <td class="rsmbl-cb-model">Chatterbox Multilingual <span class="rsmbl-cb-code">es-mx-latam</span></td>
+          <td class="rsmbl-cb-lang">Latin American Spanish</td>
+          <td class="rsmbl-num">0.46</td>
+          <td><a class="rsmbl-cb-link" href="https://huggingface.co/spaces/ResembleAI/Chatterbox-Multilingual-TTS-es-mx-latam" target="_blank" rel="noopener">Hugging Face ↗</a></td>
+        </tr>
+        <tr>
+          <td class="rsmbl-cb-model">Chatterbox Multilingual <span class="rsmbl-cb-code">es-es</span></td>
+          <td class="rsmbl-cb-lang">European Spanish</td>
+          <td class="rsmbl-num">0.62</td>
+          <td><a class="rsmbl-cb-link" href="https://huggingface.co/spaces/ResembleAI/Chatterbox-Multilingual-TTS-es-es" target="_blank" rel="noopener">Hugging Face ↗</a></td>
+        </tr>
+        <tr>
+          <td class="rsmbl-cb-model">Chatterbox Multilingual <span class="rsmbl-cb-code">pt-br</span></td>
+          <td class="rsmbl-cb-lang">Brazilian Portuguese</td>
+          <td class="rsmbl-num">0.35</td>
+          <td><a class="rsmbl-cb-link" href="https://huggingface.co/spaces/ResembleAI/Chatterbox-Multilingual-TTS-pt-br" target="_blank" rel="noopener">Hugging Face ↗</a></td>
+        </tr>
+        <tr>
+          <td class="rsmbl-cb-model">Chatterbox Multilingual <span class="rsmbl-cb-code">pt-pt</span></td>
+          <td class="rsmbl-cb-lang">European Portuguese</td>
+          <td class="rsmbl-num">0.38</td>
+          <td><a class="rsmbl-cb-link" href="https://huggingface.co/spaces/ResembleAI/Chatterbox-Multilingual-TTS-pt-pt" target="_blank" rel="noopener">Hugging Face ↗</a></td>
+        </tr>
+        <tr>
+          <td class="rsmbl-cb-model">Chatterbox Multilingual <span class="rsmbl-cb-code">hi</span></td>
+          <td class="rsmbl-cb-lang">Hindi</td>
+          <td class="rsmbl-num">2.55</td>
+          <td><a class="rsmbl-cb-link" href="https://huggingface.co/spaces/ResembleAI/Chatterbox-Multilingual-TTS-hi" target="_blank" rel="noopener">Hugging Face ↗</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="rsmbl-cb-caption">CER % = Character Error Rate; lower is better.</p>
+</div></div><h3>What v3 still does not do well</h3><p>v3 has known weaknesses we want to surface in detail rather than leave them to be discovered by developers in production.</p><p><strong>Korean and Vietnamese are not at production quality. </strong></p><p>v3 generates Korean and Vietnamese speech with CERs of 70.90% and 75.21% respectively, both more than an order of magnitude worse than the next-weakest language in the supported set. The root cause is training data: we do not have sufficient volume of high-quality paired text-audio data in either language across the speaker distribution the model needs to generalize properly. v3 will produce Korean and Vietnamese output, but we recommend against using v3 for commercial deployments in either language until we have shipped an improvement. We are actively working on the data side and expect to release either upgraded multilingual checkpoints or dedicated Single-Language Pack models as follow-ups.</p><p><strong>Czech, Japanese, and Finnish are usable with caveats</strong>. </p><p>Czech at 32.21% CER, Japanese at 21.87%, and Finnish at 17.52% are all behind the front-runners but still in the range where the output is intelligible for many applications. We attribute the gap to a combination of factors: smaller training data volume than the well-supported European languages, tokenization challenges (particularly for Japanese mixed scripts of hiragana, katakana, and kanji), and prosodic features our current evaluation does not capture well. Developers building applications in any of these three languages should evaluate carefully on their specific content before deploying.</p><p><strong>Watermarking has limits we are continuing to characterize.</strong> </p><p>PerTh is robust against the manipulations we have tested, but we have not yet published systematic robustness curves under adversarial conditions (specifically: targeted attacks designed to strip the watermark without destroying audio quality). The watermark also produces a binary signal for &quot;this audio was generated by Chatterbox,&quot; not a model-version signal or a tenant-attribution signal. These capabilities and on their way, and we are working with the C2PA community on the interop standards that would let multiple TTS providers&#x27; watermarks be verified through a single library.</p><p><strong>The deeper limitation is that CER does not capture everything.</strong> </p><p>A model can score well on transcription-based metrics while still missing prosody, sounding unnatural, or failing on speaker similarity in voice-cloning use cases. The numbers in this post are evidence of intelligibility and stability, not a complete picture of quality. We are working on the next round of evaluations and expect those numbers to surface tradeoffs the current results hide.</p><h3>What&#x27;s next</h3><p>The work continues in four directions. The first is closing the gap on the languages where v3 is weak, particularly Korean and Vietnamese, which will require both data work and likely architectural attention for languages with complex tokenization. The second is extending the evaluation protocol to add subjective quality and speaker similarity metrics that the current CER-based approach misses. The third is broadening the Single-Language Pack to additional languages where the deployment volume and quality headroom justify dedicated models. The fourth is the watermarking work: tenant attribution, model-version signaling, and adversarial robustness characterization.</p></div><div id="blog-cta" class="blog-cta-block"><div class="blog-cta-wrapper"><div><div class="display-md mb-16">Try Resemble AI free</div><div class="text-xl">Generate with confidence. Verify ownership. Detect deception. Only with Resemble AI.</div></div><a href="https://app.resemble.ai/" class="button md-full-width w-button">Get started</a></div></div></div></div></div></section><section id="post-related" class="section padded-section lg-padding"><div class="container related-posts-container"><h2 class="display-md mb-64">Related resources</h2><div class="full-width w-dyn-list"><div role="list" class="blog-post-grid w-dyn-items"><div role="listitem" class="w-dyn-item"><a href="/resources/introducing-detect-world-the-first-world-model-for-deepfake-detection" class="blog-post-card w-inline-block"><img src="https://cdn.prod.website-files.com/69d6774372a7b569dc02a034/6a7a594c1a51d2c121aee880_Resemble%20AI%20DETECT-World%20preview.avif" loading="lazy" alt="" class="blog-post-card_img mb-16"/><div class="w-layout-hflex blog-post-card_meta"><div>Research</div><div>•</div><div>Aug 12, 2026</div></div><div class="text-xl gray-900 mb-4">Introducing DETECT-World: The First World Model for Deepfake Detection</div><div class="text-md clamp">DETECT-World is the first world model for deepfake detection — catching unseen generators by checking physics, not memorizing signatures. Audio, image, and video.
+</div></a></div><div role="listitem" class="w-dyn-item"><a href="/resources/the-watermark-shortcut-how-provenance-marking-sabotages-audio-deepfake-detection" class="blog-post-card w-inline-block"><img src="https://cdn.prod.website-files.com/69d6774372a7b569dc02a034/6a58eee790e39ac05f02592f_detect-research%20(1).avif" loading="lazy" alt="" class="blog-post-card_img mb-16"/><div class="w-layout-hflex blog-post-card_meta"><div>Research</div><div>•</div><div>Jun 22, 2026</div></div><div class="text-xl gray-900 mb-4">The Watermark Shortcut: How Provenance Marking Sabotages Audio Deepfake Detection</div><div class="text-md clamp">When synthetic speech is watermarked by default but real speech isn&#x27;t, a detector trained on that imbalance can learn &quot;watermarked equals fake&quot; instead of genuine synthesis artifacts, a shortcut that can let unwatermarked fakes evade detection and cause genuine watermarked recordings to be wrongly flagged. Research by Resemble AI&#x27;s Nicolas Müller and Fraunhofer AISEC&#x27;s Pascal Debus.
+</div></a></div><div role="listitem" class="w-dyn-item"><a href="/resources/replay-attacks-against-audio-deepfake-detection" class="blog-post-card w-inline-block"><img src="https://cdn.prod.website-files.com/69d6774372a7b569dc02a034/6a58eee790e39ac05f02592f_detect-research%20(1).avif" loading="lazy" alt="" class="blog-post-card_img mb-16"/><div class="w-layout-hflex blog-post-card_meta"><div>Research</div><div>•</div><div>Jun 1, 2025</div></div><div class="text-xl gray-900 mb-4">Replay Attacks Against Audio Deepfake Detection</div><div class="text-md clamp">Playing synthetic audio through a speaker and re-recording it, a &quot;replay attack&quot;, can disguise deepfakes as genuine, raising a leading open-source detector&#x27;s error rate from 4.7% to 18.2%. Research by Resemble AI&#x27;s Nicolas Müller, Piotr Kawa, and Aditya Tirumala Bukkapatnam, presented at INTERSPEECH 2025.</div></a></div></div></div><a href="/resources" class="button w-button">View all posts</a></div></section><div data-wf--primary-cta--variant="gradient-noise" class="primary-cta-section w-variant-03fb2db6-09b6-1c21-25cd-4e3badad20ba"><div class="container"><div class="left-border"><div class="heading-xl black mb-24 w-variant-03fb2db6-09b6-1c21-25cd-4e3badad20ba">Know what&#x27;s real — and what&#x27;s a real threat.</div><div class="text-xl mb-32 w-variant-03fb2db6-09b6-1c21-25cd-4e3badad20ba max-800">Join thousands of developers and enterprises detecting AI fraud and protecting their content with Resemble AI</div><div class="cta-wrapper"><a href="/contact-us" class="button w-variant-03fb2db6-09b6-1c21-25cd-4e3badad20ba w-button">Contact us</a></div></div></div></div><footer class="footer"><div class="footer-container"><div class="footer_newsletter"><div class="footer_newsletter-wrapper"><div class="footer_newsletter-content"><div class="footer_newsletter-heading">Sign up for our newsletter</div><div class="footer_newsletter-text">Not too often. No spam.</div></div><div class="footer_newsletter-form"><div class="footer_newsletter-form w-form"><div class="w-form-done"><div>Thank you! Your submission has been received!</div></div><div class="w-form-fail"><div>Oops! Something went wrong while submitting the form.</div></div></div><div class="footer_newsletter-form w-embed"><div class="hs-form-html" 
+     data-region="na1" 
+     data-form-id="b473b576-d60f-485a-93e2-fa098fcdcef8" 
+     data-portal-id="39879154"></div>
+
+<style>
+  .footer_newsletter-form [data-hsfc-id='Renderer'] .hsfc-Step .hsfc-Step__Content {
+    grid-column-gap: 16px;
+    grid-row-gap: 16px;
+    grid-template-rows: auto auto;
+    grid-template-columns: 1fr 1fr;
+    grid-auto-columns: 1fr;
+    justify-content: flex-end;
+    align-items: stretch;
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    padding: 0;
+  }
+  .footer_newsletter-form [data-hsfc-id='Renderer'] .hsfc-FieldLabel {
+    display: none;
+  }
+  .footer_newsletter-form [data-hsfc-id='Renderer'] .hsfc-TextInput {
+    grid-column-gap: 8px;
+    background-color: #212522;
+    border: 1px solid #1b211e;
+    border-radius: 2px;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    height: 48px;
+    margin-bottom: 0;
+    padding: 10px 14px;
+    font-size: 16px;
+    line-height: 24px;
+    text-decoration: none;
+    color: white;
+    box-shadow: none !important;
+    font-family: 'Inter';
+  }
+  .footer_newsletter-form [data-hsfc-id='Renderer'] .hsfc-TextInput::placeholder {
+    color: var(--gray-500);
+  }
+  .footer_newsletter-form [data-hsfc-id='Renderer'] .hsfc-Button {
+    grid-column-gap: 6px;
+    color: #fbfbfa;
+    background-color: #606060;
+    border-radius: 2px;
+    flex: 0 auto;
+    justify-content: center;
+    align-items: center;
+    height: 48px;
+    padding: 12px 18px;
+    font-size: 16px;
+    line-height: 24px;
+    text-decoration: none;
+    display: flex;
+    font-weight: 400;
+    transition: opacity 0.2s ease-in-out;
+    word-break: initial;
+    font-family: 'Inter';
+  }
+  .footer_newsletter-form [data-hsfc-id='Renderer'] .hsfc-Button:not([disabled]):hover {
+    background-color: #606060 !important;
+    opacity: 0.9;
+    transform: none;
+  }
+  .footer_newsletter-form [data-hsfc-id='Renderer'] .hsfc-NavigationRow__Alerts,
+  .footer_newsletter-form [data-hsfc-id='Renderer'] .hsfc-NavigationRow {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  .footer_newsletter-form [data-hsfc-id='Renderer'] .hsfc-RichText strong {
+    color: #efeae5;
+    width: 100%;
+    margin-top: 0;
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 32px;
+    text-decoration: none;
+    font-family: 'Inter';
+  }
+  .footer_newsletter-form [data-hsfc-id='Renderer'] .hsfc-RichText span {
+    color: #8a8885;
+    letter-spacing: 0.02em;
+    width: 100%;
+    margin-top: 0;
+    margin-bottom: 0;
+    font-family:
+      Geist Mono,
+      sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    text-decoration: none;
+  }
+  .footer_newsletter-form [data-hsfc-id='Renderer'] .hsfc-ErrorAlert {
+    color: var(--red-400) !important
+  }
+</style></div></div></div></div><div class="footer_links"><div class="footer_links-wrapper"><div class="footer_links-column"><div class="footer_links-list"><div class="footer_links-heading">PRODUCT</div><a href="/products" class="footer_links-item">Product overview</a></div><div class="footer_links-list"><div class="footer_links-item no-events gray-500">Verify</div><a href="/products/identity" class="footer_links-item">Resemble Identity</a><a href="/products/watermarker" class="footer_links-item">Resemble Watermarker </a></div><div class="footer_links-list"><div class="footer_links-item no-events gray-500">Detect</div><a href="/products/detect" class="footer_links-item">Resemble Detect</a><a href="/products/meetings" class="footer_links-item">Resemble Meetings </a><a href="/products/intelligence" class="footer_links-item">Resemble Intelligence </a><a href="/products/deepfake-detection-chrome-extension" class="footer_links-item">Deepfake Detection Chrome Extension</a></div><div class="footer_links-list"><div class="footer_links-item no-events gray-500">Voice AI Research</div><a href="/products/text-to-speech" class="footer_links-item">Resemble TTS</a><a href="/products/voice-creation" class="footer_links-item">Resemble Voice Creation</a><a href="/products/audio" class="footer_links-item">Resemble Audio</a><a href="/products/speech-to-speech" class="footer_links-item">Resemble STS</a></div><div class="footer_links-list"><a href="https://status.resemble.ai/" target="_blank" class="footer_links-item">Status</a><a data-track="footer-login" href="https://app.resemble.ai/" target="_blank" class="footer_links-item">Log in</a><a href="/data-breach-policy" class="footer_links-item">Data breach policy</a><a href="https://docs.google.com/document/d/1rlgjFE6sN0mB5MCuE_erMgMuXmPu-e_E/edit?usp=sharing&amp;ouid=112999499300953419894&amp;rtpof=true&amp;sd=true" target="_blank" class="footer_links-item">Data processing agreement</a></div></div><div class="footer_links-column"><div class="footer_links-list"><div class="footer_links-heading">SOLUTIONS</div><a href="#" class="footer_links-item hidden">Solutions overview</a></div><div class="footer_links-list"><a href="#" class="footer_links-item hidden">Solutions overview</a><div class="footer_links-list"><a href="#" class="footer_links-item no-events gray-500">Use cases</a><a href="/solutions/voice-agents" class="footer_links-item">Voice agents</a><a href="/solutions/dispute-claim-verification" class="footer_links-item">Dispute &amp; claim verification</a><a href="/solutions/executive-impersonation" class="footer_links-item">Executive impersonation</a><a href="/solutions/media-watermarking" class="footer_links-item">Media watermarking</a><a href="/solutions/contact-center-fraud" class="footer_links-item">Contact center fraud</a><a href="/solutions/identity-verification-and-kyc" class="footer_links-item">Identity verification &amp; KYC</a></div></div><div class="footer_links-list"><a href="#" class="footer_links-item no-events gray-500">Industries</a><a href="/solutions/telco" class="footer_links-item">Telco</a><a href="/solutions/marketplace" class="footer_links-item">Marketplace</a><a href="/solutions/finance" class="footer_links-item">Finance</a><a href="/solutions/media-and-entertainment" class="footer_links-item">Media &amp; entertainment</a><a href="/solutions/healthtech" class="footer_links-item">Healthtech</a><a href="/solutions/public-sector" class="footer_links-item">Public sector</a></div></div><div class="footer_links-column"><div class="footer_links-list"><div class="footer_links-heading">BUILD</div><a href="/start/start-here" class="footer_links-item light icon w-inline-block"><div class="w-layout-hflex gap-4 align-center"><div>Start here</div><img src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69e631876eebafc33ccbdc35_cfebcb2952099128e68e9c8416a1ebb7_teal-sparkles.svg" loading="lazy" width="18" height="18" alt=""/></div></a><a href="https://docs.resemble.ai/libraries" target="_blank" class="footer_links-item">SDKs</a><a href="https://docs.resemble.ai/welcome" target="_blank" class="footer_links-item">Docs</a><a href="/changelog" class="footer_links-item">Changelog</a></div><div class="footer_links-list"><div class="footer_links-heading">LEARN</div><a href="/benchmarks" class="footer_links-item">Benchmarks</a><a href="https://trust.resemble.ai/" target="_blank" class="footer_links-item">Trust center</a><a href="/learn/deepfake-incident-database" class="footer_links-item">Deepfake incident database</a><a href="/learn/laws-and-regulations" class="footer_links-item">Laws &amp; regulations</a><a href="/learn/attack-vectors" class="footer_links-item">Attack vectors</a><a href="/resources" class="footer_links-item">Blog</a><a href="/resources/research" class="footer_links-item">Research</a><a href="/resources/case-studies" class="footer_links-item">Case studies</a><a href="https://discord.com/invite/ktZMcfH4ms" target="_blank" class="footer_links-item">Discord</a></div></div><div class="footer_links-column"><div class="footer_links-list"><div class="footer_links-heading">MODELS</div><a href="/learn/models" class="footer_links-item">Models overview</a></div><div class="footer_links-list"><div class="footer_links-item no-events gray-500">Verify</div><a href="/learn/models/perth" class="footer_links-item">PerTh</a><a href="/learn/models/perth-multimodal" class="footer_links-item">PerTh Multimodal</a><a href="https://github.com/resemble-ai/resemblyzer" class="footer_links-item">Resemblyzer</a></div><div class="footer_links-list"><div class="footer_links-item no-events gray-500">Detect</div><a href="/learn/models/detect-world" class="footer_links-item">DETECT-World</a><a href="/learn/models/detect-3b-omni" class="footer_links-item">DETECT-3B Omni </a><a href="/learn/models/detect2b" class="footer_links-item">DETECT-2B</a></div><div class="footer_links-list"><div class="footer_links-item no-events gray-500">Voice AI Research</div><a href="/learn/models/chatterbox" class="footer_links-item">Chatterbox </a><a href="/learn/models/chatterbox-turbo" class="footer_links-item">Chatterbox Turbo</a><a href="/learn/models/chatterbox-multilingual" class="footer_links-item">Chatterbox Multilingual</a><a href="/learn/models/chatterbox-nano" class="footer_links-item">Chatterbox Nano</a><a href="/learn/models/chatterbox-flash" class="footer_links-item">Chatterbox Flash</a><a href="/learn/models/dramabox" class="footer_links-item">DramaBox</a></div></div><div class="footer_links-column"><div class="footer_links-list"><div class="footer_links-heading">COMPARE</div></div><div class="footer_links-list"><div class="footer_links-item no-events gray-500">Deepfake detection</div><a href="/resemble-ai-vs-pindrop" class="footer_links-item">vs Pindrop</a><a href="/resemble-ai-vs-reality-defender" class="footer_links-item">vs Reality Defender</a><a href="/resemble-ai-vs-sensity" class="footer_links-item">vs Sensity</a></div></div><div class="footer_links-column"><div class="footer_links-list"><div class="footer_links-heading">COMPANY</div><a href="/company/about-us" class="footer_links-item">About Resemble AI</a><a href="https://app.dover.com/dover/careers/64b57c81-9467-4ad2-9c8c-128f553157b5" target="_blank" class="footer_links-item">Careers</a><a href="/company/ethics" class="footer_links-item">Ethics</a><a href="/company/press" class="footer_links-item">Press</a><a href="/resources" class="footer_links-item">Resources</a></div><div class="footer_links-list"><div class="footer_links-heading">PROGRAMS</div><a href="/start/builders-grant-startup-program" class="footer_links-item">Builder’s Grant</a><a href="/integrations-and-environments" class="footer_links-item">Integrations &amp; environments</a><a href="/start/press-access-tier-deepfake-detection-for-journalists" class="footer_links-item">Press Access Tier</a></div></div></div></div><div class="footer_links"><div class="footer_bottom-wrapper"><div id="w-node-_929d04df-62de-8cb7-3d46-e556bb07853d-38be02b9" class="footer_bottom-brand"><img src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69c27862161f0ac544733a65_resemble-ai-logo.svg" loading="lazy" width="230" height="37.59" alt="Resemble AI logo" class="footer_bottom-logo"/><div class="footer_bottom-brand-content"><div class="footer_bottom-tagline">Deepfake detection models</div><div><span class="footer_bottom-keywords">Make confident, scalable decisions — instantly.</span><span class="footer_bottom-keywords"></span><span class="footer_bottom-keywords"></span></div></div></div><div id="w-node-_929d04df-62de-8cb7-3d46-e556bb07854e-38be02b9" class="footer_newsletter-input-wrapper"><a href="/privacy-policy" class="footer_links-item muted">Privacy policy</a><a href="/terms-of-service" class="footer_links-item muted">Terms of service</a><a href="/cookie-policy" class="footer_links-item muted">Cookie policy</a><a fs-consent-element="open-preferences" href="#" class="footer_links-item muted">Your privacy choices</a></div><div class="footer_bottom-social"><div class="footer_bottom-social-wrapper"><a aria-label="Follow us on X / Twitter" href="https://www.x.com/resembleai" target="_blank" class="w-inline-block"><img src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69c158da8c78db043c269d87_Social-icon.svg" loading="lazy" width="24" height="24" alt="" class="footer_bottom-logo"/></a><a aria-label="Connect with us on LinkedIn" href="https://www.linkedin.com/company/resembleai/" target="_blank" class="w-inline-block"><img src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69c158da8c78db043c269d31_Social-icon.svg" loading="lazy" width="24" height="24" alt="" class="footer_bottom-logo"/></a><a aria-label="Subscribe to our YouTube channel" href="https://www.youtube.com/ResembleAI" target="_blank" class="w-inline-block"><img src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69c158da0f00cd0bac163ee9_Social-icon.svg" loading="lazy" width="24" height="24" alt="" class="footer_bottom-logo"/></a><a aria-label="Check our projects on GitHub" href="https://www.github.com/resemble-ai" target="_blank" class="w-inline-block"><img src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/69c158da95538f231d20f171_Social-icon.svg" loading="lazy" width="24" height="24" alt="" aria="" class="footer_bottom-logo"/></a></div></div></div><div class="footer_bottom-copyright"><div class="footer_bottom-copyright-copy">© 2026 Resemble AI. All rights reserved.</div></div></div></div></footer><script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=69bc3de63d285e297507b3ef" type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script><script src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef/js/webflow.15d42f10.357214b775194a50.js" type="text/javascript" integrity="sha384-5RUgPn1CEybpSFuo6pKsHyIFxU98iuTnEvLyj4B4/blfPy/hcnZtNvXstsd1GSgD" crossorigin="anonymous"></script><script>
+  (function () {
+    var loaded = false;
+    function loadHubSpot() {
+      if (loaded) return;
+      loaded = true;
+      var s = document.createElement('script');
+      s.src = 'https://js.hsforms.net/forms/embed/developer/39879154.js';
+      s.defer = true;
+      document.body.appendChild(s);
+    }
+    var target = document.querySelector('.contact-form-hs') || document.querySelector('footer');
+    if ('IntersectionObserver' in window && target) {
+      var io = new IntersectionObserver(
+        function (entries) {
+          if (
+            entries.some(function (e) {
+              return e.isIntersecting;
+            })
+          ) {
+            loadHubSpot();
+            io.disconnect();
+          }
+        },
+        { rootMargin: '600px' },
+      ); // start loading well before it's visible
+      io.observe(target);
+    } else {
+      ['scroll', 'pointerdown', 'keydown'].forEach(function (ev) {
+        window.addEventListener(ev, loadHubSpot, { once: true, passive: true });
+      });
+    }
+    // Safety net: deep-links/bots that never scroll still get the form
+    window.addEventListener('load', function () {
+      setTimeout(loadHubSpot, 4000);
+    });
+  })();
+</script>
+
+<style>
+  .contact-form-hs {
+    width: 100%;
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  p a {
+    color: var(--gray-700);
+    text-decoration: none;
+    border-bottom: 1px solid var(--gray-700);
+  }
+
+  .pretty-wrap {
+    text-wrap: pretty;
+  }
+</style>
+
+<!-- HubSpot Form Submission → dataLayer -->
+<script>
+  window.addEventListener('message', function (event) {
+    if (event.origin === 'https://forms.hsforms.com' && event.data && event.data.accepted === true && event.data.formGuid) {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'hubspot_form_submission',
+        hs_form_id: event.data.formGuid,
+      });
+    }
+  });
+</script><script>
+  const paragraphs = document.querySelectorAll('body p');
+
+  paragraphs.forEach((p) => {
+    if (p.textContent.trim() === '```Banner```') {
+      const cta = document.getElementById('blog-cta');
+      if (cta) {
+        p.replaceWith(cta);
+      }
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const tocContainer = document.querySelector('.blog-sidebar .toc');
+    const headings = document.querySelectorAll('.blog-main-content h2');
+    const OFFSET = 76;
+
+    if (!tocContainer || !headings.length) return;
+
+    tocContainer.innerHTML = '';
+
+    headings.forEach((h2, i) => {
+      const id = h2.textContent
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+      h2.id = id;
+
+      const item = document.createElement('div');
+      item.className = 'text-md gray-500 pointer toc-item';
+      item.textContent = h2.textContent.trim();
+      item.dataset.target = id;
+
+      item.addEventListener('click', () => {
+        const top = h2.getBoundingClientRect().top + window.scrollY - OFFSET;
+        window.scrollTo({ top, behavior: 'smooth' });
+      });
+
+      tocContainer.appendChild(item);
+    });
+
+    const tocItems = tocContainer.querySelectorAll('.toc-item');
+
+    const setActive = () => {
+      const midpoint = window.innerHeight * 0.1;
+      let currentIndex = 0;
+
+      headings.forEach((h2, i) => {
+        if (h2.getBoundingClientRect().top <= midpoint) {
+          currentIndex = i;
+        }
+      });
+
+      tocItems.forEach((item, i) => {
+        item.classList.toggle('active', i === currentIndex);
+      });
+    };
+
+    window.addEventListener('scroll', setActive, { passive: true });
+    setActive();
+  });
+</script>
+
+<style id="resemble-sample-styles">
+  .resemble-sample{margin:24px 0;font-family:inherit}
+  .resemble-sample-label{display:flex;align-items:center;gap:10px;margin-bottom:12px;color:#515151;font-size:16px;line-height:1.4}
+  .resemble-sample-label strong{font-weight:600;color:#1a1a1a}
+  .resemble-sample-icon{flex:0 0 auto;color:#888}
+  .resemble-sample-title{text-decoration:underline;text-underline-offset:3px}
+  .mini-audio-player{--map-color:#000;--map-color-dim:#B6B2AD;--map-height:20px;--map-icon-width:14px;--map-track-bg-height:1px;--map-track-fill-height:4px;--map-thumb-size:12px;--map-gap:16px;display:inline-flex;align-items:center;gap:var(--map-gap);width:100%;max-width:480px;height:var(--map-height);color:var(--map-color);font-family:inherit;user-select:none;-webkit-user-select:none}
+  .mini-audio-player *{box-sizing:border-box}
+  .map-play{flex:0 0 auto;width:var(--map-icon-width);height:var(--map-height);padding:0;background:transparent;border:0;color:var(--map-color);cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+  .map-play:focus{outline:none}
+  .map-play:focus-visible{outline:2px solid var(--map-color);outline-offset:3px;border-radius:2px}
+  .map-icon{width:100%;height:100%;display:block}
+  .map-icon-pause{display:none}
+  .mini-audio-player.is-playing .map-icon-play{display:none}
+  .mini-audio-player.is-playing .map-icon-pause{display:block}
+  .map-track{position:relative;flex:1 1 auto;height:var(--map-height);display:flex;align-items:center;cursor:pointer;touch-action:none}
+  .map-track:focus{outline:none}
+  .map-track:focus-visible .map-thumb{box-shadow:0 0 0 3px rgba(0,0,0,.15)}
+  .map-track-bg{position:absolute;left:0;top:50%;transform:translateY(-50%);width:100%;height:var(--map-track-bg-height);background:var(--map-color-dim);pointer-events:none}
+  .map-track-fill{position:absolute;left:0;top:50%;transform:translateY(-50%);width:0%;height:var(--map-track-fill-height);background:var(--map-color);border-radius:999px;pointer-events:none}
+  .map-thumb{position:absolute;top:50%;left:0%;width:var(--map-thumb-size);height:var(--map-thumb-size);background:var(--map-color);border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
+  .mini-audio-player.is-loading{opacity:.6}
+  .mini-audio-player.is-disabled{opacity:.4;pointer-events:none}
+</style>
+
+<script>
+(function () {
+  'use strict';
+  var CONTAINER_SELECTOR = '.w-richtext, .rich-text-blog, [data-audio-parse]';
+  var SHORTCODE_RE = /\[audio\s+src=["']([^"']+)["'](?:\s+title=["']([^"']*)["'])?\s*\]/gi;
+  var PERCENT_RE   = /%%audio\s+(\S+?)(?:\s*\|\s*([^%]+?))?\s*%%/gi;
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function buildPlayerHTML(src, title) {
+    var safeSrc   = escapeHtml(src);
+    var safeTitle = escapeHtml(title || 'Audio sample');
+    return '' +
+      '<div class="resemble-sample">' +
+        '<div class="resemble-sample-label">' +
+          '<svg class="resemble-sample-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+            '<path d="M3 14v3a2 2 0 0 0 2 2h2v-7H5a2 2 0 0 0-2 2z"/>' +
+            '<path d="M21 14v3a2 2 0 0 1-2 2h-2v-7h2a2 2 0 0 1 2 2z"/>' +
+            '<path d="M3 14v-2a9 9 0 0 1 18 0v2"/>' +
+          '</svg>' +
+          '<strong>Sample: <span class="resemble-sample-title">' + safeTitle + '</span></strong>' +
+        '</div>' +
+        '<div class="mini-audio-player" data-src="' + safeSrc + '">' +
+          '<button class="map-play" type="button" aria-label="Play">' +
+            '<svg class="map-icon map-icon-play" viewBox="0 0 14 20" aria-hidden="true"><path d="M12.69 8.81C13.18 9.13 13.5 9.69 13.5 10.25C13.5 10.85 13.18 11.41 12.69 11.69L2.57 17.88C2.04 18.20 1.37 18.23 0.84 17.91C0.32 17.63 0 17.07 0 16.44V4.06C0 3.46 0.32 2.90 0.84 2.62C1.37 2.30 2.04 2.30 2.57 2.66L12.69 8.81Z" fill="currentColor"/></svg>' +
+            '<svg class="map-icon map-icon-pause" viewBox="0 0 14 20" aria-hidden="true"><rect x="1" y="2" width="4" height="16" rx="1.5" fill="currentColor"/><rect x="9" y="2" width="4" height="16" rx="1.5" fill="currentColor"/></svg>' +
+          '</button>' +
+          '<div class="map-track" role="slider" tabindex="0" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
+            '<div class="map-track-bg"></div><div class="map-track-fill"></div><div class="map-thumb"></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function parseContainer(container) {
+    if (!container || container.dataset.audioParsed === 'true') return;
+    container.dataset.audioParsed = 'true';
+
+    var walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null);
+    var textNodes = [];
+    var n;
+    while ((n = walker.nextNode())) textNodes.push(n);
+
+    textNodes.forEach(function (node) {
+      var text = node.nodeValue;
+      if (!text) return;
+
+      if (text.indexOf('[audio') === -1 && text.indexOf('%%audio') === -1) return;
+
+      SHORTCODE_RE.lastIndex = 0;
+      PERCENT_RE.lastIndex = 0;
+
+      var matches = [];
+      var m;
+      while ((m = SHORTCODE_RE.exec(text)) !== null) {
+        matches.push({ start: m.index, end: m.index + m[0].length, src: m[1], title: m[2] || '' });
+      }
+      while ((m = PERCENT_RE.exec(text)) !== null) {
+        matches.push({ start: m.index, end: m.index + m[0].length, src: m[1], title: m[2] || '' });
+      }
+      if (!matches.length) return;
+
+      matches.sort(function (a, b) { return a.start - b.start; });
+
+      var frag = document.createDocumentFragment();
+      var cursor = 0;
+      matches.forEach(function (mm) {
+        if (mm.start > cursor) {
+          frag.appendChild(document.createTextNode(text.slice(cursor, mm.start)));
+        }
+        var wrap = document.createElement('div');
+        wrap.innerHTML = buildPlayerHTML(mm.src, mm.title);
+        while (wrap.firstChild) frag.appendChild(wrap.firstChild);
+        cursor = mm.end;
+      });
+
+      if (cursor < text.length) {
+        frag.appendChild(document.createTextNode(text.slice(cursor)));
+      }
+
+      node.parentNode.replaceChild(frag, node);
+    });
+  }
+
+  function initPlayer(player) {
+    if (player.dataset.initialized === 'true') return;
+    player.dataset.initialized = 'true';
+    var src = player.getAttribute('data-src');
+    if (!src) { player.classList.add('is-disabled'); return; }
+    var audio = new Audio();
+    audio.preload = 'metadata';
+    audio.src = src;
+    var playBtn = player.querySelector('.map-play');
+    var track   = player.querySelector('.map-track');
+    var fill    = player.querySelector('.map-track-fill');
+    var thumb   = player.querySelector('.map-thumb');
+    var dragging = false;
+
+    function setProgress(p) {
+      p = Math.max(0, Math.min(100, p));
+      fill.style.width = p + '%';
+      thumb.style.left = p + '%';
+      track.setAttribute('aria-valuenow', Math.round(p));
+    }
+    function pctFromEvent(e) {
+      var r = track.getBoundingClientRect();
+      var x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+      return (x / r.width) * 100;
+    }
+    function seekTo(p) {
+      p = Math.max(0, Math.min(100, p));
+      setProgress(p);
+      if (audio.duration) audio.currentTime = (p / 100) * audio.duration;
+    }
+
+    playBtn.addEventListener('click', function () { audio.paused ? audio.play() : audio.pause(); });
+    audio.addEventListener('play',  function () { player.classList.add('is-playing');    playBtn.setAttribute('aria-label', 'Pause'); });
+    audio.addEventListener('pause', function () { player.classList.remove('is-playing'); playBtn.setAttribute('aria-label', 'Play'); });
+    audio.addEventListener('ended', function () { player.classList.remove('is-playing'); setProgress(0); audio.currentTime = 0; });
+    audio.addEventListener('timeupdate', function () {
+      if (dragging || !audio.duration) return;
+      setProgress((audio.currentTime / audio.duration) * 100);
+    });
+
+    function start(e) { dragging = true; seekTo(pctFromEvent(e)); e.preventDefault(); }
+    function move(e)  { if (dragging) seekTo(pctFromEvent(e)); }
+    function end()    { dragging = false; }
+
+    track.addEventListener('mousedown', start);
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', end);
+    track.addEventListener('touchstart', start, { passive: false });
+    window.addEventListener('touchmove', move, { passive: false });
+    window.addEventListener('touchend', end);
+
+    track.addEventListener('keydown', function (e) {
+      if (!audio.duration) return;
+      var step = 5;
+      var cur = (audio.currentTime / audio.duration) * 100;
+      if (e.key === 'ArrowRight') { seekTo(cur + step); e.preventDefault(); }
+      if (e.key === 'ArrowLeft')  { seekTo(cur - step); e.preventDefault(); }
+      if (e.key === 'Home')       { seekTo(0);          e.preventDefault(); }
+      if (e.key === 'End')        { seekTo(100);        e.preventDefault(); }
+      if (e.key === ' ' || e.key === 'Enter') {
+        audio.paused ? audio.play() : audio.pause();
+        e.preventDefault();
+      }
+    });
+  }
+
+  function run() {
+    document.querySelectorAll(CONTAINER_SELECTOR).forEach(parseContainer);
+    document.querySelectorAll('.mini-audio-player').forEach(initPlayer);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', run);
+  } else {
+    run();
+  }
+})();
+</script><script src="https://cdn.prod.website-files.com/69bc3de63d285e297507b3ef%2F689e5ba67671442434f3ca35%2F6a5a8bc4483fe4495a5dffb8%2Fconsentprocookiedeeplink-1.0.0.js" type="text/javascript"></script></body></html>

@@ -1,0 +1,50 @@
+synkbrief | 컴퓨터 사기 전에 확인할 것
+2026.09.27 기준
+
+1. 무엇을 하려고 하나요?
+[ ] AI에게 질문하고, 문서를 쓰고, 인터넷 강의를 보기
+[ ] 짧은 영상 자르기·자막 넣기
+[ ] 4K 편집·게임·컴퓨터에 AI 모델 설치
+쓸 프로그램·게임·모델 이름: ____________________
+
+2. 지금 컴퓨터가 있다면
+[ ] 인터넷 창과 문서를 함께 써봤다.
+[ ] 내가 하려는 실제 작업을 해봤다.
+[ ] 불편한 순간을 구체적으로 적었다: ____________________
+[ ] 운영체제와 업데이트 지원을 확인했다.
+Windows: 시작 버튼 → 설정 → 시스템 → 정보.
+Mac: 화면 왼쪽 위 Apple 메뉴 → 이 Mac에 관하여.
+Windows 10은 2025년 10월 14일 일반 지원이 끝났으므로,
+Microsoft PC 상태 검사로 Windows 11 전환 가능 여부부터 확인한다.
+별도 연장 보안 업데이트 등록 여부는 따로 확인한다.
+
+3. 처음 구매한다면
+[ ] 주로 쓸 장소: 집 / 밖 / 둘 다
+[ ] 총예산: ____________________원
+[ ] 후보 두 개를 같은 구성·보증·총액으로 비교한다.
+[ ] Windows가 필요하면 포함·설치 여부를 물어본다.
+[ ] 모니터·키보드·어댑터 등 추가 비용을 합친다.
+[ ] 화면을 평소 글자 크기로 보고 키보드에 몇 줄 입력해본다.
+[ ] 들고 다닐 경우 본체와 충전기 무게를 함께 본다.
+[ ] 반품·수리·보증 조건과 문의처를 확인한다.
+
+용어를 쉽게 기억하기
+- RAM(메모리): 여러 앱을 함께 펼쳐놓는 작업 책상.
+- SSD(저장 공간): 파일과 사진을 보관하는 서랍.
+16GB RAM·512GB SSD는 일반 신규 구매 비교의 출발점이다.
+기존 기기를 무조건 바꾸라는 뜻도, 모든 앱의 필수 사양도 아니다.
+편집·게임·설치형 AI는 정확한 프로그램의 공식 요구 사양을 확인한다.
+예: Windows용 Premiere는 HD 편집에 16GB,
+4K 이상에 32GB 이상의 RAM을 권장한다. 다른 조건도 따로 확인한다.
+
+상담할 때 이 문장부터
+“저는 [할 일 / 앱 이름]에 사용할 컴퓨터를 찾고 있어요.
+[주로 쓰는 장소]에서 쓸 거고 총예산은 [금액]이에요.
+설치·추가 기기·보증을 포함한 총액으로 두 후보를 비교해주세요.”
+
+확인한 공식 자료
+https://learn.chatgpt.com/docs/web
+https://support.microsoft.com/en-us/windows/experience/compatibility/how-to-use-the-pc-health-check-app
+https://support.microsoft.com/en-us/windows/experience/find-information-about-your-windows-device
+https://support.apple.com/en-us/102767
+https://helpx.adobe.com/sg/premiere/desktop/get-started/technical-requirements/adobe-premiere-pro-technical-requirements.html

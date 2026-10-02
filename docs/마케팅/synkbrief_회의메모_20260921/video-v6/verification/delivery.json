@@ -1,0 +1,37 @@
+{
+  "duration": "123.000000",
+  "streams": [
+    {
+      "type": "video",
+      "codec": "h264",
+      "width": 1080,
+      "height": 1920
+    },
+    {
+      "type": "audio",
+      "codec": "aac",
+      "width": null,
+      "height": null
+    }
+  ],
+  "decode_mp4": "passed",
+  "decode_webm": "passed",
+  "files": {
+    "synkbrief-meeting-v6.mp4": {
+      "bytes": 11242098,
+      "sha256": "4edabe10391de18eb316ff9fd75489b8ddb883f5e8833564314933ba3ca1fae5"
+    },
+    "preview.webm": {
+      "bytes": 4612217,
+      "sha256": "003be45d230e54412428c8d91c5b95bfbb8de52c2f0038ad0ba99472e12e4116"
+    },
+    "synkbrief-meeting-guide-v6.pdf": {
+      "bytes": 184359,
+      "sha256": "0546206c86bc62644544d74f4e8c268af3346322434a8999542842c0adc85eb3"
+    },
+    "synkbrief-meeting-kit-v6.zip": {
+      "bytes": 158211,
+      "sha256": "ab25c1fe054ea6f595bc9cf6f6d51f961deaef710e18d164c7bcb42175e3ed12"
+    }
+  }
+}

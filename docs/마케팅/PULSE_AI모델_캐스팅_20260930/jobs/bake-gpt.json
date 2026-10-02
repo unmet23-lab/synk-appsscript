@@ -1,0 +1,23 @@
+[
+  {
+    "created_at": "2026-09-30T12:35:38.112228Z",
+    "display_name": "GPT Image 2.5",
+    "id": "64cdc75c-abed-473e-8681-006424449689",
+    "job_type": "gpt_image_2_5",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_123538_64cdc75c-abed-473e-8681-006424449689_min.webp",
+    "params": {
+      "aspect_ratio": "3:4",
+      "height": 2336,
+      "medias": [],
+      "model": "flare",
+      "prompt": "Unretouched model agency digital (polaroid) photo of a 23-year-old Korean woman, head and shoulders, facing the camera straight on with a relaxed neutral expression, lips gently closed. Fresh natural look: long dark-brown straight hair tucked behind one ear, soft natural brows, gentle eyes with a subtle inner-fold crease, minimal makeup. Plain black cotton tank top. Plain warm light-grey wall. Soft daylight from a large window at camera left, gentle falloff, faint catchlights in the eyes. Shot on a full-frame camera, 85mm lens at f/4, eye level. Real skin texture: visible pores on the nose and cheeks, fine peach fuzz, a few faint freckles, slight natural redness around the nose, tiny under-eye lines, a few flyaway hairs. Natural color, fine film grain, no retouching, no beauty filter, no skin smoothing.",
+      "quality": "high",
+      "reference_elements": [],
+      "remove_bg": false,
+      "resolution": "2k",
+      "width": 1744
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260930_123538_64cdc75c-abed-473e-8681-006424449689.png",
+    "status": "completed"
+  }
+]

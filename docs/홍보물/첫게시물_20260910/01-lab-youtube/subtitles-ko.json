@@ -1,0 +1,37 @@
+[
+  {
+    "text": "같이 들을까요?",
+    "startMs": 6300,
+    "endMs": 7400,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "이 노래는 어때요?",
+    "startMs": 11773.333333333334,
+    "endMs": 13333.333333333334,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "좋아요.",
+    "startMs": 17296.666666666664,
+    "endMs": 18396.666666666664,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "같이 들어요.",
+    "startMs": 18616.666666666664,
+    "endMs": 19716.666666666664,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "[음악: 오늘 밤 제일 환한 사람 · 노래가 재생됩니다]",
+    "startMs": 26566.666666666664,
+    "endMs": 88166.66666666666,
+    "timestampMs": null,
+    "confidence": null
+  }
+]

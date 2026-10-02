@@ -1,0 +1,8 @@
+Use case: identity-preserve.
+Create one carefully corrected version of Image 1, the existing vertical cafe portrait. Image 2 is the real camera frame of the SAME adult man and is the authoritative reference for his identity, natural apparent age, exact smile, skin and facial proportions.
+
+The user's feedback is that the generated portrait looks slightly older than his real self. Correct only the artificial age increase: match the subtle depth and contrast of his facial lines and the natural skin appearance in Image 2. Gently reduce only any excess under-eye darkness, etched eye-corner lines, nose-to-mouth crease contrast, coarse pore contrast and local sharpening introduced in Image 1. Use soft, even natural facial light. Do not copy the dull gray camera-log exposure of Image 2.
+
+Keep his existing genuine smile fully alive: same narrowed smiling eyes, raised cheeks, mouth corner asymmetry, lip contours, real visible teeth, expression intensity and head angle as the real frame. Preserve his long narrow chin, facial width, nose, hairline, cornrows, eye spacing and original cheek volume. This is exact-age matching to the real reference, NOT making a younger generic actor, face reshaping, enlarged eyes, fuller cheeks, plastic skin, makeup, or a beauty filter. Retain subtle real skin texture without inventing age lines or exaggerating detail.
+
+Keep Image 1's 9:16 composition, head scale, blue cotton overshirt, white T-shirt, body pose, cafe background, props and photographic style unchanged. No text, logo or watermark. Output only the corrected cafe portrait.

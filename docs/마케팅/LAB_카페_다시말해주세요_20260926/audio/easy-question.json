@@ -1,0 +1,30 @@
+{
+  "id": "easy-question",
+  "role": "barista",
+  "text": "여기서 드세요? 가져가세요?",
+  "provider": "Microsoft Edge TTS",
+  "settings": {
+    "voice": "ko-KR-SunHiNeural",
+    "rate": "+0%",
+    "pitch": "+0Hz"
+  },
+  "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\LAB_카페_다시말해주세요_20260926\\audio\\easy-question.mp3",
+  "duration": 3.744,
+  "words": [
+    {
+      "text": "여기서",
+      "start": 0.1,
+      "end": 0.55
+    },
+    {
+      "text": "드세요",
+      "start": 0.5625,
+      "end": 1.1125
+    },
+    {
+      "text": "가져가세요",
+      "start": 1.975,
+      "end": 2.875
+    }
+  ]
+}

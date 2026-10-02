@@ -1,0 +1,60 @@
+{
+  "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\라디오생동_20260909\\v3\\생성_A_원본.mp4",
+  "qa": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\라디오생동_20260909\\v3\\생성_A_검수",
+  "duration": 12.041667,
+  "frames_sampled": 24,
+  "sha256": "056b811c2256704537a7e713dde632450a04f0e8e1b98a9642bccf854f9fdb60",
+  "automatic_verdict": null,
+  "max_global_center_drift_px": 0.1394544473248519,
+  "max_global_rotation_degrees": 0.0017977599592776331,
+  "static_max_nonrigid_residual_p95": {
+    "left_roof": 0.062222398817539215,
+    "left_columns": 0.09124930948019028,
+    "right_roof_clear": 0.09678784012794495,
+    "right_columns": 0.14589384198188782,
+    "ground": 0.2582390308380127,
+    "logo": 0.06764675676822662,
+    "wall": 0.10690192878246307
+  },
+  "seam": {
+    "flow": {
+      "available": true,
+      "detected": 600,
+      "tracked": 600,
+      "tracked_fraction": 1.0,
+      "median_vector_px": [
+        -0.009243011474609375,
+        -0.105224609375
+      ],
+      "median_px": 0.1099311113357544,
+      "p95_px": 0.1639268547296524,
+      "rotation_degrees": 0.0008083771626726634,
+      "scale": 0.9999072235952227,
+      "center_drift_px": [
+        -0.041510713995648985,
+        -0.10301226099915084
+      ],
+      "affine_inlier_fraction": 1.0,
+      "nonrigid_residual_p95_px": 0.0675695389509201,
+      "matrix": [
+        [
+          0.9999072234957022,
+          -1.4107534118362602e-05,
+          0.022944961037507556
+        ],
+        [
+          1.4107534118362602e-05,
+          0.9999072234957022,
+          -0.07864154128763759
+        ]
+      ]
+    },
+    "appearance": {
+      "rgb_mean_abs_delta_255": 2.3288798332214355,
+      "luma_mean_delta_255": 0.5462265014648438,
+      "edge_mean_abs_delta": 1.5800853967666626,
+      "note": "Edge variation can include codec noise or legitimate light; inspect actual pixels."
+    }
+  },
+  "visual_review_required": true
+}
