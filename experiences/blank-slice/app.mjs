@@ -3,7 +3,7 @@
 // 맞힌 낱말이 빈칸에 끼워지는 순간에는 ‘톡’과 사운드킷 ‘획득’(픽), 빈칸 눌림, 반짝이, 점수 올라가기가 함께 온다.
 import { ITEMS, PRACTICE, SKILL_LABEL, KIND_LABEL } from './content.mjs';
 import { parts, filled, shuffled, composeRound, pointsFor, scoreRound, hangTime, readDelay } from './core.mjs';
-import { GAME_ID, itemMetadata, rankItems, answerPayload, missedPayload, skillReport, assignmentItems, assignmentLabel } from './learning.mjs';
+import { GAME_ID, rankItems, createReadingConfirmation, skillReport, assignmentItems, assignmentLabel } from './learning.mjs';
 import * as sound from './audio.mjs';
 import { swingPower } from './sfx.mjs';
 import { createStage, FEEL } from './stage.mjs';
@@ -60,12 +60,12 @@ const show = (id) => {
 
 /* ── 입구 ── */
 function renderLobby() {
-  state.run += 1; stage?.clear();
+  state.run += 1; stage?.clear(); hideAnswerCheck();
   const target = assignment(), targetItems = assignmentItems(target);
   state.ranked = progress.plays === 0 ? null : atlas((c) => rankItems(c, ITEMS));
   $('#l-count').textContent = String(target ? targetItems.length : 12);
   $('#btn-start').disabled = !!target && targetItems.length === 0;
-  $('#l-reason').textContent = target ? `${assignmentLabel(target)}. 이 목표 문장에 답하면 WORLD 과제에 반영돼요. 놓침은 평가하지 않아요.` : progress.plays === 0
+  $('#l-reason').textContent = target ? `${assignmentLabel(target)}. 이 목표 문장에 답하면 WORLD 과제에 반영돼요. 놓친 문장은 멈춘 보기에서 답해요.` : progress.plays === 0
     ? '처음이라 쉬운 문장부터 시작해요. 첫 문장은 연습이에요.'
     : state.ranked?.reason ? `${state.ranked.reason} 그 문장들을 먼저 넣었어요.` : '새 문장을 섞어 한 판을 만들어요.';
   const best = progress.best;
@@ -198,11 +198,12 @@ function practiceResult(correct, word, x, y) {
 function nextItem() {
   if (state.index >= state.queue.length) return finish();
   const item = state.queue[state.index];
-  const cur = { item, pid: atlas((c) => c.present(itemMetadata(item))), tosses: 0, done: false, options: shuffled(item.options), token: null };
+  const cur = { item, check: atlas((c) => createReadingConfirmation(c, item)), tosses: 0, done: false, confirmed: false, options: shuffled(item.options), token: null };
   state.cur = cur;
   renderSentence(item);
   updateHud();
   hideExplain();
+  hideAnswerCheck();
   announce(`${state.index + 1}번 문장. ${item.text.replace('{}', '빈칸')} 보기: ${cur.options.map((w, i) => `${i + 1} ${w}`).join(', ')}`);
   after(readDelay(item.text, { slow: progress.slow }), () => { if (state.cur === cur && !cur.done) tossCur(); });
 }
@@ -239,14 +240,15 @@ function onSlice({ word, x, y, nx, token }) {
     return ok ? 'ok' : 'wrong';
   }
   const cur = state.cur; if (!cur || cur.done || token !== cur.token) return hit(null, nx, 1, { x, y });
-  cur.done = true;
+  // 벤 말이 이 문장의 답이다. 맞음·틀림 손맛(멈칫·번쩍임·‘팅’·점수)은 베는 순간에 바로 낸다(10-02 확정, 10-03 「3번」).
+  cur.done = true; cur.confirmed = true;
   const item = cur.item, correct = word === item.answer;
-  atlas((c) => c.answer(cur.pid, answerPayload(correct)));
+  const recorded = recordedOf(cur.check?.confirm(word));
   if (correct) {
     state.combo += 1;
     hit('ok', nx, state.combo, { x, y });
     const pts = pointsFor(state.combo); state.score += pts;
-    state.results.push({ itemId: item.id, skill: item.skill, choice: word, correct: true, points: pts });
+    state.results.push({ itemId: item.id, skill: item.skill, choice: word, correct: true, points: pts, readingChoice: word, readingCorrect: true, readingRecorded: recorded });
     stage.settle();
     after(FEEL.stop.ok, () => flyToBlank(word, x, y, () => landed(word)));
     popText(state.combo >= 2 ? `+${pts} · ${state.combo}연속!` : `+${pts}`, x, y, state.combo);
@@ -258,23 +260,47 @@ function onSlice({ word, x, y, nx, token }) {
   }
   state.combo = 0;
   hit('wrong', nx, 0, { x, y });
-  state.results.push({ itemId: item.id, skill: item.skill, choice: word, correct: false, points: 0 });
+  state.results.push({ itemId: item.id, skill: item.skill, choice: word, correct: false, points: 0, readingChoice: word, readingCorrect: false, readingRecorded: recorded });
   stage.settle({ reveal: cur.options.indexOf(item.answer) });
   after(240, () => sound.play(sound.pick('calm1', 'calm2')));   // 베는 소리 뒤에 몽글의 ‘괜찮아’(실패음 아님)
   updateHud();
-  after(500, () => showExplain(item, word));
+  after(500, () => showExplain(item, word, word));
   return 'wrong';
+}
+const recordedOf = (assessment) => !!assessment && assessment.verdict !== 'unassessed';
+
+/* ── 읽기 확인: 두 번 던져도 못 벤 문장만. 손이 늦어 놓친 것과 몰라서 놓친 것을 가르려고, 정답을 보이기 전에 멈춘 보기에서 시간 제한 없이 답한다 ── */
+function hideAnswerCheck() { $('#answer-check').hidden = true; $('#check-options').replaceChildren(); }
+function showAnswerCheck(cur) {
+  if (state.cur !== cur || cur.confirmed) return;
+  $('#check-sentence').textContent = cur.item.text.replace('{}', '（　　）');
+  $('#check-options').replaceChildren(...cur.options.map((word, index) => {
+    const button = el('button', 'chip-btn wide'); button.type = 'button'; button.textContent = `${index + 1}. ${word}`; button.dataset.word = word;
+    button.onclick = () => confirmReading(cur, word); return button;
+  }));
+  $('#answer-check').hidden = false; $('#check-title').focus({ preventScroll: true });
+  announce('시간 제한 없이 빈칸에 맞는 말을 골라 주세요. 아직 정답은 공개하지 않았어요.');
+}
+
+/** 놓친 문장에서 멈춘 보기로 고른 답. 베기 점수·연속은 주지 않고(베지 않았으니), 읽기 기록에만 남긴 뒤 정답과 이유를 보인다. */
+function confirmReading(cur, word) {
+  if (state.cur !== cur || cur.confirmed || state.paused || $('#answer-check').hidden || !cur.options.includes(word)) return;
+  cur.confirmed = true;
+  const recorded = recordedOf(cur.check?.confirm(word));
+  hideAnswerCheck();
+  const item = cur.item, readingCorrect = word === item.answer;
+  state.results.push({ itemId: item.id, skill: item.skill, choice: null, correct: null, points: 0, readingChoice: word, readingCorrect, readingRecorded: recorded });
+  updateHud();
+  if (!readingCorrect) after(240, () => sound.play(sound.pick('calm1', 'calm2')));
+  showExplain(item, null, word);
 }
 
 function onLanded({ token }) {
   if (state.practice) { if (token === state.practice.token) practiceResult(false, null); return; }
   const cur = state.cur; if (!cur || cur.done || token !== cur.token) return;
   if (cur.tosses < 2) { popText('한 번 더!'); after(450, () => { if (state.cur === cur && !cur.done) tossCur(); }); return; }
-  cur.done = true; state.combo = 0;
-  atlas((c) => c.answer(cur.pid, missedPayload()));
-  state.results.push({ itemId: cur.item.id, skill: cur.item.skill, choice: null, correct: null, points: 0 });
-  updateHud();
-  showExplain(cur.item, null);
+  cur.done = true; state.combo = 0; updateHud();
+  showAnswerCheck(cur);
 }
 
 let lastLaunch = 0;
@@ -286,9 +312,10 @@ function onLaunch({ n, x }) {
 /** 손이 빠르게 지나갈 때 ‘휙’(벤 것과 상관없이). */
 function onSwing({ speed, x, to }) { sound.sfx('whoosh', { power: swingPower(speed), x, to }); }
 
-function showExplain(item, choice) {
+function showExplain(item, choice, readingChoice) {
   fillBlank(item.answer, 'answer');
-  $('#x-kicker').textContent = choice ? `정답은 ‘${item.answer}’ · 벤 말 ‘${choice}’` : `놓쳤어요 · 정답은 ‘${item.answer}’`;
+  $('#x-kicker').textContent = choice != null ? `정답은 ‘${item.answer}’ · 벤 말 ‘${choice}’`
+    : readingChoice === item.answer ? `놓쳤어요 · 고른 답 ‘${readingChoice}’ 맞아요` : `놓쳤어요 · 고른 답 ‘${readingChoice}’ · 정답은 ‘${item.answer}’`;
   $('#x-sentence').innerHTML = esc(filled(item, '\u0000')).replace('\u0000', `<b>${esc(item.answer)}</b>`);
   $('#x-why').textContent = item.why;
   $('#explain').hidden = false;
@@ -389,7 +416,7 @@ function finish() {
   $('#r-mongle').src = s.stars >= 2 ? 'assets/brand/mongle-smile.webp' : 'assets/brand/mongle-cheer.webp';
   const notes = [`점수 ${s.score}점`];
   if (s.bestRun >= 3) notes.push(`최고 ${s.bestRun}연속`);
-  if (s.missed) notes.push(`놓친 문장 ${s.missed}개`);
+  if (s.missed) notes.push(`놓친 문장 ${s.missed}개(멈춘 보기에서 ${state.results.filter((r) => r.correct === null && r.readingCorrect).length}개 맞힘)`);
   $('#r-note').textContent = notes.join(' · ');
   const log = $('#r-log'); log.textContent = '';
   state.results.forEach((r) => {
@@ -398,13 +425,13 @@ function finish() {
     const mark = r.correct === true ? '맞음' : r.correct === false ? '다시 볼 것' : '놓침';
     li.innerHTML = `<span class="mark" aria-label="${mark}">${r.correct === true ? '○' : r.correct === false ? '×' : '–'}</span>
       <span class="body"><span class="sent">${esc(filled(item, '\u0000')).replace('\u0000', `<b>${esc(item.answer)}</b>`)}</span>
-      <small>${esc(KIND_LABEL[item.kind] || '')}${r.correct === false ? ` · 벤 말 ‘${esc(r.choice)}’` : ''}${r.correct === null ? ' · 놓침(기록에서 평가하지 않음)' : ''}</small></span>`;
+      <small>${esc(KIND_LABEL[item.kind] || '')}${r.correct === false ? ` · 벤 말 ‘${esc(r.choice)}’` : ''}${r.correct === null ? ` · 놓침 · 멈춘 보기에서 고른 답 ‘${esc(r.readingChoice)}’ ${r.readingCorrect ? '맞음' : '다시 볼 것'}` : ''}</small></span>`;
     log.append(li);
   });
   const next = atlas((c) => rankItems(c, ITEMS));
   state.ranked = next;
   renderSkills(s, next);
-  $('#r-next-reason').textContent = target ? `${assignmentLabel(target)}. ${s.missed ? '놓친 문장은 다시 답해 주세요.' : 'WORLD에서 수행 결과와 다음 과제를 확인해요.'}` : nextLine(next);
+  $('#r-next-reason').textContent = target ? `${assignmentLabel(target)}. WORLD에서 읽기 수행 결과와 다음 과제를 확인해요.` : nextLine(next);
   $('#r-again span').textContent = target ? '목표 문장 다시 풀기' : '다음 판 시작';
   $('#r-hub').hidden = hosted || !location.pathname.includes('/blank-slice/');
   show('results');
@@ -425,7 +452,7 @@ function renderSkills(s, next) {
   const report = atlas((c) => skillReport(c.summary(), { focusSkillId: next?.skillId }), []);
   const rows = report.length ? report : Object.keys(SKILL_LABEL).map((id) => ({ id, label: SKILL_LABEL[id], text: '기록을 쓸 수 없어요', tone: 'quiet' }));
   for (const r of rows) {
-    const b = s.bySkill[r.id], focus = r.tone === 'focus';
+    const rows = state.results.filter(x => x.skill === r.id), b = { correct: rows.filter(x => x.readingCorrect).length, total: rows.length }, focus = r.tone === 'focus';
     const li = el('li', focus ? 'focus' : r.tone === 'good' ? 'good' : '');
     li.innerHTML = `<b>${esc(r.label)}${focus ? ' <i class="next-tag">다음 연습</i>' : ''}</b><em>${b ? `이번 ${b.correct}/${b.total}` : '이번 0'}</em><span>${esc(r.text)}${r.n ? ` · 혼자 푼 새 문항 ${r.n}개 중 ${r.correct}개 맞힘` : ''}</span>`;
     ul.append(li);
@@ -444,8 +471,8 @@ $('#resume').onclick = () => { sound.unlock(); pause(false); };
 $('#pause-dialog').addEventListener('cancel', (e) => { e.preventDefault(); pause(false); });
 $('#quit').onclick = () => {
   // 풀던 문장은 응답 없음으로 닫는다(평가하지 않음)
-  if (state.cur && !state.cur.done) atlas((c) => c.answer(state.cur.pid, { correct: null, assessable: false, reason: 'unanswered' }));
-  pause(false); state.cur = null; state.practice = null; tip(null); hideExplain(); renderLobby();
+  if (state.cur && !state.cur.confirmed) state.cur.check?.cancel();
+  pause(false); state.cur = null; state.practice = null; tip(null); hideExplain(); hideAnswerCheck(); renderLobby();
 };
 document.addEventListener('visibilitychange', () => { if (document.hidden && !$('#game').hidden) pause(true); });
 
@@ -465,6 +492,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { e.preventDefault(); pause(true); return; }
   if (!$('#explain').hidden) { if ((e.key === 'Enter' || e.key === ' ') && document.activeElement !== $('#btn-next')) { e.preventDefault(); $('#btn-next').click(); } return; }
   const n = Number(/^(?:Digit|Numpad)([1-4])$/.exec(e.code)?.[1] ?? (/^[1-4]$/.test(e.key) ? e.key : NaN));
+  if (!$('#answer-check').hidden) { if (n >= 1 && n <= 4 && !e.repeat) { e.preventDefault(); $('#check-options').children[n - 1]?.click(); } return; }
   if (n >= 1 && n <= 4 && stage) { e.preventDefault(); stage.sliceIndex(n - 1, { x: 0.85, y: -0.5 }); }
 });
 window.addEventListener('resize', () => { if (stage && !$('#game').hidden) stage.setTopPx(sentenceBottom()); });
@@ -477,7 +505,7 @@ renderLobby();
 if (QA) {
   window.__slice = {
     state: () => ({ index: state.index, queue: state.queue.map((x) => x.id), results: state.results.map((r) => ({ ...r })), combo: state.combo, score: state.score,
-      cur: state.cur && { id: state.cur.item.id, answer: state.cur.item.answer, options: [...state.cur.options], tosses: state.cur.tosses, done: state.cur.done },
+      cur: state.cur && { id: state.cur.item.id, answer: state.cur.item.answer, options: [...state.cur.options], tosses: state.cur.tosses, done: state.cur.done, confirmed: state.cur.confirmed },
       practice: state.practice && { options: [...state.practice.options], tries: state.practice.tries } }),
     progress: () => JSON.parse(JSON.stringify(progress)), summary: () => atlas((c) => c.summary()),
     pieces: () => stage?.pieceWords() || [], pieceScreen: (i) => stage?.pieceScreen(i) || null,

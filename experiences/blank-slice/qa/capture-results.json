@@ -1,6 +1,6 @@
 {
  "url": "http://127.0.0.1:5217/",
- "at": "2026-10-02T12:26:52.942Z",
+ "at": "2026-10-02T21:05:34.172Z",
  "views": {
   "desktop": {
    "shots": [
@@ -10,7 +10,8 @@
     "desktop_03_practice_sliced.png",
     "desktop_04_correct.png",
     "desktop_06_wrong_explain.png",
-    "desktop_05_missed.png",
+    "desktop_05_missed_check.png",
+    "desktop_05b_missed_explain.png",
     "desktop_07_results.png",
     "desktop_07_results_full.png",
     "desktop_08_pause.png"
@@ -44,13 +45,15 @@
       "plan": "wrong",
       "id": "v01",
       "got": false,
-      "choice": "옷",
+      "choice": "빵",
       "index": 1
      },
      {
       "k": 2,
       "plan": "miss",
-      "got": null
+      "got": null,
+      "reading": "에서",
+      "readingCorrect": true
      },
      {
       "k": 3,
@@ -126,14 +129,15 @@
      }
     ],
     "practiceDone": true,
+    "missedKicker": "놓쳤어요 · 고른 답 ‘에서’ 맞아요",
     "results": {
      "correct": "10",
      "total": "12",
-     "note": "점수 1600점 · 최고 9연속 · 놓친 문장 1개",
+     "note": "점수 1600점 · 최고 9연속 · 놓친 문장 1개(멈춘 보기에서 1개 맞힘)",
      "next": "조사·문형 읽기는 아직 기록이 적어요. 짧게 확인해 봐요. 다음 판에는 조금 어려운 조사·문형 읽기 문장이 먼저 나와요.",
      "skills": [
       "낱말 뜻 읽기이번 5/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 6개 중 5개 맞힘",
-      "조사·문형 읽기 다음 연습이번 5/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 5개 중 5개 맞힘"
+      "조사·문형 읽기 다음 연습이번 6/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 6개 중 6개 맞힘"
      ],
      "log": [
       "ok",
@@ -151,7 +155,7 @@
      ]
     },
     "atlas": {
-     "independent": 11,
+     "independent": 12,
      "storage": true
     },
     "progress": {
@@ -190,7 +194,8 @@
     "mobile_03_practice_sliced.png",
     "mobile_04_correct.png",
     "mobile_06_wrong_explain.png",
-    "mobile_05_missed.png",
+    "mobile_05_missed_check.png",
+    "mobile_05b_missed_explain.png",
     "mobile_07_results.png",
     "mobile_07_results_full.png",
     "mobile_08_pause.png"
@@ -230,7 +235,9 @@
      {
       "k": 2,
       "plan": "miss",
-      "got": null
+      "got": null,
+      "reading": "에서",
+      "readingCorrect": true
      },
      {
       "k": 3,
@@ -306,14 +313,16 @@
      }
     ],
     "practiceDone": true,
+    "missedKicker": "놓쳤어요 · 고른 답 ‘에서’ 맞아요",
+    "retries": 1,
     "results": {
      "correct": "10",
      "total": "12",
-     "note": "점수 1600점 · 최고 9연속 · 놓친 문장 1개",
+     "note": "점수 1600점 · 최고 9연속 · 놓친 문장 1개(멈춘 보기에서 1개 맞힘)",
      "next": "조사·문형 읽기는 아직 기록이 적어요. 짧게 확인해 봐요. 다음 판에는 조금 어려운 조사·문형 읽기 문장이 먼저 나와요.",
      "skills": [
       "낱말 뜻 읽기이번 5/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 6개 중 5개 맞힘",
-      "조사·문형 읽기 다음 연습이번 5/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 5개 중 5개 맞힘"
+      "조사·문형 읽기 다음 연습이번 6/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 6개 중 6개 맞힘"
      ],
      "log": [
       "ok",
@@ -331,7 +340,7 @@
      ]
     },
     "atlas": {
-     "independent": 11,
+     "independent": 12,
      "storage": true
     },
     "progress": {
@@ -369,7 +378,8 @@
     "small_03_practice_sliced.png",
     "small_04_correct.png",
     "small_06_wrong_explain.png",
-    "small_05_missed.png",
+    "small_05_missed_check.png",
+    "small_05b_missed_explain.png",
     "small_07_results.png"
    ],
    "overflow": {
@@ -401,13 +411,15 @@
       "plan": "wrong",
       "id": "v01",
       "got": false,
-      "choice": "빵",
+      "choice": "책",
       "index": 1
      },
      {
       "k": 2,
       "plan": "miss",
-      "got": null
+      "got": null,
+      "reading": "에서",
+      "readingCorrect": true
      },
      {
       "k": 3,
@@ -429,8 +441,8 @@
       "k": 5,
       "plan": "right",
       "id": "p03",
-      "got": true,
-      "choice": "이",
+      "got": false,
+      "choice": "에서",
       "index": 5
      },
      {
@@ -482,16 +494,17 @@
       "index": 11
      }
     ],
-    "practiceDone": true,
     "retries": 1,
+    "practiceDone": true,
+    "missedKicker": "놓쳤어요 · 고른 답 ‘에서’ 맞아요",
     "results": {
-     "correct": "10",
+     "correct": "9",
      "total": "12",
-     "note": "점수 1600점 · 최고 9연속 · 놓친 문장 1개",
+     "note": "점수 1220점 · 최고 6연속 · 놓친 문장 1개(멈춘 보기에서 1개 맞힘)",
      "next": "조사·문형 읽기는 아직 기록이 적어요. 짧게 확인해 봐요. 다음 판에는 조금 어려운 조사·문형 읽기 문장이 먼저 나와요.",
      "skills": [
       "낱말 뜻 읽기이번 5/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 6개 중 5개 맞힘",
-      "조사·문형 읽기 다음 연습이번 5/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 5개 중 5개 맞힘"
+      "조사·문형 읽기 다음 연습이번 5/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 6개 중 5개 맞힘"
      ],
      "log": [
       "ok",
@@ -499,7 +512,7 @@
       "miss",
       "ok",
       "ok",
-      "ok",
+      "ko",
       "ok",
       "ok",
       "ok",
@@ -509,7 +522,7 @@
      ]
     },
     "atlas": {
-     "independent": 11,
+     "independent": 12,
      "storage": true
     },
     "progress": {
@@ -518,8 +531,8 @@
      "practiced": true,
      "slow": false,
      "best": {
-      "score": 1600,
-      "correct": 10,
+      "score": 1220,
+      "correct": 9,
       "total": 12
      }
     },
@@ -538,7 +551,9 @@
      "p06"
     ]
    },
-   "errors": []
+   "errors": [
+    "맞힘 계획인데 {\"itemId\":\"p03\",\"skill\":\"ko.reading.grammar\",\"choice\":\"에서\",\"correct\":false,\"points\":0,\"readingChoice\":\"에서\",\"readingCorrect\":false,\"readingRecorded\":true}"
+   ]
   },
   "mobile-reduced": {
    "shots": [
@@ -547,7 +562,8 @@
     "mobile-reduced_03_practice_sliced.png",
     "mobile-reduced_04_correct.png",
     "mobile-reduced_06_wrong_explain.png",
-    "mobile-reduced_05_missed.png",
+    "mobile-reduced_05_missed_check.png",
+    "mobile-reduced_05b_missed_explain.png",
     "mobile-reduced_07_results.png"
    ],
    "overflow": {
@@ -579,13 +595,15 @@
       "plan": "wrong",
       "id": "v01",
       "got": false,
-      "choice": "옷",
+      "choice": "책",
       "index": 1
      },
      {
       "k": 2,
       "plan": "miss",
-      "got": null
+      "got": null,
+      "reading": "에서",
+      "readingCorrect": true
      },
      {
       "k": 3,
@@ -661,14 +679,15 @@
      }
     ],
     "practiceDone": true,
+    "missedKicker": "놓쳤어요 · 고른 답 ‘에서’ 맞아요",
     "results": {
      "correct": "10",
      "total": "12",
-     "note": "점수 1600점 · 최고 9연속 · 놓친 문장 1개",
+     "note": "점수 1600점 · 최고 9연속 · 놓친 문장 1개(멈춘 보기에서 1개 맞힘)",
      "next": "조사·문형 읽기는 아직 기록이 적어요. 짧게 확인해 봐요. 다음 판에는 조금 어려운 조사·문형 읽기 문장이 먼저 나와요.",
      "skills": [
       "낱말 뜻 읽기이번 5/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 6개 중 5개 맞힘",
-      "조사·문형 읽기 다음 연습이번 5/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 5개 중 5개 맞힘"
+      "조사·문형 읽기 다음 연습이번 6/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 6개 중 6개 맞힘"
      ],
      "log": [
       "ok",
@@ -686,7 +705,7 @@
      ]
     },
     "atlas": {
-     "independent": 11,
+     "independent": 12,
      "storage": true
     },
     "progress": {

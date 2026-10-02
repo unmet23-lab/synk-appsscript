@@ -1,6 +1,6 @@
 'use strict';
 // 빈칸 베기 확인: 처음 하는 사람처럼 연습부터 한 판 끝까지 실제 손동작(마우스로 긋기·휴대폰 터치로 긋기·숫자 키)으로 하며 장면을 찍는다.
-// 검사: 오류·4xx, 가로 넘침, 연습 → 12문장 → 결과, 맞힘·틀림·놓침, 아틀라스 기록(놓침은 평가 안 함), 움직임 줄이기.
+// 검사: 오류·4xx, 가로 넘침, 연습 → 12문장 → 결과, 맞힘·틀림·놓침(놓치면 멈춘 보기에서 답), 아틀라스 기록, 움직임 줄이기.
 // 쓰는 법: node experiences/blank-slice/server.mjs 를 켠 뒤  node experiences/blank-slice/qa/capture.cjs
 const path = require('node:path'), fs = require('node:fs');
 const NM = process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules');
@@ -104,9 +104,15 @@ async function run(browser, viewName, { reduced = false } = {}) {
     if (plan === 'miss') {
       for (let w = 0; w < 140 && !(await S(page)).cur.done; w++) await sleep(100);
       await sleep(300);
-      if (!few || k === 2) out.shots.push(await shot('05_missed'));
+      // 놓치면 정답을 보이기 전에 멈춘 보기(읽기 확인)가 뜬다. 맞는 답을 골라 ‘놓쳤어요 · 고른 답 … 맞아요’ 해설까지 본다.
+      await page.waitForSelector('#answer-check:not([hidden])', { timeout: 4000 });
+      if (!few || k === 2) out.shots.push(await shot('05_missed_check'));
+      await page.click(`#check-options button[data-word="${cur.answer}"]`); await sleep(400);
+      if (!few || k === 2) out.shots.push(await shot('05b_missed_explain'));
+      out.checks.missedKicker = await page.textContent('#x-kicker');
       await page.click('#btn-next'); await sleep(300);
-      out.checks.outcomes.push({ k, plan, got: (await S(page)).results.at(-1)?.correct });
+      const mr = (await S(page)).results.at(-1);
+      out.checks.outcomes.push({ k, plan, got: mr?.correct, reading: mr?.readingChoice, readingCorrect: mr?.readingCorrect });
       continue;
     }
     const target = plan === 'right' ? cur.answer : cur.options.find((o) => o !== cur.answer);
@@ -120,6 +126,10 @@ async function run(browser, viewName, { reduced = false } = {}) {
     if (k === 0) out.shots.push(await shot('04_correct'));
     if (plan === 'wrong') { out.shots.push(await shot('06_wrong_explain')); await page.click('#btn-next'); await sleep(300); }
     else await sleep(1150);
+    if (plan === 'right' && await page.isVisible('#answer-check')) {   // 두 번 빗나가 놓침: 멈춘 보기에서 답하고 넘어간다(기록)
+      errors.push(`맞힘 계획인데 놓침(읽기 확인으로 넘어감) ${cur.id}`);
+      await page.click(`#check-options button[data-word="${cur.answer}"]`); await sleep(400);
+    }
     if (plan === 'right' && await page.isVisible('#explain')) {   // 엉뚱한 조각이 베였거나 두 번 빗나가 놓침: 기록하고 넘어간다
       errors.push(`맞힘 계획인데 ${JSON.stringify((await S(page)).results.at(-1))}`);
       await page.click('#btn-next'); await sleep(300);
