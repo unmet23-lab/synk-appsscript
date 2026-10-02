@@ -1,6 +1,6 @@
 # SYNK Apps Script
 
-Google Apps Script 학습·운영 코드다. `Code.js`와 `엔진_*.js`는 전역 이름공간을 공유한다. 콘텐츠는 `contents_*.js`, 로컬 도구는 `tools/`에 있다.
+Google Apps Script 코드와 회사 작업 저장소다. Apps Script에는 `Code.js`(웹 입구·메뉴·트리거)와 `엔진_synkbrief.js`(@synkbrief 자료 DM)만 올라간다. 몽골 오프라인 학원 운영 시스템은 2026-10-02에 지웠다([정리 목록](docs/_ops/옛시스템_정리목록_20261002.md)). `엔진_콘텐츠AI.js`는 Strata 문법 뱅크의 원천이라 저장소에만 둔다. Atlas 엔진은 `atlas/`·`strata/`, 체험은 `experiences/`, 로컬 도구는 `tools/`에 있다.
 
 - 작업 안내: [AGENTS](AGENTS.md)
 - 자료: [문서 지도](docs/문서_지도.md)

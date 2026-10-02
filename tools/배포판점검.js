@@ -62,6 +62,8 @@ const 지문표기 = (fp) => `#fp:${fp}`;
  * 같은 판정을 두 곳에 적으면 갈라지고, 갈라지는 방향은 언제나 「통과」다. */
 function 배포집합(projRoot, root = ROOT) {
   const out = [];
+  // 2026-10-02 crewcard 처럼 지운 프로젝트는 올릴 파일이 없다(옛 커밋을 다시 판정할 때 이 경로로 온다).
+  if (!fs.existsSync(projRoot)) return out;
   const 하위 = claspProjects().filter((p) => p !== projRoot && p.startsWith(projRoot + path.sep));
   /* 글롭의 `*` 는 `/` 를 안 넘는다. 그래서 패턴에 `/` 가 하나도 없으면 하위 디렉터리 파일은
    * **원리상** 대상이 될 수 없다 — 그 경우 훑기를 최상위로 줄인다(같은 답, 훨씬 싸다). */

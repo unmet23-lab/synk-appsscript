@@ -4,13 +4,13 @@ GPT와 Claude가 함께 쓰는 저장소 안내다. `CLAUDE.md`는 이 파일을
 
 작업 시작·재개 때 [AI 운영 원칙](docs/AI_운영원칙.md)을 읽고 이번 작업에 필요한 자료만 확인한다. 담당 원문은 [문서 지도](docs/문서_지도.md)에서 찾는다.
 
-- `Code.js`·`엔진_*.js`는 전역 이름공간을 공유한다. 콘텐츠는 `contents_*.js`, 도구는 `tools/`, 관련 시험은 `node --test tests/<파일>`이다.
+- Apps Script에는 `Code.js`·`엔진_synkbrief.js`만 올라가고 두 파일은 전역 이름공간을 공유한다(2026-10-02 학원 운영 시스템 삭제). `엔진_콘텐츠AI.js`는 Strata 문법 뱅크의 원천이라 저장소에만 둔다. 도구는 `tools/`, 관련 시험은 `node --test tests/<파일>`이다.
 - Apps Script 라이브 배포가 요청됐을 때만 `deploy`의 실행 정보를 사용한다. `clasp pull`로 작업본을 덮어쓰지 않는다.
 - 작업 분담·재개·검토·예약은 현재 공식 앱·CLI의 기능을 먼저 쓴다. 과거 `codex-build`·`codex-review` 절차는 일반 작업의 선행 조건이 아니다.
 
 ## 해당 파일을 다룰 때
 
-- `Code.js`·`엔진_*.js`·`contents_*.js`·`appsscript.json`: 함수·전역 이름 충돌을 확인한다. 시트 열 추가는 코드 변경만으로 반영되지 않는다.
+- `Code.js`·`엔진_synkbrief.js`·`appsscript.json`: 함수·전역 이름 충돌을 확인한다. 웹앱은 익명 공개라 `doGet`은 HtmlService를 돌려주지 않는다.
 - `tools/*굽기*`·`tools/밤일감.js`·`tools/lib/마스코트자산.js`: 자산 경로는 `tools/lib/마스코트자산.js`에서 확인한다. 밤 작업은 기존 `tools/밤일감.js`의 실행·로그·결과 위치를 확인하고 원본과 다른 작업을 보존한다.
 - `docs/**/*.html`·`docs/발표물/**`·`docs/홈페이지_시안/**`·`docs/SHIFT/배너/**`·`캐러셀/**`: 발표물의 `_src_*.html`이 원고이며 `tools/발표물빌드.js`가 출력을 만든다. 자립형 HTML의 폰트 삽입은 `tools/lib/브랜드폰트.js`를 사용한다. 마스코트 4K 원본과 파생 이미지를 구분하고 투명 영역·해상도·`img`·`svg` 표시 크기를 실제 배경에서 확인한다.
 - `docs/_ops/**`: `결정.md`에는 실제 확정과 근거, `트랙.md`에는 이어 할 일과 결과 위치를 적는다. 해당 항목만 갱신하며 과거 기록을 새 작업의 의무로 삼지 않는다.

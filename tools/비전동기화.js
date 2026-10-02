@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-// 비전 정본에서 GAS 상담 지식과 대외 FAQ의 표시 구간만 갱신한다.
+// 비전 정본에서 대외 FAQ의 표시 구간만 갱신한다. (2026-10-02 GAS 상담 지식은 상담 AI와 함께 지웠다)
 // 수동 제작: node tools/비전동기화.js / 읽기 전용 대조: --check
 // 이어하기 꾸러미의 실제 갱신에서도 실행한다. GAS 런타임은 이 도구를 호출하지 않는다.
 const fs = require('node:fs');
@@ -10,14 +10,6 @@ const { loadVisions } = require('./lib/비전정본.js');
 const ROOT = path.resolve(__dirname, '..');
 
 const targets = [
-  {
-    file: 'contents_상담AI.js',
-    start: '    // synk-vision:lab:start',
-    end: '    // synk-vision:lab:end',
-    body: visions => '    내용: ' + JSON.stringify(
-      ['SYNK LAB의 비전은 다음과 같습니다.', visions.lab.headline, visions.lab.subtext].filter(Boolean).join('\n\n')
-    ),
-  },
   {
     file: 'docs/정본/SYNK/SYNK FAQ.txt',
     start: '<!-- synk-vision:faq:start -->',

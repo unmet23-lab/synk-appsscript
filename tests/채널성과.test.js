@@ -54,12 +54,7 @@ test('상담 수는 상담 폼의 인지채널 칸만 받는다', () => {
   assert.throws(() => consultEntry('9월 둘째 주', ['페이스북=1']), /기간은/);
 });
 
-test('도구의 인지채널 칸은 실제 폼 문항의 선택지와 같다', () => {
-  const form = fs.readFileSync(path.join(__dirname, '..', '엔진_폼리포트.js'), 'utf8');
-  const lists = [...form.matchAll(/mc\('인지채널', (\[[^\]]*\])/g)].map(m => JSON.parse(m[1].replace(/'/g, '"')));
-  assert.ok(lists.length >= 1, '폼에서 인지채널 문항을 찾지 못했다');
-  for (const list of lists) assert.deepEqual(list, CONSULT_BUCKETS);
-});
+// [2026-10-02] 상담 폼 문항(엔진_폼리포트.js)과 대조하던 검사는 학원 운영 시스템과 함께 폼 코드를 지워 뺐다.
 
 test('운영 제외 계정은 목록에서 빠지고 장부는 쌓인 순서대로 읽힌다', t => {
   const dir = tempDir(t);

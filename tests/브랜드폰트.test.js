@@ -30,7 +30,6 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
-const { engineSource } = require('./_engine-source');
 const 브랜드폰트 = require(path.join(ROOT, 'tools', 'lib', '브랜드폰트.js'));
 const TOOLS = path.join(ROOT, 'docs', 'tools');
 
@@ -207,8 +206,7 @@ test('3종 밖 폰트가 새로 들어오지 않는다(화이트리스트 — �
 });
 
 /* HTML 만 검사하면 빈틈이 남는다 — 앱 카드 폰트는 Code.js 안의 문자열이고, 콘텐츠 파일도 마찬가지다. */
-const JS_TARGETS = [...require('./_engine-source').ENGINE_FILES, '상담AI.js', '교재연동.js', '만족도팩.js']
-  .concat(fs.readdirSync(ROOT).filter((f) => /^contents_.*\.js$/.test(f)));
+const JS_TARGETS = require('./_engine-source').liveFiles(); // 라이브에 올라가는 Apps Script 파일 전수
 
 test('JS 산출물에 폐기 폰트가 새로 들어오지 않는다', () => {
   const hits = [];
@@ -242,46 +240,7 @@ test('브랜드 폰트 정본 문서가 존재한다', () => {
     '정본이 이 자를 안 가리킨다 — 자와 문서가 갈리면 「기계가 막는다」가 거짓이 된다');
 });
 
-test('Code.js CARD_FONT 가 브랜드 3종을 쓴다', () => {
-  const src = engineSource();
-  const m = src.match(/const CARD_FONT = "([^"]+)"/);
-  assert.ok(m, 'Code.js 에서 CARD_FONT 상수를 못 찾았다');
-  const decl = stripLocal(m[1]);
-  for (const bad of RETIRED) assert.ok(!decl.includes(bad), `CARD_FONT 에 폐기 폰트 「${bad}」`);
-  assert.ok(decl.includes('Inter Tight') && decl.includes('SUIT Variable'), 'CARD_FONT 가 3종 스택이 아니다');
-  assert.ok(
-    decl.indexOf('Inter Tight') < decl.indexOf('SUIT Variable'),
-    'CARD_FONT 스택 순서가 뒤집혔다 — Inter Tight 가 앞'
-  );
-});
-
-/* 이 파일에서 가장 중요한 검사 — 「이름만 바꾸고 로드를 빠뜨리는」 실패를 막는다.
- * 학생 기기에 SUIT·Inter Tight 는 없다. 로드가 없으면 전 카드가 시스템 폰트로 조용히 내려앉는데,
- * 에러도 안 나고 화면도 그럴싸해서 사람 눈으로는 「적용됐다」와 구별이 안 된다.
- * ⚠ 여기는 **CDN 그대로**다 — 학생 폰이 여는 Glide 카드라 아티팩트 CSP 가 없고,
- *   610KB 를 39자리에 인라인하면 카드가 못 열린다(09-03 판정 · `tests/지면폰트.test.js` 제외 표). */
-test('CARD_WEBFONT 가 두 웹폰트를 실제로 로드한다', () => {
-  const src = engineSource();
-  // `\r?\n` — CRLF 사본에서 `;\r\n` 이 되어 매치가 통째로 실패하던 것을 막는다(08-02).
-  const m = src.match(/const CARD_WEBFONT = ([\s\S]*?);\r?\n/);
-  assert.ok(m, 'CARD_WEBFONT 상수가 없다 — CARD_FONT 만 바꾸면 전 카드가 폴백된다(정본 §9)');
-  const decl = m[1];
-  assert.ok(/sun-typeface\/SUIT/.test(decl), 'CARD_WEBFONT 가 SUIT 를 안 부른다 → 한글이 폴백된다');
-  assert.ok(/Inter\+Tight/.test(decl), 'CARD_WEBFONT 가 Inter Tight 를 안 부른다 → 영문·몽골어가 폴백된다');
-  assert.ok(/<style>/.test(decl), 'CARD_WEBFONT 에 <style> 블록이 없다 — style 속성 값에는 @import 를 못 넣는다');
-});
-
-test('카드 루트마다 CARD_WEBFONT 가 붙어 있다', () => {
-  const src = engineSource();
-  const roots = src.match(/'<div style="' \+ CARD_FONT/g) || [];
-  assert.ok(roots.length > 0, '카드 루트 패턴을 못 찾았다 — 렌더 구조가 바뀌었는지 확인');
-  const loaded = src.match(/CARD_WEBFONT \+ '<div style="' \+ CARD_FONT/g) || [];
-  assert.equal(
-    loaded.length, roots.length,
-    `카드 루트 ${roots.length}곳 중 ${loaded.length}곳에만 CARD_WEBFONT 가 붙었다 — `
-    + '빠진 카드는 폰트가 폴백된다. 새 카드를 추가했다면 CARD_WEBFONT 를 앞에 붙여라'
-  );
-});
+/* [2026-10-02] Code.js 카드 폰트(CARD_FONT·CARD_WEBFONT) 검사 셋은 학원 운영 시스템과 함께 카드 코드를 지워 뺐다. */
 
 /* ── 탐지력 — 실저장소가 초록이어도 이 자가 «무는지»를 픽스처가 증명한다 ───
  * 옛 판은 이 자리가 비어 있었다(변이를 손으로 넣어 봤다고 주석에만 적혀 있었다).

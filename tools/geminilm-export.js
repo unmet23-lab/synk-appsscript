@@ -119,7 +119,10 @@ const PII = [
  *   **정본에서 읽는다**. 새 열이 붙었는데 아래 분류표에 없으면 **던진다**(조용한 통과 금지).
  *   업로드 도구가 던지면 그 파일은 안 나간다 = 실패 방향이 「차단」이다. */
 
-const 골격정본_ = path.join(REPO, '엔진_셋업확장.js');
+/* 2026-10-02 학원 운영 시스템과 함께 엔진_셋업확장.js(sheetSkeleton_)를 지웠다. 그 profiles 행의 마지막 열 목록을
+ * 여기 옮겨 둔다. 라이브 스프레드시트의 profiles 탭과 옛 문서에는 이 열 이름이 남아 있으므로 게이트는 계속 쓴다. */
+const 골격정본_ = 'profiles 열 목록(2026-10-02 엔진_셋업확장.js에서 옮김)';
+const PROFILES_열_ = ['user_id', '이름', '이름_몽골', 'role', 'class_name', '생일', 'email', '연락처', 'messenger_link', 'parent_of', 'tuition', '등록일', '보호자명', '보호자연락처', 'created_at'];
 
 /** profiles 열 중 **식별자인 것** → 그 열을 부르는 라벨 별칭.
  *  키는 반드시 정본 열 이름이어야 한다(아래 `식별라벨_` 이 대조해 던진다). */
@@ -146,12 +149,7 @@ let _라벨캐시 = null;
 /** 정본 열 목록과 분류표를 대조해 라벨 축을 만든다. 못 재면 **던진다**(0건으로 접지 않는다). */
 function 식별라벨_() {
   if (_라벨캐시) return _라벨캐시;
-  let src;
-  try { src = fs.readFileSync(골격정본_, 'utf8'); }
-  catch (e) { throw new Error(`식별자 게이트 확인 불가 — 열 정본을 못 읽었다(${골격정본_}): ${e.message}`); }
-  const m = src.match(/\[\s*'profiles'\s*,\s*\[([^\]]*)\]\s*\]/);
-  if (!m) throw new Error(`식별자 게이트 확인 불가 — ${path.basename(골격정본_)} sheetSkeleton_() 의 profiles 행을 못 찾았다`);
-  const 열 = m[1].split(',').map((s) => s.trim().replace(/^'|'$/g, '')).filter(Boolean);
+  const 열 = PROFILES_열_.slice();
   if (!열.length) throw new Error('식별자 게이트 확인 불가 — profiles 열 목록이 비었다');
   const 미분류 = 열.filter((c) => !(c in 식별열_별칭) && !비식별열_.includes(c));
   if (미분류.length) {

@@ -169,9 +169,10 @@ for (const 갈래 of ['none', 'scope']) {
 test('🔑 과녁은 **프로젝트별**이다 — 처방한 커밋에 그 프로젝트의 배포 파일이 들어 있어야 한다', () => {
   const 근 = (p) => 검수.게이트판정(p, ROOT, 장부([], [], []))
     .lines.join('\n').match(/--commit\s+([0-9a-f]+)/);
-  for (const [proj, 이름] of [[루트프로젝트, '(루트)'], [path.join(ROOT, 'crewcard'), 'crewcard']]) {
+  // 2026-10-02 crewcard 프로젝트(학원 접수 카드)는 학원 운영 시스템과 함께 지웠다. 남은 프로젝트는 루트 하나다.
+  for (const [proj, 이름] of [[루트프로젝트, '(루트)']]) {
     const m = 근(proj);
-    assert.ok(m, 이름 + ' 과녁이 안 나왔다 — 두 프로젝트 다 과녁이 나와야 한다');
+    assert.ok(m, 이름 + ' 과녁이 안 나왔다');
     /* 🔴 09-05: `core.quotepath` 를 끄지 않으면 git 이 **비ASCII 파일 이름을 8진수로 이스케이프**해
      *   내놓는다 — 원격 실측: `"contents_\354\203\201\353\213\264AI.js"`. 우리 배포 파일은 이름이
      *   거의 다 한글이라(`contents_상담AI.js` 등 18건 중 16건) 글자 비교가 전부 어긋났고,
