@@ -9,6 +9,7 @@ const Trail = require('./trail');
 const Learning = require('./learning');
 const Temper = require('./temper');
 const { createLearningSync, sameEvent } = require('./learning-sync');
+const { createFlowPort, createLive } = require('./game-flow');
 const KEY = 'synk.atlas.learning.v1';
 const identifier = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
 const uid = () => `l${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
@@ -18,6 +19,8 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   if (!['device', 'account'].includes(storageScope) || storageScope === 'account' && (!identifier(accountKey) || learnerKey !== 'device')) throw new TypeError('Atlas: account identity and isolated host storage required');
   const scope = { domain: 'LAB', workspace: 'learning', subject: learnerKey };
   const key = `${KEY}.${learnerKey}`;
+  // Core's moment-level challenge keeps one small memory per content beside this log (game-flow.js).
+  let flowPort = null;
   let epoch = null, session, readable = true, writable = !!storage, complete = historyComplete, warning = null;
   const UNCHANGED = Symbol('unchanged-history');
   let lastStoredRaw = Symbol('unread-history');
@@ -93,7 +96,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   function requireActive(pid) {
     refresh(); const item = active.get(pid); if (!item) throw new Error('Atlas: presentation ended or local record reset'); return item;
   }
-  return {
+  const api = {
     syncPort: Object.freeze({
       scope: storageScope, accountKey,
       events() { refresh(); if (!readable || !writable) throw Object.assign(new Error('Atlas: local history is not durable'), { code: 'STORAGE_ERROR' }); return session.events(); },
@@ -124,8 +127,9 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
       const profile = summary();
       return { ...Learning.recommend({ profile, candidates, presentations: view().presentations, ...options }), storage: profile.storage };
     },
-    present(item) {
+    present(item, context = {}) {
       refresh();
+      if (!context || typeof context !== 'object' || Object.keys(context).some(k => k !== 'flow') || (context.flow != null && (typeof context.flow !== 'object' || Array.isArray(context.flow)))) throw new TypeError('Atlas: invalid presentation context');
       const node = map.getNode(item?.skillId);
       if (!node || node.domain !== item.modality || !identifier(item.id) || !identifier(item.itemKey)
         || !identifier(item.familyKey || item.itemKey) || ![1, 2, 3].includes(item.difficulty)
@@ -145,7 +149,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
       // Snapshot the actual Core state used at delivery so the choice is reviewable.
       const decision = session.plan(gameId, [{ id: item.id, minutes: 3, pace: 'standard',
         learning: { policy: Learning.POLICY.version, skillId: item.skillId, difficulty: item.difficulty, responseFormat: measure.responseFormat,
-          state: basis.status, evidence: basis.evidence } }]);
+          state: basis.status, evidence: basis.evidence }, ...(context.flow ? { flow: JSON.parse(JSON.stringify(context.flow)) } : {}) }]);
       const task = { id: item.id, version: map.map_ver, itemKey: item.itemKey, concepts: [item.skillId], tags: [], measure };
       const practice = Core.createPractice({ session: practiceSession, decision, map, task,
         assess: result => ({ verdict: result.assessable === false ? 'unassessed' : result.correct == null ? 'skipped' : result.correct ? 'correct' : 'incorrect', errorTags: [] }),
@@ -174,7 +178,8 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
       const attempt = p.practice.submit({ ...result, assessable }, { reason: reason || null });
       session.complete(p.decision); persist();
       const actual = view().attempts.find(a => a.eventId === attempt.eventId);
-      const recorded = { ...attempt, independent: !!actual?.independent && complete && writable, reason: reason || null };
+      const recorded = { ...attempt, independent: !!actual?.independent && complete && writable, reason: reason || null,
+        assisted: actual?.assisted ?? null, exposure: actual?.exposure ?? null };
       p.results.push(recorded); return { ...recorded };
     },
     exclude(eventId) { refresh(); const event = session.exclude(eventId); persist(); return event; },
@@ -182,8 +187,15 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     reset() {
       if (storageScope === 'account') throw Object.assign(new Error('Atlas: account deletion requires the host consent/reset API; local reset cannot delete server records'), { code: 'ACCOUNT_RESET_REQUIRED' });
       epoch = uid(); session = newSession([]); active.clear(); readable = true; writable = !!storage; complete = historyComplete; warning = null; persist();
+      flowPort.clear();
       return summary();
     },
   };
+  // The flow memory follows the log's epoch, so a reset in another tab is not undone from here.
+  flowPort = createFlowPort({ storage, key, clock: monotonicClock, epoch: () => { try { refresh(); } catch { /* the log reports its own error */ } return epoch; } });
+  api.today = flowPort.today;
+  api.setToday = flowPort.setToday;
+  api.live = createLive({ coach: api, port: flowPort, clock: monotonicClock });
+  return api;
 }
 module.exports = { createGame, createLearningSync, summarizeLearning: Learning.summarizeLearning, recommend: Learning.recommend, POLICY: Learning.POLICY, RESPONSE_FORMATS: Learning.RESPONSE_FORMATS, KEY };

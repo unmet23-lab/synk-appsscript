@@ -23,8 +23,11 @@ function createWorldLearningHost({ accountKey, revision, storage, transport, gua
       else if (change.kind === 'append') void sync.flush();
     });
     // Use the same public API the games already consume. No account/config UI per game.
+    const guarded = value => (typeof value === 'function' ? (...args) => { check(); return value(...args); } : value);
+    // A live content (coach.live) answers through the same guard on every call, not only when it opens.
+    const live = value => (...args) => { check(); return Object.freeze(Object.fromEntries(Object.entries(value(...args)).map(([name, part]) => [name, guarded(part)]))); };
     return Object.freeze(Object.fromEntries(Object.entries(coach).filter(([name]) => name !== 'syncPort').map(([name, value]) => [name,
-      typeof value === 'function' ? (...args) => { check(); return value(...args); } : value]).concat([
+      name === 'live' ? live(value) : guarded(value)]).concat([
       ['disconnect', () => { unsubscribe(); coaches.delete(coach); }],
     ])));
   }

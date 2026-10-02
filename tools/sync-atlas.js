@@ -13,7 +13,8 @@ for (let i = 0; i < args.length; i++) {
   else throw new Error('Usage: sync-atlas.js [--check] [--consumer talk|website]');
 }
 const talkFiles = ['engine.js', 'experiences.js', 'preferences.js', 'education.js', 'vellum.js', 'trail.js', 'temper.js',
-  'learning.js', 'game-learning.js', 'learning-sync.js', 'strata/index.js', 'strata/maps/ko.json', 'strata/maps/topik-i.json'];
+  'learning.js', 'game-learning.js', 'learning-sync.js', 'flow.js', 'temper-flow.js', 'vellum-flow.js', 'ask.js', 'game-flow.js',
+  'strata/index.js', 'strata/maps/ko.json', 'strata/maps/topik-i.json'];
 const consumers = {
   talk: [process.env.SYNK_TALK_ROOT || path.resolve(root, '../SYNK-talk'), 'lib/atlas', talkFiles],
   // The letter page imports only these two scripts; do not publish unused modules.

@@ -63,11 +63,12 @@ function recommend({ profile, candidates, presentations = [], audioAvailable = t
   for (const candidate of candidates) {
     if (!candidate || typeof candidate.id !== 'string' || !/^[a-zA-Z0-9_.:-]{1,120}$/.test(candidate.id) || ids.has(candidate.id)
       || !Array.isArray(candidate.skillIds) || !candidate.skillIds.length || !candidate.skillIds.every(id => skills.has(id))
-      || ![1, 2, 3].includes(candidate.difficulty) || !['listening', 'reading'].includes(candidate.modality)
+      || ![1, 2, 3].includes(candidate.difficulty) || typeof candidate.modality !== 'string' || !/^[a-z][a-z0-9_-]{0,40}$/.test(candidate.modality)
       || !RESPONSE_FORMATS.includes(candidate.responseFormat ?? 'unknown')
       || candidate.skillIds.some(id => skills.get(id).domain !== candidate.modality)) throw new TypeError('Core: invalid learning candidate');
     ids.add(candidate.id);
-    if (excludeIds.includes(candidate.id) || (!audioAvailable && candidate.modality === 'listening')) continue;
+    // Any subject's modality (Strata node domain) is accepted; sound needs are explicit or listening.
+    if (excludeIds.includes(candidate.id) || (!audioAvailable && (candidate.audioRequired ?? candidate.modality === 'listening'))) continue;
     const responseFormat = candidate.responseFormat ?? 'unknown';
     const states = candidate.skillIds.map(id => ({ ...skills.get(id).levels[candidate.difficulty].formats[responseFormat], skill: skills.get(id) }));
     const focus = states.sort((a, b) => b.priority - a.priority)[0];

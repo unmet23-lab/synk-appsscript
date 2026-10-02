@@ -15,8 +15,12 @@ test('WORLD games share verified account scope and cannot overwrite host storage
   assert.ok(two.events().some(e => e.type === 'practice.presented'));
   assert.ok(posted.some(e => e.type === 'practice.presented'));
   assert.equal('syncPort' in one, false);
+  const live = one.live({ id: 'world.sample', items: { levels: [1, 2, 3] }, knobs: [{ id: 'patience', kind: 'pace', values: [60, 45, 30], start: 1 }] });
+  live.observe({ outcome: 'success', pressure: 0.3 });
   ended = true;
   assert.throws(() => one.events(), /ended/);
+  // An open round is guarded on every call too, not only when it began.
+  for (const call of [() => live.observe({ outcome: 'success' }), () => live.settings(), () => live.end()]) assert.throws(call, /ended/);
   host.stop();
 });
 test('a signed-in WORLD with sharing off keeps its own local scope and never initializes transport', () => {
