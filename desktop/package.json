@@ -1,0 +1,25 @@
+{
+  "name": "synk-desktop-shell",
+  "version": "0.4.0",
+  "private": true,
+  "description": "Separate SYNK Platform, WORLD and Messenger desktop clients",
+  "author": "SYNK",
+  "main": "src/main.cjs",
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "dev:platform": "electron . --synk-dev --client=platform",
+    "dev:world": "electron . --synk-dev --client=world",
+    "dev:messenger": "electron . --synk-dev --client=messenger",
+    "dev:teacher": "electron src/teacher-main.cjs --synk-teacher-preview",
+    "dev:classroom": "electron src/classroom-main.cjs --synk-classroom-preview",
+    "dev:path": "electron src/product-main.cjs --synk-product-preview=path",
+    "package:preview:win": "node tools/package.cjs --mode=development --platform=win32 --arch=x64",
+    "package:preview:mac": "node tools/package.cjs --mode=development --platform=darwin --arch=arm64"
+  },
+  "devDependencies": {
+    "@electron/packager": "20.3.0",
+    "electron": "44.5.1",
+    "electron-builder": "26.15.3",
+    "sharp": "0.35.4"
+  }
+}

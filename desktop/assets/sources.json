@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "transformation": "Approved existing assets; proportion preserved, centered on white; no recoloring or redrawing.",
+  "sources": [
+    {
+      "id": "platform",
+      "source": "experiences/synk-account/assets/synk-logo.svg",
+      "sha256": "cd4950d57eab280fe14b26d58cb78f416eaf5c1ae1f0fa130986dde9567f61f6"
+    },
+    {
+      "id": "world",
+      "source": "experiences/synk-account/assets/sticker-book.webp",
+      "sha256": "c16dbf3db9716ae6d7d44a9d3d87dc6dded858d4027fb2a2cf0e31a1222c633e"
+    },
+    {
+      "id": "messenger",
+      "source": "experiences/synk-account/assets/laptop-felt.webp",
+      "sha256": "e7fec4f0b240f1d440041bb39cae6adec4784f0624f911605e119abc2d0e1689"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+export const INSTALLABLE_IDS=['world','messenger'];
+export const APPS={
+  world:{name:'SYNK WORLD',short:'WORLD',icon:'world.png',category:'PLAY · LEARN · CONNECT',description:'놀다 보면, 나의 세계가 넓어진다.',cover:'world-cover.webp',alt:'리듬 게임에 사용된 펠트 세계의 장면',caption:'SIGNAL RHYTHM · WORLD의 게임 아트',stage:'development',audience:'한국어를 배우는 학생',keywords:'월드 학습 게임 학생 토픽 TOPIK',summary:'미니게임·Town·숙제·AI 코칭을 연결하는 학습 클라이언트입니다.'},
+  messenger:{name:'SYNK Messenger',short:'MESSENGER',icon:'messenger.png',category:'TEAM · TALK · TOGETHER',description:'대화부터 제작과 AI 업무 연습까지, 함께.',cover:'laptop.webp',alt:'SYNK의 파란 펠트 노트북',caption:'SYNK MESSENGER · TEAM WORKSPACE',stage:'development',audience:'SYNK 회사 구성원',keywords:'메신저 사내 회사 팀 업무 내 작업실 제작 콘텐츠 스튜디오 Studio SHIFT 시프트 인공지능 AI 연습 검토',summary:'회사 구성원의 대화와 내 작업실을 연결합니다. 제작 데스크·게시 전 점검·AI 업무 연습을 같은 사내 권한 안에서 이어갑니다.'},
+  teacher:{name:'SYNK WORLD · 교사',short:'WORLD / 교사',icon:'world.png',category:'TEACH · GUIDE · GROW',description:'학생의 다음 학습을, 수업으로 연결하다.',cover:'world.png',alt:'SYNK의 펠트 책',caption:'TEACHER & INSTITUTION · LOCAL MVP',stage:'preview',audience:'한국어 교사·학원 및 교육기관 운영자',keywords:'교사 선생님 기관 학원 학교 수업 숙제 평가 교육',summary:'학생용 WORLD와 분리된 교사·기관용 앱입니다. WORLD에서 공유한 학습 기록으로 다음 읽기 과제를 보내고 수행 결과를 확인합니다.',boundary:'로컬 수업 연결 MVP. 교사와 WORLD 창을 함께 열어 기록·과제를 연결합니다. 정식 SYNK ID·운영 학생 연결·공개 배포는 준비 중입니다.',features:[['학급과 학생','담당 학급과 학생을 구분하고 교사가 확인할 학습 현황을 한곳에 모읍니다.'],['과제와 수업','학생의 학습 기록을 근거로 과제와 수업 준비를 연결하는 흐름을 구성합니다.'],['기관 운영','교사별 담당 범위와 기관 권한을 구분하는 운영 기반을 준비합니다.']]},
+  path:{name:'SYNK PATH',short:'PATH',icon:'world.png',category:'EXPLORE · PRACTICE · PREPARE',description:'한국에서의 첫날을, 먼저 경험해 보세요.',cover:'world.png',alt:'진로 준비를 나타내는 승인 펠트 책',caption:'VR CAMPUS PRACTICE · LOCAL MVP',stage:'preview',previewLabel:'VR 상황 연습 · 로컬 MVP',audience:'한국 유학·진로·취업을 준비하는 학습자',keywords:'패스 VR 가상 캠퍼스 진로 진학 취업 이력서 면접 목표',summary:'가상 캠퍼스의 안내데스크·수업실·진로상담실을 탐색하며 상황을 연습합니다. 내가 고른 목표와 시간에 맞춰 첫 연습을 추천하고 다음 준비를 정리합니다.',boundary:'가상 상황을 사용하는 로컬 MVP입니다. VR은 지원 브라우저·장비가 필요하며 실제 헤드셋 검증은 남아 있습니다. 실제 학교·기업 연결과 진학·취업 보장은 제공하지 않습니다.',features:[['공간을 직접 탐색','PC·모바일의 3D 화면과 지원 브라우저의 VR에서 같은 공간을 탐색합니다.'],['나에게 필요한 상황 연습','목표와 가용 시간에 맞춰 연습을 고르고 선택의 이유와 다음 준비 항목을 확인합니다.'],['준비 기록 이어가기','이 기기에 저장하는 데 동의하면 연습 기록을 이어가고 언제든 삭제할 수 있습니다.']]},
+  pulse:{name:'SYNK PULSE',short:'PULSE',icon:'messenger.png',category:'BRIEF · CREATE · DELIVER',description:'고객의 생각이, 작품으로 이어지는 곳.',cover:'laptop.webp',alt:'고객과 작품 협업을 나타내는 승인 펠트 노트북',caption:'CLIENT & CREATIVE WORK · IN PLANNING',stage:'planned',audience:'PULSE 고객·프로젝트 제작 담당자·작품 팬',keywords:'펄스 고객 작품 프로젝트 발주 피드백 영상 브랜드',summary:'고객의 요청·검토·최종 전달과 자체 작품·IP를 만나는 공간을 준비합니다.',boundary:'확장 후보 · 준비 중. 플랫폼 안에서 발주·결제·고객 전달을 운영하는 단계는 아닙니다.',features:[['요청 정리','목적·대상·일정과 필요한 결과물을 프로젝트별로 정리할 계획입니다.'],['작품 검토','시안별 의견과 수정 상태를 모아 확인한 내용을 추적하는 흐름을 준비합니다.'],['최종 전달','승인한 결과물과 사용 범위·전달 기록을 함께 보관할 계획입니다.'],['작품과 IP','자체 작품 감상·팬 참여·이용권과 라이선스를 작품별 권리 범위에 맞춰 준비합니다.']]},
+  partners:{name:'SYNK Partners',short:'PARTNERS',icon:'world.png',category:'CREATE · SHARE · CONNECT',description:'좋은 콘텐츠와 제작자가 만나는 곳.',cover:'world.png',alt:'외부 제작자의 콘텐츠를 나타내는 승인 펠트 책',caption:'CREATOR & PARTNER MARKET · IN PLANNING',stage:'planned',audience:'외부 창작자·교육 콘텐츠 파트너',keywords:'파트너 창작자 외부 시장 마켓 콘텐츠 판매',summary:'외부 창작자와 파트너가 검수된 콘텐츠를 소개하고 협업할 수 있는 시장을 준비합니다.',boundary:'확장 후보 · 준비 중. 입점·판매·결제·정산 기능과 공개 마켓은 아직 열지 않았습니다.',features:[['작품 소개','창작자와 콘텐츠의 목적·대상·사용 조건을 확인할 수 있게 구성할 계획입니다.'],['품질과 권리','교육 품질과 저작권·사용 허가를 검토하는 기준을 준비합니다.'],['파트너 협업','입점·운영·정산에 필요한 계약과 권한을 정한 뒤 실제 거래를 연결할 계획입니다.']]},
+};
+// Division colours: docs/디자인_토큰.json, SNS키트/README.md and approved palette.
+// Studio and SHIFT are workroom features in Messenger, not separate apps.
+export const BRAND_PRESENTATION={
+  world:{brand:'LAB · 학생',accent:'#F96859',ink:'#AE322A'},
+  messenger:{brand:'SYNK · 팀',accent:'#000000',ink:'#000000'},
+  teacher:{brand:'LAB · 교사',accent:'#F96859',ink:'#AE322A',icon:'teacher-cover.png',cover:'teacher-cover.png',alt:'수업 내용을 정리한 코럴색 펠트 발표 보드와 연단'},
+  path:{brand:'PATH · 다음 길',accent:'#526956',ink:'#526956',icon:'path-cover.png',cover:'path-cover.png',alt:'유학 계획 노트에서 대학 건물로 이어지는 초록색 펠트 길'},
+  pulse:{brand:'PULSE · 작품',accent:'#99295D',ink:'#99295D',icon:'pulse-cover.png',cover:'pulse-cover.png',alt:'작품을 담은 베리색 펠트 레코드와 사용 범위 서류'},
+  partners:{brand:'SYNK · 파트너',accent:'#F5C445',ink:'#7E5A10'},
+};
+for(const [id,presentation] of Object.entries(BRAND_PRESENTATION))Object.assign(APPS[id],presentation);
+export const APP_IDS=Object.keys(APPS);
+export function clientRows(snapshot=[],{native=true}={}){return APP_IDS.map(id=>{const app=APPS[id];if(app.stage==='planned')return {id,status:'planned',canLaunch:false,reason:'PRODUCT_PLANNED'};if(app.stage==='preview')return {id,status:'preview',canLaunch:false,reason:'LOCAL_PREVIEW'};return snapshot.find(row=>row?.id===id)||{id,status:'unavailable',reason:native?'CHECKING':'BROWSER_PREVIEW'};});}
+export function matchesLibrary(id,{search='',filter='all',favorites=[],client}={}){const app=APPS[id];if(!app)return false;const text=[app.name,app.keywords,app.audience,app.summary].join(' ').toLowerCase();if(search.trim()&&!text.includes(search.trim().toLowerCase()))return false;if(filter==='installed'&&!client?.canLaunch)return false;if(filter==='favorites'&&!favorites.includes(id))return false;if(filter==='planned'&&app.stage!=='planned')return false;if(filter==='development'&&app.stage==='planned')return false;return true;}
+export function bytes(value){if(!Number.isFinite(value)||value<0)return '—';if(value<1024)return `${value} B`;if(value<1024**2)return `${(value/1024).toFixed(1)} KB`;return `${(value/1024**2).toFixed(1)} MB`;}
+export function statusLabel(client){if(!client)return '확인 중';if(APPS[client.id]?.stage==='planned'||client.status==='planned')return '확장 준비 중';if(APPS[client.id]?.stage==='preview'||client.status==='preview')return APPS[client.id]?.previewLabel||'교사·기관용 로컬 MVP';if(client.reason==='CHECKING')return '확인 중';if(client.reason==='BROWSER_PREVIEW')return 'PC 앱에서 확인';if(client.canLaunch)return client.updateAvailable?'업데이트 가능':'설치됨';if(client.status==='not-installed')return '설치되지 않음';if(client.reason==='INVALID_INSTALLATION')return '앱 확인 필요';return '배포 준비 중';}
+export function primaryAction(client,{native=true,busy=false,teacherPreviewAvailable=false,productPreviewsAvailable=[]}={}){
+  if(client?.id&&!APP_IDS.includes(client.id))return {label:'이용할 수 없음',action:'none',disabled:true};
+  if(busy)return {label:'확인 중…',action:'none',disabled:true};
+  if(APPS[client?.id]?.stage==='planned'||client?.status==='planned')return {label:'준비 중',action:'none',disabled:true};
+  if(client?.id==='teacher')return native&&teacherPreviewAvailable?{label:'교사 앱 미리보기',action:'teacher-preview',disabled:false}:{label:native?'로컬 MVP 준비 중':'교사 앱 · 로컬 MVP',action:'none',disabled:true};
+  if(client?.id==='path')return native&&Array.isArray(productPreviewsAvailable)&&productPreviewsAvailable.includes(client.id)?{label:APPS[client.id].short+' MVP 열기',action:'product-preview',disabled:false}:{label:native?'로컬 MVP 준비 중':'PC 앱 · 로컬 MVP',action:'none',disabled:true};
+  if(!native)return {label:'PC 앱에서 설치',action:'none',disabled:true};
+  if(!client)return {label:'확인 중…',action:'none',disabled:true};
+  if(client.canLaunch)return {label:'▶ 실행',action:'launch',disabled:false};
+  const installer=client.installer||{};
+  if(installer.status==='preparing')return {label:'설치 파일 준비 중',action:'none',disabled:true};
+  if(installer.status==='opening')return {label:'설치 파일 확인 중',action:'none',disabled:true};
+  if(installer.status==='installer-opened')return {label:'설치 상태 확인',action:'refresh',disabled:false};
+  if(installer.canOpen)return {label:'설치 시작',action:'open',disabled:false};
+  if(installer.canPrepare)return {label:installer.status==='error'?'다시 준비':'↓ 설치 준비',action:'prepare',disabled:false};
+  return {label:'배포 준비 중',action:'none',disabled:true};
+}
+export function installerLabel(installer={}){return ({idle:'설치 파일 준비 가능',preparing:'설치 파일 복사·확인 중',opening:'설치 프로그램 여는 중',ready:'설치 파일 준비 완료','installer-opened':'설치 마법사를 열었어요',cancelled:'준비 취소됨',error:'설치 준비를 완료하지 못했어요',unavailable:'배포 준비 중'})[installer.status]||'배포 준비 중';}
+export function progressValue(installer={}){if(Number.isFinite(installer.progress))return Math.max(0,Math.min(installer.status==='preparing'?99:100,installer.progress));const total=Number(installer.totalBytes),done=Number(installer.transferredBytes);return total>0&&Number.isFinite(done)?Math.max(0,Math.min(installer.status==='preparing'?99:100,done/total*100)):0;}
+export function parsePreferences(raw){try{const value=JSON.parse(raw);return {selected:APP_IDS.includes(value?.selected)?value.selected:'world',favorites:Array.isArray(value?.favorites)?APP_IDS.filter(id=>value.favorites.includes(id)):[],density:value?.density==='compact'?'compact':'comfortable',lastLaunch:Object.fromEntries(APP_IDS.map(id=>[id,INSTALLABLE_IDS.includes(id)&&Number.isFinite(value?.lastLaunch?.[id])&&value.lastLaunch[id]>0&&value.lastLaunch[id]<=8640000000000000?value.lastLaunch[id]:null]))};}catch{return {selected:'world',favorites:[],density:'comfortable',lastLaunch:{}};}}

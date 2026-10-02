@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SYNK Platform</title>
+  <link rel="stylesheet" href="./launcher.css">
+  <script src="/assets/launcher/engine.js"></script>
+  <script src="/assets/launcher/personalization.js"></script>
+  <script type="module" src="./launcher.mjs"></script>
+</head>
+<body>
+<div class="launcher">
+  <header class="titlebar">
+    <img class="brand" src="/assets/launcher/synk.svg" alt="SYNK">
+    <span class="edition" id="edition">PLATFORM</span>
+    <div class="drag-space" aria-hidden="true"></div>
+    <span class="window-caption">당신의 모든 SYNK</span>
+    <div class="window-actions" id="window-actions" hidden>
+      <button data-window="minimize" aria-label="최소화"><span aria-hidden="true">−</span></button>
+      <button data-window="toggle-maximize" id="maximize" aria-label="최대화"><span aria-hidden="true">□</span></button>
+      <button data-window="close" class="window-close" aria-label="닫기"><span aria-hidden="true">×</span></button>
+    </div>
+  </header>
+  <nav class="topbar" aria-label="주 메뉴">
+    <div class="nav-links">
+      <button data-view="library" class="active" aria-current="page">라이브러리</button>
+      <button data-view="downloads">설치·업데이트 <span class="counter" id="queue-count" hidden>0</span></button>
+      <button data-view="settings">설정</button>
+    </div>
+    <button class="account-button" id="account-button" aria-label="SYNK ID 계정"><span class="avatar" aria-hidden="true">S</span><span id="account-label">SYNK ID 로그인</span><span aria-hidden="true">⌄</span></button>
+  </nav>
+  <div class="workspace">
+    <aside class="library" aria-label="내 앱">
+      <div class="library-heading"><span id="library-caption">내 라이브러리</span><span class="mono" id="library-count">00</span></div>
+      <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="앱 찾기" aria-label="라이브러리에서 앱 찾기" autocomplete="off"><kbd>Ctrl K</kbd></label>
+      <div class="filters" aria-label="라이브러리 필터"><button data-filter="all" aria-pressed="true">내 앱</button><button data-filter="installed" aria-pressed="false">설치됨</button><button data-filter="development" aria-pressed="false">개발판</button><button data-filter="planned" aria-pressed="false">준비 중</button><button data-filter="favorites" aria-pressed="false" aria-label="즐겨찾기">☆</button></div>
+      <div id="app-list" class="app-list"></div>
+      <p class="empty-search" id="empty-search" hidden>표시할 앱이 없어요.<br>검색어나 필터를 바꿔 보세요.</p>
+      <div class="library-bottom"><span class="small-caps">ONE ID. YOUR SYNK.</span><p>배움과 일, 창작까지.<br>각자의 공간으로.</p><span class="library-note" id="library-access-note">이 계정의 앱을 확인하고 있어요.</span></div>
+    </aside>
+    <main id="main" tabindex="-1">
+      <section id="view-library" class="view" aria-label="앱 상세">
+        <div class="personal-entry" id="personal-entry" hidden><div><span class="eyebrow">YOUR SYNK, YOUR WAY</span><strong id="personal-heading">무엇부터 시작할까요?</strong><p id="personal-summary">목적과 보기 방식을 고르면, 나에게 맞는 공간부터 보여 드려요.</p></div><button class="soft-button" id="personal-open">맞춤 시작</button></div>
+        <div id="recommendation" class="recommendation" hidden aria-live="polite"></div>
+        <div class="library-empty" id="library-empty" hidden aria-live="polite"><span class="eyebrow">YOUR SYNK</span><h1 id="library-empty-title">내 앱을 확인하고 있어요</h1><p id="library-empty-description">계정 연결을 마치면 이용할 수 있는 앱이 나타납니다.</p><div><button class="soft-button" id="library-account">계정 관리</button><button class="soft-button" id="library-retry" hidden>다시 불러오기</button></div></div>
+        <div id="app-detail" hidden>
+        <div class="app-heading"><div class="breadcrumb">라이브러리 <span>/</span> <strong id="breadcrumb-app">SYNK WORLD</strong></div><button class="icon-button" id="favorite" aria-label="즐겨찾기에 추가" aria-pressed="false">☆</button></div>
+        <div class="hero world" id="hero">
+          <img class="hero-art" id="hero-art" src="/assets/launcher/world-cover.webp" alt="리듬 게임에 사용된 펠트 세계의 장면">
+          <div class="hero-shade"></div>
+          <div class="hero-text"><span class="brand-scope" id="brand-scope">LAB · 학생</span><span class="eyebrow" id="hero-category">PLAY · LEARN · CONNECT</span><h1 id="hero-title"><span>SYNK</span>WORLD</h1><p id="hero-description">놀다 보면, 나의 세계가 넓어진다.</p><span class="product-stage" id="product-stage">독립 클라이언트 · 개발판</span></div>
+          <span class="hero-caption" id="hero-caption">SIGNAL RHYTHM · WORLD의 게임 아트</span>
+        </div>
+        <div class="action-strip">
+          <div class="launch-group"><button class="primary" id="primary-action" disabled>확인 중</button><button class="icon-button refresh" id="refresh" aria-label="설치 상태 다시 확인">↻</button></div>
+          <div class="app-state"><span class="field-label">이 기기의 앱</span><strong id="install-status">확인 중</strong></div>
+          <div class="app-version"><span class="field-label">설치 버전</span><strong id="install-version" class="mono">—</strong></div>
+          <div class="last-play"><span class="field-label">이 기기에서 마지막 실행</span><strong id="last-launch">기록 없음</strong></div>
+        </div>
+        <p class="action-notice" id="action-notice" role="status"></p>
+        <p class="teacher-web-entry" id="teacher-web-link" hidden><a href="http://127.0.0.1:4295/" target="_blank" rel="noopener noreferrer">이 컴퓨터의 교사 앱 열기 ↗</a><span>로컬 MVP · 교사 서비스가 실행 중이어야 합니다.</span></p>
+        <div class="detail-tabs" aria-label="앱 상세 항목"><button data-detail="overview" aria-pressed="true">개요</button><button data-detail="content" aria-pressed="false">포함된 콘텐츠</button><button data-detail="info" aria-pressed="false">앱 정보</button></div>
+        <div id="detail-content" class="detail-content"></div>
+        </div>
+      </section>
+      <section id="view-downloads" class="view padded-view" aria-labelledby="downloads-title" hidden><div class="section-title"><div><span class="eyebrow">INSTALL MANAGER</span><h1 id="downloads-title">설치·업데이트</h1><p>앱을 준비하고, 각 클라이언트의 설치를 이어가세요.</p></div><button class="soft-button" id="refresh-downloads">상태 새로고침</button></div><div id="download-list"></div><div class="quiet-note"><strong>개발 미리보기 배포</strong><p>포함된 설치 파일을 이 기기에 복사하고 확인합니다. 설치 마법사는 직접 열 때 시작되며, 설치 완료 후 라이브러리에서 실행할 수 있어요.</p></div></section>
+      <section id="view-settings" class="view padded-view" aria-labelledby="settings-title" hidden><div class="section-title"><div><span class="eyebrow">PREFERENCES</span><h1 id="settings-title">설정</h1><p>이 기기의 플랫폼과 계정 연결을 관리하세요.</p></div></div><div class="setting-row"><div><h2>맞춤 보기</h2><p id="personal-settings-summary">앱 순서와 보기 방식은 이 기기의 계정별로 저장됩니다.</p></div><button class="soft-button" id="personal-settings-open">맞춤 설정</button></div><div class="setting-row"><div><h2>화면 밀도</h2><p>라이브러리와 앱 상세의 간격을 조절합니다.</p></div><select id="density" aria-label="화면 밀도"><option value="comfortable">기본</option><option value="compact">촘촘하게</option></select></div><div class="setting-row"><div><h2>SYNK ID</h2><p id="settings-account">계정 상태 확인 중</p></div><button class="soft-button" id="settings-login">계정 관리</button></div><div class="setting-row"><div><h2>플랫폼 정보</h2><p>각 앱은 별도 클라이언트로 실행됩니다.</p></div><span class="mono" id="platform-version">—</span></div><div class="setting-row"><div><h2>이 기기의 보기 설정</h2><p>즐겨찾기, 화면 밀도, 마지막 실행 표시를 초기화합니다.</p></div><button class="soft-button" id="reset-preferences">초기화</button></div><div class="quiet-note"><strong>연결 상태</strong><dl id="diagnostics"></dl></div></section>
+    </main>
+  </div>
+  <footer class="statusbar"><button id="download-shortcut"><span aria-hidden="true">↓</span><span id="download-status">설치 대기 없음</span><span class="footer-progress" hidden><span id="footer-progress-fill"></span></span></button><span id="runtime-label">플랫폼 준비 중</span><span class="status-separator">|</span><button id="footer-settings">설정 <span aria-hidden="true">⚙</span></button></footer>
+</div>
+<dialog id="account-dialog" aria-labelledby="account-title"><form method="dialog"><button class="dialog-close icon-button" aria-label="계정 창 닫기">×</button></form><span class="eyebrow">ONE SYNK ID</span><h2 id="account-title">SYNK에 로그인</h2><p id="account-description">하나의 계정으로 각자의 SYNK 공간을 연결하세요.</p><div class="account-state" id="account-state"></div><button class="primary" id="sign-in">로그인</button><button class="soft-button" id="sign-out" hidden>로그아웃</button><button class="soft-button" id="cancel-sign-in" hidden>로그인 취소</button><p class="fine-print">로그인은 기본 브라우저에서 진행됩니다. 학습 기록과 회사 자료는 각 앱의 권한에 따라 따로 관리됩니다.</p></dialog>
+<dialog id="content-dialog" class="content-dialog" aria-labelledby="content-title"><form method="dialog"><button class="dialog-close icon-button" aria-label="콘텐츠 창 닫기">×</button></form><img id="content-image" alt=""><div class="content-dialog-copy"><span class="eyebrow">WORLD · 개발 중인 콘텐츠</span><h2 id="content-title"></h2><p id="content-description"></p><p class="fine-print">콘텐츠는 WORLD 클라이언트에서 이용합니다. 표시된 화면은 개발 버전입니다.</p><button class="soft-button" id="content-go-world">WORLD로 돌아가기</button></div></dialog>
+<div id="toast" class="toast" role="status" hidden></div>
+<dialog id="personal-dialog" class="personal-dialog" aria-labelledby="personal-title"><form method="dialog"><button class="dialog-close icon-button" aria-label="맞춤 설정 닫기">×</button></form><span class="eyebrow">이 기기 설정 · 선택 사항</span><h2 id="personal-title">나에게 맞는 SYNK</h2><p class="personal-intro">표시할 앱은 계정에 연결된 이용 권한으로 정해져요. 맞춤 설정은 그 안에서 앱 순서와 보기 방식만 바꿔요. 이 기기의 계정별로 저장됩니다.</p><form id="personal-form">
+  <div class="personal-fields"><label>지금 어떤 일로 오셨나요?<select id="personal-context"><option value="everyday">일상에서 둘러보기</option><option value="student">한국어를 배우는 학생</option><option value="teacher">교사·교육기관</option><option value="work">기업·실무 활용</option><option value="creator">콘텐츠 제작</option><option value="customer">작품 감상·제작 의뢰</option><option value="career">진로·다음 단계 준비</option><option value="partner">외부 창작·파트너 협업</option><option value="team">SYNK 사내 업무</option></select></label>
+  <label>오늘의 목적<select id="personal-goal"><option value="explore">새로운 공간 살펴보기</option><option value="study">한국어 학습 시작하기</option><option value="clarity">수업과 설명 준비하기</option><option value="work">업무에 활용하기</option><option value="expression">만들고 표현하기</option><option value="prepare">다음 단계 준비하기</option></select></label>
+  <label>글자 크기<select id="personal-text"><option value="standard">기본</option><option value="large">크게</option></select></label><label>설명 분량<select id="personal-explanation"><option value="standard">기본</option><option value="brief">핵심만</option><option value="detailed">자세히</option></select></label><label>화면 움직임<select id="personal-motion"><option value="full">기본</option><option value="reduced">줄이기</option></select></label></div>
+  <label class="consent-choice"><input id="personal-consent" type="checkbox"><span>내 선택을 이 기기에 저장하고 플랫폼 맞춤 표시에 사용하는 데 동의해요.</span></label><p class="fine-print">학습 능력·회사 권한을 판단하지 않아요. 학생 기록과 회사 자료를 가져오거나 섞지 않으며, 언제든 삭제할 수 있어요.</p><p id="personal-message" role="status"></p><button class="primary" type="submit" id="personal-save">이 기기에 저장하고 적용</button><div class="personal-secondary"><button type="button" class="soft-button" id="personal-skip">지금은 건너뛰기</button><button type="button" class="text-link" id="personal-clear">맞춤 설정 삭제</button></div>
+</form></dialog>
+</body></html>

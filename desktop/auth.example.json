@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "supabaseUrl": "https://YOUR-PROJECT.supabase.co",
+  "accountApiUrl": "https://YOUR-PROJECT.supabase.co",
+  "supabasePublishableKey": "sb_publishable_REPLACE_WITH_PUBLIC_KEY",
+  "clients": {
+    "platform": { "clientId": "REPLACE_PLATFORM_PUBLIC_CLIENT_ID", "redirectUri": "http://127.0.0.1:43821/synk/oauth/platform/callback" },
+    "world": { "clientId": "REPLACE_WORLD_PUBLIC_CLIENT_ID", "redirectUri": "http://127.0.0.1:43822/synk/oauth/world/callback" },
+    "messenger": { "clientId": "REPLACE_MESSENGER_PUBLIC_CLIENT_ID", "redirectUri": "http://127.0.0.1:43823/synk/oauth/messenger/callback" }
+  }
+}

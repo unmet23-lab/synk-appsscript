@@ -1,0 +1,79 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path');
+const {build,Platform,Arch}=require('electron-builder');
+const {CLIENTS,DEV_URLS,PLATFORM_ENTRY,identity}=require('../src/catalog.cjs');
+const {safeEntry,inside}=require('../src/security.cjs');
+const {configuration}=require('../src/auth-config.cjs');
+const root=path.resolve(__dirname,'..');
+const hashFile=p=>require('node:crypto').createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+const sourceHash=()=>require('./source-hash.cjs').sourceHash(root);
+function previewReleases(options) {
+  const entries=[];
+  for(const id of ['world','messenger']) {
+    const c=identity(id,'development'),output=configFor(id,options).directories.output;
+    const dir=options.platform==='win32'?path.join(output,options.arch==='arm64'?'win-arm64-unpacked':'win-unpacked'):path.join(output,options.arch==='arm64'?'mac-arm64':'mac',c.executableName+'.app');
+    const resources=options.platform==='win32'?path.join(dir,'resources'):path.join(dir,'Contents','Resources');
+    try {const metadata=JSON.parse(fs.readFileSync(path.join(resources,'synk-install.json'),'utf8'));if(metadata.sourceHash!==sourceHash())continue;
+      const installer=path.join(output,c.productName+'-'+metadata.version+'-'+(options.platform==='win32'?'win':'mac')+'-'+options.arch+(options.platform==='win32'?'.exe':'.dmg'));
+      const item={id,mode:'development',platform:options.platform,arch:options.arch,version:metadata.version,executableSHA256:hashFile(options.platform==='win32'?path.join(dir,c.executableName+'.exe'):path.join(dir,'Contents','MacOS',c.executableName)),asarSHA256:hashFile(path.join(resources,'app.asar'))};
+      if(fs.existsSync(installer))item.installer={relativePath:id+(options.platform==='win32'?'.exe':'.dmg'),sha256:hashFile(installer),bytes:fs.statSync(installer).size};
+      entries.push(item);
+    }catch{}
+  }
+  const history=require('../src/local-releases.cjs').loadDevelopmentReleases({root,platform:options.platform,arch:options.arch});
+  for(const release of history)if(!entries.some(r=>r.id===release.id&&r.version===release.version)){const {installer,...pin}=release;entries.push(pin);}
+  return entries;
+}
+function configFor(id,{mode='development',platform='win32',arch='x64'}={}) {
+  const c=identity(id,mode),suffix=mode==='development'?'preview':'release';
+  return {appId:c.appId,productName:c.productName,executableName:c.executableName,asar:true,npmRebuild:false,
+    directories:{app:path.join(root,'.stage',suffix,platform,arch,id),output:path.join(root,'dist',suffix,platform,arch,id)},
+    files:['package.json','runtime.json','src/**','renderer/**','assets/**'],extraResources:[{from:path.join(root,'.stage',suffix,platform,arch,id,'synk-install.json'),to:'synk-install.json'}],
+    artifactName:'${productName}-${version}-${os}-${arch}.${ext}',
+    forceCodeSigning:mode==='release',
+    win:{target:[{target:'nsis',arch:[arch]}],signExecutable:mode==='release',icon:path.join(root,'assets',id+'.ico')},
+    nsis:{oneClick:false,perMachine:false,allowElevation:false,allowToChangeInstallationDirectory:false,runAfterFinish:false,deleteAppDataOnUninstall:false,createDesktopShortcut:true,createStartMenuShortcut:true},
+    mac:{target:[{target:'dmg',arch:[arch]},{target:'zip',arch:[arch]}],category:id==='world'?'public.app-category.education':'public.app-category.productivity',hardenedRuntime:true,gatekeeperAssess:false,icon:path.join(root,'assets',id+'.icns'),...(mode==='development'?{identity:null}:{})},
+    publish:null,
+  };
+}
+function prepare(id,options){
+  const config=configFor(id,options),c=identity(id,options.mode);let entry=DEV_URLS[id],releases=[],auth=null;
+  if(id==='platform'&&['index.html','launcher.mjs','launcher.css'].some(file=>!fs.existsSync(path.join(root,'renderer',file))))throw Error('The native platform renderer must be built before packaging.');
+  if(options.authConfig){auth=JSON.parse(fs.readFileSync(options.authConfig,'utf8'));configuration(auth,id,options.mode);}
+  if(options.mode==='development'&&id==='platform')releases=previewReleases(options);
+  if(options.mode==='release') {
+    if(!options.releaseConfig)throw Error('Release URLs and approved application hashes are not configured.');
+    const release=JSON.parse(fs.readFileSync(options.releaseConfig,'utf8'));entry=id==='platform'?PLATFORM_ENTRY:release.entries?.[id];releases=release.releases||[];
+    if(release.version!==1||release.approved!==true)throw Error('Release configuration is not approved.');
+  }
+  if(!safeEntry(entry,options.mode))throw Error('Invalid entry URL for '+id);
+  const stageRoot=path.resolve(root,'.stage'),stage=path.resolve(config.directories.app);
+  if(!inside(stageRoot,stage))throw Error('Invalid staging directory');
+  fs.rmSync(stage,{recursive:true,force:true});
+  fs.mkdirSync(stage,{recursive:true});fs.cpSync(path.join(root,'src'),path.join(stage,'src'),{recursive:true});
+  for(const directory of ['renderer','assets'])if(fs.existsSync(path.join(root,directory)))fs.cpSync(path.join(root,directory),path.join(config.directories.app,directory),{recursive:true});
+  if(id==='platform'&&options.mode==='development')for(const release of releases){if(!release.installer)continue;const child=identity(release.id,'development'),output=configFor(release.id,options).directories.output;
+    const installer=path.join(output,child.productName+'-'+release.version+'-'+(options.platform==='win32'?'win':'mac')+'-'+options.arch+(options.platform==='win32'?'.exe':'.dmg'));
+    config.extraResources.push({from:installer,to:'clients/'+release.installer.relativePath});
+  }
+  const version=require('../package.json').version;
+  fs.writeFileSync(path.join(config.directories.app,'package.json'),JSON.stringify({name:'synk-'+id+(options.mode==='development'?'-preview':''),version,description:'SYNK '+id+' desktop client',author:'SYNK',main:'src/main.cjs'},null,2));
+  fs.writeFileSync(path.join(config.directories.app,'runtime.json'),JSON.stringify({clientId:id,mode:options.mode,entry,releases,auth},null,2));
+  fs.writeFileSync(path.join(config.directories.app,'synk-install.json'),JSON.stringify({clientId:id,mode:options.mode,appId:c.appId,version,arch:options.arch,platform:options.platform,sourceHash:sourceHash()},null,2));
+  return config;
+}
+async function main(args=process.argv.slice(2)) {
+  const allowed=['mode','platform','arch','client','release-config','auth-config','dir'];const options={mode:'development',platform:process.platform,arch:process.arch};
+  for(const arg of args){const m=/^--([a-z-]+)=(.+)$/.exec(arg);if(!m||!allowed.includes(m[1]))throw Error('Unknown argument');options[m[1]==='release-config'?'releaseConfig':m[1]==='auth-config'?'authConfig':m[1]]=m[2];}
+  if(!['development','release'].includes(options.mode)||!['win32','darwin'].includes(options.platform)||!['x64','arm64'].includes(options.arch))throw Error('Unsupported build target');
+  if(options.platform==='darwin'&&process.platform!=='darwin'&&options.dir!=='true')throw Error('Create Mac DMG/ZIP installers on macOS; this host can only prepare an unsigned .app directory.');
+  const ids=options.client?[options.client]:['world','messenger','platform'];
+  const electronVersion=require('../package.json').devDependencies.electron;
+  for(const id of ids){const config=prepare(id,options);const target=options.platform==='win32'?Platform.WINDOWS:Platform.MAC;
+    const artifacts=await build({targets:target.createTarget(options.dir==='true'?'dir':null,options.arch==='arm64'?Arch.arm64:Arch.x64),config:{...config,electronVersion},publish:'never'});
+    process.stdout.write(JSON.stringify({client:id,mode:options.mode,platform:options.platform,arch:options.arch,artifacts})+'\n');
+  }
+}
+if(require.main===module)main().catch(error=>{process.stderr.write(error.message+'\n');process.exitCode=1;});
+module.exports={configFor,prepare};

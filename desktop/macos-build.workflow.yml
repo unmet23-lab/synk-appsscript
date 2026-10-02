@@ -1,0 +1,32 @@
+# Copy to .github/workflows/synk-desktop-macos.yml only when CI setup is authorized.
+# This template has not been pushed or executed. It publishes no release.
+name: SYNK macOS preview packages
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        arch: [x64, arm64]
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: node tools/package.cjs --mode=development --platform=darwin --arch=${{ matrix.arch }}
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: synk-macos-preview-${{ matrix.arch }}
+          path: desktop/dist/preview/darwin/${{ matrix.arch }}/
+          retention-days: 7

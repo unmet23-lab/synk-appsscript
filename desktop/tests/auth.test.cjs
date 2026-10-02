@@ -1,0 +1,145 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),http=require('node:http'),fs=require('node:fs/promises'),path=require('node:path'),os=require('node:os'),crypto=require('node:crypto');
+const {configuration}=require('../src/auth-config.cjs'),{createTokenStore}=require('../src/auth-store.cjs'),{createAuthService}=require('../src/auth-service.cjs'),{requestSpec}=require('../src/account-requests.cjs'),{trustedEntry,assertSender}=require('../src/security.cjs'),{createCompanyRequests}=require('../src/company-requests.cjs');
+async function waitFor(fn){for(let i=0;i<150;i++){if(fn())return;await new Promise(r=>setTimeout(r,10));}assert.fail('Timed out waiting for synthetic auth state');}
+async function listen(server){await new Promise(r=>server.listen(0,'127.0.0.1',r));return server.address().port;}
+const close=server=>new Promise(r=>{server.closeAllConnections();server.close(r);});
+const secure={isEncryptionAvailable:()=>true,encryptString:text=>{const cipher=crypto.createCipheriv('aes-256-gcm',Buffer.alloc(32,7),Buffer.alloc(12,9));return Buffer.concat([cipher.update(text),cipher.final(),cipher.getAuthTag()]);},decryptString:data=>{const decipher=crypto.createDecipheriv('aes-256-gcm',Buffer.alloc(32,7),Buffer.alloc(12,9));decipher.setAuthTag(data.subarray(-16));return Buffer.concat([decipher.update(data.subarray(0,-16)),decipher.final()]).toString();}};
+async function fixture(t,{product='platform',secureStorage=secure,openFail=false}={}){
+  const directory=await fs.mkdtemp(path.join(os.tmpdir(),'synk-auth-test-'));const portProbe=http.createServer(),callbackPort=await listen(portProbe);await close(portProbe);
+  let opened,clock=1000000,serial=0,codeCount=0,refreshCount=0,logoutCount=0,delayToken=null,tokenStatus=200,wrongSubject=false,accountStatus=200,userStatus=200,nonJson=false,accountPayload={account:{synk_user_id:'stable-synthetic-id',status:'active',profile:{display_name:'합성 계정'}},memberships:[],entitlements:[]};const requests=[],codes=new Map(),active=new Set(),accountResponses=[];
+  const server=http.createServer(async(req,res)=>{
+    const u=new URL(req.url,'http://127.0.0.1');let body='';for await(const chunk of req)body+=chunk;
+    const reply=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(data));};requests.push({path:u.pathname,method:req.method,headers:req.headers,body});
+    if(u.pathname==='/auth/v1/oauth/authorize'){const code='synthetic-code-'+codes.size;codes.set(code,{challenge:u.searchParams.get('code_challenge'),client:u.searchParams.get('client_id'),redirect:u.searchParams.get('redirect_uri')});const target=new URL(u.searchParams.get('redirect_uri'));target.search=new URLSearchParams({code,state:u.searchParams.get('state')});res.writeHead(302,{Location:target.href});res.end();return;}
+    if(u.pathname==='/auth/v1/oauth/token'){
+      const values=new URLSearchParams(body);if(values.get('grant_type')==='authorization_code'){codeCount++;const stored=codes.get(values.get('code'));if(!stored||stored.challenge!==crypto.createHash('sha256').update(values.get('code_verifier')).digest('base64url')||stored.client!==values.get('client_id')||stored.redirect!==values.get('redirect_uri'))return reply(400,{error:'invalid_grant'});codes.delete(values.get('code'));}else{refreshCount++;if(!active.has(values.get('refresh_token')))return reply(400,{error:'invalid_grant'});active.delete(values.get('refresh_token'));}
+      if(delayToken)await delayToken;if(tokenStatus!==200)return reply(tokenStatus,{error:'synthetic_failure'});serial++;active.add('synthetic-refresh-'+serial);reply(200,{token_type:'bearer',access_token:'synthetic-access-'+serial,refresh_token:'synthetic-refresh-'+serial,expires_in:3600});return;
+    }
+    if(u.pathname==='/auth/v1/user'){if(nonJson&&userStatus!==200){res.writeHead(userStatus);res.end('<html>Temporary unavailable</html>');return;}return reply(userStatus,{id:wrongSubject?'different-user':'synthetic-auth-user'});}
+    if(u.pathname==='/auth/v1/logout'){logoutCount++;active.clear();res.writeHead(204);res.end();return;}
+    if(u.pathname==='/functions/v1/synk-account'){
+      if(nonJson&&accountStatus!==200){res.writeHead(accountStatus);res.end('<html>Temporary unavailable</html>');return;}
+      if(body&&JSON.parse(body).action==='revoke-session')return reply(200,{ok:true,current:true});
+      const queued=accountResponses.shift();if(queued){await queued.wait;return reply(queued.status??200,queued.data);}
+      return reply(accountStatus,accountStatus===200?{ok:true,...accountPayload,sessions:[{id:'00000000-0000-4000-8000-000000000001',current:true,revoked:false}],access_token:'must-be-redacted'}:{ok:false,error:{code:accountStatus===503?'UNAVAILABLE':'SESSION_REVOKED'}});
+    }
+    if(u.pathname==='/functions/v1/synk-learning')return reply(200,{ok:true,events:[],cursor:0,revision:1});
+    reply(404,{ok:false});
+  });
+  const serverPort=await listen(server),origin='http://127.0.0.1:'+serverPort,raw={version:1,supabaseUrl:origin,accountApiUrl:origin,supabasePublishableKey:'sb_publishable_synthetic',clients:{[product]:{clientId:'synthetic-client-'+product,redirectUri:`http://127.0.0.1:${callbackPort}/synk/oauth/${product}/callback`}}};
+  const config=configuration(raw,product,'development');const store=()=>createTokenStore({directory,safeStorage:secureStorage,scope:product,configFingerprint:config.fingerprint,platform:'win32'});const services=[];
+  const create=()=>{const service=createAuthService({config,store:store(),now:()=>clock,openExternal:async url=>{if(openFail)throw Error('SYNTHETIC_OPEN_FAILED');opened=url;},timeoutMs:3000});services.push(service);return service;};
+  const service=create();t.after(async()=>{for(const s of services)s.dispose();await close(server);await fs.rm(directory,{recursive:true,force:true});});
+  return {service,create,store,config,raw,directory,requests,get opened(){return opened;},get codeCount(){return codeCount;},get refreshCount(){return refreshCount;},get logoutCount(){return logoutCount;},setClock:value=>{clock=value;},delay:promise=>{delayToken=promise;},tokenStatus:value=>{tokenStatus=value;},wrongSubject:()=>{wrongSubject=true;},accountStatus:value=>{accountStatus=value;},accountPayload:value=>{accountPayload={...accountPayload,...value};},queueAccount:value=>accountResponses.push(value),userStatus:value=>{userStatus=value;},nonJson:()=>{nonJson=true;},async login(){await service.initialize();await service.signIn();const response=await fetch(opened);assert.equal(response.status,200);await waitFor(()=>service.status().signedIn);}};
+}
+test('external-browser OAuth uses real HTTP callback, S256, state and public client; no tokens enter status',async t=>{
+  const f=await fixture(t);await f.login();const url=new URL(f.opened);assert.equal(url.searchParams.get('code_challenge_method'),'S256');assert.equal(url.searchParams.get('response_type'),'code');assert.equal(url.searchParams.get('state').length,43);assert.equal(f.codeCount,1);assert.equal(f.service.status().account.synk_user_id,'stable-synthetic-id');assert.doesNotMatch(JSON.stringify(f.service.status()),/synthetic-access|synthetic-refresh|code_verifier/);
+  const load=await f.service.accountRequest('load');assert.equal(load.ok,true);assert.equal(load.access_token,undefined);assert.equal(f.requests.find(r=>r.path==='/functions/v1/synk-account').headers['x-synk-product'],'platform');
+});
+test('wrong state, duplicate state/code, wrong path and forged Host cannot consume callback',async t=>{
+  const f=await fixture(t);await f.service.signIn();const start=new URL(f.opened),callback=new URL(f.config.redirectUri),state=start.searchParams.get('state');
+  for(const query of [`?code=x&state=wrong`,`?code=x&state=${state}&state=${state}`,`?code=x&code=y&state=${state}`])assert.equal((await fetch(callback.href+query)).status,400);
+  assert.equal((await fetch(callback.origin+'/bad?code=x&state='+state)).status,400);
+  assert.equal(await new Promise(resolve=>{http.get(callback.href+'?code=x&state='+state,{headers:{Host:'evil.invalid'}},res=>{res.resume();resolve(res.statusCode);});}),400);
+  assert.equal(f.codeCount,0);assert.equal(f.service.status().status,'signing-in');await fetch(f.opened);await waitFor(()=>f.service.status().signedIn);assert.equal(f.codeCount,1);
+  await assert.rejects(fetch(callback.href+'?code=x&state='+state));assert.equal(f.codeCount,1);
+});
+test('cancellation and expired callback close listener and never create a disk session',async t=>{
+  const f=await fixture(t);await f.service.signIn();const old=f.config.redirectUri;assert.equal((await f.service.cancel()).error.code,'AUTH_CANCELLED');await assert.rejects(fetch(old+'?code=x&state=x'));
+  await f.service.signIn();const state=new URL(f.opened).searchParams.get('state');f.setClock(1400000);assert.equal((await fetch(old+'?code=x&state='+state)).status,410);await waitFor(()=>f.service.status().status==='signed-out');assert.equal(f.codeCount,0);await assert.rejects(fs.stat(path.join(f.directory,'auth-session.enc')));
+});
+test('port collision or external browser launch failure returns a usable signed-out state',async t=>{
+  const f=await fixture(t);const busy=http.createServer();await new Promise(r=>busy.listen(Number(new URL(f.config.redirectUri).port),'127.0.0.1',r));await assert.rejects(f.service.signIn(),{code:'CALLBACK_UNAVAILABLE'});await close(busy);assert.equal(f.service.status().status,'signed-out');
+  const broken=await fixture(t,{openFail:true});await assert.rejects(broken.service.signIn(),{code:'AUTH_FAILED'});assert.equal(broken.service.status().status,'signed-out');
+});
+test('disk holds ciphertext only; restore rotates refresh token, verifies same subject and logout removes it',async t=>{
+  const f=await fixture(t);await f.login();const file=path.join(f.directory,'auth-session.enc'),bytes=await fs.readFile(file);assert.equal(bytes.includes(Buffer.from('synthetic-refresh')),false);f.service.dispose();const restored=f.create();await restored.initialize();assert.equal(restored.status().signedIn,true);assert.equal(f.refreshCount,1);assert.equal((await restored.signOut()).serverRevoked,true);assert.equal(f.logoutCount,1);await assert.rejects(fs.stat(file));const again=f.create();await again.initialize();assert.equal(again.status().signedIn,false);
+});
+test('near expiry concurrent requests share one refresh and verify the restored subject',async t=>{
+  const f=await fixture(t);await f.login();f.setClock(4590000);const results=await Promise.all([f.service.accountRequest('load'),f.service.accountRequest('load'),f.service.accountRequest('learningGet',{after:0,revision:1})]);assert.equal(results.every(r=>r.ok),true);assert.equal(f.refreshCount,1);
+  f.wrongSubject();f.setClock(8180000);assert.equal((await f.service.accountRequest('load')).ok,false);assert.equal(f.service.status().signedIn,false);await assert.rejects(fs.stat(path.join(f.directory,'auth-session.enc')));
+});
+test('refresh invalid_grant drops stored session, while transient server failure preserves encrypted recovery',async t=>{
+  const f=await fixture(t);await f.login();f.tokenStatus(503);f.setClock(4590000);assert.equal((await f.service.accountRequest('load')).error.retryable,true);assert.ok(await fs.stat(path.join(f.directory,'auth-session.enc')));
+  f.tokenStatus(400);assert.equal((await f.service.accountRequest('load')).ok,false);assert.equal(f.service.status().signedIn,false);await assert.rejects(fs.stat(path.join(f.directory,'auth-session.enc')));
+});
+test('cancel during token exchange cannot resurrect a session after the response arrives',async t=>{
+  const f=await fixture(t);let release;f.delay(new Promise(r=>{release=r;}));await f.service.signIn();await fetch(f.opened);await waitFor(()=>f.codeCount===1);await f.service.cancel();release();await new Promise(r=>setTimeout(r,30));assert.equal(f.service.status().signedIn,false);await assert.rejects(fs.stat(path.join(f.directory,'auth-session.enc')));
+});
+test('no encryption backend means no sign-in, token storage or plaintext fallback',async t=>{
+  const f=await fixture(t,{secureStorage:{...secure,isEncryptionAvailable:()=>false}});await f.service.initialize();assert.equal(f.service.status().error.code,'SECURE_STORAGE_UNAVAILABLE');await assert.rejects(f.service.signIn(),{code:'SECURE_STORAGE_UNAVAILABLE'});assert.equal(f.opened,undefined);assert.deepEqual(await fs.readdir(f.directory),[]);
+  const basic=createTokenStore({directory:f.directory,scope:'x',configFingerprint:'x',safeStorage:{...secure,getSelectedStorageBackend:()=> 'basic_text'},platform:'win32'});assert.equal(basic.available(),false);
+});
+test('encrypted store is bound to app and config; save followed by clear leaves no resurrection file',async t=>{
+  const f=await fixture(t);await f.login();const other=createTokenStore({directory:f.directory,safeStorage:secure,scope:'other-app',configFingerprint:f.config.fingerprint,platform:'win32'});await assert.rejects(other.load(),/INVALID_TOKEN_STORE/);
+  const store=f.store();await Promise.all([store.save({refreshToken:'synthetic-late',subject:'synthetic-auth-user'}),store.clear()]);assert.equal(await store.load(),null);
+});
+test('public config rejects secrets, shared client identities, release HTTP and imprecise callbacks',async t=>{
+  const f=await fixture(t);for(const raw of [{...f.raw,client_secret:'forbidden'},{...f.raw,supabasePublishableKey:'sb_secret_no'},{...f.raw,clients:{platform:{...f.raw.clients.platform,redirectUri:f.config.redirectUri+'?x=1'}}},{...f.raw,clients:{platform:f.raw.clients.platform,world:{...f.raw.clients.platform,redirectUri:f.config.redirectUri.replace('/platform/','/world/')}}}])assert.throws(()=>configuration(raw,'platform','development'),{code:'AUTH_CONFIG_INVALID'});
+  assert.throws(()=>configuration(f.raw,'platform','release'));assert.equal(configuration(null,'world','development'),null);
+});
+test('fixed account operation input rejects URL/header/action injection; messenger only uses own-account routes',async t=>{
+  for(const [op,params]of [['load',{url:'https://evil.invalid'}],['revokeAll',{action:'profile-update'}],['learningGet',{after:-1,revision:1}],['exportPage',{after:'0'}],['fetch',{}]])assert.throws(()=>requestSpec(op,params),{code:'INVALID_REQUEST'});
+  const f=await fixture(t,{product:'messenger'});await f.login();assert.equal((await f.service.accountRequest('load')).ok,true);assert.equal((await f.service.accountRequest('learningGet',{after:0,revision:1})).error.code,'INVALID_REQUEST');
+});
+test('platform account entry is exact; different product, duplicates, child frames and IdP portal cannot invoke auth',()=>{
+  const entry='http://127.0.0.1:4280/synk-account/platform.html',good='http://127.0.0.1:4280/synk-account/client.html?product=platform';assert.equal(trustedEntry(good,entry,'platform'),true);
+  for(const url of [good+'&product=platform',good.replace('product=platform','product=world'),good.replace('client.html?product=platform','index.html'),good+'&url=evil'])assert.equal(trustedEntry(url,entry,'platform'),false);
+  const frame={url:good},contents={mainFrame:frame},window={isDestroyed:()=>false,webContents:contents};assert.doesNotThrow(()=>assertSender({sender:contents,senderFrame:frame},window,entry,'platform'));assert.throws(()=>assertSender({sender:contents,senderFrame:{url:good}},window,entry,'platform'));
+});
+test('company requests keep token in main and bind Origin, confirmation, CSRF and fixed cookie session fetch',async()=>{
+  const calls=[],handler=createCompanyRequests({entry:'http://127.0.0.1:4191/?tab=messenger',clientId:'messenger',auth:{getAccessToken:async()=> 'synthetic-main-token'},session:{fetch:async(url,options)=>{calls.push({url,options});return new Response(JSON.stringify({ok:true,user:{name:'합성'},access_token:'hidden'}),{headers:{'Content-Type':'application/json'}});}}});
+  assert.equal((await handler('challenge',{action:'link',currentPassword:'synthetic-password',csrfToken:'synthetic-csrf'})).ok,false);await handler('challenge',{action:'link',currentPassword:'synthetic-password',csrfToken:'synthetic-csrf',confirm:true});const result=await handler('exchange',{challenge:'synthetic-challenge',confirm:true});assert.equal(result.access_token,undefined);assert.equal(calls[1].options.headers.Authorization,'Bearer synthetic-main-token');assert.equal(calls[1].options.credentials,'include');assert.equal(calls[1].options.headers.Origin,'http://127.0.0.1:4191');assert.equal((await handler('exchange',{challenge:'x',confirm:true,url:'http://evil.invalid'})).ok,false);
+});
+test('rotated refresh is saved before user/account verification; 503 or 429 including HTML preserves recovery',async t=>{
+  for(const step of ['user503','user429','account503','htmlUser503','htmlAccount503']){
+    const f=await fixture(t);await f.login();if(step.toLowerCase().includes('user'))f.userStatus(step.includes('429')?429:503);else f.accountStatus(503);if(step.startsWith('html'))f.nonJson();f.setClock(4590000);
+    const result=await f.service.accountRequest('load');assert.equal(result.error.retryable,true,step);assert.equal(f.service.status().signedIn,false,step);assert.equal((await f.store().load()).refreshToken,'synthetic-refresh-2',step);
+    f.userStatus(200);f.accountStatus(200);f.service.dispose();const restored=f.create();await restored.initialize();assert.equal(restored.status().signedIn,true,step);assert.equal((await f.store().load()).refreshToken,'synthetic-refresh-3',step);
+  }
+});
+test('current-session revocation immediately clears main state and encrypted recovery token',async t=>{
+  const f=await fixture(t);await f.login();const generation=f.service.status().sessionGeneration;
+  const result=await f.service.accountRequest('revokeSession',{session_id:'00000000-0000-4000-8000-000000000001'});assert.equal(result.current,true);assert.equal(f.service.status().signedIn,false);assert.ok(f.service.status().sessionGeneration>generation);assert.equal(await f.store().load(),null);
+});
+test('native account contract enforces server learning and profile limits',()=>{
+  assert.throws(()=>requestSpec('learningPost',{revision:1,events:Array(257).fill({})}));assert.throws(()=>requestSpec('learningPost',{revision:1,events:[{content:'x'.repeat(262144)}]}));
+  assert.throws(()=>requestSpec('updateProfile',{profile:{display_name:'x'.repeat(61)},expected_profile_revision:1}));
+  assert.deepEqual(requestSpec('updateProfile',{profile:{locale:'ko',time_zone:'Asia/Seoul'},expected_profile_revision:1}).body.profile,{locale:'ko',time_zone:'Asia/Seoul'});
+});
+test('company HTTP denial is an error envelope instead of a successful exchange result',async()=>{
+  const handler=createCompanyRequests({entry:'http://127.0.0.1:4191/?tab=messenger',clientId:'messenger',auth:{getAccessToken:async()=> 'synthetic-main-token'},session:{fetch:async()=>new Response(JSON.stringify({error:'직원 연결이 필요해요.',code:'SYNK_LINK_REQUIRED'}),{status:403})}});
+  const result=await handler('exchange',{challenge:'synthetic-challenge',confirm:true});assert.equal(result.ok,false);assert.equal(result.error.code,'SYNK_LINK_REQUIRED');assert.equal(result.error.status,403);
+});
+test('verified account library is minimal, updates on reload, and clears during logout and a different login',async t=>{
+  const f=await fixture(t);f.accountPayload({memberships:[{kind:'learner',role:'student',learner_id:'synthetic-learner'}]});await f.login();
+  assert.deepEqual(f.service.status().library,{status:'ready',appIds:['world']});assert.equal('memberships' in f.service.status(),false);
+  f.accountPayload({memberships:[{kind:'staff',role:'teacher',staff_id:'synthetic-teacher'}]});await f.service.accountRequest('load');assert.deepEqual(f.service.status().library.appIds,['teacher']);
+  await f.service.signOut();assert.deepEqual(f.service.status().library,{status:'unavailable',appIds:[]});
+  f.accountPayload({account:{synk_user_id:'another-synthetic-id',status:'active',profile:{display_name:'다른 합성 계정'}},memberships:[]});await f.login();assert.deepEqual(f.service.status().library,{status:'ready',appIds:[]});
+});
+test('library is removed on missing contract, failed account reload and restore verification failure',async t=>{
+  const f=await fixture(t);f.accountPayload({entitlements:[{product:'platform',key:'library.messenger'}]});await f.login();assert.deepEqual(f.service.status().library.appIds,['messenger']);
+  f.accountStatus(503);assert.equal((await f.service.accountRequest('load')).ok,false);assert.equal(f.service.status().signedIn,true);assert.deepEqual(f.service.status().library,{status:'unavailable',appIds:[]});
+  f.accountStatus(200);f.accountPayload({entitlements:undefined});await f.service.accountRequest('load');assert.deepEqual(f.service.status().library,{status:'unavailable',appIds:[]});
+  f.accountPayload({entitlements:[{product:'platform',key:'library.messenger'}]});await f.service.accountRequest('load');assert.deepEqual(f.service.status().library.appIds,['messenger']);
+  f.service.dispose();f.userStatus(503);const restored=f.create();await restored.initialize();assert.deepEqual(restored.status().library,{status:'unavailable',appIds:[]});
+});
+test('expired menu rights are removed from status without trusting a renderer clock or cached array',async t=>{
+  const f=await fixture(t);f.accountPayload({entitlements:[{product:'platform',key:'library.pulse',valid_until:new Date(1001000).toISOString()}]});await f.login();assert.deepEqual(f.service.status().library.appIds,['pulse']);
+  const old=f.service.status();old.library.appIds.push('messenger');assert.deepEqual(f.service.status().library.appIds,['pulse']);
+  f.setClock(1001000);assert.deepEqual(f.service.status().library,{status:'ready',appIds:[]});
+});
+test('a late old account load cannot restore entries removed by a newer server response',async t=>{
+  const f=await fixture(t);await f.login();let release;const held=new Promise(r=>{release=r;});
+  const account={synk_user_id:'stable-synthetic-id',status:'active',profile:{display_name:'합성 계정'}};
+  f.queueAccount({wait:held,data:{ok:true,account,memberships:[{kind:'staff',role:'teacher',staff_id:'synthetic-staff'}],entitlements:[]}});
+  const first=f.service.accountRequest('load');await waitFor(()=>f.requests.filter(r=>r.path==='/functions/v1/synk-account').length===2);assert.deepEqual(f.service.status().library,{status:'unavailable',appIds:[]});
+  await f.service.accountRequest('load');assert.deepEqual(f.service.status().library,{status:'ready',appIds:[]});release();await first;assert.deepEqual(f.service.status().library,{status:'ready',appIds:[]});
+});
+test('an account ID change on a reload is rejected and cannot carry rights across identities',async t=>{
+  const f=await fixture(t);f.accountPayload({memberships:[{kind:'learner',role:'student',learner_id:'synthetic'}]});await f.login();
+  f.accountPayload({account:{synk_user_id:'unexpected-other-account',status:'active'},entitlements:[{product:'platform',key:'library.messenger'}]});
+  assert.equal((await f.service.accountRequest('load')).error.code,'AUTH_REQUIRED');assert.equal(f.service.status().signedIn,false);assert.deepEqual(f.service.status().library,{status:'unavailable',appIds:[]});
+});
