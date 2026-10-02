@@ -3,7 +3,7 @@
 // 맞힌 낱말이 빈칸에 끼워지는 순간에는 ‘톡’과 사운드킷 ‘획득’(픽), 빈칸 눌림, 반짝이, 점수 올라가기가 함께 온다.
 import { ITEMS, PRACTICE, SKILL_LABEL, KIND_LABEL } from './content.mjs';
 import { parts, filled, shuffled, composeRound, pointsFor, scoreRound, hangTime, readDelay } from './core.mjs';
-import { GAME_ID, rankItems, createReadingConfirmation, skillReport, assignmentItems, assignmentLabel } from './learning.mjs';
+import { GAME_ID, rankItems, createReadingConfirmation, skillReport, assignmentItems, assignmentLabel, FLOW_SLICE, FLOW_WORDS, sliceObservation } from './learning.mjs';
 import * as sound from './audio.mjs';
 import { swingPower } from './sfx.mjs';
 import { createStage, FEEL } from './stage.mjs';
@@ -37,7 +37,25 @@ const assignment = () => atlas(c => c.assignment?.());
 const hosted = atlas(c => typeof c.assignment === 'function', false);
 
 /* ── 상태 ── */
-const state = { run: 0, queue: [], index: 0, results: [], combo: 0, score: 0, cur: null, practice: null, paused: false, ranked: null };
+const state = { run: 0, queue: [], index: 0, results: [], combo: 0, score: 0, cur: null, practice: null, paused: false, ranked: null,
+  flow: null, tired: false, pausedMs: 0, pausedAt: 0 };
+// 순간 맞춤: 조각이 떠 있는 시간만 이 사람에 맞춘다(연습 문장 제외). 피곤한 날은 연속으로 맞혀도 빨라지지 않는다.
+function startFlow() {
+  try { state.flow?.end(); } catch { /* 이어 하기 기억은 편의 */ }
+  state.tired = atlas((c) => c.today?.() === 'tired', false);
+  state.flow = atlas((c) => c.live?.(FLOW_SLICE, { words: FLOW_WORDS }) ?? null);
+  return atlas(() => state.flow?.intro().line?.text) || null;
+}
+function endFlow() { const flow = state.flow; state.flow = null; if (flow) atlas(() => flow.end()); }
+const hangScale = () => atlas(() => state.flow?.settings().values.hang, 1) || 1;
+/** 한 번 던진 결과를 순간 맞춤에 넘긴다. 바뀐 것이 있으면 한 줄로만 알린다. */
+function followFlow(cur, word) {
+  if (!state.flow || !cur?.tossAt) return;
+  const used = (performance.now() - cur.tossAt - (state.pausedMs - cur.pausedBase)) / cur.hangMs;
+  const out = atlas(() => state.flow.observe(sliceObservation({ word, answer: cur.item.answer, used })));
+  cur.tossAt = 0;
+  if (out?.line) { tip(out.line.text); const run = state.run; setTimeout(() => { if (live(run) && $('#tip').textContent === out.line.text) tip(null); }, 2200); }
+}
 const live = (run) => run === state.run;
 let stage = null;
 
@@ -110,6 +128,7 @@ async function startRound() {
   state.run += 1;
   const run = state.run;
   // 무대를 준비하는 동안에도 쉬기를 누를 수 있다. 상태를 먼저 정해 두고, 준비가 끝나면 쉬기 상태를 무대에 그대로 넘긴다
+  const opening = startFlow();
   Object.assign(state, { index: 0, results: [], combo: 0, score: 0, cur: null, practice: null, paused: false,
     queue: targetItems || composeRound(ITEMS, { ranked: state.ranked?.order, firstTime: progress.plays === 0, seed: progress.plays + 1 }) });
   countScore.token = (countScore.token || 0) + 1; countScore.anim = false;
@@ -124,7 +143,8 @@ async function startRound() {
   }
   if (!live(run)) return;
   stage.pause(state.paused);
-  if (!target && !progress.practiced) startPractice(); else nextItem();
+  if (!target && !progress.practiced) startPractice();
+  else { if (opening) { tip(opening); setTimeout(() => { if (live(run) && $('#tip').textContent === opening) tip(null); }, 2600); } nextItem(); }
 }
 
 function renderSentence(item, { kicker } = {}) {
@@ -212,7 +232,10 @@ function tossCur() {
   const cur = state.cur; cur.tosses += 1;
   const words = cur.options.map((word, i) => ({ word, n: i + 1 }));
   stage.setTopPx(sentenceBottom());
-  cur.token = stage.toss(words, { hang: hangTime({ difficulty: cur.item.difficulty, combo: state.combo, slow: progress.slow }) });
+  // 피곤한 날은 연속 가속을 쓰지 않는다. 순간 맞춤의 배율은 그 사람의 기본 체공 시간을 맞춘다.
+  const hang = hangTime({ difficulty: cur.item.difficulty, combo: state.tired ? 0 : state.combo, slow: progress.slow }) * hangScale();
+  cur.tossAt = performance.now(); cur.hangMs = hang * 1000; cur.pausedBase = state.pausedMs;
+  cur.token = stage.toss(words, { hang });
 }
 
 /** 베는 순간의 소리·진동. 화면 쪽 손맛(멈칫·칼빛·부스러기)은 stage가 낸다. 반환: verdict 그대로. */
@@ -244,6 +267,7 @@ function onSlice({ word, x, y, nx, token }) {
   cur.done = true; cur.confirmed = true;
   const item = cur.item, correct = word === item.answer;
   const recorded = recordedOf(cur.check?.confirm(word));
+  followFlow(cur, word);
   if (correct) {
     state.combo += 1;
     hit('ok', nx, state.combo, { x, y });
@@ -298,6 +322,7 @@ function confirmReading(cur, word) {
 function onLanded({ token }) {
   if (state.practice) { if (token === state.practice.token) practiceResult(false, null); return; }
   const cur = state.cur; if (!cur || cur.done || token !== cur.token) return;
+  followFlow(cur, null);
   if (cur.tosses < 2) { popText('한 번 더!'); after(450, () => { if (state.cur === cur && !cur.done) tossCur(); }); return; }
   cur.done = true; state.combo = 0; updateHud();
   showAnswerCheck(cur);
@@ -398,6 +423,7 @@ function tip(text, { silent = false } = {}) { $('#tip').hidden = !text; if (text
 
 /* ── 결과 ── */
 function finish() {
+  endFlow();
   state.cur = null; stage.clear();
   const s = scoreRound(state.results);
   const target = assignment();
@@ -463,6 +489,8 @@ function renderSkills(s, next) {
 /* ── 멈춤 ── */
 function pause(open = true) {
   if (open && $('#game').hidden) return;
+  if (open && !state.paused) state.pausedAt = performance.now();
+  if (!open && state.paused && state.pausedAt) { state.pausedMs += performance.now() - state.pausedAt; state.pausedAt = 0; }
   state.paused = open; stage?.pause(open);
   if (open && !$('#pause-dialog').open) $('#pause-dialog').showModal();
   if (!open && $('#pause-dialog').open) $('#pause-dialog').close();
@@ -473,7 +501,7 @@ $('#pause-dialog').addEventListener('cancel', (e) => { e.preventDefault(); pause
 $('#quit').onclick = () => {
   // 풀던 문장은 응답 없음으로 닫는다(평가하지 않음)
   if (state.cur && !state.cur.confirmed) state.cur.check?.cancel();
-  pause(false); state.cur = null; state.practice = null; tip(null); hideExplain(); hideAnswerCheck(); renderLobby();
+  pause(false); endFlow(); state.cur = null; state.practice = null; tip(null); hideExplain(); hideAnswerCheck(); renderLobby();
 };
 document.addEventListener('visibilitychange', () => { if (document.hidden && !$('#game').hidden) pause(true); });
 

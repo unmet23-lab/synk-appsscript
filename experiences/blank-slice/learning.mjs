@@ -122,3 +122,17 @@ export function skillReport(summary, { focusSkillId = null } = {}) {
       n: seen.reduce((sum, l) => sum + l.n, 0), correct: seen.reduce((sum, l) => sum + l.correct, 0) };
   });
 }
+
+/* 순간 맞춤(Core flow.js): 조각이 떠 있는 시간만 이 사람에 맞춘다. 문장·보기·정답과 읽기 기록은 그대로다.
+ * 값은 쉬운 것(오래 떠 있음)부터, 처음은 원래 게임(1배). 맞는 조각을 베면 성공(그때까지 쓴 체공 시간의 비율이
+ * 압박), 다른 조각을 베면 시간 안의 실수, 조각을 놓치면 시간 부족이다. 베기는 읽기 근거가 아니다(정적 확인만). */
+export const FLOW_SLICE = { id: 'blank-slice.hang', version: 1, target: 0.8, knobs: [
+  { id: 'hang', kind: 'pace', label: '조각이 떠 있는 시간', values: [1.3, 1.2, 1.1, 1, 0.95, 0.9], start: 3 }] };
+export const FLOW_WORDS = { 'raise.pace': '조각이 조금 빨라져요.', 'ease.pace': '조각이 조금 더 오래 떠 있어요.', 'start.memory': '', 'start.prior': '',
+  'start.tired': '오늘은 조각이 빨라지지 않아요.', 'start.returning': '오랜만이라 조각을 천천히 던져요.' };
+/** 한 번 던진 결과를 순간 맞춤의 관측으로. word가 null이면 놓침. used: 체공 시간 중 쓴 비율. */
+export function sliceObservation({ word, answer, used = null }) {
+  if (word == null) return { outcome: 'timeout' };
+  const pressure = Number.isFinite(used) ? Math.min(1.5, Math.max(0, used)) : null;
+  return { outcome: word === answer ? 'success' : 'fail', pressure };
+}
