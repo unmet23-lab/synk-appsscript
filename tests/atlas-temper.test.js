@@ -72,3 +72,41 @@ test('concept names from data cannot reach Object.prototype', () => {
   assert.equal(r.byConcept.__proto__.evaluated, 1); assert.equal(r.byConcept.constructor.evaluated, 1);
   assert.equal(({}).evaluated, undefined); assert.equal(({}).correct, undefined);
 });
+
+// 평가 전용 집단(공개판 설계 #evaluation-demographics · Atlas §7-4).
+test('evaluation-only groups compare two arms person by person and flag the group a new way leaves worse', () => {
+  const people = [
+    ['p1', '20s', 'baseline', 'correct'], ['p2', '20s', 'baseline', 'correct'], ['p3', '20s', 'adapted', 'incorrect'], ['p4', '20s', 'adapted', 'correct'],
+    ['p5', '30s', 'baseline', 'incorrect'], ['p6', '30s', 'baseline', 'correct'], ['p7', '30s', 'adapted', 'correct'], ['p8', '30s', 'adapted', 'correct'],
+  ];
+  const rows = people.map(([subject, , arm, verdict]) => summary({ subject, arm, verdict }));
+  const labels = Object.fromEntries(people.map(([subject, ageBand]) => [`LAB/practice/${subject}`, { ageBand }]));
+  const r = Temper.groups({ rows, labels, arms: ['baseline', 'adapted'], minimum: 2 });
+  assert.deepEqual(r.worse, ['ageBand=20s']);
+  const twenties = r.cells.find(cell => cell.value === '20s'), thirties = r.cells.find(cell => cell.value === '30s');
+  assert.equal(twenties.status, 'worse'); assert.equal(twenties.difference, -0.5);
+  assert.deepEqual(twenties.people, { baseline: 2, candidate: 2 });
+  assert.equal(thirties.status, 'not_worse'); assert.equal(thirties.difference, 0.5);
+  assert.equal(r.learningEffectClaim, false); assert.equal(r.causalClaim, false); assert.equal(r.significanceTested, false);
+});
+test('a group below the minimum is not compared and its size is not shown', () => {
+  const rows = [summary({ subject: 'a', arm: 'baseline' }), summary({ subject: 'b', arm: 'adapted', verdict: 'incorrect' })];
+  const labels = { 'LAB/practice/a': { gender: 'female' }, 'LAB/practice/b': { gender: 'female' } };
+  const r = Temper.groups({ rows, labels, arms: ['baseline', 'adapted'] });
+  assert.deepEqual(r.cells, [{ dimension: 'gender', value: 'female', status: 'waiting' }]);
+  assert.deepEqual(r.waiting, ['gender=female']); assert.deepEqual(r.worse, []);
+  assert.equal(r.minimum, Temper.MINIMUM_PER_CELL);
+});
+test('no answer, unlabelled people and assisted attempts do not form or fill a group', () => {
+  const rows = [summary({ subject: 'a', arm: 'baseline' }), summary({ subject: 'b', arm: 'adapted', help: true }), summary({ subject: 'c', arm: 'adapted' })];
+  const labels = { 'LAB/practice/a': { ageBand: 'no_answer', gender: 'male' }, 'LAB/practice/b': { gender: 'male' } };
+  const r = Temper.groups({ rows, labels, arms: ['baseline', 'adapted'], minimum: 1 });
+  assert.deepEqual(r.cells.map(cell => `${cell.dimension}=${cell.value}:${cell.status}`), ['gender=male:waiting'], 'b was helped, c gave no label');
+  assert.throws(() => Temper.groups({ rows, labels: { 'LAB/practice/a': { 'age band': '20s' } }, arms: ['baseline', 'adapted'] }), /invalid group label/);
+  assert.throws(() => Temper.groups({ rows, labels, arms: ['same', 'same'] }), /arms/);
+  assert.throws(() => Temper.groups({ rows, labels, arms: ['baseline', 'adapted'], minimum: 0 }), /minimum/);
+});
+test('the per-cell minimum is the one in the shared contract', () => {
+  const contract = JSON.parse(require('node:fs').readFileSync(require('node:path').resolve(__dirname, '../계약/배우는이유_선택응답_계약.json'), 'utf8'));
+  assert.equal(Temper.MINIMUM_PER_CELL, contract.선택응답.칸_최소인원);
+});

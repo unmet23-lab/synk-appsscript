@@ -250,3 +250,58 @@ test('browser bundle uses the same existing Core and public adapter as CommonJS'
   assert.equal(outcome.plan.selected.id, 'work');
   assert.equal(outcome.plan.version, Core.VERSION);
 });
+
+// 공개 가입의 「배우는 이유」(계약/배우는이유_선택응답_계약.json r1 · 공개판 설계 #learn-reasons).
+test('declared learning reasons reach Core only as one broad goal, never as ability or level', () => {
+  const examples = [[['work', 'career'], 'work'], [['exam'], 'prepare'], [['travel', 'people', 'life'], 'create'], [['study'], 'learn']];
+  for (const [reasons, expected] of examples) {
+    const result = select(consent({ reasons }));
+    assert.equal(result.plan.selected.id, expected, reasons.join('+'));
+    assert.equal(result.ask, null);
+    assert(result.reasons.includes('reasons.declared'));
+    assert.equal(result.explanation.basis, 'self-declared');
+    assert.equal(result.explanation.abilityClaim, false);
+    assert.equal(result.provenance.reasons.source, 'self-declared');
+  }
+});
+
+test('reasons are stored unordered in contract order; empty, four, repeated or unknown reasons fail', () => {
+  assert.deepEqual(consent({ reasons: ['work', 'culture'] }).values.reasons, ['culture', 'work']);
+  for (const reasons of [[], ['culture', 'travel', 'people', 'life'], ['work', 'work'], ['religion'], 'work']) {
+    assert.throws(() => consent({ reasons }), /invalid reasons/, JSON.stringify(reasons));
+  }
+  assert.throws(() => consent({ reasons: ['other'], otherText: 'private words' }), /unsupported setting/);
+});
+
+test('reasons with different goals stay undecided and ask only when the biggest one changes the plan', () => {
+  const mixed = select(consent({ reasons: ['study', 'work'] }));
+  assert(mixed.reasons.includes('reasons.mixed'));
+  assert.deepEqual(mixed.ask, { id: 'reasons.primary', kind: 'choice', about: 'primaryReason', options: [{ id: 'study' }, { id: 'work' }] });
+  assert.equal(mixed.events.filter(event => event.type === 'decision.made').length, 1, 'trial plans leave no decision in the history');
+  const shared = [{ id: 'both', minutes: 5, pace: 'standard', goals: ['study', 'work'] }, { id: 'talk', minutes: 5, pace: 'standard', goals: ['expression'] }];
+  const same = select(consent({ reasons: ['study', 'work'] }), { candidates: shared });
+  assert.equal(same.ask, null, 'an answer that changes nothing is not asked');
+  assert.equal(select(consent({ reasons: ['other'] })).ask, null);
+  assert.equal(select(consent({ reasons: ['study', 'work'], goal: 'prepare' })).plan.selected.id, 'prepare', 'an explicit goal is not overridden');
+});
+
+test('the biggest reason decides the goal and is forgotten when the reasons change', () => {
+  const both = consent({ reasons: ['study', 'work'] });
+  const primary = P.updateProfile(both, { values: { primaryReason: 'work' } }, later);
+  const chosen = select(primary, { at: later });
+  assert.equal(chosen.plan.selected.id, 'work');
+  assert.equal(chosen.ask, null);
+  assert.throws(() => P.updateProfile(both, { values: { primaryReason: 'travel' } }, later), /one of the declared reasons/);
+  const changed = P.updateProfile(primary, { values: { reasons: ['study', 'travel'] } }, later);
+  assert.equal(changed.values.primaryReason, undefined);
+  assert.equal(changed.provenance.primaryReason, undefined);
+  assert(changed.generation > primary.generation, 'forgetting a declaration starts a clean decision history');
+});
+
+test('the shared contract and Core agree on the reasons and their broad goals', () => {
+  const contract = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../계약/배우는이유_선택응답_계약.json'), 'utf8')).배우는이유;
+  assert.deepEqual(P.REASONS, contract.보기.map(item => item.값));
+  assert.deepEqual({ ...P.REASON_GOAL }, Object.fromEntries(contract.보기.map(item => [item.값, item.atlas_goal])));
+  assert.equal(P.MAX_REASONS, contract.최대);
+  for (const goal of Object.values(P.REASON_GOAL)) assert(goal === null || P.OPTIONS.goal.includes(goal));
+});
