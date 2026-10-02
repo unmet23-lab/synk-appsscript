@@ -6,17 +6,23 @@ import { ITEMS, SKILL_LABEL } from './content.mjs';
 export const GAME_ID = 'blank-slice';
 export const FORMAT = 'single-choice';
 
+// 조사·문형 문항이 쓰는 TOPIK I 문형(strata/topik-i.grammar.json). 정답과 빈칸 뒤 말을 보고 Strata의
+// grammarOf(strata/topik-i-forms.js)가 고른 것이고, 시험이 둘이 같은지 본다(교원 검수 전 초안).
+// 이음말(그래서·하지만·그리고)은 문형이 아니라 잇지 않는다. 낱말 문항도 잇지 않는다.
+export const GRAMMAR = Object.freeze({ p01: 'G203', p02: 'G207', p03: 'G201', t01: 'G208', p04: 'G309', p05: 'G210', e01: 'G303',
+  e02: 'G301', e03: 'G401', e04: 'G305', e05: 'G406', a01: 'G209', e06: 'G211', e07: 'G302', e08: 'G308', e09: 'G506', e10: 'G501', p06: 'G203' });
+
 export function itemMetadata(item) {
   const key = `${GAME_ID}.${item.id}.v1`;
   return { id: `${GAME_ID}.${item.id}`, itemKey: key, familyKey: key, skillId: item.skill, difficulty: item.difficulty,
-    modality: 'reading', responseFormat: FORMAT, audioRequired: false, confounded: false };
+    modality: 'reading', responseFormat: FORMAT, audioRequired: false, confounded: false, conceptIds: GRAMMAR[item.id] ? [GRAMMAR[item.id]] : [] };
 }
 
 export function candidates(items) {
   return items.map((x) => {
     const m = itemMetadata(x);
     return { id: m.id, itemId: x.id, skillIds: [m.skillId], difficulty: m.difficulty, modality: m.modality,
-      responseFormat: m.responseFormat, itemKey: m.itemKey };
+      responseFormat: m.responseFormat, itemKey: m.itemKey, conceptIds: m.conceptIds };
   });
 }
 
