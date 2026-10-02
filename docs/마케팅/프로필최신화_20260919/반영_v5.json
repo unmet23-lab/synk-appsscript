@@ -1,0 +1,133 @@
+{
+  "copyRevision": "2026-09-19-natural-profile-v5",
+  "coverRevision": "2026-09-19-felt-glass-v4",
+  "authorization": "2026-09-19 user requested final proportion/finish check, publication and fresh bios for all 23 accounts",
+  "scope": "23 existing SNS accounts and Tistory skin; no synk.im website or global brand canon changes",
+  "accounts": {
+    "synk-linkedin-company": {
+      "tagline": "saved-and-public-verified",
+      "bio": "saved-and-public-verified",
+      "cover": "saved-and-public-verified",
+      "secondaryLanguage": "saved-and-editor-verified",
+      "avatar": "white-stitch-v2-saved-and-public-verified",
+      "evidence": "User-assisted cover retry showed '배경사진을 변경함'; member view confirmed new glass-frame cover. Public About and tagline match v5. Existing English slot Korean text synchronized, update announcement declined. Stitched/fuzzy white avatar v2 uploaded again after v1 remained public; save succeeded, member view changed to D560BAQEV39KPprElSQ/B56aC487ckJYAE-. Public screenshot confirms white background and stitched wordmark. No new post written."
+    },
+    "yuho-linkedin-primary": {
+      "headline": "saved-and-profile-verified",
+      "bio": "saved-public-recheck-pending",
+      "cover": "saved-and-public-verified",
+      "evidence": "Header v5 saved and displayed. Full About v5 saved with '저장을 완료했습니다' and '정보 항목을 변경했습니다' notices. v4 cover uploaded via cover photo dialog, crop and change-save checked; reloaded public screenshot shows new glass banner with safe portrait clearance. Approved portrait retained."
+    },
+    "yuhobuilds-telegram": {
+      "bio": "saved-and-settings-verified",
+      "evidence": "Edit Profile saved; Settings shows exact v5 bio, name and username unchanged."
+    },
+    "lab-telegram": {
+      "bio": "saved-and-channel-info-verified",
+      "evidence": "120-char v5 bio saved via channel Edit, full new text and synk.im/lab/ visible in Channel Info. Mascot retained."
+    },
+    "synkbrief-instagram": {
+      "bio": "saved-and-public-verified",
+      "website": "existing-main-site-preserved-mobile-only-edit",
+      "evidence": "67-char bio saved, editor reloaded with persisted text, public @synkbrief matched all four lines."
+    },
+    "shift-pinterest": {
+      "bio": "saved-and-public-verified",
+      "cover": "saved-and-public-verified",
+      "evidence": "v5 bio persisted in fresh editor and public page. v4 upload crop checked and saved; after image propagation public reload shows clear glass badge, white embroidered synk and lowered balanced layout."
+    },
+    "yuhobuilds-instagram": {
+      "bio": "attempted-not-saved",
+      "evidence": "Three v5 submit attempts and a fresh actual-clipboard paste/submit retry reverted to old bio. Counter reached 76/150 but after submit returned to old 120/150. Public and reopened editor remain old. No success claim; app edit needed."
+    },
+    "shift-tistory": {
+      "bio": "saved-and-public-verified",
+      "coverDesktop": "saved-and-public-verified",
+      "coverMobile": "saved-and-public-verified",
+      "evidence": "v5 description saved in blog settings and full public sidebar matched. Skin-option chooser blocked; source editor file upload succeeded instead: images/shift-tistory.png 973.0kB and images/shift-tistory-mobile.png 90.2kB. Appended narrow cover CSS after verifying original 109423 characters unchanged; saved. Public PC screenshot shows white/glass v4. Actual 390px viewport shows new 390x300 mobile image with full copy/objects, no old slogan. Temporary viewport reset. Prior assets/CSS retained."
+    },
+    "lab-facebook": {
+      "bio": "saved-and-public-verified",
+      "cover": "saved-and-public-verified",
+      "evidence": "v5 introduction saved and exact full text verified on public page. v4 cover crop checked, change-save clicked, public reload confirmed new white glass LAB banner with full copy visible. Existing mascot retained."
+    },
+    "shift-kakao": {
+      "bio": "saved-confirmation-and-preview-verified",
+      "evidence": "45/55-char v5 description saved in Channel Home; '저장되었습니다.' dialog and full preview match confirmed. Existing red stitched badge retained; no other card/settings changed."
+    },
+    "yuhobuilds-youtube": {
+      "bio": "saved-and-public-visible",
+      "cover": "saved-and-public-verified",
+      "evidence": "Studio v5 full description entered and published. Refreshed @yuhobuilds showed new intro opening and black felt/glass banner; centered text, logo and objects visually checked."
+    },
+    "lab-youtube": {
+      "bio": "saved-and-public-visible",
+      "cover": "saved-and-public-verified",
+      "evidence": "Studio all-device safe area checked, v5 description and v4 cover published. Public @synkkorean showed white glass LAB cover and description opening. Full public About recheck pending."
+    },
+    "lab-instagram": {
+      "bio": "saved-and-public-verified",
+      "website": "existing-synk.im-preserved-mobile-only-edit",
+      "evidence": "92/150-char bio submitted in synk.mn editor. Public profile reloaded and all three lines matched v5; website field disabled on web."
+    },
+    "synkbrief-youtube": {
+      "bio": "saved-and-public-verified",
+      "cover": "saved-and-public-verified",
+      "evidence": "Studio all-device crop verified and published. Public @synkbrief refreshed after propagation; white glass banner visually verified and full About text matched v5."
+    },
+    "yuhobuilds-threads": {
+      "bio": "saved-and-public-verified",
+      "evidence": "83-character v5 bio saved; refreshed public @yuhobuilds shows exact full text. Portrait, links and switches retained."
+    },
+    "synklab-substack": {
+      "bio": "saved-and-reloaded-settings-verified",
+      "about": "saved-and-public-verified",
+      "authorBio": "saved-and-public-reload-verified",
+      "evidence": "About v5 saved and public text/links checked. Short publication description persisted in fresh settings tab. Author bio required explicit Save after entry; saved, Done, public profile reloaded and exact new text confirmed. Mascot, colors, links, subscriptions unchanged. No post/email sent."
+    },
+    "shift-naverblog": {
+      "bio": "saved-and-public-verified",
+      "cover": "saved-and-public-verified",
+      "evidence": "Owner login confirmed. v5 bio persisted after editor reload and exact public sidebar matched. v4 966x360 title PNG uploaded via native-position chooser after semantic click failed. Existing 360px title area preserved. Applied design confirmation, public redirect and independent public reload screenshot show full white/glass cover with no cropped copy or objects. Portrait, post and categories preserved."
+    },
+    "yuhobuilds-tiktok": {
+      "bio": "attempted-not-saved",
+      "login": "owner-confirmed-after-user-login",
+      "evidence": "Correct @yuhobuilds owner editor opened. Repeated save attempts left old public text; a.init is not a function was logged. Fresh actual clipboard paste retry still has no success signal. Do not count as saved. Name, handle, portrait unchanged."
+    },
+    "yuhobuilds-behance": {
+      "bio": "attempted-not-saved",
+      "cover": "saved-and-public-verified",
+      "evidence": "Owner access recovered after user login. Editor description entry, actual clipboard paste and key/blur attempts did not persist; returning to public profile still shows old bio. Hydration mismatch logged. User switched Chrome translation to original; lang ko-KR and empty translated class confirmed, but another bio fill/key/blur and return still left old public text. Do not count bio as saved. Cover initial crop cut right props, cancelled without saving. Native layout narrowed and shifted down 40 source px for actual Behance header viewport. Corrected v4 uploaded; after user interaction page exited crop editor. Public reload screenshot confirms complete glass logo/copy/felt props centered in visible header, no portrait overlap. Published image URL includes 893721a6-75f0-4712-896a-637465c11925_rwc_502x0x2196x410x3200.png. Existing identity, project and links preserved."
+    },
+    "yuhobuilds-x": {
+      "bio": "saved-and-public-verified",
+      "cover": "saved-and-public-verified",
+      "evidence": "Correct @yuhobuilds owner confirmed after user login. v5 bio and v4 banner uploaded, crop checked, applied and saved. Public reload confirmed new cover and introduction. Chrome automatic translation (translated-ltr) garbled the Korean public bio; reopening the editor confirmed the exact saved v5 original and https://synk.im/ unchanged. Editor then closed without changes. Alternative ending suggested conversationally was not applied."
+    },
+    "lab-tiktok": {
+      "bio": "pending",
+      "evidence": "v5 not saved; owner editor access still needed. Historical updates are separate."
+    },
+    "synkbrief-tiktok": {
+      "bio": "pending",
+      "evidence": "v5 not saved; owner editor access still needed. Historical updates are separate."
+    },
+    "yuhobuilds-naver-clip": {
+      "bio": "pending",
+      "evidence": "v5 not saved; owner editor access still needed. Historical updates are separate."
+    }
+  },
+  "remaining": "6 account bios remain: Yuho Instagram, TikTok, Behance, Naver Clip, LAB TikTok and synkbrief TikTok. All 11 cover accounts publicly verified. Full public About-body recheck remains for Yuho LinkedIn and two YouTube channels; saved notices/opening text are recorded above.",
+  "status": "partially-published",
+  "browserHandoff": "After final public checks, browser tool requested updating the ChatGPT Chrome extension. Further UI operations and final keep-tab marking could not be completed. Prior successful publication verification is retained; remaining six bios are not counted as complete.",
+  "summary": {
+    "targetAccounts": 23,
+    "biosSaved": 17,
+    "coverAccountsVerified": 11,
+    "coverAccountsTarget": 11,
+    "tistoryMobileVerified": true,
+    "newAvatarPublished": 1
+  },
+  "countingNote": "Saved bios include editor success/settings verification and public matching text as specified per account. Failed/reverted attempts are excluded. Not every saved account has its full public About-body rechecked."
+}

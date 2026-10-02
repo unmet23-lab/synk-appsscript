@@ -1,0 +1,123 @@
+{
+  "research_date": "2026-09-21",
+  "method": "Read public Steam English store HTML directly with Invoke-WebRequest; extract the first two user_reviews_summary_row anchors. Core game and multiplayer claims were checked against official Steam Features and About This Game sections. No purchases or installation performed.",
+  "metric_notes": {
+    "english_all": "Steam store English Reviews lifetime positive percentage and review count, not all-language totals or sales.",
+    "recent": "Steam store Recent Reviews, displayed as last 30 days. The extracted top-row tooltip did not explicitly identify its language scope; do not label it English or all-language without an additional source.",
+    "comparability": "Percentages are rounded Steam display values. Games differ in release age. Reviews are not unique player counts or sales, and this shortlist is not an exhaustive Steam ranking."
+  },
+  "games": [
+    {
+      "appid": 427520,
+      "name": "Factorio",
+      "source_url": "https://store.steampowered.com/app/427520/?l=english",
+      "observed_at": "2026-09-21T18:49:06+09:00",
+      "english_all_pct": 98,
+      "english_all_count": 117965,
+      "recent_pct": 97,
+      "recent_count": 1166,
+      "recent_scope": "last_30_days_language_scope_not_explicit_in_extracted_tooltip",
+      "offtopic": { "notice_present": true, "meaning": "Steam says off-topic periods are excluded from the displayed Review Score according to current preferences." },
+      "status": "released; store Features and About This Game verified",
+      "multiplayer": { "official_features": ["Single-player", "Online Co-op", "LAN Co-op", "Cross-Platform Multiplayer"], "evidence": "About This Game describes cooperative factories and delegating tasks to friends.", "verified_player_limit": null }
+    },
+    {
+      "appid": 526870,
+      "name": "Satisfactory",
+      "source_url": "https://store.steampowered.com/app/526870/?l=english",
+      "observed_at": "2026-09-21T18:49:07+09:00",
+      "english_all_pct": 97,
+      "english_all_count": 137537,
+      "recent_pct": 96,
+      "recent_count": 1398,
+      "recent_scope": "last_30_days_language_scope_not_explicit_in_extracted_tooltip",
+      "offtopic": { "notice_present": false },
+      "status": "released; store Features and About This Game verified",
+      "multiplayer": { "official_features": ["Single-player", "Online Co-op", "Cross-Platform Multiplayer"], "evidence": "About This Game describes building alone or with friends; minimum system requirements state Internet is needed for multiplayer.", "verified_player_limit": null }
+    },
+    {
+      "appid": 493340,
+      "name": "Planet Coaster",
+      "source_url": "https://store.steampowered.com/app/493340/?l=english",
+      "observed_at": "2026-09-21T18:49:07+09:00",
+      "english_all_pct": 90,
+      "english_all_count": 31261,
+      "recent_pct": 84,
+      "recent_count": 97,
+      "recent_scope": "last_30_days_language_scope_not_explicit_in_extracted_tooltip",
+      "offtopic": { "notice_present": true, "meaning": "Steam says off-topic periods are excluded from the displayed Review Score according to current preferences." },
+      "status": "released; store Features and About This Game verified",
+      "multiplayer": { "official_features": ["Single-player", "Steam Workshop"], "evidence": "Community creation refers to sharing scenery, rides and parks through Steam Workshop. A user-defined Multiplayer tag is not an official simultaneous-play feature.", "verified_player_limit": 1 }
+    },
+    {
+      "appid": 2688950,
+      "name": "Planet Coaster 2",
+      "source_url": "https://store.steampowered.com/app/2688950/?l=english",
+      "observed_at": "2026-09-21T18:49:07+09:00",
+      "english_all_pct": 74,
+      "english_all_count": 8675,
+      "recent_pct": 84,
+      "recent_count": 301,
+      "recent_scope": "last_30_days_language_scope_not_explicit_in_extracted_tooltip",
+      "offtopic": { "notice_present": false },
+      "status": "released; store Features and About This Game verified",
+      "multiplayer": { "official_features": ["Single-player"], "evidence": "Create together describes taking turns using a shared cross-platform save. Franchise collaboration, visiting parks and Frontier Workshop sharing are also described. This does not establish simultaneous cooperative building or 16 players in one world.", "verified_player_limit": null }
+    },
+    {
+      "appid": 453090,
+      "name": "Parkitect",
+      "source_url": "https://store.steampowered.com/app/453090/?l=english",
+      "observed_at": "2026-09-21T18:49:08+09:00",
+      "english_all_pct": 94,
+      "english_all_count": 4744,
+      "recent_pct": 92,
+      "recent_count": 28,
+      "recent_scope": "last_30_days_language_scope_not_explicit_in_extracted_tooltip",
+      "offtopic": { "notice_present": false },
+      "status": "released; store Features and About This Game verified",
+      "multiplayer": { "official_features": ["Single-player", "Online Co-op"], "evidence": "Store description and About This Game explicitly support up to 8 players building together online in campaign and sandbox.", "verified_player_limit": 8 }
+    },
+    {
+      "appid": 703080,
+      "name": "Planet Zoo",
+      "source_url": "https://store.steampowered.com/app/703080/?l=english",
+      "observed_at": "2026-09-21T18:49:08+09:00",
+      "english_all_pct": 91,
+      "english_all_count": 42930,
+      "recent_pct": 88,
+      "recent_count": 410,
+      "recent_scope": "last_30_days_language_scope_not_explicit_in_extracted_tooltip",
+      "offtopic": { "notice_present": false },
+      "status": "released; store Features and About This Game verified",
+      "multiplayer": { "official_features": ["Single-player", "Steam Workshop"], "evidence": "The store describes sharing habitats, scenery and zoos through Steam Workshop. A user-defined Multiplayer tag is not an official simultaneous-play feature.", "verified_player_limit": 1 }
+    },
+    {
+      "appid": 285330,
+      "name": "RollerCoaster Tycoon 2: Triple Thrill Pack",
+      "source_url": "https://store.steampowered.com/app/285330/?l=english",
+      "observed_at": "2026-09-21T18:49:09+09:00",
+      "english_all_pct": 90,
+      "english_all_count": 3736,
+      "recent_pct": 96,
+      "recent_count": 25,
+      "recent_scope": "last_30_days_language_scope_not_explicit_in_extracted_tooltip",
+      "offtopic": { "notice_present": false },
+      "status": "released; official Steam store Features verified",
+      "multiplayer": { "official_features": ["Single-player"], "evidence": "Official Steam Features lists Single-player. User-defined Multiplayer tags and external community projects must be distinguished from this store release.", "verified_player_limit": 1 }
+    },
+    {
+      "appid": 683900,
+      "name": "RollerCoaster Tycoon Classic",
+      "source_url": "https://store.steampowered.com/app/683900/?l=english",
+      "observed_at": "2026-09-21T18:49:09+09:00",
+      "english_all_pct": 90,
+      "english_all_count": 1933,
+      "recent_pct": 80,
+      "recent_count": 31,
+      "recent_scope": "last_30_days_language_scope_not_explicit_in_extracted_tooltip",
+      "offtopic": { "notice_present": false },
+      "status": "released; store Features and About This Game verified",
+      "multiplayer": { "official_features": ["Single-player"], "evidence": "The store describes import/export sharing of saved parks, scenarios and ride designs; this is not simultaneous cooperative play.", "verified_player_limit": 1 }
+    }
+  ]
+}

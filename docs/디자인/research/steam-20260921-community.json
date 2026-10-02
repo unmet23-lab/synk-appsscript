@@ -1,0 +1,41 @@
+[
+  {
+    "appid": 1245560,
+    "name": "Roots of Pacha",
+    "source_url": "https://store.steampowered.com/app/1245560/Roots_of_Pacha/?l=english",
+    "observed_at": "2026-09-21T18:51:14.0483328+09:00",
+    "english_all_pct": 94,
+    "english_all_count": 2509,
+    "recent_pct": 91,
+    "recent_count": 24,
+    "recent_scope": "Steam storefront Recent Reviews: past 30 days; language not separately established",
+    "collection_method": "Direct public Steam store HTML, l=english; tooltip text",
+    "multiplayer": "Online co-op listed; maximum not verified in this snapshot"
+  },
+  {
+    "appid": 894940,
+    "name": "Littlewood",
+    "source_url": "https://store.steampowered.com/app/894940/Littlewood/?l=english",
+    "observed_at": "2026-09-21T18:51:14.8601299+09:00",
+    "english_all_pct": 93,
+    "english_all_count": 5123,
+    "recent_pct": null,
+    "recent_count": null,
+    "recent_scope": "Steam storefront Recent Reviews: past 30 days; language not separately established",
+    "collection_method": "Direct public Steam store HTML, l=english; tooltip text",
+    "multiplayer": "Single-player listed"
+  },
+  {
+    "appid": 2418520,
+    "name": "Farm Together 2",
+    "source_url": "https://store.steampowered.com/app/2418520/Farm_Together_2/?l=english",
+    "observed_at": "2026-09-21T18:51:15.6041599+09:00",
+    "english_all_pct": 93,
+    "english_all_count": 2002,
+    "recent_pct": 94,
+    "recent_count": 39,
+    "recent_scope": "Steam storefront Recent Reviews: past 30 days; language not separately established",
+    "collection_method": "Direct public Steam store HTML, l=english; tooltip text",
+    "multiplayer": "Online co-op listed; maximum not verified in this snapshot"
+  }
+]

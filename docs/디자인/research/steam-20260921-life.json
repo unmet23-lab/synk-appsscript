@@ -1,0 +1,91 @@
+{
+  "observed_at": "2026-09-21T18:49:50+09:00",
+  "method": "Direct Steam store HTML via Invoke-WebRequest, l=english. Percentages are Steam's displayed rounded values. Cumulative counts are English Reviews, not all-language totals. Recent values are the Recent Reviews header for the last 30 days; the tooltip does not explicitly state language scope. Stardew English and Korean headers showed identical recent counts (6472) and percentage (97), while cumulative counts differed.",
+  "selection": "Six farming/life/crafting candidates, not an exhaustive Steam ranking. Status and multiplayer evidence checked on official Steam store pages and announcements. Games were not played.",
+  "games": [
+    {
+      "appid": 413150,
+      "name": "Stardew Valley",
+      "source_url": "https://store.steampowered.com/app/413150/Stardew_Valley/?l=english",
+      "observed_at": "2026-09-21T18:49:48.4340278+09:00",
+      "english_all_pct": 98,
+      "english_all_count": 394553,
+      "recent_pct": 97,
+      "recent_count": 6472,
+      "recent_scope": "Past 30 days, Steam Recent Reviews header. Language scope not explicitly stated; identical values observed in English and Korean store HTML.",
+      "offtopic": "No exclusion notice observed in header tooltip.",
+      "status": {"type": "released", "steam_displayed_release_date": "2016-02-26"},
+      "multiplayer": {"players": 8, "evidence": "Steam description: 8 Player Farming; invite 1-7 players online.", "source_url": "https://store.steampowered.com/app/413150/Stardew_Valley/?l=english"}
+    },
+    {
+      "appid": 2142790,
+      "name": "Fields of Mistria",
+      "source_url": "https://store.steampowered.com/app/2142790/Fields_of_Mistria/?l=english",
+      "observed_at": "2026-09-21T18:49:48.8235299+09:00",
+      "english_all_pct": 97,
+      "english_all_count": 25203,
+      "recent_pct": 93,
+      "recent_count": 2274,
+      "recent_scope": "Past 30 days, Steam Recent Reviews header. Language scope not explicitly stated in header tooltip.",
+      "offtopic": "No exclusion notice observed in header tooltip.",
+      "status": {"type": "released", "steam_displayed_release_date": "2026-08-05", "early_access_release_date": "2024-08-05"},
+      "multiplayer": {"players": 1, "evidence": "Steam features lists Single-player and does not list multiplayer/co-op.", "source_url": "https://store.steampowered.com/app/2142790/Fields_of_Mistria/?l=english"}
+    },
+    {
+      "appid": 1062520,
+      "name": "Dinkum",
+      "source_url": "https://store.steampowered.com/app/1062520/Dinkum/?l=english",
+      "observed_at": "2026-09-21T18:49:49.1837062+09:00",
+      "english_all_pct": 93,
+      "english_all_count": 15806,
+      "recent_pct": 81,
+      "recent_count": 99,
+      "recent_scope": "Past 30 days, Steam Recent Reviews header. Language scope not explicitly stated in header tooltip.",
+      "offtopic": "No exclusion notice observed in header tooltip.",
+      "status": {"type": "released", "steam_displayed_release_date": "2025-04-22", "early_access_release_date": "2022-07-14", "note": "Official launch announcement specifies 2025-04-23 02:00 UTC; date differs from regional Steam display."},
+      "multiplayer": {"players": 6, "evidence": "Official Summer Sun update states Increased multiplayer limit to 6 players; current Steam store lists Online Co-op. This is PC evidence; Switch differs.", "source_url": "https://store.steampowered.com/news/posts/?appgroupname=Dinkum&appids=1062520&enddate=1716451077&feed=steam_community_announcements"}
+    },
+    {
+      "appid": 1084600,
+      "name": "My Time at Sandrock",
+      "source_url": "https://store.steampowered.com/app/1084600/My_Time_at_Sandrock/?l=english",
+      "observed_at": "2026-09-21T18:49:49.7415977+09:00",
+      "english_all_pct": 94,
+      "english_all_count": 9314,
+      "recent_pct": 83,
+      "recent_count": 101,
+      "recent_scope": "Past 30 days, Steam Recent Reviews header. Language scope not explicitly stated in header tooltip.",
+      "offtopic": "No exclusion notice observed in header tooltip.",
+      "status": {"type": "released", "steam_displayed_release_date": "2023-11-02", "early_access_release_date": "2022-05-25"},
+      "multiplayer": {"players": 4, "evidence": "Steam description: Explore, build, and battle with up to 4 players. Reviews sampled separately flag different single-player and multiplayer content; do not infer full story co-op from tag.", "source_url": "https://store.steampowered.com/app/1084600/My_Time_at_Sandrock/?l=english"}
+    },
+    {
+      "appid": 1158160,
+      "name": "Coral Island",
+      "source_url": "https://store.steampowered.com/app/1158160/Coral_Island/?l=english",
+      "observed_at": "2026-09-21T18:49:50.3092504+09:00",
+      "english_all_pct": 89,
+      "english_all_count": 14196,
+      "recent_pct": 90,
+      "recent_count": 155,
+      "recent_scope": "Past 30 days, Steam Recent Reviews header. Language scope not explicitly stated in header tooltip.",
+      "offtopic": "No exclusion notice observed in header tooltip.",
+      "status": {"type": "released", "steam_displayed_release_date": "2023-11-14", "early_access_release_date": "2022-10-11"},
+      "multiplayer": {"players": 4, "evidence": "Steam description: up to 3 friends (4 farmers total).", "source_url": "https://store.steampowered.com/app/1158160/Coral_Island/?l=english"}
+    },
+    {
+      "appid": 1432860,
+      "name": "Sun Haven",
+      "source_url": "https://store.steampowered.com/app/1432860/Sun_Haven/?l=english",
+      "observed_at": "2026-09-21T18:49:50.7583692+09:00",
+      "english_all_pct": 83,
+      "english_all_count": 13339,
+      "recent_pct": 71,
+      "recent_count": 141,
+      "recent_scope": "Past 30 days, Steam Recent Reviews header. Language scope not explicitly stated in header tooltip.",
+      "offtopic": "Header states periods of off-topic review activity are excluded based on preferences. English cumulative web summary showed an asterisk.",
+      "status": {"type": "released", "steam_displayed_release_date": "2023-03-10", "early_access_release_date": "2021-06-25"},
+      "multiplayer": {"players": 8, "evidence": "Steam short description explicitly says 8 person multiplayer. Long description says up to 8 friends, which is ambiguous; use explicit 8-person statement.", "source_url": "https://store.steampowered.com/app/1432860/Sun_Haven/?l=english"}
+    }
+  ]
+}
