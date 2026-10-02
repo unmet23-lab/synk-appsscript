@@ -1,0 +1,117 @@
+[
+  {
+    "url": "/",
+    "status": 200,
+    "bytes": 918
+  },
+  {
+    "url": "/preview.html",
+    "status": 200,
+    "bytes": 5076
+  },
+  {
+    "url": "/app.mjs",
+    "status": 200,
+    "bytes": 13700
+  },
+  {
+    "url": "/style.css",
+    "status": 200,
+    "bytes": 14870
+  },
+  {
+    "url": "/engine/loom-life.js",
+    "status": 200,
+    "bytes": 7082
+  },
+  {
+    "url": "/engine/loom-motion.js",
+    "status": 200,
+    "bytes": 5731
+  },
+  {
+    "url": "/assets/logo-ink.svg",
+    "status": 200,
+    "bytes": 10353
+  },
+  {
+    "url": "/assets/material/tea.webp",
+    "status": 200,
+    "bytes": 214918
+  },
+  {
+    "url": "/assets/material/chair.webp",
+    "status": 200,
+    "bytes": 23400
+  },
+  {
+    "url": "/assets/cast/deer.webp",
+    "status": 200,
+    "bytes": 100768
+  },
+  {
+    "url": "/assets/cast/bear.webp",
+    "status": 200,
+    "bytes": 134640
+  },
+  {
+    "url": "/assets/material/coffee-open.webp",
+    "status": 200,
+    "bytes": 17684
+  },
+  {
+    "url": "/assets/fonts/SUIT-Variable.woff2",
+    "status": 200,
+    "bytes": 624536
+  },
+  {
+    "url": "/assets/fonts/InterTight-Medium.ttf",
+    "status": 200,
+    "bytes": 309140
+  },
+  {
+    "url": "/assets/fonts/InterTight-Bold.ttf",
+    "status": 200,
+    "bytes": 310440
+  },
+  {
+    "url": "/assets/material/wide-cream.webp",
+    "status": 200,
+    "bytes": 330544
+  },
+  {
+    "url": "/assets/material/wide-butter.webp",
+    "status": 200,
+    "bytes": 841862
+  },
+  {
+    "url": "/assets/material/wide-lapis.webp",
+    "status": 200,
+    "bytes": 1323108
+  },
+  {
+    "url": "/assets/ui/slab-cream-long.webp",
+    "status": 200,
+    "bytes": 475944
+  },
+  {
+    "url": "/assets/ui/slab-coral-long.webp",
+    "status": 200,
+    "bytes": 737556
+  },
+  {
+    "url": "/assets/ui/slab-blush-long.webp",
+    "status": 200,
+    "bytes": 541850
+  },
+  {
+    "url": "/assets/ui/tag-cream.webp",
+    "status": 200,
+    "bytes": 158128
+  },
+  {
+    "url": "/assets/ui/tex-coral.webp",
+    "status": 200,
+    "bytes": 54754
+  }
+]

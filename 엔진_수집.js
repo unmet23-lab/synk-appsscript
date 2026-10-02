@@ -760,9 +760,11 @@ function dataCoverageReport(opts) {
   // ① 숙제 첨삭 — 오류 태그 분포 + 3단 데이터(원문→교정→재작성) 완성 수
   const fb = ss.getSheetByName('hw_feedback');
   let 첨삭 = 0, 태그있음 = 0, 재작성 = 0, 문항연결 = 0, 강의요약 = 0;
+  let 첨삭행 = [], 퀴즈행 = [], 대화행 = [];
   if (fb && fb.getLastRow() >= 2) {
     const w = Math.min(HW_FEEDBACK_HEADERS.length, fb.getLastColumn());
-    fb.getRange(2, 1, fb.getLastRow() - 1, w).getValues().forEach(r => {
+    첨삭행 = fb.getRange(2, 1, fb.getLastRow() - 1, w).getValues();
+    첨삭행.forEach(r => {
       첨삭++;
       const 출처 = String(r[11] || '').trim();                  // L 숙제ID(강의 한줄요약은 '강의:' 접두)
       if (출처.indexOf(LECTURE_SRC_PREFIX) === 0) 강의요약++;   // [v9.198] ㉡ 읽기 배선이 실제로 도는지 — 숙제 문항 연결과 섞으면 둘 다 못 읽는다
@@ -776,7 +778,8 @@ function dataCoverageReport(opts) {
   const 상위 = HW_ERROR_TAGS.filter(t => 태그수[t] > 0).sort((a, b) => 태그수[b] - 태그수[a]).slice(0, 8);
 
   L.push('■ 숙제 첨삭 (원문↔교정 병렬쌍 — 가장 값나가는 자산)');
-  L.push('  전체 ' + 첨삭 + '건 · 오류 태그 있음 ' + 태그있음 + '건 · 문항 연결 ' + 문항연결 + '건 · 재작성(3단) ' + 재작성 + '건');
+  L.push(fb ? '  전체 ' + 첨삭 + '건 · 오류 태그 있음 ' + 태그있음 + '건 · 문항 연결 ' + 문항연결 + '건 · 재작성(3단) ' + 재작성 + '건'
+    : '  ⚠️ 미관측 — hw_feedback 시트가 없습니다.');
   // [v9.198] 강의 한줄요약 편입분 — 분자만 보면 「도는지」를 알 수 없어 lecture_views 총량(분모)과 함께 낸다
   const vwSh = ss.getSheetByName('lecture_views');
   //   분모 = **편입 자격이 있는 행**(student_id·요약 둘 다 있는 것)이다. 이름 미매칭 행까지 세면 사람이 sid를
@@ -784,11 +787,11 @@ function dataCoverageReport(opts) {
   const 요약총 = vwSh && vwSh.getLastRow() >= 2
     ? vwSh.getRange(2, 2, vwSh.getLastRow() - 1, 5).getValues()
       .filter(r => String(r[0] || '').trim() && String(r[4] || '').trim()).length : 0;
-  if (요약총 || 강의요약) L.push('  강의 한줄요약 편입 ' + 강의요약 + '/' + 요약총 + '건' +
+  if (fb && vwSh && (요약총 || 강의요약)) L.push('  강의 한줄요약 편입 ' + 강의요약 + '/' + 요약총 + '건' +
     (요약총 && !강의요약 ? ' — ⚠️ 한 건도 안 실렸습니다(야간 배치 미실행이거나 CLAUDE_API_KEY 휴면)' : ''));
   if (첨삭 && !태그있음) L.push('  ⚠️ 태그가 한 건도 없습니다 — v9.138 이전 제출분이거나 배치가 아직 안 돌았습니다(원문이 남아 있어 소급 재처리는 가능).');
   if (상위.length) L.push('  많이 틀리는 순: ' + 상위.map(t => t + ' ' + 태그수[t]).join(' · '));
-  L.push('  🕳 아직 한 건도 못 잡은 오류 유형 ' + 빈칸.length + '/' + (HW_ERROR_TAGS.length - 1) + (빈칸.length ? ': ' + 빈칸.join(', ') : ' — 전 유형 확보'));
+  if (fb) L.push('  🕳 아직 한 건도 못 잡은 오류 유형 ' + 빈칸.length + '/' + (HW_ERROR_TAGS.length - 1) + (빈칸.length ? ': ' + 빈칸.join(', ') : ' — 전 유형 확보'));
 
   // ② 퀴즈 — 「무엇을 골랐나」. 확신도 축이 실제로 채워지는지가 관건(비면 그 축은 없는 것과 같다)
   const ql = ss.getSheetByName('quiz_log');
@@ -799,7 +802,8 @@ function dataCoverageReport(opts) {
      *   라이브 시트를 읽으면 상수 폭이 시트 폭을 넘어 getRange 가 던진다 — 리포트가 통째로 죽는다.
      *   읽는 칸은 r[2]·r[7]·r[8] 뿐이라 폭을 줄여도 세는 값은 하나도 안 변한다. */
     const qw = Math.min(QUIZ_LOG_HEADERS.length, ql.getLastColumn());
-    ql.getRange(2, 1, ql.getLastRow() - 1, qw).getValues().forEach(r => {
+    퀴즈행 = ql.getRange(2, 1, ql.getLastRow() - 1, qw).getValues();
+    퀴즈행.forEach(r => {
       응답++;
       문항종[String(r[2] || '')] = 1;
       const v = String(r[7] || '');
@@ -809,8 +813,9 @@ function dataCoverageReport(opts) {
   }
   L.push('');
   L.push('■ 퀴즈 응답 (소급 절대 불가 축 — 그날 고른 답은 다시 못 받는다)');
-  L.push('  응답 ' + 응답 + '건 · 다룬 문항 ' + Object.keys(문항종).length + '종 · 정답 ' + 정답 + ' · 판정보류 ' + 보류 + ' · 「찍었어요」 ' + 찍음);
-  if (!응답) L.push('  ⚠️ 0건 — 퀴즈 응답 폼이 없거나(SYNK 메뉴 ▸ 퀴즈 응답 폼 만들기) 학생에게 주소가 아직 안 갔습니다(profiles 「퀴즈폼URL」 열).');
+  L.push(ql ? '  응답 ' + 응답 + '건 · 다룬 문항 ' + Object.keys(문항종).length + '종 · 정답 ' + 정답 + ' · 판정보류 ' + 보류 + ' · 「찍었어요」 ' + 찍음
+    : '  ⚠️ 미관측 — quiz_log 시트가 없습니다.');
+  if (ql && !응답) L.push('  ⚠️ 관측된 응답이 0건입니다 — 폼 연결·안내·제출 여부를 확인하세요.');
   else if (정답 + 보류 < 응답 * 0.99 && 응답 > 20) {
     const 정답률 = Math.round(정답 / Math.max(1, 응답 - 보류) * 100);
     L.push('  정답률 ' + 정답률 + '%(판정보류 제외) — 「찍었어요」인데 정답인 건은 아직 모르는 것으로 읽습니다.');
@@ -824,14 +829,16 @@ function dataCoverageReport(opts) {
     vl.getRange(2, 1, vl.getLastRow() - 1, w).getValues().forEach(r => { 녹음++; if (String(r[6] || '').trim()) 전사++; });
   }
   L.push('');
-  L.push('■ 목소리  녹음 ' + 녹음 + '건 · 전사 완료 ' + 전사 + '건' + (녹음 && !전사 ? ' ⚠️ 전사 0 — 라벨 없는 오디오는 나중에 소급 가능하지만, 지금 붙이면 발음 오류 사전이 함께 자랍니다.' : ''));
+  L.push(vl ? '■ 목소리  녹음 ' + 녹음 + '건 · 전사 완료 ' + 전사 + '건' + (녹음 && !전사 ? ' ⚠️ 전사 0 — 승인된 전사 경로와 처리 상태를 확인하세요. 전사만으로 발음 오류를 판정하지 않습니다.' : '')
+    : '■ 목소리  ⚠️ 미관측 — voice_log 시트가 없습니다.');
 
   // ④ 대화 — 회화 앱의 핵심 재료. 「턴이 이어지는가」가 관건이다(1턴짜리만 쌓이면 그건 대화가 아니라 단문이다)
   const tl = ss.getSheetByName('talk_log');
   let 턴 = 0, 최장 = 0, 참여 = {};
   if (tl && tl.getLastRow() >= 2) {
     const tw = Math.min(TALK_LOG_HEADERS.length, tl.getLastColumn()); // [v9.207] 위 퀴즈와 같은 사유 — 읽는 칸은 r[1]·r[2] 뿐이다
-    tl.getRange(2, 1, tl.getLastRow() - 1, tw).getValues().forEach(r => {
+    대화행 = tl.getRange(2, 1, tl.getLastRow() - 1, tw).getValues();
+    대화행.forEach(r => {
       턴++;
       const s = String(r[1] || '').trim();
       if (s) 참여[s] = Math.max(참여[s] || 0, Number(r[2]) || 0);
@@ -841,41 +848,45 @@ function dataCoverageReport(opts) {
   const 학생수 = Object.keys(참여).length;
   L.push('');
   L.push('■ AI 대화 (회화 앱의 핵심 — 다른 어디서도 안 나오는 데이터)');
-  L.push('  누적 ' + 턴 + '턴 · 참여 ' + 학생수 + '명 · 가장 긴 대화 ' + 최장 + '턴'
-    + (학생수 ? ' · 평균 ' + (Math.round(턴 / 학생수 * 10) / 10) + '턴' : ''));
-  if (!턴) L.push('  ⚠️ 0턴 — 대화 폼이 없거나(SYNK 메뉴 ▸ 한국어 대화 폼 만들기) CLAUDE_API_KEY가 없습니다.');
-  else if (최장 < 3) L.push('  ⚠️ 아직 이어지는 대화가 없습니다(최장 ' + 최장 + '턴) — 답장이 질문으로 끝나는지, 학생이 답장을 읽는 화면이 있는지 확인하세요.');
+  L.push(tl ? '  누적 ' + 턴 + '턴 · 참여 ' + 학생수 + '명 · 가장 긴 대화 ' + 최장 + '턴'
+    + (학생수 ? ' · 평균 ' + (Math.round(턴 / 학생수 * 10) / 10) + '턴' : '')
+    : '  ⚠️ 미관측 — talk_log 시트가 없습니다.');
+  if (tl && !턴) L.push('  ⚠️ 관측된 대화가 0턴입니다 — 폼 연결·안내·응답 처리 여부를 확인하세요.');
+  else if (tl && 최장 < 3) L.push('  ⚠️ 아직 이어지는 대화가 없습니다(최장 ' + 최장 + '턴) — 답장이 질문으로 끝나는지, 학생이 답장을 읽는 화면이 있는지 확인하세요.');
 
   /* ⑤ [v9.147] 참여율 — **기능 압축의 부작용을 재는 유일한 계기다.**
    *   압축 판정의 축이 「학생을 로그 입구까지 데려오는가」였는데, 그걸 재는 숫자가 없으면
    *   압축이 감량인지 출혈인지 영영 모른 채 지나간다(적대 리뷰가 지목한 가장 큰 구멍).
    *   분모는 재원 학생 수, 분자는 최근 7일에 **무엇이든 하나라도 낸** 학생 수다 —
    *   총량(건수)은 소수의 열성 학생이 혼자 끌어올릴 수 있어 참여를 못 잰다. */
-  const 최근 = new Date(Date.now() - 7 * 86400000);
-  const 활동 = new Set();
-  const 최근카운트 = (name, sidCol, dateCol, width) => {
-    const sh = ss.getSheetByName(name);
-    if (!sh || sh.getLastRow() < 2) return;
-    const w = Math.min(width, sh.getLastColumn());
-    sh.getRange(2, 1, sh.getLastRow() - 1, w).getValues().forEach(r => {
-      const s = String(r[sidCol] || '').trim();
-      const d = r[dateCol] ? asDate_(r[dateCol]) : null;
-      if (s && d && d >= 최근) 활동.add(s);
-    });
-  };
-  최근카운트('hw_feedback', 1, 2, 3);   // 숙제 제출(첨삭 행 = 제출의 증거)
-  최근카운트('quiz_log', 1, 9, 10);      // 퀴즈 응답
-  최근카운트('talk_log', 1, 6, 7);       // 대화
-  let 재원 = 0;
+  // 같은 스냅샷을 다시 사용한다. 분자도 분모의 student 집합에 속해야 한다.
+  const 지금 = new Date(), 최근 = new Date(지금.getTime() - 7 * 86400000);
+  const 활동 = new Set(), 재원목록 = new Set(), 미관측 = [];
   const pfC = ss.getSheetByName('profiles');
-  if (pfC && pfC.getLastRow() >= 2) pfC.getRange(2, 1, pfC.getLastRow() - 1, 4).getValues().forEach(r => {
-    if (r[0] && r[3] === 'student') 재원++;
+  const 재원관측 = !!pfC && pfC.getLastColumn() >= 4;
+  if (!재원관측) 미관측.push('profiles');
+  else if (pfC.getLastRow() >= 2) pfC.getRange(2, 1, pfC.getLastRow() - 1, 4).getValues().forEach(r => {
+    const sid = String(r[0] || '').trim();
+    if (sid && r[3] === 'student') 재원목록.add(sid);
   });
+  for (const [name, sh, rows, dateCol] of [
+    ['hw_feedback', fb, 첨삭행, 2], ['quiz_log', ql, 퀴즈행, 9], ['talk_log', tl, 대화행, 6]
+  ]) {
+    if (!sh || sh.getLastColumn() <= dateCol) { 미관측.push(name); continue; }
+    rows.forEach(r => {
+      const sid = String(r[1] || '').trim();
+      const d = r[dateCol] ? asDate_(r[dateCol]) : null;
+      if (재원목록.has(sid) && d && d >= 최근 && d <= 지금) 활동.add(sid);
+    });
+  }
+  const 재원 = 재원관측 ? 재원목록.size : null;
+  const 활동수 = 미관측.length ? null : 활동.size;
   L.push('');
   L.push('■ 참여율 (압축이 감량인지 출혈인지를 가르는 숫자)');
-  L.push('  최근 7일에 하나라도 낸 학생 ' + 활동.size + '/' + 재원 + '명'
-    + (재원 ? ' (' + Math.round(활동.size / 재원 * 100) + '%)' : ''));
-  if (재원 && 활동.size < 재원 * 0.5) L.push('  ⚠️ 절반 아래입니다 — 총량이 늘어도 이 숫자가 내려가면 압축이 접속을 깎고 있다는 뜻입니다(끈 기능을 되살릴 판단 재료).');
+  if (미관측.length) L.push('  ⚠️ 참여율 미관측 — 시트 또는 제출일 열 확인 필요: ' + 미관측.join(', '));
+  else L.push('  최근 7일에 하나라도 낸 학생 ' + 활동수 + '/' + 재원 + '명'
+    + (재원 ? ' (' + Math.round(활동수 / 재원 * 100) + '%)' : ''));
+  if (재원 && 활동수 !== null && 활동수 < 재원 * 0.5) L.push('  ⚠️ 절반 아래입니다 — 접속·안내·과제 조건을 함께 확인하세요. 참여율만으로 기능 변경의 영향을 단정하지 않습니다.');
 
   // ⑥ [v9.147] 강사 정답 모음 — 학생이 아니라 **정답**을 쌓는 칸. 이게 비면 2년 뒤 모델 선택을 감으로 한다
   const gd = ss.getSheetByName('teacher_gold');
@@ -891,7 +902,8 @@ function dataCoverageReport(opts) {
   });
   L.push('');
   L.push('■ 강사 교정 정답 모음 (2년 뒤 「어느 모델이 우리 학생에게 맞는가」의 채점표)');
-  L.push('  표본 ' + 표본 + '건 · 강사 응답 ' + 응답G + '건 · 그중 교정 수정 ' + 수정 + '건');
+  L.push(gd ? '  표본 ' + 표본 + '건 · 강사 응답 ' + 응답G + '건 · 그중 교정 수정 ' + 수정 + '건'
+    : '  ⚠️ 미관측 — teacher_gold 시트가 없습니다.');
   if (표본 && !응답G) L.push('  ⚠️ 표본은 뽑히는데 응답이 0 — 강사가 그 탭을 안 보고 있습니다(유인이 0인 업무라 예상된 실패 모드입니다).');
   else if (응답G && 수정 === 응답G) L.push('  ⚠️ 전부 「고칠 곳이 있다」로만 쌓였습니다 — 「AI가 맞았다」 라벨이 0이면 재현율을 못 재는 반쪽 채점표가 됩니다.');
 
@@ -902,9 +914,10 @@ function dataCoverageReport(opts) {
   Logger.log(report);
   if (opts && opts.raw) {
     return { text: report, stats: {
-      빈유형: 빈칸, 재원: 재원, 활동: 활동.size,
-      골든표본: 표본, 골든응답: 응답G, 골든수정: 수정,
-      첨삭: 첨삭, 태그있음: 태그있음, 퀴즈응답: 응답, 대화턴: 턴
+      빈유형: fb ? 빈칸 : null, 재원: 재원, 활동: 활동수,
+      참여관측: { 상태: 미관측.length ? '미관측' : '관측', 미관측시트: 미관측, 관측활동: 재원관측 ? 활동.size : null },
+      골든표본: gd ? 표본 : null, 골든응답: gd ? 응답G : null, 골든수정: gd ? 수정 : null,
+      첨삭: fb ? 첨삭 : null, 태그있음: fb ? 태그있음 : null, 퀴즈응답: ql ? 응답 : null, 대화턴: tl ? 턴 : null
     } };
   }
   return report;
@@ -927,6 +940,7 @@ function dataCoverageMonthly_() {
   const r = dataCoverageReport({ raw: true });
   if (!r || !r.stats) return;
   const s = r.stats;
+  if (s.재원 === null) { Logger.log('커버리지 월간 — 재원 미관측: profiles 시트·역할 열 확인 필요'); return; }
   if (!s.재원) { Logger.log('커버리지 월간 — 재원 0명이라 침묵(개원 전 정상)'); return; }
   if (r.text.indexOf('⚠️') === -1) { Logger.log('커버리지 월간 — 경고 없음, 메일 생략'); return; }
 
@@ -940,7 +954,7 @@ function dataCoverageMonthly_() {
   if (s.빈유형 && s.빈유형.length) 처방.push(
     '② 아직 한 건도 못 잡은 오류 유형 ' + s.빈유형.length + '종 — 다음 시즌 숙제·퀴즈에 이 문법을 넣으세요:\n' +
     '   ' + s.빈유형.slice(0, 3).join(' · ') + (s.빈유형.length > 3 ? ' (외 ' + (s.빈유형.length - 3) + '종은 아래 리포트에)' : ''));
-  if (s.활동 < s.재원 * 0.5) 처방.push(
+  if (s.활동 !== null && s.활동 < s.재원 * 0.5) 처방.push(
     '③ 최근 7일 참여 ' + s.활동 + '/' + s.재원 + '명 — 분모가 마르면 총량이 늘어도 유형은 안 채워집니다.');
   /* [v9.176] 정답이 쌓였는데 **나갈 통로가 안 열려 있으면** 여기서 말한다.
    *   설치가 6개월 뒤에나 값을 하는 종류라, 안 해도 그 사이 아무 일도 안 일어난다 —

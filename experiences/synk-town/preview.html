@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>싱크타운 · 작은 쉼터 개발 체험</title><link rel="stylesheet" href="./style.css"><script src="/engine/loom-motion.js" defer></script><script src="/engine/loom-life.js" defer></script><script src="./app.mjs" type="module"></script></head>
+<body>
+  <header class="topbar">
+    <div class="brand"><img src="./assets/logo-ink.svg" alt="synk" width="72" height="26"><span>싱크타운</span></div>
+    <span id="scope-label" class="scope-label">개발 체험 · 가상 기록</span>
+    <button id="help-button" class="quiet-button" type="button">도움</button>
+  </header>
+  <main class="town-layout">
+    <section class="world-column" aria-label="찻집 앞 작은 쉼터">
+      <div class="scene-heading"><div><p class="eyebrow">작은 쉼터</p><h1 id="scene-title">어디에서 쉴까요?</h1></div><p id="visit-label" class="visit-label">첫 방문</p></div>
+      <div id="scene" class="scene" role="img" aria-label="찻집과 바깥의 빈 자리">
+        <div class="land"></div><div class="walkway"></div>
+        <div class="plant plant-a"><img src="./assets/material/tea.webp" alt=""></div><div class="plant plant-b"><img src="./assets/material/tea.webp" alt=""></div><div class="plant plant-c"><img src="./assets/material/tea.webp" alt=""></div>
+        <div class="teahouse"><div class="house-wall"><div class="house-window"><span></span></div><div class="house-door"></div><div class="house-sign">찻집</div></div><div class="house-roof"></div><div class="house-eaves"></div><div class="porch"></div></div>
+        <span class="place-caption inside-caption">안</span><span class="place-caption outside-caption">밖</span>
+        <div id="canopy" class="canopy" hidden><div class="canopy-leg left-leg"></div><div class="canopy-leg right-leg"></div><div class="canopy-fabric"></div></div>
+        <div id="canopy-preview" class="canopy canopy-preview" hidden><div class="canopy-leg left-leg"></div><div class="canopy-leg right-leg"></div><div class="canopy-fabric"></div></div>
+        <div id="placement-ghost" class="placement-ghost" hidden><img src="./assets/material/chair.webp" alt=""><span>미리보기</span></div>
+        <svg id="sign-route" class="sign-route" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" hidden><path id="sign-route-path" d=""></path></svg>
+        <div id="sign-board" class="sign-board" hidden><div class="sign-post"></div><div class="sign-face"><img class="sign-picture" src="./assets/material/chair.webp" alt=""><span class="sign-arrow" aria-hidden="true"></span></div><span class="sign-label" hidden>지금 자리</span></div>
+        <div id="sign-preview" class="sign-board sign-preview" hidden><div class="sign-post"></div><div class="sign-face"><img class="sign-picture" src="./assets/material/chair.webp" alt=""><span class="sign-arrow" aria-hidden="true"></span></div><span class="sign-label">미리보기</span></div>
+        <img id="chair" class="chair" src="./assets/material/chair.webp" alt="기존 의자">
+        <div id="tea-table" class="tea-table" hidden></div>
+        <div id="actor-guest" class="actor guest" data-pose="idle"><img src="./assets/cast/deer.webp" alt="손님"><span class="actor-label">손님</span><span id="guest-bubble" class="guest-bubble" hidden>편해요</span></div>
+        <div id="actor-owner" class="actor owner" data-pose="idle"><img src="./assets/cast/bear.webp" alt="찻집 주인"><span class="actor-label">주인</span></div>
+        <div id="actor-tea" class="actor tea" hidden><img src="./assets/material/coffee-open.webp" alt="차 한 잔"></div>
+        <div id="scene-caption" class="scene-caption">작은 자리가 기다리고 있어요.</div>
+      </div>
+      <div class="world-footer"><button id="notebook-button" class="quiet-button" type="button">함께한 일</button><span id="save-status" class="save-status" role="status">가상 기록을 불러오는 중…</span></div>
+    </section>
+    <aside class="conversation" aria-label="이야기와 행동">
+      <div class="speaker-row"><img src="./assets/cast/bear.webp" alt="" class="speaker-portrait"><span id="speaker">찻집 주인</span></div>
+      <p id="dialogue" class="dialogue" aria-live="polite" aria-atomic="true">잠깐만요.</p>
+      <div id="material-summary" class="material-summary" hidden></div>
+      <p id="craft-recipe" class="craft-recipe" hidden>나무 2 + 천 1 → 작은 지붕 1</p>
+      <div id="actions" class="actions" aria-label="할 일"></div>
+      <p id="error" class="error" role="alert" hidden></p><button id="retry-button" class="felt-button" type="button" hidden>다시 불러오기</button>
+      <div class="conversation-bottom"><div class="help-actions"><button id="meaning-button" class="quiet-button" type="button">뜻 보기</button><button id="route-help-button" class="quiet-button" type="button" aria-pressed="false" hidden>길 보기</button></div><span>천천히 골라도 돼요.</span></div>
+    </aside>
+  </main>
+  <details class="review-panel"><summary>개발 체험 안내</summary><p>이 화면은 가상의 기록으로 첫 생활을 살펴보는 개발 체험이에요. 실제 계정·급수·상품 권한에 반영되지 않아요. 주민 그림과 음성은 최종 제작 전이며, 현재는 글로 대화해요.</p><div class="review-actions"><button id="visit-button" class="felt-button" type="button">다음 방문</button><button id="remove-button" class="felt-button" type="button" hidden>지붕 보관하기</button><button id="reset-button" class="quiet-button" type="button">가상 기록 다시 시작</button></div></details>
+  <dialog id="info-dialog"><div class="dialog-head"><h2 id="info-title">도움</h2><button id="close-dialog" class="quiet-button" type="button">닫기</button></div><div id="info-content"></div></dialog>
+</body></html>

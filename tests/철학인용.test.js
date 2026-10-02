@@ -57,7 +57,7 @@ test('④ 면제 — 역사 문서는 면제이고 담당 설계는 면제가 �
   assert.equal(도구.면제인가('docs/_ops/심문결과/코어엔진_설계-전건판정.md'), true);
   assert.equal(도구.면제인가('docs/_ops/결정.md'), true);
   assert.equal(도구.면제인가('docs/앱재설계_v2.md'), false);
-  assert.equal(도구.면제인가('docs/엔진7종_상향설계_v3.md'), false);
+  assert.equal(도구.면제인가('docs/엔진8종_상향설계_v3.md'), false);
 });
 
 test('⑤ 대조표 — 번호의 현행 자리를 찾고, 없으면 null', () => {

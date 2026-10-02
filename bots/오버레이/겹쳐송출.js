@@ -459,6 +459,8 @@ function 사건문세우기(사건넣기) {
     expression: `(() => { const 문 = new BroadcastChannel('라디오오버레이');`
       + ` 문.postMessage(${JSON.stringify(사건)}); setTimeout(() => 문.close(), 1000); })()`,
   });
+  try { require('./현재곡.js').시작({ playlist: 소리목록, progress: 진척, send: 사건넣기, log: 말 }); }
+  catch (e) { 말('곡 시간표 오류:', e.message); }
   사건문세우기(사건넣기);
   채팅감시(사건넣기).catch((e) => 말('채팅 감시가 죽었다:', e.message));
   결신호(사건넣기).catch((e) => 말('결 신호가 죽었다:', e.message));
