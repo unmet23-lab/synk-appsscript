@@ -34,6 +34,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 
@@ -54,11 +55,10 @@ const 읽기 = (rel) => fs.readFileSync(path.join(루트, rel), 'utf8');
 const 제외 = [
   [/^docs\/tools\//, '사람이 브라우저로 여는 «계기»다(팔레트·글리프 탐침·포스터 목업). 발행하지 않고, '
     + '`_mn_font_probe.html` 은 CDN 서체를 «비교 대상»으로 부르는 것이 그 지면의 일이다.'],
-  [/^crewcard\/카드_(kr|mn)\.html$/, '🔴 학생이 여는 «라이브» 접수 폼(doGet 서빙)이다. 서체를 심으면 네 벌이 '
-    + '각각 +0.8MB 가 되고, 이 폼은 몽골 학생 휴대폰이 연다. 발행 대상이 아니라 CSP 문제도 없다 — '
-    + '심을지는 «학생 쪽 로딩»을 재고 유호님이 정하실 자리라 이 트랙에서 손대지 않았다.'],
-  [/^docs\/크루카드\/크루카드_(한국어|몽골어)\.html$/, '위 라이브 폼의 docs 사본 — `크루카드사본.js` 가 '
-    + '바이트 동일성을 강제한다. 정본이 안 바뀌었는데 사본만 바꾸면 그 검사가 빨개진다.'],
+  [/^docs\/크루카드\/크루카드_(한국어|몽골어)\.html$/, '옛 라이브 접수 폼(`crewcard/카드_kr·mn.html`)의 docs 사본이다. '
+    + '폼과 사본 검사(`크루카드사본.js`)는 10-02 학원 운영 시스템 삭제(`220f05d88`) 때 지워졌고 사본만 남았다. '
+    + '다시 내보내지 않아 서체를 심지 않는다(심으면 한 벌에 +0.8MB).\n'
+    + '     ⚰ 폼 쪽 제외 줄(`crewcard/`)은 10-03 에 걷었다 — ⑤ 가 「아무것도 안 덮는 줄」로 잡았다.'],
   [/^docs\/홈페이지_시안\/(병합판|시안\.tpl)\.html$/, '자립형 짝(`_자립형.html`)이 나가는 판이고, '
     + '이 원본은 그림도 상대경로라 애초에 «파일 하나»가 아니다. 서체는 `tools/시안굽기.js` 가 자립형에 심는다.\n'
     + '     ⚠ 09-03 에 기각본 넷(도전안판·도전안판_자립형·정석판·비교_0815)이 지워졌다'
@@ -82,6 +82,18 @@ const 제외 = [
   [/^docs\/디자인\/펠트스크랩북\/견본\.html$/, '저장소 안에서 여는 양식 견본이다. `@font-face` 가 `docs/브랜드_폰트/` 의 '
     + '정본 서체를 상대 경로로 싣는다 — 정본이 바뀌면 견본도 같이 따라간다. 파일 하나로 내보내지 않아 심지 않는다'
     + '(10-02 git 밖 원본 커밋 때 처음 추적).'],
+  /* 10-03 — ⑦ 이 잡은 49벌 중 «만들기 단계의 입력»인 열세 벌. 산출물은 서체를 싣고 ⑦ 을 통과한다. */
+  [/^docs\/(앱로드맵_20260921|엔진\/지도_20260921)\/template\.html$/, '만들기 틀이다. 같은 폴더의 `build.cjs` 가 '
+    + '틀의 `__FONTS__` 자리에 정본 SUIT 를 data URI 로 채워 산출물(`SYNK_WORLD_앱로드맵_20260921.html` · '
+    + '`SYNK_Atlas_엔진지도_20260921.html`)을 쓴다 — 산출물은 ⑦ 을 그대로 통과한다. 틀이 이름만 적는 것이 이 통로의 설계다.'],
+  [/^docs\/마케팅\/SYNK_인터뷰_20260923\/세로클립_20260927\/kit-v1\/template\.html$/, '세로 클립 공용 틀이다. '
+    + '`build.mjs` 가 이 틀로 `clips/<키>/index.html` 을 쓰고 키트 사본을 그 폴더의 `assets/synk-kit/` 에 넣는다. '
+    + '틀의 `@font-face` 상대 경로는 클립 폴더에서 풀리는 경로라 틀 자리에는 서체 파일이 없다 — 만들어진 클립 일곱 벌은 ⑦ 을 통과한다.'],
+  [/^docs\/마케팅\/(SHIFT_과정1편_20260921|yuhobuilds_1편_20260922|yuhobuilds_1편_쇼츠수정_20260922)\/_src_preview\.html$/,
+    '미리보기 원고다. 같은 폴더의 `finish-preview.cjs` 가 이 원고에 `브랜드폰트.심기` 를 돌려 `preview.html`(git 밖 산출물)을 '
+    + '쓴다 — 발표물 `_src_` 와 같은 통로라 원고가 이름만 적는 것이 설계다.'],
+  [/^docs\/마케팅\/yuhobuilds_1편_쇼츠수정_20260922\/(업로드_최종_20260926|이전버전\/[^/]+)\/_src_preview\.html$/,
+    '위 통로로 만든 판의 원고를 판마다 보관한 사본이다(업로드 최종본 하나 · 이전 판 여섯). 다시 굽지 않는다.'],
 ];
 
 const 제외사유 = (rel) => (제외.find(([re]) => re.test(rel)) || [])[1] || null;
@@ -162,7 +174,7 @@ const 서체를심은지면 = [
   'docs/허깅페이스_수확_2026-09-03.html',
   'docs/허깅페이스_정찰_2026-09-02.html',
   'docs/엔진/SYNK_엔진_지도.html',
-  'docs/릴_재미_시안.html',
+  /* ⚰ `docs/릴_재미_시안.html` 은 09-22 옛 콘텐츠 정리(`4dd8a63d3`)에서 지워졌다 — 10-03 에 목록에서도 걷었다. */
 ];
 
 /* ── ① 바깥에서 SUIT 를 부르는 지면 ────────────────────────────────────── */
@@ -270,16 +282,113 @@ test('⑥ 서체 원본이 못박은 지문 그대로다 — 아니면 위 다�
  *
  * 🔑 그래서 술어를 뒤집는다 — 「부르나」가 아니라 «부르면 싣나». 스택에 SUIT 를 적는 순간
  *    그 지면은 이 검사의 분모에 «스스로» 들어온다. 등록부가 없어 낡을 수가 없다.
+ *
+ * ── 10-03 «싣나»의 길을 셋으로 ──
+ *   09-03 의 «싣나»는 «안에 심었나»(`심겼나`) 하나였다. 10-01 부터 SNS 키트 지면은 폴더째 렌더하는
+ *   HyperFrames 프로젝트라 서체를 «옆에 둔 파일»로 싣는다. 10-03 에 ⑦ 이 49벌을 잡았는데 그중 36벌은
+ *   실제로 SUIT 가 나오는 모양이었고(아래 ⓑⓒ), 나머지 13벌은 만들기 단계의 입력이었다(제외 표).
+ *     ⓐ 지면 안에 심었다(`심겼나`) — 파일 하나로 내보내는 지면의 길.
+ *     ⓑ 지면이 부르는 저장소 안 스타일시트에 심었다 — 여러 쪽이 서체 한 벌을 나눠 쓰는 묶음
+ *        (포트폴리오: `build.cjs` 가 `assets/fonts.css` 를 쓴다).
+ *     ⓒ `@font-face` 가 저장소 안 서체 파일을 상대 경로로 싣는다 — 키트 사본
+ *        (`tools/SNS키트_영상연결.js` 가 정본을 `assets/synk-kit/fonts/` 로 복사한다).
+ *   🔑 ⓑⓒ 의 파일은 만들기 단계가 쓰는 사본이라 git 밖에 있는 것이 많다. 그래서 «있나»가 아니라
+ *      «정본과 바이트까지 같나»를 문다 — 없거나, 다른 서체거나, 저장소 밖이면 «안 싣는다»로 센다(⑧ 이 증명).
+ *   ⓑⓒ 는 «파일 하나»가 아니라서 ③(자립형·펠트 스킨)과 ④(심은 지면 목록)에는 안 쓴다 — 그 둘은 ⓐ 만 받는다.
  */
+
+let 정본서체 = null;
+const 정본인가 = (buf) => buf.equals(정본서체 ||= 브랜드폰트.woff2());
+
+/** 저장소(경계) 안의 상대 경로면 그 파일, 아니면 null — data:·https:·`//`·`/` 로 시작하는 주소는 상대 경로가 아니다. */
+function 안쪽파일(기준, url, 경계) {
+  if (/^(?:[a-z][a-z0-9+.-]*:|\/)/i.test(url)) return null;
+  let 이름;
+  try { 이름 = decodeURIComponent(url.split(/[?#]/)[0]); } catch { return null; }
+  const 파일 = path.resolve(기준, 이름);
+  const 안 = path.relative(경계, 파일);
+  if (!안 || 안.startsWith('..') || path.isAbsolute(안)) return null;
+  return fs.existsSync(파일) && fs.statSync(파일).isFile() ? 파일 : null;
+}
+
+/** ⑦ 의 술어 — 이 지면이 정본 SUIT 를 실제로 받나(ⓐ·ⓑ·ⓒ 중 하나). */
+function 싣나(파일, 경계 = 루트) {
+  const html = fs.readFileSync(파일, 'utf8');
+  if (브랜드폰트.심겼나(html)) return true;                                        // ⓐ
+  const 폴더 = path.dirname(파일);
+  const 원천 = [{ 글: html, 기준: 폴더 }];
+  for (const [태그] of html.matchAll(/<link\b[^>]*>/gi)) {
+    if (!/\brel\s*=\s*["']?stylesheet\b/i.test(태그)) continue;
+    const href = (태그.match(/\bhref\s*=\s*["']([^"']+)["']/i) || [])[1];
+    const css = href && 안쪽파일(폴더, href, 경계);
+    if (css) 원천.push({ 글: fs.readFileSync(css, 'utf8'), 기준: path.dirname(css) });
+  }
+  for (const { 글, 기준 } of 원천) {
+    for (const [면] of 글.matchAll(/@font-face\s*\{[^}]*\}/gi)) {
+      if (!/font-family\s*:\s*["']?SUIT\b/i.test(면)) continue;
+      for (const [, url] of 면.matchAll(/url\(\s*["']?([^"')\s]+)["']?\s*\)/gi)) {
+        const 데이터 = url.match(/^data:font\/woff2[^,]*;base64,(.+)$/i);
+        if (데이터) {                                                                 // ⓑ (지면 안의 data URI 는 ⓐ 가 이미 셌다)
+          if (정본인가(Buffer.from(데이터[1], 'base64'))) return true;
+          continue;
+        }
+        const 서체 = 안쪽파일(기준, url, 경계);
+        if (서체 && 정본인가(fs.readFileSync(서체))) return true;                       // ⓒ
+      }
+    }
+  }
+  return false;
+}
 
 test('⑦ SUIT 를 «이름으로 부르는» 지면은 그 서체를 반드시 싣는다', () => {
   const 부르는것 = 추적HTML().filter((rel) => !제외사유(rel) && /['"]SUIT/.test(읽기(rel)));
   assert.ok(부르는것.length > 30,
     `SUIT 를 부르는 지면이 ${부르는것.length}벌뿐이다 — 자가 거의 아무것도 안 재고 있다(09-03 실측 = 79벌).`);
-  const 빈것 = 부르는것.filter((rel) => !브랜드폰트.심겼나(읽기(rel)));
+  const 빈것 = 부르는것.filter((rel) => !싣나(path.join(루트, rel)));
   assert.deepEqual(빈것, [],
     `이름만 적고 안 싣는 지면 ${빈것.length}벌 (부르는 지면 ${부르는것.length}벌 중).`
-    + ' 이 지면들은 «막힌 적이 없어» 경고도 안 뜬다 — 그냥 시스템 고딕으로 떨어져 있다.'
+    + ' 안에 심지도, 정본과 같은 서체 파일·스타일시트를 부르지도 않는다 — 시스템 고딕으로 떨어져 있다.'
     + `\n   → 심는다: node tools/lib/브랜드폰트.js --심기 ${빈것.slice(0, 3).map((p) => JSON.stringify(p)).join(' ')}`
+    + '\n   → 폴더째 렌더하는 키트 지면이면 키트 사본을 다시 넣는다: node tools/SNS키트_영상연결.js <그 프로젝트 폴더>'
     + '\n   → 안 심는 것이 맞으면 위 `제외` 표에 **사유와 함께** 줄을 넣는다(사유 없는 제외는 안 받는다).');
+});
+
+/* ── ⑧ ⑦ 의 자가 무는지 — 실저장소가 초록이어도 «싣나»가 헐거워지지 않았음을 픽스처가 증명한다 ── */
+
+test('⑧ «싣나»는 이름만·없는 파일·다른 서체·저장소 밖 파일을 «안 싣는다»로 센다', () => {
+  const 정본 = 브랜드폰트.woff2();
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '지면폰트-'));
+  const 저장소 = path.join(방, '저장소');
+  const 쓰기 = (곳, rel, 내용) => {
+    const 파일 = path.join(곳, rel);
+    fs.mkdirSync(path.dirname(파일), { recursive: true });
+    fs.writeFileSync(파일, 내용);
+    return 파일;
+  };
+  const 면 = (src) => `<style>@font-face{font-family:'SUIT Variable';src:url(${src}) format('woff2-variations')}</style>`;
+  const 스택 = '<p style="font-family:\'SUIT Variable\',sans-serif">가</p>';
+  try {
+    쓰기(저장소, '키트/assets/synk-kit/fonts/SUIT-Variable.woff2', 정본);
+    쓰기(저장소, '옛판/fonts/SUIT-Variable.woff2', 정본.subarray(0, 정본.length - 1));
+    쓰기(방, '밖/SUIT-Variable.woff2', 정본);
+    쓰기(저장소, '묶음/assets/fonts.css',
+      `@font-face{font-family:'SUIT Variable';src:url(data:font/woff2;base64,${정본.toString('base64')}) format('woff2')}`);
+    쓰기(저장소, '헌묶음/assets/fonts.css',
+      `@font-face{font-family:'SUIT Variable';src:url(data:font/woff2;base64,${정본.subarray(1).toString('base64')}) format('woff2')}`);
+    const 판 = {
+      이름만: 쓰기(저장소, '이름만.html', 스택),
+      없는파일: 쓰기(저장소, '없는파일/index.html', 면('"fonts/SUIT-Variable.woff2"') + 스택),
+      다른서체: 쓰기(저장소, '옛판/index.html', 면('"fonts/SUIT-Variable.woff2"') + 스택),
+      저장소밖: 쓰기(저장소, '바깥/index.html', 면('"../../밖/SUIT-Variable.woff2"') + 스택),
+      다른서체CSS: 쓰기(저장소, '헌묶음/source/쪽.html', '<link rel="stylesheet" href="../assets/fonts.css">' + 스택),
+      키트사본: 쓰기(저장소, '키트/index.html', 면('"assets/synk-kit/fonts/SUIT-Variable.woff2"') + 스택),
+      묶음CSS: 쓰기(저장소, '묶음/source/쪽.html', '<link href="../assets/fonts.css" rel="stylesheet">' + 스택),
+    };
+    const 잰것 = Object.fromEntries(Object.entries(판).map(([이름, 파일]) => [이름, 싣나(파일, 저장소)]));
+    assert.deepEqual(잰것, {
+      이름만: false, 없는파일: false, 다른서체: false, 저장소밖: false, 다른서체CSS: false, 키트사본: true, 묶음CSS: true,
+    });
+  } finally {
+    fs.rmSync(방, { recursive: true, force: true });
+  }
 });
