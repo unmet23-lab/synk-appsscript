@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>회의 기록 맞춤 정리 · synkbrief</title>
+<meta name="description" content="어떤 회의인지, 기록이 어떤 모양인지, 어떤 AI를 쓰는지 고르면 그대로 붙여 넣을 요청문, 프로젝트·Gem에 저장할 규칙, 보낼 문장까지 만들어 드려요. 영상 속 11쪽 PDF와 연습 자료도 여기 있어요.">
+<meta name="theme-color" content="#ffffff">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="synkbrief">
+<meta property="og:title" content="흩어진 회의 기록을 읽기 쉬운 회의록으로 · 1분 맞춤 정리">
+<meta property="og:description" content="ChatGPT·Claude·Gemini 어디서든, 내 회의에 맞춘 요청문과 저장할 규칙을 만들어 드려요. 11쪽 PDF와 연습 자료도 함께.">
+<meta property="og:url" content="https://synk.im/brief/meeting/">
+<meta property="og:image" content="https://synk.im/brief/meeting/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="assets/favicon-32.png">
+<link rel="preload" href="assets/SUIT-subset.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="tool">
+  <header class="bar">
+    <a class="brand" href="https://synk.im/shift/" aria-label="SYNK SHIFT 홈">
+      <img src="assets/brand-shift.webp" alt="synk SHIFT" width="103" height="28">
+      <span>synkbrief 활용</span>
+    </a>
+    <div class="bar-tools">
+      <button type="button" class="switch" role="switch" aria-checked="true" data-tips><span class="track" aria-hidden="true"></span><span>팁 보기</span></button>
+    </div>
+  </header>
+  <main id="app"></main>
+  <footer class="foot no-print">
+    <span>synkbrief · 처음부터, 하나씩</span>
+    <span><a href="https://www.instagram.com/synkbrief/" target="_blank" rel="noopener">Instagram</a> · <a href="https://www.youtube.com/@synkbrief" target="_blank" rel="noopener">YouTube</a> · <button type="button" data-forget>저장된 기록 지우기</button><span data-account-slot hidden> · <button type="button" data-account>SYNK 설정 불러오기</button></span></span>
+  </footer>
+  <div id="live" class="sr" aria-live="polite"></div>
+</div>
+<noscript><p style="max-width:680px;margin:40px auto;padding:0 20px;font-size:17px">맞춤 정리는 브라우저에서 만들어요. 자바스크립트를 켜 주세요. 영상 속 자료는 <a href="meeting-guide.pdf">11쪽 PDF</a>와 <a href="meeting-kit.zip">연습 자료 ZIP</a>으로 바로 받을 수 있어요.</p></noscript>
+<script src="atlas-engine.js"></script>
+<script src="content.js"></script>
+<script src="rules.js"></script>
+<script src="view.js"></script>
+<script src="account.js"></script>
+<script src="wizard.js"></script>
+<script>
+SynkWizard.start({
+  root: document.getElementById('app'),
+  tool: {
+    id: 'brief.meeting',
+    scope: { domain: 'SHIFT', workspace: 'synkbrief', subject: 'visitor' },
+    content: SynkMeetingContent, rules: SynkMeetingRules, view: SynkMeetingView,
+    candidates: [
+      { id: 'quick', pace: 'short', minutes: 2 },
+      { id: 'guided', pace: 'standard', minutes: 4 },
+      { id: 'deep', pace: 'deep', minutes: 8 }
+    ]
+  }
+});
+</script>
+</body>
+</html>

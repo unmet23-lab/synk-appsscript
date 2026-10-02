@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>og · meeting</title>
+<!-- 링크 미리보기(1200×630) 원고. build.mjs가 Chrome으로 og.png를 찍는다. v3 ‘펠트 스크랩북’ 디자인. -->
+<style>
+@font-face{font-family:'SUIT Variable';font-weight:100 900;src:url(../../../../브랜드_폰트/SUIT/SUIT-Variable.woff2) format('woff2')}
+@font-face{font-family:'Inter Tight';font-weight:700;src:url(../../../../브랜드_폰트/InterTight/InterTight-Bold.ttf)}
+@font-face{font-family:'DM Mono';font-weight:500;src:url(../../../../브랜드_폰트/DM_Mono/DMMono-Medium.ttf)}
+*{box-sizing:border-box}
+html,body{margin:0;width:1200px;height:630px;overflow:hidden;background:#fff}
+body{font-family:'Inter Tight','SUIT Variable',sans-serif;color:#000;word-break:keep-all}
+.card{position:absolute;inset:34px;padding:50px 58px;display:grid;grid-template-columns:1fr 400px;align-items:center;gap:26px}
+.card::before{content:'';position:absolute;inset:0;border:1px solid transparent;border-image:url(../../assets/thread-shift.webp) 250 / 40px / 0 round;-webkit-mask:linear-gradient(#000 0 0) 0 0/110px 110px no-repeat,linear-gradient(#000 0 0) 100% 0/110px 110px no-repeat,linear-gradient(#000 0 0) 0 100%/110px 110px no-repeat,linear-gradient(#000 0 0) 100% 100%/110px 110px no-repeat}
+.rec{display:flex;align-items:center;gap:14px;margin-bottom:22px;font:500 21px/1 'DM Mono','SUIT Variable',monospace;color:#565a61}
+.rec b{display:inline-flex;align-items:center;gap:9px;color:#ae322a;font-weight:500}
+.rec b::before{content:'';width:13px;height:13px;border-radius:50%;background:#f96859;box-shadow:0 0 0 5px rgba(249,104,89,.2)}
+.rec img{height:34px}
+h1{font-size:64px;line-height:1.14;letter-spacing:-.05em;margin:0 0 22px;font-weight:830}
+.hl{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 40' preserveAspectRatio='none'%3E%3Cpath d='M6 24C60 14 140 16 234 20' fill='none' stroke='%23ffe07a' stroke-width='22' stroke-linecap='round' opacity='.85'/%3E%3C/svg%3E") no-repeat 0 74%/100% .6em}
+p{font-size:28px;line-height:1.42;margin:0;color:#23262b;font-weight:600}
+p b{color:#24448c}
+.url{display:inline-block;margin-top:26px;padding:10px 18px;border-radius:14px;background:#fff;box-shadow:0 0 0 2px #10131a,5px 5px 0 #10131a;font:700 22px/1.2 'Inter Tight','SUIT Variable',sans-serif;color:#10131a}
+.art{position:relative;height:420px;display:grid;place-items:center}
+.art .main{width:390px;height:390px}
+.stk{position:absolute;filter:drop-shadow(3px 0 0 #fff) drop-shadow(-3px 0 0 #fff) drop-shadow(0 3px 0 #fff) drop-shadow(0 -3px 0 #fff) drop-shadow(0 8px 10px rgba(16,19,26,.2))}
+.s1{width:96px;top:8px;right:6px;transform:rotate(10deg)}
+.s2{width:82px;bottom:26px;left:-6px;transform:rotate(-12deg)}
+.s3{width:70px;bottom:6px;right:34px;transform:rotate(6deg)}
+.dots{position:absolute;top:26px;right:210px;width:150px;height:64px;background:radial-gradient(circle at 12% 40%,#c5d6f5 0 8px,transparent 8.5px),radial-gradient(circle at 40% 80%,#3d6bc9 0 6px,transparent 6.5px),radial-gradient(circle at 68% 24%,#24448c 0 5px,transparent 5.5px),radial-gradient(circle at 92% 64%,#c5d6f5 0 6px,transparent 6.5px)}
+</style>
+</head>
+<body>
+<div class="card">
+  <div>
+    <div class="rec"><img src="../../assets/brand-shift.webp" alt=""><span>synkbrief 활용</span></div>
+    <h1>흩어진 회의 기록을<br><span class="hl">읽기 쉬운 회의록</span>으로</h1>
+    <p>ChatGPT·Claude·Gemini 어디서든<br><b>내 회의에 맞춘 요청문</b>과 저장할 규칙</p>
+    <div class="url">synk.im/brief/meeting · 11쪽 PDF 포함</div>
+  </div>
+  <div class="art"><span class="dots"></span><img class="main" src="../../assets/meeting-hero.webp" alt=""><img class="stk s1" src="../../assets/sticker-envelope.webp" alt=""><img class="stk s2" src="../../assets/sticker-person.webp" alt=""><img class="stk s3" src="../../assets/sticker-check.webp" alt=""></div>
+</div>
+</body>
+</html>
