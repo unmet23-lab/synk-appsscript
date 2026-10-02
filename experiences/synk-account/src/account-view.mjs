@@ -78,7 +78,7 @@ export function createAccountView({ client, product, guard, notice, logout, prev
     input.disabled = !input.checked && !canEnable;
     input.onchange = () => { const enabled = input.checked;input.disabled = true;if (!enabled) stopWorld();void action(async () => { if (enabled && !canEnable) throw new Error('현재는 계정 학습 연결을 켤 수 없어요.');await client.setLearning(enabled, data.learning.revision);await load();notice(enabled ? '학습 기록 연결에 동의했어요.' : '학습 기록 연결을 껐어요.'); }).finally(() => { input.checked = data.learning?.enabled === true;input.disabled = !input.checked && !canEnable; }); };
     toggle.append(input, element('span', '계정에 학습 기록 연결'));learning.append(toggle);
-    if (!canEnable) learning.append(element('p', deleting ? '계정 삭제 요청이 접수되어 학습 연결을 다시 켤 수 없어요.' : '계정 학습 연결은 아직 제공 전이에요. 이 계정의 기기 내 연습은 계속할 수 있어요.', 'small'));
+    if (!canEnable) learning.append(element('p', deleting ? '삭제 요청을 받아 학습 연결을 다시 켤 수 없어요. 늦어도 30일 안에 계정과 기록을 지워요.' : '계정 학습 연결은 아직 제공 전이에요. 이 계정의 기기 내 연습은 계속할 수 있어요.', 'small'));
     const memory = card('아틀라스가 기억하는 나');memory.classList.add('atlas-card');memory.append(element('p', '요약을 불러오고 있어요.', 'small'));void atlas(memory);
     const rights = card('이용 권한');rights.append(list((data.entitlements || []).map(e => `${e.key}${e.product ? ` · ${e.product}` : ''}${e.status ? ` · ${e.status}` : ''}${e.valid_until ? ` · ${new Date(e.valid_until).toLocaleDateString('ko-KR')}까지` : ''}`), '현재 표시할 이용 권한이 없어요.'));
     const sessions = card('연결된 로그인');
@@ -95,8 +95,8 @@ export function createAccountView({ client, product, guard, notice, logout, prev
         if (!result.hasMore) { const blob = new Blob([JSON.stringify({ scope: 'connected-learning-records', account: result.account || data.account, ...(atlasMemory ? { atlasMemory } : {}), until, events, eventMeta: metadata }, null, 2)], { type: 'application/json' });const a = element('a');a.href = URL.createObjectURL(blob);a.download = 'synk-connected-learning.json';a.click();setTimeout(() => URL.revokeObjectURL(a.href), 1000);notice('연결된 연습 기록을 내려받았어요. 다른 과제·AI 기록은 이 파일 범위에 포함되지 않아요.');return; }
       }throw new Error('기록이 많아 한 번에 마치지 못했어요. 잠시 뒤 다시 시도해 주세요.');
     }, 'sb-btn soft'));
-    const deleteButton = button(deleting ? '계정 삭제 요청 접수됨' : '계정 삭제 요청', async () => { const dialog = element('dialog');dialog.append(element('h2', '계정 삭제를 요청할까요?'), element('p', '이 버튼은 삭제 요청을 접수해요. 접수 결과와 실제 삭제 완료를 구분해서 안내해요.', 'small'));
-      const controls = element('div', null, 'actions');controls.append(button('삭제 요청 보내기', async () => { deleteRequestId ||= crypto.randomUUID();await client.requestDeletion(deleteRequestId);stopWorld();dialog.close();await load();notice('계정 삭제 요청이 접수되었어요. 실제 삭제 완료 여부는 서비스의 처리 안내를 확인해 주세요.'); }), button('취소', async () => dialog.close()));dialog.append(controls);dialog.addEventListener('close', () => dialog.remove());document.body.append(dialog);dialog.showModal();
+    const deleteButton = button(deleting ? '계정 삭제 요청 접수됨' : '계정 삭제 요청', async () => { const dialog = element('dialog');dialog.append(element('h2', '계정 삭제를 요청할까요?'), element('p', '요청하면 학습 기록 연결을 바로 멈추고, 지체 없이 늦어도 30일 안에 계정과 학습 기록, 맞춤 기억, 로그인 정보를 지워요. 지운 뒤에는 되돌릴 수 없어요.', 'small'));
+      const controls = element('div', null, 'actions');controls.append(button('삭제 요청 보내기', async () => { deleteRequestId ||= crypto.randomUUID();await client.requestDeletion(deleteRequestId);stopWorld();dialog.close();await load();notice('삭제 요청을 받았어요. 학습 기록 연결을 멈췄고, 늦어도 30일 안에 계정과 기록을 지워요.'); }), button('취소', async () => dialog.close()));dialog.append(controls);dialog.addEventListener('close', () => dialog.remove());document.body.append(dialog);dialog.showModal();
     }, 'plain danger');deleteButton.disabled = deleting;actions.append(deleteButton);root.append(actions);
     }
     games();
