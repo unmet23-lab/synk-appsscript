@@ -30,9 +30,11 @@ let requestedModality=new URLSearchParams(location.search).get('learning');
 if(!['listening','reading'].includes(requestedModality))requestedModality=null;
 try{coach=globalThis.SynkLearning?.createGame({gameId:'korean-racing',storage:localStorage})||null;}catch{learningAvailable=false;}
 function learn(action,fallback=null){try{return coach?action(coach):fallback;}catch{learningAvailable=false;return fallback;}}
-function learningScope(){const summary=learn(c=>c.summary());return !coach||!learningAvailable?'맞춤 기록을 연결하지 못했어요. 기본 코스는 계속 플레이할 수 있어요.':summary?.storage.available?'이 브라우저의 공통 학습 기록 · 학생 계정 연결 전':'저장이 제한되어 이번 페이지에서만 맞춤 기록을 유지해요.';}
+function learningScope(){const summary=learn(c=>c.summary());return !coach||!learningAvailable?'맞춤 기록을 연결하지 못했어요. 기본 코스는 계속 플레이할 수 있어요.':summary?.storage.available?(hosted?'WORLD 계정의 학습 기록 · 공유와 삭제는 WORLD 계정 설정에서 관리해요':'이 브라우저의 공통 학습 기록 · 학생 계정 연결 전'):'저장이 제한되어 이번 페이지에서만 맞춤 기록을 유지해요.';}
 function nextPersonalized(){return learn(c=>personalizedStage(c,{audioAvailable:!soundTouched||soundEnabled,modality:requestedModality}));}
 const assignment=()=>learn(c=>c.assignment?.());
+// Inside SYNK WORLD the record is the account's: kept and deleted there, not in this browser.
+const hosted=learn(c=>typeof c.assignment==='function',false);
 if('scrollRestoration' in history)history.scrollRestoration='manual';
 const stage = $('experience');
 let mobile = matchMedia('(max-width: 650px)').matches;
@@ -447,6 +449,8 @@ function makeGate(index, s) {
 }
 function disposeGate(){
   if(!gate)return;
+  // A question heard but left (home, restart, another course) was met: closed as unanswered, never as a wrong answer.
+  if(gate.presentationId&&!gate.judged&&!roundWasDemo){learn(c=>c.answer(gate.presentationId,{correct:null,assessable:false,reason:'unanswered'}));gate.judged=true;}
   scene.remove(gate.group);
   const gs=new Set(),ms=new Set(),ts=new Set();gate.group.traverse(o=>{if(o.geometry)gs.add(o.geometry);if(o.material){for(const m of Array.isArray(o.material)?o.material:[o.material])ms.add(m);}});
   for(const g of gs)g.dispose();for(const m of ms){if(m.map)ts.add(m.map);m.dispose();}for(const t of ts)t.dispose();gate=null;
@@ -606,6 +610,8 @@ async function init() {
     });
     mark('readyMs');startup.phase='ready';
     ready=true;$('loading').hidden=true;$('watch').disabled=false;$('start').disabled=!isUnlocked(selectedStage);refreshStartLabel();renderStages();
+    // From the hub's 'reading first' (or 'listening'), the default start runs that personalised course, not the first listening course.
+    if(requestedModality&&!assignment()){const plan=nextPersonalized();if(plan?.stage)selectStage(plan.stage);}
     if(!location.hash)window.scrollTo({top:0,behavior:'instant'});
     window.addEventListener('resize',resize);new ResizeObserver(resize).observe(stage);
     renderer.setAnimationLoop(frame);
@@ -976,7 +982,14 @@ $('stage-prev').addEventListener('click',()=>{stagePage--;renderStages();});$('s
 $('review-stage').addEventListener('click',()=>{const s=reviewStage(progress,activeCollection);if(s)selectStage(s);});
 $('next-stage').addEventListener('click',()=>{const next=nextStage();if(next){const demo=roundWasDemo;selectStage(next);start(demo);}});
 $('journey-next').addEventListener('click',()=>{if(!ready||starting)return;const personal=nextPersonalized();if(requestedModality&&!personal){showToast('맞춤 문항을 준비하지 못했어요. 소리 설정과 연결 상태를 확인해 주세요.');return;}requestedModality=null;activeCollection='campaign';stagePage=0;$('stage-filter').hidden=true;$('collection-campaign').setAttribute('aria-pressed','true');$('collection-words').setAttribute('aria-pressed','false');selectStage(personal?.stage||recommendedStage(progress));start(false);});
-$('reset-learning').addEventListener('click',()=>{learn(c=>c.reset());renderStages();showToast('이 기기의 공통 맞춤 학습 기록을 지웠어요.');});
+$('reset-learning').hidden=hosted;
+$('reset-learning').addEventListener('click',()=>{
+  // Only a reset that happened says so. An account record is deleted in WORLD, and that refusal is not a failure of learning.
+  let message='학습 기록을 지우지 못했어요. 다시 시도해 주세요.';
+  try{const result=coach?.reset();if(result?.storage?.available)message='이 기기의 공통 맞춤 학습 기록을 지웠어요.';}
+  catch(error){if(error?.code==='ACCOUNT_RESET_REQUIRED')message='계정의 학습 기록은 WORLD 계정 설정에서 관리해 주세요.';else learningAvailable=false;}
+  renderStages();showToast(message);
+});
 for(const kind of ['campaign','words'])$('collection-'+kind).addEventListener('click',()=>{activeCollection=kind;stagePage=0;$('stage-filter').hidden=kind==='campaign';for(const k of ['campaign','words'])$('collection-'+k).setAttribute('aria-pressed',String(k===kind));renderStages();});
 for(const name of ['marin','kkamong'])$('driver-'+name).addEventListener('click',()=>selectDriver(name));
 for(const direction of ['left','right']){
