@@ -74,11 +74,18 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     session = newSession(combined);
   }
   // Byte-identical to JSON.stringify({ version, epoch, events, owner }). Log entries are
-  // frozen, so each one is serialised once instead of the whole history on every write.
+  // frozen, so each is serialised once, and since the log only grows within one session
+  // object the joined text is extended rather than rebuilt on every write.
   const serialised = new WeakMap();
   const entryJson = e => { let json = serialised.get(e); if (json === undefined) { json = JSON.stringify(e); if (Object.isFrozen(e)) serialised.set(e, json); } return json; };
-  const snapshot = events => `{"version":1,"epoch":${JSON.stringify(epoch)},"events":[${events.map(entryJson).join(',')}]`
-    + `${storageScope === 'account' ? `,"owner":${JSON.stringify(accountKey)}` : ''}}`;
+  let body = null;
+  const snapshot = events => {
+    if (!(body && body.session === session && body.count <= events.length && (body.count === 0 || events[body.count - 1] === body.last))) body = { session, count: 0, last: null, text: '' };
+    for (; body.count < events.length; body.count += 1) body.text += (body.count ? ',' : '') + entryJson(events[body.count]);
+    body.last = body.count ? events[body.count - 1] : null;
+    return `{"version":1,"epoch":${JSON.stringify(epoch)},"events":[${body.text}]`
+      + `${storageScope === 'account' ? `,"owner":${JSON.stringify(accountKey)}` : ''}}`;
+  };
   function persist(kind = 'append') {
     if (!storage || !readable) { complete = false; notify('storage-error', 'STORAGE_ERROR'); return false; }
     try {
@@ -109,21 +116,29 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     if (cached?.summary === observed) cached.profiles.set(flag, profile);
     return profile;
   }
-  // Items and families already attempted or revealed. The log only grows within one
+  // Trail's provenance, kept current entry by entry. The log only grows within one
   // session object, so new entries are folded in; a replaced session is read again.
-  function metIndex() {
+  // Rows are grouped by skill, difficulty and response format, as summarizeLearning() does.
+  function provenance() {
     const events = log();
-    if (!met || met.session !== session) met = { session, done: 0, presented: new Map(), items: new Set(), families: new Set() };
+    if (!met || met.session !== session) met = { session, done: 0, index: Trail.createIndex({ scope }), buckets: new Map() };
     for (; met.done < events.length; met.done += 1) {
-      const e = events[met.done];
-      if (e.type === 'practice.presented') { met.presented.set(e.id, e); continue; }
-      if (e.type !== 'practice.attempted' && !(e.type === 'practice.helped' && e.level === 'answer')) continue;
-      const p = met.presented.get(e.presentationId);
-      if (!p) continue;
-      met.items.add(p.itemKey);
-      if (p.measure?.familyKey) met.families.add(p.measure.familyKey);
+      const row = met.index.add(events[met.done]);
+      if (!row?.measure) continue;
+      const bucket = `${row.measure.skillId}|${row.measure.difficulty}|${row.measure.responseFormat}`;
+      if (!met.buckets.has(bucket)) met.buckets.set(bucket, []);
+      met.buckets.get(bucket).push(row);
     }
     return met;
+  }
+  // The learning state of one skill/difficulty/format: identical to the same cell of
+  // summarizeLearning(), read from the index unless the log arrived out of time order.
+  function basisOf(measure) {
+    const known = provenance();
+    if (!known.index.exact) return profileOf(view()).skills.find(s => s.id === measure.skillId).levels[measure.difficulty].formats[measure.responseFormat];
+    const rows = (known.buckets.get(`${measure.skillId}|${measure.difficulty}|${measure.responseFormat}`) || []).filter(row => !row.omitted);
+    return Learning.formatEvidence(rows, { now: Date.parse(monotonicClock()), complete: complete && readable && writable,
+      difficulty: measure.difficulty, responseFormat: measure.responseFormat });
   }
   function summary() {
     refresh(); const observed = view();
@@ -176,9 +191,8 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
         responseFormat: item.responseFormat ?? 'unknown',
         familyKey: item.familyKey || item.itemKey, audioRequired: item.audioRequired ?? item.modality === 'listening', confounded: !!item.confounded };
       // Analytical exclusion cannot erase exposure to an item or its answer.
-      const index = metIndex(), seen = index.items.has(item.itemKey) || index.families.has(measure.familyKey);
-      const profile = profileOf(view());
-      const basis = profile.skills.find(s => s.id === item.skillId).levels[item.difficulty].formats[measure.responseFormat];
+      const seen = provenance().index.met(item.itemKey, measure.familyKey);
+      const basis = basisOf(measure);
       // Snapshot the actual Core state used at delivery so the choice is reviewable.
       const decision = session.plan(gameId, [{ id: item.id, minutes: 3, pace: 'standard',
         learning: { policy: Learning.POLICY.version, skillId: item.skillId, difficulty: item.difficulty, responseFormat: measure.responseFormat,
@@ -210,7 +224,9 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
       const assessable = result.assessable && !p.measure.confounded && (!p.measure.audioRequired || p.audio === 'completed') && readable && writable;
       const attempt = p.practice.submit({ ...result, assessable }, { reason: reason || null });
       session.complete(p.decision); persist();
-      const actual = view().attempts.find(a => a.eventId === attempt.eventId);
+      // The row summarize() would give this answer, read from the index when it is exact.
+      const known = provenance(), row = known.index.attempt(attempt.eventId);
+      const actual = known.index.exact ? (row && !row.omitted ? row : undefined) : view().attempts.find(a => a.eventId === attempt.eventId);
       const recorded = { ...attempt, independent: !!actual?.independent && complete && writable, reason: reason || null,
         assisted: actual?.assisted ?? null, exposure: actual?.exposure ?? null };
       p.results.push(recorded); return { ...recorded };

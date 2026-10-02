@@ -117,6 +117,29 @@
     return linked(event, events.find(e => e.id === event.id),
       events.find(e => e.id === (event.type === TYPES[0] ? event.decisionId : event.presentationId)), attempts);
   }
+  // An attempt's provenance from what came before it. `prior(kinds)` says whether help,
+  // a reveal or an attempt on the same item or family came earlier. Shared by summarize()
+  // and createIndex() so the batch reading and the incremental one cannot drift apart.
+  function judge(event, p, prior, audio) {
+    const assisted = prior(['help', 'answer']) ? true : p.firstExposure === true ? false : null;
+    const exposure = prior(['attempt', 'answer']) || p.firstExposure === false ? 'repeat' : p.firstExposure === true ? 'new' : 'unknown';
+    // Delivery is an actual observation, never inferred from play() being called.
+    // Later audio completion cannot rehabilitate an answer made before delivery.
+    const usableDelivery = !p.measure || (!p.measure.confounded && (!p.measure.audioRequired || audio === 'completed'));
+    const exclusionReason = event.reason || (p.measure?.confounded ? 'visual' : !usableDelivery ? 'audio' : null);
+    return { assisted, exposure, usableDelivery, exclusionReason,
+      independent: !exclusionReason && usableDelivery && assisted === false && exposure === 'new' && ['correct', 'incorrect'].includes(event.verdict) };
+  }
+  const attemptRow = (event, p, arm, audio, j) => ({
+    eventId: event.id, at: event.at, recordedAt: event.recordedAt,
+    presentationId: p.id, decisionId: p.decisionId, arm,
+    taskId: p.taskId, taskVersion: p.taskVersion, itemKey: p.itemKey, conceptIds: [...p.conceptIds],
+    attemptNo: event.attemptNo, verdict: event.verdict, errorTags: [...event.errorTags], assisted: j.assisted, exposure: j.exposure,
+    ...(p.measure ? { measure: { ...p.measure, responseFormat: p.measure.responseFormat || 'unknown' }, audio, exclusionReason: j.exclusionReason }
+      : j.exclusionReason ? { exclusionReason: j.exclusionReason } : {}),
+    independent: j.independent,
+  });
+  const traceKeys = p => [`item:${p.itemKey}`, ...(p.measure ? [`family:${p.measure.familyKey}`] : [])];
   // `decisions` limits what is reported (for example one round); evidence from the whole
   // log still decides what came before. `met` always covers the whole log.
   function summarize(events, { scope, asOf, recordedAsOf = asOf, decisions = null } = {}) {
@@ -150,7 +173,6 @@
     // A family can be open in two games before either one is answered. Check
     // actual help/attempt order across its variants, not only the snapshot at
     // presentation time. Keep the item key as well for legacy presentations.
-    const traceKeys = p => [`item:${p.itemKey}`, ...(p.measure ? [`family:${p.measure.familyKey}`] : [])];
     visible.forEach((event, index) => {
       if (event.type === TYPES[0]) provenance.set(event.id, event);
       const p = provenance.get(event.presentationId);
@@ -175,7 +197,7 @@
           eventId: event.id, at: event.at, recordedAt: event.recordedAt,
           decisionId: event.decisionId, taskId: event.taskId, taskVersion: event.taskVersion,
           itemKey: event.itemKey, conceptIds: [...event.conceptIds], firstExposure: event.firstExposure,
-          ...(event.measure ? { measure: { ...copy(event.measure), responseFormat: event.measure.responseFormat || 'unknown' } } : {}),
+          ...(event.measure ? { measure: { ...event.measure, responseFormat: event.measure.responseFormat || 'unknown' } } : {}),
         });
         return;
       }
@@ -190,33 +212,70 @@
         return;
       }
       const at = atOf(event);
-      const before = kinds => traceKeys(p).some(traceKey => kinds.some(kind => {
+      const prior = kinds => traceKeys(p).some(traceKey => kinds.some(kind => {
         const first = traces.get(traceKey)?.get(kind);
         return first && (first.index < index || first.at < at);
       }));
-      const assisted = before(['help', 'answer']) ? true : p.firstExposure === true ? false : null;
-      const exposure = before(['attempt', 'answer']) || p.firstExposure === false ? 'repeat' : p.firstExposure === true ? 'new' : 'unknown';
-      // Delivery is an actual observation, never inferred from play() being called.
-      // Later audio completion cannot rehabilitate an answer made before delivery.
-      const audio = audioByPresentation.get(p.id) || 'pending';
-      const usableDelivery = !p.measure || (!p.measure.confounded && (!p.measure.audioRequired || audio === 'completed'));
-      const exclusionReason = event.reason || (p.measure?.confounded ? 'visual' : !usableDelivery ? 'audio' : null);
+      const audio = audioByPresentation.get(p.id) || 'pending', j = judge(event, p, prior, audio);
       // A first attempt made after the answer was shown was met at the reveal, not here.
-      meet(p, event.at, omitted || exclusionReason ? null : event.verdict);
+      meet(p, event.at, omitted || j.exclusionReason ? null : event.verdict);
       if (!reported(p.decisionId)) return;
       if (omitted) { excludedAttempts += 1; return; }
-      attempts.push({
-        eventId: event.id, at: event.at, recordedAt: event.recordedAt,
-        presentationId: p.id, decisionId: p.decisionId, arm: arms.get(p.decisionId) ?? null,
-        taskId: p.taskId, taskVersion: p.taskVersion, itemKey: p.itemKey, conceptIds: [...p.conceptIds],
-        attemptNo: event.attemptNo, verdict: event.verdict, errorTags: [...event.errorTags], assisted, exposure,
-        ...(p.measure ? { measure: { ...copy(p.measure), responseFormat: p.measure.responseFormat || 'unknown' }, audio, exclusionReason }
-          : exclusionReason ? { exclusionReason } : {}),
-        independent: !exclusionReason && usableDelivery && assisted === false && exposure === 'new' && ['correct', 'incorrect'].includes(event.verdict),
-      });
+      attempts.push(attemptRow(event, p, arms.get(p.decisionId) ?? null, audio, j));
     });
     return { version: VERSION, scope: copy(scope), asOf, recordedAsOf, decisions: decisions === null ? null : [...decisions],
       presentations, help, attempts, excludedAttempts, met: [...met.values()], persistence: 'provided-log-only', learningEffectClaim: false };
+  }
+  /* The same provenance as summarize(), kept current one entry at a time, for a session
+   * that appends in time order (a monotonic clock). add() takes each new log entry and,
+   * for an attempt, returns the row summarize() would give it (with `omitted` when an
+   * exclusion covers it). If an entry ever arrives out of time order, earlier answers
+   * could change, so `exact` turns false for good and callers read the whole log again.
+   * met(itemKey, familyKey): was this item or family attempted or revealed already? */
+  function createIndex({ scope }) {
+    const scopeId = key(scope);
+    const presentations = new Map(), audio = new Map(), arms = new Map(), excluded = new Set();
+    const helped = new Set(), seen = new Set(), rows = new Map(), covering = new Map();
+    let lastAt = -Infinity, exact = true;
+    const cover = (target, row) => { if (!covering.has(target)) covering.set(target, []); covering.get(target).push(row); };
+    function add(event) {
+      if (!event || !event.scope || (vouched.get(event)?.scope ?? `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}`) !== scopeId) return null;
+      // An entry recorded later than the next one's time means the log is not in time order.
+      const at = atOf(event);
+      if (at < lastAt) exact = false;
+      lastAt = Math.max(lastAt, at, recordedOf(event));
+      if (event.type === 'decision.made') { arms.set(event.id, event.arm ?? null); return null; }
+      if (event.type === 'record.excluded') {
+        excluded.add(event.targetId);
+        for (const row of covering.get(event.targetId) || []) row.omitted = true;
+        return null;
+      }
+      if (event.type === TYPES[0]) { presentations.set(event.id, event); return null; }
+      if (event.type === TYPES[3]) { audio.set(event.presentationId, event.audio); return null; }
+      if (event.type !== TYPES[1] && event.type !== TYPES[2]) return null;
+      // A visible child without its recorded parent is not usable evidence.
+      const p = presentations.get(event.presentationId);
+      if (!p) return null;
+      const keys = traceKeys(p);
+      if (event.type === TYPES[1]) {
+        for (const k of keys) { helped.add(`help|${k}`); if (event.level === 'answer') { helped.add(`answer|${k}`); seen.add(k); } }
+        return null;
+      }
+      const prior = kinds => keys.some(k => kinds.some(kind => kind === 'attempt' ? seen.has(`attempt|${k}`) : helped.has(`${kind}|${k}`)));
+      const delivered = audio.get(p.id) || 'pending';
+      const row = attemptRow(event, p, arms.get(p.decisionId) ?? null, delivered, judge(event, p, prior, delivered));
+      row.omitted = excluded.has(event.id) || excluded.has(p.id) || excluded.has(p.decisionId);
+      for (const k of keys) { seen.add(`attempt|${k}`); seen.add(k); }
+      for (const target of [event.id, p.id, p.decisionId]) cover(target, row);
+      rows.set(event.id, row);
+      return row;
+    }
+    return {
+      add,
+      get exact() { return exact; },
+      attempt: eventId => rows.get(eventId) || null,
+      met: (itemKey, familyKey) => seen.has(`item:${itemKey}`) || (familyKey != null && seen.has(`family:${familyKey}`)),
+    };
   }
   // Exactly these four fields: a history must never carry response text or identity.
   const RECORD = ['itemKey', 'conceptIds', 'at', 'verdict'];
@@ -278,5 +337,5 @@
     }
     return facts;
   }
-  return Object.freeze({ VERSION, TYPES, validate, checkLink, link, vouch, summarize, openHistory, remember, growth });
+  return Object.freeze({ VERSION, TYPES, validate, checkLink, link, vouch, summarize, createIndex, openHistory, remember, growth });
 });

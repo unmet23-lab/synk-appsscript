@@ -88,4 +88,4 @@ function recommend({ profile, candidates, presentations = [], audioAvailable = t
     state: best.focus.status, responseFormat: best.focus.responseFormat, policy: POLICY.version, evidence: best.focus.evidence,
     alternatives: ranked.slice(1).map(r => r.candidate) };
 }
-module.exports = { POLICY, RESPONSE_FORMATS, summarizeLearning, recommend };
+module.exports = { POLICY, RESPONSE_FORMATS, summarizeLearning, recommend, formatEvidence };
