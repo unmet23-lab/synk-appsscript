@@ -82,6 +82,7 @@ test('a WORLD child game original-event failure blocks its primary account synch
 test('an original-event store already unwritable at construction never starts network synchronization', async t => {
   const storage = disk(); storage.fail(); const c = client(storage); t.after(() => c.sync.stop());
   assert.throws(() => c.adapter.syncPort.events(), { code: 'STORAGE_ERROR' });
+  assert.throws(() => c.adapter.syncPort.ids(), { code: 'STORAGE_ERROR' });
   await c.sync.start(); blocked(c.sync); assert.equal(c.remote.calls, 0); assert.equal(c.remote.posts, 0);
 });
 
