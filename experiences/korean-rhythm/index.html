@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="한국어를 듣고, 박자에 맞춰 답해요. SYNK의 한국어 리듬 게임 시제품.">
+  <title>SYNK · 말의 리듬</title>
+  <link rel="icon" href="assets/logo-ink.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css?v=20261001-listen">
+</head>
+<body>
+  <main id="lobby" class="lobby">
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="SYNK 말의 리듬 홈"><img src="assets/logo-ink.svg" alt="SYNK"><span class="brand-divider"></span><span>말의 리듬</span></a>
+      <div class="header-right"><span class="prototype-label mono">PLAYABLE STUDY / 01</span><button class="text-button" id="help-button">플레이 방법 <span aria-hidden="true">↗</span></button></div>
+    </header>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="live-dot"></span> 한국어 × 리듬</p>
+        <h1 id="hero-title">말이 <span class="marked">리듬이</span><br>되는 순간.</h1>
+        <p class="hero-description">한국어를 듣고, 박자에 맞춰 답해요.<br>맞으면 O, 아니면 X. 두 버튼이면 충분해요.</p>
+        <a class="hero-link" href="#track-selection">첫 번째 무대로 <span aria-hidden="true">↓</span></a>
+        <p class="synk-collection-line"><span data-collection-balance>코인을 불러오고 있어요.</span><a data-collection-garage href="/try/racing/?garage=1">공통 차고 →</a></p>
+      </div>
+      <div class="hero-art">
+        <img class="stage-art" src="assets/signal-stage.webp" alt="코랄과 파란 펠트 리본이 검은 호수 위에서 거대한 원형 무대를 감싸는 풍경" fetchpriority="high">
+        <span class="art-tape" aria-hidden="true"></span>
+        <div class="art-caption"><span class="mono">SIGNAL / ORIGINAL STAGE</span><span class="art-caption-title">소리의 문을 열다.</span></div>
+        <span class="art-index mono">01—03</span>
+      </div>
+    </section>
+    <section class="selection" id="track-selection" aria-labelledby="selection-title">
+      <div class="section-heading"><div><span class="eyebrow mono">CHOOSE YOUR TRACK</span><h2 id="selection-title">오늘의 한 곡</h2></div><p>우리가 만든 한국어 노래로 연주해요.</p></div>
+      <div class="learning-recommendation"><div><strong>내 기록에 맞는 다음 곡</strong><p id="recommendation-reason"></p><small id="learning-scope"></small></div><button class="secondary-button" id="recommended-track">추천 곡 선택 →</button><button class="text-button small" id="reset-learning">이 기기의 공통 학습 기록 지우기</button></div>
+      <div class="track-grid" id="track-grid"></div>
+      <div class="play-dock">
+        <div class="difficulty-wrap"><span class="dock-label">리듬 난이도</span><div class="segmented" id="difficulty" role="group" aria-label="리듬 난이도"><button data-level="easy" aria-pressed="true">편하게</button><button data-level="normal" aria-pressed="false">리드미컬</button><button data-level="hard" aria-pressed="false">도전</button></div></div>
+        <button class="primary-button" id="start-button"><span>이 곡으로 시작</span><span class="button-arrow" aria-hidden="true">↗</span></button>
+      </div>
+      <div class="selection-foot"><p><kbd>F</kbd><kbd>J</kbd><span> 또는 화면 터치 · 이어폰을 추천해요.</span></p><button class="text-button small" id="settings-button">소리·화면 설정</button></div>
+    </section>
+    <footer class="site-footer"><span class="mono">A LITTLE GROOVE. A LITTLE KOREAN.</span><p>한국어 듣기를 연습하는 시제품이에요. 게임 결과는 TOPIK 점수가 아니에요.</p></footer>
+  </main>
+
+  <section class="game" id="game" aria-label="리듬 게임" hidden>
+    <div class="game-backdrop" id="game-backdrop"></div>
+    <div class="game-vignette"></div>
+    <canvas id="stage" aria-label="두 레인의 노트가 판정선으로 내려옵니다. F J 또는 왼쪽 오른쪽 화살표, 화면 아래 두 버튼을 사용하세요. 나레이션 문제를 듣고 O 또는 X로 답하세요."></canvas>
+    <header class="game-header"><div class="game-song"><img src="assets/logo-paper.svg" alt="SYNK"><span class="song-divider"></span><div><span class="mono" id="game-track-number">TRACK 01</span><strong id="game-title">초록</strong></div></div><div class="game-meta"><span id="game-clock" class="mono">00:00 / 03:22</span><button class="icon-button" id="pause-button" aria-label="일시 정지"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg></button></div></header>
+    <div class="song-progress"><div id="song-progress-fill"></div></div>
+    <div class="score-panel"><span class="mono score-label">RHYTHM SCORE</span><strong class="mono" id="score">000000</strong><span id="accuracy" class="mono">—</span></div>
+    <div class="combo-panel" id="combo-panel"><strong class="mono" id="combo">0</strong><span class="mono">COMBO</span></div>
+    <div class="phrase-card" id="phrase-card" hidden><span class="phrase-category" id="phrase-category">시간 표현</span><div class="voice-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><p id="phrase-text" hidden></p><strong id="phrase-question"></strong><span class="phrase-instruction" id="phrase-instruction">뜻을 고르고, 노트가 선에 닿을 때 쳐요.</span></div>
+    <div class="judgment" id="judgment" aria-hidden="true"></div>
+    <div class="countdown" id="countdown"><span class="mono" id="countdown-number">3</span><p>F · J<br><small>노트가 밝은 선에 닿을 때</small></p></div>
+    <div class="mode-cue" id="mode-cue"><span class="live-dot"></span><span id="mode-label">리듬을 타요</span></div>
+    <div class="lane-controls" id="lane-controls" role="group" aria-label="두 레인 입력"><button data-lane="0" aria-label="왼쪽 레인 F"><span class="lane-answer" id="answer-0"></span><kbd>F</kbd><span class="lane-touch">←</span></button><button data-lane="1" aria-label="오른쪽 레인 J"><span class="lane-answer" id="answer-1"></span><kbd>J</kbd><span class="lane-touch">→</span></button></div>
+    <div class="game-bottom"><span><span id="learning-count">듣기 0 / 5</span> <span class="synk-collection-badge" data-collection-badge hidden title="코스트 챔피언">♧</span></span><span id="hit-hint">길게 이어진 노트는 꾹 눌러요.</span><button id="reduce-button" aria-pressed="false">효과 줄이기</button></div>
+    <div class="pause-overlay" id="pause-overlay" hidden><div class="pause-card"><span class="eyebrow mono">TAKE A BREATH</span><h2>잠깐, 쉬어 가요.</h2><p>음악·나레이션·노트가 함께 멈췄어요.</p><button class="primary-button" id="resume-button">이어서 연주 <span aria-hidden="true">↗</span></button><button class="text-button" id="leave-button">곡 선택으로</button></div></div>
+  </section>
+
+  <section id="results" class="results" hidden aria-labelledby="result-title">
+    <header class="result-header"><img src="assets/logo-ink.svg" alt="SYNK"><button class="text-button" id="back-button">곡 선택으로 <span aria-hidden="true">↗</span></button></header>
+    <div class="result-hero"><div class="result-cover"><img src="assets/signal-stage.webp" alt="펠트 리본 무대"><span class="mono" id="result-track">TRACK 01</span></div><div><p class="eyebrow mono">TRACK COMPLETE</p><h1 id="result-title">한 곡, 잘 들었어요.</h1><p id="result-subtitle">초록</p></div></div>
+    <div class="result-stats"><div><span>리듬 정확도</span><strong class="mono" id="result-accuracy">0%</strong><p>타이밍과 롱노트 완주 기준</p></div><div><span>최대 콤보</span><strong class="mono" id="result-combo">0</strong><p>박자에 맞춘 연속 입력</p></div><div><span>듣기 이해</span><strong class="mono" id="result-learning">0 / 5</strong><p>타이밍과 별도로 확인해요.</p></div></div>
+    <p id="result-learning-note" class="learning-result-note"></p>
+    <p class="synk-collection-line"><span id="result-collection-reward" role="status"></span><a data-collection-garage href="/try/racing/?garage=1">공통 차고 →</a></p>
+    <div class="result-main"><div class="review-section"><h2>오늘 만난 표현</h2><div id="review-list"></div></div><div class="recall-card"><img src="assets/sticker-book.webp" alt="" aria-hidden="true"><p class="eyebrow mono">ONE MORE SENTENCE</p><h2>다른 문장도<br>알아들을 수 있을까요?</h2><p id="recall-intro">새로운 문장도 소리로 들어봐요.</p><div id="recall-content" hidden><p id="recall-sentence"></p><strong id="recall-question"></strong><div id="recall-options"></div><p id="recall-feedback" role="status"></p></div><button class="secondary-button" id="recall-button">다른 문장 듣기 <span aria-hidden="true">↗</span></button></div></div>
+    <div class="result-actions"><button class="primary-button" id="replay-button">한 번 더 연주 <span aria-hidden="true">↗</span></button><p>다음 판에는 듣고 판단할 내용이 달라져요.</p></div>
+  </section>
+
+  <dialog id="help-dialog"><button class="dialog-close" data-close="help-dialog" aria-label="닫기">×</button><p class="eyebrow mono">HOW TO PLAY</p><h2>귀는 한국어를,<br>손은 박자를.</h2><ol class="help-steps"><li><strong>선을 맞춰요.</strong><p>노트가 밝은 판정선에 닿으면 왼쪽 F, 오른쪽 J 키 또는 아래 두 버튼을 누르세요.</p></li><li><strong>롱노트는 꾹.</strong><p>긴 노트는 머리부터 꼬리까지 누르고 있어요. 키를 연타할 필요가 없어요.</p></li><li><strong>듣고, O / X.</strong><p>나레이션을 듣는 동안 음악이 작아지고 노트는 쉬어 가요. 맞는 내용이면 왼쪽 O, 아니면 오른쪽 X를 노트가 선에 닿을 때 한 번 누르세요.</p></li></ol><p class="help-note">리듬을 놓쳐도 들은 내용을 이해했다면 따로 기록해요. 곡이 끝나면 다른 문장도 나레이션으로 다시 들을 수 있어요.</p><button class="primary-button" data-close="help-dialog">준비됐어요 <span aria-hidden="true">↗</span></button></dialog>
+  <dialog id="settings-dialog"><button class="dialog-close" data-close="settings-dialog" aria-label="닫기">×</button><p class="eyebrow mono">YOUR PLAY</p><h2>내게 맞는 연주.</h2><label class="setting-row"><span><strong>배경 음악</strong><small>나레이션은 항상 들려요.</small></span><input id="sound-setting" type="checkbox" checked></label><label class="setting-row"><span><strong>효과 줄이기</strong><small>빛 번짐과 입자 움직임을 줄여요.</small></span><input id="effects-setting" type="checkbox"></label><label class="offset-label" for="offset-setting">입력 보정 <output id="offset-value">0 ms</output></label><input id="offset-setting" type="range" min="-200" max="200" step="10" value="0"><p class="help-note">노트를 누르는 순간이 계속 늦게 판정되면 + 방향으로 조금씩 조절하세요. 블루투스 이어폰은 소리 지연이 클 수 있어요.</p><button class="primary-button" data-close="settings-dialog">설정 완료 <span aria-hidden="true">↗</span></button></dialog>
+  <div class="loading-overlay" id="loading" hidden role="status"><span class="loading-mark"></span><p>음악과 나레이션을 준비하고 있어요.</p></div>
+  <div class="toast" id="toast" role="status" hidden></div>
+  <script src="atlas-learning.js"></script><script src="collection.js"></script>
+  <script type="module" src="app.mjs?v=20261002-tracks"></script>
+</body>
+</html>

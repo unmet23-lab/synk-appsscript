@@ -1,0 +1,413 @@
+{
+  "voice": "ko-KR-SunHiNeural",
+  "engine": "edge-tts",
+  "rate": "-8%",
+  "format": "MP3 mono 24kHz 64kbps",
+  "clips": [
+    {
+      "id": "t0q0v0",
+      "text": "오늘은 바빠서 내일 도서관에 갈 거예요. 도서관에는 내일 가나요?",
+      "url": "assets/narration/t0q0v0.mp3",
+      "duration": 6.912,
+      "bytes": 55916,
+      "sha256": "cc6bb834a2d55ad8ea1f90dce82e32c923f590608b4f5dbd4a3e07119acc0938",
+      "completeDecode": true
+    },
+    {
+      "id": "t0q0v1",
+      "text": "오늘은 바빠서 내일 도서관에 갈 거예요. 도서관에는 오늘 가나요?",
+      "url": "assets/narration/t0q0v1.mp3",
+      "duration": 6.816,
+      "bytes": 55148,
+      "sha256": "a443a21df81f0f44c0f65e5b75677b8b187e2d26ab1d355dbc4f3269b9c0fa8f",
+      "completeDecode": true
+    },
+    {
+      "id": "t0q0r",
+      "text": "내일은 바빠서 오늘 도서관에 가요. 도서관에는 오늘 가나요?",
+      "url": "assets/narration/t0q0r.mp3",
+      "duration": 6.408,
+      "bytes": 51884,
+      "sha256": "3a0c0279ed97e6f29c49056b78dce388b8f21dd3ce8e0ad4ea2624d93231d8b4",
+      "completeDecode": true
+    },
+    {
+      "id": "t0q1v0",
+      "text": "카페에서 친구를 기다리고 있어요. 지금 카페에 있나요?",
+      "url": "assets/narration/t0q1v0.mp3",
+      "duration": 5.856,
+      "bytes": 47468,
+      "sha256": "0fe7348e6e928790a23103a077b539698b57f07ea594558f1522ab15c106a55a",
+      "completeDecode": true
+    },
+    {
+      "id": "t0q1v1",
+      "text": "카페에서 친구를 기다리고 있어요. 지금 학교에 있나요?",
+      "url": "assets/narration/t0q1v1.mp3",
+      "duration": 5.784,
+      "bytes": 46892,
+      "sha256": "210f396de008a1384acedcbc40894602bc028c22e3d61296e94477e34d9a8b93",
+      "completeDecode": true
+    },
+    {
+      "id": "t0q1r",
+      "text": "친구를 만나기 전에 도서관에서 책을 빌리고 있어요. 지금 카페에 있나요?",
+      "url": "assets/narration/t0q1r.mp3",
+      "duration": 7.32,
+      "bytes": 59180,
+      "sha256": "bbff9bdedf9601dbcdb291abe9236e00949a32c18f72c1302ffe1af04ec90adc",
+      "completeDecode": true
+    },
+    {
+      "id": "t0q2v0",
+      "text": "아침에는 비가 왔지만 지금은 맑아요. 지금 날씨는 맑은가요?",
+      "url": "assets/narration/t0q2v0.mp3",
+      "duration": 6.576,
+      "bytes": 53228,
+      "sha256": "f6d794356cc0e1fe5a3e073acf5118badb0ec987ca9bc08a6dbcbae7373664e1",
+      "completeDecode": true
+    },
+    {
+      "id": "t0q2v1",
+      "text": "아침에는 비가 왔지만 지금은 맑아요. 지금도 비가 오나요?",
+      "url": "assets/narration/t0q2v1.mp3",
+      "duration": 6.192,
+      "bytes": 50156,
+      "sha256": "0998c9e4e79aded1b5a4501bdfea43ead9ea8e1929797812c19f0ba4e4cc938e",
+      "completeDecode": true
+    },
+    {
+      "id": "t0q2r",
+      "text": "아침에는 맑았지만 지금은 비가 와요. 지금 날씨는 맑은가요?",
+      "url": "assets/narration/t0q2r.mp3",
+      "duration": 6.528,
+      "bytes": 52844,
+      "sha256": "1a0581c788eeca35554a8cb7ff454ddb810fad81fa003fc26927851a4c81b294",
+      "completeDecode": true
+    },
+    {
+      "id": "t0q3v0",
+      "text": "저는 커피 대신 차를 주문했어요. 차를 주문했나요?",
+      "url": "assets/narration/t0q3v0.mp3",
+      "duration": 5.76,
+      "bytes": 46700,
+      "sha256": "cd395f2d7a2d6b14584799fa3f37827f4bb0d2b1a0142db3bc117affdc9af0af",
+      "completeDecode": true
+    },
+    {
+      "id": "t0q3v1",
+      "text": "저는 커피 대신 차를 주문했어요. 커피를 주문했나요?",
+      "url": "assets/narration/t0q3v1.mp3",
+      "duration": 5.928,
+      "bytes": 48044,
+      "sha256": "e1fc331ddacc5595d9e64352b004346f2d9f75b0a2103dcdc00bf53fedb1ccb0",
+      "completeDecode": true
+    },
+    {
+      "id": "t0q3r",
+      "text": "저는 차 대신 주스를 주문했어요. 주스를 주문했나요?",
+      "url": "assets/narration/t0q3r.mp3",
+      "duration": 5.952,
+      "bytes": 48236,
+      "sha256": "9844cc253edb082974ee7448edb7ad34f6806a356b74e5136c31735864874d8d",
+      "completeDecode": true
+    },
+    {
+      "id": "t0q4v0",
+      "text": "회의가 두 시에서 세 시로 바뀌었어요. 회의는 세 시에 시작하나요?",
+      "url": "assets/narration/t0q4v0.mp3",
+      "duration": 6.816,
+      "bytes": 55148,
+      "sha256": "d4b44a25ae38a58af3c63e5ec07a737291aebf6b345fea8c0eebb6a702761872",
+      "completeDecode": true
+    },
+    {
+      "id": "t0q4v1",
+      "text": "회의가 두 시에서 세 시로 바뀌었어요. 회의는 두 시에 시작하나요?",
+      "url": "assets/narration/t0q4v1.mp3",
+      "duration": 6.84,
+      "bytes": 55340,
+      "sha256": "bd24394b0818c8a1e2010da48614d50e4ae67244bc9c12b949cfcb51b083b429",
+      "completeDecode": true
+    },
+    {
+      "id": "t0q4r",
+      "text": "회의가 세 시에서 네 시로 바뀌었어요. 회의는 세 시에 시작하나요?",
+      "url": "assets/narration/t0q4r.mp3",
+      "duration": 6.888,
+      "bytes": 55724,
+      "sha256": "faf9c456da0c07d12a9372df474b618318eee478762aefe17fe24e64be5bc6d9",
+      "completeDecode": true
+    },
+    {
+      "id": "t1q0v0",
+      "text": "비가 많이 왔어요. 그래서 소풍을 취소했어요. 비 때문에 소풍을 취소했나요?",
+      "url": "assets/narration/t1q0v0.mp3",
+      "duration": 8.544,
+      "bytes": 68972,
+      "sha256": "550c6b191b32a901c11b09c905632d924a008b28e938b8ae981ea7fe4b0a2a46",
+      "completeDecode": true
+    },
+    {
+      "id": "t1q0v1",
+      "text": "비가 많이 왔어요. 그래서 소풍을 취소했어요. 소풍을 다녀왔나요?",
+      "url": "assets/narration/t1q0v1.mp3",
+      "duration": 7.848,
+      "bytes": 63404,
+      "sha256": "d258a81c45ee6357b26219259d51699af48d880a124711db1601a40df27f4ddf",
+      "completeDecode": true
+    },
+    {
+      "id": "t1q0r",
+      "text": "버스를 놓쳤어요. 그래서 택시를 탔어요. 버스를 타고 갔나요?",
+      "url": "assets/narration/t1q0r.mp3",
+      "duration": 7.608,
+      "bytes": 61484,
+      "sha256": "275b5c225f111cbc15668fa8d25ac6f984f138b3c1dc5fb5c420994cbe7dea35",
+      "completeDecode": true
+    },
+    {
+      "id": "t1q1v0",
+      "text": "이 가방은 비싸지만 오래 쓸 수 있어요. 가격은 비싸도 오래 쓸 수 있나요?",
+      "url": "assets/narration/t1q1v0.mp3",
+      "duration": 7.44,
+      "bytes": 60140,
+      "sha256": "38cc83bdf5ebebf13a8dc9a245f6d881e6653f846bd635e097019bc066ad99e3",
+      "completeDecode": true
+    },
+    {
+      "id": "t1q1v1",
+      "text": "이 가방은 비싸지만 오래 쓸 수 있어요. 가격이 싼 가방인가요?",
+      "url": "assets/narration/t1q1v1.mp3",
+      "duration": 6.672,
+      "bytes": 53996,
+      "sha256": "24d67d6d5794d6c9ffc8fe7e61465b9435713ef4cf4ad1db48ab5342a8109d6b",
+      "completeDecode": true
+    },
+    {
+      "id": "t1q1r",
+      "text": "이 집은 작지만 교통이 편리해요. 교통이 불편한 집인가요?",
+      "url": "assets/narration/t1q1r.mp3",
+      "duration": 6.216,
+      "bytes": 50348,
+      "sha256": "f2a828e3c60c5e96386c3917f1cb235a1fec10a0148b8fbae832f59231076f48",
+      "completeDecode": true
+    },
+    {
+      "id": "t1q2v0",
+      "text": "친구를 만나려고 카페에 갔어요. 친구를 만나러 갔나요?",
+      "url": "assets/narration/t1q2v0.mp3",
+      "duration": 6.12,
+      "bytes": 49580,
+      "sha256": "e3857485dd6beb758253c8d68944c408a8633e2129003170c8025b51b3d9d7c1",
+      "completeDecode": true
+    },
+    {
+      "id": "t1q2v1",
+      "text": "친구를 만나려고 카페에 갔어요. 책을 사러 갔나요?",
+      "url": "assets/narration/t1q2v1.mp3",
+      "duration": 5.784,
+      "bytes": 46892,
+      "sha256": "f33a98cee1012db411b689e982fdcc9486ae91285bf667a266dd277c1e4eb9aa",
+      "completeDecode": true
+    },
+    {
+      "id": "t1q2r",
+      "text": "한국어를 배우려고 학원에 등록했어요. 한국어를 배우러 등록했나요?",
+      "url": "assets/narration/t1q2r.mp3",
+      "duration": 6.984,
+      "bytes": 56492,
+      "sha256": "d4b992d0c71399e5476e8e80c1b6984c45449074b6c8ef3e7dea6cca33fa584a",
+      "completeDecode": true
+    },
+    {
+      "id": "t1q3v0",
+      "text": "지금 음악을 듣고 있어요. 지금 음악을 듣는 중인가요?",
+      "url": "assets/narration/t1q3v0.mp3",
+      "duration": 5.928,
+      "bytes": 48044,
+      "sha256": "e687261822d74cc3e0086073e2d96c1631bf38f8d159ee4aff68d201ec9bead9",
+      "completeDecode": true
+    },
+    {
+      "id": "t1q3v1",
+      "text": "지금 음악을 듣고 있어요. 어제 들은 음악 이야기인가요?",
+      "url": "assets/narration/t1q3v1.mp3",
+      "duration": 5.904,
+      "bytes": 47852,
+      "sha256": "a78dd2d510324cd344acaab2d7267a0906ce1d93d34d27bed14f254b98315664",
+      "completeDecode": true
+    },
+    {
+      "id": "t1q3r",
+      "text": "어제 음악을 들었어요. 지금 음악을 듣는 중인가요?",
+      "url": "assets/narration/t1q3r.mp3",
+      "duration": 5.64,
+      "bytes": 45740,
+      "sha256": "0c76c49412d2addfc5dd57b4718a775f0eb419f6e4c5fc954d2c5747b9672ac2",
+      "completeDecode": true
+    },
+    {
+      "id": "t1q4v0",
+      "text": "날씨가 추우니까 창문을 닫으세요. 추워서 창문을 닫으라고 했나요?",
+      "url": "assets/narration/t1q4v0.mp3",
+      "duration": 6.696,
+      "bytes": 54188,
+      "sha256": "c1973098b981470719e6b2c86af378d97e46edd20b9446ff4594595e5c732bac",
+      "completeDecode": true
+    },
+    {
+      "id": "t1q4v1",
+      "text": "날씨가 추우니까 창문을 닫으세요. 더워서 창문을 닫으라고 했나요?",
+      "url": "assets/narration/t1q4v1.mp3",
+      "duration": 6.72,
+      "bytes": 54380,
+      "sha256": "a14fdd4b5361db48236ade80f3b8bcc84599dea9c985146387a29ffbe79731db",
+      "completeDecode": true
+    },
+    {
+      "id": "t1q4r",
+      "text": "밖이 시끄러우니까 창문을 닫으세요. 시끄러워서 창문을 닫으라고 했나요?",
+      "url": "assets/narration/t1q4r.mp3",
+      "duration": 7.032,
+      "bytes": 56876,
+      "sha256": "23b19486903ad285a9a36868e04593617d003f6b677e4542aa391fe49f5e6e05",
+      "completeDecode": true
+    },
+    {
+      "id": "t2q0v0",
+      "text": "이 식당은 예약해야 이용할 수 있어요. 이용하려면 미리 예약해야 하나요?",
+      "url": "assets/narration/t2q0v0.mp3",
+      "duration": 7.224,
+      "bytes": 58412,
+      "sha256": "a51825d06fdaf8f6aaf863d3a6155438a5be45d349b27c3f24b62e601d6d2328",
+      "completeDecode": true
+    },
+    {
+      "id": "t2q0v1",
+      "text": "이 식당은 예약해야 이용할 수 있어요. 예약 없이 이용할 수 있나요?",
+      "url": "assets/narration/t2q0v1.mp3",
+      "duration": 6.696,
+      "bytes": 54188,
+      "sha256": "e27ebce88f276e16fcdd8a1f30fc6674d66b323a681dcd9dda0d56fa8cc92674",
+      "completeDecode": true
+    },
+    {
+      "id": "t2q0r",
+      "text": "이 식당은 예약하지 않아도 이용할 수 있어요. 예약 없이 이용할 수 있나요?",
+      "url": "assets/narration/t2q0r.mp3",
+      "duration": 6.96,
+      "bytes": 56300,
+      "sha256": "115f40beddec2933af39e167d5f8025430a436107111a80cf35b5248933355cc",
+      "completeDecode": true
+    },
+    {
+      "id": "t2q1v0",
+      "text": "상품의 가격이 지난해보다 올랐어요. 지난해보다 더 비싸졌나요?",
+      "url": "assets/narration/t2q1v0.mp3",
+      "duration": 6.864,
+      "bytes": 55532,
+      "sha256": "689ba13b23fe5bc3365d2c1bd2f8764388425dc8b161e03389ce3038ce80b2b2",
+      "completeDecode": true
+    },
+    {
+      "id": "t2q1v1",
+      "text": "상품의 가격이 지난해보다 올랐어요. 지난해보다 더 싸졌나요?",
+      "url": "assets/narration/t2q1v1.mp3",
+      "duration": 6.696,
+      "bytes": 54188,
+      "sha256": "2d4f3ef276efd51a87e6760d8465442aa49e6336beadea8f970e5a31f73c6f3f",
+      "completeDecode": true
+    },
+    {
+      "id": "t2q1r",
+      "text": "상품의 가격이 지난해보다 내렸어요. 지난해보다 더 비싸졌나요?",
+      "url": "assets/narration/t2q1r.mp3",
+      "duration": 6.912,
+      "bytes": 55916,
+      "sha256": "60bff81f31af53620e7fac5177620eebbbe675667c15e62c4da7ba67ae931c5d",
+      "completeDecode": true
+    },
+    {
+      "id": "t2q2v0",
+      "text": "직원들은 새로운 방법에 찬성했어요. 직원들은 그 방법에 동의하나요?",
+      "url": "assets/narration/t2q2v0.mp3",
+      "duration": 7.176,
+      "bytes": 58028,
+      "sha256": "6302b4c9bed276ed06358e124674ca8c37dad704a74c6d3903e3c82369ae8e00",
+      "completeDecode": true
+    },
+    {
+      "id": "t2q2v1",
+      "text": "직원들은 새로운 방법에 찬성했어요. 직원들은 그 방법에 반대하나요?",
+      "url": "assets/narration/t2q2v1.mp3",
+      "duration": 7.272,
+      "bytes": 58796,
+      "sha256": "1a33a4460c3ed506cede813f578f1b5ccb6d852c59182b7cc57fb31b6f1e3b35",
+      "completeDecode": true
+    },
+    {
+      "id": "t2q2r",
+      "text": "직원들은 새로운 방법에 반대했어요. 직원들은 그 방법에 동의하나요?",
+      "url": "assets/narration/t2q2r.mp3",
+      "duration": 7.152,
+      "bytes": 57836,
+      "sha256": "a2ef5b3f6f78929aeb1b198451df6a721de209c6de147f725e158c51e3c6ea1f",
+      "completeDecode": true
+    },
+    {
+      "id": "t2q3v0",
+      "text": "일정을 변경하기 어려워요. 날짜를 바꾸기 힘든가요?",
+      "url": "assets/narration/t2q3v0.mp3",
+      "duration": 5.952,
+      "bytes": 48236,
+      "sha256": "53eec1c17560117489c6eb170d8aeda54af7a18262a572bb31386f9bed781eb4",
+      "completeDecode": true
+    },
+    {
+      "id": "t2q3v1",
+      "text": "일정을 변경하기 어려워요. 이미 날짜를 바꿨나요?",
+      "url": "assets/narration/t2q3v1.mp3",
+      "duration": 5.784,
+      "bytes": 46892,
+      "sha256": "2e5feb038b82589c0335815df9e47f0c91911680b4e22e9a9589b58313fe3e3d",
+      "completeDecode": true
+    },
+    {
+      "id": "t2q3r",
+      "text": "일정을 변경했어요. 날짜를 바꿨나요?",
+      "url": "assets/narration/t2q3r.mp3",
+      "duration": 5.112,
+      "bytes": 41516,
+      "sha256": "f551c5c241ed48413addfbdb7abb0850d5e373154d87cc2ffe06a26d44a8b230",
+      "completeDecode": true
+    },
+    {
+      "id": "t2q4v0",
+      "text": "교통이 편리한 곳으로 이사했어요. 이동하기 좋은 곳으로 집을 옮겼나요?",
+      "url": "assets/narration/t2q4v0.mp3",
+      "duration": 6.984,
+      "bytes": 56492,
+      "sha256": "895dd886c52be8639f946e1db03ac17bd60f36838ffa014f01cdbe838379101f",
+      "completeDecode": true
+    },
+    {
+      "id": "t2q4v1",
+      "text": "교통이 편리한 곳으로 이사했어요. 집을 옮기지 않고 고쳤나요?",
+      "url": "assets/narration/t2q4v1.mp3",
+      "duration": 6.456,
+      "bytes": 52268,
+      "sha256": "5afdf5731ac61c7e4a0885aefe50546aba106fffb41382245c8323576f53c534",
+      "completeDecode": true
+    },
+    {
+      "id": "t2q4r",
+      "text": "교통이 불편한 곳에서 살고 있어요. 이동하기 좋은 곳에 살고 있나요?",
+      "url": "assets/narration/t2q4r.mp3",
+      "duration": 6.816,
+      "bytes": 55148,
+      "sha256": "40bc879df15fde580d3bfb4e7a247d705ce26111bb324d8f4747fb1db10204bf",
+      "completeDecode": true
+    }
+  ]
+}
