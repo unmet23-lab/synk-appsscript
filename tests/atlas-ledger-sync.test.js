@@ -127,6 +127,7 @@ test('a synchronised store folds only what the server sent back and reads like a
     assert.equal(outbox.pending.length, 0);
     assert.ok(outbox.acknowledged.length <= local.events.length, `the outbox forgets folded ids: ${outbox.acknowledged.length}`);
     assert.ok(local.settled.every(id => local.events.some(e => e.id === id)), 'settled marks name kept entries only');
+    assert.ok(!local.dropped || local.dropped.length <= FOLD.max, `the synchroniser has taken what was folded: ${local.dropped?.length}`);
     assert.deepEqual(reading(a.game), reading(full));
   }
 });

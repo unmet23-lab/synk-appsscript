@@ -20,7 +20,8 @@ function play(seed, rounds) {
   const r = rng(seed);
   let t = Date.parse('2026-09-01T00:00:00Z');
   const clock = () => new Date(t += Math.floor(r() * 4) * 1000 + (r() < 0.02 ? 9 * 86400000 : 0)).toISOString();
-  const game = createGame({ gameId: 'random-play', map, storage: memory(), clock });
+  // The reference reads game.events() as the whole log, so this game keeps every entry.
+  const game = createGame({ gameId: 'random-play', map, storage: memory(), clock, fold: false });
   const answers = [];
   for (let i = 0; i < rounds; i += 1) {
     const [skillId, modality] = pick(r, SKILLS), n = Math.floor(r() * 25);
@@ -45,7 +46,8 @@ test('each answer read from the incremental index equals the whole-log summary a
     const r = rng(seed * 7919);
     let t = Date.parse('2026-09-01T00:00:00Z');
     const clock = () => new Date(t += Math.floor(r() * 3) * 1000).toISOString();
-    const game = createGame({ gameId: 'random-play', map, storage: memory(), clock });
+    // The reference reads game.events() as the whole log, so this game keeps every entry.
+    const game = createGame({ gameId: 'random-play', map, storage: memory(), clock, fold: false });
     for (let i = 0; i < 120; i += 1) {
       const [skillId, modality] = pick(r, SKILLS), n = Math.floor(r() * 20);
       const pid = game.present({ id: `q${i}`, itemKey: `item.${n}`, familyKey: r() < 0.5 ? `family.${n % 7}` : undefined, skillId, modality,

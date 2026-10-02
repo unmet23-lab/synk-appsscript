@@ -5434,20 +5434,21 @@ var SynkLearning = (() => {
         return { version: VERSION, cutoff: null, folded: 0, keys: {}, presented: [], cells: {}, content: {}, counts: null };
       }
       function validate(ledger) {
-        const cellOk = (cell) => plain(cell) && Array.isArray(cell.ind) && cell.ind.length <= KEEP && cell.ind.every((r) => Array.isArray(r) && (r.length === 4 || r.length === 5 && typeof r[4] === "string") && typeof r[0] === "string" && Number.isFinite(r[1]) && ["correct", "incorrect"].includes(r[2]) && typeof r[3] === "string") && Array.isArray(cell.helped) && cell.helped.length <= MAX_ENTRIES && cell.helped.every(Number.isFinite) && Number.isInteger(cell.unassessed) && cell.unassessed >= 0;
-        if (!plain(ledger) || ledger.version !== VERSION || !Number.isInteger(ledger.folded) || ledger.folded < 0 || !(ledger.cutoff === null || Number.isFinite(ledger.cutoff)) || !plain(ledger.keys) || Object.keys(ledger.keys).length > MAX_ENTRIES || Object.values(ledger.keys).some((v) => !Number.isInteger(v) || v < 1 || v > 7) || !Array.isArray(ledger.presented) || ledger.presented.length > MAX_ENTRIES || ledger.presented.some((r) => !Array.isArray(r) || r.length !== 4 || r.slice(0, 3).some((v) => typeof v !== "string") || !Number.isInteger(r[3]) || r[3] < 1) || !plain(ledger.cells) || !Object.values(ledger.cells).every(cellOk) || !plain(ledger.content) || !Object.values(ledger.content).every(cellOk) || !(ledger.counts === null || plain(ledger.counts))) throw new TypeError("Ledger: unreadable");
+        const cellOk = (cell) => plain(cell) && Array.isArray(cell.ind) && cell.ind.length <= KEEP && cell.ind.every((r) => Array.isArray(r) && (r.length === 4 || r.length === 5 && typeof r[4] === "string") && typeof r[0] === "string" && Number.isFinite(r[1]) && ["correct", "incorrect"].includes(r[2]) && typeof r[3] === "string") && Array.isArray(cell.helped) && cell.helped.length <= MAX_ENTRIES && cell.helped.every((h) => Number.isFinite(h) || Array.isArray(h) && h.length === 2 && typeof h[0] === "string" && Number.isFinite(h[1])) && Number.isInteger(cell.unassessed) && cell.unassessed >= 0;
+        if (!plain(ledger) || ledger.version !== VERSION || !Number.isInteger(ledger.folded) || ledger.folded < 0 || !(ledger.cutoff === null || Number.isFinite(ledger.cutoff)) || !plain(ledger.keys) || Object.keys(ledger.keys).length > MAX_ENTRIES || Object.values(ledger.keys).some((v) => !Number.isInteger(v) || v < 1 || v > 7) || !Array.isArray(ledger.presented) || ledger.presented.length > MAX_ENTRIES || ledger.presented.some((r) => !Array.isArray(r) || r.length !== 4 || r.slice(0, 3).some((v) => typeof v !== "string") || !Number.isInteger(r[3]) || r[3] < 1) || !plain(ledger.cells) || !Object.values(ledger.cells).every(cellOk) || !plain(ledger.content) || !Object.values(ledger.content).every(cellOk) || !(ledger.counts === null || plain(ledger.counts)) || !(ledger.adjusted === void 0 || Number.isInteger(ledger.adjusted) && ledger.adjusted >= 0)) throw new TypeError("Ledger: unreadable");
         return ledger;
       }
       var before = (ledger, traceKey, kinds) => {
         const bits = ledger && own(ledger.keys, traceKey) ? ledger.keys[traceKey] : 0;
         return kinds.some((kind) => bits & BITS[kind]);
       };
+      var helpedAt = (h) => Array.isArray(h) ? h[1] : h;
       function rows(cell) {
         if (!cell) return { rows: [], unassessed: 0 };
         const iso = (ms) => new Date(ms).toISOString();
         return { unassessed: cell.unassessed, rows: [
           ...cell.ind.map(([eventId, at, verdict, familyKey]) => ({ eventId, at: iso(at), verdict, independent: true, assisted: false, exclusionReason: null, measure: { familyKey } })),
-          ...cell.helped.map((at) => ({ eventId: null, at: iso(at), verdict: "correct", independent: false, assisted: true, exclusionReason: null, measure: { familyKey: null } }))
+          ...cell.helped.map((h) => ({ eventId: Array.isArray(h) ? h[0] : null, at: iso(helpedAt(h)), verdict: "correct", independent: false, assisted: true, exclusionReason: null, measure: { familyKey: null } }))
         ] };
       }
       var cellOf = (ledger, key) => ledger && own(ledger.cells, key) ? ledger.cells[key] : null;
@@ -5481,7 +5482,7 @@ var SynkLearning = (() => {
           touched.add(cell);
           const at = Date.parse(a.at);
           if (a.independent) cell.ind.push([a.eventId, at, a.verdict, a.measure.familyKey, ...a.itemKey !== a.measure.familyKey ? [a.itemKey] : []]);
-          if (!a.exclusionReason && a.assisted === true && a.verdict === "correct") cell.helped.push(at);
+          if (!a.exclusionReason && a.assisted === true && a.verdict === "correct") cell.helped.push([a.eventId, at]);
           if (a.verdict === "unassessed" || a.verdict === "skipped") cell.unassessed += 1;
         };
         for (const a of summary.attempts) {
@@ -5491,9 +5492,9 @@ var SynkLearning = (() => {
           for (const id of a.conceptIds) if (id !== a.measure.skillId) add(ledger.content, `${id}|${format}`, a);
         }
         for (const table of [ledger.cells, ledger.content]) for (const [key, cell] of Object.entries(table)) {
-          const helped = cell.helped.filter((at) => at > latest - HELP_MS);
+          const helped = cell.helped.filter((h) => helpedAt(h) > latest - HELP_MS);
           if (!touched.has(cell) && helped.length === cell.helped.length) continue;
-          table[key] = { ind: [...cell.ind].sort((x, y) => x[1] - y[1]).slice(-KEEP), helped: helped.sort((x, y) => x - y), unassessed: cell.unassessed };
+          table[key] = { ind: [...cell.ind].sort((x, y) => x[1] - y[1]).slice(-KEEP), helped: helped.sort((x, y) => helpedAt(x) - helpedAt(y)), unassessed: cell.unassessed };
         }
         ledger.counts = ledger.counts ? Temper.combine(ledger.counts, Temper.measure(summary)) : Temper.measure(summary);
         ledger.cutoff = Math.max(ledger.cutoff ?? -Infinity, events.reduce((max, e) => Math.max(max, time(e)), -Infinity));
@@ -5554,18 +5555,19 @@ var SynkLearning = (() => {
         const ca = a?.cutoff ?? -Infinity, cb = b?.cutoff ?? -Infinity;
         return ca === cb ? 0 : ca > cb ? 1 : -1;
       }
-      function demote(ledger, late, find, excluded = []) {
+      function demote(ledger, { late = [], excluded = [], strays = 0 }, find) {
         const marks = [], gone = new Set(excluded);
         for (const e of late) {
           if (e.type !== "practice.attempted" && e.type !== "practice.helped") continue;
           const p = find(e.presentationId);
           if (p) marks.push({ keys: new Set(Trail.traceKeys(p)), at: Date.parse(e.at) });
         }
-        if (!ledger || !marks.length && !gone.size) return ledger;
+        if (!ledger || !late.length && !gone.size && !strays) return ledger;
         const after = ([eventId, at, , familyKey, itemKey = familyKey]) => gone.has(eventId) || marks.some((m) => (m.keys.has(`item:${itemKey}`) || m.keys.has(`family:${familyKey}`)) && at > m.at);
-        const next = { ...ledger, cells: { ...ledger.cells }, content: { ...ledger.content } };
+        const excludedHelp = (h) => Array.isArray(h) && gone.has(h[0]);
+        const next = { ...ledger, cells: { ...ledger.cells }, content: { ...ledger.content }, adjusted: (ledger.adjusted || 0) + late.length + strays };
         for (const table of [next.cells, next.content]) for (const [key, cell] of Object.entries(table)) {
-          if (cell.ind.some(after)) table[key] = { ...cell, ind: cell.ind.filter((row) => !after(row)) };
+          if (cell.ind.some(after) || cell.helped.some(excludedHelp)) table[key] = { ...cell, ind: cell.ind.filter((row) => !after(row)), helped: cell.helped.filter((h) => !excludedHelp(h)) };
         }
         return next;
       }
@@ -5785,9 +5787,10 @@ var SynkLearning = (() => {
         if (!id(accountKey) || !Number.isSafeInteger(revision) || revision < 1 || !port || port.scope !== "account" || port.accountKey !== accountKey || !storage?.getItem || !storage?.setItem || typeof transport?.get !== "function" || typeof transport?.post !== "function") throw new TypeError("Atlas sync: an authenticated account adapter, isolated durable store and transport are required");
         if (![batchSize, maxAttempts, maxPages, timeoutMs].every((n) => Number.isInteger(n) && n > 0) || batchSize > 500 || maxAttempts > 10 || !Array.isArray(backoffMs) || !backoffMs.length || backoffMs.some((ms) => !Number.isFinite(ms) || ms < 0)) throw new TypeError("Atlas sync: invalid retry bounds");
         const key = `${SYNC_KEY}.${accountKey}`;
-        let state = { version: 1, accountKey, revision, cursor: 0, complete: false, acknowledged: [], pending: [] };
+        let state = { version: 2, accountKey, revision, cursor: 0, complete: false, acknowledged: [], pending: [], missing: [] };
         let phase = "idle", code = null, message = null, stopped = false, started = false, generation = 0, running = null, timer = null, flushRequested = false;
         const controllers = /* @__PURE__ */ new Set();
+        const whole = () => state.complete && !state.missing.length;
         const status = () => ({
           phase,
           code,
@@ -5795,7 +5798,7 @@ var SynkLearning = (() => {
           revision,
           cursor: state.cursor,
           queued: state.pending.length,
-          complete: state.complete && phase !== "blocked" && phase !== "stopped",
+          complete: whole() && phase !== "blocked" && phase !== "stopped",
           accountKey,
           durable: !["STORAGE_ERROR", "HISTORY_CAPACITY"].includes(code)
         });
@@ -5826,28 +5829,33 @@ var SynkLearning = (() => {
         try {
           const raw = storage.getItem(key);
           if (raw != null) {
-            const stored = JSON.parse(raw);
-            if (!stored || stored.version !== 1 || stored.accountKey !== accountKey || !Number.isSafeInteger(stored.cursor) || stored.cursor < 0 || typeof stored.complete !== "boolean" || !Array.isArray(stored.acknowledged) || !stored.acknowledged.every(id) || !Array.isArray(stored.pending) || stored.pending.some((e) => !id(e?.id)) || stored.pending.length + stored.acknowledged.length > 4e4) throw failure("STORAGE_ERROR", "Atlas sync: unreadable outbox; preserved without replacement");
+            const stored = JSON.parse(raw), v1 = stored?.version === 1;
+            if (!stored || ![1, 2].includes(stored.version) || stored.accountKey !== accountKey || !Number.isSafeInteger(stored.cursor) || stored.cursor < 0 || typeof stored.complete !== "boolean" || !Array.isArray(stored.acknowledged) || !stored.acknowledged.every(id) || !Array.isArray(stored.pending) || !stored.pending.every(v1 ? (e) => id(e?.id) : id) || !(stored.missing === void 0 || Array.isArray(stored.missing) && stored.missing.every(id)) || stored.pending.length + stored.acknowledged.length + (stored.missing?.length || 0) > 4e4) throw failure("STORAGE_ERROR", "Atlas sync: unreadable outbox; preserved without replacement");
             if (stored.revision !== revision) throw failure("REVISION_CONFLICT", "Atlas sync: a new consent revision requires a fresh account store");
-            state = stored;
+            state = { ...stored, version: 2, pending: v1 ? stored.pending.map((e) => e.id) : stored.pending, missing: stored.missing || [] };
           }
-          port.markComplete(state.complete);
+          port.markComplete(whole());
         } catch (error) {
           block(error?.code ? error : failure("STORAGE_ERROR", "Atlas sync: unreadable outbox; preserved without replacement"));
         }
         const collect = () => {
-          const known = new Map(state.pending.map((event) => [event.id, event])), acknowledged = new Set(state.acknowledged);
-          const local = port.events(), localById = new Map(local.map((event) => [event.id, event]));
-          if (state.pending.some((event) => !localById.has(event.id) || !sameEvent(localById.get(event.id), event))) throw failure("STORAGE_ERROR", "Atlas sync: queued history does not match its account log");
-          if (state.acknowledged.some((eventId) => !localById.has(eventId))) state.acknowledged = state.acknowledged.filter((eventId) => localById.has(eventId));
-          for (const event of local) {
-            if (known.has(event.id) && !sameEvent(known.get(event.id), event)) throw failure("EVENT_CONFLICT", "Atlas sync: conflicting queued event");
-            if (!known.has(event.id) && !acknowledged.has(event.id)) {
-              known.set(event.id, event);
-              state.pending.push(clone(event));
-            }
+          const local = port.events(), localIds = new Set(local.map((event) => event.id));
+          if (state.pending.some((eventId) => !localIds.has(eventId))) throw failure("STORAGE_ERROR", "Atlas sync: queued history does not match its account log");
+          const folded = new Set(typeof port.dropped === "function" ? port.dropped() : []);
+          const lost = state.acknowledged.filter((eventId) => !localIds.has(eventId) && !folded.has(eventId));
+          if (lost.length) {
+            state.missing = [.../* @__PURE__ */ new Set([...state.missing, ...lost])];
+            port.markComplete(false);
+          }
+          state.acknowledged = state.acknowledged.filter((eventId) => localIds.has(eventId));
+          state.missing = state.missing.filter((eventId) => !localIds.has(eventId));
+          const queued = new Set(state.pending), acknowledged = new Set(state.acknowledged);
+          for (const event of local) if (!queued.has(event.id) && !acknowledged.has(event.id)) {
+            queued.add(event.id);
+            state.pending.push(event.id);
           }
           save();
+          if (folded.size && typeof port.forget === "function") port.forget([...folded]);
         };
         const schedule = () => {
           if (!auto || !started || stopped || phase === "blocked" || phase === "offline" || timer) return;
@@ -5916,19 +5924,20 @@ var SynkLearning = (() => {
             const before = state.cursor, response = await request("get", { after: before, revision }, token);
             if (!Array.isArray(response.events) || !Number.isSafeInteger(response.cursor) || response.cursor < before || typeof response.hasMore !== "boolean" || response.hasMore && response.cursor <= before || response.events.length && response.cursor <= before) throw failure("INVALID_RESPONSE", "Atlas sync: invalid or stalled server cursor");
             if (!active(token)) return;
+            let result;
             try {
-              port.importEvents(response.events);
+              result = port.importEvents(response.events);
             } catch (error) {
               throw failure(error?.code || "INVALID_EVENTS", error.message);
             }
-            const remote = new Set(state.acknowledged);
-            for (const event of response.events) remote.add(event.id);
+            const skipped = new Set(result?.skipped || []), remote = new Set(state.acknowledged);
+            for (const event of response.events) if (!skipped.has(event.id)) remote.add(event.id);
             state.acknowledged = [...remote];
-            state.pending = state.pending.filter((event) => !remote.has(event.id));
+            state.pending = state.pending.filter((eventId) => !remote.has(eventId));
             state.cursor = response.cursor;
             if (!response.hasMore) state.complete = true;
             save();
-            port.markComplete(state.complete);
+            port.markComplete(whole());
             publish();
             if (!response.hasMore) {
               if (typeof port.settle === "function") port.settle(state.acknowledged);
@@ -5937,12 +5946,40 @@ var SynkLearning = (() => {
           }
           throw failure("INVALID_RESPONSE", "Atlas sync: page limit exceeded");
         };
+        const recover = async (token) => {
+          let after = 0;
+          for (let page = 0; page < maxPages && state.missing.length; page++) {
+            const response = await request("get", { after, revision }, token);
+            if (!Array.isArray(response.events) || !Number.isSafeInteger(response.cursor) || response.cursor < after || typeof response.hasMore !== "boolean" || response.hasMore && response.cursor <= after) throw failure("INVALID_RESPONSE", "Atlas sync: invalid or stalled server cursor");
+            if (!active(token)) return;
+            const wanted = new Set(state.missing), found = response.events.filter((event) => wanted.has(event.id));
+            if (found.length) {
+              let result;
+              try {
+                result = port.importEvents(found);
+              } catch (error) {
+                throw failure(error?.code || "INVALID_EVENTS", error.message);
+              }
+              const skipped = new Set(result?.skipped || []), back = new Set(found.map((event) => event.id));
+              state.acknowledged = [.../* @__PURE__ */ new Set([...state.acknowledged, ...[...back].filter((eventId) => !skipped.has(eventId))])];
+              state.missing = state.missing.filter((eventId) => !back.has(eventId));
+            }
+            after = response.cursor;
+            if (!response.hasMore || after >= state.cursor) {
+              state.missing = [];
+            }
+            save();
+            port.markComplete(whole());
+            publish();
+          }
+        };
         const flushQueue = async (token) => {
           let emptyAcks = 0;
           for (let batch = 0; batch < maxPages; batch++) {
             collect();
             if (!state.pending.length) return;
-            const events = state.pending.slice(0, batchSize).map(clone), sent = new Set(events.map((event) => event.id));
+            const local = new Map(port.events().map((event) => [event.id, event]));
+            const events = state.pending.slice(0, batchSize).map((eventId) => clone(local.get(eventId))), sent = new Set(events.map((event) => event.id));
             const response = await request("post", { revision, events }, token);
             if (!Array.isArray(response.accepted) || new Set(response.accepted).size !== response.accepted.length || response.accepted.some((eventId) => !sent.has(eventId))) throw failure("INVALID_RESPONSE", "Atlas sync: acknowledgement contains an unsent event");
             if (!active(token)) return;
@@ -5955,7 +5992,7 @@ var SynkLearning = (() => {
             const accepted = new Set(response.accepted), acknowledged = new Set(state.acknowledged);
             for (const eventId of accepted) acknowledged.add(eventId);
             state.acknowledged = [...acknowledged];
-            state.pending = state.pending.filter((event) => !accepted.has(event.id));
+            state.pending = state.pending.filter((eventId) => !accepted.has(eventId));
             save();
             publish();
           }
@@ -5976,6 +6013,7 @@ var SynkLearning = (() => {
           running = (async () => {
             try {
               await pullPages(token);
+              if (active(token) && state.missing.length) await recover(token);
               if (active(token) && flushRequested) await flushQueue(token);
               if (active(token)) {
                 phase = "synced";
@@ -6912,9 +6950,11 @@ var SynkLearning = (() => {
         const key = `${KEY}.${learnerKey}`;
         let flowPort = null;
         let epoch = null, session, readable = true, writable = !!storage, complete = historyComplete, warning = null, ledger = null;
-        const folding = fold === false || fold == null && storageScope !== "device" ? null : { max: 2e3, keep: 1600, ageMs: fold?.remote ? 3 * 864e5 : 36e5, remote: false, ...fold && typeof fold === "object" ? fold : {} };
+        const folding = fold === false || fold == null && storageScope !== "device" ? null : { max: 600, keep: 400, ageMs: fold?.remote ? 864e5 : 6e5, remote: false, ...fold && typeof fold === "object" ? fold : {} };
         const settled = /* @__PURE__ */ new Set();
         let settledVersion = 0;
+        const dropped = /* @__PURE__ */ new Set();
+        let droppedVersion = 0;
         const UNCHANGED = /* @__PURE__ */ Symbol("unchanged-history");
         let lastStoredRaw = /* @__PURE__ */ Symbol("unread-history");
         let lastTime = 0;
@@ -6947,9 +6987,9 @@ var SynkLearning = (() => {
         const decode = (raw) => {
           if (raw == null) return null;
           const value = JSON.parse(raw);
-          if (!value || value.version !== 1 || !identifier(value.epoch) || !Array.isArray(value.events) || value.events.length > 2e4 || Object.keys(value).some((k) => !["version", "epoch", "events", "owner", "ledger", "settled"].includes(k))) throw new Error("Atlas: unreadable history");
+          if (!value || value.version !== 1 || !identifier(value.epoch) || !Array.isArray(value.events) || value.events.length > 2e4 || Object.keys(value).some((k) => !["version", "epoch", "events", "owner", "ledger", "settled", "dropped"].includes(k))) throw new Error("Atlas: unreadable history");
           if (value.ledger != null) Ledger.validate(value.ledger);
-          if (value.settled != null && (!Array.isArray(value.settled) || value.settled.length > 2e4 || !value.settled.every(identifier))) throw new Error("Atlas: unreadable history");
+          for (const ids of [value.settled, value.dropped]) if (ids != null && (!Array.isArray(ids) || ids.length > 2e4 || !ids.every(identifier))) throw new Error("Atlas: unreadable history");
           if (storageScope === "account" ? value.owner !== accountKey : value.owner != null) throw new Error("Atlas: local history belongs to a different storage scope");
           newSession(value.events);
           return value;
@@ -6981,6 +7021,15 @@ var SynkLearning = (() => {
           if (settled.size !== before) settledVersion += 1;
         };
         if (initial?.settled) settle(initial.settled, new Set(initial.events.map((e) => e.id)));
+        for (const id of initial?.dropped || []) dropped.add(id);
+        const takeDropped = (ids, keepMine) => {
+          const next = new Set(keepMine ? [...dropped, ...ids] : ids);
+          if (next.size !== dropped.size || [...next].some((id) => !dropped.has(id))) {
+            dropped.clear();
+            for (const id of next) dropped.add(id);
+            droppedVersion += 1;
+          }
+        };
         function refresh() {
           if (!readable || !storage) return;
           const stored = readStored();
@@ -6993,6 +7042,7 @@ var SynkLearning = (() => {
             settled.clear();
             settledVersion += 1;
             settle(stored.settled || [], new Set(stored.events.map((e) => e.id)));
+            takeDropped(stored.dropped || [], false);
             return;
           }
           const theirs = stored.ledger || null, order = Ledger.compare(ledger, theirs), mine = log();
@@ -7015,6 +7065,7 @@ var SynkLearning = (() => {
           }
           if (order < 0) ledger = theirs;
           settle([...settled, ...stored.settled || []], known);
+          takeDropped(stored.dropped || [], order > 0);
           session = newSession(combined);
           for (const pid of active.keys()) if (!known.has(pid)) active.delete(pid);
         }
@@ -7034,22 +7085,27 @@ var SynkLearning = (() => {
           body.last = body.count ? events[body.count - 1] : null;
           if (ledgerJson?.ledger !== ledger) ledgerJson = { ledger, text: ledger ? `,"ledger":${JSON.stringify(ledger)}` : "" };
           if (settledJson?.version !== settledVersion) settledJson = { version: settledVersion, text: settled.size ? `,"settled":${JSON.stringify([...settled])}` : "" };
-          return `{"version":1,"epoch":${JSON.stringify(epoch)},"events":[${body.text}]${ledgerJson.text}${settledJson.text}${storageScope === "account" ? `,"owner":${JSON.stringify(accountKey)}` : ""}}`;
+          if (droppedJson?.version !== droppedVersion) droppedJson = { version: droppedVersion, text: dropped.size ? `,"dropped":${JSON.stringify([...dropped])}` : "" };
+          return `{"version":1,"epoch":${JSON.stringify(epoch)},"events":[${body.text}]${ledgerJson.text}${settledJson.text}${droppedJson.text}${storageScope === "account" ? `,"owner":${JSON.stringify(accountKey)}` : ""}}`;
         };
-        let ledgerJson = null, settledJson = null, retryFold = null;
+        let ledgerJson = null, settledJson = null, droppedJson = null, retryFold = null;
         function compact() {
           if (!folding) return;
           const events = log(), now = Date.parse(monotonicClock());
           if (events.length <= folding.max) return;
           if (retryFold && retryFold.settled === settledVersion && now < retryFold.at) return;
-          const open = folding.remote ? events.filter((e) => !settled.has(e.id)).map((e) => e.id) : [];
+          const open = [...active].filter(([, item]) => !item.results.length).map(([pid]) => pid);
+          if (folding.remote) {
+            for (const e of events) if (!settled.has(e.id)) open.push(e.id);
+          }
           const planned = Ledger.plan(events, {
             keep: folding.keep,
             olderThan: now - folding.ageMs,
             open,
             unfinishedBefore: folding.remote ? now - 30 * 864e5 : now - folding.ageMs
           });
-          if (!planned) {
+          const batch = Math.max(1, Math.floor((folding.max - folding.keep) / 2));
+          if (!planned || planned.folded.length < batch && events.length < 2 * folding.max) {
             retryFold = { settled: settledVersion, at: now + 6e4 };
             return;
           }
@@ -7061,6 +7117,10 @@ var SynkLearning = (() => {
             settled.delete(e.id);
           }
           settledVersion += 1;
+          if (folding.remote) {
+            for (const e of planned.folded) dropped.add(e.id);
+            droppedVersion += 1;
+          }
         }
         function persist(kind = "append", { quiet = false } = {}) {
           if (!storage || !readable) {
@@ -7138,7 +7198,12 @@ var SynkLearning = (() => {
           if (cached?.summary === observed && !cached.counts) cached.counts = measured();
           return {
             ...profileOf(observed),
-            storage: { available: readable && writable, scope: storageScope, warning },
+            storage: {
+              available: readable && writable,
+              scope: storageScope,
+              warning,
+              ...ledger ? { folded: ledger.folded, adjusted: ledger.adjusted || 0 } : {}
+            },
             counts: cached?.summary === observed ? cached.counts : measured()
           };
         }
@@ -7169,6 +7234,19 @@ var SynkLearning = (() => {
               settle([...settled, ...ids], new Set(log().map((e) => e.id)));
               return settledVersion === version || persist("settle", { quiet: true });
             },
+            // Ids this store folded away since the synchroniser last took them (always on the server).
+            dropped() {
+              refresh();
+              return [...dropped];
+            },
+            // The synchroniser has taken these (saved in its own outbox first).
+            forget(ids) {
+              refresh();
+              if (!readable || !Array.isArray(ids)) return false;
+              const version = droppedVersion;
+              for (const id of ids) if (dropped.delete(id)) droppedVersion = version + 1;
+              return droppedVersion === version || persist("forget", { quiet: true });
+            },
             subscribe(listener) {
               if (typeof listener !== "function") throw new TypeError("Atlas: listener required");
               listeners.add(listener);
@@ -7182,11 +7260,12 @@ var SynkLearning = (() => {
               if (!readable) throw Object.assign(new Error("Atlas: local history is unreadable"), { code: "STORAGE_ERROR" });
               if (ledger && !folding?.remote) throw Object.assign(new Error("Atlas: a folded history is kept on this device only"), { code: "HISTORY_FOLDED" });
               if (!Array.isArray(incoming)) throw new TypeError("Atlas: imported events must be an array");
-              const combined = log().slice(), previousLength = combined.length, known = new Map(combined.map((event) => [event.id, event])), late = [], gone = [];
+              const combined = log().slice(), previousLength = combined.length, known = new Map(combined.map((event) => [event.id, event])), late = [], gone = [], skipped = [];
               for (const event of incoming) {
                 if (known.has(event?.id)) {
                   if (!sameEvent(known.get(event.id), event)) throw Object.assign(new Error("Atlas: conflicting imported event"), { code: "EVENT_CONFLICT" });
                 } else if (ledger && Ledger.stray(event, known)) {
+                  skipped.push(event.id);
                   if (event.type === "record.excluded") gone.push(event.targetId);
                   continue;
                 } else {
@@ -7195,12 +7274,12 @@ var SynkLearning = (() => {
                   if (Ledger.folded(ledger, event)) late.push(event);
                 }
               }
-              if (combined.length === previousLength && !gone.length && writable && snapshot(combined) === lastStoredRaw) return { added: 0 };
+              if (combined.length === previousLength && !skipped.length && writable && snapshot(combined) === lastStoredRaw) return { added: 0, skipped };
               const imported = newSession(combined);
               session = imported;
-              if (late.length || gone.length) ledger = Ledger.demote(ledger, late, (id) => known.get(id), gone);
+              if (late.length || skipped.length) ledger = Ledger.demote(ledger, { late, excluded: gone, strays: skipped.length }, (id) => known.get(id));
               if (!persist("import")) throw Object.assign(new Error("Atlas: imported history could not be saved"), { code: "STORAGE_ERROR" });
-              return { added: combined.length - previousLength };
+              return { added: combined.length - previousLength, skipped };
             }
           }),
           summary,
@@ -7300,12 +7379,20 @@ var SynkLearning = (() => {
             refresh();
             return session.events();
           },
+          // Before a tab closes or hides: another tab may have written an older history over this
+          // one's entries in the meantime (tabs see each other's writes late), so join and write again.
+          flush() {
+            refresh();
+            if (!storage || !readable || !writable) return false;
+            return snapshot(log()) === lastStoredRaw || persist("flush", { quiet: true });
+          },
           reset() {
             if (storageScope === "account") throw Object.assign(new Error("Atlas: account deletion requires the host consent/reset API; local reset cannot delete server records"), { code: "ACCOUNT_RESET_REQUIRED" });
             epoch = uid();
             ledger = null;
             settled.clear();
             settledVersion += 1;
+            takeDropped([], false);
             session = newSession([]);
             active.clear();
             readable = true;
@@ -7465,6 +7552,21 @@ var SynkLearning = (() => {
         return null;
       }
       var factory = (config) => learning.createGame({ ...config, map });
+      var games = /* @__PURE__ */ new Set();
+      var flushAll = () => {
+        for (const game of games) {
+          try {
+            game.flush?.();
+          } catch {
+          }
+        }
+      };
+      if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+        window.addEventListener("pagehide", flushAll);
+        if (typeof document !== "undefined") document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "hidden") flushAll();
+        });
+      }
       module.exports = {
         ...learning,
         Flow,
@@ -7475,7 +7577,9 @@ var SynkLearning = (() => {
         engine: Object.freeze({ createGame: factory, createLearningSync: learning.createLearningSync }),
         createGame: (options) => {
           const owner = host();
-          return owner ? owner.createGame(options, factory, learning.createLearningSync) : factory(options);
+          const game = owner ? owner.createGame(options, factory, learning.createLearningSync) : factory(options);
+          games.add(game);
+          return game;
         }
       };
     }
