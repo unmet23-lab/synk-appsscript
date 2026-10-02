@@ -21,4 +21,4 @@ SYNK 계정(synk.im/id/)을 talk 프로젝트(Supabase)에 여는 데 쓴 스크
 2. 화면: `node tools/build-synk-account.js` → `node tools/synk-id/prepare-portal.mjs production <폴더>` → `login-check.cjs`로 로컬 확인 → synk-policy `origin/main` 기준 임시 작업 공간의 `id/`에 복사해 푸시 → 실제 주소와 바이트 비교.
 3. **운영 메일 발송(SMTP)을 유호님이 넣은 뒤** `node tools/synk-id/auth-settings.js --운영 --적용 --메일문구`로 한국어 메일 문구를 넣는다.
 
-계정 지우기 처리는 talk의 `supabase/계정삭제_대기.sql`(읽기)·`supabase/계정삭제_처리.sql`(쓰기)이다.
+계정 지우기는 요청 뒤 지체 없이, 늦어도 30일 안에 처리한다(유호님 2026-10-03). talk 예약 작업 `synk-account-purge`가 매일 한국 03:17에 대기 중인 요청을 처리하고(talk 마이그레이션 20261003005000), 학원 소속이 이어진 계정처럼 남은 요청은 talk의 `supabase/계정삭제_대기.sql`(읽기, 요청마다 기한·남은 날)로 보고 `supabase/계정삭제_처리.sql`(쓰기)로 기한 안에 처리한다.
