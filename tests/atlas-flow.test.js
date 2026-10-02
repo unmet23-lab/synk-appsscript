@@ -205,6 +205,25 @@ test('successes in a row, with help or without, are counted for the offer of les
   assert.equal(run.lessHelpAllowed(), true);
   assert.equal(run.acceptLessHelp().to, 1);
   assert.equal(run.steadyStreak(), 0, 'the new help level earns its own run');
+  // More help after a struggle starts the run again too: the successes counted are at this level.
+  const eased = Flow.start({ spec: Flow.defineContent({ id: 'test.auto-help.mid', knobs: [{ id: 'clue', kind: 'support', values: ['at-once', 'on-pause', 'on-press'], start: 2 }] }), now: NOW });
+  const turns = play(eased, [{ outcome: 'success', assisted: true }, 'fail', { outcome: 'success', assisted: true }, { outcome: 'success', assisted: true }]);
+  const lastEase = turns.map((r, i) => r.change?.kind === 'support' ? i : -1).filter(i => i >= 0).at(-1);
+  assert.ok(lastEase >= 0, 'help came earlier');
+  assert.equal(eased.steadyStreak(), turns.length - 1 - lastEase, 'only successes after the last change of help count');
+});
+
+test('less help the person accepted is kept: the next round does not quietly take it back', () => {
+  const spec = Flow.defineContent({ id: 'test.auto-help.kept', knobs: [{ id: 'clue', kind: 'support', values: ['at-once', 'on-pause', 'on-press'], start: 2 }] });
+  const run = Flow.start({ spec, now: NOW });
+  play(run, ['fail', { outcome: 'success', assisted: true }, 'fail']);
+  assert.equal(run.settings().values.clue, 'at-once', 'misses brought the help to its earliest');
+  play(run, Array(4).fill({ outcome: 'success', assisted: true }));
+  assert.equal(run.acceptLessHelp().value, 'on-pause');
+  const next = Flow.start({ spec, now: later(1), memory: run.memory(NOW) });
+  assert.equal(next.settings().values.clue, 'on-pause', 'the next round opens where the person chose');
+  play(next, ['fail']);
+  assert.equal(next.settings().values.clue, 'at-once', 'a miss still brings the help back');
 });
 
 test('a day chosen to be easier lifts both aims: for the same answers, time pressure is never higher than on a normal day', () => {

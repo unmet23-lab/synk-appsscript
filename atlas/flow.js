@@ -380,6 +380,8 @@
             }
           }
         }
+        // A help level that just changed earns its own run of successes before less help is asked.
+        if (change && change.kind === 'support') steady = 0;
         trace.push({ response: responses, step, outcome, assisted, repeat, pressure, expected: round(before, 3),
           content: round(estimates.content.theta, 3), pace: round(estimates.pace.theta, 3), change: change && copy(change) });
         return { change: change && copy(change), settings: settings(), evidence };
@@ -397,6 +399,10 @@
         const from = indices[knob.id], to = from + 1;
         if (!guard.check({ spec, knob: knob.id, from, to, step, phase: 'accepted', history: changes, frozen: false }).ok) return null;
         indices[knob.id] = to;
+        // Held like a tentative step: the estimate moves just enough to keep the person's choice, so the
+        // next opening does not quietly take it back (helped successes never raise the estimate), and a
+        // miss still brings the help back.
+        estimates.content.theta = Math.max(estimates.content.theta, logit(aim.content) + challenge(spec, indices, 'content') - spec.scale / 2);
         const change = { step, phase: 'accepted', knob: knob.id, kind: knob.kind, dimension: 'content', from, to, direction: 1, because: 'accepted-less-help', value: knob.values[to] };
         // The run of successes was spent on this step; the new help level earns its own.
         steady = 0;

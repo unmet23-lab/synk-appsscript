@@ -36,6 +36,8 @@ const MUTATIONS = [
   ['atlas/vellum-flow.js', 'if (streak < need && steady < need + 1)', 'if (streak < need)', 'help shown before every answer never offers less help'],
   ['atlas/flow.js', "else if (outcome === 'fail' || outcome === 'timeout') steady = 0;", '', 'a miss does not end the run of successes'],
   ['atlas/game-flow.js', 'const leading = focus ? ranked.filter(candidate => candidate.skillIds?.includes(focus)) : ranked;', 'const leading = ranked;', 'an easier level puts off the practice Core asked for'],
+  ['atlas/flow.js', "if (change && change.kind === 'support') steady = 0;", '', 'successes before a change of help count toward less help'],
+  ['atlas/flow.js', "estimates.content.theta = Math.max(estimates.content.theta, logit(aim.content) + challenge(spec, indices, 'content') - spec.scale / 2);", '', 'accepted less help is taken back at the next opening'],
   ['atlas/flow.js', 'if (change && chance(dimension) < aim[dimension] - 0.15)', 'if (false)', 'a quiet streak steps beyond reach'],
   ['atlas/flow.js', "const fixed = knob => knob.follows === 'declared' ? indices[knob.id] : null;", 'const fixed = knob => locked(knob) ? indices[knob.id] : null;', 'a knob set by hand erases what was learned'],
   ['atlas/game-flow.js', 'const own = chosen === recommendation.selected ? recommendation : coach.recommend([chosen], rest);', 'const own = recommendation;', 'the reason shown belongs to another item'],
