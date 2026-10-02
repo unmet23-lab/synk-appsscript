@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 import { createRequire } from 'node:module';
 import { ITEMS } from './content.mjs';
 import { composeRound } from './core.mjs';
@@ -40,7 +41,8 @@ test('문항 정보: 지도에 있는 읽기 항목·고정 키·한 개 고르�
     const m = itemMetadata(x);
     assert.ok(ids.has(m.skillId), m.skillId);
     assert.equal(m.modality, 'reading'); assert.equal(m.responseFormat, 'single-choice'); assert.equal(m.audioRequired, false);
-    assert.match(m.itemKey, /^blank-slice\.[a-z]\d\d\.v1$/);
+    assert.match(m.itemKey, /^blank-slice\.[a-z]\d\d\.v\d+$/);
+    assert.equal(m.familyKey, `blank-slice.${x.id}.v1`, '판이 바뀌어도 같은 계열');
     assert.ok(!keys.has(m.itemKey)); keys.add(m.itemKey);
   }
   assert.doesNotThrow(() => coach().recommend(candidates(ITEMS)));
@@ -97,4 +99,54 @@ test('기록이 반대인 두 학생은 다음 판의 첫 문장 항목이 다�
 test('아틀라스가 없거나 오류면 null(원고 순서로 진행)', () => {
   assert.equal(rankItems(null, ITEMS), null);
   assert.equal(rankItems({ recommend: () => { throw new Error('x'); } }, ITEMS), null);
+});
+
+// 문장·보기·정답이 바뀌면 그 문항의 판(learning.mjs ITEM_VERSION)을 올려야 한다(학습기준 §7-2).
+// 판을 올린 뒤 이 표의 판과 지문(앞 12자리 해시)을 함께 바꾼다. 새 문항은 판 1로 더한다.
+const CONTENT = {
+  p01: [1, '9a2e02d76a1f'],
+  v01: [1, '419dd7c4e654'],
+  p02: [1, '732294bc6bd9'],
+  v02: [1, 'e92a61c59e70'],
+  v03: [1, '805c4a52febe'],
+  p03: [1, '04ac2df48448'],
+  t01: [1, 'a35b8a178121'],
+  v04: [1, '5cfb4bd1a300'],
+  p04: [1, 'c5f4af41e4a6'],
+  v05: [1, '8f7ead7d72d5'],
+  p05: [1, '55dbf3f2d14a'],
+  v06: [2, '2f890b33070c'],
+  v07: [2, 'a0d087d69f1e'],
+  v08: [1, '9eb8ebb9959d'],
+  g01: [1, '5e125a3d06f0'],
+  g02: [1, '8496fc8d2e0d'],
+  e01: [2, '57e0ecd478c0'],
+  v09: [1, '0fda09b8b43a'],
+  v10: [1, 'a987cdd4911c'],
+  e02: [1, '20fb95451fd9'],
+  v11: [1, 'b223acacf5d5'],
+  v12: [1, '2d66771c5832'],
+  e03: [1, '6b447533fc37'],
+  e04: [1, '2be32abcc22c'],
+  v13: [1, '92f293df2e23'],
+  e05: [1, '6d79026fa7b5'],
+  a01: [1, '7f82e1c50c50'],
+  e06: [1, 'b6467f246f68'],
+  e07: [1, 'ab79a664326e'],
+  e08: [2, '87cb834d5cf4'],
+  g03: [1, '05b64b59a857'],
+  e09: [1, 'eb2f92057844'],
+  e10: [1, '3aad530c9105'],
+  a02: [1, '65addaff1ad0'],
+  p06: [1, 'a08ef82f408c'],
+  v14: [1, 'a18c1c5eedeb'],
+};
+test('문항 판: 문장·보기·정답을 바꾸면 판이 올라간다', () => {
+  const digest = (x) => crypto.createHash('sha256').update(JSON.stringify([x.text, x.options, x.answer])).digest('hex').slice(0, 12);
+  assert.deepEqual(Object.keys(CONTENT).sort(), ITEMS.map((x) => x.id).sort(), '새 문항은 이 표에 판 1로 더한다');
+  for (const x of ITEMS) {
+    const [version, hash] = CONTENT[x.id];
+    assert.equal(digest(x), hash, `${x.id}: 내용이 바뀌었으면 ITEM_VERSION에서 판을 올리고 이 표를 고친다`);
+    assert.equal(itemMetadata(x).itemKey, `blank-slice.${x.id}.v${version}`, x.id);
+  }
 });

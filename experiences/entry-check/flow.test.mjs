@@ -29,7 +29,8 @@ test('돋보기: 처음은 누를 때만, 막히면 한 칸씩 일찍', () => {
   assert.equal(magnifierAfter(flow), null);
   guest(coach, flow, CASES[0], { correct: false });
   assert.equal(flow.settings().values.magnifier, '머뭇거리면');
-  assert.equal(magnifierAfter(flow), MAGNIFIER_AFTER.머뭇거리면, '혼자 바르게 답한 기록이 쌓이기 전에는 12초');
+  assert.equal(MAGNIFIER_AFTER.머뭇거리면, 'stuck');
+  assert.equal(magnifierAfter(flow), 40000, '혼자 바르게 답한 기록이 쌓이기 전에는 엔진 기본값');
 });
 
 test('돋보기: 바로 나오는 칸에서도 연달아 해내면 늦출지 묻는다(갇히지 않는다)', () => {

@@ -439,12 +439,13 @@ function finish() {
   announce(`${$('#r-title').textContent} ${s.total}문장 중 ${s.correct}개 맞혔어요. 별 ${s.stars}개, ${s.score}점.`);
 }
 
-/** 다음 판 이유: 아틀라스의 이유에 어떤 문장(학습 항목·난도)이 먼저 나오는지 붙인다. */
+/** 다음 판 이유: 아틀라스의 이유에 어떤 문장(학습 항목·난도)을 넣는지 붙인다. 한 판은 쉬운 문장부터 늘어놓아서
+ *  필요한 문장이 맨 앞에 온다고는 말하지 않는다(composeRound는 1순위 문장을 반드시 넣는다). */
 function nextLine(next) {
   if (!next?.reason) return '다음 판에는 새 문장을 섞어요.';
   const first = ITEMS.find((x) => x.id === next.order?.[0]);
   const what = first ? `${first.difficulty >= 2 ? '조금 어려운 ' : ''}${SKILL_LABEL[first.skill]} 문장` : '그 문장';
-  return `${next.reason} 다음 판에는 ${what}이 먼저 나와요.`;
+  return `${next.reason} 다음 판에는 ${what}을 넣어요.`;
 }
 
 function renderSkills(s, next) {
