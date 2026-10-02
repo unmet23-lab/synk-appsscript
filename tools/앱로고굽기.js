@@ -22,6 +22,7 @@
  * 사용: node tools/앱로고굽기.js            (굽고 talk/assets 에 쓴다)
  *      node tools/앱로고굽기.js --확인      (쓰지 않고 크기만 보고)
  *      node tools/앱로고굽기.js --너비 1800 (고해상도 마스터가 필요할 때)
+ *      node tools/앱로고굽기.js --출력 <talk 체크아웃> (배포 사본·워크트리에만 쓴다)
  */
 'use strict';
 const fs = require('fs');
@@ -34,7 +35,14 @@ const 크롬 = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 /* 🔴 워크트리에서 `__dirname/../..` 은 `.claude/worktrees/` 를 가리킨다 — 거기엔 형제가 없고
  *   증상은 「talk 에 못 썼다」가 아니라 **엉뚱한 자리에 조용히 굽는 것**이다(08-26 실측:
  *   `…/.claude/worktrees/SYNK-talk` · 존재 false). 자리는 통로 하나가 답한다. */
-const talk = require('../.claude/hooks/lib/형제저장소.js').형제경로(path.resolve(__dirname, '..'));
+const 출력인자 = process.argv.indexOf('--출력');
+if (출력인자 >= 0 && (!process.argv[출력인자 + 1] || process.argv[출력인자 + 1].startsWith('--'))) {
+  throw new Error('--출력 다음에 SYNK-talk 체크아웃 경로를 지정해 주세요.');
+}
+const talk = 출력인자 >= 0
+  ? path.resolve(process.argv[출력인자 + 1])
+  : require('../.claude/hooks/lib/형제저장소.js').형제경로(path.resolve(__dirname, '..'));
+if (!fs.existsSync(path.join(talk, 'assets'))) throw new Error(`아이콘 출력 assets 디렉터리가 없다: ${talk}`);
 const 확인만 = process.argv.includes('--확인');
 const 너비인자 = process.argv.indexOf('--너비');
 const 기본너비 = 너비인자 > -1 ? Number(process.argv[너비인자 + 1]) : 1024;
