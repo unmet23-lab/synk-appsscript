@@ -1,0 +1,183 @@
+// Optional browser QA. Uses only isolated accounts and temporary local storage.
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {mkdtemp, mkdir, readFile, rm} from 'node:fs/promises';
+import {homedir, tmpdir} from 'node:os';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {randomUUID} from 'node:crypto';
+import {createMessenger} from '../server.mjs';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const output = path.join(root, 'qa-output');
+const require = createRequire(import.meta.url);
+const {chromium} = require(process.env.MESSENGER_PLAYWRIGHT || path.join(homedir(), '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
+const dataDir = await mkdtemp(path.join(tmpdir(),'synk-messenger-ui-'));
+const service = createMessenger({dataDir,port:0});
+const {url} = await service.listen();
+const browser = await chromium.launch({executablePath:process.env.MESSENGER_CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
+const owner = await browser.newContext({viewport:{width:1440,height:960},deviceScaleFactor:1});
+const member = await browser.newContext({viewport:{width:1280,height:850},deviceScaleFactor:1});
+const page = await owner.newPage();
+const other = await member.newPage();
+const issues=[];
+let offlineTest=false;
+for(const tab of [page,other]){
+  tab.on('pageerror',e=>issues.push(e.message));
+  tab.on('console',m=>{if(m.type()==='error'&&!offlineTest)issues.push(m.text());});
+}
+const password = `QA-${randomUUID()}`;
+const stateOf = async context => (await context.request.get(`${url}/api/bootstrap`)).json();
+const send = async (tab,text) => {
+  await tab.locator('#composer-input').fill(text);
+  await tab.locator('#send-message').click();
+  await tab.getByText(text,{exact:true}).waitFor();
+  await tab.waitForFunction(()=>document.querySelector('#composer-input').value==='');
+};
+try{
+  await mkdir(output,{recursive:true});
+  await page.goto(url);
+  await page.locator('#workspace-name').fill('SYNK 검수 공간');
+  await page.locator('#display-name').fill('유호 · 검수');
+  await page.locator('#username').fill('qaowner');
+  await page.locator('#password').fill(password);
+  await page.locator('#auth-submit').click();
+  await page.locator('#composer-input').waitFor();
+  const state = await stateOf(owner);
+  const lounge = state.channels.find(c=>c.name==='팀 라운지');
+  const self = state.channels.find(c=>c.kind==='self');
+  assert.equal(state.user.username,'qaowner');
+  await page.locator(`[data-channel="${lounge.id}"]`).click();
+  await page.locator('#channel-title').filter({hasText:'팀 라운지'}).waitFor();
+  await page.locator('#composer-input').fill('한글 입력 조합 확인');
+  await page.locator('#composer-input').evaluate(el=>el.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',code:'Enter',isComposing:true,bubbles:true,cancelable:true})));
+  await page.waitForTimeout(180);
+  assert.equal(await page.locator('.message').count(),0,'IME Enter must not send');
+  await page.locator('#composer-input').press('Shift+Enter');
+  assert.equal(await page.locator('#composer-input').inputValue(),'한글 입력 조합 확인\n');
+  await send(page,'오늘의 아이디어를 이곳에 모아 볼까요?');
+  const first = page.locator('.message').filter({hasText:'오늘의 아이디어'});
+  await first.hover();
+  await first.locator('[data-action="reaction-picker"]').click();
+  await page.locator('[data-picker="👍"]').click();
+  await first.locator('.reaction').waitFor();
+  await first.hover();
+  await first.locator('[data-action="edit"]').click();
+  await page.locator('#edit-message-text').fill('오늘의 아이디어와 필요한 자료를 함께 모아 볼까요?');
+  await page.getByRole('button',{name:'수정 저장',exact:true}).click();
+  await page.getByText('오늘의 아이디어와 필요한 자료를 함께 모아 볼까요?',{exact:true}).waitFor();
+
+  // Actual file-input upload, message attachment, and byte-identical browser download.
+  const contents=Buffer.from('함께 확인할 프로젝트 메모\n수요일까지 초안 정리','utf8');
+  await page.locator('#file-input').setInputFiles({name:'프로젝트 메모.txt',mimeType:'text/plain',buffer:contents});
+  await page.waitForFunction(()=>!document.querySelector('#send-message').disabled);
+  await page.reload();
+  await page.locator('#composer-input').waitFor();
+  await page.locator('.upload-chip').waitFor();
+  await page.waitForFunction(()=>!document.querySelector('#send-message').disabled);
+  await send(page,'회의 전에 확인할 메모입니다.');
+  const [download] = await Promise.all([page.waitForEvent('download'),page.locator('.message-files .file-card').first().click()]);
+  assert.equal(download.suggestedFilename(),'프로젝트 메모.txt');
+  assert.deepEqual(await readFile(await download.path()),contents);
+  await page.locator('#tab-files').click();
+  await page.locator('#files-view .file-card').waitFor();
+  await page.locator('#tab-chat').click();
+
+  await page.locator('#create-channel').click();
+  await page.locator('#new-channel-name').fill('프로젝트 아이디어');
+  await page.locator('#channel-form button[type=submit]').click();
+  await page.locator('#channel-title').filter({hasText:'프로젝트 아이디어'}).waitFor();
+  await send(page,'새 프로젝트를 위한 공간도 준비했습니다.');
+  await page.locator(`[data-channel="${self.id}"]`).click();
+  await page.locator('#composer-input').fill('내일 이어서 정리할 아이디어');
+  await page.reload();
+  await page.locator('#composer-input').waitFor();
+  assert.equal(await page.locator('#composer-input').inputValue(),'내일 이어서 정리할 아이디어');
+  await page.locator('#send-message').click();
+  await page.getByText('내일 이어서 정리할 아이디어',{exact:true}).waitFor();
+
+  await page.locator('#global-search').click();
+  await page.locator('#search-input').fill('아이디어와 필요한');
+  await page.locator('.search-result').waitFor();
+  await page.locator('.search-result').first().click();
+  await page.locator('#channel-title').filter({hasText:'팀 라운지'}).waitFor();
+
+  await page.locator('#invite-button').click();
+  await page.locator('#generate-invite').click();
+  await page.locator('#new-invite-code').waitFor();
+  const code=await page.locator('#new-invite-code').innerText();
+  await page.locator('#close-modal').click();
+  await other.goto(url);
+  await other.locator('#switch-auth').click();
+  await other.locator('#invite-code').fill(code);
+  await other.locator('#display-name').fill('동료 · 검수');
+  await other.locator('#username').fill('qateammate');
+  await other.locator('#password').fill(password);
+  await other.locator('#auth-submit').click();
+  await other.locator('#composer-input').waitFor();
+  await other.locator(`[data-channel="${lounge.id}"]`).click();
+  await send(other,'자료 확인했어요. 같이 정리해 봅시다!');
+  await page.getByText('자료 확인했어요. 같이 정리해 봅시다!',{exact:true}).waitFor({timeout:5000});
+  await page.locator('#new-dm').click();
+  const memberState=await stateOf(member);
+  await page.locator(`[data-person="${memberState.user.id}"]`).click();
+  await page.locator('#channel-title').filter({hasText:'동료 · 검수'}).waitFor();
+  await send(page,'1:1로 이야기할 내용은 여기에 남길게요.');
+  await other.locator('#dm-nav .nav-item').waitFor();
+  await other.locator('#dm-nav .nav-item').click();
+  await other.getByText('1:1로 이야기할 내용은 여기에 남길게요.',{exact:true}).waitFor();
+  await send(other,'네, 이곳에서 이어서 이야기해요.');
+  await page.getByText('네, 이곳에서 이어서 이야기해요.',{exact:true}).waitFor({timeout:5000});
+  offlineTest=true;
+  await owner.setOffline(true);
+  // Chromium's offline flag alone does not necessarily close an established SSE socket.
+  service.server.closeAllConnections();
+  await page.locator('#connection.offline').waitFor({timeout:10000});
+  await send(other,'다시 연결하면 이 메시지도 보일 거예요.');
+  await owner.setOffline(false);
+  await page.getByText('다시 연결하면 이 메시지도 보일 거예요.',{exact:true}).waitFor({timeout:10000});
+  offlineTest=false;
+
+  await page.locator(`[data-channel="${lounge.id}"]`).click();
+  await page.evaluate(()=>document.fonts.ready);
+  assert.ok(await page.evaluate(()=>document.fonts.check('15px SUIT','한글')&&document.fonts.check('500 15px "Inter Tight"','synk')),'local fonts loaded');
+  await page.screenshot({path:path.join(output,'chat-desktop.png'),fullPage:true,animations:'disabled'});
+  // XSS-shaped messages stay literal text.
+  await send(page,'<img src=x onerror="window.__qaXss=1">');
+  assert.equal(await page.evaluate(()=>window.__qaXss),undefined);
+  const unsafe=page.locator('.message').filter({hasText:'<img src=x'});
+  await unsafe.hover();
+  await unsafe.locator('[data-action="delete"]').click();
+  await page.locator('#confirm-delete').click();
+  await unsafe.waitFor({state:'detached'});
+  await page.setViewportSize({width:390,height:844});
+  await page.screenshot({path:path.join(output,'chat-mobile.png'),fullPage:true,animations:'disabled'});
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'mobile horizontal overflow');
+  await page.locator('#mobile-menu').click();
+  await page.locator('#sidebar.open').waitFor();
+  await page.locator(`[data-channel="${self.id}"]`).click();
+  await page.locator('#channel-title').filter({hasText:'나에게'}).waitFor();
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.setViewportSize({width:320,height:740});
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'320px horizontal overflow');
+  await page.locator('#mobile-menu').click();
+  await page.locator('#workspace-settings').click();
+  await page.locator('#logout-button').click();
+  await page.locator('#username').waitFor();
+  await page.locator('#username').fill('qaowner');
+  await page.locator('#password').fill(password);
+  await page.locator('#auth-submit').click();
+  await page.locator('#composer-input').waitFor();
+  assert.equal((await stateOf(owner)).user.username,'qaowner');
+  console.log(JSON.stringify({passed:true,flows:['setup','IME-safe Enter and multiline','send/edit/delete/reaction','file upload and original download','pending upload reload recovery','file browser','create channel','self notes and reload draft','search and jump','invite/join','two-browser realtime','private DM','offline reconnect catchup','XSS escaped','390/320px mobile','logout/login'],consoleIssues:issues},null,2));
+  assert.deepEqual(issues,[],'browser console errors');
+}catch(error){
+  await page.screenshot({path:path.join(output,'failure.png'),fullPage:true}).catch(()=>{});
+  console.error(JSON.stringify({error:error.message,consoleIssues:issues},null,2));
+  throw error;
+}finally{
+  await browser.close();
+  await service.close();
+  assert.ok(path.resolve(dataDir).startsWith(path.resolve(tmpdir())+path.sep)&&path.basename(dataDir).startsWith('synk-messenger-ui-'));
+  await rm(dataDir,{recursive:true,force:true});
+}

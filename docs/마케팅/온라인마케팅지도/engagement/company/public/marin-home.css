@@ -1,0 +1,120 @@
+.marin-shell{min-height:100dvh;display:flex;flex-direction:column;background:#fff;color:#202923}.marin-topbar{display:flex;align-items:center;justify-content:space-between;padding:22px 36px;min-height:76px;flex:none}.marin-brand-home{display:inline-flex;align-items:center;justify-content:center;flex:none;min-height:30px;line-height:0}.marin-brand-home .brand-logo{width:44px;height:auto}.marin-account{display:flex;gap:9px;align-items:center;border:0;background:transparent;font-size:12px;color:#647267;max-width:220px;padding:5px}.marin-account>span:not(.avatar){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.marin-account .avatar{width:27px;height:27px;font-size:10px}.marin-account>.icon{width:12px;height:12px}.marin-shell>main{display:flex;flex:1;min-height:0;align-items:center;justify-content:center;padding:10px 24px 40px}.marin-home{width:100%;max-width:660px;min-width:0;margin:auto}.marin-welcome{text-align:center;padding:0 0 36px}.marin-welcome>img{width:234px;height:234px;display:block;object-fit:contain;margin:0 auto 1px}.marin-welcome>div>span{display:block;font-size:12px;color:#6e7e70;margin-bottom:12px}.marin-welcome h1{font-size:30px;font-weight:550;line-height:1.5;letter-spacing:-.05em}.marin-compose{width:100%}.marin-compose form{display:flex;align-items:flex-end;gap:12px;padding:16px 16px 16px 22px;border:1px solid #dce3db;border-radius:18px;background:#fff;box-shadow:0 4px 20px #20372606}.marin-compose form:focus-within{border-color:#8ca78e;box-shadow:0 0 0 3px #e9f0e8}.marin-compose textarea{width:100%;min-width:0;min-height:27px;max-height:144px;resize:none;overflow-y:hidden;border:0;outline:0;box-shadow:none;background:transparent;padding:0;font:inherit;font-size:14px;line-height:1.8;color:#273c2d;letter-spacing:-.02em}.marin-compose textarea:focus{outline:0;box-shadow:none}.marin-compose textarea::placeholder{color:#829086}.marin-compose button[type=submit]{flex:none;display:grid;place-items:center;width:35px;height:35px;border-radius:50%;background:#334c3a;color:white;border:0}.marin-compose button[type=submit] .icon{width:17px;height:17px;transform:rotate(-90deg)}.marin-compose button:disabled{opacity:.32;cursor:default}.marin-input-foot{display:flex;justify-content:space-between;gap:14px;padding:12px 5px;color:#829086;font-size:10px;line-height:1.7}.marin-input-foot p{margin:0}.marin-input-foot>button{font-size:10px;color:#637767;background:none;border:0;padding:0;white-space:nowrap}.marin-destinations{display:grid;grid-template-columns:1fr 1fr;gap:44px;width:min(660px,calc(100% - 48px));margin:0 auto;padding:0 0 30px;flex:none}.marin-destinations>button{display:flex;align-items:center;gap:12px;min-height:62px;padding:12px 18px;border:0;border-top:1px solid #e5eae4;background:none;color:#344b3b;font-size:15px;text-align:left}.marin-destinations>button>.icon:first-child{width:18px;height:18px;color:#6b806e}.marin-destinations>button>.icon:last-child{width:16px;height:16px;margin-left:auto;color:#87978b}.marin-destinations>button:hover{background:#f8faf7}.marin-destinations .messenger-unread{font-size:10px;border-radius:12px;padding:2px 5px;background:#eaf0e7;color:#415e45}.marin-conversation{display:none}.marin-home.has-conversation .marin-welcome{display:flex;align-items:center;justify-content:center;gap:9px;padding:0 0 12px}.marin-home.has-conversation .marin-welcome>img{width:74px;height:74px;margin:0}.marin-home.has-conversation .marin-welcome>div>span{font-size:14px;margin:0}.marin-home.has-conversation .marin-welcome h1{display:none}.marin-home.has-conversation .marin-conversation{display:block;max-height:calc(100dvh - 355px);min-height:150px;overflow-y:auto;padding:10px 12px 25px;scrollbar-width:thin;scrollbar-color:#cad6ca transparent;overscroll-behavior:contain}.marin-message{margin:0 0 29px;max-width:100%;font-size:14px;line-height:1.9;overflow-wrap:anywhere}.marin-message.user{margin-left:13%;padding:12px 17px;border-radius:14px;background:#f3f6f1}.marin-message .marin-speaker{display:block;font-size:10px;letter-spacing:.03em;color:#7a8a7d;margin-bottom:6px}.marin-message p{margin:0;white-space:pre-wrap}.marin-response-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}.marin-response-actions>button{display:flex;gap:10px;align-items:center;padding:8px 11px;border:1px solid #dce4d8;border-radius:7px;font-size:12px;background:#fff;color:#3c5b40;text-align:left;max-width:100%;overflow-wrap:anywhere}.marin-response-actions .icon{width:13px;height:13px;flex:none}.marin-thinking{font-size:12px;color:#758678;padding:4px 0}.marin-error{font-size:12px;line-height:1.7;color:#975441;padding:10px 5px;overflow-wrap:anywhere}.marin-error[hidden]{display:none}.marin-error>button{border:0;background:none;color:#3c6046;text-decoration:underline;font:inherit;padding:3px 5px}.marin-account-actions{display:flex;flex-wrap:wrap;gap:10px}.marin-back-home{display:flex;align-items:center;gap:7px;border:0;background:none;padding:7px 0;margin-right:9px;color:#526958;white-space:nowrap;font-size:11px}.marin-back-home>.icon{width:13px;height:13px}.marin-shell button:focus-visible,.marin-brand-home:focus-visible,.marin-back-home:focus-visible{outline:2px solid #496f51;outline-offset:4px}
+@media(max-width:700px){.marin-topbar{padding:17px 21px;min-height:64px}.marin-brand-home .brand-logo{width:38px}.marin-shell>main{padding:4px 22px 27px}.marin-welcome{padding-bottom:27px}.marin-welcome>img{width:218px;height:218px}.marin-welcome h1{font-size:25px}.marin-compose form{padding:13px 12px 13px 16px;border-radius:16px;gap:7px}.marin-compose textarea{font-size:16px;line-height:1.7}.marin-compose textarea::placeholder{font-size:13px}.marin-destinations{width:calc(100% - 44px);gap:22px;padding-bottom:max(19px,env(safe-area-inset-bottom))}.marin-destinations>button{padding:10px 7px;gap:9px;font-size:14px;min-height:58px}.marin-home.has-conversation .marin-conversation{max-height:calc(100dvh - 319px);padding:8px 3px 18px}.marin-message{font-size:13px}.marin-message.user{margin-left:8%;padding:10px 13px}.marin-back-home{margin-right:3px;font-size:10px;gap:4px}.marin-back-home+.crumb{display:none}.marin-account>span:not(.avatar){max-width:115px}}
+@media(max-height:680px) and (min-width:701px){.marin-topbar{min-height:56px;padding-top:12px;padding-bottom:12px}.marin-welcome>img{width:170px;height:170px}.marin-welcome{padding-bottom:22px}.marin-welcome h1{font-size:26px}.marin-shell>main{padding-bottom:20px}.marin-destinations{padding-bottom:18px}}
+@media(max-width:360px){.marin-topbar{padding:15px 17px}.marin-shell>main{padding-left:17px;padding-right:17px}.marin-welcome h1{font-size:23px}.marin-destinations{width:calc(100% - 34px);gap:17px}.marin-compose textarea::placeholder{font-size:12px}.marin-input-foot{font-size:9px}}
+.marin-compose .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.marin-shell:has(.marin-home.has-conversation){height:100dvh;min-height:0;overflow:hidden}
+.marin-shell:has(.marin-home.has-conversation)>main{min-height:0;align-items:stretch}
+.marin-home.has-conversation{display:flex;flex-direction:column;min-height:0;margin:0 auto}
+.marin-home.has-conversation .marin-welcome,.marin-home.has-conversation .marin-compose{flex:none}
+.marin-home.has-conversation .marin-conversation{flex:1;min-height:0;max-height:none}
+.marin-destinations{row-gap:0}
+.marin-workroom-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;max-width:900px}
+.marin-workroom-card{display:flex;align-items:center;gap:17px;min-width:0;min-height:124px;padding:24px;text-align:left;border:1px solid #dce3db;border-radius:12px;background:#fff;color:#344b3b}
+.marin-workroom-card>.icon:first-child{width:23px;height:23px;flex:none;color:#6b806e}
+.marin-workroom-card>span{min-width:0;flex:1}
+.marin-workroom-card strong{display:block;font-size:17px;font-weight:550;line-height:1.5}
+.marin-workroom-card small{display:block;margin-top:7px;font-size:12px;line-height:1.7;color:#647267;overflow-wrap:anywhere}
+.marin-workroom-card>.icon:last-child{width:16px;height:16px;flex:none;color:#87978b}
+.marin-workroom-card:hover{background:#f8faf7;border-color:#a8bba9}
+.marin-workroom-card:focus-visible{outline:2px solid #496f51;outline-offset:4px}
+@media(max-width:700px){.marin-workroom-grid{grid-template-columns:1fr;gap:12px}.marin-workroom-card{min-height:108px;padding:19px;gap:13px}.marin-workroom-card strong{font-size:16px}}
+/* Home · 2026-10-02. A compact welcome and four clear workspaces. */
+.marin-shell{color:#171b24}
+.marin-topbar{width:100%;max-width:1120px;margin:0 auto;padding:22px 36px;min-height:76px}
+.marin-brand-home{gap:14px;border-radius:6px;color:#171b24;text-decoration:none}
+.marin-brand-home .brand-logo{width:48px}
+.marin-brand-caption{font-size:12px;line-height:1.5;letter-spacing:-.02em;color:#657185}
+.marin-account{padding:7px 10px;gap:8px;border:1px solid #e5eaf2;border-radius:12px;color:#52637e;background:#fff;font-size:13px;min-height:42px}
+.marin-account:hover{background:#f5f8fe;border-color:#c5d6f5}
+.marin-account .avatar{background:#c5d6f5;color:#24448c;border-radius:8px;font-size:11px;width:27px;height:27px}
+.marin-home-layout{width:calc(100% - 64px);max-width:1000px;margin:auto;display:flex;flex-direction:column;gap:18px;padding:18px 0 34px;min-width:0}
+.marin-home-layout>main{min-height:0;min-width:0;padding:0}
+.marin-home-layout .marin-home{max-width:none;margin:0}
+.marin-home-layout .marin-welcome{display:grid;grid-template-columns:minmax(0,1fr) 230px;align-items:center;gap:24px;position:relative;isolation:isolate;text-align:left;padding:25px 36px;min-height:234px;border:1px solid #e1e8f4;border-radius:24px;background:linear-gradient(115deg,#f8faff,#f0f4fc);overflow:hidden}
+.marin-home-layout .marin-welcome:before{content:"";position:absolute;z-index:-1;right:54px;top:19px;bottom:15px;width:180px;border-radius:100px 100px 26px 26px;background:#e0e9fa;border:1px solid #d7e2f7}
+.marin-home-layout .marin-welcome:after{content:"";position:absolute;top:16px;right:112px;width:62px;height:17px;background:#ffebb0bc;border:1px solid #f5c44540;transform:rotate(-8deg)}
+.marin-home-layout .marin-welcome>.marin-mascot{grid-column:2;grid-row:1;order:2;width:205px;height:198px;max-width:100%;margin:0;justify-self:center;object-fit:contain;filter:drop-shadow(0 6px 4px #24448c0b)}
+.marin-home-layout .marin-welcome>div{grid-column:1;grid-row:1;min-width:0}
+.marin-home-layout .marin-welcome>div>span{display:inline-flex;align-items:center;padding:4px 8px;border:1px solid #d8e3f6;border-radius:7px;background:#fff;color:#24448c;font-size:11px;font-weight:600;margin-bottom:14px}
+.marin-home-layout .marin-welcome h1{font-size:36px;font-weight:780;line-height:1.35;letter-spacing:-.045em;color:#171b24;word-break:keep-all}
+.marin-welcome h1>span{background:linear-gradient(transparent 73%,#ffebb0 73%,#ffebb0 95%,transparent 95%)}
+.marin-welcome>div>p{margin:13px 0 0;font-size:13px;line-height:1.8;color:#626f84;word-break:keep-all}
+.marin-home-layout .marin-welcome>.marin-hero-sticker{position:absolute;right:34px;bottom:15px;z-index:2;width:77px;height:54px;object-fit:contain;transform:rotate(10deg);margin:0;filter:drop-shadow(0 2px 2px #24448c0b)}
+.marin-compose{margin-top:16px}
+.marin-compose form{min-height:68px;padding:17px 16px 17px 21px;gap:12px;border:1px solid #d6e1f2;border-radius:16px;box-shadow:0 4px 18px #24448c05;align-items:center}
+.marin-compose form:focus-within{border-color:#89a7df;box-shadow:0 0 0 3px #c5d6f548,0 4px 20px #24448c07}
+.marin-compose textarea{font-size:15px;color:#253249;line-height:1.8;max-height:144px}
+.marin-compose textarea::placeholder{font-size:14px;color:#626f84}
+.marin-compose button[type=submit]{width:36px;height:36px;border-radius:10px;background:linear-gradient(180deg,#4674cf,#355fb8);border:1px solid #315db8;box-shadow:0 2px 0 #24448c,inset 0 1px 0 #ffffff35}
+.marin-compose button[type=submit]:hover:not(:disabled){background:#24448c}
+.marin-compose button[type=submit]:disabled{background:#edf2fa;color:#788ba8;border-color:#e4eaf4;box-shadow:none;opacity:1}
+.marin-input-foot{padding:10px 3px 0;color:#626f84;font-size:11px;line-height:1.7}
+.marin-input-foot>button{font-size:11px;color:#24448c}
+.marin-home-layout .marin-destinations{width:100%;max-width:none;margin:0;padding:0;gap:14px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.marin-home-layout .marin-destinations>button{min-width:0;min-height:98px;padding:20px;gap:15px;border:1px solid #e0e6ef;border-radius:16px;background:#fff;color:#24324b;position:relative;transition:background .15s,border-color .15s,box-shadow .15s}
+.marin-home-layout .marin-destinations>button:hover{background:#f7faff;border-color:#b5c9ec;box-shadow:0 4px 13px #24448c06}
+.marin-destination-icon{width:44px;height:44px;flex:none;display:grid;place-items:center;border:1px solid #d9e4f7;border-radius:13px;background:#edf2fc;color:#24448c}
+.marin-destination-icon>.icon{width:21px;height:21px}
+[data-tab=handbook]>.marin-destination-icon{background:#fff5d7;border-color:#f5e6ba;color:#7e5a10}
+[data-tab=marketing]>.marin-destination-icon{background:#eef6e7;border-color:#ddeccd;color:#3f6b2e}
+[data-tab=messenger]>.marin-destination-icon{background:#fdecf4;border-color:#f5d9e7;color:#99295d}
+.marin-destination-copy{min-width:0;flex:1}
+.marin-destination-copy>strong{display:block;font-size:17px;font-weight:750;line-height:1.5;letter-spacing:-.025em}
+.marin-destination-copy>small{display:block;margin-top:5px;font-size:12px;line-height:1.7;color:#626f84;overflow-wrap:anywhere;word-break:keep-all}
+.marin-home-layout .marin-destinations>button>.icon:last-child{width:17px;height:17px;margin-left:0;flex:none;color:#7183a4}
+.marin-destinations .messenger-unread{padding:3px 6px;min-width:21px;border-radius:7px;background:#3d6bc9;color:#fff;font-size:11px;text-align:center}
+.marin-shell button:focus-visible,.marin-brand-home:focus-visible{outline:2px solid #3d6bc9;outline-offset:4px}
+.marin-message{font-size:15px;line-height:1.85;color:#253249}
+.marin-message.user{background:#edf2fc;border-radius:13px}
+.marin-message .marin-speaker{font-size:11px;color:#657591}
+.marin-response-actions>button{font-size:13px;color:#24448c;border-color:#dbe5f5;border-radius:10px;padding:9px 12px}
+.marin-response-actions>button:hover{background:#f2f6fe}
+.marin-thinking{color:#626f84}
+.marin-error{color:#84251f}.marin-error>button{color:#24448c}
+.marin-shell:has(.marin-home.has-conversation) .marin-home-layout{flex:1;min-height:0;margin:0 auto;padding-top:10px;padding-bottom:20px;gap:16px}
+.marin-shell:has(.marin-home.has-conversation) .marin-home-layout>main{flex:1;min-height:0;display:flex}
+.marin-home-layout .marin-home.has-conversation{flex:1;min-height:0}
+.marin-home-layout .marin-home.has-conversation .marin-welcome{display:flex;min-height:54px;max-height:54px;justify-content:flex-start;gap:10px;padding:0 2px 8px;border:0;border-radius:0;background:transparent;overflow:visible;flex:none}
+.marin-home-layout .marin-home.has-conversation .marin-welcome:before,.marin-home-layout .marin-home.has-conversation .marin-welcome:after{display:none}
+.marin-home-layout .marin-home.has-conversation .marin-welcome>.marin-mascot{width:48px;height:48px;order:0;margin:0;filter:none}
+.marin-home-layout .marin-home.has-conversation .marin-welcome>div>span{font-size:14px;padding:0;background:transparent;border:0;color:#24448c;margin:0}
+.marin-home.has-conversation .marin-welcome h1,.marin-home.has-conversation .marin-welcome>div>p,.marin-home.has-conversation .marin-hero-sticker{display:none}
+.marin-home-layout .marin-home.has-conversation .marin-conversation{padding:16px 9px 20px;border-top:1px solid #e8edf5;scrollbar-color:#d5deed transparent}
+.marin-shell:has(.marin-home.has-conversation) .marin-destinations>button{min-height:62px;padding:12px 16px;gap:12px}
+.marin-shell:has(.marin-home.has-conversation) .marin-destination-icon{width:33px;height:33px;border-radius:10px}
+.marin-shell:has(.marin-home.has-conversation) .marin-destination-icon>.icon{width:17px;height:17px}
+.marin-shell:has(.marin-home.has-conversation) .marin-destination-copy>strong{font-size:14px}
+.marin-shell:has(.marin-home.has-conversation) .marin-destination-copy>small{display:none}
+@media(max-width:700px){
+  .marin-topbar{min-height:64px;padding:16px 22px}.marin-brand-home{gap:11px}.marin-brand-home .brand-logo{width:41px}.marin-brand-caption{font-size:11px}.marin-account{min-height:36px;padding:5px 7px;font-size:12px}
+  .marin-home-layout{width:calc(100% - 40px);gap:16px;padding:12px 0 26px;margin:24px auto auto}
+  .marin-home-layout .marin-welcome{padding:19px 21px;min-height:173px;grid-template-columns:minmax(0,1fr) 108px;gap:9px;border-radius:18px}
+  .marin-home-layout .marin-welcome h1{font-size:27px;line-height:1.4}.marin-home-layout .marin-welcome>div>span{font-size:10px;margin-bottom:10px;padding:3px 6px}
+  .marin-welcome>div>p{display:none}.marin-home-layout .marin-welcome>.marin-mascot{width:117px;height:132px}
+  .marin-home-layout .marin-welcome:before{width:96px;right:27px;top:16px;bottom:14px;border-radius:55px 55px 18px 18px}.marin-home-layout .marin-welcome:after{right:53px;top:13px;width:45px;height:13px}
+  .marin-home-layout .marin-welcome>.marin-hero-sticker{width:45px;height:33px;right:14px;bottom:11px}
+  .marin-compose{margin-top:14px}.marin-compose form{min-height:64px;padding:13px 11px 13px 15px;gap:8px;border-radius:13px}.marin-compose textarea{font-size:16px}.marin-compose textarea::placeholder{font-size:13px}.marin-compose button[type=submit]{width:33px;height:33px;border-radius:9px}
+  .marin-input-foot{padding-top:8px;font-size:10px}
+  .marin-home-layout .marin-destinations{gap:12px}.marin-home-layout .marin-destinations>button{min-height:98px;align-items:flex-start;padding:14px 13px;gap:10px;border-radius:13px;flex-wrap:wrap}
+  .marin-destination-icon{width:32px;height:33px;border-radius:9px}.marin-destination-icon>.icon{width:17px;height:17px}.marin-destination-copy{flex-basis:calc(100% - 44px)}.marin-destination-copy>strong{font-size:15px}.marin-destination-copy>small{font-size:11px;line-height:1.7;margin-top:4px}
+  .marin-home-layout .marin-destinations>button>.icon:last-child{position:absolute;right:12px;top:15px;width:12px;height:12px}.marin-destination-copy>strong{padding-right:12px}.marin-destinations .messenger-unread{position:absolute;right:10px;bottom:9px;font-size:10px}
+  .marin-message{font-size:14px}.marin-message.user{margin-left:7%;padding:11px 13px}
+  .marin-shell:has(.marin-home.has-conversation) .marin-home-layout{padding-top:5px;padding-bottom:max(15px,env(safe-area-inset-bottom));gap:13px}
+  .marin-shell:has(.marin-home.has-conversation) .marin-destinations>button{min-height:54px;padding:11px;align-items:center;gap:8px;flex-wrap:nowrap}
+  .marin-shell:has(.marin-home.has-conversation) .marin-destination-copy{flex-basis:auto}.marin-shell:has(.marin-home.has-conversation) .marin-destination-copy>strong{font-size:13px}
+  .marin-shell:has(.marin-home.has-conversation) .marin-destination-icon{width:29px;height:29px}.marin-shell:has(.marin-home.has-conversation) .marin-destinations>button>.icon:last-child{display:none}
+}
+@media(max-width:360px){
+  .marin-topbar{min-height:60px;padding:14px 17px}.marin-brand-caption{font-size:10px}.marin-brand-home{gap:9px}.marin-account{font-size:11px;gap:6px}
+  .marin-home-layout{width:calc(100% - 32px);padding:9px 0 21px;gap:14px}
+  .marin-home-layout .marin-welcome{padding:15px 14px;grid-template-columns:minmax(0,1fr) 82px;min-height:145px;gap:8px}.marin-home-layout .marin-welcome h1{font-size:22px}.marin-home-layout .marin-welcome>.marin-mascot{width:89px;height:111px}.marin-home-layout .marin-welcome:before{width:80px;right:16px;top:13px;bottom:13px}.marin-home-layout .marin-welcome:after{right:35px;top:9px;width:43px}.marin-home-layout .marin-welcome>.marin-hero-sticker{width:39px;height:29px;right:8px;bottom:10px}
+  .marin-compose textarea::placeholder{font-size:12px}.marin-home-layout .marin-destinations{gap:10px}.marin-home-layout .marin-destinations>button{padding:12px 10px;gap:7px;min-height:96px}.marin-destination-icon{width:27px;height:29px}.marin-destination-copy{flex-basis:calc(100% - 35px)}.marin-destination-copy>strong{font-size:14px}.marin-destination-copy>small{font-size:11px}.marin-home-layout .marin-destinations>button>.icon:last-child{right:9px;top:14px}
+}
+@media(min-width:701px) and (max-height:740px){
+  .marin-topbar{min-height:64px;padding-top:15px;padding-bottom:15px}.marin-home-layout{padding:10px 0 25px;gap:15px}.marin-home-layout .marin-welcome{min-height:203px;padding-top:19px;padding-bottom:19px}.marin-home-layout .marin-welcome h1{font-size:32px}.marin-home-layout .marin-welcome>.marin-mascot{width:177px;height:165px}.marin-home-layout .marin-welcome:before{right:61px;width:164px;top:13px;bottom:12px}.marin-home-layout .marin-welcome:after{top:9px}.marin-home-layout .marin-destinations>button{min-height:86px;padding:16px 20px}.marin-compose{margin-top:14px}
+}
+@media(min-width:701px) and (max-height:640px){
+  .marin-topbar{min-height:60px;padding-top:12px;padding-bottom:12px}.marin-home-layout{padding-top:8px;padding-bottom:18px;gap:12px}.marin-home-layout .marin-welcome{min-height:176px;padding:15px 32px}.marin-home-layout .marin-welcome h1{font-size:30px;line-height:1.3}.marin-home-layout .marin-welcome>div>span{margin-bottom:10px}.marin-welcome>div>p{margin-top:10px}.marin-home-layout .marin-welcome>.marin-mascot{height:146px;width:160px}.marin-compose{margin-top:12px}.marin-compose form{min-height:64px;padding-top:13px;padding-bottom:13px}.marin-home-layout .marin-destinations>button{min-height:79px;padding-top:13px;padding-bottom:13px}
+}
+@media(prefers-reduced-motion:reduce){.marin-shell *{transition:none!important;scroll-behavior:auto!important}}

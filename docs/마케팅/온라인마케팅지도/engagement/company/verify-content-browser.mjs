@@ -1,0 +1,97 @@
+// Disposable database. No external requests or real company content mutations.
+import assert from 'node:assert/strict';
+import {mkdtemp,mkdir,rm,writeFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {dirname,join} from 'node:path';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+import {createCompanyApp} from './server.mjs';
+const here=dirname(fileURLToPath(import.meta.url));
+const {chromium}=await import(pathToFileURL(process.env.SYNK_PLAYWRIGHT_MODULE));
+const dir=await mkdtemp(join(tmpdir(),'synk-content-browser-')),checks=[],errors=[];
+const app=createCompanyApp({dataDir:dir,port:4194,schedule:false});
+let browser;
+try{
+  await app.start();
+  const admin=app.store.createUser({name:'검증 작성자',email:'content-fixture@example.test',role:'admin',password:'Content-fixture-password'});
+  const viewer=app.store.createUser({name:'검증 열람자',email:'viewer-fixture@example.test',role:'viewer',password:'Viewer-fixture-password'});
+  browser=await chromium.launch({headless:true,executablePath:process.env.SYNK_BROWSER_EXE});
+  const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage();
+  page.on('pageerror',e=>errors.push(e.message));
+  page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+  await context.route('**/*',route=>new URL(route.request().url()).origin===app.origin?route.continue():route.abort());
+  const login=async(email,password)=>{await page.goto(app.origin);await page.locator('[name="email"]').fill(email);await page.locator('[name="password"]').fill(password);await page.locator('[data-form="auth"] [type="submit"]').click();await page.locator('.sidebar').waitFor();};
+  await login(admin.email,'Content-fixture-password');
+  await page.locator('.nav-item[data-tab="content"]').click();
+  await page.locator('.cp-tabs [data-view="plan"]').click();await page.locator('[data-cp-form="generate"]').waitFor();
+  assert.equal(await page.locator('[name="seriesId"] option').count(),10);
+  assert.equal(await page.locator('[name^="auth-"]').count(),4);checks.push('catalog-and-authenticity-form');
+  await page.locator('[name="topic"]').fill('검증용 회의 메모 정리');
+  await page.locator('[name="experience"]').fill('검증용 경험: 메모에서 담당자를 빠뜨렸다.');
+  await page.locator('[name="takeaway"]').fill('담당자와 기한을 원본과 대조하기');
+  await page.locator('[name="entertainment"]').fill('누락된 항목을 함께 찾아보기');
+  await page.locator('[name="auth-basis"]').fill('검증용 직접 경험');
+  await page.locator('[name="auth-ownPerspective"]').fill('속도보다 정확한 전달을 우선한다.');
+  await page.locator('[name="auth-limits"]').fill('담당자가 없는 문장은 직접 확인한다.');
+  await page.locator('[name="auth-disclosure"]').fill('협찬 없음. 연출 시 재구성 표시.');
+  await page.locator('[data-cp-form="generate"] [type="submit"]').click();
+  await page.locator('.cp-result').waitFor();
+  assert.equal(await page.locator('.cp-idea-option').count(),3);
+  assert.match(await page.locator('.cp-review').innerText(),/검증용 직접 경험/);
+  assert.equal(app.store.all('contentDrafts').length,1);checks.push('three-ideas-saved-and-authenticity-preserved');
+  await page.locator('.cp-idea-option').nth(1).click();
+  await page.locator('[data-action="cp-select-idea"]').click();
+  await page.getByRole('button',{name:'이 구성으로 선택됨',exact:true}).waitFor();
+  const selected=app.store.all('contentDrafts')[0].selectedIdeaId;assert.ok(selected);
+  await page.locator('[data-cp-status]').selectOption('review');
+  await page.waitForFunction(()=>document.querySelector('[data-cp-status]')?.value==='review');
+  const exportResponse=await context.request.get(app.origin+'/api/content-drafts/'+app.store.all('contentDrafts')[0].id+'/export');
+  assert.equal(exportResponse.status(),200);assert.match(await exportResponse.text(),/진정성 검토/);checks.push('idea-selection-status-and-export');
+  await mkdir(join(here,'verification'),{recursive:true});
+  await page.screenshot({path:join(here,'verification/content-result-fixture.png'),fullPage:false});
+  for(const width of [1440,1024,768,390,320]){
+    await page.setViewportSize({width,height:1000});
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`result overflow ${width}`);
+  }
+  checks.push('result-responsive-five-widths');
+  await page.setViewportSize({width:1440,height:1000});
+  await page.locator('[data-action="cp-view"][data-view="discover"]').click();
+  await page.locator('[name="query"]').fill('AI 활용');
+  await page.locator('[data-cp-form="search"] [type="submit"]').click();
+  await page.locator('.cp-search-output').waitFor();
+  assert.ok(await page.locator('.cp-external-links a').count()>0);checks.push('unconfigured-search-honest-external-links');
+  await page.locator('.cp-reference-library [data-action="cp-reference"]').first().click();
+  await page.locator('[data-cp-form="reference"] [name="url"]').fill('https://www.instagram.com/reel/FIXTURE_TEST/');
+  await page.locator('[data-cp-form="reference"] [name="title"]').fill('검증 전용 참고 자료');
+  await page.locator('[data-cp-form="reference"] [name="likes"]').fill('42');
+  await page.locator('[data-cp-form="reference"] [name="formatNotes"]').fill('질문 → 실제 비교 → 적용 방법');
+  await page.locator('[data-cp-form="reference"] [type="submit"]').click();
+  await page.locator('.cp-reference-library .cp-reference-row').waitFor();
+  assert.equal(app.store.all('contentReferences')[0].metrics.views,null);checks.push('reference-saved-missing-metrics-not-zero');
+  await page.locator('[data-action="cp-use-reference"]').click();
+  assert.equal(await page.locator('[name="referenceId"]').inputValue(),app.store.all('contentReferences')[0].id);
+  for(const width of [1440,1024,768,390,320]){
+    await page.setViewportSize({width,height:1000});
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`form overflow ${width}`);
+  }
+  checks.push('reference-to-plan-and-form-responsive');
+  await page.setViewportSize({width:390,height:1000});
+  await page.screenshot({path:join(here,'verification/content-composer-mobile-fixture.png'),fullPage:true});
+  await page.setViewportSize({width:1440,height:1000});
+  await page.locator('[data-action="cp-view"][data-view="library"]').click();
+  await page.locator('.cp-draft-row').click();await page.locator('.cp-result').waitFor();
+  assert.equal(await page.locator('.cp-idea-option.active').getAttribute('data-id'),selected);checks.push('saved-plan-restored');
+  await page.locator('[data-action="cp-guide"]').click();await page.locator('[role="dialog"]').waitFor();
+  assert.match(await page.locator('.modal-body').innerText(),/진정성/);await page.keyboard.press('Escape');checks.push('guide-dialog-keyboard');
+  await page.locator('.sidebar [data-action="logout"]').click();
+  await login(viewer.email,'Viewer-fixture-password');
+  await page.locator('.nav-item[data-tab="content"]').click();await page.locator('.cp-tabs [data-view="plan"]').click();await page.locator('[data-cp-form="generate"]').waitFor();
+  assert.equal(await page.locator('[data-cp-form="generate"] [type="submit"]').isDisabled(),true);
+  await page.locator('[data-action="cp-view"][data-view="library"]').click();assert.equal(await page.locator('.cp-draft-row').count(),0);checks.push('logout-clears-drafts-and-viewer-readonly');
+  assert.deepEqual(errors,[]);
+  await writeFile(join(here,'verification/content-browser-results.json'),JSON.stringify({checks,errors},null,2));
+  console.log(JSON.stringify({passed:checks.length,checks,errors},null,2));
+}finally{
+  if(browser)await browser.close();await app.stop();
+  if(!dir.startsWith(join(tmpdir(),'synk-content-browser-')))throw new Error('Unexpected cleanup target');
+  await rm(dir,{recursive:true,force:true});
+}

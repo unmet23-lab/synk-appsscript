@@ -1,0 +1,13 @@
+{
+  "id": "/?app=synk-messenger",
+  "name": "SYNK 사내 메신저",
+  "short_name": "SYNK 메신저",
+  "description": "초대받은 SYNK 직원의 대화와 업무 공간. 인터넷 연결이 필요합니다.",
+  "lang": "ko",
+  "start_url": "/?tab=messenger",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [{ "src": "/messenger-icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" }]
+}

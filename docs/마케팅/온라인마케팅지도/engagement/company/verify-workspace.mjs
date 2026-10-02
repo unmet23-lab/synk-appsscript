@@ -1,0 +1,105 @@
+// End-to-end verification with temporary databases and synthetic users only.
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { tmpdir, homedir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createServer } from 'node:net';
+import { createCompanyApp } from './server.mjs';
+const require = createRequire(import.meta.url);
+const { chromium } = require(process.env.MESSENGER_PLAYWRIGHT || join(homedir(), '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
+const here = dirname(fileURLToPath(import.meta.url));
+const dir = await mkdtemp(join(tmpdir(), 'synk-workspace-ui-'));
+const probe = createServer(); await new Promise(resolve => probe.listen(0, '127.0.0.1', resolve));
+const port = probe.address().port; await new Promise(resolve => probe.close(resolve));
+const app = createCompanyApp({ dataDir: dir, port, schedule: false });
+let browser;
+const report = { checks: [], errors: [], externalRequests: [], screenshots: [] };
+function check(name, condition = true) { assert.ok(condition, name); report.checks.push(name); }
+try {
+  const password = 'workspace-browser-fixture-password';
+  for (const role of ['admin', 'member', 'viewer']) app.store.createUser({ email: `${role}@example.test`, name: `검증 ${role}`, role, password });
+  const address = await app.start(), base = `http://127.0.0.1:${address.port}`;
+  await mkdir(join(here, 'verification'), { recursive: true });
+  browser = await chromium.launch({ headless: true, executablePath: process.env.MESSENGER_CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe' });
+  const context = await browser.newContext({ viewport: { width: 1440, height: 960 } });
+  const page = await context.newPage();
+  page.on('pageerror', e => report.errors.push(e.message));
+  page.on('request', r => { if (!r.url().startsWith(base) && !r.url().startsWith('data:')) report.externalRequests.push(r.url()); });
+  await page.goto(base);
+  await page.locator('[name=email]').fill('admin@example.test');
+  await page.locator('[name=password]').fill(password);
+  await page.locator('[data-form=auth] button[type=submit]').click();
+  await page.locator('.workspace-sections').waitFor(); check('One login opens shared workspace home');
+  check('Two primary work areas', await page.locator('.nav-list .nav-item').count() === 2);
+  check('Marketing holds five sections', await page.locator('.workspace-sections button').count() === 5);
+  const tab = name => page.locator(`.nav-item[data-tab="${name}"]`).first();
+  const marketing = async section => {
+    await tab('marketing').click();
+    await page.locator(`[data-action="marketing-section"][data-tab="${section === 'overview' ? 'all' : section}"]`).click();
+  };
+  await tab('messenger').click();
+  const frame = page.frameLocator('#messenger-frame');
+  await frame.locator('#composer-input').waitFor(); check('Messenger opens with company session and no second login');
+  const bootstrap = await (await context.request.get(base + '/messenger/api/bootstrap')).json();
+  check('Company admin has integrated identity', bootstrap.integrated.role === 'admin');
+  const channel = bootstrap.channels.find(c => c.kind === 'channel');
+  await frame.locator(`[data-channel="${channel.id}"]`).click();
+  await frame.locator('#composer-input').fill('왕복해도 보존하는 초안');
+  await marketing('content'); await page.locator('#workspace-messenger').waitFor({ state: 'hidden' });
+  await tab('messenger').click();
+  check('Draft survives navigation', await frame.locator('#composer-input').inputValue() === '왕복해도 보존하는 초안');
+  await frame.locator('#composer-input').fill('통합 화면에서 보낸 메시지'); await frame.locator('#send-message').click();
+  await frame.getByText('통합 화면에서 보낸 메시지', { exact: true }).waitFor(); check('Message sends through common session');
+  await frame.locator('#file-input').setInputFiles({ name: '통합 검증.txt', mimeType: 'text/plain', buffer: Buffer.from('workspace attachment fixture') });
+  await frame.locator('#send-message:not([disabled])').waitFor();
+  await frame.locator('#send-message').click();
+  await frame.locator('a[href^="/messenger/api/files/"]').first().waitFor();
+  const fileUrl = await frame.locator('a[href^="/messenger/api/files/"]').first().getAttribute('href');
+  const downloaded = await context.request.get(base + fileUrl);
+  check('Mounted attachment downloads original bytes', (await downloaded.body()).toString() === 'workspace attachment fixture');
+  await marketing('content'); await page.getByRole('button', {name:'좋은 콘텐츠', exact:true}).click(); await page.getByRole('button', { name: '현재 화면을 대화 초안으로 공유' }).click();
+  await frame.locator('#composer-input').filter({ visible: true }).waitFor();
+  await page.waitForFunction(() => document.querySelector('#messenger-frame')?.contentDocument?.querySelector('#composer-input')?.value.includes('#view=content'));
+  check('Content examples link added to draft without automatic send', (await frame.locator('#composer-input').inputValue()).includes('좋은 콘텐츠'));
+  check('Content section retained in shared link', (await frame.locator('#composer-input').inputValue()).includes('section=examples'));
+  await frame.locator('#composer-input').fill('');
+  // A hidden persistent module must not mark incoming messages as read.
+  await marketing('overview');
+  const other = await browser.newContext();
+  const login = await other.request.post(base + '/api/login', { data: { email: 'member@example.test', password }, headers: { Origin: base } });
+  const memberSession = await login.json();
+  await other.request.get(base + '/messenger/api/bootstrap');
+  const incoming = await other.request.post(base + `/messenger/api/channels/${channel.id}/messages`, { data: { body: '다른 업무 중 도착한 메시지' }, headers: { Origin: base, 'X-CSRF-Token': memberSession.csrfToken } });
+  assert.equal(incoming.status(), 201);
+  await page.locator('.sidebar .messenger-unread:not([hidden])').waitFor();
+  check('Hidden chat does not consume unread messages', (await (await context.request.get(base + '/api/workspace-summary')).json()).messenger.unread > 0);
+  await tab('messenger').click(); await frame.getByText('다른 업무 중 도착한 메시지', { exact: true }).waitFor();
+  await page.locator('.sidebar .messenger-unread').waitFor({ state: 'hidden' }); check('Opening conversation clears actual unread state');
+  for (const width of [1440, 900, 768, 390, 320]) {
+    await page.setViewportSize({ width, height: width < 500 ? 844 : 960 });
+    await page.waitForTimeout(150);
+    check(`No parent overflow at ${width}`, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+    check(`No messenger overflow at ${width}`, await frame.locator('body').evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+    const name = `workspace-messenger-${width}.png`; await page.screenshot({ path: join(here, 'verification', name), fullPage: true }); report.screenshots.push(name);
+  }
+  await page.setViewportSize({ width: 1440, height: 960 });
+  await marketing('overview'); await page.screenshot({ path: join(here, 'verification', 'workspace-home.png'), fullPage: true });
+  const viewer = await browser.newContext(); const viewerPage = await viewer.newPage();
+  await viewer.request.post(base + '/api/login', { data: { email: 'viewer@example.test', password }, headers: { Origin: base } });
+  await viewerPage.goto(base + '/?tab=messenger');
+  const viewerFrame = viewerPage.frameLocator('#messenger-frame'); await viewerFrame.locator('#composer-input').waitFor();
+  check('Viewer composer is read-only', await viewerFrame.locator('#composer-input').getAttribute('readonly') !== null);
+  await page.locator('.sidebar [data-action=logout]').click(); await page.locator('[data-form=auth]').waitFor();
+  check('Logout removes chat frame and shared access', await page.locator('#messenger-frame').count() === 0);
+  check('No browser errors', report.errors.length === 0); check('No external service requests', report.externalRequests.length === 0);
+  await other.close(); await viewer.close();
+  report.passed = true;
+  console.log(JSON.stringify({ passed: true, checks: report.checks.length, screenshots: report.screenshots.length, errors: report.errors.length }));
+} finally {
+  await writeFile(join(here, 'verification', 'workspace-ui-report.json'), JSON.stringify(report, null, 2));
+  await browser?.close(); await app.stop();
+  if (!dir.startsWith(join(tmpdir(), 'synk-workspace-ui-'))) throw new Error('Unexpected cleanup location');
+  await rm(dir, { recursive: true, force: true });
+}

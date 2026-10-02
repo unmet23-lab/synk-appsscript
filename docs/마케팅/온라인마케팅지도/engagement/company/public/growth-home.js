@@ -1,0 +1,64 @@
+'use strict';
+
+const GROWTH_HOME_METRICS=[['views','조회수','회'],['likes','좋아요','개'],['followers','팔로워·구독자','명'],['comments','댓글','개'],['shares','공유','회'],['saves','저장','회'],['reach','도달','명']];
+const growthKnown=value=>typeof value==='number'&&Number.isFinite(value);
+const growthEscape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const growthNumber=value=>growthKnown(value)?new Intl.NumberFormat('ko-KR',{maximumFractionDigits:1}).format(value):'—';
+const growthSigned=value=>growthKnown(value)?`${value>0?'+':''}${growthNumber(value)}`:'—';
+function growthMetric(){return GROWTH_HOME_METRICS.find(([key])=>key===(typeof state!=='undefined'?state.metric:''))||GROWTH_HOME_METRICS[0];}
+function growthDate(value){return /^\d{4}-\d{2}-\d{2}$/.test(String(value||''))?`${Number(value.slice(5,7))}.${Number(value.slice(8,10))}`:'날짜 확인 전';}
+function growthRange(period){return period?.start&&period?.end?`${growthDate(period.start)} – ${growthDate(period.end)}`:'기록 확인 전';}
+function growthCoverage(part,label='확인'){return growthKnown(part?.count)&&growthKnown(part?.eligible)?`${growthNumber(part.count)}/${growthNumber(part.eligible)}개 ${label}`:'관측 수 확인 전';}
+function growthCompact(value){const absolute=Math.abs(value);return absolute>=1e8?`${growthNumber(value/1e8)}억`:absolute>=1e4?`${growthNumber(value/1e4)}만`:growthNumber(value);}
+
+// Incomplete observations are isolated points, never bridges between complete days.
+function growthSeries(growth,metric,previous=false){
+  const field=previous?'previous':'current',valueKey=previous?'previousValue':'value',dateKey=previous?'previousDate':'date';
+  const rows=(metric?.trend||[]).filter(row=>growthKnown(row.day)&&row.day>=1).slice().sort((a,b)=>a.day-b.day).map(row=>({day:row.day,date:row[dateKey]||null,value:row[dateKey]&&(!growth.asOf||previous||row.date<=growth.asOf)&&growthKnown(row[valueKey])?row[valueKey]:null,complete:row[field]?.complete===true,count:row[field]?.count,eligible:row[field]?.eligible}));
+  if(rows[0]?.day===1&&rows[0].complete&&growthKnown(rows[0].value))rows.unshift({day:0,date:metric.trend[0]?.[field]?.baseDate||null,value:0,complete:true,baseline:true});
+  return rows;
+}
+function growthSegments(rows){
+  const segments=[];let current=[];
+  for(const row of rows){if(!row.complete||!growthKnown(row.value)){if(current.length)segments.push(current);current=[];continue;}if(current.length&&row.day!==current[current.length-1].day+1){segments.push(current);current=[];}current.push(row);}
+  if(current.length)segments.push(current);return segments;
+}
+function growthChart(growth,metric,definition){
+  const [key,label,unit]=definition,weeklyMetric={trend:metric.week?.trend||[]},current=growthSeries(growth,weeklyMetric),previous=growthSeries(growth,weeklyMetric,true),values=[...current,...previous].map(row=>row.value).filter(growthKnown);
+  const niceBound=value=>{const magnitude=10**Math.floor(Math.log10(Math.abs(value)||1)),scaled=Math.abs(value)/magnitude;return([1,2,5,10].find(step=>step>=scaled)||10)*magnitude;};
+  const lower=Math.min(0,...values),upper=Math.max(0,...values),min=lower<0?-niceBound(lower):0,max=upper>0?niceBound(upper):lower===0?1:0,extent=max-min||1;
+  const days=Math.max(1,growth.week?.current?.days||0,...current.map(row=>row.day),...previous.map(row=>row.day));
+  const renderSvg=(mobile=false)=>{
+  const width=mobile?360:820,height=mobile?230:300,left=mobile?49:62,right=mobile?13:23,top=20,bottom=38,chartWidth=width-left-right,chartHeight=height-top-bottom,x=day=>left+day/days*chartWidth,y=value=>top+(max-value)/extent*chartHeight,xy=row=>`${x(row.day).toFixed(2)},${y(row.value).toFixed(2)}`;
+  const tickValues=[max,(max+min)/2,min].filter((value,index,array)=>array.indexOf(value)===index),ticks=tickValues.map(value=>`<g><line class="growth-grid-line" x1="${left}" x2="${width-right}" y1="${y(value).toFixed(2)}" y2="${y(value).toFixed(2)}"/><text class="growth-axis-label" x="${left-12}" y="${(y(value)+4).toFixed(2)}" text-anchor="end">${growthEscape(growthCompact(value))}</text></g>`).join('');
+  const zero=`<line class="growth-zero-line" x1="${left}" x2="${width-right}" y1="${y(0).toFixed(2)}" y2="${y(0).toFixed(2)}"/>`,dayTicks=Array.from({length:days+1},(_,day)=>`<text class="growth-axis-label" x="${x(day).toFixed(2)}" y="${height-12}" text-anchor="${day===0?'start':day===days?'end':'middle'}">${day===0?'시작':['월','화','수','목','금','토','일'][day-1]||`${day}일`}</text>`).join('');
+  const series=(rows,isPrevious)=>{
+    const className=isPrevious?'is-previous':'is-current',paths=growthSegments(rows).filter(segment=>segment.length>1).map(segment=>`<polyline class="growth-curve ${className}" points="${segment.map(xy).join(' ')}" fill="none" vector-effect="non-scaling-stroke"/>`).join('');
+    const points=rows.filter(row=>growthKnown(row.value)&&!row.baseline).map(row=>{const description=`${isPrevious?'지난주':'이번 주'} ${row.date||`${row.day}일`} · ${label} ${key==='followers'?'순증':'누적 증가'} ${growthSigned(row.value)} ${unit} · ${growthCoverage(row,'비교')}${row.complete?'':' · 일부 기록'}`;return`<circle class="growth-dot ${className}${row.complete?'':' is-partial'}" cx="${x(row.day).toFixed(2)}" cy="${y(row.value).toFixed(2)}" r="${row.complete?'3.3':'4'}" vector-effect="non-scaling-stroke"><title>${growthEscape(description)}</title></circle>`;}).join('');
+    return paths+points;
+  };
+  return`<svg class="growth-chart-svg ${mobile?'is-mobile':'is-desktop'}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${growthEscape(summary)}"><title>${growthEscape(label)} · 주 시작 대비 ${key==='followers'?'순증':'누적 증가'}</title>${ticks}${zero}${series(previous,true)}${series(current,false)}${dayTicks}</svg>`;
+  };
+  const fullCurrent=current.filter(row=>!row.baseline&&growthKnown(row.value)&&row.complete).length,fullPrevious=previous.filter(row=>!row.baseline&&growthKnown(row.value)&&row.complete).length,partial=[...current,...previous].some(row=>growthKnown(row.value)&&!row.complete),hasValues=values.length>0;
+  const summary=`${label} 주 시작 대비 누적 증가 그래프, 단위 ${unit}. 이번 주 ${growthRange(growth.week?.current)}, ${fullCurrent}일 전체 관측. 지난주 같은 요일까지 ${growthRange(growth.week?.previous)}, ${fullPrevious}일 전체 관측. 두 선은 같은 0 기준과 눈금을 사용하며 미수집 구간은 연결하지 않습니다.`;
+  const chart=hasValues?renderSvg()+renderSvg(true):'<div class="growth-chart-empty"><strong>이번 주의 기록을 기다리고 있어요</strong><p>주 시작 전날과 이후 기록이 모이면 그래프가 나타나요.<br>수집하지 않은 날은 0으로 표시하지 않아요.</p></div>';
+  const table=weeklyMetric.trend.map(raw=>{const observed=current.find(row=>row.day===raw.day),prior=previous.find(row=>row.day===raw.day);return{...raw,value:observed?.value??null,previousValue:prior?.value??null};}).map(row=>`<tr><th scope="row">${growthEscape(['월','화','수','목','금','토','일'][row.day-1]||row.day)}</th><td>${growthEscape(row.date||'—')}</td><td>${growthEscape(growthSigned(row.value))}${growthKnown(row.value)&&row.current?.complete!==true?' (일부 기록)':''}</td><td>${growthEscape(row.previousDate||'—')}</td><td>${growthEscape(growthSigned(row.previousValue))}${growthKnown(row.previousValue)&&row.previous?.complete!==true?' (일부 기록)':''}</td></tr>`).join('');
+  return `<section class="growth-chart-section" aria-label="이번 주의 흐름"><div class="growth-chart-head"><div><h2>이번 주의 흐름</h2><p>주 시작 대비 ${key==='followers'?'팔로워·구독자 순증':'누적 증가'} <span>· ${growthEscape(unit)}</span></p></div><div class="growth-chart-legend"><span><i class="is-current" aria-hidden="true"></i>이번 주 <small>${growthEscape(growthRange(growth.week?.current))}</small></span><span><i class="is-previous" aria-hidden="true"></i>지난주 <small>${growthEscape(growthRange(growth.week?.previous))} · 같은 요일까지</small></span></div></div>${chart}<div class="growth-chart-meta"><span>전체 관측일 · 이번 주 ${fullCurrent}/${days}일 · 지난주 ${fullPrevious}/${growthNumber(growth.week?.previous?.days)}일</span><span>${partial?'빈 점은 일부 기록 · ':''}미수집 구간은 선을 잇지 않아요.</span></div><details id="growth-daily-records" class="growth-data-details"><summary>일별 수치와 집계 기준</summary><p>각 주의 월요일 직전 기록을 기준으로, 같은 요일까지 늘거나 줄어든 양을 비교합니다. 일별 누적 수치를 여러 번 더하지 않아요. 빈 점은 일부 대상만 비교 가능한 값입니다.</p><div class="growth-data-table-wrap" tabindex="0" role="region" aria-label="일별 성장 수치"><table><caption>${growthEscape(label)} ${key==='followers'?'순증':'누적 증가'} · ${growthEscape(unit)}</caption><thead><tr><th>요일</th><th>이번 주 날짜</th><th>증가량</th><th>지난주 날짜</th><th>증가량</th></tr></thead><tbody>${table||'<tr><td colspan="5">아직 비교할 기록이 없어요.</td></tr>'}</tbody></table></div></details></section>`;
+}
+
+function growthHomeSection(report){
+  const definition=growthMetric(),[key,label,unit]=definition,growth=report?.growth,metric=growth?.metrics?.[key];
+  const button=([value,name])=>`<button type="button" data-action="growth-metric" data-metric="${value}" aria-pressed="${value===key}">${growthEscape(name)}</button>`;
+  const controls=`<div class="growth-metric-controls"><div class="growth-metric-primary" role="group" aria-label="성장 지표">${GROWTH_HOME_METRICS.slice(0,3).map(button).join('')}</div><details id="growth-other-metrics" class="growth-other-metrics"${GROWTH_HOME_METRICS.slice(3).some(([value])=>value===key)?' open':''}><summary>다른 지표</summary><div role="group" aria-label="다른 성장 지표">${GROWTH_HOME_METRICS.slice(3).map(button).join('')}</div></details></div>`;
+  if(!growth||!metric)return`<section class="growth-home" aria-label="나의 성장" aria-busy="${!report}">${controls}<div class="growth-chart-empty" role="status"><strong>${!report?'성장 기록을 불러오고 있어요':'아직 비교할 성장 기록이 없어요'}</strong><p>확인한 기록만 숫자와 그래프로 보여드려요.</p></div></section>`;
+  const today=metric.today||{},day=metric.day||{},week=metric.week||{},month=metric.month||{},weekComparable=week.comparable===true&&growth.week?.sameDayCount!==false,comparable=month.comparable===true&&growth.month?.sameDayCount!==false,weekDifference=weekComparable?week.difference:null,weekRate=weekComparable?week.rate:null,monthDifference=comparable?month.difference:null,monthRate=comparable?month.rate:null;
+  const value=(amount,signed=false)=>`<strong class="growth-stat-value${amount<0?' is-negative':''}${!growthKnown(amount)?' is-missing':''}">${growthEscape(signed?growthSigned(amount):growthNumber(amount))}${growthKnown(amount)?`<small>${growthEscape(unit)}</small>`:''}</strong>`;
+  const periodCoverage=part=>growthKnown(part?.delta)?`${growthCoverage(part,'비교')}${part.complete?'':' · 일부 기록'}`:'비교할 기록이 더 필요해요';
+  const totalLabel=period=>key==='followers'?`${period} 팔로워·구독자 순증`:`${period} 누적 ${label}`;
+  const weekNote=weekComparable?`${growthKnown(weekRate)?growthSigned(weekRate)+'% · ':''}같은 요일까지 비교`:'두 주의 비교 가능한 기록이 더 필요해요';
+  const monthNote=growth.month?.sameDayCount===false?'두 달의 일수가 달라 직접 비교하지 않아요':comparable?`${growthKnown(monthRate)?growthSigned(monthRate)+'% · ':''}두 기간 모두 확인`:'두 달의 비교 가능한 기록이 더 필요해요';
+  const sentence=growthKnown(weekDifference)?weekDifference>0?`이번 주 ${label} 증가량은 지난주 같은 기간보다 ${growthNumber(weekDifference)}${unit} 높아요.`:weekDifference<0?`이번 주 ${label} 증가량은 지난주 같은 기간보다 ${growthNumber(Math.abs(weekDifference))}${unit} 낮아요.`:`이번 주와 지난주 같은 기간의 ${label} 증가량이 같아요.`:'이번 주와 지난주 기록이 모두 확인되면 같은 요일까지의 변화를 비교할 수 있어요.';
+  const todayText=growthKnown(today.total)?`오늘 누적 ${growthNumber(today.total)}${unit} (${growthCoverage(today)})`:'오늘 수집 전';
+  const dayText=growthKnown(day.delta)?`어제 대비 ${growthSigned(day.delta)}${unit} (${growthCoverage(day,'비교')}${day.complete?'':' · 일부 기록'})`:'어제 대비 —';
+  return`<section class="growth-home" aria-label="성장 현황">${controls}<div class="growth-stats"><article class="growth-stat is-primary"><span class="growth-stat-label">${growthEscape(totalLabel('이번 주'))}</span>${value(week.current?.delta)}<p>${growthEscape(growthRange(growth.week?.current))} · ${growthEscape(periodCoverage(week.current))}</p></article><article class="growth-stat is-primary"><span class="growth-stat-label">${growthEscape(totalLabel('지난주'))}</span>${value(week.previous?.delta)}<p>${growthEscape(growthRange(growth.week?.previous))} · 같은 요일까지</p><small class="growth-stat-explanation">${growthEscape(periodCoverage(week.previous))}</small></article><article class="growth-stat is-comparison"><span class="growth-stat-label">전주 대비</span>${value(weekDifference,true)}<p>${growthEscape(weekNote)}</p></article><article class="growth-stat is-comparison"><span class="growth-stat-label">전월 동기 대비</span>${value(monthDifference,true)}<p>${growthEscape(monthNote)}</p><small class="growth-stat-explanation">${growthEscape(growthRange(growth.month?.current))} / ${growthEscape(growthRange(growth.month?.previous))}</small></article></div>${growthChart(growth,metric,definition)}<p class="growth-reflection"><span aria-hidden="true">${growthKnown(weekDifference)?weekDifference>0?'↑':weekDifference<0?'↓':'·':'·'}</span>${growthEscape(sentence)}</p><p class="growth-daily-note">${growthEscape(growthDate(growth.asOf))} ${growthEscape(label)} · ${growthEscape(todayText)} · ${growthEscape(dayText)}</p></section>`;
+}

@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "title": "작성용 템플릿 · 실제 조사 보고서가 아닙니다",
+  "scope": "",
+  "periodStart": "",
+  "periodEnd": "",
+  "researchedAt": "",
+  "candidateCount": 0,
+  "selectionBasis": "",
+  "items": [
+    {
+      "title": "",
+      "url": "",
+      "platform": "",
+      "creator": "",
+      "publishedAt": "",
+      "checkedAt": "",
+      "metrics": {
+        "views": null,
+        "likes": null,
+        "comments": null,
+        "shares": null,
+        "saves": null,
+        "followers": null
+      },
+      "evidenceNote": "",
+      "hook": "",
+      "structure": "",
+      "payoff": "",
+      "brandFit": "",
+      "adaptation": "",
+      "seriesIds": []
+    }
+  ]
+}
