@@ -1,0 +1,14 @@
+{
+  "origin": "http://127.0.0.1:4291",
+  "at": "2026-10-02T05:10:45.930Z",
+  "auto": {
+    "timing": 1.35,
+    "missed": 10
+  },
+  "fixed": {
+    "timing": 1,
+    "missed": 10
+  },
+  "status": "passed",
+  "pageErrors": []
+}

@@ -1,7 +1,12 @@
-import {TRACKS,LEVELS,RoundState} from './core.mjs?v=20261001-listen';
+import {TRACKS,LEVELS,RoundState} from './core.mjs?v=20261002-flow';
 import {MusicPlayer} from './audio.mjs?v=20261001-listen';
 import {Stage} from './stage.mjs?v=20261001-listen';
-import {rhythmItem,RHYTHM_CANDIDATES} from './personalization.mjs';
+import {rhythmItem,RHYTHM_CANDIDATES,FLOW_RHYTHM,timingObservation,timingSummary} from './personalization.mjs';
+// Atlas moment-level challenge: the timing windows follow this person inside the chosen level.
+const TIMING_KEY='synk.korean-rhythm.timing-mode';let live=null,timingStart=null;
+const timingAuto=()=>{try{return localStorage.getItem(TIMING_KEY)!=='fixed';}catch{return true;}};
+function startTiming(){live=null;timingStart=null;if(!coach||!learningAvailable||typeof coach.live!=='function')return;try{live=coach.live(FLOW_RHYTHM,{declared:timingAuto()?{}:{mode:'fixed'}});timingStart=live.settings().values.window;state.round.scaleTiming(timingStart);}catch{live=null;}}
+function followTiming(event){if(!live||!state.round)return;const observation=timingObservation(event);if(!observation)return;try{const out=live.observe(observation);if(out.change)state.round.scaleTiming(out.settings.values.window);}catch{live=null;}}
 const $=id=>document.getElementById(id);
 let coach=null,learningAvailable=true;
 try{coach=globalThis.SynkLearning?.createGame({gameId:'korean-rhythm',storage:localStorage})||null;}catch{learningAvailable=false;}
@@ -41,6 +46,7 @@ async function start(){
     const buffer=await music.prepare(track,state.round.questions);if(generation!==startGeneration)return;
     collectionRoundId=globalThis.SynkPlayCollection?.roundId('rhythm')||null;
     state.pressed.clear();state.paused=false;stage.particles=[];stage.flashes=[0,0];resetQuestion();
+    startTiming();
     $('game').dataset.track=track.id;$('game-title').textContent=track.title;$('game-track-number').textContent=`TRACK 0${track.id+1} / ${LEVELS[state.level].label}`;
     $('pause-overlay').hidden=true;$('countdown').hidden=false;$('score').textContent='000000';$('combo').textContent='0';$('accuracy').textContent='—';$('learning-count').textContent='듣기 0 / 5';$('mode-label').textContent='리듬을 타요';$('mode-cue').hidden=false;
     for(const l of lanes)l.classList.remove('active','intent');screen('game');syncEffects();music.start(buffer,state.round.beat);lastFrame=performance.now();lastUi=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(frame);$('pause-button').focus({preventScroll:true});
@@ -63,6 +69,7 @@ function questionPhase(q,t){if(!q)return;const ready=t>=q.answerOpen,answered=q.
 function judgment(word,quality=1){if(!word)return;const el=$('judgment');el.textContent=word;el.style.color=quality===1?'#fff0c4':quality>=.8?'#c5d6f5':'#ffb8af';el.classList.remove('visible');void el.offsetWidth;el.classList.add('visible');}
 function eventEffect(event){
   if(!event)return;
+  followTiming(event);
   if(event.type==='listening')return;
   if(event.type==='intent'){lanes.forEach((b,i)=>b.classList.toggle('intent',i===event.lane));$('phrase-instruction').textContent='선택했어요. 선에 닿을 때 같은 칸을 쳐요.';return;}
   if(event.quality>0){stage.hit(event.lane,event.quality);music.hit(event.lane);judgment(qualityWord(event.quality),event.quality);}
@@ -89,6 +96,8 @@ function finish(){
   for(const event of state.round.update(state.round.duration+3,new Set()))eventEffect(event);music.stop();cancelAnimationFrame(raf);state.pressed.clear();state.paused=false;screen('results');
   const r=state.round;$('result-accuracy').textContent=`${(r.earned/r.possible*100).toFixed(1)}%`;$('result-combo').textContent=r.maxCombo;$('result-learning').textContent=`${r.correctCount} / ${r.questions.length}`;$('result-subtitle').textContent=`${r.track.title} · ${LEVELS[r.levelName].label}`;$('result-track').textContent=`TRACK 0${r.track.id+1}`;
   $('review-list').replaceChildren();for(const q of r.questions){const correct=q.response!==null&&q.options[q.response]===q.answer;const el=document.createElement('div');el.className='review-item'+(correct?'':' revisit');const mark=document.createElement('span');mark.className='review-status';mark.textContent=correct?'✓':'↻';const text=document.createElement('div'),title=document.createElement('strong'),description=document.createElement('p');title.textContent=q.prompt+' '+q.question;description.textContent=`${correct?'이해했어요.':q.response===null?'선택하지 않았어요.':`선택: ${q.options[q.response]}.`} ${q.explanation}`;text.append(title,description);el.append(mark,text);$('review-list').append(el);}
+  const timingEnd=live?(()=>{try{return live.end().settings.values.window;}catch{return null;}})():null;live=null;
+  $('result-timing').textContent=timingEnd===null?'':timingAuto()?timingSummary(timingStart,timingEnd):'정해진 판정 폭으로 연주했어요.';
   const independent=r.questions.filter(q=>q.learning?.independent).length;$('result-learning-note').textContent=`도움·반복을 제외한 새 응답 ${independent}개를 맞춤 추천에 참고해요. 읽기 능력은 이 곡으로 판단하지 않아요.`;
   $('result-collection-reward').textContent='공통 차고에 완주를 모으고 있어요.';
   globalThis.SynkPlayCollection?.award({game:'rhythm',total:r.questions.length,correct:r.correctCount,completed:true,automatic:false,roundId:collectionRoundId}).then(result=>{
@@ -113,7 +122,8 @@ $('start-button').addEventListener('click',start);$('replay-button').addEventLis
 $('difficulty').addEventListener('click',e=>{const b=e.target.closest('[data-level]');if(!b)return;state.level=b.dataset.level;for(const x of $('difficulty').children)x.setAttribute('aria-pressed',String(x===b));});
 for(const name of ['help','settings'])$(name+'-button').addEventListener('click',()=>$(name+'-dialog').showModal());
 for(const b of document.querySelectorAll('[data-close]'))b.addEventListener('click',()=>$(b.dataset.close).close());
-$('sound-setting').addEventListener('change',()=>music.setSound($('sound-setting').checked));$('effects-setting').checked=matchMedia('(prefers-reduced-motion: reduce)').matches;$('effects-setting').addEventListener('change',syncEffects);$('reduce-button').addEventListener('click',()=>{$('effects-setting').checked=!stage.reduced;syncEffects();});$('offset-setting').addEventListener('input',()=>{state.offset=Number($('offset-setting').value);$('offset-value').textContent=`${state.offset>0?'+':''}${state.offset} ms`;});
+$('sound-setting').addEventListener('change',()=>music.setSound($('sound-setting').checked));
+$('timing-setting').checked=timingAuto();$('timing-setting').addEventListener('change',()=>{try{localStorage.setItem(TIMING_KEY,$('timing-setting').checked?'auto':'fixed');}catch{/* this page only */}});$('effects-setting').checked=matchMedia('(prefers-reduced-motion: reduce)').matches;$('effects-setting').addEventListener('change',syncEffects);$('reduce-button').addEventListener('click',()=>{$('effects-setting').checked=!stage.reduced;syncEffects();});$('offset-setting').addEventListener('input',()=>{state.offset=Number($('offset-setting').value);$('offset-value').textContent=`${state.offset>0?'+':''}${state.offset} ms`;});
 const pointers=new Map();
 for(const b of lanes){const lane=Number(b.dataset.lane);b.addEventListener('pointerdown',e=>{e.preventDefault();pointers.set(e.pointerId,lane);b.setPointerCapture(e.pointerId);input(lane);});b.addEventListener('pointerup',e=>{if(pointers.has(e.pointerId)){pointers.delete(e.pointerId);release(lane);}});b.addEventListener('pointercancel',e=>{pointers.delete(e.pointerId);release(lane);});b.addEventListener('lostpointercapture',e=>{if(pointers.has(e.pointerId)){pointers.delete(e.pointerId);release(lane);}});b.addEventListener('click',e=>{if(e.detail===0){input(lane);setTimeout(()=>release(lane),120);}});}
 const keyLanes={KeyF:0,KeyJ:1,ArrowLeft:0,ArrowRight:1};
@@ -135,4 +145,4 @@ $('reset-learning').addEventListener('click',()=>{
 });
 renderTracks();renderRecommendation(true);
 // Read-only diagnostics for QA. Input remains through real keyboard/pointer events.
-window.synkRhythm={snapshot:()=>({screen:state.screen,paused:state.paused,loading:state.loading,time:music.time,audioState:music.state,recording:music.recording,signalLevel:music.signalLevel,voiceLevel:music.voiceLevel,activeVoice:music.activeVoice,scheduledVoices:music.scheduledVoices,score:state.round?.score,combo:state.round?.combo,correct:state.round?.correctCount,processed:state.round?.processed,notes:state.round?.notes.map(n=>({time:n.time,lane:n.lane,duration:n.duration,state:n.state})),questions:state.round?.questions.map(q=>({time:q.time,showTime:q.showTime,voiceEnd:q.voiceEnd,answerOpen:q.answerOpen,voice:q.voice,state:q.state,response:q.response,options:q.options,answer:q.answer,prompt:q.prompt})),duration:state.round?.duration,level:state.level,track:state.track}),audio:()=>music.context};
+window.synkRhythm={snapshot:()=>({timing:state.round?.timing??null,screen:state.screen,paused:state.paused,loading:state.loading,time:music.time,audioState:music.state,recording:music.recording,signalLevel:music.signalLevel,voiceLevel:music.voiceLevel,activeVoice:music.activeVoice,scheduledVoices:music.scheduledVoices,score:state.round?.score,combo:state.round?.combo,correct:state.round?.correctCount,processed:state.round?.processed,notes:state.round?.notes.map(n=>({time:n.time,lane:n.lane,duration:n.duration,state:n.state})),questions:state.round?.questions.map(q=>({time:q.time,showTime:q.showTime,voiceEnd:q.voiceEnd,answerOpen:q.answerOpen,voice:q.voice,state:q.state,response:q.response,options:q.options,answer:q.answer,prompt:q.prompt})),duration:state.round?.duration,level:state.level,track:state.track}),audio:()=>music.context};

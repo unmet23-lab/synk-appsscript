@@ -50,7 +50,7 @@ export function buildChart(track,levelName='easy',seed=1){
 }
 
 export class RoundState{
-  constructor(track,levelName='easy',seed=1){Object.assign(this,buildChart(track,levelName,seed));this.track=track;this.levelName=levelName;this.combo=0;this.maxCombo=0;this.score=0;this.earned=0;this.processed=0;this.possible=this.notes.reduce((n,x)=>n+(x.duration?2:1),0)+this.questions.length;this.events=[];}
+  constructor(track,levelName='easy',seed=1){Object.assign(this,buildChart(track,levelName,seed));this.base=this.level;this.level={...this.level};this.timing=1;this.track=track;this.levelName=levelName;this.combo=0;this.maxCombo=0;this.score=0;this.earned=0;this.processed=0;this.possible=this.notes.reduce((n,x)=>n+(x.duration?2:1),0)+this.questions.length;this.events=[];}
   record(quality,type,lane){this.processed++;this.earned+=quality;this.score+=Math.round(quality*1000);if(quality>0){this.combo++;this.maxCombo=Math.max(this.maxCombo,this.combo);}else this.combo=0;const event={type,lane,quality,combo:this.combo};this.events.push(event);return event;}
   activeQuestion(time){return this.questions.find(q=>time>=q.showTime&&time<=q.closeTime+1.5);}
   input(lane,time){
@@ -83,6 +83,8 @@ export class RoundState{
     for(const q of this.questions){if(q.state==='pending'&&time>q.closeTime){q.response=q.intent;q.state=q.intent===null?'unanswered':'answered';q.quality=0;out.push({...this.record(0,'question',q.response),q,correct:q.response!==null&&q.options[q.response]===q.answer});}}
     return out;
   }
+  // Atlas moment-level challenge: how wide the timing windows are for this person (1 = the level's own).
+  scaleTiming(factor){const f=Math.min(1.5,Math.max(.7,Number(factor)||1));this.timing=f;this.level={...this.base,window:this.base.window*f,perfect:this.base.perfect*f,great:this.base.great*f};return f;}
   get accuracy(){return this.processed?this.earned/this.processed:0;}
   get correctCount(){return this.questions.filter(q=>q.response!==null&&q.options[q.response]===q.answer).length;}
   get answeredCount(){return this.questions.filter(q=>q.response!==null).length;}
