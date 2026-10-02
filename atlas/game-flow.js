@@ -1,11 +1,15 @@
 'use strict';
 // Thin host adapter for Core's moment-level challenge (flow.js) in a game that uses game-learning.
 // Learning evidence still goes to Trail through the game's coach; the same responses also move
-// the content's knobs. One small memory per content is kept next to the learning log, on this
-// device only: no identity, no answers, no text, not synced. Resetting the log clears it.
-// Today's condition (good / okay / tired / no_time) lasts until the end of the local day.
+// the content's knobs. One small memory per content is kept next to the learning log: no identity,
+// no answers, no text. Resetting the log clears it.
+// Today's condition (good / okay / tired / no_time) lasts until the end of the local day, on this
+// device only.
 // The presentation the person chose (help style, text size, motion, explanation; Flow.PRESENTATION)
-// stays on this device until they change it or reset the log, and every game's live() follows it.
+// stays until they change it or reset the log, and every game's live() follows it.
+// A device store keeps all of this on the device. For an account whose learning storage is on,
+// memory-sync.js keeps the chosen presentation, the content memories and declined offers the same
+// on every device (state, merge and subscribe below).
 const Flow = require('./flow');
 const VellumFlow = require('./vellum-flow');
 const localDay = iso => { const d = new Date(iso); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
@@ -18,6 +22,8 @@ const presentationOf = value => object(value) && Object.keys(value).length > 0
 // and memory written under an older epoch is never read or written back.
 function createFlowPort({ storage, key, clock, epoch = () => null }) {
   const FLOW = `${key}.flow`, TODAY = `${key}.today`, PRESENT = `${key}.presentation`;
+  const listeners = new Set();
+  const notify = change => { for (const listener of listeners) { try { listener(change); } catch { /* an observer cannot change the memory */ } } };
   const read = name => { try { const raw = storage?.getItem(name); return raw == null || raw === '' ? null : JSON.parse(raw); } catch { return null; } };
   const write = (name, value) => {
     try {
@@ -34,6 +40,11 @@ function createFlowPort({ storage, key, clock, epoch = () => null }) {
   };
   // A write from a round that began before a reset is dropped, so a reset cannot be undone by an open tab.
   const update = (since, change) => { const current = epoch(); if (since !== undefined && since !== current) return false; const all = memories(current); change(all); return write(FLOW, all); };
+  const instant = value => typeof value === 'string' && Number.isFinite(Date.parse(value));
+  // A value with a readable time replaces one without.
+  const later = (at, than) => !instant(than) || Date.parse(at) > Date.parse(than);
+  // The stored choice with its time. `presentation: null` is a choice forgotten at that time.
+  const chosen = () => { const value = read(PRESENT); return value && value.v === 1 && instant(value.at) && (value.presentation === null || presentationOf(value.presentation)) ? value : null; };
   return Object.freeze({
     today() { const value = read(TODAY); return value && value.day === localDay(clock()) && Flow.CONDITIONS.includes(value.condition) ? value.condition : null; },
     setToday(condition) {
@@ -41,16 +52,52 @@ function createFlowPort({ storage, key, clock, epoch = () => null }) {
       return write(TODAY, condition === null ? null : { day: localDay(clock()), condition });
     },
     // Set only by the person's own choice (a hub or settings screen); a value that is not in the
-    // vocabulary is never read back. null forgets it.
-    presentation() { const value = read(PRESENT); return value && value.v === 1 && presentationOf(value.presentation) ? { ...value.presentation } : null; },
+    // vocabulary is never read back. null forgets it, and the forgetting keeps its time so another
+    // device's older choice does not come back.
+    presentation() { const value = chosen(); return value?.presentation ? { ...value.presentation } : null; },
     setPresentation(presentation) {
       if (presentation !== null && !presentationOf(presentation)) throw new TypeError(`Atlas: presentation accepts only ${Object.keys(Flow.PRESENTATION).join(', ')}`);
-      return write(PRESENT, presentation === null ? null : { v: 1, presentation: { ...presentation }, at: clock() });
+      const done = write(PRESENT, { v: 1, presentation: presentation === null ? null : { ...presentation }, at: clock() });
+      if (done) notify({ kind: 'presentation', key: 'chosen' });
+      return done;
     },
     epoch,
     memories: () => memories(),
-    save(contentId, memory, since) { return update(since, all => { all.contents[contentId] = memory; }); },
-    decline(contentId, at, since) { return update(since, all => { all.declined[contentId] = at; }); },
+    save(contentId, memory, since) { const done = update(since, all => { all.contents[contentId] = memory; }); if (done) notify({ kind: 'flow', key: contentId }); return done; },
+    decline(contentId, at, since) { const done = update(since, all => { all.declined[contentId] = at; }); if (done) notify({ kind: 'declined', key: contentId }); return done; },
+    // Everything a synchroniser exchanges, each with its own time: the chosen presentation,
+    // each content's memory (memory.at) and each declined offer.
+    state() {
+      const all = memories(), present = chosen();
+      return { presentation: present ? { value: present.presentation && { ...present.presentation }, at: present.at } : null,
+        flow: JSON.parse(JSON.stringify(all.contents)), declined: { ...all.declined } };
+    },
+    // Takes another device's values where they are newer than this device's, entry by entry.
+    // Subscribers hear it as 'import', so a synchroniser does not send it back.
+    merge(remote) {
+      if (!object(remote)) throw new TypeError('Atlas: invalid memory');
+      let changed = false;
+      const present = remote.presentation;
+      if (object(present) && instant(present.at) && (present.value === null || presentationOf(present.value)) && later(present.at, chosen()?.at)
+        && write(PRESENT, { v: 1, presentation: present.value && { ...present.value }, at: present.at })) changed = true;
+      const all = memories();
+      let touched = false;
+      for (const [id, memory] of Object.entries(object(remote.flow) ? remote.flow : {})) {
+        if (!object(memory) || memory.content !== id || !instant(memory.at) || !later(memory.at, all.contents[id]?.at)) continue;
+        all.contents[id] = JSON.parse(JSON.stringify(memory)); touched = true;
+      }
+      for (const [id, at] of Object.entries(object(remote.declined) ? remote.declined : {})) {
+        if (!instant(at) || !later(at, all.declined[id])) continue;
+        all.declined[id] = at; touched = true;
+      }
+      if (touched && write(FLOW, all)) changed = true;
+      if (changed) notify({ kind: 'import' });
+      return changed;
+    },
+    subscribe(listener) {
+      if (typeof listener !== 'function') throw new TypeError('Atlas: listener required');
+      listeners.add(listener); return () => listeners.delete(listener);
+    },
     clear() { write(FLOW, null); write(TODAY, null); write(PRESENT, null); },
   });
 }

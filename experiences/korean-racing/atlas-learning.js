@@ -6072,6 +6072,218 @@ var SynkLearning = (() => {
     }
   });
 
+  // atlas/memory-sync.js
+  var require_memory_sync = __commonJS({
+    "atlas/memory-sync.js"(exports, module) {
+      "use strict";
+      var ID = /^[a-zA-Z0-9_.:-]{1,120}$/;
+      var BATCH = 100;
+      var ROUNDS = 50;
+      var MAX_BYTES = 4096;
+      var KINDS = Object.freeze(["presentation", "flow", "declined"]);
+      var object = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+      var instant = (value) => typeof value === "string" && Number.isFinite(Date.parse(value));
+      var failure = (code, message) => Object.assign(new Error(message), { code });
+      var errorCode = (error) => error?.code || error?.error?.code || error?.body?.error?.code || "NETWORK_ERROR";
+      var FATAL = /* @__PURE__ */ new Set([
+        "REVISION_CONFLICT",
+        "LEARNING_DISABLED",
+        "FEATURE_DISABLED",
+        "MEMORY_UNAVAILABLE",
+        "MEMORY_CAPACITY",
+        "INVALID_MEMORY",
+        "INVALID_RESPONSE",
+        "UNAUTHORIZED",
+        "AUTH_REQUIRED",
+        "AUTH_SESSION_MISSING",
+        "SESSION_REVOKED",
+        "MEMORY_SESSION_ENDED",
+        "PRODUCT_FORBIDDEN",
+        "ACCOUNT_UNAVAILABLE"
+      ]);
+      var keyOf = (entry) => `${entry.kind}\0${entry.key}`;
+      function entriesOf(state) {
+        const out = [];
+        if (object(state?.presentation)) out.push({ kind: "presentation", key: "chosen", value: state.presentation.value ?? null, at: state.presentation.at });
+        for (const [key, memory] of Object.entries(object(state?.flow) ? state.flow : {})) out.push({ kind: "flow", key, value: memory, at: memory?.at });
+        for (const [key, at] of Object.entries(object(state?.declined) ? state.declined : {})) out.push({ kind: "declined", key, value: null, at });
+        return out;
+      }
+      function stateOf(entries) {
+        const state = { presentation: null, flow: {}, declined: {} };
+        for (const entry of entries) {
+          if (entry.kind === "presentation") state.presentation = { value: entry.value, at: entry.at };
+          else if (entry.kind === "flow") state.flow[entry.key] = entry.value;
+          else state.declined[entry.key] = entry.at;
+        }
+        return state;
+      }
+      function sendable(entry) {
+        if (!KINDS.includes(entry.kind) || !ID.test(entry.key || "") || !instant(entry.at)) return false;
+        if (entry.kind === "presentation") return entry.key === "chosen" && (entry.value === null || object(entry.value));
+        if (entry.kind === "declined") return entry.value === null;
+        return object(entry.value) && entry.value.content === entry.key && Date.parse(entry.value.at) === Date.parse(entry.at) && JSON.stringify(entry.value).length <= MAX_BYTES;
+      }
+      var received = (entry) => object(entry) && KINDS.includes(entry.kind) && ID.test(entry.key || "") && instant(entry.at) && (entry.kind === "flow" ? object(entry.value) : entry.kind === "declined" ? entry.value === null : entry.value === null || object(entry.value));
+      function createMemorySync({
+        adapter,
+        accountKey,
+        revision,
+        transport,
+        onStatus = () => {
+        },
+        delayMs = 3e3,
+        timeoutMs = 15e3,
+        setTimer = (fn, ms) => setTimeout(fn, ms),
+        clearTimer = (id) => clearTimeout(id)
+      } = {}) {
+        const port = adapter?.memoryPort;
+        if (!ID.test(accountKey || "") || !Number.isSafeInteger(revision) || revision < 1 || !port || port.scope !== "account" || port.accountKey !== accountKey || typeof port.state !== "function" || typeof port.merge !== "function" || typeof port.subscribe !== "function" || typeof transport?.get !== "function" || typeof transport?.post !== "function") throw new TypeError("Atlas memory sync: an authenticated account adapter and transport are required");
+        if (!Number.isFinite(delayMs) || delayMs < 0 || !Number.isInteger(timeoutMs) || timeoutMs < 1) throw new TypeError("Atlas memory sync: invalid timing");
+        const remote = /* @__PURE__ */ new Map(), refused = /* @__PURE__ */ new Map();
+        let phase = "idle", code = null, stopped = false, timer = null, running = null, again = false, pulled = false, generation = 0;
+        const controllers = /* @__PURE__ */ new Set();
+        const newer = (at, than) => than == null || Date.parse(at) > Date.parse(than);
+        const pending = () => entriesOf(port.state()).filter((entry) => instant(entry.at) && newer(entry.at, remote.get(keyOf(entry))) && refused.get(keyOf(entry)) !== entry.at);
+        const status = () => {
+          let queued = 0;
+          try {
+            queued = pending().length;
+          } catch {
+          }
+          return { phase, code, accountKey, revision, queued };
+        };
+        const publish = () => {
+          try {
+            onStatus(status());
+          } catch {
+          }
+        };
+        const active = (token) => !stopped && token === generation;
+        const call = async (method, body, token) => {
+          if (!active(token)) throw failure("STOPPED", "Atlas memory sync: stopped");
+          const controller = new AbortController();
+          controllers.add(controller);
+          let deadline;
+          try {
+            const response = await Promise.race([
+              Promise.resolve().then(() => transport[method]({ ...body, signal: controller.signal })),
+              new Promise((_, reject) => {
+                deadline = setTimeout(() => {
+                  reject(failure("NETWORK_ERROR", "Atlas memory sync: request timed out"));
+                  controller.abort();
+                }, timeoutMs);
+                controller.signal.addEventListener("abort", () => reject(failure("STOPPED", "Atlas memory sync: request cancelled")), { once: true });
+              })
+            ]);
+            if (!active(token)) throw failure("STOPPED", "Atlas memory sync: stale request");
+            if (response?.ok === false) throw failure(response.error?.code || "INVALID_RESPONSE", response.error?.message || "Atlas memory sync: rejected");
+            if (!response || response.revision !== revision) throw failure("REVISION_CONFLICT", "Atlas memory sync: server revision changed");
+            if (!Array.isArray(response.entries) || !response.entries.every(received)) throw failure("INVALID_RESPONSE", "Atlas memory sync: invalid entries");
+            return response;
+          } finally {
+            clearTimeout(deadline);
+            controllers.delete(controller);
+          }
+        };
+        const accept = (entries) => {
+          port.merge(stateOf(entries));
+          for (const entry of entries) if (newer(entry.at, remote.get(keyOf(entry)))) remote.set(keyOf(entry), entry.at);
+        };
+        async function cycle(token) {
+          if (!pulled) {
+            accept((await call("get", { revision }, token)).entries);
+            pulled = true;
+          }
+          for (let round = 0; round < ROUNDS; round++) {
+            const all = pending();
+            for (const entry of all) if (!sendable(entry)) refused.set(keyOf(entry), entry.at);
+            const batch = all.filter(sendable).slice(0, BATCH);
+            if (!batch.length) return;
+            const response = await call("post", { revision, entries: batch }, token);
+            if (!active(token)) return;
+            accept(response.entries);
+            for (const entry of batch) if (newer(entry.at, remote.get(keyOf(entry)))) remote.set(keyOf(entry), entry.at);
+          }
+          throw failure("NETWORK_ERROR", "Atlas memory sync: too many rounds; the rest waits for the next sync");
+        }
+        function run({ pull = false } = {}) {
+          if (stopped || phase === "blocked") return Promise.resolve(status());
+          if (pull) pulled = false;
+          if (running) {
+            again = true;
+            return running;
+          }
+          const token = generation;
+          phase = "syncing";
+          code = null;
+          publish();
+          running = (async () => {
+            try {
+              do {
+                again = false;
+                await cycle(token);
+              } while (again && active(token));
+              if (active(token)) {
+                phase = "synced";
+                publish();
+              }
+            } catch (error) {
+              if (active(token)) {
+                code = errorCode(error);
+                phase = FATAL.has(code) ? "blocked" : "offline";
+                publish();
+              }
+            } finally {
+              running = null;
+            }
+            return status();
+          })();
+          return running;
+        }
+        const schedule = () => {
+          if (stopped || phase === "blocked" || timer != null) return;
+          timer = setTimer(() => {
+            timer = null;
+            void run();
+          }, delayMs);
+        };
+        const unsubscribe = port.subscribe((change) => {
+          if (!stopped && change?.kind !== "import") schedule();
+        });
+        return Object.freeze({
+          // Reads the server first, then sends what is newer here.
+          start: () => run({ pull: true }),
+          // Sends local changes now (before the app goes to the background or a page closes).
+          flush() {
+            if (timer != null) {
+              clearTimer(timer);
+              timer = null;
+            }
+            return run();
+          },
+          // Back in front: read the server again (another device may have changed something).
+          retry: () => run({ pull: true }),
+          status,
+          stop() {
+            if (!stopped) {
+              stopped = true;
+              generation++;
+              if (timer != null) clearTimer(timer);
+              timer = null;
+              unsubscribe();
+              for (const controller of controllers) controller.abort();
+              phase = "stopped";
+              publish();
+            }
+            return status();
+          }
+        });
+      }
+      module.exports = { createMemorySync, entriesOf, stateOf, MAX_BYTES };
+    }
+  });
+
   // atlas/temper-flow.js
   var require_temper_flow = __commonJS({
     "atlas/temper-flow.js"(exports, module) {
@@ -6752,6 +6964,15 @@ var SynkLearning = (() => {
       var presentationOf = (value) => object(value) && Object.keys(value).length > 0 && Object.entries(value).every(([key, choice]) => Object.hasOwn(Flow.PRESENTATION, key) && (choice === null || Flow.PRESENTATION[key].includes(choice)));
       function createFlowPort({ storage, key, clock, epoch = () => null }) {
         const FLOW = `${key}.flow`, TODAY = `${key}.today`, PRESENT = `${key}.presentation`;
+        const listeners = /* @__PURE__ */ new Set();
+        const notify = (change) => {
+          for (const listener of listeners) {
+            try {
+              listener(change);
+            } catch {
+            }
+          }
+        };
         const read = (name) => {
           try {
             const raw = storage?.getItem(name);
@@ -6783,6 +7004,12 @@ var SynkLearning = (() => {
           change(all);
           return write(FLOW, all);
         };
+        const instant = (value) => typeof value === "string" && Number.isFinite(Date.parse(value));
+        const later = (at, than) => !instant(than) || Date.parse(at) > Date.parse(than);
+        const chosen = () => {
+          const value = read(PRESENT);
+          return value && value.v === 1 && instant(value.at) && (value.presentation === null || presentationOf(value.presentation)) ? value : null;
+        };
         return Object.freeze({
           today() {
             const value = read(TODAY);
@@ -6793,26 +7020,71 @@ var SynkLearning = (() => {
             return write(TODAY, condition === null ? null : { day: localDay(clock()), condition });
           },
           // Set only by the person's own choice (a hub or settings screen); a value that is not in the
-          // vocabulary is never read back. null forgets it.
+          // vocabulary is never read back. null forgets it, and the forgetting keeps its time so another
+          // device's older choice does not come back.
           presentation() {
-            const value = read(PRESENT);
-            return value && value.v === 1 && presentationOf(value.presentation) ? { ...value.presentation } : null;
+            const value = chosen();
+            return value?.presentation ? { ...value.presentation } : null;
           },
           setPresentation(presentation) {
             if (presentation !== null && !presentationOf(presentation)) throw new TypeError(`Atlas: presentation accepts only ${Object.keys(Flow.PRESENTATION).join(", ")}`);
-            return write(PRESENT, presentation === null ? null : { v: 1, presentation: { ...presentation }, at: clock() });
+            const done = write(PRESENT, { v: 1, presentation: presentation === null ? null : { ...presentation }, at: clock() });
+            if (done) notify({ kind: "presentation", key: "chosen" });
+            return done;
           },
           epoch,
           memories: () => memories(),
           save(contentId, memory, since) {
-            return update(since, (all) => {
+            const done = update(since, (all) => {
               all.contents[contentId] = memory;
             });
+            if (done) notify({ kind: "flow", key: contentId });
+            return done;
           },
           decline(contentId, at, since) {
-            return update(since, (all) => {
+            const done = update(since, (all) => {
               all.declined[contentId] = at;
             });
+            if (done) notify({ kind: "declined", key: contentId });
+            return done;
+          },
+          // Everything a synchroniser exchanges, each with its own time: the chosen presentation,
+          // each content's memory (memory.at) and each declined offer.
+          state() {
+            const all = memories(), present = chosen();
+            return {
+              presentation: present ? { value: present.presentation && { ...present.presentation }, at: present.at } : null,
+              flow: JSON.parse(JSON.stringify(all.contents)),
+              declined: { ...all.declined }
+            };
+          },
+          // Takes another device's values where they are newer than this device's, entry by entry.
+          // Subscribers hear it as 'import', so a synchroniser does not send it back.
+          merge(remote) {
+            if (!object(remote)) throw new TypeError("Atlas: invalid memory");
+            let changed = false;
+            const present = remote.presentation;
+            if (object(present) && instant(present.at) && (present.value === null || presentationOf(present.value)) && later(present.at, chosen()?.at) && write(PRESENT, { v: 1, presentation: present.value && { ...present.value }, at: present.at })) changed = true;
+            const all = memories();
+            let touched = false;
+            for (const [id, memory] of Object.entries(object(remote.flow) ? remote.flow : {})) {
+              if (!object(memory) || memory.content !== id || !instant(memory.at) || !later(memory.at, all.contents[id]?.at)) continue;
+              all.contents[id] = JSON.parse(JSON.stringify(memory));
+              touched = true;
+            }
+            for (const [id, at] of Object.entries(object(remote.declined) ? remote.declined : {})) {
+              if (!instant(at) || !later(at, all.declined[id])) continue;
+              all.declined[id] = at;
+              touched = true;
+            }
+            if (touched && write(FLOW, all)) changed = true;
+            if (changed) notify({ kind: "import" });
+            return changed;
+          },
+          subscribe(listener) {
+            if (typeof listener !== "function") throw new TypeError("Atlas: listener required");
+            listeners.add(listener);
+            return () => listeners.delete(listener);
           },
           clear() {
             write(FLOW, null);
@@ -6943,6 +7215,7 @@ var SynkLearning = (() => {
       var Learning = require_learning();
       var Temper = require_temper();
       var { createLearningSync, sameEvent } = require_learning_sync();
+      var { createMemorySync } = require_memory_sync();
       var Ledger = require_learning_ledger();
       var { createFlowPort, createLive } = require_game_flow();
       var KEY = "synk.atlas.learning.v1";
@@ -7436,10 +7709,11 @@ var SynkLearning = (() => {
         api.setToday = flowPort.setToday;
         api.presentation = flowPort.presentation;
         api.setPresentation = flowPort.setPresentation;
+        api.memoryPort = Object.freeze({ scope: storageScope, accountKey, state: flowPort.state, merge: flowPort.merge, subscribe: flowPort.subscribe });
         api.live = createLive({ coach: api, port: flowPort, clock: monotonicClock });
         return api;
       }
-      module.exports = { createGame, createLearningSync, summarizeLearning: Learning.summarizeLearning, recommend: Learning.recommend, POLICY: Learning.POLICY, RESPONSE_FORMATS: Learning.RESPONSE_FORMATS, KEY };
+      module.exports = { createGame, createLearningSync, createMemorySync, summarizeLearning: Learning.summarizeLearning, recommend: Learning.recommend, POLICY: Learning.POLICY, RESPONSE_FORMATS: Learning.RESPONSE_FORMATS, KEY };
     }
   });
 
@@ -7597,7 +7871,7 @@ var SynkLearning = (() => {
         VellumFlow,
         Ask,
         SKILLS: map.allNodes(),
-        engine: Object.freeze({ createGame: factory, createLearningSync: learning.createLearningSync }),
+        engine: Object.freeze({ createGame: factory, createLearningSync: learning.createLearningSync, createMemorySync: learning.createMemorySync }),
         createGame: (options) => {
           const owner = host();
           const game = owner ? owner.createGame(options, factory, learning.createLearningSync) : factory(options);

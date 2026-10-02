@@ -17,6 +17,10 @@ const messages = {
   EVALUATION_NOT_ASKED: '학원에 소속된 계정에는 이 질문을 하지 않아요.',
   ACCOUNT_UNAVAILABLE: '계정 삭제 요청을 처리하는 중이라 저장할 수 없어요.',
   MY_INFO_UNAVAILABLE: '내 정보는 아직 준비 중이에요. 연습은 그대로 이용할 수 있어요.',
+  MEMORY_UNAVAILABLE: '고른 설정을 계정에 저장하는 기능은 아직 준비 중이에요. 이 기기에는 그대로 남아요.',
+  MEMORY_CAPACITY: '계정에 저장할 수 있는 맞춤 기록이 가득 찼어요. 이 기기에는 그대로 남아요.',
+  INVALID_MEMORY: '맞춤 기록을 계정에 저장하지 못했어요. 이 기기에는 그대로 남아요.',
+  SUMMARY_UNAVAILABLE: '아틀라스 요약은 아직 준비 중이에요.',
 };
 function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getAccessToken, refresh, guard,
   fetch: fetcher = globalThis.fetch, timeoutMs = 12000 }) {
@@ -88,9 +92,17 @@ function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getA
     skipEvaluation: () => action('evaluation-skip'),
     deleteEvaluation: () => action('evaluation-delete'),
     exportPage: ({ after = 0, until } = {}) => request(`synk-account?view=export&after=${encodeURIComponent(after)}${until == null ? '' : `&until=${encodeURIComponent(until)}`}`),
+    // Core's summary of this account for any SYNK product: chosen settings, declared reasons and
+    // the stored practice (only while learning storage is on). Never evaluation answers.
+    atlasSummary: options => request('synk-account?view=atlas', undefined, options),
     learning: Object.freeze({
       get: ({ after, revision, signal }) => request(`synk-learning?after=${encodeURIComponent(after)}&revision=${encodeURIComponent(revision)}`, undefined, { signal }),
       post: ({ revision, events, signal }) => request('synk-learning', { revision, events }, { signal }),
+    }),
+    // Core memory (lib/atlas/memory-sync.js): chosen presentation, content memories, declined offers.
+    memory: Object.freeze({
+      get: ({ revision, signal }) => request(`synk-learning?view=memory&revision=${encodeURIComponent(revision)}`, undefined, { signal }),
+      post: ({ revision, entries, signal }) => request('synk-learning', { revision, memory: entries }, { signal }),
     }),
   });
 }

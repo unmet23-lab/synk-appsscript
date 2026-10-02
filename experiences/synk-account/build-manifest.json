@@ -2,7 +2,7 @@
   "version": 1,
   "sdk": "2.117.2",
   "sha256": {
-    "src/generated/account-client.cjs": "78ffea1c758332b60570e88bc50e172101f51399633ea2a6e91f0c34a8646210",
+    "src/generated/account-client.cjs": "b5c0b8c6815593846255d88c28c2946c4d2a995f5ec5a5dcf1224dd2a81573fc",
     "src/generated/world-learning-host.cjs": "2d891fdcc22d3671801d8ddb2f90506d953e063a0e3916874014ae6c14491f23",
     "assets/SUIT-Variable.woff2": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
     "assets/InterTight-700.woff2": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e",
@@ -24,11 +24,11 @@
     "assets/InterTight-Regular.ttf": "053de5dcb2af4b7bd2fad68249953df7a58bf7b103a38b59d2d8d89a86ca5699",
     "assets/InterTight-Medium.ttf": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1",
     "assets/DMMono-Medium.ttf": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
-    "dist/app.js": "a5fa97c3ef9b577c6d416e874984ef1a07c3a0f2e020d5a356af7e7d0e5919bf",
-    "dist/client.js": "1aaa83ad795c2796f25efe7d8d3b73ab7eff7242f49e9771d1f5a55d440bcb53",
-    "dist/preview.js": "6222a83b75c7b176d86667844ef72fa5d4274c8113e391ce515ce9d4e628f6fa",
+    "dist/app.js": "b2d6bd563e589c5b1555f09b3926147349cb5a7d90e86f14a2d1f6d418bfdd54",
+    "dist/client.js": "8885a3fd72dcee0b2b24e1b6e4bbb6dc4d854714bc597032950c4217d1cb0c1e",
+    "dist/preview.js": "19abbfc900ab80cabe3942ed96873ffefaa6baaad636f5dee71685ea925e09f8",
     "dist/platform.js": "5b0a0370f027d3114b52bc4579c08f0118cd3f16a6b953b2a5f439a2abd9258b",
-    "dist/local-world.js": "6ce6e5c8df091642b61c84f2401fd933f4f50f86c25198a254a7f4849ba5f008",
-    "preview.html": "137ac0cb441aed644675bd451c62828df7f52150d3ded3d7d5ba7ad63c9e09fd"
+    "dist/local-world.js": "13b980b2e47d3ed76ac0fb6674d1745815a4b0f607ca10f96cf7df8fecd56a55",
+    "preview.html": "699af1b151da2c22c57df0b14ad0064e1ea53c38d5a285e02126e86dde578563"
   }
 }

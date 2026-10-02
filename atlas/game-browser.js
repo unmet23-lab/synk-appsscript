@@ -24,9 +24,10 @@ if (typeof window !== 'undefined' && typeof window.addEventListener === 'functio
   window.addEventListener('pagehide', flushAll);
   if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushAll(); });
 }
-// `engine` lets a host page build its own account-wide adapter in its own window.
+// `engine` lets a host page build its own account-wide adapter in its own window, with the
+// synchronisers for its learning log and its Core memory (memory-sync.js).
 module.exports = { ...learning, Flow, TemperFlow, VellumFlow, Ask, SKILLS: map.allNodes(),
-  engine: Object.freeze({ createGame: factory, createLearningSync: learning.createLearningSync }), createGame: options => {
+  engine: Object.freeze({ createGame: factory, createLearningSync: learning.createLearningSync, createMemorySync: learning.createMemorySync }), createGame: options => {
     const owner = host();
     const game = owner ? owner.createGame(options, factory, learning.createLearningSync) : factory(options);
     games.add(game);

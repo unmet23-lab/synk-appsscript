@@ -9,6 +9,7 @@ const Trail = require('./trail');
 const Learning = require('./learning');
 const Temper = require('./temper');
 const { createLearningSync, sameEvent } = require('./learning-sync');
+const { createMemorySync } = require('./memory-sync');
 const Ledger = require('./learning-ledger');
 const { createFlowPort, createLive } = require('./game-flow');
 const KEY = 'synk.atlas.learning.v1';
@@ -374,7 +375,10 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   api.setToday = flowPort.setToday;
   api.presentation = flowPort.presentation;
   api.setPresentation = flowPort.setPresentation;
+  // What memory-sync.js exchanges for an account: the chosen presentation, content memories and
+  // declined offers. Today's condition stays on the device.
+  api.memoryPort = Object.freeze({ scope: storageScope, accountKey, state: flowPort.state, merge: flowPort.merge, subscribe: flowPort.subscribe });
   api.live = createLive({ coach: api, port: flowPort, clock: monotonicClock });
   return api;
 }
-module.exports = { createGame, createLearningSync, summarizeLearning: Learning.summarizeLearning, recommend: Learning.recommend, POLICY: Learning.POLICY, RESPONSE_FORMATS: Learning.RESPONSE_FORMATS, KEY };
+module.exports = { createGame, createLearningSync, createMemorySync, summarizeLearning: Learning.summarizeLearning, recommend: Learning.recommend, POLICY: Learning.POLICY, RESPONSE_FORMATS: Learning.RESPONSE_FORMATS, KEY };

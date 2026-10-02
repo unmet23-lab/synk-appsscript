@@ -1,6 +1,13 @@
 import { createWorldLearningHost } from './generated/world-learning-host.cjs';
 import { scopedStorage } from './core.mjs';
 const memberLabel = member => ({ student: '학생', teacher: '강사', director: '원장', reviewer: '검수 담당' })[member.role] || (member.kind === 'staff' ? '교직원' : '회원');
+// Words for Core's account summary (synk-account ?view=atlas): the settings a person chose and the
+// learning reasons they declared. A summary describes choices and practice, never ability or a trait.
+const SETTING_WORDS = { support: { step: '단계별로 도와줘요', choose: '그때그때 맞춰 줘요', independent: '혼자 해 볼게요' },
+  textSize: { standard: '보통 글씨', large: '큰 글씨' }, explanation: { brief: '짧은 설명', standard: '보통 설명', detailed: '자세한 설명' },
+  motion: { full: '움직임 그대로', reduced: '움직임 줄이기' }, audio: { off: '소리 끄기', available: '소리 쓰기' } };
+const REASON_WORDS = { culture: '드라마·음악·웹툰', travel: '한국 여행', people: '가족·친구와 이야기', life: '한국 생활', study: '한국에서 공부',
+  work: '한국에서 일', career: '지금 하는 일', exam: '시험·자격', hobby: '배우는 즐거움', other: '다른 이유' };
 const element = (tag, text, className) => { const node = document.createElement(tag);if (text != null) node.textContent = text;if (className) node.className = className;return node; };
 export function createAccountView({ client, product, guard, notice, logout, preview = false, localConnection = false, onGameRequest = null }) {
   const root = document.getElementById('account'), world = document.getElementById('world-games');let data, host, ended = false, deleteRequestId, gameFrame, gameGeneration=0;
@@ -36,6 +43,26 @@ export function createAccountView({ client, product, guard, notice, logout, prev
   async function load() {
     const result = await client.load();guard();if (ended) return;data = result;render();
   }
+  // What Atlas keeps for this account, as other SYNK products read it. An older server without the
+  // summary leaves the card saying so; the rest of the account screen does not wait for it.
+  async function atlas(target) {
+    let result;
+    try { result = typeof client.atlasSummary === 'function' ? await client.atlasSummary() : null;guard(); }
+    catch { if (!ended) target.replaceChildren(element('h3', '아틀라스가 기억하는 나'), element('p', '요약은 아직 준비 중이에요. 연습과 계정은 그대로 쓸 수 있어요.', 'small'));return; }
+    if (ended || !result?.summary) return;
+    const { summary } = result, rows = [];
+    const chosen = Object.entries(summary.presentation || {}).filter(([key, value]) => SETTING_WORDS[key]?.[value]).map(([key, value]) => SETTING_WORDS[key][value]);
+    rows.push(chosen.length ? `고른 설정 · ${chosen.join(' · ')}` : '고른 설정 · 아직 없어요');
+    const reasons = (summary.reasons || []).map(reason => REASON_WORDS[reason]).filter(Boolean);
+    rows.push(reasons.length ? `배우는 이유 · ${reasons.join(' · ')}` : '배우는 이유 · 아직 밝히지 않았어요');
+    const practice = summary.practice || {};
+    rows.push(practice.answered ? `연습 · ${practice.answered}문항 · 혼자 맞힌 문항 ${practice.independent} · 도움 받은 문항 ${practice.assisted}` : '연습 · 아직 저장된 연습이 없어요');
+    for (const skill of (practice.skills || []).slice(0, 3)) rows.push(skill.line);
+    target.replaceChildren(element('h3', '아틀라스가 기억하는 나'), list(rows, ''),
+      element('p', result.shared === 'practice-and-settings'
+        ? '다른 SYNK 앱도 이 요약으로 시작해요. 직접 고른 것과 실제 연습에서만 나오며, 나이·성별이나 성격은 짐작하지 않아요.'
+        : '학습 기록 저장이 꺼져 있어 다른 SYNK 앱에는 직접 밝힌 배우는 이유만 전해요.', 'small'));
+  }
   function render() {
     document.body.classList.add('account-open');root.hidden = false;root.replaceChildren();const head = element('div', null, 'account-head');
     head.append(element('h2', `${data.account?.profile?.display_name || '나'}의 ${localConnection?'개발용 WORLD 연결':'SYNK ID'}`), button(localConnection?'이 창의 연결 종료':'이 제품에서 로그아웃', () => signOut()));root.append(head);
@@ -50,18 +77,20 @@ export function createAccountView({ client, product, guard, notice, logout, prev
     input.onchange = () => { const enabled = input.checked;input.disabled = true;if (!enabled) stopWorld();void action(async () => { if (enabled && !canEnable) throw new Error('현재는 계정 학습 연결을 켤 수 없어요.');await client.setLearning(enabled, data.learning.revision);await load();notice(enabled ? '학습 기록 연결에 동의했어요.' : '학습 기록 연결을 껐어요.'); }).finally(() => { input.checked = data.learning?.enabled === true;input.disabled = !input.checked && !canEnable; }); };
     toggle.append(input, element('span', '계정에 학습 기록 연결'));learning.append(toggle);
     if (!canEnable) learning.append(element('p', deleting ? '계정 삭제 요청이 접수되어 학습 연결을 다시 켤 수 없어요.' : '계정 학습 연결은 아직 제공 전이에요. 이 계정의 기기 내 연습은 계속할 수 있어요.', 'small'));
+    const memory = card('아틀라스가 기억하는 나');memory.classList.add('atlas-card');memory.append(element('p', '요약을 불러오고 있어요.', 'small'));void atlas(memory);
     const rights = card('이용 권한');rights.append(list((data.entitlements || []).map(e => `${e.key}${e.product ? ` · ${e.product}` : ''}${e.status ? ` · ${e.status}` : ''}${e.valid_until ? ` · ${new Date(e.valid_until).toLocaleDateString('ko-KR')}까지` : ''}`), '현재 표시할 이용 권한이 없어요.'));
     const sessions = card('연결된 로그인');
     for (const session of data.sessions || []) { const row = element('div', null, 'session-row');row.append(element('p', `${session.label || session.product || '로그인'}${session.current ? ' · 현재' : ''}${session.revoked ? ' · 종료됨' : ''}`, 'small'));if (!session.revoked) row.append(button('종료', async () => { if (session.current) await signOut();else { await client.revokeSession(session.id);await load(); } }));sessions.append(row); }
     if (!(data.sessions || []).length) sessions.append(element('p', '표시할 로그인 기록이 없어요.', 'small'));
-    if(!localConnection)sessions.append(button('모든 제품의 로그인 종료', () => signOut('all')));grid.append(identity, learning, rights, sessions);root.append(grid);
+    if(!localConnection)sessions.append(button('모든 제품의 로그인 종료', () => signOut('all')));grid.append(identity, learning, memory, rights, sessions);root.append(grid);
     if(!localConnection){
     const actions = element('div', null, 'actions');actions.append(button('연결된 연습 기록 내려받기', async () => {
-      const events = [], metadata = [];let after = 0, until;
+      const events = [], metadata = [];let after = 0, until, atlasMemory;
       for (let page = 0; page < 1000; page++) { const result = await client.exportPage({ after, until });guard();
+        if (after === 0 && Array.isArray(result.atlasMemory)) atlasMemory = result.atlasMemory;
         if (!Array.isArray(result.events) || !Number.isSafeInteger(result.cursor) || result.cursor < after || result.hasMore && result.cursor <= after) throw new Error('내보내기 진행을 확인하지 못했어요. 다시 시도해 주세요.');
         until ??= result.until;events.push(...result.events);if (Array.isArray(result.eventMeta)) metadata.push(...result.eventMeta);after = result.cursor;
-        if (!result.hasMore) { const blob = new Blob([JSON.stringify({ scope: 'connected-learning-records', account: result.account || data.account, until, events, eventMeta: metadata }, null, 2)], { type: 'application/json' });const a = element('a');a.href = URL.createObjectURL(blob);a.download = 'synk-connected-learning.json';a.click();setTimeout(() => URL.revokeObjectURL(a.href), 1000);notice('연결된 연습 기록을 내려받았어요. 다른 과제·AI 기록은 이 파일 범위에 포함되지 않아요.');return; }
+        if (!result.hasMore) { const blob = new Blob([JSON.stringify({ scope: 'connected-learning-records', account: result.account || data.account, ...(atlasMemory ? { atlasMemory } : {}), until, events, eventMeta: metadata }, null, 2)], { type: 'application/json' });const a = element('a');a.href = URL.createObjectURL(blob);a.download = 'synk-connected-learning.json';a.click();setTimeout(() => URL.revokeObjectURL(a.href), 1000);notice('연결된 연습 기록을 내려받았어요. 다른 과제·AI 기록은 이 파일 범위에 포함되지 않아요.');return; }
       }throw new Error('기록이 많아 한 번에 마치지 못했어요. 잠시 뒤 다시 시도해 주세요.');
     }, 'sb-btn soft'));
     const deleteButton = button(deleting ? '계정 삭제 요청 접수됨' : '계정 삭제 요청', async () => { const dialog = element('dialog');dialog.append(element('h2', '계정 삭제를 요청할까요?'), element('p', '이 버튼은 삭제 요청을 접수해요. 접수 결과와 실제 삭제 완료를 구분해서 안내해요.', 'small'));

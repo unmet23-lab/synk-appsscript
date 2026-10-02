@@ -6,7 +6,8 @@
  *   1. finds what Talk itself imports from lib/atlas (app, lib, server functions, tools, tests),
  *   2. follows require() in the canonical sources and copies exactly that set,
  *   3. removes copies an earlier sync made that nothing needs any more (never Talk's own files),
- *   4. regenerates Talk's server bundle with Talk's own tools/synk-server-build.js,
+ *   4. regenerates Talk's server bundles (the event validator and the account summary) with Talk's
+ *      own tools/synk-server-build.js,
  *   5. writes lib/atlas/sync-manifest.json, which Talk's tests check without this repository.
  * The website letter page loads two scripts directly, so it keeps an explicit list; after a change
  * the website's own sync-letter-copy.mjs recomputes the page's cache keys (`?v=`).
@@ -26,8 +27,8 @@ for (let i = 0; i < args.length; i++) {
   else throw new Error('Usage: sync-atlas.js [--check] [--consumer talk|website]');
 }
 const MANIFEST = 'sync-manifest.json';
-// The server bundle (Talk's tools/synk-server-build.js) inlines these two.
-const SERVER_ENTRIES = ['trail.js', 'engine.js'];
+// The server bundles (Talk's tools/synk-server-build.js) inline these and what they require.
+const SERVER_ENTRIES = ['trail.js', 'engine.js', 'account-summary.js', 'strata/index.js', 'strata/maps/topik-i.json'];
 const consumers = {
   talk: { repo: process.env.SYNK_TALK_ROOT || path.resolve(root, '../SYNK-talk'), dir: 'lib/atlas', files: talkFiles, manifest: true, server: 'tools/synk-server-build.js' },
   // The letter page imports only these two scripts; do not publish unused modules. Its cache keys
@@ -125,16 +126,20 @@ for (const t of targets) {
   const manifest = JSON.stringify({ source: 'SYNK-appsscript atlas/ + strata/', tool: 'tools/sync-atlas.js', engine: after, files: hashes }, null, 2) + '\n';
   if (check) { if (!fs.existsSync(manifestPath) || normalized(fs.readFileSync(manifestPath)) !== manifest) problems.push(`${label}/${MANIFEST}: out of date`); }
   else if (!fs.existsSync(manifestPath) || normalized(fs.readFileSync(manifestPath)) !== manifest) { fs.writeFileSync(manifestPath, manifest); console.log(`wrote ${label}/${MANIFEST} (${files.length} files)`); }
-  // The server bundle is Talk's own generator; it reads the copy just written.
+  // The server bundles are Talk's own generator; it reads the copy just written. An older
+  // generator makes one bundle (build), a newer one lists its OUTPUTS (the account summary too).
   const generator = path.join(t.repo, t.server);
   if (fs.existsSync(generator)) {
     delete require.cache[require.resolve(generator)];
     const server = require(generator);
+    const outputs = Array.isArray(server.OUTPUTS) ? server.OUTPUTS : [{ file: 'supabase/functions/_shared/synk-atlas.js', build: server.build }];
     if (check) {
-      const bundle = path.join(t.repo, 'supabase/functions/_shared/synk-atlas.js');
       const sources = files.every(name => fs.existsSync(path.join(base, name)) && normalized(fs.readFileSync(path.join(base, name))) === normalized(fs.readFileSync(canonical(name))));
-      if (sources && (!fs.existsSync(bundle) || normalized(fs.readFileSync(bundle)) !== normalized(server.build()))) problems.push(`${path.basename(t.repo)}/supabase/functions/_shared/synk-atlas.js: not rebuilt from the copy`);
-    } else { server.write(); console.log(`rebuilt ${path.basename(t.repo)}/supabase/functions/_shared/synk-atlas.js`); }
+      for (const output of outputs) {
+        const bundle = path.join(t.repo, output.file);
+        if (sources && (!fs.existsSync(bundle) || normalized(fs.readFileSync(bundle)) !== normalized(output.build()))) problems.push(`${path.basename(t.repo)}/${output.file}: not rebuilt from the copy`);
+      }
+    } else { server.write(); for (const output of outputs) console.log(`rebuilt ${path.basename(t.repo)}/${output.file}`); }
   }
   if (!check && before !== after) {
     console.log(`engine ${before || '(none)'} -> ${after} in ${label}`);

@@ -20,7 +20,11 @@ const accountFactory = () => ({
     memberships: [{ kind: '학습 그룹 예시', role: 'student', student_code: 'EXAMPLE', active: true }], entitlements: [{ key: '기본 학습 예시', product: 'world', valid_until: null }],
     sessions: [{ id: 'preview-session', product: 'world', label: '이 브라우저 예시', current: true, revoked: false }] }),
   setLearning: async value => { enabled = value;revision++; }, revokeSession: async () => ({}), revokeAll: async () => ({ refreshRevoked: false, legacyAccessGuard: false }), requestDeletion: async id => { if (!/^[\da-f-]{36}$/.test(id)) throw new Error('삭제 요청 UUID 없음');deleting = true;enabled = false;revision++;return {}; },
-  exportPage: async () => ({ events: [], cursor: 0, until: 0, hasMore: false, eventMeta: [] })
+  exportPage: async () => ({ events: [], cursor: 0, until: 0, hasMore: false, eventMeta: [] }),
+  // A synthetic Atlas summary in the shape synk-account ?view=atlas returns.
+  atlasSummary: async () => ({ shared: enabled ? 'practice-and-settings' : 'declared-only', learning: { enabled, revision }, summary: {
+    presentation: enabled ? { support: 'step', textSize: 'large' } : null, reasons: ['travel', 'culture'],
+    practice: enabled ? { answered: 18, independent: 12, assisted: 4, skills: [{ line: '최근 놓친 듣고 세부 정보 찾기를 조금 더 연습해 봐요.' }, { line: '낱말 듣기를 최근 혼자 해냈어요. 가볍게 이어가요.' }] } : { answered: 0, independent: 0, assisted: 0, skills: [] } } })
 });
 const notice = text => { document.getElementById('notice').textContent = `합성 화면 예시 · ${text}`; };
 document.getElementById('preview-banner').hidden = false;

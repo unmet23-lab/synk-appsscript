@@ -6,3 +6,4 @@
 
 input[type=checkbox]{appearance:none;-webkit-appearance:none;flex:0 0 32px;width:32px;height:32px;min-height:32px;padding:0;border:0;border-radius:0;background:url('./assets/badge-cream.webp') center/contain no-repeat;cursor:pointer}input[type=checkbox]:checked{background-image:url('./assets/badge-check.webp')}input[type=checkbox]:disabled{opacity:.6;cursor:not-allowed}
 
+.signup-choices{margin:-4px 0 18px}.signup-choices .toggle{margin:0 0 14px;font-weight:650}.signup-choices .small{margin:0 0 10px}.atlas-card ul.details li{line-height:1.6}.atlas-card .small{margin:10px 0 0}

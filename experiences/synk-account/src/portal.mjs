@@ -15,7 +15,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     mode = value;$('auth-heading').textContent = ({ login: '다시 만나서 반가워요.', signup: '나만의 SYNK를 시작해요.', recover: '비밀번호를 다시 정해요.', reset: '새 비밀번호를 정해 주세요.' })[mode];
     $('auth-copy').textContent = mode === 'recover' ? '가입한 이메일로 재설정 링크를 보내 드려요.' : mode === 'signup' ? '이메일로 일반 계정을 만들어요. 학생 권한은 소속 확인 뒤 연결돼요.' : '이메일과 비밀번호로 내 계정에 들어가요.';
     $('password-label').hidden = mode === 'recover';$('password').required = mode !== 'recover';$('password').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
-    $('email').closest('label').hidden = mode === 'reset';$('email').required = mode !== 'reset';
+    $('email').closest('label').hidden = mode === 'reset';$('email').required = mode !== 'reset';$('signup-choices').hidden = mode !== 'signup';
     $('auth-submit').textContent = ({ login: '로그인', signup: '이메일로 가입', recover: '재설정 메일 보내기', reset: '새 비밀번호 저장' })[mode];
     document.querySelectorAll('[data-view]').forEach(button => { button.hidden = button.dataset.view === mode || mode === 'login' && button.dataset.view === 'login'; });
   };
@@ -78,7 +78,11 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       let result;
       const email = $('email').value.trim(), password = $('password').value;
       const callback = new URL(config.portalUrl);if (authorizationId) callback.searchParams.set('authorization_id', authorizationId);
-      if (mode === 'signup') result = await sdk.auth.signUp({ email, password, options: { emailRedirectTo: callback.href } });
+      // The sign-up choices travel with the account (user_metadata.synk_signup): the account server starts
+      // learning storage on the first sign-in only when the person ticked it here (SYNK-talk synk-auth.js).
+      if (mode === 'signup' && !$('signup-age').checked) throw new Error('만 14세 이상만 가입할 수 있어요. 확인란을 선택해 주세요.');
+      if (mode === 'signup') result = await sdk.auth.signUp({ email, password, options: { emailRedirectTo: callback.href,
+        data: { synk_signup: { version: 'synk-signup-1', learning: $('signup-learning').checked, age14: true } } } });
       else if (mode === 'recover') { callback.searchParams.set('view', 'reset');result = await sdk.auth.resetPasswordForEmail(email, { redirectTo: callback.href }); }
       else if (mode === 'reset') result = await sdk.auth.updateUser({ password });
       else result = await sdk.auth.signInWithPassword({ email, password });
