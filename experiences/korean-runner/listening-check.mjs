@@ -42,20 +42,25 @@ export function selectListeningChecks(coach, { assignment = coach.assignment?.()
   return selected;
 }
 // Audio completion gates scoring; cancelling/failing cannot become a wrong language answer.
+// Until the instruction has been heard in full, each play is its delivery. After that a play is a
+// replay (help) and cannot make it unheard: a replay cut off by a hidden tab leaves the answer open.
 export function createListeningCheck(coach) {
   let current = null, sequence = 0;
   return {
     get current() { return current && { ...current }; },
-    begin(item) { this.cancel(); current = { item, token: ++sequence, pid: coach.present(checkMetadata(item)), audio: 'pending', answered: false, replayed: false }; return current.token; },
+    begin(item) { this.cancel(); current = { item, token: ++sequence, pid: coach.present(checkMetadata(item)), audio: 'pending', heard: false, answered: false, replayed: false }; return current.token; },
     delivery(token, status) {
       if (!current || token !== current.token || current.answered) return false;
       if (!['pending', 'completed', 'failed'].includes(status)) throw Error('Invalid audio state');
-      current.audio = status; coach.delivery(current.pid, { audio: status }); return true;
+      if (current.heard) return true;
+      current.audio = status; if (status === 'completed') current.heard = true;
+      coach.delivery(current.pid, { audio: status }); return true;
     },
+    // Only a play after a full listen is help. A play after a failed or cut-off first play is still the first listen.
     replay() {
       if (!current || current.answered) return false;
-      coach.help(current.pid, 'replay'); current.replayed = true; current.audio = 'pending';
-      coach.delivery(current.pid, { audio: 'pending' }); return true;
+      if (current.heard) { coach.help(current.pid, 'replay'); current.replayed = true; return true; }
+      current.audio = 'pending'; coach.delivery(current.pid, { audio: 'pending' }); return true;
     },
     answer(choice) {
       if (!current || current.answered || current.audio !== 'completed') return null;

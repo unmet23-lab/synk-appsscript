@@ -16,10 +16,26 @@ test('all sixteen completed MP3 checks can produce independent correct/incorrect
   }
   assert.equal(coach.summary().independent, LISTENING_CHECKS.length);
 });
-test('replaying is assisted and requires a newly completed audio delivery', () => {
+test('a replay after a full listen is help; it cannot make the heard instruction unheard', () => {
+  const { coach, check } = fixture(), item = LISTENING_CHECKS[0], token = check.begin(item);
+  check.delivery(token, 'completed'); check.replay();
+  // The replay was cut off (a hidden tab): the instruction was still heard, so the answer stays open.
+  check.delivery(token, 'failed');
+  const result = check.answer(item.correct);
+  assert.equal(result.verdict, 'correct'); assert.equal(result.assisted, true); assert.equal(result.independent, false);
+  assert.deepEqual(coach.events().filter(e => e.type === 'practice.delivery').map(e => e.audio), ['completed']);
+});
+test('a first listen after a failed load is the first listen, not help', () => {
   const { check } = fixture(), item = LISTENING_CHECKS[0], token = check.begin(item);
-  check.delivery(token, 'completed'); check.replay(); assert.equal(check.answer(item.correct), null);
-  check.delivery(token, 'completed'); const result = check.answer(item.correct); assert.equal(result.assisted, true); assert.equal(result.independent, false);
+  check.delivery(token, 'failed'); assert.equal(check.answer(item.correct), null, 'nothing heard yet');
+  check.replay(); check.delivery(token, 'completed');
+  const result = check.answer(item.correct);
+  assert.equal(result.assisted, false); assert.equal(result.independent, true);
+});
+test('closing after a full listen leaves the question unanswered, not an audio failure', () => {
+  const { coach, check } = fixture(), token = check.begin(LISTENING_CHECKS[0]);
+  check.delivery(token, 'completed'); check.cancel();
+  assert.equal(coach.events().filter(e => e.type === 'practice.attempted').at(-1).reason, 'unanswered');
 });
 test('missing/interrupted audio and cancelled questions create no incorrect language evidence', () => {
   const { coach, check } = fixture(); const token = check.begin(LISTENING_CHECKS[0]); check.delivery(token, 'failed');

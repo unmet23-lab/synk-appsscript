@@ -4,7 +4,7 @@ import {INSTRUCTIONS,actionLabel} from './instructions.mjs';
 import {createWorld} from './world.mjs';
 import {KeyboardInput,KEY_ACTIONS} from './controls.mjs';
 import {InstructionAudio} from './audio.mjs';
-import {instructionMetadata,chooseInstruction,actionEvidence} from './learning.mjs';
+import {instructionMetadata,chooseInstruction,actionEvidence,FLOW_RUN,TIRED_RUN,FLOW_WORDS,paceOf,runObservation} from './learning.mjs';
 import {ShopStore} from './shop.mjs';
 import {createShopUI} from './shop-ui.mjs';
 import {createJourneyUI} from './goals-ui.mjs';
@@ -12,9 +12,16 @@ const $=id=>document.getElementById(id),keyboard=new KeyboardInput();
 let coach=null,learningFailed=false,nextPlan=null,practicePresentation=null;
 try{coach=globalThis.SynkLearning?.createGame({gameId:'korean-runner',storage:localStorage})||null;}catch{learningFailed=true;}
 function learn(method,...args){try{return coach?.[method](...args);}catch{learningFailed=true;return null;}}
+// Inside SYNK WORLD the record is the account's: kept and deleted there, not in this browser.
+const hosted=(()=>{try{return typeof coach?.assignment==='function';}catch{return false;}})();
 function updateLearning(){const summary=learn('summary'),text=!coach||learningFailed||summary?.storage?.available===false?'학습 기록을 저장할 수 없어 기본 부탁으로 달려요.':`${nextPlan?.reason||'아직 만나지 않은 부탁부터 준비했어요.'} 조작 결과로 듣기 실력을 단정하지 않아요.`;for(const id of ['learning-reason','result-learning'])if($(id))$(id).textContent=text;}
 function selectInstruction(items){if(!coach||learningFailed)return items[0];try{const plan=chooseInstruction(coach,items);if(plan?.selected){nextPlan=plan;updateLearning();return plan.selected;}}catch{learningFailed=true;}return items[0];}
 function refreshRecommendation(){if(coach)selectInstruction(INSTRUCTIONS);updateLearning();}
+// Atlas moment-level challenge: the run's pace follows this person (never the demo). A tired day does not speed up.
+let live=null;
+function startLive(){live=null;if(demo||!coach||learningFailed||typeof coach.live!=='function')return null;try{const tired=coach.today?.()==='tired';live=coach.live(FLOW_RUN,{words:FLOW_WORDS,...(tired?{declared:TIRED_RUN}:{})});return paceOf(live.settings().values);}catch{live=null;return null;}}
+function followPace(notice){const observation=live&&runObservation(notice);if(!observation)return;try{const out=live.observe(observation);if(out.change){model.tune(paceOf(out.settings.values));if(out.line)toast(out.line.text);}}catch{live=null;}}
+function endLive(){try{live?.end();}catch{/* the pace memory is a convenience */}live=null;}
 const panels=['pause-panel','settings-panel','practice-panel','audio-panel','result'];
 let world,model=null,running=false,paused=false,ready=false,starting=false,demo=false,resuming=false;
 let ending=false,resultRevealAt=0;
@@ -81,13 +88,14 @@ async function start(asDemo=false){
   $('start').disabled=true;$('demo').disabled=true;$('start').querySelector('span').textContent='목소리를 준비하고 있어요';
   try{
     if(!await ensureVoices()){audioFault(()=>start(asDemo));return;}
-    settleShopRound();setSound(true);pendingInstruction=null;ending=false;demo=asDemo;model=new RunnerModel({mode:demo?'tour':mode,learning:'listen',chooseInstruction:demo||!coach?null:selectInstruction});collectionRoundId=globalThis.SynkPlayCollection?.roundId('runner')||null;shopRoundId=globalThis.crypto?.randomUUID?.()||('run-'+Date.now()+'-'+Math.random().toString(36).slice(2));world.setCosmetics(shopStore.snapshot().equipped);running=true;paused=false;closeModal();$('demo-banner').hidden=!demo;
+    settleShopRound();setSound(true);pendingInstruction=null;ending=false;demo=asDemo;endLive();model=new RunnerModel({mode:demo?'tour':mode,learning:'listen',chooseInstruction:demo||!coach?null:selectInstruction,pace:startLive()||undefined});collectionRoundId=globalThis.SynkPlayCollection?.roundId('runner')||null;shopRoundId=globalThis.crypto?.randomUUID?.()||('run-'+Date.now()+'-'+Math.random().toString(36).slice(2));world.setCosmetics(shopStore.snapshot().equipped);running=true;paused=false;closeModal();$('demo-banner').hidden=!demo;
     document.body.classList.add('playing');document.body.classList.toggle('demo',demo);$('intro').hidden=true;$('hud').hidden=false;$('pause-button').hidden=false;
     $('cue').hidden=true;$('combo').hidden=true;$('feedback').hidden=true;$('toast').hidden=true;
     musicClock=0;musicStep=0;lastFrame=performance.now();hudClock=0;updateHUD();announce('한국어 지시를 듣고 바람길을 달려요.');
+    const opening=(()=>{try{return live?.intro().line?.text||null;}catch{return null;}})();if(opening)toast(opening,2600);
   }finally{starting=false;$('start').disabled=false;$('demo').disabled=false;$('start').querySelector('span').textContent='바람길 달리기';}
 }
-function home(){settleShopRound();closeUnanswered();running=false;paused=false;ending=false;demo=false;model=null;shopRoundId=null;pendingInstruction=null;keyboard.reset();cancelVoice();closeModal();document.body.classList.remove('playing','demo');$('hud').hidden=true;$('intro').hidden=false;$('pause-button').hidden=true;$('cue').hidden=true;$('toast').hidden=true;$('best-intro').textContent=best+' m';refreshRecommendation();$('start').focus();}
+function home(){settleShopRound();closeUnanswered();endLive();running=false;paused=false;ending=false;demo=false;model=null;shopRoundId=null;pendingInstruction=null;keyboard.reset();cancelVoice();closeModal();document.body.classList.remove('playing','demo');$('hud').hidden=true;$('intro').hidden=false;$('pause-button').hidden=true;$('cue').hidden=true;$('toast').hidden=true;$('best-intro').textContent=best+' m';refreshRecommendation();$('start').focus();}
 $('start').addEventListener('click',()=>start());$('demo').addEventListener('click',()=>start(true));$('restart').addEventListener('click',()=>start());$('back-home').addEventListener('click',home);$('result-home').addEventListener('click',home);
 function practiceActions(item){
   return item.steps.flatMap((step,i)=>{const el=document.createElement('span');el.className='practice-action';el.textContent=step.action==='lane'?['←','•','→'][step.target]:step.action==='jump'?'↑':step.action==='slide'?'↓':'＝';el.setAttribute('aria-label',actionLabel(step));if(!i)return[el];const then=document.createElement('small');then.textContent='다음';return[then,el];});
@@ -126,7 +134,7 @@ function recordAction(m,correct){if(demo||!m.presentationId||m.learningClosed)re
 function closeUnanswered(){if(demo)return;for(const m of model?.missions||[])if(m.presentationId&&!m.learningClosed){learn('answer',m.presentationId,{correct:null,assessable:false,reason:'unanswered'});m.learningClosed=true;}}
 function feedback(symbol,label){$('feedback').textContent=symbol;$('feedback').setAttribute('aria-label',label);$('feedback').hidden=false;feedbackUntil=performance.now()+850;announce(label);}
 function finish(){
-  updateHUD();closeUnanswered();paused=true;keyboard.reset();cancelVoice();$('cue').hidden=true;$('pause-button').hidden=true;if(!demo)refreshRecommendation();
+  updateHUD();closeUnanswered();endLive();paused=true;keyboard.reset();cancelVoice();$('cue').hidden=true;$('pause-button').hidden=true;if(!demo)refreshRecommendation();
   const distance=Math.floor(model.distance),newBest=!demo&&distance>best;if(newBest){best=distance;store('best',best);}
   $('result-eyebrow').textContent=demo?'A WALK THROUGH WIND VILLAGE':'YOUR LITTLE ADVENTURE';
   $('result-title').textContent=demo?'이제, 몸으로 달려볼까요?':model.reason==='tour'?'바람길 한 바퀴, 완주!':'다음엔 한 걸음 더!';
@@ -158,7 +166,7 @@ function frame(now){
   if(running&&!paused&&!model.finished){
     if(demo)driveDemo(model);model.step(dt);
     for(const n of model.drain()){
-      world.effect(n.type,model);effectAudio(n.type);
+      world.effect(n.type,model);effectAudio(n.type);followPace(n);
       if(n.type==='instruction')showInstruction(n.mission);
       if(n.type==='stepResult')refreshInstruction();
       if(n.type==='correct'){recordAction(n.mission,true);$('cue').hidden=true;feedback('✓','부탁 수행');}
@@ -186,6 +194,7 @@ async function init(){
 }
 const listeningCheck=mountListeningCheck({coach,beforeOpen:()=>{if(running&&!model?.finished)return false;cancelVoice();closeModal();return true;},onClose:()=>{if(running&&model?.finished)showModal('result');}});
 init();requestAnimationFrame(frame);
-$('learning-reset').addEventListener('click',()=>{try{coach?.reset();for(const m of model?.missions||[])m.presentationId=null;practicePresentation=null;learningFailed=!coach;nextPlan=null;}catch{learningFailed=true;}refreshRecommendation();});
+$('learning-reset').hidden=hosted;if(hosted)document.querySelector('#settings-panel .learning-note')?.replaceChildren('학습 기록은 WORLD 계정에 이어져요. 기록 공유와 삭제는 WORLD 계정 설정에서 관리해요.');
+$('learning-reset').addEventListener('click',()=>{try{coach?.reset();for(const m of model?.missions||[])m.presentationId=null;practicePresentation=null;learningFailed=!coach;nextPlan=null;}catch(error){if(error?.code!=='ACCOUNT_RESET_REQUIRED')learningFailed=true;}refreshRecommendation();});
 refreshRecommendation();
 window.synkRunner={get info(){return{version:6,ready,running,paused,demo,mode,learning:'listen',best,sound,shop:shopStore.snapshot(),shopPreview:shopUI?.info,journey:journeyUI?.info(),voiceClips:voiceBank?.info.clips||0,audio:voiceBank?.info||null,world:world?.info,model:model?{distance:model.distance,elapsed:model.elapsed,lane:model.lane,x:model.x,y:model.y,slide:model.slide,hearts:model.hearts,shield:model.shield,combo:model.combo,lanterns:model.lanterns,coins:model.coins,correct:model.correct,answers:model.answers,finished:model.finished,reason:model.reason,current:model.currentMission?{id:model.currentMission.id,text:model.currentMission.text,steps:model.currentMission.steps.map(s=>({action:s.action,target:s.target,remaining:s.d-model.distance,resolved:s.resolved,status:s.status}))}:null}:null};}};

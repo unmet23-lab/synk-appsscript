@@ -1,14 +1,20 @@
 import {INSTRUCTIONS,actionLabel} from './instructions.mjs';
 import {VOICE_SECONDS} from './voice-timing.mjs';
 export const LANES=[-2.35,0,2.35];
+// The run's pace (Atlas moment-level challenge, learning.mjs FLOW_RUN): the starting speed and how much
+// it rises over the run. These defaults are the original game. A spoken instruction must end before its
+// first action even at the top speed, so no pace ever runs faster than MAX_SPEED.
+export const DEFAULT_PACE=Object.freeze({speed:13,ramp:.055});
+export const MAX_SPEED=19;
 export function rng(seed=137){return()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
 export function obstacleHit(type,x,lane,y,sliding){
   if(Math.abs(x-LANES[lane])>.85)return false;
   return type==='barrier'?y<1.02:type==='arch'?!sliding||y>.15:true;
 }
 export class RunnerModel{
-  constructor({mode='tour',learning='listen',seed=Date.now(),chooseInstruction=null}={}){
-    this.mode=mode;this.learning=learning;this.random=rng(seed);this.elapsed=0;this.distance=0;this.speed=13;
+  constructor({mode='tour',learning='listen',seed=Date.now(),chooseInstruction=null,pace=DEFAULT_PACE}={}){
+    this.mode=mode;this.learning=learning;this.random=rng(seed);this.elapsed=0;this.distance=0;
+    this.pace={...DEFAULT_PACE,...pace};this.base=this.pace.speed;this.speed=Math.min(MAX_SPEED,this.base);
     this.chooseInstruction=chooseInstruction;this.scheduledInstructions=new Set();
     this.x=0;this.lane=1;this.y=0;this.vy=0;this.slide=0;this.hearts=3;this.shield=0;this.invincible=0;
     this.coins=0;this.score=0;this.near=0;this.correct=0;this.combo=0;this.maxCombo=0;this.lanterns=0;
@@ -17,6 +23,8 @@ export class RunnerModel{
     this.currentMission=null;this.reviewQueue=[];this.generated=0;this.generate();
   }
   emit(type,data={}){this.notices.push({type,...data});}
+  // A new pace from the moment-level challenge. The starting speed glides there (one step a second) rather than jumping.
+  tune(pace={}){this.pace={...this.pace,...Object.fromEntries(Object.entries(pace).filter(([,v])=>Number.isFinite(v)))};}
   get currentStep(){return this.currentMission?.steps.find(s=>!s.resolved)||null;}
   input(action){
     if(this.finished)return;
@@ -103,7 +111,8 @@ export class RunnerModel{
     if(this.vy!==0||this.y>0){this.vy-=23*dt;this.y+=this.vy*dt;if(this.y<=0){this.y=0;this.vy=0;this.emit('land');}}
     const mission=this.missions.find(m=>!m.resolved&&m.d-this.distance<m.cueDistance&&m.end>=this.distance);
     if(mission&&!mission.announced){mission.announced=true;mission.learning=this.learning;this.currentMission=mission;this.emit('instruction',{mission});}
-    this.speed=13+Math.min(6,this.elapsed*.055);
+    this.base+=Math.max(-dt,Math.min(dt,this.pace.speed-this.base));
+    this.speed=Math.min(MAX_SPEED,this.base+Math.min(6,this.elapsed*this.pace.ramp));
     const before=this.distance;this.distance+=this.speed*dt;this.score+=this.speed*dt;
     const crossed=this.events.filter(e=>!e.resolved&&e.d<=this.distance&&e.d>=before-.001).sort((a,b)=>a.d-b.d||(a.kind==='mark'?-1:b.kind==='mark'?1:0));
     for(const e of crossed){
@@ -113,7 +122,7 @@ export class RunnerModel{
       else if(obstacleHit(e.type,this.x,e.lane,this.y,this.slide>0)){
         if(this.invincible>0)continue;
         if(this.shield){this.shield=0;this.invincible=1.1;this.emit('shield');}
-        else{this.hearts--;this.invincible=1.35;this.emit('hit');if(this.hearts<=0){this.finish('collision');break;}}
+        else{this.hearts--;this.invincible=1.35;this.emit('hit',{mission:e.mission||null});if(this.hearts<=0){this.finish('collision');break;}}
       }else if(Math.abs(this.x-LANES[e.lane])<1.5||(e.type!=='tram'&&this.lane===e.lane)){this.near++;this.score+=25;this.emit('near');}
     }
     if(this.distance+180>this.generated)this.generate();

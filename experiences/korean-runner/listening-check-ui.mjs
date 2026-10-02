@@ -5,11 +5,18 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {} }) {
   let check = null, context, bank, gain, round = [], index = 0, epoch = 0, pending = false;
   const status = text => { $('check-status').textContent = text; };
   const choicesDisabled = value => { for (const button of $('check-choices').children) button.disabled = value; };
+  const ready = () => { choicesDisabled(false); $('check-replay').disabled = false; status('들은 내용과 같은 행동을 골라 주세요. 시간 제한은 없어요.'); };
+  // A play cut off before the end leaves the instruction unheard. Once it was heard in full, a cut-off
+  // replay changes nothing: the answer stays open without listening again.
   function interrupt() {
     epoch++; pending = false; bank?.stop();
-    if (check?.current && !check.current.answered) { check.delivery(check.current.token, 'failed'); choicesDisabled(true); status('소리가 멈췄어요. 다시 들은 뒤 답해 주세요.'); $('check-replay').disabled = false; }
+    const now = check?.current;
+    if (!now || now.answered) return;
+    if (now.audio === 'completed') { ready(); return; }
+    check.delivery(now.token, 'failed'); choicesDisabled(true); status('소리가 멈췄어요. 다시 들은 뒤 답해 주세요.'); $('check-replay').disabled = false;
   }
-  function close() { interrupt(); check?.cancel(); dialog.close(); $('check-choices').replaceChildren(); $('check-feedback').textContent = ''; onClose(); }
+  // A record the account refuses (a WORLD run that ended) must not keep the dialog open.
+  function close() { interrupt(); try { check?.cancel(); } catch { /* the run ended; nothing more to record */ } dialog.close(); $('check-choices').replaceChildren(); $('check-feedback').textContent = ''; onClose(); }
   async function play(replay = false) {
     if (!check?.current || pending || check.current.answered) return;
     const mine = ++epoch, token = check.current.token, item = check.current.item;
@@ -27,13 +34,14 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {} }) {
       bank.onState = (audio, played) => {
         if (!dialog.open || mine !== epoch || played.checkToken !== check?.current?.token) return;
         check.delivery(played.checkToken, audio);
-        if (audio === 'completed') { pending = false; choicesDisabled(false); $('check-replay').disabled = false; status('들은 내용과 같은 행동을 골라 주세요. 시간 제한은 없어요.'); }
+        if (audio === 'completed') { pending = false; ready(); }
       };
       if (!await bank.resume() || !await bank.prepare([item])) throw Error();
       if (mine !== epoch || !dialog.open) return;
       status('지시를 듣고 있어요…'); if (!bank.play({ ...item, checkToken: token })) throw Error();
     } catch {
       if (mine !== epoch || !dialog.open) return; check.delivery(token, 'failed'); pending = false;
+      if (check.current?.audio === 'completed') { ready(); return; }
       status('음성을 불러오지 못했어요. 듣기 실력의 오답으로 기록하지 않아요.'); $('check-replay').disabled = false;
     }
   }
