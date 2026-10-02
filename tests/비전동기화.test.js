@@ -35,10 +35,10 @@ test('GAS 상담 프롬프트까지 확정 LAB 비전이 임의 부연 없이 �
   assert.equal(syncVisionSources({ check: true }).changed.length, 0);
 });
 
-test('09-18 비전 개정과 사업 역할을 파생 소개에 전달한다', () => {
+test('10-02 개인화 엔진 기업 비전과 09-18 사업 역할을 파생 소개에 전달한다', () => {
   const visions = loadVisions();
-  assert.equal(visions.synk.headline, '각자의 목표와 상황에 맞는 도움을 제공하는 개인화 시스템을 만듭니다.');
-  assert.equal(visions.synk.subtext, '교육, 기업의 AI 활용, 콘텐츠, 유학·취업 준비에 개인화 기술을 적용합니다.');
+  assert.equal(visions.synk.headline, '누구에게나 확실히 도움이 되는 개인화 엔진을 만듭니다.');
+  assert.equal(visions.synk.subtext, 'SYNK는 개인화 엔진 아틀라스를 만드는 기업입니다. 20대부터 60대까지 남녀노소 누구든 게임을 하거나 배우고 공부할 때, 컨설팅을 받을 때 그 사람의 목표와 상황에 맞는 도움을 받게 합니다. 한국어 교육, 기업의 AI 활용, 콘텐츠, 유학·취업 준비는 이 엔진이 쓰이는 분야입니다.');
   assert.equal(visions.lab.headline, '한국어를 배우고, 한국에서의 공부와 생활을 준비하는 교육을 만듭니다.');
   assert.equal(visions.lab.subtext, '');
   assert.equal(visions.shift.headline, '기업과 기관이 AI를 자기 일에 활용하고, 가진 가치를 고객에게 전달하도록 돕습니다.');

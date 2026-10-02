@@ -106,7 +106,7 @@ function 목록뽑기(md, 앵커) {
 // 문장·제목·빈 줄은 편집할 수 있다. 기계가 읽는 경계는 의미별 주석 다섯 쌍이다.
 const 철학구획정의 = [
   ['purpose', '목적'], ['criteria', '판단 기준'], ['boundaries', '보호 경계'],
-  ['applicability', '적용 대상'], ['understanding', 'LAB 이해'],
+  ['applicability', '적용 대상'], ['understanding', '사람 이해'],
 ];
 
 function 철학구획(md) {
