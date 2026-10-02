@@ -6,6 +6,8 @@ const statusText={assigned:'진행 중',submitted:'제출 완료',completed:'제
 let workspace,classId,learnerId,view='students',revision=0,automaticInstructions=null;
 let linked=false,teacherToken='',authEpoch=0,pollTimer=null,pollLoading=false,workspaceReady=false,accessEpoch=0,draftContext=null;
 const tokenKey='synk.teacher.local-linked.session';
+const accountRequested=new URL(location.href).searchParams.get('account')==='1';
+let accountHost=null;
 const tokenStorage={get(){try{return sessionStorage.getItem(tokenKey)||'';}catch{return '';}},set(value){try{if(value)sessionStorage.setItem(tokenKey,value);else sessionStorage.removeItem(tokenKey);}catch{}}};
 const personalUI=createPersonalizationUI({role:'teacher',container:$('personalization-panel'),button:$('personalization-button'),onChange:load,onView:()=>{const template=personalUI.state?.assignmentTemplates?.find(t=>t.classId===classId&&t.learnerId===learnerId);if(template)openAssignment();else toast('선택한 학생의 추천은 이 과제 체험에서 아직 지원하지 않아요. 학생의 학습 근거를 먼저 확인해 주세요.');}});
 const classNow=()=>workspace?.classes.find(c=>c.id===classId);
@@ -16,6 +18,13 @@ function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTi
 const messages={OVERRIDE_REASON_REQUIRED:'추천과 다른 과제를 배정하는 이유를 짧게 적어 주세요.',AUTH_NOT_CONFIGURED:'정식 로그인은 아직 연결되지 않았어요.',FORBIDDEN:'이 학생의 수업 권한을 확인할 수 없어요.',INVALID_DUE_AT:'오늘 이후의 마감일을 골라 주세요.',INVALID_DUE_DATE:'오늘 이후의 마감일을 골라 주세요.',DUPLICATE_ASSIGNMENT:'이미 같은 과제가 진행 중이에요.',ASSIGNMENT_CLOSED:'이미 제출되거나 취소된 과제예요.',SERVER_ERROR:'저장하지 못했어요. 잠시 후 다시 시도해 주세요.'};
 Object.assign(messages,{AUTH_REQUIRED:'교사 연결 키를 확인한 뒤 다시 연결해 주세요.',RATE_LIMITED:'연결 시도가 많아요. 잠시 기다린 뒤 다시 시도해 주세요.',LEARNING_DISABLED:'학생이 WORLD 연결과 기록 공유에 동의한 뒤 과제를 보낼 수 있어요.',INVALID_INPUT:'입력한 내용을 확인해 주세요.'});
 async function request(path,payload){
+  if(accountRequested){
+    if(!accountHost||window.parent===window||window.parent.SYNKClassroomHost!==accountHost)throw Object.assign(Error('SYNK ID의 수업 연결에서 다시 열어 주세요.'),{code:'SESSION_CHANGED'});
+    const epoch=authEpoch,access=accessEpoch;if(payload&&!workspaceReady)throw Error('최신 연결 상태를 확인한 뒤 다시 시도해 주세요.');
+    const result=await accountHost.request(path,payload);
+    if(epoch!==authEpoch||payload&&access!==accessEpoch||window.parent.SYNKClassroomHost!==accountHost)throw Object.assign(Error('수업 연결이 바뀌었어요.'),{code:'SESSION_CHANGED'});
+    return result;
+  }
   const epoch=authEpoch,token=teacherToken,access=accessEpoch,guardedWrite=linked&&payload&&!['/api/teacher/session','/api/logout'].includes(path);
   if(linked&&!token&&path!=='/api/teacher/session')throw Error('교사 공간을 먼저 연결해 주세요.');
   if(guardedWrite&&!workspaceReady)throw Error('최신 연결 상태를 확인한 뒤 다시 시도해 주세요.');
@@ -34,6 +43,7 @@ function clearSession(message='교사 연결을 종료했어요.'){
   $('world-link-result').hidden=true;$('teacher-key').value='';$('teacher-session').hidden=false;$('teacher-session-error').textContent=message;document.documentElement.dataset.ready='auth';
 }
 function setMode(){
+  if(accountRequested){$('mode-badge').textContent='SYNK ID · 수업 연결';$('mode-note').textContent='서버가 확인한 담당 반의 공유된 학습 기록과 과제입니다. 학생의 공유 상태와 교사 권한을 요청할 때마다 확인해요.';for(const id of ['personalization-button','world-connections','teacher-logout','teacher-session'])$(id).hidden=true;return;}
   $('mode-badge').textContent=linked?'WORLD 연결 · 로컬 MVP':'예시 데이터 · 로컬 MVP';
   $('mode-note').textContent=linked?'학생이 동의한 WORLD 기록과 과제를 이 기기의 교사 공간에 연결해요. 정식 SYNK 로그인·다른 기기 동기화는 아직 제공하지 않아요.':'가상의 학생으로 과제 왕복을 체험하는 개발판이에요. 실제 SYNK ID·학생 계정과 연결되지 않았어요.';
   $('personalization-button').hidden=linked;$('world-connections').hidden=!linked||!teacherToken||!workspaceReady;$('teacher-logout').hidden=!linked||!teacherToken;$('teacher-session').hidden=!linked||!!teacherToken;
@@ -63,11 +73,12 @@ function suspendWorkspace(){
 function watchConnected(){if(!linked||pollTimer)return;pollTimer=setInterval(async()=>{if(pollLoading||!teacherToken||document.visibilityState==='hidden')return;pollLoading=true;try{await load();}finally{pollLoading=false;}},5000);}
 async function load(){const current=++revision;try{
   const data=await request('/api/workspace');if(current!==revision)return;
-  if(linked&&data.mode!=='local-linked')throw Error('연결된 교사 공간을 확인하지 못했어요.');
+  if(linked&&data.mode!==(accountRequested?'account-linked':'local-linked'))throw Error('연결된 교사 공간을 확인하지 못했어요.');
   workspace=data;workspaceReady=true;if(linked&&draftContext&&!draftAllowed(draftContext.kind)){accessEpoch++;clearDraft();toast('학생의 공유 또는 과제 상태가 바뀌어 작성 창을 닫았어요. 최신 내용을 확인해 주세요.');}workspace.assignments=workspace.assignments.map(a=>({...a,status:a.status==='cancelled'?'cancelled':a.completedCount>=a.assignedCount?'submitted':'assigned',submission:a.submissions?.[0]}));classId=workspace.classes.some(c=>c.id===classId)?classId:workspace.classes[0]?.id;learnerId=learners().some(s=>s.id===learnerId)?learnerId:learners()[0]?.id;$('class-select').innerHTML=workspace.classes.map(c=>`<option value="${escape(c.id)}">${escape(c.name.replace(' · 합성',''))}</option>`).join('');$('class-select').value=classId||'';$('loading').hidden=true;setMode();setPersonalization();render();watchConnected();document.documentElement.dataset.ready='true';
 }catch(e){if(current!==revision||e.code==='SESSION_CHANGED')return;if(linked){suspendWorkspace();watchConnected();}$('loading').hidden=false;$('loading').innerHTML=`<p>${escape(e.message)}</p><button class="text-button" id="retry">다시 불러오기</button>`;$('retry').onclick=load;}}
 async function openSession(key){const epoch=authEpoch;const result=await request('/api/teacher/session',{key});if(epoch!==authEpoch)return;if(typeof result.token!=='string'||!result.token)throw Error('교사 연결을 확인하지 못했어요.');authEpoch++;teacherToken=result.token;tokenStorage.set(teacherToken);$('teacher-key').value='';$('teacher-session-error').textContent='';setMode();await load();}
 async function start(){
+  if(accountRequested){try{if(window.parent===window||window.parent.location.origin!==location.origin||window.parent.SYNKClassroomHost?.mode!=='account-linked')throw Error('SYNK ID의 수업 연결에서 교사 공간을 열어 주세요.');accountHost=window.parent.SYNKClassroomHost;linked=true;teacherToken='account-session';setMode();await load();}catch(error){$('loading').textContent=error.message;document.documentElement.dataset.ready='error';}return;}
   const initial=new URL(location.href),key=new URLSearchParams(initial.hash.slice(1)).get('teacher-key');
   if(key){initial.hash='';history.replaceState(null,'',initial.pathname+initial.search);}
   try{const response=await fetch('/api/health',{cache:'no-store'}),health=await response.json();if(!response.ok)throw Error('교사 연결 상태를 확인하지 못했어요.');linked=health.mode==='local-linked';setMode();
@@ -87,7 +98,7 @@ function render(){
 function renderRoster(){const query=$('student-search').value.trim().toLowerCase();const rows=learners().filter(s=>s.name.toLowerCase().includes(query));$('roster').innerHTML=rows.length?rows.map(s=>`<button class="student-row ${s.id===learnerId?'selected':''}" data-student="${escape(s.id)}" aria-pressed="${s.id===learnerId}"><span class="avatar">${escape(s.name.slice(0,1))}</span><span class="student-copy"><strong>${escape(s.name)}</strong><small>${escape(linked&&s.revoked?'WORLD 연결 해제':linked&&!s.connectedAt?'WORLD 연결 대기':linked&&!s.sharing?.enabled?'기록 공유 종료':s.recommendation?.title||'먼저 학습 기록을 확인해요')}</small></span><span class="arrow">↗</span></button>`).join(''):`<p class="empty">${query?'검색한 학생이 없어요.':linked?'연결된 학생이 아직 없어요. 위에서 학생 이름을 입력하고 WORLD 연결 코드를 만들어 주세요.':'검색한 학생이 없어요.'}</p>`;}
 function renderDetail(){const s=studentNow();if(!s){$('student-detail').innerHTML=`<p class="empty">${linked?'학생이 연결에 동의한 뒤 이곳에서 학습 기록과 다음 과제를 살펴볼 수 있어요.':'학생을 선택해 주세요.'}</p>`;return;}const rec=s.recommendation;const skills=s.skills.filter(k=>k.n||k.status!=='unseen');const shown=skills.length?skills:s.skills.slice(0,3);const selectedContent=workspace.content.find(c=>c.id===rec?.contentId);const canAssign=!linked||(!s.revoked&&s.connectedAt&&s.sharing?.enabled===true);$('student-detail').innerHTML=`
   <div class="detail-header"><span class="avatar">${escape(s.name.slice(0,1))}</span><div><h3>${escape(s.name)}</h3><p>${escape(classNow().name)}${linked?'':' · 예시 학생'}</p></div><button class="text-button" id="add-note" ${canAssign?'':'disabled'}>관찰 +</button></div>
-  ${linked?`<div class="student-connection"><strong>${s.revoked?'WORLD 연결 해제':s.connectedAt?(s.sharing?.enabled?'WORLD 연결됨 · 기록 공유 중':'기록 공유 종료'):'학생의 연결 동의를 기다리고 있어요'}</strong><p class="help">연결 ${escape(date(s.connectedAt))} · 마지막 수행 ${escape(date(s.lastEventAt))}</p><p class="help">공유 범위: 학습 문항 수행과 이 수업의 과제 결과</p>${!s.revoked&&(s.sharing?.enabled||!s.connectedAt)?`<button class="text-button" data-revoke="${escape(s.id)}">학생 연결 해제</button>`:''}</div>`:''}
+  ${linked?`<div class="student-connection"><strong>${s.revoked?'WORLD 연결 해제':s.connectedAt?(s.sharing?.enabled?'WORLD 연결됨 · 기록 공유 중':'기록 공유 종료'):'학생의 연결 동의를 기다리고 있어요'}</strong><p class="help">연결 ${escape(date(s.connectedAt))} · 마지막 수행 ${escape(date(s.lastEventAt))}</p><p class="help">공유 범위: 학습 문항 수행과 이 수업의 과제 결과</p>${!accountRequested&&!s.revoked&&(s.sharing?.enabled||!s.connectedAt)?`<button class="text-button" data-revoke="${escape(s.id)}">학생 연결 해제</button>`:''}</div>`:''}
   <p class="goal">학습 목표 · ${escape(s.goal||'TOPIK I 듣기·읽기 연습')}</p><div class="evidence-title"><h3>학습 근거</h3><span>최근 독립 수행 기준</span></div>
   ${shown.map(k=>`<div class="skill-row"><strong>${escape(k.label)}</strong><span class="skill-number">${k.n?`${k.correct} / ${k.n}`:'—'}</span><small>${escape(labels[k.status]||k.status)} · ${k.n?'정답 / 독립 문항':''} ${escape(date(k.lastAt))}<br>${escape(({'independent-language-items':'독립 언어 문항','assisted-language-items':'도움 받은 언어 문항','insufficient-evidence':'아직 근거 부족'})[k.source]||'WORLD 학습 기록')} ${k.freshness==='stale'?'· 오래된 기록':''}</small></div>`).join('')}
   ${linked?`<p class="help">읽기 응답은 서버에서 채점해요. 미니게임 기록은 게임이 보고한 언어 응답이며 서버 독립 채점과 구분해 살펴봐요.</p>`:''}

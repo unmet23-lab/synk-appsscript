@@ -11,7 +11,7 @@ export function submissionAttempt({assignment,content,revision,answers,key}){
   const selected={};for(const question of questions){const answer=answers[question.id];if(!question.options?.some(option=>option.id===answer))throw new Error('모든 문항의 답을 골라 주세요.');selected[question.id]=answer;}
   return Object.freeze(assignment?{assignmentId:assignment.id,revision,answers:Object.freeze(selected),idempotencyKey:key}:{contentId:content.id,revision,answers:Object.freeze(selected),idempotencyKey:key});
 }
-export function createWorldClassroom({root,client,learnerId,guard,notice=()=>{},launchRun=()=>{},closeGame=()=>{},pollMs=5000,documentObject=document,makeId=()=>crypto.randomUUID()}){
+export function createWorldClassroom({root,client,learnerId,guard,notice=()=>{},launchRun=()=>{},closeGame=()=>{},onSharingChange=null,pollMs=5000,documentObject=document,makeId=()=>crypto.randomUUID()}){
   let ended=false,requestVersion=0,timer=null,abort=null,busy=false,workspace=null,practice=[],error='',selected=null,submitting=false,starting=false,viewVersion=0,lastSnapshot='',lastSharingRevision=null,assignmentVersions=new Map(),drafts=new Map(),pending=new Map(),practiceResults=new Map(),runRequests=new Map(),openRun=null,gameVisible=false;
   const active=()=>{guard();if(ended)throw Object.assign(new Error('연결이 끝났어요.'),{code:'ACCOUNT_CHANGED'});};
   const keyFor=choice=>`${choice.kind}:${choice.id}:${workspace?.sharing?.revision||0}`;
@@ -53,6 +53,7 @@ export function createWorldClassroom({root,client,learnerId,guard,notice=()=>{},
     try{
       const [result,catalog]=await Promise.all([client.student({signal}),client.practice({signal})]);active();if(version!==requestVersion)return;
       validateWorldWorkspace(result,learnerId);if(!Array.isArray(catalog?.content))invalid();
+      if(lastSharingRevision!==null&&lastSharingRevision!==result.sharing.revision&&onSharingChange){closeLocal();onSharingChange(result.sharing);return;}
       let changedAssignment=false;
       if(lastSharingRevision!==null&&lastSharingRevision!==result.sharing.revision){closeLocal();openRun=null;runRequests.clear();drafts.clear();pending.clear();practiceResults.clear();selected=null;submitting=false;starting=false;viewVersion++;}
       else for(const [id,previous] of assignmentVersions){

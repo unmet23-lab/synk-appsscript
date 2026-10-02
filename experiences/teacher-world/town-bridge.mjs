@@ -3,7 +3,7 @@
 import { initialState, restoreState, reduceCommand, snapshot, TownError, SCOPE } from '../synk-town/core.mjs';
 const requireValue = (ok, code, message, status = 403) => { if (!ok) throw new TownError(code, message, status); };
 function owner(state, actor) {
-  requireValue(state?.mode === 'local-linked' && state.synthetic === false && actor?.mode === 'local-linked'
+  requireValue(['local-linked','account-linked'].includes(state?.mode) && state.synthetic === false && actor?.mode === state.mode
     && actor.role === 'learner', 'FORBIDDEN', 'WORLD 연결을 확인해 주세요.');
   const learner = state.learners.find(row => row.id === actor.id);
   requireValue(learner && !learner.revoked && learner.connectedAt && learner.sharing?.enabled
@@ -20,16 +20,16 @@ function read(learner) {
     'INVALID_OWNER', '다른 학생의 체험 기록을 열 수 없어요.', 503);
   return restoreState(learner.town.state);
 }
-function result(learner, value) {
+function result(learner, value, mode) {
   const data = snapshot(value);
   data.view.scopeLabel = 'WORLD 연결 · 내 생활 체험';
-  return { ...data, mode: 'local-linked', sharingRevision: learner.sharing.revision };
+  return { ...data, mode, sharingRevision: learner.sharing.revision };
 }
-export function townWorkspace(state, actor) { const learner = owner(state, actor); return result(learner, read(learner)); }
+export function townWorkspace(state, actor) { const learner = owner(state, actor); return result(learner, read(learner), state.mode); }
 export function townCommand(state, actor, command) {
   const learner = owner(state, actor);
   requireValue(command?.sharingRevision === learner.sharing.revision, 'REVISION_CONFLICT', '연결 상태가 바뀌었어요. 다시 불러와 주세요.', 409);
   const next = reduceCommand(read(learner), { id: command.id, type: command.type, payload: command.payload, expectedRevision: command.expectedRevision });
   learner.town = { ownerId: learner.id, state: next.state };
-  return { ...result(learner, next.state), duplicate: next.duplicate };
+  return { ...result(learner, next.state, state.mode), duplicate: next.duplicate };
 }

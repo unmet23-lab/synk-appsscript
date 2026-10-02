@@ -1,6 +1,6 @@
 // 게임은 원고와 판정을 맡고, 아틀라스는 공통 기록과 다음 연습의 선택을 맡는다.
-// 문장 하나 = 읽기 문항 하나. 보기 넷 중 하나를 베는 응답이라 형식은 single-choice다.
-// 베지 못하고 떨어뜨린 것(놓침)은 읽고 몰랐는지 손이 늦었는지 가를 수 없어 평가하지 않는 응답으로 남긴다.
+// 문장 하나 = 읽기 문항 하나. 베기 점수와 별도로 정답 공개 전 정적 보기에서 답한다.
+// 베기·놓침만으로는 읽기 기록을 만들지 않는다. 정적 확인을 닫은 경우도 오답이 아니다.
 import { ITEMS, SKILL_LABEL } from './content.mjs';
 
 export const GAME_ID = 'blank-slice';
@@ -56,10 +56,25 @@ export function rankItems(coach, items) {
   } catch { return null; }
 }
 
-/** 벤 답. 문장은 늘 보이는 읽기 지문이라 도움으로 세지 않는다. */
+/** 시간 제한 없는 정적 확인의 답. 정답 공개 전이므로 독립 응답이 가능하다. */
 export const answerPayload = (correct) => ({ correct, assessable: true });
-/** 두 번 던져도 베지 않음. */
+/** 읽기 확인 없이 종료. */
 export const missedPayload = () => ({ correct: null, assessable: false, reason: 'unanswered' });
+
+/** 조작 결과를 받지 않는다. 읽기 선택 한 번만 기록하고 취소는 평가하지 않는다. */
+export function createReadingConfirmation(coach, item) {
+  const pid = coach.present(itemMetadata(item)); let closed = false;
+  return {
+    pid,
+    confirm(choice) {
+      if (closed) return null;
+      if (!item.options.includes(choice)) throw new Error('보기에서 답을 골라 주세요.');
+      const result = coach.answer(pid, answerPayload(choice === item.answer));
+      closed = true; return result;
+    },
+    cancel() { if (closed) return null; closed = true; return coach.answer(pid, missedPayload()); },
+  };
+}
 
 const STATUS = {
   unseen: { text: '아직 기록이 적어요', tone: 'quiet' },

@@ -1,0 +1,47 @@
+✔ classroom requests use main credentials, product identity and class URL without exposing tokens (353.913ms)
+✔ classroom calls require login and cannot turn Messenger or injected IPC into a classroom caller (141.848ms)
+✔ classroom transport refreshes a rejected token once and preserves scope and conflict information (143.6844ms)
+✔ logout fences delayed classroom data and transport errors do not fabricate success (122.5047ms)
+✔ external-browser OAuth uses real HTTP callback, S256, state and public client; no tokens enter status (89.1732ms)
+✔ wrong state, duplicate state/code, wrong path and forged Host cannot consume callback (90.9754ms)
+✔ cancellation and expired callback close listener and never create a disk session (20.7382ms)
+✔ port collision or external browser launch failure returns a usable signed-out state (20.9656ms)
+✔ disk holds ciphertext only; restore rotates refresh token, verifies same subject and logout removes it (136.7146ms)
+✔ near expiry concurrent requests share one refresh and verify the restored subject (196.7344ms)
+✔ refresh invalid_grant drops stored session, while transient server failure preserves encrypted recovery (152.1161ms)
+✔ cancel during token exchange cannot resurrect a session after the response arrives (102.5077ms)
+✔ no encryption backend means no sign-in, token storage or plaintext fallback (12.8344ms)
+✔ encrypted store is bound to app and config; save followed by clear leaves no resurrection file (85.5655ms)
+✔ public config rejects secrets, shared client identities, release HTTP and imprecise callbacks (5.6152ms)
+✔ fixed account operation input rejects URL/header/action injection; messenger only uses own-account routes (60.3817ms)
+✔ platform account entry is exact; different product, duplicates, child frames and IdP portal cannot invoke auth (1.1006ms)
+✔ company requests keep token in main and bind Origin, confirmation, CSRF and fixed cookie session fetch (4.0826ms)
+✔ rotated refresh is saved before user/account verification; 503 or 429 including HTML preserves recovery (703.1875ms)
+✔ current-session revocation immediately clears main state and encrypted recovery token (59.8545ms)
+✔ native account contract enforces server learning and profile limits (138.1048ms)
+✔ company HTTP denial is an error envelope instead of a successful exchange result (0.9602ms)
+✔ verified account library is minimal, updates on reload, and clears during logout and a different login (177.2267ms)
+✔ library is removed on missing contract, failed account reload and restore verification failure (131.7941ms)
+✔ expired menu rights are removed from status without trusting a renderer clock or cached array (39.6489ms)
+✔ a late old account load cannot restore entries removed by a newer server response (80.3173ms)
+✔ an account ID change on a reload is rejected and cannot carry rights across identities (83.6645ms)
+✔ classroom IPC maps every known action to a fixed endpoint and class query (8.9425ms)
+✔ classroom rejects unknown routes, raw URLs, headers, method injection and foreign products (3.6987ms)
+✔ class scope is required for reads and writes and cannot disagree with a model body (1.9152ms)
+✔ only learning read accepts the two nonnegative integer query fields (0.6767ms)
+✔ classroom JSON keeps the run identifier, copies values and caps bytes (11.5756ms)
+✔ classroom rejects values that JSON would drop or rewrite and recursive objects (0.8991ms)
+✔ desktop account adapter sends fixed operations, never credentials or arbitrary URLs (3.7098ms)
+✔ a logout or account switch fences a late desktop response and queued work (3.0484ms)
+✔ desktop service rejection and cancellation preserve their meaning for offline learning (1.3857ms)
+✔ mobile home entries remain separate products with no authentication tokens or offline promise (11.3911ms)
+✔ desktop classroom transport uses fixed main IPC with a scoped class and preserves run data (1.0182ms)
+✔ desktop classroom rejects late identity changes, cancelled replies and preserves server conflicts (0.6951ms)
+ℹ tests 39
+ℹ suites 0
+ℹ pass 39
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3419.3197

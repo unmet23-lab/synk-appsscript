@@ -11,7 +11,7 @@ const REASON_WORDS = { culture: '드라마·음악·웹툰', travel: '한국 여
 const element = (tag, text, className) => { const node = document.createElement(tag);if (text != null) node.textContent = text;if (className) node.className = className;return node; };
 // 기기 시각으로 「10월 10일 05:00」(계정 지우기 취소 기한).
 const dueText = value => { const d = new Date(value);if (!value || Number.isNaN(d.getTime())) return '';return `${d.getMonth() + 1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
-export function createAccountView({ client, product, guard, notice, logout, preview = false, localConnection = false, onGameRequest = null }) {
+export function createAccountView({ client, product, guard, notice, logout, preview = false, localConnection = false, onGameRequest = null, classConnection = null }) {
   const root = document.getElementById('account'), world = document.getElementById('world-games');let data, host, ended = false, deleteRequestId, gameFrame, gameGeneration=0;
   const closeGame=()=>{gameGeneration++;if(window.SYNKTownHost)delete window.SYNKTownHost;try{host?.closeRun?.();}catch{}if(gameFrame){gameFrame.removeAttribute?.('src');gameFrame.hidden=true;}};
   // Back in front: read what other devices chose (help style, moment memory); going to the background: send what changed here.
@@ -28,24 +28,28 @@ export function createAccountView({ client, product, guard, notice, logout, prev
   function games() {
     stopWorld();if (product !== 'world' || !data.account?.synk_user_id) return;
     world.hidden = false;world.append(element('h2', 'WORLD에서 이어서 연습해요.'));
-    const connected = data.learning?.enabled === true && data.capabilities?.learningSync === true && data.account.status !== 'deletion-requested';
+    const context=classConnection?data.classroom:data;
+    const connected = context?.learning?.enabled === true && data.learning?.enabled === true && data.capabilities?.learningSync === true && data.account.status === 'active';
     const status = element('p', connected ? '학습 계정을 연결할 준비가 되었어요.' : '이 계정의 기기 내 기록으로 연습해요. 비회원 기록과 합치거나 서버에 보내지 않아요.', 'notice');world.append(status);
     if (!preview) {
-      const accountKey = connected ? data.account.synk_user_id : `local:${data.account.synk_user_id}`;
-      const storage = scopedStorage(localStorage, accountKey, data.learning.revision, guard);
+      const accountKey = (connected ? data.account.synk_user_id : `local:${data.account.synk_user_id}`)+(classConnection?`:class:${classConnection.classId}`:'');
+      const learningRevision=context?.learning?.revision||data.learning.revision;
+      const storage = scopedStorage(localStorage, accountKey, learningRevision, guard);
       // The page's own engine builds the account-wide adapter; a game frame only builds its coach.
-      host = createWorldLearningHost({ accountKey, revision: data.learning.revision, storage, connected, engine: window.SynkLearning?.engine,
-        transport: client.learning, memoryTransport: client.memory, guard, onStatus: state => { if (ended) return;status.textContent = state.phase === 'synced' ? '계정 학습 기록을 연결했어요.' : state.phase === 'offline' ? `연결을 기다리는 기록 ${state.queued}개 · 이 기기에 보관해요.` : state.phase === 'blocked' ? '학습 연결을 확인하지 못했어요. 계정 상태를 새로 확인해 주세요.' : '학습 기록을 연결하고 있어요.'; } });
+      host = createWorldLearningHost({ accountKey, revision: learningRevision, storage, connected, engine: window.SynkLearning?.engine,
+        transport: classConnection?.client.learning||client.learning, memoryTransport: classConnection?undefined:client.memory, guard, onStatus: state => { if (ended) return;status.textContent = state.phase === 'synced' ? '계정 학습 기록을 연결했어요.' : state.phase === 'offline' ? `연결을 기다리는 기록 ${state.queued}개 · 이 기기에 보관해요.` : state.phase === 'blocked' ? '학습 연결을 확인하지 못했어요. 계정 상태를 새로 확인해 주세요.' : '학습 기록을 연결하고 있어요.'; } });
       window.SYNKLearningHost = host;document.addEventListener?.('visibilitychange', visibility);
     }
     const links = element('div', null, 'game-links'), frame = element('iframe');gameFrame=frame;frame.hidden = true;frame.title = 'WORLD 학습 게임';frame.allow = 'autoplay; fullscreen';
     for (const [path, label] of [['korean-racing', '한국어 레이싱'], ['korean-runner', '바람길'], ['korean-rhythm', '한국어 리듬'], ['order-rush', '주문 폭주'], ['entry-check', '입장 검사'], ['story-classroom', '선생님이 돌아왔다'], ['blank-slice', '빈칸 베기']]) {
-      links.append(button(label, async () => { guard();if (preview) { notice('로컬 화면 예시에서는 실제 게임 계정 연결을 시작하지 않아요.');return; }if(localConnection){await onGameRequest?.(path);return;}frame.src = new URL(`../${path}/`, location.href).href;frame.hidden = false; }, 'sb-glass'));
+      links.append(button(label, async () => { guard();if (preview) { notice('로컬 화면 예시에서는 실제 게임 계정 연결을 시작하지 않아요.');return; }if(localConnection||classConnection){await onGameRequest?.(path);return;}frame.src = new URL(`../${path}/`, location.href).href;frame.hidden = false; }, 'sb-glass'));
     }
     world.append(links, frame);
   }
   async function load() {
-    const result = await client.load();guard();if (ended) return;data = result;render();
+    const result = await client.load();guard();if (ended) return;
+    if(classConnection){const context=await classConnection.client.load();guard();if(ended)return;if(context?.account?.synk_user_id!==result.account?.synk_user_id)throw new Error('수업 계정이 바뀌었어요. 다시 로그인해 주세요.');result.classroom=context;classConnection.onContext?.(context);}
+    data = result;render();
   }
   // What Atlas keeps for this account, as other SYNK products read it. An older server without the
   // summary leaves the card saying so; the rest of the account screen does not wait for it.
@@ -109,14 +113,16 @@ export function createAccountView({ client, product, guard, notice, logout, prev
     games();
   }
   function launchRun(run){
-    guard();if(ended||!localConnection||!host||!gameFrame||!data.learning?.enabled)throw new Error('먼저 WORLD 학습 연결을 확인해 주세요.');
+    guard();if(ended||!(localConnection||classConnection)||!host||!gameFrame||!data.learning?.enabled||classConnection&&!data.classroom?.sharing?.enabled)throw new Error('먼저 WORLD 학습 연결을 확인해 주세요.');
     const paths={'korean-racing':'/korean-racing/','korean-runner':'/korean-runner/','korean-rhythm':'/korean-rhythm/','order-rush':'/order-rush/','entry-check':'/entry-check/','story-classroom':'/story-classroom/','blank-slice':'/blank-slice/','synk-town':'/synk-town/linked.html'};
     const url=new URL(run?.href||'',location.href);if(!paths[run?.gameId]||url.origin!==location.origin||url.pathname!==paths[run.gameId]||url.hash)throw new Error('지원하는 WORLD 게임 주소가 아니에요.');
     closeGame();host.beginRun(run);const generation=gameGeneration;
     if(run.gameId==='synk-town'){
       const current=()=>{guard();if(ended||generation!==gameGeneration)throw new Error('Town 연결이 끝났어요.');};
-      window.SYNKTownHost=Object.freeze({async read(){current();const result=await client.townRead();current();return result;},async command(payload){current();const result=await client.townCommand(payload);current();return result;}});
+      const townClient=classConnection?.client||client;
+      window.SYNKTownHost=Object.freeze({async read(){current();const result=await townClient.townRead();current();return result;},async command(payload){current();const result=await townClient.townCommand(payload);current();return result;}});
     }
+    if(classConnection)url.pathname=new URL(`../${run.gameId}/${run.gameId==='synk-town'?'linked.html':''}`,location.href).pathname;
     gameFrame.src=url.href;gameFrame.hidden=false;world.hidden=false;gameFrame.scrollIntoView?.({behavior:'smooth',block:'start'});
   }
   return { load,launchRun,closeGame, stop() { ended = true;document.body.classList.remove('account-open');stopWorld();root.replaceChildren();root.hidden = true; } };

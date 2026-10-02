@@ -1,5 +1,6 @@
 'use strict';
-function requestSpec(operation,params={},appVersion='0.1.0'){
+const {classroomRequestSpec}=require('./classroom-requests.cjs');
+function requestSpec(operation,params={},appVersion='0.1.0',product){
   const invalid=()=>{throw Object.assign(new Error('요청 형식을 확인해 주세요.'),{code:'INVALID_REQUEST'});};
   if(!params||typeof params!=='object'||Array.isArray(params))invalid();
   const keys=(allowed)=>{if(Object.keys(params).some(k=>!allowed.includes(k)))invalid();};
@@ -7,6 +8,7 @@ function requestSpec(operation,params={},appVersion='0.1.0'){
   const uuid=v=>{if(typeof v!=='string'||!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(v))invalid();return v;};
   const action=(action,body)=>({path:'synk-account',body:{action,...body}});
   switch(operation){
+    case 'classroom':return classroomRequestSpec(params,product);
     case 'load':keys([]);return {path:'synk-account'};
     case 'release':keys([]);return {path:'release-policy?app_version='+encodeURIComponent(appVersion)};
     case 'setLearning':keys(['enabled','expected_revision']);if(typeof params.enabled!=='boolean')invalid();return action('learning-consent',{enabled:params.enabled,expected_revision:integer(params.expected_revision)});

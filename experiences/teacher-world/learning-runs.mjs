@@ -33,7 +33,9 @@ export function bindRunEvents(state,l,runId,events){
   const r=runId==null?null:(state.learningRuns||[]).find(r=>r.id===runId&&belongs(r,l));
   if(runId!=null&&!r)fail('FORBIDDEN','다른 학생 또는 이전 공유의 수행입니다.',403);
   for(const e of events){const old=l.events.find(row=>row.revision===l.sharing.revision&&row.payload.id===e.id);if(old&&(old.runId||null)!==(runId||null))fail('EVENT_RUN_CONFLICT','이미 저장한 기록의 수행을 바꿀 수 없어요.');
-    if(r&&Date.parse(e.at)<Date.parse(r.startedAt))fail('EVENT_BEFORE_RUN','수행 시작 전 기록을 과제에 붙일 수 없어요.',400);
+    // Account service checks first server receipt and immutable event/run ownership.
+    // Device clocks are not comparable to a remote server's run start clock.
+    if(r&&state.mode!=='account-linked'&&Date.parse(e.at)<Date.parse(r.startedAt))fail('EVENT_BEFORE_RUN','수행 시작 전 기록을 과제에 붙일 수 없어요.',400);
     if(r&&e.type==='decision.made'&&e.experienceId!==r.gameId)fail('WRONG_RUN_CONTENT','다른 콘텐츠의 기록입니다.',400);
   }
   if(r)r.eventIds=[...new Set([...r.eventIds,...events.map(e=>e.id)])];return r;

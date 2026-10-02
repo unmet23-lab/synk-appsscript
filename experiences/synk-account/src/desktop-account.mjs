@@ -28,6 +28,20 @@ export function createDesktopAccountClient({ bridge, product, guard }) {
   });
 }
 
+// Same trusted IPC and main-process token store, with classroom-only operations.
+export function createDesktopClassroomClient({bridge,product,guard}) {
+  if(!['platform','world'].includes(product)||typeof guard!=='function'||typeof bridge?.accountRequest!=='function')throw new TypeError('Trusted desktop classroom bridge required');
+  return async function request(operation,{classId,query,body}={}, {signal}={}) {
+    guard();
+    if(signal?.aborted)throw Object.assign(new Error('요청을 취소했어요.'),{code:'ABORTED'});
+    const result=await bridge.accountRequest('classroom',{operation,...(classId===undefined?{}:{classId}),...(query===undefined?{}:{query}),...(body===undefined?{}:{body})});
+    guard();
+    if(signal?.aborted)throw Object.assign(new Error('요청을 취소했어요.'),{code:'ABORTED'});
+    if(result?.ok!==true)throw Object.assign(new Error(result?.error?.message||'수업 연결을 확인하지 못했어요.'),{code:result?.error?.code||'CLASSROOM_UNAVAILABLE',retryable:result?.error?.retryable===true,status:result?.error?.status,revision:result?.revision});
+    return result;
+  };
+}
+
 export function authMessage(state) {
   if (!state?.configured) return '이 앱의 SYNK ID 연결 설정을 준비하고 있어요. 기본 학습은 계속 이용할 수 있어요.';
   if (state.error?.message) return state.error.message;
