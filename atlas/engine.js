@@ -40,6 +40,10 @@
   const ARMS = ['adapted', 'baseline'];
   const DAY = 86400000, RECENT = 30 * DAY;
   const copy = value => JSON.parse(JSON.stringify(value));
+  const freeze = value => {
+    if (value && typeof value === 'object' && !Object.isFrozen(value)) { Object.freeze(value); for (const k of Object.keys(value)) freeze(value[k]); }
+    return value;
+  };
   const validId = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
   const unit = value => typeof value === 'number' && value >= 0 && value <= 1;
   const flag = value => value == null || typeof value === 'boolean';
@@ -91,34 +95,54 @@
     } else throw new TypeError('Atlas: unknown event');
     return event;
   }
+  // Entries a session has admitted: validated once, owned by that session and frozen,
+  // so reading its log again neither re-validates them nor re-parses their times.
+  const admitted = new WeakMap();
+  // Link checks look events up by id. A session answers from its own index; a bare log is scanned.
+  const scan = events => ({
+    byId: id => events.find(e => e.id === id),
+    attempts: presentationId => {
+      const stats = { count: 0, latest: -Infinity };
+      for (const e of events) if (e.type === 'practice.attempted' && e.presentationId === presentationId) { stats.count += 1; stats.latest = Math.max(stats.latest, ms(e.at)); }
+      return stats;
+    },
+    events,
+  });
   // Check one event against a log without copying the log. False means an exact replay.
-  function admit(events, event) {
+  function admit(events, event) { return admitWith(scan(events), event); }
+  function admitWith(lookup, event) {
     validate(event);
-    const previous = events.find(e => e.id === event.id);
+    // Ids are unique in an admitted log, so "the event with this id, of this type" is one lookup.
+    const find = (id, type) => { const found = lookup.byId(id); return found && (!type || found.type === type) ? found : undefined; };
+    const previous = lookup.byId(event.id);
     if (previous) {
       if (JSON.stringify(previous) !== JSON.stringify(event)) throw new Error('Atlas: conflicting event id');
       return false;
     }
-    if (isPractice(event)) trail().checkLink(events, event);
+    if (isPractice(event)) {
+      const t = trail();
+      if (typeof t.link === 'function') t.link(event, lookup.byId(event.type === 'practice.presented' ? event.decisionId : event.presentationId), lookup.attempts(event.presentationId));
+      else t.checkLink(lookup.events, event);
+    }
     if (event.type === 'feedback.given') {
-      const completion = events.find(e => e.id === event.completionId && e.type === 'experience.completed');
+      const completion = find(event.completionId, 'experience.completed');
       if (!completion || scopeKey(completion.scope) !== scopeKey(event.scope) || ms(completion.at) > ms(event.at)) throw new Error('Atlas: feedback requires a prior completion in the same scope');
     }
     if (event.type === 'experience.completed') {
-      const decision = events.find(e => e.type === 'decision.made' && e.id === event.decisionId);
+      const decision = find(event.decisionId, 'decision.made');
       if (!decision || scopeKey(decision.scope) !== scopeKey(event.scope) || decision.variant !== event.variant || decision.experienceId !== event.experienceId || ms(decision.at) > ms(event.at)) throw new Error('Atlas: completion requires the delivered decision');
     }
     if (event.type === 'outcome.observed') {
-      const decision = events.find(e => e.type === 'decision.made' && e.id === event.decisionId);
+      const decision = find(event.decisionId, 'decision.made');
       if (!decision || scopeKey(decision.scope) !== scopeKey(event.scope) || ms(decision.at) > ms(event.at)) throw new Error('Atlas: outcome requires a prior decision in the same scope');
       if (event.attemptId != null) {
-        const attempt = events.find(e => e.type === 'practice.attempted' && e.id === event.attemptId);
+        const attempt = find(event.attemptId, 'practice.attempted');
         if (!attempt || scopeKey(attempt.scope) !== scopeKey(event.scope) || ms(attempt.at) > ms(event.at)
           || ms(attempt.recordedAt) > ms(event.recordedAt)) throw new Error('Atlas: outcome proof requires a prior attempt in the same scope');
       }
     }
     if (event.type === 'record.excluded') {
-      const target = events.find(e => e.id === event.targetId);
+      const target = find(event.targetId);
       if (!target || target.type === 'record.excluded' || scopeKey(target.scope) !== scopeKey(event.scope)) throw new Error('Atlas: invalid exclusion target');
     }
     return true;
@@ -129,10 +153,21 @@
   // Internal reading. understand() publishes the state; decide() also needs the decision history.
   function read(events, scope, asOf, recordedAsOf = asOf) {
     const key = scopeKey(scope), cutoff = ms(asOf), recordedCutoff = ms(recordedAsOf);
-    const ordered = events.map(validate).filter(e => scopeKey(e.scope) === key && ms(e.at) <= cutoff && ms(e.recordedAt) <= recordedCutoff)
-      // Stable sort preserves the append order when both clocks have the same
-      // millisecond. Random IDs are identity, never a causal ordering clock.
-      .sort((a, b) => ms(a.at) - ms(b.at) || ms(a.recordedAt) - ms(b.recordedAt));
+    // A session's own entries were validated when admitted; anything else is checked in full.
+    const rows = [];
+    let sorted = true, last = null;
+    for (const e of events) {
+      const known = admitted.get(e);
+      if (!known) validate(e);
+      const row = known || { key: scopeKey(e.scope), at: ms(e.at), recordedAt: ms(e.recordedAt) };
+      if (row.key !== key || row.at > cutoff || row.recordedAt > recordedCutoff) continue;
+      if (last && (row.at < last.at || (row.at === last.at && row.recordedAt < last.recordedAt))) sorted = false;
+      rows.push({ e, at: row.at, recordedAt: row.recordedAt }); last = row;
+    }
+    // Stable sort preserves the append order when both clocks have the same
+    // millisecond. Random IDs are identity, never a causal ordering clock.
+    if (!sorted) rows.sort((a, b) => a.at - b.at || a.recordedAt - b.recordedAt);
+    const ordered = rows.map(row => row.e);
     const excluded = new Set(ordered.filter(e => e.type === 'record.excluded').map(e => e.targetId));
     const context = {}, evidence = {}, expired = [], latest = {}, latestSignal = {}, latestAnswer = {}, lines = [];
     // Resolve newest declaration first. Its expiry must not resurrect an older declaration.
@@ -342,23 +377,44 @@
     // The owner is fixed for this session, even if the host reuses and edits its
     // input object while switching accounts or workspaces.
     scope = copy(scope);
-    // The session owns its log. Appending checks one event and never copies the whole
-    // log, so a fast game that records hundreds of items stays cheap; reads return copies.
-    let log = [];
+    // The session owns its log. Appending checks one event against an id index and never
+    // copies or rescans the whole log, so a fast game with a long history stays cheap.
+    // events() returns copies; snapshot() returns the frozen entries themselves.
+    let log = [], frozen = null;
+    const byId = new Map(), attemptStats = new Map(), completions = new Map();
+    const lookup = { byId: id => byId.get(id), attempts: presentationId => attemptStats.get(presentationId) || { count: 0, latest: -Infinity },
+      get events() { return log; } };
+    const store = event => {
+      const entry = copy(event);
+      // The entry is never handed out or changed again, so it is checked once and frozen.
+      // Trail may load later (it is only needed for practice); until then entries stay unvouched.
+      const t = getTrail();
+      if (typeof t?.vouch === 'function') t.vouch(entry);
+      else freeze(entry);
+      admitted.set(entry, { key: scopeKey(entry.scope), at: ms(entry.at), recordedAt: ms(entry.recordedAt) });
+      byId.set(entry.id, entry);
+      if (entry.type === 'practice.attempted') {
+        const stats = lookup.attempts(entry.presentationId);
+        attemptStats.set(entry.presentationId, { count: stats.count + 1, latest: Math.max(stats.latest, ms(entry.at)) });
+      }
+      if (entry.type === 'experience.completed' && !completions.has(entry.decisionId)) completions.set(entry.decisionId, entry);
+      log.push(entry); frozen = null;
+    };
     for (const event of events) {
       if (scopeKey(event.scope) !== scopeKey(scope)) throw new Error('Atlas: scope mismatch');
-      if (admit(log, event)) log.push(copy(event));
+      if (admitWith(lookup, event)) store(event);
     }
     let sequence = 0;
     const nextId = id || (() => `a${Date.now().toString(36)}-${(++sequence).toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
     const record = body => {
       const at = clock(), event = { ...body, schema: 1, scope: copy(scope), id: nextId(), at, recordedAt: at };
       // The caller's nested values (lists, snapshots) are detached before they enter the log.
-      if (admit(log, event)) log.push(copy(event));
+      if (admitWith(lookup, event)) store(event);
       return copy(event);
     };
     return {
       events: () => copy(log),
+      snapshot: () => frozen || (frozen = Object.freeze(log.slice())),
       set: (field, value, until = null) => record({ type: 'context.set', field, value, until }),
       observe: signal => record({ type: 'signal.observed', kind: signal?.kind, key: signal?.key, strength: signal?.strength, n: signal?.n, assisted: signal?.assisted ?? null, until: signal?.until ?? null, refs: signal?.refs ?? [] }),
       respond: (line, value) => record({ type: 'estimate.responded', line, value }),
@@ -374,7 +430,7 @@
       },
       complete: decision => {
         if (!decision || decision.status !== 'ready' || scopeKey(decision.scope) !== scopeKey(scope)) throw new Error('Atlas: invalid decision');
-        const existing = log.find(e => e.type === 'experience.completed' && e.decisionId === decision.id);
+        const existing = completions.get(decision.id);
         return existing ? copy(existing) : record({ type: 'experience.completed', decisionId: decision.id, experienceId: decision.experienceId, variant: decision.selected.id });
       },
       feedback: (completionId, value) => record({ type: 'feedback.given', completionId, value }),
@@ -385,7 +441,7 @@
       outcome: (decisionId, result) => record({ type: 'outcome.observed', decisionId, measure: result?.measure, window: result?.window, value: result?.value ?? null, reason: result?.reason ?? null, assisted: result?.assisted ?? null,
         ...(result?.attemptId != null || result?.targetLine != null ? { attemptId: result?.attemptId, targetLine: result?.targetLine } : {}) }),
       exclude: targetId => record({ type: 'record.excluded', targetId }),
-      clear: () => { log = []; },
+      clear: () => { log = []; frozen = null; byId.clear(); attemptStats.clear(); completions.clear(); },
       state: () => understand(log, scope, clock()),
       lines: () => understand(log, scope, clock()).lines,
     };

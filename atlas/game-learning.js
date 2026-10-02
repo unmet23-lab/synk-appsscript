@@ -33,6 +33,8 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     lastTime = Math.max(lastTime, ...events.map(e => Date.parse(e.at)).filter(Number.isFinite));
     return Atlas.createSession({ scope, events, clock: monotonicClock });
   };
+  // The session's frozen entries themselves (no copy). Older sessions only offer copies.
+  const log = () => session.snapshot ? session.snapshot() : session.events();
   const decode = raw => {
     if (raw == null) return null;
     const value = JSON.parse(raw);
@@ -71,11 +73,16 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     }
     session = newSession(combined);
   }
-  const snapshot = events => JSON.stringify({ version: 1, epoch, events, ...(storageScope === 'account' ? { owner: accountKey } : {}) });
+  // Byte-identical to JSON.stringify({ version, epoch, events, owner }). Log entries are
+  // frozen, so each one is serialised once instead of the whole history on every write.
+  const serialised = new WeakMap();
+  const entryJson = e => { let json = serialised.get(e); if (json === undefined) { json = JSON.stringify(e); if (Object.isFrozen(e)) serialised.set(e, json); } return json; };
+  const snapshot = events => `{"version":1,"epoch":${JSON.stringify(epoch)},"events":[${events.map(entryJson).join(',')}]`
+    + `${storageScope === 'account' ? `,"owner":${JSON.stringify(accountKey)}` : ''}}`;
   function persist(kind = 'append') {
     if (!storage || !readable) { complete = false; notify('storage-error', 'STORAGE_ERROR'); return false; }
     try {
-      const events = session.events();
+      const events = log();
       if (events.length > 20000) throw Object.assign(new Error('Atlas: local history limit'), { code: 'HISTORY_CAPACITY' });
       const raw = snapshot(events);
       storage.setItem(key, raw); lastStoredRaw = raw; writable = true; notify(kind); return true;
@@ -84,14 +91,45 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   // Initialize one shared epoch before a second game/tab opens it.
   if (!initial && readable && storage) persist();
   const practiceSession = { practice: (...args) => session.practice(...args) };
+  // Derived views are rebuilt only when the log changes; the frozen snapshot is the log
+  // itself, so the same array means nothing was added. Policy windows (7/30 days) move
+  // with time, so a view is not reused for long even when nothing was added.
+  const VIEW_MS = 60000;
+  let cached = null, met = null;
   function view() {
-    const events = session.events(), state = session.state();
-    return Trail.summarize(events, { scope, asOf: state.asOf });
+    const events = log(), asOf = monotonicClock(), now = Date.parse(asOf);
+    if (cached?.events === events && now - cached.now < VIEW_MS) return cached.summary;
+    cached = { events, now, summary: Trail.summarize(events, { scope, asOf }), profiles: new Map(), counts: null };
+    return cached.summary;
+  }
+  function profileOf(observed) {
+    const ok = complete && readable && writable, flag = String(ok);
+    if (cached?.summary === observed && cached.profiles.has(flag)) return cached.profiles.get(flag);
+    const profile = Learning.summarizeLearning({ summary: observed, map, complete: ok });
+    if (cached?.summary === observed) cached.profiles.set(flag, profile);
+    return profile;
+  }
+  // Items and families already attempted or revealed. The log only grows within one
+  // session object, so new entries are folded in; a replaced session is read again.
+  function metIndex() {
+    const events = log();
+    if (!met || met.session !== session) met = { session, done: 0, presented: new Map(), items: new Set(), families: new Set() };
+    for (; met.done < events.length; met.done += 1) {
+      const e = events[met.done];
+      if (e.type === 'practice.presented') { met.presented.set(e.id, e); continue; }
+      if (e.type !== 'practice.attempted' && !(e.type === 'practice.helped' && e.level === 'answer')) continue;
+      const p = met.presented.get(e.presentationId);
+      if (!p) continue;
+      met.items.add(p.itemKey);
+      if (p.measure?.familyKey) met.families.add(p.measure.familyKey);
+    }
+    return met;
   }
   function summary() {
     refresh(); const observed = view();
-    return { ...Learning.summarizeLearning({ summary: observed, map, complete: complete && readable && writable }),
-      storage: { available: readable && writable, scope: storageScope, warning }, counts: Temper.measure(observed) };
+    if (cached?.summary === observed && !cached.counts) cached.counts = Temper.measure(observed);
+    return { ...profileOf(observed), storage: { available: readable && writable, scope: storageScope, warning },
+      counts: cached?.summary === observed ? cached.counts : Temper.measure(observed) };
   }
   function requireActive(pid) {
     refresh(); const item = active.get(pid); if (!item) throw new Error('Atlas: presentation ended or local record reset'); return item;
@@ -138,13 +176,8 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
         responseFormat: item.responseFormat ?? 'unknown',
         familyKey: item.familyKey || item.itemKey, audioRequired: item.audioRequired ?? item.modality === 'listening', confounded: !!item.confounded };
       // Analytical exclusion cannot erase exposure to an item or its answer.
-      const raw = session.events(), presented = new Map(raw.filter(e => e.type === 'practice.presented').map(e => [e.id, e]));
-      const seen = raw.some(e => {
-        const p = presented.get(e.presentationId);
-        return p && (p.itemKey === item.itemKey || p.measure?.familyKey === measure.familyKey)
-          && (e.type === 'practice.attempted' || e.type === 'practice.helped' && e.level === 'answer');
-      });
-      const profile = Learning.summarizeLearning({ summary: view(), map, complete: complete && readable && writable });
+      const index = metIndex(), seen = index.items.has(item.itemKey) || index.families.has(measure.familyKey);
+      const profile = profileOf(view());
       const basis = profile.skills.find(s => s.id === item.skillId).levels[item.difficulty].formats[measure.responseFormat];
       // Snapshot the actual Core state used at delivery so the choice is reviewable.
       const decision = session.plan(gameId, [{ id: item.id, minutes: 3, pace: 'standard',

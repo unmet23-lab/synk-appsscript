@@ -46,6 +46,16 @@
       || !['LAB', 'SHIFT', 'PATH'].includes(scope.domain) || !id(scope.workspace) || !id(scope.subject)) throw new TypeError('Trail: invalid practice scope');
     return `${scope.domain}/${scope.workspace}/${scope.subject}`;
   };
+  // Entries a session log has admitted: checked once and deep-frozen, so reading the log
+  // again neither re-validates them nor parses their times. Anything else is checked in full.
+  const vouched = new WeakMap();
+  const freeze = value => {
+    if (value && typeof value === 'object' && !Object.isFrozen(value)) { Object.freeze(value); for (const k of Object.keys(value)) freeze(value[k]); }
+    return value;
+  };
+  const scopeOf = e => vouched.get(e)?.scope ?? key(e.scope);
+  const atOf = e => vouched.get(e)?.at ?? time(e.at);
+  const recordedOf = e => vouched.get(e)?.recordedAt ?? time(e.recordedAt);
   const uniqueList = (values, valid, max) => Array.isArray(values) && values.length <= max && values.every(valid) && new Set(values).size === values.length;
   const tag = v => typeof v === 'string' && v.trim() === v && v.length > 0 && v.length <= 120 && !/[\r\n]/.test(v);
   function validate(event) {
@@ -75,17 +85,28 @@
     return event;
   }
   function linked(event, prior, parent, attempts) {
-    validate(event);
+    if (!vouched.has(event)) validate(event);
     if (prior) {
       if (canonical(prior) !== canonical(event)) throw new Error('Trail: conflicting event id');
       return event;
     }
     const presented = event.type === TYPES[0];
-    if (!parent || parent.type !== (presented ? 'decision.made' : TYPES[0]) || key(parent.scope) !== key(event.scope)
-      || time(parent.at) > time(event.at) || time(parent.recordedAt) > time(event.recordedAt)) throw new Error('Trail: practice requires a prior parent in the same scope');
+    if (!parent || parent.type !== (presented ? 'decision.made' : TYPES[0]) || scopeOf(parent) !== scopeOf(event)
+      || atOf(parent) > atOf(event) || recordedOf(parent) > recordedOf(event)) throw new Error('Trail: practice requires a prior parent in the same scope');
     if (event.type === TYPES[2]) {
-      if (event.attemptNo !== attempts.count + 1 || attempts.latest > time(event.at)) throw new Error('Trail: attempt sequence must be consecutive');
+      if (event.attemptNo !== attempts.count + 1 || attempts.latest > atOf(event)) throw new Error('Trail: attempt sequence must be consecutive');
     }
+    return event;
+  }
+  // A session that keeps its own index links one new event without scanning the log.
+  const link = (event, parent, attempts) => linked(event, null, parent, attempts);
+  // The session vouches for an entry it has admitted and will never change: practice
+  // events are validated here, other events only need their scope and times.
+  function vouch(event) {
+    if (TYPES.includes(event?.type)) validate(event);
+    else if (!event?.scope || ![event.scope.domain, event.scope.workspace, event.scope.subject].every(v => typeof v === 'string')) throw new TypeError('Trail: invalid log entry');
+    freeze(event);
+    vouched.set(event, { scope: `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}`, at: time(event.at), recordedAt: time(event.recordedAt) });
     return event;
   }
   function checkLink(events, event) {
@@ -105,7 +126,7 @@
     const reported = decisionId => decisions === null || decisions.includes(decisionId);
     const all = [], seen = new Map(), attemptOrder = new Map();
     for (const event of events) {
-      if (!event || !event.scope || `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}` !== scopeId) continue;
+      if (!event || !event.scope || (vouched.get(event)?.scope ?? `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}`) !== scopeId) continue;
       if (seen.has(event.id)) {
         if (canonical(seen.get(event.id)) !== canonical(event)) throw new Error('Trail: conflicting event id');
         continue;
@@ -115,13 +136,13 @@
         attemptOrder.get(event.presentationId) || { count: 0, latest: -Infinity });
       if (event.type === TYPES[2]) {
         const earlier = attemptOrder.get(event.presentationId) || { count: 0, latest: -Infinity };
-        attemptOrder.set(event.presentationId, { count: earlier.count + 1, latest: Math.max(earlier.latest, time(event.at)) });
+        attemptOrder.set(event.presentationId, { count: earlier.count + 1, latest: Math.max(earlier.latest, atOf(event)) });
       }
       seen.set(event.id, event); all.push(event);
     }
     // The log is in the order things happened in the app; a device clock can step back.
     // Help, a reveal or an attempt earlier in either order counts as prior evidence.
-    const visible = all.filter(e => time(e.at) <= cutoff && time(e.recordedAt) <= recordedCutoff);
+    const visible = all.filter(e => atOf(e) <= cutoff && recordedOf(e) <= recordedCutoff);
     const excluded = new Set(visible.filter(e => e.type === 'record.excluded').map(e => e.targetId));
     // The comparison arm is recorded on the decision; practice only points to it.
     const arms = new Map(visible.filter(e => e.type === 'decision.made').map(e => [e.id, e.arm ?? null]));
@@ -139,7 +160,7 @@
         if (!traces.has(traceKey)) traces.set(traceKey, new Map());
         const trace = traces.get(traceKey), kind = event.type === TYPES[2] ? 'attempt' : event.level === 'answer' ? 'answer' : 'help';
         const earlier = trace.get(kind);
-        trace.set(kind, { index: Math.min(earlier?.index ?? Infinity, index), at: Math.min(earlier?.at ?? Infinity, time(event.at)) });
+        trace.set(kind, { index: Math.min(earlier?.index ?? Infinity, index), at: Math.min(earlier?.at ?? Infinity, atOf(event)) });
       }
     });
     const presentations = [], help = [], attempts = [], met = new Map(), audioByPresentation = new Map();
@@ -168,7 +189,7 @@
           presentationId: p.id, helpId: event.helpId, level: event.level, contentRef: event.contentRef });
         return;
       }
-      const at = time(event.at);
+      const at = atOf(event);
       const before = kinds => traceKeys(p).some(traceKey => kinds.some(kind => {
         const first = traces.get(traceKey)?.get(kind);
         return first && (first.index < index || first.at < at);
@@ -257,5 +278,5 @@
     }
     return facts;
   }
-  return Object.freeze({ VERSION, TYPES, validate, checkLink, summarize, openHistory, remember, growth });
+  return Object.freeze({ VERSION, TYPES, validate, checkLink, link, vouch, summarize, openHistory, remember, growth });
 });
