@@ -5704,10 +5704,10 @@ var SynkLearning = (() => {
           if (candidate.familyKeys != null && (!Array.isArray(candidate.familyKeys) || !candidate.familyKeys.length || candidate.familyKeys.length > 500 || candidate.familyKeys.some((key) => typeof key !== "string"))) throw new TypeError("Core: invalid learning candidate");
           const lift = Math.max(0, ...(candidate.conceptIds || []).map((id) => CONTENT_LIFT[content.get(id)] || 0));
           const exhausted = !!candidate.familyKeys && candidate.familyKeys.every((key) => history.family.has(key));
-          const score = focus.priority + lift - (immediate ? 0.45 : 0) - (previous.size ? 0.1 : 0) - (!readyForHarder ? 0.25 * (candidate.difficulty - 1) : 0) - (exhausted ? 0.5 : 0);
-          ranked.push({ candidate, focus, score, count });
+          const score = focus.priority - (immediate ? 0.45 : 0) - (previous.size ? 0.1 : 0) - (!readyForHarder ? 0.25 * (candidate.difficulty - 1) : 0) - (exhausted ? 0.5 : 0);
+          ranked.push({ candidate, focus, score, lift, count });
         }
-        ranked.sort((a, b) => b.score - a.score || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id));
+        ranked.sort((a, b) => b.score - a.score || b.lift - a.lift || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id));
         if (!ranked.length) return { status: "unavailable", selected: null, reason: "지금 조건에 맞는 연습이 없어요.", alternatives: [] };
         const best = ranked[0], label = best.focus.skill.label;
         return {

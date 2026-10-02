@@ -65,3 +65,19 @@ test('between candidates of one ability, the one using recently missed content i
   assert.equal(pick.selected.id, 'b-missed');
   assert.ok(Learning.summarizeConcepts, 'the content summary is part of Core');
 });
+
+test('missed content never puts another ability ahead of the one its own state ranks first', () => {
+  const game = play();
+  // Word listening at level 2 is missed three times, on one word; its level 1 has no record yet.
+  for (const n of [1, 2, 3]) {
+    const pid = game.present(wordItem(n, 'w0011', { difficulty: 2 }));
+    game.delivery(pid, { audio: 'completed' }); game.answer(pid, { correct: false, assessable: true });
+  }
+  const candidate = (id, skillId, difficulty, word) => ({ id, itemKey: id, skillIds: [skillId], modality: 'listening', difficulty,
+    responseFormat: 'single-choice', conceptIds: [`ko.word.${word}`] });
+  // A detail question that uses the missed word does not overtake word listening, which needs practice.
+  const pick = game.recommend([candidate('detail-with-missed-word', 'ko.listening.detail', 1, 'w0011'), candidate('word-again', 'ko.listening.word', 2, 'w0500')]);
+  assert.equal(pick.selected.id, 'word-again');
+  assert.equal(pick.focusSkillId, 'ko.listening.word');
+  assert.equal(pick.alternatives[0].id, 'detail-with-missed-word');
+});

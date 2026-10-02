@@ -52,8 +52,8 @@ function summarizeLearning({ summary, map, complete = true, prior = null }) {
     independent: skills.reduce((n, s) => n + Object.values(s.levels).reduce((m, l) => m + Object.values(l.formats).reduce((sum, f) => sum + f.n, 0), 0), 0),
     learningEffectClaim: false, grade: null };
 }
-// Missed or due content (a word, a grammar point) lifts a candidate a little; the ability's
-// own state still decides first.
+// Missed or due content (a word, a grammar point) puts a candidate a little ahead of those its
+// ability's own state ranks alike; it never moves one ability, level or history past another.
 const CONTENT_LIFT = Object.freeze({ practice: 0.2, review: 0.1, supported: 0.05 });
 function recommend({ profile, candidates, presentations = [], audioAvailable = true, excludeIds = [], prior = null }) {
   if (!Array.isArray(candidates)) throw new TypeError('Core: candidates must be an array');
@@ -107,11 +107,11 @@ function recommend({ profile, candidates, presentations = [], audioAvailable = t
     // A candidate whose every item family was already presented can give no new first try:
     // it goes behind those that still can, and stays available when nothing else is.
     const exhausted = !!candidate.familyKeys && candidate.familyKeys.every(key => history.family.has(key));
-    const score = focus.priority + lift - (immediate ? .45 : 0) - (previous.size ? .10 : 0) - (!readyForHarder ? .25 * (candidate.difficulty - 1) : 0)
+    const score = focus.priority - (immediate ? .45 : 0) - (previous.size ? .10 : 0) - (!readyForHarder ? .25 * (candidate.difficulty - 1) : 0)
       - (exhausted ? .5 : 0);
-    ranked.push({ candidate, focus, score, count });
+    ranked.push({ candidate, focus, score, lift, count });
   }
-  ranked.sort((a, b) => b.score - a.score || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id));
+  ranked.sort((a, b) => b.score - a.score || b.lift - a.lift || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id));
   if (!ranked.length) return { status: 'unavailable', selected: null, reason: '지금 조건에 맞는 연습이 없어요.', alternatives: [] };
   const best = ranked[0], label = best.focus.skill.label;
   return { status: 'ready', selected: best.candidate, reason: learningReason({ status: best.focus.status, label }), focusSkillId: best.focus.skill.id,

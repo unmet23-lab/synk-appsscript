@@ -25,6 +25,17 @@ const MAPPING = Object.freeze({
   'review-snacks': ['detail', 1], 'review-paper': ['negation', 2],
   'review-cake': ['sequence', 2],
 });
+// The TOPIK I grammar each request uses (strata/topik-i.grammar.json): the particles after who
+// moves, what moves and where it goes (마린은, 과자를, 상자 안에), then the endings of the sentence
+// (놓은 뒤 → -(으)ㄴ 후에). Strata's particleAfter and grammarIn (strata/topik-i-forms.js) read them
+// and a test keeps the two the same. Drafts until teachers review them.
+export const GRAMMAR = Object.freeze({
+  'cleanup-snacks': ['G202', 'G203', 'G206'], 'cleanup-paper': ['G202', 'G203', 'G206'],
+  'clue-flowers': ['G202', 'G203', 'G206'], 'clue-letter': ['G202', 'G203', 'G206', 'G406'],
+  'surprise-cake': ['G202', 'G203', 'G206'], 'surprise-ribbon': ['G202', 'G203', 'G206', 'G406'],
+  'review-snacks': ['G201', 'G203', 'G206'], 'review-paper': ['G202', 'G203', 'G206'],
+  'review-cake': ['G202', 'G203', 'G206', 'G406'],
+});
 const MISSIONS = new Map([...EPISODE.acts.flatMap(act => act.missions), ...EPISODE.review].map(m => [m.id, m]));
 const STATUS_LABELS = Object.freeze({
   unseen: '아직 기록이 적어요', checking: '확인하는 중이에요', practice: '조금 더 연습하면 좋아요',
@@ -37,13 +48,13 @@ export function missionMetadata(mission) {
   const key = `${GAME_ID}.${mission.id}.${STORY_VERSION}`;
   return { id: `${GAME_ID}.${mission.id}`, itemKey: key, familyKey: key,
     skillId: `ko.reading.${mapped[0]}`, difficulty: mapped[1], modality: 'reading',
-    responseFormat: RESPONSE_FORMAT, audioRequired: false, confounded: false };
+    responseFormat: RESPONSE_FORMAT, audioRequired: false, confounded: false, conceptIds: [...GRAMMAR[mission.id]] };
 }
 
 export function missionCandidates(missions) {
   return missions.map(mission => { const m = missionMetadata(mission); return {
     id: m.id, missionId: mission.id, skillIds: [m.skillId], difficulty: m.difficulty,
-    modality: m.modality, responseFormat: m.responseFormat, itemKey: m.itemKey,
+    modality: m.modality, responseFormat: m.responseFormat, itemKey: m.itemKey, conceptIds: m.conceptIds,
   }; });
 }
 

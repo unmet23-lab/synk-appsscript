@@ -16,17 +16,27 @@ export const MAGNIFIER_AFTER = { 바로: 0, 머뭇거리면: 12000, 누르면: n
 export const FLOW_WORDS = { 'ease.support': '다음 손님부터는 돋보기를 조금 더 일찍 보여 줄게요.',
   'accepted-less-help': '말한 대로 돋보기를 조금 늦게 보여 줄게요.' };
 
+// 규칙 문장이 쓰는 TOPIK I 문형(strata/topik-i.grammar.json). 문장을 Strata의 grammarIn
+// (strata/topik-i-forms.js)이 읽은 것이고, 시험이 둘이 같은지 본다(교원 검수 전 초안).
+// 손님 문항은 판단 근거가 되는 규칙(evidence)들의 문형을 쓴다.
+export const RULE_GRAMMAR = Object.freeze({
+  'pool.cap': ['G403'], 'pool.food': ['G402'], 'pool.kid': ['G212', 'G403'],
+  'library.card': ['G402'], 'library.food': ['G402', 'G401'], 'library.time': ['G212', 'G402'],
+  'museum.time': ['G212', 'G402'], 'museum.camera': ['G402'], 'museum.fee': ['G212', 'G402'],
+  'concert.date': ['G212', 'G402'], 'concert.chair': ['G505', 'G402'], 'concert.kid': ['G212', 'G403'], 'concert.food': ['G402'] });
+const CASE_GRAMMAR = new Map(VENUES.flatMap((v) => v.cases.map((c) => [c.id, [...new Set(c.evidence.flatMap((r) => RULE_GRAMMAR[`${v.id}.${r}`] || []))]])));
+
 export function caseMetadata(c) {
   const key = `${GAME_ID}.${c.id}.v1`;
   return { id: `${GAME_ID}.${c.id}`, itemKey: key, familyKey: key, skillId: c.skill, difficulty: c.difficulty,
-    modality: 'reading', responseFormat: FORMAT, audioRequired: false, confounded: false };
+    modality: 'reading', responseFormat: FORMAT, audioRequired: false, confounded: false, conceptIds: [...(CASE_GRAMMAR.get(c.id) || [])] };
 }
 
 export function caseCandidates(cases) {
   return cases.map((c) => {
     const m = caseMetadata(c);
     return { id: m.id, caseId: c.id, skillIds: [m.skillId], difficulty: m.difficulty, modality: m.modality,
-      responseFormat: m.responseFormat, itemKey: m.itemKey };
+      responseFormat: m.responseFormat, itemKey: m.itemKey, conceptIds: m.conceptIds };
   });
 }
 

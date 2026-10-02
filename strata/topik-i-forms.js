@@ -7,6 +7,7 @@
 // For an item that practises grammar; a noun answer that merely ends like an ending is not one.
 // The links are drafts like the grammar layer itself: teacher review comes later.
 const grammar = require('./topik-i.grammar.json');
+const words = require('./topik-i.words.json');
 
 const HANGUL = 0xac00, SYLLABLES = 11172;
 const syllable = ch => { const c = (ch || '').charCodeAt(0) - HANGUL; return c >= 0 && c < SYLLABLES ? { vowel: Math.floor((c % 588) / 28), final: c % 28 } : null; };
@@ -34,15 +35,16 @@ const before = (word, tail) => word.slice(0, word.length - tail.length);
 const ENDINGS = [
   ['G305', w => /^못( |$)/.test(w)],
   ['G209', w => /^안( |$)/.test(w)],
-  ['G506', (w, a) => /면$/.test(w) && /^\s*안 (되|돼)/.test(a) || /면 안 (되|돼)/.test(w)],
-  ['G505', (w, a) => /[아어여와워해]도$/.test(w) && /^\s*(되|돼)/.test(a) || /도 (되|돼)/.test(w)],
+  ['G506', (w, a) => /면$/.test(w) && /^\s*안 (되|돼|됩)/.test(a) || /면 안 (되|돼|됩)/.test(w)],
+  ['G505', (w, a) => /[아어여와워해]도$/.test(w) && /^\s*(되|돼|됩)/.test(a) || /도 (되|돼|됩)/.test(w)],
   ['G402', (w, a) => finalOf(w) === FINAL_L && /^\s*수 (있|없)/.test(a) || /(.) 수 (있|없)/.test(w) && finalOf(w.split(' 수 ')[0]) === FINAL_L],
   ['G509', (w, a) => finalOf(w) === FINAL_N && /^\s*적이 (있|없)/.test(a) || / 적이 (있|없)/.test(w) && finalOf(w.split(' 적이 ')[0]) === FINAL_N],
   ['G608', (w, a) => finalOf(w) === FINAL_L && /^\s*것 같/.test(a) || / 것 같/.test(w) && finalOf(w.split(' 것 같')[0]) === FINAL_L],
   ['G302', (w, a) => finalOf(w) === FINAL_L && /^\s*거(예|에)요/.test(a) || / 거(예|에)요$/.test(w) && finalOf(w.split(' 거')[0]) === FINAL_L],
   ['G603', (w, a) => finalOf(w) === FINAL_L && /^\s*때/.test(a) || / 때$/.test(w) && finalOf(w.split(' 때')[0]) === FINAL_L],
+  // -(으)ㄴ 뒤에 and -(으)ㄴ 다음에 say what -(으)ㄴ 후에 says and are taught with it. 저는 다음 주에 is 는.
   ['G406', (w, a) => /^(후에|전에)$/.test(w) || /기$/.test(w) && /^\s*전에/.test(a) || /기 전에$/.test(w)
-    || finalOf(w) === FINAL_N && /^\s*후에/.test(a) || / 후에$/.test(w) && finalOf(w.split(' 후에')[0]) === FINAL_N],
+    || finalOf(w) === FINAL_N && !/는$/.test(w) && /^\s*(후|뒤|다음)(에)?([,.\s]|$)/.test(a) || / (후|뒤|다음)에$/.test(w) && finalOf(w.split(' ')[0]) === FINAL_N],
   ['G407', (w, a) => /는$/.test(w) && /^\s*(것|거)/.test(a) || /는 (것|거)/.test(w)],
   ['G301', (w, a) => /고 싶/.test(w) || /고$/.test(w) && /^\s*싶/.test(a)],
   ['G409', (w, a) => /고 (있|계)/.test(w) || /고$/.test(w) && /^\s*(있|계)/.test(a)],
@@ -57,7 +59,8 @@ const ENDINGS = [
   ['G612', w => /(게요|래요)$/.test(w) && finalOf(before(w, '게요')) === FINAL_L],
   ['G410', w => /니까$/.test(w)],
   ['G610', w => /는데$/.test(w) || /데$/.test(w) && finalOf(before(w, '데')) === FINAL_N],
-  ['G307', w => /지만$/.test(w)],
+  // 5시까지만 is 까지 and 만, not -지만.
+  ['G307', w => /지만$/.test(w) && !/까지만$/.test(w)],
   ['G401', w => /면$/.test(w)],
   ['G308', w => /서$/.test(w) && w.length > 1 && A_EO.has(syllable(before(w, '서').slice(-1))?.vowel) && finalOf(before(w, '서')) === 0],
   ['G306', w => /고$/.test(w) && w.length > 1],
@@ -80,4 +83,65 @@ function grammarOf(answer, { after = '' } = {}) {
 }
 // The points the endings above can name; a point not here (숫자/시간 표현, -아/어요) is named by none.
 const ENDING_POINTS = Object.freeze(ENDINGS.map(([id]) => id));
-module.exports = { grammarOf, PARTICLES, ENDING_POINTS };
+
+// A TOPIK I noun or pronoun (topik-i.words.json), alone or with a particle: 병원, 동생은, 편지만.
+const NOUNS = new Set(words.words.filter(([, , pos]) => pos === '명' || pos === '대').map(([, word]) => word));
+const TAILS = [...PARTICLES.keys(), '만', '도', '의', '까지', '부터'];
+const isNoun = word => NOUNS.has(word) || TAILS.some(t => word.length > t.length && word.endsWith(t) && NOUNS.has(word.slice(0, -t.length)));
+const TIME_UNITS = new Set(['분', '초', '년', '주일', '개월']);
+
+// The grammar points a whole sentence uses, in the order they come: endings read word by word (each
+// with the words after it) and a number with its unit (7살, 오후 5시 30분: 숫자/시간 표현). A blank
+// is known to hold a form; a word in a sentence may be a noun, so some endings read more narrowly:
+// -고, -(으)러, -아/어서 and the noun-modifying -는 are not read at all (친구하고, 달러, 학교에서,
+// 어린이는), -(으)면 only where the word cannot be a noun (있으면, 하면; not 라면), and a TOPIK I noun
+// is no verb before 후·뒤·다음 (병원 뒤에, 1시간 후에, 동생은 다음에) and has no -지만 or -(으)ㄴ데
+// (편지만, 가운데). A verb that is also such a noun is missed (옷을 산 후에) rather than misread.
+// Particles are read with particleAfter, for a word the caller knows.
+const NOT_IN_SENTENCES = new Set(['G306', 'G303', 'G308', 'G501']);
+const IN_SENTENCES = new Map([
+  ['G406', (w, a) => /기$/.test(w) && /^\s*전에/.test(a)
+    || finalOf(w) === FINAL_N && !/는$/.test(w) && !/\d/.test(w) && !TIME_UNITS.has(w) && !isNoun(w) && /^\s*(후|뒤|다음)(에)?([,.\s]|$)/.test(a)],
+  // 저는 거기에 is 는 and 거기.
+  ['G407', (w, a) => /는$/.test(w) && /^\s*(것|거(예요|에요|야|를|는|가|도|만)?)([\s.,!?]|$)/.test(a)],
+  ['G307', w => /지만$/.test(w) && !/까지만$/.test(w) && !isNoun(before(w, '만'))],
+  ['G610', w => !isNoun(w) && (/는데$/.test(w) || /데$/.test(w) && finalOf(before(w, '데')) === FINAL_N)],
+  ['G401', w => /(으|하|되|이)면$/.test(w)],
+  // 갈 거예요: this 거예요 belongs to -(으)ㄹ 거예요.
+  ['G204', w => /(이에요|예요)$/.test(w) && !/^(거|것이)(예요|에요)$/.test(w)],
+]);
+const NUMBER = /\d+\s*(시간|시|분|초|살|세|개월|월|일|년|주|명|개|원|번|층|장|권)/;
+function grammarIn(sentence) {
+  const text = String(sentence ?? ''), found = [];
+  const add = (id, at) => { if (!found.some(f => f.id === id)) found.push({ id, at }); };
+  const number = NUMBER.exec(text);
+  if (number) add('G212', number.index);
+  let previous = '';
+  for (const m of text.matchAll(/\S+/g)) {
+    const word = m[0].replace(/^[("“‘'«]+|[.,!?…"”’'»)]+$/g, '');
+    const last = previous; previous = word;
+    if (!word || PARTICLES.has(word) || CONJUNCTIONS.has(word)) continue;
+    const after = text.slice(m.index + m[0].length);
+    for (const [id, ending] of ENDINGS) {
+      if (NOT_IN_SENTENCES.has(id)) continue;
+      // 찍으면 안 됩니다: this 안 belongs to -(으)면 안 되다.
+      if (id === 'G209' && /면$/.test(last)) continue;
+      if ((IN_SENTENCES.get(id) || ending)(word, after)) { add(id, m.index); break; }
+    }
+  }
+  return found.sort((x, y) => x.at - y.at).map(f => f.id);
+}
+// The point of the particle right after `word` in a sentence: 마린은 → G202, 과자를 → G203. A place
+// noun between them carries it for the word before it: 상자 안에, 책상 위에 → G206.
+const PLACE = /^\s+(안|위|밑|아래|앞|뒤|옆|속)(?=[가-힣])/;
+function particleAfter(text, word) {
+  const source = String(text ?? ''), at = word ? source.indexOf(word) : -1;
+  if (at < 0) return null;
+  let rest = source.slice(at + word.length);
+  const place = PLACE.exec(rest);
+  if (place) rest = rest.slice(place[0].length);
+  const tail = (/^[가-힣]+/.exec(rest) || [''])[0];
+  for (let n = tail.length; n > 0; n--) if (PARTICLES.has(tail.slice(0, n))) return PARTICLES.get(tail.slice(0, n));
+  return null;
+}
+module.exports = { grammarOf, grammarIn, particleAfter, PARTICLES, ENDING_POINTS };
