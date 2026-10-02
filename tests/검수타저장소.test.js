@@ -276,7 +276,8 @@ test('🔑 --심문 과는 겸용을 거절한다 — 결과·장부가 어디 �
     [path.join(ROOT, 'tools', 'codex-review.js'), '--심문', 'docs/없는문서.md', 검수.저장소플래그, 픽.경로],
     { encoding: 'utf8', windowsHide: true });
   assert.strictEqual(r.status, 2);
-  assert.match(String(r.stderr), /심문은 문서 경로를 그대로 받는다/);
+  /* 09-21 `--심문`이 은퇴했다(01ba16a54) — 겸용 검사보다 앞에서 «은퇴»로 끊는다. 결과·장부를 안 만드는 것은 그대로다. */
+  assert.match(String(r.stderr), /자체 AI 검수 CLI는 은퇴했다[^\n]*실행하지 않았다/);
 });
 
 /* 없는 개정의 git 문구는 **셋으로 갈린다**(실측 08-31) — 문구 목록으로 재면 넷째가 생기는 날

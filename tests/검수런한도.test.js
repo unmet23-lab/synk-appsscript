@@ -252,7 +252,9 @@ test('던지기: 살아있는 마커면 스폰 전에 끊는다 — 런 JSON·�
       { encoding: 'utf8', env, cwd: ROOT, timeout: 60000 });
   } catch (e) { status = e.status; stderr = String(e.stderr || ''); }
   assert.strictEqual(status, 2, '한도 중 던지기가 통과했다 — 죽을 런을 또 만든다');
-  assert.ok(stderr.includes('던지지 않는다'), `차단 사유가 없다: ${stderr.slice(0, 200)}`);
+  /* 09-21 `--심문`·`--던지기`가 은퇴했다(01ba16a54) — 이제는 한도 게이트보다 앞에서 «은퇴»로 끊는다.
+     지키는 것은 그대로다: 스폰 전에 멈추고, 런 JSON·장부 던짐행을 안 남긴다(아래). */
+  assert.ok(stderr.includes('은퇴했다') && stderr.includes('실행하지 않았다'), `차단 사유가 없다: ${stderr.slice(0, 200)}`);
   const 런들 = fs.existsSync(process.env.SYNK_REVIEW_RUNS)
     ? fs.readdirSync(process.env.SYNK_REVIEW_RUNS).filter((f) => f.startsWith('심문-')) : [];
   assert.strictEqual(런들.length, 0, '차단됐는데 런 JSON 이 생겼다 — 「던졌는데 완료 0」 소음이 그대로다');

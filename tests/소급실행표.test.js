@@ -54,11 +54,14 @@ test('짧은 색인은 모든 ID·수정 위치를 남기고 상세 조회는 �
   assert.ok(detailed.includes(item.current_state.replace(/\r?\n/g, ' ')));
 });
 
-test('저장된 MD는 재생성 결과와 같고 반복 실행에서 날짜·환경 때문에 바뀌지 않는다', () => {
+test('MD 출력은 반복 실행에서 날짜·환경 때문에 바뀌지 않고, 저장본이 있으면 재생성 결과와 같다', () => {
   const run = () => execFileSync(process.execPath, ['tools/소급실행표.js', '--전량', '--md'], { cwd: root });
   const generated = run();
   assert.deepEqual(generated, run());
-  assert.deepEqual(generated, fs.readFileSync(path.join(root, 'docs/소급_실행표_0908.md')));
+  /* 저장본 `docs/소급_실행표_0908.md` 는 09-18 문서 정리(`11157567c`)에서 소급불가 md 다섯과 함께 지워졌다 —
+     원자료(`전량.json`·판정 json)와 이 도구만 남기고 표는 필요할 때 다시 낸다. 다시 저장하면 그날부터 다시 대조한다. */
+  const saved = path.join(root, 'docs/소급_실행표_0908.md');
+  if (fs.existsSync(saved)) assert.deepEqual(generated, fs.readFileSync(saved));
 });
 
 test('없는 ID의 상세 조회는 조용히 빈 성공을 내지 않는다', () => {

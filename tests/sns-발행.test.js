@@ -48,6 +48,15 @@ const {
 } = require('../tools/lib/sns-publisher.js');
 
 const PACKAGE_ROOT = path.join(REPO_ROOT, 'docs', '홍보물', '첫게시물_20260910', '전체_업로드');
+/* 10-03: 09-10 첫 게시물 묶음은 보관본이다(10-01 SNS 키트로 옛 판을 바꿨다). 그 안에서 빠진 것 여덟 —
+ *   영상 여섯: `*.mp4` 는 09-17 포괄 규칙으로 git 밖이고, 이 PC와 Drive 백업 목록(10-03 00:54)에도 없다.
+ *   블로그 본문 둘: `본문.md` 가 git 에 들어온 적이 없다(폴더에는 `본문.html` 만 있다).
+ * 실묶음 검사는 이 빈자리만 받아 주고, 새로 생기는 빈자리는 그대로 문다. 영상·본문을 찾는 길은 아래 격리 픽스처가 잰다. */
+const 보관본빈자리 = new Set([
+  '01-lab-youtube: video.mp4 없음', '03-lab-tiktok: video.mp4 없음', '04-yuhobuilds-youtube: video.mp4 없음',
+  '06-yuhobuilds-tiktok: video.mp4 없음', '07-synkbrief-youtube: video.mp4 없음', '09-synkbrief-tiktok: video.mp4 없음',
+  '15-synklab-substack: 본문.md 없음', '17-shift-naverblog: 본문.md 없음',
+]);
 const temporary = [];
 
 afterEach(() => {
@@ -73,9 +82,11 @@ test('현재 첫 게시물 19계정을 계정 지도와 한 번에 묶는다', (
   const accounts = loadAccounts(DEFAULT_ACCOUNTS);
   assert.equal(items.length, 19);
   assert.equal(new Set(items.map((item) => item.accountKey)).size, 19);
-  const { profileStatus, ...tistoryPublishingAccount } = accounts.accounts['shift-tistory'];
+  const { profileStatus, mobileVerification, ...tistoryPublishingAccount } = accounts.accounts['shift-tistory'];
   assert.equal(typeof profileStatus, 'string');
   assert.ok(profileStatus.trim().length > 0);
+  /* 모바일 검증 기록을 가리키는 칸 — 가리키는 파일이 저장소에 있어야 한다(09-18 판은 git 에 없던 md 를 가리켰다). */
+  assert.equal(fs.existsSync(path.join(REPO_ROOT, mobileVerification)), true, `없는 파일을 가리킨다: ${mobileVerification}`);
   assert.deepEqual(tistoryPublishingAccount, {
     brand: 'SHIFT',
     platform: 'tistory',
@@ -87,8 +98,11 @@ test('현재 첫 게시물 19계정을 계정 지도와 한 번에 묶는다', (
   assert.deepEqual(items.map((item) => item.id).slice(0, 3), [
     '01-lab-youtube', '02-lab-instagram', '03-lab-tiktok',
   ]);
-  assert.equal(items.find((item) => item.id === '01-lab-youtube').video.endsWith('video.mp4'), true);
-  assert.equal(items.find((item) => item.id === '17-shift-naverblog').dependencies.some((dep) => dep.role === 'article'), true);
+  /* 보관본에서 빠진 영상·본문은 맨 위 `보관본빈자리` 가 받는다 — 있으면 제 이름으로 잡혀야 한다. */
+  const 첫영상 = items.find((item) => item.id === '01-lab-youtube').video;
+  assert.equal(첫영상 ? 첫영상.endsWith('video.mp4') : 보관본빈자리.has('01-lab-youtube: video.mp4 없음'), true);
+  const 블로그 = items.find((item) => item.id === '17-shift-naverblog');
+  assert.equal(블로그.dependencies.some((dep) => dep.role === 'article') || 보관본빈자리.has('17-shift-naverblog: 본문.md 없음'), true);
 });
 
 test('미확인 X 항목은 자격 조회와 네트워크 없이 계정 확인 대기로 남는다', async () => {
@@ -150,7 +164,8 @@ test('발행 검수판에 자격증명을 담지 않고 모든 자료를 검사�
   const planFile = path.join(dir, 'plan.json');
   const plan = buildPlan({ root: PACKAGE_ROOT, accountsFile: DEFAULT_ACCOUNTS, outputFile: planFile });
   assert.equal(plan.items.length, 19);
-  assert.deepEqual(plan.items.flatMap((item) => item.errors), []);
+  const 빈자리 = plan.items.flatMap((item) => item.errors.map((error) => `${item.id}: ${error}`));
+  assert.deepEqual(빈자리.filter((x) => !보관본빈자리.has(x)), [], '보관본에 새 빈자리가 생겼다');
   const raw = fs.readFileSync(planFile, 'utf8');
   assert.doesNotMatch(raw, /access[_-]?token|refresh[_-]?token|client[_-]?secret|botToken/i);
   assert.equal(fs.existsSync(path.join(dir, 'plan.md')), true);

@@ -147,15 +147,23 @@ test('큰 HTML 이미지 검색 생략은 문서 머리의 줄 위치를 바꾸�
   assert.equal(g.mapGaps.noMap, true);
 });
 
-test('실제 Git 제외 규칙은 확인된 브라우저 프로필만 가리고 원본·렌더 결과는 남긴다', (t) => {
+test('실제 Git 제외 규칙은 브라우저 프로필과 09-17 포괄 규칙 자리만 가리고 정본 자리의 원본·렌더 결과는 남긴다', (t) => {
   const f = fixture(t);
   f.write('.gitignore', fs.readFileSync(path.join(__dirname, '..', '.gitignore'), 'utf8'));
   const base = 'docs/홍보물/첫게시물_20260910/_검토/01-표정편집엔딩/render-temp/';
   f.write(base + 'puppeteer_dev_chrome_profile-fixture/Default/Cookies', 'fixture');
   f.write(base + 'result.png', 'fixture');
   f.write('tmp/unknown-original.md', '# 원본');
+  /* 정본 자리 — 납품본은 검토·실험 폴더 바깥에 둔다(.gitignore 09-17 규칙 머리말). */
+  const 정본 = 'docs/홍보물/첫게시물_20260910/01-표정편집엔딩/';
+  f.write(정본 + 'result.png', 'fixture');
+  f.write('docs/unknown-original.md', '# 원본');
   const files = inventory(f.root).files;
   assert.ok(!files.some((r) => r.includes('Cookies')));
-  assert.ok(files.includes(base + 'result.png'));
-  assert.ok(files.includes('tmp/unknown-original.md'));
+  /* 2026-09-17 유호님 지시로 세운 포괄 규칙(`/tmp/`·`**\/_검토/`·`**\/_실험/`): 검토·실험 중간판과 tmp 는
+     로컬·Drive 에 두고 git 에는 넣지 않는다. 이 시험이 09-10 에 세울 때는 이 둘이 «보여야» 했다 — 10-03 에 결정에 맞췄다. */
+  assert.ok(!files.includes(base + 'result.png'));
+  assert.ok(!files.includes('tmp/unknown-original.md'));
+  assert.ok(files.includes(정본 + 'result.png'));
+  assert.ok(files.includes('docs/unknown-original.md'));
 });
