@@ -45,7 +45,7 @@ test('Talk receives exactly what it imports and what that loads, with a manifest
   talkLikeImports(write);
   const result = run('--consumer', 'talk');
   assert.equal(result.status, 0, result.stderr);
-  const copied = ['education.js', 'engine.js', 'experiences.js', 'flow.js', 'game-flow.js', 'game-learning.js', 'learning-sync.js', 'learning.js',
+  const copied = ['education.js', 'engine.js', 'experiences.js', 'flow.js', 'game-flow.js', 'game-learning.js', 'learning-ledger.js', 'learning-sync.js', 'learning.js',
     'preferences.js', 'temper-flow.js', 'temper.js', 'trail.js', 'vellum-flow.js', 'vellum.js'];
   for (const name of copied) assert.deepEqual(fs.readFileSync(path.join(talk, 'lib/atlas', name)), fs.readFileSync(path.join(root, 'atlas', name)), name);
   for (const name of ['index.js', 'maps/ko.json', 'maps/topik-i.json']) assert.deepEqual(fs.readFileSync(path.join(talk, 'lib/atlas/strata', name)), fs.readFileSync(path.join(root, 'strata', name)));

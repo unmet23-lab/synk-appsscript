@@ -12,7 +12,8 @@ function createWorldLearningHost({ accountKey, revision, storage, transport, gua
     check();
     // With sharing off the account's store lives on this device only, so it is complete on
     // its own, like a guest device. A connected store is complete once the server says so.
-    const owned = { storage: shared, learnerKey: 'device', storageScope: 'account', accountKey, historyComplete: !connected };
+    // Older items fold into a ledger (learning-ledger.js); a synchronised store folds only what the server has sent back.
+    const owned = { storage: shared, learnerKey: 'device', storageScope: 'account', accountKey, historyComplete: !connected, fold: connected ? { remote: true } : true };
     if (connected && !sync) {
       const make = engine?.createGame && engine?.createLearningSync ? engine : { createGame: factory, createLearningSync: createSync };
       primary = make.createGame({ gameId: 'world-account', ...owned });

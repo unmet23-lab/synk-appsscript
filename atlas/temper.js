@@ -63,6 +63,23 @@
     Object.values(result.byArm).forEach(close);
     return { ...result, status: result.independent.evaluated ? 'measured' : 'no_sample', learningEffectClaim: false };
   }
+  // The sum of two measures over disjoint attempts (for example a folded ledger and the log after it).
+  function combine(a, b) {
+    if (!a) return b; if (!b) return a;
+    const sum = (x, y) => close({ evaluated: x.evaluated + y.evaluated, correct: x.correct + y.correct, incorrect: x.incorrect + y.incorrect, accuracy: null });
+    const table = (x, y) => {
+      const out = Object.create(null);
+      for (const [k, v] of Object.entries(x || {})) out[k] = sum(v, bucket());
+      for (const [k, v] of Object.entries(y || {})) out[k] = sum(out[k] || bucket(), v);
+      return out;
+    };
+    const result = { scopes: Math.max(a.scopes, b.scopes), presented: a.presented + b.presented, attempts: a.attempts + b.attempts,
+      independent: sum(a.independent, b.independent), byConcept: table(a.byConcept, b.byConcept), byArm: table(a.byArm, b.byArm),
+      assisted: a.assisted + b.assisted, unknownAssistance: a.unknownAssistance + b.unknownAssistance, repeat: a.repeat + b.repeat,
+      unknownExposure: a.unknownExposure + b.unknownExposure, unassessed: a.unassessed + b.unassessed, skipped: a.skipped + b.skipped,
+      excludedAttempts: a.excludedAttempts + b.excludedAttempts };
+    return { ...result, status: result.independent.evaluated ? 'measured' : 'no_sample', learningEffectClaim: false };
+  }
   function compare({ before, after } = {}) {
     const left = summaries(before), right = summaries(after);
     const tasks = rows => new Map(rows.map(row => [scopeKey(row.scope), row.presentations.map(taskKey).sort()]));
@@ -126,5 +143,5 @@
     return { version: VERSION, arms: { baseline, candidate }, minimum, tolerance, cells: report, worse: named('worse'), waiting: named('waiting'),
       unit: 'person-mean-of-new-item-independent-accuracy', learningEffectClaim: false, causalClaim: false, significanceTested: false };
   }
-  return Object.freeze({ VERSION, MINIMUM_PER_CELL, measure, compare, groups });
+  return Object.freeze({ VERSION, MINIMUM_PER_CELL, measure, combine, compare, groups });
 });

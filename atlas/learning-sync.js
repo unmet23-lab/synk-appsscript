@@ -56,6 +56,8 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
     const known = new Map(state.pending.map(event => [event.id, event])), acknowledged = new Set(state.acknowledged);
     const local = port.events(), localById = new Map(local.map(event => [event.id, event]));
     if (state.pending.some(event => !localById.has(event.id) || !sameEvent(localById.get(event.id), event))) throw failure('STORAGE_ERROR', 'Atlas sync: queued history does not match its account log');
+    // Entries a synchronised log folded are on the server and never come back: forget their ids.
+    if (state.acknowledged.some(eventId => !localById.has(eventId))) state.acknowledged = state.acknowledged.filter(eventId => localById.has(eventId));
     for (const event of local) {
       if (known.has(event.id) && !sameEvent(known.get(event.id), event)) throw failure('EVENT_CONFLICT', 'Atlas sync: conflicting queued event');
       if (!known.has(event.id) && !acknowledged.has(event.id)) { known.set(event.id, event); state.pending.push(clone(event)); }
@@ -113,7 +115,9 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
       state.acknowledged = [...remote]; state.pending = state.pending.filter(event => !remote.has(event.id)); state.cursor = response.cursor;
       if (!response.hasMore) state.complete = true;
       save(); port.markComplete(state.complete); publish();
-      if (!response.hasMore) return;
+      // Everything the server held when this pull began has come back by now, so the log may
+      // fold those entries (game-learning.js `fold.remote`); an older adapter has no settle().
+      if (!response.hasMore) { if (typeof port.settle === 'function') port.settle(state.acknowledged); return; }
     }
     throw failure('INVALID_RESPONSE', 'Atlas sync: page limit exceeded');
   };
