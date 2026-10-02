@@ -8,7 +8,7 @@ const crypto = require('node:crypto');
 const { spawnSync } = require('node:child_process');
 const root = path.resolve(__dirname, '..');
 const script = path.join(root, 'tools/sync-atlas.js');
-const sha = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+const sha = file => crypto.createHash('sha256').update(fs.readFileSync(file,'utf8').replace(/\r\n/g,'\n')).digest('hex');
 
 function fixture(t) {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-atlas-sync-'));
@@ -63,6 +63,22 @@ test('Talk receives exactly what it imports and what that loads, with a manifest
   assert.match(drift.stderr, /preferences\.js: differs/);
   assert.match(drift.stderr, /flow\.js: missing/, 'every difference is listed at once');
   assert.match(fs.readFileSync(path.join(talk, 'lib/atlas/preferences.js'), 'utf8'), /drift/, 'check changes nothing');
+});
+
+test('LF and CRLF checkouts keep the same manifest and do not rewrite equivalent source', t => {
+  const { talk, run, write } = fixture(t);
+  talkLikeImports(write);
+  assert.equal(run('--consumer','talk').status,0);
+  const manifestFile=path.join(talk,'lib/atlas/sync-manifest.json');
+  const manifest=JSON.parse(fs.readFileSync(manifestFile,'utf8'));
+  for(const name of [...Object.keys(manifest.files),'sync-manifest.json']){
+    const file=path.join(talk,'lib/atlas',name);
+    fs.writeFileSync(file,fs.readFileSync(file,'utf8').replace(/\r?\n/g,'\r\n'));
+  }
+  const check=run('--consumer','talk','--check');assert.equal(check.status,0,check.stderr);
+  const before=fs.readFileSync(manifestFile);
+  const again=run('--consumer','talk');assert.equal(again.status,0,again.stderr);
+  assert.deepEqual(fs.readFileSync(manifestFile),before,'equivalent checkout should not be rewritten');
 });
 
 test('a copy nothing imports any more is removed; Talk\'s own files and edited copies are kept', t => {

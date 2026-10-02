@@ -34,7 +34,10 @@ const consumers = {
   // (`?v=`) hash these files, so the website's own sync-letter-copy.mjs runs after a change.
   website: { repo: process.env.SYNK_WEBSITE_ROOT || path.resolve(root, '../SYNK-website'), dir: 'dist/try/letter/atlas', files: () => ['engine.js', 'experiences.js'], after: 'sync-letter-copy.mjs' },
 };
-const sha = buffer => crypto.createHash('sha256').update(buffer).digest('hex');
+// Git normalizes these JS/JSON text files. Hash logical content so a clean Linux checkout
+// and a Windows working copy describe the same engine, regardless of CRLF/LF checkout policy.
+const normalized = buffer => buffer.toString('utf8').replace(/\r\n/g, '\n');
+const sha = buffer => crypto.createHash('sha256').update(normalized(buffer)).digest('hex');
 const canonical = name => path.join(root, name.startsWith('strata/') ? name : `atlas/${name}`);
 const normal = name => (name === 'strata' ? 'strata/index.js' : /\.(js|json)$/.test(name) ? name : `${name}.js`);
 const versionOf = file => (fs.existsSync(file) ? (fs.readFileSync(file, 'utf8').match(/const VERSION = '([^']+)'/) || [])[1] || null : null);
@@ -95,7 +98,7 @@ for (const t of targets) {
   for (const name of files) {
     const source = fs.readFileSync(canonical(name)), destination = path.join(base, name);
     hashes[name] = sha(source);
-    const same = fs.existsSync(destination) && fs.readFileSync(destination).equals(source);
+    const same = fs.existsSync(destination) && normalized(fs.readFileSync(destination)) === normalized(source);
     if (same) { if (!check) console.log(`unchanged ${label}/${name}`); continue; }
     if (check) { problems.push(`${label}/${name}: ${fs.existsSync(destination) ? 'differs from the canonical source' : 'missing'}`); continue; }
     fs.mkdirSync(path.dirname(destination), { recursive: true }); fs.writeFileSync(destination, source);
@@ -120,8 +123,8 @@ for (const t of targets) {
   }
   const after = versionOf(canonical('engine.js'));
   const manifest = JSON.stringify({ source: 'SYNK-appsscript atlas/ + strata/', tool: 'tools/sync-atlas.js', engine: after, files: hashes }, null, 2) + '\n';
-  if (check) { if (!fs.existsSync(manifestPath) || fs.readFileSync(manifestPath, 'utf8') !== manifest) problems.push(`${label}/${MANIFEST}: out of date`); }
-  else if (!fs.existsSync(manifestPath) || fs.readFileSync(manifestPath, 'utf8') !== manifest) { fs.writeFileSync(manifestPath, manifest); console.log(`wrote ${label}/${MANIFEST} (${files.length} files)`); }
+  if (check) { if (!fs.existsSync(manifestPath) || normalized(fs.readFileSync(manifestPath)) !== manifest) problems.push(`${label}/${MANIFEST}: out of date`); }
+  else if (!fs.existsSync(manifestPath) || normalized(fs.readFileSync(manifestPath)) !== manifest) { fs.writeFileSync(manifestPath, manifest); console.log(`wrote ${label}/${MANIFEST} (${files.length} files)`); }
   // The server bundle is Talk's own generator; it reads the copy just written.
   const generator = path.join(t.repo, t.server);
   if (fs.existsSync(generator)) {
@@ -129,8 +132,8 @@ for (const t of targets) {
     const server = require(generator);
     if (check) {
       const bundle = path.join(t.repo, 'supabase/functions/_shared/synk-atlas.js');
-      const sources = files.every(name => fs.existsSync(path.join(base, name)) && fs.readFileSync(path.join(base, name)).equals(fs.readFileSync(canonical(name))));
-      if (sources && (!fs.existsSync(bundle) || fs.readFileSync(bundle, 'utf8') !== server.build())) problems.push(`${path.basename(t.repo)}/supabase/functions/_shared/synk-atlas.js: not rebuilt from the copy`);
+      const sources = files.every(name => fs.existsSync(path.join(base, name)) && normalized(fs.readFileSync(path.join(base, name))) === normalized(fs.readFileSync(canonical(name))));
+      if (sources && (!fs.existsSync(bundle) || normalized(fs.readFileSync(bundle)) !== normalized(server.build()))) problems.push(`${path.basename(t.repo)}/supabase/functions/_shared/synk-atlas.js: not rebuilt from the copy`);
     } else { server.write(); console.log(`rebuilt ${path.basename(t.repo)}/supabase/functions/_shared/synk-atlas.js`); }
   }
   if (!check && before !== after) {
