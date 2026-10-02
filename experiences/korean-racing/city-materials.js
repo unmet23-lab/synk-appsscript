@@ -40,8 +40,8 @@ export function configureCityMaterials(materials,{twilight={value:0}}={}) {
       shader.fragmentShader=shader.fragmentShader.replace('void main() {',functions+'\nvoid main() {');
       build(shader);
     };
-    material.customProgramCacheKey=()=>`city-architectural-${kind}-v5`;
-    material.userData.finish={version:5,metricUv:true,opaque:true,kind};
+    material.customProgramCacheKey=()=>`city-architectural-${kind}-v8`;
+    material.userData.finish={version:8,metricUv:true,opaque:true,kind};
   };
   for(const kind of ['stone','pale'])patch(materials[kind],kind,shader=>{
     const scale=kind==='stone'?'vec2(1.65,.72)':'vec2(.92,2.20)';
@@ -198,14 +198,16 @@ export function configureCityMaterials(materials,{twilight={value:0}}={}) {
         cityRoomColor=mix(cityRoomColor,cityWall,cityRoomDepthFade);
         }
       }
-      float cityRoomLit=${kind==='darkGlass'?'.68+.32*step(.38,cityRoomHash)':'step(.76,cityRoomHash)'};
-      cityRoomColor+=vec3(.22,.125,.052)*cityRoomLit*cityTwilight;
-      vec3 cityReflected=radiance*vec3(.73,.93,.97)*cityFresnel;
+      float cityRoomLit=${kind==='darkGlass'?'step(.62,cityRoomHash)':'step(.80,cityRoomHash)'};
+      cityRoomColor+=vec3(.18,.078,.025)*cityRoomLit*cityTwilight;
+      // The sunset reflection remains visible through the darker coating;
+      // most rooms stay unlit instead of one continuous cream-colored wall.
+      vec3 cityReflected=radiance*${kind==='darkGlass'?'vec3(.35,.48,.47)':'vec3(.62,.80,.84)'}*cityFresnel*(.82+cityRoomHash*.18);
       vec3 cityGlass=cityRoomColor*(1.0-cityFresnel)+cityReflected+reflectedLight.directSpecular*.38;
       outgoingLight=mix(outgoingLight,cityGlass,cityPane*.97);
       #include <opaque_fragment>
     `);
   });
   return {setQuality(quality){detail.value=quality==='low'?0:quality==='balanced'?.62:1;},detail,
-    stats:{version:5,metricUv:true,extraDrawCalls:0,extraTriangles:0,downloadedTextures:0,interiorRays:1}};
+    stats:{version:8,metricUv:true,extraDrawCalls:0,extraTriangles:0,downloadedTextures:0,interiorRays:1}};
 }

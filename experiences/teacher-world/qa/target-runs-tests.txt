@@ -1,0 +1,30 @@
+✔ racing-listening: assignment → owned run → 3 actual Atlas answers → teacher result (161.3487ms)
+✔ racing-reading: assignment → owned run → 3 actual Atlas answers → teacher result (90.8211ms)
+✔ rhythm-listening: assignment → owned run → 3 actual Atlas answers → teacher result (113.1512ms)
+✔ runner-listening: assignment → owned run → 3 actual Atlas answers → teacher result (89.1611ms)
+✔ order-listening: assignment → owned run → 3 actual Atlas answers → teacher result (117.6792ms)
+✔ entry-reading: assignment → owned run → 3 actual Atlas answers → teacher result (124.6575ms)
+✔ story-reading: assignment → owned run → 3 actual Atlas answers → teacher result (116.8628ms)
+✔ town-reading: assignment → owned run → 3 actual Atlas answers → teacher result (101.3982ms)
+✔ backlog and another learner cannot claim a new run; ownership cannot change (94.855ms)
+✔ foreign game and cross-run presentation/answer cannot complete a task (106.106ms)
+✔ repeated family, failed audio, and motor evidence cannot manufacture completion (79.0235ms)
+✔ cancelled and revised runs drain queued records but never resurrect assignment completion (201.4744ms)
+✔ readings are downloaded into the same Atlas history without doubling teacher evidence (46.7232ms)
+✔ coaching and recommendations use current consent and never turn unseen skills into weakness (68.371ms)
+✔ closing and resuming an assignment preserves partial work while lost start retries do not revive a closed run (101.0652ms)
+✔ ending class membership rejects learner APIs even if a session and consent still exist (81.0909ms)
+✔ a game receives an immutable task snapshot and an ended frame cannot read the next task (7.7042ms)
+✔ WORLD games share verified account scope and cannot overwrite host storage with guest options (10.2132ms)
+✔ a signed-in WORLD with sharing off keeps its own local scope and never initializes transport (0.6892ms)
+✔ durable event ownership keeps old backlog on its original run across new games and host restart (7.9531ms)
+✔ run mismatch and ownership storage failure cannot silently attribute or acknowledge game results (1.1754ms)
+✔ even synchronous flush cannot send an append before its run ownership is durable (2.9547ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1887.6351

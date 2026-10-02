@@ -13,13 +13,16 @@ import { buildAlternativeCar, customizeCar, createGarageStage, refineOriginalCar
 import { createGarageUI } from './garage-ui.js';
 import { buildDriver, updateDriverPose } from './drivers.js';
 import { createTutorial, loadTutorial, saveTutorialCompleted } from './tutorial.js';
-import { automaticQuality, qualitySettings, slowerQuality } from './graphics.js';
+import { automaticQuality, qualitySettings, slowerQuality, createPausedFrameGate } from './graphics.js';
 import { buildSceneryDetails } from './scenery.js';
 import { createLandscapeHeight, buildDistantCoast } from './landscape.js';
 import { createAtmosphere } from './atmosphere.js';
 import { buildCourseTerrain } from './render-world.js';
 import { buildCoastalCity } from './cityscape.js';
 import { buildCityLife } from './city-life.js';
+import { createCoastalRocks } from './coastal-rocks.js';
+import { createCoastalBoats } from './seascape-boats.js';
+import { startAssetLoad, prepareFirstFrame } from './startup.js';
 
 const $ = id => document.getElementById(id);
 let coach=null,learningAvailable=true;
@@ -54,10 +57,13 @@ function roadPoint(s, offset = 0, y = 0) {
 const groundHeight=createLandscapeHeight(pathX,pathY);
 
 let renderer, scene, camera, car, rivals = [], wheels = [], gate = null, gateIndex = 0;
+const startup={phase:'idle',compilePasses:0};
 let running = false, paused = false, ready = false, auto = false, finished = false;
 let playerS = 75, playerOffset = 0, velocity = 26, elapsed = 0, boost = 0, answers = [], correct = 0;
 let inputs = {left:false,right:false}, aimOffset = 0, laneAim = null, attractTime = 0, toastTime = 0;
 let renderFrames = 0, renderTotal = 0, adaptiveTime = 0, frameSample = [], warmupFrames = 0;
+const pausedFrameGate=createPausedFrameGate();
+let renderedFrames=0,skippedPausedFrames=0;
 let soundEnabled = false, soundTouched = false, audio = null, motor = null, motorGain = null, windGain = null;
 const deviceGraphics={coarsePointer:matchMedia('(pointer: coarse)').matches,memoryGB:navigator.deviceMemory||8,cores:navigator.hardwareConcurrency||8};
 // Authoring-only capture URL: render real extra pixels on a DPR1 desktop.
@@ -174,8 +180,11 @@ function displayQuestion(){
 function narrateQuestion(interrupt=false){if(!gate||gate.judged||!gate.announced)return;displayQuestion();if(gate.q.mode==='reading'){$('repeat-question').disabled=true;$('voice-status').textContent='지문을 읽고 길을 골라요';return;}if(interrupt&&gate.presentationId)learn(c=>c.help(gate.presentationId,'replay'));if(!soundEnabled&&gate.presentationId)learn(c=>c.delivery(gate.presentationId,{audio:'failed'}));const voice=questionNarration(gate.q,gate.types,WORD_BY_ID);speak(voice.ids,voice.text,'question',interrupt,gate.presentationId);}
 function renderStages(){
   $('stages').dataset.collection=activeCollection;
+  const target=assignment(),targetStage=target?nextPersonalized()?.stage:null;
   const query=$('stage-search').value.trim(),filter=activeCollection==='campaign'?'all':$('stage-filter').value;
-  const list=availableStages().filter(s=>(filter==='all'||s.mode===filter||s.band===filter)&&(!query||`${s.title} ${s.number} ${s.campaign?s.skill:s.words.map(id=>WORD_BY_ID[id].word).join(' ')}`.includes(query)));
+  const list=target?(targetStage?[targetStage]:[]):availableStages().filter(s=>(filter==='all'||s.mode===filter||s.band===filter)&&(!query||`${s.title} ${s.number} ${s.campaign?s.skill:s.words.map(id=>WORD_BY_ID[id].word).join(' ')}`.includes(query)));
+  for(const id of ['collection-campaign','collection-words','stage-search','stage-filter','review-stage'])$(id).hidden=!!target;
+  $('watch').disabled=!!target||!ready||starting;
   const pages=Math.max(1,Math.ceil(list.length/12));stagePage=clamp(stagePage,0,pages-1);
   $('stage-pagination').hidden=pages===1;
   $('stage-count').textContent=`${list.length}개 스테이지`;$('stage-page').textContent=`${stagePage+1} / ${pages}`;
@@ -194,7 +203,7 @@ function renderStages(){
   for(const s of list.slice(stagePage*12,stagePage*12+12)){
     const b=document.createElement('button');b.className='stage-card';b.classList.toggle('selected',s.id===selectedStage.id);b.dataset.stage=s.id;b.setAttribute('aria-pressed',String(s.id===selectedStage.id));
     const unlocked=isUnlocked(s);b.classList.toggle('locked',!unlocked);b.classList.toggle('stage-finale',!!s.finale);
-    for(const [tag,css,text] of [['span','stage-card-top',s.campaign?`LEVEL ${s.level} / ${s.skill}`:`${String(s.number).padStart(3,'0')} / ${s.mode==='picture'?'그림 + 듣기':'듣고 단어 선택'}`],['strong','',s.title],['span','stage-words',s.campaign?CHAPTERS[s.chapter-1].goal:s.words.map(id=>WORD_BY_ID[id].word).join(' · ')],['span','stage-status',progress.stages[s.id]?.cleared?`${'◆'.repeat(medalFor(progress.stages[s.id].bestScore))} 통과 · 최고 ${progress.stages[s.id].bestScore}/5`:!unlocked?'이전 코스 4/5 통과로 열기 · 시연 보기 가능':progress.stages[s.id]?`다시 도전 · 최고 ${progress.stages[s.id].bestScore}/5`:`${stageSize(s)}문제 · 도전하기`]]){
+    for(const [tag,css,text] of [['span','stage-card-top',s.campaign?`LEVEL ${s.level} / ${s.skill}`:`${String(s.number).padStart(3,'0')} / ${s.mode==='picture'?'그림 + 듣기':'듣고 단어 선택'}`],['strong','',s.title],['span','stage-words',s.personalized?s.skill:s.campaign?CHAPTERS[s.chapter-1].goal:s.words.map(id=>WORD_BY_ID[id].word).join(' · ')],['span','stage-status',progress.stages[s.id]?.cleared?`${'◆'.repeat(medalFor(progress.stages[s.id].bestScore))} 통과 · 최고 ${progress.stages[s.id].bestScore}/5`:!unlocked?'이전 코스 4/5 통과로 열기 · 시연 보기 가능':progress.stages[s.id]?`다시 도전 · 최고 ${progress.stages[s.id].bestScore}/5`:`${stageSize(s)}문제 · 도전하기`]]){
       const e=document.createElement(tag);e.className=css;e.textContent=s.finale&&css==='stage-words'?`새로운 문장 5개 · ${s.reward.title}`:s.finale&&css==='stage-status'&&!unlocked?'챕터의 두 코스를 통과하면 열려요':text;b.appendChild(e);
     }
     b.addEventListener('click',()=>selectStage(s));$('stage-grid').appendChild(b);
@@ -331,17 +340,14 @@ function setupJourneyScenery(sky){
 function setScenery(theme){
   if(!scenery.sky)return;
   scenery.theme=theme;scenery.bloom.visible=theme==='bloom';scenery.details.setTheme(theme);
-  scenery.city.setTheme(theme);
+  scenery.city.setTheme(theme==='bloom'?'bloom':'sunset');
   scenery.cityLife.setTheme(theme);
-  scenery.atmosphere.setTheme(theme);
-  sunDirection.set(...(theme==='sunset'?[.34,.115,.94]:[.58,.72,.38])).normalize();
-  light.color.set(theme==='sunset'?0xffcc9d:0xfff3de);light.intensity=theme==='sunset'?2.05:2.75;
-  ambientLight.intensity=theme==='sunset'?.80:.78;
-  ambientLight.color.set(theme==='sunset'?0xbfc4df:0xc1dff8);ambientLight.groundColor.set(theme==='sunset'?0x78634d:0x677c4c);
-  renderer.toneMappingExposure=theme==='sunset'?1.02:1.06;
-  scene.environment=scenery.environments[theme].texture;
-  scene.environmentIntensity=theme==='sunset'?.85:1.04;
-  scene.environmentRotation.y=0;
+  scenery.atmosphere.setTheme('sunset');
+  sunDirection.set(.34,.115,.94).normalize();
+  light.color.set(0xffd4ac);light.intensity=2.15;
+  ambientLight.intensity=.88;ambientLight.color.set(0xc4c8e2);ambientLight.groundColor.set(0x756550);
+  renderer.toneMappingExposure=1.04;
+  scene.environment=scenery.environments.sunset.texture;scene.environmentIntensity=.95;scene.environmentRotation.y=0;
 }
 function setupWater(daySky,sunsetSky) {
   scenery.atmosphere=createAtmosphere(THREE,{daySky,sunsetSky,time:worldTime,sunDirection,shoreOffset:groundHeight.shoreOffset,ROAD_END});
@@ -349,15 +355,7 @@ function setupWater(daySky,sunsetSky) {
 }
 function setupCoastalScenery() {
   const coast=buildDistantCoast(THREE,{material:coastalTerrainMaterial(),roadPoint,pathX,groundHeight,ROAD_END,textures:{pineCanopy:pineCanopyTexture},random});scene.add(coast);scenery.coast=coast;
-  const hullMaterial=new THREE.MeshStandardMaterial({color:0xf2f1e3,roughness:.5});
-  const sailMaterial=new THREE.MeshStandardMaterial({color:0xfffae8,side:THREE.DoubleSide,roughness:.85});
-  for(const [x,z,angle,size] of [[260,340,.45,1],[470,940,-.4,1.3],[370,1810,.75,1.15]]){
-    const boat=new THREE.Group();
-    const hull=new THREE.Mesh(new THREE.SphereGeometry(1,12,6),hullMaterial);hull.scale.set(1.15,.48,3.2);hull.position.y=.18;
-    const mast=new THREE.Mesh(new THREE.CylinderGeometry(.06,.08,8,6),hullMaterial);mast.position.y=4;
-    const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute([0,.8,-2.8,0,.8,.12,0,7.6,.12],3));geo.computeVertexNormals();
-    const sail=new THREE.Mesh(geo,sailMaterial);boat.add(hull,mast,sail);boat.position.set(x,-2.1,z);boat.rotation.y=angle;boat.scale.setScalar(size);scene.add(boat);
-  }
+  scenery.boats=createCoastalBoats(THREE,{pathX,groundHeight});scene.add(scenery.boats.group);
 }
 function setupVegetation() {
   // Roadside stone, grass and steel rails are instanced rather than thousands of draw calls.
@@ -516,18 +514,36 @@ function placeCar(c,s,offset,yaw=0) {
 }
 function setQuality(value) {
   currentQuality=value;mode=value==='auto'?automaticQuality(deviceGraphics):value;
-  applyRenderQuality();adaptiveTime=0;frameSample=[];
+  if(renderer&&light)applyRenderQuality();adaptiveTime=0;frameSample=[];
 }
 function applyRenderQuality(){
   renderQuality=qualitySettings(mode,{pixelRatio:capture4k?2:devicePixelRatio,explicit:currentQuality!=='auto'});
   renderer.setPixelRatio(renderQuality.pixelRatio);renderer.shadowMap.enabled=renderQuality.shadows;
   if(light.shadow.mapSize.x!==renderQuality.shadowSize){light.shadow.map?.dispose();light.shadow.map=null;light.shadow.mapSize.setScalar(renderQuality.shadowSize);}
-  renderer.shadowMap.needsUpdate=true;resize();
+  scenery.atmosphere?.setQuality(mode);renderer.shadowMap.needsUpdate=true;resize();
 }
-function resize(){if(!renderer)return;const w=stage.clientWidth,h=stage.clientHeight;mobile=w<=650;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();if(running)requestAnimationFrame(()=>stage.scrollIntoView({behavior:'instant',block:'start'}));}
+function resize(){
+  if(!renderer)return;
+  const w=stage.clientWidth,h=stage.clientHeight;mobile=w<=650;
+  const pixelRatio=qualitySettings(mode,{pixelRatio:capture4k?2:devicePixelRatio,explicit:currentQuality!=='auto'}).pixelRatio;
+  if(renderer.getPixelRatio()!==pixelRatio){renderQuality={...renderQuality,pixelRatio};renderer.setPixelRatio(pixelRatio);}
+  renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
+  // THREE reassigns canvas width/height even for the same size, clearing its
+  // drawing buffer. A paused view must repaint after every such operation.
+  pausedFrameGate.invalidate();
+  if(running)requestAnimationFrame(()=>stage.scrollIntoView({behavior:'instant',block:'start'}));
+}
 
 async function init() {
+  const startedAt=performance.now(),mark=name=>{startup[name]=Math.round(performance.now()-startedAt);};
+  const yieldToUI=()=>new Promise(resolve=>setTimeout(resolve,0));
+  startup.phase='assets';startup.startedAt=Math.round(startedAt);
+  let draco;
   try{
+    const textures=new THREE.TextureLoader();
+    draco=new DRACOLoader();draco.setDecoderPath('./vendor/');draco.setDecoderConfig({type:'wasm'});
+    const loader=new GLTFLoader();loader.setDRACOLoader(draco);
+    const assetsPending=startAssetLoad({textures,models:loader,coarsePointer:deviceGraphics.coarsePointer}).then(result=>{mark('assetsMs');return result;});
     await document.fonts.ready;
     renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
     renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
@@ -537,29 +553,37 @@ async function init() {
     scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(53,1,.12,4900);
     ambientLight=new THREE.HemisphereLight(0xc7e1fa,0x68764c,.78);scene.add(ambientLight);
     light=new THREE.DirectionalLight(0xfff2db,2.9);light.castShadow=true;light.shadow.mapSize.set(2048,2048);light.shadow.camera.left=-38;light.shadow.camera.right=38;light.shadow.camera.top=66;light.shadow.camera.bottom=-26;light.shadow.camera.near=1;light.shadow.camera.far=280;light.shadow.bias=-.00012;light.shadow.normalBias=.035;light.shadow.radius=2;scene.add(light,light.target);
-    const textures=new THREE.TextureLoader();
-    const skySuffix=deviceGraphics.coarsePointer?'-mobile':'';const skyFile=`azure-sky-v3${skySuffix}.jpg`,sunsetFile=`golden-sky-v3${skySuffix}.jpg`;
-    const [road,roadNormal,terrain,terrainNormal,clearSky,cliff,cliffNormal,beach,pineCanopy,blossomCanopy,goldenSky]=await Promise.all(['road.jpg','road-normal.jpg','meadow-v2.jpg','terrain-normal.jpg',skyFile,'cliff.jpg','cliff-normal.jpg','beach.jpg','pine-canopy-v2.webp','blossom-canopy-v2.webp',sunsetFile].map(name=>textures.loadAsync('./assets/'+name)));
+    const assets=await assetsPending;if(!assets.ok)throw assets.error;
+    const [road,roadNormal,terrain,terrainNormal,clearSky,cliff,cliffNormal,beach,pineCanopy,blossomCanopy,goldenSky]=assets.textures;
+    const {car:gltf,felt,rocks:rockScan}=assets;
+    draco.dispose();draco=null;startup.phase='world';
     pineCanopyTexture=pineCanopy;blossomCanopyTexture=blossomCanopy;
     for(const t of [pineCanopy,blossomCanopy]){t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());}
     surfaceTextures={road,roadNormal,terrain,terrainNormal,cliff,cliffNormal,beach};
     for(const [name,t] of Object.entries(surfaceTextures)){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());if(['road','terrain','cliff','beach'].includes(name))t.colorSpace=THREE.SRGBColorSpace;}
     for(const sky of [clearSky,goldenSky]){sky.colorSpace=THREE.SRGBColorSpace;sky.mapping=THREE.EquirectangularReflectionMapping;sky.wrapS=THREE.RepeatWrapping;}
-    setupSky();setupTerrain();setupWater(clearSky,goldenSky);setupCoastalScenery();
+    // End each large construction task so the loading indicator and input can
+    // update between them; no partially constructed scene is exposed to play.
+    startup.phase='terrain';setupSky();setupTerrain();setupWater(clearSky,goldenSky);
+    mark('terrainMs');await yieldToUI();
+    startup.phase='coast-city';setupCoastalScenery();
     scenery.city=buildCoastalCity(THREE,{pathX,groundHeight,roadEnd:ROAD_END});scene.add(scenery.city.group);
-    setupVegetation();
+    mark('coastCityMs');await yieldToUI();
+    startup.phase='vegetation';setupVegetation();
+    mark('vegetationMs');await yieldToUI();
     // Bake the exact sky shader, including its spherical orientation and cloud
     // height, so the bodywork, sea and visible sky use the same radiance.
+    startup.phase='environment';
     const pmrem=new THREE.PMREMGenerator(renderer),environmentScene=new THREE.Scene();
     const environmentSky=new THREE.Mesh(scenery.atmosphere.sky.geometry,scenery.atmosphere.sky.material);environmentScene.add(environmentSky);
     scenery.environments={};
-    for(const theme of ['bloom','coast','sunset']){scenery.atmosphere.setTheme(theme);environmentSky.rotation.copy(scenery.atmosphere.sky.rotation);sunDirection.set(...(theme==='sunset'?[.34,.115,.94]:[.58,.72,.38])).normalize();scenery.environments[theme]=pmrem.fromScene(environmentScene,.01,.1,5000,{size:deviceGraphics.coarsePointer?128:256});}
+    scenery.atmosphere.setTheme('sunset');environmentSky.rotation.copy(scenery.atmosphere.sky.rotation);sunDirection.set(.34,.115,.94).normalize();
+    scenery.environments.sunset=pmrem.fromScene(environmentScene,.01,.1,5000,{size:deviceGraphics.coarsePointer?128:256});
     environmentScene.remove(environmentSky);pmrem.dispose();setupJourneyScenery(clearSky);
-    const draco=new DRACOLoader();draco.setDecoderPath('./vendor/');draco.setDecoderConfig({type:'wasm'});
-    const loader=new GLTFLoader();loader.setDRACOLoader(draco);
-    const [gltf,felt]=await Promise.all([loader.loadAsync('./assets/car.glb'),textures.loadAsync('./assets/felt/driver-felt.webp')]);
+    mark('environmentMs');await yieldToUI();
+    startup.phase='vehicles';
+    scenery.rockShelves=createCoastalRocks(THREE,{source:rockScan.scene,pathX,groundHeight});scene.add(scenery.rockShelves.group);
     driverFeltTexture=felt;felt.wrapS=felt.wrapT=THREE.RepeatWrapping;felt.repeat.set(3,3);felt.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
-    draco.dispose();
     carTemplate=gltf.scene.children[0];car=prepareCar(carTemplate,0xaad882);wheels=car.userData.wheels;
     seatMascot(car,driverName);raceCars.set('coast',car);garageStudio=createGarageStage(scene);applyEquipment();
     // Fully modelled lightweight rivals keep the dense hero GT's detail where
@@ -567,13 +591,27 @@ async function init() {
     rivals=[{mesh:buildAlternativeCar('open',{color:0x7c9fba}),s:103,offset:-3.15,speed:26.1},{mesh:buildAlternativeCar('rally',{color:0xd09970}),s:124,offset:3.1,speed:25.6}];
     rivals.forEach(r=>{r.mesh.add(shadowPlane());scene.add(r.mesh);});
     seatMascot(rivals[0].mesh,'kkamong');seatMascot(rivals[1].mesh,'marin');
-    setQuality($('quality').value);reset(false);
+    mark('worldMs');startup.phase='shaders';
+    startup.parallelShaders=renderer.extensions.has('KHR_parallel_shader_compile');
+    await prepareFirstFrame({
+      getState:()=>[selectedStage,questionBank,$('quality').value,driverName,stage.clientWidth,stage.clientHeight,devicePixelRatio],
+      prepare:()=>{
+        setScenery(selectedStage.scene||'coast');
+        setQuality($('quality').value);reset(false);
+        updateCamera(0);
+      },
+      compile:async()=>{startup.compilePasses++;await renderer.compileAsync(scene,camera);mark('shadersMs');},
+      render:()=>{frame();mark('firstFrameMs');},
+      nextFrame:()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))
+    });
+    mark('readyMs');startup.phase='ready';
     ready=true;$('loading').hidden=true;$('watch').disabled=false;$('start').disabled=!isUnlocked(selectedStage);refreshStartLabel();renderStages();
     if(!location.hash)window.scrollTo({top:0,behavior:'instant'});
     window.addEventListener('resize',resize);new ResizeObserver(resize).observe(stage);
     renderer.setAnimationLoop(frame);
     if(new URLSearchParams(location.search).get('garage')==='1')openGarage();
-  }catch(error){console.error(error);$('loading').hidden=true;$('error').hidden=false;window.__racingError=String(error);}
+  }catch(error){ready=false;startup.phase='failed';console.error(error);$('loading').hidden=true;$('error').hidden=false;window.__racingError=String(error);}
+  finally{draco?.dispose();}
 }
 
 function refreshStartLabel(){
@@ -719,7 +757,7 @@ function reset(play) {
   camera.position.copy(roadPoint(playerS-(mobile?12.5:7.4),mobile?-1.8:5.4,mobile?4.5:3.6));camera.lookAt(roadPoint(playerS+(mobile?14:12),mobile?3.8:1.8,1.2));
 }
 async function start(demo=false,bypassTutorial=false) {
-  if(assignment()){const plan=nextPersonalized();if(!plan){showToast('지정 문항을 준비하지 못했어요. WORLD에서 다시 열어 주세요.');return;}selectedStage=plan.stage;demo=false;}
+  if(assignment()){if(demo){showToast('이번 목표는 직접 응답하며 연습해요.');return;}const plan=nextPersonalized();if(!plan){showToast('지정 문항을 준비하지 못했어요. WORLD에서 다시 열어 주세요.');return;}selectedStage=plan.stage;}
   if(!ready||starting||!demo&&!isUnlocked(selectedStage))return;
   if(!demo&&!bypassTutorial&&!tutorialCompleted&&!tutorialDismissed){await startTutorial();return;}
   clearTutorial();
@@ -728,7 +766,7 @@ async function start(demo=false,bypassTutorial=false) {
   if(!soundTouched){soundEnabled=true;updateSoundButton();}
   if(soundEnabled){try{await ensureAudio();await narrator.prepare([...commonClips,...stageClips(selectedStage)]);}catch{narrationUnavailable=true;}}
   auto=demo;roundWasDemo=demo;questionBank=makeQuestions(selectedStage);starting=false;
-  $('start').disabled=!isUnlocked(selectedStage);$('watch').disabled=false;$('start').firstChild.textContent=`${questionBank.length}문제 달리기 `;
+  $('start').disabled=!isUnlocked(selectedStage);$('watch').disabled=!!assignment();$('start').firstChild.textContent=`${questionBank.length}문제 달리기 `;
   reset(true);stage.scrollIntoView({behavior:'auto',block:'start'});
   $('start').blur();$('watch').blur();
   speak(['intro'],'출발! 문제를 듣고 길을 골라줘.','intro');
@@ -755,7 +793,7 @@ function ding(success){
 function silence(){narrator.cancel();if(audio){motorGain.gain.setTargetAtTime(0,audio.currentTime,.06);windGain.gain.setTargetAtTime(0,audio.currentTime,.06);}}
 function pause(){if(!running||paused)return;paused=true;$('pause-panel').hidden=false;inputs.left=inputs.right=false;silence();tutorialVoicePending=false;$('repeat-question').disabled=true;}
 function resume(){paused=false;$('pause-panel').hidden=true;clock.getDelta();$('resume').blur();stage.scrollIntoView({behavior:'instant',block:'start'});if(tutorial){repeatTutorial();return;}if(gate&&gate.announced&&!gate.judged){$('repeat-question').disabled=false;if(gate.heard&&gate.presentationId)learn(c=>c.help(gate.presentationId,'replay'));narrateQuestion();}}
-function home(){running=false;auto=false;silence();clearTutorial();reset(false);refreshStartLabel();renderStages();stage.scrollIntoView({behavior:'auto',block:'start'});}
+function home(){if(!ready)return;running=false;auto=false;silence();clearTutorial();reset(false);refreshStartLabel();renderStages();stage.scrollIntoView({behavior:'auto',block:'start'});}
 function finish(){
   if(tutorial)return;
   running=false;finished=true;inputs.left=inputs.right=false;stage.classList.remove('boosting');silence();
@@ -874,7 +912,13 @@ function updateCamera(dt) {
   if(contactTimer>0&&!reducedMotion)camera.rotation.z+=Math.sin(contactTimer*30)*contactTimer*.014;
 }
 function frame() {
-  const raw=clock.getDelta(),dt=Math.min(raw,.055);warmupFrames++;
+  const raw=clock.getDelta(),dt=Math.min(raw,.055);
+  // Startup still submits its required first frame before publishing ready.
+  if(!pausedFrameGate.shouldRender({paused,hidden:ready&&document.hidden,dt,state:paused?[mode,renderQuality.pixelRatio,stage.clientWidth,stage.clientHeight,driverName,car,scenery.theme]:[]})){
+    if(paused&&!document.hidden)skippedPausedFrames++;
+    return;
+  }
+  warmupFrames++;
   if(!paused){
     worldTime.value+=dt;attractTime+=dt;
     if(scenery.sky)scenery.sky.position.copy(roadPoint(playerS));
@@ -887,12 +931,15 @@ function frame() {
     updateMascot(dt);updateShield(dt);
     updateCamera(dt);
     if(toastTime>0){toastTime-=dt;if(toastTime<=0)$('toast').classList.remove('show');}
-  }
+  }else updateCamera(dt);
     scenery.details?.update({time:worldTime.value,playerS,motion:!reducedMotion,detailDistance:renderQuality.detailDistance,quality:mode});
     scenery.terrain?.update({playerS:garageOpen?93:playerS,quality:mode,camera});
+    scenery.rockShelves?.update({playerS,quality:mode,camera});
+    scenery.boats?.update({dt,time:worldTime.value,playerS,quality:mode,camera,paused:paused||garageOpen||document.hidden,motion:!reducedMotion});
     scenery.city?.update({playerS:garageOpen?93:playerS,quality:mode,camera,time:worldTime.value});
     scenery.cityLife?.update({time:worldTime.value,playerS:garageOpen?93:playerS,playerX:car?.position.x??pathX(playerS),quality:mode,camera,motion:!reducedMotion,paused:paused||garageOpen||document.hidden,celebrating:running&&boost>0});
   renderer.render(scene,camera);
+  renderedFrames++;
   if(!paused&&!document.hidden&&warmupFrames>35&&raw<.3){frameSample.push(raw);if(frameSample.length>120)frameSample.shift();renderFrames++;renderTotal+=raw;adaptiveTime+=raw;}
   if(currentQuality==='auto'&&mode!=='low'&&adaptiveTime>7&&frameSample.length>90){const average=frameSample.reduce((a,b)=>a+b,0)/frameSample.length;const next=slowerQuality(mode,average);if(next!==mode){mode=next;applyRenderQuality();frameSample=[];}adaptiveTime=0;}
 }
@@ -947,6 +994,6 @@ window.addEventListener('keyup',e=>{if(['ArrowLeft','KeyA'].includes(e.code)){in
 window.addEventListener('blur',()=>{inputs.left=inputs.right=false;if(running&&!paused)pause();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!paused)pause();});
 // Read-only telemetry makes verification reproducible without a hidden game bypass.
-window.__racing={snapshot:()=>({ready,running,paused,auto,roundWasDemo,elapsed,playerS,playerOffset,tutorial:tutorial?{step:tutorial.step,mistakes:tutorial.mistakes,boostElapsed:tutorial.boostElapsed,voicePending:tutorialVoicePending,completed:tutorialCompleted,saved:tutorialSaved}:null,collection:{coins:garage.coins,owned:[...garage.owned],equipped:{...garage.equipped},wish:garage.wish,mission:dailyMission(progress,Date.now(),garage),garageOpen,preview:previewCar?.userData.vehicleKind,angle:garageAngle},driving:{collisions,contactTimer,combo,bestCombo,shield,shieldBlocked,rivals:rivals.map(r=>({s:r.s,offset:r.offset})),waitingForChoice:questionChosen===false},scenery:scenery.theme,landscape:scenery.coast?.userData.stats,city:scenery.city?.stats,cityLife:scenery.cityLife?.stats,groundProps:scenery.groundProps,terrain:scenery.terrain?.stats,vegetation:scenery.details?.stats,screenX:car?+car.position.clone().project(camera).x.toFixed(4):null,driver:{name:driverName,mood:driverMood,seated:!!car?.userData.mascot},vehicle:car?.userData.modelStats,velocity,boost,correct,answers:answers.map(a=>({...a})),stage:{id:selectedStage.id,title:selectedStage.title,mode:selectedStage.mode,level:selectedStage.level,campaign:selectedStage.campaign,words:selectedStage.words},gate:gate?{s:gate.s,prompt:gate.q.prompt,spoken:gate.q.spoken,types:[...gate.types],questionId:gate.q.id,announced:gate.announced}:null,quality:mode,narration:narrator.snapshot(),audioState:audio?.state,audioClock:audio?.currentTime,narrationUnavailable,learning:{words:Object.keys(progress.words).length,correctWords:Object.values(progress.words).filter(p=>p.correct>0).length,rounds:progress.rounds,cleared:Object.values(progress.stages).filter(p=>p.cleared).length},render:{pixelRatio:renderer?.getPixelRatio(),calls:renderer?.info.render.calls,triangles:renderer?.info.render.triangles,geometries:renderer?.info.memory.geometries,textures:renderer?.info.memory.textures,averageFps:frameSample.length?+(frameSample.length/frameSample.reduce((a,b)=>a+b,0)).toFixed(1):0},viewport:{width:stage.clientWidth,height:stage.clientHeight}})};
+window.__racing={snapshot:()=>({ready,startup:{...startup},running,paused,auto,roundWasDemo,elapsed,playerS,playerOffset,tutorial:tutorial?{step:tutorial.step,mistakes:tutorial.mistakes,boostElapsed:tutorial.boostElapsed,voicePending:tutorialVoicePending,completed:tutorialCompleted,saved:tutorialSaved}:null,collection:{coins:garage.coins,owned:[...garage.owned],equipped:{...garage.equipped},wish:garage.wish,mission:dailyMission(progress,Date.now(),garage),garageOpen,preview:previewCar?.userData.vehicleKind,angle:garageAngle},driving:{collisions,contactTimer,combo,bestCombo,shield,shieldBlocked,rivals:rivals.map(r=>({s:r.s,offset:r.offset})),waitingForChoice:questionChosen===false},scenery:scenery.theme,atmosphere:scenery.atmosphere?.stats,boats:scenery.boats?.stats,boatPoses:scenery.boats?.group.userData.poseSnapshots,rockShelves:scenery.rockShelves?.stats,landscape:scenery.coast?.userData.stats,city:scenery.city?.stats,cityLife:scenery.cityLife?.stats,groundProps:scenery.groundProps,terrain:scenery.terrain?.stats,vegetation:scenery.details?.stats,screenX:car?+car.position.clone().project(camera).x.toFixed(4):null,driver:{name:driverName,mood:driverMood,seated:!!car?.userData.mascot},vehicle:car?.userData.modelStats,velocity,boost,correct,answers:answers.map(a=>({...a})),stage:{id:selectedStage.id,title:selectedStage.title,mode:selectedStage.mode,level:selectedStage.level,campaign:selectedStage.campaign,words:selectedStage.words},gate:gate?{s:gate.s,prompt:gate.q.prompt,spoken:gate.q.spoken,types:[...gate.types],questionId:gate.q.id,announced:gate.announced}:null,quality:mode,narration:narrator.snapshot(),audioState:audio?.state,audioClock:audio?.currentTime,narrationUnavailable,learning:{words:Object.keys(progress.words).length,correctWords:Object.values(progress.words).filter(p=>p.correct>0).length,rounds:progress.rounds,cleared:Object.values(progress.stages).filter(p=>p.cleared).length},render:{renderedFrames,skippedPausedFrames,programs:renderer?.info.programs?.length,pixelRatio:renderer?.getPixelRatio(),calls:renderer?.info.render.calls,triangles:renderer?.info.render.triangles,geometries:renderer?.info.memory.geometries,textures:renderer?.info.memory.textures,averageFps:frameSample.length?+(frameSample.length/frameSample.reduce((a,b)=>a+b,0)).toFixed(1):0},viewport:{width:stage.clientWidth,height:stage.clientHeight}})};
 renderStages();
 init();

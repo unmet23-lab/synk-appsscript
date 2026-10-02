@@ -1,0 +1,48 @@
+✔ 원고: 36문장 모두 검사 통과(빈칸 하나·보기 넷·정답 첫 보기·학습 항목·난도·설명), 연습 문장도 (6.8252ms)
+✔ 빈칸 뒤 조사가 붙은 문장은 보기가 모두 같은 받침 조건이다(모양으로 답이 드러나지 않게) (0.5095ms)
+✔ 빈칸 나누기·채우기·판정 (0.2969ms)
+✔ 한 판 구성: 12문장, 두 항목 4문장 이상, 처음엔 난도 1만, 쉬운 것부터 (0.6631ms)
+✔ 아틀라스 순서가 없으면 판 번호로 섞어 판마다 다른 문장이 나온다(규칙은 그대로) (3.4218ms)
+✔ 점수·별·연속·놓침 (2.173ms)
+✔ 속도: 연속으로 맞히면 빨라지되 2.6초 아래로는 안 간다, 천천히 모드는 1.4배 (0.3245ms)
+✔ 배치: 좁은 화면은 같은 열의 두 조각을 같은 순간에 던지고 꼭대기 높이만 다르다 (0.2244ms)
+✔ 베기 판정: 그은 선이 처음 닿는 조각만 (2.0821ms)
+✔ 보기 섞기는 넷을 그대로 두고 순서만 바꾼다 (0.3982ms)
+✔ WORLD 목표는 실제 영역·난도·문항 쌍만 출제하고 순서와 원고를 보존한다 (4.3823ms)
+✔ 문항 정보: 지도에 있는 읽기 항목·고정 키·한 개 고르기 형식, 엔진 검사 통과 (70.2652ms)
+✔ 실제 엔진: 벤 정답은 혼자 해낸 기록, 놓침은 평가하지 않는다 (8.7174ms)
+✔ 실제 엔진: 조사·문형을 거듭 틀리면 다음 판 앞쪽에 조사·문형 문장이 오고, 결과에 다음 연습으로 나온다 (10.5916ms)
+✔ 결과의 학습 항목은 난도마다 따로 말하고, ‘다음 연습’은 아틀라스가 고른 항목을 따른다 (5.3974ms)
+✔ 기록이 반대인 두 학생은 다음 판의 첫 문장 항목이 다르다 (8.6282ms)
+✔ 아틀라스가 없거나 오류면 null(원고 순서로 진행) (0.5059ms)
+✔ 규칙 ①③④: 소리마다 400ms 이하, 음은 사인·트라이앵글만, 음높이는 C 펜타토닉 안(미끄럼은 시작·끝음) (43.4885ms)
+✔ 규칙 ②: 틀리게 벤 소리는 맞힌 소리에서 ‘팅’만 빠진다(새 음·내려가는 긴 음 없음) (3.1437ms)
+✔ B(맑은 사인)는 잡음을 쓰지 않는다, A(펠트 사각)는 베기·바람에 잡음 층이 있다 (3.3009ms)
+✔ 연속 계단: 맞힐수록 한 칸씩 오르고 10번째부터 같은 음, 휘두르기 세기는 0~1 (0.2607ms)
+✔ 리미터: -3dBFS(0.7)까지는 그대로, 겹친 소리(두 배 크기)도 0.93을 넘지 않게 부드럽게 (1.1069ms)
+✔ actual Atlas histories produce opposite listening/reading targets and preserve missing and assisted evidence (572.5584ms)
+✔ racing-listening: teacher target uses authored capacity, reaches owned run and only its items complete (199.081ms)
+✔ racing-reading: teacher target uses authored capacity, reaches owned run and only its items complete (213.4189ms)
+✔ rhythm-listening: teacher target uses authored capacity, reaches owned run and only its items complete (157.1637ms)
+✔ runner-listening: teacher target uses authored capacity, reaches owned run and only its items complete (173.0213ms)
+✔ order-listening: teacher target uses authored capacity, reaches owned run and only its items complete (171.976ms)
+✔ entry-reading: teacher target uses authored capacity, reaches owned run and only its items complete (157.3981ms)
+✔ story-reading: teacher target uses authored capacity, reaches owned run and only its items complete (147.2578ms)
+✔ blank-reading: teacher target uses authored capacity, reaches owned run and only its items complete (153.2572ms)
+✔ town-reading: teacher target uses authored capacity, reaches owned run and only its items complete (126.795ms)
+✔ wrong skill, level, response format and authored but unselected pair cannot fill the target (147.4037ms)
+✔ repeating one family and unplayed listening cannot replace the remaining authored questions (84.3306ms)
+✔ a second assignment chooses unseen families before review while the first target remains fixed (88.4749ms)
+✔ new independent families change the recommendation but repeated right answers never erase first errors (113.8682ms)
+✔ different learner, withdrawn sharing and changed assignment cannot inherit or finish an owned target (194.4308ms)
+✔ expanded runner and Town source questions independently provide at least three real families per included goal (0.5932ms)
+✔ one class assignment freezes distinct student targets without exposing another learner target in the student API (145.2191ms)
+✔ invalid target tuples are rejected atomically and retries cannot silently change a teacher target (116.1311ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3352.2763

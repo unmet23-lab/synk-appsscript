@@ -1,0 +1,23 @@
+✔ workspace validation rejects another learner and submissions contain exactly server-owned assignment identifiers (2.5039ms)
+✔ an uncertain submission freezes its first answers and retries the identical key and payload (260.2475ms)
+✔ free reading practice sends current sharing revision and displays server-scored answers (1.5061ms)
+✔ mixed catalog reading metadata is hydrated from the public question endpoint before opening (1.643ms)
+✔ read failures remove stale assignment details and a later response after stop cannot restore them (1.0024ms)
+✔ a new sharing revision clears the old draft and incomplete request (2.3441ms)
+✔ a changed assignment revision invalidates an uncertain old submission and requires new answers (1.6216ms)
+✔ revision invalidation also clears a pending task while its list is shown or a read failure hides the workspace (2.3504ms)
+✔ hidden pages do not poll and stopping the classroom cancels scheduled refresh (96.8656ms)
+✔ server reading recommendations reorder actual activities and explain selection without inventing weakness (7.8636ms)
+✔ mixed catalog and coaching open actual game assignments, preserve a lost start key, and display server progress (4.8316ms)
+✔ assignment changes and consent changes close the iframe and cannot launch a late start response (10.3886ms)
+✔ free game launch uses catalog content and sharing revision, and a failed old stop blocks the next game (1.8848ms)
+✔ a confirmed ended run clears the old retry key while an uncertain start keeps it (1.9718ms)
+✔ a completed free run is refreshed by id and cannot complete a separate assignment using the same game (0.9407ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 557.5774

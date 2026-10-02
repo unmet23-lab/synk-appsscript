@@ -1,0 +1,5 @@
+Coast Rocks 01
+Authors: Rob Tuytel (photography, processing), Rico Cilliers (cleanup)
+Source: https://polyhaven.com/a/coast_rocks_01
+License: CC0-1.0 / https://polyhaven.com/license
+SYNK modifications: UV-preserving geometry simplification, two LODs, JPEG optimization, placement and material wetness.

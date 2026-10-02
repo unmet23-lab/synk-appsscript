@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createLinkedServer} from './linked-server.mjs';
-import {GAME_CONTENT,gameProfiles} from './game-catalog.mjs';
+import {GAME_CONTENT,gameProfiles,gameItems} from './game-catalog.mjs';
 import Game from '../../atlas/game-learning.js';
 import Strata from '../../strata/index.js';
 import mapData from '../../strata/maps/topik-i.json' with {type:'json'};
@@ -14,8 +14,9 @@ async function setup(t,options={}){let now=Date.parse('2026-10-02T14:00:00Z');co
   const assign=async(id)=>{const result=await call('/api/assignments',teacher,{classId:'class-local',learnerIds:[s.learner.id],contentId:id,dueAt:new Date(now+86400000).toISOString(),reason:'콘텐츠별 실제 수행 확인',idempotencyKey:'assign-'+id});assert.equal(result.status,200,JSON.stringify(result));return result.assignment;};
   return {server,call,teacher,s,join,assign,advance:()=>++now,get now(){return now;}};
 }
-function coachFor(c,f){const values=new Map();return Game.createGame({gameId:c.gameId,map,storage:{getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v)},clock:()=>new Date(f.advance()).toISOString()});}
-function answer(coach,c,index,{help=false,audio=true,confounded=false,same=false}={}){const profile=gameProfiles(c)[0];const family=`${c.gameId}.test-${same?0:index}`;const p=coach.present({id:family,itemKey:family,familyKey:family,skillId:profile.skillIds[0],difficulty:profile.difficulty,modality:c.modality,responseFormat:c.responseFormat,audioRequired:c.modality==='listening',confounded});if(audio&&c.modality==='listening')coach.delivery(p,{audio:'completed'});if(help)coach.help(p,'hint');return coach.answer(p,{correct:index!==1,assessable:true});}
+const targets=new WeakMap();
+function coachFor(c,f){const values=new Map(),coach=Game.createGame({gameId:c.gameId,map,storage:{getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v)},clock:()=>new Date(f.advance()).toISOString()});targets.set(coach,f.server.snapshot().learningRuns?.filter(r=>r.gameId===c.gameId).at(-1)?.target);return coach;}
+function answer(coach,c,index,{help=false,audio=true,confounded=false,same=false}={}){const profile=gameProfiles(c)[0],pool=targets.get(coach)?.items||gameItems(c).filter(m=>m.skillId===profile.skillIds[0]&&m.difficulty===profile.difficulty),unique=[...new Map(pool.map(m=>[m.familyKey,m])).values()],m=unique[same?0:index]||gameItems(c).find(m=>!unique.some(u=>u.familyKey===m.familyKey));assert(m,'Test requires an authored question');const p=coach.present({id:m.itemKey,...m,audioRequired:c.modality==='listening',confounded});if(audio&&c.modality==='listening')coach.delivery(p,{audio:'completed'});if(help)coach.help(p,'hint');return coach.answer(p,{correct:index!==1,assessable:true});}
 for(const c of GAME_CONTENT)test(`${c.id}: assignment → owned run → 3 actual Atlas answers → teacher result`,async t=>{
   const f=await setup(t),a=await f.assign(c.id),start=await f.call('/api/world/runs/start',f.s.token,{assignmentId:a.id,revision:a.revision,idempotencyKey:'start'});assert.equal(start.status,200);assert.equal(start.run.gameId,c.gameId);
   const coach=coachFor(c,f);for(let i=0;i<3;i++)answer(coach,c,i,{help:i===2});
@@ -55,7 +56,7 @@ test('readings are downloaded into the same Atlas history without doubling teach
   const fake={...log.events.find(e=>e.type==='practice.attempted'),id:'new-client-attempt'};assert.equal((await f.call('/api/world/learning',f.s.token,{revision:2,events:[fake]})).code,'SERVER_EVIDENCE_REQUIRED');
 });
 test('coaching and recommendations use current consent and never turn unseen skills into weakness',async t=>{
-  const f=await setup(t);const w=await f.call('/api/student',f.s.token);assert.equal(new Set(w.content.filter(c=>c.kind==='game').map(c=>c.gameId)).size,7);assert.equal(w.coaching.basedOn.length,0);assert.match(w.coaching.summary,/부족/);
+  const f=await setup(t);const w=await f.call('/api/student',f.s.token);assert.deepEqual([...new Set(w.content.filter(c=>c.kind==='game').map(c=>c.gameId))].sort(),['blank-slice','entry-check','korean-racing','korean-rhythm','korean-runner','order-rush','story-classroom','synk-town']);assert.equal(w.coaching.basedOn.length,0);assert.match(w.coaching.summary,/부족/);
   await f.call('/api/world/sharing',f.s.token,{revision:2,enabled:false});const off=await f.call('/api/student',f.s.token);assert.equal(off.coaching.next.length,0);assert.equal(off.activeRun,null);
 });
 test('closing and resuming an assignment preserves partial work while lost start retries do not revive a closed run',async t=>{
@@ -71,4 +72,16 @@ test('ending class membership rejects learner APIs even if a session and consent
   const first=await setup(t),state=first.server.snapshot();state.classes[0].learnerIds=[];const f=await setup(t,{state});
   for(const [route,payload] of [['/api/student'],['/api/world/account'],['/api/world/learning?revision=2'],['/api/world/runs/start',{contentId:'entry-reading',revision:2,idempotencyKey:'forbidden'}],['/api/world/sharing',{revision:2,enabled:false}]])assert.equal((await f.call(route,first.s.token,payload)).status,403,route);
   assert.equal(f.server.snapshot().learningRuns?.length||0,0);
+});
+
+test('an older unfinished run without a target cannot resume as a targeted task',async t=>{
+  const first=await setup(t),a=await first.assign('entry-reading');
+  const old=(await first.call('/api/world/runs/start',first.s.token,{assignmentId:a.id,revision:1,idempotencyKey:'old-start'})).run;
+  const state=first.server.snapshot();delete state.learningRuns[0].target;delete state.assignments[0].targets;
+  const f=await setup(t,{state});
+  assert.equal((await f.call('/api/student',first.s.token)).activeRun,null);
+  assert.equal((await f.call('/api/world/runs/start',first.s.token,{assignmentId:a.id,revision:1,idempotencyKey:'old-start'})).code,'RUN_ENDED');
+  const fresh=await f.call('/api/world/runs/start',first.s.token,{assignmentId:a.id,revision:1,idempotencyKey:'new-target-start'});
+  assert.equal(fresh.status,200);assert.notEqual(fresh.run.id,old.id);assert.ok(fresh.run.target.items.length);assert.equal(fresh.run.progress.total,0);
+  assert.equal(f.server.snapshot().learningRuns.find(r=>r.id===old.id).status,'stopped');
 });

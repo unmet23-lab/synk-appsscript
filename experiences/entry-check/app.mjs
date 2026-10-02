@@ -2,7 +2,7 @@
 import { VENUES, CAST, SKILL_LABEL } from './content.mjs';
 import { TUTORIAL, TUTORIAL_CASES, VOICE_ID } from './narration.mjs';
 import { koreanTime, minutes, venueById, activeRules, memoActive, judge, composeShift, scoreShift, unlocked, itemLabel } from './core.mjs';
-import { GAME_ID, caseMetadata, rankCases, recommendVenue, answerPayload, skillReport, FLOW_ENTRY, MAGNIFIER_AFTER, FLOW_WORDS } from './learning.mjs';
+import { GAME_ID, caseMetadata, rankCases, recommendVenue, answerPayload, skillReport, FLOW_ENTRY, MAGNIFIER_AFTER, FLOW_WORDS, assignmentCases, assignmentVenues, entryTargetLabel } from './learning.mjs';
 import * as sound from './audio.mjs';
 
 const $ = (s) => document.querySelector(s);
@@ -25,6 +25,8 @@ const progress = loadProgress();
 let coach = null;
 try { coach = window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { coach = null; }
 const atlas = (fn, fallback = null) => { if (!coach) return fallback; try { return fn(coach); } catch { return fallback; } };
+const assignment=()=>atlas(c=>c.assignment?.());
+const assignmentSeen=new Set();
 
 /* ── 상태 ── */
 const state = { venue: null, queue: [], index: 0, results: [], combo: 0, cur: null, memoShown: false, ranked: null, busy: false, shift: 0, guardUntil: 0,
@@ -73,20 +75,23 @@ const show = (id) => {
 
 /* ── 입구 ── */
 function renderLobby() {
+  const target=assignment(),targetVenues=assignmentVenues(target,[...assignmentSeen]);
   const ids = unlockedIds();
   const rec = progress.plays === 0 ? null : atlas((c) => recommendVenue(c, ids));
-  const venue = venueById(rec?.venueId) || VENUES.find((v) => ids.includes(v.id) && (progress.stars[v.id] || 0) < 3) || VENUES[0];
+  const venue = targetVenues[0] || venueById(rec?.venueId) || VENUES.find((v) => ids.includes(v.id) && (progress.stars[v.id] || 0) < 3) || VENUES[0];
   $('#rec-day').textContent = `${venue.day}일차`;
   $('#rec-name').textContent = venue.name;
-  $('#rec-reason').textContent = progress.plays === 0
+  $('#rec-reason').textContent = target ? (targetVenues.length?entryTargetLabel(target):'지정 손님을 준비하지 못했어요. WORLD에서 다시 열어 주세요.') : progress.plays === 0
     ? '처음이라 가장 쉬운 하늘 수영장부터 시작해요. 안내문은 세 줄이에요.'
     : rec?.reason ? `${rec.reason} 이 연습을 하는 손님이 가장 많은 근무지예요.` : '앞 근무지에서 별을 모아 다음 근무지를 열어요.';
   $('#rec-start').onclick = () => startShift(venue.id);
+  $('#rec-start').disabled=!!target&&!targetVenues.length;
+  $('#how-tutorial').hidden=!!target;
   const warn = atlas((c) => c.summary().storage?.warning) || (!coach ? '학습 기록을 쓸 수 없어 기본 순서로 진행해요.' : null) || (!progressSaved ? '이 브라우저에 진행을 저장할 수 없어요.' : null);
   $('#storage-note').hidden = !warn; $('#storage-note').textContent = warn || '';
   const list = $('#venues'); list.textContent = '';
   for (const v of VENUES) {
-    const open = unlocked(progress, v.id), stars = progress.stars[v.id] || 0;
+    const open = target?targetVenues.some(x=>x.id===v.id):unlocked(progress, v.id), stars = progress.stars[v.id] || 0;
     const li = el('li');
     const b = el('button', `venue${open ? '' : ' locked'}${v.id === venue.id ? ' is-rec' : ''}`);
     b.type = 'button';
@@ -94,6 +99,7 @@ function renderLobby() {
     b.innerHTML = `<span class="thumb"><img src="assets/scenes/${v.scene}-m.webp" alt="" loading="lazy"><b class="num">${v.day}</b>${open ? '' : '<span class="lock">앞 근무지 별 1개면 열려요</span>'}</span>
       <span class="body"><strong>${esc(v.name)}</strong><small>${esc(v.notice.kind)} · 규칙 ${v.notice.rules.length + (v.memo ? 1 : 0)}개</small>
       <span class="stars" aria-hidden="true">${[1, 2, 3].map((i) => `<i class="${i <= stars ? 'on' : ''}"></i>`).join('')}</span></span>`;
+    if(target&&!open){li.hidden=true;}else if(target){b.querySelector('.body small').textContent=`이번 목표 손님 ${assignmentCases(v.cases,target).length}명`;}
     if (open) b.onclick = () => startShift(v.id); else b.disabled = true;
     li.append(b); list.append(li);
   }
@@ -104,10 +110,12 @@ function renderLobby() {
 function startShift(venueId, { tutorial = !progress.tutorial } = {}) {
   sound.unlock(); sound.stopVoice();
   const v = venueById(venueId);
-  if (!v || !unlocked(progress, v.id)) return;
+  const target=assignment(),targetCases=v&&target?assignmentCases(v.cases,target):null;
+  if (!v || (target?!targetCases.length:!unlocked(progress, v.id))) return;
+  if(target)tutorial=false;
   tut.on = tutorial && v.id === 'pool'; tut.i = 0; hideCoach();
   state.ranked = progress.plays === 0 || tut.on ? null : atlas((c) => rankCases(c, v.cases));
-  Object.assign(state, { venue: v, queue: tut.on ? tutorialQueue(v) : composeShift(v, { ranked: state.ranked?.order, firstTime: !progress.tutorial }),
+  Object.assign(state, { venue: v, queue: targetCases || (tut.on ? tutorialQueue(v) : composeShift(v, { ranked: state.ranked?.order, firstTime: !progress.tutorial })),
     index: 0, results: [], combo: 0, cur: null, memoShown: false, busy: false, shift: state.shift + 1 });
   // 순간 맞춤: 돋보기가 스스로 나오는 때만 맞춘다(연수 근무는 정해진 대로).
   clearTimeout(state.magnifierTimer); state.flowLine = null;
@@ -136,7 +144,7 @@ function startShift(venueId, { tutorial = !progress.tutorial } = {}) {
   $('#brief-day').textContent = `${v.day}일차`;
   $('#brief-title').lastChild.textContent = ` ${v.name}`;
   $('#brief-text').textContent = v.briefing;
-  const why = tut.on ? '처음이라 연수를 함께 해요. 하는 방법을 한 단계씩 알려 줄게요.'
+  const why = target ? entryTargetLabel(target) : tut.on ? '처음이라 연수를 함께 해요. 하는 방법을 한 단계씩 알려 줄게요.'
     : state.ranked?.reason && progress.plays > 0 ? `오늘의 손님은 기록에 맞춰 골랐어요. ${state.ranked.reason}` : '';
   $('#brief-reason').hidden = !why; $('#brief-reason').textContent = why;
   $('#briefing').hidden = false; setOverlay(true);
@@ -351,6 +359,7 @@ async function decide(choice, e) {
   if (cur.guided) atlas((c) => c.help(cur.pid, 'answer'));
   sound.unlock(); hideCoach(); sound.stopVoice();
   cur.done = true; state.busy = true;
+  if(assignment())assignmentSeen.add(cur.item.id);
   const item = cur.item, v = state.venue, token = state.shift;
   const result = judge(item, choice);
   clearTimeout(state.magnifierTimer);
@@ -403,7 +412,7 @@ function circleRule(id) {
   const cx = w / 2, cy = h / 2, rx = w / 2 - 3, ry = h / 2 - 3, k = .5523;
   const d = `M ${cx - rx + 2} ${cy + 3} C ${cx - rx} ${cy - ry * k - 2}, ${cx - rx * k} ${cy - ry}, ${cx} ${cy - ry + 1} C ${cx + rx * k} ${cy - ry - 1}, ${cx + rx + 2} ${cy - ry * k}, ${cx + rx} ${cy + 1} C ${cx + rx - 1} ${cy + ry * k}, ${cx + rx * k} ${cy + ry + 1}, ${cx} ${cy + ry} C ${cx - rx * k} ${cy + ry - 1}, ${cx - rx - 2} ${cy + ry * k}, ${cx - rx + 6} ${cy - 4}`;
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('class', 'circle'); svg.setAttribute('viewBox', `0 0 ${w} ${h}`); svg.setAttribute('width', w); svg.setAttribute('height', h); svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('class', 'circle'); svg.setAttribute('viewBox', `0 0 ${w} ${h}`); svg.setAttribute('width', w); svg.setAttribute('height', h); svg.setAttribute('preserveAspectRatio', 'none'); svg.setAttribute('aria-hidden', 'true');
   const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('d', d);
   svg.append(p); btn.append(svg);
   try { p.style.setProperty('--len', String(Math.ceil(p.getTotalLength()))); } catch { p.style.setProperty('--len', '0'); }
@@ -477,8 +486,10 @@ function finishShift() {
   const offer = flow ? atlas(() => flow.offerLessHelp(), { offer: false }) : { offer: false };
   if (flow) atlas(() => flow.end());
   const before = unlockedIds();
-  progress.stars[v.id] = Math.max(progress.stars[v.id] || 0, score.stars);
-  progress.plays += 1; progress.tutorial = true;
+  if(!assignment()){
+    progress.stars[v.id] = Math.max(progress.stars[v.id] || 0, score.stars);
+    progress.plays += 1; progress.tutorial = true;
+  }
   const today = new Date().toLocaleDateString('sv'); // 이 기기의 날짜(YYYY-MM-DD)로 하루 한 번
   const celebrate = progress.doneDay !== today; progress.doneDay = today;
   saveProgress();
@@ -543,9 +554,10 @@ function renderSkills(score, focusId) {
 function renderNext(v) {
   const ids = unlockedIds();
   const rec = atlas((c) => recommendVenue(c, ids));
-  const target = venueById(rec?.venueId) || VENUES.find((x) => ids.includes(x.id) && (progress.stars[x.id] || 0) < 3) || v;
+  const goal=assignment();
+  const target = assignmentVenues(goal,[...assignmentSeen])[0] || venueById(rec?.venueId) || VENUES.find((x) => ids.includes(x.id) && (progress.stars[x.id] || 0) < 3) || v;
   $('#r-next-name').textContent = `${target.day}일차 · ${target.name}`;
-  $('#r-next-reason').textContent = rec?.reason ? `${rec.reason}` : target.id === v.id ? '같은 근무지에서 새 손님을 만나요.' : '다음 근무지에서 새 안내문을 읽어요.';
+  $('#r-next-reason').textContent = goal ? entryTargetLabel(goal) : rec?.reason ? `${rec.reason}` : target.id === v.id ? '같은 근무지에서 새 손님을 만나요.' : '다음 근무지에서 새 안내문을 읽어요.';
   $('#r-next').onclick = () => startShift(target.id);
   $('#r-again').onclick = () => startShift(v.id);
   return rec;

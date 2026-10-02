@@ -26,7 +26,8 @@ export function buildChart(track,levelName='easy',seed=1){
   const gates=[40,...[.30,.48,.66,.84].map(r=>Math.floor(track.beatTimes.length*r/4)*4)];
   const variants=shuffle([0,1,0,1,rng()>.5?1:0],rng);
   const questions=track.questions.map((q,i)=>{
-    const variant=variants[i],voice=NARRATION[`t${track.id}q${i}v${variant}`],recallVoice=NARRATION[`t${track.id}q${i}r`];
+    const allowed=track.variantChoices?.[i];
+    const variant=allowed?.length&&!allowed.includes(variants[i])?allowed[0]:variants[i],voice=NARRATION[`t${track.id}q${i}v${variant}`],recallVoice=NARRATION[`t${track.id}q${i}r`];
     const at=gates[i],time=timeAtBeat(track,at),lead=Math.max(voice.duration+3.5,12);
     const showTime=time-lead,voiceEnd=showTime+voice.duration,answerOpen=time-Math.max(2,3*beat);
     if(showTime<1||voiceEnd>answerOpen-.4)throw Error('음성 문항의 듣기 시간이 부족합니다.');

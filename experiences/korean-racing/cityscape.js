@@ -10,7 +10,7 @@ export function buildCoastalCity(THREE, {pathX, groundHeight, roadEnd = 2250} = 
   const group = new THREE.Group(); group.name = 'coastal-city-district';
   const scaleS = roadEnd / 2250, blocks = [], footprints = [], features = [], walks=[], activityAnchors=[];
   const disposed = new Set(), object = new THREE.Object3D(), clamp = (v,a,b) => Math.max(a,Math.min(b,v));
-  const twilight = {value: 0}; let theme = 'coast', lastQuality = 'high', lastS = -Infinity;
+  const twilight = {value: .68}; let theme = 'coast', lastQuality = 'high', lastS = -Infinity;
   const materials = {
     stone: new THREE.MeshStandardMaterial({color: 0xbdb8aa, roughness: .72, metalness: .02, vertexColors: true}),
     pale: new THREE.MeshStandardMaterial({color: 0xcec9bd, roughness: .61, metalness: .035, vertexColors: true}),
@@ -19,7 +19,7 @@ export function buildCoastalCity(THREE, {pathX, groundHeight, roadEnd = 2250} = 
     darkGlass: new THREE.MeshStandardMaterial({color: 0x788583, roughness: .12, metalness: .035, envMapIntensity: .90, vertexColors: true}),
     timber: new THREE.MeshStandardMaterial({color: 0x796148, roughness: .70, vertexColors: true}),
     green: new THREE.MeshStandardMaterial({color: 0x557463, roughness: .87, vertexColors: true}),
-    lamp: new THREE.MeshStandardMaterial({color: 0xffeac2, emissive: 0xffca85, emissiveIntensity: .08, roughness: .38}),
+    lamp: new THREE.MeshStandardMaterial({color: 0xffeac2, emissive: 0xffca85, emissiveIntensity: .64, roughness: .38}),
     sign: new THREE.MeshBasicMaterial({color: 0xf0e2c8, map: makeSignAtlas(THREE), side: THREE.DoubleSide}),
     contact: new THREE.MeshBasicMaterial({color:0x263633,map:contactTexture(THREE),transparent:true,opacity:.23,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1}),
   };
@@ -32,6 +32,7 @@ export function buildCoastalCity(THREE, {pathX, groundHeight, roadEnd = 2250} = 
     dome: new THREE.SphereGeometry(1,8,5,0,Math.PI*2,0,Math.PI*.5),
     plane: new THREE.PlaneGeometry(1,1),
     groundQuad: new THREE.PlaneGeometry(1,1).rotateX(-Math.PI*.5),
+    pitchedRoof: makePitchedRoof(THREE),
   };
   const buckets = new Map();
   function bucket(block, tier, key) {
@@ -39,9 +40,9 @@ export function buildCoastalCity(THREE, {pathX, groundHeight, roadEnd = 2250} = 
     if (!buckets.has(id)) buckets.set(id, {block,tier,key,position:[],normal:[],uv:[],color:[],cityUv:[],cityCell:[],citySeed:[]});
     return buckets.get(id);
   }
-  function part(block,tier,key,geometry,x,y,z,w,h,d,yaw=0,tint=1,atlas=null) {
+  function part(block,tier,key,geometry,x,y,z,w,h,d,yaw=0,tint=1,atlas=null,pitch=0) {
     const b = bucket(block,tier,key), base = templates[geometry];
-    object.position.set(x,y,z); object.rotation.set(0,yaw,0); object.scale.set(w,h,d); object.updateMatrix();
+    object.position.set(x,y,z); object.rotation.set(0,yaw,0);if(pitch)object.rotateX(pitch); object.scale.set(w,h,d); object.updateMatrix();
     const normalMatrix = new THREE.Matrix3().getNormalMatrix(object.matrix), point = new THREE.Vector3(), normal = new THREE.Vector3();
     const pos = base.attributes.position, ns = base.attributes.normal, uv = base.attributes.uv;
     const count = base.index?.count ?? pos.count;
@@ -77,6 +78,23 @@ export function buildCoastalCity(THREE, {pathX, groundHeight, roadEnd = 2250} = 
   function pointAt(pad,u,y,v,yaw=pad.yaw) {const p=at(pad,u,y,v);return {x:p[0],y:p[1],z:p[2],yaw};}
   function buildingPart(b,tier,key,geometry,pad,u,y,v,w,h,d,tint=1,atlas=null) {
     part(b.id,tier,key,geometry,...at(pad,u,y,v),w,h,d,pad.yaw,tint,atlas);
+  }
+  function festoon(b,pad,u,start,end,height,tier='detail') {
+    // One gently sagging cable, with bulbs attached to that same curve. These
+    // are merged opaque surfaces, not point lights or billboards.
+    const segments=8, sag=.24;
+    const cableY=t=>height-sag*4*t*(1-t);
+    for(let i=0;i<segments;i++) {
+      const a=i/segments,c=(i+1)/segments,m=(a+c)*.5;
+      // Tilt each small box along the curve instead of disconnected horizontal
+      // steps. The cable and hanging bulbs still use the existing batches.
+      const dz=(end-start)/segments,dy=cableY(c)-cableY(a);
+      part(b.id,tier,'bronze','box',...at(pad,u,(cableY(a)+cableY(c))*.5,start+(end-start)*m),.022,.025,Math.hypot(dz,dy)+.015,pad.yaw,.65,null,-Math.atan2(dy,dz));
+      if(i%2===0) {
+        buildingPart(b,tier,'bronze','column',pad,u,cableY(m)-.085,start+(end-start)*m,.010,.17,.010,.7);
+        buildingPart(b,tier,'lamp','dome',pad,u,cableY(m)-.21,start+(end-start)*m,.065,.10,.065,1);
+      }
+    }
   }
   function foundation(b,pad,width,depth) {
     const depthY=Math.max(.7,pad.maxGround-pad.minGround+.5);
@@ -272,6 +290,80 @@ export function buildCoastalCity(THREE, {pathX, groundHeight, roadEnd = 2250} = 
       activityAnchors.push({id:`${b.id}-walk-${walker}`,kind:'walk',blockId:b.id,...start,yaw:Math.atan2(end.x-start.x,end.z-start.z),start,end,path,roadRelativeOffset:offset,phase:walker*.43});
     }
   });
+  // A quiet residential pocket between the first two commercial blocks. The
+  // homes share one material batch per detail tier and stay below the skyline.
+  // Their compact footprints keep the hillside foundation low and leave the
+  // existing footpaths, people and open coastal view intact.
+  const homes=block('harbour-homes',550);
+  [498,551,609].forEach((rawS,i)=>{
+    const s=rawS*scaleS,width=9.6+i*.8,depth=11.2+(i%2)*1.0,height=6.2+(i%2)*.7;
+    const pad=groundPad(s,-25.5-(i%2)*1.5,width+5,depth+4,'home');
+    const coreDepth=Math.max(.55,pad.maxGround-pad.minGround+.22);
+    buildingPart(homes,'shell','stone','box',pad,0,-coreDepth*.5,0,width+.4,coreDepth,depth+.4,[.65,.68,.64]);
+    buildingPart(homes,'shell','stone','box',pad,0,.11,0,width+.7,.22,depth+.7,.83);
+    // The entry descends to this exact patch of terrain. It is not a floating
+    // door or a full-width bright retaining wall on the coastal slope.
+    const approach=at(pad,0,0,-depth*.5-1.70),entryRise=Math.max(.16,pad.baseY+.22-groundHeight(approach[0],approach[2]));
+    const entrySteps=Math.max(2,Math.min(7,Math.ceil(entryRise/.25))),run=1.7/entrySteps;
+    for(let step=0;step<entrySteps;step++) {
+      const top=.22-entryRise*(step/entrySteps),v=-depth*.5-(step+.5)*run;
+      const p=at(pad,0,0,v),bottom=groundHeight(p[0],p[2])-pad.baseY-.08,thickness=Math.max(.12,top-bottom);
+      buildingPart(homes,'shell','stone','box',pad,0,top-thickness*.5,v,2.48,thickness,run+.025,.79);
+    }
+    for(const side of [-1,1]) {
+      // Low planted containers also soften the base in the near-camera view.
+      const u=side*width*.29,v=-depth*.5-.57,p=at(pad,u,0,v);
+      const groundY=groundHeight(p[0],p[2])-pad.baseY;
+      buildingPart(homes,'detail','stone','box',pad,u,groundY+.26,v,1.65,.52,.84,.73);
+      buildingPart(homes,'detail','green','dome',pad,u,groundY+.52,v,.97,.48,.51,[.82,.88,.72]);
+    }
+    const tones=[[.96,.91,.79],[.82,.88,.86],[.91,.83,.72]];
+    buildingPart(homes,'shell','pale','box',pad,0,height*.5+.22,0,width,height,depth,tones[i]);
+    const roofHeight=i===1?.72:1.72;
+    if(i===1) {
+      buildingPart(homes,'shell','bronze','box',pad,0,height+.36,0,width+.7,.28,depth+.75,.80);
+      buildingPart(homes,'shell','pale','box',pad,-width*.20,height+1.06,depth*.17,width*.48,1.30,depth*.48,tones[i]);
+      buildingPart(homes,'shell','bronze','box',pad,-width*.20,height+1.76,depth*.17,width*.54,.13,depth*.54,.79);
+    } else {
+      buildingPart(homes,'shell','timber','pitchedRoof',pad,0,height+.22,0,width+1,roofHeight,depth+.95,i===0?[.85,.64,.49]:[.58,.66,.67]);
+      buildingPart(homes,'detail','bronze','box',pad,0,height+roofHeight+.22,0,.18,.12,depth+1.02,.78);
+      buildingPart(homes,'detail','stone','box',pad,-width*.27,height+1.50,depth*.22,.72,1.75,.83,.77);
+    }
+    // Real recessed openings on +X and -Z: both are visible from the chase
+    // camera. Upper windows have room depth and independently lit panes.
+    for(const v of [-depth*.27,depth*.27]) {
+      buildingPart(homes,'shell','timber','box',pad,width*.5+.025,4.66,v,.13,2.25,2.54,.77);
+      buildingPart(homes,'shell','glass','box',pad,width*.5+.105,4.68,v,.065,1.96,2.26,.93);
+      buildingPart(homes,'detail','stone','box',pad,width*.5+.18,3.56,v,.37,.16,2.74,.92);
+    }
+    for(const u of [-width*.255,width*.255]) {
+      buildingPart(homes,'shell','timber','box',pad,u,4.63,-depth*.5-.045,2.62,2.20,.13,.75);
+      buildingPart(homes,'shell','glass','box',pad,u,4.64,-depth*.5-.12,2.30,1.92,.075,.93);
+      buildingPart(homes,'detail','bronze','box',pad,u,4.65,-depth*.5-.165,.065,1.95,.045,.74);
+    }
+    buildingPart(homes,'shell','darkGlass','box',pad,width*.5+.05,1.65,0,.13,2.65,depth*.60,.94);
+    buildingPart(homes,'shell','timber','box',pad,0,1.64,-depth*.5-.06,2.12,2.84,.15,.73);
+    buildingPart(homes,'shell','darkGlass','box',pad,0,1.77,-depth*.5-.15,1.63,2.26,.06,.86);
+    buildingPart(homes,'shell','bronze','box',pad,0,3.23,-depth*.5-.56,3.2,.13,1.25,.86);
+    // Balcony slab, continuous handrail and a few clearly separated uprights.
+    const balconyV=depth*.10,balconyDepth=depth*.72;
+    buildingPart(homes,'shell','stone','box',pad,width*.5+.83,3.38,balconyV,1.80,.20,balconyDepth,.85);
+    buildingPart(homes,'shell','bronze','box',pad,width*.5+1.63,4.43,balconyV,.07,.07,balconyDepth,.84);
+    for(const side of [-1,1])buildingPart(homes,'shell','bronze','box',pad,width*.5+.82,4.43,balconyV+side*balconyDepth*.5,1.70,.07,.07,.84);
+    for(let v=-balconyDepth*.5;v<=balconyDepth*.5+.01;v+=balconyDepth/4)buildingPart(homes,'detail','bronze','box',pad,width*.5+1.63,3.94,balconyV+v,.045,.99,.045,.79);
+    for(const v of [-depth*.22,depth*.29]) {
+      buildingPart(homes,'detail','bronze','box',pad,width*.5+1.23,3.74,v,.62,.50,1.08,.79);
+      buildingPart(homes,'detail','green','dome',pad,width*.5+1.23,3.99,v,.43,.54,.68,[.75,.88,.77]);
+    }
+    // The middle house has a small evening pergola; the other two keep the
+    // skyline clean. Lamps are retained in balanced quality near the homes.
+    if(i===1) {
+      for(const v of [-depth*.24,depth*.36])buildingPart(homes,'detail','bronze','box',pad,width*.5+1.62,4.91,v,.085,2.85,.085,.80);
+      buildingPart(homes,'detail','bronze','box',pad,width*.5+1.62,6.33,depth*.06,.10,.10,depth*.60+.15,.8);
+      festoon(homes,pad,width*.5+1.57,-depth*.24,depth*.36,6.24);
+    }
+    features.push({kind:'home',s,x:pad.x,z:pad.z,y:pad.baseY,height:height+(i===1?1.825:2.375),width,depth,style:i,blockId:homes.id});
+  });
   // Tall glass sits behind the shopping street, leaving the sea horizon open.
   // Distinct paired wings, rotated octagonal faces, terraces and offset crowns
   // make a skyline instead of a random repeated box extrusion.
@@ -322,7 +414,7 @@ export function buildCoastalCity(THREE, {pathX, groundHeight, roadEnd = 2250} = 
   for (const b of blocks) b.bounds=new THREE.Box3().setFromObject(b.root);
   for (const geometry of Object.values(templates)) geometry.dispose();
   buckets.clear();
-  const stats={shops:features.filter(f=>f.kind==='shop').length,towers:towerPlan.length,blocks:streetPlan.length,quality:'high',theme,
+  const stats={shops:features.filter(f=>f.kind==='shop').length,homes:features.filter(f=>f.kind==='home').length,towers:towerPlan.length,blocks:streetPlan.length,quality:'high',theme,
     storedTriangles:0,visibleTriangles:0,drawCalls:0,shadowDrawCalls:0,visibleShops:0,roadMinimumClearance:Infinity,materials:materialFinish.stats,materialDetail:1};
   for (const b of blocks) for (const mesh of b.meshes) stats.storedTriangles+=mesh.geometry.attributes.position.count/3;
   for (const b of blocks) for (const mesh of b.meshes) {
@@ -352,8 +444,8 @@ export function buildCoastalCity(THREE, {pathX, groundHeight, roadEnd = 2250} = 
     group.visible=theme!=='bloom'; return stats;
   }
   function setTheme(next='coast') {
-    theme=next; twilight.value=next==='sunset'?1:0;
-    materials.lamp.emissiveIntensity=next==='sunset'?1.3:.08;
+    theme=next; twilight.value=next==='sunset'?1:next==='coast'?.68:0;
+    materials.lamp.emissiveIntensity=next==='sunset'?1.1:next==='coast'?.64:.08;
     materials.sign.color.setHex(next==='sunset'?0xfff3db:0xe4dece);
     update({playerS:lastS,quality:lastQuality});
   }
@@ -368,6 +460,15 @@ export function buildCoastalCity(THREE, {pathX, groundHeight, roadEnd = 2250} = 
   }
   update({playerS:75,quality:'high'});
   return {group,setTheme,update,stats,containsFootprint,surfaceHeightAt,dispose};
+}
+
+function makePitchedRoof(THREE) {
+  const a=[-.5,0,-.5],b=[.5,0,-.5],c=[0,1,-.5],d=[-.5,0,.5],e=[.5,0,.5],f=[0,1,.5];
+  const faces=[[a,c,b],[d,e,f],[a,d,f],[a,f,c],[b,c,f],[b,f,e]];
+  const geometry=new THREE.BufferGeometry();
+  geometry.setAttribute('position',new THREE.Float32BufferAttribute(faces.flat(2),3));
+  geometry.setAttribute('uv',new THREE.Float32BufferAttribute(faces.flatMap(()=>[0,0,.5,1,1,0]),2));
+  geometry.computeVertexNormals();return geometry;
 }
 
 function makeSignAtlas(THREE) {

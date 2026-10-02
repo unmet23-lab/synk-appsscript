@@ -1,0 +1,44 @@
+✔ racing-listening: assignment → owned run → 3 actual Atlas answers → teacher result (251.1169ms)
+✔ racing-reading: assignment → owned run → 3 actual Atlas answers → teacher result (121.1714ms)
+✔ rhythm-listening: assignment → owned run → 3 actual Atlas answers → teacher result (103.2254ms)
+✔ runner-listening: assignment → owned run → 3 actual Atlas answers → teacher result (122.5055ms)
+✔ order-listening: assignment → owned run → 3 actual Atlas answers → teacher result (111.3882ms)
+✔ entry-reading: assignment → owned run → 3 actual Atlas answers → teacher result (110.0169ms)
+✔ story-reading: assignment → owned run → 3 actual Atlas answers → teacher result (114.8273ms)
+✔ blank-reading: assignment → owned run → 3 actual Atlas answers → teacher result (84.5777ms)
+✔ town-reading: assignment → owned run → 3 actual Atlas answers → teacher result (87.6695ms)
+✔ backlog and another learner cannot claim a new run; ownership cannot change (97.8989ms)
+✔ foreign game and cross-run presentation/answer cannot complete a task (96.5642ms)
+✔ repeated family, failed audio, and motor evidence cannot manufacture completion (68.406ms)
+✔ cancelled and revised runs drain queued records but never resurrect assignment completion (168.1614ms)
+✔ readings are downloaded into the same Atlas history without doubling teacher evidence (80.5792ms)
+✔ coaching and recommendations use current consent and never turn unseen skills into weakness (62.9421ms)
+✔ closing and resuming an assignment preserves partial work while lost start retries do not revive a closed run (124.1812ms)
+✔ ending class membership rejects learner APIs even if a session and consent still exist (114.6054ms)
+✔ an older unfinished run without a target cannot resume as a targeted task (177.2271ms)
+✔ actual Atlas histories produce opposite listening/reading targets and preserve missing and assisted evidence (460.7407ms)
+✔ racing-listening: teacher target uses authored capacity, reaches owned run and only its items complete (156.3948ms)
+✔ racing-reading: teacher target uses authored capacity, reaches owned run and only its items complete (144.1664ms)
+✔ rhythm-listening: teacher target uses authored capacity, reaches owned run and only its items complete (173.8811ms)
+✔ runner-listening: teacher target uses authored capacity, reaches owned run and only its items complete (169.4749ms)
+✔ order-listening: teacher target uses authored capacity, reaches owned run and only its items complete (190.471ms)
+✔ entry-reading: teacher target uses authored capacity, reaches owned run and only its items complete (136.2107ms)
+✔ story-reading: teacher target uses authored capacity, reaches owned run and only its items complete (165.3137ms)
+✔ blank-reading: teacher target uses authored capacity, reaches owned run and only its items complete (145.8725ms)
+✔ town-reading: teacher target uses authored capacity, reaches owned run and only its items complete (153.784ms)
+✔ wrong skill, level, response format and authored but unselected pair cannot fill the target (163.7022ms)
+✔ repeating one family and unplayed listening cannot replace the remaining authored questions (115.5103ms)
+✔ a second assignment chooses unseen families before review while the first target remains fixed (150.5536ms)
+✔ new independent families change the recommendation but repeated right answers never erase first errors (133.0788ms)
+✔ different learner, withdrawn sharing and changed assignment cannot inherit or finish an owned target (270.3917ms)
+✔ expanded runner and Town source questions independently provide at least three real families per included goal (0.6324ms)
+✔ one class assignment freezes distinct student targets without exposing another learner target in the student API (154.6822ms)
+✔ invalid target tuples are rejected atomically and retries cannot silently change a teacher target (108.5295ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3271.487

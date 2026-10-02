@@ -1,0 +1,26 @@
+✔ a game receives an immutable task snapshot and an ended frame cannot read the next task (13.3191ms)
+✔ WORLD games share verified account scope and cannot overwrite host storage with guest options (7.2218ms)
+✔ a signed-in WORLD with sharing off keeps its own local scope and never initializes transport (1.0063ms)
+✔ an entry keeps the run it was made in: an old backlog goes up with its own run after new games and a restart (10.2138ms)
+✔ a run refuses another game, and an owner that cannot be written stops the upload (0.9283ms)
+✔ even a flush that posts at once cannot send an entry before its run is recorded (4.1627ms)
+✔ an owner record lasts while its entry is in the log, and goes a day after the entry left (1.058ms)
+✔ a long run keeps few owner records while the synchronised log folds (781.4488ms)
+✔ a refusal or a new revision reaches learning-sync as the server sent it (1.387ms)
+✔ a game whose run closed still writes its entries once more as its page closes (0.579ms)
+✔ a run follows the log by its ids without copying entries; an older engine is followed through copies (3.6207ms)
+✔ the status names the account partition and the open run; a device-only account opens no run (0.7994ms)
+✔ an acknowledgement naming an entry of another run is refused (1.6905ms)
+✔ entries another tab made never join this tab's run (2.763ms)
+✔ the help style and a content’s moment memory chosen in a WORLD game follow the account to another device (9.2832ms)
+✔ a game’s change goes up by itself, and coming back to the page reads what another device chose (148.7858ms)
+✔ memory stays on the device without a memory transport, the page engine or sharing (0.9492ms)
+✔ a memory view the server does not offer yet holds up neither the game nor its learning records (1.0916ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1157.1366

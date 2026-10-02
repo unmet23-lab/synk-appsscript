@@ -1,4 +1,4 @@
-import { LISTENING_CHECKS, createListeningCheck, checkMetadata } from './listening-check.mjs';
+import { createListeningCheck, selectListeningChecks } from './listening-check.mjs';
 import { InstructionAudio } from './audio.mjs';
 export function mountListeningCheck({ coach, beforeOpen, onClose = () => {} }) {
   const $ = id => document.getElementById(id), dialog = $('listening-check-dialog');
@@ -38,7 +38,7 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {} }) {
     }
   }
   function question() {
-    const item = round[index]; check.begin(item); $('check-count').textContent = `${index + 1} / ${round.length}`;
+    const item = round[index]; dialog.dataset.item = item.id; check.begin(item); $('check-count').textContent = `${index + 1} / ${round.length}`;
     $('check-feedback').textContent = ''; $('check-next').hidden = true;
     $('check-choices').replaceChildren(...item.choices.map((label, choice) => {
       const button = document.createElement('button'); button.textContent = label; button.className = 'check-choice'; button.dataset.choice = choice; button.disabled = true;
@@ -56,9 +56,9 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {} }) {
     if (!coach) { status('학습 기록을 준비하지 못했어요. 앱을 다시 열어 주세요.'); dialog.showModal(); return; }
     try {
       check ||= createListeningCheck(coach);
-      const candidates = LISTENING_CHECKS.map(item => ({ ...item, ...checkMetadata(item), id: item.id, skillIds: [checkMetadata(item).skillId] }));
-      const selected = coach.recommend(candidates, { audioAvailable: true })?.selected;
-      round = [...LISTENING_CHECKS].sort((a, b) => Number(b.id === selected?.id) - Number(a.id === selected?.id)); index = 0;
+      round = selectListeningChecks(coach); index = 0;
+      if (!round.length) { $('check-choices').replaceChildren(); $('check-feedback').textContent = ''; $('check-count').textContent = ''; $('check-next').hidden = true; $('check-replay').hidden = true; status('이 목표에 맞는 문항을 준비하지 못했어요. WORLD에서 학습 목표를 다시 확인해 주세요.'); dialog.showModal(); return; }
+      $('check-replay').hidden = false;
       dialog.showModal(); question();
     } catch { close(); }
   }

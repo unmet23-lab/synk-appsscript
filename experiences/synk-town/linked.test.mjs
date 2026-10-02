@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createTownTransport } from './linked-client.mjs';
-import { READING_CHECKS, readingMetadata, readingAnswer } from './understanding.mjs';
+import { READING_CHECKS, readingMetadata, readingAnswer, selectReadingChecks } from './understanding.mjs';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url), { createGame } = require('../../atlas/game-learning.js'), { createMap } = require('../../strata/index.js');
 const map = createMap(require('../../strata/maps/topik-i.json'));
 test('only three authored reading answers generate learning evidence; hints remain assisted', () => {
   const rows = new Map(), coach = createGame({ gameId: 'synk-town', map, storage: { getItem: k => rows.get(k) ?? null, setItem: (k, v) => rows.set(k, v) } });
-  for (const [i, item] of READING_CHECKS.entries()) {
+  for (const [i, item] of READING_CHECKS.slice(0,3).entries()) {
     const pid = coach.present(readingMetadata(item)); if (i === 1) coach.help(pid, 'hint');
     const result = coach.answer(pid, readingAnswer(item, item.correct));
     assert.equal(result.verdict, 'correct'); assert.equal(result.independent, i !== 1);

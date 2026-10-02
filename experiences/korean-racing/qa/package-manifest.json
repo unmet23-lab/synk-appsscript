@@ -1,5 +1,5 @@
 {
-  "verifiedFiles": 2733,
+  "verifiedFiles": 2738,
   "games": [
     {
       "id": "korean-racing",
@@ -14,15 +14,15 @@
       "prefix": "play/runner"
     }
   ],
-  "importsChecked": 80,
+  "importsChecked": 83,
   "htmlLinksChecked": 30,
   "excludedUndeclaredFiles": [],
   "files": [
     {
       "path": "app.js",
       "source": "korean-racing/app.js",
-      "bytes": 98097,
-      "sha256": "b4fe7a0403975fc21a93d1a15ba8896081c80fdae98a300d009d9947f744b49b"
+      "bytes": 100026,
+      "sha256": "39a7940d85ccf12b2e3f68ad6ba1c8a2dc6753c643c2419b8d14105db8e347cf"
     },
     {
       "path": "assets/azure-sky-v3-mobile.jpg",
@@ -89,6 +89,18 @@
       "source": "korean-racing/assets/cliff.jpg",
       "bytes": 289906,
       "sha256": "dab4539d1472fdddff9464a37129b4e387552ffcb801129bae8f9dc6430a67bf"
+    },
+    {
+      "path": "assets/coastal-rocks-LICENSE.txt",
+      "source": "korean-racing/assets/coastal-rocks-LICENSE.txt",
+      "bytes": 307,
+      "sha256": "0d1cc284df3471bcf283f682fa82a46f565b87bab47854009d7d3c87555a8290"
+    },
+    {
+      "path": "assets/coastal-rocks-v6.glb",
+      "source": "korean-racing/assets/coastal-rocks-v6.glb",
+      "bytes": 1939860,
+      "sha256": "2e97b9eec9dfa2cb6f2124866440952f2f21ff5bbfd8aaedbfccddb5cdb7106e"
     },
     {
       "path": "assets/dm-mono.woff2",
@@ -15195,14 +15207,14 @@
     {
       "path": "atlas-learning.js",
       "source": "korean-racing/atlas-learning.js",
-      "bytes": 376857,
-      "sha256": "b87907becf0619957b99eb89d3ebd4957d04b3e2faffdd9ad8f9bf132d7f3a41"
+      "bytes": 391577,
+      "sha256": "a4acf55b4dc274b7cbe11620fcfabd75277fb8e8f33c53494698f093d7e15dea"
     },
     {
       "path": "atmosphere.js",
       "source": "korean-racing/atmosphere.js",
-      "bytes": 5088,
-      "sha256": "6060735cab0ef1465d66ee1a7b4d36016b06e337be8864b9193364dde45a7459"
+      "bytes": 8625,
+      "sha256": "301b25988328532c39beb83145c780f4ec8da97554372fec76d28a923560c952"
     },
     {
       "path": "campaign.js",
@@ -15227,6 +15239,12 @@
       "source": "korean-racing/cityscape.js",
       "bytes": 29173,
       "sha256": "77a26c6acf12dac1ec382c90216d84cdd243c04fd7aec4868eae8148b14cb6a1"
+    },
+    {
+      "path": "coastal-rocks.js",
+      "source": "korean-racing/coastal-rocks.js",
+      "bytes": 4880,
+      "sha256": "c0d5acd8ce03fba03f54b70b948e2e5655c02ffb84128965309555299a357f71"
     },
     {
       "path": "curriculum.js",
@@ -15279,14 +15297,14 @@
     {
       "path": "index.html",
       "source": "korean-racing/index.html",
-      "bytes": 17556,
-      "sha256": "b5079e2811887d7eb936718cfb9a0fd2bf60cf0041a980cfcc5cde4987eca006"
+      "bytes": 17730,
+      "sha256": "494d5d21e8d427f90dc58b52eaad226d1506041f44dc1590e41dd3de0eed1129"
     },
     {
       "path": "landscape.js",
       "source": "korean-racing/landscape.js",
-      "bytes": 21790,
-      "sha256": "7a81674fac2ff77e023965caefabcc0cfe664bb98c26b78cdc1f9c0a80167b10"
+      "bytes": 23770,
+      "sha256": "fb9421c70d1af6c91889c91af9ffbd00bfd1b409054dd3f3b24745db185fb768"
     },
     {
       "path": "learning.js",
@@ -15303,14 +15321,14 @@
     {
       "path": "personalization.js",
       "source": "korean-racing/personalization.js",
-      "bytes": 4056,
-      "sha256": "1ff861317473373305605edcd0a361a63a94598a5ef0093b0d3ef1a1026306dd"
+      "bytes": 5112,
+      "sha256": "c6be62d66f98aebdf1e2ccf3520e2bee5489ff9e9e503423f7db52c5ef3dd6b2"
     },
     {
       "path": "play/rhythm/app.mjs",
       "source": "korean-rhythm/app.mjs",
-      "bytes": 21557,
-      "sha256": "935e9144457aff19b94f9678d5c7045f129b281e923b7166e458b7aed06d3ef5"
+      "bytes": 21979,
+      "sha256": "764fc83ea1dd5de634e0af6db75ffbdbad81d478c8249bed07fd9788bd08ecdc"
     },
     {
       "path": "play/rhythm/assets/DMMono-OFL.txt",
@@ -15687,8 +15705,8 @@
     {
       "path": "play/rhythm/atlas-learning.js",
       "source": "korean-rhythm/atlas-learning.js",
-      "bytes": 376857,
-      "sha256": "b87907becf0619957b99eb89d3ebd4957d04b3e2faffdd9ad8f9bf132d7f3a41"
+      "bytes": 391577,
+      "sha256": "a4acf55b4dc274b7cbe11620fcfabd75277fb8e8f33c53494698f093d7e15dea"
     },
     {
       "path": "play/rhythm/audio.mjs",
@@ -15705,8 +15723,8 @@
     {
       "path": "play/rhythm/core.mjs",
       "source": "korean-rhythm/core.mjs",
-      "bytes": 7528,
-      "sha256": "74ebe2e15a5212e3db840fd4097680e46423d3c9e0bb70d803ee49e626b89b8e"
+      "bytes": 7631,
+      "sha256": "443e0cb638693dd39207995100ecc2cda441ee98ce1651f11a72016d5e9ba847"
     },
     {
       "path": "play/rhythm/index.html",
@@ -15729,8 +15747,8 @@
     {
       "path": "play/rhythm/personalization.mjs",
       "source": "korean-rhythm/personalization.mjs",
-      "bytes": 2759,
-      "sha256": "faf957cc46312b766d02cfdcd95ca5a408b36298f790d3529819797fcaa91da1"
+      "bytes": 4174,
+      "sha256": "c571e298d549ddc6c2e359bd560425d95057bd1a6f79bcfcc24134103e57f99e"
     },
     {
       "path": "play/rhythm/stage.mjs",
@@ -16173,8 +16191,8 @@
     {
       "path": "play/runner/atlas-learning.js",
       "source": "korean-runner/atlas-learning.js",
-      "bytes": 376857,
-      "sha256": "b87907becf0619957b99eb89d3ebd4957d04b3e2faffdd9ad8f9bf132d7f3a41"
+      "bytes": 391577,
+      "sha256": "a4acf55b4dc274b7cbe11620fcfabd75277fb8e8f33c53494698f093d7e15dea"
     },
     {
       "path": "play/runner/audio.mjs",
@@ -16227,14 +16245,14 @@
     {
       "path": "play/runner/listening-check-ui.mjs",
       "source": "korean-runner/listening-check-ui.mjs",
-      "bytes": 5597,
-      "sha256": "ef0151e8fa679de4aaa5d925daf614bb3e4cecc2bd8d1fb1cfd43df2ca4ec659"
+      "bytes": 5709,
+      "sha256": "12ce2323573fe0e6985e71c4c3a2b25a79c9c4573d1a747839c89ded30862790"
     },
     {
       "path": "play/runner/listening-check.mjs",
       "source": "korean-runner/listening-check.mjs",
-      "bytes": 2519,
-      "sha256": "f97307d0ff5dd6d16b6e3f19d414dd56ef3e7697bfce048325545a056aca02d3"
+      "bytes": 5925,
+      "sha256": "7f5ceabbb054e2a4f22633413c241e61075b8a9229e3b6dca2468690382c279f"
     },
     {
       "path": "play/runner/scenery-details.mjs",
@@ -16327,6 +16345,18 @@
       "sha256": "02dfd2c166bbd3f3e61ee9bb215e1db2f45383721d9399bb76edfd4ff6adec14"
     },
     {
+      "path": "seascape-boats.js",
+      "source": "korean-racing/seascape-boats.js",
+      "bytes": 14352,
+      "sha256": "4dc06b506850643451b418709d5cd999a5b573cbf7eee245fd82d101d035f48a"
+    },
+    {
+      "path": "startup.js",
+      "source": "korean-racing/startup.js",
+      "bytes": 1510,
+      "sha256": "894ccf0251c9121d703ff3c873ca3db572df324899a72e71d49bb5c675651f4d"
+    },
+    {
       "path": "style.css",
       "source": "korean-racing/style.css",
       "bytes": 48676,
@@ -16413,13 +16443,13 @@
     {
       "path": "build-manifest.json",
       "generated": true,
-      "bytes": 608011,
-      "sha256": "89c03d402530e61b2656c025e2fd127128b89b930bb89d727508f042344b0cf3"
+      "bytes": 609064,
+      "sha256": "418797da0351104fe27f70db13be026876a570b1444ed6d210829d42ec9e2d77"
     }
   ],
   "zip": {
-    "path": "SYNK-LAB-PLAY-시안-20261002.zip",
-    "bytes": 57053655,
-    "sha256": "7951134165d5c7a69846e1b97206d38da5b13478dcf02d2745fdb59509266353"
+    "path": "SYNK-LAB-PLAY-시안-v7-20261003.zip",
+    "bytes": 58863515,
+    "sha256": "699a23f19a62899fc67d83670ae895dbb47243fbc83869619f1664457bb1c9fb"
   }
 }

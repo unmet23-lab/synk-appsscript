@@ -70,7 +70,7 @@ export async function createLinkedServer({state,persistPath=null,ownerKey=secret
     const l=learnerFor(s,actor,false),w=Model.getStudentWorkspace(visible(s),actor,{now:now()}),profile=workspace(s,{id:'teacher-local',role:'teacher',mode:'local-linked'}).classes.flatMap(c=>c.learners).find(x=>x.id===l.id);
     const recommendations=l.sharing.enabled?profile?.recommendations||[]:[],runs=l.sharing.enabled?runsFor(s,l):{activeRun:null,runs:[]};
     const evidence=profile?.skills.filter(k=>k.n>0)||[],summary=!l.sharing.enabled?'공유를 켜면 기록에 맞는 안내를 받을 수 있어요.':evidence.length?'실제로 답한 문항을 바탕으로 다음 연습을 골랐어요. 도움받은 답과 처음 혼자 푼 답은 구분해요.':'아직 실력을 판단할 답이 부족해요. 짧은 확인부터 시작해요.';
-    return {...w,sharing:clone(l.sharing),recommendations,content:Model.contentCatalog(s),activeRun:runs.activeRun,runs:runs.runs,coaching:{kind:'evidence-guidance',summary,next:recommendations,basedOn:[...new Set(recommendations.flatMap(r=>r.evidence||[]))],note:'Atlas 학습 기록 기반 안내입니다. 자유 대화나 미연결 AI 평가를 만들어내지 않아요.'},assignments:w.assignments.map(a=>({...a,run:runs.runs.filter(r=>r.assignmentId===a.id&&r.assignmentRevision===a.revision).at(-1)||null}))};
+    return {...w,sharing:clone(l.sharing),recommendations,gameTargets:l.sharing.enabled?profile?.gameTargets||{}:{},content:Model.contentCatalog(s),activeRun:runs.activeRun,runs:runs.runs,coaching:{kind:'evidence-guidance',summary,next:recommendations,basedOn:[...new Set(recommendations.flatMap(r=>r.evidence||[]))],note:'Atlas 학습 기록 기반 안내입니다. 자유 대화나 미연결 AI 평가를 만들어내지 않아요.'},assignments:w.assignments.map(a=>({...a,run:runs.runs.filter(r=>r.assignmentId===a.id&&r.assignmentRevision===a.revision).at(-1)||null}))};
   };
   const publishReading=(l,result)=>{
     if(result.duplicate)return;
@@ -206,7 +206,7 @@ export async function createLinkedServer({state,persistPath=null,ownerKey=secret
         res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; frame-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'");
         const data=await fs.readFile(target);res.writeHead(200,{'Content-Type':mime[path.extname(target)],'Content-Length':data.length});res.end(req.method==='HEAD'?undefined:data);return;
       }
-      if(/^\/(synk-account|learning-hub|korean-racing|korean-runner|korean-rhythm|order-rush|entry-check|story-classroom)\//.test(route)){files.emit('request',req,res);return;}
+      if(/^\/(synk-account|learning-hub|korean-racing|korean-runner|korean-rhythm|order-rush|entry-check|story-classroom|blank-slice)\//.test(route)){files.emit('request',req,res);return;}
       fail('NOT_FOUND',404);
     }catch(e){json(e.code==='ENOENT'?404:Number.isInteger(e.status)?e.status:500,{ok:false,code:e.code||'SERVER_ERROR',message:Number.isInteger(e.status)?e.message:'요청을 처리하지 못했어요.'});}
   });

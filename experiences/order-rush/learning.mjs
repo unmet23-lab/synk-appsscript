@@ -5,6 +5,11 @@ export function orderMetadata(order){
  return {id:`order-rush.${order.id}`,itemKey:`order-rush.${order.id}.v1`,familyKey:`order-rush.${order.id}.v1`,skillId,
   difficulty:order.cups.length>1?3:SKILLS[order.id]?2:1,modality:'listening',responseFormat:'cup-compose',audioRequired:true,confounded:false};
 }
+export function assignmentOrders(orders,target){
+ if(!target)return orders;
+ return orders.filter(o=>{const m=orderMetadata(o);return m.skillId===target.skillId&&m.difficulty===target.difficulty&&m.modality===target.modality&&m.responseFormat===target.responseFormat&&target.familyKeys?.includes(m.familyKey)&&(!target.itemKeys?.length||target.itemKeys.includes(m.itemKey));});
+}
+export function orderTargetLabel(target){return `이번 목표: 듣기 · ${{detail:'세부 주문',negation:'빼기·바꾸기',condition:'조건 표현'}[target.skillId.split('.').at(-1)]||'지정 주문'} · 난도 ${target.difficulty}. 지정된 ${target.requiredAttempts}개 주문을 만들어 봐요.`;}
 export function orderCandidates(orders){return orders.map(order=>{const m=orderMetadata(order);return {...order,skillIds:[m.skillId],difficulty:m.difficulty,modality:m.modality,responseFormat:m.responseFormat,itemKey:m.itemKey,label:order.skill};});}
 export function chooseOrder(coach,orders){return coach.recommend(orderCandidates(orders),{audioAvailable:true});}
 export function orderAnswer(result,ticket){

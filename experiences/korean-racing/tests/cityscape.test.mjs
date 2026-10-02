@@ -29,8 +29,8 @@ test('coastal city keeps every actual vertex on the inland side outside the full
   });
   assert.equal(c.stats.storedTriangles,triangles);
   assert.equal(c.stats.roadMinimumClearance,clearance);
-  assert(c.stats.storedTriangles<29000);
-  assert.equal(c.stats.shops,22);assert.equal(c.stats.towers,12);
+  assert(c.stats.storedTriangles<31000);
+  assert.equal(c.stats.shops,22);assert.equal(c.stats.towers,12);assert.equal(c.stats.homes,3);
   c.dispose();
 });
 
@@ -129,9 +129,9 @@ test('every course position observes a smaller mobile budget and quality is reve
     const low=c.update({playerS:s,quality:'low'}).visibleTriangles;
     assert(c.update({playerS:s,quality:'high'}).visibleTriangles>=low);
   }
-  assert(maxima.high.triangles<19000);assert(maxima.high.calls<=52);
-  assert(maxima.balanced.triangles<13000);assert(maxima.balanced.calls<=35);
-  assert(maxima.low.triangles<9600);assert(maxima.low.calls<=28);
+  assert(maxima.high.triangles<21800);assert(maxima.high.calls<=61);
+  assert(maxima.balanced.triangles<15800);assert(maxima.balanced.calls<=44);
+  assert(maxima.low.triangles<10400);assert(maxima.low.calls<=33);
   let index=0;c.group.traverse(mesh=>{if(mesh.isMesh)assert.equal(mesh.geometry,identities[index++]);});
   c.dispose();
 });
@@ -144,8 +144,58 @@ test('the city vanishes in the flower theme and sunset uses shared emissive wind
   const windowUniform=shader.uniforms.cityTwilight;
   c.setTheme('sunset');assert.equal(windowUniform.value,1);assert(lamp.emissiveIntensity>1);
   c.setTheme('bloom');assert.equal(c.group.visible,false);assert.equal(c.stats.drawCalls,0);assert.equal(c.stats.visibleTriangles,0);
-  c.setTheme('coast');assert(c.group.visible);assert.equal(windowUniform.value,0);assert(c.stats.drawCalls>0);
+  c.setTheme('coast');assert(c.group.visible);assert(windowUniform.value>0&&windowUniform.value<1);assert(c.stats.drawCalls>0);
   c.dispose();
+});
+
+test('the residential pocket fits real terrain between shops and keeps every balcony inside its vegetation exclusion',()=>{
+  const c=city(),features=c.group.userData.features,homes=features.filter(f=>f.kind==='home');
+  const pads=c.group.userData.footprints.filter(p=>p.kind==='home');
+  assert.equal(homes.length,3);assert.equal(pads.length,3);
+  for(const home of homes) {
+    const pad=pads.find(p=>p.z===home.s);
+    assert(home.s>460&&home.s<650,'homes must form the initial open residential pocket');
+    assert(home.height<9,'homes must stay clearly below the commercial skyline');
+    assert(pad.maxGround-pad.minGround<2.25,'a large bright retaining podium would overwhelm the homes');
+    for(const other of c.group.userData.footprints.filter(p=>p!==pad)) {
+      const distance=Math.hypot(pad.x-other.x,pad.z-other.z);
+      assert(distance>Math.hypot(pad.halfW,pad.halfD)+Math.hypot(other.halfW,other.halfD),'a home overlaps another authored building footprint');
+    }
+    const meshes=c.group.getObjectByName('coastal-city-harbour-homes').children;
+    c.group.updateMatrixWorld(true);
+    const stairs=[];
+    for(const run of [.25,.80,1.60]) {
+      const v=-home.depth*.5-run,x=pad.x+Math.sin(pad.yaw)*v,z=pad.z+Math.cos(pad.yaw)*v;
+      const ray=new THREE.Raycaster(new THREE.Vector3(x,pad.baseY+.60,z),new THREE.Vector3(0,-1,0));
+      const hit=ray.intersectObjects(meshes,false)[0];
+      assert(hit,'the front door approach needs actual supporting steps');
+      assert(hit.point.y>groundHeight(x,z)-.025,'the approach step is buried in the slope');
+      stairs.push(hit.point.y);
+    }
+    assert(stairs[0]>=stairs[1]&&stairs[1]>=stairs[2],'entry steps must descend toward the terrain');
+  }
+  let vertices=0;
+  c.group.traverse(mesh=>{
+    if(!mesh.isMesh||!mesh.name.includes('harbour-homes'))return;
+    const p=mesh.geometry.attributes.position;
+    for(let i=0;i<p.count;i++) {
+      assert(c.containsFootprint(p.getX(i),p.getZ(i),.002),'a balcony or roof lies outside the vegetation exclusion');
+      vertices++;
+    }
+  });
+  assert(vertices>1000);
+  c.update({playerS:550,quality:'high'});
+  assert(c.group.getObjectByName('coastal-city-harbour-homes').visible);
+  c.update({playerS:550,quality:'low'});
+  assert(c.group.getObjectByName('coastal-city-harbour-homes').children.filter(m=>m.userData.cityTier==='detail').every(m=>!m.visible));
+  const geometries=new Set(),materials=new Set(),disposedGeometry=new Set(),disposedMaterial=new Set();
+  c.group.traverse(mesh=>{
+    if(!mesh.isMesh)return;geometries.add(mesh.geometry);materials.add(mesh.material);
+  });
+  for(const geometry of geometries)geometry.addEventListener('dispose',()=>disposedGeometry.add(geometry));
+  for(const material of materials)material.addEventListener('dispose',()=>disposedMaterial.add(material));
+  c.dispose();
+  assert.equal(disposedGeometry.size,geometries.size);assert.equal(disposedMaterial.size,materials.size);assert.equal(c.group.children.length,0);
 });
 
 test('camera frustum culling removes the district when looking away while retaining geometry for returning',()=>{

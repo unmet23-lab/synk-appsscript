@@ -29,7 +29,7 @@ test('the coast is finite and continuous, and its shared shoreline exactly inter
   for (let s = -150; s <= 3500; s += 7.3) {
     const shore = groundHeight.shoreOffset(s), cliff = groundHeight.cliffOffset(s);
     shortest = Math.min(shortest, shore); longest = Math.max(longest, shore);
-    assert(shore > 18 && shore < 90);
+    assert(shore > 16 && shore < 28);
     assert(Math.abs(groundHeight(pathX(s) + shore, s) + 2.2) < .0004, 'water and terrain must meet at the shared foam line');
     for (const offset of [-350, -100, -26, -7.1, 0, 7.1, cliff - 8, cliff + 6, 170]) {
       const x = pathX(s) + offset, y = groundHeight(x, s);
@@ -39,8 +39,8 @@ test('the coast is finite and continuous, and its shared shoreline exactly inter
       assert(surface >= 0 && surface <= 2);
     }
   }
-  assert(longest - shortest > 12, 'the narrow coast must still vary through coves and headlands');
-  assert(longest < 45, 'the shore must not return to a broad flat grass apron');
+  assert(longest - shortest > 4, 'the narrow coast must still vary through coves and headlands');
+  assert(longest < 28, 'the shore must not return to a broad flat grass apron');
 });
 
 test('low roadside ground opens the horizon before the distant ridges and exposed rock begins', () => {
@@ -59,15 +59,15 @@ test('low roadside ground opens the horizon before the distant ridges and expose
   assert(rock > 100, 'rock and woodland must alternate on the background ridges');
 });
 
-test('ridged islands, broken cliff toes and eroded stacks stay outside the road within a small merged geometry budget', () => {
+test('low headlands and sparse tidal rocks stay outside the road within a reduced merged geometry budget', () => {
   for (const ROAD_END of [2250, 4500]) {
     const group = coast({ROAD_END}), meshes = [];
     group.traverse(part => {if (part.isMesh) meshes.push(part);});
-    assert.equal(meshes.length, 3);
+    assert.equal(meshes.length, 4);
     const mesh = meshes[0], geometry = mesh.geometry;
     const triangles = meshes.reduce((total, part) => total + part.geometry.index.count / 3 * (part.isInstancedMesh ? part.count : 1), 0);
     assert.equal(triangles, group.userData.stats.triangles);
-    assert(triangles < 50000, 'distant silhouettes must retain the lower static geometry budget');
+    assert(triangles < 27000, 'the open coast must leave geometry budget for nearby scanned rocks and boats');
     assert.equal(group.userData.stats.drawCalls, meshes.length);
     assert.equal(geometry.groups.length, 0);
     for (const name of ['position', 'normal', 'color', 'uv', 'surface']) {
@@ -81,10 +81,11 @@ test('ridged islands, broken cliff toes and eroded stacks stay outside the road 
       assert(clearance > 13, 'an island or sea stack enters the road/view clearance');
     }
     assert(minimum > 13);
-    assert.equal(group.userData.features.filter(f => f.type === 'ridge-island').length, 7);
-    assert.equal(group.userData.features.filter(f => f.type === 'cliff-toe').length, 36);
-    assert.equal(group.userData.features.filter(f => f.type === 'sea-stack').length, 10);
-    assert(group.userData.features.filter(f => f.type === 'ridge-island').every(f => f.height > 40));
+    assert.equal(group.userData.features.filter(f => f.type === 'ridge-island' && !f.distant).length, 4);
+    assert.equal(group.userData.features.filter(f => f.distant).length, 1);
+    assert.equal(group.userData.features.filter(f => f.type === 'cliff-toe').length, 14);
+    assert.equal(group.userData.features.filter(f => f.type === 'sea-stack').length, 4);
+    assert(group.userData.features.filter(f => f.type === 'ridge-island').every(f => f.height > 14 && f.height < 52));
     assert(geometry.attributes.surface.array.some(s => s > .95), 'exposed sea-cliff surfaces are required');
     assert(geometry.attributes.surface.array.some(s => s < .1), 'wooded ridges are required');
     let steep = 0, steepRock = 0;
@@ -99,18 +100,21 @@ test('ridged islands, broken cliff toes and eroded stacks stay outside the road 
         }
       }
     }
-    assert(steep > 500);
+    assert(steep > 10, 'low islands must still retain a few exposed ledges');
     assert(steepRock / steep > .90, 'the steep island faces must be rock rather than green clay');
   }
 });
 
-test('island silhouettes have separate summits, lower wooded shoulders and unequal distant mesh resolutions', () => {
+test('long asymmetric headlands leave open water and broad wooded crowns rather than a wall of high peaks', () => {
   const group = coast(), geometry = group.children[0].geometry, positions = geometry.attributes.position, surfaces = geometry.attributes.surface;
   const islands = group.userData.features.filter(f => f.type === 'ridge-island');
   assert(islands.at(-1).vertexCount < islands[0].vertexCount * .55, 'remote landforms should use fewer vertices');
-  let woodedShoulders = 0, separatedSummits = 0;
+  let woodedShoulders = 0;
   for (const island of islands) {
     const [nx, nz] = island.grid, silhouette = [];
+    assert(island.rz > island.rx * 2, 'headlands must extend along the horizon rather than rise as cones');
+    assert(island.height / (island.rz * 2) < .08, 'the silhouette must remain low against the open sky');
+    assert(island.minimumClearance > 190, 'large islands must leave water beside the driving view');
     for (let row = 0; row <= nz; row++) {
       let crest = -Infinity;
       for (let col = 0; col <= nx; col++) {
@@ -120,17 +124,55 @@ test('island silhouettes have separate summits, lower wooded shoulders and unequ
       }
       silhouette.push(crest);
     }
-    const summits = [];
-    for (let row = 3; row < nz - 2; row++) {
-      const y = silhouette[row];
-      if (y <= silhouette[row - 1] || y <= silhouette[row + 1]) continue;
-      const left = Math.min(...silhouette.slice(Math.max(0, row - 5), row)), right = Math.min(...silhouette.slice(row + 1, row + 6));
-      if (y - Math.max(left, right) > island.height * .04) summits.push(row);
+    assert(silhouette.filter(y => y > island.height * .65).length >= nz * .22, 'the visible crown must occupy a broad span rather than a narrow spike');
+    if (!island.distant) {
+      const next = islands[islands.indexOf(island) + 1];
+      assert(next.s - next.rz - (island.s + island.rz) > 160, 'each large silhouette needs a real open-water gap');
     }
-    if (summits.some((row, i) => summits.some((other, j) => i !== j && Math.abs(row - other) >= 4))) separatedSummits++;
   }
-  assert(woodedShoulders > 600, 'the coast needs visible low wooded terraces instead of bare rock cones');
-  assert(separatedSummits >= 6, 'islands must read as broken ridges rather than single rounded mounds');
+  assert(woodedShoulders > 200, 'the coast needs visible low wooded terraces instead of bare rock cones');
+});
+
+test('island underwater skirts and the exported shoreline meet the actual rendered water level', () => {
+  const group = coast(), mesh = group.children[0], positions = mesh.geometry.attributes.position;
+  const ray = new THREE.Raycaster(), down = new THREE.Vector3(0, -1, 0);
+  group.updateMatrixWorld(true);
+  for (const island of group.userData.features.filter(f => f.type === 'ridge-island')) {
+    const [nx, nz] = island.grid;
+    for (let row = 0; row <= nz; row++) for (let col = 0; col <= nx; col++) {
+      if (row !== 0 && row !== nz && col !== 0 && col !== nx) continue;
+      assert(positions.getY(island.vertexStart + row * (nx + 1) + col) < -2.2, 'the mesh boundary must stay hidden below water');
+    }
+    const shore = group.userData.islandShorelines.find(f => f.id === island.id);
+    assert.equal(shore.points.length, 24);
+    for (const point of shore.points) {
+      assert.equal(point.y, -2.2);
+      ray.set(new THREE.Vector3(point.x, 5, point.z), down);
+      const [hit] = ray.intersectObject(mesh, false);
+      assert(hit, 'the water edge must be over a real island triangle');
+      assert(Math.abs(hit.point.y + 2.2) < .0001, 'water effects must follow the rendered shoreline instead of a circular halo');
+    }
+  }
+});
+
+test('tidal light is one low-contrast merged wash with transparent edges and no shadow or texture pass', () => {
+  const group = coast(), wash = group.getObjectByName('coastal-island-tidal-light');
+  assert(wash && wash.isMesh);
+  assert.equal(wash.material.transparent, true);
+  assert.equal(wash.material.depthWrite, false);
+  assert.equal(wash.castShadow, false);
+  assert.equal(wash.receiveShadow, false);
+  assert.equal(wash.material.map, null);
+  const positions = wash.geometry.attributes.position, colors = wash.geometry.attributes.color;
+  assert.equal(colors.itemSize, 4);
+  assert(wash.geometry.index.count / 3 <= 400, 'shore contact must cost only a few hundred triangles');
+  assert.equal(wash.geometry.index.count / 3, group.userData.stats.tidalTriangles);
+  for (let i = 0; i < positions.count; i++) {
+    assert(Math.abs(positions.getY(i) + 2.17) < .000001);
+    assert(colors.getW(i) >= 0 && colors.getW(i) <= .096);
+    if (i % 3 !== 1) assert.equal(colors.getW(i), 0, 'both sides must dissolve into the water');
+  }
+  assert(Array.from({length: colors.count}, (_, i) => colors.getW(i)).some(alpha => alpha > .06), 'some broken stretches must remain visible');
 });
 
 test('landforms keep the supplied surface material contract and construction is deterministic', () => {
@@ -147,11 +189,12 @@ test('landforms keep the supplied surface material contract and construction is 
     const a = first.getObjectByName(name), b = second.getObjectByName(name);
     assert.deepEqual(a.instanceMatrix.array, b.instanceMatrix.array);
   }
-  // Opposite sides differ in both peaks and coastline; no repeated hemisphere.
+  // Opposite sides differ in both height and coastline; no mirrored mound.
   const geometry = first.children[0].geometry, positions = geometry.attributes.position, surfaces = geometry.attributes.surface;
   let differences = 0;
-  for (let j = 3; j < 36; j++) for (let i = 3; i < 24; i++) {
-    const left = j * 49 + i, right = j * 49 + 48 - i;
+  const [nx, nz] = first.userData.features[0].grid;
+  for (let j = 3; j < nz - 2; j++) for (let i = 3; i < nx / 2; i++) {
+    const left = j * (nx + 1) + i, right = j * (nx + 1) + nx - i;
     if (Math.abs(positions.getY(left) - positions.getY(right)) > 2 || Math.abs(surfaces.getX(left) - surfaces.getX(right)) > .2) differences++;
   }
   assert(differences > 150);
@@ -162,7 +205,7 @@ test('small island pine groves root into actual green mesh faces and preserve th
   texture.repeat.set(2, 3); texture.offset.set(.2, .3); texture.rotation = .3; texture.wrapS = THREE.RepeatWrapping;
   const original = {repeat: texture.repeat.clone(), offset: texture.offset.clone(), rotation: texture.rotation, wrapS: texture.wrapS, colorSpace: texture.colorSpace, version: texture.version, sourceVersion: texture.source.version};
   const group = coast({textures: {pineCanopy: texture}}), trees = group.userData.islandTrees;
-  assert(trees.length >= 200 && trees.length <= 300);
+  assert(trees.length >= 100 && trees.length <= 150, 'small groves must retain vegetation without filling distant silhouettes with geometry');
   assert.equal(trees.length, group.userData.stats.trees);
   const crowns = group.getObjectByName('coastal-island-pine-crowns'), trunks = group.getObjectByName('coastal-island-pine-trunks');
   assert.equal(crowns.count, trees.length); assert.equal(trunks.count, trees.length);
@@ -195,5 +238,5 @@ test('small island pine groves root into actual green mesh faces and preserve th
     const surface = surfaces.getX(hit.face.a) * barycentric.x + surfaces.getX(hit.face.b) * barycentric.y + surfaces.getX(hit.face.c) * barycentric.z;
     assert(surface < .351, 'trees must grow on wooded ledges rather than exposed rock faces');
   }
-  assert(group.userData.features[0].height > 40 && group.userData.features[0].height < 57, 'the nearest island summit must be kept below its previous 62m crest');
+  assert(group.userData.features[0].height > 14 && group.userData.features[0].height < 26, 'the nearest island crown must remain below the road eye line');
 });

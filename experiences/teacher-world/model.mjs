@@ -2,7 +2,7 @@ import Learning from '../../atlas/learning.js';
 import Personalization from '../../atlas/personalization.js';
 import Strata from '../../strata/index.js';
 import mapData from '../../strata/maps/topik-i.json' with {type:'json'};
-import {GAME_CONTENT,gameContent,gameProfiles} from './game-catalog.mjs';
+import {GAME_CONTENT,gameContent,gameProfiles,gameItems} from './game-catalog.mjs';
 
 // Local teacher MVP adapter over the existing Core learning policy and Strata map.
 // No ninth Atlas engine, live authentication, production roster or proficiency score.
@@ -99,7 +99,7 @@ function profileFor(state,learner,now,candidates=contentCatalog(state)){
     independent:row.independent===true&&row.assisted!==true&&['correct','incorrect'].includes(row.verdict),assisted:row.assisted===true,
     measure:{skillId:row.skillId,difficulty:row.difficulty??1,responseFormat:row.responseFormat??'single-choice',familyKey:row.familyKey||row.id}}));
   const profile=Learning.summarizeLearning({summary:{asOf:new Date(now).toISOString(),attempts},map,complete:true});
-  const presentations=evidence.filter(row=>row.source==='language-item'&&Date.parse(row.at)<=now).map(row=>({taskId:row.taskId,itemKey:row.itemKey}));
+  const presentations=evidence.filter(row=>row.source==='language-item'&&Date.parse(row.at)<=now).map(row=>({taskId:row.taskId,itemKey:row.itemKey,measure:{familyKey:row.familyKey||row.itemKey}}));
   const expanded=candidates.flatMap(c=>c.kind==='game'?gameProfiles(c):[c]),plan=Learning.recommend({profile,candidates:expanded,presentations}),unique=new Set();
   const recommendations=[plan.selected,...plan.alternatives].filter(candidate=>{if(!candidate)return false;const id=candidate.contentId||candidate.id;if(unique.has(id))return false;unique.add(id);return true;}).slice(0,3).map(candidate=>{
     const own=Learning.recommend({profile,candidates:[candidate],presentations});
@@ -114,13 +114,30 @@ function profileFor(state,learner,now,candidates=contentCatalog(state)){
     excludedEvidence:evidence.filter(row=>row.source!=='language-item').map(row=>({id:row.id,source:row.source,at:row.at,reason:'게임 조작과 관찰 메모는 정답률·급수의 근거로 계산하지 않아요.'})),
     evidence:evidence.map(row=>({id:row.id,skillId:row.skillId,at:row.at,source:row.source,verdict:row.source==='language-item'?row.verdict:'unassessed',independent:row.source==='language-item'&&row.independent===true&&row.assisted!==true,assisted:row.assisted===true,taskId:row.taskId||null,reason:row.reason||null,grading:row.grading||null,sourceEventId:row.sourceEventId||null}))};
 }
+export function gameTargetFor(state,learner,content,now,preferred=null){
+  const recommendation=profileFor(state,learner,now,[content]).recommendation;
+  const focus=preferred||recommendation;
+  if(!focus||!gameProfiles(content).some(p=>p.skillIds.includes(focus.skillId)&&p.difficulty===focus.difficulty&&p.responseFormat===focus.responseFormat))fail('INVALID_TARGET','이 콘텐츠에서 연습할 수 있는 영역과 난도를 골라 주세요.');
+  const items=gameItems(content).filter(m=>m.skillId===focus.skillId&&m.difficulty===focus.difficulty&&m.responseFormat===focus.responseFormat);
+  const seen=new Map();
+  for(const row of learner.events||[]){const e=row.payload;if(row.revision!==learner.sharing?.revision||e?.type!=='practice.presented'||Date.parse(e.at)>now)continue;const family=e.measure?.familyKey;if(family)seen.set(family,(seen.get(family)||0)+1);}
+  for(const e of learner.evidence||[]){if(e.source==='language-item'&&Date.parse(e.at)<=now&&(!e.sharingRevision||e.sharingRevision===learner.sharing?.revision)&&e.familyKey&&!seen.has(e.familyKey))seen.set(e.familyKey,1);}
+  const families=[...new Set(items.map(m=>m.familyKey))].sort((a,b)=>(seen.get(a)||0)-(seen.get(b)||0)).slice(0,content.requiredAttempts||3);
+  if(!families.length)fail('TARGET_UNAVAILABLE','지금 실행할 수 있는 목표 문항이 없어요.');
+  const selected=items.filter(m=>families.includes(m.familyKey)),freshCount=families.filter(f=>!seen.has(f)).length,requiredAttempts=families.length;
+  const label=skillLabels.get(focus.skillId)||focus.skillId;
+  return {version:1,skillId:focus.skillId,difficulty:focus.difficulty,responseFormat:focus.responseFormat,modality:content.modality,label,
+    familyKeys:families,itemKeys:selected.map(m=>m.itemKey),items:copy(selected),requiredAttempts,freshCount,reviewCount:requiredAttempts-freshCount,
+    description:`${label} · 난도 ${focus.difficulty} · 목표 ${requiredAttempts}문항 (새 문항 ${freshCount}, 복습 ${requiredAttempts-freshCount})`,
+    reason:recommendation?.skillId===focus.skillId?recommendation.reason:'선생님이 선택한 영역을 연습해요.',policy:Learning.POLICY.version};
+}
 function assignmentView(state,row,now,learnerId=null){
   const submissions=state.submissions.filter(item=>item.assignmentId===row.id&&(!learnerId||item.learnerId===learnerId));
   const base={id:row.id,classId:row.classId,contentId:row.contentId,contentVersion:row.contentVersion||'v1',title:row.title,dueAt:row.dueAt,status:row.status,createdAt:row.createdAt,updatedAt:row.updatedAt,reason:row.reason,revision:row.revision,
     overdue:row.status==='active'&&Date.parse(row.dueAt)<now&&submissions.length<(learnerId?1:row.learnerIds.length),completedCount:submissions.length,lateCount:submissions.filter(item=>item.late).length};
-  if(learnerId){const task=row.taskSnapshot||TASKS[row.contentId];return {...base,completed:submissions.length>0,submission:submissions[0]?copy(submissions[0]):null,content:{id:task.id,title:task.title,kind:task.kind||'reading',gameId:task.gameId,href:task.href,requiredAttempts:task.requiredAttempts,note:task.note,passage:task.passage,questions:(task.questions||[]).map(({answer,explanation,...question})=>copy(question))}};}
+  if(learnerId){const task=row.taskSnapshot||TASKS[row.contentId],target=row.targets?.[learnerId]||null;return {...base,target:copy(target),completed:submissions.length>0,submission:submissions[0]?copy(submissions[0]):null,content:{id:task.id,title:task.title,kind:task.kind||'reading',gameId:task.gameId,href:task.href,requiredAttempts:target?.requiredAttempts||task.requiredAttempts,note:task.note,passage:task.passage,questions:(task.questions||[]).map(({answer,explanation,...question})=>copy(question))}};}
   const task=row.taskSnapshot||TASKS[row.contentId];
-  return {...base,kind:task?.kind||'reading',requiredAttempts:task?.requiredAttempts||task?.questions?.length,learnerIds:[...row.learnerIds],assignedCount:row.learnerIds.length,createdBy:row.createdBy,cancelledAt:row.cancelledAt||null,cancelReason:row.cancelReason||null,recommendations:copy(row.recommendations),submissions:copy(submissions)};
+  return {...base,kind:task?.kind||'reading',targets:copy(Object.fromEntries(row.learnerIds.filter(id=>row.targets?.[id]).map(id=>[id,row.targets[id]]))),requiredAttempts:row.learnerIds.length===1&&row.targets?.[row.learnerIds[0]]?.requiredAttempts||task?.requiredAttempts||task?.questions?.length,learnerIds:[...row.learnerIds],assignedCount:row.learnerIds.length,createdBy:row.createdBy,cancelledAt:row.cancelledAt||null,cancelReason:row.cancelReason||null,recommendations:copy(row.recommendations),submissions:copy(submissions)};
 }
 function analyticsFor(state,classes,now){
   const ids=new Set(classes.flatMap(row=>row.learnerIds)),assignments=state.assignments.filter(row=>classes.some(c=>c.id===row.classId));
@@ -139,6 +156,7 @@ export function getWorkspace(state,actor,options={}){
     classes:classes.map(row=>({id:row.id,name:row.name,learners:row.learnerIds.map(id=>{
       const learner=allowedLearner(state,classes,id),profile=profileFor(state,learner,now);
       return {id:learner.id,name:learner.name,classId:learner.classId,...profile,
+        ...(state.mode==='local-linked'&&learner.sharing?.enabled&&!learner.revoked?{gameTargets:Object.fromEntries(GAME_CONTENT.map(c=>[c.id,gameTargetFor(state,learner,c,now)]))}:{}),
         assignments:state.assignments.filter(a=>a.classId===row.id&&a.learnerIds.includes(id)).map(a=>assignmentView(state,a,now)),
         observations:copy(state.observations.filter(item=>item.learnerId===id))};
     }),analytics:analyticsFor(state,[row],now)})),
@@ -159,13 +177,15 @@ export function createAssignment(state,actor,payload,options={}){
   if(!Array.isArray(payload.learnerIds)||!payload.learnerIds.length||payload.learnerIds.length>100||new Set(payload.learnerIds).size!==payload.learnerIds.length)fail('INVALID_RECIPIENTS','과제를 받을 학생을 확인해 주세요.');
   const learners=payload.learnerIds.map(id=>{const learner=allowedLearner(state,[classroom],id);return learner;});
   const title=payload.title==null?task.title:text(payload.title,'과제 제목',100),reason=text(payload.reason,'배정 이유',500,{optional:true}),key=payload.idempotencyKey==null?null:idempotencyKey(payload.idempotencyKey);
-  const fingerprint=JSON.stringify([classroom.id,[...payload.learnerIds].sort(),task.id,title,payload.dueAt,reason]);
+  const preferred=task.kind==='game'&&payload.target?{skillId:payload.target.skillId,difficulty:payload.target.difficulty,responseFormat:payload.target.responseFormat}:null;
+  const fingerprint=JSON.stringify([classroom.id,[...payload.learnerIds].sort(),task.id,title,payload.dueAt,reason,preferred]);
   const prior=key&&state.assignments.find(row=>row.createdBy===actor.id&&row.idempotencyKey===key);
   if(prior){if(prior.fingerprint!==fingerprint)fail('IDEMPOTENCY_CONFLICT','같은 요청에 다른 과제 내용을 보낼 수 없어요.',409);return {ok:true,assignment:assignmentView(state,prior,now),duplicate:true};}
   const dueAt=dueDate(payload.dueAt,now),at=new Date(now).toISOString();
   const recommendations=learners.map(learner=>{const recommended=profileFor(state,learner,now).recommendation;return {learnerId:learner.id,recommendedContentId:recommended?.contentId||null,reason:recommended?.reason||'',evidence:recommended?.evidence||[],policy:Learning.POLICY.version,teacherOverride:recommended?.contentId!==task.id,teacherReason:reason};});
   if(recommendations.some(row=>row.teacherOverride)&&!reason)fail('OVERRIDE_REASON_REQUIRED','추천과 다른 과제를 배정하는 이유를 짧게 적어 주세요.');
-  const assignment={id:nextId(state,'assignment'),classId:classroom.id,learnerIds:learners.map(row=>row.id),contentId:task.id,contentVersion:'v1',taskSnapshot:copy(task),title,dueAt,reason,status:'active',revision:1,createdBy:actor.id,createdAt:at,updatedAt:at,recommendations,...(key?{idempotencyKey:key,fingerprint}:{})};
+  const targets=task.kind==='game'?Object.fromEntries(learners.map(l=>[l.id,gameTargetFor(state,l,task,now,preferred)])):null;
+  const assignment={id:nextId(state,'assignment'),classId:classroom.id,learnerIds:learners.map(row=>row.id),contentId:task.id,contentVersion:'v1',taskSnapshot:copy(task),...(targets?{targets}:{}),title,dueAt,reason,status:'active',revision:1,createdBy:actor.id,createdAt:at,updatedAt:at,recommendations,...(key?{idempotencyKey:key,fingerprint}:{})};
   state.assignments.push(assignment);audit(state,actor,'assignment.created',assignment.id,at);
   return {ok:true,assignment:assignmentView(state,assignment,now)};
 }

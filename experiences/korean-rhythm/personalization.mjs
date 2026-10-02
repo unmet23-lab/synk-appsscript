@@ -17,6 +17,21 @@ export const RHYTHM_CANDIDATES=TRACKS.map(track=>({id:`track-${track.id}`,trackI
   difficulty:track.id+1,modality:'listening',responseFormat:'binary-choice',
   familyKeys:track.questions.map((_,i)=>`korean-rhythm:t${track.id}q${i}:v1`)}));
 
+export function assignmentTracks(target){
+ if(!target)return RHYTHM_CANDIDATES;
+ return RHYTHM_CANDIDATES.filter(c=>c.difficulty===target.difficulty&&c.modality===target.modality&&c.responseFormat===target.responseFormat&&c.familyKeys.some((key,i)=>target.familyKeys?.includes(key)&&rhythmItem(c.trackId,{sourceIndex:i}).skillId===target.skillId&&(!target.itemKeys?.length||[0,1].some(v=>target.itemKeys.includes(`${key}:claim${v}`)))));
+}
+export function rhythmTargetLabel(target){return `이번 목표: 듣기 · ${{detail:'세부 내용',negation:'부정 표현',condition:'조건 표현',reason:'이유',main:'중심 내용'}[target.skillId.split('.').at(-1)]||'지정 표현'} · 난도 ${target.difficulty}. 지정된 ${target.requiredAttempts}문항에 응답해요.`;}
+// Preserve a complete song and its timing while selecting only authorized claim
+// variants for its target families. Other questions still belong to the song.
+export function assignmentTrack(track,target){
+ if(!target)return track;
+ if(!assignmentTracks(target).some(c=>c.trackId===track.id))return null;
+ const variantChoices={};
+ track.questions.forEach((q,i)=>{const m=rhythmItem(track.id,{sourceIndex:i});if(target.familyKeys?.includes(m.familyKey)&&m.skillId===target.skillId)variantChoices[i]=[0,1].filter(v=>!target.itemKeys?.length||target.itemKeys.includes(`${m.familyKey}:claim${v}`));});
+ return {...track,variantChoices};
+}
+
 /* Atlas moment-level challenge for the beat (Core flow.js). Only the timing windows move, within the
  * level the person chose; notes, songs and the O/X listening answers never change. 1 is the level's own
  * window; larger is more forgiving. Rhythm results are not evidence of Korean ability. */

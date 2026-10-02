@@ -1,0 +1,150 @@
+{
+  "ok": true,
+  "checks": [
+    {
+      "name": "WORLD menu includes blank slice",
+      "ok": true
+    },
+    {
+      "name": "teacher preview names target and question count",
+      "ok": true
+    },
+    {
+      "name": "round 0: target exact authored capacity",
+      "ok": true
+    },
+    {
+      "name": "round 0: lobby shows three actual target questions",
+      "ok": true
+    },
+    {
+      "name": "round 0: account record controls do not erase browser records",
+      "ok": true
+    },
+    {
+      "name": "round 0: 390px target lobby fits",
+      "ok": true
+    },
+    {
+      "name": "round 0: real queue only has target items",
+      "ok": true
+    },
+    {
+      "name": "round 0: target skips unrelated tutorial",
+      "ok": true
+    },
+    {
+      "name": "round 0: three actual target responses complete",
+      "ok": true
+    },
+    {
+      "name": "round 0: wrong level cannot enter result",
+      "ok": true
+    },
+    {
+      "name": "round 0: target run preserves free-play score",
+      "ok": true
+    },
+    {
+      "name": "round 0: 390px target layout fits",
+      "ok": true
+    },
+    {
+      "name": "round 0: teacher receives identical goal result",
+      "ok": true
+    },
+    {
+      "name": "round 1: target exact authored capacity",
+      "ok": true
+    },
+    {
+      "name": "round 1: lobby shows three actual target questions",
+      "ok": true
+    },
+    {
+      "name": "round 1: account record controls do not erase browser records",
+      "ok": true
+    },
+    {
+      "name": "round 1: 390px target lobby fits",
+      "ok": true
+    },
+    {
+      "name": "round 1: real queue only has target items",
+      "ok": true
+    },
+    {
+      "name": "round 1: target skips unrelated tutorial",
+      "ok": true
+    },
+    {
+      "name": "round 1: three actual target responses complete",
+      "ok": true
+    },
+    {
+      "name": "round 1: wrong level cannot enter result",
+      "ok": true
+    },
+    {
+      "name": "round 1: target run preserves free-play score",
+      "ok": true
+    },
+    {
+      "name": "round 1: 390px target layout fits",
+      "ok": true
+    },
+    {
+      "name": "round 1: teacher receives identical goal result",
+      "ok": true
+    },
+    {
+      "name": "both completed results survive reload",
+      "ok": true
+    }
+  ],
+  "results": [
+    {
+      "round": 0,
+      "source": "teacher-form-and-real-keyboard-controls",
+      "target": {
+        "skillId": "ko.reading.grammar",
+        "difficulty": 1,
+        "itemKeys": [
+          "blank-slice.p01.v1",
+          "blank-slice.p02.v1",
+          "blank-slice.p03.v1"
+        ]
+      },
+      "trace": [
+        "p01",
+        "p02",
+        "p03"
+      ],
+      "total": 3,
+      "correct": 3
+    },
+    {
+      "round": 1,
+      "source": "teacher-api-target-and-real-keyboard-controls",
+      "target": {
+        "skillId": "ko.reading.grammar",
+        "difficulty": 2,
+        "itemKeys": [
+          "blank-slice.e03.v1",
+          "blank-slice.e05.v1",
+          "blank-slice.a01.v1"
+        ]
+      },
+      "trace": [
+        "e03",
+        "e05",
+        "a01"
+      ],
+      "total": 3,
+      "correct": 3
+    }
+  ],
+  "errors": [],
+  "isolated": true,
+  "productionConnected": false
+}

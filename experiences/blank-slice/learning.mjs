@@ -18,6 +18,26 @@ export function itemMetadata(item) {
     modality: 'reading', responseFormat: FORMAT, audioRequired: false, confounded: false, conceptIds: GRAMMAR[item.id] ? [GRAMMAR[item.id]] : [] };
 }
 
+/** WORLD가 확정한 실제 문항만 출제한다. null은 기존 자유 플레이다. */
+export function assignmentItems(target, items = ITEMS) {
+  if (!target) return null;
+  const selected = new Map();
+  for (const required of target.items || []) {
+    const item = items.find(x => {
+      const m = itemMetadata(x);
+      return m.itemKey === required.itemKey && m.familyKey === required.familyKey
+        && m.skillId === required.skillId && m.difficulty === required.difficulty
+        && m.modality === required.modality && m.responseFormat === required.responseFormat
+        && m.skillId === target.skillId && m.difficulty === target.difficulty
+        && m.modality === target.modality && m.responseFormat === target.responseFormat;
+    });
+    if (item) selected.set(required.familyKey, item);
+  }
+  return [...selected.values()];
+}
+
+export const assignmentLabel = target => target?.description || (target ? `${SKILL_LABEL[target.skillId] || '목표 읽기'} · 난도 ${target.difficulty} · 목표 ${target.requiredAttempts}문항` : '');
+
 export function candidates(items) {
   return items.map((x) => {
     const m = itemMetadata(x);

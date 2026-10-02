@@ -2,6 +2,15 @@
 const test = require('node:test'), assert = require('node:assert/strict');
 const { createWorldLearningHost } = require('../account/world-learning-host');
 const { createGame, createLearningSync } = require('../atlas/game-browser');
+
+test('a game receives an immutable task snapshot and an ended frame cannot read the next task', async () => {
+  const saved=new Map(),host=createWorldLearningHost({accountKey:'task-snapshot',revision:1,guard(){},storage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)},transport:{get:async()=>({ok:true,revision:1,cursor:0,hasMore:false,events:[]}),post:async({events})=>({ok:true,revision:1,accepted:events.map(e=>e.id)})}});
+  const target={skillId:'ko.reading.negation',difficulty:1,responseFormat:'single-choice',modality:'reading',familyKeys:['one'],itemKeys:['one'],requiredAttempts:1};
+  host.beginRun({id:'first',gameId:'entry-check',target});target.familyKeys.push('mutated');
+  const coach=host.createGame({gameId:'entry-check'},createGame,createLearningSync);await host.retry();
+  const returned=coach.assignment();assert.deepEqual(returned.familyKeys,['one']);returned.familyKeys.push('other');assert.deepEqual(coach.assignment().familyKeys,['one']);
+  host.beginRun({id:'second',gameId:'entry-check',target:{...target,skillId:'ko.reading.detail'}});assert.throws(()=>coach.assignment(),/run ended/);host.stop();
+});
 test('WORLD games share verified account scope and cannot overwrite host storage with guest options', async () => {
   const saved = new Map(); let ended = false, posted = [];
   const host = createWorldLearningHost({ accountKey: 'synthetic-world', revision: 1, guard() { if (ended) throw new Error('ended'); },

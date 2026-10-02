@@ -62,22 +62,24 @@ app.whenReady().then(async()=>{try{
   await js(world,`document.querySelector('[data-kind=assignment][data-id="${gameAssignment.id}"]').click();document.querySelector('[data-world-action=start-game]').click()`);
   await until(()=>world.webContents.mainFrame.frames.some(frame=>frame.url.includes('/entry-check/')),'entry-check frame');
   const game=world.webContents.mainFrame.frames.find(frame=>frame.url.includes('/entry-check/'));
+  const gameTarget=gameAssignment.targets[gameAssignment.learnerIds[0]];
   await until(()=>game.executeJavaScript(`!!document.getElementById('rec-start')?.onclick`),'entry-check start control');
   await game.executeJavaScript(`document.getElementById('rec-start').click();document.getElementById('btn-begin').click()`,true);
-  await until(()=>game.executeJavaScript(`!document.getElementById('coach').hidden`),'entry-check tutorial');
-  await game.executeJavaScript(`document.getElementById('coach-skip').click()`,true);await delay(550);
-  await until(()=>game.executeJavaScript(`!document.getElementById('btn-pass').disabled`),'entry-check answer available');
-  await game.executeJavaScript(`document.getElementById('btn-pass').click()`,true);
-  await until(()=>game.executeJavaScript(`!document.getElementById('feedback').hidden`),'entry-check feedback');
-  await until(()=>server.snapshot().learners[0].evidence.some(row=>row.grading==='game-reported'),'game learning event sync');
-  check('actual-game-button-response-syncs-through-world-host',server.snapshot().learners[0].evidence.some(row=>row.grading==='game-reported'));
-  for(let i=1;i<3;i++){
-    await until(()=>game.executeJavaScript(`!document.getElementById('btn-next').disabled`),'next guest');await game.executeJavaScript(`document.getElementById('btn-next').click()`,true);
-    await until(()=>game.executeJavaScript(`!document.getElementById('btn-pass').disabled&&document.getElementById('feedback').hidden`),'next actual question');await delay(500);await game.executeJavaScript(`document.getElementById('btn-pass').click()`,true);
-    await until(()=>game.executeJavaScript(`!document.getElementById('feedback').hidden`),'next feedback');
+  for(let i=0;i<gameTarget.requiredAttempts;i++){
+    // Targeted play omits the generic tutorial and can span more than one venue.
+    await until(()=>game.executeJavaScript(`!document.getElementById('results').hidden||!document.getElementById('briefing').hidden||!document.getElementById('coach').hidden||(!document.getElementById('btn-pass').disabled&&document.getElementById('feedback').hidden)`),'entry-check next target control');
+    if(await game.executeJavaScript(`!document.getElementById('results').hidden`))await game.executeJavaScript(`document.getElementById('r-next').click()`,true);
+    if(await game.executeJavaScript(`!document.getElementById('briefing').hidden`))await game.executeJavaScript(`document.getElementById('btn-begin').click()`,true);
+    if(await game.executeJavaScript(`!document.getElementById('coach').hidden`))await game.executeJavaScript(`document.getElementById('coach-skip').click()`,true);
+    await until(()=>game.executeJavaScript(`!document.getElementById('btn-pass').disabled&&document.getElementById('feedback').hidden`),'target answer available');await delay(550);await game.executeJavaScript(`document.getElementById('btn-pass').click()`,true);
+    await until(()=>game.executeJavaScript(`!document.getElementById('feedback').hidden`),'target answer feedback');
+    await until(()=>server.snapshot().learningRuns.some(r=>r.assignmentId===gameAssignment.id&&r.progress.total>=i+1),'target answer synced');
+    if(i===0)check('actual-game-button-response-syncs-through-world-host',server.snapshot().learners[0].evidence.some(row=>row.grading==='game-reported'));
+    if(i<gameTarget.requiredAttempts-1){await until(()=>game.executeJavaScript(`!document.getElementById('btn-next').disabled`),'next guest');await game.executeJavaScript(`document.getElementById('btn-next').click()`,true);}
   }
-  await until(()=>server.snapshot().submissions.some(s=>s.assignmentId===gameAssignment.id),'game completion from three responses');
-  check('real-game-assignment-completes-only-after-three-distinct-language-responses',server.snapshot().submissions.find(s=>s.assignmentId===gameAssignment.id).total===3);
+  await until(()=>server.snapshot().submissions.some(s=>s.assignmentId===gameAssignment.id),'game completion from target responses');
+  const gameResult=server.snapshot().submissions.find(s=>s.assignmentId===gameAssignment.id);
+  check('real-game-assignment-completes-only-after-targeted-distinct-language-responses',gameResult.total===gameTarget.requiredAttempts&&gameResult.results.every(row=>gameTarget.itemKeys.includes(row.itemKey)));
   await js(world,`document.querySelector('[data-world-action=refresh]').click()`);await wait(world,`document.querySelector('.wc-activity')?.textContent.includes('학습 완료')`);
   await js(teacher,`document.getElementById('refresh').click();document.querySelector('[data-view=assignments]').click()`);await wait(teacher,`document.getElementById('assignments').textContent.includes('게임 응답 기록')`);
   check('teacher-renders-game-result-with-help-and-independent-counts',await js(teacher,`document.getElementById('assignments').textContent.includes('혼자 푼 새 문항')`));

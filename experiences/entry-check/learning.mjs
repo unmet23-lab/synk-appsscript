@@ -31,6 +31,15 @@ export function caseMetadata(c) {
   return { id: `${GAME_ID}.${c.id}`, itemKey: key, familyKey: key, skillId: c.skill, difficulty: c.difficulty,
     modality: 'reading', responseFormat: FORMAT, audioRequired: false, confounded: false, conceptIds: [...(CASE_GRAMMAR.get(c.id) || [])] };
 }
+export function assignmentCases(cases,target){
+  if(!target)return cases;
+  return cases.filter(c=>{const m=caseMetadata(c);return m.skillId===target.skillId&&m.difficulty===target.difficulty&&m.modality===target.modality&&m.responseFormat===target.responseFormat&&target.familyKeys?.includes(m.familyKey)&&(!target.itemKeys?.length||target.itemKeys.includes(m.itemKey));});
+}
+export function assignmentVenues(target,seen=[]){
+  if(!target)return [];
+  return VENUES.filter(v=>assignmentCases(v.cases,target).length).sort((a,b)=>assignmentCases(b.cases,target).filter(c=>!seen.includes(c.id)).length-assignmentCases(a.cases,target).filter(c=>!seen.includes(c.id)).length);
+}
+export function entryTargetLabel(target){return `이번 목표: 읽기 · ${SKILL_LABEL[target.skillId]||'지정 표현'} · 난도 ${target.difficulty}. 지정된 ${target.requiredAttempts}명의 손님을 확인해요.`;}
 
 export function caseCandidates(cases) {
   return cases.map((c) => {

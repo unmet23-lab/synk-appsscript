@@ -50,6 +50,11 @@ export function missionMetadata(mission) {
     skillId: `ko.reading.${mapped[0]}`, difficulty: mapped[1], modality: 'reading',
     responseFormat: RESPONSE_FORMAT, audioRequired: false, confounded: false, conceptIds: [...GRAMMAR[mission.id]] };
 }
+export function assignmentMissions(missions,target){
+  if(!target)return missions;
+  return missions.filter(m=>{const meta=missionMetadata(m);return meta.skillId===target.skillId&&meta.difficulty===target.difficulty&&meta.modality===target.modality&&meta.responseFormat===target.responseFormat&&target.familyKeys?.includes(meta.familyKey)&&(!target.itemKeys?.length||target.itemKeys.includes(meta.itemKey));});
+}
+export function storyTargetLabel(target){return `이번 목표: ${SKILL_LABELS[target.skillId]||'지정 부탁 읽기'} · 난도 ${target.difficulty}. 지정된 ${target.requiredAttempts}개 부탁을 행동으로 옮겨요.`;}
 
 export function missionCandidates(missions) {
   return missions.map(mission => { const m = missionMetadata(mission); return {
@@ -194,9 +199,10 @@ export class StoryLearning {
   }
 
   summary() { return this._call('summary'); }
+  assignment() { return typeof this.coach?.assignment==='function'?this._call('assignment'):null; }
   recommend(missions = EPISODE.review) {
     let candidates;
-    try { candidates = missionCandidates(missions); } catch (error) { this._fail(error); return null; }
+    try { const target=assignmentMissions(missions,this.assignment());candidates = missionCandidates(target.length?target:missions); } catch (error) { this._fail(error); return null; }
     return this._call('recommend', candidates, { audioAvailable: true });
   }
 

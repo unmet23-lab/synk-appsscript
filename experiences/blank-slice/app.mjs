@@ -3,7 +3,7 @@
 // 맞힌 낱말이 빈칸에 끼워지는 순간에는 ‘톡’과 사운드킷 ‘획득’(픽), 빈칸 눌림, 반짝이, 점수 올라가기가 함께 온다.
 import { ITEMS, PRACTICE, SKILL_LABEL, KIND_LABEL } from './content.mjs';
 import { parts, filled, shuffled, composeRound, pointsFor, scoreRound, hangTime, readDelay } from './core.mjs';
-import { GAME_ID, itemMetadata, rankItems, answerPayload, missedPayload, skillReport } from './learning.mjs';
+import { GAME_ID, itemMetadata, rankItems, answerPayload, missedPayload, skillReport, assignmentItems, assignmentLabel } from './learning.mjs';
 import * as sound from './audio.mjs';
 import { swingPower } from './sfx.mjs';
 import { createStage, FEEL } from './stage.mjs';
@@ -33,6 +33,8 @@ const save = () => { try { localStorage.setItem(KEY, JSON.stringify(progress)); 
 let coach = null;
 try { coach = window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { coach = null; }
 const atlas = (fn, fallback = null) => { if (!coach) return fallback; try { return fn(coach); } catch { return fallback; } };
+const assignment = () => atlas(c => c.assignment?.());
+const hosted = atlas(c => typeof c.assignment === 'function', false);
 
 /* ── 상태 ── */
 const state = { run: 0, queue: [], index: 0, results: [], combo: 0, score: 0, cur: null, practice: null, paused: false, ranked: null };
@@ -59,14 +61,19 @@ const show = (id) => {
 /* ── 입구 ── */
 function renderLobby() {
   state.run += 1; stage?.clear();
+  const target = assignment(), targetItems = assignmentItems(target);
   state.ranked = progress.plays === 0 ? null : atlas((c) => rankItems(c, ITEMS));
-  $('#l-reason').textContent = progress.plays === 0
+  $('#l-count').textContent = String(target ? targetItems.length : 12);
+  $('#btn-start').disabled = !!target && targetItems.length === 0;
+  $('#l-reason').textContent = target ? `${assignmentLabel(target)}. 이 목표 문장에 답하면 WORLD 과제에 반영돼요. 놓침은 평가하지 않아요.` : progress.plays === 0
     ? '처음이라 쉬운 문장부터 시작해요. 첫 문장은 연습이에요.'
     : state.ranked?.reason ? `${state.ranked.reason} 그 문장들을 먼저 넣었어요.` : '새 문장을 섞어 한 판을 만들어요.';
   const best = progress.best;
   $('#best-line').hidden = !best; if (best) $('#best-line').textContent = `최고 ${best.score}점 · ${best.correct}/${best.total}`;
   const warn = atlas((c) => c.summary().storage?.warning) || (!coach ? '학습 기록을 쓸 수 없어 기본 순서로 진행해요.' : null) || (!saved ? '이 브라우저에 진행을 저장할 수 없어요.' : null);
   $('#storage-note').hidden = !warn; $('#storage-note').textContent = warn || '';
+  $('#reset-learning').hidden = hosted;
+  if (hosted) $('#learning-scope').textContent = 'WORLD에서 선택한 계정의 학습 기록으로 연결해요. 기록 공유와 삭제는 WORLD 계정 설정에서 관리해요.';
   syncToggles();
   show('lobby');
 }
@@ -96,13 +103,15 @@ function ensureStage() {
 }
 
 async function startRound() {
+  const target = assignment(), targetItems = assignmentItems(target);
+  if (target && !targetItems.length) return renderLobby();
   sound.unlock();
   show('game');
   state.run += 1;
   const run = state.run;
   // 무대를 준비하는 동안에도 쉬기를 누를 수 있다. 상태를 먼저 정해 두고, 준비가 끝나면 쉬기 상태를 무대에 그대로 넘긴다
   Object.assign(state, { index: 0, results: [], combo: 0, score: 0, cur: null, practice: null, paused: false,
-    queue: composeRound(ITEMS, { ranked: state.ranked?.order, firstTime: progress.plays === 0, seed: progress.plays + 1 }) });
+    queue: targetItems || composeRound(ITEMS, { ranked: state.ranked?.order, firstTime: progress.plays === 0, seed: progress.plays + 1 }) });
   countScore.token = (countScore.token || 0) + 1; countScore.anim = false;
   updateHud();
   try { await ensureStage(); }
@@ -115,7 +124,7 @@ async function startRound() {
   }
   if (!live(run)) return;
   stage.pause(state.paused);
-  if (!progress.practiced) startPractice(); else nextItem();
+  if (!target && !progress.practiced) startPractice(); else nextItem();
 }
 
 function renderSentence(item, { kicker } = {}) {
@@ -364,9 +373,12 @@ function tip(text, { silent = false } = {}) { $('#tip').hidden = !text; if (text
 function finish() {
   state.cur = null; stage.clear();
   const s = scoreRound(state.results);
-  progress.plays += 1;
-  if (!progress.best || s.score > progress.best.score) progress.best = { score: s.score, correct: s.correct, total: s.total };
-  save();
+  const target = assignment();
+  if (!target) {
+    progress.plays += 1;
+    if (!progress.best || s.score > progress.best.score) progress.best = { score: s.score, correct: s.correct, total: s.total };
+    save();
+  }
   sound.play('achieve');
   $('#r-title').textContent = ['다시 도전!', '좋아요!', '멋져요!', '완벽해요!'][s.stars];
   $('#r-correct').textContent = String(s.correct); $('#r-total').textContent = String(s.total);
@@ -392,8 +404,9 @@ function finish() {
   const next = atlas((c) => rankItems(c, ITEMS));
   state.ranked = next;
   renderSkills(s, next);
-  $('#r-next-reason').textContent = nextLine(next);
-  $('#r-hub').hidden = !location.pathname.includes('/blank-slice/');
+  $('#r-next-reason').textContent = target ? `${assignmentLabel(target)}. ${s.missed ? '놓친 문장은 다시 답해 주세요.' : 'WORLD에서 수행 결과와 다음 과제를 확인해요.'}` : nextLine(next);
+  $('#r-again span').textContent = target ? '목표 문장 다시 풀기' : '다음 판 시작';
+  $('#r-hub').hidden = hosted || !location.pathname.includes('/blank-slice/');
   show('results');
   $('#r-title').focus({ preventScroll: true });
   announce(`${$('#r-title').textContent} ${s.total}문장 중 ${s.correct}개 맞혔어요. 별 ${s.stars}개, ${s.score}점.`);

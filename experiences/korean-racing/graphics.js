@@ -22,3 +22,21 @@ export function slowerQuality(mode,averageSeconds) {
   if(!Number.isFinite(averageSeconds)||averageSeconds<=.038)return mode;
   return mode==='high'?'balanced':mode==='balanced'?'low':'low';
 }
+
+// Pausing freezes animation immediately, then lets the camera settle briefly.
+// A changed viewport or appearance must still paint before we reuse that frame.
+export function createPausedFrameGate({settleSeconds=1}={}) {
+  let previous=null,remaining=0;
+  return {
+    invalidate(){previous=null;remaining=0;},
+    shouldRender({paused=false,hidden=false,dt=0,state=[]}={}) {
+      if(hidden){previous=null;remaining=0;return false;}
+      if(!paused){previous=null;remaining=0;return true;}
+      const changed=previous===null||previous.length!==state.length||state.some((value,i)=>!Object.is(value,previous[i]));
+      if(changed){previous=state.slice();remaining=settleSeconds;}
+      const draw=changed||remaining>0;
+      remaining=Math.max(0,remaining-(Number.isFinite(dt)?Math.max(0,dt):0));
+      return draw;
+    }
+  };
+}

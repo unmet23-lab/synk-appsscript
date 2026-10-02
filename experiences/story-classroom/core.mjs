@@ -45,6 +45,19 @@ export class StoryGame {
     return this;
   }
 
+  /** Start at the first scene containing the assigned reading. Keep every
+   * request in that scene: sequence prerequisites remain actual player actions.
+   * No skipped scene is counted as a completed answer. */
+  startPractice(missionIds) {
+    const ids=new Set(missionIds);
+    const index=EPISODE.acts.findIndex(act=>act.missions.some(m=>ids.has(m.id)));
+    if(index<0&&!EPISODE.review.some(m=>ids.has(m.id)))return false;
+    this.restart();
+    this.actIndex=index<0?EPISODE.acts.length-1:index;
+    this.phase=index<0?'review':'intro';
+    return true;
+  }
+
   advance() {
     if (['play', 'review', 'complete'].includes(this.phase)) return false;
     if (this.dialogueIndex + 1 < this.currentLines.length) {

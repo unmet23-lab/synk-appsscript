@@ -1,0 +1,207 @@
+{
+  "ok": true,
+  "isolated": true,
+  "checks": [
+    {
+      "name": "Town-mobile-dialog-is-visible-and-does-not-overflow",
+      "ok": true
+    },
+    {
+      "name": "town-detail-first-question-1-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "town-detail-first-question-2-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "town-detail-first-question-3-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "town-detail-first-three-valid-answers-reach-teacher",
+      "ok": true
+    },
+    {
+      "name": "town-detail-first-first-exposures-remain-independent",
+      "ok": true
+    },
+    {
+      "name": "town-detail-followup-question-1-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "town-detail-followup-question-2-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "town-detail-followup-question-3-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "town-detail-followup-three-valid-answers-reach-teacher",
+      "ok": true
+    },
+    {
+      "name": "town-detail-followup-first-exposures-remain-independent",
+      "ok": true
+    },
+    {
+      "name": "town-detail-followup-uses-three-new-passages",
+      "ok": true
+    },
+    {
+      "name": "town-negation-first-question-1-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "town-negation-first-question-2-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "town-negation-first-question-3-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "town-negation-first-three-valid-answers-reach-teacher",
+      "ok": true
+    },
+    {
+      "name": "town-negation-first-first-exposures-remain-independent",
+      "ok": true
+    },
+    {
+      "name": "town-negation-followup-question-1-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "town-negation-followup-question-2-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "town-negation-followup-question-3-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "town-negation-followup-three-valid-answers-reach-teacher",
+      "ok": true
+    },
+    {
+      "name": "town-negation-followup-first-exposures-remain-independent",
+      "ok": true
+    },
+    {
+      "name": "town-negation-followup-uses-three-new-passages",
+      "ok": true
+    },
+    {
+      "name": "town-sequence-first-question-1-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "town-sequence-first-question-2-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "town-sequence-first-question-3-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "town-sequence-first-three-valid-answers-reach-teacher",
+      "ok": true
+    },
+    {
+      "name": "town-sequence-first-first-exposures-remain-independent",
+      "ok": true
+    },
+    {
+      "name": "town-sequence-followup-question-1-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "town-sequence-followup-question-2-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "town-sequence-followup-question-3-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "town-sequence-followup-three-valid-answers-reach-teacher",
+      "ok": true
+    },
+    {
+      "name": "town-sequence-followup-first-exposures-remain-independent",
+      "ok": true
+    },
+    {
+      "name": "town-sequence-followup-uses-three-new-passages",
+      "ok": true
+    },
+    {
+      "name": "runner-detail-question-1-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "runner-detail-question-2-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "runner-detail-question-3-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "runner-detail-three-valid-answers-reach-teacher",
+      "ok": true
+    },
+    {
+      "name": "runner-detail-first-exposures-remain-independent",
+      "ok": true
+    },
+    {
+      "name": "runner-negation-question-1-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "runner-negation-question-2-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "runner-negation-question-3-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "runner-negation-three-valid-answers-reach-teacher",
+      "ok": true
+    },
+    {
+      "name": "runner-negation-first-exposures-remain-independent",
+      "ok": true
+    },
+    {
+      "name": "runner-sequence-question-1-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "runner-sequence-question-2-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "runner-sequence-question-3-matches-server-target",
+      "ok": true
+    },
+    {
+      "name": "runner-sequence-three-valid-answers-reach-teacher",
+      "ok": true
+    },
+    {
+      "name": "runner-sequence-first-exposures-remain-independent",
+      "ok": true
+    },
+    {
+      "name": "all-nine-assigned-rounds-complete-with-27-real-answers",
+      "ok": true
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,102 @@
+{
+  "version": 6,
+  "measuredAt": "2026-10-02T16:13:13.861Z",
+  "method": "Conservative whole-course runtime-module update sweep, no camera/frustum exclusion; playerS 0..2250 inclusive in 1m steps; static boat poses, motion:false; counts cover only new coastal boats and scanned coastal rocks, not the whole game.",
+  "sourceHashes": {
+    "seascape-boats.js": "4dc06b506850643451b418709d5cd999a5b573cbf7eee245fd82d101d035f48a",
+    "coastal-rocks.js": "f90b7c6e74d98f9eeef907a9b99e7eb1c408da679477d496ee43b065869198f0",
+    "landscape.js": "fb9421c70d1af6c91889c91af9ffbd00bfd1b409054dd3f3b24745db185fb768",
+    "scenery.js": "02dfd2c166bbd3f3e61ee9bb215e1db2f45383721d9399bb76edfd4ff6adec14",
+    "assets/coastal-rocks-v6.glb": "2e97b9eec9dfa2cb6f2124866440952f2f21ff5bbfd8aaedbfccddb5cdb7106e"
+  },
+  "sampling": {
+    "minPlayerS": 0,
+    "maxPlayerS": 2250,
+    "stepMeters": 1,
+    "samplesPerQuality": 2251,
+    "camera": null
+  },
+  "asset": {
+    "bytes": 1939860,
+    "nearRockTriangles": 10491,
+    "farRockTriangles": 2298,
+    "storedBoatTriangles": 6642
+  },
+  "quality": {
+    "high": {
+      "boats": {
+        "maxTriangles": 5122,
+        "trianglesAtPlayerS": 291,
+        "maxDrawCalls": 13,
+        "drawCallsAtPlayerS": 291,
+        "maxVisibleObjects": 3
+      },
+      "rocks": {
+        "maxTriangles": 25578,
+        "trianglesAtPlayerS": 716,
+        "maxDrawCalls": 4,
+        "drawCallsAtPlayerS": 616,
+        "maxVisibleObjects": 4
+      },
+      "combined": {
+        "maxTriangles": 30700,
+        "trianglesAtPlayerS": 716,
+        "maxDrawCalls": 17,
+        "drawCallsAtPlayerS": 616,
+        "maxVisibleObjects": 7
+      },
+      "maxWakeDrawCalls": 1,
+      "shadowDrawCalls": 0
+    },
+    "balanced": {
+      "boats": {
+        "maxTriangles": 5122,
+        "trianglesAtPlayerS": 491,
+        "maxDrawCalls": 13,
+        "drawCallsAtPlayerS": 491,
+        "maxVisibleObjects": 3
+      },
+      "rocks": {
+        "maxTriangles": 17385,
+        "trianglesAtPlayerS": 616,
+        "maxDrawCalls": 4,
+        "drawCallsAtPlayerS": 616,
+        "maxVisibleObjects": 4
+      },
+      "combined": {
+        "maxTriangles": 22507,
+        "trianglesAtPlayerS": 616,
+        "maxDrawCalls": 17,
+        "drawCallsAtPlayerS": 616,
+        "maxVisibleObjects": 7
+      },
+      "maxWakeDrawCalls": 1,
+      "shadowDrawCalls": 0
+    },
+    "low": {
+      "boats": {
+        "maxTriangles": 5116,
+        "trianglesAtPlayerS": 661,
+        "maxDrawCalls": 12,
+        "drawCallsAtPlayerS": 661,
+        "maxVisibleObjects": 3
+      },
+      "rocks": {
+        "maxTriangles": 6894,
+        "trianglesAtPlayerS": 456,
+        "maxDrawCalls": 3,
+        "drawCallsAtPlayerS": 456,
+        "maxVisibleObjects": 3
+      },
+      "combined": {
+        "maxTriangles": 10214,
+        "trianglesAtPlayerS": 456,
+        "maxDrawCalls": 14,
+        "drawCallsAtPlayerS": 661,
+        "maxVisibleObjects": 5
+      },
+      "maxWakeDrawCalls": 0,
+      "shadowDrawCalls": 0
+    }
+  }
+}

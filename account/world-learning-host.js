@@ -139,6 +139,8 @@ function createWorldLearningHost({ accountKey, revision, storage, transport, mem
     // The ports belong to the host's synchronisers, not to games.
     return Object.freeze(Object.fromEntries(Object.entries(coach).filter(([name]) => name !== 'syncPort' && name !== 'memoryPort').map(([name, value]) => [name,
       name === 'live' ? live(value) : guarded(value, name === 'flush')]).concat([
+      // Each game sees the run's immutable task snapshot, without an account token.
+      ['assignment', () => { check(); if (opened !== generation) throw failure('WORLD game run ended', 'RUN_ENDED'); return context?.target ? structuredClone(context.target) : null; }],
       ['disconnect', () => { unsubscribe(); unsubscribeMemory(); coaches.delete(coach); }],
     ])));
   }
@@ -153,8 +155,8 @@ function createWorldLearningHost({ accountKey, revision, storage, transport, mem
     beginRun(value) {
       check();
       if (!connected || !identifier(value?.id) || !identifier(value?.gameId)) throw new TypeError('A connected WORLD run is required');
-      generation += 1; run = { id: value.id, gameId: value.gameId };
-      return { ...run };
+      generation += 1; run = { id: value.id, gameId: value.gameId, ...(value.target ? { target: structuredClone(value.target) } : {}) };
+      return structuredClone(run);
     },
     closeRun() { check(); generation += 1; run = null; },
     stop() { closed = true; generation += 1; run = null; sync?.stop(); memory?.stop(); coaches.clear(); memoryListeners.clear(); } });

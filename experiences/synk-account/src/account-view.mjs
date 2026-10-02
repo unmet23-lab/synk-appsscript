@@ -39,7 +39,7 @@ export function createAccountView({ client, product, guard, notice, logout, prev
       window.SYNKLearningHost = host;document.addEventListener?.('visibilitychange', visibility);
     }
     const links = element('div', null, 'game-links'), frame = element('iframe');gameFrame=frame;frame.hidden = true;frame.title = 'WORLD 학습 게임';frame.allow = 'autoplay; fullscreen';
-    for (const [path, label] of [['korean-racing', '한국어 레이싱'], ['korean-runner', '바람길'], ['korean-rhythm', '한국어 리듬'], ['order-rush', '주문 폭주'], ['entry-check', '입장 검사'], ['story-classroom', '선생님이 돌아왔다']]) {
+    for (const [path, label] of [['korean-racing', '한국어 레이싱'], ['korean-runner', '바람길'], ['korean-rhythm', '한국어 리듬'], ['order-rush', '주문 폭주'], ['entry-check', '입장 검사'], ['story-classroom', '선생님이 돌아왔다'], ['blank-slice', '빈칸 베기']]) {
       links.append(button(label, async () => { guard();if (preview) { notice('로컬 화면 예시에서는 실제 게임 계정 연결을 시작하지 않아요.');return; }if(localConnection){await onGameRequest?.(path);return;}frame.src = new URL(`../${path}/`, location.href).href;frame.hidden = false; }, 'sb-glass'));
     }
     world.append(links, frame);
@@ -110,7 +110,7 @@ export function createAccountView({ client, product, guard, notice, logout, prev
   }
   function launchRun(run){
     guard();if(ended||!localConnection||!host||!gameFrame||!data.learning?.enabled)throw new Error('먼저 WORLD 학습 연결을 확인해 주세요.');
-    const paths={'korean-racing':'/korean-racing/','korean-runner':'/korean-runner/','korean-rhythm':'/korean-rhythm/','order-rush':'/order-rush/','entry-check':'/entry-check/','story-classroom':'/story-classroom/','synk-town':'/synk-town/linked.html'};
+    const paths={'korean-racing':'/korean-racing/','korean-runner':'/korean-runner/','korean-rhythm':'/korean-rhythm/','order-rush':'/order-rush/','entry-check':'/entry-check/','story-classroom':'/story-classroom/','blank-slice':'/blank-slice/','synk-town':'/synk-town/linked.html'};
     const url=new URL(run?.href||'',location.href);if(!paths[run?.gameId]||url.origin!==location.origin||url.pathname!==paths[run.gameId]||url.hash)throw new Error('지원하는 WORLD 게임 주소가 아니에요.');
     closeGame();host.beginRun(run);const generation=gameGeneration;
     if(run.gameId==='synk-town'){

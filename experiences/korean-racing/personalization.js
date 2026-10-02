@@ -70,7 +70,7 @@ export function personalizedStage(coach,{audioAvailable=true,modality=null}={}){
   const pool=assignmentCandidates(target);
   const candidates=modality?pool.filter(c=>c.modality===modality):pool;
   const chosen=[],excluded=[];let reason='';
-  for(let i=0;i<(target?candidates.length:5);i++){
+  for(let i=0;i<Math.min(5,candidates.length);i++){
     const recommendation=coach.recommend(candidates,{audioAvailable,excludeIds:excluded});
     if(recommendation.status!=='ready'||!recommendation.selected)break;
     if(!reason)reason=recommendation.reason;

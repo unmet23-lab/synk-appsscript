@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { ITEMS } from './content.mjs';
 import { composeRound } from './core.mjs';
-import { itemMetadata, candidates, rankItems, answerPayload, missedPayload, skillReport } from './learning.mjs';
+import { itemMetadata, candidates, rankItems, answerPayload, missedPayload, skillReport, assignmentItems } from './learning.mjs';
 
 const require = createRequire(import.meta.url);
 const { createGame } = require('../../atlas/game-learning.js');
@@ -16,6 +16,22 @@ function coach(store = new Map()) {
 }
 const byId = (id) => ITEMS.find((x) => x.id === id);
 const play = (g, x, correct) => g.answer(g.present(itemMetadata(x)), correct === null ? missedPayload() : answerPayload(correct));
+
+test('WORLD 목표는 실제 영역·난도·문항 쌍만 출제하고 순서와 원고를 보존한다', () => {
+  const chosen = ITEMS.filter(x => x.skill === 'ko.reading.grammar' && x.difficulty === 2).slice(-3).reverse();
+  const target = { skillId: 'ko.reading.grammar', difficulty: 2, modality: 'reading', responseFormat: 'single-choice', items: chosen.map(itemMetadata) };
+  const before = JSON.stringify(target);
+  assert.deepEqual(assignmentItems(target), chosen);
+  assert.equal(JSON.stringify(target), before);
+  assert.equal(assignmentItems(null), null, '자유 플레이는 원래 구성 함수를 사용한다');
+  const wrong = ['skillId', 'difficulty', 'modality', 'responseFormat', 'itemKey', 'familyKey'];
+  for (const key of wrong) {
+    const changed = structuredClone(target); changed.items[0][key] = key === 'difficulty' ? 1 : 'wrong';
+    assert.deepEqual(assignmentItems(changed), chosen.slice(1), key);
+  }
+  assert.deepEqual(assignmentItems({...target, difficulty:1}), []);
+  assert.deepEqual(assignmentItems({...target, items:[...target.items,...target.items]}), chosen, '같은 문항은 두 번 넣지 않는다');
+});
 
 test('문항 정보: 지도에 있는 읽기 항목·고정 키·한 개 고르기 형식, 엔진 검사 통과', () => {
   const ids = new Set(map.allNodes().map((n) => n.id));

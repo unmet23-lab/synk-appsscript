@@ -5,7 +5,7 @@
 @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic');unicode-range:U+300C-300D}
 :root{--paper:#fff;--ink:#10131a;--text:#000;--muted:#565a61;--faint:#6f747c;--line:#dde0e5;--coral:#df675d;--coral-deep:#ae322a;--coral-wash:#fff3f1;--butter:#ffe07a;--meadow:#226747;--focus:#24448c;--sans:'SYNK Bracket','Inter Tight','SUIT Variable',sans-serif;--mono:'DM Mono','Inter Tight','SUIT Variable',sans-serif;--thread:url('./assets/thread.webp');--felt:url('./assets/felt.webp');color-scheme:light;font-synthesis:none}
 *{box-sizing:border-box}
-html{min-width:320px;background:var(--paper);scroll-behavior:smooth;scroll-padding-block:24px}
+html{background:var(--paper);scroll-behavior:smooth;scroll-padding-block:24px}
 body{margin:0;color:var(--text);font-family:var(--sans);font-weight:500;letter-spacing:-.025em;word-break:keep-all;-webkit-font-smoothing:antialiased;background:var(--paper)}
 button,a{-webkit-tap-highlight-color:transparent}
 button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
@@ -335,3 +335,15 @@ h1,h2,h3,p{margin:0}
 .ending .reading-recap li{padding:14px 16px;border-bottom:1px solid #e0e5e8;font-size:18px;line-height:1.75;letter-spacing:-.025em;color:var(--ink);overflow-wrap:anywhere}
 .ending .reading-recap li:last-child{border-bottom:0}
 @media(max-width:600px){.ending .reading-recap li{padding:14px 8px;font-size:18px;line-height:1.8}}
+/* WORLD's embedded game can be narrower than the phone's outer viewport. */
+@media(max-width:359px){
+  .site-header{height:auto;min-height:75px;flex-wrap:wrap;gap:6px 12px;padding-block:12px}
+  .button-primary,.button-secondary{min-width:min(220px,100%);max-width:100%;overflow-wrap:anywhere}
+  .ending .reading-recap .button-secondary{min-width:min(210px,100%)}
+  .ending-stats>div{min-width:0}
+}
+@media(max-width:299px){
+  .tools-reading{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tools-settings{width:100%}
+  .tool-button{white-space:normal}
+}

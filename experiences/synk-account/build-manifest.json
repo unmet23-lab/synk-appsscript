@@ -3,7 +3,7 @@
   "sdk": "2.117.2",
   "sha256": {
     "src/generated/account-client.cjs": "d6e0474afc0bd0d5a3e32070637ebeecdac7c8ef3970bfef3a0885e9013011f3",
-    "src/generated/world-learning-host.cjs": "66b07a530f48f346d4aa0c2185af9ae246b7cb04c28509baa4c1df6d8ce79665",
+    "src/generated/world-learning-host.cjs": "513f58e4c1ff084e6a2b23a71f401bf53fc6968bea95f9527340672297acf639",
     "assets/SUIT-Variable.woff2": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
     "assets/InterTight-700.woff2": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e",
     "assets/scrapbook.css": "b565d9dfe0b7ad700587ba37031cd797709fca91a606b5e13646e14aed659572",
@@ -24,11 +24,11 @@
     "assets/InterTight-Regular.ttf": "053de5dcb2af4b7bd2fad68249953df7a58bf7b103a38b59d2d8d89a86ca5699",
     "assets/InterTight-Medium.ttf": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1",
     "assets/DMMono-Medium.ttf": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
-    "dist/app.js": "917cee5ce4e3f9e370946e756e1e00d8461c3943f14715b266909ed17b555ba1",
-    "dist/client.js": "7ebb9527d7f196da7528fd23b7f93b11286cf5b92d7a65573be97f00c795464c",
-    "dist/preview.js": "e39bddb2d2f6bfbdabc238e50c77162bfe72666b5e847f66f48a5e774e928037",
+    "dist/app.js": "c4e2c6e4c850fe0be06b73d2977bc6c2f33c9d5d277d6cee24a80ed4e4da40cf",
+    "dist/client.js": "7029d9b1b5efc0b4c30d055854651da8cbae99163090200edfa0b39e26ac5fcd",
+    "dist/preview.js": "83679160d8baf6257458dbe9f2a6aa298d8ef5647585461002864e28b571c7e5",
     "dist/platform.js": "5b0a0370f027d3114b52bc4579c08f0118cd3f16a6b953b2a5f439a2abd9258b",
-    "dist/local-world.js": "b625f3b3c009efa041535f7c10d26c407708a25f3694a8a93167a6725b380ce9",
+    "dist/local-world.js": "e9118f2a65bba8633ed7530b929823f154faa80f583519019e8bbecedbc435aa",
     "preview.html": "b79543db61732b3fdcaa8a4f16835e23c38db34307718886e92aba12e15f5b62"
   }
 }

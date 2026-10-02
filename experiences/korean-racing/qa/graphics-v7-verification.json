@@ -1,0 +1,246 @@
+{
+  "date": "2026-10-03",
+  "scope": "local 5197 and handoff ZIP; no public deployment",
+  "sources": [
+    {
+      "path": "app.js",
+      "bytes": 100026,
+      "sha256": "39a7940d85ccf12b2e3f68ad6ba1c8a2dc6753c643c2419b8d14105db8e347cf"
+    },
+    {
+      "path": "startup.js",
+      "bytes": 1510,
+      "sha256": "894ccf0251c9121d703ff3c873ca3db572df324899a72e71d49bb5c675651f4d"
+    },
+    {
+      "path": "atmosphere.js",
+      "bytes": 8625,
+      "sha256": "301b25988328532c39beb83145c780f4ec8da97554372fec76d28a923560c952"
+    },
+    {
+      "path": "coastal-rocks.js",
+      "bytes": 4880,
+      "sha256": "c0d5acd8ce03fba03f54b70b948e2e5655c02ffb84128965309555299a357f71"
+    },
+    {
+      "path": "build-site.mjs",
+      "bytes": 3292,
+      "sha256": "83dd06e2d5967748b7aeabb4f91e985af99240a51486d6959ddde98025a0d694"
+    },
+    {
+      "path": "tests/startup.test.mjs",
+      "bytes": 3574,
+      "sha256": "fc1cb841c94ba85214e5adab031b6df232f865ed499520eae55db5a40d2d5bde"
+    },
+    {
+      "path": "tests/atmosphere.test.mjs",
+      "bytes": 4522,
+      "sha256": "2b2fc7f952f44a2167ae533a040b580b72400cf4e3c166add45e83921c51af30"
+    },
+    {
+      "path": "tests/coastal-rocks.test.mjs",
+      "bytes": 6312,
+      "sha256": "61f2f7732348d2412b1282bc5667cbc1398e1ef9f35a5bc8d9c433e5e7bc78be"
+    }
+  ],
+  "captures": [
+    {
+      "path": "qa/graphics-v7-final-4k-20261003.jpg",
+      "bytes": 1638832,
+      "sha256": "5f7a609caff0ed85f03796c5c3be059558cfa5c0a75db9b69b3fa5052043c34c",
+      "size": [
+        3840,
+        2160
+      ]
+    },
+    {
+      "path": "qa/graphics-v7-final-ui-20261003.jpg",
+      "bytes": 196178,
+      "sha256": "b5f53a41a0d3ec8921ec1d4d88f13674a46af81d462af1bb1226e5248845ce6f",
+      "size": [
+        1859,
+        1072
+      ]
+    },
+    {
+      "path": "qa/graphics-v7-mobile-390-20261003.jpg",
+      "bytes": 32594,
+      "sha256": "ca1d3b90c183e7064d47c78a7e8dd205cd90b72b2d607684bbbbab9cf59079e3",
+      "size": [
+        375,
+        812
+      ]
+    },
+    {
+      "path": "qa/graphics-v7-mobile-landscape-20261003.jpg",
+      "bytes": 40420,
+      "sha256": "07471b0c0aabffc5fedc91f5589212f9a4986d7e34245335c41fba5abff28c88",
+      "size": [
+        829,
+        383
+      ]
+    },
+    {
+      "path": "qa/graphics-v7-preview-20261003.jpg",
+      "bytes": 32235,
+      "sha256": "fd2fda00dcfb7254b44057a2558696a872d0165b257f3e1e3c52f6c703a39406",
+      "size": [
+        539,
+        686
+      ]
+    },
+    {
+      "path": "qa/graphics-v7-final-4k-20261003.png",
+      "bytes": 10801677,
+      "sha256": "4e8c8971d036d65c95f3e5d88c7a473a23cbf1f8d2844ad7732ba2d32a683348",
+      "size": [
+        3840,
+        2160
+      ]
+    }
+  ],
+  "tests": {
+    "pass": 133,
+    "fail": 0,
+    "skip": 0,
+    "durationMs": 4398.6575
+  },
+  "package": {
+    "verifiedFiles": 2738,
+    "importsChecked": 83,
+    "htmlLinksChecked": 30,
+    "zip": {
+      "path": "SYNK-LAB-PLAY-시안-v7-20261003.zip",
+      "bytes": 58863515,
+      "sha256": "699a23f19a62899fc67d83670ae895dbb47243fbc83869619f1664457bb1c9fb"
+    }
+  },
+  "startupSamples": [
+    {
+      "label": "before startup change",
+      "pageReadyMs": 6182.8,
+      "longTaskMs": [
+        192,
+        1949,
+        308,
+        2062
+      ],
+      "carRequestMs": 3536.3,
+      "rockRequestMs": 3537.1
+    },
+    {
+      "label": "parallel requests and async compile; before world yields",
+      "pageReadyMs": 11753.8,
+      "longTaskMs": [
+        256,
+        3712,
+        989
+      ],
+      "carRequestMs": 4211.1,
+      "rockRequestMs": 4212.8
+    },
+    {
+      "label": "with world yields",
+      "pageReadyMs": 6329.9,
+      "longTaskMs": [
+        216,
+        1520,
+        210,
+        636,
+        821,
+        717
+      ],
+      "carRequestMs": 1367.2,
+      "rockRequestMs": 1367.5,
+      "startup": {
+        "assetsMs": 538,
+        "terrainMs": 2057,
+        "coastCityMs": 2274,
+        "vegetationMs": 2303,
+        "environmentMs": 2940,
+        "worldMs": 3227,
+        "shadersMs": 4242,
+        "firstFrameMs": 4959,
+        "readyMs": 4961
+      }
+    },
+    {
+      "label": "final ordinary reload; warmed browser",
+      "pageReadyMs": 3125.3,
+      "longTaskMs": [
+        112,
+        947,
+        127,
+        265,
+        326,
+        391
+      ],
+      "carRequestMs": 667.4,
+      "rockRequestMs": 667.5,
+      "startup": {
+        "assetsMs": 277,
+        "terrainMs": 1224,
+        "coastCityMs": 1353,
+        "vegetationMs": 1375,
+        "environmentMs": 1640,
+        "worldMs": 1882,
+        "shadersMs": 2040,
+        "firstFrameMs": 2431,
+        "readyMs": 2449
+      }
+    }
+  ],
+  "timingLimitations": "Normal reloads, not cache-cleared; network/GPU cache/host load vary. No public-version speedup or physical-phone performance claim. Startup times are cumulative from init, while pageReadyMs is from navigation.",
+  "desktop4k": {
+    "width": 3840,
+    "height": 2160,
+    "quality": "high",
+    "stage": "challenge-03",
+    "playerS": 351.02267668479806,
+    "question": "c03q2",
+    "auto": true,
+    "muted": true,
+    "syntheticUpscaling": false
+  },
+  "mobileViewportChecks": [
+    {
+      "requested": [
+        390,
+        844
+      ],
+      "clientWidth": 375,
+      "scrollWidth": 375,
+      "scrollY": 0,
+      "quality": "low",
+      "waterDetail": 0,
+      "rockTriangles": 2298
+    },
+    {
+      "requested": [
+        844,
+        390
+      ],
+      "clientWidth": 829,
+      "scrollWidth": 829,
+      "scrollY": 0,
+      "quality": "low",
+      "waterDetail": 0,
+      "visibleBoats": 2,
+      "wakeDrawCalls": 0
+    }
+  ],
+  "restored": {
+    "url": "http://127.0.0.1:5197/",
+    "viewportOverride": false,
+    "qualityControl": "auto",
+    "quality": "high",
+    "ready": true,
+    "running": false,
+    "stage": "challenge-03",
+    "coins": 0,
+    "rounds": 1,
+    "cleared": 1,
+    "consoleErrors": 0,
+    "consoleWarnings": 0
+  }
+}

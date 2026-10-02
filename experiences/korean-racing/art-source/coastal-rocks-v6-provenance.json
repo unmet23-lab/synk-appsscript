@@ -1,0 +1,32 @@
+{
+  "source": "https://polyhaven.com/a/coast_rocks_01",
+  "license": "https://polyhaven.com/license",
+  "authors": [
+    "Rob Tuytel",
+    "Rico Cilliers"
+  ],
+  "licenseId": "CC0-1.0",
+  "sourceTriangles": 679936,
+  "processing": "UV-preserving meshoptimizer simplification; source normal/AO/roughness preserved; 2K color and 1K normal/ORM JPEG encoding; original retained outside runtime.",
+  "lods": [
+    {
+      "name": "near",
+      "triangles": 10491,
+      "vertices": 6482,
+      "relativeError": 0.0016547878040000796
+    },
+    {
+      "name": "far",
+      "triangles": 2298,
+      "vertices": 1743,
+      "relativeError": 0.004118251148611307
+    }
+  ],
+  "bytes": 1939860,
+  "sha256": "2e97b9eec9dfa2cb6f2124866440952f2f21ff5bbfd8aaedbfccddb5cdb7106e",
+  "downloadedOriginal": {
+    "path": "C:\\Users\\q1212\\Downloads\\coast_rocks_01_2k.gltf.zip",
+    "bytes": 28608172,
+    "sha256": "918fe80012bff9fbf51d0c84c2cc87cc6c0c520e5da97a90b162e32e39cc7184"
+  }
+}

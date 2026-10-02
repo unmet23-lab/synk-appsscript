@@ -1,7 +1,7 @@
 import {TRACKS,LEVELS,RoundState} from './core.mjs?v=20261002-flow';
 import {MusicPlayer} from './audio.mjs?v=20261001-listen';
 import {Stage} from './stage.mjs?v=20261001-listen';
-import {rhythmItem,RHYTHM_CANDIDATES,FLOW_RHYTHM,timingObservation,timingSummary} from './personalization.mjs';
+import {rhythmItem,RHYTHM_CANDIDATES,FLOW_RHYTHM,timingObservation,timingSummary,assignmentTracks,assignmentTrack,rhythmTargetLabel} from './personalization.mjs';
 // Atlas moment-level challenge: the timing windows follow this person inside the chosen level.
 const TIMING_KEY='synk.korean-rhythm.timing-mode';let live=null,timingStart=null;
 const timingAuto=()=>{try{return localStorage.getItem(TIMING_KEY)!=='fixed';}catch{return true;}};
@@ -11,11 +11,13 @@ const $=id=>document.getElementById(id);
 let coach=null,learningAvailable=true;
 try{coach=globalThis.SynkLearning?.createGame({gameId:'korean-rhythm',storage:localStorage})||null;}catch{learningAvailable=false;}
 function learn(action,fallback=null){try{return coach?action(coach):fallback;}catch{learningAvailable=false;return fallback;}}
+const assignment=()=>learn(c=>c.assignment?.());
 function renderRecommendation(select=false){
-  const recommendation=learn(c=>c.recommend(RHYTHM_CANDIDATES,{audioAvailable:true}));
-  const candidate=recommendation?.selected;
+  const target=assignment(),candidates=assignmentTracks(target);
+  const recommendation=learn(c=>c.recommend(candidates,{audioAvailable:true}));
+  const candidate=recommendation?.selected||(target?candidates[0]:null);
   $('recommended-track').disabled=!candidate;$('recommended-track').textContent=candidate?`${candidate.label} 선택 →`:'기본 곡에서 선택해 주세요';
-  $('recommendation-reason').textContent=recommendation?.reason||'맞춤 추천을 연결하지 못했어요. 원하는 곡은 계속 플레이할 수 있어요.';
+  $('recommendation-reason').textContent=target?rhythmTargetLabel(target):recommendation?.reason||'맞춤 추천을 연결하지 못했어요. 원하는 곡은 계속 플레이할 수 있어요.';
   const summary=learn(c=>c.summary());
   $('learning-scope').textContent=!coach||!learningAvailable?'맞춤 기록 연결 불가':summary?.storage.available?'이 브라우저의 공통 학습 기록 · 학생 계정 연결 전':'저장이 제한되어 이번 페이지에서만 기록해요.';
   if(candidate&&select)selectTrack(candidate.trackId);
@@ -31,9 +33,9 @@ const lanes=[...$('lane-controls').querySelectorAll('button')];
 
 function renderTracks(){
   $('track-grid').replaceChildren();
-  for(const track of TRACKS){const b=document.createElement('button');b.className='track';b.dataset.track=track.id;b.setAttribute('aria-pressed',String(state.track===track.id));b.setAttribute('aria-label',`${track.title}, ${track.tag}, ${track.bpm.toFixed(1)} BPM`);b.innerHTML=`<img class="track-cover" src="assets/signal-stage.webp" alt=""><span class="track-description"><span class="track-number mono">TRACK 0${track.id+1} · SYNK</span><strong class="track-title">${track.title}</strong><span class="track-info mono">${track.bpm.toFixed(1)} BPM · ${clock(track.duration)} · 2 KEYS</span><span class="track-type">${track.tag}</span></span><span class="track-selected" aria-hidden="true"></span>`;b.addEventListener('click',()=>{state.track=track.id;for(const x of $('track-grid').children)x.setAttribute('aria-pressed',String(Number(x.dataset.track)===state.track));});$('track-grid').append(b);}
+  for(const track of TRACKS){const b=document.createElement('button');b.className='track';b.dataset.track=track.id;b.setAttribute('aria-pressed',String(state.track===track.id));b.setAttribute('aria-label',`${track.title}, ${track.tag}, ${track.bpm.toFixed(1)} BPM`);b.innerHTML=`<img class="track-cover" src="assets/signal-stage.webp" alt=""><span class="track-description"><span class="track-number mono">TRACK 0${track.id+1} · SYNK</span><strong class="track-title">${track.title}</strong><span class="track-info mono">${track.bpm.toFixed(1)} BPM · ${clock(track.duration)} · 2 KEYS</span><span class="track-type">${track.tag}</span></span><span class="track-selected" aria-hidden="true"></span>`;b.disabled=!assignmentTracks(assignment()).some(c=>c.trackId===track.id);b.addEventListener('click',()=>selectTrack(track.id));$('track-grid').append(b);}
 }
-function selectTrack(id){state.track=id;for(const x of $('track-grid').children)x.setAttribute('aria-pressed',String(Number(x.dataset.track)===id));}
+function selectTrack(id){if(!assignmentTracks(assignment()).some(c=>c.trackId===id))return;state.track=id;for(const x of $('track-grid').children)x.setAttribute('aria-pressed',String(Number(x.dataset.track)===id));}
 function screen(name){for(const s of ['lobby','game','results'])$(s).hidden=s!==name;state.screen=name;document.body.classList.toggle('playing',name==='game');if(name!=='game')window.scrollTo({top:0,behavior:'instant'});if(name==='game')stage.resize();}
 function toast(message){clearTimeout(toastTimer);$('toast').textContent=message;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,3600);}
 function syncEffects(){stage.reduced=$('effects-setting').checked;$('reduce-button').setAttribute('aria-pressed',String(stage.reduced));$('reduce-button').textContent=stage.reduced?'효과 줄임':'효과 줄이기';stage.resize();}
@@ -42,7 +44,9 @@ async function start(){
   if(state.loading)return;state.loading=true;const generation=++startGeneration;$('loading').hidden=false;$('start-button').disabled=true;
   try{
     if(!window.AudioContext)throw new Error('이 브라우저는 음악 재생을 지원하지 않아요. 최신 Chrome 또는 Edge에서 열어주세요.');
-    const track=TRACKS[state.track];state.round=new RoundState(track,state.level,crypto.getRandomValues(new Uint32Array(1))[0]);
+    const target=assignment(),track=assignmentTrack(TRACKS[state.track],target);
+    if(!track)throw new Error('지정 문항이 있는 곡을 준비하지 못했어요. WORLD에서 다시 열어 주세요.');
+    state.round=new RoundState(track,state.level,crypto.getRandomValues(new Uint32Array(1))[0]);
     const buffer=await music.prepare(track,state.round.questions);if(generation!==startGeneration)return;
     collectionRoundId=globalThis.SynkPlayCollection?.roundId('rhythm')||null;
     state.pressed.clear();state.paused=false;stage.particles=[];stage.flashes=[0,0];resetQuestion();

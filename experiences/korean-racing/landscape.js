@@ -11,7 +11,9 @@ function noise(x, z) {
 }
 const fbm = (x, z) => noise(x, z) * .55 + noise(x * 2, z * 2) * .28 + noise(x * 4, z * 4) * .12 + noise(x * 8, z * 8) * .05;
 const ridgeNoise = (x, z) => 1 - Math.abs(fbm(x, z) * 2 - 1);
-const cliffOffset = z => clamp(27 + Math.sin(z / 170 + .7) * 4.5 + Math.sin(z / 390 + .4) * 6 + (noise(z * .008, 23.1) - .5) * 5, 20, 42);
+// Keep the full road shoulder, then descend promptly so the chase camera can
+// see the tidal rocks and water instead of a wide grass apron.
+const cliffOffset = z => clamp(19 + Math.sin(z / 170 + .7) * 1.5 + Math.sin(z / 390 + .4) * 1.6 + (noise(z * .008, 23.1) - .5) * 1.5, 17.5, 22);
 
 export function createLandscapeHeight(pathX, pathY) {
   if (typeof pathX !== 'function' || typeof pathY !== 'function') throw new TypeError('Landscape needs the current road height and horizontal path.');
@@ -72,39 +74,33 @@ export function buildDistantCoast(THREE, {material, roadPoint, pathX, groundHeig
   const rng = typeof random === 'function' ? random : seeded(89217);
   const rand = () => {const n = rng(); return Number.isFinite(n) ? clamp(n, 0, .999999) : .5;};
   const positions = [], colors = [], uv = [], surfaces = [], indices = [];
-  const features = [], islandFields = [], colour = new THREE.Color();
+  const features = [], islandFields = [], islandShorelines = [], colour = new THREE.Color();
   const append = (x, y, z, surface, shade, tint = 0xffffff) => {
     positions.push(x, y, z); uv.push(x / 18, z / 18); surfaces.push(surface);
     colour.set(tint).multiplyScalar(shade); colors.push(colour.r, colour.g, colour.b);
   };
-  function island({s, offset, rx, rz, h, yaw, phase}, id) {
-    // The closest islands keep the detailed grid. Remote silhouettes need
-    // fewer vertices; their shape comes from separate ridges and cut coves.
-    const grids = [[48, 38], [44, 34], [40, 32], [44, 34], [36, 30], [32, 26], [32, 26]];
+  function island({s, offset, rx, rz, h, yaw, phase, distant = false}, id) {
+    // Low, long headlands leave open water between landmarks. Their broad
+    // wooded backs break into asymmetric coves rather than repeated peaks.
+    const grids = [[40, 38], [36, 34], [34, 34], [30, 30], [20, 24]];
     const [nx, nz] = grids[id], center = roadPoint(s, offset), c = Math.cos(yaw), sn = Math.sin(yaw), start = positions.length / 3;
-    const width = .205 + (id % 4) * .018;
-    const peaks = [
-      {v: -.56 + Math.sin(phase * 1.7) * .07, width: .20 + (id % 3) * .035, height: .60 + Math.cos(phase) * .10},
-      {v: -.035 + Math.cos(phase * .8) * .13, width: .25 + ((id + 1) % 3) * .028, height: .98 - (id % 3) * .045},
-      {v: .59 + Math.sin(phase * .7) * .11, width: .19 + ((id + 2) % 3) * .03, height: .61 + Math.sin(phase * 1.3) * .13},
-    ];
     function sample(u, v) {
       const theta = Math.atan2(v, u), radial = Math.hypot(u, v);
-      const rim = clamp(1 + Math.sin(theta * 3 + phase) * .13 + Math.cos(theta * 5 - phase) * .075 + Math.sin(theta * 7 + phase * 2) * .037, .81, 1.12);
-      const inlet = Math.exp(-Math.pow((u + .48 + Math.sin(phase) * .09) / .23, 2) - Math.pow((v + .56 - Math.cos(phase) * .13) / .31, 2)) * .36;
+      const rim = clamp(1 + Math.sin(theta * 3 + phase) * .105 + Math.cos(theta * 5 - phase) * .045, .85, 1.12);
+      const inlet = Math.exp(-Math.pow((u + .48 + Math.sin(phase) * .09) / .25, 2) - Math.pow((v + .41 - Math.cos(phase) * .13) / .34, 2)) * .34;
       const r = radial / rim + inlet, x = center.x + c * u * rx + sn * v * rz, z = center.z - sn * u * rx + c * v * rz;
-      // Broken spines fork into a lower shoulder, unlike repeated smooth
-      // cones. The sheltered side has a wooded ledge above a short sea cliff.
-      const bend = Math.sin(v * (3.8 + id * .18) + phase) * .12 + Math.cos(v * 7 + phase) * .052;
-      const alongRidge = Math.exp(-Math.pow(Math.abs((u - bend) / width), 1.55 + (id % 3) * .12));
-      const peakProfile = peaks.reduce((sum, peak) => sum + Math.exp(-Math.pow(Math.abs((v - peak.v) / peak.width), 1.50)) * peak.height, 0);
-      const rockFold = ridgeNoise(x * .040, z * .029), ridge = peakProfile * alongRidge * (.74 + rockFold * .26);
-      const branch = Math.exp(-Math.pow(Math.abs((u + .31 + v * (.24 + id % 2 * .18) - bend * .35) / .16), 1.6)) * Math.exp(-Math.pow((v - .19) / .52, 2)) * .20;
-      const shoulder = Math.exp(-Math.pow((u - bend + .39) / .37, 4)) * (.105 + noise(z * .014, phase * 5) * .025);
-      const ledge = .097 + fbm(x * .017, z * .012) * .052;
-      const crown = ledge + ridge * .69 + shoulder + branch;
-      const fracture = (ridgeNoise(x * .085 + 15, z * .063) - .71) * h * .12 * smooth(.19, .65, ridge);
-      const y = mix(h * crown + fracture + Math.sin(z * .037 + phase) * .85, -6.5, smooth(.86, 1.01, r));
+      const bend = Math.sin(v * 3.1 + phase) * .13 + Math.cos(v * 5.4 + phase) * .04;
+      const crossRidge = Math.exp(-Math.pow(Math.abs((u - bend) / (.47 + id % 2 * .07)), 3.4));
+      const endTaper = 1 - smooth(.27, .94, Math.abs(v + Math.sin(phase) * .13));
+      const rockFold = ridgeNoise(x * .036, z * .022);
+      const ridge = crossRidge * endTaper * (.63 + noise(v * 2.1 + phase, id + 3) * .19);
+      const shoulder = (1 - smooth(.43, .86, r)) * (.16 + fbm(x * .012, z * .009) * .07);
+      // The entire underwater skirt lies below the -2.2m water plane. A wide
+      // sloping intertidal shelf avoids a vertical cut around the island base.
+      const shelf = mix(-6.4, .8, 1 - smooth(.75, 1.08, r));
+      const crown = (shoulder + ridge * .74) * (1 - smooth(.61, .91, r));
+      const fracture = (rockFold - .75) * h * .042 * smooth(.25, .68, ridge);
+      const y = shelf + h * crown + fracture;
       return {x, y, z, r, ridge, rockFold, shoulder};
     }
     const classify = (u, v) => {
@@ -112,8 +108,8 @@ export function buildDistantCoast(THREE, {material, roadPoint, pathX, groundHeig
       const slopeU = (sample(u + .008, v).y - sample(u - .008, v).y) / (.016 * rx);
       const slopeV = (sample(u, v + .008).y - sample(u, v - .008).y) / (.016 * rz);
       const slope = Math.hypot(slopeU, slopeV);
-      const exposed = Math.max(smooth(.84, .94, point.r), smooth(.38, .68, slope), smooth(.76, 1.06, point.ridge) * .69, smooth(.93, .99, point.rockFold) * .36);
-      return {...point, slope, surface: point.y < -1 ? 1.7 : exposed};
+      const exposed = Math.max(smooth(.68, .88, point.r), smooth(.34, .61, slope), smooth(.92, .99, point.rockFold) * .32);
+      return {...point, slope, surface: point.y < -1.45 ? 1.35 : exposed};
     };
     const candidates = [];
     let crest = -Infinity, minimum = Infinity;
@@ -129,7 +125,7 @@ export function buildDistantCoast(THREE, {material, roadPoint, pathX, groundHeig
       const a = start + j * (nx + 1) + i, b = a + nx + 1;
       indices.push(a, b, a + 1, a + 1, b, b + 1);
     }
-    features.push({type: 'ridge-island', id, s, offset, rx, rz, height: crest, minimumClearance: minimum, vertexStart: start, vertexCount: (nx + 1) * (nz + 1), grid: [nx, nz]});
+    features.push({type: 'ridge-island', id, s, offset, rx, rz, yaw, distant, height: crest, minimumClearance: minimum, vertexStart: start, vertexCount: (nx + 1) * (nz + 1), grid: [nx, nz]});
     const terrainAt = (u, v) => {
       const gx = clamp((u + 1.18) / 2.36 * nx, 0, nx - .00001), gz = clamp((v + 1.18) / 2.36 * nz, 0, nz - .00001);
       const i = Math.floor(gx), j = Math.floor(gz), a = gx - i, b = gz - j;
@@ -140,17 +136,28 @@ export function buildDistantCoast(THREE, {material, roadPoint, pathX, groundHeig
       corners.forEach((corner, k) => {result.height += corner.height * weights[k]; result.surface += corner.surface * weights[k];});
       return result;
     };
-    islandFields.push({id, rx, rz, sample, classify, candidates, terrainAt});
+    const shoreline = [];
+    for (let i = 0; i < 24; i++) {
+      const theta = i / 24 * TAU;
+      let low = 0, high = 1.18;
+      for (let step = 0; step < 22; step++) {
+        const radius = (low + high) / 2;
+        if (terrainAt(Math.cos(theta) * radius, Math.sin(theta) * radius).height > -2.2) low = radius;
+        else high = radius;
+      }
+      const radius = (low + high) / 2, point = sample(Math.cos(theta) * radius, Math.sin(theta) * radius);
+      shoreline.push({x: point.x, y: -2.2, z: point.z});
+    }
+    islandShorelines.push({id, center: {x: center.x, z: center.z}, distant, points: shoreline});
+    islandFields.push({id, rx, rz, distant, sample, classify, candidates, terrainAt});
   }
   const scale = ROAD_END / 2250;
   const islands = [
-    {s: 440 * scale, offset: 191, rx: 64, rz: 108, h: 54.4, yaw: -.23},
-    {s: 860 * scale, offset: 360, rx: 127, rz: 189, h: 116, yaw: .31},
-    {s: 1230 * scale, offset: 656, rx: 193, rz: 283, h: 148, yaw: -.16},
-    {s: 1660 * scale, offset: 257, rx: 99, rz: 173, h: 92, yaw: .34},
-    {s: 2250 * scale, offset: 560, rx: 217, rz: 297, h: 163, yaw: -.41},
-    {s: 2860 * scale, offset: 1010, rx: 293, rz: 358, h: 177, yaw: .27},
-    {s: 3550 * scale, offset: 540, rx: 270, rz: 465, h: 215, yaw: -.31},
+    {s: 690 * scale, offset: 330, rx: 76, rz: 172, h: 27, yaw: -.31},
+    {s: 1540 * scale, offset: 770, rx: 118, rz: 278, h: 39, yaw: .28},
+    {s: 2400 * scale, offset: 490, rx: 92, rz: 236, h: 32, yaw: -.18},
+    {s: 3470 * scale, offset: 1090, rx: 178, rz: 386, h: 47, yaw: .24},
+    {s: 4780 * scale, offset: 1530, rx: 292, rz: 684, h: 58, yaw: -.26, distant: true},
   ];
   islands.forEach((spec, id) => island({...spec, phase: id * 1.63 + .4}, id));
 
@@ -173,16 +180,16 @@ export function buildDistantCoast(THREE, {material, roadPoint, pathX, groundHeig
     geometry.dispose();
     features.push({type, id, s, offset, height: sy, minimumClearance: minimum});
   }
-  // Small connected rock shelves break the uniform waterline. A few eroded
-  // stacks occur in clusters, rather than a repeating row of identical pillars.
-  for (let i = 0; i < 36; i++) {
-    const s = 40 + (i + rand() * .8) / 36 * (ROAD_END - 80), coast = groundHeight.shoreOffset?.(s) ?? cliffOffset(s);
-    rock(s, coast + 7 + rand() * 7, 3.5 + rand() * 6.5, 4.5 + rand() * 6, 6 + rand() * 8, rand() * TAU, i, 'cliff-toe');
+  // Sparse low shelves connect the road coast to the water. Close scanned
+  // rocks are supplied separately, so these must not crowd their silhouettes.
+  for (let i = 0; i < 14; i++) {
+    const s = 40 + (i + rand() * .8) / 14 * (ROAD_END - 80), coast = groundHeight.shoreOffset?.(s) ?? cliffOffset(s);
+    rock(s, coast + 7 + rand() * 7, 3.5 + rand() * 4.5, 3.5 + rand() * 2.5, 7 + rand() * 8, rand() * TAU, i, 'cliff-toe');
   }
-  for (let i = 0; i < 10; i++) {
-    const bay = [410, 1020, 1730][i % 3] * scale, s = bay + (rand() - .5) * 93;
+  for (let i = 0; i < 4; i++) {
+    const bay = [920, 1810][i % 2] * scale, s = bay + (rand() - .5) * 78;
     const coast = groundHeight.shoreOffset?.(s) ?? cliffOffset(s);
-    rock(s, coast + 20 + rand() * 18, 2.5 + rand() * 3.5, 8 + rand() * 12, 3 + rand() * 5, rand() * TAU, 36 + i, 'sea-stack');
+    rock(s, coast + 20 + rand() * 18, 4.5 + rand() * 3.5, 5.5 + rand() * 2.5, 6 + rand() * 5, rand() * TAU, 14 + i, 'sea-stack');
   }
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
@@ -197,7 +204,7 @@ export function buildDistantCoast(THREE, {material, roadPoint, pathX, groundHeig
     if (!field.candidates.length) continue;
     const centers = [0, 1, 2].map(() => field.candidates[Math.floor(rand() * field.candidates.length)]);
     const ownTrees = [];
-    for (let attempts = 0; attempts < 1600 && ownTrees.length < 40; attempts++) {
+    for (let attempts = 0; attempts < 1600 && ownTrees.length < (field.distant ? 12 : 30); attempts++) {
       const grove = centers[ownTrees.length % centers.length];
       const u = grove.u + (rand() - .5) * .36, v = grove.v + (rand() - .5) * .44;
       const point = field.classify(u, v), size = 1.32 + rand() * .83;
@@ -213,10 +220,44 @@ export function buildDistantCoast(THREE, {material, roadPoint, pathX, groundHeig
     }
   }
   const treeBudget = buildIslandForest(THREE, group, trees, textures.pineCanopy);
+  const tidalBudget = buildIslandTidalLight(THREE, group, islandShorelines);
   group.userData.features = features;
   group.userData.islandTrees = trees;
-  group.userData.stats = {triangles: indices.length / 3 + treeBudget.triangles, drawCalls: 1 + treeBudget.drawCalls, islands: islands.length, rocks: 46, trees: trees.length};
+  group.userData.islandShorelines = islandShorelines;
+  group.userData.stats = {triangles: indices.length / 3 + treeBudget.triangles + tidalBudget.triangles, drawCalls: 1 + treeBudget.drawCalls + tidalBudget.drawCalls, islands: islands.length, rocks: 18, trees: trees.length, tidalTriangles: tidalBudget.triangles};
   return group;
+}
+
+function buildIslandTidalLight(THREE, group, shores) {
+  const positions = [], colors = [], indices = [], tint = new THREE.Color(0xd5e3d7);
+  for (const shore of shores) {
+    if (shore.distant) continue;
+    const start = positions.length / 3, count = shore.points.length;
+    shore.points.forEach((point, i) => {
+      const dx = point.x - shore.center.x, dz = point.z - shore.center.z, length = Math.hypot(dx, dz);
+      const patch = smooth(.18, .78, noise(i * .49, shore.id * 3.7));
+      const width = 1.7 + noise(i * .73 + 12, shore.id + 2) * 3.5;
+      // A faint broken wash follows the actual -2.2m intersection. The three
+      // rows fade to zero on both sides; no hard white ring or water texture.
+      for (let row = 0; row < 3; row++) {
+        const out = [-.35, width * .32, width][row];
+        positions.push(point.x + dx / length * out, -2.17, point.z + dz / length * out);
+        colors.push(tint.r, tint.g, tint.b, row === 1 ? .095 * patch : 0);
+      }
+    });
+    for (let i = 0; i < count; i++) for (let row = 0; row < 2; row++) {
+      const a = start + i * 3 + row, b = start + (i + 1) % count * 3 + row;
+      indices.push(a, b, a + 1, a + 1, b, b + 1);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 4));
+  geometry.setIndex(indices); geometry.computeVertexNormals(); geometry.computeBoundingSphere();
+  const material = new THREE.MeshStandardMaterial({vertexColors: true, transparent: true, depthWrite: false, roughness: .95, metalness: 0, envMapIntensity: .12});
+  const mesh = new THREE.Mesh(geometry, material); mesh.name = 'coastal-island-tidal-light';
+  mesh.renderOrder = 2; group.add(mesh);
+  return {triangles: indices.length / 3, drawCalls: 1};
 }
 
 function seeded(initial) {

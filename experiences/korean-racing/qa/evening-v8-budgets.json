@@ -1,0 +1,130 @@
+{
+  "version": 8,
+  "method": "No camera/frustum: player s0..2250 by5m, boat simulation t0..600s by60s. Each time sample advances through dt0.1s. Component maxima can occur at different positions. Only city and boats; not total game render cost.",
+  "sourceHashes": {
+    "cityscape.js": "55c95b86e0bf395c97c9204c0c9c3720c32ca4d91cf335e0e8bf39cd3318a8fd",
+    "city-materials.js": "e44ec06b5b57490551f817159142b58471adc199639d9f708e03c9758b479bf5",
+    "seascape-boats.js": "dc864f1fb6f12f125fc0b54a31202450bc25e7f7f8b0e6622d9f1b02f869d34b",
+    "landscape.js": "fb9421c70d1af6c91889c91af9ffbd00bfd1b409054dd3f3b24745db185fb768"
+  },
+  "storedTriangles": {
+    "city": 30780,
+    "boats": 6642
+  },
+  "peaks": {
+    "high": {
+      "city": {
+        "triangles": 21636,
+        "calls": 61,
+        "trianglesAt": {
+          "s": 475,
+          "t": 0
+        },
+        "callsAt": {
+          "s": 475,
+          "t": 0
+        }
+      },
+      "boats": {
+        "triangles": 5122,
+        "calls": 13,
+        "trianglesAt": {
+          "s": 295,
+          "t": 0
+        },
+        "callsAt": {
+          "s": 295,
+          "t": 0
+        }
+      },
+      "combined": {
+        "triangles": 26758,
+        "calls": 74,
+        "trianglesAt": {
+          "s": 475,
+          "t": 0
+        },
+        "callsAt": {
+          "s": 475,
+          "t": 0
+        }
+      }
+    },
+    "balanced": {
+      "city": {
+        "triangles": 15610,
+        "calls": 44,
+        "trianglesAt": {
+          "s": 645,
+          "t": 0
+        },
+        "callsAt": {
+          "s": 365,
+          "t": 0
+        }
+      },
+      "boats": {
+        "triangles": 5122,
+        "calls": 13,
+        "trianglesAt": {
+          "s": 495,
+          "t": 0
+        },
+        "callsAt": {
+          "s": 495,
+          "t": 0
+        }
+      },
+      "combined": {
+        "triangles": 20732,
+        "calls": 57,
+        "trianglesAt": {
+          "s": 645,
+          "t": 0
+        },
+        "callsAt": {
+          "s": 495,
+          "t": 0
+        }
+      }
+    },
+    "low": {
+      "city": {
+        "triangles": 10356,
+        "calls": 33,
+        "trianglesAt": {
+          "s": 485,
+          "t": 0
+        },
+        "callsAt": {
+          "s": 485,
+          "t": 0
+        }
+      },
+      "boats": {
+        "triangles": 5116,
+        "calls": 12,
+        "trianglesAt": {
+          "s": 665,
+          "t": 0
+        },
+        "callsAt": {
+          "s": 665,
+          "t": 0
+        }
+      },
+      "combined": {
+        "triangles": 13676,
+        "calls": 41,
+        "trianglesAt": {
+          "s": 485,
+          "t": 0
+        },
+        "callsAt": {
+          "s": 485,
+          "t": 0
+        }
+      }
+    }
+  }
+}

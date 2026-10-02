@@ -1,12 +1,13 @@
 import {CafeSession,ORDERS,REVIEW,makeCup,editCup,describeCup,judgeOrder} from './core.mjs';
 import {CafeStage,FlatStage} from './stage.mjs';
 import {CafeAudio} from './audio.mjs';
-import {orderMetadata,chooseOrder,orderAnswer,FLOW_RUSH,FLOW_PRACTICE,FLOW_SKILLS,FLOW_WORDS,tuningFrom,chooseOrderLive,pressureOf,describeChanges,easierSuggestion,closingObservation} from './learning.mjs';
+import {orderMetadata,chooseOrder,orderAnswer,FLOW_RUSH,FLOW_PRACTICE,FLOW_SKILLS,FLOW_WORDS,tuningFrom,chooseOrderLive,pressureOf,describeChanges,easierSuggestion,closingObservation,assignmentOrders,orderTargetLabel} from './learning.mjs';
 
 const $=id=>document.getElementById(id);
 let coach=null,learningFailed=false,nextPlan=null,audioTicket=null;
 try{coach=globalThis.SynkLearning?.createGame({gameId:'order-rush',storage:localStorage})||null;}catch{learningFailed=true;}
 function learn(method,...args){try{return coach?.[method](...args);}catch{learningFailed=true;return null;}}
+const assignment=()=>{try{return coach?.assignment?.()||null;}catch{return null;}};
 // Atlas moment-level challenge: the rush follows this person; the lobby can switch it off.
 const FLOW_KEY='synk.order-rush.flow-mode';let live=null,flowStart=null,flowSpec=null;
 function flowMode(){try{return localStorage.getItem(FLOW_KEY)==='fixed'?'fixed':'auto';}catch{return 'auto';}}
@@ -17,7 +18,7 @@ function startLive(isReview){live=null;flowStart=null;flowSpec=null;if(!coach||l
 function applyFlow(out){if(!out)return;if(out.settings&&state.session)state.session.tune(tuningFrom(out.settings.values));if(out.line)flowLine(out.line);}
 function presentOrder(order){if(live){try{return live.present(orderMetadata(order));}catch{live=null;}}return learn('present',orderMetadata(order));}
 function answerWithFlow(t,result,flow={}){if(live){try{const out=live.answer(t.presentationId,result,flow);applyFlow(out);return out.recorded;}catch{live=null;}}return learn('answer',t.presentationId,result);}
-function learningCopy(){const s=learn('summary');return !coach||learningFailed||s?.storage?.available===false?'학습 기록을 저장할 수 없어 이번에는 기본 주문으로 연습해요.':`${nextPlan?.reason||'아직 확인하지 않은 주문 표현부터 만나 봐요.'} 이 브라우저의 연습 기록을 사용해요.`;}
+function learningCopy(){const target=assignment();if(target)return orderTargetLabel(target);const s=learn('summary');return !coach||learningFailed||s?.storage?.available===false?'학습 기록을 저장할 수 없어 이번에는 기본 주문으로 연습해요.':`${nextPlan?.reason||'아직 확인하지 않은 주문 표현부터 만나 봐요.'} 이 브라우저의 연습 기록을 사용해요.`;}
 function updateLearning(){for(const id of ['learning-reason','game-learning','result-learning'])if($(id))$(id).textContent=learningCopy();}
 function selectOrder(orders){if(!coach||learningFailed)return orders[0];try{const plan=live?chooseOrderLive(live,orders):chooseOrder(coach,orders);if(plan?.selected){nextPlan=plan;updateLearning();return plan.selected;}}catch{learningFailed=true;}return orders[0];}
 function refreshRecommendation(){if(coach)selectOrder(ORDERS);updateLearning();}
@@ -39,11 +40,14 @@ function ticket(){return state.session?.queue.find(t=>t.uid===state.ticket);}
 function setFeedback(text,kind=''){$('feedback').textContent=text;$('feedback').className=`feedback ${kind}`;}
 function initStage(){if(stage)return;try{stage=new CafeStage($('stage'),selectCup);}catch(error){console.warn('3D renderer unavailable; using accessible flat counter.',error.message);const old=$('stage'),canvas=document.createElement('canvas');canvas.id='stage';canvas.setAttribute('aria-label','음료 제작 작업대');old.replaceWith(canvas);stage=new FlatStage(canvas);}}
 function start(isReview=false){
+ const target=assignment(),targetDeck=target?assignmentOrders([...ORDERS,...REVIEW],target):null;
+ if(target&&!targetDeck.length){$('learning-reason').textContent='지정 주문을 준비하지 못했어요. WORLD에서 다시 열어 주세요.';return;}
+ if(target){state.mode='practice';isReview=false;}
  audio.stop();clearTimeout(celebrationTimer);state.celebrating=false;state.pendingServe=false;$('celebration').hidden=true;state.review=isReview;state.paused=false;state.ticket=null;
  audioTicket=null;startLive(isReview);
- state.session=new CafeSession(isReview?'practice':state.mode,Date.now()>>>0,{deck:isReview?REVIEW:ORDERS,selectOrder:coach?selectOrder:null,orderLimit:isReview?REVIEW.length:8,tuning:live?tuningFrom(live.settings().values):null});
+ state.session=new CafeSession(isReview?'practice':state.mode,Date.now()>>>0,{deck:targetDeck||(isReview?REVIEW:ORDERS),selectOrder:coach?selectOrder:null,orderLimit:targetDeck?.length||(isReview?REVIEW.length:8),tuning:live?tuningFrom(live.settings().values):null});
  flowLine(live?.intro().line||null);
- $('shift-name').textContent=isReview?'새 주문 연습':state.mode==='rush'?'점심 러시':'한가한 오픈';$('time-label').textContent=!isReview&&state.mode==='rush'?'TIME LEFT':'ORDER';
+ $('shift-name').textContent=target?'나의 목표 주문':isReview?'새 주문 연습':state.mode==='rush'?'점심 러시':'한가한 오픈';$('time-label').textContent=!isReview&&state.mode==='rush'?'TIME LEFT':'ORDER';
  audio.unlock();switchScreen('game');initStage();updateQueue(true);metrics();state.last=performance.now();cancelAnimationFrame(state.frame);state.frame=requestAnimationFrame(tick);
 }
 function updateQueue(selectFirst=false){
@@ -99,7 +103,7 @@ function finish(){
  $('round-records').replaceChildren(...s.records.map(r=>{const details=document.createElement('details'),summary=document.createElement('summary'),status=document.createElement('span'),p=document.createElement('p');status.className='status';status.textContent=r.first===null?'미응답':`${r.first?'첫 제출 정답':'조건을 다시 확인'}${r.help?' · 글로 확인':''}${r.outcome==='served'?' · 서빙 완료':' · 서빙 미완료'}`;summary.append(status,document.createTextNode(r.order.text));p.textContent=`연습한 표현: ${r.order.skill}. 주문: ${r.order.cups.map(c=>describeCup({...makeCup(),...c})).join(' / ')}${r.order.cups.some(c=>!('sugar'in c)||!('ice'in c))?' (말하지 않은 재료 조건은 채점에서 제외했어요.)':''}`;details.addEventListener('toggle',()=>{if(details.open&&!r.answerRevealed){if(r.presentationId)learn('help',r.presentationId,'answer');r.answerRevealed=true;}});details.append(summary,p);return details;}));
  if(!s.records.length)$('round-records').textContent='이번 영업에는 제출한 주문이 없어요.';
 }
-document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{state.mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}));
+document.querySelectorAll('[data-mode]').forEach(b=>{if(assignment()&&b.dataset.mode!=='practice')b.disabled=true;b.addEventListener('click',()=>{if(assignment()&&b.dataset.mode!=='practice')return;state.mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});});
 document.querySelectorAll('[data-flow]').forEach(b=>b.addEventListener('click',()=>setFlowMode(b.dataset.flow)));renderFlowChoice();
 $('start').addEventListener('click',()=>start());$('replay').addEventListener('click',()=>start());$('review-start').addEventListener('click',()=>start(true));$('home').addEventListener('click',()=>{audio.stop();switchScreen('lobby');refreshRecommendation();});
 document.querySelectorAll('[data-ingredient]').forEach(b=>b.addEventListener('click',()=>ingredient(b.dataset.ingredient)));

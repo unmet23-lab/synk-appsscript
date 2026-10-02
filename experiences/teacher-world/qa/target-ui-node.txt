@@ -1,0 +1,44 @@
+✔ restored connection survives temporary account failure and explicit retry reuses the same token (6.8211ms)
+✔ successful one-time join retains token when the later classroom request fails (1.6756ms)
+✔ confirmed unauthorized clears connection and does not offer retry with a revoked token (1.4716ms)
+✔ workspace validation rejects another learner and submissions contain exactly server-owned assignment identifiers (3.2185ms)
+✔ an uncertain submission freezes its first answers and retries the identical key and payload (70.9028ms)
+✔ free reading practice sends current sharing revision and displays server-scored answers (0.7426ms)
+✔ mixed catalog reading metadata is hydrated from the public question endpoint before opening (0.6354ms)
+✔ read failures remove stale assignment details and a later response after stop cannot restore them (0.4773ms)
+✔ a new sharing revision clears the old draft and incomplete request (0.837ms)
+✔ a changed assignment revision invalidates an uncertain old submission and requires new answers (1.0565ms)
+✔ revision invalidation also clears a pending task while its list is shown or a read failure hides the workspace (1.0617ms)
+✔ hidden pages do not poll and stopping the classroom cancels scheduled refresh (77.2478ms)
+✔ server reading recommendations reorder actual activities and explain selection without inventing weakness (1.149ms)
+✔ mixed catalog and coaching open actual game assignments, preserve a lost start key, and display server progress (1.6799ms)
+✔ assignment changes and consent changes close the iframe and cannot launch a late start response (1.9866ms)
+✔ free game launch uses catalog content and sharing revision, and a failed old stop blocks the next game (0.6237ms)
+✔ a confirmed ended run clears the old retry key while an uncertain start keeps it (1.2153ms)
+✔ a completed free run is refreshed by id and cannot complete a separate assignment using the same game (0.4752ms)
+✔ starts empty and connects WORLD practice, teacher assignment and server-scored result with one identity (286.815ms)
+✔ student token cannot access teacher data, issue links or submit for another student (161.4515ms)
+✔ owner key required and pairing codes expire, require consent and can be used only once (97.9687ms)
+✔ bad origin, source/state files and wrong roles fail closed (80.3132ms)
+✔ game events cross the shared server with provenance, deduplicate and reject conflicting bodies (66.9325ms)
+✔ hinted, failed audio and motor-confounded play never become independent language mastery (183.4997ms)
+✔ foreign event scope and pre-consent events cannot be adopted as this learner history (36.4621ms)
+✔ sharing withdrawal clears derived teacher evidence, blocks stale uploads and does not revive old tasks on consent (152.7111ms)
+✔ changed or cancelled assignments reject stale submissions and preserve server state (62.9486ms)
+✔ lost response retries and concurrent submissions create exactly one score and evidence set (36.4823ms)
+✔ link revocation and logout invalidate server sessions (45.9123ms)
+✔ session expiration never returns cached student or teacher data (50.4167ms)
+✔ restart retains identity, assignments and results in separate linked storage (114.5606ms)
+✔ failed persistence is atomic and never acknowledges or exposes unsaved data (96.5957ms)
+✔ demo state can never be used as linked student history (0.6392ms)
+✔ reading mistakes recommend available reading practice and a new passage updates the same skill (77.1342ms)
+✔ a delayed observation retry cannot resurrect an earlier consent epoch (95.9105ms)
+✔ an assignment keeps its authored question snapshot without exposing its answer key (67.1025ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1935.2736

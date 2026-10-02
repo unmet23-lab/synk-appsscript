@@ -11,6 +11,9 @@ async function wait(target, source) { for (let i = 0; i < 240; i++) { if (await 
 function windowFor(role) { const win = new BrowserWindow({ show: false, width: 1280, height: 1000, webPreferences: { partition: `qa-town-${role}-${Date.now()}`, contextIsolation: true, sandbox: true, backgroundThrottling: false } }); windows.push(win); return win; }
 app.whenReady().then(async () => { try {
   const { createLinkedServer } = await import(pathToFileURL(path.join(__dirname, '../teacher-world/linked-server.mjs')).href);
+  const {READING_CHECKS}=await import(pathToFileURL(path.join(__dirname,'understanding.mjs')).href);
+  const {LISTENING_CHECKS}=await import(pathToFileURL(path.join(__dirname,'../korean-runner/listening-check.mjs')).href);
+  async function answerShown(frame,townMode){const id=await js(frame,`document.getElementById('${townMode?'reading-dialog':'listening-check-dialog'}').dataset.item`),item=(townMode?READING_CHECKS:LISTENING_CHECKS).find(row=>row.id===id);if(!item)throw Error('Unknown displayed item');await js(frame,`document.querySelectorAll('${townMode?'#reading-choices':'#check-choices'} button')[${item.correct}].click()`);}
   server = await createLinkedServer(); await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const origin = `http://127.0.0.1:${server.address().port}`;
   async function post(route, payload, token) { const response = await fetch(origin + route, { method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify(payload) }); const value = await response.json(); if (!response.ok) throw Error(value.error || route); return value; }
@@ -36,10 +39,10 @@ app.whenReady().then(async () => { try {
   await wait(town, `!document.getElementById('reading-open').disabled`); await delay(350);
   check('FT51-life-remains-outside-language-score', !!server.snapshot().learners[0].town.state.sign.placedId && server.snapshot().learners[0].evidence.length === 0);
   await js(town, `document.getElementById('reading-open').click()`); await wait(town, `document.getElementById('reading-dialog').open`);
-  await js(town, `document.getElementById('reading-hint').click();document.querySelector('[data-answer="1"]').click()`);
+  await js(town, `document.getElementById('reading-hint').click()`); await answerShown(town,true);
   await wait(town, `!document.getElementById('reading-next').hidden`);
   check('Town-reading-hint-is-not-independent', await js(town, `document.getElementById('reading-feedback').textContent.includes('도움')`));
-  for (const answer of [2, 0]) { await js(town, `document.getElementById('reading-next').click();document.querySelector('[data-answer="${answer}"]').click()`); await wait(town, `!document.getElementById('reading-next').hidden`); }
+  for (let next=0;next<2;next++) { await js(town, `document.getElementById('reading-next').click()`); await answerShown(town,true); await wait(town, `!document.getElementById('reading-next').hidden`); }
   await delay(1200); check('three-reading-answers-reach-teacher-state', server.snapshot().learners[0].evidence.filter(e => e.skillId.startsWith('ko.reading.')).length === 3);
   world.setSize(390, 900); await delay(350);
   await js(world, `document.querySelector('#world-games iframe').scrollIntoView({behavior:'instant',block:'start'})`);
@@ -54,9 +57,8 @@ app.whenReady().then(async () => { try {
   check('runner-before-answer-does-not-show-spoken-transcript', await js(runner, `document.getElementById('check-feedback').textContent===''&&!document.getElementById('listening-check-dialog').textContent.includes('오른쪽 길로 가세요.')`));
   await js(runner, `document.getElementById('check-replay').click()`); check('runner-replay-locks-answers-again', await js(runner, `[...document.querySelectorAll('#check-choices button')].every(b=>b.disabled)`));
   await wait(runner, `!!document.querySelector('#check-choices button:not(:disabled)')`);
-  const choose = `[...document.querySelectorAll('#check-choices button')].find(b=>['오른쪽 길로 가기','뛰지 않고 그대로 달리기','뛰어넘은 뒤 오른쪽으로 가기'].includes(b.textContent)).click()`;
-  await js(runner, choose); check('runner-replay-feedback-is-assisted', await js(runner, `document.getElementById('check-feedback').textContent.includes('도움')`));
-  for (let i = 0; i < 2; i++) { await js(runner, `document.getElementById('check-next').click()`); await wait(runner, `!!document.querySelector('#check-choices button:not(:disabled)')`); await js(runner, choose); }
+  await answerShown(runner,false); check('runner-replay-feedback-is-assisted', await js(runner, `document.getElementById('check-feedback').textContent.includes('도움')`));
+  for (let i = 0; i < 2; i++) { await js(runner, `document.getElementById('check-next').click()`); await wait(runner, `!!document.querySelector('#check-choices button:not(:disabled)')`); await answerShown(runner,false); }
   check('runner-three-real-MP3-checks-complete', await js(runner, `document.getElementById('check-next').textContent==='확인 마치기'`));
   runner.setSize(390, 840); await delay(250); fs.writeFileSync(path.join(output, 'linked-runner-mobile.png'), (await runner.webContents.capturePage()).toPNG());
   check('runner-dialog-fits-mobile', await js(runner, `document.getElementById('listening-check-dialog').scrollWidth<=document.getElementById('listening-check-dialog').clientWidth+2`));

@@ -1,0 +1,32 @@
+✔ synthetic fixtures are serializable and existing Core/Strata select different practice from evidence (17.797ms)
+✔ game motor scores never establish language proficiency; old and assisted evidence remain distinct (2.9791ms)
+✔ teacher scope derives from trusted state membership and rejects body class escalation (1.3908ms)
+✔ live or unconfigured identity paths fail closed without mutating state (0.2471ms)
+✔ create records recommendation provenance and requires a reason for teacher override (1.5554ms)
+✔ empty optional reason is accepted for the recommended activity and for cancellation (0.5247ms)
+✔ nonassignable listening game suggestions cannot be silently marked as reading homework (0.17ms)
+✔ assignment create retries are idempotent and changed payloads conflict (0.5512ms)
+✔ due dates, recipients and unsupported update scope are validated before mutation (0.7207ms)
+✔ teacher can revise title, reason and due date while unrelated teacher cannot (0.9956ms)
+✔ student sees only own assignments and never receives answer keys before submission (1.6555ms)
+✔ server grades actual answers and submitted evidence changes the teacher profile and analytics (4.9518ms)
+✔ submission retries add no duplicate result or evidence and changed retry payload conflicts (0.8526ms)
+✔ incomplete answers reject atomically and another assignment cannot reuse an old key (1.7753ms)
+✔ reassigning the same questions does not manufacture fresh independent evidence (5.9126ms)
+✔ cancelled assignments remain recorded and reject new submissions without deleting prior results (2.8997ms)
+✔ late submissions are accepted as late and remove their overdue pending count (4.1808ms)
+✔ teacher notes persist with provenance but do not fabricate independent language results (4.8994ms)
+✔ returned workspaces and assignments cannot mutate persisted state or catalog (3.2088ms)
+✔ WORLD games share verified account scope and cannot overwrite host storage with guest options (9.7852ms)
+✔ a signed-in WORLD with sharing off keeps its own local scope and never initializes transport (1.0003ms)
+✔ durable event ownership keeps old backlog on its original run across new games and host restart (6.5457ms)
+✔ run mismatch and ownership storage failure cannot silently attribute or acknowledge game results (1.6493ms)
+✔ even synchronous flush cannot send an append before its run ownership is durable (2.198ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 168.0202

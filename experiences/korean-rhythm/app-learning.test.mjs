@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import {createRequire} from 'node:module';
 import {TRACKS,LEVELS,RoundState} from './core.mjs';
-import {rhythmItem,RHYTHM_CANDIDATES} from './personalization.mjs';
+import {rhythmItem,RHYTHM_CANDIDATES,assignmentTracks,assignmentTrack,rhythmTargetLabel} from './personalization.mjs';
 const require=createRequire(import.meta.url);
 const {createGame}=require('../../atlas/game-learning.js');
 const {createMap}=require('../../strata');
@@ -21,13 +21,22 @@ function mount(coach,storage){
     replaceChildren(...children){this.children=children;},focus(){},click(){this.listeners.get('click')?.();}});
   const get=id=>{if(!elements.has(id))elements.set(id,element());return elements.get(id);};
   const document={getElementById:get,createElement:element,querySelectorAll:()=>[],addEventListener(){},body:element()};
-  const context={TRACKS,LEVELS,RoundState,rhythmItem,RHYTHM_CANDIDATES,document,localStorage:storage,
+  const context={TRACKS,LEVELS,RoundState,rhythmItem,RHYTHM_CANDIDATES,assignmentTracks,assignmentTrack,rhythmTargetLabel,document,localStorage:storage,
     MusicPlayer:class{},Stage:class{},SynkLearning:{createGame:()=>coach},
     matchMedia:()=>({matches:false}),setTimeout:()=>1,clearTimeout(){},addEventListener(){},scrollTo(){}};
   context.window=context;
   vm.runInNewContext(app,context,{filename:'korean-rhythm/app.mjs'});
-  return {reset:()=>get('reset-learning').click(),toast:()=>get('toast').textContent,scope:()=>get('learning-scope').textContent};
+  return {reset:()=>get('reset-learning').click(),toast:()=>get('toast').textContent,scope:()=>get('learning-scope').textContent,
+    tracks:()=>get('track-grid').children,selected:()=>context.synkRhythm.snapshot().track,reason:()=>get('recommendation-reason').textContent};
 }
+
+test('actual lobby selects the target song and refuses another song even through its old click handler',()=>{
+  const m=rhythmItem(2,{sourceIndex:0}),target={...m,familyKeys:[m.familyKey],requiredAttempts:1};
+  const coach={assignment:()=>target,recommend:()=>null,summary:()=>({storage:{available:true}})};
+  const page=mount(coach,{getItem:()=>null,setItem(){}});
+  assert.equal(page.selected(),2);assert.match(page.reason(),/조건 표현/);
+  assert.equal(page.tracks()[0].disabled,true);page.tracks()[0].click();assert.equal(page.selected(),2);
+});
 
 function fixture(account=false){
   const values=new Map();let fail=false;
