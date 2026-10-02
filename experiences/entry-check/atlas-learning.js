@@ -6660,7 +6660,9 @@ var SynkLearning = (() => {
           }
           const latencies = remembered ? remembered.latencies : [];
           const changes = [], trace = [];
-          let step = 0, responses = 0, quiet = 0, last = null;
+          let step = 0, responses = 0, quiet = 0, steady = 0, last = null;
+          const TODAY_ONLY = ["tired", "declared-easier", "declared-harder"];
+          const todayOnly = {};
           const gap = (dimension) => (estimates[dimension].theta - logit(aim[dimension]) - challenge(spec, indices, dimension)) / spec.scale;
           const chance = (dimension, at = indices) => sigmoid(estimates[dimension].theta - challenge(spec, at, dimension));
           const expected = (at = indices) => (has(spec, "content") ? chance("content", at) : 1) * (has(spec, "pace") ? chance("pace", at) : 1);
@@ -6737,6 +6739,7 @@ var SynkLearning = (() => {
               const change = settle(dimension, direction, null, reason, "opening");
               if (!change) break;
               opening.push(change);
+              if (TODAY_ONLY.includes(change.because)) todayOnly[change.knob] = (todayOnly[change.knob] || 0) + change.direction;
             }
           }
           const intro = !adaptive ? arm === "baseline" ? "baseline" : "fixed" : returning ? "returning" : condition === "tired" ? "tired" : basis;
@@ -6792,6 +6795,8 @@ var SynkLearning = (() => {
                 quiet += 1;
                 if (latencyMs !== null) latencies.push(Math.round(latencyMs));
               } else if (evidence) quiet = 0;
+              if (outcome === "success") steady += 1;
+              else if (outcome === "fail" || outcome === "timeout") steady = 0;
               while (latencies.length > LATENCIES) latencies.shift();
               last = { outcome, assisted, repeat, pressure };
               let change = null;
@@ -6824,6 +6829,7 @@ var SynkLearning = (() => {
                   }
                 }
               }
+              if (change && change.kind === "support") steady = 0;
               trace.push({
                 response: responses,
                 step,
@@ -6851,11 +6857,14 @@ var SynkLearning = (() => {
               const from = indices[knob.id], to = from + 1;
               if (!guard.check({ spec, knob: knob.id, from, to, step, phase: "accepted", history: changes, frozen: false }).ok) return null;
               indices[knob.id] = to;
+              estimates.content.theta = Math.max(estimates.content.theta, logit(aim.content) + challenge(spec, indices, "content") - spec.scale / 2);
               const change = { step, phase: "accepted", knob: knob.id, kind: knob.kind, dimension: "content", from, to, direction: 1, because: "accepted-less-help", value: knob.values[to] };
+              steady = 0;
               changes.push(change);
               return copy(change);
             },
             quietStreak: () => quiet,
+            steadyStreak: () => steady,
             // Dimensions whose adjustable knobs are all at their easiest. When the person still struggles
             // there, the content itself has no easier step left: suggest an easier content instead.
             floor: () => DIMENSIONS.filter((d) => {
@@ -6867,7 +6876,8 @@ var SynkLearning = (() => {
             changes: () => copy(changes),
             last: () => last && { ...last },
             // What the host stores for next time: per content, no identity, no answers, no text.
-            // The estimates learn in every round; the place kept is only where adapted play reached.
+            // The estimates learn in every round; the place kept is only where adapted play reached,
+            // without the opening steps taken for today's choice alone.
             memory: (at) => ({
               v: 2,
               content: spec.id,
@@ -6875,7 +6885,7 @@ var SynkLearning = (() => {
               policy: VERSION,
               at: new Date(time(at)).toISOString(),
               estimates: Object.fromEntries(DIMENSIONS.map((d) => [d, { theta: round(estimates[d].theta, 4), n: round(estimates[d].n, 2), reversals: estimates[d].reversals }])),
-              indices: Object.fromEntries(spec.knobs.map((k) => [k.id, adaptive && !locked(k) ? indices[k.id] : reached[k.id]])),
+              indices: Object.fromEntries(spec.knobs.map((k) => [k.id, adaptive && !locked(k) ? clamp(indices[k.id] - (todayOnly[k.id] || 0), 0, k.values.length - 1) : reached[k.id]])),
               latencies: [...latencies]
             })
           };
@@ -6911,13 +6921,13 @@ var SynkLearning = (() => {
           const median = sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
           return { afterMs: Math.round(Math.min(ceilMs, Math.max(floorMs, factor * median))), misses: base.misses, basis: "personal", n: latencies.length };
         }
-        function supportStep({ at, last, streak, declared = false, declinedAt = null, now, need = 3, quietDays = 14 } = {}) {
-          if (!Number.isInteger(at) || !Number.isInteger(last) || at < 0 || at > last || !Number.isInteger(streak) || streak < 0 || typeof declared !== "boolean" || !Number.isInteger(need) || need < 1 || !within(quietDays, 0, 365)) throw new TypeError("Vellum: invalid support step input");
+        function supportStep({ at, last, streak, steady = 0, declared = false, declinedAt = null, now, need = 3, quietDays = 14 } = {}) {
+          if (!Number.isInteger(at) || !Number.isInteger(last) || at < 0 || at > last || !Number.isInteger(streak) || streak < 0 || !Number.isInteger(steady) || steady < 0 || typeof declared !== "boolean" || !Number.isInteger(need) || need < 1 || !within(quietDays, 0, 365)) throw new TypeError("Vellum: invalid support step input");
           if (declared) return { offer: false, reason: "declared" };
           if (at >= last) return { offer: false, reason: "least-help" };
-          if (streak < need) return { offer: false, reason: "not-yet" };
+          if (streak < need && steady < need + 1) return { offer: false, reason: "not-yet" };
           if (declinedAt !== null && time(now) - time(declinedAt) < quietDays * DAY) return { offer: false, reason: "declined-recently" };
-          return { offer: true, from: at, to: at + 1, reason: "quiet-streak" };
+          return { offer: true, from: at, to: at + 1, reason: streak >= need ? "quiet-streak" : "steady-with-help" };
         }
         const WORDS = Object.freeze({
           easy: {
@@ -6979,6 +6989,7 @@ var SynkLearning = (() => {
         const d = new Date(iso);
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       };
+      var SEEN = Object.freeze(["practice", "supported", "checking", "review"]);
       var object = (value) => !!value && typeof value === "object" && !Array.isArray(value);
       var presentationOf = (value) => object(value) && Object.keys(value).length > 0 && Object.entries(value).every(([key, choice]) => Object.hasOwn(Flow.PRESENTATION, key) && (choice === null || Flow.PRESENTATION[key].includes(choice)));
       function createFlowPort({ storage, key, clock, epoch = () => null }) {
@@ -7148,12 +7159,17 @@ var SynkLearning = (() => {
             },
             level: run.level,
             // Core's learning priority decides what to practise; the flow level decides how hard,
-            // among the leading choices only.
+            // among the leading choices only. When Core's first choice rests on what it saw (a miss to
+            // practise, help, a check or a review that is due), the choice stays with that ability, and
+            // only its level follows the flow: in a content whose levels are different kinds of item,
+            // an easier level must not quietly put off the practice Core asked for.
             pick(candidates, options = {}) {
               const { within = 5, ...rest } = options;
               const recommendation = coach.recommend(candidates, rest);
               if (recommendation.status !== "ready" || !spec.items) return recommendation;
-              const leading = [recommendation.selected, ...recommendation.alternatives].slice(0, within);
+              const ranked = [recommendation.selected, ...recommendation.alternatives].slice(0, within);
+              const focus = SEEN.includes(recommendation.state) && recommendation.focusSkillId;
+              const leading = focus ? ranked.filter((candidate) => candidate.skillIds?.includes(focus)) : ranked;
               const wanted = run.level(leading.map((candidate) => candidate.difficulty));
               const chosen = leading.find((candidate) => candidate.difficulty === wanted) || recommendation.selected;
               const own = chosen === recommendation.selected ? recommendation : coach.recommend([chosen], rest);
@@ -7197,6 +7213,7 @@ var SynkLearning = (() => {
                 at: run.settings().indices[support.id],
                 last: support.values.length - 1,
                 streak: run.quietStreak(),
+                steady: run.steadyStreak(),
                 declared: Object.hasOwn(declared.knobs || {}, support.id),
                 declinedAt: port.memories().declined[spec.id] ?? null,
                 now: clock()
