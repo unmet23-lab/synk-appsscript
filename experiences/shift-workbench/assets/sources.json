@@ -1,0 +1,50 @@
+{
+  "assets": [
+    {
+      "source": "desktop/assets/launcher/synk.svg",
+      "name": "synk.svg",
+      "sha256": "cd4950d57eab280fe14b26d58cb78f416eaf5c1ae1f0fa130986dde9567f61f6"
+    },
+    {
+      "source": "desktop/assets/launcher/SUIT.woff2",
+      "name": "SUIT.woff2",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+    },
+    {
+      "source": "docs/브랜드_폰트/InterTight/InterTight-Medium.ttf",
+      "name": "InterTight.ttf",
+      "sha256": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1"
+    },
+    {
+      "source": "docs/브랜드_폰트/InterTight/InterTight-Bold.ttf",
+      "name": "InterTightBold.ttf",
+      "sha256": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca"
+    },
+    {
+      "source": "desktop/assets/launcher/DMMono.ttf",
+      "name": "DMMono.ttf",
+      "sha256": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b"
+    },
+    {
+      "source": "docs/디자인/펠트부품/assets/ui/slab-cream-long.webp",
+      "name": "button-soft.webp",
+      "sha256": "84569abd7fed8e954281cd109f19def8288321c41c8bbbe3f8804208fe43f6ac"
+    },
+    {
+      "source": "docs/디자인/펠트부품/assets/ui/badge-cream.webp",
+      "name": "badge-cream.webp",
+      "sha256": "5336c1eca815b403ad0348bfde1573dda2367fab4996ea099c2daf03015f15be"
+    },
+    {
+      "source": "docs/디자인/펠트부품/assets/배경/wide-lapis.webp",
+      "name": "wide-lapis.webp",
+      "sha256": "4c8a9dbfbe26f068ed69ceb661a63f57959967952d9deb9601ddb79588e3d312"
+    },
+    {
+      "source": "docs/디자인/웹_단락이미지/20260919/shift-ai-workshop.png",
+      "name": "shift-cover.png",
+      "sha256": "acaabc6e3f992484ff4038d1d11bc026259513a262fe4b8694651e29b0e92fc0"
+    }
+  ],
+  "note": "Approved assets copied unchanged; colour tokens #24448C, #3D6BC9 from docs/디자인_토큰.json. Inter Tight Latin, SUIT Korean, DM Mono numeric labels."
+}

@@ -1,0 +1,42 @@
+{
+  "createdAt": "2026-10-01T10:31:30.228Z",
+  "model": "v6",
+  "variants": [
+    {
+      "link": "/song/a88e7cc4-e9f7-4e61-9d31-c73e0d537ede",
+      "text": "3:35\n밤의 온도\nV6\n80s city pop, breezy airy female vocal with clear natural diction, relaxed close verses opening into a bright singable chorus with lush harmonies; sparkling electric piano, punchy slap bass, warm brass stabs, muted funk guitar and glossy analog polysynth; 114 BPM easy groove, brief brass-and-guitar break, bigger final refrain and gentle complete outro; wide analog reverb, clean vintage stereo mix, sophisticated seventh and ninth chords\nPublish",
+      "title": "밤의 온도"
+    },
+    {
+      "link": "/song/eac38a6e-d89c-4feb-8d31-4f12445135cf",
+      "text": "3:41\n밤의 온도\nV6\n80s city pop, breezy airy female vocal with close relaxed verses opening into a bright chorus and lush backing harmonies; 114 BPM buoyant groove, sparkling electric piano, punchy slap bass, warm brass stabs, muted funk guitar and glossy analog polysynth; brief brass-and-guitar break, bigger final refrain and gentle full outro, wide analog reverb and clean vintage stereo mix, sophisticated seventh and ninth chords\nPublish",
+      "title": "밤의 온도"
+    },
+    {
+      "link": "/song/41cee495-d5d8-4961-8ae5-c207d0e528b9",
+      "text": "3:47\n잔상\nV6\nCity pop, sparkling Rhodes, punchy melodic bass with light slap accents, clean chorus funk guitar, warm brass responses, glossy analog synth pads and tight vintage drums; airy, smooth female lead with clear conversational Korean phrasing, intimate spacious verses, gently rising pre-chorus and luminous layered-harmony chorus; short sax and Rhodes interlude, full final chorus and finished outro; wide analog reverb, clean warm vintage stereo mix, breezy 108 BPM groove\nPublish",
+      "title": "잔상"
+    },
+    {
+      "link": "/song/dddd0294-0de8-4d5d-bd51-f5aecccfa198",
+      "text": "3:45\n잔상\nV6\n80s city pop, clean warm vintage stereo mix with wide analog reverb; sparkling Rhodes, punchy melodic bass with light slap accents, chorus funk guitar, warm brass responses, glossy synth pads, tight vintage drums; breezy 108 BPM groove; airy smooth female lead with clear conversational phrasing, intimate spacious verses, rising pre-chorus, luminous layered-harmony chorus, short sax and Rhodes interlude, full final chorus and finished outro\nPublish",
+      "title": "잔상"
+    },
+    {
+      "link": "/song/145ffb62-6e5a-4d41-a85a-293a47437d0b",
+      "text": "3:47\n유영\nV6\n80s city pop, breezy airy adult female lead with fluid, spacious phrasing; relaxed 112 BPM funk sway; sparkling electric piano, punchy melodic slap bass, warm brass stabs and clean syncopated funk guitar, with a short piano-and-brass break; wide analog reverb, clean vintage stereo mix and golden-hour warmth\nPublish",
+      "title": "유영"
+    },
+    {
+      "link": "/song/cdaea5d7-1e68-4bde-9fdb-d853188999c3",
+      "text": "3:30\n유영\nV6\n80s city pop, wide analog reverb and clean vintage stereo warmth, relaxed 112 BPM funk sway; breezy, airy adult female lead with fluid phrasing, spacious Korean lines and tasteful stacked chorus harmonies; sparkling electric piano, punchy melodic slap bass, warm brass stabs, clean syncopated funk guitar, brief piano-and-brass break, complete warm outro\nPublish",
+      "title": "유영"
+    }
+  ],
+  "primaryIds": [
+    "145ffb62-6e5a-4d41-a85a-293a47437d0b",
+    "41cee495-d5d8-4961-8ae5-c207d0e528b9",
+    "a88e7cc4-e9f7-4e61-9d31-c73e0d537ede"
+  ],
+  "listShowsCompleteDurations": true
+}

@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-02",
+  "method": "Actual Chrome OfflineAudioContext 54-second stereo renders of audio.mjs. Event mix includes pickup/place/success/door/mistake/reveal/select using approved WAV copies. Digital rendering and level measurement, not listening or speaker playback.",
+  "before": {
+    "bgmPeakDBFS": -42.59060939628459,
+    "bgmRmsDBFS": -66.575662837827,
+    "method": "Stereo baseline established from measured 15dB trim render and exact linear gain ratio."
+  },
+  "change": {
+    "musicTrimDB": 13.6,
+    "page": "silent",
+    "approvedUIFiles": "preserved byte-for-byte",
+    "globalUiGain": "unchanged"
+  },
+  "bgm": {
+    "seconds": 54,
+    "sampleRate": 44100,
+    "channels": 2,
+    "peak": 0.03551971912384033,
+    "peakDBFS": -28.990609542242908,
+    "rmsDBFS": -52.97566224577102,
+    "clippedSamples": 0,
+    "pageSilent": true,
+    "musicBusGain": 1.1008492708206177,
+    "uiGlobalGain": 0.41999998688697815,
+    "approvedBufferCount": 3
+  },
+  "bgmWithRepresentativeEvents": {
+    "seconds": 54,
+    "sampleRate": 44100,
+    "channels": 2,
+    "peak": 0.3072698712348938,
+    "peakDBFS": -10.24960043157349,
+    "rmsDBFS": -41.086699807680446,
+    "clippedSamples": 0,
+    "pageSilent": true,
+    "musicBusGain": 1.1008492708206177,
+    "uiGlobalGain": 0.41999998688697815,
+    "approvedBufferCount": 3
+  }
+}

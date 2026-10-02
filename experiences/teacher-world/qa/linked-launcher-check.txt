@@ -1,0 +1,2 @@
+
+SYNK_CLASSROOM_SMOKE {"ok":true,"teacher":{"ready":true,"path":"/","hash":"","hasNode":false},"world":{"path":"/synk-account/local-world.html","join":true,"hasNode":false},"teacherReopened":true,"worldReopened":true,"separateSessions":true,"productionConnected":false}

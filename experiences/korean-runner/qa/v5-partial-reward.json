@@ -1,0 +1,73 @@
+{
+  "partial": {
+    "distance": 169.74005690705036,
+    "elapsed": 12.714499999999965,
+    "lane": 1,
+    "x": 0,
+    "y": 0,
+    "slide": 0,
+    "hearts": 1,
+    "shield": 0,
+    "combo": 0,
+    "lanterns": 0,
+    "coins": 4,
+    "correct": 0,
+    "answers": [
+      {
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "explanation": "울타리 가까이에서 점프해요.",
+        "skill": "동작",
+        "learning": "listen",
+        "correct": false,
+        "steps": [
+          {
+            "action": "jump",
+            "status": "missed",
+            "inputMatched": false,
+            "executed": false,
+            "label": "뛰어넘기"
+          }
+        ]
+      }
+    ],
+    "finished": false,
+    "reason": "",
+    "current": {
+      "id": "left",
+      "text": "왼쪽 길로 가세요.",
+      "steps": [
+        {
+          "action": "lane",
+          "target": 0,
+          "remaining": 21.97596861213441,
+          "resolved": false,
+          "status": null
+        }
+      ]
+    }
+  },
+  "settled": {
+    "version": 1,
+    "wallet": 29,
+    "owned": [
+      "trail:none",
+      "lantern:paper",
+      "companion:none",
+      "scenery:village",
+      "finish:simple",
+      "trail:petals"
+    ],
+    "equipped": {
+      "trail": "petals",
+      "lantern": "paper",
+      "companion": "none",
+      "scenery": "village",
+      "finish": "simple"
+    },
+    "settled": [
+      "0bbf4c41-e736-4cd3-9bd4-c36b365bd086"
+    ],
+    "available": true
+  }
+}

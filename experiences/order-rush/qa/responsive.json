@@ -1,0 +1,66 @@
+{
+  "lobby": [
+    {
+      "broken": 0,
+      "font": true,
+      "height": 780,
+      "overflow": 0,
+      "screen": "lobby",
+      "width": 320
+    },
+    {
+      "broken": 0,
+      "font": true,
+      "height": 844,
+      "overflow": 0,
+      "screen": "lobby",
+      "width": 390
+    },
+    {
+      "broken": 0,
+      "font": true,
+      "height": 1024,
+      "overflow": 0,
+      "screen": "lobby",
+      "width": 768
+    },
+    {
+      "broken": 0,
+      "font": true,
+      "height": 960,
+      "overflow": 0,
+      "screen": "lobby",
+      "width": 1440
+    }
+  ],
+  "game": [
+    {
+      "font": true,
+      "height": 780,
+      "overflow": 0,
+      "screen": "game",
+      "width": 320
+    },
+    {
+      "font": true,
+      "height": 844,
+      "overflow": 0,
+      "screen": "game",
+      "width": 390
+    },
+    {
+      "font": true,
+      "height": 1024,
+      "overflow": 0,
+      "screen": "game",
+      "width": 768
+    },
+    {
+      "font": true,
+      "height": 960,
+      "overflow": 0,
+      "screen": "game",
+      "width": 1440
+    }
+  ]
+}

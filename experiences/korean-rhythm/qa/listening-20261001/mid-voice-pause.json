@@ -1,0 +1,14 @@
+{
+  "voice": {
+    "result": {
+      "type": "string",
+      "value": "{\"time\":48.82903953337654,\"voiceLevel\":0.11196027515065045,\"signalLevel\":0.07817438155597406,\"activeVoice\":{\"id\":\"q1\",\"url\":\"assets/narration/t0q1v0.mp3\",\"start\":48.53896,\"end\":54.394960000000005}}"
+    }
+  },
+  "paused": {
+    "result": {
+      "type": "string",
+      "value": "{\"time\":49.13037286670988,\"activeVoice\":{\"id\":\"q1\",\"url\":\"assets/narration/t0q1v0.mp3\",\"start\":48.53896,\"end\":54.394960000000005},\"audioState\":\"suspended\"}"
+    }
+  }
+}

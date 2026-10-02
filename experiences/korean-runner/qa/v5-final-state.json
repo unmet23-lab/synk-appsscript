@@ -1,0 +1,76 @@
+{
+  "version": 5,
+  "ready": true,
+  "running": false,
+  "paused": false,
+  "demo": false,
+  "mode": "tour",
+  "learning": "listen",
+  "best": 0,
+  "sound": true,
+  "shop": {
+    "version": 1,
+    "wallet": 60,
+    "owned": [
+      "trail:none",
+      "lantern:paper",
+      "companion:none",
+      "scenery:village",
+      "finish:simple"
+    ],
+    "equipped": {
+      "trail": "none",
+      "lantern": "paper",
+      "companion": "none",
+      "scenery": "village",
+      "finish": "simple"
+    },
+    "settled": [],
+    "available": true
+  },
+  "shopPreview": {
+    "visible": true,
+    "category": "companion",
+    "selected": "companion:sparrow"
+  },
+  "voiceClips": 0,
+  "audio": null,
+  "world": {
+    "renderer": "Three.js 180",
+    "quality": "experience",
+    "fps": 59,
+    "drawCalls": 432,
+    "triangles": 307220,
+    "width": 2112,
+    "height": 1188,
+    "eventObjects": 0,
+    "frames": 5481,
+    "armlessMongle": true,
+    "cosmetics": {
+      "selection": {
+        "trail": "none",
+        "lantern": "paper",
+        "companion": "sparrow",
+        "scenery": "village",
+        "finish": "simple"
+      },
+      "preview": true,
+      "activeTrail": 0,
+      "trailCapacity": 24,
+      "finishCapacity": 28,
+      "budget": {
+        "trail": 24,
+        "finish": 28,
+        "lantern": 2
+      },
+      "companionVisible": true,
+      "finishVisible": false,
+      "finishAge": 0,
+      "lanternFlashes": 0
+    },
+    "shopPreview": true,
+    "ambientParticles": 70,
+    "particles": 0
+  },
+  "model": null
+}

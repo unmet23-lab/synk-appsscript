@@ -1,0 +1,161 @@
+/* SYNK 펠트 스크랩북 — 공통 양식 스타일(토큰과 부품)
+ * 원문: SYNK-appsscript/docs/디자인/펠트스크랩북/README.md · 2026-09-29 사용자 확정
+ * 담는 것: 색·글꼴·그림자·손그림 토큰과, 어느 페이지에서나 쓰는 부품(sb-*).
+ * 담지 않는 것: 글꼴 파일(@font-face)과 그림 경로. 쓰는 쪽에서 --thread·--sticker-check와 글꼴을 선언한다.
+ * 요소 선택자(body, img …)는 쓰지 않는다. 가져다 쓰는 페이지의 기존 스타일을 바꾸지 않기 위해서다.
+ * 맞춤 도구(docs/마케팅/맞춤도구)는 빌드할 때 이 파일을 app.css 맨 앞에 붙인다.
+ * .hl .ul .stk .mono는 맞춤 도구가 먼저 쓰던 이름이라 sb- 이름과 같은 부품으로 둔다.
+ */
+:root{
+  /* 바탕·글자. DESIGN §2: 바탕은 Paper #FFFFFF와 Black #000000. 검은 화면(--night)은 결과 공개 한 곳에만 */
+  --paper:#fff;--text:#000;--ink:#10131a;--night:#0b0d12;
+  --muted:#565a61;--faint:#6f747c;--line:rgba(0,0,0,.12);
+  /* 실 색. 토큰 색.스티치의 청금석·메도우·버터·팝과 코랄 */
+  --brand:#3d6bc9;--brand-ink:#24448c;--brand-wash:#f0f4fc;--brand-soft:#c5d6f5;
+  --meadow:#7db45a;--meadow-deep:#3f6b2e;--meadow-soft:#d3e8be;
+  --butter:#f5c445;--butter-deep:#7e5a10;--butter-soft:#ffebb0;
+  --pop:#e05c97;--pop-deep:#99295d;--pop-soft:#f8c7de;
+  --coral:#f96859;--coral-deep:#ae322a;--coral-wash:#fef0e9;
+  --marker:#ffe07a;
+  --focus:#24448c;
+  /* 글꼴. DESIGN §3: 라틴 Inter Tight, 한글 SUIT, 숫자·코드 DM Mono */
+  --sans:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --mono:'DM Mono','SUIT Variable',ui-monospace,monospace;
+  /* 손그림(나이브 드로잉): 코랄 밑줄, 노란 형광펜, 버터 반짝이, 코랄 화살표 */
+  --doodle-line:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 24' preserveAspectRatio='none'%3E%3Cpath d='M4 15C50 7 110 19 160 11S225 9 236 12' fill='none' stroke='%23f96859' stroke-width='6' stroke-linecap='round'/%3E%3Cpath d='M12 19C62 12 122 21 172 15S220 14 230 16' fill='none' stroke='%23f96859' stroke-width='2.4' stroke-linecap='round' opacity='.7'/%3E%3C/svg%3E");
+  --doodle-mark:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 40' preserveAspectRatio='none'%3E%3Cpath d='M6 24C60 14 140 16 234 20' fill='none' stroke='%23ffe07a' stroke-width='22' stroke-linecap='round' opacity='.85'/%3E%3C/svg%3E");
+  --doodle-spark:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg fill='none' stroke='%23f5c445' stroke-width='3.2' stroke-linecap='round'%3E%3Cpath d='M20 4v10M20 26v10M4 20h10M26 20h10M9 9l5 5M26 26l5 5M31 9l-5 5M14 26l-5 5'/%3E%3C/g%3E%3C/svg%3E");
+  --doodle-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 70'%3E%3Cg fill='none' stroke='%23f96859' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M112 10C84 6 40 14 18 50'/%3E%3Cpath d='M14 32l4 19 18-6'/%3E%3C/g%3E%3C/svg%3E");
+  /* 콜라주: 종이테이프와 스티커 칼선 */
+  --tape:rgba(245,196,69,.62);--tape-blue:rgba(197,214,245,.85);
+  --sticker-edge:drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff);
+  /* 윤곽·그림자: 옅은 선이 기본이고, 검은 윤곽과 단단한 그림자는 핵심 하나에만 */
+  --hairline:0 0 0 1px #d6dbe3;
+  --edge:0 0 0 1.5px var(--ink);
+  --drop:5px 5px 0 var(--ink);
+  /* 가벼운 엠보싱: 펠트 두께로 눌리는 버튼, 도드라진 핵심 숫자 */
+  --felt-press:inset 0 -3px 0 var(--brand-ink),0 2px 0 rgba(16,19,26,.14),0 10px 18px -12px rgba(36,68,140,.9);
+  --felt-pressed:inset 0 2px 5px rgba(16,19,26,.3);
+  --emboss:0 1px 0 rgba(255,255,255,.95),0 -1px 0 rgba(16,19,26,.16),0 3px 6px rgba(36,68,140,.18);
+  /* 마스킹(아치 창)과 멈춘 컨페티(청금석 계열 몇 점). 검은 화면 위와 흰 바탕 위를 나눈다 */
+  --arch:999px 999px 30px 30px;
+  --confetti-dark:radial-gradient(circle at 12% 40%,#c5d6f5 0 5px,transparent 5.5px),radial-gradient(circle at 40% 78%,#3d6bc9 0 4px,transparent 4.5px),radial-gradient(circle at 66% 26%,#fff 0 3.5px,transparent 4px),radial-gradient(circle at 90% 62%,#c5d6f5 0 4px,transparent 4.5px);
+  --confetti-light:radial-gradient(circle at 12% 40%,#c5d6f5 0 8px,transparent 8.5px),radial-gradient(circle at 40% 80%,#3d6bc9 0 6px,transparent 6.5px),radial-gradient(circle at 68% 24%,#24448c 0 5px,transparent 5.5px),radial-gradient(circle at 92% 64%,#c5d6f5 0 6px,transparent 6.5px);
+}
+
+/* ── 바탕 ── 새 페이지는 body에 sb-page를 단다 */
+.sb-page{margin:0;background:var(--paper);color:var(--text);font:17px/1.62 var(--sans);word-break:keep-all;overflow-wrap:anywhere;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.sb-page :focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+
+/* ── 글자 ── */
+.mono,.sb-mono{font-family:var(--mono);letter-spacing:.02em}
+.sb-eyebrow{margin:0;font:500 12.5px/1.4 var(--mono);letter-spacing:.02em;color:var(--brand-ink)}
+.sb-display{margin:0;font-weight:820;font-size:clamp(34px,6vw,68px);line-height:1.1;letter-spacing:-.045em;text-wrap:balance}
+.sb-no{display:inline-block;padding:5px 8px;border-radius:8px;background:var(--brand-wash);color:var(--brand-ink);font:500 13px/1 var(--mono);letter-spacing:.06em}
+
+/* ── 손그림 ── 제목마다 핵심 한 구절에만 */
+.hl,.sb-mark{background:var(--doodle-mark) no-repeat 0 72%/100% .62em;padding:0 .08em;margin:0 -.04em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.ul,.sb-underline{background:var(--doodle-line) no-repeat 0 100%/100% .34em;padding-bottom:.12em}
+.sb-spark{display:inline-block;width:34px;height:34px;background:var(--doodle-spark) no-repeat center/contain}
+.sb-arrow{display:inline-block;width:74px;height:46px;background:var(--doodle-arrow) no-repeat center/contain;pointer-events:none}
+
+/* ── 콜라주 ── 펠트 스티커(흰 칼선 + 붙인 그림자), 종이테이프 */
+.stk,.sb-sticker{display:inline-block;width:var(--s,54px);height:auto;transform:rotate(var(--r,-7deg));filter:var(--sticker-edge) drop-shadow(0 5px 6px rgba(16,19,26,.18));pointer-events:none;user-select:none}
+.sb-collage{position:relative;display:grid;place-items:center;width:100%;min-height:300px}
+.sb-collage>.main{position:relative;z-index:1;width:min(320px,80%)}
+.sb-collage>.sb-sticker,.sb-collage>.sb-spark{position:absolute;z-index:2}
+.sb-taped{position:relative}
+.sb-taped::before{content:'';position:absolute;top:-12px;left:28px;width:88px;height:24px;background:var(--tape);transform:rotate(-4deg);pointer-events:none;-webkit-mask:linear-gradient(90deg,transparent 0 3px,#000 3px calc(100% - 3px),transparent calc(100% - 3px));mask:linear-gradient(90deg,transparent 0 3px,#000 3px calc(100% - 3px),transparent calc(100% - 3px))}
+
+/* ── 실땀 ── 실제 실 이미지(--thread). CSS 점선으로 대신하지 않는다 */
+.sb-stitch{display:block;box-sizing:content-box;height:10px;margin:0;border:0;border-top:20px solid transparent;border-image:var(--thread) 250 / 30px 0 0 / 0 round}
+.sb-stitch.thin{height:6px;border-top-width:8px;border-image-width:14px 0 0}
+.sb-stitch-box{border:1px solid transparent;border-image:var(--thread) 250 / 24px / 0 round}
+.sb-corners{position:relative;isolation:isolate}
+.sb-corners::before,.sb-viewfinder::before{content:'';position:absolute;inset:var(--corner-inset,0);z-index:-1;pointer-events:none;border:1px solid transparent;border-image:var(--thread) 250 / var(--thread-w,30px) / 0 round;
+ -webkit-mask:linear-gradient(#000 0 0) 0 0/var(--corner,72px) var(--corner,72px) no-repeat,linear-gradient(#000 0 0) 100% 0/var(--corner,72px) var(--corner,72px) no-repeat,linear-gradient(#000 0 0) 0 100%/var(--corner,72px) var(--corner,72px) no-repeat,linear-gradient(#000 0 0) 100% 100%/var(--corner,72px) var(--corner,72px) no-repeat;
+ mask:linear-gradient(#000 0 0) 0 0/var(--corner,72px) var(--corner,72px) no-repeat,linear-gradient(#000 0 0) 100% 0/var(--corner,72px) var(--corner,72px) no-repeat,linear-gradient(#000 0 0) 0 100%/var(--corner,72px) var(--corner,72px) no-repeat,linear-gradient(#000 0 0) 100% 100%/var(--corner,72px) var(--corner,72px) no-repeat}
+
+/* ── 카드 ── 기본은 옅은 선. 핵심 하나만 검은 윤곽 + 색 그림자(벤토의 큰 칸) */
+.sb-card{padding:20px 20px 18px;border-radius:22px;background:#fff;box-shadow:var(--hairline)}
+.sb-card.key{background:var(--brand-wash);box-shadow:var(--edge),6px 6px 0 var(--brand)}
+.sb-bento{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-flow:dense;gap:14px}
+@media(min-width:881px){.sb-bento>.key{grid-column:span 2}}
+@media(max-width:880px){.sb-bento{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.sb-bento{grid-template-columns:minmax(0,1fr)}}
+.sb-emboss{margin:0;font-weight:800;font-size:clamp(34px,5vw,48px);line-height:1.15;letter-spacing:-.04em;color:var(--brand-ink);text-shadow:var(--emboss)}
+.sb-chip{display:inline-flex;align-items:center;padding:6px 12px;border-radius:30px;background:#fff;color:var(--ink);font-size:14px;font-weight:650;box-shadow:0 0 0 1.5px var(--ink)}
+.sb-chip.butter{background:var(--butter-soft)}
+.sb-chip.lapis{background:var(--brand-soft)}
+
+/* ── 버튼 ── 펠트 두께(엠보싱)로 눌리는 느낌 */
+.sb-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:0 24px;border:0;border-radius:14px;background:var(--brand);color:#fff;font:750 17px/1.2 var(--sans);text-decoration:none;cursor:pointer;touch-action:manipulation;box-shadow:var(--felt-press)}
+.sb-btn:active{transform:translateY(1px);box-shadow:var(--felt-pressed)}
+.sb-btn:disabled{background:#c9d1dc;box-shadow:none;cursor:not-allowed}
+.sb-btn.soft{background:#fff;color:var(--brand-ink);box-shadow:var(--edge)}
+
+/* ── 유리 선택 카드 ── 고르는 버튼(선택지·칩)은 승인 유리. synk.im sites.css의 규칙(2026-09-19)을 옮겨 왔다.
+ * 고른 상태는 aria-pressed·aria-checked="true". 맞춤 도구의 .glass와 같은 부품이다 */
+.glass,.sb-glass{
+ --glass-color:#5a666b;--glass-x:24%;--glass-y:6%;--glass-edge:3px;
+ --glass-face:radial-gradient(ellipse at 83% 112%,#aecfe77d 0%,#dae7f026 40%,#fff0 65%),linear-gradient(122deg,#fff0 5%,#ffffffd9 6%,#ffffff9c 31%,#8eacc34a 31.5%,#a4b5c121 34%,#fff0 52%),linear-gradient(175deg,#ffffff80 0%,#c2d0dd3d 37%,#91a5b84a 78%,#f3faff99 100%);
+ --glass-shadow:inset 0 1px 1px #fff,inset 1px 0 2px #fff,inset -1px -2px 2px #60758780,inset 0 -5px 7px -5px #49667dcc,0 1px 0 #fff,1px 2px 0 -1px #8599ab8c,1px 3px 0 -1px #fff,2px 6px 7px -4px #283d5261,5px 12px 19px -10px #47617759,9px 19px 26px -17px #57738445;
+ position:relative;isolation:isolate;border:1px solid #8ca2b273;background-color:#edf3f521;background-image:var(--glass-face);background-size:100% 100%;
+ -webkit-backdrop-filter:blur(8px) saturate(1.2);backdrop-filter:blur(8px) saturate(1.2);box-shadow:var(--glass-shadow);color:var(--text);text-shadow:0 1px 0 #ffffffd9;
+ transition:transform .18s ease,box-shadow .22s ease,border-color .22s ease,background-color .22s ease}
+.glass::before,.sb-glass::before{content:'';position:absolute;pointer-events:none;z-index:2;inset:1px;border-radius:inherit;padding:var(--glass-edge);
+ background:radial-gradient(ellipse at var(--glass-x) var(--glass-y),#fff 0%,#ffffffcc 18%,#fff0 48%),conic-gradient(from 95deg at 50% 50%,#53738aab 0deg,#d8f1fb 23deg,#fff 50deg,#9db4c433 69deg,#668cb799 91deg,#e4d2f0b8 111deg,#ffebbacf 130deg,#fff 139deg,#6f8ea58c 160deg,#f7ffff 180deg,#fff 213deg,#7d929e94 247deg,#aec9e4ad 283deg,#fff 316deg,#e0f5ff 340deg,#53738aab);
+ -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;filter:blur(.25px)}
+.glass::after,.sb-glass::after{content:'';position:absolute;pointer-events:none;z-index:2;inset:5px;border-radius:inherit;
+ background:radial-gradient(ellipse 42% 18% at var(--glass-x) 0%,#fff 10%,#ffffff00 100%),linear-gradient(122deg,#fff0 30%,#ffffff85 30.4%,#fff0 31.2%),radial-gradient(ellipse 44% 14% at 76% 100%,#b3d9ec9c 0%,#ffffff00 100%);opacity:.82}
+.glass>*,.sb-glass>*{position:relative;z-index:3}
+.glass[aria-pressed="true"],.glass[aria-checked="true"],.sb-glass[aria-pressed="true"],.sb-glass[aria-checked="true"]{--glass-color:var(--brand-ink);background-color:color-mix(in srgb,var(--glass-color) 9%,#ffffff66);border-color:color-mix(in srgb,var(--glass-color) 48%,#e1e7e9);box-shadow:var(--glass-shadow),inset 0 -3px 6px -4px var(--glass-color)}
+@media(hover:hover){.glass:hover,.sb-glass:hover{transform:translateY(-1px)}}
+.glass:active,.sb-glass:active{transform:translateY(0) scale(.99)}
+@media(forced-colors:active){.glass,.sb-glass{border:2px solid ButtonText}}
+
+/* ── 옛 창(웹코어) ── 페이지에서 가장 중요한 복사 상자 하나에만 */
+.sb-window{position:relative;border-radius:14px;background:#fff;box-shadow:var(--edge),var(--drop)}
+.sb-window::before{content:'';position:absolute;top:-11px;right:26px;z-index:2;width:74px;height:22px;background:var(--tape-blue);transform:rotate(5deg);pointer-events:none}
+.sb-titlebar{display:flex;align-items:center;gap:8px;margin:0;padding:10px 14px;border-radius:13px 13px 0 0;background:var(--brand);color:#fff;font:600 13.5px/1.35 var(--sans)}
+.sb-window>.sb-body{padding:16px;line-height:1.7;font-size:15px}
+.sb-window>.sb-foot{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 14px 14px;border-top:1.5px solid var(--ink)}
+
+/* ── 카메라 화면 ── 결과 공개처럼 한 번뿐인 머리: 검은 바탕 + 실땀 모서리 + 날짜 도장 */
+.sb-viewfinder{--corner-inset:10px;--thread-w:26px;position:relative;isolation:isolate;padding:40px 34px 34px;border-radius:28px;background:var(--night);color:#fff}
+.sb-viewfinder .hl,.sb-viewfinder .sb-mark{background:var(--doodle-line) no-repeat 0 100%/100% .3em;padding-bottom:.1em;color:var(--marker)}
+.sb-stamp{display:inline-flex;align-items:center;padding:3px 8px;border-radius:6px;color:var(--muted);font:500 12.5px/1.4 var(--mono);letter-spacing:.02em;box-shadow:inset 0 0 0 1.5px currentColor;transform:rotate(-2deg)}
+.sb-viewfinder .sb-stamp{color:#e6e9ee;box-shadow:inset 0 0 0 1.5px #aab2c0}
+
+/* ── 마스킹 ── 대표 그림 하나만 펠트 조각 모양 창에 */
+.sb-arch{width:170px;height:198px;margin:0;overflow:hidden;border-radius:var(--arch);background:#fff;box-shadow:0 0 0 4px #fff,0 0 0 6px var(--brand),0 16px 26px -12px rgba(0,0,0,.7)}
+.sb-arch>img{display:block;width:100%;height:100%;object-fit:contain;padding:18px 12px 10px;box-sizing:border-box}
+
+/* ── 컨페티 ── 좋은 결과에만. 움직이지 않는 청금석 점 몇 개 */
+.sb-confetti{position:absolute;width:120px;height:60px;pointer-events:none;background:var(--confetti-light)}
+.sb-viewfinder .sb-confetti{background:var(--confetti-dark)}
+
+/* ── 순서와 확인 ── 번호는 펠트 단추, 체크는 펠트 체크 스티커 */
+.sb-steps{display:grid;gap:10px;margin:0;padding:0;list-style:none;counter-reset:sb-step}
+.sb-steps>li{counter-increment:sb-step;display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;align-items:start;padding:14px 16px;border-radius:18px;background:#fff;box-shadow:var(--hairline)}
+.sb-steps>li::before{content:counter(sb-step);display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--brand);color:#fff;font:500 14px/1 var(--mono);box-shadow:inset 0 -3px 0 rgba(0,0,0,.18),0 2px 0 rgba(16,19,26,.25)}
+.sb-steps>li:nth-child(3n+2)::before{background:var(--coral)}
+.sb-steps>li:nth-child(3n+3)::before{background:var(--meadow)}
+.sb-check{appearance:none;-webkit-appearance:none;flex:none;display:inline-grid;width:24px;height:24px;margin:0;border:2px solid var(--ink);border-radius:7px;background:#fff;cursor:pointer}
+.sb-check:checked{border-color:transparent;background:var(--sticker-check) center/140% no-repeat;transform:rotate(-8deg)}
+.sb-check:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+/* ── 하단 바와 알림 ── 바로 쓰는 버튼 둘, 복사하면 짧은 알림 */
+.sb-dock{position:sticky;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:15;display:flex;justify-content:center;gap:10px;width:max-content;max-width:100%;margin:26px auto 0;padding:8px;border-radius:22px;background:#fff;box-shadow:var(--edge),0 14px 30px -14px rgba(16,19,26,.45)}
+.sb-dock .sb-btn{min-height:46px;padding:0 18px;font-size:16px}
+.sb-toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:30;display:flex;align-items:center;gap:8px;max-width:calc(100% - 32px);padding:12px 18px;border-radius:14px;background:var(--ink);color:#fff;font:650 15px/1.4 var(--sans);box-shadow:0 12px 28px -12px rgba(0,0,0,.55);transform:translateX(-50%)}
+.sb-toast::before{content:'';flex:none;width:22px;height:22px;background:var(--sticker-check) center/140% no-repeat}
+.sb-toast[hidden]{display:none}
+
+@media(prefers-reduced-motion:reduce){.sb-btn,.sb-check,.sb-toast{transition:none!important;animation:none!important}}
+@media print{
+ .sb-sticker,.sb-spark,.sb-arrow,.sb-confetti,.sb-dock,.sb-toast{display:none!important}
+ .sb-taped::before,.sb-window::before{content:none}
+ .sb-viewfinder{background:#fff;color:#000}
+ .sb-window{box-shadow:0 0 0 1px #ccc}
+}

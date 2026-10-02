@@ -1,0 +1,5483 @@
+{
+  "date": "2026-10-01T19:48:01.782Z",
+  "checks": [
+    {
+      "name": "native-speed opening recording completed in actual Chrome Web Audio",
+      "pass": true
+    },
+    {
+      "name": "next text cancels old character voice and starts teacher recording",
+      "pass": true
+    },
+    {
+      "name": "mission auto speech, per-text replay, and assisted reading evidence",
+      "pass": true
+    },
+    {
+      "name": "manual replay with automatic-off, mute and reading-only cancel current playback",
+      "pass": true
+    },
+    {
+      "name": "390px all nine reading-only tasks completed, independent first responses and Atlas records",
+      "pass": true,
+      "summary": {
+        "policy": "learning-priority-2",
+        "skills": [
+          {
+            "id": "ko.listening.word",
+            "label": "낱말 듣기",
+            "domain": "listening",
+            "difficulty": 1,
+            "responseFormat": "unknown",
+            "status": "unseen",
+            "priority": 0.65,
+            "n": 0,
+            "correct": 0,
+            "incorrect": 0,
+            "lastAt": null,
+            "assisted": 0,
+            "evidence": [],
+            "unassessed": 0,
+            "formats": {
+              "binary-choice": {
+                "difficulty": 1,
+                "responseFormat": "binary-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "single-choice": {
+                "difficulty": 1,
+                "responseFormat": "single-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "cup-compose": {
+                "difficulty": 1,
+                "responseFormat": "cup-compose",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "action": {
+                "difficulty": 1,
+                "responseFormat": "action",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "unknown": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              }
+            },
+            "levels": {
+              "1": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 1,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 1,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 1,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "2": {
+                "difficulty": 2,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 2,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 2,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 2,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "3": {
+                "difficulty": 3,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 3,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 3,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 3,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "ko.listening.detail",
+            "label": "듣고 세부 정보 찾기",
+            "domain": "listening",
+            "difficulty": 1,
+            "responseFormat": "unknown",
+            "status": "unseen",
+            "priority": 0.65,
+            "n": 0,
+            "correct": 0,
+            "incorrect": 0,
+            "lastAt": null,
+            "assisted": 0,
+            "evidence": [],
+            "unassessed": 0,
+            "formats": {
+              "binary-choice": {
+                "difficulty": 1,
+                "responseFormat": "binary-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "single-choice": {
+                "difficulty": 1,
+                "responseFormat": "single-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "cup-compose": {
+                "difficulty": 1,
+                "responseFormat": "cup-compose",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "action": {
+                "difficulty": 1,
+                "responseFormat": "action",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "unknown": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              }
+            },
+            "levels": {
+              "1": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 1,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 1,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 1,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "2": {
+                "difficulty": 2,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 2,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 2,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 2,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "3": {
+                "difficulty": 3,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 3,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 3,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 3,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "ko.listening.negation",
+            "label": "듣고 부정·변경 이해하기",
+            "domain": "listening",
+            "difficulty": 1,
+            "responseFormat": "unknown",
+            "status": "unseen",
+            "priority": 0.65,
+            "n": 0,
+            "correct": 0,
+            "incorrect": 0,
+            "lastAt": null,
+            "assisted": 0,
+            "evidence": [],
+            "unassessed": 0,
+            "formats": {
+              "binary-choice": {
+                "difficulty": 1,
+                "responseFormat": "binary-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "single-choice": {
+                "difficulty": 1,
+                "responseFormat": "single-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "cup-compose": {
+                "difficulty": 1,
+                "responseFormat": "cup-compose",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "action": {
+                "difficulty": 1,
+                "responseFormat": "action",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "unknown": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              }
+            },
+            "levels": {
+              "1": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 1,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 1,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 1,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "2": {
+                "difficulty": 2,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 2,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 2,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 2,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "3": {
+                "difficulty": 3,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 3,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 3,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 3,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "ko.listening.sequence",
+            "label": "듣고 순서 이해하기",
+            "domain": "listening",
+            "difficulty": 1,
+            "responseFormat": "unknown",
+            "status": "unseen",
+            "priority": 0.65,
+            "n": 0,
+            "correct": 0,
+            "incorrect": 0,
+            "lastAt": null,
+            "assisted": 0,
+            "evidence": [],
+            "unassessed": 0,
+            "formats": {
+              "binary-choice": {
+                "difficulty": 1,
+                "responseFormat": "binary-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "single-choice": {
+                "difficulty": 1,
+                "responseFormat": "single-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "cup-compose": {
+                "difficulty": 1,
+                "responseFormat": "cup-compose",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "action": {
+                "difficulty": 1,
+                "responseFormat": "action",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "unknown": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              }
+            },
+            "levels": {
+              "1": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 1,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 1,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 1,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "2": {
+                "difficulty": 2,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 2,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 2,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 2,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "3": {
+                "difficulty": 3,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 3,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 3,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 3,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "ko.listening.reason",
+            "label": "듣고 이유 이해하기",
+            "domain": "listening",
+            "difficulty": 1,
+            "responseFormat": "unknown",
+            "status": "unseen",
+            "priority": 0.65,
+            "n": 0,
+            "correct": 0,
+            "incorrect": 0,
+            "lastAt": null,
+            "assisted": 0,
+            "evidence": [],
+            "unassessed": 0,
+            "formats": {
+              "binary-choice": {
+                "difficulty": 1,
+                "responseFormat": "binary-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "single-choice": {
+                "difficulty": 1,
+                "responseFormat": "single-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "cup-compose": {
+                "difficulty": 1,
+                "responseFormat": "cup-compose",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "action": {
+                "difficulty": 1,
+                "responseFormat": "action",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "unknown": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              }
+            },
+            "levels": {
+              "1": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 1,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 1,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 1,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "2": {
+                "difficulty": 2,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 2,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 2,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 2,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "3": {
+                "difficulty": 3,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 3,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 3,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 3,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "ko.listening.condition",
+            "label": "듣고 조건 이해하기",
+            "domain": "listening",
+            "difficulty": 1,
+            "responseFormat": "unknown",
+            "status": "unseen",
+            "priority": 0.65,
+            "n": 0,
+            "correct": 0,
+            "incorrect": 0,
+            "lastAt": null,
+            "assisted": 0,
+            "evidence": [],
+            "unassessed": 0,
+            "formats": {
+              "binary-choice": {
+                "difficulty": 1,
+                "responseFormat": "binary-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "single-choice": {
+                "difficulty": 1,
+                "responseFormat": "single-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "cup-compose": {
+                "difficulty": 1,
+                "responseFormat": "cup-compose",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "action": {
+                "difficulty": 1,
+                "responseFormat": "action",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "unknown": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              }
+            },
+            "levels": {
+              "1": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 1,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 1,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 1,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "2": {
+                "difficulty": 2,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 2,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 2,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 2,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "3": {
+                "difficulty": 3,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 3,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 3,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 3,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "ko.listening.main",
+            "label": "듣고 핵심 이해하기",
+            "domain": "listening",
+            "difficulty": 1,
+            "responseFormat": "unknown",
+            "status": "unseen",
+            "priority": 0.65,
+            "n": 0,
+            "correct": 0,
+            "incorrect": 0,
+            "lastAt": null,
+            "assisted": 0,
+            "evidence": [],
+            "unassessed": 0,
+            "formats": {
+              "binary-choice": {
+                "difficulty": 1,
+                "responseFormat": "binary-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "single-choice": {
+                "difficulty": 1,
+                "responseFormat": "single-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "cup-compose": {
+                "difficulty": 1,
+                "responseFormat": "cup-compose",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "action": {
+                "difficulty": 1,
+                "responseFormat": "action",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "unknown": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              }
+            },
+            "levels": {
+              "1": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 1,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 1,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 1,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "2": {
+                "difficulty": 2,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 2,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 2,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 2,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "3": {
+                "difficulty": 3,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 3,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 3,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 3,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "ko.reading.vocabulary",
+            "label": "낱말 뜻 읽기",
+            "domain": "reading",
+            "difficulty": 1,
+            "responseFormat": "unknown",
+            "status": "unseen",
+            "priority": 0.65,
+            "n": 0,
+            "correct": 0,
+            "incorrect": 0,
+            "lastAt": null,
+            "assisted": 0,
+            "evidence": [],
+            "unassessed": 0,
+            "formats": {
+              "binary-choice": {
+                "difficulty": 1,
+                "responseFormat": "binary-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "single-choice": {
+                "difficulty": 1,
+                "responseFormat": "single-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "cup-compose": {
+                "difficulty": 1,
+                "responseFormat": "cup-compose",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "action": {
+                "difficulty": 1,
+                "responseFormat": "action",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "unknown": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              }
+            },
+            "levels": {
+              "1": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 1,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 1,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 1,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "2": {
+                "difficulty": 2,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 2,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 2,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 2,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "3": {
+                "difficulty": 3,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 3,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 3,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 3,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "ko.reading.grammar",
+            "label": "조사·문형 읽기",
+            "domain": "reading",
+            "difficulty": 1,
+            "responseFormat": "unknown",
+            "status": "unseen",
+            "priority": 0.65,
+            "n": 0,
+            "correct": 0,
+            "incorrect": 0,
+            "lastAt": null,
+            "assisted": 0,
+            "evidence": [],
+            "unassessed": 0,
+            "formats": {
+              "binary-choice": {
+                "difficulty": 1,
+                "responseFormat": "binary-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "single-choice": {
+                "difficulty": 1,
+                "responseFormat": "single-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "cup-compose": {
+                "difficulty": 1,
+                "responseFormat": "cup-compose",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "action": {
+                "difficulty": 1,
+                "responseFormat": "action",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "unknown": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              }
+            },
+            "levels": {
+              "1": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 1,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 1,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 1,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "2": {
+                "difficulty": 2,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 2,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 2,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 2,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "3": {
+                "difficulty": 3,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 3,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 3,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 3,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "ko.reading.detail",
+            "label": "읽고 세부 정보 찾기",
+            "domain": "reading",
+            "difficulty": 1,
+            "responseFormat": "action",
+            "status": "recent-independent",
+            "priority": 0.15,
+            "n": 4,
+            "correct": 4,
+            "incorrect": 0,
+            "lastAt": "2026-10-01T19:48:34.446Z",
+            "assisted": 0,
+            "evidence": [
+              "amupy5smb-5-5nogqwio",
+              "amupy5t81-d-3bb7cse9",
+              "amupy5twb-l-6xm2kxgy",
+              "amupy5uku-v-cb27s0zm"
+            ],
+            "unassessed": 0,
+            "formats": {
+              "binary-choice": {
+                "difficulty": 1,
+                "responseFormat": "binary-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "single-choice": {
+                "difficulty": 1,
+                "responseFormat": "single-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "cup-compose": {
+                "difficulty": 1,
+                "responseFormat": "cup-compose",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "action": {
+                "difficulty": 1,
+                "responseFormat": "action",
+                "status": "recent-independent",
+                "priority": 0.15,
+                "n": 4,
+                "correct": 4,
+                "incorrect": 0,
+                "lastAt": "2026-10-01T19:48:34.446Z",
+                "assisted": 0,
+                "evidence": [
+                  "amupy5smb-5-5nogqwio",
+                  "amupy5t81-d-3bb7cse9",
+                  "amupy5twb-l-6xm2kxgy",
+                  "amupy5uku-v-cb27s0zm"
+                ],
+                "unassessed": 0
+              },
+              "unknown": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              }
+            },
+            "levels": {
+              "1": {
+                "difficulty": 1,
+                "responseFormat": "action",
+                "status": "recent-independent",
+                "priority": 0.15,
+                "n": 4,
+                "correct": 4,
+                "incorrect": 0,
+                "lastAt": "2026-10-01T19:48:34.446Z",
+                "assisted": 0,
+                "evidence": [
+                  "amupy5smb-5-5nogqwio",
+                  "amupy5t81-d-3bb7cse9",
+                  "amupy5twb-l-6xm2kxgy",
+                  "amupy5uku-v-cb27s0zm"
+                ],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 1,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 1,
+                    "responseFormat": "action",
+                    "status": "recent-independent",
+                    "priority": 0.15,
+                    "n": 4,
+                    "correct": 4,
+                    "incorrect": 0,
+                    "lastAt": "2026-10-01T19:48:34.446Z",
+                    "assisted": 0,
+                    "evidence": [
+                      "amupy5smb-5-5nogqwio",
+                      "amupy5t81-d-3bb7cse9",
+                      "amupy5twb-l-6xm2kxgy",
+                      "amupy5uku-v-cb27s0zm"
+                    ],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 1,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "2": {
+                "difficulty": 2,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 2,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 2,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 2,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "3": {
+                "difficulty": 3,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 3,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 3,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 3,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "ko.reading.negation",
+            "label": "읽고 부정·변경 이해하기",
+            "domain": "reading",
+            "difficulty": 2,
+            "responseFormat": "action",
+            "status": "checking",
+            "priority": 0.55,
+            "n": 2,
+            "correct": 2,
+            "incorrect": 0,
+            "lastAt": "2026-10-01T19:48:34.747Z",
+            "assisted": 0,
+            "evidence": [
+              "amupy5stn-7-jr5uaoda",
+              "amupy5ut7-x-n174311h"
+            ],
+            "unassessed": 0,
+            "formats": {
+              "binary-choice": {
+                "difficulty": 2,
+                "responseFormat": "binary-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "single-choice": {
+                "difficulty": 2,
+                "responseFormat": "single-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "cup-compose": {
+                "difficulty": 2,
+                "responseFormat": "cup-compose",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "action": {
+                "difficulty": 2,
+                "responseFormat": "action",
+                "status": "checking",
+                "priority": 0.55,
+                "n": 2,
+                "correct": 2,
+                "incorrect": 0,
+                "lastAt": "2026-10-01T19:48:34.747Z",
+                "assisted": 0,
+                "evidence": [
+                  "amupy5stn-7-jr5uaoda",
+                  "amupy5ut7-x-n174311h"
+                ],
+                "unassessed": 0
+              },
+              "unknown": {
+                "difficulty": 2,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              }
+            },
+            "levels": {
+              "1": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 1,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 1,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 1,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "2": {
+                "difficulty": 2,
+                "responseFormat": "action",
+                "status": "checking",
+                "priority": 0.55,
+                "n": 2,
+                "correct": 2,
+                "incorrect": 0,
+                "lastAt": "2026-10-01T19:48:34.747Z",
+                "assisted": 0,
+                "evidence": [
+                  "amupy5stn-7-jr5uaoda",
+                  "amupy5ut7-x-n174311h"
+                ],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 2,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 2,
+                    "responseFormat": "action",
+                    "status": "checking",
+                    "priority": 0.55,
+                    "n": 2,
+                    "correct": 2,
+                    "incorrect": 0,
+                    "lastAt": "2026-10-01T19:48:34.747Z",
+                    "assisted": 0,
+                    "evidence": [
+                      "amupy5stn-7-jr5uaoda",
+                      "amupy5ut7-x-n174311h"
+                    ],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 2,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "3": {
+                "difficulty": 3,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 3,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 3,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 3,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "ko.reading.sequence",
+            "label": "읽고 순서 이해하기",
+            "domain": "reading",
+            "difficulty": 2,
+            "responseFormat": "action",
+            "status": "checking",
+            "priority": 0.55,
+            "n": 3,
+            "correct": 3,
+            "incorrect": 0,
+            "lastAt": "2026-10-01T19:48:35.020Z",
+            "assisted": 0,
+            "evidence": [
+              "amupy5tgc-f-b4ne9j8a",
+              "amupy5u47-n-x835rhfw",
+              "amupy5v0s-z-4g35k5mk"
+            ],
+            "unassessed": 0,
+            "formats": {
+              "binary-choice": {
+                "difficulty": 2,
+                "responseFormat": "binary-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "single-choice": {
+                "difficulty": 2,
+                "responseFormat": "single-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "cup-compose": {
+                "difficulty": 2,
+                "responseFormat": "cup-compose",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "action": {
+                "difficulty": 2,
+                "responseFormat": "action",
+                "status": "checking",
+                "priority": 0.55,
+                "n": 3,
+                "correct": 3,
+                "incorrect": 0,
+                "lastAt": "2026-10-01T19:48:35.020Z",
+                "assisted": 0,
+                "evidence": [
+                  "amupy5tgc-f-b4ne9j8a",
+                  "amupy5u47-n-x835rhfw",
+                  "amupy5v0s-z-4g35k5mk"
+                ],
+                "unassessed": 0
+              },
+              "unknown": {
+                "difficulty": 2,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              }
+            },
+            "levels": {
+              "1": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 1,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 1,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 1,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "2": {
+                "difficulty": 2,
+                "responseFormat": "action",
+                "status": "checking",
+                "priority": 0.55,
+                "n": 3,
+                "correct": 3,
+                "incorrect": 0,
+                "lastAt": "2026-10-01T19:48:35.020Z",
+                "assisted": 0,
+                "evidence": [
+                  "amupy5tgc-f-b4ne9j8a",
+                  "amupy5u47-n-x835rhfw",
+                  "amupy5v0s-z-4g35k5mk"
+                ],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 2,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 2,
+                    "responseFormat": "action",
+                    "status": "checking",
+                    "priority": 0.55,
+                    "n": 3,
+                    "correct": 3,
+                    "incorrect": 0,
+                    "lastAt": "2026-10-01T19:48:35.020Z",
+                    "assisted": 0,
+                    "evidence": [
+                      "amupy5tgc-f-b4ne9j8a",
+                      "amupy5u47-n-x835rhfw",
+                      "amupy5v0s-z-4g35k5mk"
+                    ],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 2,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "3": {
+                "difficulty": 3,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 3,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 3,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 3,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "ko.reading.reason",
+            "label": "읽고 이유 이해하기",
+            "domain": "reading",
+            "difficulty": 1,
+            "responseFormat": "unknown",
+            "status": "unseen",
+            "priority": 0.65,
+            "n": 0,
+            "correct": 0,
+            "incorrect": 0,
+            "lastAt": null,
+            "assisted": 0,
+            "evidence": [],
+            "unassessed": 0,
+            "formats": {
+              "binary-choice": {
+                "difficulty": 1,
+                "responseFormat": "binary-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "single-choice": {
+                "difficulty": 1,
+                "responseFormat": "single-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "cup-compose": {
+                "difficulty": 1,
+                "responseFormat": "cup-compose",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "action": {
+                "difficulty": 1,
+                "responseFormat": "action",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "unknown": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              }
+            },
+            "levels": {
+              "1": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 1,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 1,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 1,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "2": {
+                "difficulty": 2,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 2,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 2,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 2,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "3": {
+                "difficulty": 3,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 3,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 3,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 3,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "ko.reading.condition",
+            "label": "읽고 조건 이해하기",
+            "domain": "reading",
+            "difficulty": 1,
+            "responseFormat": "unknown",
+            "status": "unseen",
+            "priority": 0.65,
+            "n": 0,
+            "correct": 0,
+            "incorrect": 0,
+            "lastAt": null,
+            "assisted": 0,
+            "evidence": [],
+            "unassessed": 0,
+            "formats": {
+              "binary-choice": {
+                "difficulty": 1,
+                "responseFormat": "binary-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "single-choice": {
+                "difficulty": 1,
+                "responseFormat": "single-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "cup-compose": {
+                "difficulty": 1,
+                "responseFormat": "cup-compose",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "action": {
+                "difficulty": 1,
+                "responseFormat": "action",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "unknown": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              }
+            },
+            "levels": {
+              "1": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 1,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 1,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 1,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "2": {
+                "difficulty": 2,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 2,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 2,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 2,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "3": {
+                "difficulty": 3,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 3,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 3,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 3,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "ko.reading.main",
+            "label": "읽고 핵심 이해하기",
+            "domain": "reading",
+            "difficulty": 1,
+            "responseFormat": "unknown",
+            "status": "unseen",
+            "priority": 0.65,
+            "n": 0,
+            "correct": 0,
+            "incorrect": 0,
+            "lastAt": null,
+            "assisted": 0,
+            "evidence": [],
+            "unassessed": 0,
+            "formats": {
+              "binary-choice": {
+                "difficulty": 1,
+                "responseFormat": "binary-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "single-choice": {
+                "difficulty": 1,
+                "responseFormat": "single-choice",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "cup-compose": {
+                "difficulty": 1,
+                "responseFormat": "cup-compose",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "action": {
+                "difficulty": 1,
+                "responseFormat": "action",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              },
+              "unknown": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0
+              }
+            },
+            "levels": {
+              "1": {
+                "difficulty": 1,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 1,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 1,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 1,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 1,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "2": {
+                "difficulty": 2,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 2,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 2,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 2,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 2,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              },
+              "3": {
+                "difficulty": 3,
+                "responseFormat": "unknown",
+                "status": "unseen",
+                "priority": 0.65,
+                "n": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "lastAt": null,
+                "assisted": 0,
+                "evidence": [],
+                "unassessed": 0,
+                "formats": {
+                  "binary-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "binary-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "single-choice": {
+                    "difficulty": 3,
+                    "responseFormat": "single-choice",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "cup-compose": {
+                    "difficulty": 3,
+                    "responseFormat": "cup-compose",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "action": {
+                    "difficulty": 3,
+                    "responseFormat": "action",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  },
+                  "unknown": {
+                    "difficulty": 3,
+                    "responseFormat": "unknown",
+                    "status": "unseen",
+                    "priority": 0.65,
+                    "n": 0,
+                    "correct": 0,
+                    "incorrect": 0,
+                    "lastAt": null,
+                    "assisted": 0,
+                    "evidence": [],
+                    "unassessed": 0
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "evidenceComplete": true,
+        "asOf": "2026-10-01T19:48:35.197Z",
+        "independent": 9,
+        "learningEffectClaim": false,
+        "grade": null,
+        "storage": {
+          "available": true,
+          "scope": "device",
+          "warning": null
+        },
+        "counts": {
+          "scopes": 1,
+          "presented": 9,
+          "attempts": 9,
+          "independent": {
+            "evaluated": 9,
+            "correct": 9,
+            "incorrect": 0,
+            "accuracy": 1
+          },
+          "byConcept": {
+            "ko.reading.detail": {
+              "evaluated": 4,
+              "correct": 4,
+              "incorrect": 0,
+              "accuracy": 1
+            },
+            "ko.reading.negation": {
+              "evaluated": 2,
+              "correct": 2,
+              "incorrect": 0,
+              "accuracy": 1
+            },
+            "ko.reading.sequence": {
+              "evaluated": 3,
+              "correct": 3,
+              "incorrect": 0,
+              "accuracy": 1
+            }
+          },
+          "byArm": {
+            "adapted": {
+              "evaluated": 9,
+              "correct": 9,
+              "incorrect": 0,
+              "accuracy": 1
+            }
+          },
+          "assisted": 0,
+          "unknownAssistance": 0,
+          "repeat": 0,
+          "unknownExposure": 0,
+          "unassessed": 0,
+          "skipped": 0,
+          "excludedAttempts": 0,
+          "status": "measured",
+          "learningEffectClaim": false
+        }
+      }
+    },
+    {
+      "name": "all ninety local recordings fetched, SHA-256 verified and decoded in Chrome",
+      "pass": true,
+      "files": [
+        {
+          "id": "dialogue-opening-01",
+          "seconds": 6.312,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-opening-02",
+          "seconds": 5.64,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-opening-03",
+          "seconds": 4.944,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-opening-04",
+          "seconds": 2.16,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-opening-05",
+          "seconds": 7.464,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-cleanup-intro-01",
+          "seconds": 5.4,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-cleanup-intro-02",
+          "seconds": 6.12,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-cleanup-intro-03",
+          "seconds": 5.136,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-cleanup-outro-01",
+          "seconds": 5.112,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-cleanup-outro-02",
+          "seconds": 7.488,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-cleanup-outro-03",
+          "seconds": 5.832,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-clue-intro-01",
+          "seconds": 4.392,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-clue-intro-02",
+          "seconds": 6.648,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-clue-intro-03",
+          "seconds": 5.256,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-clue-outro-01",
+          "seconds": 7.368,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-clue-outro-02",
+          "seconds": 3.384,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-clue-outro-03",
+          "seconds": 4.704,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-surprise-intro-01",
+          "seconds": 5.904,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-surprise-intro-02",
+          "seconds": 2.904,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-surprise-intro-03",
+          "seconds": 6.168,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-surprise-outro-01",
+          "seconds": 6.96,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-surprise-outro-02",
+          "seconds": 4.32,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-ending-01",
+          "seconds": 5.16,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-ending-02",
+          "seconds": 4.92,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-ending-03",
+          "seconds": 5.328,
+          "channels": 1
+        },
+        {
+          "id": "dialogue-ending-04",
+          "seconds": 7.392,
+          "channels": 1
+        },
+        {
+          "id": "feedback-unavailable-story",
+          "seconds": 2.976,
+          "channels": 1
+        },
+        {
+          "id": "feedback-invalid-destination",
+          "seconds": 3.312,
+          "channels": 1
+        },
+        {
+          "id": "feedback-selection",
+          "seconds": 3.456,
+          "channels": 1
+        },
+        {
+          "id": "feedback-extra-object",
+          "seconds": 6.96,
+          "channels": 1
+        },
+        {
+          "id": "feedback-help-unavailable",
+          "seconds": 2.976,
+          "channels": 1
+        },
+        {
+          "id": "feedback-already-marin",
+          "seconds": 4.896,
+          "channels": 1
+        },
+        {
+          "id": "feedback-already-kkamong",
+          "seconds": 2.352,
+          "channels": 1
+        },
+        {
+          "id": "mission-cleanup-snacks",
+          "seconds": 3.432,
+          "channels": 1
+        },
+        {
+          "id": "help-cleanup-snacks",
+          "seconds": 6.6,
+          "channels": 1
+        },
+        {
+          "id": "feedback-cleanup-snacks-success",
+          "seconds": 6.216,
+          "channels": 1
+        },
+        {
+          "id": "feedback-cleanup-snacks-actor",
+          "seconds": 8.04,
+          "channels": 1
+        },
+        {
+          "id": "feedback-cleanup-snacks-destination",
+          "seconds": 6.864,
+          "channels": 1
+        },
+        {
+          "id": "feedback-cleanup-snacks-bin",
+          "seconds": 7.488,
+          "channels": 1
+        },
+        {
+          "id": "mission-cleanup-paper",
+          "seconds": 4.392,
+          "channels": 1
+        },
+        {
+          "id": "help-cleanup-paper",
+          "seconds": 6.888,
+          "channels": 1
+        },
+        {
+          "id": "feedback-cleanup-paper-success",
+          "seconds": 4.632,
+          "channels": 1
+        },
+        {
+          "id": "feedback-cleanup-paper-actor",
+          "seconds": 8.088,
+          "channels": 1
+        },
+        {
+          "id": "feedback-cleanup-paper-destination",
+          "seconds": 6.744,
+          "channels": 1
+        },
+        {
+          "id": "feedback-cleanup-paper-bin",
+          "seconds": 8.616,
+          "channels": 1
+        },
+        {
+          "id": "mission-clue-flowers",
+          "seconds": 3.48,
+          "channels": 1
+        },
+        {
+          "id": "help-clue-flowers",
+          "seconds": 5.928,
+          "channels": 1
+        },
+        {
+          "id": "feedback-clue-flowers-success",
+          "seconds": 6.024,
+          "channels": 1
+        },
+        {
+          "id": "feedback-clue-flowers-actor",
+          "seconds": 8.04,
+          "channels": 1
+        },
+        {
+          "id": "feedback-clue-flowers-destination",
+          "seconds": 6.768,
+          "channels": 1
+        },
+        {
+          "id": "feedback-clue-flowers-bin",
+          "seconds": 7.272,
+          "channels": 1
+        },
+        {
+          "id": "mission-clue-letter",
+          "seconds": 4.848,
+          "channels": 1
+        },
+        {
+          "id": "help-clue-letter",
+          "seconds": 7.8,
+          "channels": 1
+        },
+        {
+          "id": "feedback-clue-letter-success",
+          "seconds": 4.632,
+          "channels": 1
+        },
+        {
+          "id": "feedback-clue-letter-actor",
+          "seconds": 8.088,
+          "channels": 1
+        },
+        {
+          "id": "feedback-clue-letter-destination",
+          "seconds": 6.84,
+          "channels": 1
+        },
+        {
+          "id": "feedback-clue-letter-bin",
+          "seconds": 7.464,
+          "channels": 1
+        },
+        {
+          "id": "feedback-clue-letter-order",
+          "seconds": 7.56,
+          "channels": 1
+        },
+        {
+          "id": "mission-surprise-cake",
+          "seconds": 3.552,
+          "channels": 1
+        },
+        {
+          "id": "help-surprise-cake",
+          "seconds": 6.192,
+          "channels": 1
+        },
+        {
+          "id": "feedback-surprise-cake-success",
+          "seconds": 4.728,
+          "channels": 1
+        },
+        {
+          "id": "feedback-surprise-cake-actor",
+          "seconds": 8.088,
+          "channels": 1
+        },
+        {
+          "id": "feedback-surprise-cake-destination",
+          "seconds": 6.768,
+          "channels": 1
+        },
+        {
+          "id": "feedback-surprise-cake-bin",
+          "seconds": 7.608,
+          "channels": 1
+        },
+        {
+          "id": "mission-surprise-ribbon",
+          "seconds": 5.136,
+          "channels": 1
+        },
+        {
+          "id": "help-surprise-ribbon",
+          "seconds": 6.072,
+          "channels": 1
+        },
+        {
+          "id": "feedback-surprise-ribbon-success",
+          "seconds": 6.336,
+          "channels": 1
+        },
+        {
+          "id": "feedback-surprise-ribbon-actor",
+          "seconds": 8.04,
+          "channels": 1
+        },
+        {
+          "id": "feedback-surprise-ribbon-destination",
+          "seconds": 6.84,
+          "channels": 1
+        },
+        {
+          "id": "feedback-surprise-ribbon-bin",
+          "seconds": 7.56,
+          "channels": 1
+        },
+        {
+          "id": "feedback-surprise-ribbon-order",
+          "seconds": 7.728,
+          "channels": 1
+        },
+        {
+          "id": "mission-review-snacks",
+          "seconds": 3.912,
+          "channels": 1
+        },
+        {
+          "id": "help-review-snacks",
+          "seconds": 7.272,
+          "channels": 1
+        },
+        {
+          "id": "feedback-review-snacks-success",
+          "seconds": 4.728,
+          "channels": 1
+        },
+        {
+          "id": "feedback-review-snacks-actor",
+          "seconds": 8.088,
+          "channels": 1
+        },
+        {
+          "id": "feedback-review-snacks-destination",
+          "seconds": 6.816,
+          "channels": 1
+        },
+        {
+          "id": "feedback-review-snacks-bin",
+          "seconds": 7.488,
+          "channels": 1
+        },
+        {
+          "id": "mission-review-paper",
+          "seconds": 4.2,
+          "channels": 1
+        },
+        {
+          "id": "help-review-paper",
+          "seconds": 6.024,
+          "channels": 1
+        },
+        {
+          "id": "feedback-review-paper-success",
+          "seconds": 5.976,
+          "channels": 1
+        },
+        {
+          "id": "feedback-review-paper-actor",
+          "seconds": 8.04,
+          "channels": 1
+        },
+        {
+          "id": "feedback-review-paper-destination",
+          "seconds": 6.864,
+          "channels": 1
+        },
+        {
+          "id": "feedback-review-paper-bin",
+          "seconds": 8.832,
+          "channels": 1
+        },
+        {
+          "id": "mission-review-cake",
+          "seconds": 4.896,
+          "channels": 1
+        },
+        {
+          "id": "help-review-cake",
+          "seconds": 6.768,
+          "channels": 1
+        },
+        {
+          "id": "feedback-review-cake-success",
+          "seconds": 6.24,
+          "channels": 1
+        },
+        {
+          "id": "feedback-review-cake-actor",
+          "seconds": 8.04,
+          "channels": 1
+        },
+        {
+          "id": "feedback-review-cake-destination",
+          "seconds": 6.816,
+          "channels": 1
+        },
+        {
+          "id": "feedback-review-cake-bin",
+          "seconds": 7.608,
+          "channels": 1
+        },
+        {
+          "id": "feedback-review-cake-order",
+          "seconds": 7.512,
+          "channels": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "expectedFailures": [
+    "One intentionally blocked MP3; retry succeeded without marking a failed load as help"
+  ],
+  "pass": true,
+  "sourceHashes": {
+    "app.mjs": "31c4e3d95eee26799c4af3c0ca2dfcc7a1e35428fdbca15e84e4b41bfee475c9",
+    "story.mjs": "6c139b949559b73cd5d2eeda9263988ef1cb53af1246fea7ffe1febbbae13aa6",
+    "core.mjs": "d25f2db36f1bff0276f341dcb188951fa8d9b1cdae7c7320ccfbf8bdeeb56001",
+    "voice.mjs": "9cead7ccf8d44d1410808073e82053b4172fe0934c5725307a3d58aefaf65a90",
+    "voice-lines.mjs": "4d0d7d77b6132107ab44ba96b6382124e5ee291d763eab01735c195bca6c0fb3",
+    "learning.mjs": "1918b2ecfc701a66a219e2b084891d89a1347cdd8eaf26c714a912e712010ea0",
+    "audio.mjs": "0429642bdfab521214eedb35944ce9e49dcf9d360d8dd6c731f18e4a80446017",
+    "index.html": "dd55f952b8b8d34c9107cdcdb5e19781b8ee174c6c23acef1512f12de37b94c5",
+    "style.css": "a499c7abb71b3903a4a6e074eb085b1fb670423d8258bb64e74bc2f52f1bb728"
+  }
+}

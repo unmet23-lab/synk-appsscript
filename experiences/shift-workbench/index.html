@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#24448C"><title>SYNK SHIFT · AI 업무 실습</title><link rel="stylesheet" href="/style.css"><script src="/atlas/engine.js" defer></script><script src="/atlas/personalization.js" defer></script><script type="module" src="/app.mjs"></script></head>
+<body><a class="skip" href="#main">실습으로 바로 가기</a><header class="top"><a href="/" aria-label="SYNK SHIFT 처음"><img src="/assets/synk.svg" alt="synk"><span>SHIFT</span></a><p>AI 업무 실습실 <span class="local">LOCAL MVP</span></p></header>
+<main id="main"><section class="intro"><div><p class="eyebrow">BETTER WORK, WITH YOU.</p><h1>AI가 쓴 다음,<br><span>내 판단이 시작됩니다.</span></h1><p class="lead">가상 업무로 요청하고, 근거를 확인하고, 쓸 수 있는 결과로 직접 고쳐 보세요.</p><p class="fine">예시 AI 결과를 사용하는 로컬 실습입니다. 실제 AI 호출이나 외부 전송은 없습니다.</p></div><img src="/assets/shift-cover.png" alt="펠트로 만든 AI 업무 워크숍" class="hero-art"></section>
+<div class="toolbar"><div><span id="mode-label">이 창에서만 진행</span><p id="save-status" role="status">저장하려면 시작할 때 이 기기 저장을 선택하세요.</p></div><button id="history-open" class="soft">진행 기록 <span id="history-count">0</span></button></div>
+<div id="notice" role="status" tabindex="-1" hidden></div>
+<section id="setup" aria-labelledby="setup-title"><div class="section-heading"><span class="number">01</span><div><p class="eyebrow">YOUR NEXT PRACTICE</p><h2 id="setup-title">오늘 어떤 업무를 연습할까요?</h2></div></div>
+<form id="setup-form"><fieldset><legend class="sr-only">업무 선택</legend><div class="task-grid" id="task-options"></div></fieldset><div class="settings-grid">
+<label>지금 필요한 결과<select name="goal" id="goal"><option value="clarity">짧고 정확하게 정리하기</option><option value="work">업무에 쓸 초안 완성하기</option><option value="prepare">검토 방법까지 준비하기</option></select></label>
+<label>실습할 시간<select name="minutes" id="minutes"><option value="5">5분 · 핵심부터</option><option value="10">10분 · 전체 검토</option><option value="15">15분 · 다음 활용까지</option></select></label>
+<label>도움 방식<select name="support" id="support"><option value="step">안내와 예시를 보며</option><option value="independent">먼저 혼자 해보기</option></select></label></div>
+<label class="checkline"><input type="checkbox" id="save-choice"> 이 기기에 선택 조건·요청문·실습 결과 저장하기</label><p class="fine">공용 기기에서는 선택하지 마세요. 이름이나 회사 자료는 입력하지 않습니다. 아래 버튼을 누르면 고른 조건을 이번 실습 추천에 사용합니다.</p><button type="submit" class="primary">이 조건으로 실습 시작 <span aria-hidden="true">↗</span></button></form></section>
+<section id="practice" hidden aria-labelledby="practice-title"></section><section id="result" hidden aria-labelledby="result-title"></section>
+<section id="history" hidden aria-labelledby="history-title"><div class="section-heading"><h2 id="history-title">이 기기의 진행 기록</h2><button id="history-close" class="soft">실습으로 돌아가기</button></div><div id="history-list"></div><p class="fine">가상 자료의 정해진 검토 항목 결과입니다. 업무 능력이나 생산성 평가가 아닙니다.</p></section>
+<footer><p>선택한 조건은 바꿀 수 있어요. 학습 결과를 회사나 교사에게 보내지 않습니다.</p><button id="reset" class="quiet">실습과 저장 기록 초기화</button></footer></main>
+<dialog id="reset-dialog"><h2>이 기기의 실습을 지울까요?</h2><p>작성 중인 요청문, 결과, 진행 기록과 맞춤 조건을 지웁니다.</p><div class="actions"><button id="reset-cancel" class="soft">유지하기</button><button id="reset-confirm" class="primary">모두 지우기</button></div></dialog>
+</body></html>

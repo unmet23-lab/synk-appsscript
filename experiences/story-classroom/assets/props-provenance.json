@@ -1,0 +1,463 @@
+{
+  "schemaVersion": 1,
+  "asset": "story-classroom-props",
+  "createdAt": "2026-10-02",
+  "tool": "built-in image_gen.imagegen",
+  "mode": "generate followed by one placement-and-margin edit",
+  "styleReference": "classroom.webp",
+  "source": "props-atlas-original.png",
+  "transparencyRequested": true,
+  "identityAssetsRecreated": false,
+  "grid": {
+    "columns": 4,
+    "rows": 3,
+    "order": [
+      "snacks",
+      "paper",
+      "cake",
+      "ribbon",
+      "flowers",
+      "letter",
+      "box",
+      "drawer",
+      "table",
+      "bin",
+      "shelf",
+      "board"
+    ]
+  },
+  "generations": [
+    {
+      "role": "initial atlas",
+      "path": "C:/Users/q1212/.codex/generated_images/01a0f825-bc14-7ce1-b4b2-976224bd3340/exec-cf33f7e9-0286-4e82-b2ad-8d196fd51116.png",
+      "prompt": "Use case: stylized-concept.\nAsset type: ONE transparent sprite atlas for a premium handcrafted miniature classroom reading game.\nReference image 1: use only the warm real wood, handmade felt/cotton/paper materials, warm upper-left sunlight, soft shadows and charming stop-motion miniature quality. Do not copy the room or its layout. No existing character or brand identity to recreate.\nPrimary request: Create exactly TWELVE isolated miniature prop cutouts arranged in an EXACT 4-column by 3-row regular grid on a genuinely transparent alpha background. The overall sheet is landscape 4:3. Every cell is equal sized. Each object is centered in its own cell with wide clear transparent margins, approximately 18% margin on every side. No object, loose fragment, cast shadow or decorative detail may cross any cell boundary. No visible grid, no cell outlines, no card backgrounds. Keep alpha empty between items. Scale objects to fit within each cell, even the larger furniture. No extra objects outside the specified groups.\nROW 1 left to right:\n1) snacks: one open small kraft paper snack bag plus two round handmade chocolate-chip cookies leaning against the bag, as a single compact object group.\n2) paper: one compact overlapping pile of colorful thick paper decoration scraps, muted cream, coral, ochre and navy, no writing.\n3) cake: one small round white cream birthday cake on a plain round plate, with EXACTLY ONE short coral candle.\n4) ribbon: one soft coral fabric ribbon tied in a large bow, short loose tails, tactile woven cotton.\nROW 2 left to right:\n5) flowers: three simple cream and coral felt flowers with leaves in one small blue ceramic vase.\n6) letter: one cream paper envelope, closed, with a small coral heart seal, NO letters or writing.\n7) box: one open empty corrugated cardboard box, four open flaps, interior visible.\n8) drawer: one small freestanding two-drawer natural wood chest, top drawer pulled slightly open, simple round knobs.\nROW 3 left to right:\n9) table: one small natural wood classroom table, sturdy legs, a small cream fabric cloth across its surface. Show entire table and all legs.\n10) bin: one simple open blue cylindrical wastepaper basket, empty, rim clearly visible.\n11) shelf: one small freestanding natural wood two-level shelf with exactly three closed books on lower shelf, no text on books.\n12) board: one small dark green chalkboard with a natural wood frame, no writing, no stand.\nStyle and camera: crafted practical stop-motion miniature objects, real grain and subtly irregular handmade edges, wool felt fuzz, thick paper fiber, quiet high quality realism with inviting children-story proportions. Slight three-quarter front view, modest view from above, all props visually cohesive. Directional warm daylight from upper left, restrained ambient fill, tiny soft contact shadows only within each object group. Muted navy, dusty coral, cream, honey wood, sage palette matching the reference. Clean readable silhouettes at small game scale.\nStrict constraints: actual transparent alpha background, no white or checkerboard baked background, no text, no labels, no numbers, no logo, no watermark, no people, no characters, no faces, no room, no floor plane. Exactly twelve cells, exactly twelve specified groups. Do not add other props. The items must be separable by simple cropping of their equal grid cells.",
+      "note": "Tactile appearance accepted; table approached/crossed equal cell boundary, so a margin correction was requested."
+    },
+    {
+      "role": "selected atlas",
+      "path": "C:/Users/q1212/.codex/generated_images/01a0f825-bc14-7ce1-b4b2-976224bd3340/exec-deb1d8c4-dcb3-4d43-9813-ce51194e3e54.png",
+      "prompt": "Use case: precise-object-edit. Edit only the placement and scale of the supplied transparent twelve-prop atlas. Keep the same twelve props, designs, materials, colors, camera angles and warm upper-left lighting. Keep a true transparent alpha background.\nCritical change: EXACT regular 4-column by 3-row grid. The 4:3 landscape sheet divides into twelve equal SQUARE cells. Center every whole object in its own cell. Reduce every object to at most 64 percent of the cell's width AND height, leaving at least 18 percent clear transparent margin on each side. The entire table including cloth and feet must remain inside cell 9; nothing from table may leak into cell 10. No element or shadow may approach any cell border. Keep transparent margins completely empty, without speckles or noise.\nDo not add grid lines, numbers, text, checkerboard or backgrounds. Do not remove any of the twelve props. Preserve row order: row1 snack bag+cookies / paper decorations / one-candle cake / coral bow; row2 flowers in blue vase / heart-sealed envelope / open cardboard box / two-drawer wood chest; row3 cloth-covered wood table / blue bin / shelf with exactly three books / blank green chalkboard. Only give the objects more breathing room in an exactly aligned 4 by 3 grid."
+    }
+  ],
+  "extraction": {
+    "method": "Equal 4x3 cells; alpha>32 bounding box with 6px padding; preserve original RGBA; uniform LANCZOS resize into a centered transparent canvas; lossless WebP.",
+    "canvas": 256,
+    "tableCanvas": 384,
+    "padding": 16,
+    "tablePadding": 24,
+    "repainted": false
+  },
+  "checks": {
+    "alpha": {
+      "min": 0,
+      "max": 255,
+      "trueTransparentSource": true
+    },
+    "cellBoundary": "All twelve source cell edges alpha <= 1; no visible object crosses its cell boundary.",
+    "sprites": "12 lossless WebP files have RGBA mode, transparent corners, normalized canvases and preserved source colors."
+  },
+  "sourceSize": [
+    1448,
+    1086
+  ],
+  "sourceMode": "RGBA",
+  "sourceSha256": "64c63c35d05e3c6ac8028626e6a7cf8ee43ff84bc6c0133ce90115a6a89a35ce",
+  "sprites": [
+    {
+      "id": "snacks",
+      "file": "prop-snacks.webp",
+      "cellRect": [
+        0,
+        0,
+        362,
+        362
+      ],
+      "contentBoundsAlpha32": [
+        60,
+        86,
+        316,
+        352
+      ],
+      "cropBounds": [
+        54,
+        80,
+        322,
+        358
+      ],
+      "sourceCellEdgeMaxAlpha": 0,
+      "canvas": [
+        256,
+        256
+      ],
+      "contentSize": [
+        216,
+        224
+      ],
+      "bytes": 57712,
+      "sha256": "172daa940787ff659b17692125c079b522e246be15908ab516d4b500cffb2a45"
+    },
+    {
+      "id": "paper",
+      "file": "prop-paper.webp",
+      "cellRect": [
+        362,
+        0,
+        724,
+        362
+      ],
+      "contentBoundsAlpha32": [
+        62,
+        100,
+        338,
+        345
+      ],
+      "cropBounds": [
+        56,
+        94,
+        344,
+        351
+      ],
+      "sourceCellEdgeMaxAlpha": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "contentSize": [
+        224,
+        200
+      ],
+      "bytes": 54306,
+      "sha256": "beef59cd54fb05f06a482e172c5278cd7597c6cf4c22e8828f2e43eaba8d1903"
+    },
+    {
+      "id": "cake",
+      "file": "prop-cake.webp",
+      "cellRect": [
+        724,
+        0,
+        1086,
+        362
+      ],
+      "contentBoundsAlpha32": [
+        66,
+        97,
+        316,
+        341
+      ],
+      "cropBounds": [
+        60,
+        91,
+        322,
+        347
+      ],
+      "sourceCellEdgeMaxAlpha": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "contentSize": [
+        224,
+        219
+      ],
+      "bytes": 45556,
+      "sha256": "6e55265332d81c0392182c84f2a7a4431743ceac6697173e718efe4e2a768f8b"
+    },
+    {
+      "id": "ribbon",
+      "file": "prop-ribbon.webp",
+      "cellRect": [
+        1086,
+        0,
+        1448,
+        362
+      ],
+      "contentBoundsAlpha32": [
+        66,
+        116,
+        321,
+        339
+      ],
+      "cropBounds": [
+        60,
+        110,
+        327,
+        345
+      ],
+      "sourceCellEdgeMaxAlpha": 0,
+      "canvas": [
+        256,
+        256
+      ],
+      "contentSize": [
+        224,
+        197
+      ],
+      "bytes": 50022,
+      "sha256": "5e38a770353afd30b3b4b9c2b96f129b159f4817158bc9af5717621eaf65f495"
+    },
+    {
+      "id": "flowers",
+      "file": "prop-flowers.webp",
+      "cellRect": [
+        0,
+        362,
+        362,
+        724
+      ],
+      "contentBoundsAlpha32": [
+        78,
+        43,
+        298,
+        316
+      ],
+      "cropBounds": [
+        72,
+        37,
+        304,
+        322
+      ],
+      "sourceCellEdgeMaxAlpha": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "contentSize": [
+        182,
+        224
+      ],
+      "bytes": 48444,
+      "sha256": "16d8be2f21f3f09940141a2fe3a483f12fdd769901ed93395dae47da2738f51a"
+    },
+    {
+      "id": "letter",
+      "file": "prop-letter.webp",
+      "cellRect": [
+        362,
+        362,
+        724,
+        724
+      ],
+      "contentBoundsAlpha32": [
+        69,
+        108,
+        302,
+        277
+      ],
+      "cropBounds": [
+        63,
+        102,
+        308,
+        283
+      ],
+      "sourceCellEdgeMaxAlpha": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "contentSize": [
+        224,
+        165
+      ],
+      "bytes": 45204,
+      "sha256": "57596ece4500c820d9cf633b4952e9456568ad69c1bf4e55bd5ad09a99a97663"
+    },
+    {
+      "id": "box",
+      "file": "prop-box.webp",
+      "cellRect": [
+        724,
+        362,
+        1086,
+        724
+      ],
+      "contentBoundsAlpha32": [
+        41,
+        69,
+        332,
+        312
+      ],
+      "cropBounds": [
+        35,
+        63,
+        338,
+        318
+      ],
+      "sourceCellEdgeMaxAlpha": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "contentSize": [
+        224,
+        189
+      ],
+      "bytes": 44444,
+      "sha256": "aef2155a2b3a0a0539aa742c251dd53be75dd53f3ddefb31a5451961978bf09c"
+    },
+    {
+      "id": "drawer",
+      "file": "prop-drawer.webp",
+      "cellRect": [
+        1086,
+        362,
+        1448,
+        724
+      ],
+      "contentBoundsAlpha32": [
+        68,
+        66,
+        293,
+        306
+      ],
+      "cropBounds": [
+        62,
+        60,
+        299,
+        312
+      ],
+      "sourceCellEdgeMaxAlpha": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "contentSize": [
+        211,
+        224
+      ],
+      "bytes": 56406,
+      "sha256": "a3e8526c7cf7ed795df6ff22256fa3e088e9b3911156d9b632edae83f4346357"
+    },
+    {
+      "id": "table",
+      "file": "prop-table.webp",
+      "cellRect": [
+        0,
+        724,
+        362,
+        1086
+      ],
+      "contentBoundsAlpha32": [
+        48,
+        47,
+        331,
+        273
+      ],
+      "cropBounds": [
+        42,
+        41,
+        337,
+        279
+      ],
+      "sourceCellEdgeMaxAlpha": 1,
+      "canvas": [
+        384,
+        384
+      ],
+      "contentSize": [
+        336,
+        271
+      ],
+      "bytes": 75254,
+      "sha256": "e4409bf46154ceb3cf97c21224b23bbaef619e521cddff4e7d5bd5a158f6f030"
+    },
+    {
+      "id": "bin",
+      "file": "prop-bin.webp",
+      "cellRect": [
+        362,
+        724,
+        724,
+        1086
+      ],
+      "contentBoundsAlpha32": [
+        96,
+        37,
+        299,
+        280
+      ],
+      "cropBounds": [
+        90,
+        31,
+        305,
+        286
+      ],
+      "sourceCellEdgeMaxAlpha": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "contentSize": [
+        189,
+        224
+      ],
+      "bytes": 57328,
+      "sha256": "b1776ff42a7bec7b79a8592104d030f9ade478e3b3db34122251996c5f7cb130"
+    },
+    {
+      "id": "shelf",
+      "file": "prop-shelf.webp",
+      "cellRect": [
+        724,
+        724,
+        1086,
+        1086
+      ],
+      "contentBoundsAlpha32": [
+        70,
+        23,
+        296,
+        282
+      ],
+      "cropBounds": [
+        64,
+        17,
+        302,
+        288
+      ],
+      "sourceCellEdgeMaxAlpha": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "contentSize": [
+        197,
+        224
+      ],
+      "bytes": 53844,
+      "sha256": "a64dbf93b46400e084c77f190623fb8d74928fe09aea056c564b5d71bf0dd9f5"
+    },
+    {
+      "id": "board",
+      "file": "prop-board.webp",
+      "cellRect": [
+        1086,
+        724,
+        1448,
+        1086
+      ],
+      "contentBoundsAlpha32": [
+        50,
+        54,
+        315,
+        251
+      ],
+      "cropBounds": [
+        44,
+        48,
+        321,
+        257
+      ],
+      "sourceCellEdgeMaxAlpha": 1,
+      "canvas": [
+        256,
+        256
+      ],
+      "contentSize": [
+        224,
+        169
+      ],
+      "bytes": 43666,
+      "sha256": "035dd3e94f8d58e4611acaa7377b1f4ed8755ecf942b4651d3d5493c22924b55"
+    }
+  ]
+}

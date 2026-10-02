@@ -1,0 +1,17 @@
+{
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "overflow": false
+  },
+  "hudText": "↗\n1m\n✦\n0\n♡\n● ● ●\n◷\n1:30\n♧\n1\n←\n↑\n↓\n→",
+  "questionRemoved": true,
+  "learningChoices": 0,
+  "audio": {
+    "state": "running",
+    "clips": 16,
+    "id": "left",
+    "offset": 0.14933333333333332,
+    "duration": 2.079125
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "version": 4,
+  "ready": true,
+  "running": true,
+  "paused": true,
+  "demo": true,
+  "mode": "tour",
+  "learning": "listen",
+  "best": 0,
+  "sound": true,
+  "voiceClips": 16,
+  "audio": {
+    "state": "suspended",
+    "clips": 16,
+    "id": "slide",
+    "offset": 0.6693333333333342,
+    "duration": 3.4139166666666667
+  },
+  "world": {
+    "renderer": "Three.js 180",
+    "quality": "experience",
+    "fps": 60,
+    "drawCalls": 495,
+    "triangles": 313248,
+    "width": 2112,
+    "height": 1188,
+    "eventObjects": 23,
+    "frames": 3092,
+    "armlessMongle": true
+  },
+  "model": {
+    "distance": 388.75619647522734,
+    "elapsed": 28.218799999998073,
+    "lane": 2,
+    "x": 2.35,
+    "y": 0,
+    "slide": 0,
+    "hearts": 3,
+    "shield": 1,
+    "combo": 3,
+    "lanterns": 3,
+    "correct": 3,
+    "answers": [
+      {
+        "id": "left",
+        "text": "왼쪽 길로 가세요.",
+        "explanation": "왼쪽 길의 표시선을 지나가요.",
+        "skill": "방향",
+        "learning": "listen",
+        "correct": true,
+        "steps": [
+          {
+            "action": "lane",
+            "target": 0,
+            "status": "done",
+            "inputMatched": true,
+            "executed": true,
+            "label": "왼쪽으로"
+          }
+        ]
+      },
+      {
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "explanation": "울타리 가까이에서 점프해요.",
+        "skill": "동작",
+        "learning": "listen",
+        "correct": true,
+        "steps": [
+          {
+            "action": "jump",
+            "status": "done",
+            "inputMatched": true,
+            "executed": true,
+            "label": "뛰어넘기"
+          }
+        ]
+      },
+      {
+        "id": "right",
+        "text": "오른쪽 길로 가세요.",
+        "explanation": "오른쪽 길의 표시선을 지나가요.",
+        "skill": "방향",
+        "learning": "listen",
+        "correct": true,
+        "steps": [
+          {
+            "action": "lane",
+            "target": 2,
+            "status": "done",
+            "inputMatched": true,
+            "executed": true,
+            "label": "오른쪽으로"
+          }
+        ]
+      }
+    ],
+    "finished": false,
+    "reason": "",
+    "current": {
+      "id": "slide",
+      "text": "표지판 아래로 몸을 숙여 지나가세요.",
+      "steps": [
+        {
+          "action": "slide",
+          "remaining": 79.51335322939514,
+          "resolved": false,
+          "status": null
+        }
+      ]
+    }
+  }
+}

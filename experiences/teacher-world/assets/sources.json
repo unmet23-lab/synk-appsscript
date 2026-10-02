@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "source": "../synk-account/assets",
+  "brand": "SYNK approved assets; copied without recoloring or logo reconstruction",
+  "fonts": {
+    "Korean": "SUIT Variable",
+    "Latin": "Inter Tight 700",
+    "labels": "DM Mono Medium"
+  },
+  "felt": "docs/디자인/펠트부품/README.md",
+  "colors": {
+    "LAB": "#F96859",
+    "LAB text": "#AE322A"
+  },
+  "additionalFelt": {
+    "wide-coral.webp": "docs/디자인/펠트부품/assets/ui/wide-coral.webp",
+    "wide-lapis.webp": "docs/디자인/펠트부품/assets/배경/wide-lapis.webp",
+    "wide-butter.webp": "docs/디자인/펠트부품/assets/배경/wide-butter.webp"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-02",
+  "method": "Whole course in 5m steps without camera frustum. Per-component maxima need not occur in the same frame. Geometry/draw-call budgets, not FPS or physical-phone benchmarks.",
+  "actors": 44,
+  "activities": {
+    "table": 16,
+    "cheer": 8,
+    "party": 12,
+    "walk": 8
+  },
+  "cityStoredTriangles": 27940,
+  "npcSharedGeometryTriangles": 422,
+  "npcDynamicShadowCalls": 0,
+  "maxima": {
+    "high": {
+      "cityTriangles": 18796,
+      "cityDrawCalls": 51,
+      "npcTriangles": 21630,
+      "npcDrawCalls": 9,
+      "visibleActors": 11
+    },
+    "balanced": {
+      "cityTriangles": 12770,
+      "cityDrawCalls": 34,
+      "npcTriangles": 21630,
+      "npcDrawCalls": 9,
+      "visibleActors": 11
+    },
+    "low": {
+      "cityTriangles": 9444,
+      "cityDrawCalls": 27,
+      "npcTriangles": 21630,
+      "npcDrawCalls": 9,
+      "visibleActors": 11
+    }
+  }
+}

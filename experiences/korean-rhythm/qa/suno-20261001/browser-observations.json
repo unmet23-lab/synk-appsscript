@@ -1,0 +1,26 @@
+{
+  "pause": {
+    "result": {
+      "type": "string",
+      "value": "{\"time\":78.13037286670986,\"paused\":true,\"audioState\":\"suspended\",\"signalLevel\":0.060179587206748764,\"recording\":{\"title\":\"파란 신호가 켜지면\",\"sourceId\":\"94e8eeb8-fcba-4434-a0ba-cd1490d8c6d3\",\"url\":\"assets/music/blue-signal.mp3\",\"duration\":202.68,\"sampleRate\":48000,\"channels\":2}}"
+    }
+  },
+  "second": {
+    "result": {
+      "type": "string",
+      "value": "{\"screen\":\"game\",\"time\":126.96758530998828,\"audioState\":\"running\",\"recording\":{\"title\":\"바다까지 한 시간\",\"sourceId\":\"c2835bc7-6963-4503-95bd-781b55e20b88\",\"url\":\"assets/music/one-hour-to-sea.mp3\",\"duration\":231.6,\"sampleRate\":48000,\"channels\":2},\"signalLevel\":0.08001065823068575,\"duration\":231.6,\"paused\":false}"
+    }
+  },
+  "third": {
+    "result": {
+      "type": "string",
+      "value": "{\"screen\":\"game\",\"time\":90.04748733382559,\"audioState\":\"running\",\"recording\":{\"title\":\"오후 네 시의 약속\",\"sourceId\":\"ed3ac4b9-0386-4f47-8c1f-eb61cbd11f52\",\"url\":\"assets/music/four-pm-promise.mp3\",\"duration\":222.8,\"sampleRate\":48000,\"channels\":2},\"signalLevel\":0.0548894885725168,\"duration\":222.8,\"paused\":false}"
+    }
+  },
+  "public": {
+    "result": {
+      "type": "string",
+      "value": "{\"screen\":\"game\",\"time\":99.58103953337654,\"audioState\":\"running\",\"recording\":{\"title\":\"파란 신호가 켜지면\",\"sourceId\":\"94e8eeb8-fcba-4434-a0ba-cd1490d8c6d3\",\"url\":\"assets/music/blue-signal.mp3\",\"duration\":202.68,\"sampleRate\":48000,\"channels\":2},\"signalLevel\":0.0647407835613882,\"duration\":202.68,\"paused\":false}"
+    }
+  }
+}

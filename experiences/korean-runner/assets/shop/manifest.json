@@ -1,0 +1,815 @@
+{
+  "date": "2026-10-02",
+  "basis": "docs/디자인/펠트부품/README.md",
+  "assets": [
+    {
+      "file": "experiences/korean-runner/assets/shop/ui/slab-coral-long.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/slab-coral-long.webp",
+      "originalSize": [
+        1797,
+        321
+      ],
+      "size": [
+        900,
+        161
+      ],
+      "mode": "RGBA",
+      "bytes": 209930,
+      "sourceSha256": "d58a4c8912eba6972ef1a38a7f701b7d841970a164524d41f267984949686849",
+      "sha256": "dee2bd7df8ce10a76e8c4f56cd8bdcf4d6a7e665367510ccd968dcfcd22aa524",
+      "transform": "Resize only; preserve alpha and felt surface; lossless WebP"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/ui/slab-cream-long.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/slab-cream-long.webp",
+      "originalSize": [
+        1792,
+        320
+      ],
+      "size": [
+        900,
+        161
+      ],
+      "mode": "RGBA",
+      "bytes": 149470,
+      "sourceSha256": "84569abd7fed8e954281cd109f19def8288321c41c8bbbe3f8804208fe43f6ac",
+      "sha256": "eb0d23e94888626060fb46beeef991f5952d4d93f82acb7ef27104d3e4266423",
+      "transform": "Resize only; preserve alpha and felt surface; lossless WebP"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/ui/slab-blush-long.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/slab-blush-long.webp",
+      "originalSize": [
+        1797,
+        321
+      ],
+      "size": [
+        900,
+        161
+      ],
+      "mode": "RGBA",
+      "bytes": 164656,
+      "sourceSha256": "8249fb7023fd51806045e8db93999c0ae24ae9ba09d2f57e9f6712d632b9a899",
+      "sha256": "009428210dbfdb45fba251320a3344470ce71f11de8b252a258a4e661e5b8799",
+      "transform": "Resize only; preserve alpha and felt surface; lossless WebP"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/ui/slab-coral.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/slab-coral.webp",
+      "originalSize": [
+        643,
+        321
+      ],
+      "size": [
+        512,
+        256
+      ],
+      "mode": "RGBA",
+      "bytes": 186162,
+      "sourceSha256": "4f313136f063163384e9d2af74c5430c8506c2c137774de5a41cc847ff718d73",
+      "sha256": "1cbfd10fa7881f3c3a0bb865a39e48a6694761d34ed7c23dbb867130dfc09ea7",
+      "transform": "Resize only; preserve alpha and felt surface; lossless WebP"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/ui/slab-cream.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/slab-cream.webp",
+      "originalSize": [
+        637,
+        320
+      ],
+      "size": [
+        512,
+        257
+      ],
+      "mode": "RGBA",
+      "bytes": 132560,
+      "sourceSha256": "f4603fad81dac1607711a5352cd9573482ed563e30f1f13beb9ed08e121f7663",
+      "sha256": "50b7c34d3ed0a792ce30da664cc2617f72883955da27986f7fc0d18c49ea9350",
+      "transform": "Resize only; preserve alpha and felt surface; lossless WebP"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/ui/slab-blush.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/slab-blush.webp",
+      "originalSize": [
+        641,
+        321
+      ],
+      "size": [
+        512,
+        256
+      ],
+      "mode": "RGBA",
+      "bytes": 148532,
+      "sourceSha256": "9177d0e6e4f94774de70ead7d0e24fed0767ced311021f50bb9ed7921eb4be4f",
+      "sha256": "53127ef25704d8345cf344ad13394e57918be6fc43eb9fafa04ec12345dc9264",
+      "transform": "Resize only; preserve alpha and felt surface; lossless WebP"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/ui/chip-blush-long.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/chip-blush-long.webp",
+      "originalSize": [
+        717,
+        239
+      ],
+      "size": [
+        600,
+        200
+      ],
+      "mode": "RGBA",
+      "bytes": 138728,
+      "sourceSha256": "184f49c21988368e1a4422a5584785999f8741c1bfc263371d9f62fd8d622457",
+      "sha256": "c2d66c14a7aa4c59a3a9be4cc71d7b6d819011e1164000f643a687ec673f7807",
+      "transform": "Resize only; preserve alpha and felt surface; lossless WebP"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/ui/chip-blush.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/chip-blush.webp",
+      "originalSize": [
+        391,
+        239
+      ],
+      "size": [
+        384,
+        235
+      ],
+      "mode": "RGBA",
+      "bytes": 97556,
+      "sourceSha256": "fcf455288baad82da74b84181fb0c850b1e96ca50d0732fbf34e3cafb28d7e69",
+      "sha256": "b220643a22bb174c9632427f37a460a879251d4eb410d9d384e2590d7b5a4936",
+      "transform": "Resize only; preserve alpha and felt surface; lossless WebP"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/ui/badge-check.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/badge-check.webp",
+      "originalSize": [
+        513,
+        514
+      ],
+      "size": [
+        192,
+        192
+      ],
+      "mode": "RGBA",
+      "bytes": 47710,
+      "sourceSha256": "9cf54368ec871bc8f1b645ca2dfda0ff88d6dd565c3d27b1dd9b98dc5e2bb645",
+      "sha256": "7b89aa4538dc35f2db79c9b35a03720b06a7a0e2be653dd0d9be0cd3bbfe4a54",
+      "transform": "Resize only; preserve alpha and felt surface; lossless WebP"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/ui/badge-coral.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/badge-coral.webp",
+      "originalSize": [
+        492,
+        499
+      ],
+      "size": [
+        189,
+        192
+      ],
+      "mode": "RGBA",
+      "bytes": 46786,
+      "sourceSha256": "34780a6d00da5afa0c71ef86f9bb8cd975e9adda2cf389585dcdc1d4079a2eec",
+      "sha256": "68ea74401304d70cd5f21f75d13026ce72e3e406bda786cad6c088fd415e1ba9",
+      "transform": "Resize only; preserve alpha and felt surface; lossless WebP"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/ui/badge-cream.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/badge-cream.webp",
+      "originalSize": [
+        353,
+        362
+      ],
+      "size": [
+        187,
+        192
+      ],
+      "mode": "RGBA",
+      "bytes": 35712,
+      "sourceSha256": "5336c1eca815b403ad0348bfde1573dda2367fab4996ea099c2daf03015f15be",
+      "sha256": "2277baf4b3c0273dad63e1155ea749484cc854f881da0204ef5d6d8ae49a83ee",
+      "transform": "Resize only; preserve alpha and felt surface; lossless WebP"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/ui/tag-cream.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/tag-cream.webp",
+      "originalSize": [
+        529,
+        302
+      ],
+      "size": [
+        384,
+        219
+      ],
+      "mode": "RGBA",
+      "bytes": 88900,
+      "sourceSha256": "3e21b91b548936cc98f44cf57991613f52dc03cb44e4f215458e79e795e9e7f4",
+      "sha256": "e12e17839b9b1c157915fd41cc46225519fe21d99d109a24b06f793d78d005e6",
+      "transform": "Resize only; preserve alpha and felt surface; lossless WebP"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/ui/tex-coral.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/tex-coral.webp",
+      "originalSize": [
+        353,
+        351
+      ],
+      "size": [
+        256,
+        255
+      ],
+      "mode": "RGB",
+      "bytes": 26150,
+      "sourceSha256": "a71048dab9e47aa4646985c3baa17c8055cbad0c70bb826537b0a6e31a9f04b1",
+      "sha256": "fac5060b0cfe8454371ad4a13569ea7256ca7bfdfe02f6d74e8582a9f1270411",
+      "transform": "Resize only; approved opaque felt surface; WebP quality 88 (no alpha in source)"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/ui/tex-blush.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/tex-blush.webp",
+      "originalSize": [
+        352,
+        350
+      ],
+      "size": [
+        256,
+        255
+      ],
+      "mode": "RGB",
+      "bytes": 11704,
+      "sourceSha256": "c22e6bae8603eba21f09fc9d53ea857290bffd53ec9112183e44e81c9a638831",
+      "sha256": "4adab7f70854d0b68b6b31c6149b117c18b4a4aa4291ec14f8b53bf4c5e78a39",
+      "transform": "Resize only; approved opaque felt surface; WebP quality 88 (no alpha in source)"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/ui/tex-cream.webp",
+      "source": "docs/디자인/펠트부품/assets/배경/tex-cream.webp",
+      "originalSize": [
+        389,
+        390
+      ],
+      "size": [
+        255,
+        256
+      ],
+      "mode": "RGB",
+      "bytes": 5208,
+      "sourceSha256": "55c9fe19c8b43cadeb232a7c1cfb0cb6f55f308cb3e7129cef36b8a2659d3e3e",
+      "sha256": "49c43aee416c453b0a87ea95240cded544b92a76d340080b0bab6ca624c53dfd",
+      "transform": "Resize only; approved opaque felt surface; WebP quality 88 (no alpha in source)"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/ui/tex-lapis.webp",
+      "source": "docs/디자인/펠트부품/assets/배경/tex-lapis.webp",
+      "originalSize": [
+        398,
+        393
+      ],
+      "size": [
+        256,
+        253
+      ],
+      "mode": "RGB",
+      "bytes": 23832,
+      "sourceSha256": "15267ac2ca5b8e01ac28436a96ff7aa153a92961b669dd133ca2f6d4ddc828ca",
+      "sha256": "ab65071f096e61130ba8a77bdc920a5f7f14180905be3180eb0f28596a780ce8",
+      "transform": "Resize only; approved opaque felt surface; WebP quality 88 (no alpha in source)"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/ui/tex-butter.webp",
+      "source": "docs/디자인/펠트부품/assets/배경/tex-butter.webp",
+      "originalSize": [
+        395,
+        392
+      ],
+      "size": [
+        256,
+        254
+      ],
+      "mode": "RGB",
+      "bytes": 15536,
+      "sourceSha256": "d58e05da20f74089a004cd7af0c19092508110a51bd401dd8535bfe45578e6b1",
+      "sha256": "fae8c111e0f41f97dabc99458dc4338da427c3191177d675faa2f7b83e0cb36f",
+      "transform": "Resize only; approved opaque felt surface; WebP quality 88 (no alpha in source)"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/ui/ring-butter.webp",
+      "source": "docs/디자인/펠트부품/assets/배경/ring-butter.webp",
+      "originalSize": [
+        561,
+        566
+      ],
+      "size": [
+        190,
+        192
+      ],
+      "mode": "RGBA",
+      "bytes": 40866,
+      "sourceSha256": "00e81cdbde27f87f037efbcccc59262acf6904c13bb104db1fb5c94a6cc2dccf",
+      "sha256": "214fea8380261ba89505acac927a8b1932793193fc8ba2d634ae30cde6851c27",
+      "transform": "Resize only; preserve alpha and felt surface; lossless WebP"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/icons/trail-petals.webp",
+      "source": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+      "atlasCell": [
+        0,
+        0,
+        307,
+        280
+      ],
+      "crop": [
+        35,
+        43,
+        285,
+        257
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "contentSize": [
+        250,
+        214
+      ],
+      "bytes": 46472,
+      "sha256": "061d2a4109581fed419d3149c134614ef5849bbc7cc8e4c7a5678356b0b0cf76",
+      "transform": "Mechanical atlas crop, uniform downscale only, untouched RGBA alpha preserved"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/icons/trail-starlight.webp",
+      "source": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+      "atlasCell": [
+        307,
+        0,
+        604,
+        280
+      ],
+      "crop": [
+        8,
+        56,
+        271,
+        245
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "contentSize": [
+        256,
+        184
+      ],
+      "bytes": 34134,
+      "sha256": "ec1e92e0773118bee9664d6ee1ae7d5477951ddb6978e0039a597138c90cb65a",
+      "transform": "Mechanical atlas crop, uniform downscale only, untouched RGBA alpha preserved"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/icons/trail-footprints.webp",
+      "source": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+      "atlasCell": [
+        604,
+        0,
+        887,
+        280
+      ],
+      "crop": [
+        0,
+        40,
+        256,
+        265
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "contentSize": [
+        256,
+        225
+      ],
+      "bytes": 60160,
+      "sha256": "a83589014594822380262c9aaf4a0666ac0ae6cf082aaba0e1ea08412ee7f1a5",
+      "transform": "Mechanical atlas crop, uniform downscale only, untouched RGBA alpha preserved"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/icons/lantern-flower.webp",
+      "source": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+      "atlasCell": [
+        0,
+        280,
+        307,
+        588
+      ],
+      "crop": [
+        59,
+        0,
+        252,
+        295
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "contentSize": [
+        167,
+        256
+      ],
+      "bytes": 38236,
+      "sha256": "7d44c1f94bfb82d2d9b6d7b94aa3486e200b4cd587995bbec2836e1979427b95",
+      "transform": "Mechanical atlas crop, uniform downscale only, untouched RGBA alpha preserved"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/icons/lantern-firefly.webp",
+      "source": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+      "atlasCell": [
+        307,
+        280,
+        604,
+        588
+      ],
+      "crop": [
+        4,
+        0,
+        265,
+        292
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "contentSize": [
+        229,
+        256
+      ],
+      "bytes": 46888,
+      "sha256": "0d40d939e8edbf5d7bc376e681bdbabcdb807588d1b8691d26c18b10534f97c1",
+      "transform": "Mechanical atlas crop, uniform downscale only, untouched RGBA alpha preserved"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/icons/companion-sparrow.webp",
+      "source": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+      "atlasCell": [
+        604,
+        280,
+        887,
+        588
+      ],
+      "crop": [
+        4,
+        31,
+        251,
+        271
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "contentSize": [
+        247,
+        240
+      ],
+      "bytes": 64306,
+      "sha256": "b831baeb72565a237744f43f1986d42af0261ba376c1236043c6d5701884b8ba",
+      "transform": "Mechanical atlas crop, uniform downscale only, untouched RGBA alpha preserved"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/icons/companion-cloud.webp",
+      "source": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+      "atlasCell": [
+        0,
+        588,
+        307,
+        870
+      ],
+      "crop": [
+        26,
+        37,
+        287,
+        234
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "contentSize": [
+        256,
+        193
+      ],
+      "bytes": 48018,
+      "sha256": "de424855f391eb73518714ef7ee7239614c2302016ecdbb459517c4741ffd7ad",
+      "transform": "Mechanical atlas crop, uniform downscale only, untouched RGBA alpha preserved"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/icons/scenery-blossom.webp",
+      "source": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+      "atlasCell": [
+        307,
+        588,
+        604,
+        870
+      ],
+      "crop": [
+        0,
+        8,
+        276,
+        257
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "contentSize": [
+        256,
+        231
+      ],
+      "bytes": 75230,
+      "sha256": "13908ecb4e47d7aa864ed877f43b9e98a3789a0ea3f176ff68bae3a88ad4fe1a",
+      "transform": "Mechanical atlas crop, uniform downscale only, untouched RGBA alpha preserved"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/icons/scenery-snow.webp",
+      "source": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+      "atlasCell": [
+        604,
+        588,
+        887,
+        870
+      ],
+      "crop": [
+        0,
+        10,
+        261,
+        254
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "contentSize": [
+        256,
+        239
+      ],
+      "bytes": 68918,
+      "sha256": "8ff9f624fc58489a97dbd2f71533b10208c14f5b7b428fa8bc9b313dd58e3c52",
+      "transform": "Mechanical atlas crop, uniform downscale only, untouched RGBA alpha preserved"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/icons/scenery-moonlight.webp",
+      "source": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+      "atlasCell": [
+        0,
+        870,
+        307,
+        1155
+      ],
+      "crop": [
+        23,
+        10,
+        288,
+        250
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "contentSize": [
+        256,
+        232
+      ],
+      "bytes": 62950,
+      "sha256": "8454134b792c19811477cc6f6a64852eaf68e58f84286813a25daed66d8d09e1",
+      "transform": "Mechanical atlas crop, uniform downscale only, untouched RGBA alpha preserved"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/icons/finish-flowers.webp",
+      "source": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+      "atlasCell": [
+        307,
+        870,
+        604,
+        1155
+      ],
+      "crop": [
+        1,
+        0,
+        271,
+        259
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "contentSize": [
+        256,
+        246
+      ],
+      "bytes": 72654,
+      "sha256": "6b749225f1dd4e965d9cd21d5a62bf25e082e6e012d22471ad78f10b80cbe397",
+      "transform": "Mechanical atlas crop, uniform downscale only, untouched RGBA alpha preserved"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/icons/finish-stars.webp",
+      "source": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+      "atlasCell": [
+        604,
+        870,
+        887,
+        1125
+      ],
+      "crop": [
+        25,
+        0,
+        228,
+        252
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "contentSize": [
+        203,
+        252
+      ],
+      "bytes": 52390,
+      "sha256": "b0a3734b74972ef760820fb7af932d6f3f5b2ab9db4b91379acf02c4af9797c3",
+      "transform": "Mechanical atlas crop, uniform downscale only, untouched RGBA alpha preserved"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/icons/finish-festival.webp",
+      "source": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+      "atlasCell": [
+        0,
+        1155,
+        307,
+        1445
+      ],
+      "crop": [
+        5,
+        4,
+        307,
+        238
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "contentSize": [
+        256,
+        198
+      ],
+      "bytes": 38206,
+      "sha256": "4b1d0e03cf797799fd87ad653e5a893d9904e055d65e8448829a71883e814a4a",
+      "transform": "Mechanical atlas crop, uniform downscale only, untouched RGBA alpha preserved"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/icons/trail-none.webp",
+      "source": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+      "atlasCell": [
+        307,
+        1155,
+        604,
+        1445
+      ],
+      "crop": [
+        0,
+        36,
+        276,
+        202
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "contentSize": [
+        256,
+        154
+      ],
+      "bytes": 31484,
+      "sha256": "23783a6664f19cb301f6f51ba2f0f51c188599207d2ba577e2ed44183df30ce7",
+      "transform": "Mechanical atlas crop, uniform downscale only, untouched RGBA alpha preserved"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/icons/lantern-paper.webp",
+      "source": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+      "atlasCell": [
+        604,
+        1125,
+        887,
+        1445
+      ],
+      "crop": [
+        28,
+        5,
+        224,
+        304
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "contentSize": [
+        168,
+        256
+      ],
+      "bytes": 36330,
+      "sha256": "835821d7b98e2f8f25943a29e3d750107567f2e32fdd05dacf0930432cc7acde",
+      "transform": "Mechanical atlas crop, uniform downscale only, untouched RGBA alpha preserved"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/icons/companion-none.webp",
+      "source": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+      "atlasCell": [
+        0,
+        1445,
+        307,
+        1774
+      ],
+      "crop": [
+        26,
+        0,
+        285,
+        255
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "contentSize": [
+        256,
+        252
+      ],
+      "bytes": 77832,
+      "sha256": "2a3fe875e03bbb3005ebb0dd32b0684cf985c1c3e94657674ab3ebadf33f2a71",
+      "transform": "Mechanical atlas crop, uniform downscale only, untouched RGBA alpha preserved"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/icons/scenery-village.webp",
+      "source": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+      "atlasCell": [
+        307,
+        1445,
+        604,
+        1774
+      ],
+      "crop": [
+        0,
+        15,
+        277,
+        253
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "contentSize": [
+        256,
+        220
+      ],
+      "bytes": 68408,
+      "sha256": "280935ee3bc0bb0c512f96622fe5ff27fb98bffcc0c08621c83c1cf3cfe1b9cc",
+      "transform": "Mechanical atlas crop, uniform downscale only, untouched RGBA alpha preserved"
+    },
+    {
+      "file": "experiences/korean-runner/assets/shop/icons/finish-simple.webp",
+      "source": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+      "atlasCell": [
+        604,
+        1445,
+        887,
+        1774
+      ],
+      "crop": [
+        0,
+        0,
+        257,
+        254
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "contentSize": [
+        256,
+        253
+      ],
+      "bytes": 73860,
+      "sha256": "bdcb7d37c8cfeb3c8ce779b183a19accf8706c092816529a384d1746ec88f142",
+      "transform": "Mechanical atlas crop, uniform downscale only, untouched RGBA alpha preserved"
+    }
+  ],
+  "generatedAtlas": {
+    "file": "experiences/korean-runner/assets/shop/source/atlas-v1.png",
+    "tool": "built-in image_gen",
+    "size": [
+      887,
+      1774
+    ],
+    "mode": "RGBA",
+    "bytes": 1534249,
+    "sha256": "2ef7ae0496c2af51adec12000a87ba60417768e8ab4a1038f2029798e88f786a",
+    "prompt": "assets/shop/source/atlas-prompt-v1.txt",
+    "references": [
+      "docs/디자인/펠트부품/펠트부품_시트.jpg",
+      "docs/캐릭터/정본_4K/몽글_본체.png"
+    ],
+    "model": "Built-in image_gen model not exposed by tool; not claimed as GPT Image 2.5"
+  }
+}

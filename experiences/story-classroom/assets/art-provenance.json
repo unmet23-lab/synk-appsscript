@@ -1,0 +1,29 @@
+{
+  "createdAt": "2026-10-02",
+  "generator": "image_gen.imagegen",
+  "status": "Original fictional game art, local prototype assets",
+  "scope": "Background and teacher NPC only. Existing approved SYNK mascots and logos were copied without visual changes.",
+  "assets": [
+    {
+      "id": "classroom",
+      "original": "classroom-original.png",
+      "runtime": "classroom.webp",
+      "generatedOriginal": "C:/Users/q1212/.codex/generated_images/01a0f80b-e70c-7d92-b4a4-5d11d5857683/exec-7af13417-7bed-4fff-b487-a884cb00edd2.png",
+      "width": 1586,
+      "height": 992,
+      "transparent": false,
+      "prompt": "Create a premium original background plate for an interactive Korean reading story game called 'The teacher is back'. Wide landscape 16:10 composition, high resolution. A beautifully handmade miniature Korean school art classroom, stop-motion cinematic quality with real tactile wool felt, painted wood, soft paper, actual threads, porcelain small accents. Front-facing slight elevated 3/4 view into room, strongly believable perspective, floor fills lower 55 percent for interactive characters and objects added later. White walls, light grey wood floor, coral and lapis small accents; absolutely no overall beige/cream filter. Large windows at far left showing green trees and clear blue afternoon sky, directional sunlight diagonally crossing the floor from upper left, graceful real shadows. At far right rear wall a single closed painted coral-red classroom door. Upper back center a wide dark green blank chalkboard with wooden frame, a tiny shelf at back left and potted green plant at side. Sparse excellent composition with floor center and foreground entirely empty; all fixed wall decoration only in upper half or extreme edges. Precious miniature material detail, mature art direction, art-school atmosphere, inviting, subtly whimsical but not babyish. NO people, NO characters, NO desks, NO chairs, NO loose props, NO cake, NO boxes, NO text, NO letters, NO symbols, NO numbers, NO logos, NO interface or frames. This image is the static backdrop for transparent approved felt mascot sprites and movable separate props, leave ample usable foreground staging space. Crisp near material details and softly receding distance; natural volumetric light only by window, cinematic depth without haze obscuring readability. Camera must see the whole floor and rear wall, not close-up. A well composed playable miniature set, polished to the level of a premium indie narrative puzzle game."
+    },
+    {
+      "id": "teacher",
+      "original": "teacher-original.png",
+      "runtime": "teacher.webp",
+      "generatedOriginal": "C:/Users/q1212/.codex/generated_images/01a0f80b-e70c-7d92-b4a4-5d11d5857683/exec-29f7dd23-8b16-492e-bd9a-2df5f496c9dc.png",
+      "width": 1024,
+      "height": 1536,
+      "transparent": true,
+      "prompt": "Generate one original fictional Korean female schoolteacher character sprite for a premium miniature stop-motion classroom story game. Full body head-to-toe, facing slightly towards camera and left, isolated on true transparent background, no floor and no external shadows. Beautiful realistic handcrafted wool felt doll / needle-felt miniature mixed with sewn fabric clothing, the same high-end tactile miniature mood as a sunlit Korean art classroom. A kind energetic teacher in her 30s with a short dark brown bob hairstyle, small round thin metal glasses, coral wool cardigan over crisp white blouse, dark lapis wide-leg trousers, simple white canvas shoes. Expressive surprised eyes and a mildly astonished open mouth like she just walked into a messy party classroom; not angry or scary. Natural compact cute stylized human proportions around 4 heads tall, sophisticated handmade animation film character rather than flat cartoon. Holds a slim closed notebook tucked under left arm, right hand slightly open by waist in surprise, anatomically clear hands and separate limbs. Directional natural afternoon light from upper left with subtle warm highlights and real material shadow to right. Fine wool fibres, sewn hems, thoughtful skin-toned felt facial details, clean silhouette and true alpha edge. Whole doll fits within image with comfortable margins. ONE character only, one pose, no text, no letters, no logos, no badges, no background, no props separate from the character. Render clean high-resolution asset suitable to be 120-200px high on screen."
+    }
+  ],
+  "processing": "Copied generated PNG originals without changes; encoded WebP at quality92 for local game delivery. No redraw or composite of approved mascots."
+}

@@ -1,0 +1,313 @@
+{
+  "passed": 44,
+  "items": [
+    {
+      "path": "assets/shop/icons/companion-cloud.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 48018,
+      "match": true
+    },
+    {
+      "path": "assets/shop/icons/companion-none.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 77832,
+      "match": true
+    },
+    {
+      "path": "assets/shop/icons/companion-sparrow.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 64306,
+      "match": true
+    },
+    {
+      "path": "assets/shop/icons/finish-festival.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 38206,
+      "match": true
+    },
+    {
+      "path": "assets/shop/icons/finish-flowers.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 72654,
+      "match": true
+    },
+    {
+      "path": "assets/shop/icons/finish-simple.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 73860,
+      "match": true
+    },
+    {
+      "path": "assets/shop/icons/finish-stars.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 52390,
+      "match": true
+    },
+    {
+      "path": "assets/shop/icons/lantern-firefly.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 46888,
+      "match": true
+    },
+    {
+      "path": "assets/shop/icons/lantern-flower.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 38236,
+      "match": true
+    },
+    {
+      "path": "assets/shop/icons/lantern-paper.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 36330,
+      "match": true
+    },
+    {
+      "path": "assets/shop/icons/scenery-blossom.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 75230,
+      "match": true
+    },
+    {
+      "path": "assets/shop/icons/scenery-moonlight.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 62950,
+      "match": true
+    },
+    {
+      "path": "assets/shop/icons/scenery-snow.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 68918,
+      "match": true
+    },
+    {
+      "path": "assets/shop/icons/scenery-village.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 68408,
+      "match": true
+    },
+    {
+      "path": "assets/shop/icons/trail-footprints.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 60160,
+      "match": true
+    },
+    {
+      "path": "assets/shop/icons/trail-none.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 31484,
+      "match": true
+    },
+    {
+      "path": "assets/shop/icons/trail-petals.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 46472,
+      "match": true
+    },
+    {
+      "path": "assets/shop/icons/trail-starlight.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 34134,
+      "match": true
+    },
+    {
+      "path": "assets/shop/ui/badge-check.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 52744,
+      "match": true
+    },
+    {
+      "path": "assets/shop/ui/badge-coral.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 52394,
+      "match": true
+    },
+    {
+      "path": "assets/shop/ui/badge-cream.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 40416,
+      "match": true
+    },
+    {
+      "path": "assets/shop/ui/chip-blush-long.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 150256,
+      "match": true
+    },
+    {
+      "path": "assets/shop/ui/chip-blush.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 106300,
+      "match": true
+    },
+    {
+      "path": "assets/shop/ui/ring-butter.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 42148,
+      "match": true
+    },
+    {
+      "path": "assets/shop/ui/slab-blush-long.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 192094,
+      "match": true
+    },
+    {
+      "path": "assets/shop/ui/slab-blush.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 164140,
+      "match": true
+    },
+    {
+      "path": "assets/shop/ui/slab-coral-long.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 234584,
+      "match": true
+    },
+    {
+      "path": "assets/shop/ui/slab-coral.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 210584,
+      "match": true
+    },
+    {
+      "path": "assets/shop/ui/slab-cream-long.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 173026,
+      "match": true
+    },
+    {
+      "path": "assets/shop/ui/slab-cream.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 148998,
+      "match": true
+    },
+    {
+      "path": "assets/shop/ui/tag-cream.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 106542,
+      "match": true
+    },
+    {
+      "path": "assets/shop/ui/tex-blush.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 11704,
+      "match": true
+    },
+    {
+      "path": "assets/shop/ui/tex-butter.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 15536,
+      "match": true
+    },
+    {
+      "path": "assets/shop/ui/tex-coral.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 26150,
+      "match": true
+    },
+    {
+      "path": "assets/shop/ui/tex-cream.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 5208,
+      "match": true
+    },
+    {
+      "path": "assets/shop/ui/tex-lapis.webp",
+      "status": 200,
+      "mime": "image/webp",
+      "bytes": 23832,
+      "match": true
+    },
+    {
+      "path": "shop.mjs",
+      "status": 200,
+      "mime": "text/javascript; charset=utf-8",
+      "bytes": 7397,
+      "match": true
+    },
+    {
+      "path": "shop-ui.mjs",
+      "status": 200,
+      "mime": "text/javascript; charset=utf-8",
+      "bytes": 5906,
+      "match": true
+    },
+    {
+      "path": "shop-assets.mjs",
+      "status": 200,
+      "mime": "text/javascript; charset=utf-8",
+      "bytes": 2098,
+      "match": true
+    },
+    {
+      "path": "world-cosmetics.mjs",
+      "status": 200,
+      "mime": "text/javascript; charset=utf-8",
+      "bytes": 14286,
+      "match": true
+    },
+    {
+      "path": "app.js",
+      "status": 200,
+      "mime": "text/javascript; charset=utf-8",
+      "bytes": 23578,
+      "match": true
+    },
+    {
+      "path": "world.mjs",
+      "status": 200,
+      "mime": "text/javascript; charset=utf-8",
+      "bytes": 27568,
+      "match": true
+    },
+    {
+      "path": "atlas-learning.js",
+      "status": 200,
+      "mime": "text/javascript; charset=utf-8",
+      "bytes": 111409,
+      "match": true
+    },
+    {
+      "path": "collection.js",
+      "status": 200,
+      "mime": "text/javascript; charset=utf-8",
+      "bytes": 347152,
+      "match": true
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "synk-platform",
+  "name": "SYNK 플랫폼",
+  "short_name": "SYNK",
+  "lang": "ko",
+  "start_url": "./platform.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [{ "src": "./assets/app-platform.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" }]
+}

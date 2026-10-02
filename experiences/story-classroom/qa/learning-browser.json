@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-02",
+  "method": "Actual bundled SynkLearning and story adapter executed in isolated Chrome contexts. Account case uses the real WORLD host and scopedStorage with an explicitly synthetic account/guard/transport, including same-origin parent iframe routing. No real login, consent, account server, learner data or public deployment.",
+  "standalone": {
+    "bundleLoaded": true,
+    "presentationCreated": true,
+    "independent": true,
+    "duplicateEventPreserved": true,
+    "readingActionCount": 1,
+    "scope": "device",
+    "guestProgressPartition": true
+  },
+  "syntheticAccount": {
+    "automaticParentHostRouting": true,
+    "phase": "synced",
+    "evidenceComplete": true,
+    "independent": true,
+    "readingActionCount": 1,
+    "accountProgressPartition": true,
+    "guestSentinelUnchanged": true,
+    "uniqueUploadedAttempts": 1,
+    "isolatedStoreOnly": true
+  },
+  "sourceSHA256": "1918b2ecfc701a66a219e2b084891d89a1347cdd8eaf26c714a912e712010ea0"
+}

@@ -1,0 +1,6 @@
+{
+  "result": {
+    "type": "string",
+    "value": "{\"screen\":\"game\",\"time\":90.04748733382559,\"audioState\":\"running\",\"recording\":{\"title\":\"오후 네 시의 약속\",\"sourceId\":\"ed3ac4b9-0386-4f47-8c1f-eb61cbd11f52\",\"url\":\"assets/music/four-pm-promise.mp3\",\"duration\":222.8,\"sampleRate\":48000,\"channels\":2},\"signalLevel\":0.0548894885725168,\"duration\":222.8,\"paused\":false}"
+  }
+}

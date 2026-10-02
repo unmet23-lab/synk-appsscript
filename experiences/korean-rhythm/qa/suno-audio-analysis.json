@@ -1,0 +1,182 @@
+[
+  {
+    "sourceId": "94e8eeb8-fcba-4434-a0ba-cd1490d8c6d3",
+    "title": "파란 신호가 켜지면",
+    "audioUrl": "assets/music/blue-signal.mp3",
+    "duration": 202.68,
+    "bpm": 111.096,
+    "beatOffset": 0.045,
+    "source": "C:\\Users\\q1212\\Documents\\SYNK-radio-20260926\\원본\\파란 신호가 켜지면.wav",
+    "sourceSha256": "1ebecd94de04e69f9edb906329ca68d72b009afbf0340fa73a68fad16a6a83ba",
+    "assetSha256": "fe3d17bddef0e0d525ce5fee119067c1693a978b5222349ba5693f7adfd0692d",
+    "assetBytes": 4054908,
+    "samples": 4469094,
+    "analysisSampleRate": 22050,
+    "tempoCandidates": [
+      {
+        "bpm": 111.306,
+        "strength": 746.52
+      },
+      {
+        "bpm": 139.568,
+        "strength": 154.56
+      },
+      {
+        "bpm": 113.416,
+        "strength": 142.43
+      },
+      {
+        "bpm": 110.182,
+        "strength": 133.01
+      },
+      {
+        "bpm": 138.559,
+        "strength": 122.68
+      },
+      {
+        "bpm": 142.367,
+        "strength": 116.87
+      }
+    ],
+    "beatCount": 375,
+    "maxGridShiftSeconds": 0.05471,
+    "pulseWindows": [
+      {
+        "from": 5,
+        "to": 35,
+        "meanPulseStrength": 1.597
+      },
+      {
+        "from": 86.34,
+        "to": 116.34,
+        "meanPulseStrength": 1.446
+      },
+      {
+        "from": 167.68,
+        "to": 197.68,
+        "meanPulseStrength": 0.513
+      }
+    ],
+    "method": "low-frequency weighted spectral flux, whole-song periodicity and phase search, local onset refinement within 55ms; automatic pulse estimate, not a human beat audit"
+  },
+  {
+    "sourceId": "c2835bc7-6963-4503-95bd-781b55e20b88",
+    "title": "바다까지 한 시간",
+    "audioUrl": "assets/music/one-hour-to-sea.mp3",
+    "duration": 231.6,
+    "bpm": 112.058,
+    "beatOffset": 0.205,
+    "source": "C:\\Users\\q1212\\Documents\\SYNK-radio-20260926\\원본\\바다까지 한 시간.wav",
+    "sourceSha256": "5a5329e60f3c5669109c5d5eeaff8384bb712eb77ee00beaccfd791b891f4bcb",
+    "assetSha256": "4580f5e5bc70dd735988c095ba785ae3e7ce144b0f6df021af538b2cbf448873",
+    "assetBytes": 4633256,
+    "samples": 5106780,
+    "analysisSampleRate": 22050,
+    "tempoCandidates": [
+      {
+        "bpm": 111.948,
+        "strength": 694.12
+      },
+      {
+        "bpm": 113.875,
+        "strength": 147.58
+      },
+      {
+        "bpm": 140.761,
+        "strength": 127.82
+      },
+      {
+        "bpm": 138.077,
+        "strength": 126.75
+      },
+      {
+        "bpm": 92.357,
+        "strength": 115.12
+      },
+      {
+        "bpm": 85.888,
+        "strength": 110.33
+      }
+    ],
+    "beatCount": 432,
+    "maxGridShiftSeconds": 0.05495,
+    "pulseWindows": [
+      {
+        "from": 5,
+        "to": 35,
+        "meanPulseStrength": 0.652
+      },
+      {
+        "from": 100.8,
+        "to": 130.8,
+        "meanPulseStrength": 1.679
+      },
+      {
+        "from": 196.6,
+        "to": 226.6,
+        "meanPulseStrength": 1.22
+      }
+    ],
+    "method": "low-frequency weighted spectral flux, whole-song periodicity and phase search, local onset refinement within 55ms; automatic pulse estimate, not a human beat audit"
+  },
+  {
+    "sourceId": "ed3ac4b9-0386-4f47-8c1f-eb61cbd11f52",
+    "title": "오후 네 시의 약속",
+    "audioUrl": "assets/music/four-pm-promise.mp3",
+    "duration": 222.8,
+    "bpm": 106.991,
+    "beatOffset": 0.5,
+    "source": "C:\\Users\\q1212\\Documents\\SYNK-radio-20260926\\원본\\오후 네 시의 약속.wav",
+    "sourceSha256": "3e74060785925188500e8c8a62d85bf6b594797c592876002cd20a7514130a17",
+    "assetSha256": "514d6baf67f1de742befb3a18e36974730ffe14f2d66c6e15c5a77e0df81356d",
+    "assetBytes": 4457714,
+    "samples": 4912740,
+    "analysisSampleRate": 22050,
+    "tempoCandidates": [
+      {
+        "bpm": 107.131,
+        "strength": 666.16
+      },
+      {
+        "bpm": 105.915,
+        "strength": 217.72
+      },
+      {
+        "bpm": 134.2,
+        "strength": 192.97
+      },
+      {
+        "bpm": 108.209,
+        "strength": 188.8
+      },
+      {
+        "bpm": 109.218,
+        "strength": 181.24
+      },
+      {
+        "bpm": 104.24,
+        "strength": 160.19
+      }
+    ],
+    "beatCount": 397,
+    "maxGridShiftSeconds": 0.05496,
+    "pulseWindows": [
+      {
+        "from": 5,
+        "to": 35,
+        "meanPulseStrength": 1.391
+      },
+      {
+        "from": 96.4,
+        "to": 126.4,
+        "meanPulseStrength": 1.264
+      },
+      {
+        "from": 187.8,
+        "to": 217.8,
+        "meanPulseStrength": 0.752
+      }
+    ],
+    "method": "low-frequency weighted spectral flux, whole-song periodicity and phase search, local onset refinement within 55ms; automatic pulse estimate, not a human beat audit"
+  }
+]

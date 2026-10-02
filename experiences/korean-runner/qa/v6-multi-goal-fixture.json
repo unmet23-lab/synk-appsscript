@@ -1,0 +1,225 @@
+{
+  "fixture": true,
+  "note": "Separate QA origin only: preloaded cumulative distance 1490m and collected stars 29; actual run then settled.",
+  "info": {
+    "version": 6,
+    "ready": true,
+    "running": true,
+    "paused": true,
+    "demo": false,
+    "mode": "tour",
+    "learning": "listen",
+    "best": 473,
+    "sound": true,
+    "shop": {
+      "version": 1,
+      "wallet": 60,
+      "owned": [
+        "trail:none",
+        "lantern:paper",
+        "companion:none",
+        "scenery:village",
+        "finish:simple",
+        "scenery:blossom"
+      ],
+      "equipped": {
+        "trail": "none",
+        "lantern": "paper",
+        "companion": "none",
+        "scenery": "blossom",
+        "finish": "simple"
+      },
+      "settled": [
+        "9f0f7ecb-04c6-4022-8b3c-ae18362281d2",
+        "610af754-0902-4638-8fae-87986e0cca34"
+      ],
+      "wishlist": "scenery:snow",
+      "progress": {
+        "distance": 1963.43036298655,
+        "stars": 47,
+        "runs": 2,
+        "completions": 0,
+        "claimed": [
+          "distance-150",
+          "stars-10",
+          "distance-1500",
+          "stars-30"
+        ]
+      },
+      "available": true
+    },
+    "shopPreview": {
+      "visible": false,
+      "category": "trail",
+      "selected": "trail:none",
+      "wishlist": "scenery:snow"
+    },
+    "journey": {
+      "nextGoal": {
+        "id": "complete-1",
+        "current": 0,
+        "target": 1,
+        "claimed": false
+      },
+      "wishlist": {
+        "id": "scenery:snow",
+        "wallet": 60,
+        "price": 95,
+        "remaining": 35
+      },
+      "goalsUnlocked": [
+        "distance-1500",
+        "stars-30"
+      ]
+    },
+    "voiceClips": 16,
+    "audio": {
+      "state": "running",
+      "clips": 16,
+      "id": null,
+      "offset": 0,
+      "duration": 0
+    },
+    "world": {
+      "renderer": "Three.js 180",
+      "quality": "balanced",
+      "fps": 58,
+      "drawCalls": 498,
+      "triangles": 414644,
+      "width": 320,
+      "height": 668,
+      "eventObjects": 21,
+      "frames": 4347,
+      "armlessMongle": true,
+      "cosmetics": {
+        "selection": {
+          "trail": "none",
+          "lantern": "paper",
+          "companion": "none",
+          "scenery": "blossom",
+          "finish": "simple"
+        },
+        "preview": false,
+        "activeTrail": 0,
+        "trailCapacity": 24,
+        "finishCapacity": 28,
+        "budget": {
+          "trail": 12,
+          "finish": 14,
+          "lantern": 2
+        },
+        "companionVisible": false,
+        "finishVisible": false,
+        "finishAge": 31.25849999999994,
+        "lanternFlashes": 0
+      },
+      "sceneryDetails": {
+        "theme": "blossom",
+        "tiles": 10,
+        "capacity": {
+          "blossom": 1045,
+          "snow": 360,
+          "moonlight": 597
+        },
+        "activeInstances": 735,
+        "drawCalls": 8,
+        "bufferCount": 25,
+        "quality": "balanced",
+        "reduced": false,
+        "disposed": false
+      },
+      "shopPreview": false,
+      "ambientParticles": 30,
+      "particles": 0
+    },
+    "model": {
+      "distance": 473.43036298655016,
+      "elapsed": 33.97469999999968,
+      "lane": 1,
+      "x": 0,
+      "y": 0,
+      "slide": 0,
+      "hearts": 0,
+      "shield": 0,
+      "combo": 0,
+      "lanterns": 1,
+      "coins": 18,
+      "correct": 1,
+      "answers": [
+        {
+          "id": "not-right",
+          "text": "오른쪽으로 가지 말고 왼쪽으로 가세요.",
+          "explanation": "가지 말고 뒤의 행동을 따라요. 목적지는 왼쪽이에요.",
+          "skill": "부정 · 방향",
+          "learning": "listen",
+          "correct": false,
+          "steps": [
+            {
+              "action": "lane",
+              "target": 0,
+              "status": "missed",
+              "inputMatched": false,
+              "executed": false,
+              "label": "왼쪽으로"
+            }
+          ]
+        },
+        {
+          "id": "not-slide",
+          "text": "이번에는 몸을 숙이지 말고 그대로 달리세요.",
+          "explanation": "숙이지 말고는 슬라이딩하지 말라는 뜻이에요. 표시선까지 그대로 달려요.",
+          "skill": "부정 지시",
+          "learning": "listen",
+          "correct": true,
+          "steps": [
+            {
+              "action": "stay",
+              "status": "done",
+              "inputMatched": true,
+              "executed": true,
+              "label": "그대로 달리기"
+            }
+          ]
+        },
+        {
+          "id": "right",
+          "text": "오른쪽 길로 가세요.",
+          "explanation": "오른쪽 길의 표시선을 지나가요.",
+          "skill": "방향",
+          "learning": "listen",
+          "correct": false,
+          "steps": [
+            {
+              "action": "lane",
+              "target": 2,
+              "status": "missed",
+              "inputMatched": false,
+              "executed": false,
+              "label": "오른쪽으로"
+            }
+          ]
+        },
+        {
+          "id": "slide",
+          "text": "표지판 아래로 몸을 숙여 지나가세요.",
+          "explanation": "표지판 가까이에서 슬라이딩해요.",
+          "skill": "위치 · 동작",
+          "learning": "listen",
+          "correct": false,
+          "steps": [
+            {
+              "action": "slide",
+              "status": "missed",
+              "inputMatched": false,
+              "executed": false,
+              "label": "몸 숙이기"
+            }
+          ]
+        }
+      ],
+      "finished": true,
+      "reason": "collision",
+      "current": null
+    }
+  }
+}

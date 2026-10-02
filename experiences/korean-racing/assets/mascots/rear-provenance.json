@@ -1,0 +1,36 @@
+{
+  "method": "Built-in image_gen identity-preserve rear-view variants, canonical 4K references. Technical uniform resizing, transparent canvas alignment and WebP encoding only; no stretching or painting. Vehicle-aligned rear planes, not billboards.",
+  "prompts": "art-source/mascot-rear-prompts.json",
+  "assets": [
+    {
+      "name": "marin",
+      "source": "art-source\\marin-rear-generated.png",
+      "path": "assets\\mascots\\marin-rear.webp",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "displaySize": [
+        512,
+        512
+      ],
+      "bytes": 51712,
+      "sha256": "9208007f1907d425fcea06a57a645f89a1fce39f50f1e830df60eb0fe2dc953a"
+    },
+    {
+      "name": "kkamong",
+      "source": "art-source\\kkamong-rear-generated.png",
+      "path": "assets\\mascots\\kkamong-rear.webp",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "displaySize": [
+        512,
+        512
+      ],
+      "bytes": 41420,
+      "sha256": "6fae08e2d83d247e176edf540582f4a28f3c97c19dec4ed3f7262ddf02a2d06a"
+    }
+  ]
+}

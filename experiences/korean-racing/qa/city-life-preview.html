@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>해안 도시 인물 · 내부 시각 검사</title>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#b6d1df;color:#fff;font:14px system-ui}canvas{display:block}aside{position:fixed;left:16px;top:16px;max-width:430px;padding:14px;background:#172b35e8;border-radius:10px;line-height:1.6}button,select{font:inherit;padding:7px;margin:4px 4px 4px 0}pre{font-size:11px;white-space:pre-wrap;margin:6px 0 0}</style>
+<script type="importmap">{"imports":{"three":"../vendor/three.module.js"}}</script></head><body>
+<aside><strong>내부 시각 검사 · 인물·좌석·보도</strong><br><select id="anchor" aria-label="활동 장면"></select><select id="quality" aria-label="검사 품질"><option value="high">선명</option><option value="balanced">기본</option><option value="low">가벼움</option></select><br><button id="motion">멈추기</button><button id="theme">노을 보기</button><button id="camera">넓게 보기</button><br><label>차의 상대 위치 <input id="pass" type="range" min="-65" max="65" value="0" aria-label="차의 상대 위치"></label><label><input id="reduced" type="checkbox"> 동작 줄이기</label><br><button id="record">8초 동작 저장</button><span id="record-status" role="status"></span><pre id="stats">준비 중</pre></aside>
+<script type="module">
+import * as T from 'three';
+import {buildCoastalCity} from '../cityscape.js';
+import {buildCityLife} from '../city-life.js';
+import {createLandscapeHeight} from '../landscape.js';
+import {createAtmosphere} from '../atmosphere.js';
+const pathX=s=>Math.sin(s/235)*25+Math.sin(s/580)*31;
+const pathY=s=>23+Math.sin(s/280)*2.8+Math.sin(s/100)*1.2;
+const groundHeight=createLandscapeHeight(pathX,pathY);
+const scene=new T.Scene();scene.background=new T.Color(0xb6d1df);
+const camera=new T.PerspectiveCamera(45,innerWidth/innerHeight,.1,2200);
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;document.body.append(renderer.domElement);
+const light=new T.DirectionalLight(0xfff0d9,2.7);light.castShadow=true;light.shadow.mapSize.set(2048,2048);light.shadow.camera.left=-60;light.shadow.camera.right=60;light.shadow.camera.top=60;light.shadow.camera.bottom=-60;light.shadow.normalBias=.025;scene.add(light,light.target);
+const ambient=new T.HemisphereLight(0xc1dff8,0x677c4c,.8);scene.add(ambient);
+const loader=new T.TextureLoader();
+const [daySky,sunsetSky]=await Promise.all(['azure-sky-v3.jpg','golden-sky-v3.jpg'].map(file=>loader.loadAsync('../assets/'+file)));
+for(const sky of [daySky,sunsetSky]){sky.colorSpace=T.SRGBColorSpace;sky.wrapS=T.RepeatWrapping;}
+const sunDirection=new T.Vector3(.58,.72,.38).normalize();
+const atmosphere=createAtmosphere(T,{daySky,sunsetSky,time:{value:0},sunDirection,shoreOffset:()=>100,ROAD_END:2250});
+scene.add(atmosphere.sky);
+const pmrem=new T.PMREMGenerator(renderer),envScene=new T.Scene(),envSky=new T.Mesh(atmosphere.sky.geometry,atmosphere.sky.material),environments={};envScene.add(envSky);
+for(const name of ['coast','sunset']){atmosphere.setTheme(name);envSky.rotation.copy(atmosphere.sky.rotation);sunDirection.set(...(name==='sunset'?[.34,.115,.94]:[.58,.72,.38])).normalize();environments[name]=pmrem.fromScene(envScene,.01,.1,5000,{size:128});}
+pmrem.dispose();atmosphere.setTheme('coast');sunDirection.set(.58,.72,.38).normalize();scene.environment=environments.coast.texture;
+const city=buildCoastalCity(T,{pathX,groundHeight,roadEnd:2250});scene.add(city.group);
+const anchors=city.group.userData.activityAnchors;
+if(!anchors?.length)throw new Error('활동 앵커가 아직 준비되지 않았습니다.');
+const life=buildCityLife(T,{anchors,pathX,groundHeight,surfaceHeightAt:city.surfaceHeightAt});scene.add(life.group);
+const ground=new T.Mesh(new T.PlaneGeometry(3500,3500),new T.MeshStandardMaterial({color:0x526b48,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=0;ground.receiveShadow=true;scene.add(ground);
+let index=0,time=0,paused=false,wide=false,theme='coast',recordingTrack=null;
+const select=document.querySelector('#anchor');anchors.forEach((a,i)=>{const option=document.createElement('option');option.value=i;option.textContent=a.kind+' · '+a.id;select.append(option)});
+function frameSubject(a){const height=anchors[index].kind==='table'?1.05:1.15;camera.position.set(a.x+(wide?22:6.5),a.y+(wide?7:3.0),a.z-(wide?30:8.5));camera.lookAt(a.x,a.y+height,a.z);light.target.position.set(a.x,a.y,a.z);light.position.copy(light.target.position).add(new T.Vector3(30,55,38));ground.position.y=a.y-.08;}
+function focus(){const a=anchors[index];life.update({time,playerS:a.z,playerX:pathX(a.z),quality:'high'});const pose=a.kind==='walk'?life.group.userData.poseSnapshots.find(p=>p.id===a.id+':0'):null;frameSubject(pose?.position||a);}
+select.onchange=()=>{index=Number(select.value);focus()};
+document.querySelector('#motion').onclick=event=>{paused=!paused;event.currentTarget.textContent=paused?'움직이기':'멈추기'};
+document.querySelector('#camera').onclick=event=>{wide=!wide;event.currentTarget.textContent=wide?'가까이 보기':'넓게 보기';focus()};
+document.querySelector('#theme').onclick=event=>{theme=theme==='coast'?'sunset':'coast';city.setTheme(theme);life.setTheme(theme);atmosphere.setTheme(theme);scene.environment=environments[theme].texture;sunDirection.set(...(theme==='sunset'?[.34,.115,.94]:[.58,.72,.38])).normalize();light.color.set(theme==='sunset'?0xffcc9d:0xfff0d9);event.currentTarget.textContent=theme==='coast'?'노을 보기':'낮 보기'};
+document.querySelector('#record').onclick=()=>{
+  const button=document.querySelector('#record'),status=document.querySelector('#record-status');
+  if(!window.MediaRecorder){status.textContent='이 브라우저는 동작 저장을 지원하지 않아요.';return;}
+  const stream=renderer.domElement.captureStream(0),chunks=[];recordingTrack=stream.getVideoTracks()[0];
+  const preferred=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'].find(type=>MediaRecorder.isTypeSupported(type));
+  const recorder=new MediaRecorder(stream,{mimeType:preferred,videoBitsPerSecond:4500000});
+  button.disabled=true;status.textContent='실제 애니메이션 8초 저장 중';
+  recorder.ondataavailable=event=>{if(event.data.size)chunks.push(event.data)};
+  recorder.onstop=async()=>{try{const name=`city-life-v5-${anchors[index].kind}-motion.webm`;const result=await fetch('/_qa/capture/'+name,{method:'POST',body:new Blob(chunks,{type:'video/webm'})});if(!result.ok)throw new Error('capture failed');status.textContent='저장 완료: '+name;}catch(error){status.textContent=error.message;}finally{recordingTrack=null;stream.getTracks().forEach(track=>track.stop());button.disabled=false;}};
+  recorder.start(250);setTimeout(()=>recorder.stop(),8000);
+};
+focus();let last=performance.now();
+renderer.setAnimationLoop(now=>{const dt=Math.min((now-last)/1000,.05);last=now;if(!paused)time+=dt;const a=anchors[index],quality=document.querySelector('#quality').value,playerS=a.z+Number(document.querySelector('#pass').value);city.update({playerS:a.z,quality,camera});life.update({time,playerS,playerX:pathX(playerS),quality,camera,motion:!document.querySelector('#reduced').checked,paused,celebrating:true});const pose=a.kind==='walk'?life.group.userData.poseSnapshots.find(p=>p.id===a.id+':0'):null;if(pose)frameSubject(pose.position);renderer.render(scene,camera);recordingTrack?.requestFrame();document.querySelector('#stats').textContent=JSON.stringify({time:+time.toFixed(2),kind:a.kind,people:life.stats,render:renderer.info.render},null,1)});
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+window.__cityLifePreview={snapshot:()=>({time,index,anchor:anchors[index],life:life.stats,poses:life.group.userData.poseSnapshots})};
+</script></body></html>

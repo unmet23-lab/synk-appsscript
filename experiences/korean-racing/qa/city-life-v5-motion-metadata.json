@@ -1,0 +1,28 @@
+{
+  "city-life-v5-table-motion.webm": {
+    "bytes": 1015112,
+    "streams": [
+      {
+        "codec_name": "vp9",
+        "width": 1280,
+        "height": 720,
+        "nb_read_frames": "110"
+      }
+    ],
+    "firstTimestamp": 0.0,
+    "lastTimestamp": 7.805
+  },
+  "city-life-v5-walk-motion.webm": {
+    "bytes": 3363501,
+    "streams": [
+      {
+        "codec_name": "vp9",
+        "width": 1920,
+        "height": 1080,
+        "nb_read_frames": "178"
+      }
+    ],
+    "firstTimestamp": 0.0,
+    "lastTimestamp": 7.544
+  }
+}

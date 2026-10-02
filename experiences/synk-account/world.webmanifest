@@ -1,0 +1,12 @@
+{
+  "id": "synk-world",
+  "name": "SYNK WORLD",
+  "short_name": "WORLD",
+  "lang": "ko",
+  "start_url": "./client.html?product=world",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [{ "src": "./assets/app-world.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" }]
+}

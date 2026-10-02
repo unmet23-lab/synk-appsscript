@@ -1,0 +1,1288 @@
+{
+  "voice": "Microsoft Heami Desktop",
+  "engine": "Windows System.Speech",
+  "format": "MP3 mono 24kHz 48kbps",
+  "clips": [
+    {
+      "id": "lane-left",
+      "text": "왼쪽 길.",
+      "duration": 1.772,
+      "bytes": 11180,
+      "rms": 1938
+    },
+    {
+      "id": "lane-center",
+      "text": "가운데 길.",
+      "duration": 1.787,
+      "bytes": 11324,
+      "rms": 1827
+    },
+    {
+      "id": "lane-right",
+      "text": "오른쪽 길.",
+      "duration": 1.893,
+      "bytes": 11900,
+      "rms": 2139
+    },
+    {
+      "id": "c01q1o0",
+      "text": "빵",
+      "duration": 1.344,
+      "bytes": 8732,
+      "rms": 1028
+    },
+    {
+      "id": "c01q1o1",
+      "text": "우유",
+      "duration": 1.317,
+      "bytes": 8444,
+      "rms": 1691
+    },
+    {
+      "id": "c01q1o2",
+      "text": "물",
+      "duration": 1.272,
+      "bytes": 8156,
+      "rms": 1687
+    },
+    {
+      "id": "c01q2o0",
+      "text": "학교",
+      "duration": 1.415,
+      "bytes": 9020,
+      "rms": 1083
+    },
+    {
+      "id": "c01q2o1",
+      "text": "시장",
+      "duration": 1.542,
+      "bytes": 9884,
+      "rms": 963
+    },
+    {
+      "id": "c01q2o2",
+      "text": "병원",
+      "duration": 1.529,
+      "bytes": 9740,
+      "rms": 1900
+    },
+    {
+      "id": "c01q3o0",
+      "text": "책상 위",
+      "duration": 1.748,
+      "bytes": 11036,
+      "rms": 1875
+    },
+    {
+      "id": "c01q3o1",
+      "text": "책상 아래",
+      "duration": 1.852,
+      "bytes": 11756,
+      "rms": 2006
+    },
+    {
+      "id": "c01q3o2",
+      "text": "가방 안",
+      "duration": 1.661,
+      "bytes": 10604,
+      "rms": 2051
+    },
+    {
+      "id": "c01q4o0",
+      "text": "비가 와요",
+      "duration": 1.658,
+      "bytes": 10604,
+      "rms": 2034
+    },
+    {
+      "id": "c01q4o1",
+      "text": "눈이 와요",
+      "duration": 1.585,
+      "bytes": 10172,
+      "rms": 2264
+    },
+    {
+      "id": "c01q4o2",
+      "text": "맑아요",
+      "duration": 1.532,
+      "bytes": 9740,
+      "rms": 1642
+    },
+    {
+      "id": "c01q5o0",
+      "text": "버스",
+      "duration": 1.538,
+      "bytes": 9884,
+      "rms": 1286
+    },
+    {
+      "id": "c01q5o1",
+      "text": "기차",
+      "duration": 1.473,
+      "bytes": 9452,
+      "rms": 1104
+    },
+    {
+      "id": "c01q5o2",
+      "text": "택시",
+      "duration": 1.54,
+      "bytes": 9884,
+      "rms": 955
+    },
+    {
+      "id": "c02q1o0",
+      "text": "커피",
+      "duration": 1.502,
+      "bytes": 9596,
+      "rms": 1485
+    },
+    {
+      "id": "c02q1o1",
+      "text": "우유",
+      "duration": 1.317,
+      "bytes": 8444,
+      "rms": 1691
+    },
+    {
+      "id": "c02q1o2",
+      "text": "주스",
+      "duration": 1.476,
+      "bytes": 9452,
+      "rms": 1136
+    },
+    {
+      "id": "c02q2o0",
+      "text": "영화를 봐요",
+      "duration": 1.812,
+      "bytes": 11468,
+      "rms": 2594
+    },
+    {
+      "id": "c02q2o1",
+      "text": "책을 읽어요",
+      "duration": 1.87,
+      "bytes": 11756,
+      "rms": 2491
+    },
+    {
+      "id": "c02q2o2",
+      "text": "운동을 해요",
+      "duration": 1.832,
+      "bytes": 11612,
+      "rms": 3032
+    },
+    {
+      "id": "c02q3o0",
+      "text": "무거워요",
+      "duration": 1.607,
+      "bytes": 10172,
+      "rms": 2283
+    },
+    {
+      "id": "c02q3o1",
+      "text": "가벼워요",
+      "duration": 1.636,
+      "bytes": 10460,
+      "rms": 2370
+    },
+    {
+      "id": "c02q3o2",
+      "text": "작아요",
+      "duration": 1.477,
+      "bytes": 9452,
+      "rms": 1709
+    },
+    {
+      "id": "c02q4o0",
+      "text": "집",
+      "duration": 1.181,
+      "bytes": 7724,
+      "rms": 705
+    },
+    {
+      "id": "c02q4o1",
+      "text": "회사",
+      "duration": 1.412,
+      "bytes": 9020,
+      "rms": 1455
+    },
+    {
+      "id": "c02q4o2",
+      "text": "도서관",
+      "duration": 1.639,
+      "bytes": 10460,
+      "rms": 2341
+    },
+    {
+      "id": "c02q5o0",
+      "text": "저녁",
+      "duration": 1.412,
+      "bytes": 9020,
+      "rms": 1499
+    },
+    {
+      "id": "c02q5o1",
+      "text": "아침",
+      "duration": 1.547,
+      "bytes": 9884,
+      "rms": 1703
+    },
+    {
+      "id": "c02q5o2",
+      "text": "점심",
+      "duration": 1.63,
+      "bytes": 10316,
+      "rms": 1776
+    },
+    {
+      "id": "c03q1o0",
+      "text": "에서",
+      "duration": 1.402,
+      "bytes": 9020,
+      "rms": 1277
+    },
+    {
+      "id": "c03q1o1",
+      "text": "에게",
+      "duration": 1.393,
+      "bytes": 9020,
+      "rms": 1498
+    },
+    {
+      "id": "c03q1o2",
+      "text": "까지",
+      "duration": 1.485,
+      "bytes": 9452,
+      "rms": 1334
+    },
+    {
+      "id": "c03q2o0",
+      "text": "에",
+      "duration": 1.166,
+      "bytes": 7580,
+      "rms": 914
+    },
+    {
+      "id": "c03q2o1",
+      "text": "을",
+      "duration": 1.222,
+      "bytes": 7868,
+      "rms": 1337
+    },
+    {
+      "id": "c03q2o2",
+      "text": "에게",
+      "duration": 1.393,
+      "bytes": 9020,
+      "rms": 1498
+    },
+    {
+      "id": "c03q3o0",
+      "text": "에게",
+      "duration": 1.393,
+      "bytes": 9020,
+      "rms": 1498
+    },
+    {
+      "id": "c03q3o1",
+      "text": "에서",
+      "duration": 1.402,
+      "bytes": 9020,
+      "rms": 1277
+    },
+    {
+      "id": "c03q3o2",
+      "text": "부터",
+      "duration": 1.462,
+      "bytes": 9308,
+      "rms": 1021
+    },
+    {
+      "id": "c03q4o0",
+      "text": "에",
+      "duration": 1.166,
+      "bytes": 7580,
+      "rms": 914
+    },
+    {
+      "id": "c03q4o1",
+      "text": "를",
+      "duration": 1.248,
+      "bytes": 8012,
+      "rms": 1356
+    },
+    {
+      "id": "c03q4o2",
+      "text": "에서",
+      "duration": 1.402,
+      "bytes": 9020,
+      "rms": 1277
+    },
+    {
+      "id": "c03q5o0",
+      "text": "에서",
+      "duration": 1.402,
+      "bytes": 9020,
+      "rms": 1277
+    },
+    {
+      "id": "c03q5o1",
+      "text": "에게",
+      "duration": 1.393,
+      "bytes": 9020,
+      "rms": 1498
+    },
+    {
+      "id": "c03q5o2",
+      "text": "을",
+      "duration": 1.222,
+      "bytes": 7868,
+      "rms": 1337
+    },
+    {
+      "id": "c04q1o0",
+      "text": "그래서",
+      "duration": 1.514,
+      "bytes": 9740,
+      "rms": 1553
+    },
+    {
+      "id": "c04q1o1",
+      "text": "하지만",
+      "duration": 1.558,
+      "bytes": 9884,
+      "rms": 1423
+    },
+    {
+      "id": "c04q1o2",
+      "text": "또는",
+      "duration": 1.604,
+      "bytes": 10172,
+      "rms": 1932
+    },
+    {
+      "id": "c04q2o0",
+      "text": "하지만",
+      "duration": 1.558,
+      "bytes": 9884,
+      "rms": 1423
+    },
+    {
+      "id": "c04q2o1",
+      "text": "그래서",
+      "duration": 1.514,
+      "bytes": 9740,
+      "rms": 1553
+    },
+    {
+      "id": "c04q2o2",
+      "text": "또는",
+      "duration": 1.604,
+      "bytes": 10172,
+      "rms": 1932
+    },
+    {
+      "id": "c04q3o0",
+      "text": "또는",
+      "duration": 1.604,
+      "bytes": 10172,
+      "rms": 1932
+    },
+    {
+      "id": "c04q3o1",
+      "text": "그래서",
+      "duration": 1.514,
+      "bytes": 9740,
+      "rms": 1553
+    },
+    {
+      "id": "c04q3o2",
+      "text": "하지만",
+      "duration": 1.558,
+      "bytes": 9884,
+      "rms": 1423
+    },
+    {
+      "id": "c04q4o0",
+      "text": "그리고",
+      "duration": 1.464,
+      "bytes": 9308,
+      "rms": 1856
+    },
+    {
+      "id": "c04q4o1",
+      "text": "하지만",
+      "duration": 1.558,
+      "bytes": 9884,
+      "rms": 1423
+    },
+    {
+      "id": "c04q4o2",
+      "text": "그래서",
+      "duration": 1.514,
+      "bytes": 9740,
+      "rms": 1553
+    },
+    {
+      "id": "c04q5o0",
+      "text": "그래서",
+      "duration": 1.514,
+      "bytes": 9740,
+      "rms": 1553
+    },
+    {
+      "id": "c04q5o1",
+      "text": "또는",
+      "duration": 1.604,
+      "bytes": 10172,
+      "rms": 1932
+    },
+    {
+      "id": "c04q5o2",
+      "text": "하지만",
+      "duration": 1.558,
+      "bytes": 9884,
+      "rms": 1423
+    },
+    {
+      "id": "c05q1o0",
+      "text": "오전 9시",
+      "duration": 2.108,
+      "bytes": 13196,
+      "rms": 2406
+    },
+    {
+      "id": "c05q1o1",
+      "text": "오전 8시",
+      "duration": 2.088,
+      "bytes": 13196,
+      "rms": 2464
+    },
+    {
+      "id": "c05q1o2",
+      "text": "오후 9시",
+      "duration": 2.016,
+      "bytes": 12764,
+      "rms": 1941
+    },
+    {
+      "id": "c05q2o0",
+      "text": "수요일",
+      "duration": 1.558,
+      "bytes": 9884,
+      "rms": 2019
+    },
+    {
+      "id": "c05q2o1",
+      "text": "화요일",
+      "duration": 1.517,
+      "bytes": 9740,
+      "rms": 2022
+    },
+    {
+      "id": "c05q2o2",
+      "text": "목요일",
+      "duration": 1.517,
+      "bytes": 9740,
+      "rms": 2492
+    },
+    {
+      "id": "c05q3o0",
+      "text": "한 시간 후",
+      "duration": 1.922,
+      "bytes": 12188,
+      "rms": 2018
+    },
+    {
+      "id": "c05q3o1",
+      "text": "두 시간 후",
+      "duration": 1.791,
+      "bytes": 11324,
+      "rms": 1922
+    },
+    {
+      "id": "c05q3o2",
+      "text": "세 시간 후",
+      "duration": 1.834,
+      "bytes": 11612,
+      "rms": 1797
+    },
+    {
+      "id": "c05q4o0",
+      "text": "오후 2시 30분",
+      "duration": 2.636,
+      "bytes": 16364,
+      "rms": 2026
+    },
+    {
+      "id": "c05q4o1",
+      "text": "오후 2시",
+      "duration": 1.798,
+      "bytes": 11324,
+      "rms": 1866
+    },
+    {
+      "id": "c05q4o2",
+      "text": "오후 3시 30분",
+      "duration": 2.639,
+      "bytes": 16364,
+      "rms": 2018
+    },
+    {
+      "id": "c05q5o0",
+      "text": "일요일",
+      "duration": 1.436,
+      "bytes": 9164,
+      "rms": 1708
+    },
+    {
+      "id": "c05q5o1",
+      "text": "토요일",
+      "duration": 1.506,
+      "bytes": 9596,
+      "rms": 2569
+    },
+    {
+      "id": "c05q5o2",
+      "text": "금요일",
+      "duration": 1.506,
+      "bytes": 9596,
+      "rms": 2220
+    },
+    {
+      "id": "c06q1o0",
+      "text": "병원 옆",
+      "duration": 1.604,
+      "bytes": 10172,
+      "rms": 2238
+    },
+    {
+      "id": "c06q1o1",
+      "text": "병원 안",
+      "duration": 1.678,
+      "bytes": 10604,
+      "rms": 2242
+    },
+    {
+      "id": "c06q1o2",
+      "text": "병원 뒤",
+      "duration": 1.678,
+      "bytes": 10604,
+      "rms": 2372
+    },
+    {
+      "id": "c06q2o0",
+      "text": "지하철역",
+      "duration": 1.713,
+      "bytes": 10892,
+      "rms": 1663
+    },
+    {
+      "id": "c06q2o1",
+      "text": "우체국",
+      "duration": 1.631,
+      "bytes": 10316,
+      "rms": 1850
+    },
+    {
+      "id": "c06q2o2",
+      "text": "공원",
+      "duration": 1.502,
+      "bytes": 9596,
+      "rms": 2166
+    },
+    {
+      "id": "c06q3o0",
+      "text": "2층",
+      "duration": 1.552,
+      "bytes": 9884,
+      "rms": 1271
+    },
+    {
+      "id": "c06q3o1",
+      "text": "1층",
+      "duration": 1.575,
+      "bytes": 10028,
+      "rms": 1644
+    },
+    {
+      "id": "c06q3o2",
+      "text": "3층",
+      "duration": 1.656,
+      "bytes": 10604,
+      "rms": 1482
+    },
+    {
+      "id": "c06q4o0",
+      "text": "왼쪽",
+      "duration": 1.491,
+      "bytes": 9596,
+      "rms": 1897
+    },
+    {
+      "id": "c06q4o1",
+      "text": "오른쪽",
+      "duration": 1.61,
+      "bytes": 10316,
+      "rms": 2330
+    },
+    {
+      "id": "c06q4o2",
+      "text": "뒤쪽",
+      "duration": 1.443,
+      "bytes": 9308,
+      "rms": 1514
+    },
+    {
+      "id": "c06q5o0",
+      "text": "공원과 학교 사이",
+      "duration": 2.362,
+      "bytes": 14780,
+      "rms": 2880
+    },
+    {
+      "id": "c06q5o1",
+      "text": "학교 뒤",
+      "duration": 1.614,
+      "bytes": 10316,
+      "rms": 1617
+    },
+    {
+      "id": "c06q5o2",
+      "text": "공원 안",
+      "duration": 1.652,
+      "bytes": 10460,
+      "rms": 2397
+    },
+    {
+      "id": "c07q1o0",
+      "text": "독서",
+      "duration": 1.471,
+      "bytes": 9452,
+      "rms": 1451
+    },
+    {
+      "id": "c07q1o1",
+      "text": "등산",
+      "duration": 1.549,
+      "bytes": 9884,
+      "rms": 1657
+    },
+    {
+      "id": "c07q1o2",
+      "text": "쇼핑",
+      "duration": 1.606,
+      "bytes": 10172,
+      "rms": 1373
+    },
+    {
+      "id": "c07q2o0",
+      "text": "물",
+      "duration": 1.272,
+      "bytes": 8156,
+      "rms": 1687
+    },
+    {
+      "id": "c07q2o1",
+      "text": "커피",
+      "duration": 1.502,
+      "bytes": 9596,
+      "rms": 1485
+    },
+    {
+      "id": "c07q2o2",
+      "text": "차",
+      "duration": 1.242,
+      "bytes": 8012,
+      "rms": 892
+    },
+    {
+      "id": "c07q3o0",
+      "text": "함께 보고 싶어요",
+      "duration": 2.385,
+      "bytes": 14924,
+      "rms": 2264
+    },
+    {
+      "id": "c07q3o1",
+      "text": "혼자 보고 싶어요",
+      "duration": 2.262,
+      "bytes": 14204,
+      "rms": 2504
+    },
+    {
+      "id": "c07q3o2",
+      "text": "영화를 싫어해요",
+      "duration": 2.211,
+      "bytes": 13916,
+      "rms": 2686
+    },
+    {
+      "id": "c07q4o0",
+      "text": "목",
+      "duration": 1.231,
+      "bytes": 8012,
+      "rms": 1480
+    },
+    {
+      "id": "c07q4o1",
+      "text": "배",
+      "duration": 1.228,
+      "bytes": 8012,
+      "rms": 765
+    },
+    {
+      "id": "c07q4o2",
+      "text": "다리",
+      "duration": 1.354,
+      "bytes": 8732,
+      "rms": 1807
+    },
+    {
+      "id": "c07q5o0",
+      "text": "나의 가방",
+      "duration": 1.816,
+      "bytes": 11468,
+      "rms": 1978
+    },
+    {
+      "id": "c07q5o1",
+      "text": "가의 가방",
+      "duration": 1.865,
+      "bytes": 11756,
+      "rms": 2043
+    },
+    {
+      "id": "c07q5o2",
+      "text": "선생님의 가방",
+      "duration": 2.239,
+      "bytes": 14060,
+      "rms": 2430
+    },
+    {
+      "id": "c08q1o0",
+      "text": "약국",
+      "duration": 1.486,
+      "bytes": 9452,
+      "rms": 1861
+    },
+    {
+      "id": "c08q1o1",
+      "text": "은행",
+      "duration": 1.462,
+      "bytes": 9308,
+      "rms": 1687
+    },
+    {
+      "id": "c08q1o2",
+      "text": "서점",
+      "duration": 1.549,
+      "bytes": 9884,
+      "rms": 1386
+    },
+    {
+      "id": "c08q2o0",
+      "text": "표를 사려고 해요",
+      "duration": 2.163,
+      "bytes": 13628,
+      "rms": 2388
+    },
+    {
+      "id": "c08q2o1",
+      "text": "책을 빌리려고 해요",
+      "duration": 2.285,
+      "bytes": 14348,
+      "rms": 2702
+    },
+    {
+      "id": "c08q2o2",
+      "text": "옷을 고치려고 해요",
+      "duration": 2.382,
+      "bytes": 14924,
+      "rms": 2373
+    },
+    {
+      "id": "c08q3o0",
+      "text": "집에서 쉬어요",
+      "duration": 1.982,
+      "bytes": 12476,
+      "rms": 2227
+    },
+    {
+      "id": "c08q3o1",
+      "text": "산책해요",
+      "duration": 1.892,
+      "bytes": 11900,
+      "rms": 1907
+    },
+    {
+      "id": "c08q3o2",
+      "text": "등산해요",
+      "duration": 1.771,
+      "bytes": 11180,
+      "rms": 2152
+    },
+    {
+      "id": "c08q4o0",
+      "text": "내일 3시 · 도서관 앞",
+      "duration": 2.637,
+      "bytes": 16364,
+      "rms": 2873
+    },
+    {
+      "id": "c08q4o1",
+      "text": "오늘 3시 · 도서관 앞",
+      "duration": 2.615,
+      "bytes": 16220,
+      "rms": 2670
+    },
+    {
+      "id": "c08q4o2",
+      "text": "내일 2시 · 학교 앞",
+      "duration": 2.299,
+      "bytes": 14348,
+      "rms": 2851
+    },
+    {
+      "id": "c08q5o0",
+      "text": "큰 옷을 가져와요",
+      "duration": 2.403,
+      "bytes": 15068,
+      "rms": 2312
+    },
+    {
+      "id": "c08q5o1",
+      "text": "옷을 버려요",
+      "duration": 1.853,
+      "bytes": 11756,
+      "rms": 2341
+    },
+    {
+      "id": "c08q5o2",
+      "text": "옷을 세탁해요",
+      "duration": 2.237,
+      "bytes": 14060,
+      "rms": 2215
+    },
+    {
+      "id": "c09q1o0",
+      "text": "월요일",
+      "duration": 1.486,
+      "bytes": 9452,
+      "rms": 1913
+    },
+    {
+      "id": "c09q1o1",
+      "text": "화요일",
+      "duration": 1.517,
+      "bytes": 9740,
+      "rms": 2022
+    },
+    {
+      "id": "c09q1o2",
+      "text": "일요일",
+      "duration": 1.436,
+      "bytes": 9164,
+      "rms": 1708
+    },
+    {
+      "id": "c09q2o0",
+      "text": "오후 3시",
+      "duration": 1.838,
+      "bytes": 11612,
+      "rms": 1739
+    },
+    {
+      "id": "c09q2o1",
+      "text": "오전 10시",
+      "duration": 1.916,
+      "bytes": 12044,
+      "rms": 2489
+    },
+    {
+      "id": "c09q2o2",
+      "text": "오후 5시",
+      "duration": 2.05,
+      "bytes": 12908,
+      "rms": 1872
+    },
+    {
+      "id": "c09q3o0",
+      "text": "걸어야 해요",
+      "duration": 1.759,
+      "bytes": 11180,
+      "rms": 2201
+    },
+    {
+      "id": "c09q3o1",
+      "text": "자전거를 타야 해요",
+      "duration": 2.436,
+      "bytes": 15212,
+      "rms": 2576
+    },
+    {
+      "id": "c09q3o2",
+      "text": "차를 타야 해요",
+      "duration": 2.028,
+      "bytes": 12764,
+      "rms": 2150
+    },
+    {
+      "id": "c09q4o0",
+      "text": "계산대",
+      "duration": 1.695,
+      "bytes": 10748,
+      "rms": 2010
+    },
+    {
+      "id": "c09q4o1",
+      "text": "반납대",
+      "duration": 1.75,
+      "bytes": 11036,
+      "rms": 1788
+    },
+    {
+      "id": "c09q4o2",
+      "text": "입구",
+      "duration": 1.486,
+      "bytes": 9452,
+      "rms": 1543
+    },
+    {
+      "id": "c09q5o0",
+      "text": "음식",
+      "duration": 1.548,
+      "bytes": 9884,
+      "rms": 1980
+    },
+    {
+      "id": "c09q5o1",
+      "text": "수영모",
+      "duration": 1.613,
+      "bytes": 10316,
+      "rms": 2133
+    },
+    {
+      "id": "c09q5o2",
+      "text": "수건",
+      "duration": 1.529,
+      "bytes": 9740,
+      "rms": 1302
+    },
+    {
+      "id": "c10q1o0",
+      "text": "내일",
+      "duration": 1.403,
+      "bytes": 9020,
+      "rms": 1701
+    },
+    {
+      "id": "c10q1o1",
+      "text": "오늘",
+      "duration": 1.347,
+      "bytes": 8732,
+      "rms": 2352
+    },
+    {
+      "id": "c10q1o2",
+      "text": "다음 주",
+      "duration": 1.625,
+      "bytes": 10316,
+      "rms": 1985
+    },
+    {
+      "id": "c10q2o0",
+      "text": "장소",
+      "duration": 1.537,
+      "bytes": 9884,
+      "rms": 1866
+    },
+    {
+      "id": "c10q2o1",
+      "text": "시간",
+      "duration": 1.512,
+      "bytes": 9596,
+      "rms": 1081
+    },
+    {
+      "id": "c10q2o2",
+      "text": "날짜",
+      "duration": 1.502,
+      "bytes": 9596,
+      "rms": 1552
+    },
+    {
+      "id": "c10q3o0",
+      "text": "이용할 수 없어요",
+      "duration": 2.246,
+      "bytes": 14060,
+      "rms": 2392
+    },
+    {
+      "id": "c10q3o1",
+      "text": "오후 7시까지 가능해요",
+      "duration": 3.114,
+      "bytes": 19244,
+      "rms": 2640
+    },
+    {
+      "id": "c10q3o2",
+      "text": "오전만 가능해요",
+      "duration": 2.329,
+      "bytes": 14636,
+      "rms": 2732
+    },
+    {
+      "id": "c10q4o0",
+      "text": "검은 우산",
+      "duration": 1.932,
+      "bytes": 12188,
+      "rms": 2176
+    },
+    {
+      "id": "c10q4o1",
+      "text": "검은 가방",
+      "duration": 1.933,
+      "bytes": 12188,
+      "rms": 2146
+    },
+    {
+      "id": "c10q4o2",
+      "text": "흰 우산",
+      "duration": 1.749,
+      "bytes": 11036,
+      "rms": 1801
+    },
+    {
+      "id": "c10q5o0",
+      "text": "돈을 내지 않아요",
+      "duration": 2.112,
+      "bytes": 13196,
+      "rms": 2994
+    },
+    {
+      "id": "c10q5o1",
+      "text": "1층에서 만나요",
+      "duration": 2.274,
+      "bytes": 14204,
+      "rms": 2363
+    },
+    {
+      "id": "c10q5o2",
+      "text": "토요일에 만나요",
+      "duration": 2.088,
+      "bytes": 13196,
+      "rms": 3013
+    },
+    {
+      "id": "c11q1o0",
+      "text": "날씨가 좋아서",
+      "duration": 2.193,
+      "bytes": 13772,
+      "rms": 2155
+    },
+    {
+      "id": "c11q1o1",
+      "text": "버스가 고장 나서",
+      "duration": 2.517,
+      "bytes": 15644,
+      "rms": 2392
+    },
+    {
+      "id": "c11q1o2",
+      "text": "늦게 일어나서",
+      "duration": 2.116,
+      "bytes": 13340,
+      "rms": 2275
+    },
+    {
+      "id": "c11q2o0",
+      "text": "오늘 수업에 가요",
+      "duration": 2.128,
+      "bytes": 13340,
+      "rms": 2678
+    },
+    {
+      "id": "c11q2o1",
+      "text": "오늘도 많이 아파요",
+      "duration": 2.398,
+      "bytes": 14924,
+      "rms": 2953
+    },
+    {
+      "id": "c11q2o2",
+      "text": "어제 수업에 갔어요",
+      "duration": 2.423,
+      "bytes": 15068,
+      "rms": 2590
+    },
+    {
+      "id": "c11q3o0",
+      "text": "빵",
+      "duration": 1.344,
+      "bytes": 8732,
+      "rms": 1028
+    },
+    {
+      "id": "c11q3o1",
+      "text": "케이크",
+      "duration": 1.641,
+      "bytes": 10460,
+      "rms": 2058
+    },
+    {
+      "id": "c11q3o2",
+      "text": "과일",
+      "duration": 1.42,
+      "bytes": 9164,
+      "rms": 1558
+    },
+    {
+      "id": "c11q4o0",
+      "text": "은행",
+      "duration": 1.462,
+      "bytes": 9308,
+      "rms": 1687
+    },
+    {
+      "id": "c11q4o1",
+      "text": "집",
+      "duration": 1.181,
+      "bytes": 7724,
+      "rms": 705
+    },
+    {
+      "id": "c11q4o2",
+      "text": "학교",
+      "duration": 1.415,
+      "bytes": 9020,
+      "rms": 1083
+    },
+    {
+      "id": "c11q5o0",
+      "text": "동생은 매운 음식을 못 먹어요",
+      "duration": 3.425,
+      "bytes": 21116,
+      "rms": 2958
+    },
+    {
+      "id": "c11q5o1",
+      "text": "둘 다 매운 음식을 좋아해요",
+      "duration": 3.141,
+      "bytes": 19388,
+      "rms": 2854
+    },
+    {
+      "id": "c11q5o2",
+      "text": "저는 매운 음식을 못 먹어요",
+      "duration": 3.182,
+      "bytes": 19676,
+      "rms": 3035
+    },
+    {
+      "id": "c12q1o0",
+      "text": "무료로 들어가요",
+      "duration": 2.022,
+      "bytes": 12764,
+      "rms": 2611
+    },
+    {
+      "id": "c12q1o1",
+      "text": "돈을 내야 해요",
+      "duration": 1.896,
+      "bytes": 12044,
+      "rms": 2981
+    },
+    {
+      "id": "c12q1o2",
+      "text": "문이 닫혀 있어요",
+      "duration": 2.216,
+      "bytes": 13916,
+      "rms": 2403
+    },
+    {
+      "id": "c12q2o0",
+      "text": "9시 30분",
+      "duration": 2.377,
+      "bytes": 14924,
+      "rms": 1785
+    },
+    {
+      "id": "c12q2o1",
+      "text": "9시 20분",
+      "duration": 2.246,
+      "bytes": 14060,
+      "rms": 1863
+    },
+    {
+      "id": "c12q2o2",
+      "text": "9시 40분",
+      "duration": 2.347,
+      "bytes": 14636,
+      "rms": 1735
+    },
+    {
+      "id": "c12q3o0",
+      "text": "받을 수 있어요",
+      "duration": 2.05,
+      "bytes": 12908,
+      "rms": 2180
+    },
+    {
+      "id": "c12q3o1",
+      "text": "할인이 이미 끝났어요",
+      "duration": 2.54,
+      "bytes": 15788,
+      "rms": 2465
+    },
+    {
+      "id": "c12q3o2",
+      "text": "수업 전에만 가능해요",
+      "duration": 2.727,
+      "bytes": 16940,
+      "rms": 2611
+    },
+    {
+      "id": "c12q4o0",
+      "text": "체육관",
+      "duration": 1.765,
+      "bytes": 11180,
+      "rms": 2150
+    },
+    {
+      "id": "c12q4o1",
+      "text": "공원",
+      "duration": 1.502,
+      "bytes": 9596,
+      "rms": 2166
+    },
+    {
+      "id": "c12q4o2",
+      "text": "도서관",
+      "duration": 1.639,
+      "bytes": 10460,
+      "rms": 2341
+    },
+    {
+      "id": "c12q5o0",
+      "text": "다음 주 수요일까지 돌려줘요",
+      "duration": 3.286,
+      "bytes": 20252,
+      "rms": 3123
+    },
+    {
+      "id": "c12q5o1",
+      "text": "다음 주 금요일까지 빌려요",
+      "duration": 2.966,
+      "bytes": 18380,
+      "rms": 2904
+    },
+    {
+      "id": "c12q5o2",
+      "text": "하루만 빌릴 수 있어요",
+      "duration": 2.566,
+      "bytes": 15932,
+      "rms": 2562
+    }
+  ]
+}

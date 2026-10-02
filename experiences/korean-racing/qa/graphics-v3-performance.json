@@ -1,0 +1,110 @@
+{
+  "date": "2026-10-02",
+  "scope": "Local desktop browser; workload comparison captured before the final city addition. Not a phone benchmark.",
+  "comparison": {
+    "theme": "bloom",
+    "playerS": 75,
+    "quality": "high",
+    "canvasCss": [
+      1280,
+      720
+    ],
+    "canvasPixels": [
+      2560,
+      1440
+    ],
+    "reducedMotion": true,
+    "rafFrames": 180,
+    "discardWarmup": 30,
+    "samples": 150,
+    "before": {
+      "triangles": 860998,
+      "calls": 290,
+      "averageFrameMs": 16.66199999999997,
+      "p95FrameMs": 16.80000000000291
+    },
+    "afterTerrainVehicleSigns": {
+      "triangles": 743363,
+      "calls": 264,
+      "averageFrameMs": 16.662666666666723,
+      "p95FrameMs": 16.80000000000291
+    },
+    "limits": "Both runs were near the 60Hz display limit. RAF intervals are not GPU timing. No FPS improvement or sustained phone performance is claimed."
+  },
+  "componentBudgets": {
+    "terrainOldTriangles": 150700,
+    "terrainConservativeMax": {
+      "high": 39811,
+      "balanced": 30824,
+      "low": 22976
+    },
+    "landscapeOldTriangles": 56776,
+    "landscapeCurrentTriangles": 48920,
+    "vehicleGlbShadowBefore": 349836,
+    "vehicleGlbShadowAfter": 192984,
+    "treesAtS1125BeforeCityExclusion": {
+      "high": {
+        "triangles": 100720,
+        "calls": 17,
+        "shadowCalls": 9
+      },
+      "balanced": {
+        "triangles": 46296,
+        "calls": 14,
+        "shadowCalls": 5
+      },
+      "low": {
+        "triangles": 42016,
+        "calls": 14,
+        "shadowCalls": 0
+      }
+    },
+    "cityConservativeMax": {
+      "high": {
+        "triangles": 14076,
+        "calls": 40
+      },
+      "balanced": {
+        "triangles": 9034,
+        "calls": 26
+      },
+      "low": {
+        "triangles": 6236,
+        "calls": 20
+      }
+    },
+    "cityStoredTriangles": 25156,
+    "cityDynamicLights": 0
+  },
+  "skyTransferBytes": {
+    "oldDesktopSkyAndHdr": 1822839,
+    "currentDesktopDayAndSunset": 919882,
+    "oldMobileSkyAndHdr": 1575800,
+    "currentMobileDayAndSunset": 149660,
+    "limits": "Only sky/environment input transfers; excludes the rest of the game. Generated source 1774x887; mobile derivative 1024x512."
+  },
+  "mobileViewportChecks": [
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "horizontalOverflow": 0
+    },
+    {
+      "viewport": [
+        320,
+        568
+      ],
+      "horizontalOverflow": 0
+    },
+    {
+      "viewport": [
+        844,
+        390
+      ],
+      "horizontalOverflow": 0
+    }
+  ],
+  "mobileLimits": "Desktop viewport checks only. No physical Android/iPhone test or sustained device performance benchmark."
+}

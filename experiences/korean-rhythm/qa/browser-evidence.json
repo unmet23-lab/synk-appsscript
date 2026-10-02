@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-01",
+  "surface": "Codex in-app Chromium",
+  "responsive": [
+    {
+      "width": 320,
+      "height": 740,
+      "overflow": false,
+      "brokenImages": 0,
+      "font": true,
+      "buttonHeight": 59
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "brokenImages": 0,
+      "font": true,
+      "buttonHeight": 59
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "overflow": false,
+      "brokenImages": 0,
+      "font": true,
+      "buttonHeight": 61
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "brokenImages": 0,
+      "font": true,
+      "buttonHeight": 61
+    }
+  ],
+  "keyboardRound": {
+    "rhythmAccuracy": "65.6%",
+    "maxCombo": 18,
+    "languageCorrect": 2,
+    "languageTotal": 5,
+    "intentionalCases": [
+      "late correct meaning",
+      "on-beat wrong meaning",
+      "unanswered"
+    ]
+  },
+  "pause": {
+    "audioState": "suspended",
+    "clockDelta": 0
+  },
+  "mobileInput": {
+    "width": 390,
+    "height": 844,
+    "laneButtonHeight": 89,
+    "selectionConfirmed": true
+  },
+  "recall": {
+    "newSentence": "내일은 바빠서 오늘 도서관에 가요.",
+    "selected": "오늘",
+    "feedbackConfirmed": true
+  },
+  "muteRegression": {
+    "fixed": true,
+    "newErrors": []
+  },
+  "limits": [
+    "실제 휴대폰 다중 터치·발열 미확인",
+    "브라우저 출력음 직접 청취 미확인",
+    "학생 학습 효과 미측정"
+  ]
+}

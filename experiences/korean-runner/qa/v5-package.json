@@ -1,0 +1,33 @@
+{
+  "zip": "korean-runner-play-20261002-v5-shop.zip",
+  "entries": 117,
+  "bytes": 5282582,
+  "sha256": "e9aca4ac4d51d996f7061aa95b7fc69d6e7ac9b2ddc9b5118c5885f1ba47723d",
+  "crc": "passed",
+  "byteMatch": "passed",
+  "feltFix": {
+    "date": "2026-10-02",
+    "note": "펠트 부품 흰 띠 정리: assets/shop/ui 13개와 assets/shop/manifest.json만 고친 판으로 바꿨다. 나머지 103개 항목은 원래 v5 ZIP과 바이트가 같고, 바꾼 14개는 고친 소스와 바이트가 같다. CRC 검사 통과.",
+    "replaced": [
+      "assets/shop/manifest.json",
+      "assets/shop/ui/badge-check.webp",
+      "assets/shop/ui/badge-coral.webp",
+      "assets/shop/ui/badge-cream.webp",
+      "assets/shop/ui/chip-blush-long.webp",
+      "assets/shop/ui/chip-blush.webp",
+      "assets/shop/ui/ring-butter.webp",
+      "assets/shop/ui/slab-blush-long.webp",
+      "assets/shop/ui/slab-blush.webp",
+      "assets/shop/ui/slab-coral-long.webp",
+      "assets/shop/ui/slab-coral.webp",
+      "assets/shop/ui/slab-cream-long.webp",
+      "assets/shop/ui/slab-cream.webp",
+      "assets/shop/ui/tag-cream.webp"
+    ],
+    "before": {
+      "bytes": 5467053,
+      "sha256": "d0e7d2aabd988a4a9f6a0d15601cb4bd9ac7cae2200b5b6bd68d6445b305fe4e"
+    },
+    "beforeArchive": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/korean-runner-play-20261002-v5-shop_재묶기전.zip"
+  }
+}

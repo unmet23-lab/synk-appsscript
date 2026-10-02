@@ -1,0 +1,842 @@
+{
+  "date": "2026-10-02T10:48:41.084Z",
+  "url": "http://127.0.0.1:5213/",
+  "checks": [
+    {
+      "label": "desktop landing",
+      "width": 1440,
+      "overflow": false,
+      "fonts": true,
+      "images": [],
+      "missions": [],
+      "actors": [
+        {
+          "width": 0,
+          "height": 0,
+          "disabled": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "label": "desktop first scene",
+      "width": 1440,
+      "overflow": false,
+      "fonts": true,
+      "images": [],
+      "missions": [
+        {
+          "text": "마린은 과자를 상자 안에 넣어 줘.",
+          "size": "18px"
+        },
+        {
+          "text": "까몽은 종이를 버리지 말고 서랍 안에 넣어 줘.",
+          "size": "18px"
+        }
+      ],
+      "actors": [
+        {
+          "width": 117.125,
+          "height": 183.875,
+          "disabled": false
+        },
+        {
+          "width": 135.140625,
+          "height": 212.171875,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "label": "desktop ending",
+      "width": 1440,
+      "overflow": false,
+      "fonts": true,
+      "images": [],
+      "missions": [],
+      "actors": [
+        {
+          "width": 0,
+          "height": 0,
+          "disabled": true
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "label": "story, mistakes, undo, order, hints, save/resume, changed review, all nine completed",
+      "records": [
+        {
+          "id": "cleanup-paper",
+          "mode": "story",
+          "area": "reading",
+          "skill": "부정 표현과 지시 이해",
+          "attempts": 2,
+          "firstCorrect": false,
+          "firstHelpUsed": false,
+          "helpUsed": false,
+          "helpBeforeFirst": false,
+          "helpCount": 0,
+          "completed": true,
+          "corrected": true,
+          "firstAudioHelpUsed": true,
+          "audioHelpUsed": true,
+          "audioBeforeFirst": true,
+          "audioHelpCount": 3,
+          "audioHelps": [
+            {
+              "source": "dialogue",
+              "voiceId": "dialogue-cleanup-intro-03",
+              "beforeFirst": true,
+              "afterAttempts": 0
+            },
+            {
+              "source": "feedback",
+              "voiceId": "feedback-cleanup-paper-bin",
+              "beforeFirst": false,
+              "afterAttempts": 1
+            },
+            {
+              "source": "feedback",
+              "voiceId": "feedback-cleanup-paper-success",
+              "beforeFirst": false,
+              "afterAttempts": 2
+            }
+          ],
+          "undoneCount": 0,
+          "mistakes": [
+            {
+              "attempt": 1,
+              "kind": "destination",
+              "actor": "kkamong",
+              "destination": "bin"
+            }
+          ],
+          "responses": [
+            {
+              "actor": "kkamong",
+              "object": "paper",
+              "destination": "bin",
+              "correct": false,
+              "kind": "destination",
+              "helpUsed": false,
+              "audioHelpUsed": true
+            },
+            {
+              "actor": "kkamong",
+              "object": "paper",
+              "destination": "drawer",
+              "correct": true,
+              "kind": "correct",
+              "helpUsed": false,
+              "audioHelpUsed": true
+            }
+          ]
+        },
+        {
+          "id": "cleanup-snacks",
+          "mode": "story",
+          "area": "reading",
+          "skill": "문장의 대상·위치 이해",
+          "attempts": 2,
+          "firstCorrect": true,
+          "firstHelpUsed": false,
+          "helpUsed": false,
+          "helpBeforeFirst": false,
+          "helpCount": 0,
+          "completed": true,
+          "corrected": false,
+          "firstAudioHelpUsed": true,
+          "audioHelpUsed": true,
+          "audioBeforeFirst": true,
+          "audioHelpCount": 6,
+          "audioHelps": [
+            {
+              "source": "mission",
+              "voiceId": "mission-cleanup-snacks",
+              "beforeFirst": true,
+              "afterAttempts": 0
+            },
+            {
+              "source": "mission",
+              "voiceId": "mission-cleanup-snacks",
+              "beforeFirst": true,
+              "afterAttempts": 0
+            },
+            {
+              "source": "mission",
+              "voiceId": "mission-cleanup-snacks",
+              "beforeFirst": true,
+              "afterAttempts": 0
+            },
+            {
+              "source": "feedback",
+              "voiceId": "feedback-cleanup-snacks-success",
+              "beforeFirst": false,
+              "afterAttempts": 1
+            },
+            {
+              "source": "mission",
+              "voiceId": "mission-cleanup-snacks",
+              "beforeFirst": false,
+              "afterAttempts": 1
+            },
+            {
+              "source": "feedback",
+              "voiceId": "feedback-cleanup-snacks-success",
+              "beforeFirst": false,
+              "afterAttempts": 2
+            }
+          ],
+          "undoneCount": 1,
+          "mistakes": [],
+          "responses": [
+            {
+              "actor": "marin",
+              "object": "snacks",
+              "destination": "box",
+              "correct": true,
+              "kind": "correct",
+              "helpUsed": false,
+              "audioHelpUsed": true
+            },
+            {
+              "actor": "marin",
+              "object": "snacks",
+              "destination": "box",
+              "correct": true,
+              "kind": "correct",
+              "helpUsed": false,
+              "audioHelpUsed": true
+            }
+          ]
+        },
+        {
+          "id": "clue-flowers",
+          "mode": "story",
+          "area": "reading",
+          "skill": "문장의 대상·위치 이해",
+          "attempts": 1,
+          "firstCorrect": true,
+          "firstHelpUsed": false,
+          "helpUsed": false,
+          "helpBeforeFirst": false,
+          "helpCount": 0,
+          "completed": true,
+          "corrected": false,
+          "firstAudioHelpUsed": true,
+          "audioHelpUsed": true,
+          "audioBeforeFirst": true,
+          "audioHelpCount": 5,
+          "audioHelps": [
+            {
+              "source": "dialogue",
+              "voiceId": "dialogue-clue-intro-02",
+              "beforeFirst": true,
+              "afterAttempts": 0
+            },
+            {
+              "source": "mission",
+              "voiceId": "mission-clue-flowers",
+              "beforeFirst": true,
+              "afterAttempts": 0
+            },
+            {
+              "source": "mission",
+              "voiceId": "mission-clue-flowers",
+              "beforeFirst": true,
+              "afterAttempts": 0
+            },
+            {
+              "source": "mission",
+              "voiceId": "mission-clue-flowers",
+              "beforeFirst": true,
+              "afterAttempts": 0
+            },
+            {
+              "source": "feedback",
+              "voiceId": "feedback-clue-flowers-success",
+              "beforeFirst": false,
+              "afterAttempts": 1
+            }
+          ],
+          "undoneCount": 0,
+          "mistakes": [],
+          "responses": [
+            {
+              "actor": "marin",
+              "object": "flowers",
+              "destination": "table",
+              "correct": true,
+              "kind": "correct",
+              "helpUsed": false,
+              "audioHelpUsed": true
+            }
+          ]
+        },
+        {
+          "id": "clue-letter",
+          "mode": "story",
+          "area": "reading",
+          "skill": "짧은 글의 행동 순서 이해",
+          "attempts": 2,
+          "firstCorrect": false,
+          "firstHelpUsed": false,
+          "helpUsed": true,
+          "helpBeforeFirst": false,
+          "helpCount": 1,
+          "completed": true,
+          "corrected": true,
+          "firstAudioHelpUsed": false,
+          "audioHelpUsed": true,
+          "audioBeforeFirst": false,
+          "audioHelpCount": 4,
+          "audioHelps": [
+            {
+              "source": "feedback",
+              "voiceId": "feedback-clue-letter-order",
+              "beforeFirst": false,
+              "afterAttempts": 1
+            },
+            {
+              "source": "explanation",
+              "voiceId": "help-clue-letter",
+              "beforeFirst": false,
+              "afterAttempts": 1
+            },
+            {
+              "source": "mission",
+              "voiceId": "mission-clue-letter",
+              "beforeFirst": false,
+              "afterAttempts": 1
+            },
+            {
+              "source": "feedback",
+              "voiceId": "feedback-clue-letter-success",
+              "beforeFirst": false,
+              "afterAttempts": 2
+            }
+          ],
+          "undoneCount": 0,
+          "mistakes": [
+            {
+              "attempt": 1,
+              "kind": "order",
+              "actor": "kkamong",
+              "destination": "board"
+            }
+          ],
+          "responses": [
+            {
+              "actor": "kkamong",
+              "object": "letter",
+              "destination": "board",
+              "correct": false,
+              "kind": "order",
+              "helpUsed": false,
+              "audioHelpUsed": false
+            },
+            {
+              "actor": "kkamong",
+              "object": "letter",
+              "destination": "board",
+              "correct": true,
+              "kind": "correct",
+              "helpUsed": true,
+              "audioHelpUsed": true
+            }
+          ]
+        },
+        {
+          "id": "surprise-cake",
+          "mode": "story",
+          "area": "reading",
+          "skill": "문장의 대상·위치 이해",
+          "attempts": 1,
+          "firstCorrect": true,
+          "firstHelpUsed": false,
+          "helpUsed": false,
+          "helpBeforeFirst": false,
+          "helpCount": 0,
+          "completed": true,
+          "corrected": false,
+          "firstAudioHelpUsed": true,
+          "audioHelpUsed": true,
+          "audioBeforeFirst": true,
+          "audioHelpCount": 3,
+          "audioHelps": [
+            {
+              "source": "dialogue",
+              "voiceId": "dialogue-surprise-intro-03",
+              "beforeFirst": true,
+              "afterAttempts": 0
+            },
+            {
+              "source": "mission",
+              "voiceId": "mission-surprise-cake",
+              "beforeFirst": true,
+              "afterAttempts": 0
+            },
+            {
+              "source": "feedback",
+              "voiceId": "feedback-surprise-cake-success",
+              "beforeFirst": false,
+              "afterAttempts": 1
+            }
+          ],
+          "undoneCount": 0,
+          "mistakes": [],
+          "responses": [
+            {
+              "actor": "kkamong",
+              "object": "cake",
+              "destination": "table",
+              "correct": true,
+              "kind": "correct",
+              "helpUsed": false,
+              "audioHelpUsed": true
+            }
+          ]
+        },
+        {
+          "id": "surprise-ribbon",
+          "mode": "story",
+          "area": "reading",
+          "skill": "짧은 글의 행동 순서 이해",
+          "attempts": 1,
+          "firstCorrect": true,
+          "firstHelpUsed": false,
+          "helpUsed": false,
+          "helpBeforeFirst": false,
+          "helpCount": 0,
+          "completed": true,
+          "corrected": false,
+          "firstAudioHelpUsed": true,
+          "audioHelpUsed": true,
+          "audioBeforeFirst": true,
+          "audioHelpCount": 2,
+          "audioHelps": [
+            {
+              "source": "mission",
+              "voiceId": "mission-surprise-ribbon",
+              "beforeFirst": true,
+              "afterAttempts": 0
+            },
+            {
+              "source": "feedback",
+              "voiceId": "feedback-surprise-ribbon-success",
+              "beforeFirst": false,
+              "afterAttempts": 1
+            }
+          ],
+          "undoneCount": 0,
+          "mistakes": [],
+          "responses": [
+            {
+              "actor": "marin",
+              "object": "ribbon",
+              "destination": "board",
+              "correct": true,
+              "kind": "correct",
+              "helpUsed": false,
+              "audioHelpUsed": true
+            }
+          ]
+        },
+        {
+          "id": "review-snacks",
+          "mode": "review",
+          "area": "reading",
+          "skill": "새 문장의 대상·위치 이해",
+          "attempts": 2,
+          "firstCorrect": false,
+          "firstHelpUsed": false,
+          "helpUsed": false,
+          "helpBeforeFirst": false,
+          "helpCount": 0,
+          "completed": true,
+          "corrected": true,
+          "firstAudioHelpUsed": true,
+          "audioHelpUsed": true,
+          "audioBeforeFirst": true,
+          "audioHelpCount": 4,
+          "audioHelps": [
+            {
+              "source": "mission",
+              "voiceId": "mission-review-snacks",
+              "beforeFirst": true,
+              "afterAttempts": 0
+            },
+            {
+              "source": "feedback",
+              "voiceId": "feedback-review-snacks-actor",
+              "beforeFirst": false,
+              "afterAttempts": 1
+            },
+            {
+              "source": "mission",
+              "voiceId": "mission-review-snacks",
+              "beforeFirst": false,
+              "afterAttempts": 1
+            },
+            {
+              "source": "feedback",
+              "voiceId": "feedback-review-snacks-success",
+              "beforeFirst": false,
+              "afterAttempts": 2
+            }
+          ],
+          "undoneCount": 0,
+          "mistakes": [
+            {
+              "attempt": 1,
+              "kind": "actor",
+              "actor": "marin",
+              "destination": "box"
+            }
+          ],
+          "responses": [
+            {
+              "actor": "marin",
+              "object": "snacks",
+              "destination": "box",
+              "correct": false,
+              "kind": "actor",
+              "helpUsed": false,
+              "audioHelpUsed": true
+            },
+            {
+              "actor": "kkamong",
+              "object": "snacks",
+              "destination": "shelf",
+              "correct": true,
+              "kind": "correct",
+              "helpUsed": false,
+              "audioHelpUsed": true
+            }
+          ]
+        },
+        {
+          "id": "review-paper",
+          "mode": "review",
+          "area": "reading",
+          "skill": "새 문장의 부정·변경 이해",
+          "attempts": 1,
+          "firstCorrect": true,
+          "firstHelpUsed": false,
+          "helpUsed": false,
+          "helpBeforeFirst": false,
+          "helpCount": 0,
+          "completed": true,
+          "corrected": false,
+          "firstAudioHelpUsed": true,
+          "audioHelpUsed": true,
+          "audioBeforeFirst": true,
+          "audioHelpCount": 2,
+          "audioHelps": [
+            {
+              "source": "mission",
+              "voiceId": "mission-review-paper",
+              "beforeFirst": true,
+              "afterAttempts": 0
+            },
+            {
+              "source": "feedback",
+              "voiceId": "feedback-review-paper-success",
+              "beforeFirst": false,
+              "afterAttempts": 1
+            }
+          ],
+          "undoneCount": 0,
+          "mistakes": [],
+          "responses": [
+            {
+              "actor": "marin",
+              "object": "paper",
+              "destination": "box",
+              "correct": true,
+              "kind": "correct",
+              "helpUsed": false,
+              "audioHelpUsed": true
+            }
+          ]
+        },
+        {
+          "id": "review-cake",
+          "mode": "review",
+          "area": "reading",
+          "skill": "새 문장의 행동 순서 이해",
+          "attempts": 1,
+          "firstCorrect": true,
+          "firstHelpUsed": false,
+          "helpUsed": false,
+          "helpBeforeFirst": false,
+          "helpCount": 0,
+          "completed": true,
+          "corrected": false,
+          "firstAudioHelpUsed": true,
+          "audioHelpUsed": true,
+          "audioBeforeFirst": true,
+          "audioHelpCount": 2,
+          "audioHelps": [
+            {
+              "source": "mission",
+              "voiceId": "mission-review-cake",
+              "beforeFirst": true,
+              "afterAttempts": 0
+            },
+            {
+              "source": "feedback",
+              "voiceId": "feedback-review-cake-success",
+              "beforeFirst": false,
+              "afterAttempts": 1
+            }
+          ],
+          "undoneCount": 0,
+          "mistakes": [],
+          "responses": [
+            {
+              "actor": "marin",
+              "object": "cake",
+              "destination": "shelf",
+              "correct": true,
+              "kind": "correct",
+              "helpUsed": false,
+              "audioHelpUsed": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "780px landing",
+      "width": 780,
+      "overflow": false,
+      "fonts": true,
+      "images": [],
+      "missions": [],
+      "actors": [
+        {
+          "width": 0,
+          "height": 0,
+          "disabled": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "label": "780px play",
+      "width": 780,
+      "overflow": false,
+      "fonts": true,
+      "images": [],
+      "missions": [
+        {
+          "text": "마린은 과자를 상자 안에 넣어 줘.",
+          "size": "18px"
+        },
+        {
+          "text": "까몽은 종이를 버리지 말고 서랍 안에 넣어 줘.",
+          "size": "18px"
+        }
+      ],
+      "actors": [
+        {
+          "width": 95.40625,
+          "height": 149.78125,
+          "disabled": false
+        },
+        {
+          "width": 110.09375,
+          "height": 172.84375,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "label": "390px landing",
+      "width": 390,
+      "overflow": false,
+      "fonts": true,
+      "images": [],
+      "missions": [],
+      "actors": [
+        {
+          "width": 0,
+          "height": 0,
+          "disabled": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "label": "390px play",
+      "width": 390,
+      "overflow": false,
+      "fonts": true,
+      "images": [],
+      "missions": [
+        {
+          "text": "마린은 과자를 상자 안에 넣어 줘.",
+          "size": "18px"
+        },
+        {
+          "text": "까몽은 종이를 버리지 말고 서랍 안에 넣어 줘.",
+          "size": "18px"
+        }
+      ],
+      "actors": [
+        {
+          "width": 47.3125,
+          "height": 74.28125,
+          "disabled": false
+        },
+        {
+          "width": 54.59375,
+          "height": 85.71875,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "label": "390px ending",
+      "width": 390,
+      "overflow": false,
+      "fonts": true,
+      "images": [],
+      "missions": [],
+      "actors": [
+        {
+          "width": 0,
+          "height": 0,
+          "disabled": true
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "label": "390px touch selection, actual pointer drag, muted complete story, reduced motion",
+      "pass": true
+    },
+    {
+      "label": "320px landing",
+      "width": 320,
+      "overflow": false,
+      "fonts": true,
+      "images": [],
+      "missions": [],
+      "actors": [
+        {
+          "width": 0,
+          "height": 0,
+          "disabled": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "label": "320px play",
+      "width": 320,
+      "overflow": false,
+      "fonts": true,
+      "images": [],
+      "missions": [
+        {
+          "text": "마린은 과자를 상자 안에 넣어 줘.",
+          "size": "18px"
+        },
+        {
+          "text": "까몽은 종이를 버리지 말고 서랍 안에 넣어 줘.",
+          "size": "18px"
+        }
+      ],
+      "actors": [
+        {
+          "width": 44,
+          "height": 69.078125,
+          "disabled": false
+        },
+        {
+          "width": 45.296875,
+          "height": 71.125,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "label": "1024px keyboard play",
+      "width": 1024,
+      "overflow": false,
+      "fonts": true,
+      "images": [],
+      "missions": [
+        {
+          "text": "마린은 과자를 상자 안에 넣어 줘.",
+          "size": "18px"
+        },
+        {
+          "text": "까몽은 종이를 버리지 말고 서랍 안에 넣어 줘.",
+          "size": "18px"
+        }
+      ],
+      "actors": [
+        {
+          "width": 93.328125,
+          "height": 146.53125,
+          "disabled": false
+        },
+        {
+          "width": 107.6875,
+          "height": 169.0625,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "label": "invalid save ignored, keyboard move and dialog focus",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "badRequests": [],
+  "screenshots": [
+    "desktop-landing.png",
+    "desktop-teacher.png",
+    "desktop-play.png",
+    "desktop-wrong.png",
+    "desktop-party.png",
+    "desktop-ending.png",
+    "mobile-780-landing.png",
+    "mobile-780-play.png",
+    "mobile-390-landing.png",
+    "mobile-390-play.png",
+    "mobile-390-ending.png",
+    "mobile-320-landing.png",
+    "mobile-320-play.png"
+  ],
+  "pass": true
+}

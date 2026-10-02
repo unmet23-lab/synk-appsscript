@@ -1,0 +1,315 @@
+{
+  "date": "2026-10-02",
+  "scope": "Local v5 materials and human motion; no public deploy",
+  "tests": {
+    "passed": 109,
+    "failed": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "durationMs": 7703.636,
+    "focusedTests": 18
+  },
+  "sources": {
+    "app.js": "b4fe7a0403975fc21a93d1a15ba8896081c80fdae98a300d009d9947f744b49b",
+    "cityscape.js": "77a26c6acf12dac1ec382c90216d84cdd243c04fd7aec4868eae8148b14cb6a1",
+    "city-materials.js": "27079c067f3a5e9afb4f618372c08cde09f2c5e67f51fbe001307761675dce75",
+    "city-life.js": "052a8d46d55bdc0c58606421d15a3590f27daa5f38df60a1618ca4475550d87f",
+    "build-site.mjs": "e15f93f981bff7987e57fb762f9315601ebfb329c267e83f3e5e28c8af045528"
+  },
+  "captures": [
+    {
+      "file": "city-life-v5-cheer-final.jpg",
+      "bytes": 137993,
+      "sha256": "cae9b485605ed3e2e64a0b4f943a087288ca6538f36bee4e430a2041550bb1a3",
+      "width": 1280,
+      "height": 720,
+      "kind": "isolated QA environment or frame extracted from QA motion recording"
+    },
+    {
+      "file": "city-life-v5-day-4k-final.jpg",
+      "bytes": 2436457,
+      "sha256": "98b36b95150367eee150cb906776e27d5cf90cde5c1beb8e173915232bb4451f",
+      "width": 3840,
+      "height": 2160,
+      "kind": "actual game render/UI"
+    },
+    {
+      "file": "city-life-v5-day-4k-final.png",
+      "bytes": 11801319,
+      "sha256": "5c204837cad8acfaf47fe4c3cdd58453c9de998135992b81eed55475f9c7f40a",
+      "width": 3840,
+      "height": 2160,
+      "kind": "actual game render/UI"
+    },
+    {
+      "file": "city-life-v5-day-review.jpg",
+      "bytes": 2438988,
+      "sha256": "83cb0b705b1a63e084f09a9f12f88ce2eaacd3de2f376d48dc2b6f5332663cf4",
+      "width": 3840,
+      "height": 2160,
+      "kind": "intermediate actual game render"
+    },
+    {
+      "file": "city-life-v5-day-review.png",
+      "bytes": 11624262,
+      "sha256": "5adb32225019112c706335492c5eab35ed352ed6c9cd25be4b014f2e87dceb70",
+      "width": 3840,
+      "height": 2160,
+      "kind": "intermediate actual game render"
+    },
+    {
+      "file": "city-life-v5-day-ui-final.jpg",
+      "bytes": 475269,
+      "sha256": "496f7d474a7a9fe296356feb45fc6d836877f25c7ae6076772a1a4f7c0050c7b",
+      "width": 1920,
+      "height": 1080,
+      "kind": "actual game render/UI"
+    },
+    {
+      "file": "city-life-v5-material-before.jpg",
+      "bytes": 291919,
+      "sha256": "147d09e567a5cd3111f17b25f28970ecfe0cbe32aa4f2cc370e7434d129f6e90",
+      "width": 2560,
+      "height": 1440,
+      "kind": "isolated QA environment or frame extracted from QA motion recording"
+    },
+    {
+      "file": "city-life-v5-mobile-320-final.jpg",
+      "bytes": 48085,
+      "sha256": "6b62bd66ab6fc9640f57c7e526ae97a32f39be1b8dac5210ab0e2956d794bbca",
+      "width": 305,
+      "height": 568,
+      "kind": "actual game render/UI"
+    },
+    {
+      "file": "city-life-v5-mobile-390-final.jpg",
+      "bytes": 74494,
+      "sha256": "575d5887c2b4713676d5918fe25a51eb3b2721d2ce510c26f338e144e83fd9cf",
+      "width": 375,
+      "height": 844,
+      "kind": "actual game render/UI"
+    },
+    {
+      "file": "city-life-v5-mobile-landscape-final.jpg",
+      "bytes": 88913,
+      "sha256": "902010fab837ea7da39bdffcd61793685915e1c062756e275d244b6aee05798c",
+      "width": 829,
+      "height": 390,
+      "kind": "actual game render/UI"
+    },
+    {
+      "file": "city-life-v5-sunset-4k-final.jpg",
+      "bytes": 2082955,
+      "sha256": "468d1d8e7c1cf2ce7d6bdd66351e3158e419e0082fe0825c6f2c6b5344f376fb",
+      "width": 3840,
+      "height": 2160,
+      "kind": "actual game render/UI"
+    },
+    {
+      "file": "city-life-v5-sunset-4k-final.png",
+      "bytes": 11001192,
+      "sha256": "6879f7b66177ec30fc3091b5083fc1a976efa1922195b32627a6f9d7d3e6f0b5",
+      "width": 3840,
+      "height": 2160,
+      "kind": "actual game render/UI"
+    },
+    {
+      "file": "city-life-v5-sunset-ui-final.jpg",
+      "bytes": 407426,
+      "sha256": "5a7c1ac57a9cb3f3a3170491291542bb054d1bf81f5888972ee793cddc3705ae",
+      "width": 1920,
+      "height": 1080,
+      "kind": "actual game render/UI"
+    },
+    {
+      "file": "city-life-v5-table-frame3.jpg",
+      "bytes": 45677,
+      "sha256": "9642d6e68a3056febf7ca58c5bbf5267ca4d286a3f48f32bc49b8b64c15312a0",
+      "width": 1280,
+      "height": 720,
+      "kind": "isolated QA environment or frame extracted from QA motion recording"
+    },
+    {
+      "file": "city-life-v5-table-motion.webm",
+      "bytes": 1015112,
+      "sha256": "15285c5e59b4b4158c2a5ec39bc58e211986359071224a7662cdc2bc909bf14a",
+      "kind": "isolated QA environment or frame extracted from QA motion recording"
+    },
+    {
+      "file": "city-life-v5-terrace-final.jpg",
+      "bytes": 362426,
+      "sha256": "c559c8a87096c7df33ddf680b9e9b5d28c8ed47fed515026bb975e7cad75de39",
+      "width": 2560,
+      "height": 1440,
+      "kind": "isolated QA environment or frame extracted from QA motion recording"
+    },
+    {
+      "file": "city-life-v5-terrace-sunset-final.jpg",
+      "bytes": 135799,
+      "sha256": "a328755cb16f88f8657c15dc40531c02dc2549fc788adc887bf54b5b7c1e528c",
+      "width": 1280,
+      "height": 720,
+      "kind": "isolated QA environment or frame extracted from QA motion recording"
+    },
+    {
+      "file": "city-life-v5-walk-final.jpg",
+      "bytes": 130262,
+      "sha256": "5e54f939db19e452d15d1a1bc7381589e41c22de928089fd6baaba4f9e40076b",
+      "width": 1280,
+      "height": 720,
+      "kind": "isolated QA environment or frame extracted from QA motion recording"
+    },
+    {
+      "file": "city-life-v5-walk-frame1.jpg",
+      "bytes": 79218,
+      "sha256": "23356bf1f495d2e7af05a7e29ed9e8aaef074830068b4e1016a622bd7d9e5f4e",
+      "width": 1920,
+      "height": 1080,
+      "kind": "isolated QA environment or frame extracted from QA motion recording"
+    },
+    {
+      "file": "city-life-v5-walk-frame4.jpg",
+      "bytes": 79901,
+      "sha256": "80ddda234e9fca000b4b3620f445d1aea4f9d886d6c91d661bf40d67d3ae1635",
+      "width": 1920,
+      "height": 1080,
+      "kind": "isolated QA environment or frame extracted from QA motion recording"
+    },
+    {
+      "file": "city-life-v5-walk-frame6.jpg",
+      "bytes": 78245,
+      "sha256": "5b35f21f6d5b555f07b6ecbbd7d6e5f6c6a836a00cd2ce74ec2ca84c64bfdf05",
+      "width": 1920,
+      "height": 1080,
+      "kind": "isolated QA environment or frame extracted from QA motion recording"
+    },
+    {
+      "file": "city-life-v5-walk-motion.webm",
+      "bytes": 3363501,
+      "sha256": "2bfb89b6cfbc65764fc50abad403dc3d27fe349e977ae54bd9e9582111d04539",
+      "kind": "isolated QA environment or frame extracted from QA motion recording"
+    }
+  ],
+  "motion": {
+    "city-life-v5-table-motion.webm": {
+      "bytes": 1015112,
+      "streams": [
+        {
+          "codec_name": "vp9",
+          "width": 1280,
+          "height": 720,
+          "nb_read_frames": "110"
+        }
+      ],
+      "firstTimestamp": 0.0,
+      "lastTimestamp": 7.805
+    },
+    "city-life-v5-walk-motion.webm": {
+      "bytes": 3363501,
+      "streams": [
+        {
+          "codec_name": "vp9",
+          "width": 1920,
+          "height": 1080,
+          "nb_read_frames": "178"
+        }
+      ],
+      "firstTimestamp": 0.0,
+      "lastTimestamp": 7.544
+    }
+  },
+  "package": {
+    "verifiedFiles": 2733,
+    "importsChecked": 80,
+    "htmlLinksChecked": 30,
+    "zip": {
+      "path": "SYNK-LAB-PLAY-시안-20261002.zip",
+      "bytes": 57053655,
+      "sha256": "7951134165d5c7a69846e1b97206d38da5b13478dcf02d2745fdb59509266353"
+    }
+  },
+  "browser": {
+    "capture": "Actual 3840x2160 WebGL pixels at content1920x1080 and render2; viewport1935 includes15px desktop scrollbar. No upscale or composite.",
+    "day": {
+      "playerS": 351.5190527887371,
+      "npcVisible": 6,
+      "npcTriangles": 15500,
+      "npcDrawCalls": 9
+    },
+    "sunset": {
+      "playerS": 350.89017415646583,
+      "npcVisible": 7,
+      "npcTriangles": 17862,
+      "npcDrawCalls": 9
+    },
+    "cityMaterialVersion": 5,
+    "lowMaterialDetail": 0,
+    "reducedMotionPoseJsonUnchangedAcrossQualityChange": true,
+    "mainConsoleErrors": 0,
+    "mainConsoleWarnings": 0,
+    "mobile": [
+      {
+        "viewport": [
+          390,
+          844
+        ],
+        "contentWidth": 375,
+        "scrollWidth": 375,
+        "scrollY": 0
+      },
+      {
+        "viewport": [
+          320,
+          568
+        ],
+        "contentWidth": 305,
+        "scrollWidth": 305,
+        "scrollY": 0
+      },
+      {
+        "viewport": [
+          844,
+          390
+        ],
+        "contentWidth": 829,
+        "scrollWidth": 829,
+        "scrollY": 0
+      }
+    ],
+    "mobileNpcVisibleAtCapture": 0,
+    "finalPreview": {
+      "url": "http://127.0.0.1:5197/",
+      "stage": "003",
+      "ready": true,
+      "running": false,
+      "qualitySelection": "auto",
+      "resolvedQuality": "high",
+      "scenery": "coast",
+      "learning": {
+        "words": 0,
+        "correctWords": 0,
+        "rounds": 1,
+        "cleared": 1
+      },
+      "coins": 0,
+      "scrollY": 0,
+      "overflow": 0,
+      "consoleErrors": 0,
+      "consoleWarnings": 0,
+      "viewportOverrideReset": true,
+      "deliverableTabMarked": true,
+      "screenshot": {
+        "path": "city-life-v5-current-preview-final.jpg",
+        "bytes": 756271,
+        "sha256": "0af731691cf9229e57d96db3bda2f5fb1c9baf4cb1c5b66df4e509e45771ab4b"
+      }
+    }
+  },
+  "limits": [
+    "desktop viewport QA, not physical iPhone/Android performance",
+    "partial muted demo, not full five-question or narration listening verification",
+    "room depth is an opaque shader, not enterable 3D interiors",
+    "motion videos use an isolated QA camera/light/floor, not gameplay footage",
+    "NPC triangles increased; no overall FPS improvement claim"
+  ]
+}

@@ -1,0 +1,105 @@
+{"title":"유영","observedProgress":"0:37","sourceId":"145ffb62-6e5a-4d41-a85a-293a47437d0b"}
+:
+        - /url: /song/8a7481c5-6399-4067-bc1e-406c5374dc91
+      - button "Edit title":
+      - generic: V6
+      - generic: Documentary instrumental, 106 BPM confident light groove from the first two seconds, warm Rhodes chords, clean muted electric guitar motifs, rounded bass, crisp restrained live drums and light shakers, subtle airy analog synth, elegant major-key jazz extensions, spacious four-minute arrangement with a warm lift and resolved ending, premium clean stereo detail, restrained 1-4 kHz energy, smooth natural dynamics
+      - button "Like clip":
+      - button "Dislike clip":
+      - button "Share clip":
+      - button "Publish clip":
+        - generic: Publish
+      - button "More options":
+    - group "Untitled"
+    - group "Untitled"
+    - group "Untitled"
+    - group "Untitled"
+    - heading "Wednesday, Sep 23" [level=3]
+    - group "Untitled"
+    - group "Untitled"
+    - group "Untitled"
+    - group "Untitled"
+    - group "Untitled"
+    - group "Untitled"
+    - group "Untitled"
+    - group "Untitled"
+- 'link "Playbar: Title for 잔상"':
+  - /url: /song/41cee495-d5d8-4961-8ae5-c207d0e528b9
+- 'link "Playbar: Title for 잔상"':
+  - /url: /song/41cee495-d5d8-4961-8ae5-c207d0e528b9
+  - text: 잔상
+- 'link "Playbar: Artist for 잔상"':
+  - /url: /@77yuhbs
+  - generic: 77yuhbs
+- 'button "Playbar: Toggle shuffle button"':
+- 'button "Playbar: Previous Song button"':
+- 'button "Playbar: Pause button"':
+- 'button "Playbar: Next Song button"':
+- 'button "Playbar: Toggle repeat button"':
+- generic: 1:06
+- slider "Playback progress": "65"
+- generic: 3:46
+- button "Queue":
+- 'button "Playbar: Like"':
+- 'button "Playbar: Dislike"':
+- 'link "Playbar: Comment"':
+  - /url: /song/41cee495-d5d8-4961-8ae5-c207d0e528b9?show_comments=true
+- 'button "Playbar: Share"':
+- button "More options":
+- 'button "Playbar: Volume Slider"':
+- 'button "Playbar: Toggle song details panel"':
+- alert
+- region "Bottom notifications"
+- region "Top notifications"
+- region "Bottom edge notifications"
+eneric: V6
+      - generic: Documentary instrumental, instrumental with space for Korean male interview voice; warm Rhodes chords, clean muted electric guitar motifs, rounded bass, crisp restrained live drums, light shakers, airy analog synth; 106 BPM confident light groove from the first two seconds; elegant major-key harmony with tasteful jazz extensions, understated 8- and 16-bar changes, final-third lift and resolved ending, clean stereo detail, restrained 1-4 kHz energy, smooth natural dynamics
+      - button "Like clip":
+      - button "Dislike clip":
+      - button "Share clip":
+      - button "Publish clip":
+        - generic: Publish
+      - button "More options":
+    - group "Untitled"
+    - group "Untitled"
+    - group "Untitled"
+    - group "Untitled"
+    - group "Untitled"
+    - heading "Wednesday, Sep 23" [level=3]
+    - group "Untitled"
+    - group "Untitled"
+    - group "Untitled"
+    - group "Untitled"
+    - group "Untitled"
+    - group "Untitled"
+    - group "Untitled"
+    - group "Untitled"
+- 'link "Playbar: Title for 밤의 온도"':
+  - /url: /song/a88e7cc4-e9f7-4e61-9d31-c73e0d537ede
+- 'link "Playbar: Title for 밤의 온도"':
+  - /url: /song/a88e7cc4-e9f7-4e61-9d31-c73e0d537ede
+  - text: 밤의 온도
+- 'link "Playbar: Artist for 밤의 온도"':
+  - /url: /@77yuhbs
+  - generic: 77yuhbs
+- 'button "Playbar: Toggle shuffle button"':
+- 'button "Playbar: Previous Song button"':
+- 'button "Playbar: Pause button"':
+- 'button "Playbar: Next Song button"':
+- 'button "Playbar: Toggle repeat button"':
+- generic: 1:38
+- slider "Playback progress": "100"
+- generic: 3:34
+- button "Queue":
+- 'button "Playbar: Like"':
+- 'button "Playbar: Dislike"':
+- 'link "Playbar: Comment"':
+  - /url: /song/a88e7cc4-e9f7-4e61-9d31-c73e0d537ede?show_comments=true
+- 'button "Playbar: Share"':
+- button "More options":
+- 'button "Playbar: Volume Slider"':
+- 'button "Playbar: Toggle song details panel"':
+- alert
+- region "Bottom notifications"
+- region "Top notifications"
+- region "Bottom edge notifications"

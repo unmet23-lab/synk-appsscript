@@ -1,0 +1,110 @@
+{
+  "version": 6,
+  "ready": true,
+  "running": false,
+  "paused": false,
+  "demo": false,
+  "mode": "tour",
+  "learning": "listen",
+  "best": 0,
+  "sound": true,
+  "shop": {
+    "version": 1,
+    "wallet": 60,
+    "owned": [
+      "trail:none",
+      "lantern:paper",
+      "companion:none",
+      "scenery:village",
+      "finish:simple"
+    ],
+    "equipped": {
+      "trail": "none",
+      "lantern": "paper",
+      "companion": "none",
+      "scenery": "village",
+      "finish": "simple"
+    },
+    "settled": [],
+    "wishlist": null,
+    "progress": {
+      "distance": 0,
+      "stars": 0,
+      "runs": 0,
+      "completions": 0,
+      "claimed": []
+    },
+    "available": true
+  },
+  "shopPreview": {
+    "visible": true,
+    "category": "scenery",
+    "selected": "scenery:blossom",
+    "wishlist": null
+  },
+  "journey": {
+    "nextGoal": {
+      "id": "distance-150",
+      "current": 0,
+      "target": 150,
+      "claimed": false
+    },
+    "wishlist": null,
+    "goalsUnlocked": []
+  },
+  "voiceClips": 0,
+  "audio": null,
+  "world": {
+    "renderer": "Three.js 180",
+    "quality": "experience",
+    "fps": 52,
+    "drawCalls": 429,
+    "triangles": 460158,
+    "width": 2112,
+    "height": 1188,
+    "eventObjects": 0,
+    "frames": 1177,
+    "armlessMongle": true,
+    "cosmetics": {
+      "selection": {
+        "trail": "none",
+        "lantern": "paper",
+        "companion": "none",
+        "scenery": "blossom",
+        "finish": "simple"
+      },
+      "preview": true,
+      "activeTrail": 0,
+      "trailCapacity": 24,
+      "finishCapacity": 28,
+      "budget": {
+        "trail": 24,
+        "finish": 28,
+        "lantern": 2
+      },
+      "companionVisible": false,
+      "finishVisible": false,
+      "finishAge": 0,
+      "lanternFlashes": 0
+    },
+    "sceneryDetails": {
+      "theme": "blossom",
+      "tiles": 10,
+      "capacity": {
+        "blossom": 1045,
+        "snow": 360,
+        "moonlight": 597
+      },
+      "activeInstances": 1045,
+      "drawCalls": 8,
+      "bufferCount": 25,
+      "quality": "experience",
+      "reduced": false,
+      "disposed": false
+    },
+    "shopPreview": true,
+    "ambientParticles": 70,
+    "particles": 0
+  },
+  "model": null
+}

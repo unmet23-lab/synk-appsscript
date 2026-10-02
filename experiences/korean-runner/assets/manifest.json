@@ -1,0 +1,71 @@
+{
+  "date": "2026-10-01",
+  "source": "Local approved SYNK assets and existing Three.js r180 vendor",
+  "files": [
+    {
+      "file": "assets/brand-lab.webp",
+      "bytes": 126616,
+      "sha256": "b1e0ec28fa10cc446952afa82bc58cea3e58b3ddbf9a169e27cbcaec30695b0e"
+    },
+    {
+      "file": "assets/dm-mono.woff2",
+      "bytes": 20640,
+      "sha256": "90c18834dd45ae0dd9b414cff0e3ec55bb89e9c04c5f8ccc65960bc3e67d3e1a"
+    },
+    {
+      "file": "assets/DMMono-OFL.txt",
+      "bytes": 4484,
+      "sha256": "2bada5ea45c3c63b7f1ea1f88ce9672c9e4f0c42b2c3b7378949084fe55a3066"
+    },
+    {
+      "file": "assets/favicon.svg",
+      "bytes": 240,
+      "sha256": "f588f436055184114c6186e199698020354fdd86d8f0266eb2aa59cdb52bc849"
+    },
+    {
+      "file": "assets/felt.webp",
+      "bytes": 77674,
+      "sha256": "63526708186cfef84f7559628b38ad8663c22a222976242e0a401f75f3865b2b"
+    },
+    {
+      "file": "assets/inter-tight.ttf",
+      "bytes": 309140,
+      "sha256": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1"
+    },
+    {
+      "file": "assets/InterTight-OFL.txt",
+      "bytes": 4383,
+      "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58"
+    },
+    {
+      "file": "assets/SUIT-OFL.txt",
+      "bytes": 4380,
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9"
+    },
+    {
+      "file": "assets/suit.woff2",
+      "bytes": 624536,
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+    },
+    {
+      "file": "vendor/BufferGeometryUtils.js",
+      "bytes": 35539,
+      "sha256": "fda7e946b8e0b5ab39b779206589e7a1079a22eb24efb89d7223e03fdfb1f751"
+    },
+    {
+      "file": "vendor/THREE-LICENSE.txt",
+      "bytes": 1081,
+      "sha256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601"
+    },
+    {
+      "file": "vendor/three.core.js",
+      "bytes": 1403455,
+      "sha256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20"
+    },
+    {
+      "file": "vendor/three.module.js",
+      "bytes": 603113,
+      "sha256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a"
+    }
+  ]
+}

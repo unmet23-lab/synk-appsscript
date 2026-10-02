@@ -1,0 +1,98 @@
+{
+  "date": "2026-10-02",
+  "scope": "Shared SYNK ID across independent Platform, WORLD and company Messenger; Android/iOS/Windows/macOS/web development targets",
+  "deployment": "local implementation and synthetic verification only",
+  "tests": [
+    {
+      "group": "central schema/server and WORLD mobile authentication",
+      "passed": 115,
+      "failed": 0,
+      "parts": {
+        "schema": 25,
+        "server": 31,
+        "mobile": 59
+      },
+      "workspace": "../SYNK-talk"
+    },
+    {
+      "group": "web account, desktop renderer and static entry server",
+      "passed": 40,
+      "failed": 0,
+      "command": "node --test experiences/synk-account/tests/*.test.mjs tests/learning-hub-server.test.js"
+    },
+    {
+      "group": "desktop shell and OAuth",
+      "passed": 31,
+      "failed": 0,
+      "workspace": "desktop",
+      "command": "npm test"
+    },
+    {
+      "group": "company SSO, session lifetime, UI and existing navigation/authorization",
+      "passed": 77,
+      "failed": 0,
+      "evidence": "../../../tools/company-messenger/QA.md"
+    }
+  ],
+  "browser": {
+    "surfaces": [
+      "platform account",
+      "WORLD account",
+      "platform home",
+      "isolated synthetic company account"
+    ],
+    "widths": {
+      "platformWorld": [
+        320,
+        390,
+        1280
+      ],
+      "syntheticCompany": [
+        390
+      ]
+    },
+    "horizontalOverflow": false,
+    "consoleWarningsOrErrors": 0,
+    "realIdentityLogin": false,
+    "syntheticCompanyServerStopped": true,
+    "operatingCompany4191Restarted": false,
+    "screenshots": [
+      "platform-mobile-id-20261002.png",
+      "messenger-mobile-id-20261002.png"
+    ],
+    "platformWorldBrokenImages": 0
+  },
+  "desktop": {
+    "version": "0.2.0",
+    "windowsInstallers": 6,
+    "architectures": [
+      "x64",
+      "arm64"
+    ],
+    "osEncryptedStorageVerified": "Windows DPAPI, all three clients",
+    "packageReport": "../../../desktop/artifacts/package-verification.json",
+    "webContract": "../../../desktop/artifacts/desktop-web-contract.json",
+    "signed": false,
+    "installerExecuted": false,
+    "macArtifactsCreated": false
+  },
+  "publicSetup": {
+    "webConfigExists": false,
+    "desktopConfigExists": false,
+    "remoteMigrationsApplied": false,
+    "remoteFunctionsDeployed": false,
+    "mobileOAuthClientConfigured": false
+  },
+  "remaining": [
+    "Register actual per-product OAuth clients and exact callbacks, configure public endpoints and server-owned client/product registry",
+    "Apply reviewed central migration/functions to a verification environment and verify real cross-device login, renewal, logout and revocation",
+    "Create and verify Mac artifacts; native mobile packages, real devices, signing and distribution remain unverified",
+    "Desktop Messenger may require company re-login after a long inactive period; documented in company SYNK_ID.md"
+  ],
+  "sourceHashes": {
+    "experiences/synk-account/dist/client.js": "a9e0cb94a972a0426c1252dde5887302ceebb8cee513cf4cc33f56250dc496d1",
+    "docs/마케팅/온라인마케팅지도/engagement/company/synk-identity.mjs": "858ea49fbfb59fcaec632daf669e3a5369a423462511e184c5da8b1ea3071b90",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/synk-id.js": "ad905f6eefc9ddbce39a9ff070172bdfc295e6cffa6ff5a0989a9886d75d0f7f",
+    "desktop/src/auth-service.cjs": "dafdf6f4445914de61ac3bc68c8b92d33d98b2e6cb4e90421e240972b898f0c3"
+  }
+}

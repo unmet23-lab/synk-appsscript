@@ -1,0 +1,42 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import engine from '../../atlas/personalization.js';
+import {TASKS,STORAGE_KEY,newState,startRun,nextTaskSuggestion,evaluate,completeRun,giveFeedback,restore,persist,exportText,escapeHTML} from './model.mjs';
+const at='2026-10-02T00:00:00.000Z',later='2026-10-02T00:00:01.000Z';
+const start=(settings={})=>startRun(newState(),{task:'meeting',goal:'clarity',minutes:5,support:'step',...settings},engine,at);
+const filled=()=>{const state=start();state.run.prompt=TASKS.meeting.template;for(const id of state.run.checkIds){const c=TASKS.meeting.checks.find(c=>c.id===id);state.run.answers[id]={kind:c.answer,source:c.source};}state.run.result=evaluate(state.run);state.run.draft='지안은 10월 8일까지 안내 초안을 작성합니다. 다국어 예산 80만 원은 승인 대기입니다. 도윤은 10월 6일까지 접근성 검토 항목을 전달합니다.';state.run.reviewed=true;return state;};
+test('Core limits a short session and only receives actual declared settings',()=>{const s=start();assert.equal(s.run.checkIds.length,2);assert.equal(s.run.support,'step');assert.match(s.run.reason,/5분/);assert.ok(s.events.some(e=>e.type==='decision.made'));assert.equal(s.profile.scope.domain,'SHIFT');assert.deepEqual(Object.keys(s.profile.values).sort(),['goal','minutes','support']);assert.equal(s.profile.provenance.experience,undefined);assert.equal(s.profile.provenance.audio,undefined);});
+test('different purpose and time change the actual practice scope',()=>{const s=start({task:'planning',goal:'work',minutes:10,support:'independent'});assert.equal(s.run.variant,'full');assert.equal(s.run.checkIds.length,3);assert.equal(s.run.support,'independent');});
+test('more-practice feedback selects a deeper feasible practice, without forcing it just because time is available',()=>{let s=start({goal:'prepare',minutes:15});assert.equal(s.run.variant,'full');s=completeRun(filled(),engine,later);s=giveFeedback(s,'want_more',engine,'2026-10-02T00:00:02.000Z');s=startRun(s,{task:'meeting',goal:'prepare',minutes:15,support:'step'},engine,'2026-10-02T00:00:03.000Z');assert.equal(s.run.variant,'deep');assert.equal(s.run.goal,'prepare');});
+test('wrong source is not credited even when the judgment matches',()=>{const s=filled();s.run.answers.deadline.source='M2';const result=evaluate(s.run);assert.equal(result[0].correct,false);assert.equal(result[1].correct,true);});
+test('incomplete answers cannot complete the practice',()=>{const s=filled();delete s.run.answers.approval;assert.throws(()=>completeRun(s,engine,later),/모든 항목/);});
+test('unchanged sample and unconfirmed edits cannot masquerade as completion',()=>{const s=filled();s.run.draft=TASKS.meeting.sample;assert.throws(()=>completeRun(s,engine,later),/직접 수정/);s.run.draft='직접 수정한 내용으로 충분히 길게 작성된 검토 결과입니다. 원문과 비교합니다.';s.run.reviewed=false;assert.throws(()=>completeRun(s,engine,later),/직접 읽고/);});
+test('completion and explicit feedback use existing Core events exactly once',()=>{let s=completeRun(filled(),engine,later);assert.equal(s.history.length,1);assert.equal(s.history[0].correct,2);assert.equal(s.run.step,'result');assert.ok(s.events.find(e=>e.type==='experience.completed'));s=giveFeedback(s,'too_much',engine,'2026-10-02T00:00:02.000Z');assert.ok(s.events.find(e=>e.type==='feedback.given'));assert.throws(()=>giveFeedback(s,'helpful',engine,'2026-10-02T00:00:03.000Z'),/한 번/);});
+test('missed evidence controls the next check order without declaring an ability',()=>{let s=filled();s.run.answers.approval.kind='match';s.run.result=evaluate(s.run);s=completeRun(s,engine,later);s=startRun(s,{task:'meeting',goal:'clarity',minutes:5,support:'step'},engine,'2026-10-02T00:00:02.000Z');assert.equal(s.run.checkIds[0],'approval');assert.match(s.run.reason,/주장과 근거/);});
+test('a missed completeness check suggests a matching new task but never claims an absent focus in an explicitly chosen task',()=>{
+  let s=start({goal:'work',minutes:10});s.run.prompt=TASKS.meeting.template;s.run.draft=filled().run.draft;s.run.reviewed=true;
+  for(const c of TASKS.meeting.checks)s.run.answers[c.id]={kind:c.id==='missing'?'match':c.answer,source:c.source};
+  s.run.result=evaluate(s.run);s=completeRun(s,engine,later);
+  assert.deepEqual(s.history[0].missed,['completeness']);assert.deepEqual(nextTaskSuggestion(s),{task:'planning',focus:'completeness'});
+  const explicit=startRun(s,{task:'research',goal:'work',minutes:10,support:'step'},engine,'2026-10-02T00:00:02.000Z');
+  assert.equal(explicit.run.task,'research');assert.equal(explicit.run.checkIds[0],'ratio');assert.doesNotMatch(explicit.run.reason,/누락·성공 기준|지난 실습의/);
+  const suggested=startRun(s,{task:'planning',goal:'work',minutes:10,support:'step'},engine,'2026-10-02T00:00:02.000Z');
+  assert.equal(suggested.run.checkIds[0],'criteria');assert.match(suggested.run.reason,/지난 실습의 누락·성공 기준 확인/);
+});
+test('storage is opt in, failure is visible, and restart preserves only this scope',()=>{const calls=[],storage={setItem:(...args)=>calls.push(args)};let s=filled();assert.equal(persist(storage,s).saved,false);assert.equal(calls.length,0);s.save=true;assert.equal(persist(storage,s).saved,true);assert.equal(calls[0][0],STORAGE_KEY);assert.deepEqual(restore(calls[0][1],engine).run.checkIds,s.run.checkIds);assert.equal(persist({setItem(){throw Error('quota');}},s).ok,false);const foreign=structuredClone(s);foreign.profile.scope.productId='world';assert.throws(()=>restore(JSON.stringify(foreign),engine),/다른 실습/);});
+test('tampered and oversized stored sessions are rejected',()=>{const s=filled();s.save=true;s.run.checkIds=['nonexistent'];assert.throws(()=>restore(JSON.stringify(s),engine),/진행 내용/);assert.throws(()=>restore('x'.repeat(1000001),engine),/읽을 수/);});
+test('text output preserves literal user text while HTML rendering escapes it',()=>{const s=filled();s.run.prompt='<img src=x onerror=alert(1)> & example';assert.match(exportText(s),/<img src=x/);assert.equal(escapeHTML(s.run.prompt),'&lt;img src=x onerror=alert(1)&gt; &amp; example');assert.match(exportText(s),/실제 AI 호출·업무 효과 검증 없음/);});
+test('company hosts use an explicit member scope for selection, completion, feedback and restore',()=>{
+  const scope={personId:'company-member-A',productId:'company',contextId:'workroom-practice',domain:'SHIFT'},other={...scope,personId:'company-member-B'};
+  let s=startRun(newState(),{task:'meeting',goal:'clarity',minutes:5,support:'step'},engine,at,scope);
+  assert.deepEqual(s.profile.scope,scope);s.run.prompt=TASKS.meeting.template;
+  for(const id of s.run.checkIds){const c=TASKS.meeting.checks.find(c=>c.id===id);s.run.answers[id]={kind:c.answer,source:c.source};}
+  s.run.result=evaluate(s.run);s.run.draft=filled().run.draft;s.run.reviewed=true;
+  assert.throws(()=>completeRun(s,engine,later,other));s=completeRun(s,engine,later,scope);
+  s=giveFeedback(s,'helpful',engine,'2026-10-02T00:00:02.000Z',scope);s.save=true;
+  assert.deepEqual(restore(JSON.stringify(s),engine,scope).profile.scope,scope);
+  assert.throws(()=>restore(JSON.stringify(s),engine,other),/다른 실습/);
+  assert.throws(()=>restore(JSON.stringify(s),engine),/다른 실습/);
+  const writes=[];persist({setItem:(...args)=>writes.push(args)},s,'synk-workroom:ai-practice:v1:company-member-A');
+  assert.equal(writes[0][0],'synk-workroom:ai-practice:v1:company-member-A');
+});

@@ -1,0 +1,678 @@
+{
+ "url": "http://127.0.0.1:5215/",
+ "at": "2026-10-02T12:00:45.720Z",
+ "views": {
+  "mobile": {
+   "shots": [
+    "mobile_01_lobby.png",
+    "mobile_01b_how.png",
+    "mobile_02_briefing.png",
+    "mobile_03_tut01.png",
+    "mobile_03_tut02.png",
+    "mobile_03_tut03.png",
+    "mobile_03_tut04.png",
+    "mobile_03_tut05.png",
+    "mobile_03_tut06.png",
+    "mobile_03_tut07.png",
+    "mobile_03_tut08.png",
+    "mobile_03_tut09.png",
+    "mobile_03_tut10.png",
+    "mobile_03_tut11.png",
+    "mobile_03_tut12.png",
+    "mobile_04_hint.png",
+    "mobile_05_feedback_wrong.png",
+    "mobile_06_results.png",
+    "mobile_06_results_full.png",
+    "mobile_07_library_video.png",
+    "mobile_08_pause.png",
+    "mobile_09_memo_alert.png"
+   ],
+   "overflow": {
+    "lobby": {
+     "inner": 390,
+     "visual": 390,
+     "scroll": 390
+    },
+    "game": {
+     "inner": 390,
+     "visual": 390,
+     "scroll": 390
+    },
+    "results": {
+     "inner": 390,
+     "visual": 390,
+     "scroll": 390
+    }
+   },
+   "checks": {
+    "blockedOutside": true,
+    "topAtReject": "coach-block",
+    "onlyTargetRule": [
+     "food"
+    ],
+    "tutorialSteps": [
+     [
+      1,
+      "tut-guest"
+     ],
+     [
+      2,
+      "tut-notice"
+     ],
+     [
+      3,
+      "tut-papers"
+     ],
+     [
+      4,
+      "tut-pass"
+     ],
+     [
+      5,
+      "tut-why"
+     ],
+     [
+      6,
+      "tut-tray"
+     ],
+     [
+      7,
+      "tut-rule"
+     ],
+     [
+      8,
+      "tut-reject"
+     ],
+     [
+      9,
+      "tut-choose"
+     ],
+     [
+      10,
+      "tut-why2"
+     ],
+     [
+      11,
+      "tut-hint"
+     ],
+     [
+      12,
+      "tut-free"
+     ]
+    ],
+    "tutorialEnded": {
+     "on": false,
+     "step": null
+    },
+    "progressTutorial": true,
+    "results": {
+     "correct": "5",
+     "total": "6",
+     "log": [
+      "정답 통과 · 연수",
+      "정답 거절 · ② 음식 · 연수",
+      "정답 통과 · 돋보기",
+      "정답 거절 · ① 수영 모자 · 내 도장 통과",
+      "정답 거절 · ③ 7살 이하 어린이",
+      "정답 통과"
+     ],
+     "next": "2일차 · 별빛 도서관",
+     "reason": "읽고 세부 정보 찾기를 도움과 함께 해냈어요. 이어서 살펴봐요.",
+     "skills": [
+      "읽고 세부 정보 찾기 다음 연습이번 1/2도움과 함께 해냈어요",
+      "읽고 부정·변경 이해하기이번 1/1도움과 함께 해냈어요",
+      "읽고 조건 이해하기이번 3/3도움과 함께 해냈어요 · 혼자 푼 새 문항 2개 중 2개 맞힘"
+     ]
+    },
+    "atlasGuided": [
+     [
+      "pool-01",
+      false
+     ],
+     [
+      "pool-02",
+      false
+     ]
+    ],
+    "voices": [
+     "nar-brief-pool",
+     "line-pool-01",
+     "nar-tut-notice",
+     "nar-tut-papers",
+     "nar-tut-pass",
+     "reply-pool-01",
+     "line-pool-02",
+     "nar-tut-rule",
+     "nar-tut-reject",
+     "nar-tut-choose",
+     "reply-pool-02",
+     "line-pool-03",
+     "nar-tut-free",
+     "reply-pool-03",
+     "line-pool-04",
+     "thanks-fox",
+     "nar-oops-pool-04",
+     "line-pool-05",
+     "reply-pool-05",
+     "line-pool-06",
+     "reply-pool-06",
+     "nar-result-2"
+    ],
+    "libraryVideo": {
+     "src": "assets/scenes/library-m.mp4",
+     "on": true,
+     "paused": false,
+     "advanced": true,
+     "readyState": 4,
+     "display": "block"
+    },
+    "memoAlert": true,
+    "memoRules": [
+     "date",
+     "chair",
+     "kid",
+     "food"
+    ]
+   },
+   "errors": []
+  },
+  "desktop": {
+   "shots": [
+    "desktop_01_lobby.png",
+    "desktop_01b_how.png",
+    "desktop_02_briefing.png",
+    "desktop_03_tut01.png",
+    "desktop_03_tut02.png",
+    "desktop_03_tut03.png",
+    "desktop_03_tut04.png",
+    "desktop_03_tut05.png",
+    "desktop_03_tut06.png",
+    "desktop_03_tut07.png",
+    "desktop_03_tut08.png",
+    "desktop_03_tut09.png",
+    "desktop_03_tut10.png",
+    "desktop_03_tut11.png",
+    "desktop_03_tut12.png",
+    "desktop_04_hint.png",
+    "desktop_05_feedback_wrong.png",
+    "desktop_06_results.png",
+    "desktop_06_results_full.png",
+    "desktop_07_library_video.png",
+    "desktop_08_pause.png",
+    "desktop_09_memo_alert.png"
+   ],
+   "overflow": {
+    "lobby": {
+     "inner": 1440,
+     "visual": 1440,
+     "scroll": 1440
+    },
+    "game": {
+     "inner": 1440,
+     "visual": 1440,
+     "scroll": 1440
+    },
+    "results": {
+     "inner": 1440,
+     "visual": 1440,
+     "scroll": 1440
+    }
+   },
+   "checks": {
+    "blockedOutside": true,
+    "topAtReject": "coach-block",
+    "onlyTargetRule": [
+     "food"
+    ],
+    "tutorialSteps": [
+     [
+      1,
+      "tut-guest"
+     ],
+     [
+      2,
+      "tut-notice"
+     ],
+     [
+      3,
+      "tut-papers"
+     ],
+     [
+      4,
+      "tut-pass"
+     ],
+     [
+      5,
+      "tut-why"
+     ],
+     [
+      6,
+      "tut-tray"
+     ],
+     [
+      7,
+      "tut-rule"
+     ],
+     [
+      8,
+      "tut-reject"
+     ],
+     [
+      9,
+      "tut-choose"
+     ],
+     [
+      10,
+      "tut-why2"
+     ],
+     [
+      11,
+      "tut-hint"
+     ],
+     [
+      12,
+      "tut-free"
+     ]
+    ],
+    "tutorialEnded": {
+     "on": false,
+     "step": null
+    },
+    "progressTutorial": true,
+    "results": {
+     "correct": "5",
+     "total": "6",
+     "log": [
+      "정답 통과 · 연수",
+      "정답 거절 · ② 음식 · 연수",
+      "정답 통과 · 돋보기",
+      "정답 거절 · ① 수영 모자 · 내 도장 통과",
+      "정답 거절 · ③ 7살 이하 어린이",
+      "정답 통과"
+     ],
+     "next": "2일차 · 별빛 도서관",
+     "reason": "읽고 세부 정보 찾기를 도움과 함께 해냈어요. 이어서 살펴봐요.",
+     "skills": [
+      "읽고 세부 정보 찾기 다음 연습이번 1/2도움과 함께 해냈어요",
+      "읽고 부정·변경 이해하기이번 1/1도움과 함께 해냈어요",
+      "읽고 조건 이해하기이번 3/3도움과 함께 해냈어요 · 혼자 푼 새 문항 2개 중 2개 맞힘"
+     ]
+    },
+    "atlasGuided": [
+     [
+      "pool-01",
+      false
+     ],
+     [
+      "pool-02",
+      false
+     ]
+    ],
+    "voices": [
+     "nar-brief-pool",
+     "line-pool-01",
+     "nar-tut-notice",
+     "nar-tut-papers",
+     "nar-tut-pass",
+     "reply-pool-01",
+     "line-pool-02",
+     "nar-tut-rule",
+     "nar-tut-reject",
+     "nar-tut-choose",
+     "reply-pool-02",
+     "line-pool-03",
+     "nar-tut-free",
+     "reply-pool-03",
+     "line-pool-04",
+     "thanks-fox",
+     "nar-oops-pool-04",
+     "line-pool-05",
+     "reply-pool-05",
+     "line-pool-06",
+     "reply-pool-06",
+     "nar-result-2"
+    ],
+    "libraryVideo": {
+     "src": "assets/scenes/library.mp4",
+     "on": true,
+     "paused": false,
+     "advanced": true,
+     "readyState": 4,
+     "display": "block"
+    },
+    "memoAlert": true,
+    "memoRules": [
+     "date",
+     "chair",
+     "kid",
+     "food"
+    ]
+   },
+   "errors": []
+  },
+  "small": {
+   "shots": [
+    "small_01_lobby.png",
+    "small_02_briefing.png",
+    "small_03_tut01.png",
+    "small_03_tut04.png",
+    "small_03_tut09.png",
+    "small_03_tut12.png",
+    "small_05_feedback_wrong.png",
+    "small_06_results.png",
+    "small_07_library_video.png",
+    "small_09_memo_alert.png"
+   ],
+   "overflow": {
+    "lobby": {
+     "inner": 320,
+     "visual": 320,
+     "scroll": 320
+    },
+    "game": {
+     "inner": 320,
+     "visual": 320,
+     "scroll": 320
+    },
+    "results": {
+     "inner": 320,
+     "visual": 320,
+     "scroll": 320
+    }
+   },
+   "checks": {
+    "blockedOutside": true,
+    "topAtReject": "coach-block",
+    "onlyTargetRule": [
+     "food"
+    ],
+    "tutorialSteps": [
+     [
+      1,
+      "tut-guest"
+     ],
+     [
+      2,
+      "tut-notice"
+     ],
+     [
+      3,
+      "tut-papers"
+     ],
+     [
+      4,
+      "tut-pass"
+     ],
+     [
+      5,
+      "tut-why"
+     ],
+     [
+      6,
+      "tut-tray"
+     ],
+     [
+      7,
+      "tut-rule"
+     ],
+     [
+      8,
+      "tut-reject"
+     ],
+     [
+      9,
+      "tut-choose"
+     ],
+     [
+      10,
+      "tut-why2"
+     ],
+     [
+      11,
+      "tut-hint"
+     ],
+     [
+      12,
+      "tut-free"
+     ]
+    ],
+    "tutorialEnded": {
+     "on": false,
+     "step": null
+    },
+    "progressTutorial": true,
+    "results": {
+     "correct": "5",
+     "total": "6",
+     "log": [
+      "정답 통과 · 연수",
+      "정답 거절 · ② 음식 · 연수",
+      "정답 통과 · 돋보기",
+      "정답 거절 · ① 수영 모자 · 내 도장 통과",
+      "정답 거절 · ③ 7살 이하 어린이",
+      "정답 통과"
+     ],
+     "next": "2일차 · 별빛 도서관",
+     "reason": "읽고 세부 정보 찾기를 도움과 함께 해냈어요. 이어서 살펴봐요.",
+     "skills": [
+      "읽고 세부 정보 찾기 다음 연습이번 1/2도움과 함께 해냈어요",
+      "읽고 부정·변경 이해하기이번 1/1도움과 함께 해냈어요",
+      "읽고 조건 이해하기이번 3/3도움과 함께 해냈어요 · 혼자 푼 새 문항 2개 중 2개 맞힘"
+     ]
+    },
+    "atlasGuided": [
+     [
+      "pool-01",
+      false
+     ],
+     [
+      "pool-02",
+      false
+     ]
+    ],
+    "voices": [
+     "nar-brief-pool",
+     "line-pool-01",
+     "nar-tut-notice",
+     "nar-tut-papers",
+     "nar-tut-pass",
+     "reply-pool-01",
+     "line-pool-02",
+     "nar-tut-rule",
+     "nar-tut-reject",
+     "nar-tut-choose",
+     "reply-pool-02",
+     "line-pool-03",
+     "nar-tut-free",
+     "reply-pool-03",
+     "line-pool-04",
+     "thanks-fox",
+     "line-pool-05",
+     "reply-pool-05",
+     "line-pool-06",
+     "reply-pool-06",
+     "nar-result-2"
+    ],
+    "libraryVideo": {
+     "src": "assets/scenes/library-m.mp4",
+     "on": true,
+     "paused": false,
+     "advanced": true,
+     "readyState": 4,
+     "display": "block"
+    },
+    "memoAlert": true,
+    "memoRules": [
+     "date",
+     "chair",
+     "kid",
+     "food"
+    ]
+   },
+   "errors": []
+  },
+  "mobile-reduced": {
+   "shots": [
+    "mobile-reduced_01_lobby.png",
+    "mobile-reduced_02_briefing.png",
+    "mobile-reduced_03_tut01.png",
+    "mobile-reduced_03_tut04.png",
+    "mobile-reduced_03_tut09.png",
+    "mobile-reduced_03_tut12.png",
+    "mobile-reduced_05_feedback_wrong.png",
+    "mobile-reduced_06_results.png",
+    "mobile-reduced_07_library_video.png",
+    "mobile-reduced_09_memo_alert.png"
+   ],
+   "overflow": {
+    "lobby": {
+     "inner": 390,
+     "visual": 390,
+     "scroll": 390
+    },
+    "game": {
+     "inner": 390,
+     "visual": 390,
+     "scroll": 390
+    },
+    "results": {
+     "inner": 390,
+     "visual": 390,
+     "scroll": 390
+    }
+   },
+   "checks": {
+    "blockedOutside": true,
+    "topAtReject": "coach-block",
+    "onlyTargetRule": [
+     "food"
+    ],
+    "tutorialSteps": [
+     [
+      1,
+      "tut-guest"
+     ],
+     [
+      2,
+      "tut-notice"
+     ],
+     [
+      3,
+      "tut-papers"
+     ],
+     [
+      4,
+      "tut-pass"
+     ],
+     [
+      5,
+      "tut-why"
+     ],
+     [
+      6,
+      "tut-tray"
+     ],
+     [
+      7,
+      "tut-rule"
+     ],
+     [
+      8,
+      "tut-reject"
+     ],
+     [
+      9,
+      "tut-choose"
+     ],
+     [
+      10,
+      "tut-why2"
+     ],
+     [
+      11,
+      "tut-hint"
+     ],
+     [
+      12,
+      "tut-free"
+     ]
+    ],
+    "tutorialEnded": {
+     "on": false,
+     "step": null
+    },
+    "progressTutorial": true,
+    "results": {
+     "correct": "5",
+     "total": "6",
+     "log": [
+      "정답 통과 · 연수",
+      "정답 거절 · ② 음식 · 연수",
+      "정답 통과 · 돋보기",
+      "정답 거절 · ① 수영 모자 · 내 도장 통과",
+      "정답 거절 · ③ 7살 이하 어린이",
+      "정답 통과"
+     ],
+     "next": "2일차 · 별빛 도서관",
+     "reason": "읽고 세부 정보 찾기를 도움과 함께 해냈어요. 이어서 살펴봐요.",
+     "skills": [
+      "읽고 세부 정보 찾기 다음 연습이번 1/2도움과 함께 해냈어요",
+      "읽고 부정·변경 이해하기이번 1/1도움과 함께 해냈어요",
+      "읽고 조건 이해하기이번 3/3도움과 함께 해냈어요 · 혼자 푼 새 문항 2개 중 2개 맞힘"
+     ]
+    },
+    "atlasGuided": [
+     [
+      "pool-01",
+      false
+     ],
+     [
+      "pool-02",
+      false
+     ]
+    ],
+    "voices": [
+     "nar-brief-pool",
+     "line-pool-01",
+     "nar-tut-notice",
+     "nar-tut-papers",
+     "nar-tut-pass",
+     "reply-pool-01",
+     "line-pool-02",
+     "nar-tut-rule",
+     "nar-tut-reject",
+     "nar-tut-choose",
+     "reply-pool-02",
+     "line-pool-03",
+     "nar-tut-free",
+     "reply-pool-03",
+     "line-pool-04",
+     "thanks-fox",
+     "nar-oops-pool-04",
+     "line-pool-05",
+     "reply-pool-05",
+     "line-pool-06",
+     "reply-pool-06",
+     "nar-result-2"
+    ],
+    "libraryVideo": {
+     "src": null,
+     "on": false,
+     "paused": true,
+     "advanced": false,
+     "readyState": 0,
+     "display": "none"
+    },
+    "memoAlert": true,
+    "memoRules": [
+     "date",
+     "chair",
+     "kid",
+     "food"
+    ],
+    "runningAnimations": 0
+   },
+   "errors": []
+  }
+ }
+}

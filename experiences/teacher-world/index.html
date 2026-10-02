@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer"><meta name="theme-color" content="#ffffff">
+  <title>SYNK WORLD · 교사</title>
+  <link rel="icon" href="/assets/app-world.png"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/personalization.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="교사 앱 홈"><img src="/assets/synk-logo.svg" alt="synk"></a>
+      <div class="product"><span>WORLD</span><p>교사 워크스페이스</p></div>
+      <label class="field-label" for="class-select">내 수업</label>
+      <select id="class-select" aria-label="반 선택"><option>수업 불러오는 중</option></select>
+      <nav aria-label="주 메뉴">
+        <button class="nav-button active" data-view="students"><span class="nav-symbol">01</span>학생과 학습</button>
+        <button class="nav-button" data-view="assignments"><span class="nav-symbol">02</span>보낸 과제<span id="assignment-count" class="count">0</span></button>
+        <button class="nav-button" data-view="review"><span class="nav-symbol">03</span>수업 관찰</button>
+      </nav>
+      <div class="sidebar-bottom"><img src="/assets/sticker-book.webp" alt=""><p>한 명을 이해하면,<br>다음 수업이 달라져요.</p><span class="eyebrow">SYNK WORLD / TEACHER</span></div>
+    </aside>
+    <div class="workspace">
+      <header class="topbar"><span class="breadcrumb">SYNK WORLD <span>/</span> 교사</span><div><span id="mode-badge" class="demo-badge">연결 확인 중</span><button id="personalization-button" class="text-button">내 맞춤</button><button id="refresh" class="text-button">새로고침 ↻</button><button id="teacher-logout" class="text-button" hidden>연결 종료</button></div></header>
+      <main id="main" tabindex="-1">
+        <section class="intro"><div><p class="eyebrow">TEACHING, WITH CONTEXT.</p><h1 id="page-title">기록을 읽고, <span class="underline">다음 수업으로.</span></h1><p id="page-description">학생별로 지금 필요한 연습을 살펴보고 과제를 보내세요.</p></div><div class="intro-note"><span class="mono">CONNECTED LEARNING</span><p>관찰하고<br><strong>함께 나아가요.</strong></p><img src="/assets/sticker-person.webp" alt=""></div></section>
+        <p id="mode-note" class="mode-note">교사 앱의 연결 상태를 확인하고 있어요.</p>
+        <section id="teacher-session" class="connection-panel" aria-labelledby="teacher-session-title" hidden><h2 id="teacher-session-title">교사 공간 열기</h2><p class="help">이 기기의 교사 연결 키로 수업 공간을 열어요. 정식 SYNK 로그인과는 별도의 로컬 연결이에요.</p><form id="teacher-session-form"><label for="teacher-key">교사 연결 키</label><div class="connection-fields"><input id="teacher-key" name="key" type="password" required autocomplete="off" maxlength="256"><button type="submit" class="felt-button primary">연결하기</button></div><p id="teacher-session-error" class="error" role="alert"></p></form></section>
+        <section id="world-connections" class="connection-panel" aria-labelledby="world-connections-title" hidden><div class="connection-heading"><div><p class="eyebrow">WORLD · MY CLASS</p><h2 id="world-connections-title">학생의 WORLD와 연결하기</h2></div><span class="status">기기 내 연결</span></div><p class="help">학생이 WORLD에서 연결 코드를 입력하고 학습 기록 공유에 동의하면, 이 수업의 과제와 수행 기록을 함께 볼 수 있어요.</p><form id="world-link-form"><label for="world-learner-name">학생 표시 이름</label><div class="connection-fields"><input id="world-learner-name" name="name" required maxlength="60" autocomplete="off" placeholder="수업에서 사용할 이름"><button type="submit" class="felt-button">연결 코드 만들기</button></div><p id="world-link-error" class="error" role="alert"></p></form><div id="world-link-result" class="connection-result" role="status" hidden></div></section>
+        <section id="personalization-panel" class="personal-panel" aria-label="선생님 맞춤 제안" hidden></section>
+        <div id="loading" class="empty">수업을 불러오고 있어요.</div>
+        <div id="summary" class="summary" hidden></div>
+        <section id="view-students" hidden>
+          <div class="section-title"><div><span class="eyebrow">01 / MY CLASS</span><h2 id="class-title">학생과 학습</h2></div><label class="search"><span>학생 찾기</span><input type="search" id="student-search" placeholder="이름으로 검색" autocomplete="off"></label></div>
+          <div class="learning-grid"><section class="roster-panel"><div class="table-label"><span>학생 / 다음 도움</span><span>기록 확인</span></div><div id="roster"></div></section><section id="student-detail" class="detail-panel" aria-label="학생 학습 상세"></section></div>
+        </section>
+        <section id="view-assignments" hidden><div class="section-title"><div><span class="eyebrow">02 / ASSIGNMENTS</span><h2>보낸 과제</h2></div><label class="search"><span>상태</span><select id="assignment-filter"><option value="all">전체</option><option value="assigned">진행 중</option><option value="submitted">제출 완료</option><option value="cancelled">취소</option></select></label></div><div id="assignments"></div></section>
+        <section id="view-review" hidden><div class="section-title"><div><span class="eyebrow">03 / TEACHER NOTES</span><h2>수업에서 발견한 것</h2></div></div><p class="subtle">선생님의 관찰은 학습 기록과 구분해 보관해요. 학생 상세에서 남길 수 있어요.</p><div id="observations"></div></section>
+        <footer class="workspace-footer"><span>기존 Core · Strata의 학습 기준을 교사에게 연결합니다.</span><span>TOPIK 등급·성격을 자동 판정하지 않아요.</span></footer>
+      </main>
+    </div>
+  </div>
+  <dialog id="assignment-dialog" aria-labelledby="assignment-dialog-title"><form id="assignment-form"><div class="dialog-header"><p class="eyebrow">NEXT STEP</p><button type="button" class="text-button close-dialog" aria-label="닫기">닫기 ×</button></div><h2 id="assignment-dialog-title">다음 연습 보내기</h2><p id="assignment-student" class="subtle"></p><label>학습 내용<select name="contentId" id="content-select" required></select></label><p id="content-description" class="help"></p><label>과제 이름<input name="title" id="assignment-title" required maxlength="100"></label><label>마감일<input type="date" name="dueDate" id="assignment-due" required></label><label>학생에게 전할 말<textarea name="instructions" maxlength="500" rows="3" placeholder="어떻게 풀면 좋을지 짧게 알려 주세요."></textarea></label><p class="help">추천을 검토한 뒤 선생님이 내용을 바꿔 보낼 수 있어요.</p><p id="assignment-error" class="error" role="alert"></p><button type="submit" class="felt-button primary">학생에게 과제 보내기 →</button></form></dialog>
+  <dialog id="note-dialog" aria-labelledby="note-title"><form id="note-form"><div class="dialog-header"><p class="eyebrow">OBSERVATION</p><button type="button" class="text-button close-dialog" aria-label="닫기">닫기 ×</button></div><h2 id="note-title">수업 관찰 남기기</h2><p id="note-student" class="subtle"></p><label>관찰한 학습 영역<select name="skillId" id="note-skill" required></select></label><label>직접 관찰한 내용<textarea name="text" required maxlength="1000" rows="5" placeholder="예: 안내문을 소리 내어 다시 읽으니 장소를 정확히 찾았어요."></textarea></label><p class="help">관찰한 행동과 상황을 적어 주세요. 성격이나 실력을 단정하는 표현은 피해주세요.</p><p id="note-error" class="error" role="alert"></p><button type="submit" class="felt-button primary">관찰 저장하기</button></form></dialog>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+  <script type="module" src="/app.mjs"></script>
+</body></html>

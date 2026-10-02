@@ -1,0 +1,182 @@
+{
+  "paused": {
+    "version": 4,
+    "ready": true,
+    "running": true,
+    "paused": true,
+    "demo": false,
+    "mode": "tour",
+    "learning": "listen",
+    "best": 0,
+    "sound": true,
+    "voiceClips": 16,
+    "audio": {
+      "state": "suspended",
+      "clips": 16,
+      "id": "left",
+      "offset": 0.31199999999999994,
+      "duration": 2.079125
+    },
+    "world": {
+      "renderer": "Three.js 180",
+      "quality": "experience",
+      "fps": 46,
+      "drawCalls": 458,
+      "triangles": 308058,
+      "width": 844,
+      "height": 390,
+      "eventObjects": 17,
+      "frames": 78,
+      "armlessMongle": true
+    },
+    "model": {
+      "distance": 3.939059060790301,
+      "elapsed": 0.30279999999925483,
+      "lane": 1,
+      "x": 0,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "lanterns": 0,
+      "correct": 0,
+      "answers": [],
+      "finished": false,
+      "reason": "",
+      "current": {
+        "id": "left",
+        "text": "왼쪽 길로 가세요.",
+        "steps": [
+          {
+            "action": "lane",
+            "target": 0,
+            "remaining": 61.0609409392097,
+            "resolved": false,
+            "status": null
+          }
+        ]
+      }
+    }
+  },
+  "frozen": {
+    "version": 4,
+    "ready": true,
+    "running": true,
+    "paused": true,
+    "demo": false,
+    "mode": "tour",
+    "learning": "listen",
+    "best": 0,
+    "sound": true,
+    "voiceClips": 16,
+    "audio": {
+      "state": "suspended",
+      "clips": 16,
+      "id": "left",
+      "offset": 0.31199999999999994,
+      "duration": 2.079125
+    },
+    "world": {
+      "renderer": "Three.js 180",
+      "quality": "experience",
+      "fps": 60,
+      "drawCalls": 458,
+      "triangles": 308058,
+      "width": 844,
+      "height": 390,
+      "eventObjects": 17,
+      "frames": 5997,
+      "armlessMongle": true
+    },
+    "model": {
+      "distance": 3.939059060790301,
+      "elapsed": 0.30279999999925483,
+      "lane": 1,
+      "x": 0,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "lanterns": 0,
+      "correct": 0,
+      "answers": [],
+      "finished": false,
+      "reason": "",
+      "current": {
+        "id": "left",
+        "text": "왼쪽 길로 가세요.",
+        "steps": [
+          {
+            "action": "lane",
+            "target": 0,
+            "remaining": 61.0609409392097,
+            "resolved": false,
+            "status": null
+          }
+        ]
+      }
+    }
+  },
+  "resumed": {
+    "version": 4,
+    "ready": true,
+    "running": true,
+    "paused": false,
+    "demo": false,
+    "mode": "tour",
+    "learning": "listen",
+    "best": 0,
+    "sound": true,
+    "voiceClips": 16,
+    "audio": {
+      "state": "running",
+      "clips": 16,
+      "id": "left",
+      "offset": 0.52,
+      "duration": 2.079125
+    },
+    "world": {
+      "renderer": "Three.js 180",
+      "quality": "experience",
+      "fps": 60,
+      "drawCalls": 461,
+      "triangles": 310718,
+      "width": 844,
+      "height": 390,
+      "eventObjects": 17,
+      "frames": 6016,
+      "armlessMongle": true
+    },
+    "model": {
+      "distance": 6.378127599340332,
+      "elapsed": 0.4900999999992579,
+      "lane": 1,
+      "x": 0,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "lanterns": 0,
+      "correct": 0,
+      "answers": [],
+      "finished": false,
+      "reason": "",
+      "current": {
+        "id": "left",
+        "text": "왼쪽 길로 가세요.",
+        "steps": [
+          {
+            "action": "lane",
+            "target": 0,
+            "remaining": 58.62187240065967,
+            "resolved": false,
+            "status": null
+          }
+        ]
+      }
+    }
+  }
+}

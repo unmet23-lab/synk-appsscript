@@ -1,0 +1,277 @@
+{
+  "origin": "http://127.0.0.1:4291",
+  "at": "2026-10-02T05:03:53.835Z",
+  "quick": [
+    {
+      "id": "o01",
+      "line": null,
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 3,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o02",
+      "line": null,
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 3,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o04",
+      "line": null,
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 3,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o05",
+      "line": null,
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 3,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o03",
+      "line": "조금 더 까다로운 주문도 들어와요.",
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 3,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o07",
+      "line": "조금 더 까다로운 주문도 들어와요.",
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 3,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o09",
+      "line": "조금 더 까다로운 주문도 들어와요.",
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 3,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o11",
+      "line": "조금 더 까다로운 주문도 들어와요.",
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 3,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o06",
+      "line": "손님이 조금 더 바빠져요.",
+      "tuning": {
+        "patience": 36,
+        "spawnEvery": 10,
+        "queueMax": 3,
+        "duration": 90
+      }
+    }
+  ],
+  "quickSummary": [
+    "손님이 기다리는 시간 42초 → 36초",
+    "주문 종류 한 잔 기본 주문 → 빼기·바꾸기가 있는 주문"
+  ],
+  "quickNextLine": "지난번 영업에 맞춰 문을 열어요.",
+  "quickNextTuning": {
+    "patience": 36,
+    "spawnEvery": 10,
+    "queueMax": 3,
+    "duration": 90
+  },
+  "slowLine": "손님이 조금 더 여유 있게 기다려요.",
+  "slowTuning": {
+    "patience": 42,
+    "spawnEvery": 10,
+    "queueMax": 2,
+    "duration": 90
+  },
+  "slowLearning": {
+    "independent": 0
+  },
+  "fixedLine": "정해진 속도로 영업해요.",
+  "fixed": [
+    {
+      "id": "o01",
+      "line": "정해진 속도로 영업해요.",
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 3,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o02",
+      "line": "정해진 속도로 영업해요.",
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 3,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o04",
+      "line": "정해진 속도로 영업해요.",
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 3,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o05",
+      "line": "정해진 속도로 영업해요.",
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 3,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o03",
+      "line": "정해진 속도로 영업해요.",
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 3,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o07",
+      "line": "정해진 속도로 영업해요.",
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 3,
+        "duration": 90
+      }
+    }
+  ],
+  "tiredHubNote": "알겠어요. 오늘은 게임이 더 어려워지지 않고, 힌트를 줄이자는 말도 하지 않아요.",
+  "tiredLine": "오늘은 더 바빠지지 않게 영업해요.",
+  "tiredStart": {
+    "patience": 42,
+    "spawnEvery": 10,
+    "queueMax": 2,
+    "duration": 90
+  },
+  "tired": [
+    {
+      "id": "o01",
+      "line": "오늘은 더 바빠지지 않게 영업해요.",
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 2,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o02",
+      "line": "오늘은 더 바빠지지 않게 영업해요.",
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 2,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o04",
+      "line": "오늘은 더 바빠지지 않게 영업해요.",
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 2,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o05",
+      "line": "오늘은 더 바빠지지 않게 영업해요.",
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 2,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o03",
+      "line": "오늘은 더 바빠지지 않게 영업해요.",
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 2,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o07",
+      "line": "오늘은 더 바빠지지 않게 영업해요.",
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 2,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o09",
+      "line": "오늘은 더 바빠지지 않게 영업해요.",
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 2,
+        "duration": 90
+      }
+    },
+    {
+      "id": "o11",
+      "line": "오늘은 더 바빠지지 않게 영업해요.",
+      "tuning": {
+        "patience": 42,
+        "spawnEvery": 10,
+        "queueMax": 2,
+        "duration": 90
+      }
+    }
+  ],
+  "mobileOverflow": {
+    "scroll": false,
+    "zoomed": false
+  },
+  "mobileGameOverflow": false,
+  "pageErrors": [],
+  "status": "passed"
+}

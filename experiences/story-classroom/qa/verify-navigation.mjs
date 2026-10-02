@@ -1,0 +1,11 @@
+import {createRequire} from 'node:module';import {homedir} from 'node:os';import path from 'node:path';import assert from 'node:assert/strict';import {writeFile} from 'node:fs/promises';
+const require=createRequire(import.meta.url),{chromium}=require(path.join(homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
+const b=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
+try{const p=await b.newPage();await p.addInitScript(()=>{if(!localStorage.getItem('synk.story-classroom.progress.v3.guest'))localStorage.setItem('synk.story-classroom.progress.v3.guest','{"game":{"records":[null]}}');});await p.goto('http://127.0.0.1:5213/?reading=1');assert.equal(await p.locator('#resume').isVisible(),false);await p.locator('#start').click();for(let i=0;i<20;i++){if(await p.evaluate(()=>window.__storyState.phase==='play'))break;await p.locator('#dialogue-next').click();}
+ await p.locator('[data-actor="marin"]').click();await p.locator('[data-object="snacks"]').click();await p.locator('[data-destination="box"]').click();await p.waitForFunction(()=>!window.__storyState.busy);
+ await p.goto('http://127.0.0.1:5213/README.md');await p.goBack();await p.waitForFunction(()=>window.__storyState);
+ const before=await p.evaluate(()=>({state:window.__storyState,learning:window.__storyLearning}));if(!before.state.started)await p.locator('#resume').click();
+ assert.equal(await p.evaluate(()=>window.__storyLearning.status.phase),'device');assert.equal(await p.evaluate(()=>window.__storyState.completedIds.includes('cleanup-snacks')),true);
+ await p.locator('[data-actor="kkamong"]').click();await p.locator('[data-object="paper"]').click();await p.locator('[data-destination="drawer"]').click();await p.waitForFunction(()=>!window.__storyState.busy);assert.equal(await p.evaluate(()=>window.__storyLearning.summary.counts.attempts),2);
+ const result={date:new Date().toISOString(),pass:true,malformedCurrentProgressIgnored:true,navigation:'Actual navigation away and browser back',stateRestored:before.state.started,phase:await p.evaluate(()=>window.__storyState.phase),atlasAttempts:2};await writeFile(new URL('./navigation-results.json',import.meta.url),JSON.stringify(result,null,2)+'\n');console.log(result);
+}finally{await b.close();}

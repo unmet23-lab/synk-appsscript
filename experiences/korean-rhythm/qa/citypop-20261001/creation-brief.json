@@ -1,0 +1,33 @@
+{
+  "requestedAt": "2026-10-01",
+  "provider": "Suno",
+  "referenceSource": "User identified the three city-pop songs already registered in SYNK Radio; WAV metadata provided the original Suno IDs. Style prompts were read from those song pages, not inferred from unrelated library songs.",
+  "references": [
+    {"radioTitle":"노을빛 드라이브","file":"C:/Users/q1212/Music/OneDrive_음악_20260924/수노_받은것/_올린것/시티팝_몽글/시티팝 1.wav","sourceId":"c4b497d1-32fe-455c-b749-dbf415222c1e","duration":156.72},
+    {"radioTitle":"너와 걷던 여름밤","file":"C:/Users/q1212/Music/OneDrive_음악_20260924/수노_받은것/_올린것/시티팝_몽글/시티팝 2.wav","sourceId":"8c9d3c85-0e37-471d-8f85-b7d815ca9725","duration":162.16},
+    {"radioTitle":"Golden Hour Beach","file":"C:/Users/q1212/Music/OneDrive_음악_20260924/수노_받은것/_올린것/시티팝_몽글/시티팝 3.wav","sourceId":"8440fcef-5ecb-4fa7-87bd-ff0e9bb88aba","duration":188.68}
+  ],
+  "referenceStyle": "80s japanese city pop, bright summer seaside mood, sparkling electric piano, punchy slap bass, warm brass stabs, breezy airy female vocal, mid-up tempo around 112 bpm, wide analog reverb, nostalgic golden-hour warmth, clean vintage mix",
+  "titleChanges": [
+    {"from":"파란 신호가 켜지면","to":"초록","sourceId":"94e8eeb8-fcba-4434-a0ba-cd1490d8c6d3"},
+    {"from":"바다까지 한 시간","to":"해안선","sourceId":"c2835bc7-6963-4503-95bd-781b55e20b88"},
+    {"from":"오후 네 시의 약속","to":"네 시","sourceId":"ed3ac4b9-0386-4f47-8c1f-eb61cbd11f52"}
+  ],
+  "songs": [
+    {
+      "title":"유영",
+      "style":"Authentic 80s Japanese city pop aesthetic with Korean lyrics only. Bright summer seaside mood, sparkling electric piano, punchy melodic slap bass, warm brass stabs, clean syncopated funk guitar, breezy airy adult female lead singing natural clear Korean, 112 BPM, wide analog reverb, nostalgic golden-hour warmth, clean vintage stereo mix. Relaxed intimate verses, rising pre-chorus, an effortlessly catchy open chorus with tasteful stacked harmonies, short electric-piano and brass instrumental break, complete warm outro. Original melody and arrangement. Keep the vocal phrasing fluid with space between short Korean lines. No rap, spoken intro, English or Japanese singing, lo-fi noise, EDM drops or harsh belting.",
+      "lyrics":"[Intro]\n\n[Verse 1]\n발끝에 닿은 물결\n미처 못한 말을 씻어\n괜히 젖은 소매 끝을\n네가 먼저 잡아 줘\n\n[Pre-Chorus]\n멀리 보이던 불빛이\n어느새 가까워지고\n돌아갈 시간을 잊은 채\n우린 웃고 있어\n\n[Chorus]\n이대로 조금 더\n너와 멀리 흘러가\n정해 둔 길은 없어도\n같은 쪽을 보고 있어\n내일은 내일의 바람\n오늘은 너에게 맡겨\n아무 말 하지 않아도\n이 마음은 네게 닿아\n\n[Verse 2]\n모래 위에 남긴 이름\n파도가 지워도 괜찮아\n돌아보면 네가 있고\n그걸로 난 충분해\n\n[Pre-Chorus]\n낮게 기울어진 햇살\n우리 어깨에 머물러\n끝이 없는 것만 같은 밤\n천천히 걸어가\n\n[Chorus]\n이대로 조금 더\n너와 멀리 흘러가\n정해 둔 길은 없어도\n같은 쪽을 보고 있어\n내일은 내일의 바람\n오늘은 너에게 맡겨\n아무 말 하지 않아도\n이 마음은 네게 닿아\n\n[Instrumental Break]\n\n[Bridge]\n서두르지 않아도 돼\n잠깐 쉬어 가도 돼\n네 손을 놓지 않을게\n우린 여기 있으니까\n\n[Final Chorus]\n이대로 조금 더\n너와 멀리 흘러가\n정해 둔 길은 없어도\n같은 쪽을 보고 있어\n내일은 내일의 바람\n오늘은 너에게 맡겨\n아무 말 하지 않아도\n이 마음은 네게 닿아\n\n[Outro]\n이대로 조금 더\n너와 멀리 흘러가"
+    },
+    {
+      "title":"잔상",
+      "style":"80s Japanese city pop aesthetic, Korean lyrics only, breezy nostalgic summer-evening mood with a hopeful lift. Sparkling Rhodes electric piano, punchy melodic electric bass with light slap accents, clean chorus funk guitar, warm brass responses, glossy analog synth pads, tight vintage drums at 108 BPM, wide analog reverb and a clean warm vintage stereo mix. Airy smooth adult female lead with clear conversational Korean phrasing, intimate spacious verses, gently rising pre-chorus and a memorable luminous chorus with layered harmonies. Short sax and Rhodes interlude, full final chorus and finished outro. Original composition. No rap, spoken intro, English or Japanese singing, gloomy ballad, lo-fi noise or EDM drops.",
+      "lyrics":"[Intro]\n\n[Verse 1]\n닫힌 문에 비친 얼굴\n어쩐지 아직 웃고 있어\n네가 앉던 창가 자리\n남은 빛이 흔들려\n\n[Pre-Chorus]\n괜히 꺼내 보는 사진\n하나도 지우지 못해\n잘 들어갔냐는 네 말에\n다시 웃게 돼\n\n[Chorus]\n눈을 감으면 더 선명해\n오늘의 너 오늘의 나\n스쳐 간 작은 순간들이\n내 안에 오래 남아\n멀어지는 불빛 너머\n너는 아직 여기 있어\n다시 만날 거란 말로\n이 밤을 밝혀 줘\n\n[Verse 2]\n집 앞에서 멈춘 걸음\n괜히 먼 길을 돌아왔어\n같이 고른 작은 꽃은\n창가 옆에 놓아 둬\n\n[Pre-Chorus]\n아직 따뜻한 목소리\n귓가에 천천히 번져\n잘 자라는 짧은 한마디\n하루를 채워\n\n[Chorus]\n눈을 감으면 더 선명해\n오늘의 너 오늘의 나\n스쳐 간 작은 순간들이\n내 안에 오래 남아\n멀어지는 불빛 너머\n너는 아직 여기 있어\n다시 만날 거란 말로\n이 밤을 밝혀 줘\n\n[Instrumental Break]\n\n[Bridge]\n다 지나가 버린 뒤에도\n사라지지 않는 게 있어\n이런 마음의 이름을\n이제는 알 것 같아\n\n[Final Chorus]\n눈을 감으면 더 선명해\n오늘의 너 오늘의 나\n스쳐 간 작은 순간들이\n내 안에 오래 남아\n멀어지는 불빛 너머\n너는 아직 여기 있어\n다시 만날 거란 말로\n이 밤을 밝혀 줘\n\n[Outro]\n오늘의 너 오늘의 나\n내 안에 오래 남아"
+    },
+    {
+      "title":"밤의 온도",
+      "style":"Authentic 80s Japanese city pop atmosphere with Korean lyrics only. Warm romantic summer night, sparkling electric piano, punchy slap bass, warm brass stabs, clean muted funk guitar, glossy analog polysynth, crisp softly gated vintage drums at 114 BPM, wide analog reverb, nostalgic golden-hour warmth, clean vintage stereo mix. Breezy airy adult female vocal with clear natural Korean diction, relaxed close verses opening into a bright singable chorus, lush tasteful backing harmonies, brief brass and guitar instrumental break, a bigger final refrain and a complete gentle outro. Original melody and arrangement, sophisticated seventh and ninth chords. No rap, spoken intro, English or Japanese singing, harsh belting, lo-fi noise or EDM drops.",
+      "lyrics":"[Intro]\n\n[Verse 1]\n편의점 앞 작은 의자\n반씩 나눠 마신 음료\n별일 없던 하루 얘기\n너와 하면 달라져\n\n[Pre-Chorus]\n조금 열린 창문 사이\n느린 바람이 불어와\n가까워진 너의 어깨에\n마음이 기대\n\n[Chorus]\n너와 있는 밤의 온도\n그대로 기억할래\n조금 서툰 내 마음도\n네 옆에선 편안해\n굳이 멀리 가지 않아도\n여기가 좋아 나는\n내일도 같은 시간에\n너를 만나고 싶어\n\n[Verse 2]\n누가 먼저 웃었는지\n기억 안 나도 괜찮아\n길게 늘어진 그림자\n나란히 집을 향해\n\n[Pre-Chorus]\n골목 끝을 돌아서면\n헤어질 시간이지만\n한 번 더 불러 보는 이름\n네가 돌아봐\n\n[Chorus]\n너와 있는 밤의 온도\n그대로 기억할래\n조금 서툰 내 마음도\n네 옆에선 편안해\n굳이 멀리 가지 않아도\n여기가 좋아 나는\n내일도 같은 시간에\n너를 만나고 싶어\n\n[Instrumental Break]\n\n[Bridge]\n특별한 약속 대신에\n그냥 내 곁에 있어 줘\n아무 일도 없던 오늘이\n오래 남을 것 같아\n\n[Final Chorus]\n너와 있는 밤의 온도\n그대로 기억할래\n조금 서툰 내 마음도\n네 옆에선 편안해\n굳이 멀리 가지 않아도\n여기가 좋아 나는\n내일도 같은 시간에\n너를 만나고 싶어\n\n[Outro]\n내일도 같은 시간에\n너를 만나고 싶어"
+    }
+  ]
+}

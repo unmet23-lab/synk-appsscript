@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import http from 'node:http';
+import {createServer} from './server.mjs';
+const server=createServer({port:0});await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+const port=server.address().port,base=`http://127.0.0.1:${port}`;
+test.after(()=>new Promise(resolve=>server.close(resolve)));
+test('local page, approved assets and original Core scripts are actually served',async()=>{for(const url of ['/','/app.mjs','/model.mjs','/assets/SUIT.woff2','/assets/wide-lapis.webp','/atlas/engine.js','/atlas/personalization.js']){const res=await fetch(base+url);assert.equal(res.status,200,url);assert.ok((await res.arrayBuffer()).byteLength>100);assert.match(res.headers.get('content-security-policy'),/script-src 'self'/);}});
+test('health reports local mode and no AI or production connection',async()=>{const data=await(await fetch(base+'/api/health')).json();assert.equal(data.aiConnected,false);assert.equal(data.productionConnected,false);assert.equal(data.mode,'local-mvp');});
+test('private sources, tests, manifests and traversal routes are not exposed',async()=>{for(const file of ['/server.mjs','/model.test.mjs','/README.md','/assets/sources.json','/atlas/trail.js','/assets/%2e%2e%2fserver.mjs','/%2e%2e%2f%2e%2e%2fCode.js'])assert.equal((await fetch(base+file)).status,404,file);});
+test('wrong host, cross-origin requests and writes are rejected',async()=>{assert.equal((await fetch(base+'/',{headers:{Origin:'https://example.com'}})).status,403);assert.equal((await fetch(base+'/',{method:'POST'})).status,405);const code=await new Promise(resolve=>{http.get({hostname:'127.0.0.1',port,path:'/',headers:{Host:'evil.invalid'}},res=>{res.resume();resolve(res.statusCode);});});assert.equal(code,403);});
+test('HEAD is supported and malformed encoding is bounded',async()=>{const response=await fetch(base+'/',{method:'HEAD'});assert.equal(response.status,200);assert.equal(await response.text(),'');assert.equal((await fetch(base+'/%zz')).status,400);});

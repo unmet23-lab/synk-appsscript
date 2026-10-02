@@ -1,0 +1,18 @@
+[
+  {
+    "key": "ArrowLeft",
+    "lane": 0
+  },
+  {
+    "key": "ArrowRight",
+    "lane": 1
+  },
+  {
+    "key": "ArrowRight",
+    "lane": 2
+  },
+  {
+    "key": "ArrowLeft",
+    "lane": 1
+  }
+]

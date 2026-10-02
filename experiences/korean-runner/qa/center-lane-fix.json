@@ -1,0 +1,38 @@
+[
+  {
+    "step": "center-to-right",
+    "data": {
+      "result": {
+        "type": "string",
+        "value": "{\"distance\":5.6070402320000206,\"elapsed\":0.39990000000000153,\"lane\":2,\"x\":2.3296298497320036,\"y\":0,\"slide\":0,\"hearts\":3,\"shield\":0,\"correct\":0,\"answers\":[],\"finished\":false,\"reason\":\"\",\"upcoming\":[{\"kind\":\"gate\",\"distance\":114.39295976799998,\"answer\":0},{\"kind\":\"gate\",\"distance\":264.39295976799997,\"answer\":0},{\"kind\":\"obstacle\",\"type\":\"tram\",\"distance\":29.39295976799998,\"lane\":1},{\"kind\":\"obstacle\",\"type\":\"barrier\",\"distance\":146.5730846967091,\"lane\":0},{\"kind\":\"obstacle\",\"type\":\"arch\",\"distance\":172.79875777107748,\"lane\":1}]}"
+      }
+    }
+  },
+  {
+    "step": "right-to-center",
+    "data": {
+      "result": {
+        "type": "string",
+        "value": "{\"distance\":10.526101350000015,\"elapsed\":0.7498000000000011,\"lane\":1,\"x\":0.005709639222984312,\"y\":0,\"slide\":0,\"hearts\":3,\"shield\":0,\"correct\":0,\"answers\":[],\"finished\":false,\"reason\":\"\",\"upcoming\":[{\"kind\":\"gate\",\"distance\":109.47389864999998,\"answer\":0},{\"kind\":\"gate\",\"distance\":259.47389864999997,\"answer\":0},{\"kind\":\"obstacle\",\"type\":\"tram\",\"distance\":24.473898649999985,\"lane\":1},{\"kind\":\"obstacle\",\"type\":\"barrier\",\"distance\":141.65402357870911,\"lane\":0},{\"kind\":\"obstacle\",\"type\":\"arch\",\"distance\":167.8796966530775,\"lane\":1}]}"
+      }
+    }
+  },
+  {
+    "step": "center-to-left",
+    "data": {
+      "result": {
+        "type": "string",
+        "value": "{\"distance\":140.96968048299996,\"elapsed\":11.280500000000018,\"lane\":0,\"x\":-2.335140036141726,\"y\":0,\"slide\":0,\"hearts\":2,\"shield\":0,\"correct\":0,\"answers\":[{\"id\":\"banana\",\"word\":\"바나나\",\"correct\":false,\"chosen\":\"물\",\"prompt\":\"길고 노란 과일이에요.\"}],\"finished\":false,\"reason\":\"\",\"upcoming\":[{\"kind\":\"gate\",\"distance\":129.03031951700004,\"answer\":0},{\"kind\":\"obstacle\",\"type\":\"barrier\",\"distance\":11.210444445709157,\"lane\":0},{\"kind\":\"obstacle\",\"type\":\"arch\",\"distance\":37.436117520077545,\"lane\":1},{\"kind\":\"obstacle\",\"type\":\"barrier\",\"distance\":158.75928658804523,\"lane\":1},{\"kind\":\"obstacle\",\"type\":\"barrier\",\"distance\":188.44674834794031,\"lane\":1}]}"
+      }
+    }
+  },
+  {
+    "step": "left-to-center",
+    "data": {
+      "result": {
+        "type": "string",
+        "value": "{\"distance\":144.75351085099993,\"elapsed\":11.530400000000014,\"lane\":1,\"x\":-0.027794746877228896,\"y\":0,\"slide\":0,\"hearts\":2,\"shield\":0,\"correct\":0,\"answers\":[{\"id\":\"banana\",\"word\":\"바나나\",\"correct\":false,\"chosen\":\"물\",\"prompt\":\"길고 노란 과일이에요.\"}],\"finished\":false,\"reason\":\"\",\"upcoming\":[{\"kind\":\"gate\",\"distance\":125.24648914900007,\"answer\":0},{\"kind\":\"obstacle\",\"type\":\"barrier\",\"distance\":7.426614077709189,\"lane\":0},{\"kind\":\"obstacle\",\"type\":\"arch\",\"distance\":33.65228715207758,\"lane\":1},{\"kind\":\"obstacle\",\"type\":\"barrier\",\"distance\":154.97545622004526,\"lane\":1},{\"kind\":\"obstacle\",\"type\":\"barrier\",\"distance\":184.66291797994035,\"lane\":1}]}"
+      }
+    }
+  }
+]

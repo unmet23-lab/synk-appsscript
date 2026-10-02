@@ -1,0 +1,172 @@
+{
+  "voice": "Microsoft Heami Desktop",
+  "method": "local System.Speech synthesis",
+  "orders": [
+    {
+      "id": "o01",
+      "text": "따뜻한 커피 한 잔 주세요.",
+      "status": 200,
+      "bytes": 147446,
+      "sampleRate": 22050,
+      "channels": 1,
+      "bits": 16,
+      "seconds": 3.342,
+      "peak": 16204
+    },
+    {
+      "id": "o02",
+      "text": "아이스커피 한 잔 주세요.",
+      "status": 200,
+      "bytes": 132360,
+      "sampleRate": 22050,
+      "channels": 1,
+      "bits": 16,
+      "seconds": 3,
+      "peak": 20091
+    },
+    {
+      "id": "o03",
+      "text": "따뜻한 차 한 잔 주세요. 설탕은 빼 주세요.",
+      "status": 200,
+      "bytes": 246372,
+      "sampleRate": 22050,
+      "channels": 1,
+      "bits": 16,
+      "seconds": 5.586,
+      "peak": 16906
+    },
+    {
+      "id": "o04",
+      "text": "아이스라테 한 잔 주세요.",
+      "status": 200,
+      "bytes": 128816,
+      "sampleRate": 22050,
+      "channels": 1,
+      "bits": 16,
+      "seconds": 2.92,
+      "peak": 20091
+    },
+    {
+      "id": "o05",
+      "text": "따뜻한 커피 한 잔 주세요. 설탕도 넣어 주세요.",
+      "status": 200,
+      "bytes": 265110,
+      "sampleRate": 22050,
+      "channels": 1,
+      "bits": 16,
+      "seconds": 6.011,
+      "peak": 17984
+    },
+    {
+      "id": "o06",
+      "text": "아이스커피 두 잔 주세요. 한 잔은 얼음 빼 주세요.",
+      "status": 200,
+      "bytes": 258938,
+      "sampleRate": 22050,
+      "channels": 1,
+      "bits": 16,
+      "seconds": 5.871,
+      "peak": 20091
+    },
+    {
+      "id": "o07",
+      "text": "따뜻한 라테 한 잔 주세요. 설탕 없이요.",
+      "status": 200,
+      "bytes": 239022,
+      "sampleRate": 22050,
+      "channels": 1,
+      "bits": 16,
+      "seconds": 5.419,
+      "peak": 16105
+    },
+    {
+      "id": "o08",
+      "text": "차 두 잔 차갑게 주세요. 둘 다 설탕은 빼 주세요.",
+      "status": 200,
+      "bytes": 256058,
+      "sampleRate": 22050,
+      "channels": 1,
+      "bits": 16,
+      "seconds": 5.805,
+      "peak": 17244
+    },
+    {
+      "id": "o09",
+      "text": "따뜻한 커피 대신 차 한 잔 주세요.",
+      "status": 200,
+      "bytes": 180646,
+      "sampleRate": 22050,
+      "channels": 1,
+      "bits": 16,
+      "seconds": 4.095,
+      "peak": 16196
+    },
+    {
+      "id": "o10",
+      "text": "라테 한 잔하고 커피 한 잔 주세요. 둘 다 아이스로요.",
+      "status": 200,
+      "bytes": 268236,
+      "sampleRate": 22050,
+      "channels": 1,
+      "bits": 16,
+      "seconds": 6.081,
+      "peak": 16874
+    },
+    {
+      "id": "o11",
+      "text": "차 한 잔에 얼음 넣어 주세요. 설탕은 넣지 마세요.",
+      "status": 200,
+      "bytes": 261078,
+      "sampleRate": 22050,
+      "channels": 1,
+      "bits": 16,
+      "seconds": 5.919,
+      "peak": 18201
+    },
+    {
+      "id": "o12",
+      "text": "커피 두 잔 주세요. 하나는 따뜻하게, 다른 하나는 차갑게요.",
+      "status": 200,
+      "bytes": 316294,
+      "sampleRate": 22050,
+      "channels": 1,
+      "bits": 16,
+      "seconds": 7.171,
+      "peak": 25593
+    },
+    {
+      "id": "r01",
+      "text": "아이스라테 대신 아이스커피 한 잔 주세요.",
+      "status": 200,
+      "bytes": 194978,
+      "sampleRate": 22050,
+      "channels": 1,
+      "bits": 16,
+      "seconds": 4.42,
+      "peak": 20091
+    },
+    {
+      "id": "r02",
+      "text": "따뜻한 차 두 잔 주세요. 한 잔만 설탕을 넣어 주세요.",
+      "status": 200,
+      "bytes": 286230,
+      "sampleRate": 22050,
+      "channels": 1,
+      "bits": 16,
+      "seconds": 6.489,
+      "peak": 19908
+    },
+    {
+      "id": "r03",
+      "text": "아이스라테 두 잔 주세요. 둘 다 얼음 없이요.",
+      "status": 200,
+      "bytes": 231918,
+      "sampleRate": 22050,
+      "channels": 1,
+      "bits": 16,
+      "seconds": 5.258,
+      "peak": 20091
+    }
+  ],
+  "note": "Waveform and browser playback-state verification; not a human listening or naturalness assessment."
+}

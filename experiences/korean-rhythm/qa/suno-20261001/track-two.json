@@ -1,0 +1,6 @@
+{
+  "result": {
+    "type": "string",
+    "value": "{\"screen\":\"game\",\"time\":126.96758530998828,\"audioState\":\"running\",\"recording\":{\"title\":\"바다까지 한 시간\",\"sourceId\":\"c2835bc7-6963-4503-95bd-781b55e20b88\",\"url\":\"assets/music/one-hour-to-sea.mp3\",\"duration\":231.6,\"sampleRate\":48000,\"channels\":2},\"signalLevel\":0.08001065823068575,\"duration\":231.6,\"paused\":false}"
+  }
+}

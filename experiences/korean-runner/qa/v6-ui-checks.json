@@ -1,0 +1,88 @@
+{
+  "manualRunSettlement": {
+    "version": 1,
+    "wallet": 92,
+    "owned": [
+      "trail:none",
+      "lantern:paper",
+      "companion:none",
+      "scenery:village",
+      "finish:simple"
+    ],
+    "equipped": {
+      "trail": "none",
+      "lantern": "paper",
+      "companion": "none",
+      "scenery": "village",
+      "finish": "simple"
+    },
+    "settled": [
+      "9f0f7ecb-04c6-4022-8b3c-ae18362281d2"
+    ],
+    "wishlist": "scenery:moonlight",
+    "progress": {
+      "distance": 546.0676529181678,
+      "stars": 12,
+      "runs": 1,
+      "completions": 0,
+      "claimed": [
+        "distance-150",
+        "stars-10"
+      ]
+    },
+    "available": true
+  },
+  "keyboardLanes": [
+    0,
+    1
+  ],
+  "buttonLanes": [
+    2,
+    1
+  ],
+  "jumpHeight": 1.4778523300000106,
+  "groundSlideSeconds": 0.6867000000000048,
+  "syntheticSwipeLanes": [
+    0,
+    1
+  ],
+  "syntheticSwipeNote": "Dispatched PointerEvent test only; IAB raw touch dispatch unsupported; no physical phone proof",
+  "fixtureRepeatUnchanged": true,
+  "fixturePaidOnce": {
+    "version": 1,
+    "wallet": 60,
+    "owned": [
+      "trail:none",
+      "lantern:paper",
+      "companion:none",
+      "scenery:village",
+      "finish:simple",
+      "scenery:blossom"
+    ],
+    "equipped": {
+      "trail": "none",
+      "lantern": "paper",
+      "companion": "none",
+      "scenery": "blossom",
+      "finish": "simple"
+    },
+    "settled": [
+      "9f0f7ecb-04c6-4022-8b3c-ae18362281d2",
+      "610af754-0902-4638-8fae-87986e0cca34"
+    ],
+    "wishlist": "scenery:snow",
+    "progress": {
+      "distance": 1963.43036298655,
+      "stars": 47,
+      "runs": 2,
+      "completions": 0,
+      "claimed": [
+        "distance-150",
+        "stars-10",
+        "distance-1500",
+        "stars-30"
+      ]
+    },
+    "available": true
+  }
+}

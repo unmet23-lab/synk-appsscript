@@ -1,0 +1,71 @@
+{
+  "method": "Existing approved front-view transparent WebP assets, copied byte-for-byte. Vehicle-aligned front and rear planes seated in the 3D vehicle; generated rear-view variants documented in rear-provenance.json. No skeletal animation.",
+  "assets": [
+    {
+      "name": "마린",
+      "pose": "본체",
+      "sourceCanonical": "docs/캐릭터/정본_4K/마린_본체.png",
+      "sourceOptimized": "docs/캐릭터/화면_1024/마린_본체.webp",
+      "sourceSize": 4096,
+      "displaySize": 1024,
+      "path": "assets/mascots/marin-base.webp",
+      "bytes": 144398,
+      "sha256": "1f2f19b0724bbfcba4ed5802ebd2fa21c07ccac19459b09bff2ae33e1b35f57a"
+    },
+    {
+      "name": "마린",
+      "pose": "집중",
+      "sourceCanonical": "docs/캐릭터/정본_4K/마린_집중.png",
+      "sourceOptimized": "docs/캐릭터/화면_1024/마린_집중.webp",
+      "sourceSize": 4096,
+      "displaySize": 1024,
+      "path": "assets/mascots/marin-focus.webp",
+      "bytes": 143836,
+      "sha256": "a73783c7d1e2a7588503d66af256ad9d41441f606b6cee2d49801f86f68ed9be"
+    },
+    {
+      "name": "마린",
+      "pose": "응원",
+      "sourceCanonical": "docs/캐릭터/정본_4K/마린_응원.png",
+      "sourceOptimized": "docs/캐릭터/화면_1024/마린_응원.webp",
+      "sourceSize": 4096,
+      "displaySize": 1024,
+      "path": "assets/mascots/marin-cheer.webp",
+      "bytes": 144308,
+      "sha256": "ed35af9e1eb28e8c7ee4dfc9db98e8d2f6d0648e7fca523b2d47d9034a745bc1"
+    },
+    {
+      "name": "까몽",
+      "pose": "본체",
+      "sourceCanonical": "docs/캐릭터/정본_4K/까몽_본체.png",
+      "sourceOptimized": "docs/캐릭터/화면_1024/까몽_본체.webp",
+      "sourceSize": 4096,
+      "displaySize": 1024,
+      "path": "assets/mascots/kkamong-base.webp",
+      "bytes": 92234,
+      "sha256": "6b4443b39891e3f91abb70e6727ec7be00c943c13887e5fe69a79c1d7d640600"
+    },
+    {
+      "name": "까몽",
+      "pose": "집중",
+      "sourceCanonical": "docs/캐릭터/정본_4K/까몽_집중.png",
+      "sourceOptimized": "docs/캐릭터/화면_1024/까몽_집중.webp",
+      "sourceSize": 4096,
+      "displaySize": 1024,
+      "path": "assets/mascots/kkamong-focus.webp",
+      "bytes": 91366,
+      "sha256": "bf7f3c27199caa1c31a0d3c1e189e94c46c777b37e2e4c3d7c2e2f54219ff455"
+    },
+    {
+      "name": "까몽",
+      "pose": "응원",
+      "sourceCanonical": "docs/캐릭터/정본_4K/까몽_응원.png",
+      "sourceOptimized": "docs/캐릭터/화면_1024/까몽_응원.webp",
+      "sourceSize": 4096,
+      "displaySize": 1024,
+      "path": "assets/mascots/kkamong-cheer.webp",
+      "bytes": 96588,
+      "sha256": "6376a7765686a9b3f03bbb7324654d9dbbbaec056549e90f5594d2980cec74b7"
+    }
+  ]
+}

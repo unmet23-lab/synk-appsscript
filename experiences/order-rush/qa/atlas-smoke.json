@@ -1,0 +1,13 @@
+{
+  "origin": "http://127.0.0.1:4280",
+  "firstIndependent": 1,
+  "afterTextHelp": 1,
+  "afterReload": 1,
+  "sharedBeforeRunner": 1,
+  "runner": {
+    "independent": 1,
+    "unassessed": 1
+  },
+  "errors": [],
+  "status": "passed"
+}

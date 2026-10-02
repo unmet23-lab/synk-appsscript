@@ -1,0 +1,146 @@
+{
+  "version": "scenery-v3-final-20261002",
+  "method": "Live browser UI actions. Raw game canvas saved inside requestAnimationFrame; UI captured with native browser screenshot. No upscaling or compositing.",
+  "limits": "CSS sizes are desktop browser overrides, not physical phone benchmarks. Day/night captures are partial demo runs with sound off, not audio completion or learner outcome evidence. Source hashes identify the final delivered runtime; the 320px capture was refreshed after the final CSS label fix.",
+  "packageSha256": "c2f287a78a66e431571be02643a46d3e92d8b553930918476e2fcb69a21b4fd3",
+  "sourcesAtFinalCollection": {
+    "app.js": "6761506aa1d14a13a6ffb48c767e10f33f5a7c87763d0fb1a1b8f0e753cdbb6b",
+    "atmosphere.js": "6060735cab0ef1465d66ee1a7b4d36016b06e337be8864b9193364dde45a7459",
+    "render-world.js": "12ddba343c016a31bb2b331f8e2aca8a04a06c14f2a31cfb4968d0e50f757918",
+    "landscape.js": "7a81674fac2ff77e023965caefabcc0cfe664bb98c26b78cdc1f9c0a80167b10",
+    "scenery.js": "02dfd2c166bbd3f3e61ee9bb215e1db2f45383721d9399bb76edfd4ff6adec14",
+    "cityscape.js": "5cdc960c388b4e0da5e9c5a49b6b20152e4ecdbe3a88078644e7842f974b5eca",
+    "vehicles.js": "b357943e0d4c3eb6c3570301f92b40e81559e8cc780c5527992966ea40c0a189",
+    "narration.js": "e68773c4e611f2bb25848bc14608d576ffc9349d898fa2a6d281e7fe5816991d",
+    "style.css": "d031816d2dfd5420063cfb39ef7e0a18183a057942f5702af326cf0ac1da76f1"
+  },
+  "captures": [
+    {
+      "file": "scenery-v3-city-day-4k-20261002.png",
+      "size": [
+        3840,
+        2160
+      ],
+      "bytes": 10752062,
+      "sha256": "090711eddc2042f6507ce28e90e5a81b16ce66d07bd4252c239c3aa385fbaa20",
+      "kind": "raw-game-canvas",
+      "postprocessed": false
+    },
+    {
+      "file": "scenery-v3-city-day-4k-20261002.jpg",
+      "size": [
+        3840,
+        2160
+      ],
+      "bytes": 2344181,
+      "sha256": "e6d77a8dda928c5f15c8083e65367937b939d7fbe40058a14ece69524f4fedd0",
+      "kind": "raw-game-canvas",
+      "postprocessed": false
+    },
+    {
+      "file": "scenery-v3-city-sunset-4k-20261002.png",
+      "size": [
+        3840,
+        2160
+      ],
+      "bytes": 10202581,
+      "sha256": "4b9d1faa9bfb4136f7af124fec045c4ac674616d23b4751b067e3f2eb70aa6a8",
+      "kind": "raw-game-canvas",
+      "postprocessed": false
+    },
+    {
+      "file": "scenery-v3-city-sunset-4k-20261002.jpg",
+      "size": [
+        3840,
+        2160
+      ],
+      "bytes": 1938665,
+      "sha256": "bdb8054b72366105f8307c54fa6ab283b29ea91cbf3dc43b9b44b75d0baae785",
+      "kind": "raw-game-canvas",
+      "postprocessed": false
+    },
+    {
+      "file": "scenery-v3-city-day-ui-20261002.jpg",
+      "size": [
+        1920,
+        1080
+      ],
+      "bytes": 462732,
+      "sha256": "e829d994beb9f7a94083725bff4d158b5ab429ece2673234ccf10d6316637a48",
+      "kind": "browser-ui",
+      "postprocessed": false
+    },
+    {
+      "file": "scenery-v3-city-sunset-ui-20261002.jpg",
+      "size": [
+        1920,
+        1080
+      ],
+      "bytes": 410045,
+      "sha256": "c0a8e66756bb41599fb151f3685a91bff795b10da4e87f161233ad3da0e1f265",
+      "kind": "browser-ui",
+      "postprocessed": false
+    },
+    {
+      "file": "scenery-v3-city-mobile-390-20261002.jpg",
+      "size": [
+        375,
+        844
+      ],
+      "bytes": 72919,
+      "sha256": "3b2f2a1035dddb8fe06fed94d75f673819984e15905f863b70202844b164a6f7",
+      "kind": "browser-ui",
+      "postprocessed": false
+    },
+    {
+      "file": "scenery-v3-city-mobile-320-20261002.jpg",
+      "size": [
+        305,
+        567
+      ],
+      "bytes": 49834,
+      "sha256": "9bd1b844b8d6d7a24abaf94433fca227ae99d762aadfd593e90ff27b0b099f4d",
+      "kind": "browser-ui",
+      "postprocessed": false
+    },
+    {
+      "file": "scenery-v3-city-landscape-20261002.jpg",
+      "size": [
+        829,
+        390
+      ],
+      "bytes": 82277,
+      "sha256": "482bbed74f070bff2b04a2ccfd22a7cd0678255d30cd86aa38732bb03e4c30de",
+      "kind": "browser-ui",
+      "postprocessed": false
+    },
+    {
+      "file": "scenery-v3-current-preview-20261002.jpg",
+      "size": [
+        3840,
+        2160
+      ],
+      "bytes": 1600552,
+      "sha256": "97872ea56df203af1c309a2e82eb567b85e2fc77757f0f23391111c0dbec48aa",
+      "kind": "browser-ui",
+      "postprocessed": false
+    }
+  ],
+  "finalPreview": {
+    "url": "http://127.0.0.1:5197/",
+    "viewportOverrideReset": true,
+    "scrollY": 0,
+    "horizontalOverflow": 0,
+    "ready": true,
+    "running": false,
+    "selectedStage": "challenge-03",
+    "scenery": "coast",
+    "qualityControl": "auto",
+    "deviceResolvedQuality": "high",
+    "coins": 0,
+    "learningRounds": 1,
+    "clearedCourses": 1,
+    "consoleErrorsSinceFinalReload": 0,
+    "consoleWarningsSinceFinalReload": 0
+  }
+}

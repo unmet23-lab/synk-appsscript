@@ -1,0 +1,222 @@
+- link "Suno logo":
+  - /url: /
+  - img "Suno logo"
+- button "Collapse sidebar":
+- link "Home":
+  - /url: /discover
+  - generic: Home
+- link "Explore":
+  - /url: /explore
+  - generic: Explore
+- link "Create":
+  - /url: /create
+  - generic: Create
+- link "Studio":
+  - /url: /studio
+  - generic: Studio
+- link "Library":
+  - /url: /me
+  - generic: Library
+- link "77yuhbs 77yuhbs":
+  - /url: /@77yuhbs
+  - img "77yuhbs"
+  - generic: 77yuhbs
+- button "Profile menu button":
+- button "Earn Credits":
+  - generic: Earn Credits
+- link "Labs":
+  - /url: /labs
+  - generic: Labs
+- link "Notifications":
+  - /url: /notifications
+  - generic: Notifications
+- button "More":
+  - generic: More
+- generic: Notifications
+- generic: Activity
+- button:
+- button "Song Cover Image":
+  - img "Song Cover Image"
+- heading "src" [level=1]
+- link:
+  - /url: /@unmet23
+- link "unmet23":
+  - /url: /@unmet23
+- button "Follow":
+  - text: Follow
+- generic "80s japanese city pop, bright summer seaside mood, sparkling electric piano, punchy slap bass, warm brass stabs, breezy airy female vocal, mid-up tempo around 112 bpm, wide analog reverb, nostalgic golden-hour warmth, clean vintage mix":
+  - generic "80s japanese city pop": 80s japanese city pop,
+  - generic "bright summer seaside mood": bright summer seaside mood,
+  - generic "sparkling electric piano": sparkling electric piano,
+  - generic "punchy slap bass": punchy slap bass,
+  - generic "warm brass stabs": warm brass stabs,
+  - generic "breezy airy female vocal": breezy airy female vocal,
+  - generic "mid-up tempo around 112 bpm": mid-up tempo around 112 bpm,
+  - generic "wide analog reverb": wide analog reverb,
+  - generic "nostalgic golden-hour warmth": nostalgic golden-hour warmth,
+  - text: clean vintage mix
+- button "Copy styles to clipboard":
+- generic: – Show Summary
+- generic "2026년 9월 7일 오전 1:54"
+- generic: V5.5
+- button "Play Count":
+  - text: "40"
+- button:
+- button "1":
+  - text: "1"
+- button:
+- button "More options":
+- button "Add to Playlist":
+- button:
+- button "Play":
+- paragraph: "[Intro] [Verse 1] Sunlight on the waves Sparkling in your eyes Summer breeze is calling We're chasing the sky Neon lights are fading Golden hours near We're driving down the coastline With nothing to fear Hold on to this moment Let it slip away Every second feels like a holiday [Chorus] City pop dreams We're dancing in the sun Seaside memories We've only just begun Worm brass and piano Play our favorite song We'll keep this summer going all night long [Verse 2] Evening shadows fall But the heat remains We're walking on the sand right in our names The ocean whispers softly Secrets in the air With every wave we leave behind our cares Hold on to this feeling Let it fill the night Underneath the stars everything's so bright [Chorus] City pop dreams We're dancing in the sun Seaside memories We've only just begun Worm brass and piano Play our favorite song We'll keep this summer going all night long [Chorus] Hold on to the golden hour Don't let the summer fade away Every wave remembers how we danced along the bay [Outro] Sunlight on the waves Summer, don't you let me go"
+- button "Copy lyrics to clipboard":
+
+
+- link "Suno logo":
+  - /url: /
+  - img "Suno logo"
+- button "Collapse sidebar":
+- link "Home":
+  - /url: /discover
+  - generic: Home
+- link "Explore":
+  - /url: /explore
+  - generic: Explore
+- link "Create":
+  - /url: /create
+  - generic: Create
+- link "Studio":
+  - /url: /studio
+  - generic: Studio
+- link "Library":
+  - /url: /me
+  - generic: Library
+- link "77yuhbs 77yuhbs":
+  - /url: /@77yuhbs
+  - img "77yuhbs"
+  - generic: 77yuhbs
+- button "Profile menu button":
+- button "Earn Credits":
+  - generic: Earn Credits
+- link "Labs":
+  - /url: /labs
+  - generic: Labs
+- link "Notifications":
+  - /url: /notifications
+  - generic: Notifications
+- button "More":
+  - generic: More
+- generic: Notifications
+- generic: Activity
+- button:
+- button "Song Cover Image":
+  - img "Song Cover Image"
+- heading "src" [level=1]
+- link:
+  - /url: /@unmet23
+- link "unmet23":
+  - /url: /@unmet23
+- button "Follow":
+  - text: Follow
+- generic "80s japanese city pop, bright summer seaside mood, sparkling electric piano, punchy slap bass, warm brass stabs, breezy airy female vocal, mid-up tempo around 112 bpm, wide analog reverb, nostalgic golden-hour warmth, clean vintage mix":
+  - generic "80s japanese city pop": 80s japanese city pop,
+  - generic "bright summer seaside mood": bright summer seaside mood,
+  - generic "sparkling electric piano": sparkling electric piano,
+  - generic "punchy slap bass": punchy slap bass,
+  - generic "warm brass stabs": warm brass stabs,
+  - generic "breezy airy female vocal": breezy airy female vocal,
+  - generic "mid-up tempo around 112 bpm": mid-up tempo around 112 bpm,
+  - generic "wide analog reverb": wide analog reverb,
+  - generic "nostalgic golden-hour warmth": nostalgic golden-hour warmth,
+  - text: clean vintage mix
+- button "Copy styles to clipboard":
+- generic: – Show Summary
+- generic "2026년 9월 7일 오전 1:54"
+- generic: V5.5
+- button "Play Count":
+  - text: "45"
+- button:
+- button "1":
+  - text: "1"
+- button:
+- button "More options":
+- button "Add to Playlist":
+- button:
+- button "Play":
+- paragraph: "[Intro] [Verse 1] Sunlight on the waves Sparkling in your eyes Summer breeze is calling We're chasing the sky Neon lights are fading Golden hours near We're driving down the coastline With nothing to fear Hold on to this moment Let it slip away Every second feels like a holiday [Chorus] City pop dreams We're dancing in the sun Seaside memories We've only just begun Worm brass and piano Play our favorite song We'll keep this summer going all night long [Verse 2] Evening shadows fall But the heat remains We're walking on the sand right in our names The ocean whispers softly Secrets in the air With every wave we leave behind our cares Hold on to this feeling Let it fill the night Underneath the stars everything's so bright [Chorus] City pop dreams We're dancing in the sun Seaside memories We've only just begun Worm brass and piano Play our favorite song We'll keep this summer going all night long [Chorus] Hold on to the golden hour Don't let the summer fade away Every wave remembers how we danced along the bay [Outro] Sunlight on the waves Summer, don't you let me go"
+- button "Copy lyrics to clipboard":
+
+
+- link "Suno logo":
+  - /url: /
+  - img "Suno logo"
+- button "Collapse sidebar":
+- link "Home":
+  - /url: /discover
+  - generic: Home
+- link "Explore":
+  - /url: /explore
+  - generic: Explore
+- link "Create":
+  - /url: /create
+  - generic: Create
+- link "Studio":
+  - /url: /studio
+  - generic: Studio
+- link "Library":
+  - /url: /me
+  - generic: Library
+- link "77yuhbs 77yuhbs":
+  - /url: /@77yuhbs
+  - img "77yuhbs"
+  - generic: 77yuhbs
+- button "Profile menu button":
+- button "Earn Credits":
+  - generic: Earn Credits
+- link "Labs":
+  - /url: /labs
+  - generic: Labs
+- link "Notifications":
+  - /url: /notifications
+  - generic: Notifications
+- button "More":
+  - generic: More
+- generic: Notifications
+- generic: Activity
+- button:
+- button "Song Cover Image":
+  - img "Song Cover Image"
+- heading "Golden Hour Beach" [level=1]
+- link:
+  - /url: /@unmet23
+- link "unmet23":
+  - /url: /@unmet23
+- button "Follow":
+  - text: Follow
+- generic "80s japanese city pop, bright summer seaside mood, sparkling electric piano, punchy slap bass, warm brass stabs, breezy airy female vocal, mid-up tempo around 112 bpm, wide analog reverb, nostalgic golden-hour warmth, clean vintage mix":
+  - generic "80s japanese city pop": 80s japanese city pop,
+  - generic "bright summer seaside mood": bright summer seaside mood,
+  - generic "sparkling electric piano": sparkling electric piano,
+  - generic "punchy slap bass": punchy slap bass,
+  - generic "warm brass stabs": warm brass stabs,
+  - generic "breezy airy female vocal": breezy airy female vocal,
+  - generic "mid-up tempo around 112 bpm": mid-up tempo around 112 bpm,
+  - generic "wide analog reverb": wide analog reverb,
+  - generic "nostalgic golden-hour warmth": nostalgic golden-hour warmth,
+  - text: clean vintage mix
+- button "Copy styles to clipboard":
+- generic: – Show Summary
+- generic "2026년 9월 7일 오후 9:49"
+- generic: V5.5
+- button "Play Count":
+  - text: "50"
+- button:
+- button "1":
+  - text: "1"
+- button:
+- button "More options":
+- button "Add to Playlist":
+- button:
+- button "Play":
+- paragraph

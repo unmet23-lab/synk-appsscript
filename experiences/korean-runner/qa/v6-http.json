@@ -1,0 +1,681 @@
+{
+  "date": "2026-10-02",
+  "origin": "http://127.0.0.1:4274",
+  "files": 96,
+  "passed": true,
+  "rows": [
+    {
+      "path": "app.js",
+      "status": 200,
+      "bytes": 24193,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "art.mjs",
+      "status": 200,
+      "bytes": 4432,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "atlas-learning.js",
+      "status": 200,
+      "bytes": 111409,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "audio.mjs",
+      "status": 200,
+      "bytes": 2181,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "audio.test.mjs",
+      "status": 200,
+      "bytes": 2645,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "collection.js",
+      "status": 200,
+      "bytes": 347152,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "controls.mjs",
+      "status": 200,
+      "bytes": 717,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "controls.test.mjs",
+      "status": 200,
+      "bytes": 1723,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "core.mjs",
+      "status": 200,
+      "bytes": 9203,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "core.test.mjs",
+      "status": 200,
+      "bytes": 5033,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "goals-ui.mjs",
+      "status": 200,
+      "bytes": 4969,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "index.html",
+      "status": 200,
+      "bytes": 13098,
+      "byteMatch": true,
+      "mime": "text/html; charset=utf-8"
+    },
+    {
+      "path": "instructions.mjs",
+      "status": 200,
+      "bytes": 3562,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "learning.mjs",
+      "status": 200,
+      "bytes": 1039,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "learning.test.mjs",
+      "status": 200,
+      "bytes": 2372,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "scenery-details.mjs",
+      "status": 200,
+      "bytes": 8677,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "scenery-details.test.mjs",
+      "status": 200,
+      "bytes": 3523,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "server.mjs",
+      "status": 200,
+      "bytes": 1647,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "shop-assets.mjs",
+      "status": 200,
+      "bytes": 2098,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "shop-ui.mjs",
+      "status": 200,
+      "bytes": 7205,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "shop.mjs",
+      "status": 200,
+      "bytes": 11079,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "shop.test.mjs",
+      "status": 200,
+      "bytes": 15640,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "style.css",
+      "status": 200,
+      "bytes": 46003,
+      "byteMatch": true,
+      "mime": "text/css; charset=utf-8"
+    },
+    {
+      "path": "voice-timing.mjs",
+      "status": 200,
+      "bytes": 488,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "world-cosmetics.mjs",
+      "status": 200,
+      "bytes": 14286,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "world-cosmetics.test.mjs",
+      "status": 200,
+      "bytes": 3202,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "world.mjs",
+      "status": 200,
+      "bytes": 27829,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "assets/brand-lab.webp",
+      "status": 200,
+      "bytes": 126616,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/dm-mono.woff2",
+      "status": 200,
+      "bytes": 20640,
+      "byteMatch": true,
+      "mime": "font/woff2"
+    },
+    {
+      "path": "assets/DMMono-OFL.txt",
+      "status": 200,
+      "bytes": 4484,
+      "byteMatch": true,
+      "mime": "text/plain; charset=utf-8"
+    },
+    {
+      "path": "assets/favicon.svg",
+      "status": 200,
+      "bytes": 240,
+      "byteMatch": true,
+      "mime": "image/svg+xml"
+    },
+    {
+      "path": "assets/felt.webp",
+      "status": 200,
+      "bytes": 77674,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/inter-tight.ttf",
+      "status": 200,
+      "bytes": 309140,
+      "byteMatch": true,
+      "mime": "font/ttf"
+    },
+    {
+      "path": "assets/InterTight-OFL.txt",
+      "status": 200,
+      "bytes": 4383,
+      "byteMatch": true,
+      "mime": "text/plain; charset=utf-8"
+    },
+    {
+      "path": "assets/manifest.json",
+      "status": 200,
+      "bytes": 2162,
+      "byteMatch": true,
+      "mime": "application/json; charset=utf-8"
+    },
+    {
+      "path": "assets/SUIT-OFL.txt",
+      "status": 200,
+      "bytes": 4380,
+      "byteMatch": true,
+      "mime": "text/plain; charset=utf-8"
+    },
+    {
+      "path": "assets/suit.woff2",
+      "status": 200,
+      "bytes": 624536,
+      "byteMatch": true,
+      "mime": "font/woff2"
+    },
+    {
+      "path": "vendor/BufferGeometryUtils.js",
+      "status": 200,
+      "bytes": 35539,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "vendor/THREE-LICENSE.txt",
+      "status": 200,
+      "bytes": 1081,
+      "byteMatch": true,
+      "mime": "text/plain; charset=utf-8"
+    },
+    {
+      "path": "vendor/three.core.js",
+      "status": 200,
+      "bytes": 1403455,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "vendor/three.module.js",
+      "status": 200,
+      "bytes": 603113,
+      "byteMatch": true,
+      "mime": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "assets/shop/manifest.json",
+      "status": 200,
+      "bytes": 23327,
+      "byteMatch": true,
+      "mime": "application/json; charset=utf-8"
+    },
+    {
+      "path": "assets/voice/jobs.json",
+      "status": 200,
+      "bytes": 1505,
+      "byteMatch": true,
+      "mime": "application/json; charset=utf-8"
+    },
+    {
+      "path": "assets/voice/jump-right.mp3",
+      "status": 200,
+      "bytes": 32434,
+      "byteMatch": true,
+      "mime": "audio/mpeg"
+    },
+    {
+      "path": "assets/voice/jump-stay.mp3",
+      "status": 200,
+      "bytes": 39749,
+      "byteMatch": true,
+      "mime": "audio/mpeg"
+    },
+    {
+      "path": "assets/voice/jump.mp3",
+      "status": 200,
+      "bytes": 24075,
+      "byteMatch": true,
+      "mime": "audio/mpeg"
+    },
+    {
+      "path": "assets/voice/left-jump.mp3",
+      "status": 200,
+      "bytes": 33061,
+      "byteMatch": true,
+      "mime": "audio/mpeg"
+    },
+    {
+      "path": "assets/voice/left.mp3",
+      "status": 200,
+      "bytes": 17388,
+      "byteMatch": true,
+      "mime": "audio/mpeg"
+    },
+    {
+      "path": "assets/voice/manifest.json",
+      "status": 200,
+      "bytes": 5138,
+      "byteMatch": true,
+      "mime": "application/json; charset=utf-8"
+    },
+    {
+      "path": "assets/voice/middle-slide.mp3",
+      "status": 200,
+      "bytes": 27837,
+      "byteMatch": true,
+      "mime": "audio/mpeg"
+    },
+    {
+      "path": "assets/voice/middle.mp3",
+      "status": 200,
+      "bytes": 18433,
+      "byteMatch": true,
+      "mime": "audio/mpeg"
+    },
+    {
+      "path": "assets/voice/no-jump.mp3",
+      "status": 200,
+      "bytes": 27210,
+      "byteMatch": true,
+      "mime": "audio/mpeg"
+    },
+    {
+      "path": "assets/voice/not-left.mp3",
+      "status": 200,
+      "bytes": 27001,
+      "byteMatch": true,
+      "mime": "audio/mpeg"
+    },
+    {
+      "path": "assets/voice/not-right.mp3",
+      "status": 200,
+      "bytes": 27001,
+      "byteMatch": true,
+      "mime": "audio/mpeg"
+    },
+    {
+      "path": "assets/voice/not-slide.mp3",
+      "status": 200,
+      "bytes": 31598,
+      "byteMatch": true,
+      "mime": "audio/mpeg"
+    },
+    {
+      "path": "assets/voice/right-middle.mp3",
+      "status": 200,
+      "bytes": 29091,
+      "byteMatch": true,
+      "mime": "audio/mpeg"
+    },
+    {
+      "path": "assets/voice/right-slide.mp3",
+      "status": 200,
+      "bytes": 36405,
+      "byteMatch": true,
+      "mime": "audio/mpeg"
+    },
+    {
+      "path": "assets/voice/right.mp3",
+      "status": 200,
+      "bytes": 18224,
+      "byteMatch": true,
+      "mime": "audio/mpeg"
+    },
+    {
+      "path": "assets/voice/slide-left.mp3",
+      "status": 200,
+      "bytes": 28673,
+      "byteMatch": true,
+      "mime": "audio/mpeg"
+    },
+    {
+      "path": "assets/voice/slide.mp3",
+      "status": 200,
+      "bytes": 28046,
+      "byteMatch": true,
+      "mime": "audio/mpeg"
+    },
+    {
+      "path": "assets/shop/icons/companion-cloud.webp",
+      "status": 200,
+      "bytes": 48018,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/icons/companion-none.webp",
+      "status": 200,
+      "bytes": 77832,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/icons/companion-sparrow.webp",
+      "status": 200,
+      "bytes": 64306,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/icons/finish-festival.webp",
+      "status": 200,
+      "bytes": 38206,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/icons/finish-flowers.webp",
+      "status": 200,
+      "bytes": 72654,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/icons/finish-simple.webp",
+      "status": 200,
+      "bytes": 73860,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/icons/finish-stars.webp",
+      "status": 200,
+      "bytes": 52390,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/icons/lantern-firefly.webp",
+      "status": 200,
+      "bytes": 46888,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/icons/lantern-flower.webp",
+      "status": 200,
+      "bytes": 38236,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/icons/lantern-paper.webp",
+      "status": 200,
+      "bytes": 36330,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/icons/scenery-blossom.webp",
+      "status": 200,
+      "bytes": 75230,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/icons/scenery-moonlight.webp",
+      "status": 200,
+      "bytes": 62950,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/icons/scenery-snow.webp",
+      "status": 200,
+      "bytes": 68918,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/icons/scenery-village.webp",
+      "status": 200,
+      "bytes": 68408,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/icons/trail-footprints.webp",
+      "status": 200,
+      "bytes": 60160,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/icons/trail-none.webp",
+      "status": 200,
+      "bytes": 31484,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/icons/trail-petals.webp",
+      "status": 200,
+      "bytes": 46472,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/icons/trail-starlight.webp",
+      "status": 200,
+      "bytes": 34134,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/ui/badge-check.webp",
+      "status": 200,
+      "bytes": 52744,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/ui/badge-coral.webp",
+      "status": 200,
+      "bytes": 52394,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/ui/badge-cream.webp",
+      "status": 200,
+      "bytes": 40416,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/ui/chip-blush-long.webp",
+      "status": 200,
+      "bytes": 150256,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/ui/chip-blush.webp",
+      "status": 200,
+      "bytes": 106300,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/ui/ring-butter.webp",
+      "status": 200,
+      "bytes": 42148,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/ui/slab-blush-long.webp",
+      "status": 200,
+      "bytes": 192094,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/ui/slab-blush.webp",
+      "status": 200,
+      "bytes": 164140,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/ui/slab-coral-long.webp",
+      "status": 200,
+      "bytes": 234584,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/ui/slab-coral.webp",
+      "status": 200,
+      "bytes": 210584,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/ui/slab-cream-long.webp",
+      "status": 200,
+      "bytes": 173026,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/ui/slab-cream.webp",
+      "status": 200,
+      "bytes": 148998,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/ui/tag-cream.webp",
+      "status": 200,
+      "bytes": 106542,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/ui/tex-blush.webp",
+      "status": 200,
+      "bytes": 11704,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/ui/tex-butter.webp",
+      "status": 200,
+      "bytes": 15536,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/ui/tex-coral.webp",
+      "status": 200,
+      "bytes": 26150,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/ui/tex-cream.webp",
+      "status": 200,
+      "bytes": 5208,
+      "byteMatch": true,
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/shop/ui/tex-lapis.webp",
+      "status": 200,
+      "bytes": 23832,
+      "byteMatch": true,
+      "mime": "image/webp"
+    }
+  ],
+  "finalStyleRecheck": true
+}

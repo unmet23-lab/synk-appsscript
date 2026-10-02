@@ -1,0 +1,167 @@
+{
+  "voice": "Microsoft Heami Desktop",
+  "rate": 0,
+  "clips": [
+    {
+      "id": "left",
+      "text": "왼쪽 길로 가세요.",
+      "seconds": 2.079138,
+      "bytes": 17388,
+      "sha256": "60e7586f2767afafd2c1acfc5b2d2ff1a6ac3c875086dda67fee4061c233c103",
+      "codec": "mp3",
+      "sampleRate": 22050,
+      "channels": 1
+    },
+    {
+      "id": "jump",
+      "text": "낮은 울타리를 뛰어넘으세요.",
+      "seconds": 2.904036,
+      "bytes": 24075,
+      "sha256": "9fbf90eb20777036dac8a738a4a13e1d9655bada9a05c228d71e75aceb866e83",
+      "codec": "mp3",
+      "sampleRate": 22050,
+      "channels": 1
+    },
+    {
+      "id": "right",
+      "text": "오른쪽 길로 가세요.",
+      "seconds": 2.174059,
+      "bytes": 18224,
+      "sha256": "dd1b8dcd73c765da1ff44b983fa083a5ab9283df07ceeb7e3d3a8a6db9d8ba81",
+      "codec": "mp3",
+      "sampleRate": 22050,
+      "channels": 1
+    },
+    {
+      "id": "slide",
+      "text": "표지판 아래로 몸을 숙여 지나가세요.",
+      "seconds": 3.413923,
+      "bytes": 28046,
+      "sha256": "03c4ac0ba745fca4f4650c4ac57d80e7724bd46359b2b8b96117989410943edd",
+      "codec": "mp3",
+      "sampleRate": 22050,
+      "channels": 1
+    },
+    {
+      "id": "middle",
+      "text": "가운데 길로 가세요.",
+      "seconds": 2.219093,
+      "bytes": 18433,
+      "sha256": "d151a7e150b28b5762f6048775ab907c5f62166b061bc86ebc48b501bb7ce0a3",
+      "codec": "mp3",
+      "sampleRate": 22050,
+      "channels": 1
+    },
+    {
+      "id": "no-jump",
+      "text": "이번에는 뛰지 말고 그대로 달리세요.",
+      "seconds": 3.298912,
+      "bytes": 27210,
+      "sha256": "785017849cd57b74fb32303072e3bbe8ad916eb7ac85714237d8496239a36e24",
+      "codec": "mp3",
+      "sampleRate": 22050,
+      "channels": 1
+    },
+    {
+      "id": "left-jump",
+      "text": "왼쪽으로 간 다음, 울타리를 뛰어넘으세요.",
+      "seconds": 4.043855,
+      "bytes": 33061,
+      "sha256": "900ed159732c92180589824284c768a85ed232cb704350c6b899a08905e027ae",
+      "codec": "mp3",
+      "sampleRate": 22050,
+      "channels": 1
+    },
+    {
+      "id": "middle-slide",
+      "text": "가운데로 간 뒤, 몸을 숙이세요.",
+      "seconds": 3.384036,
+      "bytes": 27837,
+      "sha256": "c3785125a2ae1bf45a47a5baf24fde114b7b9572aa26b8e9f8a78558bc3d32fc",
+      "codec": "mp3",
+      "sampleRate": 22050,
+      "channels": 1
+    },
+    {
+      "id": "not-right",
+      "text": "오른쪽으로 가지 말고 왼쪽으로 가세요.",
+      "seconds": 3.283719,
+      "bytes": 27001,
+      "sha256": "63db1fb6776a8c2e52144e81432c8a78635ee47e6c1769bfafae0b359cf511e6",
+      "codec": "mp3",
+      "sampleRate": 22050,
+      "channels": 1
+    },
+    {
+      "id": "jump-right",
+      "text": "울타리를 뛰어넘은 뒤, 오른쪽으로 가세요.",
+      "seconds": 3.95873,
+      "bytes": 32434,
+      "sha256": "bddd00a5ea4f0a668481b69291d95feb0db86f68ff3a898a248a54ad32e49503",
+      "codec": "mp3",
+      "sampleRate": 22050,
+      "channels": 1
+    },
+    {
+      "id": "slide-left",
+      "text": "몸을 숙인 다음, 왼쪽으로 가세요.",
+      "seconds": 3.499138,
+      "bytes": 28673,
+      "sha256": "574ddb827274e88cfc2435dbfb588af95430ece5e1aaf0486c54dbd3f0ffed88",
+      "codec": "mp3",
+      "sampleRate": 22050,
+      "channels": 1
+    },
+    {
+      "id": "not-left",
+      "text": "왼쪽으로 가지 말고 가운데로 가세요.",
+      "seconds": 3.278866,
+      "bytes": 27001,
+      "sha256": "e7d79cf6d2a48d14a328d60d396c08d9978e0acbe54372dc5ba3a0732be49468",
+      "codec": "mp3",
+      "sampleRate": 22050,
+      "channels": 1
+    },
+    {
+      "id": "right-slide",
+      "text": "오른쪽으로 간 다음, 표지판 아래로 지나가세요.",
+      "seconds": 4.463855,
+      "bytes": 36405,
+      "sha256": "ab4314dab4902568b119fa184ec530e7eb9b54445499db3b24e246f0e2b4437b",
+      "codec": "mp3",
+      "sampleRate": 22050,
+      "channels": 1
+    },
+    {
+      "id": "jump-stay",
+      "text": "한 번 뛰어넘고, 다음 표시선에서는 뛰지 마세요.",
+      "seconds": 4.87873,
+      "bytes": 39749,
+      "sha256": "730c6ea96fe6292f4e5cc25f704e3bc313a3e84e1ae23478841acaf38ab04382",
+      "codec": "mp3",
+      "sampleRate": 22050,
+      "channels": 1
+    },
+    {
+      "id": "right-middle",
+      "text": "오른쪽으로 갔다가 가운데로 돌아오세요.",
+      "seconds": 3.54381,
+      "bytes": 29091,
+      "sha256": "54ccb2c5c69b0066affa3669e77bd1a396a801c39675738c1452110af6711e28",
+      "codec": "mp3",
+      "sampleRate": 22050,
+      "channels": 1
+    },
+    {
+      "id": "not-slide",
+      "text": "이번에는 몸을 숙이지 말고 그대로 달리세요.",
+      "seconds": 3.863764,
+      "bytes": 31598,
+      "sha256": "929d55ba53cba76fcd8331deb716f6b7d4074876c9f006fc953ea718eb9235da",
+      "codec": "mp3",
+      "sampleRate": 22050,
+      "channels": 1
+    }
+  ],
+  "totalBytes": 446226
+}

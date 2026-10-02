@@ -1,0 +1,44 @@
+{
+  "audio": [
+    {
+      "title": "유영",
+      "sourceId": "145ffb62-6e5a-4d41-a85a-293a47437d0b",
+      "url": "https://suno.com/song/145ffb62-6e5a-4d41-a85a-293a47437d0b",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\korean-rhythm\\qa\\citypop-20261001\\유영.mp3",
+      "duration": 227.16,
+      "bytes": 5284951,
+      "sha256": "995c330839fc40c7d872097a2721eab453c72b668828ec92688a2eb9d7c35dde",
+      "sampleRate": 48000,
+      "channels": 2,
+      "completeDecode": true,
+      "koreanLyricsMetadata": true
+    },
+    {
+      "title": "잔상",
+      "sourceId": "41cee495-d5d8-4961-8ae5-c207d0e528b9",
+      "url": "https://suno.com/song/41cee495-d5d8-4961-8ae5-c207d0e528b9",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\korean-rhythm\\qa\\citypop-20261001\\잔상.mp3",
+      "duration": 226.8,
+      "bytes": 5490426,
+      "sha256": "aa3fb1b9f8b90cb3a93a47a20e686e666f7e145cdc57a85ed4f94a184bc96cdc",
+      "sampleRate": 48000,
+      "channels": 2,
+      "completeDecode": true,
+      "koreanLyricsMetadata": true
+    },
+    {
+      "title": "밤의 온도",
+      "sourceId": "a88e7cc4-e9f7-4e61-9d31-c73e0d537ede",
+      "url": "https://suno.com/song/a88e7cc4-e9f7-4e61-9d31-c73e0d537ede",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\korean-rhythm\\qa\\citypop-20261001\\밤의 온도.mp3",
+      "duration": 214.8,
+      "bytes": 5076143,
+      "sha256": "ef5f719fb78497f758597ae21134f62535ff2010c4373a9c64b281dbcbb2a6d7",
+      "sampleRate": 48000,
+      "channels": 2,
+      "completeDecode": true,
+      "koreanLyricsMetadata": true
+    }
+  ],
+  "limit": "Metadata and complete decoding verify the delivered files; subjective listening, pronunciation and reference similarity require listening review."
+}

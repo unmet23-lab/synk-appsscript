@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-02T11:51:37.733Z",
+  "pass": true,
+  "results": [
+    {
+      "width": 1440,
+      "cancelSelection": true,
+      "visibleCarryingLayer": true,
+      "correctPlacement": true,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "cancelSelection": true,
+      "visibleCarryingLayer": true,
+      "correctPlacement": true,
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "sourceHashes": {
+    "app.mjs": "31c4e3d95eee26799c4af3c0ca2dfcc7a1e35428fdbca15e84e4b41bfee475c9",
+    "stage.mjs": "f8535e1f3319c14ad8168e2d0228313ee5e4743f4ae0a775ba545eecc07dfe47",
+    "core.mjs": "d25f2db36f1bff0276f341dcb188951fa8d9b1cdae7c7320ccfbf8bdeeb56001",
+    "story.mjs": "6c139b949559b73cd5d2eeda9263988ef1cb53af1246fea7ffe1febbbae13aa6",
+    "audio.mjs": "0429642bdfab521214eedb35944ce9e49dcf9d360d8dd6c731f18e4a80446017",
+    "index.html": "dd55f952b8b8d34c9107cdcdb5e19781b8ee174c6c23acef1512f12de37b94c5",
+    "style.css": "a499c7abb71b3903a4a6e074eb085b1fb670423d8258bb64e74bc2f52f1bb728"
+  }
+}

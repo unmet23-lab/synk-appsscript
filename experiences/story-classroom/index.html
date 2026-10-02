@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="이야기를 읽고 마린, 까몽과 함께 교실의 비밀을 지키는 한국어 읽기 미니게임.">
+  <title>선생님이 돌아왔다 — SYNK LAB PLAY</title>
+  <link rel="icon" href="./assets/brand-lab.webp" type="image/webp">
+  <link rel="preload" href="./assets/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="./assets/classroom.webp" as="image">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="SYNK LAB PLAY 처음 화면">
+        <img src="./assets/brand-lab.webp" alt="synk LAB" width="152" height="52">
+      </a>
+      <span class="header-caption">이야기로 노는 한국어</span>
+      <span class="series-label">READ &amp; PLAY <span>01</span></span>
+    </header>
+
+    <main>
+      <section id="landing" class="landing" aria-labelledby="landing-title">
+        <div class="landing-copy">
+          <p class="eyebrow"><span class="chapter-dot"></span> 교실에서 생긴 일</p>
+          <h1 id="landing-title">선생님이<br><span class="title-mark">돌아왔다<svg viewBox="0 0 360 20" aria-hidden="true"><path d="M4 12 C70 5 119 15 175 10 S284 6 354 10 M23 18 C90 12 179 17 286 15"/></svg></span></h1>
+          <p class="landing-hook">문이 열렸다.<br class="mobile-break"> 아직 파티는 비밀이다.</p>
+          <p class="landing-description">이야기를 읽고, 두 친구와<br>교실의 비밀을 지켜 주세요.</p>
+          <div class="landing-actions">
+            <button id="start" class="button-primary" type="button">이야기 시작 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+            <button id="resume" class="button-secondary" type="button" hidden>이어 하기</button>
+          </div>
+          <p class="reading-note"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 4c3-1 5-1 7 1 2-2 4-2 7-1v12c-3-1-5-1-7 1-2-2-4-2-7-1V4Z"/><path d="M10 5v12"/></svg><span>TOPIK I 읽기 · 천천히 읽어도 괜찮아요</span></p>
+        </div>
+        <div class="landing-art" aria-hidden="true">
+          <div class="hero-scene">
+            <img class="hero-room" src="./assets/classroom.webp" alt="" width="1536" height="1024">
+            <div class="hero-paper-stack"><img src="./assets/prop-paper.webp" alt="" width="256" height="256"></div>
+            <img class="hero-marin" src="./assets/marin-focus.webp" alt="" width="700" height="1000">
+            <img class="hero-kkamong" src="./assets/kkamong-focus.webp" alt="" width="700" height="1000">
+            <span class="hero-quiet">쉿!</span>
+            <div class="hero-gift"><img src="./assets/prop-cake.webp" alt="" width="256" height="256"></div>
+          </div>
+          <div class="art-caption"><span class="art-caption-no">EP.01</span><span>어쩌면, 오늘은 특별한 날.</span></div>
+        </div>
+      </section>
+
+      <section id="game" class="game" aria-labelledby="chapter-title" hidden>
+        <div class="game-heading">
+          <div class="chapter-heading"><p id="chapter-label" class="eyebrow">첫 번째 장면</p><h1 id="chapter-title">문밖의 발소리</h1></div>
+          <div id="chapter-progress" class="chapter-progress" aria-label="이야기 진행">1 / 4</div>
+        </div>
+
+        <div class="game-layout">
+          <div class="scene-column">
+            <div class="scene-frame">
+              <div id="stage" class="stage" role="region" aria-label="마린과 까몽이 있는 교실"></div>
+              <div class="selection-bar"><span class="selection-dot" aria-hidden="true"></span><p id="selection">이야기를 읽고 친구를 골라 주세요.</p><button id="cancel-selection" type="button" hidden>선택 취소</button></div>
+            </div>
+
+            <div id="dialogue" class="dialogue" aria-live="polite" aria-atomic="true">
+              <div class="speaker-column"><img id="speaker-avatar" class="speaker-avatar" src="./assets/marin-focus.webp" alt="" width="96" height="96" hidden><p id="speaker" class="speaker">이야기</p></div>
+              <div class="dialogue-body">
+                <p id="dialogue-text">교실 밖에서 발소리가 들렸다.</p>
+                <button id="dialogue-next" class="dialogue-next" type="button">다음 이야기 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></button>
+                <div class="voice-controls" aria-label="한국어 음성과 읽기 연습">
+                  <button id="voice-replay" class="tool-button" type="button">다시 듣기</button>
+                  <button id="voice-auto" class="tool-button" type="button" aria-pressed="true">대사 음성 자동</button>
+                  <button id="reading-mode" class="tool-button" type="button" aria-pressed="false">글로만 연습</button>
+                  <p id="voice-status" class="voice-status" role="status" aria-live="polite">이야기를 시작하면 한국어 음성이 나와요.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="mission-panel" aria-labelledby="missions-title">
+            <div class="mission-panel-heading"><h2 id="missions-title">부탁</h2><span class="mission-stamp" aria-hidden="true">할 수 있어!</span></div>
+            <div id="missions" class="missions"></div>
+            <p class="mission-footnote">글 속에 힌트가 있어요.<br>언제든 다시 읽어 보세요.</p>
+          </aside>
+        </div>
+
+        <nav class="game-tools" aria-label="게임 도구">
+          <div class="tools-reading">
+            <button id="undo" class="tool-button" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6-5 5 5 5M4 11h10a6 6 0 0 1 0 12"/></svg><span>되돌리기</span></button>
+            <button id="hint" class="tool-button" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 15c-4-4-1-12 4-12s8 8 4 12l-1 2H9l-1-2ZM9 21h6m-5-4v4m4-4v4"/></svg><span>작은 힌트</span></button>
+            <button id="journal" class="tool-button" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v17H5ZM8 8h8m-8 4h8m-8 4h5"/></svg><span>이야기 수첩</span></button>
+          </div>
+          <div class="tools-settings">
+            <button id="sound" class="tool-button" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 5-5 4H2v6h3l5 4V5Zm5 3a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg><span>소리</span></button>
+            <button id="restart" class="tool-button" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8a9 9 0 1 1-1 7M4 3v6h6"/></svg><span>처음부터</span></button>
+          </div>
+        </nav>
+      </section>
+
+      <section id="ending" class="ending" aria-label="이야기 결말" hidden>
+        <div class="ending-topline"><p class="eyebrow">우리 교실의 이야기</p><span class="ending-seal" aria-hidden="true">THE END</span></div>
+        <div id="ending-content"></div>
+        <button id="again" class="button-primary" type="button">한 번 더 놀기 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8a9 9 0 1 1-1 7M4 3v6h6"/></svg></button>
+      </section>
+
+      <section id="account-panel" aria-labelledby="account-title">
+        <div class="account-summary">
+          <div><h2 id="account-title">WORLD 학습 기록</h2><p id="account-status" role="status">이 기기의 연습 기록을 저장해요.</p></div>
+        </div>
+        <div class="account-actions">
+          <a id="account-sign-in" class="button-secondary" href="http://127.0.0.1:4280/synk-account/client.html?product=world&amp;game=story-classroom">WORLD 계정으로 열기</a>
+          <button id="account-sync" class="button-secondary" type="button" hidden>기록 다시 보내기</button>
+          <a id="account-sign-out" class="button-secondary" href="../synk-account/client.html?product=world" hidden>WORLD 계정 관리</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer"><span>SYNK LAB PLAY</span><span>읽으면 이야기가 움직여요.</span></footer>
+    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+    <dialog id="modal" class="modal" aria-labelledby="modal-title">
+      <button id="modal-close" class="modal-close" type="button" aria-label="닫기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+      <div id="modal-content"></div>
+    </dialog>
+  </div>
+  <script src="./atlas-learning.js"></script>
+  <script type="module" src="./app.mjs"></script>
+</body>
+</html>

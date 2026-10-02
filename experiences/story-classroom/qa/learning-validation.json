@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-02",
+  "command": "node --test experiences/story-classroom/learning.test.mjs",
+  "tests": 21,
+  "passed": 21,
+  "failed": 0,
+  "implementation": "Existing Atlas game-browser/game-learning and existing WORLD guarded learning host/scopedStorage; no second persisted learning profile.",
+  "checked": [
+    "Authored TOPIK I reading detail/negation/sequence mapping",
+    "First visible item vs rerender",
+    "Independent first response vs repeated attempts",
+    "Text answer help and actual speech-start help",
+    "Intro clue before mission visibility",
+    "Failed speech playback does not imply assistance",
+    "Different review text family vs same-text replay",
+    "Core undo and immutable first answer",
+    "Conservative resumed already-answered presentations",
+    "Missing callbacks fail closed",
+    "Durable local storage failure",
+    "Duplicate callback and uploaded event IDs",
+    "Shared account vs device scope",
+    "WORLD synthetic offline/retry and sharing-off",
+    "Session revocation and parent host change",
+    "Recommendation uses actual shared reading/action buckets"
+  ],
+  "accountVerification": "Synthetic account/guard/transport tests only. No real login, consent, deployment, authenticated account server or actual learner-effect proof.",
+  "browserEvidence": [
+    "qa/learning-browser.json",
+    "qa/learning-recommend.json"
+  ],
+  "sourceSHA256": "1918b2ecfc701a66a219e2b084891d89a1347cdd8eaf26c714a912e712010ea0",
+  "testSHA256": "1ba07d85d574f1cea70955d6746acf035865c4a40f992e9de04e406e000aee6e"
+}

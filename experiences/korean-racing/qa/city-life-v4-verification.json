@@ -1,0 +1,227 @@
+{
+  "date": "2026-10-02",
+  "scope": "Local coastal city graphics v4; no public deployment",
+  "tests": {
+    "command": "node --test tests/*.test.mjs",
+    "passed": 104,
+    "failed": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "durationMs": 29023
+  },
+  "sources": {
+    "app.js": "b4fe7a0403975fc21a93d1a15ba8896081c80fdae98a300d009d9947f744b49b",
+    "cityscape.js": "b84d3d41c76290f8b8c187f469d5dd3d7ef0f6801dea1d39dea2805b1986a292",
+    "city-life.js": "0cfe04549d3a1e53d6ab177a56e4d8b85be566e9a05dc26c795412558a052793",
+    "build-site.mjs": "3829eefd32ecdf1e31ee7edba70cc1fd421c141f72918412e0c0b1cb30bae8d8"
+  },
+  "captures": [
+    {
+      "path": "city-life-v4-current-preview-20261002.jpg",
+      "width": 3840,
+      "height": 2160,
+      "bytes": 1604893,
+      "sha256": "e05e82ab025565c29c2c7cfa8fcdd48ced98dd094bcfaef8534bacb8a36f26c3",
+      "kind": "actual local game render or browser UI"
+    },
+    {
+      "path": "city-life-v4-day-4k-20261002.jpg",
+      "width": 3840,
+      "height": 2160,
+      "bytes": 2401174,
+      "sha256": "acf63a196b10f7260dd9be5dc2a962990c4e58b5d3ebabc30447c7b2df4e0343",
+      "kind": "actual local game render or browser UI"
+    },
+    {
+      "path": "city-life-v4-day-ui-20261002.jpg",
+      "width": 3840,
+      "height": 2160,
+      "bytes": 1682417,
+      "sha256": "ec1fbe5a1093c6a6649ced80d5da60823fa28ef899a5275980e1939f91d146ac",
+      "kind": "actual local game render or browser UI"
+    },
+    {
+      "path": "city-life-v4-landscape-20261002.jpg",
+      "width": 829,
+      "height": 390,
+      "bytes": 78935,
+      "sha256": "4a7e651db9284a48956f59c42b054e7064c1b9463b4091635b9c1c1d73bc4148",
+      "kind": "actual local game render or browser UI"
+    },
+    {
+      "path": "city-life-v4-landscape-clear-20261002.jpg",
+      "width": 829,
+      "height": 390,
+      "bytes": 77598,
+      "sha256": "eea5f1b908323789a92a09815861fe4d4667c3a3ec83a60949481bd91983b51e",
+      "kind": "actual local game render or browser UI"
+    },
+    {
+      "path": "city-life-v4-mobile-320-20261002.jpg",
+      "width": 305,
+      "height": 568,
+      "bytes": 42404,
+      "sha256": "3f2157b7ba540b2af712e17875a68fa2063c35edf040e6b572f5fd8aaf9a0c6e",
+      "kind": "actual local game render or browser UI"
+    },
+    {
+      "path": "city-life-v4-mobile-390-20261002.jpg",
+      "width": 375,
+      "height": 844,
+      "bytes": 66751,
+      "sha256": "8dfa6caebea9572ff29bcc71b26f30256803d4879452196722545b76ec9ce8af",
+      "kind": "actual local game render or browser UI"
+    },
+    {
+      "path": "city-life-v4-mobile-clear-320-20261002.jpg",
+      "width": 305,
+      "height": 568,
+      "bytes": 44444,
+      "sha256": "b3d464b28470d65084a2d374f52cd75f8e9eb65fc03b4ac7daabb5ac8f859855",
+      "kind": "actual local game render or browser UI"
+    },
+    {
+      "path": "city-life-v4-mobile-clear-390-20261002.jpg",
+      "width": 375,
+      "height": 844,
+      "bytes": 68110,
+      "sha256": "f4670a371452a2ad9ee9ce9e81c52fb78953e85730798f2898d0e02d8a406eee",
+      "kind": "actual local game render or browser UI"
+    },
+    {
+      "path": "city-life-v4-party-inspection.jpg",
+      "width": 2560,
+      "height": 1440,
+      "bytes": 291544,
+      "sha256": "f6ee5d93e4f3fce97ccac548383ba1365e4194fe3a015d448ed2c1737a706207",
+      "kind": "isolated model inspection with simplified light/floor"
+    },
+    {
+      "path": "city-life-v4-sunset-4k-20261002.jpg",
+      "width": 3840,
+      "height": 2160,
+      "bytes": 2066251,
+      "sha256": "9a7c771a017a1481302818752c724c3616212997504743d7d3ca3e0839a3cd16",
+      "kind": "actual local game render or browser UI"
+    },
+    {
+      "path": "city-life-v4-sunset-ui-20261002.jpg",
+      "width": 3840,
+      "height": 2160,
+      "bytes": 1392907,
+      "sha256": "5e6f3c6ec139ddf83c704d91f3f6c8218c376c3d73d5043fcf28d3461e52bb2c",
+      "kind": "actual local game render or browser UI"
+    },
+    {
+      "path": "city-life-v4-terrace-inspection.jpg",
+      "width": 2560,
+      "height": 1440,
+      "bytes": 277251,
+      "sha256": "8d629b437b18f48abc614519d7a5698580b8ca3dccba14d97674b0f919b1fadc",
+      "kind": "isolated model inspection with simplified light/floor"
+    },
+    {
+      "path": "city-life-v4-day-4k-20261002.png",
+      "width": 3840,
+      "height": 2160,
+      "bytes": 11447770,
+      "sha256": "0e9d0dae959a98e36f6f598455a0ebc0844a00e7a50274f0fd94ff8cede7ceb8",
+      "kind": "actual local game render or browser UI"
+    },
+    {
+      "path": "city-life-v4-sunset-4k-20261002.png",
+      "width": 3840,
+      "height": 2160,
+      "bytes": 10884517,
+      "sha256": "916808a00012a3a8785a17fbf008a80ed30ad93c4e984f8ddddd85366fa189e3",
+      "kind": "actual local game render or browser UI"
+    }
+  ],
+  "package": {
+    "verifiedFiles": 2730,
+    "importsChecked": 74,
+    "htmlLinksChecked": 30,
+    "zip": {
+      "path": "SYNK-LAB-PLAY-시안-20261002.zip",
+      "bytes": 57037653,
+      "sha256": "b79f300cc2c98aca5445b5fa8e5bd51aaa0d1f6abd93962523742d02fd7fc8a3"
+    }
+  },
+  "browser": {
+    "day": {
+      "stage": "challenge-03",
+      "playerS": 351.00568227883,
+      "visibleActors": 6,
+      "npcTriangles": 11852,
+      "npcDrawCalls": 9
+    },
+    "sunset": {
+      "stage": "challenge-09",
+      "playerS": 351.37819932204775,
+      "visibleActors": 7,
+      "npcTriangles": 13662,
+      "npcDrawCalls": 9
+    },
+    "captureMethod": "Visible UI stage/demo and first answer selection. At second question, save actual 3840x2160 WebGL canvas; no upscale, composite, answer/reward/position injection. Sound off. HUD excluded in canvas originals. UI screenshot separately.",
+    "pause": {
+      "frozenTimeBefore": 404.9590999999685,
+      "frozenTimeAfter": 404.9590999999685,
+      "highToLowChangedWhilePaused": true
+    },
+    "mobile": [
+      {
+        "width": 390,
+        "height": 844,
+        "clientWidth": 375,
+        "scrollWidth": 375,
+        "scrollY": 0
+      },
+      {
+        "width": 320,
+        "height": 568,
+        "clientWidth": 305,
+        "scrollWidth": 305,
+        "scrollY": 0
+      },
+      {
+        "width": 844,
+        "height": 390,
+        "clientWidth": 829,
+        "scrollWidth": 829,
+        "scrollY": 0
+      }
+    ],
+    "mobileScope": "Desktop viewport and low-quality rendering; reading panel open and closed; real phone untested. Landscape sunset shows one visible actor.",
+    "groundProps": {
+      "rocks": 139,
+      "grass": 3977,
+      "excludedRocks": 41,
+      "excludedGrass": 523
+    },
+    "nearTrees": 128,
+    "final": {
+      "url": "http://127.0.0.1:5197/",
+      "viewportOverrideCleared": true,
+      "qualitySelection": "auto",
+      "resolvedQuality": "high",
+      "stage": "challenge-03",
+      "ready": true,
+      "running": false,
+      "scrollY": 0,
+      "overflow": 0,
+      "coins": 0,
+      "rounds": 1,
+      "cleared": 1,
+      "consoleErrorsAfterReload": 0,
+      "consoleWarningsAfterReload": 0,
+      "tabMarkedDeliverable": true
+    }
+  },
+  "limits": [
+    "No five-question full playthrough in this graphics QA",
+    "No direct listening/normal audio quality validation",
+    "No physical Android/iPhone FPS/heat/memory/touch benchmark",
+    "No measured learning effect or TOPIK exam outcome",
+    "Procedural lightweight background actors with authored loops, not full crowd simulation"
+  ]
+}

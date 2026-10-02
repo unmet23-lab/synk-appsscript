@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-02",
+  "method": "Full course sampled each 5m without camera frustum; per-component maxima may occur at different frames. Geometry and draw-call counts only, not GPU/FPS or phone measurement.",
+  "actors": 44,
+  "cityStoredTriangles": 27940,
+  "npcSharedTriangles": 458,
+  "npcDynamicShadowCalls": 0,
+  "materials": {
+    "version": 5,
+    "metricUv": true,
+    "extraDrawCalls": 0,
+    "extraTriangles": 0,
+    "downloadedTextures": 0,
+    "interiorRays": 1,
+    "additionalVertexAttributeBytes": 1005840,
+    "lowInteriorParallax": false
+  },
+  "maxima": {
+    "high": {
+      "cityTriangles": 18796,
+      "cityDrawCalls": 51,
+      "npcTriangles": 28422,
+      "npcDrawCalls": 9,
+      "visibleActors": 11
+    },
+    "balanced": {
+      "cityTriangles": 12770,
+      "cityDrawCalls": 34,
+      "npcTriangles": 28422,
+      "npcDrawCalls": 9,
+      "visibleActors": 11
+    },
+    "low": {
+      "cityTriangles": 9444,
+      "cityDrawCalls": 27,
+      "npcTriangles": 28422,
+      "npcDrawCalls": 9,
+      "visibleActors": 11
+    }
+  }
+}

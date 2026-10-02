@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-02",
+  "scope": "SYNK platform web development preview, separate desktop clients",
+  "entry": "http://127.0.0.1:4280/synk-account/platform.html",
+  "nodeTests": {
+    "passed": 19,
+    "failed": 0,
+    "command": "node --test experiences/synk-account/tests/core.test.mjs experiences/synk-account/tests/platform.test.mjs tests/learning-hub-server.test.js"
+  },
+  "buildCheck": "tools/build-synk-account.js --check passed; 4 bundles and approved assets",
+  "browser": {
+    "surface": "Codex in-app browser via CUA",
+    "widths": [
+      1440,
+      390,
+      320
+    ],
+    "verified": [
+      "exactly two application cards",
+      "WORLD detail and independent installation explanation",
+      "messenger company-only detail and web destination",
+      "add to library",
+      "favorite",
+      "learning collection",
+      "persist after reload",
+      "empty collection",
+      "search for collaboration returns messenger",
+      "OS selection and unavailable-release explanation",
+      "settings compact mode",
+      "settings reset limited to platform namespace",
+      "settings reachable at narrow widths",
+      "news dialog",
+      "no broken images at390",
+      "no horizontal overflow at390 and320",
+      "visible text minimum11px at390",
+      "console error and warning list empty"
+    ],
+    "export": "Browser download event timed out: file receipt not verified. Desktop synthetic JSON export is separately tested.",
+    "screenshots": [
+      "platform-home-1440.png",
+      "platform-home-390.png",
+      "platform-messenger-1440.png"
+    ]
+  },
+  "limits": [
+    "No production deployment or company operating DB/auth changes",
+    "UI library preferences are device-local, not account synced",
+    "Real SSO, signed release/update service, actual Mac execution are not verified",
+    "No TOPIK pass or student learning-effect claim"
+  ]
+}

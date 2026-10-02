@@ -1,0 +1,140 @@
+{
+  "at": "2026-10-02T06:21:35.816Z",
+  "checks": [
+    {
+      "name": "3D canvas rendered",
+      "ok": true
+    },
+    {
+      "name": "local brand fonts loaded",
+      "ok": true
+    },
+    {
+      "name": "defaults are not declared preferences",
+      "ok": true
+    },
+    {
+      "name": "Core work destination",
+      "ok": true
+    },
+    {
+      "name": "Core time limit destination",
+      "ok": true
+    },
+    {
+      "name": "assisted action recorded",
+      "ok": true
+    },
+    {
+      "name": "two-step summary",
+      "ok": true
+    },
+    {
+      "name": "no save before consent",
+      "ok": true
+    },
+    {
+      "name": "resume recorded results",
+      "ok": true
+    },
+    {
+      "name": "resume opt-in",
+      "ok": true
+    },
+    {
+      "name": "confirmed preferences restored",
+      "ok": true
+    },
+    {
+      "name": "resume current completed scene",
+      "ok": true
+    },
+    {
+      "name": "retry cursor survives reload",
+      "ok": true
+    },
+    {
+      "name": "retry preserves prior observations",
+      "ok": true
+    },
+    {
+      "name": "specific next practice on wrong choice",
+      "ok": true
+    },
+    {
+      "name": "all three zones completed",
+      "ok": true
+    },
+    {
+      "name": "reset stored data",
+      "ok": true
+    },
+    {
+      "name": "reset consent",
+      "ok": true
+    },
+    {
+      "name": "reset removes declared preferences",
+      "ok": true
+    },
+    {
+      "name": "no horizontal overflow 1280",
+      "ok": true
+    },
+    {
+      "name": "choices usable 1280",
+      "ok": true
+    },
+    {
+      "name": "no horizontal overflow 720",
+      "ok": true
+    },
+    {
+      "name": "choices usable 720",
+      "ok": true
+    },
+    {
+      "name": "no horizontal overflow 390",
+      "ok": true
+    },
+    {
+      "name": "choices usable 390",
+      "ok": true
+    },
+    {
+      "name": "no horizontal overflow 320",
+      "ok": true
+    },
+    {
+      "name": "choices usable 320",
+      "ok": true
+    },
+    {
+      "name": "corruption recovery surfaced",
+      "ok": true
+    },
+    {
+      "name": "no page errors",
+      "ok": true
+    },
+    {
+      "name": "no external requests",
+      "ok": true
+    },
+    {
+      "name": "WebGL failure offers text exercise",
+      "ok": true
+    },
+    {
+      "name": "keyboard and no-WebGL completion",
+      "ok": true
+    },
+    {
+      "name": "storage failure is visible",
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "external": [],
+  "hardwareVR": "not-tested"
+}

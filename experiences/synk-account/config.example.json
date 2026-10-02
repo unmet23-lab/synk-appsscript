@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "supabaseUrl": "",
+  "supabasePublishableKey": "",
+  "accountApiUrl": "",
+  "portalUrl": "",
+  "learningUrl": "../learning-hub/",
+  "messengerUrl": "",
+  "authorizationClients": [
+    { "product": "world", "clientId": "", "redirectUris": ["synktalk://oauth/callback"] },
+    { "product": "platform", "clientId": "", "redirectUris": ["http://127.0.0.1:43821/synk/oauth/platform/callback"] },
+    { "product": "world", "clientId": "", "redirectUris": ["http://127.0.0.1:43822/synk/oauth/world/callback"] },
+    { "product": "messenger", "clientId": "", "redirectUris": ["http://127.0.0.1:43823/synk/oauth/messenger/callback"] }
+  ],
+  "clients": {
+    "platform": { "clientId": "", "redirectUri": "" },
+    "world": { "clientId": "", "redirectUri": "" },
+    "messenger": { "clientId": "", "redirectUri": "" }
+  }
+}

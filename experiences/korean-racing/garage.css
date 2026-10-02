@@ -1,0 +1,98 @@
+/* The current racing UI keeps controls quiet so the car remains the focus. */
+.garage-panel{position:fixed;inset:0;z-index:40;isolation:isolate;color:#f5faf7;background:linear-gradient(90deg,transparent 0%,transparent 54%,#102a2b28 75%,#102a2b65 100%);font-family:SUIT,system-ui,sans-serif;overflow:hidden;word-break:keep-all}
+.garage-panel:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(0deg,#15363620,transparent 28%,transparent 80%,#12303435)}
+.garage-panel button{font:inherit;min-height:44px;min-width:44px;touch-action:manipulation;cursor:pointer}
+.garage-panel button:disabled{cursor:default;opacity:1}
+.garage-panel button:focus-visible,.garage-panel input:focus-visible,.garage-items:focus-visible{outline:2px solid #68b9b1;outline-offset:2px}
+.garage-header{position:absolute;inset:24px 3.8% auto;display:flex;align-items:center;justify-content:space-between;gap:20px;z-index:4}
+.garage-eyebrow{font-family:SUIT,system-ui,sans-serif;font-size:11px;line-height:1.3;letter-spacing:1.4px;color:#d4e6da;display:block}
+.garage-header h2{font-size:clamp(24px,2.3vw,30px);line-height:1.2;letter-spacing:-1.2px;margin:8px 0 0;font-weight:750}
+.garage-header-tools{display:flex;align-items:center;gap:16px}
+.garage-balance{display:flex;align-items:center;gap:8px;padding:8px 13px;min-height:44px;white-space:nowrap;color:#eaf2f3;background:#17282fc9;border:1px solid #deeeef2b;border-radius:8px;font-variant-numeric:tabular-nums;backdrop-filter:blur(12px)}
+.garage-balance i{font:11px SUIT,system-ui,sans-serif;font-style:normal;width:18px;height:18px;display:grid;place-items:center;color:#a5d9d0;background:none}
+.garage-balance strong{font-family:SUIT,system-ui,sans-serif;font-weight:650;font-size:17px;letter-spacing:0}
+.garage-balance>span{font-size:11px;color:#bed1d3}
+.garage-close{height:44px;width:44px;display:grid;place-items:center;font-size:23px!important;line-height:1;background:#17282fc9;border:1px solid #deeeef2b;border-radius:8px;color:#ecf2f3;transition:background .18s;backdrop-filter:blur(12px)}
+.garage-close:hover{background:#243a43ed}
+.garage-preview{position:absolute;top:112px;bottom:65px;left:0;width:58%;z-index:1;overflow:hidden}
+.garage-preview canvas{display:block;position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.garage-preview-title{position:absolute;top:8px;left:6.5%;z-index:2;pointer-events:none;text-shadow:0 2px 10px #11333260}
+.garage-preview-title h3{margin:6px 0 7px;font-size:24px;line-height:1.3;letter-spacing:-.8px;font-weight:650}
+.garage-preview-copy{font-size:11px;color:#d9e9df}
+.garage-rotation{position:absolute;bottom:108px;left:50%;transform:translateX(-50%);width:min(240px,65%);z-index:3;display:flex;align-items:center;justify-content:center;gap:11px;background:#17282fbb;border:1px solid #d8e9eb35;border-radius:8px;padding:2px 14px;min-height:44px;backdrop-filter:blur(12px)}
+.garage-rotation label{position:absolute;bottom:calc(100% + 6px);left:0;right:0;text-align:center;font-size:11px;color:#e9f4e7;text-shadow:0 1px 5px #132f32}
+.garage-rotation>span{font-size:17px;color:#c7dedf}
+.garage-rotation input{width:100%;height:40px;margin:0;accent-color:#91d0c8;cursor:grab;touch-action:pan-x}
+.garage-shop{position:absolute;top:118px;bottom:28px;left:59%;right:3.8%;z-index:3;display:flex;flex-direction:column;min-height:0;border:1px solid #e8efea92;border-radius:12px;padding:18px 18px 15px;background:#f8faf8f7;color:#263d3b;backdrop-filter:blur(16px)}
+.garage-shop-heading{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:13px;font-weight:650;margin:0 0 14px}
+.garage-shop-hint{font-size:11px;font-weight:400;color:#586b68;text-align:right;line-height:1.45;max-width:145px}
+.garage-tabs{display:flex;gap:3px;padding:0;flex-shrink:0;border-bottom:1px solid #dbe5de}
+.garage-tabs>button{flex:1;min-width:0;min-height:44px;background:transparent;color:#60736f;font-size:12px;padding:7px 2px;border-radius:6px 6px 0 0;transition:color .2s,background .2s}
+.garage-tabs>button[aria-selected=true]{background:#e6f1ec;color:#255a53;font-weight:650;box-shadow:inset 0 -2px #72ada3}
+.garage-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-content:start;overflow-y:auto;overscroll-behavior:contain;min-height:0;flex:1;padding:14px 3px 14px 0;margin:0 -3px 0 0;scrollbar-width:thin;scrollbar-color:#aec5bc transparent}
+.garage-item{position:relative;display:flex;align-items:flex-start;justify-content:center;flex-direction:column;min-width:0;padding:10px 14px;color:#314843;background:#f0f4f0;border:1px solid #dce5de;border-radius:7px;text-align:left;transition:background .18s,border-color .18s}
+.garage-item:hover{background:#eaf2ed;border-color:#a5bdb1}
+.garage-item.selected{background:#e7f2eb;border-color:#7cafa2;color:#294c40}
+.garage-art{height:48px;width:100%;display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:5px;pointer-events:none;flex-shrink:0}
+.garage-art svg{fill:none;stroke:none}
+.garage-art img{display:none!important}
+.garage-badge:after{content:"✓";display:grid;place-items:center;width:34px;height:34px;border:1px solid #91b2a5;border-radius:50%;color:#547e6b;font-size:22px;font-weight:600}
+.garage-art:not(.garage-car) svg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);height:34px;width:34px}
+.garage-car svg{width:min(134px,100%);height:48px}
+.garage-item-name{font-size:12px;font-weight:650;line-height:1.4;word-break:keep-all}
+.garage-item-state{font:11px SUIT,system-ui,sans-serif;color:#60756b;margin-top:4px;line-height:1.4}
+.garage-item-state.equipped{color:#3b6e5b}
+.garage-item-wish{position:absolute;top:9px;right:12px;font:17px SUIT,sans-serif;font-style:normal;color:#668879}
+.garage-item-detail{border-top:1px solid #dbe5de;padding-top:15px;flex-shrink:0}
+.garage-selection{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.garage-selection-type{font-size:11px;color:#617269;display:block;margin-bottom:4px}
+.garage-selection h3{margin:0;font-size:18px;font-weight:650;line-height:1.4;letter-spacing:-.5px;word-break:keep-all}
+.garage-selection-price{font:12px SUIT,system-ui,sans-serif;color:#3f6958;white-space:nowrap;padding-bottom:3px}
+.garage-selection-note{font-size:11px;line-height:1.55;color:#5e7266;margin:8px 0 13px;word-break:keep-all}
+.garage-item-actions{display:flex;gap:8px}
+.garage-primary{flex:1;min-width:0;background:#a7d5c6;border:1px solid #9ac5b8;border-radius:7px;color:#203d34;padding:10px 14px;font-size:12px!important;line-height:1.3;font-weight:650!important;text-shadow:none;transition:background .18s}
+.garage-primary:hover:not(:disabled){background:#b7e0d3}
+.garage-primary:active:not(:disabled){background:#8fc4b2}
+.garage-primary:disabled,.garage-primary.garage-locked{background:#eaf0ea;border-color:#d7e1d9;color:#62756a;text-shadow:none}
+.garage-wish-button{min-width:106px;color:#51695e;background:transparent;border:1px solid #cad9cf;border-radius:7px;padding:9px 12px;font-size:11px!important;line-height:1.4}
+.garage-wish-button.wished{background:#e5efe7;border-color:#a6c1af;color:#3d6552}
+.garage-notice{font-size:11px;line-height:1.5;margin:8px 0 0;color:#4d6f59;min-height:17px;word-break:keep-all}
+.garage-notice[data-kind=error]{color:#9a5742}
+.garage-goals{position:absolute;z-index:3;left:3.8%;right:44.5%;bottom:29px;display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:12px}
+.garage-goal-card{min-width:0;border:1px solid #dfebe05c;border-radius:8px;background:#15282ed1;color:#e7eeeb;padding:12px 14px;backdrop-filter:blur(14px)}
+.garage-goal-card .garage-eyebrow{font-size:11px;letter-spacing:.6px;color:#aac1b7;margin-bottom:6px}
+.garage-goal-card strong{font-size:12px;line-height:1.45;display:block;font-weight:650;word-break:keep-all}
+.garage-goal-card div>span:last-child:not(.garage-eyebrow){display:block;font-size:11px;line-height:1.5;margin-top:4px;color:#bfcec5;word-break:keep-all}
+.garage-wish-track{height:3px;background:#5d766d54;border-radius:4px;margin-top:9px;overflow:hidden}
+.garage-wish-track i{display:block;height:100%;background:#9fcfbf;border-radius:inherit;transition:width .4s}
+.garage-mission-card{display:flex;align-items:center;gap:6px;padding-right:8px}
+.garage-mission-card>div{flex:1;min-width:0}
+.garage-mission-card button{flex-shrink:0;height:44px;width:44px;background:#9bb9ab17;border:1px solid #cadfd339;border-radius:7px;color:#c7e1d2;font-size:21px}
+.garage-mission-card button:disabled{background:transparent;border-color:transparent;color:#b7d8c6}
+.garage-open .topbar,.garage-open .intro,.garage-open .driver-picker,.garage-open .location,.garage-open .discover,.garage-open .play-only,.garage-open .play-nav{visibility:hidden}
+/* Cards keep their content height even inside a short, scrollable catalogue. */
+.garage-items .garage-item{min-height:112px}
+@media(max-width:1050px) and (min-width:651px){
+  .garage-shop{left:55%;right:3%;padding:15px;top:112px}.garage-preview{width:53%}.garage-header{left:3%;right:3%}.garage-goals{left:3%;right:48%;gap:8px}.garage-goal-card{padding:10px}.garage-shop-hint{max-width:125px}.garage-item-actions{gap:6px}.garage-wish-button{min-width:100px;padding:8px}
+}
+@media(max-width:650px){
+  .garage-panel{background:linear-gradient(0deg,#10312fbb 0%,#173c3770 38%,#17373523 70%,#122f3235 100%)}
+  .garage-header{inset:18px 20px auto;align-items:center;gap:10px}.garage-header h2{font-size:24px;margin-top:6px;letter-spacing:-.8px}.garage-header .garage-eyebrow{letter-spacing:1px}.garage-header-tools{gap:8px}.garage-balance{padding:7px 11px;gap:5px}.garage-balance strong{font-size:17px}.garage-balance>span{display:none}.garage-balance i{width:22px;height:22px}.garage-close{width:44px;height:44px}
+  .garage-preview{top:98px;bottom:auto;left:0;width:100%;height:196px;overflow:visible}.garage-preview-title{left:20px;top:3px}.garage-preview-title h3{font-size:18px;margin:5px 0}.garage-preview-copy{font-size:11px}.garage-rotation{bottom:-10px;width:180px;min-height:44px;padding:0 14px}.garage-rotation label{font-size:11px;bottom:calc(100% + 2px)}
+  .garage-shop{top:316px;left:16px;right:16px;bottom:116px;padding:10px 12px 8px;border-radius:14px;overflow-y:auto}
+  .garage-shop-heading{display:none}.garage-tabs{gap:2px}.garage-tabs>button{font-size:11px;min-height:44px;padding:7px 1px}
+  .garage-items{gap:7px;padding:9px 3px 9px 0;grid-template-columns:repeat(2,minmax(0,1fr));min-height:88px}.garage-items .garage-item{min-height:86px;padding:7px 12px}.garage-art{height:32px;margin-bottom:3px}.garage-car svg{height:32px;width:96px}.garage-art img{height:32px;width:32px}.garage-art:not(.garage-car) svg{height:24px;width:24px}.garage-item-name{font-size:11px}.garage-item-state{font-size:11px;margin-top:2px}
+  .garage-item-detail{padding-top:8px}.garage-selection h3{font-size:15px;line-height:1.3}.garage-selection-type{display:none}.garage-selection-price{font-size:11px}.garage-selection-note{font-size:11px;margin:5px 0 7px;line-height:1.45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.garage-item-actions{gap:6px}.garage-primary{font-size:11px!important;padding:8px 10px;min-height:44px}.garage-wish-button{font-size:11px!important;padding:7px 9px;min-width:105px;min-height:44px}.garage-notice{font-size:11px;margin-top:5px;min-height:16px}
+  .garage-goals{left:16px;right:16px;bottom:12px;grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr);gap:7px;align-items:stretch}.garage-goal-card{padding:10px 11px;border-radius:10px}.garage-goal-card .garage-eyebrow{font-size:11px;letter-spacing:0;margin-bottom:4px}.garage-goal-card strong{font-size:11px;line-height:1.35;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}.garage-goal-card div>span:last-child:not(.garage-eyebrow){font-size:11px;line-height:1.35;margin-top:3px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden}.garage-wish-track{margin-top:6px}.garage-mission-card{padding-right:5px;gap:3px}.garage-mission-card button{height:44px;width:44px;font-size:20px}
+}
+@media(max-width:360px){
+  .garage-header{left:16px;right:16px}.garage-header h2{font-size:22px}.garage-header-tools{gap:5px}.garage-balance{padding:7px 9px}.garage-balance strong{font-size:15px}.garage-preview-title{left:16px}.garage-shop{left:12px;right:12px;top:310px;bottom:124px;padding:8px 10px}.garage-goals{left:12px;right:12px;gap:6px}.garage-goal-card{padding:10px 8px}.garage-item-detail{padding-top:7px}.garage-wish-button{min-width:103px}.garage-mission-card button{width:44px;min-width:44px}.garage-tabs>button{font-size:11px}
+}
+@media(max-height:560px) and (min-width:651px){
+  .garage-header{inset:12px 3% auto}.garage-header h2{font-size:23px;margin-top:3px}.garage-header-tools{gap:10px}.garage-balance{padding:6px 12px}.garage-balance strong{font-size:17px}
+  .garage-preview{top:72px;bottom:109px;left:0;width:51%;overflow:visible}.garage-preview-title{left:6%;top:0}.garage-preview-title h3{font-size:17px;margin:3px 0}.garage-preview-copy{font-size:11px}.garage-rotation{bottom:2px;width:180px;min-height:44px}.garage-rotation label{font-size:11px}
+  .garage-shop{top:73px;bottom:15px;left:53%;right:3%;padding:9px 12px;border-radius:13px}.garage-shop-heading{display:none}.garage-tabs{padding:0}.garage-tabs>button{font-size:11px;min-height:44px}.garage-items{padding:8px 3px 8px 0;gap:7px}.garage-items .garage-item{min-height:82px;padding:6px 12px}.garage-art{height:30px;margin-bottom:2px}.garage-car svg{height:30px;width:96px}.garage-art img{height:30px;width:30px}.garage-art:not(.garage-car) svg{height:22px;width:22px}.garage-item-name{font-size:11px}.garage-item-state{font-size:11px;margin-top:2px}.garage-item-detail{padding-top:7px}.garage-selection h3{font-size:14px}.garage-selection-type{display:none}.garage-selection-price{font-size:11px}.garage-selection-note{font-size:11px;margin:4px 0 6px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.garage-primary{font-size:11px!important;padding:7px 11px;min-height:44px}.garage-wish-button{font-size:11px!important;padding:7px 10px;min-width:103px}.garage-notice{font-size:11px;min-height:15px;margin-top:4px}
+  .garage-goals{left:3%;right:49%;bottom:15px;gap:7px}.garage-goal-card{padding:9px 10px;border-radius:10px}.garage-goal-card .garage-eyebrow{font-size:11px;letter-spacing:0;margin-bottom:3px}.garage-goal-card strong{font-size:11px}.garage-goal-card div>span:last-child:not(.garage-eyebrow){font-size:11px;line-height:1.3;margin-top:2px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden}.garage-mission-card{padding-right:4px;gap:2px}.garage-mission-card button{width:44px;height:44px;min-height:44px;font-size:19px}.garage-wish-track{margin-top:5px}
+}
+@media(prefers-reduced-motion:reduce){.garage-panel *{transition:none!important}}
+html:has(.garage-open){overflow:hidden}

@@ -1,0 +1,49 @@
+✔ all clips must load; missing files are retried without replacing loaded clips (1.4724ms)
+✔ pause and resume keep the current source and its playback position (0.5832ms)
+✔ next instruction stops the previous clip; completed clips restore music gain (1.5883ms)
+✔ delivery marks a clip completed only on its actual ended event (5.4465ms)
+✔ both outer lanes return to the center on one press, including duplicated keydown (7.8009ms)
+✔ fresh consecutive taps still move from left through center to right (0.6377ms)
+✔ arrow and letter aliases held together cannot skip the middle lane (0.3808ms)
+✔ blur or pause reset releases stuck keys for the next deliberate press (1.5548ms)
+✔ physical jumping, crouching and side dodging retain their different collision rules (1.4039ms)
+✔ all sixteen directions, negations and ordered instructions are physically executable (15.4652ms)
+✔ a request for a specific path is not solved by choosing a written word or an arbitrary path (0.9495ms)
+✔ a correctly chosen jump too early is recorded as timing, not an inferred language failure (2.6971ms)
+✔ do not jump fails if a jump was made and already landed before the marker (1.0722ms)
+✔ a sequence records each marker separately, and a missing second action cannot clear it (0.9383ms)
+✔ three performed requests award wind protection without a speed boost (1.4455ms)
+✔ ordinary collisions change survival protection without creating a language record (0.4396ms)
+✔ generated ordinary obstacles do not intrude on instruction response or sequence corridors (60.6659ms)
+✔ even at maximum speed, a complete spoken instruction ends before its first action (0.7925ms)
+✔ full ninety-second demonstrations perform sequences without collision on varied courses (92.2976ms)
+✔ landing, lane bounds and frame spikes remain safe, and endless mode continues (4.2964ms)
+✔ a selected negation instruction changes course generation without replacing action gameplay (3.0719ms)
+✔ visual success and a correctly intended action with bad timing are both unassessed (1.1374ms)
+✔ all sixteen instructions carry stable listening content IDs and confounding flags (1.4286ms)
+✔ the real shared engine keeps an executed visual action out of language scores (12.408ms)
+✔ all five cosmetic categories have one free default and thirteen purchasable styles (3.4472ms)
+✔ welcome stars are saved once and existing best and learning keys stay untouched (0.992ms)
+✔ a purchase equips its category without affecting other equipped cosmetics (0.8749ms)
+✔ insufficient stars, repeat buying and unowned equipment never subtract stars (1.4034ms)
+✔ real runs save collected stars, full completion adds a bonus, and demonstrations never pay (0.4508ms)
+✔ failed saving rolls back purchases, equipment and round rewards and can be retried (0.5274ms)
+✔ damaged persisted data is bounded and only owned, known styles can be equipped (3.6634ms)
+✔ invalid reward numbers and invalid round ids cannot create an unlimited wallet (0.4935ms)
+✔ two open stores read the latest saved wallet before buying (0.3667ms)
+✔ missing or blocked storage leaves cosmetics previewable without reporting a purchase (0.5636ms)
+(node:22392) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/korean-runner/vendor/three.module.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\C:\Users\q1212\Documents\SYNK-appsscript\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ unrecognized cosmetic IDs fall back to a complete usable wardrobe (2.4072ms)
+✔ trails, companions, three lantern styles and finish effects are real scene objects (39.8421ms)
+✔ cosmetic pools stay bounded and do not alter movement, survival, learning or sound state (67.3718ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 37
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 466.5836

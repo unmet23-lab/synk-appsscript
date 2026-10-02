@@ -1,0 +1,359 @@
+{
+  "shopUnchanged": true,
+  "info": {
+    "version": 6,
+    "ready": true,
+    "running": true,
+    "paused": true,
+    "demo": true,
+    "mode": "tour",
+    "learning": "listen",
+    "best": 0,
+    "sound": true,
+    "shop": {
+      "version": 1,
+      "wallet": 12,
+      "owned": [
+        "trail:none",
+        "lantern:paper",
+        "companion:none",
+        "scenery:village",
+        "finish:simple",
+        "scenery:blossom"
+      ],
+      "equipped": {
+        "trail": "none",
+        "lantern": "paper",
+        "companion": "none",
+        "scenery": "blossom",
+        "finish": "simple"
+      },
+      "settled": [
+        "9f0f7ecb-04c6-4022-8b3c-ae18362281d2"
+      ],
+      "wishlist": null,
+      "progress": {
+        "distance": 546.0676529181678,
+        "stars": 12,
+        "runs": 1,
+        "completions": 0,
+        "claimed": [
+          "distance-150",
+          "stars-10"
+        ]
+      },
+      "available": true
+    },
+    "shopPreview": {
+      "visible": false,
+      "category": "scenery",
+      "selected": "scenery:blossom",
+      "wishlist": null
+    },
+    "journey": {
+      "nextGoal": {
+        "id": "complete-1",
+        "current": 0,
+        "target": 1,
+        "claimed": false
+      },
+      "wishlist": null,
+      "goalsUnlocked": []
+    },
+    "voiceClips": 16,
+    "audio": {
+      "state": "running",
+      "clips": 16,
+      "id": null,
+      "offset": 0,
+      "duration": 0
+    },
+    "world": {
+      "renderer": "Three.js 180",
+      "quality": "balanced",
+      "fps": 59,
+      "drawCalls": 515,
+      "triangles": 423130,
+      "width": 390,
+      "height": 844,
+      "eventObjects": 19,
+      "frames": 9139,
+      "armlessMongle": true,
+      "cosmetics": {
+        "selection": {
+          "trail": "none",
+          "lantern": "paper",
+          "companion": "none",
+          "scenery": "blossom",
+          "finish": "simple"
+        },
+        "preview": false,
+        "activeTrail": 0,
+        "trailCapacity": 24,
+        "finishCapacity": 28,
+        "budget": {
+          "trail": 12,
+          "finish": 14,
+          "lantern": 2
+        },
+        "companionVisible": false,
+        "finishVisible": false,
+        "finishAge": 24.5358,
+        "lanternFlashes": 0
+      },
+      "sceneryDetails": {
+        "theme": "blossom",
+        "tiles": 10,
+        "capacity": {
+          "blossom": 1045,
+          "snow": 360,
+          "moonlight": 597
+        },
+        "activeInstances": 735,
+        "drawCalls": 8,
+        "bufferCount": 25,
+        "quality": "balanced",
+        "reduced": false,
+        "disposed": false
+      },
+      "shopPreview": false,
+      "ambientParticles": 30,
+      "particles": 0
+    },
+    "model": {
+      "distance": 1392.9757897382315,
+      "elapsed": 90.01010000000753,
+      "lane": 0,
+      "x": -2.3499999999999996,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 1,
+      "combo": 10,
+      "lanterns": 13,
+      "coins": 46,
+      "correct": 10,
+      "answers": [
+        {
+          "id": "left",
+          "text": "왼쪽 길로 가세요.",
+          "explanation": "왼쪽 길의 표시선을 지나가요.",
+          "skill": "방향",
+          "learning": "listen",
+          "correct": true,
+          "steps": [
+            {
+              "action": "lane",
+              "target": 0,
+              "status": "done",
+              "inputMatched": true,
+              "executed": true,
+              "label": "왼쪽으로"
+            }
+          ]
+        },
+        {
+          "id": "jump",
+          "text": "낮은 울타리를 뛰어넘으세요.",
+          "explanation": "울타리 가까이에서 점프해요.",
+          "skill": "동작",
+          "learning": "listen",
+          "correct": true,
+          "steps": [
+            {
+              "action": "jump",
+              "status": "done",
+              "inputMatched": true,
+              "executed": true,
+              "label": "뛰어넘기"
+            }
+          ]
+        },
+        {
+          "id": "right",
+          "text": "오른쪽 길로 가세요.",
+          "explanation": "오른쪽 길의 표시선을 지나가요.",
+          "skill": "방향",
+          "learning": "listen",
+          "correct": true,
+          "steps": [
+            {
+              "action": "lane",
+              "target": 2,
+              "status": "done",
+              "inputMatched": true,
+              "executed": true,
+              "label": "오른쪽으로"
+            }
+          ]
+        },
+        {
+          "id": "slide",
+          "text": "표지판 아래로 몸을 숙여 지나가세요.",
+          "explanation": "표지판 가까이에서 슬라이딩해요.",
+          "skill": "위치 · 동작",
+          "learning": "listen",
+          "correct": true,
+          "steps": [
+            {
+              "action": "slide",
+              "status": "done",
+              "inputMatched": true,
+              "executed": true,
+              "label": "몸 숙이기"
+            }
+          ]
+        },
+        {
+          "id": "middle",
+          "text": "가운데 길로 가세요.",
+          "explanation": "양쪽 끝에서 한 칸 이동하면 가운데예요.",
+          "skill": "방향",
+          "learning": "listen",
+          "correct": true,
+          "steps": [
+            {
+              "action": "lane",
+              "target": 1,
+              "status": "done",
+              "inputMatched": true,
+              "executed": true,
+              "label": "가운데로"
+            }
+          ]
+        },
+        {
+          "id": "no-jump",
+          "text": "이번에는 뛰지 말고 그대로 달리세요.",
+          "explanation": "뛰지 말고는 점프하지 말라는 뜻이에요. 표시선까지 그대로 달려요.",
+          "skill": "부정 지시",
+          "learning": "listen",
+          "correct": true,
+          "steps": [
+            {
+              "action": "stay",
+              "status": "done",
+              "inputMatched": true,
+              "executed": true,
+              "label": "그대로 달리기"
+            }
+          ]
+        },
+        {
+          "id": "left-jump",
+          "text": "왼쪽으로 간 다음, 울타리를 뛰어넘으세요.",
+          "explanation": "첫 표시선은 왼쪽, 다음 울타리에서는 점프해요.",
+          "skill": "순서",
+          "learning": "listen",
+          "correct": true,
+          "steps": [
+            {
+              "action": "lane",
+              "target": 0,
+              "status": "done",
+              "inputMatched": true,
+              "executed": true,
+              "label": "왼쪽으로"
+            },
+            {
+              "action": "jump",
+              "status": "done",
+              "inputMatched": true,
+              "executed": true,
+              "label": "뛰어넘기"
+            }
+          ]
+        },
+        {
+          "id": "middle-slide",
+          "text": "가운데로 간 뒤, 몸을 숙이세요.",
+          "explanation": "가운데 표시선을 지난 뒤, 다음 표지판에서는 숙여요.",
+          "skill": "순서 · 위치",
+          "learning": "listen",
+          "correct": true,
+          "steps": [
+            {
+              "action": "lane",
+              "target": 1,
+              "status": "done",
+              "inputMatched": true,
+              "executed": true,
+              "label": "가운데로"
+            },
+            {
+              "action": "slide",
+              "status": "done",
+              "inputMatched": true,
+              "executed": true,
+              "label": "몸 숙이기"
+            }
+          ]
+        },
+        {
+          "id": "not-right",
+          "text": "오른쪽으로 가지 말고 왼쪽으로 가세요.",
+          "explanation": "가지 말고 뒤의 행동을 따라요. 목적지는 왼쪽이에요.",
+          "skill": "부정 · 방향",
+          "learning": "listen",
+          "correct": true,
+          "steps": [
+            {
+              "action": "lane",
+              "target": 0,
+              "status": "done",
+              "inputMatched": true,
+              "executed": true,
+              "label": "왼쪽으로"
+            }
+          ]
+        },
+        {
+          "id": "jump-right",
+          "text": "울타리를 뛰어넘은 뒤, 오른쪽으로 가세요.",
+          "explanation": "먼저 점프, 다음 표시선에서는 오른쪽으로 가요.",
+          "skill": "순서",
+          "learning": "listen",
+          "correct": true,
+          "steps": [
+            {
+              "action": "jump",
+              "status": "done",
+              "inputMatched": true,
+              "executed": true,
+              "label": "뛰어넘기"
+            },
+            {
+              "action": "lane",
+              "target": 2,
+              "status": "done",
+              "inputMatched": true,
+              "executed": true,
+              "label": "오른쪽으로"
+            }
+          ]
+        }
+      ],
+      "finished": true,
+      "reason": "tour",
+      "current": {
+        "id": "slide-left",
+        "text": "몸을 숙인 다음, 왼쪽으로 가세요.",
+        "steps": [
+          {
+            "action": "slide",
+            "remaining": 65.82506782014934,
+            "resolved": false,
+            "status": null
+          },
+          {
+            "action": "lane",
+            "target": 0,
+            "remaining": 92.82506782014934,
+            "resolved": false,
+            "status": null
+          }
+        ]
+      }
+    }
+  }
+}

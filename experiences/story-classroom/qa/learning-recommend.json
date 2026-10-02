@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-02",
+  "url": "http://127.0.0.1:4280/story-classroom/",
+  "method": "Actual app UI in isolated Chrome contexts. Default guest and explicitly synthetic profile with four new independent reading.detail/action examples. Reading-only option enabled during the prologue keeps semantic mission speech assistance out of the test. This demonstrates recommendation consumption, not real learner improvement or authenticated account operation.",
+  "baseline": {
+    "phase": "play",
+    "recommended": "cleanup-snacks",
+    "missionLabels": [
+      "기록을 보고 먼저 추천하는 부탁",
+      "선생님의 부탁"
+    ],
+    "reason": "읽고 세부 정보 찾기는 아직 기록이 적어요. 짧게 확인해 봐요.",
+    "scope": "device",
+    "detailIndependent": 0,
+    "negationIndependent": 0,
+    "pageErrors": []
+  },
+  "syntheticProfile": {
+    "phase": "play",
+    "recommended": "cleanup-paper",
+    "missionLabels": [
+      "선생님의 부탁",
+      "기록을 보고 먼저 추천하는 부탁"
+    ],
+    "reason": "읽고 부정·변경 이해하기는 아직 기록이 적어요. 짧게 확인해 봐요.",
+    "scope": "device",
+    "detailIndependent": 4,
+    "negationIndependent": 0,
+    "pageErrors": []
+  },
+  "changedVisibleRecommendation": true,
+  "screenshots": [
+    "qa/learning-recommend-default.png",
+    "qa/learning-recommend-profile.png"
+  ]
+}

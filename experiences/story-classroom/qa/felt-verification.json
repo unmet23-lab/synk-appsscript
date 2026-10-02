@@ -1,0 +1,469 @@
+{
+  "date": "2026-10-02",
+  "scope": "Final photographed felt UI with voice/account controls, actual UI journey to ending and reading notes",
+  "browser": "Google Chrome via Playwright, headless, deviceScaleFactor 1, reduced motion",
+  "sourceSha256": {
+    "index.html": "dd55f952b8b8d34c9107cdcdb5e19781b8ee174c6c23acef1512f12de37b94c5",
+    "style.css": "a499c7abb71b3903a4a6e074eb085b1fb670423d8258bb64e74bc2f52f1bb728",
+    "app.mjs": "31c4e3d95eee26799c4af3c0ca2dfcc7a1e35428fdbca15e84e4b41bfee475c9",
+    "core.mjs": "d25f2db36f1bff0276f341dcb188951fa8d9b1cdae7c7320ccfbf8bdeeb56001",
+    "story.mjs": "6c139b949559b73cd5d2eeda9263988ef1cb53af1246fea7ffe1febbbae13aa6",
+    "voice.mjs": "9cead7ccf8d44d1410808073e82053b4172fe0934c5725307a3d58aefaf65a90",
+    "audio.mjs": "0429642bdfab521214eedb35944ce9e49dcf9d360d8dd6c731f18e4a80446017",
+    "learning.mjs": "1918b2ecfc701a66a219e2b084891d89a1347cdd8eaf26c714a912e712010ea0"
+  },
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "states": [
+        {
+          "state": "landing",
+          "horizontalOverflowPx": 0,
+          "visibleTextBelow11Px": [],
+          "mainReadingFontPx": 18,
+          "visibleInternalErrors": [],
+          "statusText": [
+            {
+              "id": "account-status",
+              "text": "이 기기의 연습 기록을 저장해요. 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요."
+            }
+          ],
+          "brokenImages": [],
+          "fonts": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "state": "opening",
+          "horizontalOverflowPx": 0,
+          "visibleTextBelow11Px": [],
+          "mainReadingFontPx": 18,
+          "visibleInternalErrors": [],
+          "statusText": [
+            {
+              "id": "voice-status",
+              "text": "한국어 음성을 듣고 있어요."
+            },
+            {
+              "id": "account-status",
+              "text": "이 기기의 연습 기록을 저장해요. 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요."
+            }
+          ],
+          "brokenImages": [],
+          "fonts": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "state": "play",
+          "horizontalOverflowPx": 0,
+          "visibleTextBelow11Px": [],
+          "mainReadingFontPx": 18,
+          "visibleInternalErrors": [],
+          "statusText": [
+            {
+              "id": "voice-status",
+              "text": "한국어 음성을 듣고 있어요."
+            },
+            {
+              "id": "account-status",
+              "text": "이 기기의 연습 기록을 저장해요. 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요."
+            }
+          ],
+          "brokenImages": [],
+          "fonts": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "state": "badge",
+          "horizontalOverflowPx": 0,
+          "visibleTextBelow11Px": [],
+          "mainReadingFontPx": 18,
+          "visibleInternalErrors": [],
+          "statusText": [
+            {
+              "id": "voice-status",
+              "text": "한국어 음성을 듣고 있어요."
+            },
+            {
+              "id": "account-status",
+              "text": "이 기기의 연습 기록을 저장해요. 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요."
+            }
+          ],
+          "brokenImages": [],
+          "fonts": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "state": "ending",
+          "horizontalOverflowPx": 0,
+          "visibleTextBelow11Px": [],
+          "mainReadingFontPx": 18,
+          "visibleInternalErrors": [],
+          "statusText": [
+            {
+              "id": "account-status",
+              "text": "이 기기의 연습 기록을 저장해요. 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요."
+            }
+          ],
+          "brokenImages": [],
+          "fonts": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "state": "reading-notes",
+          "horizontalOverflowPx": 0,
+          "visibleTextBelow11Px": [],
+          "mainReadingFontPx": 18,
+          "visibleInternalErrors": [],
+          "statusText": [
+            {
+              "id": "account-status",
+              "text": "이 기기의 연습 기록을 저장해요. 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요."
+            }
+          ],
+          "brokenImages": [],
+          "fonts": [
+            true,
+            true,
+            true
+          ]
+        }
+      ],
+      "pageErrors": [],
+      "httpErrors": [],
+      "readingOnlyControls": {
+        "pressed": "true",
+        "replayDisabled": true,
+        "missionListenDisabled": true
+      },
+      "completedBadgeUsesFelt": true,
+      "pass": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "states": [
+        {
+          "state": "landing",
+          "horizontalOverflowPx": 0,
+          "visibleTextBelow11Px": [],
+          "mainReadingFontPx": 18,
+          "visibleInternalErrors": [],
+          "statusText": [
+            {
+              "id": "account-status",
+              "text": "이 기기의 연습 기록을 저장해요. 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요."
+            }
+          ],
+          "brokenImages": [],
+          "fonts": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "state": "opening",
+          "horizontalOverflowPx": 0,
+          "visibleTextBelow11Px": [],
+          "mainReadingFontPx": 18,
+          "visibleInternalErrors": [],
+          "statusText": [
+            {
+              "id": "voice-status",
+              "text": "한국어 음성을 듣고 있어요."
+            },
+            {
+              "id": "account-status",
+              "text": "이 기기의 연습 기록을 저장해요. 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요."
+            }
+          ],
+          "brokenImages": [],
+          "fonts": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "state": "play",
+          "horizontalOverflowPx": 0,
+          "visibleTextBelow11Px": [],
+          "mainReadingFontPx": 18,
+          "visibleInternalErrors": [],
+          "statusText": [
+            {
+              "id": "voice-status",
+              "text": "한국어 음성을 듣고 있어요."
+            },
+            {
+              "id": "account-status",
+              "text": "이 기기의 연습 기록을 저장해요. 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요."
+            }
+          ],
+          "brokenImages": [],
+          "fonts": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "state": "badge",
+          "horizontalOverflowPx": 0,
+          "visibleTextBelow11Px": [],
+          "mainReadingFontPx": 18,
+          "visibleInternalErrors": [],
+          "statusText": [
+            {
+              "id": "voice-status",
+              "text": "한국어 음성을 듣고 있어요."
+            },
+            {
+              "id": "account-status",
+              "text": "이 기기의 연습 기록을 저장해요. 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요."
+            }
+          ],
+          "brokenImages": [],
+          "fonts": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "state": "ending",
+          "horizontalOverflowPx": 0,
+          "visibleTextBelow11Px": [],
+          "mainReadingFontPx": 18,
+          "visibleInternalErrors": [],
+          "statusText": [
+            {
+              "id": "account-status",
+              "text": "이 기기의 연습 기록을 저장해요. 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요."
+            }
+          ],
+          "brokenImages": [],
+          "fonts": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "state": "reading-notes",
+          "horizontalOverflowPx": 0,
+          "visibleTextBelow11Px": [],
+          "mainReadingFontPx": 18,
+          "visibleInternalErrors": [],
+          "statusText": [
+            {
+              "id": "account-status",
+              "text": "이 기기의 연습 기록을 저장해요. 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요."
+            }
+          ],
+          "brokenImages": [],
+          "fonts": [
+            true,
+            true,
+            true
+          ]
+        }
+      ],
+      "pageErrors": [],
+      "httpErrors": [],
+      "readingOnlyControls": {
+        "pressed": "true",
+        "replayDisabled": true,
+        "missionListenDisabled": true
+      },
+      "completedBadgeUsesFelt": true,
+      "pass": true
+    },
+    {
+      "width": 320,
+      "height": 800,
+      "states": [
+        {
+          "state": "landing",
+          "horizontalOverflowPx": 0,
+          "visibleTextBelow11Px": [],
+          "mainReadingFontPx": 18,
+          "visibleInternalErrors": [],
+          "statusText": [
+            {
+              "id": "account-status",
+              "text": "이 기기의 연습 기록을 저장해요. 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요."
+            }
+          ],
+          "brokenImages": [],
+          "fonts": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "state": "opening",
+          "horizontalOverflowPx": 0,
+          "visibleTextBelow11Px": [],
+          "mainReadingFontPx": 18,
+          "visibleInternalErrors": [],
+          "statusText": [
+            {
+              "id": "voice-status",
+              "text": "한국어 음성을 듣고 있어요."
+            },
+            {
+              "id": "account-status",
+              "text": "이 기기의 연습 기록을 저장해요. 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요."
+            }
+          ],
+          "brokenImages": [],
+          "fonts": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "state": "play",
+          "horizontalOverflowPx": 0,
+          "visibleTextBelow11Px": [],
+          "mainReadingFontPx": 18,
+          "visibleInternalErrors": [],
+          "statusText": [
+            {
+              "id": "voice-status",
+              "text": "한국어 음성을 듣고 있어요."
+            },
+            {
+              "id": "account-status",
+              "text": "이 기기의 연습 기록을 저장해요. 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요."
+            }
+          ],
+          "brokenImages": [],
+          "fonts": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "state": "badge",
+          "horizontalOverflowPx": 0,
+          "visibleTextBelow11Px": [],
+          "mainReadingFontPx": 18,
+          "visibleInternalErrors": [],
+          "statusText": [
+            {
+              "id": "voice-status",
+              "text": "한국어 음성을 듣고 있어요."
+            },
+            {
+              "id": "account-status",
+              "text": "이 기기의 연습 기록을 저장해요. 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요."
+            }
+          ],
+          "brokenImages": [],
+          "fonts": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "state": "ending",
+          "horizontalOverflowPx": 0,
+          "visibleTextBelow11Px": [],
+          "mainReadingFontPx": 18,
+          "visibleInternalErrors": [],
+          "statusText": [
+            {
+              "id": "account-status",
+              "text": "이 기기의 연습 기록을 저장해요. 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요."
+            }
+          ],
+          "brokenImages": [],
+          "fonts": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "state": "reading-notes",
+          "horizontalOverflowPx": 0,
+          "visibleTextBelow11Px": [],
+          "mainReadingFontPx": 18,
+          "visibleInternalErrors": [],
+          "statusText": [
+            {
+              "id": "account-status",
+              "text": "이 기기의 연습 기록을 저장해요. 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요."
+            }
+          ],
+          "brokenImages": [],
+          "fonts": [
+            true,
+            true,
+            true
+          ]
+        }
+      ],
+      "pageErrors": [],
+      "httpErrors": [],
+      "readingOnlyControls": {
+        "pressed": "true",
+        "replayDisabled": true,
+        "missionListenDisabled": true
+      },
+      "completedBadgeUsesFelt": true,
+      "pass": true
+    }
+  ],
+  "screenshots": [
+    "felt-1440-landing.png",
+    "felt-1440-opening.png",
+    "felt-1440-play.png",
+    "felt-1440-reading-only.png",
+    "felt-1440-badge.png",
+    "felt-1440-ending.png",
+    "felt-1440-reading-notes.png",
+    "felt-390-landing.png",
+    "felt-390-opening.png",
+    "felt-390-play.png",
+    "felt-390-reading-only.png",
+    "felt-390-badge.png",
+    "felt-390-ending.png",
+    "felt-390-reading-notes.png",
+    "felt-320-landing.png",
+    "felt-320-opening.png",
+    "felt-320-play.png",
+    "felt-320-reading-only.png",
+    "felt-320-badge.png",
+    "felt-320-ending.png",
+    "felt-320-reading-notes.png"
+  ],
+  "notEstablishedByThisCheck": [
+    "Direct listening and voice quality",
+    "WORLD authenticated remote record synchronization",
+    "Student learning effects and real device performance"
+  ],
+  "pass": true
+}

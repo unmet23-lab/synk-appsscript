@@ -1,0 +1,99 @@
+{
+  "at": "2026-10-02T06:22:11.155Z",
+  "results": [
+    {
+      "name": "setup no horizontal overflow 320",
+      "ok": true,
+      "detail": {
+        "width": 321,
+        "client": 306,
+        "scroll": 306
+      }
+    },
+    {
+      "name": "setup no horizontal overflow 390",
+      "ok": true,
+      "detail": {
+        "width": 391,
+        "client": 376,
+        "scroll": 376
+      }
+    },
+    {
+      "name": "setup no horizontal overflow 1280",
+      "ok": true,
+      "detail": {
+        "width": 1281,
+        "client": 1266,
+        "scroll": 1266
+      }
+    },
+    {
+      "name": "actual brand fonts load",
+      "ok": true,
+      "detail": {
+        "suit": true,
+        "latin": true,
+        "mono": true
+      }
+    },
+    {
+      "name": "first recommendation does not claim prior evidence",
+      "ok": true
+    },
+    {
+      "name": "review displays source explanation",
+      "ok": true
+    },
+    {
+      "name": "practice no horizontal overflow 320",
+      "ok": true,
+      "detail": {
+        "width": 321,
+        "client": 306,
+        "scroll": 306
+      }
+    },
+    {
+      "name": "real form completes at 2/2",
+      "ok": true
+    },
+    {
+      "name": "user HTML stays text",
+      "ok": true
+    },
+    {
+      "name": "result no horizontal overflow 320",
+      "ok": true,
+      "detail": {
+        "width": 321,
+        "client": 306,
+        "scroll": 306
+      }
+    },
+    {
+      "name": "reload restores completed run and edited draft",
+      "ok": true
+    },
+    {
+      "name": "history does not execute stored HTML",
+      "ok": true
+    },
+    {
+      "name": "reset removes saved data and UI history",
+      "ok": true
+    },
+    {
+      "name": "without opt in no persistent storage is created",
+      "ok": true
+    },
+    {
+      "name": "blocked storage getter still permits a complete unsaved practice",
+      "ok": true
+    },
+    {
+      "name": "storage getter failure is visible while practice remains usable",
+      "ok": true
+    }
+  ]
+}

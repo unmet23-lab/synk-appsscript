@@ -1,0 +1,91 @@
+{
+  "at": "2026-10-02",
+  "method": "Unmodified local copy",
+  "assets": [
+    {
+      "file": "assets/logo-path.webp",
+      "source": "docs/디자인/SNS키트/assets/logo-path.webp",
+      "sha256": "9b36d188a5384406547e928371e4a55a081e5c63463e42ae527a47912caa604d"
+    },
+    {
+      "file": "assets/SUIT.woff2",
+      "source": "docs/브랜드_폰트/SUIT/SUIT-Variable.woff2",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+    },
+    {
+      "file": "assets/InterTight.woff2",
+      "source": "desktop/assets/launcher/InterTight.woff2",
+      "sha256": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e"
+    },
+    {
+      "file": "assets/DMMono.woff2",
+      "source": "docs/마케팅/맞춤도구/dist/brief/meeting/assets/DMMono-400.woff2",
+      "sha256": "a04f4ebd976dad6a5b83508bbaa6bebac082c1ebc19c3d5a923d9f12f4732504"
+    },
+    {
+      "file": "assets/slab-cream-long.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/slab-cream-long.webp",
+      "sha256": "84569abd7fed8e954281cd109f19def8288321c41c8bbbe3f8804208fe43f6ac"
+    },
+    {
+      "file": "assets/slab-blush-long.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/slab-blush-long.webp",
+      "sha256": "8249fb7023fd51806045e8db93999c0ae24ae9ba09d2f57e9f6712d632b9a899"
+    },
+    {
+      "file": "assets/slab-coral-long.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/slab-coral-long.webp",
+      "sha256": "d58a4c8912eba6972ef1a38a7f701b7d841970a164524d41f267984949686849"
+    },
+    {
+      "file": "assets/badge-check.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/badge-check.webp",
+      "sha256": "9cf54368ec871bc8f1b645ca2dfda0ff88d6dd565c3d27b1dd9b98dc5e2bb645"
+    },
+    {
+      "file": "assets/wide-cream.webp",
+      "source": "docs/디자인/펠트부품/assets/배경/wide-cream.webp",
+      "sha256": "5339e11853bfbba65b0fc0abbb1390de6ac1987979fbfecfb46ba415a811a51d"
+    },
+    {
+      "file": "assets/wide-lapis.webp",
+      "source": "docs/디자인/펠트부품/assets/배경/wide-lapis.webp",
+      "sha256": "4c8a9dbfbe26f068ed69ceb661a63f57959967952d9deb9601ddb79588e3d312"
+    },
+    {
+      "file": "assets/wide-butter.webp",
+      "source": "docs/디자인/펠트부품/assets/배경/wide-butter.webp",
+      "sha256": "1527974a05a2814457ecc92735e22959d8378c032a80c7c682ced57d7f329f8e"
+    },
+    {
+      "file": "vendor/three.module.js",
+      "source": "experiences/korean-runner/vendor/three.module.js",
+      "sha256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a"
+    },
+    {
+      "file": "vendor/three.core.js",
+      "source": "experiences/korean-runner/vendor/three.core.js",
+      "sha256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20"
+    },
+    {
+      "file": "vendor/THREE-LICENSE.txt",
+      "source": "experiences/korean-runner/vendor/THREE-LICENSE.txt",
+      "sha256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601"
+    },
+    {
+      "file": "vendor/engine.js",
+      "source": "atlas/engine.js",
+      "sha256": "46c989d7f9bc6eafd6380c26021941843f5b9c7c18763684fc60212e3f28bb41"
+    },
+    {
+      "file": "vendor/trail.js",
+      "source": "atlas/trail.js",
+      "sha256": "57b54d52d0ac17e200e94f7ae128f90e49ffaef4b2b6cbb665f003cd3479f2bb"
+    },
+    {
+      "file": "vendor/personalization.js",
+      "source": "atlas/personalization.js",
+      "sha256": "26821d73ca7d779aaad53cf2bbed7ced774f80ea2e3a1eec6dd985f7545e5546"
+    }
+  ]
+}

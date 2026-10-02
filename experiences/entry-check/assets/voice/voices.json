@@ -1,0 +1,1035 @@
+{
+ "model": "gemini-3.8-flash-tts",
+ "lines": {
+  "line-pool-01": {
+   "text": "안녕하세요! 수영하러 왔어요.",
+   "spoken": "안녕하세요! 수영하러 왔어요.",
+   "speaker": "bear",
+   "voice": "Achird",
+   "dur": 2.59
+  },
+  "line-pool-02": {
+   "text": "점심은 수영장 안에서 먹을 거예요.",
+   "spoken": "점심은 수영장 안에서 먹을 거예요.",
+   "speaker": "raccoon",
+   "voice": "Zubenelgenubi",
+   "dur": 4.25
+  },
+  "line-pool-05": {
+   "text": "아빠는 주차장에 있어요. 저 먼저 들어갈게요!",
+   "spoken": "아빠는 주차장에 있어요. 저 먼저 들어갈게요!",
+   "speaker": "squirrel",
+   "voice": "Leda",
+   "dur": 5.37
+  },
+  "line-pool-04": {
+   "text": "모자는 집에 두고 왔어요. 그냥 들어가도 되지요?",
+   "spoken": "모자는 집에 두고 왔어요. 그냥 들어가도 되지요?",
+   "speaker": "fox",
+   "voice": "Iapetus",
+   "dur": 4.34
+  },
+  "line-pool-06": {
+   "text": "저 혼자 왔어요. 아홉 살이에요!",
+   "spoken": "저 혼자 왔어요. 아홉 살이에요!",
+   "speaker": "hedgehog",
+   "voice": "Laomedeia",
+   "dur": 3.27
+  },
+  "line-pool-03": {
+   "text": "물은 가지고 가도 되지요?",
+   "spoken": "물은 가지고 가도 되지요?",
+   "speaker": "rabbit",
+   "voice": "Gacrux",
+   "dur": 3.56
+  },
+  "line-pool-07": {
+   "text": "물만 가지고 왔어요.",
+   "spoken": "물만 가지고 왔어요.",
+   "speaker": "penguin",
+   "voice": "Zephyr",
+   "dur": 2
+  },
+  "line-pool-08": {
+   "text": "아이와 같이 왔어요.",
+   "spoken": "아이와 같이 왔어요.",
+   "speaker": "ducks",
+   "voice": "Callirrhoe",
+   "dur": 2.44
+  },
+  "nar-tut-guest": {
+   "text": "손님이 왔어요. 손님의 말을 먼저 읽어 봐요.",
+   "spoken": "손님이 왔어요. 손님의 말을 먼저 읽어 봐요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 5.26
+  },
+  "nar-tut-papers": {
+   "text": "손님이 보여 준 표와 짐이에요. 안내문과 하나씩 맞춰 봐요.",
+   "spoken": "손님이 보여 준 표와 짐이에요. 안내문과 하나씩 맞춰 봐요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 6.44
+  },
+  "nar-tut-notice": {
+   "text": "이건 오늘의 안내문이에요. 지켜야 할 규칙이 세 개 있어요.",
+   "spoken": "이건 오늘의 안내문이에요. 지켜야 할 규칙이 세 개 있어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 6.66
+  },
+  "nar-tut-why": {
+   "text": "맞았어요! 여기에서 이유를 읽을 수 있어요. 다음 손님을 눌러요.",
+   "spoken": "맞았어요! 여기에서 이유를 읽을 수 있어요. 다음 손님을 눌러요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 7.5
+  },
+  "nar-tut-pass": {
+   "text": "보리 씨는 수영 모자가 있고, 음식은 없어요. 규칙을 다 지켰으니까 통과를 눌러요.",
+   "spoken": "보리 씨는 수영 모자가 있고, 음식은 없어요. 규칙을 다 지켰으니까 통과를 눌러요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 8.36
+  },
+  "nar-tut-tray": {
+   "text": "구리 씨의 짐을 봐요. 김밥이 있어요.",
+   "spoken": "구리 씨의 짐을 봐요. 김밥이 있어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 3.99
+  },
+  "nar-tut-reject": {
+   "text": "규칙을 하나라도 어기면 거절을 눌러요.",
+   "spoken": "규칙을 하나라도 어기면 거절을 눌러요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 4.56
+  },
+  "nar-tut-rule": {
+   "text": "안내문의 두 번째 규칙을 봐요. 음식은 가지고 들어갈 수 없어요.",
+   "spoken": "안내문의 두 번째 규칙을 봐요. 음식은 가지고 들어갈 수 없어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 7.19
+  },
+  "nar-tut-choose": {
+   "text": "왜 거절하는지 골라요. 두 번째 규칙을 눌러요.",
+   "spoken": "왜 거절하는지 골라요. 두 번째 규칙을 눌러요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 5.8
+  },
+  "nar-tut-why2": {
+   "text": "잘했어요! 거절할 때는 이유도 함께 골라요. 다음 손님을 눌러요.",
+   "spoken": "잘했어요! 거절할 때는 이유도 함께 골라요. 다음 손님을 눌러요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 6.67
+  },
+  "nar-tut-hint": {
+   "text": "잘 모르겠으면 돋보기를 눌러요. 어디를 봐야 하는지 노랗게 알려 줘요.",
+   "spoken": "잘 모르겠으면 돋보기를 눌러요. 어디를 봐야 하는지 노랗게 알려 줘요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 7.05
+  },
+  "nar-tut-free": {
+   "text": "이제 혼자 해 봐요. 시간 제한은 없으니까 천천히 읽어요.",
+   "spoken": "이제 혼자 해 봐요. 시간 제한은 없으니까 천천히 읽어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 6.66
+  },
+  "reply-pool-01": {
+   "text": "고마워요! 시원하게 수영할게요.",
+   "spoken": "고마워요! 시원하게 수영할게요.",
+   "speaker": "bear",
+   "voice": "Achird",
+   "dur": 2.63
+  },
+  "nar-brief-pool": {
+   "text": "하늘 수영장이에요. 첫 근무예요. 안내문은 세 줄뿐이에요. 손님의 표와 짐을 안내문과 하나씩 맞춰 봐요.",
+   "spoken": "하늘 수영장이에요. 첫 근무예요. 안내문은 세 줄뿐이에요. 손님의 표와 짐을 안내문과 하나씩 맞춰 봐요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 11.88
+  },
+  "reply-pool-02": {
+   "text": "아이고, 김밥은 밖에서 먹고 올게요.",
+   "spoken": "아이고, 김밥은 밖에서 먹고 올게요.",
+   "speaker": "raccoon",
+   "voice": "Zubenelgenubi",
+   "dur": 2.79
+  },
+  "nar-oops-pool-01": {
+   "text": "보리 씨가 고개를 갸웃했어요. “모자도 있고, 음식도 없는데요?”",
+   "spoken": "보리 씨가 고개를 갸웃했어요. “모자도 있고, 음식도 없는데요?”",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 7.21
+  },
+  "nar-oops-pool-02": {
+   "text": "잠시 뒤, 구리 씨가 물 옆에서 김밥을 먹다가 안전 요원에게 걸렸어요.",
+   "spoken": "잠시 뒤, 구리 씨가 물 옆에서 김밥을 먹다가 안전 요원에게 걸렸어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 7.12
+  },
+  "reply-pool-03": {
+   "text": "고마워요. 천천히 걸어갈게요.",
+   "spoken": "고마워요. 천천히 걸어갈게요.",
+   "speaker": "rabbit",
+   "voice": "Gacrux",
+   "dur": 4.91
+  },
+  "reply-pool-04": {
+   "text": "알겠어요. 매점에서 모자를 하나 살게요.",
+   "spoken": "알겠어요. 매점에서 모자를 하나 살게요.",
+   "speaker": "fox",
+   "voice": "Iapetus",
+   "dur": 3.23
+  },
+  "nar-oops-pool-03": {
+   "text": "토순 할머니가 안내문을 가리켰어요. “물은 괜찮다고 쓰여 있어요.”",
+   "spoken": "토순 할머니가 안내문을 가리켰어요. “물은 괜찮다고 쓰여 있어요.”",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 7.93
+  },
+  "reply-pool-05": {
+   "text": "네! 아빠랑 같이 올게요.",
+   "spoken": "네! 아빠랑 같이 올게요.",
+   "speaker": "squirrel",
+   "voice": "Leda",
+   "dur": 2.83
+  },
+  "nar-oops-pool-04": {
+   "text": "잠시 뒤, 우진 씨가 모자 없이 물에 들어갔다가 다시 밖으로 나왔어요.",
+   "spoken": "잠시 뒤, 우진 씨가 모자 없이 물에 들어갔다가 다시 밖으로 나왔어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 7.83
+  },
+  "reply-pool-06": {
+   "text": "야호! 고마워요.",
+   "spoken": "야호! 고마워요.",
+   "speaker": "hedgehog",
+   "voice": "Laomedeia",
+   "dur": 2.46
+  },
+  "nar-oops-pool-05": {
+   "text": "다미가 혼자 물가로 뛰어가서 안전 요원이 깜짝 놀랐어요.",
+   "spoken": "다미가 혼자 물가로 뛰어가서 안전 요원이 깜짝 놀랐어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 5.93
+  },
+  "reply-pool-07": {
+   "text": "앗, 과자가 들어 있었네요. 맡겨 둘게요.",
+   "spoken": "앗, 과자가 들어 있었네요. 맡겨 둘게요.",
+   "speaker": "penguin",
+   "voice": "Zephyr",
+   "dur": 3.45
+  },
+  "nar-oops-pool-06": {
+   "text": "도치가 표를 다시 보여 줬어요. “저는 아홉 살인데요?”",
+   "spoken": "도치가 표를 다시 보여 줬어요. “저는 아홉 살인데요?”",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 6.22
+  },
+  "reply-pool-08": {
+   "text": "고마워요. 아이 손을 꼭 잡을게요.",
+   "spoken": "고마워요. 아이 손을 꼭 잡을게요.",
+   "speaker": "ducks",
+   "voice": "Callirrhoe",
+   "dur": 3.67
+  },
+  "nar-oops-pool-07": {
+   "text": "잠시 뒤, 콩이 씨가 수영장 안에서 과자를 먹다가 걸렸어요.",
+   "spoken": "잠시 뒤, 콩이 씨가 수영장 안에서 과자를 먹다가 걸렸어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 6.16
+  },
+  "line-library-01": {
+   "text": "책을 돌려주러 왔어요.",
+   "spoken": "책을 돌려주러 왔어요.",
+   "speaker": "bear",
+   "voice": "Achird",
+   "dur": 2.32
+  },
+  "nar-oops-pool-08": {
+   "text": "아기 오리가 울먹였어요. “엄마랑 같이 왔는데요!”",
+   "spoken": "아기 오리가 울먹였어요. “엄마랑 같이 왔는데요!”",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 6.28
+  },
+  "reply-library-01": {
+   "text": "고마워요. 다음 책도 빌려 갈게요.",
+   "spoken": "고마워요. 다음 책도 빌려 갈게요.",
+   "speaker": "bear",
+   "voice": "Achird",
+   "dur": 2.89
+  },
+  "nar-brief-library": {
+   "text": "별빛 도서관이에요. 도서관은 오늘 일찍 문을 닫아요. 시계도 함께 봐요. 카드의 이름도 확인해요.",
+   "spoken": "별빛 도서관이에요. 도서관은 오늘 일찍 문을 닫아요. 시계도 함께 봐요. 카드의 이름도 확인해요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 12.29
+  },
+  "line-library-02": {
+   "text": "카드는 집에 있어요. 오늘만 그냥 들어가면 안 돼요?",
+   "spoken": "카드는 집에 있어요. 오늘만 그냥 들어가면 안 돼요?",
+   "speaker": "raccoon",
+   "voice": "Zubenelgenubi",
+   "dur": 4.61
+  },
+  "reply-library-02": {
+   "text": "그럼 1층에서 카드를 새로 만들게요.",
+   "spoken": "그럼 일 층에서 카드를 새로 만들게요.",
+   "speaker": "raccoon",
+   "voice": "Zubenelgenubi",
+   "dur": 3.75
+  },
+  "nar-oops-library-01": {
+   "text": "보리 씨가 카드를 다시 보여 줬어요. “제 카드 맞는데요?”",
+   "spoken": "보리 씨가 카드를 다시 보여 줬어요. “제 카드 맞는데요?”",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 6.17
+  },
+  "nar-oops-library-02": {
+   "text": "잠시 뒤, 관장님이 카드 없는 손님을 찾으러 나왔어요.",
+   "spoken": "잠시 뒤, 관장님이 카드 없는 손님을 찾으러 나왔어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 5.34
+  },
+  "reply-library-03": {
+   "text": "조용히 읽고 갈게요.",
+   "spoken": "조용히 읽고 갈게요.",
+   "speaker": "rabbit",
+   "voice": "Gacrux",
+   "dur": 3.1
+  },
+  "line-library-03": {
+   "text": "커피는 뚜껑을 꼭 닫았어요.",
+   "spoken": "커피는 뚜껑을 꼭 닫았어요.",
+   "speaker": "rabbit",
+   "voice": "Gacrux",
+   "dur": 4.66
+  },
+  "nar-oops-library-03": {
+   "text": "토순 할머니가 안내문을 가리켰어요. “뚜껑이 있으면 괜찮다고 쓰여 있어요.”",
+   "spoken": "토순 할머니가 안내문을 가리켰어요. “뚜껑이 있으면 괜찮다고 쓰여 있어요.”",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 8.78
+  },
+  "line-library-04": {
+   "text": "커피 한 잔만 들고 갈게요.",
+   "spoken": "커피 한 잔만 들고 갈게요.",
+   "speaker": "fox",
+   "voice": "Iapetus",
+   "dur": 1.85
+  },
+  "reply-library-04": {
+   "text": "아, 뚜껑을 받아 올게요.",
+   "spoken": "아, 뚜껑을 받아 올게요.",
+   "speaker": "fox",
+   "voice": "Iapetus",
+   "dur": 2.2
+  },
+  "nar-oops-library-04": {
+   "text": "잠시 뒤, 우진 씨가 책 위에 커피를 쏟았어요!",
+   "spoken": "잠시 뒤, 우진 씨가 책 위에 커피를 쏟았어요!",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 5.29
+  },
+  "line-library-05": {
+   "text": "이 카드도 되지요? 제 카드예요!",
+   "spoken": "이 카드도 되지요? 제 카드예요!",
+   "speaker": "squirrel",
+   "voice": "Leda",
+   "dur": 2.99
+  },
+  "reply-library-05": {
+   "text": "아, 수영장 카드였네요. 엄마랑 도서관 카드를 만들게요.",
+   "spoken": "아, 수영장 카드였네요. 엄마랑 도서관 카드를 만들게요.",
+   "speaker": "squirrel",
+   "voice": "Leda",
+   "dur": 6.13
+  },
+  "line-library-06": {
+   "text": "배가 고파서 김밥을 샀어요.",
+   "spoken": "배가 고파서 김밥을 샀어요.",
+   "speaker": "penguin",
+   "voice": "Zephyr",
+   "dur": 2.67
+  },
+  "reply-library-06": {
+   "text": "밖에서 먹고 올게요.",
+   "spoken": "밖에서 먹고 올게요.",
+   "speaker": "penguin",
+   "voice": "Zephyr",
+   "dur": 1.79
+  },
+  "nar-oops-library-05": {
+   "text": "다미가 수영장 카드로 책을 빌리려다가 직원을 웃게 했어요.",
+   "spoken": "다미가 수영장 카드로 책을 빌리려다가 직원을 웃게 했어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 6.85
+  },
+  "nar-oops-library-06": {
+   "text": "도서관 안에 김밥 냄새가 퍼졌어요.",
+   "spoken": "도서관 안에 김밥 냄새가 퍼졌어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 3.61
+  },
+  "reply-library-07": {
+   "text": "제 카드를 만들어 올게요.",
+   "spoken": "제 카드를 만들어 올게요.",
+   "speaker": "panda",
+   "voice": "Autonoe",
+   "dur": 2.16
+  },
+  "line-library-07": {
+   "text": "이 카드는 언니 거예요. 괜찮지요?",
+   "spoken": "이 카드는 언니 거예요. 괜찮지요?",
+   "speaker": "panda",
+   "voice": "Autonoe",
+   "dur": 3.96
+  },
+  "nar-oops-library-07": {
+   "text": "잠시 뒤, 단비의 언니가 카드를 찾으러 왔어요.",
+   "spoken": "잠시 뒤, 단비의 언니가 카드를 찾으러 왔어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 4.81
+  },
+  "line-library-08": {
+   "text": "숙제할 책을 빌리고 싶어요.",
+   "spoken": "숙제할 책을 빌리고 싶어요.",
+   "speaker": "hedgehog",
+   "voice": "Laomedeia",
+   "dur": 2.52
+  },
+  "reply-library-08": {
+   "text": "고마워요! 빨리 고를게요.",
+   "spoken": "고마워요! 빨리 고를게요.",
+   "speaker": "hedgehog",
+   "voice": "Laomedeia",
+   "dur": 2.68
+  },
+  "nar-oops-library-08": {
+   "text": "도치가 시계를 가리켰어요. “아직 5시 30분 전인데요?”",
+   "spoken": "도치가 시계를 가리켰어요. “아직 다섯 시 삼십 분 전인데요?”",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 6.89
+  },
+  "line-library-09": {
+   "text": "잠깐이면 돼요. 책만 빌릴게요.",
+   "spoken": "잠깐이면 돼요. 책만 빌릴게요.",
+   "speaker": "otter",
+   "voice": "Algenib",
+   "dur": 3.52
+  },
+  "reply-library-09": {
+   "text": "허허, 그럼 내일 일찍 올게요.",
+   "spoken": "허허, 그럼 내일 일찍 올게요.",
+   "speaker": "otter",
+   "voice": "Algenib",
+   "dur": 4.23
+  },
+  "nar-oops-library-09": {
+   "text": "직원이 문을 닫다가 할아버지를 찾느라 늦게 퇴근했어요.",
+   "spoken": "직원이 문을 닫다가 할아버지를 찾느라 늦게 퇴근했어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 5.92
+  },
+  "line-museum-01": {
+   "text": "사진은 안 찍을게요. 휴대폰만 있어요.",
+   "spoken": "사진은 안 찍을게요. 휴대폰만 있어요.",
+   "speaker": "deer",
+   "voice": "Despina",
+   "dur": 4.15
+  },
+  "reply-museum-01": {
+   "text": "고마워요. 바다 그림을 천천히 볼게요.",
+   "spoken": "고마워요. 바다 그림을 천천히 볼게요.",
+   "speaker": "deer",
+   "voice": "Despina",
+   "dur": 4.22
+  },
+  "nar-brief-museum": {
+   "text": "바람 미술관이에요. 오늘은 특별 전시예요. 표의 종류와 나이, 그리고 입장 시간을 잘 봐요.",
+   "spoken": "바람 미술관이에요. 오늘은 특별 전시예요. 표의 종류와 나이, 그리고 입장 시간을 잘 봐요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 10.43
+  },
+  "nar-oops-museum-01": {
+   "text": "나래 씨가 휴대폰을 들어 보였어요. “휴대폰은 괜찮다고 쓰여 있는데요?”",
+   "spoken": "나래 씨가 휴대폰을 들어 보였어요. “휴대폰은 괜찮다고 쓰여 있는데요?”",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 6.92
+  },
+  "reply-museum-02": {
+   "text": "아쉽지만 카메라는 보관함에 맡길게요.",
+   "spoken": "아쉽지만 카메라는 보관함에 맡길게요.",
+   "speaker": "sheep",
+   "voice": "Aoede",
+   "dur": 3.88
+  },
+  "line-museum-03": {
+   "text": "저는 중학생이에요. 어린이 표로 샀어요.",
+   "spoken": "저는 중학생이에요. 어린이 표로 샀어요.",
+   "speaker": "panda",
+   "voice": "Autonoe",
+   "dur": 4.24
+  },
+  "reply-museum-03": {
+   "text": "아, 어른 표로 바꿔 올게요.",
+   "spoken": "아, 어른 표로 바꿔 올게요.",
+   "speaker": "panda",
+   "voice": "Autonoe",
+   "dur": 2.29
+  },
+  "nar-oops-museum-02": {
+   "text": "잠시 뒤, 전시실에서 찰칵! 소리가 나서 모두 돌아봤어요.",
+   "spoken": "잠시 뒤, 전시실에서 찰칵! 소리가 나서 모두 돌아봤어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 7.11
+  },
+  "line-museum-04": {
+   "text": "할머니는 무료지요?",
+   "spoken": "할머니는 무료지요?",
+   "speaker": "rabbit",
+   "voice": "Gacrux",
+   "dur": 3.12
+  },
+  "nar-oops-museum-03": {
+   "text": "매표소 직원이 달려와서 단비의 표를 바꿔 줬어요.",
+   "spoken": "매표소 직원이 달려와서 단비의 표를 바꿔 줬어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 5.51
+  },
+  "line-museum-02": {
+   "text": "바다 그림을 꼭 찍고 싶어요!",
+   "spoken": "바다 그림을 꼭 찍고 싶어요!",
+   "speaker": "sheep",
+   "voice": "Aoede",
+   "dur": 2.71
+  },
+  "reply-museum-04": {
+   "text": "고마워요. 젊을 때 바다를 많이 봤어요.",
+   "spoken": "고마워요. 젊을 때 바다를 많이 봤어요.",
+   "speaker": "rabbit",
+   "voice": "Gacrux",
+   "dur": 5.98
+  },
+  "reply-museum-05": {
+   "text": "허허, 3년만 더 기다릴게요.",
+   "spoken": "허허, 삼 년만 더 기다릴게요.",
+   "speaker": "otter",
+   "voice": "Algenib",
+   "dur": 3.35
+  },
+  "line-museum-05": {
+   "text": "저도 할아버지인데, 무료지요?",
+   "spoken": "저도 할아버지인데, 무료지요?",
+   "speaker": "otter",
+   "voice": "Algenib",
+   "dur": 4.35
+  },
+  "nar-oops-museum-04": {
+   "text": "토순 할머니가 안내문을 가리켰어요. “65살 이상은 무료라고 쓰여 있어요.”",
+   "spoken": "토순 할머니가 안내문을 가리켰어요. “예순다섯 살 이상은 무료라고 쓰여 있어요.”",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 9.02
+  },
+  "nar-oops-museum-05": {
+   "text": "잠시 뒤, 매표소에서 할아버지를 다시 불렀어요.",
+   "spoken": "잠시 뒤, 매표소에서 할아버지를 다시 불렀어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 5.58
+  },
+  "line-museum-06": {
+   "text": "엄마가 표를 사 줬어요!",
+   "spoken": "엄마가 표를 사 줬어요!",
+   "speaker": "hedgehog",
+   "voice": "Laomedeia",
+   "dur": 2.44
+  },
+  "reply-museum-06": {
+   "text": "고마워요! 큰 고래 그림부터 볼래요.",
+   "spoken": "고마워요! 큰 고래 그림부터 볼래요.",
+   "speaker": "hedgehog",
+   "voice": "Laomedeia",
+   "dur": 3.71
+  },
+  "line-museum-07": {
+   "text": "카메라는 가방에 넣을게요. 안 찍으면 되지요?",
+   "spoken": "카메라는 가방에 넣을게요. 안 찍으면 되지요?",
+   "speaker": "raccoon",
+   "voice": "Zubenelgenubi",
+   "dur": 3.91
+  },
+  "reply-museum-07": {
+   "text": "알겠어요. 보관함에 넣고 올게요.",
+   "spoken": "알겠어요. 보관함에 넣고 올게요.",
+   "speaker": "raccoon",
+   "voice": "Zubenelgenubi",
+   "dur": 2.78
+  },
+  "nar-oops-museum-06": {
+   "text": "도치가 표를 꼭 쥐었어요. “저는 아홉 살인데요?”",
+   "spoken": "도치가 표를 꼭 쥐었어요. “저는 아홉 살인데요?”",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 6.91
+  },
+  "nar-oops-museum-07": {
+   "text": "잠시 뒤, 구리 씨가 가방 속 카메라를 몰래 꺼냈어요.",
+   "spoken": "잠시 뒤, 구리 씨가 가방 속 카메라를 몰래 꺼냈어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 5.79
+  },
+  "line-museum-08": {
+   "text": "전시를 보러 왔어요. 아직 괜찮지요?",
+   "spoken": "전시를 보러 왔어요. 아직 괜찮지요?",
+   "speaker": "bear",
+   "voice": "Achird",
+   "dur": 3.47
+  },
+  "reply-museum-08": {
+   "text": "아쉬워요. 내일은 일찍 올게요.",
+   "spoken": "아쉬워요. 내일은 일찍 올게요.",
+   "speaker": "bear",
+   "voice": "Achird",
+   "dur": 3.66
+  },
+  "nar-oops-museum-08": {
+   "text": "보리 씨가 안으로 들어갔다가, 입장 시간이 지나서 직원이 다시 불러 세웠어요.",
+   "spoken": "보리 씨가 안으로 들어갔다가, 입장 시간이 지나서 직원이 다시 불러 세웠어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 6.66
+  },
+  "line-concert-01": {
+   "text": "어제 비가 와서 오늘 왔어요.",
+   "spoken": "어제 비가 와서 오늘 왔어요.",
+   "speaker": "sheep",
+   "voice": "Aoede",
+   "dur": 2.59
+  },
+  "reply-concert-01": {
+   "text": "고마워요! 앞자리에 돗자리를 펼게요.",
+   "spoken": "고마워요! 앞자리에 돗자리를 펼게요.",
+   "speaker": "sheep",
+   "voice": "Aoede",
+   "dur": 3.75
+  },
+  "nar-brief-concert": {
+   "text": "노을 공원 음악회예요. 비 때문에 날짜가 하루 미뤄졌어요. 근무 중에 새 알림이 올 수도 있어요.",
+   "spoken": "노을 공원 음악회예요. 비 때문에 날짜가 하루 미뤄졌어요. 근무 중에 새 알림이 올 수도 있어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 10.53
+  },
+  "line-concert-02": {
+   "text": "의자에 앉아서 보고 싶어요.",
+   "spoken": "의자에 앉아서 보고 싶어요.",
+   "speaker": "fox",
+   "voice": "Iapetus",
+   "dur": 1.81
+  },
+  "reply-concert-02": {
+   "text": "그럼 의자는 차에 두고 올게요.",
+   "spoken": "그럼 의자는 차에 두고 올게요.",
+   "speaker": "fox",
+   "voice": "Iapetus",
+   "dur": 2.24
+  },
+  "nar-oops-concert-01": {
+   "text": "솜이 씨가 안내문을 가리켰어요. “9일 표로 들어올 수 있다고 쓰여 있어요.”",
+   "spoken": "솜이 씨가 안내문을 가리켰어요. “구 일 표로 들어올 수 있다고 쓰여 있어요.”",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 8.03
+  },
+  "line-concert-03": {
+   "text": "오늘 음악회 맞지요?",
+   "spoken": "오늘 음악회 맞지요?",
+   "speaker": "penguin",
+   "voice": "Zephyr",
+   "dur": 2.46
+  },
+  "reply-concert-03": {
+   "text": "앗, 다음 주 표였네요! 다음 주에 올게요.",
+   "spoken": "앗, 다음 주 표였네요! 다음 주에 올게요.",
+   "speaker": "penguin",
+   "voice": "Zephyr",
+   "dur": 3.55
+  },
+  "nar-oops-concert-02": {
+   "text": "잠시 뒤, 우진 씨 의자 때문에 뒷사람이 무대를 못 봤어요.",
+   "spoken": "잠시 뒤, 우진 씨 의자 때문에 뒷사람이 무대를 못 봤어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 6.33
+  },
+  "nar-oops-concert-03": {
+   "text": "잠시 뒤, 콩이 씨 자리에 다른 손님이 앉아 있었어요.",
+   "spoken": "잠시 뒤, 콩이 씨 자리에 다른 손님이 앉아 있었어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 5.09
+  },
+  "line-concert-04": {
+   "text": "과자 먹으면서 들을 거예요.",
+   "spoken": "과자 먹으면서 들을 거예요.",
+   "speaker": "bear",
+   "voice": "Achird",
+   "dur": 1.97
+  },
+  "reply-concert-04": {
+   "text": "고마워요! 친구랑 나눠 먹을게요.",
+   "spoken": "고마워요! 친구랑 나눠 먹을게요.",
+   "speaker": "bear",
+   "voice": "Achird",
+   "dur": 2.76
+  },
+  "line-concert-05": {
+   "text": "김밥 도시락을 싸 왔어요.",
+   "spoken": "김밥 도시락을 싸 왔어요.",
+   "speaker": "raccoon",
+   "voice": "Zubenelgenubi",
+   "dur": 1.98
+  },
+  "reply-concert-05": {
+   "text": "아이고, 그럼 여기서 다 먹고 들어갈게요.",
+   "spoken": "아이고, 그럼 여기서 다 먹고 들어갈게요.",
+   "speaker": "raccoon",
+   "voice": "Zubenelgenubi",
+   "dur": 3.28
+  },
+  "nar-oops-concert-04": {
+   "text": "보리 씨가 안내문을 다시 읽었어요. “과자 이야기는 없는데요?”",
+   "spoken": "보리 씨가 안내문을 다시 읽었어요. “과자 이야기는 없는데요?”",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 7.04
+  },
+  "nar-oops-concert-05": {
+   "text": "잠시 뒤, 공원 관리실에서 김밥 손님을 찾았어요.",
+   "spoken": "잠시 뒤, 공원 관리실에서 김밥 손님을 찾았어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 5.44
+  },
+  "line-concert-06": {
+   "text": "물 한 병만 가지고 왔어요.",
+   "spoken": "물 한 병만 가지고 왔어요.",
+   "speaker": "rabbit",
+   "voice": "Gacrux",
+   "dur": 3.82
+  },
+  "reply-concert-06": {
+   "text": "고마워요. 노래를 들으면 젊어지는 것 같아요.",
+   "spoken": "고마워요. 노래를 들으면 젊어지는 것 같아요.",
+   "speaker": "rabbit",
+   "voice": "Gacrux",
+   "dur": 6.35
+  },
+  "nar-oops-concert-06": {
+   "text": "토순 할머니가 알림을 가리켰어요. “물은 괜찮다고 쓰여 있어요.”",
+   "spoken": "토순 할머니가 알림을 가리켰어요. “물은 괜찮다고 쓰여 있어요.”",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 7.37
+  },
+  "line-concert-07": {
+   "text": "언니는 다음 버스로 와요. 먼저 들어갈게요!",
+   "spoken": "언니는 다음 버스로 와요. 먼저 들어갈게요!",
+   "speaker": "squirrel",
+   "voice": "Leda",
+   "dur": 4.36
+  },
+  "reply-concert-07": {
+   "text": "네, 언니 오면 같이 들어갈게요!",
+   "spoken": "네, 언니 오면 같이 들어갈게요!",
+   "speaker": "squirrel",
+   "voice": "Leda",
+   "dur": 3.46
+  },
+  "line-concert-08": {
+   "text": "아이랑 돗자리에 앉아서 볼게요.",
+   "spoken": "아이랑 돗자리에 앉아서 볼게요.",
+   "speaker": "ducks",
+   "voice": "Callirrhoe",
+   "dur": 3.2
+  },
+  "reply-concert-08": {
+   "text": "고마워요. 아이가 노래를 좋아해요.",
+   "spoken": "고마워요. 아이가 노래를 좋아해요.",
+   "speaker": "ducks",
+   "voice": "Callirrhoe",
+   "dur": 3.84
+  },
+  "nar-oops-concert-07": {
+   "text": "다미가 혼자 사람들 사이로 들어가서 언니가 한참 찾았어요.",
+   "spoken": "다미가 혼자 사람들 사이로 들어가서 언니가 한참 찾았어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 7.44
+  },
+  "line-concert-09": {
+   "text": "아주 작은 의자예요. 괜찮지요?",
+   "spoken": "아주 작은 의자예요. 괜찮지요?",
+   "speaker": "otter",
+   "voice": "Algenib",
+   "dur": 4.61
+  },
+  "reply-concert-09": {
+   "text": "허허, 그럼 돗자리를 빌려 올게요.",
+   "spoken": "허허, 그럼 돗자리를 빌려 올게요.",
+   "speaker": "otter",
+   "voice": "Algenib",
+   "dur": 4.08
+  },
+  "nar-oops-concert-08": {
+   "text": "아기 오리가 엄마 날개를 꼭 잡았어요. “엄마랑 같이 왔어요!”",
+   "spoken": "아기 오리가 엄마 날개를 꼭 잡았어요. “엄마랑 같이 왔어요!”",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 7.1
+  },
+  "nar-oops-concert-09": {
+   "text": "잠시 뒤, 할아버지 의자가 다른 손님들의 길을 막았어요.",
+   "spoken": "잠시 뒤, 할아버지 의자가 다른 손님들의 길을 막았어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 5.27
+  },
+  "nar-result-1": {
+   "text": "근무 끝! 오늘도 수고했어요.",
+   "spoken": "근무 끝! 오늘도 수고했어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 3.52
+  },
+  "nar-memo": {
+   "text": "새 알림이 왔어요. 잘 읽고, 안내문의 네 번째 규칙으로 붙여요.",
+   "spoken": "새 알림이 왔어요. 잘 읽고, 안내문의 네 번째 규칙으로 붙여요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 6.87
+  },
+  "nar-result-2": {
+   "text": "좋은 근무였어요! 다음 근무지도 기대돼요.",
+   "spoken": "좋은 근무였어요! 다음 근무지도 기대돼요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 4.51
+  },
+  "nar-result-0": {
+   "text": "오늘은 연습한 날이에요. 틀린 손님을 다시 만나 봐요.",
+   "spoken": "오늘은 연습한 날이에요. 틀린 손님을 다시 만나 봐요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 6.67
+  },
+  "thanks-bear": {
+   "text": "고마워요!",
+   "spoken": "고마워요!",
+   "speaker": "bear",
+   "voice": "Achird",
+   "dur": 1.25
+  },
+  "why-bear": {
+   "text": "네? 왜요?",
+   "spoken": "네? 왜요?",
+   "speaker": "bear",
+   "voice": "Achird",
+   "dur": 1.27
+  },
+  "thanks-raccoon": {
+   "text": "고마워요!",
+   "spoken": "고마워요!",
+   "speaker": "raccoon",
+   "voice": "Zubenelgenubi",
+   "dur": 0.91
+  },
+  "nar-result-3": {
+   "text": "완벽한 근무였어요! 모든 손님을 바르게 맞이했어요.",
+   "spoken": "완벽한 근무였어요! 모든 손님을 바르게 맞이했어요.",
+   "speaker": "narrator",
+   "voice": "Sulafat",
+   "dur": 6.56
+  },
+  "why-raccoon": {
+   "text": "네? 왜요?",
+   "spoken": "네? 왜요?",
+   "speaker": "raccoon",
+   "voice": "Zubenelgenubi",
+   "dur": 1.16
+  },
+  "thanks-rabbit": {
+   "text": "고마워요!",
+   "spoken": "고마워요!",
+   "speaker": "rabbit",
+   "voice": "Gacrux",
+   "dur": 1.63
+  },
+  "thanks-fox": {
+   "text": "고마워요!",
+   "spoken": "고마워요!",
+   "speaker": "fox",
+   "voice": "Iapetus",
+   "dur": 0.92
+  },
+  "why-rabbit": {
+   "text": "네? 왜요?",
+   "spoken": "네? 왜요?",
+   "speaker": "rabbit",
+   "voice": "Gacrux",
+   "dur": 2.19
+  },
+  "why-fox": {
+   "text": "네? 왜요?",
+   "spoken": "네? 왜요?",
+   "speaker": "fox",
+   "voice": "Iapetus",
+   "dur": 1.29
+  },
+  "thanks-squirrel": {
+   "text": "고마워요!",
+   "spoken": "고마워요!",
+   "speaker": "squirrel",
+   "voice": "Leda",
+   "dur": 1.49
+  },
+  "why-squirrel": {
+   "text": "네? 왜요?",
+   "spoken": "네? 왜요?",
+   "speaker": "squirrel",
+   "voice": "Leda",
+   "dur": 1.6
+  },
+  "why-hedgehog": {
+   "text": "네? 왜요?",
+   "spoken": "네? 왜요?",
+   "speaker": "hedgehog",
+   "voice": "Laomedeia",
+   "dur": 1.77
+  },
+  "thanks-penguin": {
+   "text": "고마워요!",
+   "spoken": "고마워요!",
+   "speaker": "penguin",
+   "voice": "Zephyr",
+   "dur": 1.12
+  },
+  "why-penguin": {
+   "text": "네? 왜요?",
+   "spoken": "네? 왜요?",
+   "speaker": "penguin",
+   "voice": "Zephyr",
+   "dur": 1.42
+  },
+  "thanks-ducks": {
+   "text": "고마워요!",
+   "spoken": "고마워요!",
+   "speaker": "ducks",
+   "voice": "Callirrhoe",
+   "dur": 1.42
+  },
+  "why-ducks": {
+   "text": "네? 왜요?",
+   "spoken": "네? 왜요?",
+   "speaker": "ducks",
+   "voice": "Callirrhoe",
+   "dur": 2.01
+  },
+  "thanks-otter": {
+   "text": "고마워요!",
+   "spoken": "고마워요!",
+   "speaker": "otter",
+   "voice": "Algenib",
+   "dur": 1.49
+  },
+  "why-otter": {
+   "text": "네? 왜요?",
+   "spoken": "네? 왜요?",
+   "speaker": "otter",
+   "voice": "Algenib",
+   "dur": 1.96
+  },
+  "thanks-deer": {
+   "text": "고마워요!",
+   "spoken": "고마워요!",
+   "speaker": "deer",
+   "voice": "Despina",
+   "dur": 1.24
+  },
+  "why-deer": {
+   "text": "네? 왜요?",
+   "spoken": "네? 왜요?",
+   "speaker": "deer",
+   "voice": "Despina",
+   "dur": 1.64
+  },
+  "thanks-panda": {
+   "text": "고마워요!",
+   "spoken": "고마워요!",
+   "speaker": "panda",
+   "voice": "Autonoe",
+   "dur": 1.2
+  },
+  "why-panda": {
+   "text": "네? 왜요?",
+   "spoken": "네? 왜요?",
+   "speaker": "panda",
+   "voice": "Autonoe",
+   "dur": 1.36
+  },
+  "thanks-sheep": {
+   "text": "고마워요!",
+   "spoken": "고마워요!",
+   "speaker": "sheep",
+   "voice": "Aoede",
+   "dur": 1.16
+  },
+  "why-sheep": {
+   "text": "네? 왜요?",
+   "spoken": "네? 왜요?",
+   "speaker": "sheep",
+   "voice": "Aoede",
+   "dur": 1.73
+  },
+  "thanks-hedgehog": {
+   "text": "고마워요!",
+   "spoken": "고마워요!",
+   "speaker": "hedgehog",
+   "voice": "Laomedeia",
+   "dur": 1.04
+  }
+ },
+ "at": "2026-10-01T23:20:06.630Z"
+}
