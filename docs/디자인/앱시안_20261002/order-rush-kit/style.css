@@ -1,0 +1,391 @@
+/* 주문 폭주 · SNS 키트 적용 시안 v3(2026-10-02)
+ * 원문: docs/디자인/SNS키트/README.md · kit.css(LAB 테마 토큰·크레용·흰 칼선)
+ * v3: 사용자 「모든 부분을 최대한 펠트질감 퀄리티 비싸게」. 조작 부품을 CSS 도형 대신 실제 니들 펠트 사진 부품(assets/felt, 리드가 만든 컷아웃)으로 바꿨다.
+ *   - 길쭉한 단추·칩·탭: 펠트 판을 9칸 border-image로. 모서리·실땀은 높이에 맞춘 같은 배율, 가로는 round(늘이지 않고 이어 붙임)
+ *   - 재료 타일: 짧은 펠트 판(2:1)을 통째로. HUD: 펠트 알약. 숫자·체크: 펠트 원판. 큰 면: 펠트 결 타일
+ *   - 글자는 그림에 굽지 않고 펠트 위에 살아 있는 글자로 얹는다. 누르면 3px 가라앉고 그림자가 줄어든다
+ * v2 지적은 그대로 지킨다: 글자 기울임 없음, 작은 화면 실땀 선·테이프·컨페티 없음, 이름표 SUIT, 흔들기·번쩍임 없음.
+ * 색: LAB 코랄 + 짙은 갈색 잉크 + 크림·흰 종이 + 펠트 부품의 원래 색.
+ */
+@font-face{font-family:SUIT;src:url(assets/SUIT-Variable.woff2) format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'DM Mono';src:url(assets/DMMono-Medium.ttf);font-weight:400 600;font-display:swap}
+
+:root{
+ --coral:#f96859;--coral-deep:#ae322a;--coral-wash:#fef0e9;--cream:#fffaf4;
+ --ink:#2a120d;--ink-2:rgba(42,18,13,.78);--muted:rgba(42,18,13,.64);
+ --line:#e6ddd3;--line-soft:#efe7de;
+ --sans:SUIT,system-ui,sans-serif;--mono:'DM Mono',ui-monospace,monospace;
+ /* 펠트 부품(이 파일 기준 경로) */
+ --f-cream:url(assets/felt/slab-cream.webp);--f-blush:url(assets/felt/slab-blush.webp);
+ --f-cream-l:url(assets/felt/slab-cream-long.webp);--f-blush-l:url(assets/felt/slab-blush-long.webp);--f-coral-l:url(assets/felt/slab-coral-long.webp);
+ --f-pill:url(assets/felt/chip-blush.webp);--f-pill-l:url(assets/felt/chip-blush-long.webp);
+ --f-check:url(assets/felt/badge-check.webp);--f-dot-coral:url(assets/felt/badge-coral.webp);--f-dot-cream:url(assets/felt/badge-cream.webp);
+ --f-tag:url(assets/felt/tag-cream.webp);
+ --tex-coral:linear-gradient(rgba(249,104,89,.38),rgba(249,104,89,.38)),url(assets/felt/tex-coral.webp) 0 0/190px 190px,#f96859;
+ --tex-blush:linear-gradient(rgba(255,247,241,.55),rgba(255,247,241,.55)),url(assets/felt/tex-blush.webp) 0 0/200px 200px,#fbe3d9;
+ --crayon-under:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 40' preserveAspectRatio='none'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='5'/%3E%3C/filter%3E%3Cg filter='url(%23r)' fill='none' stroke='black' stroke-linecap='round'%3E%3Cpath d='M8 22C90 12 200 26 300 16S380 15 392 18' stroke-width='9'/%3E%3Cpath d='M30 30C120 22 220 32 330 25' stroke-width='4' opacity='.6'/%3E%3C/g%3E%3C/svg%3E");
+ --crayon-circle:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 160' preserveAspectRatio='none'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='5'/%3E%3C/filter%3E%3Cpath filter='url(%23r)' d='M60 22C140 2 270 18 286 70S220 152 140 150 12 128 14 82 70 20 170 14' fill='none' stroke='black' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E");
+ --diecut:drop-shadow(3px 0 0 #fff) drop-shadow(-3px 0 0 #fff) drop-shadow(0 3px 0 #fff) drop-shadow(0 -3px 0 #fff) drop-shadow(0 10px 12px rgba(42,18,13,.24));
+ --lift:drop-shadow(0 5px 6px rgba(90,50,30,.16));--lift-down:drop-shadow(0 1px 2px rgba(90,50,30,.2));
+ --pop:cubic-bezier(.34,1.56,.64,1);--out:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+html{background:#fff}
+body{margin:0;background:#fff;color:var(--ink);font:500 16px/1.6 var(--sans);letter-spacing:-.01em;word-break:keep-all;overflow-wrap:anywhere;-webkit-font-smoothing:antialiased}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+button,a{-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0;touch-action:manipulation}
+button:disabled{cursor:default}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid rgba(174,50,42,.5);outline-offset:2px}
+[hidden]{display:none!important}
+h1,h2{text-wrap:balance}
+.mono,.eyebrow{font:500 11px/1.4 var(--mono);letter-spacing:.08em}
+.eyebrow{display:block;color:var(--muted)}
+.ico{width:24px;height:24px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+kbd{font:500 11px/1 var(--mono);color:var(--muted)}
+.quiet{font:700 14px/1.2 var(--sans);color:var(--ink-2);text-decoration:underline;text-decoration-color:rgba(42,18,13,.3);text-decoration-thickness:1.5px;text-underline-offset:5px;padding:12px 4px}
+.scope{font-size:12.5px;line-height:1.65;color:var(--muted)}
+
+/* ════ 펠트 부품 ════════════════════════════════════════════════════════
+ * .felt: 9칸 펠트 판. --fh(높이)에 맞춰 테두리 폭을 정해 모서리·실땀이 늘 같은 배율로 보인다.
+ * 기본은 짧은 크림 판(조각이 작아 어떤 폭에서도 배율이 거의 같다). .long은 넓은 행동 단추용 긴 판. */
+.felt{--fh:48px;--src:var(--f-cream);--sl:90 95 fill;--bv:.37;--bh:.39;
+ position:relative;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:var(--fh);padding:0;white-space:nowrap;
+ border:solid transparent;border-width:calc(var(--fh)*var(--bv)) calc(var(--fh)*var(--bh));border-radius:18px;padding-bottom:calc(var(--fh)*.05);
+ border-image-source:var(--src);border-image-slice:var(--sl);border-image-width:1;border-image-outset:0;border-image-repeat:round stretch;
+ background:none;color:var(--ink);font:700 14px/1.2 var(--sans);filter:var(--lift);transition:transform .07s ease,filter .07s ease,opacity .2s}
+.felt.blush{--src:var(--f-blush)}
+.felt.cta{--fh:60px;--src:var(--f-cream-l);--sl:70 80 fill;--bv:.39;--bh:.44;justify-content:space-between;gap:16px;font:800 18px/1 var(--sans);letter-spacing:-.02em}
+.felt.coral{--src:var(--f-coral-l);color:#fff;text-shadow:0 1px 1px rgba(120,30,20,.4)}
+.felt:active:not(:disabled){transform:translateY(3px);filter:var(--lift-down)}
+.felt:disabled{opacity:.45}
+.felt .ico{width:20px;height:20px}
+/* 행동 단추 끝의 펠트 원판(화살표는 살아 있는 선 아이콘) */
+.felt.cta .kw{flex:none;display:grid;place-items:center;width:38px;height:38px;margin-right:-6px;background:var(--f-dot-coral) center/contain no-repeat;color:#fff}
+.felt.cta .kw .ico{width:18px;height:18px;stroke-width:2.4}
+/* 코랄 판 위에서는 원판 대신 블러시 펠트 알약에 SPACE */
+.felt.coral .kw{display:inline-flex;align-items:center;width:auto;height:34px;gap:6px;padding:0 14px;margin-right:-8px;background:var(--f-pill-l) center/100% 100% no-repeat;color:var(--ink);text-shadow:none;font:500 12px/1 var(--mono);letter-spacing:.04em}
+/* 작은 펠트 꼬리표(글자는 위에 얹는다) */
+.felt-tag{display:inline-flex;align-items:center;border:solid transparent;border-width:7px 10px;border-image:var(--f-tag) 45 51 fill / 7px 10px stretch;padding:1px 4px}
+/* 크레용 밑줄(kit .k-mark, LAB 색 면): 흰 크레용 한 줄. 제목 하나에 한 곳 */
+.mark,.results h1 em{position:relative;white-space:nowrap}
+.mark::after,.results h1 em::after{content:'';position:absolute;left:-.04em;right:-.04em;bottom:-.12em;height:.2em;pointer-events:none;background:#fff;
+ -webkit-mask:var(--crayon-under) no-repeat center/100% 100%;mask:var(--crayon-under) no-repeat center/100% 100%;animation:crayon .5s steps(9) .5s both}
+
+/* ── 색 면: 코랄 펠트 결 ── 입구·끝 화면에만 */
+.field{position:relative;background:var(--tex-coral);color:var(--ink)}
+.field .eyebrow,.field .scope{color:var(--ink-2)}
+.field .quiet{color:var(--ink);text-decoration-color:rgba(42,18,13,.45)}
+.logo-tag{border-width:10px 14px;border-image:var(--f-tag) 45 51 fill / 10px 14px stretch;padding:2px 4px;filter:drop-shadow(0 6px 8px rgba(90,30,20,.25))}
+.logo-tag img{display:block;height:22px;width:auto}
+.site-head{display:flex;align-items:center;justify-content:space-between;gap:24px}
+.head-label{color:var(--ink-2)}
+
+/* ════ 입구 ════════════════════════════════════════════════════════════ */
+/* 사진이 내려앉는 첫 순간(기울어진 상태)이 휴대폰 폭을 넘어 화면 전체가 줄어들지 않게 가로만 자른다 */
+.lobby,.results{overflow-x:clip}
+.lobby-field{padding:24px 48px 64px}
+.lobby-field>.site-head,.hero{max-width:1240px;margin-left:auto;margin-right:auto}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);grid-template-areas:"text photo" "actions photo";column-gap:64px;align-items:start;padding-top:48px}
+.hero-text{grid-area:text}
+.hero-text h1{margin:16px 0;font:800 clamp(40px,5vw,72px)/1.1 var(--sans);letter-spacing:-.05em}
+.hero-text h1 em{font-style:normal;font-weight:500;letter-spacing:-.045em}
+.hero-text p{margin:0;font:500 18px/1.7 var(--sans);color:var(--ink-2)}
+/* 카페 그림은 인화지처럼: 흰 테두리, 조금 기울임(사진만 기울인다). 처음에 한 번 내려앉는다 */
+.photo{grid-area:photo;align-self:center;position:relative;margin:0;padding:12px;border-radius:8px;background:#fff;--r:-2.5deg;transform:rotate(var(--r));
+ box-shadow:0 26px 40px -24px rgba(42,18,13,.7);animation:drop .55s var(--out) .1s both}
+.photo>img:first-child{display:block;width:100%;height:auto;border-radius:3px}
+/* 몽글: 흰 칼선 펠트 스티커 하나. 한 번 붙고 그대로 있다(흔들지 않는다) */
+.mong{display:block;height:auto;pointer-events:none;filter:var(--diecut);transform:rotate(var(--r,0deg))}
+.photo .mong{position:absolute;left:-40px;bottom:-48px;width:144px;--r:-6deg;animation:pop .42s var(--pop) .6s both}
+.hero-actions{grid-area:actions;max-width:520px}
+/* 모드: 고르지 않은 쪽은 블러시 펠트, 고른 쪽은 크림 펠트 + 펠트 체크 배지 */
+.shift-choice{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:32px 0 24px}
+.shift-choice .felt{--fh:88px;flex-direction:column;align-items:flex-start;gap:4px;width:100%;text-align:left}
+.shift-choice .felt>*{flex:none}
+.shift-choice .felt{padding-bottom:14px}
+.shift-choice .felt[aria-pressed=true]{--src:var(--f-cream)}
+.shift-choice strong{display:block;padding-right:24px;font:800 17px/1.25 var(--sans);letter-spacing:-.02em}
+.shift-choice span{display:block;font:500 13px/1.35 var(--sans);color:var(--ink-2)}
+/* 체크 배지는 펠트 판 오른쪽 위 모서리에 꿰매 붙인 자리 */
+.tick{position:absolute;right:-16px;top:-18px;width:32px;height:32px;background:var(--f-check) center/contain no-repeat;filter:drop-shadow(0 2px 2px rgba(90,30,20,.25));display:none}
+.shift-choice [aria-pressed=true] .tick{display:block}
+#start{width:100%}
+.sound-note{display:block;margin:16px 0 8px;font:500 13px/1.5 var(--sans);color:var(--ink-2)}
+#learning-reason{margin:8px 0 0}
+#learning-reset{display:block;padding:8px 0;font-size:12px;font-weight:500}
+.intro-strip{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:32px;padding:40px 48px 16px}
+.intro-strip>div{display:flex;gap:16px;align-items:flex-start}
+/* 순서 번호: 코랄 펠트 원판 위 숫자 */
+.step{flex:none;display:grid;place-items:center;width:44px;height:44px;background:var(--f-dot-coral) center/contain no-repeat;font:500 16px/1 var(--mono);color:var(--ink)}
+.intro-strip .mono{display:block;color:var(--coral-deep)}
+.intro-strip strong{display:block;margin-top:2px;font:800 18px/1.4 var(--sans);letter-spacing:-.02em}
+.intro-strip p{margin:4px 0;font-size:14px;color:var(--muted)}
+.lobby footer{max-width:1240px;margin:0 auto;padding:8px 48px 32px;font-size:12px;color:var(--muted)}
+
+/* ════ 영업 화면 ══════════════════════════════════════════════════════ */
+.game-shell{max-width:1440px;margin:0 auto;padding:16px 28px 24px}
+.game-head{display:flex;align-items:center;gap:12px;padding:0 0 16px;border-bottom:1px solid var(--line-soft)}
+.brand{display:flex;align-items:center;gap:14px;margin-right:auto}
+.brand img{display:block;height:28px;width:auto}
+.brand strong{font:700 13px/1 var(--sans);padding:9px 16px 10px;background:var(--f-pill-l) center/100% 100% no-repeat;color:var(--coral-deep)}
+.game-metrics{display:flex;align-items:center;gap:8px}
+/* HUD: 블러시 펠트 알약. 이름표 11px 모노, 숫자가 주인공 */
+.hud{display:flex;flex-direction:column;justify-content:center;min-width:108px;height:58px;padding:0 20px;background:var(--f-pill) center/100% 100% no-repeat;filter:drop-shadow(0 3px 4px rgba(90,50,30,.12))}
+.hud small{font:500 11px/1.25 var(--mono);letter-spacing:.04em;color:var(--ink-2)}
+.hud b{font:500 20px/1.15 var(--mono);font-variant-numeric:tabular-nums}
+.icon-button{display:grid;place-items:center;width:48px;height:48px;background:var(--f-dot-cream) center/contain no-repeat;filter:var(--lift);transition:transform .07s ease,filter .07s ease}
+.icon-button:active{transform:translateY(3px);filter:var(--lift-down)}
+.cafe-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:32px;margin-top:16px;align-items:start}
+.workstation{min-width:0}
+.counter-label{display:flex;justify-content:space-between;align-items:center;margin:0 4px 8px;font:500 11px/1 var(--mono);letter-spacing:.08em;color:var(--muted)}
+#active-cup{font:700 13px/1 var(--sans);letter-spacing:0;padding:8px 14px 9px;background:var(--f-pill-l) center/100% 100% no-repeat;color:var(--coral-deep)}
+#stage-wrap{position:relative;height:420px;border-radius:20px;overflow:hidden;background:#f6efe6;border:1px solid var(--line-soft)}
+#stage{display:block;width:100%;height:100%}
+/* 컵 탭: app.mjs가 만드는 .cup-tab에 펠트 판을 입힌다 */
+.cup-tabs{display:flex;gap:12px;padding:16px 0 12px}
+.cup-tab{--fh:68px;--src:var(--f-cream-l);--sl:70 80 fill;--bv:.39;--bh:.44;
+ flex:0 1 320px;min-width:0;box-sizing:border-box;height:var(--fh);display:flex;flex-direction:column;justify-content:center;text-align:left;
+ border:solid transparent;border-width:calc(var(--fh)*var(--bv)) calc(var(--fh)*var(--bh));border-image:var(--src) var(--sl) / 1 / 0 stretch;border-radius:18px;padding-bottom:7px;
+ filter:var(--lift);transition:transform .07s ease,filter .07s ease}
+.cup-tab>*{flex:none}
+.cup-tab:active{transform:translateY(3px);filter:var(--lift-down)}
+.cup-tab[aria-pressed=true]{--src:var(--f-blush-l)}
+.cup-tab strong{display:block;font:800 14px/1.3 var(--sans)}
+.cup-tab span{display:block;font:500 12px/1.35 var(--sans);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tray-actions{display:flex;gap:12px}
+.tray-actions .felt{--fh:44px;padding:0 4px}
+.tray-actions kbd{margin-left:2px}
+/* 재료: 짧은 크림 펠트 판 + 펠트 재료 물건. 넣은 재료는 블러시 펠트 */
+.ingredients{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-top:16px}
+.ingredients button{position:relative;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:8px;height:84px;padding-bottom:6px;
+ background:var(--f-cream) center/100% 100% no-repeat;filter:var(--lift);transition:transform .07s ease,filter .07s ease,opacity .2s}
+.ingredients img{display:block;height:40px;width:auto}
+.ingredients strong{font:800 15px/1.2 var(--sans);letter-spacing:-.02em}
+.ingredients kbd{position:absolute;top:12px;right:14px;display:grid;place-items:center;width:22px;height:22px;background:var(--f-dot-cream) center/contain no-repeat;color:var(--ink-2);font-size:11px}
+.ingredients button[aria-pressed=true]{background-image:var(--f-blush)}
+.ingredients button[aria-pressed=true] img{animation:press .28s var(--pop)}
+.ingredients button:active:not(:disabled){transform:translateY(3px);filter:var(--lift-down)}
+.ingredients button:disabled{opacity:.45}
+/* 지금 컵 설명은 컵 탭과 같은 글이라 화면에서는 숨기고 화면 읽기 알림(aria-live)으로만 남긴다 */
+.cup-description{position:absolute;width:1px;height:1px;margin:0;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* 오른쪽 계산대: 블러시 펠트 판 위에 크림 종이 주문서, 그 아래 최근 안내와 서빙 */
+.order-desk{background:var(--tex-blush);border-radius:20px;padding:20px 20px 12px}
+.desk-heading{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px;margin:0 4px 16px}
+.desk-heading .eyebrow{width:100%}
+.desk-heading h2{margin:0;font:800 22px/1.3 var(--sans);letter-spacing:-.04em}
+#queue-count{font:500 13px/1.3 var(--sans);color:var(--ink-2)}
+/* 손님 줄: 점심 러시(기다림 막대가 있을 때)만 보인다 */
+.customer-queue{display:flex;gap:8px;margin:0 0 24px}
+.customer>*{flex:none}
+.customer-queue:not(:has(.patience)){display:none}
+.customer{--fh:66px;padding-bottom:6px;--src:var(--f-cream);flex:1;min-width:0;box-sizing:border-box;height:var(--fh);display:flex;flex-direction:column;justify-content:center;text-align:left;position:relative;
+ border:solid transparent;border-width:calc(var(--fh)*.37) calc(var(--fh)*.39);border-image:var(--src) 90 95 fill / 1 / 0 round stretch;filter:var(--lift)}
+.customer[aria-pressed=true]{--src:var(--f-blush)}
+.avatar{display:none}
+.customer strong{display:block;font:700 13px/1.3 var(--sans)}
+.customer small{display:block;font:500 11px/1.3 var(--sans);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 기다림 막대는 펠트 아래 바깥에 둔다(글자·실땀과 겹치지 않게) */
+.patience{position:absolute;left:calc(var(--fh)*-.39 + 12px);right:calc(var(--fh)*-.39 + 12px);bottom:calc(var(--fh)*-.37 - 10px);height:4px;border-radius:4px;background:var(--coral-deep);transform-origin:left}
+/* 주문서(디제틱 UI): 크림 종이 한 장. 이름표는 펠트 꼬리표, 주문 번호만 모노 */
+.slip{position:relative;padding:16px;border-radius:18px;background:var(--cream);box-shadow:0 0 0 1px rgba(174,50,42,.08),0 14px 26px -20px rgba(60,30,20,.5)}
+.slip-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0 0 12px;border-bottom:1px solid var(--line-soft)}
+.slip-title{font:700 13px/1.2 var(--sans);color:var(--coral-deep)}
+.slip-no{font:500 11px/1 var(--mono);letter-spacing:.06em;color:var(--muted)}
+.slip-no b{margin-left:4px;font:500 26px/1 var(--mono);letter-spacing:-.02em;color:var(--ink)}
+.audio-status{display:block;margin-top:12px;min-height:44px;font:500 14px/1.55 var(--sans);color:var(--ink-2)}
+.listen-actions{display:flex;gap:10px;margin-top:12px}
+.listen-actions .felt{flex:1;--fh:46px}
+.listen-actions .felt[aria-pressed=true]{--src:var(--f-blush)}
+#order-text{margin:16px 0 0;padding:12px 16px;border-radius:14px;background:var(--coral-wash);font:800 18px/1.55 var(--sans);letter-spacing:-.02em}
+/* 서빙 바로 위 최근 안내. 맞으면 펠트 체크 배지, 틀리면 그 조건 낱말에 크레용 동그라미 */
+.dock{position:relative;margin-top:16px}
+.feedback{margin:0 4px 12px;min-height:22px;font:500 14px/1.55 var(--sans);color:var(--ink-2)}
+.feedback.good,.feedback.wrong{margin:0 0 12px;padding:12px 16px;border-radius:16px;background:var(--tex-blush);color:var(--ink);box-shadow:inset 0 0 0 1px rgba(174,50,42,.1);animation:sheet .28s var(--out)}
+.feedback.good{position:relative;min-height:58px;display:flex;align-items:center;padding:10px 68px 10px 54px;font-weight:700}
+.feedback.good::before{content:'';position:absolute;left:12px;top:50%;width:34px;height:34px;margin-top:-17px;background:var(--f-check) center/contain no-repeat;filter:drop-shadow(0 2px 3px rgba(90,30,20,.25))}
+.feedback .ring{position:relative;margin:0 .3em 0 .2em;white-space:nowrap;font-weight:800}
+.feedback .ring::after{content:'';position:absolute;left:-.5em;right:-.5em;top:-.4em;bottom:-.44em;pointer-events:none;background:var(--coral);
+ -webkit-mask:var(--crayon-circle) no-repeat center/100% 100%;mask:var(--crayon-circle) no-repeat center/100% 100%;animation:crayon .5s steps(9) .12s both}
+/* 맞게 서빙: 몽글 눈웃음이 안내 판 오른쪽에 한 번 붙는다 */
+#celebration{position:absolute;right:12px;top:6px;z-index:3;pointer-events:none}
+#celebration .mong{width:46px;--r:6deg;animation:pop .4s var(--pop) .1s both}
+.serve-button{width:100%}
+#game-learning{margin:16px 4px 0;font-size:12px;color:var(--ink-2)}
+.recipe-help{margin-top:12px;padding-top:4px;border-top:1px solid rgba(174,50,42,.14);font-size:13px}
+.recipe-help summary{display:flex;align-items:center;min-height:40px;cursor:pointer;font:700 13px/1.3 var(--sans)}
+.recipe-help p{margin:0 0 8px;line-height:1.9;color:var(--ink-2)}
+
+/* ════ 결과 ── 코랄 펠트 끝 화면. 점수 하나가 주인공, 몽글은 기록 카드에 붙인다 ════ */
+.end-field{padding:24px 48px 40px}
+.end-field>*{max-width:840px;margin-left:auto;margin-right:auto}
+/* #result-metrics의 칸을 이 격자에 직접 놓는다(왼쪽 점수, 오른쪽 기록 카드) */
+.end-grid{display:grid;grid-template-columns:minmax(0,1fr) 380px;grid-template-rows:auto auto repeat(5,auto);column-gap:48px;margin-top:32px}
+.end-copy{grid-column:1;grid-row:1;align-self:end}
+.end-copy h1{margin:16px 0 0;font:800 clamp(40px,4.6vw,64px)/1.12 var(--sans);letter-spacing:-.05em}
+.results h1 em{font-style:normal;font-weight:500;letter-spacing:-.045em}
+.end-grid>.mong{grid-column:2;grid-row:1;justify-self:end;align-self:end;position:relative;z-index:2;width:116px;margin:0 20px -34px 0;--r:6deg;animation:pop .42s var(--pop) .35s both}
+.card-title{grid-column:2;grid-row:2;padding:20px 20px 8px;border-radius:20px 20px 0 0;background:var(--cream);font:700 13px/1.3 var(--sans);color:var(--coral-deep)}
+.result-metrics{display:contents}
+.result-metrics>div:first-child{grid-column:1;grid-row:2 / 8;align-self:end;display:flex;flex-direction:column;margin-top:24px}
+.result-metrics>div:first-child small{font:700 14px/1.3 var(--sans);color:var(--ink-2)}
+/* 점수: 펠트를 오려 붙인 듯 두께가 보이는 큰 숫자(kit .k-emboss를 읽히게 잉크색으로) */
+.result-metrics>div:first-child b{margin-top:8px;font:800 clamp(96px,11vw,168px)/.92 var(--sans);letter-spacing:-.06em;font-variant-numeric:tabular-nums;color:var(--ink);
+ text-shadow:-2px -2px 0 rgba(255,255,255,.28),3px 5px 0 var(--coral-deep),5px 12px 18px rgba(42,18,13,.28)}
+.result-metrics>div:not(:first-child){grid-column:2;display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:12px 20px;background:var(--cream);border-top:1px solid var(--line-soft)}
+.result-metrics>div:nth-child(2){grid-row:3;border-top:0}
+.result-metrics>div:nth-child(3){grid-row:4}
+.result-metrics>div:nth-child(4){grid-row:5}
+.result-metrics>div:nth-child(5){grid-row:6}
+.result-metrics>div:nth-child(6){grid-row:7;border-radius:0 0 20px 20px;padding-bottom:18px;box-shadow:0 22px 30px -24px rgba(42,18,13,.6)}
+.result-metrics>div:not(:first-child) small{font:500 14px/1.4 var(--sans);color:var(--muted)}
+.result-metrics>div:not(:first-child) b{font:500 18px/1.2 var(--mono);font-variant-numeric:tabular-nums}
+.review{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:40px;padding-top:24px;border-top:1px solid rgba(42,18,13,.2)}
+.review h2{margin:8px 0 4px;font:800 24px/1.3 var(--sans);letter-spacing:-.04em}
+.review p{margin:0;font:500 14px/1.5 var(--sans);color:var(--ink-2)}
+#review-start{flex:none;width:320px}
+.result-actions{display:flex;align-items:center;gap:16px;margin-top:24px}
+.result-actions .felt{--fh:46px}
+#results:has(#review[hidden]) #replay{--fh:60px;--src:var(--f-cream-l);--sl:70 80 fill;--bv:.39;--bh:.44;font:800 18px/1 var(--sans)}
+.end-paper{max-width:840px;margin:0 auto;padding:24px 48px 56px}
+.round-records{margin:16px 0}
+.round-records details{border-top:1px solid var(--line-soft);padding:16px 0}
+.round-records summary{cursor:pointer;font:500 15px/1.6 var(--sans)}
+.round-records .status{display:block;margin-bottom:4px;font:700 13px/1.3 var(--sans);color:var(--coral-deep)}
+.round-records p{font-size:14px;color:var(--muted)}
+
+/* ── 안내·일시 정지 창: 크림 종이. 뒤를 흐리게 하지 않는다(유리 효과 금지) ── */
+dialog{border:0;border-radius:22px;padding:32px;max-width:500px;width:calc(100% - 32px);background:var(--cream);color:var(--ink);box-shadow:0 30px 80px -30px rgba(42,18,13,.7)}
+dialog::backdrop{background:rgba(42,18,13,.5)}
+dialog h2{margin:8px 0 16px;font:800 28px/1.25 var(--sans);letter-spacing:-.04em}
+dialog ol{margin:0;padding:0;list-style:none;counter-reset:s}
+dialog li{counter-increment:s;display:grid;grid-template-columns:32px 1fr;gap:12px;align-items:start;margin:12px 0;font-size:15px}
+dialog li::before{content:counter(s);display:grid;place-items:center;width:30px;height:30px;background:var(--f-dot-coral) center/contain no-repeat;font:500 13px/1 var(--mono)}
+dialog p{font-size:13px;color:var(--muted)}
+dialog .felt.cta{width:100%;margin-top:24px}
+.close{position:absolute;right:16px;top:12px;width:44px;height:44px;font-size:28px}
+#pause-dialog .quiet{display:block;margin:12px auto 0}
+
+/* ── 움직임 ── kit motion.js 프리셋을 CSS로 옮겼다. 모두 한 번만 */
+@keyframes crayon{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0)}}             /* M.crayon: 손으로 긋듯 steps(9) */
+@keyframes drop{from{opacity:0;transform:translateY(-60px) rotate(calc(var(--r) - 8deg)) scale(1.03)}to{opacity:1;transform:rotate(var(--r))}} /* M.photo */
+@keyframes pop{from{opacity:0;transform:rotate(var(--r)) scale(1.4)}to{opacity:1;transform:rotate(var(--r)) scale(1)}} /* 마스코트: 크기만, 돌리지 않는다 */
+@keyframes sheet{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}  /* 안내 판이 아래에서 올라온다 */
+@keyframes press{from{transform:scale(.72)}to{transform:scale(1)}}                      /* M.press: 재료가 들어간 순간 */
+
+/* ── 중간 폭(태블릿) ── */
+@media(max-width:1100px) and (min-width:681px){
+ .cafe-layout{grid-template-columns:minmax(0,1fr) 312px;gap:24px}
+ #stage-wrap{height:320px}
+ .ingredients{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .ingredients button{height:76px;gap:10px}
+ .ingredients img{height:36px}
+ .hero{column-gap:40px}
+ .end-grid{grid-template-columns:minmax(0,1fr) 340px;column-gap:32px}
+ .hud{min-width:96px;padding:0 16px}
+}
+
+/* ── 휴대폰 ── */
+@media(max-width:680px){
+ .lobby-field{padding:16px 20px 40px}
+ .site-head{gap:12px}
+ .head-label{display:none}
+ .logo-tag img{height:19px}
+ .hero{grid-template-columns:1fr;grid-template-areas:"text" "photo" "actions";padding-top:24px}
+ .hero-text h1{font-size:40px;margin:12px 0}
+ .hero-text p{font-size:16px;line-height:1.65}
+ .photo{width:90%;margin:24px auto 40px 4px;padding:8px}
+ .photo .mong{left:auto;right:-16px;bottom:-36px;width:88px;--r:6deg}
+ .shift-choice{margin:0 0 16px;gap:10px}
+ .shift-choice .felt{--fh:80px}
+ .shift-choice strong{font-size:16px}
+ .shift-choice span{font-size:12px}
+ .tick{width:28px;height:28px;right:-16px;top:-16px}
+ .intro-strip{grid-template-columns:1fr;gap:16px;padding:32px 20px 8px}
+ .lobby footer{padding:8px 20px 32px}
+
+ .game-shell{padding:12px 16px 0}
+ .game-head{display:grid;grid-template-columns:1fr auto;gap:8px;padding:0 0 10px}
+ .brand{gap:10px}
+ .brand img{height:20px}
+ .brand strong{font-size:12px;padding:7px 12px 8px}
+ .icon-button{grid-column:2;grid-row:1;width:42px;height:42px}
+ .icon-button .ico{width:20px;height:20px}
+ .game-metrics{grid-column:1 / 3;grid-row:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ .hud{min-width:0;height:48px;padding:0 16px;background-image:var(--f-pill-l)}
+ .hud b{font-size:17px}
+ .cafe-layout{display:flex;flex-direction:column;align-items:stretch;gap:10px;margin-top:10px}
+ .order-desk{display:contents}
+ .desk-heading{display:none}
+ .customer-queue{order:-2;margin:0 0 8px}
+ .slip{order:-1;padding:10px 14px 12px}
+ .workstation{order:0}
+ .dock{order:1;position:sticky;bottom:0;z-index:5;margin:0 -16px;padding:10px 16px 12px;background:linear-gradient(rgba(255,255,255,0),#fff 14px)}
+ #game-learning{order:2;margin:4px 4px 0}
+ .recipe-help{order:3;margin:0}
+ .finish{order:4;margin:0 0 16px;align-self:flex-start}
+ .slip-head{padding-bottom:8px}
+ .slip-no b{font-size:22px}
+ .audio-status{margin-top:8px;min-height:0;font-size:13px}
+ .listen-actions{margin-top:8px}
+ .listen-actions .felt{--fh:42px;font-size:13px}
+ .listen-actions kbd{display:none}
+ #order-text{margin-top:8px;padding:8px 12px;font-size:16px}
+ .counter-label{display:none}
+ #stage-wrap{height:124px;border-radius:16px}
+ .cup-tabs{padding:8px 0 6px;gap:8px}
+ .cup-tab{--fh:62px;flex:1 1 0}
+ .cup-tab strong{font-size:13px}
+ .cup-tab span{font-size:11px}
+ .tray-actions{justify-content:space-between}
+ .tray-actions .felt{--fh:38px;font-size:12px}
+ .ingredients{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+ .ingredients button{flex-direction:row;gap:4px;height:54px;padding-bottom:3px}
+ .ingredients img{height:26px}
+ .ingredients strong{font-size:13px}
+ .ingredients kbd{display:none}
+ .feedback{margin:0 2px 8px;font-size:13px;line-height:1.5;min-height:0}
+ .serve-button .key{display:none}
+ .felt.coral .kw{width:36px;height:36px;padding:0;margin-right:-8px;background:var(--f-dot-cream) center/contain no-repeat;justify-content:center}
+ .feedback.good,.feedback.wrong{margin:0 0 10px;padding:10px 12px}
+ .feedback.good{min-height:52px;padding:8px 60px 8px 48px}
+ .feedback.good::before{left:10px;width:30px;height:30px;margin-top:-15px}
+ #celebration{right:12px;top:16px}
+ #celebration .mong{width:40px}
+ .felt.cta{--fh:56px;font-size:17px}
+
+ .end-field{padding:16px 20px 32px}
+ .end-grid{grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto;column-gap:12px;margin-top:24px}
+ .end-copy{grid-column:1 / 3;grid-row:1}
+ .end-copy h1{font-size:38px}
+ .result-metrics>div:first-child{grid-column:1;grid-row:2;margin-top:16px}
+ .result-metrics>div:first-child b{font-size:92px}
+ .end-grid>.mong{grid-column:2;grid-row:2;align-self:center;width:92px;margin:16px 4px 0 0}
+ .card-title{grid-column:1 / 3;grid-row:3;margin-top:20px;padding:16px 16px 6px}
+ .result-metrics>div:not(:first-child){grid-column:1 / 3;padding:10px 16px}
+ .result-metrics>div:nth-child(2){grid-row:4}
+ .result-metrics>div:nth-child(3){grid-row:5}
+ .result-metrics>div:nth-child(4){grid-row:6}
+ .result-metrics>div:nth-child(5){grid-row:7}
+ .result-metrics>div:nth-child(6){grid-row:8}
+ .result-metrics>div:not(:first-child) small{font-size:13px}
+ .result-metrics>div:not(:first-child) b{font-size:16px}
+ .review{flex-direction:column;align-items:stretch;gap:16px;margin-top:32px;padding-top:24px}
+ .review h2{font-size:21px}
+ #review-start{width:100%}
+ .result-actions{justify-content:space-between;margin-top:16px}
+ .end-paper{padding:24px 20px 40px}
+ dialog{padding:24px}
+}
+@media(max-width:360px){
+ .hero-text h1{font-size:34px}
+ .hud{padding:0 10px}
+ .hud b{font-size:15px}
+ .brand img{height:17px}
+ .ingredients strong{font-size:12px}
+ .ingredients img{height:26px}
+ .tray-actions kbd{display:none}
+}
+/* 모션 줄이기: 붙기·긋기·내려앉기·펀치를 모두 끈다. 처음부터 최종 모습 */
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

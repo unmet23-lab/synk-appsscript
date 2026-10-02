@@ -1,0 +1,328 @@
+/* SYNK SNS 제작 키트 — 판·계정 테마·부품(k-*)과 영상 위 글자(kv-*)
+ * 원문: docs/디자인/SNS키트/README.md (2026-10-01)
+ * 바탕은 펠트 스크랩북(scrapbook.css)의 토큰을 그대로 쓰고, SNS 판에 필요한 것만 더한다.
+ * 모든 값은 1080px 폭 기준의 고정 픽셀이다. 화면 크기에 따라 바뀌는 값은 쓰지 않는다(굽는 판이라서).
+ * 장식에는 data-deco, 유행 장치(카메라 화면·옛 창·마스킹·컨페티)에는 data-trend를 단다.
+ * tools/SNS키트굽기.js가 장마다 이 표시를 세어 조잡해지는 것을 막는다(README §6).
+ */
+@import url("../펠트스크랩북/scrapbook.css");
+
+@font-face{font-family:'SUIT Variable';font-weight:100 900;font-display:block;src:url("../../브랜드_폰트/SUIT/SUIT-Variable.woff2") format('woff2')}
+@font-face{font-family:'Inter Tight';font-weight:400 500;font-display:block;src:url("../../브랜드_폰트/InterTight/InterTight-Medium.ttf")}
+@font-face{font-family:'Inter Tight';font-weight:600;font-display:block;src:url("../../브랜드_폰트/InterTight/InterTight-SemiBold.ttf")}
+@font-face{font-family:'Inter Tight';font-weight:700 900;font-display:block;src:url("../../브랜드_폰트/InterTight/InterTight-Bold.ttf")}
+@font-face{font-family:'DM Mono';font-weight:400 700;font-display:block;src:url("../../브랜드_폰트/DM_Mono/DMMono-Medium.ttf")}
+
+:root{
+  /* 한국어 게시물은 한글·라틴 모두 SUIT로 굵기를 맞춘다(Inter Tight는 700까지라 900 제목에서 가짜 굵기가 생긴다).
+     키릴·몽골어는 SUIT에 없어서 Inter Tight가 받는다. 영어만 쓰는 판은 .k-latin */
+  --k-sans:'SUIT Variable','Inter Tight',system-ui,sans-serif;
+  --k-latin:'Inter Tight','SUIT Variable',system-ui,sans-serif;
+  --k-mono:'DM Mono','SUIT Variable','Inter Tight',ui-monospace,monospace;
+  --k-ink:#0a0a0a;
+  --k-muted:#4f535a;
+  --k-hair:#dfe3e9;
+  --k-grain:url("assets/field-grain.webp");
+  /* 실땀 사진. 바탕이 흰 종이일 때(--thread-paper)와 색 면일 때(--thread-field)를 계정마다 고른다 */
+  --thread-lapis:url("assets/thread-lapis.webp");
+  --thread-lapis-soft:url("assets/thread-lapis-soft.webp");
+  --thread-coral:url("assets/thread-coral.webp");
+  --thread-coral-soft:url("assets/thread-coral-soft.webp");
+  --thread-butter:url("assets/thread-butter.webp");
+  --thread-butter-soft:url("assets/thread-butter-soft.webp");
+  --thread-pop-soft:url("assets/thread-pop-soft.webp");
+  --thread-meadow-soft:url("assets/thread-meadow-soft.webp");
+  /* 크레용 손그림(나이브). 실제 크레용처럼 끝이 거칠고 두 번 그은 선. 색은 계정이 정한다 */
+  --k-crayon-under:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 40' preserveAspectRatio='none'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='5'/%3E%3C/filter%3E%3Cg filter='url(%23r)' fill='none' stroke='black' stroke-linecap='round'%3E%3Cpath d='M8 22C90 12 200 26 300 16S380 15 392 18' stroke-width='9'/%3E%3Cpath d='M30 30C120 22 220 32 330 25' stroke-width='4' opacity='.6'/%3E%3C/g%3E%3C/svg%3E");
+  --k-crayon-circle:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 160' preserveAspectRatio='none'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='5'/%3E%3C/filter%3E%3Cpath filter='url(%23r)' d='M60 22C140 2 270 18 286 70S220 152 140 150 12 128 14 82 70 20 170 14' fill='none' stroke='black' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E");
+  --k-crayon-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 110'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='4'/%3E%3C/filter%3E%3Cg filter='url(%23r)' fill='none' stroke='black' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M150 12C112 6 52 22 22 84'/%3E%3Cpath d='M12 56l9 30 30-10'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ── 계정 테마 ─────────────────────────────────────────────────────────────
+ * 사업 색은 synk.im 홈페이지 v7(2026-09-30 확정)의 색 면과 같다. 계정마다 한 색만 쓴다.
+ *   --field·--on-field: 표지 색 면과 그 위 글자  --acc: 흰 종이 위 강조 글자  --acc-wash: 옅은 판
+ *   --mark: 흰 종이 위 형광펜  --mark-field: 색 면 위 강조 글자  --crayon: 손그림 색 */
+:root{
+  --field:#0a0a0a;--on-field:#fff;--on-field-2:rgba(255,255,255,.78);
+  --acc:#24448c;--acc-wash:#f0f4fc;--acc-soft:#c5d6f5;
+  --mark:#ffe07a;--mark-field:#ffe07a;--crayon:#f96859;
+  --thread-paper:var(--thread-lapis);--thread-field:var(--thread-lapis-soft);
+}
+[data-acc="lab"]{
+  --field:#f96859;--on-field:#2a120d;--on-field-2:rgba(42,18,13,.8);
+  --acc:#ae322a;--acc-wash:#fef0e9;--acc-soft:#fbb7a3;
+  --mark:#ffe07a;--mark-field:#fff;--crayon:#f96859;
+  --thread-paper:var(--thread-coral);--thread-field:var(--thread-coral-soft);
+}
+[data-acc="brief"]{
+  --field:#3d6bc9;--on-field:#fff;--on-field-2:rgba(255,255,255,.86);
+  --acc:#24448c;--acc-wash:#f0f4fc;--acc-soft:#c5d6f5;
+  --mark:#ffe07a;--mark-field:#ffebb0;--crayon:#f96859;
+  --thread-paper:var(--thread-lapis);--thread-field:var(--thread-lapis-soft);
+}
+[data-acc="builds"]{
+  --field:#0a0a0a;--on-field:#fff;--on-field-2:rgba(255,255,255,.78);
+  --acc:#0a0a0a;--acc-wash:#fff8e1;--acc-soft:#ffebb0;
+  --mark:#f5c445;--mark-field:#f5c445;--crayon:#f5c445;
+  --thread-paper:var(--thread-butter);--thread-field:var(--thread-butter);
+}
+[data-acc="synk"]{
+  --field:#0a0a0a;--on-field:#fff;--on-field-2:rgba(255,255,255,.78);
+  --acc:#0a0a0a;--acc-wash:#f3f4f6;--acc-soft:#c5d6f5;
+  --mark:#ffe07a;--mark-field:#c5d6f5;--crayon:#3d6bc9;
+  --thread-paper:var(--thread-lapis);--thread-field:var(--thread-lapis-soft);
+}
+[data-acc="pulse"]{
+  --field:#99295d;--on-field:#fff;--on-field-2:rgba(255,255,255,.88);
+  --acc:#99295d;--acc-wash:#fbeff5;--acc-soft:#f8c7de;
+  --mark:#f8c7de;--mark-field:#f8c7de;--crayon:#e05c97;
+  --thread-paper:var(--thread-pop-soft);--thread-field:var(--thread-pop-soft);
+}
+[data-acc="path"]{
+  --field:#526956;--on-field:#fff;--on-field-2:rgba(255,255,255,.86);
+  --acc:#3b503e;--acc-wash:#f1f5f1;--acc-soft:#d3e8be;
+  --mark:#d3e8be;--mark-field:#d3e8be;--crayon:#7db45a;
+  --thread-paper:var(--thread-meadow-soft);--thread-field:var(--thread-meadow-soft);
+}
+
+/* ── 판(형식) ─────────────────────────────────────────────────────────────
+ * --safe-*: 글자를 두면 안 되는 가장자리. 굽기 도구가 이 값으로 넘침을 잰다.
+ * feed34는 3:4 원본이고, 4:5로 내보낼 때 위아래 45px가 잘린다(그 띠에 글자 없음). */
+.k-slide{position:relative;overflow:hidden;box-sizing:border-box;width:var(--w);height:var(--h);margin:0;
+  background:#fff;color:var(--k-ink);font:500 38px/1.5 var(--k-sans);letter-spacing:-.01em;
+  word-break:keep-all;overflow-wrap:anywhere;-webkit-font-smoothing:antialiased;
+  --pad-x:84px;--pad-top:120px;--pad-bot:120px}
+.k-slide *{box-sizing:border-box}
+.k-slide[data-fmt="feed34"]{--w:1080px;--h:1440px;--safe-t:96px;--safe-b:96px;--safe-l:64px;--safe-r:64px;--pad-top:196px;--pad-bot:170px}
+.k-slide[data-fmt="doc45"]{--w:1080px;--h:1350px;--safe-t:72px;--safe-b:72px;--safe-l:64px;--safe-r:64px;--pad-top:170px;--pad-bot:146px}
+.k-slide[data-fmt="sq11"]{--w:1080px;--h:1080px;--safe-t:64px;--safe-b:64px;--safe-l:64px;--safe-r:64px;--pad-top:160px;--pad-bot:140px}
+.k-slide[data-fmt="pin23"]{--w:1000px;--h:1500px;--safe-t:72px;--safe-b:220px;--safe-l:64px;--safe-r:64px;--pad-x:76px;--pad-top:170px;--pad-bot:300px}
+/* 세로 9:16: 메타 통합 안전 영역(위 269·아래 672·좌우 65)을 따른다. 오른쪽은 좋아요·댓글 단추 자리라 160을 비운다.
+   2026-09-27 인터뷰 세로 클립 v2가 이 기준으로 실측했고, 2026-10-01 키트도 같은 기준으로 맞췄다(이전 키트 값은 아래 420) */
+.k-slide[data-fmt="cover916"]{--w:1080px;--h:1920px;--safe-t:269px;--safe-b:672px;--safe-l:65px;--safe-r:160px;--pad-x:84px;--pad-top:350px;--pad-bot:740px}
+/* 유튜브 썸네일: 오른쪽 아래 재생 시간 자리를 비운다 */
+.k-slide[data-fmt="thumb169"]{--w:1920px;--h:1080px;--safe-t:64px;--safe-b:64px;--safe-l:72px;--safe-r:72px;--pad-x:110px;--pad-top:110px;--pad-bot:110px}
+.k-slide[data-fmt="og"]{--w:1200px;--h:630px;--safe-t:40px;--safe-b:40px;--safe-l:48px;--safe-r:48px;--pad-x:72px;--pad-top:64px;--pad-bot:64px}
+
+/* 바탕 두 가지: 흰 종이(기본)와 사업 색 면 */
+.k-paper{background:#fff;color:var(--k-ink)}
+.k-field{background-color:var(--field);color:var(--on-field)}
+.k-field::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(1100px 700px at 12% -160px,rgba(255,255,255,.16),rgba(255,255,255,0) 70%),
+             radial-gradient(1200px 900px at 100% 115%,rgba(0,0,0,.2),rgba(0,0,0,0) 62%),var(--k-grain) 0 0/192px 192px repeat;
+  mix-blend-mode:normal;opacity:.9}
+.k-field>*{position:relative;z-index:1}
+
+/* 판 안의 배치 상자. 머리줄·몸·발을 위에서 아래로 쌓는다 */
+.k-in{position:absolute;inset:var(--pad-top) var(--pad-x) var(--pad-bot);display:flex;flex-direction:column}
+.k-grow{flex:1 1 auto;min-height:0}
+
+/* ── 머리줄과 발 ── 모든 장에서 같은 자리. 시리즈 이름은 작게, 쪽수는 모노 */
+.k-head{position:absolute;left:var(--pad-x);right:var(--pad-x);top:calc(var(--safe-t) + 4px);display:flex;align-items:center;justify-content:space-between;gap:24px;
+  font:500 26px/1 var(--k-mono);letter-spacing:.01em;color:var(--k-muted)}
+.k-field .k-head{color:var(--on-field-2)}
+.k-head b{font-weight:500;color:var(--k-ink)}
+.k-field .k-head b{color:var(--on-field)}
+.k-count{font-variant-numeric:tabular-nums}
+.k-foot{position:absolute;left:var(--pad-x);right:var(--pad-x);bottom:calc(var(--safe-b) + 4px);display:flex;align-items:center;justify-content:space-between;gap:24px;
+  font:500 26px/1 var(--k-mono);color:var(--k-muted)}
+.k-field .k-foot{color:var(--on-field-2)}
+/* 세로 9:16 판은 오른쪽 160px(좋아요·댓글 버튼 자리)를 비운다 */
+.k-slide[data-fmt="cover916"] .k-head,.k-slide[data-fmt="cover916"] .k-foot{right:calc(var(--safe-r) + 4px)}
+/* 영상에서 말자막(y 1080~1236)이 있는 장면은 발(로고 줄)을 자막 위로 올리거나(.up) 빼고, 로고는 자막 없는 표지·끝 장면에 둔다 */
+.k-slide[data-fmt="cover916"] .k-foot.up{bottom:calc(var(--safe-b) + 200px)}
+.k-logo{height:46px;width:auto;display:block}
+.k-logo.sm{height:36px}
+/* 색 면 위 로고: 펠트 로고를 다른 색으로 칠하지 않고 흰 라벨 위에 원본 그대로 얹는다(사업명 색이 바탕과 같아도 보이게).
+   검은 면에서는 흰 펠트 synk(logo-synk-paper)를 라벨 없이 쓴다 */
+.k-logo-tag{display:inline-flex;align-items:center;padding:12px 20px;border-radius:16px;background:#fff;
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.08),0 10px 20px -12px rgba(0,0,0,.55)}
+.k-logo-tag .k-logo{height:40px}
+.k-handle{font:600 28px/1 var(--k-latin);letter-spacing:-.01em;color:inherit}
+
+/* ── 글자 ── 한 장에 크기는 제목·본문 두 단계 + 작은 라벨 */
+.k-label{margin:0;font:500 28px/1.3 var(--k-mono);letter-spacing:.01em;color:var(--acc)}
+.k-field .k-label{color:var(--on-field-2)}
+.k-title{margin:0;font-family:var(--k-sans);font-weight:900;line-height:1.1;letter-spacing:-.05em;text-wrap:balance}
+.k-title.xl{font-size:136px;line-height:1.04}
+.k-title.l{font-size:108px}
+.k-title.m{font-size:80px;line-height:1.14}
+.k-title.s{font-size:64px;line-height:1.18;letter-spacing:-.04em}
+.k-title .thin{font-weight:500;letter-spacing:-.04em}
+/* 영상에서는 <br> 대신 줄 블록(.ln)을 쓴다(HyperFrames 규칙). 줄마다 따로 움직일 수 있다 */
+.k-slide .ln,.kv-frame .ln,.kv-hook .ln,.kv-cap .ln{display:block}
+.k-sub{margin:0;font:600 40px/1.42 var(--k-sans);letter-spacing:-.02em;color:var(--k-muted)}
+.k-field .k-sub{color:var(--on-field-2)}
+.k-body{margin:0;font:500 38px/1.55 var(--k-sans);letter-spacing:-.015em}
+.k-body b,.k-sub b{font-weight:800;color:var(--k-ink)}
+.k-field .k-body b,.k-field .k-sub b{color:var(--on-field)}
+.k-latin{font-family:var(--k-latin)}
+/* 라틴·키릴 제목은 한글보다 자간을 덜 좁힌다(-.05em이면 키릴 글자끼리 붙는다, 2026-10-01 LAB 몽골어 캐러셀) */
+.k-title.k-latin{letter-spacing:-.035em}
+.k-small{font:500 28px/1.45 var(--k-sans);color:var(--k-muted)}
+.k-acc{color:var(--acc)}
+
+/* 형광펜: 제목 하나에 한 곳. 흰 종이에서는 형광펜, 색 면에서는 글자색만 바꾸고 크레용 밑줄 */
+.k-mark{background:linear-gradient(transparent 0 0) ;position:relative;z-index:0;white-space:nowrap}
+.k-paper .k-mark,.k-mark.on-paper{background:linear-gradient(var(--mark),var(--mark)) no-repeat 0 78%/calc(var(--mk,1) * 100%) .42em;padding:0 .06em;margin:0 -.03em}
+.k-field .k-mark{color:var(--mark-field)}
+.k-field .k-mark::after{content:'';position:absolute;left:-.04em;right:-.04em;bottom:-.12em;height:.22em;z-index:-1;clip-path:inset(0 calc((1 - var(--mk,1)) * 100%) 0 0);
+  background:var(--mark-field);-webkit-mask:var(--k-crayon-under) no-repeat center/100% 100%;mask:var(--k-crayon-under) no-repeat center/100% 100%}
+/* LAB 코랄 면은 글자가 짙은 색이라 강조 글자색을 바꾸지 않고 흰 크레용 밑줄만 긋는다 */
+[data-acc="lab"] .k-field .k-mark,[data-acc="lab"].k-field .k-mark{color:var(--on-field)}
+
+/* ── 손그림(나이브) ── 한 장에 하나. 실제 크레용 같은 거친 선 */
+.k-crayon{position:absolute;pointer-events:none;background:var(--crayon);-webkit-mask:var(--m) no-repeat center/100% 100%;mask:var(--m) no-repeat center/100% 100%}
+.k-crayon.under{--m:var(--k-crayon-under);height:30px}
+.k-crayon.circle{--m:var(--k-crayon-circle)}
+.k-crayon.arrow{--m:var(--k-crayon-arrow);width:150px;height:104px}
+
+/* ── 실땀 ── 실제 실 사진. 구분선·네 모서리·상자 */
+.k-stitch{display:block;height:12px;border:0;border-top:22px solid transparent;margin:0;
+  border-image:var(--thread-paper) 250 / 32px 0 0 / 0 round}
+.k-field .k-stitch{border-image-source:var(--thread-field)}
+.k-corners{--corner:132px;--thread-w:40px;--corner-inset:0px}
+/* 표지·끝 장의 SYNK 표식: 판 가장자리에서 들어온 실땀 네 모서리 */
+.k-slide.k-corners{--corner-inset:34px;--corner:150px}
+.k-corners::after{content:'';position:absolute;inset:var(--corner-inset);pointer-events:none;z-index:0;clip-path:inset(0 calc((1 - var(--st,1)) * 100%) calc((1 - var(--st,1)) * 100%) 0);
+  border:1px solid transparent;border-image:var(--thread-paper) 250 / var(--thread-w) / 0 round;
+  -webkit-mask:linear-gradient(#000 0 0) 0 0/var(--corner) var(--corner) no-repeat,linear-gradient(#000 0 0) 100% 0/var(--corner) var(--corner) no-repeat,linear-gradient(#000 0 0) 0 100%/var(--corner) var(--corner) no-repeat,linear-gradient(#000 0 0) 100% 100%/var(--corner) var(--corner) no-repeat;
+  mask:linear-gradient(#000 0 0) 0 0/var(--corner) var(--corner) no-repeat,linear-gradient(#000 0 0) 100% 0/var(--corner) var(--corner) no-repeat,linear-gradient(#000 0 0) 0 100%/var(--corner) var(--corner) no-repeat,linear-gradient(#000 0 0) 100% 100%/var(--corner) var(--corner) no-repeat}
+.k-field.k-corners::after,.k-field .k-corners::after{border-image-source:var(--thread-field)}
+.k-stitch-box{position:relative;border:1px solid transparent;border-image:var(--thread-paper) 250 / 30px / 0 round}
+
+/* ── 콜라주 ── 승인 펠트 스티커·실제 사진·종이테이프. 기울이는 건 스티커와 사진뿐 */
+.k-sticker{position:absolute;display:block;width:var(--s,180px);height:auto;transform:rotate(var(--r,-7deg));pointer-events:none;
+  filter:drop-shadow(3px 0 0 #fff) drop-shadow(-3px 0 0 #fff) drop-shadow(0 3px 0 #fff) drop-shadow(0 -3px 0 #fff) drop-shadow(0 10px 14px rgba(16,19,26,.22))}
+.k-object{position:absolute;display:block;width:var(--s,620px);height:auto;pointer-events:none;
+  filter:drop-shadow(0 30px 40px rgba(0,0,0,.28))}
+.k-field .k-object{filter:drop-shadow(0 34px 44px rgba(0,0,0,.34))}
+/* 같은 색 면 위의 펠트 물건·마스코트는 두꺼운 흰 칼선으로 오려 낸 스티커처럼 떼어 낸다(코랄 몽글 + 코랄 면) */
+.k-object.diecut,.k-field .k-object.diecut{filter:drop-shadow(7px 0 0 #fff) drop-shadow(-7px 0 0 #fff) drop-shadow(0 7px 0 #fff) drop-shadow(0 -7px 0 #fff) drop-shadow(0 26px 30px rgba(0,0,0,.3))}
+/* 실제 사진·화면: 인화지처럼 흰 테두리. 화면 캡처는 기울이지 않는다(읽어야 하니까) */
+.k-photo{position:relative;display:block;margin:0;padding:14px;background:#fff;border-radius:6px;transform:rotate(var(--r,0deg));
+  box-shadow:0 1px 0 rgba(0,0,0,.06),0 18px 34px -16px rgba(0,0,0,.45)}
+.k-photo>img{display:block;width:100%;height:100%;object-fit:cover;border-radius:2px}
+.k-photo>figcaption{margin:12px 2px 0;font:500 24px/1.3 var(--k-mono);color:var(--k-muted)}
+.k-shot{position:relative;display:block;margin:0;border-radius:18px;overflow:hidden;background:#fff;box-shadow:0 0 0 2px var(--k-hair),0 18px 36px -18px rgba(0,0,0,.4)}
+.k-shot>img{display:block;width:100%;height:auto}
+.k-tape{position:absolute;width:150px;height:44px;pointer-events:none;background:rgba(245,196,69,.6);transform:rotate(var(--r,-5deg));
+  -webkit-mask:linear-gradient(90deg,transparent 0 4px,#000 4px calc(100% - 4px),transparent calc(100% - 4px));mask:linear-gradient(90deg,transparent 0 4px,#000 4px calc(100% - 4px),transparent calc(100% - 4px))}
+.k-tape.lapis{background:rgba(197,214,245,.85)}
+.k-tape.white{background:rgba(255,255,255,.72)}
+
+/* ── 칩·행동 ── 펠트 두께가 보이는 칩. 기울이지 않는다 */
+.k-chip{display:inline-flex;align-items:center;gap:12px;padding:14px 26px;border-radius:999px;background:#fff;color:var(--k-ink);
+  font:700 32px/1 var(--k-sans);letter-spacing:-.02em;box-shadow:0 0 0 2.5px var(--k-ink)}
+.k-chip.acc{background:var(--acc-wash);color:var(--acc);box-shadow:0 0 0 2.5px var(--acc)}
+.k-field .k-chip{background:transparent;color:var(--on-field);box-shadow:0 0 0 2.5px var(--on-field-2)}
+.k-cta{display:inline-flex;align-items:center;gap:16px;padding:24px 40px;border-radius:28px;background:var(--field);color:var(--on-field);
+  font:800 44px/1.1 var(--k-sans);letter-spacing:-.03em;
+  box-shadow:inset 0 -6px 0 rgba(0,0,0,.22),0 4px 0 rgba(16,19,26,.12),0 22px 30px -18px rgba(0,0,0,.7)}
+.k-cta .kw{font-family:var(--k-latin);font-weight:700;padding:4px 18px 8px;border-radius:14px;background:var(--on-field);color:var(--field)}
+.k-field .k-cta{background:#fff;color:var(--k-ink)}
+.k-field .k-cta .kw{background:var(--field);color:var(--on-field)}
+
+/* ── 엠보싱 ── 색 면에 눌러 찍은 회차 숫자·표식. 한 장에 하나 */
+.k-emboss{margin:0;font:900 220px/0.9 var(--k-sans);letter-spacing:-.06em;color:var(--field);
+  text-shadow:-2px -2px 2px rgba(255,255,255,.28),3px 4px 5px rgba(0,0,0,.32),0 0 1px rgba(0,0,0,.2)}
+.k-paper .k-emboss{color:#f4f5f7;text-shadow:-2px -2px 2px #fff,3px 4px 6px rgba(16,19,26,.18)}
+
+/* ── 순서 ── 펠트 단추 번호 */
+.k-steps{display:grid;gap:26px;margin:0;padding:0;list-style:none;counter-reset:k}
+.k-steps>li{counter-increment:k;display:grid;grid-template-columns:76px 1fr;gap:26px;align-items:start}
+.k-steps>li::before{content:counter(k);display:grid;place-items:center;width:76px;height:76px;border-radius:50%;
+  background:var(--field);color:var(--on-field);font:800 38px/1 var(--k-latin);
+  box-shadow:inset 0 -5px 0 rgba(0,0,0,.22),0 10px 16px -10px rgba(0,0,0,.6)}
+.k-steps h3{margin:6px 0 6px;font:800 44px/1.25 var(--k-sans);letter-spacing:-.03em}
+.k-steps p{margin:0;font:500 34px/1.5 var(--k-sans);color:var(--k-muted)}
+
+/* ── 전후 비교 ── 두 칸. 바뀐 쪽 하나만 윤곽 */
+.k-compare{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.k-compare>figure{margin:0}
+.k-compare>figure>.k-label{margin-bottom:14px;color:var(--k-muted)}
+.k-compare>figure.after>.k-label{color:var(--acc)}
+.k-compare>figure.after .k-shot{box-shadow:0 0 0 4px var(--acc),0 18px 36px -18px rgba(0,0,0,.45)}
+
+/* ── 인용 ── 한 사람의 말 한 문장 */
+.k-quote{margin:0;font:800 76px/1.24 var(--k-sans);letter-spacing:-.045em;text-wrap:balance}
+.k-quote::before{content:'“';display:block;height:.62em;margin-bottom:.06em;font:900 1.9em/1 var(--k-latin);color:var(--mark-field)}
+.k-paper .k-quote::before{color:var(--acc)}
+.k-who{display:flex;align-items:center;gap:18px;margin-top:34px;font:600 32px/1.3 var(--k-sans)}
+.k-who small{display:block;font:500 26px/1.3 var(--k-mono);color:var(--k-muted)}
+.k-field .k-who small{color:var(--on-field-2)}
+
+/* ── LAB 낱말 카드 ── 한글이 주인공. 번역은 한 줄, 소리는 모노 */
+.k-word{display:flex;flex-direction:column;align-items:center;text-align:center}
+.k-word .ko{font:900 248px/1 var(--k-sans);letter-spacing:-.05em}
+.k-word .say{margin-top:22px;font:500 40px/1.2 var(--k-mono);letter-spacing:.06em;color:var(--k-muted)}
+.k-word .mean{margin-top:48px;font:700 56px/1.2 var(--k-latin);letter-spacing:-.02em}
+.k-field .k-word .say{color:var(--on-field-2)}
+
+/* ════ 유행 장치 — 한 장에 하나(data-trend) ════════════════════════════════ */
+
+/* 카메라 화면: 실제 화면·사진이 '진짜'라는 증거 자리. 실땀 네 모서리 + 날짜 도장. 깜빡임·REC 없음 */
+.k-viewfinder{position:relative;isolation:isolate;padding:44px;border-radius:32px;background:#0b0d12;color:#fff;
+  --corner:110px;--thread-w:34px;--corner-inset:14px}
+.k-viewfinder::after{content:'';position:absolute;inset:calc(var(--corner-inset) - var(--vfo,0px));z-index:2;pointer-events:none;border:1px solid transparent;
+  border-image:var(--thread-field) 250 / var(--thread-w) / 0 round;
+  -webkit-mask:linear-gradient(#000 0 0) 0 0/var(--corner) var(--corner) no-repeat,linear-gradient(#000 0 0) 100% 0/var(--corner) var(--corner) no-repeat,linear-gradient(#000 0 0) 0 100%/var(--corner) var(--corner) no-repeat,linear-gradient(#000 0 0) 100% 100%/var(--corner) var(--corner) no-repeat;
+  mask:linear-gradient(#000 0 0) 0 0/var(--corner) var(--corner) no-repeat,linear-gradient(#000 0 0) 100% 0/var(--corner) var(--corner) no-repeat,linear-gradient(#000 0 0) 0 100%/var(--corner) var(--corner) no-repeat,linear-gradient(#000 0 0) 100% 100%/var(--corner) var(--corner) no-repeat}
+.k-viewfinder .k-shot{box-shadow:none;border-radius:14px}
+.k-stamp{align-self:flex-start;display:inline-flex;align-items:center;gap:12px;padding:8px 16px;border-radius:10px;font:500 26px/1.2 var(--k-mono);letter-spacing:.02em;
+  color:#e8ebf0;box-shadow:inset 0 0 0 2px #9aa3b2;transform:rotate(-2deg)}
+.k-paper .k-stamp{color:var(--k-muted);box-shadow:inset 0 0 0 2px currentColor}
+.k-slide .k-viewfinder .k-stamp{position:absolute;top:50px;left:58px;z-index:3;color:#fff;background:#0b0d12;box-shadow:inset 0 0 0 2px #6b7385}
+/* 화면 제목을 가리면 도장을 오른쪽 아래로 옮긴다 */
+.k-slide .k-viewfinder.stamp-br .k-stamp{top:auto;left:auto;bottom:50px;right:58px}
+
+/* 옛 창(웹코어): 복사해 갈 문장 하나에만. 가는 선 하나, 가짜 단추 없음 */
+.k-window{position:relative;border-radius:22px;background:#fff;box-shadow:0 0 0 3px var(--k-ink),8px 8px 0 var(--k-ink)}
+.k-window>.bar{display:flex;align-items:center;justify-content:space-between;padding:16px 26px;border-radius:20px 20px 0 0;background:var(--field);color:var(--on-field);
+  font:500 26px/1.2 var(--k-mono)}
+.k-window>.txt{padding:30px 32px 34px;font:600 36px/1.6 var(--k-sans);letter-spacing:-.015em}
+.k-window>.txt mark{background:var(--acc-wash);color:var(--acc);padding:0 .12em;border-radius:6px}
+
+/* 마스킹: 대표 사진 하나를 아치 창에. 얼굴이 잘리지 않게 위쪽을 둥글게 */
+.k-arch{position:relative;margin:0;overflow:hidden;border-radius:999px 999px 36px 36px;background:#fff;
+  box-shadow:0 0 0 10px #fff,0 0 0 13px var(--k-ink),0 30px 44px -22px rgba(0,0,0,.7)}
+.k-field .k-arch{box-shadow:0 0 0 10px #fff,0 30px 50px -20px rgba(0,0,0,.75)}
+.k-arch>img{display:block;width:100%;height:100%;object-fit:cover;object-position:var(--pos,50% 20%)}
+
+/* 컨페티: 좋은 결과·발표에만. 가장자리에 펠트 펀치 점 몇 개, 멈춰 있음 */
+.k-confetti{position:absolute;pointer-events:none;width:var(--w-c,320px);height:var(--h-c,200px);
+  background:
+   radial-gradient(circle at 10% 30%,var(--c1,#f5c445) 0 15px,transparent 16px),
+   radial-gradient(circle at 34% 78%,var(--c2,#c5d6f5) 0 11px,transparent 12px),
+   radial-gradient(circle at 58% 18%,var(--c3,#fff) 0 9px,transparent 10px),
+   radial-gradient(circle at 80% 64%,var(--c1,#f5c445) 0 12px,transparent 13px),
+   radial-gradient(circle at 94% 26%,var(--c2,#c5d6f5) 0 8px,transparent 9px);
+  filter:drop-shadow(0 3px 2px rgba(0,0,0,.22))}
+
+/* ════ 영상 위 글자(kv-*) — 1080×1920 기준. 첫 프레임 = 표지 ════════════════ */
+.kv-frame{position:relative;width:1080px;height:1920px;overflow:hidden;background:#222;font-family:var(--k-sans)}
+.kv-frame>img.bg,.kv-frame>video.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* 훅 제목: 위 안전선 아래 두 줄. 첫 줄 흰색, 둘째 줄 계정 강조색. 처음부터 끝까지 그대로 둔다 */
+.kv-hook{position:absolute;left:84px;right:160px;top:270px;margin:0;font:900 76px/1.16 var(--k-sans);letter-spacing:-.045em;color:#fff;
+  text-shadow:0 2px 0 rgba(0,0,0,.25),0 6px 26px rgba(0,0,0,.55)}
+.kv-hook .l2{display:block;color:var(--mark-field)}
+/* 밝은 피부·배경 위에서 훅이 묻히면 위쪽 그늘을 깐다(영상 맨 아래 층, 글자 아래) */
+.kv-scrim{position:absolute;left:0;right:0;top:0;height:780px;pointer-events:none;background:linear-gradient(rgba(0,0,0,.58),rgba(0,0,0,.3) 55%,rgba(0,0,0,0))}
+/* 이름표가 얼굴을 가리면 훅 윗줄(시리즈 칩 옆)에 둔다 */
+.kv-hook .kv-name{position:static;display:inline-flex;margin:0 0 18px 12px;vertical-align:top;text-shadow:none;letter-spacing:0}
+.kv-hook .series{display:inline-block;margin-bottom:18px;padding:8px 16px;border-radius:10px;background:var(--field);color:var(--on-field);
+  font:500 26px/1.2 var(--k-mono);letter-spacing:.02em;text-shadow:none}
+/* 말자막: 아래끝을 y 1236에 붙여 위로 쌓는다(아래 672 안전선 위, 두 줄이면 y 1080~1236). 흰 글자 + 검은 외곽선, 강조 낱말은 계정색 */
+.kv-cap{position:absolute;left:84px;right:160px;top:auto;bottom:684px;margin:0;text-align:center;font:800 64px/1.22 var(--k-sans);letter-spacing:-.03em;color:#fff;
+  -webkit-text-stroke:10px rgba(0,0,0,.9);paint-order:stroke fill}
+.kv-cap em{font-style:normal;color:var(--mark-field)}
+/* 설명 장면(흰 종이·색 면) 위 자막: 외곽선 없이 굵게, 강조 낱말만 계정색. 자막이 있는 장면의 내용은 y 1040까지 둔다 */
+.k-slide .kv-cap{top:auto;bottom:684px;-webkit-text-stroke:0;font-size:60px;text-align:left}
+.k-paper .kv-cap{color:var(--k-ink)}
+.k-paper .kv-cap em{color:var(--acc)}
+/* 형광펜은 낱말 조각(.w)마다 칠한다. 낱말이 나타나기 전에 띠만 먼저 보이지 않게 */
+.k-paper .kv-cap em .w,.k-paper .kv-cap em:not(:has(.w)){background:linear-gradient(var(--mark),var(--mark)) no-repeat 0 82%/100% .36em}
+.k-field .kv-cap{color:#fff}
+.kv-name{position:absolute;left:84px;top:640px;display:inline-flex;align-items:center;gap:14px;padding:12px 22px;border-radius:14px;
+  background:rgba(255,255,255,.94);color:#0a0a0a;font:700 32px/1.1 var(--k-sans);box-shadow:0 10px 24px -12px rgba(0,0,0,.6)}
+.kv-name small{font:500 24px/1 var(--k-mono);color:#4f535a}

@@ -1,0 +1,158 @@
+[
+ {
+  "target": "before",
+  "view": "mobile",
+  "url": "http://127.0.0.1:5223/",
+  "checks": {
+   "lobby": {
+    "scrollW": 390,
+    "innerW": 390,
+    "vv": 390,
+    "fonts": [
+     "SUIT",
+     "Mono"
+    ]
+   },
+   "play": {
+    "scrollW": 390,
+    "innerW": 390,
+    "vv": 390,
+    "fonts": [
+     "SUIT",
+     "Mono"
+    ]
+   },
+   "results": {
+    "scrollW": 390,
+    "innerW": 390,
+    "vv": 390,
+    "fonts": [
+     "SUIT",
+     "Mono"
+    ]
+   }
+  },
+  "order": "o01",
+  "wrongText": "따뜻하게 부탁했어요. 고친 뒤 다시 서빙할 수 있어요.",
+  "score": "360",
+  "errors": [],
+  "warnings": []
+ },
+ {
+  "target": "after",
+  "view": "mobile",
+  "url": "http://127.0.0.1:5243/",
+  "checks": {
+   "lobby": {
+    "scrollW": 390,
+    "innerW": 390,
+    "vv": 390,
+    "fonts": [
+     "SUIT",
+     "DM Mono"
+    ]
+   },
+   "play": {
+    "scrollW": 390,
+    "innerW": 390,
+    "vv": 390,
+    "fonts": [
+     "SUIT",
+     "DM Mono"
+    ]
+   },
+   "results": {
+    "scrollW": 390,
+    "innerW": 390,
+    "vv": 390,
+    "fonts": [
+     "SUIT",
+     "DM Mono"
+    ]
+   }
+  },
+  "order": "o01",
+  "wrongText": "따뜻하게 부탁했어요. 고친 뒤 다시 서빙할 수 있어요.",
+  "score": "360",
+  "errors": [],
+  "warnings": []
+ },
+ {
+  "target": "before",
+  "view": "desktop",
+  "url": "http://127.0.0.1:5223/",
+  "checks": {
+   "lobby": {
+    "scrollW": 1440,
+    "innerW": 1440,
+    "vv": 1440,
+    "fonts": [
+     "SUIT",
+     "Mono"
+    ]
+   },
+   "play": {
+    "scrollW": 1440,
+    "innerW": 1440,
+    "vv": 1440,
+    "fonts": [
+     "SUIT",
+     "Mono"
+    ]
+   },
+   "results": {
+    "scrollW": 1440,
+    "innerW": 1440,
+    "vv": 1440,
+    "fonts": [
+     "SUIT",
+     "Mono"
+    ]
+   }
+  },
+  "order": "o01",
+  "wrongText": "따뜻하게 부탁했어요. 고친 뒤 다시 서빙할 수 있어요.",
+  "score": "360",
+  "errors": [],
+  "warnings": []
+ },
+ {
+  "target": "after",
+  "view": "desktop",
+  "url": "http://127.0.0.1:5243/",
+  "checks": {
+   "lobby": {
+    "scrollW": 1440,
+    "innerW": 1440,
+    "vv": 1440,
+    "fonts": [
+     "SUIT",
+     "DM Mono"
+    ]
+   },
+   "play": {
+    "scrollW": 1440,
+    "innerW": 1440,
+    "vv": 1440,
+    "fonts": [
+     "SUIT",
+     "DM Mono"
+    ]
+   },
+   "results": {
+    "scrollW": 1440,
+    "innerW": 1440,
+    "vv": 1440,
+    "fonts": [
+     "SUIT",
+     "DM Mono"
+    ]
+   }
+  },
+  "order": "o01",
+  "wrongText": "따뜻하게 부탁했어요. 고친 뒤 다시 서빙할 수 있어요.",
+  "score": "360",
+  "errors": [],
+  "warnings": []
+ }
+]

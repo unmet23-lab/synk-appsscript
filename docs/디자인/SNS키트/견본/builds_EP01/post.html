@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>yuhobuilds EP.01 · 출석 앱 만들다 출석을 까먹었다 · 캐러셀·표지·인용·썸네일·문서</title>
+<link rel="stylesheet" href="../../kit.css">
+<style>
+  body{margin:0;background:#d9dbe0;display:flex;flex-direction:column;gap:40px;padding:40px;align-items:flex-start}
+  .stack{position:relative;height:560px}
+  .stack .card{position:absolute;left:0;right:120px;padding:34px 40px;border-radius:26px;background:#fff;box-shadow:0 0 0 3px var(--k-ink);
+    font:800 50px/1.2 var(--k-sans);letter-spacing:-.03em;display:flex;justify-content:space-between;align-items:center}
+  .stack .card span{font:500 30px/1 var(--k-mono);color:var(--k-muted)}
+  .prompt{padding:46px 48px;border-radius:30px;background:var(--acc-wash)}
+  .prompt p{margin:0;font:700 54px/1.45 var(--k-sans);letter-spacing:-.03em}
+  .prompt p+p{margin-top:18px}
+</style>
+</head>
+<body data-acc="builds">
+
+<!-- 1 표지: 검은 면 + 실제 얼굴(아치 창) -->
+<section class="k-slide k-field k-corners" data-fmt="feed34" data-name="표지">
+  <div class="k-head"><b>yuhobuilds · EP.01</b><span>실화 · 2026.06</span></div>
+  <div class="k-in">
+    <h1 class="k-title l">AI로 출석 앱<br>만들다가<br><span class="k-mark">출석을 까먹었다</span></h1>
+  </div>
+  <figure class="k-arch" data-trend="mask" style="position:absolute;right:96px;bottom:170px;width:430px;height:560px;--pos:50% 18%"><img src="../../assets/photo-yuho-interview-front.webp" alt="양유호"></figure>
+  <p class="k-sub" style="position:absolute;left:84px;bottom:190px;width:440px">개발 0에서 시작한<br>제 첫 앱 이야기</p>
+  <div class="k-foot"><img class="k-logo" src="../../assets/logo-synk-paper.webp" alt="synk"><span class="k-handle">@yuhobuilds</span></div>
+</section>
+
+<!-- 2 시작 -->
+<section class="k-slide k-paper" data-fmt="feed34" data-name="시작">
+  <div class="k-head"><b>yuhobuilds · EP.01</b><span class="k-count">02 / 07</span></div>
+  <div class="k-in">
+    <span class="k-stamp">2026.06 · 몽골 울란바토르</span>
+    <h2 class="k-title l" style="margin-top:40px">번역하려고<br><span class="k-mark">Claude</span>를<br>결제했다</h2>
+    <div class="k-grow" style="display:grid;place-items:center"><img class="k-sticker" data-deco src="../../assets/sticker-time.webp" alt="" style="position:relative;--s:300px;--r:-8deg"></div>
+    <p class="k-body">몽골 학원에서 부원장으로 일하던 6월.<br>학생 문의가 늘자, <b>출석 앱도 만들고 싶어졌어요.</b></p>
+    <p class="k-small" style="margin-top:18px">회고를 바탕으로 한 실화입니다.</p>
+  </div>
+  <div class="k-foot"><span class="k-handle" style="font-size:26px">@yuhobuilds</span><span>SYNK를 만드는 유호</span></div>
+</section>
+
+<!-- 3 개발 0 -->
+<section class="k-slide k-paper" data-fmt="feed34" data-name="개발0">
+  <div class="k-head"><b>yuhobuilds · EP.01</b><span class="k-count">03 / 07</span></div>
+  <div class="k-in">
+    <p class="k-label">문제는</p>
+    <h2 class="k-title l" style="margin-top:18px">개발 실력<br><span class="k-mark">ZERO</span></h2>
+    <ol class="k-steps" style="margin-top:80px;gap:46px">
+      <li><div><h3>화면을 찍고</h3><p>막힌 화면을 그대로 캡처해서</p></div></li>
+      <li><div><h3>물어보고</h3><p>AI에게 “이거 왜 이래요?”</p></div></li>
+      <li><div><h3>그대로 따라 했어요</h3><p>무슨 뜻인지 모른 채로</p></div></li>
+    </ol>
+  </div>
+  <div class="k-foot"><span class="k-handle" style="font-size:26px">@yuhobuilds</span><span>SYNK를 만드는 유호</span></div>
+</section>
+
+<!-- 4 기능이 늘다 -->
+<section class="k-slide k-paper" data-fmt="feed34" data-name="기능">
+  <div class="k-head"><b>yuhobuilds · EP.01</b><span class="k-count">04 / 07</span></div>
+  <div class="k-in">
+    <p class="k-label">그런데</p>
+    <h2 class="k-title m" style="margin-top:18px">기능은 늘었는데<br>출석은 <span class="k-mark">뒷전</span></h2>
+    <div class="stack" style="margin-top:80px">
+      <div class="card" style="top:0;transform:rotate(-2deg)">+ 이 기능도 좋아 보이고<span>+1</span></div>
+      <div class="card" style="top:150px;left:40px;right:80px;transform:rotate(1.5deg)">+ 저것도 넣고 싶고<span>+1</span></div>
+      <div class="card" style="top:300px;left:10px;right:110px;transform:rotate(-1deg)">+ 하나만 더…<span>+1</span></div>
+    </div>
+    <p class="k-title s" style="margin-top:20px">나 뭐 만들고 있었지?</p>
+  </div>
+  <div class="k-foot"><span class="k-handle" style="font-size:26px">@yuhobuilds</span><span>SYNK를 만드는 유호</span></div>
+</section>
+
+<!-- 5 완성 기준 한 줄: 옛 창 -->
+<section class="k-slide k-paper" data-fmt="feed34" data-name="기준">
+  <div class="k-head"><b>yuhobuilds · EP.01</b><span class="k-count">05 / 07</span></div>
+  <div class="k-in">
+    <p class="k-label">지금 다시 한다면</p>
+    <h2 class="k-title m" style="margin-top:18px">완성 기준부터<br><span class="k-mark">딱 한 줄</span>로</h2>
+    <div class="k-window" data-trend="window" style="margin-top:80px">
+      <div class="bar"><span>완성_기준.txt</span><span>1줄</span></div>
+      <div class="txt" style="font-size:52px;line-height:1.4;font-weight:800;letter-spacing:-.03em">학생 한 명의 출석을 <mark>저장</mark>하고,<br>다시 <mark>확인</mark>할 수 있으면 완성.</div>
+    </div>
+    <p class="k-label" style="margin-top:70px;color:var(--k-muted)">확인하는 법</p>
+    <ol class="k-steps" style="margin-top:26px;gap:26px">
+      <li><div><h3>이름을 고르고, 출석 저장</h3></div></li>
+      <li><div><h3>다시 열어도 기록이 보이면 첫 단계 끝</h3></div></li>
+    </ol>
+  </div>
+  <div class="k-foot"><span class="k-handle" style="font-size:26px">@yuhobuilds</span><span>SYNK를 만드는 유호</span></div>
+</section>
+
+<!-- 6 AI에게 이렇게 -->
+<section class="k-slide k-paper" data-fmt="feed34" data-name="요청">
+  <div class="k-head"><b>yuhobuilds · EP.01</b><span class="k-count">06 / 07</span></div>
+  <div class="k-in">
+    <p class="k-label">복사해서 쓰세요</p>
+    <h2 class="k-title m" style="margin-top:18px">AI에게는<br><span class="k-mark">이렇게</span>말해 보세요</h2>
+    <div class="prompt" style="margin-top:70px">
+      <p>“나는 개발이 처음이야.</p>
+      <p>학생 한 명의 출석을 저장하고, 다시 확인하고 싶어.</p>
+      <p>추가 기능은 빼고, 가장 쉬운 방법과 확인 순서를 알려줘.”</p>
+    </div>
+    <div class="k-grow"></div>
+    <p class="k-small">EP.01 영상에서 쓴 요청문 그대로예요.</p>
+  </div>
+  <span class="k-tape" data-deco style="left:120px;top:480px;--r:-6deg"></span>
+  <div class="k-foot"><span class="k-handle" style="font-size:26px">@yuhobuilds</span><span>SYNK를 만드는 유호</span></div>
+</section>
+
+<!-- 7 끝 -->
+<section class="k-slide k-field k-corners" data-fmt="feed34" data-name="끝">
+  <div class="k-head"><b>yuhobuilds · EP.01</b><span class="k-count">07 / 07</span></div>
+  <div class="k-in" style="justify-content:center">
+    <h2 class="k-title l">제가 헤맨 길,<br><span class="k-mark">여러분은 건너뛰세요</span></h2>
+    <p class="k-sub" style="margin-top:36px">왕초보에서 1인 기업가까지.<br>AI로 회사를 만들며 막힌 곳을 그대로 보여 드려요.</p>
+    <div style="margin-top:70px;display:flex;gap:18px;flex-wrap:wrap"><span class="k-chip">다음 편 · 이름이 네 개?!</span></div>
+  </div>
+  <div class="k-foot"><img class="k-logo" src="../../assets/logo-synk-paper.webp" alt="synk"><span class="k-handle">@yuhobuilds</span></div>
+</section>
+
+<!-- 릴스·쇼츠 표지 -->
+<section class="k-slide k-field k-corners" data-fmt="cover916" data-name="릴스표지">
+  <div class="k-head" style="justify-content:flex-start;gap:18px"><b>yuhobuilds · EP.01</b></div>
+  <div class="k-in">
+    <h1 class="k-title l">AI로 출석 앱<br>만들다가<br><span class="k-mark">출석을 까먹었다</span></h1>
+  </div>
+  <figure class="k-arch" data-trend="mask" style="position:absolute;left:250px;top:880px;width:500px;height:600px;--pos:50% 18%"><img src="../../assets/photo-yuho-interview-front.webp" alt="양유호"></figure>
+</section>
+
+<!-- 스레드·X 인용 카드(1:1). 인터뷰 v9의 실제 문장 -->
+<section class="k-slide k-field k-corners" data-fmt="sq11" data-name="인용">
+  <div class="k-head"><b>yuhobuilds</b><span>창업자 인터뷰에서</span></div>
+  <div class="k-in" style="justify-content:center">
+    <p class="k-quote" style="font-size:84px">AI 쓰다 보면<br>진짜 <span class="k-mark">끌려가게</span> 돼요.</p>
+    <div class="k-who"><img src="../../assets/photo-yuho-interview-front.webp" alt="" style="width:84px;height:84px;border-radius:50%;object-fit:cover;object-position:50% 20%;box-shadow:0 0 0 4px #fff"><div>양유호<small>SYNK 창업자</small></div></div>
+  </div>
+</section>
+
+<!-- 유튜브 썸네일(16:9). 얼굴 + 글자 4~6단어 -->
+<section class="k-slide k-field" data-fmt="thumb169" data-name="썸네일">
+  <div class="k-in" style="right:860px;justify-content:center">
+    <p class="k-label" style="font-size:48px">SYNK 창업자 인터뷰</p>
+    <h1 class="k-title" style="font-size:150px;line-height:1.04;margin-top:26px">재미만 있는<br>한국어 공부는<br><span class="k-mark">쓰레기</span></h1>
+  </div>
+  <figure class="k-arch" data-trend="mask" style="position:absolute;right:120px;top:90px;width:700px;height:900px;--pos:50% 16%"><img src="../../assets/photo-yuho-interview-front.webp" alt="양유호"></figure>
+</section>
+
+<!-- 링크드인 문서(4:5) 표지 · 개인 계정. 흰 종이가 기본 -->
+<section class="k-slide k-paper k-corners" data-fmt="doc45" data-name="링크드인표지">
+  <div class="k-head"><b>양유호 · SYNK</b><span>01 / 03</span></div>
+  <div class="k-in">
+    <p class="k-label">AI로 회사를 만들며 배운 것</p>
+    <h1 class="k-title l" style="margin-top:22px">완성 기준은<br><span class="k-mark">한 줄</span>이면<br>충분했다</h1>
+    <p class="k-sub" style="margin-top:40px">개발 0에서 첫 앱을 만들다<br>목적을 잃었던 이야기</p>
+  </div>
+  <figure class="k-arch" data-trend="mask" style="position:absolute;right:96px;bottom:150px;width:330px;height:420px;--pos:50% 18%"><img src="../../assets/photo-yuho-interview-front.webp" alt="양유호"></figure>
+</section>
+<section class="k-slide k-paper" data-fmt="doc45" data-name="링크드인2">
+  <div class="k-head"><b>양유호 · SYNK</b><span>02 / 03</span></div>
+  <div class="k-in">
+    <p class="k-label">무엇이 잘못됐나</p>
+    <h2 class="k-title m" style="margin-top:22px">기능을 하나씩 더할 때마다<br><span class="k-mark">처음 목적</span>이 흐려졌다</h2>
+    <ol class="k-steps" style="margin-top:70px;gap:40px">
+      <li><div><h3>목적: 출석을 기록한다</h3><p>학생 문의가 늘어 시작한 일</p></div></li>
+      <li><div><h3>현실: 좋아 보이는 기능을 계속 추가</h3><p>AI가 제안하는 대로 따라가다</p></div></li>
+      <li><div><h3>결과: 출석은 뒷전</h3><p>무엇을 만들고 있는지 잊었다</p></div></li>
+    </ol>
+  </div>
+</section>
+<section class="k-slide k-field k-corners" data-fmt="doc45" data-name="링크드인3">
+  <div class="k-head"><b>양유호 · SYNK</b><span>03 / 03</span></div>
+  <div class="k-in" style="justify-content:center">
+    <p class="k-label">다음에 만들 때</p>
+    <h2 class="k-title m" style="margin-top:22px">“학생 한 명의 출석을<br>저장하고 다시 볼 수 있으면<br><span class="k-mark">완성</span>.”</h2>
+    <p class="k-sub" style="margin-top:44px">작게 완성하고, 확인한 뒤, 다음 기능.<br>여러분의 첫 프로젝트의 한 줄은 무엇인가요?</p>
+  </div>
+  <div class="k-foot"><img class="k-logo" src="../../assets/logo-synk-paper.webp" alt="synk"><span>synk.im</span></div>
+</section>
+
+</body>
+</html>

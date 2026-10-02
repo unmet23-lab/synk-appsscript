@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>SYNK SNS 키트 모션 견본 · synkbrief 광고 세 컷</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="assets/synk-kit/motion.js"></script>
+    <link rel="stylesheet" href="assets/synk-kit/kit.css" />
+    <style>
+      @font-face{font-family:'SUIT Variable';font-weight:100 900;src:url("assets/synk-kit/fonts/SUIT-Variable.woff2") format('woff2')}
+      @font-face{font-family:'Inter Tight';font-weight:400 600;src:url("assets/synk-kit/fonts/InterTight-SemiBold.ttf")}
+      @font-face{font-family:'Inter Tight';font-weight:700 900;src:url("assets/synk-kit/fonts/InterTight-Bold.ttf")}
+      @font-face{font-family:'DM Mono';font-weight:400 700;src:url("assets/synk-kit/fonts/DMMono-Medium.ttf")}
+      html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #0a0a0a; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; font-family: 'SUIT Variable', 'Inter Tight', sans-serif; }
+      .k-scene { position: absolute; inset: 0; overflow: hidden; }
+      .k-scene > .k-slide { position: absolute; inset: 0; }
+      #s2, #s3, #s4, #s5 { opacity: 0; }
+      .row { display: grid; grid-template-columns: 1fr 200px; gap: 30px; align-items: center; }
+      .thumb { height: 130px; }
+    </style>
+  </head>
+  <body data-acc="brief">
+    <div id="root" data-composition-id="main" data-start="0" data-duration="17" data-width="1080" data-height="1920">
+
+      <!-- 1 표지: 0초 화면부터 제목과 결과가 보인다. 사진이 차례로 내려앉고 자막이 낱말 단위로 -->
+      <div id="s1" class="k-scene">
+        <section class="k-slide k-field k-corners" data-fmt="cover916">
+          <div class="k-head"><b>synkbrief 활용</b><span>AI 예시 이미지</span></div>
+          <div class="k-in">
+            <h1 class="k-title l" style="width:fit-content"><span class="ln">사진 1장으로</span><span class="ln"><span class="k-mark">광고 3컷</span></span></h1>
+            <p class="k-sub" style="margin-top:28px">ChatGPT 이미지 편집 · 제품 사진</p>
+          </div>
+          <figure class="k-photo" id="s1-src" style="position:absolute;left:84px;top:720px;width:250px;height:312px;--r:-6deg;padding:10px"><img src="assets/images/source.png" alt="원본"></figure>
+          <span class="k-tape white" id="s1-tape" style="left:136px;top:704px;--r:-8deg;width:120px;height:38px"></span>
+          <figure class="k-photo s1-res" style="position:absolute;left:380px;top:700px;width:240px;height:300px;--r:-5deg;padding:10px"><img src="assets/images/hero.png" alt=""></figure>
+          <figure class="k-photo s1-res" style="position:absolute;left:530px;top:740px;width:240px;height:300px;--r:3deg;padding:10px"><img src="assets/images/detail.png" alt=""></figure>
+          <figure class="k-photo s1-res" style="position:absolute;left:670px;top:690px;width:250px;height:312px;--r:8deg;padding:10px"><img src="assets/images/lifestyle.png" alt=""></figure>
+          <p class="kv-cap" id="c1">사진은 한 장인데, <em>광고는 세 컷.</em></p>
+        </section>
+      </div>
+
+      <!-- 2 증거: 카메라 화면이 초점을 맞추고 날짜 도장이 붙는다 -->
+      <div id="s2" class="k-scene">
+        <section class="k-slide k-paper" data-fmt="cover916">
+          <div class="k-head"><b>synkbrief 활용</b><span class="k-count">01 / 05</span></div>
+          <div class="k-in">
+            <p class="k-label">01 · 사진 준비</p>
+            <h2 class="k-title m" style="margin-top:18px"><span class="ln">제품 사진이</span><span class="ln"><span class="k-mark">한 장뿐</span>이라면</span></h2>
+            <div class="k-viewfinder" id="s2-vf" style="margin-top:40px;padding:24px">
+              <span class="k-stamp">2026.09.27 · AI 예시 원본</span>
+              <div class="k-shot" style="height:300px"><img src="assets/images/source.png" alt="원본 머그컵" style="height:100%;object-fit:cover;object-position:50% 55%"></div>
+            </div>
+          </div>
+          <p class="kv-cap" id="c2">먼저, 제품이 <em>잘 보이는</em> 사진 한 장.</p>
+        </section>
+      </div>
+
+      <!-- 3 역할: 번호가 펠트 단추처럼 눌리며 생기고, 컷마다 사진이 내려앉는다 -->
+      <div id="s3" class="k-scene">
+        <section class="k-slide k-paper" data-fmt="cover916">
+          <div class="k-head"><b>synkbrief 활용</b><span class="k-count">02 / 05</span></div>
+          <div class="k-in">
+            <p class="k-label">02 · 세 컷의 역할</p>
+            <h2 class="k-title m" style="margin-top:18px"><span class="ln">한 컷에</span><span class="ln"><span class="k-mark">한 가지</span>만</span></h2>
+            <ol class="k-steps" style="margin-top:44px;gap:24px">
+              <li><div class="row"><div><h3>전체 컷</h3><p>어떤 제품인지 한눈에</p></div><div class="k-shot thumb s3-th"><img src="assets/images/hero.png" alt="" style="height:100%;object-fit:cover"></div></div></li>
+              <li><div class="row"><div><h3>디테일 컷</h3><p>손잡이·질감처럼 가까이</p></div><div class="k-shot thumb s3-th"><img src="assets/images/detail.png" alt="" style="height:100%;object-fit:cover"></div></div></li>
+              <li><div class="row"><div><h3>사용 장면</h3><p>언제, 어떻게 쓰는지</p></div><div class="k-shot thumb s3-th"><img src="assets/images/lifestyle.png" alt="" style="height:100%;object-fit:cover"></div></div></li>
+            </ol>
+          </div>
+          <p class="kv-cap" id="c3">한 장에 <em>한 가지 역할</em>만 맡겨요.</p>
+        </section>
+      </div>
+
+      <!-- 4 비교: 두 사진이 나란히 놓이고, 크레용이 손잡이에 동그라미를 친다 -->
+      <div id="s4" class="k-scene">
+        <section class="k-slide k-paper" data-fmt="cover916">
+          <div class="k-head"><b>synkbrief 활용</b><span class="k-count">03 / 05</span></div>
+          <div class="k-in">
+            <p class="k-label">03 · 결과 확인</p>
+            <h2 class="k-title m" style="margin-top:18px"><span class="ln">예뻐도,</span><span class="ln"><span class="k-mark">원본과</span> 나란히</span></h2>
+            <div class="k-compare" style="margin-top:44px">
+              <figure><p class="k-label">원본</p><div class="k-shot s4-sh" style="height:340px"><img src="assets/images/source.png" alt="원본" style="height:100%;object-fit:cover"></div></figure>
+              <figure class="after"><p class="k-label">AI 결과</p><div class="k-shot s4-sh" style="height:340px"><img src="assets/images/detail.png" alt="AI 결과" style="height:100%;object-fit:cover"></div></figure>
+            </div>
+          </div>
+          <span class="k-crayon circle" id="s4-circle" style="left:610px;top:700px;width:280px;height:220px"></span>
+          <p class="kv-cap" id="c4">손잡이·색·테두리는 <em>꼭 비교.</em></p>
+        </section>
+      </div>
+
+      <!-- 5 끝: 색 면 + 행동 하나. 단추가 눌리고 컨페티가 한 번 -->
+      <div id="s5" class="k-scene">
+        <section class="k-slide k-field k-corners" data-fmt="cover916">
+          <div class="k-head"><b>synkbrief 활용</b><span class="k-count">05 / 05</span></div>
+          <div class="k-in">
+            <p class="k-label">받아 가는 것</p>
+            <h2 class="k-title l" style="margin-top:22px"><span class="ln">요청문 전문 +</span><span class="ln"><span class="k-mark">따라 하기 PDF</span></span></h2>
+            <p class="k-sub" style="margin-top:30px">구조가 바뀌었을 때 고치는 문장까지</p>
+            <div style="margin-top:48px"><span class="k-cta" id="s5-cta">댓글에 <span class="kw">synk</span></span></div>
+          </div>
+          <span class="k-confetti" id="s5-conf" style="left:600px;top:900px;--c1:#ffebb0;--c2:#c5d6f5;--c3:#fff"></span>
+          <img class="k-sticker" id="s5-stk" src="assets/synk-kit/assets/sticker-envelope.webp" alt="" style="--s:180px;--r:8deg;left:720px;top:920px">
+          <p class="kv-cap" id="c5">필요하면 댓글에 <em>synk</em> 남겨 주세요.</p>
+        </section>
+      </div>
+
+    </div>
+    <script>
+      const M = window.SynkMotion;
+      const tl = gsap.timeline({ paused: true });
+
+      // 1 표지 (0 ~ 3.2) — 첫 프레임 = 표지
+      M.slam(tl, '#s1 .k-title', 0);
+      M.mark(tl, '#s1 .k-mark', 0.15, { dur: 0.3 });
+      M.stitch(tl, '#s1 .k-slide', 0, { dur: 0.5 });
+      M.photo(tl, '.s1-res', 0.25, { stagger: 0.14, y: -70 });
+      M.fade(tl, '#s1 .k-sub', 0.5);
+      M.photo(tl, '#s1-src', 0.75);
+      M.tape(tl, '#s1-tape', 1.1);
+      M.caption(tl, '#c1', 1.3, 3.1);
+      M.punch(tl, '#s1 .k-in', 2.2);
+
+      // 펠트 덮개로 넘김
+      M.patch(tl, '#s1', '#s2', 3.2, { root: '#root' });
+
+      // 2 증거 (3.56 ~ 6.9)
+      M.fade(tl, '#s2 .k-head', 3.58);
+      M.fade(tl, '#s2 .k-label', 3.62);
+      M.lines(tl, '#s2 .k-title', 3.7);
+      M.mark(tl, '#s2 .k-mark', 4.1);
+      M.focus(tl, '#s2-vf', 4.4);
+      M.caption(tl, '#c2', 5.1, 6.8);
+
+      // 실땀 와이프로 넘김
+      M.seam(tl, '#s2', '#s3', 6.9, { root: '#root' });
+
+      // 3 역할 (7.2 ~ 10.3)
+      M.fade(tl, '#s3 .k-label', 7.3);
+      M.lines(tl, '#s3 .k-title', 7.38);
+      M.mark(tl, '#s3 .k-mark', 7.75);
+      M.press(tl, '#s3 .k-steps > li', 7.95, { stagger: 0.4, dur: 0.34 });
+      M.photo(tl, '.s3-th', 8.05, { stagger: 0.4, y: -60 });
+      M.caption(tl, '#c3', 9.0, 10.2);
+      M.punch(tl, '#s3 .k-in', 9.7);
+
+      // 아치 창으로 열기
+      M.arch(tl, '#s3', '#s4', 10.3);
+
+      // 4 비교 (10.7 ~ 13.9)
+      M.fade(tl, '#s4 .k-label', 10.8);
+      M.lines(tl, '#s4 .k-title', 10.86);
+      M.mark(tl, '#s4 .k-mark', 11.2);
+      M.photo(tl, '.s4-sh', 11.35, { stagger: 0.2, y: 80 });
+      M.crayon(tl, '#s4-circle', 12.0);
+      M.caption(tl, '#c4', 12.5, 13.8);
+
+      // 종이 밀어 올리기로 넘김
+      M.paper(tl, '#s4', '#s5', 13.9);
+
+      // 5 끝 (14.3 ~ 17)
+      M.stitch(tl, '#s5 .k-slide', 14.3);
+      M.fade(tl, '#s5 .k-label', 14.35);
+      M.lines(tl, '#s5 .k-title', 14.42);
+      M.mark(tl, '#s5 .k-mark', 14.9);
+      M.fade(tl, '#s5 .k-sub', 15.05);
+      M.press(tl, '#s5-cta', 15.35, { dur: 0.36 });
+      M.confetti(tl, '#s5-conf', 15.6);
+      M.sticker(tl, '#s5-stk', 15.8);
+      M.caption(tl, '#c5', 16.0);
+
+      window.__timelines['main'] = tl;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,93 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#f96859"><title>주문 폭주 · SYNK LAB (키트 시안)</title><link rel="icon" href="assets/logo-ink.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css"></head><body>
+<!-- SNS 키트 적용 시안 v3(2026-10-02): 모든 조작 부품을 실제 니들 펠트 사진 부품(assets/felt)으로. 원본 experiences/order-rush의 사본이며 화면 표현만 바꿨다.
+     app.mjs가 쓰는 id·data 속성은 모두 그대로다. 글자는 그림에 굽지 않고 펠트 위에 살아 있는 글자로 얹는다. -->
+<svg class="sprite" aria-hidden="true" focusable="false">
+ <symbol id="i-listen" viewBox="0 0 24 24"><path d="M4 9.5h3.2L12 5.6v12.8l-4.8-3.9H4z"/><path d="M15.6 9.2a4 4 0 0 1 0 5.6M18.2 6.6a7.6 7.6 0 0 1 0 10.8"/></symbol>
+ <symbol id="i-text" viewBox="0 0 24 24"><rect x="4.4" y="3.6" width="15.2" height="16.8" rx="2.2"/><path d="M8 8.4h8M8 12h8M8 15.6h5"/></symbol>
+ <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></symbol>
+ <symbol id="i-pause" viewBox="0 0 24 24"><rect x="7" y="5.5" width="3.4" height="13" rx="1.2"/><rect x="13.6" y="5.5" width="3.4" height="13" rx="1.2"/></symbol>
+</svg>
+
+<main id="lobby" class="lobby">
+ <section class="field lobby-field">
+  <header class="site-head"><a class="logo-tag felt-tag" href="./" aria-label="주문 폭주 홈"><img src="assets/logo-lab.webp" alt="SYNK LAB" width="520" height="160"></a><span class="mono head-label">LISTEN &amp; PLAY · ORDER RUSH</span><button id="help-open" class="quiet">플레이 방법</button></header>
+  <div class="hero">
+   <div class="hero-text"><span class="eyebrow">A LITTLE CAFE. A LOT OF KOREAN.</span><h1>주문은 한국어로.<br><em>서빙은 <span class="mark">내 손으로.</span></em></h1><p>따뜻하게? 얼음 없이? 두 잔?<br>손님의 말을 듣고, 나만의 작은 카페를 열어요.</p></div>
+   <figure class="photo"><img src="assets/cafe.webp" alt="햇빛이 드는 입체 미니어처 카페. 코랄색 커피 머신과 파란 냉장고, 유리컵과 우유병이 준비된 작은 작업대." width="1600" height="900"><img class="mong" src="assets/mong-body.webp" alt="" width="480" height="475"></figure>
+   <div class="hero-actions">
+    <div class="shift-choice" role="group" aria-label="영업 모드"><button class="felt short blush" data-mode="practice" aria-pressed="true"><strong>한가한 오픈</strong><span>8개 주문 · 시간 제한 없이</span><i class="tick" aria-hidden="true"></i></button><button class="felt short blush" data-mode="rush" aria-pressed="false"><strong>점심 러시</strong><span>90초 · 주문이 쌓여요</span><i class="tick" aria-hidden="true"></i></button></div>
+    <button id="start" class="felt cta">카페 문 열기 <span class="kw"><svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></span></button>
+    <small class="sound-note">소리를 켜 주세요. 한국어 주문을 들으며 만들어요.</small>
+    <p id="learning-reason" class="scope" role="status"></p><button id="learning-reset" class="quiet">이 브라우저의 모든 게임 학습 기록 지우기</button>
+   </div>
+  </div>
+ </section>
+ <section class="intro-strip"><div><span class="step">1</span><div><span class="mono">LISTEN</span><strong>주문을 듣고</strong><p>필요하면 다시 듣거나 글로 확인해요.</p></div></div><div><span class="step">2</span><div><span class="mono">MAKE</span><strong>컵과 재료를 조합하고</strong><p>커피·차·우유·얼음·설탕으로 만들어요.</p></div></div><div><span class="step">3</span><div><span class="mono">SERVE</span><strong>손님에게 직접 서빙해요</strong><p>다른 조건은 고쳐서 다시 전달해요.</p></div></div></section>
+ <footer>듣기와 조건 이해를 연습하는 시제품 · 게임 점수는 TOPIK 성적이 아니에요.</footer>
+</main>
+
+<main id="game" hidden class="game-shell">
+ <header class="game-head">
+  <div class="brand"><img src="assets/logo-lab.webp" alt="SYNK LAB" width="520" height="160"><strong id="shift-name">한가한 오픈</strong></div>
+  <div class="game-metrics"><span class="hud"><small>SERVE SCORE</small><b id="score">0000</b></span><span class="hud"><small>COMBO</small><b id="combo">0</b></span><span class="hud"><small id="time-label">ORDER</small><b id="time">1 / 8</b></span></div>
+  <button id="pause" class="icon-button" aria-label="일시 정지"><svg class="ico" aria-hidden="true"><use href="#i-pause"/></svg></button>
+ </header>
+ <div class="cafe-layout">
+  <section class="workstation" aria-label="음료 제작 작업대">
+   <div class="counter-label"><span>MAKE IT YOUR WAY</span><span id="active-cup">컵 1</span></div>
+   <div id="stage-wrap"><canvas id="stage" aria-label="실시간 입체 카페 작업대. 음료가 채워지고 얼음이 들어가는 모습을 보여줍니다."></canvas></div>
+   <div id="cup-tabs" class="cup-tabs" aria-label="만들 컵 선택"></div>
+   <div class="tray-actions"><button id="add-cup" class="felt chip">빈 컵 하나 더 + <kbd>Q</kbd></button><button id="remove-cup" class="felt chip">이 컵 비우기 <kbd>⌫</kbd></button></div>
+   <div class="ingredients" aria-label="음료 재료">
+    <button data-ingredient="coffee"><img src="assets/felt/coffee.webp" alt="" width="195" height="200"><strong>커피</strong><kbd>1</kbd></button>
+    <button data-ingredient="tea"><img src="assets/felt/tea.webp" alt="" width="140" height="200"><strong>차</strong><kbd>2</kbd></button>
+    <button data-ingredient="milk"><img src="assets/felt/milk.webp" alt="" width="112" height="200"><strong>우유</strong><kbd>3</kbd></button>
+    <button data-ingredient="ice"><img src="assets/felt/ice.webp" alt="" width="189" height="200"><strong>얼음</strong><kbd>4</kbd></button>
+    <button data-ingredient="sugar"><img src="assets/felt/sugar.webp" alt="" width="187" height="200"><strong>설탕</strong><kbd>5</kbd></button>
+    <button data-ingredient="cold"><img src="assets/felt/cold.webp" alt="" width="176" height="200"><strong>차갑게</strong><kbd>6</kbd></button>
+   </div>
+   <p id="cup-description" class="cup-description" aria-live="polite">빈 컵</p>
+  </section>
+  <aside class="order-desk">
+   <div class="desk-heading"><span class="eyebrow">HEAR YOUR CUSTOMER</span><h2>오늘의 손님</h2><span id="queue-count">1명 기다리는 중</span></div>
+   <div id="queue" class="customer-queue"></div>
+   <article class="slip" aria-label="주문서">
+    <div class="slip-head"><span class="slip-title felt-tag">주문서</span><span class="slip-no">ORDER No.<b id="slip-no">--</b></span></div>
+    <section class="listen-panel"><span id="audio-status" class="audio-status" role="status">손님의 주문을 들어보세요.</span><div class="listen-actions"><button id="listen" class="felt chip"><svg class="ico" aria-hidden="true"><use href="#i-listen"/></svg>다시 듣기 <kbd>R</kbd></button><button id="show-text" class="felt chip" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-text"/></svg>글로 보기</button></div><p id="order-text" hidden></p></section>
+   </article>
+   <!-- 서빙 바로 위에 가장 최근 안내. 휴대폰에서는 아래에 붙어 따라온다 -->
+   <div class="dock">
+    <p id="feedback" class="feedback" role="status">컵에 재료를 넣고 서빙해 주세요.</p>
+    <div id="celebration" hidden><img class="mong" src="assets/mong-smile.webp" alt="" width="480" height="475"></div>
+    <button id="serve" class="felt coral cta serve-button">손님에게 서빙하기 <span class="kw"><span class="key">SPACE</span><svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></span></button>
+   </div>
+   <p id="game-learning" class="scope"></p>
+   <details class="recipe-help"><summary>작은 카페의 레시피</summary><p>커피 + 우유 = 라테<br>컵은 기본으로 따뜻해요.<br>얼음을 넣으면 차가워져요.<br>얼음 없이 차갑게 하려면 ‘차갑게’.<br>같은 재료를 다시 누르면 뺄 수 있어요.</p></details>
+   <button id="finish" class="quiet finish">영업 마치기</button>
+  </aside>
+ </div>
+</main>
+
+<main id="results" hidden class="results">
+ <section class="field end-field">
+  <header class="site-head"><span class="logo-tag felt-tag"><img src="assets/logo-lab.webp" alt="SYNK LAB" width="520" height="160"></span><span class="mono head-label">SHIFT COMPLETE</span></header>
+  <div class="end-grid">
+   <div class="end-copy"><span class="eyebrow">A LITTLE BETTER THAN BEFORE.</span><h1>오늘도,<br><em>잘 들었습니다.</em></h1></div>
+   <span class="card-title">오늘의 기록</span>
+   <img class="mong" src="assets/mong-smile.webp" alt="" width="480" height="475">
+   <div id="result-metrics" class="result-metrics"></div>
+  </div>
+  <section id="review" class="review"><div><span class="eyebrow">ONE MORE, WITHOUT THE RUSH</span><h2>새로운 주문도 이해할 수 있을까요?</h2><p>이번에는 시간 제한 없이 다른 주문을 들어요.</p></div><button id="review-start" class="felt cta">새 주문 연습하기 <span class="kw"><svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></span></button></section>
+  <div class="result-actions"><button id="replay" class="felt chip">다시 문 열기 ↗</button><button id="home" class="quiet">카페 선택으로</button></div>
+ </section>
+ <section class="end-paper">
+  <p id="result-learning" class="scope" role="status"></p>
+  <p class="scope">첫 제출 정확도는 답한 주문 중 첫 서빙이 맞았던 비율이에요. 글로 확인한 주문도 포함돼요. 서빙 점수는 수정해서 완료한 주문에도 쌓이며, 미응답은 따로 표시해요.</p>
+  <div id="round-records" class="round-records"></div>
+  <p class="scope">한국어 주문 음성은 합성 음성이에요. 학습 효과는 학생 검증 전이며, 학습 기록은 이 브라우저에 저장돼요. 학생 계정과 다른 기기에는 아직 연결되지 않아요.</p>
+ </section>
+</main>
+
+<dialog id="help"><button id="help-close" class="close" aria-label="플레이 방법 닫기">×</button><span class="eyebrow">WELCOME TO YOUR CAFE</span><h2>듣고, 만들고,<br>서빙해요.</h2><ol><li>손님의 주문을 끝까지 들어요. 듣는 동안 영업 시간은 멈춰요.</li><li>컵을 고르고 재료를 넣어요. 두 잔이라면 ‘빈 컵 하나 더’를 눌러요.</li><li>커피에 우유를 넣으면 라테가 돼요. 얼음을 넣으면 차가워져요.</li><li>얼음 없이 차갑게 하려면 ‘차갑게’를 눌러요. 재료를 다시 누르면 뺄 수 있어요.</li><li>서빙 후 다른 조건을 알려주면 고쳐서 다시 서빙해요.</li></ol><p>키보드 1–6 재료 · Q 컵 추가 · R 다시 듣기 · Space 서빙 · Esc 정지</p></dialog>
+<dialog id="pause-dialog"><span class="eyebrow">TAKE A LITTLE BREAK</span><h2>카페도 잠깐 쉬어요.</h2><p>주문과 영업 시간이 함께 멈췄어요.</p><button id="resume" class="felt coral cta">이어서 영업하기 <span class="kw"><svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></span></button><button id="leave" class="quiet">영업 마치기</button></dialog>
+<script src="./atlas-learning.js"></script><script type="module" src="app.mjs"></script></body></html>
