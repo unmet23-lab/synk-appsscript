@@ -29,8 +29,12 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   const listeners = new Set();
   const notify = (kind, code) => { for (const listener of listeners) { try { listener({ kind, ...(code ? { code } : {}) }); } catch { /* Host notifications cannot corrupt learning events. */ } } };
   const monotonicClock = () => { const value = Date.parse(clock()); if (!Number.isFinite(value)) throw new TypeError('Atlas: invalid clock'); lastTime = Math.max(value, lastTime); return new Date(lastTime).toISOString(); };
+  // Earlier entries keep new ones in time order, but another device's clock running ahead
+  // must not pin this one: a time beyond this device's own clock (plus a margin) is not adopted.
+  const AHEAD_MS = 5 * 60000;
   const newSession = events => {
-    lastTime = Math.max(lastTime, ...events.map(e => Date.parse(e.at)).filter(Number.isFinite));
+    const own = Date.parse(clock());
+    for (const e of events) { const at = Date.parse(e.at); if (Number.isFinite(at) && (!Number.isFinite(own) || at <= own + AHEAD_MS) && at > lastTime) lastTime = at; }
     return Atlas.createSession({ scope, events, clock: monotonicClock });
   };
   // The session's frozen entries themselves (no copy). Older sessions only offer copies.

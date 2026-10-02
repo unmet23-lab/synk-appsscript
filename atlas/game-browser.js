@@ -14,7 +14,10 @@ function host() {
   try { if (window.parent !== window && window.parent.location.origin === window.location.origin) return window.parent.SYNKLearningHost || null; } catch { /* separate origin has no implicit account access */ }
   return null;
 }
-module.exports = { ...learning, Flow, TemperFlow, VellumFlow, Ask, SKILLS: map.allNodes(), createGame: options => {
-  const factory = config => learning.createGame({ ...config, map }), owner = host();
-  return owner ? owner.createGame(options, factory, learning.createLearningSync) : factory(options);
-} };
+const factory = config => learning.createGame({ ...config, map });
+// `engine` lets a host page build its own account-wide adapter in its own window.
+module.exports = { ...learning, Flow, TemperFlow, VellumFlow, Ask, SKILLS: map.allNodes(),
+  engine: Object.freeze({ createGame: factory, createLearningSync: learning.createLearningSync }), createGame: options => {
+    const owner = host();
+    return owner ? owner.createGame(options, factory, learning.createLearningSync) : factory(options);
+  } };

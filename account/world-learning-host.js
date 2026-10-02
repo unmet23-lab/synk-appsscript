@@ -1,6 +1,8 @@
 'use strict';
 // WORLD owns authentication. Minigames receive guarded learning methods, never tokens.
-function createWorldLearningHost({ accountKey, revision, storage, transport, guard, connected = true, onStatus = () => {} }) {
+// `engine` is this page's own { createGame, createLearningSync } (SynkLearning.engine). The
+// account-wide synchroniser must live here: a game frame that navigates away stops its timers.
+function createWorldLearningHost({ accountKey, revision, storage, transport, guard, connected = true, onStatus = () => {}, engine = null }) {
   if (!accountKey || !Number.isSafeInteger(revision) || typeof guard !== 'function') throw new TypeError('Verified WORLD account required');
   let sync, primary, closed = false;
   const coaches = new Set();
@@ -8,15 +10,18 @@ function createWorldLearningHost({ accountKey, revision, storage, transport, gua
   const shared = { getItem(key) { check(); return storage.getItem(key); }, setItem(key, value) { check(); storage.setItem(key, value); }, removeItem(key) { check(); storage.removeItem(key); } };
   function createGame(options, factory, createSync) {
     check();
-    const owned = { storage: shared, learnerKey: 'device', storageScope: 'account', accountKey, historyComplete: false };
+    // With sharing off the account's store lives on this device only, so it is complete on
+    // its own, like a guest device. A connected store is complete once the server says so.
+    const owned = { storage: shared, learnerKey: 'device', storageScope: 'account', accountKey, historyComplete: !connected };
     if (connected && !sync) {
-      primary = factory({ gameId: 'world-account', ...owned });
-      sync = createSync({ adapter: primary, accountKey, revision, storage: shared, transport,
+      const make = engine?.createGame && engine?.createLearningSync ? engine : { createGame: factory, createLearningSync: createSync };
+      primary = make.createGame({ gameId: 'world-account', ...owned });
+      sync = make.createLearningSync({ adapter: primary, accountKey, revision, storage: shared, transport,
         onStatus: state => { for (const coach of coaches) coach.syncPort.markComplete(state.complete && state.phase !== 'blocked'); onStatus(state); } });
       void sync.start();
     }
     const coach = factory({ ...options, ...owned }); coaches.add(coach);
-    coach.syncPort.markComplete(sync?.status().complete === true);
+    if (connected) coach.syncPort.markComplete(sync?.status().complete === true);
     const unsubscribe = coach.syncPort.subscribe(change => {
       if (closed || !sync) return;
       if (change.kind === 'storage-error') sync.invalidate(change.code);
