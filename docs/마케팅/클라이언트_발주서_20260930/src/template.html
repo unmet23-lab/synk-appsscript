@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>SYNK PULSE · 나의 영상 제작 브리프</title>
+  <meta name="description" content="제작할 대상과 필요한 영상, 원본 자료를 간단히 전달하세요.">
+  <link rel="icon" href="@@FAVICON@@">
+  <style>@@FONTS@@
+@@COMMON@@
+@@STYLE@@</style>
+</head>
+<body class="sb-page">
+  <a class="skip" href="#main">작성 내용으로 이동</a>
+  <header class="topbar">
+    <div class="brand">
+      <img src="@@LOGO@@" alt="SYNK PULSE">
+      <span class="brand-divider" aria-hidden="true"></span>
+      <span class="brand-caption">우리 브랜드의 영상 만들기</span>
+    </div>
+    <div class="top-actions">
+      <span id="save-state" role="status">이 기기에 임시저장</span>
+      <button class="text-btn" id="import-btn" type="button">이전 작성 불러오기</button>
+      <input id="import-file" type="file" accept=".json,application/json" hidden>
+      <button class="text-btn" id="reset-btn" type="button">새로 작성</button>
+    </div>
+  </header>
+  <div class="sb-stitch thin header-thread" aria-hidden="true"></div>
+  <div class="workspace">
+    <aside class="navigation">
+      <div class="nav-intro">
+        <span class="eyebrow">PULSE / YOUR STORY</span>
+        <h1>당신의 이야기가<br><span class="sb-mark">영상이 되는 시작.</span></h1>
+        <p>브랜드를 가장 잘 아는 당신과<br>함께 방향을 잡아갈게요.</p>
+      </div>
+      <nav id="steps" aria-label="영상 브리프 작성 단계"></nav>
+      <div class="local-note sb-taped">
+        <div class="note-collage" aria-hidden="true"><img class="envelope-sticker" src="@@ENVELOPE@@" alt=""><img class="check-sticker" src="@@CHECK@@" alt=""></div>
+        <p>작성한 내용과 자료를<br>한곳에 모아 전달해요.</p>
+        <span id="delivery-hint">온라인 링크에서는 바로 접수하고,<br>보관 파일에서는 ZIP으로 저장해요.</span>
+      </div>
+    </aside>
+    <main id="main" tabindex="-1">
+      <div class="step-meta"><span id="step-label" class="eyebrow"></span><span id="step-count" class="mono"></span></div>
+      <div class="progress-track" aria-hidden="true"><div id="progress-bar"></div></div>
+      <div id="mobile-summary"></div>
+      <div id="page"></div>
+      <div class="step-footer">
+        <button class="button secondary" id="previous" type="button">이전</button>
+        <span id="footer-hint">정해진 항목만 작성해도 괜찮아요.</span>
+        <button class="button primary" id="next" type="button">다음 단계</button>
+      </div>
+    </main>
+    <aside class="brief-aside" aria-label="지금까지 정리된 방향">
+      <div class="summary-head"><span class="eyebrow">YOUR BRIEF</span><span class="live-label">작성 중</span></div>
+      <p class="summary-intro">지금까지 정리된 방향</p>
+      <h2 id="summary-title">나의 첫 프로젝트</h2>
+      <dl id="summary-fields"></dl>
+      <div class="sb-stitch thin" aria-hidden="true"></div>
+      <div id="context-tip" class="context-tip"></div>
+      <div class="aside-bottom"><img src="@@CHECK@@" alt=""><p>자료를 살펴보고<br>필요한 내용만 확인할게요.</p></div>
+    </aside>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <dialog id="confirm-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-message">
+    <h2 id="dialog-title">새로 작성할까요?</h2>
+    <p id="dialog-message">현재 작성 내용과 첨부한 파일 선택이 지워집니다. 필요한 내용은 먼저 저장해주세요.</p>
+    <div class="dialog-actions"><button id="dialog-cancel" class="button secondary" type="button">돌아가기</button><button id="dialog-confirm" class="button primary" type="button">새로 작성</button></div>
+  </dialog>
+  <section id="print-view"></section>
+  <script>@@APP@@</script>
+</body>
+</html>

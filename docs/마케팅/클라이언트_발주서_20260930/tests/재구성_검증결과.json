@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-01",
+  "downloadedSample": "SYNK_PULSE_LUNE 여름 셔츠 · 샘플_발주서.zip",
+  "downloadedReportAndDataChecks": "passed; before scene-priority wording alignment",
+  "finalCoreReportChecks": "passed; 반드시 포함 / 가능하면 포함",
+  "originalHash": "f8015d2993079020058bb9af7a6f3e4171b92de2b6509c8c75894dc6d06ae13d",
+  "deliveryEntries": [
+    "SYNK_영상제작_발주서.html",
+    "먼저_읽어주세요.txt"
+  ],
+  "deliveryHtmlHash": "534b889d5b8059864c9ac1a26429e138cb58c5b6465e2f53a7937d5a5f36cea5",
+  "deliveryZipBytes": 1474789,
+  "uiWidths": [
+    320,
+    390,
+    1280
+  ],
+  "coreTests": 18
+}

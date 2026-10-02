@@ -1,0 +1,17 @@
+const fs=require('node:fs'),path=require('node:path');
+const root=path.resolve(__dirname,'../../..'),src=path.join(__dirname,'src'),dist=path.join(__dirname,'dist');
+const assets=path.join(root,'docs/마케팅/맞춤도구/assets');
+const pulseAssets=path.join(__dirname,'assets');
+const uri=(p,m)=>`data:${m};base64,${fs.readFileSync(p).toString('base64')}`;
+const fontDir=path.join(root,'docs/마케팅/맞춤도구/dist/brief/computer/assets');
+let fonts=require(path.join(root,'tools/lib/브랜드폰트.js')).면();
+for(const [name,file,weight] of [['Inter Tight','InterTight-500.woff2',500],['Inter Tight','InterTight-700.woff2',700],['DM Mono','DMMono-500.woff2',500]]) fonts+=`@font-face{font-family:'${name}';font-style:normal;font-weight:${weight};font-display:swap;src:url(${uri(path.join(fontDir,file),'font/woff2')}) format('woff2');}`;
+const vars=`:root{--thread:url('${uri(path.join(pulseAssets,'thread-pulse.webp'),'image/webp')}');--sticker-check:url('${uri(path.join(assets,'sticker-check.webp'),'image/webp')}')}`;
+let html=fs.readFileSync(path.join(src,'template.html'),'utf8');
+const replacements={FAVICON:uri(path.join(assets,'favicon-32.png'),'image/png'),LOGO:uri(path.join(pulseAssets,'brand-pulse.webp'),'image/webp'),ENVELOPE:uri(path.join(assets,'sticker-envelope.webp'),'image/webp'),CHECK:uri(path.join(assets,'sticker-check.webp'),'image/webp'),FONTS:fonts,COMMON:fs.readFileSync(path.join(root,'docs/디자인/펠트스크랩북/scrapbook.css'),'utf8')+vars,STYLE:fs.readFileSync(path.join(src,'style.css'),'utf8'),APP:fs.readFileSync(path.join(src,'app.js'),'utf8')};
+replacements.APP=['core.js','handoff.js','client-fields.js','intake.js'].map(file=>fs.readFileSync(path.join(src,file),'utf8')).join('\n')+'\n'+replacements.APP;
+for(const [key,value] of Object.entries(replacements))html=html.replaceAll(`@@${key}@@`,()=>value);
+if(/@@\w+@@/.test(html))throw Error('Unresolved template token');
+const licenses=['SUIT/LICENSE_OFL.txt','InterTight/OFL.txt','DM_Mono/OFL.txt'].map(p=>fs.readFileSync(path.join(root,'docs/브랜드_폰트',p),'utf8')).join('\n\n');
+html=html.replace('</head>',()=>`<!-- Embedded font licenses\n${licenses}\n--></head>`);
+fs.mkdirSync(dist,{recursive:true});fs.writeFileSync(path.join(dist,'SYNK_영상제작_발주서.html'),html);console.log(`Built standalone brief: ${Buffer.byteLength(html)} bytes`);

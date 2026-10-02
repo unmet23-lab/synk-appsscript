@@ -1,0 +1,98 @@
+{
+  "schema": "synk-video-brief",
+  "version": 1,
+  "createdAt": "2026-09-29T16:13:38.145Z",
+  "data": {
+    "format": "product",
+    "subject": "테스트 향수",
+    "subjectType": "product",
+    "intro": "샘플 테스트용 50ml 향수. 제품의 형태와 라벨은 정확하게 유지해주세요.",
+    "goal": "purchase",
+    "count": "",
+    "productVariants": "",
+    "productUrl": "",
+    "audience": "",
+    "message": "",
+    "cta": "",
+    "moods": [
+      "premium",
+      "dream"
+    ],
+    "genres": [
+      "sf"
+    ],
+    "colors": "",
+    "avoid": "",
+    "production": "transform",
+    "model": "reference",
+    "roles": [],
+    "modelCount": "one",
+    "modelDetails": "",
+    "permission": "approved",
+    "scenes": [
+      "whole"
+    ],
+    "sceneNote": "",
+    "background": "",
+    "camera": [],
+    "preserve": [],
+    "transformRange": "00:03~00:08",
+    "transformChanges": "배경만 미래 도시로 변경. 제품 라벨과 원본 동작 유지.",
+    "shootLocation": "",
+    "shootReady": "",
+    "hybridScope": "",
+    "channels": [
+      "instagram",
+      "shorts"
+    ],
+    "primaryChannel": "",
+    "duration": "15",
+    "customDuration": "",
+    "ratios": [],
+    "resolution": "",
+    "audio": "music",
+    "language": "한국어 자막",
+    "onScreenText": "숲의 여운을 담다",
+    "script": "",
+    "delivery": "single",
+    "quantity": "",
+    "extras": [],
+    "budget": "100to200",
+    "deadlineMode": "flexible",
+    "deadline": "",
+    "scheduleNotes": "",
+    "contact": "",
+    "approval": "",
+    "assetLink": "",
+    "notes": "",
+    "references": [
+      {
+        "url": "https://example.com/reference",
+        "likes": "00:03~00:06의 은빛 조명과 부드러운 카메라 움직임"
+      }
+    ],
+    "assetStatus": {
+      "product": "ready",
+      "logo": "pending",
+      "model": "pending"
+    },
+    "attachments": [
+      {
+        "name": "샘플_제품정보.txt",
+        "size": 163,
+        "category": "product"
+      }
+    ]
+  },
+  "includedAttachments": [
+    {
+      "name": "샘플_제품정보.txt",
+      "size": 163,
+      "category": "product"
+    }
+  ],
+  "pendingQuestions": [
+    "화면 비율 제안·협의",
+    "고객에게 전달할 핵심 메시지 정하기"
+  ]
+}
