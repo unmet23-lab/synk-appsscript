@@ -31,15 +31,18 @@
   }
 
   /* `at` is the current help level as an index (0 = the most help) and `last` the index of the
-   * least help. `streak` is the run of quiet successes (Flow.quietStreak). */
-  function supportStep({ at, last, streak, declared = false, declinedAt = null, now, need = 3, quietDays = 14 } = {}) {
+   * least help. `streak` is the run of quiet successes (Flow.quietStreak). `steady` is the run of
+   * successes with help or without (Flow.steadyStreak): where help shows before every answer no
+   * success is quiet, so one more success in a row than `need` may also ask. Still only asked. */
+  function supportStep({ at, last, streak, steady = 0, declared = false, declinedAt = null, now, need = 3, quietDays = 14 } = {}) {
     if (!Number.isInteger(at) || !Number.isInteger(last) || at < 0 || at > last || !Number.isInteger(streak) || streak < 0
+      || !Number.isInteger(steady) || steady < 0
       || typeof declared !== 'boolean' || !Number.isInteger(need) || need < 1 || !within(quietDays, 0, 365)) throw new TypeError('Vellum: invalid support step input');
     if (declared) return { offer: false, reason: 'declared' };
     if (at >= last) return { offer: false, reason: 'least-help' };
-    if (streak < need) return { offer: false, reason: 'not-yet' };
+    if (streak < need && steady < need + 1) return { offer: false, reason: 'not-yet' };
     if (declinedAt !== null && time(now) - time(declinedAt) < quietDays * DAY) return { offer: false, reason: 'declined-recently' };
-    return { offer: true, from: at, to: at + 1, reason: 'quiet-streak' };
+    return { offer: true, from: at, to: at + 1, reason: streak >= need ? 'quiet-streak' : 'steady-with-help' };
   }
 
   // Two levels of the same sentence (design §8-2): very short words, or one plain sentence.

@@ -219,7 +219,13 @@
     const latencies = remembered ? remembered.latencies : [];
     const changes = [], trace = [];
     // `step` counts responses that were evidence: Temper's pauses are measured in those only.
-    let step = 0, responses = 0, quiet = 0, last = null;
+    // `steady` counts successes in a row, with help or without: where help shows before every
+    // answer no success can be quiet, and less help must still be askable (vellum-flow.supportStep).
+    let step = 0, responses = 0, quiet = 0, steady = 0, last = null;
+    // Opening steps taken only for today's choice (a tired day, a round chosen easier or harder).
+    // They are undone in what is kept, so the next day starts where adapted play reached.
+    const TODAY_ONLY = ['tired', 'declared-easier', 'declared-harder'];
+    const todayOnly = {};
     const gap = dimension => (estimates[dimension].theta - logit(aim[dimension]) - challenge(spec, indices, dimension)) / spec.scale;
     const chance = (dimension, at = indices) => sigmoid(estimates[dimension].theta - challenge(spec, at, dimension));
     const expected = (at = indices) => (has(spec, 'content') ? chance('content', at) : 1) * (has(spec, 'pace') ? chance('pace', at) : 1);
@@ -293,6 +299,7 @@
         const change = settle(dimension, direction, null, reason, 'opening');
         if (!change) break;
         opening.push(change);
+        if (TODAY_ONLY.includes(change.because)) todayOnly[change.knob] = (todayOnly[change.knob] || 0) + change.direction;
       }
     }
     const intro = !adaptive ? (arm === 'baseline' ? 'baseline' : 'fixed') : returning ? 'returning' : condition === 'tired' ? 'tired' : basis;
@@ -342,6 +349,8 @@
         indices = saved;
         if (outcome === 'success' && !assisted && !repeat) { quiet += 1; if (latencyMs !== null) latencies.push(Math.round(latencyMs)); }
         else if (evidence) quiet = 0;
+        if (outcome === 'success') steady += 1;
+        else if (outcome === 'fail' || outcome === 'timeout') steady = 0;
         while (latencies.length > LATENCIES) latencies.shift();
         last = { outcome, assisted, repeat, pressure };
         let change = null;
@@ -389,9 +398,12 @@
         if (!guard.check({ spec, knob: knob.id, from, to, step, phase: 'accepted', history: changes, frozen: false }).ok) return null;
         indices[knob.id] = to;
         const change = { step, phase: 'accepted', knob: knob.id, kind: knob.kind, dimension: 'content', from, to, direction: 1, because: 'accepted-less-help', value: knob.values[to] };
+        // The run of successes was spent on this step; the new help level earns its own.
+        steady = 0;
         changes.push(change); return copy(change);
       },
       quietStreak: () => quiet,
+      steadyStreak: () => steady,
       // Dimensions whose adjustable knobs are all at their easiest. When the person still struggles
       // there, the content itself has no easier step left: suggest an easier content instead.
       floor: () => DIMENSIONS.filter(d => { const knobs = spec.knobs.filter(k => dimensionOf(k) === d && !locked(k)); return knobs.length > 0 && knobs.every(k => indices[k.id] === 0); }),
@@ -400,10 +412,12 @@
       changes: () => copy(changes),
       last: () => last && { ...last },
       // What the host stores for next time: per content, no identity, no answers, no text.
-      // The estimates learn in every round; the place kept is only where adapted play reached.
+      // The estimates learn in every round; the place kept is only where adapted play reached,
+      // without the opening steps taken for today's choice alone.
       memory: at => ({ v: 2, content: spec.id, specVersion: spec.version, policy: VERSION, at: new Date(time(at)).toISOString(),
         estimates: Object.fromEntries(DIMENSIONS.map(d => [d, { theta: round(estimates[d].theta, 4), n: round(estimates[d].n, 2), reversals: estimates[d].reversals }])),
-        indices: Object.fromEntries(spec.knobs.map(k => [k.id, adaptive && !locked(k) ? indices[k.id] : reached[k.id]])), latencies: [...latencies] }),
+        indices: Object.fromEntries(spec.knobs.map(k => [k.id, adaptive && !locked(k) ? clamp(indices[k.id] - (todayOnly[k.id] || 0), 0, k.values.length - 1) : reached[k.id]])),
+        latencies: [...latencies] }),
     };
   }
   return Object.freeze({ VERSION, KINDS, OUTCOMES, MODES, CONDITIONS, DIMENSIONS, ITEM, PRESENTATION, defineContent, priorFromSummary, declaredFrom, start, challenge, sigmoid, logit });

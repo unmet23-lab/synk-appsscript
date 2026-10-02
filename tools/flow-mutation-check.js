@@ -31,12 +31,16 @@ const MUTATIONS = [
   ['atlas/flow.js', "const calm = condition === 'tired';", 'const calm = false;', 'a tired day still makes things harder'],
   ['atlas/flow.js', 'const pace = clamp(PACE_TARGET * Math.sqrt(overall / spec.target), 0.75, 0.97);', 'const pace = PACE_TARGET;', 'an easier day tightens time sooner'],
   ['atlas/flow.js', 'if (evidence) step += 1;', 'step += 1;', 'a skipped response counted as a pause'],
-  ['atlas/flow.js', 'adaptive && !locked(k) ? indices[k.id] : reached[k.id]', 'indices[k.id]', 'a fixed round overwrites where adapted play reached'],
+  ['atlas/flow.js', 'adaptive && !locked(k) ? clamp(indices[k.id] - (todayOnly[k.id] || 0), 0, k.values.length - 1) : reached[k.id]', 'indices[k.id]', 'a fixed round overwrites where adapted play reached'],
+  ['atlas/flow.js', 'clamp(indices[k.id] - (todayOnly[k.id] || 0), 0, k.values.length - 1)', 'indices[k.id]', "a tired day's lighter opening is kept for the next day"],
+  ['atlas/vellum-flow.js', 'if (streak < need && steady < need + 1)', 'if (streak < need)', 'help shown before every answer never offers less help'],
+  ['atlas/flow.js', "else if (outcome === 'fail' || outcome === 'timeout') steady = 0;", '', 'a miss does not end the run of successes'],
+  ['atlas/game-flow.js', 'const leading = focus ? ranked.filter(candidate => candidate.skillIds?.includes(focus)) : ranked;', 'const leading = ranked;', 'an easier level puts off the practice Core asked for'],
   ['atlas/flow.js', 'if (change && chance(dimension) < aim[dimension] - 0.15)', 'if (false)', 'a quiet streak steps beyond reach'],
   ['atlas/flow.js', "const fixed = knob => knob.follows === 'declared' ? indices[knob.id] : null;", 'const fixed = knob => locked(knob) ? indices[knob.id] : null;', 'a knob set by hand erases what was learned'],
   ['atlas/game-flow.js', 'const own = chosen === recommendation.selected ? recommendation : coach.recommend([chosen], rest);', 'const own = recommendation;', 'the reason shown belongs to another item'],
   ['atlas/game-flow.js', 'if (since !== undefined && since !== current) return false;', '', 'an open tab writes memory back after a reset'],
-  ['account/world-learning-host.js', "name === 'live' ? live(value) : guarded(value)", 'guarded(value)', 'an open round skips the WORLD guard'],
+  ['account/world-learning-host.js', "name === 'live' ? live(value) : guarded(value, name === 'flush')", "guarded(value, name === 'flush')", 'an open round skips the WORLD guard'],
   ['atlas/flow.js', "if (direction > 0 && phase === 'response' && reason !== 'quiet-streak' && gap(dimension) - knob.weight <= -DEADBAND) continue;", '', 'a raise that lands where it is eased straight back'],
 ];
 try {

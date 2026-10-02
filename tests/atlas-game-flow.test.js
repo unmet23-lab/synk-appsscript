@@ -150,6 +150,43 @@ test('when the challenge picks another item, the reason shown is that item\'s ow
   assert.deepEqual(picked.alternatives, [plain]);
 });
 
+test('a practice need Core saw stays the ability practised; the flow level only chooses how hard within it', () => {
+  const coach = learning.createGame({ gameId: 'g', map, storage: memoryStorage(), clock: clockFrom('2026-10-02T09:00:00.000Z') });
+  // Three different negation items missed: Core asks for negation practice.
+  for (let i = 0; i < 3; i += 1) { const pid = coach.present(item(2, 'ko.listening.negation')); coach.answer(pid, { correct: false, assessable: true }); }
+  const live = coach.live(SPEC);
+  assert.equal(live.settings().level, 1, 'the round starts at the first level');
+  // In this content every level is another kind of item: level 1 is a plain order, level 2 a negation.
+  const plain = { ...item(1, 'ko.listening.detail'), skillIds: ['ko.listening.detail'] };
+  const negation = { ...item(2, 'ko.listening.negation'), skillIds: ['ko.listening.negation'] };
+  const top = coach.recommend([plain, negation]);
+  assert.equal(top.selected, negation);
+  assert.equal(top.state, 'practice');
+  const picked = live.pick([plain, negation]);
+  assert.equal(picked.selected, negation, 'an easier level does not put off the practice Core asked for');
+  assert.equal(picked.focusSkillId, 'ko.listening.negation');
+  assert.equal(picked.reason, top.reason);
+  assert.equal(picked.flowLevel, 2, 'the nearest level this ability has');
+  // Within the same ability the flow still chooses how hard.
+  const easyNegation = { ...item(1, 'ko.listening.negation'), skillIds: ['ko.listening.negation'] };
+  assert.equal(live.pick([plain, negation, easyNegation]).selected, easyNegation);
+});
+
+test('where help shows at once, steady successes still bring the offer of less help, and a no is kept', () => {
+  const storage = memoryStorage(), clock = clockFrom('2026-10-02T09:00:00.000Z');
+  const coach = learning.createGame({ gameId: 'g', map, storage, clock });
+  const AUTO = { id: 'test.auto-help', knobs: [{ id: 'clue', kind: 'support', values: ['at-once', 'on-pause', 'on-press'], start: 0 }] };
+  const live = coach.live(AUTO);
+  const helped = n => { for (let i = 0; i < n; i += 1) { const pid = live.present(item(1, 'ko.reading.detail')); coach.help(pid, 'hint'); live.answer(pid, { correct: true, assessable: true }); } };
+  helped(3);
+  assert.equal(live.offerLessHelp().reason, 'not-yet');
+  helped(1);
+  assert.deepEqual(live.offerLessHelp(), { offer: true, from: 0, to: 1, reason: 'steady-with-help' });
+  assert.equal(live.acceptLessHelp().because, 'accepted-less-help');
+  assert.equal(live.settings().values.clue, 'on-pause');
+  assert.equal(live.offerLessHelp().reason, 'not-yet', 'the next step waits for its own run');
+});
+
 test('a reset in one tab is not undone by a round still open in another', () => {
   const storage = memoryStorage(), clock = clockFrom('2026-10-02T09:00:00.000Z');
   const here = learning.createGame({ gameId: 'g', map, storage, clock });

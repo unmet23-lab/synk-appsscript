@@ -28,6 +28,19 @@ test('less help is offered after three quiet successes, never against a declared
   assert.equal(Vellum.supportStep({ at: 0, last: 2, streak: 9, now, declinedAt: '2026-09-10T00:00:00.000Z' }).offer, true);
 });
 
+test('where help shows before every answer, one more success in a row than a quiet streak needs also asks', () => {
+  const now = '2026-10-02T00:00:00.000Z';
+  // No success is quiet at the most help when it shows at once: only the run of successes can ask.
+  assert.equal(Vellum.supportStep({ at: 0, last: 2, streak: 0, steady: 3, now }).reason, 'not-yet');
+  assert.deepEqual(Vellum.supportStep({ at: 0, last: 2, streak: 0, steady: 4, now }), { offer: true, from: 0, to: 1, reason: 'steady-with-help' });
+  assert.equal(Vellum.supportStep({ at: 0, last: 2, streak: 3, steady: 4, now }).reason, 'quiet-streak', 'quiet successes are named first');
+  // Still never against a declared choice, at the least help, or right after a no.
+  assert.equal(Vellum.supportStep({ at: 0, last: 2, streak: 0, steady: 9, now, declared: true }).reason, 'declared');
+  assert.equal(Vellum.supportStep({ at: 2, last: 2, streak: 0, steady: 9, now }).reason, 'least-help');
+  assert.equal(Vellum.supportStep({ at: 0, last: 2, streak: 0, steady: 9, now, declinedAt: '2026-09-25T00:00:00.000Z' }).reason, 'declined-recently');
+  assert.throws(() => Vellum.supportStep({ at: 0, last: 2, streak: 0, steady: -1, now }), /invalid support step/);
+});
+
 test('lines say what changed in plain words, in two levels, and contents may use their own words', () => {
   assert.equal(Vellum.line({ direction: 1, kind: 'pace' }).text, '조금 더 빠르게 해 볼게요.');
   assert.equal(Vellum.line({ direction: -1, kind: 'pace' }, { level: 'easy' }).text, '시간이 더 있어요.');

@@ -167,6 +167,46 @@ test('a tired day never makes anything harder, offers no less help, and its star
   assert.equal(tiredPrior.settings().level, 1);
 });
 
+test('an opening taken for today alone is not kept: the next day starts where adapted play reached', () => {
+  const spec = rush(), defaults = Flow.start({ spec, now: NOW }).settings().indices;
+  // A tired day opens a step lighter (its aims are higher) ...
+  const tired = Flow.start({ spec, now: NOW, condition: 'tired' });
+  assert.ok(tired.intro().opening.some(c => c.because === 'tired'), 'the tired day eased its opening');
+  assert.notDeepEqual(tired.settings().indices, defaults);
+  // ... and with nothing else happening, what is kept is where the person was, not today's lighter start.
+  assert.deepEqual(tired.memory(NOW).indices, defaults);
+  const next = Flow.start({ spec, now: later(1), memory: tired.memory(NOW) });
+  assert.equal(next.intro().code, 'start.memory');
+  assert.deepEqual(next.settings().indices, defaults, 'the next day does not start lighter because of yesterday');
+  // A miss in the round is still learnt: one step eased in play stays eased.
+  const missed = Flow.start({ spec, now: NOW, condition: 'tired' });
+  const eased = play(missed, [{ outcome: 'fail', pressure: 0.2 }, { outcome: 'fail', pressure: 0.2 }]).filter(r => r.change).length;
+  assert.ok(eased >= 1);
+  const kept = missed.memory(NOW).indices;
+  assert.ok(Flow.challenge(spec, kept) < Flow.challenge(spec, defaults), 'what play eased stays eased');
+  assert.ok(Flow.challenge(spec, kept) > Flow.challenge(spec, missed.settings().indices), 'only the tired opening is undone');
+  // A round chosen easier is today's choice too.
+  const easier = Flow.start({ spec, now: NOW, declared: { mode: 'easier' } });
+  if (easier.intro().opening.length) assert.deepEqual(easier.memory(NOW).indices, defaults);
+});
+
+test('successes in a row, with help or without, are counted for the offer of less help; a miss ends the run', () => {
+  const spec = Flow.defineContent({ id: 'test.auto-help', knobs: [{ id: 'clue', kind: 'support', values: ['at-once', 'on-pause', 'on-press'], start: 0 }] });
+  const run = Flow.start({ spec, now: NOW });
+  play(run, Array(3).fill({ outcome: 'success', assisted: true }));
+  assert.equal(run.quietStreak(), 0, 'a helped success is never quiet');
+  assert.equal(run.steadyStreak(), 3);
+  play(run, ['fail']);
+  assert.equal(run.steadyStreak(), 0);
+  play(run, ['skip', 'void']);
+  assert.equal(run.steadyStreak(), 0, 'a skipped response is not a success');
+  play(run, Array(4).fill({ outcome: 'success', assisted: true }));
+  assert.equal(run.steadyStreak(), 4);
+  assert.equal(run.lessHelpAllowed(), true);
+  assert.equal(run.acceptLessHelp().to, 1);
+  assert.equal(run.steadyStreak(), 0, 'the new help level earns its own run');
+});
+
 test('a day chosen to be easier lifts both aims: for the same answers, time pressure is never higher than on a normal day', () => {
   let seed = 20261002;
   const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };

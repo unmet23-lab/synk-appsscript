@@ -13,6 +13,9 @@
 const Flow = require('./flow');
 const VellumFlow = require('./vellum-flow');
 const localDay = iso => { const d = new Date(iso); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+// Learning states (learning.js) that come from what the person did: the practice they point to is
+// Core's to choose. 'unseen' and 'recent-independent' leave the leading choices open to the flow.
+const SEEN = Object.freeze(['practice', 'supported', 'checking', 'review']);
 const object = value => !!value && typeof value === 'object' && !Array.isArray(value);
 // Only the presentation vocabulary, with a value the person can choose (null means not chosen).
 const presentationOf = value => object(value) && Object.keys(value).length > 0
@@ -130,12 +133,17 @@ function createLive({ coach, port, clock }) {
       intro() { const intro = run.intro(); return { ...intro, line: say(intro) }; },
       level: run.level,
       // Core's learning priority decides what to practise; the flow level decides how hard,
-      // among the leading choices only.
+      // among the leading choices only. When Core's first choice rests on what it saw (a miss to
+      // practise, help, a check or a review that is due), the choice stays with that ability, and
+      // only its level follows the flow: in a content whose levels are different kinds of item,
+      // an easier level must not quietly put off the practice Core asked for.
       pick(candidates, options = {}) {
         const { within = 5, ...rest } = options;
         const recommendation = coach.recommend(candidates, rest);
         if (recommendation.status !== 'ready' || !spec.items) return recommendation;
-        const leading = [recommendation.selected, ...recommendation.alternatives].slice(0, within);
+        const ranked = [recommendation.selected, ...recommendation.alternatives].slice(0, within);
+        const focus = SEEN.includes(recommendation.state) && recommendation.focusSkillId;
+        const leading = focus ? ranked.filter(candidate => candidate.skillIds?.includes(focus)) : ranked;
         const wanted = run.level(leading.map(candidate => candidate.difficulty));
         const chosen = leading.find(candidate => candidate.difficulty === wanted) || recommendation.selected;
         // The reason, focus skill and evidence shown are the chosen item's own, not the first choice's.
@@ -163,6 +171,7 @@ function createLive({ coach, port, clock }) {
         const support = spec.knobs.find(knob => knob.kind === 'support' && knob.follows !== 'declared');
         if (!support || !run.settings().adaptive) return { offer: false, reason: 'not-available' };
         const step = VellumFlow.supportStep({ at: run.settings().indices[support.id], last: support.values.length - 1, streak: run.quietStreak(),
+          steady: run.steadyStreak(),
           declared: Object.hasOwn(declared.knobs || {}, support.id), declinedAt: port.memories().declined[spec.id] ?? null, now: clock() });
         // Never stacked on a change that just happened; the offer can come at a calmer moment.
         return step.offer && !run.lessHelpAllowed() ? { offer: false, reason: 'not-now' } : step;
