@@ -1,0 +1,22 @@
+{
+  "expectedChannelId": "UCmZplYKuNHLPng4iL2AbLLg",
+  "credentialAccount": "lab-youtube",
+  "stateDir": "C:/SYNK-Classroom/private-state",
+  "inboxDir": "C:/SYNK-Classroom/completed",
+  "recordingsRoot": "D:/SYNK-Classroom/recordings",
+  "syncUrl": "https://YOUR_PROJECT.supabase.co/functions/v1/classroom-sync",
+  "anonKeyEnv": "SYNK_SUPABASE_ANON_KEY",
+  "pollIntervalMs": 60000,
+  "rooms": [
+    { "roomId": "room-1", "displayName": "교실 1", "streamId": "REPLACE_ROOM_STREAM_1" },
+    { "roomId": "room-2", "displayName": "교실 2", "streamId": "REPLACE_ROOM_STREAM_2" },
+    { "roomId": "room-3", "displayName": "교실 3", "streamId": "REPLACE_ROOM_STREAM_3" },
+    { "roomId": "room-4", "displayName": "교실 4", "streamId": "REPLACE_ROOM_STREAM_4" }
+  ],
+  "classes": [
+    { "classId": "00000000-0000-4000-8000-000000000001", "displayName": "반 1", "playlistId": "REPLACE_PLAYLIST_1", "videoPrivacy": "private", "syncKeyEnv": "SYNK_CLASSROOM_1_KEY" },
+    { "classId": "00000000-0000-4000-8000-000000000002", "displayName": "반 2", "playlistId": "REPLACE_PLAYLIST_2", "videoPrivacy": "private", "syncKeyEnv": "SYNK_CLASSROOM_2_KEY" },
+    { "classId": "00000000-0000-4000-8000-000000000003", "displayName": "반 3", "playlistId": "REPLACE_PLAYLIST_3", "videoPrivacy": "private", "syncKeyEnv": "SYNK_CLASSROOM_3_KEY" },
+    { "classId": "00000000-0000-4000-8000-000000000004", "displayName": "반 4", "playlistId": "REPLACE_PLAYLIST_4", "videoPrivacy": "private", "syncKeyEnv": "SYNK_CLASSROOM_4_KEY" }
+  ]
+}
