@@ -15,7 +15,7 @@ const 문서인가 = p => p.endsWith('.md') || p.startsWith('docs/_ops/') ||
   (p.startsWith('docs/') && p.endsWith('.json'));
 const docs = {
   SYNK: ['DESIGN.md', 'docs/AI_운영원칙.md', 'docs/SYNK_철학.md', 'docs/비전_정본.md',
-    'docs/마케팅_정본.md', 'docs/제품방향.md', 'docs/엔진7종_상향설계_v3.md',
+    'docs/마케팅_정본.md', 'docs/제품방향.md', 'docs/엔진8종_상향설계_v3.md',
     'docs/로고_중립색_정본_v1.md', 'docs/브랜드_폰트_정본.md', 'docs/디자인_토큰.json'],
   'SYNK LAB': ['docs/커리큘럼_정본_v1.md', 'docs/반편성_정본_v2.md', 'docs/1기_제안문안_v1.md'],
   'SYNK SHIFT': ['docs/마케팅_정본.md'],
@@ -57,7 +57,7 @@ function 목록(root = ROOT) {
   // 회사별 전략과 실행 기준은 현행 분리 원문에서 가져온다.
   folder('SYNK', 'docs/마케팅', '정본/마케팅', p => p.endsWith('.md'));
   add('SYNK', 'docs/브랜드킷.html', '브랜드 킷.html');
-  folder('SYNK', 'docs/엔진', '엔진 7종', p => !p.includes('/') && p.endsWith('.html'));
+  folder('SYNK', 'docs/엔진', '엔진 8종', p => !p.includes('/') && p.endsWith('.html'));
   folder('SYNK', 'docs/캐릭터/정본_4K', '확정 자산/마스코트');
   folder('SYNK', 'docs/브랜드_폰트', '확정 자산/폰트');
   // 배포 요소와 대응 원본. 추적된 시험판은 포함하지 않는다.

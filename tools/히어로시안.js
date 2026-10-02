@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 /**
- * 엔진 히어로 시안 — 소개서 «표지 얼굴» 일곱을 한 지면에 세운다 (2026-09-03 신설)
+ * 엔진 히어로 시안 — 기존 소개서용 히어로 7개를 한 지면에 세운다 (2026-09-03 신설). 제품 엔진 총수 8종과 별도다.
  *
  * ══ 왜 있나 ═══════════════════════════════════════════════════════════════
  *   유호 교정 09-01 「명품화」로 표지 얼굴을 **부품 확대가 아니라 «사진»으로** 굽기로 했다
@@ -103,7 +103,7 @@ function main() {
 
   const 원고 = `<!doctype html>
 <html lang="ko"><meta charset="utf-8">
-<title>엔진 얼굴 일곱</title>
+<title>기존 엔진 히어로 7개</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap">
 <!-- 자동 생성: node tools/히어로시안.js — 손 편집 금지(재생성이 덮는다) -->
@@ -131,11 +131,11 @@ function main() {
 </style>
 <div class="판"><div class="글">
 
-<h1>엔진 얼굴 일곱</h1>
-<p class="리드">소개서 일곱 벌의 <strong>표지에 앉을 얼굴</strong>입니다. 지금까지는 작은 부품을 확대해 썼고,
+<h1>기존 엔진 히어로 7개</h1>
+<p class="리드">2026-09-03에 제작한 기존 소개서용 <strong>표지 히어로 7개</strong>입니다. 현재 제품 엔진 8종 전체를 뜻하지 않습니다. 당시에는 작은 부품을 확대해 썼고,
 이번에는 무대·조명·얕은 심도를 걸어 <strong>사진처럼</strong> 구웠습니다(유호 교정 09-01 「명품화」).</p>
 
-<h2>일곱을 한 줄로</h2>
+<h2>기존 히어로 7개를 한 줄로</h2>
 <p>세트로 보이는지는 <strong>나란히 놓아야</strong> 보입니다. 하나씩 스크롤해서 보면 각각은 다 괜찮아 보이기 때문입니다.
 색이 서로 갈리는지, 하나가 튀지 않는지를 이 줄에서 봐 주세요.</p>
 <div class="일곱띠">
@@ -149,13 +149,13 @@ ${한줄.join('\n')}
   <li><strong>일곱이 한 세트로 보이나.</strong> 따로 보면 알 수 없어서 한 줄로 늘어놓았습니다.</li>
 </ol>
 
-<h2>일곱</h2>
+<h2>기존 히어로 7개</h2>
 ${카드.join('\n')}
 
 <h2>고르신 뒤에 일어나는 일</h2>
 <ol class="듦">
   <li>고른 얼굴이 <code>docs/Loom_자산/구운재질.json</code> 에 실립니다(<code>python tools/룸자산화.py</code>).</li>
-  <li>소개서 일곱 벌이 다음 굽기에서 그 얼굴로 갈아입습니다(<code>node tools/펠트문서.js --전량</code>).</li>
+  <li>해당 히어로가 있는 기존 소개서 7벌이 다음 굽기에서 그 얼굴로 갈아입습니다(<code>node tools/펠트문서.js --전량</code>).</li>
   <li>🔑 <strong>구웠다는 것과 입었다는 것은 다릅니다.</strong> 이 지면은 «고르는» 자리까지입니다.</li>
 </ol>
 

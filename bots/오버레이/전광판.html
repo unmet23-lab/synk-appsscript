@@ -38,7 +38,7 @@
     · 개인 순위·개인 성적·정답률 — §8 영구 금지(판정층 `금지칸` 이 기계로 문다).
     · 학생코드·실명·급수 — §3 철칙. 사람 표기는 유튜브 닉네임 하나.
     · 동시 시청자 «숫자» — 확정 ④ 가 숫자를 뺐다. 불빛 개수로만 말한다(하한 1 · 상한 12).
-    · 곡 제목 — 구석 표기는 고정 문안 하나다(확정 ⑤ 「티 안 나게」). 제목까지 띄우면 그게 깨진다.
+    · 곡 제목 — 2026-09-27 사용자 요청으로 실제 재생 곡을 구석에 계속 표시한다.
     · innerHTML — 채팅 원문이 그대로 오는 자리라 textContent 만 쓴다.
     · 몽골어 지어내기 — 검수 전까지 한국어만 그린다(문안표 mn 칸이 비어 있다).
 -->
@@ -97,6 +97,22 @@
     opacity: .13; transition: opacity 1.2s ease;
   }
   #구석.밝음 { opacity: .52; }
+  #구석.현재곡 {
+    left: auto; right: 64px; top: 60px; bottom: auto; max-width: 690px;
+    min-width: 270px; box-sizing: border-box; padding: 22px 30px 23px;
+    border-radius: 18px; border: 1px solid rgba(255,255,255,.24);
+    font-size: 33px; font-weight: 600; letter-spacing: -.025em;
+    color: #fff; background: linear-gradient(135deg,rgba(24,24,24,.78),rgba(24,24,24,.62));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.12),0 8px 28px rgba(0,0,0,.12);
+    opacity: 1; line-height: 1.4; text-align: right;
+  }
+  #구석.현재곡::before {
+    content: 'NOW PLAYING'; display: block; margin-bottom: 8px;
+    font: 500 15px/1.2 'Inter Tight','SUIT Variable',sans-serif;
+    letter-spacing: .18em; color: rgba(255,255,255,.72);
+  }
+  #구석.현재곡.밝음 { opacity: 1; }
+
 
   /* ── 순간 ① 합산 스냅숏 — 상시 아님(§8 · v1.5) ─────────────────────
      결이 바뀔 때와 정답 뒤에만 20초. 「데이터가 방송을 만든다」의 값은 노출 시간이 아니라
@@ -277,7 +293,8 @@ function 시작() {
   /* ── 구석 표기 — 곡이 바뀌는 순간에만 밝아진다 ─────────────────── */
   const 구석칸 = 요소('구석');
   let 구석타이머 = null;
-  function 구석밝히기() {
+  function 구석밝히기(제목) {
+    if (제목) { 글(구석칸, 제목); 구석칸.classList.add('현재곡'); }
     구석칸.classList.add('밝음');
     clearTimeout(구석타이머);
     구석타이머 = setTimeout(() => 구석칸.classList.remove('밝음'), 6000);
@@ -321,7 +338,7 @@ function 시작() {
 
     if (r.종류 === '합산') 합산값 = r.값;                 // 값만 갱신 — 그리는 것은 결 경계·정답 뒤
     else if (r.종류 === '맥박') 불빛그리기(r.값.불빛);
-    else if (r.종류 === '곡') 구석밝히기();
+    else if (r.종류 === '곡') 구석밝히기(r.값.제목);
     else if (r.종류 === '결') { 마지막결 = r.값; 합산스냅숏(); }  // DJ 교대 연출은 마스코트 몫
     else if (r.종류 === '정답') 정답축하(r.값);
     else if (r.종류 === '연동') 토스트(판정.병기('연동'), r.값.닉네임);

@@ -1,3 +1,6 @@
+import { createTownTransport } from './linked-client.mjs';
+import { mountUnderstanding } from './understanding-ui.mjs';
+const transport = createTownTransport();
 // This renderer consumes only the loopback preview service. It never grants
 // account access, awards inventory, or infers TOPIK proficiency in the browser.
 const $ = id => document.getElementById(id);
@@ -34,7 +37,7 @@ function actor(name, value) {
   if (name === 'guest') $('guest-bubble').hidden = value.pose !== 'seated';
 }
 function sceneVisible() {
-  if (document.hidden || $('info-dialog').open) return false;
+  if (document.hidden || $('info-dialog').open || $('reading-dialog')?.open) return false;
   const rect = $('scene').getBoundingClientRect(), dialogue = $('dialogue').getBoundingClientRect();
   // The essential scene and authored reaction must both be on screen for a
   // delivery receipt. Merely setting DOM styles off screen is not a delivery.
@@ -50,7 +53,9 @@ function setBusy(value) {
   busy = value;
   for (const button of document.querySelectorAll('#actions button,.review-actions button')) button.disabled = value;
 }
+const readingUI = mountUnderstanding({ transport, available: () => !!snapshot });
 function showError(message) {
+  if (transport.linked) { snapshot = null; cancelPresentation(); readingUI.invalidate(); $('actions').replaceChildren(); $('scene').hidden = true; $('dialogue').textContent = '연결 상태를 다시 확인해 주세요.'; $('info-dialog').close(); $('info-content').replaceChildren(); $('material-summary').replaceChildren(); if ($('reading-open')) $('reading-open').disabled = true; }
   $('error').textContent = message; $('error').hidden = false;
   $('retry-button').hidden = false; $('save-status').textContent = '기록을 다시 확인해 주세요.';
 }
@@ -157,6 +162,7 @@ function renderScene({ preserveActors = false } = {}) {
     : scene.guestSeated ? '손님이 앉아 차를 마셔요.' : '');
 }
 function render(data) {
+  $('scene').hidden = false; if ($('reading-open')) $('reading-open').disabled = false;
   const keepPresentation = activePlan && data.view.plan?.id === activePlan.id
     && data.state.worldRevision === activePlan.revision
     && (data.state.activity || 'seat') === (snapshot?.state.activity || 'seat');
@@ -179,7 +185,7 @@ function render(data) {
     if (!value && label === '내 지붕') continue;
     const span = document.createElement('span'); span.className = 'material'; span.textContent = `${label} ${value}`; inventory.append(span);
   }
-  $('save-status').textContent = '이 기기의 가상 기록에 저장돼요.';
+  $('save-status').textContent = transport.linked ? '이 학생의 생활 기록에 저장돼요. 생활 행동은 한국어 실력 점수가 아니에요.' : '이 기기의 가상 기록에 저장돼요.';
   renderScene({ preserveActors: !!keepPresentation }); setBusy(busy);
   if (view.plan && view.reaction && !keepPresentation) present(view.plan);
 }
@@ -188,10 +194,7 @@ async function command(type, payload = {}) {
   setBusy(true); clearError(); $('save-status').textContent = '기록을 확인하고 있어요…';
   const request = { id: crypto.randomUUID(), type, payload, expectedRevision: snapshot.state.revision };
   try {
-    const response = await fetch('/api/preview/command', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(request), cache: 'no-store' });
-    const data = await response.json();
-    if (data.state && data.view) render(data);
-    if (!response.ok || data.error) throw new Error(data.message || '기록을 저장하지 못했어요. 다시 확인해요.');
+    render(await transport.command({ ...request, sharingRevision: snapshot.sharingRevision }));
   } catch (error) {
     cancelPresentation(); showError(error.message || '연결이 잠깐 끊겼어요. 기록을 다시 확인해요.');
   } finally { setBusy(false); }
@@ -200,10 +203,7 @@ async function load() {
   if (busy) return;
   setBusy(true); clearError();
   try {
-    const response = await fetch('/api/preview/state', { cache: 'no-store' });
-    const data = await response.json();
-    if (!response.ok || !data.state || !data.view) throw new Error(data.message || '가상 기록을 불러오지 못했어요.');
-    render(data);
+    render(await transport.read());
   } catch (error) { cancelPresentation(); showError(error.message); }
   finally { setBusy(false); }
 }
@@ -317,3 +317,5 @@ if (!['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname)) {
 } else {
   prepareAssets().then(load).catch(error => showError(error.message));
 }
+
+if (transport.linked) setInterval(() => { if (!busy) load(); }, 5000);

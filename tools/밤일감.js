@@ -168,7 +168,7 @@ function 돌기(로그fd) {
   return 성공 === ls.length ? 0 : 1;
 }
 
-/* ── 띄우기 — 콘솔에서 완전히 뗀다(WMI CreateFlags=520 · .claude/rules/bake-tools.md) ── */
+/* ── 띄우기 — 기존 WMI CreateFlags=520 방식 ── */
 function 띄우기() {
   const ls = 남은것();
   if (!ls.length) { console.log('■ 쌓인 밤 일감이 0건이다 — 띄우지 않는다.'); return 0; }

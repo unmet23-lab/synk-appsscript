@@ -26,8 +26,8 @@ export class TownError extends Error {
   constructor(code, message, status = 400) { super(message); this.code = code; this.status = status; }
 }
 const ensure = (condition, code, message, status) => { if (!condition) throw new TownError(code, message, status); };
-export function initialState() {
-  return { schema: 1, scope: { ...SCOPE }, revision: 0, worldRevision: 0, visit: 1,
+export function initialState({ scope = SCOPE } = {}) {
+  return { schema: 1, scope: { ...scope }, revision: 0, worldRevision: 0, visit: 1,
     phase: 'choose', branch: null, inventory: { wood: 0, cloth: 0, canopy: 0 },
     canopyOwned: false, color: null, placement: null, previewSlot: null,
     materialsGranted: false, served: false, delivered: false, currentUseId: null,
@@ -43,7 +43,7 @@ export function restoreState(saved) {
   return assertState(state);
 }
 export function assertState(state) {
-  ensure(state?.schema === 1 && canonical(state.scope) === canonical(SCOPE), 'invalid-save', '체험 기록을 확인할 수 없어요.', 503);
+  ensure(state?.schema === 1 && state.scope?.domain === SCOPE.domain && state.scope?.workspace === SCOPE.workspace && /^(preview-local|linked-[a-zA-Z0-9_-]{1,100})$/.test(state.scope?.subject), 'invalid-save', '체험 기록을 확인할 수 없어요.', 503);
   ensure(Number.isSafeInteger(state.revision) && state.revision >= 0
     && Number.isSafeInteger(state.worldRevision) && state.worldRevision >= 0
     && Number.isSafeInteger(state.visit) && state.visit > 0, 'invalid-save', '체험 기록을 확인할 수 없어요.', 503);
@@ -59,7 +59,8 @@ export function assertState(state) {
   const outside = state.placement && SEATS[state.placement].branch === 'outside';
   ensure((state.canopyOwned ? state.inventory.canopy + Number(!!outside) === 1 : state.inventory.canopy === 0 && !outside)
     && (!state.canopyOwned || state.color !== null) && (!state.served || state.placement !== null), 'invalid-save', '체험 기록을 확인할 수 없어요.', 503);
-  const trail = Trail.summarize(state.events, { scope: SCOPE });
+  ensure(Array.isArray(state.events) && state.events.every(event => canonical(event.scope) === canonical(state.scope)), 'invalid-save', '다른 사람의 체험 기록을 섞을 수 없어요.', 503);
+  const trail = Trail.summarize(state.events, { scope: state.scope });
   const sign = state.sign;
   ensure(['seat', 'sign'].includes(state.activity) && sign
     && [null, 'chair', 'tea'].includes(sign.picture) && [null, 'chair', 'tea'].includes(sign.draftPicture)
@@ -81,7 +82,7 @@ export function assertState(state) {
 }
 function append(state, type, fields) {
   const seq = (state.events.at(-1)?.seq || 0) + 1;
-  const event = { schema: 1, id: `life:${seq}`, scope: { ...SCOPE }, seq, type, ...fields };
+  const event = { schema: 1, id: `life:${seq}`, scope: { ...state.scope }, seq, type, ...fields };
   state.events = Trail.append(state.events, event, { currentRevisions: { shelter: state.worldRevision } });
   return event.id;
 }
@@ -115,7 +116,7 @@ function signReaction(state, npcId = 'cafe-owner') {
   const sign = state.sign;
   if (!sign.currentUseId || sign.target !== state.placement || !state.placement) return { selected: null };
   const base = { requiredRevisions: { shelter: state.worldRevision }, conditions: { signReady: true }, actionRef: 'FT51.04' };
-  return Vellum.select({ scope: SCOPE, trail: Trail.summarize(state.events, { scope: SCOPE }), npcId,
+  return Vellum.select({ scope: state.scope, trail: Trail.summarize(state.events, { scope: state.scope }), npcId,
     currentRevisions: { shelter: state.worldRevision }, conditions: { signReady: true }, candidates: [
       { ...base, id: `FT51.${state.worldRevision}.${state.visit}.first`, semanticKey: 'FT51:first', sourceIds: [sign.goalId],
         priority: 100, once: true, contentRef: 'FT51.05' },
@@ -154,7 +155,7 @@ export function reactionFor(state, npcId = 'cafe-owner') {
     priority: 100, once: true, contentRef: branch === 'outside' ? 'FT10.06A' : 'FT10.06B' };
   const daily = { ...base, id: `FT10.${state.worldRevision}.${state.visit}.daily`, semanticKey: 'FT10:daily-use',
     priority: 10, once: false, contentRef: 'FT10.revisit' };
-  return Vellum.select({ scope: SCOPE, trail: Trail.summarize(state.events, { scope: SCOPE }), npcId,
+  return Vellum.select({ scope: state.scope, trail: Trail.summarize(state.events, { scope: state.scope }), npcId,
     currentRevisions: { shelter: state.worldRevision }, conditions: { seatPresent: !!state.placement, served: state.served }, candidates: [first, daily] });
 }
 const action = (type, label, payload = {}) => ({ type, label, payload });
@@ -350,7 +351,7 @@ export function reduceCommand(previous, command) {
       if (state.activity === 'sign') state.sign.delivered = true; else state.delivered = true; break;
     }
     case 'RESET': {
-      const old = state; state = initialState(); state.revision = old.revision; state.worldRevision = old.worldRevision + 1;
+      const old = state; state = initialState({ scope: old.scope }); state.revision = old.revision; state.worldRevision = old.worldRevision + 1;
       state.commands = old.commands; break;
     }
     default: throw new TownError('unknown-command', '지금 할 수 있는 일을 골라요.');

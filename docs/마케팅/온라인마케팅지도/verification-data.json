@@ -1,14 +1,20 @@
 {
-  "generatedAt": "2026-09-19T20:36:42.152Z",
-  "asOf": "2026-09-20",
+  "generatedAt": "2026-09-27T06:19:28.345Z",
+  "sourceAsOf": {
+    "registry": "2026-09-21",
+    "social": "2026-09-21",
+    "latestContent": "2026-09-27"
+  },
   "counts": {
     "operating": 23,
     "mongolia": 5,
     "plannedCountries": 23,
     "prioritySlots": 46,
     "newSlots": 44,
+    "expansionConfirmed": 24,
+    "expansionUnconfirmed": 20,
     "channelRows": 70,
-    "contents": 14,
+    "contents": 25,
     "identities": 6
   },
   "files": [
@@ -23,6 +29,50 @@
     {
       "file": "inputs/content-status.json",
       "sha256": "4219854ed73ce4a47d354c446966c720249725b6ff79dce340f89c7155723bd3"
+    },
+    {
+      "file": "inputs/content-lines.json",
+      "sha256": "e249a48d3ab66374df84c707ab453c0abda7420f82dd434b5fa8b3cbd20bb615"
+    },
+    {
+      "file": "../콘텐츠_운영체계_20260927.md",
+      "sha256": "4fc79be1bca9406be2b1d4451e8990b0232d20d28f42e6c4ae6c1332ead7a33c"
+    },
+    {
+      "file": "account-setup-proposal.json",
+      "sha256": "bd27e1bc36f8fb14e77fe34ce416ac56f0534cadc6b8326893874a55143f56e6"
+    },
+    {
+      "file": "../sns-계정.json",
+      "sha256": "6a688a7f073ca870636b2eec3b7ad33eb7fdbb7be075d8b587d15cfa9a9300b3"
+    },
+    {
+      "file": "../SNS_계정_전체목록_20260919.md",
+      "sha256": "8d27e3a149f3438fd162b3d57769963b96176ec0b720c98f4edec161ac6f2d0a"
+    },
+    {
+      "file": "../프로필최신화_20260919/반영_v6.json",
+      "sha256": "ba6f81da38dff5cab0b2a95ffb89f73acb73c7cb0269feeea415daacf7615454"
+    },
+    {
+      "file": "intl-social/execution-20260920.json",
+      "sha256": "3d26d637a358d96fc24e299bc1702f62361340eb7610039dccb78778f86f4c7a"
+    },
+    {
+      "file": "intl-youtube/publication.json",
+      "sha256": "fcbdc8f6e1c8d60d7c9998bce7a4d8c0e656420767dcba6c82c48197391d6219"
+    },
+    {
+      "file": "jp-vn-profile/publication.json",
+      "sha256": "c55bf2dfd28733f412c65c555303681f11059ecce7184d0056038b198f8b12c1"
+    },
+    {
+      "file": "../yuhobuilds_1편_쇼츠수정_20260922/README.md",
+      "sha256": "92ad381a729aa1fb9e40f4e777ca605335bd0d029a2a8d03db8bbbbbd35a1d7e"
+    },
+    {
+      "file": "../synkbrief_회의메모_20260921/video-v12/README.md",
+      "sha256": "aacc8318d31758f3b437ee2050244c58b1bc66d0c3f2257b993028534b98000f"
     }
   ]
 }

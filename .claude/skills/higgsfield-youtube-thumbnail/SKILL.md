@@ -9,6 +9,8 @@ allowed-tools: Bash
 
 # Higgsfield YouTube Thumbnail
 
+> SYNK (2026-10-01): SYNK 계정의 유튜브 썸네일·쇼츠·릴스 표지는 [SNS 제작 키트](../../../docs/디자인/SNS키트/README.md)의 `thumb169`·`cover916` 판으로 굽는다(글자·로고·색·안전영역은 키트가 정한다, `node tools/SNS키트굽기.js`). 이 스킬은 그 판 안에 넣을 사진·그림 한 장이 필요할 때만, 생성 크레딧을 사용자에게 먼저 승인받고 쓴다. 유호님 얼굴은 실제 사진이나 확정 얼굴 세트만 쓴다. 원본을 판올림할 때 이 줄을 다시 붙인다.
+
 Create a clean thumbnail concept, generate each variant through the `higgsfield` CLI, inspect it, and make only requested surgical edits.
 
 ## Bootstrap

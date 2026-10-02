@@ -2,9 +2,9 @@
   "id": "dashboard:59868cae-d12b-4e1e-9119-33990ad72c6c",
   "surface": "dashboard",
   "title": "SYNK 온라인 마케팅 지도",
-  "generatedAt": "2026-09-19T20:36:42.152Z",
+  "generatedAt": "2026-09-27T06:19:28.345Z",
   "status": "reviewed-local-records",
-  "buildStatus": "complete",
+  "buildStatus": "updating",
   "filters": [
     {
       "id": "brand",
@@ -74,6 +74,7 @@
           "legalEntity": "법인 구분이 아닌 회사·브랜드 운영 분류",
           "brand": "SYNK",
           "ownedCount": 2,
+          "securedExpansionCount": 0,
           "sharedCount": 0,
           "plannedSlots": null
         },
@@ -87,6 +88,7 @@
           "legalEntity": "브랜드",
           "brand": "LAB",
           "ownedCount": 5,
+          "securedExpansionCount": 24,
           "sharedCount": 1,
           "plannedSlots": 46
         },
@@ -96,10 +98,11 @@
           "role": "AI 활용·기업 교육·컨설팅·브랜딩",
           "market": "기존 한국어 채널 중심 · 국가 확장 미정",
           "channelPolicy": "유호·정보 브리핑 및 기존 업무 채널 유지",
-          "nextAction": "얼굴 없는 콘텐츠 제작과 출연 영상 별도 세션 연결",
+          "nextAction": "synkbrief 활용법 1편의 음성·자료 전달 경로 검토",
           "legalEntity": "브랜드",
           "brand": "SHIFT",
           "ownedCount": 5,
+          "securedExpansionCount": 0,
           "sharedCount": 1,
           "plannedSlots": null
         },
@@ -109,10 +112,11 @@
           "role": "SYNK를 만드는 유호의 제작·협업 기록",
           "market": "한국어 중심 · 여러 브랜드를 다루는 개인 트랙",
           "channelPolicy": "브랜드와 분리한 탐색용 트랙 · 기존 계정 유지",
-          "nextAction": "L1·S1 출연 영상은 다른 세션에서 제작",
+          "nextAction": "연재 1편의 육성·최종 검토 후 게시본 준비",
           "legalEntity": "사람·제작 기록 트랙",
           "brand": "YUHO",
           "ownedCount": 11,
+          "securedExpansionCount": 0,
           "sharedCount": 0,
           "plannedSlots": null
         },
@@ -126,6 +130,7 @@
           "legalEntity": "브랜드",
           "brand": "PULSE",
           "ownedCount": 0,
+          "securedExpansionCount": 0,
           "sharedCount": 1,
           "plannedSlots": null
         },
@@ -139,53 +144,62 @@
           "legalEntity": "브랜드",
           "brand": "PATH",
           "ownedCount": 0,
+          "securedExpansionCount": 0,
           "sharedCount": 0,
           "plannedSlots": null
         }
       ],
       "source": {
-        "label": "회사·브랜드 원문과 기존 계정의 탐색 분류",
+        "label": "회사·브랜드 원문과 확보 계정의 탐색 분류",
         "files": [
           "docs/마케팅_정본.md",
           "docs/마케팅/sns-계정.json",
           "docs/마케팅/SNS_계정_전체목록_20260919.md",
           "docs/마케팅/프로필최신화_20260919/반영_v6.json",
-          "docs/마케팅/프로필최신화_20260919/실행상태.json"
+          "docs/마케팅/프로필최신화_20260919/실행상태.json",
+          "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+          "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
+          "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
+          "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json"
         ],
-        "executedAt": "2026-09-19T20:36:42.152Z",
-        "classification": "로컬 기록 및 대화 계획",
+        "executedAt": "2026-09-27T06:19:28.345Z",
+        "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
-          "2026-09-19~20 로컬 근거 · 실시간 SNS 조회 아님"
+          "2026-09-19~23 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
         ],
         "metricDefinitions": [
           {
             "label": "기존 운영 채널",
-            "definition": "기록에서 각 계정의 주 탐색 분류에 한 번만 집계. 0은 해당 분류의 전용 운영 계정 기록 없음. YUHO는 별도 법인·브랜드가 아닌 제작 기록 트랙."
+            "definition": "2026-09-19 계정 목록의 23개를 주 분류에 한 번씩 집계한다. YUHO는 별도 법인이 아닌 제작 기록 트랙."
+          },
+          {
+            "label": "확장 확보",
+            "definition": "몽골 외 LAB 44자리 중 계정 레지스트리에 실재 확인된 24곳. 게시·성과 수가 아니다."
           },
           {
             "label": "공유 연결",
-            "definition": "LAB YouTube의 PULSE 라디오 공유와 SYNK Substack의 LAB·SHIFT 공유만 집계. 유호가 다룰 수 있는 다른 브랜드 소재는 공유 계정 수에 포함하지 않는다."
+            "definition": "LAB YouTube의 PULSE 라디오 공유와 SYNK Substack의 LAB·SHIFT 공유만 집계한다."
           }
         ],
         "caveats": [
           "미확인은 0·미존재·실패가 아니다.",
-          "운영 대상·프로필 저장·새 콘텐츠 게시·실제 성과는 별도 상태다."
+          "계정 확보·프로필 확인·콘텐츠 제작·게시·성과는 별도 상태다."
         ],
         "evidenceFlow": [
           {
             "title": "입력 자료",
-            "detail": "docs/마케팅_정본.md / docs/마케팅/sns-계정.json / docs/마케팅/SNS_계정_전체목록_20260919.md / docs/마케팅/프로필최신화_20260919/반영_v6.json / docs/마케팅/프로필최신화_20260919/실행상태.json"
+            "detail": "docs/마케팅_정본.md / docs/마케팅/sns-계정.json / docs/마케팅/SNS_계정_전체목록_20260919.md / docs/마케팅/프로필최신화_20260919/반영_v6.json / docs/마케팅/프로필최신화_20260919/실행상태.json / docs/마케팅/온라인마케팅지도/account-setup-proposal.json / docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json / docs/마케팅/온라인마케팅지도/intl-youtube/publication.json / docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json"
           },
           {
             "title": "대조 방법",
-            "detail": "현행 계정 ID 유지, 최신 반영 원장 우선, 23개국 계획은 LAB에만 연결. 공유 채널은 중복 제거."
+            "detail": "기존 26행과 확장 44자리를 ID로 대조하고 확인된 24곳만 확보로 표시. 23개국 계획은 LAB에만 연결."
           }
         ]
       },
       "methods": [
         {
           "language": "javascript",
-          "code": "docs/마케팅/온라인마케팅지도/build-map.mjs — 입력 JSON 3개를 읽어 정규화하고 집계. 실행: node build-map.mjs"
+          "code": "docs/마케팅/온라인마케팅지도/build-map.mjs — 로컬 계정 레지스트리·실행 원장·제작 기록과 국가 계획을 ID로 대조해 화면 자료를 생성"
         }
       ]
     },
@@ -199,65 +213,69 @@
           "note": "공개 발행 대상 22곳 + 개인 연락 1곳"
         },
         {
-          "id": "lab-mn",
-          "label": "몽골 LAB 기존",
-          "value": 5,
-          "unit": "채널",
-          "note": "우선 2개와 기존 추가 3개 모두 유지"
+          "id": "lab-secured",
+          "label": "LAB 확장 확보",
+          "value": 24,
+          "unit": "곳",
+          "note": "YouTube 16 + 기타 SNS 8 · 게시 수 아님"
+        },
+        {
+          "id": "lab-pending",
+          "label": "LAB 확장 미확인",
+          "value": 20,
+          "unit": "곳",
+          "note": "개설 또는 브랜드 채널 확인 필요"
         },
         {
           "id": "lab-world",
-          "label": "LAB 확장 대상",
+          "label": "LAB 대상 국가",
           "value": 23,
           "unit": "개국",
-          "note": "국가별 우선 2개 · 46개 운영 자리"
-        },
-        {
-          "id": "lab-new",
-          "label": "신규 국가 채널 계획",
-          "value": 44,
-          "unit": "자리",
-          "note": "몽골 외 22개국 · 아직 생성 완료 아님"
+          "note": "전체 관리 계획 49자리 · 몽골 기존 5 포함"
         }
       ],
       "source": {
-        "label": "중복을 제외한 운영 대상과 LAB 확장 계획",
+        "label": "기존 운영 대상과 LAB 확장 확인 상태",
         "files": [
           "docs/마케팅/sns-계정.json",
           "docs/마케팅/SNS_계정_전체목록_20260919.md",
           "docs/마케팅/프로필최신화_20260919/반영_v6.json",
-          "docs/마케팅/프로필최신화_20260919/실행상태.json"
+          "docs/마케팅/프로필최신화_20260919/실행상태.json",
+          "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+          "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
+          "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
+          "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json"
         ],
-        "executedAt": "2026-09-19T20:36:42.152Z",
-        "classification": "로컬 기록 및 대화 계획",
+        "executedAt": "2026-09-27T06:19:28.345Z",
+        "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
-          "2026-09-19~20 로컬 근거 · 실시간 SNS 조회 아님"
+          "2026-09-19~23 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
         ],
         "metricDefinitions": [
           {
-            "label": "신규 국가 채널 계획",
-            "definition": "23개국 × 우선 2플랫폼 = 46자리. 몽골 기존 우선 2자리를 제외한 신규 계획 44자리. 몽골 추가 3채널은 보존."
+            "label": "LAB 전체 계획",
+            "definition": "23개국 우선 46자리 + 몽골 추가 3자리 = 49자리. 그중 기존 몽골 5자리, 확장 확보 24자리, 확장 미확인 20자리."
           }
         ],
         "caveats": [
           "미확인은 0·미존재·실패가 아니다.",
-          "운영 대상·프로필 저장·새 콘텐츠 게시·실제 성과는 별도 상태다."
+          "계정 확보·프로필 확인·콘텐츠 제작·게시·성과는 별도 상태다."
         ],
         "evidenceFlow": [
           {
             "title": "입력 자료",
-            "detail": "docs/마케팅/sns-계정.json / docs/마케팅/SNS_계정_전체목록_20260919.md / docs/마케팅/프로필최신화_20260919/반영_v6.json / docs/마케팅/프로필최신화_20260919/실행상태.json"
+            "detail": "docs/마케팅/sns-계정.json / docs/마케팅/SNS_계정_전체목록_20260919.md / docs/마케팅/프로필최신화_20260919/반영_v6.json / docs/마케팅/프로필최신화_20260919/실행상태.json / docs/마케팅/온라인마케팅지도/account-setup-proposal.json / docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json / docs/마케팅/온라인마케팅지도/intl-youtube/publication.json / docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json"
           },
           {
             "title": "대조 방법",
-            "detail": "현행 계정 ID 유지, 최신 반영 원장 우선, 23개국 계획은 LAB에만 연결. 공유 채널은 중복 제거."
+            "detail": "기존 26행과 확장 44자리를 ID로 대조하고 확인된 24곳만 확보로 표시. 23개국 계획은 LAB에만 연결."
           }
         ]
       },
       "methods": [
         {
           "language": "javascript",
-          "code": "docs/마케팅/온라인마케팅지도/build-map.mjs — 입력 JSON 3개를 읽어 정규화하고 집계. 실행: node build-map.mjs"
+          "code": "docs/마케팅/온라인마케팅지도/build-map.mjs — 로컬 계정 레지스트리·실행 원장·제작 기록과 국가 계획을 ID로 대조해 화면 자료를 생성"
         }
       ]
     },
@@ -269,16 +287,16 @@
           "country": "베트남",
           "brand": "LAB",
           "platformsLabel": "TikTok · YouTube",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 2,
+          "existingLabel": "확장 확보 2/2",
+          "setupStatus": "확장 확보 2/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -288,16 +306,16 @@
           "country": "중국",
           "brand": "LAB",
           "platformsLabel": "Douyin · Xiaohongshu",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -307,16 +325,16 @@
           "country": "일본",
           "brand": "LAB",
           "platformsLabel": "YouTube · Instagram",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -326,16 +344,16 @@
           "country": "우즈베키스탄",
           "brand": "LAB",
           "platformsLabel": "Instagram · Telegram",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -364,16 +382,16 @@
           "country": "대만",
           "brand": "LAB",
           "platformsLabel": "Instagram · YouTube",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -383,16 +401,16 @@
           "country": "미얀마",
           "brand": "LAB",
           "platformsLabel": "TikTok · YouTube",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 2,
+          "existingLabel": "확장 확보 2/2",
+          "setupStatus": "확장 확보 2/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -402,16 +420,16 @@
           "country": "태국",
           "brand": "LAB",
           "platformsLabel": "TikTok · YouTube",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -421,16 +439,16 @@
           "country": "인도네시아",
           "brand": "LAB",
           "platformsLabel": "TikTok · YouTube",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -440,16 +458,16 @@
           "country": "러시아",
           "brand": "LAB",
           "platformsLabel": "VK · RUTUBE",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -459,16 +477,16 @@
           "country": "인도",
           "brand": "LAB",
           "platformsLabel": "YouTube · Instagram",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -479,15 +497,15 @@
           "brand": "LAB",
           "platformsLabel": "Instagram · TikTok",
           "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingLabel": "확장 확보 0/2",
+          "setupStatus": "확장 확보 0/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -497,16 +515,16 @@
           "country": "네팔",
           "brand": "LAB",
           "platformsLabel": "Facebook · TikTok",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -516,16 +534,16 @@
           "country": "키르기스스탄",
           "brand": "LAB",
           "platformsLabel": "Instagram · YouTube",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -535,16 +553,16 @@
           "country": "캄보디아",
           "brand": "LAB",
           "platformsLabel": "TikTok · Facebook",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -554,16 +572,16 @@
           "country": "미국",
           "brand": "LAB",
           "platformsLabel": "YouTube · TikTok",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -573,16 +591,16 @@
           "country": "필리핀",
           "brand": "LAB",
           "platformsLabel": "TikTok · YouTube",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -592,16 +610,16 @@
           "country": "스리랑카",
           "brand": "LAB",
           "platformsLabel": "YouTube · Facebook",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 2,
+          "existingLabel": "확장 확보 2/2",
+          "setupStatus": "확장 확보 2/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -611,16 +629,16 @@
           "country": "호주",
           "brand": "LAB",
           "platformsLabel": "YouTube · TikTok",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -630,16 +648,16 @@
           "country": "파라과이",
           "brand": "LAB",
           "platformsLabel": "Instagram · YouTube",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -649,16 +667,16 @@
           "country": "뉴질랜드",
           "brand": "LAB",
           "platformsLabel": "YouTube · Instagram",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -668,16 +686,16 @@
           "country": "말레이시아",
           "brand": "LAB",
           "platformsLabel": "TikTok · YouTube",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -687,51 +705,54 @@
           "country": "캐나다",
           "brand": "LAB",
           "platformsLabel": "YouTube · Instagram",
-          "existingCount": 0,
-          "existingLabel": "신규 2개 계획 · 기존 확인 없음",
-          "setupStatus": "신규 세팅 계획",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
           "scriptStatus": "한국어 원본 검토",
           "translationStatus": "최종 번역 미확인",
           "localReviewStatus": "현지 검수 미확인",
           "contentStatus": "한국어 원본 확정 후 현지화",
           "publishStatus": "새 콘텐츠 게시 미확인",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "국가별 가입·운영 조건과 번역 언어를 확인한 뒤 2개 채널의 로그인·소유권·프로필을 준비한다.",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         }
       ],
       "source": {
-        "label": "LAB 23개국 운영 계획",
+        "label": "LAB 23개국별 확보 상태와 제작 계획",
         "files": [
           "docs/마케팅/온라인마케팅지도/inputs/content-status.json",
-          "docs/마케팅/온라인마케팅지도/inputs/plan.json"
+          "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+          "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
+          "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
+          "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json"
         ],
-        "executedAt": "2026-09-19T20:36:42.152Z",
-        "classification": "로컬 기록 및 대화 계획",
+        "executedAt": "2026-09-27T06:19:28.345Z",
+        "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
-          "2026-09-19~20 로컬 근거 · 실시간 SNS 조회 아님"
+          "2026-09-19~23 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
         ],
         "metricDefinitions": [],
         "caveats": [
           "미확인은 0·미존재·실패가 아니다.",
-          "운영 대상·프로필 저장·새 콘텐츠 게시·실제 성과는 별도 상태다."
+          "계정 확보·프로필 확인·콘텐츠 제작·게시·성과는 별도 상태다."
         ],
         "evidenceFlow": [
           {
             "title": "입력 자료",
-            "detail": "docs/마케팅/온라인마케팅지도/inputs/content-status.json / docs/마케팅/온라인마케팅지도/inputs/plan.json"
+            "detail": "docs/마케팅/온라인마케팅지도/inputs/content-status.json / docs/마케팅/온라인마케팅지도/account-setup-proposal.json / docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json / docs/마케팅/온라인마케팅지도/intl-youtube/publication.json / docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json"
           },
           {
             "title": "대조 방법",
-            "detail": "현행 계정 ID 유지, 최신 반영 원장 우선, 23개국 계획은 LAB에만 연결. 공유 채널은 중복 제거."
+            "detail": "기존 26행과 확장 44자리를 ID로 대조하고 확인된 24곳만 확보로 표시. 23개국 계획은 LAB에만 연결."
           }
         ]
       },
       "methods": [
         {
           "language": "javascript",
-          "code": "docs/마케팅/온라인마케팅지도/build-map.mjs — 입력 JSON 3개를 읽어 정규화하고 집계. 실행: node build-map.mjs"
+          "code": "docs/마케팅/온라인마케팅지도/build-map.mjs — 로컬 계정 레지스트리·실행 원장·제작 기록과 국가 계획을 ID로 대조해 화면 자료를 생성"
         }
       ]
     },
@@ -1475,7 +1496,7 @@
         {
           "id": "shift-kakao",
           "brand": "SHIFT",
-          "platform": "kakao-channel",
+          "platform": "KakaoTalk",
           "handle": "synkshift",
           "publicUrl": "https://pf.kakao.com/_kvlrX",
           "loginAlias": null,
@@ -1686,25 +1707,32 @@
           "country": "베트남",
           "countryCode": "VN",
           "platform": "TikTok",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "@synklab.vn",
+          "publicUrl": "https://www.tiktok.com/@synklab.vn",
+          "loginAlias": "unmet27",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 확인 기록",
+          "coverStatus": "커버 미확인·미반영",
+          "avatarStatus": "approved-kkamong-v4-profile-verified-20260921",
+          "profileStatusCode": "created-name-handle-bio-publicly-verified-2026-09-20; initial-delayed-display-resolved; avatar-verified-20260921; external-links-not-set; separate-content-post-not-created; automatic-photo-activity-not-fully-audited",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "커버·링크 등 남은 프로필 작업과 학습 콘텐츠 준비",
+          "lastEvidenceAt": "2026-09-21",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json\ndocs/마케팅/sns-계정.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
+            "docs/마케팅/sns-계정.json"
+          ],
+          "verificationScope": "계정별 점검 기록",
+          "observedGate": "created-bio-verified",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-vn-youtube",
@@ -1713,25 +1741,32 @@
           "country": "베트남",
           "countryCode": "VN",
           "platform": "YouTube",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "@synklabvietnam",
+          "publicUrl": "https://www.youtube.com/@synklabvietnam",
+          "loginAlias": "77yuhbs",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 공개 확인",
+          "coverStatus": "커버 공개 확인",
+          "avatarStatus": null,
+          "profileStatusCode": "localized-bio-and-white-felt-glass-banner-v2-preserved; kkamong-open-eyes-profile-v4-publicly-verified-2026-09-20; name-handle-website-mongle-watermark-and-timing-preserved",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "원어민 감수와 학습 영상 준비; 게시 시 재확인",
+          "lastEvidenceAt": "2026-09-20T07:55:00+09:00",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/sns-계정.json\ndocs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json"
+          ],
+          "verificationScope": "공개 프로필 확인 기록",
+          "observedGate": null,
+          "youtubeProfileVerified": true
         },
         {
           "id": "lab-cn-douyin",
@@ -1744,21 +1779,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "문자 요청 제한 · 개설 미확인",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "blocked-creator-rate-limit",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "공식 제한 해소 후 가입 상태 확인",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "blocked-creator-rate-limit",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-cn-xiaohongshu",
@@ -1767,25 +1808,32 @@
           "country": "중국",
           "countryCode": "CN",
           "platform": "Xiaohongshu",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "rednote ID 94512834104",
+          "publicUrl": "https://www.rednote.com/user/profile/6ab10807000000000301d12f",
+          "loginAlias": "unmet23",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "본인 계정 확인 · LAB 프로필 미완",
+          "profileStatus": "LAB 소개·사진 미반영",
+          "coverStatus": "시안 준비 · 미반영",
+          "avatarStatus": "default-balloon-approved-kkamong-not-applied",
+          "profileStatusCode": "account-identity-confirmed; lab-name-bio-avatar-cover-not-applied; upload-ui-accessible-actual-upload-and-publishing-not-verified",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "앱 편집 화면에서 LAB 이름·소개·사진 반영 확인",
+          "lastEvidenceAt": "2026-09-21",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json\ndocs/마케팅/sns-계정.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
+            "docs/마케팅/sns-계정.json"
+          ],
+          "verificationScope": "로그인된 본인 프로필 확인 · 비로그인 공개 확인 아님",
+          "observedGate": "account-identity-confirmed-profile-edit-awaiting-mobile",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-jp-youtube",
@@ -1794,25 +1842,32 @@
           "country": "일본",
           "countryCode": "JP",
           "platform": "YouTube",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "@synklabjapan",
+          "publicUrl": "https://www.youtube.com/@synklabjapan",
+          "loginAlias": "77yuhbs",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 공개 확인",
+          "coverStatus": "커버 공개 확인",
+          "avatarStatus": null,
+          "profileStatusCode": "localized-bio-and-white-felt-glass-banner-v2-preserved; kkamong-open-eyes-profile-v4-publicly-verified-2026-09-20; name-handle-website-existing-video-preserved",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "원어민 감수와 학습 영상 준비; 게시 시 재확인",
+          "lastEvidenceAt": "2026-09-20T07:55:00+09:00",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/sns-계정.json\ndocs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json"
+          ],
+          "verificationScope": "공개 프로필 확인 기록",
+          "observedGate": null,
+          "youtubeProfileVerified": true
         },
         {
           "id": "lab-jp-instagram",
@@ -1825,21 +1880,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "가입 오류 · 생성 미확인",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "user-submitted-signup-generic-error",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "공식 가입 오류 확인 후 계정 생성 여부 재점검",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "user-submitted-signup-generic-error",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-uz-instagram",
@@ -1852,21 +1913,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "가입 오류 · 생성 미확인",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "user-submitted-signup-generic-error",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "공식 가입 오류 확인 후 계정 생성 여부 재점검",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "user-submitted-signup-generic-error",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-uz-telegram",
@@ -1875,25 +1942,32 @@
           "country": "우즈베키스탄",
           "countryCode": "UZ",
           "platform": "Telegram",
-          "handle": null,
-          "publicUrl": null,
+          "handle": "@synklab_uz",
+          "publicUrl": "https://t.me/synklab_uz",
           "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 확인 기록",
+          "coverStatus": "커버 미확인·미반영",
+          "avatarStatus": "approved-kkamong-v4-profile-verified-20260921",
+          "profileStatusCode": "created-public-channel-name-handle-full-bio-publicly-verified-2026-09-20; avatar-verified-20260921; separate-content-post-not-created; automatic-photo-activity-not-fully-audited",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "커버·링크 등 남은 프로필 작업과 학습 콘텐츠 준비",
+          "lastEvidenceAt": "2026-09-21",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json\ndocs/마케팅/sns-계정.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
+            "docs/마케팅/sns-계정.json"
+          ],
+          "verificationScope": "계정별 점검 기록",
+          "observedGate": "created-bio-verified",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-tw-instagram",
@@ -1906,21 +1980,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "가입 오류 · 생성 미확인",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "user-submitted-signup-generic-error",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "공식 가입 오류 확인 후 계정 생성 여부 재점검",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "user-submitted-signup-generic-error",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-tw-youtube",
@@ -1929,25 +2009,32 @@
           "country": "대만",
           "countryCode": "TW",
           "platform": "YouTube",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "@synklabtaiwan",
+          "publicUrl": "https://www.youtube.com/@synklabtaiwan",
+          "loginAlias": "unmet23",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 공개 확인",
+          "coverStatus": "커버 공개 확인",
+          "avatarStatus": null,
+          "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "원어민 감수와 학습 영상 준비; 게시 시 재확인",
+          "lastEvidenceAt": "2026-09-20T08:35:47.9282742+09:00",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/sns-계정.json\ndocs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
+          ],
+          "verificationScope": "공개 프로필 확인 기록",
+          "observedGate": null,
+          "youtubeProfileVerified": true
         },
         {
           "id": "lab-mm-tiktok",
@@ -1956,25 +2043,32 @@
           "country": "미얀마",
           "countryCode": "MM",
           "platform": "TikTok",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "@synklab.mm",
+          "publicUrl": "https://www.tiktok.com/@synklab.mm",
+          "loginAlias": "synk.yuh",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 확인 기록",
+          "coverStatus": "커버 미확인·미반영",
+          "avatarStatus": "approved-kkamong-v4-profile-verified-20260921",
+          "profileStatusCode": "created-handle-and-bio-publicly-verified-2026-09-21; desired-name-limited-until-after-2026-09-27; avatar-verified-20260921; external-links-not-set; separate-content-post-not-created; automatic-photo-activity-not-fully-audited",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "커버·링크 등 남은 프로필 작업과 학습 콘텐츠 준비",
+          "lastEvidenceAt": "2026-09-21",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json\ndocs/마케팅/sns-계정.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
+            "docs/마케팅/sns-계정.json"
+          ],
+          "verificationScope": "계정별 점검 기록",
+          "observedGate": "created-bio-verified-desired-name-pending",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-mm-youtube",
@@ -1983,25 +2077,32 @@
           "country": "미얀마",
           "countryCode": "MM",
           "platform": "YouTube",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "@synklabmyanmar",
+          "publicUrl": "https://www.youtube.com/@synklabmyanmar",
+          "loginAlias": "unmet23",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 공개 확인",
+          "coverStatus": "커버 공개 확인",
+          "avatarStatus": null,
+          "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "원어민 감수와 학습 영상 준비; 게시 시 재확인",
+          "lastEvidenceAt": "2026-09-20T00:20:06.520Z",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/sns-계정.json\ndocs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
+          ],
+          "verificationScope": "공개 프로필 확인 기록",
+          "observedGate": null,
+          "youtubeProfileVerified": true
         },
         {
           "id": "lab-th-tiktok",
@@ -2014,21 +2115,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "기존 번호 충돌 보고 · 생성 미확인",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "blocked-phone-already-used-user-reported",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "기존 번호 연결 상태 확인",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "blocked-phone-already-used-user-reported",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-th-youtube",
@@ -2037,25 +2144,32 @@
           "country": "태국",
           "countryCode": "TH",
           "platform": "YouTube",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "@synklabthailand",
+          "publicUrl": "https://www.youtube.com/@synklabthailand",
+          "loginAlias": "unmet23",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 공개 확인",
+          "coverStatus": "커버 공개 확인",
+          "avatarStatus": null,
+          "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "원어민 감수와 학습 영상 준비; 게시 시 재확인",
+          "lastEvidenceAt": "2026-09-20T00:26:00.128Z",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/sns-계정.json\ndocs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
+          ],
+          "verificationScope": "공개 프로필 확인 기록",
+          "observedGate": null,
+          "youtubeProfileVerified": true
         },
         {
           "id": "lab-id-tiktok",
@@ -2068,21 +2182,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "인증 코드 만료 보고 · 생성 미확인",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "user-deferred-until-20260922-repeated-code-expiry",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "공식 인증 상태와 계정 독립성 확인",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "user-deferred-until-20260922-repeated-code-expiry",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-id-youtube",
@@ -2091,25 +2211,32 @@
           "country": "인도네시아",
           "countryCode": "ID",
           "platform": "YouTube",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "@synklabindonesia",
+          "publicUrl": "https://www.youtube.com/@synklabindonesia",
+          "loginAlias": "unmet23",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 공개 확인",
+          "coverStatus": "커버 공개 확인",
+          "avatarStatus": null,
+          "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "원어민 감수와 학습 영상 준비; 게시 시 재확인",
+          "lastEvidenceAt": "2026-09-20T00:31:21.265Z",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/sns-계정.json\ndocs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
+          ],
+          "verificationScope": "공개 프로필 확인 기록",
+          "observedGate": null,
+          "youtubeProfileVerified": true
         },
         {
           "id": "lab-ru-vk",
@@ -2122,21 +2249,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "개인 계정 확인 · LAB 채널 미확인",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "personal-account-confirmed-by-user-screenshot-lab-channel-pending",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "LAB 커뮤니티 생성·공개 확인",
+          "lastEvidenceAt": "2026-09-21T20:44:00+09:00",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "personal-account-confirmed-by-user-screenshot-lab-channel-pending",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-ru-rutube",
@@ -2146,24 +2279,31 @@
           "countryCode": "RU",
           "platform": "RUTUBE",
           "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "publicUrl": "https://rutube.ru/channel/81398864/",
+          "loginAlias": "synk.yuh",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 확인 기록",
+          "coverStatus": "커버 미확인·미반영",
+          "avatarStatus": "approved-kkamong-v4-profile-verified-20260921",
+          "profileStatusCode": "created-2026-09-20; name-full-bio-and-description-lab-link-publicly-verified-2026-09-21; avatar-verified-20260921; cover-custom-handle-not-set; separate-content-post-not-created; automatic-photo-activity-not-fully-audited",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "커버·링크 등 남은 프로필 작업과 학습 콘텐츠 준비",
+          "lastEvidenceAt": "2026-09-21",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json\ndocs/마케팅/sns-계정.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
+            "docs/마케팅/sns-계정.json"
+          ],
+          "verificationScope": "계정별 점검 기록",
+          "observedGate": "created-bio-verified",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-in-youtube",
@@ -2172,25 +2312,32 @@
           "country": "인도",
           "countryCode": "IN",
           "platform": "YouTube",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "@synklabindia",
+          "publicUrl": "https://www.youtube.com/@synklabindia",
+          "loginAlias": "unmet23",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 공개 확인",
+          "coverStatus": "커버 공개 확인",
+          "avatarStatus": null,
+          "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "원어민 감수와 학습 영상 준비; 게시 시 재확인",
+          "lastEvidenceAt": "2026-09-20T00:36:00.498Z",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/sns-계정.json\ndocs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
+          ],
+          "verificationScope": "공개 프로필 확인 기록",
+          "observedGate": null,
+          "youtubeProfileVerified": true
         },
         {
           "id": "lab-in-instagram",
@@ -2203,21 +2350,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "개별 가입 미시도",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "blocked-shared-instagram-signup-gate",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "공식 가입 경로 확인 후 개별 계정 시도",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "blocked-shared-instagram-signup-gate",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-kz-instagram",
@@ -2230,21 +2383,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "개별 가입 미시도",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "blocked-shared-instagram-signup-gate",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "공식 가입 경로 확인 후 개별 계정 시도",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "blocked-shared-instagram-signup-gate",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-kz-tiktok",
@@ -2257,21 +2416,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "독립 로그인 미배정",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "blocked-google-login-allocation-required",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "로그인 배정 후 국가 계정 개설 확인",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "blocked-google-login-allocation-required",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-np-facebook",
@@ -2280,25 +2445,32 @@
           "country": "네팔",
           "countryCode": "NP",
           "platform": "Facebook",
-          "handle": null,
-          "publicUrl": null,
+          "handle": "@synklab.np",
+          "publicUrl": "https://www.facebook.com/synklab.np/",
           "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 확인 기록",
+          "coverStatus": "커버 미확인·미반영",
+          "avatarStatus": "approved-kkamong-v4-profile-verified-20260921",
+          "profileStatusCode": "created-name-bio-website-and-vanity-handle-publicly-verified-2026-09-21; avatar-verified-20260921; cover-not-set; separate-content-post-not-created; automatic-photo-activity-not-fully-audited",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "커버·링크 등 남은 프로필 작업과 학습 콘텐츠 준비",
+          "lastEvidenceAt": "2026-09-21",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json\ndocs/마케팅/sns-계정.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
+            "docs/마케팅/sns-계정.json"
+          ],
+          "verificationScope": "계정별 점검 기록",
+          "observedGate": "created-bio-verified",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-np-tiktok",
@@ -2311,21 +2483,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "독립 로그인 미배정",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "blocked-google-login-allocation-required",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "로그인 배정 후 국가 계정 개설 확인",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "blocked-google-login-allocation-required",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-kg-instagram",
@@ -2338,21 +2516,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "개별 가입 미시도",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "blocked-shared-instagram-signup-gate",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "공식 가입 경로 확인 후 개별 계정 시도",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "blocked-shared-instagram-signup-gate",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-kg-youtube",
@@ -2361,25 +2545,32 @@
           "country": "키르기스스탄",
           "countryCode": "KG",
           "platform": "YouTube",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "@synklabkyrgyzstan",
+          "publicUrl": "https://www.youtube.com/@synklabkyrgyzstan",
+          "loginAlias": "unmet23",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 공개 확인",
+          "coverStatus": "커버 공개 확인",
+          "avatarStatus": null,
+          "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "원어민 감수와 학습 영상 준비; 게시 시 재확인",
+          "lastEvidenceAt": "2026-09-20T00:41:34.315Z",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/sns-계정.json\ndocs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
+          ],
+          "verificationScope": "공개 프로필 확인 기록",
+          "observedGate": null,
+          "youtubeProfileVerified": true
         },
         {
           "id": "lab-kh-tiktok",
@@ -2392,21 +2583,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "독립 로그인 미배정",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "blocked-google-login-allocation-required",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "로그인 배정 후 국가 계정 개설 확인",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "blocked-google-login-allocation-required",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-kh-facebook",
@@ -2416,24 +2613,31 @@
           "countryCode": "KH",
           "platform": "Facebook",
           "handle": null,
-          "publicUrl": null,
+          "publicUrl": "https://www.facebook.com/profile.php?id=61594726675164",
           "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 확인 기록",
+          "coverStatus": "커버 미확인·미반영",
+          "avatarStatus": "approved-kkamong-v4-profile-verified-20260921",
+          "profileStatusCode": "created-name-bio-website-publicly-verified-2026-09-20; avatar-verified-20260921; vanity-handle-cover-not-set; separate-content-post-not-created; automatic-photo-activity-not-fully-audited",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "커버·링크 등 남은 프로필 작업과 학습 콘텐츠 준비",
+          "lastEvidenceAt": "2026-09-21",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json\ndocs/마케팅/sns-계정.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
+            "docs/마케팅/sns-계정.json"
+          ],
+          "verificationScope": "계정별 점검 기록",
+          "observedGate": "created-bio-verified",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-us-youtube",
@@ -2442,25 +2646,32 @@
           "country": "미국",
           "countryCode": "US",
           "platform": "YouTube",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "@synklabusa",
+          "publicUrl": "https://www.youtube.com/@synklabusa",
+          "loginAlias": "unmet23",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 공개 확인",
+          "coverStatus": "커버 공개 확인",
+          "avatarStatus": null,
+          "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "원어민 감수와 학습 영상 준비; 게시 시 재확인",
+          "lastEvidenceAt": "2026-09-20T00:46:55.415Z",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/sns-계정.json\ndocs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
+          ],
+          "verificationScope": "공개 프로필 확인 기록",
+          "observedGate": null,
+          "youtubeProfileVerified": true
         },
         {
           "id": "lab-us-tiktok",
@@ -2473,21 +2684,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "독립 로그인 미배정",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "blocked-google-login-allocation-required",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "로그인 배정 후 국가 계정 개설 확인",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "blocked-google-login-allocation-required",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-ph-tiktok",
@@ -2500,21 +2717,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "독립 로그인 미배정",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "blocked-google-login-allocation-required",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "로그인 배정 후 국가 계정 개설 확인",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "blocked-google-login-allocation-required",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-ph-youtube",
@@ -2523,25 +2746,32 @@
           "country": "필리핀",
           "countryCode": "PH",
           "platform": "YouTube",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "@synklabphilippines",
+          "publicUrl": "https://www.youtube.com/@synklabphilippines",
+          "loginAlias": "unmet23",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 공개 확인",
+          "coverStatus": "커버 공개 확인",
+          "avatarStatus": null,
+          "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "원어민 감수와 학습 영상 준비; 게시 시 재확인",
+          "lastEvidenceAt": "2026-09-20T00:52:49.133Z",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/sns-계정.json\ndocs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
+          ],
+          "verificationScope": "공개 프로필 확인 기록",
+          "observedGate": null,
+          "youtubeProfileVerified": true
         },
         {
           "id": "lab-lk-youtube",
@@ -2550,25 +2780,32 @@
           "country": "스리랑카",
           "countryCode": "LK",
           "platform": "YouTube",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "@synklabsrilanka",
+          "publicUrl": "https://www.youtube.com/@synklabsrilanka",
+          "loginAlias": "unmet23",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 공개 확인",
+          "coverStatus": "커버 공개 확인",
+          "avatarStatus": null,
+          "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "원어민 감수와 학습 영상 준비; 게시 시 재확인",
+          "lastEvidenceAt": "2026-09-20T00:58:29.125Z",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/sns-계정.json\ndocs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
+          ],
+          "verificationScope": "공개 프로필 확인 기록",
+          "observedGate": null,
+          "youtubeProfileVerified": true
         },
         {
           "id": "lab-lk-facebook",
@@ -2578,24 +2815,31 @@
           "countryCode": "LK",
           "platform": "Facebook",
           "handle": null,
-          "publicUrl": null,
+          "publicUrl": "https://www.facebook.com/profile.php?id=61594274084966",
           "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 확인 기록",
+          "coverStatus": "커버 미확인·미반영",
+          "avatarStatus": "approved-kkamong-v4-profile-verified-20260921",
+          "profileStatusCode": "created-name-bio-website-publicly-verified-2026-09-20; avatar-verified-20260921; vanity-handle-cover-not-set; separate-content-post-not-created; automatic-photo-activity-not-fully-audited",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "커버·링크 등 남은 프로필 작업과 학습 콘텐츠 준비",
+          "lastEvidenceAt": "2026-09-21",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json\ndocs/마케팅/sns-계정.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
+            "docs/마케팅/sns-계정.json"
+          ],
+          "verificationScope": "계정별 점검 기록",
+          "observedGate": "created-bio-verified",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-au-youtube",
@@ -2604,25 +2848,32 @@
           "country": "호주",
           "countryCode": "AU",
           "platform": "YouTube",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "@synklabaustralia",
+          "publicUrl": "https://www.youtube.com/@synklabaustralia",
+          "loginAlias": "unmet23",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 공개 확인",
+          "coverStatus": "커버 공개 확인",
+          "avatarStatus": null,
+          "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "원어민 감수와 학습 영상 준비; 게시 시 재확인",
+          "lastEvidenceAt": "2026-09-20T01:04:21.603Z",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/sns-계정.json\ndocs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
+          ],
+          "verificationScope": "공개 프로필 확인 기록",
+          "observedGate": null,
+          "youtubeProfileVerified": true
         },
         {
           "id": "lab-au-tiktok",
@@ -2635,21 +2886,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "독립 로그인 미배정",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "blocked-google-login-allocation-required",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "로그인 배정 후 국가 계정 개설 확인",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "blocked-google-login-allocation-required",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-py-instagram",
@@ -2662,21 +2919,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "개별 가입 미시도",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "blocked-shared-instagram-signup-gate",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "공식 가입 경로 확인 후 개별 계정 시도",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "blocked-shared-instagram-signup-gate",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-py-youtube",
@@ -2685,25 +2948,32 @@
           "country": "파라과이",
           "countryCode": "PY",
           "platform": "YouTube",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "@synklabparaguay",
+          "publicUrl": "https://www.youtube.com/@synklabparaguay",
+          "loginAlias": "unmet23",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 공개 확인",
+          "coverStatus": "커버 공개 확인",
+          "avatarStatus": null,
+          "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "원어민 감수와 학습 영상 준비; 게시 시 재확인",
+          "lastEvidenceAt": "2026-09-20T01:16:13.348Z",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/sns-계정.json\ndocs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
+          ],
+          "verificationScope": "공개 프로필 확인 기록",
+          "observedGate": null,
+          "youtubeProfileVerified": true
         },
         {
           "id": "lab-nz-youtube",
@@ -2712,25 +2982,32 @@
           "country": "뉴질랜드",
           "countryCode": "NZ",
           "platform": "YouTube",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "@synklabnewzealand",
+          "publicUrl": "https://www.youtube.com/@synklabnewzealand",
+          "loginAlias": "unmet23",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 공개 확인",
+          "coverStatus": "커버 공개 확인",
+          "avatarStatus": null,
+          "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "원어민 감수와 학습 영상 준비; 게시 시 재확인",
+          "lastEvidenceAt": "2026-09-20T01:21:41.280Z",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/sns-계정.json\ndocs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
+          ],
+          "verificationScope": "공개 프로필 확인 기록",
+          "observedGate": null,
+          "youtubeProfileVerified": true
         },
         {
           "id": "lab-nz-instagram",
@@ -2743,21 +3020,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "개별 가입 미시도",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "blocked-shared-instagram-signup-gate",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "공식 가입 경로 확인 후 개별 계정 시도",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "blocked-shared-instagram-signup-gate",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-my-tiktok",
@@ -2770,21 +3053,27 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "독립 로그인 미배정",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "blocked-google-login-allocation-required",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "로그인 배정 후 국가 계정 개설 확인",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "blocked-google-login-allocation-required",
+          "youtubeProfileVerified": false
         },
         {
           "id": "lab-my-youtube",
@@ -2793,25 +3082,32 @@
           "country": "말레이시아",
           "countryCode": "MY",
           "platform": "YouTube",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "@synklabmalaysia",
+          "publicUrl": "https://www.youtube.com/@synklabmalaysia",
+          "loginAlias": "unmet23",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 공개 확인",
+          "coverStatus": "커버 공개 확인",
+          "avatarStatus": null,
+          "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "원어민 감수와 학습 영상 준비; 게시 시 재확인",
+          "lastEvidenceAt": "2026-09-20T01:27:05.193Z",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/sns-계정.json\ndocs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
+          ],
+          "verificationScope": "공개 프로필 확인 기록",
+          "observedGate": null,
+          "youtubeProfileVerified": true
         },
         {
           "id": "lab-ca-youtube",
@@ -2820,25 +3116,32 @@
           "country": "캐나다",
           "countryCode": "CA",
           "platform": "YouTube",
-          "handle": null,
-          "publicUrl": null,
-          "loginAlias": null,
-          "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "handle": "@synklabcanada",
+          "publicUrl": "https://www.youtube.com/@synklabcanada",
+          "loginAlias": "unmet23",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 공개 확인",
+          "coverStatus": "커버 공개 확인",
+          "avatarStatus": null,
+          "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
-          "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "nextAction": "원어민 감수와 학습 영상 준비; 게시 시 재확인",
+          "lastEvidenceAt": "2026-09-20T01:33:18.814Z",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/sns-계정.json\ndocs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
+          ],
+          "verificationScope": "공개 프로필 확인 기록",
+          "observedGate": null,
+          "youtubeProfileVerified": true
         },
         {
           "id": "lab-ca-instagram",
@@ -2851,56 +3154,66 @@
           "publicUrl": null,
           "loginAlias": null,
           "accountStatus": "planned",
-          "channelScope": "신규 계획",
-          "setupStatus": "계정 준비 계획",
-          "profileStatus": "미착수",
-          "coverStatus": "미착수",
+          "channelScope": "확장 미확인",
+          "setupStatus": "개별 가입 미시도",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "blocked-shared-instagram-signup-gate",
           "priority": "우선 플랫폼",
-          "publishStatus": "미착수",
+          "publishStatus": "계정 미확인",
           "publicationEvidence": null,
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
-          "nextAction": "가입·운영 조건 확인 → 로그인 배정 → 계정 세팅",
+          "nextAction": "공식 가입 경로 확인 후 개별 계정 시도",
           "lastEvidenceAt": null,
-          "sourceLabel": "2026-09-20 대화의 LAB 23개국 확장 계획",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "sourcePaths": [
-            "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
-          ]
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "blocked-shared-instagram-signup-gate",
+          "youtubeProfileVerified": false
         }
       ],
       "source": {
-        "label": "기존 계정 원장과 LAB 신규 계획",
+        "label": "기존 26개 등록 항목과 LAB 44개 확장 자리",
         "files": [
           "docs/마케팅/sns-계정.json",
           "docs/마케팅/SNS_계정_전체목록_20260919.md",
           "docs/마케팅/프로필최신화_20260919/반영_v6.json",
-          "docs/마케팅/프로필최신화_20260919/실행상태.json"
+          "docs/마케팅/프로필최신화_20260919/실행상태.json",
+          "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+          "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
+          "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
+          "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json"
         ],
-        "executedAt": "2026-09-19T20:36:42.152Z",
-        "classification": "로컬 기록 및 대화 계획",
+        "executedAt": "2026-09-27T06:19:28.345Z",
+        "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
-          "2026-09-19~20 로컬 근거 · 실시간 SNS 조회 아님"
+          "2026-09-19~23 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
         ],
         "metricDefinitions": [],
         "caveats": [
           "미확인은 0·미존재·실패가 아니다.",
-          "운영 대상·프로필 저장·새 콘텐츠 게시·실제 성과는 별도 상태다."
+          "계정 확보·프로필 확인·콘텐츠 제작·게시·성과는 별도 상태다."
         ],
         "evidenceFlow": [
           {
             "title": "입력 자료",
-            "detail": "docs/마케팅/sns-계정.json / docs/마케팅/SNS_계정_전체목록_20260919.md / docs/마케팅/프로필최신화_20260919/반영_v6.json / docs/마케팅/프로필최신화_20260919/실행상태.json"
+            "detail": "docs/마케팅/sns-계정.json / docs/마케팅/SNS_계정_전체목록_20260919.md / docs/마케팅/프로필최신화_20260919/반영_v6.json / docs/마케팅/프로필최신화_20260919/실행상태.json / docs/마케팅/온라인마케팅지도/account-setup-proposal.json / docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json / docs/마케팅/온라인마케팅지도/intl-youtube/publication.json / docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json"
           },
           {
             "title": "대조 방법",
-            "detail": "현행 계정 ID 유지, 최신 반영 원장 우선, 23개국 계획은 LAB에만 연결. 공유 채널은 중복 제거."
+            "detail": "기존 26행과 확장 44자리를 ID로 대조하고 확인된 24곳만 확보로 표시. 23개국 계획은 LAB에만 연결."
           }
         ]
       },
       "methods": [
         {
           "language": "javascript",
-          "code": "docs/마케팅/온라인마케팅지도/build-map.mjs — 입력 JSON 3개를 읽어 정규화하고 집계. 실행: node build-map.mjs"
+          "code": "docs/마케팅/온라인마케팅지도/build-map.mjs — 로컬 계정 레지스트리·실행 원장·제작 기록과 국가 계획을 ID로 대조해 화면 자료를 생성"
         }
       ]
     },
@@ -3199,39 +3512,229 @@
           "approvalStatus": "unknown",
           "currentExternalStatus": "unknown",
           "statusBasis": "읽은 로컬 원고·제작 기록과 현재 사용자 결정의 대조. 원고 편집 검수는 사용자 승인·원어민 감수·게시 검증이 아님."
+        },
+        {
+          "id": "YB-EP01",
+          "brand": "YUHO",
+          "title": "yuhobuilds · 6월부터의 제작 여정 1편",
+          "format": "세로 영상 검토본",
+          "scriptStatus": "실화 기반 원고·자막 57개 준비",
+          "productionStatus": "76초 MP4 제작·전체 디코드 확인",
+          "publishStatus": "외부 게시 없음 · 직접 청취·최종 승인 전",
+          "scopeOwner": "유호 제작 트랙",
+          "nextAction": "육성 교체와 최종 검토 후 4개 우선 채널용 게시본 확인",
+          "approvalStatus": "unknown",
+          "currentExternalStatus": "not-published-in-record",
+          "sourcePaths": [
+            "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md"
+          ]
+        },
+        {
+          "id": "SB-EP01",
+          "brand": "SHIFT",
+          "title": "synkbrief · 회의 메모 활용법 1편",
+          "format": "세로 영상·따라 하기 자료 검토본",
+          "scriptStatus": "18장면·자막 47개·10쪽 PDF 준비",
+          "productionStatus": "140.33초 MP4/WebM 제작·전체 디코드 확인",
+          "publishStatus": "SNS 게시 없음 · 직접 청취 품질 승인 전",
+          "scopeOwner": "SHIFT 정보 트랙",
+          "nextAction": "음성 최종 검토·자료 전달 경로 확인 후 3개 채널 게시본 준비",
+          "approvalStatus": "unknown",
+          "currentExternalStatus": "not-published-in-record",
+          "sourcePaths": [
+            "docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
+          ]
+        },
+        {
+          "id": "CL-1",
+          "brand": "YUHO",
+          "title": "창업자·인물 클립 · 인터뷰 1회 → 롱폼 1 + 세로 클립 4~6",
+          "format": "라인 · 격주 촬영, 클립 주 1~2",
+          "scriptStatus": "촬영 설계·클립 규칙 세팅 · 제작양식/인물클립.md",
+          "productionStatus": "첫 편 완료 · 인터뷰 v9 승인, 세로 클립 A~F v2(2026-09 릴스 기준: 안전 영역·첫 5초 펀치인·조각 자막·B/D 단축·−14 LUFS·레벨 4.1) 검수 통과",
+          "publishStatus": "미게시 · 사용자 시청·게시 승인 전",
+          "scopeOwner": "라인 1 · 유호 촬영 + AI 편집",
+          "nextAction": "게시 승인 → 다음 촬영 질문을 클립 기준으로 설계",
+          "approvalStatus": "unknown",
+          "currentExternalStatus": "unknown",
+          "sourcePaths": [
+            "docs/마케팅/제작양식/인물클립.md",
+            "docs/마케팅/SYNK_인터뷰_20260923/세로클립_20260927/README.md",
+            "docs/마케팅/SYNK_인터뷰_20260923/세로클립_20260927/v2/README.md"
+          ]
+        },
+        {
+          "id": "CL-2",
+          "brand": "YUHO",
+          "title": "yuhobuilds 제작 여정 쇼츠 · 실화·각색 60~75초, 오늘 할 한 가지",
+          "format": "라인 · 주 1편",
+          "scriptStatus": "양식 세팅 · 제작양식/제작여정_쇼츠.md",
+          "productionStatus": "EP01 재제작본(56초)·EP02 v3 검토 대기 · 육성 녹음 전",
+          "publishStatus": "미게시",
+          "scopeOwner": "라인 2 · GPT 재제작 진행 + 육성은 유호",
+          "nextAction": "육성 녹음 → EP01 콜드오픈 확정 → 게시",
+          "approvalStatus": "unknown",
+          "currentExternalStatus": "unknown",
+          "sourcePaths": [
+            "docs/마케팅/제작양식/제작여정_쇼츠.md",
+            "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/README.md"
+          ]
+        },
+        {
+          "id": "CL-3",
+          "brand": "SHIFT",
+          "title": "synkbrief AI 활용법 · 결과 먼저 45~60초 + PDF·댓글 DM",
+          "format": "라인 · 주 1편",
+          "scriptStatus": "양식 갱신(결과 먼저·분할) · 제작양식/AI_활용법.md",
+          "productionStatus": "1편 v19 159.7초 마감본 · 분할판 전",
+          "publishStatus": "미게시 · 자동 DM 실수신 미검증",
+          "scopeOwner": "라인 3 · AI 제작",
+          "nextAction": "v19 게시 승인 또는 45초 분할판 제작 → DM 실수신 확인",
+          "approvalStatus": "unknown",
+          "currentExternalStatus": "unknown",
+          "sourcePaths": [
+            "docs/마케팅/제작양식/AI_활용법.md",
+            "docs/마케팅/synkbrief_회의메모_20260921/video-v19/README.md"
+          ]
+        },
+        {
+          "id": "CL-4",
+          "brand": "SHIFT",
+          "title": "synkbrief AI 소식·도구 · 직접 써본 30~45초",
+          "format": "라인 · 주 1편",
+          "scriptStatus": "양식 세팅 · 제작양식/AI_소식_도구추천.md",
+          "productionStatus": "첫 편 전 · 소재는 아이디어 창고(SB-002 등)",
+          "publishStatus": "미게시",
+          "scopeOwner": "라인 4 · AI 제작",
+          "nextAction": "이번 주 소재 확정 → 실제 시연 화면 확보 → 원고",
+          "approvalStatus": "unknown",
+          "currentExternalStatus": "unknown",
+          "sourcePaths": [
+            "docs/마케팅/제작양식/AI_소식_도구추천.md",
+            "docs/마케팅/synkbrief_아이디어_창고.md"
+          ]
+        },
+        {
+          "id": "CL-5",
+          "brand": "LAB",
+          "title": "LAB 생활 상황극 · AI 실사 인물 25~35초",
+          "format": "라인 · 주 1편(한국어 원본)",
+          "scriptStatus": "양식 세팅·표현 은행 후보 20 · 제작양식/LAB_상황극.md",
+          "productionStatus": "카페 편 32초 재구성안 · 실사 생성은 크레딧 대기(0.92)",
+          "publishStatus": "미게시",
+          "scopeOwner": "라인 5 · AI 제작, 크레딧은 사용자 결정",
+          "nextAction": "크레딧 확보 → 첫 두 구간 생성·연기 확인 → 영어판",
+          "approvalStatus": "unknown",
+          "currentExternalStatus": "unknown",
+          "sourcePaths": [
+            "docs/마케팅/제작양식/LAB_상황극.md",
+            "docs/마케팅/LAB_카페_다시말해주세요_20260926/재구성_재미와이해_20260927.md"
+          ]
+        },
+        {
+          "id": "CL-6",
+          "brand": "LAB",
+          "title": "LAB 표현 소개 · 마스코트 15~25초",
+          "format": "라인 · 주 1~2편",
+          "scriptStatus": "양식 세팅·표현 은행 후보 30 · 제작양식/LAB_표현소개.md",
+          "productionStatus": "첫 편 「아 맞다」(몽글) v2 완료 09-27 · 릴스 기준 19.3초 · 사용자가 음성 있는 판 선택 · 2026-09 순위 신호 반영(첫 5초 펀치인·보내기 유도) · Gemini TTS·Lyria 3·Veo · −14 LUFS · 자동 검수 통과",
+          "publishStatus": "미게시 · 사용자 시청·교사 검토·게시 승인 전",
+          "scopeOwner": "라인 6 · AI 제작, 표현 검토는 교사·사용자",
+          "nextAction": "게시 승인(체크리스트: Meta AI 번역 끔·AI 표시 켬) → 48시간·7일 측정 → 사람 목소리 녹음 검토 → 까몽 편",
+          "approvalStatus": "unknown",
+          "currentExternalStatus": "unknown",
+          "sourcePaths": [
+            "docs/마케팅/제작양식/LAB_표현소개.md",
+            "docs/마케팅/LAB표현소개_아맞다_20260927/README.md"
+          ]
+        },
+        {
+          "id": "CL-7",
+          "brand": "SHIFT",
+          "title": "글·뉴스레터 · Threads·X 주 3, 블로그 격주, Substack 주 1",
+          "format": "라인 · 영상 문장의 텍스트판",
+          "scriptStatus": "양식 세팅 · 제작양식/글_뉴스레터.md",
+          "productionStatus": "09-26 초안 5종은 보존, 재작성 전",
+          "publishStatus": "미게시",
+          "scopeOwner": "라인 7 · AI 작성",
+          "nextAction": "인터뷰 문장으로 Threads·X 3개, Substack 1호 재구성",
+          "approvalStatus": "unknown",
+          "currentExternalStatus": "unknown",
+          "sourcePaths": [
+            "docs/마케팅/제작양식/글_뉴스레터.md",
+            "docs/마케팅/글뉴스레터_첫제작_20260926/README.md"
+          ]
+        },
+        {
+          "id": "CL-8",
+          "brand": "SYNK",
+          "title": "회사 소개·작업물 · 실제로 만든 것과 만든 이유",
+          "format": "라인 · 월 1~2회",
+          "scriptStatus": "양식 세팅 · 제작양식/회사소개_작업물.md",
+          "productionStatus": "포트폴리오 재제작본(GPT) 검토 대기",
+          "publishStatus": "미게시",
+          "scopeOwner": "라인 8 · AI 제작",
+          "nextAction": "LinkedIn 첫 글은 인터뷰 클립 F·D → 포트폴리오는 두 번째",
+          "approvalStatus": "unknown",
+          "currentExternalStatus": "unknown",
+          "sourcePaths": [
+            "docs/마케팅/제작양식/회사소개_작업물.md",
+            "docs/마케팅/포트폴리오_회사소개_20260926/README.md"
+          ]
+        },
+        {
+          "id": "CL-9",
+          "brand": "LAB",
+          "title": "LAB 현지화 · 라인 5·6 승인 원본을 언어별로",
+          "format": "라인 · 원본 승인 후 영어 → 국가별",
+          "scriptStatus": "절차 세팅 · 각 양식의 현지화 절",
+          "productionStatus": "원본 승인 전",
+          "publishStatus": "미게시",
+          "scopeOwner": "라인 9 · 번역 검수자 필요",
+          "nextAction": "영어판 1개로 시작, 검수자 없는 언어는 영어판 게시",
+          "approvalStatus": "unknown",
+          "currentExternalStatus": "unknown",
+          "sourcePaths": [
+            "docs/마케팅/제작양식/LAB_상황극.md",
+            "docs/마케팅/제작양식/LAB_표현소개.md"
+          ]
         }
       ],
       "source": {
-        "label": "첫 콘텐츠 원고·제작 기록과 현재 사용자 결정",
+        "label": "기존 첫 콘텐츠 계획, 2026-09-23까지의 제작 검토본, 2026-09-27 콘텐츠 라인 9개",
         "files": [
           "docs/마케팅/온라인마케팅지도/inputs/content-status.json",
-          "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md"
+          "docs/마케팅/온라인마케팅지도/inputs/content-lines.json",
+          "docs/마케팅/콘텐츠_운영체계_20260927.md",
+          "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md",
+          "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
         ],
-        "executedAt": "2026-09-19T20:36:42.152Z",
-        "classification": "로컬 기록 및 대화 계획",
+        "executedAt": "2026-09-27T06:19:28.345Z",
+        "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
-          "2026-09-19~20 로컬 근거 · 실시간 SNS 조회 아님"
+          "2026-09-19~23 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
         ],
         "metricDefinitions": [],
         "caveats": [
           "미확인은 0·미존재·실패가 아니다.",
-          "운영 대상·프로필 저장·새 콘텐츠 게시·실제 성과는 별도 상태다."
+          "계정 확보·프로필 확인·콘텐츠 제작·게시·성과는 별도 상태다."
         ],
         "evidenceFlow": [
           {
             "title": "입력 자료",
-            "detail": "docs/마케팅/온라인마케팅지도/inputs/content-status.json / docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md"
+            "detail": "docs/마케팅/온라인마케팅지도/inputs/content-status.json / docs/마케팅/온라인마케팅지도/inputs/content-lines.json / docs/마케팅/콘텐츠_운영체계_20260927.md / docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md / docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md / docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
           },
           {
             "title": "대조 방법",
-            "detail": "현행 계정 ID 유지, 최신 반영 원장 우선, 23개국 계획은 LAB에만 연결. 공유 채널은 중복 제거."
+            "detail": "기존 26행과 확장 44자리를 ID로 대조하고 확인된 24곳만 확보로 표시. 23개국 계획은 LAB에만 연결."
           }
         ]
       },
       "methods": [
         {
           "language": "javascript",
-          "code": "docs/마케팅/온라인마케팅지도/build-map.mjs — 입력 JSON 3개를 읽어 정규화하고 집계. 실행: node build-map.mjs"
+          "code": "docs/마케팅/온라인마케팅지도/build-map.mjs — 로컬 계정 레지스트리·실행 원장·제작 기록과 국가 계획을 ID로 대조해 화면 자료를 생성"
         }
       ]
     },
@@ -3242,7 +3745,7 @@
           "label": "founder@synk.im",
           "existence": "사용자 확인",
           "loginType": "독립 Google 로그인 · 사용자 확인",
-          "currentUse": "연결 서비스·권한 미확인",
+          "currentUse": "TikTok For Business 지원 로그인 확인 · 국가별 Business Center·광고 계정은 미생성",
           "proposedRole": "회사 주요 자산 소유권 관리",
           "assignment": "제안 · 미적용",
           "security": "미확인",
@@ -3252,8 +3755,8 @@
           "id": "synk-yuh",
           "label": "synk.yuh",
           "existence": "사용자 확인",
-          "loginType": "Google 계정 구분명 · 전체 주소 미확인",
-          "currentUse": "연결 서비스·권한 미확인",
+          "loginType": "Google 계정 · 주소 확인 기록",
+          "currentUse": "미얀마 LAB TikTok·러시아 RUTUBE 연결 기록",
           "proposedRole": "해외 LAB 일상 운영",
           "assignment": "제안 · 미적용",
           "security": "미확인",
@@ -3264,7 +3767,7 @@
           "label": "unmet27",
           "existence": "사용자 확인",
           "loginType": "Google 계정 구분명",
-          "currentUse": "연결 서비스·권한 미확인",
+          "currentUse": "베트남 LAB TikTok 연결 기록 · 다른 국가 가입 완료는 미확인",
           "proposedRole": "보조 소유자·복구 대비",
           "assignment": "제안 · 미적용",
           "security": "미확인",
@@ -3275,7 +3778,7 @@
           "label": "unmet23",
           "existence": "기록 및 사용자 확인",
           "loginType": "Google 계정 구분명",
-          "currentUse": "유호 TikTok @yuhobuilds · 기존 주요 서비스",
+          "currentUse": "유호 TikTok·LAB 신규 YouTube 14곳·rednote 로그인 기록",
           "proposedRole": "기존 연결 유지",
           "assignment": "기존 연결 기록 · 신규 역할 미적용",
           "security": "미확인",
@@ -3286,7 +3789,7 @@
           "label": "77yuhbs",
           "existence": "기록 및 사용자 확인",
           "loginType": "Google 계정 구분명",
-          "currentUse": "몽골 LAB TikTok @synk.mn",
+          "currentUse": "몽골 LAB TikTok·일본/베트남 LAB YouTube 연결 기록",
           "proposedRole": "기존 몽골 LAB 연결 유지",
           "assignment": "기존 연결 기록",
           "security": "미확인",
@@ -3297,7 +3800,7 @@
           "label": "unmet25",
           "existence": "기록 및 사용자 확인",
           "loginType": "Google 계정 구분명",
-          "currentUse": "정보 TikTok @synkbrief · LinkedIn 개인 및 회사",
+          "currentUse": "synkbrief TikTok·LinkedIn 개인과 회사 페이지 연결 기록",
           "proposedRole": "기존 SHIFT·LinkedIn 연결 유지",
           "assignment": "기존 연결 기록",
           "security": "미확인",
@@ -3305,36 +3808,38 @@
         }
       ],
       "source": {
-        "label": "사용자가 확인한 로그인 계정과 미적용 역할 제안",
+        "label": "확인된 로그인 연결 기록과 미적용 역할 제안",
         "files": [
           "docs/마케팅/온라인마케팅지도/inputs/plan.json",
-          "docs/마케팅/SNS_계정_전체목록_20260919.md"
+          "docs/마케팅/sns-계정.json",
+          "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
+          "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
         ],
-        "executedAt": "2026-09-19T20:36:42.152Z",
-        "classification": "로컬 기록 및 대화 계획",
+        "executedAt": "2026-09-27T06:19:28.345Z",
+        "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
-          "2026-09-19~20 로컬 근거 · 실시간 SNS 조회 아님"
+          "2026-09-19~23 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
         ],
         "metricDefinitions": [],
         "caveats": [
           "미확인은 0·미존재·실패가 아니다.",
-          "운영 대상·프로필 저장·새 콘텐츠 게시·실제 성과는 별도 상태다."
+          "계정 확보·프로필 확인·콘텐츠 제작·게시·성과는 별도 상태다."
         ],
         "evidenceFlow": [
           {
             "title": "입력 자료",
-            "detail": "docs/마케팅/온라인마케팅지도/inputs/plan.json / docs/마케팅/SNS_계정_전체목록_20260919.md"
+            "detail": "docs/마케팅/온라인마케팅지도/inputs/plan.json / docs/마케팅/sns-계정.json / docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json / docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
           },
           {
             "title": "대조 방법",
-            "detail": "현행 계정 ID 유지, 최신 반영 원장 우선, 23개국 계획은 LAB에만 연결. 공유 채널은 중복 제거."
+            "detail": "기존 26행과 확장 44자리를 ID로 대조하고 확인된 24곳만 확보로 표시. 23개국 계획은 LAB에만 연결."
           }
         ]
       },
       "methods": [
         {
           "language": "javascript",
-          "code": "docs/마케팅/온라인마케팅지도/build-map.mjs — 입력 JSON 3개를 읽어 정규화하고 집계. 실행: node build-map.mjs"
+          "code": "docs/마케팅/온라인마케팅지도/build-map.mjs — 로컬 계정 레지스트리·실행 원장·제작 기록과 국가 계획을 ID로 대조해 화면 자료를 생성"
         }
       ]
     },
@@ -3359,10 +3864,18 @@
         {
           "id": "task-global",
           "brand": "LAB",
-          "country": "신규 22개국",
-          "title": "44개 신규 채널 자리 세팅",
-          "state": "계획",
-          "nextAction": "국가별 조건 확인 후 로그인·핸들·복구 방식 배정"
+          "country": "몽골 외 22개국",
+          "title": "확장 20곳 개설·생성 확인",
+          "state": "24곳 확보 · 20곳 미확인",
+          "nextAction": "Instagram 오류·TikTok 로그인·중국 인증·VK 브랜드 채널을 계정별로 확인"
+        },
+        {
+          "id": "task-rednote",
+          "brand": "LAB",
+          "country": "중국",
+          "title": "rednote LAB 프로필",
+          "state": "본인 계정 확인 · 프로필 미완",
+          "nextAction": "앱 편집 화면에서 이름·소개·까몽 사진 반영 후 확인"
         },
         {
           "id": "task-localize",
@@ -3378,7 +3891,7 @@
           "country": "로그인 6개",
           "title": "현재 연결과 소유권 확인",
           "state": "역할 제안 · 미적용",
-          "nextAction": "기존 연결 조사 후 소유자·운영자·백업 권한 분리"
+          "nextAction": "확인된 연결은 보존하고 미확인 권한·복구 수단 조사"
         },
         {
           "id": "task-clip",
@@ -3389,12 +3902,20 @@
           "nextAction": "각 채널에 콘텐츠를 업로드할 때 처리"
         },
         {
+          "id": "task-videos",
+          "brand": "YUHO·SHIFT",
+          "country": "한국",
+          "title": "yuhobuilds·synkbrief 검토 영상",
+          "state": "로컬 제작 · 게시 전",
+          "nextAction": "음성·최종 검토 후 채널별 게시 패키지와 실제 게시 확인"
+        },
+        {
           "id": "task-face",
           "brand": "LAB·YUHO",
           "country": "다른 세션",
-          "title": "출연 영상 L1·S1",
-          "state": "다른 세션 담당",
-          "nextAction": "다른 세션의 실제 촬영·편집 결과를 받아 기록"
+          "title": "기존 출연 영상 L1·S1",
+          "state": "제작 결과 미확인",
+          "nextAction": "별도 영상의 실제 촬영·편집 결과 확인"
         },
         {
           "id": "task-app",
@@ -3406,36 +3927,40 @@
         }
       ],
       "source": {
-        "label": "사용자 결정과 남아 있는 작업",
+        "label": "최신 계정·제작 기록에 따른 남은 작업",
         "files": [
-          "docs/마케팅/온라인마케팅지도/inputs/plan.json",
-          "docs/_ops/트랙.md"
+          "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+          "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
+          "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
+          "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
+          "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
         ],
-        "executedAt": "2026-09-19T20:36:42.152Z",
-        "classification": "로컬 기록 및 대화 계획",
+        "executedAt": "2026-09-27T06:19:28.345Z",
+        "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
-          "2026-09-19~20 로컬 근거 · 실시간 SNS 조회 아님"
+          "2026-09-19~23 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
         ],
         "metricDefinitions": [],
         "caveats": [
           "미확인은 0·미존재·실패가 아니다.",
-          "운영 대상·프로필 저장·새 콘텐츠 게시·실제 성과는 별도 상태다."
+          "계정 확보·프로필 확인·콘텐츠 제작·게시·성과는 별도 상태다."
         ],
         "evidenceFlow": [
           {
             "title": "입력 자료",
-            "detail": "docs/마케팅/온라인마케팅지도/inputs/plan.json / docs/_ops/트랙.md"
+            "detail": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json / docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json / docs/마케팅/온라인마케팅지도/intl-youtube/publication.json / docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json / docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md / docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
           },
           {
             "title": "대조 방법",
-            "detail": "현행 계정 ID 유지, 최신 반영 원장 우선, 23개국 계획은 LAB에만 연결. 공유 채널은 중복 제거."
+            "detail": "기존 26행과 확장 44자리를 ID로 대조하고 확인된 24곳만 확보로 표시. 23개국 계획은 LAB에만 연결."
           }
         ]
       },
       "methods": [
         {
           "language": "javascript",
-          "code": "docs/마케팅/온라인마케팅지도/build-map.mjs — 입력 JSON 3개를 읽어 정규화하고 집계. 실행: node build-map.mjs"
+          "code": "docs/마케팅/온라인마케팅지도/build-map.mjs — 로컬 계정 레지스트리·실행 원장·제작 기록과 국가 계획을 ID로 대조해 화면 자료를 생성"
         }
       ]
     },
@@ -3601,15 +4126,15 @@
         "files": [
           "docs/마케팅/SNS_계정_전체목록_20260919.md"
         ],
-        "executedAt": "2026-09-19T20:36:42.152Z",
-        "classification": "로컬 기록 및 대화 계획",
+        "executedAt": "2026-09-27T06:19:28.345Z",
+        "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
-          "2026-09-19~20 로컬 근거 · 실시간 SNS 조회 아님"
+          "2026-09-19~23 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
         ],
         "metricDefinitions": [],
         "caveats": [
           "미확인은 0·미존재·실패가 아니다.",
-          "운영 대상·프로필 저장·새 콘텐츠 게시·실제 성과는 별도 상태다."
+          "계정 확보·프로필 확인·콘텐츠 제작·게시·성과는 별도 상태다."
         ],
         "evidenceFlow": [
           {
@@ -3618,14 +4143,14 @@
           },
           {
             "title": "대조 방법",
-            "detail": "현행 계정 ID 유지, 최신 반영 원장 우선, 23개국 계획은 LAB에만 연결. 공유 채널은 중복 제거."
+            "detail": "기존 26행과 확장 44자리를 ID로 대조하고 확인된 24곳만 확보로 표시. 23개국 계획은 LAB에만 연결."
           }
         ]
       },
       "methods": [
         {
           "language": "javascript",
-          "code": "docs/마케팅/온라인마케팅지도/build-map.mjs — 입력 JSON 3개를 읽어 정규화하고 집계. 실행: node build-map.mjs"
+          "code": "docs/마케팅/온라인마케팅지도/build-map.mjs — 로컬 계정 레지스트리·실행 원장·제작 기록과 국가 계획을 ID로 대조해 화면 자료를 생성"
         }
       ]
     }

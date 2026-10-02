@@ -1,38 +1,26 @@
 #!/usr/bin/env node
 /**
- * 캐러셀 굽기 — 원고 md 한 벌을 SNS 캐러셀 PNG(1080×1080, 장별)로 굽는다.
+ * 캐러셀 굽기 — 원고 md 한 벌을 SNS 키트 판(3:4 1080×1440 장별 PNG + 4:5 판 + 확인 시트)으로 굽는다.
+ *
+ * 2026-10-01 사용자 확정 「니가 바꿔준게 정말 훨씬 나아. 전에 쓰던 양식 이걸로 전부 다 교체해줄래?」
+ * — 옛 검은 정사각형 카드(Loom 캐러셀 CSS + 크롬 한 방 찍기 + PIL 자르기)를 SNS 키트로 바꿨다.
+ *   판·계정 색·부품·검사는 docs/디자인/SNS키트(README·kit.css)가 원문이고, 굽기와 검사는
+ *   tools/SNS키트굽기.js가 한다. 옛 판은 git 기록에만 남는다.
  *
  * 쓰는 법:
- *   node 캐러셀/굽기.js 캐러셀/원고/001_이름.md
- *   → 캐러셀/out/001_이름/01.png … NN.png
+ *   node 캐러셀/굽기.js 캐러셀/원고/001_이름.md [--pdf] [--webp]
+ *   node 캐러셀/굽기.js --전부                  원고 폴더의 원고 전부
+ *   → 캐러셀/_빌드/<편>.kit.html (키트 원고 HTML, 손으로 고치지 않는다)
+ *   → 캐러셀/out/<편>/01_feed34_cover.png … (올릴 파일) · *_4x5.png(예약 도구·API용) · _시트.png · 검사.json
  *
- * 왜 이 통로인가 (유호님 확정 2026-08-27 두 벌):
- *   ① 「만들어질 컨텐츠는 모두 Loom 엔진을 사용 — 색·글씨체 전부 우리 것」
- *      ⇒ CSS 는 손으로 안 쓴다. `node tools/lib/loom.js --css 캐러셀` 이 색·율·부품을 주고,
- *        이 파일의 보충 CSS 는 Loom 이 침묵하는 «카드 프레임»만 정의한다(변수만 소비).
- *   ② 개인 계정 축 셋 중 «코너 B: AI 뉴스 + 내 회사 판정» 의 생산 통로.
- *      원고의 규율은 공개선 12칸(docs/SHIFT/영상_공개선.md §2 · 유호 확정 08-27)이 진다 —
- *      특히 ✗⑩ 돈(매출·수익·수강료) · ✗⑥⑨ 학생 데이터·얼굴 · ✗⑫ 날짜 약속(시제 = 「짓고 있습니다」).
+ * 원고 형식(장 구분 = `---` 단독 줄)은 예전 그대로다. 머리에 더 쓸 수 있는 줄:
+ *   계정: lab|brief|builds|synk|pulse|path   없으면 LAB으로 시작하는 원고는 lab, 나머지는 builds
+ *   시리즈: 머리줄 왼쪽 이름                  없으면 계정 이름
+ *   끝말: / 끝잔:                              끝 장 문구(없으면 언어별 기본 문구)
+ *   제목·장 제목의 **굵게** 한 곳 = 형광펜(k-mark). 본문의 **굵게** = 굵은 글자.
  *
- * 원고 형식 (md · 장 구분 = `---` 단독 줄):
- *   # 편 제목            ← 표지 큰 글씨
- *   훅: 한 줄            ← 표지 아래 문장 (선택)
- *   마무리: 끄기          ← 자동 마무리 장 생략 (선택)
- *   ---
- *   ## 장 제목
- *   본문 줄들 (빈 줄 = 문단 구분 · **굵게** 지원)
- *   ---
- *   🔑 판정 제목          ← 🔑 로 시작하면 «내 판정» 장 (코랄 신호)
- *   본문
- *
- * 함정 셋 (겪고 적음):
- *   · 헤드리스 크롬 --screenshot 은 «뷰포트만» 찍는다 — 창을 1080×(1080×N) 으로 열고 한 방에
- *     찍은 뒤 파이썬(PIL)이 N 등분한다. 굽고 나서 픽셀 크기를 «기계로» 검증한다(어긋나면 즉사 —
- *     08-27 실측: --window-size=390 이 뷰포트 511px 로 잡힌 적이 있다. 1080 은 정상이지만 안 믿는다).
- *   · 폰트는 이름만 부르면 폴백이 «조용히» 그린다 — `docs/tools/브랜드폰트_임베드.py` 가
- *     서브셋을 임베드하고, 없는 글자는 빌드가 잡는다(스타일 첫 줄의 @FONTS@ 마커).
- *   · PNG 는 브랜드렌더린트가 원리상 못 잰다(크롬 computed style 만 읽는다) — 영상과 같은
- *     «사람 눈» 지면이다. 굽고 나면 눈으로 본다.
+ * 검사(장식·유행 장치·형광펜·글자 크기·안전영역·넘침·서체·깨진 그림)에 걸리면 종료 코드 1이다.
+ * 통과는 규칙을 지켰다는 뜻일 뿐이다. 굽고 나면 _시트.png를 눈으로 본다.
  */
 'use strict';
 const fs = require('fs');
@@ -40,177 +28,206 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
-/* 발행 규격 — 기본 1080px 정사각(브랜드렌더린트 §제외목록 실측과 같은 값).
- * 🆕 `--4:5` 를 붙이면 1080×1350 — 인스타 프로필 그리드가 3:4 로 바뀌어(2025-01) 1:1 은 좌우 12.5% 가
- *    잘리고 4:5 는 3% 만 잘린다(마케팅 정찰 09-02 C4 · 유호 확정 09-02 「전부 진행」). 안전영역 = 중앙 3:4
- *    (좌우 34px) — 카드 패딩 96px 안이라 글은 안 잘린다. 굽는 사람이 규격을 고른다(정보 캐러셀은 4:5 권장). */
-const 세로판 = process.argv.includes('--4:5');
-const W = 1080, H = 세로판 ? 1350 : 1080;
-
-// ── 입력 ──────────────────────────────────────────────────────────────
-const 원고경로 = process.argv[2];
-if (!원고경로) { console.error('쓰는 법: node 캐러셀/굽기.js 캐러셀/원고/001_이름.md'); process.exit(1); }
-const 원고절대 = path.resolve(ROOT, 원고경로);
-const md = fs.readFileSync(원고절대, 'utf8').replace(/\r\n/g, '\n');
-const 편이름 = path.basename(원고절대, '.md');
-
-// ── 원고 파싱 ─────────────────────────────────────────────────────────
-const 덩어리들 = md.split(/\n---\n/).map(s => s.trim()).filter(Boolean);
-const 머리 = 덩어리들.shift() || '';
-const 제목 = (머리.match(/^#\s+(.+)$/m) || [, 편이름])[1].trim();
-const 훅 = (머리.match(/^훅:\s*(.+)$/m) || [, ''])[1].trim();
-const 마무리끄기 = /^마무리:\s*끄기/m.test(머리);
-
-// 말 — 자동으로 붙는 문구(표지 넘김·판정 배지·마무리)가 이 표에서 나온다.
-// 까닭: LAB 계정은 «몽골어 · 학생·학부모»이고 개인 계정은 «한국어 · 업계»다(영상_공개선 ㉠ 표).
-// 원고 머리에 `언어: mn` 을 적으면 그 말로 굽는다. 안 적으면 지금까지처럼 한국어다.
-const 말표 = {
-  ko: { 넘김: '밀어서 보기 →', 배지: '내 판정',
-        끝말: 'AI로 교육 회사를 짓고 있습니다.', 끝잔: '저장해 두세요 — 다음 판정과 함께 돌아옵니다.' },
-  mn: { 넘김: 'Гүйлгэж үзнэ үү →', 배지: 'Гол нь',
-        끝말: 'Улаанбаатарт солонгос хэлний сургалтын төв бэлтгэж байна.',
-        끝잔: 'Хадгалж аваарай — дараагийн бичлэгээр уулзъя.' },
-  en: { 넘김: 'Swipe →', 배지: 'The point',
-        끝말: 'We are building a Korean-language school in Ulaanbaatar.',
-        끝잔: 'Save this — we will be back with the next one.' },
-};
-const 언어 = (머리.match(/^언어:\s*(ko|mn|en)/m) || [, 'ko'])[1];
-const 말 = 말표[언어];
-
-const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const 본문HTML = s => esc(s).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
-  .split(/\n\s*\n/).map(p => '<p>' + p.replace(/\n/g, '<br>') + '</p>').join('\n');
-
-const 장들 = 덩어리들.map(덩 => {
-  const 줄들 = 덩.split('\n');
-  const 첫줄 = 줄들[0].trim();
-  const 판정 = 첫줄.startsWith('🔑');
-  const 장제목 = 첫줄.replace(/^##\s*/, '').replace(/^🔑\s*/, '').trim();
-  return { 판정, 장제목, 본문: 줄들.slice(1).join('\n').trim() };
-});
-
-// ── 킷 재료 — 전부 통로에서 온다 (손 색·손 CSS 없음) ────────────────────
-const loom = spawnSync('node', [path.join(ROOT, 'tools/lib/loom.js'), '--css', '캐러셀'], { encoding: 'utf8' });
-if (loom.status !== 0 || !loom.stdout.includes('loom부품')) { console.error('🔴 Loom 캐러셀 CSS 통로 실패'); process.exit(1); }
-const 로고결과 = spawnSync('node', [path.join(ROOT, 'tools/lib/로고정본.js'), '--json'], { encoding: 'utf8' });
-const 로고 = JSON.parse(로고결과.stdout)['단색다크'];
-if (!로고 || !로고.startsWith('<svg')) { console.error('🔴 로고정본 통로 실패'); process.exit(1); }
-
-// ── 카드 마크업 ───────────────────────────────────────────────────────
-const 총장수 = 장들.length + 1 + (마무리끄기 ? 0 : 1);
-const 진행점 = i => '<div class="진행">' +
-  Array.from({ length: 총장수 }, (_, k) => `<span class="점${k === i ? ' 여기' : ''}"></span>`).join('') + '</div>';
-
-let 카드들 = [];
-// 표지
-카드들.push(`<section class="카드 표지">
-  <div class="카드로고">${로고}</div>
-  <h1>${esc(제목)}</h1>
-  ${훅 ? `<p class="훅">${esc(훅)}</p>` : ''}
-  <div class="넘김">${말.넘김}</div>
-</section>`);
-// 본문·판정 장
-장들.forEach((장, i) => {
-  카드들.push(`<section class="카드${장.판정 ? ' 판정' : ''}">
-  <div class="카드머리"><span class="잔글">${esc(제목)}</span>${장.판정 ? `<span class="판정배지">${말.배지}</span>` : ''}</div>
-  <h2>${esc(장.장제목)}</h2>
-  <div class="본문">${본문HTML(장.본문)}</div>
-  ${진행점(i + 1)}
-  <div class="물표">${로고}</div>
-</section>`);
-});
-// 마무리
-if (!마무리끄기) 카드들.push(`<section class="카드 마무리">
-  <div class="카드로고 큰">${로고}</div>
-  <p class="끝말">${말.끝말}</p>
-  <p class="끝잔">${말.끝잔}</p>
-</section>`);
-
-// ── 보충 CSS — Loom 이 침묵하는 «카드 프레임»만. 값은 Loom 변수 소비 ──────
-const 보충 = `
-/* 캐러셀 카드 프레임 — 굽기.js 조립 산출물(손 편집 금지) */
-html,body{background:var(--graphite);}
-body{display:block;min-height:0;}
-.카드{width:${W}px;height:${H}px;overflow:hidden;position:relative;
-  display:flex;flex-direction:column;justify-content:center;gap:var(--단);
-  padding:96px;
-  background:
-    radial-gradient(105% 62% at 50% -14%, rgba(55,55,55,0.55) 0%, rgba(55,55,55,0) 58%),
-    linear-gradient(180deg, rgba(0,0,0,.30), rgba(0,0,0,.52)),
-    var(--graphite);}
-.카드로고 svg{width:190px;height:auto;display:block;}
-.카드로고.큰 svg{width:300px;}
-.카드 h1{margin:0;font-size:84px;line-height:1.16;font-weight:800;letter-spacing:-.035em;
-  color:var(--chalk);text-wrap:balance;}
-.카드 h2{margin:0;font-size:58px;line-height:1.24;font-weight:800;letter-spacing:-.03em;
-  color:var(--chalk);text-wrap:balance;}
-.훅{margin:0;font-size:40px;line-height:1.5;color:var(--chalk);opacity:.82;max-width:22em;}
-.본문{font-size:42px;line-height:1.62;color:var(--chalk);}
-.본문 p{margin:0 0 .7em;color:var(--chalk);}
-.본문 b{color:var(--coral2);}
-.카드머리{display:flex;align-items:center;gap:var(--칸);}
-.잔글{font-size:27px;font-weight:700;color:var(--ash);letter-spacing:.01em;}
-.판정배지{font-size:27px;font-weight:800;color:var(--coral2);
-  padding:.28em .95em;border-radius:999px;background:rgba(249,104,89,.15);
-  box-shadow:inset 0 0 0 2px rgba(249,104,89,.55);}
-.카드.판정{box-shadow:inset 0 0 0 3px rgba(249,104,89,.4);}
-.넘김{position:absolute;right:96px;bottom:88px;font-size:30px;font-weight:750;color:var(--coral2);}
-.진행{position:absolute;left:96px;bottom:96px;display:flex;gap:14px;}
-.점{width:14px;height:14px;border-radius:50%;background:rgba(228,228,231,.28);}
-.점.여기{background:var(--coral);}
-.물표{position:absolute;right:96px;bottom:76px;opacity:.5;}
-.물표 svg{width:96px;height:auto;}
-.카드.마무리{align-items:center;text-align:center;justify-content:center;}
-.끝말{margin:0;font-size:52px;font-weight:800;color:var(--chalk);letter-spacing:-.02em;}
-.끝잔{margin:0;font-size:33px;color:var(--ash);}
-`;
-
-const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(제목)}</title>
-<style>
-/*@FONTS@*/
-${loom.stdout}
-${보충}
-</style></head><body>
-${카드들.join('\n')}
-</body></html>`;
-
-// ── 조립 → 폰트 임베드 → 렌더 → 분할 ─────────────────────────────────
+const 키트 = path.join(ROOT, 'docs', '디자인', 'SNS키트');
 const 빌드폴더 = path.join(__dirname, '_빌드');
-const 출력폴더 = path.join(__dirname, 'out', 편이름);
-fs.mkdirSync(빌드폴더, { recursive: true });
-fs.mkdirSync(출력폴더, { recursive: true });
-const src = path.join(빌드폴더, 편이름 + '.src.html');
-const 임베드본 = path.join(빌드폴더, 편이름 + '.html');
-fs.writeFileSync(src, html);
+const args = process.argv.slice(2);
+const 넘길 = ['--pdf', '--webp', '--force'].filter((f) => args.includes(f));
 
-const py = spawnSync('python', [path.join(ROOT, 'docs/tools/브랜드폰트_임베드.py'), src, 임베드본], { encoding: 'utf8' });
-if (py.status !== 0) { console.error('🔴 폰트 임베드 실패:\n' + (py.stderr || py.stdout)); process.exit(1); }
+// 말 — 자동으로 붙는 문구. LAB 몽골 계정은 몽골어·학생·학부모, 개인 계정은 한국어·업계(영상_공개선 ㉠ 표).
+const 말표 = {
+  ko: { 넘김: '밀어서 보기 →', 배지: '내 판정', 끝말: 'AI로 교육 회사를 짓고 있습니다.', 끝잔: '저장해 두세요 — 다음 판정과 함께 돌아옵니다.' },
+  mn: { 넘김: 'Гүйлгэж үзнэ үү →', 배지: 'Гол нь', 끝말: 'Улаанбаатарт солонгос хэлний сургалтын төв бэлтгэж байна.', 끝잔: 'Хадгалж аваарай — дараагийн бичлэгээр уулзъя.' },
+  en: { 넘김: 'Swipe →', 배지: 'The point', 끝말: 'We are building a Korean-language school in Ulaanbaatar.', 끝잔: 'Save this — we will be back with the next one.' },
+};
+// LAB 한국어 짝 원고는 몽골어판의 검토용 번역이라 끝말도 몽골어판의 뜻을 옮긴다.
+const LAB한국어끝말 = '울란바토르에 한국어 학원을 준비하고 있습니다.';
+const LAB한국어끝잔 = '저장해 두세요 — 다음 글에서 만나요.';
 
-const N = 카드들.length;
-const 크롬후보 = ['C:/Program Files/Google/Chrome/Application/chrome.exe',
-  'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'].filter(fs.existsSync);
-if (!크롬후보.length) { console.error('🔴 크롬을 못 찾았다'); process.exit(1); }
-const 판사진 = path.join(빌드폴더, 편이름 + '.전체.png');
-const cr = spawnSync(크롬후보[0], ['--headless', '--disable-gpu', '--force-device-scale-factor=1',
-  '--hide-scrollbars', `--window-size=${W},${H * N}`, `--screenshot=${판사진}`,
-  'file:///' + 임베드본.replace(/\\/g, '/')], { encoding: 'utf8' });
-if (!fs.existsSync(판사진)) { console.error('🔴 크롬 렌더 실패:\n' + (cr.stderr || '')); process.exit(1); }
+// 계정 — 키트 README §4의 테마. 그림은 키트 assets/의 승인 원본 사본만 쓴다.
+const 계정표 = {
+  lab: { 이름: 'SYNK LAB', 로고: 'logo-lab.webp', 로고글: 'synk LAB', 핸들: { mn: '@synk.mn', ko: '@synk.mn', en: '@synkkorean' },
+    표지: { 종류: 'object', src: 'mascot-몽글_눈웃음.webp', diecut: true, s: 380 }, 끝: { 종류: 'object', src: 'mascot-몽글_응원.webp', diecut: true, s: 340 } },
+  brief: { 이름: 'synkbrief', 로고: 'logo-shift.webp', 로고글: 'synk SHIFT', 핸들: '@synkbrief',
+    표지: { 종류: 'object', src: 'hero-shift.webp', s: 520 }, 끝: { 종류: 'object', src: 'felt-laptop.webp', s: 420 } },
+  builds: { 이름: 'yuhobuilds', 로고: 'logo-synk-paper.webp', 로고글: 'synk', 검은면: true, 핸들: '@yuhobuilds',
+    표지: { 종류: 'arch', src: 'photo-yuho-interview-front.webp' }, 끝: { 종류: 'object', src: 'felt-laptop.webp', s: 400 } },
+  synk: { 이름: 'SYNK', 로고: 'logo-synk-paper.webp', 로고글: 'synk', 검은면: true, 핸들: '@synk.hq',
+    표지: { 종류: 'object', src: 'felt-laptop.webp', s: 460 }, 끝: { 종류: 'object', src: 'felt-laptop.webp', s: 400 } },
+  pulse: { 이름: 'SYNK PULSE', 로고: 'logo-pulse.webp', 로고글: 'synk PULSE', 핸들: '',
+    표지: { 종류: 'object', src: 'hero-pulse.webp', s: 520 }, 끝: { 종류: 'object', src: 'hero-pulse.webp', s: 420 } },
+  path: { 이름: 'SYNK PATH', 로고: 'logo-path.webp', 로고글: 'synk PATH', 핸들: '',
+    표지: { 종류: 'object', src: 'hero-path.webp', s: 520 }, 끝: { 종류: 'object', src: 'hero-path.webp', s: 420 } },
+};
 
-// 분할 + 픽셀 검증 — 「조용한 성공」 금지: 크기가 어긋나면 여기서 죽는다
-const 분할py = `# -*- coding: utf-8 -*-
-import sys
-from PIL import Image
-img = Image.open(r'''${판사진}''')
-w, h = img.size
-assert (w, h) == (${W}, ${H * N}), f'렌더 크기 어긋남: {w}x{h} != ${W}x${H * N} (뷰포트 함정 — force-device-scale-factor 확인)'
-for i in range(${N}):
-    img.crop((0, i * ${H}, w, (i + 1) * ${H})).save(r'''${출력폴더}''' + '/%02d.png' % (i + 1))
-print('OK', ${N})
+const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+/** 제목: **굵게** 첫 한 곳만 형광펜, 나머지 별표는 지운다(형광펜은 제목 하나에 한 곳). */
+const 제목HTML = (s) => { let 한번 = false; return esc(s).replace(/\*\*([^*]+)\*\*/g, (_, t) => { if (한번) return t; 한번 = true; return `<span class="k-mark">${t}</span>`; }); };
+const 본문HTML = (s) => esc(s).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+  .split(/\n\s*\n/).map((p) => `<p class="k-body">${p.trim().replace(/\n/g, '<br>')}</p>`).join('\n      ');
+const 글자수 = (s) => s.replace(/\*\*/g, '').replace(/\s+/g, ' ').trim().length;
+const 한글인가 = (언어) => 언어 === 'ko';
+
+/** 제목 크기 — 판 폭 912px에 줄 수가 넷을 넘지 않게. 넘침은 굽기 검사가 다시 잰다. */
+function 표지크기(제목, 언어) {
+  const n = 글자수(제목);
+  if (한글인가(언어)) return n <= 10 ? 'xl' : n <= 24 ? 'l' : 'm';
+  return n <= 36 ? 'l' : n <= 60 ? 'm' : 's';
+}
+function 장제목크기(제목, 언어) {
+  const n = 글자수(제목);
+  if (한글인가(언어)) return n <= 13 ? 'l' : n <= 24 ? 'm' : 's';
+  return n <= 14 ? 'l' : n <= 30 ? 'm' : 's';
+}
+/** 본문 글자 크기 — 짧을수록 키워 흰 종이가 허전하지 않게(두 단계 규칙 안: 제목·본문). */
+function 본문글자(본문, 언어) {
+  const n = 글자수(본문) * (한글인가(언어) ? 1 : 0.6);
+  return n < 90 ? 54 : n < 160 ? 50 : n < 240 ? 44 : 40;
+}
+
+function 원고읽기(원고경로) {
+  const md = fs.readFileSync(원고경로, 'utf8').replace(/\r\n/g, '\n');
+  const 편이름 = path.basename(원고경로, '.md');
+  const 덩어리들 = md.split(/\n---\n/).map((s) => s.trim()).filter(Boolean);
+  const 머리 = 덩어리들.shift() || '';
+  const 머리값 = (k) => ((머리.match(new RegExp(`^${k}:\\s*(.+)$`, 'm')) || [])[1] || '').trim();
+  const 언어 = (머리값('언어').match(/^(ko|mn|en)/) || [, 'ko'])[1];
+  const 계정 = 머리값('계정') || (편이름.startsWith('LAB') ? 'lab' : 'builds');
+  if (!계정표[계정]) throw new Error(`${편이름}: 모르는 계정 '${계정}' (lab|brief|builds|synk|pulse|path)`);
+  const 장들 = 덩어리들.map((덩) => {
+    const 줄들 = 덩.split('\n').filter((l) => !/^<!--.*-->$/.test(l.trim()));
+    const 첫줄 = (줄들[0] || '').trim();
+    return { 판정: 첫줄.startsWith('🔑'), 장제목: 첫줄.replace(/^##\s*/, '').replace(/^🔑\s*/, '').trim(), 본문: 줄들.slice(1).join('\n').trim() };
+  });
+  return {
+    편이름, 언어, 계정, 장들,
+    제목: ((머리.match(/^#\s+(.+)$/m) || [])[1] || 편이름).trim(),
+    훅: 머리값('훅'), 시리즈: 머리값('시리즈'), 끝말: 머리값('끝말'), 끝잔: 머리값('끝잔'),
+    마무리끄기: /^마무리:\s*끄기/m.test(머리),
+  };
+}
+
+function 키트HTML(원) {
+  const 말 = 말표[원.언어];
+  const 계 = 계정표[원.계정];
+  const 그림 = (f) => `../../docs/디자인/SNS키트/assets/${f}`;
+  const 핸들 = typeof 계.핸들 === 'string' ? 계.핸들 : (계.핸들[원.언어] || '');
+  const 시리즈 = esc(원.시리즈 || 계.이름);
+  const 라틴 = 원.언어 === 'ko' ? '' : ' k-latin';
+  const 총 = 원.장들.length + 1 + (원.마무리끄기 ? 0 : 1);
+  const 쪽 = (i) => `<span class="k-count">${String(i).padStart(2, '0')} / ${String(총).padStart(2, '0')}</span>`;
+  const 색면로고 = 계.검은면
+    ? `<img class="k-logo" src="${그림(계.로고)}" alt="${계.로고글}">`
+    : `<span class="k-logo-tag"><img class="k-logo" src="${그림(계.로고)}" alt="${계.로고글}"></span>`;
+  const 큰그림 = (g, 자리) => {
+    if (g.종류 === 'arch') return `<figure class="k-arch" data-trend="mask" style="position:absolute;right:96px;bottom:200px;width:400px;height:520px;--pos:50% 18%"><img src="${그림(g.src)}" alt=""></figure>`;
+    return `<img class="k-object${g.diecut ? ' diecut' : ''}" src="${그림(g.src)}" alt="" style="--s:${g.s}px;right:${자리 === '끝' ? 100 : 84}px;bottom:${자리 === '끝' ? 200 : 190}px">`;
+  };
+  const 장 = [];
+
+  // 1 표지 — 사업 색 면 + 큰 제목 + 주인공 하나 + 실땀 네 모서리
+  장.push(`<section class="k-slide k-field k-corners" data-fmt="feed34" data-acc="${원.계정}" data-name="cover">
+  <div class="k-head"><b>${시리즈}</b>${쪽(1)}</div>
+  <div class="k-in">
+    <h1 class="k-title ${표지크기(원.제목, 원.언어)}${라틴}">${제목HTML(원.제목)}</h1>
+    ${원.훅 ? `<p class="k-sub${라틴}" style="margin-top:36px;max-width:${계.표지.종류 === 'arch' ? 520 : 820}px">${esc(원.훅)}</p>` : ''}
+  </div>
+  ${큰그림(계.표지, '표지')}
+  <div class="k-foot">${색면로고}<span>${esc(말.넘김)}</span></div>
+</section>`);
+
+  // 본문·판정 장 — 흰 종이, 장식 없음. 유호 09-08 「모든 장에 들어가니까 좀 별론데」: 장식은 표지에, 마스코트는 처음과 끝에만.
+  // 빈 자리는 장식 대신 여백과 글자 크기로 가른다(본문 묶음을 눈높이 가운데에).
+  원.장들.forEach((s0, k) => {
+    const i = k + 2;
+    const s = { ...s0 };
+    // 판정 장: 본문 첫 문단이 통째로 굵으면 그 문장이 큰 제목이 되고, 장 제목은 칩으로 내려간다(「제 판정」 + 「내 판정」 겹침 방지)
+    let 칩 = 말.배지;
+    if (s.판정) {
+      const 첫 = s.본문.split(/\n\s*\n/)[0].trim();
+      if (/^\*\*[^*]+\*\*$/.test(첫)) { 칩 = s.장제목 || 말.배지; s.장제목 = 첫.slice(2, -2); s.본문 = s.본문.slice(s.본문.indexOf(첫) + 첫.length).trim(); }
+    }
+    const 본문크기 = 본문글자(s.본문, 원.언어);
+    const 제목크기 = 장제목크기(s.장제목, 원.언어);
+    const 본문 = s.본문 ? 본문HTML(s.본문).replace(/class="k-body"/g, `class="k-body${라틴}" style="font-size:${본문크기}px;margin:0 0 ${Math.round(본문크기 * 0.6)}px"`) : '';
+    const 발 = `<div class="k-foot">${핸들 ? `<span class="k-handle" style="font-size:26px">${핸들}</span>` : '<span></span>'}<span>${시리즈}</span></div>`;
+    if (s.판정) {
+      // 판정 장은 장식 없이 가운데에 모은다
+      장.push(`<section class="k-slide k-paper" data-fmt="feed34" data-acc="${원.계정}" data-name="judgment">
+  <div class="k-head"><b>${시리즈}</b>${쪽(i)}</div>
+  <div class="k-in" style="justify-content:center;padding-bottom:60px">
+    <span class="k-chip acc" style="align-self:flex-start">${esc(칩.replace(/\*\*/g, ''))}</span>
+    <h2 class="k-title ${제목크기}${라틴}" style="margin-top:36px">${제목HTML(s.장제목)}</h2>${본문 ? `
+    <div class="k-corners" style="position:relative;margin-top:52px;padding:52px 56px ${Math.round(52 - 본문크기 * 0.6)}px;border-radius:20px;background:var(--acc-wash)">
+      ${본문}
+    </div>` : ''}
+  </div>
+  ${발}
+</section>`);
+    } else {
+      장.push(`<section class="k-slide k-paper" data-fmt="feed34" data-acc="${원.계정}" data-name="p${String(i).padStart(2, '0')}">
+  <div class="k-head"><b>${시리즈}</b>${쪽(i)}</div>
+  <div class="k-in" style="justify-content:center;padding-bottom:60px">
+    <h2 class="k-title ${제목크기}${라틴}">${제목HTML(s.장제목)}</h2>
+    <div style="margin-top:56px">
+      ${본문}
+    </div>
+  </div>
+  ${발}
+</section>`);
+    }
+  });
+
+  // 끝 장 — 다시 사업 색 면. 행동은 하나(저장)
+  if (!원.마무리끄기) {
+    const 끝말 = 원.끝말 || (원.계정 === 'lab' && 원.언어 === 'ko' ? LAB한국어끝말 : 말.끝말);
+    장.push(`<section class="k-slide k-field k-corners" data-fmt="feed34" data-acc="${원.계정}" data-name="end">
+  <div class="k-head"><b>${시리즈}</b>${쪽(총)}</div>
+  <div class="k-in" style="justify-content:center;padding-bottom:300px">
+    <h2 class="k-title s${라틴}" style="max-width:860px">${esc(끝말)}</h2>
+    <p class="k-sub${라틴}" style="margin-top:32px;max-width:620px">${esc(원.끝잔 || (원.계정 === 'lab' && 원.언어 === 'ko' ? LAB한국어끝잔 : 말.끝잔))}</p>
+  </div>
+  ${큰그림(계.끝, '끝')}
+  <div class="k-foot">${색면로고}<span class="k-handle">${핸들}</span></div>
+</section>`);
+  }
+
+  return `<!doctype html>
+<html lang="${원.언어}">
+<head>
+<meta charset="utf-8">
+<title>${esc(원.제목.replace(/\*\*/g, ''))} · ${계.이름}</title>
+<!-- 캐러셀/굽기.js가 ${path.basename(원.편이름)}.md에서 만든 키트 원고. 손으로 고치지 말고 원고 md를 고친다 -->
+<link rel="stylesheet" href="../../docs/디자인/SNS키트/kit.css">
+<style>body{margin:0;background:#d9dbe0;display:flex;flex-direction:column;gap:40px;padding:40px;align-items:flex-start}</style>
+</head>
+<body data-acc="${원.계정}">
+${장.join('\n\n')}
+</body>
+</html>
 `;
-const 분할스크립트 = path.join(빌드폴더, 편이름 + '.분할.py');
-fs.writeFileSync(분할스크립트, 분할py);
-const cut = spawnSync('python', [분할스크립트], { encoding: 'utf8' });
-if (cut.status !== 0) { console.error('🔴 분할·검증 실패:\n' + (cut.stderr || cut.stdout)); process.exit(1); }
+}
 
-console.log(`✅ ${편이름} — ${N}장 구움 → ${path.relative(ROOT, 출력폴더)}/01~${String(N).padStart(2, '0')}.png`);
-console.log('   (판정은 사람 눈이 한다 — PNG 는 렌더린트가 원리상 못 잰다)');
+function 굽기(원고경로) {
+  const 원 = 원고읽기(원고경로);
+  fs.mkdirSync(빌드폴더, { recursive: true });
+  const html = path.join(빌드폴더, `${원.편이름}.kit.html`);
+  fs.writeFileSync(html, 키트HTML(원));
+  const 출력 = path.join(__dirname, 'out', 원.편이름);
+  // 옛 판(01.png …)과 지난 굽기 결과를 비운다. 원고 md가 원본이라 언제든 다시 굽는다.
+  if (fs.existsSync(출력)) for (const f of fs.readdirSync(출력)) if (/\.(png|webp|pdf|json)$/i.test(f)) fs.rmSync(path.join(출력, f));
+  const r = spawnSync(process.execPath, [path.join(ROOT, 'tools', 'SNS키트굽기.js'), html, '--out', 출력, '--45', '--sheet', ...넘길], { encoding: 'utf8' });
+  process.stdout.write(r.stdout || '');
+  process.stderr.write(r.stderr || '');
+  console.log(r.status === 0 ? `✅ ${원.편이름} (${원.계정}·${원.언어}) → ${path.relative(ROOT, 출력)}` : `✗ ${원.편이름}: 검사에 걸렸다(위 ✗ 줄)`);
+  return r.status === 0;
+}
+
+const 원고들 = args.includes('--전부')
+  ? fs.readdirSync(path.join(__dirname, '원고')).filter((f) => f.endsWith('.md')).sort().map((f) => path.join(__dirname, '원고', f))
+  : args.filter((a) => !a.startsWith('--')).map((a) => path.resolve(ROOT, a));
+if (!원고들.length) { console.error('쓰는 법: node 캐러셀/굽기.js 캐러셀/원고/001_이름.md [--pdf] [--webp]  |  --전부'); process.exit(2); }
+if (!fs.existsSync(path.join(키트, 'kit.css'))) { console.error('SNS 키트를 못 찾았다: ' + 키트); process.exit(2); }
+let 실패 = 0;
+for (const f of 원고들) if (!굽기(f)) 실패++;
+if (원고들.length > 1) console.log(`\n${원고들.length}편 중 ${원고들.length - 실패}편 통과`);
+process.exit(실패 ? 1 : 0);

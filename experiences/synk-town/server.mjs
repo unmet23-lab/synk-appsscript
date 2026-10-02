@@ -49,7 +49,7 @@ function fileFor(route, previewEnabled) {
   if (route === '/style.css') return path.join(root, 'style.css');
   if (/^\/assets\/(?:[a-zA-Z0-9_-]+\/)?[a-zA-Z0-9_-]+\.(webp|png|jpg|svg|woff2|ttf)$/.test(route)) return path.join(root, route.slice(1));
   if (!previewEnabled) return null;
-  if (['/preview.html', '/app.mjs'].includes(route)) return path.join(root, route.slice(1));
+  if (['/preview.html', '/app.mjs', '/linked-client.mjs', '/understanding.mjs', '/understanding-ui.mjs'].includes(route)) return path.join(root, route.slice(1));
   if (route === '/engine/loom-life.js') return path.join(repo, 'tools/lib/loom-life.js');
   if (route === '/engine/loom-motion.js') return path.join(repo, 'tools/lib/loom-motion.js');
   return null;

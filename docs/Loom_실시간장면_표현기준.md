@@ -42,6 +42,10 @@
 
 원본과 파생 자산은 [provenance.json](../experiences/loom-living/provenance.json), 현재 풀 윤곽은 [비교 그림](../experiences/loom-living/qa/grass-contour.png)과 [검증 기록](../experiences/loom-living/qa/grass-contour.json), 바람 시간은 [wind.json](../experiences/loom-living/qa/wind.json), 말풍선은 [dialogue.json](../experiences/loom-living/qa/dialogue.json)에 각 버전의 확인 범위가 있다. 로컬 웹 장면 확인과 학생 앱 배포·실제 기기·학생 반응은 구분한다.
 
+## 연결망 장면의 재사용 부품
+
+2026-09-22 [Atlas 연결망](엔진/atlas-constellation-20260921/README.md)의 부드러운 조작을 위해 [loom-motion.js](../tools/lib/loom-motion.js)와 [loom-network-webgl.js](../tools/lib/loom-network-webgl.js)를 추가했다. 전자는 주사율에 무관한 감쇠·스프링·관성과 정지·숨김 복귀 시계를, 후자는 재사용 버퍼에 모은 선·입자와 유리 중심부 셰이더를 제공한다. 기존 펠트 장면 표시기는 그대로 사용한다. 네트워크 장면에는 이 부품을 연결하고 입력 레이어, 컨텍스트 복구, 움직임 감소, 실제 프레임 간격을 확인한다. 60·120·144Hz 수학적 결과 일치는 시험했으며, 실기기 확인은 현재 60Hz 브라우저 범위다.
+
 ## 표정 상호작용은 다음 검토 사항
 
 같은 요청의 「인사할 때나 바람 볼 때 표정이 상호작용할 수 있게 하면 어떨까?」는 의견 요청이다. 현재 저장 승인을 새로운 표정의 제작·적용 완료로 확대하지 않는다. 깜빡임을 보존하며, 인사에는 반가움, 바람에는 호기심이 드러나는 짧은 사건 반응을 검토한다. 구체 표정·시간·자산 선택은 아직 확정하지 않았다. 승인 원본에 없는 입·코를 추가하거나 표정 때문에 몸 전체의 털을 갈아끼우지 않는다는 기존 기준을 따른다.

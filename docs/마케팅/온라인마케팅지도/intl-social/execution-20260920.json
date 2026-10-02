@@ -2,6 +2,28 @@
   "schemaVersion": 1,
   "asOf": "2026-09-21",
   "status": "partial-completion-user-authentication-and-platform-gates",
+  "latestSignupFollowup20260925": {
+    "date": "2026-09-25",
+    "report": "최종점검_20260920.md#2026-09-25-가입-재개-확인",
+    "userHold": "TikTok은 나중에 진행",
+    "heldTikTokRemaining": 9,
+    "nonTikTokRemaining": {
+      "instagram": 9,
+      "douyin": 1,
+      "vkLabCommunity": 1
+    },
+    "instagramOfficialSignupFormReached": true,
+    "indiaNameAndCandidateHandleEntered": true,
+    "indiaHandleValidIndicatorObserved": true,
+    "indiaSignupSubmitted": false,
+    "douyinOfficialCreatorLoginFormReached": true,
+    "douyinSmsRequestedThisFollowup": false,
+    "vkBrowserSafetyBlockedAgain": true,
+    "vkWorkaroundAttempted": false,
+    "newAccountsCreated": 0,
+    "remainingNotCreatedOrUnconfirmed": 20,
+    "sensitiveValuesStored": false
+  },
   "finalRecheck": {
     "date": "2026-09-20",
     "scope": "all-28-records-and-available-live-gates",

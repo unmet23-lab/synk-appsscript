@@ -1,6 +1,6 @@
 ---
 name: remotion-captions
-description: Remotion 영상에 자막을 넣고 움직일 때 연다 — 받아쓰기·SRT 반입·자막 표시·자막 애니메이션. SYNK 에서는 릴 훅의 몽골어·한국어 자막 자리가 여기다. Transcribing, displaying and animating captions in Remotion.
+description: Remotion 영상에 자막을 넣거나 움직일 때 쓴다. 받아쓰기, SRT 파일 가져오기, 자막 표시, 자막 애니메이션을 다룬다. SYNK에서는 이미 만든 Remotion 영상을 다시 렌더하거나 고칠 때만 쓴다. 새 SNS 영상의 자막은 SNS 제작 키트(docs/디자인/SNS키트, motion.js의 M.caption)로 만든다(2026-10-01). Transcribing, displaying and animating captions in Remotion.
 version: 4.0.520
 ---
 
