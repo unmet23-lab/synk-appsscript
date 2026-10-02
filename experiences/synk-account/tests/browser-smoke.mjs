@@ -12,6 +12,8 @@ const errors = [], requests = [];
 context.on('page', page => page.on('pageerror', error => errors.push(error.message)));
 await context.route('**/*', async route => {
   const url = new URL(route.request().url());requests.push(url.href);
+  // The account pages load the shared learning bundle beside them (synk.im serves it from vendor/).
+  if (url.origin === 'http://127.0.0.1:4280' && url.pathname === '/learning-hub/atlas-learning.js') return route.fulfill({ status: 200, body: await fs.readFile(path.resolve(root, '../learning-hub/atlas-learning.js')), contentType: 'application/javascript' });
   if (url.origin !== 'http://127.0.0.1:4280' || !url.pathname.startsWith('/synk-account/')) throw new Error(`Unexpected fixture network: ${url.href}`);
   const relative = decodeURIComponent(url.pathname.slice('/synk-account/'.length)) || 'index.html';
   const target = path.resolve(root, relative);if (!target.startsWith(root + path.sep)) return route.fulfill({ status: 404, body: '' });
@@ -39,12 +41,12 @@ try {
   assert.equal(await page.locator('.game-links button').count(), 6);assert.equal(await page.evaluate(() => !!window.SYNKLearningHost), false);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
   await page.locator('.game-links button').first().click();assert.match(await page.locator('#notice').innerText(), /실제 게임 계정 연결을 시작하지/);
-  await page.locator('.toggle input').uncheck();assert.equal(await page.locator('.toggle input').isChecked(), false);
+  await page.locator('#account .toggle input').uncheck();assert.equal(await page.locator('#account .toggle input').isChecked(), false);
   await fs.mkdir(path.join(root, 'qa'), { recursive: true });await page.screenshot({ path: path.join(root, 'qa/preview-world-mobile.png'), fullPage: true });
   await page.setViewportSize({ width: 1440, height: 1000 });await page.goto('http://127.0.0.1:4280/synk-account/preview.html');await page.locator('#auth-panel').waitFor({ state: 'visible' });await page.screenshot({ path: path.join(root, 'qa/preview-login-desktop.png'), fullPage: true });
-  await page.goto('http://127.0.0.1:4280/synk-account/preview.html?account=world&disabled&rollout-off');await page.locator('#account').waitFor({ state: 'visible' });assert.equal(await page.locator('.toggle input').isDisabled(), true);
-  await page.goto('http://127.0.0.1:4280/synk-account/preview.html?account=world&rollout-off');await page.locator('#account').waitFor({ state: 'visible' });assert.equal(await page.locator('.toggle input').isDisabled(), false);await page.locator('.toggle input').uncheck();assert.equal(await page.locator('.toggle input').isDisabled(), true);
-  await page.goto('http://127.0.0.1:4280/synk-account/preview.html?account=world');await page.locator('#account').waitFor({ state: 'visible' });await page.getByRole('button', { name: '계정 삭제 요청', exact: true }).click();await page.getByRole('button', { name: '삭제 요청 보내기' }).click();await page.getByRole('button', { name: '계정 삭제 요청 접수됨' }).waitFor();assert.equal(await page.locator('.toggle input').isDisabled(), true);assert.match(await page.locator('#notice').innerText(), /늦어도 30일 안에/);
+  await page.goto('http://127.0.0.1:4280/synk-account/preview.html?account=world&disabled&rollout-off');await page.locator('#account').waitFor({ state: 'visible' });assert.equal(await page.locator('#account .toggle input').isDisabled(), true);
+  await page.goto('http://127.0.0.1:4280/synk-account/preview.html?account=world&rollout-off');await page.locator('#account').waitFor({ state: 'visible' });assert.equal(await page.locator('#account .toggle input').isDisabled(), false);await page.locator('#account .toggle input').uncheck();assert.equal(await page.locator('#account .toggle input').isDisabled(), true);
+  await page.goto('http://127.0.0.1:4280/synk-account/preview.html?account=world');await page.locator('#account').waitFor({ state: 'visible' });await page.getByRole('button', { name: '계정 삭제 요청', exact: true }).click();await page.getByRole('button', { name: '삭제 요청 보내기' }).click();await page.getByRole('button', { name: '계정 삭제 요청 접수됨' }).waitFor();assert.equal(await page.locator('#account .toggle input').isDisabled(), true);assert.match(await page.locator('#notice').innerText(), /늦어도 30일 안에/);
   await page.getByRole('button', { name: '모든 제품의 로그인 종료' }).click();assert.match(await page.locator('#notice').innerText(), /실제 다른 제품의 로그인은 종료하지 않았/);assert.doesNotMatch(await page.locator('#notice').innerText(), /상태가 바뀌/);
   await page.goto('http://127.0.0.1:4280/synk-account/preview.html?account=platform&fail-user');await page.locator('#auth-panel').waitFor({ state: 'visible' });assert.match(await page.locator('#notice').innerText(), /로그인 상태를 확인하지 못/);
   await page.goto('http://127.0.0.1:4280/synk-account/client.html?product=world');await page.locator('#setup').waitFor({ state: 'visible' });

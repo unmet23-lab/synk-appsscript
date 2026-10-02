@@ -24,11 +24,11 @@
     "assets/InterTight-Regular.ttf": "053de5dcb2af4b7bd2fad68249953df7a58bf7b103a38b59d2d8d89a86ca5699",
     "assets/InterTight-Medium.ttf": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1",
     "assets/DMMono-Medium.ttf": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
-    "dist/app.js": "74cb113c5f9c9c3d08855c3b2aacfe46206ade82c2a4d118e058a01f8c01565b",
-    "dist/client.js": "92b81400d915472c2c2cf12b75a07ff30a2de193bde4ef81e35282f1db40e69f",
-    "dist/preview.js": "bb833489aa5d258a7cd820a1675ed2d300b1ba873c83d403c75fbc191f087558",
+    "dist/app.js": "197316278110cd7c7d20644a85013c2604f74ee3b077e41535e14e228163da00",
+    "dist/client.js": "0ee83a1465d6f24a2a6eb533c26b34be1c5b2c9a791270217b791bbca1829aed",
+    "dist/preview.js": "97ba4483afa3187a8a197b5558ebb9b2bc7791f44483aff8c5bca1699a64b7be",
     "dist/platform.js": "5b0a0370f027d3114b52bc4579c08f0118cd3f16a6b953b2a5f439a2abd9258b",
-    "dist/local-world.js": "9dd9d62f7e21efba944f223ac854d9a2b516bbe3f6d2b9e2867d9e8f29451a49",
+    "dist/local-world.js": "75d47a749fb1aeb0322c3c976754f5152ed9d56bb7e55efb86ed037d73f10cf3",
     "preview.html": "b79543db61732b3fdcaa8a4f16835e23c38db34307718886e92aba12e15f5b62"
   }
 }
