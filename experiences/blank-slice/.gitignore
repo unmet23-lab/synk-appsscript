@@ -1,0 +1,4 @@
+# 확인 캡처·시연 영상·구운 소리 원본(수십 MB). 묶은 시트와 결과(qa/capture-results.json·qa/sound-results.json·qa/소리_스펙트럼.jpg)만 남긴다.
+qa/shots/
+qa/demo/
+qa/sound/

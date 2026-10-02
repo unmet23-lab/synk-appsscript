@@ -41,6 +41,6 @@ const esbuild = require(require.resolve('esbuild', { paths: [root, path.join(roo
 const bundled = esbuild.buildSync({ absWorkingDir: root, entryPoints: ['atlas/game-browser.js'], bundle: true,
   write: false, platform: 'browser', format: 'iife', globalName: 'SynkLearning', target: ['es2022'], charset: 'utf8',
   banner: { js: '// Generated from atlas/ and strata/. Change canonical sources; run tools/build-game-learning.js.' } });
-for (const game of ['korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'learning-hub', 'entry-check', 'story-classroom']) {
+for (const game of ['korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'learning-hub', 'entry-check', 'story-classroom', 'blank-slice']) {
   output(path.join(root, 'experiences', game, 'atlas-learning.js'), bundled.outputFiles[0].contents);
 }

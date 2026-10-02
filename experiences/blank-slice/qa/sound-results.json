@@ -1,0 +1,218 @@
+{
+ "kit-earn": {
+  "peak_dbfs": -4.3,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -20.8,
+  "audible_ms": 86,
+  "centroid_hz": 1204,
+  "vs_earn_lu": 0.0
+ },
+ "kit-achieve": {
+  "peak_dbfs": -3.0,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -15.6,
+  "audible_ms": 341,
+  "centroid_hz": 754,
+  "vs_earn_lu": 5.2
+ },
+ "kit-calm1": {
+  "peak_dbfs": -7.0,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -11.6,
+  "audible_ms": 416,
+  "centroid_hz": 925,
+  "vs_earn_lu": 9.2
+ },
+ "felt-slice-ok": {
+  "peak_dbfs": -3.3,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -17.8,
+  "audible_ms": 211,
+  "centroid_hz": 1730,
+  "vs_earn_lu": 3.0
+ },
+ "felt-slice-side": {
+  "peak_dbfs": -1.8,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -17.1,
+  "audible_ms": 222,
+  "centroid_hz": 1892,
+  "vs_earn_lu": 3.7
+ },
+ "clean-slice-side": {
+  "peak_dbfs": -1.7,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -16.7,
+  "audible_ms": 222,
+  "centroid_hz": 1517,
+  "vs_earn_lu": 4.1
+ },
+ "felt-slice-wrong": {
+  "peak_dbfs": -5.4,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -23.7,
+  "audible_ms": 100,
+  "centroid_hz": 3164,
+  "vs_earn_lu": -2.9
+ },
+ "felt-swing-soft": {
+  "peak_dbfs": -13.7,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -28.7,
+  "audible_ms": 163,
+  "centroid_hz": 1988,
+  "vs_earn_lu": -7.9
+ },
+ "felt-swing-hard": {
+  "peak_dbfs": -5.1,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -23.0,
+  "audible_ms": 127,
+  "centroid_hz": 3043,
+  "vs_earn_lu": -2.2
+ },
+ "felt-launch": {
+  "peak_dbfs": -12.0,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -26.6,
+  "audible_ms": 195,
+  "centroid_hz": 474,
+  "vs_earn_lu": -5.8
+ },
+ "felt-flow": {
+  "peak_dbfs": -0.8,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -16.4,
+  "audible_ms": 1923,
+  "centroid_hz": 4397,
+  "vs_earn_lu": 4.4
+ },
+ "felt-combo": {
+  "peak_dbfs": -0.7,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -11.4,
+  "audible_ms": 4607,
+  "centroid_hz": 3625,
+  "vs_earn_lu": 9.4
+ },
+ "felt-wrong": {
+  "peak_dbfs": -2.3,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -11.6,
+  "audible_ms": 721,
+  "centroid_hz": 1482,
+  "vs_earn_lu": 9.2
+ },
+ "clean-slice-ok": {
+  "peak_dbfs": -3.2,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -17.3,
+  "audible_ms": 211,
+  "centroid_hz": 957,
+  "vs_earn_lu": 3.5
+ },
+ "clean-slice-wrong": {
+  "peak_dbfs": -3.7,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -22.2,
+  "audible_ms": 93,
+  "centroid_hz": 1003,
+  "vs_earn_lu": -1.4
+ },
+ "clean-swing-soft": {
+  "peak_dbfs": -11.6,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -28.0,
+  "audible_ms": 170,
+  "centroid_hz": 966,
+  "vs_earn_lu": -7.2
+ },
+ "clean-swing-hard": {
+  "peak_dbfs": -5.3,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -22.9,
+  "audible_ms": 118,
+  "centroid_hz": 985,
+  "vs_earn_lu": -2.1
+ },
+ "clean-launch": {
+  "peak_dbfs": -12.2,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -26.8,
+  "audible_ms": 196,
+  "centroid_hz": 462,
+  "vs_earn_lu": -6.0
+ },
+ "clean-flow": {
+  "peak_dbfs": -1.9,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -16.5,
+  "audible_ms": 1925,
+  "centroid_hz": 1831,
+  "vs_earn_lu": 4.3
+ },
+ "clean-combo": {
+  "peak_dbfs": -1.2,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -11.2,
+  "audible_ms": 4615,
+  "centroid_hz": 1613,
+  "vs_earn_lu": 9.6
+ },
+ "clean-wrong": {
+  "peak_dbfs": -2.8,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -11.6,
+  "audible_ms": 725,
+  "centroid_hz": 1052,
+  "vs_earn_lu": 9.2
+ },
+ "felt-stress": {
+  "peak_dbfs": -0.6,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -7.1,
+  "audible_ms": 437,
+  "centroid_hz": 1370,
+  "vs_earn_lu": 13.7
+ },
+ "clean-stress": {
+  "peak_dbfs": -0.6,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -7.0,
+  "audible_ms": 439,
+  "centroid_hz": 1119,
+  "vs_earn_lu": 13.8
+ },
+ "snap": {
+  "peak_dbfs": -5.7,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -28.2,
+  "audible_ms": 36,
+  "centroid_hz": 1101,
+  "vs_earn_lu": -7.4
+ },
+ "star": {
+  "peak_dbfs": -3.2,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -20.6,
+  "audible_ms": 179,
+  "centroid_hz": 1888,
+  "vs_earn_lu": 0.2
+ },
+ "fill": {
+  "peak_dbfs": -4.3,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -20.1,
+  "audible_ms": 101,
+  "centroid_hz": 1377,
+  "vs_earn_lu": 0.7
+ },
+ "stars": {
+  "peak_dbfs": -2.9,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -14.4,
+  "audible_ms": 900,
+  "centroid_hz": 2076,
+  "vs_earn_lu": 6.4
+ }
+}

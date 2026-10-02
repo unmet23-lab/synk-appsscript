@@ -1,0 +1,77 @@
+// 게임은 원고와 판정을 맡고, 아틀라스는 공통 기록과 다음 연습의 선택을 맡는다.
+// 문장 하나 = 읽기 문항 하나. 보기 넷 중 하나를 베는 응답이라 형식은 single-choice다.
+// 베지 못하고 떨어뜨린 것(놓침)은 읽고 몰랐는지 손이 늦었는지 가를 수 없어 평가하지 않는 응답으로 남긴다.
+import { ITEMS, SKILL_LABEL } from './content.mjs';
+
+export const GAME_ID = 'blank-slice';
+export const FORMAT = 'single-choice';
+
+export function itemMetadata(item) {
+  const key = `${GAME_ID}.${item.id}.v1`;
+  return { id: `${GAME_ID}.${item.id}`, itemKey: key, familyKey: key, skillId: item.skill, difficulty: item.difficulty,
+    modality: 'reading', responseFormat: FORMAT, audioRequired: false, confounded: false };
+}
+
+export function candidates(items) {
+  return items.map((x) => {
+    const m = itemMetadata(x);
+    return { id: m.id, itemId: x.id, skillIds: [m.skillId], difficulty: m.difficulty, modality: m.modality,
+      responseFormat: m.responseFormat, itemKey: m.itemKey };
+  });
+}
+
+/** 필요 순서. 아틀라스를 못 쓰면 null(원고 순서로 진행). */
+export function rankItems(coach, items) {
+  if (!coach) return null;
+  try {
+    const r = coach.recommend(candidates(items), { audioAvailable: true });
+    if (r.status !== 'ready') return null;
+    return { order: [r.selected, ...r.alternatives].map((x) => x.itemId), reason: r.reason, skillId: r.focusSkillId, state: r.state };
+  } catch { return null; }
+}
+
+/** 벤 답. 문장은 늘 보이는 읽기 지문이라 도움으로 세지 않는다. */
+export const answerPayload = (correct) => ({ correct, assessable: true });
+/** 두 번 던져도 베지 않음. */
+export const missedPayload = () => ({ correct: null, assessable: false, reason: 'unanswered' });
+
+const STATUS = {
+  unseen: { text: '아직 기록이 적어요', tone: 'quiet' },
+  checking: { text: '확인하는 중이에요', tone: 'quiet' },
+  practice: { text: '조금 더 연습하면 좋아요', tone: 'focus' },
+  supported: { text: '도움과 함께 해냈어요', tone: 'quiet' },
+  'recent-independent': { text: '최근 혼자 해냈어요', tone: 'good' },
+  review: { text: '다시 볼 때예요', tone: 'focus' },
+};
+const PRIORITY = { practice: 6, review: 5, supported: 4, checking: 3, unseen: 2, 'recent-independent': 1 };
+const LEVEL_LABEL = { 1: '쉬운 문장', 2: '조금 어려운 문장' };
+// 학습 항목마다 이 게임의 문장에 실제로 있는 난도
+const LEVELS = Object.fromEntries(Object.keys(SKILL_LABEL).map((id) =>
+  [id, [...new Set(ITEMS.filter((x) => x.skill === id).map((x) => x.difficulty))].sort((a, b) => a - b)]));
+
+/**
+ * 공통 기록 요약에서 이 게임의 두 학습 항목 상태(같은 형식·읽기 기록만).
+ * 난도마다 따로 말한다. 쉬운 문장은 혼자 해냈어도 조금 어려운 문장은 아직 기록이 적을 수 있다.
+ * ‘다음 연습’(tone: focus)은 아틀라스가 다음 판에 고른 항목(focusSkillId)을 따른다.
+ * 그래서 결과의 꼬리표와 다음 판 이유가 같은 말을 한다. focusSkillId가 없으면 상태의 우선순위로 정한다.
+ */
+export function skillReport(summary, { focusSkillId = null } = {}) {
+  if (!summary?.skills) return [];
+  return Object.keys(SKILL_LABEL).map((id) => {
+    const s = summary.skills.find((x) => x.id === id);
+    const levels = LEVELS[id].map((d) => {
+      const f = s?.levels?.[d]?.formats?.[FORMAT];
+      const status = f && (f.lastAt || f.assisted) && STATUS[f.status] ? f.status : 'unseen';
+      return { d, status, n: f?.n || 0, correct: f?.correct || 0 };
+    });
+    const seen = levels.filter((l) => l.status !== 'unseen');
+    const status = [...seen].sort((a, b) => (PRIORITY[b.status] || 0) - (PRIORITY[a.status] || 0))[0]?.status || 'unseen';
+    const same = levels.every((l) => l.status === levels[0].status);
+    const text = same ? STATUS[levels[0].status].text
+      : levels.map((l) => `${LEVEL_LABEL[l.d] || `난도 ${l.d}`}: ${STATUS[l.status].text}`).join(' · ');
+    const own = STATUS[status].tone;
+    const tone = !focusSkillId ? own : id === focusSkillId ? 'focus' : own === 'focus' ? 'quiet' : own;
+    return { id, label: SKILL_LABEL[id], status, text, tone, levels,
+      n: seen.reduce((sum, l) => sum + l.n, 0), correct: seen.reduce((sum, l) => sum + l.correct, 0) };
+  });
+}

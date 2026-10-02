@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f96859">
+<title>빈칸 베기 · SYNK LAB PLAY</title>
+<meta name="description" content="문장을 읽고 빈칸에 맞는 낱말 조각만 베는 한국어 읽기 액션 게임. TOPIK I 읽기의 빈칸 채우기(낱말·조사·문형)를 연습합니다.">
+<link rel="icon" href="assets/felt/sparkle.webp" type="image/webp">
+<link rel="preload" href="assets/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+<script src="./atlas-learning.js"></script>
+<script type="module" src="./app.mjs"></script>
+</head>
+<body>
+<p id="sr-live" class="sr" aria-live="polite"></p>
+
+<!-- 입구 -->
+<main id="lobby" class="screen lobby">
+  <header class="topbar on-field">
+    <a class="logo-tag" href="./" aria-label="빈칸 베기 처음으로"><img src="assets/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></a>
+    <span class="kicker">LAB · READ &amp; PLAY</span>
+    <button class="sound-toggle" type="button" aria-pressed="true" data-sound-toggle><span class="sr">소리</span></button>
+  </header>
+
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="kicker">FILL THE BLANK · AN ACTION GAME</span>
+      <h1>빈칸 베기</h1>
+      <p class="lede">문장을 읽고,<br><mark class="crayon-under">빈칸에 맞는 낱말만</mark> 베어요!</p>
+      <p class="sub">낱말 조각 넷이 튀어 올라요. 맞는 조각을 손가락이나 마우스로 그어 베면 빈칸이 채워져요. 연속으로 맞힐수록 빨라져요.</p>
+    </div>
+    <figure class="hero-art" aria-hidden="true">
+      <div class="hero-sentence paper">목이 말라요. <b class="hb">물</b>을 마시고 싶어요.</div>
+      <img class="hero-pieces" src="assets/hero-pieces.webp" alt="" width="1100" height="414">
+      <i class="slash"></i>
+      <img class="hero-mongle diecut" src="assets/brand/mongle-cheer.webp" alt="">
+    </figure>
+  </section>
+
+  <section class="plan">
+    <article class="paper start-card">
+      <span class="tag">오늘의 한 판</span>
+      <h2>문장 <b id="l-count">12</b>개</h2>
+      <p id="l-reason" class="reason">처음이라 쉬운 문장부터 시작해요. 첫 문장은 연습이에요.</p>
+      <button id="btn-start" class="felt-cta coral" type="button"><span>시작</span><i class="disc" aria-hidden="true"></i></button>
+      <div class="start-options">
+        <button id="slow-toggle" class="chip-btn" type="button" aria-pressed="false">천천히 모드 꺼짐</button>
+        <span class="fine" id="best-line" hidden></span>
+      </div>
+      <p id="storage-note" class="fine" hidden></p>
+    </article>
+    <section class="paper how" aria-labelledby="how-title">
+      <span class="tag" id="how-title">하는 방법</span>
+      <ol class="how-steps">
+        <li><b class="num">1</b><strong>문장 읽기</strong><span>위에 빈칸이 있는 문장이 나와요.</span></li>
+        <li><b class="num">2</b><strong>맞는 조각 베기</strong><span>튀어 오르는 낱말 넷 중 빈칸에 맞는 것을 그어 베요.</span></li>
+        <li><b class="num">3</b><strong>빈칸 채우기</strong><span>맞으면 빈칸이 채워지고, 틀리면 정답과 이유가 나와요.</span></li>
+      </ol>
+      <p class="fine">넓은 화면에서는 조각의 번호(1~4)를 눌러도 벨 수 있어요. 두 번 던져도 못 베면 ‘놓침’이에요.</p>
+    </section>
+  </section>
+
+  <footer class="lobby-foot">
+    <p>TOPIK I 읽기의 빈칸 채우기(34~39번: 낱말·조사·문형)와 같은 능력을 연습해요. 점수·별은 TOPIK 급수가 아니에요.</p>
+    <p>학습 기록은 이 브라우저에만 남고, 같은 주소에서 연 다른 SYNK 게임과 함께 써요. <button id="reset-learning" class="text-link" type="button">이 브라우저의 모든 게임 학습 기록 지우기</button></p>
+  </footer>
+</main>
+
+<!-- 게임 -->
+<main id="game" class="screen game" hidden>
+  <header class="topbar game-bar">
+    <img class="logo-mini" src="assets/brand/logo-lab.webp" alt="SYNK LAB" width="78" height="24">
+    <strong class="game-title">빈칸 베기</strong>
+    <div class="hud" aria-live="off">
+      <span class="pill"><small>문장</small><b id="g-count">1 / 12</b></span>
+      <span class="pill"><small>점수</small><b id="g-score">0</b></span>
+      <span class="pill combo" id="g-combo-wrap"><small>연속</small><b id="g-combo">0</b></span>
+    </div>
+    <button id="pause" class="disc-btn" type="button" aria-label="잠깐 멈춤"><span aria-hidden="true">Ⅱ</span></button>
+  </header>
+
+  <section class="arena" id="arena" aria-label="베기 판">
+    <canvas id="trail" class="trail" aria-hidden="true"></canvas>
+    <article class="sentence paper" id="sentence">
+      <span class="kicker ko" id="s-kicker">1번 문장</span>
+      <p id="s-text" class="s-text"></p>
+    </article>
+    <p class="tip" id="tip" hidden></p>
+    <p class="pop" id="pop" hidden aria-hidden="true"></p>
+    <section class="explain paper" id="explain" hidden>
+      <span class="kicker ko" id="x-kicker">정답</span>
+      <p class="x-sentence" id="x-sentence"></p>
+      <p class="x-why"><b>왜?</b> <span id="x-why"></span></p>
+      <button id="btn-next" class="felt-cta coral" type="button"><span>다음 문장</span><i class="disc" aria-hidden="true"></i></button>
+    </section>
+  </section>
+</main>
+
+<!-- 결과 -->
+<main id="results" class="screen results" hidden>
+  <header class="topbar on-field">
+    <span class="logo-tag"><img src="assets/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></span>
+    <span class="kicker">ROUND COMPLETE</span>
+  </header>
+  <section class="res-hero">
+    <div>
+      <span class="kicker ko" id="r-kicker">빈칸 베기 · 한 판</span>
+      <h1 id="r-title" tabindex="-1">좋아요!</h1>
+      <p class="big"><b id="r-correct">9</b><span>/ <i id="r-total">12</i></span></p>
+      <p class="stars" id="r-stars" aria-label="별 3개 중 2개"></p>
+      <p class="r-note" id="r-note"></p>
+    </div>
+    <img class="res-mongle diecut" id="r-mongle" src="assets/brand/mongle-smile.webp" alt="">
+  </section>
+  <section class="res-grid">
+    <article class="paper log">
+      <span class="tag">이번 판의 문장</span>
+      <ol id="r-log"></ol>
+    </article>
+    <article class="paper skills">
+      <span class="tag">읽기 능력 기록</span>
+      <ul id="r-skills"></ul>
+      <p class="fine">이 브라우저에 남은 공통 학습 기록 중 ‘보기 하나 고르기’ 응답만 봐요. 놓친 문장은 평가하지 않아요. TOPIK 급수나 합격 판정이 아니에요.</p>
+    </article>
+    <article class="paper next">
+      <span class="tag">다음 판</span>
+      <p id="r-next-reason" class="reason"></p>
+      <button id="r-again" class="felt-cta coral" type="button"><span>다음 판 시작</span><i class="disc" aria-hidden="true"></i></button>
+      <div class="r-actions">
+        <button id="r-home" class="chip-btn" type="button">처음으로</button>
+        <a id="r-hub" class="chip-btn" href="/learning-hub/" hidden>다른 게임 추천 보기</a>
+      </div>
+    </article>
+  </section>
+</main>
+
+<dialog id="pause-dialog" class="paper">
+  <span class="kicker">PAUSED</span>
+  <h2>잠깐 쉬어요</h2>
+  <p>조각이 멈춰 있어요. 이어서 하거나 처음으로 돌아갈 수 있어요.</p>
+  <div class="dialog-actions">
+    <button id="resume" class="felt-cta coral" type="button"><span>이어 하기</span><i class="disc" aria-hidden="true"></i></button>
+    <div class="dialog-toggles">
+      <button class="chip-btn" type="button" data-sound-toggle data-sound-label aria-pressed="true">소리 켜짐</button>
+      <button class="chip-btn" type="button" id="slow-toggle-2" aria-pressed="false">천천히 모드 꺼짐</button>
+    </div>
+    <button id="quit" class="chip-btn wide" type="button">처음으로</button>
+  </div>
+</dialog>
+</body>
+</html>

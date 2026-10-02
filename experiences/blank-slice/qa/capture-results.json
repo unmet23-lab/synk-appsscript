@@ -1,0 +1,722 @@
+{
+ "url": "http://127.0.0.1:5217/",
+ "at": "2026-10-02T12:26:52.942Z",
+ "views": {
+  "desktop": {
+   "shots": [
+    "desktop_01_lobby.png",
+    "desktop_01_lobby_full.png",
+    "desktop_02_practice.png",
+    "desktop_03_practice_sliced.png",
+    "desktop_04_correct.png",
+    "desktop_06_wrong_explain.png",
+    "desktop_05_missed.png",
+    "desktop_07_results.png",
+    "desktop_07_results_full.png",
+    "desktop_08_pause.png"
+   ],
+   "overflow": {
+    "lobby": {
+     "inner": 1440,
+     "scroll": 1440
+    },
+    "game": {
+     "inner": 1440,
+     "scroll": 1440
+    },
+    "results": {
+     "inner": 1440,
+     "scroll": 1440
+    }
+   },
+   "checks": {
+    "outcomes": [
+     {
+      "k": 0,
+      "plan": "right",
+      "id": "p01",
+      "got": true,
+      "choice": "을",
+      "index": 0
+     },
+     {
+      "k": 1,
+      "plan": "wrong",
+      "id": "v01",
+      "got": false,
+      "choice": "옷",
+      "index": 1
+     },
+     {
+      "k": 2,
+      "plan": "miss",
+      "got": null
+     },
+     {
+      "k": 3,
+      "plan": "right",
+      "id": "v02",
+      "got": true,
+      "choice": "입어요",
+      "index": 3
+     },
+     {
+      "k": 4,
+      "plan": "right",
+      "id": "v03",
+      "got": true,
+      "choice": "개",
+      "index": 4
+     },
+     {
+      "k": 5,
+      "plan": "right",
+      "id": "p03",
+      "got": true,
+      "choice": "이",
+      "index": 5
+     },
+     {
+      "k": 6,
+      "plan": "right",
+      "id": "t01",
+      "got": true,
+      "choice": "쉬었어요",
+      "index": 6
+     },
+     {
+      "k": 7,
+      "plan": "right",
+      "id": "v04",
+      "got": true,
+      "choice": "비싸요",
+      "index": 7
+     },
+     {
+      "k": 8,
+      "plan": "right",
+      "id": "p04",
+      "got": true,
+      "choice": "로",
+      "index": 8
+     },
+     {
+      "k": 9,
+      "plan": "right",
+      "id": "v05",
+      "got": true,
+      "choice": "병원",
+      "index": 9
+     },
+     {
+      "k": 10,
+      "plan": "right",
+      "id": "p05",
+      "got": true,
+      "choice": "와",
+      "index": 10
+     },
+     {
+      "k": 11,
+      "plan": "right",
+      "id": "v06",
+      "got": true,
+      "choice": "우산",
+      "index": 11
+     }
+    ],
+    "practiceDone": true,
+    "results": {
+     "correct": "10",
+     "total": "12",
+     "note": "점수 1600점 · 최고 9연속 · 놓친 문장 1개",
+     "next": "조사·문형 읽기는 아직 기록이 적어요. 짧게 확인해 봐요. 다음 판에는 조금 어려운 조사·문형 읽기 문장이 먼저 나와요.",
+     "skills": [
+      "낱말 뜻 읽기이번 5/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 6개 중 5개 맞힘",
+      "조사·문형 읽기 다음 연습이번 5/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 5개 중 5개 맞힘"
+     ],
+     "log": [
+      "ok",
+      "ko",
+      "miss",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok"
+     ]
+    },
+    "atlas": {
+     "independent": 11,
+     "storage": true
+    },
+    "progress": {
+     "v": 1,
+     "plays": 1,
+     "practiced": true,
+     "slow": false,
+     "best": {
+      "score": 1600,
+      "correct": 10,
+      "total": 12
+     }
+    },
+    "secondRound": [
+     "e01",
+     "v07",
+     "v08",
+     "v09",
+     "a01",
+     "a02",
+     "e03",
+     "e05",
+     "e07",
+     "e09",
+     "e10",
+     "p06"
+    ]
+   },
+   "errors": []
+  },
+  "mobile": {
+   "shots": [
+    "mobile_01_lobby.png",
+    "mobile_01_lobby_full.png",
+    "mobile_02_practice.png",
+    "mobile_03_practice_sliced.png",
+    "mobile_04_correct.png",
+    "mobile_06_wrong_explain.png",
+    "mobile_05_missed.png",
+    "mobile_07_results.png",
+    "mobile_07_results_full.png",
+    "mobile_08_pause.png"
+   ],
+   "overflow": {
+    "lobby": {
+     "inner": 390,
+     "scroll": 390
+    },
+    "game": {
+     "inner": 390,
+     "scroll": 390
+    },
+    "results": {
+     "inner": 390,
+     "scroll": 390
+    }
+   },
+   "checks": {
+    "outcomes": [
+     {
+      "k": 0,
+      "plan": "right",
+      "id": "p01",
+      "got": true,
+      "choice": "을",
+      "index": 0
+     },
+     {
+      "k": 1,
+      "plan": "wrong",
+      "id": "v01",
+      "got": false,
+      "choice": "옷",
+      "index": 1
+     },
+     {
+      "k": 2,
+      "plan": "miss",
+      "got": null
+     },
+     {
+      "k": 3,
+      "plan": "right",
+      "id": "v02",
+      "got": true,
+      "choice": "입어요",
+      "index": 3
+     },
+     {
+      "k": 4,
+      "plan": "right",
+      "id": "v03",
+      "got": true,
+      "choice": "개",
+      "index": 4
+     },
+     {
+      "k": 5,
+      "plan": "right",
+      "id": "p03",
+      "got": true,
+      "choice": "이",
+      "index": 5
+     },
+     {
+      "k": 6,
+      "plan": "right",
+      "id": "t01",
+      "got": true,
+      "choice": "쉬었어요",
+      "index": 6
+     },
+     {
+      "k": 7,
+      "plan": "right",
+      "id": "v04",
+      "got": true,
+      "choice": "비싸요",
+      "index": 7
+     },
+     {
+      "k": 8,
+      "plan": "right",
+      "id": "p04",
+      "got": true,
+      "choice": "로",
+      "index": 8
+     },
+     {
+      "k": 9,
+      "plan": "right",
+      "id": "v05",
+      "got": true,
+      "choice": "병원",
+      "index": 9
+     },
+     {
+      "k": 10,
+      "plan": "right",
+      "id": "p05",
+      "got": true,
+      "choice": "와",
+      "index": 10
+     },
+     {
+      "k": 11,
+      "plan": "right",
+      "id": "v06",
+      "got": true,
+      "choice": "우산",
+      "index": 11
+     }
+    ],
+    "practiceDone": true,
+    "results": {
+     "correct": "10",
+     "total": "12",
+     "note": "점수 1600점 · 최고 9연속 · 놓친 문장 1개",
+     "next": "조사·문형 읽기는 아직 기록이 적어요. 짧게 확인해 봐요. 다음 판에는 조금 어려운 조사·문형 읽기 문장이 먼저 나와요.",
+     "skills": [
+      "낱말 뜻 읽기이번 5/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 6개 중 5개 맞힘",
+      "조사·문형 읽기 다음 연습이번 5/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 5개 중 5개 맞힘"
+     ],
+     "log": [
+      "ok",
+      "ko",
+      "miss",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok"
+     ]
+    },
+    "atlas": {
+     "independent": 11,
+     "storage": true
+    },
+    "progress": {
+     "v": 1,
+     "plays": 1,
+     "practiced": true,
+     "slow": false,
+     "best": {
+      "score": 1600,
+      "correct": 10,
+      "total": 12
+     }
+    },
+    "secondRound": [
+     "e01",
+     "v07",
+     "v08",
+     "v09",
+     "a01",
+     "a02",
+     "e03",
+     "e05",
+     "e07",
+     "e09",
+     "e10",
+     "p06"
+    ]
+   },
+   "errors": []
+  },
+  "small": {
+   "shots": [
+    "small_01_lobby.png",
+    "small_02_practice.png",
+    "small_03_practice_sliced.png",
+    "small_04_correct.png",
+    "small_06_wrong_explain.png",
+    "small_05_missed.png",
+    "small_07_results.png"
+   ],
+   "overflow": {
+    "lobby": {
+     "inner": 320,
+     "scroll": 320
+    },
+    "game": {
+     "inner": 320,
+     "scroll": 320
+    },
+    "results": {
+     "inner": 320,
+     "scroll": 320
+    }
+   },
+   "checks": {
+    "outcomes": [
+     {
+      "k": 0,
+      "plan": "right",
+      "id": "p01",
+      "got": true,
+      "choice": "을",
+      "index": 0
+     },
+     {
+      "k": 1,
+      "plan": "wrong",
+      "id": "v01",
+      "got": false,
+      "choice": "빵",
+      "index": 1
+     },
+     {
+      "k": 2,
+      "plan": "miss",
+      "got": null
+     },
+     {
+      "k": 3,
+      "plan": "right",
+      "id": "v02",
+      "got": true,
+      "choice": "입어요",
+      "index": 3
+     },
+     {
+      "k": 4,
+      "plan": "right",
+      "id": "v03",
+      "got": true,
+      "choice": "개",
+      "index": 4
+     },
+     {
+      "k": 5,
+      "plan": "right",
+      "id": "p03",
+      "got": true,
+      "choice": "이",
+      "index": 5
+     },
+     {
+      "k": 6,
+      "plan": "right",
+      "id": "t01",
+      "got": true,
+      "choice": "쉬었어요",
+      "index": 6
+     },
+     {
+      "k": 7,
+      "plan": "right",
+      "id": "v04",
+      "got": true,
+      "choice": "비싸요",
+      "index": 7
+     },
+     {
+      "k": 8,
+      "plan": "right",
+      "id": "p04",
+      "got": true,
+      "choice": "로",
+      "index": 8
+     },
+     {
+      "k": 9,
+      "plan": "right",
+      "id": "v05",
+      "got": true,
+      "choice": "병원",
+      "index": 9
+     },
+     {
+      "k": 10,
+      "plan": "right",
+      "id": "p05",
+      "got": true,
+      "choice": "와",
+      "index": 10
+     },
+     {
+      "k": 11,
+      "plan": "right",
+      "id": "v06",
+      "got": true,
+      "choice": "우산",
+      "index": 11
+     }
+    ],
+    "practiceDone": true,
+    "retries": 1,
+    "results": {
+     "correct": "10",
+     "total": "12",
+     "note": "점수 1600점 · 최고 9연속 · 놓친 문장 1개",
+     "next": "조사·문형 읽기는 아직 기록이 적어요. 짧게 확인해 봐요. 다음 판에는 조금 어려운 조사·문형 읽기 문장이 먼저 나와요.",
+     "skills": [
+      "낱말 뜻 읽기이번 5/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 6개 중 5개 맞힘",
+      "조사·문형 읽기 다음 연습이번 5/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 5개 중 5개 맞힘"
+     ],
+     "log": [
+      "ok",
+      "ko",
+      "miss",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok"
+     ]
+    },
+    "atlas": {
+     "independent": 11,
+     "storage": true
+    },
+    "progress": {
+     "v": 1,
+     "plays": 1,
+     "practiced": true,
+     "slow": false,
+     "best": {
+      "score": 1600,
+      "correct": 10,
+      "total": 12
+     }
+    },
+    "secondRound": [
+     "e01",
+     "v07",
+     "v08",
+     "v09",
+     "a01",
+     "a02",
+     "e03",
+     "e05",
+     "e07",
+     "e09",
+     "e10",
+     "p06"
+    ]
+   },
+   "errors": []
+  },
+  "mobile-reduced": {
+   "shots": [
+    "mobile-reduced_01_lobby.png",
+    "mobile-reduced_02_practice.png",
+    "mobile-reduced_03_practice_sliced.png",
+    "mobile-reduced_04_correct.png",
+    "mobile-reduced_06_wrong_explain.png",
+    "mobile-reduced_05_missed.png",
+    "mobile-reduced_07_results.png"
+   ],
+   "overflow": {
+    "lobby": {
+     "inner": 390,
+     "scroll": 390
+    },
+    "game": {
+     "inner": 390,
+     "scroll": 390
+    },
+    "results": {
+     "inner": 390,
+     "scroll": 390
+    }
+   },
+   "checks": {
+    "outcomes": [
+     {
+      "k": 0,
+      "plan": "right",
+      "id": "p01",
+      "got": true,
+      "choice": "을",
+      "index": 0
+     },
+     {
+      "k": 1,
+      "plan": "wrong",
+      "id": "v01",
+      "got": false,
+      "choice": "옷",
+      "index": 1
+     },
+     {
+      "k": 2,
+      "plan": "miss",
+      "got": null
+     },
+     {
+      "k": 3,
+      "plan": "right",
+      "id": "v02",
+      "got": true,
+      "choice": "입어요",
+      "index": 3
+     },
+     {
+      "k": 4,
+      "plan": "right",
+      "id": "v03",
+      "got": true,
+      "choice": "개",
+      "index": 4
+     },
+     {
+      "k": 5,
+      "plan": "right",
+      "id": "p03",
+      "got": true,
+      "choice": "이",
+      "index": 5
+     },
+     {
+      "k": 6,
+      "plan": "right",
+      "id": "t01",
+      "got": true,
+      "choice": "쉬었어요",
+      "index": 6
+     },
+     {
+      "k": 7,
+      "plan": "right",
+      "id": "v04",
+      "got": true,
+      "choice": "비싸요",
+      "index": 7
+     },
+     {
+      "k": 8,
+      "plan": "right",
+      "id": "p04",
+      "got": true,
+      "choice": "로",
+      "index": 8
+     },
+     {
+      "k": 9,
+      "plan": "right",
+      "id": "v05",
+      "got": true,
+      "choice": "병원",
+      "index": 9
+     },
+     {
+      "k": 10,
+      "plan": "right",
+      "id": "p05",
+      "got": true,
+      "choice": "와",
+      "index": 10
+     },
+     {
+      "k": 11,
+      "plan": "right",
+      "id": "v06",
+      "got": true,
+      "choice": "우산",
+      "index": 11
+     }
+    ],
+    "practiceDone": true,
+    "results": {
+     "correct": "10",
+     "total": "12",
+     "note": "점수 1600점 · 최고 9연속 · 놓친 문장 1개",
+     "next": "조사·문형 읽기는 아직 기록이 적어요. 짧게 확인해 봐요. 다음 판에는 조금 어려운 조사·문형 읽기 문장이 먼저 나와요.",
+     "skills": [
+      "낱말 뜻 읽기이번 5/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 6개 중 5개 맞힘",
+      "조사·문형 읽기 다음 연습이번 5/6쉬운 문장: 최근 혼자 해냈어요 · 조금 어려운 문장: 아직 기록이 적어요 · 혼자 푼 새 문항 5개 중 5개 맞힘"
+     ],
+     "log": [
+      "ok",
+      "ko",
+      "miss",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok"
+     ]
+    },
+    "atlas": {
+     "independent": 11,
+     "storage": true
+    },
+    "progress": {
+     "v": 1,
+     "plays": 1,
+     "practiced": true,
+     "slow": false,
+     "best": {
+      "score": 1600,
+      "correct": 10,
+      "total": 12
+     }
+    },
+    "secondRound": [
+     "e01",
+     "v07",
+     "v08",
+     "v09",
+     "a01",
+     "a02",
+     "e03",
+     "e05",
+     "e07",
+     "e09",
+     "e10",
+     "p06"
+    ],
+    "runningAnimations": 0
+   },
+   "errors": []
+  }
+ }
+}
