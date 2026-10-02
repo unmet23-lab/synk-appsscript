@@ -9,6 +9,7 @@ GPT와 Claude가 함께 쓰는 저장소 안내다. `CLAUDE.md`는 이 파일을
 - Apps Script에는 `Code.js`·`엔진_synkbrief.js`만 올라가고 두 파일은 전역 이름공간을 공유한다(2026-10-02 학원 운영 시스템 삭제). `엔진_콘텐츠AI.js`는 Strata 문법 뱅크의 원천이라 저장소에만 둔다. 도구는 `tools/`, 관련 시험은 `node --test tests/<파일>`이다.
 - Apps Script 라이브 배포가 요청됐을 때만 `deploy`의 실행 정보를 사용한다. `clasp pull`로 작업본을 덮어쓰지 않는다.
 - 작업 분담·재개·검토·예약은 현재 공식 앱·CLI의 기능을 먼저 쓴다. 과거 `codex-build`·`codex-review` 절차는 일반 작업의 선행 조건이 아니다.
+- 공용 작업본에서 git이 `index.lock` 때문에 멈추면 몇 초 뒤 다시 한다. 10초 넘게 남으면 `node tools/git잠금.js`로 주인을 가리고, `--정리`는 주인 없는 잠금만 지운다.
 
 ## 해당 파일을 다룰 때
 
