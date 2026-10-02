@@ -193,3 +193,14 @@ test('less help is offered after quiet successes, accepted one step at a time, a
   assert.equal(accepted.line.text, '말씀하신 대로 도움을 조금 늦게 보여 드릴게요.');
   assert.equal(later.settings().values.hint, 'normal');
 });
+
+test('a game passes the settings the person chose; a lock the content set for itself still wins', () => {
+  const storage = memoryStorage(), clock = clockFrom('2026-10-02T09:00:00.000Z');
+  const coach = learning.createGame({ gameId: 'g', map, storage, clock });
+  assert.equal(coach.live(SPEC, { presentation: { support: 'step' } }).settings().values.hint, 'early');
+  assert.equal(coach.live(SPEC, { presentation: { support: 'independent' } }).settings().values.hint, 'late');
+  assert.equal(coach.live(SPEC, { presentation: { support: 'choose' } }).settings().values.hint, 'normal');
+  assert.equal(coach.live(SPEC, { presentation: { support: 'step' }, declared: { knobs: { hint: 2 } } }).settings().values.hint, 'late');
+  assert.equal(coach.live(SPEC, { presentation: { support: 'step' }, declared: { mode: 'fixed' } }).settings().mode, 'fixed');
+  assert.throws(() => coach.live(SPEC, { presentation: { minutes: 5 } }), /presentation accepts only/);
+});

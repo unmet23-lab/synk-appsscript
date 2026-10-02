@@ -294,3 +294,68 @@ test('the same inputs give the same decisions', () => {
   play(a, sequence); play(b, sequence);
   assert.deepEqual(a.trace(), b.trace());
 });
+
+// The settings a person chose (Core personalization) as this content's declared locks (§9).
+const Personalization = require('../atlas/personalization');
+const chosen = () => Flow.defineContent({ id: 'test.chosen', target: 0.75, knobs: [
+  { id: 'patience', kind: 'pace', values: [60, 52, 45, 38, 32], start: 2 },
+  { id: 'hint', kind: 'support', values: ['early', 'normal', 'late'], start: 1 },
+  { id: 'textSize', kind: 'content', follows: 'declared', values: ['standard', 'large'], start: 0 },
+  { id: 'motion', kind: 'content', follows: 'declared', values: ['full', 'reduced'], start: 0 },
+  { id: 'text', kind: 'content', follows: 'declared', values: ['large', 'standard'], start: 1 },
+] });
+
+test('a chosen help style holds the help knob; "choose" leaves help to the round', () => {
+  assert.deepEqual(Flow.declaredFrom(chosen(), { support: 'step' }).knobs, { hint: 0 });
+  assert.deepEqual(Flow.declaredFrom(chosen(), { support: 'independent' }).knobs, { hint: 2 });
+  assert.deepEqual(Flow.declaredFrom(chosen(), { support: 'choose' }).knobs, {});
+  assert.deepEqual(Flow.declaredFrom(chosen(), {}).knobs, {});
+  // Step-by-step help stays the most help even when every answer is right ...
+  const step = Flow.start({ spec: chosen(), now: NOW, declared: Flow.declaredFrom(chosen(), { support: 'step' }) });
+  play(step, Array(16).fill({ outcome: 'success', pressure: 0.2 }));
+  assert.equal(step.settings().values.hint, 'early');
+  assert.ok(step.changes().some(change => change.knob === 'patience'), 'the rest of the content still follows the person');
+  assert.equal(step.lessHelpAllowed(), false, 'less help is not even offered against the chosen style');
+  assert.equal(step.acceptLessHelp(), null);
+  // ... and working alone is not overruled by more help when answers miss.
+  const alone = Flow.start({ spec: chosen(), now: NOW, declared: Flow.declaredFrom(chosen(), { support: 'independent' }) });
+  play(alone, Array(12).fill({ outcome: 'fail', pressure: 0.9 }));
+  assert.equal(alone.settings().values.hint, 'late');
+  assert.ok(alone.changes().length > 0, 'it eases elsewhere instead');
+});
+
+test('text size, motion and explanation set the declared knob of the same name, nothing else', () => {
+  const declared = Flow.declaredFrom(chosen(), { textSize: 'large', motion: 'reduced', explanation: 'brief', audio: 'off' });
+  assert.deepEqual(declared.knobs, { textSize: 1, motion: 1 });
+  const run = Flow.start({ spec: chosen(), now: NOW, declared });
+  assert.equal(run.settings().values.textSize, 'large');
+  assert.equal(run.settings().values.motion, 'reduced');
+  assert.equal(run.settings().values.text, 'standard', 'a declared knob with another name keeps the content default');
+  // A content that has no such knob simply has nothing to hold.
+  assert.deepEqual(Flow.declaredFrom(rush(), { textSize: 'large', support: 'choose' }).knobs, {});
+});
+
+test('only presentation settings are accepted, in the personalization adapter vocabulary', () => {
+  for (const extra of [{ minutes: 10 }, { goal: 'study' }, { reasons: ['travel'] }, { age: 40 }, { gender: 'f' }]) {
+    assert.throws(() => Flow.declaredFrom(chosen(), extra), /presentation accepts only/);
+  }
+  assert.throws(() => Flow.declaredFrom(chosen(), { support: 'maybe' }), /invalid presentation support/);
+  assert.throws(() => Flow.declaredFrom(chosen(), { textSize: 'huge' }), /invalid presentation textSize/);
+  for (const bad of [null, [], 'step']) assert.throws(() => Flow.declaredFrom(chosen(), bad), /presentation accepts only/);
+  for (const key of Object.keys(Flow.PRESENTATION)) assert.deepEqual([...Flow.PRESENTATION[key]], [...Personalization.OPTIONS[key]], key);
+});
+
+test('from a remembered profile to the round: the person’s own choice, or a fitting default for a first time', () => {
+  const scope = { personId: 'person-1', productId: 'atlas-lab', contextId: 'numbers', domain: 'LAB' };
+  const at = '2026-10-02T09:00:00.000Z';
+  const pick = values => {
+    const profile = Personalization.updateProfile(Personalization.createProfile({ scope, at }), { values, consent: true }, at);
+    return Personalization.selectPersonalization({ profile, scope, at, experienceId: 'atlas-lab.numbers',
+      candidates: [{ id: 'atlas-lab.numbers', minutes: 3, pace: 'short' }] }).presentation;
+  };
+  const values = presentation => Flow.start({ spec: chosen(), now: NOW, declared: Flow.declaredFrom(chosen(), presentation) }).settings().values;
+  assert.equal(values(pick({ support: 'independent', textSize: 'large' })).hint, 'late');
+  assert.equal(values(pick({ support: 'independent', textSize: 'large' })).textSize, 'large');
+  assert.equal(values(pick({ experience: 'new' })).hint, 'early', 'a first-timer who did not choose gets step-by-step help');
+  assert.equal(values(pick({ experience: 'practiced' })).hint, 'normal', 'otherwise help is left to the round');
+});

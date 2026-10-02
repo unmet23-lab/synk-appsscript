@@ -137,6 +137,38 @@
     return { content: challenge(spec, indices, 'content') + logit(targets(spec, spec.target).content), level: spec.items.levels[level], basis: 'practice-summary' };
   }
 
+  /* The settings a person chose (Core personalization, `selectPersonalization().presentation`)
+   * as this content's declared locks, design 아틀라스_순간맞춤 §9. The vocabulary is the
+   * personalization adapter's; a test keeps the two equal.
+   * support 'step' holds every adjustable help knob at its most help (the first value),
+   * 'independent' at its least, and 'choose' leaves help to the round, where less help is
+   * only offered and accepted. textSize, motion and explanation set the content's
+   * `follows: 'declared'` knob of the same id when it lists that value. audio belongs to
+   * choosing the session, not to the round. Nothing else is a presentation setting: minutes,
+   * goals, reasons, age or any demographic are refused here. */
+  const PRESENTATION = Object.freeze({
+    support: Object.freeze(['choose', 'step', 'independent']),
+    textSize: Object.freeze(['standard', 'large']),
+    explanation: Object.freeze(['brief', 'standard', 'detailed']),
+    motion: Object.freeze(['full', 'reduced']),
+    audio: Object.freeze(['off', 'available']),
+  });
+  const FOLLOWED = ['textSize', 'motion', 'explanation'];
+  function declaredFrom(input, presentation) {
+    const spec = defineContent(input);
+    if (!presentation || typeof presentation !== 'object' || Array.isArray(presentation)
+      || Object.keys(presentation).some(key => !Object.hasOwn(PRESENTATION, key))) fail(`presentation accepts only ${Object.keys(PRESENTATION).join(', ')}`);
+    for (const [key, value] of Object.entries(presentation)) if (value != null && !PRESENTATION[key].includes(value)) fail(`invalid presentation ${key}`);
+    const support = presentation.support ?? 'choose', knobs = {};
+    for (const knob of spec.knobs) {
+      if (knob.follows === 'declared') {
+        const index = FOLLOWED.includes(knob.id) && presentation[knob.id] != null ? knob.values.indexOf(presentation[knob.id]) : -1;
+        if (index >= 0) knobs[knob.id] = index;
+      } else if (knob.kind === 'support' && support !== 'choose') knobs[knob.id] = support === 'step' ? 0 : knob.values.length - 1;
+    }
+    return { knobs };
+  }
+
   const START = ['spec', 'memory', 'prior', 'declared', 'condition', 'arm', 'now'];
   function start(options = {}) {
     // Nothing else is accepted: no profile, age, gender, nationality or other demographic input.
@@ -374,5 +406,5 @@
         indices: Object.fromEntries(spec.knobs.map(k => [k.id, adaptive && !locked(k) ? indices[k.id] : reached[k.id]])), latencies: [...latencies] }),
     };
   }
-  return Object.freeze({ VERSION, KINDS, OUTCOMES, MODES, CONDITIONS, DIMENSIONS, ITEM, defineContent, priorFromSummary, start, challenge, sigmoid, logit });
+  return Object.freeze({ VERSION, KINDS, OUTCOMES, MODES, CONDITIONS, DIMENSIONS, ITEM, PRESENTATION, defineContent, priorFromSummary, declaredFrom, start, challenge, sigmoid, logit });
 });

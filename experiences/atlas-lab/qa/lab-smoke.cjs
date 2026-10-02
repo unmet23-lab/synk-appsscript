@@ -41,6 +41,38 @@ const base = process.env.SYNK_QA_BASE || 'http://127.0.0.1:4291';
     result.tryAim = { target: await page.locator('#target').textContent(), expected: await page.locator('#expected').textContent() };
     assert.equal(result.tryAim.target, '75%');
     assert.match(result.tryAim.expected, /^\d{1,3}%$/);
+    // A chosen help style holds the hint knob (Flow.declaredFrom); the rest still follows the answers.
+    const answerTen = async () => {
+      for (let i = 0; i < 10; i += 1) {
+        await page.locator('.tile').first().waitFor();
+        const values = await page.locator('.tile').allTextContents();
+        await page.locator('.tile', { hasText: new RegExp(`^${Math.max(...values.map(Number))}$`) }).first().click();
+        await page.waitForTimeout(700);
+      }
+    };
+    const hintKnob = () => page.locator('#knobs div', { hasText: '힌트' }).locator('dd').textContent();
+    await page.locator('#try-support').selectOption('step');
+    await page.locator('#try-start').click();
+    await page.locator('.tile').first().waitFor();
+    result.step = { hintedAtOnce: await page.locator('#tiles').evaluate(n => n.classList.contains('hinted')), knob: await hintKnob() };
+    await answerTen();
+    result.step.run = await page.evaluate(() => window.synkAtlasLab.run());
+    result.step.line = await page.locator('#try-line').textContent();
+    assert.equal(result.step.hintedAtOnce, true);
+    assert.equal(result.step.knob, '바로 보여 줌 · 고른 대로');
+    assert.equal(result.step.run.settings.values.hint, '바로 보여 줌');
+    assert.ok(result.step.run.changes.every(c => c.knob !== 'hint'), 'the chosen help style is not moved');
+    assert.match(result.step.line, /힌트는 고른 도움 방식대로 두었어요/);
+    await page.locator('#try-support').selectOption('independent');
+    await page.locator('#try-start').click();
+    await page.locator('.tile').first().waitFor();
+    result.alone = { knob: await hintKnob(), seconds: (await page.evaluate(() => window.synkAtlasLab.run())).settings.values.seconds };
+    await page.waitForTimeout(Math.round(result.alone.seconds * 600));
+    result.alone.hintedAfterMoreThanHalf = await page.locator('#tiles').evaluate(n => n.classList.contains('hinted'));
+    await answerTen();
+    assert.equal(result.alone.knob, '보여 주지 않음 · 고른 대로');
+    assert.equal(result.alone.hintedAfterMoreThanHalf, false);
+    await page.locator('#try-support').selectOption('choose');
     // Consultation: only questions that change the advice are asked.
     await page.locator('#uses .chip', { hasText: 'AI와 대화' }).click();
     result.webAsk = await page.locator('.ask-card h3').textContent().catch(() => null);

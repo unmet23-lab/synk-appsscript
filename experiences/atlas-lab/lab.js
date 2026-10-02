@@ -60,12 +60,17 @@ document.querySelectorAll('[data-content]').forEach(button => button.addEventLis
 renderPeople('cafe');
 
 // ---------- ② Try it: pick the bigger number ----------
-const NUMBERS = Flow.defineContent({ id: 'atlas-lab.numbers', version: 1, target: 0.75, items: { levels: [1, 2, 3], weight: 2 }, knobs: [
+const NUMBERS = Flow.defineContent({ id: 'atlas-lab.numbers', version: 2, target: 0.75, items: { levels: [1, 2, 3], weight: 2 }, knobs: [
   { id: 'choices', kind: 'content', label: '고를 수', values: [2, 3, 4], start: 0 },
-  { id: 'seconds', kind: 'pace', label: '제한 시간', values: [8, 6.5, 5, 4, 3.2, 2.6], start: 2 }] });
-const WORDS = { 'raise.pace': '조금 더 빠르게 해 볼게요.', 'raise.content': '조금 더 헷갈리는 수도 섞을게요.', 'ease.pace': '시간을 조금 더 드릴게요.', 'ease.content': '조금 더 쉬운 수로 갈게요.' };
+  { id: 'seconds', kind: 'pace', label: '제한 시간', values: [8, 6.5, 5, 4, 3.2, 2.6], start: 2 },
+  { id: 'hint', kind: 'support', label: '힌트', values: ['바로 보여 줌', '절반 지나면', '보여 주지 않음'], start: 1 }] });
+const WORDS = { 'raise.pace': '조금 더 빠르게 해 볼게요.', 'raise.content': '조금 더 헷갈리는 수도 섞을게요.', 'ease.pace': '시간을 조금 더 드릴게요.', 'ease.content': '조금 더 쉬운 수로 갈게요.', 'ease.support': '힌트를 조금 더 일찍 보여 드릴게요.' };
 const LEVEL_TEXT = { 1: '차이가 큰 수', 2: '차이가 보통인 수', 3: '세 자리, 차이가 작은 수' };
+// When the hint (compare the first digits) appears, as a share of the time limit.
+const HINT_AFTER = { '바로 보여 줌': 0, '절반 지나면': 0.5, '보여 주지 않음': Infinity };
 let run = null, round = 0, current = null, timer = null, started = 0;
+// Knobs held by the help style the person chose (Core personalization vocabulary, Flow.declaredFrom).
+let chosen = { knobs: {} };
 const random = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
 function numbers(level, count) {
   const out = new Set();
@@ -82,8 +87,9 @@ function numbers(level, count) {
 function showEngine() {
   const s = run.settings();
   $('knobs').replaceChildren(...NUMBERS.knobs.map(knob => {
-    const value = s.values[knob.id], text = knob.id === Flow.ITEM ? LEVEL_TEXT[value] : knob.id === 'seconds' ? `${value}초` : `${value}개`;
-    return el('div', {}, el('dt', { text: knob.id === Flow.ITEM ? '숫자 차이' : knob.label }), el('dd', { text }));
+    const value = s.values[knob.id], text = knob.id === Flow.ITEM ? LEVEL_TEXT[value] : knob.id === 'seconds' ? `${value}초` : knob.id === 'hint' ? value : `${value}개`;
+    const held = Object.hasOwn(chosen.knobs, knob.id) ? ' · 고른 대로' : '';
+    return el('div', {}, el('dt', { text: knob.id === Flow.ITEM ? '숫자 차이' : knob.label }), el('dd', { text: text + held }));
   }));
   // The aim is the content's; the expectation is the engine's current estimate, not a score.
   $('target').textContent = s.adaptive ? `${Math.round(NUMBERS.target * 100)}%` : '맞추지 않음';
@@ -94,22 +100,32 @@ function nextRound() {
   if (round >= 10) {
     $('tiles').replaceChildren(); $('timer-fill').style.transform = 'scaleX(0)';
     const changes = run.changes().filter(c => c.phase === 'response').length;
-    $('try-line').textContent = run.settings().adaptive ? `열 번 중 ${changes}번 설정을 바꿨어요. 다시 하면 처음부터 맞춰요.` : '정해진 설정으로 열 번 답했어요. 설정은 그대로였어요.';
+    const held = Object.hasOwn(chosen.knobs, 'hint') ? ' 힌트는 고른 도움 방식대로 두었어요.' : '';
+    $('try-line').textContent = run.settings().adaptive ? `열 번 중 ${changes}번 설정을 바꿨어요.${held} 다시 하면 처음부터 맞춰요.` : `정해진 설정으로 열 번 답했어요. 설정은 그대로였어요.${held}`;
     $('try-start').hidden = false; return;
   }
   round += 1;
-  const s = run.settings(), level = s.level, count = s.values.choices, seconds = s.values.seconds;
+  const s = run.settings(), level = s.level, count = s.values.choices, seconds = s.values.seconds, hintAfter = HINT_AFTER[s.values.hint];
   const set = numbers(level, count), answer = Math.max(...set);
-  current = { answer, seconds, level, done: false };
+  current = { answer, seconds, level, done: false, hinted: false };
+  $('tiles').classList.remove('hinted');
   $('tiles').replaceChildren(...set.map(value => {
-    const b = el('button', { type: 'button', class: 'tile', text: String(value) });
+    const digits = String(value);
+    const b = el('button', { type: 'button', class: 'tile' }, el('b', { class: 'lead-digit', text: digits[0] }), digits.slice(1));
     b.addEventListener('click', () => respond(value === answer ? 'success' : 'fail', b));
     return b;
   }));
+  // The hint is on screen before the answer, so that answer counts as helped (Flow `assisted`).
+  const showHint = () => {
+    if (current.hinted || current.done) return;
+    current.hinted = true; $('tiles').classList.add('hinted'); $('try-line').textContent = '앞자리부터 비교해 보세요.';
+  };
+  if (hintAfter === 0) showHint();
   started = performance.now();
   timer = setInterval(() => {
     const used = (performance.now() - started) / 1000 / seconds;
     $('timer-fill').style.transform = `scaleX(${Math.max(0, 1 - used)})`;
+    if (used >= hintAfter) showHint();
     if (used >= 1) respond('timeout');
   }, 50);
 }
@@ -118,7 +134,7 @@ function respond(outcome, button = null) {
   current.done = true; clearInterval(timer);
   const pressure = Math.min(1, (performance.now() - started) / 1000 / current.seconds);
   if (button) button.classList.add(outcome === 'success' ? 'right' : 'wrong');
-  const out = run.observe({ outcome, pressure, level: current.level, latencyMs: Math.round(performance.now() - started) });
+  const out = run.observe({ outcome, pressure, level: current.level, assisted: current.hinted, latencyMs: Math.round(performance.now() - started) });
   const line = out.change ? VellumFlow.line(out.change, { words: WORDS }) : null;
   $('try-line').textContent = line ? line.text : outcome === 'success' ? '맞아요.' : outcome === 'timeout' ? '시간이 지났어요.' : '아쉬워요. 더 큰 수가 있었어요.';
   $('history').prepend(el('li', { class: outcome, text: `${round}. ${outcome === 'success' ? '맞힘' : outcome === 'timeout' ? '시간 지남' : '틀림'}${out.change ? ` → ${out.change.direction > 0 ? '올림' : '내림'}: ${out.change.knob === Flow.ITEM ? '숫자 차이' : NUMBERS.knobs.find(k => k.id === out.change.knob).label}` : ''}` }));
@@ -126,7 +142,9 @@ function respond(outcome, button = null) {
   setTimeout(nextRound, 650);
 }
 $('try-start').addEventListener('click', () => {
-  run = Flow.start({ spec: NUMBERS, now: new Date().toISOString(), declared: $('try-fixed').checked ? { mode: 'fixed' } : {} });
+  // The chosen help style holds the hint knob; everything else still follows the answers.
+  chosen = Flow.declaredFrom(NUMBERS, { support: $('try-support').value });
+  run = Flow.start({ spec: NUMBERS, now: new Date().toISOString(), declared: $('try-fixed').checked ? { ...chosen, mode: 'fixed' } : chosen });
   round = 0; $('history').replaceChildren(); $('try-start').hidden = true; showEngine(); nextRound();
 });
 run = Flow.start({ spec: NUMBERS, now: new Date().toISOString() }); showEngine();

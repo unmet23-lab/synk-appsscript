@@ -44,8 +44,14 @@ function createFlowPort({ storage, key, clock, epoch = () => null }) {
 }
 
 function createLive({ coach, port, clock }) {
-  return function live(input, { declared = {}, skillIds = [], arm = 'adapted', condition, level = 'standard', words = {} } = {}) {
+  return function live(input, { declared = {}, presentation = null, skillIds = [], arm = 'adapted', condition, level = 'standard', words = {} } = {}) {
     const spec = Flow.defineContent(input);
+    // The settings the person chose (Core personalization) hold help and declared knobs;
+    // a lock this content set for itself (`declared.knobs`) still wins.
+    if (presentation != null) {
+      const knobs = { ...Flow.declaredFrom(spec, presentation).knobs, ...(declared && declared.knobs) };
+      if (Object.keys(knobs).length) declared = { ...declared, knobs };
+    }
     const since = port.epoch();
     const memory = port.memories().contents[spec.id] || null;
     let prior = null;

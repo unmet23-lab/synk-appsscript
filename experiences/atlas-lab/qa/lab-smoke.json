@@ -1,6 +1,6 @@
 {
   "origin": "http://127.0.0.1:4291",
-  "at": "2026-10-02T05:11:09.941Z",
+  "at": "2026-10-02T11:58:41.260Z",
   "missing": [],
   "people": {
     "cafe": [
@@ -42,12 +42,14 @@
       "values": {
         "item.difficulty": 1,
         "choices": 4,
-        "seconds": 4
+        "seconds": 4,
+        "hint": "절반 지나면"
       },
       "indices": {
         "item.difficulty": 0,
         "choices": 2,
-        "seconds": 3
+        "seconds": 3,
+        "hint": 1
       },
       "expected": 0.83,
       "level": 1
@@ -94,6 +96,65 @@
   "tryAim": {
     "target": "75%",
     "expected": "83%"
+  },
+  "step": {
+    "hintedAtOnce": true,
+    "knob": "바로 보여 줌 · 고른 대로",
+    "run": {
+      "settings": {
+        "content": "atlas-lab.numbers",
+        "policy": "flow-1",
+        "arm": "adapted",
+        "mode": "auto",
+        "adaptive": true,
+        "values": {
+          "item.difficulty": 1,
+          "choices": 2,
+          "seconds": 5,
+          "hint": "바로 보여 줌"
+        },
+        "indices": {
+          "item.difficulty": 0,
+          "choices": 0,
+          "seconds": 2,
+          "hint": 0
+        },
+        "expected": 0.62,
+        "level": 1
+      },
+      "changes": [
+        {
+          "step": 0,
+          "phase": "opening",
+          "knob": "choices",
+          "kind": "content",
+          "dimension": "content",
+          "from": 0,
+          "to": 1,
+          "direction": 1,
+          "because": "prior",
+          "value": 3
+        },
+        {
+          "step": 1,
+          "phase": "response",
+          "knob": "choices",
+          "kind": "content",
+          "dimension": "content",
+          "from": 1,
+          "to": 0,
+          "direction": -1,
+          "because": "help-needed",
+          "value": 2
+        }
+      ]
+    },
+    "line": "열 번 중 1번 설정을 바꿨어요. 힌트는 고른 도움 방식대로 두었어요. 다시 하면 처음부터 맞춰요."
+  },
+  "alone": {
+    "knob": "보여 주지 않음 · 고른 대로",
+    "seconds": 5,
+    "hintedAfterMoreThanHalf": false
   },
   "webAsk": "운영체제",
   "webSkipped": [
