@@ -12,6 +12,8 @@ let coach=null,learningAvailable=true;
 try{coach=globalThis.SynkLearning?.createGame({gameId:'korean-rhythm',storage:localStorage})||null;}catch{learningAvailable=false;}
 function learn(action,fallback=null){try{return coach?action(coach):fallback;}catch{learningAvailable=false;return fallback;}}
 const assignment=()=>learn(c=>c.assignment?.());
+// Inside SYNK WORLD the record is the account's: kept and deleted there, not in this browser.
+const hosted=learn(c=>typeof c.assignment==='function',false);
 function renderRecommendation(select=false){
   const target=assignment(),candidates=assignmentTracks(target);
   const recommendation=learn(c=>c.recommend(candidates,{audioAvailable:true}));
@@ -19,7 +21,8 @@ function renderRecommendation(select=false){
   $('recommended-track').disabled=!candidate;$('recommended-track').textContent=candidate?`${candidate.label} 선택 →`:'기본 곡에서 선택해 주세요';
   $('recommendation-reason').textContent=target?rhythmTargetLabel(target):recommendation?.reason||'맞춤 추천을 연결하지 못했어요. 원하는 곡은 계속 플레이할 수 있어요.';
   const summary=learn(c=>c.summary());
-  $('learning-scope').textContent=!coach||!learningAvailable?'맞춤 기록 연결 불가':summary?.storage.available?'이 브라우저의 공통 학습 기록 · 학생 계정 연결 전':'저장이 제한되어 이번 페이지에서만 기록해요.';
+  $('learning-scope').textContent=!coach||!learningAvailable?'맞춤 기록 연결 불가':summary?.storage.available?(hosted?'WORLD 계정의 학습 기록 · 공유와 삭제는 WORLD 계정 설정에서 관리해요':'이 브라우저의 공통 학습 기록 · 학생 계정 연결 전'):'저장이 제한되어 이번 페이지에서만 기록해요.';
+  $('reset-learning').hidden=hosted;
   if(candidate&&select)selectTrack(candidate.trackId);
   return candidate;
 }

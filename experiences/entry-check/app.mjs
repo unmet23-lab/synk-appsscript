@@ -2,7 +2,7 @@
 import { VENUES, CAST, SKILL_LABEL } from './content.mjs';
 import { TUTORIAL, TUTORIAL_CASES, VOICE_ID } from './narration.mjs';
 import { koreanTime, minutes, venueById, activeRules, memoActive, judge, composeShift, scoreShift, unlocked, itemLabel } from './core.mjs';
-import { GAME_ID, caseMetadata, rankCases, recommendVenue, answerPayload, skillReport, FLOW_ENTRY, MAGNIFIER_AFTER, FLOW_WORDS, assignmentCases, assignmentVenues, entryTargetLabel } from './learning.mjs';
+import { GAME_ID, caseMetadata, rankCases, recommendVenue, answerPayload, skillReport, FLOW_ENTRY, magnifierAfter, FLOW_WORDS, assignmentCases, assignmentVenues, entryTargetLabel } from './learning.mjs';
 import * as sound from './audio.mjs';
 
 const $ = (s) => document.querySelector(s);
@@ -26,6 +26,8 @@ let coach = null;
 try { coach = window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { coach = null; }
 const atlas = (fn, fallback = null) => { if (!coach) return fallback; try { return fn(coach); } catch { return fallback; } };
 const assignment=()=>atlas(c=>c.assignment?.());
+// SYNK WORLD 안에서는 계정의 기록이다. 이 브라우저가 아니라 WORLD 계정 설정에서 공유·삭제를 관리한다.
+const hosted = atlas((c) => typeof c.assignment === 'function', false);
 const assignmentSeen=new Set();
 
 /* ── 상태 ── */
@@ -89,6 +91,8 @@ function renderLobby() {
   $('#how-tutorial').hidden=!!target;
   const warn = atlas((c) => c.summary().storage?.warning) || (!coach ? '학습 기록을 쓸 수 없어 기본 순서로 진행해요.' : null) || (!progressSaved ? '이 브라우저에 진행을 저장할 수 없어요.' : null);
   $('#storage-note').hidden = !warn; $('#storage-note').textContent = warn || '';
+  $('#reset-learning').hidden = hosted;
+  if (hosted) { $('#learning-scope').textContent = 'WORLD에서 선택한 계정의 학습 기록으로 연결해요. 기록 공유와 삭제는 WORLD 계정 설정에서 관리해요.'; $('#skills-scope').textContent = 'WORLD 계정의 공통 학습 기록 중'; }
   const list = $('#venues'); list.textContent = '';
   for (const v of VENUES) {
     const open = target?targetVenues.some(x=>x.id===v.id):unlocked(progress, v.id), stars = progress.stars[v.id] || 0;
@@ -120,6 +124,8 @@ function startShift(venueId, { tutorial = !progress.tutorial } = {}) {
   // 순간 맞춤: 돋보기가 스스로 나오는 때만 맞춘다(연수 근무는 정해진 대로).
   clearTimeout(state.magnifierTimer); state.flowLine = null;
   state.flow = tut.on ? null : atlas((c) => c.live?.(FLOW_ENTRY, { words: FLOW_WORDS }) ?? null);
+  // 피곤한 날·오랜만인 날의 약속은 첫 손님 앞에서 한 줄로 알린다(지난번에 이어 가는 날은 말하지 않는다).
+  state.flowLine = state.flow ? atlas(() => state.flow.intro().line?.text) || null : null;
   sound.preloadVoices([VOICE_ID.brief(v.id), VOICE_ID.memo(), ...(tut.on ? TUTORIAL.map((t) => VOICE_ID.tutorial(t.id)) : []),
     ...state.queue.flatMap((c) => [VOICE_ID.line(c.id), VOICE_ID.reply(c.id), VOICE_ID.oops(c.id), VOICE_ID.thanks(c.who), VOICE_ID.why(c.who)]),
     ...[0, 1, 2, 3].map(VOICE_ID.result)]);
@@ -195,7 +201,7 @@ function renderShiftLog() {
 async function nextGuest() {
   if (state.index >= state.queue.length) return finishShift();
   const v = state.venue, item = state.queue[state.index], who = CAST[item.who], token = state.shift;
-  state.cur = { item, pid: null, hint: 0, choosing: false, done: false };
+  state.cur = { item, pid: null, hint: 0, choosing: false, done: false, shownAt: 0, pausedMs: 0 };
   clearMarks();
   $('#g-clock').textContent = koreanTime(item.at);
   updateHud();
@@ -225,6 +231,7 @@ async function nextGuest() {
   renderTray(item);
   renderQueue();
   state.cur.pid = atlas((c) => (state.flow ? state.flow.present(caseMetadata(item)) : c.present(caseMetadata(item))));
+  state.cur.shownAt = performance.now();
   setDock('ready');
   // 지난 손님 뒤에 돋보기 시점이 바뀌었으면 무엇이 바뀌었는지만 한 줄로 알린다.
   if (state.flowLine) { $('#dock-hint').hidden = false; $('#dock-hint').textContent = state.flowLine; announce(state.flowLine); state.flowLine = null; }
@@ -315,12 +322,15 @@ function chooseRule(id, e) { if (state.cur?.choosing) decide(id, e); }
 /** 순간 맞춤이 정한 때가 되면 첫 돋보기가 스스로 나온다. 누른 것과 똑같이 도움으로 기록한다. */
 function scheduleMagnifier(token) {
   clearTimeout(state.magnifierTimer);
-  const after = state.flow ? MAGNIFIER_AFTER[state.flow.settings().values.magnifier] : null;
+  const after = atlas(() => magnifierAfter(state.flow));
   if (after == null || tut.on) return;
   const cur = state.cur;
-  state.magnifierTimer = setTimeout(() => {
+  const fire = () => {
+    // 쉬는 동안에는 나오지 않는다. 쉬기를 닫으면 곧 이어서 본다.
+    if ($('#pause-dialog').open) { state.magnifierTimer = setTimeout(fire, 1000); return; }
     if (live(token) && state.cur === cur && !cur.done && !cur.choosing && cur.hint === 0 && !$('#game').hidden) showClue();
-  }, after);
+  };
+  state.magnifierTimer = setTimeout(fire, after);
 }
 function useHint(e) { if (!guarded(e)) showClue(); }
 function showClue() {
@@ -364,7 +374,10 @@ async function decide(choice, e) {
   const result = judge(item, choice);
   clearTimeout(state.magnifierTimer);
   // 같은 응답이 공통 학습 기록(도움 받은 정답은 혼자 해낸 것으로 세지 않음)과 돋보기 시점을 함께 움직인다.
-  const out = state.flow ? atlas(() => state.flow.answer(cur.pid, answerPayload(result.correct))) : null;
+  // 손님을 본 때부터 도장까지 걸린 시간(쉬기 창을 연 동안은 빼고). 엔진은 돋보기 없이 바르게 찍은 시간만 모아
+  // 이 사람의 '머뭇거림' 기준으로 쓴다.
+  const latencyMs = cur.shownAt ? Math.min(600000, Math.max(0, performance.now() - cur.shownAt - cur.pausedMs)) : null;
+  const out = state.flow ? atlas(() => state.flow.answer(cur.pid, answerPayload(result.correct), { latencyMs })) : null;
   const rec = out ? out.recorded : atlas((c) => c.answer(cur.pid, answerPayload(result.correct)));
   if (out?.line) state.flowLine = out.line.text;
   state.results.push({ caseId: item.id, who: item.who, choice, expected: item.answer, correct: result.correct, skill: item.skill,
@@ -528,7 +541,7 @@ function finishShift() {
   }
   const next = renderNext(v);
   renderSkills(score, next?.skillId);
-  $('#r-hub').hidden = !location.pathname.includes('/entry-check/');
+  $('#r-hub').hidden = hosted || !location.pathname.includes('/entry-check/');
   show('results');
 }
 
@@ -570,7 +583,11 @@ $('#btn-cancel').onclick = () => { if (!tut.on) cancelChoosing(); };
 $('#btn-hint').onclick = (e) => useHint(e);
 $('#btn-next').onclick = next;
 $('#r-home').onclick = renderLobby;
-$('#pause').onclick = () => $('#pause-dialog').showModal();
+// 쉬는 동안은 도장까지 걸린 시간에 넣지 않는다(쉬기 단추·Esc 어느 쪽으로 열고 닫아도).
+let pausedAt = 0;
+const openPause = () => { if ($('#pause-dialog').open) return; pausedAt = performance.now(); $('#pause-dialog').showModal(); };
+$('#pause-dialog').addEventListener('close', () => { if (pausedAt && state.cur) state.cur.pausedMs += performance.now() - pausedAt; pausedAt = 0; });
+$('#pause').onclick = openPause;
 $('#resume').onclick = () => $('#pause-dialog').close();
 function leaveShift() {
   if (state.cur && !state.cur.done) atlas((c) => c.answer(state.cur.pid, { correct: null, assessable: false, reason: 'unanswered' }));
@@ -590,7 +607,7 @@ $('#motion-toggle').onclick = () => {
   if (state.venue && !$('#game').hidden) setScene(state.venue);
 };
 $('#reset-learning').onclick = () => {
-  if (!coach) return;
+  if (!coach || hosted) return;
   if (!window.confirm('같은 주소에서 연 모든 SYNK 게임의 학습 기록을 지울까요? 근무지 별은 그대로 남아요.')) return;
   atlas((c) => c.reset()); renderLobby();
 };
@@ -624,7 +641,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowRight') { e.preventDefault(); decide('pass', e); }
   else if (e.key === 'ArrowLeft') { e.preventDefault(); startChoosing(e); }
   else if (e.code === 'KeyH' || e.key.toLowerCase() === 'h') { e.preventDefault(); useHint(e); }
-  else if (e.key === 'Escape') { e.preventDefault(); $('#pause-dialog').showModal(); }
+  else if (e.key === 'Escape') { e.preventDefault(); openPause(); }
 });
 window.addEventListener('resize', () => {
   if (!state.venue || $('#game').hidden) return;

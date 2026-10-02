@@ -87,3 +87,18 @@ test('a customer who leaves is time running out, also after a wrong cup; nothing
  assert.equal(closingObservation({presentationId:'p1',attempts:0,outcome:'missed',learningClosed:true}),null);
  assert.equal(closingObservation({presentationId:'p1',attempts:1,outcome:'missed',flowClosed:true}),null);
 });
+
+test('the shift follows the practice Core asked for: with missed negation orders, a negation order comes first even at the easiest level',()=>{
+ const coach=createGame({gameId:'order-rush',map,storage:memory(),clock:clock()});
+ for(let i=0;i<3;i++){
+  const meta={...orderMetadata(ORDERS[2]),id:`probe.negation.${i}`,itemKey:`probe.negation.${i}`,familyKey:`probe.negation.${i}`};
+  const pid=coach.present(meta);coach.delivery(pid,{audio:'completed'});coach.answer(pid,{correct:false,assessable:true});
+ }
+ for(const spec of [FLOW_PRACTICE,FLOW_RUSH]){
+  const live=coach.live(spec,{skillIds:FLOW_SKILLS,words:FLOW_WORDS});
+  assert.equal(live.settings().level,1,'the flow starts at plain orders');
+  const pick=chooseOrderLive(live,ORDERS);
+  assert.equal(orderMetadata(pick.selected).skillId,'ko.listening.negation',`${spec.id}: Core's practice first`);
+  assert.equal(pick.focusSkillId,'ko.listening.negation');
+ }
+});

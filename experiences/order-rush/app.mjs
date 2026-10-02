@@ -8,6 +8,8 @@ let coach=null,learningFailed=false,nextPlan=null,audioTicket=null;
 try{coach=globalThis.SynkLearning?.createGame({gameId:'order-rush',storage:localStorage})||null;}catch{learningFailed=true;}
 function learn(method,...args){try{return coach?.[method](...args);}catch{learningFailed=true;return null;}}
 const assignment=()=>{try{return coach?.assignment?.()||null;}catch{return null;}};
+// Inside SYNK WORLD the record is the account's: kept and deleted there, not in this browser.
+const hosted=(()=>{try{return typeof coach?.assignment==='function';}catch{return false;}})();
 // Atlas moment-level challenge: the rush follows this person; the lobby can switch it off.
 const FLOW_KEY='synk.order-rush.flow-mode';let live=null,flowStart=null,flowSpec=null;
 function flowMode(){try{return localStorage.getItem(FLOW_KEY)==='fixed'?'fixed':'auto';}catch{return 'auto';}}
@@ -18,23 +20,29 @@ function startLive(isReview){live=null;flowStart=null;flowSpec=null;if(!coach||l
 function applyFlow(out){if(!out)return;if(out.settings&&state.session)state.session.tune(tuningFrom(out.settings.values));if(out.line)flowLine(out.line);}
 function presentOrder(order){if(live){try{return live.present(orderMetadata(order));}catch{live=null;}}return learn('present',orderMetadata(order));}
 function answerWithFlow(t,result,flow={}){if(live){try{const out=live.answer(t.presentationId,result,flow);applyFlow(out);return out.recorded;}catch{live=null;}}return learn('answer',t.presentationId,result);}
-function learningCopy(){const target=assignment();if(target)return orderTargetLabel(target);const s=learn('summary');return !coach||learningFailed||s?.storage?.available===false?'학습 기록을 저장할 수 없어 이번에는 기본 주문으로 연습해요.':`${nextPlan?.reason||'아직 확인하지 않은 주문 표현부터 만나 봐요.'} 이 브라우저의 연습 기록을 사용해요.`;}
+function learningCopy(){const target=assignment();if(target)return orderTargetLabel(target);const s=learn('summary');return !coach||learningFailed||s?.storage?.available===false?'학습 기록을 저장할 수 없어 이번에는 기본 주문으로 연습해요.':`${nextPlan?.reason||'아직 확인하지 않은 주문 표현부터 만나 봐요.'} ${hosted?'WORLD 계정의 연습 기록을 사용해요.':'이 브라우저의 연습 기록을 사용해요.'}`;}
 function updateLearning(){for(const id of ['learning-reason','game-learning','result-learning'])if($(id))$(id).textContent=learningCopy();}
 function selectOrder(orders){if(!coach||learningFailed)return orders[0];try{const plan=live?chooseOrderLive(live,orders):chooseOrder(coach,orders);if(plan?.selected){nextPlan=plan;updateLearning();return plan.selected;}}catch{learningFailed=true;}return orders[0];}
 function refreshRecommendation(){if(coach)selectOrder(ORDERS);updateLearning();}
 const state={mode:'practice',session:null,ticket:null,cups:[makeCup()],active:0,paused:false,review:false,celebrating:false,screen:'lobby',frame:0,last:0,original:null};
 let stage=null,celebrationTimer;
 const audio=new CafeAudio(status=>{
- const t=audioTicket;if(t?.presentationId){if(status==='playing')t.audioCompleted=false;if(status==='ready')t.audioCompleted=true;learn('delivery',t.presentationId,{audio:status==='ready'?'completed':status==='error'?'failed':'pending'});}
+ // Until the order has been heard in full, each play is its delivery. A play after that is a replay (help,
+ // recorded when it starts) and cannot make the heard order unheard: serving mid-replay stays assessable.
+ const t=audioTicket;if(t?.presentationId&&!t.heard){if(status==='playing')t.audioCompleted=false;if(status==='ready'){t.audioCompleted=true;t.heard=true;}learn('delivery',t.presentationId,{audio:status==='ready'?'completed':status==='error'?'failed':'pending'});}
  $('audio-status').textContent=status==='playing'?'주문을 듣는 중 · 영업 시간은 잠깐 멈춰요.':status==='error'?'소리를 재생하지 못했어요. 다시 듣기를 누르거나 글로 확인해 주세요.':'주문을 들었어요. 컵에 재료를 넣어 주세요.';
 });
-function playTicket(t){if(!t)return;if(!t.presentationId)t.presentationId=presentOrder(t.order);if(t.playCount)learn('help',t.presentationId,'replay');t.playCount=(t.playCount||0)+1;audioTicket=t;audio.play(t.order);}
+// Only a play after a full listen is a replay. A first play that failed or was cut off by another
+// customer is still the first listen.
+function playTicket(t){if(!t)return;if(!t.presentationId)t.presentationId=presentOrder(t.order);if(t.heard)learn('help',t.presentationId,'replay');t.playCount=(t.playCount||0)+1;audioTicket=t;audio.play(t.order);}
 // A customer who left before being served: not a language error, but the rush was too fast.
 function recordUnanswered(){for(const t of state.session?.records||[]){const close=closingObservation(t);if(!close)continue;
  if(close.answer){answerWithFlow(t,{correct:null,assessable:false,reason:'unanswered'},{outcome:close.outcome});t.learningClosed=true;}
  else{if(live){try{applyFlow(live.observe({outcome:close.outcome}));}catch{live=null;}}t.flowClosed=true;}
 }}
-function recordResultText(){for(const t of state.session?.records||[]){if(!t.presentationId)t.presentationId=learn('present',orderMetadata(t.order));if(t.presentationId)learn('help',t.presentationId,'text');}}
+// The result list shows the text of every order that was heard: help with the text. An order whose
+// customer left before it was heard shows no text and leaves no record, so it stays a first listen later.
+function recordResultText(){for(const t of state.session?.records||[]){if(t.presentationId)learn('help',t.presentationId,'text');}}
 function switchScreen(screen){state.screen=screen;for(const id of ['lobby','game','results'])$(id).hidden=id!==screen;window.scrollTo({top:0,behavior:'instant'});}
 function ticket(){return state.session?.queue.find(t=>t.uid===state.ticket);}
 function setFeedback(text,kind=''){$('feedback').textContent=text;$('feedback').className=`feedback ${kind}`;}
@@ -100,7 +108,8 @@ function finish(){
  const entries=[['서빙 점수',String(s.score)],['최고 콤보',String(s.best)],['서빙 완료',`${stats.served}개 주문`],['첫 제출 정확도',stats.answered?`${Math.round(stats.firstCorrect/stats.answered*100)}%`:'—'],['글로 확인한 주문',`${stats.help} / ${stats.answered}`],['미응답 주문',`${stats.unanswered}`]];
  $('result-metrics').replaceChildren(...entries.map(([label,value])=>{const d=document.createElement('div'),small=document.createElement('small'),b=document.createElement('b');small.textContent=label;b.textContent=value;d.append(small,b);return d;}));
  $('review').hidden=state.review;$('results').querySelector('h1').innerHTML=state.review?'새로운 주문도,<br><em>차근차근 들어요.</em>':'오늘도,<br><em>잘 들었습니다.</em>';
- $('round-records').replaceChildren(...s.records.map(r=>{const details=document.createElement('details'),summary=document.createElement('summary'),status=document.createElement('span'),p=document.createElement('p');status.className='status';status.textContent=r.first===null?'미응답':`${r.first?'첫 제출 정답':'조건을 다시 확인'}${r.help?' · 글로 확인':''}${r.outcome==='served'?' · 서빙 완료':' · 서빙 미완료'}`;summary.append(status,document.createTextNode(r.order.text));p.textContent=`연습한 표현: ${r.order.skill}. 주문: ${r.order.cups.map(c=>describeCup({...makeCup(),...c})).join(' / ')}${r.order.cups.some(c=>!('sugar'in c)||!('ice'in c))?' (말하지 않은 재료 조건은 채점에서 제외했어요.)':''}`;details.addEventListener('toggle',()=>{if(details.open&&!r.answerRevealed){if(r.presentationId)learn('help',r.presentationId,'answer');r.answerRevealed=true;}});details.append(summary,p);return details;}));
+ $('round-records').replaceChildren(...s.records.map(r=>{const details=document.createElement('details'),summary=document.createElement('summary'),status=document.createElement('span'),p=document.createElement('p');status.className='status';
+  if(!r.presentationId){const row=document.createElement('div');row.className='record-unheard';status.textContent='듣기 전에 떠난 손님';row.append(status,document.createTextNode('이 주문은 다음 영업에서 처음 듣게 돼요.'));return row;}status.textContent=r.first===null?'미응답':`${r.first?'첫 제출 정답':'조건을 다시 확인'}${r.help?' · 글로 확인':''}${r.outcome==='served'?' · 서빙 완료':' · 서빙 미완료'}`;summary.append(status,document.createTextNode(r.order.text));p.textContent=`연습한 표현: ${r.order.skill}. 주문: ${r.order.cups.map(c=>describeCup({...makeCup(),...c})).join(' / ')}${r.order.cups.some(c=>!('sugar'in c)||!('ice'in c))?' (말하지 않은 재료 조건은 채점에서 제외했어요.)':''}`;details.addEventListener('toggle',()=>{if(details.open&&!r.answerRevealed){if(r.presentationId)learn('help',r.presentationId,'answer');r.answerRevealed=true;}});details.append(summary,p);return details;}));
  if(!s.records.length)$('round-records').textContent='이번 영업에는 제출한 주문이 없어요.';
 }
 document.querySelectorAll('[data-mode]').forEach(b=>{if(assignment()&&b.dataset.mode!=='practice')b.disabled=true;b.addEventListener('click',()=>{if(assignment()&&b.dataset.mode!=='practice')return;state.mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});});
@@ -119,6 +128,7 @@ document.addEventListener('keydown',e=>{if(state.screen!=='game'||state.paused||
 });
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&state.screen==='game'&&!state.paused&&!state.celebrating)pause();});
 window.addEventListener('pagehide',()=>{audio.stop();cancelAnimationFrame(state.frame);stage?.dispose();});
-$('learning-reset').addEventListener('click',()=>{try{coach?.reset();learningFailed=!coach;nextPlan=null;}catch{learningFailed=true;}refreshRecommendation();});
+$('learning-reset').hidden=hosted;if(hosted&&$('result-scope'))$('result-scope').textContent='한국어 주문 음성은 합성 음성이에요. 학습 효과는 학생 검증 전이에요. 연습 기록은 WORLD 계정에 이어지고, 공유와 삭제는 WORLD 계정 설정에서 관리해요.';
+$('learning-reset').addEventListener('click',()=>{try{coach?.reset();learningFailed=!coach;nextPlan=null;}catch(error){if(error?.code!=='ACCOUNT_RESET_REQUIRED')learningFailed=true;}refreshRecommendation();});
 refreshRecommendation();
 window.synkCafe={get flow(){return live?{settings:live.settings(),trace:live.trace()}:null;},get tuning(){return state.session?{...state.session.tuning}:null;},get learning(){return learn('summary');},get current(){return ticket()?{id:ticket().order.id,presentationId:ticket().presentationId,audioCompleted:!!ticket().audioCompleted}:null;}};
