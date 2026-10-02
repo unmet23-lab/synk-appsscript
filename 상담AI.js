@@ -72,6 +72,9 @@ function doPost(e) {
     if (e && e.parameter && e.parameter.p === '회고') return 회고API_(e, 'post');   // [㉡-1 · 09-07] 시즌 회고 물음 답 — ContentService 만(아래 doGet ⛔ 그대로)
     const raw = e && e.postData && e.postData.contents ? e.postData.contents : '{}';
     const body = JSON.parse(raw);
+    // synkbrief의 자료 요청은 자체 계정·토큰으로 처리한다. LAB 상담 프롬프트에 섞지 않는다.
+    const brief = typeof synkbrief_웹훅_ === 'function' ? synkbrief_웹훅_(e, body) : null;
+    if (brief) return 상담_응답_(brief);
     const 입력 = 상담_정규화_(body);
     if (!입력) return 상담_응답_({ ok: true, skip: 'no-message' });   // 읽음표시·배달확인 등은 조용히 무시
 

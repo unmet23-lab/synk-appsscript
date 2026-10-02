@@ -2002,6 +2002,7 @@ function morningJobs() {   // 매일 07시
   //    여기 인라인으로 두면 시험이 예외 경로를 못 부른다(09-08 검수 P1 33079b2b2699).
   safeRun('시트칸맞추기', function () { return 시트칸맞추기한판_(SpreadsheetApp.getActiveSpreadsheet()); });
   safeRun('상담AI_IG토큰수명', 상담AI_IG토큰수명점검_); // Instagram Login 토큰 만료 14일 전 자동 갱신·실패 주 1회 경보
+  if (typeof synkbrief정기점검 === 'function') safeRun('synkbrief_인증점검', synkbrief정기점검);
   safeRun('첨삭서명트리거', 첨삭서명트리거보장_); // [㉡-1 부품 · 09-07] hw_feedback onEdit 이 없으면 만든다(멱등) — 손으로 켜는 설정을 안 둔다
   safeRun('학생ID발급', function () { 학생ID_발급_(); }); // [v9.164] 반배정·앱편입인데 ID가 빈 행을 채운다. **syncProfiles보다 앞** — 뒤에 두면 그날 아침 앱에 못 들어가고 하루 밀린다. onEdit 트리거가 죽어도 여기서 잡히는 두 번째 발동층
   safeRun('syncProfiles', syncProfiles);       // [v7.0] 동기화 먼저 — 신규 학생 생일을 당일부터 인식
@@ -5770,6 +5771,7 @@ function menuLeft_(F, keys) {
 function onOpen() {
   try {
     const ui = SpreadsheetApp.getUi();
+    if (typeof synkbrief관리메뉴 === 'function') synkbrief관리메뉴();
     const F = menuFlags_();
     const 폼키 = ['반출석폼ID', '출퇴근폼ID', '퀴즈폼ID', '대화폼ID', '직장폼ID',
       '마감폼ID', '면접폼ID', '약점메모폼ID', '강의폼ID'];
