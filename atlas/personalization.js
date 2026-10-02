@@ -101,8 +101,15 @@
   }
   function updateProfile(profile, patch, at) {
     checkProfile(profile); atOrAfter(profile, at);
-    if (!exact(patch, ['values', 'consent']) || !Object.hasOwn(patch, 'values')
-      || (Object.hasOwn(patch, 'consent') && typeof patch.consent !== 'boolean')) fail('invalid update');
+    if (!exact(patch, ['values', 'consent', 'expectedRevision']) || !Object.hasOwn(patch, 'values')
+      || (Object.hasOwn(patch, 'consent') && typeof patch.consent !== 'boolean')
+      || (Object.hasOwn(patch, 'expectedRevision') && !Number.isSafeInteger(patch.expectedRevision))) fail('invalid update');
+    // A host that passes the revision its edit was made from has an edit from an older copy
+    // refused (another device changed the profile meanwhile) instead of silently written over.
+    // Clearing never needs it: forgetting a profile always wins.
+    if (Object.hasOwn(patch, 'expectedRevision') && patch.expectedRevision !== profile.revision) {
+      throw Object.assign(new Error('Personalization: the profile changed since this edit began'), { code: 'PROFILE_CONFLICT' });
+    }
     checkValues(patch.values, true);
     if (patch.consent === false) return clearProfile(profile, { mode: 'disable', at });
     if (!(patch.consent === true || profile.consent)) fail('explicit consent required before remembering settings');
