@@ -62,5 +62,53 @@
   {
     "id": "not-slide",
     "text": "이번에는 몸을 숙이지 말고 그대로 달리세요."
+  },
+  {
+    "id": "check-star-middle",
+    "text": "가운데 길에 별이 있어요. 별이 있는 길로 가세요."
+  },
+  {
+    "id": "check-wide-left",
+    "text": "왼쪽 길이 넓어요. 넓은 길로 가세요."
+  },
+  {
+    "id": "check-fence-jump",
+    "text": "앞에 낮은 울타리가 있어요. 울타리를 넘어가세요."
+  },
+  {
+    "id": "check-sign-duck",
+    "text": "앞에 낮은 표지판이 있어요. 머리를 숙이고 지나가세요."
+  },
+  {
+    "id": "check-not-middle",
+    "text": "가운데로 가지 말고 오른쪽으로 가세요."
+  },
+  {
+    "id": "check-no-fence",
+    "text": "울타리가 없으니까 뛰지 않아도 돼요."
+  },
+  {
+    "id": "check-high-sign",
+    "text": "표지판이 높아서 숙이지 않아도 돼요."
+  },
+  {
+    "id": "check-not-left",
+    "text": "왼쪽으로 가지 마세요. 오른쪽 길이 좋아요."
+  },
+  {
+    "id": "check-duck-jump",
+    "text": "먼저 몸을 숙이고, 그다음에 울타리를 뛰어넘으세요."
+  },
+  {
+    "id": "check-middle-left",
+    "text": "가운데로 간 다음, 왼쪽으로 가세요."
+  },
+  {
+    "id": "check-right-before-jump",
+    "text": "뛰어넘기 전에 오른쪽으로 가세요."
+  },
+  {
+    "id": "check-left-run",
+    "text": "왼쪽으로 간 다음, 그냥 달리세요."
   }
 ]

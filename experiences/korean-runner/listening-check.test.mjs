@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { LISTENING_CHECKS, checkMetadata, createListeningCheck, selectListeningChecks } from './listening-check.mjs';
+import { LISTENING_CHECKS, CHECK_GRAMMAR, checkMetadata, createListeningCheck, selectListeningChecks } from './listening-check.mjs';
 import { instructionMetadata } from './learning.mjs';
 const require = createRequire(import.meta.url), { createGame } = require('../../atlas/game-learning.js'), { createMap } = require('../../strata/index.js');
 const map = createMap(require('../../strata/maps/topik-i.json'));
 function fixture() { const rows = new Map(), coach = createGame({ gameId: 'korean-runner', map, storage: { getItem: k => rows.get(k) ?? null, setItem: (k, v) => rows.set(k, v) } }); return { coach, check: createListeningCheck(coach) }; }
-test('all sixteen completed MP3 checks can produce independent correct/incorrect listening evidence', () => {
+test('all twelve completed MP3 checks can produce independent correct/incorrect listening evidence', () => {
   const { coach, check } = fixture();
   for (const [i, item] of LISTENING_CHECKS.entries()) {
     const token = check.begin(item); assert.equal(check.answer(item.correct), null);
@@ -46,24 +46,44 @@ test('stale audio completion cannot unlock the following question', () => {
   const { check } = fixture(); const token = check.begin(LISTENING_CHECKS[0]); check.begin(LISTENING_CHECKS[1]);
   assert.equal(check.delivery(token, 'completed'), false); assert.equal(check.answer(0), null);
 });
-test('a phrase already shown during running/practice cannot become a new independent listening fact', () => {
-  const { coach, check } = fixture(), item = LISTENING_CHECKS[0]; const pid = coach.present(instructionMetadata(item)); coach.help(pid, 'answer');
-  const token = check.begin(item); check.delivery(token, 'completed'); assert.equal(check.answer(item.correct).independent, false);
-  assert.equal(checkMetadata(item).familyKey, instructionMetadata(item).familyKey);
+test('a check is a sentence the run never says: running and practising do not spend its first try', async () => {
+  const { INSTRUCTIONS } = await import('./instructions.mjs');
+  const { coach, check } = fixture();
+  // Every run instruction heard and acted on, and its meaning shown in practice.
+  for (const item of INSTRUCTIONS) {
+    const run = coach.present(instructionMetadata(item)); coach.delivery(run, { audio: 'completed' });
+    coach.answer(run, { correct: true, assessable: false, reason: 'visual' });
+    coach.help(coach.present(instructionMetadata(item)), 'answer');
+  }
+  const item = LISTENING_CHECKS[0], token = check.begin(item); check.delivery(token, 'completed');
+  assert.equal(check.answer(item.correct).independent, true, 'still a first try after running');
+  const runFamilies = new Set(INSTRUCTIONS.map(x => instructionMetadata(x).familyKey)), runTexts = new Set(INSTRUCTIONS.map(x => x.text));
+  for (const x of LISTENING_CHECKS) { assert.ok(!runFamilies.has(checkMetadata(x).familyKey), x.id); assert.ok(!runTexts.has(x.text), x.id); }
 });
 
-test('sixteen authored checks reuse exactly the sixteen recorded clips and original families', async () => {
-  const { INSTRUCTIONS } = await import('./instructions.mjs');
-  const { stat } = await import('node:fs/promises');
-  assert.equal(LISTENING_CHECKS.length, 16); assert.deepEqual(new Set(LISTENING_CHECKS.map(x => x.id)), new Set(INSTRUCTIONS.map(x => x.id)));
-  const counts = {};
+test('twelve authored checks: their own recorded clips and families, three choices, the answer in every place', async () => {
+  const { stat, readFile } = await import('node:fs/promises');
+  assert.equal(LISTENING_CHECKS.length, 12);
+  const jobs = JSON.parse((await readFile(new URL('./assets/voice/jobs.json', import.meta.url), 'utf8')).replace(/^﻿/, ''));
+  const counts = {}, places = [0, 0, 0];
   for (const item of LISTENING_CHECKS) {
-    const m = checkMetadata(item); counts[m.skillId] = (counts[m.skillId] || 0) + 1;
-    assert.equal(m.familyKey, instructionMetadata(item).familyKey); assert.equal(item.text, INSTRUCTIONS.find(x => x.id === item.id).text);
+    const m = checkMetadata(item); counts[m.skillId] = (counts[m.skillId] || 0) + 1; places[item.correct] += 1;
+    assert.equal(m.familyKey, m.itemKey); assert.match(m.itemKey, /^korean-runner.listening-check.check-[a-z-]+.v1$/);
+    assert.equal(jobs.find(j => j.id === item.id)?.text, item.text, `${item.id}: the clip says the check sentence`);
     assert.equal(new Set(item.choices).size, 3); assert.ok(item.choices[item.correct]);
     assert.ok((await stat(new URL(`./assets/voice/${item.id}.mp3`, import.meta.url))).size > 1000);
   }
-  assert.deepEqual(counts, { 'ko.listening.detail': 5, 'ko.listening.negation': 4, 'ko.listening.sequence': 7 });
+  assert.deepEqual(counts, { 'ko.listening.detail': 4, 'ko.listening.negation': 4, 'ko.listening.sequence': 4 });
+  assert.ok(places.every(n => n >= 3), `answers spread over the three places: ${places}`);
+});
+test('check sentences link the grammar Strata reads in them', async () => {
+  const { grammarIn } = require('../../strata/topik-i-forms.js');
+  assert.deepEqual(Object.keys(CHECK_GRAMMAR).sort(), LISTENING_CHECKS.map(x => x.id).sort());
+  for (const item of LISTENING_CHECKS) {
+    assert.deepEqual(CHECK_GRAMMAR[item.id], grammarIn(item.text), item.id);
+    assert.deepEqual(checkMetadata(item).conceptIds, grammarIn(item.text), item.id);
+  }
+  for (const id of new Set(Object.values(CHECK_GRAMMAR).flat())) assert.equal(map.getNode(id)?.kind, 'grammar_point', id);
 });
 test('server assignment controls exact runner skill, level, modality and families without fallback', () => {
   const { coach } = fixture(), target = LISTENING_CHECKS.filter(x => checkMetadata(x).skillId === 'ko.listening.sequence').slice(-3);
