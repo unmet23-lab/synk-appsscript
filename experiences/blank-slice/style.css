@@ -198,7 +198,8 @@ dialog p{margin:0 0 14px;color:var(--ink-2);font-size:15px}
 @keyframes popUp{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}16%{opacity:1;transform:translate(-50%,-50%) scale(1.28)}30%{transform:translate(-50%,-58%) scale(1)}100%{opacity:0;transform:translate(-50%,-150%) scale(.96)}}
 @keyframes snap{0%{transform:scale(1.32,.78)}35%{transform:scale(.9,1.12)}65%{transform:scale(1.05,.97)}100%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .pop.go{animation:none}   /* 점수 글자는 움직이지 않고 0.9초 보였다 사라진다(popUp의 마지막 장면이 투명이라 그대로 두면 안 보인다) */
 }
 
 @media (min-width:960px){

@@ -519,7 +519,7 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
       p.group.rotation.set(Math.sin(t * 1.3 + p.ph) * 0.05, Math.sin(t * p.wy + p.ph) * 0.18, p.tilt + Math.sin(t * p.wz + p.ph) * 0.1);
       const s = Math.max(0, 1 - t / 0.2);   // 튀어 오를 때 잠깐 길쭉하게(눌렸다 펴지는 펠트)
       p.group.scale.set(1 - 0.08 * s, 1 + 0.14 * s, 1);
-      if (p.glow) p.glow.material.opacity = 0.62 + 0.36 * (0.5 + 0.5 * Math.sin(now * 0.0088));   // 1.4번/초로 숨 쉬듯
+      if (p.glow && !reducedMotion()) p.glow.material.opacity = 0.62 + 0.36 * (0.5 + 0.5 * Math.sin(now * 0.0088));   // 1.4번/초로 숨 쉬듯. 움직임 줄이기에서는 반복 없이 처음 밝기(0.95)만 남는다
       if (p.fading) { p.fade = Math.max(0, p.fade - sdt * 1.6); p.mesh.material.forEach((m) => { m.transparent = true; m.opacity = p.fade; }); }
       const goneNow = p.t > 0.3 && p.vy < 0 && p.y < p.y0 - 0.2;
       if (goneNow && !p.gone) { p.gone = true; p.group.visible = false; }
