@@ -1,0 +1,125 @@
+{
+  "note": "바이트 그대로 가져온 사본이다. 펠트 부품(kit)은 입장 검사의 줄이고 흰 띠를 걷은 사본(빈칸 베기와 같음), 몽글·글꼴·효과음도 입장 검사 사본에서 왔다(효과음은 docs/브랜드_사운드킷 원본과 같다). 원본 키트를 고치면 docs/디자인/펠트부품/README.md 「사본 맞추기」대로 이 사본도 맞춘다.",
+  "files": [
+    {
+      "path": "brand/mongle-curious.webp",
+      "from": "experiences/entry-check/assets/brand/mongle-curious.webp",
+      "bytes": 118984,
+      "sha256": "7dab074570e2b6219fc86249ea607655a164538b3b2c8a783370142610556675"
+    },
+    {
+      "path": "brand/mongle-smile.webp",
+      "from": "experiences/entry-check/assets/brand/mongle-smile.webp",
+      "bytes": 120020,
+      "sha256": "3a24744f0d6207706d2fce116fe7795a1fa24b6e6749ad17b631655488142229"
+    },
+    {
+      "path": "fonts/SUIT-OFL.txt",
+      "from": "experiences/entry-check/assets/fonts/SUIT-OFL.txt",
+      "bytes": 4380,
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9"
+    },
+    {
+      "path": "fonts/SUIT-Variable.woff2",
+      "from": "experiences/entry-check/assets/fonts/SUIT-Variable.woff2",
+      "bytes": 624536,
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+    },
+    {
+      "path": "kit/badge-check.webp",
+      "from": "experiences/entry-check/assets/kit/badge-check.webp",
+      "bytes": 11924,
+      "sha256": "fe9c972903efb6d1346b2c66ac6c6530f7abd619b8a486b96a8ea441d969a494"
+    },
+    {
+      "path": "kit/badge-coral.webp",
+      "from": "experiences/entry-check/assets/kit/badge-coral.webp",
+      "bytes": 11660,
+      "sha256": "b83aef15e27ed17fe1a7179abb8935bb1acb8fbbae70a180ebc46f61261689d2"
+    },
+    {
+      "path": "kit/badge-cream.webp",
+      "from": "experiences/entry-check/assets/kit/badge-cream.webp",
+      "bytes": 8582,
+      "sha256": "9d791e8f21381ffeb1214bcd523523717db881499ae6220bcb15bb7618a8f01d"
+    },
+    {
+      "path": "kit/chip-blush-long.webp",
+      "from": "experiences/entry-check/assets/kit/chip-blush-long.webp",
+      "bytes": 49488,
+      "sha256": "8f4f938682c8b047f00d186d95b804355cbb9e5f96d9bbc8e3b3689d567d98b8"
+    },
+    {
+      "path": "kit/slab-blush-long.webp",
+      "from": "experiences/entry-check/assets/kit/slab-blush-long.webp",
+      "bytes": 106334,
+      "sha256": "d28bece617250a03745173b311dd0de187f9ef8e259c0b7573b86279c94cfa50"
+    },
+    {
+      "path": "kit/slab-blush.webp",
+      "from": "experiences/entry-check/assets/kit/slab-blush.webp",
+      "bytes": 52120,
+      "sha256": "38cd655421ef8b2dc39dce56153620e73ff6cdf91731da46caa7a6ab6367e5fe"
+    },
+    {
+      "path": "kit/slab-coral-long.webp",
+      "from": "experiences/entry-check/assets/kit/slab-coral-long.webp",
+      "bytes": 140444,
+      "sha256": "04abd854673ca854af927c46e65baf8243a5d5dd44f54edb54b9e8c9a92654f7"
+    },
+    {
+      "path": "kit/slab-cream-long.webp",
+      "from": "experiences/entry-check/assets/kit/slab-cream-long.webp",
+      "bytes": 81146,
+      "sha256": "5807744d5189f4c9e6efa6824f124d13c298dacb9057b2e098924a3685544eee"
+    },
+    {
+      "path": "kit/slab-cream.webp",
+      "from": "experiences/entry-check/assets/kit/slab-cream.webp",
+      "bytes": 40438,
+      "sha256": "b83d8968bb0a231511c5d7235434e853c7c32fa37fdb1e16d6fddbc503eb8c1a"
+    },
+    {
+      "path": "kit/tag-cream.webp",
+      "from": "experiences/entry-check/assets/kit/tag-cream.webp",
+      "bytes": 24330,
+      "sha256": "0f54b059c986d0d192b32fdb8bd46d0e093e60c60a18a334884bac573ce6287d"
+    },
+    {
+      "path": "kit/tex-coral.webp",
+      "from": "experiences/entry-check/assets/kit/tex-coral.webp",
+      "bytes": 53002,
+      "sha256": "c6eea0ddf76860f7a5ca4db54c6948bbb8071fe23eec7106307fe484f6053800"
+    },
+    {
+      "path": "kit/tex-cream.webp",
+      "from": "experiences/entry-check/assets/kit/tex-cream.webp",
+      "bytes": 15526,
+      "sha256": "9b8c9e9654d36a96f3a663d34293792b9d67776c157ab5ef74c3debd70b198e9"
+    },
+    {
+      "path": "sound/achieve.wav",
+      "from": "experiences/entry-check/assets/sound/achieve.wav",
+      "bytes": 31796,
+      "sha256": "8ed08659fbaca6cf923b8409d6ca338f187d3f5526df3d0f29927f83258aa30a"
+    },
+    {
+      "path": "sound/earn.wav",
+      "from": "experiences/entry-check/assets/sound/earn.wav",
+      "bytes": 9746,
+      "sha256": "5baf5337b980ace0b75f31160fd4f09cc154429c78d2d40196c9a9644c25a7e7"
+    },
+    {
+      "path": "sound/mongle-mii.wav",
+      "from": "experiences/entry-check/assets/sound/mongle-mii.wav",
+      "bytes": 39910,
+      "sha256": "0de5136ab4b97e0f1931f0a718b62cf629e0059c28d09930bc76dfd1b656dd64"
+    },
+    {
+      "path": "sound/mongle-miyu.wav",
+      "from": "experiences/entry-check/assets/sound/mongle-miyu.wav",
+      "bytes": 41102,
+      "sha256": "b938c764425c44146d88a85eee4c8066e49a7b780a837254c00008a7c32a5652"
+    }
+  ]
+}

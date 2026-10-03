@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>한글 단계 · SYNK WORLD</title>
+<meta name="description" content="가나다부터 혼자 배우는 한글 단계. 소리를 듣고, 글자를 보고, 음절을 만들며 익힌다.">
+<meta name="theme-color" content="#f96859">
+<link rel="icon" href="assets/brand/mongle-smile.webp" type="image/webp">
+<link rel="preload" href="assets/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+<script src="./atlas-learning.js"></script>
+<script type="module" src="./app.mjs"></script>
+</head>
+<body>
+<div id="app">
+  <!-- 입구: 한글 길 -->
+  <main id="home" hidden>
+    <header class="hero field-coral">
+      <div class="topbar">
+        <span class="name-tag">한글 단계</span>
+        <button id="effects" class="round-btn sound" type="button" aria-pressed="true" aria-label="효과음 켜고 끄기"></button>
+      </div>
+      <div class="hero-body">
+        <img class="mongle" src="assets/brand/mongle-smile.webp" alt="" width="280" height="277">
+        <div class="hero-copy">
+          <h1>가나다부터</h1>
+          <p class="lede">소리를 듣고, 글자를 보고, 음절을 만들며 혼자 배워요.</p>
+        </div>
+      </div>
+      <button id="start" class="felt-cta cream" type="button">
+        <span class="cta-text"><b id="start-label">시작</b><small id="start-sub"></small></span>
+        <span class="disc play" aria-hidden="true"></span>
+      </button>
+      <p id="voice-note" class="voice-note" role="status" hidden></p>
+    </header>
+
+    <section class="paper block" aria-labelledby="road-title">
+      <div class="block-head"><h2 id="road-title">한글 길</h2><span class="fine" id="road-now"></span></div>
+      <ol id="road" class="road"></ol>
+    </section>
+
+    <section class="paper block" aria-labelledby="box-title">
+      <div class="block-head"><h2 id="box-title">글자 상자</h2><span class="fine">누르면 소리가 나요</span></div>
+      <div id="box" class="box"></div>
+      <ul class="legend" aria-label="글자 상태">
+        <li><span class="dot met"></span>만남</li><li><span class="dot learning"></span>익히는 중</li><li><span class="dot mastered"></span>익힘</li>
+      </ul>
+    </section>
+
+    <section class="paper block" aria-labelledby="signs-title">
+      <div class="block-head"><h2 id="signs-title">마을 간판</h2><span class="fine">글자를 다 익히면 읽혀요</span></div>
+      <div id="signs" class="signs"></div>
+    </section>
+
+    <section class="paper block" aria-labelledby="plate-title">
+      <div class="block-head"><h2 id="plate-title">내 명패</h2><span class="fine">익힌 글자가 채워져요</span></div>
+      <div id="plate" class="plate"></div>
+    </section>
+
+    <section class="block settings" aria-labelledby="settings-title">
+      <h2 id="settings-title" class="small-title">한 번에 풀 문제</h2>
+      <div id="amounts" class="amounts" role="radiogroup" aria-labelledby="settings-title"></div>
+      <button id="skip" class="text-link" type="button">한글을 읽을 수 있어요</button>
+      <p id="skipped-note" class="fine" hidden>한글 단계를 건너뛰었어요. <button id="unskip" class="text-link" type="button">다시 배우기</button></p>
+      <p id="save-note" class="fine" hidden></p>
+    </section>
+  </main>
+
+  <!-- 한 회차 -->
+  <main id="session" hidden>
+    <div class="session-top">
+      <button id="quit" class="round-btn close" type="button" aria-label="그만하기"></button>
+      <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    </div>
+    <section id="stage" class="stage" aria-live="polite"></section>
+    <div id="dock" class="dock"></div>
+  </main>
+
+  <!-- 마무리 -->
+  <main id="finish" hidden>
+    <section class="finish-card paper">
+      <img class="mongle" src="assets/brand/mongle-smile.webp" alt="" width="280" height="277">
+      <h1 id="finish-title">오늘 만난 글자예요</h1>
+      <div id="finish-letters" class="finish-letters"></div>
+      <div id="finish-extra" class="finish-extra"></div>
+      <div class="tomorrow" id="tomorrow"></div>
+    </section>
+    <div class="dock">
+      <button id="again" class="felt-cta cream" type="button"><span class="cta-text"><b>한 번 더</b></span><span class="disc play" aria-hidden="true"></span></button>
+      <button id="done" class="felt-cta coral" type="button"><span class="cta-text"><b>끝</b></span><span class="disc" aria-hidden="true"></span></button>
+    </div>
+  </main>
+
+  <div id="error" class="error paper" hidden>
+    <h1>한글 단계를 열지 못했어요</h1>
+    <p>필요한 파일을 불러오지 못했어요. 새로고침해 주세요.</p>
+  </div>
+</div>
+
+<!-- 건너뛰기 확인 -->
+<div id="sheet" class="sheet" hidden>
+  <div class="sheet-card paper" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <h2 id="sheet-title">한글을 읽을 수 있나요?</h2>
+    <p>읽을 수 있으면 이 단계를 건너뛰어도 돼요. 나중에 언제든 다시 배울 수 있어요.</p>
+    <div class="sheet-actions">
+      <button id="sheet-skip" class="felt-cta coral" type="button"><span class="cta-text"><b>건너뛰기</b></span><span class="disc" aria-hidden="true"></span></button>
+      <button id="sheet-stay" class="felt-cta cream" type="button"><span class="cta-text"><b>계속 배우기</b></span><span class="disc play" aria-hidden="true"></span></button>
+    </div>
+  </div>
+</div>
+<div id="pointer" class="pointer" aria-hidden="true" hidden></div>
+</body>
+</html>

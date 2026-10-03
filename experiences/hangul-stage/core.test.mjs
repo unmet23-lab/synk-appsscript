@@ -1,0 +1,194 @@
+// 한글 단계 판단의 시험(설계 §13의 인수 기준 가운데 MVP 범위). node --test experiences/hangul-stage/core.test.mjs
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { createPack } from './pack.mjs';
+import { emptyProgress, readProgress, planSession, answer, meet, finishSession, view, letterOf, retryItem, nextLetters, canPlayMore, SETTINGS } from './core.mjs';
+
+const layer = JSON.parse(fs.readFileSync(new URL('../../strata/hangul.json', import.meta.url), 'utf8'));
+const pack = createPack(layer);
+const DAY = 86400000;
+const at = (day, minutes = 0) => new Date(Date.UTC(2026, 9, 5 + day, 1, minutes)).toISOString();
+const unitIndex = id => layer.units.findIndex(u => u.letters.includes(id));
+const items = plan => plan.steps.filter(s => s.kind === 'item').map(s => s.item);
+const optionLetters = item => item.options ? item.options.map(o => o.letter) : item.cards ? item.cards.map(c => c.letter)
+  : [...item.pieces.consonants, ...item.pieces.vowels];
+
+// 한 회차를 끝까지 푼다. choose(item)는 고른 답의 글자를 돌려준다(정답이면 target.letter).
+function play(progress, { day, sessionNo = 0, choose = item => null }) {
+  const now = at(day, sessionNo * 10);
+  const plan = planSession(progress, pack, { now, sessionNo });
+  let p = progress, total = 0, independent = 0;
+  const sessionId = `${plan.day}#${sessionNo}`;
+  for (const step of plan.steps) {
+    if (step.kind === 'meet') { p = meet(p, [step.letter], now); continue; }
+    const item = step.item, wrong = choose(item);
+    const correct = !wrong;
+    if (item.type === 'match' || item.type === 'build') {
+      p = answer(p, { focus: item.focus, correct, at: now, sessionId, confused: wrong ? [[item.target.letter, wrong]] : [] });
+    } else p = answer(p, { focus: item.focus, correct, at: now, sessionId, confused: wrong ? [[item.target.letter, wrong]] : [] });
+    total += 1; if (correct) independent += 1;
+  }
+  p = finishSession(p, { day: plan.day, sessionNo, total, independent });
+  return { progress: p, plan };
+}
+
+test('첫 회차: 새 글자 셋(ㅏ ㅓ ㅗ)을 만나기 카드로 먼저 만나고, 보기는 만난 글자뿐이다', () => {
+  const plan = planSession(emptyProgress(), pack, { now: at(0) });
+  assert.deepEqual(plan.fresh, ['v-a', 'v-eo', 'v-o']);
+  const seen = new Set();
+  for (const step of plan.steps) {
+    if (step.kind === 'meet') { seen.add(step.letter); continue; }
+    for (const id of optionLetters(step.item)) assert.ok(seen.has(id), `만나기 전 글자 ${id}가 보기로 나옴`);
+  }
+  assert.equal(items(plan).length, SETTINGS.amount);
+  assert.equal(plan.reason.kind, 'new');
+  assert.deepEqual(plan.reason.letters, ['ㅏ', 'ㅓ', 'ㅗ']);
+});
+
+test('단원은 선행이다: 앞 단원의 글자를 다 만나기 전에는 다음 단원의 새 글자가 나오지 않는다', () => {
+  let p = emptyProgress();
+  for (let day = 0; day < 30; day += 1) {
+    const before = new Set(pack.letters.filter(l => letterOf(p, l.id).state !== 'unmet').map(l => l.id));
+    const { progress, plan } = play(p, { day });
+    for (const id of plan.fresh) {
+      const u = unitIndex(id);
+      for (const prev of layer.units.slice(0, u).flatMap(x => x.letters)) assert.ok(before.has(prev), `${id} 앞에 ${prev}를 만나지 않음`);
+    }
+    p = progress;
+  }
+  assert.ok(pack.letters.every(l => letterOf(p, l.id).state !== 'unmet'), '다 맞히는 사람은 30일 안에 네 단원의 글자를 다 만난다');
+});
+
+test('같은 사람·같은 날·같은 회차는 같은 문항을 낸다', () => {
+  const p = play(emptyProgress(), { day: 0 }).progress;
+  const a = planSession(p, pack, { now: at(1), sessionNo: 0 }), b = planSession(p, pack, { now: at(1, 30), sessionNo: 0 });
+  assert.deepEqual(a.steps, b.steps);
+  const c = planSession(p, pack, { now: at(1), sessionNo: 1 });
+  assert.notDeepEqual(a.steps, c.steps);
+});
+
+test('같은 꼴은 세 번 넘게 이어지지 않고, 꼴이 셋 이상이면 회차에 셋 이상 섞인다', () => {
+  let p = emptyProgress();
+  for (let day = 0; day < 20; day += 1) {
+    const { progress, plan } = play(p, { day });
+    const list = items(plan);
+    for (let i = 3; i < list.length; i += 1) assert.ok(!(list[i].type === list[i - 1].type && list[i].type === list[i - 2].type && list[i].type === list[i - 3].type), `${day}일: ${list.map(x => x.type).join(',')}`);
+    if (day > 2) assert.ok(new Set(list.map(x => x.type)).size >= 3, `${day}일 꼴: ${[...new Set(list.map(x => x.type))]}`);
+    p = progress;
+  }
+});
+
+test('소리로 가를 수 없는 짝(ㅐ/ㅔ)과 같은 소리는 소리 문항의 보기에 함께 나오지 않는다', () => {
+  // ㅐ·ㅔ를 이미 만난 사람의 여러 회차를 훑는다.
+  let p = meet(emptyProgress(), pack.letters.map(l => l.id), at(0));
+  for (let day = 1; day < 40; day += 1) {
+    for (let s = 0; s < 3; s += 1) {
+      const plan = planSession(p, pack, { now: at(day, s * 10), sessionNo: s });
+      for (const item of items(plan)) {
+        const texts = item.options ? item.options.map(o => o.text) : item.cards ? item.cards.map(c => c.voice) : null;
+        if (!texts) { assert.ok(!(item.pieces.vowels.includes('v-ae') && item.pieces.vowels.includes('v-e')), '음절 만들기에 ㅐ와 ㅔ가 함께'); continue; }
+        for (let i = 0; i < texts.length; i += 1) for (let j = i + 1; j < texts.length; j += 1) assert.ok(!pack.sameSound(texts[i], texts[j]), `${item.type}: ${texts}`);
+      }
+    }
+    p = play(p, { day }).progress;
+  }
+});
+
+test('ㅓ/ㅗ를 자주 헷갈리는 사람에게 그 짝이 다시 오고, 이유 한 줄이 그 짝을 가리킨다', () => {
+  let p = play(emptyProgress(), { day: 0, choose: item => (item.target.letter === 'v-eo' && optionLetters(item).includes('v-o') ? 'v-o' : null) }).progress;
+  assert.ok(p.pairs['v-eo|v-o']?.wrong > 0, '헷갈린 짝이 남는다');
+  const plan = planSession(p, pack, { now: at(1) });
+  assert.equal(plan.reason.kind, 'pair');
+  assert.deepEqual([...plan.reason.letters].sort(), ['ㅓ', 'ㅗ'].sort());
+  assert.ok(plan.reviews.includes('v-eo') && plan.reviews.includes('v-o'), '복습 앞자리에 그 짝');
+  assert.match(plan.reason.text, /헷갈린/);
+});
+
+test('「익힘」은 서로 다른 두 회차에 걸친 세 번의 혼자 맞힘으로만 선다', () => {
+  const s = (n, i) => ({ focus: ['v-a'], correct: true, at: at(n, i), sessionId: `d${n}` });
+  let p = meet(emptyProgress(), ['v-a'], at(0));
+  p = answer(p, s(0, 1)); p = answer(p, s(0, 2)); p = answer(p, s(0, 3));
+  assert.equal(letterOf(p, 'v-a').state, 'learning', '한 회차의 세 번은 익힘이 아니다');
+  p = answer(p, s(1, 1));
+  assert.equal(letterOf(p, 'v-a').state, 'mastered');
+  // 도움받은 정답은 세지 않는다.
+  let q = meet(emptyProgress(), ['v-o'], at(0));
+  for (let d = 0; d < 3; d += 1) q = answer(q, { focus: ['v-o'], correct: true, assisted: true, at: at(d), sessionId: `d${d}` });
+  assert.notEqual(letterOf(q, 'v-o').state, 'mastered');
+  // 익힌 뒤에 틀리면 익히는 중으로 돌아가지만, 보이는 자수(best)는 줄지 않는다.
+  p = answer(p, { focus: ['v-a'], correct: false, at: at(2), sessionId: 'd2', confused: [['v-a', 'v-eo']] });
+  assert.equal(letterOf(p, 'v-a').state, 'learning');
+  assert.equal(letterOf(p, 'v-a').best, 'mastered');
+  assert.equal(view(p, pack, at(2)).letters.find(l => l.id === 'v-a').shown, 'mastered');
+});
+
+test('틀린 글자는 그날 다시 오고, 맞히기 시작하면 다음 복습까지의 간격이 벌어진다', () => {
+  let p = meet(emptyProgress(), ['v-eo', 'v-o', 'v-a'], at(0));
+  p = answer(p, { focus: ['v-eo'], correct: false, at: at(0), sessionId: 'd0', confused: [['v-eo', 'v-o']] });
+  assert.ok(Date.parse(letterOf(p, 'v-eo').due) <= Date.parse(at(0)));
+  const gaps = [];
+  for (let d = 1; d <= 4; d += 1) {
+    p = answer(p, { focus: ['v-eo'], correct: true, at: at(d * 10), sessionId: `d${d}` });
+    gaps.push(Date.parse(letterOf(p, 'v-eo').due) - Date.parse(at(d * 10)));
+  }
+  for (let i = 1; i < gaps.length; i += 1) assert.ok(gaps[i] >= gaps[i - 1], `간격 ${gaps.map(g => g / DAY)}`);
+  assert.ok(gaps.at(-1) > gaps[0]);
+  // 다시 듣고 맞힌 것은 맞힘이지만 간격을 늘리지 않는다.
+  const before = letterOf(p, 'v-eo').step;
+  p = answer(p, { focus: ['v-eo'], correct: true, replays: 2, at: at(60), sessionId: 'd60' });
+  assert.ok(letterOf(p, 'v-eo').step <= before);
+  // 회차 안에서 한 번 더: 막 틀린 꼴과 다른 꼴로.
+  const again = retryItem(p, pack, 'v-eo', { now: at(60), n: 1, avoid: 'listen_pick' });
+  assert.equal(again.type, 'see_pick');
+  assert.equal(again.target.letter, 'v-eo');
+});
+
+test('간판은 그 글자를 다 익혔을 때만 또렷해지고, 명패의 받침 칸은 다음 단원으로 남는다', () => {
+  let p = meet(emptyProgress(), ['v-o', 'v-i'], at(0));
+  assert.equal(view(p, pack, at(0)).signs.find(s => s.text === '오이').readable, false);
+  for (const [d, id] of [[0, 'v-o'], [0, 'v-i'], [1, 'v-o'], [1, 'v-i'], [2, 'v-o'], [2, 'v-i']]) p = answer(p, { focus: [id], correct: true, at: at(d), sessionId: `d${d}` });
+  const v = view(p, pack, at(2));
+  assert.equal(v.signs.find(s => s.text === '오이').readable, true);
+  assert.equal(v.signs.find(s => s.text === '나무').readable, false);
+  // 다시 틀려도 읽히는 간판은 흐려지지 않는다.
+  p = answer(p, { focus: ['v-o'], correct: false, at: at(3), sessionId: 'd3', confused: [['v-o', 'v-u']] });
+  assert.equal(view(p, pack, at(3)).signs.find(s => s.text === '오이').readable, true);
+  const plate = view(p, pack, at(3)).plate;
+  assert.equal(plate.flatMap(s => s.cells).filter(c => c.later).length, 2, '한·국의 받침 칸');
+});
+
+test('막히는 사람에게는 새 글자를 쉬게 하고, 난이도는 이어서 두 회차가 막히면 내려간다', () => {
+  let p = readProgress({ ...emptyProgress(), difficulty: 2 });
+  p = meet(p, ['v-a', 'v-eo', 'v-o', 'v-u'], at(0));
+  for (let d = 0; d < 2; d += 1) p = play(p, { day: d, choose: item => optionLetters(item).find(id => id !== item.target.letter) || null }).progress;
+  assert.equal(p.difficulty, 1);
+  assert.deepEqual(planSession(p, pack, { now: at(3) }).fresh, [], '혼자 맞힌 비율이 60% 아래면 새 글자 0');
+});
+
+test('「더 하기」는 하루 두 번까지다', () => {
+  let p = emptyProgress();
+  for (let s = 0; s < 3; s += 1) { assert.ok(canPlayMore(p, at(0, s * 10))); p = play(p, { day: 0, sessionNo: s }).progress; }
+  assert.equal(canPlayMore(p, at(0, 40)), false);
+  assert.equal(canPlayMore(p, at(1)), true);
+});
+
+test('보이는 글은 한국어뿐이다(이유 한 줄·단원 이름·간판)', () => {
+  let p = emptyProgress();
+  for (let day = 0; day < 12; day += 1) {
+    const plan = planSession(p, pack, { now: at(day) });
+    assert.doesNotMatch(plan.reason.text, /[A-Za-z]/);
+    p = play(p, { day, choose: item => (day % 3 === 1 && item.target.letter === 'v-eo' ? optionLetters(item).find(id => id !== 'v-eo') : null) }).progress;
+  }
+  const v = view(p, pack, at(12));
+  for (const u of v.units) assert.doesNotMatch(u.label, /[A-Za-z]/);
+  assert.deepEqual(nextLetters(emptyProgress(), pack, 2), ['v-a', 'v-eo']);
+});
+
+test('필요한 소리의 목록이 있고, 목소리는 아직 정해지지 않았다(소리 파일을 만들지 않는다)', () => {
+  const m = pack.audioManifest();
+  assert.equal(m.voice, null);
+  for (const l of pack.letters) assert.ok(m.clips.includes(l.voice));
+  for (const w of pack.words) assert.ok(m.clips.includes(w.text));
+  assert.ok(m.clips.length > 100);
+});

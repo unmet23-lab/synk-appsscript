@@ -1,0 +1,176 @@
+{
+  "at": "2026-10-03T11:41:15.290Z",
+  "base": "http://127.0.0.1:5240/",
+  "results": [
+    {
+      "name": "390px 입구가 열림",
+      "ok": true,
+      "detail": "시작"
+    },
+    {
+      "name": "390px 입구 넘침 없음",
+      "ok": true,
+      "detail": "{\"doc\":0,\"body\":0,\"vv\":0}"
+    },
+    {
+      "name": "390px 첫 회차 끝까지",
+      "ok": true,
+      "detail": "단계 14"
+    },
+    {
+      "name": "390px 첫 회차 꼴",
+      "ok": true,
+      "detail": "listen_pick,see_pick,match"
+    },
+    {
+      "name": "390px 처음 나온 꼴마다 시범이 한 번씩",
+      "ok": true,
+      "detail": "시범 listen_pick,see_pick,match / 꼴 listen_pick,see_pick,match"
+    },
+    {
+      "name": "390px 틀린 글자를 회차 안에서 한 번 더",
+      "ok": true,
+      "detail": "다시 1"
+    },
+    {
+      "name": "390px 진도 저장(만난 글자)",
+      "ok": true,
+      "detail": "v-a,v-eo,v-o"
+    },
+    {
+      "name": "390px 아틀라스 기록",
+      "ok": true,
+      "detail": "문항 15, 기술 ko.hangul.sound,ko.hangul.read"
+    },
+    {
+      "name": "390px 아틀라스 응답",
+      "ok": true,
+      "detail": "응답 15"
+    },
+    {
+      "name": "390px 다시 열면 글자 상자에 만난 글자",
+      "ok": true,
+      "detail": "타일 3"
+    },
+    {
+      "name": "390px 다시 열면 「한 번 더」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "390px 둘째 회차 끝까지",
+      "ok": true,
+      "detail": "단계 11, 꼴 see_pick,match,listen_pick"
+    },
+    {
+      "name": "390px 자음을 배운 사람: 음절 만들기와 그 시범",
+      "ok": true,
+      "detail": "꼴 build,listen_pick,match,see_pick"
+    },
+    {
+      "name": "390px 자음을 배운 사람: U3 새 글자를 만남",
+      "ok": true,
+      "detail": "v-a,v-eo,v-o,v-u,v-eu,v-i,c-g,c-n,c-d,c-r,c-m,c-b"
+    },
+    {
+      "name": "390px 콘솔 오류 없음",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "390px 없는 파일 요청 없음",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "390px 바깥 요청 없음",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "1280px 입구가 열림",
+      "ok": true,
+      "detail": "시작"
+    },
+    {
+      "name": "1280px 입구 넘침 없음",
+      "ok": true,
+      "detail": "{\"doc\":0,\"body\":0,\"vv\":0}"
+    },
+    {
+      "name": "1280px 첫 회차 끝까지",
+      "ok": true,
+      "detail": "단계 14"
+    },
+    {
+      "name": "1280px 첫 회차 꼴",
+      "ok": true,
+      "detail": "listen_pick,see_pick,match"
+    },
+    {
+      "name": "1280px 처음 나온 꼴마다 시범이 한 번씩",
+      "ok": true,
+      "detail": "시범 listen_pick,see_pick,match / 꼴 listen_pick,see_pick,match"
+    },
+    {
+      "name": "1280px 틀린 글자를 회차 안에서 한 번 더",
+      "ok": true,
+      "detail": "다시 1"
+    },
+    {
+      "name": "1280px 진도 저장(만난 글자)",
+      "ok": true,
+      "detail": "v-a,v-eo,v-o"
+    },
+    {
+      "name": "1280px 아틀라스 기록",
+      "ok": true,
+      "detail": "문항 15, 기술 ko.hangul.sound,ko.hangul.read"
+    },
+    {
+      "name": "1280px 아틀라스 응답",
+      "ok": true,
+      "detail": "응답 15"
+    },
+    {
+      "name": "1280px 다시 열면 글자 상자에 만난 글자",
+      "ok": true,
+      "detail": "타일 3"
+    },
+    {
+      "name": "1280px 다시 열면 「한 번 더」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "1280px 둘째 회차 끝까지",
+      "ok": true,
+      "detail": "단계 11, 꼴 see_pick,match,listen_pick"
+    },
+    {
+      "name": "1280px 자음을 배운 사람: 음절 만들기와 그 시범",
+      "ok": true,
+      "detail": "꼴 build,listen_pick,match,see_pick"
+    },
+    {
+      "name": "1280px 자음을 배운 사람: U3 새 글자를 만남",
+      "ok": true,
+      "detail": "v-a,v-eo,v-o,v-u,v-eu,v-i,c-g,c-n,c-d,c-r,c-m,c-b"
+    },
+    {
+      "name": "1280px 콘솔 오류 없음",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "1280px 없는 파일 요청 없음",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "1280px 바깥 요청 없음",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}
