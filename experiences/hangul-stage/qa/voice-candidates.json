@@ -1,0 +1,110 @@
+{
+  "note": "한글 단계 목소리 후보(2026-10-03 유호님 「서현 괜찮은데 다른 상큼한 목소리 없을까?」). 9/22 받아 둔 Typecast 목록 608개 중 한국어 이름의 여자 목소리 66개의 공식 미리듣기 음원에서 음높이(F0 중앙값)·밝기(스펙트럼 무게중심)·억양 폭·빠르기를 재서 밝은 쪽을 골랐다. F0 300Hz를 넘는 아이·캐릭터 쪽은 뺐다(가희는 비교용으로 남김). 귀로 듣는 판단을 대신하지 않는다.",
+  "measured": "2026-10-03",
+  "voices": [
+    {
+      "id": "tc_61659cc118732016a95fe7c6",
+      "name": "하나",
+      "eng": "Hana",
+      "uses": [
+        "TikTok/Reels/Shorts"
+      ],
+      "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142725_61659cc118732016a95fe7c6_SSFM-V3_0.mp3",
+      "why": "09-21 「밝고 상큼하게」 요청 때 고른 목소리(SHIFT 과정 영상 시안)",
+      "f0": 266.7,
+      "centroid": 1488,
+      "rate": 6.01,
+      "bright": 1.33
+    },
+    {
+      "id": "tc_5ebea1a364afaf00087fc2fb",
+      "name": "정희",
+      "eng": "Junghee",
+      "uses": [
+        "E-learning/Explainer"
+      ],
+      "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142320_5ebea1a364afaf00087fc2fb_SSFM-V3_0.mp3",
+      "why": "교육용(E-learning) 가운데 가장 밝은 쪽 — 또박또박한 안내",
+      "f0": 280.7,
+      "centroid": 1635,
+      "rate": 7.37,
+      "bright": 2.44
+    },
+    {
+      "id": "tc_6620d242904c5eef906092eb",
+      "name": "미리내",
+      "eng": "Mirine",
+      "uses": [
+        "News Reporter",
+        "TikTok/Reels/Shorts"
+      ],
+      "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141434_6620d242904c5eef906092eb_SSFM-V3_0.mp3",
+      "why": "뉴스·숏폼용 — 밝고 빠르며 발음이 또렷한 쪽",
+      "f0": 280.7,
+      "centroid": 1566,
+      "rate": 7.99,
+      "bright": 2.42
+    },
+    {
+      "id": "tc_62e8f21e979b3860fe2f6a24",
+      "name": "혜리",
+      "eng": "Hyelee",
+      "uses": [
+        "TikTok/Reels/Shorts",
+        "Ads/Promotion"
+      ],
+      "preview": "https://static2.typecast.ai/c/251023_preview/hyelee_mixdown.mp3",
+      "why": "숏폼·광고용 — 밝은 음색",
+      "f0": 296.3,
+      "centroid": 1825,
+      "rate": 6.56,
+      "bright": 2.87
+    },
+    {
+      "id": "tc_6243fb7beec1a1bff3cfe6c4",
+      "name": "다솜",
+      "eng": "Dasom",
+      "uses": [
+        "Ads/Promotion"
+      ],
+      "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250930111954_6243fb7beec1a1bff3cfe6c4_SSFM-V3_0.mp3",
+      "why": "광고용 — 음색이 가장 밝은 축(높은 음은 아님)",
+      "f0": 288.3,
+      "centroid": 2105,
+      "rate": 5.43,
+      "bright": 0.84
+    },
+    {
+      "id": "tc_624ccc04adcd568510764d3f",
+      "name": "가희",
+      "eng": "Gahee",
+      "uses": [
+        "Conversational",
+        "Ads/Promotion",
+        "Game",
+        "TikTok/Reels/Shorts"
+      ],
+      "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250930102529_624ccc04adcd568510764d3f_SSFM-V3_0.mp3",
+      "why": "대화·광고·게임 겸용 — 가장 상큼한 쪽이지만 음이 높아 아이처럼 들릴 수 있음",
+      "f0": 313.7,
+      "centroid": 2283,
+      "rate": 7.61,
+      "bright": 5.79
+    },
+    {
+      "id": "tc_69f2e455ea79fd197aa0476f",
+      "name": "서현",
+      "eng": "Seohyeon",
+      "uses": [
+        "Announcer",
+        "Conversational"
+      ],
+      "preview": "https://static2.typecast.ai/c/260430_seohyeon/seohyeon_mixdown.mp3",
+      "why": "지금 추천(기준) — 차분한 아나운서·대화형",
+      "f0": 163.3,
+      "centroid": 799,
+      "rate": 4.88,
+      "bright": -6.47
+    }
+  ]
+}
