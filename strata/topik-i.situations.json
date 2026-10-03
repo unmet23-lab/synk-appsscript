@@ -1,0 +1,39 @@
+{
+  "version": "topik-i-situations-1",
+  "note": "배우는 이유마다 잇는 상황 마디. 이름(label)은 계약 「배우는이유_선택응답_계약.json」 r1의 「상황」 칸을 쉼표로 나눈 조각 그대로이고, 순서도 같다(시험이 같은지 본다). id는 계약 글자가 바뀌어도 그대로 둔다. when은 Vellum 이유 한 줄 「{when} 쓰는 말이라 골랐어요.」의 빈칸이다. 상황은 연습의 장면만 고른다. 실력·급수·난도를 바꾸지 않는다.",
+  "contract": "계약/배우는이유_선택응답_계약.json",
+  "contract_ver": "r1",
+  "without_situations": {
+    "exam": "문항 유형·시간 배분·약한 영역은 연습하는 방식이지 장면이 아니다. 시험 안내는 계약의 「시험안내」가 맡는다.",
+    "hobby": "일상 표현을 고루, 짧게 자주 — 한 장면으로 몰지 않는다.",
+    "other": "본인이 적은 말은 본인 화면에만 보이고 맞춤에 쓰지 않는다."
+  },
+  "situations": [
+    ["sit-culture-speech-level", "culture", "대사와 가사의 반말·존댓말", "대사와 가사에서"],
+    ["sit-culture-abbreviation", "culture", "줄임말", "친구끼리 줄여서"],
+    ["sit-culture-emotion", "culture", "감정 표현", "기분을 말할 때"],
+    ["sit-travel-directions", "travel", "길 묻기", "길을 물을 때"],
+    ["sit-travel-order", "travel", "주문", "주문할 때"],
+    ["sit-travel-transport", "travel", "교통", "버스나 지하철을 탈 때"],
+    ["sit-travel-lodging", "travel", "숙소", "숙소에서"],
+    ["sit-travel-shopping", "travel", "쇼핑", "물건을 살 때"],
+    ["sit-people-greeting", "people", "안부", "안부를 물을 때"],
+    ["sit-people-address", "people", "호칭", "사람을 부를 때"],
+    ["sit-people-honorific", "people", "높임말 고르기", "윗사람과 이야기할 때"],
+    ["sit-people-messenger", "people", "영상통화·메신저", "영상통화나 메신저에서"],
+    ["sit-life-office", "life", "주민센터·병원·은행", "주민센터·병원·은행에서"],
+    ["sit-life-notice", "life", "공공 안내문 읽기", "안내문을 읽을 때"],
+    ["sit-study-lecture", "study", "강의 듣기", "강의를 들을 때"],
+    ["sit-study-presentation", "study", "발표", "발표할 때"],
+    ["sit-study-professor-email", "study", "교수님께 메일", "교수님께 메일을 쓸 때"],
+    ["sit-study-assignment", "study", "과제", "과제를 할 때"],
+    ["sit-work-instructions", "work", "작업 지시 듣기", "작업 지시를 들을 때"],
+    ["sit-work-safety-sign", "work", "안전 표지", "안전 표지를 읽을 때"],
+    ["sit-work-colleague", "work", "동료와 대화", "동료와 이야기할 때"],
+    ["sit-work-interview", "work", "면접", "면접을 볼 때"],
+    ["sit-career-email", "career", "메일", "업무 메일을 쓸 때"],
+    ["sit-career-report", "career", "회의 보고", "회의에서 보고할 때"],
+    ["sit-career-phone", "career", "전화", "업무 전화를 할 때"],
+    ["sit-career-schedule", "career", "일정 조율", "일정을 맞출 때"]
+  ]
+}

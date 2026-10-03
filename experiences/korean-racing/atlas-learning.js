@@ -49,6 +49,7 @@ var SynkLearning = (() => {
         for (const node of data.nodes) {
           if (!text(node.id) || ids.has(node.id) || !KINDS.includes(node.kind) || !text(node.label_ko)) fail("invalid or duplicate node");
           if (node.level !== null && (!Number.isInteger(node.level?.intro) || node.level.intro < 1 || node.level.intro > 6 || !text(node.level.basis))) fail("invalid level");
+          if (node.when_ko !== void 0 && (node.kind !== "situation" || !text(node.when_ko))) fail("invalid situation words");
           refs(node);
           ids.set(node.id, node);
         }
@@ -87,6 +88,16 @@ var SynkLearning = (() => {
           tags.add(link.tag);
         }
         if (tags.size !== data.tag_vocabulary.length) fail("incomplete tag partition");
+        if (data.links.goals !== void 0) {
+          if (!Array.isArray(data.links.goals)) fail("invalid goal links");
+          const goals = /* @__PURE__ */ new Set();
+          for (const link of data.links.goals) {
+            if (!text(link?.goal) || goals.has(link.goal)) fail("invalid or duplicate goal");
+            if (!Array.isArray(link.nodes) || !link.nodes.length || new Set(link.nodes).size !== link.nodes.length || link.nodes.some((id) => !ids.has(id))) fail("goal must lead to known nodes");
+            confidence(link);
+            goals.add(link.goal);
+          }
+        }
         return true;
       }
       function createMap(input) {
@@ -94,8 +105,13 @@ var SynkLearning = (() => {
         const data = freeze(copy(input));
         const nodes = new Map(data.nodes.map((node) => [node.id, node]));
         const tags = new Map(data.links.tags.map((link) => [link.tag, link]));
+        const goals = new Map((data.links.goals || []).map((link) => [link.goal, link]));
         function getNode(id) {
           return nodes.get(id) || null;
+        }
+        function forGoal(goal) {
+          const link = goals.get(goal);
+          return freeze(link ? link.nodes.map(getNode) : []);
         }
         function forTag(tag) {
           const link = tags.get(tag);
@@ -153,6 +169,7 @@ var SynkLearning = (() => {
           getNode,
           forTag,
           forSkill,
+          forGoal,
           prerequisites,
           candidates,
           allNodes: () => Object.freeze([...nodes.values()])
@@ -2180,7 +2197,7 @@ var SynkLearning = (() => {
   var require_topik_i = __commonJS({
     "strata/maps/topik-i.json"(exports, module) {
       module.exports = {
-        map_ver: "topik-i-practice-1-44d2513dd2a1",
+        map_ver: "topik-i-practice-1-c6e2390a4b06",
         subject: "ko",
         sources: {
           "practice-taxonomy": {
@@ -2194,6 +2211,10 @@ var SynkLearning = (() => {
           "practice-words": {
             path: "strata/topik-i.words.json",
             sha256: "3ff79fba027771bc8ccf12434a2c630f550df730eb79fe2f8b716bcb9f7b3347"
+          },
+          "practice-situations": {
+            path: "strata/topik-i.situations.json",
+            sha256: "38fed71d3ce08007714ffaa50ffdaa1a291b2948a235db4988ffe978c4163c0a"
           }
         },
         nodes: [
@@ -4033,6 +4054,344 @@ var SynkLearning = (() => {
                 selector: "S227"
               }
             ]
+          },
+          {
+            id: "sit-culture-speech-level",
+            kind: "situation",
+            label_ko: "대사와 가사의 반말·존댓말",
+            when_ko: "대사와 가사에서",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-culture-speech-level"
+              }
+            ]
+          },
+          {
+            id: "sit-culture-abbreviation",
+            kind: "situation",
+            label_ko: "줄임말",
+            when_ko: "친구끼리 줄여서",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-culture-abbreviation"
+              }
+            ]
+          },
+          {
+            id: "sit-culture-emotion",
+            kind: "situation",
+            label_ko: "감정 표현",
+            when_ko: "기분을 말할 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-culture-emotion"
+              }
+            ]
+          },
+          {
+            id: "sit-travel-directions",
+            kind: "situation",
+            label_ko: "길 묻기",
+            when_ko: "길을 물을 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-travel-directions"
+              }
+            ]
+          },
+          {
+            id: "sit-travel-order",
+            kind: "situation",
+            label_ko: "주문",
+            when_ko: "주문할 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-travel-order"
+              }
+            ]
+          },
+          {
+            id: "sit-travel-transport",
+            kind: "situation",
+            label_ko: "교통",
+            when_ko: "버스나 지하철을 탈 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-travel-transport"
+              }
+            ]
+          },
+          {
+            id: "sit-travel-lodging",
+            kind: "situation",
+            label_ko: "숙소",
+            when_ko: "숙소에서",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-travel-lodging"
+              }
+            ]
+          },
+          {
+            id: "sit-travel-shopping",
+            kind: "situation",
+            label_ko: "쇼핑",
+            when_ko: "물건을 살 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-travel-shopping"
+              }
+            ]
+          },
+          {
+            id: "sit-people-greeting",
+            kind: "situation",
+            label_ko: "안부",
+            when_ko: "안부를 물을 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-people-greeting"
+              }
+            ]
+          },
+          {
+            id: "sit-people-address",
+            kind: "situation",
+            label_ko: "호칭",
+            when_ko: "사람을 부를 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-people-address"
+              }
+            ]
+          },
+          {
+            id: "sit-people-honorific",
+            kind: "situation",
+            label_ko: "높임말 고르기",
+            when_ko: "윗사람과 이야기할 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-people-honorific"
+              }
+            ]
+          },
+          {
+            id: "sit-people-messenger",
+            kind: "situation",
+            label_ko: "영상통화·메신저",
+            when_ko: "영상통화나 메신저에서",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-people-messenger"
+              }
+            ]
+          },
+          {
+            id: "sit-life-office",
+            kind: "situation",
+            label_ko: "주민센터·병원·은행",
+            when_ko: "주민센터·병원·은행에서",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-life-office"
+              }
+            ]
+          },
+          {
+            id: "sit-life-notice",
+            kind: "situation",
+            label_ko: "공공 안내문 읽기",
+            when_ko: "안내문을 읽을 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-life-notice"
+              }
+            ]
+          },
+          {
+            id: "sit-study-lecture",
+            kind: "situation",
+            label_ko: "강의 듣기",
+            when_ko: "강의를 들을 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-study-lecture"
+              }
+            ]
+          },
+          {
+            id: "sit-study-presentation",
+            kind: "situation",
+            label_ko: "발표",
+            when_ko: "발표할 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-study-presentation"
+              }
+            ]
+          },
+          {
+            id: "sit-study-professor-email",
+            kind: "situation",
+            label_ko: "교수님께 메일",
+            when_ko: "교수님께 메일을 쓸 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-study-professor-email"
+              }
+            ]
+          },
+          {
+            id: "sit-study-assignment",
+            kind: "situation",
+            label_ko: "과제",
+            when_ko: "과제를 할 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-study-assignment"
+              }
+            ]
+          },
+          {
+            id: "sit-work-instructions",
+            kind: "situation",
+            label_ko: "작업 지시 듣기",
+            when_ko: "작업 지시를 들을 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-work-instructions"
+              }
+            ]
+          },
+          {
+            id: "sit-work-safety-sign",
+            kind: "situation",
+            label_ko: "안전 표지",
+            when_ko: "안전 표지를 읽을 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-work-safety-sign"
+              }
+            ]
+          },
+          {
+            id: "sit-work-colleague",
+            kind: "situation",
+            label_ko: "동료와 대화",
+            when_ko: "동료와 이야기할 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-work-colleague"
+              }
+            ]
+          },
+          {
+            id: "sit-work-interview",
+            kind: "situation",
+            label_ko: "면접",
+            when_ko: "면접을 볼 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-work-interview"
+              }
+            ]
+          },
+          {
+            id: "sit-career-email",
+            kind: "situation",
+            label_ko: "메일",
+            when_ko: "업무 메일을 쓸 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-career-email"
+              }
+            ]
+          },
+          {
+            id: "sit-career-report",
+            kind: "situation",
+            label_ko: "회의 보고",
+            when_ko: "회의에서 보고할 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-career-report"
+              }
+            ]
+          },
+          {
+            id: "sit-career-phone",
+            kind: "situation",
+            label_ko: "전화",
+            when_ko: "업무 전화를 할 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-career-phone"
+              }
+            ]
+          },
+          {
+            id: "sit-career-schedule",
+            kind: "situation",
+            label_ko: "일정 조율",
+            when_ko: "일정을 맞출 때",
+            level: null,
+            source_refs: [
+              {
+                source: "practice-situations",
+                selector: "sit-career-schedule"
+              }
+            ]
           }
         ],
         edges: [
@@ -5508,7 +5867,126 @@ var SynkLearning = (() => {
         ],
         tag_vocabulary: [],
         links: {
-          tags: []
+          tags: [],
+          goals: [
+            {
+              goal: "culture",
+              nodes: [
+                "sit-culture-speech-level",
+                "sit-culture-abbreviation",
+                "sit-culture-emotion"
+              ],
+              confidence: "authored",
+              reviewed: true,
+              source_refs: [
+                {
+                  source: "practice-situations",
+                  selector: "culture"
+                }
+              ]
+            },
+            {
+              goal: "travel",
+              nodes: [
+                "sit-travel-directions",
+                "sit-travel-order",
+                "sit-travel-transport",
+                "sit-travel-lodging",
+                "sit-travel-shopping"
+              ],
+              confidence: "authored",
+              reviewed: true,
+              source_refs: [
+                {
+                  source: "practice-situations",
+                  selector: "travel"
+                }
+              ]
+            },
+            {
+              goal: "people",
+              nodes: [
+                "sit-people-greeting",
+                "sit-people-address",
+                "sit-people-honorific",
+                "sit-people-messenger"
+              ],
+              confidence: "authored",
+              reviewed: true,
+              source_refs: [
+                {
+                  source: "practice-situations",
+                  selector: "people"
+                }
+              ]
+            },
+            {
+              goal: "life",
+              nodes: [
+                "sit-life-office",
+                "sit-life-notice"
+              ],
+              confidence: "authored",
+              reviewed: true,
+              source_refs: [
+                {
+                  source: "practice-situations",
+                  selector: "life"
+                }
+              ]
+            },
+            {
+              goal: "study",
+              nodes: [
+                "sit-study-lecture",
+                "sit-study-presentation",
+                "sit-study-professor-email",
+                "sit-study-assignment"
+              ],
+              confidence: "authored",
+              reviewed: true,
+              source_refs: [
+                {
+                  source: "practice-situations",
+                  selector: "study"
+                }
+              ]
+            },
+            {
+              goal: "work",
+              nodes: [
+                "sit-work-instructions",
+                "sit-work-safety-sign",
+                "sit-work-colleague",
+                "sit-work-interview"
+              ],
+              confidence: "authored",
+              reviewed: true,
+              source_refs: [
+                {
+                  source: "practice-situations",
+                  selector: "work"
+                }
+              ]
+            },
+            {
+              goal: "career",
+              nodes: [
+                "sit-career-email",
+                "sit-career-report",
+                "sit-career-phone",
+                "sit-career-schedule"
+              ],
+              confidence: "authored",
+              reviewed: true,
+              source_refs: [
+                {
+                  source: "practice-situations",
+                  selector: "career"
+                }
+              ]
+            }
+          ]
         }
       };
     }
@@ -6603,7 +7081,11 @@ var SynkLearning = (() => {
         if (!Object.hasOwn(reasons, status)) throw new TypeError("Vellum: invalid learning reason");
         return reasons[status];
       }
-      module.exports = { SUPPORTS, STUCK, reviewOpen, offerCue, learningReason };
+      function situationLine({ when }) {
+        if (typeof when !== "string" || !when.trim()) throw new TypeError("Vellum: invalid situation line");
+        return `${when} 쓰는 말이라 골랐어요.`;
+      }
+      module.exports = { SUPPORTS, STUCK, reviewOpen, offerCue, learningReason, situationLine };
     }
   });
 

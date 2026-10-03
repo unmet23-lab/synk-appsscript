@@ -38,6 +38,8 @@ function validateMap(data) {
   for (const node of data.nodes) {
     if (!text(node.id) || ids.has(node.id) || !KINDS.includes(node.kind) || !text(node.label_ko)) fail('invalid or duplicate node');
     if (node.level !== null && (!Number.isInteger(node.level?.intro) || node.level.intro < 1 || node.level.intro > 6 || !text(node.level.basis))) fail('invalid level');
+    // A situation may carry the words Vellum's reason line uses for it ("주문할 때").
+    if (node.when_ko !== undefined && (node.kind !== 'situation' || !text(node.when_ko))) fail('invalid situation words');
     refs(node);
     ids.set(node.id, node);
   }
@@ -76,6 +78,19 @@ function validateMap(data) {
     tags.add(link.tag);
   }
   if (tags.size !== data.tag_vocabulary.length) fail('incomplete tag partition');
+  // A declared goal (a learner's reason) leads to the situations practised for it. Optional: a map
+  // without goal links has none, and an unknown goal leads nowhere.
+  if (data.links.goals !== undefined) {
+    if (!Array.isArray(data.links.goals)) fail('invalid goal links');
+    const goals = new Set();
+    for (const link of data.links.goals) {
+      if (!text(link?.goal) || goals.has(link.goal)) fail('invalid or duplicate goal');
+      if (!Array.isArray(link.nodes) || !link.nodes.length || new Set(link.nodes).size !== link.nodes.length
+        || link.nodes.some(id => !ids.has(id))) fail('goal must lead to known nodes');
+      confidence(link);
+      goals.add(link.goal);
+    }
+  }
   return true;
 }
 
@@ -84,7 +99,14 @@ function createMap(input) {
   const data = freeze(copy(input));
   const nodes = new Map(data.nodes.map(node => [node.id, node]));
   const tags = new Map(data.links.tags.map(link => [link.tag, link]));
+  const goals = new Map((data.links.goals || []).map(link => [link.goal, link]));
   function getNode(id) { return nodes.get(id) || null; }
+  // The nodes on the way to a declared goal, in the order the map gives them. It does not judge the
+  // goal; an unknown goal or one without links gives an empty list, never a similar goal's nodes.
+  function forGoal(goal) {
+    const link = goals.get(goal);
+    return freeze(link ? link.nodes.map(getNode) : []);
+  }
   function forTag(tag) {
     const link = tags.get(tag);
     return freeze({ status: !link ? 'unknown' : link.fit === 'full' ? 'exact' : 'missing', tag,
@@ -129,7 +151,7 @@ function createMap(input) {
       advisory: result.prerequisites.filter(item => !item.blocking && !mastered.has(item.node.id)).map(item => item.node.id),
     })).slice(0, limit));
   }
-  return Object.freeze({ map_ver: data.map_ver, getNode, forTag, forSkill, prerequisites, candidates,
+  return Object.freeze({ map_ver: data.map_ver, getNode, forTag, forSkill, forGoal, prerequisites, candidates,
     allNodes: () => Object.freeze([...nodes.values()]) });
 }
 

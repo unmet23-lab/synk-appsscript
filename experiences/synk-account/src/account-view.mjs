@@ -1,13 +1,7 @@
 import { createWorldLearningHost } from './generated/world-learning-host.cjs';
 import { scopedStorage } from './core.mjs';
+import { SETTING_WORDS, REASON_WORDS, WORLD_GAMES, picksForReasons } from './atlas-words.mjs';
 const memberLabel = member => ({ student: '학생', teacher: '강사', director: '원장', reviewer: '검수 담당' })[member.role] || (member.kind === 'staff' ? '교직원' : '회원');
-// Words for Core's account summary (synk-account ?view=atlas): the settings a person chose and the
-// learning reasons they declared. A summary describes choices and practice, never ability or a trait.
-const SETTING_WORDS = { support: { step: '단계별로 도와줘요', choose: '그때그때 맞춰 줘요', independent: '혼자 해 볼게요' },
-  textSize: { standard: '보통 글씨', large: '큰 글씨' }, explanation: { brief: '짧은 설명', standard: '보통 설명', detailed: '자세한 설명' },
-  motion: { full: '움직임 그대로', reduced: '움직임 줄이기' }, audio: { off: '소리 끄기', available: '소리 쓰기' } };
-const REASON_WORDS = { culture: '드라마·음악·웹툰', travel: '한국 여행', people: '가족·친구와 이야기', life: '한국 생활', study: '한국에서 공부',
-  work: '한국에서 일', career: '지금 하는 일', exam: '시험·자격', hobby: '배우는 즐거움', other: '다른 이유' };
 const element = (tag, text, className) => { const node = document.createElement(tag);if (text != null) node.textContent = text;if (className) node.className = className;return node; };
 // 기기 시각으로 「10월 10일 05:00」(계정 지우기 취소 기한).
 const dueText = value => { const d = new Date(value);if (!value || Number.isNaN(d.getTime())) return '';return `${d.getMonth() + 1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
@@ -39,7 +33,7 @@ export function createAccountView({ client, product, guard, notice, logout, prev
       window.SYNKLearningHost = host;document.addEventListener?.('visibilitychange', visibility);
     }
     const links = element('div', null, 'game-links'), frame = element('iframe');gameFrame=frame;frame.hidden = true;frame.title = 'WORLD 학습 게임';frame.allow = 'autoplay; fullscreen';
-    for (const [path, label] of [['korean-racing', '한국어 레이싱'], ['korean-runner', '바람길'], ['korean-rhythm', '한국어 리듬'], ['order-rush', '주문 폭주'], ['entry-check', '입장 검사'], ['story-classroom', '선생님이 돌아왔다'], ['blank-slice', '빈칸 베기']]) {
+    for (const { path, label } of WORLD_GAMES) {
       links.append(button(label, async () => { guard();if (preview) { notice('로컬 화면 예시에서는 실제 게임 계정 연결을 시작하지 않아요.');return; }if(localConnection){await onGameRequest?.(path);return;}frame.src = new URL(`../${path}/`, location.href).href;frame.hidden = false; }, 'sb-glass'));
     }
     world.append(links, frame);
@@ -59,6 +53,8 @@ export function createAccountView({ client, product, guard, notice, logout, prev
     rows.push(chosen.length ? `고른 설정 · ${chosen.join(' · ')}` : '고른 설정 · 아직 없어요');
     const reasons = (summary.reasons || []).map(reason => REASON_WORDS[reason]).filter(Boolean);
     rows.push(reasons.length ? `배우는 이유 · ${reasons.join(' · ')}` : '배우는 이유 · 아직 밝히지 않았어요');
+    // WORLD only, where the games below can be opened: practice a declared reason picked, with the line.
+    if (product === 'world') for (const pick of picksForReasons(summary.forReasons)) rows.push(`이 이유로 고른 연습 · ${pick.label} — ${pick.line}`);
     const practice = summary.practice || {};
     rows.push(practice.answered ? `연습 · ${practice.answered}문항 · 혼자 맞힌 문항 ${practice.independent} · 도움 받은 문항 ${practice.assisted}` : '연습 · 아직 저장된 연습이 없어요');
     for (const skill of (practice.skills || []).slice(0, 3)) rows.push(skill.line);

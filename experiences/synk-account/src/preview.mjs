@@ -26,7 +26,11 @@ const accountFactory = () => ({
   exportPage: async () => ({ events: [], cursor: 0, until: 0, hasMore: false, eventMeta: [] }),
   // A synthetic Atlas summary in the shape synk-account ?view=atlas returns.
   atlasSummary: async () => ({ shared: enabled ? 'practice-and-settings' : 'declared-only', learning: { enabled, revision }, summary: {
-    presentation: enabled ? { support: 'step', textSize: 'large' } : null, reasons: ['travel', 'culture'],
+    presentation: enabled ? { support: 'step', textSize: 'large' } : null, reasons: ['travel', 'life'],
+    forReasons: [{ reason: 'travel', situations: [['sit-travel-directions', '길 묻기', '길을 물을 때'], ['sit-travel-order', '주문', '주문할 때'], ['sit-travel-transport', '교통', '버스나 지하철을 탈 때'],
+      ['sit-travel-lodging', '숙소', '숙소에서'], ['sit-travel-shopping', '쇼핑', '물건을 살 때']].map(([id, label, when]) => ({ id, label, line: `${when} 쓰는 말이라 골랐어요.` })) },
+    { reason: 'life', situations: [['sit-life-office', '주민센터·병원·은행', '주민센터·병원·은행에서'], ['sit-life-notice', '공공 안내문 읽기', '안내문을 읽을 때']]
+      .map(([id, label, when]) => ({ id, label, line: `${when} 쓰는 말이라 골랐어요.` })) }],
     practice: enabled ? { answered: 18, independent: 12, assisted: 4, skills: [{ line: '최근 놓친 듣고 세부 정보 찾기를 조금 더 연습해 봐요.' }, { line: '낱말 듣기를 최근 혼자 해냈어요. 가볍게 이어가요.' }] } : { answered: 0, independent: 0, assisted: 0, skills: [] } } })
 });
 const notice = text => { document.getElementById('notice').textContent = `합성 화면 예시 · ${text}`; };

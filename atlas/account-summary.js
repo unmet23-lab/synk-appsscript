@@ -6,7 +6,7 @@
 // share. It describes practice; it is never an ability, a grade, a level or a personality.
 const Trail = require('./trail');
 const Learning = require('./learning');
-const { learningReason } = require('./vellum');
+const { learningReason, situationLine } = require('./vellum');
 const VERSION = 'atlas-account-summary-1';
 // The account log's scope (game-learning.js account store, synk-learning).
 const SCOPE = Object.freeze({ domain: 'LAB', workspace: 'learning', subject: 'device' });
@@ -25,10 +25,17 @@ function summarizeAccount({ events, map, asOf, presentation = null, reasons = nu
     .sort((a, b) => b.priority - a.priority || (Date.parse(b.lastAt || 0) - Date.parse(a.lastAt || 0)) || a.id.localeCompare(b.id));
   const lastAt = observed.attempts.reduce((at, a) => latest(at, a.at), null);
   const answered = observed.attempts.filter(a => a.verdict === 'correct' || a.verdict === 'incorrect');
+  // Where each declared reason leads (Strata links.goals), with the line a product shows beside
+  // practice it picks for that situation. A reason without situations (exam, hobby, other) claims
+  // nothing. A reason changes only where practice happens, never difficulty or a level.
+  const forReasons = !reasons || typeof map.forGoal !== 'function' ? [] : reasons.map(reason => ({ reason,
+    situations: map.forGoal(reason).filter(n => n.kind === 'situation' && n.when_ko)
+      .map(n => ({ id: n.id, label: n.label_ko, line: situationLine({ when: n.when_ko }) })) })).filter(r => r.situations.length);
   return {
     version: VERSION, asOf,
     presentation: presentation && { ...presentation },
     reasons: reasons && [...reasons],
+    forReasons,
     practice: {
       answered: answered.length,
       independent: answered.filter(a => a.independent).length,

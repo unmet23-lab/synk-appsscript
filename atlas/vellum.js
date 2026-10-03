@@ -51,4 +51,11 @@ function learningReason({ status, label }) {
   if (!Object.hasOwn(reasons, status)) throw new TypeError('Vellum: invalid learning reason');
   return reasons[status];
 }
-module.exports = { SUPPORTS, STUCK, reviewOpen, offerCue, learningReason };
+// The line beside practice a product picked because a declared learning reason leads to that
+// situation (Strata links.goals). The blank is the situation's own words (when_ko: "주문할 때").
+// It names the reason's situation only; a product shows it next to content it chose for it.
+function situationLine({ when }) {
+  if (typeof when !== 'string' || !when.trim()) throw new TypeError('Vellum: invalid situation line');
+  return `${when} 쓰는 말이라 골랐어요.`;
+}
+module.exports = { SUPPORTS, STUCK, reviewOpen, offerCue, learningReason, situationLine };
