@@ -25,8 +25,9 @@ const arg = name => { const i = process.argv.indexOf(name); return i > 0 ? proce
 const readJson = (file, fallback) => { try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return fallback; } };
 const CANDIDATES = readJson(path.join(stage, 'qa', 'voice-candidates.json'), { voices: [] }).voices;
 const VOICE_ID = /^tc_[0-9a-f]{24}$/;
-// 기본 목소리: 서현(LAB 카페 상황극 09-26 「전보다 훨씬 낫다」, 한글날 편 10-03에 유호님이 고른 여자 목소리). --voice나 POST /voice로 바꾼다.
-let VOICE = { id: arg('--voice') || 'tc_69f2e455ea79fd197aa0476f', name: arg('--name') || '서현' };
+// 목소리: 혜리. 10-03 유호님이 비교 뒤 「혜리랑 우리가 고른 서현이 제일 낫네. 여자는 컨텐츠 특성에 따라서 둘 중 하나」라고 했고,
+// 한글 단계는 상큼한 목소리를 찾던 자리라 혜리로 했다. --voice나 POST /voice로 바꾼다.
+let VOICE = { id: arg('--voice') || 'tc_62e8f21e979b3860fe2f6a24', name: arg('--name') || '혜리' };
 // 글자 소리는 감정을 싣지 않고 또박또박, 조금 천천히.
 const SETTINGS = { model: 'ssfm-v30', emotion: 'normal', intensity: 1.0, tempo: 0.9, seed: 1003 };
 const SAMPLE = ['아', '어', '오', '으', '애', '에', '가', '나무'];

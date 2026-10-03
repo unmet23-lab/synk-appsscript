@@ -35,9 +35,9 @@ node tools/build-hangul-stage.js [--check]    # 한글 층 지도와 학습 묶�
 
 ## 소리
 
-2026-09-19 결정은 「글자 소리는 정한 목소리 하나만, 귀로 확인한 파일만」이다. **10-03 목소리는 Typecast로 정했다**(유호님 「다이브 말고 타입캐스트로 바꿨어」 — Typecast API Lite가 결제돼 있다. DIVE는 결제 기록이 없다). 쓸 목소리 하나는 추천 서현이고 유호님 확인 전이다.
+2026-09-19 결정은 「글자 소리는 정한 목소리 하나만, 귀로 확인한 파일만」이다. **10-03 목소리는 Typecast로 정했다**(유호님 「다이브 말고 타입캐스트로 바꿨어」 — Typecast API Lite가 결제돼 있다. DIVE는 결제 기록이 없다). **쓸 목소리는 혜리다**(10-03 유호님: 비교한 일곱 목소리 가운데 「혜리랑 우리가 고른 서현이 제일 낫네. 여자는 컨텐츠 특성에 따라서 둘 중 하나 사용하면 될것같아」 — 한글 단계는 상큼한 목소리를 찾던 자리라 혜리).
 
-- **목소리 고르기:** 같은 도구의 http://127.0.0.1:5241/compare 에서 후보 7명(하나·정희·미리내·혜리·다솜·가희, 기준 서현)의 공식 미리듣기를 듣고, 연결 뒤 `POST /generate {"compare":true}`로 만든 같은 글자 8개(아·어·오·으·애·에·가·나무)를 목소리마다 나란히 듣는다. 후보는 Typecast 한국어 여자 목소리 66개의 공식 미리듣기에서 음높이·밝기·억양 폭·빠르기를 재서 밝은 쪽을 고르고 아이·캐릭터처럼 높은 쪽을 뺐다([qa/voice-candidates.json](qa/voice-candidates.json), 10-03 유호님 「서현 괜찮은데 다른 상큼한 목소리 없을까?」). 비교용 소리는 저장소 밖(`Documents/synk-vendor/hangul-voice/compare`)에 둔다. 고른 목소리는 `POST /voice {"id":"tc_…"}`로 바꾼다.
+- **목소리 고르기:** 같은 도구의 http://127.0.0.1:5241/compare 에서 후보 7명(하나·정희·미리내·혜리·다솜·가희, 기준 서현)의 공식 미리듣기를 듣고, 연결 뒤 `POST /generate {"compare":true}`로 만든 같은 글자 8개(아·어·오·으·애·에·가·나무)를 목소리마다 나란히 듣는다. 후보는 Typecast 한국어 여자 목소리 66개의 공식 미리듣기에서 음높이·밝기·억양 폭·빠르기를 재서 밝은 쪽을 고르고 아이·캐릭터처럼 높은 쪽을 뺐다([qa/voice-candidates.json](qa/voice-candidates.json), 10-03 유호님 「서현 괜찮은데 다른 상큼한 목소리 없을까?」). 비교용 소리는 저장소 밖(`Documents/synk-vendor/hangul-voice/compare`)에 둔다. 고른 목소리는 `POST /voice {"id":"tc_…"}`로 바꾼다. 10-03 비교 결과 혜리(`tc_62e8f21e979b3860fe2f6a24`)로 정했고 도구의 기본값도 혜리다.
 - **만들기:** `node tools/한글단계_목소리.cjs`(목소리를 바꾸려면 `--voice tc_… --name 이름`) → http://127.0.0.1:5241 에서 유호님이 기존 Typecast API 키를 붙여 넣는다(키는 메모리에만 2시간, 결제·충전 기능 없음). 그 뒤 이 컴퓨터의 명령으로 `POST /generate {"sample":true}`가 8개를 만들어 한 개당 크레딧 쓰임을 재고, `{"all":true}`가 [pack.mjs](pack.mjs)의 `audioManifest()` 목록(165개 · 214자: 글자 소리·음절·낱말·간판·명패)의 나머지를 만든다. 어림 쓰임이 남은 월 크레딧의 10%를 넘으면 멈추고 묻는다. 감정 normal·빠르기 0.9·ssfm-v30, 앞뒤 무음을 걷은 64k mp3가 `assets/voice/`에, 원본 wav는 저장소 밖 `Documents/synk-vendor/hangul-voice/raw`에 남는다.
 - **확인과 승인:** 만든 목록은 `assets/voice/voices.candidate.json`이다. 유호님이 [voice-check.html](voice-check.html)(글자 22 · 음절 표 120 · 낱말)에서 귀로 확인한 뒤 `node tools/한글단계_목소리.cjs --approve "유호님 10-0X 귀 확인"`으로 [voices.json](assets/voice/voices.json)에 옮긴다. 앱은 `approved: true`인 목록만 먼저 튼다.
 - 그전과 목록에 없는 소리는 기기의 한국어 음성(브라우저 `speechSynthesis`, 기기 안 음성 우선)으로 낸다. 기기마다 목소리가 달라 들리는 소리가 다를 수 있다. 한국어 음성도 승인된 파일도 없는 기기는 시작 단추를 잠그고 안내한다.
@@ -62,5 +62,5 @@ node tools/build-hangul-stage.js [--check]    # 한글 층 지도와 학습 묶�
 2. 교사 과제(teacher-world 게임 목록)는 한글 능력이 `ko.<영역>.` 꼴이 아니어서 목록 시험(`catalog-labels.test.mjs`)과 함께 정한다.
 3. 기기를 넘는 글자 진도: 엔진 쪽 일 — 글자·음절을 Core의 내용 종류로 받고(`atlas/learning.js` CONTENT), 되풀이 연습을 세는 증거 규칙을 둔 뒤 진도를 공통 기록에서 계산한다.
 4. 설계 둘째·셋째 판: 받침(U6·U7)·헷갈리는 짝 문항·낱말↔그림·따라 말하기·글자 퀼트·몽글에게 가르쳐 주기·졸업 / 격음·쌍자음·이중모음·첫 문장·가나다 장단·고르는 놀이·들어오기 확인 열 문항.
-5. Typecast 목소리 하나(추천 서현) 확인 → 유호님 키 붙여 넣기 → 165개 만들기 → 귀로 확인·승인. 도움 언어는 출시 나라·지원 언어가 정해진 뒤.
+5. 유호님이 키를 붙여 넣으면 혜리로 165개 만들기 → 귀로 확인·승인. 도움 언어는 출시 나라·지원 언어가 정해진 뒤.
 6. `atlas/`·`strata/`를 바꾸면 `tools/build-game-learning.js`와 함께 `tools/build-hangul-stage.js`도 다시 돌린다(이 묶음은 그 도구의 소비처 목록에 없다).
