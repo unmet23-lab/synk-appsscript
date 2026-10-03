@@ -29,10 +29,20 @@ test('WORLD 목표는 실제 영역·난도·문항 쌍만 출제하고 순서�
   const wrong = ['skillId', 'difficulty', 'modality', 'responseFormat', 'itemKey', 'familyKey'];
   for (const key of wrong) {
     const changed = structuredClone(target); changed.items[0][key] = key === 'difficulty' ? 1 : 'wrong';
-    assert.deepEqual(assignmentItems(changed), chosen.slice(1), key);
+    assert.deepEqual(assignmentItems(changed), [], `목표 일부만 가능한 경우 전체 시작을 막는다: ${key}`);
   }
   assert.deepEqual(assignmentItems({...target, difficulty:1}), []);
   assert.deepEqual(assignmentItems({...target, items:[...target.items,...target.items]}), chosen, '같은 문항은 두 번 넣지 않는다');
+});
+
+test('이전 판을 포함한 WORLD 과제는 남은 한 문항으로 조용히 줄이지 않는다', () => {
+  const chosen = ['v06', 'v07', 'v08'].map(byId);
+  const items = chosen.map(itemMetadata);
+  const target = { ...items[0], items, requiredAttempts: 3 };
+  assert.deepEqual(assignmentItems(target), chosen, '현재 판은 모두 출제한다');
+  const old = { ...target, items: items.map(m => ({ ...m, itemKey: m.itemKey.replace(/\.v2$/, '.v1') })) };
+  assert.deepEqual(assignmentItems(old), [], '현재 남아 있는 v08 하나만 실행하면 과제를 끝낼 수 없다');
+  assert.deepEqual(assignmentItems({ ...target, items: items.slice(1) }), [], '목표 수보다 적은 문항도 거절한다');
 });
 
 test('문항 정보: 지도에 있는 읽기 항목·고정 키·한 개 고르기 형식, 엔진 검사 통과', () => {

@@ -41,8 +41,11 @@ export function assignmentItems(target, items = ITEMS) {
         && m.skillId === target.skillId && m.difficulty === target.difficulty
         && m.modality === target.modality && m.responseFormat === target.responseFormat;
     });
-    if (item) selected.set(required.familyKey, item);
+    // 고정 과제에서 사라진 판을 빼고 시작하면 끝까지 풀어도 목표 수에 못 미친다.
+    if (!item) return [];
+    selected.set(required.familyKey, item);
   }
+  if (target.requiredAttempts != null && (!Number.isInteger(target.requiredAttempts) || target.requiredAttempts < 1 || selected.size < target.requiredAttempts)) return [];
   return [...selected.values()];
 }
 

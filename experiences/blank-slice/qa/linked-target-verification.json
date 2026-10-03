@@ -22,6 +22,10 @@
       "ok": true
     },
     {
+      "name": "round 0: game iframe is in the visible viewport",
+      "ok": true
+    },
+    {
       "name": "round 0: 390px target lobby fits",
       "ok": true
     },
@@ -34,6 +38,18 @@
       "ok": true
     },
     {
+      "name": "round 0: no answer exposed before static confirmation p01",
+      "ok": true
+    },
+    {
+      "name": "round 0: no answer exposed before static confirmation p02",
+      "ok": true
+    },
+    {
+      "name": "round 0: no answer exposed before static confirmation p03",
+      "ok": true
+    },
+    {
       "name": "round 0: three actual target responses complete",
       "ok": true
     },
@@ -43,6 +59,10 @@
     },
     {
       "name": "round 0: target run preserves free-play score",
+      "ok": true
+    },
+    {
+      "name": "missed slices do not become reading errors: three static answers are recorded with no motor score",
       "ok": true
     },
     {
@@ -63,6 +83,10 @@
     },
     {
       "name": "round 1: account record controls do not erase browser records",
+      "ok": true
+    },
+    {
+      "name": "round 1: game iframe is in the visible viewport",
       "ok": true
     },
     {
@@ -90,6 +114,10 @@
       "ok": true
     },
     {
+      "name": "keyboard round uses three scored slices without static answer fallback",
+      "ok": true
+    },
+    {
       "name": "round 1: 390px target layout fits",
       "ok": true
     },
@@ -105,7 +133,7 @@
   "results": [
     {
       "round": 0,
-      "source": "teacher-form-and-real-keyboard-controls",
+      "source": "teacher-form-missed-slices-and-static-answer-buttons",
       "target": {
         "skillId": "ko.reading.grammar",
         "difficulty": 1,
@@ -145,6 +173,7 @@
     }
   ],
   "errors": [],
+  "runner": "headless-chrome",
   "isolated": true,
   "productionConnected": false
 }

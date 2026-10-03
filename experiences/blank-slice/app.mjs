@@ -85,7 +85,8 @@ function renderLobby() {
   state.ranked = progress.plays === 0 ? null : atlas((c) => rankItems(c, ITEMS));
   $('#l-count').textContent = String(target ? targetItems.length : 12);
   $('#btn-start').disabled = !!target && targetItems.length === 0;
-  $('#l-reason').textContent = target ? `${assignmentLabel(target)}. 이 목표 문장에 답하면 WORLD 과제에 반영돼요. 놓친 문장은 멈춘 보기에서 답해요.` : progress.plays === 0
+  $('#l-reason').textContent = target && !targetItems.length ? '이 과제의 문항이 바뀌어 지금은 시작할 수 없어요. WORLD로 돌아가 선생님께 새 과제 배정을 요청해 주세요.'
+    : target ? `${assignmentLabel(target)}. 이 목표 문장에 답하면 WORLD 과제에 반영돼요. 놓친 문장은 멈춘 보기에서 답해요.` : progress.plays === 0
     ? '처음이라 쉬운 문장부터 시작해요. 첫 문장은 연습이에요.'
     : state.ranked?.reason ? `${state.ranked.reason} 그 문장들을 먼저 넣었어요.` : '새 문장을 섞어 한 판을 만들어요.';
   const best = progress.best;
