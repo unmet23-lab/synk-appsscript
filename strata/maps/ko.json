@@ -1,5 +1,5 @@
 {
-  "map_ver": "strata-ko-1-945acefcfa74bfae",
+  "map_ver": "strata-ko-1-b91f23e62ef678cb",
   "schema_ver": 1,
   "subject": "ko",
   "sources": {
@@ -15,7 +15,7 @@
     },
     "error_tags": {
       "path": "SYNK-appsscript/계약/수집_교정_계약.json",
-      "sha256": "b2e9fdc0f4dc7ef7b5b51ad6f79dbbe2546ef88823ec847d323d5bb209121f25",
+      "sha256": "766f061e55a9745e90ef4b73ad1c48755f33af9c7c2e7bf942fd15a84e5e4fc8",
       "hash_format": "sha256-utf8-lf"
     },
     "tag_links": {
