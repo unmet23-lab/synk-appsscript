@@ -42,6 +42,7 @@ export class StoryGame {
     this.records = [];
     this.events = [];
     this._history = [];
+    this.practice = null;
     return this;
   }
 
@@ -53,10 +54,21 @@ export class StoryGame {
     const index=EPISODE.acts.findIndex(act=>act.missions.some(m=>ids.has(m.id)));
     if(index<0&&!EPISODE.review.some(m=>ids.has(m.id)))return false;
     this.restart();
+    this.practice=[...ids].filter(id=>MISSION_IDS.has(id));
     this.actIndex=index<0?EPISODE.acts.length-1:index;
     this.phase=index<0?'review':'intro';
     return true;
   }
+
+  /** In an assigned round, the next scene that holds an assigned request (2026-10-03): scenes and
+   * the closing review without one are passed by, so the round is only the assigned reading. */
+  _nextPracticeAct() {
+    const ids = new Set(this.practice);
+    return EPISODE.acts.findIndex((act, index) => index > this.actIndex && act.missions.some(m => ids.has(m.id)));
+  }
+  _practiceReview() { return EPISODE.review.some(m => this.practice.includes(m.id)); }
+  /** Whether the closing review comes after the ending (not in an assigned round without review requests). */
+  get reviewAhead() { return !this.practice || this._practiceReview(); }
 
   advance() {
     if (['play', 'review', 'complete'].includes(this.phase)) return false;
@@ -70,11 +82,15 @@ export class StoryGame {
     else if (this.phase === 'outro') {
       this._history = [];
       this.actor = this.held = null;
-      if (this.actIndex < EPISODE.acts.length - 1) {
-        this.actIndex += 1;
+      const next = this.practice ? this._nextPracticeAct() : this.actIndex + 1;
+      if (next >= 0 && next < EPISODE.acts.length) {
+        this.actIndex = next;
         this.phase = 'intro';
       } else this.phase = 'ending';
-    } else if (this.phase === 'ending') return this.startReview();
+    } else if (this.phase === 'ending') {
+      if (this.practice && !this._practiceReview()) { this.phase = 'complete'; return true; }
+      return this.startReview();
+    }
     return true;
   }
 

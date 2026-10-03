@@ -13,19 +13,6 @@ import {READING_CHECKS,readingMetadata} from '../synk-town/understanding.mjs';
 import {ITEMS as BLANK_ITEMS} from '../blank-slice/content.mjs';
 import {itemMetadata as blankMetadata} from '../blank-slice/learning.mjs';
 const asCandidate=m=>({id:m.id,skillIds:[m.skillId],difficulty:m.difficulty,modality:m.modality,responseFormat:m.responseFormat,familyKey:m.familyKey,itemKey:m.itemKey});
-const game=(id,gameId,title,modality,responseFormat,skills,extra={})=>Object.freeze({id,gameId,title,kind:'game',modality,responseFormat,skillIds:skills.map(s=>`ko.${modality}.${s}`),difficulty:1,assignable:true,requiredAttempts:3,minutes:5,href:`/${gameId}/`,questions:[],note:'학생의 목표에 맞는 문항을 최대 3개 골라요. 목표 문항 응답으로 완료하며 도움과 반복은 독립 수행과 구분합니다.',...extra});
-export const GAME_CONTENT=Object.freeze([
-  game('racing-listening','korean-racing','레이싱 · 듣고 이해하기','listening','single-choice',['word','detail','negation','sequence'],{href:'/korean-racing/?learning=listening'}),
-  game('racing-reading','korean-racing','레이싱 · 읽고 이해하기','reading','single-choice',['detail','negation','condition'],{href:'/korean-racing/?learning=reading'}),
-  game('rhythm-listening','korean-rhythm','리듬 · 나레이션 이해하기','listening','binary-choice',['detail','negation','reason','condition','main']),
-  game('runner-listening','korean-runner','바람길 · 지시 듣기 확인','listening','single-choice',['detail','negation','sequence'],{note:'달리기 점수는 세지 않습니다. 별도 듣기 확인에서 서로 다른 지시 3개에 답해요.'}),
-  game('order-listening','order-rush','주문 폭주 · 주문 이해하기','listening','cup-compose',['detail','negation','condition']),
-  game('entry-reading','entry-check','입장 검사 · 안내문 판단','reading','single-choice',['detail','negation','condition']),
-  game('story-reading','story-classroom','선생님이 돌아왔다 · 읽고 행동하기','reading','action',['detail','negation','sequence']),
-  game('blank-reading','blank-slice','빈칸 베기 · 낱말과 문형 읽기','reading','single-choice',['vocabulary','grammar']),
-  game('town-reading','synk-town','Town · 생활 안내 읽기 확인','reading','single-choice',['detail','negation','sequence'],{href:'/synk-town/linked.html',note:'개발용 생활 체험과 별도 읽기 확인입니다. 꾸미기·이동·호감도는 실력으로 계산하지 않습니다.'}),
-]);
-export const gameContent=id=>GAME_CONTENT.find(c=>c.id===id);
 const authored={
   'korean-racing':RACING_CANDIDATES,
   'korean-rhythm':TRACKS.flatMap(t=>t.questions.flatMap((q,i)=>[0,1].map(variant=>rhythmItem(t.id,{...q,sourceIndex:i,variant})).map(asCandidate))),
@@ -36,6 +23,23 @@ const authored={
   'synk-town':READING_CHECKS.map(readingMetadata).map(asCandidate),
   'blank-slice':BLANK_ITEMS.map(blankMetadata).map(asCandidate),
 };
+// The skills a game lists come from its own questions, so a label cannot promise a skill the game
+// does not ask (racing once listed words it had none of). Targets use the questions themselves (below).
+const SKILL_ORDER=['word','vocabulary','grammar','detail','main','negation','condition','reason','sequence'];
+const skillsOf=(gameId,modality)=>[...new Set((authored[gameId]||[]).filter(c=>c.modality===modality).flatMap(c=>c.skillIds))].sort((a,b)=>SKILL_ORDER.indexOf(a.split('.').pop())-SKILL_ORDER.indexOf(b.split('.').pop()));
+const game=(id,gameId,title,modality,responseFormat,extra={})=>Object.freeze({id,gameId,title,kind:'game',modality,responseFormat,skillIds:skillsOf(gameId,modality),difficulty:1,assignable:true,requiredAttempts:3,minutes:5,href:`/${gameId}/`,questions:[],note:'학생의 목표에 맞는 문항을 최대 3개 골라요. 목표 문항 응답으로 완료하며 도움과 반복은 독립 수행과 구분합니다.',...extra});
+export const GAME_CONTENT=Object.freeze([
+  game('racing-listening','korean-racing','레이싱 · 듣고 이해하기','listening','single-choice',{href:'/korean-racing/?learning=listening'}),
+  game('racing-reading','korean-racing','레이싱 · 읽고 이해하기','reading','single-choice',{href:'/korean-racing/?learning=reading'}),
+  game('rhythm-listening','korean-rhythm','리듬 · 나레이션 이해하기','listening','binary-choice'),
+  game('runner-listening','korean-runner','바람길 · 지시 듣기 확인','listening','single-choice',{note:'달리기 점수는 세지 않습니다. 별도 듣기 확인에서 서로 다른 지시 3개에 답해요.'}),
+  game('order-listening','order-rush','주문 폭주 · 주문 이해하기','listening','cup-compose'),
+  game('entry-reading','entry-check','입장 검사 · 안내문 판단','reading','single-choice'),
+  game('story-reading','story-classroom','선생님이 돌아왔다 · 읽고 행동하기','reading','action'),
+  game('blank-reading','blank-slice','빈칸 베기 · 낱말과 문형 읽기','reading','single-choice'),
+  game('town-reading','synk-town','Town · 생활 안내 읽기 확인','reading','single-choice',{href:'/synk-town/linked.html',note:'개발용 생활 체험과 별도 읽기 확인입니다. 꾸미기·이동·호감도는 실력으로 계산하지 않습니다.'}),
+]);
+export const gameContent=id=>GAME_CONTENT.find(c=>c.id===id);
 // Compare each authored level and response format. A broad game label must not
 // pretend that all its questions are beginner questions in the same skill.
 export function gameProfiles(content){

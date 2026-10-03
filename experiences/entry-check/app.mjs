@@ -29,6 +29,9 @@ const assignment=()=>atlas(c=>c.assignment?.());
 // SYNK WORLD 안에서는 계정의 기록이다. 이 브라우저가 아니라 WORLD 계정 설정에서 공유·삭제를 관리한다.
 const hosted = atlas((c) => typeof c.assignment === 'function', false);
 const assignmentSeen=new Set();
+// The WORLD run this page was opened for has closed (the student opened another task, or it was finished):
+// nothing more is recorded, so the results screen says so instead of offering the next shift.
+const runClosed=()=>{if(!coach||!hosted)return false;try{coach.assignment?.();return false;}catch(error){return error?.code==='RUN_ENDED';}};
 
 /* ── 상태 ── */
 const state = { venue: null, queue: [], index: 0, results: [], combo: 0, cur: null, memoShown: false, ranked: null, busy: false, shift: 0, guardUntil: 0,
@@ -120,7 +123,7 @@ function startShift(venueId, { tutorial = !progress.tutorial } = {}) {
   tut.on = tutorial && v.id === 'pool'; tut.i = 0; hideCoach();
   state.ranked = progress.plays === 0 || tut.on ? null : atlas((c) => rankCases(c, v.cases));
   Object.assign(state, { venue: v, queue: targetCases || (tut.on ? tutorialQueue(v) : composeShift(v, { ranked: state.ranked?.order, firstTime: !progress.tutorial })),
-    index: 0, results: [], combo: 0, cur: null, memoShown: false, busy: false, shift: state.shift + 1 });
+    index: 0, results: [], combo: 0, cur: null, memoShown: false, busy: false, shift: state.shift + 1, targeted: !!target });
   // 순간 맞춤: 돋보기가 스스로 나오는 때만 맞춘다(연수 근무는 정해진 대로).
   clearTimeout(state.magnifierTimer); state.flowLine = null;
   state.flow = tut.on ? null : atlas((c) => c.live?.(FLOW_ENTRY, { words: FLOW_WORDS }) ?? null);
@@ -369,7 +372,7 @@ async function decide(choice, e) {
   if (cur.guided) atlas((c) => c.help(cur.pid, 'answer'));
   sound.unlock(); hideCoach(); sound.stopVoice();
   cur.done = true; state.busy = true;
-  if(assignment())assignmentSeen.add(cur.item.id);
+  if(state.targeted)assignmentSeen.add(cur.item.id);
   const item = cur.item, v = state.venue, token = state.shift;
   const result = judge(item, choice);
   clearTimeout(state.magnifierTimer);
@@ -499,7 +502,7 @@ function finishShift() {
   const offer = flow ? atlas(() => flow.offerLessHelp(), { offer: false }) : { offer: false };
   if (flow) atlas(() => flow.end());
   const before = unlockedIds();
-  if(!assignment()){
+  if(!state.targeted){
     progress.stars[v.id] = Math.max(progress.stars[v.id] || 0, score.stars);
     progress.plays += 1; progress.tutorial = true;
   }
@@ -573,6 +576,9 @@ function renderNext(v) {
   $('#r-next-reason').textContent = goal ? entryTargetLabel(goal) : rec?.reason ? `${rec.reason}` : target.id === v.id ? '같은 근무지에서 새 손님을 만나요.' : '다음 근무지에서 새 안내문을 읽어요.';
   $('#r-next').onclick = () => startShift(target.id);
   $('#r-again').onclick = () => startShift(v.id);
+  const closed = runClosed();
+  if (closed) $('#r-next-reason').textContent = '이 WORLD 과제는 끝났어요. 이어서 하려면 WORLD에서 다시 열어 주세요.';
+  $('#r-next').disabled = $('#r-again').disabled = closed;
   return rec;
 }
 
