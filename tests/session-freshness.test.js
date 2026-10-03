@@ -14,6 +14,10 @@ const SCRIPT = path.resolve(__dirname, '../tools/session-freshness.js');
 const SECRET = 'DO_NOT_OUTPUT_fixture_secret_7f24';
 const POLICY = 'docs/AI_운영원칙.md';
 let temporary, repo, old, ahead, diverged, foreign, blank, baseHead;
+// Under the full parallel suite, Git reads can exceed the 1.7s hook budget and turn these into
+// 'unavailable' (seen 2026-10-03 in a clean-checkout CI run). The checks below measure results, not
+// the budget, so they take the manual cap; the budget itself is covered by the timeout tests further down.
+const ROOMY = { manual: true, timeoutMs: 30000 };
 
 function git(cwd, args) {
   const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/^GIT_/i.test(key)));
@@ -85,7 +89,7 @@ test('current checkout: local master snapshot, policy fingerprint, no write', as
   const index = path.join(repo, '.git/index');
   const beforeIndex = crypto.createHash('sha256').update(fs.readFileSync(index)).digest('hex');
   const beforeStatus = git(repo, ['status', '--porcelain=v1', '-z']);
-  const report = await collect({ cwd: repo, repo });
+  const report = await collect({ cwd: repo, repo, ...ROOMY });
   assert.equal(report.status, 'observed');
   assert.equal(report.head, baseHead);
   assert.equal(report.baseline.source, 'master');
@@ -99,7 +103,7 @@ test('current checkout: local master snapshot, policy fingerprint, no write', as
 });
 
 test('old detached worktree sees canonical commits and missing current instructions', async () => {
-  const report = await collect({ cwd: old, repo });
+  const report = await collect({ cwd: old, repo, ...ROOMY });
   assert.equal(report.status, 'observed');
   assert.equal(report.behind, 1);
   assert.equal(report.ahead, 0);
@@ -108,8 +112,8 @@ test('old detached worktree sees canonical commits and missing current instructi
 });
 
 test('ahead and diverged worktrees retain their independent commits', async () => {
-  const forward = await collect({ cwd: ahead, repo });
-  const split = await collect({ cwd: diverged, repo });
+  const forward = await collect({ cwd: ahead, repo, ...ROOMY });
+  const split = await collect({ cwd: diverged, repo, ...ROOMY });
   assert.equal(forward.status, 'observed');
   assert.deepEqual([forward.ahead, forward.behind], [1, 0]);
   assert.equal(split.status, 'observed');
@@ -120,7 +124,7 @@ test('tracked dirty count excludes untracked names and preserves all changes', a
   file(ahead, 'fixture.txt', 'dirty ' + SECRET);
   file(ahead, SECRET + '.untracked', SECRET);
   const beforeStatus = git(ahead, ['status', '--porcelain=v1', '-z']);
-  const report = await collect({ cwd: ahead, repo });
+  const report = await collect({ cwd: ahead, repo, ...ROOMY });
   assert.equal(report.status, 'observed');
   assert.equal(report.trackedDirty, 1);
   assert.equal(git(ahead, ['status', '--porcelain=v1', '-z']), beforeStatus);
@@ -128,7 +132,7 @@ test('tracked dirty count excludes untracked names and preserves all changes', a
 });
 
 test('foreign Git common dir emits nothing in manual and hook modes', async () => {
-  const report = await collect({ cwd: foreign, repo });
+  const report = await collect({ cwd: foreign, repo, ...ROOMY });
   assert.equal(report.status, 'out-of-scope');
   assert.equal(output(report, { json: true }), '');
   const result = cli(['--hook', '--repo', repo], JSON.stringify({ cwd: foreign, hook_event_name: 'SessionStart' }));
@@ -138,7 +142,7 @@ test('foreign Git common dir emits nothing in manual and hook modes', async () =
 });
 
 test('global scoped hooks stay silent in unrelated non-Git directories', async () => {
-  assert.equal((await collect({ cwd: blank, repo })).status, 'out-of-scope');
+  assert.equal((await collect({ cwd: blank, repo, ...ROOMY })).status, 'out-of-scope');
   for (const [flag, input] of [
     ['--hook', { cwd: blank, hook_event_name: 'SessionStart' }],
     ['--antigravity-hook', { workspacePaths: [blank], invocationNum: 0 }],
@@ -442,7 +446,7 @@ for (const filterType of ['clean', 'process']) {
     // Same byte length forces status to hash instead of short-circuiting on file size.
     file(filtered, 'fixture.txt', 'changed\n');
     fs.utimesSync(path.join(filtered, 'fixture.txt'), new Date(), new Date(Date.now() + 2000));
-    const report = await collect({ cwd: filtered });
+    const report = await collect({ cwd: filtered, ...ROOMY });
     assert.equal(report.status, 'observed');
     assert.equal(report.trackedDirty, 1);
     assert.equal(fs.existsSync(marker), false, 'read-only observer invoked an external filter');
@@ -459,11 +463,11 @@ test('repeated --repo preserves one-repository compatibility and selects only ma
   git(second, ['worktree', 'add', '--detach', linked, 'HEAD']);
   assert.deepEqual(parseArgs(['--repo', repo, '--repo', second]).repo, [repo, second]);
   for (const cwd of [repo, second, linked]) {
-    const report = await collect({ cwd, repo: [repo, second] });
+    const report = await collect({ cwd, repo: [repo, second], ...ROOMY });
     assert.equal(report.status, 'observed');
     assert.equal(report.canonicalReference, cwd === repo ? 'configured-repo-1' : 'configured-repo-2');
   }
-  assert.equal((await collect({ cwd: foreign, repo: [repo, second] })).status, 'out-of-scope');
+  assert.equal((await collect({ cwd: foreign, repo: [repo, second], ...ROOMY })).status, 'out-of-scope');
   for (const [flag, input] of [
     ['--hook', { cwd: linked, hook_event_name: 'UserPromptSubmit' }],
     ['--antigravity-hook', { workspacePaths: [foreign, linked], invocationNum: 0 }],
@@ -484,7 +488,7 @@ test('canonical uncommitted artifacts, equal-count rewrites, new files and delet
   commit(canonical);
   git(canonical, ['worktree', 'add', '--detach', downstream, 'HEAD']);
   file(canonical, 'docs/product.md', 'version two');
-  const first = await collect({ cwd: downstream, repo: canonical });
+  const first = await collect({ cwd: downstream, repo: canonical, ...ROOMY });
   assert.equal(first.status, 'observed');
   assert.equal(first.behind, 0);
   assert.equal(first.working.current.trackedDirty, 0);
@@ -492,20 +496,20 @@ test('canonical uncommitted artifacts, equal-count rewrites, new files and delet
   assert.equal(first.policy.current.sha256, first.policy.canonical.sha256);
   file(canonical, 'docs/product.md', 'version six'); // Same file count and same byte length.
   fs.utimesSync(path.join(canonical, 'docs/product.md'), new Date(), new Date(Date.now() + 2000));
-  const second = await collect({ cwd: downstream, repo: canonical });
+  const second = await collect({ cwd: downstream, repo: canonical, ...ROOMY });
   assert.equal(second.working.canonical.trackedDirty, 1);
   assert.notEqual(first.working.canonical.fingerprint.sha256, second.working.canonical.fingerprint.sha256);
   file(canonical, 'docs/new-material.md', SECRET);
-  const third = await collect({ cwd: downstream, repo: canonical });
+  const third = await collect({ cwd: downstream, repo: canonical, ...ROOMY });
   assert.equal(third.working.canonical.untracked, 1);
   assert.notEqual(second.working.canonical.fingerprint.sha256, third.working.canonical.fingerprint.sha256);
   file(canonical, 'docs/new-material.md', 'replacement');
-  const rewritten = await collect({ cwd: downstream, repo: canonical });
+  const rewritten = await collect({ cwd: downstream, repo: canonical, ...ROOMY });
   assert.equal(rewritten.working.canonical.untracked, 1);
   assert.notEqual(third.working.canonical.fingerprint.sha256, rewritten.working.canonical.fingerprint.sha256);
   fs.unlinkSync(path.join(canonical, 'docs/product.md'));
   const beforeStatus = git(canonical, ['status', '--porcelain=v1', '-z']);
-  const deleted = await collect({ cwd: downstream, repo: canonical });
+  const deleted = await collect({ cwd: downstream, repo: canonical, ...ROOMY });
   assert.equal(deleted.working.canonical.trackedDirty, 1);
   assert.notEqual(rewritten.working.canonical.fingerprint.sha256, deleted.working.canonical.fingerprint.sha256);
   assert.equal(git(canonical, ['status', '--porcelain=v1', '-z']), beforeStatus);
@@ -537,7 +541,7 @@ test('manual explicit files compare current bytes with canonical bytes without o
   assert.equal(report.files[2].canonical.state, 'missing');
   assert.ok(!result.stdout.includes(SECRET));
   assert.ok(!result.stdout.includes('docs/product.md'));
-  const same = await collect({ cwd: canonical, repo: canonical, files: ['docs/product.md'] });
+  const same = await collect({ cwd: canonical, repo: canonical, files: ['docs/product.md'], ...ROOMY });
   assert.equal(same.files[0].comparison, 'same');
   const automatic = output(report, { hookEvent: 'UserPromptSubmit' });
   assert.ok(!automatic.includes(report.files[0].canonical.sha256));
@@ -560,7 +564,7 @@ test('explicit file comparison rejects traversal, secrets, ignored files, direct
   fs.truncateSync(path.join(secured, 'docs/large.md'), 64 * 1024 * 1024 + 1);
   const files = ['../outside-files/external.md', '.env', 'credentials.json', 'docs/ignored.md',
     'linked/external.md', path.join(outside, 'external.md'), 'fixture.txt:stream', '.git/index', 'docs/large.md'];
-  const report = await collect({ cwd: secured, repo: secured, files });
+  const report = await collect({ cwd: secured, repo: secured, files, ...ROOMY });
   assert.equal(report.status, 'observed');
   assert.deepEqual(report.files.slice(0, -1).map(file => file.current.state), files.slice(0, -1).map(() => 'refused'));
   assert.equal(report.files.at(-1).current.state, 'incomplete');
@@ -666,7 +670,7 @@ test('canonical commits on a separate branch are visible even when both worktree
   git(canonical, ['checkout', '-b', 'ongoing-work']);
   file(canonical, 'docs/product.md', 'v2');
   commit(canonical);
-  const report = await collect({ cwd: downstream, repo: canonical });
+  const report = await collect({ cwd: downstream, repo: canonical, ...ROOMY });
   assert.equal(report.status, 'observed');
   assert.deepEqual([report.ahead, report.behind], [0, 0]);
   assert.equal(report.baseline.source, 'master');

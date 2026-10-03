@@ -11,7 +11,8 @@
  *   ⇒ 겹을 더 붙이는 대신 **나가는 자리마다 문이 서 있나**를 이 자가 센다.
  *
  * ■ 무엇을 «학생 접점»으로 보나
- *   배포집합에 실려 학생·학부모 화면에 뜨는 코드(`Code.js`·`엔진_*.js`·`contents_*.js`)다.
+ *   배포집합에 실려 학생·학부모 화면에 뜨는 코드다 — `.claspignore` 가 «올린다»(`!파일.js`)고 적은 것
+ *   (10-02 학원 운영 시스템 삭제 뒤로는 `Code.js`·`엔진_synkbrief.js`). 아래 `배포집합()` 이 거기서 읽는다.
  *   문서·설계·장부는 대상이 아니다 — 사람만 읽는다.
  *
  * ■ 쓰기
@@ -32,8 +33,21 @@ const 루트 = path.join(__dirname, '..');
 const 장부경로 = path.join(루트, 'docs', '_ops', '몽골어검문.jsonl');
 const 기준선경로 = path.join(루트, 'docs', '_ops', '몽골어_미검문_기준선.json');
 
-/* 학생·학부모 화면에 뜨는 코드만. 문서·장부는 사람만 읽으므로 뺀다. */
-const 학생접점 = (이름) => /^(Code\.js|엔진_.*\.js|contents_.*\.js)$/.test(이름);
+/* 학생·학부모 화면에 뜨는 코드만. 문서·장부는 사람만 읽으므로 뺀다.
+ * 🔑 10-03: 손 패턴(`Code.js`·`엔진_*.js`·`contents_*.js`)이 10-02 배포 축소를 못 따라갔다. 학원 운영 시스템을
+ *   지우며 `엔진_콘텐츠AI.js` 를 배포에서 뺐는데도 접점으로 세서, 거기 남은 학업 기록 안내 몽골어 8개(09-22)를
+ *   「학생 화면에 새로 들어왔다」로 잡았다. 배포집합은 `.claspignore` 한 곳이 정하므로 거기서 읽는다 —
+ *   다시 올리면(허용 줄을 더하면) 그 파일은 저절로 이 문 안으로 돌아오고, 안 지난 몽골어는 그때 빨개진다.
+ *   (`엔진_콘텐츠AI.js` 에서 Strata 가 읽는 문법 뱅크 `GRAMMAR_BANK` 에는 몽골어가 없다 — 10-03 확인.) */
+let 배포 = null;
+function 배포집합() {
+  if (배포) return 배포;
+  const 줄들 = fs.readFileSync(path.join(루트, '.claspignore'), 'utf8').split(/\r?\n/);
+  배포 = new Set(줄들.map((l) => l.trim()).filter((l) => /^![^*?/\\]+\.js$/.test(l)).map((l) => l.slice(1)));
+  if (!배포.size) throw new Error('.claspignore 에서 배포하는 .js 를 못 찾았다 — 학생 접점을 정할 수 없다');
+  return 배포;
+}
+const 학생접점 = (이름) => 배포집합().has(이름);
 
 const 지문 = (s) => crypto.createHash('sha256').update(Buffer.from(s, 'utf8')).digest('hex').slice(0, 12);
 const 키릴수 = (s) => (String(s).match(/[Ѐ-ӿ]/g) || []).length;
@@ -347,4 +361,4 @@ if (require.main === module) {
   })();
 }
 
-module.exports = { 모으기, 잰것들, 다잰것들, 층다쟀나, 기준선읽기, 몽골어인가, 조각뽑기, 지문, 기준선경로, 한판읽기 };
+module.exports = { 모으기, 잰것들, 다잰것들, 층다쟀나, 기준선읽기, 몽골어인가, 조각뽑기, 지문, 기준선경로, 한판읽기, 배포집합 };

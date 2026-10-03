@@ -47,6 +47,7 @@ const {
   openManualItem,
 } = require('../tools/lib/sns-publisher.js');
 
+const { CI인가 } = require('./_git밖.js');
 const PACKAGE_ROOT = path.join(REPO_ROOT, 'docs', '홍보물', '첫게시물_20260910', '전체_업로드');
 /* 10-03: 09-10 첫 게시물 묶음은 보관본이다(10-01 SNS 키트로 옛 판을 바꿨다). 그 안에서 빠진 것 여덟 —
  *   영상 여섯: `*.mp4` 는 09-17 포괄 규칙으로 git 밖이고, 이 PC와 Drive 백업 목록(10-03 00:54)에도 없다.
@@ -159,13 +160,19 @@ test('티스토리 원문 묶음은 본문 파일을 요구하고 수동 편집�
   assert.deepEqual(validateItem(scanPackages(dir, DEFAULT_ACCOUNTS)[0]), ['본문 없음', '본문.md 없음']);
 });
 
-test('발행 검수판에 자격증명을 담지 않고 모든 자료를 검사한다', () => {
+test('발행 검수판에 자격증명을 담지 않고 모든 자료를 검사한다', (t) => {
   const dir = tempDir();
   const planFile = path.join(dir, 'plan.json');
   const plan = buildPlan({ root: PACKAGE_ROOT, accountsFile: DEFAULT_ACCOUNTS, outputFile: planFile });
   assert.equal(plan.items.length, 19);
   const 빈자리 = plan.items.flatMap((item) => item.errors.map((error) => `${item.id}: ${error}`));
-  assert.deepEqual(빈자리.filter((x) => !보관본빈자리.has(x)), [], '보관본에 새 빈자리가 생겼다');
+  /* 보관본의 그림·영상은 git 밖이다 — CI 체크아웃에는 아예 없고, 이 PC에서도 10-03 공간 정리가 Drive로 옮겼다
+     (`Documents/PC_공간정리_20261003` 복원 안내). 그래서 «파일 없음» 갈래는 받아 주고, 제목·본문·계정처럼
+     파일이 아닌 오류만 문다(10-03). */
+  const 파일없음 = /: (video\.mp4|게시할 이미지\/영상|PDF\/이미지|본문\.md) 없음$/;
+  const 더받음 = 빈자리.filter((x) => !보관본빈자리.has(x) && 파일없음.test(x));
+  if (더받음.length) t.diagnostic(`보관본 파일 없음 ${더받음.length}건은 받아 준다(git 밖${CI인가() ? ' · CI 체크아웃' : ' · Drive로 옮김'})`);
+  assert.deepEqual(빈자리.filter((x) => !보관본빈자리.has(x) && !더받음.includes(x)), [], '보관본에 파일 말고 다른 빈자리가 생겼다');
   const raw = fs.readFileSync(planFile, 'utf8');
   assert.doesNotMatch(raw, /access[_-]?token|refresh[_-]?token|client[_-]?secret|botToken/i);
   assert.equal(fs.existsSync(path.join(dir, 'plan.md')), true);

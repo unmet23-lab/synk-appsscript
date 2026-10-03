@@ -18,6 +18,7 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const { CI에없는로컬자료 } = require('./_git밖.js');
 
 const 루트 = path.join(__dirname, '..');
 const 무대글 = fs.readFileSync(path.join(루트, 'bots/오버레이/무대.html'), 'utf8');
@@ -68,7 +69,7 @@ test('차림에 적힌 옷 조각이 실제로 있다', () => {
   }
 });
 
-test('기본 편성은 공통 털 까몽 8컷과 공통 경계를 사용하고 옷을 중복 합성하지 않는다', () => {
+test('기본 편성은 공통 털 까몽 8컷과 공통 경계를 사용하고 옷을 중복 합성하지 않는다', (t) => {
   const 경로 = 마스코트글.match(/까몽:\s*'([^']*라디오차림\/까몽\/_후보\/여름델\+전설의팻말\/65f92a753bb5416b\/)'/);
   assert.ok(경로, '까몽이 승인된 공통 털 8컷 폴더를 가리키지 않는다');
   assert.match(마스코트글, /<script src="라디오가장자리\.js"><\/script>/);
@@ -79,7 +80,10 @@ test('기본 편성은 공통 털 까몽 8컷과 공통 경계를 사용하고 �
   const 파일들 = [...컷[1].matchAll(/:\s*'([^']+\.webp)'/g)].map((m) => m[1]);
   assert.strictEqual(new Set(파일들).size, 8, '기본 까몽은 승인된 8컷이다. 기쁨은 눈웃음의 별칭이다');
   const 컷방 = path.resolve(path.dirname(path.join(루트, 'bots/오버레이/마스코트.html')), 경로[1]);
-  for (const 파일 of new Set(파일들)) {
+  /* 10-03: 이 후보 자산 폴더는 git 에 없다(로컬에만 있다) — CI 체크아웃에서는 파일 확인만 건너뛴다(tests/_git밖.js). */
+  const 없음 = CI에없는로컬자료(path.relative(루트, 컷방).split(path.sep).join('/'), '까몽 후보 자산 폴더는 git 밖');
+  if (없음) t.diagnostic(없음);
+  else for (const 파일 of new Set(파일들)) {
     const p = path.join(컷방, 파일);
     assert.ok(fs.existsSync(p), `라디오 까몽 컷이 없다: ${p}`);
   }

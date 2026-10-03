@@ -40,6 +40,7 @@ const { execFileSync } = require('node:child_process');
 
 const 루트 = path.resolve(__dirname, '..');
 const 브랜드폰트 = require(path.join(루트, 'tools', 'lib', '브랜드폰트.js'));
+const { CI인가 } = require('./_git밖.js');
 
 /** 추적 HTML 전량 = 분모. 작업본에만 있는 파일은 분모가 못 된다(다른 세션의 굽기 중간물이 섞인다). */
 function 추적HTML() {
@@ -293,35 +294,42 @@ test('⑥ 서체 원본이 못박은 지문 그대로다 — 아니면 위 다�
  *     ⓒ `@font-face` 가 저장소 안 서체 파일을 상대 경로로 싣는다 — 키트 사본
  *        (`tools/SNS키트_영상연결.js` 가 정본을 `assets/synk-kit/fonts/` 로 복사한다).
  *   🔑 ⓑⓒ 의 파일은 만들기 단계가 쓰는 사본이라 git 밖에 있는 것이 많다. 그래서 «있나»가 아니라
- *      «정본과 바이트까지 같나»를 문다 — 없거나, 다른 서체거나, 저장소 밖이면 «안 싣는다»로 센다(⑧ 이 증명).
+ *      «정본과 바이트까지 같나»를 문다 — 다른 서체거나 저장소 밖이면 «안 싣는다», 부르는 파일이 없으면 «없음»으로 센다
+ *      (⑧ 이 증명). «없음»은 개발 PC 에서는 실패이고, 그 사본이 아예 없는 CI 체크아웃에서만 건너뛴다.
  *   ⓑⓒ 는 «파일 하나»가 아니라서 ③(자립형·펠트 스킨)과 ④(심은 지면 목록)에는 안 쓴다 — 그 둘은 ⓐ 만 받는다.
  */
 
 let 정본서체 = null;
 const 정본인가 = (buf) => buf.equals(정본서체 ||= 브랜드폰트.woff2());
 
-/** 저장소(경계) 안의 상대 경로면 그 파일, 아니면 null — data:·https:·`//`·`/` 로 시작하는 주소는 상대 경로가 아니다. */
-function 안쪽파일(기준, url, 경계) {
+/** 저장소(경계) 안의 상대 경로면 그 절대 경로(있든 없든), 아니면 null — data:·https:·`//`·`/` 로 시작하는 주소는 상대 경로가 아니다. */
+function 안쪽경로(기준, url, 경계) {
   if (/^(?:[a-z][a-z0-9+.-]*:|\/)/i.test(url)) return null;
   let 이름;
   try { 이름 = decodeURIComponent(url.split(/[?#]/)[0]); } catch { return null; }
   const 파일 = path.resolve(기준, 이름);
   const 안 = path.relative(경계, 파일);
   if (!안 || 안.startsWith('..') || path.isAbsolute(안)) return null;
-  return fs.existsSync(파일) && fs.statSync(파일).isFile() ? 파일 : null;
+  return 파일;
 }
+const 있는파일 = (p) => fs.existsSync(p) && fs.statSync(p).isFile();
 
-/** ⑦ 의 술어 — 이 지면이 정본 SUIT 를 실제로 받나(ⓐ·ⓑ·ⓒ 중 하나). */
+/** ⑦ 의 술어 — 이 지면이 정본 SUIT 를 실제로 받나(ⓐ·ⓑ·ⓒ 중 하나).
+ *  true = 받는다 · false = 안 받는다 · '없음' = 저장소 안의 스타일시트·서체 파일을 부르는데 그 파일이 지금 없다.
+ *  키트 사본·빌드 산출물은 git 밖이라 CI 체크아웃에는 없다 — ⑦ 은 '없음' 을 CI 에서만 건너뛰고, 개발 PC 에서는 빨갛다. */
 function 싣나(파일, 경계 = 루트) {
   const html = fs.readFileSync(파일, 'utf8');
   if (브랜드폰트.심겼나(html)) return true;                                        // ⓐ
+  let 빠짐 = false;
   const 폴더 = path.dirname(파일);
   const 원천 = [{ 글: html, 기준: 폴더 }];
   for (const [태그] of html.matchAll(/<link\b[^>]*>/gi)) {
     if (!/\brel\s*=\s*["']?stylesheet\b/i.test(태그)) continue;
     const href = (태그.match(/\bhref\s*=\s*["']([^"']+)["']/i) || [])[1];
-    const css = href && 안쪽파일(폴더, href, 경계);
-    if (css) 원천.push({ 글: fs.readFileSync(css, 'utf8'), 기준: path.dirname(css) });
+    const css = href && 안쪽경로(폴더, href, 경계);
+    if (!css) continue;
+    if (!있는파일(css)) { 빠짐 = true; continue; }
+    원천.push({ 글: fs.readFileSync(css, 'utf8'), 기준: path.dirname(css) });
   }
   for (const { 글, 기준 } of 원천) {
     for (const [면] of 글.matchAll(/@font-face\s*\{[^}]*\}/gi)) {
@@ -332,19 +340,26 @@ function 싣나(파일, 경계 = 루트) {
           if (정본인가(Buffer.from(데이터[1], 'base64'))) return true;
           continue;
         }
-        const 서체 = 안쪽파일(기준, url, 경계);
-        if (서체 && 정본인가(fs.readFileSync(서체))) return true;                       // ⓒ
+        const 서체 = 안쪽경로(기준, url, 경계);
+        if (!서체) continue;
+        if (!있는파일(서체)) { 빠짐 = true; continue; }
+        if (정본인가(fs.readFileSync(서체))) return true;                               // ⓒ
       }
     }
   }
-  return false;
+  return 빠짐 ? '없음' : false;
 }
 
-test('⑦ SUIT 를 «이름으로 부르는» 지면은 그 서체를 반드시 싣는다', () => {
+test('⑦ SUIT 를 «이름으로 부르는» 지면은 그 서체를 반드시 싣는다', (t) => {
   const 부르는것 = 추적HTML().filter((rel) => !제외사유(rel) && /['"]SUIT/.test(읽기(rel)));
   assert.ok(부르는것.length > 30,
     `SUIT 를 부르는 지면이 ${부르는것.length}벌뿐이다 — 자가 거의 아무것도 안 재고 있다(09-03 실측 = 79벌).`);
-  const 빈것 = 부르는것.filter((rel) => !싣나(path.join(루트, rel)));
+  const 판정 = 부르는것.map((rel) => [rel, 싣나(path.join(루트, rel))]);
+  /* '없음'(부르는 서체 파일·스타일시트가 지금 없다)은 CI 체크아웃에서만 건너뛴다 — 키트 사본·빌드 산출물이 git 밖이다
+     (tests/_git밖.js, 10-03). 개발 PC 에서는 «안 싣는다»와 같이 빨갛다. */
+  const 못잰것 = CI인가() ? 판정.filter(([, r]) => r === '없음').map(([rel]) => rel) : [];
+  if (못잰것.length) t.diagnostic(`CI 체크아웃 — 서체 파일·스타일시트가 git 밖이라 못 잰 지면 ${못잰것.length}벌`);
+  const 빈것 = 판정.filter(([rel, r]) => r !== true && !못잰것.includes(rel)).map(([rel]) => rel);
   assert.deepEqual(빈것, [],
     `이름만 적고 안 싣는 지면 ${빈것.length}벌 (부르는 지면 ${부르는것.length}벌 중).`
     + ' 안에 심지도, 정본과 같은 서체 파일·스타일시트를 부르지도 않는다 — 시스템 고딕으로 떨어져 있다.'
@@ -355,7 +370,7 @@ test('⑦ SUIT 를 «이름으로 부르는» 지면은 그 서체를 반드시 
 
 /* ── ⑧ ⑦ 의 자가 무는지 — 실저장소가 초록이어도 «싣나»가 헐거워지지 않았음을 픽스처가 증명한다 ── */
 
-test('⑧ «싣나»는 이름만·없는 파일·다른 서체·저장소 밖 파일을 «안 싣는다»로 센다', () => {
+test('⑧ «싣나»는 이름만·다른 서체·저장소 밖 파일을 «안 싣는다»로, 없는 파일을 «없음»으로 센다', () => {
   const 정본 = 브랜드폰트.woff2();
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '지면폰트-'));
   const 저장소 = path.join(방, '저장소');
@@ -381,12 +396,13 @@ test('⑧ «싣나»는 이름만·없는 파일·다른 서체·저장소 밖 �
       다른서체: 쓰기(저장소, '옛판/index.html', 면('"fonts/SUIT-Variable.woff2"') + 스택),
       저장소밖: 쓰기(저장소, '바깥/index.html', 면('"../../밖/SUIT-Variable.woff2"') + 스택),
       다른서체CSS: 쓰기(저장소, '헌묶음/source/쪽.html', '<link rel="stylesheet" href="../assets/fonts.css">' + 스택),
+      빠진CSS: 쓰기(저장소, '빈묶음/source/쪽.html', '<link rel="stylesheet" href="../assets/fonts.css">' + 스택),
       키트사본: 쓰기(저장소, '키트/index.html', 면('"assets/synk-kit/fonts/SUIT-Variable.woff2"') + 스택),
       묶음CSS: 쓰기(저장소, '묶음/source/쪽.html', '<link href="../assets/fonts.css" rel="stylesheet">' + 스택),
     };
     const 잰것 = Object.fromEntries(Object.entries(판).map(([이름, 파일]) => [이름, 싣나(파일, 저장소)]));
     assert.deepEqual(잰것, {
-      이름만: false, 없는파일: false, 다른서체: false, 저장소밖: false, 다른서체CSS: false, 키트사본: true, 묶음CSS: true,
+      이름만: false, 없는파일: '없음', 다른서체: false, 저장소밖: false, 다른서체CSS: false, 빠진CSS: '없음', 키트사본: true, 묶음CSS: true,
     });
   } finally {
     fs.rmSync(방, { recursive: true, force: true });

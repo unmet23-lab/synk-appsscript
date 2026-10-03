@@ -22,7 +22,9 @@ const path = require('node:path');
 
 function 만들기(baseEnv) {
   const fakeHome = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-ci-home-'));
-  const env = { ...(baseEnv || process.env), TZ: 'UTC', HOME: fakeHome, USERPROFILE: fakeHome };
+  /* CI=true — GitHub Actions 가 늘 넣는 값이다. git 밖(로컬에만 있는) 자료를 읽는 검사는 이 값이 있을 때만
+     «건너뜀(사유)»으로 돈다(tests/_git밖.js · 2026-10-03). 모사가 이 값을 빼면 CI 와 다른 판이 된다. */
+  const env = { ...(baseEnv || process.env), TZ: 'UTC', HOME: fakeHome, USERPROFILE: fakeHome, CI: 'true' };
   // 명시 지정이 남아 있으면 홈을 비운 의미가 사라진다(모사가 조용히 무력화된다)
   delete env.SYNK_MEMORY_DIR;
   return {

@@ -6,6 +6,9 @@ const root=path.resolve(__dirname,'..');
 const base=path.join(root,'docs/홍보물/계정별콘텐츠_20260909');
 const loom=require('../tools/lib/loom.js');
 const {assetNeedsRefresh,ASSET_TRANSFORM}=require('../docs/홍보물/계정별콘텐츠_20260909/만들기.cjs');
+const {CI에없는로컬자료}=require('./_git밖.js');
+// _검토/ 기록은 09-17 포괄 규칙으로 git 밖이다 — CI 체크아웃에서는 그 기록을 재는 부분만 건너뛴다(10-03, tests/_git밖.js).
+const 경계검사='docs/홍보물/계정별콘텐츠_20260909/_검토/정적_경계검사.json',로고갱신='docs/홍보물/계정별콘텐츠_20260909/_검토/로고갱신_20260910.json',검토밖='검토 기록은 09-17 포괄 규칙으로 git 밖';
 test('계정 컬렉션은 Loom의 명시 호출에만 실리고 기본 스킨을 바꾸지 않는다',()=>{
   const skin=loom.계정컬렉션();
   assert.match(skin,/\.account-collection/);
@@ -37,7 +40,8 @@ test('완성 지면과 문안이 원고 전량에 대응한다',()=>{
     for(let i=1;i<=p.cards.length;i++)assert.ok(fs.statSync(path.join(base,p.id,`upload-${String(i).padStart(2,'0')}.jpg`)).size>10000);
   }
 });
-test('26개 실물의 경계와 서체 검사를 통과한다',()=>{
+test('26개 실물의 경계와 서체 검사를 통과한다',(t)=>{
+  const 없음=CI에없는로컬자료(경계검사,검토밖);if(없음)return t.skip(없음);
   const report=JSON.parse(fs.readFileSync(path.join(base,'_검토/정적_경계검사.json'),'utf8'));
   assert.equal(report.cards,26);
   assert.deepEqual(report.errors,[]);
@@ -52,7 +56,7 @@ test('원천·출력·변환 규칙이 달라지면 기존 자산을 다시 만�
   assert.equal(assetNeedsRefresh({...previous,transform:'old'},'source-a','output-a'),true);
   assert.equal(assetNeedsRefresh(undefined,'source-a','output-a'),true);
 });
-test('26장과 모아보기는 승인 완성 조합 하나로 SYNK와 사업명을 함께 표시한다',()=>{
+test('26장과 모아보기는 승인 완성 조합 하나로 SYNK와 사업명을 함께 표시한다',(t)=>{
   const {items}=JSON.parse(fs.readFileSync(path.join(base,'콘텐츠원고.json'),'utf8'));
   for(const p of items){
     const html=fs.readFileSync(path.join(base,p.id,'cards.html'),'utf8');
@@ -62,6 +66,7 @@ test('26장과 모아보기는 승인 완성 조합 하나로 SYNK와 사업명�
     assert.doesNotMatch(html,/class="brand-synk"|division-stitch-logo|division-label|<svg|assets\/stitch\.webp/,p.id);
   }
   assert.match(fs.readFileSync(path.join(base,'index.html'),'utf8'),/<header class="collection-intro"><div class="brand-lock"[^>]*data-approved-logo="SYNK"[^>]*><img src="assets\/brand-full-synk-ink.webp"/);
+  const 없음=CI에없는로컬자료(경계검사,검토밖);if(없음){t.diagnostic(없음);return;}
   const report=JSON.parse(fs.readFileSync(path.join(base,'_검토/정적_경계검사.json'),'utf8'));
   for(const r of report.results){
     assert.equal(r.brand.images.length,1,r.id);
@@ -70,21 +75,24 @@ test('26장과 모아보기는 승인 완성 조합 하나로 SYNK와 사업명�
     assert.ok(r.brand.images.every(x=>x.loaded&&x.width>0&&x.height>0),r.id);
   }
 });
-test('완성 조합은 현행 승인 명세와 일치하며 사업명 원본과 기존 소품을 보존한다',()=>{
+test('완성 조합은 현행 승인 명세와 일치하며 사업명 원본과 기존 소품을 보존한다',(t)=>{
   const hash=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
   const kit=path.join(root,'docs/홍보물/마케팅실행_20260909/브랜드킷');
   const approved=JSON.parse(fs.readFileSync(path.join(kit,'배치명세.json'),'utf8'));
-  const applied=JSON.parse(fs.readFileSync(path.join(base,'_검토/로고갱신_20260910.json'),'utf8'));
+  const 없음=CI에없는로컬자료(로고갱신,검토밖);if(없음)t.diagnostic(없음);
+  const applied=없음?null:JSON.parse(fs.readFileSync(path.join(base,'_검토/로고갱신_20260910.json'),'utf8'));
   assert.equal(approved.version,2);assert.equal(approved.items.length,8);
   for(const item of approved.items){
     assert.equal(hash(path.join(kit,item.file)),item.sha256,item.file+' approved source');
+    if(!applied)continue;
     const output=applied.assets.find(x=>x.source===item.file);assert.ok(output,item.file);
     assert.equal(output.sourceSha256,item.sha256,item.file+' source provenance');
     assert.equal(hash(path.join(base,output.file)),output.sha256,item.file+' exported pixels');
   }
   const manifest=JSON.parse(fs.readFileSync(path.join(base,'사용자산.json'),'utf8'));
   for(const a of manifest){
-    assert.equal(a.sourceSha256,hash(path.join(root,a.source)),a.key+' source');
+    const 원본없음=CI에없는로컬자료(a.source,'원본 자산 폴더가 .gitignore 로 git 밖');
+    if(원본없음)t.diagnostic(원본없음);else assert.equal(a.sourceSha256,hash(path.join(root,a.source)),a.key+' source');
     assert.equal(a.outputSha256,hash(path.join(base,a.output)),a.key+' output');
     if(a.key==='brand-synk'||a.key.endsWith('page'))assert.match(a.transform,/^Approved complete logo or current introduction snapshot;/,a.key);
     else assert.equal(a.transform,ASSET_TRANSFORM,a.key);
