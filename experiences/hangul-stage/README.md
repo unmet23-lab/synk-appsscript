@@ -58,7 +58,7 @@ node tools/build-hangul-stage.js [--check]    # 한글 층 지도와 학습 묶�
 
 ## 남은 일
 
-1. **WORLD·학습 허브에 붙이기:** `experiences/learning-hub/server.mjs`의 공통 서버 폴더 목록에 `hangul-stage`, `experiences/synk-account/src/account-view.mjs`의 자유 연습 단추에 `['hangul-stage', '한글 단계']`를 더하고 `node tools/build-synk-account.js`로 다시 만든다. 2026-10-03 저녁 두 파일을 다른 작업이 고치고 있어 그 작업이 커밋된 뒤에 붙인다. 붙이면 같은 출처(4280)에서 다른 게임·WORLD와 같은 기록을 쓴다.
+1. **WORLD에 붙이기:** 학습 허브에는 붙였다(10-03 — 공통 서버 폴더 목록에 `hangul-stage`, 허브 첫 화면 카드 00, 4280에서 다른 게임과 같은 기록). 남은 것은 WORLD 화면의 자유 연습 단추다: `experiences/synk-account/src/account-view.mjs`에 `['hangul-stage', '한글 단계']`를 더하고 `node tools/build-synk-account.js`로 다시 만든다. 그 파일은 WORLD·교사 계정 연결 작업이 고친 채 커밋 전이라 그 뒤에 붙인다.
 2. 교사 과제(teacher-world 게임 목록)는 한글 능력이 `ko.<영역>.` 꼴이 아니어서 목록 시험(`catalog-labels.test.mjs`)과 함께 정한다.
 3. 기기를 넘는 글자 진도: 엔진 쪽 일 — 글자·음절을 Core의 내용 종류로 받고(`atlas/learning.js` CONTENT), 되풀이 연습을 세는 증거 규칙을 둔 뒤 진도를 공통 기록에서 계산한다.
 4. 설계 둘째·셋째 판: 받침(U6·U7)·헷갈리는 짝 문항·낱말↔그림·따라 말하기·글자 퀼트·몽글에게 가르쳐 주기·졸업 / 격음·쌍자음·이중모음·첫 문장·가나다 장단·고르는 놀이·들어오기 확인 열 문항.

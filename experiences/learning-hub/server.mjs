@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 export const root = fileURLToPath(new URL('../', import.meta.url));
-const allowed = new Set(['learning-hub', 'korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'entry-check', 'story-classroom', 'synk-account', 'atlas-lab', 'blank-slice']);
+const allowed = new Set(['learning-hub', 'korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'entry-check', 'story-classroom', 'synk-account', 'atlas-lab', 'blank-slice', 'hangul-stage']);
 // The Atlas lab's consultation demo reads the published computer recommendation tool, read-only.
 const consult = new Map([['/consult/computer/rules.js', '../docs/마케팅/맞춤도구/computer/rules.js'], ['/consult/computer/content.js', '../docs/마케팅/맞춤도구/computer/content.js']]);
 const accountPublic = new Set(['index.html', 'client.html', 'preview.html', 'platform.html', 'platform.css', 'config.json', 'style.css',
