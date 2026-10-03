@@ -9,7 +9,8 @@ import { itemMetadata, candidates, rankItems, answerPayload, missedPayload, skil
 const require = createRequire(import.meta.url);
 const { createGame } = require('../../atlas/game-learning.js');
 const { createMap } = require('../../strata/index.js');
-const map = createMap(require('../../strata/maps/topik-i.json'));
+// The game's own map: abilities, grammar and the word layer (word items link their word).
+const map = createMap(require('../../strata/topik-i.js').topikMap());
 let clock = Date.parse('2026-10-02T09:00:00Z');
 function coach(store = new Map()) {
   return createGame({ gameId: 'blank-slice', map, storage: { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v) },

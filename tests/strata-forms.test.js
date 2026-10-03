@@ -65,6 +65,22 @@ test('a whole sentence names its endings and numbers in the order they come', ()
   for (const [sentence, ids] of cases) assert.deepEqual(grammarIn(sentence), ids, sentence);
 });
 
+// -아/어 주세요 written with a space is read from the verb before 주세요; a noun before it, a counter or the
+// plain 줘 of a story request is not (덜 잇기: a verb that is also a TOPIK I noun, such as 해, is missed).
+test('a spaced -아/어 주세요 is read from its verb, and plain 주세요 stays -(으)세요', () => {
+  const cases = [
+    ['따뜻한 차 한 잔 주세요. 설탕은 빼 주세요.', ['G211', 'G404']],
+    ['따뜻한 커피 한 잔 주세요. 설탕도 넣어 주세요.', ['G211', 'G404']],
+    ['문을 열어 주세요.', ['G404']],
+    ['이름을 써 주세요.', ['G404']],
+    ['사과 주세요.', ['G211']],
+    ['이거 주세요.', ['G211']],
+    ['물 좀 주세요.', ['G211']],
+    ['케이크를 칠판 앞에 놓아 줘.', []],
+  ];
+  for (const [sentence, ids] of cases) assert.deepEqual(grammarIn(sentence), ids, sentence);
+});
+
 // A blank is known to hold a form; a word in a sentence may be a noun, a time or a place.
 test('a noun, a time or a place in a sentence is not read as an ending', () => {
   const cases = [

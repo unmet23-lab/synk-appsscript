@@ -111,6 +111,11 @@ const IN_SENTENCES = new Map([
   ['G204', w => /(이에요|예요)$/.test(w) && !/^(거|것이)(예요|에요)$/.test(w)],
 ]);
 const NUMBER = /\d+\s*(시간|시|분|초|살|세|개월|월|일|년|주|명|개|원|번|층|장|권)/;
+// 빼 주세요, 넣어 주세요, 따뜻하게 해 주세요: -아/어 주세요 written with a space. The word before is a verb
+// in its -아/어 form (a stem ending in ㅏ ㅐ ㅓ ㅕ ㅘ ㅙ ㅝ with no final consonant); a TOPIK I noun is not
+// (사과 주세요, 차 주세요), and 한 잔 주세요 keeps plain -(으)세요. Only the polite 주세요: the plain
+// 넣어 줘 of a story request is left as it is.
+const SPACED_GIVE = w => !!w && w.length > 0 && !isNoun(w) && finalOf(w) === 0 && A_EO.has(syllable(w.slice(-1))?.vowel);
 function grammarIn(sentence) {
   const text = String(sentence ?? ''), found = [];
   const add = (id, at) => { if (!found.some(f => f.id === id)) found.push({ id, at }); };
@@ -121,6 +126,7 @@ function grammarIn(sentence) {
     const word = m[0].replace(/^[("“‘'«]+|[.,!?…"”’'»)]+$/g, '');
     const last = previous; previous = word;
     if (!word || PARTICLES.has(word) || CONJUNCTIONS.has(word)) continue;
+    if (word === '주세요' && SPACED_GIVE(last)) { add('G404', m.index); continue; }
     const after = text.slice(m.index + m[0].length);
     for (const [id, ending] of ENDINGS) {
       if (NOT_IN_SENTENCES.has(id)) continue;

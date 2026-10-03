@@ -9,7 +9,7 @@ export const FORMAT = 'single-choice';
 
 // 조사·문형 문항이 쓰는 TOPIK I 문형(strata/topik-i.grammar.json). 정답과 빈칸 뒤 말을 보고 Strata의
 // grammarOf(strata/topik-i-forms.js)가 고른 것이고, 시험이 둘이 같은지 본다(교원 검수 전 초안).
-// 이음말(그래서·하지만·그리고)은 문형이 아니라 잇지 않는다. 낱말 문항도 잇지 않는다.
+// 이음말(그래서·하지만·그리고)은 문형이 아니라 잇지 않는다.
 export const GRAMMAR = Object.freeze({ p01: 'G203', p02: 'G207', p03: 'G201', t01: 'G208', p04: 'G309', p05: 'G210', e01: 'G303',
   e02: 'G301', e03: 'G401', e04: 'G305', e05: 'G406', a01: 'G209', e06: 'G211', e07: 'G302', e08: 'G308', e09: 'G506', e10: 'G501', p06: 'G203' });
 
@@ -17,10 +17,15 @@ export const GRAMMAR = Object.freeze({ p01: 'G203', p02: 'G207', p03: 'G201', t0
 // 같은 계열(familyKey)로 두어, 예전 판을 이미 본 사람에게는 새 문항이 아니라 반복으로 남는다.
 // 2026-10-03: 뜻을 가려 주는 단서 문장을 더한 넷이 2판. 바꾸고 판을 안 올리면 grammar-links 옆 시험이 잡는다.
 export const ITEM_VERSION = Object.freeze({ v06: 2, v07: 2, e01: 2, e08: 2 });
+// 낱말 문항은 정답 낱말의 기본형을 Strata 낱말 층(strata/topik-i.words.json, ko.word.*)에 잇는다(2026-10-03).
+// 활용형(입어요·매워요·작은·샀어요)은 기본형(입다·맵다·작다·사다)으로. 시험이 낱말 이름과 대조한다(교원 검수 전 초안).
+export const WORD = Object.freeze({ v01: 'w0011', v02: 'w0301', v03: 'w0041', v04: 'w0608', v05: 'w0038', v06: 'w0025', v07: 'w0745',
+  v08: 'w0777', v09: 'w0452', v10: 'w0040', v11: 'w0624', v12: 'w1674', v13: 'w0087', a02: 'w0396', v14: 'w0100' });
+const conceptsOf = (id) => GRAMMAR[id] ? [GRAMMAR[id]] : WORD[id] ? [`ko.word.${WORD[id]}`] : [];
 export function itemMetadata(item) {
   const family = `${GAME_ID}.${item.id}.v1`, key = `${GAME_ID}.${item.id}.v${ITEM_VERSION[item.id] || 1}`;
   return { id: `${GAME_ID}.${item.id}`, itemKey: key, familyKey: family, skillId: item.skill, difficulty: item.difficulty,
-    modality: 'reading', responseFormat: FORMAT, audioRequired: false, confounded: false, conceptIds: GRAMMAR[item.id] ? [GRAMMAR[item.id]] : [] };
+    modality: 'reading', responseFormat: FORMAT, audioRequired: false, confounded: false, conceptIds: conceptsOf(item.id) };
 }
 
 /** WORLD가 확정한 실제 문항만 출제한다. null은 기존 자유 플레이다. */
