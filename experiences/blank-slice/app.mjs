@@ -35,6 +35,8 @@ try { coach = window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window
 const atlas = (fn, fallback = null) => { if (!coach) return fallback; try { return fn(coach); } catch { return fallback; } };
 const assignment = () => atlas(c => c.assignment?.());
 const hosted = atlas(c => typeof c.assignment === 'function', false);
+// 이 화면을 연 WORLD 과제가 닫혔다(다른 과제를 열었거나 끝남). 더는 기록되지 않으니 결과 화면이 그렇게 알린다.
+const runClosed = () => { if (!coach || !hosted) return false; try { coach.assignment?.(); return false; } catch (error) { return error?.code === 'RUN_ENDED'; } };
 
 /* ── 상태 ── */
 const state = { run: 0, queue: [], index: 0, results: [], combo: 0, score: 0, cur: null, practice: null, paused: false, ranked: null,
@@ -123,6 +125,8 @@ function ensureStage() {
 async function startRound() {
   const target = assignment(), targetItems = assignmentItems(target);
   if (target && !targetItems.length) return renderLobby();
+  // 과제 판인지는 시작할 때 정한다. 판 중에 과제가 닫혀도 그 판을 자유 연습의 판 수·최고 점수로 세지 않는다.
+  state.targeted = !!target;
   sound.unlock();
   show('game');
   state.run += 1;
@@ -426,8 +430,8 @@ function finish() {
   endFlow();
   state.cur = null; stage.clear();
   const s = scoreRound(state.results);
-  const target = assignment();
-  if (!target) {
+  const target = assignment(), closed = runClosed();
+  if (!state.targeted) {
     progress.plays += 1;
     if (!progress.best || s.score > progress.best.score) progress.best = { score: s.score, correct: s.correct, total: s.total };
     save();
@@ -457,8 +461,9 @@ function finish() {
   const next = atlas((c) => rankItems(c, ITEMS));
   state.ranked = next;
   renderSkills(s, next);
-  $('#r-next-reason').textContent = target ? `${assignmentLabel(target)}. WORLD에서 읽기 수행 결과와 다음 과제를 확인해요.` : nextLine(next);
+  $('#r-next-reason').textContent = closed ? '이 WORLD 과제는 끝났어요. 이어서 하려면 WORLD에서 다시 열어 주세요.' : target ? `${assignmentLabel(target)}. WORLD에서 읽기 수행 결과와 다음 과제를 확인해요.` : nextLine(next);
   $('#r-again span').textContent = target ? '목표 문장 다시 풀기' : '다음 판 시작';
+  $('#r-again').disabled = closed;
   $('#r-hub').hidden = hosted || !location.pathname.includes('/blank-slice/');
   show('results');
   $('#r-title').focus({ preventScroll: true });
