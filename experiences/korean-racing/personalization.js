@@ -60,18 +60,55 @@ export const RACING_CANDIDATES = CAMPAIGN.flatMap(stage=>stage.items.map(item=>{
     modality:meta.modality,responseFormat:meta.responseFormat,conceptIds:meta.conceptIds,label:`${stage.title} · ${item.prompt}`,item};
 }));
 
+// 순간 맞춤(docs/아틀라스_순간맞춤_20261002.md §5, 2026-10-03). Two things follow the person: the item level the
+// personalized five draw from (a course the person picks keeps its own sentences), and the speed the car
+// cruises at. The number of choices and the road between gates stay as authored: the gates, their lane
+// narration and the course length are built for three lanes and this spacing.
+export const FLOW_RACE={id:'korean-racing.race',version:1,target:0.8,items:{levels:[1,2,3],weight:2},
+  knobs:[{id:'cruise',kind:'pace',label:'달리는 속도',values:[20,23,26,29,32],start:2}]};
+export const BASE_CRUISE=26;
+// The road from where a question is announced (220 before the gate) to the line where a sentence course
+// stops the car and waits for a choice (65).
+export const APPROACH=155;
+export const FLOW_WORDS={'raise.pace':'차가 조금 빨라져요.','ease.pace':'차가 조금 느긋하게 달려요.',
+  // A changed item level shows in the next personalized five, so the results screen tells it.
+  'raise.content':'','ease.content':'',
+  'start.memory':'','start.prior':'','start.returning':'오랜만이라 조금 느긋하게 달려요.','start.tired':'오늘은 차가 더 빨라지지 않아요.'};
+/** The share of the decision time used, from when the question was fully heard (or shown) to the lane
+ * chosen. A sentence course stops the car at the line and waits, so the share is of the designed approach
+ * at this speed; a word course does not wait, so it is of the road that was left. Kept under 1: a chosen
+ * answer is never late in a race, so a wrong one stays a miss about the question (flow.js reads a miss at
+ * the limit as a rush). null when a moment is unknown (the voice never finished, nothing was chosen). */
+export function racePressure({readyAt,choseAt,cruise,campaign,roadLeft=null}){
+  if(!Number.isFinite(readyAt)||!Number.isFinite(choseAt)||!(cruise>0))return null;
+  const allowed=campaign?APPROACH/cruise:Math.max(1,(Number.isFinite(roadLeft)?roadLeft:APPROACH)/cruise);
+  return Math.min(.95,Math.max(0,choseAt-readyAt)/allowed);
+}
+/** What this race changed, in the race's words (results screen). Only the settings, never a judgement. */
+export function describeRace(start,end){
+  const lines=[];
+  if(start?.cruise!=null&&end?.cruise!=null&&start.cruise!==end.cruise)lines.push(`달리는 속도 ${Math.round(start.cruise*3.6)} → ${Math.round(end.cruise*3.6)}km/h`);
+  const a=start?.['item.difficulty'],b=end?.['item.difficulty'];
+  // Only the direction: the five are drawn from what Core leads with, so a level may not be there (no level-2 reading).
+  if(a!=null&&b!=null&&a!==b)lines.push(b>a?'다음 맞춤 5문항은 조금 더 어려운 문장도 골라요':'다음 맞춤 5문항은 조금 더 쉬운 문장부터 골라요');
+  return lines;
+}
+
 export function assignmentCandidates(target){
   if(!target)return RACING_CANDIDATES;
   return RACING_CANDIDATES.filter(c=>c.skillIds.includes(target.skillId)&&c.difficulty===target.difficulty&&c.modality===target.modality&&c.responseFormat===target.responseFormat&&target.familyKeys?.includes(c.itemKey)&&(!target.itemKeys?.length||target.itemKeys.includes(c.itemKey)));
 }
 export function racingTargetLabel(target){const labels={detail:'세부 내용',negation:'부정 표현',condition:'조건 표현',reason:'이유',main:'중심 내용',sequence:'순서',grammar:'문법',vocabulary:'어휘'};return `${target.modality==='reading'?'읽기':'듣기'} · ${labels[target.skillId.split('.').at(-1)]||'지정 표현'} · 난도 ${target.difficulty}`;}
-export function personalizedStage(coach,{audioAvailable=true,modality=null}={}){
+// `live` (coach.live(FLOW_RACE)) draws free practice at the item level the races reached, among Core's
+// leading choices (game-flow.js pick). A teacher's target sets its own level, so it keeps Core's choice.
+export function personalizedStage(coach,{audioAvailable=true,modality=null,live=null}={}){
   const target=coach.assignment?.();
   const pool=assignmentCandidates(target);
   const candidates=modality?pool.filter(c=>c.modality===modality):pool;
+  const pick=!target&&live?(list,options)=>live.pick(list,options):(list,options)=>coach.recommend(list,options);
   const chosen=[],excluded=[];let reason='';
   for(let i=0;i<Math.min(5,candidates.length);i++){
-    const recommendation=coach.recommend(candidates,{audioAvailable,excludeIds:excluded});
+    const recommendation=pick(candidates,{audioAvailable,excludeIds:excluded});
     if(recommendation.status!=='ready'||!recommendation.selected)break;
     if(!reason)reason=recommendation.reason;
     chosen.push(recommendation.selected.item);excluded.push(recommendation.selected.id);

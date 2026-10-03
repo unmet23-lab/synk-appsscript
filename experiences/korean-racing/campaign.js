@@ -94,5 +94,8 @@ export const CAMPAIGN = packs.map(([title,chapter,mode,rows],i)=>({
 export const CHALLENGE_BY_ID = Object.fromEntries(CAMPAIGN.flatMap(s=>s.items).map(q=>[q.id,q]));
 export const CHOICE_BY_ID = Object.fromEntries(CAMPAIGN.flatMap(s=>s.items.flatMap(q=>q.choices)).map(c=>[c.id,c]));
 export const campaignUnlocked = (progress,stage) => !stage.campaign||stage.review||stage.number===1||progress.stages[CAMPAIGN[stage.number-2]?.id]?.cleared===true;
-export const recommendedStage = progress => CAMPAIGN.find(s=>!progress.stages[s.id]?.cleared)||CAMPAIGN.at(-1);
+// Once every course is cleared, the least familiar one (fewest points, then fewest plays), not the last course every time.
+const familiarity = (progress,s) => [progress.stages[s.id]?.bestScore||0,progress.stages[s.id]?.plays||0];
+export const recommendedStage = progress => CAMPAIGN.find(s=>!progress.stages[s.id]?.cleared)
+  ||[...CAMPAIGN].sort((a,b)=>{const [x,y]=[familiarity(progress,a),familiarity(progress,b)];return x[0]-y[0]||x[1]-y[1]||a.number-b.number;})[0];
 export const medalFor = (score,total=5) => score===total?3:score>=Math.ceil(total*.8)?2:score>0?1:0;
