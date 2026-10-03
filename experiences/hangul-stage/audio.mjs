@@ -1,7 +1,7 @@
-// 소리. 글자·음절·낱말의 소리는 지금 이 기기의 한국어 음성으로 낸다(소리 파일을 만들지 않는다).
-// 2026-09-19 결정: 글자 소리는 정해질 목소리 하나만 쓰고, 정해지기 전에는 소리 자산을 만들지 않고 목록만 둔다.
-// 그래서 MVP는 기기 음성을 쓰고, 목소리가 정해지면 pack.audioManifest()의 목록대로 만든 파일을 assets/voice/에 두면
-// 그 파일을 먼저 튼다(voices.json: { "clips": { "아": "a.mp3", … } }). 기기마다 음성이 달라 들리는 소리가 다를 수 있다.
+// 소리. 2026-09-19 결정: 글자 소리는 정한 목소리 하나만, 귀로 확인한 파일만 쓴다. 10-03 목소리는 Typecast로 정했다(유호님).
+// tools/한글단계_목소리.cjs가 pack.audioManifest() 목록대로 만든 파일은 assets/voice/에 있고, 유호님이 귀로 확인해
+// voices.json이 approved:true가 되면 그 파일을 먼저 튼다(voices.json: { "approved": true, "clips": { "아": "….mp3", … } }).
+// 그전과 목록에 없는 소리는 이 기기의 한국어 음성으로 낸다. 기기마다 음성이 달라 들리는 소리가 다를 수 있다.
 // 효과음은 브랜드 사운드킷 그대로다. 실패음은 없다 — 틀려도 버저를 울리지 않는다.
 
 const EFFECTS = { earn: 'assets/sound/earn.wav', achieve: 'assets/sound/achieve.wav', joy: 'assets/sound/mongle-miyu.wav', calm: 'assets/sound/mongle-mii.wav' };
@@ -30,7 +30,7 @@ export function initAudio() {
   if (synth) { chooseVoice(); synth.addEventListener?.('voiceschanged', chooseVoice); }
   else { voiceState = 'unsupported'; emit(); }
   fetch('assets/voice/voices.json').then(r => (r.ok ? r.json() : null))
-    .then(v => { if (v?.clips && Object.keys(v.clips).length) { clips = v.clips; emit(); } }).catch(() => {});
+    .then(v => { if (v?.approved === true && v.clips && Object.keys(v.clips).length) { clips = v.clips; emit(); } }).catch(() => {});
   // 음성 목록이 늦게 오는 브라우저: 잠시 뒤 한 번 더 본다.
   setTimeout(() => { if (voiceState !== 'ready') chooseVoice(); }, 1200);
 }

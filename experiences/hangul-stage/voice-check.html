@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>한글 단계 · 소리 듣기 확인</title>
+<style>
+  @font-face{font-family:SUIT;src:url(assets/fonts/SUIT-Variable.woff2) format("woff2");font-weight:100 900}
+  :root{--ink:#2b2320;--muted:#6b645b;--line:#ede7dc;--paper:#fffdf8;--cream:#fbf7f0;--coral:#f96859;--coral-deep:#ae322a}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--cream);color:var(--ink);font:500 16px/1.55 SUIT,system-ui,"Malgun Gothic",sans-serif;word-break:keep-all}
+  main{max-width:960px;margin:0 auto;padding:24px 16px 48px}
+  h1{font:900 26px/1.3 SUIT,sans-serif;margin:0 0 6px}
+  h2{font:800 18px/1.3 SUIT,sans-serif;margin:0 0 10px}
+  p{margin:0 0 10px;color:var(--muted)}
+  section{background:var(--paper);border-radius:18px;padding:16px;margin-top:16px;box-shadow:0 1px 0 rgba(43,35,32,.05),0 10px 24px -14px rgba(73,45,30,.38)}
+  .head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .row{display:flex;flex-wrap:wrap;gap:8px}
+  button.clip{min-width:56px;min-height:48px;padding:4px 10px;border:1px solid var(--line);border-radius:12px;background:#fff;font:800 22px/1 SUIT,sans-serif;cursor:pointer}
+  button.clip small{display:block;font:600 11px/1.2 SUIT,sans-serif;color:var(--muted);margin-top:3px}
+  button.clip.playing{border-color:var(--coral);color:var(--coral-deep)}
+  button.clip:disabled{opacity:.35;cursor:default}
+  button.all{border:0;border-radius:999px;padding:8px 16px;background:var(--ink);color:#fff;font:700 14px/1 SUIT,sans-serif;cursor:pointer}
+  .grid{overflow-x:auto}
+  table{border-collapse:separate;border-spacing:6px}
+  th{font:800 15px/1 SUIT,sans-serif;color:var(--muted)}
+  .meta{font-size:14px}
+  .warn{color:var(--coral-deep);font-weight:700}
+</style>
+<script src="./atlas-learning.js"></script>
+</head>
+<body>
+<main>
+  <h1>한글 단계 · 소리 듣기 확인</h1>
+  <p>Typecast로 만든 글자·음절·낱말 소리입니다. 하나씩 눌러 듣거나 「이어 듣기」로 줄마다 들어 보세요. ㅓ/ㅗ, ㅜ/ㅡ가 귀로 갈리는지, 끊기거나 이상하게 읽히는 소리가 없는지 봐 주세요.</p>
+  <p class="meta" id="meta">불러오는 중…</p>
+  <div id="groups"></div>
+</main>
+<script type="module">
+import { createPack } from './pack.mjs';
+const pack = createPack(window.SynkLearning.layer);
+const $ = id => document.getElementById(id);
+const el = (tag, attrs = {}, ...kids) => { const n = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) { if (k === 'class') n.className = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else if (v !== false && v != null) n.setAttribute(k, v === true ? '' : v); } n.append(...kids.flat().filter(x => x != null)); return n; };
+let files = {}, current = null;
+const play = (text, button) => new Promise(resolve => {
+  if (current) { current.audio.pause(); current.button?.classList.remove('playing'); }
+  const file = files[text]; if (!file) return resolve(false);
+  const audio = new Audio(`assets/voice/${file}`); current = { audio, button };
+  button?.classList.add('playing');
+  const end = ok => { button?.classList.remove('playing'); resolve(ok); };
+  audio.onended = () => end(true); audio.onerror = () => end(false); audio.play().catch(() => end(false));
+});
+const clip = (text, label) => el('button', { class: 'clip', type: 'button', disabled: !files[text], onclick: e => play(text, e.currentTarget) }, text, label ? el('small', {}, label) : null);
+const group = (title, buttons) => {
+  const all = el('button', { class: 'all', type: 'button', onclick: async () => { for (const b of buttons.filter(b => !b.disabled)) { await play(b.firstChild.textContent, b); await new Promise(r => setTimeout(r, 350)); } } }, '이어 듣기');
+  return el('section', {}, el('div', { class: 'head' }, el('h2', {}, title), all), el('div', { class: 'row' }, buttons));
+};
+const candidate = await fetch('assets/voice/voices.candidate.json').then(r => (r.ok ? r.json() : null)).catch(() => null);
+files = candidate?.clips || {};
+const total = pack.audioManifest().clips.length, have = Object.keys(files).length;
+$('meta').innerHTML = candidate
+  ? `목소리 <b>${candidate.voice.provider} ${candidate.voice.name}</b> · ${candidate.settings.model} · 감정 ${candidate.settings.emotion} · 빠르기 ${candidate.settings.tempo} · 만든 소리 <b>${have}/${total}</b>${candidate.credits ? ` · 한 개당 크레딧 ${candidate.credits.perClip}` : ''}${have < total ? ' · <span class="warn">아직 덜 만들었어요</span>' : ''}`
+  : '<span class="warn">아직 만든 소리가 없어요(voices.candidate.json 없음).</span>';
+const groups = $('groups');
+groups.append(group('글자 22개', pack.letters.map(l => clip(l.voice, l.glyph))));
+// 음절 표: 줄 = 첫소리(ㅇ과 자음), 칸 = 모음
+const vowels = pack.letters.filter(l => l.role === 'vowel'), consonants = [null, ...pack.letters.filter(l => l.role === 'consonant' && l.id !== 'c-ng')];
+const table = el('table', {}, el('tr', {}, el('th', {}, ''), vowels.map(v => el('th', {}, v.glyph))),
+  consonants.map(c => el('tr', {}, el('th', {}, c ? c.glyph : 'ㅇ'), vowels.map(v => el('td', {}, clip(pack.syllable(c?.id || null, v.id)))))));
+groups.append(el('section', {}, el('div', { class: 'head' }, el('h2', {}, '음절 120개')), el('div', { class: 'grid' }, table)));
+groups.append(group('낱말·간판·명패', [...new Set([...pack.words.map(w => w.text), ...pack.signs.map(s => s.text), '한국어'])].map(t => clip(t))));
+</script>
+</body>
+</html>
