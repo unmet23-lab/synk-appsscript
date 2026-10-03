@@ -18,8 +18,9 @@ const map = { map_ver: `${taxonomy.json.version}-${version.slice(0, 12)}`, subje
   nodes: [
     ...taxonomy.json.skills.map(([id, domain, label_ko]) => ({ id, kind: 'skill', label_ko, domain, level: null,
       difficulty: { authored: null, measured: null, n: 0 }, source_refs: [ref] })),
-    // A grammar step is the grammar bank's order, not a TOPIK grade.
-    ...grammar.json.points.map(([id, label_ko, forms, step]) => ({ id, kind: 'grammar_point', label_ko, forms, level: { intro: step, basis: 'grammar_bank' },
+    // A grammar step is the grammar bank's order, or the standard curriculum's grade where a point names
+    // that basis (topik-i.grammar.json S points); never a TOPIK grade.
+    ...grammar.json.points.map(([id, label_ko, forms, step, , basis]) => ({ id, kind: 'grammar_point', label_ko, forms, level: { intro: step, basis: basis || 'grammar_bank' },
       source_refs: [{ source: 'practice-grammar', selector: id }] })),
   ],
   // Which abilities a grammar point serves: a draft awaiting teacher review.

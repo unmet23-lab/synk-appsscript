@@ -31,9 +31,9 @@ export const FLOW_WORDS = { 'ease.support': '다음 손님부터는 돋보기를
 // 손님 문항은 판단 근거가 되는 규칙(evidence)들의 문형을 쓴다.
 export const RULE_GRAMMAR = Object.freeze({
   'pool.cap': ['G403'], 'pool.food': ['G402'], 'pool.kid': ['G212', 'G403'],
-  'library.card': ['G402'], 'library.food': ['G402', 'G401'], 'library.time': ['G212', 'G402'],
-  'museum.time': ['G212', 'G402'], 'museum.camera': ['G402'], 'museum.fee': ['G212', 'G402'],
-  'concert.date': ['G212', 'G402'], 'concert.chair': ['G505', 'G402'], 'concert.kid': ['G212', 'G403'], 'concert.food': ['G402'] });
+  'library.card': ['G402'], 'library.food': ['G402', 'G401'], 'library.time': ['G212', 'S104', 'G402'],
+  'museum.time': ['G212', 'S105', 'S107', 'G402'], 'museum.camera': ['G402'], 'museum.fee': ['G212', 'S107', 'G402'],
+  'concert.date': ['G212', 'G402'], 'concert.chair': ['G505', 'G402'], 'concert.kid': ['G212', 'G403'], 'concert.food': ['S104', 'G402'] });
 const CASE_GRAMMAR = new Map(VENUES.flatMap((v) => v.cases.map((c) => [c.id, [...new Set(c.evidence.flatMap((r) => RULE_GRAMMAR[`${v.id}.${r}`] || []))]])));
 
 export function caseMetadata(c) {

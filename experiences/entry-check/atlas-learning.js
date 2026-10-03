@@ -2180,7 +2180,7 @@ var SynkLearning = (() => {
   var require_topik_i = __commonJS({
     "strata/maps/topik-i.json"(exports, module) {
       module.exports = {
-        map_ver: "topik-i-practice-1-5eca4b712a05",
+        map_ver: "topik-i-practice-1-44d2513dd2a1",
         subject: "ko",
         sources: {
           "practice-taxonomy": {
@@ -2189,7 +2189,7 @@ var SynkLearning = (() => {
           },
           "practice-grammar": {
             path: "strata/topik-i.grammar.json",
-            sha256: "bf24b30cf4df3edef574417b8ac669f71712422372f52829bc0b4749e1a176fb"
+            sha256: "a5bb38207df2818f84136a3f4c5d1b8f3452aabf18f7e61de0f1e8f508d15266"
           },
           "practice-words": {
             path: "strata/topik-i.words.json",
@@ -2956,9 +2956,10 @@ var SynkLearning = (() => {
           {
             id: "G403",
             kind: "grammar_point",
-            label_ko: "-아/어야 하다",
+            label_ko: "-아/어야 하다/되다",
             forms: [
-              "-아/어야 하다"
+              "-아/어야 하다",
+              "-아/어야 되다"
             ],
             level: {
               intro: 2,
@@ -3274,6 +3275,762 @@ var SynkLearning = (() => {
               {
                 source: "practice-grammar",
                 selector: "G612"
+              }
+            ]
+          },
+          {
+            id: "S101",
+            kind: "grammar_point",
+            label_ko: "께서",
+            forms: [
+              "께서"
+            ],
+            level: {
+              intro: 1,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S101"
+              }
+            ]
+          },
+          {
+            id: "S102",
+            kind: "grammar_point",
+            label_ko: "도",
+            forms: [
+              "도"
+            ],
+            level: {
+              intro: 1,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S102"
+              }
+            ]
+          },
+          {
+            id: "S103",
+            kind: "grammar_point",
+            label_ko: "이랑/랑",
+            forms: [
+              "이랑/랑"
+            ],
+            level: {
+              intro: 1,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S103"
+              }
+            ]
+          },
+          {
+            id: "S104",
+            kind: "grammar_point",
+            label_ko: "부터",
+            forms: [
+              "부터"
+            ],
+            level: {
+              intro: 1,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S104"
+              }
+            ]
+          },
+          {
+            id: "S105",
+            kind: "grammar_point",
+            label_ko: "까지",
+            forms: [
+              "까지"
+            ],
+            level: {
+              intro: 1,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S105"
+              }
+            ]
+          },
+          {
+            id: "S106",
+            kind: "grammar_point",
+            label_ko: "의",
+            forms: [
+              "의"
+            ],
+            level: {
+              intro: 1,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S106"
+              }
+            ]
+          },
+          {
+            id: "S107",
+            kind: "grammar_point",
+            label_ko: "만",
+            forms: [
+              "만"
+            ],
+            level: {
+              intro: 1,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S107"
+              }
+            ]
+          },
+          {
+            id: "S108",
+            kind: "grammar_point",
+            label_ko: "-겠-",
+            forms: [
+              "-겠-"
+            ],
+            level: {
+              intro: 1,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S108"
+              }
+            ]
+          },
+          {
+            id: "S109",
+            kind: "grammar_point",
+            label_ko: "-(으)시-",
+            forms: [
+              "-(으)시-"
+            ],
+            level: {
+              intro: 1,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S109"
+              }
+            ]
+          },
+          {
+            id: "S110",
+            kind: "grammar_point",
+            label_ko: "-습니까/-ㅂ니까",
+            forms: [
+              "-습니까/-ㅂ니까"
+            ],
+            level: {
+              intro: 1,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S110"
+              }
+            ]
+          },
+          {
+            id: "S111",
+            kind: "grammar_point",
+            label_ko: "-습니다/-ㅂ니다",
+            forms: [
+              "-습니다/-ㅂ니다"
+            ],
+            level: {
+              intro: 1,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S111"
+              }
+            ]
+          },
+          {
+            id: "S112",
+            kind: "grammar_point",
+            label_ko: "-(으)ㅂ시다",
+            forms: [
+              "-(으)ㅂ시다"
+            ],
+            level: {
+              intro: 1,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S112"
+              }
+            ]
+          },
+          {
+            id: "S113",
+            kind: "grammar_point",
+            label_ko: "-(으)십시오",
+            forms: [
+              "-(으)십시오"
+            ],
+            level: {
+              intro: 1,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S113"
+              }
+            ]
+          },
+          {
+            id: "S114",
+            kind: "grammar_point",
+            label_ko: "-고요",
+            forms: [
+              "-고요"
+            ],
+            level: {
+              intro: 1,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S114"
+              }
+            ]
+          },
+          {
+            id: "S115",
+            kind: "grammar_point",
+            label_ko: "이/가 아니다",
+            forms: [
+              "이/가 아니다"
+            ],
+            level: {
+              intro: 1,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S115"
+              }
+            ]
+          },
+          {
+            id: "S201",
+            kind: "grammar_point",
+            label_ko: "께",
+            forms: [
+              "께"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S201"
+              }
+            ]
+          },
+          {
+            id: "S202",
+            kind: "grammar_point",
+            label_ko: "마다",
+            forms: [
+              "마다"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S202"
+              }
+            ]
+          },
+          {
+            id: "S203",
+            kind: "grammar_point",
+            label_ko: "밖에",
+            forms: [
+              "밖에"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S203"
+              }
+            ]
+          },
+          {
+            id: "S204",
+            kind: "grammar_point",
+            label_ko: "처럼",
+            forms: [
+              "처럼"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S204"
+              }
+            ]
+          },
+          {
+            id: "S205",
+            kind: "grammar_point",
+            label_ko: "에서부터",
+            forms: [
+              "에서부터"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S205"
+              }
+            ]
+          },
+          {
+            id: "S206",
+            kind: "grammar_point",
+            label_ko: "에다가",
+            forms: [
+              "에다가/에다"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S206"
+              }
+            ]
+          },
+          {
+            id: "S207",
+            kind: "grammar_point",
+            label_ko: "에게로",
+            forms: [
+              "에게로"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S207"
+              }
+            ]
+          },
+          {
+            id: "S208",
+            kind: "grammar_point",
+            label_ko: "에게서",
+            forms: [
+              "에게서"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S208"
+              }
+            ]
+          },
+          {
+            id: "S209",
+            kind: "grammar_point",
+            label_ko: "한테서",
+            forms: [
+              "한테서"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S209"
+              }
+            ]
+          },
+          {
+            id: "S210",
+            kind: "grammar_point",
+            label_ko: "(이)나",
+            forms: [
+              "이나/나"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S210"
+              }
+            ]
+          },
+          {
+            id: "S211",
+            kind: "grammar_point",
+            label_ko: "-거나",
+            forms: [
+              "-거나"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S211"
+              }
+            ]
+          },
+          {
+            id: "S212",
+            kind: "grammar_point",
+            label_ko: "-(으)면서",
+            forms: [
+              "-(으)면서"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S212"
+              }
+            ]
+          },
+          {
+            id: "S213",
+            kind: "grammar_point",
+            label_ko: "-게 (목적)",
+            forms: [
+              "-게"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S213"
+              }
+            ]
+          },
+          {
+            id: "S214",
+            kind: "grammar_point",
+            label_ko: "-다가",
+            forms: [
+              "-다가"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S214"
+              }
+            ]
+          },
+          {
+            id: "S215",
+            kind: "grammar_point",
+            label_ko: "-기 (명사형)",
+            forms: [
+              "-기"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S215"
+              }
+            ]
+          },
+          {
+            id: "S216",
+            kind: "grammar_point",
+            label_ko: "-(으)ㅁ (명사형)",
+            forms: [
+              "-(으)ㅁ"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S216"
+              }
+            ]
+          },
+          {
+            id: "S217",
+            kind: "grammar_point",
+            label_ko: "-는군요",
+            forms: [
+              "-는군요/-군요"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S217"
+              }
+            ]
+          },
+          {
+            id: "S218",
+            kind: "grammar_point",
+            label_ko: "-게 되다",
+            forms: [
+              "-게 되다"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S218"
+              }
+            ]
+          },
+          {
+            id: "S219",
+            kind: "grammar_point",
+            label_ko: "-기 때문에",
+            forms: [
+              "-기 때문에"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S219"
+              }
+            ]
+          },
+          {
+            id: "S220",
+            kind: "grammar_point",
+            label_ko: "-기로 하다",
+            forms: [
+              "-기로 하다"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S220"
+              }
+            ]
+          },
+          {
+            id: "S221",
+            kind: "grammar_point",
+            label_ko: "-(으)ㄴ 지",
+            forms: [
+              "-(으)ㄴ 지"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S221"
+              }
+            ]
+          },
+          {
+            id: "S222",
+            kind: "grammar_point",
+            label_ko: "-는 동안(에)",
+            forms: [
+              "-는 동안(에)"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S222"
+              }
+            ]
+          },
+          {
+            id: "S223",
+            kind: "grammar_point",
+            label_ko: "-(으)ㄹ 것 (명령·지시)",
+            forms: [
+              "-(으)ㄹ 것"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S223"
+              }
+            ]
+          },
+          {
+            id: "S224",
+            kind: "grammar_point",
+            label_ko: "-(으)ㄹ까 보다",
+            forms: [
+              "-(으)ㄹ까 보다"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S224"
+              }
+            ]
+          },
+          {
+            id: "S225",
+            kind: "grammar_point",
+            label_ko: "-아/어 있다",
+            forms: [
+              "-아/어 있다"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S225"
+              }
+            ]
+          },
+          {
+            id: "S226",
+            kind: "grammar_point",
+            label_ko: "-지 말다",
+            forms: [
+              "-지 말다"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S226"
+              }
+            ]
+          },
+          {
+            id: "S227",
+            kind: "grammar_point",
+            label_ko: "-(으)ㄹ 수밖에 없다",
+            forms: [
+              "-(으)ㄹ 수밖에 없다"
+            ],
+            level: {
+              intro: 2,
+              basis: "standard-curriculum-2017"
+            },
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S227"
               }
             ]
           }
@@ -4095,6 +4852,656 @@ var SynkLearning = (() => {
               {
                 source: "practice-grammar",
                 selector: "G612"
+              }
+            ]
+          },
+          {
+            from: "S101",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S101"
+              }
+            ]
+          },
+          {
+            from: "S102",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S102"
+              }
+            ]
+          },
+          {
+            from: "S103",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S103"
+              }
+            ]
+          },
+          {
+            from: "S104",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S104"
+              }
+            ]
+          },
+          {
+            from: "S105",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S105"
+              }
+            ]
+          },
+          {
+            from: "S106",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S106"
+              }
+            ]
+          },
+          {
+            from: "S107",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S107"
+              }
+            ]
+          },
+          {
+            from: "S108",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S108"
+              }
+            ]
+          },
+          {
+            from: "S109",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S109"
+              }
+            ]
+          },
+          {
+            from: "S110",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S110"
+              }
+            ]
+          },
+          {
+            from: "S111",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S111"
+              }
+            ]
+          },
+          {
+            from: "S112",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S112"
+              }
+            ]
+          },
+          {
+            from: "S113",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S113"
+              }
+            ]
+          },
+          {
+            from: "S114",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S114"
+              }
+            ]
+          },
+          {
+            from: "S115",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S115"
+              }
+            ]
+          },
+          {
+            from: "S115",
+            to: "ko.listening.negation",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S115"
+              }
+            ]
+          },
+          {
+            from: "S115",
+            to: "ko.reading.negation",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S115"
+              }
+            ]
+          },
+          {
+            from: "S201",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S201"
+              }
+            ]
+          },
+          {
+            from: "S202",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S202"
+              }
+            ]
+          },
+          {
+            from: "S203",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S203"
+              }
+            ]
+          },
+          {
+            from: "S204",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S204"
+              }
+            ]
+          },
+          {
+            from: "S205",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S205"
+              }
+            ]
+          },
+          {
+            from: "S206",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S206"
+              }
+            ]
+          },
+          {
+            from: "S207",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S207"
+              }
+            ]
+          },
+          {
+            from: "S208",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S208"
+              }
+            ]
+          },
+          {
+            from: "S209",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S209"
+              }
+            ]
+          },
+          {
+            from: "S210",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S210"
+              }
+            ]
+          },
+          {
+            from: "S211",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S211"
+              }
+            ]
+          },
+          {
+            from: "S212",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S212"
+              }
+            ]
+          },
+          {
+            from: "S213",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S213"
+              }
+            ]
+          },
+          {
+            from: "S214",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S214"
+              }
+            ]
+          },
+          {
+            from: "S214",
+            to: "ko.listening.sequence",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S214"
+              }
+            ]
+          },
+          {
+            from: "S214",
+            to: "ko.reading.sequence",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S214"
+              }
+            ]
+          },
+          {
+            from: "S215",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S215"
+              }
+            ]
+          },
+          {
+            from: "S216",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S216"
+              }
+            ]
+          },
+          {
+            from: "S217",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S217"
+              }
+            ]
+          },
+          {
+            from: "S218",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S218"
+              }
+            ]
+          },
+          {
+            from: "S219",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S219"
+              }
+            ]
+          },
+          {
+            from: "S219",
+            to: "ko.listening.reason",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S219"
+              }
+            ]
+          },
+          {
+            from: "S219",
+            to: "ko.reading.reason",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S219"
+              }
+            ]
+          },
+          {
+            from: "S220",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S220"
+              }
+            ]
+          },
+          {
+            from: "S221",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S221"
+              }
+            ]
+          },
+          {
+            from: "S222",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S222"
+              }
+            ]
+          },
+          {
+            from: "S223",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S223"
+              }
+            ]
+          },
+          {
+            from: "S224",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S224"
+              }
+            ]
+          },
+          {
+            from: "S225",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S225"
+              }
+            ]
+          },
+          {
+            from: "S226",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S226"
+              }
+            ]
+          },
+          {
+            from: "S226",
+            to: "ko.listening.negation",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S226"
+              }
+            ]
+          },
+          {
+            from: "S226",
+            to: "ko.reading.negation",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S226"
+              }
+            ]
+          },
+          {
+            from: "S227",
+            to: "ko.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "practice-grammar",
+                selector: "S227"
               }
             ]
           }

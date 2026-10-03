@@ -30,10 +30,10 @@ const MAPPING = Object.freeze({
 // (놓은 뒤 → -(으)ㄴ 후에). Strata's particleAfter and grammarIn (strata/topik-i-forms.js) read them
 // and a test keeps the two the same. Drafts until teachers review them.
 export const GRAMMAR = Object.freeze({
-  'cleanup-snacks': ['G202', 'G203', 'G206'], 'cleanup-paper': ['G202', 'G203', 'G206'],
+  'cleanup-snacks': ['G202', 'G203', 'G206'], 'cleanup-paper': ['G202', 'G203', 'G206', 'S226'],
   'clue-flowers': ['G202', 'G203', 'G206'], 'clue-letter': ['G202', 'G203', 'G206', 'G406'],
   'surprise-cake': ['G202', 'G203', 'G206'], 'surprise-ribbon': ['G202', 'G203', 'G206', 'G406'],
-  'review-snacks': ['G201', 'G203', 'G206'], 'review-paper': ['G202', 'G203', 'G206'],
+  'review-snacks': ['G201', 'G203', 'G206'], 'review-paper': ['G202', 'G203', 'G206', 'S115'],
   'review-cake': ['G202', 'G203', 'G206', 'G406'],
 });
 const MISSIONS = new Map([...EPISODE.acts.flatMap(act => act.missions), ...EPISODE.review].map(m => [m.id, m]));

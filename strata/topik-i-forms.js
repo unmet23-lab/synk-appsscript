@@ -49,11 +49,14 @@ const ENDINGS = [
   ['G301', (w, a) => /고 싶/.test(w) || /고$/.test(w) && /^\s*싶/.test(a)],
   ['G409', (w, a) => /고 (있|계)/.test(w) || /고$/.test(w) && /^\s*(있|계)/.test(a)],
   ['G405', (w, a) => /려고 (하|해|했|합)/.test(w) || /려고$/.test(w) && /^\s*(하|해|했|합)/.test(a)],
-  ['G403', (w, a) => /야 (하|해|했|합)/.test(w) || /야$/.test(w) && /^\s*(하|해|했|합)/.test(a)],
+  // -아/어야 하다 and -아/어야 되다 are one point (해야 해요, 해야 돼요).
+  ['G403', (w, a) => /야 (하|해|했|합|되|돼|됐|됩)/.test(w) || /야$/.test(w) && /^\s*(하|해|했|합|되|돼|됐|됩)/.test(a)],
   ['G404', w => /.(주세요|줘요)$/.test(w) && !/^(주세요|줘요)$/.test(w)],
   ['G408', w => /[아어여와워해가] (봐|봤|보세요|볼)/.test(w)],
   ['G304', (w, a) => /지 않/.test(w) || /지$/.test(w) && /^\s*않/.test(a)],
   ['G313', (w, a) => /지 못/.test(w) || /지$/.test(w) && /^\s*못/.test(a)],
+  // 넣지 마세요, 가지 말고: -지 말다. The word after tells it (가지 alone is also a noun).
+  ['S226', (w, a) => /지$/.test(w) && /^\s*(마|말|맙)/.test(a) || /지 (마|말|맙)/.test(w)],
   ['G303', w => /러$/.test(w)],
   ['G311', w => /까요\??$/.test(w) && finalOf(before(w.replace(/\?$/, ''), '까요')) === FINAL_L],
   ['G612', w => /(게요|래요)$/.test(w) && finalOf(before(w, '게요')) === FINAL_L],
@@ -89,6 +92,16 @@ const NOUNS = new Set(words.words.filter(([, , pos]) => pos === '명' || pos ===
 const TAILS = [...PARTICLES.keys(), '만', '도', '의', '까지', '부터'];
 const isNoun = word => NOUNS.has(word) || TAILS.some(t => word.length > t.length && word.endsWith(t) && NOUNS.has(word.slice(0, -t.length)));
 const TIME_UNITS = new Set(['분', '초', '년', '주일', '개월']);
+// 만·까지·부터 after a noun, a numeral or a number are often what a rule turns on (5시까지만, 13살 이하만,
+// 지금부터), so a sentence names them. 편지만 is 만; 먹지만 is -지만.
+const NUMERALS = new Set(words.words.filter(([, , pos]) => pos === '수').map(([, word]) => word));
+const stemLike = s => !!s && (NOUNS.has(s) || NUMERALS.has(s) || /\d/.test(s));
+function cruxParticles(word) {
+  const ids = [];
+  for (const [tail, id] of [['부터', 'S104'], ['까지', 'S105']]) { const at = word.indexOf(tail); if (at > 0 && stemLike(word.slice(0, at))) ids.push(id); }
+  if (word.length > 1 && word.endsWith('만')) { const stem = word.slice(0, -1); if (stemLike(stem) || /(까지|부터)$/.test(stem) && stemLike(stem.slice(0, -2))) ids.push('S107'); }
+  return ids;
+}
 
 // The grammar points a whole sentence uses, in the order they come: endings read word by word (each
 // with the words after it) and a number with its unit (7살, 오후 5시 30분: 숫자/시간 표현). A blank
@@ -127,6 +140,9 @@ function grammarIn(sentence) {
     const last = previous; previous = word;
     if (!word || PARTICLES.has(word) || CONJUNCTIONS.has(word)) continue;
     if (word === '주세요' && SPACED_GIVE(last)) { add('G404', m.index); continue; }
+    for (const id of cruxParticles(word)) add(id, m.index);
+    // 서랍이 아니라, 일 층이 아니에요: 이/가 아니다. 아니 alone (아니, 괜찮아요) has no 이/가 before it.
+    if (/^(아니|아닙|아냐)/.test(word) && /[이가]$/.test(last) && last.length > 1) { add('S115', m.index); continue; }
     const after = text.slice(m.index + m[0].length);
     for (const [id, ending] of ENDINGS) {
       if (NOT_IN_SENTENCES.has(id)) continue;
@@ -150,4 +166,6 @@ function particleAfter(text, word) {
   for (let n = tail.length; n > 0; n--) if (PARTICLES.has(tail.slice(0, n))) return PARTICLES.get(tail.slice(0, n));
   return null;
 }
-module.exports = { grammarOf, grammarIn, particleAfter, PARTICLES, ENDING_POINTS };
+// Points a whole sentence names by its own rules above (besides the endings and particles).
+const SENTENCE_POINTS = Object.freeze(['S104', 'S105', 'S107', 'S115']);
+module.exports = { grammarOf, grammarIn, particleAfter, PARTICLES, ENDING_POINTS, SENTENCE_POINTS };

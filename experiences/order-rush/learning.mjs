@@ -4,7 +4,7 @@ const SKILLS={o03:'negation',o07:'negation',o09:'negation',o11:'negation',r01:'n
 // -(으)세요 in every order, and -아/어 주세요 where something is taken out or put in (빼 주세요, 넣어 주세요).
 // A test keeps this equal to grammarIn (a draft before teacher review).
 export const ORDER_GRAMMAR=Object.freeze({o01:['G211'],o02:['G211'],o03:['G211','G404'],o04:['G211'],o05:['G211','G404'],o06:['G211','G404'],o07:['G211'],o08:['G211','G404'],
- o09:['G211'],o10:['G211'],o11:['G404','G211'],o12:['G211'],r01:['G211'],r02:['G211','G404'],r03:['G211']});
+ o09:['G211'],o10:['G211'],o11:['G404','S226','G211'],o12:['G211'],r01:['G211'],r02:['G211','S107','G404'],r03:['G211']});
 export function orderMetadata(order){
  const skillId=`ko.listening.${SKILLS[order.id]||'detail'}`;
  return {id:`order-rush.${order.id}`,itemKey:`order-rush.${order.id}.v1`,familyKey:`order-rush.${order.id}.v1`,skillId,

@@ -31,7 +31,7 @@ export const LISTENING_CHECKS = Object.freeze([
 ].map(check => Object.freeze({ ...check, steps: Object.freeze(check.steps), choices: Object.freeze(check.choices) })));
 // The TOPIK I grammar each check sentence uses, as Strata's grammarIn (strata/topik-i-forms.js) reads it.
 // A test keeps this equal to grammarIn (a draft before teacher review).
-export const CHECK_GRAMMAR = Object.freeze({ 'check-star-middle': ['G211'], 'check-wide-left': ['G211'], 'check-fence-jump': ['G211'], 'check-sign-duck': ['G211'], 'check-not-middle': ['G211'], 'check-no-fence': ['G410', 'G304', 'G505'], 'check-high-sign': ['G304', 'G505'], 'check-not-left': ['G211'], 'check-duck-jump': ['G211'], 'check-middle-left': ['G406', 'G211'], 'check-right-before-jump': ['G406', 'G211'], 'check-left-run': ['G406', 'G211'] });
+export const CHECK_GRAMMAR = Object.freeze({ 'check-star-middle': ['G211'], 'check-wide-left': ['G211'], 'check-fence-jump': ['G211'], 'check-sign-duck': ['G211'], 'check-not-middle': ['S226', 'G211'], 'check-no-fence': ['G410', 'G304', 'G505'], 'check-high-sign': ['G304', 'G505'], 'check-not-left': ['S226', 'G211'], 'check-duck-jump': ['G211'], 'check-middle-left': ['G406', 'G211'], 'check-right-before-jump': ['G406', 'G211'], 'check-left-run': ['G406', 'G211'] });
 export function checkMetadata(item) {
   const key = `korean-runner.listening-check.${item.id}.v1`;
   return { ...instructionMetadata(item), id: `korean-runner.listening-check.${item.id}`, itemKey: key, familyKey: key,

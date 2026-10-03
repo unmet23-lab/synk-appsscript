@@ -12,14 +12,18 @@ const memory = () => { const data = new Map(); return { getItem: k => data.get(k
 
 test('the map holds abilities, grammar and words, and none of them claims a TOPIK grade', () => {
   const nodes = map.allNodes(), count = kind => nodes.filter(n => n.kind === kind).length;
-  assert.deepEqual([count('skill'), count('grammar_point'), count('word')], [15, 45, 2000]);
+  assert.deepEqual([count('skill'), count('grammar_point'), count('word')], [15, 87, 2000]);
   assert.equal(map.getNode('ko.word.w0001').label_ko, '사과');
   assert.equal(map.getNode('ko.word.w0001').level, null, 'a word band is source metadata, not a level');
   assert.equal(map.getNode('G209').level.basis, 'grammar_bank', 'a grammar step is the grammar bank order');
+  // The standard 1·2급 points the bank layer did not have carry their own basis: the curriculum's grade.
+  assert.deepEqual(map.getNode('S226').level, { intro: 2, basis: 'standard-curriculum-2017' });
+  assert.equal(map.getNode('S111').label_ko, '-습니다/-ㅂ니다');
   // Negation grammar serves both negation abilities as well as grammar reading.
   const raw = require('../strata/maps/topik-i.json');
   const links = raw.edges.filter(e => e.from === 'G209').map(e => e.to).sort();
   assert.deepEqual(links, ['ko.listening.negation', 'ko.reading.grammar', 'ko.reading.negation']);
+  assert.deepEqual(raw.edges.filter(e => e.from === 'S226').map(e => e.to).sort(), ['ko.listening.negation', 'ko.reading.grammar', 'ko.reading.negation']);
   assert.ok(raw.edges.every(e => e.confidence === 'ai_draft' && e.reviewed === false), 'links are drafts awaiting review');
 });
 

@@ -2,14 +2,18 @@
 // strata/topik-i-forms.js: the grammar point a filled blank uses, read from its form.
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { grammarOf, grammarIn, particleAfter, PARTICLES, ENDING_POINTS } = require('../strata/topik-i-forms');
+const { grammarOf, grammarIn, particleAfter, PARTICLES, ENDING_POINTS, SENTENCE_POINTS } = require('../strata/topik-i-forms');
 const grammar = require('../strata/topik-i.grammar.json');
 const { createMap } = require('../strata');
 const { topikMap } = require('../strata/topik-i');
 
 test('particles are the forms written in the grammar file, each with one point', () => {
   const expected = [['이', 'G201'], ['가', 'G201'], ['은', 'G202'], ['는', 'G202'], ['을', 'G203'], ['를', 'G203'], ['에', 'G206'], ['에서', 'G207'],
-    ['하고', 'G210'], ['와', 'G210'], ['과', 'G210'], ['으로', 'G309'], ['로', 'G309'], ['에게', 'G310'], ['한테', 'G310'], ['보다', 'G312']];
+    ['하고', 'G210'], ['와', 'G210'], ['과', 'G210'], ['으로', 'G309'], ['로', 'G309'], ['에게', 'G310'], ['한테', 'G310'], ['보다', 'G312'],
+    // The standard 1·2급 particles the bank layer did not have (S points, 2026-10-03).
+    ['께서', 'S101'], ['도', 'S102'], ['이랑', 'S103'], ['랑', 'S103'], ['부터', 'S104'], ['까지', 'S105'], ['의', 'S106'], ['만', 'S107'],
+    ['께', 'S201'], ['마다', 'S202'], ['밖에', 'S203'], ['처럼', 'S204'], ['에서부터', 'S205'], ['에다가', 'S206'], ['에다', 'S206'],
+    ['에게로', 'S207'], ['에게서', 'S208'], ['한테서', 'S209'], ['이나', 'S210'], ['나', 'S210']];
   for (const [form, id] of expected) assert.equal(grammarOf(form), id, form);
   assert.equal(PARTICLES.size, expected.length);
 });
@@ -39,9 +43,13 @@ test('a conjunction, a plain present ending or a word names no point', () => {
   }
 });
 
-test('every grammar point is named by a form or a rule, except the two no form can tell', () => {
-  const named = new Set([...PARTICLES.values(), ...ENDING_POINTS]);
-  assert.deepEqual(grammar.points.map(([id]) => id).filter(id => !named.has(id)), ['G205', 'G212']);
+// Two no form can tell (-아/어요, a number is read on its own), and the standard points a sentence leaves to
+// a blank or a role: -습니다, -(으)시- and the like sit in nearly every sentence, and the 2급 endings are
+// not in our games yet.
+test('every grammar point is named by a form or a rule, except those no form can tell and the layer-only ones', () => {
+  const named = new Set([...PARTICLES.values(), ...ENDING_POINTS, ...SENTENCE_POINTS]);
+  assert.deepEqual(grammar.points.map(([id]) => id).filter(id => !named.has(id)), ['G205', 'G212', 'S108', 'S109', 'S110', 'S111', 'S112', 'S113', 'S114',
+    'S211', 'S212', 'S213', 'S214', 'S215', 'S216', 'S217', 'S218', 'S219', 'S220', 'S221', 'S222', 'S223', 'S224', 'S225', 'S227']);
   const map = createMap(topikMap());
   for (const id of named) assert.equal(map.getNode(id)?.kind, 'grammar_point', id);
 });
@@ -51,7 +59,7 @@ test('a whole sentence names its endings and numbers in the order they come', ()
     ['수영 모자를 꼭 써야 합니다.', ['G403']],
     ['7살 이하 어린이는 어른과 함께 들어와야 합니다.', ['G212', 'G403']],
     ['음식은 가지고 들어갈 수 없습니다. 음료는 뚜껑이 있으면 괜찮습니다.', ['G402', 'G401']],
-    ['관람은 오후 6시까지입니다. 입장은 오후 5시까지만 할 수 있습니다.', ['G212', 'G402']],
+    ['관람은 오후 6시까지입니다. 입장은 오후 5시까지만 할 수 있습니다.', ['G212', 'S105', 'S107', 'G402']],
     ['돗자리는 가지고 와도 됩니다. 의자는 가지고 올 수 없습니다.', ['G505', 'G402']],
     ['여기에서는 사진을 찍으면 안 됩니다.', ['G506']],
     ['꽃을 놓은 뒤, 까몽은 편지를 칠판에 붙여 줘.', ['G406']],
@@ -95,9 +103,33 @@ test('a noun, a time or a place in a sentence is not read as an ending', () => {
     ['1시간 후에 만나요.', ['G212']],
     ['한 시간 후에 만나요.', []],
     ['저는 거기에 가요.', []],
-    ['편지만 가지고 오세요.', ['G211']],
+    // 편지만 is 만, not -지만.
+    ['편지만 가지고 오세요.', ['S107', 'G211']],
   ];
   for (const [sentence, ids] of cases) assert.deepEqual(grammarIn(sentence), ids, sentence);
+});
+
+// The standard points a sentence names (2026-10-03): -지 말다 and 이/가 아니다, and 만·까지·부터 after a noun or
+// a number, which a rule often turns on. 도, 의 and -습니다 are in nearly every sentence: only a blank names them.
+test('a sentence names -지 말다, 이/가 아니다 and the 만·까지·부터 a rule turns on, not the forms in every sentence', () => {
+  const cases = [
+    ['설탕은 넣지 마세요.', ['S226', 'G211']],
+    ['가운데로 가지 말고 오른쪽으로 가세요.', ['S226', 'G211']],
+    ['까몽은 종이를 버리지 말고 서랍 안에 넣어 줘.', ['S226']],
+    ['마린은 종이를 서랍이 아니라 상자 안에 넣어요.', ['S115']],
+    ['약국은 일 층이 아니에요.', ['S115']],
+    ['아니, 괜찮아요.', []],
+    ['지금부터 음식은 가지고 들어갈 수 없습니다.', ['S104', 'G402']],
+    ['어린이 표는 13살 이하만 쓸 수 있습니다.', ['G212', 'S107', 'G402']],
+    ['오늘은 숙제를 해야 돼요.', ['G403']],
+    ['설탕도 넣어 주세요.', ['G404']],
+    ['다른 사람의 카드는 쓸 수 없습니다.', ['G402']],
+    ['비가 오지만 가요.', ['G307']],
+  ];
+  for (const [sentence, ids] of cases) assert.deepEqual(grammarIn(sentence), ids, sentence);
+  assert.equal(grammarOf('가지', { after: ' 마세요.' }), 'S226');
+  assert.equal(grammarOf('도'), 'S102');
+  assert.equal(grammarOf('의'), 'S106');
 });
 
 test('the particle after a word, through a place noun between them', () => {
