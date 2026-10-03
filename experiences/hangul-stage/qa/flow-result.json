@@ -1,6 +1,6 @@
 {
-  "at": "2026-10-03T11:41:15.290Z",
-  "base": "http://127.0.0.1:5240/",
+  "at": "2026-10-03T13:44:21.647Z",
+  "base": "http://127.0.0.1:5249/",
   "results": [
     {
       "name": "390px 입구가 열림",
@@ -60,17 +60,72 @@
     {
       "name": "390px 둘째 회차 끝까지",
       "ok": true,
-      "detail": "단계 11, 꼴 see_pick,match,listen_pick"
+      "detail": "단계 11, 꼴 pair,see_pick,listen_pick,match"
     },
     {
       "name": "390px 자음을 배운 사람: 음절 만들기와 그 시범",
       "ok": true,
-      "detail": "꼴 build,listen_pick,match,see_pick"
+      "detail": "꼴 match,teach,build,listen_pick,see_pick,pair"
     },
     {
       "name": "390px 자음을 배운 사람: U3 새 글자를 만남",
       "ok": true,
       "detail": "v-a,v-eo,v-o,v-u,v-eu,v-i,c-g,c-n,c-d,c-r,c-m,c-b"
+    },
+    {
+      "name": "390px 글자 상자가 모음·자음·받침으로 나뉨",
+      "ok": true,
+      "detail": "묶음 3, 받침 타일 4"
+    },
+    {
+      "name": "390px 받침 회차의 이유 한 줄이 헷갈린 받침 짝을 가리킴",
+      "ok": true,
+      "detail": "어제 헷갈린 글자예요. 오늘 다시 해요. · 받침 칩 2"
+    },
+    {
+      "name": "390px 받침 회차: 짝 고르기로 시작",
+      "ok": true,
+      "detail": "pair,teach,see_pick,see_pick,see_pick,listen_pick,see_pick,build,match,listen_pick"
+    },
+    {
+      "name": "390px 받침 회차: 몽글에게 가르쳐 주기(몽글이 든 글자가 보임)",
+      "ok": true,
+      "detail": "꼴 pair,teach,see_pick,listen_pick,build,match"
+    },
+    {
+      "name": "390px 받침 회차: 짝·가르쳐 주기의 시범이 한 번씩",
+      "ok": true,
+      "detail": "listen_pick,see_pick,build,match,pair,teach"
+    },
+    {
+      "name": "390px 받침 회차: 받침 ㄱ·ㄷ을 만나기 카드로(아 + 받침 → 음절)",
+      "ok": true,
+      "detail": "만남 f-g,f-d"
+    },
+    {
+      "name": "390px 졸업: 회차 끝에 졸업 장면",
+      "ok": true,
+      "detail": "단계 10, 꼴 pair,teach,see_pick,listen_pick,build,match, 받침 음절 만들기 1"
+    },
+    {
+      "name": "390px 졸업 장면: 읽을 수 있는 받침 낱말과 명패",
+      "ok": true,
+      "detail": "낱말 4"
+    },
+    {
+      "name": "390px 졸업 장면 넘침 없음",
+      "ok": true,
+      "detail": "{\"doc\":0,\"body\":0,\"vv\":0}"
+    },
+    {
+      "name": "390px 졸업 뒤 입구: 몸풀기",
+      "ok": true,
+      "detail": "몸풀기 · 한글을 읽어요"
+    },
+    {
+      "name": "390px 졸업 뒤 몸풀기는 다섯 문항 이하",
+      "ok": true,
+      "detail": "문항 5: see_pick,pair,build,listen_pick,see_pick"
     },
     {
       "name": "390px 콘솔 오류 없음",
@@ -145,17 +200,72 @@
     {
       "name": "1280px 둘째 회차 끝까지",
       "ok": true,
-      "detail": "단계 11, 꼴 see_pick,match,listen_pick"
+      "detail": "단계 11, 꼴 pair,see_pick,listen_pick,match"
     },
     {
       "name": "1280px 자음을 배운 사람: 음절 만들기와 그 시범",
       "ok": true,
-      "detail": "꼴 build,listen_pick,match,see_pick"
+      "detail": "꼴 match,teach,build,listen_pick,see_pick,pair"
     },
     {
       "name": "1280px 자음을 배운 사람: U3 새 글자를 만남",
       "ok": true,
       "detail": "v-a,v-eo,v-o,v-u,v-eu,v-i,c-g,c-n,c-d,c-r,c-m,c-b"
+    },
+    {
+      "name": "1280px 글자 상자가 모음·자음·받침으로 나뉨",
+      "ok": true,
+      "detail": "묶음 3, 받침 타일 4"
+    },
+    {
+      "name": "1280px 받침 회차의 이유 한 줄이 헷갈린 받침 짝을 가리킴",
+      "ok": true,
+      "detail": "어제 헷갈린 글자예요. 오늘 다시 해요. · 받침 칩 2"
+    },
+    {
+      "name": "1280px 받침 회차: 짝 고르기로 시작",
+      "ok": true,
+      "detail": "pair,teach,see_pick,see_pick,see_pick,listen_pick,see_pick,build,match,listen_pick"
+    },
+    {
+      "name": "1280px 받침 회차: 몽글에게 가르쳐 주기(몽글이 든 글자가 보임)",
+      "ok": true,
+      "detail": "꼴 pair,teach,see_pick,listen_pick,build,match"
+    },
+    {
+      "name": "1280px 받침 회차: 짝·가르쳐 주기의 시범이 한 번씩",
+      "ok": true,
+      "detail": "listen_pick,see_pick,build,match,pair,teach"
+    },
+    {
+      "name": "1280px 받침 회차: 받침 ㄱ·ㄷ을 만나기 카드로(아 + 받침 → 음절)",
+      "ok": true,
+      "detail": "만남 f-g,f-d"
+    },
+    {
+      "name": "1280px 졸업: 회차 끝에 졸업 장면",
+      "ok": true,
+      "detail": "단계 10, 꼴 pair,teach,see_pick,listen_pick,build,match, 받침 음절 만들기 1"
+    },
+    {
+      "name": "1280px 졸업 장면: 읽을 수 있는 받침 낱말과 명패",
+      "ok": true,
+      "detail": "낱말 4"
+    },
+    {
+      "name": "1280px 졸업 장면 넘침 없음",
+      "ok": true,
+      "detail": "{\"doc\":0,\"body\":0,\"vv\":0}"
+    },
+    {
+      "name": "1280px 졸업 뒤 입구: 몸풀기",
+      "ok": true,
+      "detail": "몸풀기 · 한글을 읽어요"
+    },
+    {
+      "name": "1280px 졸업 뒤 몸풀기는 다섯 문항 이하",
+      "ok": true,
+      "detail": "문항 5: see_pick,pair,build,listen_pick,see_pick"
     },
     {
       "name": "1280px 콘솔 오류 없음",

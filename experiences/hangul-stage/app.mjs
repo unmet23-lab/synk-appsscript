@@ -1,7 +1,7 @@
 // 한글 단계 MVP 화면(docs/한글단계_설계.md, 2026-10-03 한국어 MVP). 한국어만 쓰고, 글을 못 읽어도
 // 시범·그림·소리로 할 수 있게 만든다. 판단은 core.mjs, 아틀라스 기록은 learning.mjs, 소리는 audio.mjs가 맡는다.
 import { createPack } from './pack.mjs';
-import { readProgress, planSession, answer, meet, finishSession, view, retryItem, canPlayMore, sessionsToday, letterOf, readableWords } from './core.mjs';
+import { readProgress, planSession, answer, meet, finishSession, view, retryItem, canPlayMore, sessionsToday, letterOf, readableWords, graduationReady, graduate, SETTINGS } from './core.mjs';
 import { createCoach, isHosted, progressKey, createRecorder } from './learning.mjs';
 import * as audio from './audio.mjs';
 
@@ -33,31 +33,46 @@ function load() { if (!KEY) return readProgress(null); try { return readProgress
 function save() { if (!KEY) { saved = false; return; } try { localStorage.setItem(KEY, JSON.stringify(progress)); saved = true; } catch { saved = false; } }
 const glyph = id => pack.byId.get(id).glyph;
 const STATE_WORD = { unmet: '아직 안 만남', met: '만남', learning: '익히는 중', mastered: '익힘' };
+const isFinal = id => pack.byId.get(id)?.role === 'final';
+const nameOf = id => (isFinal(id) ? `받침 ${glyph(id)}` : glyph(id));
+// 졸업 뒤 미니게임으로: 공통 서버(학습 허브와 같은 출처)에서 열었을 때만 허브로 잇는다. WORLD 안에서는 위의 게임 목록을 쓴다.
+const HUB = !hosted && location.pathname.startsWith('/hangul-stage/') ? '../learning-hub/' : null;
 
 if (new URLSearchParams(location.search).get('qa') === 'silent') audio.setSilent(true);
 audio.initAudio();
 
-function show(id) { for (const s of ['home', 'session', 'finish']) $(s).hidden = s !== id; scrollTo(0, 0); }
+function show(id) { for (const s of ['home', 'session', 'finish', 'graduation']) $(s).hidden = s !== id; scrollTo(0, 0); }
 
 // ── 입구 ──────────────────────────────────────────────
 function tile(l, { onTap = true } = {}) {
   const state = l.shown || l.state;
-  const b = el('button', { class: `tile ${state}`, type: 'button', 'aria-label': `${l.glyph} ${STATE_WORD[state]}`, disabled: state === 'unmet' }, l.glyph);
+  const b = el('button', { class: `tile ${state}${l.role === 'final' ? ' final' : ''}`, type: 'button', 'aria-label': `${l.role === 'final' ? '받침 ' : ''}${l.glyph} ${STATE_WORD[state]}`, disabled: state === 'unmet' }, l.glyph);
   if (onTap && state !== 'unmet') b.addEventListener('click', () => audio.say(l.voice));
   return b;
 }
 function renderHome() {
   const at = now(), v = view(progress, pack, at);
   const more = canPlayMore(progress, at), today = sessionsToday(progress, at);
-  $('start-label').textContent = !more ? '내일 또 만나요' : today ? '한 번 더' : v.started ? '이어서 배우기' : '시작';
-  $('start-sub').textContent = more ? `${progress.amount}문제 · ${{ 5: 2, 10: 3, 15: 4 }[progress.amount]}분쯤` : '오늘은 여기까지 했어요';
+  // 졸업 뒤에는 헷갈리기 쉬운 글자의 짧은 몸풀기다(설계 §8).
+  const amount = v.graduated ? Math.min(progress.amount, SETTINGS.warmup) : progress.amount;
+  $('hero-title').textContent = v.graduated ? '한글을 읽어요' : '가나다부터';
+  $('hero-lede').textContent = v.graduated ? '한글 단계를 졸업했어요. 헷갈리기 쉬운 글자를 가끔 짧게 풀어요.' : '소리를 듣고, 글자를 보고, 음절을 만들며 혼자 배워요.';
+  $('start-label').textContent = !more ? '내일 또 만나요' : v.graduated ? '몸풀기' : today ? '한 번 더' : v.started ? '이어서 배우기' : '시작';
+  $('start-sub').textContent = more ? `${amount}문제 · ${{ 5: 2, 10: 3, 15: 4 }[amount]}분쯤` : '오늘은 여기까지 했어요';
   $('start').disabled = !more || !audio.voiceReady();
+  $('games').hidden = !(v.graduated && HUB);
+  if (HUB) $('games').href = HUB;
+  $('games-note').hidden = !(v.graduated && hosted);
   const STATUS = { done: '다 익힘', now: '지금', started: '배우는 중', next: '다음', later: '준비 중' };
-  $('road').replaceChildren(...v.units.map((u, i) => el('li', { class: u.status, 'aria-label': `${i + 1}. ${u.label} · ${STATUS[u.status]}` },
+  $('road').replaceChildren(...v.units.map((u, i) => el('li', { class: `${u.status}${u.final ? ' final' : ''}`, 'aria-label': `${i + 1}. ${u.label} · ${STATUS[u.status]}` },
     el('span', { class: 'stop', 'aria-hidden': 'true' }, String(i + 1)), el('span', { class: 'glyphs', 'aria-hidden': 'true' }, [...u.glyphs].slice(0, 3).join('') + (u.glyphs.length > 3 ? '…' : '')))));
   const current = v.units.find(u => u.status === 'now');
-  $('road-now').textContent = current ? `지금: ${current.label}` : v.units.every(u => u.status === 'done' || u.status === 'later') ? '네 단원을 다 익혔어요' : '';
-  $('box').replaceChildren(...v.letters.map(l => tile(l)));
+  $('road-now').textContent = v.graduated ? '졸업' : current ? `지금: ${current.label}` : v.units.every(u => u.status === 'done' || u.status === 'later') ? '받침까지 다 익혔어요' : '';
+  // 글자 상자는 모음 · 자음 · 받침으로 나눠 보인다. 받침은 첫소리와 모양이 같아 묶음 이름으로 가른다.
+  const GROUPS = [['vowel', '모음'], ['consonant', '자음'], ['final', '받침']];
+  $('box').replaceChildren(...GROUPS.map(([role, label]) => el('div', { class: 'box-group' },
+    el('h3', {}, label), el('div', { class: 'box' }, v.letters.filter(l => l.role === role).map(l => tile(l))))));
+  $('amounts-block').hidden = !!v.graduated;
   $('signs').replaceChildren(...v.signs.map(s => {
     const b = el('button', { class: `sign${s.readable ? ' readable' : ''}`, type: 'button', disabled: !s.readable, 'aria-label': s.readable ? `${s.text} 간판, 눌러서 듣기` : '아직 흐린 간판' },
       el('span', { class: 'plaque' }, el('span', { class: 'word', 'aria-hidden': 'true' }, s.syllables.map(x => el('span', { class: x.clear ? '' : 'hazy' }, x.text)))),
@@ -69,7 +84,7 @@ function renderHome() {
     s.cells.map(c => el('span', { class: `cell${c.filled ? ' filled' : ''}${c.later ? ' later' : ''}`, 'aria-hidden': 'true' }, c.glyph)))));
   $('amounts').replaceChildren(...[5, 10, 15].map(n => el('button', { class: 'amount', type: 'button', role: 'radio', 'aria-checked': String(progress.amount === n),
     onclick: () => { progress = readProgress({ ...progress, amount: n }); save(); renderHome(); } }, `${n}문제`)));
-  $('skip').hidden = progress.skipped;
+  $('skip').hidden = progress.skipped || !!v.graduated;
   $('skipped-note').hidden = !progress.skipped;
   $('save-note').hidden = saved;
   $('save-note').textContent = KEY ? '이 기기에 진도를 저장하지 못했어요. 이번 접속에서만 이어져요.' : '이 화면에서는 진도가 저장되지 않아요.';
@@ -108,7 +123,7 @@ function dock(...kids) { $('dock').replaceChildren(...kids); }
 function cta(label, { tone = 'coral', disc = '', onClick, disabled = false } = {}) {
   return el('button', { class: `felt-cta ${tone}`, type: 'button', disabled, onclick: onClick }, el('span', { class: 'cta-text' }, el('b', {}, label)), el('span', { class: `disc ${disc}`, 'aria-hidden': 'true' }));
 }
-function prompt(text) { return el('p', { class: 'prompt' }, el('img', { class: 'mini', src: 'assets/brand/mongle-curious.webp', alt: '' }), text); }
+function prompt(text, { mini = true } = {}) { return el('p', { class: 'prompt' }, mini ? el('img', { class: 'mini', src: 'assets/brand/mongle-curious.webp', alt: '' }) : null, text); }
 function nextStep() { audio.stop(); S.open = []; S.index += 1; if (S.index >= S.steps.length) endSession(); else renderStep(); }
 function renderStep() {
   bar();
@@ -116,15 +131,20 @@ function renderStep() {
   if (step.kind === 'reason') return renderReason();
   if (step.kind === 'meet') return renderMeet(step.letter);
   const item = step.item;
-  ({ listen_pick: renderListen, see_pick: renderSee, build: renderBuild, match: renderMatch })[item.type](item);
+  ({ listen_pick: renderListen, pair: renderListen, teach: renderListen, see_pick: renderSee, build: renderBuild, match: renderMatch })[item.type](item);
 }
 
+// 글자 칩. 받침 칩은 아래에 받침 자리 표시가 붙는다(모양만으로는 첫소리와 같아서).
+function chipRow(glyphs, finals = []) {
+  return el('div', { class: 'chips', 'aria-label': glyphs.map((g, i) => (finals[i] ? `받침 ${g}` : g)).join(' ') },
+    glyphs.map((g, i) => el('span', { class: `chip${finals[i] ? ' final' : ''}`, 'aria-hidden': 'true' }, g)));
+}
 function renderReason() {
   const r = S.plan.reason;
   $('stage').replaceChildren(el('section', { class: 'reason paper' },
     el('img', { class: 'mongle', src: 'assets/brand/mongle-curious.webp', alt: '' }),
     el('p', {}, r.text),
-    r.letters.length ? el('div', { class: 'chips', 'aria-label': r.letters.join(' ') }, r.letters.map(g => el('span', { class: 'chip', 'aria-hidden': 'true' }, g))) : null));
+    r.letters.length ? chipRow(r.letters, r.finals) : null));
   dock(cta('시작', { disc: 'play', onClick: nextStep }));
 }
 
@@ -135,13 +155,24 @@ function examplesFor(id) {
   const vowels = [...known].filter(x => pack.byId.get(x).role === 'vowel');
   let list;
   if (id === 'c-ng') list = vowels.slice(0, 3).map(v => pack.syllable(null, v));
+  else if (l.role === 'final') list = pack.FINAL_FRAME.initials.filter(c => c && known.has(c)).slice(0, 3).map(c => pack.syllable(c, 'v-a', id)); // 소리 목록의 받침 틀 안에서
   else if (l.role === 'vowel') list = [pack.syllable(null, id), ...consonants.slice(-2).map(c => pack.syllable(c, id))];
   else list = ['v-a', 'v-eo', 'v-o', 'v-u', 'v-i'].filter(v => known.has(v)).slice(0, 3).map(v => pack.syllable(id, v));
   const word = readableWords(pack, known).find(w => w.letters.includes(id) && [...w.text].length <= 3);
   return [...new Set([...list, ...(word ? [word.text] : [])])].slice(0, 4);
 }
+// 받침의 소리 길잡이. ㄷ·ㅅ·ㅈ은 받침에서 소리가 같고(대표음), ㄱ·ㄷ·ㅂ은 터뜨리지 않고 막는다(설계 §3).
+const FINAL_NOTE = {
+  'f-ng': '받침 ㅇ은 소리가 있어요. 소리가 없는 첫소리 ㅇ과 달라요.',
+  'f-g': '받침 ㄱ은 소리를 막고 끝내요. 터뜨리지 않아요.',
+  'f-d': '받침 ㄷ은 소리를 막고 끝내요. 터뜨리지 않아요.',
+  'f-b': '받침 ㅂ은 입을 다물고 끝내요. 터뜨리지 않아요.',
+  'f-s': '받침 ㅅ은 받침 ㄷ과 같은 소리로 읽어요.',
+  'f-j': '받침 ㅈ도 받침 ㄷ과 같은 소리로 읽어요.',
+};
 function noteFor(id) {
   if (id === 'c-ng') return '첫소리 ㅇ은 소리가 없어요. 아는 ㅏ와 같은 소리예요.';
+  if (isFinal(id)) return FINAL_NOTE[id] || (pack.letters.some(x => x.role === 'final' && x.id !== id && letterOf(progress, x.id).state !== 'unmet') ? null : '받침은 글자 아래에 붙는 끝소리예요.');
   const other = { 'v-ae': 'v-e', 'v-e': 'v-ae' }[id];
   if (other && letterOf(progress, other).state !== 'unmet') return `${glyph('v-ae')}와 ${glyph('v-e')}는 소리가 같아요. 낱말마다 쓰는 글자가 정해져 있어요.`;
   return null;
@@ -153,9 +184,17 @@ function renderMeet(id) {
   speak.addEventListener('click', () => play(speak, l.voice));
   const note = noteFor(id);
   const pad = tracePad(l.glyph);
-  $('stage').replaceChildren(el('section', { class: 'meet paper' },
-    el('div', { class: 'glyph', 'aria-label': `새 글자 ${l.glyph}` }, l.glyph),
+  // 받침은 「아 + ㄴ = 안」처럼 붙는 자리와 소리를 함께 보인다. 양쪽 음절은 눌러 들을 수 있다.
+  const sum = l.role === 'final' ? el('div', { class: 'sum', 'aria-label': `아에 받침 ${l.glyph}을 붙이면 ${l.voice}` },
+    el('button', { class: 'example', type: 'button', 'aria-label': '아 듣기', onclick: () => audio.say(pack.syllable(null, 'v-a')) }, pack.syllable(null, 'v-a')),
+    el('span', { class: 'op', 'aria-hidden': 'true' }, '+'), el('span', { class: 'piece final-piece', 'aria-hidden': 'true' }, l.glyph),
+    el('span', { class: 'op', 'aria-hidden': 'true' }, '='),
+    el('button', { class: 'example', type: 'button', 'aria-label': `${l.voice} 듣기`, onclick: () => audio.say(l.voice) }, l.voice)) : null;
+  $('stage').replaceChildren(el('section', { class: `meet paper${l.role === 'final' ? ' final' : ''}` },
+    l.role === 'final' ? el('span', { class: 'role-tag' }, '받침') : null,
+    el('div', { class: 'glyph', 'aria-label': `새 ${l.role === 'final' ? '받침' : '글자'} ${l.glyph}` }, l.glyph),
     speak,
+    sum,
     note ? el('p', { class: 'note' }, note) : null,
     el('div', { class: 'trace-head' }, el('span', {}, '따라 써 봐요'), el('button', { class: 'redo', type: 'button', 'aria-label': '다시 쓰기', onclick: () => pad.clear() })),
     pad.node,
@@ -204,7 +243,7 @@ function tracePad(g) {
 // ── 문항 공통 ──
 const done = item => { if (item.target.letter) S.practiced.add(item.target.letter); for (const id of item.focus) S.practiced.add(id); };
 function settle(item, { correct, assisted, replays = 0, perLetter = null, confused = [], counts = true, listening = true }) {
-  progress = answer(progress, { focus: item.focus, correct, perLetter, assisted, replays, confused, at: now(), sessionId: S.sessionId, counts });
+  progress = answer(progress, { focus: item.focus, correct, perLetter, assisted, replays, confused, at: now(), sessionId: S.sessionId, counts, word: !!item.word });
   save();
   if (counts) { S.answered += 1; if (correct && !assisted) S.independent += 1; bar(); }
   if (listening) S.wrongRun = correct ? 0 : S.wrongRun + 1;
@@ -262,7 +301,9 @@ async function demo(steps) {
   } finally { pointer.hidden = true; stage.inert = false; $('dock').inert = false; }
 }
 
-// 듣고 고르기
+// 듣고 고르기 · 짝 고르기(헷갈리는 짝 둘 중 들린 쪽) · 몽글에게 가르쳐 주기(몽글이 잘못 든 글자를 바로잡아 준다).
+// 셋 다 소리를 듣고 고르는 같은 문항이고 정오를 똑같이 센다. 모양만 다르다.
+const LISTEN_PROMPT = { pair: '헷갈리는 두 소리예요. 들은 쪽을 골라요', teach: '몽글이 헷갈려요. 들은 것을 골라 알려 줘요' };
 function renderListen(item) {
   const state = { pid: rec.present(item), assisted: false, replays: 0, plays: 0, answered: false };
   S.open = [state.pid];
@@ -274,10 +315,15 @@ function renderListen(item) {
     if (state.plays === 1) rec.delivered(state.pid, ok);
   };
   speak.addEventListener('click', () => hear());
-  const options = item.options.map(o => el('button', { class: 'opt', type: 'button', 'aria-label': o.text }, el('span', { class: `big${item.word ? ' word' : ''}` }, o.text)));
+  const options = item.options.map(o => el('button', { class: `opt${o.none ? ' none' : ''}`, type: 'button', 'aria-label': o.none ? `${o.text}, 받침 없음` : o.text }, el('span', { class: `big${item.word ? ' word' : ''}` }, o.text)));
   options.forEach((b, i) => b.addEventListener('click', () => choose(item.options[i], b)));
-  $('stage').replaceChildren(prompt(item.word ? '소리를 듣고 맞는 낱말을 골라요' : '소리를 듣고 맞는 글자를 골라요'),
-    el('div', { class: 'speak-row' }, speak, slowOffer(state, item.target.text, speak)), el('div', { class: 'options' }, options));
+  const head = item.type === 'teach'
+    ? el('div', { class: 'teach' }, el('img', { class: 'mongle', src: 'assets/brand/mongle-curious.webp', alt: '' }),
+      el('div', { class: 'held', 'aria-label': `몽글이 든 글자 ${item.wrong}` }, el('span', { class: 'big' }, item.wrong), el('span', { class: 'q', 'aria-hidden': 'true' }, '?')))
+    : null;
+  // 가르쳐 주기는 몽글이 크게 나오니 안내 줄의 작은 몽글은 뺀다. replaceChildren은 null을 글자로 넣어 빈 자리는 걸러 낸다.
+  $('stage').replaceChildren(...[prompt(LISTEN_PROMPT[item.type] || (item.word ? '소리를 듣고 맞는 낱말을 골라요' : '소리를 듣고 맞는 글자를 골라요'), { mini: !head }), head,
+    el('div', { class: 'speak-row' }, speak, slowOffer(state, item.target.text, speak)), el('div', { class: `options${item.type === 'pair' ? ' pair' : ''}` }, options)].filter(Boolean));
   dock();
   async function choose(o, b) {
     if (state.answered) return;
@@ -288,10 +334,11 @@ function renderListen(item) {
     right.classList.add('right'); if (!correct) b.classList.add('wrong');
     rec.answer(state.pid, correct);
     settle(item, { correct, assisted: state.assisted, replays: state.replays, confused: correct ? [] : [[item.target.letter, o.letter]] });
-    feedback(correct, correct ? '맞아요' : '이 소리예요');
+    if (correct && item.type === 'teach') audio.effect('joy');
+    feedback(correct, correct ? (item.type === 'teach' ? '몽글이 알았어요' : '맞아요') : '이 소리예요');
     if (!correct) { await audio.say(o.text); await audio.wait(250); await audio.say(item.target.text); }
   }
-  if (!withDemo('listen_pick', state, () => [{ node: speak, run: () => hear() }, { node: options[item.options.findIndex(x => x.text === item.target.text)] }]))
+  if (!withDemo(item.type, state, () => [{ node: speak, run: () => hear() }, { node: options[item.options.findIndex(x => x.text === item.target.text)] }]))
     pause(300).then(() => { if (!state.answered) hear(); });
 }
 
@@ -327,9 +374,9 @@ function renderSee(item) {
     () => options[i].classList.remove('picked'));
 }
 
-// 음절 만들기: 들린 음절을 자음 조각과 모음 조각으로 만든다.
+// 음절 만들기: 들린 음절을 자음 조각과 모음 조각으로, 받침이 있으면 받침 조각까지 골라 만든다.
 function renderBuild(item) {
-  const t = item.target, state = { pid: rec.present(item), assisted: false, replays: 0, plays: 0, c: null, v: null, answered: false };
+  const t = item.target, withFinal = !!item.pieces.finals, state = { pid: rec.present(item), assisted: false, replays: 0, plays: 0, c: null, v: null, f: null, answered: false };
   S.open = [state.pid];
   const speak = el('button', { class: 'speak', type: 'button', 'aria-label': '소리 듣기' });
   const hear = async (opts = {}) => {
@@ -341,35 +388,42 @@ function renderBuild(item) {
   speak.addEventListener('click', () => hear());
   const slot = el('div', { class: 'slot paper empty', 'aria-live': 'polite' }, '?');
   const confirm = cta('확인', { disc: 'check', disabled: true, onClick: () => submit() });
-  const piece = (id, kind) => el('button', { class: 'piece', type: 'button', 'aria-pressed': 'false', 'aria-label': glyph(id), onclick: () => select(kind, id) }, glyph(id));
-  const cs = item.pieces.consonants.map(id => piece(id, 'c')), vs = item.pieces.vowels.map(id => piece(id, 'v'));
+  const piece = (id, kind) => el('button', { class: `piece${kind === 'f' ? ' final-piece' : ''}`, type: 'button', 'aria-pressed': 'false', 'aria-label': nameOf(id), onclick: () => select(kind, id) }, glyph(id));
+  const cs = item.pieces.consonants.map(id => piece(id, 'c')), vs = item.pieces.vowels.map(id => piece(id, 'v')), fs = (item.pieces.finals || []).map(id => piece(id, 'f'));
+  const rows = { c: [cs, item.pieces.consonants], v: [vs, item.pieces.vowels], f: [fs, item.pieces.finals || []] };
+  const ready = () => !!(state.c && state.v && (!withFinal || state.f));
   function select(kind, id) {
     if (state.answered) return;
     state[kind] = id;
-    for (const b of kind === 'c' ? cs : vs) b.setAttribute('aria-pressed', String(b.getAttribute('aria-label') === glyph(id)));
-    // 조각을 고르는 대로 글자가 합쳐져 보인다(자음 하나만 고르면 그 조각만).
-    slot.textContent = state.c && state.v ? pack.syllable(state.c, state.v) : state.c ? glyph(state.c) : state.v ? glyph(state.v) : '?';
-    slot.classList.toggle('empty', !state.c && !state.v);
-    confirm.disabled = !(state.c && state.v);
+    const [buttons, ids] = rows[kind];
+    buttons.forEach((b, i) => b.setAttribute('aria-pressed', String(ids[i] === id)));
+    // 조각을 고르는 대로 글자가 합쳐져 보인다(자음·모음이 서기 전에는 고른 조각만, 받침은 그 아래에 붙는다).
+    slot.textContent = state.c && state.v ? pack.syllable(state.c, state.v, state.f) : [state.c, state.v, state.f].filter(Boolean).map(glyph).join(' ') || '?';
+    slot.classList.toggle('empty', !state.c && !state.v && !state.f);
+    confirm.disabled = !ready();
   }
   $('stage').replaceChildren(prompt('들은 소리를 만들어요'), el('div', { class: 'speak-row' }, speak, slowOffer(state, t.text, speak)), slot,
-    el('div', { class: 'pieces' }, el('div', { class: 'piece-row', 'aria-label': '자음' }, cs), el('div', { class: 'piece-row', 'aria-label': '모음' }, vs)));
+    el('div', { class: 'pieces' }, el('div', { class: 'piece-row', 'aria-label': '자음' }, cs), el('div', { class: 'piece-row', 'aria-label': '모음' }, vs),
+      withFinal ? el('div', { class: 'piece-row finals', 'aria-label': '받침' }, el('span', { class: 'row-tag', 'aria-hidden': 'true' }, '받침'), fs) : null));
   dock(confirm);
   async function submit() {
-    if (state.answered || !state.c || !state.v) return;
+    if (state.answered || !ready()) return;
     state.answered = true; S.open = [];
-    const cOk = state.c === t.consonant, vOk = state.v === t.vowel, correct = cOk && vOk, made = pack.syllable(state.c, state.v);
-    for (const b of [...cs, ...vs]) b.disabled = true;
+    const cOk = state.c === t.consonant, vOk = state.v === t.vowel, fOk = !withFinal || state.f === t.final, correct = cOk && vOk && fOk;
+    const made = pack.syllable(state.c, state.v, withFinal ? state.f : null);
+    for (const b of [...cs, ...vs, ...fs]) b.disabled = true;
     slot.textContent = t.text; slot.classList.remove('empty');
     rec.answer(state.pid, correct);
-    settle(item, { correct, assisted: state.assisted, replays: state.replays, perLetter: { [t.consonant]: cOk, [t.vowel]: vOk },
-      confused: [...(cOk ? [] : [[t.consonant, state.c]]), ...(vOk ? [] : [[t.vowel, state.v]])] });
+    settle(item, { correct, assisted: state.assisted, replays: state.replays, perLetter: { [t.consonant]: cOk, [t.vowel]: vOk, ...(withFinal ? { [t.final]: fOk } : {}) },
+      confused: [...(cOk ? [] : [[t.consonant, state.c]]), ...(vOk ? [] : [[t.vowel, state.v]]), ...(fOk ? [] : [[t.final, state.f]])] });
     feedback(correct, correct ? '맞아요' : `${made}가 아니라 ${t.text}예요`);
     if (!correct) { await audio.say(made); await audio.wait(250); await audio.say(t.text); }
   }
-  const c = cs[item.pieces.consonants.indexOf(t.consonant)], v = vs[item.pieces.vowels.indexOf(t.vowel)];
-  if (!withDemo('build', state, () => [{ node: speak, run: () => hear() }, { node: c, run: async () => select('c', t.consonant) }, { node: v, run: async () => select('v', t.vowel) }, { node: slot }],
-    () => { state.c = state.v = null; for (const b of [...cs, ...vs]) b.setAttribute('aria-pressed', 'false'); slot.textContent = '?'; slot.classList.add('empty'); confirm.disabled = true; }))
+  const pieceOf = kind => { const [buttons, ids] = rows[kind]; return buttons[ids.indexOf(t[{ c: 'consonant', v: 'vowel', f: 'final' }[kind]])]; };
+  const demoSteps = () => [{ node: speak, run: () => hear() }, { node: pieceOf('c'), run: async () => select('c', t.consonant) }, { node: pieceOf('v'), run: async () => select('v', t.vowel) },
+    ...(withFinal ? [{ node: pieceOf('f'), run: async () => select('f', t.final) }] : []), { node: slot }];
+  if (!withDemo(withFinal ? 'build_final' : 'build', state, demoSteps,
+    () => { state.c = state.v = state.f = null; for (const b of [...cs, ...vs, ...fs]) b.setAttribute('aria-pressed', 'false'); slot.textContent = '?'; slot.classList.add('empty'); confirm.disabled = true; }))
     pause(300).then(() => { if (!state.answered) hear(); });
 }
 
@@ -441,13 +495,32 @@ function endSession() {
     mastered.length ? el('div', { class: 'finish-letters' }, mastered.map(l => tile(l))) : null,
     ...signs.map(s => el('button', { class: 'sign readable', type: 'button', 'aria-label': `${s.text} 간판, 눌러서 듣기`, onclick: () => audio.say(s.text) },
       el('span', { class: 'plaque' }, el('span', { class: 'word', 'aria-hidden': 'true' }, s.text)), el('small', {}, '이제 읽을 수 있어요')))].filter(Boolean)); // replaceChildren은 null을 글자로 넣는다
-  $('tomorrow').replaceChildren(...(v.tomorrow.length ? [el('p', {}, '다음에 만날 글자'), el('div', { class: 'chips' }, v.tomorrow.map(g => el('span', { class: 'chip', 'aria-hidden': 'true' }, g)))]
-    : [el('p', {}, v.allMet ? '네 단원의 글자를 다 만났어요. 다음 단원은 준비 중이에요.' : '')]));
+  $('tomorrow').replaceChildren(...(v.tomorrow.length ? [el('p', {}, '다음에 만날 글자'), chipRow(v.tomorrow, v.tomorrowFinals)]
+    : [el('p', {}, v.allMet ? '이 판의 글자를 다 만났어요. 거센소리·된소리는 준비 중이에요.' : '')]));
   $('again').hidden = !canPlayMore(progress, at);
   audio.effect('achieve');
-  S = null; show('finish');
+  S = null;
+  // 졸업(설계 §8): 조건이 서는 회차 끝에 한 번. 졸업 장면을 먼저 보이고, 그 뒤는 짧은 몸풀기다.
+  if (graduationReady(progress, pack)) { progress = graduate(progress, at); save(); return showGraduation(); }
+  show('finish');
+}
+// 졸업 장면: 마스코트는 움직이지 않는다. 몽글 소리와 함께 명패(익힌 칸만 채워진 그대로 — 남은 칸은 졸업 뒤에 채워진다)와
+// 이제 읽을 수 있는 받침 낱말이 놓인다.
+const GRAD_WORDS = ['한국어', '안녕', '사랑', '김밥'];
+function showGraduation() {
+  const v = view(progress, pack, now());
+  $('grad-plate').replaceChildren(...v.plate.map(s => el('div', { class: 'syl', 'aria-label': s.text }, s.cells.map(c => el('span', { class: `cell${c.filled ? ' filled' : ''}`, 'aria-hidden': 'true' }, c.glyph)))));
+  const known = new Set(v.letters.filter(l => l.state !== 'unmet').map(l => l.id));
+  const words = readableWords(pack, known).filter(w => w.letters.some(isFinal));
+  const shown = [...GRAD_WORDS.map(t => words.find(w => w.text === t)).filter(Boolean), ...words].filter((w, i, all) => all.indexOf(w) === i).slice(0, 4);
+  $('grad-words').replaceChildren(...shown.map(w => el('button', { class: 'example', type: 'button', 'aria-label': `${w.text} 듣기`, onclick: () => audio.say(w.text) }, w.text, icon('speaker'))));
+  $('grad-games').hidden = !HUB; if (HUB) $('grad-games').href = HUB;
+  $('grad-note').hidden = !hosted;
+  show('graduation');
+  setTimeout(() => audio.effect('joy'), 700);
 }
 $('again').addEventListener('click', () => startSession());
+$('grad-done').addEventListener('click', () => { renderHome(); show('home'); });
 $('done').addEventListener('click', () => { renderHome(); show('home'); });
 $('quit').addEventListener('click', () => {
   audio.stop();

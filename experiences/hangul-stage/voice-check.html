@@ -32,7 +32,7 @@
 <body>
 <main>
   <h1>한글 단계 · 소리 듣기 확인</h1>
-  <p>Typecast로 만든 글자·음절·낱말 소리입니다. 하나씩 눌러 듣거나 「이어 듣기」로 줄마다 들어 보세요. ㅓ/ㅗ, ㅜ/ㅡ가 귀로 갈리는지, 끊기거나 이상하게 읽히는 소리가 없는지 봐 주세요.</p>
+  <p>Typecast로 만든 글자·음절·낱말 소리입니다. 하나씩 눌러 듣거나 「이어 듣기」로 줄마다 들어 보세요. ㅓ/ㅗ, ㅜ/ㅡ, 받침 ㄴ/ㅇ·ㄴ/ㅁ, 받침 ㄱ/ㄷ/ㅂ이 귀로 갈리는지, 받침 ㅅ·ㅈ이 ㄷ과 같은 소리로 나는지, 끊기거나 이상하게 읽히는 소리가 없는지 봐 주세요.</p>
   <p class="meta" id="meta">불러오는 중…</p>
   <div id="groups"></div>
 </main>
@@ -62,12 +62,15 @@ $('meta').innerHTML = candidate
   ? `목소리 <b>${candidate.voice.provider} ${candidate.voice.name}</b> · ${candidate.settings.model} · 감정 ${candidate.settings.emotion} · 빠르기 ${candidate.settings.tempo} · 만든 소리 <b>${have}/${total}</b>${candidate.credits ? ` · 한 개당 크레딧 ${candidate.credits.perClip}` : ''}${have < total ? ' · <span class="warn">아직 덜 만들었어요</span>' : ''}`
   : '<span class="warn">아직 만든 소리가 없어요(voices.candidate.json 없음).</span>';
 const groups = $('groups');
-groups.append(group('글자 22개', pack.letters.map(l => clip(l.voice, l.glyph))));
+groups.append(group(`글자 ${pack.letters.length}개`, pack.letters.map(l => clip(l.voice, l.role === 'final' ? `받침 ${l.glyph}` : l.glyph))));
 // 음절 표: 줄 = 첫소리(ㅇ과 자음), 칸 = 모음
 const vowels = pack.letters.filter(l => l.role === 'vowel'), consonants = [null, ...pack.letters.filter(l => l.role === 'consonant' && l.id !== 'c-ng')];
 const table = el('table', {}, el('tr', {}, el('th', {}, ''), vowels.map(v => el('th', {}, v.glyph))),
   consonants.map(c => el('tr', {}, el('th', {}, c ? c.glyph : 'ㅇ'), vowels.map(v => el('td', {}, clip(pack.syllable(c?.id || null, v.id)))))));
 groups.append(el('section', {}, el('div', { class: 'head' }, el('h2', {}, '음절 120개')), el('div', { class: 'grid' }, table)));
+// 받침 음절: 받침마다 정해진 틀(첫소리 ㅇ·ㄱ·ㄴ·ㅂ·ㅅ × 모음 ㅏ·ㅗ·ㅜ·ㅣ)
+const finals = pack.letters.filter(l => l.role === 'final'), frames = pack.FINAL_FRAME.initials.flatMap(c => pack.FINAL_FRAME.vowels.map(v => [c, v]));
+for (const f of finals) groups.append(group(`받침 ${f.glyph} 음절 ${frames.length}개`, frames.map(([c, v]) => clip(pack.syllable(c, v, f.id)))));
 groups.append(group('낱말·간판·명패', [...new Set([...pack.words.map(w => w.text), ...pack.signs.map(s => s.text), '한국어'])].map(t => clip(t))));
 </script>
 </body>

@@ -24,14 +24,16 @@
       <div class="hero-body">
         <img class="mongle" src="assets/brand/mongle-smile.webp" alt="" width="280" height="277">
         <div class="hero-copy">
-          <h1>가나다부터</h1>
-          <p class="lede">소리를 듣고, 글자를 보고, 음절을 만들며 혼자 배워요.</p>
+          <h1 id="hero-title">가나다부터</h1>
+          <p class="lede" id="hero-lede">소리를 듣고, 글자를 보고, 음절을 만들며 혼자 배워요.</p>
         </div>
       </div>
       <button id="start" class="felt-cta cream" type="button">
         <span class="cta-text"><b id="start-label">시작</b><small id="start-sub"></small></span>
         <span class="disc play" aria-hidden="true"></span>
       </button>
+      <a id="games" class="games-link" href="../learning-hub/" hidden>미니게임 하러 가기</a>
+      <p id="games-note" class="games-note" hidden>이제 WORLD의 다른 게임으로 연습해요. 게임 목록은 이 화면 위에 있어요.</p>
       <p id="voice-note" class="voice-note" role="status" hidden></p>
     </header>
 
@@ -42,7 +44,7 @@
 
     <section class="paper block" aria-labelledby="box-title">
       <div class="block-head"><h2 id="box-title">글자 상자</h2><span class="fine">누르면 소리가 나요</span></div>
-      <div id="box" class="box"></div>
+      <div id="box" class="box-groups"></div>
       <ul class="legend" aria-label="글자 상태">
         <li><span class="dot met"></span>만남</li><li><span class="dot learning"></span>익히는 중</li><li><span class="dot mastered"></span>익힘</li>
       </ul>
@@ -59,8 +61,10 @@
     </section>
 
     <section class="block settings" aria-labelledby="settings-title">
-      <h2 id="settings-title" class="small-title">한 번에 풀 문제</h2>
-      <div id="amounts" class="amounts" role="radiogroup" aria-labelledby="settings-title"></div>
+      <div id="amounts-block" class="amounts-block">
+        <h2 id="settings-title" class="small-title">한 번에 풀 문제</h2>
+        <div id="amounts" class="amounts" role="radiogroup" aria-labelledby="settings-title"></div>
+      </div>
       <button id="skip" class="text-link" type="button">한글을 읽을 수 있어요</button>
       <p id="skipped-note" class="fine" hidden>한글 단계를 건너뛰었어요. <button id="unskip" class="text-link" type="button">다시 배우기</button></p>
       <p id="save-note" class="fine" hidden></p>
@@ -89,6 +93,23 @@
     <div class="dock">
       <button id="again" class="felt-cta cream" type="button"><span class="cta-text"><b>한 번 더</b></span><span class="disc play" aria-hidden="true"></span></button>
       <button id="done" class="felt-cta coral" type="button"><span class="cta-text"><b>끝</b></span><span class="disc" aria-hidden="true"></span></button>
+    </div>
+  </main>
+
+  <!-- 졸업 -->
+  <main id="graduation" hidden>
+    <section class="graduation-card paper">
+      <img class="mongle" src="assets/brand/mongle-smile.webp" alt="" width="280" height="277">
+      <h1>한글 단계를 졸업했어요</h1>
+      <p class="grad-line">이제 받침이 있는 낱말도 읽을 수 있어요.</p>
+      <div id="grad-plate" class="plate"></div>
+      <div id="grad-words" class="grad-words"></div>
+      <p class="fine">헷갈리기 쉬운 글자는 가끔 짧은 몸풀기로 다시 만나요. 글자 상자는 그대로 남아요.</p>
+    </section>
+    <div class="dock">
+      <a id="grad-games" class="felt-cta cream" href="../learning-hub/" hidden><span class="cta-text"><b>미니게임 하러 가기</b></span><span class="disc play" aria-hidden="true"></span></a>
+      <p id="grad-note" class="games-note" hidden>이제 WORLD의 다른 게임으로 연습해요. 게임 목록은 이 화면 위에 있어요.</p>
+      <button id="grad-done" class="felt-cta coral" type="button"><span class="cta-text"><b>끝</b></span><span class="disc" aria-hidden="true"></span></button>
     </div>
   </main>
 

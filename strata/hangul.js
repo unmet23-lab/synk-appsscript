@@ -15,7 +15,8 @@ function hangulMap(layer, { path, sha256 }) {
   const nodes = [
     ...layer.skills.map(([id, domain, label_ko]) => ({ id, kind: 'skill', label_ko, domain, level: null,
       difficulty: { authored: null, measured: null, n: 0 }, source_refs: ref('skills') })),
-    ...[...letters.values()].map(l => ({ id: nodeId(l.id), kind: 'letter', label_ko: l.glyph, role: l.role, jamo: l.jamo,
+    // 받침은 첫소리와 같은 모양이라 이름에 「받침」을 붙여 가른다.
+    ...[...letters.values()].map(l => ({ id: nodeId(l.id), kind: 'letter', label_ko: l.role === 'final' ? `받침 ${l.glyph}` : l.glyph, role: l.role, jamo: l.jamo,
       unit: unitOf.get(l.id) || null, level: null, source_refs: ref(l.id) })),
   ];
   const edges = [];

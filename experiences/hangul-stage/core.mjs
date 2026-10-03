@@ -1,8 +1,8 @@
-// 한글 단계의 판단(설계 §5·§7). 화면·소리·저장은 모른다 — 진도(progress)를 받아 새 진도를 돌려준다.
+// 한글 단계의 판단(설계 §5·§7·§8). 화면·소리·저장은 모른다 — 진도(progress)를 받아 새 진도를 돌려준다.
 // 문항은 결정적 시드로 만든다: 같은 사람·같은 날·같은 회차 = 같은 문항.
 // 점수·등수·연속 기록·목숨·시간 제한은 없다. 틀리면 그 글자가 더 일찍 돌아올 뿐이다.
 
-export const CORE_VER = 'hangul-core-1';
+export const CORE_VER = 'hangul-core-2';
 export const STATES = Object.freeze(['unmet', 'met', 'learning', 'mastered']);
 // 설계값(시험장과 첫 학생으로 고친다).
 export const SETTINGS = Object.freeze({
@@ -13,10 +13,17 @@ export const SETTINGS = Object.freeze({
   masteryStreak: 3, masterySessions: 2, // 「서로 다른 두 회차에 걸쳐 도움 없이 이어서 세 번」
   extraPerDay: 2,       // 「더 하기」는 하루 두 번까지
   maxRun: 3,            // 같은 꼴은 세 번 넘게 이어지지 않는다
+  gradRatio: 0.9,       // 졸업: 최근 스무 문항의 혼자 맞힌 비율
+  gradWords: 5,         // 졸업: 낱말 문항을 이어서 다섯 번 읽어 냄
+  warmup: 5,            // 졸업 뒤 몸풀기 문항 수
 });
 const DAY = 86400000;
 const STEPS = [0, 1, 2, 4, 8, 16]; // 다음 복습까지의 날(마지막 칸이 가장 길다)
-const TYPES = Object.freeze(['listen_pick', 'see_pick', 'build', 'match']);
+// pair: 헷갈리는 짝 둘 중 들린 쪽 고르기. teach: 몽글이 잘못 쓴 글자를 바로잡아 주기(복습의 다른 모양).
+const TYPES = Object.freeze(['listen_pick', 'see_pick', 'build', 'match', 'pair', 'teach']);
+const LISTENING = new Set(['listen_pick', 'pair', 'teach']);
+// 시범은 꼴마다 처음 한 번. 받침이 든 음절 만들기는 조각 줄이 하나 더 있어 따로 한 번 보인다.
+const DEMOS = Object.freeze([...TYPES, 'build_final']);
 const rank = state => STATES.indexOf(state);
 
 // ── 시드 ──
@@ -28,7 +35,8 @@ export const localDay = iso => { const d = new Date(iso); return `${d.getFullYea
 
 // ── 진도 ──
 export function emptyProgress() {
-  return { v: 1, core: CORE_VER, letters: {}, pairs: {}, recent: [], sessions: [], difficulty: 1, trend: 0, amount: SETTINGS.amount, skipped: false, demoSeen: [] };
+  return { v: 1, core: CORE_VER, letters: {}, pairs: {}, recent: [], sessions: [], difficulty: 1, trend: 0, amount: SETTINGS.amount, skipped: false, demoSeen: [],
+    wordStreak: 0, graduated: null };
 }
 export function readProgress(value) {
   const p = value && typeof value === 'object' && value.v === 1 ? value : null;
@@ -36,7 +44,8 @@ export function readProgress(value) {
   const base = emptyProgress();
   return { ...base, ...p, letters: { ...(p.letters || {}) }, pairs: { ...(p.pairs || {}) }, recent: Array.isArray(p.recent) ? p.recent.slice(-SETTINGS.window) : [],
     sessions: Array.isArray(p.sessions) ? p.sessions.slice(-60) : [], difficulty: [1, 2, 3].includes(p.difficulty) ? p.difficulty : 1,
-    amount: SETTINGS.amounts.includes(p.amount) ? p.amount : SETTINGS.amount, demoSeen: Array.isArray(p.demoSeen) ? p.demoSeen.filter(t => TYPES.includes(t)) : [] };
+    amount: SETTINGS.amounts.includes(p.amount) ? p.amount : SETTINGS.amount, demoSeen: Array.isArray(p.demoSeen) ? p.demoSeen.filter(t => DEMOS.includes(t)) : [],
+    wordStreak: Number.isInteger(p.wordStreak) && p.wordStreak > 0 ? p.wordStreak : 0, graduated: p.graduated && typeof p.graduated === 'object' ? p.graduated : null };
 }
 const blank = () => ({ state: 'unmet', best: 'unmet', streak: 0, streakSessions: [], step: 0, due: null, lapses: 0, seen: 0, correct: 0, lastAt: null, metAt: null });
 export const letterOf = (progress, id) => ({ ...blank(), ...(progress.letters[id] || {}) });
@@ -58,11 +67,13 @@ export function meet(progress, ids, at) {
  * perLetter가 있으면 글자마다 맞음을 따로 본다(음절 만들기에서 자음만 맞힌 경우). 「최근 스무 문항」에는 문항 하나로 한 번 센다.
  * 도움(손 내밀기)을 받은 정답은 「혼자 맞힘」이 아니라 이어서 센 횟수를 새로 시작한다.
  * 다시 듣고 맞힌 것은 맞힘으로 세되 복습 간격을 늘리지 않는다(설계 §5 「어렵게 맞힘」).
+ * word는 낱말 문항: 이어서 혼자 읽어 낸 낱말 수(졸업 조건)를 센다.
  */
-export function answer(progress, { focus = [], confused = [], correct, perLetter = null, assisted = false, replays = 0, at, sessionId, counts = true }) {
+export function answer(progress, { focus = [], confused = [], correct, perLetter = null, assisted = false, replays = 0, at, sessionId, counts = true, word = false }) {
   const next = readProgress(progress);
   const now = Date.parse(at);
   if (counts) next.recent = [...next.recent, { ok: !!correct && !assisted }].slice(-SETTINGS.window);
+  if (counts && word) next.wordStreak = correct && !assisted ? next.wordStreak + 1 : 0;
   for (const id of focus) {
     const l = letterOf(next, id);
     const ok = perLetter && Object.hasOwn(perLetter, id) ? !!perLetter[id] : !!correct;
@@ -122,6 +133,7 @@ export function unitNow(progress, pack) {
   return pack.units.find(u => u.letters.some(id => letterOf(progress, id).best !== 'mastered')) || null;
 }
 const metIds = (progress, pack) => pack.letters.filter(l => letterOf(progress, l.id).state !== 'unmet').map(l => l.id);
+const coreIds = pack => pack.units.flatMap(u => u.letters);
 // 헷갈린 짝: 최근 두 주 안에 틀렸고, 그 뒤로 두 글자 모두 아직 이어서 두 번 혼자 맞히지 못한 짝.
 function weakPairs(progress, now) {
   const settled = id => { const l = letterOf(progress, id); return l.streak >= 2; };
@@ -130,6 +142,20 @@ function weakPairs(progress, now) {
     .sort((a, b) => Date.parse(b[1].lastAt) - Date.parse(a[1].lastAt) || b[1].wrong - a[1].wrong)
     .map(([k, p]) => Object.assign(k.split('|'), { lastAt: p.lastAt }));
 }
+// ㄱ·ㄷ·ㅂ 같은 받침(U7)은 터지지 않는 소리라 귀로 가르기 어렵다 — 1단에서는 소리로 묻지 않고 보고 고르기로 낸다(설계 §3).
+const hardByEar = (pack, id) => pack.byId.get(id)?.unit === 'U7';
+
+/**
+ * 졸업(설계 §8): 이 판의 핵심 글자(U1~U4, 받침 U6·U7)를 다 만났고, 최근 스무 문항의 혼자 맞힌 비율이 90% 이상이며,
+ * 낱말 문항을 이어서 다섯 번 읽어 냈을 때. 졸업은 「읽기 시작할 수 있다」이지 「다 안다」가 아니다.
+ */
+export function graduationReady(progress, pack) {
+  const p = readProgress(progress);
+  if (p.graduated) return false;
+  const ratio = independentRatio(p);
+  return coreIds(pack).every(id => letterOf(p, id).state !== 'unmet') && p.recent.length >= SETTINGS.window && ratio >= SETTINGS.gradRatio && p.wordStreak >= SETTINGS.gradWords;
+}
+export function graduate(progress, at) { return { ...readProgress(progress), graduated: { at, day: localDay(at) } }; }
 
 /** 회차를 짠다. 돌려주는 것: 이유 한 줄, 새 글자, 단계(step) 목록. step은 {kind:'meet'} 또는 {kind:'item'}. */
 export function planSession(progress, pack, { now, scope = 'device', sessionNo = 0 }) {
@@ -140,44 +166,67 @@ export function planSession(progress, pack, { now, scope = 'device', sessionNo =
   const due = met.filter(id => { const d = letterOf(p, id).due; return d && Date.parse(d) <= t; })
     .sort((a, b) => Date.parse(letterOf(p, a).due) - Date.parse(letterOf(p, b).due));
   const weak = weakPairs(p, t).flat().filter(id => met.includes(id));
-  const amount = p.amount;
+  // 졸업 뒤에는 헷갈리기 쉬운 글자의 짧은 몸풀기다(설계 §8).
+  const amount = p.graduated ? Math.min(p.amount, SETTINGS.warmup) : p.amount;
   let fresh = nextLetters(p, pack, Math.min(newCount(p, due.length), Math.floor(amount / 2)));
   if (!met.length && fresh.length < 2) fresh = nextLetters(p, pack, 2); // 처음 회차는 두 글자 이상이어야 문항이 선다
+  const allCoreMet = coreIds(pack).every(id => met.includes(id) || fresh.includes(id));
   const reviewFirst = [...new Set([...weak, ...due])];
   const steps = [];
   const known = new Set(met);
-  const ctx = { pack, progress: p, rand, difficulty: p.difficulty };
+  const ctx = { pack, progress: p, rand, difficulty: p.difficulty, weak: weakPairs(p, t), fresh: new Set(fresh) };
   const items = [];
   const add = item => { if (item) items.push(item); };
-  // 1. 복습 몇 문항(밀린 것·헷갈린 짝부터). 새 글자가 있으면 짧게.
+  // 1. 복습 몇 문항(밀린 것·헷갈린 짝부터). 새 글자가 있으면 짧게. 복습의 한 문항은 몽글에게 가르쳐 주기일 수 있다.
   const reviewSlots = Math.max(0, Math.min(reviewFirst.length, fresh.length ? Math.min(3, amount - fresh.length * 2) : amount));
-  for (const id of reviewFirst.slice(0, reviewSlots)) add(makeItem(pickType(items, ctx, known), id, known, ctx));
+  // 첫 복습이 헷갈린 짝의 글자면 짝 고르기로, 복습 가운데 하나는 몽글에게 가르쳐 주기로 낸다(설계 §6 「복습 몇 문항(그중 하나는 가르쳐 주기)」).
+  // 고른 꼴로 그 글자를 물을 수 없으면(받침 하나뿐인데 음절 만들기 등) 다른 꼴로 바꿔 복습 자리를 잃지 않는다.
+  const teachAt = reviewSlots >= 2 ? 1 : 0;
+  for (const [n, id] of reviewFirst.slice(0, reviewSlots).entries()) {
+    const tried = new Set(n < teachAt ? ['teach'] : []); // 가르쳐 주기 자리 앞에서는 아껴 둔다(회차에 한 번)
+    const taught = items.some(i => i.type === 'teach');
+    const prefer = n === 0 && weak.includes(id) ? 'pair' : n === teachAt && known.size >= 6 && !taught ? 'teach' : null;
+    let item = null;
+    if (prefer) { tried.add(prefer); item = makeItem(prefer, id, known, ctx); }
+    while (!item && tried.size < TYPES.length) {
+      const type = pickType(items, ctx, known, { review: true, exclude: tried });
+      if (tried.has(type)) break;
+      tried.add(type);
+      item = makeItem(type, id, known, ctx);
+    }
+    add(item);
+  }
   steps.push(...items.map(item => ({ kind: 'item', item })));
-  // 2. 새 글자: 만나기 카드 → 바로 확인 두 문항(듣고 고르기 · 보고 고르기). 비교할 글자가 하나뿐이면 다음 카드 뒤로 미룬다.
+  // 2. 새 글자: 만나기 카드 → 바로 확인 두 문항(듣고 고르기 · 보고 고르기). 비교할 글자가 아직 없으면 다음 카드 뒤로 미룬다.
   let pending = [];
   for (const id of fresh) {
     steps.push({ kind: 'meet', letter: id });
     known.add(id); pending.push(id);
-    if (known.size < 2) continue;
-    for (const target of pending) for (const type of ['listen_pick', 'see_pick']) {
-      const item = makeItem(type, target, known, { ...ctx, difficulty: 1, check: true });
-      if (item) { items.push(item); steps.push({ kind: 'item', item }); }
+    const still = [];
+    for (const target of pending) {
+      let made = 0;
+      for (const type of hardByEar(pack, target) ? ['see_pick'] : ['listen_pick', 'see_pick']) {
+        const item = makeItem(type, target, known, { ...ctx, difficulty: 1, check: true });
+        if (item) { items.push(item); steps.push({ kind: 'item', item }); made += 1; }
+      }
+      if (!made) still.push(target);
     }
-    pending = [];
+    pending = still;
   }
-  // 3. 섞어 연습: 오늘의 글자 → 밀린 것 → 나머지 아는 글자. 2단부터는 읽을 수 있는 낱말이 회차에 두 번까지 섞인다.
+  // 3. 섞어 연습: 오늘의 글자 → 밀린 것 → 나머지 아는 글자. 2단부터 읽을 수 있는 낱말이 섞인다(핵심 글자를 다 만나면 졸업 준비로 더 자주).
   const pool = [...new Set([...fresh, ...reviewFirst, ...shuffle([...known], rand)])].filter(id => known.has(id));
+  // 낱말 문항은 꼴 고르기와 따로 자리를 정한다(듣고 고르기·보고 고르기 모양) — 그래야 새 글자 확인 문항이 많은 날에도 낱말이 섞인다.
+  const wordLimit = allCoreMet ? 4 : 2, wordChance = allCoreMet ? 0.5 : 0.3;
   let guard = 0;
   while (items.length < amount && pool.length && guard < amount * 6) {
     guard += 1;
     const id = pool[(items.length + guard) % pool.length];
-    const type = pickType(items, ctx, known);
-    const wordy = ctx.difficulty >= 2 && (type === 'listen_pick' || type === 'see_pick') && items.filter(i => i.word).length < 2 && rand() < 0.3;
-    const item = (wordy && makeWordItem(type, known, ctx)) || makeItem(type, id, known, ctx);
+    const wordy = (ctx.difficulty >= 2 || allCoreMet) && items.filter(i => i.word).length < wordLimit && rand() < wordChance;
+    const item = (wordy && makeWordItem(pickType(items, ctx, known, { only: ['listen_pick', 'see_pick'] }), known, ctx)) || makeItem(pickType(items, ctx, known), id, known, ctx);
     if (item) { items.push(item); steps.push({ kind: 'item', item }); }
   }
   numberItems(steps, `${scope}|${day}|${sessionNo}`);
-  return { day, sessionNo, fresh, reviews: reviewFirst.slice(0, reviewSlots), difficulty: p.difficulty, steps,
+  return { day, sessionNo, fresh, reviews: reviewFirst.slice(0, reviewSlots), difficulty: p.difficulty, steps, warmup: !!p.graduated,
     reason: reasonLine({ p, pack, fresh, weak: weakPairs(p, t).filter(([a, b]) => met.includes(a) && met.includes(b))[0] || null, due, now: t }) };
 }
 /** 틀린 글자를 회차 안에서 한 번 더 낸다(설계 §5 「그 마디는 회차 안에서 한 번 더」). 막 틀린 꼴과 다른 꼴, 한 단계 쉽게. */
@@ -185,7 +234,7 @@ export function retryItem(progress, pack, letterId, { now, scope = 'device', ses
   const p = readProgress(progress);
   const known = new Set(metIds(p, pack)); known.add(letterId);
   const rand = rng(seedOf(`${scope}|${localDay(now)}|${sessionNo}|again|${letterId}|${n}`));
-  const ctx = { pack, progress: p, rand, difficulty: Math.max(1, p.difficulty - 1) };
+  const ctx = { pack, progress: p, rand, difficulty: Math.max(1, p.difficulty - 1), weak: [] };
   const order = ['listen_pick', 'see_pick'].sort((a, b) => (a === avoid) - (b === avoid));
   for (const type of order) {
     const item = makeItem(type, letterId, known, ctx);
@@ -199,15 +248,21 @@ function numberItems(steps, key) {
 }
 
 // 꼴 고르기: 쓸 수 있는 꼴 가운데 바로 앞과 다른 꼴, 그중 적게 나온 꼴부터. 같은 꼴은 세 번 넘게 이어지지 않는다.
-// 짝 맞추기는 한 판에 서너 글자를 한꺼번에 다루니 회차에 두 번까지, 음절 만들기는 세 번까지.
-const LIMIT = { match: 2, build: 3 };
-function pickType(items, ctx, known) {
-  const consonants = [...known].filter(id => ctx.pack.byId.get(id).role === 'consonant' && id !== 'c-ng');
-  const vowels = [...known].filter(id => ctx.pack.byId.get(id).role === 'vowel');
+// 짝 맞추기는 한 판에 서너 글자를 한꺼번에 다루니 회차에 두 번까지, 음절 만들기는 세 번까지, 짝 문항은 두 번, 가르쳐 주기는 복습에서 한 번.
+const LIMIT = { match: 2, build: 3, pair: 2, teach: 1 };
+// 짝 고르기의 짝: 소리로 가를 수 있는 헷갈리는 짝. 오늘 처음 만난 글자는 짝 고르기에 쓰지 않는다(먼저 하루 익히고).
+function earPartner(pack, id, known, skip = null) { return [...known].find(other => other !== id && !skip?.has(other) && pack.related(id, other)?.sound && pack.related(id, other)?.byEar); }
+function pickType(items, ctx, known, { review = false, exclude = null, only = null } = {}) {
+  const role = r => [...known].filter(id => ctx.pack.byId.get(id).role === r);
+  const consonants = role('consonant').filter(id => id !== 'c-ng'), vowels = role('vowel');
   const counts = Object.fromEntries(TYPES.map(t => [t, items.filter(i => i.type === t).length]));
   const usable = TYPES.filter(type => type !== 'build' || (consonants.length >= 1 && vowels.length >= 2))
     .filter(type => type !== 'match' || known.size >= 3)
-    .filter(type => !(type in LIMIT) || counts[type] < LIMIT[type]);
+    .filter(type => type !== 'pair' || [...known].some(id => !ctx.fresh?.has(id) && earPartner(ctx.pack, id, known, ctx.fresh)))
+    .filter(type => type !== 'teach' || (review && known.size >= 6))
+    .filter(type => !(type in LIMIT) || counts[type] < LIMIT[type])
+    .filter(type => !exclude?.has(type))
+    .filter(type => !only || only.includes(type));
   const run = items.slice(-SETTINGS.maxRun);
   const blocked = run.length === SETTINGS.maxRun && run.every(i => i.type === run[0].type) ? run[0].type : null;
   const last = items.at(-1)?.type;
@@ -235,27 +290,76 @@ function distractors(target, candidates, ctx, count, { byEar }) {
   for (const id of shuffle(allowed, ctx.rand)) { if (chosen.length >= count) break; if (!chosen.includes(id)) chosen.push(id); }
   return chosen;
 }
+const skillOf = type => (type === 'see_pick' ? 'ko.hangul.read' : 'ko.hangul.sound');
+const dedupeBySound = (pack, options) => options.filter((o, i, all) => all.findIndex(x => pack.sameSound(x.text, o.text)) === i);
 
 function makeItem(type, targetId, known, ctx) {
   const { pack } = ctx;
   const target = pack.byId.get(targetId);
   if (!target) return null;
   const knownList = [...known];
-  const sameRole = knownList.filter(id => pack.byId.get(id).role === target.role && id !== 'c-ng');
+  // 받침 ㄱ·ㄷ·ㅂ·ㅅ·ㅈ은 1단에서 소리로 묻지 않는다.
+  if (LISTENING.has(type) && hardByEar(pack, targetId) && ctx.difficulty < 2) type = 'see_pick';
   if (type === 'match') return makeMatch(targetId, knownList, ctx);
   if (type === 'build') return makeBuild(targetId, knownList, ctx);
-  // 듣고 고르기·보고 고르기: 같은 자리(모음이면 모음, 자음이면 자음)만 바꾼 음절을 보기로 낸다.
-  if (targetId === 'c-ng') return makeSilentItem(type, knownList, ctx);
+  if (type === 'pair') return makePair(targetId, knownList, ctx);
+  if (target.role === 'final') return makeFinalItem(type, targetId, knownList, ctx);
+  // 듣고 고르기·보고 고르기·가르쳐 주기: 같은 자리(모음이면 모음, 자음이면 자음)만 바꾼 음절을 보기로 낸다.
+  if (targetId === 'c-ng') return withTeach(type, makeSilentItem(type, knownList, ctx), ctx);
+  const sameRole = knownList.filter(id => pack.byId.get(id).role === target.role && id !== 'c-ng');
   const frame = frameFor(target, knownList, ctx);
   const others = distractors(targetId, sameRole, ctx, optionCount(ctx.difficulty) - 1, { byEar: true });
-  const options = [{ letter: targetId, text: frame(targetId) }, ...others.map(id => ({ letter: id, text: frame(id) }))]
-    .filter((o, i, all) => all.findIndex(x => pack.sameSound(x.text, o.text)) === i);
+  const options = dedupeBySound(pack, [{ letter: targetId, text: frame(targetId) }, ...others.map(id => ({ letter: id, text: frame(id) }))]);
   if (options.length < 2) return null;
-  return { type, target: { letter: targetId, text: frame(targetId) }, options: shuffle(options, ctx.rand), focus: [targetId],
-    difficulty: Math.min(ctx.difficulty, options.length - 1), skill: type === 'see_pick' ? 'ko.hangul.read' : 'ko.hangul.sound', check: !!ctx.check };
+  return withTeach(type, { type, target: { letter: targetId, text: frame(targetId) }, options: shuffle(options, ctx.rand), focus: [targetId],
+    difficulty: Math.min(ctx.difficulty, options.length - 1), skill: skillOf(type), check: !!ctx.check }, ctx);
+}
+// 몽글에게 가르쳐 주기(설계 §6의 5): 같은 듣고 고르기인데, 몽글이 보기 하나를 잘못 골라 들고 갸웃한다. 정오는 똑같이 센다.
+function withTeach(type, item, ctx) {
+  if (!item || type !== 'teach') return item;
+  const wrong = item.options.filter(o => o.text !== item.target.text);
+  return wrong.length ? { ...item, type: 'teach', wrong: pick(wrong, ctx.rand).text, skill: 'ko.hangul.sound' } : { ...item, type: 'listen_pick', skill: 'ko.hangul.sound' };
+}
+// 받침 문항: 정해진 틀(첫소리·모음)에 받침만 바꾼 음절을 보기로 낸다. 아는 받침이 하나뿐이거나 1단이면 「받침 없음」(안 / 아)도 보기로 쓴다
+// — 먼저 받침이 들리는지를 가른다. 같은 소리로 나는 받침(ㄷ·ㅅ·ㅈ → [ㄷ])은 소리 문항에서 함께 내지 않는다.
+function finalFrame(knownList, ctx) {
+  const { pack } = ctx;
+  const initials = pack.FINAL_FRAME.initials.filter(c => c === null || knownList.includes(c));
+  const vowels = pack.FINAL_FRAME.vowels.filter(v => knownList.includes(v));
+  const c = pick(initials, ctx.rand), v = vowels.length ? pick(vowels, ctx.rand) : 'v-a';
+  return { c, v, text: f => pack.syllable(c, v, f) };
+}
+function makeFinalItem(type, targetId, knownList, ctx) {
+  const { pack } = ctx;
+  const finals = knownList.filter(id => pack.byId.get(id).role === 'final');
+  const frame = finalFrame(knownList, ctx);
+  // 보고 고르기도 보기가 소리라서 같은 소리 받침은 함께 내지 않는다.
+  const others = distractors(targetId, finals, ctx, optionCount(ctx.difficulty) - 1, { byEar: true });
+  let options = dedupeBySound(pack, [{ letter: targetId, text: frame.text(targetId) }, ...others.map(id => ({ letter: id, text: frame.text(id) }))]);
+  if (options.length < optionCount(ctx.difficulty)) options = dedupeBySound(pack, [...options, { letter: null, text: frame.text(null), none: true }]);
+  options = options.slice(0, optionCount(ctx.difficulty));
+  if (options.length < 2) return null;
+  return withTeach(type, { type, final: true, target: { letter: targetId, text: frame.text(targetId) }, options: shuffle(options, ctx.rand), focus: [targetId],
+    difficulty: Math.min(ctx.difficulty, options.length - 1), skill: skillOf(type), check: !!ctx.check }, ctx);
+}
+// 짝 문항: 헷갈리는 짝(소리로 가를 수 있는 것) 둘 중 들린 쪽. 헷갈린 기록이 있는 짝을 먼저 고른다.
+function makePair(targetId, knownList, ctx) {
+  const { pack } = ctx;
+  const known = new Set(knownList);
+  const recent = (ctx.weak || []).find(([a, b]) => (a === targetId || b === targetId) && known.has(a) && known.has(b));
+  if (!recent && ctx.fresh?.has(targetId)) return null;
+  const partner = recent ? (recent[0] === targetId ? recent[1] : recent[0]) : earPartner(pack, targetId, known, ctx.fresh);
+  if (!partner || hardByEar(pack, targetId) && ctx.difficulty < 2) return null;
+  const t = pack.byId.get(targetId);
+  const textOf = t.role === 'final' ? (() => { const f = finalFrame(knownList, ctx); return id => f.text(id); })()
+    : (() => { const f = frameFor(t, knownList, ctx); return id => f(id); })();
+  const options = dedupeBySound(pack, [{ letter: targetId, text: textOf(targetId) }, { letter: partner, text: textOf(partner) }]);
+  if (options.length < 2) return null;
+  return { type: 'pair', target: { letter: targetId, text: textOf(targetId) }, options: shuffle(options, ctx.rand), focus: [targetId],
+    difficulty: 1, skill: 'ko.hangul.sound', check: false };
 }
 // 낱말 읽기: 글자를 다 만난 낱말을 가끔 낸다(읽기의 쓸모). 낱말 문항은 글자 하나를 가르지 않아 글자 진도에는 넣지 않고,
-// 「최근 스무 문항」과 아틀라스 기록에만 든다. 같은 소리로 들리는 낱말(개/게)은 함께 내지 않는다.
+// 「최근 스무 문항」·이어서 읽은 낱말 수(졸업)와 아틀라스 기록에만 든다. 같은 소리로 들리는 낱말(개/게)은 함께 내지 않는다.
 export function readableWords(pack, known) { return pack.words.filter(w => w.letters.every(id => known.has(id))); }
 function makeWordItem(type, known, ctx) {
   const { pack } = ctx;
@@ -267,9 +371,9 @@ function makeWordItem(type, known, ctx) {
   for (const w of same) { if (options.length >= optionCount(ctx.difficulty)) break; if (!options.some(o => pack.sameSound(o.text, w.text))) options.push(w); }
   if (options.length < 2) return null;
   return { type, word: true, target: { letter: null, text: target.text }, options: shuffle(options.map(w => ({ letter: null, text: w.text })), ctx.rand), focus: [],
-    difficulty: Math.min(ctx.difficulty, options.length - 1), skill: type === 'see_pick' ? 'ko.hangul.read' : 'ko.hangul.sound', check: false };
+    difficulty: Math.min(ctx.difficulty, options.length - 1), skill: skillOf(type), check: false };
 }
-// 모음은 ㅇ을 받치거나 아는 자음 하나와, 자음은 아는 모음 하나와 음절을 이룬다.
+// 모음은 ㅇ을 받치거나 아는 자음 하나와, 자음은 아는 모음 하나와 음절을 이룬다(받침 없이).
 function frameFor(target, knownList, ctx) {
   const { pack } = ctx;
   if (target.role === 'vowel') {
@@ -291,18 +395,32 @@ function makeSilentItem(type, knownList, ctx) {
   const others = shuffle(consonants, ctx.rand).slice(0, optionCount(ctx.difficulty) - 1);
   const options = [{ letter: 'c-ng', text: pack.syllable(null, v) }, ...others.map(id => ({ letter: id, text: pack.syllable(id, v) }))];
   return { type, target: { letter: 'c-ng', text: pack.syllable(null, v) }, options: shuffle(options, ctx.rand), focus: ['c-ng'],
-    difficulty: Math.min(ctx.difficulty, options.length - 1), skill: type === 'see_pick' ? 'ko.hangul.read' : 'ko.hangul.sound', check: !!ctx.check };
+    difficulty: Math.min(ctx.difficulty, options.length - 1), skill: skillOf(type), check: !!ctx.check };
 }
-// 음절 만들기: 들린 음절을 자음 조각과 모음 조각으로 만든다(U2부터).
+// 음절 만들기: 들린 음절을 조각으로 만든다(U2부터). 받침이 목표면 자음·모음·받침 세 줄(아는 받침이 둘 이상일 때).
 function makeBuild(targetId, knownList, ctx) {
   const { pack } = ctx;
   const consonants = knownList.filter(id => pack.byId.get(id).role === 'consonant' && id !== 'c-ng');
   const vowels = knownList.filter(id => pack.byId.get(id).role === 'vowel');
+  const finals = knownList.filter(id => pack.byId.get(id).role === 'final');
   if (!consonants.length || vowels.length < 2) return null;
   const t = pack.byId.get(targetId);
+  const per = { 1: 2, 2: 2, 3: 3 }[ctx.difficulty];
+  if (t.role === 'final') {
+    if (finals.length < 2 || hardByEar(pack, targetId) && ctx.difficulty < 2) return null;
+    const cs = pack.FINAL_FRAME.initials.filter(c => c && consonants.includes(c)), vs = pack.FINAL_FRAME.vowels.filter(v => vowels.includes(v));
+    if (!cs.length || vs.length < 2) return null;
+    const c = pick(cs, ctx.rand), v = pick(vs, ctx.rand), text = pack.syllable(c, v, targetId);
+    const otherC = distractors(c, consonants, ctx, per - 1, { byEar: true });
+    const otherV = distractors(v, vowels, ctx, per - 1, { byEar: true }).filter(id => !pack.sameSound(pack.syllable(c, id, targetId), text));
+    const otherF = distractors(targetId, finals, ctx, per - 1, { byEar: true }).filter(id => !pack.sameSound(pack.syllable(c, v, id), text));
+    if (!otherF.length) return null;
+    return { type: 'build', target: { letter: targetId, text, consonant: c, vowel: v, final: targetId },
+      pieces: { consonants: shuffle([c, ...otherC], ctx.rand), vowels: shuffle([v, ...otherV], ctx.rand), finals: shuffle([targetId, ...otherF], ctx.rand) },
+      focus: [c, v, targetId], difficulty: ctx.difficulty, skill: 'ko.hangul.sound', check: false };
+  }
   const c = t.role === 'consonant' && targetId !== 'c-ng' ? targetId : pick(consonants, ctx.rand);
   const v = t.role === 'vowel' ? targetId : pick(vowels, ctx.rand);
-  const per = { 1: 2, 2: 2, 3: 3 }[ctx.difficulty];
   const otherC = distractors(c, consonants, ctx, per - 1, { byEar: true });
   const otherV = distractors(v, vowels, ctx, (ctx.difficulty === 2 ? 3 : per) - 1, { byEar: true })
     .filter(id => !pack.sameSound(pack.syllable(c, id), pack.syllable(c, v)));
@@ -312,33 +430,41 @@ function makeBuild(targetId, knownList, ctx) {
     focus: [...new Set([c, v])], difficulty: ctx.difficulty, skill: 'ko.hangul.sound', check: false };
 }
 // 짝 맞추기: 글자 카드와 소리 카드 3~4쌍. 시간 제한이 없다. 같은 소리(ㅐ·ㅔ)는 한 판에 함께 넣지 않는다.
+// 받침은 첫소리와 모양이 같아 카드로는 갈리지 않으니 넣지 않는다.
 function makeMatch(targetId, knownList, ctx) {
   const { pack } = ctx;
   const size = ctx.difficulty >= 3 ? 4 : 3;
-  const chosen = [targetId];
-  for (const id of shuffle(knownList.filter(id => id !== targetId), ctx.rand)) {
+  if (pack.byId.get(targetId).role === 'final') return null;
+  const cardable = knownList.filter(id => pack.byId.get(id).role !== 'final');
+  const first = targetId;
+  const chosen = [first];
+  for (const id of shuffle(cardable.filter(id => id !== first), ctx.rand)) {
     if (chosen.length >= size) break;
     if (chosen.some(other => pack.sameSound(pack.byId.get(other).voice, pack.byId.get(id).voice))) continue;
     chosen.push(id);
   }
   if (chosen.length < 3) return null;
   const cards = chosen.map(id => ({ letter: id, text: pack.byId.get(id).glyph, voice: pack.byId.get(id).voice }));
-  return { type: 'match', target: { letter: targetId, text: pack.byId.get(targetId).glyph }, cards: shuffle(cards, ctx.rand), sounds: shuffle(cards, ctx.rand),
+  return { type: 'match', target: { letter: first, text: pack.byId.get(first).glyph }, cards: shuffle(cards, ctx.rand), sounds: shuffle(cards, ctx.rand),
     focus: chosen, difficulty: Math.min(ctx.difficulty, 2), skill: 'ko.hangul.sound', check: false };
 }
 
 // ── 이유 한 줄(설계 §7) ── 아는 것만 사실로 말한다. 글을 못 읽어도 글자 칩으로 뜻이 통하게 글자를 함께 돌려준다.
 function reasonLine({ p, pack, fresh, weak, due, now }) {
-  const glyphs = ids => ids.map(id => pack.byId.get(id).glyph);
+  // letters는 글자 모양, finals는 그 글자가 받침인지(같은 순서).
+  const chips = ids => ({ letters: ids.map(id => pack.byId.get(id).glyph), finals: ids.map(id => pack.byId.get(id).role === 'final') });
+  if (p.graduated && !weak) return { kind: 'warmup', text: '몸풀기예요. 헷갈리기 쉬운 글자를 짧게 봐요.', ...chips(due.slice(0, 4)) };
   if (weak) {
     const day = localDay(weak.lastAt), today = localDay(new Date(now).toISOString()), yesterday = localDay(new Date(now - DAY).toISOString());
     const when = day === today ? '방금' : day === yesterday ? '어제' : '지난번에';
-    return { kind: 'pair', text: `${when} 헷갈린 글자예요. 오늘 다시 해요.`, letters: glyphs([...weak]) };
+    return { kind: 'pair', text: `${when} 헷갈린 글자예요. 오늘 다시 해요.`, ...chips([...weak]) };
   }
-  if (fresh.length && due.length) return { kind: 'mixed', text: '다시 볼 글자와 새 글자예요.', letters: glyphs([...due.slice(0, 2), ...fresh]) };
-  if (fresh.length) return { kind: 'new', text: `오늘은 새 글자 ${['', '하나를', '둘을', '셋을'][fresh.length]} 만나요.`, letters: glyphs(fresh) };
-  if (due.length) return { kind: 'due', text: '다시 만날 때가 된 글자예요.', letters: glyphs(due.slice(0, 4)) };
-  return { kind: 'practice', text: '아는 글자로 연습해요.', letters: [] };
+  const finals = fresh.filter(id => pack.byId.get(id).role === 'final');
+  if (finals.length && finals.length === fresh.length) return { kind: 'new', text: `오늘은 새 받침 ${['', '하나를', '둘을', '셋을'][finals.length]} 만나요.`, ...chips(fresh) };
+  if (fresh.length && due.length) return { kind: 'mixed', text: '다시 볼 글자와 새 글자예요.', ...chips([...due.slice(0, 2), ...fresh]) };
+  if (fresh.length) return { kind: 'new', text: `오늘은 새 글자 ${['', '하나를', '둘을', '셋을'][fresh.length]} 만나요.`, ...chips(fresh) };
+  if (due.length) return { kind: 'due', text: '다시 만날 때가 된 글자예요.', ...chips(due.slice(0, 4)) };
+  return { kind: 'practice', text: '아는 글자로 연습해요.', letters: [], finals: [] };
 }
 
 // ── 회차 끝 ── 난이도: 이어서 두 회차 순조로우면 위로, 이어서 두 회차 막히면 아래로(설계 §7).
@@ -362,17 +488,19 @@ export function canPlayMore(progress, now) { return sessionsToday(progress, now)
 // 타일의 자수는 닿은 가장 높은 상태를 보이고 되풀리지 않는다. 간판은 그 글자를 다 익혔을 때 또렷해지고 다시 흐려지지 않는다.
 export function view(progress, pack, now) {
   const p = readProgress(progress);
-  const letters = pack.letters.map(l => ({ id: l.id, glyph: l.glyph, voice: l.voice, unit: l.unit, state: letterOf(p, l.id).state, shown: letterOf(p, l.id).best }));
+  const letters = pack.letters.map(l => ({ id: l.id, glyph: l.glyph, voice: l.voice, unit: l.unit, role: l.role, state: letterOf(p, l.id).state, shown: letterOf(p, l.id).best }));
   const shown = new Map(letters.map(l => [l.id, l.shown]));
   const everMastered = id => shown.get(id) === 'mastered';
   const signs = pack.signs.map(s => ({ text: s.text, unit: s.unit, readable: s.letters.every(everMastered),
     syllables: s.syllables.map(x => ({ text: x.text, clear: x.letters.every(everMastered) })) }));
-  const plate = pack.plate.map(s => ({ text: s.text, cells: s.cells.map(c => ({ glyph: c.glyph, later: !!c.later, filled: !!c.letter && everMastered(c.letter) })) }));
+  const plate = pack.plate.map(s => ({ text: s.text, cells: s.cells.map(c => ({ glyph: c.glyph, final: !!c.final, later: !!c.later, filled: !!c.letter && everMastered(c.letter) })) }));
   const unit = unitNow(p, pack);
-  const units = [...pack.units.map(u => ({ id: u.id, label: u.label, glyphs: u.letters.map(id => pack.byId.get(id).glyph).join(''),
+  const num = id => Number(id.slice(1));
+  const units = [...pack.units.map(u => ({ id: u.id, label: u.label, glyphs: u.letters.map(id => pack.byId.get(id).glyph).join(''), final: u.letters.every(id => pack.byId.get(id).role === 'final'),
     status: u.letters.every(everMastered) ? 'done' : u.id === unit?.id ? 'now' : u.letters.some(id => shown.get(id) !== 'unmet') ? 'started' : 'next' })),
-  ...pack.later.map(u => ({ id: u.id, label: u.label, glyphs: u.preview, status: 'later' }))];
-  const tomorrow = nextLetters(p, pack, 2).map(id => pack.byId.get(id).glyph);
-  return { letters, signs, plate, units, tomorrow, difficulty: p.difficulty, amount: p.amount, skipped: p.skipped,
+  ...pack.later.map(u => ({ id: u.id, label: u.label, glyphs: u.preview, status: 'later' }))].sort((a, b) => num(a.id) - num(b.id));
+  const upcoming = nextLetters(p, pack, 2);
+  const tomorrow = upcoming.map(id => pack.byId.get(id).glyph), tomorrowFinals = upcoming.map(id => pack.byId.get(id).role === 'final');
+  return { letters, signs, plate, units, tomorrow, tomorrowFinals, difficulty: p.difficulty, amount: p.amount, skipped: p.skipped, graduated: p.graduated,
     started: letters.some(l => l.state !== 'unmet'), allMet: letters.every(l => l.state !== 'unmet') };
 }

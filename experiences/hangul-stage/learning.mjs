@@ -5,7 +5,8 @@
 // 문항 묶음의 「첫 시도」를 세는데, 글자 익히기는 같은 글자를 되풀이하는 일이라서다.
 
 export const GAME_ID = 'hangul-stage';
-const FORMAT = { listen_pick: 'single-choice', see_pick: 'single-choice', build: 'cup-compose', match: 'single-choice' };
+const FORMAT = { build: 'cup-compose', match: 'single-choice' };
+const CHOICE = new Set(['listen_pick', 'see_pick', 'pair', 'teach']); // 보기 고르기: 보기 둘이면 binary-choice
 const MODALITY = { 'ko.hangul.sound': 'listening', 'ko.hangul.read': 'reading' };
 const safe = text => [...text].map(ch => ch.codePointAt(0).toString(36)).join('');
 
@@ -13,8 +14,8 @@ const safe = text => [...text].map(ch => ch.codePointAt(0).toString(36)).join(''
 export function itemMetadata(item, pairLetter = null) {
   const letter = pairLetter || item.target.letter || `w${safe(item.target.text)}`; // 낱말 문항은 낱말이 묶음이다
   const text = pairLetter ? item.cards.find(c => c.letter === pairLetter).voice : item.target.text;
-  const options = item.options ? item.options.map(o => safe(o.text)).sort().join('.') : item.pieces ? [...item.pieces.consonants, ...item.pieces.vowels].sort().join('.') : item.cards.map(c => c.letter).sort().join('.');
-  const responseFormat = item.type === 'listen_pick' || item.type === 'see_pick' ? (item.options.length === 2 ? 'binary-choice' : 'single-choice') : FORMAT[item.type];
+  const options = item.options ? item.options.map(o => safe(o.text)).sort().join('.') : item.pieces ? [...item.pieces.consonants, ...item.pieces.vowels, ...(item.pieces.finals || [])].sort().join('.') : item.cards.map(c => c.letter).sort().join('.');
+  const responseFormat = CHOICE.has(item.type) ? (item.options.length === 2 ? 'binary-choice' : 'single-choice') : FORMAT[item.type];
   return { id: `${GAME_ID}.${item.type}.${letter}`, itemKey: `${GAME_ID}.${item.type}.${letter}.${safe(text)}.${options}`.slice(0, 120),
     familyKey: `${GAME_ID}.${item.type}.${letter}`, skillId: item.skill, modality: MODALITY[item.skill], difficulty: item.difficulty,
     responseFormat, audioRequired: item.type !== 'see_pick', confounded: false };
