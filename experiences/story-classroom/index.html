@@ -32,6 +32,9 @@
             <button id="start" class="button-primary" type="button">이야기 시작 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
             <button id="resume" class="button-secondary" type="button" hidden>이어 하기</button>
           </div>
+          <div class="landing-coins">
+            <p class="synk-collection-line"><span data-collection-balance>코인을 불러오고 있어요.</span><a data-collection-garage href="/try/racing/?garage=1">공통 차고 →</a></p>
+          </div>
           <p class="reading-note"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 4c3-1 5-1 7 1 2-2 4-2 7-1v12c-3-1-5-1-7 1-2-2-4-2-7-1V4Z"/><path d="M10 5v12"/></svg><span>TOPIK I 읽기 · 천천히 읽어도 괜찮아요</span></p>
         </div>
         <div class="landing-art" aria-hidden="true">
@@ -98,6 +101,7 @@
       <section id="ending" class="ending" aria-label="이야기 결말" hidden>
         <div class="ending-topline"><p class="eyebrow">우리 교실의 이야기</p><span class="ending-seal" aria-hidden="true">THE END</span></div>
         <div id="ending-content"></div>
+        <p class="synk-collection-line"><span id="ending-coins" role="status"></span><a data-collection-garage href="/try/racing/?garage=1">공통 차고 →</a></p>
         <button id="again" class="button-primary" type="button">한 번 더 놀기 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8a9 9 0 1 1-1 7M4 3v6h6"/></svg></button>
       </section>
 
@@ -122,5 +126,6 @@
   </div>
   <script src="./atlas-learning.js"></script>
   <script type="module" src="./app.mjs"></script>
+  <script src="./collection.js"></script>
 </body>
 </html>

@@ -347,3 +347,6 @@ h1,h2,h3,p{margin:0}
   .tools-settings{width:100%}
   .tool-button{white-space:normal}
 }
+
+/* 공통 코인 줄(play-common): 가운데 정렬인 결말에서는 가운데로 */
+.ending .synk-collection-line{justify-content:center}

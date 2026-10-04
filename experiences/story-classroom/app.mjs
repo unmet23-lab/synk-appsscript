@@ -22,6 +22,9 @@ voice.readingOnly=new URLSearchParams(location.search).get('reading')==='1';
 const chosenVoice=learning.voiceDefault({target:!!learning.assignment()});voice.automatic=chosenVoice;
 const portraits={teacher:'teacher.webp',marin:'marin-focus.webp',kkamong:'kkamong-focus.webp',mongle:'mongle-body.webp'};
 const speakerNames={teacher:'선생님',marin:'마린',kkamong:'까몽',mongle:'몽글',narrator:'이야기'};
+// 공통 코인 스크립트(collection.js)를 읽지 못했으면 코인 줄을 숨긴다(모듈은 본문 끝 스크립트 뒤에 돈다).
+if (!globalThis.SynkPlayCollection) for (const n of document.querySelectorAll('.synk-collection-line')) n.hidden = true;
+let coinRound=null,coinState='idle';
 let notes=[],saved=null,busy=false,started=false,teacherVisible=false,feedback=null,toastTimer,lastRenderedPhase=null,voiceKey='',voiceHelpSerial=0;
 try{const raw=STORAGE?JSON.parse(localStorage.getItem(STORAGE)):null;if(raw?.game&&new StoryGame().restore(raw.game))saved=raw;}catch{}
 const stage=new StoryStage($('stage'),{onActor:selectActor,onObject:selectObject,onPlace:place});
@@ -29,7 +32,7 @@ if(saved&&!learning.assignment()){$('resume').hidden=false;}
 const initialTarget=learning.assignment();
 if(initialTarget)document.querySelector('.reading-note span').textContent=storyTargetLabel(initialTarget);
 
-function persist(){try{const scope=learning.progressScope();if(!learning.assignment()&&STORAGE&&scope.persistent&&scope.key===STORAGE)localStorage.setItem(STORAGE,JSON.stringify({version:2,game:game.snapshot(),notes:notes.slice(-60)}));}catch{}}
+function persist(){try{const scope=learning.progressScope();if(!learning.assignment()&&STORAGE&&scope.persistent&&scope.key===STORAGE)localStorage.setItem(STORAGE,JSON.stringify({version:2,game:game.snapshot(),notes:notes.slice(-60),coinRound,coinPaid:coinState==='done'}));}catch{}}
 function toast(text){$('toast').textContent=text;$('toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('visible'),3500);}
 function rememberLine(line){if(line&&!notes.some(n=>n.key===`${game.phase}:${game.actIndex}:${game.dialogueIndex}`))notes.push({...line,voiceId:game.currentVoiceLine?.id,key:`${game.phase}:${game.actIndex}:${game.dialogueIndex}`});}
 function voiceLines(){if(feedback?.voiceId)return [VOICE_LINE_BY_ID[feedback.voiceId]];if(['play','review'].includes(game.phase))return game.missions.filter(m=>!game.completedIds.includes(m.id)).map(m=>voiceForMission(m.id));return [game.currentVoiceLine].filter(Boolean);}
@@ -91,8 +94,9 @@ async function start(resume=false){
  if(target)resume=false;
  if(busy)return;voice.stop();voiceKey='';started=true;feedback=null;stage.reset();teacherVisible=false;
  if(!chosenVoice&&!voice.automatic&&!voice.readingOnly)toast('입구에서 고른 도움 방식대로, 부탁은 눌러야 소리로 읽어 줘요.');
- if(resume&&saved&&game.restore(saved.game)){notes=Array.isArray(saved.notes)?saved.notes.filter(n=>typeof n.text==='string'&&typeof n.speaker==='string').slice(-60):[];teacherVisible=game.phase!=='opening'||game.dialogueIndex>=3;stage.teacher(teacherVisible);}
- else{if(target)game.startPractice(targetMissions.map(m=>m.id));else game.restart();notes=[];}
+ if(resume&&saved&&game.restore(saved.game)){notes=Array.isArray(saved.notes)?saved.notes.filter(n=>typeof n.text==='string'&&typeof n.speaker==='string').slice(-60):[];teacherVisible=game.phase!=='opening'||game.dialogueIndex>=3;stage.teacher(teacherVisible);coinRound=typeof saved.coinRound==='string'?saved.coinRound:(globalThis.SynkPlayCollection?.roundId('story-classroom')||null);coinState=saved.coinPaid===true?'done':'idle';}
+ else{if(target)game.startPractice(targetMissions.map(m=>m.id));else game.restart();notes=[];coinRound=globalThis.SynkPlayCollection?.roundId('story-classroom')||null;coinState='idle';}
+ $('ending-coins').textContent=coinState==='done'?'이번 완주 보상은 이미 차고에 모였어요.':'';
  learning.beginRun({restored:resume});
  await audio.start();setSound();render();$('chapter-title').setAttribute('tabindex','-1');$('chapter-title').focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});
 }
@@ -121,9 +125,17 @@ function journal(){
  modal(`<p class="eyebrow">OUR CLASSROOM</p><h2 id="modal-title">이야기 수첩</h2><p class="modal-intro">지금까지 읽은 이야기를 다시 볼 수 있어요.</p><ol class="journal-lines">${items}</ol><div class="control-guide"><h3>친구들과 움직이는 방법</h3><p>친구 → 물건 → 놓을 곳을 차례로 눌러 주세요. 친구를 고른 뒤 물건을 끌어 놓을 곳에 옮겨도 돼요.</p><p>키보드: Tab으로 이동하고 Enter 또는 Space로 선택해요. Esc로 수첩을 닫아요. 지시는 글로 읽으며, 소리를 꺼도 모든 이야기를 플레이할 수 있어요.</p></div>`);
 }
 function restartDialog(){modal(`<p class="eyebrow">REPLAY</p><h2 id="modal-title">처음부터 다시 놀까요?</h2><p class="modal-intro">이번 교실의 진행을 지우고 첫 장면으로 돌아가요.</p><button id="confirm-restart" class="button-primary">다시 시작</button><button id="keep-playing" class="button-secondary">이어서 놀기</button>`);$('confirm-restart').onclick=()=>{$('modal').close();start(false);};$('keep-playing').onclick=()=>$('modal').close();}
+// 공통 코인(play-common): 이야기를 끝까지 마친 한 판에 한 번. 도움 없이 첫 시도에 옮긴 비율로 받는다. 코인은 학습 기록에 쓰지 않는다.
+function payCoins(correct,total){
+ if(coinState!=='idle'||!coinRound||!globalThis.SynkPlayCollection)return;
+ coinState='pending';
+ globalThis.SynkPlayCollection.award({game:'story-classroom',total,correct,completed:true,automatic:false,roundId:coinRound})
+  .then(result=>{coinState='done';$('ending-coins').textContent=globalThis.SynkPlayCollection.rewardText(result);persist();});
+}
 function renderEnding(){
  const story=game.records.filter(r=>r.mode==='story'),review=game.records.filter(r=>r.mode==='review');
  const first=game.records.filter(r=>r.firstCorrect&&!r.firstHelpUsed&&!r.firstAudioHelpUsed).length;
+ payCoins(first,game.records.length);
  const helped=game.records.filter(r=>r.helpUsed).length;
  const heard=game.records.filter(r=>r.audioHelpUsed).length;
  const skills=[...new Set(game.records.map(r=>r.skill))];

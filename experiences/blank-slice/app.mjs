@@ -17,6 +17,8 @@ const announce = (text) => { const n = $('#sr-live'); n.textContent = ''; reques
 const buzz = (ms) => { try { if (sound.isOn() && navigator.vibrate) navigator.vibrate(ms); } catch { /* 진동 없는 기기 */ } };
 const punch = (node) => { if (!node) return; node.classList.remove('punch'); void node.offsetWidth; node.classList.add('punch'); };
 const QA = new URLSearchParams(location.search).has('qa');
+// 공통 코인 스크립트(collection.js)를 읽지 못했으면 코인 줄을 숨긴다(모듈은 본문 끝 스크립트 뒤에 돈다).
+if (!globalThis.SynkPlayCollection) for (const n of document.querySelectorAll('.synk-collection-line')) n.hidden = true;
 const impacts = [];   // 확인용(?qa): 벤 순간의 시각·자리
 
 /* ── 저장: 판 수·연습 여부·천천히 모드·최고 기록. 학습 기록은 아틀라스가 따로 맡는다 ── */
@@ -132,6 +134,8 @@ async function startRound() {
   show('game');
   state.run += 1;
   const run = state.run;
+  // 공통 코인(play-common): 이 판의 번호. 끝까지 마친 판만 받는다. 코인은 학습 기록에 쓰지 않는다.
+  state.coinRound = globalThis.SynkPlayCollection?.roundId('blank-slice') || null;
   // 무대를 준비하는 동안에도 쉬기를 누를 수 있다. 상태를 먼저 정해 두고, 준비가 끝나면 쉬기 상태를 무대에 그대로 넘긴다
   const opening = startFlow();
   Object.assign(state, { index: 0, results: [], combo: 0, score: 0, cur: null, practice: null, paused: false,
@@ -438,6 +442,10 @@ function finish() {
     save();
   }
   sound.play('achieve');
+  // 정답 비율로 받는다(문장 수가 많은 판이 더 받지 않게). WORLD 과제 판도 끝까지 마치면 받는다.
+  const coinRound = state.coinRound; state.coinRound = null; $('#r-coins').textContent = '';
+  if (coinRound) globalThis.SynkPlayCollection?.award({ game: 'blank-slice', total: s.total, correct: s.correct, completed: true, automatic: false, roundId: coinRound })
+    .then((result) => { $('#r-coins').textContent = globalThis.SynkPlayCollection.rewardText(result); });
   $('#r-title').textContent = ['다시 도전!', '좋아요!', '멋져요!', '완벽해요!'][s.stars];
   $('#r-correct').textContent = String(s.correct); $('#r-total').textContent = String(s.total);
   // 별은 하나씩 튀어나오며 도·미·솔로 울린다

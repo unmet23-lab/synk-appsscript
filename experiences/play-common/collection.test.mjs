@@ -63,11 +63,34 @@ test('the coast badge is visible only when owned and equipped and garage links f
   assert.equal(b.links[0].href,'/?garage=1');
   assert.equal(browser({pathname:'/try/runner/'}).links[0].href,'/try/racing/?garage=1');
   assert.equal(browser({pathname:'/korean-rhythm/'}).links[0].href,'/korean-racing/?garage=1');
+  assert.equal(browser({pathname:'/blank-slice/'}).links[0].href,'/korean-racing/?garage=1','a learning-hub game, not the hub root');
+  assert.equal(browser({pathname:'/try/entry-check/'}).links[0].href,'/try/racing/?garage=1');
   assert.equal(browser({pathname:'/showcase/play/rhythm/'}).links[0].href,'/showcase/?garage=1');
   assert.equal(browser({pathname:'/try/racing/play/runner/'}).links[0].href,'/try/racing/?garage=1');
   assert((await b.api.catalog()).some(item=>item.id==='badge-coast'));
 });
 
-test('rhythm and runner ship byte-identical copies of the generated canonical rules',async()=>{
-  for(const game of ['korean-rhythm','korean-runner'])assert.equal(await fs.readFile(new URL(`../${game}/collection.js`,import.meta.url),'utf8'),source);
+test('every coin-paying mini-game ships byte-identical copies of the generated canonical rules',async()=>{
+  for(const game of ['korean-rhythm','korean-runner','blank-slice','entry-check','story-classroom'])assert.equal(await fs.readFile(new URL(`../${game}/collection.js`,import.meta.url),'utf8'),source);
+});
+
+test('the three reading games pay from the same wallet, by accuracy rather than round length',async()=>{
+  const b=browser({pathname:'/blank-slice/'});
+  // blank-slice plays twelve sentences, entry-check six guests, rhythm five lines: a perfect round pays 25 in each.
+  assert.equal((await b.api.award({...round('blank-slice','blank:one'),total:12,correct:12})).coins,25);
+  assert.equal((await b.api.award({...round('entry-check','entry:one'),total:6,correct:3})).coins,20);
+  assert.equal((await b.api.award({...round('story-classroom','story:one'),total:9,correct:0})).coins,15,'finishing still counts');
+  assert.equal((await b.api.award(round('order-rush','order:one'))).reason,'invalid-round','a game outside the list pays nothing');
+  assert.equal((await b.api.load()).coins,60);
+  assert.equal(b.api.rewardText({reason:'unfinished'}),'한 판을 끝까지 마치면 공통 코인이 모여요.');
+});
+
+test('the daily limit says so, and the badge is named in words',async()=>{
+  const b=browser();
+  for(let i=0;i<10;i++)await b.api.award(round('rhythm',`cap:${i}`,5));
+  const limited=await b.api.award(round('blank-slice','cap:10',5));
+  assert.equal(limited.reason,'daily-limit');assert.equal(limited.coins,0);
+  assert.equal(b.api.rewardText(limited),'오늘의 완주 코인 10회분을 모두 받았어요.');
+  const owned=emptyGarage();owned.owned.push('badge-coast');owned.equipped.badge='coast';assert(await b.api.save(owned));
+  await b.api.refreshBadges();assert.equal(b.badges[0].textContent,'코스트 챔피언');
 });
