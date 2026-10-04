@@ -29,3 +29,58 @@ dialog{position:fixed;border:1px solid #d6dbe3;border-radius:23px;box-shadow:0 2
 @media(max-width:700px){.phrase-card{top:153px;width:calc(100% - 72px)}.phrase-card>strong{font-size:18px}.lane-controls.choosing .lane-answer{font-size:31px}.voice-wave{height:25px;margin-top:12px}}
 
 .learning-recommendation{display:flex;align-items:center;flex-wrap:wrap;gap:16px;padding:22px 25px;margin:0 0 26px;background:#f2f1eb;border:1px solid #dddcd3;border-radius:16px}.learning-recommendation>div{flex:1;min-width:210px}.learning-recommendation strong{font-size:17px}.learning-recommendation p{font-size:13px;line-height:1.7;margin:8px 0}.learning-recommendation small{font-size:11px;color:#61625c;line-height:1.7}.learning-recommendation .secondary-button{width:auto;flex-shrink:0;margin:0}.learning-recommendation .text-button{font-size:11px;min-height:44px}.learning-result-note{font-size:13px;line-height:1.7;color:#575b58;margin:20px 0}.learning-recommendation>button{max-width:100%;white-space:normal}@media(max-width:700px){.learning-recommendation{padding:18px;gap:14px}.learning-recommendation>div{flex-basis:100%;min-width:0}}
+/* ════ 펠트 부품(2026-10-04) ═══════════════════════════════════════════════
+ * 로비·결과의 누르는 부품을 실제 니들 펠트 사진(assets/felt, docs/디자인/펠트부품의 원본을 줄인 것)으로 깐다.
+ * 마감 점검표대로 납작한 CSS 체크 원·검은 윤곽·밀린 그림자·기운 테이프·작은 실땀 줄을 걷었다.
+ * 배치·글·게임 화면은 그대로다. 판에 두께가 있어 CSS 윤곽·안쪽 그림자는 넣지 않고, 누르면 3px 가라앉는다. */
+:root{--f-cream:url(assets/felt/slab-cream.webp);--f-blush:url(assets/felt/slab-blush.webp);
+ --f-cream-l:url(assets/felt/slab-cream-long.webp);--f-blush-l:url(assets/felt/slab-blush-long.webp);--f-coral-l:url(assets/felt/slab-coral-long.webp);
+ --f-pill-l:url(assets/felt/chip-blush-long.webp);--f-check:url(assets/felt/badge-check.webp);--f-dot-cream:url(assets/felt/badge-cream.webp);
+ --felt-ink:#2a120d;--lift:drop-shadow(0 5px 6px rgba(90,50,30,.16));--lift-down:drop-shadow(0 1px 2px rgba(90,50,30,.2))}
+/* 9칸 펠트 판: --fh(판의 배율 높이)에 맞춰 테두리 폭을 정해 모서리·실땀이 늘 같은 배율로 보인다 */
+.primary-button,.secondary-button,.segmented button,.track,#recall-options button{--fh:48px;--src:var(--f-cream);--sl:90 95 fill;--bv:.37;--bh:.39;
+ box-sizing:border-box;border:solid transparent;border-width:calc(var(--fh)*var(--bv)) calc(var(--fh)*var(--bh));border-radius:18px;
+ border-image-source:var(--src);border-image-slice:var(--sl);border-image-width:1;border-image-outset:0;border-image-repeat:round stretch;
+ background:none;box-shadow:none;color:var(--felt-ink);filter:var(--lift);transition:transform .07s ease,filter .07s ease,opacity .2s}
+.primary-button:hover,.track:hover{transform:none;filter:var(--lift)}
+.primary-button:active,.secondary-button:active,.segmented button:active,.track:active,#recall-options button:active{transform:translateY(3px);filter:var(--lift-down);box-shadow:none}
+.primary-button:disabled,.secondary-button:disabled,#recall-options button:disabled{opacity:.45}
+/* 주 행동(이 곡으로 시작·한 번 더 연주·이어서 연주): 코랄 긴 판, 화살표는 블러시 펠트 알약 */
+.primary-button{--fh:60px;--src:var(--f-coral-l);--sl:70 80 fill;--bv:.39;--bh:.44;min-height:var(--fh);padding:0 0 3px;gap:24px;
+ color:#fff;font-weight:800;text-shadow:0 1px 1px rgba(120,30,20,.4)}
+.primary-button>span[aria-hidden],.primary-button .button-arrow{display:inline-grid;place-items:center;flex:none;min-width:34px;height:32px;padding:0 10px 1px;margin-right:-6px;
+ background:var(--f-pill-l) center/100% 100% no-repeat;color:var(--felt-ink);text-shadow:none;font-weight:700}
+/* 추천 곡·다른 문장 듣기: 짧은 크림 판 */
+.secondary-button{--fh:46px;min-height:var(--fh);padding:0 0 2px;border-radius:18px}
+/* 곡 카드: 크림 판, 고른 곡은 블러시 판 + 펠트 체크 배지(납작한 CSS 체크 원·검은 윤곽·밀린 그림자 대신) */
+.track{--fh:64px;min-height:112px;padding:0 0 4px;border-radius:18px}
+/* 원본의 고른 카드 규칙이 border 축약형으로 펠트 판을 지우므로 판을 다시 깐다 */
+.track[aria-pressed=true]{--src:var(--f-blush);border-style:solid;border-color:transparent;border-width:calc(var(--fh)*var(--bv)) calc(var(--fh)*var(--bh));
+ border-image-source:var(--src);border-image-slice:var(--sl);border-image-width:1;border-image-outset:0;border-image-repeat:round stretch;padding:0 0 4px;box-shadow:none;background:none}
+.track .track-selected{display:none}
+.track[aria-pressed=true] .track-selected{display:block;right:calc(var(--fh)*var(--bh)*-1 + 2px);top:calc(var(--fh)*var(--bv)*-1 - 10px);width:30px;height:30px;border:0;border-radius:0;
+ background:var(--f-check) center/contain no-repeat;filter:drop-shadow(0 2px 2px rgba(90,30,20,.25))}
+.track[aria-pressed=true] .track-selected:after{content:none}
+/* 리듬 난이도: 칸마다 짧은 크림 판, 고른 칸은 블러시 */
+.segmented{padding:0;background:none;border-radius:0;gap:8px}
+.segmented button{--fh:42px;padding:0 0 2px;border-radius:18px;background:none;color:var(--felt-ink)}
+.segmented button[aria-pressed=true]{--src:var(--f-blush);background:none;box-shadow:none;color:var(--felt-ink)}
+/* 다른 문장 듣기의 보기: 크림 판, 고른 보기는 블러시 */
+#recall-options button{--fh:44px;min-height:var(--fh);padding:0 0 2px;border-radius:18px;background:none}
+#recall-options button.chosen{--src:var(--f-blush);border-color:transparent;background:none;color:var(--felt-ink)}
+/* F·J 글쇠와 닫기: 크림 펠트 원판 */
+.selection-foot kbd{display:inline-grid;place-items:center;width:26px;height:26px;padding:0;border:0;border-radius:0;background:var(--f-dot-cream) center/contain no-repeat;color:rgba(42,18,13,.78);font-size:11px}
+.dialog-close{display:grid;place-items:center;width:40px;height:40px;background:var(--f-dot-cream) center/contain no-repeat;filter:var(--lift);color:var(--felt-ink);font-size:22px;line-height:1}
+/* 마감 점검표: 납작한 테이프와 작은 실땀 줄은 걷는다 */
+.art-tape{display:none}
+.section-heading{background-image:none;border-top:1px solid var(--line)}
+@media(max-width:700px){
+ .selection-foot kbd{display:none}
+ .primary-button{--fh:56px}
+ .segmented{gap:6px}
+ .segmented button{--fh:38px;font-size:12px}
+ .track{min-height:104px}
+ /* 펠트 판의 테두리만큼 안쪽이 좁아져 겹치므로, 휴대폰에서는 곡 갈래를 정보 줄 아래에 둔다 */
+ .track-type{position:static;max-width:none;text-align:left;margin-top:4px}
+}
+@media(prefers-reduced-motion:reduce){.primary-button,.secondary-button,.segmented button,.track,#recall-options button{transition:none}}

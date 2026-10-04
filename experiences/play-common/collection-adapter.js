@@ -1,10 +1,13 @@
-/* Shared collection adapter. Purchase and reward rules live only in korean-racing/garage.js. */
+/* Shared collection adapter. Purchase and reward rules live only in korean-racing/garage-core.js. */
 (function (global) {
   'use strict';
   const KEY='SYNK_PLAY_COLLECTION_V1';
   const pathname=global.location?.pathname||'/';
+  // Where racing's garage is for this page: inside racing's own package (/play/…), on synk.im (/try/…),
+  // or beside the game on a local server or the learning hub (/blank-slice/ → /korean-racing/).
   const nestedPlay=pathname.match(/^(.*)\/play\/(?:rhythm|runner)\//);
-  const racingPath=nestedPlay?nestedPlay[1]+'/':pathname.startsWith('/try/')?'/try/racing/':pathname.startsWith('/korean-')||pathname.startsWith('/learning-hub/')?'/korean-racing/':'/';
+  const besideRacing=pathname.match(/^(.*)\/(?:korean-[a-z]+|learning-hub|blank-slice|entry-check|story-classroom|order-rush)\//);
+  const racingPath=nestedPlay?nestedPlay[1]+'/':pathname.startsWith('/try/')?'/try/racing/':besideRacing?besideRacing[1]+'/korean-racing/':'/';
   const garageHref=racingPath+'?garage=1';
   function economy(){return Promise.resolve(global.SynkCollectionEconomy);}
   function storage(){try{return global.localStorage;}catch{return null;}}
@@ -30,25 +33,27 @@
   }
   async function catalog(){try{return (await economy()).SHOP_ITEMS.map(item=>({...item}));}catch{return [];}}
   function roundId(game){return `${game}:${global.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2)}`;}
+  // The equipped badge is named in words beside the coins; it is not drawn as an icon.
   async function refreshBadges(state){
     const current=state||await load(),active=current?.owned?.includes('badge-coast')&&current?.equipped?.badge==='coast';
-    for(const node of global.document?.querySelectorAll('[data-collection-badge]')||[]){node.hidden=!active;node.setAttribute('aria-label','공통 차고에서 장착한 코스트 챔피언 배지');}
+    for(const node of global.document?.querySelectorAll('[data-collection-badge]')||[]){node.hidden=!active;node.textContent='코스트 챔피언';node.setAttribute('aria-label','공통 차고에서 장착한 코스트 챔피언 배지');}
     for(const node of global.document?.querySelectorAll('[data-collection-balance]')||[])node.textContent=current?`보유 ${current.coins}코인`:'코인저장불가';
   }
   function rewardText(result){
     if(result?.saved&&result.coins>0)return `공통 코인 +${result.coins} · 보유 ${result.state.coins}`;
     if(result?.reason==='automatic')return '자동 시연은 공통 코인을 지급하지 않아요.';
-    if(result?.reason==='unfinished')return '90초 등불 여행을 완주하면 공통 코인이 모여요.';
+    if(result?.reason==='unfinished')return '한 판을 끝까지 마치면 공통 코인이 모여요.';
     if(result?.reason==='daily-limit')return '오늘의 완주 코인 10회분을 모두 받았어요.';
     if(result?.reason==='duplicate-round')return '이번 완주 보상은 이미 차고에 모였어요.';
-    if(result?.saved&&result.coins===0&&result.reason===null)return '오늘의 완주 코인 10회분을 모두 받았어요.';
     if(result?.reason==='storage-unavailable')return '브라우저 저장이 제한되어 코인을 보관하지 못했어요.';
     return '공통 차고를 연결하지 못했어요.';
   }
   function connectLinks(){for(const node of global.document?.querySelectorAll('[data-collection-garage]')||[])node.href=garageHref;}
   const style=global.document?.createElement('style');
-  if(style){style.textContent='.synk-collection-line{display:flex;align-items:center;flex-wrap:wrap;gap:8px 18px;font-size:13px;line-height:1.6;margin:14px 0}.synk-collection-line a{color:inherit;text-underline-offset:4px}.synk-collection-badge{font-size:15px;line-height:1;white-space:nowrap}.synk-collection-badge[hidden]{display:none!important}';global.document.head.append(style);}
+  if(style){style.textContent='.synk-collection-line{display:flex;align-items:center;flex-wrap:wrap;gap:8px 18px;font-size:13px;line-height:1.6;margin:14px 0}.synk-collection-line a{color:inherit;text-underline-offset:4px}.synk-collection-badge{font-size:12px;line-height:1.4;white-space:nowrap;opacity:.8}.synk-collection-badge[hidden],.synk-collection-line[hidden]{display:none!important}';global.document.head?.append(style);}
   global.SynkPlayCollection=Object.freeze({key:KEY,load,save,award,equip,catalog,roundId,refreshBadges,rewardText,garageHref});
+  // A page may load this before its body is parsed; wire the links once the document is ready.
+  if(global.document?.readyState==='loading')global.document.addEventListener?.('DOMContentLoaded',()=>{connectLinks();refreshBadges();});
   connectLinks();refreshBadges();
   global.addEventListener?.('storage',event=>{if(event.key===KEY)refreshBadges();});
   global.addEventListener?.('pageshow',()=>refreshBadges());

@@ -114,6 +114,8 @@ function renderLobby() {
 }
 
 /* ── 근무 시작 ── */
+// 공통 코인 스크립트(collection.js)를 읽지 못했으면 코인 줄을 숨긴다(모듈은 본문 끝 스크립트 뒤에 돈다).
+if (!globalThis.SynkPlayCollection) for (const n of document.querySelectorAll('.synk-collection-line')) n.hidden = true;
 function startShift(venueId, { tutorial = !progress.tutorial } = {}) {
   sound.unlock(); sound.stopVoice();
   const v = venueById(venueId);
@@ -124,6 +126,8 @@ function startShift(venueId, { tutorial = !progress.tutorial } = {}) {
   state.ranked = progress.plays === 0 || tut.on ? null : atlas((c) => rankCases(c, v.cases));
   Object.assign(state, { venue: v, queue: targetCases || (tut.on ? tutorialQueue(v) : composeShift(v, { ranked: state.ranked?.order, firstTime: !progress.tutorial })),
     index: 0, results: [], combo: 0, cur: null, memoShown: false, busy: false, shift: state.shift + 1, targeted: !!target });
+  // 공통 코인(play-common): 이 근무의 번호. 연수 근무는 안내를 따라 찍은 도장이라 받지 않는다. 코인은 학습 기록에 쓰지 않는다.
+  state.coinRound = tut.on ? null : (globalThis.SynkPlayCollection?.roundId('entry-check') || null);
   // 순간 맞춤: 돋보기가 스스로 나오는 때만 맞춘다(연수 근무는 정해진 대로).
   clearTimeout(state.magnifierTimer); state.flowLine = null;
   state.flow = tut.on ? null : atlas((c) => c.live?.(FLOW_ENTRY, { words: FLOW_WORDS }) ?? null);
@@ -496,6 +500,10 @@ async function next() {
 /* ── 근무 끝 ── */
 function finishShift() {
   const v = state.venue, score = scoreShift(state.results);
+  // 정답 비율로 받는다. WORLD 과제 근무도 끝까지 마치면 받는다.
+  const coinRound = state.coinRound; state.coinRound = null; $('#r-coins').textContent = '';
+  if (coinRound) globalThis.SynkPlayCollection?.award({ game: 'entry-check', total: score.total, correct: score.correct, completed: true, automatic: false, roundId: coinRound })
+    .then((result) => { $('#r-coins').textContent = globalThis.SynkPlayCollection.rewardText(result); });
   // 순간 맞춤: 근무를 마치며 저장한다. 돋보기를 늦추는 것은 엔진이 때가 됐다고 볼 때 물어보고, 받아들일 때만 한다.
   clearTimeout(state.magnifierTimer);
   const flow = state.flow; state.flow = null;
