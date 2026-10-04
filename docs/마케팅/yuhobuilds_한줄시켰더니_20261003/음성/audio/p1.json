@@ -1,0 +1,238 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 5.357,
+  "words": [
+    {
+      "text": "대본,",
+      "start": 0.401,
+      "end": 0.783
+    },
+    {
+      "text": "목소리,",
+      "start": 1.043,
+      "end": 1.465
+    },
+    {
+      "text": "몽골어",
+      "start": 1.746,
+      "end": 2.107
+    },
+    {
+      "text": "검수,",
+      "start": 2.167,
+      "end": 2.448
+    },
+    {
+      "text": "게시",
+      "start": 2.809,
+      "end": 3.09
+    },
+    {
+      "text": "문구,",
+      "start": 3.15,
+      "end": 3.411
+    },
+    {
+      "text": "업로드,",
+      "start": 3.732,
+      "end": 4.113
+    },
+    {
+      "text": "예약까지.",
+      "start": 4.454,
+      "end": 5.357
+    }
+  ],
+  "characters": [
+    {
+      "text": "대",
+      "start": 0.401,
+      "end": 0.582
+    },
+    {
+      "text": "본",
+      "start": 0.582,
+      "end": 0.762
+    },
+    {
+      "text": ",",
+      "start": 0.762,
+      "end": 0.783
+    },
+    {
+      "text": " ",
+      "start": 0.783,
+      "end": 1.043
+    },
+    {
+      "text": "목",
+      "start": 1.043,
+      "end": 1.224
+    },
+    {
+      "text": "소",
+      "start": 1.224,
+      "end": 1.364
+    },
+    {
+      "text": "리",
+      "start": 1.364,
+      "end": 1.445
+    },
+    {
+      "text": ",",
+      "start": 1.445,
+      "end": 1.465
+    },
+    {
+      "text": " ",
+      "start": 1.465,
+      "end": 1.746
+    },
+    {
+      "text": "몽",
+      "start": 1.746,
+      "end": 1.926
+    },
+    {
+      "text": "골",
+      "start": 1.926,
+      "end": 2.067
+    },
+    {
+      "text": "어",
+      "start": 2.067,
+      "end": 2.107
+    },
+    {
+      "text": " ",
+      "start": 2.107,
+      "end": 2.167
+    },
+    {
+      "text": "검",
+      "start": 2.167,
+      "end": 2.348
+    },
+    {
+      "text": "수",
+      "start": 2.348,
+      "end": 2.428
+    },
+    {
+      "text": ",",
+      "start": 2.428,
+      "end": 2.448
+    },
+    {
+      "text": " ",
+      "start": 2.448,
+      "end": 2.809
+    },
+    {
+      "text": "게",
+      "start": 2.809,
+      "end": 2.99
+    },
+    {
+      "text": "시",
+      "start": 2.99,
+      "end": 3.09
+    },
+    {
+      "text": " ",
+      "start": 3.09,
+      "end": 3.15
+    },
+    {
+      "text": "문",
+      "start": 3.15,
+      "end": 3.331
+    },
+    {
+      "text": "구",
+      "start": 3.331,
+      "end": 3.391
+    },
+    {
+      "text": ",",
+      "start": 3.391,
+      "end": 3.411
+    },
+    {
+      "text": " ",
+      "start": 3.411,
+      "end": 3.732
+    },
+    {
+      "text": "업",
+      "start": 3.732,
+      "end": 3.892
+    },
+    {
+      "text": "로",
+      "start": 3.892,
+      "end": 4.033
+    },
+    {
+      "text": "드",
+      "start": 4.033,
+      "end": 4.093
+    },
+    {
+      "text": ",",
+      "start": 4.093,
+      "end": 4.113
+    },
+    {
+      "text": " ",
+      "start": 4.113,
+      "end": 4.454
+    },
+    {
+      "text": "예",
+      "start": 4.454,
+      "end": 4.535
+    },
+    {
+      "text": "약",
+      "start": 4.535,
+      "end": 4.655
+    },
+    {
+      "text": "까",
+      "start": 4.655,
+      "end": 4.815
+    },
+    {
+      "text": "지",
+      "start": 4.815,
+      "end": 5.337
+    },
+    {
+      "text": ".",
+      "start": 5.337,
+      "end": 5.357
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "uc_6ac101aa0b6986f24a687878",
+    "text": "대본, 목소리, 몽골어 검수, 게시 문구, 업로드, 예약까지.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.12,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "몽골어 영상이 만들어지고, 예약까지 끝났어요.",
+      "next_text": "제가 한 건 듣고 좋아 한 마디, 그리고 로그인."
+    }
+  },
+  "fallback": false,
+  "direction": "목록. 낱말마다 화면이 바뀐다. 리듬 있게.",
+  "voiceName": "유호"
+}

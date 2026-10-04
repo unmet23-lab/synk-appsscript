@@ -1,0 +1,20 @@
+{
+  "tried": {
+    "/v1/custom-voices": 1,
+    "/v3/voices?voice_type=custom": 1,
+    "/v3/voices?voice_type=custom&model=ssfm-v30": 1
+  },
+  "voices": [
+    {
+      "voice_id": "uc_6ac101aa0b6986f24a687878",
+      "name": "유호",
+      "model": "ssfm-v30",
+      "source": "instant",
+      "status": "completed",
+      "voice_type": null,
+      "emotions": null,
+      "created_at": "2026-10-03T13:22:50.999000Z",
+      "error": null
+    }
+  ]
+}

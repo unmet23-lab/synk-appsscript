@@ -1,0 +1,110 @@
+/* yuhobuilds · AI 직원 매뉴얼 만들기 — 도구 쪽 테마.
+ * 원본: SYNK-appsscript/docs/마케팅/맞춤도구/manual/theme.css
+ * 공통 양식(scrapbook.css)과 도구 틀(core/wizard.css)은 그대로 두고, 이 파일이 app.css 뒤에서 변수와 몇 곳만 덮는다.
+ * 색: SNS 제작 키트 §4의 yuhobuilds(builds) 테마 — 검정 #0A0A0A + 버터 #F5C445 강조, 실땀은 버터.
+ * 큰 검은 면(결과 머리)과 주 버튼은 펠트 부품의 실제 검은 펠트 결(tex-black)을 곱게 깔고 같은 색을 덮는다(펠트 부품 README ‘큰 색 면’).
+ */
+:root{
+  --thread:url(assets/thread-butter.webp);
+  --brand:#0a0a0a;--brand-ink:#0a0a0a;--brand-soft:#ffebb0;--brand-wash:#fff8e1;
+  --marker:#f5c445;--focus:#0a0a0a;
+  --doodle-mark:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 40' preserveAspectRatio='none'%3E%3Cpath d='M6 24C60 14 140 16 234 20' fill='none' stroke='%23f5c445' stroke-width='22' stroke-linecap='round' opacity='.8'/%3E%3C/svg%3E");
+  --doodle-line:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 24' preserveAspectRatio='none'%3E%3Cpath d='M4 15C50 7 110 19 160 11S225 9 236 12' fill='none' stroke='%23f5c445' stroke-width='6' stroke-linecap='round'/%3E%3Cpath d='M12 19C62 12 122 21 172 15S220 14 230 16' fill='none' stroke='%23f5c445' stroke-width='2.4' stroke-linecap='round' opacity='.7'/%3E%3C/svg%3E");
+  --doodle-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 70'%3E%3Cg fill='none' stroke='%23e0a91c' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M112 10C84 6 40 14 18 50'/%3E%3Cpath d='M14 32l4 19 18-6'/%3E%3C/g%3E%3C/svg%3E");
+  --felt-press:inset 0 -3px 0 #000,0 2px 0 rgba(16,19,26,.14),0 10px 18px -12px rgba(0,0,0,.85);
+  --emboss:0 1px 0 rgba(255,255,255,.95),0 -1px 0 rgba(16,19,26,.16),0 3px 6px rgba(0,0,0,.14);
+  --felt-black:linear-gradient(rgba(10,10,10,.5),rgba(10,10,10,.5)),url(assets/tex-black.webp) 0 0/190px 190px,#0a0a0a;
+}
+
+/* 첫 화면: 그림자를 청금석 대신 중립으로 */
+.intro .art img{filter:drop-shadow(0 14px 18px rgba(16,19,26,.16))}
+.intro .art img.flat{filter:drop-shadow(0 12px 16px rgba(16,19,26,.14))}
+.intro .meta li:nth-child(3){background:#fff}
+
+/* 선택지: 고른 상태는 버터 결의 유리, 번호 테두리는 검정 */
+.glass[aria-pressed="true"],.glass[aria-checked="true"]{--glass-color:#b8860b}
+.opt strong::before{box-shadow:inset 0 0 0 1px rgba(10,10,10,.28)}
+.opt[aria-checked="true"],.opt[aria-pressed="true"]{box-shadow:var(--glass-shadow),inset 0 3px 8px rgba(184,134,11,.24)}
+.opt[aria-pressed="true"] strong,.opt[aria-checked="true"] strong{color:#0a0a0a}
+
+/* 주 버튼: 검은 펠트 판. 못 누를 때는 탁한 회색 대신 같은 펠트를 옅게(펠트 부품 마감 점검표) */
+.btn.primary{background:var(--felt-black);color:#fff}
+.btn.primary:disabled{background:var(--felt-black);color:#fff;opacity:.3;box-shadow:none}
+
+/* 마감 점검표(2026-10-02): 납작한 사각 테이프와 글자 옆 흩어진 색점은 싸 보인다 → 이 도구에서는 쓰지 않는다 */
+.tip::before,.copybox.main::before{content:none}
+.r-top.cheer::after{content:none}
+
+/* 결과 머리: 검은 펠트 위 버터 실땀 네 모서리 */
+.r-top{background:var(--felt-black)}
+.r-top .shot{box-shadow:0 0 0 4px #fff,0 0 0 6px var(--butter),0 16px 26px -12px rgba(0,0,0,.7)}
+.r-top .facts{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0;padding:0;list-style:none}
+.r-top .facts li{padding:5px 11px;border-radius:30px;font:500 13px/1.3 var(--mono);letter-spacing:.02em;color:#0a0a0a;background:var(--butter)}
+.r-top .facts li:nth-child(n+2){color:#fff;background:transparent;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.55)}
+
+/* 결론 카드·순서 번호·출처 꼬리표 */
+.spec.key{box-shadow:var(--edge),6px 6px 0 var(--butter)}
+ol.steps>li::before{background:#0a0a0a}
+ol.steps>li:nth-child(3n+2)::before{background:var(--butter);color:#0a0a0a}
+ol.steps>li:nth-child(3n+3)::before{background:#0a0a0a}
+.src.official{background:#0a0a0a;color:#fff}
+.src.community{background:#eceff3;color:#3a3d42}
+.src.synk{background:var(--butter-soft);color:var(--butter-deep)}
+.src.case{background:var(--butter);color:#0a0a0a}
+
+/* 요청문 창(웹코어 하나): 검은 제목줄 + 검은 윤곽·그림자 */
+.copybox.main textarea{min-height:420px;font-size:15px;line-height:1.72}
+.manual-note{margin:-6px 0 22px;padding:12px 14px;border-radius:14px;background:var(--brand-wash);font-size:14.5px;line-height:1.6;color:#2b2414}
+
+/* 한 줄 명령 */
+.cmds{margin:0 0 24px}
+.cmds>p{margin:0 0 10px;font:500 12.5px/1.4 var(--mono);letter-spacing:.02em;color:#0a0a0a}
+.cmdlist{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.cmdlist li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:12px 12px 12px 16px;border-radius:16px;background:#fff;box-shadow:var(--hairline)}
+.cmdlist .say{margin:0;font-size:16px;line-height:1.5;font-weight:650}
+.cmdlist .row{display:contents}
+.cmdlist .btn{min-height:44px;padding:0 14px;font-size:15px}
+.cmdlist .status{grid-column:1 / -1;font-size:13px;min-height:0}
+.cmdlist .status:empty{display:none}
+.cmdlist textarea.fallback{grid-column:1 / -1;min-height:80px}
+.picked{color:#1d1a12}
+
+/* 질문 팁의 그림 */
+.ladder{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}
+.ladder li{position:relative;padding:10px 8px 9px;border-radius:12px;background:#f3f4f6;font-size:12.5px;line-height:1.35;font-weight:700;text-align:center;color:#3a3d42}
+.ladder li small{display:block;font-weight:600;font-size:11.5px;color:var(--faint);margin-top:2px}
+.ladder li.on{background:var(--butter-soft);color:#0a0a0a;box-shadow:inset 0 0 0 1.5px #0a0a0a}
+.ladder li.human{background:#0a0a0a;color:#fff}
+.ladder li.human small{color:#d7d9dd}
+.ladder-cap{font-size:13px;color:var(--faint);margin:8px 0 0}
+.mn{display:grid;gap:8px}
+.mn div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:11px 13px;border-radius:12px;background:#f5f6f8}
+.mn b{font-size:15px;font-weight:700}
+.mn span{font-size:13px;color:#3a3d42;grid-column:1}
+.mn em{grid-row:1 / span 2;grid-column:2;font-style:normal;font:500 12px/1.2 var(--mono);padding:4px 8px;border-radius:8px;background:#fff;box-shadow:var(--hairline)}
+.mn .bad{background:var(--coral-wash)}
+.mn .bad em{color:var(--coral-deep)}
+.mn .good{background:var(--butter-soft)}
+.stopflow{display:grid;grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr);gap:8px;align-items:stretch}
+.stopflow .col{padding:11px 12px;border-radius:12px;background:#f5f6f8;font-size:13px;line-height:1.5}
+.stopflow .col b{display:block;font-size:12.5px;margin-bottom:6px}
+.stopflow .col span{display:inline-block;margin:0 4px 4px 0;padding:3px 8px;border-radius:8px;background:#fff;box-shadow:var(--hairline);font-weight:650}
+.stopflow .col.human{background:#0a0a0a;color:#fff}
+.stopflow .col.human span{background:var(--butter);color:#0a0a0a;box-shadow:none}
+.stopflow .pause{display:grid;place-items:center;font:500 12px/1.2 var(--mono);writing-mode:vertical-rl;letter-spacing:.08em;border-radius:10px;background:var(--butter-soft);color:#0a0a0a}
+@media(max-width:420px){.ladder{grid-template-columns:repeat(2,minmax(0,1fr))}.stopflow{grid-template-columns:minmax(0,1fr)}.stopflow .pause{writing-mode:horizontal-tb;padding:6px}}
+
+.pool .row span{background:var(--butter-soft);color:#0a0a0a}
+.pool .row span.alt{background:#0a0a0a;color:#fff}
+.lane .node.hot{background:var(--butter);color:#0a0a0a}
+@media(max-width:560px){.lane{grid-template-columns:minmax(0,1fr);gap:6px}}
+
+/* 신경 쓰지 않아도 되는 것 */
+.why.npu b.no{background:#eceff3;color:#3a3d42}
+.why.npu b.yes{background:var(--butter-soft);color:#0a0a0a}
+
+/* 인쇄: 검은 펠트 머리는 흰 종이로(공통 인쇄 규칙보다 이 파일이 뒤라 여기서 다시 맞춘다) */
+@media print{.r-top{background:#fff;color:#000}.r-top .hl{color:#000}.r-top .facts li,.r-top .facts li:nth-child(n+2){color:#000;background:#fff;box-shadow:inset 0 0 0 1px #999}.r-top .rec .stamp{color:#333}.cmdlist .btn,.cmdlist .status{display:none}}
+/* 매뉴얼 전문: 화면에서는 글 상자, 인쇄에서는 잘리지 않는 전문 */
+.manual-print{display:none}
+@media print{.copybox.main textarea{display:none}.manual-print{display:block;margin:0;padding:14px 16px;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;font:13px/1.65 var(--sans);color:#000}}

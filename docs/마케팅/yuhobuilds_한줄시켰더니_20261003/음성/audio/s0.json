@@ -1,0 +1,118 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 2.13,
+  "words": [
+    {
+      "text": "물론",
+      "start": 0.141,
+      "end": 0.462
+    },
+    {
+      "text": "막힌",
+      "start": 0.924,
+      "end": 1.226
+    },
+    {
+      "text": "데도",
+      "start": 1.306,
+      "end": 1.447
+    },
+    {
+      "text": "있었어요.",
+      "start": 1.507,
+      "end": 2.13
+    }
+  ],
+  "characters": [
+    {
+      "text": "물",
+      "start": 0.141,
+      "end": 0.281
+    },
+    {
+      "text": "론",
+      "start": 0.281,
+      "end": 0.462
+    },
+    {
+      "text": " ",
+      "start": 0.462,
+      "end": 0.924
+    },
+    {
+      "text": "막",
+      "start": 0.924,
+      "end": 1.125
+    },
+    {
+      "text": "힌",
+      "start": 1.125,
+      "end": 1.226
+    },
+    {
+      "text": " ",
+      "start": 1.226,
+      "end": 1.306
+    },
+    {
+      "text": "데",
+      "start": 1.306,
+      "end": 1.386
+    },
+    {
+      "text": "도",
+      "start": 1.386,
+      "end": 1.447
+    },
+    {
+      "text": " ",
+      "start": 1.447,
+      "end": 1.507
+    },
+    {
+      "text": "있",
+      "start": 1.507,
+      "end": 1.607
+    },
+    {
+      "text": "었",
+      "start": 1.607,
+      "end": 1.768
+    },
+    {
+      "text": "어",
+      "start": 1.768,
+      "end": 1.828
+    },
+    {
+      "text": "요",
+      "start": 1.828,
+      "end": 2.11
+    },
+    {
+      "text": ".",
+      "start": 2.11,
+      "end": 2.13
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "uc_6ac101aa0b6986f24a687878",
+    "text": "물론 막힌 데도 있었어요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.08,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "제가 한 건, 듣고 '좋아' 한 마디. 그리고 로그인.",
+      "next_text": "몽골어 한 줄이 '내 사진 저장해'로도 읽혀서 검수에 걸렸고,"
+    }
+  },
+  "fallback": false,
+  "direction": "분위기 전환.",
+  "voiceName": "유호"
+}

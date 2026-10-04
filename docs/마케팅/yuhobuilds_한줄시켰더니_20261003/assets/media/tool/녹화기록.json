@@ -1,0 +1,242 @@
+{
+  "url": "http://127.0.0.1:4391/builds/",
+  "answers": {
+    "task": "sns",
+    "finish": "ready",
+    "checks": [
+      "facts",
+      "lang",
+      "links"
+    ],
+    "stops": [
+      "spend",
+      "account",
+      "publish",
+      "delete",
+      "mywords"
+    ],
+    "ai": "claude"
+  },
+  "recordedAt": "2026-10-03T13:21:07.193Z",
+  "viewport": "390x844@3",
+  "shots": [
+    {
+      "id": "01_start",
+      "note": "첫 화면(synk.im/builds/에서 넘어옴)",
+      "path": "/builds/manual/",
+      "heading": "질문 다섯 개로 만드는내 AI 직원 매뉴얼",
+      "scrollY": 0,
+      "overflowX": 0,
+      "rect": {
+        "heading": [
+          60,
+          1257,
+          1050,
+          224
+        ],
+        "tip": null,
+        "picked": null,
+        "manual": null,
+        "resultTop": null
+      }
+    },
+    {
+      "id": "02_q1",
+      "note": "첫 질문(맡길 일)",
+      "path": "/builds/manual/",
+      "heading": "AI에게 어떤 일을 맡기고 싶나요?",
+      "scrollY": 0,
+      "overflowX": 0,
+      "rect": {
+        "heading": [
+          60,
+          496,
+          1050,
+          97
+        ],
+        "tip": [
+          60,
+          2838,
+          1050,
+          1428
+        ],
+        "picked": null,
+        "manual": null,
+        "resultTop": null
+      }
+    },
+    {
+      "id": "02_q1_tip",
+      "note": "첫 질문에서 SNS 게시물을 고른 뒤 한 줄과 팁",
+      "path": "/builds/manual/",
+      "heading": "AI에게 어떤 일을 맡기고 싶나요?",
+      "scrollY": 680,
+      "overflowX": 0,
+      "rect": {
+        "heading": [
+          60,
+          -1544,
+          1050,
+          97
+        ],
+        "tip": [
+          60,
+          1079,
+          1050,
+          1428
+        ],
+        "picked": [
+          60,
+          450,
+          1050,
+          233
+        ],
+        "manual": null,
+        "resultTop": null
+      }
+    },
+    {
+      "id": "03_q4",
+      "note": "질문 4: 추천대로 다섯 개가 체크된 상태",
+      "path": "/builds/manual/",
+      "heading": "AI가 혼자 하면 안 되는 일을 골라 주세요",
+      "scrollY": 0,
+      "overflowX": 0,
+      "rect": {
+        "heading": [
+          60,
+          496,
+          1050,
+          193
+        ],
+        "tip": [
+          60,
+          3043,
+          1050,
+          1696
+        ],
+        "picked": [
+          60,
+          2316,
+          1050,
+          233
+        ],
+        "manual": null,
+        "resultTop": null
+      }
+    },
+    {
+      "id": "04_result_top",
+      "note": "결과 머리",
+      "path": "/builds/manual/",
+      "heading": "SNS 게시물, 올리기 직전까지 맡기는 매뉴얼",
+      "scrollY": 0,
+      "overflowX": 0,
+      "rect": {
+        "heading": [
+          162,
+          657,
+          846,
+          202
+        ],
+        "tip": null,
+        "picked": null,
+        "manual": [
+          60,
+          2271,
+          1050,
+          1612
+        ],
+        "resultTop": [
+          60,
+          318,
+          1050,
+          1242
+        ]
+      }
+    },
+    {
+      "id": "05_result_manual",
+      "note": "매뉴얼 창이 화면 가운데",
+      "path": "/builds/manual/",
+      "heading": "SNS 게시물, 올리기 직전까지 맡기는 매뉴얼",
+      "scrollY": 604,
+      "overflowX": 0,
+      "rect": {
+        "heading": [
+          162,
+          -1155,
+          846,
+          202
+        ],
+        "tip": null,
+        "picked": null,
+        "manual": [
+          60,
+          459,
+          1050,
+          1612
+        ],
+        "resultTop": [
+          60,
+          -1494,
+          1050,
+          1242
+        ]
+      }
+    },
+    {
+      "id": "06_result_manual_rules",
+      "note": "매뉴얼 창 안: 끝내기 전 검수와 사람 차례",
+      "path": "/builds/manual/",
+      "heading": "SNS 게시물, 올리기 직전까지 맡기는 매뉴얼",
+      "scrollY": 604,
+      "overflowX": 0,
+      "rect": {
+        "heading": [
+          162,
+          -1155,
+          846,
+          202
+        ],
+        "tip": null,
+        "picked": null,
+        "manual": [
+          60,
+          459,
+          1050,
+          1612
+        ],
+        "resultTop": [
+          60,
+          -1494,
+          1050,
+          1242
+        ]
+      }
+    }
+  ],
+  "errors": [],
+  "answersSaved": {
+    "v": 1,
+    "answers": {
+      "task": "sns",
+      "finish": "ready",
+      "checks": [
+        "facts",
+        "lang",
+        "links"
+      ],
+      "stops": [
+        "spend",
+        "account",
+        "publish",
+        "delete",
+        "mywords"
+      ],
+      "ai": "claude"
+    },
+    "at": "result",
+    "checks": {}
+  }
+}

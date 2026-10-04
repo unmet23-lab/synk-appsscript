@@ -26,6 +26,8 @@ const SHARED_ASSETS = ['brand-shift.webp', 'thread-shift.webp', 'felt-paper.webp
 const TOOLS = {
   computer: { out: 'brief/computer', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: [...SHARED_ASSETS, 'laptop-felt.webp'] },
   meeting: { out: 'brief/meeting', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: [...SHARED_ASSETS, 'meeting-hero.webp'], keep: ['meeting-guide.pdf', 'meeting-kit.zip'] },
+  // yuhobuilds 허브(synk.im/builds/)의 첫 도구. theme.css = 도구 쪽 색(검정·버터). outside = 도구 폴더 밖에 둘 파일(허브 첫 화면).
+  manual: { out: 'builds/manual', files: ['content.js', 'rules.js', 'view.js', 'index.html', 'theme.css'], assets: ['favicon-32.png', 'thread-butter.webp', 'logo-synk.webp', 'note-felt.webp', 'tex-black.webp', 'sticker-check.webp', 'sticker-book.webp', 'sticker-person.webp', 'sticker-search.webp'], outside: { 'builds-index.html': 'builds/index.html' } },
 };
 
 const sha = file => createHash('sha256').update(fs.readFileSync(file)).digest('hex');
@@ -104,6 +106,7 @@ for (const name of names) {
   fs.copyFileSync(ATLAS, path.join(out, 'atlas-engine.js'));
   for (const f of tool.assets || fs.readdirSync(path.join(HERE, 'assets'))) fs.copyFileSync(path.join(HERE, 'assets', f), path.join(out, 'assets', f));
   for (const f of tool.keep || []) fs.copyFileSync(path.join(src, 'keep', f), path.join(out, f));
+  for (const [from, to] of Object.entries(tool.outside || {})) { const dest = path.join(HERE, 'dist', to); fs.mkdirSync(path.dirname(dest), { recursive: true }); fs.copyFileSync(path.join(src, from), dest); }
   const font = subsetFont([...tool.files.map(f => path.join(src, f)), path.join(HERE, 'core/wizard.js'), path.join(HERE, 'core/account.js')], path.join(out, 'assets/SUIT-subset.woff2'));
   console.log(`${name}: 글자 ${font.chars}개로 폰트를 줄임${font.missing ? ` (폰트에 없어 시스템 글꼴로 보일 기호: ${font.missing})` : ''}`);
   subsetLatin(path.join(out, 'assets'));
@@ -116,6 +119,7 @@ for (const name of names) {
   const manifest = {};
   const walk = dir => { for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const p = path.join(dir, e.name); if (e.isDirectory()) walk(p); else manifest[path.relative(out, p).replace(/\\/g, '/')] = { bytes: fs.statSync(p).size, sha256: sha(p) }; } };
   walk(out);
-  fs.writeFileSync(path.join(HERE, 'dist', `${name}.manifest.json`), JSON.stringify({ tool: name, path: `/${tool.out}/`, builtAt: new Date().toISOString(), atlasEngineSha256: sha(ATLAS), files: manifest }, null, 1) + '\n');
+  const outside = Object.fromEntries(Object.values(tool.outside || {}).map(to => { const p = path.join(HERE, 'dist', to); return [to, { bytes: fs.statSync(p).size, sha256: sha(p) }]; }));
+  fs.writeFileSync(path.join(HERE, 'dist', `${name}.manifest.json`), JSON.stringify({ tool: name, path: `/${tool.out}/`, builtAt: new Date().toISOString(), atlasEngineSha256: sha(ATLAS), files: manifest, ...(Object.keys(outside).length ? { outside } : {}) }, null, 1) + '\n');
   console.log(`${name}: ${Object.keys(manifest).length}개 파일 → dist/${tool.out}/`);
 }

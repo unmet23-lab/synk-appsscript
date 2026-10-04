@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AI 직원 매뉴얼 만들기 · yuhobuilds</title>
+<meta name="description" content="맡길 일, 완성 기준, 꼭 검수할 것, AI가 혼자 하면 안 되는 것, 쓰는 AI를 고르면 ChatGPT·Claude 프로젝트와 Gemini Gem 지침 칸에 그대로 붙여 넣을 매뉴얼을 만들어 드려요. 질문 다섯 개, 로그인 없음.">
+<meta name="theme-color" content="#ffffff">
+<link rel="canonical" href="https://synk.im/builds/manual/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="yuhobuilds">
+<meta property="og:title" content="내 일에 맞는 AI 직원 매뉴얼 · 질문 다섯 개면 만들어져요">
+<meta property="og:description" content="한 번 깔아 두면 다음부터는 한 줄로 맡기는 매뉴얼. ChatGPT·Claude·Gemini 지침 칸에 그대로 붙여 넣어요.">
+<meta property="og:url" content="https://synk.im/builds/manual/">
+<meta property="og:image" content="https://synk.im/builds/manual/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="assets/favicon-32.png">
+<link rel="preload" href="assets/SUIT-subset.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<div class="tool">
+  <header class="bar">
+    <a class="brand" href="https://synk.im/" aria-label="SYNK 홈">
+      <img src="assets/logo-synk.webp" alt="synk" width="58" height="28">
+      <span>yuhobuilds</span>
+    </a>
+    <div class="bar-tools">
+      <button type="button" class="switch" role="switch" aria-checked="true" data-tips><span class="track" aria-hidden="true"></span><span>팁 보기</span></button>
+    </div>
+  </header>
+  <main id="app"></main>
+  <footer class="foot no-print">
+    <span>yuhobuilds · 유호 · AI와 회사 만들기</span>
+    <span><a href="https://www.instagram.com/yuhobuilds/" target="_blank" rel="noopener">Instagram</a> · <a href="https://www.youtube.com/@yuhobuilds" target="_blank" rel="noopener">YouTube</a> · <button type="button" data-forget>저장된 기록 지우기</button><span data-account-slot hidden> · <button type="button" data-account>SYNK 설정 불러오기</button></span></span>
+  </footer>
+  <div id="live" class="sr" aria-live="polite"></div>
+</div>
+<noscript><p style="max-width:680px;margin:40px auto;padding:0 20px;font-size:17px">AI 직원 매뉴얼은 브라우저에서 만들어요. 자바스크립트를 켜 주세요.</p></noscript>
+<script src="atlas-engine.js"></script>
+<script src="content.js"></script>
+<script src="rules.js"></script>
+<script src="view.js"></script>
+<script src="account.js"></script>
+<script src="wizard.js"></script>
+<script>
+SynkWizard.start({
+  root: document.getElementById('app'),
+  tool: {
+    id: 'builds.manual',
+    scope: { domain: 'SHIFT', workspace: 'yuhobuilds', subject: 'visitor' },
+    content: SynkManualContent, rules: SynkManualRules, view: SynkManualView,
+    candidates: [
+      { id: 'quick', pace: 'short', minutes: 2 },
+      { id: 'guided', pace: 'standard', minutes: 4 },
+      { id: 'deep', pace: 'deep', minutes: 8 }
+    ]
+  }
+});
+</script>
+</body>
+</html>

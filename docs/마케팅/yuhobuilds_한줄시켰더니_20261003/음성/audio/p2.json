@@ -1,0 +1,223 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 4.429,
+  "words": [
+    {
+      "text": "제가",
+      "start": 0.381,
+      "end": 0.621
+    },
+    {
+      "text": "한",
+      "start": 0.681,
+      "end": 0.782
+    },
+    {
+      "text": "건,",
+      "start": 0.842,
+      "end": 1.022
+    },
+    {
+      "text": "듣고",
+      "start": 1.363,
+      "end": 1.603
+    },
+    {
+      "text": "'좋아'",
+      "start": 1.623,
+      "end": 1.844
+    },
+    {
+      "text": "한",
+      "start": 1.924,
+      "end": 2.004
+    },
+    {
+      "text": "마디.",
+      "start": 2.064,
+      "end": 2.304
+    },
+    {
+      "text": "그리고",
+      "start": 2.725,
+      "end": 3.006
+    },
+    {
+      "text": "로그인.",
+      "start": 3.387,
+      "end": 4.429
+    }
+  ],
+  "characters": [
+    {
+      "text": "제",
+      "start": 0.381,
+      "end": 0.541
+    },
+    {
+      "text": "가",
+      "start": 0.541,
+      "end": 0.621
+    },
+    {
+      "text": " ",
+      "start": 0.621,
+      "end": 0.681
+    },
+    {
+      "text": "한",
+      "start": 0.681,
+      "end": 0.782
+    },
+    {
+      "text": " ",
+      "start": 0.782,
+      "end": 0.842
+    },
+    {
+      "text": "건",
+      "start": 0.842,
+      "end": 1.002
+    },
+    {
+      "text": ",",
+      "start": 1.002,
+      "end": 1.022
+    },
+    {
+      "text": " ",
+      "start": 1.022,
+      "end": 1.363
+    },
+    {
+      "text": "듣",
+      "start": 1.363,
+      "end": 1.543
+    },
+    {
+      "text": "고",
+      "start": 1.543,
+      "end": 1.603
+    },
+    {
+      "text": " ",
+      "start": 1.603,
+      "end": 1.623
+    },
+    {
+      "text": "'",
+      "start": 1.623,
+      "end": 1.663
+    },
+    {
+      "text": "좋",
+      "start": 1.663,
+      "end": 1.824
+    },
+    {
+      "text": "아",
+      "start": 1.824,
+      "end": 1.824
+    },
+    {
+      "text": "'",
+      "start": 1.824,
+      "end": 1.844
+    },
+    {
+      "text": " ",
+      "start": 1.844,
+      "end": 1.924
+    },
+    {
+      "text": "한",
+      "start": 1.924,
+      "end": 2.004
+    },
+    {
+      "text": " ",
+      "start": 2.004,
+      "end": 2.064
+    },
+    {
+      "text": "마",
+      "start": 2.064,
+      "end": 2.204
+    },
+    {
+      "text": "디",
+      "start": 2.204,
+      "end": 2.284
+    },
+    {
+      "text": ".",
+      "start": 2.284,
+      "end": 2.304
+    },
+    {
+      "text": " ",
+      "start": 2.304,
+      "end": 2.725
+    },
+    {
+      "text": "그",
+      "start": 2.725,
+      "end": 2.825
+    },
+    {
+      "text": "리",
+      "start": 2.825,
+      "end": 2.926
+    },
+    {
+      "text": "고",
+      "start": 2.926,
+      "end": 3.006
+    },
+    {
+      "text": " ",
+      "start": 3.006,
+      "end": 3.387
+    },
+    {
+      "text": "로",
+      "start": 3.387,
+      "end": 3.547
+    },
+    {
+      "text": "그",
+      "start": 3.547,
+      "end": 3.667
+    },
+    {
+      "text": "인",
+      "start": 3.667,
+      "end": 4.409
+    },
+    {
+      "text": ".",
+      "start": 4.409,
+      "end": 4.429
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "uc_6ac101aa0b6986f24a687878",
+    "text": "제가 한 건, 듣고 '좋아' 한 마디. 그리고 로그인.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.05,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "대본, 목소리, 몽골어 검수, 게시 문구, 업로드, 예약까지.",
+      "next_text": "물론 막힌 데도 있었어요."
+    }
+  },
+  "fallback": false,
+  "direction": "펀치라인. '그리고 로그인' 앞에 반 박 쉰다.",
+  "voiceName": "유호"
+}

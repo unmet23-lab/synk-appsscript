@@ -1,0 +1,123 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 3.558,
+  "words": [
+    {
+      "text": "미리",
+      "start": 0.462,
+      "end": 0.704
+    },
+    {
+      "text": "써",
+      "start": 1.166,
+      "end": 1.327
+    },
+    {
+      "text": "둔",
+      "start": 1.407,
+      "end": 1.608
+    },
+    {
+      "text": "매뉴얼이었어요.",
+      "start": 2.251,
+      "end": 3.558
+    }
+  ],
+  "characters": [
+    {
+      "text": "미",
+      "start": 0.462,
+      "end": 0.603
+    },
+    {
+      "text": "리",
+      "start": 0.603,
+      "end": 0.704
+    },
+    {
+      "text": " ",
+      "start": 0.704,
+      "end": 1.166
+    },
+    {
+      "text": "써",
+      "start": 1.166,
+      "end": 1.327
+    },
+    {
+      "text": " ",
+      "start": 1.327,
+      "end": 1.407
+    },
+    {
+      "text": "둔",
+      "start": 1.407,
+      "end": 1.608
+    },
+    {
+      "text": " ",
+      "start": 1.608,
+      "end": 2.251
+    },
+    {
+      "text": "매",
+      "start": 2.251,
+      "end": 2.392
+    },
+    {
+      "text": "뉴",
+      "start": 2.392,
+      "end": 2.492
+    },
+    {
+      "text": "얼",
+      "start": 2.492,
+      "end": 2.593
+    },
+    {
+      "text": "이",
+      "start": 2.593,
+      "end": 2.633
+    },
+    {
+      "text": "었",
+      "start": 2.633,
+      "end": 2.794
+    },
+    {
+      "text": "어",
+      "start": 2.794,
+      "end": 2.854
+    },
+    {
+      "text": "요",
+      "start": 2.854,
+      "end": 3.538
+    },
+    {
+      "text": ".",
+      "start": 3.538,
+      "end": 3.558
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "uc_6ac101aa0b6986f24a687878",
+    "text": "미리 써 둔 매뉴얼이었어요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.04,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "한 줄로 맡길 수 있었던 비결은, 긴 프롬프트가 아니라",
+      "next_text": "내 일에 맞는 매뉴얼, 질문 다섯 개면 만들어져요."
+    }
+  },
+  "fallback": false,
+  "direction": "핵심. 또박또박.",
+  "voiceName": "유호"
+}

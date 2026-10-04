@@ -1,0 +1,183 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 3.455,
+  "words": [
+    {
+      "text": "크롬에",
+      "start": 0.321,
+      "end": 0.663
+    },
+    {
+      "text": "'유호'가",
+      "start": 0.743,
+      "end": 1.064
+    },
+    {
+      "text": "두",
+      "start": 1.125,
+      "end": 1.225
+    },
+    {
+      "text": "명이라",
+      "start": 1.285,
+      "end": 1.647
+    },
+    {
+      "text": "로그인을",
+      "start": 2.049,
+      "end": 2.45
+    },
+    {
+      "text": "헤맸고,",
+      "start": 2.511,
+      "end": 3.455
+    }
+  ],
+  "characters": [
+    {
+      "text": "크",
+      "start": 0.321,
+      "end": 0.462
+    },
+    {
+      "text": "롬",
+      "start": 0.462,
+      "end": 0.643
+    },
+    {
+      "text": "에",
+      "start": 0.643,
+      "end": 0.663
+    },
+    {
+      "text": " ",
+      "start": 0.663,
+      "end": 0.743
+    },
+    {
+      "text": "'",
+      "start": 0.743,
+      "end": 0.783
+    },
+    {
+      "text": "유",
+      "start": 0.783,
+      "end": 0.904
+    },
+    {
+      "text": "호",
+      "start": 0.904,
+      "end": 0.944
+    },
+    {
+      "text": "'",
+      "start": 0.944,
+      "end": 0.984
+    },
+    {
+      "text": "가",
+      "start": 0.984,
+      "end": 1.064
+    },
+    {
+      "text": " ",
+      "start": 1.064,
+      "end": 1.125
+    },
+    {
+      "text": "두",
+      "start": 1.125,
+      "end": 1.225
+    },
+    {
+      "text": " ",
+      "start": 1.225,
+      "end": 1.285
+    },
+    {
+      "text": "명",
+      "start": 1.285,
+      "end": 1.466
+    },
+    {
+      "text": "이",
+      "start": 1.466,
+      "end": 1.526
+    },
+    {
+      "text": "라",
+      "start": 1.526,
+      "end": 1.647
+    },
+    {
+      "text": " ",
+      "start": 1.647,
+      "end": 2.049
+    },
+    {
+      "text": "로",
+      "start": 2.049,
+      "end": 2.189
+    },
+    {
+      "text": "그",
+      "start": 2.189,
+      "end": 2.29
+    },
+    {
+      "text": "인",
+      "start": 2.29,
+      "end": 2.39
+    },
+    {
+      "text": "을",
+      "start": 2.39,
+      "end": 2.45
+    },
+    {
+      "text": " ",
+      "start": 2.45,
+      "end": 2.511
+    },
+    {
+      "text": "헤",
+      "start": 2.511,
+      "end": 2.591
+    },
+    {
+      "text": "맸",
+      "start": 2.591,
+      "end": 2.772
+    },
+    {
+      "text": "고",
+      "start": 2.772,
+      "end": 3.434
+    },
+    {
+      "text": ",",
+      "start": 3.434,
+      "end": 3.455
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "uc_6ac101aa0b6986f24a687878",
+    "text": "크롬에 '유호'가 두 명이라 로그인을 헤맸고,",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.1,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "몽골어 한 줄이 '내 사진 저장해'로도 읽혀서 검수에 걸렸고,",
+      "next_text": "제 소개글을 지우려다 안전장치에 막혔어요."
+    }
+  },
+  "fallback": false,
+  "direction": "실패담 둘. 어이없다는 듯.",
+  "voiceName": "유호"
+}

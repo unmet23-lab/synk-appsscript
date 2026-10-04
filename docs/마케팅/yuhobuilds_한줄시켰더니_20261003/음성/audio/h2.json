@@ -1,0 +1,178 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 3.611,
+  "words": [
+    {
+      "text": "몽골어",
+      "start": 0.14,
+      "end": 0.522
+    },
+    {
+      "text": "영상이",
+      "start": 1.083,
+      "end": 1.424
+    },
+    {
+      "text": "만들어지고,",
+      "start": 1.485,
+      "end": 2.026
+    },
+    {
+      "text": "예약까지",
+      "start": 2.448,
+      "end": 2.789
+    },
+    {
+      "text": "끝났어요.",
+      "start": 2.849,
+      "end": 3.611
+    }
+  ],
+  "characters": [
+    {
+      "text": "몽",
+      "start": 0.14,
+      "end": 0.321
+    },
+    {
+      "text": "골",
+      "start": 0.321,
+      "end": 0.481
+    },
+    {
+      "text": "어",
+      "start": 0.481,
+      "end": 0.522
+    },
+    {
+      "text": " ",
+      "start": 0.522,
+      "end": 1.083
+    },
+    {
+      "text": "영",
+      "start": 1.083,
+      "end": 1.244
+    },
+    {
+      "text": "상",
+      "start": 1.244,
+      "end": 1.404
+    },
+    {
+      "text": "이",
+      "start": 1.404,
+      "end": 1.424
+    },
+    {
+      "text": " ",
+      "start": 1.424,
+      "end": 1.485
+    },
+    {
+      "text": "만",
+      "start": 1.485,
+      "end": 1.625
+    },
+    {
+      "text": "들",
+      "start": 1.625,
+      "end": 1.745
+    },
+    {
+      "text": "어",
+      "start": 1.745,
+      "end": 1.806
+    },
+    {
+      "text": "지",
+      "start": 1.806,
+      "end": 1.926
+    },
+    {
+      "text": "고",
+      "start": 1.926,
+      "end": 2.006
+    },
+    {
+      "text": ",",
+      "start": 2.006,
+      "end": 2.026
+    },
+    {
+      "text": " ",
+      "start": 2.026,
+      "end": 2.448
+    },
+    {
+      "text": "예",
+      "start": 2.448,
+      "end": 2.528
+    },
+    {
+      "text": "약",
+      "start": 2.528,
+      "end": 2.628
+    },
+    {
+      "text": "까",
+      "start": 2.628,
+      "end": 2.748
+    },
+    {
+      "text": "지",
+      "start": 2.748,
+      "end": 2.789
+    },
+    {
+      "text": " ",
+      "start": 2.789,
+      "end": 2.849
+    },
+    {
+      "text": "끝",
+      "start": 2.849,
+      "end": 3.029
+    },
+    {
+      "text": "났",
+      "start": 3.029,
+      "end": 3.21
+    },
+    {
+      "text": "어",
+      "start": 3.21,
+      "end": 3.29
+    },
+    {
+      "text": "요",
+      "start": 3.29,
+      "end": 3.591
+    },
+    {
+      "text": ".",
+      "start": 3.591,
+      "end": 3.611
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "uc_6ac101aa0b6986f24a687878",
+    "text": "몽골어 영상이 만들어지고, 예약까지 끝났어요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.08,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "AI한테 이 한 줄 보냈어요.",
+      "next_text": "대본, 목소리, 몽골어 검수, 게시 문구, 업로드, 예약까지."
+    }
+  },
+  "fallback": false,
+  "direction": "결과 공개. 살짝 놀란 듯.",
+  "voiceName": "유호"
+}

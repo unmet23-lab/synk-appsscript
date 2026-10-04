@@ -1,0 +1,168 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 3.657,
+  "words": [
+    {
+      "text": "제",
+      "start": 0.382,
+      "end": 0.522
+    },
+    {
+      "text": "소개글을",
+      "start": 0.683,
+      "end": 1.166
+    },
+    {
+      "text": "지우려다",
+      "start": 1.226,
+      "end": 1.588
+    },
+    {
+      "text": "안전장치에",
+      "start": 2.15,
+      "end": 2.733
+    },
+    {
+      "text": "막혔어요.",
+      "start": 2.793,
+      "end": 3.657
+    }
+  ],
+  "characters": [
+    {
+      "text": "제",
+      "start": 0.382,
+      "end": 0.522
+    },
+    {
+      "text": " ",
+      "start": 0.522,
+      "end": 0.683
+    },
+    {
+      "text": "소",
+      "start": 0.683,
+      "end": 0.824
+    },
+    {
+      "text": "개",
+      "start": 0.824,
+      "end": 0.985
+    },
+    {
+      "text": "글",
+      "start": 0.985,
+      "end": 1.105
+    },
+    {
+      "text": "을",
+      "start": 1.105,
+      "end": 1.166
+    },
+    {
+      "text": " ",
+      "start": 1.166,
+      "end": 1.226
+    },
+    {
+      "text": "지",
+      "start": 1.226,
+      "end": 1.326
+    },
+    {
+      "text": "우",
+      "start": 1.326,
+      "end": 1.387
+    },
+    {
+      "text": "려",
+      "start": 1.387,
+      "end": 1.487
+    },
+    {
+      "text": "다",
+      "start": 1.487,
+      "end": 1.588
+    },
+    {
+      "text": " ",
+      "start": 1.588,
+      "end": 2.15
+    },
+    {
+      "text": "안",
+      "start": 2.15,
+      "end": 2.291
+    },
+    {
+      "text": "전",
+      "start": 2.291,
+      "end": 2.452
+    },
+    {
+      "text": "장",
+      "start": 2.452,
+      "end": 2.612
+    },
+    {
+      "text": "치",
+      "start": 2.612,
+      "end": 2.713
+    },
+    {
+      "text": "에",
+      "start": 2.713,
+      "end": 2.733
+    },
+    {
+      "text": " ",
+      "start": 2.733,
+      "end": 2.793
+    },
+    {
+      "text": "막",
+      "start": 2.793,
+      "end": 2.934
+    },
+    {
+      "text": "혔",
+      "start": 2.934,
+      "end": 3.135
+    },
+    {
+      "text": "어",
+      "start": 3.135,
+      "end": 3.195
+    },
+    {
+      "text": "요",
+      "start": 3.195,
+      "end": 3.637
+    },
+    {
+      "text": ".",
+      "start": 3.637,
+      "end": 3.657
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "uc_6ac101aa0b6986f24a687878",
+    "text": "제 소개글을 지우려다 안전장치에 막혔어요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.08,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "크롬에 '유호'가 두 명이라 로그인을 헤맸고,",
+      "next_text": "한 줄로 맡길 수 있었던 비결은 긴 프롬프트가 아니라,"
+    }
+  },
+  "fallback": false,
+  "direction": "실패담 셋. 웃으며.",
+  "voiceName": "유호"
+}

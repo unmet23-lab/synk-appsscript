@@ -1,0 +1,223 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 4.434,
+  "words": [
+    {
+      "text": "한",
+      "start": 0.381,
+      "end": 0.522
+    },
+    {
+      "text": "줄로",
+      "start": 0.582,
+      "end": 0.782
+    },
+    {
+      "text": "맡길",
+      "start": 0.843,
+      "end": 1.083
+    },
+    {
+      "text": "수",
+      "start": 1.144,
+      "end": 1.184
+    },
+    {
+      "text": "있었던",
+      "start": 1.244,
+      "end": 1.545
+    },
+    {
+      "text": "비결은,",
+      "start": 1.605,
+      "end": 2.026
+    },
+    {
+      "text": "긴",
+      "start": 2.568,
+      "end": 2.829
+    },
+    {
+      "text": "프롬프트가",
+      "start": 2.909,
+      "end": 3.431
+    },
+    {
+      "text": "아니라",
+      "start": 3.491,
+      "end": 4.414
+    }
+  ],
+  "characters": [
+    {
+      "text": "한",
+      "start": 0.381,
+      "end": 0.522
+    },
+    {
+      "text": " ",
+      "start": 0.522,
+      "end": 0.582
+    },
+    {
+      "text": "줄",
+      "start": 0.582,
+      "end": 0.742
+    },
+    {
+      "text": "로",
+      "start": 0.742,
+      "end": 0.782
+    },
+    {
+      "text": " ",
+      "start": 0.782,
+      "end": 0.843
+    },
+    {
+      "text": "맡",
+      "start": 0.843,
+      "end": 0.963
+    },
+    {
+      "text": "길",
+      "start": 0.963,
+      "end": 1.083
+    },
+    {
+      "text": " ",
+      "start": 1.083,
+      "end": 1.144
+    },
+    {
+      "text": "수",
+      "start": 1.144,
+      "end": 1.184
+    },
+    {
+      "text": " ",
+      "start": 1.184,
+      "end": 1.244
+    },
+    {
+      "text": "있",
+      "start": 1.244,
+      "end": 1.344
+    },
+    {
+      "text": "었",
+      "start": 1.344,
+      "end": 1.465
+    },
+    {
+      "text": "던",
+      "start": 1.465,
+      "end": 1.545
+    },
+    {
+      "text": " ",
+      "start": 1.545,
+      "end": 1.605
+    },
+    {
+      "text": "비",
+      "start": 1.605,
+      "end": 1.725
+    },
+    {
+      "text": "결",
+      "start": 1.725,
+      "end": 1.926
+    },
+    {
+      "text": "은",
+      "start": 1.926,
+      "end": 2.006
+    },
+    {
+      "text": ",",
+      "start": 2.006,
+      "end": 2.026
+    },
+    {
+      "text": " ",
+      "start": 2.026,
+      "end": 2.568
+    },
+    {
+      "text": "긴",
+      "start": 2.568,
+      "end": 2.829
+    },
+    {
+      "text": " ",
+      "start": 2.829,
+      "end": 2.909
+    },
+    {
+      "text": "프",
+      "start": 2.909,
+      "end": 3.01
+    },
+    {
+      "text": "롬",
+      "start": 3.01,
+      "end": 3.13
+    },
+    {
+      "text": "프",
+      "start": 3.13,
+      "end": 3.27
+    },
+    {
+      "text": "트",
+      "start": 3.27,
+      "end": 3.371
+    },
+    {
+      "text": "가",
+      "start": 3.371,
+      "end": 3.431
+    },
+    {
+      "text": " ",
+      "start": 3.431,
+      "end": 3.491
+    },
+    {
+      "text": "아",
+      "start": 3.491,
+      "end": 3.531
+    },
+    {
+      "text": "니",
+      "start": 3.531,
+      "end": 3.652
+    },
+    {
+      "text": "라",
+      "start": 3.652,
+      "end": 4.414
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "uc_6ac101aa0b6986f24a687878",
+    "text": "한 줄로 맡길 수 있었던 비결은, 긴 프롬프트가 아니라",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.06,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "제 소개글을 지우려다 안전장치에 막혔어요.",
+      "next_text": "미리 써 둔 매뉴얼이었어요."
+    }
+  },
+  "fallback": false,
+  "direction": "깨달음 앞. 진지하게.",
+  "voiceName": "유호"
+}

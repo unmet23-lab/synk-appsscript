@@ -1,0 +1,133 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 2.13,
+  "words": [
+    {
+      "text": "AI한테",
+      "start": 0.462,
+      "end": 0.904
+    },
+    {
+      "text": "이",
+      "start": 0.964,
+      "end": 0.984
+    },
+    {
+      "text": "한",
+      "start": 1.045,
+      "end": 1.105
+    },
+    {
+      "text": "줄",
+      "start": 1.165,
+      "end": 1.246
+    },
+    {
+      "text": "보냈어요.",
+      "start": 1.306,
+      "end": 2.13
+    }
+  ],
+  "characters": [
+    {
+      "text": "A",
+      "start": 0.462,
+      "end": 0.563
+    },
+    {
+      "text": "I",
+      "start": 0.563,
+      "end": 0.703
+    },
+    {
+      "text": "한",
+      "start": 0.703,
+      "end": 0.864
+    },
+    {
+      "text": "테",
+      "start": 0.864,
+      "end": 0.904
+    },
+    {
+      "text": " ",
+      "start": 0.904,
+      "end": 0.964
+    },
+    {
+      "text": "이",
+      "start": 0.964,
+      "end": 0.984
+    },
+    {
+      "text": " ",
+      "start": 0.984,
+      "end": 1.045
+    },
+    {
+      "text": "한",
+      "start": 1.045,
+      "end": 1.105
+    },
+    {
+      "text": " ",
+      "start": 1.105,
+      "end": 1.165
+    },
+    {
+      "text": "줄",
+      "start": 1.165,
+      "end": 1.246
+    },
+    {
+      "text": " ",
+      "start": 1.246,
+      "end": 1.306
+    },
+    {
+      "text": "보",
+      "start": 1.306,
+      "end": 1.366
+    },
+    {
+      "text": "냈",
+      "start": 1.366,
+      "end": 1.547
+    },
+    {
+      "text": "어",
+      "start": 1.547,
+      "end": 1.627
+    },
+    {
+      "text": "요",
+      "start": 1.627,
+      "end": 2.11
+    },
+    {
+      "text": ".",
+      "start": 2.11,
+      "end": 2.13
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "uc_6ac101aa0b6986f24a687878",
+    "text": "AI한테 이 한 줄 보냈어요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.08,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "",
+      "next_text": "몽골어 영상이 만들어지고, 예약까지 끝났어요."
+    }
+  },
+  "fallback": false,
+  "direction": "훅. 화면의 실제 대화창을 가리키듯.",
+  "voiceName": "유호"
+}

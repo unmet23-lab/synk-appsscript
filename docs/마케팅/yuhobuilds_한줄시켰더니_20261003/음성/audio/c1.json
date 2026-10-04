@@ -1,0 +1,208 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 3.472,
+  "words": [
+    {
+      "text": "내",
+      "start": 0.201,
+      "end": 0.301
+    },
+    {
+      "text": "일에",
+      "start": 0.401,
+      "end": 0.522
+    },
+    {
+      "text": "맞는",
+      "start": 0.582,
+      "end": 0.843
+    },
+    {
+      "text": "매뉴얼,",
+      "start": 0.903,
+      "end": 1.285
+    },
+    {
+      "text": "질문",
+      "start": 1.445,
+      "end": 1.847
+    },
+    {
+      "text": "다섯",
+      "start": 2.268,
+      "end": 2.489
+    },
+    {
+      "text": "개면",
+      "start": 2.549,
+      "end": 2.75
+    },
+    {
+      "text": "만들어져요.",
+      "start": 2.81,
+      "end": 3.472
+    }
+  ],
+  "characters": [
+    {
+      "text": "내",
+      "start": 0.201,
+      "end": 0.301
+    },
+    {
+      "text": " ",
+      "start": 0.301,
+      "end": 0.401
+    },
+    {
+      "text": "일",
+      "start": 0.401,
+      "end": 0.502
+    },
+    {
+      "text": "에",
+      "start": 0.502,
+      "end": 0.522
+    },
+    {
+      "text": " ",
+      "start": 0.522,
+      "end": 0.582
+    },
+    {
+      "text": "맞",
+      "start": 0.582,
+      "end": 0.743
+    },
+    {
+      "text": "는",
+      "start": 0.743,
+      "end": 0.843
+    },
+    {
+      "text": " ",
+      "start": 0.843,
+      "end": 0.903
+    },
+    {
+      "text": "매",
+      "start": 0.903,
+      "end": 1.024
+    },
+    {
+      "text": "뉴",
+      "start": 1.024,
+      "end": 1.184
+    },
+    {
+      "text": "얼",
+      "start": 1.184,
+      "end": 1.264
+    },
+    {
+      "text": ",",
+      "start": 1.264,
+      "end": 1.285
+    },
+    {
+      "text": " ",
+      "start": 1.285,
+      "end": 1.445
+    },
+    {
+      "text": "질",
+      "start": 1.445,
+      "end": 1.686
+    },
+    {
+      "text": "문",
+      "start": 1.686,
+      "end": 1.847
+    },
+    {
+      "text": " ",
+      "start": 1.847,
+      "end": 2.268
+    },
+    {
+      "text": "다",
+      "start": 2.268,
+      "end": 2.388
+    },
+    {
+      "text": "섯",
+      "start": 2.388,
+      "end": 2.489
+    },
+    {
+      "text": " ",
+      "start": 2.489,
+      "end": 2.549
+    },
+    {
+      "text": "개",
+      "start": 2.549,
+      "end": 2.649
+    },
+    {
+      "text": "면",
+      "start": 2.649,
+      "end": 2.75
+    },
+    {
+      "text": " ",
+      "start": 2.75,
+      "end": 2.81
+    },
+    {
+      "text": "만",
+      "start": 2.81,
+      "end": 2.93
+    },
+    {
+      "text": "들",
+      "start": 2.93,
+      "end": 3.051
+    },
+    {
+      "text": "어",
+      "start": 3.051,
+      "end": 3.111
+    },
+    {
+      "text": "져",
+      "start": 3.111,
+      "end": 3.231
+    },
+    {
+      "text": "요",
+      "start": 3.231,
+      "end": 3.452
+    },
+    {
+      "text": ".",
+      "start": 3.452,
+      "end": 3.472
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "uc_6ac101aa0b6986f24a687878",
+    "text": "내 일에 맞는 매뉴얼, 질문 다섯 개면 만들어져요.",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.08,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "미리 써 둔 매뉴얼이었어요.",
+      "next_text": "여러분은 AI한테 뭘 맡겨 보고 싶어요?"
+    }
+  },
+  "fallback": false,
+  "direction": "도구 안내. 밝게.",
+  "voiceName": "유호"
+}

@@ -1,0 +1,243 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 5.318,
+  "words": [
+    {
+      "text": "몽골어",
+      "start": 0.161,
+      "end": 0.542
+    },
+    {
+      "text": "한",
+      "start": 0.642,
+      "end": 0.743
+    },
+    {
+      "text": "줄이",
+      "start": 0.803,
+      "end": 1.024
+    },
+    {
+      "text": "'내",
+      "start": 1.425,
+      "end": 1.706
+    },
+    {
+      "text": "사진",
+      "start": 1.806,
+      "end": 2.147
+    },
+    {
+      "text": "저장해'로도",
+      "start": 2.489,
+      "end": 3.131
+    },
+    {
+      "text": "읽혀서",
+      "start": 3.191,
+      "end": 3.572
+    },
+    {
+      "text": "검수에",
+      "start": 4.094,
+      "end": 4.495
+    },
+    {
+      "text": "걸렸고,",
+      "start": 4.556,
+      "end": 5.318
+    }
+  ],
+  "characters": [
+    {
+      "text": "몽",
+      "start": 0.161,
+      "end": 0.341
+    },
+    {
+      "text": "골",
+      "start": 0.341,
+      "end": 0.502
+    },
+    {
+      "text": "어",
+      "start": 0.502,
+      "end": 0.542
+    },
+    {
+      "text": " ",
+      "start": 0.542,
+      "end": 0.642
+    },
+    {
+      "text": "한",
+      "start": 0.642,
+      "end": 0.743
+    },
+    {
+      "text": " ",
+      "start": 0.743,
+      "end": 0.803
+    },
+    {
+      "text": "줄",
+      "start": 0.803,
+      "end": 1.003
+    },
+    {
+      "text": "이",
+      "start": 1.003,
+      "end": 1.024
+    },
+    {
+      "text": " ",
+      "start": 1.024,
+      "end": 1.425
+    },
+    {
+      "text": "'",
+      "start": 1.425,
+      "end": 1.606
+    },
+    {
+      "text": "내",
+      "start": 1.606,
+      "end": 1.706
+    },
+    {
+      "text": " ",
+      "start": 1.706,
+      "end": 1.806
+    },
+    {
+      "text": "사",
+      "start": 1.806,
+      "end": 1.967
+    },
+    {
+      "text": "진",
+      "start": 1.967,
+      "end": 2.147
+    },
+    {
+      "text": " ",
+      "start": 2.147,
+      "end": 2.489
+    },
+    {
+      "text": "저",
+      "start": 2.489,
+      "end": 2.649
+    },
+    {
+      "text": "장",
+      "start": 2.649,
+      "end": 2.85
+    },
+    {
+      "text": "해",
+      "start": 2.85,
+      "end": 2.89
+    },
+    {
+      "text": "'",
+      "start": 2.89,
+      "end": 2.95
+    },
+    {
+      "text": "로",
+      "start": 2.95,
+      "end": 3.05
+    },
+    {
+      "text": "도",
+      "start": 3.05,
+      "end": 3.131
+    },
+    {
+      "text": " ",
+      "start": 3.131,
+      "end": 3.191
+    },
+    {
+      "text": "읽",
+      "start": 3.191,
+      "end": 3.352
+    },
+    {
+      "text": "혀",
+      "start": 3.352,
+      "end": 3.472
+    },
+    {
+      "text": "서",
+      "start": 3.472,
+      "end": 3.572
+    },
+    {
+      "text": " ",
+      "start": 3.572,
+      "end": 4.094
+    },
+    {
+      "text": "검",
+      "start": 4.094,
+      "end": 4.315
+    },
+    {
+      "text": "수",
+      "start": 4.315,
+      "end": 4.475
+    },
+    {
+      "text": "에",
+      "start": 4.475,
+      "end": 4.495
+    },
+    {
+      "text": " ",
+      "start": 4.495,
+      "end": 4.556
+    },
+    {
+      "text": "걸",
+      "start": 4.556,
+      "end": 4.696
+    },
+    {
+      "text": "렸",
+      "start": 4.696,
+      "end": 4.917
+    },
+    {
+      "text": "고",
+      "start": 4.917,
+      "end": 5.298
+    },
+    {
+      "text": ",",
+      "start": 5.298,
+      "end": 5.318
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "uc_6ac101aa0b6986f24a687878",
+    "text": "몽골어 한 줄이 '내 사진 저장해'로도 읽혀서 검수에 걸렸고,",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.1,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "물론 막힌 데도 있었어요.",
+      "next_text": "크롬에 '유호'가 두 명이라 로그인을 헤맸고,"
+    }
+  },
+  "fallback": false,
+  "direction": "실패담 하나.",
+  "voiceName": "유호"
+}
