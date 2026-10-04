@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "preparedAt": "2026-10-04",
+  "usage": "Music during optional free driving after the last learning question",
+  "tracks": [
+    {
+      "file": "coastline.mp3",
+      "title": "해안선",
+      "artist": "SYNK",
+      "provider": "Suno",
+      "sourceId": "c2835bc7-6963-4503-95bd-781b55e20b88",
+      "originalTitle": "바다까지 한 시간",
+      "sourceFile": "experiences/korean-rhythm/assets/music/one-hour-to-sea.mp3",
+      "sourceMetadata": "experiences/korean-rhythm/suno-tracks.mjs",
+      "titleEvidence": "experiences/korean-rhythm/qa/citypop-20261001/creation-brief.json",
+      "authorization": "User requested reusing our city-pop music in the racing game. Reused the existing SYNK recording; no new generation or paid asset purchase.",
+      "transfer": "Byte-identical local copy; no recompression",
+      "durationSeconds": 231.6,
+      "codec": "mp3",
+      "sampleRate": 44100,
+      "channels": 2,
+      "bytes": 4633256,
+      "sha256": "4580f5e5bc70dd735988c095ba785ae3e7ce144b0f6df021af538b2cbf448873"
+    }
+  ]
+}

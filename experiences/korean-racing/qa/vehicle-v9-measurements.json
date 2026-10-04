@@ -1,0 +1,143 @@
+{
+  "scope": "Shipped GT GLB only; excludes runtime mascot, lamps, jets and contact shadow. Original GLB material partitions, not runtime paint groups. CPU geometry counts, not measured GPU FPS.",
+  "hashes": {
+    "vehicles.js": "4182086be807471f8f03ecf4d5c22a2b5f9112f477c0f7bf818b6e9ea89b1270",
+    "app.js": "184fe8b971d243bbb4d7b31dafa54b45056f557a36d7c17c7b4241e3297e5ae2",
+    "assets/car.glb": "cafe3f48da6797aa9bde75ca768bc5b57db366575fd233e90df186ae988a876e",
+    "qa/load-vehicle-model.mjs": "58e2fe661bd4d0e4f88686bcb1d7176572d51a93f869d6faca33c36506055d11"
+  },
+  "high": {
+    "triangles": 358788,
+    "drawCalls": 44,
+    "shadowTriangles": 156504,
+    "shadowDrawCalls": 25
+  },
+  "low": {
+    "triangles": 327929,
+    "drawCalls": 44,
+    "shadowTriangles": 156504,
+    "shadowDrawCalls": 25,
+    "geometryLevel": "low"
+  },
+  "savedTriangles": 30859,
+  "savedPercent": 8.600900810506484,
+  "removedWheelBarrelShadowTriangles": 36480,
+  "runtimeScope": "Actual prepareCar plus hidden collection badge; no mascot or dynamically added shield. The exact-name baseline reproduces the browser omission without changing saved source.",
+  "runtimeBeforeNameFix": {
+    "high": {
+      "triangles": 359302,
+      "drawCalls": 43,
+      "shadowTriangles": 194880,
+      "shadowDrawCalls": 26,
+      "geometryLevel": "high"
+    },
+    "low": {
+      "triangles": 330903,
+      "drawCalls": 43,
+      "shadowTriangles": 194880,
+      "shadowDrawCalls": 26,
+      "geometryLevel": "low"
+    },
+    "restored": {
+      "triangles": 359302,
+      "drawCalls": 43,
+      "shadowTriangles": 194880,
+      "shadowDrawCalls": 26,
+      "geometryLevel": "high"
+    }
+  },
+  "runtimeAfterNameFix": {
+    "high": {
+      "triangles": 359302,
+      "drawCalls": 42,
+      "shadowTriangles": 156504,
+      "shadowDrawCalls": 22,
+      "geometryLevel": "high"
+    },
+    "low": {
+      "triangles": 328443,
+      "drawCalls": 42,
+      "shadowTriangles": 156504,
+      "shadowDrawCalls": 22,
+      "geometryLevel": "low"
+    },
+    "restored": {
+      "triangles": 359302,
+      "drawCalls": 42,
+      "shadowTriangles": 156504,
+      "shadowDrawCalls": 22,
+      "geometryLevel": "high"
+    }
+  },
+  "unchangedBounds": true,
+  "restoredOriginalGeometry": true,
+  "maxDisplacementMetres": 0.007828533941928974,
+  "reductions": [
+    {
+      "name": "leather",
+      "sourceTriangles": 21960,
+      "triangles": 18606,
+      "maxDeviation": 0.006084360184725867
+    },
+    {
+      "name": "interior_light",
+      "sourceTriangles": 52534,
+      "triangles": 43262,
+      "maxDeviation": 0.007828533941928974
+    },
+    {
+      "name": "brakes",
+      "sourceTriangles": 14172,
+      "triangles": 8016,
+      "maxDeviation": 0.007464640922203933
+    },
+    {
+      "name": "interior_dark",
+      "sourceTriangles": 19939,
+      "triangles": 15883,
+      "maxDeviation": 0.007294915067615165
+    },
+    {
+      "name": "brake",
+      "sourceTriangles": 3672,
+      "triangles": 2648,
+      "maxDeviation": 0.003147959066514126
+    },
+    {
+      "name": "brake_1",
+      "sourceTriangles": 3672,
+      "triangles": 2648,
+      "maxDeviation": 0.003148229065003266
+    },
+    {
+      "name": "brake_2",
+      "sourceTriangles": 3672,
+      "triangles": 2944,
+      "maxDeviation": 0.0033337717343094922
+    },
+    {
+      "name": "brake_3",
+      "sourceTriangles": 3672,
+      "triangles": 2964,
+      "maxDeviation": 0.0033464749980175387
+    },
+    {
+      "name": "steering_carbon",
+      "sourceTriangles": 5632,
+      "triangles": 4656,
+      "maxDeviation": 0.007496339073600143
+    },
+    {
+      "name": "steering_column",
+      "sourceTriangles": 4110,
+      "triangles": 3145,
+      "maxDeviation": 0.007785415388487644
+    },
+    {
+      "name": "steering_leather",
+      "sourceTriangles": 8144,
+      "triangles": 5548,
+      "maxDeviation": 0.0066400006464220705
+    }
+  ]
+}

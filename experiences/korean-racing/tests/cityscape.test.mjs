@@ -29,7 +29,7 @@ test('coastal city keeps every actual vertex on the inland side outside the full
   });
   assert.equal(c.stats.storedTriangles,triangles);
   assert.equal(c.stats.roadMinimumClearance,clearance);
-  assert(c.stats.storedTriangles<31000);
+  assert(c.stats.storedTriangles<34000);
   assert.equal(c.stats.shops,22);assert.equal(c.stats.towers,12);assert.equal(c.stats.homes,3);
   c.dispose();
 });
@@ -129,9 +129,11 @@ test('every course position observes a smaller mobile budget and quality is reve
     const low=c.update({playerS:s,quality:'low'}).visibleTriangles;
     assert(c.update({playerS:s,quality:'high'}).visibleTriangles>=low);
   }
-  assert(maxima.high.triangles<21800);assert(maxima.high.calls<=61);
-  assert(maxima.balanced.triangles<15800);assert(maxima.balanced.calls<=44);
-  assert(maxima.low.triangles<10400);assert(maxima.low.calls<=33);
+  // Three recessed facades and terrain-following gardens add bounded geometry
+  // to v8 while retaining exactly the same maximum material-batch draw calls.
+  assert(maxima.high.triangles<24700);assert(maxima.high.calls<=61);
+  assert(maxima.balanced.triangles<18700);assert(maxima.balanced.calls<=44);
+  assert(maxima.low.triangles<12200);assert(maxima.low.calls<=33);
   let index=0;c.group.traverse(mesh=>{if(mesh.isMesh)assert.equal(mesh.geometry,identities[index++]);});
   c.dispose();
 });
@@ -204,6 +206,58 @@ test('camera frustum culling removes the district when looking away while retain
   assert.equal(c.update({playerS:730,quality:'high',camera}).drawCalls,0);
   camera.lookAt(pathX(730)-80,62,780);camera.updateMatrixWorld();
   assert(c.update({playerS:730,quality:'high',camera}).drawCalls>0);
+  c.dispose();
+});
+
+test('residential windows are real openings with glass behind the plaster face, including at low quality',()=>{
+  const c=city(),openings=c.group.userData.features.filter(f=>f.kind==='home-opening');
+  const meshes=c.group.getObjectByName('coastal-city-harbour-homes').children;
+  assert.equal(openings.length,18);
+  c.update({playerS:550,quality:'low'});c.group.updateMatrixWorld(true);
+  for(const opening of openings) {
+    const {x,y,z,yaw,width,side}=opening;
+    const normal=side==='front'?new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)):new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
+    const tangent=side==='front'?new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw)):new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));
+    const origin=new THREE.Vector3(x,y,z).addScaledVector(normal,2).addScaledVector(tangent,width*.24);
+    const ray=new THREE.Raycaster(origin,normal.clone().negate());
+    const hit=ray.intersectObjects(meshes.filter(m=>m.visible),false)[0];
+    assert(hit,'an authored opening has no supporting glazing');
+    assert(/-(glass|darkGlass)$/.test(hit.object.name),'opaque wall geometry covers the window opening');
+    assert(Math.abs(hit.distance-2.2125)<.0001,'the glazing lost its 21.25cm visible recess');
+  }
+  c.dispose();
+});
+
+test('garden approaches have upward-facing paving on the real terrain and remain clear of garden walls',()=>{
+  const c=city(),gardens=c.group.userData.gardens,paths=gardens.filter(g=>g.kind==='entry-path');
+  const walls=gardens.filter(g=>g.kind==='garden-wall');
+  const meshes=c.group.getObjectByName('coastal-city-harbour-homes').children;
+  assert.equal(paths.length,9);assert.equal(walls.length,9);
+  c.group.updateMatrixWorld(true);
+  const ray=new THREE.Raycaster();
+  for(const path of paths) {
+    assert(path.samples.length>1);
+    for(const [x,y,z] of path.samples) {
+      assert(Math.abs(y-groundHeight(x,z)-.065)<.01,'paving is floating or embedded in the terrain');
+      assert(c.containsFootprint(x,z),'landscape plants can grow through an entry path');
+      ray.set(new THREE.Vector3(x,y+.025,z),new THREE.Vector3(0,-1,0));
+      const hit=ray.intersectObjects(meshes,false)[0];
+      assert(hit&&Math.abs(hit.point.y-y)<.005,'the path has a hole or faces downward');
+      for(const wall of walls) {
+        const dx=wall.to.x-wall.from.x,dz=wall.to.z-wall.from.z;
+        const t=Math.max(0,Math.min(1,((x-wall.from.x)*dx+(z-wall.from.z)*dz)/(dx*dx+dz*dz)));
+        assert(Math.hypot(x-wall.from.x-t*dx,z-wall.from.z-t*dz)>(path.width+wall.width)*.5-.03,'a low wall blocks the path');
+      }
+    }
+  }
+  // Raycast capstones too: an inverted winding would render them invisible
+  // from the actual driving camera despite passing vertex-budget checks.
+  for(const wall of walls) {
+    const x=(wall.from.x+wall.to.x)*.5,z=(wall.from.z+wall.to.z)*.5,y=groundHeight(x,z);
+    ray.set(new THREE.Vector3(x,y+1,z),new THREE.Vector3(0,-1,0));
+    const hit=ray.intersectObjects(meshes,false)[0];
+    assert(hit&&hit.point.y>y+.5&&hit.point.y<y+.7,'the garden wall lacks a continuous visible cap');
+  }
   c.dispose();
 });
 

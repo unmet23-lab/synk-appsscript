@@ -53,10 +53,12 @@ export function createLandscapeHeight(pathX, pathY) {
     }
     return (near + far) / 2;
   };
-  height.surfaceAt = (x, z, y = height(x, z)) => {
+  height.surfaceAt = (x, z, y = height(x, z), sampledSlope) => {
     const offset = x - pathX(z);
     if (Math.abs(offset) <= 7.1) return 0;
-    const slope = Math.hypot((height(x + .5, z) - height(x - .5, z)), (height(x, z + .5) - height(x, z - .5)));
+    // Terrain already sampled this exact derivative for the vertex normal.
+    // Reuse it without resampling four expensive noise-based heights.
+    const slope = Number.isFinite(sampledSlope)&&sampledSlope>=0?sampledSlope:Math.hypot((height(x + .5, z) - height(x - .5, z)), (height(x, z + .5) - height(x, z - .5)));
     if (offset < -7.1) {
       const outcrop = smooth(36, 105, -offset) * smooth(.74, .91, ridgeNoise(x * .044, z * .023)) * .76;
       return Math.max(smooth(.45, .80, slope), outcrop);

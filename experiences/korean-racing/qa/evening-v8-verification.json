@@ -1,0 +1,188 @@
+{
+  "date": "2026-10-03",
+  "version": 8,
+  "scope": "Local browser and packaged build; no public deployment in this task",
+  "sourceHashes": {
+    "app.js": "0838cc666fef270872ddb9712295177eae0fdb19060ce726443063f4894696c9",
+    "graphics.js": "08ca66cdc580c71ad721a0fa504a6a57468c00ddef6c310e14e70afd840f527d",
+    "cityscape.js": "55c95b86e0bf395c97c9204c0c9c3720c32ca4d91cf335e0e8bf39cd3318a8fd",
+    "city-materials.js": "e44ec06b5b57490551f817159142b58471adc199639d9f708e03c9758b479bf5",
+    "seascape-boats.js": "dc864f1fb6f12f125fc0b54a31202450bc25e7f7f8b0e6622d9f1b02f869d34b",
+    "landscape.js": "fb9421c70d1af6c91889c91af9ffbd00bfd1b409054dd3f3b24745db185fb768"
+  },
+  "tests": {
+    "passed": 141,
+    "failed": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "durationMs": 6370.6781,
+    "log": "evening-v8-tests.txt"
+  },
+  "capture": {
+    "method": "UI auto demo, manually selected first two answers; observed playerS then copied real WebGL canvas; no position or reward injection",
+    "playerS": 455.0875704796598,
+    "canvas": [
+      3840,
+      2160
+    ],
+    "display": [
+      1920,
+      1080
+    ],
+    "pixelRatio": 2,
+    "visibleBoats": 3,
+    "cityHomes": 3,
+    "boatTime": 433.3990000000273,
+    "upscaled": false,
+    "composited": false,
+    "uiCapture": "Separate later frame at question 3"
+  },
+  "pausedResize": {
+    "viewport": [
+      390,
+      844
+    ],
+    "quality": "low",
+    "renderedFrames": [
+      18843,
+      18843
+    ],
+    "skippedPausedFrames": [
+      17640,
+      19454
+    ],
+    "boatTime": [
+      328.73770000001184,
+      328.73770000001184
+    ],
+    "boatPositionBefore": [
+      215.1283974036864,
+      -2.1001905821028903,
+      618.6247564102058
+    ],
+    "boatPositionAfter": [
+      215.1283974036864,
+      -2.1001905821028903,
+      618.6247564102058
+    ],
+    "canvasBlank": false
+  },
+  "resume": {
+    "renderedFrames": 19484,
+    "boatTime": 339.595500000015,
+    "boatPosition": [
+      207.65225734632511,
+      -2.2225659611735193,
+      606.0206231912209
+    ]
+  },
+  "responsive": [
+    {
+      "requestedViewport": [
+        390,
+        844
+      ],
+      "clientWidth": 375,
+      "scrollWidth": 375,
+      "scrollY": 0
+    },
+    {
+      "requestedViewport": [
+        844,
+        390
+      ],
+      "clientWidth": 829,
+      "scrollWidth": 829,
+      "scrollY": 0
+    }
+  ],
+  "restored": {
+    "url": "http://127.0.0.1:5197/",
+    "qualitySelection": "auto",
+    "effectiveQuality": "high",
+    "viewportOverrideReset": true,
+    "stage": "challenge-03",
+    "ready": true,
+    "learning": {
+      "rounds": 1,
+      "cleared": 1,
+      "words": 0
+    },
+    "coins": 0,
+    "currentPageErrorWarnings": 0,
+    "currentPageTimeOrigin": 1791009561345.3
+  },
+  "package": {
+    "file": "SYNK-LAB-PLAY-시안-v8-20261003.zip",
+    "bytes": 59170813,
+    "sha256": "b46fa581b97ccbd62847c3023e59885987c1900bdaa24563a0dfae4a98ba974f",
+    "verifiedFilesIncludingManifest": 2750,
+    "runtimeFiles": 2749,
+    "importsChecked": 82,
+    "htmlLinksChecked": 30,
+    "undeclared": 0,
+    "sourceDistZipManifestMatch": true
+  },
+  "images": {
+    "evening-v8-final-4k-20261003.jpg": {
+      "width": 3840,
+      "height": 2160,
+      "bytes": 1685466,
+      "sha256": "3add17db8b56ed5a4bda9bc49a7a01dcce12f9a6b56a60b68590abb1128c0352"
+    },
+    "evening-v8-final-ui-20261003.jpg": {
+      "width": 1859,
+      "height": 1072,
+      "bytes": 194190,
+      "sha256": "11e29d37961960620630332f4f03d52e483ecec0a08d44ee08e928e4092affae"
+    },
+    "evening-v8-homes-4k-20261003.jpg": {
+      "width": 3840,
+      "height": 2160,
+      "bytes": 1611918,
+      "sha256": "be0753648c374b6affaf2f0bd686b5a21a1b7f32d3d23f35ac1d39f2dc736c0a"
+    },
+    "evening-v8-homes-ui-20261003.jpg": {
+      "width": 1859,
+      "height": 1072,
+      "bytes": 194294,
+      "sha256": "8acc1c332e12257aa0861665952c125aadd3d737fdf08dd677d5959ca5e0a319"
+    },
+    "evening-v8-mobile-390-20261003.jpg": {
+      "width": 375,
+      "height": 812,
+      "bytes": 36039,
+      "sha256": "104a138e2a83622e1e9ad568b0519998b3ef35917a5feb8f0e587a98d8b73d98"
+    },
+    "evening-v8-mobile-landscape-20261003.jpg": {
+      "width": 829,
+      "height": 383,
+      "bytes": 42207,
+      "sha256": "77d44b5b57876270650bf0dc32827202812b518141e5818cbaf9db2062eb97d7"
+    },
+    "evening-v8-mobile-paused-20261003.jpg": {
+      "width": 375,
+      "height": 812,
+      "bytes": 14598,
+      "sha256": "4a066318df9e36d590c301beaf2bc2cfe4c1a38e7a31d42ee8057284b87035c7"
+    },
+    "evening-v8-final-4k-20261003.png": {
+      "width": 3840,
+      "height": 2160,
+      "bytes": 11496608,
+      "sha256": "1a65439489db0381529b01ae09dc9f426fa64c440a38607b2397bd816bfac146"
+    },
+    "evening-v8-homes-4k-20261003.png": {
+      "width": 3840,
+      "height": 2160,
+      "bytes": 10973479,
+      "sha256": "1be1cbadb2b08c988ab91930c1762438f82cde00bdd771f2fade523dec2b1443"
+    }
+  },
+  "limits": [
+    "Desktop mobile-size viewport, not physical iOS/Android touch or sustained thermal/performance testing",
+    "Muted graphics QA, not narration listening or student learning-effect validation",
+    "Component geometry budgets do not describe whole-game FPS"
+  ],
+  "operationalNote": "Initial capture request failed because local server had exited. Server restarted; all listed images saved and opened. Earlier Failed to fetch console entry predates final page load."
+}

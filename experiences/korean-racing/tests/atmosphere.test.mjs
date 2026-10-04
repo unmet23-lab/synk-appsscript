@@ -10,7 +10,7 @@ const landscape=createLandscapeHeight(pathX,pathY);
 function setup(){
   const daySky=new THREE.Texture(),sunsetSky=new THREE.Texture();
   const time={value:0},sunDirection=new THREE.Vector3(.58,.72,.38).normalize();
-  const a=createAtmosphere(THREE,{daySky,sunsetSky,time,sunDirection,shoreOffset:landscape.shoreOffset,ROAD_END:2250});
+  const a=createAtmosphere(THREE,{daySky,sunsetSky,time,sunDirection,shoreOffset:landscape.shoreOffset,groundHeight:landscape,pathX,ROAD_END:2250});
   return {a,daySky,sunsetSky,time,sunDirection};
 }
 
@@ -25,6 +25,21 @@ test('water shoreline samples meet the actual cliff instead of a decorative stra
     assert(Math.abs(landscape(pathX(z)+landscape.shoreOffset(z),z)-a.ocean.position.y)<.0004);
   }
   assert(maxError<128/255/2+.00001,'foam sample exceeds the documented half-texel height-strip precision');
+  a.dispose();
+});
+
+test('packed shallow water depths follow the seabed within byte precision without an additional texture',()=>{
+  const {a}=setup(),map=a.ocean.material.uniforms.shoreMap.value;
+  assert.equal(a.stats.sampledDepth,true);assert.equal(a.stats.depthSamples,1536);
+  assert.equal(map.image.data.byteLength,2048);
+  for(let i=0;i<512;i++){
+    const z=-150+i/511*(2250+500),edge=landscape.shoreOffset(z);
+    [4,12,30].forEach((distance,j)=>{
+      const expected=Math.max(0,Math.min(32,-2.2-landscape(pathX(z)+edge+distance,z)));
+      const depth=map.image.data[i*4+1+j]/255*32;
+      assert(Math.abs(depth-expected)<=32/255/2+1e-8,`Incorrect shelf depth at ${z}/${distance}`);
+    });
+  }
   a.dispose();
 });
 

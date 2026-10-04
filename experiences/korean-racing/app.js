@@ -9,7 +9,10 @@ import { resolveContact, shieldContact, comboShield } from './driving.js';
 import { racingItem, personalizedStage, FLOW_RACE, FLOW_WORDS, BASE_CRUISE, racePressure, describeRace } from './personalization.js';
 import { FINALES, finaleUnlocked } from './finales.js';
 import { VEHICLES, PAINTS, WHEELS, TRAILS, SHOP_ITEMS, loadGarage, saveGarage, dailyMission, awardRace } from './garage.js';
-import { buildAlternativeCar, customizeCar, createGarageStage, refineOriginalCar } from './vehicles.js';
+import { buildAlternativeCar, customizeCar, createGarageStage, refineOriginalCar, setVehicleQuality } from './vehicles.js';
+import { createCoastDrive } from './coast-drive.js';
+import { createCoastRadio } from './coast-radio.js';
+import { createQuestionPace, gatePosition, QUESTION_LEAD, rewardBoost } from './race-pacing.js';
 import { createGarageUI } from './garage-ui.js';
 import { buildDriver, updateDriverPose } from './drivers.js';
 import { createTutorial, loadTutorial, saveTutorialCompleted } from './tutorial.js';
@@ -73,12 +76,19 @@ const groundHeight=createLandscapeHeight(pathX,pathY);
 let renderer, scene, camera, car, rivals = [], wheels = [], gate = null, gateIndex = 0;
 const startup={phase:'idle',compilePasses:0};
 let running = false, paused = false, ready = false, auto = false, finished = false;
+const coastDrive=createCoastDrive();
+const questionPace=createQuestionPace();
 let playerS = 75, playerOffset = 0, velocity = 26, elapsed = 0, boost = 0, answers = [], correct = 0;
 let inputs = {left:false,right:false}, aimOffset = 0, laneAim = null, attractTime = 0, toastTime = 0;
 let renderFrames = 0, renderTotal = 0, adaptiveTime = 0, frameSample = [], warmupFrames = 0;
 const pausedFrameGate=createPausedFrameGate();
 let renderedFrames=0,skippedPausedFrames=0;
 let soundEnabled = false, soundTouched = false, audio = null, motor = null, motorGain = null, windGain = null;
+const coastRadio=createCoastRadio({getContext:()=>audio,onUnavailable:()=>{$('cruise-track').textContent='♫ 해안선 · 눌러서 음악 켜기';}});
+function syncCoastRadio(){
+  coastRadio.setState({active:coastDrive.active,enabled:soundEnabled,paused:paused||!running||!coastDrive.driving||document.hidden});
+  $('cruise-track').textContent=coastRadio.snapshot().blocked?'♫ 해안선 · 눌러서 음악 켜기':soundEnabled?'♫ SYNK CITY POP · 해안선':'♫ 해안선 · 소리 켜기';
+}
 const deviceGraphics={coarsePointer:matchMedia('(pointer: coarse)').matches,memoryGB:navigator.deviceMemory||8,cores:navigator.hardwareConcurrency||8};
 // Authoring-only capture URL: render real extra pixels on a DPR1 desktop.
 // It changes no answers, driving rules, saves or rewards.
@@ -106,6 +116,7 @@ let garage=loadGarageSafe(),garageOpen=false,garageStudio=null,previewCar=null,g
 const raceCars=new Map(),previewCars=new Map();
 const commonClips=['intro','cue-picture','cue-listen','correct','answer','boost','retry','finish','shield-ready','shield-block','garage-earned','garage-wish','mission-complete','finale-unlock',...LANE_AUDIO];
 const narrator=new Narrator({getContext:()=>audio,onActive:active=>{
+  coastRadio.setState({duck:active});
   if(audio&&motorGain)motorGain.gain.setTargetAtTime(active?.014:running&&!paused?.055:0,audio.currentTime,.12);
   $('question').classList.toggle('narrating',active);
   $('voice-status').textContent=active?'음성 안내 중':'음성 안내';
@@ -121,13 +132,13 @@ function createVehicle(id){const vehicle=VEHICLES.find(v=>v.id===id)||VEHICLES[0
 function applyEquipment(){
   if(!carTemplate)return;const id=garage.equipped.vehicle;if(car)car.visible=false;
   if(!raceCars.has(id)){const mesh=createVehicle(id);scene.add(mesh);raceCars.set(id,mesh);}
-  car=raceCars.get(id);car.visible=!garageOpen;wheels=car.userData.wheels;customizeCar(car,equipmentStyle(garage.equipped));selectDriver(driverName);
+  car=raceCars.get(id);car.visible=!garageOpen;wheels=car.userData.wheels;customizeCar(car,equipmentStyle(garage.equipped));setVehicleQuality(car,mode);selectDriver(driverName);
   if(motor)motor.type=id==='open'||id==='finale'?'triangle':id==='rally'?'square':'sawtooth';
 }
 function previewEquipment(item=null){
   if(!ready)return;const equipment={...garage.equipped};if(item)equipment[item.kind]=item.value;
   const id=equipment.vehicle;if(!previewCars.has(id)){const mesh=createVehicle(id);mesh.removeFromParent();previewCars.set(id,mesh);}
-  previewCar=previewCars.get(id);customizeCar(previewCar,equipmentStyle(equipment));garageStudio.place(previewCar);
+  previewCar=previewCars.get(id);customizeCar(previewCar,equipmentStyle(equipment));setVehicleQuality(previewCar,mode,{preview:true});garageStudio.place(previewCar);
   previewCar.userData.jets.forEach(j=>{j.visible=item?.kind==='trail';j.scale.y=1.1;});
   seatMascot(previewCar,driverName);
 }
@@ -367,7 +378,7 @@ function setScenery(theme){
   scene.environment=scenery.environments.sunset.texture;scene.environmentIntensity=.95;scene.environmentRotation.y=0;
 }
 function setupWater(daySky,sunsetSky) {
-  scenery.atmosphere=createAtmosphere(THREE,{daySky,sunsetSky,time:worldTime,sunDirection,shoreOffset:groundHeight.shoreOffset,ROAD_END});
+  scenery.atmosphere=createAtmosphere(THREE,{daySky,sunsetSky,time:worldTime,sunDirection,shoreOffset:groundHeight.shoreOffset,groundHeight,pathX,ROAD_END});
   ocean=scenery.atmosphere.ocean;scene.add(ocean,scenery.atmosphere.sky);scene.background=null;
 }
 function setupCoastalScenery() {
@@ -435,6 +446,7 @@ function answerVisual(id,mode){
   const m=new THREE.Mesh(new THREE.PlaneGeometry(2.5,2.5),new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,side:THREE.DoubleSide}));m.rotation.y=Math.PI;m.userData.spinBase=Math.PI;return m;
 }
 function makeGate(index, s) {
+  if(index===questionBank.length-1&&soundEnabled&&!tutorial)coastRadio.prepare();
   if(gate) disposeGate();
   const q=questionBank[index%questionBank.length],types=[...q.options];
   const group=new THREE.Group(),fruitObjects=[];
@@ -489,18 +501,18 @@ function prepareCar(model,color) {
   const brake=new THREE.MeshStandardMaterial({color:0xbea880,roughness:.43,metalness:.55});
   const frontLight=new THREE.MeshPhysicalMaterial({color:0xf4f5f0,emissive:0xe9f4ff,emissiveIntensity:.38,metalness:.05,roughness:.18,clearcoat:1});
   const rearLight=new THREE.MeshPhysicalMaterial({color:0x9a302b,emissive:0xe53e28,emissiveIntensity:.7,roughness:.2,clearcoat:1});
-  object.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.receiveShadow=true;
-    if(o.name==='body')o.material=body;
-    else if(o.name==='glass'){o.material=glass;o.castShadow=false;}
-    else if(o.name.startsWith('rim_')||['metal','chrome','steering_metal','nuts'].includes(o.name))o.material=o.name.startsWith('rim_')?rim:chrome;
-    else if(o.name==='tire')o.material=rubber;
-    else if(['leather','steering_leather','carpet'].includes(o.name))o.material=leather;
-    else if(['trim','plastic_gray','grills','wipers'].includes(o.name))o.material=trim;
-    else if(['carbon_fibre_trim','carbon fibre','steering_carbon'].includes(o.name))o.material=carbon;
-    else if(['interior_dark','interior_light','steering_trim'].includes(o.name))o.material=interior;
-    else if(['brakes','brake','wheel'].includes(o.name))o.material=brake;
-    else if(['lights','leds'].includes(o.name))o.material=frontLight;
-    else if(['lights_red','steering_red_lights'].includes(o.name))o.material=rearLight;
+  object.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.receiveShadow=true;const name=o.userData.name||o.name;
+    if(name==='body')o.material=body;
+    else if(name==='glass'){o.material=glass;o.castShadow=false;}
+    else if(name.startsWith('rim_')||['metal','chrome','steering_metal','nuts'].includes(name))o.material=name.startsWith('rim_')?rim:chrome;
+    else if(name==='tire')o.material=rubber;
+    else if(['leather','steering_leather','carpet'].includes(name))o.material=leather;
+    else if(['trim','plastic_gray','grills','wipers'].includes(name))o.material=trim;
+    else if(['carbon_fibre_trim','carbon fibre','steering_carbon'].includes(name))o.material=carbon;
+    else if(['interior_dark','interior_light','steering_trim'].includes(name))o.material=interior;
+    else if(['brakes','brake','wheel'].includes(name))o.material=brake;
+    else if(['lights','leds'].includes(name))o.material=frontLight;
+    else if(['lights_red','steering_red_lights'].includes(name))o.material=rearLight;
   });
   root.add(object,shadowPlane());root.userData.model=object;root.userData.wheels=['wheel_fl','wheel_fr','wheel_rl','wheel_rr'].map(n=>object.getObjectByName(n)).filter(Boolean);
   // Subtle emissive rear lamps and exhaust give clear acceleration feedback.
@@ -540,6 +552,7 @@ function applyRenderQuality(){
   renderer.setPixelRatio(renderQuality.pixelRatio);renderer.shadowMap.enabled=renderQuality.shadows;
   if(light.shadow.mapSize.x!==renderQuality.shadowSize){light.shadow.map?.dispose();light.shadow.map=null;light.shadow.mapSize.setScalar(renderQuality.shadowSize);}
   scenery.atmosphere?.setQuality(mode);renderer.shadowMap.needsUpdate=true;resize();
+  for(const vehicle of raceCars.values())setVehicleQuality(vehicle,mode);
 }
 function resize(){
   if(!renderer)return;
@@ -759,12 +772,14 @@ function updateTutorial(dt){
 }
 
 function reset(play) {
+  questionPace.reset();
+  coastDrive.reset();coastRadio.stop();stage.classList.remove('coasting');$('cruise-banner').hidden=true;$('cruise-action').hidden=true;$('cruise-loop').style.opacity='0';
   applyEquipment();shield=0;shieldBlocked=0;shieldFlash=0;if(car.userData.shield)car.userData.shield.visible=false;
   playerS=75;playerOffset=0;aimOffset=0;laneAim=null;elapsed=0;boost=0;correct=0;answers=[];gateIndex=0;velocity=cruise;finished=false;paused=false;inputs.left=inputs.right=false;
   contactTimer=0;collisions=0;combo=0;bestCombo=0;questionChosen=false;sparkLife=0;if(scenery.sparks)scenery.sparks.visible=false;stage.classList.remove('contact');$('route-level').textContent=selectedStage.campaign?`LEVEL ${selectedStage.level} · ${selectedStage.skill}`:'WORD PRACTICE · 어휘 연습';
   mascotMood('base');
-  rivals.forEach((r,i)=>{r.s=103+i*21;r.offset=i===0?-3.15:3.1;placeCar(r.mesh,r.s,r.offset);});
-  makeGate(0,310);placeCar(car,playerS,0);
+  rivals.forEach((r,i)=>{r.s=103+i*21;r.offset=i===0?-3.15:3.1;r.mesh.visible=true;placeCar(r.mesh,r.s,r.offset);});
+  makeGate(0,gatePosition(0));placeCar(car,playerS,0);
   $('correct').textContent='0';$('nitro-fill').style.width='0%';$('progress').style.width='0%';
   $('rank').textContent='3';$('speed').textContent=String(Math.round(cruise*3.6));
   $('prompt').textContent='바다를 따라, 출발!';$('question-help').textContent='곧 문제를 소리로 들려줄게요.';
@@ -782,7 +797,7 @@ async function start(demo=false,bypassTutorial=false) {
   if(!ready||starting||!demo&&!isUnlocked(selectedStage))return;
   if(!demo&&!bypassTutorial&&!tutorialCompleted&&!tutorialDismissed){await startTutorial();return;}
   clearTutorial();
-  if(!ready||starting||!demo&&!isUnlocked(selectedStage))return;if(garageOpen)garageUI.close();garage=loadGarageSafe();roundId=globalThis.crypto?.randomUUID?.()||`race-${Date.now()}-${Math.random().toString(36).slice(2)}`;starting=true;running=false;narrationUnavailable=false;silence();
+  if(!ready||starting||!demo&&!isUnlocked(selectedStage))return;if(garageOpen)garageUI.close();garage=loadGarageSafe();roundId=globalThis.crypto?.randomUUID?.()||`race-${Date.now()}-${Math.random().toString(36).slice(2)}`;starting=true;running=false;narrationUnavailable=false;silence();coastRadio.stop();
   $('start').disabled=$('watch').disabled=$('pause').disabled=true;$('start').firstChild.textContent='음성 준비 중 ';
   if(!soundTouched){soundEnabled=true;updateSoundButton();}
   if(soundEnabled){try{await ensureAudio();await narrator.prepare([...commonClips,...stageClips(selectedStage)]);}catch{narrationUnavailable=true;}}
@@ -803,6 +818,7 @@ async function ensureAudio() {
     const buffer=audio.createBuffer(1,audio.sampleRate*2,audio.sampleRate);const data=buffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*.25;
     const wind=audio.createBufferSource();wind.buffer=buffer;wind.loop=true;const wf=audio.createBiquadFilter();wf.type='lowpass';wf.frequency.value=750;windGain=audio.createGain();windGain.gain.value=0;wind.connect(wf);wf.connect(windGain);windGain.connect(audio.destination);wind.start();
   }
+  void coastRadio.unlock();
   if(audio.state==='suspended')await audio.resume();
 }
 function ding(success){
@@ -812,12 +828,14 @@ function ding(success){
   }
 }
 function silence(){narrator.cancel();if(audio){motorGain.gain.setTargetAtTime(0,audio.currentTime,.06);windGain.gain.setTargetAtTime(0,audio.currentTime,.06);}}
-function pause(){if(!running||paused)return;paused=true;$('pause-panel').hidden=false;inputs.left=inputs.right=false;silence();tutorialVoicePending=false;$('repeat-question').disabled=true;}
-function resume(){paused=false;$('pause-panel').hidden=true;clock.getDelta();$('resume').blur();stage.scrollIntoView({behavior:'instant',block:'start'});if(tutorial){repeatTutorial();return;}if(gate&&gate.announced&&!gate.judged){$('repeat-question').disabled=false;if(gate.heard&&gate.presentationId)learn(c=>c.help(gate.presentationId,'replay'));narrateQuestion();}}
+function pause(){if(!running||paused)return;paused=true;$('pause-panel').hidden=false;inputs.left=inputs.right=false;silence();syncCoastRadio();tutorialVoicePending=false;$('repeat-question').disabled=true;}
+function resume(){paused=false;$('pause-panel').hidden=true;clock.getDelta();$('resume').blur();stage.scrollIntoView({behavior:'instant',block:'start'});if(soundEnabled)void ensureAudio();syncCoastRadio();if(tutorial){repeatTutorial();return;}if(gate&&gate.announced&&!gate.judged){$('repeat-question').disabled=false;if(gate.heard&&gate.presentationId)learn(c=>c.help(gate.presentationId,'replay'));narrateQuestion();}}
 function home(){if(!ready)return;running=false;auto=false;silence();endLive();clearTutorial();reset(false);refreshStartLabel();renderStages();stage.scrollIntoView({behavior:'auto',block:'start'});}
 function finish(){
-  if(tutorial)return;
-  running=false;finished=true;inputs.left=inputs.right=false;stage.classList.remove('boosting');silence();const flowEnd=endLive();
+  if(tutorial||!coastDrive.complete(answers.length,questionBank.length))return;
+  // Let the last answer explanation finish over the drive. Radio ducks under
+  // it; waiting here for long speech could carry the car beyond the road.
+  finished=true;inputs.left=inputs.right=false;stage.classList.remove('boosting');const flowEnd=endLive();
   const rank=1+rivals.filter(r=>r.s>playerS).length;
   $('result-correct').textContent=`${correct}/${answers.length}`;$('result-boost').textContent=correct;$('result-rank').textContent=rank;
   $('word-list').replaceChildren();
@@ -835,16 +853,32 @@ function finish(){
   $('result-note').textContent=roundWasDemo?'자동 시연은 기록·메달·코스 개방에 포함하지 않아요. 직접 달려서 도전해 보세요.':`${correct>=Math.ceil(questionBank.length*.8)?'코스 통과! ':`다음엔 ${questionBank.length}문제 중 ${Math.ceil(questionBank.length*.8)}문제를 맞혀보세요. `}${saved?'직접 플레이한 학습 기록은 이 브라우저에 저장해요.':'브라우저 저장이 제한되어 이번 화면에서만 기록을 볼 수 있어요.'}`;
   if(!roundWasDemo)$('result-note').textContent+=` 도움·반복·조작 영향을 제외한 새 응답 ${answers.filter(a=>a.learning?.independent).length}개를 맞춤 추천에 참고해요. ${learningScope()}`;
   const tuned=roundWasDemo?[]:describeRace(flowStart,flowEnd?.settings?.values);if(tuned.length)$('result-note').textContent+=` 이번 주행에서 맞춘 것: ${tuned.join(' · ')}.`;
-  const next=nextStage();$('next-stage').disabled=!next||!roundWasDemo&&!isUnlocked(next);$('next-stage').firstChild.textContent=next?.finale?'챕터 결승전 달리기 ':next?.personalized?'맞춤 5문항 달리기 ':next?'다음 코스 달리기 ':'마지막 코스예요 ';$('results').hidden=false;speak(['finish'],'완주! 오늘 만난 단어를 다시 들어볼까?','finish');
-  if(!roundWasDemo&&earned.coins)speak([earned.newUnlocks.length?'finale-unlock':earned.missionCompleted?'mission-complete':garage.wish?'garage-wish':'garage-earned'],'오늘의 보상을 받았어. 차고에서 확인해 봐!','reward');
+  const next=nextStage();$('next-stage').disabled=!next||!roundWasDemo&&!isUnlocked(next);$('next-stage').firstChild.textContent=next?.finale?'챕터 결승전 달리기 ':next?.personalized?'맞춤 5문항 달리기 ':next?'다음 코스 달리기 ':'마지막 코스예요 ';
+  $('results').hidden=true;disposeGate();setQuestionExpanded(false);boost=0;
+  $('progress').style.width='100%';
+  stage.classList.add('coasting');$('cruise-banner').hidden=false;$('cruise-action').hidden=false;
+  $('cruise-next').textContent=next?.finale?'결과 · 다음 챕터':next?'결과 · 다음 코스':'결과 · 다시 달리기';
+  $('toast').classList.remove('show');toastTime=0;laterToast=null;
+  syncCoastRadio();
+}
+function showCruiseResults(){
+  if(!coastDrive.openResults())return;
+  running=false;paused=false;inputs.left=inputs.right=false;silence();$('pause-panel').hidden=true;$('results').hidden=false;$('cruise-loop').style.opacity='0';
+  syncCoastRadio();($('next-stage').disabled?$('return-cruise'):$('next-stage')).focus();
+}
+function returnToCruise(){
+  if(!coastDrive.resume())return;
+  running=true;paused=false;$('results').hidden=true;silence();clock.getDelta();$('cruise-results').focus();
+  if(soundEnabled)void ensureAudio();syncCoastRadio();
 }
 function nextStage(){if(selectedStage.personalized)return nextPersonalized()?.stage||recommendedStage(progress);if(selectedStage.review)return selectedStage.campaign?recommendedStage(progress):STAGES[0];const collection=selectedStage.campaign?ALL_COURSES:STAGES;return collection[collection.findIndex(s=>s.id===selectedStage.id)+1]||(selectedStage.campaign?nextPersonalized()?.stage||recommendedStage(progress):null);}
 function judgeGate(){
   if(!gate||gate.judged)return;
+  questionPace.answered(elapsed);
   const lane=clamp(Math.round((playerOffset+3.45)/3.45),0,2),chosen=gate.types[lane],success=chosen===gate.q.answer;
   if(gate.presentationId&&!roundWasDemo){const assessable=gate.intentChoice===chosen;gate.learning=answerGate(gate.presentationId,{correct:success,assessable,reason:assessable?undefined:'motor'},assessable?{pressure:racePressure({readyAt:gate.readyAt,choseAt:gate.choseAt,cruise,campaign:!!selectedStage.campaign,roadLeft:gate.readyRoad})}:{outcome:'void'});}
   gate.judged=true;answers.push({id:gate.q.id,prompt:gate.q.prompt,answer:gate.q.answer,chosen,correct:success,learning:gate.learning});$('repeat-question').disabled=true;$('go').disabled=true;$('question-toggle').disabled=true;setQuestionExpanded(false);$('voice-caption').hidden=true;$('lane-choices').hidden=true;laneAim=null;
-  if(success){correct++;combo++;bestCombo=Math.max(bestCombo,combo);boost=combo>=3?3.4:2.8;mascotMood('cheer',3);showToast(`${combo>=3?`${combo}콤보 · `:'정답! '}${gate.q.word} · 부스터 ↗`);speak(['correct',...(gate.q.answerAudio||[gate.q.answer]),'boost'],`맞았어! ${gate.q.word}. ${gate.q.explanation||''} 부스터!`,'feedback');ding(true);}
+  if(success){correct++;combo++;bestCombo=Math.max(bestCombo,combo);boost=rewardBoost(combo);mascotMood('cheer',3);showToast(`${combo>=3?`${combo}콤보 · `:'정답! '}${gate.q.word} · 부스터 ↗`);speak(['correct',...(gate.q.answerAudio||[gate.q.answer]),'boost'],`맞았어! ${gate.q.word}. ${gate.q.explanation||''} 부스터!`,'feedback');ding(true);}
   else{combo=0;showToast(`${gate.q.word} · 이유를 듣고 다시 도전`,3);speak(['answer',...(gate.q.answerAudio||[gate.q.answer]),'retry'],`정답은 ${gate.q.word}. ${gate.q.explanation||''}`,'feedback');ding(false);}
   shield=comboShield(combo,success,shield);
   if(success&&combo%3===0){showToast(`${combo}콤보! 다음 접촉을 막는 보호막이 생겼어요`,3);speak(['shield-ready'],'연속 정답! 보호막이 생겼어.','reward');}
@@ -859,11 +893,11 @@ function contactSparks(hit){
  const origin=roadPoint(playerS,playerOffset-hit.direction*.7,.5),positions=scenery.sparks.geometry.attributes.position;
  scenery.sparks.userData.motion=[];for(let i=0;i<24;i++){positions.setXYZ(i,origin.x,origin.y,origin.z);scenery.sparks.userData.motion.push({x:(Math.random()-.5)*3,y:Math.random()*2.2,z:-Math.random()*6});}positions.needsUpdate=true;scenery.sparks.visible=true;sparkLife=.42;
 }
-function updateContacts(dt,waiting){
+function updateContacts(dt,waiting,record=true){
   contactTimer=Math.max(0,contactTimer-dt);
   if(!waiting)for(const r of rivals){const p={s:playerS,offset:playerOffset,velocity};const hit=resolveContact(p,r);if(!hit)continue;playerS=p.s;playerOffset=p.offset;
     if(contactTimer===0){
-      const effect=shieldContact({shield,collisions,velocity,boost},hit);({shield,collisions,velocity,boost}=effect);
+      const effect=shieldContact({shield,collisions,velocity,boost},hit);if(!record)effect.collisions=collisions;({shield,collisions,velocity,boost}=effect);
       if(effect.protected){shieldBlocked++;shieldFlash=.8;contactTimer=.45;$('driving-note').textContent='보호막이 접촉을 막았어요';$('combo').textContent=combo>=2?`${combo} COMBO`:'';showToast('보호막! 속도를 지켰어요',2);speak(['shield-block'],'보호막으로 속도를 지켰어.','reward');}
       else{contactTimer=.85;$('driving-note').textContent='접촉 · 속도를 회복해요';contactSound();contactSparks(hit);}
     }
@@ -875,6 +909,30 @@ function updateShield(dt){
   if(!car.userData.shield){const ring=new THREE.Mesh(new THREE.TorusGeometry(1.32,.035,5,64),new THREE.MeshBasicMaterial({color:0x9ff4e5,transparent:true,opacity:.65,depthWrite:false}));ring.rotation.x=Math.PI/2;ring.scale.y=1.95;ring.position.y=.2;car.add(ring);car.userData.shield=ring;}
   const ring=car.userData.shield;ring.visible=running&&Boolean(shield||shieldFlash);ring.material.opacity=shieldFlash?shieldFlash*.9:.3+(reducedMotion?0:Math.sin(worldTime.value*2.4)*.1);
 }
+function updateCoastDrive(dt){
+  const steering=(inputs.left?1:0)-(inputs.right?1:0);
+  if(auto)playerOffset=lerp(playerOffset,0,1-Math.exp(-dt*2.6));
+  else playerOffset=clamp(playerOffset+steering*dt*5.8,-5.05,5.05);
+  const desired=(contactTimer>.5?28:Math.abs(playerOffset)>4.95?32:42)*cruise/BASE_CRUISE;
+  velocity=lerp(velocity,desired,1-Math.exp(-dt*2.4));
+  const step=coastDrive.advance(playerS,velocity,dt,ROAD_END);playerS=step.position;
+  $('cruise-loop').style.opacity=String(step.fade);
+  if(step.wrapped){rivals.forEach((r,i)=>r.s=playerS+42+i*38);camera.position.copy(roadPoint(playerS-(mobile?8.8:9),playerOffset*(mobile?.92:.62),mobile?3.35:3.6));}
+  for(const [i,r] of rivals.entries()){
+    r.s+=r.speed*dt;
+    if(r.s<playerS-45)r.s=playerS+125+i*38;
+    r.mesh.visible=r.s<ROAD_END-20;placeCar(r.mesh,r.s,r.offset);
+    for(const w of r.mesh.userData.wheels)w.rotation.x-=r.speed*dt*2.2;
+  }
+  // Keep physical contact and its feedback, but the completed race's learning
+  // record, rank, coin award and collision total are already final.
+  updateContacts(dt,false,false);
+  placeCar(car,playerS,playerOffset,steering*.045);car.rotation.z=-steering*.008;
+  for(const w of wheels)w.rotation.x-=velocity*dt*2.3;
+  for(const jet of car.userData.jets){jet.visible=!reducedMotion;jet.scale.y=.65;}
+  $('speed').textContent=Math.round(velocity*3.6);
+  if(soundEnabled&&audio){motor.frequency.setTargetAtTime(45+velocity*1.8,audio.currentTime,.15);motorGain.gain.setTargetAtTime(narrator.playing?.01:.026,audio.currentTime,.18);windGain.gain.setTargetAtTime(velocity*(narrator.playing?.0002:.00055),audio.currentTime,.18);}
+}
 function updateGame(dt) {
   elapsed+=dt;
   if(gate?.announced&&(inputs.left||inputs.right))questionChosen=true;
@@ -885,13 +943,13 @@ function updateGame(dt) {
   else if(laneAim!==null&&!inputs.left&&!inputs.right)playerOffset=lerp(playerOffset,laneAim,1-Math.exp(-dt*4));
   else playerOffset+=((inputs.left?1:0)-(inputs.right?1:0))*dt*5.8;
   playerOffset=clamp(playerOffset,-5.05,5.05);
-  if(boost>0)boost=Math.max(0,boost-dt);
   // Leave time to hear the entire word, including when the player asks to hear it again.
   const hearing=gate?.announced&&!gate.judged&&(narrator.activeKind==='question'||narrator.queue.some(item=>item.kind==='question'));
   const waitingForVoice=hearing&&gate.s-playerS<65;
   const waitingForChoice=selectedStage.campaign&&gate?.announced&&!gate.judged&&!auto&&!questionChosen&&gate.s-playerS<65;
   const waiting=waitingForVoice||waitingForChoice||questionExpanded;
-  const edge=Math.abs(playerOffset)>4.95,pace=cruise/BASE_CRUISE,desired=waiting?0:contactTimer>.5?22*pace:edge?21*pace:boost>0?42*pace:cruise;
+  ({velocity,boost}=questionPace.step({waiting,velocity,boost,dt}));
+  const edge=Math.abs(playerOffset)>4.95,pace=cruise/BASE_CRUISE,desired=waiting?0:contactTimer>.5?22*pace:edge?21*pace:(boost>0||answers.length===questionBank.length)?42*pace:cruise;
   velocity=lerp(velocity,desired,1-Math.exp(-dt*2.4));playerS+=velocity*dt;
   for(const r of rivals){r.s+=r.speed*dt*(waiting?0:1);
     if(gate&&!gate.judged&&gate.s-playerS<100&&Math.abs(r.s-playerS)<25){const safe=LANES.find(o=>Math.abs(o-playerOffset)>2.5&&!rivals.some(other=>other!==r&&Math.abs(other.s-r.s)<7&&Math.abs(o-other.offset)<2));if(safe!==undefined)r.offset=lerp(r.offset,safe,1-Math.exp(-dt*3));}
@@ -904,16 +962,16 @@ function updateGame(dt) {
   for(const jet of car.userData.jets){jet.visible=boost>0;jet.scale.y=.6+Math.random()*.5;}
   if(gate){
     const distance=gate.s-playerS;
-    if(!gate.announced&&distance<220&&elapsed>=3){gate.announced=true;$('question-kicker').textContent=`${gate.q.mode==='reading'?'읽고 길을 골라요':gate.q.mode==='picture'?'듣고 그림을 골라요':'듣고 길을 골라요'} · ${gateIndex+1}/${questionBank.length}`;gate.presentationId=presentGate(gate.q);if(gate.q.mode==='reading'||!soundEnabled||narrationUnavailable)questionReady();if(roundWasDemo&&gate.presentationId)learn(c=>c.help(gate.presentationId,'answer'));mascotMood('focus');$('repeat-question').disabled=false;$('go').disabled=false;$('question-toggle').disabled=false;$('lane-choices').hidden=false;narrateQuestion();}
+    if(!gate.announced&&distance<QUESTION_LEAD&&questionPace.canAnnounce(elapsed)){gate.announced=true;$('question-kicker').textContent=`${gate.q.mode==='reading'?'읽고 길을 골라요':gate.q.mode==='picture'?'듣고 그림을 골라요':'듣고 길을 골라요'} · ${gateIndex+1}/${questionBank.length}`;gate.presentationId=presentGate(gate.q);if(gate.q.mode==='reading'||!soundEnabled||narrationUnavailable)questionReady();if(roundWasDemo&&gate.presentationId)learn(c=>c.help(gate.presentationId,'answer'));mascotMood('focus');$('repeat-question').disabled=false;$('go').disabled=false;$('question-toggle').disabled=false;$('lane-choices').hidden=false;narrateQuestion();}
     if(distance<0&&!gate.judged)judgeGate();
-    if(distance<-15){gateIndex++;if(gateIndex<questionBank.length)makeGate(gateIndex,gate.s+245);else disposeGate();}
+    if(distance<-15){gateIndex++;if(gateIndex<questionBank.length)makeGate(gateIndex,gatePosition(gateIndex));else disposeGate();}
   }
   stage.classList.toggle('boosting',boost>0&&!reducedMotion);
-  $('speed').textContent=Math.round(velocity*3.6);$('nitro-fill').style.width=`${Math.min(100,boost/2.8*100)}%`;$('nitro-label').textContent=waitingForChoice?'길을 골라 출발':boost>0?'KOREAN → BOOST':'LISTEN. CHOOSE. BOOST.';
+  $('speed').textContent=Math.round(velocity*3.6);$('nitro-fill').style.width=`${Math.min(100,boost/rewardBoost(combo)*100)}%`;$('nitro-label').textContent=waiting&&boost>0?'부스터 저장 중':waitingForChoice?'길을 골라 출발':boost>0?'KOREAN → BOOST':'LISTEN. CHOOSE. BOOST.';
   $('rank').textContent=1+rivals.filter(r=>r.s>playerS).length;
-  const seconds=Math.floor(elapsed);$('time').textContent=`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;$('progress').style.width=`${Math.min(100,(playerS-75)/(310+(questionBank.length-1)*245+85-75)*100)}%`;
+  const seconds=Math.floor(elapsed);$('time').textContent=`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;$('progress').style.width=`${Math.min(100,(playerS-75)/(gatePosition(questionBank.length-1)+15-75)*100)}%`;
   if(soundEnabled&&audio){const kind=car.userData.vehicleKind;motor.frequency.setTargetAtTime((kind==='rally'?32:kind==='open'||kind==='finale'?55:45)+velocity*1.8,audio.currentTime,.15);motorGain.gain.setTargetAtTime(narrator.playing?.014:.055+(boost>0?.012:0),audio.currentTime,.12);windGain.gain.setTargetAtTime(velocity*(narrator.playing?.0003:.0015),audio.currentTime,.15);}
-  if(answers.length===questionBank.length&&playerS>310+(questionBank.length-1)*245+85&&!narrator.playing)finish();
+  if(answers.length===questionBank.length&&!gate)finish();
 }
 function updateCamera(dt) {
   light.target.position.copy(roadPoint(garageOpen?93:playerS+18,0,0));light.position.copy(light.target.position).addScaledVector(sunDirection,151);
@@ -925,7 +983,7 @@ function updateCamera(dt) {
   let pos,target,fov;
   if(running||finished){
     const shortPortrait=mobile&&stage.clientHeight<640;
-    pos=roadPoint(playerS-(mobile?(shortPortrait?11.2:8.8):9),playerOffset*(mobile?.92:.62),(mobile?3.35:3.6));target=roadPoint(playerS+24,playerOffset*(mobile?.72:.34),shortPortrait?1.1:1.55);fov=boost>0&&!reducedMotion?61:mobile?(shortPortrait?60:58):55;
+    pos=roadPoint(playerS-(mobile?(shortPortrait?11.2:8.8):9),playerOffset*(mobile?.92:.62),(mobile?3.35:3.6));target=roadPoint(playerS+24,playerOffset*(mobile?.72:.34),shortPortrait?1.1:1.55);fov=(boost>0||coastDrive.driving)&&!reducedMotion?61:mobile?(shortPortrait?60:58):55;
   }else{
     const drift=reducedMotion?0:Math.sin(attractTime*.14)*.65;
     pos=roadPoint(playerS-(mobile?12.5:7.4),mobile?-1.8:5.4+drift,mobile?4.5:3.6);target=roadPoint(playerS+(mobile?14:12),mobile?3.8:1.8,1.2);fov=mobile?62:52;
@@ -947,7 +1005,7 @@ function frame() {
     if(scenery.petals&&!reducedMotion){scenery.petals.position.copy(roadPoint(playerS,0,0));scenery.petals.rotation.y=Math.sin(worldTime.value*.1)*.12;}
     for(const rotor of windRotors)if(!reducedMotion)rotor.rotation.z+=dt*.16;
     if(sparkLife>0){sparkLife=Math.max(0,sparkLife-dt);const positions=scenery.sparks.geometry.attributes.position;scenery.sparks.userData.motion.forEach((v,i)=>{v.y-=dt*4;positions.setXYZ(i,positions.getX(i)+v.x*dt,positions.getY(i)+v.y*dt,positions.getZ(i)+v.z*dt);});positions.needsUpdate=true;scenery.sparks.material.opacity=sparkLife/.42*.75;scenery.sparks.visible=sparkLife>0;}
-    if(running){if(tutorial)updateTutorial(dt);else updateGame(dt);}
+    if(running){if(tutorial)updateTutorial(dt);else if(coastDrive.driving)updateCoastDrive(dt);else updateGame(dt);}
     else if(!garageOpen&&!finished&&!reducedMotion){playerS+=dt*4.5;if(playerS>185){playerS=75;rivals.forEach((r,i)=>r.s=103+i*21);}placeCar(car,playerS,0);for(const w of wheels)w.rotation.x-=dt*10;rivals.forEach((r,i)=>{r.s=playerS+28+i*21;placeCar(r.mesh,r.s,r.offset);});}
     if(gate)gate.fruitObjects.forEach((f,i)=>{f.rotation.y=(f.userData.spinBase||0)+Math.sin(worldTime.value*.9+i)*.11;});
     updateMascot(dt);updateShield(dt);
@@ -973,11 +1031,14 @@ function updateSoundButton(){
 }
 async function toggleSound(){
   soundTouched=true;soundEnabled=!soundEnabled;updateSoundButton();
+  syncCoastRadio();
   if(tutorial){silence();tutorialVoicePending=false;if(soundEnabled){await ensureAudio();if(running&&!paused)repeatTutorial();}else tutorialDelivered();renderTutorial();return;}
   if(soundEnabled){await ensureAudio();setQuestionExpanded(false);if(running&&!paused&&gate?.announced&&!gate.judged)narrateQuestion();}else{silence();displayQuestion();}
   if(!running)renderStages();
 }
-$('start').addEventListener('click',()=>start(false));$('watch').addEventListener('click',()=>start(true));$('replay').addEventListener('click',()=>start(auto));$('home').addEventListener('click',home);$('exit').addEventListener('click',home);$('pause').addEventListener('click',pause);$('resume').addEventListener('click',resume);$('sound').addEventListener('click',toggleSound);$('quality').addEventListener('change',e=>setQuality(e.target.value));$('card-play').addEventListener('click',()=>start(false));
+$('start').addEventListener('click',()=>start(false));$('watch').addEventListener('click',()=>start(true));$('replay').addEventListener('click',()=>start(roundWasDemo));$('home').addEventListener('click',home);$('exit').addEventListener('click',home);$('pause').addEventListener('click',pause);$('resume').addEventListener('click',resume);$('sound').addEventListener('click',toggleSound);$('quality').addEventListener('change',e=>setQuality(e.target.value));$('card-play').addEventListener('click',()=>start(false));
+$('cruise-results').addEventListener('click',showCruiseResults);$('return-cruise').addEventListener('click',returnToCruise);
+$('cruise-track').addEventListener('click',async()=>{soundEnabled=true;soundTouched=true;updateSoundButton();await ensureAudio();syncCoastRadio();});
 $('nav-garage').addEventListener('click',openGarage);$('result-garage').addEventListener('click',openGarage);$('records-garage').addEventListener('click',openGarage);
 $('nav-race').addEventListener('click',()=>{if(garageOpen)garageUI.close();home();});
 $('nav-records').addEventListener('click',()=>{if(garageOpen)garageUI.close();renderCollection();$('records').scrollIntoView({behavior:'smooth',block:'start'});});
@@ -1024,6 +1085,6 @@ window.addEventListener('keyup',e=>{if(['ArrowLeft','KeyA'].includes(e.code)){in
 window.addEventListener('blur',()=>{inputs.left=inputs.right=false;if(running&&!paused)pause();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!paused)pause();});
 // Read-only telemetry makes verification reproducible without a hidden game bypass.
-window.__racing={snapshot:()=>({ready,startup:{...startup},running,paused,auto,roundWasDemo,elapsed,playerS,playerOffset,tutorial:tutorial?{step:tutorial.step,mistakes:tutorial.mistakes,boostElapsed:tutorial.boostElapsed,voicePending:tutorialVoicePending,completed:tutorialCompleted,saved:tutorialSaved}:null,collection:{coins:garage.coins,owned:[...garage.owned],equipped:{...garage.equipped},wish:garage.wish,mission:dailyMission(progress,Date.now(),garage),garageOpen,preview:previewCar?.userData.vehicleKind,angle:garageAngle},driving:{collisions,contactTimer,combo,bestCombo,shield,shieldBlocked,rivals:rivals.map(r=>({s:r.s,offset:r.offset})),waitingForChoice:questionChosen===false},scenery:scenery.theme,atmosphere:scenery.atmosphere?.stats,boats:scenery.boats?.stats,boatPoses:scenery.boats?.group.userData.poseSnapshots,rockShelves:scenery.rockShelves?.stats,landscape:scenery.coast?.userData.stats,city:scenery.city?.stats,cityLife:scenery.cityLife?.stats,groundProps:scenery.groundProps,terrain:scenery.terrain?.stats,vegetation:scenery.details?.stats,screenX:car?+car.position.clone().project(camera).x.toFixed(4):null,driver:{name:driverName,mood:driverMood,seated:!!car?.userData.mascot},vehicle:car?.userData.modelStats,velocity,boost,correct,answers:answers.map(a=>({...a})),flow:{cruise,active:!!live,values:(()=>{try{return live?live.settings().values:null;}catch{return null;}})()},stage:{id:selectedStage.id,title:selectedStage.title,mode:selectedStage.mode,level:selectedStage.level,campaign:selectedStage.campaign,words:selectedStage.words},gate:gate?{s:gate.s,prompt:gate.q.prompt,spoken:gate.q.spoken,types:[...gate.types],questionId:gate.q.id,announced:gate.announced}:null,quality:mode,narration:narrator.snapshot(),audioState:audio?.state,audioClock:audio?.currentTime,narrationUnavailable,learning:{words:Object.keys(progress.words).length,correctWords:Object.values(progress.words).filter(p=>p.correct>0).length,rounds:progress.rounds,cleared:Object.values(progress.stages).filter(p=>p.cleared).length},render:{renderedFrames,skippedPausedFrames,programs:renderer?.info.programs?.length,pixelRatio:renderer?.getPixelRatio(),calls:renderer?.info.render.calls,triangles:renderer?.info.render.triangles,geometries:renderer?.info.memory.geometries,textures:renderer?.info.memory.textures,averageFps:frameSample.length?+(frameSample.length/frameSample.reduce((a,b)=>a+b,0)).toFixed(1):0},viewport:{width:stage.clientWidth,height:stage.clientHeight}})};
+window.__racing={snapshot:()=>({questionPace:questionPace.snapshot(),coastDrive:coastDrive.snapshot(),coastRadio:coastRadio.snapshot(),ready,startup:{...startup},running,paused,auto,roundWasDemo,elapsed,playerS,playerOffset,tutorial:tutorial?{step:tutorial.step,mistakes:tutorial.mistakes,boostElapsed:tutorial.boostElapsed,voicePending:tutorialVoicePending,completed:tutorialCompleted,saved:tutorialSaved}:null,collection:{coins:garage.coins,owned:[...garage.owned],equipped:{...garage.equipped},wish:garage.wish,mission:dailyMission(progress,Date.now(),garage),garageOpen,preview:previewCar?.userData.vehicleKind,angle:garageAngle},driving:{collisions,contactTimer,combo,bestCombo,shield,shieldBlocked,rivals:rivals.map(r=>({s:r.s,offset:r.offset})),waitingForChoice:questionChosen===false},scenery:scenery.theme,atmosphere:scenery.atmosphere?.stats,boats:scenery.boats?.stats,boatPoses:scenery.boats?.group.userData.poseSnapshots,rockShelves:scenery.rockShelves?.stats,landscape:scenery.coast?.userData.stats,city:scenery.city?.stats,cityLife:scenery.cityLife?.stats,groundProps:scenery.groundProps,terrain:scenery.terrain?.stats,vegetation:scenery.details?.stats,screenX:car?+car.position.clone().project(camera).x.toFixed(4):null,driver:{name:driverName,mood:driverMood,seated:!!car?.userData.mascot},vehicle:car?.userData.modelStats,velocity,boost,correct,answers:answers.map(a=>({...a})),flow:{cruise,active:!!live,values:(()=>{try{return live?live.settings().values:null;}catch{return null;}})()},stage:{id:selectedStage.id,title:selectedStage.title,mode:selectedStage.mode,level:selectedStage.level,campaign:selectedStage.campaign,words:selectedStage.words},gate:gate?{s:gate.s,prompt:gate.q.prompt,spoken:gate.q.spoken,types:[...gate.types],questionId:gate.q.id,announced:gate.announced}:null,quality:mode,narration:narrator.snapshot(),audioState:audio?.state,audioClock:audio?.currentTime,narrationUnavailable,learning:{words:Object.keys(progress.words).length,correctWords:Object.values(progress.words).filter(p=>p.correct>0).length,rounds:progress.rounds,cleared:Object.values(progress.stages).filter(p=>p.cleared).length},render:{renderedFrames,skippedPausedFrames,programs:renderer?.info.programs?.length,pixelRatio:renderer?.getPixelRatio(),calls:renderer?.info.render.calls,triangles:renderer?.info.render.triangles,geometries:renderer?.info.memory.geometries,textures:renderer?.info.memory.textures,averageFps:frameSample.length?+(frameSample.length/frameSample.reduce((a,b)=>a+b,0)).toFixed(1):0},viewport:{width:stage.clientWidth,height:stage.clientHeight}})};
 renderStages();
 init();

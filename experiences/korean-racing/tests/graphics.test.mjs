@@ -86,9 +86,14 @@ test('finishing asset loading preserves a quality selected while loading',async(
     let finishAssets;
     const renderState={};
     const qualityControl={value:'auto'};
+    const cachedVehicles=[{id:'coast'},{id:'roadster'}],vehicleCalls=[];
+    const garagePreview={id:'coast-preview',quality:'high'};
     const context={
       currentQuality:'auto',mode:'high',deviceGraphics:{coarsePointer:false},
       capture4k:true,devicePixelRatio:2,automaticQuality,qualitySettings,
+      raceCars:new Map(cachedVehicles.map(vehicle=>[vehicle.id,vehicle])),
+      previewCars:new Map([[garagePreview.id,garagePreview]]),
+      setVehicleQuality(vehicle,value){vehicleCalls.push({vehicle,value});vehicle.quality=value;},
       assetsReady:new Promise(resolve=>{finishAssets=resolve;}),
       $(id){assert.equal(id,'quality');return qualityControl;},
       renderer:{setPixelRatio:value=>{renderState.pixelRatio=value;},shadowMap:{}},
@@ -109,5 +114,17 @@ test('finishing asset loading preserves a quality selected while loading',async(
     assert.equal(renderState.waterQuality,expectedMode,'water detail follows the quality selected during loading');
     assert.equal(renderState.pixelRatio,qualitySettings(expectedMode,{pixelRatio:2,explicit:selected!=='auto'}).pixelRatio);
     assert.equal(context.renderer.shadowMap.enabled,selected!=='low');
+    assert.equal(vehicleCalls.length,cachedVehicles.length*(listenerRegistered?2:1));
+    assert(cachedVehicles.every(vehicle=>vehicle.quality===expectedMode),'every cached driving vehicle receives the selected quality, including unequipped cars');
+    assert.deepEqual(vehicleCalls.slice(-cachedVehicles.length).map(call=>call.vehicle),cachedVehicles);
+    // A later setting change must update the existing cache as well, while
+    // the garage keeps its full-detail preview rather than inheriting low LOD.
+    const changedMode=expectedMode==='low'?'balanced':'low',previousCalls=vehicleCalls.length;
+    runInNewContext(`setQuality('${changedMode}')`,context);
+    assert.equal(vehicleCalls.length,previousCalls+cachedVehicles.length);
+    assert(cachedVehicles.every(vehicle=>vehicle.quality===changedMode));
+    assert(vehicleCalls.slice(-cachedVehicles.length).every(call=>call.value===changedMode));
+    assert.equal(garagePreview.quality,'high');
+    assert(!vehicleCalls.some(call=>call.vehicle===garagePreview));
   }
 });

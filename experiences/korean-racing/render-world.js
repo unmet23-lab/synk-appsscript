@@ -83,7 +83,7 @@ export function buildCourseTerrain(THREE, {pathX, groundHeight, ROAD_END = 2250,
     const dx = groundHeight(x + .5, s) - groundHeight(x - .5, s);
     const dz = groundHeight(x, s + .5) - groundHeight(x, s - .5);
     const length = Math.hypot(dx, 1, dz);
-    const surface = typeof groundHeight.surfaceAt === 'function' ? groundHeight.surfaceAt(x, s, h) : 0;
+    const surface = typeof groundHeight.surfaceAt === 'function' ? groundHeight.surfaceAt(x, s, h, Math.hypot(dx,dz)) : 0;
     let rgb = [1, 1, 1];
     if (colorAt) {
       const value = colorAt(x, s, h, surface);

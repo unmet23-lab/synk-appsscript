@@ -8,7 +8,7 @@ export function buildCoastalCity(THREE, {pathX, groundHeight, roadEnd = 2250} = 
   if (!THREE || typeof pathX !== 'function' || typeof groundHeight !== 'function') throw new TypeError('Coastal city needs THREE and the current road and ground functions.');
   if (!Number.isFinite(roadEnd) || roadEnd < 600) throw new RangeError('The coastal district needs at least 600m of road.');
   const group = new THREE.Group(); group.name = 'coastal-city-district';
-  const scaleS = roadEnd / 2250, blocks = [], footprints = [], features = [], walks=[], activityAnchors=[];
+  const scaleS = roadEnd / 2250, blocks = [], footprints = [], features = [], walks=[], activityAnchors=[], gardens=[];
   const disposed = new Set(), object = new THREE.Object3D(), clamp = (v,a,b) => Math.max(a,Math.min(b,v));
   const twilight = {value: .68}; let theme = 'coast', lastQuality = 'high', lastS = -Infinity;
   const materials = {
@@ -53,7 +53,7 @@ export function buildCoastalCity(THREE, {pathX, groundHeight, roadEnd = 2250} = 
       const u = uv?.getX(i) ?? 0, v = uv?.getY(i) ?? 0;
       b.uv.push(atlas!==null ? (u+atlas%2)/2 : u, atlas!==null ? (v+3-Math.floor(atlas/2))/4 : v);
       const face=architecturalFaceUv({u,v,w,h,d,nx:ns.getX(i),ny:ns.getY(i),nz:ns.getZ(i),shape:geometry,wood:key==='timber',floorPitch:block==='skyline'?3.3:3.7});
-      b.cityUv.push(...face.uv);b.cityCell.push(...face.cell);b.citySeed.push((Math.sin(x*.131+z*.017+y*.071)*43758.5453)%997);
+      b.cityUv.push(...face.uv);b.cityCell.push(face.cell[0],block==='harbour-homes'&&key==='pale'?-face.cell[1]:face.cell[1]);b.citySeed.push((Math.sin(x*.131+z*.017+y*.071)*43758.5453)%997);
       b.color.push(...(Array.isArray(tint)?tint:[tint,tint,tint]));
     }
   }
@@ -78,6 +78,101 @@ export function buildCoastalCity(THREE, {pathX, groundHeight, roadEnd = 2250} = 
   function pointAt(pad,u,y,v,yaw=pad.yaw) {const p=at(pad,u,y,v);return {x:p[0],y:p[1],z:p[2],yaw};}
   function buildingPart(b,tier,key,geometry,pad,u,y,v,w,h,d,tint=1,atlas=null) {
     part(b.id,tier,key,geometry,...at(pad,u,y,v),w,h,d,pad.yaw,tint,atlas);
+  }
+  function gardenGround(b,pad,points,width,kind='entry-path') {
+    // A real terrain-following ribbon. Each section remains short enough to
+    // follow the authored hillside, rather than leaving a floating flat pad.
+    const ribbon=bucket(b.id,'shell','stone');
+    for(let segment=1;segment<points.length;segment++) {
+      const samples=[];
+      const a=points[segment-1],end=points[segment],distance=Math.hypot(end[0]-a[0],end[1]-a[1]);
+      const steps=Math.max(1,Math.ceil(distance/.75)),du=(end[0]-a[0])/distance,dv=(end[1]-a[1])/distance;
+      for(let step=0;step<steps;step++) {
+        const corners=[];
+        for(const t of [step/steps,(step+1)/steps])for(const side of [-1,1]) {
+          const p=at(pad,a[0]+(end[0]-a[0])*t-dv*width*.5*side,0,a[1]+(end[1]-a[1])*t+du*width*.5*side);
+          p[1]=groundHeight(p[0],p[2])+.065;corners.push(p);
+        }
+        for(const n of [0,1,2,1,3,2]) {
+          const [x,y,z]=corners[n];ribbon.position.push(x,y,z);ribbon.normal.push(0,1,0);ribbon.uv.push(x,z);
+          ribbon.cityUv.push(x,z);ribbon.cityCell.push(.90,.60);ribbon.citySeed.push(0);ribbon.color.push(.80,.79,.74);
+        }
+        samples.push(corners.reduce((p,c)=>p.map((v,i)=>v+c[i]*.25),[0,0,0]));
+      }
+      const p0=at(pad,...[a[0],0,a[1]]),p1=at(pad,...[end[0],0,end[1]]);
+      gardens.push({kind,from:{x:p0[0],z:p0[2]},to:{x:p1[0],z:p1[2]},width,samples});
+    }
+  }
+  function gardenWall(b,pad,start,end,height=.52) {
+    const distance=Math.hypot(end[0]-start[0],end[1]-start[1]),count=Math.ceil(distance/1.25);
+    const du=(end[0]-start[0])/distance,dv=(end[1]-start[1])/distance;
+    // Continuous slopes have neither stair-stepped capstones nor duplicated
+    // internal box faces. Bottom faces are buried and omitted; end caps remain.
+    const quad=(data,a,c,d,e,tint)=>{
+      const normal=new THREE.Vector3().subVectors(new THREE.Vector3(...c),new THREE.Vector3(...a))
+        .cross(new THREE.Vector3().subVectors(new THREE.Vector3(...d),new THREE.Vector3(...a))).normalize();
+      const width=Math.hypot(...a.map((v,i)=>v-c[i])),depth=Math.hypot(...a.map((v,i)=>v-e[i]));
+      const points=[a,c,d,e],uv=[[0,0],[width,0],[width,depth],[0,depth]];
+      for(const n of [0,1,2,0,2,3]) {
+        data.position.push(...points[n]);data.normal.push(...normal.toArray());data.uv.push(...uv[n]);
+        data.cityUv.push(...uv[n]);data.cityCell.push(1.65,.72);data.citySeed.push(0);data.color.push(...tint);
+      }
+    };
+    for(const [tier,width,bottom,top,tint] of [['shell',.36,-.08,height,[.58,.63,.59]],['detail',.44,height,height+.09,[.79,.80,.73]]]) {
+      const data=bucket(b.id,tier,'stone'),sections=[];
+      for(let k=0;k<=count;k++) {
+        const u=start[0]+du*distance*k/count,v=start[1]+dv*distance*k/count;
+        sections.push([-1,1].map(side=>{
+          const p=at(pad,u-dv*width*.5*side,0,v+du*width*.5*side),y=groundHeight(p[0],p[2]);
+          return [[p[0],y+bottom,p[2]],[p[0],y+top,p[2]]];
+        }));
+      }
+      for(let k=1;k<=count;k++) {
+        const a=sections[k-1],n=sections[k];
+        quad(data,a[0][1],a[1][1],n[1][1],n[0][1],tint);
+        quad(data,a[0][0],a[0][1],n[0][1],n[0][0],tint);
+        quad(data,a[1][1],a[1][0],n[1][0],n[1][1],tint);
+      }
+      const a=sections[0],n=sections[count];
+      quad(data,a[0][0],a[1][0],a[1][1],a[0][1],tint);
+      quad(data,n[1][0],n[0][0],n[0][1],n[1][1],tint);
+    }
+    const p0=at(pad,start[0],0,start[1]),p1=at(pad,end[0],0,end[1]);
+    gardens.push({kind:'garden-wall',from:{x:p0[0],z:p0[2]},to:{x:p1[0],z:p1[2]},width:.50,samples:[]});
+  }
+  function homeFacade(b,pad,{side,length,height,openings,tone}) {
+    const front=side==='front',edge=front?-pad.homeDepth*.5:pad.homeWidth*.5;
+    const surface=(tier,key,t,y,out,w,h,d,tint)=>{
+      if(front)buildingPart(b,tier,key,'box',pad,t,y,edge-out,w,h,d,tint);
+      else buildingPart(b,tier,key,'box',pad,edge+out,y,t,d,h,w,tint);
+    };
+    // Cut the wall around each opening. Opaque glazing sits 22cm behind the
+    // plaster face, with a surrounding return, instead of a sticker on a cube.
+    const xs=[-length*.5,length*.5,...openings.flatMap(o=>[o.t-o.w*.5,o.t+o.w*.5])].sort((a,b)=>a-b);
+    const ys=[.22,height+.22,...openings.flatMap(o=>[o.y-o.h*.5,o.y+o.h*.5])].sort((a,b)=>a-b);
+    for(let iy=1;iy<ys.length;iy++) {
+      const h=ys[iy]-ys[iy-1],y=(ys[iy]+ys[iy-1])*.5;let start=null;
+      if(h<.001)continue;
+      for(let ix=1;ix<=xs.length;ix++) {
+        const t=(xs[ix]+xs[ix-1])*.5,hole=ix===xs.length||openings.some(o=>Math.abs(t-o.t)<o.w*.5-.001&&Math.abs(y-o.y)<o.h*.5-.001);
+        if(!hole&&start===null)start=xs[ix-1];
+        if(hole&&start!==null) {const end=xs[ix-1];if(end-start>.001)surface('shell','pale',(start+end)*.5,y,-.19,end-start,h,.38,tone);start=null;}
+      }
+    }
+    for(const opening of openings) {
+      const {t,y,w,h}=opening,frame=.095;
+      surface('shell',opening.door?'darkGlass':'glass',t,y,-.24,w-.08,h-.08,.055,.90);
+      for(const sign of [-1,1]) {
+        surface('shell','timber',t+sign*(w*.5-frame*.5),y,-.015,frame,h,.13,.68);
+        surface('shell','timber',t,y+sign*(h*.5-frame*.5),-.015,w,frame,.13,.68);
+      }
+      if(!opening.door) {
+        surface('detail','stone',t,y-h*.5-.07,.07,w+.28,.14,.44,.84);
+        surface('detail','bronze',t,y,-.19,.045,h-.15,.05,.76);
+      }
+      const p=front?at(pad,t,y,edge):at(pad,edge,y,t);
+      features.push({kind:'home-opening',side,x:p[0],y:p[1],z:p[2],width:w,height:h,inset:.24,yaw:pad.yaw});
+    }
   }
   function festoon(b,pad,u,start,end,height,tier='detail') {
     // One gently sagging cable, with bulbs attached to that same curve. These
@@ -318,7 +413,29 @@ export function buildCoastalCity(THREE, {pathX, groundHeight, roadEnd = 2250} = 
       buildingPart(homes,'detail','green','dome',pad,u,groundY+.52,v,.97,.48,.51,[.82,.88,.72]);
     }
     const tones=[[.96,.91,.79],[.82,.88,.86],[.91,.83,.72]];
-    buildingPart(homes,'shell','pale','box',pad,0,height*.5+.22,0,width,height,depth,tones[i]);
+    // A quiet plaster finish and real window recesses give these low houses a
+    // different scale from the tiled commercial blocks behind them.
+    pad.homeWidth=width;pad.homeDepth=depth;
+    buildingPart(homes,'shell','pale','box',pad,-.21,height*.5+.22,.21,width-.42,height,depth-.42,tones[i]);
+    homeFacade(homes,pad,{side:'front',length:width,height,tone:tones[i],openings:[
+      {t:-width*.255,y:4.64,w:2.52,h:2.14},{t:width*.255,y:4.64,w:2.52,h:2.14},{t:0,y:1.65,w:1.98,h:2.86,door:true},
+    ]});
+    homeFacade(homes,pad,{side:'side',length:depth,height,tone:tones[i],openings:[
+      {t:-depth*.27,y:4.68,w:2.48,h:2.20},{t:depth*.27,y:4.68,w:2.48,h:2.20},{t:0,y:1.66,w:depth*.58,h:2.70,door:true},
+    ]});
+    // Paths leave the entry stairs through an opening in a low garden wall;
+    // their final approach curves toward the road, never across its shoulder.
+    const frontV=-depth*.5-2.45,outerU=width*.5+3.20;
+    gardenGround(homes,pad,[[0,-depth*.5-1.70],[0,frontV-1.15],[outerU,frontV-1.15],[outerU,frontV+2.0]],1.70);
+    gardenWall(homes,pad,[-width*.5-.6,frontV],[-1.18,frontV],.48);
+    gardenWall(homes,pad,[1.18,frontV],[width*.5+1.9,frontV],.48);
+    gardenWall(homes,pad,[width*.5+1.9,frontV],[width*.5+1.9,depth*.5+.85],.56);
+    // Three uneven shrubs read as planting beds rather than identical balls.
+    for(const [u,v,size] of [[-width*.40,frontV+.66,.72],[width*.36,frontV+.68,.88],[width*.5+1.15,depth*.32,.62]]) {
+      const p=at(pad,u,0,v),base=groundHeight(p[0],p[2]);
+      part(homes.id,'detail','green','dome',p[0],base-.035,p[2],size,.62*size,size*.75,pad.yaw,[.71,.81,.68]);
+      gardens.push({kind:'planting',from:{x:p[0],z:p[2]},to:{x:p[0],z:p[2]},width:size*2.1,samples:[]});
+    }
     const roofHeight=i===1?.72:1.72;
     if(i===1) {
       buildingPart(homes,'shell','bronze','box',pad,0,height+.36,0,width+.7,.28,depth+.75,.80);
@@ -329,21 +446,6 @@ export function buildCoastalCity(THREE, {pathX, groundHeight, roadEnd = 2250} = 
       buildingPart(homes,'detail','bronze','box',pad,0,height+roofHeight+.22,0,.18,.12,depth+1.02,.78);
       buildingPart(homes,'detail','stone','box',pad,-width*.27,height+1.50,depth*.22,.72,1.75,.83,.77);
     }
-    // Real recessed openings on +X and -Z: both are visible from the chase
-    // camera. Upper windows have room depth and independently lit panes.
-    for(const v of [-depth*.27,depth*.27]) {
-      buildingPart(homes,'shell','timber','box',pad,width*.5+.025,4.66,v,.13,2.25,2.54,.77);
-      buildingPart(homes,'shell','glass','box',pad,width*.5+.105,4.68,v,.065,1.96,2.26,.93);
-      buildingPart(homes,'detail','stone','box',pad,width*.5+.18,3.56,v,.37,.16,2.74,.92);
-    }
-    for(const u of [-width*.255,width*.255]) {
-      buildingPart(homes,'shell','timber','box',pad,u,4.63,-depth*.5-.045,2.62,2.20,.13,.75);
-      buildingPart(homes,'shell','glass','box',pad,u,4.64,-depth*.5-.12,2.30,1.92,.075,.93);
-      buildingPart(homes,'detail','bronze','box',pad,u,4.65,-depth*.5-.165,.065,1.95,.045,.74);
-    }
-    buildingPart(homes,'shell','darkGlass','box',pad,width*.5+.05,1.65,0,.13,2.65,depth*.60,.94);
-    buildingPart(homes,'shell','timber','box',pad,0,1.64,-depth*.5-.06,2.12,2.84,.15,.73);
-    buildingPart(homes,'shell','darkGlass','box',pad,0,1.77,-depth*.5-.15,1.63,2.26,.06,.86);
     buildingPart(homes,'shell','bronze','box',pad,0,3.23,-depth*.5-.56,3.2,.13,1.25,.86);
     // Balcony slab, continuous handrail and a few clearly separated uprights.
     const balconyV=depth*.10,balconyDepth=depth*.72;
@@ -411,7 +513,10 @@ export function buildCoastalCity(THREE, {pathX, groundHeight, roadEnd = 2250} = 
     if(b.key==='contact')mesh.renderOrder=2;
     const owner=blocks.find(block=>block.id===b.block); owner.root.add(mesh); owner.meshes.push(mesh);
   }
-  for (const b of blocks) b.bounds=new THREE.Box3().setFromObject(b.root);
+  for (const b of blocks) {
+    b.bounds=new THREE.Box3().setFromObject(b.root);
+    b.shopCount=features.filter(f=>f.kind==='shop'&&Math.abs(f.s-b.s)<90*scaleS).length;
+  }
   for (const geometry of Object.values(templates)) geometry.dispose();
   buckets.clear();
   const stats={shops:features.filter(f=>f.kind==='shop').length,homes:features.filter(f=>f.kind==='home').length,towers:towerPlan.length,blocks:streetPlan.length,quality:'high',theme,
@@ -421,7 +526,7 @@ export function buildCoastalCity(THREE, {pathX, groundHeight, roadEnd = 2250} = 
     const p=mesh.geometry.attributes.position;
     for(let i=0;i<p.count;i++) stats.roadMinimumClearance=Math.min(stats.roadMinimumClearance,pathX(p.getZ(i))-p.getX(i));
   }
-  group.userData.features=features; group.userData.footprints=footprints; group.userData.walks=walks; group.userData.stats=stats;group.userData.activityAnchors=activityAnchors;
+  group.userData.features=features; group.userData.footprints=footprints; group.userData.walks=walks; group.userData.stats=stats;group.userData.activityAnchors=activityAnchors;group.userData.gardens=gardens;
   const frustum=new THREE.Frustum(), projection=new THREE.Matrix4();
   function update({playerS=75,quality='high',camera=null}={}) {
     const q=['high','balanced','low'].includes(quality)?quality:'balanced';
@@ -439,7 +544,7 @@ export function buildCoastalCity(THREE, {pathX, groundHeight, roadEnd = 2250} = 
         mesh.castShadow=q==='high'&&!skyline&&distance<165&&tier==='shell'&&(mesh.material===materials.pale||mesh.material===materials.stone);
         if(b.root.visible&&mesh.visible){stats.visibleTriangles+=mesh.geometry.attributes.position.count/3;stats.drawCalls++;stats.shadowDrawCalls+=mesh.castShadow?1:0;}
       }
-      if(b.root.visible&&!skyline)stats.visibleShops+=features.filter(f=>f.kind==='shop'&&Math.abs(f.s-b.s)<90*scaleS).length;
+      if(b.root.visible&&!skyline)stats.visibleShops+=b.shopCount;
     }
     group.visible=theme!=='bloom'; return stats;
   }
@@ -450,7 +555,8 @@ export function buildCoastalCity(THREE, {pathX, groundHeight, roadEnd = 2250} = 
     update({playerS:lastS,quality:lastQuality});
   }
   function containsFootprint(x,z,margin=0) {
-    return walks.some(w=>z>=w.start-margin&&z<=w.end+margin&&x-pathX(z)>=w.outer-margin&&x-pathX(z)<=w.inner+margin)||footprints.some(p=>{const dx=x-p.x,dz=z-p.z,c=Math.cos(p.yaw),s=Math.sin(p.yaw);
+    return gardens.some(g=>{const dx=g.to.x-g.from.x,dz=g.to.z-g.from.z,length=dx*dx+dz*dz,t=length?clamp(((x-g.from.x)*dx+(z-g.from.z)*dz)/length,0,1):0;
+      return Math.hypot(x-g.from.x-t*dx,z-g.from.z-t*dz)<=g.width*.5+margin;})||walks.some(w=>z>=w.start-margin&&z<=w.end+margin&&x-pathX(z)>=w.outer-margin&&x-pathX(z)<=w.inner+margin)||footprints.some(p=>{const dx=x-p.x,dz=z-p.z,c=Math.cos(p.yaw),s=Math.sin(p.yaw);
       return Math.abs(c*dx-s*dz)<=p.halfW+margin&&Math.abs(s*dx+c*dz)<=p.halfD+margin;});
   }
   function dispose() {
