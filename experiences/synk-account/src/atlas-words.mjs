@@ -8,15 +8,15 @@ export const REASON_WORDS = { culture: '드라마·음악·웹툰', travel: '한
   work: '한국에서 일', career: '지금 하는 일', exam: '시험·자격', hobby: '배우는 즐거움', other: '다른 이유' };
 // A game names a Strata situation only where that situation is the game's own practice (a café's
 // orders, an entrance notice, spoken directions); a game that merely touches many everyday topics
-// names none. These links are a draft for teacher review.
+// names none. These links are a draft for teacher review. `slug` is the same game on synk.im/try/.
 export const WORLD_GAMES = Object.freeze([
-  { path: 'korean-racing', label: '한국어 레이싱', situations: [] },
-  { path: 'korean-runner', label: '바람길', situations: ['sit-travel-directions', 'sit-work-instructions'] },
-  { path: 'korean-rhythm', label: '한국어 리듬', situations: [] },
-  { path: 'order-rush', label: '주문 폭주', situations: ['sit-travel-order'] },
-  { path: 'entry-check', label: '입장 검사', situations: ['sit-life-notice'] },
-  { path: 'story-classroom', label: '선생님이 돌아왔다', situations: [] },
-  { path: 'blank-slice', label: '빈칸 베기', situations: [] },
+  { path: 'korean-racing', slug: 'racing', label: '한국어 레이싱', situations: [] },
+  { path: 'korean-runner', slug: 'runner', label: '바람길', situations: ['sit-travel-directions', 'sit-work-instructions'] },
+  { path: 'korean-rhythm', slug: 'rhythm', label: '한국어 리듬', situations: [] },
+  { path: 'order-rush', slug: 'order-rush', label: '주문 폭주', situations: ['sit-travel-order'] },
+  { path: 'entry-check', slug: 'entry-check', label: '입장 검사', situations: ['sit-life-notice'] },
+  { path: 'story-classroom', slug: 'story-classroom', label: '선생님이 돌아왔다', situations: [] },
+  { path: 'blank-slice', slug: 'blank-slice', label: '빈칸 베기', situations: [] },
 ].map(game => Object.freeze({ ...game, situations: Object.freeze([...game.situations]) })));
 
 // Practice picked for the declared reasons (at most three): serve as many reasons as possible, each
@@ -36,5 +36,5 @@ export function picksForReasons(forReasons, games = WORLD_GAMES) {
     search(i + 1, used, chosen);
   };
   search(0, new Set(), []);
-  return best.map(({ entry, situation, game }) => ({ reason: entry.reason, situation: situation.id, game: game.path, label: game.label, line: situation.line }));
+  return best.map(({ entry, situation, game }) => ({ reason: entry.reason, situation: situation.id, game: game.path, slug: game.slug, label: game.label, line: situation.line }));
 }

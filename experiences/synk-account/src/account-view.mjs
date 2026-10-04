@@ -15,7 +15,7 @@ export function createAccountView({ client, product, guard, notice, logout, prev
   async function action(fn) { try { guard();await fn();if (!ended) guard(); } catch (error) { if (!ended) notice(error.message, true); } }
   const button = (text, fn, className = 'plain') => { const b = element('button', text, className);b.type = 'button';b.onclick = () => { b.disabled = true;void action(fn).finally(() => { b.disabled = false; }); };return b; };
   const card = title => { const c = element('section', null, 'sb-card');c.append(element('h3', title));return c; };
-  const list = (rows, empty) => { const ul = element('ul', null, 'details');for (const value of rows.length ? rows : [empty]) ul.append(element('li', value));return ul; };
+  const list = (rows, empty) => { const ul = element('ul', null, 'details');for (const value of rows.length ? rows : [empty]) ul.append(typeof value === 'string' ? element('li', value) : value);return ul; };
   // The host owns local credentials and reports server revocation separately.
   // Do not make local sign-out depend on a successful account API request here.
   const signOut = (scope = 'current') => logout(undefined, { scope,
@@ -74,8 +74,12 @@ export function createAccountView({ client, product, guard, notice, logout, prev
     rows.push(chosen.length ? `고른 설정 · ${chosen.join(' · ')}` : '고른 설정 · 아직 없어요');
     const reasons = (summary.reasons || []).map(reason => REASON_WORDS[reason]).filter(Boolean);
     rows.push(reasons.length ? `배우는 이유 · ${reasons.join(' · ')}` : '배우는 이유 · 아직 밝히지 않았어요');
-    // WORLD only, where the games below can be opened: practice a declared reason picked, with the line.
-    if (product === 'world') for (const pick of picksForReasons(summary.forReasons)) rows.push(`이 이유로 고른 연습 · ${pick.label} — ${pick.line}`);
+    // Practice a declared reason picked, with Vellum's line. WORLD opens it from its game list below;
+    // elsewhere (the SYNK ID portal) the game's name links to the same game on synk.im/try/.
+    for (const pick of picksForReasons(summary.forReasons)) {
+      if (product === 'world') { rows.push(`이 이유로 고른 연습 · ${pick.label} — ${pick.line}`);continue; }
+      const row = element('li', '이 이유로 고른 연습 · '), link = element('a', pick.label);link.href = `/try/${pick.slug}/`;row.append(link, ` — ${pick.line}`);rows.push(row);
+    }
     const practice = summary.practice || {};
     rows.push(practice.answered ? `연습 · ${practice.answered}문항 · 혼자 맞힌 문항 ${practice.independent} · 도움 받은 문항 ${practice.assisted}` : '연습 · 아직 저장된 연습이 없어요');
     for (const skill of (practice.skills || []).slice(0, 3)) rows.push(skill.line);

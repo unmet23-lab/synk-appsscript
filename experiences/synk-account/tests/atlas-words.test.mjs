@@ -21,6 +21,9 @@ test('the card names every learning reason of the contract, and no other', () =>
 test('each WORLD game names only real Strata situations, and the seven games stay listed', () => {
   assert.deepEqual(WORLD_GAMES.map(game => game.path), ['korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'entry-check', 'story-classroom', 'blank-slice']);
   for (const game of WORLD_GAMES) for (const id of game.situations) assert.equal(map.getNode(id)?.kind, 'situation', `${game.path}: ${id}`);
+  // The same games on synk.im/try/, where the SYNK ID portal links them.
+  assert.deepEqual(WORLD_GAMES.map(game => game.slug), ['racing', 'runner', 'rhythm', 'order-rush', 'entry-check', 'story-classroom', 'blank-slice']);
+  assert.equal(picksForReasons(forReasons(['life']))[0].slug, 'entry-check');
 });
 
 test('practice serves as many declared reasons as it can, each game once, with the server\'s line', () => {
