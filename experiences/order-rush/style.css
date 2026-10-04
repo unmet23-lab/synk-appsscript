@@ -12,3 +12,76 @@
 .result-flow{margin:28px 0 8px;padding:24px 26px;border-radius:20px;background:#fff7f6;border:1px solid #f2dad6}.result-flow li.suggest{list-style:none;margin:10px 0 0 -20px;font-weight:700;color:#8b2a23}.result-flow h2{font-size:24px;letter-spacing:-.03em;margin:6px 0 10px}.result-flow ul{margin:0;padding-left:20px}.result-flow li{font-size:15px;line-height:1.9}
 @media(max-width:680px){.flow-line{order:-2;margin:0}.result-flow{padding:18px}.result-flow h2{font-size:21px}}
 @media(prefers-reduced-motion:reduce){.flow-line.pulse{animation:none}}
+/* ════ 펠트 부품(2026-10-04) ═══════════════════════════════════════════════
+ * 누르는 부품을 실제 니들 펠트 사진(assets/felt)으로 깐다. 부품과 9칸 자르기 값은 order-rush-kit v3에서
+ * 가져왔고, 그림은 docs/디자인/펠트부품의 원본을 키트 크기로 다시 줄였다(흰 테 검사 통과).
+ * 배치·색·입체 작업대·움직임은 원본 그대로다. 판에 두께가 있어 CSS 윤곽·안쪽 그림자는 넣지 않고,
+ * 누르면 3px 가라앉는다. 글자는 그림에 굽지 않고 펠트 위에 얹는다. */
+:root{--f-cream:url(assets/felt/slab-cream.webp);--f-blush:url(assets/felt/slab-blush.webp);
+ --f-cream-l:url(assets/felt/slab-cream-long.webp);--f-blush-l:url(assets/felt/slab-blush-long.webp);--f-coral-l:url(assets/felt/slab-coral-long.webp);
+ --f-pill-l:url(assets/felt/chip-blush-long.webp);--f-check:url(assets/felt/badge-check.webp);--f-dot-cream:url(assets/felt/badge-cream.webp);
+ --felt-ink:#2a120d;--lift:drop-shadow(0 5px 6px rgba(90,50,30,.16));--lift-down:drop-shadow(0 1px 2px rgba(90,50,30,.2))}
+/* 9칸 펠트 판: --fh(판 높이)에 맞춰 테두리 폭을 정해 모서리·실땀이 늘 같은 배율로 보인다. 가로는 이어 붙이고 세로는 늘인다 */
+.primary,.shift-choice button,.tray-actions button,.listen-actions button,.customer,.cup-tab{--fh:48px;--src:var(--f-cream);--sl:90 95 fill;--bv:.37;--bh:.39;
+ box-sizing:border-box;border:solid transparent;border-width:calc(var(--fh)*var(--bv)) calc(var(--fh)*var(--bh));border-radius:18px;
+ border-image-source:var(--src);border-image-slice:var(--sl);border-image-width:1;border-image-outset:0;border-image-repeat:round stretch;
+ background:none;box-shadow:none;color:var(--felt-ink);filter:var(--lift);transition:transform .07s ease,filter .07s ease,opacity .2s}
+.primary:active:not(:disabled),.shift-choice button:active,.tray-actions button:active:not(:disabled),.listen-actions button:active:not(:disabled),.customer:active,.cup-tab:active{transform:translateY(3px);filter:var(--lift-down)}
+.primary:disabled,.tray-actions button:disabled,.listen-actions button:disabled{opacity:.45}
+/* 주 행동(카페 문 열기·서빙·새 주문 연습·다시 문 열기·이어서 영업하기): 코랄 긴 판 */
+.primary{--fh:60px;--src:var(--f-coral-l);--sl:70 80 fill;--bv:.39;--bh:.44;height:var(--fh);min-height:0;padding:0 0 3px;border-radius:30px;
+ color:#fff;font-weight:800;text-shadow:0 1px 1px rgba(120,30,20,.4)}
+.serve-button{border-radius:30px}
+/* 결과에 새 주문 연습이 보이면 그것이 주인공: 다시 문 열기는 크림 판으로 한 단계 낮춘다 */
+#results:has(#review:not([hidden])) #replay{--src:var(--f-cream-l);color:var(--felt-ink);text-shadow:none}
+/* 낱말 단위 줄바꿈(펠트 마감 점검표) */
+body{word-break:keep-all;overflow-wrap:break-word}
+/* 판 끝의 SPACE·화살표는 블러시 펠트 알약에 살아 있는 글자로 */
+.primary span{display:inline-flex;align-items:center;flex:none;height:32px;padding:0 12px 1px;margin-right:-6px;background:var(--f-pill-l) center/100% 100% no-repeat;
+ color:var(--felt-ink);text-shadow:none;font:500 12px/1 Mono;letter-spacing:.04em}
+/* 영업 모드·손님 속도 타일: 블러시 판, 고른 것은 크림 판 + 펠트 체크 배지 */
+.shift-choice button{--fh:64px;--src:var(--f-blush);position:relative;height:auto;min-height:84px;padding:0 0 4px;border-radius:18px;background:none;text-align:left}
+.shift-choice button[aria-pressed=true]{--src:var(--f-cream);border-color:transparent;background:none}
+.shift-choice button[aria-pressed=true]::after{content:'';position:absolute;right:calc(var(--fh)*var(--bh)*-1 - 8px);top:calc(var(--fh)*var(--bv)*-1 - 10px);width:30px;height:30px;
+ background:var(--f-check) center/contain no-repeat;filter:drop-shadow(0 2px 2px rgba(90,30,20,.25))}
+.shift-choice span{color:rgba(42,18,13,.72)}
+.shift-choice span,.cup-tab span,.customer small{word-break:keep-all}
+/* 컵 추가·비우기와 다시 듣기·글로 보기: 짧은 크림 판, 켜진 것은 블러시 */
+.tray-actions button{--fh:44px;padding:0 0 2px;font-size:13px}
+.listen-actions button{--fh:46px;padding:0 0 2px;border-radius:18px;min-height:0;background:none}
+.listen-actions kbd,.tray-actions kbd{font-size:11px}
+.listen-actions button[aria-pressed=true]{--src:var(--f-blush);background:none}
+/* 컵 탭: 긴 크림 판, 지금 만드는 컵은 블러시 */
+.cup-tab{--fh:64px;--src:var(--f-cream-l);--sl:70 80 fill;--bv:.39;--bh:.44;height:auto;min-height:var(--fh);padding:0 0 4px;border-radius:18px;background:none;text-align:left}
+.cup-tab[aria-pressed=true]{--src:var(--f-blush-l);border-color:transparent;background:none}
+/* 손님 탭: 크림 판, 지금 만드는 손님은 블러시. 참을성 줄은 판 안쪽 아래에 */
+.customer{--fh:66px;padding:0 0 4px;border-radius:18px;background:none;overflow:visible}
+.customer[aria-pressed=true]{--src:var(--f-blush);border-color:transparent;background:none}
+.customer .patience{left:2px;right:2px;bottom:2px;height:4px;border-radius:2px}
+/* 재료 타일: 짧은 판 통째로(2:1 근처라 늘어남이 거의 없다), 넣은 재료는 블러시. 그림 글자 대신 펠트 재료 사진 */
+.ingredients button{border:0;border-radius:18px;background:var(--f-cream) center/100% 100% no-repeat;box-shadow:none;filter:var(--lift);transition:transform .07s ease,filter .07s ease;padding-bottom:6px}
+.ingredients button:active:not(:disabled){transform:translateY(3px);filter:var(--lift-down)}
+.ingredients button[aria-pressed=true]{background:var(--f-blush) center/100% 100% no-repeat;border-color:transparent}
+.ingredient-icon{width:40px;height:40px;margin:0 auto 4px;font-size:0;background:center/contain no-repeat}
+.ingredient-icon.coffee{background-image:url(assets/felt/coffee.webp)}.ingredient-icon.tea{background-image:url(assets/felt/tea.webp)}
+.ingredient-icon.milk{background-image:url(assets/felt/milk.webp)}.ingredient-icon.ice{background-image:url(assets/felt/ice.webp)}
+.ingredient-icon.sugar{background-image:url(assets/felt/sugar.webp)}.ingredient-icon.cold{background-image:url(assets/felt/cold.webp)}
+/* 재료 단축키 번호: 크림 펠트 원판 */
+.ingredients kbd{top:8px;right:10px;display:grid;place-items:center;width:22px;height:22px;margin:0;background:var(--f-dot-cream) center/contain no-repeat;color:rgba(42,18,13,.78);font-size:11px}
+/* 일시 정지·도움말 닫기: 크림 펠트 원판 */
+.icon-button,.close{display:grid;place-items:center;width:48px;height:48px;border:0;border-radius:0;background:var(--f-dot-cream) center/contain no-repeat;filter:var(--lift);color:var(--felt-ink)}
+.close{width:40px;height:40px;font-size:22px;line-height:1}
+@media(max-width:980px){.ingredient-icon{width:32px;height:32px;margin:0 6px 0 0;vertical-align:middle}}
+@media(max-width:680px){
+ .primary{--fh:56px;font-size:16px}
+ .shift-choice button{--fh:56px;min-height:76px}
+ .tray-actions button{--fh:38px;font-size:12px}
+ .listen-actions button{--fh:42px;font-size:13px}
+ .customer{--fh:58px;padding:0 0 3px}
+ .cup-tab{--fh:54px}
+ .customer small{font-size:11px}
+ .ingredient-icon{width:26px;height:26px}
+ .ingredients kbd{top:5px;right:6px;width:20px;height:20px}
+ .icon-button{width:40px;height:40px}
+}
+@media(prefers-reduced-motion:reduce){.primary,.shift-choice button,.tray-actions button,.listen-actions button,.customer,.cup-tab,.ingredients button{transition:none}}
