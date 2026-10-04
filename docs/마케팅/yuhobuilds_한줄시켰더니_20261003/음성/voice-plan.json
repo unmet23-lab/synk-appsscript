@@ -1,191 +1,168 @@
 {
   "project": "yuhobuilds 「AI한테 한 줄 시켰더니」 내레이션",
-  "model": "ssfm-v30",
-  "note": "2026-10-03 사용자 요청: 「목소리는 타입캐스트에 내 목소리 학습시킨거있어 그걸 사용해줘봐」. 유호님이 1인칭으로 말한다. 대사는 10-02~03 한글날 LAB 영상을 실제로 만든 기록(대화 기록·게시 점검표·몽골어 검수 장부)에서만 가져온다. 대사는 앞 대사의 말끝에서 gapBefore초 뒤에 시작한다(첫 대사는 0.3초). cap은 화면 자막 묶음이고 *…*가 강조 낱말이다(대사 글자와 같아야 한다). 음성/넣기.cjs가 실제 녹음 길이로 시각을 정하고 음성/timing.js를 쓴다.",
-  "voices": {
-    "yuho": {
-      "name": "유호(Typecast 학습 목소리)",
-      "id": "auto",
-      "direction": "친구한테 어제 있었던 일을 들려주듯 편하게. 과장 없이, 웃음을 살짝 머금은 말투. 목록은 리듬 있게."
+  "note": "2026-10-04 유호님 「목소리가 좀 별로네. 차라리 다른 성우 api 쓰는게 낫겠다. 뭔가 부자연스러운데? 흐름이 뚝뚝 끊기는 느낌이야」 → 대사를 한 줄씩 따로 만들어 쉼을 넣고 이어 붙이던 10-03 방식(Typecast 학습 목소리, 커밋 66b0a032f)을 버리고, 대본 전체를 한 번에 읽힌 테이크 하나를 쓴다. segments는 화면·자막을 나누는 단위일 뿐 따로 만들지 않는다. 장면·자막 시각은 받아쓰기 정렬(음성/한번에_맞추기.py)로 찾은 낱말 시각에 붙는다. 대사는 10-02~03 한글날 LAB 영상을 실제로 만든 기록(대화 기록·게시 점검표·몽골어 검수 장부)에서만 가져온다. cap은 화면 자막 묶음이고 *…*가 강조 낱말이다(대사 글자와 같아야 한다).",
+  "take": {
+    "engine": "Gemini TTS (Vertex AI, 무료 크레딧)",
+    "model": "gemini-3.8-flash-tts",
+    "voice": null,
+    "file": "음성/take/take.wav",
+    "breaks": [
+      "s0",
+      "i1",
+      "c1"
+    ],
+    "notes": [
+      "Voice: a Korean man in his early thirties with a warm, attractive, mature voice, like a skilled animation voice actor playing a confident, likable lead. Never cute, never comic, never exaggerated.",
+      "Situation: he is casually telling a close friend what happened yesterday when he gave his AI assistant a single one-line instruction. A hint of a smile in the voice.",
+      "Flow: read the whole transcript as one continuous story, the way people really talk. Do not restart the intonation at every sentence. A clause that ends with a comma carries straight on into the next clause with only a tiny breath. Pauses between sentences stay short, about a third of a second.",
+      "Pace: brisk, like a short-form video narrator, about six Korean syllables per second, while every word stays clear.",
+      "Delivery: lists are light and rhythmic. The setbacks sound amused, not upset. The ending is warm and inviting.",
+      "Pronunciation: standard Seoul Korean. Read the Latin letters AI as 에이아이. Pronounce every ㅅ and ㅆ crisply.",
+      "Read only the transcript below, once, from its first word to its last, exactly as written. Do not add, skip, repeat or change any words. Never read these notes."
+    ],
+    "notes_history": "10-04 1차 메모는 연출 지점을 대본 문장으로 짚었다 → 12개 중 7개가 문장을 건너뛰거나 지어내거나 메모를 읽었다. 2차 메모는 대본 문장을 인용하지 않는다."
+  },
+  "scenes_note": "장면 전환: 그 장면 첫 대사(at) 시작보다 lead초 앞. 앞 대사가 그때까지 안 끝나면 앞 대사 끝 − 0.06초로 늦춘다(넣기.cjs). kind는 index.html이 쓰는 전환 모양이다.",
+  "scenes": {
+    "s2": {
+      "at": "h2",
+      "lead": 0.42,
+      "kind": "덮개(+0.36에 다 덮음)"
+    },
+    "s3": {
+      "at": "p1",
+      "lead": 0.58,
+      "kind": "실땀 와이프"
+    },
+    "s4": {
+      "at": "p2",
+      "lead": 0.12,
+      "kind": "컷"
+    },
+    "s5": {
+      "at": "s0",
+      "lead": 0.42,
+      "kind": "덮개"
+    },
+    "s6": {
+      "at": "s1",
+      "lead": 0.1,
+      "kind": "컷"
+    },
+    "s7": {
+      "at": "s2",
+      "lead": 0.5,
+      "kind": "실땀 와이프"
+    },
+    "s8": {
+      "at": "s3",
+      "lead": 0.1,
+      "kind": "컷"
+    },
+    "s9": {
+      "at": "i1",
+      "lead": 0.5,
+      "kind": "아치"
+    },
+    "s10": {
+      "at": "c1",
+      "lead": 0.45,
+      "kind": "종이"
     }
   },
   "segments": [
     {
       "id": "h1",
-      "role": "yuho",
-      "text": "AI한테 이 한 줄 보냈어요.",
-      "smart": true,
-      "previous": "",
-      "next": "몽골어 영상이 만들어지고, 예약까지 끝났어요.",
-      "tempo": 1.08,
-      "direction": "훅. 화면의 실제 대화창을 가리키듯.",
+      "text": "AI한테 이 한 줄 보냈더니,",
       "cap": [
-        "AI한테 이 *한 줄* 보냈어요."
-      ],
-      "gapBefore": 0
+        "AI한테 이 *한 줄* 보냈더니,"
+      ]
     },
     {
       "id": "h2",
-      "role": "yuho",
       "text": "몽골어 영상이 만들어지고, 예약까지 끝났어요.",
-      "smart": true,
-      "previous": "AI한테 이 한 줄 보냈어요.",
-      "next": "대본, 목소리, 몽골어 검수, 게시 문구, 업로드, 예약까지.",
-      "tempo": 1.08,
-      "direction": "결과 공개. 살짝 놀란 듯.",
       "cap": [
         "몽골어 영상이 만들어지고,",
         "*예약까지* 끝났어요."
-      ],
-      "gapBefore": 0.55
+      ]
     },
     {
       "id": "p1",
-      "role": "yuho",
       "text": "대본, 목소리, 몽골어 검수, 게시 문구, 업로드, 예약까지.",
-      "smart": true,
-      "previous": "몽골어 영상이 만들어지고, 예약까지 끝났어요.",
-      "next": "제가 한 건 듣고 좋아 한 마디, 그리고 로그인.",
-      "tempo": 1.12,
-      "direction": "목록. 낱말마다 화면이 바뀐다. 리듬 있게.",
       "cap": [
         "대본, 목소리, 몽골어 검수,",
         "게시 문구, 업로드, *예약까지.*"
-      ],
-      "gapBefore": 0.6
+      ]
     },
     {
       "id": "p2",
-      "role": "yuho",
       "text": "제가 한 건, 듣고 '좋아' 한 마디. 그리고 로그인.",
-      "smart": true,
-      "previous": "대본, 목소리, 몽골어 검수, 게시 문구, 업로드, 예약까지.",
-      "next": "물론 막힌 데도 있었어요.",
-      "tempo": 1.05,
-      "direction": "펀치라인. '그리고 로그인' 앞에 반 박 쉰다.",
       "cap": [
         "제가 한 건, 듣고 *'좋아'* 한 마디.",
         "그리고 *로그인.*"
-      ],
-      "gapBefore": 0.45
+      ]
     },
     {
       "id": "s0",
-      "role": "yuho",
       "text": "물론 막힌 데도 있었어요.",
-      "smart": true,
-      "previous": "제가 한 건, 듣고 '좋아' 한 마디. 그리고 로그인.",
-      "next": "몽골어 한 줄이 '내 사진 저장해'로도 읽혀서 검수에 걸렸고,",
-      "tempo": 1.08,
-      "direction": "분위기 전환.",
       "cap": [
         "물론 *막힌 데도* 있었어요."
-      ],
-      "gapBefore": 0.6
+      ]
     },
     {
       "id": "s1",
-      "role": "yuho",
       "text": "몽골어 한 줄이 '내 사진 저장해'로도 읽혀서 검수에 걸렸고,",
-      "smart": true,
-      "previous": "물론 막힌 데도 있었어요.",
-      "next": "크롬에 '유호'가 두 명이라 로그인을 헤맸고,",
-      "tempo": 1.1,
-      "direction": "실패담 하나.",
       "cap": [
         "몽골어 한 줄이 *'내 사진 저장해'로도*",
         "읽혀서 검수에 걸렸고,"
-      ],
-      "gapBefore": 0.5
+      ]
     },
     {
       "id": "s2",
-      "role": "yuho",
       "text": "크롬에 '유호'가 두 명이라 로그인을 헤맸고,",
-      "smart": true,
-      "previous": "몽골어 한 줄이 '내 사진 저장해'로도 읽혀서 검수에 걸렸고,",
-      "next": "제 소개글을 지우려다 안전장치에 막혔어요.",
-      "tempo": 1.1,
-      "direction": "실패담 둘. 어이없다는 듯.",
       "cap": [
         "크롬에 *'유호'가 두 명이라*",
         "로그인을 헤맸고,"
-      ],
-      "gapBefore": 0.4
+      ]
     },
     {
       "id": "s3",
-      "role": "yuho",
       "text": "제 소개글을 지우려다 안전장치에 막혔어요.",
-      "smart": true,
-      "previous": "크롬에 '유호'가 두 명이라 로그인을 헤맸고,",
-      "next": "한 줄로 맡길 수 있었던 비결은 긴 프롬프트가 아니라,",
-      "tempo": 1.08,
-      "direction": "실패담 셋. 웃으며.",
       "cap": [
         "제 소개글을 지우려다",
         "*안전장치에* 막혔어요."
-      ],
-      "gapBefore": 0.4
+      ]
     },
     {
       "id": "i1",
-      "role": "yuho",
       "text": "한 줄로 맡길 수 있었던 비결은, 긴 프롬프트가 아니라",
-      "smart": true,
-      "previous": "제 소개글을 지우려다 안전장치에 막혔어요.",
-      "next": "미리 써 둔 매뉴얼이었어요.",
-      "tempo": 1.06,
-      "direction": "깨달음 앞. 진지하게.",
       "cap": [
         "한 줄로 맡길 수 있었던 비결은,",
         "*긴 프롬프트가* 아니라"
-      ],
-      "gapBefore": 0.65
+      ]
     },
     {
       "id": "i2",
-      "role": "yuho",
       "text": "미리 써 둔 매뉴얼이었어요.",
-      "smart": true,
-      "previous": "한 줄로 맡길 수 있었던 비결은, 긴 프롬프트가 아니라",
-      "next": "내 일에 맞는 매뉴얼, 질문 다섯 개면 만들어져요.",
-      "tempo": 1.04,
-      "direction": "핵심. 또박또박.",
       "cap": [
         "미리 써 둔 *매뉴얼이었어요.*"
-      ],
-      "gapBefore": 0.25
+      ]
     },
     {
       "id": "c1",
-      "role": "yuho",
       "text": "내 일에 맞는 매뉴얼, 질문 다섯 개면 만들어져요.",
-      "smart": true,
-      "previous": "미리 써 둔 매뉴얼이었어요.",
-      "next": "여러분은 AI한테 뭘 맡겨 보고 싶어요?",
-      "tempo": 1.08,
-      "direction": "도구 안내. 밝게.",
       "cap": [
         "내 일에 맞는 매뉴얼,",
         "*질문 다섯 개면* 만들어져요."
-      ],
-      "gapBefore": 0.6
+      ]
     },
     {
       "id": "c2",
-      "role": "yuho",
       "text": "여러분은 AI한테 뭘 맡겨 보고 싶어요?",
-      "smart": true,
-      "previous": "내 일에 맞는 매뉴얼, 질문 다섯 개면 만들어져요.",
-      "next": "",
-      "tempo": 1.05,
-      "direction": "댓글 질문. 다정하게.",
       "cap": [
         "여러분은 AI한테",
         "*뭘 맡겨 보고* 싶어요?"
-      ],
-      "gapBefore": 0.35
+      ]
     }
   ]
 }

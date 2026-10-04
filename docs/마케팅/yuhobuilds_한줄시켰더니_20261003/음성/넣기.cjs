@@ -1,9 +1,12 @@
-// 유호님 학습 목소리 대사(음성/audio/<id>.wav·json)를 index.html에 넣고, 영상의 모든 시각을 실제 말에 맞춘다.
-// LAB 한글날 편 음성/넣기.cjs를 이 편에 맞게 넓혔다.
-// 1) 대사: 첫 대사는 0.3초에 말소리가 들리고, 다음 대사는 앞 대사의 말끝에서 gapBefore초 뒤에 시작한다.
-//    파일 앞 무음을 재서 data-start = 말 시작 − 앞 무음. voiceover 묶음, 트랙 14·15를 번갈아 쓴다.
-// 2) 음성/timing.js(window.VO): 대사마다 말 시작·끝, 띄어쓰기 낱말마다 시작 시각, 자막 묶음. 컴포지션 스크립트가 읽는다.
-// 3) data-anchor="<대사>[.t<낱말>][±초]"가 달린 요소(효과음·영상)의 data-start를, data-anchor-end가 있으면 data-duration도 고친다.
+// 한 번에 읽힌 내레이션(음성/take/take.wav·take.json)을 index.html에 넣고, 영상의 모든 시각을 실제 말에 맞춘다.
+// 10-04 유호님 「흐름이 뚝뚝 끊기는 느낌」 → 대사를 한 줄씩 만들어 쉼을 넣고 이어 붙이던 10-03 방식(커밋 66b0a032f)을 버렸다.
+// voice-plan.json의 segments는 화면·자막 단위이고, 시각은 테이크의 받아쓰기 정렬(한번에_맞추기.py → 테이크_다듬기.py)에서 온다.
+// 1) 목소리: 테이크 하나를 첫 말소리가 FIRST초에 들리게 놓는다(voiceover 묶음, 트랙 14).
+// 2) 음성/timing.js(window.VO): 대사마다 말 시작·끝, 띄어쓰기 낱말마다 시작 시각, 자막 묶음, 장면 전환 시각 x.
+//    장면 전환 = 그 장면 첫 대사 시작 − lead(voice-plan.json scenes). 앞 대사가 그때까지 안 끝나면 앞 대사 끝 − 0.06초로 늦춘다
+//    (말이 이어지는 곳에서 앞 자막이 말 도중에 잘리지 않게).
+// 3) data-anchor="<대사>[.t<낱말>][.end][±초]" 또는 "x.<장면>[±초]"가 달린 요소(효과음·영상)의 data-start를,
+//    data-anchor-end가 있으면 data-duration도 고친다.
 // 4) 영상 길이 = 마지막 말끝 + TAIL. #root와 data-full="1" 요소의 data-duration을 고친다.
 // 5) 음악: --carve를 주면 하이퍼프레임즈 carve(세기 0.6)로 목소리 대역만 비키고, 말할 때만 낮추는 duck 단계를 직접 쓴다.
 // 녹음이 아직 없으면 --estimate로 글자 수로 어림한 시각을 쓴다(장면 배치 확인용, 소리 블록은 비운다).
@@ -21,92 +24,64 @@ let html = fs.readFileSync(htmlPath, 'utf8');
 
 const FIRST = 0.3;       // 첫 말소리 시각
 const TAIL = 1.6;        // 마지막 말끝 뒤 여유(끝 장면이 읽히는 시간)
-const THR = -40;         // 말소리로 보는 크기(dBFS, 10ms 창)
 const STRENGTH = Number(arg('--strength') || 0.6);
 const DUCK_DB = -8;
 const ATTACK = 0.15, RELEASE_HOLD = 0.15, RELEASE = 0.45, MERGE = 1.0;
 const estimate = has('--estimate');
 const fmt = (x) => Number(x.toFixed(3));
+const ids = plan.segments.map((s) => s.id);
 
-function levels(file) {
-  const b = fs.readFileSync(file);
-  let p = 12, fmtc, data;
-  while (p + 8 <= b.length) {
-    const id = b.toString('ascii', p, p + 4), size = b.readUInt32LE(p + 4);
-    if (id === 'fmt ') fmtc = { ch: b.readUInt16LE(p + 10), rate: b.readUInt32LE(p + 12), bits: b.readUInt16LE(p + 22) };
-    if (id === 'data') { data = { at: p + 8, size: Math.min(size, b.length - p - 8) }; break; }
-    p += 8 + size + (size % 2);
+// ── 1) 대사 시각(영상 기준)
+let take = null, fileStart = 0;
+const segs = {};
+if (estimate) {
+  let t = FIRST;
+  for (const s of plan.segments) {
+    const tokens = s.text.split(/\s+/).filter(Boolean);
+    const dur = s.text.replace(/[^\p{L}\p{N}]/gu, '').length / 7;   // 발화 초당 7음절 어림
+    segs[s.id] = { start: fmt(t), end: fmt(t + dur), tokens: tokens.map((_, i) => fmt(t + (dur * i) / tokens.length)) };
+    t += dur + (plan.take.breaks.includes(s.id) ? 0.5 : 0.25);
   }
-  if (!fmtc || !data || fmtc.bits !== 16) throw new Error(file + ': 16비트 PCM wav가 아님');
-  const frame = 2 * fmtc.ch, n = Math.floor(data.size / frame), win = Math.round(fmtc.rate / 100), out = [];
-  for (let i = 0; i + win <= n; i += win) {
-    let sum = 0;
-    for (let j = i; j < i + win; j++) { const v = b.readInt16LE(data.at + j * frame) / 32768; sum += v * v; }
-    out.push(10 * Math.log10(sum / win + 1e-12));
+} else {
+  take = JSON.parse(fs.readFileSync(path.join(__dirname, 'take', 'take.json'), 'utf8'));
+  fileStart = FIRST - take.segs[ids[0]].start;
+  if (fileStart < 0) throw new Error('테이크 앞 무음이 FIRST보다 길다 — 테이크_다듬기.py를 다시 돌린다');
+  for (const id of ids) {
+    const g = take.segs[id];
+    if (!g) throw new Error(id + ': take.json에 없음');
+    segs[id] = { start: fmt(g.start + fileStart), end: fmt(g.end + fileStart), tokens: g.tokens.map((t) => fmt(t + fileStart)) };
   }
-  return out;
 }
+const lastEnd = segs[ids[ids.length - 1]].end;
+const total = fmt(lastEnd + TAIL);
 
-// 띄어쓰기 낱말 → 파일 안 시작 시각. Typecast words가 같은 낱말이면 그대로, 아니면 글자 위치로 맞춘다
-const norm = (s) => s.replace(/[^\p{L}\p{N}]/gu, '');
-function tokenTimes(text, meta) {
-  const tokens = text.split(/\s+/).filter(Boolean);
-  const words = meta.words || [];
-  if (words.length === tokens.length && words.every((w, i) => norm(w.text) === norm(tokens[i]))) return tokens.map((_, i) => words[i].start);
-  const flat = []; words.forEach((w) => { for (const ch of norm(w.text)) flat.push(w.start); });
-  let k = 0;
-  return tokens.map((tk) => { const at = flat[Math.min(k, flat.length - 1)] ?? 0; k += norm(tk).length; return at; });
+// ── 2) 장면 전환 시각
+const x = {};
+for (const [sc, { at, lead }] of Object.entries(plan.scenes)) {
+  const i = ids.indexOf(at);
+  if (i < 1) throw new Error('장면 ' + sc + ': 첫 대사 ' + at + '를 못 찾음');
+  const want = segs[at].start - lead, prevEnd = segs[ids[i - 1]].end - 0.06;
+  x[sc] = fmt(Math.min(segs[at].start - 0.02, Math.max(want, prevEnd)));
 }
-
-// ── 1) 대사 길이와 말 시작·끝(파일 기준)
-const segs = plan.segments.map((s) => {
-  const tokens = s.text.split(/\s+/).filter(Boolean);
-  if (estimate) {
-    const dur = (norm(s.text).length * 0.15 + 0.25) / (s.tempo || 1);
-    const per = (dur - 0.25) / tokens.length;
-    return { ...s, dur, onset: 0.1, tail: dur - 0.1, tok: tokens.map((_, i) => 0.1 + i * per) };
-  }
-  const meta = JSON.parse(fs.readFileSync(path.join(__dirname, 'audio', s.id + '.json'), 'utf8'));
-  const dur = Number(meta.audio_duration);
-  if (!(dur > 0)) throw new Error(s.id + ' 길이 없음');
-  const lv = levels(path.join(__dirname, 'audio', s.id + '.wav'));
-  const from = Math.max(0, Math.floor(((meta.words?.[0]?.start ?? 0) - 0.1) * 100));
-  const k0 = lv.findIndex((v, k) => k >= from && v > THR);
-  let k1 = lv.length - 1;
-  while (k1 > 0 && lv[k1] <= THR) k1--;
-  if (k0 < 0) throw new Error(s.id + ': 말소리를 못 찾음');
-  return { ...s, dur, onset: k0 / 100, tail: (k1 + 1) / 100, tok: tokenTimes(s.text, meta) };
-});
-
-// ── 2) 이어 붙이기
-let cursor = FIRST;
-segs.forEach((s, i) => {
-  const speech = i === 0 ? FIRST : cursor + (s.gapBefore ?? 0.35);
-  s.start = speech - s.onset;                 // 파일 시작(영상 시각)
-  s.trim = 0;
-  if (s.start < 0) { s.trim = -s.start; s.start = 0; }   // 앞 무음이 첫 시각보다 길면 파일 앞을 잘라(data-media-start) 말이 제때 들리게 한다
-  s.speech = [speech, s.start - s.trim + s.tail];
-  s.tokens = s.tok.map((t) => fmt(s.start - s.trim + Math.max(t, s.onset)));
-  s.track = 14 + (i % 2);
-  cursor = s.speech[1];
-});
-const total = fmt(cursor + TAIL);
 
 // ── 3) timing.js
-const VO = { total, estimated: estimate, segs: {} };
-segs.forEach((s) => { VO.segs[s.id] = { start: fmt(s.speech[0]), end: fmt(s.speech[1]), tokens: s.tokens, cap: s.cap }; });
+const VO = { total, estimated: estimate, x, segs: {} };
+for (const s of plan.segments) VO.segs[s.id] = { ...segs[s.id], cap: s.cap };
 fs.writeFileSync(path.join(__dirname, 'timing.js'),
   '// 음성/넣기.cjs가 만든다. 손으로 고치지 않는다.' + (estimate ? ' (어림값: 녹음 전)' : '') + '\nwindow.VO = ' + JSON.stringify(VO, null, 1) + ';\n');
 
 // ── 4) 목소리 블록
-const block = ['      <!-- 목소리 시작 · Typecast 유호님 학습 목소리(음성/넣기.cjs가 만든다) -->']
-  .concat(estimate ? ['      <!-- (녹음 전: 어림 시각만 씀) -->'] : segs.map((s) => `      <audio id="vo-${s.id}" src="음성/audio/${s.id}.wav" data-start="${fmt(s.start)}" data-duration="${fmt(s.dur - s.trim)}"${s.trim ? ` data-media-start="${fmt(s.trim)}"` : ''} data-track-index="${s.track}" data-volume="1" data-audio-group="voiceover"></audio>`))
+const label = take ? `${take.engine} · ${take.model} · ${take.voice}` : '';
+const block = [`      <!-- 목소리 시작 · 대본 전체를 한 번에 읽힌 테이크${take ? '(' + label + ')' : ''} — 음성/넣기.cjs가 만든다 -->`]
+  .concat(estimate ? ['      <!-- (녹음 전: 어림 시각만 씀) -->'] : [`      <audio id="vo-take" src="음성/take/take.wav" data-start="${fmt(fileStart)}" data-duration="${fmt(take.seconds)}" data-track-index="14" data-volume="1" data-audio-group="voiceover"></audio>`])
   .concat(['      <!-- 목소리 끝 -->']).join('\n');
 if (/<!-- 목소리 시작[\s\S]*?<!-- 목소리 끝 -->/.test(html)) html = html.replace(/      <!-- 목소리 시작[\s\S]*?<!-- 목소리 끝 -->/, block);
 else throw new Error('<!-- 목소리 시작 --> 자리를 못 찾음');
 
 // ── 5) 기준점이 달린 요소와 영상 길이
 const at = (spec) => {
+  const sx = String(spec).match(/^x\.(s\d+)([+-][0-9.]+)?$/);
+  if (sx) { if (x[sx[1]] == null) throw new Error('장면 전환이 없다: ' + spec); return Math.max(0, x[sx[1]] + Number(sx[2] || 0)); }
   const m = String(spec).match(/^([a-z0-9]+)(?:\.t(\d+))?(?:\.(end))?([+-][0-9.]+)?$/);
   if (!m || !VO.segs[m[1]]) throw new Error('기준점 해석 실패: ' + spec);
   const g = VO.segs[m[1]];
@@ -129,7 +104,7 @@ fs.writeFileSync(htmlPath, html);
 let carveLog = null, duck = null;
 if (!estimate) {
   if (arg('--carve')) {
-    const cmd = [arg('--carve'), '--comp', htmlPath, '--bed', 'music', ...segs.flatMap((s) => ['--voice', 'vo-' + s.id]), '--strength', String(STRENGTH)];
+    const cmd = [arg('--carve'), '--comp', htmlPath, '--bed', 'music', '--voice', 'vo-take', '--strength', String(STRENGTH)];
     if (arg('--core')) cmd.push('--core', arg('--core'));
     carveLog = execFileSync(process.execPath, cmd, { encoding: 'utf8' }).trim().split('\n').filter((l) => /^(carve|bands|level|wrote)/.test(l));
     html = fs.readFileSync(htmlPath, 'utf8');
@@ -144,7 +119,7 @@ if (!estimate) {
   const dropped = chain.nodes.filter((n) => (n.fromCarve && n.type === 'gain') || n.id === 'duck').map((n) => n.id);
   chain.nodes = chain.nodes.filter((n) => !dropped.includes(n.id)).concat([{ type: 'gain', id: 'duck', label: '목소리 자리 비키기', enabled: true, params: { gain: 0 } }]);
   const wins = [];
-  segs.forEach((s) => { const a = s.speech[0], b = s.speech[1], last = wins[wins.length - 1]; if (last && a - last[1] < MERGE) last[1] = Math.max(last[1], b); else wins.push([a, b]); });
+  ids.forEach((id) => { const a = segs[id].start, b = segs[id].end, last = wins[wins.length - 1]; if (last && a - last[1] < MERGE) last[1] = Math.max(last[1], b); else wins.push([a, b]); });
   const pts = [{ t: 0, v: 0 }];
   wins.forEach(([a, b]) => pts.push({ t: fmt(Math.max(0, a - ATTACK)), v: 0 }, { t: fmt(Math.max(0.01, a - 0.02)), v: DUCK_DB }, { t: fmt(b + RELEASE_HOLD), v: DUCK_DB }, { t: fmt(Math.min(total, b + RELEASE_HOLD + RELEASE)), v: 0 }));
   const points = pts.filter((p, i) => i === 0 || p.t > pts[i - 1].t);
@@ -158,7 +133,7 @@ if (!estimate) {
 }
 
 console.log(JSON.stringify({
-  total, estimated: estimate,
-  segments: segs.map((s) => ({ id: s.id, file: [fmt(s.start), fmt(s.start + s.dur - s.trim)], trim: s.trim ? fmt(s.trim) : undefined, onset: fmt(s.onset), speech: s.speech.map(fmt), track: s.track })),
+  total, estimated: estimate, voice: label || undefined, fileStart: fmt(fileStart),
+  segments: ids.map((id) => ({ id, speech: [segs[id].start, segs[id].end] })), x,
   carve: carveLog || '건너뜀', duck,
 }, null, 1));
