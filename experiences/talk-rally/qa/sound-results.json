@@ -1,0 +1,154 @@
+{
+ "kit-earn": {
+  "peak_dbfs": -4.3,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -20.8,
+  "audible_ms": 86,
+  "centroid_hz": 1204,
+  "vs_earn_lu": 0.0
+ },
+ "kit-achieve": {
+  "peak_dbfs": -3.0,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -15.6,
+  "audible_ms": 341,
+  "centroid_hz": 754,
+  "vs_earn_lu": 5.2
+ },
+ "kit-calm1": {
+  "peak_dbfs": -7.0,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -11.6,
+  "audible_ms": 416,
+  "centroid_hz": 925,
+  "vs_earn_lu": 9.2
+ },
+ "voice-f01": {
+  "peak_dbfs": -5.1,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -14.0,
+  "audible_ms": 1105,
+  "centroid_hz": 3309,
+  "vs_earn_lu": 6.8
+ },
+ "voice-r06": {
+  "peak_dbfs": -6.2,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -14.2,
+  "audible_ms": 1566,
+  "centroid_hz": 2554,
+  "vs_earn_lu": 6.6
+ },
+ "hit-ok": {
+  "peak_dbfs": -2.0,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -17.8,
+  "audible_ms": 204,
+  "centroid_hz": 1138,
+  "vs_earn_lu": 3.0
+ },
+ "quick": {
+  "peak_dbfs": -2.2,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -16.0,
+  "audible_ms": 206,
+  "centroid_hz": 1375,
+  "vs_earn_lu": 4.8
+ },
+ "hit-wrong": {
+  "peak_dbfs": -1.9,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -25.6,
+  "audible_ms": 45,
+  "centroid_hz": 2759,
+  "vs_earn_lu": -4.8
+ },
+ "smash": {
+  "peak_dbfs": -0.7,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -12.0,
+  "audible_ms": 703,
+  "centroid_hz": 1058,
+  "vs_earn_lu": 8.8
+ },
+ "opponent": {
+  "peak_dbfs": -3.9,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -26.6,
+  "audible_ms": 45,
+  "centroid_hz": 2741,
+  "vs_earn_lu": -5.8
+ },
+ "bounce-near": {
+  "peak_dbfs": -7.9,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -29.9,
+  "audible_ms": 27,
+  "centroid_hz": 5300,
+  "vs_earn_lu": -9.1
+ },
+ "bounce-far": {
+  "peak_dbfs": -10.6,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -32.4,
+  "audible_ms": 27,
+  "centroid_hz": 5300,
+  "vs_earn_lu": -11.6
+ },
+ "swing-soft": {
+  "peak_dbfs": -11.0,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -27.6,
+  "audible_ms": 158,
+  "centroid_hz": 2150,
+  "vs_earn_lu": -6.8
+ },
+ "swing-hard": {
+  "peak_dbfs": -3.7,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -23.0,
+  "audible_ms": 126,
+  "centroid_hz": 3031,
+  "vs_earn_lu": -2.2
+ },
+ "exchange": {
+  "peak_dbfs": -1.7,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -14.0,
+  "audible_ms": 3940,
+  "centroid_hz": 3727,
+  "vs_earn_lu": 6.8
+ },
+ "wrong": {
+  "peak_dbfs": -1.9,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -11.6,
+  "audible_ms": 1286,
+  "centroid_hz": 3856,
+  "vs_earn_lu": 9.2
+ },
+ "rally": {
+  "peak_dbfs": -0.7,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -15.5,
+  "audible_ms": 5021,
+  "centroid_hz": 4285,
+  "vs_earn_lu": 5.3
+ },
+ "stress": {
+  "peak_dbfs": -0.7,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -8.3,
+  "audible_ms": 1557,
+  "centroid_hz": 2268,
+  "vs_earn_lu": 12.5
+ },
+ "stars": {
+  "peak_dbfs": -2.9,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -14.4,
+  "audible_ms": 900,
+  "centroid_hz": 2076,
+  "vs_earn_lu": 6.4
+ }
+}
