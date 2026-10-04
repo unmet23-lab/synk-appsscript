@@ -14,11 +14,14 @@ const OWNER = 'synk.world.run-owner.v1', OWNERS = 'synk.world.run-owners.v1';
 const OWNER_GRACE_MS = 86400000;
 const identifier = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
 const failure = (message, code) => Object.assign(new Error(message), { code });
-function createWorldLearningHost({ accountKey, revision, storage, transport, memoryTransport = null, guard, connected = true, onStatus = () => {}, engine = null, clock = Date.now }) {
+function createWorldLearningHost({ accountKey, revision, storage, transport, memoryTransport = null, personalMemory = null, guard, connected = true, onStatus = () => {}, engine = null, clock = Date.now }) {
   if (!accountKey || !Number.isSafeInteger(revision) || typeof guard !== 'function') throw new TypeError('Verified WORLD account required');
-  let sync, primary, memory, closed = false, run = null, generation = 0;
+  if (personalMemory && (!identifier(personalMemory.accountKey) || !Number.isSafeInteger(personalMemory.revision) || personalMemory.revision < 1
+    || typeof personalMemory.storage?.getItem !== 'function' || typeof personalMemory.storage?.setItem !== 'function'
+    || typeof personalMemory.connected !== 'boolean')) throw new TypeError('Verified personal WORLD memory required');
+  let sync, primary, memory, memoryReady, personal, privacyBlocked = false, closed = false, run = null, generation = 0;
   const coaches = new Set(), memoryListeners = new Set();
-  const check = () => { guard(); if (closed) throw new Error('WORLD account session ended'); };
+  const check = () => { guard(); if (closed || privacyBlocked) throw failure('WORLD account session ended', 'MEMORY_SESSION_ENDED'); };
   const shared = { getItem(key) { check(); return storage.getItem(key); }, setItem(key, value) { check(); storage.setItem(key, value); }, removeItem(key) { check(); storage.removeItem(key); } };
   const ownerKey = eventId => `${OWNER}.${eventId}`;
   // The list of owner records only serves to remove them later. Each record is its own key, so two
@@ -83,20 +86,37 @@ function createWorldLearningHost({ accountKey, revision, storage, transport, mem
   } };
   function createGame(options, factory, createSync) {
     check();
+    const make = engine?.createGame && engine?.createLearningSync ? engine : { createGame: factory, createLearningSync: createSync };
+    if (personalMemory && !personal) {
+      const own = personalMemory, ownStorage = Object.fromEntries(['getItem', 'setItem', 'removeItem'].map(method => [method, (...args) => { check(); return own.storage[method]?.(...args); }]));
+      // This adapter uses the ordinary personal account store, including its existing epoch.
+      // It never imports or uploads a class's evidence, and it keeps today's condition local.
+      personal = make.createGame({ gameId: 'world-personal-memory', storage: ownStorage, learnerKey: 'device', storageScope: 'account', accountKey: own.accountKey, historyComplete: !own.connected, fold: { remote: true } });
+      if (own.connected && own.transport && typeof engine?.createMemorySync === 'function') {
+        memory = engine.createMemorySync({ adapter: personal, accountKey: own.accountKey, revision: own.revision, transport: own.transport,
+          onStatus: state => {
+            // A server-detected consent/account change ends access to the old personal memory.
+            // An unavailable optional memory service merely stays local, as before.
+            if (state.phase === 'blocked' && ['REVISION_CONFLICT', 'LEARNING_DISABLED', 'SESSION_REVOKED', 'UNAUTHORIZED', 'AUTH_REQUIRED', 'AUTH_SESSION_MISSING', 'MEMORY_SESSION_ENDED', 'ACCOUNT_UNAVAILABLE'].includes(state.code)) {
+              privacyBlocked = true; generation++; sync?.stop(); onStatus({ phase: 'blocked', code: state.code, complete: false, queued: 0 });
+            }
+          } });
+        memoryReady = memory.start();
+      }
+    }
     // With sharing off the account's store lives on this device only, so it is complete on
     // its own, like a guest device. A connected store is complete once the server says so.
     // Older items fold into a ledger (learning-ledger.js); a synchronised store folds only what the server has sent back.
-    const owned = { storage: shared, learnerKey: 'device', storageScope: 'account', accountKey, historyComplete: !connected, fold: connected ? { remote: true } : true };
+    const owned = { storage: shared, learnerKey: 'device', storageScope: 'account', accountKey, historyComplete: !connected, fold: connected ? { remote: true } : true, memoryOwner: personal?.memoryPort || null };
     if (connected && !sync) {
-      const make = engine?.createGame && engine?.createLearningSync ? engine : { createGame: factory, createLearningSync: createSync };
       primary = make.createGame({ gameId: 'world-account', ...owned });
       sync = make.createLearningSync({ adapter: primary, accountKey, revision, storage: shared, transport: upload,
         onStatus: state => { for (const coach of coaches) coach.syncPort.markComplete(state.complete && state.phase !== 'blocked'); onStatus(state); } });
       void sync.start();
       // The page's own engine carries the memory sync; without it (or a transport) memory stays here.
-      if (memoryTransport && typeof engine?.createMemorySync === 'function' && primary.memoryPort) {
+      if (!personalMemory && memoryTransport && typeof engine?.createMemorySync === 'function' && primary.memoryPort) {
         memory = engine.createMemorySync({ adapter: memoryAdapter(), accountKey, revision, transport: memoryTransport });
-        void memory.start();
+        memoryReady = memory.start();
       }
     }
     // A game opened during a run belongs to it, and only the run's own game may open.
@@ -112,7 +132,7 @@ function createWorldLearningHost({ accountKey, revision, storage, transport, mem
     });
     // What the game changes in the memory (a chosen help style, a content's moment memory) is sent
     // by the memory sync after a short wait.
-    const unsubscribeMemory = typeof coach.memoryPort?.subscribe === 'function'
+    const unsubscribeMemory = !personalMemory && typeof coach.memoryPort?.subscribe === 'function'
       ? coach.memoryPort.subscribe(change => { if (!closed) for (const listener of memoryListeners) listener(change); }) : () => {};
     // The log's ids, uncopied; an engine from before syncPort.ids() is read through copies (slower).
     const logIds = () => (typeof coach.syncPort.ids === 'function' ? coach.syncPort.ids() : coach.syncPort.events().map(event => event.id));
@@ -146,9 +166,31 @@ function createWorldLearningHost({ accountKey, revision, storage, transport, mem
   }
   // The status names the account partition and the open run, also on a device-only account.
   return Object.freeze({ createGame,
+    // Account preferences live beyond an individual game run. Expose only guarded choices,
+    // never a storage/merge port; a late UI callback still checks the current account session.
+    preferences() {
+      check();
+      if (!personal && !primary) {
+        if (typeof engine?.createGame !== 'function') return null;
+        createGame({ gameId: 'world-preferences' }, engine.createGame, engine.createLearningSync);
+      }
+      const owner = personal || primary;
+      if (!owner) return null;
+      return Object.freeze({
+        today: () => { check(); return owner.today(); },
+        setToday: value => { check(); return owner.setToday(value); },
+        presentation: () => { check(); return owner.presentation(); },
+        setPresentation: value => { check(); return owner.setPresentation(value); },
+        subscribe: listener => { check(); return owner.memoryPort.subscribe(change => { try { check(); listener(change); } catch { /* ended account */ } }); },
+      });
+    },
     status: () => ({ accountKey, revision, ...(sync?.status() || { phase: connected ? 'idle' : 'local', queued: 0 }), runId: run?.id || null, memory: memory ? memory.status() : null }),
+    // A new game snapshots its flow settings once. Let its launcher wait for the first
+    // bounded memory read so a slow response cannot silently start it at defaults.
+    // Offline/unsupported memory still permits device-local practice; privacy changes do not.
+    async ready() { check(); await memoryReady; check(); },
     // Back in front: retry the sync and read what other devices chose.
-    retry: () => { check(); void memory?.retry(); return sync?.retry(); },
+    retry: () => { check(); const remembered = memoryReady = memory?.retry(), learned = sync?.retry(); return remembered && learned ? Promise.all([remembered, learned]).then(([, state]) => state) : learned || remembered; },
     // Going to the background or closing: send the changed memory now.
     flush: () => { check(); return memory?.flush(); },
     // One run at a time, on a connected account. Opening or closing one ends the games of the last.

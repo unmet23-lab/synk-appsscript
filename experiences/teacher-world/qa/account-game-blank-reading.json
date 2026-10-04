@@ -1,0 +1,130 @@
+{
+  "ok": true,
+  "contentId": "blank-reading",
+  "gameId": "blank-slice",
+  "lifecycle": false,
+  "target": {
+    "items": [
+      {
+        "itemKey": "blank-slice.p01.v1",
+        "skillId": "ko.reading.grammar",
+        "modality": "reading",
+        "familyKey": "blank-slice.p01.v1",
+        "difficulty": 1,
+        "responseFormat": "single-choice"
+      },
+      {
+        "itemKey": "blank-slice.p02.v1",
+        "skillId": "ko.reading.grammar",
+        "modality": "reading",
+        "familyKey": "blank-slice.p02.v1",
+        "difficulty": 1,
+        "responseFormat": "single-choice"
+      },
+      {
+        "itemKey": "blank-slice.p03.v1",
+        "skillId": "ko.reading.grammar",
+        "modality": "reading",
+        "familyKey": "blank-slice.p03.v1",
+        "difficulty": 1,
+        "responseFormat": "single-choice"
+      }
+    ],
+    "label": "조사·문형 읽기",
+    "policy": "learning-priority-3",
+    "reason": "조사·문형 읽기는 아직 기록이 적어요. 짧게 확인해 봐요.",
+    "skillId": "ko.reading.grammar",
+    "version": 1,
+    "itemKeys": [
+      "blank-slice.p01.v1",
+      "blank-slice.p02.v1",
+      "blank-slice.p03.v1"
+    ],
+    "modality": "reading",
+    "difficulty": 1,
+    "familyKeys": [
+      "blank-slice.p01.v1",
+      "blank-slice.p02.v1",
+      "blank-slice.p03.v1"
+    ],
+    "freshCount": 3,
+    "description": "조사·문형 읽기 · 난도 1 · 목표 3문항 (새 문항 3, 복습 0)",
+    "reviewCount": 0,
+    "responseFormat": "single-choice",
+    "requiredAttempts": 3
+  },
+  "checks": [
+    {
+      "name": "real teacher UI created frozen individual target",
+      "ok": true
+    },
+    {
+      "name": "server run pins teacher target",
+      "ok": true
+    },
+    {
+      "name": "actual game responses complete exact frozen target",
+      "ok": true
+    },
+    {
+      "name": "authored correct controls have expected correctness",
+      "ok": true,
+      "detail": {
+        "correct": 3,
+        "total": 3
+      }
+    },
+    {
+      "name": "completion does not claim efficacy",
+      "ok": true
+    },
+    {
+      "name": "responses are persisted in canonical SYNK ID storage",
+      "ok": true,
+      "detail": {
+        "count": 12
+      }
+    },
+    {
+      "name": "teacher app renders the completed result",
+      "ok": true
+    },
+    {
+      "name": "teacher authorized API returns the same submission",
+      "ok": true
+    },
+    {
+      "name": "WORLD reload retains completed assignment",
+      "ok": true
+    },
+    {
+      "name": "no browser or HTTP fixture runtime errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "trace": [
+    {
+      "itemId": "p01",
+      "input": "keyboard-slice"
+    },
+    {
+      "itemId": "p02",
+      "input": "keyboard-slice"
+    },
+    {
+      "itemId": "p03",
+      "input": "keyboard-slice"
+    }
+  ],
+  "submission": {
+    "total": 3,
+    "correct": 3,
+    "assisted": 0,
+    "independent": 3
+  },
+  "errors": [],
+  "synthetic": true,
+  "production": false,
+  "completionSource": "real-game-controls-account-linked-http-postgresql"
+}

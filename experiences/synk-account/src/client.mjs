@@ -1,7 +1,9 @@
 import { createAccountClient } from './generated/account-client.cjs';
 import { PRODUCTS, readConfig, beginOAuth, consumeCallback, tokenRequest } from './core.mjs';
 import { createAccountView } from './account-view.mjs';
-import { createDesktopAccountClient, authMessage } from './desktop-account.mjs';
+import { createDesktopAccountClient, createDesktopClassroomClient, authMessage } from './desktop-account.mjs';
+import { createClassroomTransport } from './classroom-client.mjs';
+import { createAccountWorkspace } from './account-classroom.mjs';
 const $ = id => document.getElementById(id);
 const notice = (text, error = false) => { $('notice').textContent = text;$('notice').className = `notice${error ? ' error' : ''}`; };
 let generation = 0, session, view;
@@ -43,7 +45,8 @@ async function startDesktop(product, bridge) {
     const token = generation;
     const guard = () => { if (disposed || token !== generation || !identity) throw Object.assign(new Error('계정 연결이 바뀌었어요.'), { code: 'ACCOUNT_CHANGED' }); };
     const client = createDesktopAccountClient({ bridge, product, guard });
-    view = createAccountView({ client, product, guard, notice, logout: async (note, request = {}) => {
+    const transport=product==='world'?createDesktopClassroomClient({bridge,product,guard}):null;
+    view = (product==='world'?createAccountWorkspace:createAccountView)({ client, transport, product, guard, notice, logout: async (note, request = {}) => {
       let result, allResult;
       if (request.scope === 'all') {
         try { allResult = await bridge.accountRequest('revokeAll', {}); } catch { allResult = { ok: false }; }
@@ -96,12 +99,16 @@ async function start() {
     $('connect').hidden = false;
     notice(note || (!complete ? '이 브라우저에서 로그아웃했어요. 서버의 로그인 종료는 연결 후 다시 확인해 주세요.' : request.scope === 'all' ? '모든 제품에 로그인 종료를 요청하고 이 브라우저에서 로그아웃했어요.' : '이 브라우저에서 로그아웃했어요.'), !complete);
   }
-  const client = createAccountClient({ url: config.accountApiUrl, anonKey: config.supabasePublishableKey, product, guard,
-    getAccessToken: () => session?.access_token, refresh: async () => {
+  let refreshing=null;
+  const refresh=() => refreshing||= (async () => {
       guard();if (!session.refresh_token) return null;const renewed = await tokenRequest(config, { grant_type: 'refresh_token', client_id: config.clients[product].clientId, refresh_token: session.refresh_token });
       guard();session = { ...renewed, refresh_token: renewed.refresh_token || session.refresh_token };sessionStorage.setItem(key, JSON.stringify(session));return session.access_token;
-    } });
-  view = createAccountView({ client, product, guard, notice, logout });await view.load();guard();$('connect').hidden = true;notice(`${PRODUCTS[product]}에서 서버가 확인한 계정으로 연결했어요.`);
+    })().finally(()=>{refreshing=null;});
+  const client = createAccountClient({ url: config.accountApiUrl, anonKey: config.supabasePublishableKey, product, guard,getAccessToken:()=>session?.access_token,refresh });
+  const transport=product==='world'?createClassroomTransport({url:config.accountApiUrl,anonKey:config.supabasePublishableKey,product,guard,getAccessToken:()=>session?.access_token,refresh}):null;
+  view = (product==='world'?createAccountWorkspace:createAccountView)({ client, transport, product, guard, notice, logout });await view.load();guard();$('connect').hidden = true;notice(`${PRODUCTS[product]}에서 서버가 확인한 계정으로 연결했어요.`);
   window.addEventListener('pagehide', () => { generation++;view?.stop(); });
 }
 start().catch(error => { notice(error.message, true);$('connect').hidden = false; });
+// BFCache retained a stopped host; a fresh entry revalidates browser/native credentials.
+window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});

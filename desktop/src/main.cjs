@@ -16,20 +16,20 @@ const {createDownloadHandler}=require('./downloads.cjs');
 app.enableSandbox();
 protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
 const packaged=app.isPackaged;
-let runtime;
+let runtime,developmentAuthConfigPath;
 if(packaged)runtime=JSON.parse(fs.readFileSync(path.join(app.getAppPath(),'runtime.json'),'utf8'));
 else {
   if(!process.argv.includes('--synk-dev'))throw Error('Development launch requires --synk-dev');
   const clientId=process.argv.find(a=>a.startsWith('--client='))?.slice(9)||'platform';
   runtime={clientId,mode:'development',entry:DEV_URLS[clientId],releases:[]};
   if(clientId==='platform')runtime.releases=loadDevelopmentReleases({root:path.resolve(__dirname,'..'),platform:process.platform,arch:process.arch});
-  const authConfigPath=process.argv.find(a=>a.startsWith('--auth-config='))?.slice(14);
-  if(authConfigPath)runtime.auth=JSON.parse(fs.readFileSync(path.resolve(authConfigPath),'utf8'));
+  developmentAuthConfigPath=process.argv.find(a=>a.startsWith('--auth-config='))?.slice(14);
+  if(developmentAuthConfigPath)runtime.auth=JSON.parse(fs.readFileSync(path.resolve(developmentAuthConfigPath),'utf8'));
 }
 if(!Object.hasOwn(CLIENTS,runtime.clientId)||!['development','release'].includes(runtime.mode)||!safeEntry(runtime.entry,runtime.mode)||(runtime.clientId==='platform'&&runtime.entry!==PLATFORM_ENTRY)||(runtime.clientId!=='platform'&&runtime.entry===PLATFORM_ENTRY))throw Error('Invalid desktop runtime configuration');
 const smoke=runtime.mode==='development'&&process.argv.includes('--synk-smoke');
 const current=identity(runtime.clientId,runtime.mode),entry=runtime.entry;
-const teacherPreview=createTeacherPreview({packaged,mode:runtime.mode,clientId:runtime.clientId,executable:process.execPath,appRoot:app.getAppPath(),spawn});
+const teacherPreview=createTeacherPreview({packaged,mode:runtime.mode,clientId:runtime.clientId,executable:process.execPath,appRoot:app.getAppPath(),spawn,authConfigPath:developmentAuthConfigPath});
 const smokeArtifacts=smoke?(packaged?path.join(app.getPath('temp'),'SYNK Desktop Smoke',current.sessionScope):path.join(__dirname,'..','artifacts')):null;
 const authConfig=configuration(runtime.auth,runtime.clientId,runtime.mode);
 app.setName(current.productName);

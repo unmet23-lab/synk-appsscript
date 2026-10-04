@@ -9155,10 +9155,12 @@ var SynkLearning = (() => {
         historyComplete = true,
         storageScope = "device",
         accountKey = null,
-        fold = null
+        fold = null,
+        memoryOwner = null
       } = {}) {
         if (!identifier(gameId) || !identifier(learnerKey) || typeof map?.allNodes !== "function") throw new TypeError("Atlas: game, local scope and Strata map required");
         if (!["device", "account"].includes(storageScope) || storageScope === "account" && (!identifier(accountKey) || learnerKey !== "device")) throw new TypeError("Atlas: account identity and isolated host storage required");
+        if (memoryOwner != null && (storageScope !== "account" || memoryOwner.scope !== "account" || !identifier(memoryOwner.accountKey) || !memoryOwner.flow || ["today", "setToday", "presentation", "setPresentation", "epoch", "memories", "save", "decline", "state", "merge", "subscribe"].some((name) => typeof memoryOwner.flow[name] !== "function"))) throw new TypeError("Atlas: a verified personal memory owner is required");
         const scope = { domain: "LAB", workspace: "learning", subject: learnerKey };
         const key = `${KEY}.${learnerKey}`;
         let flowPort = null;
@@ -9630,7 +9632,7 @@ var SynkLearning = (() => {
             return summary();
           }
         };
-        flowPort = createFlowPort({ storage, key, clock: monotonicClock, epoch: () => {
+        flowPort = memoryOwner?.flow || createFlowPort({ storage, key, clock: monotonicClock, epoch: () => {
           try {
             refresh();
           } catch {
@@ -9641,7 +9643,14 @@ var SynkLearning = (() => {
         api.setToday = flowPort.setToday;
         api.presentation = flowPort.presentation;
         api.setPresentation = flowPort.setPresentation;
-        api.memoryPort = Object.freeze({ scope: storageScope, accountKey, state: flowPort.state, merge: flowPort.merge, subscribe: flowPort.subscribe });
+        api.memoryPort = Object.freeze({
+          scope: memoryOwner?.scope || storageScope,
+          accountKey: memoryOwner?.accountKey || accountKey,
+          state: flowPort.state,
+          merge: flowPort.merge,
+          subscribe: flowPort.subscribe,
+          flow: flowPort
+        });
         api.live = createLive({ coach: api, port: flowPort, clock: monotonicClock });
         return api;
       }

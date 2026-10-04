@@ -2,8 +2,8 @@
   "version": 1,
   "sdk": "2.117.2",
   "sha256": {
-    "src/generated/account-client.cjs": "d6e0474afc0bd0d5a3e32070637ebeecdac7c8ef3970bfef3a0885e9013011f3",
-    "src/generated/world-learning-host.cjs": "513f58e4c1ff084e6a2b23a71f401bf53fc6968bea95f9527340672297acf639",
+    "src/generated/account-client.cjs": "fab03bc8f1db7167b0eaf6d356089b1498c192d3b79df88e0df026907276987c",
+    "src/generated/world-learning-host.cjs": "8bcfb74531e65fdc960794546c1c79dd459ec57bee93fddb79c0bab1c478f977",
     "assets/SUIT-Variable.woff2": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
     "assets/InterTight-700.woff2": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e",
     "assets/scrapbook.css": "b565d9dfe0b7ad700587ba37031cd797709fca91a606b5e13646e14aed659572",
@@ -24,11 +24,12 @@
     "assets/InterTight-Regular.ttf": "053de5dcb2af4b7bd2fad68249953df7a58bf7b103a38b59d2d8d89a86ca5699",
     "assets/InterTight-Medium.ttf": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1",
     "assets/DMMono-Medium.ttf": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
-    "dist/app.js": "6c8b8f2f1495357163649c5762e37e359224e6dc1678793c7aa0d60f827d85dd",
-    "dist/client.js": "64abbf0731fc83b67da8354c7bb089a1ff40ca4e781b2fcc4bfe82173fba5f72",
-    "dist/preview.js": "a00a6e06058b651dffb4f452f325069f0733ba15432586654c5740b5b611c69c",
+    "dist/app.js": "40e264b5966700e81e181535d9572347d797a3b99ad42f9a35bb0476e9125e3b",
+    "dist/client.js": "803d81f47440218d6e0d80405bde108deddc7123185bfd6407d674d1c423d8ed",
+    "dist/preview.js": "3093fbdf6a348911a184c1534bc4c9872e4efee391e54b63b5789ade61f31a49",
     "dist/platform.js": "5b0a0370f027d3114b52bc4579c08f0118cd3f16a6b953b2a5f439a2abd9258b",
-    "dist/local-world.js": "7cfa128a3cb6462b0a5fb0f647ecb6dca875a1e70b3dff1fbbf8c4643ea639f5",
+    "dist/local-world.js": "17129de79c415de8bf7a97f5c70019d950726e9038eaf6ca24d91327740ed3bf",
+    "dist/teacher.js": "c65d194765604a6e904d62420c740eb47d81eb085f6ce1e01ecfd3c3a92a3823",
     "preview.html": "b79543db61732b3fdcaa8a4f16835e23c38db34307718886e92aba12e15f5b62"
   }
 }

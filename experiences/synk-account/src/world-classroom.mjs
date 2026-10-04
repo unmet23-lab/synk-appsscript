@@ -11,7 +11,7 @@ export function submissionAttempt({assignment,content,revision,answers,key}){
   const selected={};for(const question of questions){const answer=answers[question.id];if(!question.options?.some(option=>option.id===answer))throw new Error('모든 문항의 답을 골라 주세요.');selected[question.id]=answer;}
   return Object.freeze(assignment?{assignmentId:assignment.id,revision,answers:Object.freeze(selected),idempotencyKey:key}:{contentId:content.id,revision,answers:Object.freeze(selected),idempotencyKey:key});
 }
-export function createWorldClassroom({root,client,learnerId,guard,notice=()=>{},launchRun=()=>{},closeGame=()=>{},pollMs=5000,documentObject=document,makeId=()=>crypto.randomUUID()}){
+export function createWorldClassroom({root,client,learnerId,guard,notice=()=>{},launchRun=()=>{},closeGame=()=>{},onSharingChange=null,pollMs=5000,documentObject=document,makeId=()=>crypto.randomUUID()}){
   let ended=false,requestVersion=0,timer=null,abort=null,busy=false,workspace=null,practice=[],error='',selected=null,submitting=false,starting=false,viewVersion=0,lastSnapshot='',lastSharingRevision=null,assignmentVersions=new Map(),drafts=new Map(),pending=new Map(),practiceResults=new Map(),runRequests=new Map(),openRun=null,gameVisible=false;
   const active=()=>{guard();if(ended)throw Object.assign(new Error('연결이 끝났어요.'),{code:'ACCOUNT_CHANGED'});};
   const keyFor=choice=>`${choice.kind}:${choice.id}:${workspace?.sharing?.revision||0}`;
@@ -53,6 +53,7 @@ export function createWorldClassroom({root,client,learnerId,guard,notice=()=>{},
     try{
       const [result,catalog]=await Promise.all([client.student({signal}),client.practice({signal})]);active();if(version!==requestVersion)return;
       validateWorldWorkspace(result,learnerId);if(!Array.isArray(catalog?.content))invalid();
+      if(lastSharingRevision!==null&&lastSharingRevision!==result.sharing.revision&&onSharingChange){closeLocal();onSharingChange(result.sharing);return;}
       let changedAssignment=false;
       if(lastSharingRevision!==null&&lastSharingRevision!==result.sharing.revision){closeLocal();openRun=null;runRequests.clear();drafts.clear();pending.clear();practiceResults.clear();selected=null;submitting=false;starting=false;viewVersion++;}
       else for(const [id,previous] of assignmentVersions){
@@ -70,7 +71,13 @@ export function createWorldClassroom({root,client,learnerId,guard,notice=()=>{},
       if(openRun){const currentRun=result.runs?.find(row=>row.id===openRun.id)||(result.activeRun?.id===openRun.id?result.activeRun:result.assignments.find(row=>row.run?.id===openRun.id)?.run);if(currentRun){openRun=currentRun;if(['stopped','invalidated'].includes(currentRun.status))closeLocal();}else if(result.activeRun&&result.activeRun.id!==openRun.id){closeLocal();openRun=null;}}
       if(selected?.kind==='assignment'&&pick()?.submission)pending.delete(keyFor(selected));
       const snapshot=JSON.stringify([workspace,practice]);if(snapshot!==lastSnapshot){lastSnapshot=snapshot;render();}
-    }catch(cause){if(ended||version!==requestVersion)return;closeLocal();workspace=null;practice=[];lastSnapshot='';error=cause.message||'과제 연결을 확인하지 못했어요.';render();}
+    }catch(cause){if(ended||version!==requestVersion)return;
+      // Only a transport outage may keep an already authorized activity alive.
+      // Its outbox still needs the server's identity, sharing and run fences on retry.
+      // Permission, consent, invalid data and unknown errors continue to close it.
+      const reconnecting=(cause.code==='NETWORK_ERROR'||cause.code==='NETWORK'&&cause.retryable===true)&&workspace&&gameVisible&&openRun?.status==='active';
+      if(!reconnecting){closeLocal();workspace=null;practice=[];}
+      lastSnapshot='';error=cause.message||'과제 연결을 확인하지 못했어요.';render();}
     finally{if(!ended&&version===requestVersion){busy=false;abort=null;schedule();}}
   }
   async function submit(){
@@ -97,12 +104,12 @@ export function createWorldClassroom({root,client,learnerId,guard,notice=()=>{},
       if(openRun&&((openRun.assignmentId||null)!==(payload.assignmentId||null)||openRun.contentId!==content.id))await stopGame();
       const result=await client.startRun(payload);active();if(version!==viewVersion)return;
       const run=result?.run;if(!run||typeof run.id!=='string'||run.gameId!==content.gameId||run.contentId!==content.id||payload.assignmentId&&run.assignmentId!==payload.assignmentId)invalid();
-      runRequests.delete(key);openRun=run;if(run.status==='active'){launchRun(run);gameVisible=true;notice('게임에서 기록한 언어 응답을 이 학습에 연결합니다.');}
+      runRequests.delete(key);openRun=run;if(run.status==='active'){await launchRun(run);active();if(version!==viewVersion)return;gameVisible=true;notice('게임에서 기록한 언어 응답을 이 학습에 연결합니다.');}
       await reload({force:true});
     }catch(cause){if(!ended&&version===viewVersion){if(['RUN_ENDED','ALREADY_SUBMITTED','REVISION_CONFLICT'].includes(cause.code))runRequests.delete(key);error=cause.message||'게임 시작을 확인하지 못했어요. 같은 요청으로 다시 확인해 주세요.';}}
     finally{if(!ended&&version===viewVersion){starting=false;render();}}
   }
-  async function openGame(gameId){active();const item=practice.find(row=>row.kind==='game'&&row.gameId===gameId);if(!workspace?.sharing.enabled||!item)throw new Error('학습 연결과 게임 목록을 먼저 불러와 주세요.');selected={kind:'practice',id:item.id};viewVersion++;render();await startGame();}
+  async function openGame(gameId){active();if(starting)throw new Error('게임을 연결하고 있어요. 잠시 뒤 다시 골라 주세요.');const item=practice.find(row=>row.kind==='game'&&row.gameId===gameId);if(!workspace?.sharing.enabled||!item)throw new Error('학습 연결과 게임 목록을 먼저 불러와 주세요.');selected={kind:'practice',id:item.id};viewVersion++;render();await startGame();}
   function click(event){const button=event.target.closest?.('[data-world-action]');if(!button||button.disabled||!root.contains(button)||ended)return;const action=button.dataset.worldAction;
     if(action==='refresh'){lastSnapshot='';void reload({force:true});return;}
     if(action==='back'){selected=null;error='';viewVersion++;render();return;}

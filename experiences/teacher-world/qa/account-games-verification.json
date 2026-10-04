@@ -1,0 +1,273 @@
+{
+  "ok": true,
+  "assembledAt": "2026-10-04T10:48:14.903Z",
+  "mode": "account-linked",
+  "activities": [
+    {
+      "id": "racing-listening",
+      "file": "account-game-racing-listening.json",
+      "ok": true,
+      "checks": 13,
+      "verifiedAt": "2026-10-04T10:05:08.667Z",
+      "submission": {
+        "total": 3,
+        "correct": 3,
+        "assisted": 0,
+        "independent": 3
+      },
+      "title": "레이싱 · 듣고 이해하기"
+    },
+    {
+      "id": "racing-reading",
+      "file": "account-game-racing-reading.json",
+      "ok": true,
+      "checks": 13,
+      "verifiedAt": "2026-10-04T09:55:35.775Z",
+      "submission": {
+        "total": 3,
+        "correct": 3,
+        "assisted": 0,
+        "independent": 3
+      },
+      "title": "레이싱 · 읽고 이해하기"
+    },
+    {
+      "id": "rhythm-listening",
+      "file": "account-game-rhythm-listening.json",
+      "ok": true,
+      "checks": 10,
+      "verifiedAt": "2026-10-04T10:05:37.536Z",
+      "submission": {
+        "total": 3,
+        "correct": 3,
+        "assisted": 0,
+        "independent": 3
+      },
+      "title": "리듬 · 나레이션 이해하기"
+    },
+    {
+      "id": "runner-listening",
+      "file": "account-game-runner-listening.json",
+      "ok": true,
+      "checks": 10,
+      "verifiedAt": "2026-10-04T09:57:54.024Z",
+      "submission": {
+        "total": 3,
+        "correct": 3,
+        "assisted": 0,
+        "independent": 3
+      },
+      "title": "바람길 · 지시 듣기 확인"
+    },
+    {
+      "id": "order-listening",
+      "file": "account-game-order-listening.json",
+      "ok": true,
+      "checks": 11,
+      "verifiedAt": "2026-10-04T09:59:52.737Z",
+      "submission": {
+        "total": 3,
+        "correct": 3,
+        "assisted": 0,
+        "independent": 3
+      },
+      "title": "주문 폭주 · 주문 이해하기"
+    },
+    {
+      "id": "entry-reading",
+      "file": "account-game-entry-reading.json",
+      "ok": true,
+      "checks": 10,
+      "verifiedAt": "2026-10-04T10:00:08.445Z",
+      "submission": {
+        "total": 3,
+        "correct": 3,
+        "assisted": 0,
+        "independent": 3
+      },
+      "title": "입장 검사 · 안내문 판단"
+    },
+    {
+      "id": "story-reading",
+      "file": "account-game-story-reading.json",
+      "ok": true,
+      "checks": 10,
+      "verifiedAt": "2026-10-04T10:07:15.822Z",
+      "submission": {
+        "total": 3,
+        "correct": 3,
+        "assisted": 0,
+        "independent": 3
+      },
+      "title": "선생님이 돌아왔다 · 읽고 행동하기"
+    },
+    {
+      "id": "blank-reading",
+      "file": "account-game-blank-reading.json",
+      "ok": true,
+      "checks": 10,
+      "verifiedAt": "2026-10-04T10:02:37.115Z",
+      "submission": {
+        "total": 3,
+        "correct": 3,
+        "assisted": 0,
+        "independent": 3
+      },
+      "title": "빈칸 베기 · 낱말과 문형 읽기"
+    },
+    {
+      "id": "town-reading",
+      "file": "account-game-town-reading.json",
+      "ok": true,
+      "checks": 10,
+      "verifiedAt": "2026-10-04T10:02:54.621Z",
+      "submission": {
+        "total": 3,
+        "correct": 3,
+        "assisted": 0,
+        "independent": 3
+      },
+      "title": "Town · 생활 안내 읽기 확인"
+    }
+  ],
+  "lifecycles": [
+    {
+      "id": "racing-listening-lifecycle",
+      "file": "account-game-racing-listening-lifecycle.json",
+      "ok": true,
+      "checks": 19,
+      "verifiedAt": "2026-10-04T10:47:58.145Z",
+      "submission": {
+        "total": 3,
+        "correct": 3,
+        "assisted": 0,
+        "independent": 3
+      },
+      "title": "레이싱 · 듣고 이해하기"
+    },
+    {
+      "id": "racing-reading-lifecycle",
+      "file": "account-game-racing-reading-lifecycle.json",
+      "ok": true,
+      "checks": 19,
+      "verifiedAt": "2026-10-04T10:37:52.410Z",
+      "submission": {
+        "total": 3,
+        "correct": 3,
+        "assisted": 0,
+        "independent": 3
+      },
+      "title": "레이싱 · 읽고 이해하기"
+    },
+    {
+      "id": "rhythm-listening-lifecycle",
+      "file": "account-game-rhythm-listening-lifecycle.json",
+      "ok": true,
+      "checks": 16,
+      "verifiedAt": "2026-10-04T10:41:37.254Z",
+      "submission": {
+        "total": 3,
+        "correct": 3,
+        "assisted": 0,
+        "independent": 3
+      },
+      "title": "리듬 · 나레이션 이해하기"
+    },
+    {
+      "id": "runner-listening-lifecycle",
+      "file": "account-game-runner-listening-lifecycle.json",
+      "ok": true,
+      "checks": 16,
+      "verifiedAt": "2026-10-04T10:42:38.145Z",
+      "submission": {
+        "total": 3,
+        "correct": 3,
+        "assisted": 0,
+        "independent": 3
+      },
+      "title": "바람길 · 지시 듣기 확인"
+    },
+    {
+      "id": "order-listening-lifecycle",
+      "file": "account-game-order-listening-lifecycle.json",
+      "ok": true,
+      "checks": 18,
+      "verifiedAt": "2026-10-04T10:37:54.691Z",
+      "submission": {
+        "total": 3,
+        "correct": 3,
+        "assisted": 0,
+        "independent": 3
+      },
+      "title": "주문 폭주 · 주문 이해하기"
+    },
+    {
+      "id": "entry-reading-lifecycle",
+      "file": "account-game-entry-reading-lifecycle.json",
+      "ok": true,
+      "checks": 16,
+      "verifiedAt": "2026-10-04T10:38:23.499Z",
+      "submission": {
+        "total": 3,
+        "correct": 3,
+        "assisted": 0,
+        "independent": 3
+      },
+      "title": "입장 검사 · 안내문 판단"
+    },
+    {
+      "id": "story-reading-lifecycle",
+      "file": "account-game-story-reading-lifecycle.json",
+      "ok": true,
+      "checks": 16,
+      "verifiedAt": "2026-10-04T10:38:57.423Z",
+      "submission": {
+        "total": 3,
+        "correct": 3,
+        "assisted": 0,
+        "independent": 3
+      },
+      "title": "선생님이 돌아왔다 · 읽고 행동하기"
+    },
+    {
+      "id": "blank-reading-lifecycle",
+      "file": "account-game-blank-reading-lifecycle.json",
+      "ok": true,
+      "checks": 20,
+      "verifiedAt": "2026-10-04T10:39:23.886Z",
+      "submission": {
+        "total": 3,
+        "correct": 3,
+        "assisted": 0,
+        "independent": 3
+      },
+      "title": "빈칸 베기 · 낱말과 문형 읽기"
+    },
+    {
+      "id": "town-reading-lifecycle",
+      "file": "account-game-town-reading-lifecycle.json",
+      "ok": true,
+      "checks": 16,
+      "verifiedAt": "2026-10-04T10:40:44.959Z",
+      "submission": {
+        "total": 3,
+        "correct": 3,
+        "assisted": 0,
+        "independent": 3
+      },
+      "title": "Town · 생활 안내 읽기 확인"
+    }
+  ],
+  "activityChecks": 97,
+  "lifecycleChecks": 156,
+  "checks": 253,
+  "synthetic": true,
+  "production": false,
+  "coverage": "All nine catalog activities: real teacher assignment UI → WORLD frozen target → real game controls → stop after one response → teacher partial result → WORLD reload/reconnect to same run → complete exact target → canonical account PostgreSQL events → teacher results → WORLD reload. Blank-slice additionally exercises exhausted offline-outbox recovery.",
+  "notVerified": [
+    "Production authentication/deployment",
+    "Physical Android/iOS/macOS devices",
+    "Student learning efficacy",
+    "Every authored item and every difficulty in each game"
+  ]
+}

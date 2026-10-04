@@ -1,0 +1,94 @@
+{
+  "at": "2026-10-04T10:35:05.791Z",
+  "synthetic": true,
+  "production": false,
+  "checks": [
+    {
+      "name": "class help control stores personal memory at account revision 2 while class revision is 7",
+      "ok": true
+    },
+    {
+      "name": "today condition stays device-only",
+      "ok": true
+    },
+    {
+      "name": "completed real game stores moment memory under personal account consent",
+      "ok": true
+    },
+    {
+      "name": "teacher learner projection excludes private presentation and moment settings",
+      "ok": true
+    },
+    {
+      "name": "class help and today continue in personal learning on same device",
+      "ok": true
+    },
+    {
+      "name": "first game waits for delayed personal memory before opening",
+      "ok": true
+    },
+    {
+      "name": "fresh browser context restores personal help without device condition",
+      "ok": true
+    },
+    {
+      "name": "real game on second device starts from saved moment memory",
+      "ok": true,
+      "detail": "{\"settings\":{\"content\":\"blank-slice.hang\",\"policy\":\"flow-1\",\"arm\":\"adapted\",\"mode\":\"auto\",\"adaptive\":true,\"values\":{\"hang\":1},\"indices\":{\"hang\":3},\"expected\":0.86,\"level\":null},\"intro\":{\"code\":\"start.memory\",\"opening\":[],\"line\":null}}"
+    },
+    {
+      "name": "turning teacher sharing off preserves personal settings sync",
+      "ok": true
+    },
+    {
+      "name": "another active device reads the newer personal choice",
+      "ok": true
+    },
+    {
+      "name": "personal consent off creates fresh device-only preferences and sends no memory request",
+      "ok": true
+    },
+    {
+      "name": "other device stops stale preference access after server detects consent revocation",
+      "ok": true
+    },
+    {
+      "name": "reconsent restores prior cloud choice rather than uploading consent-off local choice",
+      "ok": true
+    },
+    {
+      "name": "logout destroys host and rejects old preference handles",
+      "ok": true
+    },
+    {
+      "name": "another account on same browser never inherits previous learner preferences",
+      "ok": true
+    },
+    {
+      "name": "logout while memory response is delayed performs no late storage import",
+      "ok": true
+    },
+    {
+      "name": "personal controls fit viewport 320",
+      "ok": true
+    },
+    {
+      "name": "personal controls fit viewport 390",
+      "ok": true
+    },
+    {
+      "name": "personal controls fit viewport 1280",
+      "ok": true
+    },
+    {
+      "name": "personal memory calls never use class sharing revision",
+      "ok": true
+    },
+    {
+      "name": "no browser or fixture errors",
+      "ok": true,
+      "detail": "[]"
+    }
+  ],
+  "errors": []
+}

@@ -10,7 +10,11 @@
 
 통합은 접근 권한의 승격이 아니다. 서버가 확인한 `library.messenger` 메뉴 권한과 실제 회사 구성원 권한이 각각 필요하다. 이전 `library.studio`·`library.shift` 권한은 무시하며 Messenger로 바꾸지 않는다. 이전 즐겨찾기·선택·실행 기록의 퇴역 앱 키는 제거해 읽고, 현재 계정에서 허용된 첫 앱을 표시한다. 관심사에 ‘AI 업무 연습’이나 ‘콘텐츠 제작’을 골라도 권한이 없는 Messenger가 나타나지 않는다.
 
-개발 플랫폼의 **교사 앱 미리보기**는 이제 `classroom-main.cjs`를 실행해 로컬 수업 연결 서버(4295)와 별도 세션의 WORLD·교사 창을 함께 연다. `desktop`에서 `npm run dev:classroom`으로도 실행한다. 닫은 창을 다시 열 수 있고 계정·회사·설치 IPC는 제공하지 않는다. [현재 연결 범위와 검증](../experiences/teacher-world/README.md)을 따른다. 기존 합성 데모는 `node experiences/teacher-world/server.mjs`(4290) + `npm run dev:teacher`로 보존했다. 정식 SSO·운영 학생·배포 패키지를 새로 연결한 것은 아니다.
+개발 플랫폼의 **교사 앱 미리보기**는 `teacher-main.cjs`를 별도 프로세스로 실행해 `/synk-account/teacher.html`을 연다. WORLD의 계정 화면에 들어가지 않고 교사 앱 자체에서 SYNK ID로 로그인하고 담당 수업을 선택한다. `im.synk.teacher.preview` 저장소·Chromium 세션·OAuth `clients.teacher` 등록은 WORLD와 분리하며 API 제품은 기존 `world`다. 교사 권한은 서버의 실제 담당 반으로 확인하고, 임의 역할 선택이나 학생의 개인 맞춤 기억 조회를 허용하지 않는다. 운영 로그인 설정이 없으면 준비 안내만 표시한다.
+
+저장소 루트에서 `node experiences/learning-hub/server.mjs`를 시작한 뒤 `desktop`에서 `npm run dev:teacher -- --auth-config=C:/path/public-auth.json`으로 실행한다. 로그인 설정에는 [auth.example.json](auth.example.json)의 별도 `clients.teacher` 공개 클라이언트와 `/synk/oauth/teacher/callback`이 필요하다. 소스 플랫폼에서 열면 플랫폼 main이 받은 공개 설정 경로를 교사 프로세스에도 전달한다. 기존 로컬 수업 데모는 `npm run dev:classroom`으로 보존했다. 별도 세션의 WORLD·교사 창을 여는 4295 연결이며 운영 계정 연결과 섞지 않는다.
+
+2026-10-04 로컬 재검증: [실제 Windows Electron 계정 연결 26/26](artifacts/teacher-account-current-20261004.json)은 DPAPI 저장·복구, PKCE loopback, 제한된 IPC, 교사 UI 과제 배정 → 학습자 API 제출 → 교사 UI 결과, 네트워크 중단·복구, 담당 반 철회·로그아웃, 1280/390px을 확인했다. 연결 복구 후에도 남던 오류 안내를 수정했다. 이 native 검사는 학습자 화면을 클릭하지 않으며 WORLD 화면 검사는 별도다. 합성 OAuth 제공자와 메모리 PostgreSQL을 사용했고 숨김 화면은 Electron offscreen compositor로 검사했다. [실제 teacher-main 부팅](artifacts/teacher-entry-current-20261004.json)도 로그인 미설정 상태에서 준비 화면·별도 세션·Node 차단을 통과했다. 데스크톱 전체 시험은 [151개 재통과 기록](artifacts/teacher-account-current-regression-20261004.txt)에 있다. 운영 OAuth 등록·배포, 정식 패키지·서명·설치, Mac/모바일 실기기 확인은 실행하지 않았다. [전체 수업 연결 범위](../experiences/teacher-world/README.md)를 따른다.
 
 ## PATH VR 로컬 MVP
 

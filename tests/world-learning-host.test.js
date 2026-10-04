@@ -325,3 +325,138 @@ test('a memory view the server does not offer yet holds up neither the game nor 
   assert.equal(host.status().memory.code, 'MEMORY_UNAVAILABLE'); assert.deepEqual(game.presentation(), { textSize: 'large' });
   host.stop();
 });
+
+test('class evidence keeps its revision while existing personal help and moment memory follow one account across classes and devices', async () => {
+  const cloud = memoryServer(), personalStore = memory().storage, records = server(7), classStore = memory().storage;
+  // A choice saved by the old ordinary personal host remains readable without a migration.
+  const old = createWorldLearningHost({ accountKey: 'person', revision: 2, storage: personalStore, guard() {}, transport: server(2).transport, engine });
+  const before = old.createGame({ gameId: 'order-rush' }, createGame, manual);
+  before.setPresentation({ support: 'step', textSize: 'large' });
+  const prior = before.live(FLOW);
+  for (let i = 0; i < 8; i++) prior.observe({ outcome: 'success', pressure: 0.3 });
+  const reached = prior.end().settings.values;
+  old.stop();
+  const memoryRequests = [];
+  const transport = Object.fromEntries(['get', 'post'].map(method => [method, args => { memoryRequests.push(args.revision); return cloud.transport[method](args); }]));
+  const open = (accountKey, revision, storage, ownStorage = personalStore, connected = true) => createWorldLearningHost({ accountKey, revision, storage, guard() {}, connected,
+    transport: records.transport, engine: { ...engine, createLearningSync: manual },
+    personalMemory: { accountKey: 'person', revision: 2, storage: ownStorage, connected: true, transport } });
+  const classA = open('person:class:A', 7, classStore);
+  classA.beginRun({ id: 'class-A-run', gameId: 'order-rush' });
+  const game = classA.createGame({ gameId: 'order-rush', memoryOwner: { malicious: true } }, createGame, manual);
+  await classA.retry();
+  assert.deepEqual(game.presentation(), { support: 'step', textSize: 'large' });
+  assert.equal(game.live(FLOW).settings().values.patience, reached.patience);
+  game.answer(game.present(item('class-A-evidence')), { correct: true, assessable: true });
+  game.setToday('tired');
+  await classA.retry(); await classA.flush();
+  assert.ok(records.rows.length > 0 && records.rows.every(row => row.runId === 'class-A-run'));
+  assert.ok(memoryRequests.length > 0 && memoryRequests.every(revision => revision === 2));
+  assert.equal('memoryPort' in game, false);
+  assert.ok([...cloud.rows.values()].every(row => ['presentation', 'flow', 'declined'].includes(row.kind)));
+  classA.stop();
+
+  // A class change (different evidence partition/revision) keeps the same personal memory.
+  const classB = open('person:class:B', 11, memory().storage, personalStore, false);
+  const there = classB.createGame({ gameId: 'korean-rhythm' }, createGame, manual);
+  await classB.retry();
+  assert.deepEqual(there.presentation(), { support: 'step', textSize: 'large' });
+  assert.equal(there.today(), 'tired', 'today stays on this device across the person’s scopes');
+  classB.stop();
+  const phone = open('person', 2, memory().storage, memory().storage, false);
+  const phoneGame = phone.createGame({ gameId: 'order-rush' }, createGame, manual);
+  await phone.retry();
+  assert.deepEqual(phoneGame.presentation(), { support: 'step', textSize: 'large' });
+  assert.equal(phoneGame.live(FLOW).settings().values.patience, reached.patience);
+  assert.equal(phoneGame.today(), null, 'today is absent on another device');
+  phone.stop();
+});
+
+test('turning class sharing off leaves personal memory connected; turning personal consent off keeps its separate local store', async () => {
+  const cloud = memoryServer(), privateStore = memory().storage;
+  const open = (enabled, ownStorage) => createWorldLearningHost({ accountKey: 'local:person:class:A', revision: 9, storage: memory().storage, guard() {}, connected: false,
+    transport: { get() { throw new Error('class sharing is off'); }, post() { throw new Error('class sharing is off'); } }, engine,
+    personalMemory: { accountKey: enabled ? 'person' : 'local:person', revision: enabled ? 2 : 3, storage: ownStorage, connected: enabled, transport: cloud.transport } });
+  let host = open(true, privateStore), game = host.createGame({ gameId: 'racing' }, createGame, manual);
+  await host.retry(); game.setPresentation({ explanation: 'detailed' }); await host.flush();
+  assert.deepEqual(cloud.rows.get('presentation|chosen').value, { explanation: 'detailed' });
+  const stale = game.live(FLOW); host.stop();
+  const calls = cloud.calls.length;
+  host = open(false, memory().storage); game = host.createGame({ gameId: 'racing' }, createGame, manual);
+  assert.equal(game.presentation(), null, 'the previous consent partition is not exposed');
+  game.setPresentation({ support: 'independent' }); await host.flush();
+  assert.equal(cloud.calls.length, calls, 'no memory request while personal consent is off');
+  assert.throws(() => stale.end(), /session ended/);
+  host.stop();
+});
+
+test('an ended personal memory host aborts a delayed account reply before any memory import or write', async () => {
+  let finish, signal, posts = 0;
+  const own = memory(), cloud = { get: args => { signal = args.signal; return new Promise(resolve => { finish = resolve; }); }, post: async () => { posts++; } };
+  const host = createWorldLearningHost({ accountKey: 'person:class:A', revision: 5, storage: memory().storage, guard() {}, connected: false, engine,
+    personalMemory: { accountKey: 'person', revision: 2, storage: own.storage, connected: true, transport: cloud } });
+  const game = host.createGame({ gameId: 'racing' }, createGame, manual);
+  await new Promise(resolve => setImmediate(resolve));
+  host.stop(); const saved = [...own.saved.entries()];
+  assert.equal(signal.aborted, true);
+  finish({ ok: true, revision: 2, entries: [{ kind: 'presentation', key: 'chosen', value: { textSize: 'large' }, at: new Date().toISOString() }] });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.deepEqual([...own.saved.entries()], saved); assert.equal(posts, 0);
+  assert.throws(() => game.presentation(), /session ended/);
+});
+
+test('a server-detected personal consent or account revision change closes old game memory access', async () => {
+  for (const code of ['LEARNING_DISABLED', 'REVISION_CONFLICT', 'SESSION_REVOKED', 'ACCOUNT_UNAVAILABLE']) {
+    const cloud = memoryServer({ ok: false, error: { code } });
+    const host = createWorldLearningHost({ accountKey: 'person:class:A', revision: 9, storage: memory().storage, guard() {}, connected: false, engine,
+      personalMemory: { accountKey: 'person', revision: 2, storage: memory().storage, connected: true, transport: cloud.transport } });
+    const game = host.createGame({ gameId: 'racing' }, createGame, manual), live = game.live(FLOW);
+    await host.retry();
+    assert.equal(host.status().memory.phase, 'blocked');
+    for (const call of [() => game.presentation(), () => game.setPresentation({ motion: 'reduced' }), () => live.settings(), () => live.end()]) assert.throws(call, error => error.code === 'MEMORY_SESSION_ENDED');
+    assert.deepEqual(cloud.calls, ['get']); host.stop();
+  }
+});
+
+test('WORLD preference controls keep working between runs without leaking either host port to the UI', async () => {
+  const cloud = memoryServer(), host = createWorldLearningHost({ accountKey: 'person:class:A', revision: 7,
+    storage: memory().storage, guard() {}, transport: server(7).transport, engine,
+    personalMemory: { accountKey: 'person', revision: 2, connected: true, storage: memory().storage, transport: cloud.transport } });
+  const preferences = host.preferences();
+  assert.deepEqual(Object.keys(preferences).sort(), ['presentation', 'setPresentation', 'setToday', 'subscribe', 'today']);
+  let notices=0; const stop=preferences.subscribe(()=>notices++);
+  preferences.setPresentation({support:'step'});
+  host.beginRun({id:'preference-run',gameId:'racing'});
+  const game=host.createGame({gameId:'racing'},createGame,manual);
+  assert.equal(game.presentation().support,'step');
+  preferences.setToday('tired');preferences.setPresentation({support:'independent'});
+  assert.equal(game.today(),'tired');assert.equal(game.presentation().support,'independent');
+  host.closeRun();preferences.setPresentation({support:'choose'});await host.flush();
+  assert.equal(cloud.rows.get('presentation|chosen').value.support,'choose');assert.ok(notices>=3);
+  stop();host.stop();assert.throws(()=>preferences.presentation(),/session ended/);
+  assert.throws(()=>preferences.setPresentation({support:'step'}),/session ended/);
+});
+
+test('game readiness waits for the initial personal memory and later foreground refresh, and an ended host rejects pending readiness', async () => {
+  let finish;
+  const transport={get:()=>new Promise(resolve=>{finish=resolve;}),post:async({revision,entries})=>({ok:true,revision,entries})};
+  const host=createWorldLearningHost({accountKey:'person:class:A',revision:7,connected:false,storage:memory().storage,guard(){},engine,
+    personalMemory:{accountKey:'person',revision:2,connected:true,storage:memory().storage,transport}});
+  const preferences=host.preferences();let ready=false;
+  const opening=host.ready().then(()=>{ready=true;});await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(ready,false,'the game cannot snapshot default settings while the first read is pending');
+  finish({ok:true,revision:2,entries:[{kind:'presentation',key:'chosen',value:{support:'step'},at:new Date().toISOString()}]});
+  await opening;assert.deepEqual(preferences.presentation(),{support:'step'});
+  const refreshing=host.retry();ready=false;const reopening=host.ready().then(()=>{ready=true;});await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(ready,false,'returning to the page also waits for the current read');
+  const rejected=assert.rejects(reopening,error=>error.code==='MEMORY_SESSION_ENDED');host.stop();await rejected;await refreshing;
+});
+
+test('a timed out personal memory read permits local practice instead of waiting indefinitely', async () => {
+  const bounded={...engine,createMemorySync:options=>engine.createMemorySync({...options,timeoutMs:20})};
+  const host=createWorldLearningHost({accountKey:'person:class:A',revision:7,connected:false,storage:memory().storage,guard(){},engine:bounded,
+    personalMemory:{accountKey:'person',revision:2,connected:true,storage:memory().storage,transport:{get:()=>new Promise(()=>{}),post:()=>new Promise(()=>{})}}});
+  const preferences=host.preferences();preferences.setPresentation({support:'step'});await host.ready();
+  assert.equal(host.status().memory.phase,'offline');
+  const game=host.createGame({gameId:'racing'},createGame,manual);assert.deepEqual(game.presentation(),{support:'step'});assert.ok(game.live(FLOW).settings());host.stop();
+});

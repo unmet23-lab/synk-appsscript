@@ -3,11 +3,9 @@
  * selects authored reactions, and Loom supplies presentation only.
  * This is not an account service or a TOPIK assessment.
  */
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-const Trail = require('../../atlas/trail-life.js');
-const Vellum = require('../../atlas/vellum-life.js');
-const Loom = require('../../tools/lib/loom-life.js');
+import Trail from '../../atlas/trail-life.js';
+import Vellum from '../../atlas/vellum-life.js';
+import Loom from '../../tools/lib/loom-life.js';
 
 export const SCOPE = Object.freeze({ domain: 'LAB', workspace: 'synk-town', subject: 'preview-local' });
 export const SEATS = Object.freeze({

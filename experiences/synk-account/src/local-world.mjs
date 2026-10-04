@@ -4,7 +4,7 @@ import {createWorldClassroom} from './world-classroom.mjs';
 
 export function mountLocalWorld({documentObject=document,windowObject=window,storage=sessionStorage,createView=createAccountView,createClassroom=createWorldClassroom,clientFactory=createLocalWorldClient}={}){
   const key='synk.local-world.connection.v1',$=id=>documentObject.getElementById(id);
-  let token=null,generation=0,classroomGeneration=0,view=null,classroom=null,joining=false,resuming=false;
+  let token=null,generation=0,classroomGeneration=0,view=null,classroom=null,joining=false,resumeGeneration=null,hidden=false,disposed=false;
   const notice=(message,error=false)=>{const node=$('notice');node.textContent=message;node.className=`notice${error?' error':''}`;};
   const changed=()=>Object.assign(new Error('계정 연결이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});
   function stopViews(){generation++;classroomGeneration++;view?.stop();classroom?.stop();view=null;classroom=null;}
@@ -26,8 +26,8 @@ export function mountLocalWorld({documentObject=document,windowObject=window,sto
     await view.load();guard();$('local-join').hidden=true;await mountClassroom(current,client);guard();documentObject.documentElement.dataset.localWorld='connected';notice('WORLD와 교사 앱을 로컬 개발 계정으로 연결했어요. 실제 학습과 과제를 이어가세요.');
   }
   async function resume(){
-    if(!token||resuming)return;resuming=true;stopViews();const current=generation;$('local-join').hidden=true;$('local-reconnect').hidden=true;$('local-retry-button').disabled=true;
-    try{await connected();}catch(error){if(current===generation)suspend(error);}finally{resuming=false;$('local-retry-button').disabled=false;}
+    if(!token||hidden||disposed||resumeGeneration===generation)return;stopViews();const current=generation;resumeGeneration=current;$('local-join').hidden=true;$('local-reconnect').hidden=true;$('local-retry-button').disabled=true;
+    try{await connected();}catch(error){if(current===generation)suspend(error);}finally{if(resumeGeneration===current){resumeGeneration=null;$('local-retry-button').disabled=false;}}
   }
   async function join(event){
     event.preventDefault();if(joining)return;const code=$('connection-code').value.trim(),consent=$('connection-consent').checked;if(!code||!consent){notice('연결 코드와 학습 공유 동의를 확인해 주세요.',true);return;}
@@ -36,10 +36,12 @@ export function mountLocalWorld({documentObject=document,windowObject=window,sto
     catch(error){if(current===generation){clear();notice(error.message||'연결을 시작하지 못했어요.',true);}}
     finally{joining=false;$('local-join-button').disabled=false;}
   }
-  const retry=()=>{void resume();},pagehide=()=>stopViews();
-  $('local-join-form').addEventListener('submit',join);$('local-retry-button').addEventListener('click',retry);windowObject.addEventListener('pagehide',pagehide);
+  // A BFCache page returns with stopped views but the same JavaScript instance.
+  // Revalidate the saved session before recreating its learning host and classroom.
+  const retry=()=>{void resume();},pagehide=()=>{hidden=true;stopViews();},pageshow=event=>{if(!event.persisted||disposed)return;hidden=false;void resume();};
+  $('local-join-form').addEventListener('submit',join);$('local-retry-button').addEventListener('click',retry);windowObject.addEventListener('pagehide',pagehide);windowObject.addEventListener('pageshow',pageshow);
   try{const saved=JSON.parse(storage.getItem(key)||'null');if(typeof saved?.token==='string')token=saved.token;}catch{}
   if(token)void resume();else notice('선생님이 발급한 개발 연결 코드를 입력해 주세요. 실제 SYNK ID 로그인과는 별도입니다.');
-  return Object.freeze({stop(){stopViews();$('local-join-form').removeEventListener('submit',join);$('local-retry-button').removeEventListener('click',retry);windowObject.removeEventListener('pagehide',pagehide);}});
+  return Object.freeze({stop(){disposed=true;stopViews();$('local-join-form').removeEventListener('submit',join);$('local-retry-button').removeEventListener('click',retry);windowObject.removeEventListener('pagehide',pagehide);windowObject.removeEventListener('pageshow',pageshow);}});
 }
 if(typeof document!=='undefined')mountLocalWorld();

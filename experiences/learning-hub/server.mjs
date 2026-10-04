@@ -3,12 +3,18 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 export const root = fileURLToPath(new URL('../', import.meta.url));
-const allowed = new Set(['learning-hub', 'korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'entry-check', 'story-classroom', 'synk-account', 'atlas-lab', 'blank-slice', 'hangul-stage']);
+const allowed = new Set(['learning-hub', 'korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'entry-check', 'story-classroom', 'synk-account', 'atlas-lab', 'blank-slice','teacher-world','synk-town','hangul-stage']);
 // The Atlas lab's consultation demo reads the published computer recommendation tool, read-only.
 const consult = new Map([['/consult/computer/rules.js', '../docs/마케팅/맞춤도구/computer/rules.js'], ['/consult/computer/content.js', '../docs/마케팅/맞춤도구/computer/content.js']]);
-const accountPublic = new Set(['index.html', 'client.html', 'preview.html', 'platform.html', 'platform.css', 'config.json', 'style.css',
-  'platform.webmanifest', 'world.webmanifest', 'assets/app-platform.png', 'assets/app-world.png',
-  'dist/app.js', 'dist/client.js', 'dist/preview.js', 'dist/platform.js',
+consult.set('/synk-town/engine/loom-motion.js','../tools/lib/loom-motion.js');
+consult.set('/synk-town/engine/loom-life.js','../tools/lib/loom-life.js');
+const classroomPublic={
+  'teacher-world':new Set(['index.html','style.css','app.mjs','personalization-ui.mjs','personalization.css']),
+  'synk-town':new Set(['linked.html','app.mjs','style.css','linked-client.mjs','understanding.mjs','understanding-ui.mjs'])
+};
+const accountPublic = new Set(['index.html', 'client.html', 'teacher.html', 'teacher.css', 'preview.html', 'platform.html', 'platform.css', 'config.json', 'style.css',
+  'platform.webmanifest', 'world.webmanifest', 'world-classroom.css', 'assets/app-platform.png', 'assets/app-world.png',
+  'dist/app.js', 'dist/client.js', 'dist/teacher.js', 'dist/preview.js', 'dist/platform.js',
   'assets/SUIT-Variable.woff2', 'assets/InterTight-700.woff2', 'assets/scrapbook.css', 'assets/sticker-book.webp',
   'assets/thread-shift.webp', 'assets/slab-coral-long.webp', 'assets/slab-cream-long.webp', 'assets/chip-blush-long.webp', 'assets/badge-cream.webp', 'assets/badge-check.webp',
   'assets/tex-blush.webp', 'assets/laptop-felt.webp', 'assets/sticker-search.webp', 'assets/sticker-person.webp', 'assets/synk-logo.svg',
@@ -28,6 +34,8 @@ export function targetFor(url) {
     || segments.some(s => s.startsWith('.')) || !types[path.extname(target)]
     || segments.includes('qa') || segments.includes('site-package')) return null;
   if (segments[0] === 'synk-account' && !accountPublic.has(segments.slice(1).join('/'))) return null;
+  const publicFiles=classroomPublic[segments[0]],name=segments.slice(1).join('/');
+  if(publicFiles&&!publicFiles.has(name)&&!(name.startsWith('assets/')&&/\.(?:png|webp|svg|woff2|ttf|jpg)$/.test(name)))return null;
   return target;
 }
 export function createServer() {

@@ -1,6 +1,6 @@
 'use strict';
 const crypto=require('node:crypto');
-const IDS=['platform','world','messenger'];
+const IDS=['platform','world','messenger','teacher'];
 function configuration(value,clientId,mode){
   if(value==null)return null;
   const fail=()=>{throw Object.assign(new Error('공개 로그인 설정을 확인해 주세요.'),{code:'AUTH_CONFIG_INVALID'});};
@@ -18,7 +18,9 @@ function configuration(value,clientId,mode){
     if(seenIds.has(c.clientId)||seenCallbacks.has(redirect.href))fail();seenIds.add(c.clientId);seenCallbacks.add(redirect.href);
   }
   if(!value.clients[clientId])fail();
-  const selected={version:1,supabaseUrl,accountApiUrl,publishableKey:key,clientId:value.clients[clientId].clientId,redirectUri:value.clients[clientId].redirectUri,product:clientId};
+  // Teacher is an isolated OAuth client of WORLD, not a new API product or a
+  // renderer-selected teacher role. staff_classes remains the server authority.
+  const selected={version:1,supabaseUrl,accountApiUrl,publishableKey:key,clientId:value.clients[clientId].clientId,redirectUri:value.clients[clientId].redirectUri,product:clientId==='teacher'?'world':clientId,...(clientId==='teacher'?{clientKey:'teacher'}:{})};
   return Object.freeze({...selected,fingerprint:crypto.createHash('sha256').update(JSON.stringify(selected)).digest('hex')});
 }
 module.exports={configuration};

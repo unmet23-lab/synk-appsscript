@@ -19,17 +19,17 @@ const TASKS=freeze({
       {id:'detail-books',prompt:'한 사람이 책을 몇 권까지 빌릴 수 있습니까?',options:[{id:'a',text:'두 권'},{id:'b',text:'세 권'},{id:'c',text:'다섯 권'}],answer:'b',explanation:'책은 한 사람에게 세 권까지 빌려 준다고 안내했어요.'},
       {id:'detail-return',prompt:'빌린 책은 언제까지 돌려줘야 합니까?',options:[{id:'a',text:'하루 안에'},{id:'b',text:'일주일 안에'},{id:'c',text:'2주 안에'}],answer:'c',explanation:'마지막 문장에 2주 안에 돌려달라고 쓰여 있어요.'}
     ]},
-  'reading-negation':{id:'reading-negation',title:'바뀐 약속과 쉬는 날 읽기',skillIds:['ko.reading.negation'],difficulty:1,modality:'reading',responseFormat:'single-choice',assignable:true,minutes:3,
+  'reading-negation':{id:'reading-negation',contentVersion:'v2',title:'바뀐 약속과 쉬는 날 읽기',skillIds:['ko.reading.negation'],difficulty:1,modality:'reading',responseFormat:'single-choice',assignable:true,minutes:3,
     passage:'내일 한국어 모임은 카페가 아니라 도서관에서 만납니다. 오전에는 도서관을 사용할 수 없어서 오후 2시에 만납니다. 간식은 준비되어 있으니 가져오지 않아도 됩니다.',
     questions:[
       {id:'negation-place',prompt:'내일 모임은 어디에서 합니까?',options:[{id:'a',text:'카페'},{id:'b',text:'도서관'},{id:'c',text:'공원'}],answer:'b',explanation:'카페가 아니라 도서관에서 만난다고 장소를 바꿨어요.'},
-      {id:'negation-time',prompt:'언제 만납니까?',options:[{id:'a',text:'오전 9시'},{id:'b',text:'오전 11시'},{id:'c',text:'오후 2시'}],answer:'c',explanation:'오전에는 사용할 수 없어서 오후 2시에 만나요.'},
+      {id:'negation-time',version:'v2',prompt:'오전에 도서관에서 모일 수 있습니까?',options:[{id:'a',text:'네, 오전 9시에 모일 수 있습니다.'},{id:'b',text:'네, 오전 11시에 모일 수 있습니다.'},{id:'c',text:'아니요, 오전에는 사용할 수 없습니다.'}],answer:'c',explanation:'오전에는 도서관을 사용할 수 없어요. 그래서 오후 2시에 만나요.'},
       {id:'negation-snack',prompt:'간식에 대한 설명으로 맞는 것은 무엇입니까?',options:[{id:'a',text:'꼭 가져와야 합니다.'},{id:'b',text:'가져오지 않아도 됩니다.'},{id:'c',text:'간식을 먹으면 안 됩니다.'}],answer:'b',explanation:'준비되어 있으니 가져오지 않아도 된다고 했어요.'}
     ]},
-  'reading-condition':{id:'reading-condition',title:'신청 조건 확인하기',skillIds:['ko.reading.condition'],difficulty:1,modality:'reading',responseFormat:'single-choice',assignable:true,minutes:3,
+  'reading-condition':{id:'reading-condition',contentVersion:'v2',title:'신청 조건 확인하기',skillIds:['ko.reading.condition'],difficulty:1,modality:'reading',responseFormat:'single-choice',assignable:true,minutes:3,
     passage:'학교 요리 수업에 참여하고 싶으면 금요일까지 신청하세요. 재료를 준비해야 하므로 신청한 사람만 수업에 참여할 수 있습니다. 앞치마가 없으면 학교에서 빌릴 수 있습니다.',
     questions:[
-      {id:'condition-day',prompt:'언제까지 신청해야 합니까?',options:[{id:'a',text:'목요일'},{id:'b',text:'금요일'},{id:'c',text:'토요일'}],answer:'b',explanation:'금요일까지 신청하라는 조건이 있어요.'},
+      {id:'condition-day',version:'v2',prompt:'수업에 참여하려면 어떻게 해야 합니까?',options:[{id:'a',text:'신청하지 않고 수업에 갑니다.'},{id:'b',text:'금요일까지 신청합니다.'},{id:'c',text:'앞치마만 준비하면 됩니다.'}],answer:'b',explanation:'신청한 사람만 참여할 수 있으므로 금요일까지 신청해야 해요.'},
       {id:'condition-who',prompt:'누가 수업에 참여할 수 있습니까?',options:[{id:'a',text:'신청한 사람'},{id:'b',text:'학교에 온 모든 사람'},{id:'c',text:'앞치마를 산 사람만'}],answer:'a',explanation:'신청한 사람만 참여할 수 있다고 했어요.'},
       {id:'condition-apron',prompt:'앞치마가 없으면 어떻게 합니까?',options:[{id:'a',text:'수업에 참여할 수 없습니다.'},{id:'b',text:'학교에서 빌립니다.'},{id:'c',text:'신청을 취소합니다.'}],answer:'b',explanation:'앞치마가 없으면 학교에서 빌릴 수 있어요.'}
     ]},
@@ -44,8 +44,20 @@ const TASKS=freeze({
   'racing-listening':{id:'racing-listening',title:'레이싱 · 듣고 세부 정보 찾기',skillIds:['ko.listening.detail'],difficulty:1,modality:'listening',responseFormat:'single-choice',assignable:false,minutes:5,href:'/korean-racing/?learning=listening',note:'WORLD의 듣기 연습 추천입니다. 게임 자유 연습 기록은 공유하지만 게임 과제 배정은 아직 지원하지 않습니다.'},
   'rhythm-listening':{id:'rhythm-listening',title:'시그널 리듬 · 듣고 뜻 확인하기',skillIds:['ko.listening.main'],difficulty:1,modality:'listening',responseFormat:'binary-choice',assignable:false,minutes:5,href:'/korean-rhythm/',note:'리듬 조작 점수는 한국어 수행 근거로 사용하지 않습니다. 이 MVP의 과제 배정 대상은 읽기 활동입니다.'}
 });
+// Existing assignments keep their original questions/answer keys. Only the changed
+// questions acquire new families; unchanged questions must not become fresh evidence.
+const LEGACY_READING_TASKS=freeze(Object.fromEntries(['reading-negation','reading-condition'].map(id=>{
+  const task=copy(TASKS[id]);task.contentVersion='v1';
+  const old=id==='reading-negation'
+    ?{id:'negation-time',prompt:'언제 만납니까?',options:[{id:'a',text:'오전 9시'},{id:'b',text:'오전 11시'},{id:'c',text:'오후 2시'}],answer:'c',explanation:'오전에는 사용할 수 없어서 오후 2시에 만나요.'}
+    :{id:'condition-day',prompt:'언제까지 신청해야 합니까?',options:[{id:'a',text:'목요일'},{id:'b',text:'금요일'},{id:'c',text:'토요일'}],answer:'b',explanation:'금요일까지 신청하라는 조건이 있어요.'};
+  task.questions=task.questions.map(q=>q.id===old.id?old:q);return [id,task];
+})));
+const assignmentTask=row=>row.taskSnapshot||((row.contentVersion||'v1')==='v1'&&LEGACY_READING_TASKS[row.contentId])||TASKS[row.contentId];
+const readingQuestionSkill=(task,question)=>question.skillId||(!question.version&&['negation-time','condition-day'].includes(question.id)?'ko.reading.detail':task.skillIds[0]);
 export const CONTENT_CATALOG=freeze(Object.values(TASKS).map(({questions,passage,...item})=>item));
-export function contentCatalog(state){return state.mode==='local-linked'?[...CONTENT_CATALOG.filter(c=>c.assignable),...GAME_CONTENT]:copy(CONTENT_CATALOG);}
+const connectedMode=state=>['local-linked','account-linked'].includes(state?.mode);
+export function contentCatalog(state){return connectedMode(state)?[...CONTENT_CATALOG.filter(c=>c.assignable),...GAME_CONTENT]:copy(CONTENT_CATALOG);}
 // Both clients use the same versioned reading content and server-side answer key.
 export function readingContent(){return Object.values(TASKS).filter(t=>t.assignable&&t.questions).map(({questions,...task})=>({...copy(task),questions:questions.map(({answer,explanation,...q})=>copy(q))}));}
 export function submitPractice(state,actor,payload,options={}){
@@ -56,7 +68,7 @@ export function submitPractice(state,actor,payload,options={}){
   const prior=state.practices.find(p=>p.learnerId===actor.id&&p.idempotencyKey===key);
   if(prior){if(prior.fingerprint!==fingerprint)fail('IDEMPOTENCY_CONFLICT','같은 요청에 다른 답을 보낼 수 없어요.',409);return {ok:true,submission:copy(prior),duplicate:true};}
   const learner=state.learners.find(l=>l.id===actor.id),working=copy(state),assignmentId=`practice-${state.nextId}`;
-  working.assignments.push({id:assignmentId,classId:learner.classId,learnerIds:[actor.id],contentId:task.id,taskSnapshot:copy(task),contentVersion:'v1',dueAt:new Date(now+DAY).toISOString(),status:'active',revision:1});
+  working.assignments.push({id:assignmentId,classId:learner.classId,learnerIds:[actor.id],contentId:task.id,taskSnapshot:copy(task),contentVersion:task.contentVersion||'v1',dueAt:new Date(now+DAY).toISOString(),status:'active',revision:1});
   const result=submitAssignment(working,actor,{assignmentId,revision:1,answers,idempotencyKey:`practice-${key}`},{now});
   learner.evidence=working.learners.find(l=>l.id===actor.id).evidence;state.nextId=working.nextId;
   const submission={...result.submission,assignmentId:null,kind:'practice',idempotencyKey:key,fingerprint};
@@ -77,7 +89,7 @@ function object(value){if(!value||typeof value!=='object'||Array.isArray(value))
 function idempotencyKey(value){const key=text(value,'재전송 식별자',100);if(!/^[a-zA-Z0-9_.:-]+$/.test(key))fail('INVALID_INPUT','재전송 식별자를 확인해 주세요.');return key;}
 function scope(state,actor,role){
   const demo=state?.mode==='demo'&&state.synthetic===true&&actor?.mode==='demo';
-  const linked=state?.mode==='local-linked'&&state.synthetic===false&&actor?.mode==='local-linked';
+  const linked=connectedMode(state)&&state.synthetic===false&&actor?.mode===state.mode;
   if(!demo&&!linked)fail('AUTH_NOT_CONFIGURED','인증된 로컬 연결 또는 합성 데모에서만 사용할 수 있어요.',403);
   if(state.schemaVersion!==1)fail('STATE_VERSION','저장된 자료의 버전을 확인해 주세요.',409);
   if(actor?.role!==role)fail('FORBIDDEN','이 작업을 할 권한이 없어요.',403);
@@ -135,8 +147,8 @@ function assignmentView(state,row,now,learnerId=null){
   const submissions=state.submissions.filter(item=>item.assignmentId===row.id&&(!learnerId||item.learnerId===learnerId));
   const base={id:row.id,classId:row.classId,contentId:row.contentId,contentVersion:row.contentVersion||'v1',title:row.title,dueAt:row.dueAt,status:row.status,createdAt:row.createdAt,updatedAt:row.updatedAt,reason:row.reason,revision:row.revision,
     overdue:row.status==='active'&&Date.parse(row.dueAt)<now&&submissions.length<(learnerId?1:row.learnerIds.length),completedCount:submissions.length,lateCount:submissions.filter(item=>item.late).length};
-  if(learnerId){const task=row.taskSnapshot||TASKS[row.contentId],target=row.targets?.[learnerId]||null;return {...base,target:copy(target),completed:submissions.length>0,submission:submissions[0]?copy(submissions[0]):null,content:{id:task.id,title:task.title,kind:task.kind||'reading',gameId:task.gameId,href:task.href,requiredAttempts:target?.requiredAttempts||task.requiredAttempts,note:task.note,passage:task.passage,questions:(task.questions||[]).map(({answer,explanation,...question})=>copy(question))}};}
-  const task=row.taskSnapshot||TASKS[row.contentId];
+  if(learnerId){const task=assignmentTask(row),target=row.targets?.[learnerId]||null;return {...base,target:copy(target),completed:submissions.length>0,submission:submissions[0]?copy(submissions[0]):null,content:{id:task.id,title:task.title,kind:task.kind||'reading',gameId:task.gameId,href:task.href,requiredAttempts:target?.requiredAttempts||task.requiredAttempts,note:task.note,passage:task.passage,questions:(task.questions||[]).map(({answer,explanation,...question})=>copy(question))}};}
+  const task=assignmentTask(row);
   return {...base,kind:task?.kind||'reading',targets:copy(Object.fromEntries(row.learnerIds.filter(id=>row.targets?.[id]).map(id=>[id,row.targets[id]]))),requiredAttempts:row.learnerIds.length===1&&row.targets?.[row.learnerIds[0]]?.requiredAttempts||task?.requiredAttempts||task?.questions?.length,learnerIds:[...row.learnerIds],assignedCount:row.learnerIds.length,createdBy:row.createdBy,cancelledAt:row.cancelledAt||null,cancelReason:row.cancelReason||null,recommendations:copy(row.recommendations),submissions:copy(submissions)};
 }
 function analyticsFor(state,classes,now){
@@ -156,7 +168,7 @@ export function getWorkspace(state,actor,options={}){
     classes:classes.map(row=>({id:row.id,name:row.name,learners:row.learnerIds.map(id=>{
       const learner=allowedLearner(state,classes,id),profile=profileFor(state,learner,now);
       return {id:learner.id,name:learner.name,classId:learner.classId,...profile,
-        ...(state.mode==='local-linked'&&learner.sharing?.enabled&&!learner.revoked?{gameTargets:Object.fromEntries(GAME_CONTENT.map(c=>[c.id,gameTargetFor(state,learner,c,now)]))}:{}),
+        ...(connectedMode(state)&&learner.sharing?.enabled&&!learner.revoked?{gameTargets:Object.fromEntries(GAME_CONTENT.map(c=>[c.id,gameTargetFor(state,learner,c,now)]))}:{}),
         assignments:state.assignments.filter(a=>a.classId===row.id&&a.learnerIds.includes(id)).map(a=>assignmentView(state,a,now)),
         observations:copy(state.observations.filter(item=>item.learnerId===id))};
     }),analytics:analyticsFor(state,[row],now)})),
@@ -173,7 +185,7 @@ export function getStudentWorkspace(state,actor,options={}){
 export function createAssignment(state,actor,payload,options={}){
   const classes=scope(state,actor,'teacher'),now=clock(options);object(payload);
   const classroom=classes.find(row=>row.id===payload.classId);if(!classroom)fail('FORBIDDEN','담당 반에만 과제를 배정할 수 있어요.',403);
-  const task=(state.mode==='local-linked'&&gameContent(payload.contentId))||TASKS[payload.contentId];if(!task?.assignable)fail('CONTENT_NOT_ASSIGNABLE','이 화면에서 연결 가능한 활동을 골라 주세요.');
+  const task=(connectedMode(state)&&gameContent(payload.contentId))||TASKS[payload.contentId];if(!task?.assignable)fail('CONTENT_NOT_ASSIGNABLE','이 화면에서 연결 가능한 활동을 골라 주세요.');
   if(!Array.isArray(payload.learnerIds)||!payload.learnerIds.length||payload.learnerIds.length>100||new Set(payload.learnerIds).size!==payload.learnerIds.length)fail('INVALID_RECIPIENTS','과제를 받을 학생을 확인해 주세요.');
   const learners=payload.learnerIds.map(id=>{const learner=allowedLearner(state,[classroom],id);return learner;});
   const title=payload.title==null?task.title:text(payload.title,'과제 제목',100),reason=text(payload.reason,'배정 이유',500,{optional:true}),key=payload.idempotencyKey==null?null:idempotencyKey(payload.idempotencyKey);
@@ -185,7 +197,7 @@ export function createAssignment(state,actor,payload,options={}){
   const recommendations=learners.map(learner=>{const recommended=profileFor(state,learner,now).recommendation;return {learnerId:learner.id,recommendedContentId:recommended?.contentId||null,reason:recommended?.reason||'',evidence:recommended?.evidence||[],policy:Learning.POLICY.version,teacherOverride:recommended?.contentId!==task.id,teacherReason:reason};});
   if(recommendations.some(row=>row.teacherOverride)&&!reason)fail('OVERRIDE_REASON_REQUIRED','추천과 다른 과제를 배정하는 이유를 짧게 적어 주세요.');
   const targets=task.kind==='game'?Object.fromEntries(learners.map(l=>[l.id,gameTargetFor(state,l,task,now,preferred)])):null;
-  const assignment={id:nextId(state,'assignment'),classId:classroom.id,learnerIds:learners.map(row=>row.id),contentId:task.id,contentVersion:'v1',taskSnapshot:copy(task),...(targets?{targets}:{}),title,dueAt,reason,status:'active',revision:1,createdBy:actor.id,createdAt:at,updatedAt:at,recommendations,...(key?{idempotencyKey:key,fingerprint}:{})};
+  const assignment={id:nextId(state,'assignment'),classId:classroom.id,learnerIds:learners.map(row=>row.id),contentId:task.id,contentVersion:task.contentVersion||'v1',taskSnapshot:copy(task),...(targets?{targets}:{}),title,dueAt,reason,status:'active',revision:1,createdBy:actor.id,createdAt:at,updatedAt:at,recommendations,...(key?{idempotencyKey:key,fingerprint}:{})};
   state.assignments.push(assignment);audit(state,actor,'assignment.created',assignment.id,at);
   return {ok:true,assignment:assignmentView(state,assignment,now)};
 }
@@ -220,18 +232,18 @@ export function submitAssignment(state,actor,payload,options={}){
   const classes=scope(state,actor,'learner'),now=clock(options);object(payload);
   const learner=allowedLearner(state,classes,actor.id),assignment=state.assignments.find(row=>row.id===payload.assignmentId);
   if(!assignment||assignment.classId!==learner.classId||!assignment.learnerIds.includes(learner.id)||payload.learnerId!=null&&payload.learnerId!==learner.id)fail('FORBIDDEN','본인에게 배정된 과제만 제출할 수 있어요.',403);
-  const task=assignment.taskSnapshot||TASKS[assignment.contentId];if(task.kind==='game')fail('GAME_RUN_REQUIRED','게임은 WORLD 과제 시작으로 실행하고 실제 문항에 답해 주세요.');
+  const task=assignmentTask(assignment);if(task.kind==='game')fail('GAME_RUN_REQUIRED','게임은 WORLD 과제 시작으로 실행하고 실제 문항에 답해 주세요.');
   const answers=object(payload.answers),key=idempotencyKey(payload.idempotencyKey);
   if(Object.keys(answers).length!==task.questions.length||task.questions.some(question=>!Object.hasOwn(answers,question.id)||!question.options.some(option=>option.id===answers[question.id])))fail('INVALID_ANSWERS','모든 문항에서 보기 하나를 선택해 주세요.');
   const fingerprint=JSON.stringify([assignment.id,task.questions.map(question=>[question.id,answers[question.id]])]);
   const prior=state.submissions.find(row=>row.learnerId===learner.id&&row.idempotencyKey===key);
   if(prior){if(prior.fingerprint!==fingerprint)fail('IDEMPOTENCY_CONFLICT','같은 제출 요청에 다른 답을 보낼 수 없어요.',409);return {ok:true,submission:copy(prior),duplicate:true};}
-  if(state.mode==='local-linked'&&payload.revision!==assignment.revision)fail('REVISION_CONFLICT','과제가 바뀌었어요. 최신 과제를 다시 열어 주세요.',409);
+  if(connectedMode(state)&&payload.revision!==assignment.revision)fail('REVISION_CONFLICT','과제가 바뀌었어요. 최신 과제를 다시 열어 주세요.',409);
   if(assignment.status!=='active')fail('ASSIGNMENT_CANCELLED','취소된 과제는 제출할 수 없어요.',409);
   if(state.submissions.some(row=>row.assignmentId===assignment.id&&row.learnerId===learner.id))fail('ALREADY_SUBMITTED','이미 제출한 과제예요.',409);
   const at=new Date(now).toISOString(),submissionId=nextId(state,'submission');
-  const results=task.questions.map(question=>{const familyKey=`teacher-world:${task.id}:${question.id}:v1`,independent=!learner.evidence.some(row=>row.source==='language-item'&&row.familyKey===familyKey),verdict=answers[question.id]===question.answer?'correct':'incorrect';
-    const evidence={id:nextId(state,'evidence'),skillId:task.skillIds[0],at,source:'language-item',verdict,independent,assisted:false,taskId:task.id,itemKey:question.id,familyKey,difficulty:task.difficulty,responseFormat:task.responseFormat,submissionId,reason:independent?'새 문항의 첫 제출':'같은 문항을 이전에 제출하여 새 독립 문항으로 계산하지 않음'};
+  const results=task.questions.map(question=>{const familyKey=`teacher-world:${task.id}:${question.id}:${question.version||'v1'}`,independent=!learner.evidence.some(row=>row.source==='language-item'&&row.familyKey===familyKey),verdict=answers[question.id]===question.answer?'correct':'incorrect';
+    const evidence={id:nextId(state,'evidence'),skillId:readingQuestionSkill(task,question),at,source:'language-item',verdict,independent,assisted:false,taskId:task.id,itemKey:question.id,familyKey,difficulty:task.difficulty,responseFormat:task.responseFormat,submissionId,reason:independent?'새 문항의 첫 제출':'같은 문항을 이전에 제출하여 새 독립 문항으로 계산하지 않음'};
     learner.evidence.push(evidence);return {questionId:question.id,answer:answers[question.id],correctAnswer:question.answer,correct:verdict==='correct',explanation:question.explanation,independent,evidenceId:evidence.id};});
   const submission={id:submissionId,assignmentId:assignment.id,learnerId:learner.id,classId:learner.classId,contentId:task.id,at,late:now>Date.parse(assignment.dueAt),correct:results.filter(row=>row.correct).length,total:results.length,results,idempotencyKey:key,fingerprint,learningEffectClaim:false};
   state.submissions.push(submission);audit(state,actor,'assignment.submitted',submission.id,at);

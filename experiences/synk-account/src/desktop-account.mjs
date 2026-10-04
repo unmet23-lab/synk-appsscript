@@ -15,7 +15,7 @@ export function createDesktopAccountClient({ bridge, product, guard }) {
   }
   return Object.freeze({
     configured: true, product,
-    load: () => request('load'), release: () => request('release'),
+    load: () => request('load'), release: () => request('release'), atlasSummary: () => request('atlasSummary'),
     setLearning: (enabled, expected_revision) => request('setLearning', { enabled, expected_revision }),
     updateProfile: (profile, expected_profile_revision) => request('updateProfile', { profile, expected_profile_revision }),
     revokeSession: session_id => request('revokeSession', { session_id }),
@@ -25,7 +25,25 @@ export function createDesktopAccountClient({ bridge, product, guard }) {
       get: ({ after, revision, signal }) => request('learningGet', { after, revision }, signal),
       post: ({ revision, events, signal }) => request('learningPost', { revision, events }, signal),
     }),
+    memory: Object.freeze({
+      get: ({ revision, signal }) => request('memoryGet', { revision }, signal),
+      post: ({ revision, entries, signal }) => request('memoryPost', { revision, entries }, signal),
+    }),
   });
+}
+
+// Same trusted IPC and main-process token store, with classroom-only operations.
+export function createDesktopClassroomClient({bridge,product,guard}) {
+  if(!['platform','world'].includes(product)||typeof guard!=='function'||typeof bridge?.accountRequest!=='function')throw new TypeError('Trusted desktop classroom bridge required');
+  return async function request(operation,{classId,query,body}={}, {signal}={}) {
+    guard();
+    if(signal?.aborted)throw Object.assign(new Error('요청을 취소했어요.'),{code:'ABORTED'});
+    const result=await bridge.accountRequest('classroom',{operation,...(classId===undefined?{}:{classId}),...(query===undefined?{}:{query}),...(body===undefined?{}:{body})});
+    guard();
+    if(signal?.aborted)throw Object.assign(new Error('요청을 취소했어요.'),{code:'ABORTED'});
+    if(result?.ok!==true)throw Object.assign(new Error(result?.error?.message||'수업 연결을 확인하지 못했어요.'),{code:result?.error?.code||'CLASSROOM_UNAVAILABLE',retryable:result?.error?.retryable===true,status:result?.error?.status,revision:result?.revision});
+    return result;
+  };
 }
 
 export function authMessage(state) {

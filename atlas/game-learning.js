@@ -23,9 +23,13 @@ const uid = () => `l${Date.now().toString(36)}-${Math.random().toString(36).slic
  * `{ remote: true }` is for a synchronised store: only entries the server holds and has sent
  * back (syncPort.settle) fold, items stay for a day, and unanswered ones for 30 days. */
 function createGame({ gameId, map, storage = null, learnerKey = 'device', clock = () => new Date().toISOString(), historyComplete = true,
-  storageScope = 'device', accountKey = null, fold = null } = {}) {
+  storageScope = 'device', accountKey = null, fold = null, memoryOwner = null } = {}) {
   if (!identifier(gameId) || !identifier(learnerKey) || typeof map?.allNodes !== 'function') throw new TypeError('Atlas: game, local scope and Strata map required');
   if (!['device', 'account'].includes(storageScope) || storageScope === 'account' && (!identifier(accountKey) || learnerKey !== 'device')) throw new TypeError('Atlas: account identity and isolated host storage required');
+  // An authenticated host may keep personal memory apart from a class's evidence log. The
+  // owner stays inside the host; a frame receives neither its storage nor this private port.
+  if (memoryOwner != null && (storageScope !== 'account' || memoryOwner.scope !== 'account' || !identifier(memoryOwner.accountKey)
+    || !memoryOwner.flow || ['today', 'setToday', 'presentation', 'setPresentation', 'epoch', 'memories', 'save', 'decline', 'state', 'merge', 'subscribe'].some(name => typeof memoryOwner.flow[name] !== 'function'))) throw new TypeError('Atlas: a verified personal memory owner is required');
   const scope = { domain: 'LAB', workspace: 'learning', subject: learnerKey };
   const key = `${KEY}.${learnerKey}`;
   // Core's moment-level challenge keeps one small memory per content beside this log (game-flow.js).
@@ -376,14 +380,15 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     },
   };
   // The flow memory follows the log's epoch, so a reset in another tab is not undone from here.
-  flowPort = createFlowPort({ storage, key, clock: monotonicClock, epoch: () => { try { refresh(); } catch { /* the log reports its own error */ } return epoch; } });
+  flowPort = memoryOwner?.flow || createFlowPort({ storage, key, clock: monotonicClock, epoch: () => { try { refresh(); } catch { /* the log reports its own error */ } return epoch; } });
   api.today = flowPort.today;
   api.setToday = flowPort.setToday;
   api.presentation = flowPort.presentation;
   api.setPresentation = flowPort.setPresentation;
   // What memory-sync.js exchanges for an account: the chosen presentation, content memories and
   // declined offers. Today's condition stays on the device.
-  api.memoryPort = Object.freeze({ scope: storageScope, accountKey, state: flowPort.state, merge: flowPort.merge, subscribe: flowPort.subscribe });
+  api.memoryPort = Object.freeze({ scope: memoryOwner?.scope || storageScope, accountKey: memoryOwner?.accountKey || accountKey,
+    state: flowPort.state, merge: flowPort.merge, subscribe: flowPort.subscribe, flow: flowPort });
   api.live = createLive({ coach: api, port: flowPort, clock: monotonicClock });
   return api;
 }

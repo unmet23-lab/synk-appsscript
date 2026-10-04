@@ -13,7 +13,7 @@ export function createTownTransport({ windowObject = globalThis.window, fetcher 
   async function request(method, payload) {
     if (linked) {
       const owner = active(), value = await owner[method](payload); active();
-      if (!value?.state || !value?.view || value.mode !== 'local-linked') throw Error('내 체험 기록을 확인할 수 없어요.');
+      if (!value?.state || !value?.view || !['local-linked','account-linked'].includes(value.mode)) throw Error('내 체험 기록을 확인할 수 없어요.');
       return value;
     }
     const response = await fetcher(`/api/preview/${method === 'read' ? 'state' : 'command'}`, method === 'read'

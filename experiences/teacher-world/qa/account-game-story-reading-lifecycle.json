@@ -1,0 +1,181 @@
+{
+  "ok": true,
+  "startedAt": "2026-10-04T10:38:37.514Z",
+  "verifiedAt": "2026-10-04T10:38:57.423Z",
+  "contentId": "story-reading",
+  "gameId": "story-classroom",
+  "lifecycle": true,
+  "offline": false,
+  "target": {
+    "items": [
+      {
+        "itemKey": "story-classroom.cleanup-snacks.classroom-birthday-2",
+        "skillId": "ko.reading.detail",
+        "modality": "reading",
+        "familyKey": "story-classroom.cleanup-snacks.classroom-birthday-2",
+        "difficulty": 1,
+        "responseFormat": "action"
+      },
+      {
+        "itemKey": "story-classroom.clue-flowers.classroom-birthday-2",
+        "skillId": "ko.reading.detail",
+        "modality": "reading",
+        "familyKey": "story-classroom.clue-flowers.classroom-birthday-2",
+        "difficulty": 1,
+        "responseFormat": "action"
+      },
+      {
+        "itemKey": "story-classroom.surprise-cake.classroom-birthday-2",
+        "skillId": "ko.reading.detail",
+        "modality": "reading",
+        "familyKey": "story-classroom.surprise-cake.classroom-birthday-2",
+        "difficulty": 1,
+        "responseFormat": "action"
+      }
+    ],
+    "label": "읽고 세부 정보 찾기",
+    "policy": "learning-priority-3",
+    "reason": "읽고 세부 정보 찾기는 아직 기록이 적어요. 짧게 확인해 봐요.",
+    "skillId": "ko.reading.detail",
+    "version": 1,
+    "itemKeys": [
+      "story-classroom.cleanup-snacks.classroom-birthday-2",
+      "story-classroom.clue-flowers.classroom-birthday-2",
+      "story-classroom.surprise-cake.classroom-birthday-2"
+    ],
+    "modality": "reading",
+    "difficulty": 1,
+    "familyKeys": [
+      "story-classroom.cleanup-snacks.classroom-birthday-2",
+      "story-classroom.clue-flowers.classroom-birthday-2",
+      "story-classroom.surprise-cake.classroom-birthday-2"
+    ],
+    "freshCount": 3,
+    "description": "읽고 세부 정보 찾기 · 난도 1 · 목표 3문항 (새 문항 3, 복습 0)",
+    "reviewCount": 0,
+    "responseFormat": "action",
+    "requiredAttempts": 3
+  },
+  "checks": [
+    {
+      "name": "real teacher UI created frozen individual target",
+      "ok": true
+    },
+    {
+      "name": "server run pins teacher target",
+      "ok": true
+    },
+    {
+      "name": "closing game preserves one completed response",
+      "ok": true
+    },
+    {
+      "name": "teacher sees stopped run and no premature submission",
+      "ok": true
+    },
+    {
+      "name": "teacher UI shows partial progress without completed result",
+      "ok": true
+    },
+    {
+      "name": "reconnect resumes same run and partial response",
+      "ok": true
+    },
+    {
+      "name": "reconnect retains exact original teacher target",
+      "ok": true
+    },
+    {
+      "name": "actual game responses complete exact frozen target",
+      "ok": true
+    },
+    {
+      "name": "authored correct controls have expected correctness",
+      "ok": true,
+      "detail": {
+        "correct": 3,
+        "total": 3
+      }
+    },
+    {
+      "name": "completion does not claim efficacy",
+      "ok": true
+    },
+    {
+      "name": "reconnect produces one submission of three distinct target families",
+      "ok": true
+    },
+    {
+      "name": "responses are persisted in canonical SYNK ID storage",
+      "ok": true,
+      "detail": {
+        "count": 28
+      }
+    },
+    {
+      "name": "teacher app renders the completed result",
+      "ok": true
+    },
+    {
+      "name": "teacher authorized API returns the same submission",
+      "ok": true
+    },
+    {
+      "name": "WORLD reload retains completed assignment",
+      "ok": true
+    },
+    {
+      "name": "no browser or HTTP fixture runtime errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "trace": [
+    {
+      "phase": "before-stop",
+      "responses": [
+        {
+          "itemId": "cleanup-snacks",
+          "prerequisites": []
+        }
+      ]
+    },
+    {
+      "phase": "after-reconnect",
+      "responses": [
+        {
+          "itemId": "cleanup-snacks",
+          "prerequisites": []
+        },
+        {
+          "itemId": "cleanup-paper",
+          "prerequisites": []
+        },
+        {
+          "itemId": "clue-flowers",
+          "prerequisites": []
+        },
+        {
+          "itemId": "clue-letter",
+          "prerequisites": [
+            "clue-flowers"
+          ]
+        },
+        {
+          "itemId": "surprise-cake",
+          "prerequisites": []
+        }
+      ]
+    }
+  ],
+  "submission": {
+    "total": 3,
+    "correct": 3,
+    "assisted": 0,
+    "independent": 3
+  },
+  "errors": [],
+  "synthetic": true,
+  "production": false,
+  "completionSource": "real-game-controls-account-linked-http-postgresql"
+}

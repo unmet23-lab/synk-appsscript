@@ -1,0 +1,138 @@
+{
+  "ok": true,
+  "contentId": "entry-reading",
+  "gameId": "entry-check",
+  "lifecycle": false,
+  "target": {
+    "items": [
+      {
+        "itemKey": "entry-check.pool-01.v1",
+        "skillId": "ko.reading.detail",
+        "modality": "reading",
+        "familyKey": "entry-check.pool-01.v1",
+        "difficulty": 1,
+        "responseFormat": "single-choice"
+      },
+      {
+        "itemKey": "entry-check.pool-04.v1",
+        "skillId": "ko.reading.detail",
+        "modality": "reading",
+        "familyKey": "entry-check.pool-04.v1",
+        "difficulty": 1,
+        "responseFormat": "single-choice"
+      },
+      {
+        "itemKey": "entry-check.library-01.v1",
+        "skillId": "ko.reading.detail",
+        "modality": "reading",
+        "familyKey": "entry-check.library-01.v1",
+        "difficulty": 1,
+        "responseFormat": "single-choice"
+      }
+    ],
+    "label": "읽고 세부 정보 찾기",
+    "policy": "learning-priority-3",
+    "reason": "읽고 세부 정보 찾기는 아직 기록이 적어요. 짧게 확인해 봐요.",
+    "skillId": "ko.reading.detail",
+    "version": 1,
+    "itemKeys": [
+      "entry-check.pool-01.v1",
+      "entry-check.pool-04.v1",
+      "entry-check.library-01.v1"
+    ],
+    "modality": "reading",
+    "difficulty": 1,
+    "familyKeys": [
+      "entry-check.pool-01.v1",
+      "entry-check.pool-04.v1",
+      "entry-check.library-01.v1"
+    ],
+    "freshCount": 3,
+    "description": "읽고 세부 정보 찾기 · 난도 1 · 목표 3문항 (새 문항 3, 복습 0)",
+    "reviewCount": 0,
+    "responseFormat": "single-choice",
+    "requiredAttempts": 3
+  },
+  "checks": [
+    {
+      "name": "real teacher UI created frozen individual target",
+      "ok": true
+    },
+    {
+      "name": "server run pins teacher target",
+      "ok": true
+    },
+    {
+      "name": "actual game responses complete exact frozen target",
+      "ok": true
+    },
+    {
+      "name": "authored correct controls have expected correctness",
+      "ok": true,
+      "detail": {
+        "correct": 3,
+        "total": 3
+      }
+    },
+    {
+      "name": "completion does not claim efficacy",
+      "ok": true
+    },
+    {
+      "name": "responses are persisted in canonical SYNK ID storage",
+      "ok": true,
+      "detail": {
+        "count": 12
+      }
+    },
+    {
+      "name": "teacher app renders the completed result",
+      "ok": true
+    },
+    {
+      "name": "teacher authorized API returns the same submission",
+      "ok": true
+    },
+    {
+      "name": "WORLD reload retains completed assignment",
+      "ok": true
+    },
+    {
+      "name": "no browser or HTTP fixture runtime errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "trace": [
+    {
+      "itemId": "pool-01",
+      "venue": "pool"
+    },
+    {
+      "itemId": "pool-01",
+      "venue": "pool"
+    },
+    {
+      "itemId": "pool-04",
+      "venue": "pool"
+    },
+    {
+      "itemId": "library-01",
+      "venue": "library"
+    },
+    {
+      "itemId": "library-01",
+      "venue": "library"
+    }
+  ],
+  "submission": {
+    "total": 3,
+    "correct": 3,
+    "assisted": 0,
+    "independent": 3
+  },
+  "errors": [],
+  "synthetic": true,
+  "production": false,
+  "completionSource": "real-game-controls-account-linked-http-postgresql"
+}
