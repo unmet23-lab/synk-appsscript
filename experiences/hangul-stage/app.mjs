@@ -583,6 +583,7 @@ let SP = null;
 function renderSongAt(t) {
   if (!SP) return null;
   const { song } = SP, { cue, step } = cueAt(song, t);
+  SP.t = t; SP.step = step;
   $('song-bar').style.width = `${Math.min(100, Math.max(0, (t / song.duration) * 100))}%`;
   const key = cue ? String(song.cues.indexOf(cue)) : 'none';
   if (key !== SP.key) {
@@ -590,6 +591,8 @@ function renderSongAt(t) {
     $('song-stage').replaceChildren(...songStage(cue));
     // 가사 줄은 글자가 보이는 장면(줄 켜기·합치기)에서만 — 모음·가사 장면은 이미 크게 글로 보인다.
     $('song-line').textContent = cue && (cue.kind === 'sweep' || cue.kind === 'blend') ? cue.text : '';
+    // 따라 하기 안내: 모음은 몸으로(손을 뻗는다), 글자 줄·합치기는 켜진 글자를 누른다.
+    $('song-hint').textContent = !cue || cue.kind === 'line' ? '' : cue.kind === 'vowel' ? '손도 같이 뻗어 봐요' : '켜진 글자를 박자에 맞춰 눌러 봐요';
   }
   for (const n of $('song-stage').querySelectorAll('[data-i]')) {
     const i = Number(n.dataset.i);
@@ -630,6 +633,13 @@ function closeSong(goHome = true) {
 }
 $('song-play').addEventListener('click', () => setSongPlaying(!!SP && SP.audio.paused));
 $('song-close').addEventListener('click', () => closeSong());
+// 따라 누르기(설계 §6 장단 「타일을 따라 누른다. 채점하지 않는다」): 지금 켜진 글자를 누르면 잠깐 빛난다. 점수·실패 표시는 없다.
+$('song-stage').addEventListener('click', e => {
+  const tile = e.target.closest('[data-i]');
+  if (!tile || !SP || Number(tile.dataset.i) !== SP.step) return;
+  tile.classList.remove('hit'); void tile.offsetWidth; tile.classList.add('hit');
+  setTimeout(() => tile.classList.remove('hit'), 450);
+});
 
 // 화면 점검(?qa=silent)에서만: 지금 단계와 진도를 읽게 한다(qa/flow.cjs). 노래는 소리 없이 시각만 옮겨 그린다. 보통 화면에는 없다.
 if (audio.voiceStatus() === 'silent') window.__hangulQA = Object.freeze({ step: () => (S ? S.steps[S.index] : null), progress: () => progress, key: KEY,
