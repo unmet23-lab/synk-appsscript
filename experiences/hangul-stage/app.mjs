@@ -4,7 +4,7 @@ import { createPack, compose } from './pack.mjs';
 import { readProgress, planSession, answer, meet, finishSession, view, retryItem, canPlayMore, sessionsToday, letterOf, readableWords, graduationReady, graduate, SETTINGS } from './core.mjs';
 import { createCoach, isHosted, progressKey, createRecorder } from './learning.mjs';
 import * as audio from './audio.mjs';
-import { SONGS, songById, cueAt, EXTRA_CONSONANTS } from './songs.mjs';
+import { SONGS, songById, cueAt, EXTRA_CONSONANTS, tileLetters, lettersIn } from './songs.mjs';
 
 const $ = id => document.getElementById(id);
 function el(tag, attrs = {}, ...kids) {
@@ -512,7 +512,7 @@ function endSession() {
   // 노래로 복습: 오늘 자음을 다뤘으면 「그 아 가」, 아니면 「모음 댄스」.
   const songId = [...S.met, ...S.practiced].some(id => pack.byId.get(id)?.role === 'consonant') ? 'geu-a-ga' : 'vowel-dance';
   $('finish-song').dataset.song = songId;
-  $('finish-song-label').textContent = `노래로 복습 · ${songById(songId).title}`;
+  $('finish-song-label').textContent = `노래로 복습 · ${songById(songId).title} 30초`;
   audio.effect('achieve');
   S = null;
   // 졸업(설계 §8): 조건이 서는 회차 끝에 한 번. 졸업 장면을 먼저 보이고, 그 뒤는 짧은 몸풀기다.
@@ -535,7 +535,7 @@ function showGraduation() {
   setTimeout(() => audio.effect('joy'), 700);
 }
 $('again').addEventListener('click', () => startSession());
-$('finish-song').addEventListener('click', () => openSong($('finish-song').dataset.song));
+$('finish-song').addEventListener('click', () => openSong($('finish-song').dataset.song, 'review'));
 $('grad-done').addEventListener('click', () => { renderHome(); show('home'); });
 $('done').addEventListener('click', () => { renderHome(); show('home'); });
 $('quit').addEventListener('click', () => {
@@ -591,46 +591,69 @@ function renderSongAt(t) {
   if (!SP) return null;
   const { song } = SP, { cue, step } = cueAt(song, t);
   SP.t = t; SP.step = step;
-  $('song-bar').style.width = `${Math.min(100, Math.max(0, (t / song.duration) * 100))}%`;
+  // 진행 막대: 30초 복습은 그 구간 안에서, 노래 듣기는 노래 전체에서.
+  $('song-bar').style.width = `${Math.min(100, Math.max(0, ((t - SP.from) / (SP.to - SP.from)) * 100))}%`;
+  // 회차 끝 장단은 구간 끝에서 멈추고, 이 노래에 나온 아는 글자 수를 보인다(점수 아님).
+  if (SP.mode === 'review' && t >= SP.to) {
+    if (!SP.done) {
+      SP.done = true; SP.key = 'done'; SP.audio.pause(); cancelAnimationFrame(SP.raf);
+      const met = [...lettersIn(song, SP.from, SP.to)].filter(id => SP.known.has(id));
+      $('song-stage').replaceChildren(el('img', { class: 'song-mongle', src: 'assets/brand/mongle-smile.webp', alt: '' }), el('p', { class: 'song-text' }, `아는 글자 ${met.length}개가 노래에 나왔어요`));
+      $('song-line').textContent = '';
+      $('song-hint').textContent = '글자를 더 배우면 노래에서 더 많이 켜져요';
+      $('song-play-label').textContent = '다시 듣기';
+      $('song-play').querySelector('.disc').classList.add('play');
+    }
+    return { cue: null, step: -1, done: true };
+  }
   const key = cue ? String(song.cues.indexOf(cue)) : 'none';
   if (key !== SP.key) {
     SP.key = key;
     $('song-stage').replaceChildren(...songStage(cue));
+    // 장단: 아직 만나지 않은 글자의 칸은 옅게 두고 켜지 않는다.
+    if (SP.mode === 'review' && cue) for (const n of $('song-stage').querySelectorAll('[data-i]')) {
+      if (!tileLetters(cue, Number(n.dataset.i)).every(id => SP.known.has(id))) n.classList.add('unmet');
+    }
     // 가사 줄은 글자가 보이는 장면(줄 켜기·합치기)에서만 — 모음·가사 장면은 이미 크게 글로 보인다.
     $('song-line').textContent = cue && (cue.kind === 'sweep' || cue.kind === 'blend') ? cue.text : '';
     // 따라 하기 안내: 모음은 몸으로(손을 뻗는다), 글자 줄·합치기는 켜진 글자를 누른다.
     $('song-hint').textContent = !cue || cue.kind === 'line' ? '' : cue.kind === 'vowel' ? '손도 같이 뻗어 봐요' : '켜진 글자를 박자에 맞춰 눌러 봐요';
   }
   for (const n of $('song-stage').querySelectorAll('[data-i]')) {
-    const i = Number(n.dataset.i);
-    n.classList.toggle('on', i === step); n.classList.toggle('done', i < step);
+    const i = Number(n.dataset.i), lit = !n.classList.contains('unmet');
+    n.classList.toggle('on', lit && i === step); n.classList.toggle('done', lit && i < step);
   }
   return { cue, step };
 }
-function openSong(id) {
+// mode: listen(첫 화면 — 노래 전체, 모든 글자가 켜진다) · review(회차 끝 30초 장단 — 만난 글자만 켜진다).
+function openSong(id, mode = 'listen') {
   const song = songById(id);
   if (!song) return;
   audio.stop(); closeSong(false);
   const a = new Audio(song.src);
   a.preload = 'auto';
-  SP = { song, audio: a, key: null, raf: 0 };
+  const [from, to] = mode === 'review' && song.review ? song.review : [0, song.duration];
+  const known = new Set(pack.letters.filter(l => letterOf(progress, l.id).state !== 'unmet').map(l => l.id));
+  SP = { song, audio: a, key: null, raf: 0, mode, from, to, known, done: false };
+  if (from > 0) a.currentTime = from; // 메타데이터 전이면 시작 위치로 잡힌다
   a.addEventListener('ended', () => { setSongPlaying(false); renderSongAt(song.duration); });
   a.addEventListener('error', () => { $('song-note').hidden = false; });
-  $('song-title').textContent = song.title;
+  $('song-title').textContent = mode === 'review' ? `${song.title} · 30초 복습` : song.title;
   $('song-note').hidden = true;
-  show('song'); renderSongAt(0); setSongPlaying(false);
+  show('song'); renderSongAt(from); setSongPlaying(false);
 }
 function setSongPlaying(on) {
   if (!SP) return;
   const a = SP.audio;
   cancelAnimationFrame(SP.raf);
   if (on) {
-    if (a.ended) a.currentTime = 0;
+    if (SP.mode === 'review' && (SP.done || a.currentTime >= SP.to || a.currentTime < SP.from)) { a.currentTime = SP.from; SP.done = false; SP.key = null; }
+    else if (a.ended) a.currentTime = 0;
     // 재생을 청하면 곧바로 화면을 노래 시각에 맞춰 돌린다(소리 장치가 늦게 깨도 화면은 기다리지 않는다).
     a.play().catch(() => { $('song-note').hidden = false; setSongPlaying(false); });
     SP.raf = requestAnimationFrame(tick);
   } else a.pause();
-  $('song-play-label').textContent = on ? '잠깐 멈춤' : a.ended ? '다시 듣기' : a.currentTime > 0 ? '이어 듣기' : '노래 시작';
+  $('song-play-label').textContent = on ? '잠깐 멈춤' : a.ended || SP.done ? '다시 듣기' : a.currentTime > SP.from + 0.05 ? '이어 듣기' : '노래 시작';
   $('song-play').querySelector('.disc').classList.toggle('play', !on);
 }
 function tick() { if (!SP) return; renderSongAt(SP.audio.currentTime); if (!SP.audio.paused) SP.raf = requestAnimationFrame(tick); }
@@ -643,13 +666,13 @@ $('song-close').addEventListener('click', () => closeSong());
 // 따라 누르기(설계 §6 장단 「타일을 따라 누른다. 채점하지 않는다」): 지금 켜진 글자를 누르면 잠깐 빛난다. 점수·실패 표시는 없다.
 $('song-stage').addEventListener('click', e => {
   const tile = e.target.closest('[data-i]');
-  if (!tile || !SP || Number(tile.dataset.i) !== SP.step) return;
+  if (!tile || !SP || tile.classList.contains('unmet') || Number(tile.dataset.i) !== SP.step) return;
   tile.classList.remove('hit'); void tile.offsetWidth; tile.classList.add('hit');
   setTimeout(() => tile.classList.remove('hit'), 450);
 });
 
 // 화면 점검(?qa=silent)에서만: 지금 단계와 진도를 읽게 한다(qa/flow.cjs). 노래는 소리 없이 시각만 옮겨 그린다. 보통 화면에는 없다.
 if (audio.voiceStatus() === 'silent') window.__hangulQA = Object.freeze({ step: () => (S ? S.steps[S.index] : null), progress: () => progress, key: KEY,
-  songAt: t => { const r = renderSongAt(t); return r && { kind: r.cue?.kind || null, step: r.step, text: r.cue?.text || '' }; }, song: () => SP?.song.id || null, songTime: () => (SP ? SP.audio.currentTime : null), songSeek: t => { if (SP) SP.audio.currentTime = t; } });
+  songAt: t => { const r = renderSongAt(t); return r && { kind: r.cue?.kind || null, step: r.step, text: r.cue?.text || '', done: !!r.done }; }, song: () => SP?.song.id || null, songMode: () => SP?.mode || null, songTime: () => (SP ? SP.audio.currentTime : null), songSeek: t => { if (SP) SP.audio.currentTime = t; } });
 
 renderHome(); show('home');

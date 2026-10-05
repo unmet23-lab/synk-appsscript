@@ -228,7 +228,8 @@ async function run(browser, name, view) {
   const smashIdx = impacts.slice(1).map((x, k) => (x.smash ? k : -1)).filter((k) => k >= 0);   // 첫 번째는 연습
   check(impacts.length === 13, `받아치기 ${impacts.length}번(연습 + 12, 놓침 없음)`);
   check(JSON.stringify(smashIdx) === JSON.stringify(EXPECT.smashAt), `스매시 위치 ${smashIdx}`);
-  check(impacts.slice(1).filter((x) => x.waited).length === 1, '기다린 뒤 받아친 공은 하나');
+  // 공마다 기다림·빠르게(w=기다린 뒤, q=빠르게, -=그 밖) — 부하로 누르기가 늦어 공이 기다리기 시작하면 여기서 드러난다
+  check(impacts.slice(1).filter((x) => x.waited).length === 1, `기다린 뒤 받아친 공은 하나 ${impacts.slice(1).map((x) => (x.waited ? 'w' : x.quick ? 'q' : '-')).join('')}`);
   const prog = await page.evaluate(() => window.__rally.progress());
   check(prog.plays === 1 && prog.practiced && prog.best?.score === EXPECT.score && prog.best?.rally === EXPECT.bestRally, `저장 ${JSON.stringify(prog)}`);
   const sum = await page.evaluate(() => window.__rally.summary());

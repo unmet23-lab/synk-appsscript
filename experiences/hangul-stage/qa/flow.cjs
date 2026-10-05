@@ -195,8 +195,23 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     check(`${width}px 아틀라스 기록`, presented.length >= 10 && skills.every(s => /^ko\.hangul\./.test(s)), `문항 ${presented.length}, 기술 ${skills.join(',')}`);
     const attempts = (log?.events || []).filter(e => e.type === 'practice.attempted').length;
     check(`${width}px 아틀라스 응답`, attempts >= 10, `응답 ${attempts}`);
+    // 회차 끝 30초 장단: 만난 글자(ㅏㅓㅗ)만 켜지고, 안 만난 글자(ㅜㅡㅣ)는 옅다. 구간 끝에서 아는 글자 수를 보인다.
+    await page.click('#finish-song');
+    await page.waitForSelector('#song:not([hidden])');
+    const reviewTitle = await page.textContent('#song-title');
+    const startAt = await page.evaluate(() => window.__hangulQA.songTime());
+    const r1 = await page.evaluate(() => window.__hangulQA.songAt(22.3));
+    const unmetIdx = await page.$$eval('#song-stage [data-i].unmet', ns => ns.map(n => Number(n.dataset.i)));
+    const litOn = await page.locator('#song-stage [data-i].on').count();
+    check(`${width}px 회차 끝 장단: 30초 복습, 만난 글자만 켜짐`, /30초 복습/.test(reviewTitle) && startAt >= 11 && r1.kind === 'sweep' && unmetIdx.join(',') === '3,4,5' && litOn === 1,
+      `${reviewTitle} · 시작 ${startAt} · 옅은 칸 ${unmetIdx.join(',')} · 켜짐 ${litOn}`);
+    if (width === 390) await shot(page, 'song-review', width);
+    const r2 = await page.evaluate(() => window.__hangulQA.songAt(42.0));
+    const endText = await page.textContent('#song-stage');
+    check(`${width}px 회차 끝 장단: 구간 끝에서 멈추고 아는 글자 수`, r2.done && endText.includes('아는 글자 3개'), endText);
+    await page.click('#song-close');
+    await page.waitForSelector('#home:not([hidden])');
     // 다시 열면 진도가 이어진다.
-    await page.click('#done');
     await page.reload(); await page.waitForSelector('#home:not([hidden])');
     const tiles = await page.locator('#box .tile:not(.unmet)').count();
     check(`${width}px 다시 열면 글자 상자에 만난 글자`, tiles >= 3, `타일 ${tiles}`);

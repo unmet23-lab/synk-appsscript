@@ -26,6 +26,7 @@ export const SONGS = Object.freeze([
   {
     id: 'vowel-dance', title: '모음 댄스', src: 'assets/songs/vowel-dance.mp3', duration: 54.76, bpm: 105.5,
     suno: '399224fa-4ca7-42ee-854d-fbd7ea288bde', teaches: [...TEN],
+    review: [11.4, 41.9], // 회차 끝 30초 장단: 첫 절(모음 여섯) → 후렴 → 둘째 절(ㅑㅕㅛㅠ) → 둘째 후렴 앞부분
     cues: [
       line(0, 5.6, 'Hey! 한글 댄스!'),
       line(5.8, 7.7, 'Ready, set, go!'),
@@ -57,6 +58,7 @@ export const SONGS = Object.freeze([
   {
     id: 'geu-a-ga', title: '그 아 가', src: 'assets/songs/geu-a-ga.mp3', duration: 74.4, bpm: 101.3,
     suno: '61cb6e8e-bb9b-4660-bba6-51e4a66a487f', teaches: ['c-g', 'c-n', 'c-d', 'c-r', 'c-m', 'c-b', 'c-s', 'c-ng', 'c-j', 'c-h'],
+    review: [10.7, 43.4], // 회차 끝 30초 장단: 합치기 열네 자음 → 「그 더하기 아는? 가!」 → 후렴 앞부분
     cues: [
       line(0, 4.1, 'Ready? 한글!'),
       blend(4.26, 6.9, 'c-g', '그, 아, 가!'),
@@ -99,6 +101,23 @@ export const SONGS = Object.freeze([
 export const EXTRA_CONSONANTS = Object.freeze({ 'c-ch': ['ㅊ', 14], 'c-k': ['ㅋ', 15], 'c-t': ['ㅌ', 16], 'c-p': ['ㅍ', 17] });
 
 export const songById = id => SONGS.find(s => s.id === id) || null;
+/** 신호의 글자 칸 i가 가리키는 글자 id들. 회차 끝 장단은 이 글자를 다 만났을 때만 그 칸을 켠다(설계 §6 「익힌 글자까지만 장단에 들어와 날마다 길어진다」). */
+export function tileLetters(cue, i) {
+  if (cue.kind === 'vowel') return [cue.letter];
+  if (cue.kind === 'blend') return i === 0 ? [cue.consonant] : i === 1 ? [cue.vowel] : [cue.consonant, cue.vowel];
+  if (cue.kind === 'sweep') { const id = cue.letters[i]; return cue.syllables ? [id, 'v-a'] : cue.consonant ? [cue.consonant, id] : [id]; }
+  return [];
+}
+/** 구간 [from, to]의 신호에 나오는 글자 id(겹치지 않게). */
+export function lettersIn(song, from, to) {
+  const out = new Set();
+  for (const cue of song.cues) {
+    if (cue.end <= from || cue.t >= to) continue;
+    const n = cue.kind === 'vowel' ? 1 : cue.kind === 'blend' ? 3 : cue.kind === 'sweep' ? cue.letters.length : 0;
+    for (let i = 0; i < n; i += 1) for (const id of tileLetters(cue, i)) out.add(id);
+  }
+  return out;
+}
 /** 시각 t의 신호(없으면 null)와 그 안의 걸음(켜진 글자 번호, 아직이면 -1). */
 export function cueAt(song, t) {
   const cue = song.cues.find(c => t >= c.t && t < c.end) || null;
