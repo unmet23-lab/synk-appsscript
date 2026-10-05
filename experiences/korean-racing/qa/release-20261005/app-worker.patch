@@ -1,0 +1,99 @@
+diff --git a/try/racing/app.js b/try/racing/app.js
+index 8e5021df8..90bbbc1fe 100644
+--- a/try/racing/app.js
++++ b/try/racing/app.js
+@@ -21,6 +21,8 @@ import { buildSceneryDetails } from './scenery.js';
+ import { createLandscapeHeight, buildDistantCoast } from './landscape.js';
+ import { createAtmosphere } from './atmosphere.js';
+ import { buildCourseTerrain } from './render-world.js';
++import { ROAD_END, pathX, pathY, pathAngle, noise, terrainColorAt } from './course.js';
++import { startTerrainBuild } from './terrain-startup.js';
+ import { buildCoastalCity } from './cityscape.js';
+ import { buildCityLife } from './city-life.js';
+ import { createCoastalRocks } from './coastal-rocks.js';
+@@ -54,20 +56,10 @@ if('scrollRestoration' in history)history.scrollRestoration='manual';
+ const stage = $('experience');
+ let mobile = matchMedia('(max-width: 650px)').matches;
+ const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+-const ROAD_END = 2250, LANES = [-3.45, 0, 3.45];
++const LANES = [-3.45, 0, 3.45];
+ const clamp = THREE.MathUtils.clamp, lerp = THREE.MathUtils.lerp;
+ let seed = 93127;
+ const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+-const hash = (x, z) => { const v = Math.sin(x * 127.1 + z * 311.7) * 43758.5453123; return v - Math.floor(v); };
+-function noise(x, z) {
+-  const a = Math.floor(x), b = Math.floor(z), fx = x - a, fz = z - b;
+-  const u = fx * fx * (3 - 2 * fx), v = fz * fz * (3 - 2 * fz);
+-  return lerp(lerp(hash(a,b),hash(a+1,b),u),lerp(hash(a,b+1),hash(a+1,b+1),u),v);
+-}
+-function fbm(x,z) { return noise(x,z)*.55 + noise(x*2,z*2)*.28 + noise(x*4,z*4)*.12 + noise(x*8,z*8)*.05; }
+-const pathX = s => Math.sin(s / 235) * 25 + Math.sin(s / 580) * 31;
+-const pathY = s => 23 + Math.sin(s / 280) * 2.8 + Math.sin(s / 100) * 1.2;
+-const pathAngle = s => Math.atan(Math.cos(s / 235) * 25 / 235 + Math.cos(s / 580) * 31 / 580);
+ function roadPoint(s, offset = 0, y = 0) {
+   return new THREE.Vector3(pathX(s) + Math.cos(pathAngle(s)) * offset, pathY(s) + y, s - Math.sin(pathAngle(s)) * offset);
+ }
+@@ -315,7 +307,7 @@ function coastalTerrainMaterial() {
+   };
+   mat.customProgramCacheKey=()=> 'coastal-terrain-v6';return mat;
+ }
+-function setupTerrain() {
++function setupTerrain(prepared) {
+   const asphalt=surfaceTextures.road;asphalt.wrapS=asphalt.wrapT=THREE.RepeatWrapping;
+   const asphaltMat=new THREE.MeshStandardMaterial({map:asphalt,normalMap:surfaceTextures.roadNormal,normalScale:new THREE.Vector2(.12,.12),roughness:.96,metalness:0,color:0xb6bdc0,envMapIntensity:.12});
+   asphaltMat.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\ndiffuseColor.rgb=mix(diffuseColor.rgb,vec3(.12,.135,.14),.24);');};
+@@ -329,7 +321,12 @@ function setupTerrain() {
+   ribbon(-5.45,.13,-60,ROAD_END,white);ribbon(5.45,.13,-60,ROAD_END,white);
+   ribbon(-1.725,.1,-60,ROAD_END,white,true);ribbon(1.725,.1,-60,ROAD_END,white,true);
+   ribbon(-5.72,.1,-60,ROAD_END,yellow);ribbon(5.72,.1,-60,ROAD_END,yellow);
+-  scenery.terrain=buildCourseTerrain(THREE,{pathX,groundHeight,ROAD_END,material:coastalTerrainMaterial(),colorAt:(x,z)=>{const shade=.90+fbm(x*.08,z*.08)*.20;return [shade,shade,shade];}});
++  const options={pathX,groundHeight,ROAD_END,material:coastalTerrainMaterial(),colorAt:terrainColorAt};
++  if(prepared){
++    try{scenery.terrain=buildCourseTerrain(THREE,{...options,prepared});}
++    catch{startup.terrainSource='fallback';startup.terrainFallback='worker-data';}
++  }
++  if(!scenery.terrain)scenery.terrain=buildCourseTerrain(THREE,options);
+   scene.add(scenery.terrain.group);
+ }
+ function setupSky() {
+@@ -570,12 +567,13 @@ async function init() {
+   const startedAt=performance.now(),mark=name=>{startup[name]=Math.round(performance.now()-startedAt);};
+   const yieldToUI=()=>new Promise(resolve=>setTimeout(resolve,0));
+   startup.phase='assets';startup.startedAt=Math.round(startedAt);
+-  let draco;
++  let draco,terrainBuild;
+   try{
+     const textures=new THREE.TextureLoader();
+     draco=new DRACOLoader();draco.setDecoderPath('./vendor/');draco.setDecoderConfig({type:'wasm'});
+     const loader=new GLTFLoader();loader.setDRACOLoader(draco);
+     const assetsPending=startAssetLoad({textures,models:loader,coarsePointer:deviceGraphics.coarsePointer}).then(result=>{mark('assetsMs');return result;});
++    terrainBuild=startTerrainBuild();
+     await document.fonts.ready;
+     renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
+     renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+@@ -596,7 +594,15 @@ async function init() {
+     for(const sky of [clearSky,goldenSky]){sky.colorSpace=THREE.SRGBColorSpace;sky.mapping=THREE.EquirectangularReflectionMapping;sky.wrapS=THREE.RepeatWrapping;}
+     // End each large construction task so the loading indicator and input can
+     // update between them; no partially constructed scene is exposed to play.
+-    startup.phase='terrain';setupSky();setupTerrain();setupWater(clearSky,goldenSky);
++    startup.phase='terrain';
++    const terrainWaitAt=performance.now(),terrainResult=await terrainBuild.result;
++    startup.terrainWaitMs=Math.round(performance.now()-terrainWaitAt);
++    startup.terrainSource=terrainResult.ok?'worker':'fallback';
++    if(terrainResult.ok)startup.terrainWorkerMs=Math.round(terrainResult.computeMs);
++    else startup.terrainFallback=terrainResult.reason;
++    const terrainMainAt=performance.now();
++    setupSky();setupTerrain(terrainResult.ok?terrainResult.terrain:undefined);setupWater(clearSky,goldenSky);
++    startup.terrainMainMs=Math.round(performance.now()-terrainMainAt);
+     mark('terrainMs');await yieldToUI();
+     startup.phase='coast-city';setupCoastalScenery();
+     scenery.city=buildCoastalCity(THREE,{pathX,groundHeight,roadEnd:ROAD_END});scene.add(scenery.city.group);
+@@ -645,7 +651,7 @@ async function init() {
+     renderer.setAnimationLoop(frame);
+     if(new URLSearchParams(location.search).get('garage')==='1')openGarage();
+   }catch(error){ready=false;startup.phase='failed';console.error(error);$('loading').hidden=true;$('error').hidden=false;window.__racingError=String(error);}
+-  finally{draco?.dispose();}
++  finally{draco?.dispose();terrainBuild?.cancel();}
+ }
+ 
+ function refreshStartLabel(){

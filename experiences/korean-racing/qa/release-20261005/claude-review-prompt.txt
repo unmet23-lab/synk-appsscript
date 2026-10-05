@@ -1,0 +1,10 @@
+사용자가 방금 레이싱 지형 워커 개선을 "배포해"라고 명시 요청했습니다. docs/AI_운영원칙.md의 공개 전 Claude 최종 검수를 공식 Claude Code에서 읽기 전용으로 수행해 주세요. 파일 수정, 명령 실행, 커밋/배포는 하지 마세요.
+
+검수 대상은 이미 준비된 공개판 7개 파일뿐입니다. 후보 작업본: C:/Users/q1212/Documents/SYNK-appsscript/.tmp/racing-terrain-release-20261005/try/racing/
+검수용 전체 패치: C:/Users/q1212/Documents/SYNK-appsscript/experiences/korean-racing/qa/release-20261005/release-candidate.patch
+배포 범위/해시: 같은 디렉터리 prepared-manifest.json
+원문 검증: C:/Users/q1212/Documents/SYNK-appsscript/experiences/korean-racing/qa/첫실행_공개판_재측정_20261003.md, terrain-startup-tests-20261004.txt, terrain-startup-smoke-20261004.json, terrain-startup-parity-20261004.json
+
+공개 origin/main 037819d 기반입니다. 로컬 app.js 전체를 복사하지 않고 지형 관련 hunk만 공개 app에 이식하여 미공개 v9/v10 주행/차고 변경은 포함하지 않았습니다. 7파일은 app.js, render-world.js, landscape.js, course.js, terrain-data.js, terrain-worker.js, terrain-startup.js. landscape.js는 이미 계산한 normal 미분을 surfaceAt에 재사용하는 변경뿐입니다. 실제 배포 후보의 브라우저와 public geometry byte parity도 병렬 검증 중이며 결과가 이 QA 디렉터리에 추가됩니다.
+
+중점: async init의 기존 월드 생성/첫 렌더/ready 가드와 충돌, 워커 실패/취소/15초 제한/늦은 응답, 정점·노멀·해안/LOD 보존, 공개 import/경로 호환, 다른 미공개 코드 유입 여부. 실제 blocker만 파일/줄/깨지는 동작/근거로 보고하고 없으면 "배포 차단 문제 없음"을 명시해 주세요. 확인한 범위와 검증 기록에 의존한 부분도 구분하세요. 검토 자체가 이미 배포했다는 뜻은 아닙니다.

@@ -1,0 +1,3540 @@
+{
+  "version": 2,
+  "capturedAt": "2026-10-05T09:24:11.162Z",
+  "pageUrl": "https://synk.im/try/racing/",
+  "device": "desktop",
+  "cache": "new browser/context",
+  "gpu": "Chrome headless, --enable-gpu --use-angle=d3d11",
+  "pageErrors": [],
+  "consoleErrors": [],
+  "failedRequests": [],
+  "scriptResponses": [
+    {
+      "url": "https://synk.im/try/racing/app.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/garage.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/graphics.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/learning.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/campaign.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/question-audio.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/personalization.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/vendor/DRACOLoader.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/vehicles.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/vendor/GLTFLoader.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/coastal-rocks.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/scenery.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/city-life.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/landscape.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/seascape-boats.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/driving.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/finales.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/render-world.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/drivers.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/cityscape.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/narration.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/tutorial.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/garage-ui.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/atmosphere.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/startup.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/vendor/BufferGeometryUtils.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/city-materials.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/curriculum.js",
+      "status": 200
+    },
+    {
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "status": 200
+    },
+    {
+      "url": "blob:https://synk.im/f984b6cc-a1f2-470a-987b-c17f4ccceb1a",
+      "status": 200
+    },
+    {
+      "url": "blob:https://synk.im/f984b6cc-a1f2-470a-987b-c17f4ccceb1a",
+      "status": 200
+    },
+    {
+      "url": "blob:https://synk.im/f984b6cc-a1f2-470a-987b-c17f4ccceb1a",
+      "status": 200
+    },
+    {
+      "url": "blob:https://synk.im/f984b6cc-a1f2-470a-987b-c17f4ccceb1a",
+      "status": 200
+    }
+  ],
+  "loadMs": 7462,
+  "navigation": {
+    "url": "https://synk.im/try/racing/",
+    "status": 200,
+    "ok": true
+  },
+  "readyMs": 11656,
+  "longTasks": [
+    {
+      "startMs": 2140,
+      "durationMs": 69
+    },
+    {
+      "startMs": 2952,
+      "durationMs": 1023
+    },
+    {
+      "startMs": 5811,
+      "durationMs": 1642
+    },
+    {
+      "startMs": 7457,
+      "durationMs": 373
+    },
+    {
+      "startMs": 7951,
+      "durationMs": 879
+    },
+    {
+      "startMs": 8840,
+      "durationMs": 1338
+    },
+    {
+      "startMs": 10485,
+      "durationMs": 978
+    }
+  ],
+  "snapshot": {
+    "ready": true,
+    "startup": {
+      "phase": "ready",
+      "compilePasses": 1,
+      "startedAt": 3575,
+      "assetsMs": 2237,
+      "terrainMs": 3862,
+      "coastCityMs": 4256,
+      "vegetationMs": 4341,
+      "environmentMs": 5256,
+      "worldMs": 5645,
+      "parallelShaders": true,
+      "shadersMs": 6910,
+      "firstFrameMs": 7889,
+      "readyMs": 7893
+    },
+    "running": false,
+    "paused": false,
+    "auto": false,
+    "roundWasDemo": false,
+    "elapsed": 0,
+    "playerS": 76.21680000002682,
+    "playerOffset": 0,
+    "tutorial": null,
+    "collection": {
+      "coins": 0,
+      "owned": [
+        "vehicle-coast",
+        "paint-mint",
+        "wheels-silver",
+        "trail-lime"
+      ],
+      "equipped": {
+        "vehicle": "coast",
+        "paint": "mint",
+        "wheels": "silver",
+        "trail": "lime",
+        "badge": null
+      },
+      "wish": "open",
+      "mission": {
+        "id": "2026-10-05:first-clear:challenge-01",
+        "date": "2026-10-05",
+        "kind": "first-clear",
+        "target": "challenge-01",
+        "collection": "campaign",
+        "title": "새로운 길을 열어요",
+        "description": "“아침의 작은 일”에서 5문제 중 4문제 이상 맞혀 첫 통과해요.",
+        "reward": 15,
+        "completed": false,
+        "completedAt": 0
+      },
+      "garageOpen": false,
+      "angle": 0.65
+    },
+    "driving": {
+      "collisions": 0,
+      "contactTimer": 0,
+      "combo": 0,
+      "bestCombo": 0,
+      "shield": 0,
+      "shieldBlocked": 0,
+      "rivals": [
+        {
+          "s": 104.21680000002682,
+          "offset": -3.15
+        },
+        {
+          "s": 125.21680000002682,
+          "offset": 3.1
+        }
+      ],
+      "waitingForChoice": true
+    },
+    "scenery": "bloom",
+    "atmosphere": {
+      "version": 7,
+      "waterTriangles": 2,
+      "waterPasses": 1,
+      "reflectionCameras": 0,
+      "shoreTextureBytes": 2048,
+      "detail": 1,
+      "theme": "sunset"
+    },
+    "boats": {
+      "version": 8,
+      "boats": 4,
+      "sailboats": 2,
+      "cruisers": 2,
+      "visibleBoats": 2,
+      "animatedBoats": 2,
+      "visibleTriangles": 3324,
+      "storedTriangles": 6642,
+      "drawCalls": 9,
+      "shadowDrawCalls": 0,
+      "wakeDrawCalls": 1,
+      "quality": "high"
+    },
+    "boatPoses": [
+      {
+        "id": 0,
+        "kind": "sail",
+        "visible": true,
+        "animated": true,
+        "time": 0.27040000000596054,
+        "position": [
+          157.08510188172278,
+          -2.1798587265151608,
+          650.4461549238927
+        ],
+        "rotation": [
+          0.0011648510545129252,
+          0.004896203975116717,
+          0.002542938966304499
+        ]
+      },
+      {
+        "id": 1,
+        "kind": "cruise",
+        "visible": true,
+        "animated": true,
+        "time": 0.27040000000596054,
+        "position": [
+          155.7987600569574,
+          -2.1064810896968234,
+          779.4051340343843
+        ],
+        "rotation": [
+          0.00862677523501509,
+          3.1332641331739888,
+          0.014192793467037463
+        ]
+      },
+      {
+        "id": 2,
+        "kind": "sail",
+        "visible": false,
+        "animated": false,
+        "time": 0.27040000000596054,
+        "position": [
+          126.04662679946611,
+          -2.249792753381695,
+          1119.5673623994062
+        ],
+        "rotation": [
+          -0.003900090928742447,
+          3.138977562099881,
+          -0.007042962852423194
+        ]
+      },
+      {
+        "id": 3,
+        "kind": "cruise",
+        "visible": false,
+        "animated": false,
+        "time": 0.27040000000596054,
+        "position": [
+          130.96549890741233,
+          -2.2777314206808104,
+          1820.6354340812186
+        ],
+        "rotation": [
+          -0.007390196799759437,
+          0.0036939592800630536,
+          -0.011959723484122633
+        ]
+      }
+    ],
+    "rockShelves": {
+      "version": 7,
+      "placements": 5,
+      "nearTriangles": 10491,
+      "farTriangles": 2298,
+      "visible": 2,
+      "triangles": 12789,
+      "drawCalls": 2,
+      "shadowDrawCalls": 0
+    },
+    "landscape": {
+      "triangles": 25008,
+      "drawCalls": 4,
+      "islands": 5,
+      "rocks": 18,
+      "trees": 132,
+      "tidalTriangles": 384
+    },
+    "city": {
+      "shops": 22,
+      "homes": 3,
+      "towers": 12,
+      "blocks": 4,
+      "quality": "high",
+      "theme": "bloom",
+      "storedTriangles": 30780,
+      "visibleTriangles": 0,
+      "drawCalls": 0,
+      "shadowDrawCalls": 0,
+      "visibleShops": 0,
+      "roadMinimumClearance": 9.299996709700785,
+      "materials": {
+        "version": 8,
+        "metricUv": true,
+        "extraDrawCalls": 0,
+        "extraTriangles": 0,
+        "downloadedTextures": 0,
+        "interiorRays": 1
+      },
+      "materialDetail": 1
+    },
+    "cityLife": {
+      "actors": 44,
+      "visibleActors": 0,
+      "animatedActors": 0,
+      "drawCalls": 0,
+      "shadowDrawCalls": 0,
+      "visibleTriangles": 0,
+      "storedTriangles": 458,
+      "quality": "high",
+      "theme": "bloom",
+      "time": 0.27040000000596054
+    },
+    "groundProps": {
+      "rocks": 115,
+      "grass": 3966,
+      "excludedRocks": 65,
+      "excludedGrass": 534
+    },
+    "terrain": {
+      "chunkCount": 22,
+      "chunkLength": 125,
+      "sourceTriangles": 150700,
+      "storedTriangles": 209472,
+      "storedVertices": 115288,
+      "activeTriangles": 33662,
+      "activeDrawCalls": 14,
+      "submittedTriangles": 33662,
+      "submittedDrawCalls": 14,
+      "visibleTriangles": 33662,
+      "visibleDrawCalls": 14,
+      "quality": "high",
+      "triangleBudget": 46000,
+      "forwardDistance": 1500,
+      "levels": {
+        "near": 3,
+        "mid": 5,
+        "far": 6
+      },
+      "updates": 4,
+      "frustumChecked": true,
+      "activeRange": [
+        -150,
+        1600
+      ]
+    },
+    "vegetation": {
+      "trees": 130,
+      "pineTrees": 102,
+      "cherryTrees": 28,
+      "chunks": 7,
+      "landmarks": 3,
+      "triangles": 180328,
+      "drawCalls": 29,
+      "shadowDrawCalls": 17,
+      "visibleTriangles": 58980,
+      "visibleDrawCalls": 14,
+      "visibleShadowDrawCalls": 7,
+      "visibleFoliageTriangles": 28864,
+      "visibleFoliageCards": 3608,
+      "detailDistance": 460,
+      "quality": "high",
+      "theme": "bloom"
+    },
+    "screenX": 0.5354,
+    "driver": {
+      "name": "marin",
+      "mood": "base",
+      "seated": true
+    },
+    "vehicle": {
+      "triangles": 359158,
+      "drawCalls": 44,
+      "shadowTriangles": 204000,
+      "shadowDrawCalls": 27
+    },
+    "velocity": 26,
+    "boost": 0,
+    "correct": 0,
+    "answers": [],
+    "flow": {
+      "cruise": 26,
+      "active": false,
+      "values": null
+    },
+    "stage": {
+      "id": "challenge-01",
+      "title": "아침의 작은 일",
+      "mode": "listen",
+      "level": 1,
+      "campaign": true,
+      "words": []
+    },
+    "gate": {
+      "s": 310,
+      "prompt": "무엇을 먹어요?",
+      "spoken": "아침에 빵을 먹어요. 무엇을 먹어요?",
+      "types": [
+        "c01q1o0",
+        "c01q1o1",
+        "c01q1o2"
+      ],
+      "questionId": "c01q1",
+      "announced": false
+    },
+    "quality": "high",
+    "narration": {
+      "playing": false,
+      "kind": null,
+      "queued": 0,
+      "played": []
+    },
+    "narrationUnavailable": false,
+    "learning": {
+      "words": 0,
+      "correctWords": 0,
+      "rounds": 0,
+      "cleared": 0
+    },
+    "render": {
+      "renderedFrames": 13,
+      "skippedPausedFrames": 0,
+      "programs": 50,
+      "pixelRatio": 1,
+      "calls": 271,
+      "triangles": 712885,
+      "geometries": 260,
+      "textures": 28,
+      "averageFps": 0
+    },
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "racingError": null,
+  "requestsBeforeReady": [
+    {
+      "url": "https://synk.im/try/racing/",
+      "startMs": 27.756103515625,
+      "endMs": 450.568115234375,
+      "bytes": 7012
+    },
+    {
+      "url": "https://synk.im/try/racing/garage.css",
+      "startMs": 482.22900390625,
+      "endMs": 778.075927734375,
+      "bytes": 4089
+    },
+    {
+      "url": "https://synk.im/try/racing/app.js",
+      "startMs": 483.306884765625,
+      "endMs": 771.659912109375,
+      "bytes": 34414
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/brand-lab.webp",
+      "startMs": 482.587158203125,
+      "endMs": 1045.744140625,
+      "bytes": 126833
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/mascots/kkamong-base.webp",
+      "startMs": 491.68896484375,
+      "endMs": 1100.27001953125,
+      "bytes": 92631
+    },
+    {
+      "url": "https://synk.im/try/racing/style.css",
+      "startMs": 481.475830078125,
+      "endMs": 1091.880859375,
+      "bytes": 11633
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/mascots/marin-base.webp",
+      "startMs": 482.632080078125,
+      "endMs": 1147.836181640625,
+      "bytes": 144624
+    },
+    {
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "startMs": 492.568115234375,
+      "endMs": 1156.925048828125,
+      "bytes": 86303
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/dm-mono.woff2",
+      "startMs": 1571.924072265625,
+      "endMs": 2286.486083984375,
+      "bytes": 21024
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/suit.woff2",
+      "startMs": 1571.0048828125,
+      "endMs": 2503.7578125,
+      "bytes": 625022
+    },
+    {
+      "url": "https://synk.im/try/racing/garage.js",
+      "startMs": 2144.35791015625,
+      "endMs": 2377.970947265625,
+      "bytes": 5226
+    },
+    {
+      "url": "https://synk.im/try/racing/graphics.js",
+      "startMs": 2153.14404296875,
+      "endMs": 2398.9140625,
+      "bytes": 1111
+    },
+    {
+      "url": "https://synk.im/try/racing/learning.js",
+      "startMs": 2127.87109375,
+      "endMs": 2375.279052734375,
+      "bytes": 2091
+    },
+    {
+      "url": "https://synk.im/try/racing/campaign.js",
+      "startMs": 2130.18603515625,
+      "endMs": 2374.18408203125,
+      "bytes": 5761
+    },
+    {
+      "url": "https://synk.im/try/racing/question-audio.js",
+      "startMs": 2129.84912109375,
+      "endMs": 2384.608154296875,
+      "bytes": 596
+    },
+    {
+      "url": "https://synk.im/try/racing/personalization.js",
+      "startMs": 2141.217041015625,
+      "endMs": 2394.816162109375,
+      "bytes": 3786
+    },
+    {
+      "url": "https://synk.im/try/racing/vendor/DRACOLoader.js",
+      "startMs": 2127.68505859375,
+      "endMs": 2377.951171875,
+      "bytes": 5467
+    },
+    {
+      "url": "https://synk.im/try/racing/vehicles.js",
+      "startMs": 2145.1728515625,
+      "endMs": 2401.374755859375,
+      "bytes": 11689
+    },
+    {
+      "url": "https://synk.im/try/racing/vendor/GLTFLoader.js",
+      "startMs": 2127.43994140625,
+      "endMs": 2379.7568359375,
+      "bytes": 25430
+    },
+    {
+      "url": "https://synk.im/try/racing/coastal-rocks.js",
+      "startMs": 2163.918212890625,
+      "endMs": 2424.503173828125,
+      "bytes": 2367
+    },
+    {
+      "url": "https://synk.im/try/racing/scenery.js",
+      "startMs": 2156.29296875,
+      "endMs": 2416.89404296875,
+      "bytes": 11754
+    },
+    {
+      "url": "https://synk.im/try/racing/city-life.js",
+      "startMs": 2163.1357421875,
+      "endMs": 2424.759765625,
+      "bytes": 9678
+    },
+    {
+      "url": "https://synk.im/try/racing/landscape.js",
+      "startMs": 2157.3310546875,
+      "endMs": 2420.001953125,
+      "bytes": 8199
+    },
+    {
+      "url": "https://synk.im/try/racing/seascape-boats.js",
+      "startMs": 2166.22705078125,
+      "endMs": 2437.51806640625,
+      "bytes": 6341
+    },
+    {
+      "url": "https://synk.im/try/racing/driving.js",
+      "startMs": 2138.39208984375,
+      "endMs": 2449.447998046875,
+      "bytes": 1160
+    },
+    {
+      "url": "https://synk.im/try/racing/finales.js",
+      "startMs": 2141.81396484375,
+      "endMs": 2454.158935546875,
+      "bytes": 4275
+    },
+    {
+      "url": "https://synk.im/try/racing/render-world.js",
+      "startMs": 2161.643798828125,
+      "endMs": 2472.61376953125,
+      "bytes": 4439
+    },
+    {
+      "url": "https://synk.im/try/racing/drivers.js",
+      "startMs": 2146.12890625,
+      "endMs": 2529.534912109375,
+      "bytes": 7163
+    },
+    {
+      "url": "https://synk.im/try/racing/cityscape.js",
+      "startMs": 2162.7509765625,
+      "endMs": 2549.52197265625,
+      "bytes": 12499
+    },
+    {
+      "url": "https://synk.im/try/racing/narration.js",
+      "startMs": 2128.64306640625,
+      "endMs": 2535.9541015625,
+      "bytes": 1968
+    },
+    {
+      "url": "https://synk.im/try/racing/tutorial.js",
+      "startMs": 2152.817138671875,
+      "endMs": 2560.980224609375,
+      "bytes": 1223
+    },
+    {
+      "url": "https://synk.im/try/racing/garage-ui.js",
+      "startMs": 2145.484130859375,
+      "endMs": 2553.244140625,
+      "bytes": 5865
+    },
+    {
+      "url": "https://synk.im/try/racing/atmosphere.js",
+      "startMs": 2158.027099609375,
+      "endMs": 2566.8271484375,
+      "bytes": 3567
+    },
+    {
+      "url": "https://synk.im/try/racing/startup.js",
+      "startMs": 2166.802001953125,
+      "endMs": 2572.075927734375,
+      "bytes": 959
+    },
+    {
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "startMs": 2126.111083984375,
+      "endMs": 2536.551025390625,
+      "bytes": 120588
+    },
+    {
+      "url": "https://synk.im/try/racing/vendor/BufferGeometryUtils.js",
+      "startMs": 2393.333984375,
+      "endMs": 2659.333984375,
+      "bytes": 8326
+    },
+    {
+      "url": "https://synk.im/try/racing/city-materials.js",
+      "startMs": 2518.990966796875,
+      "endMs": 2788.343017578125,
+      "bytes": 4350
+    },
+    {
+      "url": "https://synk.im/try/racing/curriculum.js",
+      "startMs": 2390.104248046875,
+      "endMs": 2791.998291015625,
+      "bytes": 40960
+    },
+    {
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "startMs": 2568.0810546875,
+      "endMs": 2868.651123046875,
+      "bytes": 285062
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/road.jpg",
+      "startMs": 3709.4208984375,
+      "endMs": 3987.5419921875,
+      "bytes": 401756
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/road-normal.jpg",
+      "startMs": 3710.426025390625,
+      "endMs": 4088.89599609375,
+      "bytes": 327187
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/car.glb",
+      "startMs": 3665.659912109375,
+      "endMs": 4373.558837890625,
+      "bytes": 1542866
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/terrain-normal.jpg",
+      "startMs": 4088.176025390625,
+      "endMs": 4996.64892578125,
+      "bytes": 234126
+    },
+    {
+      "url": "https://synk.im/try/racing/vendor/draco_wasm_wrapper.js",
+      "startMs": 4398.51220703125,
+      "endMs": 4729.5732421875,
+      "bytes": 11987
+    },
+    {
+      "url": "https://synk.im/try/racing/vendor/draco_decoder.wasm",
+      "startMs": 4399.1640625,
+      "endMs": 4801.510009765625,
+      "bytes": 64455
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/coastal-rocks-v6.glb",
+      "startMs": 3667.031005859375,
+      "endMs": 4834.787109375,
+      "bytes": 1785737
+    },
+    {
+      "url": "blob:https://synk.im/f984b6cc-a1f2-470a-987b-c17f4ccceb1a",
+      "startMs": 4820.59521484375,
+      "endMs": 4861.234130859375,
+      "bytes": -59
+    },
+    {
+      "url": "blob:https://synk.im/a744dadf-713a-4d41-9b3e-c4cc7ffc469f",
+      "startMs": 4857.280029296875,
+      "endMs": 4861.468017578125,
+      "bytes": -69
+    },
+    {
+      "url": "blob:https://synk.im/93d6bd29-f57f-4149-ad9f-6b8ecce53903",
+      "startMs": 4857.60791015625,
+      "endMs": 4863.14892578125,
+      "bytes": -69
+    },
+    {
+      "url": "blob:https://synk.im/f984b6cc-a1f2-470a-987b-c17f4ccceb1a",
+      "startMs": 4820.112060546875,
+      "endMs": 4863.281005859375,
+      "bytes": -59
+    },
+    {
+      "url": "blob:https://synk.im/d4136670-e5fc-4d39-aa3d-19f614c47363",
+      "startMs": 4856.841796875,
+      "endMs": 4864.264892578125,
+      "bytes": -70
+    },
+    {
+      "url": "blob:https://synk.im/f984b6cc-a1f2-470a-987b-c17f4ccceb1a",
+      "startMs": 4819.173828125,
+      "endMs": 4868.52978515625,
+      "bytes": -59
+    },
+    {
+      "url": "blob:https://synk.im/f984b6cc-a1f2-470a-987b-c17f4ccceb1a",
+      "startMs": 4816.195068359375,
+      "endMs": 4874.68115234375,
+      "bytes": -59
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/meadow-v2.jpg",
+      "startMs": 3990.1640625,
+      "endMs": 5286.697021484375,
+      "bytes": 1121866
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/azure-sky-v3.jpg",
+      "startMs": 4373.319091796875,
+      "endMs": 5770.26806640625,
+      "bytes": 480644
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/cliff.jpg",
+      "startMs": 4373.98095703125,
+      "endMs": 5805.365966796875,
+      "bytes": 290287
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/cliff-normal.jpg",
+      "startMs": 4374.242919921875,
+      "endMs": 5852.322021484375,
+      "bytes": 250547
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/beach.jpg",
+      "startMs": 4801.089111328125,
+      "endMs": 6352.18212890625,
+      "bytes": 244633
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/blossom-canopy-v2.webp",
+      "startMs": 4835.526123046875,
+      "endMs": 6572.8271484375,
+      "bytes": 276751
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/felt/driver-felt.webp",
+      "startMs": 5007.5830078125,
+      "endMs": 6962.43701171875,
+      "bytes": 29715
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/pine-canopy-v2.webp",
+      "startMs": 4835.2138671875,
+      "endMs": 6915.473876953125,
+      "bytes": 529659
+    },
+    {
+      "url": "https://synk.im/try/racing/assets/golden-sky-v3.jpg",
+      "startMs": 4835.6240234375,
+      "endMs": 6948.921142578125,
+      "bytes": 440276
+    }
+  ],
+  "network": {
+    "count": 62,
+    "bytes": 9787533,
+    "lastEndMs": 6962.43701171875
+  },
+  "longTaskSummary": {
+    "count": 7,
+    "totalMs": 6302,
+    "maxMs": 1642
+  },
+  "cpuSelf": [
+    {
+      "functionName": "(idle)",
+      "url": "",
+      "line": 0,
+      "selfMs": 4051.536
+    },
+    {
+      "functionName": "(program)",
+      "url": "",
+      "line": 0,
+      "selfMs": 1437.964
+    },
+    {
+      "functionName": "hash",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 7,
+      "selfMs": 816.878
+    },
+    {
+      "functionName": "onFirstUse",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 6491,
+      "selfMs": 533.776
+    },
+    {
+      "functionName": "texSubImage2D",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 9825,
+      "selfMs": 525.981
+    },
+    {
+      "functionName": "coins",
+      "url": "https://synk.im/try/racing/garage-ui.js",
+      "line": 11,
+      "selfMs": 302.917
+    },
+    {
+      "functionName": "(garbage collector)",
+      "url": "",
+      "line": 0,
+      "selfMs": 273.572
+    },
+    {
+      "functionName": "getContext",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 15176,
+      "selfMs": 204.613
+    },
+    {
+      "functionName": "Float32BufferAttribute",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 18744,
+      "selfMs": 93.732
+    },
+    {
+      "functionName": "createBuffer",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 65,
+      "selfMs": 77.964
+    },
+    {
+      "functionName": "height",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 20,
+      "selfMs": 77.093
+    },
+    {
+      "functionName": "hash",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 58,
+      "selfMs": 76.685
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 7599,
+      "selfMs": 76.001
+    },
+    {
+      "functionName": "pathX",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 65,
+      "selfMs": 67.24
+    },
+    {
+      "functionName": "mix",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 5,
+      "selfMs": 66.828
+    },
+    {
+      "functionName": "copy",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 17920,
+      "selfMs": 66.635
+    },
+    {
+      "functionName": "geometryFor",
+      "url": "https://synk.im/try/racing/render-world.js",
+      "line": 99,
+      "selfMs": 62.691
+    },
+    {
+      "functionName": "load",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 43981,
+      "selfMs": 59.662
+    },
+    {
+      "functionName": "noise",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 8,
+      "selfMs": 54.745
+    },
+    {
+      "functionName": "combinedGeometry",
+      "url": "https://synk.im/try/racing/vehicles.js",
+      "line": 112,
+      "selfMs": 54.07
+    },
+    {
+      "functionName": "sample",
+      "url": "https://synk.im/try/racing/render-world.js",
+      "line": 75,
+      "selfMs": 53.608
+    },
+    {
+      "functionName": "init",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 556,
+      "selfMs": 52.436
+    },
+    {
+      "functionName": "pathY",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 66,
+      "selfMs": 43.374
+    },
+    {
+      "functionName": "readStored",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 9210,
+      "selfMs": 42.529
+    },
+    {
+      "functionName": "fbm",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 12,
+      "selfMs": 41.019
+    },
+    {
+      "functionName": "part",
+      "url": "https://synk.im/try/racing/cityscape.js",
+      "line": 43,
+      "selfMs": 39.197
+    },
+    {
+      "functionName": "merge",
+      "url": "https://synk.im/try/racing/scenery.js",
+      "line": 408,
+      "selfMs": 38.334
+    },
+    {
+      "functionName": "cliffOffset",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 16,
+      "selfMs": 36.831
+    },
+    {
+      "functionName": "getZ",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 18203,
+      "selfMs": 35.83
+    },
+    {
+      "functionName": "getExtension",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 3740,
+      "selfMs": 32.391
+    },
+    {
+      "functionName": "WebGLRenderer.setSize",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 15460,
+      "selfMs": 31.467
+    },
+    {
+      "functionName": "getX",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 18137,
+      "selfMs": 31.201
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 1,
+      "selfMs": 29.013
+    },
+    {
+      "functionName": "convert",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 6331,
+      "selfMs": 27.124
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 248,
+      "selfMs": 26.882
+    },
+    {
+      "functionName": "sample",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 87,
+      "selfMs": 26.505
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/cityscape.js",
+      "line": 480,
+      "selfMs": 26.279
+    },
+    {
+      "functionName": "length",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 5098,
+      "selfMs": 25.414
+    },
+    {
+      "functionName": "fromBufferAttribute",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 5532,
+      "selfMs": 24.958
+    },
+    {
+      "functionName": "WebGLUniforms",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 5502,
+      "selfMs": 23.877
+    },
+    {
+      "functionName": "computeBoundingSphere",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 19430,
+      "selfMs": 23.386
+    },
+    {
+      "functionName": "applyMatrix4",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 4777,
+      "selfMs": 22.496
+    },
+    {
+      "functionName": "convertBufferAttribute",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 19834,
+      "selfMs": 19.374
+    },
+    {
+      "functionName": "Object3D",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 13222,
+      "selfMs": 19.283
+    },
+    {
+      "functionName": "applyNormalMatrix",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 18041,
+      "selfMs": 19.228
+    },
+    {
+      "functionName": "BufferAttribute",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 17750,
+      "selfMs": 19.11
+    },
+    {
+      "functionName": "getY",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 18170,
+      "selfMs": 18.975
+    },
+    {
+      "functionName": "generateSegment",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 37548,
+      "selfMs": 18.631
+    },
+    {
+      "functionName": "getParameters",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 6826,
+      "selfMs": 18.141
+    },
+    {
+      "functionName": "buildingPart",
+      "url": "https://synk.im/try/racing/cityscape.js",
+      "line": 79,
+      "selfMs": 17.826
+    },
+    {
+      "functionName": "WebGLShader",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 5571,
+      "selfMs": 17.562
+    },
+    {
+      "functionName": "setProgram",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 17021,
+      "selfMs": 14.588
+    },
+    {
+      "functionName": "createGarageUI",
+      "url": "https://synk.im/try/racing/garage-ui.js",
+      "line": 23,
+      "selfMs": 14.5
+    },
+    {
+      "functionName": "replaceLightNums",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 5805,
+      "selfMs": 14.272
+    },
+    {
+      "functionName": "clamp",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 4,
+      "selfMs": 14.095
+    },
+    {
+      "functionName": "getProgram",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 16874,
+      "selfMs": 13.675
+    },
+    {
+      "functionName": "SphereGeometry",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 36872,
+      "selfMs": 13.329
+    },
+    {
+      "functionName": "renderObject",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 16843,
+      "selfMs": 13.175
+    },
+    {
+      "functionName": "buildCourseTerrain",
+      "url": "https://synk.im/try/racing/render-world.js",
+      "line": 44,
+      "selfMs": 13.163
+    },
+    {
+      "functionName": "smooth",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 6,
+      "selfMs": 12.837
+    },
+    {
+      "functionName": "scrollTo",
+      "url": "",
+      "line": 0,
+      "selfMs": 12.824
+    },
+    {
+      "functionName": "createTexture",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 9238,
+      "selfMs": 12.595
+    },
+    {
+      "functionName": "BufferGeometry",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 18792,
+      "selfMs": 12.435
+    },
+    {
+      "functionName": "validateMap",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 33,
+      "selfMs": 12.296
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 44084,
+      "selfMs": 11.663
+    },
+    {
+      "functionName": "$",
+      "url": "https://synk.im/try/racing/garage-ui.js",
+      "line": 33,
+      "selfMs": 11.558
+    },
+    {
+      "functionName": "clock",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 9154,
+      "selfMs": 11.203
+    },
+    {
+      "functionName": "buildCoastalCity",
+      "url": "https://synk.im/try/racing/cityscape.js",
+      "line": 7,
+      "selfMs": 11.114
+    },
+    {
+      "functionName": "buildSceneryDetails",
+      "url": "https://synk.im/try/racing/scenery.js",
+      "line": 5,
+      "selfMs": 11.096
+    },
+    {
+      "functionName": "generateUUID",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 1825,
+      "selfMs": 11.003
+    },
+    {
+      "functionName": "WebGLRenderer.renderBufferDirect",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 15935,
+      "selfMs": 10.911
+    },
+    {
+      "functionName": "update",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 241,
+      "selfMs": 10.905
+    },
+    {
+      "functionName": "Uint16BufferAttribute",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 18507,
+      "selfMs": 10.756
+    },
+    {
+      "functionName": "setTimeout",
+      "url": "",
+      "line": 0,
+      "selfMs": 10.7
+    },
+    {
+      "functionName": "initNonuniformCatmullRom",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 32276,
+      "selfMs": 10.418
+    },
+    {
+      "functionName": "batchStaticPanels",
+      "url": "https://synk.im/try/racing/vehicles.js",
+      "line": 392,
+      "selfMs": 10.374
+    },
+    {
+      "functionName": "setXYZ",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 18298,
+      "selfMs": 10.115
+    },
+    {
+      "functionName": "max",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 4920,
+      "selfMs": 9.373
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 44045,
+      "selfMs": 8.911
+    },
+    {
+      "functionName": "ribbon",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 265,
+      "selfMs": 8.838
+    },
+    {
+      "functionName": "refreshMaterialUniforms",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 13957,
+      "selfMs": 8.599
+    },
+    {
+      "functionName": "normalizeNormals",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 19810,
+      "selfMs": 8.552
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vendor/DRACOLoader.js",
+      "line": 362,
+      "selfMs": 8.388
+    },
+    {
+      "functionName": "unique",
+      "url": "https://synk.im/try/racing/render-world.js",
+      "line": 13,
+      "selfMs": 8.331
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 1,
+      "selfMs": 8.095
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/learning.js",
+      "line": 1,
+      "selfMs": 8.077
+    },
+    {
+      "functionName": "divideScalar",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 4890,
+      "selfMs": 8.057
+    },
+    {
+      "functionName": "canvasTexture",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 241,
+      "selfMs": 8.037
+    },
+    {
+      "functionName": "clone",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 20054,
+      "selfMs": 7.78
+    },
+    {
+      "functionName": "parse",
+      "url": "https://synk.im/try/racing/vendor/GLTFLoader.js",
+      "line": 415,
+      "selfMs": 7.751
+    },
+    {
+      "functionName": "makeSignAtlas",
+      "url": "https://synk.im/try/racing/cityscape.js",
+      "line": 474,
+      "selfMs": 7.715
+    },
+    {
+      "functionName": "addMarin",
+      "url": "https://synk.im/try/racing/drivers.js",
+      "line": 110,
+      "selfMs": 7.688
+    },
+    {
+      "functionName": "renderObject",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 8731,
+      "selfMs": 7.659
+    },
+    {
+      "functionName": "Mesh",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 20220,
+      "selfMs": 7.519
+    },
+    {
+      "functionName": "bindVertexArrayObject",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 1644,
+      "selfMs": 7.505
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 430,
+      "selfMs": 7.503
+    },
+    {
+      "functionName": "pathAngle",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 67,
+      "selfMs": 7.345
+    },
+    {
+      "functionName": "setValueV3f",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 4609,
+      "selfMs": 7.247
+    },
+    {
+      "functionName": "WebGLProgram",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 6048,
+      "selfMs": 7.245
+    },
+    {
+      "functionName": "min",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 4903,
+      "selfMs": 6.98
+    },
+    {
+      "functionName": "getDimensions",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 12436,
+      "selfMs": 6.974
+    },
+    {
+      "functionName": "resolveIncludes",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 5836,
+      "selfMs": 6.968
+    },
+    {
+      "functionName": "arrayNeedsUint32",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 6204,
+      "selfMs": 6.738
+    },
+    {
+      "functionName": "load",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 44548,
+      "selfMs": 6.574
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vendor/GLTFLoader.js",
+      "line": 3386,
+      "selfMs": 6.509
+    },
+    {
+      "functionName": "set",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 5684,
+      "selfMs": 6.447
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/finales.js",
+      "line": 60,
+      "selfMs": 6.444
+    },
+    {
+      "functionName": "getUtoTmapping",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 31630,
+      "selfMs": 6.427
+    },
+    {
+      "functionName": "freeze",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 26,
+      "selfMs": 6.331
+    },
+    {
+      "functionName": "TorusGeometry",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 37102,
+      "selfMs": 6.303
+    },
+    {
+      "functionName": "acquireProgram",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 7370,
+      "selfMs": 6.202
+    },
+    {
+      "functionName": "(익명)",
+      "url": "",
+      "line": 2,
+      "selfMs": 6.136
+    },
+    {
+      "functionName": "SRGBToLinear",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 6491,
+      "selfMs": 6.015
+    },
+    {
+      "functionName": "define",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 6404,
+      "selfMs": 5.986
+    },
+    {
+      "functionName": "noise",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 59,
+      "selfMs": 5.924
+    },
+    {
+      "functionName": "init",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 32259,
+      "selfMs": 5.913
+    },
+    {
+      "functionName": "updateWorldMatrix",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 14327,
+      "selfMs": 5.81
+    },
+    {
+      "functionName": "render",
+      "url": "https://synk.im/try/racing/garage-ui.js",
+      "line": 44,
+      "selfMs": 5.79
+    },
+    {
+      "functionName": "computeVertexNormals",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 19714,
+      "selfMs": 5.768
+    },
+    {
+      "functionName": "applyMatrix3",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 4744,
+      "selfMs": 5.72
+    },
+    {
+      "functionName": "addGroup",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 19049,
+      "selfMs": 5.591
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 400,
+      "selfMs": 5.575
+    },
+    {
+      "functionName": "onRotationChange",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 13298,
+      "selfMs": 5.568
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vendor/DRACOLoader.js",
+      "line": 223,
+      "selfMs": 5.505
+    },
+    {
+      "functionName": "onUploadCallback",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 17863,
+      "selfMs": 5.499
+    },
+    {
+      "functionName": "setFromBufferAttribute",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 9518,
+      "selfMs": 5.444
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 475,
+      "selfMs": 5.392
+    },
+    {
+      "functionName": "createVertexArrayObject",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 1638,
+      "selfMs": 5.317
+    },
+    {
+      "functionName": "getProgramCacheKey",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 7154,
+      "selfMs": 5.288
+    },
+    {
+      "functionName": "WebXRManager",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 12854,
+      "selfMs": 5.188
+    },
+    {
+      "functionName": "addWheels",
+      "url": "https://synk.im/try/racing/vehicles.js",
+      "line": 50,
+      "selfMs": 5.177
+    },
+    {
+      "functionName": "renderStages",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 198,
+      "selfMs": 5.174
+    },
+    {
+      "functionName": "setupRenderBufferStorage",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 11716,
+      "selfMs": 5.093
+    },
+    {
+      "functionName": "setIndex",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 18946,
+      "selfMs": 5.086
+    },
+    {
+      "functionName": "WebGLRenderer.render",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 16363,
+      "selfMs": 5.002
+    },
+    {
+      "functionName": "addUV",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 35828,
+      "selfMs": 4.977
+    },
+    {
+      "functionName": "roadPoint",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 68,
+      "selfMs": 4.885
+    },
+    {
+      "functionName": "transformed",
+      "url": "https://synk.im/try/racing/scenery.js",
+      "line": 391,
+      "selfMs": 4.854
+    },
+    {
+      "functionName": "setColorAt",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 25894,
+      "selfMs": 4.834
+    },
+    {
+      "functionName": "createElementNS",
+      "url": "",
+      "line": 0,
+      "selfMs": 4.802
+    },
+    {
+      "functionName": "architecturalFaceUv",
+      "url": "https://synk.im/try/racing/city-materials.js",
+      "line": 4,
+      "selfMs": 4.755
+    },
+    {
+      "functionName": "clone",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 18371,
+      "selfMs": 4.717
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 1,
+      "selfMs": 4.714
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vendor/GLTFLoader.js",
+      "line": 3130,
+      "selfMs": 4.7
+    },
+    {
+      "functionName": "fetch",
+      "url": "",
+      "line": 0,
+      "selfMs": 4.687
+    },
+    {
+      "functionName": "readData",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 44082,
+      "selfMs": 4.617
+    },
+    {
+      "functionName": "model",
+      "url": "https://synk.im/try/racing/seascape-boats.js",
+      "line": 15,
+      "selfMs": 4.6
+    },
+    {
+      "functionName": "distanceToSquared",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 5296,
+      "selfMs": 4.589
+    },
+    {
+      "functionName": "contactTexture",
+      "url": "https://synk.im/try/racing/cityscape.js",
+      "line": 485,
+      "selfMs": 4.585
+    },
+    {
+      "functionName": "__require",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 5,
+      "selfMs": 4.564
+    },
+    {
+      "functionName": "refreshUniformsCommon",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 14037,
+      "selfMs": 4.549
+    },
+    {
+      "functionName": "applyMatrix4",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 18018,
+      "selfMs": 4.528
+    },
+    {
+      "functionName": "getPoint",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 32398,
+      "selfMs": 4.394
+    },
+    {
+      "functionName": "query",
+      "url": "",
+      "line": 5607,
+      "selfMs": 4.393
+    },
+    {
+      "functionName": "setValueM4",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 4734,
+      "selfMs": 4.346
+    },
+    {
+      "functionName": "GLTFParser",
+      "url": "https://synk.im/try/racing/vendor/GLTFLoader.js",
+      "line": 2625,
+      "selfMs": 4.327
+    },
+    {
+      "functionName": "Matrix4",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 11367,
+      "selfMs": 4.24
+    },
+    {
+      "functionName": "buildAlternativeCar",
+      "url": "https://synk.im/try/racing/vehicles.js",
+      "line": 415,
+      "selfMs": 4.217
+    },
+    {
+      "functionName": "getReversed",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 8933,
+      "selfMs": 4.212
+    },
+    {
+      "functionName": "feltSurface",
+      "url": "https://synk.im/try/racing/drivers.js",
+      "line": 28,
+      "selfMs": 4.066
+    },
+    {
+      "functionName": "setValueV1fArray",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 5097,
+      "selfMs": 4.046
+    },
+    {
+      "functionName": "roadster",
+      "url": "https://synk.im/try/racing/vehicles.js",
+      "line": 349,
+      "selfMs": 3.96
+    },
+    {
+      "functionName": "addVertex",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 35819,
+      "selfMs": 3.957
+    },
+    {
+      "functionName": "createImageBitmap",
+      "url": "",
+      "line": 0,
+      "selfMs": 3.675
+    },
+    {
+      "functionName": "getBindingState",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 1656,
+      "selfMs": 3.61
+    },
+    {
+      "functionName": "projectObject",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 16549,
+      "selfMs": 3.584
+    },
+    {
+      "functionName": "island",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 82,
+      "selfMs": 3.563
+    },
+    {
+      "functionName": "generateBufferData",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 37522,
+      "selfMs": 3.541
+    },
+    {
+      "functionName": "buildCityLife",
+      "url": "https://synk.im/try/racing/city-life.js",
+      "line": 3,
+      "selfMs": 3.506
+    },
+    {
+      "functionName": "combineParts",
+      "url": "https://synk.im/try/racing/drivers.js",
+      "line": 40,
+      "selfMs": 3.484
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/cityscape.js",
+      "line": 147,
+      "selfMs": 3.479
+    },
+    {
+      "functionName": "update",
+      "url": "https://synk.im/try/racing/coastal-rocks.js",
+      "line": 52,
+      "selfMs": 3.479
+    },
+    {
+      "functionName": "section",
+      "url": "https://synk.im/try/racing/render-world.js",
+      "line": 64,
+      "selfMs": 3.462
+    },
+    {
+      "functionName": "foliage",
+      "url": "https://synk.im/try/racing/scenery.js",
+      "line": 482,
+      "selfMs": 3.447
+    },
+    {
+      "functionName": "recommend",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 9512,
+      "selfMs": 3.432
+    },
+    {
+      "functionName": "set",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 12734,
+      "selfMs": 3.431
+    },
+    {
+      "functionName": "cloneUniforms",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 20884,
+      "selfMs": 3.402
+    },
+    {
+      "functionName": "batchWheel",
+      "url": "https://synk.im/try/racing/vehicles.js",
+      "line": 135,
+      "selfMs": 3.401
+    },
+    {
+      "functionName": "uploadTexture",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 10998,
+      "selfMs": 3.396
+    },
+    {
+      "functionName": "updateMorphTargets",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 20310,
+      "selfMs": 3.375
+    },
+    {
+      "functionName": "subVectors",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 4654,
+      "selfMs": 3.357
+    },
+    {
+      "functionName": "treeTemplate",
+      "url": "https://synk.im/try/racing/scenery.js",
+      "line": 457,
+      "selfMs": 3.356
+    },
+    {
+      "functionName": "part",
+      "url": "https://synk.im/try/racing/drivers.js",
+      "line": 16,
+      "selfMs": 3.355
+    },
+    {
+      "functionName": "copy",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 4539,
+      "selfMs": 3.352
+    },
+    {
+      "functionName": "setup",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 1599,
+      "selfMs": 3.316
+    },
+    {
+      "functionName": "Sphere",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 10253,
+      "selfMs": 3.315
+    },
+    {
+      "functionName": "applyMatrix4",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 19090,
+      "selfMs": 3.303
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/cityscape.js",
+      "line": 453,
+      "selfMs": 3.3
+    },
+    {
+      "functionName": "createCoastalBoats",
+      "url": "https://synk.im/try/racing/seascape-boats.js",
+      "line": 3,
+      "selfMs": 3.296
+    },
+    {
+      "functionName": "random",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 57,
+      "selfMs": 3.264
+    },
+    {
+      "functionName": "recommend",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 7550,
+      "selfMs": 3.245
+    },
+    {
+      "functionName": "setValueV1f",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 4568,
+      "selfMs": 3.237
+    },
+    {
+      "functionName": "copy",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 20,
+      "selfMs": 3.232
+    },
+    {
+      "functionName": "append",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 78,
+      "selfMs": 3.211
+    },
+    {
+      "functionName": "_generateTables",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 17523,
+      "selfMs": 3.21
+    },
+    {
+      "functionName": "height.shoreOffset",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 47,
+      "selfMs": 3.187
+    },
+    {
+      "functionName": "WebGLTextures",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 10149,
+      "selfMs": 3.183
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 1,
+      "selfMs": 3.176
+    },
+    {
+      "functionName": "render",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 4013,
+      "selfMs": 3.169
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vendor/DRACOLoader.js",
+      "line": 392,
+      "selfMs": 3.127
+    },
+    {
+      "functionName": "edgeWeight",
+      "url": "https://synk.im/try/racing/coastal-rocks.js",
+      "line": 6,
+      "selfMs": 3.118
+    },
+    {
+      "functionName": "setupJourneyScenery",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 346,
+      "selfMs": 3.108
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 7524,
+      "selfMs": 3.099
+    },
+    {
+      "functionName": "onImageLoad",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 44593,
+      "selfMs": 3.093
+    },
+    {
+      "functionName": "compose",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 12302,
+      "selfMs": 3.065
+    },
+    {
+      "functionName": "ExtrudeGeometry",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 35126,
+      "selfMs": 3.053
+    },
+    {
+      "functionName": "FileLoader",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 43942,
+      "selfMs": 3.047
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vendor/GLTFLoader.js",
+      "line": 4350,
+      "selfMs": 3.043
+    },
+    {
+      "functionName": "setHex",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 15505,
+      "selfMs": 3.037
+    },
+    {
+      "functionName": "copyArray",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 4528,
+      "selfMs": 3.035
+    },
+    {
+      "functionName": "ridgeNoise",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 13,
+      "selfMs": 3.019
+    },
+    {
+      "functionName": "addUniform",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 5440,
+      "selfMs": 2.993
+    },
+    {
+      "functionName": "toArray",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 12564,
+      "selfMs": 2.992
+    },
+    {
+      "functionName": "computeBox",
+      "url": "",
+      "line": 2987,
+      "selfMs": 2.925
+    },
+    {
+      "functionName": "prepare",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 617,
+      "selfMs": 2.921
+    },
+    {
+      "functionName": "_allocateTargets",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 2930,
+      "selfMs": 2.919
+    },
+    {
+      "functionName": "curve",
+      "url": "https://synk.im/try/racing/scenery.js",
+      "line": 463,
+      "selfMs": 2.878
+    },
+    {
+      "functionName": "addShape",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 35167,
+      "selfMs": 2.861
+    },
+    {
+      "functionName": "addPrimitiveAttributes",
+      "url": "https://synk.im/try/racing/vendor/GLTFLoader.js",
+      "line": 4817,
+      "selfMs": 2.857
+    },
+    {
+      "functionName": "profilePoint",
+      "url": "https://synk.im/try/racing/drivers.js",
+      "line": 69,
+      "selfMs": 2.818
+    },
+    {
+      "functionName": "traverse",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 14198,
+      "selfMs": 2.757
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/scenery.js",
+      "line": 68,
+      "selfMs": 2.747
+    },
+    {
+      "functionName": "markUniformsLightsNeedsUpdate",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 17422,
+      "selfMs": 2.745
+    },
+    {
+      "functionName": "setUvTransform",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 5979,
+      "selfMs": 2.712
+    },
+    {
+      "functionName": "height.surfaceAt",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 56,
+      "selfMs": 2.674
+    },
+    {
+      "functionName": "part",
+      "url": "https://synk.im/try/racing/seascape-boats.js",
+      "line": 17,
+      "selfMs": 2.673
+    },
+    {
+      "functionName": "LatheGeometry",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 36078,
+      "selfMs": 2.653
+    },
+    {
+      "functionName": "setAttribute",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 19007,
+      "selfMs": 2.649
+    },
+    {
+      "functionName": "multiplyScalar",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 4686,
+      "selfMs": 2.59
+    },
+    {
+      "functionName": "buildDistantCoast",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 70,
+      "selfMs": 2.546
+    },
+    {
+      "functionName": "addEventListener",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 1712,
+      "selfMs": 2.528
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vendor/DRACOLoader.js",
+      "line": 234,
+      "selfMs": 2.49
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vehicles.js",
+      "line": 250,
+      "selfMs": 2.48
+    },
+    {
+      "functionName": "updateProjectionMatrix",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 21842,
+      "selfMs": 2.476
+    },
+    {
+      "functionName": "updateBuffer",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 140,
+      "selfMs": 2.466
+    },
+    {
+      "functionName": "bucket",
+      "url": "https://synk.im/try/racing/cityscape.js",
+      "line": 38,
+      "selfMs": 2.465
+    },
+    {
+      "functionName": "multiplyMatrices",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 11843,
+      "selfMs": 2.424
+    },
+    {
+      "functionName": "set",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 4411,
+      "selfMs": 2.402
+    },
+    {
+      "functionName": "fromScene",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 2761,
+      "selfMs": 2.351
+    },
+    {
+      "functionName": "WebGLCapabilities",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 2266,
+      "selfMs": 2.264
+    },
+    {
+      "functionName": "set needsUpdate",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 17873,
+      "selfMs": 2.196
+    },
+    {
+      "functionName": "createElement",
+      "url": "",
+      "line": 0,
+      "selfMs": 2.17
+    },
+    {
+      "functionName": "getPoints",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 31519,
+      "selfMs": 2.123
+    },
+    {
+      "functionName": "pointAt",
+      "url": "https://synk.im/try/racing/cityscape.js",
+      "line": 78,
+      "selfMs": 2.107
+    },
+    {
+      "functionName": "makeRotationAxis",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 12221,
+      "selfMs": 2.103
+    },
+    {
+      "functionName": "load",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 48913,
+      "selfMs": 2.098
+    },
+    {
+      "functionName": "containsFootprint",
+      "url": "https://synk.im/try/racing/cityscape.js",
+      "line": 452,
+      "selfMs": 2.094
+    },
+    {
+      "functionName": "PerformanceObserver.observe.type",
+      "url": "",
+      "line": 4,
+      "selfMs": 2.079
+    },
+    {
+      "functionName": "pick",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 9055,
+      "selfMs": 2.042
+    },
+    {
+      "functionName": "onRenderTargetDispose",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 10460,
+      "selfMs": 2.032
+    },
+    {
+      "functionName": "copy",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 7906,
+      "selfMs": 2.024
+    },
+    {
+      "functionName": "fromArray",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 6149,
+      "selfMs": 1.98
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/scenery.js",
+      "line": 411,
+      "selfMs": 1.957
+    },
+    {
+      "functionName": "enableAttribute",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 1827,
+      "selfMs": 1.955
+    },
+    {
+      "functionName": "extractUrlBase",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 47282,
+      "selfMs": 1.93
+    },
+    {
+      "functionName": "generateUVs",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 31001,
+      "selfMs": 1.924
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/scenery.js",
+      "line": 178,
+      "selfMs": 1.916
+    },
+    {
+      "functionName": "normalize",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 5121,
+      "selfMs": 1.887
+    },
+    {
+      "functionName": "setClear",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 1526,
+      "selfMs": 1.883
+    },
+    {
+      "functionName": "update",
+      "url": "https://synk.im/try/racing/render-world.js",
+      "line": 157,
+      "selfMs": 1.859
+    },
+    {
+      "functionName": "setFromAxisAngle",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 3783,
+      "selfMs": 1.856
+    },
+    {
+      "functionName": "computeBoundingSphere",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 25738,
+      "selfMs": 1.855
+    },
+    {
+      "functionName": "drawBuffers",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 9340,
+      "selfMs": 1.846
+    },
+    {
+      "functionName": "getElementById",
+      "url": "",
+      "line": 0,
+      "selfMs": 1.829
+    },
+    {
+      "functionName": "lerp",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 1924,
+      "selfMs": 1.822
+    },
+    {
+      "functionName": "frame",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 936,
+      "selfMs": 1.81
+    },
+    {
+      "functionName": "getPoint",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 33353,
+      "selfMs": 1.8
+    },
+    {
+      "functionName": "setTextureParameters",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 10762,
+      "selfMs": 1.795
+    },
+    {
+      "functionName": "correctUV",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 31102,
+      "selfMs": 1.794
+    },
+    {
+      "functionName": "setFromEuler",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 3702,
+      "selfMs": 1.792
+    },
+    {
+      "functionName": "setupLights",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 8319,
+      "selfMs": 1.784
+    },
+    {
+      "functionName": "getNormalMatrix",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 5937,
+      "selfMs": 1.78
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vehicles.js",
+      "line": 441,
+      "selfMs": 1.766
+    },
+    {
+      "functionName": "computeFrenetFrames",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 31760,
+      "selfMs": 1.758
+    },
+    {
+      "functionName": "fibres",
+      "url": "https://synk.im/try/racing/drivers.js",
+      "line": 76,
+      "selfMs": 1.755
+    },
+    {
+      "functionName": "sidewalls",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 35741,
+      "selfMs": 1.753
+    },
+    {
+      "functionName": "ConeGeometry",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 30780,
+      "selfMs": 1.744
+    },
+    {
+      "functionName": "includeReplacer",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 5844,
+      "selfMs": 1.74
+    },
+    {
+      "functionName": "ShaderMaterial",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 21037,
+      "selfMs": 1.736
+    },
+    {
+      "functionName": "makeGate",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 437,
+      "selfMs": 1.733
+    },
+    {
+      "functionName": "newSession",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 9191,
+      "selfMs": 1.725
+    },
+    {
+      "functionName": "_cached",
+      "url": "",
+      "line": 5388,
+      "selfMs": 1.724
+    },
+    {
+      "functionName": "reset",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 761,
+      "selfMs": 1.721
+    },
+    {
+      "functionName": "parseUniform",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 5447,
+      "selfMs": 1.72
+    },
+    {
+      "functionName": "needsUpdate",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 1723,
+      "selfMs": 1.72
+    },
+    {
+      "functionName": "TubeGeometry",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 37466,
+      "selfMs": 1.716
+    },
+    {
+      "functionName": "computeBoundingBox",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 25702,
+      "selfMs": 1.71
+    },
+    {
+      "functionName": "setupVertexAttributes",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 1889,
+      "selfMs": 1.708
+    },
+    {
+      "functionName": "at",
+      "url": "https://synk.im/try/racing/seascape-boats.js",
+      "line": 94,
+      "selfMs": 1.707
+    },
+    {
+      "functionName": "MeshStandardMaterial",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 38041,
+      "selfMs": 1.705
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 48977,
+      "selfMs": 1.694
+    },
+    {
+      "functionName": "setupTerrain",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 307,
+      "selfMs": 1.692
+    },
+    {
+      "functionName": "automaticQuality",
+      "url": "https://synk.im/try/racing/graphics.js",
+      "line": 3,
+      "selfMs": 1.689
+    },
+    {
+      "functionName": "updateMascot",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 526,
+      "selfMs": 1.688
+    },
+    {
+      "functionName": "getDelta",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 49450,
+      "selfMs": 1.684
+    },
+    {
+      "functionName": "atlas/game-browser.js",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 9765,
+      "selfMs": 1.683
+    },
+    {
+      "functionName": "Material",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 16283,
+      "selfMs": 1.683
+    },
+    {
+      "functionName": "getLengths",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 31575,
+      "selfMs": 1.681
+    },
+    {
+      "functionName": "mark",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 557,
+      "selfMs": 1.68
+    },
+    {
+      "functionName": "requestAnimationFrame",
+      "url": "",
+      "line": 0,
+      "selfMs": 1.679
+    },
+    {
+      "functionName": "chosen",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 8928,
+      "selfMs": 1.678
+    },
+    {
+      "functionName": "addKkamong",
+      "url": "https://synk.im/try/racing/drivers.js",
+      "line": 221,
+      "selfMs": 1.677
+    },
+    {
+      "functionName": "Vector3",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 4369,
+      "selfMs": 1.677
+    },
+    {
+      "functionName": "persist",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 9338,
+      "selfMs": 1.676
+    },
+    {
+      "functionName": "mergeUniforms",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 20930,
+      "selfMs": 1.674
+    },
+    {
+      "functionName": "enable",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 9288,
+      "selfMs": 1.67
+    },
+    {
+      "functionName": "hullPoint",
+      "url": "https://synk.im/try/racing/seascape-boats.js",
+      "line": 37,
+      "selfMs": 1.668
+    },
+    {
+      "functionName": "_sceneToCubeUV",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 2975,
+      "selfMs": 1.667
+    },
+    {
+      "functionName": "rock",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 164,
+      "selfMs": 1.665
+    },
+    {
+      "functionName": "roundedBox",
+      "url": "https://synk.im/try/racing/vehicles.js",
+      "line": 35,
+      "selfMs": 1.663
+    },
+    {
+      "functionName": "setValueT1",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 4964,
+      "selfMs": 1.662
+    },
+    {
+      "functionName": "add",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 13874,
+      "selfMs": 1.66
+    },
+    {
+      "functionName": "_blur",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 3158,
+      "selfMs": 1.658
+    },
+    {
+      "functionName": "updateMatrices",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 45317,
+      "selfMs": 1.658
+    },
+    {
+      "functionName": "compile",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 622,
+      "selfMs": 1.655
+    },
+    {
+      "functionName": "setMode",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 3998,
+      "selfMs": 1.651
+    },
+    {
+      "functionName": "subdivide",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 30892,
+      "selfMs": 1.646
+    },
+    {
+      "functionName": "getProgramCacheKeyParameters",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 7194,
+      "selfMs": 1.646
+    },
+    {
+      "functionName": "buildPlane",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 20753,
+      "selfMs": 1.642
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 314,
+      "selfMs": 1.641
+    },
+    {
+      "functionName": "setupVegetation",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 377,
+      "selfMs": 1.641
+    },
+    {
+      "functionName": "extractPoints",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 34264,
+      "selfMs": 1.641
+    },
+    {
+      "functionName": "setupFrameBufferTexture",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 11672,
+      "selfMs": 1.638
+    },
+    {
+      "functionName": "buildDriver",
+      "url": "https://synk.im/try/racing/drivers.js",
+      "line": 252,
+      "selfMs": 1.637
+    },
+    {
+      "functionName": "intersectsObject",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 26484,
+      "selfMs": 1.628
+    },
+    {
+      "functionName": "inclination",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 31129,
+      "selfMs": 1.626
+    },
+    {
+      "functionName": "set",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 15450,
+      "selfMs": 1.624
+    },
+    {
+      "functionName": "festoon",
+      "url": "https://synk.im/try/racing/cityscape.js",
+      "line": 82,
+      "selfMs": 1.624
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 44128,
+      "selfMs": 1.622
+    },
+    {
+      "functionName": "personalizedStage",
+      "url": "https://synk.im/try/racing/personalization.js",
+      "line": 104,
+      "selfMs": 1.62
+    },
+    {
+      "functionName": "flowOf",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 37,
+      "selfMs": 1.618
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/campaign.js",
+      "line": 85,
+      "selfMs": 1.616
+    },
+    {
+      "functionName": "computeElementStyleVisibilityVisible",
+      "url": "",
+      "line": 2971,
+      "selfMs": 1.615
+    },
+    {
+      "functionName": "createGame",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 9149,
+      "selfMs": 1.614
+    },
+    {
+      "functionName": "enableAttributeAndDivisor",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 1833,
+      "selfMs": 1.611
+    },
+    {
+      "functionName": "setupCoastalScenery",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 373,
+      "selfMs": 1.607
+    },
+    {
+      "functionName": "refreshUniformsPhysical",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 14319,
+      "selfMs": 1.601
+    },
+    {
+      "functionName": "buildIslandForest",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 268,
+      "selfMs": 1.598
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 6001,
+      "selfMs": 1.597
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 162,
+      "selfMs": 1.593
+    },
+    {
+      "functionName": "createMap",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 103,
+      "selfMs": 1.59
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/curriculum.js",
+      "line": 1,
+      "selfMs": 1.589
+    },
+    {
+      "functionName": "addInterior",
+      "url": "https://synk.im/try/racing/vehicles.js",
+      "line": 272,
+      "selfMs": 1.584
+    },
+    {
+      "functionName": "CapsuleGeometry",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 30106,
+      "selfMs": 1.577
+    },
+    {
+      "functionName": "isElementVisible",
+      "url": "",
+      "line": 3006,
+      "selfMs": 1.576
+    },
+    {
+      "functionName": "atStation",
+      "url": "https://synk.im/try/racing/scenery.js",
+      "line": 197,
+      "selfMs": 1.575
+    },
+    {
+      "functionName": "InjectedScript",
+      "url": "",
+      "line": 6723,
+      "selfMs": 1.562
+    },
+    {
+      "functionName": "logit",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 8406,
+      "selfMs": 1.561
+    },
+    {
+      "functionName": "get",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 217,
+      "selfMs": 1.559
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vehicles.js",
+      "line": 257,
+      "selfMs": 1.557
+    },
+    {
+      "functionName": "azimuth",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 31120,
+      "selfMs": 1.556
+    },
+    {
+      "functionName": "disable",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 9299,
+      "selfMs": 1.543
+    },
+    {
+      "functionName": "softFold",
+      "url": "https://synk.im/try/racing/drivers.js",
+      "line": 100,
+      "selfMs": 1.542
+    },
+    {
+      "functionName": "yieldToUI",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 558,
+      "selfMs": 1.541
+    },
+    {
+      "functionName": "live",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 9016,
+      "selfMs": 1.538
+    },
+    {
+      "functionName": "atlas/memory-sync.js",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "line": 7985,
+      "selfMs": 1.529
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/drivers.js",
+      "line": 149,
+      "selfMs": 1.521
+    },
+    {
+      "functionName": "CylinderGeometry",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 30456,
+      "selfMs": 1.516
+    },
+    {
+      "functionName": "resize",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 544,
+      "selfMs": 1.507
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/personalization.js",
+      "line": 57,
+      "selfMs": 1.499
+    },
+    {
+      "functionName": "clone",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 17149,
+      "selfMs": 1.477
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vendor/GLTFLoader.js",
+      "line": 3672,
+      "selfMs": 1.468
+    },
+    {
+      "functionName": "update",
+      "url": "https://synk.im/try/racing/cityscape.js",
+      "line": 426,
+      "selfMs": 1.453
+    },
+    {
+      "functionName": "WebGLState",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 8835,
+      "selfMs": 1.449
+    },
+    {
+      "functionName": "lookAt",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 13822,
+      "selfMs": 1.423
+    },
+    {
+      "functionName": "computeBounds",
+      "url": "https://synk.im/try/racing/vendor/GLTFLoader.js",
+      "line": 4699,
+      "selfMs": 1.421
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/drivers.js",
+      "line": 188,
+      "selfMs": 1.421
+    },
+    {
+      "functionName": "InstancedMesh",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 25624,
+      "selfMs": 1.42
+    },
+    {
+      "functionName": "LinearToSRGB",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 6497,
+      "selfMs": 1.405
+    },
+    {
+      "functionName": "updateMatrix",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 14261,
+      "selfMs": 1.402
+    },
+    {
+      "functionName": "copy",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 38356,
+      "selfMs": 1.397
+    },
+    {
+      "functionName": "calc",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 32290,
+      "selfMs": 1.395
+    },
+    {
+      "functionName": "getUniformList",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 16985,
+      "selfMs": 1.393
+    },
+    {
+      "functionName": "painterSortStable",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 7496,
+      "selfMs": 1.374
+    },
+    {
+      "functionName": "expandByPoint",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 10526,
+      "selfMs": 1.373
+    },
+    {
+      "functionName": "fromArray",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 12544,
+      "selfMs": 1.371
+    },
+    {
+      "functionName": "setValues",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 16816,
+      "selfMs": 1.363
+    },
+    {
+      "functionName": "remove",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 225,
+      "selfMs": 1.356
+    },
+    {
+      "functionName": "push",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 7602,
+      "selfMs": 1.342
+    },
+    {
+      "functionName": "setValueV2f",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 4582,
+      "selfMs": 1.342
+    },
+    {
+      "functionName": "updateMatrix",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 7262,
+      "selfMs": 1.329
+    },
+    {
+      "functionName": "mat.onBeforeCompile",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 282,
+      "selfMs": 1.326
+    },
+    {
+      "functionName": "setup",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 7936,
+      "selfMs": 1.315
+    },
+    {
+      "functionName": "distanceTo",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 5282,
+      "selfMs": 1.311
+    },
+    {
+      "functionName": "copy",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 11472,
+      "selfMs": 1.308
+    },
+    {
+      "functionName": "worker.onmessage",
+      "url": "https://synk.im/try/racing/vendor/DRACOLoader.js",
+      "line": 404,
+      "selfMs": 1.305
+    },
+    {
+      "functionName": "WebGLRenderer",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 14910,
+      "selfMs": 1.29
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vendor/GLTFLoader.js",
+      "line": 3424,
+      "selfMs": 1.29
+    },
+    {
+      "functionName": "setX",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 18154,
+      "selfMs": 1.282
+    },
+    {
+      "functionName": "classify",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 106,
+      "selfMs": 1.28
+    },
+    {
+      "functionName": "createCoastalRocks",
+      "url": "https://synk.im/try/racing/coastal-rocks.js",
+      "line": 30,
+      "selfMs": 1.264
+    },
+    {
+      "functionName": "generateMipmap",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 10256,
+      "selfMs": 1.258
+    },
+    {
+      "functionName": "update",
+      "url": "https://synk.im/try/racing/city-life.js",
+      "line": 313,
+      "selfMs": 1.255
+    },
+    {
+      "functionName": "render",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 2189,
+      "selfMs": 1.247
+    },
+    {
+      "functionName": "seed",
+      "url": "https://synk.im/try/racing/city-life.js",
+      "line": 8,
+      "selfMs": 1.24
+    },
+    {
+      "functionName": "buildIslandTidalLight",
+      "url": "https://synk.im/try/racing/landscape.js",
+      "line": 231,
+      "selfMs": 1.238
+    },
+    {
+      "functionName": "prepareCar",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 478,
+      "selfMs": 1.235
+    },
+    {
+      "functionName": "enable",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 13091,
+      "selfMs": 1.226
+    },
+    {
+      "functionName": "DepthTexture",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 29954,
+      "selfMs": 1.221
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/render-world.js",
+      "line": 13,
+      "selfMs": 1.22
+    },
+    {
+      "functionName": "$",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 27,
+      "selfMs": 1.213
+    },
+    {
+      "functionName": "arraysEqual",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 4514,
+      "selfMs": 1.186
+    },
+    {
+      "functionName": "setFromRotationMatrix",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 12785,
+      "selfMs": 1.175
+    },
+    {
+      "functionName": "copy",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 20066,
+      "selfMs": 1.174
+    },
+    {
+      "functionName": "_setSize",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 2871,
+      "selfMs": 1.169
+    },
+    {
+      "functionName": "renderCollection",
+      "url": "https://synk.im/try/racing/app.js",
+      "line": 144,
+      "selfMs": 1.163
+    },
+    {
+      "functionName": "createDracoPrimitive",
+      "url": "https://synk.im/try/racing/vendor/GLTFLoader.js",
+      "line": 3812,
+      "selfMs": 1.153
+    },
+    {
+      "functionName": "setupRenderTarget",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 11984,
+      "selfMs": 1.149
+    },
+    {
+      "functionName": "at",
+      "url": "https://synk.im/try/racing/cityscape.js",
+      "line": 74,
+      "selfMs": 1.147
+    },
+    {
+      "functionName": "initGLContext",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 15240,
+      "selfMs": 1.142
+    },
+    {
+      "functionName": "expandByPoint",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 9675,
+      "selfMs": 1.139
+    },
+    {
+      "functionName": "pushVertex",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 31052,
+      "selfMs": 1.136
+    },
+    {
+      "functionName": "renderInstances",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 4021,
+      "selfMs": 1.107
+    },
+    {
+      "functionName": "getTangentAt",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 31745,
+      "selfMs": 1.105
+    },
+    {
+      "functionName": "add",
+      "url": "https://synk.im/try/racing/city-life.js",
+      "line": 9,
+      "selfMs": 1.092
+    },
+    {
+      "functionName": "patch",
+      "url": "https://synk.im/try/racing/vehicles.js",
+      "line": 230,
+      "selfMs": 0.936
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/drivers.js",
+      "line": 198,
+      "selfMs": 0.912
+    },
+    {
+      "functionName": "QuadraticBezier",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 32602,
+      "selfMs": 0.763
+    },
+    {
+      "functionName": "custom",
+      "url": "https://synk.im/try/racing/seascape-boats.js",
+      "line": 52,
+      "selfMs": 0.734
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vehicles.js",
+      "line": 253,
+      "selfMs": 0.722
+    },
+    {
+      "functionName": "PlaneGeometry",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 36359,
+      "selfMs": 0.687
+    },
+    {
+      "functionName": "multiplyQuaternions",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 4095,
+      "selfMs": 0.633
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/scenery.js",
+      "line": 420,
+      "selfMs": 0.524
+    },
+    {
+      "functionName": "placeTree",
+      "url": "https://synk.im/try/racing/scenery.js",
+      "line": 80,
+      "selfMs": 0.452
+    },
+    {
+      "functionName": "softenScanEdge",
+      "url": "https://synk.im/try/racing/coastal-rocks.js",
+      "line": 3,
+      "selfMs": 0.45
+    },
+    {
+      "functionName": "setValueM3",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 4707,
+      "selfMs": 0.445
+    },
+    {
+      "functionName": "subdivideFace",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 30916,
+      "selfMs": 0.431
+    },
+    {
+      "functionName": "(익명)",
+      "url": "https://synk.im/try/racing/vehicles.js",
+      "line": 482,
+      "selfMs": 0.4
+    },
+    {
+      "functionName": "equals",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 5483,
+      "selfMs": 0.381
+    },
+    {
+      "functionName": "getTangent",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 31715,
+      "selfMs": 0.376
+    },
+    {
+      "functionName": "radialShade",
+      "url": "https://synk.im/try/racing/scenery.js",
+      "line": 585,
+      "selfMs": 0.303
+    },
+    {
+      "functionName": "getPointAt",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 31505,
+      "selfMs": 0.283
+    },
+    {
+      "functionName": "applyMatrix4",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 10100,
+      "selfMs": 0.249
+    },
+    {
+      "functionName": "setFromMatrix4",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 5758,
+      "selfMs": 0.218
+    },
+    {
+      "functionName": "toNonIndexed",
+      "url": "https://synk.im/try/racing/vendor/three.core.js",
+      "line": 19832,
+      "selfMs": 0.066
+    },
+    {
+      "functionName": "setValue",
+      "url": "https://synk.im/try/racing/vendor/three.module.js",
+      "line": 5520,
+      "selfMs": 0.051
+    }
+  ],
+  "cpuSampleMs": 11235.577,
+  "jsNetworkFailures": [],
+  "ok": true
+}

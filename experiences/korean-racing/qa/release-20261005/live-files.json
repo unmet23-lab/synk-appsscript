@@ -1,0 +1,77 @@
+{
+  "capturedAt": "2026-10-05T09:33:34.395476+00:00",
+  "commit": "8c363c69d3bae6f67d97ca6bb0e2cd9bfaedb09f",
+  "files": [
+    {
+      "file": "app.js",
+      "url": "https://synk.im/try/racing/app.js?verify=8c363c69d3bae6f67d97ca6bb0e2cd9bfaedb09f",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "bytes": 104846,
+      "sha256": "f6863491116aaab83dbe63e5af520dcfc5753517a3b8e373f0989c63108fc746",
+      "expected": "f6863491116aaab83dbe63e5af520dcfc5753517a3b8e373f0989c63108fc746",
+      "ok": true
+    },
+    {
+      "file": "render-world.js",
+      "url": "https://synk.im/try/racing/render-world.js?verify=8c363c69d3bae6f67d97ca6bb0e2cd9bfaedb09f",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "bytes": 10087,
+      "sha256": "2f66a6f7e780e1c29eeea467db17e4b51652118b92d740c1bf74d0311a0e4783",
+      "expected": "2f66a6f7e780e1c29eeea467db17e4b51652118b92d740c1bf74d0311a0e4783",
+      "ok": true
+    },
+    {
+      "file": "landscape.js",
+      "url": "https://synk.im/try/racing/landscape.js?verify=8c363c69d3bae6f67d97ca6bb0e2cd9bfaedb09f",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "bytes": 23991,
+      "sha256": "5a7964c1ad97b92e019c1dd9d1e6af46f3eecfafb6df52bd0b3359574585c7b2",
+      "expected": "5a7964c1ad97b92e019c1dd9d1e6af46f3eecfafb6df52bd0b3359574585c7b2",
+      "ok": true
+    },
+    {
+      "file": "course.js",
+      "url": "https://synk.im/try/racing/course.js?verify=8c363c69d3bae6f67d97ca6bb0e2cd9bfaedb09f",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "bytes": 1124,
+      "sha256": "0a2924389f4783d01a7b259c83ea5d52050f9144a9e876099df5006986fbc409",
+      "expected": "0a2924389f4783d01a7b259c83ea5d52050f9144a9e876099df5006986fbc409",
+      "ok": true
+    },
+    {
+      "file": "terrain-data.js",
+      "url": "https://synk.im/try/racing/terrain-data.js?verify=8c363c69d3bae6f67d97ca6bb0e2cd9bfaedb09f",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "bytes": 7380,
+      "sha256": "42c3c3cdc90b54ce27a476fe7a73abab785ea1422f93db95b6560b61129558ba",
+      "expected": "42c3c3cdc90b54ce27a476fe7a73abab785ea1422f93db95b6560b61129558ba",
+      "ok": true
+    },
+    {
+      "file": "terrain-worker.js",
+      "url": "https://synk.im/try/racing/terrain-worker.js?verify=8c363c69d3bae6f67d97ca6bb0e2cd9bfaedb09f",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "bytes": 864,
+      "sha256": "ef413cd0448ed6605b2420172ff0f14f9d93913d568e34637fe917b63a2df1f1",
+      "expected": "ef413cd0448ed6605b2420172ff0f14f9d93913d568e34637fe917b63a2df1f1",
+      "ok": true
+    },
+    {
+      "file": "terrain-startup.js",
+      "url": "https://synk.im/try/racing/terrain-startup.js?verify=8c363c69d3bae6f67d97ca6bb0e2cd9bfaedb09f",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "bytes": 1374,
+      "sha256": "a304129900d969f3875004e2768c8d28c09c404238d4d9bad2e3c39fff0100a0",
+      "expected": "a304129900d969f3875004e2768c8d28c09c404238d4d9bad2e3c39fff0100a0",
+      "ok": true
+    }
+  ],
+  "ok": true
+}

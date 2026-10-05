@@ -1,0 +1,18 @@
+[
+  {
+    "conclusion": "success",
+    "databaseId": 37290721277,
+    "headSha": "8c363c69d3bae6f67d97ca6bb0e2cd9bfaedb09f",
+    "name": "pages build and deployment",
+    "status": "completed",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/37290721277"
+  },
+  {
+    "conclusion": "success",
+    "databaseId": 37290722025,
+    "headSha": "8c363c69d3bae6f67d97ca6bb0e2cd9bfaedb09f",
+    "name": "synk.im 배포 점검",
+    "status": "completed",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/37290722025"
+  }
+]
