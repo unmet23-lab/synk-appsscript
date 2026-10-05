@@ -32,7 +32,7 @@ async function run(browser, name) {
   }
   const visible = (sel) => page.evaluate((q) => { const n = document.querySelector(q); return !!n && !n.hidden && n.getBoundingClientRect().height > 0; }, sel);
   const items = await (async () => { await page.goto(URL_BASE + '?qa'); await page.waitForSelector('#btn-start'); await sleep(800);
-    return page.evaluate(() => import('./content.mjs').then((m) => m.ITEMS.map((x) => ({ id: x.id, kind: x.kind, skill: x.skill, difficulty: x.difficulty })))); })();
+    return page.evaluate(() => import((document.querySelector('script[type="module"][src]')?.src || '').includes('.mjs') ? './content.mjs' : './content.js').then((m) => m.ITEMS.map((x) => ({ id: x.id, kind: x.kind, skill: x.skill, difficulty: x.difficulty })))); })();
   const byId = new Map(items.map((x) => [x.id, x]));
   const t0 = Date.now();
   await page.click('#btn-start');

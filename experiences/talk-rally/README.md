@@ -10,6 +10,8 @@
 
 **문항 늘리기(같은 날, 유호님 「문항늘리기 하자」):** 26개 → 46개. 조금 어려운 말을 5개에서 16개로(지난 일·앞으로 할 일·‘-을래요?’·‘가 봤어요?’·‘몇 분이세요?’·‘실례합니다’·‘잘 먹었습니다’ 등), 쉬운 말은 두 학습 항목에 15개씩. 아틀라스는 학습 항목·난도마다 말마다의 첫 응답 중 최근 12개로 다음 단계를 정해서, 쉬운 말이 12개를 넉넉히 넘어야 처음에 몇 개 틀린 사람도 나머지를 맞히면 조금 어려운 말로 넘어간다(세 판 이어 하기 확인에서 찾음 — 쉬운 ‘이어지는 말’이 11개면 처음에 4개 틀린 사람은 30일 동안 쉬운 말만 돈다).
 
+**synk.im 공개(10-04, 유호님 「공개 해줘도 돼」):** `https://synk.im/try/talk-rally/` (synk-policy `037819d`, 게임 파일 93개). SYNK-website `sync-play-games.mjs`(커밋 `fd2e3a7`)로 묶었고, 학습 묶음은 공개 중인 일곱 게임과 같은 판이라 여덟 게임이 같은 학습 기록을 읽고 쓴다. 같은 날 유호님이 다른 세션에 「LAB 페이지의 ‘해 보기’ 링크를 모두 지우고 카드를 누르면 5초 플레이 영상이 나오게」 하셔서, LAB 카드(GAME 08)·질문창·llms.txt의 말 랠리는 그 세션이 그 방식으로 넣는다. `/try/talk-rally/` 주소는 링크 없이 휴대폰 확인·배포 점검에 쓴다.
+
 ## 실행
 
 ```powershell
@@ -124,6 +126,7 @@ Node.js만 필요하고 외부 요청·유료 호출은 없다. 몽글의 말은
 ```powershell
 node --test experiences/talk-rally/core.test.mjs experiences/talk-rally/learning.test.mjs experiences/talk-rally/sfx.test.mjs experiences/talk-rally/flow.test.mjs
 node experiences/talk-rally/qa/play.cjs        # 서버를 켠 뒤. 한 판을 처음부터 결과까지 실제로 친다(컴퓨터·휴대폰·320px·움직임 줄이기·소리 끔)
+RALLY_URL=https://synk.im/try/talk-rally/ node experiences/talk-rally/qa/play.cjs desktop   # 공개 주소에서 한 판(공개본은 .mjs가 .js로 바뀌어 있다 — 확인 스크립트가 페이지와 같은 이름으로 원고를 읽는다)
 node experiences/talk-rally/qa/rounds.cjs desktop phone   # 네 판 이어 하기: 새 말이 판에 나오는지·처음에 틀려도 조금 어려운 말로 넘어가는지·음성 응답·기록 수
 node experiences/talk-rally/qa/sound.cjs       # 손맛 소리를 구워 재기 → qa/sound-results.json · qa/소리_스펙트럼.jpg
 node experiences/talk-rally/qa/frames.cjs desktop   # 연습 공 하나를 처음부터 받아칠 때까지 장면별로 찍기
@@ -137,4 +140,4 @@ node experiences/talk-rally/qa/frames.cjs desktop   # 연습 공 하나를 처�
 - 교원 검수: 46개 말의 자연스러움·난도·학습 항목 태그. 몽글 음성의 발음.
 - 디테일: 나레이션, 몽글의 움직임(멀미 때문에 보여 드리고 고르게 한다), 배경 장면, 라켓·공 꾸미기, 하루 도전·순위.
 - 문항 수: 10-03에 46개로 늘렸다. 더 늘리면 같은 말이 다시 나오는 간격이 길어진다. 학습 항목·난도마다 12개를 넉넉히 넘게 둔다(`core.test.mjs`가 쉬운 말 14개 이상을 지킨다).
-- synk.im 공개(`SYNK-website/sync-play-games.mjs`에 추가, LAB 게임 소개·질문창), WORLD·교사 과제·정식 계정 연결은 하지 않았다.
+- synk.im: 게임은 10-04 공개(위). LAB 카드·질문창은 다른 세션이 5초 영상 방식으로 넣는다. WORLD·교사 과제·정식 계정 연결은 하지 않았다.

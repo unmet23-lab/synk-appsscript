@@ -258,7 +258,7 @@ async function runMute(browser) {
   await page.click(`#cards .card.l${s.cur.options.indexOf(s.cur.answer)}`);
   for (let i = 0; i < 2; i++) {
     s = await waitFor((x) => !x.practice && x.index === i && x.cur?.phase === 'talk', `${i + 1}번째 말`);
-    const t0 = Date.now(), line = await page.evaluate((id) => import('./content.mjs').then((m) => m.ITEMS.find((x) => x.id === id).line), s.cur.id);
+    const t0 = Date.now(), line = await page.evaluate((id) => import((document.querySelector('script[type="module"][src]')?.src || '').includes('.mjs') ? './content.mjs' : './content.js').then((m) => m.ITEMS.find((x) => x.id === id).line), s.cur.id);
     check((await page.textContent('#tip')) === `몽글: “${line}”`, `${i + 1}번째: 몽글의 말이 글로 ${await page.textContent('#tip')}`);
     if (i === 0) { await page.screenshot({ path: path.join(OUT, 'play_mute_00_text.png') }); shots.push('play_mute_00_text.png'); }
     s = await waitFor((x) => x.cur?.phase === 'flight', `${i + 1}번째 공`);
