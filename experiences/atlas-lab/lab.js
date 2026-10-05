@@ -2,6 +2,10 @@
 // Nothing here is a second engine: Flow, TemperFlow, VellumFlow and Ask come from atlas/.
 import { FLOW_RUSH, LEVEL_WORDS } from '/order-rush/learning.mjs';
 import { FLOW_RHYTHM } from '/korean-rhythm/personalization.mjs';
+import { createComputerConsultation } from './consultation.mjs';
+import { createComputerInterpretation } from './interpretation.mjs';
+import { createComputerModelHost } from './model-host.mjs';
+import { mountMatchingLab } from './matching-ui.mjs';
 
 const $ = id => document.getElementById(id);
 const el = (tag, attrs = {}, ...children) => {
@@ -13,7 +17,7 @@ const el = (tag, attrs = {}, ...children) => {
   return node;
 };
 const ready = () => new Promise(resolve => {
-  const check = () => (globalThis.SynkLearning?.Flow && globalThis.SynkComputerRules && globalThis.SynkComputerContent ? resolve() : setTimeout(check, 30));
+  const check = () => (globalThis.SynkLearning?.Flow && globalThis.SynkComputerRules && globalThis.SynkComputerContent && globalThis.SynkAtlasInterpretation && globalThis.SynkTemperOutcomes ? resolve() : setTimeout(check, 30));
   check();
 });
 await ready();
@@ -149,65 +153,267 @@ $('try-start').addEventListener('click', () => {
 });
 run = Flow.start({ spec: NUMBERS, now: new Date().toISOString() }); showEngine();
 
-// ---------- ③ Consultation: ask only what changes the advice ----------
+// ---------- ③ Consultation: ask when a better-informed decision has value ----------
 const C = globalThis.SynkComputerContent, R = globalThis.SynkComputerRules;
+const consultation = createComputerConsultation({ Ask, content: C, rules: R });
+const interpretation = createComputerInterpretation({ Interpretation: globalThis.SynkAtlasInterpretation, content: C });
+const modelHost = createComputerModelHost({ disabled: document.querySelector('[data-model-host]')?.dataset.modelHost === 'disabled' });
 const usesStep = C.steps.find(step => step.id === 'uses');
 let answers = { uses: [] };
-const structured = flat => {
-  const input = {};
-  for (const [about, value] of Object.entries(flat)) {
-    const [step, field] = about.split('.');
-    if (field) input[step] = { ...(input[step] || {}), [field]: value }; else input[step] = value;
-  }
-  return input;
-};
-const advice = flat => {
-  const r = R.compute(structured(flat));
-  return { content: [r.headline.title, r.form.pick, r.ram.value, r.gpu.kind, r.gpu.vram ?? null, r.storage.valueText, r.os.pick] };
-};
-function questions() {
-  const list = [];
-  for (const step of C.steps) {
-    if (step.id === 'uses' || (step.when && !step.when(structured(answers)))) continue;
-    const title = step.short || step.eyebrow || step.id;
-    if (step.type === 'single') list.push({ id: step.id, about: step.id, title, options: step.options.map(o => ({ id: o.id, label: o.label })) });
-    else if (step.type === 'group') for (const field of step.fields) list.push({ id: `${step.id}.${field.id}`, about: `${step.id}.${field.id}`, title: `${title} · ${field.label}`, options: field.options.map(o => ({ id: o.id, label: o.label })) });
-    else if (step.type === 'multi') list.push({ id: step.id, about: step.id, title, options: step.options.map(o => ({ id: o.id, label: o.label, value: [o.id] })) });
-  }
-  return list;
+let extractionMs = null, interpretationError = '';
+let aiPending = null, aiRetry = null, aiGeneration = 0, aiNotice = '', modelOrigin = null;
+let privacyPending = false, privacyNotice = '';
+function cancelAI(message = '', preserveRetry = false) {
+  aiGeneration += 1;
+  aiPending?.abort(); aiPending = null;
+  if (!preserveRetry) aiRetry = null;
+  aiNotice = message;
+}
+function syncConsultation() {
+  const state = interpretation.snapshot(); answers = state.answers;
+  for (const button of $('uses').querySelectorAll('[data-use]')) button.setAttribute('aria-pressed', String(answers.uses.includes(button.dataset.use)));
+  renderInterpretation(state); renderConsult();
+}
+function applyManual(about, value) { cancelAI(aiPending ? '직접 고른 답이 바뀌어 이전 AI 응답을 반영하지 않아요.' : ''); interpretation.setManual(about, value); syncConsultation(); }
+function reviewProposal(id, action, value) {
+  cancelAI(aiPending ? '확인 내용이 바뀌어 이전 AI 응답을 반영하지 않아요.' : '');
+  try { interpretation.review(id, action, value); interpretationError = ''; }
+  catch { interpretationError = '이 제안을 반영하지 못했어요. 원문을 다시 정리하거나 아래에서 직접 골라 주세요.'; }
+  syncConsultation();
+}
+function renderInterpretation(state) {
+  $('interpret-extract').disabled = !state.text.trim(); $('interpret-clear').disabled = !state.text;
+  $('interpret-extract').textContent = '이 기기에서 정리';
+  const host = modelHost.state();
+  $('interpret-ai').disabled = !host.available || !state.text.trim() || !!aiPending || privacyPending;
+  $('interpret-ai').textContent = aiRetry && !aiPending ? 'AI 다시 시도' : 'AI로 정리';
+  $('interpret-cancel').hidden = !aiPending;
+  document.querySelector('.interpret-input').setAttribute('aria-busy', String(!!aiPending));
+  const sessionMissing = ['session-required', 'admin-required', 'unauthorized', 'forbidden'].includes(host.reason);
+  $('model-host-status').textContent = host.state === 'disabled' ? '공유판은 이 기기에서만 정리해요. AI 호스트에 연결하지 않아요.'
+    : host.state === 'checking' || host.state === 'idle' ? 'AI 연결을 확인하고 있어요.'
+    : host.available ? `AI 연결: ${host.providerLabel} · ${host.modelLabel}`
+    : sessionMissing ? 'AI 정리는 승인된 관리자 로그인에서 사용할 수 있어요. 로그인한 뒤 새로고침해 주세요.' : 'AI 호스트에 연결되지 않았어요. 이 기기에서 정리하거나 아래에서 직접 골라 주세요.';
+  $('model-host-disclosure').textContent = host.state === 'disabled' ? '이 공유판에서는 원문을 외부로 보내지 않아요.'
+    : `‘AI로 정리’를 누르면 입력한 원문을 ${host.available ? host.providerLabel : '연결된 AI 제공자'}에게 보내요. 원문 인용이 담긴 응답은 서버에 암호화해 최대 24시간 보관해요. AI 제안도 직접 확인한 뒤에만 추천에 반영돼요.`;
+  const privacy = modelHost.privacyState();
+  $('model-privacy').hidden = host.state === 'disabled';
+  $('interpret-delete-server').disabled = !privacy.canDelete || privacyPending;
+  $('interpret-delete-server').textContent = privacyPending ? '서버 응답을 지우고 있어요' : '서버에 보관된 내 AI 응답 지우기';
+  $('model-privacy').setAttribute('aria-busy', String(privacyPending));
+  $('model-privacy-status').textContent = privacyPending ? '서버 응답 삭제를 확인하고 있어요.' : privacyNotice || (privacy.canDelete
+    ? `내 서버 응답 ${privacy.storedResponses}개 · 처리 중 ${privacy.pendingResponses}개. 인용 응답은 최대 ${privacy.retentionHours}시간 뒤 만료돼요.`
+    : privacy.state === 'idle' ? '서버의 AI 응답 보관 상태를 확인하고 있어요.'
+    : privacy.reason === 'session-required' ? '내 서버 응답을 지우려면 회사 계정으로 로그인한 뒤 새로고침해 주세요. 관리자 권한이나 AI 활성 설정은 필요하지 않아요.'
+    : '서버 응답 보관 상태를 확인하지 못했어요. 연결 상태를 확인한 뒤 새로고침해 주세요.');
+  const reviewed = state.proposals.filter(proposal => ['confirm', 'correct'].includes(proposal.review?.action)).length;
+  $('interpret-status').textContent = aiPending ? 'AI가 원문을 정리하고 있어요. 현재 확인한 답은 그대로 유지해요.' : interpretationError || aiNotice || (state.mode
+    ? `${modelOrigin ? 'AI 제안' : '이 기기에서 정리한 제안'} ${state.proposals.length}개 중 ${reviewed}개를 확인·수정했어요. ${state.held.length}개 문장은 보류했어요. 직접 고른 답이 우선해요.`
+    : '정리한 제안은 항목별로 확인하거나 수정한 뒤에만 추천에 반영돼요.');
+  $('interpret-proposals').replaceChildren(...state.proposals.map(proposal => {
+    const field = interpretation.catalog.fields.find(item => item.id === proposal.field);
+    const display = value => field.options.find(option => option.id === value)?.label || String(value);
+    const effective = state.understanding.fields.find(item => item.id === field.id);
+    const active = !!proposal.review && effective.evidence.includes(`i.${proposal.review.id}`) && effective.usable;
+    const manual = Object.hasOwn(state.manual, field.id) || Object.hasOwn(state.manual, field.about);
+    const card = el('article', { class: 'interpret-proposal', 'data-proposal': proposal.id, 'data-field': field.id },
+      el('h3', { text: field.label }), ...proposal.evidence.map(evidence => el('blockquote', { text: evidence.quote })),
+      el('p', { class: 'proposal-value', text: `제안: ${display(proposal.value)}` }));
+    const status = manual ? '직접 고른 답이 우선 적용돼요.' : active ? (proposal.review.action === 'correct' ? `수정해서 반영: ${display(effective.value)}` : '확인해서 반영했어요.')
+      : ['reject', 'withdraw'].includes(proposal.review?.action) ? '추천에서 제외했어요.'
+      : proposal.status === 'conflict' ? '서로 다른 제안이 있어요. 현재 값을 직접 골라 수정해 주세요.'
+      : proposal.status === 'blocked' ? '현재 내 조건인지 확인이 필요해요. 직접 선택해 주세요.' : '아직 추천에 반영하지 않았어요.';
+    card.append(el('p', { class: 'mini', text: status }));
+    const actions = el('div', { class: 'interpret-actions' });
+    if (active) {
+      const withdraw = el('button', { type: 'button', class: 'slab', text: '확인 취소', 'aria-label': `${field.label} 확인 취소` });
+      withdraw.addEventListener('click', () => reviewProposal(proposal.id, 'withdraw')); actions.append(withdraw);
+    } else {
+      const confirm = el('button', { type: 'button', class: 'slab', text: '확인', 'aria-label': `${field.label} 확인` });
+      confirm.disabled = proposal.status !== 'pending';
+      confirm.addEventListener('click', () => reviewProposal(proposal.id, 'confirm')); actions.append(confirm);
+    }
+    const correct = el('button', { type: 'button', class: 'slab', text: '수정', 'aria-label': `${field.label} 수정` });
+    correct.disabled = proposal.reasons.some(reason => ['other-subject', 'source-excluded', 'source-expired', 'future-source'].includes(reason));
+    const reject = el('button', { type: 'button', class: 'slab', text: '제외', 'aria-label': `${field.label} 제외` });
+    reject.addEventListener('click', () => reviewProposal(proposal.id, active ? 'withdraw' : 'reject'));
+    actions.append(correct, reject); card.append(actions);
+    const select = el('select', { 'aria-label': `${field.label} 수정할 값` }, ...field.options.map((option, index) => el('option', { value: String(index), text: option.label })));
+    select.value = String(field.options.findIndex(option => option.id === (active ? effective.value : proposal.value)));
+    const apply = el('button', { type: 'button', class: 'slab', text: '수정한 값으로 반영' });
+    const correction = el('div', { class: 'interpret-correction' }, select, apply); correction.hidden = true;
+    correct.addEventListener('click', () => { correction.hidden = !correction.hidden; if (!correction.hidden) select.focus(); });
+    apply.addEventListener('click', () => reviewProposal(proposal.id, 'correct', field.options[Number(select.value)].id));
+    card.append(correction); return card;
+  }));
+  $('interpret-held').replaceChildren(...state.held.map(item => el('p', { class: 'mini', text: `보류: “${item.quote}” — ${item.reason}` })));
+}
+$('consult-text').addEventListener('input', event => {
+  cancelAI(aiPending ? '원문이 바뀌어 이전 AI 응답을 반영하지 않아요.' : ''); modelOrigin = null;
+  interpretation.setText(event.target.value); interpretationError = ''; extractionMs = null; syncConsultation();
+});
+$('interpret-extract').addEventListener('click', () => {
+  cancelAI();
+  const start = performance.now();
+  try { interpretation.analyze(); interpretationError = ''; extractionMs = performance.now() - start; modelOrigin = null; }
+  catch { interpretationError = '지금은 조건을 정리하지 못했어요. 아래에서 직접 골라 주세요.'; }
+  syncConsultation();
+});
+$('interpret-clear').addEventListener('click', () => {
+  cancelAI(aiPending ? '원문을 지워 이전 AI 응답을 반영하지 않아요.' : ''); modelOrigin = null;
+  $('consult-text').value = ''; interpretation.clearText(); interpretationError = ''; extractionMs = null; syncConsultation();
+});
+$('interpret-ai').addEventListener('click', async () => {
+  if (aiPending || privacyPending || !modelHost.state().available || !interpretation.snapshot().text.trim()) return;
+  const current = interpretation.snapshot();
+  try {
+    if (!aiRetry || aiRetry.revision !== current.revision || aiRetry.text !== current.text) aiRetry = modelHost.prepare(interpretation.buildExtractionRequest());
+  } catch { interpretationError = 'AI 요청을 준비하지 못했어요. 이 기기에서 정리하거나 아래에서 직접 골라 주세요.'; syncConsultation(); return; }
+  const controller = new AbortController(), generation = ++aiGeneration;
+  aiPending = controller; interpretationError = ''; aiNotice = ''; syncConsultation();
+  try {
+    const response = await modelHost.extract(aiRetry, { signal: controller.signal });
+    if (generation !== aiGeneration || controller.signal.aborted) return;
+    interpretation.ingest(response); modelOrigin = modelHost.state(); extractionMs = null; aiRetry = null;
+    privacyNotice = ''; modelHost.refreshPrivacy().then(() => syncConsultation());
+  } catch (error) {
+    if (generation !== aiGeneration) return;
+    if (error.code === 'response-removed') aiRetry = null;
+    interpretationError = error.code === 'response-removed' ? '이전 서버 응답이 삭제되거나 만료됐어요. 기존 확인은 유지했어요. ‘AI로 정리’를 다시 누르면 새 요청으로 비용이 생길 수 있어요.'
+      : error.code === 'timeout' ? 'AI 응답을 기다리는 시간이 지났어요. 기존 확인은 유지했어요. 원하면 다시 시도해 주세요.'
+      : error.code === 'session-required' ? 'AI 연결의 로그인 권한을 확인하지 못했어요. 기존 확인은 유지했어요.'
+      : 'AI 응답을 반영하지 못했어요. 기존 확인은 유지했어요. 다시 시도하거나 이 기기에서 정리해 주세요.';
+  } finally { if (generation === aiGeneration) { aiPending = null; syncConsultation(); } }
+});
+$('interpret-cancel').addEventListener('click', () => {
+  cancelAI('응답 기다리기를 취소했어요. 이미 전송한 요청은 서버에서 처리될 수 있어요.', true); syncConsultation();
+});
+$('interpret-delete-server').addEventListener('click', async () => {
+  if (privacyPending || !modelHost.privacyState().canDelete) return;
+  cancelAI('서버 응답 삭제를 요청해 이전 AI 응답을 더 이상 반영하지 않아요.');
+  privacyPending = true; privacyNotice = ''; interpretationError = ''; syncConsultation();
+  try {
+    const result = await modelHost.deleteResponses();
+    privacyNotice = `서버에 보관된 내 AI 응답 ${result.deletedResponses}개를 지웠어요.${result.cancelledPendingResponses ? ` 처리 중 ${result.cancelledPendingResponses}개 응답도 보관하지 않아요.` : ''} 이 화면의 원문·확인한 답과 서버의 비용·중복 요청 방지 기록은 남아요.`;
+  } catch (error) {
+    privacyNotice = error.code === 'session-required' ? '로그인 권한을 확인하지 못해 삭제 완료를 확인할 수 없어요. 다시 로그인해 주세요.'
+      : '서버 응답 삭제를 확인하지 못했어요. 지워졌다고 처리하지 않았어요. 연결을 확인한 뒤 다시 눌러 주세요.';
+  } finally { privacyPending = false; syncConsultation(); }
+});
+function renderRequiredReview(completion, qs) {
+  const pending = completion.unresolvedRequiredFields.filter(id => !['uses', 'budget'].includes(id));
+  $('required-review').hidden = completion.status === 'not-started' || !pending.length;
+  const previous = $('required-field').value;
+  $('required-field').replaceChildren(...pending.map(id => el('option', { value: id, text: qs.find(q => q.id === id).title })));
+  if (pending.includes(previous)) $('required-field').value = previous;
+  const renderOptions = () => {
+    $('required-options').replaceChildren();
+    const q = qs.find(item => item.id === $('required-field').value);
+    if (!q) return;
+    const multiple = q.selection === 'multiple';
+    const selected = new Set(multiple && Array.isArray(answers[q.about]) ? answers[q.about] : []);
+    const confirm = multiple ? el('button', { type: 'button', class: 'slab', text: '선택한 작업으로 확인', 'data-required-confirm': '' }) : null;
+    if (confirm) confirm.disabled = !selected.size;
+    for (const option of q.displayOptions || q.options) {
+      const b = el('button', { type: 'button', class: 'slab', text: option.label, 'data-required-answer': option.id,
+        'aria-pressed': String(multiple ? selected.has(option.id) : answers[q.about] === option.id) });
+      b.addEventListener('click', () => {
+        if (multiple) {
+          if (selected.has(option.id)) selected.delete(option.id); else selected.add(option.id);
+          b.setAttribute('aria-pressed', String(selected.has(option.id))); confirm.disabled = !selected.size;
+        } else applyManual(q.about, option.value ?? option.id);
+      });
+      $('required-options').append(b);
+    }
+    if (confirm) {
+      confirm.addEventListener('click', () => {
+        if (selected.size) applyManual(q.about, q.displayOptions.filter(option => selected.has(option.id)).map(option => option.id));
+      });
+      $('required-options').append(confirm);
+    }
+  };
+  $('required-field').onchange = renderOptions;
+  renderOptions();
 }
 function renderConsult() {
-  const qs = questions(), flat = { ...answers };
-  const result = Ask.choose({ questions: qs, decide: advice, answers: flat, budget: 99 });
-  const r = R.compute(structured(flat));
+  const flat = { ...answers }, result = consultation.choose(flat), qs = result.questions;
+  const completion = result.completion;
+  const r = consultation.compute(flat);
   $('advice').textContent = answers.uses.length ? r.headline.title : '하고 싶은 일을 고르면 추천이 나와요.';
-  $('advice-sub').textContent = answers.uses.length ? r.headline.sub : '';
+  $('advice-sub').textContent = answers.uses.length ? consultation.summary(r) : '';
+  $('completion-status').textContent = completion.status === 'not-started' ? '' : completion.status === 'ready' ? '필수 확인 완료' : '임시 사양 안내';
+  $('completion-status').dataset.status = completion.status;
+  $('completion-details').textContent = completion.status === 'not-started' ? '' : completion.status === 'ready'
+    ? '사양 안내에 필요한 기본 조건을 확인했어요. 위의 주의사항과 아래 가정도 함께 확인해 주세요.'
+    : `더 확인할 항목: ${completion.fields.filter(field => completion.unresolvedRequiredFields.includes(field.id)).map(field => field.title).join(' · ')}. 아래에서 직접 답할 수 있어요.`;
+  $('completion-assumptions').textContent = completion.assumptions.map(item => item.text).join(' ');
+  renderRequiredReview(completion, qs);
+  const budgetKnown = completion.budget.state === 'known';
+  $('advice-scope').textContent = !answers.uses.length ? '' : budgetKnown
+    ? '선택한 예산 구간으로 확인한 사양 안내예요. 실제 판매 가격과 구입 조건은 별도로 확인해 주세요.'
+    : completion.path === 'reuse' ? '지금 컴퓨터를 계속 쓰거나 상태를 점검하는 안내에는 구매 예산이 필요하지 않아요.'
+      : '예산 미확인 · 현재 추천은 사양 안내예요. 구입을 검토할 때는 예산을 먼저 알려 주세요.';
+  $('budget-review').hidden = !answers.uses.length;
+  $('budget-status').textContent = budgetKnown ? '선택한 예산을 바꿀 수도 있어요.' : '질문 순서에서 건너뛰었어도 여기서 직접 확인할 수 있어요.';
+  $('budget-options').replaceChildren(...C.steps.find(step => step.id === 'budget').options.map(option => {
+    const b = el('button', { type: 'button', class: 'slab', text: option.label, 'aria-pressed': String(answers.budget === option.id), 'data-budget': option.id });
+    b.addEventListener('click', () => applyManual('budget', option.id)); return b;
+  }));
   const skipped = answers.uses.length ? result.ranked.filter(entry => entry.skippable) : [];
   $('skipped').replaceChildren(...skipped.map(entry => el('li', { text: qs.find(q => q.id === entry.id).title })));
-  const answeredCount = Object.keys(answers).filter(key => key !== 'uses').length;
-  $('count').textContent = answers.uses.length ? `전체 질문 ${qs.length + answeredCount}개 중 지금까지 ${answeredCount}개에 답했고, 남은 ${qs.length}개 가운데 ${skipped.length}개는 묻지 않아도 돼요.` : '';
+  const remaining = qs.filter(q => !Object.hasOwn(flat, q.about)).length, answeredCount = qs.length - remaining;
+  $('count').textContent = answers.uses.length ? `지금 조건의 질문 ${qs.length}개 중 ${answeredCount}개에 답했고, 남은 ${remaining}개 가운데 ${skipped.length}개는 현재 기준에서 건너뛰어요.` : '';
   $('ask').replaceChildren();
   if (!answers.uses.length) return;
-  if (result.status !== 'ask') { $('ask').append(el('p', { class: 'done', text: '추천을 바꿀 질문이 더 없어요. 여기서 추천을 보여 드려요.' })); return; }
+  if (result.status !== 'ask') { $('ask').append(el('p', { class: 'done', text: completion.status === 'ready'
+    ? '현재 기준에서 추천 조건을 더 잘 맞출 질문이 없어요. 확인된 조건의 사양과 주의사항을 함께 볼 수 있어요.'
+    : '자동 질문은 여기까지예요. 사양 안내에 필요한 필수 항목이 남아 있으니 결과의 확인 항목을 살펴봐 주세요.' })); return; }
   const q = qs.find(item => item.id === result.question.id);
   const card = el('div', { class: 'ask-card' }, el('p', { class: 'eyebrow', text: '지금 물어볼 질문' }), el('h3', { text: q.title }),
-    el('p', { class: 'mini', text: `답에 따라 추천이 달라져요(가능한 추천 ${result.ranked[0].distinct}가지).` }));
+    el('p', { class: 'mini', text: '작업에 부족하거나 필요 이상으로 큰 사양, 놓친 확인 사항을 줄이는 데 도움이 되는 질문이에요.' }));
   const options = el('div', { class: 'chips' });
-  for (const option of q.options) {
-    const b = el('button', { type: 'button', class: 'chip', text: option.label });
-    b.addEventListener('click', () => { answers = { ...answers, [q.about]: option.value ?? option.id }; renderConsult(); });
+  const multiple = q.selection === 'multiple', selected = new Set();
+  const confirm = multiple ? el('button', { type: 'button', class: 'slab', text: '선택한 작업으로 확인', disabled: '' }) : null;
+  if (multiple) card.append(el('p', { class: 'mini', text: '여러 개면 모두 고른 뒤 확인해 주세요.' }));
+  for (const option of q.displayOptions || q.options) {
+    const b = el('button', { type: 'button', class: 'chip', text: option.label, ...(multiple ? { 'aria-pressed': 'false' } : {}) });
+    b.addEventListener('click', () => {
+      if (multiple) {
+        if (selected.has(option.id)) selected.delete(option.id); else selected.add(option.id);
+        b.setAttribute('aria-pressed', String(selected.has(option.id)));
+        confirm.disabled = selected.size === 0;
+      } else applyManual(q.about, option.value ?? option.id);
+    });
     options.append(b);
   }
-  card.append(options); $('ask').append(card);
+  card.append(options);
+  if (confirm) {
+    confirm.addEventListener('click', () => {
+      if (!selected.size) return;
+      applyManual(q.about, q.displayOptions.filter(option => selected.has(option.id)).map(option => option.id));
+    });
+    card.append(el('p', {}, confirm));
+  }
+  $('ask').append(card);
 }
 $('uses').replaceChildren(...usesStep.options.map(option => {
-  const b = el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: option.label });
+  const b = el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', 'data-use': option.id, text: option.label });
   b.addEventListener('click', () => {
+    cancelAI(aiPending ? '직접 고른 답이 바뀌어 이전 AI 응답을 반영하지 않아요.' : '');
     const on = !answers.uses.includes(option.id);
-    answers = { uses: on ? [...answers.uses, option.id] : answers.uses.filter(id => id !== option.id) };
-    b.setAttribute('aria-pressed', String(on)); renderConsult();
+    interpretation.setManualMember(`uses.${option.id}`, on); syncConsultation();
   });
   return b;
 }));
-renderConsult();
-window.synkAtlasLab = { simulate: key => TemperFlow.simulate({ spec: CONTENTS[key], steps: 60, seed: `lab-${key}` }), answers: () => ({ ...answers }), run: () => run && { settings: run.settings(), changes: run.changes() } };
+syncConsultation();
+modelHost.connect().then(host => {
+  if (host.hostDetected) { const back = document.querySelector('a.back'); if (back) { back.href = '/'; back.textContent = '← 작업공간으로'; } }
+  syncConsultation();
+});
+const matchingLab = mountMatchingLab({ Domain: globalThis.SynkAtlasDomain, Ask, TemperOutcomes: globalThis.SynkTemperOutcomes });
+window.synkAtlasLab = { matching: () => matchingLab.snapshot(), simulate: key => TemperFlow.simulate({ spec: CONTENTS[key], steps: 60, seed: `lab-${key}` }), answers: () => ({ ...answers }), consult: () => consultation.choose({ ...answers }), run: () => run && { settings: run.settings(), changes: run.changes() },
+  interpretation: () => interpretation.snapshot(),
+  interpretationTiming: () => extractionMs,
+  buildExtractionRequest: () => { const request = interpretation.buildExtractionRequest(); syncConsultation(); return request; },
+  ingestProposals: response => { interpretation.ingest(response); extractionMs = null; syncConsultation(); },
+};

@@ -6193,7 +6193,7 @@ var SynkLearning = (() => {
           let excludedAttempts = 0;
           visible.forEach((event, index) => {
             if (event.type === TYPES[3]) {
-              audioByPresentation.set(event.presentationId, event.audio);
+              audioByPresentation.set(event.presentationId, excluded.has(event.id) ? "pending" : event.audio);
               return;
             }
             if (event.type === TYPES[0]) {
@@ -6260,7 +6260,7 @@ var SynkLearning = (() => {
         }
         function createIndex({ scope, prior = null }) {
           const scopeId = key(scope);
-          const presentations = /* @__PURE__ */ new Map(), audio = /* @__PURE__ */ new Map(), arms = /* @__PURE__ */ new Map(), excluded = /* @__PURE__ */ new Set();
+          const presentations = /* @__PURE__ */ new Map(), audio = /* @__PURE__ */ new Map(), deliveries = /* @__PURE__ */ new Map(), audioCover = /* @__PURE__ */ new Map(), arms = /* @__PURE__ */ new Map(), excluded = /* @__PURE__ */ new Set();
           const helped = /* @__PURE__ */ new Set(), seen = /* @__PURE__ */ new Set(), rows = /* @__PURE__ */ new Map(), covering = /* @__PURE__ */ new Map();
           for (const [k, bits] of Object.entries(prior?.keys || {})) {
             if (bits & BITS.attempt) {
@@ -6290,6 +6290,15 @@ var SynkLearning = (() => {
             if (event.type === "record.excluded") {
               excluded.add(event.targetId);
               for (const row2 of covering.get(event.targetId) || []) row2.omitted = true;
+              const current = audio.get(deliveries.get(event.targetId));
+              if (current?.id === event.targetId) current.value = "pending";
+              for (const row2 of audioCover.get(event.targetId) || []) {
+                row2.audio = "pending";
+                if (row2.measure.audioRequired) {
+                  row2.independent = false;
+                  row2.exclusionReason ||= "audio";
+                }
+              }
               return null;
             }
             if (event.type === TYPES[0]) {
@@ -6297,7 +6306,8 @@ var SynkLearning = (() => {
               return null;
             }
             if (event.type === TYPES[3]) {
-              audio.set(event.presentationId, event.audio);
+              deliveries.set(event.id, event.presentationId);
+              audio.set(event.presentationId, { id: event.id, value: excluded.has(event.id) ? "pending" : event.audio });
               return null;
             }
             if (event.type !== TYPES[1] && event.type !== TYPES[2]) return null;
@@ -6315,8 +6325,12 @@ var SynkLearning = (() => {
               return null;
             }
             const prior2 = (kinds) => keys.some((k) => kinds.some((kind) => kind === "attempt" ? seen.has(`attempt|${k}`) : helped.has(`${kind}|${k}`)));
-            const delivered = audio.get(p.id) || "pending";
+            const proof = audio.get(p.id), delivered = proof?.value || "pending";
             const row = attemptRow(event, p, arms.get(p.decisionId) ?? null, delivered, judge(event, p, prior2, delivered));
+            if (proof && row.measure) {
+              if (!audioCover.has(proof.id)) audioCover.set(proof.id, []);
+              audioCover.get(proof.id).push(row);
+            }
             row.omitted = excluded.has(event.id) || excluded.has(p.id) || excluded.has(p.decisionId);
             for (const k of keys) {
               seen.add(`attempt|${k}`);
@@ -6397,8 +6411,8 @@ var SynkLearning = (() => {
         else root.SynkAtlas = factory(() => root.SynkAtlasTrail || root.SynkTrail);
       })(typeof globalThis !== "undefined" ? globalThis : exports, function(getTrail) {
         "use strict";
-        const VERSION = "atlas-2.3.0";
-        const POLICIES = ["atlas-1.0.0", "atlas-2.0.0", "atlas-2.1.0", "atlas-2.2.0", VERSION];
+        const VERSION = "atlas-2.4.0";
+        const POLICIES = ["atlas-1.0.0", "atlas-2.0.0", "atlas-2.1.0", "atlas-2.2.0", "atlas-2.3.0", VERSION];
         const trail = () => {
           const module2 = getTrail();
           if (!module2 || typeof module2.validate !== "function" || typeof module2.checkLink !== "function" || typeof module2.summarize !== "function") throw new Error("Atlas: Trail practice module unavailable");
@@ -6604,7 +6618,8 @@ var SynkLearning = (() => {
               usable: !denied && (sufficiency !== "thin" || status === "confirmed")
             });
           }
-          const completed = new Map(ordered.filter((e) => e.type === "experience.completed" && !excluded.has(e.id)).map((e) => [e.id, e]));
+          const decisions = new Map(ordered.filter((e) => e.type === "decision.made" && !excluded.has(e.id)).map((e) => [e.id, e]));
+          const completed = new Map(ordered.filter((e) => e.type === "experience.completed" && !excluded.has(e.id) && decisions.has(e.decisionId)).map((e) => [e.id, e]));
           const responses = /* @__PURE__ */ new Map();
           if (personal) for (const event of ordered) {
             if (event.type !== "feedback.given" || !completed.has(event.completionId)) continue;
@@ -6615,7 +6630,6 @@ var SynkLearning = (() => {
               responses.set(event.completionId, copy({ ...event, experienceId: completion.experienceId, variant: completion.variant }));
             }
           }
-          const decisions = new Map(ordered.filter((e) => e.type === "decision.made" && !excluded.has(e.id)).map((e) => [e.id, e]));
           const latestOutcome = /* @__PURE__ */ new Map();
           if (personal) for (const event of ordered) {
             if (event.type === "outcome.observed" && !excluded.has(event.id) && decisions.has(event.decisionId)) latestOutcome.set(`${event.decisionId}|${event.measure}|${event.window}|${event.targetLine ?? ""}`, event);
@@ -6738,12 +6752,11 @@ var SynkLearning = (() => {
             for (const done of mine) {
               if (view.cutoff - ms(done.at) > RECENT || picked(view.decisions.get(done.decisionId), leverId) !== optionId) continue;
               const answer = state.feedback.find((item) => item.completionId === done.id);
-              if (!answer) s += 0.25;
-              else if (answer.value === "helpful") {
+              if (answer?.value === "helpful") {
                 s += 1;
                 helped += 1;
                 proof.push(answer.id, done.id);
-              } else if (answer.value === "not_fit") {
+              } else if (answer?.value === "not_fit") {
                 f += 1;
                 proof.push(answer.id, done.id);
               }
@@ -9666,7 +9679,8 @@ var SynkLearning = (() => {
         else root.SynkAsk = factory();
       })(typeof globalThis !== "undefined" ? globalThis : exports, function() {
         "use strict";
-        const VERSION = "ask-1";
+        const VERSION = "ask-1.1";
+        const MAX_OPTIONS = 64;
         const KINDS = ["setting", "confirm", "choice", "refresh", "follow_up"];
         const DAY = 864e5;
         const id = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
@@ -9676,17 +9690,30 @@ var SynkLearning = (() => {
           if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Ask: invalid time");
           return n;
         };
+        const finite = (value) => typeof value === "number" && Number.isFinite(value);
+        const owns = (value, key) => Object.hasOwn(value, key);
+        function probabilities(q) {
+          const supplied = q.options.filter((option) => owns(option, "p")).length;
+          if (!supplied) return q.options.map(() => 1 / q.options.length);
+          if (supplied !== q.options.length || q.options.some((option) => !finite(option.p) || option.p < 0 || option.p > 1)) throw new TypeError(`Ask: invalid probabilities in ${q.id}`);
+          const total = q.options.reduce((sum, option) => sum + option.p, 0);
+          if (Math.abs(total - 1) > 1e-9) throw new TypeError(`Ask: probabilities must sum to one in ${q.id}`);
+          return q.options.map((option) => option.p / total);
+        }
         function validate(questions) {
           if (!Array.isArray(questions)) throw new TypeError("Ask: questions must be an array");
           const ids = /* @__PURE__ */ new Set();
           for (const q of questions) {
-            if (!q || !id(q.id) || ids.has(q.id) || !KINDS.includes(q.kind ?? "setting") || !id(q.about ?? q.id) || !Array.isArray(q.options) || q.options.length < 2 || q.options.length > 12) throw new TypeError(`Ask: invalid question ${q && q.id}`);
+            if (!q || !id(q.id) || ids.has(q.id) || !KINDS.includes(q.kind ?? "setting") || !id(q.about ?? q.id) || !Array.isArray(q.options) || q.options.length < 2 || q.options.length > MAX_OPTIONS) throw new TypeError(`Ask: invalid question ${q && q.id}`);
             ids.add(q.id);
             const options = /* @__PURE__ */ new Set();
             for (const option of q.options) {
-              if (!option || !id(option.id) || options.has(option.id) || option.p != null && !(option.p >= 0 && option.p <= 1)) throw new TypeError(`Ask: invalid option in ${q.id}`);
+              if (!option || !id(option.id) || options.has(option.id)) throw new TypeError(`Ask: invalid option in ${q.id}`);
               options.add(option.id);
             }
+            probabilities(q);
+            if (owns(q, "cost") && (!finite(q.cost) || q.cost < 0)) throw new TypeError(`Ask: invalid question cost in ${q.id}`);
+            if (owns(q, "responseProbability") && (!finite(q.responseProbability) || q.responseProbability < 0 || q.responseProbability > 1)) throw new TypeError(`Ask: invalid response probability in ${q.id}`);
           }
           return questions;
         }
@@ -9696,9 +9723,19 @@ var SynkLearning = (() => {
           }
           return canonical(a) === canonical(b) ? 0 : 1;
         }
-        function rank({ questions, decide, answers = {}, denied = [], asked = {}, now = null, quietDays = 7 } = {}) {
+        function decisionValue(evaluate, context) {
+          const value = evaluate(context);
+          if (!value || typeof value !== "object" || Array.isArray(value) || Object.keys(value).some((key) => !["utility", "loss"].includes(key)) || !owns(value, "utility") && !owns(value, "loss") || owns(value, "utility") && !finite(value.utility) || owns(value, "loss") && (!finite(value.loss) || value.loss < 0)) throw new TypeError("Ask: evaluate must return finite utility and/or nonnegative loss");
+          const result = (value.utility ?? 0) - (value.loss ?? 0);
+          if (!finite(result)) throw new TypeError("Ask: nonfinite decision value");
+          return result;
+        }
+        function rank({ questions, decide, answers = {}, denied = [], asked = {}, now = null, quietDays = 7, evaluate } = {}) {
           validate(questions);
           if (typeof decide !== "function" || !answers || typeof answers !== "object" || !Array.isArray(denied) || !asked || typeof asked !== "object") throw new TypeError("Ask: invalid input");
+          if (evaluate !== void 0 && typeof evaluate !== "function") throw new TypeError("Ask: evaluate must be a function");
+          const valued = typeof evaluate === "function";
+          if (!valued && questions.some((q) => owns(q, "cost") || owns(q, "responseProbability"))) throw new TypeError("Ask: question cost and response probability require evaluate");
           const current = decide({ ...answers });
           const result = [];
           for (const q of questions) {
@@ -9712,35 +9749,56 @@ var SynkLearning = (() => {
               result.push({ id: q.id, kind: q.kind ?? "setting", about, impact: 0, skippable: true, reason: "asked-recently" });
               continue;
             }
-            const weights = q.options.map((option) => option.p ?? 1), total = weights.reduce((sum, w) => sum + w, 0) || 1;
-            const outcomes = {};
-            let impact = 0;
+            const chances = probabilities(q);
+            const outcomes = /* @__PURE__ */ Object.create(null);
+            let impact = 0, expectedGain = 0;
             q.options.forEach((option, index) => {
-              const decided = decide({ ...answers, [about]: Object.hasOwn(option, "value") ? option.value : option.id });
+              const scenario = { ...answers, [about]: owns(option, "value") ? option.value : option.id };
+              const decided = decide({ ...scenario });
               outcomes[option.id] = decided;
-              impact += weights[index] / total * difference(current, decided);
+              impact += chances[index] * difference(current, decided);
+              if (valued && chances[index] > 0) {
+                const context = { answers: scenario, question: q, option };
+                const gain = decisionValue(evaluate, { ...context, decision: decided }) - decisionValue(evaluate, { ...context, decision: current });
+                if (!finite(gain)) throw new TypeError("Ask: nonfinite decision gain");
+                expectedGain += chances[index] * gain;
+              }
             });
             const distinct = new Set(Object.values(outcomes).map(canonical)).size;
+            const cost = q.cost ?? 0, responseProbability = q.responseProbability ?? 1, value = responseProbability * expectedGain - cost;
+            if (valued && (!finite(expectedGain) || !finite(value))) throw new TypeError("Ask: nonfinite expected decision value");
+            const skippable = impact === 0 || valued && value <= 0;
             result.push({
               id: q.id,
               kind: q.kind ?? "setting",
               about,
               impact: Math.round(impact * 1e3) / 1e3,
               distinct,
-              skippable: impact === 0,
-              reason: impact === 0 ? "no-change" : "changes-decision",
-              outcomes
+              skippable,
+              reason: impact === 0 ? "no-change" : valued ? value > 0 ? "positive-decision-value" : "no-positive-decision-value" : "changes-decision",
+              outcomes,
+              ...valued ? { basis: "declared-decision-value", expectedGain, responseProbability, cost, value } : {}
             });
           }
-          return result.map((entry, order) => ({ ...entry, order })).sort((a, b) => b.impact - a.impact || a.order - b.order).map(({ order, ...entry }) => entry);
+          const score = (entry) => valued ? entry.value ?? 0 : entry.impact;
+          return result.map((entry, order) => ({ ...entry, order })).sort((a, b) => score(b) - score(a) || a.order - b.order).map(({ order, ...entry }) => entry);
         }
         function choose({ budget = 1, usedToday = 0, ...input } = {}) {
           if (!Number.isInteger(budget) || budget < 0 || !Number.isInteger(usedToday) || usedToday < 0) throw new TypeError("Ask: invalid budget");
           const ranked = rank(input);
           if (usedToday >= budget) return { version: VERSION, status: "none", reason: "budget", ranked };
-          const best = ranked.find((entry) => entry.impact > 0);
-          if (!best) return { version: VERSION, status: "none", reason: "no-question-changes-the-decision", ranked };
-          return { version: VERSION, status: "ask", question: input.questions.find((q) => q.id === best.id), impact: best.impact, reason: best.reason, ranked };
+          const valued = typeof input.evaluate === "function";
+          const best = ranked.find((entry) => !entry.skippable && (valued ? entry.value > 0 : entry.impact > 0));
+          if (!best) return { version: VERSION, status: "none", reason: valued ? "no-question-has-positive-decision-value" : "no-question-changes-the-decision", ranked };
+          return {
+            version: VERSION,
+            status: "ask",
+            question: input.questions.find((q) => q.id === best.id),
+            impact: best.impact,
+            reason: best.reason,
+            ranked,
+            ...valued ? { value: best.value, basis: best.basis } : {}
+          };
         }
         function fromAtlas({ engine, events = [], scope, at, experienceId, candidates, levers = [], questions, ...rest } = {}) {
           if (!engine || typeof engine.decide !== "function") throw new TypeError("Ask: Core engine required");
@@ -9764,7 +9822,7 @@ var SynkLearning = (() => {
           };
           return choose({ ...rest, questions, decide });
         }
-        return Object.freeze({ VERSION, KINDS, rank, choose, fromAtlas });
+        return Object.freeze({ VERSION, MAX_OPTIONS, KINDS, rank, choose, fromAtlas });
       });
     }
   });

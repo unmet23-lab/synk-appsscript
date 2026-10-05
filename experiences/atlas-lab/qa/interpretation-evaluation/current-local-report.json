@@ -1,0 +1,1187 @@
+{
+  "version": "temper-interpretation-2",
+  "dataset": {
+    "id": "computer-ko-authored",
+    "version": "2",
+    "kind": "authored-synthetic-sources"
+  },
+  "backend": {
+    "id": "computer-explicit-ko-1",
+    "version": "1",
+    "kind": "local-pattern"
+  },
+  "mode": "extractor-output",
+  "status": "complete",
+  "sourceInterpretationAssessed": true,
+  "counts": {
+    "cases": 28,
+    "attempted": 28,
+    "notRun": 0,
+    "malformed": 0,
+    "evaluated": 28,
+    "passed": 21,
+    "failed": 7
+  },
+  "claims": {
+    "expected": 20,
+    "exact": 13,
+    "missing": 7,
+    "incorrect": 0,
+    "permitted": 5,
+    "unsupported": 2,
+    "conflicting": 1,
+    "withheldProposals": 0,
+    "forbiddenAssertions": 1
+  },
+  "restraint": {
+    "expected": 22,
+    "correctlyUnasserted": 21,
+    "violated": 1
+  },
+  "rates": {
+    "attemptedCaseAgreement": 0.75,
+    "evaluatedFieldPrecision": 0.9,
+    "evaluatedFieldRecall": 0.65,
+    "unknownRestraint": 0.9545454545454546
+  },
+  "byField": [
+    {
+      "field": "owned",
+      "expected": 1,
+      "exact": 1,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 5,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 0,
+      "correctlyUnasserted": 0,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "uses.web",
+      "expected": 2,
+      "exact": 1,
+      "missing": 1,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 0,
+      "correctlyUnasserted": 0,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "uses.meeting",
+      "expected": 0,
+      "exact": 0,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 0,
+      "correctlyUnasserted": 0,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "uses.photo",
+      "expected": 0,
+      "exact": 0,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 0,
+      "correctlyUnasserted": 0,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "uses.video",
+      "expected": 2,
+      "exact": 1,
+      "missing": 1,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 0,
+      "correctlyUnasserted": 0,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "uses.code",
+      "expected": 0,
+      "exact": 0,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 0,
+      "correctlyUnasserted": 0,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "uses.localai",
+      "expected": 2,
+      "exact": 1,
+      "missing": 1,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 2,
+      "correctlyUnasserted": 2,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "uses.game",
+      "expected": 1,
+      "exact": 0,
+      "missing": 1,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 0,
+      "correctlyUnasserted": 0,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "localai.small",
+      "expected": 1,
+      "exact": 1,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 0,
+      "correctlyUnasserted": 0,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "localai.mid",
+      "expected": 0,
+      "exact": 0,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 0,
+      "correctlyUnasserted": 0,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "localai.large",
+      "expected": 0,
+      "exact": 0,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 0,
+      "correctlyUnasserted": 0,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "localai.huge",
+      "expected": 0,
+      "exact": 0,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 1,
+      "correctlyUnasserted": 1,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "localai.image",
+      "expected": 0,
+      "exact": 0,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 0,
+      "correctlyUnasserted": 0,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "localai.unsure",
+      "expected": 0,
+      "exact": 0,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 0,
+      "correctlyUnasserted": 0,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "photo",
+      "expected": 0,
+      "exact": 0,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 0,
+      "correctlyUnasserted": 0,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "code",
+      "expected": 0,
+      "exact": 0,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 0,
+      "correctlyUnasserted": 0,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "video.app",
+      "expected": 0,
+      "exact": 0,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 1,
+      "correctlyUnasserted": 1,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "video.res",
+      "expected": 0,
+      "exact": 0,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 1,
+      "correctlyUnasserted": 1,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "video.load",
+      "expected": 0,
+      "exact": 0,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 0,
+      "correctlyUnasserted": 0,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "multitask",
+      "expected": 0,
+      "exact": 0,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 0,
+      "correctlyUnasserted": 0,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "current.kind",
+      "expected": 0,
+      "exact": 0,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 4,
+      "correctlyUnasserted": 4,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "current.ram",
+      "expected": 7,
+      "exact": 4,
+      "missing": 3,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 2,
+      "conflicting": 1,
+      "unknownExpected": 9,
+      "correctlyUnasserted": 8,
+      "unknownViolated": 1,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "current.os",
+      "expected": 0,
+      "exact": 0,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 1,
+      "correctlyUnasserted": 1,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "current.feel",
+      "expected": 0,
+      "exact": 0,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 0,
+      "correctlyUnasserted": 0,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "place",
+      "expected": 2,
+      "exact": 2,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 1,
+      "correctlyUnasserted": 1,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "os",
+      "expected": 1,
+      "exact": 1,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 1,
+      "correctlyUnasserted": 1,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    },
+    {
+      "field": "budget",
+      "expected": 1,
+      "exact": 1,
+      "missing": 0,
+      "incorrect": 0,
+      "permitted": 0,
+      "unsupported": 0,
+      "conflicting": 0,
+      "unknownExpected": 1,
+      "correctlyUnasserted": 1,
+      "unknownViolated": 0,
+      "notRun": 0,
+      "malformed": 0
+    }
+  ],
+  "cases": [
+    {
+      "id": "ram-direct",
+      "tags": [
+        "explicit"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "current.ram",
+          "status": "exact",
+          "expected": "16",
+          "asserted": [
+            "16"
+          ],
+          "unsupported": []
+        },
+        {
+          "field": "owned",
+          "status": "permitted",
+          "permitted": "have",
+          "asserted": [
+            "have"
+          ],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "os-direct",
+      "tags": [
+        "explicit"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "os",
+          "status": "exact",
+          "expected": "win",
+          "asserted": [
+            "win"
+          ],
+          "unsupported": []
+        },
+        {
+          "field": "current.os",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "web-direct",
+      "tags": [
+        "explicit"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "uses.web",
+          "status": "exact",
+          "expected": true,
+          "asserted": [
+            true
+          ],
+          "unsupported": []
+        },
+        {
+          "field": "uses.localai",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "video-direct",
+      "tags": [
+        "explicit"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "uses.video",
+          "status": "exact",
+          "expected": true,
+          "asserted": [
+            true
+          ],
+          "unsupported": []
+        },
+        {
+          "field": "video.app",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        },
+        {
+          "field": "video.res",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "ram-past-current",
+      "tags": [
+        "time"
+      ],
+      "status": "evaluated",
+      "passed": false,
+      "fields": [
+        {
+          "field": "current.ram",
+          "status": "missing",
+          "expected": "32",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "ram-past-only",
+      "tags": [
+        "time",
+        "hold"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "current.ram",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "ram-future",
+      "tags": [
+        "time",
+        "hypothetical",
+        "hold"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "current.ram",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "other-only",
+      "tags": [
+        "subject",
+        "hold"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "current.ram",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "other-and-self",
+      "tags": [
+        "subject"
+      ],
+      "status": "evaluated",
+      "passed": false,
+      "fields": [
+        {
+          "field": "current.ram",
+          "status": "missing",
+          "expected": "16",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "quoted-recommendation",
+      "tags": [
+        "subject",
+        "quotation",
+        "hold"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "current.ram",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "ram-uncertain",
+      "tags": [
+        "uncertainty",
+        "hold"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "current.ram",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "unknown-and-use",
+      "tags": [
+        "uncertainty",
+        "partial"
+      ],
+      "status": "evaluated",
+      "passed": false,
+      "fields": [
+        {
+          "field": "uses.video",
+          "status": "missing",
+          "expected": true,
+          "asserted": [],
+          "unsupported": []
+        },
+        {
+          "field": "current.ram",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "contradictory-ram",
+      "tags": [
+        "contradiction",
+        "hold"
+      ],
+      "status": "evaluated",
+      "passed": false,
+      "fields": [
+        {
+          "field": "current.ram",
+          "status": "unsupported",
+          "asserted": [
+            "16",
+            "32"
+          ],
+          "unsupported": [
+            "16",
+            "32"
+          ]
+        },
+        {
+          "field": "owned",
+          "status": "permitted",
+          "permitted": "have",
+          "asserted": [
+            "have"
+          ],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [
+        {
+          "field": "current.ram"
+        }
+      ],
+      "withheldProposals": 0
+    },
+    {
+      "id": "explicit-correction",
+      "tags": [
+        "correction"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "current.ram",
+          "status": "exact",
+          "expected": "16",
+          "asserted": [
+            "16"
+          ],
+          "unsupported": []
+        },
+        {
+          "field": "owned",
+          "status": "permitted",
+          "permitted": "have",
+          "asserted": [
+            "have"
+          ],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "other-correction",
+      "tags": [
+        "correction",
+        "subject"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "current.ram",
+          "status": "exact",
+          "expected": "16",
+          "asserted": [
+            "16"
+          ],
+          "unsupported": []
+        },
+        {
+          "field": "owned",
+          "status": "permitted",
+          "permitted": "have",
+          "asserted": [
+            "have"
+          ],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "negated-local-positive-web",
+      "tags": [
+        "negation",
+        "partial"
+      ],
+      "status": "evaluated",
+      "passed": false,
+      "fields": [
+        {
+          "field": "uses.localai",
+          "status": "missing",
+          "expected": false,
+          "asserted": [],
+          "unsupported": []
+        },
+        {
+          "field": "uses.web",
+          "status": "missing",
+          "expected": true,
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "not-windows-only",
+      "tags": [
+        "negation",
+        "hold"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "os",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "hard-cap-soft-target",
+      "tags": [
+        "required",
+        "semantic-hold"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "budget",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "budget-range",
+      "tags": [
+        "explicit"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "budget",
+          "status": "exact",
+          "expected": "100_150",
+          "asserted": [
+            "100_150"
+          ],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "carry-explicit",
+      "tags": [
+        "required",
+        "explicit"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "place",
+          "status": "exact",
+          "expected": "carry",
+          "asserted": [
+            "carry"
+          ],
+          "unsupported": []
+        },
+        {
+          "field": "current.kind",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "soft-lightweight",
+      "tags": [
+        "required",
+        "semantic-hold"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "place",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        },
+        {
+          "field": "current.kind",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "hypothetical-local",
+      "tags": [
+        "hypothetical",
+        "hold"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "uses.localai",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        },
+        {
+          "field": "localai.huge",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "game-negated",
+      "tags": [
+        "negation"
+      ],
+      "status": "evaluated",
+      "passed": false,
+      "fields": [
+        {
+          "field": "uses.game",
+          "status": "missing",
+          "expected": false,
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "quoted-instruction",
+      "tags": [
+        "quotation",
+        "subject"
+      ],
+      "status": "evaluated",
+      "passed": false,
+      "fields": [
+        {
+          "field": "current.ram",
+          "status": "missing",
+          "expected": "8",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "owned-direct",
+      "tags": [
+        "explicit"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "owned",
+          "status": "exact",
+          "expected": "have",
+          "asserted": [
+            "have"
+          ],
+          "unsupported": []
+        },
+        {
+          "field": "current.kind",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        },
+        {
+          "field": "current.ram",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "home-direct",
+      "tags": [
+        "explicit"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "place",
+          "status": "exact",
+          "expected": "home",
+          "asserted": [
+            "home"
+          ],
+          "unsupported": []
+        },
+        {
+          "field": "current.kind",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "ram-category",
+      "tags": [
+        "explicit",
+        "units"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "current.ram",
+          "status": "exact",
+          "expected": "32",
+          "asserted": [
+            "32"
+          ],
+          "unsupported": []
+        },
+        {
+          "field": "owned",
+          "status": "permitted",
+          "permitted": "have",
+          "asserted": [
+            "have"
+          ],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    },
+    {
+      "id": "model-size-not-ram",
+      "tags": [
+        "units",
+        "overinference"
+      ],
+      "status": "evaluated",
+      "passed": true,
+      "fields": [
+        {
+          "field": "uses.localai",
+          "status": "exact",
+          "expected": true,
+          "asserted": [
+            true
+          ],
+          "unsupported": []
+        },
+        {
+          "field": "localai.small",
+          "status": "exact",
+          "expected": true,
+          "asserted": [
+            true
+          ],
+          "unsupported": []
+        },
+        {
+          "field": "current.ram",
+          "status": "correctly-unasserted",
+          "asserted": [],
+          "unsupported": []
+        }
+      ],
+      "forbiddenAssertions": [],
+      "withheldProposals": 0
+    }
+  ],
+  "generalAccuracyEstablished": false,
+  "productionEffectMeasured": false,
+  "calibrated": false,
+  "limitations": [
+    "Authored synthetic cases are not a representative sample of real user language.",
+    "Backend identity and run mode are supplied provenance, not an attestation of execution.",
+    "Proposal replay checks scoring and contracts, not source interpretation accuracy.",
+    "Field rates describe well-formed evaluated outputs only; malformed attempts remain failed cases and missing runs remain not_run.",
+    "Explicitly permitted facts count as supported additions, never as required exact fields or recall denominator; absent permitted facts are not omissions.",
+    "Source slices prove quotation identity, not semantic entailment; authored field expectations supply the semantic reference.",
+    "Self/current proposals are scored as assertions; other subjects and non-current stances are withheld, not confirmed facts."
+  ],
+  "evaluatedAt": "2026-10-05T13:18:15.822Z",
+  "inputs": {
+    "datasetSha256": "654613f555581a198b629c52c4bc09b506a8d5378cb90359314a50b9012d502a",
+    "outputsSha256": "9f326c737a0cfa8e502376fa7d09427a2777ee7733cd43dec960adf6ccc61d89",
+    "baselineSha256": null
+  },
+  "evaluatorExecution": {
+    "extractionPerformed": false,
+    "networkCalls": 0,
+    "externalApiCost": 0
+  }
+}

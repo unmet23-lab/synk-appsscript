@@ -1,0 +1,585 @@
+{
+  "at": "2026-10-05T20:13:30.204Z",
+  "localDate": "2026-10-06",
+  "status": "local-completion-contract-verified-model-deferred-by-user",
+  "tests": {
+    "passed": 591,
+    "failed": 0,
+    "files": [
+      "tests\\atlas.test.js",
+      "tests\\atlas-work.test.js",
+      "tests\\atlas-vellum-flow.test.js",
+      "tests\\atlas-trail.test.js",
+      "tests\\atlas-topik-layers.test.js",
+      "tests\\atlas-temper.test.js",
+      "tests\\atlas-temper-flow.test.js",
+      "tests\\atlas-sync-fixes.test.js",
+      "tests\\atlas-storage-failure.test.js",
+      "tests\\atlas-ledger-recovery.test.js",
+      "tests\\atlas-review-fixes.test.js",
+      "tests\\atlas-provenance-review.test.js",
+      "tests\\atlas-learning.test.js",
+      "tests\\atlas-preferences.test.js",
+      "tests\\atlas-learning-sync.test.js",
+      "tests\\atlas-personalization.test.js",
+      "tests\\atlas-label-anchor.test.js",
+      "tests\\atlas-lab-model-host.test.js",
+      "tests\\atlas-personalization-conflict.test.js",
+      "tests\\atlas-lab-interpretation.test.js",
+      "tests\\atlas-outcomes.test.js",
+      "tests\\atlas-lab-consultation.test.js",
+      "tests\\atlas-no-feedback.test.js",
+      "tests\\atlas-interpretation.test.js",
+      "tests\\atlas-model-extraction.test.js",
+      "tests\\atlas-interpretation-evaluation.test.js",
+      "tests\\atlas-memory-sync.test.js",
+      "tests\\atlas-incremental.test.js",
+      "tests\\atlas-loop.test.js",
+      "tests\\atlas-life.test.js",
+      "tests\\atlas-game-flow.test.js",
+      "tests\\atlas-formats.test.js",
+      "tests\\atlas-flow.test.js",
+      "tests\\atlas-family.test.js",
+      "tests\\atlas-education.test.js",
+      "tests\\atlas-domain.test.js",
+      "tests\\atlas-delivery-exclusion.test.js",
+      "tests\\atlas-core-boundaries.test.js",
+      "tests\\atlas-ledger.test.js",
+      "tests\\atlas-ask.test.js",
+      "tests\\atlas-ask-value.test.js",
+      "tests\\atlas-account-summary.test.js",
+      "tests\\atlas-ledger-sync.test.js",
+      "docs/마케팅/온라인마케팅지도/engagement/company/server-computer-interpretation.test.mjs",
+      "docs/마케팅/온라인마케팅지도/engagement/company/server-assistant.test.mjs",
+      "docs/마케팅/온라인마케팅지도/engagement/company/creator-tools-server.test.mjs",
+      "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice.test.mjs",
+      "tests/atlas-interpretation-capture.test.mjs",
+      "tests/atlas-computer-runtime.test.mjs",
+      "tests/atlas-capture-company.test.mjs",
+      "tests/atlas-consultation-evaluation.test.mjs",
+      "tests/atlas-matching.test.mjs",
+      "experiences/learning-hub/server.test.mjs",
+      "tests/atlas-consultation-completion.test.mjs"
+    ],
+    "log": "docs/_ops/qa/atlas-completion-20261006/tests.tap",
+    "logSha256": "e8990a7762a6df44c7988ad555ce22fd10c295d97736d0d368c8c5e436b368a0"
+  },
+  "contract": {
+    "version": "computer-completion-1",
+    "owner": "experiences/atlas-lab/consultation.mjs",
+    "statuses": [
+      "not-started",
+      "provisional",
+      "ready"
+    ],
+    "scope": "specification-guidance",
+    "questionPolicyUnchanged": true,
+    "commonEngineCodeModified": false,
+    "newEngine": false,
+    "consumers": [
+      "experiences/atlas-lab/lab.js",
+      "tools/evaluate-atlas-consultation.mjs"
+    ],
+    "warningsPreserved": true
+  },
+  "consultation": {
+    "report": {
+      "path": "docs/_ops/qa/atlas-completion-20261006/consultation-report.json",
+      "sha256": "1f757e161126829136d9e464f6ff6552676c53f012559e1c3ebeea3af33f157f"
+    },
+    "summary": {
+      "fixed": {
+        "cases": 11,
+        "questionCount": 53,
+        "questionSelectionFinished": 7,
+        "stoppedUnresolvedOrLimited": 4,
+        "productReady": 6,
+        "productProvisional": 4,
+        "productNotStarted": 1,
+        "missingRequiredAnswerCount": 5,
+        "authoredCheckFailureCount": 0,
+        "scriptedQualityGatePassed": 6,
+        "productQualityGatePassed": 6,
+        "referenceComparable": 7,
+        "matchingCompleteScriptReference": 7,
+        "totalComputeTimeMs": 1.953000000000003
+      },
+      "atlas": {
+        "cases": 11,
+        "questionCount": 32,
+        "questionSelectionFinished": 7,
+        "stoppedUnresolvedOrLimited": 4,
+        "productReady": 1,
+        "productProvisional": 9,
+        "productNotStarted": 1,
+        "missingRequiredAnswerCount": 6,
+        "authoredCheckFailureCount": 0,
+        "scriptedQualityGatePassed": 5,
+        "productQualityGatePassed": 1,
+        "referenceComparable": 7,
+        "matchingCompleteScriptReference": 7,
+        "totalComputeTimeMs": 105.02009999999997
+      },
+      "authoredQualityComparableCases": 5,
+      "fewerQuestionsWithAuthoredQualityMaintained": 5,
+      "authoredQualityComparableQuestionCounts": {
+        "fixed": 34,
+        "atlas": 21,
+        "reduced": 13
+      },
+      "qualityComparableCases": 1,
+      "qualityComparableQuestionCounts": {
+        "fixed": 8,
+        "atlas": 5,
+        "reduced": 3
+      },
+      "fewerQuestionsWithQualityMaintained": 1
+    },
+    "datasetUnchanged": true,
+    "interpretation": "Question selection finished is not product readiness. Authored-only quality comparison is separate from the stricter product comparison. Manual required-field review is not included in automatic-policy counts."
+  },
+  "browserChecks": {
+    "completion": {
+      "source": "experiences/atlas-lab/qa/completion/result.json",
+      "snapshot": "docs/_ops/qa/atlas-completion-20261006/completion-browser.json",
+      "sha256": "2265491655c952cb2c5a99562cb7329edae330a9c70e7721cd460753ec786a51",
+      "status": "passed",
+      "at": "2026-10-05T20:10:21.149Z",
+      "pathGroups": 8,
+      "screenshots": 12
+    },
+    "question-value": {
+      "source": "experiences/atlas-lab/qa/question-value/result.json",
+      "snapshot": "docs/_ops/qa/atlas-completion-20261006/question-value-browser.json",
+      "sha256": "35299f4ed89b775bc5ddc07cac31e12f2da55c6e31ae8aa54b1136f4e6477716",
+      "status": "passed",
+      "at": "2026-10-05T20:10:06.068Z"
+    },
+    "interpretation": {
+      "source": "experiences/atlas-lab/qa/interpretation/result.json",
+      "snapshot": "docs/_ops/qa/atlas-completion-20261006/interpretation-browser.json",
+      "sha256": "e66858ca8de79a14bbc6f58906fb46822bc26e68c418820c9b26f60547f9ab95",
+      "status": "passed",
+      "at": "2026-10-05T20:10:53.225Z"
+    },
+    "matching": {
+      "source": "experiences/atlas-lab/qa/matching/result.json",
+      "snapshot": "docs/_ops/qa/atlas-completion-20261006/matching-browser.json",
+      "sha256": "319b7e23f838e22c30587478521fa2dabb64aa30fed1518104eae6ed169673a8",
+      "status": "passed",
+      "at": "2026-10-05T20:10:53.212Z"
+    }
+  },
+  "independentReview": {
+    "result": "No reproducible defects found in the reviewed completion, UI and evaluator paths.",
+    "additionalCheck": "Pure-rule check across workload, OS, memory and multitasking combinations found no reuse-to-purchase flip hidden solely by unanswered mobility. Browser evidence is recorded separately."
+  },
+  "frozenEvaluation": {
+    "manifest": {
+      "path": "docs/_ops/qa/atlas-model-20261005/freeze.json",
+      "sha256": "dcd263a22e3c1b28a1d4b78f4ad0d55ffa79e3b1c91863e3df98ea94556e1347"
+    },
+    "artifacts": [
+      {
+        "path": "experiences/atlas-lab/model-extraction.mjs",
+        "sha256": "629651ccbccf6b60734c697447cfe9de62175de57bd701315c7ee36a10156266",
+        "actualSha256": "629651ccbccf6b60734c697447cfe9de62175de57bd701315c7ee36a10156266",
+        "unchanged": true
+      },
+      {
+        "path": "experiences/atlas-lab/interpretation.mjs",
+        "sha256": "589dc1fba5ee1020f062b9f7345b40d7755f33a810003bbf3ba19e2e585138c9",
+        "actualSha256": "589dc1fba5ee1020f062b9f7345b40d7755f33a810003bbf3ba19e2e585138c9",
+        "unchanged": true
+      },
+      {
+        "path": "docs/마케팅/맞춤도구/computer/content.js",
+        "sha256": "428217f11059f75a10329ef51a2ab0b451928efe89e39ec7b40be4961535df58",
+        "actualSha256": "428217f11059f75a10329ef51a2ab0b451928efe89e39ec7b40be4961535df58",
+        "unchanged": true
+      },
+      {
+        "path": "atlas/interpretation.js",
+        "sha256": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e",
+        "actualSha256": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e",
+        "unchanged": true
+      },
+      {
+        "path": "atlas/domain.js",
+        "sha256": "9951725913b41d97052f2f396b1ef4463c7c47e75a218f72096999d6f8d6b046",
+        "actualSha256": "9951725913b41d97052f2f396b1ef4463c7c47e75a218f72096999d6f8d6b046",
+        "unchanged": true
+      },
+      {
+        "path": "atlas/temper-interpretation.js",
+        "sha256": "238e3cf2b362514e002dc7c2640999b5fd8b80e03efd26962b1426af952047de",
+        "actualSha256": "238e3cf2b362514e002dc7c2640999b5fd8b80e03efd26962b1426af952047de",
+        "unchanged": true
+      }
+    ],
+    "dataset": {
+      "path": "tests/fixtures/atlas-interpretation-heldout-v1.json",
+      "sha256": "14cf6f3185d4f2b90b364a49c7d3d851494d614cad2ce0e32aca2300b978c99e",
+      "unchanged": true
+    },
+    "status": "deferred-by-user",
+    "modelCalls": 0,
+    "paidProviderCalls": 0,
+    "heldoutManuallyInspected": false
+  },
+  "sourceHashes": [
+    {
+      "path": "atlas/domain.js",
+      "sha256": "9951725913b41d97052f2f396b1ef4463c7c47e75a218f72096999d6f8d6b046"
+    },
+    {
+      "path": "atlas/interpretation.js",
+      "sha256": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e"
+    },
+    {
+      "path": "atlas/temper-interpretation.js",
+      "sha256": "238e3cf2b362514e002dc7c2640999b5fd8b80e03efd26962b1426af952047de"
+    },
+    {
+      "path": "docs/_ops/트랙.md",
+      "sha256": "b6e217e59e5c7ae92834c8dc5991f024b527c147adb0b88163a2733b21439748"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/computer/content.js",
+      "sha256": "428217f11059f75a10329ef51a2ab0b451928efe89e39ec7b40be4961535df58"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/computer-interpretation-runtime.mjs",
+      "sha256": "3f8af204a0c551271ad5173cf4e784c1fe263a027d64d6549d7aa35d139f597e"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/computer-interpretation-service.mjs",
+      "sha256": "5f55ec50df749dcde4cfcbcae71f77aa81f39d50aedfa699065b884ce154a3fe"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/creator-tools-server.test.mjs",
+      "sha256": "a68f7a899d188f62ec89aa0c1341cd23d4862059ee8feedf7b68013ea2fbc307"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-assistant.test.mjs",
+      "sha256": "c3de60e3ecc20bfebcb8768408b8444a2873842d73a7c1102881189ef6cff5d7"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-computer-interpretation.test.mjs",
+      "sha256": "3517d132bf87e59441abf26e8433f663694bb587a0c0b7af8dad55f1a1907da0"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs",
+      "sha256": "4b74b31177c257fb2fdd7808b357d8dc213c5253b9b448ba65fa8975493ad1be"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice.test.mjs",
+      "sha256": "095dd0242b032d7c4c39770df31745567a6edb2a200ad2e28f1c3630bc4824e2"
+    },
+    {
+      "path": "docs/아틀라스_공통능력_고도화_20261005.md",
+      "sha256": "ee8650ade52a496654786d66b60c088d856c9eecaa1cfaf3010b6783f3f3dde2"
+    },
+    {
+      "path": "experiences/atlas-lab/build-share.mjs",
+      "sha256": "e9a642f548b2208b24707feb11f981f049895ff6636f9602fbac93d392391ef7"
+    },
+    {
+      "path": "experiences/atlas-lab/consultation.mjs",
+      "sha256": "acd25d534c2abc7b3bcf495c6ed57f41f410dad6c6eab353b73243e6d08f068c"
+    },
+    {
+      "path": "experiences/atlas-lab/index.html",
+      "sha256": "be961feb3f6a3572ab7cba2fcc00201591951e9ec766a36891d751a6f7a74467"
+    },
+    {
+      "path": "experiences/atlas-lab/interpretation.mjs",
+      "sha256": "589dc1fba5ee1020f062b9f7345b40d7755f33a810003bbf3ba19e2e585138c9"
+    },
+    {
+      "path": "experiences/atlas-lab/lab.css",
+      "sha256": "6c5ec9526addf64dea7b84e611870e544ce33607673ee84e9a1e11140604def0"
+    },
+    {
+      "path": "experiences/atlas-lab/lab.js",
+      "sha256": "3fb30aaaf34a7788e1d1705fdc981114c44d83d92b626cbd6f28dcd248dfd20b"
+    },
+    {
+      "path": "experiences/atlas-lab/matching-ui.mjs",
+      "sha256": "bb1db7c559f26d5a7cf9850d221cf7dec2c0387b4490a0b406e8bee4243dd964"
+    },
+    {
+      "path": "experiences/atlas-lab/matching.mjs",
+      "sha256": "9c11fa3548030a35d6643fcd7c89675cfe32c6af4cdbc226b7e90c22703c21c8"
+    },
+    {
+      "path": "experiences/atlas-lab/model-extraction.mjs",
+      "sha256": "629651ccbccf6b60734c697447cfe9de62175de57bd701315c7ee36a10156266"
+    },
+    {
+      "path": "experiences/atlas-lab/model-host.mjs",
+      "sha256": "29cf31e3173d51fe40c9d68d9e9d2ed6c62892ab4e116e896efdb6bee45dc2fa"
+    },
+    {
+      "path": "experiences/learning-hub/server.mjs",
+      "sha256": "72e4ce791b1017461b4101631480d1db603a52e457987e2a1539943a608eedb7"
+    },
+    {
+      "path": "experiences/learning-hub/server.test.mjs",
+      "sha256": "835602a107d87350ac169e5b291462baca87bc949b468ef1366b710f4f99126d"
+    },
+    {
+      "path": "tests/atlas-account-summary.test.js",
+      "sha256": "54b36f7a34afa240d982b93fe88f1cdc727e30ae83e5a943e009a7dc892192b0"
+    },
+    {
+      "path": "tests/atlas-ask-value.test.js",
+      "sha256": "ad00a4e99871aa8b57539bfe476101101047233a88d7f358e9efd9967cf2fa6a"
+    },
+    {
+      "path": "tests/atlas-ask.test.js",
+      "sha256": "b6678ac021e687ae60c854c6a45e6ab4e648780afa98d163583b3578a93d89dd"
+    },
+    {
+      "path": "tests/atlas-capture-company.test.mjs",
+      "sha256": "c6bf2e85e495798ad161fda352681a227414c4701ee39bf8760bba87a386bef3"
+    },
+    {
+      "path": "tests/atlas-company-interpretation-smoke.mjs",
+      "sha256": "724602cf3e02b62c40046596d0ef21e62682146f223bd6f7db84356f158d8ac9"
+    },
+    {
+      "path": "tests/atlas-computer-runtime.test.mjs",
+      "sha256": "cb4103fb25c35f0c86c981f0b65814be815f5aa2c97972db682a218db6a5dff1"
+    },
+    {
+      "path": "tests/atlas-consultation-completion.test.mjs",
+      "sha256": "b8155a0f3ccc7c94d81baf926d436e8585df7e38af4ebf217ab41bebbe499961"
+    },
+    {
+      "path": "tests/atlas-consultation-evaluation.test.mjs",
+      "sha256": "3a347c9a2e8071225a8b88328548d8e7ec752de016c3fcbd65997db89cce883d"
+    },
+    {
+      "path": "tests/atlas-core-boundaries.test.js",
+      "sha256": "4b044c2fc30ea04633095a2ea59078d65c3ccaf3dd080fbb73028127b1d46726"
+    },
+    {
+      "path": "tests/atlas-delivery-exclusion.test.js",
+      "sha256": "9596af6b8d84aca0ff86fc6c4bf25d19e935dc3534428021abd6ca79560405d5"
+    },
+    {
+      "path": "tests/atlas-domain.test.js",
+      "sha256": "d3b4a053ee1e5029d6a55948c76568d73d9a8569c9fc4804970ceedf86c5b175"
+    },
+    {
+      "path": "tests/atlas-education.test.js",
+      "sha256": "2ba80ad2b9f563fdfc1e26906525fd0122780ee6297d127aefbce2983659c722"
+    },
+    {
+      "path": "tests/atlas-family.test.js",
+      "sha256": "a04694624ea2f37b29658dacb034f6f4523c0edb0d961790d50775570776904d"
+    },
+    {
+      "path": "tests/atlas-flow.test.js",
+      "sha256": "5b5432d9cf62e257f96202af754b796546a94487947e188b5cfc1dc833e3992a"
+    },
+    {
+      "path": "tests/atlas-formats.test.js",
+      "sha256": "9b0989e4615cc72d53b99533d379d96a196482535241e1ed31f3895d14a9d4ab"
+    },
+    {
+      "path": "tests/atlas-game-flow.test.js",
+      "sha256": "3cf4441b556bb4de9a76c648d2a2759ee3aae8fd3747e64aabbe3464505e63e2"
+    },
+    {
+      "path": "tests/atlas-incremental.test.js",
+      "sha256": "31151d112e859b31eb1a8e6032e9768c47f7673c6f6183232343715004d3ee80"
+    },
+    {
+      "path": "tests/atlas-interpretation-capture.test.mjs",
+      "sha256": "cc742f47fc9eebc23eb999c7fff946dd055f11d559e79e517c999a137d3beb71"
+    },
+    {
+      "path": "tests/atlas-interpretation-evaluation.test.js",
+      "sha256": "71569258607c2ff0fae4781ea73f423f6bed1726f721af3818c264b87c758b6b"
+    },
+    {
+      "path": "tests/atlas-interpretation.test.js",
+      "sha256": "e5152961a165031fe73ade2052e137f0fa1859e3b9691a29cb2f2952433cf7f4"
+    },
+    {
+      "path": "tests/atlas-lab-completion-smoke.mjs",
+      "sha256": "18e43c8db299dc0e49e4e22097ce084552e94bdd940cb25862c817eabcc9c43b"
+    },
+    {
+      "path": "tests/atlas-lab-consultation.test.js",
+      "sha256": "e3768dc4662fa0df6edfcfe8756e818741f4749eacf9997aedb499f446979ccd"
+    },
+    {
+      "path": "tests/atlas-lab-interpretation-smoke.mjs",
+      "sha256": "cc4cfaf47e985c33de029b0b530218fa1254f53f2913760aa8488c969d2e17a1"
+    },
+    {
+      "path": "tests/atlas-lab-interpretation.test.js",
+      "sha256": "96228524310a0fa37c9464f0a65b7b99bd9d0ef3604904be5d98769805cb55be"
+    },
+    {
+      "path": "tests/atlas-lab-model-host-smoke.mjs",
+      "sha256": "74bb7b73e0d145b96c1e1518bc6032ce4aaebbeaa9c630dfc9138621f8b00c96"
+    },
+    {
+      "path": "tests/atlas-lab-model-host.test.js",
+      "sha256": "483dbe1142125736323819de4fcc29d743132b7d613c1143420c039a84995de1"
+    },
+    {
+      "path": "tests/atlas-lab-question-value-smoke.mjs",
+      "sha256": "74bdd943ef84ae348b64a736f2d318777e8a21e1aebb6cbff9e21a4cb0be209e"
+    },
+    {
+      "path": "tests/atlas-label-anchor.test.js",
+      "sha256": "c0ea2c52ef47f6d3ef9e454c4a76857fc3eb3c43c4249d05acf9dbc2c8c5e486"
+    },
+    {
+      "path": "tests/atlas-learning-sync.test.js",
+      "sha256": "847bad3de8514141d163d0709baed3b5d5892c23b05ccecca6942c87e95cacb1"
+    },
+    {
+      "path": "tests/atlas-learning.test.js",
+      "sha256": "01097327c131b59f778a6712810530c8249435a7648bc92d42ea1d2d1ac43726"
+    },
+    {
+      "path": "tests/atlas-ledger-recovery.test.js",
+      "sha256": "d27ff05f4611fde677a599e674fae6fb4b48bf57b1a9fc1796a14d1fdcd452f3"
+    },
+    {
+      "path": "tests/atlas-ledger-sync.test.js",
+      "sha256": "d098286f05cac5fa2ea6bc355cd6305ef479a93cfd9d447cf7b8cf5b2d612b9f"
+    },
+    {
+      "path": "tests/atlas-ledger.test.js",
+      "sha256": "8459cc8a53ee048940b2712a964b05ab8dae33958ed118648bdd6e46feca88b7"
+    },
+    {
+      "path": "tests/atlas-life.test.js",
+      "sha256": "e8461887743d74a2c11e1164ea7e17a2cf844d9a2eaefb7588a53104f3bba182"
+    },
+    {
+      "path": "tests/atlas-loop.test.js",
+      "sha256": "ef4d60ae4b3a83eba75778305926b9b1b8c6619d3f3d8af9627ff52635aaa823"
+    },
+    {
+      "path": "tests/atlas-matching-smoke.mjs",
+      "sha256": "969ab8e9b298d091531dd7c20f0cb0b77124e51c21fc122f963554aa60d822c1"
+    },
+    {
+      "path": "tests/atlas-matching.test.mjs",
+      "sha256": "608271bc9a46c0de9f4bcca508f7463acc8ae4ab3785bff1d4e71ec508489e8a"
+    },
+    {
+      "path": "tests/atlas-memory-sync.test.js",
+      "sha256": "96645e7de92e993faf9b196dfaa52a6be41593402369c4733349c333326dc3e4"
+    },
+    {
+      "path": "tests/atlas-model-extraction.test.js",
+      "sha256": "48ae71b660d6be57a709d9410cef4d1c6a2f0afa4586de0c7a112fe11a6f2eb4"
+    },
+    {
+      "path": "tests/atlas-no-feedback.test.js",
+      "sha256": "e95a2f34fbc44d66cff2a9e5f5ecbf466a9163ec1559e95e0f32f0bfc36f5a61"
+    },
+    {
+      "path": "tests/atlas-outcomes.test.js",
+      "sha256": "956e7e2efdc3a7257f7134326c22e4ac48a6b23f4fd3c1db34694906e8e8a5c2"
+    },
+    {
+      "path": "tests/atlas-personalization-conflict.test.js",
+      "sha256": "7238b623ed40a6c552be2ee4555369cacbc9a2d01f55a9b5a927c80a053d3683"
+    },
+    {
+      "path": "tests/atlas-personalization.test.js",
+      "sha256": "74e2be757dee4d8df879767e67c64f199c0d17c4926d13ebf843273454e0a2ba"
+    },
+    {
+      "path": "tests/atlas-preferences.test.js",
+      "sha256": "8679250ab8934c7c8205b3380dd1b92b0ff19e1abcce1cb134542f97117c4a6f"
+    },
+    {
+      "path": "tests/atlas-provenance-review.test.js",
+      "sha256": "9678be2d0fb7a3756eafc0caae627f51cc68192caf8585bb2c70740f783bfd0b"
+    },
+    {
+      "path": "tests/atlas-review-fixes.test.js",
+      "sha256": "591693dd30589d4285123b569dbe8609bcc7fd65abcaa7fa56928f4316691418"
+    },
+    {
+      "path": "tests/atlas-storage-failure.test.js",
+      "sha256": "d6f93cc7f0dcd418e1548164886fa2579e8bcf4795d457fb46816394c9592b8e"
+    },
+    {
+      "path": "tests/atlas-sync-fixes.test.js",
+      "sha256": "bf7e21a77031b663b428047e3da56fd995ee583c18ff5a699f5b7938adffa0bb"
+    },
+    {
+      "path": "tests/atlas-temper-flow.test.js",
+      "sha256": "e6e3ef326c2f7563ca851c7dd0fefb7b66e28b5d9f10264fe3ab06806337da39"
+    },
+    {
+      "path": "tests/atlas-temper.test.js",
+      "sha256": "26ff73fc503d9dad39b80c242892822744b6903774fc0203101bf59f7882dd09"
+    },
+    {
+      "path": "tests/atlas-topik-layers.test.js",
+      "sha256": "b06b9b4475512e89cbcef3e0dde6154a5e5c4f9c000861019033581a5f8c7836"
+    },
+    {
+      "path": "tests/atlas-trail.test.js",
+      "sha256": "06e3e71b54375d75d61283cabb6891f1ae6afce843ad1050365dca71a86ae06f"
+    },
+    {
+      "path": "tests/atlas-vellum-flow.test.js",
+      "sha256": "3ae29e92a303bdb2fc5486d0a76f93451447bc929921549c01f609bf7f463b37"
+    },
+    {
+      "path": "tests/atlas-work.test.js",
+      "sha256": "c97a9e0fb7afd3c3cfab225a97e3bc0582c6302ad9feb149def4e770e239d12d"
+    },
+    {
+      "path": "tests/atlas.test.js",
+      "sha256": "df4d4e002b2666ac8d670a636e09cd4ec1ff12cb9e4e2e7afe647b637bc1205a"
+    },
+    {
+      "path": "tests/fixtures/atlas-consultation-cases.json",
+      "sha256": "77b81cf661280a718a78ab78e86bfbd7ee67f047a2de32d8826c1b94d226c98e"
+    },
+    {
+      "path": "tools/capture-atlas-interpretation-evaluation.mjs",
+      "sha256": "6c57e8d52726922c196a2498275c3faf37159cec1dba38bfa30b0e4270530ef3"
+    },
+    {
+      "path": "tools/evaluate-atlas-consultation.mjs",
+      "sha256": "6d9597a09a4bbb626c449c6647924b0cbf9a9009e736444496891b0d7121fe71"
+    }
+  ],
+  "changedSincePreviousReport": [
+    "docs/아틀라스_공통능력_고도화_20261005.md",
+    "experiences/atlas-lab/index.html",
+    "experiences/atlas-lab/lab.css",
+    "experiences/atlas-lab/lab.js",
+    "tests/atlas-consultation-evaluation.test.mjs",
+    "tools/evaluate-atlas-consultation.mjs"
+  ],
+  "deployment": {
+    "deployed": false,
+    "productionRestarted": false,
+    "paidProviderCalls": 0,
+    "localPreview": "http://127.0.0.1:58291/atlas-lab/?completion=1#consult-title"
+  },
+  "limitations": [
+    "Synthetic scripted cases do not establish actual user benefit or recommendation truth.",
+    "Input confirmation does not prove a feasible purchase or actual hardware performance.",
+    "The automatic question policy still skips some mandatory product inputs; the UI supports separate explicit review.",
+    "Additional manual review questions and user time are not measured in the offline policy comparison.",
+    "Desktop Chrome viewport checks do not establish physical phone behavior."
+  ]
+}

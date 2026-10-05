@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "at": "2026-10-05T14:49:22.176Z",
+  "kind": "frozen-heldout-local-capture",
+  "dataset": {
+    "id": "computer-ko-heldout",
+    "version": "1",
+    "sha256": "14cf6f3185d4f2b90b364a49c7d3d851494d614cad2ce0e32aca2300b978c99e",
+    "count": 30
+  },
+  "freezeSha256": "dcd263a22e3c1b28a1d4b78f4ad0d55ffa79e3b1c91863e3df98ea94556e1347",
+  "backend": {
+    "id": "computer-explicit-ko-1",
+    "version": "1",
+    "kind": "local-pattern"
+  },
+  "coreBeforeConfirmation": {
+    "checked": 30,
+    "proposals": 0,
+    "facts": 0,
+    "passed": true
+  },
+  "networkCalls": 0,
+  "externalApiCost": 0,
+  "modelCalls": 0,
+  "limitations": [
+    "Assistant-authored synthetic sources; real-user representativeness is unproven.",
+    "Holdout source content and per-case results are kept out of implementation-team summaries.",
+    "Results do not establish general natural-language accuracy or operational effects."
+  ]
+}

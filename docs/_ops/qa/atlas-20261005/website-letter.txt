@@ -1,0 +1,13 @@
+✔ Role and task precede friend choice without prescribing an answer (0.9496ms)
+✔ All nine hints require deliberate opening; extra clues require a second action (4.8119ms)
+✔ First draft survives revision, repeated review and final output byte for byte (0.6067ms)
+✔ Empty input cannot advance; self-checks do not gate or score completion (0.0969ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 85.9947
+

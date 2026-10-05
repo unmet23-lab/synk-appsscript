@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url';
 const root=fileURLToPath(new URL('.',import.meta.url)),repo=path.resolve(root,'../..');
 const publicFiles=new Set(['index.html','style.css','app.mjs','model.mjs']);
 const assets=new Set(['synk.svg','SUIT.woff2','InterTight.ttf','InterTightBold.ttf','DMMono.ttf','button-soft.webp','badge-cream.webp','wide-lapis.webp','shift-cover.png']);
-const atlas=new Set(['engine.js','personalization.js']);
+const atlas=new Set(['engine.js','domain.js','temper-outcomes.js','personalization.js']);
 const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.woff2':'font/woff2','.ttf':'font/ttf','.webp':'image/webp','.png':'image/png'};
 export function createServer(){
   const server=http.createServer(async(req,res)=>{

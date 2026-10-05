@@ -1,0 +1,41 @@
+✔ 조각은 다시 부어도 그대로이고, 표는 RLS가 켜져 있고 어떤 역할에도 권한이 없다 (2500.2091ms)
+✔ 표현 어휘는 엔진(flow.js)과 같다 — 한쪽만 바꾸면 기기 값이 서버에서 거절된다 (0.2878ms)
+✔ 학습 기록 저장 동의 안에서만 읽고 쓰며, 동의 판이 바뀌면 낡은 기기는 막힌다 (90.0344ms)
+✔ 항목마다 더 늦은 시각이 이기고, 낡은 값을 보내면 서버의 새 값을 돌려준다 (33.9169ms)
+✔ 기억이 아닌 것은 통째로 거절한다 — 정체·나이·글·크기 초과 (50.0171ms)
+✔ 계정당 항목 수에 한도가 있다 (60.0487ms)
+✔ 조각이 아직 없는 DB에서는 이 기능만 꺼지고 계정·학습 기록은 그대로다 (24.6875ms)
+✔ 사내 메신저는 기억도 요약도 읽지 못한다 (15.3656ms)
+✔ 두 기기: 한 기기에서 고른 도움 방식과 순간 맞춤이 실제 서버를 거쳐 다른 기기로 간다 (41.5335ms)
+✔ 아틀라스 요약: 저장 동의가 켜져 있으면 고른 설정·배우는 이유·연습을, 꺼지면 본인이 밝힌 이유만 준다 (61.5873ms)
+✔ 가입 때 학습 기록 저장을 고른 계정은 첫 로그인부터 저장이 켜지고, 나중에 끈 것은 되살리지 않는다 (124.3032ms)
+✔ 가입 선택은 인증 서버가 준 사용자 정보의 정해진 모양만 읽는다 (4.3451ms)
+✔ every copied file is exactly what the sync wrote (35.2459ms)
+✔ everything the app, lib, server functions and tests import from lib/atlas was copied (652.8509ms)
+✔ the copied files only load each other (3.5749ms)
+✔ one round: first exposure from the stored history, help, growth and the next stored history (14.3342ms)
+✔ two rounds in one app run: each round reports itself, and no growth fact repeats (1.581ms)
+✔ an app closed mid-round: the next session still knows what was seen (1.1347ms)
+✔ a new device, an unreadable store: nothing counts as independent and the store is not replaced (1.1888ms)
+✔ Vellum policy for a game: one offer per item, none after a decline or for working alone; review opens the answer by default (0.2509ms)
+✔ switching account ends the old session before any late practice write or read (0.8231ms)
+✔ 진행 중인 토큰 갱신 쓰기는 로그아웃 삭제보다 먼저 끝나며 세션을 되살리지 않는다 (450.0694ms)
+✔ 실패한 키체인 쓰기가 이어지는 로그아웃 삭제를 막지 않는다 (130.2438ms)
+✔ 만료 처리의 읽기와 쓰기도 같은 순서에 들어가 삭제 뒤 번호를 되살리지 않는다 (116.7131ms)
+✔ 키체인 삭제 실패를 로그아웃 완료로 보고하지 않고 다시 지울 수 있다 (109.7999ms)
+✔ 로그 정리가 실패하면 키체인 삭제까지 진행하지 않는다 (84.077ms)
+✔ a completed game response changes the next mounted game (11.9972ms)
+✔ logout revokes stale handles, and another user never inherits the prior context (0.5884ms)
+✔ resetting Atlas does not require or mutate any original game submission (0.2727ms)
+✔ error-tag links in the synced map equal Talk's tag table (0.9383ms)
+✔ skills and their grammar membership equal Talk's quiz skill table (0.2723ms)
+✔ grammar points and their introduction levels equal Talk's level table (0.1715ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5329.0187
+

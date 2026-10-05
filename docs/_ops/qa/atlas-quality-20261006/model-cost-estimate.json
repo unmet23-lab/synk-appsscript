@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-05T19:36:09.232Z",
+  "localDate": "2026-10-06",
+  "datasetSha256": "14cf6f3185d4f2b90b364a49c7d3d851494d614cad2ce0e32aca2300b978c99e",
+  "calls": 30,
+  "model": "gpt-6-luna",
+  "maxOutputTokens": 3000,
+  "pricing": {
+    "checkedAt": "2026-10-06",
+    "inputUsdPerMillion": 0.1,
+    "outputUsdPerMillion": 0.5,
+    "reservedInputUsdPerMillion": 0.125,
+    "source": "https://developers.openai.com/api/docs/pricing"
+  },
+  "totalReservedMicroUsd": 112711,
+  "maxRequestReservedMicroUsd": 3764,
+  "maxInputTokenBound": 18107,
+  "proposedRequestLimitMicroUsd": 10000,
+  "proposedTotalLimitMicroUsd": 250000,
+  "liveLimitsChanged": false,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "limitations": [
+    "Conservative token and cache-write reservation estimate, not observed invoice.",
+    "No provider call; a project API key is still needed."
+  ]
+}

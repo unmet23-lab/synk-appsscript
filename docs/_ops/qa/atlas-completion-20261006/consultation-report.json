@@ -1,0 +1,4385 @@
+{
+  "version": 2,
+  "kind": "synthetic-computer-question-policy-comparison",
+  "dataset": {
+    "id": "computer-question-policy-cases",
+    "version": 1,
+    "basis": "Hand-authored synthetic development scenarios; not unseen users or independent model evaluation."
+  },
+  "protocol": {
+    "maxQuestions": 20,
+    "entry": "Both policies receive the same explicitly selected uses and other initial answers. Uses selection is not counted as a follow-up question.",
+    "fixed": "First eligible unanswered field in the existing computer content order; recompute eligibility after each answer.",
+    "atlas": "Unmodified createComputerConsultation.choose, which calls the existing Core Ask.",
+    "stops": [
+      "no selected uses",
+      "no eligible question / no positive declared question value",
+      "first unknown, conflicting or absent response",
+      "maximum questions"
+    ],
+    "unresolved": "Never fill absent or conflicting responses with defaults. Report the current provisional product advice but do not pass the completed-quality gate.",
+    "reference": "All answerable scripted answers through the same existing product rules; consistency reference only, not independent recommendation truth.",
+    "requirements": "Authored required facts and advice checks. Unknown catalog answers acknowledge uncertainty but do not satisfy a required known fact.",
+    "success": "Question reduction is favorable only when both runs complete, all authored requirements pass, and both match the same complete-script reference.",
+    "timing": "Local computation only; no simulated user time, correction rate, satisfaction, response probability, or causal effect."
+  },
+  "versions": {
+    "ask": "ask-1.1",
+    "questionPolicy": "computer-question-value-2",
+    "completionPolicy": "computer-completion-1",
+    "rules": "computer-rules-v2-2026-09-27"
+  },
+  "comparisonScope": {
+    "decision": "Existing consultation.decision.content only: form, OS, RAM, storage, GPU, current-device actions, keep advice and budget warnings.",
+    "excludes": [
+      "CPU/NPU detail",
+      "all displayed wording/tips",
+      "live prices or hardware validation"
+    ],
+    "completion": "Question selection finished means only that the chosen policy has no next question. Product readiness uses the shared specification-guidance completion contract.",
+    "scriptedQuality": "Authored requiredAnswers and checks remain independent development criteria; the scripted gate includes question-selection completion. The product gate additionally requires product readiness.",
+    "qualityComparison": "authoredQualityComparable preserves the authored-only comparison. qualityComparable and fewerQuestionsWithQualityMaintained also require both product quality gates.",
+    "referenceComplete": "All eligible scripted questions have answers, including explicit unknown options; this is not product readiness.",
+    "computeTime": "Question selection and scripted answer application only, excluding input loading, result scoring and any human time."
+  },
+  "summary": {
+    "fixed": {
+      "cases": 11,
+      "questionCount": 53,
+      "questionSelectionFinished": 7,
+      "stoppedUnresolvedOrLimited": 4,
+      "productReady": 6,
+      "productProvisional": 4,
+      "productNotStarted": 1,
+      "missingRequiredAnswerCount": 5,
+      "authoredCheckFailureCount": 0,
+      "scriptedQualityGatePassed": 6,
+      "productQualityGatePassed": 6,
+      "referenceComparable": 7,
+      "matchingCompleteScriptReference": 7,
+      "totalComputeTimeMs": 1.953000000000003
+    },
+    "atlas": {
+      "cases": 11,
+      "questionCount": 32,
+      "questionSelectionFinished": 7,
+      "stoppedUnresolvedOrLimited": 4,
+      "productReady": 1,
+      "productProvisional": 9,
+      "productNotStarted": 1,
+      "missingRequiredAnswerCount": 6,
+      "authoredCheckFailureCount": 0,
+      "scriptedQualityGatePassed": 5,
+      "productQualityGatePassed": 1,
+      "referenceComparable": 7,
+      "matchingCompleteScriptReference": 7,
+      "totalComputeTimeMs": 105.02009999999997
+    },
+    "authoredQualityComparableCases": 5,
+    "fewerQuestionsWithAuthoredQualityMaintained": 5,
+    "authoredQualityComparableQuestionCounts": {
+      "fixed": 34,
+      "atlas": 21,
+      "reduced": 13
+    },
+    "qualityComparableCases": 1,
+    "qualityComparableQuestionCounts": {
+      "fixed": 8,
+      "atlas": 5,
+      "reduced": 3
+    },
+    "fewerQuestionsWithQualityMaintained": 1
+  },
+  "cases": [
+    {
+      "id": "web-new-light",
+      "description": "Light web work on a new Windows desktop, low budget.",
+      "reference": {
+        "basis": "same-product-rules-consistency-only",
+        "complete": true,
+        "unresolved": [],
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "new",
+          "multitask": "light",
+          "place": "home",
+          "os": "win",
+          "budget": "lt100"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "win",
+            "ram": 16,
+            "storage": 512,
+            "gpu": {
+              "kind": "integrated",
+              "vram": 0
+            },
+            "current": null,
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "containsExplicitUnknown": false
+      },
+      "fixed": {
+        "policy": "computer-content-order-1",
+        "questionCount": 5,
+        "answeredCount": 5,
+        "stopReason": "all-eligible-questions-answered",
+        "questionSelectionFinished": true,
+        "policyAbstained": false,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": []
+        },
+        "decisionStatus": "requirements-confirmed",
+        "trace": [
+          {
+            "id": "owned",
+            "about": "owned",
+            "responseStatus": "answered",
+            "value": "new"
+          },
+          {
+            "id": "multitask",
+            "about": "multitask",
+            "responseStatus": "answered",
+            "value": "light"
+          },
+          {
+            "id": "place",
+            "about": "place",
+            "responseStatus": "answered",
+            "value": "home"
+          },
+          {
+            "id": "os",
+            "about": "os",
+            "responseStatus": "answered",
+            "value": "win"
+          },
+          {
+            "id": "budget",
+            "about": "budget",
+            "responseStatus": "answered",
+            "value": "lt100"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "new",
+          "multitask": "light",
+          "place": "home",
+          "os": "win",
+          "budget": "lt100"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "win",
+            "ram": 16,
+            "storage": 512,
+            "gpu": {
+              "kind": "integrated",
+              "vram": 0
+            },
+            "current": null,
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [],
+        "authoredChecks": [
+          {
+            "id": "respect-windows",
+            "path": "os",
+            "op": "eq",
+            "value": "win",
+            "actual": "win",
+            "pass": true
+          },
+          {
+            "id": "no-unneeded-discrete-gpu",
+            "path": "gpu.kind",
+            "op": "eq",
+            "value": "integrated",
+            "actual": "integrated",
+            "pass": true
+          },
+          {
+            "id": "minimum-memory",
+            "path": "ram",
+            "op": "gte",
+            "value": 8,
+            "actual": 16,
+            "pass": true
+          }
+        ],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": true,
+        "productQualityGatePassed": true,
+        "matchesCompleteScriptReference": true,
+        "declaredPolicyLossAgainstReference": 0,
+        "computeTimeMs": 0.158299999999997,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "atlas": {
+        "policy": "computer-question-value-2",
+        "questionCount": 3,
+        "answeredCount": 3,
+        "stopReason": "no-question-has-positive-decision-value",
+        "questionSelectionFinished": true,
+        "policyAbstained": true,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "budget"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "decisionStatus": "provisional-only",
+        "trace": [
+          {
+            "id": "owned",
+            "about": "owned",
+            "responseStatus": "answered",
+            "declaredValue": 0.6666666666666666,
+            "basis": "declared-decision-value",
+            "value": "new"
+          },
+          {
+            "id": "os",
+            "about": "os",
+            "responseStatus": "answered",
+            "declaredValue": 0.6666666666666666,
+            "basis": "declared-decision-value",
+            "value": "win"
+          },
+          {
+            "id": "place",
+            "about": "place",
+            "responseStatus": "answered",
+            "declaredValue": 0.3333333333333333,
+            "basis": "declared-decision-value",
+            "value": "home"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "win",
+            "ram": 16,
+            "storage": 512,
+            "gpu": {
+              "kind": "integrated",
+              "vram": 0
+            },
+            "current": null,
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [
+          "budget"
+        ],
+        "authoredChecks": [
+          {
+            "id": "respect-windows",
+            "path": "os",
+            "op": "eq",
+            "value": "win",
+            "actual": "win",
+            "pass": true
+          },
+          {
+            "id": "no-unneeded-discrete-gpu",
+            "path": "gpu.kind",
+            "op": "eq",
+            "value": "integrated",
+            "actual": "integrated",
+            "pass": true
+          },
+          {
+            "id": "minimum-memory",
+            "path": "ram",
+            "op": "gte",
+            "value": 8,
+            "actual": 16,
+            "pass": true
+          }
+        ],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": false,
+        "productQualityGatePassed": false,
+        "matchesCompleteScriptReference": true,
+        "declaredPolicyLossAgainstReference": 0,
+        "computeTimeMs": 11.2671,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "comparison": {
+        "questionsReduced": 2,
+        "finalDecisionsEqual": true,
+        "authoredQualityComparable": false,
+        "fewerQuestionsWithAuthoredQualityMaintained": false,
+        "qualityComparable": false,
+        "fewerQuestionsWithQualityMaintained": false
+      }
+    },
+    {
+      "id": "reuse-enough-win10",
+      "description": "A working existing computer must be considered before buying, with its OS warning retained.",
+      "reference": {
+        "basis": "same-product-rules-consistency-only",
+        "complete": true,
+        "unresolved": [],
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "have",
+          "multitask": "light",
+          "current.kind": "desktop",
+          "current.ram": "32",
+          "current.os": "win10",
+          "current.feel": "ok",
+          "place": "home",
+          "os": "any",
+          "budget": "unknown"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "either",
+            "ram": 16,
+            "storage": 512,
+            "gpu": {
+              "kind": "integrated",
+              "vram": 0
+            },
+            "current": {
+              "verdict": "enough",
+              "gb": 32,
+              "actions": [
+                "check-win11-upgrade",
+                "keep-until-limited",
+                "monitor-memory-usage"
+              ]
+            },
+            "keep": true,
+            "osConflicts": [],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "containsExplicitUnknown": true
+      },
+      "fixed": {
+        "policy": "computer-content-order-1",
+        "questionCount": 8,
+        "answeredCount": 8,
+        "stopReason": "all-eligible-questions-answered",
+        "questionSelectionFinished": true,
+        "policyAbstained": false,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "reuse",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "current.ram",
+            "current.os",
+            "current.feel",
+            "os"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "current.kind",
+              "title": "지금 컴퓨터 사양 · 종류",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "current.ram",
+              "title": "지금 컴퓨터 사양 · 램 용량",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "current.os",
+              "title": "지금 컴퓨터 사양 · 운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "current.feel",
+              "title": "지금 컴퓨터 사양 · 하려는 일을 해 보니",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "unknown",
+              "required": false
+            }
+          ],
+          "budget": {
+            "state": "unknown",
+            "required": false
+          },
+          "assumptions": []
+        },
+        "decisionStatus": "requirements-confirmed",
+        "trace": [
+          {
+            "id": "multitask",
+            "about": "multitask",
+            "responseStatus": "answered",
+            "value": "light"
+          },
+          {
+            "id": "current.kind",
+            "about": "current.kind",
+            "responseStatus": "answered",
+            "value": "desktop"
+          },
+          {
+            "id": "current.ram",
+            "about": "current.ram",
+            "responseStatus": "answered",
+            "value": "32"
+          },
+          {
+            "id": "current.os",
+            "about": "current.os",
+            "responseStatus": "answered",
+            "value": "win10"
+          },
+          {
+            "id": "current.feel",
+            "about": "current.feel",
+            "responseStatus": "answered",
+            "value": "ok"
+          },
+          {
+            "id": "place",
+            "about": "place",
+            "responseStatus": "answered",
+            "value": "home"
+          },
+          {
+            "id": "os",
+            "about": "os",
+            "responseStatus": "answered",
+            "value": "any"
+          },
+          {
+            "id": "budget",
+            "about": "budget",
+            "responseStatus": "answered",
+            "value": "unknown"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "have",
+          "multitask": "light",
+          "current.kind": "desktop",
+          "current.ram": "32",
+          "current.os": "win10",
+          "current.feel": "ok",
+          "place": "home",
+          "os": "any",
+          "budget": "unknown"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "either",
+            "ram": 16,
+            "storage": 512,
+            "gpu": {
+              "kind": "integrated",
+              "vram": 0
+            },
+            "current": {
+              "verdict": "enough",
+              "gb": 32,
+              "actions": [
+                "check-win11-upgrade",
+                "keep-until-limited",
+                "monitor-memory-usage"
+              ]
+            },
+            "keep": true,
+            "osConflicts": [],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [],
+        "authoredChecks": [
+          {
+            "id": "reuse-first",
+            "path": "keep",
+            "op": "eq",
+            "value": true,
+            "actual": true,
+            "pass": true
+          },
+          {
+            "id": "legacy-os-warning",
+            "path": "current.actions",
+            "op": "includes",
+            "value": "check-win11-upgrade",
+            "actual": [
+              "check-win11-upgrade",
+              "keep-until-limited",
+              "monitor-memory-usage"
+            ],
+            "pass": true
+          }
+        ],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": true,
+        "productQualityGatePassed": true,
+        "matchesCompleteScriptReference": true,
+        "declaredPolicyLossAgainstReference": 0,
+        "computeTimeMs": 0.10369999999998925,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "atlas": {
+        "policy": "computer-question-value-2",
+        "questionCount": 5,
+        "answeredCount": 5,
+        "stopReason": "no-question-has-positive-decision-value",
+        "questionSelectionFinished": true,
+        "policyAbstained": true,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "reuse",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "current.ram",
+            "current.os",
+            "current.feel",
+            "os"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "current.kind",
+              "title": "지금 컴퓨터 사양 · 종류",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "current.ram",
+              "title": "지금 컴퓨터 사양 · 램 용량",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "current.os",
+              "title": "지금 컴퓨터 사양 · 운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "current.feel",
+              "title": "지금 컴퓨터 사양 · 하려는 일을 해 보니",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": false
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": false
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "decisionStatus": "requirements-confirmed",
+        "trace": [
+          {
+            "id": "current.ram",
+            "about": "current.ram",
+            "responseStatus": "answered",
+            "declaredValue": 0.8,
+            "basis": "declared-decision-value",
+            "value": "32"
+          },
+          {
+            "id": "current.feel",
+            "about": "current.feel",
+            "responseStatus": "answered",
+            "declaredValue": 0.6666666666666666,
+            "basis": "declared-decision-value",
+            "value": "ok"
+          },
+          {
+            "id": "os",
+            "about": "os",
+            "responseStatus": "answered",
+            "declaredValue": 0.6666666666666666,
+            "basis": "declared-decision-value",
+            "value": "any"
+          },
+          {
+            "id": "current.os",
+            "about": "current.os",
+            "responseStatus": "answered",
+            "declaredValue": 0.4,
+            "basis": "declared-decision-value",
+            "value": "win10"
+          },
+          {
+            "id": "place",
+            "about": "place",
+            "responseStatus": "answered",
+            "declaredValue": 0.3333333333333333,
+            "basis": "declared-decision-value",
+            "value": "home"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "have",
+          "current.ram": "32",
+          "current.feel": "ok",
+          "os": "any",
+          "current.os": "win10",
+          "place": "home"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "either",
+            "ram": 16,
+            "storage": 512,
+            "gpu": {
+              "kind": "integrated",
+              "vram": 0
+            },
+            "current": {
+              "verdict": "enough",
+              "gb": 32,
+              "actions": [
+                "check-win11-upgrade",
+                "keep-until-limited",
+                "monitor-memory-usage"
+              ]
+            },
+            "keep": true,
+            "osConflicts": [],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [],
+        "authoredChecks": [
+          {
+            "id": "reuse-first",
+            "path": "keep",
+            "op": "eq",
+            "value": true,
+            "actual": true,
+            "pass": true
+          },
+          {
+            "id": "legacy-os-warning",
+            "path": "current.actions",
+            "op": "includes",
+            "value": "check-win11-upgrade",
+            "actual": [
+              "check-win11-upgrade",
+              "keep-until-limited",
+              "monitor-memory-usage"
+            ],
+            "pass": true
+          }
+        ],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": true,
+        "productQualityGatePassed": true,
+        "matchesCompleteScriptReference": true,
+        "declaredPolicyLossAgainstReference": 0,
+        "computeTimeMs": 18.599999999999994,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "comparison": {
+        "questionsReduced": 3,
+        "finalDecisionsEqual": true,
+        "authoredQualityComparable": true,
+        "fewerQuestionsWithAuthoredQualityMaintained": true,
+        "qualityComparable": true,
+        "fewerQuestionsWithQualityMaintained": true
+      }
+    },
+    {
+      "id": "huge-ai-low-budget",
+      "description": "Large local model with explicit Mac preference and an insufficient budget needs a warning.",
+      "reference": {
+        "basis": "same-product-rules-consistency-only",
+        "complete": true,
+        "unresolved": [],
+        "answers": {
+          "uses": [
+            "localai"
+          ],
+          "owned": "new",
+          "localai": [
+            "huge"
+          ],
+          "multitask": "normal",
+          "place": "home",
+          "os": "mac",
+          "budget": "lt100"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "mac",
+            "ram": 128,
+            "storage": 1000,
+            "gpu": {
+              "kind": "unified",
+              "vram": 0
+            },
+            "current": null,
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": true,
+            "budgetTight": false
+          }
+        },
+        "containsExplicitUnknown": false
+      },
+      "fixed": {
+        "policy": "computer-content-order-1",
+        "questionCount": 5,
+        "answeredCount": 5,
+        "stopReason": "all-eligible-questions-answered",
+        "questionSelectionFinished": true,
+        "policyAbstained": false,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "localai",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "localai",
+              "title": "내 컴퓨터에 AI 설치",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": []
+        },
+        "decisionStatus": "requirements-confirmed",
+        "trace": [
+          {
+            "id": "localai",
+            "about": "localai",
+            "responseStatus": "answered",
+            "value": [
+              "huge"
+            ]
+          },
+          {
+            "id": "multitask",
+            "about": "multitask",
+            "responseStatus": "answered",
+            "value": "normal"
+          },
+          {
+            "id": "place",
+            "about": "place",
+            "responseStatus": "answered",
+            "value": "home"
+          },
+          {
+            "id": "os",
+            "about": "os",
+            "responseStatus": "answered",
+            "value": "mac"
+          },
+          {
+            "id": "budget",
+            "about": "budget",
+            "responseStatus": "answered",
+            "value": "lt100"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "localai"
+          ],
+          "owned": "new",
+          "localai": [
+            "huge"
+          ],
+          "multitask": "normal",
+          "place": "home",
+          "os": "mac",
+          "budget": "lt100"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "mac",
+            "ram": 128,
+            "storage": 1000,
+            "gpu": {
+              "kind": "unified",
+              "vram": 0
+            },
+            "current": null,
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": true,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [],
+        "authoredChecks": [
+          {
+            "id": "large-memory",
+            "path": "ram",
+            "op": "gte",
+            "value": 64,
+            "actual": 128,
+            "pass": true
+          },
+          {
+            "id": "budget-warning",
+            "path": "budgetWarning",
+            "op": "eq",
+            "value": true,
+            "actual": true,
+            "pass": true
+          },
+          {
+            "id": "respect-mac",
+            "path": "os",
+            "op": "eq",
+            "value": "mac",
+            "actual": "mac",
+            "pass": true
+          }
+        ],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": true,
+        "productQualityGatePassed": true,
+        "matchesCompleteScriptReference": true,
+        "declaredPolicyLossAgainstReference": 0,
+        "computeTimeMs": 0.5579000000000036,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "atlas": {
+        "policy": "computer-question-value-2",
+        "questionCount": 3,
+        "answeredCount": 3,
+        "stopReason": "no-question-has-positive-decision-value",
+        "questionSelectionFinished": true,
+        "policyAbstained": true,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "localai",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "place"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "localai",
+              "title": "내 컴퓨터에 AI 설치",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "decisionStatus": "provisional-only",
+        "trace": [
+          {
+            "id": "localai",
+            "about": "localai",
+            "responseStatus": "answered",
+            "declaredValue": 1.7142857142857117,
+            "basis": "declared-decision-value",
+            "value": [
+              "huge"
+            ]
+          },
+          {
+            "id": "budget",
+            "about": "budget",
+            "responseStatus": "answered",
+            "declaredValue": 0.6000000000000001,
+            "basis": "declared-decision-value",
+            "value": "lt100"
+          },
+          {
+            "id": "os",
+            "about": "os",
+            "responseStatus": "answered",
+            "declaredValue": 0.3333333333333333,
+            "basis": "declared-decision-value",
+            "value": "mac"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "localai"
+          ],
+          "owned": "new",
+          "localai": [
+            "huge"
+          ],
+          "budget": "lt100",
+          "os": "mac"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "mac",
+            "ram": 128,
+            "storage": 1000,
+            "gpu": {
+              "kind": "unified",
+              "vram": 0
+            },
+            "current": null,
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": true,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [],
+        "authoredChecks": [
+          {
+            "id": "large-memory",
+            "path": "ram",
+            "op": "gte",
+            "value": 64,
+            "actual": 128,
+            "pass": true
+          },
+          {
+            "id": "budget-warning",
+            "path": "budgetWarning",
+            "op": "eq",
+            "value": true,
+            "actual": true,
+            "pass": true
+          },
+          {
+            "id": "respect-mac",
+            "path": "os",
+            "op": "eq",
+            "value": "mac",
+            "actual": "mac",
+            "pass": true
+          }
+        ],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": true,
+        "productQualityGatePassed": false,
+        "matchesCompleteScriptReference": true,
+        "declaredPolicyLossAgainstReference": 0,
+        "computeTimeMs": 13.482600000000005,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "comparison": {
+        "questionsReduced": 2,
+        "finalDecisionsEqual": true,
+        "authoredQualityComparable": true,
+        "fewerQuestionsWithAuthoredQualityMaintained": true,
+        "qualityComparable": false,
+        "fewerQuestionsWithQualityMaintained": false
+      }
+    },
+    {
+      "id": "combined-local-ai",
+      "description": "Language and image models are both explicitly selected.",
+      "reference": {
+        "basis": "same-product-rules-consistency-only",
+        "complete": true,
+        "unresolved": [],
+        "answers": {
+          "uses": [
+            "localai"
+          ],
+          "owned": "new",
+          "localai": [
+            "large",
+            "image"
+          ],
+          "multitask": "heavy",
+          "place": "home",
+          "os": "win",
+          "budget": "gt250"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "win",
+            "ram": 32,
+            "storage": 1000,
+            "gpu": {
+              "kind": "dedicated",
+              "vram": 24
+            },
+            "current": null,
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "containsExplicitUnknown": false
+      },
+      "fixed": {
+        "policy": "computer-content-order-1",
+        "questionCount": 5,
+        "answeredCount": 5,
+        "stopReason": "all-eligible-questions-answered",
+        "questionSelectionFinished": true,
+        "policyAbstained": false,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "localai",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "localai",
+              "title": "내 컴퓨터에 AI 설치",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": []
+        },
+        "decisionStatus": "requirements-confirmed",
+        "trace": [
+          {
+            "id": "localai",
+            "about": "localai",
+            "responseStatus": "answered",
+            "value": [
+              "large",
+              "image"
+            ]
+          },
+          {
+            "id": "multitask",
+            "about": "multitask",
+            "responseStatus": "answered",
+            "value": "heavy"
+          },
+          {
+            "id": "place",
+            "about": "place",
+            "responseStatus": "answered",
+            "value": "home"
+          },
+          {
+            "id": "os",
+            "about": "os",
+            "responseStatus": "answered",
+            "value": "win"
+          },
+          {
+            "id": "budget",
+            "about": "budget",
+            "responseStatus": "answered",
+            "value": "gt250"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "localai"
+          ],
+          "owned": "new",
+          "localai": [
+            "large",
+            "image"
+          ],
+          "multitask": "heavy",
+          "place": "home",
+          "os": "win",
+          "budget": "gt250"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "win",
+            "ram": 32,
+            "storage": 1000,
+            "gpu": {
+              "kind": "dedicated",
+              "vram": 24
+            },
+            "current": null,
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [],
+        "authoredChecks": [
+          {
+            "id": "vram-for-large-model",
+            "path": "gpu.vram",
+            "op": "gte",
+            "value": 24,
+            "actual": 24,
+            "pass": true
+          },
+          {
+            "id": "system-memory",
+            "path": "ram",
+            "op": "gte",
+            "value": 32,
+            "actual": 32,
+            "pass": true
+          },
+          {
+            "id": "respect-windows",
+            "path": "os",
+            "op": "eq",
+            "value": "win",
+            "actual": "win",
+            "pass": true
+          }
+        ],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": true,
+        "productQualityGatePassed": true,
+        "matchesCompleteScriptReference": true,
+        "declaredPolicyLossAgainstReference": 0,
+        "computeTimeMs": 0.17840000000001055,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "atlas": {
+        "policy": "computer-question-value-2",
+        "questionCount": 3,
+        "answeredCount": 3,
+        "stopReason": "no-question-has-positive-decision-value",
+        "questionSelectionFinished": true,
+        "policyAbstained": true,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "localai",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "place"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "localai",
+              "title": "내 컴퓨터에 AI 설치",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "decisionStatus": "provisional-only",
+        "trace": [
+          {
+            "id": "localai",
+            "about": "localai",
+            "responseStatus": "answered",
+            "declaredValue": 1.7142857142857117,
+            "basis": "declared-decision-value",
+            "value": [
+              "large",
+              "image"
+            ]
+          },
+          {
+            "id": "os",
+            "about": "os",
+            "responseStatus": "answered",
+            "declaredValue": 0.6666666666666666,
+            "basis": "declared-decision-value",
+            "value": "win"
+          },
+          {
+            "id": "budget",
+            "about": "budget",
+            "responseStatus": "answered",
+            "declaredValue": 0.6000000000000001,
+            "basis": "declared-decision-value",
+            "value": "gt250"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "localai"
+          ],
+          "owned": "new",
+          "localai": [
+            "large",
+            "image"
+          ],
+          "os": "win",
+          "budget": "gt250"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "win",
+            "ram": 32,
+            "storage": 1000,
+            "gpu": {
+              "kind": "dedicated",
+              "vram": 24
+            },
+            "current": null,
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [],
+        "authoredChecks": [
+          {
+            "id": "vram-for-large-model",
+            "path": "gpu.vram",
+            "op": "gte",
+            "value": 24,
+            "actual": 24,
+            "pass": true
+          },
+          {
+            "id": "system-memory",
+            "path": "ram",
+            "op": "gte",
+            "value": 32,
+            "actual": 32,
+            "pass": true
+          },
+          {
+            "id": "respect-windows",
+            "path": "os",
+            "op": "eq",
+            "value": "win",
+            "actual": "win",
+            "pass": true
+          }
+        ],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": true,
+        "productQualityGatePassed": false,
+        "matchesCompleteScriptReference": true,
+        "declaredPolicyLossAgainstReference": 0,
+        "computeTimeMs": 12.727000000000004,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "comparison": {
+        "questionsReduced": 2,
+        "finalDecisionsEqual": true,
+        "authoredQualityComparable": true,
+        "fewerQuestionsWithAuthoredQualityMaintained": true,
+        "qualityComparable": false,
+        "fewerQuestionsWithQualityMaintained": false
+      }
+    },
+    {
+      "id": "video-mobile-os-conflict",
+      "description": "Explicit Windows choice conflicts with Final Cut and iOS development; both warnings matter.",
+      "reference": {
+        "basis": "same-product-rules-consistency-only",
+        "complete": true,
+        "unresolved": [],
+        "answers": {
+          "uses": [
+            "video",
+            "code"
+          ],
+          "owned": "new",
+          "video.app": "fcp",
+          "video.res": "4k",
+          "video.load": "heavy",
+          "code": "mobile",
+          "multitask": "heavy",
+          "place": "carry",
+          "os": "win",
+          "budget": "150_250"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "win",
+            "ram": 32,
+            "storage": 1000,
+            "gpu": {
+              "kind": "integrated",
+              "vram": 0
+            },
+            "current": null,
+            "keep": false,
+            "osConflicts": [
+              "fcp-requires-mac",
+              "ios-development-requires-mac"
+            ],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "containsExplicitUnknown": false
+      },
+      "fixed": {
+        "policy": "computer-content-order-1",
+        "questionCount": 8,
+        "answeredCount": 8,
+        "stopReason": "all-eligible-questions-answered",
+        "questionSelectionFinished": true,
+        "policyAbstained": false,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "video.app",
+            "video.res",
+            "code",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "video.app",
+              "title": "영상 편집 · 쓸 프로그램",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "video.res",
+              "title": "영상 편집 · 영상 크기",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "video.load",
+              "title": "영상 편집 · 영상 길이와 효과",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "code",
+              "title": "코딩·앱 만들기",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": []
+        },
+        "decisionStatus": "requirements-confirmed",
+        "trace": [
+          {
+            "id": "video.app",
+            "about": "video.app",
+            "responseStatus": "answered",
+            "value": "fcp"
+          },
+          {
+            "id": "video.res",
+            "about": "video.res",
+            "responseStatus": "answered",
+            "value": "4k"
+          },
+          {
+            "id": "video.load",
+            "about": "video.load",
+            "responseStatus": "answered",
+            "value": "heavy"
+          },
+          {
+            "id": "code",
+            "about": "code",
+            "responseStatus": "answered",
+            "value": "mobile"
+          },
+          {
+            "id": "multitask",
+            "about": "multitask",
+            "responseStatus": "answered",
+            "value": "heavy"
+          },
+          {
+            "id": "place",
+            "about": "place",
+            "responseStatus": "answered",
+            "value": "carry"
+          },
+          {
+            "id": "os",
+            "about": "os",
+            "responseStatus": "answered",
+            "value": "win"
+          },
+          {
+            "id": "budget",
+            "about": "budget",
+            "responseStatus": "answered",
+            "value": "150_250"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "video",
+            "code"
+          ],
+          "owned": "new",
+          "video.app": "fcp",
+          "video.res": "4k",
+          "video.load": "heavy",
+          "code": "mobile",
+          "multitask": "heavy",
+          "place": "carry",
+          "os": "win",
+          "budget": "150_250"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "win",
+            "ram": 32,
+            "storage": 1000,
+            "gpu": {
+              "kind": "integrated",
+              "vram": 0
+            },
+            "current": null,
+            "keep": false,
+            "osConflicts": [
+              "fcp-requires-mac",
+              "ios-development-requires-mac"
+            ],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [],
+        "authoredChecks": [
+          {
+            "id": "fcp-conflict",
+            "path": "osConflicts",
+            "op": "includes",
+            "value": "fcp-requires-mac",
+            "actual": [
+              "fcp-requires-mac",
+              "ios-development-requires-mac"
+            ],
+            "pass": true
+          },
+          {
+            "id": "ios-conflict",
+            "path": "osConflicts",
+            "op": "includes",
+            "value": "ios-development-requires-mac",
+            "actual": [
+              "fcp-requires-mac",
+              "ios-development-requires-mac"
+            ],
+            "pass": true
+          }
+        ],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": true,
+        "productQualityGatePassed": true,
+        "matchesCompleteScriptReference": true,
+        "declaredPolicyLossAgainstReference": 0,
+        "computeTimeMs": 0.07830000000001291,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "atlas": {
+        "policy": "computer-question-value-2",
+        "questionCount": 4,
+        "answeredCount": 4,
+        "stopReason": "no-question-has-positive-decision-value",
+        "questionSelectionFinished": true,
+        "policyAbstained": true,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "video.app",
+            "video.res",
+            "code",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "place",
+            "budget"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "video.app",
+              "title": "영상 편집 · 쓸 프로그램",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "video.res",
+              "title": "영상 편집 · 영상 크기",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "video.load",
+              "title": "영상 편집 · 영상 길이와 효과",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "code",
+              "title": "코딩·앱 만들기",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "decisionStatus": "provisional-only",
+        "trace": [
+          {
+            "id": "video.res",
+            "about": "video.res",
+            "responseStatus": "answered",
+            "declaredValue": 0.5,
+            "basis": "declared-decision-value",
+            "value": "4k"
+          },
+          {
+            "id": "os",
+            "about": "os",
+            "responseStatus": "answered",
+            "declaredValue": 0.6666666666666666,
+            "basis": "declared-decision-value",
+            "value": "win"
+          },
+          {
+            "id": "video.app",
+            "about": "video.app",
+            "responseStatus": "answered",
+            "declaredValue": 0.4,
+            "basis": "declared-decision-value",
+            "value": "fcp"
+          },
+          {
+            "id": "code",
+            "about": "code",
+            "responseStatus": "answered",
+            "declaredValue": 0.3333333333333333,
+            "basis": "declared-decision-value",
+            "value": "mobile"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "video",
+            "code"
+          ],
+          "owned": "new",
+          "video.res": "4k",
+          "os": "win",
+          "video.app": "fcp",
+          "code": "mobile"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "win",
+            "ram": 32,
+            "storage": 1000,
+            "gpu": {
+              "kind": "integrated",
+              "vram": 0
+            },
+            "current": null,
+            "keep": false,
+            "osConflicts": [
+              "fcp-requires-mac",
+              "ios-development-requires-mac"
+            ],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [],
+        "authoredChecks": [
+          {
+            "id": "fcp-conflict",
+            "path": "osConflicts",
+            "op": "includes",
+            "value": "fcp-requires-mac",
+            "actual": [
+              "fcp-requires-mac",
+              "ios-development-requires-mac"
+            ],
+            "pass": true
+          },
+          {
+            "id": "ios-conflict",
+            "path": "osConflicts",
+            "op": "includes",
+            "value": "ios-development-requires-mac",
+            "actual": [
+              "fcp-requires-mac",
+              "ios-development-requires-mac"
+            ],
+            "pass": true
+          }
+        ],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": true,
+        "productQualityGatePassed": false,
+        "matchesCompleteScriptReference": true,
+        "declaredPolicyLossAgainstReference": 0,
+        "computeTimeMs": 11.018799999999999,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "comparison": {
+        "questionsReduced": 4,
+        "finalDecisionsEqual": true,
+        "authoredQualityComparable": true,
+        "fewerQuestionsWithAuthoredQualityMaintained": true,
+        "qualityComparable": false,
+        "fewerQuestionsWithQualityMaintained": false
+      }
+    },
+    {
+      "id": "slow-old-desktop",
+      "description": "Known small RAM and slowness require upgrade and cause checks rather than a blanket keep advice.",
+      "reference": {
+        "basis": "same-product-rules-consistency-only",
+        "complete": true,
+        "unresolved": [],
+        "answers": {
+          "uses": [
+            "localai"
+          ],
+          "owned": "have",
+          "localai": [
+            "huge"
+          ],
+          "multitask": "normal",
+          "current.kind": "desktop",
+          "current.ram": "4",
+          "current.os": "win11",
+          "current.feel": "slow",
+          "place": "home",
+          "os": "win",
+          "budget": "lt100"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "win",
+            "ram": 64,
+            "storage": 1000,
+            "gpu": {
+              "kind": "dedicated",
+              "vram": 48
+            },
+            "current": {
+              "verdict": "short",
+              "gb": 4,
+              "actions": [
+                "check-slowness-cause",
+                "consider-ram-upgrade",
+                "monitor-memory-usage"
+              ]
+            },
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": true,
+            "budgetTight": false
+          }
+        },
+        "containsExplicitUnknown": false
+      },
+      "fixed": {
+        "policy": "computer-content-order-1",
+        "questionCount": 8,
+        "answeredCount": 8,
+        "stopReason": "all-eligible-questions-answered",
+        "questionSelectionFinished": true,
+        "policyAbstained": false,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "localai",
+            "current.kind",
+            "current.ram",
+            "current.os",
+            "current.feel",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "localai",
+              "title": "내 컴퓨터에 AI 설치",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "current.kind",
+              "title": "지금 컴퓨터 사양 · 종류",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "current.ram",
+              "title": "지금 컴퓨터 사양 · 램 용량",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "current.os",
+              "title": "지금 컴퓨터 사양 · 운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "current.feel",
+              "title": "지금 컴퓨터 사양 · 하려는 일을 해 보니",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": []
+        },
+        "decisionStatus": "requirements-confirmed",
+        "trace": [
+          {
+            "id": "multitask",
+            "about": "multitask",
+            "responseStatus": "answered",
+            "value": "normal"
+          },
+          {
+            "id": "current.kind",
+            "about": "current.kind",
+            "responseStatus": "answered",
+            "value": "desktop"
+          },
+          {
+            "id": "current.ram",
+            "about": "current.ram",
+            "responseStatus": "answered",
+            "value": "4"
+          },
+          {
+            "id": "current.os",
+            "about": "current.os",
+            "responseStatus": "answered",
+            "value": "win11"
+          },
+          {
+            "id": "current.feel",
+            "about": "current.feel",
+            "responseStatus": "answered",
+            "value": "slow"
+          },
+          {
+            "id": "place",
+            "about": "place",
+            "responseStatus": "answered",
+            "value": "home"
+          },
+          {
+            "id": "os",
+            "about": "os",
+            "responseStatus": "answered",
+            "value": "win"
+          },
+          {
+            "id": "budget",
+            "about": "budget",
+            "responseStatus": "answered",
+            "value": "lt100"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "localai"
+          ],
+          "owned": "have",
+          "localai": [
+            "huge"
+          ],
+          "multitask": "normal",
+          "current.kind": "desktop",
+          "current.ram": "4",
+          "current.os": "win11",
+          "current.feel": "slow",
+          "place": "home",
+          "os": "win",
+          "budget": "lt100"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "win",
+            "ram": 64,
+            "storage": 1000,
+            "gpu": {
+              "kind": "dedicated",
+              "vram": 48
+            },
+            "current": {
+              "verdict": "short",
+              "gb": 4,
+              "actions": [
+                "check-slowness-cause",
+                "consider-ram-upgrade",
+                "monitor-memory-usage"
+              ]
+            },
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": true,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [],
+        "authoredChecks": [
+          {
+            "id": "not-blanket-keep",
+            "path": "keep",
+            "op": "eq",
+            "value": false,
+            "actual": false,
+            "pass": true
+          },
+          {
+            "id": "ram-upgrade-check",
+            "path": "current.actions",
+            "op": "includes",
+            "value": "consider-ram-upgrade",
+            "actual": [
+              "check-slowness-cause",
+              "consider-ram-upgrade",
+              "monitor-memory-usage"
+            ],
+            "pass": true
+          },
+          {
+            "id": "slowness-cause",
+            "path": "current.actions",
+            "op": "includes",
+            "value": "check-slowness-cause",
+            "actual": [
+              "check-slowness-cause",
+              "consider-ram-upgrade",
+              "monitor-memory-usage"
+            ],
+            "pass": true
+          }
+        ],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": true,
+        "productQualityGatePassed": true,
+        "matchesCompleteScriptReference": true,
+        "declaredPolicyLossAgainstReference": 0,
+        "computeTimeMs": 0.6171999999999969,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "atlas": {
+        "policy": "computer-question-value-2",
+        "questionCount": 6,
+        "answeredCount": 6,
+        "stopReason": "no-question-has-positive-decision-value",
+        "questionSelectionFinished": true,
+        "policyAbstained": true,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "localai",
+            "current.kind",
+            "current.ram",
+            "current.os",
+            "current.feel",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "place"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "localai",
+              "title": "내 컴퓨터에 AI 설치",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "current.kind",
+              "title": "지금 컴퓨터 사양 · 종류",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "current.ram",
+              "title": "지금 컴퓨터 사양 · 램 용량",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "current.os",
+              "title": "지금 컴퓨터 사양 · 운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "current.feel",
+              "title": "지금 컴퓨터 사양 · 하려는 일을 해 보니",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "decisionStatus": "provisional-only",
+        "trace": [
+          {
+            "id": "current.ram",
+            "about": "current.ram",
+            "responseStatus": "answered",
+            "declaredValue": 0.8,
+            "basis": "declared-decision-value",
+            "value": "4"
+          },
+          {
+            "id": "current.kind",
+            "about": "current.kind",
+            "responseStatus": "answered",
+            "declaredValue": 1,
+            "basis": "declared-decision-value",
+            "value": "desktop"
+          },
+          {
+            "id": "current.feel",
+            "about": "current.feel",
+            "responseStatus": "answered",
+            "declaredValue": 0.6666666666666666,
+            "basis": "declared-decision-value",
+            "value": "slow"
+          },
+          {
+            "id": "budget",
+            "about": "budget",
+            "responseStatus": "answered",
+            "declaredValue": 0.6000000000000001,
+            "basis": "declared-decision-value",
+            "value": "lt100"
+          },
+          {
+            "id": "current.os",
+            "about": "current.os",
+            "responseStatus": "answered",
+            "declaredValue": 0.4,
+            "basis": "declared-decision-value",
+            "value": "win11"
+          },
+          {
+            "id": "os",
+            "about": "os",
+            "responseStatus": "answered",
+            "declaredValue": 0.3333333333333333,
+            "basis": "declared-decision-value",
+            "value": "win"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "localai"
+          ],
+          "owned": "have",
+          "localai": [
+            "huge"
+          ],
+          "current.ram": "4",
+          "current.kind": "desktop",
+          "current.feel": "slow",
+          "budget": "lt100",
+          "current.os": "win11",
+          "os": "win"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "win",
+            "ram": 64,
+            "storage": 1000,
+            "gpu": {
+              "kind": "dedicated",
+              "vram": 48
+            },
+            "current": {
+              "verdict": "short",
+              "gb": 4,
+              "actions": [
+                "check-slowness-cause",
+                "consider-ram-upgrade",
+                "monitor-memory-usage"
+              ]
+            },
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": true,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [],
+        "authoredChecks": [
+          {
+            "id": "not-blanket-keep",
+            "path": "keep",
+            "op": "eq",
+            "value": false,
+            "actual": false,
+            "pass": true
+          },
+          {
+            "id": "ram-upgrade-check",
+            "path": "current.actions",
+            "op": "includes",
+            "value": "consider-ram-upgrade",
+            "actual": [
+              "check-slowness-cause",
+              "consider-ram-upgrade",
+              "monitor-memory-usage"
+            ],
+            "pass": true
+          },
+          {
+            "id": "slowness-cause",
+            "path": "current.actions",
+            "op": "includes",
+            "value": "check-slowness-cause",
+            "actual": [
+              "check-slowness-cause",
+              "consider-ram-upgrade",
+              "monitor-memory-usage"
+            ],
+            "pass": true
+          }
+        ],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": true,
+        "productQualityGatePassed": false,
+        "matchesCompleteScriptReference": true,
+        "declaredPolicyLossAgainstReference": 0,
+        "computeTimeMs": 15.878599999999977,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "comparison": {
+        "questionsReduced": 2,
+        "finalDecisionsEqual": true,
+        "authoredQualityComparable": true,
+        "fewerQuestionsWithAuthoredQualityMaintained": true,
+        "qualityComparable": false,
+        "fewerQuestionsWithQualityMaintained": false
+      }
+    },
+    {
+      "id": "explicit-unknown-memory",
+      "description": "Catalog unknown is an explicit answer but not a known RAM capacity.",
+      "reference": {
+        "basis": "same-product-rules-consistency-only",
+        "complete": true,
+        "unresolved": [],
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "have",
+          "multitask": "light",
+          "current.kind": "laptop",
+          "current.ram": "unknown",
+          "current.os": "unknown",
+          "current.feel": "untried",
+          "place": "carry",
+          "os": "any",
+          "budget": "unknown"
+        },
+        "decision": {
+          "content": {
+            "form": "laptop",
+            "os": "either",
+            "ram": 16,
+            "storage": 512,
+            "gpu": {
+              "kind": "integrated",
+              "vram": 0
+            },
+            "current": {
+              "verdict": "unknown",
+              "gb": null,
+              "actions": [
+                "check-current-memory",
+                "monitor-memory-usage",
+                "try-workload-before-buying"
+              ]
+            },
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "containsExplicitUnknown": true
+      },
+      "fixed": {
+        "policy": "computer-content-order-1",
+        "questionCount": 8,
+        "answeredCount": 8,
+        "stopReason": "all-eligible-questions-answered",
+        "questionSelectionFinished": true,
+        "policyAbstained": false,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "undetermined",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "current.ram",
+            "current.os",
+            "current.feel",
+            "os"
+          ],
+          "unresolvedRequiredFields": [
+            "current.ram",
+            "current.os"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "current.kind",
+              "title": "지금 컴퓨터 사양 · 종류",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "current.ram",
+              "title": "지금 컴퓨터 사양 · 램 용량",
+              "state": "unknown",
+              "required": true
+            },
+            {
+              "id": "current.os",
+              "title": "지금 컴퓨터 사양 · 운영체제",
+              "state": "unknown",
+              "required": true
+            },
+            {
+              "id": "current.feel",
+              "title": "지금 컴퓨터 사양 · 하려는 일을 해 보니",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "unknown",
+              "required": false
+            }
+          ],
+          "budget": {
+            "state": "unknown",
+            "required": false
+          },
+          "assumptions": []
+        },
+        "decisionStatus": "provisional-only",
+        "trace": [
+          {
+            "id": "multitask",
+            "about": "multitask",
+            "responseStatus": "answered",
+            "value": "light"
+          },
+          {
+            "id": "current.kind",
+            "about": "current.kind",
+            "responseStatus": "answered",
+            "value": "laptop"
+          },
+          {
+            "id": "current.ram",
+            "about": "current.ram",
+            "responseStatus": "answered",
+            "value": "unknown"
+          },
+          {
+            "id": "current.os",
+            "about": "current.os",
+            "responseStatus": "answered",
+            "value": "unknown"
+          },
+          {
+            "id": "current.feel",
+            "about": "current.feel",
+            "responseStatus": "answered",
+            "value": "untried"
+          },
+          {
+            "id": "place",
+            "about": "place",
+            "responseStatus": "answered",
+            "value": "carry"
+          },
+          {
+            "id": "os",
+            "about": "os",
+            "responseStatus": "answered",
+            "value": "any"
+          },
+          {
+            "id": "budget",
+            "about": "budget",
+            "responseStatus": "answered",
+            "value": "unknown"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "have",
+          "multitask": "light",
+          "current.kind": "laptop",
+          "current.ram": "unknown",
+          "current.os": "unknown",
+          "current.feel": "untried",
+          "place": "carry",
+          "os": "any",
+          "budget": "unknown"
+        },
+        "decision": {
+          "content": {
+            "form": "laptop",
+            "os": "either",
+            "ram": 16,
+            "storage": 512,
+            "gpu": {
+              "kind": "integrated",
+              "vram": 0
+            },
+            "current": {
+              "verdict": "unknown",
+              "gb": null,
+              "actions": [
+                "check-current-memory",
+                "monitor-memory-usage",
+                "try-workload-before-buying"
+              ]
+            },
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [
+          "current.ram"
+        ],
+        "authoredChecks": [
+          {
+            "id": "memory-remains-unknown",
+            "path": "current.verdict",
+            "op": "eq",
+            "value": "unknown",
+            "actual": "unknown",
+            "pass": true
+          },
+          {
+            "id": "ask-user-to-check",
+            "path": "current.actions",
+            "op": "includes",
+            "value": "check-current-memory",
+            "actual": [
+              "check-current-memory",
+              "monitor-memory-usage",
+              "try-workload-before-buying"
+            ],
+            "pass": true
+          }
+        ],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": false,
+        "productQualityGatePassed": false,
+        "matchesCompleteScriptReference": true,
+        "declaredPolicyLossAgainstReference": 0,
+        "computeTimeMs": 0.12340000000000373,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "atlas": {
+        "policy": "computer-question-value-2",
+        "questionCount": 5,
+        "answeredCount": 5,
+        "stopReason": "no-question-has-positive-decision-value",
+        "questionSelectionFinished": true,
+        "policyAbstained": true,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "undetermined",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "current.ram",
+            "current.os",
+            "current.feel",
+            "os"
+          ],
+          "unresolvedRequiredFields": [
+            "current.ram",
+            "current.os"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "current.kind",
+              "title": "지금 컴퓨터 사양 · 종류",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "current.ram",
+              "title": "지금 컴퓨터 사양 · 램 용량",
+              "state": "unknown",
+              "required": true
+            },
+            {
+              "id": "current.os",
+              "title": "지금 컴퓨터 사양 · 운영체제",
+              "state": "unknown",
+              "required": true
+            },
+            {
+              "id": "current.feel",
+              "title": "지금 컴퓨터 사양 · 하려는 일을 해 보니",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": false
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": false
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "decisionStatus": "provisional-only",
+        "trace": [
+          {
+            "id": "current.ram",
+            "about": "current.ram",
+            "responseStatus": "answered",
+            "declaredValue": 0.8,
+            "basis": "declared-decision-value",
+            "value": "unknown"
+          },
+          {
+            "id": "current.feel",
+            "about": "current.feel",
+            "responseStatus": "answered",
+            "declaredValue": 0.6666666666666666,
+            "basis": "declared-decision-value",
+            "value": "untried"
+          },
+          {
+            "id": "os",
+            "about": "os",
+            "responseStatus": "answered",
+            "declaredValue": 0.6666666666666666,
+            "basis": "declared-decision-value",
+            "value": "any"
+          },
+          {
+            "id": "current.os",
+            "about": "current.os",
+            "responseStatus": "answered",
+            "declaredValue": 0.4,
+            "basis": "declared-decision-value",
+            "value": "unknown"
+          },
+          {
+            "id": "place",
+            "about": "place",
+            "responseStatus": "answered",
+            "declaredValue": 0.3333333333333333,
+            "basis": "declared-decision-value",
+            "value": "carry"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "have",
+          "current.ram": "unknown",
+          "current.feel": "untried",
+          "os": "any",
+          "current.os": "unknown",
+          "place": "carry"
+        },
+        "decision": {
+          "content": {
+            "form": "laptop",
+            "os": "either",
+            "ram": 16,
+            "storage": 512,
+            "gpu": {
+              "kind": "integrated",
+              "vram": 0
+            },
+            "current": {
+              "verdict": "unknown",
+              "gb": null,
+              "actions": [
+                "check-current-memory",
+                "monitor-memory-usage",
+                "try-workload-before-buying"
+              ]
+            },
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [
+          "current.ram"
+        ],
+        "authoredChecks": [
+          {
+            "id": "memory-remains-unknown",
+            "path": "current.verdict",
+            "op": "eq",
+            "value": "unknown",
+            "actual": "unknown",
+            "pass": true
+          },
+          {
+            "id": "ask-user-to-check",
+            "path": "current.actions",
+            "op": "includes",
+            "value": "check-current-memory",
+            "actual": [
+              "check-current-memory",
+              "monitor-memory-usage",
+              "try-workload-before-buying"
+            ],
+            "pass": true
+          }
+        ],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": false,
+        "productQualityGatePassed": false,
+        "matchesCompleteScriptReference": true,
+        "declaredPolicyLossAgainstReference": 0,
+        "computeTimeMs": 10.907899999999984,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "comparison": {
+        "questionsReduced": 3,
+        "finalDecisionsEqual": true,
+        "authoredQualityComparable": false,
+        "fewerQuestionsWithAuthoredQualityMaintained": false,
+        "qualityComparable": false,
+        "fewerQuestionsWithQualityMaintained": false
+      }
+    },
+    {
+      "id": "unknown-local-workload",
+      "description": "Unresolved local workload must not turn into a small-model declaration.",
+      "reference": {
+        "basis": "same-product-rules-consistency-only",
+        "complete": false,
+        "unresolved": [
+          {
+            "id": "localai",
+            "status": "unknown"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "localai"
+          ],
+          "owned": "new",
+          "multitask": "normal",
+          "place": "home",
+          "os": "any",
+          "budget": "100_150"
+        },
+        "decision": null,
+        "containsExplicitUnknown": false
+      },
+      "fixed": {
+        "policy": "computer-content-order-1",
+        "questionCount": 1,
+        "answeredCount": 0,
+        "stopReason": "unresolved-unknown",
+        "questionSelectionFinished": false,
+        "policyAbstained": false,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "localai",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "localai",
+            "place",
+            "os",
+            "budget"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "localai",
+              "title": "내 컴퓨터에 AI 설치",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "decisionStatus": "provisional-only",
+        "trace": [
+          {
+            "id": "localai",
+            "about": "localai",
+            "responseStatus": "unknown"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "localai"
+          ],
+          "owned": "new"
+        },
+        "decision": {
+          "content": {
+            "form": "laptop",
+            "os": "either",
+            "ram": 16,
+            "storage": 1000,
+            "gpu": {
+              "kind": "integrated",
+              "vram": 0
+            },
+            "current": null,
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [
+          "localai"
+        ],
+        "authoredChecks": [],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": false,
+        "productQualityGatePassed": false,
+        "matchesCompleteScriptReference": null,
+        "declaredPolicyLossAgainstReference": null,
+        "computeTimeMs": 0.046699999999987085,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "atlas": {
+        "policy": "computer-question-value-2",
+        "questionCount": 1,
+        "answeredCount": 0,
+        "stopReason": "unresolved-unknown",
+        "questionSelectionFinished": false,
+        "policyAbstained": false,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "localai",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "localai",
+            "place",
+            "os",
+            "budget"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "localai",
+              "title": "내 컴퓨터에 AI 설치",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "decisionStatus": "provisional-only",
+        "trace": [
+          {
+            "id": "localai",
+            "about": "localai",
+            "responseStatus": "unknown",
+            "declaredValue": 1.7142857142857117,
+            "basis": "declared-decision-value"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "localai"
+          ],
+          "owned": "new"
+        },
+        "decision": {
+          "content": {
+            "form": "laptop",
+            "os": "either",
+            "ram": 16,
+            "storage": 1000,
+            "gpu": {
+              "kind": "integrated",
+              "vram": 0
+            },
+            "current": null,
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [
+          "localai"
+        ],
+        "authoredChecks": [],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": false,
+        "productQualityGatePassed": false,
+        "matchesCompleteScriptReference": null,
+        "declaredPolicyLossAgainstReference": null,
+        "computeTimeMs": 8.458499999999987,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "comparison": {
+        "questionsReduced": 0,
+        "finalDecisionsEqual": null,
+        "authoredQualityComparable": false,
+        "fewerQuestionsWithAuthoredQualityMaintained": false,
+        "qualityComparable": false,
+        "fewerQuestionsWithQualityMaintained": false
+      }
+    },
+    {
+      "id": "conflicting-current-memory",
+      "description": "Two conflicting RAM declarations have no unique value to supply to the recommender.",
+      "reference": {
+        "basis": "same-product-rules-consistency-only",
+        "complete": false,
+        "unresolved": [
+          {
+            "id": "current.ram",
+            "status": "conflict"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "have",
+          "multitask": "light",
+          "current.kind": "desktop",
+          "current.os": "win11",
+          "current.feel": "ok",
+          "place": "home",
+          "os": "any",
+          "budget": "unknown"
+        },
+        "decision": null,
+        "containsExplicitUnknown": true
+      },
+      "fixed": {
+        "policy": "computer-content-order-1",
+        "questionCount": 3,
+        "answeredCount": 2,
+        "stopReason": "unresolved-conflict",
+        "questionSelectionFinished": false,
+        "policyAbstained": false,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "undetermined",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "current.ram",
+            "current.os",
+            "current.feel",
+            "os"
+          ],
+          "unresolvedRequiredFields": [
+            "current.ram",
+            "current.os",
+            "current.feel",
+            "os"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "current.kind",
+              "title": "지금 컴퓨터 사양 · 종류",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "current.ram",
+              "title": "지금 컴퓨터 사양 · 램 용량",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "current.os",
+              "title": "지금 컴퓨터 사양 · 운영체제",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "current.feel",
+              "title": "지금 컴퓨터 사양 · 하려는 일을 해 보니",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": false
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": false
+          },
+          "assumptions": []
+        },
+        "decisionStatus": "provisional-only",
+        "trace": [
+          {
+            "id": "multitask",
+            "about": "multitask",
+            "responseStatus": "answered",
+            "value": "light"
+          },
+          {
+            "id": "current.kind",
+            "about": "current.kind",
+            "responseStatus": "answered",
+            "value": "desktop"
+          },
+          {
+            "id": "current.ram",
+            "about": "current.ram",
+            "responseStatus": "conflict"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "have",
+          "multitask": "light",
+          "current.kind": "desktop"
+        },
+        "decision": {
+          "content": {
+            "form": "laptop",
+            "os": "either",
+            "ram": 16,
+            "storage": 512,
+            "gpu": {
+              "kind": "integrated",
+              "vram": 0
+            },
+            "current": {
+              "verdict": "unknown",
+              "gb": null,
+              "actions": [
+                "check-current-memory",
+                "monitor-memory-usage"
+              ]
+            },
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [
+          "current.ram"
+        ],
+        "authoredChecks": [],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": false,
+        "productQualityGatePassed": false,
+        "matchesCompleteScriptReference": null,
+        "declaredPolicyLossAgainstReference": null,
+        "computeTimeMs": 0.02240000000000464,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "atlas": {
+        "policy": "computer-question-value-2",
+        "questionCount": 1,
+        "answeredCount": 0,
+        "stopReason": "unresolved-conflict",
+        "questionSelectionFinished": false,
+        "policyAbstained": false,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "undetermined",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "current.ram",
+            "current.os",
+            "current.feel",
+            "os"
+          ],
+          "unresolvedRequiredFields": [
+            "current.ram",
+            "current.os",
+            "current.feel",
+            "os"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "current.kind",
+              "title": "지금 컴퓨터 사양 · 종류",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "current.ram",
+              "title": "지금 컴퓨터 사양 · 램 용량",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "current.os",
+              "title": "지금 컴퓨터 사양 · 운영체제",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "current.feel",
+              "title": "지금 컴퓨터 사양 · 하려는 일을 해 보니",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": false
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": false
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "decisionStatus": "provisional-only",
+        "trace": [
+          {
+            "id": "current.ram",
+            "about": "current.ram",
+            "responseStatus": "conflict",
+            "declaredValue": 0.8,
+            "basis": "declared-decision-value"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "have"
+        },
+        "decision": {
+          "content": {
+            "form": "laptop",
+            "os": "either",
+            "ram": 16,
+            "storage": 512,
+            "gpu": {
+              "kind": "integrated",
+              "vram": 0
+            },
+            "current": {
+              "verdict": "unknown",
+              "gb": null,
+              "actions": [
+                "check-current-memory",
+                "monitor-memory-usage"
+              ]
+            },
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [
+          "current.ram"
+        ],
+        "authoredChecks": [],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": false,
+        "productQualityGatePassed": false,
+        "matchesCompleteScriptReference": null,
+        "declaredPolicyLossAgainstReference": null,
+        "computeTimeMs": 1.9180000000000064,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "comparison": {
+        "questionsReduced": 2,
+        "finalDecisionsEqual": null,
+        "authoredQualityComparable": false,
+        "fewerQuestionsWithAuthoredQualityMaintained": false,
+        "qualityComparable": false,
+        "fewerQuestionsWithQualityMaintained": false
+      }
+    },
+    {
+      "id": "budget-no-response",
+      "description": "A question with no response is not a low budget, an unknown enum selection, or a failed recommendation.",
+      "reference": {
+        "basis": "same-product-rules-consistency-only",
+        "complete": false,
+        "unresolved": [
+          {
+            "id": "budget",
+            "status": "no_response"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "localai"
+          ],
+          "owned": "new",
+          "localai": [
+            "huge"
+          ],
+          "os": "mac",
+          "place": "home",
+          "multitask": "normal"
+        },
+        "decision": null,
+        "containsExplicitUnknown": false
+      },
+      "fixed": {
+        "policy": "computer-content-order-1",
+        "questionCount": 2,
+        "answeredCount": 1,
+        "stopReason": "unresolved-no_response",
+        "questionSelectionFinished": false,
+        "policyAbstained": false,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "localai",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "budget"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "localai",
+              "title": "내 컴퓨터에 AI 설치",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": true
+          },
+          "assumptions": []
+        },
+        "decisionStatus": "provisional-only",
+        "trace": [
+          {
+            "id": "multitask",
+            "about": "multitask",
+            "responseStatus": "answered",
+            "value": "normal"
+          },
+          {
+            "id": "budget",
+            "about": "budget",
+            "responseStatus": "no_response"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "localai"
+          ],
+          "owned": "new",
+          "localai": [
+            "huge"
+          ],
+          "os": "mac",
+          "place": "home",
+          "multitask": "normal"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "mac",
+            "ram": 128,
+            "storage": 1000,
+            "gpu": {
+              "kind": "unified",
+              "vram": 0
+            },
+            "current": null,
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [
+          "budget"
+        ],
+        "authoredChecks": [],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": false,
+        "productQualityGatePassed": false,
+        "matchesCompleteScriptReference": null,
+        "declaredPolicyLossAgainstReference": null,
+        "computeTimeMs": 0.06350000000000477,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "atlas": {
+        "policy": "computer-question-value-2",
+        "questionCount": 1,
+        "answeredCount": 0,
+        "stopReason": "unresolved-no_response",
+        "questionSelectionFinished": false,
+        "policyAbstained": false,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "localai",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "budget"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "localai",
+              "title": "내 컴퓨터에 AI 설치",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "decisionStatus": "provisional-only",
+        "trace": [
+          {
+            "id": "budget",
+            "about": "budget",
+            "responseStatus": "no_response",
+            "declaredValue": 0.6000000000000001,
+            "basis": "declared-decision-value"
+          }
+        ],
+        "answers": {
+          "uses": [
+            "localai"
+          ],
+          "owned": "new",
+          "localai": [
+            "huge"
+          ],
+          "os": "mac",
+          "place": "home"
+        },
+        "decision": {
+          "content": {
+            "form": "desktop",
+            "os": "mac",
+            "ram": 128,
+            "storage": 1000,
+            "gpu": {
+              "kind": "unified",
+              "vram": 0
+            },
+            "current": null,
+            "keep": false,
+            "osConflicts": [],
+            "budgetWarning": false,
+            "budgetTight": false
+          }
+        },
+        "missingRequiredAnswers": [
+          "budget"
+        ],
+        "authoredChecks": [],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": false,
+        "productQualityGatePassed": false,
+        "matchesCompleteScriptReference": null,
+        "declaredPolicyLossAgainstReference": null,
+        "computeTimeMs": 0.759900000000016,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "comparison": {
+        "questionsReduced": 1,
+        "finalDecisionsEqual": null,
+        "authoredQualityComparable": false,
+        "fewerQuestionsWithAuthoredQualityMaintained": false,
+        "qualityComparable": false,
+        "fewerQuestionsWithQualityMaintained": false
+      }
+    },
+    {
+      "id": "no-selected-use",
+      "description": "The current product requires a selected use before showing advice.",
+      "reference": {
+        "basis": "same-product-rules-consistency-only",
+        "complete": false,
+        "unresolved": [
+          {
+            "id": "owned",
+            "status": "not_scripted"
+          },
+          {
+            "id": "multitask",
+            "status": "not_scripted"
+          },
+          {
+            "id": "place",
+            "status": "not_scripted"
+          },
+          {
+            "id": "os",
+            "status": "not_scripted"
+          },
+          {
+            "id": "budget",
+            "status": "not_scripted"
+          }
+        ],
+        "answers": {
+          "uses": []
+        },
+        "decision": null,
+        "containsExplicitUnknown": false
+      },
+      "fixed": {
+        "policy": "computer-content-order-1",
+        "questionCount": 0,
+        "answeredCount": 0,
+        "stopReason": "no-selected-use",
+        "questionSelectionFinished": false,
+        "policyAbstained": false,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "not-started",
+          "scope": "specification-guidance",
+          "path": "undetermined",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "os"
+          ],
+          "unresolvedRequiredFields": [
+            "owned",
+            "uses",
+            "os"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": false
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": false
+          },
+          "assumptions": []
+        },
+        "decisionStatus": "not-shown",
+        "trace": [],
+        "answers": {
+          "uses": []
+        },
+        "decision": null,
+        "missingRequiredAnswers": [
+          "uses"
+        ],
+        "authoredChecks": [],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": false,
+        "productQualityGatePassed": false,
+        "matchesCompleteScriptReference": null,
+        "declaredPolicyLossAgainstReference": null,
+        "computeTimeMs": 0.003199999999992542,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "atlas": {
+        "policy": "computer-question-value-2",
+        "questionCount": 0,
+        "answeredCount": 0,
+        "stopReason": "no-selected-use",
+        "questionSelectionFinished": false,
+        "policyAbstained": false,
+        "productCompletion": {
+          "policy": "computer-completion-1",
+          "status": "not-started",
+          "scope": "specification-guidance",
+          "path": "undetermined",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "os"
+          ],
+          "unresolvedRequiredFields": [
+            "owned",
+            "uses",
+            "os"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": false
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": false
+          },
+          "assumptions": []
+        },
+        "decisionStatus": "not-shown",
+        "trace": [],
+        "answers": {
+          "uses": []
+        },
+        "decision": null,
+        "missingRequiredAnswers": [
+          "uses"
+        ],
+        "authoredChecks": [],
+        "authoredCheckFailures": [],
+        "scriptedQualityGatePassed": false,
+        "productQualityGatePassed": false,
+        "matchesCompleteScriptReference": null,
+        "declaredPolicyLossAgainstReference": null,
+        "computeTimeMs": 0.0016999999999995907,
+        "userCompletionTime": null,
+        "userCorrectionCount": null
+      },
+      "comparison": {
+        "questionsReduced": 0,
+        "finalDecisionsEqual": null,
+        "authoredQualityComparable": false,
+        "fewerQuestionsWithAuthoredQualityMaintained": false,
+        "qualityComparable": false,
+        "fewerQuestionsWithQualityMaintained": false
+      }
+    }
+  ],
+  "adoptionDecision": "not-assessed-no-actual-users-and-only-authored-development-criteria",
+  "limits": [
+    "Hand-authored development cases, not a population sample or held-out efficacy test.",
+    "Reference equality reuses the product rules; it is not independent recommendation correctness.",
+    "Authored checks cover only the stated conditions, not every hardware constraint or current market specification.",
+    "A finished question policy can still leave required product conditions unresolved. Product readiness is specification guidance, not a verified purchase decision.",
+    "Missing/refused/conflicting answers halt this offline script; the current UI would wait for a usable answer.",
+    "Ask probabilities, zero question cost and loss weights remain declared policy, not measured user behavior.",
+    "Computation duration excludes reading, answering and correction; no user or causal improvement is claimed."
+  ],
+  "execution": {
+    "networkCalls": 0,
+    "modelCalls": 0,
+    "actualUsers": 0,
+    "externalApiCost": 0
+  },
+  "evaluatedAt": "2026-10-05T20:10:25.113Z",
+  "sourceHashes": [
+    {
+      "path": "atlas/ask.js",
+      "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd"
+    },
+    {
+      "path": "experiences/atlas-lab/consultation.mjs",
+      "sha256": "acd25d534c2abc7b3bcf495c6ed57f41f410dad6c6eab353b73243e6d08f068c"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/computer/content.js",
+      "sha256": "428217f11059f75a10329ef51a2ab0b451928efe89e39ec7b40be4961535df58"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/computer/rules.js",
+      "sha256": "0f8ff5199135a9d7527ae6eb6ee26e33f34667fedb4ca46085ec3fa41633d6fd"
+    },
+    {
+      "path": "tools/evaluate-atlas-consultation.mjs",
+      "sha256": "6d9597a09a4bbb626c449c6647924b0cbf9a9009e736444496891b0d7121fe71"
+    }
+  ],
+  "datasetSha256": "77b81cf661280a718a78ab78e86bfbd7ee67f047a2de32d8826c1b94d226c98e"
+}

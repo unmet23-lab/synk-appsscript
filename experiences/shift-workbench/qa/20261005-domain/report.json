@@ -1,0 +1,441 @@
+{
+  "at": "2026-10-05T12:35:11.241Z",
+  "kind": "scripted-local-ui-verification",
+  "productionEffectMeasured": false,
+  "results": [
+    {
+      "name": "decision and actual DOM exposure have separate records",
+      "ok": true
+    },
+    {
+      "name": "meeting actual form completed",
+      "ok": true
+    },
+    {
+      "name": "next button offers a task containing the missed check",
+      "ok": true
+    },
+    {
+      "name": "research actual form completed",
+      "ok": true
+    },
+    {
+      "name": "unobserved completeness need changes the actual first question",
+      "ok": true
+    },
+    {
+      "name": "displayed explanation and Core decision cite the same original evidence",
+      "ok": true
+    },
+    {
+      "name": "only actually displayed sessions receive outcomes",
+      "ok": true
+    },
+    {
+      "name": "scripted local history cannot claim a measured policy improvement",
+      "ok": true
+    },
+    {
+      "name": "no horizontal overflow 320",
+      "ok": true,
+      "detail": {
+        "client": 306,
+        "scroll": 306
+      }
+    },
+    {
+      "name": "no horizontal overflow 390",
+      "ok": true,
+      "detail": {
+        "client": 376,
+        "scroll": 376
+      }
+    },
+    {
+      "name": "saved evidence and display record restore without duplicating exposure",
+      "ok": true
+    }
+  ],
+  "decision": {
+    "version": "core-domain-1",
+    "contract": {
+      "id": "shift-practice-review",
+      "version": "1",
+      "purpose": "fictional-check-review"
+    },
+    "scope": {
+      "domain": "SHIFT",
+      "subject": "local-learner",
+      "workspace": "p.shift:c.workbench:g.1"
+    },
+    "at": "2026-10-05T12:35:08.727Z",
+    "status": "ready",
+    "selected": {
+      "id": "criteria",
+      "score": 1,
+      "reasons": [
+        {
+          "criterion": "completeness-practice",
+          "field": "completeness",
+          "value": "incorrect",
+          "candidateValue": "incorrect",
+          "contribution": 1,
+          "evidence": [
+            "p1-muv8fuzj-5.completeness"
+          ],
+          "status": "supported"
+        }
+      ]
+    },
+    "ranked": [
+      {
+        "id": "criteria",
+        "score": 1,
+        "reasons": [
+          {
+            "criterion": "completeness-practice",
+            "field": "completeness",
+            "value": "incorrect",
+            "candidateValue": "incorrect",
+            "contribution": 1,
+            "evidence": [
+              "p1-muv8fuzj-5.completeness"
+            ],
+            "status": "supported"
+          }
+        ]
+      },
+      {
+        "id": "audience",
+        "score": 0,
+        "reasons": [
+          {
+            "criterion": "evidence-practice",
+            "field": "evidence",
+            "value": "correct",
+            "candidateValue": "incorrect",
+            "contribution": 0,
+            "evidence": [
+              "p1-muv8fuzj-5.evidence",
+              "p1-muv8fv3l-7.evidence"
+            ],
+            "status": "supported"
+          }
+        ]
+      },
+      {
+        "id": "budget",
+        "score": 0,
+        "reasons": [
+          {
+            "criterion": "numbers-practice",
+            "field": "numbers",
+            "value": "correct",
+            "candidateValue": "incorrect",
+            "contribution": 0,
+            "evidence": [
+              "p1-muv8fuzj-5.numbers",
+              "p1-muv8fv3l-7.numbers"
+            ],
+            "status": "supported"
+          }
+        ]
+      }
+    ],
+    "excluded": [],
+    "understanding": {
+      "version": "core-domain-1",
+      "contract": {
+        "id": "shift-practice-review",
+        "version": "1",
+        "purpose": "fictional-check-review"
+      },
+      "scope": {
+        "domain": "SHIFT",
+        "subject": "local-learner",
+        "workspace": "p.shift:c.workbench:g.1"
+      },
+      "at": "2026-10-05T12:35:08.727Z",
+      "fields": [
+        {
+          "id": "numbers",
+          "status": "supported",
+          "value": "correct",
+          "usable": true,
+          "evidence": [
+            "p1-muv8fuzj-5.numbers",
+            "p1-muv8fv3l-7.numbers"
+          ],
+          "independent": 2,
+          "agreement": 1,
+          "alternatives": [
+            {
+              "value": "correct",
+              "count": 2
+            }
+          ],
+          "proposals": [],
+          "excluded": []
+        },
+        {
+          "id": "evidence",
+          "status": "supported",
+          "value": "correct",
+          "usable": true,
+          "evidence": [
+            "p1-muv8fuzj-5.evidence",
+            "p1-muv8fv3l-7.evidence"
+          ],
+          "independent": 2,
+          "agreement": 1,
+          "alternatives": [
+            {
+              "value": "correct",
+              "count": 2
+            }
+          ],
+          "proposals": [],
+          "excluded": []
+        },
+        {
+          "id": "completeness",
+          "status": "supported",
+          "value": "incorrect",
+          "usable": true,
+          "evidence": [
+            "p1-muv8fuzj-5.completeness"
+          ],
+          "independent": 1,
+          "agreement": 1,
+          "alternatives": [
+            {
+              "value": "incorrect",
+              "count": 1
+            }
+          ],
+          "proposals": [],
+          "excluded": []
+        }
+      ],
+      "needsCheck": [],
+      "calibrated": false
+    },
+    "snapshot": {
+      "candidates": [
+        {
+          "id": "audience",
+          "features": {
+            "evidence": "incorrect"
+          }
+        },
+        {
+          "id": "budget",
+          "features": {
+            "numbers": "incorrect"
+          }
+        },
+        {
+          "id": "criteria",
+          "features": {
+            "completeness": "incorrect"
+          }
+        }
+      ],
+      "contract": {
+        "id": "shift-practice-review",
+        "version": "1",
+        "purpose": "fictional-check-review",
+        "fields": [
+          {
+            "id": "numbers",
+            "kind": "enum",
+            "values": [
+              "correct",
+              "incorrect"
+            ],
+            "maxAgeDays": 30,
+            "minIndependent": 1,
+            "minAgreement": 0.67
+          },
+          {
+            "id": "evidence",
+            "kind": "enum",
+            "values": [
+              "correct",
+              "incorrect"
+            ],
+            "maxAgeDays": 30,
+            "minIndependent": 1,
+            "minAgreement": 0.67
+          },
+          {
+            "id": "completeness",
+            "kind": "enum",
+            "values": [
+              "correct",
+              "incorrect"
+            ],
+            "maxAgeDays": 30,
+            "minIndependent": 1,
+            "minAgreement": 0.67
+          }
+        ],
+        "criteria": [
+          {
+            "id": "numbers-practice",
+            "field": "numbers",
+            "feature": "numbers",
+            "weight": 1,
+            "required": false,
+            "prefer": "match"
+          },
+          {
+            "id": "evidence-practice",
+            "field": "evidence",
+            "feature": "evidence",
+            "weight": 1,
+            "required": false,
+            "prefer": "match"
+          },
+          {
+            "id": "completeness-practice",
+            "field": "completeness",
+            "feature": "completeness",
+            "weight": 1,
+            "required": false,
+            "prefer": "match"
+          }
+        ]
+      },
+      "observations": [
+        "p1-muv8fuzj-5.numbers",
+        "p1-muv8fuzj-5.evidence",
+        "p1-muv8fuzj-5.completeness",
+        "p1-muv8fv3l-7.numbers",
+        "p1-muv8fv3l-7.evidence"
+      ]
+    },
+    "calibrated": false
+  },
+  "evaluation": {
+    "version": "temper-outcomes-1",
+    "contract": {
+      "id": "shift-first-check-result",
+      "version": "1",
+      "scope": {
+        "domain": "SHIFT",
+        "workspace": "p.shift:c.workbench:g.1",
+        "purpose": "fictional-check-review"
+      },
+      "outcome": {
+        "id": "initial-review-match-ratio",
+        "kind": "numeric",
+        "range": [
+          0,
+          1
+        ],
+        "direction": "higher",
+        "windowMs": 86400000
+      }
+    },
+    "asOf": "2026-10-06T12:35:08.737Z",
+    "minimumSubjects": 5,
+    "byPolicy": [
+      {
+        "policy": {
+          "id": "fixed-check-order",
+          "version": "1"
+        },
+        "counts": {
+          "decisions": 2,
+          "abstained": 0,
+          "delivered": 2,
+          "undelivered": 0,
+          "pending": 0,
+          "matured": 2,
+          "observed": 2,
+          "missing": 0,
+          "late": 0
+        },
+        "subjects": {
+          "decided": 1,
+          "observed": 1
+        },
+        "status": "insufficient_evidence",
+        "mean": 0.8333333333333333,
+        "measurementCompletion": 1,
+        "cost": {
+          "unit": null,
+          "recorded": 0,
+          "missing": 2,
+          "total": null,
+          "mean": null
+        },
+        "latencyMs": {
+          "recorded": 0,
+          "missing": 2,
+          "mean": null,
+          "max": null
+        }
+      },
+      {
+        "policy": {
+          "id": "evidence-check-order",
+          "version": "1"
+        },
+        "counts": {
+          "decisions": 1,
+          "abstained": 0,
+          "delivered": 1,
+          "undelivered": 0,
+          "pending": 0,
+          "matured": 1,
+          "observed": 0,
+          "missing": 1,
+          "late": 0
+        },
+        "subjects": {
+          "decided": 1,
+          "observed": 0
+        },
+        "status": "no_sample",
+        "mean": null,
+        "measurementCompletion": 0,
+        "cost": {
+          "unit": null,
+          "recorded": 0,
+          "missing": 1,
+          "total": null,
+          "mean": null
+        },
+        "latencyMs": {
+          "recorded": 0,
+          "missing": 1,
+          "mean": null,
+          "max": null
+        }
+      }
+    ],
+    "duplicates": {
+      "decisions": 0,
+      "exposures": 0,
+      "outcomes": 0
+    },
+    "comparison": {
+      "status": "insufficient_evidence",
+      "difference": null,
+      "directedDifference": null,
+      "direction": "unknown",
+      "unit": "subject-mean-of-observed-matured-outcomes"
+    },
+    "causalClaim": false,
+    "significanceTested": false,
+    "calibrated": false,
+    "policyPromotion": false,
+    "limitations": [
+      "The host authorizes subjects and purpose; this function does not authenticate or grant consent.",
+      "Observed outcomes describe the supplied records; missing responses are unknown, not failures.",
+      "Selection, nonresponse and different people can bias policy means; this is not a causal or significance test."
+    ]
+  }
+}

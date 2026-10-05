@@ -5,9 +5,9 @@
  * A setting is a reversible declaration, never evidence of ability or a fixed trait.
  */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(require('./engine'));
-  else root.SynkAtlasPersonalization = factory(root.SynkAtlas);
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (Core) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./engine'), () => require('./domain'));
+  else root.SynkAtlasPersonalization = factory(root.SynkAtlas, () => root.SynkAtlasDomain);
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (Core, getDomain) {
   'use strict';
   if (!Core?.createSession) throw new TypeError('Personalization: load Core first');
   const VERSION = 'core-personalization-1';
@@ -271,5 +271,7 @@
     return current.events();
   }
   return Object.freeze({ VERSION, OPTIONS, FIELDS, REASONS, REASON_GOAL, MAX_REASONS, DEFAULT_PRESENTATION, createProfile, updateProfile, clearProfile,
-    selectPersonalization, recordCompletion, recordFeedback, coreScope, validateProfile: checkProfile });
+    selectPersonalization, recordCompletion, recordFeedback, coreScope, validateProfile: checkProfile,
+    // Optional Core capability: products that need field-based decisions load it.
+    get domain() { const domain = getDomain(); if (!domain?.decide) fail('load Core domain capability first'); return domain; } });
 });

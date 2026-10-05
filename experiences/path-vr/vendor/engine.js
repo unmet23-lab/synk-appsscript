@@ -15,9 +15,9 @@
   else root.SynkAtlas = factory(() => root.SynkAtlasTrail || root.SynkTrail);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (getTrail) {
   'use strict';
-  const VERSION = 'atlas-2.3.0';
+  const VERSION = 'atlas-2.4.0';
   // Decisions recorded by an earlier policy stay readable; a new plan is always stamped with VERSION.
-  const POLICIES = ['atlas-1.0.0', 'atlas-2.0.0', 'atlas-2.1.0', 'atlas-2.2.0', VERSION];
+  const POLICIES = ['atlas-1.0.0', 'atlas-2.0.0', 'atlas-2.1.0', 'atlas-2.2.0', 'atlas-2.3.0', VERSION];
   const trail = () => {
     const module = getTrail();
     if (!module || typeof module.validate !== 'function' || typeof module.checkLink !== 'function' || typeof module.summarize !== 'function') throw new Error('Atlas: Trail practice module unavailable');
@@ -111,7 +111,9 @@
   // Check one event against a log without copying the log. False means an exact replay.
   function admit(events, event) { return admitWith(scan(events), event); }
   function admitWith(lookup, event) {
-    validate(event);
+    // An entry another session already admitted is frozen and was validated then; its links
+    // and ids are still checked against this log below.
+    if (!admitted.has(event)) validate(event);
     // Ids are unique in an admitted log, so "the event with this id, of this type" is one lookup.
     const find = (id, type) => { const found = lookup.byId(id); return found && (!type || found.type === type) ? found : undefined; };
     const previous = lookup.byId(event.id);
@@ -197,7 +199,10 @@
       lines.push({ key: line, kind: event.kind, source: 'observed', strength: event.strength, n: event.n, sufficiency, assisted: event.assisted ?? null, at: event.at, until,
         evidence: [event.id, ...(answer ? [answer.id] : [])], status, usable: !denied && (sufficiency !== 'thin' || status === 'confirmed') });
     }
-    const completed = new Map(ordered.filter(e => e.type === 'experience.completed' && !excluded.has(e.id)).map(e => [e.id, e]));
+    const decisions = new Map(ordered.filter(e => e.type === 'decision.made' && !excluded.has(e.id)).map(e => [e.id, e]));
+    // An excluded decision invalidates its analytical descendants as well.
+    // The original completion still counts as history in `rounds` below.
+    const completed = new Map(ordered.filter(e => e.type === 'experience.completed' && !excluded.has(e.id) && decisions.has(e.decisionId)).map(e => [e.id, e]));
     const responses = new Map();
     if (personal) for (const event of ordered) {
       if (event.type !== 'feedback.given' || !completed.has(event.completionId)) continue;
@@ -206,7 +211,6 @@
       // A changed answer moves to the end, so the list stays in order of the latest response.
       if (ms(completion.at) <= ms(event.at)) { responses.delete(event.completionId); responses.set(event.completionId, copy({ ...event, experienceId: completion.experienceId, variant: completion.variant })); }
     }
-    const decisions = new Map(ordered.filter(e => e.type === 'decision.made' && !excluded.has(e.id)).map(e => [e.id, e]));
     const latestOutcome = new Map();
     // The newest report per decision, measure, window and target line: a proof for one
     // line is never replaced by a report about another line or by a proofless report.
@@ -318,13 +322,14 @@
     evidence.push(...scored[0].proof);
     const bundle = { mode: { option: scored[0].item.id, basis: !adapted ? 'baseline' : scored[0].notes.length ? 'line' : recent ? 'response' : 'setting', reasons: scored[0].notes, evidence: scored[0].proof } };
     // How a way of working went for this person: helpful counts for it, not_fit against it.
-    // too_much and want_more only steer ordered amounts above. A finished round with no answer is a weak yes.
+    // too_much and want_more only steer ordered amounts above. Completion without
+    // feedback is a missing preference observation, never a weak positive vote.
     const tally = (leverId, optionId) => {
       let s = 0, f = 0, helped = 0; const proof = [];
       for (const done of mine) {
         if (view.cutoff - ms(done.at) > RECENT || picked(view.decisions.get(done.decisionId), leverId) !== optionId) continue;
         const answer = state.feedback.find(item => item.completionId === done.id);
-        if (!answer) s += 0.25; else if (answer.value === 'helpful') { s += 1; helped += 1; proof.push(answer.id, done.id); } else if (answer.value === 'not_fit') { f += 1; proof.push(answer.id, done.id); }
+        if (answer?.value === 'helpful') { s += 1; helped += 1; proof.push(answer.id, done.id); } else if (answer?.value === 'not_fit') { f += 1; proof.push(answer.id, done.id); }
       }
       return { s, f, helped, proof };
     };
@@ -388,7 +393,17 @@
     const byId = new Map(), attemptStats = new Map(), completions = new Map();
     const lookup = { byId: id => byId.get(id), attempts: presentationId => attemptStats.get(presentationId) || { count: 0, latest: -Infinity },
       get events() { return log; } };
+    const index = entry => {
+      if (entry.type === 'practice.attempted') {
+        const stats = lookup.attempts(entry.presentationId);
+        attemptStats.set(entry.presentationId, { count: stats.count + 1, latest: Math.max(stats.latest, admitted.get(entry)?.at ?? ms(entry.at)) });
+      }
+      if (entry.type === 'experience.completed' && !completions.has(entry.decisionId)) completions.set(entry.decisionId, entry);
+    };
     const store = event => {
+      // An admitted entry is immutable, so a new session (after folding, for example) can
+      // hold the same object instead of copying it again.
+      if (admitted.has(event)) { byId.set(event.id, event); index(event); log.push(event); frozen = null; return; }
       const entry = copy(event);
       // The entry is never handed out or changed again, so it is checked once and frozen.
       // Trail may load later (it is only needed for practice); until then entries stay unvouched.
@@ -396,12 +411,7 @@
       if (typeof t?.vouch === 'function') t.vouch(entry);
       else freeze(entry);
       admitted.set(entry, { key: scopeKey(entry.scope), at: ms(entry.at), recordedAt: ms(entry.recordedAt) });
-      byId.set(entry.id, entry);
-      if (entry.type === 'practice.attempted') {
-        const stats = lookup.attempts(entry.presentationId);
-        attemptStats.set(entry.presentationId, { count: stats.count + 1, latest: Math.max(stats.latest, ms(entry.at)) });
-      }
-      if (entry.type === 'experience.completed' && !completions.has(entry.decisionId)) completions.set(entry.decisionId, entry);
+      byId.set(entry.id, entry); index(entry);
       log.push(entry); frozen = null;
     };
     for (const event of events) {

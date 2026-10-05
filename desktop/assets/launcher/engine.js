@@ -15,9 +15,9 @@
   else root.SynkAtlas = factory(() => root.SynkAtlasTrail || root.SynkTrail);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (getTrail) {
   'use strict';
-  const VERSION = 'atlas-2.3.0';
+  const VERSION = 'atlas-2.4.0';
   // Decisions recorded by an earlier policy stay readable; a new plan is always stamped with VERSION.
-  const POLICIES = ['atlas-1.0.0', 'atlas-2.0.0', 'atlas-2.1.0', 'atlas-2.2.0', VERSION];
+  const POLICIES = ['atlas-1.0.0', 'atlas-2.0.0', 'atlas-2.1.0', 'atlas-2.2.0', 'atlas-2.3.0', VERSION];
   const trail = () => {
     const module = getTrail();
     if (!module || typeof module.validate !== 'function' || typeof module.checkLink !== 'function' || typeof module.summarize !== 'function') throw new Error('Atlas: Trail practice module unavailable');
@@ -199,7 +199,10 @@
       lines.push({ key: line, kind: event.kind, source: 'observed', strength: event.strength, n: event.n, sufficiency, assisted: event.assisted ?? null, at: event.at, until,
         evidence: [event.id, ...(answer ? [answer.id] : [])], status, usable: !denied && (sufficiency !== 'thin' || status === 'confirmed') });
     }
-    const completed = new Map(ordered.filter(e => e.type === 'experience.completed' && !excluded.has(e.id)).map(e => [e.id, e]));
+    const decisions = new Map(ordered.filter(e => e.type === 'decision.made' && !excluded.has(e.id)).map(e => [e.id, e]));
+    // An excluded decision invalidates its analytical descendants as well.
+    // The original completion still counts as history in `rounds` below.
+    const completed = new Map(ordered.filter(e => e.type === 'experience.completed' && !excluded.has(e.id) && decisions.has(e.decisionId)).map(e => [e.id, e]));
     const responses = new Map();
     if (personal) for (const event of ordered) {
       if (event.type !== 'feedback.given' || !completed.has(event.completionId)) continue;
@@ -208,7 +211,6 @@
       // A changed answer moves to the end, so the list stays in order of the latest response.
       if (ms(completion.at) <= ms(event.at)) { responses.delete(event.completionId); responses.set(event.completionId, copy({ ...event, experienceId: completion.experienceId, variant: completion.variant })); }
     }
-    const decisions = new Map(ordered.filter(e => e.type === 'decision.made' && !excluded.has(e.id)).map(e => [e.id, e]));
     const latestOutcome = new Map();
     // The newest report per decision, measure, window and target line: a proof for one
     // line is never replaced by a report about another line or by a proofless report.
@@ -320,13 +322,14 @@
     evidence.push(...scored[0].proof);
     const bundle = { mode: { option: scored[0].item.id, basis: !adapted ? 'baseline' : scored[0].notes.length ? 'line' : recent ? 'response' : 'setting', reasons: scored[0].notes, evidence: scored[0].proof } };
     // How a way of working went for this person: helpful counts for it, not_fit against it.
-    // too_much and want_more only steer ordered amounts above. A finished round with no answer is a weak yes.
+    // too_much and want_more only steer ordered amounts above. Completion without
+    // feedback is a missing preference observation, never a weak positive vote.
     const tally = (leverId, optionId) => {
       let s = 0, f = 0, helped = 0; const proof = [];
       for (const done of mine) {
         if (view.cutoff - ms(done.at) > RECENT || picked(view.decisions.get(done.decisionId), leverId) !== optionId) continue;
         const answer = state.feedback.find(item => item.completionId === done.id);
-        if (!answer) s += 0.25; else if (answer.value === 'helpful') { s += 1; helped += 1; proof.push(answer.id, done.id); } else if (answer.value === 'not_fit') { f += 1; proof.push(answer.id, done.id); }
+        if (answer?.value === 'helpful') { s += 1; helped += 1; proof.push(answer.id, done.id); } else if (answer?.value === 'not_fit') { f += 1; proof.push(answer.id, done.id); }
       }
       return { s, f, helped, proof };
     };

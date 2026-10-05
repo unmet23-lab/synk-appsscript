@@ -5,9 +5,9 @@
  * A setting is a reversible declaration, never evidence of ability or a fixed trait.
  */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(require('./engine'));
-  else root.SynkAtlasPersonalization = factory(root.SynkAtlas);
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (Core) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./engine'), () => require('./domain'));
+  else root.SynkAtlasPersonalization = factory(root.SynkAtlas, () => root.SynkAtlasDomain);
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (Core, getDomain) {
   'use strict';
   if (!Core?.createSession) throw new TypeError('Personalization: load Core first');
   const VERSION = 'core-personalization-1';
@@ -21,7 +21,14 @@
     motion: Object.freeze(['full', 'reduced']),
   });
   const DEFAULT_PRESENTATION = Object.freeze({ textSize: 'standard', explanation: 'standard', motion: 'full', support: 'choose', audio: 'available' });
-  const FIELDS = Object.freeze([...Object.keys(OPTIONS), 'minutes']);
+  // Learning reasons a person may declare (계약/배우는이유_선택응답_계약.json r1, 공개판 설계 #learn-reasons).
+  // A reason shapes situations, examples and exam guidance through the broad goal below; it is
+  // never evidence of ability, level, age or gender. `other` has no goal and its text stays with the host.
+  const REASON_GOAL = Object.freeze({ culture: 'explore', travel: 'expression', people: 'expression', life: 'expression',
+    study: 'study', work: 'work', career: 'work', exam: 'prepare', hobby: 'explore', other: null });
+  const REASONS = Object.freeze(Object.keys(REASON_GOAL));
+  const MAX_REASONS = 3;
+  const FIELDS = Object.freeze([...Object.keys(OPTIONS), 'minutes', 'reasons', 'primaryReason']);
   const copy = value => JSON.parse(JSON.stringify(value));
   const fail = message => { throw new TypeError(`Personalization: ${message}`); };
   const record = value => value !== null && typeof value === 'object' && !Array.isArray(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value));
@@ -42,9 +49,27 @@
     if (!exact(values, FIELDS)) fail('unsupported setting (identity, age and gender are not personalization inputs)');
     for (const [field, value] of Object.entries(values)) {
       if (patch && value === null) continue;
-      if (field === 'minutes' ? !Number.isInteger(value) || value < 1 || value > 240 : !OPTIONS[field].includes(value)) fail(`invalid ${field}`);
+      if (field === 'reasons') {
+        if (!Array.isArray(value) || !value.length || value.length > MAX_REASONS || new Set(value).size !== value.length
+          || value.some(reason => !REASONS.includes(reason))) fail('invalid reasons (choose one to three known reasons)');
+      } else if (field === 'primaryReason') {
+        if (!REASONS.includes(value)) fail('invalid primaryReason');
+      } else if (field === 'minutes' ? !Number.isInteger(value) || value < 1 || value > 240 : !OPTIONS[field].includes(value)) fail(`invalid ${field}`);
     }
     return values;
+  }
+  // Reasons are unordered: store them in the shared contract order so no position reads as a ranking.
+  const canonicalReasons = reasons => REASONS.filter(reason => reasons.includes(reason));
+  // The one broad goal Core may act on: an explicit goal, else the reason the person named as the
+  // biggest, else the goal all declared reasons share. Several different goals stay undecided.
+  function reasonGoals(values) {
+    return [...new Set((values.reasons || []).map(reason => REASON_GOAL[reason]).filter(Boolean))];
+  }
+  function declaredGoal(values) {
+    if (values.goal) return values.goal;
+    if (values.primaryReason) return REASON_GOAL[values.primaryReason];
+    const goals = reasonGoals(values);
+    return goals.length === 1 ? goals[0] : null;
   }
   function checkProfile(profile) {
     const keys = ['version', 'scope', 'revision', 'generation', 'status', 'consent', 'values', 'provenance', 'createdAt', 'updatedAt'];
@@ -54,6 +79,7 @@
       || !['new', 'active', 'skipped', 'disabled', 'deleted'].includes(profile.status)
       || typeof profile.consent !== 'boolean' || (profile.status === 'active') !== profile.consent) fail('invalid profile');
     checkScope(profile.scope); checkValues(profile.values);
+    if (Object.hasOwn(profile.values, 'primaryReason') && !(profile.values.reasons || []).includes(profile.values.primaryReason)) fail('primary reason must be one of the declared reasons');
     if (instant(profile.updatedAt) < instant(profile.createdAt)) fail('profile time reversal');
     if (!exact(profile.provenance, Object.keys(profile.values)) || Object.keys(profile.values).some(key => !Object.hasOwn(profile.provenance, key))) fail('invalid provenance');
     for (const source of Object.values(profile.provenance)) {
@@ -75,8 +101,15 @@
   }
   function updateProfile(profile, patch, at) {
     checkProfile(profile); atOrAfter(profile, at);
-    if (!exact(patch, ['values', 'consent']) || !Object.hasOwn(patch, 'values')
-      || (Object.hasOwn(patch, 'consent') && typeof patch.consent !== 'boolean')) fail('invalid update');
+    if (!exact(patch, ['values', 'consent', 'expectedRevision']) || !Object.hasOwn(patch, 'values')
+      || (Object.hasOwn(patch, 'consent') && typeof patch.consent !== 'boolean')
+      || (Object.hasOwn(patch, 'expectedRevision') && !Number.isSafeInteger(patch.expectedRevision))) fail('invalid update');
+    // A host that passes the revision its edit was made from has an edit from an older copy
+    // refused (another device changed the profile meanwhile) instead of silently written over.
+    // Clearing never needs it: forgetting a profile always wins.
+    if (Object.hasOwn(patch, 'expectedRevision') && patch.expectedRevision !== profile.revision) {
+      throw Object.assign(new Error('Personalization: the profile changed since this edit began'), { code: 'PROFILE_CONFLICT' });
+    }
     checkValues(patch.values, true);
     if (patch.consent === false) return clearProfile(profile, { mode: 'disable', at });
     if (!(patch.consent === true || profile.consent)) fail('explicit consent required before remembering settings');
@@ -90,9 +123,17 @@
     for (const [field, value] of Object.entries(patch.values)) {
       if (value === null) { delete next.values[field]; delete next.provenance[field]; }
       else {
-        next.values[field] = value;
+        next.values[field] = field === 'reasons' ? canonicalReasons(value) : value;
         next.provenance[field] = { source: 'self-declared', confidence: 'declared', at, revision: next.revision };
       }
+    }
+    // A biggest reason cannot outlive the reasons it was chosen from. Naming it together with
+    // reasons that leave it out is a host error; changing the reasons later forgets it, which
+    // (like any forgotten setting) starts a clean decision history.
+    if (Object.hasOwn(next.values, 'primaryReason') && !(next.values.reasons || []).includes(next.values.primaryReason)) {
+      if (patch.values.primaryReason != null) fail('primary reason must be one of the declared reasons');
+      delete next.values.primaryReason; delete next.provenance.primaryReason;
+      if (next.generation === profile.generation) next.generation += 1;
     }
     return copy(checkProfile(next));
   }
@@ -159,10 +200,14 @@
     if (!token(experienceId, 120)) fail('invalid experience id');
     const values = profile.consent ? copy(profile.values) : {}, presentation = presentationFor(values), current = session(profile, prior, at);
     // Project declarations into the existing Core vocabulary; no parallel ranking.
-    const settings = { goal: values.goal ?? null, time: values.minutes == null ? null : values.minutes <= 5 ? 'short' : 'standard',
+    const settings = { goal: declaredGoal(values), time: values.minutes == null ? null : values.minutes <= 5 ? 'short' : 'standard',
       support: values.support ?? null, audio: values.audio ?? null };
-    const previous = current.state().context;
-    for (const [field, value] of Object.entries(settings)) if ((previous[field] ?? null) !== value) current.set(field, value);
+    const apply = (target, wanted) => {
+      const previous = target.state().context;
+      for (const [field, value] of Object.entries(wanted)) if ((previous[field] ?? null) !== value) target.set(field, value);
+    };
+    apply(current, settings);
+    const mixedGoals = settings.goal == null ? reasonGoals(values) : [];
     let eligible = candidates.filter(item => (values.minutes == null || item.minutes <= values.minutes)
       && (!values.experience || !item.experiences || item.experiences.includes(values.experience)));
     // A help style derived from the declared experience prefers fitting ways of working; it is
@@ -174,6 +219,21 @@
     const constraints = [];
     if (values.minutes != null) constraints.push('time.limit');
     if (values.experience != null) constraints.push('experience.declared');
+    if (values.reasons) constraints.push('reasons.declared');
+    if (mixedGoals.length > 1) constraints.push('reasons.mixed');
+    // Reasons pointing to different goals are not ranked by guesswork. Core offers "today's one
+    // question" (atlas/ask.js) only when naming the biggest reason would change this very plan;
+    // each answer is tried in a throwaway session so no trial decision enters the history.
+    let ask = null;
+    if (mixedGoals.length > 1 && eligible.length) {
+      const outcomes = new Set(mixedGoals.map(goal => {
+        const trial = session(profile, copy(prior), at);
+        apply(trial, { ...settings, goal });
+        return trial.plan(experienceId, copy(eligible)).selected?.id ?? null;
+      }));
+      if (outcomes.size > 1) ask = { id: 'reasons.primary', kind: 'choice', about: 'primaryReason',
+        options: values.reasons.filter(reason => REASON_GOAL[reason]).map(reason => ({ id: reason })) };
+    }
     const plan = eligible.length ? current.plan(experienceId, copy(eligible)) : {
       version: Core.VERSION, status: 'unavailable', scope: coreScope(profile), experienceId, at,
       selected: null, alternatives: [], reasons: ['no.feasible.experience'], evidence: [],
@@ -183,7 +243,7 @@
     if (chosen && !chosen.includes(presentation.support)) presentation.support = chosen.includes('choose') ? 'choose' : chosen[0];
     const returned = profile.consent ? current.events() : [];
     const basis = plan.outcomeBasis === 'self_report' ? 'self-reported-feedback' : Object.keys(values).length ? 'self-declared' : 'cold-start';
-    return { version: VERSION, profile: copy(profile), values, presentation, plan: copy(plan), events: returned, reasons,
+    return { version: VERSION, profile: copy(profile), values, presentation, plan: copy(plan), events: returned, reasons, ask,
       provenance: copy(profile.provenance), explanation: { basis, confidence: basis === 'cold-start' ? 'unknown' : 'declared',
         learningEffectClaim: false, abilityClaim: false, reasons, evidence: copy(plan.evidence), revision: profile.revision },
       persistence: profile.consent ? 'consented-product-context' : 'none' };
@@ -210,6 +270,8 @@
     current.feedback(completed.id, options.value);
     return current.events();
   }
-  return Object.freeze({ VERSION, OPTIONS, FIELDS, DEFAULT_PRESENTATION, createProfile, updateProfile, clearProfile,
-    selectPersonalization, recordCompletion, recordFeedback, coreScope, validateProfile: checkProfile });
+  return Object.freeze({ VERSION, OPTIONS, FIELDS, REASONS, REASON_GOAL, MAX_REASONS, DEFAULT_PRESENTATION, createProfile, updateProfile, clearProfile,
+    selectPersonalization, recordCompletion, recordFeedback, coreScope, validateProfile: checkProfile,
+    // Optional Core capability: products that need field-based decisions load it.
+    get domain() { const domain = getDomain(); if (!domain?.decide) fail('load Core domain capability first'); return domain; } });
 });

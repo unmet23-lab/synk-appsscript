@@ -196,7 +196,9 @@
     const meet = (p, at, verdict) => { if (!met.has(p.itemKey)) met.set(p.itemKey, { itemKey: p.itemKey, conceptIds: [...p.conceptIds], at, verdict }); };
     let excludedAttempts = 0;
     visible.forEach((event, index) => {
-      if (event.type === TYPES[3]) { audioByPresentation.set(event.presentationId, event.audio); return; }
+      // A withdrawn delivery is no longer proof that the required audio arrived.
+      // Keep it as unknown instead of reviving an earlier completion report.
+      if (event.type === TYPES[3]) { audioByPresentation.set(event.presentationId, excluded.has(event.id) ? 'pending' : event.audio); return; }
       if (event.type === TYPES[0]) {
         if (reported(event.decisionId) && !excluded.has(event.id) && !excluded.has(event.decisionId)) presentations.push({
           eventId: event.id, at: event.at, recordedAt: event.recordedAt,
@@ -240,7 +242,7 @@
    * met(itemKey, familyKey): was this item or family attempted or revealed already? */
   function createIndex({ scope, prior = null }) {
     const scopeId = key(scope);
-    const presentations = new Map(), audio = new Map(), arms = new Map(), excluded = new Set();
+    const presentations = new Map(), audio = new Map(), deliveries = new Map(), audioCover = new Map(), arms = new Map(), excluded = new Set();
     const helped = new Set(), seen = new Set(), rows = new Map(), covering = new Map();
     // Folded entries came before everything here: seed what they did.
     for (const [k, bits] of Object.entries(prior?.keys || {})) {
@@ -260,10 +262,22 @@
       if (event.type === 'record.excluded') {
         excluded.add(event.targetId);
         for (const row of covering.get(event.targetId) || []) row.omitted = true;
+        const current = audio.get(deliveries.get(event.targetId));
+        if (current?.id === event.targetId) current.value = 'pending';
+        // Update only attempts whose original delivery proof was withdrawn.
+        // A later completed playback never rehabilitates an earlier answer.
+        for (const row of audioCover.get(event.targetId) || []) {
+          row.audio = 'pending';
+          if (row.measure.audioRequired) { row.independent = false; row.exclusionReason ||= 'audio'; }
+        }
         return null;
       }
       if (event.type === TYPES[0]) { presentations.set(event.id, event); return null; }
-      if (event.type === TYPES[3]) { audio.set(event.presentationId, event.audio); return null; }
+      if (event.type === TYPES[3]) {
+        deliveries.set(event.id, event.presentationId);
+        audio.set(event.presentationId, { id: event.id, value: excluded.has(event.id) ? 'pending' : event.audio });
+        return null;
+      }
       if (event.type !== TYPES[1] && event.type !== TYPES[2]) return null;
       // A visible child without its recorded parent is not usable evidence.
       const p = presentations.get(event.presentationId);
@@ -274,8 +288,12 @@
         return null;
       }
       const prior = kinds => keys.some(k => kinds.some(kind => kind === 'attempt' ? seen.has(`attempt|${k}`) : helped.has(`${kind}|${k}`)));
-      const delivered = audio.get(p.id) || 'pending';
+      const proof = audio.get(p.id), delivered = proof?.value || 'pending';
       const row = attemptRow(event, p, arms.get(p.decisionId) ?? null, delivered, judge(event, p, prior, delivered));
+      if (proof && row.measure) {
+        if (!audioCover.has(proof.id)) audioCover.set(proof.id, []);
+        audioCover.get(proof.id).push(row);
+      }
       row.omitted = excluded.has(event.id) || excluded.has(p.id) || excluded.has(p.decisionId);
       for (const k of keys) { seen.add(`attempt|${k}`); seen.add(k); }
       for (const target of [event.id, p.id, p.decisionId]) cover(target, row);

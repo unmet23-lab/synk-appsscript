@@ -1,0 +1,954 @@
+{
+  "at": "2026-10-05T15:52:54.915Z",
+  "localDate": "2026-10-06",
+  "status": "local-lifecycle-and-runtime-verified-live-model-pending",
+  "tests": {
+    "passed": 548,
+    "failed": 0,
+    "files": [
+      "tests\\atlas.test.js",
+      "tests\\atlas-work.test.js",
+      "tests\\atlas-vellum-flow.test.js",
+      "tests\\atlas-trail.test.js",
+      "tests\\atlas-topik-layers.test.js",
+      "tests\\atlas-temper.test.js",
+      "tests\\atlas-temper-flow.test.js",
+      "tests\\atlas-sync-fixes.test.js",
+      "tests\\atlas-storage-failure.test.js",
+      "tests\\atlas-ledger-recovery.test.js",
+      "tests\\atlas-review-fixes.test.js",
+      "tests\\atlas-provenance-review.test.js",
+      "tests\\atlas-learning.test.js",
+      "tests\\atlas-preferences.test.js",
+      "tests\\atlas-learning-sync.test.js",
+      "tests\\atlas-personalization.test.js",
+      "tests\\atlas-label-anchor.test.js",
+      "tests\\atlas-lab-model-host.test.js",
+      "tests\\atlas-personalization-conflict.test.js",
+      "tests\\atlas-lab-interpretation.test.js",
+      "tests\\atlas-outcomes.test.js",
+      "tests\\atlas-lab-consultation.test.js",
+      "tests\\atlas-no-feedback.test.js",
+      "tests\\atlas-interpretation.test.js",
+      "tests\\atlas-model-extraction.test.js",
+      "tests\\atlas-interpretation-evaluation.test.js",
+      "tests\\atlas-memory-sync.test.js",
+      "tests\\atlas-incremental.test.js",
+      "tests\\atlas-loop.test.js",
+      "tests\\atlas-life.test.js",
+      "tests\\atlas-game-flow.test.js",
+      "tests\\atlas-formats.test.js",
+      "tests\\atlas-flow.test.js",
+      "tests\\atlas-family.test.js",
+      "tests\\atlas-education.test.js",
+      "tests\\atlas-domain.test.js",
+      "tests\\atlas-delivery-exclusion.test.js",
+      "tests\\atlas-core-boundaries.test.js",
+      "tests\\atlas-ledger.test.js",
+      "tests\\atlas-ask.test.js",
+      "tests\\atlas-ask-value.test.js",
+      "tests\\atlas-account-summary.test.js",
+      "tests\\atlas-ledger-sync.test.js",
+      "docs/마케팅/온라인마케팅지도/engagement/company/server-computer-interpretation.test.mjs",
+      "docs/마케팅/온라인마케팅지도/engagement/company/server-assistant.test.mjs",
+      "docs/마케팅/온라인마케팅지도/engagement/company/creator-tools-server.test.mjs",
+      "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice.test.mjs",
+      "tests/atlas-interpretation-capture.test.mjs",
+      "tests/atlas-computer-runtime.test.mjs",
+      "tests/atlas-capture-company.test.mjs"
+    ],
+    "log": "docs/_ops/qa/atlas-lifecycle-20261006/tests.tap",
+    "sha256": "40f3fc39380fa334570dd1829267b15929ad83dbf61953159ef3068bb4ea7402"
+  },
+  "browser": [
+    {
+      "path": "experiences/atlas-lab/qa/model-company/result.json",
+      "sha256": "aff2e366550741f81441cabfb6d0f4b33e6f5119294a5987620ce6b9dcf2dd33",
+      "result": {
+        "at": "2026-10-05T15:49:00.291Z",
+        "status": "passed",
+        "kind": "company-host-browser-with-mock-provider",
+        "realCompanyAuthAndApi": true,
+        "paidModelCalls": 0,
+        "externalNetworkCalls": 0,
+        "mockedProviderCalls": 5,
+        "checks": [
+          "authenticated-ai-review-1280",
+          "authenticated-ai-review-390",
+          "authenticated-ai-review-320",
+          "local-button-no-provider",
+          "late-response-after-edit-discarded",
+          "provider-request-ledger-persisted",
+          "server-delete-preserves-browser-and-billing",
+          "pending-delete-no-late-response-or-ciphertext-restoration"
+        ],
+        "screenshots": [
+          {
+            "width": 1280,
+            "section": "computer-consultation",
+            "file": "company-ai-1280.png"
+          },
+          {
+            "width": 390,
+            "section": "computer-consultation",
+            "file": "company-ai-390.png"
+          },
+          {
+            "width": 320,
+            "section": "computer-consultation",
+            "file": "company-ai-320.png"
+          },
+          {
+            "width": 320,
+            "section": "server-response-deleted",
+            "file": "company-deleted-320.png"
+          }
+        ],
+        "errors": [],
+        "missing": [],
+        "requestLedgerRows": 5
+      }
+    },
+    {
+      "path": "experiences/atlas-lab/qa/model-host/result.json",
+      "sha256": "7e3b3a178de2f2719b7cf59b2e39b51f606c04df0e8532601f0eebfe1a0a3e5c",
+      "result": {
+        "at": "2026-10-05T15:41:51.483Z",
+        "status": "passed",
+        "kind": "mock-host-ui",
+        "paidModelCalls": 0,
+        "errors": [],
+        "externalRequests": [],
+        "paths": [
+          {
+            "width": 1280,
+            "checks": [
+              "explicit-send-only",
+              "csrf-and-wire-fields",
+              "review-gate",
+              "no-auto-retry",
+              "same-UUID-retry",
+              "bad-quote-preserves-answers",
+              "duplicate-prevention",
+              "cancel-late-response",
+              "edit-stale",
+              "manual-stale",
+              "local-stale",
+              "delete-success-preserves-browser",
+              "delete-empty-account-scoped-body",
+              "delete-failure-has-no-success-message",
+              "delete-blocks-late-AI",
+              "expired-requires-fresh-UUID",
+              "no-overflow"
+            ],
+            "mockPosts": 12,
+            "mockDeletes": 2
+          },
+          {
+            "width": 390,
+            "checks": [
+              "explicit-send-only",
+              "csrf-and-wire-fields",
+              "review-gate",
+              "no-auto-retry",
+              "same-UUID-retry",
+              "bad-quote-preserves-answers",
+              "duplicate-prevention",
+              "cancel-late-response",
+              "edit-stale",
+              "manual-stale",
+              "local-stale",
+              "delete-success-preserves-browser",
+              "delete-empty-account-scoped-body",
+              "delete-failure-has-no-success-message",
+              "delete-blocks-late-AI",
+              "expired-requires-fresh-UUID",
+              "no-overflow"
+            ],
+            "mockPosts": 12,
+            "mockDeletes": 2
+          },
+          {
+            "checks": [
+              "unconfigured-local-fallback",
+              "nonadmin-can-delete-with-AI-disabled",
+              "delete-revoked-session-no-success",
+              "http-share-zero-host-and-privacy-requests"
+            ]
+          }
+        ],
+        "screens": [
+          "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\model-host\\model-review-1280.png",
+          "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\model-host\\model-review-390.png"
+        ]
+      }
+    },
+    {
+      "path": "experiences/atlas-lab/qa/interpretation/result.json",
+      "sha256": "1f9e7ebaee845153886ba71f53c41acf6c209b77f7027a978fec27594a6560bd",
+      "result": {
+        "at": "2026-10-05T15:41:02.193Z",
+        "status": "passed",
+        "kind": "synthetic-browser-paths",
+        "paidModelCalls": 0,
+        "deployed": false,
+        "errors": [],
+        "missing": [],
+        "externalRequests": [],
+        "screens": [
+          "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\interpretation\\review-1280.png",
+          "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\interpretation\\review-390.png",
+          "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\interpretation\\review-320.png"
+        ],
+        "paths": [
+          {
+            "label": "1280",
+            "checks": [
+              "pending-no-answers",
+              "exact-quotes",
+              "confirm",
+              "correct",
+              "withdraw",
+              "reject",
+              "original-rules-result",
+              "clear-preserves-manual"
+            ]
+          },
+          {
+            "label": "1280",
+            "checks": [
+              "conflict-blocks-confirm",
+              "reject-resolves-conflict",
+              "explicit-correction",
+              "other-and-past-held",
+              "stale-response-rejected",
+              "no-overflow"
+            ]
+          },
+          {
+            "label": "390",
+            "checks": [
+              "pending-no-answers",
+              "exact-quotes",
+              "confirm",
+              "correct",
+              "withdraw",
+              "reject",
+              "original-rules-result",
+              "clear-preserves-manual"
+            ]
+          },
+          {
+            "label": "390",
+            "checks": [
+              "conflict-blocks-confirm",
+              "reject-resolves-conflict",
+              "explicit-correction",
+              "other-and-past-held",
+              "stale-response-rejected",
+              "no-overflow"
+            ]
+          },
+          {
+            "label": "320",
+            "checks": [
+              "pending-no-answers",
+              "exact-quotes",
+              "confirm",
+              "correct",
+              "withdraw",
+              "reject",
+              "original-rules-result",
+              "clear-preserves-manual"
+            ]
+          },
+          {
+            "label": "320",
+            "checks": [
+              "conflict-blocks-confirm",
+              "reject-resolves-conflict",
+              "explicit-correction",
+              "other-and-past-held",
+              "stale-response-rejected",
+              "no-overflow"
+            ]
+          },
+          {
+            "label": "file-share",
+            "checks": [
+              "pending-no-answers",
+              "exact-quotes",
+              "confirm",
+              "correct",
+              "withdraw",
+              "reject",
+              "original-rules-result",
+              "clear-preserves-manual"
+            ]
+          }
+        ],
+        "share": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\interpretation\\share.html"
+      }
+    },
+    {
+      "path": "experiences/atlas-lab/qa/question-value/result.json",
+      "sha256": "4203fe19f4b1789482cc98e79e4beb55545ff87c723b5303c1dd7ef2d814f647",
+      "result": {
+        "status": "passed",
+        "at": "2026-10-05T15:41:02.173Z",
+        "origin": "http://127.0.0.1:53215",
+        "errors": [],
+        "missing": [],
+        "screenshots": [
+          "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\question-value\\consultation-1280.png",
+          "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\question-value\\consultation-390.png"
+        ],
+        "desktop": {
+          "first": {
+            "question": "localai",
+            "value": 1.7142857142857117,
+            "basis": "declared-decision-value"
+          },
+          "combination": {
+            "answers": [
+              "large",
+              "image"
+            ],
+            "os": "win",
+            "ram": 32,
+            "vram": 24,
+            "headline": "데스크톱 · 램 32GB · 그래픽 24GB"
+          },
+          "chooserMs": {
+            "samples": 10,
+            "median": 4,
+            "max": 5.3999999994412065
+          },
+          "answered": [
+            {
+              "question": "localai",
+              "answer": "huge"
+            },
+            {
+              "question": "owned",
+              "answer": "new"
+            },
+            {
+              "question": "budget",
+              "answer": "lt100"
+            },
+            {
+              "question": "os",
+              "answer": "mac"
+            }
+          ],
+          "advice": "맥 스튜디오 · 램 128GB · SSD 1TB",
+          "details": "아주 큰 대화 AI(70B급) 기준 가성비 추천이에요. 이 용도엔 램 128GB면 충분해요. 모델을 한 단계 작게 써 보세요. 14B급은 맥 24GB나 그래픽 12GB로도 돌아가요.",
+          "count": "지금 조건의 질문 6개 중 4개에 답했고, 남은 2개 가운데 2개는 현재 기준에서 건너뛰어요.",
+          "actionPaths": [
+            {
+              "kind": "mobile-development",
+              "answered": [
+                {
+                  "question": "localai",
+                  "answer": "huge"
+                },
+                {
+                  "question": "owned",
+                  "answer": "new"
+                },
+                {
+                  "question": "budget",
+                  "answer": "lt100"
+                },
+                {
+                  "question": "os",
+                  "answer": "win"
+                },
+                {
+                  "question": "code",
+                  "answer": "mobile"
+                }
+              ],
+              "details": "모바일 앱 개발, 아주 큰 대화 AI(70B급) 기준 가성비 추천이에요. 여유가 되면 램 128GB. 아이폰 앱까지 만들려면 맥이 필요해요. 애플의 개발 도구 Xcode는 맥에서만 돌아가요. 모델을 한 단계 작게 써 보세요. 14B급은 맥 24GB나 그래픽 12GB로도 돌아가요."
+            },
+            {
+              "kind": "laptop",
+              "answered": [
+                {
+                  "question": "localai",
+                  "answer": "huge"
+                },
+                {
+                  "question": "owned",
+                  "answer": "have"
+                },
+                {
+                  "question": "current.ram",
+                  "answer": "4"
+                },
+                {
+                  "question": "current.kind",
+                  "answer": "laptop"
+                },
+                {
+                  "question": "current.feel",
+                  "answer": "untried"
+                },
+                {
+                  "question": "budget",
+                  "answer": "lt100"
+                },
+                {
+                  "question": "current.os",
+                  "answer": "win11"
+                },
+                {
+                  "question": "os",
+                  "answer": "mac"
+                }
+              ],
+              "details": "아주 큰 대화 AI(70B급) 기준 가성비 추천이에요. 이 용도엔 램 128GB면 충분해요. 지금 노트북은 밖에서 계속 쓰고, 이 데스크톱을 더하세요. 작업이 무거우니 지금 노트북은 밖에서 계속 쓰고, 무거운 작업용 데스크톱을 더하세요. 노트북을 바꾸는 것보다 가성비가 좋아요. 사기 전에 하려는 작업을 지금 컴퓨터로 한 번 해 보세요. 실제로 막히는 순간이 가장 정확한 기준이에요. 모델을 한 단계 작게 써 보세요. 14B급은 맥 24GB나 그래픽 12GB로도 돌아가요."
+            },
+            {
+              "kind": "desktop",
+              "answered": [
+                {
+                  "question": "localai",
+                  "answer": "huge"
+                },
+                {
+                  "question": "owned",
+                  "answer": "have"
+                },
+                {
+                  "question": "current.ram",
+                  "answer": "4"
+                },
+                {
+                  "question": "current.kind",
+                  "answer": "desktop"
+                },
+                {
+                  "question": "current.feel",
+                  "answer": "untried"
+                },
+                {
+                  "question": "budget",
+                  "answer": "lt100"
+                },
+                {
+                  "question": "current.os",
+                  "answer": "win11"
+                },
+                {
+                  "question": "os",
+                  "answer": "mac"
+                }
+              ],
+              "details": "아주 큰 대화 AI(70B급) 기준 가성비 추천이에요. 이 용도엔 램 128GB면 충분해요. 지금 컴퓨터가 데스크톱이라면 램만 더 꽂는 게 가장 싸요. 빈 램 슬롯이 있는지 먼저 보세요. 사기 전에 하려는 작업을 지금 컴퓨터로 한 번 해 보세요. 실제로 막히는 순간이 가장 정확한 기준이에요. 모델을 한 단계 작게 써 보세요. 14B급은 맥 24GB나 그래픽 12GB로도 돌아가요."
+            }
+          ]
+        },
+        "mobile": {
+          "first": {
+            "question": "localai",
+            "value": 1.7142857142857117,
+            "basis": "declared-decision-value"
+          },
+          "combination": {
+            "answers": [
+              "large",
+              "image"
+            ],
+            "os": "win",
+            "ram": 32,
+            "vram": 24,
+            "headline": "데스크톱 · 램 32GB · 그래픽 24GB"
+          },
+          "chooserMs": {
+            "samples": 10,
+            "median": 3.2000000001862645,
+            "max": 4.5
+          },
+          "answered": [
+            {
+              "question": "localai",
+              "answer": "huge"
+            },
+            {
+              "question": "owned",
+              "answer": "new"
+            },
+            {
+              "question": "budget",
+              "answer": "lt100"
+            },
+            {
+              "question": "os",
+              "answer": "mac"
+            }
+          ],
+          "advice": "맥 스튜디오 · 램 128GB · SSD 1TB",
+          "details": "아주 큰 대화 AI(70B급) 기준 가성비 추천이에요. 이 용도엔 램 128GB면 충분해요. 모델을 한 단계 작게 써 보세요. 14B급은 맥 24GB나 그래픽 12GB로도 돌아가요.",
+          "count": "지금 조건의 질문 6개 중 4개에 답했고, 남은 2개 가운데 2개는 현재 기준에서 건너뛰어요.",
+          "actionPaths": [
+            {
+              "kind": "mobile-development",
+              "answered": [
+                {
+                  "question": "localai",
+                  "answer": "huge"
+                },
+                {
+                  "question": "owned",
+                  "answer": "new"
+                },
+                {
+                  "question": "budget",
+                  "answer": "lt100"
+                },
+                {
+                  "question": "os",
+                  "answer": "win"
+                },
+                {
+                  "question": "code",
+                  "answer": "mobile"
+                }
+              ],
+              "details": "모바일 앱 개발, 아주 큰 대화 AI(70B급) 기준 가성비 추천이에요. 여유가 되면 램 128GB. 아이폰 앱까지 만들려면 맥이 필요해요. 애플의 개발 도구 Xcode는 맥에서만 돌아가요. 모델을 한 단계 작게 써 보세요. 14B급은 맥 24GB나 그래픽 12GB로도 돌아가요."
+            },
+            {
+              "kind": "laptop",
+              "answered": [
+                {
+                  "question": "localai",
+                  "answer": "huge"
+                },
+                {
+                  "question": "owned",
+                  "answer": "have"
+                },
+                {
+                  "question": "current.ram",
+                  "answer": "4"
+                },
+                {
+                  "question": "current.kind",
+                  "answer": "laptop"
+                },
+                {
+                  "question": "current.feel",
+                  "answer": "untried"
+                },
+                {
+                  "question": "budget",
+                  "answer": "lt100"
+                },
+                {
+                  "question": "current.os",
+                  "answer": "win11"
+                },
+                {
+                  "question": "os",
+                  "answer": "mac"
+                }
+              ],
+              "details": "아주 큰 대화 AI(70B급) 기준 가성비 추천이에요. 이 용도엔 램 128GB면 충분해요. 지금 노트북은 밖에서 계속 쓰고, 이 데스크톱을 더하세요. 작업이 무거우니 지금 노트북은 밖에서 계속 쓰고, 무거운 작업용 데스크톱을 더하세요. 노트북을 바꾸는 것보다 가성비가 좋아요. 사기 전에 하려는 작업을 지금 컴퓨터로 한 번 해 보세요. 실제로 막히는 순간이 가장 정확한 기준이에요. 모델을 한 단계 작게 써 보세요. 14B급은 맥 24GB나 그래픽 12GB로도 돌아가요."
+            },
+            {
+              "kind": "desktop",
+              "answered": [
+                {
+                  "question": "localai",
+                  "answer": "huge"
+                },
+                {
+                  "question": "owned",
+                  "answer": "have"
+                },
+                {
+                  "question": "current.ram",
+                  "answer": "4"
+                },
+                {
+                  "question": "current.kind",
+                  "answer": "desktop"
+                },
+                {
+                  "question": "current.feel",
+                  "answer": "untried"
+                },
+                {
+                  "question": "budget",
+                  "answer": "lt100"
+                },
+                {
+                  "question": "current.os",
+                  "answer": "win11"
+                },
+                {
+                  "question": "os",
+                  "answer": "mac"
+                }
+              ],
+              "details": "아주 큰 대화 AI(70B급) 기준 가성비 추천이에요. 이 용도엔 램 128GB면 충분해요. 지금 컴퓨터가 데스크톱이라면 램만 더 꽂는 게 가장 싸요. 빈 램 슬롯이 있는지 먼저 보세요. 사기 전에 하려는 작업을 지금 컴퓨터로 한 번 해 보세요. 실제로 막히는 순간이 가장 정확한 기준이에요. 모델을 한 단계 작게 써 보세요. 14B급은 맥 24GB나 그래픽 12GB로도 돌아가요."
+            }
+          ]
+        },
+        "share": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\question-value\\share.html"
+      }
+    }
+  ],
+  "runtime": {
+    "node": "v24.18.0",
+    "proof": {
+      "version": 1,
+      "runtimeAttested": true,
+      "startedAt": "2026-10-05T15:52:54.891Z",
+      "buildId": "1fc47d7ebfd44bcd78e831d0de52cc29516ed5316c5b59069619a8c79bfde693",
+      "artifacts": [
+        {
+          "path": "atlas/domain.js",
+          "sha256": "9951725913b41d97052f2f396b1ef4463c7c47e75a218f72096999d6f8d6b046"
+        },
+        {
+          "path": "atlas/interpretation.js",
+          "sha256": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e"
+        },
+        {
+          "path": "docs/마케팅/맞춤도구/computer/content.js",
+          "sha256": "428217f11059f75a10329ef51a2ab0b451928efe89e39ec7b40be4961535df58"
+        },
+        {
+          "path": "experiences/atlas-lab/interpretation.mjs",
+          "sha256": "589dc1fba5ee1020f062b9f7345b40d7755f33a810003bbf3ba19e2e585138c9"
+        },
+        {
+          "path": "experiences/atlas-lab/model-extraction.mjs",
+          "sha256": "629651ccbccf6b60734c697447cfe9de62175de57bd701315c7ee36a10156266"
+        }
+      ]
+    },
+    "meaning": "Source bytes observed by official Node load hook in trusted local process; not adversarial remote attestation."
+  },
+  "freeze": {
+    "path": "docs/_ops/qa/atlas-model-20261005/freeze.json",
+    "sha256": "dcd263a22e3c1b28a1d4b78f4ad0d55ffa79e3b1c91863e3df98ea94556e1347",
+    "verified": true,
+    "artifactCount": 6,
+    "datasetSha256": "14cf6f3185d4f2b90b364a49c7d3d851494d614cad2ce0e32aca2300b978c99e",
+    "sealSha256": "875a1f28c7cb2140f8f121abc7a7cfafe1683b94256e5eaf7b512672d5de64ca",
+    "implementationAgentViewedHeldoutTextOrLabels": false
+  },
+  "privacy": {
+    "retentionHours": 24,
+    "startsAt": "request acceptance",
+    "responseDeletion": "Current SQLite ledger resultCiphertext removed; request identity and billing retained.",
+    "inFlightDeletion": "Late response is neither persisted nor delivered; incurred usage is settled.",
+    "scope": "Authenticated active account owns deletion, including downgraded roles or disabled AI.",
+    "backupAndProviderDeletionVerified": false
+  },
+  "modelEvaluation": {
+    "status": "not-run",
+    "paidProviderCalls": 0,
+    "externalApiCost": 0,
+    "heldoutBaselineReport": "docs/_ops/qa/atlas-model-20261005/heldout-local-report.json"
+  },
+  "deployment": {
+    "deployed": false,
+    "productionRestarted": false,
+    "productionDataAccessed": false,
+    "limitsChanged": false
+  },
+  "sourceHashes": [
+    {
+      "path": "atlas/domain.js",
+      "sha256": "9951725913b41d97052f2f396b1ef4463c7c47e75a218f72096999d6f8d6b046"
+    },
+    {
+      "path": "atlas/interpretation.js",
+      "sha256": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e"
+    },
+    {
+      "path": "atlas/temper-interpretation.js",
+      "sha256": "238e3cf2b362514e002dc7c2640999b5fd8b80e03efd26962b1426af952047de"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/computer/content.js",
+      "sha256": "428217f11059f75a10329ef51a2ab0b451928efe89e39ec7b40be4961535df58"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/computer-interpretation-runtime.mjs",
+      "sha256": "3f8af204a0c551271ad5173cf4e784c1fe263a027d64d6549d7aa35d139f597e"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/computer-interpretation-service.mjs",
+      "sha256": "5f55ec50df749dcde4cfcbcae71f77aa81f39d50aedfa699065b884ce154a3fe"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/creator-tools-server.test.mjs",
+      "sha256": "a68f7a899d188f62ec89aa0c1341cd23d4862059ee8feedf7b68013ea2fbc307"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-assistant.test.mjs",
+      "sha256": "c3de60e3ecc20bfebcb8768408b8444a2873842d73a7c1102881189ef6cff5d7"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-computer-interpretation.test.mjs",
+      "sha256": "3517d132bf87e59441abf26e8433f663694bb587a0c0b7af8dad55f1a1907da0"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs",
+      "sha256": "6df5095b66337e039a3977f508ce0b38bb3f52690fc2a22b9568636f41e71485"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice.test.mjs",
+      "sha256": "095dd0242b032d7c4c39770df31745567a6edb2a200ad2e28f1c3630bc4824e2"
+    },
+    {
+      "path": "docs/아틀라스_공통능력_고도화_20261005.md",
+      "sha256": "a6f4bab12733e43c846ad65f54b6e8ba6bbec0a57488299339df559b712dd345"
+    },
+    {
+      "path": "experiences/atlas-lab/build-share.mjs",
+      "sha256": "8f2aea03aa254aa6431d3a5cc7107974e3caea3eca6c4c01c73edfeabd18d90f"
+    },
+    {
+      "path": "experiences/atlas-lab/index.html",
+      "sha256": "e6128de6bd0a014ae64a85b829c7d0ea695b2673264aeab432bd8a79cf804149"
+    },
+    {
+      "path": "experiences/atlas-lab/interpretation.mjs",
+      "sha256": "589dc1fba5ee1020f062b9f7345b40d7755f33a810003bbf3ba19e2e585138c9"
+    },
+    {
+      "path": "experiences/atlas-lab/lab.css",
+      "sha256": "0c20eae56c161d51e3fb9d78970211b5a06fea24981e29ff8adf76b2ac10d1dd"
+    },
+    {
+      "path": "experiences/atlas-lab/lab.js",
+      "sha256": "f87874e4c51bc0a3ac6a639747b5f6e7d1af1bcbaa5e241164b0e529f8a4621d"
+    },
+    {
+      "path": "experiences/atlas-lab/model-extraction.mjs",
+      "sha256": "629651ccbccf6b60734c697447cfe9de62175de57bd701315c7ee36a10156266"
+    },
+    {
+      "path": "experiences/atlas-lab/model-host.mjs",
+      "sha256": "29cf31e3173d51fe40c9d68d9e9d2ed6c62892ab4e116e896efdb6bee45dc2fa"
+    },
+    {
+      "path": "tests/atlas-capture-company.test.mjs",
+      "sha256": "c6bf2e85e495798ad161fda352681a227414c4701ee39bf8760bba87a386bef3"
+    },
+    {
+      "path": "tests/atlas-company-interpretation-smoke.mjs",
+      "sha256": "724602cf3e02b62c40046596d0ef21e62682146f223bd6f7db84356f158d8ac9"
+    },
+    {
+      "path": "tests/atlas-computer-runtime.test.mjs",
+      "sha256": "cb4103fb25c35f0c86c981f0b65814be815f5aa2c97972db682a218db6a5dff1"
+    },
+    {
+      "path": "tests/atlas-interpretation-capture.test.mjs",
+      "sha256": "cc742f47fc9eebc23eb999c7fff946dd055f11d559e79e517c999a137d3beb71"
+    },
+    {
+      "path": "tests/atlas-lab-interpretation-smoke.mjs",
+      "sha256": "cc4cfaf47e985c33de029b0b530218fa1254f53f2913760aa8488c969d2e17a1"
+    },
+    {
+      "path": "tests/atlas-lab-model-host-smoke.mjs",
+      "sha256": "74bb7b73e0d145b96c1e1518bc6032ce4aaebbeaa9c630dfc9138621f8b00c96"
+    },
+    {
+      "path": "tests/atlas-lab-question-value-smoke.mjs",
+      "sha256": "74bdd943ef84ae348b64a736f2d318777e8a21e1aebb6cbff9e21a4cb0be209e"
+    },
+    {
+      "path": "tests\\atlas-account-summary.test.js",
+      "sha256": "54b36f7a34afa240d982b93fe88f1cdc727e30ae83e5a943e009a7dc892192b0"
+    },
+    {
+      "path": "tests\\atlas-ask-value.test.js",
+      "sha256": "ad00a4e99871aa8b57539bfe476101101047233a88d7f358e9efd9967cf2fa6a"
+    },
+    {
+      "path": "tests\\atlas-ask.test.js",
+      "sha256": "b6678ac021e687ae60c854c6a45e6ab4e648780afa98d163583b3578a93d89dd"
+    },
+    {
+      "path": "tests\\atlas-core-boundaries.test.js",
+      "sha256": "4b044c2fc30ea04633095a2ea59078d65c3ccaf3dd080fbb73028127b1d46726"
+    },
+    {
+      "path": "tests\\atlas-delivery-exclusion.test.js",
+      "sha256": "9596af6b8d84aca0ff86fc6c4bf25d19e935dc3534428021abd6ca79560405d5"
+    },
+    {
+      "path": "tests\\atlas-domain.test.js",
+      "sha256": "d3b4a053ee1e5029d6a55948c76568d73d9a8569c9fc4804970ceedf86c5b175"
+    },
+    {
+      "path": "tests\\atlas-education.test.js",
+      "sha256": "2ba80ad2b9f563fdfc1e26906525fd0122780ee6297d127aefbce2983659c722"
+    },
+    {
+      "path": "tests\\atlas-family.test.js",
+      "sha256": "a04694624ea2f37b29658dacb034f6f4523c0edb0d961790d50775570776904d"
+    },
+    {
+      "path": "tests\\atlas-flow.test.js",
+      "sha256": "5b5432d9cf62e257f96202af754b796546a94487947e188b5cfc1dc833e3992a"
+    },
+    {
+      "path": "tests\\atlas-formats.test.js",
+      "sha256": "9b0989e4615cc72d53b99533d379d96a196482535241e1ed31f3895d14a9d4ab"
+    },
+    {
+      "path": "tests\\atlas-game-flow.test.js",
+      "sha256": "3cf4441b556bb4de9a76c648d2a2759ee3aae8fd3747e64aabbe3464505e63e2"
+    },
+    {
+      "path": "tests\\atlas-incremental.test.js",
+      "sha256": "31151d112e859b31eb1a8e6032e9768c47f7673c6f6183232343715004d3ee80"
+    },
+    {
+      "path": "tests\\atlas-interpretation-evaluation.test.js",
+      "sha256": "71569258607c2ff0fae4781ea73f423f6bed1726f721af3818c264b87c758b6b"
+    },
+    {
+      "path": "tests\\atlas-interpretation.test.js",
+      "sha256": "e5152961a165031fe73ade2052e137f0fa1859e3b9691a29cb2f2952433cf7f4"
+    },
+    {
+      "path": "tests\\atlas-lab-consultation.test.js",
+      "sha256": "e3768dc4662fa0df6edfcfe8756e818741f4749eacf9997aedb499f446979ccd"
+    },
+    {
+      "path": "tests\\atlas-lab-interpretation.test.js",
+      "sha256": "96228524310a0fa37c9464f0a65b7b99bd9d0ef3604904be5d98769805cb55be"
+    },
+    {
+      "path": "tests\\atlas-lab-model-host.test.js",
+      "sha256": "483dbe1142125736323819de4fcc29d743132b7d613c1143420c039a84995de1"
+    },
+    {
+      "path": "tests\\atlas-label-anchor.test.js",
+      "sha256": "c0ea2c52ef47f6d3ef9e454c4a76857fc3eb3c43c4249d05acf9dbc2c8c5e486"
+    },
+    {
+      "path": "tests\\atlas-learning-sync.test.js",
+      "sha256": "847bad3de8514141d163d0709baed3b5d5892c23b05ccecca6942c87e95cacb1"
+    },
+    {
+      "path": "tests\\atlas-learning.test.js",
+      "sha256": "01097327c131b59f778a6712810530c8249435a7648bc92d42ea1d2d1ac43726"
+    },
+    {
+      "path": "tests\\atlas-ledger-recovery.test.js",
+      "sha256": "d27ff05f4611fde677a599e674fae6fb4b48bf57b1a9fc1796a14d1fdcd452f3"
+    },
+    {
+      "path": "tests\\atlas-ledger-sync.test.js",
+      "sha256": "d098286f05cac5fa2ea6bc355cd6305ef479a93cfd9d447cf7b8cf5b2d612b9f"
+    },
+    {
+      "path": "tests\\atlas-ledger.test.js",
+      "sha256": "8459cc8a53ee048940b2712a964b05ab8dae33958ed118648bdd6e46feca88b7"
+    },
+    {
+      "path": "tests\\atlas-life.test.js",
+      "sha256": "e8461887743d74a2c11e1164ea7e17a2cf844d9a2eaefb7588a53104f3bba182"
+    },
+    {
+      "path": "tests\\atlas-loop.test.js",
+      "sha256": "ef4d60ae4b3a83eba75778305926b9b1b8c6619d3f3d8af9627ff52635aaa823"
+    },
+    {
+      "path": "tests\\atlas-memory-sync.test.js",
+      "sha256": "96645e7de92e993faf9b196dfaa52a6be41593402369c4733349c333326dc3e4"
+    },
+    {
+      "path": "tests\\atlas-model-extraction.test.js",
+      "sha256": "48ae71b660d6be57a709d9410cef4d1c6a2f0afa4586de0c7a112fe11a6f2eb4"
+    },
+    {
+      "path": "tests\\atlas-no-feedback.test.js",
+      "sha256": "e95a2f34fbc44d66cff2a9e5f5ecbf466a9163ec1559e95e0f32f0bfc36f5a61"
+    },
+    {
+      "path": "tests\\atlas-outcomes.test.js",
+      "sha256": "956e7e2efdc3a7257f7134326c22e4ac48a6b23f4fd3c1db34694906e8e8a5c2"
+    },
+    {
+      "path": "tests\\atlas-personalization-conflict.test.js",
+      "sha256": "7238b623ed40a6c552be2ee4555369cacbc9a2d01f55a9b5a927c80a053d3683"
+    },
+    {
+      "path": "tests\\atlas-personalization.test.js",
+      "sha256": "74e2be757dee4d8df879767e67c64f199c0d17c4926d13ebf843273454e0a2ba"
+    },
+    {
+      "path": "tests\\atlas-preferences.test.js",
+      "sha256": "8679250ab8934c7c8205b3380dd1b92b0ff19e1abcce1cb134542f97117c4a6f"
+    },
+    {
+      "path": "tests\\atlas-provenance-review.test.js",
+      "sha256": "9678be2d0fb7a3756eafc0caae627f51cc68192caf8585bb2c70740f783bfd0b"
+    },
+    {
+      "path": "tests\\atlas-review-fixes.test.js",
+      "sha256": "591693dd30589d4285123b569dbe8609bcc7fd65abcaa7fa56928f4316691418"
+    },
+    {
+      "path": "tests\\atlas-storage-failure.test.js",
+      "sha256": "d6f93cc7f0dcd418e1548164886fa2579e8bcf4795d457fb46816394c9592b8e"
+    },
+    {
+      "path": "tests\\atlas-sync-fixes.test.js",
+      "sha256": "bf7e21a77031b663b428047e3da56fd995ee583c18ff5a699f5b7938adffa0bb"
+    },
+    {
+      "path": "tests\\atlas-temper-flow.test.js",
+      "sha256": "e6e3ef326c2f7563ca851c7dd0fefb7b66e28b5d9f10264fe3ab06806337da39"
+    },
+    {
+      "path": "tests\\atlas-temper.test.js",
+      "sha256": "26ff73fc503d9dad39b80c242892822744b6903774fc0203101bf59f7882dd09"
+    },
+    {
+      "path": "tests\\atlas-topik-layers.test.js",
+      "sha256": "b06b9b4475512e89cbcef3e0dde6154a5e5c4f9c000861019033581a5f8c7836"
+    },
+    {
+      "path": "tests\\atlas-trail.test.js",
+      "sha256": "06e3e71b54375d75d61283cabb6891f1ae6afce843ad1050365dca71a86ae06f"
+    },
+    {
+      "path": "tests\\atlas-vellum-flow.test.js",
+      "sha256": "3ae29e92a303bdb2fc5486d0a76f93451447bc929921549c01f609bf7f463b37"
+    },
+    {
+      "path": "tests\\atlas-work.test.js",
+      "sha256": "c97a9e0fb7afd3c3cfab225a97e3bc0582c6302ad9feb149def4e770e239d12d"
+    },
+    {
+      "path": "tests\\atlas.test.js",
+      "sha256": "df4d4e002b2666ac8d670a636e09cd4ec1ff12cb9e4e2e7afe647b637bc1205a"
+    },
+    {
+      "path": "tools/capture-atlas-interpretation-evaluation.mjs",
+      "sha256": "6c57e8d52726922c196a2498275c3faf37159cec1dba38bfa30b0e4270530ef3"
+    }
+  ],
+  "limitations": [
+    "Mock provider responses validate wiring and lifecycle, not language-model quality.",
+    "Response removal is logical active-ledger deletion, not erasure of database page remnants, external backups or provider records.",
+    "Browsers were local Chrome at 1280/390/320 CSS pixels, not physical phone devices.",
+    "Process kill and disk failure were not separately fault-injected.",
+    "Loaded-source proof assumes a trusted local host; it does not prove absence of arbitrary memory tampering."
+  ]
+}

@@ -31,10 +31,158 @@ export const TASKS = Object.freeze({
 });
 export const ANSWERS = {match:'자료와 일치',wrong:'사실·조건이 다름',unsupported:'확정할 근거가 없음',missing:'필요한 내용이 누락됨'};
 export const FOCUS = {numbers:'숫자·기한 대조',evidence:'주장과 근거 구분',completeness:'누락·성공 기준 확인'};
+// These observations concern fixed checks in fictional exercises, never ability,
+// personality or the accuracy of a person's freely written work.
+export const PRACTICE_CONTRACT = Object.freeze({
+  id:'shift-practice-review',version:'1',purpose:'fictional-check-review',
+  fields:Object.keys(FOCUS).map(id=>({id,kind:'enum',values:['correct','incorrect'],maxAgeDays:30,minIndependent:1,minAgreement:0.67})),
+  criteria:Object.keys(FOCUS).map(id=>({id:`${id}-practice`,field:id,feature:id,weight:1,required:false,prefer:'match'}))
+});
 export const GOALS = {clarity:'핵심을 3줄 이내로 정리하기',work:'담당·할 일·확인 사항을 포함한 실행 초안 만들기',prepare:'초안과 함께 실제 사용 전 확인할 항목 적기'};
 export const escapeHTML = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const now = () => new Date().toISOString();
-export function newState(){return {version:1,save:false,settings:{task:'meeting',goal:'clarity',minutes:5,support:'step'},profile:null,events:[],run:null,history:[]};}
+export function newState(){return {version:1,save:false,settings:{task:'meeting',goal:'clarity',minutes:5,support:'step'},profile:null,events:[],run:null,history:[],evaluation:{decisions:[],exposures:[],outcomes:[]}};}
+const evaluationScope=(state,scope)=>({domain:scope.domain,workspace:`p.${scope.productId}:c.${scope.contextId}:g.${state.profile.generation}`,purpose:PRACTICE_CONTRACT.purpose});
+export const PRACTICE_POLICIES=Object.freeze([{id:'fixed-check-order',version:'1'},{id:'evidence-check-order',version:'1'}]);
+// The policy selects the first check in a practice. Its downstream outcome is the
+// fraction of all presented checks matched on their initial review, before hints.
+export function outcomeContract(state,scope=SCOPE){return {id:'shift-first-check-result',version:'1',scope:evaluationScope(state,scope),outcome:{id:'initial-review-match-ratio',kind:'numeric',range:[0,1],direction:'higher',windowMs:86400000}};}
+export function practiceEvaluation(state,temper,at=now(),scope=SCOPE){
+  if(!state.profile||!temper?.evaluateOutcomes)return null;
+  const input={contract:outcomeContract(state,scope),...(state.evaluation||{decisions:[],exposures:[],outcomes:[]}),policies:PRACTICE_POLICIES,subjects:[scope.personId],asOf:at};
+  // Validate every supplied record before excluding analytical descendants; a
+  // withdrawal must not hide malformed or foreign records from boundary checks.
+  const report=temper.evaluateOutcomes(input);checkEvaluationLineage(state);
+  const retained=retainedEvaluation(state);
+  const events=ownedEvents(state,scope),excluded=new Set(events.filter(e=>e.type==='record.excluded').map(e=>e.targetId));
+  if(!excluded.size&&retained.decisions.length===input.decisions.length)return report;
+  const removedDecisions=new Set(events.filter(e=>e.type==='decision.made'&&excluded.has(e.id)).map(e=>`review.${e.id}`));
+  const removedResults=new Set(events.filter(e=>e.type==='experience.completed'&&excluded.has(e.id)).map(e=>`review.${e.decisionId}`));
+  const decisions=retained.decisions.filter(row=>!removedDecisions.has(row.id)),ids=new Set(decisions.map(row=>row.id));
+  const exposures=retained.exposures.filter(row=>ids.has(row.decisionId)),validResults=new Set(exposures.filter(row=>!removedResults.has(row.decisionId)).map(row=>row.id));
+  const outcomes=retained.outcomes.filter(row=>validResults.has(row.exposureId));
+  return temper.evaluateOutcomes({...input,decisions,exposures,outcomes});
+}
+export function recordPracticeExposure(state,at=now(),scope=SCOPE){
+  if(!state.run||state.run.step!=='practice')return state;
+  const evaluation=state.evaluation,decision=evaluation?.decisions.find(d=>d.id===state.run.reviewDecisionId);
+  if(!decision||evaluation.exposures.some(e=>e.decisionId===decision.id))return state;
+  if(decision.subject!==scope.personId||JSON.stringify(decision.scope)!==JSON.stringify(evaluationScope(state,scope))||Date.parse(at)<Date.parse(decision.at))throw new Error('다른 실습의 화면 기록이에요.');
+  return {...state,evaluation:{...evaluation,exposures:[...evaluation.exposures,{id:`seen.${decision.id}`,subject:scope.personId,scope:{...decision.scope},at,decisionId:decision.id,candidateId:decision.selectedId}]}};
+}
+function ownedEvents(state,scope){
+  if(!state.profile?.consent)return [];
+  const owned={domain:scope.domain,subject:scope.personId,workspace:`p.${scope.productId}:c.${scope.contextId}:g.${state.profile.generation}`};
+  return state.events.filter(e=>Object.keys(owned).every(key=>e.scope?.[key]===owned[key]));
+}
+function effectiveCompletions(state,scope){
+  const events=ownedEvents(state,scope);
+  const excluded=new Set(events.filter(e=>e.type==='record.excluded').map(e=>e.targetId));
+  const decisions=new Set(events.filter(e=>e.type==='decision.made'&&!excluded.has(e.id)).map(e=>e.id));
+  return events.filter(e=>e.type==='experience.completed'&&!excluded.has(e.id)&&decisions.has(e.decisionId));
+}
+const sameList=(a,b)=>Array.isArray(a)&&Array.isArray(b)&&a.length===b.length&&a.every((value,index)=>value===b[index]);
+const brokenHistory=()=>{throw new Error('저장된 실습 기록과 완료 근거가 일치하지 않아요.');};
+function historyLineage(state,h){
+  const matches=state.events.filter(e=>e.type==='experience.completed'&&(h.completionId?e.id===h.completionId:e.at===h.at&&e.variant?.startsWith(`${h.task}.`)));
+  if(matches.length!==1)brokenHistory();
+  const completion=matches[0],decision=state.events.find(e=>e.type==='decision.made'&&e.id===completion.decisionId);
+  const [taskId,variant]=String(decision?.variant||'').split('.'),task=TASKS[taskId],count=variant==='quick'?2:3;
+  if(!task||!['quick','full','deep'].includes(variant)||h.task!==taskId||h.at!==completion.at||completion.variant!==decision.variant||completion.experienceId!=='shift-workbench'||decision.experienceId!=='shift-workbench'||(h.decisionId&&h.decisionId!==decision.id)||h.total!==count||!Number.isInteger(h.correct)||h.correct<0||h.correct>count||!Array.isArray(h.missed)||new Set(h.missed).size!==h.missed.length||h.missed.some(f=>!task.checks.some(c=>c.focus===f)))brokenHistory();
+  if(h.review){
+    if(!Array.isArray(h.review)||h.review.length!==count||new Set(h.review.map(c=>c.id)).size!==count||h.review.some(c=>typeof c.correct!=='boolean'||!task.checks.some(check=>check.id===c.id&&check.focus===c.focus))||h.correct!==h.review.filter(c=>c.correct).length||!sameList([...new Set(h.review.filter(c=>!c.correct).map(c=>c.focus))].sort(),[...h.missed].sort()))brokenHistory();
+    const metric=state.evaluation?.decisions.find(d=>d.id===`review.${decision.id}`);
+    if(metric){
+      const first=task.checks.find(c=>c.id===metric.selectedId);if(!first)brokenHistory();
+      const checks=[...task.checks];if(metric.policy.id==='evidence-check-order')checks.sort((a,b)=>Number(b.focus===first.focus)-Number(a.focus===first.focus));
+      if(!sameList(h.review.map(c=>c.id),checks.slice(0,count).map(c=>c.id)))brokenHistory();
+    }
+    if(state.run?.decisionId===decision.id){const checked=evaluate(state.run);if(!sameList(h.review.map(c=>c.id),state.run.checkIds)||h.review.some((c,i)=>c.correct!==checked[i].correct))brokenHistory();}
+  }
+  return {summary:h,completion,decision};
+}
+function checkEvaluationLineage(state){
+  const lineage=state.history.map(h=>historyLineage(state,h)),evaluation=state.evaluation||{decisions:[],exposures:[],outcomes:[]};
+  const decisions=new Map();
+  for(const metric of evaluation.decisions){
+    const decision=state.events.find(e=>e.type==='decision.made'&&`review.${e.id}`===metric.id),task=TASKS[String(decision?.variant||'').split('.')[0]];
+    if(!decision||decision.experienceId!=='shift-workbench'||!task||metric.at!==decision.at||!sameList(metric.candidateIds,task.checks.map(c=>c.id)))brokenHistory();
+    const summary=lineage.find(row=>row.decision.id===decision.id)?.summary;
+    if(summary?.review&&metric.selectedId!==summary.review[0].id)brokenHistory();
+    if(state.run?.decisionId===decision.id&&metric.selectedId!==state.run.checkIds[0])brokenHistory();
+    decisions.set(metric.id,decision);
+  }
+  for(const outcome of evaluation.outcomes){
+    const exposure=evaluation.exposures.find(e=>e.id===outcome.exposureId),decision=decisions.get(exposure?.decisionId);
+    const completion=state.events.find(e=>e.type==='experience.completed'&&e.decisionId===decision?.id);
+    if(!completion||outcome.at!==completion.at)brokenHistory();
+    const summary=lineage.find(row=>row.completion.id===completion.id)?.summary;
+    // Older saves may have more outcomes than retained summaries. Validate their
+    // event lineage here; retainedEvaluation then removes unverifiable results.
+    if(summary&&outcome.value!==summary.correct/summary.total)brokenHistory();
+  }
+}
+function retainedEvaluation(state){
+  const evaluation=state.evaluation||{decisions:[],exposures:[],outcomes:[]};
+  const completed=new Set(state.events.filter(e=>e.type==='experience.completed').map(e=>`review.${e.decisionId}`));
+  const summarized=new Set(state.history.map(h=>`review.${historyLineage(state,h).decision.id}`));
+  // A completed result leaves with its detailed summary. Keep its entire
+  // analytical chain together so deletion cannot turn it into a missing result.
+  const decisions=evaluation.decisions.filter(row=>!completed.has(row.id)||summarized.has(row.id)),ids=new Set(decisions.map(row=>row.id));
+  const exposures=evaluation.exposures.filter(row=>ids.has(row.decisionId)),seen=new Set(exposures.map(row=>row.id));
+  return {decisions,exposures,outcomes:evaluation.outcomes.filter(row=>seen.has(row.exposureId))};
+}
+export function practiceObservations(state,scope=SCOPE){
+  if(!state.profile?.consent)return [];
+  const owned={domain:scope.domain,subject:scope.personId,workspace:`p.${scope.productId}:c.${scope.contextId}:g.${state.profile.generation}`};
+  const completions=effectiveCompletions(state,scope);
+  return state.history.flatMap(h=>{
+    const completion=completions.find(e=>h.completionId?e.id===h.completionId:e.at===h.at&&e.variant?.startsWith(`${h.task}.`));
+    if(!completion)return [];
+    historyLineage(state,h);
+    // Old records only identify missed checks. An unmentioned focus is unknown,
+    // because a short exercise may never have presented it.
+    const fields=h.review?[...new Set(h.review.map(c=>c.focus))]:h.missed;
+    return fields.map(field=>{
+      const reviewed=h.review?.filter(c=>c.focus===field);
+      return {id:`${completion.id}.${field}`,scope:{...owned},contract:{id:PRACTICE_CONTRACT.id,version:PRACTICE_CONTRACT.version,purpose:PRACTICE_CONTRACT.purpose},field,value:reviewed?.every(c=>c.correct)?'correct':'incorrect',source:'observed',
+        independentKey:`${completion.id}.${field}`,at:completion.at,recordedAt:completion.recordedAt,
+        refs:[completion.id,...(reviewed||[]).map(c=>`${h.task}.${c.id}`)]};
+    });
+  });
+}
+function reviewDecision(state,candidates,engine,at,scope){
+  const domain=engine?.domain||globalThis.SynkAtlasDomain;
+  if(!domain?.decide)throw new Error('검토 기록 모듈을 불러오지 못했어요. 새로고침해 주세요.');
+  return domain.decide({contract:PRACTICE_CONTRACT,scope:{domain:scope.domain,subject:scope.personId,workspace:`p.${scope.productId}:c.${scope.contextId}:g.${state.profile.generation}`},observations:practiceObservations(state,scope),at,candidates});
+}
+const reviewReason=ranked=>ranked?.reasons?.find(reason=>reason.value==='incorrect'&&reason.candidateValue==='incorrect'&&reason.contribution>0);
+function currentReviewReason(state,ranked){
+  const reason=reviewReason(ranked),valid=new Set(practiceObservations(state,state.profile?.scope||SCOPE).map(row=>row.id));
+  return reason?.evidence.length&&reason.evidence.every(id=>valid.has(id))?reason:null;
+}
+export function decisionEvidence(state,decision){
+  const reason=currentReviewReason(state,decision?.selected);
+  if(!reason)return [];
+  const completions=effectiveCompletions(state,state.profile.scope);
+  return reason.evidence.flatMap(id=>{
+    const summary=state.history.find(h=>completions.some(e=>(h.completionId?e.id===h.completionId:e.at===h.at&&e.variant?.startsWith(`${h.task}.`))&&id===`${e.id}.${reason.field}`));
+    return summary?[{id,task:summary.task,at:summary.at,focus:reason.field,correct:summary.review?.filter(c=>c.focus===reason.field).every(c=>c.correct)??!summary.missed.includes(reason.field),assisted:summary.assisted}]:[];
+  });
+}
+export function practiceBasis(state){
+  const records=decisionEvidence(state,state.run?.focusDecision),lines=records.map(r=>`${new Date(r.at).toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul'})} · ${TASKS[r.task].name} · ${FOCUS[r.focus]}: ${r.correct?'판단과 근거 일치':'다시 확인'} (${r.assisted?'안내 사용':'스스로 검토'})`);
+  const uncertain=(state.run?.focusDecision?.understanding?.needsCheck||[]).filter(f=>TASKS[state.run.task].checks.some(c=>c.focus===f));
+  if(uncertain.length)lines.push(`${uncertain.map(f=>FOCUS[f]).join(', ')}: 기록이 충분하지 않거나 결과가 엇갈려 순서에 반영하지 않았어요.`);
+  return lines;
+}
+export function practiceReason(state){
+  const run=state.run;
+  if(!run)return '';
+  // A cached presentation may outlive the evidence it cited. Keep its original
+  // time/support explanation, but stop presenting a withdrawn review as current.
+  return run.focusDecision&&!currentReviewReason(state,run.focusDecision.selected)?run.reason.split(' 지난 실습의 ')[0]:run.reason;
+}
 export function startRun(state,settings,engine,at=now(),scope=SCOPE){
   if(!Object.hasOwn(TASKS,settings.task)||!['clarity','work','prepare'].includes(settings.goal)||![5,10,15].includes(settings.minutes)||!['step','independent'].includes(settings.support))throw new Error('실습 조건을 다시 선택해 주세요.');
   let profile = state.profile || engine.createProfile({scope,at});
@@ -48,15 +196,23 @@ export function startRun(state,settings,engine,at=now(),scope=SCOPE){
   if(selection.plan.status!=='ready')throw new Error('지금 조건에 맞는 실습을 선택하지 못했어요.');
   const variant=selection.plan.selected.id.split('.').at(-1);
   let checks=[...TASKS[settings.task].checks];
-  const last=state.history.at(-1),focus=last?.missed?.find(value=>checks.some(check=>check.focus===value));
+  const focusDecision=reviewDecision({...state,profile:selection.profile,events:selection.events},checks.map(c=>({id:c.id,features:{[c.focus]:'incorrect'}})),engine,at,scope);
+  const focus=reviewReason(focusDecision.selected)?.field;
   if(focus)checks.sort((a,b)=>Number(b.focus===focus)-Number(a.focus===focus));
   checks=checks.slice(0,variant==='quick'?2:3);
-  return {...state,settings:{...settings},profile:selection.profile,events:selection.events,run:{task:settings.task,goal:settings.goal,variant,checkIds:checks.map(c=>c.id),decisionId:selection.plan.id,startedAt:at,step:'practice',prompt:'',answers:{},result:null,draft:TASKS[settings.task].sample,reviewed:false,feedback:null,reason:`${settings.minutes}분 안에서 ${variant==='quick'?'핵심 2개':'전체 3개'} 항목을 ${selection.presentation.support==='step'?'안내와 함께':'스스로'} 확인합니다.${variant==='deep'?' 검토 후 실제 업무에 적용할 확인 항목도 정리해요.':''}${focus?' 지난 실습의 '+FOCUS[focus]+' 항목부터 살펴봐요.':''}`,support:selection.presentation.support}};
+  const next={...state,settings:{...settings},profile:selection.profile,events:selection.events,run:{task:settings.task,goal:settings.goal,variant,checkIds:checks.map(c=>c.id),decisionId:selection.plan.id,focusDecision,reviewDecisionId:`review.${selection.plan.id}`,startedAt:at,step:'practice',prompt:'',answers:{},result:null,draft:TASKS[settings.task].sample,reviewed:false,feedback:null,reason:`${settings.minutes}분 안에서 ${variant==='quick'?'핵심 2개':'전체 3개'} 항목을 ${selection.presentation.support==='step'?'안내와 함께':'스스로'} 확인합니다.${variant==='deep'?' 검토 후 실제 업무에 적용할 확인 항목도 정리해요.':''}${focus?' 지난 실습의 '+FOCUS[focus]+' 항목부터 살펴봐요. 가상 자료의 확인 기록이며 업무 능력 평가는 아닙니다.':''}`,support:selection.presentation.support}};
+  const boundary=evaluationScope(next,scope),prior=state.evaluation||{decisions:[],exposures:[],outcomes:[]};
+  const decisions=prior.decisions.filter(row=>row.subject===scope.personId&&JSON.stringify(row.scope)===JSON.stringify(boundary)).slice(-199),ids=new Set(decisions.map(row=>row.id));
+  const exposures=prior.exposures.filter(row=>ids.has(row.decisionId)),seen=new Set(exposures.map(row=>row.id));
+  next.evaluation={decisions,exposures,outcomes:prior.outcomes.filter(row=>seen.has(row.exposureId))};
+  next.evaluation.decisions.push({id:next.run.reviewDecisionId,subject:scope.personId,scope:boundary,contract:{id:'shift-first-check-result',version:'1'},at,policy:{...PRACTICE_POLICIES[focus?1:0]},candidateIds:TASKS[settings.task].checks.map(c=>c.id),selectedId:checks[0].id});
+  return next;
 }
 export function nextTaskSuggestion(state){
   const ids=Object.keys(TASKS),current=state.run?.task,index=ids.indexOf(current);
   if(index<0)return {task:ids[0],focus:null};
   const ordered=ids.slice(index+1).concat(ids.slice(0,index));
+  if(state.run?.nextDecision){const selected=state.run.nextDecision.selected,reason=currentReviewReason(state,selected);return {task:reason?selected.id:ordered[0]||ids[0],focus:reason?.field||null};}
   const missed=[...new Set((state.run?.result||[]).filter(check=>!check.correct).map(check=>check.focus))];
   for(const focus of missed){const task=ordered.find(id=>TASKS[id].checks.some(check=>check.focus===focus));if(task)return {task,focus};}
   return {task:ordered[0]||ids[0],focus:null};
@@ -76,15 +232,27 @@ export function completeRun(state,engine,at=now(),scope=SCOPE){
   if(!run.reviewed)throw new Error('수정한 결과를 직접 읽고 확인해 주세요.');
   const events=engine.recordCompletion({profile:state.profile,scope,events:state.events,decisionId:run.decisionId,at});
   const completion=events.find(e=>e.type==='experience.completed'&&e.decisionId===run.decisionId);
-  const summary={task:run.task,at,correct:run.result.filter(c=>c.correct).length,total:run.result.length,missed:[...new Set(run.result.filter(c=>!c.correct).map(c=>c.focus))],prompt:run.prompt,draft:run.draft,assisted:run.support==='step'};
-  return {...state,events,run:{...run,step:'result',completionId:completion.id,completedAt:at},history:[...state.history,summary].slice(-20)};
+  const summary={task:run.task,at,completionId:completion.id,decisionId:run.decisionId,correct:run.result.filter(c=>c.correct).length,total:run.result.length,missed:[...new Set(run.result.filter(c=>!c.correct).map(c=>c.focus))],review:run.result.map(c=>({id:c.id,focus:c.focus,correct:c.correct})),prompt:run.prompt,draft:run.draft,assisted:run.support==='step'};
+  const next={...state,events,run:{...run,step:'result',completionId:completion.id,completedAt:at},history:[...state.history,summary].slice(-20)};
+  const ids=Object.keys(TASKS),index=ids.indexOf(run.task),ordered=ids.slice(index+1).concat(ids.slice(0,index));
+  next.run.nextDecision=reviewDecision(next,ordered.map(id=>({id,features:Object.fromEntries(TASKS[id].checks.map(c=>[c.focus,'incorrect']))})),engine,at,scope);
+  const exposure=next.evaluation?.exposures.find(e=>e.decisionId===run.reviewDecisionId);
+  if(exposure)next.evaluation={...next.evaluation,outcomes:[...next.evaluation.outcomes,{id:`result.${run.reviewDecisionId}`,subject:scope.personId,scope:{...exposure.scope},at,exposureId:exposure.id,value:summary.correct/summary.total}]};
+  next.evaluation=retainedEvaluation(next);
+  return next;
 }
 export function giveFeedback(state,value,engine,at=now(),scope=SCOPE){
   if(!state.run?.completionId||state.run.feedback)throw new Error('완료한 실습에 한 번만 피드백할 수 있어요.');
   const events=engine.recordFeedback({profile:state.profile,scope,events:state.events,completionId:state.run.completionId,value,at});
   return {...state,events,run:{...state.run,feedback:value}};
 }
-export function restore(text,engine,scope=SCOPE){
+function checkSavedDecision(decision,ids,profile,scope){
+  if(!decision)return;
+  const owner={domain:scope.domain,subject:scope.personId,workspace:`p.${scope.productId}:c.${scope.contextId}:g.${profile.generation}`};
+  const ranking=rank=>rank&&ids.includes(rank.id)&&Number.isFinite(rank.score)&&Array.isArray(rank.reasons)&&rank.reasons.length<=3&&rank.reasons.every(reason=>Object.hasOwn(FOCUS,reason.field)&&['correct','incorrect'].includes(reason.value)&&['correct','incorrect'].includes(reason.candidateValue)&&Number.isFinite(reason.contribution)&&Array.isArray(reason.evidence)&&reason.evidence.length<=60&&reason.evidence.every(id=>typeof id==='string'&&id.length<=120));
+  if(decision.version!=='core-domain-1'||Object.keys(owner).some(key=>decision.scope?.[key]!==owner[key])||['id','version','purpose'].some(key=>decision.contract?.[key]!==PRACTICE_CONTRACT[key])||!Array.isArray(decision.ranked)||decision.ranked.length>ids.length||decision.ranked.some(rank=>!ranking(rank))||(decision.selected&&!ranking(decision.selected))||!Array.isArray(decision.understanding?.needsCheck)||decision.understanding.needsCheck.some(f=>!Object.hasOwn(FOCUS,f)))throw new Error('저장된 추천 근거를 확인할 수 없어요.');
+}
+export function restore(text,engine,scope=SCOPE,temper){
   if(typeof text!=='string'||text.length>1000000)throw new Error('저장된 실습을 읽을 수 없어요.');
   const value=JSON.parse(text);
   if(value?.version!==1||value.save!==true||!Array.isArray(value.events)||value.events.length>5000||!Array.isArray(value.history)||value.history.length>20)throw new Error('지원하지 않는 저장 형식이에요.');
@@ -97,6 +265,12 @@ export function restore(text,engine,scope=SCOPE){
     if(r.result)r.result=evaluate(r);
     if(r.step==='result'&&!value.events.some(e=>e.type==='experience.completed'&&e.id===r.completionId&&e.decisionId===r.decisionId))throw new Error('완료 기록을 확인할 수 없어요.');}
   if(value.history.some(h=>!Object.hasOwn(TASKS,h?.task)||!Array.isArray(h.missed)||h.missed.some(f=>!Object.hasOwn(FOCUS,f))||typeof h.draft!=='string'||typeof h.prompt!=='string'||!Number.isInteger(h.correct)||!Number.isInteger(h.total)))throw new Error('이전 실습 기록을 확인할 수 없어요.');
+  if(value.history.some(h=>h.review&&(!Array.isArray(h.review)||h.review.length>3||h.review.some(c=>typeof c.correct!=='boolean'||!TASKS[h.task].checks.some(check=>check.id===c.id&&check.focus===c.focus)))))throw new Error('이전 검토 근거를 확인할 수 없어요.');
+  if(value.run){checkSavedDecision(value.run.focusDecision,TASKS[value.run.task].checks.map(c=>c.id),value.profile,scope);checkSavedDecision(value.run.nextDecision,Object.keys(TASKS).filter(id=>id!==value.run.task),value.profile,scope);}
+  value.evaluation??={decisions:[],exposures:[],outcomes:[]};
+  if(!temper?.evaluateOutcomes)throw new Error('실습 기록 검증 모듈을 불러오지 못했어요.');
+  practiceEvaluation(value,temper,now(),scope);
+  value.evaluation=retainedEvaluation(value);
   return value;
 }
 export function persist(storage,state,key=STORAGE_KEY){if(!state.save)return {ok:true,saved:false};try{storage.setItem(key,JSON.stringify(state));return {ok:true,saved:true};}catch{return {ok:false,saved:false,message:'이 기기에 저장하지 못했어요. 창을 닫기 전에 결과를 내려받아 주세요.'};}}

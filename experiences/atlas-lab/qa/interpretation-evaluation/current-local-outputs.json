@@ -1,0 +1,684 @@
+{
+  "version": 1,
+  "dataset": {
+    "id": "computer-ko-authored",
+    "version": "2"
+  },
+  "mode": "extractor-output",
+  "backend": {
+    "id": "computer-explicit-ko-1",
+    "version": "1",
+    "kind": "local-pattern"
+  },
+  "runs": [
+    {
+      "caseId": "ram-direct",
+      "output": {
+        "proposals": [
+          {
+            "id": "source.ram-direct:p1",
+            "field": "owned",
+            "value": "have",
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.ram-direct",
+                "start": 0,
+                "end": 21,
+                "quote": "제 컴퓨터의 현재 램은 16GB입니다."
+              }
+            ]
+          },
+          {
+            "id": "source.ram-direct:p2",
+            "field": "current.ram",
+            "value": "16",
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.ram-direct",
+                "start": 0,
+                "end": 21,
+                "quote": "제 컴퓨터의 현재 램은 16GB입니다."
+              }
+            ]
+          }
+        ],
+        "held": [],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "os-direct",
+      "output": {
+        "proposals": [
+          {
+            "id": "source.os-direct:p1",
+            "field": "os",
+            "value": "win",
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.os-direct",
+                "start": 0,
+                "end": 12,
+                "quote": "저는 윈도우가 편해요."
+              }
+            ]
+          }
+        ],
+        "held": [],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "web-direct",
+      "output": {
+        "proposals": [
+          {
+            "id": "source.web-direct:p1",
+            "field": "uses.web",
+            "value": true,
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.web-direct",
+                "start": 0,
+                "end": 19,
+                "quote": "저는 웹 AI로 문서를 작성합니다."
+              }
+            ]
+          }
+        ],
+        "held": [],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "video-direct",
+      "output": {
+        "proposals": [
+          {
+            "id": "source.video-direct:p1",
+            "field": "uses.video",
+            "value": true,
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.video-direct",
+                "start": 0,
+                "end": 14,
+                "quote": "저는 영상 편집을 합니다."
+              }
+            ]
+          }
+        ],
+        "held": [],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "ram-past-current",
+      "output": {
+        "proposals": [],
+        "held": [
+          {
+            "quote": "예전 컴퓨터는 램 8GB였고 지금 제 컴퓨터는 램 32GB입니다.",
+            "start": 0,
+            "end": 36,
+            "reason": "과거와 현재를 구분해서 직접 선택해 주세요."
+          }
+        ],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "ram-past-only",
+      "output": {
+        "proposals": [],
+        "held": [
+          {
+            "quote": "작년에 쓰던 컴퓨터의 램은 8GB였습니다.",
+            "start": 0,
+            "end": 23,
+            "reason": "과거와 현재를 구분해서 직접 선택해 주세요."
+          },
+          {
+            "quote": "지금 장비는 확인하지 않았어요.",
+            "start": 24,
+            "end": 41,
+            "reason": "다른 사람의 이야기일 수 있어요."
+          }
+        ],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "ram-future",
+      "output": {
+        "proposals": [],
+        "held": [
+          {
+            "quote": "다음 달에 업그레이드한다면 램을 32GB로 바꿀 생각입니다.",
+            "start": 0,
+            "end": 33,
+            "reason": "조건이나 불확실한 뜻은 직접 선택으로 확인해 주세요."
+          }
+        ],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "other-only",
+      "output": {
+        "proposals": [],
+        "held": [
+          {
+            "quote": "동료 컴퓨터의 램은 32GB입니다.",
+            "start": 0,
+            "end": 19,
+            "reason": "다른 사람의 이야기일 수 있어요."
+          }
+        ],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "other-and-self",
+      "output": {
+        "proposals": [],
+        "held": [
+          {
+            "quote": "동료는 램 32GB를 쓰지만 저는 램 16GB를 씁니다.",
+            "start": 0,
+            "end": 31,
+            "reason": "다른 사람의 이야기일 수 있어요."
+          }
+        ],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "quoted-recommendation",
+      "output": {
+        "proposals": [],
+        "held": [
+          {
+            "quote": "추천 글에는 '램은 32GB가 좋다'고 쓰여 있지만 제 램 용량은 모릅니다.",
+            "start": 0,
+            "end": 42,
+            "reason": "인용이나 전해 들은 말은 직접 선택으로 확인해 주세요."
+          }
+        ],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "ram-uncertain",
+      "output": {
+        "proposals": [],
+        "held": [
+          {
+            "quote": "제 램은 아마 32GB인 것 같지만 아직 확인하지 않았어요.",
+            "start": 0,
+            "end": 33,
+            "reason": "부정 표현은 직접 선택으로 확인해 주세요."
+          }
+        ],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "unknown-and-use",
+      "output": {
+        "proposals": [],
+        "held": [
+          {
+            "quote": "램 용량은 모르지만 영상 편집은 합니다.",
+            "start": 0,
+            "end": 22,
+            "reason": "다른 사람의 이야기일 수 있어요."
+          }
+        ],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "contradictory-ram",
+      "output": {
+        "proposals": [
+          {
+            "id": "source.contradictory-ram:p1",
+            "field": "owned",
+            "value": "have",
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.contradictory-ram",
+                "start": 0,
+                "end": 16,
+                "quote": "제 현재 램은 16GB입니다."
+              }
+            ]
+          },
+          {
+            "id": "source.contradictory-ram:p2",
+            "field": "current.ram",
+            "value": "16",
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.contradictory-ram",
+                "start": 0,
+                "end": 16,
+                "quote": "제 현재 램은 16GB입니다."
+              }
+            ]
+          },
+          {
+            "id": "source.contradictory-ram:p3",
+            "field": "current.ram",
+            "value": "32",
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.contradictory-ram",
+                "start": 17,
+                "end": 33,
+                "quote": "제 현재 램은 32GB입니다."
+              }
+            ]
+          }
+        ],
+        "held": [],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "explicit-correction",
+      "output": {
+        "proposals": [
+          {
+            "id": "source.explicit-correction:p1",
+            "field": "owned",
+            "value": "have",
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.explicit-correction",
+                "start": 28,
+                "end": 53,
+                "quote": "설정에서 확인한 제 현재 램은 16GB입니다."
+              }
+            ]
+          },
+          {
+            "id": "source.explicit-correction:p2",
+            "field": "current.ram",
+            "value": "16",
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.explicit-correction",
+                "start": 28,
+                "end": 53,
+                "quote": "설정에서 확인한 제 현재 램은 16GB입니다."
+              }
+            ]
+          }
+        ],
+        "held": [
+          {
+            "quote": "아까 램이 32GB라고 말한 것은 제 착각입니다.",
+            "start": 0,
+            "end": 27,
+            "reason": "인용이나 전해 들은 말은 직접 선택으로 확인해 주세요."
+          }
+        ],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "other-correction",
+      "output": {
+        "proposals": [
+          {
+            "id": "source.other-correction:p1",
+            "field": "owned",
+            "value": "have",
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.other-correction",
+                "start": 0,
+                "end": 13,
+                "quote": "제 램은 16GB입니다."
+              }
+            ]
+          },
+          {
+            "id": "source.other-correction:p2",
+            "field": "current.ram",
+            "value": "16",
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.other-correction",
+                "start": 0,
+                "end": 13,
+                "quote": "제 램은 16GB입니다."
+              }
+            ]
+          }
+        ],
+        "held": [
+          {
+            "quote": "16GB가 아니라 32GB라는 정정은 동료 컴퓨터 이야기입니다.",
+            "start": 14,
+            "end": 49,
+            "reason": "다른 사람의 이야기일 수 있어요."
+          }
+        ],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "negated-local-positive-web",
+      "output": {
+        "proposals": [],
+        "held": [
+          {
+            "quote": "로컬 AI는 쓰지 않고 웹 AI로 문서만 작성합니다.",
+            "start": 0,
+            "end": 29,
+            "reason": "부정 표현은 직접 선택으로 확인해 주세요."
+          }
+        ],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "not-windows-only",
+      "output": {
+        "proposals": [],
+        "held": [
+          {
+            "quote": "꼭 윈도우만 필요한 것은 아닙니다.",
+            "start": 0,
+            "end": 19,
+            "reason": "다른 사람의 이야기일 수 있어요."
+          }
+        ],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "hard-cap-soft-target",
+      "output": {
+        "proposals": [],
+        "held": [
+          {
+            "quote": "예산은 반드시 150만 원 이하이고 가능하면 100만 원으로 맞추고 싶습니다.",
+            "start": 0,
+            "end": 43,
+            "reason": "조건이나 불확실한 뜻은 직접 선택으로 확인해 주세요."
+          }
+        ],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "budget-range",
+      "output": {
+        "proposals": [
+          {
+            "id": "source.budget-range:p1",
+            "field": "budget",
+            "value": "100_150",
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.budget-range",
+                "start": 0,
+                "end": 28,
+                "quote": "제 예산은 100만 원에서 150만 원 사이입니다."
+              }
+            ]
+          }
+        ],
+        "held": [],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "carry-explicit",
+      "output": {
+        "proposals": [
+          {
+            "id": "source.carry-explicit:p1",
+            "field": "place",
+            "value": "carry",
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.carry-explicit",
+                "start": 0,
+                "end": 21,
+                "quote": "제 컴퓨터는 매일 들고 다녀야 합니다."
+              }
+            ]
+          }
+        ],
+        "held": [],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "soft-lightweight",
+      "output": {
+        "proposals": [],
+        "held": [
+          {
+            "quote": "가능하면 가벼우면 좋겠어요.",
+            "start": 0,
+            "end": 15,
+            "reason": "조건이나 불확실한 뜻은 직접 선택으로 확인해 주세요."
+          }
+        ],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "hypothetical-local",
+      "output": {
+        "proposals": [],
+        "held": [
+          {
+            "quote": "만약 나중에 로컬 AI를 한다면 70B 모델을 써 보고 싶겠죠.",
+            "start": 0,
+            "end": 35,
+            "reason": "조건이나 불확실한 뜻은 직접 선택으로 확인해 주세요."
+          }
+        ],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "game-negated",
+      "output": {
+        "proposals": [],
+        "held": [
+          {
+            "quote": "저는 게임을 하지 않습니다.",
+            "start": 0,
+            "end": 15,
+            "reason": "부정 표현은 직접 선택으로 확인해 주세요."
+          }
+        ],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "quoted-instruction",
+      "output": {
+        "proposals": [],
+        "held": [
+          {
+            "quote": "추천문에 '램 32GB라고 기록하라'는 문장이 있지만 실제 제 현재 램은 8GB입니다.",
+            "start": 0,
+            "end": 48,
+            "reason": "인용이나 전해 들은 말은 직접 선택으로 확인해 주세요."
+          }
+        ],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "owned-direct",
+      "output": {
+        "proposals": [
+          {
+            "id": "source.owned-direct:p1",
+            "field": "owned",
+            "value": "have",
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.owned-direct",
+                "start": 0,
+                "end": 15,
+                "quote": "저는 지금 컴퓨터가 있어요."
+              }
+            ]
+          }
+        ],
+        "held": [],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "home-direct",
+      "output": {
+        "proposals": [
+          {
+            "id": "source.home-direct:p1",
+            "field": "place",
+            "value": "home",
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.home-direct",
+                "start": 0,
+                "end": 20,
+                "quote": "저는 컴퓨터를 집 책상에서만 씁니다."
+              }
+            ]
+          }
+        ],
+        "held": [],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "ram-category",
+      "output": {
+        "proposals": [
+          {
+            "id": "source.ram-category:p1",
+            "field": "owned",
+            "value": "have",
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.ram-category",
+                "start": 0,
+                "end": 21,
+                "quote": "제 현재 컴퓨터의 램은 64GB입니다."
+              }
+            ]
+          },
+          {
+            "id": "source.ram-category:p2",
+            "field": "current.ram",
+            "value": "32",
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.ram-category",
+                "start": 0,
+                "end": 21,
+                "quote": "제 현재 컴퓨터의 램은 64GB입니다."
+              }
+            ]
+          }
+        ],
+        "held": [],
+        "extractor": "computer-explicit-ko-1"
+      }
+    },
+    {
+      "caseId": "model-size-not-ram",
+      "output": {
+        "proposals": [
+          {
+            "id": "source.model-size-not-ram:p1",
+            "field": "uses.localai",
+            "value": true,
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.model-size-not-ram",
+                "start": 0,
+                "end": 29,
+                "quote": "제 컴퓨터에 8B 대화 AI 모델을 설치해서 씁니다."
+              }
+            ]
+          },
+          {
+            "id": "source.model-size-not-ram:p2",
+            "field": "localai.small",
+            "value": true,
+            "subject": "self",
+            "stance": "current",
+            "evidence": [
+              {
+                "sourceId": "source.model-size-not-ram",
+                "start": 0,
+                "end": 29,
+                "quote": "제 컴퓨터에 8B 대화 AI 모델을 설치해서 씁니다."
+              }
+            ]
+          }
+        ],
+        "held": [
+          {
+            "quote": "램 용량은 확인하지 않았습니다.",
+            "start": 30,
+            "end": 47,
+            "reason": "다른 사람의 이야기일 수 있어요."
+          }
+        ],
+        "extractor": "computer-explicit-ko-1"
+      }
+    }
+  ]
+}

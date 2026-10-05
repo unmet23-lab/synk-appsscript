@@ -13,6 +13,8 @@ test('workroom serves shared practice modules without exposing the source direct
   const modules={
     '/workroom-practice/model.mjs':'../../../../../experiences/shift-workbench/model.mjs',
     '/workroom-practice/core.js':'../../../../../atlas/engine.js',
+    '/workroom-practice/domain.js':'../../../../../atlas/domain.js',
+    '/workroom-practice/temper-outcomes.js':'../../../../../atlas/temper-outcomes.js',
     '/workroom-practice/personalization.js':'../../../../../atlas/personalization.js',
     '/workroom-practice.js':'./public/workroom-practice.js',
     '/workroom-practice.css':'./public/workroom-practice.css',

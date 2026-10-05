@@ -1,0 +1,1513 @@
+{
+  "at": "2026-10-05T19:55:20.934Z",
+  "localDate": "2026-10-06",
+  "status": "synthetic-contract-verified",
+  "kind": "two-person-matching-contract",
+  "realPeople": 0,
+  "modelCalls": 0,
+  "scenarios": [
+    {
+      "scenario": {
+        "id": "ready",
+        "title": "조건 충족, 아직 소개 전",
+        "description": "두 사람이 밝힌 필수조건과 소개 동의가 있어요. 실제 소개 전달과 수락은 따로 확인해요."
+      },
+      "eligibility": "eligible",
+      "canIntroduce": true,
+      "checks": [
+        {
+          "owner": "person-a",
+          "other": "person-b",
+          "field": "requires.meetingTime",
+          "label": "상대에게 필수로 요구하는 만남 시간",
+          "requiredValue": "weekend",
+          "actualValue": "weekend",
+          "status": "pass",
+          "reason": "명시한 조건을 충족해요."
+        },
+        {
+          "owner": "person-a",
+          "other": "person-b",
+          "field": "requires.conversationPace",
+          "label": "상대에게 필수로 요구하는 대화 속도",
+          "requiredValue": "slow",
+          "actualValue": "slow",
+          "status": "pass",
+          "reason": "명시한 조건을 충족해요."
+        },
+        {
+          "owner": "person-b",
+          "other": "person-a",
+          "field": "requires.meetingTime",
+          "label": "상대에게 필수로 요구하는 만남 시간",
+          "requiredValue": "weekend",
+          "actualValue": "weekend",
+          "status": "pass",
+          "reason": "명시한 조건을 충족해요."
+        },
+        {
+          "owner": "person-b",
+          "other": "person-a",
+          "field": "requires.conversationPace",
+          "label": "상대에게 필수로 요구하는 대화 속도",
+          "requiredValue": "slow",
+          "actualValue": "slow",
+          "status": "pass",
+          "reason": "명시한 조건을 충족해요."
+        }
+      ],
+      "mutual": "not-introduced",
+      "nextQuestion": null,
+      "counts": {
+        "decisions": 0,
+        "exposures": 0,
+        "outcomes": 0,
+        "resultDeliveries": 0,
+        "historicalResultDeliveries": 0
+      },
+      "measurement": {
+        "version": "temper-outcomes-1",
+        "contract": {
+          "id": "matching.mutual-intent",
+          "version": "1",
+          "scope": {
+            "domain": "SYNK",
+            "workspace": "synthetic-matching",
+            "purpose": "explicit-introduction"
+          },
+          "outcome": {
+            "id": "explicit-mutual-intent",
+            "kind": "binary",
+            "direction": "higher",
+            "allowedValues": [
+              0,
+              1
+            ],
+            "windowMs": 1800000
+          }
+        },
+        "asOf": "2026-10-06T00:00:10.000Z",
+        "minimumSubjects": 5,
+        "byPolicy": [
+          {
+            "policy": {
+              "id": "mutual-required",
+              "version": "1"
+            },
+            "counts": {
+              "decisions": 0,
+              "abstained": 0,
+              "delivered": 0,
+              "undelivered": 0,
+              "pending": 0,
+              "matured": 0,
+              "observed": 0,
+              "missing": 0,
+              "late": 0
+            },
+            "subjects": {
+              "decided": 0,
+              "observed": 0
+            },
+            "status": "no_sample",
+            "mean": null,
+            "measurementCompletion": null,
+            "cost": {
+              "unit": null,
+              "recorded": 0,
+              "missing": 0,
+              "total": null,
+              "mean": null
+            },
+            "latencyMs": {
+              "recorded": 0,
+              "missing": 0,
+              "mean": null,
+              "max": null
+            }
+          },
+          {
+            "policy": {
+              "id": "reference-not-run",
+              "version": "1"
+            },
+            "counts": {
+              "decisions": 0,
+              "abstained": 0,
+              "delivered": 0,
+              "undelivered": 0,
+              "pending": 0,
+              "matured": 0,
+              "observed": 0,
+              "missing": 0,
+              "late": 0
+            },
+            "subjects": {
+              "decided": 0,
+              "observed": 0
+            },
+            "status": "no_sample",
+            "mean": null,
+            "measurementCompletion": null,
+            "cost": {
+              "unit": null,
+              "recorded": 0,
+              "missing": 0,
+              "total": null,
+              "mean": null
+            },
+            "latencyMs": {
+              "recorded": 0,
+              "missing": 0,
+              "mean": null,
+              "max": null
+            }
+          }
+        ],
+        "duplicates": {
+          "decisions": 0,
+          "exposures": 0,
+          "outcomes": 0
+        },
+        "comparison": {
+          "status": "insufficient_evidence",
+          "difference": null,
+          "directedDifference": null,
+          "direction": "unknown",
+          "unit": "subject-mean-of-observed-matured-outcomes"
+        },
+        "causalClaim": false,
+        "significanceTested": false,
+        "calibrated": false,
+        "policyPromotion": false,
+        "limitations": [
+          "The host authorizes subjects and purpose; this function does not authenticate or grant consent.",
+          "Observed outcomes describe the supplied records; missing responses are unknown, not failures.",
+          "Selection, nonresponse and different people can bias policy means; this is not a causal or significance test."
+        ]
+      },
+      "limits": [
+        "합성 두 사람의 명시 조건·동의·전달 연결만 확인해요. 실제 관계 적합성이나 매칭 효과는 검증하지 않았어요.",
+        "현재 유효한 소개만 집계해요. 서로 연결된 두 사람의 의향을 독립적인 효과 표본으로 해석하지 않아요.",
+        "Temper의 합성 관측창은 소개 전달 뒤 30분이에요. 미응답과 늦은 답을 실패로 채우지 않아요.",
+        "참고 정책은 실행하지 않았어요. Temper의 비교·정책 승격 근거가 없어요. 실제 인증·동의 확인·전송·보관은 제품 호스트의 책임이에요."
+      ]
+    },
+    {
+      "scenario": {
+        "id": "mismatch",
+        "title": "한쪽 필수조건 불일치",
+        "description": "A가 원하는 조건은 B가 충족하지만, B가 원하는 시간은 A가 충족하지 않아요."
+      },
+      "eligibility": "ineligible",
+      "canIntroduce": false,
+      "checks": [
+        {
+          "owner": "person-a",
+          "other": "person-b",
+          "field": "requires.meetingTime",
+          "label": "상대에게 필수로 요구하는 만남 시간",
+          "requiredValue": "weekend",
+          "actualValue": "weekend",
+          "status": "pass",
+          "reason": "명시한 조건을 충족해요."
+        },
+        {
+          "owner": "person-a",
+          "other": "person-b",
+          "field": "requires.conversationPace",
+          "label": "상대에게 필수로 요구하는 대화 속도",
+          "requiredValue": "slow",
+          "actualValue": "slow",
+          "status": "pass",
+          "reason": "명시한 조건을 충족해요."
+        },
+        {
+          "owner": "person-b",
+          "other": "person-a",
+          "field": "requires.meetingTime",
+          "label": "상대에게 필수로 요구하는 만남 시간",
+          "requiredValue": "weekend",
+          "actualValue": "weekday-evening",
+          "status": "fail",
+          "reason": "명시한 필수조건을 충족하지 않아요."
+        },
+        {
+          "owner": "person-b",
+          "other": "person-a",
+          "field": "requires.conversationPace",
+          "label": "상대에게 필수로 요구하는 대화 속도",
+          "requiredValue": "slow",
+          "actualValue": "slow",
+          "status": "pass",
+          "reason": "명시한 조건을 충족해요."
+        }
+      ],
+      "mutual": "not-introduced",
+      "nextQuestion": null,
+      "counts": {
+        "decisions": 0,
+        "exposures": 0,
+        "outcomes": 0,
+        "resultDeliveries": 0,
+        "historicalResultDeliveries": 0
+      },
+      "measurement": {
+        "version": "temper-outcomes-1",
+        "contract": {
+          "id": "matching.mutual-intent",
+          "version": "1",
+          "scope": {
+            "domain": "SYNK",
+            "workspace": "synthetic-matching",
+            "purpose": "explicit-introduction"
+          },
+          "outcome": {
+            "id": "explicit-mutual-intent",
+            "kind": "binary",
+            "direction": "higher",
+            "allowedValues": [
+              0,
+              1
+            ],
+            "windowMs": 1800000
+          }
+        },
+        "asOf": "2026-10-06T00:00:10.000Z",
+        "minimumSubjects": 5,
+        "byPolicy": [
+          {
+            "policy": {
+              "id": "mutual-required",
+              "version": "1"
+            },
+            "counts": {
+              "decisions": 0,
+              "abstained": 0,
+              "delivered": 0,
+              "undelivered": 0,
+              "pending": 0,
+              "matured": 0,
+              "observed": 0,
+              "missing": 0,
+              "late": 0
+            },
+            "subjects": {
+              "decided": 0,
+              "observed": 0
+            },
+            "status": "no_sample",
+            "mean": null,
+            "measurementCompletion": null,
+            "cost": {
+              "unit": null,
+              "recorded": 0,
+              "missing": 0,
+              "total": null,
+              "mean": null
+            },
+            "latencyMs": {
+              "recorded": 0,
+              "missing": 0,
+              "mean": null,
+              "max": null
+            }
+          },
+          {
+            "policy": {
+              "id": "reference-not-run",
+              "version": "1"
+            },
+            "counts": {
+              "decisions": 0,
+              "abstained": 0,
+              "delivered": 0,
+              "undelivered": 0,
+              "pending": 0,
+              "matured": 0,
+              "observed": 0,
+              "missing": 0,
+              "late": 0
+            },
+            "subjects": {
+              "decided": 0,
+              "observed": 0
+            },
+            "status": "no_sample",
+            "mean": null,
+            "measurementCompletion": null,
+            "cost": {
+              "unit": null,
+              "recorded": 0,
+              "missing": 0,
+              "total": null,
+              "mean": null
+            },
+            "latencyMs": {
+              "recorded": 0,
+              "missing": 0,
+              "mean": null,
+              "max": null
+            }
+          }
+        ],
+        "duplicates": {
+          "decisions": 0,
+          "exposures": 0,
+          "outcomes": 0
+        },
+        "comparison": {
+          "status": "insufficient_evidence",
+          "difference": null,
+          "directedDifference": null,
+          "direction": "unknown",
+          "unit": "subject-mean-of-observed-matured-outcomes"
+        },
+        "causalClaim": false,
+        "significanceTested": false,
+        "calibrated": false,
+        "policyPromotion": false,
+        "limitations": [
+          "The host authorizes subjects and purpose; this function does not authenticate or grant consent.",
+          "Observed outcomes describe the supplied records; missing responses are unknown, not failures.",
+          "Selection, nonresponse and different people can bias policy means; this is not a causal or significance test."
+        ]
+      },
+      "limits": [
+        "합성 두 사람의 명시 조건·동의·전달 연결만 확인해요. 실제 관계 적합성이나 매칭 효과는 검증하지 않았어요.",
+        "현재 유효한 소개만 집계해요. 서로 연결된 두 사람의 의향을 독립적인 효과 표본으로 해석하지 않아요.",
+        "Temper의 합성 관측창은 소개 전달 뒤 30분이에요. 미응답과 늦은 답을 실패로 채우지 않아요.",
+        "참고 정책은 실행하지 않았어요. Temper의 비교·정책 승격 근거가 없어요. 실제 인증·동의 확인·전송·보관은 제품 호스트의 책임이에요."
+      ]
+    },
+    {
+      "scenario": {
+        "id": "unknown",
+        "title": "필수조건의 답이 없음",
+        "description": "B의 가능한 시간을 몰라요. 빈 답을 A가 원하는 주말로 채우지 않아요."
+      },
+      "eligibility": "needs-confirmation",
+      "canIntroduce": false,
+      "checks": [
+        {
+          "owner": "person-a",
+          "other": "person-b",
+          "field": "requires.meetingTime",
+          "label": "상대에게 필수로 요구하는 만남 시간",
+          "requiredValue": "weekend",
+          "actualValue": null,
+          "status": "unknown",
+          "reason": "상대가 밝힌 답이 없어 확인이 필요해요."
+        },
+        {
+          "owner": "person-a",
+          "other": "person-b",
+          "field": "requires.conversationPace",
+          "label": "상대에게 필수로 요구하는 대화 속도",
+          "requiredValue": "slow",
+          "actualValue": "slow",
+          "status": "pass",
+          "reason": "명시한 조건을 충족해요."
+        },
+        {
+          "owner": "person-b",
+          "other": "person-a",
+          "field": "requires.meetingTime",
+          "label": "상대에게 필수로 요구하는 만남 시간",
+          "requiredValue": "weekend",
+          "actualValue": "weekend",
+          "status": "pass",
+          "reason": "명시한 조건을 충족해요."
+        },
+        {
+          "owner": "person-b",
+          "other": "person-a",
+          "field": "requires.conversationPace",
+          "label": "상대에게 필수로 요구하는 대화 속도",
+          "requiredValue": "slow",
+          "actualValue": "slow",
+          "status": "pass",
+          "reason": "명시한 조건을 충족해요."
+        }
+      ],
+      "mutual": "not-introduced",
+      "nextQuestion": {
+        "person": "person-b",
+        "field": "self.meetingTime"
+      },
+      "counts": {
+        "decisions": 0,
+        "exposures": 0,
+        "outcomes": 0,
+        "resultDeliveries": 0,
+        "historicalResultDeliveries": 0
+      },
+      "measurement": {
+        "version": "temper-outcomes-1",
+        "contract": {
+          "id": "matching.mutual-intent",
+          "version": "1",
+          "scope": {
+            "domain": "SYNK",
+            "workspace": "synthetic-matching",
+            "purpose": "explicit-introduction"
+          },
+          "outcome": {
+            "id": "explicit-mutual-intent",
+            "kind": "binary",
+            "direction": "higher",
+            "allowedValues": [
+              0,
+              1
+            ],
+            "windowMs": 1800000
+          }
+        },
+        "asOf": "2026-10-06T00:00:09.000Z",
+        "minimumSubjects": 5,
+        "byPolicy": [
+          {
+            "policy": {
+              "id": "mutual-required",
+              "version": "1"
+            },
+            "counts": {
+              "decisions": 0,
+              "abstained": 0,
+              "delivered": 0,
+              "undelivered": 0,
+              "pending": 0,
+              "matured": 0,
+              "observed": 0,
+              "missing": 0,
+              "late": 0
+            },
+            "subjects": {
+              "decided": 0,
+              "observed": 0
+            },
+            "status": "no_sample",
+            "mean": null,
+            "measurementCompletion": null,
+            "cost": {
+              "unit": null,
+              "recorded": 0,
+              "missing": 0,
+              "total": null,
+              "mean": null
+            },
+            "latencyMs": {
+              "recorded": 0,
+              "missing": 0,
+              "mean": null,
+              "max": null
+            }
+          },
+          {
+            "policy": {
+              "id": "reference-not-run",
+              "version": "1"
+            },
+            "counts": {
+              "decisions": 0,
+              "abstained": 0,
+              "delivered": 0,
+              "undelivered": 0,
+              "pending": 0,
+              "matured": 0,
+              "observed": 0,
+              "missing": 0,
+              "late": 0
+            },
+            "subjects": {
+              "decided": 0,
+              "observed": 0
+            },
+            "status": "no_sample",
+            "mean": null,
+            "measurementCompletion": null,
+            "cost": {
+              "unit": null,
+              "recorded": 0,
+              "missing": 0,
+              "total": null,
+              "mean": null
+            },
+            "latencyMs": {
+              "recorded": 0,
+              "missing": 0,
+              "mean": null,
+              "max": null
+            }
+          }
+        ],
+        "duplicates": {
+          "decisions": 0,
+          "exposures": 0,
+          "outcomes": 0
+        },
+        "comparison": {
+          "status": "insufficient_evidence",
+          "difference": null,
+          "directedDifference": null,
+          "direction": "unknown",
+          "unit": "subject-mean-of-observed-matured-outcomes"
+        },
+        "causalClaim": false,
+        "significanceTested": false,
+        "calibrated": false,
+        "policyPromotion": false,
+        "limitations": [
+          "The host authorizes subjects and purpose; this function does not authenticate or grant consent.",
+          "Observed outcomes describe the supplied records; missing responses are unknown, not failures.",
+          "Selection, nonresponse and different people can bias policy means; this is not a causal or significance test."
+        ]
+      },
+      "limits": [
+        "합성 두 사람의 명시 조건·동의·전달 연결만 확인해요. 실제 관계 적합성이나 매칭 효과는 검증하지 않았어요.",
+        "현재 유효한 소개만 집계해요. 서로 연결된 두 사람의 의향을 독립적인 효과 표본으로 해석하지 않아요.",
+        "Temper의 합성 관측창은 소개 전달 뒤 30분이에요. 미응답과 늦은 답을 실패로 채우지 않아요.",
+        "참고 정책은 실행하지 않았어요. Temper의 비교·정책 승격 근거가 없어요. 실제 인증·동의 확인·전송·보관은 제품 호스트의 책임이에요."
+      ]
+    },
+    {
+      "scenario": {
+        "id": "no-consent",
+        "title": "한쪽 소개 동의 미확인",
+        "description": "조건이 맞아도 B의 소개 동의가 없으면 소개하지 않아요."
+      },
+      "eligibility": "needs-confirmation",
+      "canIntroduce": false,
+      "checks": [
+        {
+          "owner": "person-a",
+          "other": "person-b",
+          "field": "requires.meetingTime",
+          "label": "상대에게 필수로 요구하는 만남 시간",
+          "requiredValue": "weekend",
+          "actualValue": "weekend",
+          "status": "pass",
+          "reason": "명시한 조건을 충족해요."
+        },
+        {
+          "owner": "person-a",
+          "other": "person-b",
+          "field": "requires.conversationPace",
+          "label": "상대에게 필수로 요구하는 대화 속도",
+          "requiredValue": "slow",
+          "actualValue": "slow",
+          "status": "pass",
+          "reason": "명시한 조건을 충족해요."
+        },
+        {
+          "owner": "person-b",
+          "other": "person-a",
+          "field": "requires.meetingTime",
+          "label": "상대에게 필수로 요구하는 만남 시간",
+          "requiredValue": "weekend",
+          "actualValue": "weekend",
+          "status": "pass",
+          "reason": "명시한 조건을 충족해요."
+        },
+        {
+          "owner": "person-b",
+          "other": "person-a",
+          "field": "requires.conversationPace",
+          "label": "상대에게 필수로 요구하는 대화 속도",
+          "requiredValue": "slow",
+          "actualValue": "slow",
+          "status": "pass",
+          "reason": "명시한 조건을 충족해요."
+        }
+      ],
+      "mutual": "not-introduced",
+      "nextQuestion": {
+        "person": "person-b",
+        "field": "consent"
+      },
+      "counts": {
+        "decisions": 0,
+        "exposures": 0,
+        "outcomes": 0,
+        "resultDeliveries": 0,
+        "historicalResultDeliveries": 0
+      },
+      "measurement": {
+        "version": "temper-outcomes-1",
+        "contract": {
+          "id": "matching.mutual-intent",
+          "version": "1",
+          "scope": {
+            "domain": "SYNK",
+            "workspace": "synthetic-matching",
+            "purpose": "explicit-introduction"
+          },
+          "outcome": {
+            "id": "explicit-mutual-intent",
+            "kind": "binary",
+            "direction": "higher",
+            "allowedValues": [
+              0,
+              1
+            ],
+            "windowMs": 1800000
+          }
+        },
+        "asOf": "2026-10-06T00:00:09.000Z",
+        "minimumSubjects": 5,
+        "byPolicy": [
+          {
+            "policy": {
+              "id": "mutual-required",
+              "version": "1"
+            },
+            "counts": {
+              "decisions": 0,
+              "abstained": 0,
+              "delivered": 0,
+              "undelivered": 0,
+              "pending": 0,
+              "matured": 0,
+              "observed": 0,
+              "missing": 0,
+              "late": 0
+            },
+            "subjects": {
+              "decided": 0,
+              "observed": 0
+            },
+            "status": "no_sample",
+            "mean": null,
+            "measurementCompletion": null,
+            "cost": {
+              "unit": null,
+              "recorded": 0,
+              "missing": 0,
+              "total": null,
+              "mean": null
+            },
+            "latencyMs": {
+              "recorded": 0,
+              "missing": 0,
+              "mean": null,
+              "max": null
+            }
+          },
+          {
+            "policy": {
+              "id": "reference-not-run",
+              "version": "1"
+            },
+            "counts": {
+              "decisions": 0,
+              "abstained": 0,
+              "delivered": 0,
+              "undelivered": 0,
+              "pending": 0,
+              "matured": 0,
+              "observed": 0,
+              "missing": 0,
+              "late": 0
+            },
+            "subjects": {
+              "decided": 0,
+              "observed": 0
+            },
+            "status": "no_sample",
+            "mean": null,
+            "measurementCompletion": null,
+            "cost": {
+              "unit": null,
+              "recorded": 0,
+              "missing": 0,
+              "total": null,
+              "mean": null
+            },
+            "latencyMs": {
+              "recorded": 0,
+              "missing": 0,
+              "mean": null,
+              "max": null
+            }
+          }
+        ],
+        "duplicates": {
+          "decisions": 0,
+          "exposures": 0,
+          "outcomes": 0
+        },
+        "comparison": {
+          "status": "insufficient_evidence",
+          "difference": null,
+          "directedDifference": null,
+          "direction": "unknown",
+          "unit": "subject-mean-of-observed-matured-outcomes"
+        },
+        "causalClaim": false,
+        "significanceTested": false,
+        "calibrated": false,
+        "policyPromotion": false,
+        "limitations": [
+          "The host authorizes subjects and purpose; this function does not authenticate or grant consent.",
+          "Observed outcomes describe the supplied records; missing responses are unknown, not failures.",
+          "Selection, nonresponse and different people can bias policy means; this is not a causal or significance test."
+        ]
+      },
+      "limits": [
+        "합성 두 사람의 명시 조건·동의·전달 연결만 확인해요. 실제 관계 적합성이나 매칭 효과는 검증하지 않았어요.",
+        "현재 유효한 소개만 집계해요. 서로 연결된 두 사람의 의향을 독립적인 효과 표본으로 해석하지 않아요.",
+        "Temper의 합성 관측창은 소개 전달 뒤 30분이에요. 미응답과 늦은 답을 실패로 채우지 않아요.",
+        "참고 정책은 실행하지 않았어요. Temper의 비교·정책 승격 근거가 없어요. 실제 인증·동의 확인·전송·보관은 제품 호스트의 책임이에요."
+      ]
+    },
+    {
+      "scenario": {
+        "id": "withdrawn",
+        "title": "상호 수락 뒤 의향 철회",
+        "description": "B가 의향을 철회했어요. 과거 수락이나 이미 전달한 결과가 현재 의향을 대신하지 않아요."
+      },
+      "eligibility": "eligible",
+      "canIntroduce": true,
+      "checks": [
+        {
+          "owner": "person-a",
+          "other": "person-b",
+          "field": "requires.meetingTime",
+          "label": "상대에게 필수로 요구하는 만남 시간",
+          "requiredValue": "weekend",
+          "actualValue": "weekend",
+          "status": "pass",
+          "reason": "명시한 조건을 충족해요."
+        },
+        {
+          "owner": "person-a",
+          "other": "person-b",
+          "field": "requires.conversationPace",
+          "label": "상대에게 필수로 요구하는 대화 속도",
+          "requiredValue": "slow",
+          "actualValue": "slow",
+          "status": "pass",
+          "reason": "명시한 조건을 충족해요."
+        },
+        {
+          "owner": "person-b",
+          "other": "person-a",
+          "field": "requires.meetingTime",
+          "label": "상대에게 필수로 요구하는 만남 시간",
+          "requiredValue": "weekend",
+          "actualValue": "weekend",
+          "status": "pass",
+          "reason": "명시한 조건을 충족해요."
+        },
+        {
+          "owner": "person-b",
+          "other": "person-a",
+          "field": "requires.conversationPace",
+          "label": "상대에게 필수로 요구하는 대화 속도",
+          "requiredValue": "slow",
+          "actualValue": "slow",
+          "status": "pass",
+          "reason": "명시한 조건을 충족해요."
+        }
+      ],
+      "mutual": "withdrawn",
+      "nextQuestion": null,
+      "counts": {
+        "decisions": 0,
+        "exposures": 0,
+        "outcomes": 0,
+        "resultDeliveries": 0,
+        "historicalResultDeliveries": 1
+      },
+      "measurement": {
+        "version": "temper-outcomes-1",
+        "contract": {
+          "id": "matching.mutual-intent",
+          "version": "1",
+          "scope": {
+            "domain": "SYNK",
+            "workspace": "synthetic-matching",
+            "purpose": "explicit-introduction"
+          },
+          "outcome": {
+            "id": "explicit-mutual-intent",
+            "kind": "binary",
+            "direction": "higher",
+            "allowedValues": [
+              0,
+              1
+            ],
+            "windowMs": 1800000
+          }
+        },
+        "asOf": "2026-10-06T00:00:17.000Z",
+        "minimumSubjects": 5,
+        "byPolicy": [
+          {
+            "policy": {
+              "id": "mutual-required",
+              "version": "1"
+            },
+            "counts": {
+              "decisions": 0,
+              "abstained": 0,
+              "delivered": 0,
+              "undelivered": 0,
+              "pending": 0,
+              "matured": 0,
+              "observed": 0,
+              "missing": 0,
+              "late": 0
+            },
+            "subjects": {
+              "decided": 0,
+              "observed": 0
+            },
+            "status": "no_sample",
+            "mean": null,
+            "measurementCompletion": null,
+            "cost": {
+              "unit": null,
+              "recorded": 0,
+              "missing": 0,
+              "total": null,
+              "mean": null
+            },
+            "latencyMs": {
+              "recorded": 0,
+              "missing": 0,
+              "mean": null,
+              "max": null
+            }
+          },
+          {
+            "policy": {
+              "id": "reference-not-run",
+              "version": "1"
+            },
+            "counts": {
+              "decisions": 0,
+              "abstained": 0,
+              "delivered": 0,
+              "undelivered": 0,
+              "pending": 0,
+              "matured": 0,
+              "observed": 0,
+              "missing": 0,
+              "late": 0
+            },
+            "subjects": {
+              "decided": 0,
+              "observed": 0
+            },
+            "status": "no_sample",
+            "mean": null,
+            "measurementCompletion": null,
+            "cost": {
+              "unit": null,
+              "recorded": 0,
+              "missing": 0,
+              "total": null,
+              "mean": null
+            },
+            "latencyMs": {
+              "recorded": 0,
+              "missing": 0,
+              "mean": null,
+              "max": null
+            }
+          }
+        ],
+        "duplicates": {
+          "decisions": 0,
+          "exposures": 0,
+          "outcomes": 0
+        },
+        "comparison": {
+          "status": "insufficient_evidence",
+          "difference": null,
+          "directedDifference": null,
+          "direction": "unknown",
+          "unit": "subject-mean-of-observed-matured-outcomes"
+        },
+        "causalClaim": false,
+        "significanceTested": false,
+        "calibrated": false,
+        "policyPromotion": false,
+        "limitations": [
+          "The host authorizes subjects and purpose; this function does not authenticate or grant consent.",
+          "Observed outcomes describe the supplied records; missing responses are unknown, not failures.",
+          "Selection, nonresponse and different people can bias policy means; this is not a causal or significance test."
+        ]
+      },
+      "limits": [
+        "합성 두 사람의 명시 조건·동의·전달 연결만 확인해요. 실제 관계 적합성이나 매칭 효과는 검증하지 않았어요.",
+        "현재 유효한 소개만 집계해요. 서로 연결된 두 사람의 의향을 독립적인 효과 표본으로 해석하지 않아요.",
+        "Temper의 합성 관측창은 소개 전달 뒤 30분이에요. 미응답과 늦은 답을 실패로 채우지 않아요.",
+        "참고 정책은 실행하지 않았어요. Temper의 비교·정책 승격 근거가 없어요. 실제 인증·동의 확인·전송·보관은 제품 호스트의 책임이에요."
+      ]
+    }
+  ],
+  "mutualAfterObservationWindow": {
+    "scenario": {
+      "id": "ready",
+      "title": "조건 충족, 아직 소개 전",
+      "description": "두 사람이 밝힌 필수조건과 소개 동의가 있어요. 실제 소개 전달과 수락은 따로 확인해요."
+    },
+    "eligibility": "eligible",
+    "canIntroduce": false,
+    "checks": [
+      {
+        "owner": "person-a",
+        "other": "person-b",
+        "field": "requires.meetingTime",
+        "label": "상대에게 필수로 요구하는 만남 시간",
+        "requiredValue": "weekend",
+        "actualValue": "weekend",
+        "status": "pass",
+        "reason": "명시한 조건을 충족해요."
+      },
+      {
+        "owner": "person-a",
+        "other": "person-b",
+        "field": "requires.conversationPace",
+        "label": "상대에게 필수로 요구하는 대화 속도",
+        "requiredValue": "slow",
+        "actualValue": "slow",
+        "status": "pass",
+        "reason": "명시한 조건을 충족해요."
+      },
+      {
+        "owner": "person-b",
+        "other": "person-a",
+        "field": "requires.meetingTime",
+        "label": "상대에게 필수로 요구하는 만남 시간",
+        "requiredValue": "weekend",
+        "actualValue": "weekend",
+        "status": "pass",
+        "reason": "명시한 조건을 충족해요."
+      },
+      {
+        "owner": "person-b",
+        "other": "person-a",
+        "field": "requires.conversationPace",
+        "label": "상대에게 필수로 요구하는 대화 속도",
+        "requiredValue": "slow",
+        "actualValue": "slow",
+        "status": "pass",
+        "reason": "명시한 조건을 충족해요."
+      }
+    ],
+    "mutual": "mutual",
+    "nextQuestion": null,
+    "counts": {
+      "decisions": 2,
+      "exposures": 2,
+      "outcomes": 2,
+      "resultDeliveries": 1,
+      "historicalResultDeliveries": 1
+    },
+    "measurement": {
+      "version": "temper-outcomes-1",
+      "contract": {
+        "id": "matching.mutual-intent",
+        "version": "1",
+        "scope": {
+          "domain": "SYNK",
+          "workspace": "synthetic-matching",
+          "purpose": "explicit-introduction"
+        },
+        "outcome": {
+          "id": "explicit-mutual-intent",
+          "kind": "binary",
+          "direction": "higher",
+          "allowedValues": [
+            0,
+            1
+          ],
+          "windowMs": 1800000
+        }
+      },
+      "asOf": "2026-10-06T00:31:16.000Z",
+      "minimumSubjects": 5,
+      "byPolicy": [
+        {
+          "policy": {
+            "id": "mutual-required",
+            "version": "1"
+          },
+          "counts": {
+            "decisions": 2,
+            "abstained": 0,
+            "delivered": 2,
+            "undelivered": 0,
+            "pending": 0,
+            "matured": 2,
+            "observed": 2,
+            "missing": 0,
+            "late": 0
+          },
+          "subjects": {
+            "decided": 2,
+            "observed": 2
+          },
+          "status": "insufficient_evidence",
+          "mean": 1,
+          "measurementCompletion": 1,
+          "cost": {
+            "unit": null,
+            "recorded": 0,
+            "missing": 2,
+            "total": null,
+            "mean": null
+          },
+          "latencyMs": {
+            "recorded": 0,
+            "missing": 2,
+            "mean": null,
+            "max": null
+          }
+        },
+        {
+          "policy": {
+            "id": "reference-not-run",
+            "version": "1"
+          },
+          "counts": {
+            "decisions": 0,
+            "abstained": 0,
+            "delivered": 0,
+            "undelivered": 0,
+            "pending": 0,
+            "matured": 0,
+            "observed": 0,
+            "missing": 0,
+            "late": 0
+          },
+          "subjects": {
+            "decided": 0,
+            "observed": 0
+          },
+          "status": "no_sample",
+          "mean": null,
+          "measurementCompletion": null,
+          "cost": {
+            "unit": null,
+            "recorded": 0,
+            "missing": 0,
+            "total": null,
+            "mean": null
+          },
+          "latencyMs": {
+            "recorded": 0,
+            "missing": 0,
+            "mean": null,
+            "max": null
+          }
+        }
+      ],
+      "duplicates": {
+        "decisions": 0,
+        "exposures": 0,
+        "outcomes": 0
+      },
+      "comparison": {
+        "status": "insufficient_evidence",
+        "difference": null,
+        "directedDifference": null,
+        "direction": "unknown",
+        "unit": "subject-mean-of-observed-matured-outcomes"
+      },
+      "causalClaim": false,
+      "significanceTested": false,
+      "calibrated": false,
+      "policyPromotion": false,
+      "limitations": [
+        "The host authorizes subjects and purpose; this function does not authenticate or grant consent.",
+        "Observed outcomes describe the supplied records; missing responses are unknown, not failures.",
+        "Selection, nonresponse and different people can bias policy means; this is not a causal or significance test."
+      ]
+    },
+    "limits": [
+      "합성 두 사람의 명시 조건·동의·전달 연결만 확인해요. 실제 관계 적합성이나 매칭 효과는 검증하지 않았어요.",
+      "현재 유효한 소개만 집계해요. 서로 연결된 두 사람의 의향을 독립적인 효과 표본으로 해석하지 않아요.",
+      "Temper의 합성 관측창은 소개 전달 뒤 30분이에요. 미응답과 늦은 답을 실패로 채우지 않아요.",
+      "참고 정책은 실행하지 않았어요. Temper의 비교·정책 승격 근거가 없어요. 실제 인증·동의 확인·전송·보관은 제품 호스트의 책임이에요."
+    ]
+  },
+  "repeatedAcceptanceAfterObservationWindow": {
+    "scenario": {
+      "id": "ready",
+      "title": "조건 충족, 아직 소개 전",
+      "description": "두 사람이 밝힌 필수조건과 소개 동의가 있어요. 실제 소개 전달과 수락은 따로 확인해요."
+    },
+    "eligibility": "eligible",
+    "canIntroduce": false,
+    "checks": [
+      {
+        "owner": "person-a",
+        "other": "person-b",
+        "field": "requires.meetingTime",
+        "label": "상대에게 필수로 요구하는 만남 시간",
+        "requiredValue": "weekend",
+        "actualValue": "weekend",
+        "status": "pass",
+        "reason": "명시한 조건을 충족해요."
+      },
+      {
+        "owner": "person-a",
+        "other": "person-b",
+        "field": "requires.conversationPace",
+        "label": "상대에게 필수로 요구하는 대화 속도",
+        "requiredValue": "slow",
+        "actualValue": "slow",
+        "status": "pass",
+        "reason": "명시한 조건을 충족해요."
+      },
+      {
+        "owner": "person-b",
+        "other": "person-a",
+        "field": "requires.meetingTime",
+        "label": "상대에게 필수로 요구하는 만남 시간",
+        "requiredValue": "weekend",
+        "actualValue": "weekend",
+        "status": "pass",
+        "reason": "명시한 조건을 충족해요."
+      },
+      {
+        "owner": "person-b",
+        "other": "person-a",
+        "field": "requires.conversationPace",
+        "label": "상대에게 필수로 요구하는 대화 속도",
+        "requiredValue": "slow",
+        "actualValue": "slow",
+        "status": "pass",
+        "reason": "명시한 조건을 충족해요."
+      }
+    ],
+    "mutual": "mutual",
+    "nextQuestion": null,
+    "counts": {
+      "decisions": 2,
+      "exposures": 2,
+      "outcomes": 2,
+      "resultDeliveries": 1,
+      "historicalResultDeliveries": 1
+    },
+    "measurement": {
+      "version": "temper-outcomes-1",
+      "contract": {
+        "id": "matching.mutual-intent",
+        "version": "1",
+        "scope": {
+          "domain": "SYNK",
+          "workspace": "synthetic-matching",
+          "purpose": "explicit-introduction"
+        },
+        "outcome": {
+          "id": "explicit-mutual-intent",
+          "kind": "binary",
+          "direction": "higher",
+          "allowedValues": [
+            0,
+            1
+          ],
+          "windowMs": 1800000
+        }
+      },
+      "asOf": "2026-10-06T00:31:16.000Z",
+      "minimumSubjects": 5,
+      "byPolicy": [
+        {
+          "policy": {
+            "id": "mutual-required",
+            "version": "1"
+          },
+          "counts": {
+            "decisions": 2,
+            "abstained": 0,
+            "delivered": 2,
+            "undelivered": 0,
+            "pending": 0,
+            "matured": 2,
+            "observed": 2,
+            "missing": 0,
+            "late": 0
+          },
+          "subjects": {
+            "decided": 2,
+            "observed": 2
+          },
+          "status": "insufficient_evidence",
+          "mean": 1,
+          "measurementCompletion": 1,
+          "cost": {
+            "unit": null,
+            "recorded": 0,
+            "missing": 2,
+            "total": null,
+            "mean": null
+          },
+          "latencyMs": {
+            "recorded": 0,
+            "missing": 2,
+            "mean": null,
+            "max": null
+          }
+        },
+        {
+          "policy": {
+            "id": "reference-not-run",
+            "version": "1"
+          },
+          "counts": {
+            "decisions": 0,
+            "abstained": 0,
+            "delivered": 0,
+            "undelivered": 0,
+            "pending": 0,
+            "matured": 0,
+            "observed": 0,
+            "missing": 0,
+            "late": 0
+          },
+          "subjects": {
+            "decided": 0,
+            "observed": 0
+          },
+          "status": "no_sample",
+          "mean": null,
+          "measurementCompletion": null,
+          "cost": {
+            "unit": null,
+            "recorded": 0,
+            "missing": 0,
+            "total": null,
+            "mean": null
+          },
+          "latencyMs": {
+            "recorded": 0,
+            "missing": 0,
+            "mean": null,
+            "max": null
+          }
+        }
+      ],
+      "duplicates": {
+        "decisions": 0,
+        "exposures": 0,
+        "outcomes": 0
+      },
+      "comparison": {
+        "status": "insufficient_evidence",
+        "difference": null,
+        "directedDifference": null,
+        "direction": "unknown",
+        "unit": "subject-mean-of-observed-matured-outcomes"
+      },
+      "causalClaim": false,
+      "significanceTested": false,
+      "calibrated": false,
+      "policyPromotion": false,
+      "limitations": [
+        "The host authorizes subjects and purpose; this function does not authenticate or grant consent.",
+        "Observed outcomes describe the supplied records; missing responses are unknown, not failures.",
+        "Selection, nonresponse and different people can bias policy means; this is not a causal or significance test."
+      ]
+    },
+    "limits": [
+      "합성 두 사람의 명시 조건·동의·전달 연결만 확인해요. 실제 관계 적합성이나 매칭 효과는 검증하지 않았어요.",
+      "현재 유효한 소개만 집계해요. 서로 연결된 두 사람의 의향을 독립적인 효과 표본으로 해석하지 않아요.",
+      "Temper의 합성 관측창은 소개 전달 뒤 30분이에요. 미응답과 늦은 답을 실패로 채우지 않아요.",
+      "참고 정책은 실행하지 않았어요. Temper의 비교·정책 승격 근거가 없어요. 실제 인증·동의 확인·전송·보관은 제품 호스트의 책임이에요."
+    ]
+  },
+  "withdrawal": {
+    "scenario": {
+      "id": "ready",
+      "title": "조건 충족, 아직 소개 전",
+      "description": "두 사람이 밝힌 필수조건과 소개 동의가 있어요. 실제 소개 전달과 수락은 따로 확인해요."
+    },
+    "eligibility": "eligible",
+    "canIntroduce": true,
+    "checks": [
+      {
+        "owner": "person-a",
+        "other": "person-b",
+        "field": "requires.meetingTime",
+        "label": "상대에게 필수로 요구하는 만남 시간",
+        "requiredValue": "weekend",
+        "actualValue": "weekend",
+        "status": "pass",
+        "reason": "명시한 조건을 충족해요."
+      },
+      {
+        "owner": "person-a",
+        "other": "person-b",
+        "field": "requires.conversationPace",
+        "label": "상대에게 필수로 요구하는 대화 속도",
+        "requiredValue": "slow",
+        "actualValue": "slow",
+        "status": "pass",
+        "reason": "명시한 조건을 충족해요."
+      },
+      {
+        "owner": "person-b",
+        "other": "person-a",
+        "field": "requires.meetingTime",
+        "label": "상대에게 필수로 요구하는 만남 시간",
+        "requiredValue": "weekend",
+        "actualValue": "weekend",
+        "status": "pass",
+        "reason": "명시한 조건을 충족해요."
+      },
+      {
+        "owner": "person-b",
+        "other": "person-a",
+        "field": "requires.conversationPace",
+        "label": "상대에게 필수로 요구하는 대화 속도",
+        "requiredValue": "slow",
+        "actualValue": "slow",
+        "status": "pass",
+        "reason": "명시한 조건을 충족해요."
+      }
+    ],
+    "mutual": "withdrawn",
+    "nextQuestion": null,
+    "counts": {
+      "decisions": 0,
+      "exposures": 0,
+      "outcomes": 0,
+      "resultDeliveries": 0,
+      "historicalResultDeliveries": 1
+    },
+    "measurement": {
+      "version": "temper-outcomes-1",
+      "contract": {
+        "id": "matching.mutual-intent",
+        "version": "1",
+        "scope": {
+          "domain": "SYNK",
+          "workspace": "synthetic-matching",
+          "purpose": "explicit-introduction"
+        },
+        "outcome": {
+          "id": "explicit-mutual-intent",
+          "kind": "binary",
+          "direction": "higher",
+          "allowedValues": [
+            0,
+            1
+          ],
+          "windowMs": 1800000
+        }
+      },
+      "asOf": "2026-10-06T00:31:17.000Z",
+      "minimumSubjects": 5,
+      "byPolicy": [
+        {
+          "policy": {
+            "id": "mutual-required",
+            "version": "1"
+          },
+          "counts": {
+            "decisions": 0,
+            "abstained": 0,
+            "delivered": 0,
+            "undelivered": 0,
+            "pending": 0,
+            "matured": 0,
+            "observed": 0,
+            "missing": 0,
+            "late": 0
+          },
+          "subjects": {
+            "decided": 0,
+            "observed": 0
+          },
+          "status": "no_sample",
+          "mean": null,
+          "measurementCompletion": null,
+          "cost": {
+            "unit": null,
+            "recorded": 0,
+            "missing": 0,
+            "total": null,
+            "mean": null
+          },
+          "latencyMs": {
+            "recorded": 0,
+            "missing": 0,
+            "mean": null,
+            "max": null
+          }
+        },
+        {
+          "policy": {
+            "id": "reference-not-run",
+            "version": "1"
+          },
+          "counts": {
+            "decisions": 0,
+            "abstained": 0,
+            "delivered": 0,
+            "undelivered": 0,
+            "pending": 0,
+            "matured": 0,
+            "observed": 0,
+            "missing": 0,
+            "late": 0
+          },
+          "subjects": {
+            "decided": 0,
+            "observed": 0
+          },
+          "status": "no_sample",
+          "mean": null,
+          "measurementCompletion": null,
+          "cost": {
+            "unit": null,
+            "recorded": 0,
+            "missing": 0,
+            "total": null,
+            "mean": null
+          },
+          "latencyMs": {
+            "recorded": 0,
+            "missing": 0,
+            "mean": null,
+            "max": null
+          }
+        }
+      ],
+      "duplicates": {
+        "decisions": 0,
+        "exposures": 0,
+        "outcomes": 0
+      },
+      "comparison": {
+        "status": "insufficient_evidence",
+        "difference": null,
+        "directedDifference": null,
+        "direction": "unknown",
+        "unit": "subject-mean-of-observed-matured-outcomes"
+      },
+      "causalClaim": false,
+      "significanceTested": false,
+      "calibrated": false,
+      "policyPromotion": false,
+      "limitations": [
+        "The host authorizes subjects and purpose; this function does not authenticate or grant consent.",
+        "Observed outcomes describe the supplied records; missing responses are unknown, not failures.",
+        "Selection, nonresponse and different people can bias policy means; this is not a causal or significance test."
+      ]
+    },
+    "limits": [
+      "합성 두 사람의 명시 조건·동의·전달 연결만 확인해요. 실제 관계 적합성이나 매칭 효과는 검증하지 않았어요.",
+      "현재 유효한 소개만 집계해요. 서로 연결된 두 사람의 의향을 독립적인 효과 표본으로 해석하지 않아요.",
+      "Temper의 합성 관측창은 소개 전달 뒤 30분이에요. 미응답과 늦은 답을 실패로 채우지 않아요.",
+      "참고 정책은 실행하지 않았어요. Temper의 비교·정책 승격 근거가 없어요. 실제 인증·동의 확인·전송·보관은 제품 호스트의 책임이에요."
+    ]
+  },
+  "meaning": "Product contract reuse, not compatibility prediction, independent sample efficacy or a production dating service."
+}

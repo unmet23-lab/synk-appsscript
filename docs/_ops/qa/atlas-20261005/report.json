@@ -1,0 +1,155 @@
+{
+  "at": "2026-10-05T12:38:51.291Z",
+  "kind": "local-implementation-regression",
+  "deployed": false,
+  "paidModelCalls": 0,
+  "realUserEffectMeasured": false,
+  "suites": [
+    {
+      "name": "common-and-products",
+      "files": [
+        "tests/atlas-account-summary.test.js",
+        "tests/atlas-ask-value.test.js",
+        "tests/atlas-ask.test.js",
+        "tests/atlas-core-boundaries.test.js",
+        "tests/atlas-delivery-exclusion.test.js",
+        "tests/atlas-domain.test.js",
+        "tests/atlas-education.test.js",
+        "tests/atlas-family.test.js",
+        "tests/atlas-flow.test.js",
+        "tests/atlas-formats.test.js",
+        "tests/atlas-game-flow.test.js",
+        "tests/atlas-incremental.test.js",
+        "tests/atlas-lab-consultation.test.js",
+        "tests/atlas-label-anchor.test.js",
+        "tests/atlas-learning-sync.test.js",
+        "tests/atlas-learning.test.js",
+        "tests/atlas-ledger-recovery.test.js",
+        "tests/atlas-ledger-sync.test.js",
+        "tests/atlas-ledger.test.js",
+        "tests/atlas-life.test.js",
+        "tests/atlas-loop.test.js",
+        "tests/atlas-memory-sync.test.js",
+        "tests/atlas-no-feedback.test.js",
+        "tests/atlas-outcomes.test.js",
+        "tests/atlas-personalization-conflict.test.js",
+        "tests/atlas-personalization.test.js",
+        "tests/atlas-preferences.test.js",
+        "tests/atlas-provenance-review.test.js",
+        "tests/atlas-review-fixes.test.js",
+        "tests/atlas-storage-failure.test.js",
+        "tests/atlas-sync-fixes.test.js",
+        "tests/atlas-temper-flow.test.js",
+        "tests/atlas-temper.test.js",
+        "tests/atlas-topik-layers.test.js",
+        "tests/atlas-trail.test.js",
+        "tests/atlas-vellum-flow.test.js",
+        "tests/atlas-work.test.js",
+        "tests/atlas.test.js",
+        "tests/sync-atlas.test.js",
+        "experiences/shift-workbench/model.test.mjs",
+        "experiences/shift-workbench/server.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-client.test.mjs",
+        "desktop/tests/renderer-personalization.test.cjs",
+        "experiences/teacher-world/model.test.mjs",
+        "experiences/teacher-world/personalization.test.mjs",
+        "experiences/path-vr/tests/path.test.mjs",
+        "docs/마케팅/맞춤도구/computer/rules.test.js"
+      ],
+      "exitCode": 0,
+      "tests": 536,
+      "pass": 536,
+      "fail": 0,
+      "log": "common-and-products.txt"
+    },
+    {
+      "name": "talk",
+      "files": [
+        "tests/atlas-copy.test.js",
+        "tests/atlas-session.test.js",
+        "tests/atlas-session-storage.test.js",
+        "tests/atlas-practice.test.js",
+        "tests/atlas-account-memory.test.js",
+        "tests/atlas-strata-drift.test.js"
+      ],
+      "exitCode": 0,
+      "tests": 32,
+      "pass": 32,
+      "fail": 0,
+      "log": "talk.txt"
+    },
+    {
+      "name": "website-letter",
+      "files": [
+        "qa/letter.test.mjs"
+      ],
+      "exitCode": 0,
+      "tests": 4,
+      "pass": 4,
+      "fail": 0,
+      "log": "website-letter.txt"
+    }
+  ],
+  "status": "passed",
+  "totalTests": 572,
+  "sources": {
+    "atlas/engine.js": "f8c38132ca967e95c91bc9bc95fd39cf33d3a9b9a643244d1262deea6047999f",
+    "atlas/personalization.js": "d715f838bb30aaf868f8e82a335f7a513e4968644e71315bf5dfe1849b2ceb3f",
+    "atlas/domain.js": "9951725913b41d97052f2f396b1ef4463c7c47e75a218f72096999d6f8d6b046",
+    "atlas/ask.js": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+    "atlas/trail.js": "0ab3a1c6f6ab6d3f94783728086a14ae69c3551093ec038b16c62945edfc2114",
+    "atlas/temper-outcomes.js": "ac0764455b2f3c44ff368b85b4db012327d0622e82198d2363bf0936c1f27903",
+    "experiences/shift-workbench/model.mjs": "61e7e8e7a8bb36c865216d39f5ed6a797788f9e9ff62eef3de0e6cb2c86d93c7",
+    "experiences/atlas-lab/consultation.mjs": "4510921885746b39301ff79577c9698da559ec023da332b681a89319a45125ea",
+    "docs/마케팅/맞춤도구/computer/rules.js": "0f8ff5199135a9d7527ae6eb6ee26e33f34667fedb4ca46085ec3fa41633d6fd"
+  },
+  "numericProjection": {
+    "kind": "synthetic-local",
+    "observations": 10000,
+    "distinctValues": 10000,
+    "beforeMs": [
+      507.0767,
+      473.5188,
+      452.0846,
+      459.5912
+    ],
+    "afterMs": [
+      63.6022,
+      52.9089,
+      61.6001,
+      52.4388
+    ],
+    "generalizedPerformanceClaim": false
+  },
+  "ui": {
+    "shift": {
+      "report": "experiences/shift-workbench/qa/20261005-domain/report.json",
+      "at": "2026-10-05T12:35:11.241Z",
+      "passed": 11,
+      "kind": "scripted-local-ui-verification"
+    },
+    "consultation": {
+      "report": "experiences/atlas-lab/qa/question-value/result.json",
+      "at": "2026-10-05T12:38:44.615Z",
+      "status": "passed",
+      "desktopChooserMs": {
+        "samples": 10,
+        "median": 4,
+        "max": 5.4000000059604645
+      },
+      "mobileViewportChooserMs": {
+        "samples": 10,
+        "median": 2.899999976158142,
+        "max": 3.800000011920929
+      }
+    }
+  },
+  "copies": {
+    "gameBundles": 9,
+    "talkAndWebsiteCheck": "passed",
+    "launcherCanonicalFiles": 2,
+    "pathCanonicalFiles": 3
+  }
+}

@@ -1,0 +1,272 @@
+{
+  "at": "2026-10-05T13:18:15.746Z",
+  "kind": "authored-development-regression",
+  "sourceSha256": "589dc1fba5ee1020f062b9f7345b40d7755f33a810003bbf3ba19e2e585138c9",
+  "datasetSha256": "654613f555581a198b629c52c4bc09b506a8d5378cb90359314a50b9012d502a",
+  "sourceInterpretationExecuted": true,
+  "modelExecuted": false,
+  "networkCalls": 0,
+  "externalApiCost": 0,
+  "timings": [
+    {
+      "caseId": "ram-direct",
+      "milliseconds": 2.8833999999999946
+    },
+    {
+      "caseId": "os-direct",
+      "milliseconds": 0.7182999999999993
+    },
+    {
+      "caseId": "web-direct",
+      "milliseconds": 0.03200000000000358
+    },
+    {
+      "caseId": "video-direct",
+      "milliseconds": 0.07990000000000208
+    },
+    {
+      "caseId": "ram-past-current",
+      "milliseconds": 0.038800000000001944
+    },
+    {
+      "caseId": "ram-past-only",
+      "milliseconds": 0.019899999999999807
+    },
+    {
+      "caseId": "ram-future",
+      "milliseconds": 0.008000000000002672
+    },
+    {
+      "caseId": "other-only",
+      "milliseconds": 0.006300000000003081
+    },
+    {
+      "caseId": "other-and-self",
+      "milliseconds": 0.007000000000005002
+    },
+    {
+      "caseId": "quoted-recommendation",
+      "milliseconds": 0.006799999999998363
+    },
+    {
+      "caseId": "ram-uncertain",
+      "milliseconds": 0.006300000000003081
+    },
+    {
+      "caseId": "unknown-and-use",
+      "milliseconds": 0.003700000000002035
+    },
+    {
+      "caseId": "contradictory-ram",
+      "milliseconds": 0.08689999999999998
+    },
+    {
+      "caseId": "explicit-correction",
+      "milliseconds": 0.030299999999996885
+    },
+    {
+      "caseId": "other-correction",
+      "milliseconds": 0.012999999999998124
+    },
+    {
+      "caseId": "negated-local-positive-web",
+      "milliseconds": 0.005000000000002558
+    },
+    {
+      "caseId": "not-windows-only",
+      "milliseconds": 0.0031000000000034333
+    },
+    {
+      "caseId": "hard-cap-soft-target",
+      "milliseconds": 0.004800000000003024
+    },
+    {
+      "caseId": "budget-range",
+      "milliseconds": 0.00929999999999609
+    },
+    {
+      "caseId": "carry-explicit",
+      "milliseconds": 0.03059999999999974
+    },
+    {
+      "caseId": "soft-lightweight",
+      "milliseconds": 0.004300000000000637
+    },
+    {
+      "caseId": "hypothetical-local",
+      "milliseconds": 0.0035999999999987153
+    },
+    {
+      "caseId": "game-negated",
+      "milliseconds": 0.0031999999999996476
+    },
+    {
+      "caseId": "quoted-instruction",
+      "milliseconds": 0.0033000000000029672
+    },
+    {
+      "caseId": "owned-direct",
+      "milliseconds": 0.007899999999999352
+    },
+    {
+      "caseId": "home-direct",
+      "milliseconds": 0.00730000000000075
+    },
+    {
+      "caseId": "ram-category",
+      "milliseconds": 0.010399999999997078
+    },
+    {
+      "caseId": "model-size-not-ram",
+      "milliseconds": 0.18269999999999698
+    }
+  ],
+  "reviewGate": [
+    {
+      "caseId": "ram-direct",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "os-direct",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "web-direct",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "video-direct",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "ram-past-current",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "ram-past-only",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "ram-future",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "other-only",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "other-and-self",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "quoted-recommendation",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "ram-uncertain",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "unknown-and-use",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "contradictory-ram",
+      "usableBeforeReview": 0,
+      "conflictingFields": [
+        "current.ram"
+      ]
+    },
+    {
+      "caseId": "explicit-correction",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "other-correction",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "negated-local-positive-web",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "not-windows-only",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "hard-cap-soft-target",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "budget-range",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "carry-explicit",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "soft-lightweight",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "hypothetical-local",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "game-negated",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "quoted-instruction",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "owned-direct",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "home-direct",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "ram-category",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    },
+    {
+      "caseId": "model-size-not-ram",
+      "usableBeforeReview": 0,
+      "conflictingFields": []
+    }
+  ],
+  "limitations": [
+    "Cases were visible during development; agreement is not held-out performance.",
+    "Times cover only local extraction on this computer, not UI, inference or real-device latency."
+  ]
+}

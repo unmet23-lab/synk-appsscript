@@ -4,6 +4,8 @@
 
 ## 회사 작업실에서 사용
 
+2026-10-05 공통 능력 보강: `Core.domain`이 최근 20회 이력에서 유효한 항목별 관측을 해석하고, 문항 순서와 다음 실습 제안의 근거를 반환한다. 목적·세대·제외·만료·모순을 확인하며 업무 능력으로 일반화하지 않는다. `temper-outcomes.js`는 별도 로딩해 실제 화면 노출과 최초 검토 결과를 연결한다. [계약·검수·운영 경계](../../docs/아틀라스_공통능력_고도화_20261005.md), [신규 화면 검사](qa/20261005-domain/report.json).
+
 회사의 기존 로그인으로 `http://127.0.0.1:4191/?tab=workroom&section=practice`를 연다. 회사 클라이언트는 `docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice.js`와 `.css`를 사용한다. iframe이나 별도 SHIFT 클라이언트를 열지 않는다. 제작 데스크·게시 전 점검으로 바로 이어갈 수 있으며, 실습이 회사 공유 자료를 자동으로 작성하거나 권한을 바꾸지 않는다.
 
 - 기존 `/api/me`에서 확인한 `state.user.id`를 scope의 personId로 사용한다. productId는 `company`, contextId는 `workroom-practice`, domain은 `SHIFT`다. 기존 Core를 재사용하며 새로운 엔진은 없다.
@@ -22,7 +24,7 @@ node --test experiences/shift-workbench/model.test.mjs experiences/shift-workben
 & 'desktop/node_modules/electron/dist/electron.exe' 'experiences/shift-workbench/qa-ui.cjs'
 ```
 
-주소: `http://127.0.0.1:4293/`. 서버는 127.0.0.1만 바인딩하고 Host·Origin을 검사한다. HTML/CSS/모듈·승인 자산·기존 Core 두 파일만 허용한다. `createServer()`는 테스트에서 포트 0에 바인딩할 수 있는 Node HTTP 서버를 반환한다. 실제 로그인을 모사하지 않는다.
+주소: `http://127.0.0.1:4293/`. 서버는 127.0.0.1만 바인딩하고 Host·Origin을 검사한다. HTML/CSS/모듈·승인 자산·Core의 engine/domain/personalization 및 Temper outcomes 모듈만 허용한다. `createServer()`는 테스트에서 포트 0에 바인딩할 수 있는 Node HTTP 서버를 반환한다. 실제 로그인을 모사하지 않는다. 저장 복원은 `restore(text, engine, scope, temperOutcomes)`로 현재 호스트의 범위와 결과 계약을 검증한다.
 
 ## 구현 범위
 

@@ -6,6 +6,9 @@ export const root = fileURLToPath(new URL('../', import.meta.url));
 const allowed = new Set(['learning-hub', 'korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'entry-check', 'story-classroom', 'synk-account', 'atlas-lab', 'blank-slice','teacher-world','synk-town','hangul-stage']);
 // The Atlas lab's consultation demo reads the published computer recommendation tool, read-only.
 const consult = new Map([['/consult/computer/rules.js', '../docs/마케팅/맞춤도구/computer/rules.js'], ['/consult/computer/content.js', '../docs/마케팅/맞춤도구/computer/content.js']]);
+consult.set('/consult/core/domain.js', '../atlas/domain.js');
+consult.set('/consult/core/interpretation.js', '../atlas/interpretation.js');
+consult.set('/consult/core/temper-outcomes.js', '../atlas/temper-outcomes.js');
 consult.set('/synk-town/engine/loom-motion.js','../tools/lib/loom-motion.js');
 consult.set('/synk-town/engine/loom-life.js','../tools/lib/loom-life.js');
 const classroomPublic={

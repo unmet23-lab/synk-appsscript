@@ -1,0 +1,88 @@
+TAP version 13
+# Subtest: offline/default plans reveal lengths and hashes without source text or authored answers
+ok 1 - offline/default plans reveal lengths and hashes without source text or authored answers
+  ---
+  duration_ms: 38.6238
+  type: 'test'
+  ...
+# Subtest: capture requires explicit approval before any HTTP request
+ok 2 - capture requires explicit approval before any HTTP request
+  ---
+  duration_ms: 11.2592
+  type: 'test'
+  ...
+# Subtest: only the explicit loopback origin and safe authentication header values are accepted
+ok 3 - only the explicit loopback origin and safe authentication header values are accepted
+  ---
+  duration_ms: 8.4564
+  type: 'test'
+  ...
+# Subtest: capture requires a freeze manifest and an unchanged dataset seal
+ok 4 - capture requires a freeze manifest and an unchanged dataset seal
+  ---
+  duration_ms: 12.9356
+  type: 'test'
+  ...
+# Subtest: all six frozen artifact hashes are independently checked using temporary manifest mutations
+ok 5 - all six frozen artifact hashes are independently checked using temporary manifest mutations
+  ---
+  duration_ms: 41.9571
+  type: 'test'
+  ...
+# Subtest: the output directory and an explicit 1 through 30 call budget are required
+ok 6 - the output directory and an explicit 1 through 30 call budget are required
+  ---
+  duration_ms: 8.2597
+  type: 'test'
+  ...
+# Subtest: unavailable hosts or differing model IDs/output ceilings cannot dispatch a POST
+ok 7 - unavailable hosts or differing model IDs/output ceilings cannot dispatch a POST
+  ---
+  duration_ms: 24.0069
+  type: 'test'
+  ...
+# Subtest: all UUIDs are persisted before the first POST and only whitelisted source fields are sent
+ok 8 - all UUIDs are persisted before the first POST and only whitelisted source fields are sent
+  ---
+  duration_ms: 35.1076
+  type: 'test'
+  ...
+# Subtest: a transport failure stops immediately, records an unknown missing run and never records the exception text
+ok 9 - a transport failure stops immediately, records an unknown missing run and never records the exception text
+  ---
+  duration_ms: 31.8301
+  type: 'test'
+  ...
+# Subtest: an explicit later invocation reuses the same UUID while counting both dispatch attempts
+ok 10 - an explicit later invocation reuses the same UUID while counting both dispatch attempts
+  ---
+  duration_ms: 57.6826
+  type: 'test'
+  ...
+# Subtest: thirty successful mock calls exhaust the lifetime limit and completed reruns send no POST
+ok 11 - thirty successful mock calls exhaust the lifetime limit and completed reruns send no POST
+  ---
+  duration_ms: 383.1976
+  type: 'test'
+  ...
+# Subtest: persisted output recovers a crash between output and ledger writes; changed capture identity is rejected
+ok 12 - persisted output recovers a crash between output and ledger writes; changed capture identity is rejected
+  ---
+  duration_ms: 66.9263
+  type: 'test'
+  ...
+# Subtest: mismatched/invalid responses remain missing, while malformed returned proposals remain scoreable failures
+ok 13 - mismatched/invalid responses remain missing, while malformed returned proposals remain scoreable failures
+  ---
+  duration_ms: 59.8769
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 891.8323

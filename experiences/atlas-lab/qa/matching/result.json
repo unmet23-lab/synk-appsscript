@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-05T20:10:53.212Z",
+  "status": "passed",
+  "kind": "fictional-matching-browser",
+  "paidModelCalls": 0,
+  "externalRequests": [],
+  "errors": [],
+  "missing": [],
+  "checks": [
+    "mutual-delivery-withdrawal-new-round-1280",
+    "mutual-delivery-withdrawal-new-round-390",
+    "mutual-delivery-withdrawal-new-round-320",
+    "one-sided-mismatch-and-unknown-confirmation",
+    "consent-required",
+    "unconfirmed-budget-labelled-and-directly-answerable",
+    "standalone-share-zero-subrequests"
+  ],
+  "screenshots": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\matching\\matching-mutual-1280.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\matching\\matching-mutual-390.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\matching\\matching-mutual-320.png"
+  ]
+}

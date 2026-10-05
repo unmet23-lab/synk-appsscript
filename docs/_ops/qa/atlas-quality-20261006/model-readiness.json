@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-05T19:48:14.849Z",
+  "localDate": "2026-10-06",
+  "status": "deferred-by-user",
+  "reason": "User deferred API setup and paid evaluation: 이건 다음에 정하자",
+  "scope": "Only live model/API evaluation deferred; consultation and matching work continues.",
+  "modelCalls": 0,
+  "paidCalls": 0,
+  "cost": 0,
+  "freezeVerified": true,
+  "freezeManifestSha256": "dcd263a22e3c1b28a1d4b78f4ad0d55ffa79e3b1c91863e3df98ea94556e1347",
+  "datasetSha256": "14cf6f3185d4f2b90b364a49c7d3d851494d614cad2ce0e32aca2300b978c99e",
+  "plannedCases": 30,
+  "plan": "model-capture/plan.json",
+  "costEstimate": "model-cost-estimate.json",
+  "approvalEnvironmentEnabled": false,
+  "credentialsWritten": false,
+  "productionRestarted": false
+}

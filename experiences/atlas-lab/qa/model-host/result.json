@@ -1,0 +1,70 @@
+{
+  "at": "2026-10-05T19:50:52.879Z",
+  "status": "passed",
+  "kind": "mock-host-ui",
+  "paidModelCalls": 0,
+  "errors": [],
+  "externalRequests": [],
+  "paths": [
+    {
+      "width": 1280,
+      "checks": [
+        "explicit-send-only",
+        "csrf-and-wire-fields",
+        "review-gate",
+        "no-auto-retry",
+        "same-UUID-retry",
+        "bad-quote-preserves-answers",
+        "duplicate-prevention",
+        "cancel-late-response",
+        "edit-stale",
+        "manual-stale",
+        "local-stale",
+        "delete-success-preserves-browser",
+        "delete-empty-account-scoped-body",
+        "delete-failure-has-no-success-message",
+        "delete-blocks-late-AI",
+        "expired-requires-fresh-UUID",
+        "no-overflow"
+      ],
+      "mockPosts": 12,
+      "mockDeletes": 2
+    },
+    {
+      "width": 390,
+      "checks": [
+        "explicit-send-only",
+        "csrf-and-wire-fields",
+        "review-gate",
+        "no-auto-retry",
+        "same-UUID-retry",
+        "bad-quote-preserves-answers",
+        "duplicate-prevention",
+        "cancel-late-response",
+        "edit-stale",
+        "manual-stale",
+        "local-stale",
+        "delete-success-preserves-browser",
+        "delete-empty-account-scoped-body",
+        "delete-failure-has-no-success-message",
+        "delete-blocks-late-AI",
+        "expired-requires-fresh-UUID",
+        "no-overflow"
+      ],
+      "mockPosts": 12,
+      "mockDeletes": 2
+    },
+    {
+      "checks": [
+        "unconfigured-local-fallback",
+        "nonadmin-can-delete-with-AI-disabled",
+        "delete-revoked-session-no-success",
+        "http-share-zero-host-and-privacy-requests"
+      ]
+    }
+  ],
+  "screens": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\model-host\\model-review-1280.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\model-host\\model-review-390.png"
+  ]
+}

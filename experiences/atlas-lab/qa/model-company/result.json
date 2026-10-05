@@ -1,0 +1,44 @@
+{
+  "at": "2026-10-05T19:50:51.647Z",
+  "status": "passed",
+  "kind": "company-host-browser-with-mock-provider",
+  "realCompanyAuthAndApi": true,
+  "paidModelCalls": 0,
+  "externalNetworkCalls": 0,
+  "mockedProviderCalls": 5,
+  "checks": [
+    "authenticated-ai-review-1280",
+    "authenticated-ai-review-390",
+    "authenticated-ai-review-320",
+    "local-button-no-provider",
+    "late-response-after-edit-discarded",
+    "provider-request-ledger-persisted",
+    "server-delete-preserves-browser-and-billing",
+    "pending-delete-no-late-response-or-ciphertext-restoration"
+  ],
+  "screenshots": [
+    {
+      "width": 1280,
+      "section": "computer-consultation",
+      "file": "company-ai-1280.png"
+    },
+    {
+      "width": 390,
+      "section": "computer-consultation",
+      "file": "company-ai-390.png"
+    },
+    {
+      "width": 320,
+      "section": "computer-consultation",
+      "file": "company-ai-320.png"
+    },
+    {
+      "width": 320,
+      "section": "server-response-deleted",
+      "file": "company-deleted-320.png"
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "requestLedgerRows": 5
+}

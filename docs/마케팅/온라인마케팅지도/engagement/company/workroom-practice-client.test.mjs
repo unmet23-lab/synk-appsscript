@@ -13,6 +13,8 @@ function fixture(){
     document:{activeElement:null,addEventListener(type,handler){if(!handlers.has(type))handlers.set(type,[]);handlers.get(type).push(handler);},getElementById:id=>nodes.get(id)||null,querySelector:()=>selected},
     render(){renders++;},escape:value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),button:(label,action)=>`<button data-action="${action}">${label}</button>`});
   vm.runInContext(readFileSync(new URL('atlas/engine.js',root),'utf8'),context);
+  vm.runInContext(readFileSync(new URL('atlas/domain.js',root),'utf8'),context);
+  vm.runInContext(readFileSync(new URL('atlas/temper-outcomes.js',root),'utf8'),context);
   vm.runInContext(readFileSync(new URL('atlas/personalization.js',root),'utf8'),context);
   vm.runInContext(`(()=>{${shared.replaceAll('export ','')} globalThis.practiceModel={${modelNames.join(',')}};})()`,context);
   vm.runInContext(readFileSync(new URL('./public/workroom-practice.js',import.meta.url),'utf8'),context);
@@ -22,6 +24,14 @@ function fixture(){
   const action=name=>emit('click',{closest:()=>({disabled:false,dataset:{action:'practice-'+name}})});
   return {context,storage,reads,writes,nodes,emit,start,action,evaluate,get wp(){return evaluate('wp');},get renders(){return renders;},set selected(value){selected=value;}};
 }
+
+test('a practice decision is recorded as displayed only after its current DOM marker exists',()=>{
+  const f=fixture();f.start();assert.equal(f.wp.value.evaluation.decisions.length,1);assert.equal(f.wp.value.evaluation.exposures.length,0);
+  f.evaluate('wpRestoreEdit(null)');assert.equal(f.wp.value.evaluation.exposures.length,0);
+  f.selected={};f.evaluate('wpRestoreEdit(null)');assert.equal(f.wp.value.evaluation.exposures.length,1);
+  f.evaluate('wpRestoreEdit(null)');assert.equal(f.wp.value.evaluation.exposures.length,1);
+  f.evaluate("wp.mode='setup'");f.selected=null;f.evaluate('wpRestoreEdit(null)');assert.equal(f.wp.value.evaluation.exposures.length,1);
+});
 test('practice reads only the active employee key and never imports the standalone visitor record',()=>{
   const f=fixture();f.storage.set('synk.shift.workbench.v1','visitor-record');f.evaluate('wpRestore()');
   assert.ok(f.reads.every(key=>key==='synk-workroom:ai-practice:v1:member-A'));assert.equal(f.wp.value.save,false);assert.equal(f.wp.value.profile,null);

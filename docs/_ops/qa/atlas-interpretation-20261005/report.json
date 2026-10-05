@@ -1,0 +1,133 @@
+{
+  "at": "2026-10-05T13:20:02.298Z",
+  "kind": "local-implementation-and-authored-development-regression",
+  "paidModelCalls": 0,
+  "deployed": false,
+  "realUserEffectMeasured": false,
+  "automaticTests": {
+    "total": 489,
+    "passed": 489,
+    "failed": 0,
+    "log": "tests.txt",
+    "files": [
+      "tests/atlas-account-summary.test.js",
+      "tests/atlas-ask-value.test.js",
+      "tests/atlas-ask.test.js",
+      "tests/atlas-core-boundaries.test.js",
+      "tests/atlas-delivery-exclusion.test.js",
+      "tests/atlas-domain.test.js",
+      "tests/atlas-education.test.js",
+      "tests/atlas-family.test.js",
+      "tests/atlas-flow.test.js",
+      "tests/atlas-formats.test.js",
+      "tests/atlas-game-flow.test.js",
+      "tests/atlas-incremental.test.js",
+      "tests/atlas-interpretation-evaluation.test.js",
+      "tests/atlas-interpretation.test.js",
+      "tests/atlas-lab-consultation.test.js",
+      "tests/atlas-lab-interpretation.test.js",
+      "tests/atlas-label-anchor.test.js",
+      "tests/atlas-learning-sync.test.js",
+      "tests/atlas-learning.test.js",
+      "tests/atlas-ledger-recovery.test.js",
+      "tests/atlas-ledger-sync.test.js",
+      "tests/atlas-ledger.test.js",
+      "tests/atlas-life.test.js",
+      "tests/atlas-loop.test.js",
+      "tests/atlas-memory-sync.test.js",
+      "tests/atlas-no-feedback.test.js",
+      "tests/atlas-outcomes.test.js",
+      "tests/atlas-personalization-conflict.test.js",
+      "tests/atlas-personalization.test.js",
+      "tests/atlas-preferences.test.js",
+      "tests/atlas-provenance-review.test.js",
+      "tests/atlas-review-fixes.test.js",
+      "tests/atlas-storage-failure.test.js",
+      "tests/atlas-sync-fixes.test.js",
+      "tests/atlas-temper-flow.test.js",
+      "tests/atlas-temper.test.js",
+      "tests/atlas-topik-layers.test.js",
+      "tests/atlas-trail.test.js",
+      "tests/atlas-vellum-flow.test.js",
+      "tests/atlas-work.test.js",
+      "tests/atlas.test.js",
+      "tests/learning-hub-server.test.js",
+      "experiences/learning-hub/server.test.mjs",
+      "docs/마케팅/맞춤도구/computer/rules.test.js"
+    ]
+  },
+  "browser": {
+    "interpretation": "../../../../experiences/atlas-lab/qa/interpretation/result.json",
+    "questionValue": "../../../../experiences/atlas-lab/qa/question-value/result.json",
+    "widths": [
+      1280,
+      390,
+      320
+    ],
+    "standaloneFilePassed": true
+  },
+  "authoredEvaluation": {
+    "dataset": {
+      "id": "computer-ko-authored",
+      "version": "2",
+      "kind": "authored-synthetic-sources"
+    },
+    "backend": {
+      "id": "computer-explicit-ko-1",
+      "version": "1",
+      "kind": "local-pattern"
+    },
+    "counts": {
+      "cases": 28,
+      "attempted": 28,
+      "notRun": 0,
+      "malformed": 0,
+      "evaluated": 28,
+      "passed": 21,
+      "failed": 7
+    },
+    "claims": {
+      "expected": 20,
+      "exact": 13,
+      "missing": 7,
+      "incorrect": 0,
+      "permitted": 5,
+      "unsupported": 2,
+      "conflicting": 1,
+      "withheldProposals": 0,
+      "forbiddenAssertions": 1
+    },
+    "restraint": {
+      "expected": 22,
+      "correctlyUnasserted": 21,
+      "violated": 1
+    },
+    "usedDuringDevelopment": true,
+    "allUnreviewedFactsHeld": true,
+    "conflicts": [
+      {
+        "caseId": "contradictory-ram",
+        "usableBeforeReview": 0,
+        "conflictingFields": [
+          "current.ram"
+        ]
+      }
+    ]
+  },
+  "sources": {
+    "atlas/interpretation.js": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e",
+    "atlas/temper-interpretation.js": "238e3cf2b362514e002dc7c2640999b5fd8b80e03efd26962b1426af952047de",
+    "atlas/domain.js": "9951725913b41d97052f2f396b1ef4463c7c47e75a218f72096999d6f8d6b046",
+    "atlas/ask.js": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+    "experiences/atlas-lab/interpretation.mjs": "589dc1fba5ee1020f062b9f7345b40d7755f33a810003bbf3ba19e2e585138c9",
+    "experiences/atlas-lab/consultation.mjs": "4510921885746b39301ff79577c9698da559ec023da332b681a89319a45125ea",
+    "experiences/atlas-lab/lab.js": "2076ba5dec9167ff529432641cd72ea319a4cbb1eb6ff896aa798d1ecf92aaa7",
+    "experiences/atlas-lab/lab.css": "e884190f6a49588266c910943cf6382962d3dfe43767c75e149c8aa6a3210887",
+    "experiences/atlas-lab/index.html": "67535f4d3fe94c5a6f879bbad52c7fcc1b9ea8045e380c9295ebc316e23602fd",
+    "experiences/atlas-lab/build-share.mjs": "cf8e9bc630da4a4052af32ed194cad61ccce169b14ad1cc07094b1ad88680fb2",
+    "experiences/atlas-lab/evaluate-local.mjs": "50ca91dddc8426b3313ab384c9ab010725603e59568389fe9927c765e66a4956",
+    "experiences/learning-hub/server.mjs": "28ef528697f347b626064f839bee838c16ed72efb1b14c44552a2e8cfa0218fa",
+    "tools/evaluate-atlas-interpretation.mjs": "45b64b0ffe471be6a70d91dfc399c4123ab3a06fc2edbe80e8cdec7e2ee1f09a",
+    "tests/fixtures/atlas-interpretation-cases.json": "654613f555581a198b629c52c4bc09b506a8d5378cb90359314a50b9012d502a"
+  }
+}

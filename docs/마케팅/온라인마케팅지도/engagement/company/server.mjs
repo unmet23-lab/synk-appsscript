@@ -28,6 +28,7 @@ import { buildTeamTrends } from './team-trends.mjs';
 import { buildContentLeaders } from './content-leaders.mjs';
 import { createAssistantService } from './assistant-service.mjs';
 import { createCrewProfileService } from './crew-profile-service.mjs';
+import { createComputerInterpretationService } from './computer-interpretation-service.mjs';
 import { receiveStudioMedia,commitStudioMedia,discardStudioMedia,serveStudioMedia } from './studio-media.mjs';
 import { createMessenger } from '../../../../../tools/company-messenger/server.mjs';
 import { resolvePlatformUrl } from '../../../../../tools/company-messenger/platform-navigation.mjs';
@@ -90,6 +91,7 @@ export function createCompanyApp(options={}) {
   const creatorSources=createCreatorSourcesService({store});
   const studio=createStudioService({store,clock});
   const crewProfiles=createCrewProfileService({store,clock});
+  const computerInterpretation=createComputerInterpretationService({store,clock,getEnv:options.computerAIEnv,fetchImpl:options.computerAIFetch});
   const demo=createDemoService({directory:options.demoDataDir??join(store.directory,'demo')});
   const assistant=createAssistantService({today:()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(clock())),performance:assistantPerformance,directory:(req,query)=>messenger.assistantDirectory(req,query)});
   const migrationAt=clock();
@@ -337,6 +339,7 @@ export function createCompanyApp(options={}) {
     let auth=identityControl?rawSession(req):session(req),user=auth?.user;
     if(method==='GET'&&path==='/api/synk-id/status')return send(res,200,synkIdentity.status(auth));
     if(method==='GET'&&path==='/api/me')return send(res,200,{user:publicUser(user),csrfToken:auth?.body.csrfToken,needsSetup:store.all('users').length===0,platformUrl});
+    if(method==='GET'&&path==='/api/computer-interpretation'){if(url.search)throw httpError('AI 상담 상태 주소를 확인해 주세요.');return send(res,200,computerInterpretation.state(user));}
     if(method==='POST'&&['/api/synk-id/challenge','/api/synk-id/start','/api/synk-id/exchange','/api/synk-id/renew'].includes(path)){
       const input=await body(req);auth=identityControl?rawSession(req):session(req);
       if(path.endsWith('/challenge'))return send(res,200,synkIdentity.challenge(req,res,input,auth));
@@ -387,6 +390,16 @@ export function createCompanyApp(options={}) {
         const checkedHash=passwordHash(input.password);const result=store.transaction(()=>{const inv=store.readToken(input.token,'invite');if(!inv)throw httpError('이미 사용된 초대입니다.',403);teamFor(inv.body.teamId);const u=store.createUser({email:inv.body.email,name:input.name||inv.body.name,role:inv.body.role||'member',teamId:inv.body.teamId||null});store.put('users',u.id,{...u,passwordHash:checkedHash});store.db.prepare('DELETE FROM tokens WHERE hash=?').run(hash(input.token));return store.get('users',u.id);});return send(res,201,setSession(res,result));
       }
       if(!user)throw httpError('먼저 로그인해 주세요.',401);
+      if(path==='/api/computer-interpretation/delete'){
+        if(url.search)throw httpError('본인의 서버 응답 인용만 삭제할 수 있어요.');
+        return send(res,200,computerInterpretation.removeResponses(user,input));
+      }
+      if(path==='/api/computer-interpretation'){
+        admin(user);if(url.search)throw httpError('AI 상담 요청 주소를 확인해 주세요.');
+        const originalHash=auth.hash,originalUser=user.id;
+        const revalidate=()=>{const latest=session(req);if(!latest||latest.hash!==originalHash||latest.user.id!==originalUser||req.headers['x-csrf-token']!==latest.body.csrfToken)throw httpError('로그인 상태를 다시 확인해 주세요.',401);admin(latest.user);};
+        return send(res,200,await computerInterpretation.interpret(user,input,{revalidate}));
+      }
       if(path==='/api/assistant')return send(res,200,assistant.answer(user,input,req));
       if(path==='/api/crew-profile')return send(res,200,crewProfiles.save(user,input));
       if(path==='/api/crew-profile/delete')return send(res,200,crewProfiles.remove(user,input));
@@ -519,6 +532,10 @@ export function createCompanyApp(options={}) {
     const studioMediaRoute=path.match(/^\/api\/studio-media\/([^/]+)$/);
     if(['GET','HEAD'].includes(method)&&studioMediaRoute){if(!user)throw httpError('먼저 로그인해 주세요.',401);return await serveStudioMedia(req,res,store.directory,studio.readableMedia(user,studioMediaRoute[1]),()=>{const latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);studio.readableMedia(latest.user,studioMediaRoute[1]);});}
     if(method==='GET'&&path.startsWith('/api/')){if(!user)throw httpError('먼저 로그인해 주세요.',401);
+      if(path==='/api/computer-interpretation/privacy'){
+        if(url.search)throw httpError('본인의 서버 응답 인용만 조회할 수 있어요.');
+        return send(res,200,computerInterpretation.privacy(user));
+      }
       if(path.startsWith('/api/demo/')){
         admin(user);
         if(path==='/api/demo/state')return send(res,200,demo.state(url.searchParams));
@@ -583,6 +600,17 @@ export function createCompanyApp(options={}) {
     }
     const files={'/studio.js':['public/studio.js','text/javascript; charset=utf-8'],'/studio.css':['public/studio.css','text/css; charset=utf-8'],'/studio-review.js':['public/studio-review.js','text/javascript; charset=utf-8'],'/studio-review.css':['public/studio-review.css','text/css; charset=utf-8'],'/studio-board.js':['public/studio-board.js','text/javascript; charset=utf-8'],'/studio-board.css':['public/studio-board.css','text/css; charset=utf-8'],'/benchmark.js':['public/benchmark.js','text/javascript; charset=utf-8'],'/benchmark.css':['public/benchmark.css','text/css; charset=utf-8'],'/content.js':['public/content.js','text/javascript; charset=utf-8'],'/content.css':['public/content.css','text/css; charset=utf-8'],'/wordmark.svg':['public/wordmark.svg','image/svg+xml'],'/pages.css':['public/pages.css','text/css; charset=utf-8'],'/dialogs.css':['public/dialogs.css','text/css; charset=utf-8'],'/':['public/index.html','text/html; charset=utf-8'],'/app.js':['public/app.js','text/javascript; charset=utf-8'],'/style.css':['public/style.css','text/css; charset=utf-8'],'/font.woff2':['../../../../브랜드_폰트/SUIT/SUIT-Variable.woff2','font/woff2'],'/inter.ttf':['../../../../브랜드_폰트/InterTight/InterTight-Regular.ttf','font/ttf'],'/inter-semibold.ttf':['../../../../브랜드_폰트/InterTight/InterTight-SemiBold.ttf','font/ttf'],'/mono.ttf':['../../../../브랜드_폰트/DM_Mono/DMMono-Regular.ttf','font/ttf'],'/brand-logo.svg':['../../../../홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg','image/svg+xml']};
     Object.assign(files,{'/workspace.js':['public/workspace.js','text/javascript; charset=utf-8'],'/workspace.css':['public/workspace.css','text/css; charset=utf-8'],'/team-overview.js':['public/team-overview.js','text/javascript; charset=utf-8']});
+    // Exact browser dependencies only: server model adapter, fixtures and data
+    // directories are intentionally absent from this public asset map.
+    if(path==='/atlas-lab'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/atlas-lab/'});return res.end();}
+    files['/atlas-lab/']=['../../../../../experiences/atlas-lab/index.html','text/html; charset=utf-8'];
+    for(const file of ['lab.js','lab.css','consultation.mjs','interpretation.mjs','model-host.mjs','matching.mjs','matching-ui.mjs'])files['/atlas-lab/'+file]=['../../../../../experiences/atlas-lab/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
+    for(const file of ['atlas-learning.js'])files['/learning-hub/'+file]=['../../../../../experiences/learning-hub/'+file,'text/javascript; charset=utf-8'];
+    for(const file of ['scrapbook.css','SUIT-Variable.woff2','InterTight-700.woff2','sticker-book.webp','slab-cream-long.webp','slab-blush-long.webp'])files['/learning-hub/assets/'+file]=['../../../../../experiences/learning-hub/assets/'+file,file.endsWith('.css')?'text/css; charset=utf-8':file.endsWith('.woff2')?'font/woff2':'image/webp'];
+    for(const file of ['domain.js','interpretation.js','temper-outcomes.js'])files['/consult/core/'+file]=['../../../../../atlas/'+file,'text/javascript; charset=utf-8'];
+    for(const file of ['content.js','rules.js'])files['/consult/computer/'+file]=['../../../맞춤도구/computer/'+file,'text/javascript; charset=utf-8'];
+    files['/order-rush/learning.mjs']=['../../../../../experiences/order-rush/learning.mjs','text/javascript; charset=utf-8'];
+    for(const file of ['personalization.mjs','core.mjs','suno-tracks.mjs','listening.mjs','narration.mjs'])files['/korean-rhythm/'+file]=['../../../../../experiences/korean-rhythm/'+file,'text/javascript; charset=utf-8'];
     Object.assign(files,{'/comparison-charts.js':['public/comparison-charts.js','text/javascript; charset=utf-8'],'/comparison-charts.css':['public/comparison-charts.css','text/css; charset=utf-8'],'/demo-ui.js':['public/demo-ui.js','text/javascript; charset=utf-8']});
     Object.assign(files,{'/growth-home.js':['public/growth-home.js','text/javascript; charset=utf-8'],'/growth-home.css':['public/growth-home.css','text/css; charset=utf-8']});
     Object.assign(files,{'/growth-history.js':['public/growth-history.js','text/javascript; charset=utf-8'],'/growth-history.css':['public/growth-history.css','text/css; charset=utf-8']});
@@ -598,6 +626,8 @@ export function createCompanyApp(options={}) {
       '/workroom-practice.css':['public/workroom-practice.css','text/css; charset=utf-8'],
       '/workroom-practice/model.mjs':['../../../../../experiences/shift-workbench/model.mjs','text/javascript; charset=utf-8'],
       '/workroom-practice/core.js':['../../../../../atlas/engine.js','text/javascript; charset=utf-8'],
+      '/workroom-practice/domain.js':['../../../../../atlas/domain.js','text/javascript; charset=utf-8'],
+      '/workroom-practice/temper-outcomes.js':['../../../../../atlas/temper-outcomes.js','text/javascript; charset=utf-8'],
       '/workroom-practice/personalization.js':['../../../../../atlas/personalization.js','text/javascript; charset=utf-8'],
     });
     for(const file of ['publish-rules.js','publish-check.js','maker-tools.js','maker-tools.css','subtitle-lab.js','subtitle-lab.css','creator-sources.js','creator-sources.css'])files['/'+file]=['public/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
@@ -619,7 +649,7 @@ export function createCompanyApp(options={}) {
     ready=false;clearInterval(timer);synkIdentity.close();
     if(shutdownTask)return shutdownTask;
     shutdownTask=(async()=>{
-      await Promise.all([queue,dailyTrends.stop(),creativeResearch.stop()]);messenger.endConnections();
+      await Promise.all([queue,dailyTrends.stop(),creativeResearch.stop(),computerInterpretation.stop()]);messenger.endConnections();
       for(const listener of [redirectServer,server])if(listener?.listening)await new Promise(resolve=>{listener.close(resolve);listener.closeIdleConnections();});
       try{await messenger.close();}finally{store.close();}
     })();
@@ -642,7 +672,7 @@ export function createCompanyApp(options={}) {
     return startTask;
   }
   async function stop(){ready=false;stopRequested=true;clearInterval(timer);if(startTask)await startTask.catch(()=>{});await shutdown();}
-  return {server,store,messenger,dailyTrends,creativeResearch,origin,host,port,importLegacy,scheduledTick,report,enqueueCollection,waitForIdle:()=>Promise.all([queue,dailyTrends.waitForIdle(),creativeResearch.waitForIdle()]),start,stop};
+  return {server,store,messenger,dailyTrends,creativeResearch,computerInterpretation,origin,host,port,importLegacy,scheduledTick,report,enqueueCollection,waitForIdle:()=>Promise.all([queue,dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),computerInterpretation.waitForIdle()]),start,stop};
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   let app;

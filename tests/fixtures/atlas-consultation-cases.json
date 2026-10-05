@@ -1,0 +1,89 @@
+{
+  "id": "computer-question-policy-cases", "version": 1,
+  "basis": "Hand-authored synthetic development scenarios; not unseen users or independent model evaluation.",
+  "protocol": {
+    "maxQuestions": 20,
+    "entry": "Both policies receive the same explicitly selected uses and other initial answers. Uses selection is not counted as a follow-up question.",
+    "fixed": "First eligible unanswered field in the existing computer content order; recompute eligibility after each answer.",
+    "atlas": "Unmodified createComputerConsultation.choose, which calls the existing Core Ask.",
+    "stops": ["no selected uses", "no eligible question / no positive declared question value", "first unknown, conflicting or absent response", "maximum questions"],
+    "unresolved": "Never fill absent or conflicting responses with defaults. Report the current provisional product advice but do not pass the completed-quality gate.",
+    "reference": "All answerable scripted answers through the same existing product rules; consistency reference only, not independent recommendation truth.",
+    "requirements": "Authored required facts and advice checks. Unknown catalog answers acknowledge uncertainty but do not satisfy a required known fact.",
+    "success": "Question reduction is favorable only when both runs complete, all authored requirements pass, and both match the same complete-script reference.",
+    "timing": "Local computation only; no simulated user time, correction rate, satisfaction, response probability, or causal effect."
+  },
+  "cases": [
+    {
+      "id": "web-new-light", "description": "Light web work on a new Windows desktop, low budget.",
+      "initialAnswers": {"uses":["web"]},
+      "responses": {"owned":{"status":"answered","value":"new"},"multitask":{"status":"answered","value":"light"},"place":{"status":"answered","value":"home"},"os":{"status":"answered","value":"win"},"budget":{"status":"answered","value":"lt100"}},
+      "requiredAnswers": ["owned","place","os","budget"],
+      "checks": [{"id":"respect-windows","path":"os","op":"eq","value":"win"},{"id":"no-unneeded-discrete-gpu","path":"gpu.kind","op":"eq","value":"integrated"},{"id":"minimum-memory","path":"ram","op":"gte","value":8}]
+    },
+    {
+      "id":"reuse-enough-win10", "description":"A working existing computer must be considered before buying, with its OS warning retained.",
+      "initialAnswers":{"uses":["web"],"owned":"have"},
+      "responses":{"multitask":{"status":"answered","value":"light"},"current.kind":{"status":"answered","value":"desktop"},"current.ram":{"status":"answered","value":"32"},"current.os":{"status":"answered","value":"win10"},"current.feel":{"status":"answered","value":"ok"},"place":{"status":"answered","value":"home"},"os":{"status":"answered","value":"any"},"budget":{"status":"answered","value":"unknown"}},
+      "requiredAnswers":["current.ram","current.os","current.feel"],
+      "checks":[{"id":"reuse-first","path":"keep","op":"eq","value":true},{"id":"legacy-os-warning","path":"current.actions","op":"includes","value":"check-win11-upgrade"}]
+    },
+    {
+      "id":"huge-ai-low-budget", "description":"Large local model with explicit Mac preference and an insufficient budget needs a warning.",
+      "initialAnswers":{"uses":["localai"],"owned":"new"},
+      "responses":{"localai":{"status":"answered","value":["huge"]},"multitask":{"status":"answered","value":"normal"},"place":{"status":"answered","value":"home"},"os":{"status":"answered","value":"mac"},"budget":{"status":"answered","value":"lt100"}},
+      "requiredAnswers":["localai","os","budget"],
+      "checks":[{"id":"large-memory","path":"ram","op":"gte","value":64},{"id":"budget-warning","path":"budgetWarning","op":"eq","value":true},{"id":"respect-mac","path":"os","op":"eq","value":"mac"}]
+    },
+    {
+      "id":"combined-local-ai", "description":"Language and image models are both explicitly selected.",
+      "initialAnswers":{"uses":["localai"],"owned":"new"},
+      "responses":{"localai":{"status":"answered","value":["large","image"]},"multitask":{"status":"answered","value":"heavy"},"place":{"status":"answered","value":"home"},"os":{"status":"answered","value":"win"},"budget":{"status":"answered","value":"gt250"}},
+      "requiredAnswers":["localai","os"],
+      "checks":[{"id":"vram-for-large-model","path":"gpu.vram","op":"gte","value":24},{"id":"system-memory","path":"ram","op":"gte","value":32},{"id":"respect-windows","path":"os","op":"eq","value":"win"}]
+    },
+    {
+      "id":"video-mobile-os-conflict", "description":"Explicit Windows choice conflicts with Final Cut and iOS development; both warnings matter.",
+      "initialAnswers":{"uses":["video","code"],"owned":"new"},
+      "responses":{"video.app":{"status":"answered","value":"fcp"},"video.res":{"status":"answered","value":"4k"},"video.load":{"status":"answered","value":"heavy"},"code":{"status":"answered","value":"mobile"},"multitask":{"status":"answered","value":"heavy"},"place":{"status":"answered","value":"carry"},"os":{"status":"answered","value":"win"},"budget":{"status":"answered","value":"150_250"}},
+      "requiredAnswers":["video.app","video.res","code","os"],
+      "checks":[{"id":"fcp-conflict","path":"osConflicts","op":"includes","value":"fcp-requires-mac"},{"id":"ios-conflict","path":"osConflicts","op":"includes","value":"ios-development-requires-mac"}]
+    },
+    {
+      "id":"slow-old-desktop", "description":"Known small RAM and slowness require upgrade and cause checks rather than a blanket keep advice.",
+      "initialAnswers":{"uses":["localai"],"owned":"have","localai":["huge"]},
+      "responses":{"multitask":{"status":"answered","value":"normal"},"current.kind":{"status":"answered","value":"desktop"},"current.ram":{"status":"answered","value":"4"},"current.os":{"status":"answered","value":"win11"},"current.feel":{"status":"answered","value":"slow"},"place":{"status":"answered","value":"home"},"os":{"status":"answered","value":"win"},"budget":{"status":"answered","value":"lt100"}},
+      "requiredAnswers":["current.ram","current.kind","current.feel"],
+      "checks":[{"id":"not-blanket-keep","path":"keep","op":"eq","value":false},{"id":"ram-upgrade-check","path":"current.actions","op":"includes","value":"consider-ram-upgrade"},{"id":"slowness-cause","path":"current.actions","op":"includes","value":"check-slowness-cause"}]
+    },
+    {
+      "id":"explicit-unknown-memory", "description":"Catalog unknown is an explicit answer but not a known RAM capacity.",
+      "initialAnswers":{"uses":["web"],"owned":"have"},
+      "responses":{"multitask":{"status":"answered","value":"light"},"current.kind":{"status":"answered","value":"laptop"},"current.ram":{"status":"answered","value":"unknown"},"current.os":{"status":"answered","value":"unknown"},"current.feel":{"status":"answered","value":"untried"},"place":{"status":"answered","value":"carry"},"os":{"status":"answered","value":"any"},"budget":{"status":"answered","value":"unknown"}},
+      "requiredAnswers":["current.ram"],
+      "checks":[{"id":"memory-remains-unknown","path":"current.verdict","op":"eq","value":"unknown"},{"id":"ask-user-to-check","path":"current.actions","op":"includes","value":"check-current-memory"}]
+    },
+    {
+      "id":"unknown-local-workload", "description":"Unresolved local workload must not turn into a small-model declaration.",
+      "initialAnswers":{"uses":["localai"],"owned":"new"},
+      "responses":{"localai":{"status":"unknown"},"multitask":{"status":"answered","value":"normal"},"place":{"status":"answered","value":"home"},"os":{"status":"answered","value":"any"},"budget":{"status":"answered","value":"100_150"}},
+      "requiredAnswers":["localai"], "checks":[]
+    },
+    {
+      "id":"conflicting-current-memory", "description":"Two conflicting RAM declarations have no unique value to supply to the recommender.",
+      "initialAnswers":{"uses":["web"],"owned":"have"},
+      "responses":{"multitask":{"status":"answered","value":"light"},"current.kind":{"status":"answered","value":"desktop"},"current.ram":{"status":"conflict","values":["4","32"]},"current.os":{"status":"answered","value":"win11"},"current.feel":{"status":"answered","value":"ok"},"place":{"status":"answered","value":"home"},"os":{"status":"answered","value":"any"},"budget":{"status":"answered","value":"unknown"}},
+      "requiredAnswers":["current.ram"], "checks":[]
+    },
+    {
+      "id":"budget-no-response", "description":"A question with no response is not a low budget, an unknown enum selection, or a failed recommendation.",
+      "initialAnswers":{"uses":["localai"],"owned":"new","localai":["huge"],"os":"mac","place":"home"},
+      "responses":{"multitask":{"status":"answered","value":"normal"},"budget":{"status":"no_response"}},
+      "requiredAnswers":["budget"], "checks":[]
+    },
+    {
+      "id":"no-selected-use", "description":"The current product requires a selected use before showing advice.",
+      "initialAnswers":{"uses":[]}, "responses":{}, "requiredAnswers":["uses"], "checks":[]
+    }
+  ]
+}
