@@ -1,5 +1,5 @@
 {
-  "at": "2026-10-03T13:44:21.647Z",
+  "at": "2026-10-05T09:44:50.918Z",
   "base": "http://127.0.0.1:5249/",
   "results": [
     {
@@ -11,6 +11,51 @@
       "name": "390px 입구 넘침 없음",
       "ok": true,
       "detail": "{\"doc\":0,\"body\":0,\"vv\":0}"
+    },
+    {
+      "name": "390px 첫 화면에 노래 두 곡",
+      "ok": true,
+      "detail": "노래 2"
+    },
+    {
+      "name": "390px 모음 댄스 12.2초: ㅏ가 켜지고 오른쪽 화살표",
+      "ok": true,
+      "detail": "{\"kind\":\"vowel\",\"step\":0,\"text\":\"오른쪽 아!\"}"
+    },
+    {
+      "name": "390px 모음 댄스 후렴: 여섯 모음을 차례로",
+      "ok": true,
+      "detail": "{\"kind\":\"sweep\",\"step\":2,\"text\":\"아! 어! 오! 우! 으! 이!\"}"
+    },
+    {
+      "name": "390px 노래 화면 넘침 없음",
+      "ok": true,
+      "detail": "{\"doc\":0,\"body\":0,\"vv\":0}"
+    },
+    {
+      "name": "390px 그 아 가 11초: ㄱ + ㅏ = 가 세 걸음",
+      "ok": true,
+      "detail": "{\"kind\":\"blend\",\"step\":0,\"text\":\"그 아 가!\"} {\"kind\":\"blend\",\"step\":2,\"text\":\"그 아 가!\"}"
+    },
+    {
+      "name": "390px 그 아 가 후렴: 가 나 다 라 마 바 사",
+      "ok": true,
+      "detail": "{\"kind\":\"sweep\",\"step\":2,\"text\":\"가 나 다 라 마 바 사!\"}"
+    },
+    {
+      "name": "390px 그 아 가 둘째 절: 가 거 고 구 그 기",
+      "ok": true,
+      "detail": "{\"kind\":\"sweep\",\"step\":1,\"text\":\"가 거 고 구 그 기!\"}"
+    },
+    {
+      "name": "390px 노래가 실제로 흘러감(그 아 가)",
+      "ok": true,
+      "detail": "시각 0.311842"
+    },
+    {
+      "name": "390px 재생 중 화면이 노래 시각을 따라감(13.6초로 옮기면 ㄷ + ㅏ = 다)",
+      "ok": true,
+      "detail": "13.850061 ㄷ드+ㅏ아=다다"
     },
     {
       "name": "390px 첫 회차 끝까지",
@@ -31,6 +76,11 @@
       "name": "390px 틀린 글자를 회차 안에서 한 번 더",
       "ok": true,
       "detail": "다시 1"
+    },
+    {
+      "name": "390px 마무리에 노래로 복습(모음만 배운 날은 모음 댄스)",
+      "ok": true,
+      "detail": "노래로 복습 · 모음 댄스"
     },
     {
       "name": "390px 진도 저장(만난 글자)",
@@ -60,12 +110,12 @@
     {
       "name": "390px 둘째 회차 끝까지",
       "ok": true,
-      "detail": "단계 11, 꼴 pair,see_pick,listen_pick,match"
+      "detail": "단계 11, 꼴 pair,listen_pick,see_pick,match"
     },
     {
       "name": "390px 자음을 배운 사람: 음절 만들기와 그 시범",
       "ok": true,
-      "detail": "꼴 match,teach,build,listen_pick,see_pick,pair"
+      "detail": "꼴 listen_pick,teach,see_pick,build,pair,match"
     },
     {
       "name": "390px 자음을 배운 사람: U3 새 글자를 만남",
@@ -85,12 +135,12 @@
     {
       "name": "390px 받침 회차: 짝 고르기로 시작",
       "ok": true,
-      "detail": "pair,teach,see_pick,see_pick,see_pick,listen_pick,see_pick,build,match,listen_pick"
+      "detail": "pair,teach,listen_pick,see_pick,see_pick,match,build,listen_pick,match,build"
     },
     {
       "name": "390px 받침 회차: 몽글에게 가르쳐 주기(몽글이 든 글자가 보임)",
       "ok": true,
-      "detail": "꼴 pair,teach,see_pick,listen_pick,build,match"
+      "detail": "꼴 pair,teach,listen_pick,see_pick,match,build"
     },
     {
       "name": "390px 받침 회차: 짝·가르쳐 주기의 시범이 한 번씩",
@@ -105,7 +155,7 @@
     {
       "name": "390px 졸업: 회차 끝에 졸업 장면",
       "ok": true,
-      "detail": "단계 10, 꼴 pair,teach,see_pick,listen_pick,build,match, 받침 음절 만들기 1"
+      "detail": "단계 10, 꼴 listen_pick,teach,see_pick,build,match, 받침 음절 만들기 1"
     },
     {
       "name": "390px 졸업 장면: 읽을 수 있는 받침 낱말과 명패",
@@ -125,7 +175,7 @@
     {
       "name": "390px 졸업 뒤 몸풀기는 다섯 문항 이하",
       "ok": true,
-      "detail": "문항 5: see_pick,pair,build,listen_pick,see_pick"
+      "detail": "문항 5: see_pick,listen_pick,match,build,listen_pick"
     },
     {
       "name": "390px 콘솔 오류 없음",
@@ -153,6 +203,51 @@
       "detail": "{\"doc\":0,\"body\":0,\"vv\":0}"
     },
     {
+      "name": "1280px 첫 화면에 노래 두 곡",
+      "ok": true,
+      "detail": "노래 2"
+    },
+    {
+      "name": "1280px 모음 댄스 12.2초: ㅏ가 켜지고 오른쪽 화살표",
+      "ok": true,
+      "detail": "{\"kind\":\"vowel\",\"step\":0,\"text\":\"오른쪽 아!\"}"
+    },
+    {
+      "name": "1280px 모음 댄스 후렴: 여섯 모음을 차례로",
+      "ok": true,
+      "detail": "{\"kind\":\"sweep\",\"step\":2,\"text\":\"아! 어! 오! 우! 으! 이!\"}"
+    },
+    {
+      "name": "1280px 노래 화면 넘침 없음",
+      "ok": true,
+      "detail": "{\"doc\":0,\"body\":0,\"vv\":0}"
+    },
+    {
+      "name": "1280px 그 아 가 11초: ㄱ + ㅏ = 가 세 걸음",
+      "ok": true,
+      "detail": "{\"kind\":\"blend\",\"step\":0,\"text\":\"그 아 가!\"} {\"kind\":\"blend\",\"step\":2,\"text\":\"그 아 가!\"}"
+    },
+    {
+      "name": "1280px 그 아 가 후렴: 가 나 다 라 마 바 사",
+      "ok": true,
+      "detail": "{\"kind\":\"sweep\",\"step\":2,\"text\":\"가 나 다 라 마 바 사!\"}"
+    },
+    {
+      "name": "1280px 그 아 가 둘째 절: 가 거 고 구 그 기",
+      "ok": true,
+      "detail": "{\"kind\":\"sweep\",\"step\":1,\"text\":\"가 거 고 구 그 기!\"}"
+    },
+    {
+      "name": "1280px 노래가 실제로 흘러감(그 아 가)",
+      "ok": true,
+      "detail": "시각 0.304814"
+    },
+    {
+      "name": "1280px 재생 중 화면이 노래 시각을 따라감(13.6초로 옮기면 ㄷ + ㅏ = 다)",
+      "ok": true,
+      "detail": "13.843099 ㄷ드+ㅏ아=다다"
+    },
+    {
       "name": "1280px 첫 회차 끝까지",
       "ok": true,
       "detail": "단계 14"
@@ -171,6 +266,11 @@
       "name": "1280px 틀린 글자를 회차 안에서 한 번 더",
       "ok": true,
       "detail": "다시 1"
+    },
+    {
+      "name": "1280px 마무리에 노래로 복습(모음만 배운 날은 모음 댄스)",
+      "ok": true,
+      "detail": "노래로 복습 · 모음 댄스"
     },
     {
       "name": "1280px 진도 저장(만난 글자)",
@@ -200,12 +300,12 @@
     {
       "name": "1280px 둘째 회차 끝까지",
       "ok": true,
-      "detail": "단계 11, 꼴 pair,see_pick,listen_pick,match"
+      "detail": "단계 11, 꼴 pair,listen_pick,see_pick,match"
     },
     {
       "name": "1280px 자음을 배운 사람: 음절 만들기와 그 시범",
       "ok": true,
-      "detail": "꼴 match,teach,build,listen_pick,see_pick,pair"
+      "detail": "꼴 listen_pick,teach,see_pick,build,pair,match"
     },
     {
       "name": "1280px 자음을 배운 사람: U3 새 글자를 만남",
@@ -225,12 +325,12 @@
     {
       "name": "1280px 받침 회차: 짝 고르기로 시작",
       "ok": true,
-      "detail": "pair,teach,see_pick,see_pick,see_pick,listen_pick,see_pick,build,match,listen_pick"
+      "detail": "pair,teach,listen_pick,see_pick,see_pick,match,build,listen_pick,match,build"
     },
     {
       "name": "1280px 받침 회차: 몽글에게 가르쳐 주기(몽글이 든 글자가 보임)",
       "ok": true,
-      "detail": "꼴 pair,teach,see_pick,listen_pick,build,match"
+      "detail": "꼴 pair,teach,listen_pick,see_pick,match,build"
     },
     {
       "name": "1280px 받침 회차: 짝·가르쳐 주기의 시범이 한 번씩",
@@ -245,7 +345,7 @@
     {
       "name": "1280px 졸업: 회차 끝에 졸업 장면",
       "ok": true,
-      "detail": "단계 10, 꼴 pair,teach,see_pick,listen_pick,build,match, 받침 음절 만들기 1"
+      "detail": "단계 10, 꼴 listen_pick,teach,see_pick,build,match, 받침 음절 만들기 1"
     },
     {
       "name": "1280px 졸업 장면: 읽을 수 있는 받침 낱말과 명패",
@@ -265,7 +365,7 @@
     {
       "name": "1280px 졸업 뒤 몸풀기는 다섯 문항 이하",
       "ok": true,
-      "detail": "문항 5: see_pick,pair,build,listen_pick,see_pick"
+      "detail": "문항 5: see_pick,listen_pick,match,build,listen_pick"
     },
     {
       "name": "1280px 콘솔 오류 없음",
