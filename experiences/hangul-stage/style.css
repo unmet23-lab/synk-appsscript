@@ -237,6 +237,45 @@ h1,h2{margin:0;letter-spacing:-.01em}
 .tomorrow .chips .chip{opacity:.5}
 #finish .dock{grid-template-columns:1fr 1fr}
 
+/* 노래 */
+.songs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.song-card{display:grid;justify-items:start;align-content:start;gap:8px;min-height:96px;border:0;padding:12px 14px 16px;text-align:left;background:url(assets/kit/slab-cream.webp) center/100% 100% no-repeat;filter:drop-shadow(0 5px 6px rgba(120,60,40,.14));transition:transform .12s var(--ease)}
+.song-card:active{transform:translateY(2px)}
+.song-glyphs{font:900 26px/1 var(--sans);color:var(--coral-deep)}
+.song-name{display:grid;gap:3px}
+.song-name b{font:800 16px/1.2 var(--sans)}
+.song-name small{font:700 12px/1 var(--sans);color:var(--muted)}
+#song{min-height:100vh;display:flex;flex-direction:column}
+.song-main{flex:1;margin:8px 16px 0;padding:18px 14px 22px;display:grid;grid-template-rows:auto 1fr auto auto;justify-items:center;gap:14px;text-align:center}
+.song-title{font:900 20px/1.2 var(--sans);color:var(--ink-2)}
+.song-stage{min-height:300px;display:grid;place-items:center;align-content:center;gap:16px;align-self:stretch}
+.song-line{margin:0;min-height:1.5em;font:800 17px/1.4 var(--sans);color:var(--ink-2)}
+.song-text{margin:0;font:900 clamp(26px,8vw,38px)/1.25 var(--sans)}
+.song-mongle{width:150px;height:auto}
+.song-tile{display:grid;place-items:center;width:64px;height:64px;font:900 30px/1 var(--sans);background:url(assets/kit/badge-cream.webp) center/contain no-repeat;color:var(--ink);transition:transform .12s var(--ease)}
+.song-tile.big{width:150px;height:150px;font-size:84px}
+.song-tile.result{width:78px;height:78px;font-size:40px}
+.song-tile.on,[data-i].on>.song-tile{background-image:url(assets/kit/badge-coral.webp);color:#fff;text-shadow:0 1px 1px rgba(120,30,20,.4);transform:scale(1.06)}
+.song-tile.done,[data-i].done>.song-tile{color:var(--coral-deep)}
+.song-vowel{display:flex;align-items:center;gap:18px}
+.song-cue{margin:0;font:900 22px/1.3 var(--sans);color:var(--coral-deep)}
+.song-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:420px}
+.song-row.n10 .song-tile{width:56px;height:56px;font-size:26px}
+.song-blend{display:flex;align-items:center;gap:8px}
+.song-blend .part{display:grid;justify-items:center;gap:6px}
+.song-blend small{font:800 15px/1 var(--sans);color:var(--muted)}
+.song-blend .part.on small{color:var(--coral-deep)}
+.song-blend .op{font:900 26px/1 var(--sans);color:var(--muted)}
+/* 동작 화살표: 짧은 획이 가리키는 쪽. ㅡ는 옆으로, ㅣ는 위아래로, ㅑㅕㅛㅠ는 두 번. */
+.move{display:inline-flex;align-items:center;gap:4px}
+.move.tall{flex-direction:column}
+.move .arrow{width:46px;height:46px;background:var(--coral-deep);-webkit-mask:var(--i-arrow) center/contain no-repeat;mask:var(--i-arrow) center/contain no-repeat}
+.move .arrow.left{transform:rotate(180deg)}
+.move .arrow.up{transform:rotate(-90deg)}
+.move .arrow.down{transform:rotate(90deg)}
+.song-review{display:inline-flex;align-items:center;gap:8px;min-height:44px;border:0;padding:0 18px 3px;font:800 15px/1 var(--sans);color:var(--coral-deep);background:url(assets/kit/chip-blush-long.webp) center/100% 100% no-repeat}
+.song-review .note-mark{font-size:17px}
+
 /* 졸업 */
 #graduation{min-height:100vh;display:flex;flex-direction:column}
 .graduation-card{margin:20px 16px 0;padding:24px 16px;display:grid;justify-items:center;gap:14px;text-align:center}

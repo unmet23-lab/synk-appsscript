@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-05",
+  "base": "037819d5db8467d96547a5f7ca7ad79ce94648e8",
+  "releaseRoot": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\racing-terrain-release-20261005",
+  "strategy": "Apply only terrain-worker changes onto current public racing app. Include identical normal-derivative reuse in landscape.surfaceAt. Preserve public gameplay, garage, other landscape formulas, assets and other pages. No full app/all-games sync.",
+  "files": {
+    "app.js": "fae98f33a6ca7f621dd2a26359d03692a68c4cff4af8b49b835f62b23bc43317",
+    "render-world.js": "2f66a6f7e780e1c29eeea467db17e4b51652118b92d740c1bf74d0311a0e4783",
+    "landscape.js": "5a7964c1ad97b92e019c1dd9d1e6af46f3eecfafb6df52bd0b3359574585c7b2",
+    "course.js": "0a2924389f4783d01a7b259c83ea5d52050f9144a9e876099df5006986fbc409",
+    "terrain-data.js": "42c3c3cdc90b54ce27a476fe7a73abab785ea1422f93db95b6560b61129558ba",
+    "terrain-worker.js": "ef413cd0448ed6605b2420172ff0f14f9d93913d568e34637fe917b63a2df1f1",
+    "terrain-startup.js": "a304129900d969f3875004e2768c8d28c09c404238d4d9bad2e3c39fff0100a0"
+  }
+}

@@ -37,6 +37,11 @@
       <p id="voice-note" class="voice-note" role="status" hidden></p>
     </header>
 
+    <section class="paper block" aria-labelledby="songs-title">
+      <div class="block-head"><h2 id="songs-title">노래로 배우기</h2><span class="fine">노래에 맞춰 글자가 켜져요</span></div>
+      <div id="songs" class="songs"></div>
+    </section>
+
     <section class="paper block" aria-labelledby="road-title">
       <div class="block-head"><h2 id="road-title">한글 길</h2><span class="fine" id="road-now"></span></div>
       <ol id="road" class="road"></ol>
@@ -89,10 +94,28 @@
       <div id="finish-letters" class="finish-letters"></div>
       <div id="finish-extra" class="finish-extra"></div>
       <div class="tomorrow" id="tomorrow"></div>
+      <button id="finish-song" class="song-review" type="button"><span class="note-mark" aria-hidden="true">♪</span><span id="finish-song-label">노래로 복습</span></button>
     </section>
     <div class="dock">
       <button id="again" class="felt-cta cream" type="button"><span class="cta-text"><b>한 번 더</b></span><span class="disc play" aria-hidden="true"></span></button>
       <button id="done" class="felt-cta coral" type="button"><span class="cta-text"><b>끝</b></span><span class="disc" aria-hidden="true"></span></button>
+    </div>
+  </main>
+
+  <!-- 노래 -->
+  <main id="song" hidden>
+    <div class="session-top">
+      <button id="song-close" class="round-btn close" type="button" aria-label="노래 닫기"></button>
+      <div class="progress" aria-hidden="true"><span id="song-bar"></span></div>
+    </div>
+    <section class="song-main paper">
+      <h1 id="song-title" class="song-title">노래</h1>
+      <div id="song-stage" class="song-stage"></div>
+      <p id="song-line" class="song-line"></p>
+      <p id="song-note" class="fine" hidden>노래를 불러오지 못했어요. 잠시 뒤 다시 눌러 주세요.</p>
+    </section>
+    <div class="dock">
+      <button id="song-play" class="felt-cta coral" type="button"><span class="cta-text"><b id="song-play-label">노래 시작</b></span><span class="disc play" aria-hidden="true"></span></button>
     </div>
   </main>
 

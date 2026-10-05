@@ -1,9 +1,10 @@
 // 한글 단계 MVP 화면(docs/한글단계_설계.md, 2026-10-03 한국어 MVP). 한국어만 쓰고, 글을 못 읽어도
 // 시범·그림·소리로 할 수 있게 만든다. 판단은 core.mjs, 아틀라스 기록은 learning.mjs, 소리는 audio.mjs가 맡는다.
-import { createPack } from './pack.mjs';
+import { createPack, compose } from './pack.mjs';
 import { readProgress, planSession, answer, meet, finishSession, view, retryItem, canPlayMore, sessionsToday, letterOf, readableWords, graduationReady, graduate, SETTINGS } from './core.mjs';
 import { createCoach, isHosted, progressKey, createRecorder } from './learning.mjs';
 import * as audio from './audio.mjs';
+import { SONGS, songById, cueAt, EXTRA_CONSONANTS } from './songs.mjs';
 
 const $ = id => document.getElementById(id);
 function el(tag, attrs = {}, ...kids) {
@@ -41,7 +42,7 @@ const HUB = !hosted && location.pathname.startsWith('/hangul-stage/') ? '../lear
 if (new URLSearchParams(location.search).get('qa') === 'silent') audio.setSilent(true);
 audio.initAudio();
 
-function show(id) { for (const s of ['home', 'session', 'finish', 'graduation']) $(s).hidden = s !== id; scrollTo(0, 0); }
+function show(id) { for (const s of ['home', 'session', 'finish', 'graduation', 'song']) $(s).hidden = s !== id; scrollTo(0, 0); }
 
 // ── 입구 ──────────────────────────────────────────────
 function tile(l, { onTap = true } = {}) {
@@ -73,6 +74,10 @@ function renderHome() {
   $('box').replaceChildren(...GROUPS.map(([role, label]) => el('div', { class: 'box-group' },
     el('h3', {}, label), el('div', { class: 'box' }, v.letters.filter(l => l.role === role).map(l => tile(l))))));
   $('amounts-block').hidden = !!v.graduated;
+  // 노래로 배우기: 처음 온 사람의 입구이자 언제든 복습(조사 10-04 — 노래는 입구·복습·보상, 읽게 만드는 것은 연습).
+  $('songs').replaceChildren(...SONGS.map(s => el('button', { class: 'song-card', type: 'button', 'aria-label': `${s.title} 노래 듣기`, onclick: () => openSong(s.id) },
+    el('span', { class: 'song-glyphs', 'aria-hidden': 'true' }, s.id === 'vowel-dance' ? 'ㅏㅓㅗㅜ' : 'ㄱ+ㅏ'),
+    el('span', { class: 'song-name' }, el('b', {}, s.title), el('small', {}, durationText(s.duration))))));
   $('signs').replaceChildren(...v.signs.map(s => {
     const b = el('button', { class: `sign${s.readable ? ' readable' : ''}`, type: 'button', disabled: !s.readable, 'aria-label': s.readable ? `${s.text} 간판, 눌러서 듣기` : '아직 흐린 간판' },
       el('span', { class: 'plaque' }, el('span', { class: 'word', 'aria-hidden': 'true' }, s.syllables.map(x => el('span', { class: x.clear ? '' : 'hazy' }, x.text)))),
@@ -498,6 +503,10 @@ function endSession() {
   $('tomorrow').replaceChildren(...(v.tomorrow.length ? [el('p', {}, '다음에 만날 글자'), chipRow(v.tomorrow, v.tomorrowFinals)]
     : [el('p', {}, v.allMet ? '이 판의 글자를 다 만났어요. 거센소리·된소리는 준비 중이에요.' : '')]));
   $('again').hidden = !canPlayMore(progress, at);
+  // 노래로 복습: 오늘 자음을 다뤘으면 「그 아 가」, 아니면 「모음 댄스」.
+  const songId = [...S.met, ...S.practiced].some(id => pack.byId.get(id)?.role === 'consonant') ? 'geu-a-ga' : 'vowel-dance';
+  $('finish-song').dataset.song = songId;
+  $('finish-song-label').textContent = `노래로 복습 · ${songById(songId).title}`;
   audio.effect('achieve');
   S = null;
   // 졸업(설계 §8): 조건이 서는 회차 끝에 한 번. 졸업 장면을 먼저 보이고, 그 뒤는 짧은 몸풀기다.
@@ -520,6 +529,7 @@ function showGraduation() {
   setTimeout(() => audio.effect('joy'), 700);
 }
 $('again').addEventListener('click', () => startSession());
+$('finish-song').addEventListener('click', () => openSong($('finish-song').dataset.song));
 $('grad-done').addEventListener('click', () => { renderHome(); show('home'); });
 $('done').addEventListener('click', () => { renderHome(); show('home'); });
 $('quit').addEventListener('click', () => {
@@ -529,7 +539,100 @@ $('quit').addEventListener('click', () => {
   save(); rec.flush(); S = null; renderHome(); show('home');
 });
 
-// 화면 점검(?qa=silent)에서만: 지금 단계와 진도를 읽게 한다(qa/flow.cjs). 보통 화면에는 없다.
-if (audio.voiceStatus() === 'silent') window.__hangulQA = Object.freeze({ step: () => (S ? S.steps[S.index] : null), progress: () => progress, key: KEY });
+// ── 노래 ──────────────────────────────────────────────
+// 노래 시각에 맞춰 글자를 켠다: 모음은 크게 + 동작 화살표, 합치기는 「ㄱ + ㅏ = 가」 세 걸음, 후렴은 글자 줄을 차례로.
+// 몽글은 움직이지 않는다. 글자 진도·아틀라스 기록에는 넣지 않는다(설계 §6 장단 — 세지 않는다).
+function durationText(sec) { const m = Math.floor(sec / 60), s = Math.round(sec % 60); return m ? `${m}분 ${s}초` : `${s}초`; }
+const MOVE_WORD = { right: '오른쪽', left: '왼쪽', up: '위로', down: '아래', wide: '옆으로 쭉', tall: '차렷',
+  right2: '오른쪽 두 번', left2: '왼쪽 두 번', up2: '위로 두 번', down2: '아래 두 번' };
+const consonantGlyph = id => pack.byId.get(id)?.glyph || EXTRA_CONSONANTS[id]?.[0] || '';
+// 자음 + 모음 음절. ㅇ은 소리 없는 첫소리, 거센소리(ㅊㅋㅌㅍ)는 아직 길에 없어 유니코드 번호로 만든다.
+function songSyllable(c, v = 'v-a') {
+  if (c === 'c-ng') return pack.syllable(null, v);
+  if (EXTRA_CONSONANTS[c]) return compose(EXTRA_CONSONANTS[c][1], pack.byId.get(v).jamo);
+  return pack.syllable(c, v);
+}
+const consonantSound = c => (c === 'c-ng' ? '쉿' : songSyllable(c, 'v-eu')); // 그 느 드 … 츠 크 트 프
+function moveIcon(move) {
+  const dir = move.replace('2', ''), two = move.endsWith('2');
+  const arrows = dir === 'wide' ? ['left', 'right'] : dir === 'tall' ? ['up', 'down'] : two ? [dir, dir] : [dir];
+  return el('span', { class: `move ${dir}${two ? ' two' : ''}`, 'aria-hidden': 'true' }, arrows.map(d => el('span', { class: `arrow ${d}` })));
+}
+function songStage(cue) {
+  if (!cue) return [el('img', { class: 'song-mongle', src: 'assets/brand/mongle-smile.webp', alt: '' })];
+  if (cue.kind === 'line') return [el('p', { class: 'song-text' }, cue.text)];
+  if (cue.kind === 'vowel') {
+    const l = pack.byId.get(cue.letter);
+    return [el('div', { class: 'song-vowel', 'aria-label': `${l.glyph} ${l.voice}` }, el('span', { class: 'song-tile big', 'data-i': '0' }, l.glyph), moveIcon(cue.move)),
+      el('p', { class: 'song-cue' }, `${MOVE_WORD[cue.move]} ${l.voice}!`)];
+  }
+  if (cue.kind === 'sweep') {
+    const texts = cue.letters.map(id => (cue.syllables ? songSyllable(id) : cue.consonant ? songSyllable(cue.consonant, id) : pack.byId.get(id).glyph));
+    return [el('div', { class: `song-row n${texts.length}`, 'aria-label': texts.join(' ') }, texts.map((t, i) => el('span', { class: 'song-tile', 'data-i': String(i) }, t)))];
+  }
+  if (cue.kind === 'blend') {
+    const c = cue.consonant, v = pack.byId.get(cue.vowel), made = songSyllable(c, cue.vowel);
+    const part = (i, glyph, sound, extra = '') => el('span', { class: 'part', 'data-i': String(i) }, el('span', { class: `song-tile${extra}` }, glyph), el('small', {}, sound));
+    return [el('div', { class: 'song-blend', 'aria-label': `${consonantGlyph(c)} 더하기 ${v.glyph}는 ${made}` },
+      part(0, consonantGlyph(c), consonantSound(c)), el('span', { class: 'op', 'aria-hidden': 'true' }, '+'),
+      part(1, v.glyph, v.voice), el('span', { class: 'op', 'aria-hidden': 'true' }, '='), part(2, made, made, ' result'))];
+  }
+  return [];
+}
+let SP = null;
+function renderSongAt(t) {
+  if (!SP) return null;
+  const { song } = SP, { cue, step } = cueAt(song, t);
+  $('song-bar').style.width = `${Math.min(100, Math.max(0, (t / song.duration) * 100))}%`;
+  const key = cue ? String(song.cues.indexOf(cue)) : 'none';
+  if (key !== SP.key) {
+    SP.key = key;
+    $('song-stage').replaceChildren(...songStage(cue));
+    // 가사 줄은 글자가 보이는 장면(줄 켜기·합치기)에서만 — 모음·가사 장면은 이미 크게 글로 보인다.
+    $('song-line').textContent = cue && (cue.kind === 'sweep' || cue.kind === 'blend') ? cue.text : '';
+  }
+  for (const n of $('song-stage').querySelectorAll('[data-i]')) {
+    const i = Number(n.dataset.i);
+    n.classList.toggle('on', i === step); n.classList.toggle('done', i < step);
+  }
+  return { cue, step };
+}
+function openSong(id) {
+  const song = songById(id);
+  if (!song) return;
+  audio.stop(); closeSong(false);
+  const a = new Audio(song.src);
+  a.preload = 'auto';
+  SP = { song, audio: a, key: null, raf: 0 };
+  a.addEventListener('ended', () => { setSongPlaying(false); renderSongAt(song.duration); });
+  a.addEventListener('error', () => { $('song-note').hidden = false; });
+  $('song-title').textContent = song.title;
+  $('song-note').hidden = true;
+  show('song'); renderSongAt(0); setSongPlaying(false);
+}
+function setSongPlaying(on) {
+  if (!SP) return;
+  const a = SP.audio;
+  cancelAnimationFrame(SP.raf);
+  if (on) {
+    if (a.ended) a.currentTime = 0;
+    // 재생을 청하면 곧바로 화면을 노래 시각에 맞춰 돌린다(소리 장치가 늦게 깨도 화면은 기다리지 않는다).
+    a.play().catch(() => { $('song-note').hidden = false; setSongPlaying(false); });
+    SP.raf = requestAnimationFrame(tick);
+  } else a.pause();
+  $('song-play-label').textContent = on ? '잠깐 멈춤' : a.ended ? '다시 듣기' : a.currentTime > 0 ? '이어 듣기' : '노래 시작';
+  $('song-play').querySelector('.disc').classList.toggle('play', !on);
+}
+function tick() { if (!SP) return; renderSongAt(SP.audio.currentTime); if (!SP.audio.paused) SP.raf = requestAnimationFrame(tick); }
+function closeSong(goHome = true) {
+  if (SP) { cancelAnimationFrame(SP.raf); SP.audio.pause(); SP = null; }
+  if (goHome) { renderHome(); show('home'); }
+}
+$('song-play').addEventListener('click', () => setSongPlaying(!!SP && SP.audio.paused));
+$('song-close').addEventListener('click', () => closeSong());
+
+// 화면 점검(?qa=silent)에서만: 지금 단계와 진도를 읽게 한다(qa/flow.cjs). 노래는 소리 없이 시각만 옮겨 그린다. 보통 화면에는 없다.
+if (audio.voiceStatus() === 'silent') window.__hangulQA = Object.freeze({ step: () => (S ? S.steps[S.index] : null), progress: () => progress, key: KEY,
+  songAt: t => { const r = renderSongAt(t); return r && { kind: r.cue?.kind || null, step: r.step, text: r.cue?.text || '' }; }, song: () => SP?.song.id || null, songTime: () => (SP ? SP.audio.currentTime : null), songSeek: t => { if (SP) SP.audio.currentTime = t; } });
 
 renderHome(); show('home');

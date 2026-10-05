@@ -1,0 +1,42 @@
+{
+  "capturedAt": "2026-10-05T09:22:04.125Z",
+  "baselineCommit": "037819d5db8467d96547a5f7ca7ad79ce94648e8",
+  "releaseDirectory": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\racing-terrain-release-20261005",
+  "method": "Immutable origin/main public render-world and landscape versus staged candidate, using the unchanged public THREE runtime. Compare every typed attribute/index byte and serialized exact bounds/row metadata across all 66 meshes. Reverse only approved app substitutions and require the remaining app to match the public baseline exactly.",
+  "ok": true,
+  "original": {
+    "geometrySha256": "17bd7772a07ac572c43c5301f73989ca78667e0743484ac8f5084ec3b6353928",
+    "geometryBoundsMetadataSha256": "66baccd42e56e6c2d2280664a460a5665a7af914028c6dbea2b86c27bd389994"
+  },
+  "candidate": {
+    "geometrySha256": "17bd7772a07ac572c43c5301f73989ca78667e0743484ac8f5084ec3b6353928",
+    "geometryBoundsMetadataSha256": "66baccd42e56e6c2d2280664a460a5665a7af914028c6dbea2b86c27bd389994"
+  },
+  "geometryCount": 66,
+  "storedTriangles": 209472,
+  "storedVertices": 115288,
+  "unchangedGameplayOutsideTerrainPatch": true,
+  "changedRacingFiles": [
+    "try/racing/app.js",
+    "try/racing/course.js",
+    "try/racing/landscape.js",
+    "try/racing/render-world.js",
+    "try/racing/terrain-data.js",
+    "try/racing/terrain-startup.js",
+    "try/racing/terrain-worker.js"
+  ],
+  "baselineSources": {
+    "app.js": "feb260fe3c369431021348780ade9acddc755dcf3d245c387154c6e285571312",
+    "render-world.js": "12ddba343c016a31bb2b331f8e2aca8a04a06c14f2a31cfb4968d0e50f757918",
+    "landscape.js": "fb9421c70d1af6c91889c91af9ffbd00bfd1b409054dd3f3b24745db185fb768"
+  },
+  "candidateSources": {
+    "app.js": "fae98f33a6ca7f621dd2a26359d03692a68c4cff4af8b49b835f62b23bc43317",
+    "course.js": "0a2924389f4783d01a7b259c83ea5d52050f9144a9e876099df5006986fbc409",
+    "landscape.js": "5a7964c1ad97b92e019c1dd9d1e6af46f3eecfafb6df52bd0b3359574585c7b2",
+    "render-world.js": "2f66a6f7e780e1c29eeea467db17e4b51652118b92d740c1bf74d0311a0e4783",
+    "terrain-data.js": "42c3c3cdc90b54ce27a476fe7a73abab785ea1422f93db95b6560b61129558ba",
+    "terrain-startup.js": "a304129900d969f3875004e2768c8d28c09c404238d4d9bad2e3c39fff0100a0",
+    "terrain-worker.js": "ef413cd0448ed6605b2420172ff0f14f9d93913d568e34637fe917b63a2df1f1"
+  }
+}

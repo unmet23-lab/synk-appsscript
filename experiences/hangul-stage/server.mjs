@@ -19,7 +19,19 @@ const server = http.createServer(async (req, res) => {
     const type = types[path.extname(target)];
     if (!type || /\.test\.mjs$/.test(target)) { res.writeHead(404).end(); return; }
     const data = await readFile(target);
-    res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Content-Length': data.length });
+    const head = { 'Content-Type': type, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Accept-Ranges': 'bytes' };
+    // 노래의 범위 요청: 범위를 받지 않으면 브라우저가 소리를 옮길 수 없는 것으로 본다(사파리·iOS는 206이 있어야 재생한다 — 학습 허브 서버와 같은 처리).
+    const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
+    if (range && (range[1] || range[2])) {
+      const start = range[1] ? Number(range[1]) : Math.max(0, data.length - Number(range[2]));
+      const end = range[1] && range[2] ? Math.min(Number(range[2]), data.length - 1) : data.length - 1;
+      if (start >= data.length || start > end) { res.writeHead(416, { 'Content-Range': `bytes */${data.length}` }).end(); return; }
+      const part = data.subarray(start, end + 1);
+      res.writeHead(206, { ...head, 'Content-Range': `bytes ${start}-${end}/${data.length}`, 'Content-Length': part.length });
+      res.end(req.method === 'HEAD' ? undefined : part);
+      return;
+    }
+    res.writeHead(200, { ...head, 'Content-Length': data.length });
     res.end(req.method === 'HEAD' ? undefined : data);
   } catch { res.writeHead(404).end('Not found'); }
 });

@@ -1,0 +1,42 @@
+검수를 마쳤습니다. 파일 수정·명령 실행·커밋·배포는 하지 않았습니다. (`Write`가 막혀 있어 계획 파일은 만들지 못했고, 결과는 아래에 그대로 둡니다.)
+
+## 결론: 배포 차단 문제 없음
+
+P0·P1에 해당하는 지적은 없습니다.
+
+## 직접 읽어 확인한 것
+
+- **import 그래프가 7파일로 닫힌다.** `app.js` → `course.js`·`terrain-startup.js`·`render-world.js`·`landscape.js`, `render-world.js:3` → `terrain-data.js`, `terrain-worker.js:2-4` → `course.js`·`landscape.js`·`terrain-data.js`. 이 밖의 공개 파일은 새 모듈을 참조하지 않아 추가로 올릴 파일이 없습니다.
+- **워커가 importmap에 의존하지 않는다.** 모듈 워커는 문서의 importmap을 물려받지 않는데, 워커가 타는 세 모듈 모두 `three` 같은 bare specifier를 쓰지 않습니다(`landscape.js`는 import이 아예 없고 THREE를 인자로 받음). 중간 구현에서 있었다던 THREE 중복 다운로드도 실제로 없습니다.
+- **`noise`·`terrainColorAt`가 비트 단위로 같다.** 기존 `app.js`가 쓰던 `THREE.MathUtils.lerp`는 `vendor/three.core.js:1924`의 `(1-t)*x + t*y`이고 `course.js:8`의 `lerp`와 동일합니다. `hash`·`noise`·`fbm`·`pathX/pathY/pathAngle`도 삭제된 정의와 식이 같아, 지형 색과 `app.js:377` 해안 암석 변형이 그대로입니다.
+- **`surfaceAt` 표본 재사용이 같은 식이다.** `landscape.js:61`의 4번째 인자는 `terrain-data.js:61`에서 `Math.hypot(dx,dz)`로 들어오고, `dx`·`dz`는 원래 `surfaceAt`이 직접 계산했던 네 개 height 차와 같습니다. 인자를 주지 않는 기존 호출자(도시·식생·분위기)는 재계산 경로를 그대로 탑니다.
+- **청크·검증 산수가 맞는다.** `start=-150`, `end=2600`, `CHUNK_LENGTH=125` → 22청크 × 3 LOD = 66개이고 `validateTerrainData`의 `ceil((2250+500)/125)*3`과 일치, 마지막 청크 `end` 경계도 맞습니다. 검증이 scene 객체 할당 **전에** 끝나므로 잘못된 payload가 반쯤 만들어진 지형을 남기지 않습니다.
+- **ready 가드 충돌 없음.** `app.js:584-593`에서 await하는 동안 `ready=false`·로딩 표시 유지이고, `ready=true`·단추 활성화는 `prepareFirstFrame` 뒤입니다. 기다리는 사이 코스·화질·캐릭터를 바꿔도 `prepareFirstFrame`의 상태 재확인이 받아냅니다.
+- **실패·취소·늦은 응답.** 생성 실패→`worker-unavailable`, onerror→`worker-error`, onmessageerror→`worker-message`, 15초→`worker-timeout`, init 예외→`finally`의 `cancel()`. `finish`가 멱등이고 핸들러를 떼고 `terminate()`하므로 늦은 응답이 지형을 바꿔치기할 수 없습니다. `setupTerrain`은 prepared가 터지면 `terrainFallback='worker-data'`를 남기고 같은 생성기의 동기 경로로 복구합니다.
+- **미공개 코드 유입 없음.** 후보 `app.js`에 v10 식별자(`coastDrive`·`coastRadio`·`questionPace`·`race-pacing.js`·`garage-core.js` 등) 0건이고, 후보 디렉터리에도 해당 파일이 없습니다.
+- **`index.html`에 CSP 없음**, importmap 1줄 그대로. 호스트가 `worker-src`를 막아도 `new Worker` 예외가 `worker-unavailable`로 잡혀 동기 경로로 떨어집니다.
+- **`build-site.mjs:9`에 새 4모듈이 이미 들어 있다** — 다음 패키지 빌드가 새 모듈을 빠뜨려 라이브를 깨는 일은 없습니다.
+
+## 기록에 의존한 부분 (다시 돌리지 않음)
+
+- `release-20261005/public-terrain-parity.json` — 공개 baseline과 후보의 66 geometry 전체 바이트·bounds·행 metadata 동일(`17bd7772…`), `unchangedGameplayOutsideTerrainPatch: true`. 기재된 후보 해시 7개가 `prepared-manifest.json`과 전부 일치합니다.
+- `release-20261005/preview-smoke/terrain-startup-smoke-20261004.json` — 10-05 09:21, **후보 트리 자체**(`127.0.0.1:50841/try/racing/`)에서 5개 시나리오 통과, 페이지 오류 0, 워커/폴백 geometry 동일. 말씀하신 병렬 검증이 들어와 있어 제 마지막 공백이 메워졌습니다.
+- `terrain-startup-tests-20261004.txt` 199/199, 10-04 parity, 전후 측정(워커 실계산 421~502ms).
+
+## 확인하지 않은 범위
+
+- `prepared-manifest.json`의 sha256을 재계산하지 않았습니다(명령 실행 금지).
+- 패치 헤더의 base blob(`f4ac5f6` 등)이 synk-policy `037819d`의 것인지 git으로 대조하지 않았습니다. synk-policy는 이 작업본에 없어 `public-terrain-parity.json`의 baseline 해시 기록에 의존했습니다.
+- 실기기 지속 성능·발열, 라이브 응답 헤더(MIME·CSP).
+
+## 배포할 때 확인할 것 (코드 문제는 아님)
+
+1. **7파일을 한 커밋으로 같이 올린다.** `app.js`가 `course.js`·`terrain-startup.js`를 정적 import하므로 일부만 올라가면 빈 화면이 됩니다.
+2. 올린 뒤 캐시 없이 `https://synk.im/try/racing/`을 열어 실패 요청 0, `ready=true`, `startup.terrainSource`가 `worker`/`fallback` 중 하나로 찍히는지 봅니다.
+3. `qa/release-20261005/claude-review.txt`가 빈 파일로 대기 중입니다. 배포하는 세션이 이 검수 내용을 거기에 남기면 됩니다.
+
+## 남겨 두는 관찰 (차단 아님)
+
+- **P3** `terrain-startup.js:3`의 15초 제한에는 "워커가 메인보다 느릴 때"의 탈출구가 없습니다. 워커 계산이 15초를 넘는 기기라면 자산 로딩이 끝난 뒤에도 제한까지 기다렸다가 동기로 다시 만들어 변경 전보다 늦어질 수 있습니다. 측정 421~502ms로 약 30배 여유라 실제로 걸릴 가능성은 낮습니다.
+- **P3** 워커 하위 import가 404일 때 엔진에 따라 `onerror`가 안 뜨면 15초를 기다린 뒤 폴백합니다. 다만 `course.js`가 없으면 `app.js` 자체가 못 뜨니 실질 방어는 위 1번입니다.
+- **P2** `app.js:316`의 `catch`가 콘솔에 아무것도 남기지 않아, 현장에서 payload가 틀렸을 때 `startup.terrainFallback`을 봐야만 알 수 있습니다. 주석대로 의도된 선택이고 MVP 범위에서는 문제없습니다.

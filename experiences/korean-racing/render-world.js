@@ -1,156 +1,71 @@
 // The road and the shore use the same height function as the original terrain.
 // Only the number of triangles submitted beyond the driving view changes.
-const CHUNK_LENGTH = 125;
-const ROAD_EDGE = 7.1;
-const SURFACE_OFFSET = -.055;
-const LEVELS = ['near', 'mid', 'far'];
+import {buildCourseTerrainData, CHUNK_LENGTH, LEVELS, SOURCE_TRIANGLES} from './terrain-data.js';
 const SETTINGS = Object.freeze({
   high: Object.freeze({near: 250, nearBehind: 70, mid: 650, ahead: 1500, behind: 150, triangleBudget: 46000}),
   balanced: Object.freeze({near: 150, nearBehind: 35, mid: 450, ahead: 1300, behind: 110, triangleBudget: 35000}),
   low: Object.freeze({near: 75, nearBehind: 25, mid: 300, ahead: 1100, behind: 75, triangleBudget: 26000}),
 });
 const clamp = (n, low, high) => Math.max(low, Math.min(high, n));
-const unique = values => values.sort((a, b) => a - b).filter((n, i, all) => i === 0 || n - all[i - 1] > .00001);
-
-function originalOffsets() {
-  const offsets = [];
-  for (let x = -350; x < -100; x += 10) offsets.push(x);
-  for (let x = -100; x < -40; x += 4) offsets.push(x);
-  for (let x = -40; x < -8; x += 2) offsets.push(x);
-  for (let x = -8; x < 8; x++) offsets.push(x);
-  for (let x = 8; x < 90; x += 1.5) offsets.push(x);
-  for (let x = 90; x < 170; x += 8) offsets.push(x);
-  offsets.push(170);
-  return offsets;
-}
-
-const DENSE_OFFSETS = originalOffsets();
-const CROSS_SECTIONS = {
-  near: unique([...DENSE_OFFSETS, -ROAD_EDGE, ROAD_EDGE]),
-  mid: unique([
-    ...DENSE_OFFSETS.filter(x => x < -100 ? x % 20 === -10 || x === -350 : x < -40 ? x % 8 === 0 : x < -8 ? x % 4 === 0 : x < 8 ? x % 2 === 0 : x < 90 ? (x - 8) % 3 === 0 : x % 16 === 10),
-    -350, -ROAD_EDGE, 0, ROAD_EDGE, 170,
-  ]),
-  far: [-350, -320, -290, -260, -230, -200, -170, -140, -110, -85, -65, -48, -36, -26, -18, -12, -8, -ROAD_EDGE, 0, ROAD_EDGE, 8, 12, 70, 90, 130, 170],
-};
-const STEPS = {near: 5, mid: 12.5, far: 25};
-
 /**
  * Geometry remains in world coordinates for the existing terrain shader.
  * colorAt(x,z,height,surface) may return linear RGB, a THREE.Color or a hex color.
  * Material ownership stays with the caller; dispose() releases only this geometry.
  * update accepts optional camera/time for frustum statistics and deterministic QA.
  */
-export function buildCourseTerrain(THREE, {pathX, groundHeight, ROAD_END = 2250, material, colorAt} = {}) {
+export function buildCourseTerrain(THREE, {pathX, groundHeight, ROAD_END = 2250, material, colorAt, prepared} = {}) {
   if (!THREE || typeof pathX !== 'function' || typeof groundHeight !== 'function' || !material?.isMaterial) {
     throw new TypeError('Course terrain needs THREE, the current path/height functions and a material.');
   }
   if (!Number.isFinite(ROAD_END) || ROAD_END < 100) throw new RangeError('ROAD_END must be at least 100m.');
   if (colorAt !== undefined && typeof colorAt !== 'function') throw new TypeError('colorAt must be a function.');
+  // Validate before allocating scene objects. A failed worker payload can safely
+  // fall back to the same generator without leaving a partial terrain behind.
+  if (prepared !== undefined) validateTerrainData(prepared, ROAD_END);
 
   const start = -150, end = ROAD_END + 350;
   const group = new THREE.Group(); group.name = 'course-terrain';
-  const chunks = [], colour = new THREE.Color(), cachedRows = new Map();
+  const chunks = [], colour = new THREE.Color();
+  const terrainData = prepared ?? buildCourseTerrainData({pathX, groundHeight, ROAD_END, colorAt: colorAt && ((...args) => {
+    const value = colorAt(...args);
+    if (Array.isArray(value) || ArrayBuffer.isView(value)) return value;
+    if (value?.isColor) return [value.r, value.g, value.b];
+    if (value === undefined) return [1, 1, 1];
+    colour.set(value); return [colour.r, colour.g, colour.b];
+  })});
   const frustum = new THREE.Frustum(), projectionView = new THREE.Matrix4();
   const sphere = new THREE.Sphere();
   const stats = {
-    chunkCount: 0, chunkLength: CHUNK_LENGTH, sourceTriangles: 550 * (DENSE_OFFSETS.length - 1) * 2,
+    chunkCount: 0, chunkLength: CHUNK_LENGTH, sourceTriangles: SOURCE_TRIANGLES,
     storedTriangles: 0, storedVertices: 0, activeTriangles: 0, activeDrawCalls: 0,
     submittedTriangles: 0, submittedDrawCalls: 0, visibleTriangles: 0, visibleDrawCalls: 0,
     quality: 'high', triangleBudget: SETTINGS.high.triangleBudget, forwardDistance: SETTINGS.high.ahead,
     levels: {near: 0, mid: 0, far: 0}, updates: 0, frustumChecked: false, activeRange: null,
   };
 
-  function section(s, level) {
-    // Exact cliff transitions and the foam/water intersection survive every LOD.
-    const extra = [];
-    if (typeof groundHeight.cliffOffset === 'function') {
-      const cliff = groundHeight.cliffOffset(s);
-      extra.push(cliff - 5, cliff - 2, cliff, cliff + 3.5, cliff + 13.5, cliff + 58.5);
-    }
-    if (typeof groundHeight.shoreOffset === 'function') extra.push(groundHeight.shoreOffset(s));
-    return unique([...CROSS_SECTIONS[level], ...extra.filter(x => Number.isFinite(x) && x > ROAD_EDGE && x < 170)]);
-  }
-
-  function sample(s, offset) {
-    let row = cachedRows.get(s);
-    if (!row) {row = new Map(); cachedRows.set(s, row);}
-    if (row.has(offset)) return row.get(offset);
-    const x = pathX(s) + offset, h = groundHeight(x, s);
-    if (!Number.isFinite(x) || !Number.isFinite(h)) throw new RangeError(`Invalid terrain sample at ${s}m.`);
-    // A shared world-space derivative avoids lighting seams at independent
-    // chunk borders, including a border between different detail levels.
-    const dx = groundHeight(x + .5, s) - groundHeight(x - .5, s);
-    const dz = groundHeight(x, s + .5) - groundHeight(x, s - .5);
-    const length = Math.hypot(dx, 1, dz);
-    const surface = typeof groundHeight.surfaceAt === 'function' ? groundHeight.surfaceAt(x, s, h, Math.hypot(dx,dz)) : 0;
-    let rgb = [1, 1, 1];
-    if (colorAt) {
-      const value = colorAt(x, s, h, surface);
-      if (Array.isArray(value) || ArrayBuffer.isView(value)) rgb = [value[0], value[1], value[2]];
-      else if (value?.isColor) rgb = [value.r, value.g, value.b];
-      else if (value !== undefined) {colour.set(value); rgb = [colour.r, colour.g, colour.b];}
-    }
-    const value = {position: [x, h + SURFACE_OFFSET, s], normal: [-dx / length, 1 / length, -dz / length], colour: rgb, surface};
-    if (![...value.position, ...value.normal, ...rgb, surface].every(Number.isFinite)) throw new RangeError(`Invalid terrain attributes at ${s}m.`);
-    row.set(offset, value); return value;
-  }
-
-  function geometryFor(a, b, level) {
-    const positions = [], normals = [], colours = [], uv = [], surfaces = [], indices = [];
-    const rowStarts = [], rowCounts = [], rowOffsets = [], rows = [];
-    const divisions = Math.ceil((b - a) / STEPS[level]);
-    for (let j = 0; j <= divisions; j++) {
-      const s = j === divisions ? b : a + (b - a) * j / divisions;
-      // All LODs keep the exact same dense boundary row. The strip between
-      // sparse and dense rows is triangulated, so there are no T-junction gaps.
-      const offsets = section(s, j === 0 || j === divisions ? 'near' : level);
-      rows.push(s); rowStarts.push(positions.length / 3); rowCounts.push(offsets.length); rowOffsets.push(offsets);
-      for (const offset of offsets) {
-        const point = sample(s, offset);
-        positions.push(...point.position); normals.push(...point.normal); colours.push(...point.colour);
-        uv.push(point.position[0] / 3.4, s / 3.4); surfaces.push(point.surface);
-      }
-    }
-    // Both rows are monotonic across the road, even as the coast meanders.
-    // Advancing the next transverse sample gives a complete upward-facing strip.
-    for (let j = 0; j < divisions; j++) {
-      const top = rowOffsets[j], bottom = rowOffsets[j + 1];
-      let i = 0, k = 0;
-      while (i < top.length - 1 || k < bottom.length - 1) {
-        const p = rowStarts[j] + i, q = rowStarts[j + 1] + k;
-        if (k === bottom.length - 1 || (i < top.length - 1 && top[i + 1] <= bottom[k + 1])) {
-          indices.push(p, q, p + 1); i++;
-        } else {indices.push(p, q, q + 1); k++;}
-      }
-    }
+  function geometryFor(level) {
+    const data = terrainData.geometries[chunks.length * LEVELS.length + LEVELS.indexOf(level)];
     const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colours, 3));
-    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-    geometry.setAttribute('surface', new THREE.Float32BufferAttribute(surfaces, 1));
-    geometry.setIndex(indices); geometry.computeBoundingBox(); geometry.computeBoundingSphere();
-    geometry.userData.terrain = {start: a, end: b, level, rows, rowStarts, rowCounts};
+    for (const [name, attribute] of Object.entries(data.attributes)) geometry.setAttribute(name, new THREE.BufferAttribute(attribute.array, attribute.itemSize));
+    geometry.setIndex(new THREE.BufferAttribute(data.index, 1));
+    geometry.boundingBox = new THREE.Box3(new THREE.Vector3().fromArray(data.box[0]), new THREE.Vector3().fromArray(data.box[1]));
+    geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3().fromArray(data.sphere[0]), data.sphere[1]);
+    geometry.userData.terrain = data.terrain;
     return geometry;
   }
 
   for (let a = start; a < end; a += CHUNK_LENGTH) {
     const b = Math.min(a + CHUNK_LENGTH, end), chunk = {start: a, end: b, meshes: {}};
     for (const level of LEVELS) {
-      const geometry = geometryFor(a, b, level), mesh = new THREE.Mesh(geometry, material);
+      const geometry = geometryFor(level), mesh = new THREE.Mesh(geometry, material);
       mesh.name = `terrain-${chunks.length}-${level}`; mesh.receiveShadow = true; mesh.castShadow = false;
       mesh.frustumCulled = true; mesh.visible = false; mesh.userData.terrainLOD = level;
       chunk.meshes[level] = mesh; group.add(mesh);
       stats.storedTriangles += geometry.index.count / 3; stats.storedVertices += geometry.attributes.position.count;
     }
     chunks.push(chunk);
-    // Retain only the shared last row while building the next chunk. Keeping
-    // every temporary sample until the whole course is built wastes phone RAM.
-    const boundary = cachedRows.get(b); cachedRows.clear();
-    if (boundary) cachedRows.set(b, boundary);
   }
-  cachedRows.clear(); stats.chunkCount = chunks.length;
+  stats.chunkCount = chunks.length;
   group.userData.chunks = chunks; group.userData.stats = stats;
   let lastS = Infinity, lastTime = -Infinity, lastQuality = '', disposed = false;
 
@@ -211,4 +126,34 @@ export function buildCourseTerrain(THREE, {pathX, groundHeight, ROAD_END = 2250,
 
   update({playerS: 0, quality: 'high'});
   return {group, update, stats, dispose};
+}
+
+// Only typed geometry arrays cross the worker boundary. Materials, textures,
+// LOD visibility, random scene state and renderer ownership stay on the main thread.
+export function serializeCourseTerrain(world, ROAD_END) {
+  return {version: 1, roadEnd: ROAD_END, geometries: world.group.children.map(({geometry}) => ({
+    attributes: Object.fromEntries(Object.entries(geometry.attributes).map(([name, attribute]) => [name, {array: attribute.array, itemSize: attribute.itemSize}])),
+    index: geometry.index.array, terrain: geometry.userData.terrain,
+    box: [geometry.boundingBox.min.toArray(), geometry.boundingBox.max.toArray()],
+    sphere: [geometry.boundingSphere.center.toArray(), geometry.boundingSphere.radius],
+  }))};
+}
+
+function validateTerrainData(data, roadEnd) {
+  const fail = () => {throw new TypeError('Invalid prepared course terrain.');};
+  const count = Math.ceil((roadEnd + 500) / CHUNK_LENGTH) * LEVELS.length;
+  if (data?.version !== 1 || data.roadEnd !== roadEnd || !Array.isArray(data.geometries) || data.geometries.length !== count) fail();
+  data.geometries.forEach((geometry, i) => {
+    const start = -150 + Math.floor(i / LEVELS.length) * CHUNK_LENGTH;
+    if (geometry?.terrain?.start !== start || geometry.terrain.end !== Math.min(start + CHUNK_LENGTH, roadEnd + 350) || geometry.terrain.level !== LEVELS[i % LEVELS.length]) fail();
+    const vertices = geometry.attributes?.position?.array?.length / 3;
+    if (!Number.isInteger(vertices) || vertices <= 0) fail();
+    for (const [name, itemSize] of Object.entries({position: 3, normal: 3, color: 3, uv: 2, surface: 1})) {
+      const attribute = geometry.attributes[name];
+      if (!(attribute?.array instanceof Float32Array) || attribute.itemSize !== itemSize || attribute.array.length !== vertices * itemSize) fail();
+    }
+    if (!(geometry.index instanceof Uint16Array || geometry.index instanceof Uint32Array) || !geometry.index.length || geometry.index.length % 3) fail();
+    if (geometry.box?.length !== 2 || geometry.sphere?.length !== 2 || !(geometry.sphere[1] > 0) || !Number.isFinite(geometry.sphere[1])) fail();
+    for (const point of [...geometry.box, geometry.sphere[0]]) if (!Array.isArray(point) || point.length !== 3 || !point.every(Number.isFinite)) fail();
+  });
 }

@@ -1,5 +1,6 @@
 // 한글 단계 화면 점검: 헤드리스 크롬으로 입구 → 이유 한 줄 → 만나기 → 문항 꼴(시범 포함) → 오답과 회차 안 재출제 → 마무리 → 다시 열기,
-// 그리고 둘째 판: 받침을 배우는 사람(받침 만나기 · 짝 고르기 · 몽글에게 가르쳐 주기 · 받침 조각) → 졸업 장면 → 졸업 뒤 몸풀기.
+// 그리고 둘째 판: 받침을 배우는 사람(받침 만나기 · 짝 고르기 · 몽글에게 가르쳐 주기 · 받침 조각) → 졸업 장면 → 졸업 뒤 몸풀기,
+// 노래로 배우기(모음 댄스 · 그 아 가 — 소리 없이 노래 시각만 옮겨 그려 글자가 켜지는지 본다).
 // 소리 없이(?qa=silent) 흐름만 본다. 소리를 실제로 듣는 확인은 사람 귀로 따로 한다.
 // node experiences/hangul-stage/qa/flow.cjs [http://127.0.0.1:5240/]  (서버: node experiences/hangul-stage/server.mjs)
 const path = require('node:path');
@@ -116,6 +117,44 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     const ov = await overflow(page);
     check(`${width}px 입구 넘침 없음`, ov.doc <= 0 && ov.body <= 0 && ov.vv <= 0, JSON.stringify(ov));
     await shot(page, 'home', width, { fullPage: true });
+    // 노래로 배우기: 첫 화면의 노래 두 곡. 노래 화면은 노래 시각에 맞춰 글자를 켠다.
+    const songCards = await page.locator('#songs .song-card').count();
+    check(`${width}px 첫 화면에 노래 두 곡`, songCards === 2, `노래 ${songCards}`);
+    await page.locator('#songs .song-card').nth(0).click();
+    await page.waitForSelector('#song:not([hidden])');
+    const v1 = await page.evaluate(() => window.__hangulQA.songAt(12.2));
+    const vowelOk = v1.kind === 'vowel' && v1.step === 0 && await page.locator('#song-stage .song-tile.big.on').count() === 1 && await page.locator('#song-stage .move.right').count() === 1;
+    check(`${width}px 모음 댄스 12.2초: ㅏ가 켜지고 오른쪽 화살표`, vowelOk, JSON.stringify(v1));
+    if (width === 390) await shot(page, 'song-vowel', width);
+    const v2 = await page.evaluate(() => window.__hangulQA.songAt(22.3));
+    check(`${width}px 모음 댄스 후렴: 여섯 모음을 차례로`, v2.kind === 'sweep' && v2.step >= 1 && await page.locator('#song-stage .song-tile.on').count() === 1, JSON.stringify(v2));
+    const ovs = await overflow(page);
+    check(`${width}px 노래 화면 넘침 없음`, ovs.doc <= 0 && ovs.body <= 0 && ovs.vv <= 0, JSON.stringify(ovs));
+    await page.click('#song-close');
+    await page.waitForSelector('#home:not([hidden])');
+    await page.locator('#songs .song-card').nth(1).click();
+    await page.waitForSelector('#song:not([hidden])');
+    const g1 = await page.evaluate(() => window.__hangulQA.songAt(11.0));
+    const g2 = await page.evaluate(() => window.__hangulQA.songAt(11.8));
+    const blendText = await page.textContent('#song-stage .song-blend');
+    check(`${width}px 그 아 가 11초: ㄱ + ㅏ = 가 세 걸음`, g1.kind === 'blend' && g1.step === 0 && g2.step >= 1 && /ㄱ/.test(blendText) && /가/.test(blendText), `${JSON.stringify(g1)} ${JSON.stringify(g2)}`);
+    if (width === 390) await shot(page, 'song-blend', width);
+    const g3 = await page.evaluate(() => window.__hangulQA.songAt(40.0));
+    check(`${width}px 그 아 가 후렴: 가 나 다 라 마 바 사`, g3.kind === 'sweep' && (await page.textContent('#song-stage .song-row')).includes('가나다라마바사'), JSON.stringify(g3));
+    if (width === 390) await shot(page, 'song-sweep', width);
+    const g4 = await page.evaluate(() => window.__hangulQA.songAt(49.9));
+    check(`${width}px 그 아 가 둘째 절: 가 거 고 구 그 기`, g4.kind === 'sweep' && (await page.textContent('#song-stage .song-row')).includes('가거고구그기'), JSON.stringify(g4));
+    // 재생: 단추를 누르면 노래가 흐르고(범위 요청을 받는 서버라야 옮기기·흐름이 된다), 화면은 노래 시각을 따라간다. 실제 소리는 사람 귀로 확인한다.
+    await page.click('#song-play');
+    const flowed = await page.waitForFunction(() => window.__hangulQA.songTime() > 0.3, null, { timeout: 4000 }).then(() => true, () => false);
+    check(`${width}px 노래가 실제로 흘러감(그 아 가)`, flowed, `시각 ${await page.evaluate(() => window.__hangulQA.songTime())}`);
+    await page.evaluate(() => window.__hangulQA.songSeek(13.6));
+    await page.waitForTimeout(300);
+    const stageNow = await page.textContent('#song-stage');
+    check(`${width}px 재생 중 화면이 노래 시각을 따라감(13.6초로 옮기면 ㄷ + ㅏ = 다)`, stageNow.includes('ㄷ') && stageNow.includes('다'), `${await page.evaluate(() => window.__hangulQA.songTime())} ${stageNow}`);
+    await page.click('#song-play');
+    await page.click('#song-close');
+    await page.waitForSelector('#home:not([hidden])');
     const first = await playSession(page, { width, shots: true, wrongOnce: true });
     check(`${width}px 첫 회차 끝까지`, await page.locator('#finish:not([hidden])').count() === 1, `단계 ${first.steps}`);
     check(`${width}px 첫 회차 꼴`, first.types.length >= 3, first.types.join(','));
@@ -123,6 +162,8 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     check(`${width}px 처음 나온 꼴마다 시범이 한 번씩`, first.types.every(t => seen.includes(t)) && new Set(seen).size === seen.length, `시범 ${seen.join(',')} / 꼴 ${first.types.join(',')}`);
     check(`${width}px 틀린 글자를 회차 안에서 한 번 더`, first.retries >= 1, `다시 ${first.retries}`);
     await shot(page, 'finish', width);
+    const finishSong = await page.textContent('#finish-song-label');
+    check(`${width}px 마무리에 노래로 복습(모음만 배운 날은 모음 댄스)`, finishSong.includes('모음 댄스'), finishSong);
     const p = await page.evaluate(() => window.__hangulQA.progress());
     const met = Object.entries(p.letters).filter(([, l]) => l.state !== 'unmet').map(([id]) => id);
     check(`${width}px 진도 저장(만난 글자)`, met.length >= 3, met.join(','));

@@ -1,0 +1,2390 @@
+{
+  "version": 1,
+  "capturedAt": "2026-10-05T09:21:04.536Z",
+  "pageUrl": "http://127.0.0.1:50841/try/racing/",
+  "gpu": "Chrome headless, --enable-gpu --use-angle=d3d11",
+  "cases": [
+    {
+      "mode": "normal",
+      "ok": true,
+      "pageErrors": [],
+      "consoleErrors": [],
+      "failedRequests": [],
+      "terrainScriptAborts": 0,
+      "snapshot": {
+        "ready": true,
+        "startup": {
+          "phase": "ready",
+          "compilePasses": 1,
+          "startedAt": 2853,
+          "assetsMs": 1551,
+          "terrainWaitMs": 1027,
+          "terrainSource": "worker",
+          "terrainWorkerMs": 1813,
+          "terrainMainMs": 103,
+          "terrainMs": 2827,
+          "coastCityMs": 3306,
+          "vegetationMs": 3351,
+          "environmentMs": 4117,
+          "worldMs": 4532,
+          "parallelShaders": true,
+          "shadersMs": 6337,
+          "firstFrameMs": 7588,
+          "readyMs": 7592
+        },
+        "running": false,
+        "paused": false,
+        "auto": false,
+        "roundWasDemo": false,
+        "elapsed": 0,
+        "playerS": 77.78864999994639,
+        "playerOffset": 0,
+        "tutorial": null,
+        "collection": {
+          "coins": 0,
+          "owned": [
+            "vehicle-coast",
+            "paint-mint",
+            "wheels-silver",
+            "trail-lime"
+          ],
+          "equipped": {
+            "vehicle": "coast",
+            "paint": "mint",
+            "wheels": "silver",
+            "trail": "lime",
+            "badge": null
+          },
+          "wish": "open",
+          "mission": {
+            "id": "2026-10-05:first-clear:challenge-01",
+            "date": "2026-10-05",
+            "kind": "first-clear",
+            "target": "challenge-01",
+            "collection": "campaign",
+            "title": "새로운 길을 열어요",
+            "description": "“아침의 작은 일”에서 5문제 중 4문제 이상 맞혀 첫 통과해요.",
+            "reward": 15,
+            "completed": false,
+            "completedAt": 0
+          },
+          "garageOpen": false,
+          "angle": 0.65
+        },
+        "driving": {
+          "collisions": 0,
+          "contactTimer": 0,
+          "combo": 0,
+          "bestCombo": 0,
+          "shield": 0,
+          "shieldBlocked": 0,
+          "rivals": [
+            {
+              "s": 105.78864999994639,
+              "offset": -3.15
+            },
+            {
+              "s": 126.78864999994639,
+              "offset": 3.1
+            }
+          ],
+          "waitingForChoice": true
+        },
+        "scenery": "bloom",
+        "atmosphere": {
+          "version": 7,
+          "waterTriangles": 2,
+          "waterPasses": 1,
+          "reflectionCameras": 0,
+          "shoreTextureBytes": 2048,
+          "detail": 1,
+          "theme": "sunset"
+        },
+        "boats": {
+          "version": 8,
+          "boats": 4,
+          "sailboats": 2,
+          "cruisers": 2,
+          "visibleBoats": 2,
+          "animatedBoats": 2,
+          "visibleTriangles": 3324,
+          "storedTriangles": 6642,
+          "drawCalls": 9,
+          "shadowDrawCalls": 0,
+          "wakeDrawCalls": 1,
+          "quality": "high"
+        },
+        "boatPoses": [
+          {
+            "id": 0,
+            "kind": "sail",
+            "visible": true,
+            "animated": true,
+            "time": 0.6196999999880792,
+            "position": [
+              157.08974620338768,
+              -2.1551778319763626,
+              651.0224438987767
+            ],
+            "rotation": [
+              0.002637799892600902,
+              0.01122177553758697,
+              0.0057085278092731855
+            ]
+          },
+          {
+            "id": 1,
+            "kind": "cruise",
+            "visible": true,
+            "animated": true,
+            "time": 0.6196999999880792,
+            "position": [
+              155.80929297627748,
+              -2.1188439728032167,
+              778.6368289293825
+            ],
+            "rotation": [
+              0.008077773847972753,
+              3.1225034809991765,
+              0.012790887962446085
+            ]
+          },
+          {
+            "id": 2,
+            "kind": "sail",
+            "visible": false,
+            "animated": false,
+            "time": 0.6196999999880792,
+            "position": [
+              126.04903224881738,
+              -2.27055382273532,
+              1119.0085088819924
+            ],
+            "rotation": [
+              -0.005198971190341901,
+              3.135599188621949,
+              -0.009764057926677913
+            ]
+          },
+          {
+            "id": 3,
+            "kind": "cruise",
+            "visible": false,
+            "animated": false,
+            "time": 0.6196999999880792,
+            "position": [
+              130.97048938268927,
+              -2.258785949854131,
+              1821.456223755266
+            ],
+            "rotation": [
+              -0.00642936723977986,
+              0.008466285649067866,
+              -0.009695056687401915
+            ]
+          }
+        ],
+        "rockShelves": {
+          "version": 7,
+          "placements": 5,
+          "nearTriangles": 10491,
+          "farTriangles": 2298,
+          "visible": 2,
+          "triangles": 12789,
+          "drawCalls": 2,
+          "shadowDrawCalls": 0
+        },
+        "landscape": {
+          "triangles": 25008,
+          "drawCalls": 4,
+          "islands": 5,
+          "rocks": 18,
+          "trees": 132,
+          "tidalTriangles": 384
+        },
+        "city": {
+          "shops": 22,
+          "homes": 3,
+          "towers": 12,
+          "blocks": 4,
+          "quality": "high",
+          "theme": "bloom",
+          "storedTriangles": 30780,
+          "visibleTriangles": 0,
+          "drawCalls": 0,
+          "shadowDrawCalls": 0,
+          "visibleShops": 0,
+          "roadMinimumClearance": 9.299996709700785,
+          "materials": {
+            "version": 8,
+            "metricUv": true,
+            "extraDrawCalls": 0,
+            "extraTriangles": 0,
+            "downloadedTextures": 0,
+            "interiorRays": 1
+          },
+          "materialDetail": 1
+        },
+        "cityLife": {
+          "actors": 44,
+          "visibleActors": 0,
+          "animatedActors": 0,
+          "drawCalls": 0,
+          "shadowDrawCalls": 0,
+          "visibleTriangles": 0,
+          "storedTriangles": 458,
+          "quality": "high",
+          "theme": "bloom",
+          "time": 0.6196999999880792
+        },
+        "groundProps": {
+          "rocks": 115,
+          "grass": 3966,
+          "excludedRocks": 65,
+          "excludedGrass": 534
+        },
+        "terrain": {
+          "chunkCount": 22,
+          "chunkLength": 125,
+          "sourceTriangles": 150700,
+          "storedTriangles": 209472,
+          "storedVertices": 115288,
+          "activeTriangles": 33662,
+          "activeDrawCalls": 14,
+          "submittedTriangles": 33662,
+          "submittedDrawCalls": 14,
+          "visibleTriangles": 33662,
+          "visibleDrawCalls": 14,
+          "quality": "high",
+          "triangleBudget": 46000,
+          "forwardDistance": 1500,
+          "levels": {
+            "near": 3,
+            "mid": 5,
+            "far": 6
+          },
+          "updates": 5,
+          "frustumChecked": true,
+          "activeRange": [
+            -150,
+            1600
+          ]
+        },
+        "vegetation": {
+          "trees": 130,
+          "pineTrees": 102,
+          "cherryTrees": 28,
+          "chunks": 7,
+          "landmarks": 3,
+          "triangles": 180328,
+          "drawCalls": 29,
+          "shadowDrawCalls": 17,
+          "visibleTriangles": 58980,
+          "visibleDrawCalls": 14,
+          "visibleShadowDrawCalls": 7,
+          "visibleFoliageTriangles": 28864,
+          "visibleFoliageCards": 3608,
+          "detailDistance": 460,
+          "quality": "high",
+          "theme": "bloom"
+        },
+        "screenX": 0.5269,
+        "driver": {
+          "name": "marin",
+          "mood": "base",
+          "seated": true
+        },
+        "vehicle": {
+          "triangles": 359158,
+          "drawCalls": 44,
+          "shadowTriangles": 204000,
+          "shadowDrawCalls": 27
+        },
+        "velocity": 26,
+        "boost": 0,
+        "correct": 0,
+        "answers": [],
+        "flow": {
+          "cruise": 26,
+          "active": false,
+          "values": null
+        },
+        "stage": {
+          "id": "challenge-01",
+          "title": "아침의 작은 일",
+          "mode": "listen",
+          "level": 1,
+          "campaign": true,
+          "words": []
+        },
+        "gate": {
+          "s": 310,
+          "prompt": "무엇을 먹어요?",
+          "spoken": "아침에 빵을 먹어요. 무엇을 먹어요?",
+          "types": [
+            "c01q1o1",
+            "c01q1o2",
+            "c01q1o0"
+          ],
+          "questionId": "c01q1",
+          "announced": false
+        },
+        "quality": "high",
+        "narration": {
+          "playing": false,
+          "kind": null,
+          "queued": 0,
+          "played": []
+        },
+        "narrationUnavailable": false,
+        "learning": {
+          "words": 0,
+          "correctWords": 0,
+          "rounds": 0,
+          "cleared": 0
+        },
+        "render": {
+          "renderedFrames": 33,
+          "skippedPausedFrames": 0,
+          "programs": 50,
+          "pixelRatio": 1,
+          "calls": 271,
+          "triangles": 712885,
+          "geometries": 260,
+          "textures": 28,
+          "averageFps": 0
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      "worker": {
+        "mode": "normal",
+        "attempts": 1,
+        "created": 1,
+        "otherWorkers": 4,
+        "terminateCalls": 1,
+        "nativeMessages": 1,
+        "delivered": 1,
+        "lateDelivered": 0,
+        "queued": 0,
+        "errors": 0
+      },
+      "controls": {
+        "startDisabled": false,
+        "watchDisabled": false,
+        "loadingHidden": true,
+        "errorHidden": true
+      },
+      "screenshot": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\korean-racing\\qa\\release-20261005\\preview-smoke\\terrain-startup-desktop-20261004.jpg",
+      "automaticDrive": {
+        "boundary": 100,
+        "targetS": 240,
+        "before": {
+          "playerS": 77.85740000015497,
+          "running": true,
+          "auto": true,
+          "renderedFrames": 100,
+          "terrain": {
+            "chunkCount": 22,
+            "chunkLength": 125,
+            "sourceTriangles": 150700,
+            "storedTriangles": 209472,
+            "storedVertices": 115288,
+            "activeTriangles": 33662,
+            "activeDrawCalls": 14,
+            "submittedTriangles": 33662,
+            "submittedDrawCalls": 14,
+            "visibleTriangles": 33662,
+            "visibleDrawCalls": 14,
+            "quality": "high",
+            "triangleBudget": 46000,
+            "forwardDistance": 1500,
+            "levels": {
+              "near": 3,
+              "mid": 5,
+              "far": 6
+            },
+            "updates": 12,
+            "frustumChecked": true,
+            "activeRange": [
+              -150,
+              1600
+            ]
+          }
+        },
+        "after": {
+          "playerS": 240.32879999953505,
+          "running": true,
+          "auto": true,
+          "renderedFrames": 463,
+          "terrain": {
+            "chunkCount": 22,
+            "chunkLength": 125,
+            "sourceTriangles": 150700,
+            "storedTriangles": 209472,
+            "storedVertices": 115288,
+            "activeTriangles": 39806,
+            "activeDrawCalls": 15,
+            "submittedTriangles": 39806,
+            "submittedDrawCalls": 15,
+            "visibleTriangles": 39806,
+            "visibleDrawCalls": 15,
+            "quality": "high",
+            "triangleBudget": 46000,
+            "forwardDistance": 1500,
+            "levels": {
+              "near": 4,
+              "mid": 4,
+              "far": 7
+            },
+            "updates": 42,
+            "frustumChecked": true,
+            "activeRange": [
+              -25,
+              1850
+            ]
+          }
+        }
+      }
+    },
+    {
+      "mode": "constructor-error",
+      "ok": true,
+      "pageErrors": [],
+      "consoleErrors": [],
+      "failedRequests": [],
+      "terrainScriptAborts": 0,
+      "snapshot": {
+        "ready": true,
+        "startup": {
+          "phase": "ready",
+          "compilePasses": 1,
+          "startedAt": 3655,
+          "assetsMs": 2484,
+          "terrainWaitMs": 0,
+          "terrainSource": "fallback",
+          "terrainFallback": "worker-unavailable",
+          "terrainMainMs": 1017,
+          "terrainMs": 3511,
+          "coastCityMs": 3830,
+          "vegetationMs": 3871,
+          "environmentMs": 4569,
+          "worldMs": 4889,
+          "parallelShaders": true,
+          "shadersMs": 6315,
+          "firstFrameMs": 7653,
+          "readyMs": 7656
+        },
+        "running": false,
+        "paused": false,
+        "auto": false,
+        "roundWasDemo": false,
+        "elapsed": 0,
+        "playerS": 77.9574000000805,
+        "playerOffset": 0,
+        "tutorial": null,
+        "collection": {
+          "coins": 0,
+          "owned": [
+            "vehicle-coast",
+            "paint-mint",
+            "wheels-silver",
+            "trail-lime"
+          ],
+          "equipped": {
+            "vehicle": "coast",
+            "paint": "mint",
+            "wheels": "silver",
+            "trail": "lime",
+            "badge": null
+          },
+          "wish": "open",
+          "mission": {
+            "id": "2026-10-05:first-clear:challenge-01",
+            "date": "2026-10-05",
+            "kind": "first-clear",
+            "target": "challenge-01",
+            "collection": "campaign",
+            "title": "새로운 길을 열어요",
+            "description": "“아침의 작은 일”에서 5문제 중 4문제 이상 맞혀 첫 통과해요.",
+            "reward": 15,
+            "completed": false,
+            "completedAt": 0
+          },
+          "garageOpen": false,
+          "angle": 0.65
+        },
+        "driving": {
+          "collisions": 0,
+          "contactTimer": 0,
+          "combo": 0,
+          "bestCombo": 0,
+          "shield": 0,
+          "shieldBlocked": 0,
+          "rivals": [
+            {
+              "s": 105.9574000000805,
+              "offset": -3.15
+            },
+            {
+              "s": 126.9574000000805,
+              "offset": 3.1
+            }
+          ],
+          "waitingForChoice": true
+        },
+        "scenery": "bloom",
+        "atmosphere": {
+          "version": 7,
+          "waterTriangles": 2,
+          "waterPasses": 1,
+          "reflectionCameras": 0,
+          "shoreTextureBytes": 2048,
+          "detail": 1,
+          "theme": "sunset"
+        },
+        "boats": {
+          "version": 8,
+          "boats": 4,
+          "sailboats": 2,
+          "cruisers": 2,
+          "visibleBoats": 2,
+          "animatedBoats": 2,
+          "visibleTriangles": 3324,
+          "storedTriangles": 6642,
+          "drawCalls": 9,
+          "shadowDrawCalls": 0,
+          "wakeDrawCalls": 1,
+          "quality": "high"
+        },
+        "boatPoses": [
+          {
+            "id": 0,
+            "kind": "sail",
+            "visible": true,
+            "animated": true,
+            "time": 0.6572000000178816,
+            "position": [
+              157.09046145844266,
+              -2.152681732909407,
+              651.0843071219415
+            ],
+            "rotation": [
+              0.0027922500194267103,
+              0.011900955618342183,
+              0.006034613565873543
+            ]
+          },
+          {
+            "id": 1,
+            "kind": "cruise",
+            "visible": true,
+            "animated": true,
+            "time": 0.6572000000178816,
+            "position": [
+              155.8109150641802,
+              -2.120519107645618,
+              778.5543614889369
+            ],
+            "rotation": [
+              0.008005034831797589,
+              3.1213480159513565,
+              0.01260222492976119
+            ]
+          },
+          {
+            "id": 2,
+            "kind": "sail",
+            "visible": false,
+            "animated": false,
+            "time": 0.6572000000178816,
+            "position": [
+              126.04940270860678,
+              -2.2725187968464464,
+              1118.9485144488085
+            ],
+            "rotation": [
+              -0.005330358393649431,
+              3.1352364684827103,
+              -0.010030325427239997
+            ]
+          },
+          {
+            "id": 3,
+            "kind": "cruise",
+            "visible": false,
+            "animated": false,
+            "time": 0.6572000000178816,
+            "position": [
+              130.97125795149083,
+              -2.256487792457628,
+              1821.5443350233188
+            ],
+            "rotation": [
+              -0.006314970071205914,
+              0.008978690078543442,
+              -0.009421969815575753
+            ]
+          }
+        ],
+        "rockShelves": {
+          "version": 7,
+          "placements": 5,
+          "nearTriangles": 10491,
+          "farTriangles": 2298,
+          "visible": 2,
+          "triangles": 12789,
+          "drawCalls": 2,
+          "shadowDrawCalls": 0
+        },
+        "landscape": {
+          "triangles": 25008,
+          "drawCalls": 4,
+          "islands": 5,
+          "rocks": 18,
+          "trees": 132,
+          "tidalTriangles": 384
+        },
+        "city": {
+          "shops": 22,
+          "homes": 3,
+          "towers": 12,
+          "blocks": 4,
+          "quality": "high",
+          "theme": "bloom",
+          "storedTriangles": 30780,
+          "visibleTriangles": 0,
+          "drawCalls": 0,
+          "shadowDrawCalls": 0,
+          "visibleShops": 0,
+          "roadMinimumClearance": 9.299996709700785,
+          "materials": {
+            "version": 8,
+            "metricUv": true,
+            "extraDrawCalls": 0,
+            "extraTriangles": 0,
+            "downloadedTextures": 0,
+            "interiorRays": 1
+          },
+          "materialDetail": 1
+        },
+        "cityLife": {
+          "actors": 44,
+          "visibleActors": 0,
+          "animatedActors": 0,
+          "drawCalls": 0,
+          "shadowDrawCalls": 0,
+          "visibleTriangles": 0,
+          "storedTriangles": 458,
+          "quality": "high",
+          "theme": "bloom",
+          "time": 0.6572000000178816
+        },
+        "groundProps": {
+          "rocks": 115,
+          "grass": 3966,
+          "excludedRocks": 65,
+          "excludedGrass": 534
+        },
+        "terrain": {
+          "chunkCount": 22,
+          "chunkLength": 125,
+          "sourceTriangles": 150700,
+          "storedTriangles": 209472,
+          "storedVertices": 115288,
+          "activeTriangles": 33662,
+          "activeDrawCalls": 14,
+          "submittedTriangles": 33662,
+          "submittedDrawCalls": 14,
+          "visibleTriangles": 33662,
+          "visibleDrawCalls": 14,
+          "quality": "high",
+          "triangleBudget": 46000,
+          "forwardDistance": 1500,
+          "levels": {
+            "near": 3,
+            "mid": 5,
+            "far": 6
+          },
+          "updates": 5,
+          "frustumChecked": true,
+          "activeRange": [
+            -150,
+            1600
+          ]
+        },
+        "vegetation": {
+          "trees": 130,
+          "pineTrees": 102,
+          "cherryTrees": 28,
+          "chunks": 7,
+          "landmarks": 3,
+          "triangles": 180328,
+          "drawCalls": 29,
+          "shadowDrawCalls": 17,
+          "visibleTriangles": 58980,
+          "visibleDrawCalls": 14,
+          "visibleShadowDrawCalls": 7,
+          "visibleFoliageTriangles": 28864,
+          "visibleFoliageCards": 3608,
+          "detailDistance": 460,
+          "quality": "high",
+          "theme": "bloom"
+        },
+        "screenX": 0.5276,
+        "driver": {
+          "name": "marin",
+          "mood": "base",
+          "seated": true
+        },
+        "vehicle": {
+          "triangles": 359158,
+          "drawCalls": 44,
+          "shadowTriangles": 204000,
+          "shadowDrawCalls": 27
+        },
+        "velocity": 26,
+        "boost": 0,
+        "correct": 0,
+        "answers": [],
+        "flow": {
+          "cruise": 26,
+          "active": false,
+          "values": null
+        },
+        "stage": {
+          "id": "challenge-01",
+          "title": "아침의 작은 일",
+          "mode": "listen",
+          "level": 1,
+          "campaign": true,
+          "words": []
+        },
+        "gate": {
+          "s": 310,
+          "prompt": "무엇을 먹어요?",
+          "spoken": "아침에 빵을 먹어요. 무엇을 먹어요?",
+          "types": [
+            "c01q1o1",
+            "c01q1o0",
+            "c01q1o2"
+          ],
+          "questionId": "c01q1",
+          "announced": false
+        },
+        "quality": "high",
+        "narration": {
+          "playing": false,
+          "kind": null,
+          "queued": 0,
+          "played": []
+        },
+        "narrationUnavailable": false,
+        "learning": {
+          "words": 0,
+          "correctWords": 0,
+          "rounds": 0,
+          "cleared": 0
+        },
+        "render": {
+          "renderedFrames": 35,
+          "skippedPausedFrames": 0,
+          "programs": 50,
+          "pixelRatio": 1,
+          "calls": 271,
+          "triangles": 712885,
+          "geometries": 260,
+          "textures": 28,
+          "averageFps": 0
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      "worker": {
+        "mode": "constructor-error",
+        "attempts": 1,
+        "created": 0,
+        "otherWorkers": 4,
+        "terminateCalls": 0,
+        "nativeMessages": 0,
+        "delivered": 0,
+        "lateDelivered": 0,
+        "queued": 0,
+        "errors": 0
+      },
+      "controls": {
+        "startDisabled": false,
+        "watchDisabled": false,
+        "loadingHidden": true,
+        "errorHidden": true
+      },
+      "geometryMatchesNormal": true
+    },
+    {
+      "mode": "script-error",
+      "ok": true,
+      "pageErrors": [],
+      "consoleErrors": [],
+      "failedRequests": [
+        {
+          "url": "http://127.0.0.1:50841/try/racing/terrain-worker.js",
+          "error": "net::ERR_ABORTED"
+        }
+      ],
+      "terrainScriptAborts": 1,
+      "snapshot": {
+        "ready": true,
+        "startup": {
+          "phase": "ready",
+          "compilePasses": 1,
+          "startedAt": 1981,
+          "assetsMs": 487,
+          "terrainWaitMs": 0,
+          "terrainSource": "fallback",
+          "terrainFallback": "worker-error",
+          "terrainMainMs": 892,
+          "terrainMs": 1381,
+          "coastCityMs": 1701,
+          "vegetationMs": 1732,
+          "environmentMs": 2326,
+          "worldMs": 2673,
+          "parallelShaders": true,
+          "shadersMs": 3903,
+          "firstFrameMs": 4705,
+          "readyMs": 4707
+        },
+        "running": false,
+        "paused": false,
+        "auto": false,
+        "roundWasDemo": false,
+        "elapsed": 0,
+        "playerS": 77.80079999989276,
+        "playerOffset": 0,
+        "tutorial": null,
+        "collection": {
+          "coins": 0,
+          "owned": [
+            "vehicle-coast",
+            "paint-mint",
+            "wheels-silver",
+            "trail-lime"
+          ],
+          "equipped": {
+            "vehicle": "coast",
+            "paint": "mint",
+            "wheels": "silver",
+            "trail": "lime",
+            "badge": null
+          },
+          "wish": "open",
+          "mission": {
+            "id": "2026-10-05:first-clear:challenge-01",
+            "date": "2026-10-05",
+            "kind": "first-clear",
+            "target": "challenge-01",
+            "collection": "campaign",
+            "title": "새로운 길을 열어요",
+            "description": "“아침의 작은 일”에서 5문제 중 4문제 이상 맞혀 첫 통과해요.",
+            "reward": 15,
+            "completed": false,
+            "completedAt": 0
+          },
+          "garageOpen": false,
+          "angle": 0.65
+        },
+        "driving": {
+          "collisions": 0,
+          "contactTimer": 0,
+          "combo": 0,
+          "bestCombo": 0,
+          "shield": 0,
+          "shieldBlocked": 0,
+          "rivals": [
+            {
+              "s": 105.80079999989276,
+              "offset": -3.15
+            },
+            {
+              "s": 126.80079999989276,
+              "offset": 3.1
+            }
+          ],
+          "waitingForChoice": true
+        },
+        "scenery": "bloom",
+        "atmosphere": {
+          "version": 7,
+          "waterTriangles": 2,
+          "waterPasses": 1,
+          "reflectionCameras": 0,
+          "shoreTextureBytes": 2048,
+          "detail": 1,
+          "theme": "sunset"
+        },
+        "boats": {
+          "version": 8,
+          "boats": 4,
+          "sailboats": 2,
+          "cruisers": 2,
+          "visibleBoats": 2,
+          "animatedBoats": 2,
+          "visibleTriangles": 3324,
+          "storedTriangles": 6642,
+          "drawCalls": 9,
+          "shadowDrawCalls": 0,
+          "wakeDrawCalls": 1,
+          "quality": "high"
+        },
+        "boatPoses": [
+          {
+            "id": 0,
+            "kind": "sail",
+            "visible": true,
+            "animated": true,
+            "time": 0.6223999999761582,
+            "position": [
+              157.08979629841403,
+              -2.154996904706578,
+              651.026898096638
+            ],
+            "rotation": [
+              0.0026489494519608883,
+              0.011270675850499635,
+              0.005732114605023419
+            ]
+          },
+          {
+            "id": 1,
+            "kind": "cruise",
+            "visible": true,
+            "animated": true,
+            "time": 0.6223999999761582,
+            "position": [
+              155.80940658447633,
+              -2.1189624535306772,
+              778.6308911470363
+            ],
+            "rotation": [
+              0.00807262379537496,
+              3.122420289325676,
+              0.012777541482387925
+            ]
+          },
+          {
+            "id": 2,
+            "kind": "sail",
+            "visible": false,
+            "animated": false,
+            "time": 0.6223999999761582,
+            "position": [
+              126.04905819503031,
+              -2.2706971840315804,
+              1119.0041892611682
+            ],
+            "rotation": [
+              -0.005208487853418388,
+              3.1355730729801112,
+              -0.009783413034057789
+            ]
+          },
+          {
+            "id": 3,
+            "kind": "cruise",
+            "visible": false,
+            "animated": false,
+            "time": 0.6223999999761582,
+            "position": [
+              130.97054321166945,
+              -2.2586220144204483,
+              1821.4625678199557
+            ],
+            "rotation": [
+              -0.0064211997959081205,
+              0.008503178298185756,
+              -0.00967557339955252
+            ]
+          }
+        ],
+        "rockShelves": {
+          "version": 7,
+          "placements": 5,
+          "nearTriangles": 10491,
+          "farTriangles": 2298,
+          "visible": 2,
+          "triangles": 12789,
+          "drawCalls": 2,
+          "shadowDrawCalls": 0
+        },
+        "landscape": {
+          "triangles": 25008,
+          "drawCalls": 4,
+          "islands": 5,
+          "rocks": 18,
+          "trees": 132,
+          "tidalTriangles": 384
+        },
+        "city": {
+          "shops": 22,
+          "homes": 3,
+          "towers": 12,
+          "blocks": 4,
+          "quality": "high",
+          "theme": "bloom",
+          "storedTriangles": 30780,
+          "visibleTriangles": 0,
+          "drawCalls": 0,
+          "shadowDrawCalls": 0,
+          "visibleShops": 0,
+          "roadMinimumClearance": 9.299996709700785,
+          "materials": {
+            "version": 8,
+            "metricUv": true,
+            "extraDrawCalls": 0,
+            "extraTriangles": 0,
+            "downloadedTextures": 0,
+            "interiorRays": 1
+          },
+          "materialDetail": 1
+        },
+        "cityLife": {
+          "actors": 44,
+          "visibleActors": 0,
+          "animatedActors": 0,
+          "drawCalls": 0,
+          "shadowDrawCalls": 0,
+          "visibleTriangles": 0,
+          "storedTriangles": 458,
+          "quality": "high",
+          "theme": "bloom",
+          "time": 0.6223999999761582
+        },
+        "groundProps": {
+          "rocks": 115,
+          "grass": 3966,
+          "excludedRocks": 65,
+          "excludedGrass": 534
+        },
+        "terrain": {
+          "chunkCount": 22,
+          "chunkLength": 125,
+          "sourceTriangles": 150700,
+          "storedTriangles": 209472,
+          "storedVertices": 115288,
+          "activeTriangles": 33662,
+          "activeDrawCalls": 14,
+          "submittedTriangles": 33662,
+          "submittedDrawCalls": 14,
+          "visibleTriangles": 33662,
+          "visibleDrawCalls": 14,
+          "quality": "high",
+          "triangleBudget": 46000,
+          "forwardDistance": 1500,
+          "levels": {
+            "near": 3,
+            "mid": 5,
+            "far": 6
+          },
+          "updates": 5,
+          "frustumChecked": true,
+          "activeRange": [
+            -150,
+            1600
+          ]
+        },
+        "vegetation": {
+          "trees": 130,
+          "pineTrees": 102,
+          "cherryTrees": 28,
+          "chunks": 7,
+          "landmarks": 3,
+          "triangles": 180328,
+          "drawCalls": 29,
+          "shadowDrawCalls": 17,
+          "visibleTriangles": 58980,
+          "visibleDrawCalls": 14,
+          "visibleShadowDrawCalls": 7,
+          "visibleFoliageTriangles": 28864,
+          "visibleFoliageCards": 3608,
+          "detailDistance": 460,
+          "quality": "high",
+          "theme": "bloom"
+        },
+        "screenX": 0.5263,
+        "driver": {
+          "name": "marin",
+          "mood": "base",
+          "seated": true
+        },
+        "vehicle": {
+          "triangles": 359158,
+          "drawCalls": 44,
+          "shadowTriangles": 204000,
+          "shadowDrawCalls": 27
+        },
+        "velocity": 26,
+        "boost": 0,
+        "correct": 0,
+        "answers": [],
+        "flow": {
+          "cruise": 26,
+          "active": false,
+          "values": null
+        },
+        "stage": {
+          "id": "challenge-01",
+          "title": "아침의 작은 일",
+          "mode": "listen",
+          "level": 1,
+          "campaign": true,
+          "words": []
+        },
+        "gate": {
+          "s": 310,
+          "prompt": "무엇을 먹어요?",
+          "spoken": "아침에 빵을 먹어요. 무엇을 먹어요?",
+          "types": [
+            "c01q1o2",
+            "c01q1o1",
+            "c01q1o0"
+          ],
+          "questionId": "c01q1",
+          "announced": false
+        },
+        "quality": "high",
+        "narration": {
+          "playing": false,
+          "kind": null,
+          "queued": 0,
+          "played": []
+        },
+        "narrationUnavailable": false,
+        "learning": {
+          "words": 0,
+          "correctWords": 0,
+          "rounds": 0,
+          "cleared": 0
+        },
+        "render": {
+          "renderedFrames": 36,
+          "skippedPausedFrames": 0,
+          "programs": 50,
+          "pixelRatio": 1,
+          "calls": 271,
+          "triangles": 712885,
+          "geometries": 260,
+          "textures": 28,
+          "averageFps": 43.7
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      "worker": {
+        "mode": "script-error",
+        "attempts": 1,
+        "created": 1,
+        "otherWorkers": 4,
+        "terminateCalls": 1,
+        "nativeMessages": 0,
+        "delivered": 0,
+        "lateDelivered": 0,
+        "queued": 0,
+        "errors": 1
+      },
+      "controls": {
+        "startDisabled": false,
+        "watchDisabled": false,
+        "loadingHidden": true,
+        "errorHidden": true
+      },
+      "geometryMatchesNormal": true
+    },
+    {
+      "mode": "delayed-result",
+      "ok": true,
+      "pageErrors": [],
+      "consoleErrors": [],
+      "failedRequests": [],
+      "terrainScriptAborts": 0,
+      "beforeSelections": {
+        "snapshot": {
+          "ready": false,
+          "startup": {
+            "phase": "terrain",
+            "compilePasses": 0,
+            "startedAt": 599,
+            "assetsMs": 248
+          },
+          "running": false,
+          "paused": false,
+          "auto": false,
+          "roundWasDemo": false,
+          "elapsed": 0,
+          "playerS": 75,
+          "playerOffset": 0,
+          "tutorial": null,
+          "collection": {
+            "coins": 0,
+            "owned": [
+              "vehicle-coast",
+              "paint-mint",
+              "wheels-silver",
+              "trail-lime"
+            ],
+            "equipped": {
+              "vehicle": "coast",
+              "paint": "mint",
+              "wheels": "silver",
+              "trail": "lime",
+              "badge": null
+            },
+            "wish": "open",
+            "mission": {
+              "id": "2026-10-05:first-clear:challenge-01",
+              "date": "2026-10-05",
+              "kind": "first-clear",
+              "target": "challenge-01",
+              "collection": "campaign",
+              "title": "새로운 길을 열어요",
+              "description": "“아침의 작은 일”에서 5문제 중 4문제 이상 맞혀 첫 통과해요.",
+              "reward": 15,
+              "completed": false,
+              "completedAt": 0
+            },
+            "garageOpen": false,
+            "angle": 0.65
+          },
+          "driving": {
+            "collisions": 0,
+            "contactTimer": 0,
+            "combo": 0,
+            "bestCombo": 0,
+            "shield": 0,
+            "shieldBlocked": 0,
+            "rivals": [],
+            "waitingForChoice": true
+          },
+          "screenX": null,
+          "driver": {
+            "name": "marin",
+            "mood": "base",
+            "seated": false
+          },
+          "velocity": 26,
+          "boost": 0,
+          "correct": 0,
+          "answers": [],
+          "flow": {
+            "cruise": 26,
+            "active": false,
+            "values": null
+          },
+          "stage": {
+            "id": "challenge-01",
+            "title": "아침의 작은 일",
+            "mode": "listen",
+            "level": 1,
+            "campaign": true,
+            "words": []
+          },
+          "gate": null,
+          "quality": "high",
+          "narration": {
+            "playing": false,
+            "kind": null,
+            "queued": 0,
+            "played": []
+          },
+          "narrationUnavailable": false,
+          "learning": {
+            "words": 0,
+            "correctWords": 0,
+            "rounds": 0,
+            "cleared": 0
+          },
+          "render": {
+            "renderedFrames": 0,
+            "skippedPausedFrames": 0,
+            "programs": 0,
+            "pixelRatio": 1,
+            "calls": 0,
+            "triangles": 0,
+            "geometries": 0,
+            "textures": 0,
+            "averageFps": 0
+          },
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          }
+        },
+        "racingError": null,
+        "worker": {
+          "mode": "delayed-result",
+          "attempts": 1,
+          "created": 1,
+          "otherWorkers": 4,
+          "terminateCalls": 0,
+          "nativeMessages": 1,
+          "delivered": 0,
+          "lateDelivered": 0,
+          "queued": 1,
+          "errors": 0
+        },
+        "controls": {
+          "startDisabled": true,
+          "watchDisabled": true,
+          "loadingHidden": false,
+          "errorHidden": true
+        }
+      },
+      "selectedStage": "s002",
+      "duringSelections": {
+        "snapshot": {
+          "ready": false,
+          "startup": {
+            "phase": "terrain",
+            "compilePasses": 0,
+            "startedAt": 599,
+            "assetsMs": 248
+          },
+          "running": false,
+          "paused": false,
+          "auto": false,
+          "roundWasDemo": false,
+          "elapsed": 0,
+          "playerS": 75,
+          "playerOffset": 0,
+          "tutorial": null,
+          "collection": {
+            "coins": 0,
+            "owned": [
+              "vehicle-coast",
+              "paint-mint",
+              "wheels-silver",
+              "trail-lime"
+            ],
+            "equipped": {
+              "vehicle": "coast",
+              "paint": "mint",
+              "wheels": "silver",
+              "trail": "lime",
+              "badge": null
+            },
+            "wish": "open",
+            "mission": {
+              "id": "2026-10-05:first-clear:challenge-01",
+              "date": "2026-10-05",
+              "kind": "first-clear",
+              "target": "challenge-01",
+              "collection": "campaign",
+              "title": "새로운 길을 열어요",
+              "description": "“아침의 작은 일”에서 5문제 중 4문제 이상 맞혀 첫 통과해요.",
+              "reward": 15,
+              "completed": false,
+              "completedAt": 0
+            },
+            "garageOpen": false,
+            "angle": 0.65
+          },
+          "driving": {
+            "collisions": 0,
+            "contactTimer": 0,
+            "combo": 0,
+            "bestCombo": 0,
+            "shield": 0,
+            "shieldBlocked": 0,
+            "rivals": [],
+            "waitingForChoice": true
+          },
+          "screenX": null,
+          "driver": {
+            "name": "kkamong",
+            "mood": "base",
+            "seated": false
+          },
+          "velocity": 26,
+          "boost": 0,
+          "correct": 0,
+          "answers": [],
+          "flow": {
+            "cruise": 26,
+            "active": false,
+            "values": null
+          },
+          "stage": {
+            "id": "s002",
+            "title": "식탁 위에서",
+            "mode": "picture",
+            "words": [
+              "w0006",
+              "w0007",
+              "w0008",
+              "w0009",
+              "w0010"
+            ]
+          },
+          "gate": null,
+          "quality": "low",
+          "narration": {
+            "playing": false,
+            "kind": null,
+            "queued": 0,
+            "played": []
+          },
+          "narrationUnavailable": false,
+          "learning": {
+            "words": 0,
+            "correctWords": 0,
+            "rounds": 0,
+            "cleared": 0
+          },
+          "render": {
+            "renderedFrames": 0,
+            "skippedPausedFrames": 0,
+            "programs": 0,
+            "pixelRatio": 1,
+            "calls": 0,
+            "triangles": 0,
+            "geometries": 0,
+            "textures": 0,
+            "averageFps": 0
+          },
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          }
+        },
+        "racingError": null,
+        "worker": {
+          "mode": "delayed-result",
+          "attempts": 1,
+          "created": 1,
+          "otherWorkers": 4,
+          "terminateCalls": 0,
+          "nativeMessages": 1,
+          "delivered": 0,
+          "lateDelivered": 0,
+          "queued": 1,
+          "errors": 0
+        },
+        "controls": {
+          "startDisabled": true,
+          "watchDisabled": true,
+          "loadingHidden": false,
+          "errorHidden": true
+        }
+      },
+      "snapshot": {
+        "ready": true,
+        "startup": {
+          "phase": "ready",
+          "compilePasses": 1,
+          "startedAt": 599,
+          "assetsMs": 248,
+          "terrainWaitMs": 817,
+          "terrainSource": "worker",
+          "terrainWorkerMs": 654,
+          "terrainMainMs": 33,
+          "terrainMs": 1099,
+          "coastCityMs": 1294,
+          "vegetationMs": 1312,
+          "environmentMs": 1570,
+          "worldMs": 1731,
+          "parallelShaders": true,
+          "shadersMs": 2611,
+          "firstFrameMs": 4049,
+          "readyMs": 4053
+        },
+        "running": false,
+        "paused": false,
+        "auto": false,
+        "roundWasDemo": false,
+        "elapsed": 0,
+        "playerS": 78.21525000000005,
+        "playerOffset": 0,
+        "tutorial": null,
+        "collection": {
+          "coins": 0,
+          "owned": [
+            "vehicle-coast",
+            "paint-mint",
+            "wheels-silver",
+            "trail-lime"
+          ],
+          "equipped": {
+            "vehicle": "coast",
+            "paint": "mint",
+            "wheels": "silver",
+            "trail": "lime",
+            "badge": null
+          },
+          "wish": "open",
+          "mission": {
+            "id": "2026-10-05:first-clear:challenge-01",
+            "date": "2026-10-05",
+            "kind": "first-clear",
+            "target": "challenge-01",
+            "collection": "campaign",
+            "title": "새로운 길을 열어요",
+            "description": "“아침의 작은 일”에서 5문제 중 4문제 이상 맞혀 첫 통과해요.",
+            "reward": 15,
+            "completed": false,
+            "completedAt": 0
+          },
+          "garageOpen": false,
+          "angle": 0.65
+        },
+        "driving": {
+          "collisions": 0,
+          "contactTimer": 0,
+          "combo": 0,
+          "bestCombo": 0,
+          "shield": 0,
+          "shieldBlocked": 0,
+          "rivals": [
+            {
+              "s": 106.21525000000005,
+              "offset": -3.15
+            },
+            {
+              "s": 127.21525000000005,
+              "offset": 3.1
+            }
+          ],
+          "waitingForChoice": true
+        },
+        "scenery": "coast",
+        "atmosphere": {
+          "version": 7,
+          "waterTriangles": 2,
+          "waterPasses": 1,
+          "reflectionCameras": 0,
+          "shoreTextureBytes": 2048,
+          "detail": 0,
+          "theme": "sunset"
+        },
+        "boats": {
+          "version": 8,
+          "boats": 4,
+          "sailboats": 2,
+          "cruisers": 2,
+          "visibleBoats": 0,
+          "animatedBoats": 0,
+          "visibleTriangles": 0,
+          "storedTriangles": 6642,
+          "drawCalls": 0,
+          "shadowDrawCalls": 0,
+          "wakeDrawCalls": 0,
+          "quality": "low"
+        },
+        "boatPoses": [
+          {
+            "id": 0,
+            "kind": "sail",
+            "visible": false,
+            "animated": false,
+            "time": 0.7145,
+            "position": [
+              157.09163549674932,
+              -2.148940642079025,
+              651.1788313496485
+            ],
+            "rotation": [
+              0.003026485628429767,
+              0.012938782342166253,
+              0.006526306357590827
+            ]
+          },
+          {
+            "id": 1,
+            "kind": "cruise",
+            "visible": false,
+            "animated": false,
+            "time": 0.7145,
+            "position": [
+              155.81357757344836,
+              -2.1231996681759835,
+              778.4283589178673
+            ],
+            "rotation": [
+              0.007888888694839058,
+              3.119582355672614,
+              0.0123004003677202
+            ]
+          },
+          {
+            "id": 2,
+            "kind": "sail",
+            "visible": false,
+            "animated": false,
+            "time": 0.7145,
+            "position": [
+              126.05001079403674,
+              -2.275409978429374,
+              1118.8568442677883
+            ],
+            "rotation": [
+              -0.005527768243734228,
+              3.134682219499193,
+              -0.010426320515629445
+            ]
+          },
+          {
+            "id": 3,
+            "kind": "cruise",
+            "visible": false,
+            "animated": false,
+            "time": 0.7145,
+            "position": [
+              130.97251950262302,
+              -2.252890542326128,
+              1821.6789658024961
+            ],
+            "rotation": [
+              -0.006136232377285762,
+              0.009761672512517519,
+              -0.008994589466319439
+            ]
+          }
+        ],
+        "rockShelves": {
+          "version": 7,
+          "placements": 5,
+          "nearTriangles": 10491,
+          "farTriangles": 2298,
+          "visible": 1,
+          "triangles": 2298,
+          "drawCalls": 1,
+          "shadowDrawCalls": 0
+        },
+        "landscape": {
+          "triangles": 25008,
+          "drawCalls": 4,
+          "islands": 5,
+          "rocks": 18,
+          "trees": 132,
+          "tidalTriangles": 384
+        },
+        "city": {
+          "shops": 22,
+          "homes": 3,
+          "towers": 12,
+          "blocks": 4,
+          "quality": "low",
+          "theme": "sunset",
+          "storedTriangles": 30780,
+          "visibleTriangles": 4372,
+          "drawCalls": 17,
+          "shadowDrawCalls": 0,
+          "visibleShops": 5,
+          "roadMinimumClearance": 9.299996709700785,
+          "materials": {
+            "version": 8,
+            "metricUv": true,
+            "extraDrawCalls": 0,
+            "extraTriangles": 0,
+            "downloadedTextures": 0,
+            "interiorRays": 1
+          },
+          "materialDetail": 0
+        },
+        "cityLife": {
+          "actors": 44,
+          "visibleActors": 0,
+          "animatedActors": 0,
+          "drawCalls": 0,
+          "shadowDrawCalls": 0,
+          "visibleTriangles": 0,
+          "storedTriangles": 458,
+          "quality": "low",
+          "theme": "coast",
+          "time": 0.7145
+        },
+        "groundProps": {
+          "rocks": 115,
+          "grass": 3966,
+          "excludedRocks": 65,
+          "excludedGrass": 534
+        },
+        "terrain": {
+          "chunkCount": 22,
+          "chunkLength": 125,
+          "sourceTriangles": 150700,
+          "storedTriangles": 209472,
+          "storedVertices": 115288,
+          "activeTriangles": 21280,
+          "activeDrawCalls": 10,
+          "submittedTriangles": 21280,
+          "submittedDrawCalls": 10,
+          "visibleTriangles": 21280,
+          "visibleDrawCalls": 10,
+          "quality": "low",
+          "triangleBudget": 26000,
+          "forwardDistance": 1100,
+          "levels": {
+            "near": 2,
+            "mid": 2,
+            "far": 6
+          },
+          "updates": 6,
+          "frustumChecked": true,
+          "activeRange": [
+            -25,
+            1225
+          ]
+        },
+        "vegetation": {
+          "trees": 130,
+          "pineTrees": 102,
+          "cherryTrees": 28,
+          "chunks": 7,
+          "landmarks": 3,
+          "triangles": 102744,
+          "drawCalls": 29,
+          "shadowDrawCalls": 0,
+          "visibleTriangles": 37496,
+          "visibleDrawCalls": 14,
+          "visibleShadowDrawCalls": 0,
+          "visibleFoliageTriangles": 12912,
+          "visibleFoliageCards": 1614,
+          "detailDistance": 260,
+          "quality": "low",
+          "theme": "coast"
+        },
+        "screenX": 0.5261,
+        "driver": {
+          "name": "kkamong",
+          "mood": "base",
+          "seated": true
+        },
+        "vehicle": {
+          "triangles": 359158,
+          "drawCalls": 44,
+          "shadowTriangles": 204000,
+          "shadowDrawCalls": 27
+        },
+        "velocity": 26,
+        "boost": 0,
+        "correct": 0,
+        "answers": [],
+        "flow": {
+          "cruise": 26,
+          "active": false,
+          "values": null
+        },
+        "stage": {
+          "id": "s002",
+          "title": "식탁 위에서",
+          "mode": "picture",
+          "words": [
+            "w0006",
+            "w0007",
+            "w0008",
+            "w0009",
+            "w0010"
+          ]
+        },
+        "gate": {
+          "s": 310,
+          "prompt": "밥의 그림을 찾아줘!",
+          "spoken": "이 단어의 그림을 찾아줘. 밥.",
+          "types": [
+            "w0010",
+            "w0009",
+            "w0006"
+          ],
+          "announced": false
+        },
+        "quality": "low",
+        "narration": {
+          "playing": false,
+          "kind": null,
+          "queued": 0,
+          "played": []
+        },
+        "narrationUnavailable": false,
+        "learning": {
+          "words": 0,
+          "correctWords": 0,
+          "rounds": 0,
+          "cleared": 0
+        },
+        "render": {
+          "renderedFrames": 42,
+          "skippedPausedFrames": 0,
+          "programs": 47,
+          "pixelRatio": 1,
+          "calls": 264,
+          "triangles": 625156,
+          "geometries": 253,
+          "textures": 26,
+          "averageFps": 60
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      "worker": {
+        "mode": "delayed-result",
+        "attempts": 1,
+        "created": 1,
+        "otherWorkers": 4,
+        "terminateCalls": 1,
+        "nativeMessages": 1,
+        "delivered": 1,
+        "lateDelivered": 0,
+        "queued": 0,
+        "errors": 0
+      },
+      "controls": {
+        "startDisabled": false,
+        "watchDisabled": false,
+        "loadingHidden": true,
+        "errorHidden": true
+      },
+      "geometryMatchesNormal": true
+    },
+    {
+      "mode": "asset-error",
+      "ok": true,
+      "pageErrors": [],
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_FAILED",
+        "Event"
+      ],
+      "failedRequests": [
+        {
+          "url": "http://127.0.0.1:50841/try/racing/assets/road.jpg",
+          "error": "net::ERR_FAILED"
+        }
+      ],
+      "terrainScriptAborts": 0,
+      "beforeFailure": {
+        "snapshot": {
+          "ready": false,
+          "startup": {
+            "phase": "assets",
+            "compilePasses": 0,
+            "startedAt": 541
+          },
+          "running": false,
+          "paused": false,
+          "auto": false,
+          "roundWasDemo": false,
+          "elapsed": 0,
+          "playerS": 75,
+          "playerOffset": 0,
+          "tutorial": null,
+          "collection": {
+            "coins": 0,
+            "owned": [
+              "vehicle-coast",
+              "paint-mint",
+              "wheels-silver",
+              "trail-lime"
+            ],
+            "equipped": {
+              "vehicle": "coast",
+              "paint": "mint",
+              "wheels": "silver",
+              "trail": "lime",
+              "badge": null
+            },
+            "wish": "open",
+            "mission": {
+              "id": "2026-10-05:first-clear:challenge-01",
+              "date": "2026-10-05",
+              "kind": "first-clear",
+              "target": "challenge-01",
+              "collection": "campaign",
+              "title": "새로운 길을 열어요",
+              "description": "“아침의 작은 일”에서 5문제 중 4문제 이상 맞혀 첫 통과해요.",
+              "reward": 15,
+              "completed": false,
+              "completedAt": 0
+            },
+            "garageOpen": false,
+            "angle": 0.65
+          },
+          "driving": {
+            "collisions": 0,
+            "contactTimer": 0,
+            "combo": 0,
+            "bestCombo": 0,
+            "shield": 0,
+            "shieldBlocked": 0,
+            "rivals": [],
+            "waitingForChoice": true
+          },
+          "screenX": null,
+          "driver": {
+            "name": "marin",
+            "mood": "base",
+            "seated": false
+          },
+          "velocity": 26,
+          "boost": 0,
+          "correct": 0,
+          "answers": [],
+          "flow": {
+            "cruise": 26,
+            "active": false,
+            "values": null
+          },
+          "stage": {
+            "id": "challenge-01",
+            "title": "아침의 작은 일",
+            "mode": "listen",
+            "level": 1,
+            "campaign": true,
+            "words": []
+          },
+          "gate": null,
+          "quality": "high",
+          "narration": {
+            "playing": false,
+            "kind": null,
+            "queued": 0,
+            "played": []
+          },
+          "narrationUnavailable": false,
+          "learning": {
+            "words": 0,
+            "correctWords": 0,
+            "rounds": 0,
+            "cleared": 0
+          },
+          "render": {
+            "renderedFrames": 0,
+            "skippedPausedFrames": 0,
+            "programs": 0,
+            "pixelRatio": 1,
+            "calls": 0,
+            "triangles": 0,
+            "geometries": 0,
+            "textures": 0,
+            "averageFps": 0
+          },
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          }
+        },
+        "racingError": null,
+        "worker": {
+          "mode": "asset-error",
+          "attempts": 1,
+          "created": 1,
+          "otherWorkers": 4,
+          "terminateCalls": 0,
+          "nativeMessages": 1,
+          "delivered": 0,
+          "lateDelivered": 0,
+          "queued": 1,
+          "errors": 0
+        },
+        "controls": {
+          "startDisabled": true,
+          "watchDisabled": true,
+          "loadingHidden": false,
+          "errorHidden": true
+        }
+      },
+      "afterFailure": {
+        "snapshot": {
+          "ready": false,
+          "startup": {
+            "phase": "failed",
+            "compilePasses": 0,
+            "startedAt": 541,
+            "assetsMs": 1436
+          },
+          "running": false,
+          "paused": false,
+          "auto": false,
+          "roundWasDemo": false,
+          "elapsed": 0,
+          "playerS": 75,
+          "playerOffset": 0,
+          "tutorial": null,
+          "collection": {
+            "coins": 0,
+            "owned": [
+              "vehicle-coast",
+              "paint-mint",
+              "wheels-silver",
+              "trail-lime"
+            ],
+            "equipped": {
+              "vehicle": "coast",
+              "paint": "mint",
+              "wheels": "silver",
+              "trail": "lime",
+              "badge": null
+            },
+            "wish": "open",
+            "mission": {
+              "id": "2026-10-05:first-clear:challenge-01",
+              "date": "2026-10-05",
+              "kind": "first-clear",
+              "target": "challenge-01",
+              "collection": "campaign",
+              "title": "새로운 길을 열어요",
+              "description": "“아침의 작은 일”에서 5문제 중 4문제 이상 맞혀 첫 통과해요.",
+              "reward": 15,
+              "completed": false,
+              "completedAt": 0
+            },
+            "garageOpen": false,
+            "angle": 0.65
+          },
+          "driving": {
+            "collisions": 0,
+            "contactTimer": 0,
+            "combo": 0,
+            "bestCombo": 0,
+            "shield": 0,
+            "shieldBlocked": 0,
+            "rivals": [],
+            "waitingForChoice": true
+          },
+          "screenX": null,
+          "driver": {
+            "name": "marin",
+            "mood": "base",
+            "seated": false
+          },
+          "velocity": 26,
+          "boost": 0,
+          "correct": 0,
+          "answers": [],
+          "flow": {
+            "cruise": 26,
+            "active": false,
+            "values": null
+          },
+          "stage": {
+            "id": "challenge-01",
+            "title": "아침의 작은 일",
+            "mode": "listen",
+            "level": 1,
+            "campaign": true,
+            "words": []
+          },
+          "gate": null,
+          "quality": "high",
+          "narration": {
+            "playing": false,
+            "kind": null,
+            "queued": 0,
+            "played": []
+          },
+          "narrationUnavailable": false,
+          "learning": {
+            "words": 0,
+            "correctWords": 0,
+            "rounds": 0,
+            "cleared": 0
+          },
+          "render": {
+            "renderedFrames": 0,
+            "skippedPausedFrames": 0,
+            "programs": 0,
+            "pixelRatio": 1,
+            "calls": 0,
+            "triangles": 0,
+            "geometries": 0,
+            "textures": 0,
+            "averageFps": 0
+          },
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          }
+        },
+        "racingError": "[object Event]",
+        "worker": {
+          "mode": "asset-error",
+          "attempts": 1,
+          "created": 1,
+          "otherWorkers": 4,
+          "terminateCalls": 1,
+          "nativeMessages": 1,
+          "delivered": 0,
+          "lateDelivered": 0,
+          "queued": 1,
+          "errors": 0
+        },
+        "controls": {
+          "startDisabled": true,
+          "watchDisabled": true,
+          "loadingHidden": true,
+          "errorHidden": false
+        }
+      },
+      "afterLateCallback": {
+        "snapshot": {
+          "ready": false,
+          "startup": {
+            "phase": "failed",
+            "compilePasses": 0,
+            "startedAt": 541,
+            "assetsMs": 1436
+          },
+          "running": false,
+          "paused": false,
+          "auto": false,
+          "roundWasDemo": false,
+          "elapsed": 0,
+          "playerS": 75,
+          "playerOffset": 0,
+          "tutorial": null,
+          "collection": {
+            "coins": 0,
+            "owned": [
+              "vehicle-coast",
+              "paint-mint",
+              "wheels-silver",
+              "trail-lime"
+            ],
+            "equipped": {
+              "vehicle": "coast",
+              "paint": "mint",
+              "wheels": "silver",
+              "trail": "lime",
+              "badge": null
+            },
+            "wish": "open",
+            "mission": {
+              "id": "2026-10-05:first-clear:challenge-01",
+              "date": "2026-10-05",
+              "kind": "first-clear",
+              "target": "challenge-01",
+              "collection": "campaign",
+              "title": "새로운 길을 열어요",
+              "description": "“아침의 작은 일”에서 5문제 중 4문제 이상 맞혀 첫 통과해요.",
+              "reward": 15,
+              "completed": false,
+              "completedAt": 0
+            },
+            "garageOpen": false,
+            "angle": 0.65
+          },
+          "driving": {
+            "collisions": 0,
+            "contactTimer": 0,
+            "combo": 0,
+            "bestCombo": 0,
+            "shield": 0,
+            "shieldBlocked": 0,
+            "rivals": [],
+            "waitingForChoice": true
+          },
+          "screenX": null,
+          "driver": {
+            "name": "marin",
+            "mood": "base",
+            "seated": false
+          },
+          "velocity": 26,
+          "boost": 0,
+          "correct": 0,
+          "answers": [],
+          "flow": {
+            "cruise": 26,
+            "active": false,
+            "values": null
+          },
+          "stage": {
+            "id": "challenge-01",
+            "title": "아침의 작은 일",
+            "mode": "listen",
+            "level": 1,
+            "campaign": true,
+            "words": []
+          },
+          "gate": null,
+          "quality": "high",
+          "narration": {
+            "playing": false,
+            "kind": null,
+            "queued": 0,
+            "played": []
+          },
+          "narrationUnavailable": false,
+          "learning": {
+            "words": 0,
+            "correctWords": 0,
+            "rounds": 0,
+            "cleared": 0
+          },
+          "render": {
+            "renderedFrames": 0,
+            "skippedPausedFrames": 0,
+            "programs": 0,
+            "pixelRatio": 1,
+            "calls": 0,
+            "triangles": 0,
+            "geometries": 0,
+            "textures": 0,
+            "averageFps": 0
+          },
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          }
+        },
+        "racingError": "[object Event]",
+        "worker": {
+          "mode": "asset-error",
+          "attempts": 1,
+          "created": 1,
+          "otherWorkers": 4,
+          "terminateCalls": 1,
+          "nativeMessages": 1,
+          "delivered": 1,
+          "lateDelivered": 1,
+          "queued": 0,
+          "errors": 0
+        },
+        "controls": {
+          "startDisabled": true,
+          "watchDisabled": true,
+          "loadingHidden": true,
+          "errorHidden": false
+        }
+      },
+      "snapshot": {
+        "ready": false,
+        "startup": {
+          "phase": "failed",
+          "compilePasses": 0,
+          "startedAt": 541,
+          "assetsMs": 1436
+        },
+        "running": false,
+        "paused": false,
+        "auto": false,
+        "roundWasDemo": false,
+        "elapsed": 0,
+        "playerS": 75,
+        "playerOffset": 0,
+        "tutorial": null,
+        "collection": {
+          "coins": 0,
+          "owned": [
+            "vehicle-coast",
+            "paint-mint",
+            "wheels-silver",
+            "trail-lime"
+          ],
+          "equipped": {
+            "vehicle": "coast",
+            "paint": "mint",
+            "wheels": "silver",
+            "trail": "lime",
+            "badge": null
+          },
+          "wish": "open",
+          "mission": {
+            "id": "2026-10-05:first-clear:challenge-01",
+            "date": "2026-10-05",
+            "kind": "first-clear",
+            "target": "challenge-01",
+            "collection": "campaign",
+            "title": "새로운 길을 열어요",
+            "description": "“아침의 작은 일”에서 5문제 중 4문제 이상 맞혀 첫 통과해요.",
+            "reward": 15,
+            "completed": false,
+            "completedAt": 0
+          },
+          "garageOpen": false,
+          "angle": 0.65
+        },
+        "driving": {
+          "collisions": 0,
+          "contactTimer": 0,
+          "combo": 0,
+          "bestCombo": 0,
+          "shield": 0,
+          "shieldBlocked": 0,
+          "rivals": [],
+          "waitingForChoice": true
+        },
+        "screenX": null,
+        "driver": {
+          "name": "marin",
+          "mood": "base",
+          "seated": false
+        },
+        "velocity": 26,
+        "boost": 0,
+        "correct": 0,
+        "answers": [],
+        "flow": {
+          "cruise": 26,
+          "active": false,
+          "values": null
+        },
+        "stage": {
+          "id": "challenge-01",
+          "title": "아침의 작은 일",
+          "mode": "listen",
+          "level": 1,
+          "campaign": true,
+          "words": []
+        },
+        "gate": null,
+        "quality": "high",
+        "narration": {
+          "playing": false,
+          "kind": null,
+          "queued": 0,
+          "played": []
+        },
+        "narrationUnavailable": false,
+        "learning": {
+          "words": 0,
+          "correctWords": 0,
+          "rounds": 0,
+          "cleared": 0
+        },
+        "render": {
+          "renderedFrames": 0,
+          "skippedPausedFrames": 0,
+          "programs": 0,
+          "pixelRatio": 1,
+          "calls": 0,
+          "triangles": 0,
+          "geometries": 0,
+          "textures": 0,
+          "averageFps": 0
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      "worker": {
+        "mode": "asset-error",
+        "attempts": 1,
+        "created": 1,
+        "otherWorkers": 4,
+        "terminateCalls": 1,
+        "nativeMessages": 1,
+        "delivered": 1,
+        "lateDelivered": 1,
+        "queued": 0,
+        "errors": 0
+      }
+    }
+  ],
+  "ok": true
+}

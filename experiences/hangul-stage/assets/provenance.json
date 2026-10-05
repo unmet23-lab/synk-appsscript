@@ -1,5 +1,5 @@
 {
-  "note": "바이트 그대로 가져온 사본이다. 펠트 부품(kit)은 입장 검사의 줄이고 흰 띠를 걷은 사본(빈칸 베기와 같음), 몽글·글꼴·효과음도 입장 검사 사본에서 왔다(효과음은 docs/브랜드_사운드킷 원본과 같다). 원본 키트를 고치면 docs/디자인/펠트부품/README.md 「사본 맞추기」대로 이 사본도 맞춘다.",
+  "note": "바이트 그대로 가져온 사본이다. 펠트 부품(kit)은 입장 검사의 줄이고 흰 띠를 걷은 사본(빈칸 베기와 같음), 몽글·글꼴·효과음도 입장 검사 사본에서 왔다(효과음은 docs/브랜드_사운드킷 원본과 같다). 원본 키트를 고치면 docs/디자인/펠트부품/README.md 「사본 맞추기」대로 이 사본도 맞춘다. 노래(songs/)는 Suno 공식 내려받기 원본 그대로다(songs/README.md, 음악 장부).",
   "files": [
     {
       "path": "brand/mongle-curious.webp",
@@ -120,6 +120,18 @@
       "from": "experiences/entry-check/assets/sound/mongle-miyu.wav",
       "bytes": 41102,
       "sha256": "b938c764425c44146d88a85eee4c8066e49a7b780a837254c00008a7c32a5652"
+    },
+    {
+      "path": "songs/vowel-dance.mp3",
+      "from": "Suno 399224fa-4ca7-42ee-854d-fbd7ea288bde · 공식 내려받기 MP3 2026-10-04(유호님 허락) · 원본 Documents/synk-vendor/hangul-songs/vowel-dance_399224fa.mp3",
+      "bytes": 1317968,
+      "sha256": "3d53b8f3e76dd44ca98c88c5bc00c19beb90645e22b5a47e032b1374353a0fdf"
+    },
+    {
+      "path": "songs/geu-a-ga.mp3",
+      "from": "Suno 61cb6e8e-bb9b-4660-bba6-51e4a66a487f · 공식 내려받기 MP3 2026-10-04(유호님 허락) · 원본 Documents/synk-vendor/hangul-songs/geu-a-ga_61cb6e8e.mp3",
+      "bytes": 1781481,
+      "sha256": "c7077d4c8753ed1a107c47daea2d1030e0bda0fd07d10175230ac13b7a4eab76"
     }
   ]
 }
