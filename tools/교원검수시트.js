@@ -5,9 +5,10 @@
 // 표는 여기서만 만들고, 고친 것은 원본(게임 문항 파일, strata/)에 반영한다. 표를 직접 원본으로 삼지 않는다.
 //
 //   node tools/교원검수시트.js                       docs/교원검수/교원검수시트.csv 를 다시 만든다
+//                                                    (그 파일에 교원이 적은 줄이 있으면 멈춘다 — 빈 시트로 바꾸려면 --덮어쓰기)
 //   node tools/교원검수시트.js --읽기 <검수한.csv>    검수 결과를 읽어 갈래별로 센다(고침·빼기·새 문항·원본이 바뀐 줄)
 //   node tools/교원검수시트.js --읽기 <검수한.csv> --적용
-//                                                    「맞음」으로 확인된 상황 예문의 id를 예문 원천의 review.reviewed 에 적는다
+//                                                    「맞음」으로 확인된 상황 예문을 예문 원천의 review.reviewed 에 적는다(id와 그 문장)
 //
 // 교원이 채우는 칸은 「확인」(맞음 · 고침 · 빼기), 「고친 내용」, 「메모」, 「검수자」, 「날짜」다. 새 문항은 「번호」를 비우고
 // 「갈래」와 「내용」을 적은 새 줄로 넣는다.
@@ -155,13 +156,16 @@ async function buildRows() {
   return rows;
 }
 
-// RFC 4180, every field quoted. Excel reads the BOM as UTF-8.
-const cell = value => `"${String(value ?? '').replace(/"/g, '""')}"`;
+// RFC 4180, every field quoted. Excel reads the byte order mark as UTF-8. A value a spreadsheet would
+// take for a formula (-고 싶다, =…) gets a leading space, which reading trims again: without it Excel
+// shows #NAME? in those cells and saves that back.
+const BOM = String.fromCharCode(0xfeff);
+const cell = value => { const text = String(value ?? ''); return `"${(/^[=+\-@]/.test(text) ? ` ${text}` : text).replace(/"/g, '""')}"`; };
 function toCsv(rows) {
-  return '﻿' + [COLUMNS, ...rows.map(row => COLUMNS.map(column => row[column] ?? ''))].map(line => line.map(cell).join(',')).join('\r\n') + '\r\n';
+  return BOM + [COLUMNS, ...rows.map(row => COLUMNS.map(column => row[column] ?? ''))].map(line => line.map(cell).join(',')).join('\r\n') + '\r\n';
 }
 function parseCsv(text) {
-  const source = String(text).replace(/^﻿/, ''), table = [];
+  const raw = String(text), source = raw.startsWith(BOM) ? raw.slice(1) : raw, table = [];
   let row = [], field = '', quoted = false;
   for (let i = 0; i < source.length; i += 1) {
     const ch = source[i];
@@ -179,54 +183,85 @@ function parseCsv(text) {
 }
 
 const VERDICT = new Map([['맞음', 'ok'], ['확인', 'ok'], ['o', 'ok'], ['ㅇ', 'ok'], ['ok', 'ok'], ['고침', 'fix'], ['수정', 'fix'], ['빼기', 'drop'], ['삭제', 'drop'], ['', 'open']]);
-// What a reviewed sheet says, against the sources as they are now. A row whose source changed after
-// the sheet was made is not counted as reviewed: its verdict was given to other words.
+// What a reviewed sheet says, against the sources as they are now. Nothing a teacher wrote is dropped
+// silently: a row whose source changed after the sheet was made is not counted as reviewed (its verdict
+// was given to other words) and is listed; so is a row with a note or a corrected text but no verdict,
+// and a number that comes twice. 「맞음」 with a corrected text is a correction, not a confirmation.
 function review(reviewedRows, currentRows) {
   const current = new Map(currentRows.map(row => [row.번호, row]));
-  const report = { counts: {}, fixes: [], drops: [], added: [], changed: [], unknown: [], unclear: [], confirmedExamples: [] };
+  const report = { counts: {}, fixes: [], drops: [], added: [], changed: [], noted: [], duplicates: [], unknown: [], unclear: [], confirmedExamples: [] };
   for (const kind of KINDS) report.counts[kind] = { 모두: currentRows.filter(row => row.갈래 === kind).length, 맞음: 0, 고침: 0, 빼기: 0, 아직: 0 };
   const seen = new Set();
   for (const row of reviewedRows) {
     if (!row.번호) { if (row.내용) report.added.push({ 갈래: row.갈래 || '', 자리: row.자리 || '', 내용: row.내용, '정답·보기': row['정답·보기'] || '', 메모: row.메모 || '' }); continue; }
     const now = current.get(row.번호);
-    if (!now || seen.has(row.번호)) { report.unknown.push(row.번호); continue; }
+    if (!now) { report.unknown.push(row.번호); continue; }
+    if (seen.has(row.번호)) { report.duplicates.push({ 번호: row.번호, 확인: row.확인 || '' }); continue; }
     seen.add(row.번호);
     const verdict = VERDICT.get((row.확인 || '').trim().toLowerCase());
     if (verdict === undefined) { report.unclear.push({ 번호: row.번호, 확인: row.확인 }); continue; }
-    if (verdict !== 'open' && one(row.내용) !== now.내용) { report.changed.push({ 번호: row.번호, 시트: row.내용, 지금: now.내용, 확인: row.확인 }); continue; }
+    const fixed = row['고친 내용'] || '', memo = row.메모 || '', edited = one(row.내용) !== now.내용;
+    if (verdict === 'open') {
+      if (fixed || memo || edited) report.noted.push({ 번호: row.번호, 지금: now.내용, 시트: edited ? row.내용 : '', 고친: fixed, 메모: memo });
+      continue;
+    }
+    if (edited) { report.changed.push({ 번호: row.번호, 시트: row.내용, 지금: now.내용, 확인: row.확인 }); continue; }
     const count = report.counts[now.갈래];
-    if (verdict === 'ok') { count.맞음 += 1; if (now.갈래 === '상황 예문') report.confirmedExamples.push(row.번호.slice('예문/'.length)); }
-    else if (verdict === 'fix') { count.고침 += 1; report.fixes.push({ 번호: row.번호, 지금: now.내용, 고친: row['고친 내용'] || '', 메모: row.메모 || '' }); }
-    else if (verdict === 'drop') { count.빼기 += 1; report.drops.push({ 번호: row.번호, 지금: now.내용, 메모: row.메모 || '' }); }
+    if (verdict === 'fix' || (verdict === 'ok' && fixed)) { count.고침 += 1; report.fixes.push({ 번호: row.번호, 지금: now.내용, 고친: fixed, 메모: memo }); }
+    else if (verdict === 'ok') { count.맞음 += 1; if (now.갈래 === '상황 예문') report.confirmedExamples.push({ id: row.번호.slice('예문/'.length), ko: now.내용 }); }
+    else { count.빼기 += 1; report.drops.push({ 번호: row.번호, 지금: now.내용, 메모: memo }); }
   }
   for (const kind of KINDS) { const c = report.counts[kind]; c.아직 = c.모두 - c.맞음 - c.고침 - c.빼기; }
   return report;
 }
 
-// Writes the confirmed example ids into the example layer's review.reviewed, in the source's order,
-// without reflowing the hand-formatted file.
-function applyConfirmedExamples(ids, file = path.join(root, EXAMPLES)) {
-  const text = fs.readFileSync(file, 'utf8'), data = JSON.parse(text);
-  const order = Object.values(data.examples).flat().map(([id]) => id);
-  const next = order.filter(id => data.review.reviewed.includes(id) || ids.includes(id));
-  const strangers = ids.filter(id => !order.includes(id));
-  if (strangers.length) throw new Error(`교원 검수 시트: 예문이 아닌 번호 ${strangers.join(', ')}`);
-  const pattern = /"reviewed":\s*\[[^\]]*\]/;
+// Writes the confirmed sentences into the example layer's review.reviewed (id → the sentence that was
+// confirmed, in the source's order) without reflowing the hand-formatted file. A sentence that has
+// changed since it was confirmed is refused; an older entry whose sentence has changed is dropped.
+// Before writing, the result is parsed: only review.reviewed may differ.
+function applyConfirmedExamples(confirmed, file = path.join(root, EXAMPLES)) {
+  const text = fs.readFileSync(file, 'utf8'), data = JSON.parse(text), eol = text.includes('\r\n') ? '\r\n' : '\n';
+  const sentence = new Map(Object.values(data.examples).flat().map(([id, ko]) => [id, ko]));
+  const strangers = confirmed.filter(c => !sentence.has(c.id));
+  if (strangers.length) throw new Error(`교원 검수 시트: 예문이 아닌 번호 ${strangers.map(c => c.id).join(', ')}`);
+  const stale = confirmed.filter(c => sentence.get(c.id) !== c.ko);
+  if (stale.length) throw new Error(`교원 검수 시트: 확인한 문장이 지금 원천과 다르다 ${stale.map(c => c.id).join(', ')}`);
+  const before = data.review.reviewed, next = {};
+  for (const [id, ko] of sentence) if (confirmed.some(c => c.id === id) || before[id] === ko) next[id] = ko;
+  const entries = Object.entries(next);
+  const literal = entries.length ? `{${eol}${entries.map(([id, ko]) => `    ${JSON.stringify(id)}: ${JSON.stringify(ko)}`).join(`,${eol}`)}${eol}  }` : '{}';
+  const pattern = /"reviewed":\s*\{[^}]*\}/;
   if (!pattern.test(text)) throw new Error('교원 검수 시트: 예문 원천에서 review.reviewed 를 찾지 못했다');
-  const updated = text.replace(pattern, () => `"reviewed": [${next.map(id => JSON.stringify(id)).join(', ')}]`);
+  const updated = text.replace(pattern, () => `"reviewed": ${literal}`);
+  const expected = JSON.parse(text); expected.review.reviewed = next;
+  if (JSON.stringify(JSON.parse(updated)) !== JSON.stringify(expected)) throw new Error('교원 검수 시트: 예문 원천의 review.reviewed 말고 다른 곳이 바뀌려 했다 — 쓰지 않았다');
   if (updated !== text) { const temporary = `${file}.tmp-${process.pid}`; fs.writeFileSync(temporary, updated); fs.renameSync(temporary, file); }
-  return { reviewed: next.length, added: next.length - data.review.reviewed.length };
+  return { reviewed: entries.length, added: entries.filter(([id]) => before[id] !== next[id]).length };
+}
+
+// Writes the blank sheet. A sheet a teacher has written in is never replaced by a blank one in passing:
+// a reviewed file belongs under another name, read with --읽기.
+function writeSheet(rows, target, overwrite = false) {
+  const csv = toCsv(rows);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  if (fs.existsSync(target) && fs.readFileSync(target, 'utf8').replace(/\r\n/g, '\n') === csv.replace(/\r\n/g, '\n')) return 'same';
+  if (fs.existsSync(target) && !overwrite) {
+    let written;
+    try { written = parseCsv(fs.readFileSync(target, 'utf8')).filter(row => row.확인 || row['고친 내용'] || row.메모 || row.검수자 || row.날짜).length; } catch { written = -1; }
+    if (written) throw new Error(written > 0 ? `교원 검수 시트: ${path.basename(target)} 에 교원이 적은 줄이 ${written}개 있다. 검수한 파일은 다른 이름으로 두고 --읽기 로 읽는다. 빈 시트로 바꾸려면 --덮어쓰기`
+      : `교원 검수 시트: ${path.basename(target)} 를 읽지 못했다. 빈 시트로 바꾸려면 --덮어쓰기`);
+  }
+  const temporary = `${target}.tmp-${process.pid}`; fs.writeFileSync(temporary, csv); fs.renameSync(temporary, target);
+  return 'written';
 }
 
 async function main() {
   const args = process.argv.slice(2), readAt = args.indexOf('--읽기');
-  if (args.some((a, i) => !['--읽기', '--적용'].includes(a) && !(readAt >= 0 && i === readAt + 1)) || (args.includes('--적용') && readAt < 0)) throw new Error('쓰는 법: node tools/교원검수시트.js [--읽기 <검수한.csv> [--적용]]');
+  const known = (a, i) => ['--읽기', '--적용', '--덮어쓰기'].includes(a) || (readAt >= 0 && i === readAt + 1);
+  if (!args.every(known) || (args.includes('--적용') && readAt < 0) || (args.includes('--덮어쓰기') && readAt >= 0)) throw new Error('쓰는 법: node tools/교원검수시트.js [--덮어쓰기] | --읽기 <검수한.csv> [--적용]');
   const rows = await buildRows();
   if (readAt < 0) {
-    const target = path.join(root, SHEET), csv = toCsv(rows);
-    fs.mkdirSync(path.dirname(target), { recursive: true });
-    const same = fs.existsSync(target) && fs.readFileSync(target, 'utf8').replace(/\r\n/g, '\n') === csv.replace(/\r\n/g, '\n');
-    if (!same) { const temporary = `${target}.tmp-${process.pid}`; fs.writeFileSync(temporary, csv); fs.renameSync(temporary, target); }
+    const same = writeSheet(rows, path.join(root, SHEET), args.includes('--덮어쓰기')) === 'same';
     console.log(`${same ? '그대로' : '다시 만듦'} ${SHEET} · ${rows.length}줄 (${KINDS.map(kind => `${kind} ${rows.filter(row => row.갈래 === kind).length}`).join(' · ')})`);
     return;
   }
@@ -238,12 +273,14 @@ async function main() {
   list('고침', report.fixes, f => `${f.번호}: 「${f.지금}」 → 「${f.고친}」${f.메모 ? ` (${f.메모})` : ''}`);
   list('빼기', report.drops, d => `${d.번호}: 「${d.지금}」${d.메모 ? ` (${d.메모})` : ''}`);
   list('새 문항', report.added, a => `[${a.갈래}] ${a.자리 ? `${a.자리} · ` : ''}${a.내용}${a['정답·보기'] ? ` · ${a['정답·보기']}` : ''}`);
+  list('「확인」은 비었는데 적은 것이 있는 줄(세지 않음 — 확인 칸을 채워 다시 읽는다)', report.noted, n => `${n.번호}: 「${n.지금}」${n.시트 ? ` · 시트의 내용 「${n.시트}」` : ''}${n.고친 ? ` · 고친 내용 「${n.고친}」` : ''}${n.메모 ? ` · 메모 ${n.메모}` : ''}`);
   list('시트를 만든 뒤 원본이 바뀐 줄(다시 확인)', report.changed, c => `${c.번호}: 시트 「${c.시트}」 · 지금 「${c.지금}」`);
   list('「확인」 칸을 읽지 못한 줄', report.unclear, u => `${u.번호}: ${u.확인}`);
+  list('두 번 나온 번호(첫 줄만 셈)', report.duplicates, d => `${d.번호}${d.확인 ? `: 둘째 줄의 확인 ${d.확인}` : ''}`);
   list('모르는 번호', report.unknown, u => u);
   if (args.includes('--적용')) { const result = applyConfirmedExamples(report.confirmedExamples); console.log(`\n예문 원천에 반영: 확인된 문장 ${result.reviewed}개(이번에 ${result.added}개). 고침·빼기·새 문항은 위 목록을 보고 원본에서 고친다.`); }
   else if (report.confirmedExamples.length) console.log(`\n「맞음」인 상황 예문 ${report.confirmedExamples.length}개 — --적용 을 붙이면 예문 원천에 적는다.`);
 }
 
-module.exports = { buildRows, toCsv, parseCsv, review, applyConfirmedExamples, COLUMNS, KINDS, SHEET };
+module.exports = { buildRows, toCsv, parseCsv, review, applyConfirmedExamples, writeSheet, COLUMNS, KINDS, SHEET };
 if (require.main === module) main().catch(error => { console.error(error.message); process.exit(1); });

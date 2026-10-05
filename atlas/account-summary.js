@@ -34,7 +34,8 @@ function summarizeAccount({ events, map, asOf, presentation = null, reasons = nu
   // When the host passes Strata's example layer (topik-i-examples.js examplesFor), each situation
   // also carries a few sentences said there, each marked reviewed or still a draft. Without the
   // layer the summary is as it was.
-  const said = id => (examples(id) || []).slice(0, EXAMPLES).map(e => ({ id: e.id, ko: e.ko, reviewed: e.reviewed === true }));
+  const said = id => { const list = examples(id); return (Array.isArray(list) ? list : []).filter(e => e && typeof e.id === 'string' && e.id && typeof e.ko === 'string' && e.ko)
+    .slice(0, EXAMPLES).map(e => ({ id: e.id, ko: e.ko, reviewed: e.reviewed === true })); };
   const forReasons = !reasons || typeof map.forGoal !== 'function' ? [] : reasons.map(reason => ({ reason,
     situations: map.forGoal(reason).filter(n => n.kind === 'situation' && n.when_ko)
       .map(n => ({ id: n.id, label: n.label_ko, line: situationLine({ when: n.when_ko }), ...(examples ? { examples: said(n.id) } : {}) })) })).filter(r => r.situations.length);

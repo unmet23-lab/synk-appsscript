@@ -1,10 +1,10 @@
 {
   "version": "topik-i-situation-examples-1",
-  "note": "상황 마디(topik-i.situations.json)마다 그 자리에서 쓰는 말 세 개. 배우는 이유 계약 r1의 「보기가 바꾸는 것은 연습의 상황과 예문」에서 예문 쪽이다. 초급 문형(topik-i.grammar.json)으로 쓴 제작용 초안이고 교원 검수 전이다. from이 있는 줄은 그 게임의 문항 글(또는 그 안의 한 문장) 그대로이며 시험이 같은지 본다. from이 없는 줄은 새로 쓴 초안이다. 예문은 연습의 장면만 보여 준다. 실력·급수·난도를 바꾸지 않고, 지도(maps/topik-i.json)와 게임 묶음에는 들어가지 않는다.",
+  "note": "상황 마디(topik-i.situations.json)마다 그 자리에서 쓰는 말 세 개. 배우는 이유 계약 r1의 「보기가 바꾸는 것은 연습의 상황과 예문」에서 예문 쪽이다. 초급 문형(topik-i.grammar.json)으로 쓴 제작용 초안이고 교원 검수 전이다. 교원이 확인한 문장은 review.reviewed에 id와 그 문장을 함께 적는다(tools/교원검수시트.js --적용). 문장을 고치면 적힌 문장과 달라져 확인이 풀린다. from이 있는 줄은 그 게임의 문항 글(또는 그 안의 한 문장) 그대로이며 시험이 같은지 본다. from이 없는 줄은 새로 쓴 초안이다. 예문은 연습의 장면만 보여 준다. 실력·급수·난도를 바꾸지 않고, 지도(maps/topik-i.json)와 게임 묶음에는 들어가지 않는다.",
   "situations": "strata/topik-i.situations.json",
   "situations_ver": "topik-i-situations-1",
   "fields": ["id", "ko", "from(게임/문항 — 없으면 새로 쓴 초안)"],
-  "review": { "confidence": "ai_draft", "reviewed": [] },
+  "review": { "confidence": "ai_draft", "reviewed": {} },
   "examples": {
     "sit-culture-speech-level": [
       ["ex-culture-speech-level-1", "밥 먹었어?"],

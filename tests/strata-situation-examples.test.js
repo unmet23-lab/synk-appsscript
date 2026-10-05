@@ -40,8 +40,9 @@ test('every situation has three sentences under ids that name it, and the layer 
 test('the sentences are drafts until a teacher reviews them, and say so one by one', () => {
   assert.equal(source.review.confidence, 'ai_draft');
   const all = layer.all().flatMap(s => s.examples);
-  assert.ok(all.every(e => e.confidence === 'ai_draft' && e.reviewed === source.review.reviewed.includes(e.id)));
-  const one = structuredClone(source); one.review.reviewed = ['ex-travel-order-1'];
+  assert.ok(all.every(e => e.confidence === 'ai_draft' && e.reviewed === (source.review.reviewed[e.id] === e.ko)));
+  // A confirmation is kept with the sentence it was given to: an edited sentence is a draft again.
+  const one = structuredClone(source); one.review.reviewed = { 'ex-travel-order-1': '따뜻한 커피 한 잔 주세요.', 'ex-travel-order-2': '설탕은 넣지 마세요.' };
   const marked = situationExamples(map, { data: one }).examplesFor('sit-travel-order');
   assert.deepEqual(marked.map(e => e.reviewed), [true, false, false]);
 });
@@ -87,7 +88,8 @@ test('a broken layer is refused', () => {
   assert.throws(broken(d => { d.examples['sit-travel-order'][0][0] = 'ex-travel-shopping-9'; }), /invalid or duplicate example id/);
   assert.throws(broken(d => { d.examples['sit-travel-order'][0][1] = '커피 주세요'; }), /invalid sentence/);
   assert.throws(broken(d => { d.examples['sit-travel-order'][0][1] = `${'아주 '.repeat(12)}좋아요.`; }), /invalid sentence/);
-  assert.throws(broken(d => { d.review.reviewed = ['ex-nowhere-1']; }), /is not an example/);
+  assert.throws(broken(d => { d.review.reviewed = { 'ex-nowhere-1': '없는 문장이에요.' }; }), /is not an example/);
+  assert.throws(broken(d => { d.review.reviewed = ['ex-travel-order-1']; }), /invalid review status/);
   assert.throws(broken(d => { d.review.confidence = 'authored'; }), /invalid review status/);
   assert.throws(() => situationExamples(null), /a map is required/);
   assert.throws(() => situationExamples(map, { grammarIn: 'reader' }), /invalid form reader/);
@@ -123,6 +125,8 @@ test('the account summary carries a situation\'s sentences only when the host pa
   assert.deepEqual([summary.abilityClaim, summary.learningEffectClaim, summary.grade], [false, false, null]);
   assert.throws(() => summarizeAccount({ events: [], map, asOf, reasons: ['travel'], examples: {} }), /invalid examples/);
   // A host layer that knows nothing of a situation leaves it without sentences.
-  const none = summarizeAccount({ events: [], map, asOf, reasons: ['travel'], examples: () => [] });
-  assert.deepEqual(none.forReasons[0].situations[0].examples, []);
+  for (const nothing of [[], undefined, null, 'ex-travel-order-1', [null, { ko: 1 }, { id: 'x' }, { id: 'x', ko: '' }]]) {
+    const none = summarizeAccount({ events: [], map, asOf, reasons: ['travel'], examples: () => nothing });
+    assert.deepEqual(none.forReasons[0].situations[0].examples, []);
+  }
 });

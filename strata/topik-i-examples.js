@@ -22,8 +22,11 @@ function situationExamples(map, { data = source, grammarIn = null } = {}) {
   if (typeof map?.getNode !== 'function' || typeof map.allNodes !== 'function') fail('a map is required');
   if (!text(data?.version) || !data.examples || typeof data.examples !== 'object') fail('invalid source');
   if (grammarIn !== null && typeof grammarIn !== 'function') fail('invalid form reader');
-  if (data.review?.confidence !== 'ai_draft' || !Array.isArray(data.review.reviewed)) fail('invalid review status');
-  const reviewed = new Set(data.review.reviewed), ids = new Set(), bySituation = new Map();
+  // review.reviewed: id → the sentence a teacher confirmed. A sentence edited afterwards no longer
+  // matches and is a draft again.
+  const reviewed = data.review?.reviewed;
+  if (data.review?.confidence !== 'ai_draft' || !reviewed || typeof reviewed !== 'object' || Array.isArray(reviewed)) fail('invalid review status');
+  const ids = new Set(), bySituation = new Map();
   for (const [situation, rows] of Object.entries(data.examples)) {
     const node = map.getNode(situation);
     if (node?.kind !== 'situation') fail(`unknown situation ${situation}`);
@@ -38,10 +41,10 @@ function situationExamples(map, { data = source, grammarIn = null } = {}) {
       const grammar = grammarIn ? grammarIn(ko) : null;
       if (grammar && (!Array.isArray(grammar) || grammar.some(point => map.getNode(point)?.kind !== 'grammar_point'))) fail(`unknown grammar in ${id}`);
       return Object.freeze({ id, ko, grammar: grammar && Object.freeze([...grammar]), from: from || null,
-        confidence: data.review.confidence, reviewed: reviewed.has(id) });
+        confidence: data.review.confidence, reviewed: reviewed[id] === ko });
     })));
   }
-  for (const id of reviewed) if (!ids.has(id)) fail(`reviewed id ${id} is not an example`);
+  for (const id of Object.keys(reviewed)) if (!ids.has(id)) fail(`reviewed id ${id} is not an example`);
   for (const node of map.allNodes()) if (node.kind === 'situation' && !bySituation.has(node.id)) fail(`situation ${node.id} has no examples`);
   const none = Object.freeze([]);
   // An unknown situation has no examples, never a similar situation's.
