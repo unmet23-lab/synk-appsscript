@@ -38,3 +38,19 @@ export function picksForReasons(forReasons, games = WORLD_GAMES) {
   search(0, new Set(), []);
   return best.map(({ entry, situation, game }) => ({ reason: entry.reason, situation: situation.id, game: game.path, slug: game.slug, label: game.label, line: situation.line }));
 }
+
+// One sentence for each declared reason, said in one of its situations (Strata's example layer, sent
+// by the server with the situation): the reason's first situation that has a sentence, other than
+// the one its picked game already practises when there is another. So a reason no game serves
+// still shows where it leads, and a reason with a game shows a second place. An older server
+// sends no sentences, and nothing is shown.
+export function sentencesForReasons(forReasons, picks = []) {
+  if (!Array.isArray(forReasons)) return [];
+  const sentence = situation => (Array.isArray(situation?.examples) ? situation.examples.find(e => typeof e?.ko === 'string' && e.ko) : null);
+  return forReasons.flatMap(entry => {
+    const having = (Array.isArray(entry?.situations) ? entry.situations : []).filter(s => typeof s?.id === 'string' && typeof s.label === 'string' && s.label && sentence(s));
+    const picked = picks.find(pick => pick.reason === entry.reason)?.situation;
+    const situation = having.find(s => s.id !== picked) || having[0];
+    return situation ? [{ reason: entry.reason, situation: situation.id, label: situation.label, ko: sentence(situation).ko }] : [];
+  });
+}

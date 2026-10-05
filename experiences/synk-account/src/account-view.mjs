@@ -1,6 +1,6 @@
 import { createWorldLearningHost } from './generated/world-learning-host.cjs';
 import { scopedStorage } from './core.mjs';
-import { SETTING_WORDS, REASON_WORDS, WORLD_GAMES, picksForReasons } from './atlas-words.mjs';
+import { SETTING_WORDS, REASON_WORDS, WORLD_GAMES, picksForReasons, sentencesForReasons } from './atlas-words.mjs';
 const memberLabel = member => ({ student: '학생', teacher: '강사', director: '원장', reviewer: '검수 담당' })[member.role] || (member.kind === 'staff' ? '교직원' : '회원');
 const element = (tag, text, className) => { const node = document.createElement(tag);if (text != null) node.textContent = text;if (className) node.className = className;return node; };
 // 기기 시각으로 「10월 10일 05:00」(계정 지우기 취소 기한).
@@ -76,10 +76,13 @@ export function createAccountView({ client, product, guard, notice, logout, prev
     rows.push(reasons.length ? `배우는 이유 · ${reasons.join(' · ')}` : '배우는 이유 · 아직 밝히지 않았어요');
     // Practice a declared reason picked, with Vellum's line. WORLD opens it from its game list below;
     // elsewhere (the SYNK ID portal) the game's name links to the same game on synk.im/try/.
-    for (const pick of picksForReasons(summary.forReasons)) {
+    const picks = picksForReasons(summary.forReasons);
+    for (const pick of picks) {
       if (product === 'world') { rows.push(`이 이유로 고른 연습 · ${pick.label} — ${pick.line}`);continue; }
       const row = element('li', '이 이유로 고른 연습 · '), link = element('a', pick.label);link.href = `/try/${pick.slug}/`;row.append(link, ` — ${pick.line}`);rows.push(row);
     }
+    // A sentence said where each reason leads (Strata's example layer), also for a reason no game serves.
+    for (const said of sentencesForReasons(summary.forReasons, picks)) rows.push(`이 이유로 고른 말 · ${said.label} — “${said.ko}”`);
     const practice = summary.practice || {};
     rows.push(practice.answered ? `연습 · ${practice.answered}문항 · 혼자 맞힌 문항 ${practice.independent} · 도움 받은 문항 ${practice.assisted}` : '연습 · 아직 저장된 연습이 없어요');
     for (const skill of (practice.skills || []).slice(0, 3)) rows.push(skill.line);
