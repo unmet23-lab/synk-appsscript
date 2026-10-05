@@ -54,6 +54,7 @@ node 음성/후보_듣기.cjs 음성/후보/듣기_목록.json --copy <바탕화
 
 ## 화면 재료
 
+- 얼굴(끝 화면 아치·표지): 10-05 유호님 「이 사진을 우리가 만든 내 모델컷 있잖아. 이걸로 바꿔줘」 → 키트의 인터뷰 정면 사진 대신 PULSE 캐스팅북 확정 모델컷(`docs/마케팅/PULSE_AI모델_캐스팅_20260930/raw/M-yuho-hero-v5.png`, 10-01 시안 B 방식)을 아치 비율로 잘라 `assets/media/face/yuho_model_cut.webp`(800×978)로 쓴다.
 - 실제 캡처: Business Suite 예약 목록(`assets/media/shots/bs_scheduled.png`, 10-03 크롬 unmet23), LAB 릴스 렌더본(`lab_reel.mp4`, git 밖 — LAB 폴더 `renders/…_MN_v2.mp4` 사본), 맞춤 도구 화면(`assets/media/tool/01~06`, 로컬 빌드를 390×844@3으로 캡처, `녹화기록.json`).
 - 키트: `node tools/SNS키트_영상연결.js <이 폴더>`로 `assets/synk-kit/`을 다시 넣는다(LAB처럼 `motion.js`만 저장소에 둔다).
 - 효과음: 브랜드 사운드킷 + Pixabay(상업 이용 가능, [CREDITS](assets/media/sound/CREDITS_pixabay.md)).
