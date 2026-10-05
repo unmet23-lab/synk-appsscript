@@ -32,7 +32,9 @@ async function waitReady(page) {
 const shots390 = width => width === 390;
 async function playSession(page, { width, shots, wrongOnce, started = false, end = '#finish:not([hidden])' }) {
   let wrongDone = !wrongOnce, types = new Set(), demos = 0, retries = 0, steps = 0, sums = 0, finalsBuilt = 0, teachShown = 0, mnemonics = 0, derives = 0, finalMnemonics = 0;
-  const met = [], order = [];
+  const met = [], order = [], tense = [], compound = [];
+  const text = sel => page.evaluate(s => document.querySelector(s)?.textContent || '', sel);
+  const imgReady = () => page.waitForFunction(() => { const i = document.querySelector('.meet .mnemonic img'); return !!i && i.complete && i.naturalWidth > 0; }, null, { timeout: 3000 }).then(() => true, () => false);
   if (!started) {
     await page.click('#start');
     await page.waitForSelector('#session:not([hidden]) .reason');
@@ -55,6 +57,19 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
         const ok = await page.waitForFunction(() => { const i = document.querySelector('.meet .mnemonic img'); return !!i && i.complete && i.naturalWidth > 0; }, null, { timeout: 3000 }).then(() => true, () => false);
         if (ok) mnemonics += 1;
         if (shots && ok && !has('meet-consonant', width)) await shot(page, 'meet-consonant', width, { fullPage: true });
+      }
+      // 된소리: 「ㄱ + ㄱ = ㄲ」(같은 글자 조각), 세 소리 견주기(가 · 카 · 까), 그림 연상의 강조 음절.
+      if (/^c-(kk|tt|pp|ss|jj)$/.test(step.letter)) {
+        tense.push({ letter: step.letter, twin: await page.locator('.meet .derive .twin-piece').count(), trio: await page.locator('.meet .trio .example').count(),
+          word: await text('.meet .mnemonic .mn-word'), bold: await text('.meet .mnemonic .mn-word b') });
+        if (shots && !has('meet-tense', width)) await shot(page, 'meet-tense', width, { fullPage: true });
+      }
+      // 겹모음: 「ㅗ + ㅏ = ㅘ」(눌러 듣는 글자 셋), 그 모음이 든 음절의 강조, 소리 길잡이 한 줄.
+      if (/^v-(wa|wo|wi|ui|oe|wae|we|ye|yae)$/.test(step.letter)) {
+        const pic = await page.locator('.meet .mnemonic').count() ? await imgReady() : null;
+        compound.push({ letter: step.letter, derive: await page.locator('.meet .derive .example').count(), stroke: await page.locator('.meet .derive .stroke-piece').count(),
+          bold: await text('.meet .mnemonic .mn-word b'), note: await text('.meet .note'), pic });
+        if (shots && pic && !has('meet-compound', width)) await shot(page, 'meet-compound', width, { fullPage: true });
       }
       if (/^f-/.test(step.letter) && await page.locator('.meet .mnemonic').count()) {
         const ok = await page.waitForFunction(() => { const i = document.querySelector('.meet .mnemonic img'); return !!i && i.complete && i.naturalWidth > 0; }, null, { timeout: 3000 }).then(() => true, () => false);
@@ -115,7 +130,7 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     if (ov.doc > 0 || ov.body > 0 || ov.vv > 0) check(`${width}px 넘침 없음(${item.type})`, false, JSON.stringify(ov));
     await page.click('#dock .felt-cta');
   }
-  return { types: [...types], demos, retries, steps, sums, finalsBuilt, teachShown, met, order, mnemonics, derives, finalMnemonics };
+  return { types: [...types], demos, retries, steps, sums, finalsBuilt, teachShown, met, order, mnemonics, derives, finalMnemonics, tense, compound };
 }
 
 (async () => {
@@ -282,6 +297,37 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     check(`${width}px 받침 만나기 카드에 받침으로 끝나는 낱말 그림(책 = 채 + ㄱ)`, fourth.finalMnemonics >= 1, `그림 ${fourth.finalMnemonics}`);
     check(`${width}px 받침 회차: 받침 ㄱ·ㄷ을 만나기 카드로(아 + 받침 → 음절)`, fourth.met.some(id => U7.includes(id)) && fourth.sums >= 1, `만남 ${fourth.met.join(',')}`);
     await shot(page, 'finish-finals', width);
+
+    // ── 셋째 판: 된소리·겹모음(U8·U9) ──
+    const U8 = ['c-kk', 'c-tt', 'c-pp', 'c-ss', 'c-jj'], U9 = ['v-wa', 'v-wo', 'v-wi', 'v-ui', 'v-oe', 'v-wae', 'v-we', 'v-ye', 'v-yae'];
+    const ALL_DEMOS = [...TYPES, 'pair', 'teach', 'build_final'];
+    // 된소리를 배우는 사람(U1~U7을 익힘): 오늘 ㄲㄸㅃ을 만나고, 만나기 카드에 「ㄱ + ㄱ = ㄲ」·세 소리(가 · 카 · 까)·그림 연상(꿀)이 붙는다.
+    await page.click('#done');
+    await seed(key, { groups: [[U14, 'mastered', -3], [U5, 'mastered', -3], [U6, 'mastered', -3], [U7, 'mastered', -3]], difficulty: 2, demoSeen: ALL_DEMOS });
+    await page.reload(); await page.waitForSelector('#home:not([hidden])');
+    const tz = await playSession(page, { width, shots: true, wrongOnce: false });
+    const kk = tz.tense.find(t => t.letter === 'c-kk');
+    check(`${width}px 된소리: 「ㄱ + ㄱ = ㄲ」·세 소리(가 · 카 · 까)·그림 연상(꿀)`, !!kk && kk.twin === 1 && kk.trio === 3 && kk.bold === '꿀' && tz.mnemonics >= 1,
+      `만남 ${tz.met.join(',')} · ${JSON.stringify(tz.tense)}`);
+    // 겹모음을 배우는 사람(U1~U8을 익힘): 오늘 ㅘㅝㅟ를 만나고, 「ㅗ + ㅏ = ㅘ」와 사과의 「과」, 「오와 아를 빨리 이어 말하면 와」가 붙는다.
+    await page.click('#done');
+    await seed(key, { groups: [[U14, 'mastered', -3], [U5, 'mastered', -3], [U6, 'mastered', -3], [U7, 'mastered', -3], [U8, 'mastered', -3]], difficulty: 2, demoSeen: ALL_DEMOS });
+    await page.reload(); await page.waitForSelector('#home:not([hidden])');
+    const road = await page.evaluate(() => [...document.querySelectorAll('#road li')].map(li => li.getAttribute('aria-label')));
+    check(`${width}px 한글 길에 된소리·겹모음 단원`, road.length === 10 && road.some(l => /된소리 · 다 익힘/.test(l)) && road.some(l => /겹모음 · 지금/.test(l)) && road.some(l => /첫 문장 · 준비 중/.test(l)), road.join(' | '));
+    if (width === 390) await shot(page, 'home-late', width, { fullPage: true });
+    const cz = await playSession(page, { width, shots: true, wrongOnce: false });
+    const wa = cz.compound.find(t => t.letter === 'v-wa');
+    check(`${width}px 겹모음: 「ㅗ + ㅏ = ㅘ」·그림 연상(사과의 「과」)·소리 길잡이`, !!wa && wa.derive === 3 && wa.bold === '과' && wa.pic === true && /오와 아를 빨리/.test(wa.note),
+      `만남 ${cz.met.join(',')} · ${JSON.stringify(cz.compound)}`);
+    // 소리가 같은 모음: ㅚ를 만난 사람이 ㅙ를 만나면 「ㅚ와 ㅙ는 소리가 같아요」, ㅖ는 「ㅔ + 획」.
+    await page.click('#done');
+    await seed(key, { groups: [[U14, 'mastered', -3], [U5, 'mastered', -3], [U6, 'mastered', -3], [U7, 'mastered', -3], [U8, 'mastered', -3], [U9.slice(0, 5), 'mastered', -3]], difficulty: 2, demoSeen: ALL_DEMOS });
+    await page.reload(); await page.waitForSelector('#home:not([hidden])');
+    const sz = await playSession(page, { width, shots: false, wrongOnce: false });
+    const wae = sz.compound.find(t => t.letter === 'v-wae'), ye = sz.compound.find(t => t.letter === 'v-ye');
+    check(`${width}px 겹모음: 소리가 같은 ㅚ·ㅙ는 그렇게 짚고, ㅖ는 「ㅔ + 획」`, !!wae && /ㅚ와 ㅙ는 소리가 같아요/.test(wae.note) && (!ye || ye.stroke === 1),
+      `만남 ${sz.met.join(',')} · ${JSON.stringify(sz.compound)}`);
 
     // 졸업 직전인 사람: 핵심 글자를 다 만났고 최근 스무 문항을 다 맞혔고 낱말을 이어서 다섯 번 읽었다. 이 회차를 다 맞히면 졸업 장면이 나온다.
     await page.click('#done');

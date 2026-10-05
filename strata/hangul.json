@@ -1,6 +1,6 @@
 {
-  "version": "hangul-3",
-  "note": "한글 단계의 글자 층(docs/한글단계_설계.md §3). 단원 순서 U1~U4는 체험 2주 수업 순서, U5(거센소리 ㅋㅌㅍㅊ, 2026-10-05)는 글자 만든 원리대로 획을 더한 순서(ㄱ→ㅋ, ㄷ→ㅌ, ㅂ→ㅍ, ㅈ→ㅊ), U6·U7(받침)은 설계 둘째 판이다. 헷갈리는 짝과 닮은 모양은 출발값이며 교사의 앎과 실측으로 고친다. by_ear:false인 짝은 소리로 묻지 않는다 — ㅐ/ㅔ와, 받침에서 [ㄷ]으로 같이 소리 나는 ㄷ·ㅅ·ㅈ. 글자 번호(jamo)는 유니코드 한글 음절 조합의 초성·중성·종성 순번이다. 받침은 role final이다.",
+  "version": "hangul-4",
+  "note": "한글 단계의 글자 층(docs/한글단계_설계.md §3). 단원 순서 U1~U4는 체험 2주 수업 순서, U5(거센소리 ㅋㅌㅍㅊ, 2026-10-05)는 글자 만든 원리대로 획을 더한 순서(ㄱ→ㅋ, ㄷ→ㅌ, ㅂ→ㅍ, ㅈ→ㅊ), U6·U7(받침)은 설계 둘째 판이다. U8(된소리 ㄲㄸㅃㅆㅉ — 같은 글자를 둘 쓴 모양)·U9(겹모음 ㅘㅝㅟㅢㅚㅙㅞㅖㅒ — 모음 둘을 합친 모양, 2026-10-06)는 받침 뒤에 이어지고 core:false다: 졸업 조건(설계 §8 「U7까지의 핵심 마디」)에 들지 않고 졸업 앞뒤로 이어서 만난다. 헷갈리는 짝과 닮은 모양은 출발값이며 교사의 앎과 실측으로 고친다. by_ear:false인 짝은 소리로 묻지 않는다 — ㅐ/ㅔ, ㅒ/ㅖ, ㅚ/ㅙ/ㅞ(지금의 한국어에서 소리가 같다)와, 받침에서 [ㄷ]으로 같이 소리 나는 ㄷ·ㅅ·ㅈ. 글자 번호(jamo)는 유니코드 한글 음절 조합의 초성·중성·종성 순번이다. 받침은 role final이다.",
   "skills": [
     ["ko.hangul.sound", "listening", "소리 듣고 글자 찾기"],
     ["ko.hangul.read", "reading", "글자 보고 소리 알기"]
@@ -12,11 +12,11 @@
     { "id": "U4", "label": "모음 더하기", "letters": ["v-ya", "v-yeo", "v-yo", "v-yu", "v-ae", "v-e"] },
     { "id": "U5", "label": "거센소리", "letters": ["c-k", "c-t", "c-p", "c-ch"] },
     { "id": "U6", "label": "받침 하나", "letters": ["f-n", "f-r", "f-m", "f-ng"] },
-    { "id": "U7", "label": "받침 둘", "letters": ["f-g", "f-d", "f-b", "f-s", "f-j"] }
+    { "id": "U7", "label": "받침 둘", "letters": ["f-g", "f-d", "f-b", "f-s", "f-j"] },
+    { "id": "U8", "label": "된소리", "letters": ["c-kk", "c-tt", "c-pp", "c-ss", "c-jj"], "core": false },
+    { "id": "U9", "label": "겹모음", "letters": ["v-wa", "v-wo", "v-wi", "v-ui", "v-oe", "v-wae", "v-we", "v-ye", "v-yae"], "core": false }
   ],
   "later": [
-    { "id": "U8", "label": "된소리", "preview": "ㄲㄸㅃㅆㅉ" },
-    { "id": "U9", "label": "겹모음", "preview": "ㅘㅝㅚㅟㅢ" },
     { "id": "U10", "label": "첫 문장", "preview": "저는" }
   ],
   "letters": [
@@ -54,7 +54,21 @@
     ["f-d", "ㄷ", "final", 7],
     ["f-b", "ㅂ", "final", 17],
     ["f-s", "ㅅ", "final", 19],
-    ["f-j", "ㅈ", "final", 22]
+    ["f-j", "ㅈ", "final", 22],
+    ["c-kk", "ㄲ", "consonant", 1],
+    ["c-tt", "ㄸ", "consonant", 4],
+    ["c-pp", "ㅃ", "consonant", 8],
+    ["c-ss", "ㅆ", "consonant", 10],
+    ["c-jj", "ㅉ", "consonant", 13],
+    ["v-wa", "ㅘ", "vowel", 9],
+    ["v-wo", "ㅝ", "vowel", 14],
+    ["v-wi", "ㅟ", "vowel", 16],
+    ["v-ui", "ㅢ", "vowel", 19],
+    ["v-oe", "ㅚ", "vowel", 11],
+    ["v-wae", "ㅙ", "vowel", 10],
+    ["v-we", "ㅞ", "vowel", 15],
+    ["v-ye", "ㅖ", "vowel", 7],
+    ["v-yae", "ㅒ", "vowel", 3]
   ],
   "pairs": [
     { "letters": ["v-eo", "v-o"], "by_ear": true },
@@ -74,13 +88,32 @@
     { "letters": ["f-d", "f-b"], "by_ear": true },
     { "letters": ["f-d", "f-s"], "by_ear": false },
     { "letters": ["f-d", "f-j"], "by_ear": false },
-    { "letters": ["f-s", "f-j"], "by_ear": false }
+    { "letters": ["f-s", "f-j"], "by_ear": false },
+    { "letters": ["c-g", "c-kk"], "by_ear": true },
+    { "letters": ["c-k", "c-kk"], "by_ear": true },
+    { "letters": ["c-d", "c-tt"], "by_ear": true },
+    { "letters": ["c-t", "c-tt"], "by_ear": true },
+    { "letters": ["c-b", "c-pp"], "by_ear": true },
+    { "letters": ["c-p", "c-pp"], "by_ear": true },
+    { "letters": ["c-s", "c-ss"], "by_ear": true },
+    { "letters": ["c-j", "c-jj"], "by_ear": true },
+    { "letters": ["c-ch", "c-jj"], "by_ear": true },
+    { "letters": ["v-wa", "v-wo"], "by_ear": true },
+    { "letters": ["v-wi", "v-ui"], "by_ear": true },
+    { "letters": ["v-eu", "v-ui"], "by_ear": true },
+    { "letters": ["v-yeo", "v-ye"], "by_ear": true },
+    { "letters": ["v-oe", "v-wae"], "by_ear": false },
+    { "letters": ["v-oe", "v-we"], "by_ear": false },
+    { "letters": ["v-wae", "v-we"], "by_ear": false },
+    { "letters": ["v-yae", "v-ye"], "by_ear": false }
   ],
   "shapes": [
     ["v-a", "v-eo"], ["v-o", "v-u"], ["v-ya", "v-yeo"], ["v-yo", "v-yu"],
     ["v-a", "v-ya"], ["v-eo", "v-yeo"], ["v-o", "v-yo"], ["v-u", "v-yu"], ["v-eu", "v-i"],
     ["c-g", "c-n"], ["c-n", "c-d"], ["c-d", "c-r"], ["c-m", "c-b"], ["c-s", "c-j"], ["c-ng", "c-h"],
     ["c-g", "c-k"], ["c-d", "c-t"], ["c-j", "c-ch"], ["c-ch", "c-h"],
-    ["f-n", "f-d"], ["f-d", "f-r"], ["f-m", "f-b"], ["f-s", "f-j"], ["f-g", "f-n"]
+    ["f-n", "f-d"], ["f-d", "f-r"], ["f-m", "f-b"], ["f-s", "f-j"], ["f-g", "f-n"],
+    ["c-g", "c-kk"], ["c-d", "c-tt"], ["c-b", "c-pp"], ["c-s", "c-ss"], ["c-j", "c-jj"],
+    ["v-oe", "v-wi"], ["v-wi", "v-ui"], ["v-wa", "v-wae"], ["v-wo", "v-we"], ["v-yae", "v-ye"], ["v-ae", "v-yae"], ["v-e", "v-ye"]
   ]
 }

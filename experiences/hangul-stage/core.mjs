@@ -133,7 +133,8 @@ export function unitNow(progress, pack) {
   return pack.units.find(u => u.letters.some(id => letterOf(progress, id).best !== 'mastered')) || null;
 }
 const metIds = (progress, pack) => pack.letters.filter(l => letterOf(progress, l.id).state !== 'unmet').map(l => l.id);
-const coreIds = pack => pack.units.flatMap(u => u.letters);
+// 졸업 조건의 글자: core:false인 단원(U8 된소리·U9 겹모음)은 졸업 앞뒤로 이어서 만나고 졸업 조건에 들지 않는다(설계 §8 「U7까지의 핵심 마디」).
+const coreIds = pack => pack.units.filter(u => u.core !== false).flatMap(u => u.letters);
 // 헷갈린 짝: 최근 두 주 안에 틀렸고, 그 뒤로 두 글자 모두 아직 이어서 두 번 혼자 맞히지 못한 짝.
 function weakPairs(progress, now) {
   const settled = id => { const l = letterOf(progress, id); return l.streak >= 2; };
@@ -146,7 +147,7 @@ function weakPairs(progress, now) {
 const hardByEar = (pack, id) => pack.byId.get(id)?.unit === 'U7';
 
 /**
- * 졸업(설계 §8): 이 판의 핵심 글자(U1~U4, 받침 U6·U7)를 다 만났고, 최근 스무 문항의 혼자 맞힌 비율이 90% 이상이며,
+ * 졸업(설계 §8): 이 판의 핵심 글자(U1~U7 — 된소리·겹모음은 빼고)를 다 만났고, 최근 스무 문항의 혼자 맞힌 비율이 90% 이상이며,
  * 낱말 문항을 이어서 다섯 번 읽어 냈을 때. 졸업은 「읽기 시작할 수 있다」이지 「다 안다」가 아니다.
  */
 export function graduationReady(progress, pack) {
@@ -306,8 +307,9 @@ function makeItem(type, targetId, known, ctx) {
   if (target.role === 'final') return makeFinalItem(type, targetId, knownList, ctx);
   // 듣고 고르기·보고 고르기·가르쳐 주기: 같은 자리(모음이면 모음, 자음이면 자음)만 바꾼 음절을 보기로 낸다.
   if (targetId === 'c-ng') return withTeach(type, makeSilentItem(type, knownList, ctx), ctx);
-  const sameRole = knownList.filter(id => pack.byId.get(id).role === target.role && id !== 'c-ng');
   const frame = frameFor(target, knownList, ctx);
+  // 자음을 받친 틀(과·귀)이면 ㅇ하고만 쓰는 모음(ㅒ·ㅖ·ㅢ)은 보기에서 뺀다.
+  const sameRole = knownList.filter(id => pack.byId.get(id).role === target.role && id !== 'c-ng' && !(frame.c && pack.byId.get(id).alone));
   const others = distractors(targetId, sameRole, ctx, optionCount(ctx.difficulty) - 1, { byEar: true });
   const options = dedupeBySound(pack, [{ letter: targetId, text: frame(targetId) }, ...others.map(id => ({ letter: id, text: frame(id) }))]);
   if (options.length < 2) return null;
@@ -352,7 +354,7 @@ function makePair(targetId, knownList, ctx) {
   if (!partner || hardByEar(pack, targetId) && ctx.difficulty < 2) return null;
   const t = pack.byId.get(targetId);
   const textOf = t.role === 'final' ? (() => { const f = finalFrame(knownList, ctx); return id => f.text(id); })()
-    : (() => { const f = frameFor(t, knownList, ctx); return id => f(id); })();
+    : (() => { const f = frameFor(t, knownList, ctx, { alone: !!pack.byId.get(partner).alone }); return id => f(id); })();
   const options = dedupeBySound(pack, [{ letter: targetId, text: textOf(targetId) }, { letter: partner, text: textOf(partner) }]);
   if (options.length < 2) return null;
   return { type: 'pair', target: { letter: targetId, text: textOf(targetId) }, options: shuffle(options, ctx.rand), focus: [targetId],
@@ -373,15 +375,16 @@ function makeWordItem(type, known, ctx) {
   return { type, word: true, target: { letter: null, text: target.text }, options: shuffle(options.map(w => ({ letter: null, text: w.text })), ctx.rand), focus: [],
     difficulty: Math.min(ctx.difficulty, options.length - 1), skill: skillOf(type), check: false };
 }
-// 모음은 ㅇ을 받치거나 아는 자음 하나와, 자음은 아는 모음 하나와 음절을 이룬다(받침 없이).
-function frameFor(target, knownList, ctx) {
+// 모음은 ㅇ을 받치거나 아는 자음 하나와, 자음은 아는 홑모음 하나와 음절을 이룬다(받침 없이). ㅒ·ㅖ·ㅢ가 든 문항은 ㅇ만 받친다.
+// 모음 틀은 받친 자음(c)을 함께 돌려준다 — 보기를 고를 때 그 자음과 쓰지 않는 모음을 뺀다.
+function frameFor(target, knownList, ctx, { alone = false } = {}) {
   const { pack } = ctx;
   if (target.role === 'vowel') {
     const consonants = knownList.filter(id => pack.byId.get(id).role === 'consonant' && id !== 'c-ng');
-    const c = consonants.length && ctx.difficulty >= 2 && ctx.rand() < 0.5 ? pick(consonants, ctx.rand) : null;
-    return id => pack.syllable(c, id);
+    const c = !alone && !target.alone && consonants.length && ctx.difficulty >= 2 && ctx.rand() < 0.5 ? pick(consonants, ctx.rand) : null;
+    return Object.assign(id => pack.syllable(c, id), { c });
   }
-  const vowels = knownList.filter(id => pack.byId.get(id).role === 'vowel' && id !== 'v-ae' && id !== 'v-e');
+  const vowels = knownList.filter(id => pack.byId.get(id).role === 'vowel' && pack.byId.get(id).frame);
   const v = vowels.includes('v-a') && ctx.rand() < 0.5 ? 'v-a' : pick(vowels.length ? vowels : ['v-a'], ctx.rand);
   return id => pack.syllable(id, v);
 }
@@ -389,7 +392,7 @@ function frameFor(target, knownList, ctx) {
 function makeSilentItem(type, knownList, ctx) {
   const { pack } = ctx;
   const consonants = knownList.filter(id => pack.byId.get(id).role === 'consonant' && id !== 'c-ng');
-  const vowels = knownList.filter(id => pack.byId.get(id).role === 'vowel' && id !== 'v-ae' && id !== 'v-e');
+  const vowels = knownList.filter(id => pack.byId.get(id).role === 'vowel' && pack.byId.get(id).frame);
   if (!consonants.length || !vowels.length) return null;
   const v = pick(vowels, ctx.rand);
   const others = shuffle(consonants, ctx.rand).slice(0, optionCount(ctx.difficulty) - 1);
@@ -398,21 +401,26 @@ function makeSilentItem(type, knownList, ctx) {
     difficulty: Math.min(ctx.difficulty, options.length - 1), skill: skillOf(type), check: !!ctx.check };
 }
 // 음절 만들기: 들린 음절을 조각으로 만든다(U2부터). 받침이 목표면 자음·모음·받침 세 줄(아는 받침이 둘 이상일 때).
+// ㅇ하고만 쓰는 모음(ㅒ·ㅖ·ㅢ)은 조각이 되지 않고, 겹모음은 겹모음을 만드는 문항에서만 조각으로 나온다.
+// 같은 소리가 나는 조각(ㅐ·ㅔ, ㅚ·ㅙ·ㅞ)은 한 줄에 함께 내지 않는다.
 function makeBuild(targetId, knownList, ctx) {
   const { pack } = ctx;
   const consonants = knownList.filter(id => pack.byId.get(id).role === 'consonant' && id !== 'c-ng');
-  const vowels = knownList.filter(id => pack.byId.get(id).role === 'vowel');
+  const vowels = knownList.filter(id => pack.byId.get(id).role === 'vowel' && !pack.byId.get(id).alone);
+  const plain = vowels.filter(id => !pack.byId.get(id).compound);
   const finals = knownList.filter(id => pack.byId.get(id).role === 'final');
-  if (!consonants.length || vowels.length < 2) return null;
+  if (!consonants.length || plain.length < 2) return null;
   const t = pack.byId.get(targetId);
+  if (t.alone) return null;
+  const distinct = (c, f) => (ids, made) => ids.filter((id, i) => !ids.slice(0, i).some(x => pack.sameSound(pack.syllable(c, x, f), pack.syllable(c, id, f))) && !pack.sameSound(pack.syllable(c, id, f), made));
   const per = { 1: 2, 2: 2, 3: 3 }[ctx.difficulty];
   if (t.role === 'final') {
     if (finals.length < 2 || hardByEar(pack, targetId) && ctx.difficulty < 2) return null;
-    const cs = pack.FINAL_FRAME.initials.filter(c => c && consonants.includes(c)), vs = pack.FINAL_FRAME.vowels.filter(v => vowels.includes(v));
+    const cs = pack.FINAL_FRAME.initials.filter(c => c && consonants.includes(c)), vs = pack.FINAL_FRAME.vowels.filter(v => plain.includes(v));
     if (!cs.length || vs.length < 2) return null;
     const c = pick(cs, ctx.rand), v = pick(vs, ctx.rand), text = pack.syllable(c, v, targetId);
     const otherC = distractors(c, consonants, ctx, per - 1, { byEar: true });
-    const otherV = distractors(v, vowels, ctx, per - 1, { byEar: true }).filter(id => !pack.sameSound(pack.syllable(c, id, targetId), text));
+    const otherV = distinct(c, targetId)(distractors(v, plain, ctx, per - 1, { byEar: true }), text);
     const otherF = distractors(targetId, finals, ctx, per - 1, { byEar: true }).filter(id => !pack.sameSound(pack.syllable(c, v, id), text));
     if (!otherF.length) return null;
     return { type: 'build', target: { letter: targetId, text, consonant: c, vowel: v, final: targetId },
@@ -420,11 +428,10 @@ function makeBuild(targetId, knownList, ctx) {
       focus: [c, v, targetId], difficulty: ctx.difficulty, skill: 'ko.hangul.sound', check: false };
   }
   const c = t.role === 'consonant' && targetId !== 'c-ng' ? targetId : pick(consonants, ctx.rand);
-  const v = t.role === 'vowel' ? targetId : pick(vowels, ctx.rand);
+  const v = t.role === 'vowel' ? targetId : pick(plain, ctx.rand);
   const otherC = distractors(c, consonants, ctx, per - 1, { byEar: true });
-  const otherV = distractors(v, vowels, ctx, (ctx.difficulty === 2 ? 3 : per) - 1, { byEar: true })
-    .filter(id => !pack.sameSound(pack.syllable(c, id), pack.syllable(c, v)));
   const text = pack.syllable(c, v);
+  const otherV = distinct(c, null)(distractors(v, t.compound ? vowels : plain, ctx, (ctx.difficulty === 2 ? 3 : per) - 1, { byEar: true }), text);
   return { type: 'build', target: { letter: targetId, text, consonant: c, vowel: v },
     pieces: { consonants: shuffle([c, ...otherC], ctx.rand), vowels: shuffle([v, ...otherV], ctx.rand) },
     focus: [...new Set([c, v])], difficulty: ctx.difficulty, skill: 'ko.hangul.sound', check: false };
@@ -453,7 +460,7 @@ function makeMatch(targetId, knownList, ctx) {
 function reasonLine({ p, pack, fresh, weak, due, now }) {
   // letters는 글자 모양, finals는 그 글자가 받침인지(같은 순서).
   const chips = ids => ({ letters: ids.map(id => pack.byId.get(id).glyph), finals: ids.map(id => pack.byId.get(id).role === 'final') });
-  if (p.graduated && !weak) return { kind: 'warmup', text: '몸풀기예요. 헷갈리기 쉬운 글자를 짧게 봐요.', ...chips(due.slice(0, 4)) };
+  if (p.graduated && !weak && !fresh.length) return { kind: 'warmup', text: '몸풀기예요. 헷갈리기 쉬운 글자를 짧게 봐요.', ...chips(due.slice(0, 4)) };
   if (weak) {
     const day = localDay(weak.lastAt), today = localDay(new Date(now).toISOString()), yesterday = localDay(new Date(now - DAY).toISOString());
     const when = day === today ? '방금' : day === yesterday ? '어제' : '지난번에';

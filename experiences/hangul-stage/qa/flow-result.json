@@ -1,5 +1,5 @@
 {
-  "at": "2026-10-05T19:46:57.217Z",
+  "at": "2026-10-05T20:37:01.713Z",
   "base": "http://127.0.0.1:5249/",
   "results": [
     {
@@ -60,7 +60,7 @@
     {
       "name": "390px 재생 중 화면이 노래 시각을 따라감(13.6초로 옮기면 ㄷ + ㅏ = 다)",
       "ok": true,
-      "detail": "13.858912 ㄷ드+ㅏ아=다다"
+      "detail": "13.8645 ㄷ드+ㅏ아=다다"
     },
     {
       "name": "390px 첫 회차 끝까지",
@@ -183,9 +183,29 @@
       "detail": "만남 f-g,f-d"
     },
     {
+      "name": "390px 된소리: 「ㄱ + ㄱ = ㄲ」·세 소리(가 · 카 · 까)·그림 연상(꿀)",
+      "ok": true,
+      "detail": "만남 c-kk,c-tt,c-pp · [{\"letter\":\"c-kk\",\"twin\":1,\"trio\":3,\"word\":\"꿀\",\"bold\":\"꿀\"},{\"letter\":\"c-tt\",\"twin\":1,\"trio\":3,\"word\":\"딸기\",\"bold\":\"딸\"},{\"letter\":\"c-pp\",\"twin\":1,\"trio\":3,\"word\":\"빵\",\"bold\":\"빵\"}]"
+    },
+    {
+      "name": "390px 한글 길에 된소리·겹모음 단원",
+      "ok": true,
+      "detail": "1. 기본 모음 · 다 익힘 | 2. 자음 하나 · 다 익힘 | 3. 자음 둘 · 다 익힘 | 4. 모음 더하기 · 다 익힘 | 5. 거센소리 · 다 익힘 | 6. 받침 하나 · 다 익힘 | 7. 받침 둘 · 다 익힘 | 8. 된소리 · 다 익힘 | 9. 겹모음 · 지금 | 10. 첫 문장 · 준비 중"
+    },
+    {
+      "name": "390px 겹모음: 「ㅗ + ㅏ = ㅘ」·그림 연상(사과의 「과」)·소리 길잡이",
+      "ok": true,
+      "detail": "만남 v-wa,v-wo,v-wi · [{\"letter\":\"v-wa\",\"derive\":3,\"stroke\":0,\"bold\":\"과\",\"note\":\"오와 아를 빨리 이어 말하면 와.\",\"pic\":true},{\"letter\":\"v-wo\",\"derive\":3,\"stroke\":0,\"bold\":\"원\",\"note\":\"우와 어를 빨리 이어 말하면 워.\",\"pic\":true},{\"letter\":\"v-wi\",\"derive\":3,\"stroke\":0,\"bold\":\"위\",\"note\":\"우와 이를 빨리 이어 말하면 위.\",\"pic\":true}]"
+    },
+    {
+      "name": "390px 겹모음: 소리가 같은 ㅚ·ㅙ는 그렇게 짚고, ㅖ는 「ㅔ + 획」",
+      "ok": true,
+      "detail": "만남 v-wae,v-we,v-ye · [{\"letter\":\"v-wae\",\"derive\":3,\"stroke\":0,\"bold\":\"돼\",\"note\":\"ㅚ와 ㅙ는 소리가 같아요. 낱말마다 쓰는 글자가 정해져 있어요.\",\"pic\":true},{\"letter\":\"v-we\",\"derive\":3,\"stroke\":0,\"bold\":\"웨\",\"note\":\"ㅚ·ㅙ·ㅞ는 소리가 같아요. 낱말마다 쓰는 글자가 정해져 있어요.\",\"pic\":true},{\"letter\":\"v-ye\",\"derive\":2,\"stroke\":1,\"bold\":\"계\",\"note\":\"ㅔ에 획을 하나 더하면 ㅖ. ㅓ가 ㅕ가 되는 것과 같아요.\",\"pic\":true}]"
+    },
+    {
       "name": "390px 졸업: 회차 끝에 졸업 장면",
       "ok": true,
-      "detail": "단계 10, 꼴 listen_pick,teach,pair,build,see_pick,match, 받침 음절 만들기 1"
+      "detail": "단계 12, 꼴 listen_pick,teach,pair,see_pick, 받침 음절 만들기 0"
     },
     {
       "name": "390px 졸업 장면: 읽을 수 있는 받침 낱말과 명패",
@@ -205,7 +225,7 @@
     {
       "name": "390px 졸업 뒤 몸풀기는 다섯 문항 이하",
       "ok": true,
-      "detail": "문항 5: listen_pick,see_pick,listen_pick,build,pair"
+      "detail": "문항 5: teach,listen_pick,see_pick,listen_pick,see_pick"
     },
     {
       "name": "390px 콘솔 오류 없음",
@@ -280,7 +300,7 @@
     {
       "name": "1280px 재생 중 화면이 노래 시각을 따라감(13.6초로 옮기면 ㄷ + ㅏ = 다)",
       "ok": true,
-      "detail": "13.855262 ㄷ드+ㅏ아=다다"
+      "detail": "13.843991 ㄷ드+ㅏ아=다다"
     },
     {
       "name": "1280px 첫 회차 끝까지",
@@ -403,9 +423,29 @@
       "detail": "만남 f-g,f-d"
     },
     {
+      "name": "1280px 된소리: 「ㄱ + ㄱ = ㄲ」·세 소리(가 · 카 · 까)·그림 연상(꿀)",
+      "ok": true,
+      "detail": "만남 c-kk,c-tt,c-pp · [{\"letter\":\"c-kk\",\"twin\":1,\"trio\":3,\"word\":\"꿀\",\"bold\":\"꿀\"},{\"letter\":\"c-tt\",\"twin\":1,\"trio\":3,\"word\":\"딸기\",\"bold\":\"딸\"},{\"letter\":\"c-pp\",\"twin\":1,\"trio\":3,\"word\":\"빵\",\"bold\":\"빵\"}]"
+    },
+    {
+      "name": "1280px 한글 길에 된소리·겹모음 단원",
+      "ok": true,
+      "detail": "1. 기본 모음 · 다 익힘 | 2. 자음 하나 · 다 익힘 | 3. 자음 둘 · 다 익힘 | 4. 모음 더하기 · 다 익힘 | 5. 거센소리 · 다 익힘 | 6. 받침 하나 · 다 익힘 | 7. 받침 둘 · 다 익힘 | 8. 된소리 · 다 익힘 | 9. 겹모음 · 지금 | 10. 첫 문장 · 준비 중"
+    },
+    {
+      "name": "1280px 겹모음: 「ㅗ + ㅏ = ㅘ」·그림 연상(사과의 「과」)·소리 길잡이",
+      "ok": true,
+      "detail": "만남 v-wa,v-wo,v-wi · [{\"letter\":\"v-wa\",\"derive\":3,\"stroke\":0,\"bold\":\"과\",\"note\":\"오와 아를 빨리 이어 말하면 와.\",\"pic\":true},{\"letter\":\"v-wo\",\"derive\":3,\"stroke\":0,\"bold\":\"원\",\"note\":\"우와 어를 빨리 이어 말하면 워.\",\"pic\":true},{\"letter\":\"v-wi\",\"derive\":3,\"stroke\":0,\"bold\":\"위\",\"note\":\"우와 이를 빨리 이어 말하면 위.\",\"pic\":true}]"
+    },
+    {
+      "name": "1280px 겹모음: 소리가 같은 ㅚ·ㅙ는 그렇게 짚고, ㅖ는 「ㅔ + 획」",
+      "ok": true,
+      "detail": "만남 v-wae,v-we,v-ye · [{\"letter\":\"v-wae\",\"derive\":3,\"stroke\":0,\"bold\":\"돼\",\"note\":\"ㅚ와 ㅙ는 소리가 같아요. 낱말마다 쓰는 글자가 정해져 있어요.\",\"pic\":true},{\"letter\":\"v-we\",\"derive\":3,\"stroke\":0,\"bold\":\"웨\",\"note\":\"ㅚ·ㅙ·ㅞ는 소리가 같아요. 낱말마다 쓰는 글자가 정해져 있어요.\",\"pic\":true},{\"letter\":\"v-ye\",\"derive\":2,\"stroke\":1,\"bold\":\"계\",\"note\":\"ㅔ에 획을 하나 더하면 ㅖ. ㅓ가 ㅕ가 되는 것과 같아요.\",\"pic\":true}]"
+    },
+    {
       "name": "1280px 졸업: 회차 끝에 졸업 장면",
       "ok": true,
-      "detail": "단계 10, 꼴 listen_pick,teach,pair,build,see_pick,match, 받침 음절 만들기 1"
+      "detail": "단계 12, 꼴 listen_pick,teach,pair,see_pick, 받침 음절 만들기 0"
     },
     {
       "name": "1280px 졸업 장면: 읽을 수 있는 받침 낱말과 명패",
@@ -425,7 +465,7 @@
     {
       "name": "1280px 졸업 뒤 몸풀기는 다섯 문항 이하",
       "ok": true,
-      "detail": "문항 5: listen_pick,see_pick,listen_pick,build,pair"
+      "detail": "문항 5: teach,listen_pick,see_pick,listen_pick,see_pick"
     },
     {
       "name": "1280px 콘솔 오류 없음",

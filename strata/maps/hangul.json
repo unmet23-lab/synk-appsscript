@@ -1,10 +1,10 @@
 {
-  "map_ver": "hangul-3-8061cf27ab88",
+  "map_ver": "hangul-4-a2d24bbbec6c",
   "subject": "ko",
   "sources": {
     "hangul-layer": {
       "path": "strata/hangul.json",
-      "sha256": "8061cf27ab88994dcb4bdcbe522a68b7b4ee1aec6aaae325162ea8757eb04e99"
+      "sha256": "a2d24bbbec6cbee7bf708670b9f325c89c0788d14c15ef891b288ac9ab3a0ebf"
     }
   },
   "nodes": [
@@ -566,6 +566,216 @@
         {
           "source": "hangul-layer",
           "selector": "f-j"
+        }
+      ]
+    },
+    {
+      "id": "hangul.c-kk",
+      "kind": "letter",
+      "label_ko": "ㄲ",
+      "role": "consonant",
+      "jamo": 1,
+      "unit": "U8",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "c-kk"
+        }
+      ]
+    },
+    {
+      "id": "hangul.c-tt",
+      "kind": "letter",
+      "label_ko": "ㄸ",
+      "role": "consonant",
+      "jamo": 4,
+      "unit": "U8",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "c-tt"
+        }
+      ]
+    },
+    {
+      "id": "hangul.c-pp",
+      "kind": "letter",
+      "label_ko": "ㅃ",
+      "role": "consonant",
+      "jamo": 8,
+      "unit": "U8",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "c-pp"
+        }
+      ]
+    },
+    {
+      "id": "hangul.c-ss",
+      "kind": "letter",
+      "label_ko": "ㅆ",
+      "role": "consonant",
+      "jamo": 10,
+      "unit": "U8",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "c-ss"
+        }
+      ]
+    },
+    {
+      "id": "hangul.c-jj",
+      "kind": "letter",
+      "label_ko": "ㅉ",
+      "role": "consonant",
+      "jamo": 13,
+      "unit": "U8",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "c-jj"
+        }
+      ]
+    },
+    {
+      "id": "hangul.v-wa",
+      "kind": "letter",
+      "label_ko": "ㅘ",
+      "role": "vowel",
+      "jamo": 9,
+      "unit": "U9",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "v-wa"
+        }
+      ]
+    },
+    {
+      "id": "hangul.v-wo",
+      "kind": "letter",
+      "label_ko": "ㅝ",
+      "role": "vowel",
+      "jamo": 14,
+      "unit": "U9",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "v-wo"
+        }
+      ]
+    },
+    {
+      "id": "hangul.v-wi",
+      "kind": "letter",
+      "label_ko": "ㅟ",
+      "role": "vowel",
+      "jamo": 16,
+      "unit": "U9",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "v-wi"
+        }
+      ]
+    },
+    {
+      "id": "hangul.v-ui",
+      "kind": "letter",
+      "label_ko": "ㅢ",
+      "role": "vowel",
+      "jamo": 19,
+      "unit": "U9",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "v-ui"
+        }
+      ]
+    },
+    {
+      "id": "hangul.v-oe",
+      "kind": "letter",
+      "label_ko": "ㅚ",
+      "role": "vowel",
+      "jamo": 11,
+      "unit": "U9",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "v-oe"
+        }
+      ]
+    },
+    {
+      "id": "hangul.v-wae",
+      "kind": "letter",
+      "label_ko": "ㅙ",
+      "role": "vowel",
+      "jamo": 10,
+      "unit": "U9",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "v-wae"
+        }
+      ]
+    },
+    {
+      "id": "hangul.v-we",
+      "kind": "letter",
+      "label_ko": "ㅞ",
+      "role": "vowel",
+      "jamo": 15,
+      "unit": "U9",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "v-we"
+        }
+      ]
+    },
+    {
+      "id": "hangul.v-ye",
+      "kind": "letter",
+      "label_ko": "ㅖ",
+      "role": "vowel",
+      "jamo": 7,
+      "unit": "U9",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "v-ye"
+        }
+      ]
+    },
+    {
+      "id": "hangul.v-yae",
+      "kind": "letter",
+      "label_ko": "ㅒ",
+      "role": "vowel",
+      "jamo": 3,
+      "unit": "U9",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "v-yae"
         }
       ]
     }
@@ -2457,6 +2667,916 @@
       ]
     },
     {
+      "from": "hangul.f-g",
+      "to": "hangul.c-kk",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-g",
+      "to": "hangul.c-tt",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-g",
+      "to": "hangul.c-pp",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-g",
+      "to": "hangul.c-ss",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-g",
+      "to": "hangul.c-jj",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-d",
+      "to": "hangul.c-kk",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-d",
+      "to": "hangul.c-tt",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-d",
+      "to": "hangul.c-pp",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-d",
+      "to": "hangul.c-ss",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-d",
+      "to": "hangul.c-jj",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-b",
+      "to": "hangul.c-kk",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-b",
+      "to": "hangul.c-tt",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-b",
+      "to": "hangul.c-pp",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-b",
+      "to": "hangul.c-ss",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-b",
+      "to": "hangul.c-jj",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-s",
+      "to": "hangul.c-kk",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-s",
+      "to": "hangul.c-tt",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-s",
+      "to": "hangul.c-pp",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-s",
+      "to": "hangul.c-ss",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-s",
+      "to": "hangul.c-jj",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-j",
+      "to": "hangul.c-kk",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-j",
+      "to": "hangul.c-tt",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-j",
+      "to": "hangul.c-pp",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-j",
+      "to": "hangul.c-ss",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.f-j",
+      "to": "hangul.c-jj",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U8"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-kk",
+      "to": "hangul.v-wa",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-kk",
+      "to": "hangul.v-wo",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-kk",
+      "to": "hangul.v-wi",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-kk",
+      "to": "hangul.v-ui",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-kk",
+      "to": "hangul.v-oe",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-kk",
+      "to": "hangul.v-wae",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-kk",
+      "to": "hangul.v-we",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-kk",
+      "to": "hangul.v-ye",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-kk",
+      "to": "hangul.v-yae",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-tt",
+      "to": "hangul.v-wa",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-tt",
+      "to": "hangul.v-wo",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-tt",
+      "to": "hangul.v-wi",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-tt",
+      "to": "hangul.v-ui",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-tt",
+      "to": "hangul.v-oe",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-tt",
+      "to": "hangul.v-wae",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-tt",
+      "to": "hangul.v-we",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-tt",
+      "to": "hangul.v-ye",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-tt",
+      "to": "hangul.v-yae",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-pp",
+      "to": "hangul.v-wa",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-pp",
+      "to": "hangul.v-wo",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-pp",
+      "to": "hangul.v-wi",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-pp",
+      "to": "hangul.v-ui",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-pp",
+      "to": "hangul.v-oe",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-pp",
+      "to": "hangul.v-wae",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-pp",
+      "to": "hangul.v-we",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-pp",
+      "to": "hangul.v-ye",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-pp",
+      "to": "hangul.v-yae",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-ss",
+      "to": "hangul.v-wa",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-ss",
+      "to": "hangul.v-wo",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-ss",
+      "to": "hangul.v-wi",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-ss",
+      "to": "hangul.v-ui",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-ss",
+      "to": "hangul.v-oe",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-ss",
+      "to": "hangul.v-wae",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-ss",
+      "to": "hangul.v-we",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-ss",
+      "to": "hangul.v-ye",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-ss",
+      "to": "hangul.v-yae",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-jj",
+      "to": "hangul.v-wa",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-jj",
+      "to": "hangul.v-wo",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-jj",
+      "to": "hangul.v-wi",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-jj",
+      "to": "hangul.v-ui",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-jj",
+      "to": "hangul.v-oe",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-jj",
+      "to": "hangul.v-wae",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-jj",
+      "to": "hangul.v-we",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-jj",
+      "to": "hangul.v-ye",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-jj",
+      "to": "hangul.v-yae",
+      "type": "prerequisite",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "units.U9"
+        }
+      ]
+    },
+    {
       "from": "hangul.c-b",
       "to": "hangul.c-m",
       "type": "contrasts_with",
@@ -2487,6 +3607,28 @@
         {
           "source": "hangul-layer",
           "selector": "sounds.c-b|c-p"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-b",
+      "to": "hangul.c-pp",
+      "type": "contrasts_with",
+      "bases": [
+        "sound",
+        "shape"
+      ],
+      "by_ear": true,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "sounds.c-b|c-pp"
+        },
+        {
+          "source": "hangul-layer",
+          "selector": "shapes.c-b|c-pp"
         }
       ]
     },
@@ -2526,6 +3668,23 @@
         {
           "source": "hangul-layer",
           "selector": "shapes.c-ch|c-j"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-ch",
+      "to": "hangul.c-jj",
+      "type": "contrasts_with",
+      "bases": [
+        "sound"
+      ],
+      "by_ear": true,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "sounds.c-ch|c-jj"
         }
       ]
     },
@@ -2591,6 +3750,28 @@
       ]
     },
     {
+      "from": "hangul.c-d",
+      "to": "hangul.c-tt",
+      "type": "contrasts_with",
+      "bases": [
+        "sound",
+        "shape"
+      ],
+      "by_ear": true,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "sounds.c-d|c-tt"
+        },
+        {
+          "source": "hangul-layer",
+          "selector": "shapes.c-d|c-tt"
+        }
+      ]
+    },
+    {
       "from": "hangul.c-g",
       "to": "hangul.c-k",
       "type": "contrasts_with",
@@ -2609,6 +3790,28 @@
         {
           "source": "hangul-layer",
           "selector": "shapes.c-g|c-k"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-g",
+      "to": "hangul.c-kk",
+      "type": "contrasts_with",
+      "bases": [
+        "sound",
+        "shape"
+      ],
+      "by_ear": true,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "sounds.c-g|c-kk"
+        },
+        {
+          "source": "hangul-layer",
+          "selector": "shapes.c-g|c-kk"
         }
       ]
     },
@@ -2648,6 +3851,28 @@
     },
     {
       "from": "hangul.c-j",
+      "to": "hangul.c-jj",
+      "type": "contrasts_with",
+      "bases": [
+        "sound",
+        "shape"
+      ],
+      "by_ear": true,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "sounds.c-j|c-jj"
+        },
+        {
+          "source": "hangul-layer",
+          "selector": "shapes.c-j|c-jj"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-j",
       "to": "hangul.c-s",
       "type": "contrasts_with",
       "bases": [
@@ -2660,6 +3885,79 @@
         {
           "source": "hangul-layer",
           "selector": "shapes.c-j|c-s"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-k",
+      "to": "hangul.c-kk",
+      "type": "contrasts_with",
+      "bases": [
+        "sound"
+      ],
+      "by_ear": true,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "sounds.c-k|c-kk"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-p",
+      "to": "hangul.c-pp",
+      "type": "contrasts_with",
+      "bases": [
+        "sound"
+      ],
+      "by_ear": true,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "sounds.c-p|c-pp"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-s",
+      "to": "hangul.c-ss",
+      "type": "contrasts_with",
+      "bases": [
+        "sound",
+        "shape"
+      ],
+      "by_ear": true,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "sounds.c-s|c-ss"
+        },
+        {
+          "source": "hangul-layer",
+          "selector": "shapes.c-s|c-ss"
+        }
+      ]
+    },
+    {
+      "from": "hangul.c-t",
+      "to": "hangul.c-tt",
+      "type": "contrasts_with",
+      "bases": [
+        "sound"
+      ],
+      "by_ear": true,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "sounds.c-t|c-tt"
         }
       ]
     },
@@ -2890,6 +4188,23 @@
       ]
     },
     {
+      "from": "hangul.v-ae",
+      "to": "hangul.v-yae",
+      "type": "contrasts_with",
+      "bases": [
+        "shape"
+      ],
+      "by_ear": true,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "shapes.v-ae|v-yae"
+        }
+      ]
+    },
+    {
       "from": "hangul.v-a",
       "to": "hangul.v-eo",
       "type": "contrasts_with",
@@ -2920,6 +4235,23 @@
         {
           "source": "hangul-layer",
           "selector": "shapes.v-a|v-ya"
+        }
+      ]
+    },
+    {
+      "from": "hangul.v-e",
+      "to": "hangul.v-ye",
+      "type": "contrasts_with",
+      "bases": [
+        "shape"
+      ],
+      "by_ear": true,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "shapes.v-e|v-ye"
         }
       ]
     },
@@ -2992,6 +4324,74 @@
       ]
     },
     {
+      "from": "hangul.v-eu",
+      "to": "hangul.v-ui",
+      "type": "contrasts_with",
+      "bases": [
+        "sound"
+      ],
+      "by_ear": true,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "sounds.v-eu|v-ui"
+        }
+      ]
+    },
+    {
+      "from": "hangul.v-oe",
+      "to": "hangul.v-wae",
+      "type": "contrasts_with",
+      "bases": [
+        "sound"
+      ],
+      "by_ear": false,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "sounds.v-oe|v-wae"
+        }
+      ]
+    },
+    {
+      "from": "hangul.v-oe",
+      "to": "hangul.v-we",
+      "type": "contrasts_with",
+      "bases": [
+        "sound"
+      ],
+      "by_ear": false,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "sounds.v-oe|v-we"
+        }
+      ]
+    },
+    {
+      "from": "hangul.v-oe",
+      "to": "hangul.v-wi",
+      "type": "contrasts_with",
+      "bases": [
+        "shape"
+      ],
+      "by_ear": true,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "shapes.v-oe|v-wi"
+        }
+      ]
+    },
+    {
       "from": "hangul.v-o",
       "to": "hangul.v-u",
       "type": "contrasts_with",
@@ -3048,6 +4448,118 @@
       ]
     },
     {
+      "from": "hangul.v-ui",
+      "to": "hangul.v-wi",
+      "type": "contrasts_with",
+      "bases": [
+        "sound",
+        "shape"
+      ],
+      "by_ear": true,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "sounds.v-ui|v-wi"
+        },
+        {
+          "source": "hangul-layer",
+          "selector": "shapes.v-ui|v-wi"
+        }
+      ]
+    },
+    {
+      "from": "hangul.v-wae",
+      "to": "hangul.v-we",
+      "type": "contrasts_with",
+      "bases": [
+        "sound"
+      ],
+      "by_ear": false,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "sounds.v-wae|v-we"
+        }
+      ]
+    },
+    {
+      "from": "hangul.v-wa",
+      "to": "hangul.v-wae",
+      "type": "contrasts_with",
+      "bases": [
+        "shape"
+      ],
+      "by_ear": true,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "shapes.v-wa|v-wae"
+        }
+      ]
+    },
+    {
+      "from": "hangul.v-wa",
+      "to": "hangul.v-wo",
+      "type": "contrasts_with",
+      "bases": [
+        "sound"
+      ],
+      "by_ear": true,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "sounds.v-wa|v-wo"
+        }
+      ]
+    },
+    {
+      "from": "hangul.v-we",
+      "to": "hangul.v-wo",
+      "type": "contrasts_with",
+      "bases": [
+        "shape"
+      ],
+      "by_ear": true,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "shapes.v-we|v-wo"
+        }
+      ]
+    },
+    {
+      "from": "hangul.v-yae",
+      "to": "hangul.v-ye",
+      "type": "contrasts_with",
+      "bases": [
+        "sound",
+        "shape"
+      ],
+      "by_ear": false,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "sounds.v-yae|v-ye"
+        },
+        {
+          "source": "hangul-layer",
+          "selector": "shapes.v-yae|v-ye"
+        }
+      ]
+    },
+    {
       "from": "hangul.v-ya",
       "to": "hangul.v-yeo",
       "type": "contrasts_with",
@@ -3061,6 +4573,23 @@
         {
           "source": "hangul-layer",
           "selector": "shapes.v-ya|v-yeo"
+        }
+      ]
+    },
+    {
+      "from": "hangul.v-ye",
+      "to": "hangul.v-yeo",
+      "type": "contrasts_with",
+      "bases": [
+        "sound"
+      ],
+      "by_ear": true,
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "hangul-layer",
+          "selector": "sounds.v-ye|v-yeo"
         }
       ]
     },

@@ -258,6 +258,84 @@
       "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet4_codex_20261006.png의 shirt · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기)",
       "bytes": 155714,
       "sha256": "c2bca248b947595966a7946123391d870fdc2bf3cb992305515f8a8a2ab012b0"
+    },
+    {
+      "path": "mnemonic/c-kk.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet5_codex_20261006.png의 honey pot · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기)",
+      "bytes": 180200,
+      "sha256": "4250bc8da25fbf2cbc4ddea712d5c7a132656477a39f8e10a3a063b344df8f4c"
+    },
+    {
+      "path": "mnemonic/c-tt.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet5_codex_20261006.png의 strawberry · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기)",
+      "bytes": 182434,
+      "sha256": "34b0cfb755b3ab0fe384b35aeb4e33136915394a0e363c73a17fbd133201910c"
+    },
+    {
+      "path": "mnemonic/c-pp.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet5_codex_20261006.png의 bread · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기)",
+      "bytes": 198966,
+      "sha256": "805d6eda70f6323005d610a336808a72d5e4d6e8425f890893a9b5d138daa621"
+    },
+    {
+      "path": "mnemonic/c-ss.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet5_codex_20261006.png의 seed · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기)",
+      "bytes": 123870,
+      "sha256": "307ec992852ec7a428528f56e0e5f93d536ab46cf2689d3b0c88b0fadde66dd1"
+    },
+    {
+      "path": "mnemonic/c-jj.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet5_codex_20261006.png의 black-bean noodles · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기)",
+      "bytes": 201758,
+      "sha256": "d8fccb538c50e27b27c118d76487b70556bf9f49706e2e0fbe0f572ae4589b05"
+    },
+    {
+      "path": "mnemonic/v-wa.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet6_codex_20261006.png의 apple · tools/펠트부품_오리기.py로 오림(물건마다 따로 오린 뒤 막힌 구멍·흰 테 걷기, 흰 판 걷기 --고치기)",
+      "bytes": 127100,
+      "sha256": "15e8efa233e65ab962c9ca0732d334749c95279e879f65ea6a1766fa78434920"
+    },
+    {
+      "path": "mnemonic/v-wo.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet6_codex_20261006.png의 monkey · tools/펠트부품_오리기.py로 오림(물건마다 따로 오림, 흰 판 걷기 --고치기)",
+      "bytes": 125948,
+      "sha256": "d3fa69d0be1d2dd4a80af03b152a55901a321761f0299d1c0965a5320eeb5a19"
+    },
+    {
+      "path": "mnemonic/v-wi.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet6_codex_20261006.png의 scissors · tools/펠트부품_오리기.py로 오림(물건마다 따로 오린 뒤 손잡이 구멍 걷기, 흰 판 걷기 --고치기)",
+      "bytes": 99952,
+      "sha256": "f0edf055227c5d1adbdcb6b1b20d7fe60de0528acdf1e1d0050bed9ce22fc594"
+    },
+    {
+      "path": "mnemonic/v-ui.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet6_codex_20261006.png의 chair · tools/펠트부품_오리기.py로 오림(물건마다 따로 오린 뒤 등받이 구멍 걷기, 흰 판 걷기 --고치기)",
+      "bytes": 105022,
+      "sha256": "70a46028f63596450f2d5c033f9c41fe47ecf6b53fb42769046e0af0b89527bc"
+    },
+    {
+      "path": "mnemonic/v-oe.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet6_codex_20261006.png의 alien · tools/펠트부품_오리기.py로 오림(물건마다 따로 오림, 흰 판 걷기 --고치기)",
+      "bytes": 114692,
+      "sha256": "03502f5214904c4739d5095273c5b517b9635e63f8889036203dd53616212e49"
+    },
+    {
+      "path": "mnemonic/v-wae.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet6_codex_20261006.png의 pig · tools/펠트부품_오리기.py로 오림(물건마다 따로 오림(이웃 스웨터와 붙어 덩어리로 가름), 흰 판 걷기 --고치기)",
+      "bytes": 128440,
+      "sha256": "e6bd71ad5718d5193d7fa43c846d744816f6498059fe53ff5d3cc730253db095"
+    },
+    {
+      "path": "mnemonic/v-we.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet6_codex_20261006.png의 sweater · tools/펠트부품_오리기.py로 오림(물건마다 따로 오림(이웃 돼지와 붙어 덩어리로 가름), 흰 판 걷기 --고치기)",
+      "bytes": 168312,
+      "sha256": "3c33d1c6431be26123bf320bd9abce9bb42d46fe45f16e8593baa70ca8a9841e"
+    },
+    {
+      "path": "mnemonic/v-ye.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet6_codex_20261006.png의 alarm clock · tools/펠트부품_오리기.py로 오림(물건마다 따로 오린 뒤 흰 테 걷기, 흰 판 걷기 --고치기)",
+      "bytes": 140188,
+      "sha256": "89a8fcfa4745faf94fcdf95f9a813cf427006a8a203f545a387a4318dbe3a5da"
     }
   ]
 }

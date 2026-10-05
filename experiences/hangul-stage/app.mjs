@@ -68,7 +68,7 @@ function renderHome() {
   $('road').replaceChildren(...v.units.map((u, i) => el('li', { class: `${u.status}${u.final ? ' final' : ''}`, 'aria-label': `${i + 1}. ${u.label} · ${STATUS[u.status]}` },
     el('span', { class: 'stop', 'aria-hidden': 'true' }, String(i + 1)), el('span', { class: 'glyphs', 'aria-hidden': 'true' }, [...u.glyphs].slice(0, 3).join('') + (u.glyphs.length > 3 ? '…' : '')))));
   const current = v.units.find(u => u.status === 'now');
-  $('road-now').textContent = v.graduated ? '졸업' : current ? `지금: ${current.label}` : v.units.every(u => u.status === 'done' || u.status === 'later') ? '받침까지 다 익혔어요' : '';
+  $('road-now').textContent = v.graduated ? '졸업' : current ? `지금: ${current.label}` : v.units.every(u => u.status === 'done' || u.status === 'later') ? '한글 글자를 다 익혔어요' : '';
   // 글자 상자는 모음 · 자음 · 받침으로 나눠 보인다. 받침은 첫소리와 모양이 같아 묶음 이름으로 가른다.
   const GROUPS = [['vowel', '모음'], ['consonant', '자음'], ['final', '받침']];
   $('box').replaceChildren(...GROUPS.map(([role, label]) => el('div', { class: 'box-group' },
@@ -161,7 +161,7 @@ function examplesFor(id) {
   let list;
   if (id === 'c-ng') list = vowels.slice(0, 3).map(v => pack.syllable(null, v));
   else if (l.role === 'final') list = pack.FINAL_FRAME.initials.filter(c => c && known.has(c)).slice(0, 3).map(c => pack.syllable(c, 'v-a', id)); // 소리 목록의 받침 틀 안에서
-  else if (l.role === 'vowel') list = [pack.syllable(null, id), ...consonants.slice(-2).map(c => pack.syllable(c, id))];
+  else if (l.role === 'vowel') list = [pack.syllable(null, id), ...(l.alone ? [] : l.compound ? (COMPOUND_WITH[id] || []).filter(c => known.has(c)) : consonants.slice(-2)).map(c => pack.syllable(c, id))];
   else list = ['v-a', 'v-eo', 'v-o', 'v-u', 'v-i'].filter(v => known.has(v)).slice(0, 3).map(v => pack.syllable(id, v));
   const word = readableWords(pack, known).find(w => w.letters.includes(id) && [...w.text].length <= 3);
   return [...new Set([...list, ...(word ? [word.text] : [])])].slice(0, 4);
@@ -180,13 +180,31 @@ const FINAL_NOTE = {
 const ASPIRATED = { 'c-k': ['c-g', true], 'c-t': ['c-d', true], 'c-p': ['c-b', false], 'c-ch': ['c-j', true] };
 const ASPIRATED_NOTE = { 'c-k': 'ㄱ에 획을 하나 더하면 ㅋ. 숨을 세게 내보내요.', 'c-t': 'ㄷ에 획을 하나 더하면 ㅌ. 숨을 세게 내보내요.',
   'c-p': 'ㅍ은 ㅂ보다 숨을 세게 내보내요.', 'c-ch': 'ㅈ에 획을 하나 더하면 ㅊ. 숨을 세게 내보내요.' };
+// 된소리(U8): 짝인 예사소리를 둘 쓴 글자다. [예사소리, 거센소리(ㅆ은 없음)] — 세 소리(가 · 카 · 까)를 눌러 견준다.
+const TENSE = { 'c-kk': ['c-g', 'c-k'], 'c-tt': ['c-d', 'c-t'], 'c-pp': ['c-b', 'c-p'], 'c-ss': ['c-s', null], 'c-jj': ['c-j', 'c-ch'] };
+const TENSE_NOTE = { 'c-kk': 'ㄱ을 둘 쓰면 ㄲ. 목에 힘을 주고, 숨은 내보내지 않아요.', 'c-tt': 'ㄷ을 둘 쓰면 ㄸ. 목에 힘을 주고, 숨은 내보내지 않아요.',
+  'c-pp': 'ㅂ을 둘 쓰면 ㅃ. 목에 힘을 주고, 숨은 내보내지 않아요.', 'c-ss': 'ㅅ을 둘 쓰면 ㅆ. ㅅ보다 힘을 주어 단단하게 내요.',
+  'c-jj': 'ㅈ을 둘 쓰면 ㅉ. 목에 힘을 주고, 숨은 내보내지 않아요.' };
+// 겹모음(U9): 아는 모음 둘을 합친 글자다 — 두 소리를 빨리 이어 말하면 그 소리(ㅗ + ㅏ = ㅘ, 오 + 아 → 와).
+// ㅒ·ㅖ는 ㅐ·ㅔ에 획을 더한 글자(ㅏ가 ㅑ가 되는 원리)라 [짝 모음, null]. ㅚ는 ㅗ와 ㅣ를 합쳤지만 소리는 [웨]처럼 난다.
+const COMPOUND = { 'v-wa': ['v-o', 'v-a'], 'v-wo': ['v-u', 'v-eo'], 'v-wi': ['v-u', 'v-i'], 'v-ui': ['v-eu', 'v-i'], 'v-oe': ['v-o', 'v-i'],
+  'v-wae': ['v-o', 'v-ae'], 'v-we': ['v-u', 'v-e'], 'v-ye': ['v-e', null], 'v-yae': ['v-ae', null] };
+const COMPOUND_NOTE = { 'v-wa': '오와 아를 빨리 이어 말하면 와.', 'v-wo': '우와 어를 빨리 이어 말하면 워.', 'v-wi': '우와 이를 빨리 이어 말하면 위.',
+  'v-ui': '으와 이를 빨리 이어 말하면 의.', 'v-oe': 'ㅗ와 ㅣ를 합쳤지만, 소리는 「우에」를 빨리 말한 소리예요.', 'v-wae': '오와 애를 빨리 이어 말하면 왜.',
+  'v-we': '우와 에를 빨리 이어 말하면 웨.', 'v-ye': 'ㅔ에 획을 하나 더하면 ㅖ. ㅓ가 ㅕ가 되는 것과 같아요.', 'v-yae': 'ㅐ에 획을 하나 더하면 ㅒ. ㅏ가 ㅑ가 되는 것과 같아요.' };
+// 겹모음 만나기 카드의 음절 보기는 흔히 쓰는 음절로(과·화, 뭐·줘, 귀·쥐, 회·되, 돼·꽤, 궤).
+const COMPOUND_WITH = { 'v-wa': ['c-g', 'c-h'], 'v-wo': ['c-m', 'c-j'], 'v-wi': ['c-g', 'c-j'], 'v-oe': ['c-h', 'c-d'], 'v-wae': ['c-d', 'c-kk'], 'v-we': ['c-g'] };
+// 지금의 한국어에서 소리가 같은 모음.
+const SAME_SOUND_GROUPS = [['v-ae', 'v-e'], ['v-yae', 'v-ye'], ['v-oe', 'v-wae', 'v-we']];
 function noteFor(id) {
   if (id === 'c-ng') return '첫소리 ㅇ은 소리가 없어요. 아는 ㅏ와 같은 소리예요.';
   if (ASPIRATED_NOTE[id]) return ASPIRATED_NOTE[id];
+  if (TENSE_NOTE[id]) return TENSE_NOTE[id];
   if (isFinal(id)) return FINAL_NOTE[id] || (pack.letters.some(x => x.role === 'final' && x.id !== id && letterOf(progress, x.id).state !== 'unmet') ? null : '받침은 글자 아래에 붙는 끝소리예요.');
-  const other = { 'v-ae': 'v-e', 'v-e': 'v-ae' }[id];
-  if (other && letterOf(progress, other).state !== 'unmet') return `${glyph('v-ae')}와 ${glyph('v-e')}는 소리가 같아요. 낱말마다 쓰는 글자가 정해져 있어요.`;
-  return null;
+  // 소리가 같은 모음(ㅐ·ㅔ, ㅒ·ㅖ, ㅚ·ㅙ·ㅞ): 같은 소리의 글자를 이미 만났으면 그것부터 짚는다.
+  const same = (SAME_SOUND_GROUPS.find(g => g.includes(id)) || []).filter(x => x === id || letterOf(progress, x).state !== 'unmet');
+  if (same.length > 1) return `${same.length === 2 ? `${glyph(same[0])}와 ${glyph(same[1])}` : same.map(glyph).join('·')}는 소리가 같아요. 낱말마다 쓰는 글자가 정해져 있어요.`;
+  return COMPOUND_NOTE[id] || null;
 }
 function renderMeet(id) {
   const l = pack.byId.get(id);
@@ -199,20 +217,31 @@ function renderMeet(id) {
   const mn = pack.mnemonics[id];
   // 받침은 그 받침으로 끝나는 낱말이라 「손 = 소 + ㄴ」처럼 받침이 붙는 모습을 함께 보인다.
   const splitFinal = word => { const last = [...word].at(-1), dd = decompose(last); return dd ? `${[...word].slice(0, -1).join('')}${compose(dd.initial, dd.medial)} + ${l.glyph}` : ''; };
+  // 강조할 음절: 그 글자가 든 첫 음절(자음은 첫소리, 모음은 가운뎃소리 — 사과의 「과」).
+  const chars = mn ? [...mn.word] : [];
+  const hit = Math.max(0, chars.findIndex(ch => { const dd = decompose(ch); return dd && (l.role === 'vowel' ? dd.medial === l.jamo : dd.initial === l.jamo); }));
   const mnemonic = mn ? el('button', { class: `mnemonic${l.role === 'final' ? ' final' : ''}`, type: 'button', 'aria-label': `${mn.word} 듣기`, onclick: () => audio.say(mn.word) },
     el('img', { src: mn.img, alt: '' }),
     l.role === 'final'
       ? el('span', { class: 'mn-word', 'aria-hidden': 'true' }, el('b', {}, mn.word), el('small', { class: 'mn-split' }, splitFinal(mn.word)))
-      : el('span', { class: 'mn-word', 'aria-hidden': 'true' }, el('b', {}, [...mn.word][0]), [...mn.word].slice(1).join('')),
+      : el('span', { class: 'mn-word', 'aria-hidden': 'true' }, chars.slice(0, hit).join(''), el('b', {}, chars[hit]), chars.slice(hit + 1).join('')),
     icon('speaker')) : null;
-  // 거센소리: 「ㄱ + 획 = ㅋ」과 두 소리(가 · 카)를 눌러 견준다.
-  const asp = ASPIRATED[id];
-  const sound = (cid, g) => el('button', { class: 'example', type: 'button', 'aria-label': `${pack.syllable(cid, 'v-a')} 듣기`, onclick: () => audio.say(pack.syllable(cid, 'v-a')) },
-    el('span', { class: 'derive-glyph' }, g), el('small', {}, pack.syllable(cid, 'v-a')));
+  // 짝 글자에서 오는 글자: 거센소리 「ㄱ + 획 = ㅋ」, 된소리 「ㄱ + ㄱ = ㄲ」, 겹모음 「ㅗ + ㅏ = ㅘ」(ㅒ·ㅖ는 「ㅐ + 획」). 글자는 눌러 듣는다(자음은 가, 모음은 아).
+  const sound = x => el('button', { class: 'example', type: 'button', 'aria-label': `${pack.byId.get(x).voice} 듣기`, onclick: () => audio.say(pack.byId.get(x).voice) },
+    el('span', { class: 'derive-glyph' }, glyph(x)), el('small', {}, pack.byId.get(x).voice));
+  const op = t => el('span', { class: 'op', 'aria-hidden': 'true' }, t);
+  const stroke = () => el('span', { class: 'piece stroke-piece', 'aria-hidden': 'true' });
+  const asp = ASPIRATED[id], tense = TENSE[id], comp = COMPOUND[id];
   const derive = asp ? el('div', { class: 'derive', 'aria-label': asp[1] ? `${glyph(asp[0])}에 획을 더하면 ${l.glyph}` : `${glyph(asp[0])}과 ${l.glyph}는 짝` },
-    sound(asp[0], glyph(asp[0])),
-    asp[1] ? [el('span', { class: 'op', 'aria-hidden': 'true' }, '+'), el('span', { class: 'piece stroke-piece', 'aria-hidden': 'true' }), el('span', { class: 'op', 'aria-hidden': 'true' }, '=')] : null,
-    sound(id, l.glyph)) : null;
+    sound(asp[0]), asp[1] ? [op('+'), stroke(), op('=')] : null, sound(id))
+    : tense ? el('div', { class: 'derive', 'aria-label': `${glyph(tense[0])}을 둘 쓰면 ${l.glyph}` },
+      sound(tense[0]), op('+'), el('span', { class: 'piece twin-piece', 'aria-hidden': 'true' }, glyph(tense[0])), op('='), sound(id))
+    : comp ? el('div', { class: 'derive', 'aria-label': comp[1] ? `${glyph(comp[0])}와 ${glyph(comp[1])}를 합치면 ${l.glyph}` : `${glyph(comp[0])}에 획을 더하면 ${l.glyph}` },
+      sound(comp[0]), op('+'), comp[1] ? sound(comp[1]) : stroke(), op('='), sound(id))
+    : null;
+  // 된소리는 세 소리(가 · 카 · 까)를 눌러 견준다 — 예사·거센·된소리는 오래 가는 어려움이다(설계 §8).
+  const trio = tense?.[1] ? el('div', { class: 'trio', 'aria-label': `${[tense[0], tense[1], id].map(x => pack.byId.get(x).voice).join(' · ')} 세 소리 견주기` },
+    el('span', { class: 'row-tag', 'aria-hidden': 'true' }, '세 소리'), [tense[0], tense[1], id].map(sound)) : null;
   // 받침은 「아 + ㄴ = 안」처럼 붙는 자리와 소리를 함께 보인다. 양쪽 음절은 눌러 들을 수 있다.
   const sum = l.role === 'final' ? el('div', { class: 'sum', 'aria-label': `아에 받침 ${l.glyph}을 붙이면 ${l.voice}` },
     el('button', { class: 'example', type: 'button', 'aria-label': '아 듣기', onclick: () => audio.say(pack.syllable(null, 'v-a')) }, pack.syllable(null, 'v-a')),
@@ -225,6 +254,7 @@ function renderMeet(id) {
     speak,
     mnemonic,
     derive,
+    trio,
     sum,
     note ? el('p', { class: 'note' }, note) : null,
     el('div', { class: 'trace-head' }, el('span', {}, '따라 써 봐요'), el('button', { class: 'redo', type: 'button', 'aria-label': '다시 쓰기', onclick: () => pad.clear() })),
@@ -527,7 +557,7 @@ function endSession() {
     ...signs.map(s => el('button', { class: 'sign readable', type: 'button', 'aria-label': `${s.text} 간판, 눌러서 듣기`, onclick: () => audio.say(s.text) },
       el('span', { class: 'plaque' }, el('span', { class: 'word', 'aria-hidden': 'true' }, s.text)), el('small', {}, '이제 읽을 수 있어요')))].filter(Boolean)); // replaceChildren은 null을 글자로 넣는다
   $('tomorrow').replaceChildren(...(v.tomorrow.length ? [el('p', {}, '다음에 만날 글자'), chipRow(v.tomorrow, v.tomorrowFinals)]
-    : [el('p', {}, v.allMet ? '이 판의 글자를 다 만났어요. 거센소리·된소리는 준비 중이에요.' : '')]));
+    : [el('p', {}, v.allMet ? '한글 글자를 다 만났어요.' : '')]));
   $('again').hidden = !canPlayMore(progress, at);
   // 노래로 복습: 오늘 자음을 다뤘으면 「그 아 가」, 아니면 「모음 댄스」.
   const songId = [...S.met, ...S.practiced].some(id => pack.byId.get(id)?.role === 'consonant') ? 'geu-a-ga' : 'vowel-dance';

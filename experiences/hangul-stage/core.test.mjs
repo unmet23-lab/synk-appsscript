@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { createPack } from './pack.mjs';
+import { createPack, decompose } from './pack.mjs';
 import { emptyProgress, readProgress, planSession, answer, meet, finishSession, view, letterOf, retryItem, nextLetters, canPlayMore, graduationReady, graduate, SETTINGS } from './core.mjs';
 
 const layer = JSON.parse(fs.readFileSync(new URL('../../strata/hangul.json', import.meta.url), 'utf8'));
@@ -301,4 +301,62 @@ test('다 맞히는 사람은 받침까지 만나고 졸업에 닿는다(사람 
   assert.ok(p.graduated, `70일 안에 졸업하지 못함 — 만난 받침 ${finalIds.filter(id => letterOf(p, id).state !== 'unmet').length}, 낱말 ${p.wordStreak}`);
   assert.ok(finalIds.every(id => letterOf(p, id).state !== 'unmet'));
   console.log(`졸업까지 ${day}일`);
+});
+
+// ── 셋째 판: 된소리·겹모음(U8·U9) ──
+const coreLetters = layer.units.filter(u => u.core !== false).flatMap(u => u.letters);
+const lateLetters = layer.units.filter(u => u.core === false).flatMap(u => u.letters);
+
+test('된소리·겹모음(U8·U9)은 받침 뒤에 나오고 졸업 조건이 아니다 — 졸업 뒤 몸풀기에서 남은 글자를 만난다', () => {
+  assert.deepEqual(layer.units.slice(-2).map(u => u.id), ['U8', 'U9']);
+  assert.deepEqual(nextLetters(meet(emptyProgress(), coreLetters, at(0)), pack, 2), ['c-kk', 'c-tt'], '받침까지 만나면 된소리');
+  assert.deepEqual(nextLetters(meet(emptyProgress(), [...coreLetters, ...layer.units.find(u => u.id === 'U8').letters], at(0)), pack, 2), ['v-wa', 'v-wo'], '된소리 다음 겹모음');
+  let p = meet(emptyProgress(), coreLetters, at(0));
+  for (let i = 0; i < 20; i += 1) p = answer(p, { focus: [], correct: true, at: at(1), sessionId: 'd1' });
+  for (let i = 0; i < 5; i += 1) p = answer(p, { focus: [], correct: true, word: true, at: at(1), sessionId: 'd1' });
+  assert.equal(graduationReady(p, pack), true, '된소리·겹모음을 만나지 않아도 졸업');
+  const plan = planSession(graduate(p, at(1)), pack, { now: at(2) });
+  assert.ok(plan.warmup && items(plan).length <= SETTINGS.warmup, `몸풀기 ${items(plan).length}`);
+  assert.ok(plan.fresh.length >= 1 && plan.fresh.every(id => lateLetters.includes(id)), `졸업 뒤 새 글자 ${plan.fresh}`);
+  assert.notEqual(plan.reason.kind, 'warmup', '새 글자를 만나는 날은 그렇게 말한다');
+});
+
+test('ㅒ·ㅖ·ㅢ는 문항에서 ㅇ하고만 음절을 만들고, 같은 소리(ㅚ·ㅙ·ㅞ, ㅒ·ㅖ)는 보기와 조각에 함께 나오지 않는다', () => {
+  const alone = new Set(pack.letters.filter(l => l.alone).map(l => l.jamo));
+  const odd = text => [...text].some(ch => { const d = decompose(ch); return d && d.initial !== pack.SILENT && alone.has(d.medial); });
+  let builds = 0;
+  const compound = new Set();
+  for (const difficulty of [2, 3]) {
+    let p = readProgress({ ...meet(emptyProgress(), pack.letters.map(l => l.id), at(0)), difficulty });
+    for (let day = 1; day < 25; day += 1) {
+      const plan = planSession(p, pack, { now: at(day) });
+      for (const i of items(plan)) {
+        if (i.word) continue; // 낱말(시계·의사)은 그대로 쓴다
+        const texts = i.type === 'match' ? i.cards.map(c => c.voice) : [i.target.text, ...(i.options || []).map(o => o.text)];
+        for (const t of texts) assert.ok(!odd(t), `${i.type}: ${texts}`);
+        if (i.type === 'build') {
+          builds += 1;
+          assert.ok(!i.pieces.vowels.some(v => pack.byId.get(v).alone), `조각 ${i.pieces.vowels}`);
+          const made = i.pieces.vowels.map(v => pack.syllable(i.target.consonant, v, i.target.final || null));
+          for (let a = 0; a < made.length; a += 1) for (let b = a + 1; b < made.length; b += 1) assert.ok(!pack.sameSound(made[a], made[b]), `조각 ${made}`);
+        }
+        for (const id of i.focus) if (pack.byId.get(id).compound) compound.add(id);
+      }
+      p = readProgress({ ...play(p, { day }).progress, difficulty });
+    }
+  }
+  assert.ok(builds > 0, '음절 만들기가 나온다');
+  assert.ok(compound.size >= 6, `겹모음 문항 ${[...compound]}`);
+  assert.ok(pack.sameSound('외', '왜') && pack.sameSound('왜', '웨') && pack.sameSound('얘', '예') && pack.sameSound('계', '게') && !pack.sameSound('의', '이'));
+});
+
+test('된소리를 헷갈리면(ㄲ을 ㄱ으로) 다음 회차 첫 문항이 그 짝의 짝 고르기다', () => {
+  let p = meet(emptyProgress(), [...coreLetters, 'c-kk'], at(0));
+  p = answer(p, { focus: ['c-kk'], correct: false, at: at(0), sessionId: 'd0', confused: [['c-kk', 'c-g']] });
+  const plan = planSession(p, pack, { now: at(1) });
+  assert.equal(plan.reason.kind, 'pair');
+  assert.deepEqual([...plan.reason.letters].sort(), ['ㄱ', 'ㄲ'].sort());
+  const first = items(plan)[0];
+  assert.equal(first.type, 'pair');
+  assert.deepEqual(first.options.map(o => o.letter).sort(), ['c-g', 'c-kk']);
 });
