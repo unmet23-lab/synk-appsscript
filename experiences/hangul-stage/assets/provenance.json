@@ -1,5 +1,5 @@
 {
-  "note": "바이트 그대로 가져온 사본이다. 펠트 부품(kit)은 입장 검사의 줄이고 흰 띠를 걷은 사본(빈칸 베기와 같음), 몽글·글꼴·효과음도 입장 검사 사본에서 왔다(효과음은 docs/브랜드_사운드킷 원본과 같다). 원본 키트를 고치면 docs/디자인/펠트부품/README.md 「사본 맞추기」대로 이 사본도 맞춘다. 노래(songs/)는 Suno 공식 내려받기 원본 그대로다(songs/README.md, 음악 장부).",
+  "note": "바이트 그대로 가져온 사본이다. 펠트 부품(kit)은 입장 검사의 줄이고 흰 띠를 걷은 사본(빈칸 베기와 같음), 몽글·글꼴·효과음도 입장 검사 사본에서 왔다(효과음은 docs/브랜드_사운드킷 원본과 같다). 원본 키트를 고치면 docs/디자인/펠트부품/README.md 「사본 맞추기」대로 이 사본도 맞춘다. 노래(songs/)는 Suno 공식 내려받기 원본 그대로다(songs/README.md, 음악 장부). 자음 그림 연상(mnemonic/)은 Codex로 구운 펠트 판에서 오렸다(지시문은 판과 같은 곳).",
   "files": [
     {
       "path": "brand/mongle-curious.webp",
@@ -132,6 +132,66 @@
       "from": "Suno 61cb6e8e-bb9b-4660-bba6-51e4a66a487f · 공식 내려받기 MP3 2026-10-04(유호님 허락) · 원본 Documents/synk-vendor/hangul-songs/geu-a-ga_61cb6e8e.mp3",
       "bytes": 1781481,
       "sha256": "c7077d4c8753ed1a107c47daea2d1030e0bda0fd07d10175230ac13b7a4eab76"
+    },
+    {
+      "path": "mnemonic/c-g.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-05 · 판 Documents/synk-vendor/hangul-mnemonic/sheet2_codex_20261005.png의 lamp · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기 포함)",
+      "bytes": 66902,
+      "sha256": "bc768fb260e8bdf47aa991866f456f87e7d0e35fcdc65aee55bf93a84bbfab4e"
+    },
+    {
+      "path": "mnemonic/c-n.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-05 · 판 Documents/synk-vendor/hangul-mnemonic/sheet2_codex_20261005.png의 laptop · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기 포함)",
+      "bytes": 73990,
+      "sha256": "6ca9374224d7273862b76a46649eae8f80dd92ef737f1aec895648e149786b12"
+    },
+    {
+      "path": "mnemonic/c-d.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-05 · 판 Documents/synk-vendor/hangul-mnemonic/sheet2_codex_20261005.png의 moon · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기 포함)",
+      "bytes": 77442,
+      "sha256": "a58a94d69b03c47592f303cf00c9ef7d880f8aa882e8ee07b8ca9c7e55b253b5"
+    },
+    {
+      "path": "mnemonic/c-r.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-05 · 판 Documents/synk-vendor/hangul-mnemonic/sheet2_codex_20261005.png의 ramen · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기 포함)",
+      "bytes": 76458,
+      "sha256": "c6c82516f17fcec283061e8a465d3b665a8f870b62b0de7fadf356df6d254f97"
+    },
+    {
+      "path": "mnemonic/c-m.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-05 · 판 Documents/synk-vendor/hangul-mnemonic/sheet2_codex_20261005.png의 window · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기 포함)",
+      "bytes": 97510,
+      "sha256": "76977a05c639daac0f2f19d1a5d7e65ceeed3e7892ff0b5f36305db5283e7c2b"
+    },
+    {
+      "path": "mnemonic/c-b.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-05 · 판 Documents/synk-vendor/hangul-mnemonic/sheet2_codex_20261005.png의 basket · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기 포함)",
+      "bytes": 94504,
+      "sha256": "5feca1cfe37ec6493514c91737b81065d21988a61d02aa6dcc2b338c740dd99f"
+    },
+    {
+      "path": "mnemonic/c-s.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-05 · 판 Documents/synk-vendor/hangul-mnemonic/sheet1_codex_20261005.png의 mountain · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기 포함)",
+      "bytes": 62778,
+      "sha256": "234fc1177b671972102a187bd053073c716a66a69cfbafa7d17ce1f35ab381d1"
+    },
+    {
+      "path": "mnemonic/c-ng.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-05 · 판 Documents/synk-vendor/hangul-mnemonic/sheet2_codex_20261005.png의 egg · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기 포함)",
+      "bytes": 53370,
+      "sha256": "db00a91c34387de8bc4f242f89754b184344c4866023dc741b625451f9bafd06"
+    },
+    {
+      "path": "mnemonic/c-j.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-05 · 판 Documents/synk-vendor/hangul-mnemonic/sheet2_codex_20261005.png의 bicycle · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기 포함)",
+      "bytes": 92868,
+      "sha256": "c1fc0fde038b7c36faae4c3f4e92e8da2ae2ddc9bac2091459c1dc544395bb5c"
+    },
+    {
+      "path": "mnemonic/c-h.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-05 · 판 Documents/synk-vendor/hangul-mnemonic/sheet2_codex_20261005.png의 sun · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기 포함)",
+      "bytes": 76538,
+      "sha256": "bdf5041a3ec75dc561a8dc6b9b7f717f5cfef98bb27e036aed63b9775a526275"
     }
   ]
 }

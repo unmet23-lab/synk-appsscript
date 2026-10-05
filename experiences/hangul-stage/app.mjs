@@ -189,6 +189,11 @@ function renderMeet(id) {
   speak.addEventListener('click', () => play(speak, l.voice));
   const note = noteFor(id);
   const pad = tracePad(l.glyph);
+  // 자음 그림 연상: 글자 모양이 든 그림과 그 소리로 시작하는 낱말(첫 글자를 강조). 누르면 낱말을 듣는다.
+  const mn = pack.mnemonics[id];
+  const mnemonic = mn ? el('button', { class: 'mnemonic', type: 'button', 'aria-label': `${mn.word} 듣기`, onclick: () => audio.say(mn.word) },
+    el('img', { src: mn.img, alt: '' }),
+    el('span', { class: 'mn-word', 'aria-hidden': 'true' }, el('b', {}, [...mn.word][0]), [...mn.word].slice(1).join('')), icon('speaker')) : null;
   // 받침은 「아 + ㄴ = 안」처럼 붙는 자리와 소리를 함께 보인다. 양쪽 음절은 눌러 들을 수 있다.
   const sum = l.role === 'final' ? el('div', { class: 'sum', 'aria-label': `아에 받침 ${l.glyph}을 붙이면 ${l.voice}` },
     el('button', { class: 'example', type: 'button', 'aria-label': '아 듣기', onclick: () => audio.say(pack.syllable(null, 'v-a')) }, pack.syllable(null, 'v-a')),
@@ -199,6 +204,7 @@ function renderMeet(id) {
     l.role === 'final' ? el('span', { class: 'role-tag' }, '받침') : null,
     el('div', { class: 'glyph', 'aria-label': `새 ${l.role === 'final' ? '받침' : '글자'} ${l.glyph}` }, l.glyph),
     speak,
+    mnemonic,
     sum,
     note ? el('p', { class: 'note' }, note) : null,
     el('div', { class: 'trace-head' }, el('span', {}, '따라 써 봐요'), el('button', { class: 'redo', type: 'button', 'aria-label': '다시 쓰기', onclick: () => pad.clear() })),
@@ -572,9 +578,10 @@ function songStage(cue) {
   }
   if (cue.kind === 'blend') {
     const c = cue.consonant, v = pack.byId.get(cue.vowel), made = songSyllable(c, cue.vowel);
-    const part = (i, glyph, sound, extra = '') => el('span', { class: 'part', 'data-i': String(i) }, el('span', { class: `song-tile${extra}` }, glyph), el('small', {}, sound));
+    const part = (i, glyph, sound, extra = '', pic = null) => el('span', { class: 'part', 'data-i': String(i) }, pic ? el('img', { class: 'song-mn', src: pic, alt: '' }) : null,
+      el('span', { class: `song-tile${extra}` }, glyph), el('small', {}, sound));
     return [el('div', { class: 'song-blend', 'aria-label': `${consonantGlyph(c)} 더하기 ${v.glyph}는 ${made}` },
-      part(0, consonantGlyph(c), consonantSound(c)), el('span', { class: 'op', 'aria-hidden': 'true' }, '+'),
+      part(0, consonantGlyph(c), consonantSound(c), '', pack.mnemonics[c]?.img || null), el('span', { class: 'op', 'aria-hidden': 'true' }, '+'),
       part(1, v.glyph, v.voice), el('span', { class: 'op', 'aria-hidden': 'true' }, '='), part(2, made, made, ' result'))];
   }
   return [];

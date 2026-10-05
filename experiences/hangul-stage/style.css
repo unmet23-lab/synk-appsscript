@@ -175,6 +175,11 @@ h1,h2{margin:0;letter-spacing:-.01em}
 .sum{display:flex;align-items:center;justify-content:center;gap:8px}
 .sum .op{font:800 22px/1 var(--sans);color:var(--muted)}
 .sum .piece{cursor:default}
+.mnemonic{display:flex;align-items:center;gap:12px;border:0;padding:6px 16px 10px 8px;background:url(assets/kit/slab-cream-long.webp) center/100% 100% no-repeat;filter:drop-shadow(0 5px 6px rgba(120,60,40,.14))}
+.mnemonic img{width:96px;height:96px;object-fit:contain}
+.mnemonic .mn-word{font:800 28px/1 var(--sans);color:var(--ink)}
+.mnemonic .mn-word b{color:var(--coral-deep)}
+.mnemonic .icon{--m:var(--i-speaker);width:18px;height:18px;color:var(--muted)}
 .meet .note{margin:0;text-align:center;font:700 14.5px/1.5 var(--sans);color:var(--ink-2)}
 .trace{position:relative;width:min(260px,72vw);aspect-ratio:1;border-radius:22px;background:var(--cream);touch-action:none}
 .trace canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:22px}
@@ -262,7 +267,8 @@ h1,h2{margin:0;letter-spacing:-.01em}
 .song-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:420px}
 .song-row.n10 .song-tile{width:56px;height:56px;font-size:26px}
 .song-blend{display:flex;align-items:center;gap:8px}
-.song-blend .part{display:grid;justify-items:center;gap:6px}
+.song-blend .part{display:grid;justify-items:center;align-content:end;gap:6px}
+.song-mn{width:72px;height:72px;object-fit:contain}
 .song-blend small{font:800 15px/1 var(--sans);color:var(--muted)}
 .song-blend .part.on small{color:var(--coral-deep)}
 .song-blend .op{font:900 26px/1 var(--sans);color:var(--muted)}
