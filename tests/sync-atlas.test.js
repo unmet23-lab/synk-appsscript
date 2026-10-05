@@ -45,14 +45,18 @@ test('Talk receives exactly what it imports and what that loads, with a manifest
   talkLikeImports(write);
   const result = run('--consumer', 'talk');
   assert.equal(result.status, 0, result.stderr);
-  // account-summary.js goes with the server bundles (Talk's synk-server-build.js), memory-sync.js with game-learning.js.
+  // account-summary.js and Strata's example layer (the sentences the summary carries) go with the server
+  // bundles (Talk's synk-server-build.js), memory-sync.js with game-learning.js.
   const copied = ['account-summary.js', 'education.js', 'engine.js', 'experiences.js', 'flow.js', 'game-flow.js', 'game-learning.js', 'learning-ledger.js', 'learning-sync.js', 'learning.js',
     'memory-sync.js', 'preferences.js', 'temper-flow.js', 'temper.js', 'trail.js', 'vellum-flow.js', 'vellum.js'];
   for (const name of copied) assert.deepEqual(fs.readFileSync(path.join(talk, 'lib/atlas', name)), fs.readFileSync(path.join(root, 'atlas', name)), name);
-  for (const name of ['index.js', 'maps/ko.json', 'maps/topik-i.json']) assert.deepEqual(fs.readFileSync(path.join(talk, 'lib/atlas/strata', name)), fs.readFileSync(path.join(root, 'strata', name)));
+  const strata = ['index.js', 'maps/ko.json', 'maps/topik-i.json', 'topik-i-examples.js', 'topik-i.situation-examples.json'];
+  for (const name of strata) assert.deepEqual(fs.readFileSync(path.join(talk, 'lib/atlas/strata', name)), fs.readFileSync(path.join(root, 'strata', name)));
+  // The example layer brings only its sentences: neither the form reader nor the word list follows it.
+  for (const name of ['topik-i-forms.js', 'topik-i.words.json', 'topik-i.grammar.json']) assert.equal(fs.existsSync(path.join(talk, 'lib/atlas/strata', name)), false, name);
   assert.equal(fs.existsSync(path.join(talk, 'lib/atlas/ask.js')), false, 'nothing in Talk imports it');
   const manifest = JSON.parse(fs.readFileSync(path.join(talk, 'lib/atlas/sync-manifest.json'), 'utf8'));
-  assert.deepEqual(Object.keys(manifest.files), [...copied, 'strata/index.js', 'strata/maps/ko.json', 'strata/maps/topik-i.json'].sort());
+  assert.deepEqual(Object.keys(manifest.files), [...copied, ...strata.map(name => `strata/${name}`)].sort());
   for (const [name, hash] of Object.entries(manifest.files)) assert.equal(sha(path.join(talk, 'lib/atlas', name)), hash);
   assert.match(manifest.engine, /^atlas-\d+\.\d+\.\d+$/);
   assert.equal(fs.existsSync(path.join(website, 'dist')), false);
