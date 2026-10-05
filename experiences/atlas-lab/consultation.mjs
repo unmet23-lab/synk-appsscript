@@ -3,7 +3,7 @@
 // One unmet condition is one policy-loss unit; capacity shortage/oversizing uses its
 // fraction of the required/recommended capacity. These weights are product policy,
 // not measured preference, money, answer likelihood or a prediction of satisfaction.
-export const QUESTION_POLICY = 'computer-question-value-2';
+export const QUESTION_POLICY = 'computer-question-value-3';
 // Product input completeness, independent of Ask's question-value stopping rule.
 export const COMPLETION_POLICY = 'computer-completion-1';
 
@@ -114,6 +114,14 @@ export function createComputerConsultation({ Ask, content, rules }) {
     loss += shortage(candidate.storage, platform.storage.min) + excess(candidate.storage, platform.storage.value);
     const neededVram = platform.gpu.need ?? platform.gpu.vram;
     if (platform.gpu.kind !== 'unified') loss += shortage(candidate.gpu.vram, neededVram) + excess(candidate.gpu.vram, platform.gpu.vram);
+    // The screen shows the recommended capacity, not the lowest one that still runs. For a
+    // purchase, advice below that recommendation is a shortfall too; otherwise a question
+    // whose answer doubles the recommended memory has no value and is never asked.
+    // Keeping the current computer is still judged against what is workable.
+    if (!candidate.keep) {
+      loss += shortage(candidate.ram, platform.ram.value) + shortage(candidate.storage, platform.storage.value);
+      if (platform.gpu.kind !== 'unified') loss += shortage(candidate.gpu.vram, platform.gpu.vram);
+    }
     if ((settings.place || target.form.heavy) && candidate.form !== target.form.pick) loss += 1;
     if (['mac', 'win'].includes(settings.os) && candidate.os !== settings.os) loss += 1;
     // Treat a changed current-device diagnosis/advice as one condition, even if

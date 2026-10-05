@@ -17,13 +17,19 @@ test('real local-AI workload capacity supplies a distinct question-value basis',
   assert.ok(byValue.questions.every(q => q.options.every(option => !Object.hasOwn(option, 'p'))), 'no invented response frequencies');
 });
 
-test('a changed RAM suggestion with no reduction in the workload loss can be skipped', async () => {
-  const consultation = await adapter;
-  const entry = consultation.choose({ uses: ['localai'] }).ranked.find(q => q.id === 'multitask');
+test('a question whose answer raises the recommended purchase capacity has value even when the lower amount would still run', async () => {
+  const consultation = await adapter, answers = { uses: ['localai'] };
+  const entry = consultation.choose(answers).ranked.find(q => q.id === 'multitask');
   assert.ok(entry.impact > 0, 'the underlying rule does change a recommendation');
-  assert.equal(entry.value, 0);
-  assert.equal(entry.skippable, true);
-  assert.equal(entry.reason, 'no-positive-decision-value');
+  // The screen shows the recommended memory. Until 2026-10-06 only falling below the
+  // workable amount counted as a shortfall, so this question had no value and was skipped.
+  assert.ok(entry.value > 0);
+  assert.equal(entry.skippable, false);
+  assert.equal(entry.reason, 'positive-decision-value');
+  const light = consultation.decision({ ...answers, multitask: 'normal' }), heavy = { ...answers, multitask: 'heavy' };
+  assert.ok(consultation.decision(heavy).content.ram > light.content.ram);
+  assert.ok(consultation.evaluate({ decision: light, answers: heavy }).loss > 0, 'advice below the recommendation is a shortfall for a purchase');
+  assert.equal(consultation.evaluate({ decision: consultation.decision(heavy), answers: heavy }).loss, 0);
 });
 
 test('underpowered recommendations lose value against the same declared task and unnecessary capacity is penalized', async () => {

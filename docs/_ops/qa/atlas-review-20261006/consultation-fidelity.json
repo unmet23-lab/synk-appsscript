@@ -1,0 +1,66 @@
+{
+  "kind": "computer-consultation-stop-fidelity",
+  "questionPolicy": "computer-question-value-3",
+  "ask": "ask-1.1",
+  "samples": 1500,
+  "seed": 20261006,
+  "basis": "uniform random answers, fixed seed; reference = the same rules with every eligible question answered",
+  "meanEligibleQuestions": 9.58,
+  "policies": {
+    "value": {
+      "meanQuestionsAsked": 6.67,
+      "adviceDiffersFromFullAnswers": 32,
+      "rate": 0.0213,
+      "alsoWorseByDeclaredLoss": 16,
+      "productCompletionReadyWhenStopped": 79,
+      "differingAdviceFields": {
+        "ram": 23,
+        "os": 9,
+        "gpu": 9,
+        "budgetTight": 4,
+        "current": 3,
+        "budgetWarning": 3,
+        "osConflicts": 1
+      },
+      "unaskedQuestionsInThoseCases": {
+        "multitask": 30,
+        "budget": 29,
+        "place": 27,
+        "video.load": 17,
+        "video.app": 17,
+        "photo": 10,
+        "code": 8,
+        "video.res": 7,
+        "current.kind": 3
+      }
+    },
+    "impact": {
+      "meanQuestionsAsked": 6.81,
+      "adviceDiffersFromFullAnswers": 11,
+      "rate": 0.0073,
+      "alsoWorseByDeclaredLoss": 11,
+      "productCompletionReadyWhenStopped": 87,
+      "differingAdviceFields": {
+        "ram": 11,
+        "budgetWarning": 2,
+        "budgetTight": 2,
+        "current": 1
+      },
+      "unaskedQuestionsInThoseCases": {
+        "multitask": 11,
+        "place": 11,
+        "budget": 9,
+        "photo": 7,
+        "video.load": 5,
+        "video.res": 3,
+        "video.app": 1
+      }
+    }
+  },
+  "limits": [
+    "Random answer combinations are not real users and include unusual combinations.",
+    "Equal advice means agreement with the product rules, not that the hardware advice is correct.",
+    "Both rules look one question ahead, so answers that only matter together can be missed by either.",
+    "productCompletionReadyWhenStopped counts the product completion contract at the moment automatic questions end."
+  ]
+}
