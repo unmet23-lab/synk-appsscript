@@ -31,7 +31,7 @@ async function waitReady(page) {
 }
 const shots390 = width => width === 390;
 async function playSession(page, { width, shots, wrongOnce, started = false, end = '#finish:not([hidden])' }) {
-  let wrongDone = !wrongOnce, types = new Set(), demos = 0, retries = 0, steps = 0, sums = 0, finalsBuilt = 0, teachShown = 0, mnemonics = 0;
+  let wrongDone = !wrongOnce, types = new Set(), demos = 0, retries = 0, steps = 0, sums = 0, finalsBuilt = 0, teachShown = 0, mnemonics = 0, derives = 0;
   const met = [], order = [];
   if (!started) {
     await page.click('#start');
@@ -47,6 +47,10 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     steps += 1;
     if (step.kind === 'meet') {
       met.push(step.letter);
+      if (/^c-(k|t|p|ch)$/.test(step.letter)) {
+        derives += await page.locator('.meet .derive').count();
+        if (shots && !has('meet-aspirated', width)) await shot(page, 'meet-aspirated', width, { fullPage: true });
+      }
       if (/^c-/.test(step.letter)) {
         const ok = await page.waitForFunction(() => { const i = document.querySelector('.meet .mnemonic img'); return !!i && i.complete && i.naturalWidth > 0; }, null, { timeout: 3000 }).then(() => true, () => false);
         if (ok) mnemonics += 1;
@@ -107,7 +111,7 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     if (ov.doc > 0 || ov.body > 0 || ov.vv > 0) check(`${width}px 넘침 없음(${item.type})`, false, JSON.stringify(ov));
     await page.click('#dock .felt-cta');
   }
-  return { types: [...types], demos, retries, steps, sums, finalsBuilt, teachShown, met, order, mnemonics };
+  return { types: [...types], demos, retries, steps, sums, finalsBuilt, teachShown, met, order, mnemonics, derives };
 }
 
 (async () => {
@@ -237,7 +241,7 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     // ── 둘째 판 ──
     const TYPES = ['listen_pick', 'see_pick', 'build', 'match'];
     const U14 = ['v-a', 'v-eo', 'v-o', 'v-u', 'v-eu', 'v-i', 'c-g', 'c-n', 'c-d', 'c-r', 'c-m', 'c-b', 'c-s', 'c-ng', 'c-j', 'c-h', 'v-ya', 'v-yeo', 'v-yo', 'v-yu', 'v-ae', 'v-e'];
-    const U6 = ['f-n', 'f-r', 'f-m', 'f-ng'], U7 = ['f-g', 'f-d', 'f-b', 'f-s', 'f-j'];
+    const U5 = ['c-k', 'c-t', 'c-p', 'c-ch'], U6 = ['f-n', 'f-r', 'f-m', 'f-ng'], U7 = ['f-g', 'f-d', 'f-b', 'f-s', 'f-j'];
     const seed = (key, extra) => page.evaluate(([key, extra]) => {
       const ago = d => new Date(Date.now() - d * 86400000).toISOString();
       const letters = {};
@@ -249,7 +253,13 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     const key = await page.evaluate(() => window.__hangulQA.key);
     // 받침 ㄴㄹㅁㅇ을 배우는 중이고 어제 ㄴ/ㅇ 받침을 헷갈린 사람(2단). 오늘은 짝 고르기로 시작하고, 복습에 가르쳐 주기가 들며, 받침 ㄱ·ㄷ을 새로 만난다.
     await page.click('#done');
-    await seed(key, { groups: [[U14, 'mastered', -3], [U6, 'learning', 1]], pairs: { 'f-n|f-ng': { wrong: 1, lastAt: new Date(Date.now() - 86400000).toISOString() } }, difficulty: 2, demoSeen: TYPES });
+    // 거센소리를 배우는 사람(U1~U4를 익힘): 오늘 ㅋㅌㅍ을 만나고, 만나기 카드에 「ㄱ + 획 = ㅋ」과 그림 연상(캣타워)이 붙는다.
+    await seed(key, { groups: [[U14, 'mastered', -3]], difficulty: 2, demoSeen: TYPES });
+    await page.reload(); await page.waitForSelector('#home:not([hidden])');
+    const asp = await playSession(page, { width, shots: true, wrongOnce: false });
+    check(`${width}px 거센소리: 「ㄱ + 획 = ㅋ」 만나기 카드와 그림 연상`, asp.met.some(id => U5.includes(id)) && asp.derives >= 1 && asp.mnemonics >= 1, `만남 ${asp.met.join(',')} · 획 더하기 ${asp.derives} · 그림 ${asp.mnemonics}`);
+    await page.click('#done');
+    await seed(key, { groups: [[U14, 'mastered', -3], [U5, 'mastered', -3], [U6, 'learning', 1]], pairs: { 'f-n|f-ng': { wrong: 1, lastAt: new Date(Date.now() - 86400000).toISOString() } }, difficulty: 2, demoSeen: TYPES });
     await page.reload(); await page.waitForSelector('#home:not([hidden])');
     const groups = await page.locator('#box .box-group').count(), finalTiles = await page.locator('#box .tile.final:not(.unmet)').count();
     check(`${width}px 글자 상자가 모음·자음·받침으로 나뉨`, groups === 3 && finalTiles === 4, `묶음 ${groups}, 받침 타일 ${finalTiles}`);
@@ -270,7 +280,7 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
 
     // 졸업 직전인 사람: 핵심 글자를 다 만났고 최근 스무 문항을 다 맞혔고 낱말을 이어서 다섯 번 읽었다. 이 회차를 다 맞히면 졸업 장면이 나온다.
     await page.click('#done');
-    await seed(key, { groups: [[U14, 'mastered', -3], [U6, 'mastered', -3], [U7, 'learning', 1]], difficulty: 3, wordStreak: 5,
+    await seed(key, { groups: [[U14, 'mastered', -3], [U5, 'mastered', -3], [U6, 'mastered', -3], [U7, 'learning', 1]], difficulty: 3, wordStreak: 5,
       demoSeen: [...TYPES, 'pair', 'teach', 'build_final'] });
     await page.reload(); await page.waitForSelector('#home:not([hidden])');
     const fifth = await playSession(page, { width, shots: true, wrongOnce: false, end: '#graduation:not([hidden])' });

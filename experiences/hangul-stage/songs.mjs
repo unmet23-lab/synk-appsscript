@@ -15,7 +15,7 @@ const spread = (t, end, n) => Array.from({ length: n }, (_, k) => +(t + ((end - 
 const BASIC = ['v-a', 'v-eo', 'v-o', 'v-u', 'v-eu', 'v-i'];
 const TEN = ['v-a', 'v-ya', 'v-eo', 'v-yeo', 'v-o', 'v-yo', 'v-u', 'v-yu', 'v-eu', 'v-i'];
 const ROW1 = ['c-g', 'c-n', 'c-d', 'c-r', 'c-m', 'c-b', 'c-s'];        // 가 나 다 라 마 바 사
-const ROW2 = ['c-ng', 'c-j', 'c-ch', 'c-k', 'c-t', 'c-p', 'c-h'];     // 아 자 차 카 타 파 하 (ㅊㅋㅌㅍ은 아직 배우지 않은 글자)
+const ROW2 = ['c-ng', 'c-j', 'c-ch', 'c-k', 'c-t', 'c-p', 'c-h'];     // 아 자 차 카 타 파 하 (ㅊㅋㅌㅍ은 거센소리 U5)
 const sweep = (t, end, letters, extra = {}) => ({ kind: 'sweep', t, end, letters, at: spread(t, end, letters.length), ...extra });
 const vowel = (t, end, letter, at, text) => ({ kind: 'vowel', t, end, letter, at, move: MOVE[letter], text });
 // 합치기: 자음 소리 → 아 → 음절. 세 걸음은 줄 길이를 셋으로 나눈다.
@@ -57,7 +57,7 @@ export const SONGS = Object.freeze([
   },
   {
     id: 'geu-a-ga', title: '그 아 가', src: 'assets/songs/geu-a-ga.mp3', duration: 74.4, bpm: 101.3,
-    suno: '61cb6e8e-bb9b-4660-bba6-51e4a66a487f', teaches: ['c-g', 'c-n', 'c-d', 'c-r', 'c-m', 'c-b', 'c-s', 'c-ng', 'c-j', 'c-h'],
+    suno: '61cb6e8e-bb9b-4660-bba6-51e4a66a487f', teaches: ['c-g', 'c-n', 'c-d', 'c-r', 'c-m', 'c-b', 'c-s', 'c-ng', 'c-j', 'c-h', 'c-k', 'c-t', 'c-p', 'c-ch'],
     review: [10.7, 43.4], // 회차 끝 30초 장단: 합치기 열네 자음 → 「그 더하기 아는? 가!」 → 후렴 앞부분
     cues: [
       line(0, 4.1, 'Ready? 한글!'),
@@ -97,7 +97,7 @@ export const SONGS = Object.freeze([
   },
 ]);
 
-// 노래에는 나오지만 아직 배우는 길에 없는 자음(거센소리 U5): 글자 모양과 유니코드 첫소리 번호.
+// 배우는 길에 없는 자음이 노래에 나올 때 쓰는 글자 모양과 유니코드 첫소리 번호(10-05 거센소리 U5가 길에 들어와 지금은 대비용).
 export const EXTRA_CONSONANTS = Object.freeze({ 'c-ch': ['ㅊ', 14], 'c-k': ['ㅋ', 15], 'c-t': ['ㅌ', 16], 'c-p': ['ㅍ', 17] });
 
 export const songById = id => SONGS.find(s => s.id === id) || null;

@@ -175,8 +175,14 @@ const FINAL_NOTE = {
   'f-s': '받침 ㅅ은 받침 ㄷ과 같은 소리로 읽어요.',
   'f-j': '받침 ㅈ도 받침 ㄷ과 같은 소리로 읽어요.',
 };
+// 거센소리(U5): 짝인 예사소리에 획을 더한 글자다(글자 만든 원리 — 조사 10-04: 제자원리 순서로 배운 외국인의 자모 점수가 높았다).
+// [짝 자음, 모양도 획 하나 더한 것인지]. ㅍ은 ㅂ과 소리 짝이지만 모양은 획 하나 차이가 아니다.
+const ASPIRATED = { 'c-k': ['c-g', true], 'c-t': ['c-d', true], 'c-p': ['c-b', false], 'c-ch': ['c-j', true] };
+const ASPIRATED_NOTE = { 'c-k': 'ㄱ에 획을 하나 더하면 ㅋ. 숨을 세게 내보내요.', 'c-t': 'ㄷ에 획을 하나 더하면 ㅌ. 숨을 세게 내보내요.',
+  'c-p': 'ㅍ은 ㅂ보다 숨을 세게 내보내요.', 'c-ch': 'ㅈ에 획을 하나 더하면 ㅊ. 숨을 세게 내보내요.' };
 function noteFor(id) {
   if (id === 'c-ng') return '첫소리 ㅇ은 소리가 없어요. 아는 ㅏ와 같은 소리예요.';
+  if (ASPIRATED_NOTE[id]) return ASPIRATED_NOTE[id];
   if (isFinal(id)) return FINAL_NOTE[id] || (pack.letters.some(x => x.role === 'final' && x.id !== id && letterOf(progress, x.id).state !== 'unmet') ? null : '받침은 글자 아래에 붙는 끝소리예요.');
   const other = { 'v-ae': 'v-e', 'v-e': 'v-ae' }[id];
   if (other && letterOf(progress, other).state !== 'unmet') return `${glyph('v-ae')}와 ${glyph('v-e')}는 소리가 같아요. 낱말마다 쓰는 글자가 정해져 있어요.`;
@@ -194,6 +200,14 @@ function renderMeet(id) {
   const mnemonic = mn ? el('button', { class: 'mnemonic', type: 'button', 'aria-label': `${mn.word} 듣기`, onclick: () => audio.say(mn.word) },
     el('img', { src: mn.img, alt: '' }),
     el('span', { class: 'mn-word', 'aria-hidden': 'true' }, el('b', {}, [...mn.word][0]), [...mn.word].slice(1).join('')), icon('speaker')) : null;
+  // 거센소리: 「ㄱ + 획 = ㅋ」과 두 소리(가 · 카)를 눌러 견준다.
+  const asp = ASPIRATED[id];
+  const sound = (cid, g) => el('button', { class: 'example', type: 'button', 'aria-label': `${pack.syllable(cid, 'v-a')} 듣기`, onclick: () => audio.say(pack.syllable(cid, 'v-a')) },
+    el('span', { class: 'derive-glyph' }, g), el('small', {}, pack.syllable(cid, 'v-a')));
+  const derive = asp ? el('div', { class: 'derive', 'aria-label': asp[1] ? `${glyph(asp[0])}에 획을 더하면 ${l.glyph}` : `${glyph(asp[0])}과 ${l.glyph}는 짝` },
+    sound(asp[0], glyph(asp[0])),
+    asp[1] ? [el('span', { class: 'op', 'aria-hidden': 'true' }, '+'), el('span', { class: 'piece stroke-piece', 'aria-hidden': 'true' }), el('span', { class: 'op', 'aria-hidden': 'true' }, '=')] : null,
+    sound(id, l.glyph)) : null;
   // 받침은 「아 + ㄴ = 안」처럼 붙는 자리와 소리를 함께 보인다. 양쪽 음절은 눌러 들을 수 있다.
   const sum = l.role === 'final' ? el('div', { class: 'sum', 'aria-label': `아에 받침 ${l.glyph}을 붙이면 ${l.voice}` },
     el('button', { class: 'example', type: 'button', 'aria-label': '아 듣기', onclick: () => audio.say(pack.syllable(null, 'v-a')) }, pack.syllable(null, 'v-a')),
@@ -205,6 +219,7 @@ function renderMeet(id) {
     el('div', { class: 'glyph', 'aria-label': `새 ${l.role === 'final' ? '받침' : '글자'} ${l.glyph}` }, l.glyph),
     speak,
     mnemonic,
+    derive,
     sum,
     note ? el('p', { class: 'note' }, note) : null,
     el('div', { class: 'trace-head' }, el('span', {}, '따라 써 봐요'), el('button', { class: 'redo', type: 'button', 'aria-label': '다시 쓰기', onclick: () => pad.clear() })),
@@ -555,8 +570,8 @@ const consonantGlyph = id => pack.byId.get(id)?.glyph || EXTRA_CONSONANTS[id]?.[
 // 자음 + 모음 음절. ㅇ은 소리 없는 첫소리, 거센소리(ㅊㅋㅌㅍ)는 아직 길에 없어 유니코드 번호로 만든다.
 function songSyllable(c, v = 'v-a') {
   if (c === 'c-ng') return pack.syllable(null, v);
-  if (EXTRA_CONSONANTS[c]) return compose(EXTRA_CONSONANTS[c][1], pack.byId.get(v).jamo);
-  return pack.syllable(c, v);
+  if (pack.byId.has(c)) return pack.syllable(c, v);
+  return compose(EXTRA_CONSONANTS[c][1], pack.byId.get(v).jamo);
 }
 const consonantSound = c => (c === 'c-ng' ? '쉿' : songSyllable(c, 'v-eu')); // 그 느 드 … 츠 크 트 프
 function moveIcon(move) {
