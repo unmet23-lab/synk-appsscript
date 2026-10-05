@@ -462,7 +462,7 @@ function finish() {
     const item = ITEMS.find((x) => x.id === r.itemId);
     const li = el('li', r.correct === true ? 'ok' : r.correct === false ? 'ko' : 'miss');
     const mark = r.correct === true ? '맞음' : r.correct === false ? '다시 볼 것' : '놓침';
-    li.innerHTML = `<span class="mark" aria-label="${mark}">${r.correct === true ? '○' : r.correct === false ? '×' : '–'}</span>
+    li.innerHTML = `<img class="mark" src="${r.correct === true ? 'assets/kit/badge-check.webp' : r.correct === false ? 'assets/felt/drop.webp' : 'assets/kit/badge-cream.webp'}" alt="${mark}">
       <span class="body"><span class="sent">${esc(filled(item, '\u0000')).replace('\u0000', `<b>${esc(item.answer)}</b>`)}</span>
       <small>${esc(KIND_LABEL[item.kind] || '')}${r.correct === false ? ` · 벤 말 ‘${esc(r.choice)}’` : ''}${r.correct === null ? ` · 놓침 · 멈춘 보기에서 고른 답 ‘${esc(r.readingChoice)}’ ${r.readingCorrect ? '맞음' : '다시 볼 것'}` : ''}</small></span>`;
     log.append(li);
