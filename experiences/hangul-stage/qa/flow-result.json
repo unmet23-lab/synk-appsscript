@@ -1,5 +1,5 @@
 {
-  "at": "2026-10-05T10:55:31.092Z",
+  "at": "2026-10-05T11:10:46.565Z",
   "base": "http://127.0.0.1:5249/",
   "results": [
     {
@@ -60,7 +60,7 @@
     {
       "name": "390px 재생 중 화면이 노래 시각을 따라감(13.6초로 옮기면 ㄷ + ㅏ = 다)",
       "ok": true,
-      "detail": "13.870206 ㄷ드+ㅏ아=다다"
+      "detail": "13.845615 ㄷ드+ㅏ아=다다"
     },
     {
       "name": "390px 첫 회차 끝까지",
@@ -143,6 +143,11 @@
       "detail": "v-a,v-eo,v-o,v-u,v-eu,v-i,c-g,c-n,c-d,c-r,c-m,c-b"
     },
     {
+      "name": "390px 거센소리: 「ㄱ + 획 = ㅋ」 만나기 카드와 그림 연상",
+      "ok": true,
+      "detail": "만남 c-k,c-t,c-p · 획 더하기 3 · 그림 3"
+    },
+    {
       "name": "390px 글자 상자가 모음·자음·받침으로 나뉨",
       "ok": true,
       "detail": "묶음 3, 받침 타일 4"
@@ -155,7 +160,7 @@
     {
       "name": "390px 받침 회차: 짝 고르기로 시작",
       "ok": true,
-      "detail": "pair,teach,listen_pick,see_pick,see_pick,match,build,listen_pick,match,build"
+      "detail": "pair,teach,listen_pick,see_pick,see_pick,match,build,listen_pick,see_pick,match"
     },
     {
       "name": "390px 받침 회차: 몽글에게 가르쳐 주기(몽글이 든 글자가 보임)",
@@ -175,7 +180,7 @@
     {
       "name": "390px 졸업: 회차 끝에 졸업 장면",
       "ok": true,
-      "detail": "단계 10, 꼴 listen_pick,teach,see_pick,build,match, 받침 음절 만들기 1"
+      "detail": "단계 10, 꼴 listen_pick,teach,see_pick,build,pair,match, 받침 음절 만들기 1"
     },
     {
       "name": "390px 졸업 장면: 읽을 수 있는 받침 낱말과 명패",
@@ -195,7 +200,7 @@
     {
       "name": "390px 졸업 뒤 몸풀기는 다섯 문항 이하",
       "ok": true,
-      "detail": "문항 5: see_pick,listen_pick,match,build,listen_pick"
+      "detail": "문항 5: see_pick,match,listen_pick,see_pick,listen_pick"
     },
     {
       "name": "390px 콘솔 오류 없음",
@@ -270,7 +275,7 @@
     {
       "name": "1280px 재생 중 화면이 노래 시각을 따라감(13.6초로 옮기면 ㄷ + ㅏ = 다)",
       "ok": true,
-      "detail": "13.839996 ㄷ드+ㅏ아=다다"
+      "detail": "13.856323 ㄷ드+ㅏ아=다다"
     },
     {
       "name": "1280px 첫 회차 끝까지",
@@ -353,6 +358,11 @@
       "detail": "v-a,v-eo,v-o,v-u,v-eu,v-i,c-g,c-n,c-d,c-r,c-m,c-b"
     },
     {
+      "name": "1280px 거센소리: 「ㄱ + 획 = ㅋ」 만나기 카드와 그림 연상",
+      "ok": true,
+      "detail": "만남 c-k,c-t,c-p · 획 더하기 3 · 그림 3"
+    },
+    {
       "name": "1280px 글자 상자가 모음·자음·받침으로 나뉨",
       "ok": true,
       "detail": "묶음 3, 받침 타일 4"
@@ -365,7 +375,7 @@
     {
       "name": "1280px 받침 회차: 짝 고르기로 시작",
       "ok": true,
-      "detail": "pair,teach,listen_pick,see_pick,see_pick,match,build,listen_pick,match,build"
+      "detail": "pair,teach,listen_pick,see_pick,see_pick,match,build,listen_pick,see_pick,match"
     },
     {
       "name": "1280px 받침 회차: 몽글에게 가르쳐 주기(몽글이 든 글자가 보임)",
@@ -385,7 +395,7 @@
     {
       "name": "1280px 졸업: 회차 끝에 졸업 장면",
       "ok": true,
-      "detail": "단계 10, 꼴 listen_pick,teach,see_pick,build,match, 받침 음절 만들기 1"
+      "detail": "단계 10, 꼴 listen_pick,teach,see_pick,build,pair,match, 받침 음절 만들기 1"
     },
     {
       "name": "1280px 졸업 장면: 읽을 수 있는 받침 낱말과 명패",
@@ -405,7 +415,7 @@
     {
       "name": "1280px 졸업 뒤 몸풀기는 다섯 문항 이하",
       "ok": true,
-      "detail": "문항 5: see_pick,listen_pick,match,build,listen_pick"
+      "detail": "문항 5: see_pick,match,listen_pick,see_pick,listen_pick"
     },
     {
       "name": "1280px 콘솔 오류 없음",

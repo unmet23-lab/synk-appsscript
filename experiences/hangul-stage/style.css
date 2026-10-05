@@ -180,6 +180,13 @@ h1,h2{margin:0;letter-spacing:-.01em}
 .mnemonic .mn-word{font:800 28px/1 var(--sans);color:var(--ink)}
 .mnemonic .mn-word b{color:var(--coral-deep)}
 .mnemonic .icon{--m:var(--i-speaker);width:18px;height:18px;color:var(--muted)}
+.derive{display:flex;align-items:center;justify-content:center;gap:10px}
+.derive .example{flex-direction:column;gap:2px;min-width:72px;padding:6px 14px 10px}
+.derive .derive-glyph{font:900 30px/1 var(--sans)}
+.derive small{font:800 14px/1 var(--sans);color:var(--muted)}
+.derive .op{font:800 22px/1 var(--sans);color:var(--muted)}
+.stroke-piece{display:grid;place-items:center;cursor:default}
+.stroke-piece::before{content:"";width:26px;height:7px;border-radius:4px;background:var(--coral-deep)}
 .meet .note{margin:0;text-align:center;font:700 14.5px/1.5 var(--sans);color:var(--ink-2)}
 .trace{position:relative;width:min(260px,72vw);aspect-ratio:1;border-radius:22px;background:var(--cream);touch-action:none}
 .trace canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:22px}

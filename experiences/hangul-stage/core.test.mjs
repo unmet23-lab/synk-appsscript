@@ -55,7 +55,7 @@ test('단원은 선행이다: 앞 단원의 글자를 다 만나기 전에는 �
     }
     p = progress;
   }
-  assert.ok(pack.letters.every(l => letterOf(p, l.id).state !== 'unmet'), '다 맞히는 사람은 30일 안에 네 단원의 글자를 다 만난다');
+  assert.ok(pack.letters.every(l => letterOf(p, l.id).state !== 'unmet'), '다 맞히는 사람은 30일 안에 이 판의 글자를 다 만난다');
 });
 
 test('같은 사람·같은 날·같은 회차는 같은 문항을 낸다', () => {
@@ -209,12 +209,13 @@ test('필요한 소리의 목록에 글자·음절·받침 음절·낱말이 다
 });
 
 // ── 둘째 판: 받침·짝·가르쳐 주기·졸업 ──
-const U14 = layer.units.slice(0, 4).flatMap(u => u.letters);
+// 받침 앞의 다섯 단원(U1~U5)의 글자.
+const U14 = layer.units.slice(0, 5).flatMap(u => u.letters);
 const finalIds = pack.letters.filter(l => l.role === 'final').map(l => l.id);
 const U7 = layer.units.find(u => u.id === 'U7').letters;
 
-test('받침 단원은 네 단원을 다 만난 뒤에 나오고(U5는 아직 없어 U4 → U6), 받침 하나만 알 때는 「받침 없음」과 견준다', () => {
-  assert.deepEqual(nextLetters(meet(emptyProgress(), U14.slice(0, -1), at(0)), pack, 3), [U14.at(-1)], 'U4가 남으면 받침이 먼저 나오지 않는다');
+test('받침 단원은 다섯 단원(U1~U5)을 다 만난 뒤에 나오고, 받침 하나만 알 때는 「받침 없음」과 견준다', () => {
+  assert.deepEqual(nextLetters(meet(emptyProgress(), U14.slice(0, -1), at(0)), pack, 3), [U14.at(-1)], 'U5가 남으면 받침이 먼저 나오지 않는다');
   let p = meet(emptyProgress(), U14, at(0));
   for (const id of U14) for (const d of [0, 1, 2]) p = answer(p, { focus: [id], correct: true, at: at(d), sessionId: `d${d}` });
   assert.deepEqual(nextLetters(p, pack, 2), ['f-n', 'f-r']);

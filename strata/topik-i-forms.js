@@ -72,9 +72,11 @@ const ENDINGS = [
   ['G412', w => /(지요|죠)\??$/.test(w)],
   ['G211', w => /세요$/.test(w)],
   ['G204', w => /(이에요|예요)$/.test(w)],
-  // A past ending: the syllable before 어요 carries ㅆ (갔어요, 쉬었어요), but 있어요 is the present of 있다
-  // and 모르겠어요, 알겠어요 carry -겠-.
-  ['G208', w => /어요$/.test(w) && finalOf(before(w, '어요')) === FINAL_SS && !/(있|겠)어요$/.test(w)],
+  // A past ending: the syllable before 어요 carries ㅆ (갔어요, 쉬었어요), but 있어요 is the present of 있다,
+  // and in 모르겠어요, 있겠어요 the ㅆ is -겠-. With -겠- it is a past only when the syllable before 겠
+  // carries one (했겠어요, 있었겠어요).
+  ['G208', w => /어요$/.test(w) && finalOf(before(w, '어요')) === FINAL_SS && !/있어요$/.test(w)
+    && (!/겠어요$/.test(w) || finalOf(before(w, '겠어요')) === FINAL_SS && !/있$/.test(before(w, '겠어요')))],
   ['G501', (w, a) => /.는$/.test(w) && /^\s+[가-힣]/.test(a)],
 ];
 
@@ -97,7 +99,6 @@ const TIME_UNITS = new Set(['분', '초', '년', '주일', '개월']);
 // 만·까지·부터 after a noun, a numeral or a number are often what a rule turns on (5시까지만, 13살 이하만,
 // 지금부터), so a sentence names them. 편지만 is 만; 먹지만 is -지만.
 const NUMERALS = new Set(words.words.filter(([, , pos]) => pos === '수').map(([, word]) => word));
-const ADVERBS = new Set(words.words.filter(([, , pos]) => pos === '부').map(([, word]) => word));
 const stemLike = s => !!s && (NOUNS.has(s) || NUMERALS.has(s) || /\d/.test(s));
 function cruxParticles(word) {
   const ids = [];
@@ -130,20 +131,26 @@ const NUMBER = /\d+\s*(시간|시|분|초|살|세|개월|월|일|년|주|명|개
 // 빼 주세요, 넣어 주세요, 따뜻하게 해 주세요: -아/어 주세요 written with a space. The word before is a verb
 // in its -아/어 form (a stem ending in ㅏ ㅐ ㅓ ㅕ ㅘ ㅙ ㅝ with no final consonant); a TOPIK I noun is not
 // (사과 주세요, 차 주세요), and 한 잔 주세요 keeps plain -(으)세요. Only the polite 주세요: the plain
-// 넣어 줘 of a story request is left as it is. A TOPIK I adverb or numeral before 주세요 is no verb either
-// (더 주세요, 먼저 주세요, 하나 주세요).
-const SPACED_GIVE = w => !!w && w.length > 0 && !isNoun(w) && !ADVERBS.has(w) && !NUMERALS.has(w) && finalOf(w) === 0 && A_EO.has(syllable(w.slice(-1))?.vowel);
+// 넣어 줘 of a story request is left as it is. A few words that end like a verb's -아/어 form come
+// before 주세요 as themselves (더 주세요, 하나 주세요). The list is short on purpose: other adverbs and
+// numerals are also verbs (끝내 주세요, 사 주세요).
+const NOT_A_VERB_BEFORE_GIVE = new Set(['더', '다', '먼저', '어서', '하나']);
+// 세 개 주세요, 한 대 주세요: a counter right after a number. 차를 대 주세요 keeps its verb.
+const COUNTERS = new Set(words.words.filter(([, , pos]) => pos === '의').map(([, word]) => word));
+const COUNTING = new Set(['한', '두', '세', '네', '다섯', '여섯', '일곱', '여덟', '아홉', '열', '몇', '여러']);
+const counted = (counter, number) => COUNTERS.has(counter) && !!number && (COUNTING.has(number) || NUMERALS.has(number) || /\d/.test(number));
+const SPACED_GIVE = w => !!w && w.length > 0 && !isNoun(w) && !NOT_A_VERB_BEFORE_GIVE.has(w) && finalOf(w) === 0 && A_EO.has(syllable(w.slice(-1))?.vowel);
 function grammarIn(sentence) {
   const text = String(sentence ?? ''), found = [];
   const add = (id, at) => { if (!found.some(f => f.id === id)) found.push({ id, at }); };
   const number = NUMBER.exec(text);
   if (number) add('G212', number.index);
-  let previous = '';
+  let previous = '', beforePrevious = '';
   for (const m of text.matchAll(/\S+/g)) {
     const word = m[0].replace(/^[("“‘'«]+|[.,!?…"”’'»)]+$/g, '');
-    const last = previous; previous = word;
+    const last = previous, lastButOne = beforePrevious; beforePrevious = previous; previous = word;
     if (!word || PARTICLES.has(word) || CONJUNCTIONS.has(word)) continue;
-    if (word === '주세요' && SPACED_GIVE(last)) { add('G404', m.index); continue; }
+    if (word === '주세요' && SPACED_GIVE(last) && !counted(last, lastButOne)) { add('G404', m.index); continue; }
     for (const id of cruxParticles(word)) add(id, m.index);
     // 서랍이 아니라, 일 층이 아니에요: 이/가 아니다. 아니 alone (아니, 괜찮아요) has no 이/가 before it.
     if (/^(아니|아닙|아냐)/.test(word) && /[이가]$/.test(last) && last.length > 1) { add('S115', m.index); continue; }

@@ -1,6 +1,6 @@
 {
-  "version": "hangul-2",
-  "note": "한글 단계의 글자 층(docs/한글단계_설계.md §3). 단원 순서 U1~U4는 체험 2주 수업 순서, U6·U7(받침)은 설계 둘째 판이다. U5(거센소리)는 아직 없어 U4 다음이 U6이다. 헷갈리는 짝과 닮은 모양은 출발값이며 교사의 앎과 실측으로 고친다. by_ear:false인 짝은 소리로 묻지 않는다 — ㅐ/ㅔ와, 받침에서 [ㄷ]으로 같이 소리 나는 ㄷ·ㅅ·ㅈ. 글자 번호(jamo)는 유니코드 한글 음절 조합의 초성·중성·종성 순번이다. 받침은 role final이다.",
+  "version": "hangul-3",
+  "note": "한글 단계의 글자 층(docs/한글단계_설계.md §3). 단원 순서 U1~U4는 체험 2주 수업 순서, U5(거센소리 ㅋㅌㅍㅊ, 2026-10-05)는 글자 만든 원리대로 획을 더한 순서(ㄱ→ㅋ, ㄷ→ㅌ, ㅂ→ㅍ, ㅈ→ㅊ), U6·U7(받침)은 설계 둘째 판이다. 헷갈리는 짝과 닮은 모양은 출발값이며 교사의 앎과 실측으로 고친다. by_ear:false인 짝은 소리로 묻지 않는다 — ㅐ/ㅔ와, 받침에서 [ㄷ]으로 같이 소리 나는 ㄷ·ㅅ·ㅈ. 글자 번호(jamo)는 유니코드 한글 음절 조합의 초성·중성·종성 순번이다. 받침은 role final이다.",
   "skills": [
     ["ko.hangul.sound", "listening", "소리 듣고 글자 찾기"],
     ["ko.hangul.read", "reading", "글자 보고 소리 알기"]
@@ -10,11 +10,11 @@
     { "id": "U2", "label": "자음 하나", "letters": ["c-g", "c-n", "c-d", "c-r", "c-m"] },
     { "id": "U3", "label": "자음 둘", "letters": ["c-b", "c-s", "c-ng", "c-j", "c-h"] },
     { "id": "U4", "label": "모음 더하기", "letters": ["v-ya", "v-yeo", "v-yo", "v-yu", "v-ae", "v-e"] },
+    { "id": "U5", "label": "거센소리", "letters": ["c-k", "c-t", "c-p", "c-ch"] },
     { "id": "U6", "label": "받침 하나", "letters": ["f-n", "f-r", "f-m", "f-ng"] },
     { "id": "U7", "label": "받침 둘", "letters": ["f-g", "f-d", "f-b", "f-s", "f-j"] }
   ],
   "later": [
-    { "id": "U5", "label": "거센소리", "preview": "ㅊㅋㅌㅍ" },
     { "id": "U8", "label": "된소리", "preview": "ㄲㄸㅃㅆㅉ" },
     { "id": "U9", "label": "겹모음", "preview": "ㅘㅝㅚㅟㅢ" },
     { "id": "U10", "label": "첫 문장", "preview": "저는" }
@@ -42,6 +42,10 @@
     ["v-yu", "ㅠ", "vowel", 17],
     ["v-ae", "ㅐ", "vowel", 1],
     ["v-e", "ㅔ", "vowel", 5],
+    ["c-k", "ㅋ", "consonant", 15],
+    ["c-t", "ㅌ", "consonant", 16],
+    ["c-p", "ㅍ", "consonant", 17],
+    ["c-ch", "ㅊ", "consonant", 14],
     ["f-n", "ㄴ", "final", 4],
     ["f-r", "ㄹ", "final", 8],
     ["f-m", "ㅁ", "final", 16],
@@ -59,6 +63,10 @@
     { "letters": ["v-yeo", "v-yo"], "by_ear": true },
     { "letters": ["c-d", "c-r"], "by_ear": true },
     { "letters": ["v-ae", "v-e"], "by_ear": false },
+    { "letters": ["c-g", "c-k"], "by_ear": true },
+    { "letters": ["c-d", "c-t"], "by_ear": true },
+    { "letters": ["c-b", "c-p"], "by_ear": true },
+    { "letters": ["c-j", "c-ch"], "by_ear": true },
     { "letters": ["f-n", "f-ng"], "by_ear": true },
     { "letters": ["f-n", "f-m"], "by_ear": true },
     { "letters": ["f-m", "f-ng"], "by_ear": true },
@@ -72,6 +80,7 @@
     ["v-a", "v-eo"], ["v-o", "v-u"], ["v-ya", "v-yeo"], ["v-yo", "v-yu"],
     ["v-a", "v-ya"], ["v-eo", "v-yeo"], ["v-o", "v-yo"], ["v-u", "v-yu"], ["v-eu", "v-i"],
     ["c-g", "c-n"], ["c-n", "c-d"], ["c-d", "c-r"], ["c-m", "c-b"], ["c-s", "c-j"], ["c-ng", "c-h"],
+    ["c-g", "c-k"], ["c-d", "c-t"], ["c-j", "c-ch"], ["c-ch", "c-h"],
     ["f-n", "f-d"], ["f-d", "f-r"], ["f-m", "f-b"], ["f-s", "f-j"], ["f-g", "f-n"]
   ]
 }
