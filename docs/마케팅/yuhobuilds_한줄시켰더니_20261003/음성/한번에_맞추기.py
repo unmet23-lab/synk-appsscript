@@ -1,7 +1,8 @@
 # 한 번에 읽힌 테이크를 로컬 받아쓰기(faster-whisper, 낱말 시각)로 듣고 대본 낱말에 시각을 붙인다.
 # 대본 글자와 들린 글자를 difflib로 맞춰 들린 글자의 시각을 대본 글자로 옮기고, 못 맞춘 글자는 앞뒤로 메운다.
 # 대사(화면 단위) 시작·끝은 근처의 쉼(소리 크기)으로 다듬는다. 넣기.cjs가 <wav>.align.json을 읽는다.
-# 실행(음성 폴더에서): HF_HUB_OFFLINE=1 STT_MODEL=small python 한번에_맞추기.py 후보/*.wav  [--표]
+# 실행(음성 폴더에서): HF_HUB_OFFLINE=1 STT_MODEL=small python 한번에_맞추기.py 후보/*.wav  [--segs c1,c2,c3]
+# STT_MODEL=large-v3-turbo(10-04부터 HF 캐시에 있음)가 small보다 정확하다. 낱말 시각은 둘 다 쓸 만하다.
 import json, os, re, sys, difflib
 import numpy as np
 from scipy.io import wavfile
@@ -42,6 +43,10 @@ def f0_track(x, sr):
         if ac[k] / ac[0] > 0.5: vals.append(sr / k)
     return np.array(vals)
 
+# --segs c1,c2: 끝 문단만 따로 읽힌 테이크(한번에_생성.cjs --segs)는 그 대사들하고만 맞춘다
+SEGS = sys.argv[sys.argv.index('--segs') + 1].split(',') if '--segs' in sys.argv else None
+if SEGS: plan['segments'] = [s for s in plan['segments'] if s['id'] in SEGS]
+
 # 대본 글자 표: (대사 번호, 낱말 번호)
 S, owner = [], []
 for si, s in enumerate(plan['segments']):
@@ -49,7 +54,7 @@ for si, s in enumerate(plan['segments']):
         for ch in norm(tk): S.append(ch); owner.append((si, ti))
 
 model = WhisperModel(os.environ.get('STT_MODEL', 'small'), device='cpu', compute_type='int8', cpu_threads=8)
-files = [a for a in sys.argv[1:] if not a.startswith('--')]
+files = [a for i, a in enumerate(sys.argv[1:], 1) if not a.startswith('--') and sys.argv[i - 1] != '--segs']
 rows = []
 for wav in files:
     sr, x = wavfile.read(wav); x = x.astype(np.float32) / 32768

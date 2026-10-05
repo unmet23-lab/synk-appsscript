@@ -1,7 +1,7 @@
 // 대본 전체를 한 번에 읽힌 테이크를 만든다(Gemini TTS, Vertex). 10-04 「흐름이 뚝뚝 끊기는 느낌」 → 한 줄씩 따로 만들지 않는다.
 // 연출 메모와 대본은 머리글로 가른다(10-02 입장 검사: 한 문장 지시는 지시문까지 소리로 읽었다).
 // 실행(폴더 안에서, 종량제라 --유료-api가 있어야 부른다):
-//   node 음성/한번에_생성.cjs --유료-api --voices Achird,Algieba [--model gemini-3.8-flash-tts] [--out 음성/후보] [--n 2] [--tag r2]
+//   node 음성/한번에_생성.cjs --유료-api --voices Achird,Algieba [--model gemini-3.8-flash-tts] [--out 음성/후보] [--n 2] [--tag r2] [--segs c1,c2]
 // 결과: <out>/<모델>__<목소리>[_n].wav(16비트 PCM, 원래 표본율) + 같은 이름 .json(모델·목소리·대본·길이). 이미 있으면 건너뛴다(--다시).
 const fs = require('fs');
 const path = require('path');
@@ -18,12 +18,14 @@ const OUT = path.resolve(path.join(__dirname, '..'), arg('--out', '음성/후보
 const N = Number(arg('--n', 1));
 const again = argv.includes('--다시');
 const TAG = arg('--tag', '');
+// --segs c1,c2: 그 대사들만 이어 읽힌다(끝 문단만 새로 쓸 때). 음성/테이크_잇기.py가 앞 테이크와 잇는다.
+const SEGS = arg('--segs', '') ? arg('--segs').split(',') : null;
 const short = MODEL.replace(/^gemini-/, '').replace(/-preview/, '').replace(/-tts$/, '');
 
 /** 화면 단위(segments)를 이어 붙인 읽을 대본. breaks에 든 대사 앞에서 줄을 바꾼다. */
 function transcript() {
   const out = [];
-  plan.segments.forEach((s, i) => {
+  plan.segments.filter((s) => !SEGS || SEGS.includes(s.id)).forEach((s, i) => {
     if (i > 0) out.push(plan.take.breaks.includes(s.id) ? '\n' : ' ');
     out.push(s.text);
   });
@@ -78,7 +80,7 @@ function save(got, file) {
       try {
         const got = await tts(j.voice);
         const sec = save(got, j.file);
-        fs.writeFileSync(j.file.replace(/\.wav$/, '.json'), JSON.stringify({ engine: 'Gemini TTS (Vertex)', model: MODEL, voice: j.voice, mime: got.mime, seconds: sec, made: new Date().toISOString(), transcript: transcript(), notes: plan.take.notes }, null, 1));
+        fs.writeFileSync(j.file.replace(/\.wav$/, '.json'), JSON.stringify({ engine: 'Gemini TTS (Vertex)', model: MODEL, voice: j.voice, segs: SEGS || undefined, mime: got.mime, seconds: sec, made: new Date().toISOString(), transcript: transcript(), notes: plan.take.notes }, null, 1));
         console.log(`  ${path.basename(j.file)} ${sec.toFixed(2)}초 · ${((Date.now() - t0) / 1000).toFixed(1)}초 걸림`);
       } catch (e) { console.log(`  ${path.basename(j.file)} 실패: ${e.message}`); }
     }
