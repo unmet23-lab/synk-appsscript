@@ -40,8 +40,8 @@ export function configureCityMaterials(materials,{twilight={value:0}}={}) {
       shader.fragmentShader=shader.fragmentShader.replace('void main() {',functions+'\nvoid main() {');
       build(shader);
     };
-    material.customProgramCacheKey=()=>`city-architectural-${kind}-v8`;
-    material.userData.finish={version:8,metricUv:true,opaque:true,kind};
+    material.customProgramCacheKey=()=>`city-architectural-${kind}-v9`;
+    material.userData.finish={version:9,metricUv:true,opaque:true,kind};
   };
   for(const kind of ['stone','pale'])patch(materials[kind],kind,shader=>{
     const scale=kind==='stone'?'vec2(1.65,.72)':'vec2(.92,2.20)';
@@ -50,6 +50,11 @@ export function configureCityMaterials(materials,{twilight={value:0}}={}) {
       float cityPanel=cityHash(floor(cityTile)+vec2(vCitySeed*.017));
       float cityAA=max(fwidth(cityTile.x),fwidth(cityTile.y));
       float cityJoint=1.0-smoothstep(.007,.014+cityAA*.45,cityEdge(cityTile));
+      // Residential lime plaster keeps a continuous face. The same material
+      // batch still supplies the larger commercial stone panel joints.
+      float cityPlaster=step(vCityCell.y,0.0);
+      cityJoint*=1.0-cityPlaster;
+      cityPanel=mix(cityPanel,.45,cityPlaster);
       float cityDistanceFade=1.0-smoothstep(55.0,150.0,length(vViewPosition));
       float cityGrain=0.0;
       if(cityMaterialDetail>.01) {
@@ -59,7 +64,7 @@ export function configureCityMaterials(materials,{twilight={value:0}}={}) {
       diffuseColor.rgb *= .938+cityPanel*.055-cityJoint*.12+cityGrain*.032;
     `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
-      roughnessFactor=clamp(roughnessFactor+(cityPanel-.5)*.065+cityJoint*.15,.48,.96);
+      roughnessFactor=clamp(roughnessFactor+(cityPanel-.5)*.065+cityJoint*.15+cityPlaster*.17,.48,.96);
     `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
       if(cityMaterialDetail>.01) {
@@ -198,8 +203,10 @@ export function configureCityMaterials(materials,{twilight={value:0}}={}) {
         cityRoomColor=mix(cityRoomColor,cityWall,cityRoomDepthFade);
         }
       }
-      float cityRoomLit=${kind==='darkGlass'?'step(.62,cityRoomHash)':'step(.80,cityRoomHash)'};
-      cityRoomColor+=vec3(.18,.078,.025)*cityRoomLit*cityTwilight;
+      float cityRoomLit=${kind==='darkGlass'?'step(.62,cityRoomHash)':'step(.84,cityRoomHash)'};
+      // Warm interior light stays below the coherent sky reflection. Large
+      // distant towers should not turn into a checkerboard of cream squares.
+      cityRoomColor+=vec3(.105,.050,.021)*cityRoomLit*cityTwilight;
       // The sunset reflection remains visible through the darker coating;
       // most rooms stay unlit instead of one continuous cream-colored wall.
       vec3 cityReflected=radiance*${kind==='darkGlass'?'vec3(.35,.48,.47)':'vec3(.62,.80,.84)'}*cityFresnel*(.82+cityRoomHash*.18);
@@ -209,5 +216,5 @@ export function configureCityMaterials(materials,{twilight={value:0}}={}) {
     `);
   });
   return {setQuality(quality){detail.value=quality==='low'?0:quality==='balanced'?.62:1;},detail,
-    stats:{version:8,metricUv:true,extraDrawCalls:0,extraTriangles:0,downloadedTextures:0,interiorRays:1}};
+    stats:{version:9,metricUv:true,extraDrawCalls:0,extraTriangles:0,downloadedTextures:0,interiorRays:1}};
 }

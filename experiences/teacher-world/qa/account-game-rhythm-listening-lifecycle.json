@@ -1,0 +1,218 @@
+{
+  "ok": true,
+  "startedAt": "2026-10-04T10:37:59.040Z",
+  "verifiedAt": "2026-10-04T10:41:37.254Z",
+  "contentId": "rhythm-listening",
+  "gameId": "korean-rhythm",
+  "lifecycle": true,
+  "offline": false,
+  "target": {
+    "items": [
+      {
+        "itemKey": "korean-rhythm:t0q0:v1:claim0",
+        "skillId": "ko.listening.detail",
+        "modality": "listening",
+        "familyKey": "korean-rhythm:t0q0:v1",
+        "difficulty": 1,
+        "responseFormat": "binary-choice"
+      },
+      {
+        "itemKey": "korean-rhythm:t0q0:v1:claim1",
+        "skillId": "ko.listening.detail",
+        "modality": "listening",
+        "familyKey": "korean-rhythm:t0q0:v1",
+        "difficulty": 1,
+        "responseFormat": "binary-choice"
+      },
+      {
+        "itemKey": "korean-rhythm:t0q1:v1:claim0",
+        "skillId": "ko.listening.detail",
+        "modality": "listening",
+        "familyKey": "korean-rhythm:t0q1:v1",
+        "difficulty": 1,
+        "responseFormat": "binary-choice"
+      },
+      {
+        "itemKey": "korean-rhythm:t0q1:v1:claim1",
+        "skillId": "ko.listening.detail",
+        "modality": "listening",
+        "familyKey": "korean-rhythm:t0q1:v1",
+        "difficulty": 1,
+        "responseFormat": "binary-choice"
+      },
+      {
+        "itemKey": "korean-rhythm:t0q4:v1:claim0",
+        "skillId": "ko.listening.detail",
+        "modality": "listening",
+        "familyKey": "korean-rhythm:t0q4:v1",
+        "difficulty": 1,
+        "responseFormat": "binary-choice"
+      },
+      {
+        "itemKey": "korean-rhythm:t0q4:v1:claim1",
+        "skillId": "ko.listening.detail",
+        "modality": "listening",
+        "familyKey": "korean-rhythm:t0q4:v1",
+        "difficulty": 1,
+        "responseFormat": "binary-choice"
+      }
+    ],
+    "label": "듣고 세부 정보 찾기",
+    "policy": "learning-priority-3",
+    "reason": "듣고 세부 정보 찾기는 아직 기록이 적어요. 짧게 확인해 봐요.",
+    "skillId": "ko.listening.detail",
+    "version": 1,
+    "itemKeys": [
+      "korean-rhythm:t0q0:v1:claim0",
+      "korean-rhythm:t0q0:v1:claim1",
+      "korean-rhythm:t0q1:v1:claim0",
+      "korean-rhythm:t0q1:v1:claim1",
+      "korean-rhythm:t0q4:v1:claim0",
+      "korean-rhythm:t0q4:v1:claim1"
+    ],
+    "modality": "listening",
+    "difficulty": 1,
+    "familyKeys": [
+      "korean-rhythm:t0q0:v1",
+      "korean-rhythm:t0q1:v1",
+      "korean-rhythm:t0q4:v1"
+    ],
+    "freshCount": 3,
+    "description": "듣고 세부 정보 찾기 · 난도 1 · 목표 3문항 (새 문항 3, 복습 0)",
+    "reviewCount": 0,
+    "responseFormat": "binary-choice",
+    "requiredAttempts": 3
+  },
+  "checks": [
+    {
+      "name": "real teacher UI created frozen individual target",
+      "ok": true
+    },
+    {
+      "name": "server run pins teacher target",
+      "ok": true
+    },
+    {
+      "name": "closing game preserves one completed response",
+      "ok": true
+    },
+    {
+      "name": "teacher sees stopped run and no premature submission",
+      "ok": true
+    },
+    {
+      "name": "teacher UI shows partial progress without completed result",
+      "ok": true
+    },
+    {
+      "name": "reconnect resumes same run and partial response",
+      "ok": true
+    },
+    {
+      "name": "reconnect retains exact original teacher target",
+      "ok": true
+    },
+    {
+      "name": "actual game responses complete exact frozen target",
+      "ok": true
+    },
+    {
+      "name": "authored correct controls have expected correctness",
+      "ok": true,
+      "detail": {
+        "correct": 3,
+        "total": 3
+      }
+    },
+    {
+      "name": "completion does not claim efficacy",
+      "ok": true
+    },
+    {
+      "name": "reconnect produces one submission of three distinct target families",
+      "ok": true
+    },
+    {
+      "name": "responses are persisted in canonical SYNK ID storage",
+      "ok": true,
+      "detail": {
+        "count": 36
+      }
+    },
+    {
+      "name": "teacher app renders the completed result",
+      "ok": true
+    },
+    {
+      "name": "teacher authorized API returns the same submission",
+      "ok": true
+    },
+    {
+      "name": "WORLD reload retains completed assignment",
+      "ok": true
+    },
+    {
+      "name": "no browser or HTTP fixture runtime errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "trace": [
+    {
+      "phase": "before-stop",
+      "responses": [
+        {
+          "prompt": "오늘은 바빠서 내일 도서관에 갈 거예요.",
+          "track": 0,
+          "input": "F",
+          "answerWindowOpened": true
+        }
+      ]
+    },
+    {
+      "phase": "after-reconnect",
+      "responses": [
+        {
+          "prompt": "오늘은 바빠서 내일 도서관에 갈 거예요.",
+          "track": 0,
+          "input": "F",
+          "answerWindowOpened": true
+        },
+        {
+          "prompt": "카페에서 친구를 기다리고 있어요.",
+          "track": 0,
+          "input": "F",
+          "answerWindowOpened": true
+        },
+        {
+          "prompt": "아침에는 비가 왔지만 지금은 맑아요.",
+          "track": 0,
+          "input": "J",
+          "answerWindowOpened": true
+        },
+        {
+          "prompt": "저는 커피 대신 차를 주문했어요.",
+          "track": 0,
+          "input": "F",
+          "answerWindowOpened": true
+        },
+        {
+          "prompt": "회의가 두 시에서 세 시로 바뀌었어요.",
+          "track": 0,
+          "input": "J",
+          "answerWindowOpened": true
+        }
+      ]
+    }
+  ],
+  "submission": {
+    "total": 3,
+    "correct": 3,
+    "assisted": 0,
+    "independent": 3
+  },
+  "errors": [],
+  "synthetic": true,
+  "production": false,
+  "completionSource": "real-game-controls-account-linked-http-postgresql"
+}

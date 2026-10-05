@@ -99,6 +99,7 @@ function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getA
     // Core's summary of this account for any SYNK product: chosen settings, declared reasons and
     // the stored practice (only while learning storage is on). Never evaluation answers.
     atlasSummary: options => request('synk-account?view=atlas', undefined, options),
+    exportAiPage: ({ after = 0, until } = {}) => request(`synk-account?view=ai-export&after=${encodeURIComponent(after)}${until == null ? '' : `&until=${encodeURIComponent(until)}`}`),
     learning: Object.freeze({
       get: ({ after, revision, signal }) => request(`synk-learning?after=${encodeURIComponent(after)}&revision=${encodeURIComponent(revision)}`, undefined, { signal }),
       post: ({ revision, events, signal }) => request('synk-learning', { revision, events }, { signal }),

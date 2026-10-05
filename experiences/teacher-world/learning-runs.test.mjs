@@ -85,3 +85,25 @@ test('an older unfinished run without a target cannot resume as a targeted task'
   assert.equal(fresh.status,200);assert.notEqual(fresh.run.id,old.id);assert.ok(fresh.run.target.items.length);assert.equal(fresh.run.progress.total,0);
   assert.equal(f.server.snapshot().learningRuns.find(r=>r.id===old.id).status,'stopped');
 });
+
+for(const entry of ['new','retry','active','resume'])test(`changed blank-slice item versions reject ${entry} before partial launch or stopping another run`,async t=>{
+  const first=await setup(t),a=await first.assign('blank-reading');
+  const old=(await first.call('/api/world/runs/start',first.s.token,{assignmentId:a.id,revision:1,idempotencyKey:'old-start'})).run;
+  const state=first.server.snapshot(),assignment=state.assignments.find(row=>row.id===a.id);
+  const current=gameItems(GAME_CONTENT.find(row=>row.id==='blank-reading')).filter(item=>['blank-slice.v06.v2','blank-slice.v07.v2','blank-slice.v08.v1'].includes(item.itemKey));
+  assert.equal(current.length,3);
+  const items=current.map(item=>({...item,itemKey:item.itemKey.replace(/\.v2$/,'.v1')}));
+  const stale={...old.target,...items[0],items,itemKeys:items.map(item=>item.itemKey),familyKeys:items.map(item=>item.familyKey),requiredAttempts:3};
+  assignment.targets[first.s.learner.id]=structuredClone(stale);
+  state.learningRuns[0].target=structuredClone(stale);
+  if(entry==='new')state.learningRuns=[];
+  if(entry==='resume')state.learningRuns[0].status='stopped';
+  const other={...structuredClone(old),id:'other-active',assignmentId:null,assignmentRevision:null,learnerId:first.s.learner.id,sharingRevision:2,fingerprint:'other',status:'active',idempotencyKey:'other'};
+  state.learningRuns.push(other);
+  const f=await setup(t,{state});
+  const response=await f.call('/api/world/runs/start',first.s.token,{assignmentId:a.id,revision:1,idempotencyKey:entry==='retry'?'old-start':'new-start'});
+  assert.equal(response.status,409,JSON.stringify(response));assert.equal(response.code,'TARGET_UNAVAILABLE');assert.match(response.message,/문항|과제/);
+  const after=f.server.snapshot();
+  assert.deepEqual(after.learningRuns,state.learningRuns,'rejection does not change or create a run');
+  assert.deepEqual(after.assignments.find(row=>row.id===a.id).targets,assignment.targets,'never silently substitutes v2 for the pinned version');
+});

@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from '../vendor/three.module.js';
-import {buildAlternativeCar,customizeCar,createGarageStage,refineOriginalCar} from '../vehicles.js';
+import {buildAlternativeCar,customizeCar,createGarageStage,refineOriginalCar,setVehicleQuality} from '../vehicles.js';
+import {loadVehicleModel} from '../qa/load-vehicle-model.mjs';
 
 function drivingBounds(car){
   car.updateMatrixWorld(true);const box=new THREE.Box3();
@@ -165,4 +166,72 @@ test('original GT refinement preserves world bounds and rolling groups while bat
   assert.equal(body.material.color.getHexString(),'4d9489');
   assert(car.userData.rimMeshes.every(p=>p.material.color.getHexString()==='d0aa67'));
   const stats={...car.userData.modelStats};refineOriginalCar(car);assert.deepEqual(car.userData.modelStats,stats,'repeat refinement must be harmless');
+});
+
+function wrapOriginalModel(model){
+  const car=new THREE.Group();model.rotation.y=Math.PI;car.add(model);
+  car.userData.model=model;
+  car.userData.wheels=['wheel_fl','wheel_fr','wheel_rl','wheel_rr'].map(name=>model.getObjectByName(name)).filter(Boolean);
+  model.traverse(part=>{if(part.isMesh){part.castShadow=part.name!=='glass';part.receiveShadow=true;}});
+  return car;
+}
+
+test('shipped GT low detail reduces geometry while preserving exterior bounds, axles and original high/garage geometry',async()=>{
+  const template=await loadVehicleModel(),car=wrapOriginalModel(template.clone(true));
+  const bounds=drivingBounds(car),axes=car.userData.wheels.map(w=>w.position.toArray()),body=car.userData.model.getObjectByName('body'),bodyGeometry=body.geometry;
+  const sourceBuffers=new Map(),sourceBarrels=[];
+  template.traverse(part=>{if(part.isMesh){sourceBuffers.set(part.geometry,{positions:part.geometry.attributes.position.array.slice(),indices:part.geometry.index.array.slice()});if((part.userData.name||part.name)==='wheel')sourceBarrels.push(part);}});
+  const barrelTriangles=sourceBarrels.reduce((sum,p)=>sum+p.geometry.index.count/3,0);
+  assert.equal(barrelTriangles,36480);
+  assert.equal(new Set(sourceBarrels.map(part=>part.name)).size,4,'QA must exercise actual GLTFLoader unique node names');
+  assert(sourceBarrels.some(part=>part.name!==part.userData.name),'the original authored name must survive loader renaming');
+  refineOriginalCar(car);
+  const high={...car.userData.modelStats},originals=new Map();
+  car.traverse(part=>{if(part.isMesh)originals.set(part,part.geometry);});
+  assert.equal(high.triangles,358788);
+  assert.equal(high.shadowTriangles,156504,'wheel barrels, cockpit and brake fixtures must not enter the shadow pass');
+  setVehicleQuality(car,'low');
+  const low={...car.userData.modelStats},reduced=new Map();
+  car.traverse(part=>{if(part.isMesh)reduced.set(part,part.geometry);});
+  assert.equal(low.triangles,327929);assert(low.triangles<high.triangles*.92);
+  assert.equal(low.shadowTriangles,high.shadowTriangles);assert.equal(low.drawCalls,high.drawCalls);
+  assert.equal(body.geometry,bodyGeometry,'the full exterior body is never simplified');
+  assert.deepEqual(drivingBounds(car),bounds,'the collision/exterior envelope must stay exact');
+  assert.deepEqual(car.userData.wheels.map(w=>w.position.toArray()),axes);
+  for(const [part,geometry] of reduced){
+    const position=geometry.attributes.position,normal=geometry.attributes.normal;
+    assert(geometry.index.array.every(i=>i<position.count),'all triangle vertices must exist');
+    assert(position.array.every(Number.isFinite));assert(normal.array.every(Number.isFinite));
+    if(geometry.userData.mobileReduction)assert(geometry.userData.mobileReduction.maxDeviation<=Math.sqrt(3)*.006+1e-7,'6mm grid displacement must remain below its 10.4mm diagonal');
+    if(part.castShadow)assert.equal(geometry,originals.get(part),'the complete exterior shadow silhouette stays exact');
+  }
+  // Restoring quality or opening the garage swaps back to the same buffers,
+  // and a second low transition uses the already-created geometry.
+  for(const [quality,options] of [['balanced',{}],['high',{}],['low',{preview:true}]]){
+    setVehicleQuality(car,quality,options);assert.equal(car.userData.modelStats.geometryLevel,'high');
+    for(const [part,geometry] of originals)assert.equal(part.geometry,geometry);
+    setVehicleQuality(car,'low');for(const [part,geometry] of reduced)assert.equal(part.geometry,geometry);
+  }
+  for(const [geometry,buffers] of sourceBuffers){assert.deepEqual(geometry.attributes.position.array,buffers.positions);assert.deepEqual(geometry.index.array,buffers.indices);}
+});
+
+test('low geometry is lazy, shared across original clones and never disposes another car or preview buffers',()=>{
+  const geometry=new THREE.SphereGeometry(.12,96,64),material=new THREE.MeshStandardMaterial();
+  const make=()=>{
+    const model=new THREE.Group(),part=new THREE.Mesh(geometry,material);part.name='interior_dark';model.add(part);
+    const car=wrapOriginalModel(model);refineOriginalCar(car);return{car,part};
+  };
+  const first=make(),second=make();let disposals=0;
+  geometry.addEventListener('dispose',()=>disposals++);
+  assert.equal(first.part.userData.vehicleGeometryLevels.low,null);
+  setVehicleQuality(first.car,'balanced');assert.equal(first.part.userData.vehicleGeometryLevels.low,null);
+  setVehicleQuality(first.car,'low');const low=first.part.geometry;low.addEventListener('dispose',()=>disposals++);
+  assert.notEqual(low,geometry);assert(low.index.count<geometry.index.count);
+  assert.equal(second.part.geometry,geometry);
+  setVehicleQuality(second.car,'low');assert.equal(second.part.geometry,low,'the same source only needs one reduction');
+  const scene=new THREE.Scene(),studio=createGarageStage(scene);studio.place(first.car);
+  setVehicleQuality(first.car,'low',{preview:true});assert.equal(first.part.geometry,geometry);assert.equal(second.part.geometry,low);
+  studio.dispose();assert.equal(disposals,0);
+  for(let i=0;i<6;i++){setVehicleQuality(first.car,'low');assert.equal(first.part.geometry,low);setVehicleQuality(first.car,'high');assert.equal(first.part.geometry,geometry);}
+  assert.equal(disposals,0);
 });

@@ -1,0 +1,143 @@
+[
+  {
+    "name": "desktop",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "시작 단추 → 첫 말 0.8초",
+      "공이 나는 동안 초당 그림 31장(헤드리스)",
+      "천천히 듣기: 누른 뒤 50ms 안에 재생(미리 불러 둠) · 0.75배",
+      "기다리던 공: 고른 뒤 받아치기까지 201ms(누르기 포함)",
+      "공이 오는 시간 배율(순간 맞춤, 말마다): 1 → 1 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.9 → 0.9 → 0.9",
+      "학습 기록 — 세부: 난도1: recent-independent n7 맞6 도움1, 난도2: unseen n0 맞0, 난도3: unseen n0 맞0 / 핵심: 난도1: recent-independent n4 맞4, 난도2: unseen n0 맞0, 난도3: unseen n0 맞0",
+      "소리: 음성 17(연습·12개·멈춤 뒤 다시·다시 듣기·해설·복습) · 천천히 1 · 획득(빠르게) 7 · 몽글 침 13 · 튀김 26 · 받아치기 13 · 휙 13 · 별 2 · 성취 1",
+      "결과 능력 줄: 듣고 세부 정보 찾기 이번 7/8 쉬운 말: 최근 혼자 해냈어요 · 조금 어려운 말: 아직 기록이 적어요 · 혼자 고른 새 문항 7개 중 6개 맞힘 / 듣고 핵심 이해하기 다음 연습 이번 4/4 쉬운 말: 최근 혼자 해냈어요 · 조금 어려운 말: 아직 기록이 적어요 · 혼자 고른 새 문항 4개 중 4개 맞힘",
+      "다음 판: 듣고 핵심 이해하기는 아직 기록이 적어요. 짧게 확인해 봐요. 다음 판에는 조금 어려운 ‘이어지는 말’ 문항을 먼저 넣어요.",
+      "둘째 판 입구: 듣고 핵심 이해하기는 아직 기록이 적어요. 짧게 확인해 봐요. 그 말들을 먼저 넣었어요."
+    ],
+    "shots": [
+      "play_desktop_00_lobby.png",
+      "play_desktop_01_practice_talk.png",
+      "play_desktop_02_chosen.png",
+      "play_desktop_03_smash.png",
+      "play_desktop_04_wrong_explain.png",
+      "play_desktop_05_wait.png",
+      "play_desktop_06_wait_text.png",
+      "play_desktop_07_pause.png",
+      "play_desktop_08_smash2.png",
+      "play_desktop_09_results.png",
+      "play_desktop_10_results_full.png",
+      "play_desktop_11_lobby_again.png"
+    ],
+    "sec": 81
+  },
+  {
+    "name": "phone",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "시작 단추 → 첫 말 0.8초",
+      "공이 나는 동안 초당 그림 30장(헤드리스)",
+      "천천히 듣기: 누른 뒤 50ms 안에 재생(미리 불러 둠) · 0.75배",
+      "기다리던 공: 고른 뒤 받아치기까지 187ms(누르기 포함)",
+      "공이 오는 시간 배율(순간 맞춤, 말마다): 1 → 1 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.9 → 0.9 → 0.9",
+      "학습 기록 — 세부: 난도1: recent-independent n7 맞6 도움1, 난도2: unseen n0 맞0, 난도3: unseen n0 맞0 / 핵심: 난도1: recent-independent n4 맞4, 난도2: unseen n0 맞0, 난도3: unseen n0 맞0",
+      "소리: 음성 17(연습·12개·멈춤 뒤 다시·다시 듣기·해설·복습) · 천천히 1 · 획득(빠르게) 7 · 몽글 침 13 · 튀김 26 · 받아치기 13 · 휙 13 · 별 2 · 성취 1",
+      "결과 능력 줄: 듣고 세부 정보 찾기 이번 7/8 쉬운 말: 최근 혼자 해냈어요 · 조금 어려운 말: 아직 기록이 적어요 · 혼자 고른 새 문항 7개 중 6개 맞힘 / 듣고 핵심 이해하기 다음 연습 이번 4/4 쉬운 말: 최근 혼자 해냈어요 · 조금 어려운 말: 아직 기록이 적어요 · 혼자 고른 새 문항 4개 중 4개 맞힘",
+      "다음 판: 듣고 핵심 이해하기는 아직 기록이 적어요. 짧게 확인해 봐요. 다음 판에는 조금 어려운 ‘이어지는 말’ 문항을 먼저 넣어요.",
+      "둘째 판 입구: 듣고 핵심 이해하기는 아직 기록이 적어요. 짧게 확인해 봐요. 그 말들을 먼저 넣었어요."
+    ],
+    "shots": [
+      "play_phone_00_lobby.png",
+      "play_phone_01_practice_talk.png",
+      "play_phone_02_chosen.png",
+      "play_phone_03_smash.png",
+      "play_phone_04_wrong_explain.png",
+      "play_phone_05_wait.png",
+      "play_phone_06_wait_text.png",
+      "play_phone_07_pause.png",
+      "play_phone_08_smash2.png",
+      "play_phone_09_results.png",
+      "play_phone_10_results_full.png",
+      "play_phone_11_lobby_again.png"
+    ],
+    "sec": 83
+  },
+  {
+    "name": "small",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "시작 단추 → 첫 말 0.9초",
+      "공이 나는 동안 초당 그림 31장(헤드리스)",
+      "천천히 듣기: 누른 뒤 50ms 안에 재생(미리 불러 둠) · 0.75배",
+      "기다리던 공: 고른 뒤 받아치기까지 218ms(누르기 포함)",
+      "공이 오는 시간 배율(순간 맞춤, 말마다): 1 → 1 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.9 → 0.9 → 0.9",
+      "학습 기록 — 세부: 난도1: recent-independent n7 맞6 도움1, 난도2: unseen n0 맞0, 난도3: unseen n0 맞0 / 핵심: 난도1: recent-independent n4 맞4, 난도2: unseen n0 맞0, 난도3: unseen n0 맞0",
+      "소리: 음성 17(연습·12개·멈춤 뒤 다시·다시 듣기·해설·복습) · 천천히 1 · 획득(빠르게) 7 · 몽글 침 13 · 튀김 26 · 받아치기 13 · 휙 13 · 별 2 · 성취 1",
+      "결과 능력 줄: 듣고 세부 정보 찾기 이번 7/8 쉬운 말: 최근 혼자 해냈어요 · 조금 어려운 말: 아직 기록이 적어요 · 혼자 고른 새 문항 7개 중 6개 맞힘 / 듣고 핵심 이해하기 다음 연습 이번 4/4 쉬운 말: 최근 혼자 해냈어요 · 조금 어려운 말: 아직 기록이 적어요 · 혼자 고른 새 문항 4개 중 4개 맞힘",
+      "다음 판: 듣고 핵심 이해하기는 아직 기록이 적어요. 짧게 확인해 봐요. 다음 판에는 조금 어려운 ‘이어지는 말’ 문항을 먼저 넣어요.",
+      "둘째 판 입구: 듣고 핵심 이해하기는 아직 기록이 적어요. 짧게 확인해 봐요. 그 말들을 먼저 넣었어요."
+    ],
+    "shots": [
+      "play_small_00_lobby.png",
+      "play_small_01_practice_talk.png",
+      "play_small_02_chosen.png",
+      "play_small_03_smash.png",
+      "play_small_04_wrong_explain.png",
+      "play_small_05_wait.png",
+      "play_small_06_wait_text.png",
+      "play_small_07_pause.png",
+      "play_small_08_smash2.png",
+      "play_small_09_results.png",
+      "play_small_10_results_full.png",
+      "play_small_11_lobby_again.png"
+    ],
+    "sec": 80
+  },
+  {
+    "name": "reduced",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "시작 단추 → 첫 말 0.7초",
+      "공이 나는 동안 초당 그림 32장(헤드리스)",
+      "천천히 듣기: 누른 뒤 50ms 안에 재생(미리 불러 둠) · 0.75배",
+      "기다리던 공: 고른 뒤 받아치기까지 205ms(누르기 포함)",
+      "공이 오는 시간 배율(순간 맞춤, 말마다): 1 → 1 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.9 → 0.9 → 0.9",
+      "학습 기록 — 세부: 난도1: recent-independent n7 맞6 도움1, 난도2: unseen n0 맞0, 난도3: unseen n0 맞0 / 핵심: 난도1: recent-independent n4 맞4, 난도2: unseen n0 맞0, 난도3: unseen n0 맞0",
+      "소리: 음성 17(연습·12개·멈춤 뒤 다시·다시 듣기·해설·복습) · 천천히 1 · 획득(빠르게) 7 · 몽글 침 13 · 튀김 26 · 받아치기 13 · 휙 13 · 별 2 · 성취 1",
+      "결과 능력 줄: 듣고 세부 정보 찾기 이번 7/8 쉬운 말: 최근 혼자 해냈어요 · 조금 어려운 말: 아직 기록이 적어요 · 혼자 고른 새 문항 7개 중 6개 맞힘 / 듣고 핵심 이해하기 다음 연습 이번 4/4 쉬운 말: 최근 혼자 해냈어요 · 조금 어려운 말: 아직 기록이 적어요 · 혼자 고른 새 문항 4개 중 4개 맞힘",
+      "다음 판: 듣고 핵심 이해하기는 아직 기록이 적어요. 짧게 확인해 봐요. 다음 판에는 조금 어려운 ‘이어지는 말’ 문항을 먼저 넣어요.",
+      "둘째 판 입구: 듣고 핵심 이해하기는 아직 기록이 적어요. 짧게 확인해 봐요. 그 말들을 먼저 넣었어요."
+    ],
+    "shots": [
+      "play_reduced_00_lobby.png",
+      "play_reduced_01_practice_talk.png",
+      "play_reduced_02_chosen.png",
+      "play_reduced_03_smash.png",
+      "play_reduced_04_wrong_explain.png",
+      "play_reduced_05_wait.png",
+      "play_reduced_06_wait_text.png",
+      "play_reduced_07_pause.png",
+      "play_reduced_08_smash2.png",
+      "play_reduced_09_results.png",
+      "play_reduced_10_results_full.png",
+      "play_reduced_11_lobby_again.png"
+    ],
+    "sec": 81
+  },
+  {
+    "name": "mute",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "‘물이 있어요?’(7자) 읽을 시간 약 1.1초",
+      "‘동생이 있어요?’(8자) 읽을 시간 약 1.3초"
+    ],
+    "shots": [
+      "play_mute_00_text.png"
+    ],
+    "sec": 23
+  }
+]

@@ -1,5 +1,15 @@
 # 데스크톱 SYNK ID 연결 — 0.2.0
 
+## 2026-10-04 소스 후속 — 독립 교사 앱과 WORLD 개인 맞춤 기억
+
+교사 앱은 `clientId: teacher`, OAuth `clients.teacher`, `im.synk.teacher.preview` 보관소·세션을 쓰는 독립 프로세스다. API 헤더의 제품은 `world`로 유지하고 실제 교사·담당 반 권한은 서버가 판정한다. 콜백은 `http://127.0.0.1:43824/synk/oauth/teacher/callback`이며 WORLD 클라이언트 ID·콜백·암호화 저장소를 재사용하지 않는다. 설정 예시는 [auth.example.json](auth.example.json), 동작 범위는 [README](README.md)에 있다.
+
+`synkTeacher`는 최상위의 정확한 `teacher.html`에서만 main IPC를 호출할 수 있다. 반 목록·교사 workspace·과제 생성/변경/취소·관찰 메모가 고정 허용 목록이다. 자식 교사 화면은 반에 한정한 호스트를 사용하고 토큰을 받지 않는다. 학생의 학습 전송·Town·개인 맞춤 기억·임의 URL·회사 및 설치 API는 교사 broker에서 거절한다.
+
+WORLD의 native account broker에는 기존 서버 계약의 `memoryGet`/`memoryPost`와 `atlasSummary`를 연결했다. 반별 공유 revision과 개인 계정 학습 revision을 섞지 않으며 메모리는 계정의 `synk-learning?view=memory` 경로로 전달한다. 학생의 개인 기억이 교사에게 자동 공유되는 경로를 추가하지 않았다.
+
+[실제 Windows native 합성 재검증](artifacts/teacher-account-current-20261004.json) **26/26**은 PKCE loopback·DPAPI·저장 토큰 재복구·IPC·PGlite 과제 결과·네트워크 중단과 복구·권한 철회·로그아웃을 검사한다. 연결 복구 후 담당 수업과 정상 안내를 다시 표시한다. [teacher-main 부팅](artifacts/teacher-entry-current-20261004.json)은 실제 입구의 미설정 상태를 검사한다. 운영 OAuth 등록·실사용자 로그인·서명 패키지 및 설치·Mac/모바일 기기 검증은 아직 하지 않았다. 아래 0.2.0 기록은 과거 패키지 이력이다.
+
 2026-10-02. 소스 구현·합성 서버 검증·Windows 0.2.0 개발판 6종 패키징을 완료했다. 운영 OAuth 설정을 읽거나 변경하지 않았고, 실제 사용자 로그인·공개 배포·Mac 실행을 확인하지 않았다. 0.2.0 패키지에는 공개 설정이 없으므로 로그인은 준비 중으로 표시된다. 보존한 0.1.0 설치 파일에는 이 기능이 없다.
 
 ## 인증과 저장

@@ -1,0 +1,183 @@
+{
+  "date": "2026-10-04",
+  "scope": "local implementation and browser verification, no public deployment",
+  "tests": {
+    "passed": 176,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 7531.5004,
+    "log": "graphics-v9-tests.txt"
+  },
+  "sources": {
+    "app.js": {
+      "bytes": 109768,
+      "sha256": "184fe8b971d243bbb4d7b31dafa54b45056f557a36d7c17c7b4241e3297e5ae2"
+    },
+    "index.html": {
+      "bytes": 18524,
+      "sha256": "758598a37af367577376ded557f8383adbb73cc391db8b473f0e3e07cb7fd8a0"
+    },
+    "coast-drive.js": {
+      "bytes": 1553,
+      "sha256": "e03b377b183c6d17364e379233a34c1fd77c16365b1730f8989c68a7f1af3c6f"
+    },
+    "coast-drive.css": {
+      "bytes": 2203,
+      "sha256": "04b151200cf8c25c4714ba96f26070f210c7de2cf6f5fea5a3320832f0298850"
+    },
+    "coast-radio.js": {
+      "bytes": 5143,
+      "sha256": "08e9eb71db31cbc74df8af35091daa270bbecf2bca71328be5dda7ae897d9e70"
+    },
+    "atmosphere.js": {
+      "bytes": 10043,
+      "sha256": "eb0adcf280249ab782e3930e7cd043377db11cc1a8305ea1f50572e79ea6ae85"
+    },
+    "landscape.js": {
+      "bytes": 23991,
+      "sha256": "5a7964c1ad97b92e019c1dd9d1e6af46f3eecfafb6df52bd0b3359574585c7b2"
+    },
+    "render-world.js": {
+      "bytes": 12196,
+      "sha256": "91c2027ddf95b379002005fd664b74bf6ca9c63aae4c95ab6c4f1003237baca0"
+    },
+    "cityscape.js": {
+      "bytes": 42764,
+      "sha256": "da3f68d40a178995fb3d34775a06fdc2a792af49646d102e08673e2ac7d27e4a"
+    },
+    "city-materials.js": {
+      "bytes": 13736,
+      "sha256": "cad4dfe6acf3d5903b40ab48c5c6f68d0017d94f37581ee450430a7437557972"
+    },
+    "city-life.js": {
+      "bytes": 28803,
+      "sha256": "52f06f5898e67c4b94373a4402701013a94a1a06402825f554fc4116ccc0afb9"
+    },
+    "vehicles.js": {
+      "bytes": 40744,
+      "sha256": "4182086be807471f8f03ecf4d5c22a2b5f9112f477c0f7bf818b6e9ea89b1270"
+    },
+    "build-site.mjs": {
+      "bytes": 3345,
+      "sha256": "9b2b05486f9ab0f66ed56b637390a405a12ac2c77341d46e54d69977507d3acf"
+    },
+    "assets/music/coastline.mp3": {
+      "bytes": 4633256,
+      "sha256": "4580f5e5bc70dd735988c095ba785ae3e7ce144b0f6df021af538b2cbf448873"
+    },
+    "assets/music/sources.json": {
+      "bytes": 1062,
+      "sha256": "8e2a0b39914a90fa92ab39c5f55218b542fd89b3ef8048fe572f2b8d9d561f07"
+    }
+  },
+  "captures": {
+    "coast-drive-v9-final-ui-20261004.jpg": {
+      "width": 1920,
+      "height": 1072,
+      "format": "JPEG",
+      "bytes": 181431,
+      "sha256": "bc1d2072ecd4ba2b2939546e0733a5c66de0973c9894c6507af1bc3305dff102"
+    },
+    "coast-drive-v9-final-4k-20261004.png": {
+      "width": 3840,
+      "height": 2160,
+      "format": "PNG",
+      "bytes": 12317673,
+      "sha256": "d64a016bd9302d2a1ccc62b3026fbbe83d56ab80ad29d3aaa131187e8873105d"
+    },
+    "coast-drive-v9-mobile-20261004.jpg": {
+      "width": 375,
+      "height": 812,
+      "format": "JPEG",
+      "bytes": 32882,
+      "sha256": "1d61037667e4bd900ddd951648c28e9f607530ac61a9955ea560f63477dde880"
+    },
+    "coast-drive-v9-landscape-20261004.jpg": {
+      "width": 829,
+      "height": 383,
+      "format": "JPEG",
+      "bytes": 40629,
+      "sha256": "92bea56d3b4e783a553fce6cbd4c76925329b184262f21e39bb466d85a00e427"
+    },
+    "graphics-v9-homes-4k-20261004.png": {
+      "width": 3840,
+      "height": 2160,
+      "format": "PNG",
+      "bytes": 11121031,
+      "sha256": "4a80040c3267e5e994a221b5ebcd18177191eb3fcf35aede8fceaba471eebaae"
+    }
+  },
+  "browser": {
+    "completedCourse": "challenge-03",
+    "driveSpeedMetersPerSecond": 42,
+    "driveSpeedDisplayedKmh": 151,
+    "completedAnswers": 5,
+    "observedDriveLaps": 3,
+    "gateAfterCompletion": null,
+    "radio": {
+      "track": "해안선",
+      "playingObserved": true,
+      "clockSamplesSeconds": [
+        38.780227,
+        118.534966,
+        186.848458
+      ],
+      "blocked": false,
+      "errors": null,
+      "gain": 0.38
+    },
+    "checkedTransitions": [
+      "complete to drive with results hidden",
+      "drive to results",
+      "results back to drive",
+      "pause and resume",
+      "mute and track-button resume",
+      "next course03 to04 clears drive and rewinds song"
+    ],
+    "learningBeforeAndAfter": {
+      "rounds": 1,
+      "cleared": 1,
+      "coins": 0
+    },
+    "actualVehicle": {
+      "highTriangles": 359302,
+      "lowTriangles": 328443,
+      "shadowTriangles": 156504,
+      "drawCalls": 42,
+      "shadowDrawCalls": 22,
+      "restoredHigh": true
+    },
+    "responsive": [
+      [
+        390,
+        844
+      ],
+      [
+        844,
+        390
+      ]
+    ],
+    "horizontalOverflow": false,
+    "consoleErrors": 0,
+    "consoleWarnings": 0,
+    "finalQualityControl": "auto",
+    "viewportOverrideReset": true
+  },
+  "limits": [
+    "No physical-phone sustained FPS, thermal, memory or touch verification",
+    "Media clock and gain verified, no direct speaker listening or subjective mix verification",
+    "No measured learner outcome",
+    "4K authoring mode is not mobile FPS evidence"
+  ],
+  "package": {
+    "verifiedFiles": 2755,
+    "importsChecked": 84,
+    "htmlLinksChecked": 31,
+    "excludedUndeclaredFiles": [],
+    "zip": {
+      "path": "SYNK-LAB-PLAY-시안-v9-20261004.zip",
+      "bytes": 63821017,
+      "sha256": "f8e43f3d3ce5856d687680caed614eef121e6220c003c9a5522a1db6f9ef0a3f"
+    }
+  }
+}

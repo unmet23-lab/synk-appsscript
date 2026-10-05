@@ -107,4 +107,5 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   const result = await bounded(sdk.auth.getSession());session = result.data?.session;subject = session?.user?.id || null;setMode(mode);
   await enter().catch(report);
   window.addEventListener('pagehide', () => { generation++;view?.stop(); });
+  window.addEventListener('pageshow', event => { if(event.persisted) location.reload(); });
 }

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f96859">
+<title>말 랠리 소리 듣기 · SYNK LAB PLAY</title>
+<link rel="icon" href="assets/felt/sparkle.webp" type="image/webp">
+<link rel="stylesheet" href="style.css">
+<style>
+  .lab{max-width:760px;margin:0 auto;padding:16px 16px 48px;display:grid;gap:14px}
+  .lab h1{margin:6px 0 0;font:900 clamp(34px,8vw,54px)/1 var(--sans);letter-spacing:-.04em}
+  .lab .paper{padding:18px;display:grid;gap:10px}
+  .lab .row{display:flex;flex-wrap:wrap;gap:8px}
+  .lab p{margin:0;line-height:1.6}
+</style>
+<script type="module" src="./sound-lab.mjs"></script>
+</head>
+<body>
+<main class="lab">
+  <span class="kicker">LAB · TALK RALLY · SOUND</span>
+  <h1>말 랠리 소리 듣기</h1>
+  <p class="fine">게임과 같은 합성·같은 사운드킷 파일·같은 몽글 음성이에요. 휴대폰 스피커와 이어폰에서 각각 들어 봐 주세요. 틀려도 버저는 없고 맞힘의 ‘팅’만 빠져요(사운드킷 규칙).</p>
+  <section class="paper">
+    <span class="tag">한 번 주고받기</span>
+    <div class="row">
+      <button class="chip-btn" type="button" data-play="exchange">몽글의 말 → 톡 → 틱 → 받아치기</button>
+      <button class="chip-btn" type="button" data-play="wrong">틀린 칸으로 받아치기</button>
+      <button class="chip-btn" type="button" data-play="rally">랠리 여섯 번(3·6번째 스매시)</button>
+    </div>
+  </section>
+  <section class="paper">
+    <span class="tag">소리 하나씩</span>
+    <div class="row">
+      <button class="chip-btn" type="button" data-play="hitOk">받아치기 · 맞음</button>
+      <button class="chip-btn" type="button" data-play="quick">빠르게! (맞음 + 획득)</button>
+      <button class="chip-btn" type="button" data-play="hitWrong">받아치기 · 틀림</button>
+      <button class="chip-btn" type="button" data-play="smash">스매시</button>
+      <button class="chip-btn" type="button" data-play="opponent">몽글이 친 소리</button>
+      <button class="chip-btn" type="button" data-play="bounceNear">탁구대 · 내 쪽</button>
+      <button class="chip-btn" type="button" data-play="bounceFar">탁구대 · 몽글 쪽</button>
+      <button class="chip-btn" type="button" data-play="swingSoft">휙 · 카드 누르기</button>
+      <button class="chip-btn" type="button" data-play="swingHard">휙 · 세게 긋기</button>
+      <button class="chip-btn" type="button" data-play="stars">결과 별 셋</button>
+    </div>
+  </section>
+  <p class="fine"><a href="./">말 랠리로 돌아가기</a></p>
+</main>
+</body>
+</html>

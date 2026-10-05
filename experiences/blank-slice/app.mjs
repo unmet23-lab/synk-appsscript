@@ -547,6 +547,7 @@ renderLobby();
 // 시험·확인용 읽기 전용 관찰(?qa)
 if (QA) {
   window.__slice = {
+    flow: () => state.flow ? { settings: state.flow.settings(), intro: state.flow.intro() } : null,
     state: () => ({ index: state.index, queue: state.queue.map((x) => x.id), results: state.results.map((r) => ({ ...r })), combo: state.combo, score: state.score,
       cur: state.cur && { id: state.cur.item.id, answer: state.cur.item.answer, options: [...state.cur.options], tosses: state.cur.tosses, done: state.cur.done, confirmed: state.cur.confirmed },
       practice: state.practice && { options: [...state.practice.options], tries: state.practice.tries } }),

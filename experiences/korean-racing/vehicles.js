@@ -7,6 +7,69 @@ import * as THREE from './vendor/three.module.js';
 // contract, so the collection has no collision or speed advantage.
 const TAU = Math.PI * 2;
 const vector = p => new THREE.Vector3(...p);
+// The supplied GT contains almost 100k triangles in the seats and dashboard.
+// Keep its authored body, glass, rubber and rims intact. Only low graphics uses
+// a cached, millimetre-bounded version of dense interior/brake fixtures.
+const mobileGeometryCache=new WeakMap();
+const mobileFixtures=new Set(['interior_dark','interior_light','leather','carpet','brakes','brake','steering_carbon','steering_leather','steering_column']);
+const MOBILE_CELL=.006;
+
+function mobileFixtureGeometry(source) {
+  if(mobileGeometryCache.has(source))return mobileGeometryCache.get(source);
+  const position=source.getAttribute('position'),normal=source.getAttribute('normal'),uv=source.getAttribute('uv');
+  if(!source.index||!normal||source.groups.length||Object.keys(source.attributes).some(name=>!['position','normal','uv'].includes(name))){mobileGeometryCache.set(source,source);return source;}
+  const cells=new Map(),representatives=new Uint32Array(position.count),positions=[],normals=[],uvs=[],indices=[];
+  let maxDeviation=0;
+  for(let i=0;i<position.count;i++){
+    const x=position.getX(i),y=position.getY(i),z=position.getZ(i),nx=normal.getX(i),ny=normal.getY(i),nz=normal.getZ(i),u=uv?.getX(i)||0,v=uv?.getY(i)||0;
+    const key=`${Math.floor(x/MOBILE_CELL)},${Math.floor(y/MOBILE_CELL)},${Math.floor(z/MOBILE_CELL)}`;
+    let candidates=cells.get(key);if(!candidates){candidates=[];cells.set(key,candidates);}
+    // Sharp edges and UV seams never share a cluster. Position samples remain
+    // on the source surface instead of inflating or smoothing the cockpit.
+    let match=-1;
+    for(const candidate of candidates){
+      const n=candidate*3,t=candidate*2;
+      if(nx*normals[n]+ny*normals[n+1]+nz*normals[n+2]>.985&&Math.abs(u-uvs[t])<.025&&Math.abs(v-uvs[t+1])<.025){match=candidate;break;}
+    }
+    if(match<0){match=positions.length/3;candidates.push(match);positions.push(x,y,z);normals.push(nx,ny,nz);uvs.push(u,v);}
+    else {const j=match*3;maxDeviation=Math.max(maxDeviation,Math.hypot(x-positions[j],y-positions[j+1],z-positions[j+2]));}
+    representatives[i]=match;
+  }
+  const fallbackVertices=new Map();
+  const originalVertex=i=>{
+    if(fallbackVertices.has(i))return fallbackVertices.get(i);
+    const vertex=positions.length/3;positions.push(position.getX(i),position.getY(i),position.getZ(i));normals.push(normal.getX(i),normal.getY(i),normal.getZ(i));uvs.push(uv?.getX(i)||0,uv?.getY(i)||0);fallbackVertices.set(i,vertex);return vertex;
+  };
+  for(let i=0;i<source.index.count;i+=3){
+    const ia=source.index.getX(i),ib=source.index.getX(i+1),ic=source.index.getX(i+2),a=representatives[ia],b=representatives[ib],c=representatives[ic];
+    if(a===b||b===c||c===a)continue;
+    const abx=position.getX(ib)-position.getX(ia),aby=position.getY(ib)-position.getY(ia),abz=position.getZ(ib)-position.getZ(ia),acx=position.getX(ic)-position.getX(ia),acy=position.getY(ic)-position.getY(ia),acz=position.getZ(ic)-position.getZ(ia);
+    const lx=positions[b*3]-positions[a*3],ly=positions[b*3+1]-positions[a*3+1],lz=positions[b*3+2]-positions[a*3+2],mx=positions[c*3]-positions[a*3],my=positions[c*3+1]-positions[a*3+1],mz=positions[c*3+2]-positions[a*3+2];
+    const winding=(aby*acz-abz*acy)*(ly*mz-lz*my)+(abz*acx-abx*acz)*(lz*mx-lx*mz)+(abx*acy-aby*acx)*(lx*my-ly*mx);
+    // A cluster must never turn a surviving face inside out. Preserve that
+    // original face if the reduced sample would flatten or reverse it.
+    if(winding<=0)indices.push(originalVertex(ia),originalVertex(ib),originalVertex(ic));else indices.push(a,b,c);
+  }
+  // Leave small/sparse geometry unchanged rather than keep an ineffective copy.
+  if(indices.length>source.index.count*.9){mobileGeometryCache.set(source,source);return source;}
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));
+  if(uv)geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);
+  geometry.computeBoundingBox();geometry.computeBoundingSphere();
+  geometry.userData.mobileReduction={sourceTriangles:source.index.count/3,triangles:indices.length/3,maxDeviation};
+  mobileGeometryCache.set(source,geometry);return geometry;
+}
+
+function setFixtureLevels(part,createLow) {
+  part.userData.vehicleGeometryLevels={high:part.geometry,low:null,createLow};
+}
+
+function fixtureGeometry(part,level) {
+  const levels=part.userData.vehicleGeometryLevels;
+  if(!levels)return part.geometry;
+  if(level==='high')return levels.high;
+  if(!levels.low){levels.low=levels.createLow();levels.createLow=null;}
+  return levels.low;
+}
 let finishTexture;
 function microFinish() {
   // A very small deterministic roughness variation breaks a perfectly plastic
@@ -109,11 +172,11 @@ function addWheels(car,rally,rimMaterial) {
   }
 }
 
-function combinedGeometry(parts) {
+function combinedGeometry(parts,level='high') {
   const positions=[],normals=[],uvs=[],indices=[];let offset=0;
   const transform=new THREE.Matrix4(),instance=new THREE.Matrix4(),normalMatrix=new THREE.Matrix3(),p=new THREE.Vector3(),n=new THREE.Vector3();
   for(const part of parts){
-    part.updateMatrix();const geometry=part.geometry,position=geometry.getAttribute('position'),normal=geometry.getAttribute('normal'),uv=geometry.getAttribute('uv');
+    part.updateMatrix();const geometry=fixtureGeometry(part,level),position=geometry.getAttribute('position'),normal=geometry.getAttribute('normal'),uv=geometry.getAttribute('uv');
     const count=part.isInstancedMesh?part.count:1;
     for(let j=0;j<count;j++){
       transform.copy(part.matrix);
@@ -138,6 +201,7 @@ function batchWheel(wheel,rimMeshes) {
     const rim=parts.some(p=>oldRims.has(p)||p.name.startsWith('rim_'));
     if(parts.length===1&&!parts[0].isInstancedMesh){if(rim&&!rimMeshes.includes(parts[0]))rimMeshes.push(parts[0]);continue;}
     const combined=mesh(wheel,combinedGeometry(parts),material,[0,0,0],[0,0,0],rim?`rim_${wheel.name}`:`wheel-detail-${groups.length}-${wheel.children.length}`);
+    if(parts.some(p=>p.userData.vehicleGeometryLevels))setFixtureLevels(combined,()=>combinedGeometry(parts,'low'));
     combined.castShadow=castShadow;combined.receiveShadow=receiveShadow;
     for(const part of parts){wheel.remove(part);const i=rimMeshes.indexOf(part);if(i>=0)rimMeshes.splice(i,1);}
     if(rim)rimMeshes.push(combined);
@@ -406,6 +470,7 @@ function batchStaticPanels(car) {
     if(parts.length===1){if(isBody)newBody.push(parts[0]);continue;}
     const geometry=combinedGeometry(parts);for(const part of parts)car.remove(part);
     const combined=mesh(car,geometry,material,[0,0,0],[0,0,0],isBody?'body':`chassis-details-${groups.length}-${car.children.length}`);
+    if(parts.some(p=>p.userData.vehicleGeometryLevels))setFixtureLevels(combined,()=>combinedGeometry(parts,'low'));
     combined.castShadow=castShadow;combined.receiveShadow=receiveShadow;
     if(isBody)newBody.push(combined);
   }
@@ -426,8 +491,16 @@ export function buildAlternativeCar(kind,{color=0x99c8bc,wheelColor=0xd5dadc,tra
 
 function vehicleStats(car) {
   let triangles=0,drawCalls=0,shadowTriangles=0,shadowDrawCalls=0;
-  car.traverse(p=>{if(p.isMesh)triangles+=(p.geometry.index?p.geometry.index.count:p.geometry.attributes.position.count)/3*(p.isInstancedMesh?p.count:1);});
-  car.traverseVisible(p=>{if(p.isMesh){drawCalls++;if(p.castShadow){shadowDrawCalls++;shadowTriangles+=(p.geometry.index?p.geometry.index.count:p.geometry.attributes.position.count)/3*(p.isInstancedMesh?p.count:1);}}});
+  const drivers=new Set(car.userData.drivers?.values()||[]);
+  const visit=(p,visible)=>{
+    if(drivers.has(p))return;visible=visible&&p.visible;
+    if(p.isMesh){
+      const count=(p.geometry.index?p.geometry.index.count:p.geometry.attributes.position.count)/3*(p.isInstancedMesh?p.count:1);triangles+=count;
+      if(visible){drawCalls++;if(p.castShadow){shadowDrawCalls++;shadowTriangles+=count;}}
+    }
+    p.children.forEach(child=>visit(child,visible));
+  };
+  visit(car,true);
   return {triangles,drawCalls,shadowTriangles,shadowDrawCalls};
 }
 
@@ -440,16 +513,23 @@ export function refineOriginalCar(car) {
   if(!model)throw new TypeError('Original vehicle requires userData.model');
   model.traverse(part=>{
     if(!part.isMesh)return;
+    // GLTFLoader makes repeated node names unique (wheel_1, brake_2, etc.)
+    // while preserving the authored identity in userData.name. All four
+    // wheels must receive the same finish and detail policy.
+    const name=part.userData.name||part.name;
+    if(mobileFixtures.has(name)){const source=part.geometry;setFixtureLevels(part,()=>mobileFixtureGeometry(source));}
     // Dense seats, dashboard, steering and tiny inset lights/brakes do not
     // affect the exterior silhouette. Keep their receiving/visible geometry,
-    // but stop submitting them to the directional-light shadow pass.
-    if(['interior_dark','interior_light','leather','carpet','brakes','brake','lights','leds','lights_red'].includes(part.name)||part.name.startsWith('steering_'))part.castShadow=false;
+    // but stop submitting them to the directional-light shadow pass. The
+    // 0.564m wheel barrels sit inside the 0.716m tires; their shadow is already
+    // covered by the unchanged rubber and exterior rim geometry.
+    if(['interior_dark','interior_light','leather','carpet','brakes','brake','lights','leds','lights_red','wheel'].includes(name)||name.startsWith('steering_'))part.castShadow=false;
     if(Array.isArray(part.material))return;
     const material=part.material;
-    if(part.name==='body'&&material.isMeshPhysicalMaterial){
+    if(name==='body'&&material.isMeshPhysicalMaterial){
       material.roughness=.265;material.roughnessMap=microFinish();material.metalness=.32;
       material.clearcoatRoughness=.11;material.envMapIntensity=1.08;material.needsUpdate=true;
-    }else if(['leather','carpet','steering_leather','tire'].includes(part.name)&&material.isMeshStandardMaterial){
+    }else if(['leather','carpet','steering_leather','tire'].includes(name)&&material.isMeshStandardMaterial){
       material.roughnessMap=microFinish();material.needsUpdate=true;
     }
   });
@@ -461,6 +541,19 @@ export function refineOriginalCar(car) {
   if(main){main.userData.body=main.children.filter(p=>p.name==='body');batchStaticPanels(main);}
   const steering=model.getObjectByName('steering_wheel');if(steering)batchWheel(steering,[]);
   car.userData.graphicsRefined=true;car.userData.modelStats=vehicleStats(car);return car;
+}
+
+/** Switch only the low-detail interior; high/balanced and every garage preview
+ * retain the exact original geometry. Call when quality/equipped car changes.
+ * No geometry or material is disposed: cloned GTs can safely share the cache. */
+export function setVehicleQuality(car,quality='high',{preview=false}={}) {
+  const level=quality==='low'&&!preview?'low':'high';
+  if(car.userData.vehicleGeometryLevel===level)return car;
+  car.traverse(part=>{if(part.isMesh&&part.userData.vehicleGeometryLevels)part.geometry=fixtureGeometry(part,level);});
+  car.userData.vehicleGeometryLevel=level;
+  car.userData.modelStats=vehicleStats(car);
+  car.userData.modelStats.geometryLevel=level;
+  return car;
 }
 
 function colorValue(value,fallback) {

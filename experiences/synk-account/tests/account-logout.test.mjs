@@ -10,11 +10,15 @@ import { mountPortal } from '../src/portal.mjs';
 // Exercise the real view and the built client entry point against a minimal DOM.
 // No remote Auth service, browser credentials or production account is used.
 class Node {
-  constructor(tag = 'div') { this.tagName = tag;this.children = [];this.textContent = '';this.hidden = false;this.disabled = false;this.classList = { add() {}, remove() {} }; }
+  constructor(tag = 'div') { this.tagName = tag;this.children = [];this.dataset={};this.textContent = '';this.hidden = false;this.disabled = false;this.classList = { add() {}, remove() {} }; }
   append(...nodes) { this.children.push(...nodes); }
   replaceChildren(...nodes) { this.children = [...nodes]; }
   addEventListener() {}
   closest() { return this; }
+  before() {}
+  remove() {}
+  setAttribute(key,value){this[key]=value;}
+  querySelector(selector){return this.children.find(n=>selector==='[data-sharing-status]'&&Object.hasOwn(n.dataset||{},'sharingStatus'))||null;}
 }
 function dom() {
   const ids = new Map(), selectors = new Map();
@@ -76,7 +80,7 @@ async function clientFixture({ reply = 'offline', sessions = fixture().sessions,
   const bridge = {
     getEnvironment: async () => ({ clientId: product }), authStatus: async () => state,
     onAuthChanged: callback => { listener = callback;return () => {}; },
-    accountRequest: async operation => { calls.push(operation);if (operation === 'load') return account;if (bridgeThrow) throw new Error('synthetic IPC failure');return { ok: false }; },
+    accountRequest: async operation => { calls.push(operation);if (operation === 'load') return account;if(operation==='classroom')return {ok:true,classes:[]};if (bridgeThrow) throw new Error('synthetic IPC failure');return { ok: false }; },
     authSignOut: async () => { calls.push('authSignOut');state = { configured: true, signedIn: false, status: 'signed-out' };listener?.(state);return { ok: true, serverRevoked: false }; },
   };
   const window = { addEventListener() {}, ...(desktop ? { synkDesktop: bridge } : {}) };
@@ -114,9 +118,9 @@ test('actual web client keeps storage failure visible and reports completed revo
 });
 test('actual desktop client delegates current logout and clears locally after a thrown global request', async () => {
   const current = await clientFixture({ desktop: true });current.button('이 제품에서 로그아웃').onclick();await settle();
-  assert.deepEqual(current.calls, ['load', 'authSignOut']);assert.equal(current.root.hidden, true);assert.match(current.notice().textContent, /서버의 로그인 종료는 연결 후 다시 확인/);
+  assert.deepEqual(current.calls, ['load', 'atlasSummary', 'authSignOut']);assert.equal(current.root.hidden, true);assert.match(current.notice().textContent, /서버의 로그인 종료는 연결 후 다시 확인/);
   const all = await clientFixture({ desktop: true, bridgeThrow: true });all.button('모든 제품의 로그인 종료').onclick();await settle();
-  assert.deepEqual(all.calls, ['load', 'revokeAll', 'authSignOut']);assert.equal(all.root.hidden, true);assert.match(all.notice().textContent, /서버의 로그인 종료는 연결 후 다시 확인/);
+  assert.deepEqual(all.calls, ['load', 'atlasSummary', 'revokeAll', 'authSignOut']);assert.equal(all.root.hidden, true);assert.match(all.notice().textContent, /서버의 로그인 종료는 연결 후 다시 확인/);
 });
 
 test('same-session desktop refresh preserves the running WORLD iframe, host and account guard', async () => {
@@ -131,7 +135,7 @@ test('same-session desktop refresh preserves the running WORLD iframe, host and 
   assert.equal(page.document.getElementById('connect').hidden, true);assert.doesNotThrow(() => host.retry());
   await page.emit(signedIn);
   assert.equal(page.window.SYNKLearningHost, host);assert.equal(page.root.children[0], head);assert.equal(frame.src, source);
-  assert.deepEqual(page.calls, ['load']);assert.doesNotThrow(() => host.retry());
+  assert.deepEqual(page.calls, ['classroom','load','atlasSummary']);assert.doesNotThrow(() => host.retry());
 });
 test('a new session generation, revoked session or restore error closes the previous WORLD host', async () => {
   for (const change of [
@@ -150,7 +154,7 @@ test('switching account within a signed-in desktop event replaces and fences the
   const page = await clientFixture({ desktop: true, product: 'world' }), host = page.window.SYNKLearningHost;
   await page.emit({ ...page.state(), sessionGeneration: 2, account: { synk_user_id: 'synthetic-new-account', profile: {}, status: 'active' } });
   assert.equal(page.root.hidden, false);assert.notEqual(page.window.SYNKLearningHost, host);assert.throws(() => host.retry(), /바뀌|ended/);
-  assert.doesNotThrow(() => page.window.SYNKLearningHost.retry());assert.deepEqual(page.calls, ['load', 'load']);
+  assert.doesNotThrow(() => page.window.SYNKLearningHost.retry());assert.deepEqual(page.calls, ['classroom','load','atlasSummary', 'classroom','load','atlasSummary']);
 });
 
 async function portalFixture(t, { server = 'offline', clear = true, preview = false, switchAccount = false } = {}) {

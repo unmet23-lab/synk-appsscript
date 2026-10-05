@@ -7,10 +7,10 @@ const close=server=>new Promise(r=>{server.closeAllConnections();server.close(r)
 const secure={isEncryptionAvailable:()=>true,encryptString:text=>{const cipher=crypto.createCipheriv('aes-256-gcm',Buffer.alloc(32,7),Buffer.alloc(12,9));return Buffer.concat([cipher.update(text),cipher.final(),cipher.getAuthTag()]);},decryptString:data=>{const decipher=crypto.createDecipheriv('aes-256-gcm',Buffer.alloc(32,7),Buffer.alloc(12,9));decipher.setAuthTag(data.subarray(-16));return Buffer.concat([decipher.update(data.subarray(0,-16)),decipher.final()]).toString();}};
 async function fixture(t,{product='platform',secureStorage=secure,openFail=false}={}){
   const directory=await fs.mkdtemp(path.join(os.tmpdir(),'synk-auth-test-'));const portProbe=http.createServer(),callbackPort=await listen(portProbe);await close(portProbe);
-  let opened,clock=1000000,serial=0,codeCount=0,refreshCount=0,logoutCount=0,delayToken=null,tokenStatus=200,wrongSubject=false,accountStatus=200,userStatus=200,nonJson=false,accountPayload={account:{synk_user_id:'stable-synthetic-id',status:'active',profile:{display_name:'합성 계정'}},memberships:[],entitlements:[]};const requests=[],codes=new Map(),active=new Set(),accountResponses=[];
+  let opened,clock=1000000,serial=0,codeCount=0,refreshCount=0,logoutCount=0,delayToken=null,tokenStatus=200,wrongSubject=false,accountStatus=200,userStatus=200,nonJson=false,accountPayload={account:{synk_user_id:'stable-synthetic-id',status:'active',profile:{display_name:'합성 계정'}},memberships:[],entitlements:[]};const requests=[],codes=new Map(),active=new Set(),accountResponses=[],classroomResponses=[];
   const server=http.createServer(async(req,res)=>{
     const u=new URL(req.url,'http://127.0.0.1');let body='';for await(const chunk of req)body+=chunk;
-    const reply=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(data));};requests.push({path:u.pathname,method:req.method,headers:req.headers,body});
+    const reply=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(data));};requests.push({path:u.pathname,query:Object.fromEntries(u.searchParams),method:req.method,headers:req.headers,body});
     if(u.pathname==='/auth/v1/oauth/authorize'){const code='synthetic-code-'+codes.size;codes.set(code,{challenge:u.searchParams.get('code_challenge'),client:u.searchParams.get('client_id'),redirect:u.searchParams.get('redirect_uri')});const target=new URL(u.searchParams.get('redirect_uri'));target.search=new URLSearchParams({code,state:u.searchParams.get('state')});res.writeHead(302,{Location:target.href});res.end();return;}
     if(u.pathname==='/auth/v1/oauth/token'){
       const values=new URLSearchParams(body);if(values.get('grant_type')==='authorization_code'){codeCount++;const stored=codes.get(values.get('code'));if(!stored||stored.challenge!==crypto.createHash('sha256').update(values.get('code_verifier')).digest('base64url')||stored.client!==values.get('client_id')||stored.redirect!==values.get('redirect_uri'))return reply(400,{error:'invalid_grant'});codes.delete(values.get('code'));}else{refreshCount++;if(!active.has(values.get('refresh_token')))return reply(400,{error:'invalid_grant'});active.delete(values.get('refresh_token'));}
@@ -25,14 +25,53 @@ async function fixture(t,{product='platform',secureStorage=secure,openFail=false
       return reply(accountStatus,accountStatus===200?{ok:true,...accountPayload,sessions:[{id:'00000000-0000-4000-8000-000000000001',current:true,revoked:false}],access_token:'must-be-redacted'}:{ok:false,error:{code:accountStatus===503?'UNAVAILABLE':'SESSION_REVOKED'}});
     }
     if(u.pathname==='/functions/v1/synk-learning')return reply(200,{ok:true,events:[],cursor:0,revision:1});
+    if(u.pathname.startsWith('/functions/v1/synk-classroom/api/')){const queued=classroomResponses.shift();if(queued){await queued.wait;return reply(queued.status??200,queued.data);}return reply(200,{ok:true,classes:[],nested:{access_token:'must-not-reach-renderer',refresh_token:'must-not-reach-renderer'}});}
     reply(404,{ok:false});
   });
   const serverPort=await listen(server),origin='http://127.0.0.1:'+serverPort,raw={version:1,supabaseUrl:origin,accountApiUrl:origin,supabasePublishableKey:'sb_publishable_synthetic',clients:{[product]:{clientId:'synthetic-client-'+product,redirectUri:`http://127.0.0.1:${callbackPort}/synk/oauth/${product}/callback`}}};
   const config=configuration(raw,product,'development');const store=()=>createTokenStore({directory,safeStorage:secureStorage,scope:product,configFingerprint:config.fingerprint,platform:'win32'});const services=[];
   const create=()=>{const service=createAuthService({config,store:store(),now:()=>clock,openExternal:async url=>{if(openFail)throw Error('SYNTHETIC_OPEN_FAILED');opened=url;},timeoutMs:3000});services.push(service);return service;};
   const service=create();t.after(async()=>{for(const s of services)s.dispose();await close(server);await fs.rm(directory,{recursive:true,force:true});});
-  return {service,create,store,config,raw,directory,requests,get opened(){return opened;},get codeCount(){return codeCount;},get refreshCount(){return refreshCount;},get logoutCount(){return logoutCount;},setClock:value=>{clock=value;},delay:promise=>{delayToken=promise;},tokenStatus:value=>{tokenStatus=value;},wrongSubject:()=>{wrongSubject=true;},accountStatus:value=>{accountStatus=value;},accountPayload:value=>{accountPayload={...accountPayload,...value};},queueAccount:value=>accountResponses.push(value),userStatus:value=>{userStatus=value;},nonJson:()=>{nonJson=true;},async login(){await service.initialize();await service.signIn();const response=await fetch(opened);assert.equal(response.status,200);await waitFor(()=>service.status().signedIn);}};
+  return {service,create,store,config,raw,directory,requests,get opened(){return opened;},get codeCount(){return codeCount;},get refreshCount(){return refreshCount;},get logoutCount(){return logoutCount;},setClock:value=>{clock=value;},delay:promise=>{delayToken=promise;},tokenStatus:value=>{tokenStatus=value;},wrongSubject:()=>{wrongSubject=true;},accountStatus:value=>{accountStatus=value;},accountPayload:value=>{accountPayload={...accountPayload,...value};},queueAccount:value=>accountResponses.push(value),queueClassroom:value=>classroomResponses.push(value),userStatus:value=>{userStatus=value;},nonJson:()=>{nonJson=true;},async login(){await service.initialize();await service.signIn();const response=await fetch(opened);assert.equal(response.status,200);await waitFor(()=>service.status().signedIn);}};
 }
+
+test('classroom requests use main credentials, product identity and class URL without exposing tokens',async t=>{
+  for(const product of ['world','platform']){const f=await fixture(t,{product});await f.login();
+    const response=await f.service.accountRequest('classroom',{operation:'learningPost',classId:'class-one',body:{runId:'run-one',revision:2,events:[]}});
+    assert.equal(response.ok,true);assert.deepEqual(response.nested,{});
+    const request=f.requests.find(r=>r.path==='/functions/v1/synk-classroom/api/world/learning');
+    assert.equal(request.method,'POST');assert.deepEqual(request.query,{classId:'class-one'});assert.equal(request.headers.authorization,'Bearer synthetic-access-1');assert.equal(request.headers['x-synk-product'],product);assert.equal(request.headers['x-synk-contract'],'1');assert.deepEqual(JSON.parse(request.body),{runId:'run-one',revision:2,events:[]});
+  }
+});
+test('WORLD memory and Atlas use native account credentials and Messenger cannot dispatch them',async t=>{
+  const f=await fixture(t,{product:'world'});await f.login();
+  assert.equal((await f.service.accountRequest('memoryGet',{revision:2})).ok,true);
+  assert.equal((await f.service.accountRequest('memoryPost',{revision:2,entries:[]})).ok,true);
+  assert.equal((await f.service.accountRequest('atlasSummary',{})).ok,true);
+  const reads=f.requests.filter(r=>r.path==='/functions/v1/synk-learning');assert.equal(reads.length,2);
+  assert.deepEqual(reads[0].query,{view:'memory',revision:'2'});assert.deepEqual(JSON.parse(reads[1].body),{revision:2,memory:[]});
+  for(const row of reads){assert.equal(row.headers['x-synk-product'],'world');assert.equal(row.headers.authorization,'Bearer synthetic-access-1');}
+  assert.equal(f.requests.some(r=>r.path==='/functions/v1/synk-account'&&r.query.view==='atlas'),true);
+  const m=await fixture(t,{product:'messenger'});await m.login();
+  for(const [operation,params]of [['memoryGet',{revision:2}],['memoryPost',{revision:2,entries:[]}],['atlasSummary',{}]])assert.equal((await m.service.accountRequest(operation,params)).error.code,'INVALID_REQUEST');
+});
+test('classroom calls require login and cannot turn Messenger or injected IPC into a classroom caller',async t=>{
+  const f=await fixture(t);assert.equal((await f.service.accountRequest('classroom',{operation:'classes'})).error.code,'AUTH_REQUIRED');
+  await f.login();assert.equal((await f.service.accountRequest('classroom',{operation:'classes',url:'https://evil.invalid'})).error.code,'INVALID_REQUEST');assert.equal(f.requests.some(r=>r.path.includes('synk-classroom')),false);
+  const messenger=await fixture(t,{product:'messenger'});await messenger.login();assert.equal((await messenger.service.accountRequest('classroom',{operation:'classes'})).error.code,'INVALID_REQUEST');assert.equal(messenger.requests.some(r=>r.path.includes('synk-classroom')),false);
+});
+test('classroom transport refreshes a rejected token once and preserves scope and conflict information',async t=>{
+  const f=await fixture(t,{product:'world'});await f.login();f.queueClassroom({status:401,data:{ok:false,error:{code:'AUTH_REQUIRED'}}});
+  assert.equal((await f.service.accountRequest('classroom',{operation:'student',classId:'a'})).ok,true);assert.equal(f.refreshCount,1);
+  const requests=f.requests.filter(r=>r.path.includes('synk-classroom'));assert.equal(requests.length,2);assert.equal(requests[0].headers.authorization,'Bearer synthetic-access-1');assert.equal(requests[1].headers.authorization,'Bearer synthetic-access-2');for(const request of requests)assert.deepEqual(request.query,{classId:'a'});
+  f.queueClassroom({status:409,data:{ok:false,error:{code:'REVISION_CONFLICT'},revision:8}});const conflict=await f.service.accountRequest('classroom',{operation:'startRun',classId:'a',body:{}});assert.equal(conflict.error.code,'REVISION_CONFLICT');assert.equal(conflict.error.status,409);assert.equal(conflict.revision,8);assert.equal(f.service.status().signedIn,true);
+});
+test('logout fences delayed classroom data and transport errors do not fabricate success',async t=>{
+  const f=await fixture(t);await f.login();f.queueClassroom({status:503,data:{ok:false,error:{code:'CLASSROOM_UNAVAILABLE'}}});const unavailable=await f.service.accountRequest('classroom',{operation:'classes'});assert.equal(unavailable.ok,false);assert.equal(unavailable.error.retryable,true);
+  let release;f.queueClassroom({wait:new Promise(resolve=>{release=resolve;}),data:{ok:true,classes:['old-account']}});
+  const waiting=f.service.accountRequest('classroom',{operation:'classes'});await waitFor(()=>f.requests.filter(r=>r.path.includes('synk-classroom')).length===2);await f.service.signOut();release();
+  const result=await waiting;assert.equal(result.ok,false);assert.equal(result.classes,undefined);assert.equal(f.service.status().signedIn,false);
+});
 test('external-browser OAuth uses real HTTP callback, S256, state and public client; no tokens enter status',async t=>{
   const f=await fixture(t);await f.login();const url=new URL(f.opened);assert.equal(url.searchParams.get('code_challenge_method'),'S256');assert.equal(url.searchParams.get('response_type'),'code');assert.equal(url.searchParams.get('state').length,43);assert.equal(f.codeCount,1);assert.equal(f.service.status().account.synk_user_id,'stable-synthetic-id');assert.doesNotMatch(JSON.stringify(f.service.status()),/synthetic-access|synthetic-refresh|code_verifier/);
   const load=await f.service.accountRequest('load');assert.equal(load.ok,true);assert.equal(load.access_token,undefined);assert.equal(f.requests.find(r=>r.path==='/functions/v1/synk-account').headers['x-synk-product'],'platform');

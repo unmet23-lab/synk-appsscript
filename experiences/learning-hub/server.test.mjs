@@ -13,6 +13,10 @@ test('the Atlas lab and exactly two read-only consultation files are served', ()
   assert.match(targetFor('/consult/computer/content.js'), /맞춤도구[\\/]computer[\\/]content.js$/);
   for (const path of ['/consult/computer/view.js', '/consult/computer/탐색노트.md', '/consult/../Code.js', '/atlas-lab/qa/x.json']) assert.equal(targetFor(path), null);
 });
+test('account classrooms serve teacher UI and Town assets while model, answer keys and stored state stay private',()=>{
+  for(const route of ['/teacher-world/?account=1','/teacher-world/app.mjs','/synk-account/world-classroom.css','/synk-town/linked.html','/synk-town/engine/loom-motion.js'])assert.ok(targetFor(route),route);
+  for(const route of ['/teacher-world/model.mjs','/teacher-world/account-service.mjs','/teacher-world/learning-runs.mjs','/teacher-world/.local/linked-state.json','/synk-town/core.mjs','/synk-town/server.mjs'])assert.equal(targetFor(route),null,route);
+});
 test('shared origin serves executable common bundles with nosniff-safe MIME', async () => {
   const server = createServer(); await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   try {

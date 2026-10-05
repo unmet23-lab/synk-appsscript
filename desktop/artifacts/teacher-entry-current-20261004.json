@@ -1,0 +1,50 @@
+{
+  "checkedAt": "2026-10-04T10:28:34.869Z",
+  "exitCode": 0,
+  "result": {
+    "ok": true,
+    "url": "http://127.0.0.1:4280/synk-account/teacher.html",
+    "ready": true,
+    "title": "SYNK WORLD · 교사",
+    "bodyCharacters": 242,
+    "node": "undefined",
+    "platformBridge": "undefined",
+    "bridgeKeys": [
+      "getEnvironment",
+      "authStatus",
+      "authSignIn",
+      "authCancelSignIn",
+      "authSignOut",
+      "accountRequest",
+      "onAuthChanged"
+    ],
+    "environment": {
+      "clientId": "teacher",
+      "authProduct": "world",
+      "mode": "development",
+      "platform": "win32",
+      "arch": "x64",
+      "sessionScope": "im.synk.teacher.preview.smoke",
+      "separateClient": true,
+      "productionReady": false
+    },
+    "auth": {
+      "configured": false,
+      "status": "unconfigured",
+      "signedIn": false,
+      "sessionGeneration": 0,
+      "secureStorage": true,
+      "account": null,
+      "library": {
+        "status": "unavailable",
+        "appIds": []
+      },
+      "error": null
+    },
+    "frames": 0,
+    "errors": [],
+    "visible": false
+  },
+  "stderr": "",
+  "ok": true
+}

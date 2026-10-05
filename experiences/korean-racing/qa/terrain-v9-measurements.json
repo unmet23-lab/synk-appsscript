@@ -1,0 +1,38 @@
+{
+  "method": "Same-process alternating builds; legacy recomputes slope, v9 reuses the identical normal derivative. Hardware/JIT variance affects duration.",
+  "samples": [
+    {
+      "reuse": false,
+      "ms": 749.676,
+      "heightCalls": 786475,
+      "triangles": 209472,
+      "vertices": 115288,
+      "geometrySha256": "4749cde56e8eab02b477c06cb1a23479409f45750495821b565bb37025a88c21"
+    },
+    {
+      "reuse": true,
+      "ms": 492.489,
+      "heightCalls": 466083,
+      "triangles": 209472,
+      "vertices": 115288,
+      "geometrySha256": "4749cde56e8eab02b477c06cb1a23479409f45750495821b565bb37025a88c21"
+    },
+    {
+      "reuse": false,
+      "ms": 738.553,
+      "heightCalls": 786475,
+      "triangles": 209472,
+      "vertices": 115288,
+      "geometrySha256": "4749cde56e8eab02b477c06cb1a23479409f45750495821b565bb37025a88c21"
+    },
+    {
+      "reuse": true,
+      "ms": 414.426,
+      "heightCalls": 466083,
+      "triangles": 209472,
+      "vertices": 115288,
+      "geometrySha256": "4749cde56e8eab02b477c06cb1a23479409f45750495821b565bb37025a88c21"
+    }
+  ],
+  "heightCallsSaved": 320392
+}

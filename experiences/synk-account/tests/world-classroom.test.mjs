@@ -84,6 +84,18 @@ test('assignment changes and consent changes close the iframe and cannot launch 
   f.client.startRun=async()=>({run:runFor({assignmentRevision:2})});f.click('start-game');await settle();assert.equal(launched,1);const before=closed;const off=gameWorkspace();off.sharing={enabled:false,revision:3};off.assignments=[];f.data=off;await f.ui.reload();assert(closed>before);assert.equal(f.ui.status().gameVisible,false);assert.equal(f.ui.status().run,null);
 });
 
+test('transient network loss preserves an active game, while permission failures still close it',async t=>{
+ let closed=0;const f=fixture(t,{closeGame:()=>closed++,startRun:async()=>({run:runFor()})});
+ f.data=gameWorkspace();await f.ui.reload();f.click('open','assignment','assignment-A');f.click('start-game');await settle();
+ const before=closed;const student=f.client.student;
+ f.client.student=async()=>{throw Object.assign(Error('connection waiting'),{code:'NETWORK_ERROR'});};await f.ui.reload();
+ assert.equal(closed,before);assert.equal(f.ui.status().gameVisible,true);assert.equal(f.ui.status().run.id,runFor().id);assert.match(f.root.innerHTML,/connection waiting/);
+ f.client.student=async()=>{throw Object.assign(Error('native connection waiting'),{code:'NETWORK',retryable:true});};await f.ui.reload();assert.equal(closed,before);assert.equal(f.ui.status().gameVisible,true);
+ f.client.student=student;await f.ui.reload();assert.doesNotMatch(f.root.innerHTML,/connection waiting/);
+ f.client.student=async()=>{throw Object.assign(Error('permission revoked'),{code:'FORBIDDEN',status:403});};await f.ui.reload();
+ assert(closed>before);assert.equal(f.ui.status().gameVisible,false);assert.equal(f.ui.status().loaded,false);
+});
+
 test('free game launch uses catalog content and sharing revision, and a failed old stop blocks the next game',async t=>{
   const requests=[],launches=[];const next={...gameContent,id:'rhythm-listening',gameId:'korean-rhythm',href:'/korean-rhythm/'};
   const f=fixture(t,{launchRun:r=>launches.push(r.id),startRun:async payload=>{requests.push(payload);return{run:runFor({assignmentId:null,contentId:payload.contentId,gameId:payload.contentId===next.id?next.gameId:gameContent.gameId,id:payload.contentId})};},stopRun:async()=>{throw Error('stop offline');}});const data=gameWorkspace();data.content.push(next);f.data=data;await f.ui.reload();await f.ui.openGame('korean-racing');assert.deepEqual(requests[0],{contentId:'racing-listening',revision:2,idempotencyKey:'same-request-key'});
@@ -102,4 +114,21 @@ test('a completed free run is refreshed by id and cannot complete a separate ass
   const f=fixture(t,{startRun:async()=>({run:runFor({assignmentId:null})})});const data=gameWorkspace();f.data=data;await f.ui.reload();await f.ui.openGame(gameContent.gameId);
   data.runs=[runFor({assignmentId:null,status:'completed',progress:{total:3,correct:2,independent:2,assisted:1,excluded:0}})];data.activeRun=null;f.data=data;await f.ui.reload();assert.match(f.root.innerHTML,/학습 완료/);assert.match(f.root.innerHTML,/3 \/ 3응답/);
   f.click('open','assignment','assignment-A');assert.doesNotMatch(f.root.innerHTML,/학습 완료/);assert.match(f.root.innerHTML,/data-world-action="start-game"/);
+});
+
+test('a game remains connecting until its personal settings arrive and a late launch cannot restore an invalidated activity',async t=>{
+  for(const invalidate of [false,true]){
+    let finish;const f=fixture(t,{launchRun:()=>new Promise(resolve=>{finish=resolve;}),startRun:async()=>({run:runFor()})});
+    f.data=gameWorkspace();await f.ui.reload();f.click('open','assignment','assignment-A');f.click('start-game');await settle();
+    assert.equal(f.ui.status().gameVisible,false);assert.match(f.root.innerHTML,/게임 연결 중/);
+    if(invalidate){const changed=gameWorkspace();changed.assignments[0].revision=2;f.data=changed;await f.ui.reload();}
+    finish();await settle();assert.equal(f.ui.status().gameVisible,!invalidate);
+  }
+});
+
+test('another game request during personal memory loading keeps the current launch usable',async t=>{
+  let finish;const f=fixture(t,{launchRun:()=>new Promise(resolve=>{finish=resolve;}),startRun:async()=>({run:runFor({assignmentId:null})})});
+  const data=gameWorkspace();data.content.push({...gameContent,id:'rhythm-listening',gameId:'korean-rhythm',href:'/korean-rhythm/'});f.data=data;await f.ui.reload();
+  const opening=f.ui.openGame(gameContent.gameId);await settle();await assert.rejects(f.ui.openGame('korean-rhythm'),/게임을 연결하고 있어요/);
+  assert.equal(f.ui.status().selected.id,gameContent.id);finish();await opening;assert.equal(f.ui.status().gameVisible,true);assert.doesNotMatch(f.root.innerHTML,/게임 연결 중/);
 });

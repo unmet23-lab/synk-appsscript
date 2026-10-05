@@ -11,7 +11,7 @@ const skyGrade = `
     return mix(colour,twilight,golden);
   }`;
 
-export function createAtmosphere(THREE,{daySky,sunsetSky,time,sunDirection,shoreOffset,ROAD_END}) {
+export function createAtmosphere(THREE,{daySky,sunsetSky,time,sunDirection,shoreOffset,groundHeight,pathX,ROAD_END}) {
   if(typeof shoreOffset!=='function'||!Number.isFinite(ROAD_END)||ROAD_END<100)throw new TypeError('Atmosphere needs the real shoreline and a finite course length.');
   const shared={map:{value:daySky},sun:{value:sunDirection},golden:{value:0}};
   const skyMaterial=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:shared,
@@ -33,11 +33,20 @@ export function createAtmosphere(THREE,{daySky,sunsetSky,time,sunDirection,shore
         #include <colorspace_fragment>}`});
   const sky=new THREE.Mesh(new THREE.SphereGeometry(4000,32,20),skyMaterial);
   sky.name='coastal-panoramic-sky';sky.renderOrder=-10;sky.frustumCulled=false;
-  const samples=512,pixels=new Uint8Array(samples*4);
+  const samples=512,pixels=new Uint8Array(samples*4),sampledDepth=typeof groundHeight==='function'&&typeof pathX==='function';
   for(let i=0;i<samples;i++){
     const z=-150+i/(samples-1)*(ROAD_END+500),offset=shoreOffset(z);
     if(!Number.isFinite(offset)||offset<0||offset>128)throw new RangeError('Shoreline sample is outside the 0 to 128 metre coast strip.');
-    const value=Math.round(offset/128*255);pixels.set([value,value,value,255],i*4);
+    const value=Math.round(offset/128*255);
+    // Pack the actual shelf depths in the spare RGB strip channels. The same
+    // single texture read now describes shoreline and water depth; no second
+    // map, offscreen depth pass or per-frame terrain sampling is needed.
+    const depths=[4,12,30].map((distance,j)=>{
+      const depth=sampledDepth?-2.2-groundHeight(pathX(z)+offset+distance,z):[4,7,10][j];
+      if(!Number.isFinite(depth))throw new RangeError('Invalid coastal water depth.');
+      return Math.round(Math.max(0,Math.min(32,depth))/32*255);
+    });
+    pixels.set([value,...depths],i*4);
   }
   const shoreMap=new THREE.DataTexture(pixels,samples,1,THREE.RGBAFormat);
   shoreMap.minFilter=shoreMap.magFilter=THREE.LinearFilter;shoreMap.needsUpdate=true;
@@ -72,12 +81,22 @@ export function createAtmosphere(THREE,{daySky,sunsetSky,time,sunDirection,shore
         // Smooth high-frequency glints before they become isolated hot pixels.
         float glintFilter=1.-smoothstep(.018,.12,length(fwidth(slope)));
         float roadX=sin(p.y/235.)*25.+sin(p.y/580.)*31.;
-        float edge=texture2D(shoreMap,vec2(clamp((p.y+150.)/shoreRange,0.,1.),.5)).r*128.;
+        vec4 coast=texture2D(shoreMap,vec2(clamp((p.y+150.)/shoreRange,0.,1.),.5));
+        float edge=coast.r*128.;
         float shore=p.x-roadX-edge;
-        float depth=smoothstep(1.5,96.,shore);
+        vec3 shelf=coast.gba*32.;
+        float metres=mix(0.,shelf.x,clamp(shore/4.,0.,1.));
+        metres=mix(metres,shelf.y,clamp((shore-4.)/8.,0.,1.));
+        metres=mix(metres,shelf.z,clamp((shore-12.)/18.,0.,1.));
+        metres+=max(0.,shore-30.)*.16;
+        float depth=smoothstep(.7,15.,metres);
         vec3 shallows=mix(vec3(.023,.235,.223),vec3(.041,.183,.185),golden);
         vec3 deep=mix(vec3(.008,.075,.137),vec3(.024,.062,.121),golden);
         vec3 colour=mix(shallows,deep,depth);
+        // Restrained sand/rock variation belongs to shallow water only. Filter
+        // it by world footprint so distant bays do not shimmer with fine noise.
+        float shelfLight=(.5+.5*sin(p.y*.073+sin(p.x*.11)))*(1.-smoothstep(2.,10.,metres));
+        colour+=mix(vec3(.017,.030,.014),vec3(.024,.023,.009),golden)*shelfLight;
         float crest=(swellSin.x*.5+.5)*(swellSin.y*.5+.5);
         colour+=mix(vec3(.006,.018,.017),vec3(.011,.012,.020),golden)*crest;
         if(waterDetail>.1&&fine>.015&&depth<.98){
@@ -97,14 +116,16 @@ export function createAtmosphere(THREE,{daySky,sunsetSky,time,sunDirection,shore
         colour+=mix(vec3(1.,.94,.77),vec3(1.32,.68,.34),golden)*shimmer;
         // Foam tracks the actual coast, with broken wash and receding lace.
         if(shore<8.&&distanceToEye<1600.){
-          float wash=shore-1.25-sin(time*.53+p.y*.039+sin(p.y*.013))*1.05;
-          float foamWidth=1.7+min(footprint,.85);
+          float surge=sin(time*.53+p.y*.039+sin(p.y*.013));
+          float shoal=1.-smoothstep(2.,9.,shelf.x);
+          float wash=shore-(.8+shoal*.55)-surge*(.65+shoal*.55);
+          float foamWidth=.65+shoal*.95+min(footprint,.65);
           float breaking=(1.-smoothstep(.14,foamWidth,abs(wash)));
           float foamPatch=.42+.58*smoothstep(-.55,.65,sin(p.y*.31+sin(p.y*.073)*2.4));
-          float surf=breaking*foamPatch*(.28+.11*cos(time*.91+p.y*.12));
+          float surf=breaking*foamPatch*(.23+.10*cos(time*.91+p.y*.12));
           if(waterDetail>.1&&fine>.015){
             float lace=(1.-smoothstep(.09,.58+min(footprint,.8),abs(wash-2.25)));
-            surf+=lace*smoothstep(.1,.85,sin(p.y*.74-time*.31))*.10*fine*waterDetail;
+            surf+=lace*smoothstep(.1,.85,sin(p.y*.74-time*.31))*.09*fine*waterDetail*(.35+.65*shoal);
           }
           vec3 foam=mix(vec3(.62,.79,.77),vec3(.72,.71,.66),golden);
           colour=mix(colour,foam,surf*(1.-smoothstep(850.,1600.,distanceToEye)));
@@ -115,7 +136,7 @@ export function createAtmosphere(THREE,{daySky,sunsetSky,time,sunDirection,shore
         #include <colorspace_fragment>}`});
   const ocean=new THREE.Mesh(new THREE.PlaneGeometry(8000,10000),waterMaterial);
   ocean.name='spectral-coastal-water';ocean.rotation.x=-Math.PI/2;ocean.position.set(2500,-2.2,2200);
-  const stats={version:7,waterTriangles:2,waterPasses:1,reflectionCameras:0,shoreTextureBytes:pixels.byteLength,detail:1,theme:'coast'};
+  const stats={version:9,waterTriangles:2,waterPasses:1,reflectionCameras:0,shoreTextureBytes:pixels.byteLength,sampledDepth,depthSamples:sampledDepth?samples*3:0,detail:1,theme:'coast'};
   function setTheme(theme){const golden=theme==='sunset';shared.map.value=golden?sunsetSky:daySky;shared.golden.value=golden?1:0;
     sky.rotation.y=golden?.075:theme==='bloom'?4.6:4.2;waterMaterial.uniforms.skyRotation.value=sky.rotation.y;
     waterMaterial.uniforms.skyBasis.value.set(Math.cos(sky.rotation.y),Math.sin(sky.rotation.y));stats.theme=theme;}

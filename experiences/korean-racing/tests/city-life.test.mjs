@@ -169,3 +169,55 @@ test('stance feet remain planted in world space while fixed-length limbs articul
   }
   assert(plantPairs>400);assert(mouthContacts>30);assert(maxHandSpeed<2.8,'gestures transition without one-frame hand jumps');life.dispose();
 });
+
+test('a passing car draws selective, staggered greetings once; parked cars do not retrigger and a new pass rearms them',()=>{
+  const crowd=Array.from({length:12},(_,i)=>({id:`notice-${i}`,kind:'cheer',positions:[{x:-12-i%3,y:0,z:100+i*.3,yaw:Math.PI*.5}]}));
+  const life=buildCityLife(THREE,{anchors:crowd,groundHeight:flat,pathX:straight}),firstResponse=new Map(),counts=new Map(),restFeet=new Map();
+  life.update({time:0,playerS:40});
+  for(const p of poses(life))restFeet.set(p.id,p.motion.feet.map(f=>f.position));
+  let maximum=0,changedHead=false,waveSeen=false;
+  for(let frame=1;frame<=900;frame++){
+    life.update({time:frame/30,playerS:80});maximum=Math.max(maximum,life.stats.reactingActors);
+    for(const p of poses(life)){
+      counts.set(p.id,p.motion.reactionCount);
+      if(p.motion.reaction>.01){
+        if(!firstResponse.has(p.id))firstResponse.set(p.id,frame/30);
+        changedHead||=Math.abs(p.motion.headYaw)>.03;waveSeen||=p.motion.cheerBlend>.1;
+      }
+      assert.deepEqual(p.motion.feet.map(f=>f.position),restFeet.get(p.id),'greeting must not swivel planted feet');
+      assert(p.motion.reactionCount<=1,'a listening stop may produce only one greeting per bystander');
+    }
+  }
+  assert(firstResponse.size>1&&firstResponse.size<12,'only part of the crowd reacts');
+  assert(new Set(firstResponse.values()).size>1,'individual response delays prevent synchronized greetings');
+  assert(changedHead&&waveSeen,'both looking and hand gestures are represented');
+  assert(maximum<=4,'nearby reactions stay within the high-quality crowd budget');
+  assert.equal(life.stats.reactingActors,0,'everyone returns to their own activity while the car remains stopped');
+  life.update({time:30.1,playerS:-100});
+  for(let frame=1;frame<=300;frame++)life.update({time:30.1+frame/30,playerS:80});
+  for(const p of poses(life))assert.equal(p.motion.reactionCount,(counts.get(p.id)||0)*2,'leaving the area rearms the next visit');
+  life.dispose();
+});
+
+test('a greeting in progress freezes on pause and reduced motion; low quality limits reactions without changing geometry pools',()=>{
+  const crowd=Array.from({length:10},(_,i)=>({id:`nearby-${i}`,kind:'cheer',positions:[{x:-12-i%2,y:0,z:100+i*.2,yaw:Math.PI*.5}]}));
+  const life=buildCityLife(THREE,{anchors:crowd,groundHeight:flat,pathX:straight}),geometry=life.group.children.map(m=>m.geometry);
+  let time=0,peak=0;
+  for(let frame=0;frame<=90;frame++){
+    time=frame/30;life.update({time,playerS:85,quality:'low'});peak=Math.max(peak,life.stats.reactingActors);
+    if(frame>20&&life.stats.reactingActors===2)break;
+  }
+  assert(peak>0&&peak<=2);
+  const before=poses(life);
+  life.update({time:time+40,playerS:85,quality:'low',paused:true});assert.deepEqual(poses(life),before);
+  life.update({time:time+80,playerS:85,quality:'low',motion:false,celebrating:true});assert.deepEqual(poses(life),before);
+  life.update({time:time+80+1/60,playerS:85,quality:'low'});
+  for(const p of poses(life)){
+    const old=before.find(b=>b.id===p.id);
+    assert(Math.abs(p.motion.reactionAge-old.motion.reactionAge)<=1/60+.0001,'resume must not catch up a paused greeting');
+    assert(Math.hypot(...p.joints.handRight.map((v,i)=>v-old.joints.handRight[i]))<.05,'resume must not jump the raised hand');
+  }
+  assert.deepEqual(life.group.children.map(m=>m.geometry),geometry);
+  assert(life.stats.drawCalls<=9);assert.equal(life.stats.shadowDrawCalls,0);
+  life.dispose();
+});

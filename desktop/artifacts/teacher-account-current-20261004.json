@@ -1,0 +1,117 @@
+{
+  "checkedAt": "2026-10-04T10:30:50.813Z",
+  "synthetic": true,
+  "production": false,
+  "platform": "win32",
+  "offscreenCompositor": true,
+  "scope": "actual Electron + DPAPI + PKCE loopback + native IPC + compiled teacher UI + PGlite classroom; learner submits through API, not WORLD UI; synthetic provider, no public auth registration",
+  "checks": [
+    {
+      "name": "real Windows secure storage available",
+      "ok": true
+    },
+    {
+      "name": "standalone renderer has no WORLD launcher or Node bridge",
+      "ok": true
+    },
+    {
+      "name": "real loopback PKCE callback accepted",
+      "ok": true
+    },
+    {
+      "name": "native PKCE login verified and scoped teacher class opened",
+      "ok": true
+    },
+    {
+      "name": "iframe receives scoped host but no credentials or native bridge",
+      "ok": true
+    },
+    {
+      "name": "all classroom HTTP calls use WORLD API product",
+      "ok": true
+    },
+    {
+      "name": "refresh token persisted with real DPAPI encryption",
+      "ok": true
+    },
+    {
+      "name": "WORLD cannot restore teacher encrypted session",
+      "ok": true
+    },
+    {
+      "name": "provider rejects teacher refresh token for WORLD client",
+      "ok": true
+    },
+    {
+      "name": "learner and arbitrary API IPC rejected",
+      "ok": true
+    },
+    {
+      "name": "real teacher iframe assigns through native IPC and PostgreSQL",
+      "ok": true
+    },
+    {
+      "name": "learner API sees independent teacher assignment",
+      "ok": true
+    },
+    {
+      "name": "learner API submits teacher assignment to canonical service",
+      "ok": true
+    },
+    {
+      "name": "native teacher UI displays actual WORLD result",
+      "ok": true
+    },
+    {
+      "name": "classroom outage retains teacher frame and blocks stale scoped requests",
+      "ok": true
+    },
+    {
+      "name": "successful membership recheck restores existing native teacher workspace and clears offline notice",
+      "ok": true
+    },
+    {
+      "name": "new native auth service restores DPAPI session and rotates refresh for same teacher",
+      "ok": true
+    },
+    {
+      "name": "teacher native responsive width 1280",
+      "ok": true
+    },
+    {
+      "name": "teacher native responsive width 390",
+      "ok": true
+    },
+    {
+      "name": "teacher membership withdrawal closes existing classroom",
+      "ok": true
+    },
+    {
+      "name": "teacher with no assigned class sees clear empty state and no learner fallback",
+      "ok": true
+    },
+    {
+      "name": "revoked teacher cannot request former class through IPC",
+      "ok": true
+    },
+    {
+      "name": "logout removes native token vault and scoped host",
+      "ok": true
+    },
+    {
+      "name": "logout revokes actual PostgreSQL account session and provider refresh",
+      "ok": true
+    },
+    {
+      "name": "no visible window or external browser opened",
+      "ok": true
+    },
+    {
+      "name": "no renderer or fixture errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "ok": true
+}

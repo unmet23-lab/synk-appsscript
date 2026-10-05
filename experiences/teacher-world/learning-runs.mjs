@@ -5,6 +5,12 @@ const fail=(code,message,status=409)=>{throw Object.assign(new Error(message),{c
 const publicRun=r=>r?copy(Object.fromEntries(Object.entries(r).filter(([k])=>!['eventIds','idempotencyKey','fingerprint','learnerId','sharingRevision','profiles'].includes(k)))):null;
 const belongs=(r,l)=>r.learnerId===l.id&&r.sharingRevision===l.sharing.revision;
 function validAssignment(state,r,l){const a=state.assignments.find(a=>a.id===r.assignmentId);return !r.assignmentId||a&&a.status==='active'&&a.revision===r.assignmentRevision&&a.learnerIds.includes(l.id)&&a.deliveryRevisions?.[l.id]===l.sharing.revision;}
+function requireAvailableTarget(content,target){
+  const authored=gameItems(content),keys=['itemKey','familyKey','skillId','difficulty','modality','responseFormat'];
+  const available=Array.isArray(target?.items)&&target.items.length>0&&target.items.every(item=>authored.some(current=>keys.every(key=>current[key]===item[key])));
+  if(!available||!Number.isInteger(target.requiredAttempts)||target.requiredAttempts<1||new Set(target.items.map(item=>item.familyKey)).size<target.requiredAttempts)
+    fail('TARGET_UNAVAILABLE','이 과제의 문항이 바뀌어 지금은 시작할 수 없어요. 선생님께 새 과제 배정을 요청해 주세요.');
+}
 export function runsFor(state,l){const rows=(state.learningRuns||[]).filter(r=>belongs(r,l));return {activeRun:publicRun(rows.find(r=>r.status==='active'&&r.target&&validAssignment(state,r,l))),runs:rows.map(publicRun)};}
 export function startRun(state,l,payload,now){
   const key=payload.idempotencyKey;if(typeof key!=='string'||!/^[\w.:-]{1,100}$/.test(key))fail('INVALID_INPUT','수행 요청 번호를 확인해 주세요.',400);
@@ -15,14 +21,15 @@ export function startRun(state,l,payload,now){
   const c=a?.taskSnapshot||gameContent(payload.contentId);if(c?.kind!=='game')fail('CONTENT_NOT_ASSIGNABLE','실행할 학습 활동을 확인해 주세요.',400);
   state.learningRuns??=[];const fingerprint=JSON.stringify([a?.id||null,a?.revision||null,c.id,l.sharing.revision]);
   const prior=state.learningRuns.find(r=>r.learnerId===l.id&&r.idempotencyKey===key);
-  if(prior){if(prior.fingerprint!==fingerprint)fail('IDEMPOTENCY_CONFLICT','같은 요청으로 다른 수행을 시작할 수 없어요.');if(!prior.target||prior.status==='stopped'||prior.status==='invalidated')fail('RUN_ENDED','이 시작 요청은 이미 끝났어요. 과제를 다시 선택해 주세요.');return {ok:true,run:publicRun(prior),duplicate:true};}
+  if(prior){if(prior.fingerprint!==fingerprint)fail('IDEMPOTENCY_CONFLICT','같은 요청으로 다른 수행을 시작할 수 없어요.');if(!prior.target||prior.status==='stopped'||prior.status==='invalidated')fail('RUN_ENDED','이 시작 요청은 이미 끝났어요. 과제를 다시 선택해 주세요.');requireAvailableTarget(c,prior.target);return {ok:true,run:publicRun(prior),duplicate:true};}
   if(a&&state.submissions.some(s=>s.assignmentId===a.id&&s.learnerId===l.id))fail('ALREADY_SUBMITTED','완료한 과제입니다. 자유 연습으로 다시 풀 수 있어요.');
   const active=state.learningRuns.find(r=>belongs(r,l)&&r.status==='active'&&r.fingerprint===fingerprint&&validAssignment(state,r,l));
-  if(active?.target)return {ok:true,run:publicRun(active),duplicate:true};
-  for(const r of state.learningRuns.filter(r=>belongs(r,l)&&r.status==='active'))r.status='stopped';
+  if(active?.target){requireAvailableTarget(c,active.target);return {ok:true,run:publicRun(active),duplicate:true};}
   const resumable=a&&state.learningRuns.filter(r=>belongs(r,l)&&r.target&&r.status==='stopped'&&r.fingerprint===fingerprint).at(-1);
+  const target=copy(resumable?.target||a?.targets?.[l.id]||gameTargetFor(state,{...l,evidence:l.evidence.filter(e=>e.sharingRevision===l.sharing.revision)},c,now));
+  requireAvailableTarget(c,target);
+  for(const r of state.learningRuns.filter(r=>belongs(r,l)&&r.status==='active'))r.status='stopped';
   if(resumable){resumable.status='active';return {ok:true,run:publicRun(resumable),resumed:true};}
-  const target=copy(a?.targets?.[l.id]||gameTargetFor(state,{...l,evidence:l.evidence.filter(e=>e.sharingRevision===l.sharing.revision)},c,now));
   if(a){a.targets??={};a.targets[l.id]??=copy(target);}
   const run={id:`run-${state.nextId++}`,learnerId:l.id,sharingRevision:l.sharing.revision,assignmentId:a?.id||null,assignmentRevision:a?.revision||null,contentId:c.id,gameId:c.gameId,href:c.href,target,requiredAttempts:target.requiredAttempts,profiles:gameProfiles(c),status:'active',startedAt:new Date(now).toISOString(),progress:{total:0,correct:0,assisted:0,independent:0,excluded:0},eventIds:[],idempotencyKey:key,fingerprint};
   state.learningRuns.push(run);return {ok:true,run:publicRun(run)};
@@ -33,7 +40,9 @@ export function bindRunEvents(state,l,runId,events){
   const r=runId==null?null:(state.learningRuns||[]).find(r=>r.id===runId&&belongs(r,l));
   if(runId!=null&&!r)fail('FORBIDDEN','다른 학생 또는 이전 공유의 수행입니다.',403);
   for(const e of events){const old=l.events.find(row=>row.revision===l.sharing.revision&&row.payload.id===e.id);if(old&&(old.runId||null)!==(runId||null))fail('EVENT_RUN_CONFLICT','이미 저장한 기록의 수행을 바꿀 수 없어요.');
-    if(r&&Date.parse(e.at)<Date.parse(r.startedAt))fail('EVENT_BEFORE_RUN','수행 시작 전 기록을 과제에 붙일 수 없어요.',400);
+    // Account service checks first server receipt and immutable event/run ownership.
+    // Device clocks are not comparable to a remote server's run start clock.
+    if(r&&state.mode!=='account-linked'&&Date.parse(e.at)<Date.parse(r.startedAt))fail('EVENT_BEFORE_RUN','수행 시작 전 기록을 과제에 붙일 수 없어요.',400);
     if(r&&e.type==='decision.made'&&e.experienceId!==r.gameId)fail('WRONG_RUN_CONTENT','다른 콘텐츠의 기록입니다.',400);
   }
   if(r)r.eventIds=[...new Set([...r.eventIds,...events.map(e=>e.id)])];return r;

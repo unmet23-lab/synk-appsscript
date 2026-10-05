@@ -1,0 +1,86 @@
+{
+  "synthetic": true,
+  "production": false,
+  "checks": [
+    {
+      "name": "student defaults to sharing off",
+      "ok": true
+    },
+    {
+      "name": "student can explicitly enable shared classroom",
+      "ok": true
+    },
+    {
+      "name": "real teacher app loads authenticated class",
+      "ok": true
+    },
+    {
+      "name": "embedded teacher width 320",
+      "ok": true,
+      "detail": "{\"client\":230,\"scroll\":230}"
+    },
+    {
+      "name": "embedded teacher width 390",
+      "ok": true,
+      "detail": "{\"client\":300,\"scroll\":300}"
+    },
+    {
+      "name": "embedded teacher width 1280",
+      "ok": true,
+      "detail": "{\"client\":950,\"scroll\":950}"
+    },
+    {
+      "name": "teacher sends assignment through 390px dialog",
+      "ok": true
+    },
+    {
+      "name": "teacher assignment arrives in WORLD",
+      "ok": true
+    },
+    {
+      "name": "WORLD submits scored answers via actual HTTP PostgreSQL service",
+      "ok": true
+    },
+    {
+      "name": "teacher sees WORLD submission after reload",
+      "ok": true
+    },
+    {
+      "name": "student width 320",
+      "ok": true,
+      "detail": "{\"client\":320,\"scroll\":320}"
+    },
+    {
+      "name": "student width 390",
+      "ok": true,
+      "detail": "{\"client\":390,\"scroll\":390}"
+    },
+    {
+      "name": "student width 1280",
+      "ok": true,
+      "detail": "{\"client\":1280,\"scroll\":1280}"
+    },
+    {
+      "name": "operating classroom opens real targeted game iframe",
+      "ok": true
+    },
+    {
+      "name": "real game answers cross account transport and complete targeted server run",
+      "ok": true
+    },
+    {
+      "name": "sharing withdrawal hides teacher task and stops game host",
+      "ok": true
+    },
+    {
+      "name": "scope switch destroys previous classroom",
+      "ok": true
+    },
+    {
+      "name": "no browser or fixture runtime errors",
+      "ok": true,
+      "detail": "[]"
+    }
+  ],
+  "errors": []
+}

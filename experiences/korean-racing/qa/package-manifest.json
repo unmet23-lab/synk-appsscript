@@ -1,5 +1,5 @@
 {
-  "verifiedFiles": 2738,
+  "verifiedFiles": 2756,
   "games": [
     {
       "id": "korean-racing",
@@ -14,15 +14,15 @@
       "prefix": "play/runner"
     }
   ],
-  "importsChecked": 83,
-  "htmlLinksChecked": 30,
+  "importsChecked": 85,
+  "htmlLinksChecked": 31,
   "excludedUndeclaredFiles": [],
   "files": [
     {
       "path": "app.js",
       "source": "korean-racing/app.js",
-      "bytes": 100026,
-      "sha256": "39a7940d85ccf12b2e3f68ad6ba1c8a2dc6753c643c2419b8d14105db8e347cf"
+      "bytes": 110324,
+      "sha256": "5e3a36f27879dfd2d54f7886505c792f5bd82edf3477bd4f93cee96a43a8037d"
     },
     {
       "path": "assets/azure-sky-v3-mobile.jpg",
@@ -257,6 +257,18 @@
       "source": "korean-racing/assets/meadow-v2.jpg",
       "bytes": 1120842,
       "sha256": "cb8ce958dea72d2f2a156e7855aafdebf9b8f70602ac2bf2329605ced3078548"
+    },
+    {
+      "path": "assets/music/coastline.mp3",
+      "source": "korean-racing/assets/music/coastline.mp3",
+      "bytes": 4633256,
+      "sha256": "4580f5e5bc70dd735988c095ba785ae3e7ce144b0f6df021af538b2cbf448873"
+    },
+    {
+      "path": "assets/music/sources.json",
+      "source": "korean-racing/assets/music/sources.json",
+      "bytes": 1062,
+      "sha256": "8e2a0b39914a90fa92ab39c5f55218b542fd89b3ef8048fe572f2b8d9d561f07"
     },
     {
       "path": "assets/narration/answer.mp3",
@@ -15207,38 +15219,56 @@
     {
       "path": "atlas-learning.js",
       "source": "korean-racing/atlas-learning.js",
-      "bytes": 391577,
-      "sha256": "a4acf55b4dc274b7cbe11620fcfabd75277fb8e8f33c53494698f093d7e15dea"
+      "bytes": 443608,
+      "sha256": "9cfae6599bf47ccaf4d6b9f9035375a794de75a2670425e2b38366f3e227523b"
     },
     {
       "path": "atmosphere.js",
       "source": "korean-racing/atmosphere.js",
-      "bytes": 8625,
-      "sha256": "301b25988328532c39beb83145c780f4ec8da97554372fec76d28a923560c952"
+      "bytes": 10043,
+      "sha256": "eb0adcf280249ab782e3930e7cd043377db11cc1a8305ea1f50572e79ea6ae85"
     },
     {
       "path": "campaign.js",
       "source": "korean-racing/campaign.js",
-      "bytes": 14952,
-      "sha256": "98dfc33e8f825d8d33c3e5186dd015973ca1b04b00d41257d2a6dbe1f6110b3f"
+      "bytes": 15312,
+      "sha256": "7fcdb924b59a7218a99eb42f2733f6ccbe7037e54289efcf13e235c39d7f314f"
     },
     {
       "path": "city-life.js",
       "source": "korean-racing/city-life.js",
-      "bytes": 27616,
-      "sha256": "052a8d46d55bdc0c58606421d15a3590f27daa5f38df60a1618ca4475550d87f"
+      "bytes": 28803,
+      "sha256": "52f06f5898e67c4b94373a4402701013a94a1a06402825f554fc4116ccc0afb9"
     },
     {
       "path": "city-materials.js",
       "source": "korean-racing/city-materials.js",
-      "bytes": 13076,
-      "sha256": "27079c067f3a5e9afb4f618372c08cde09f2c5e67f51fbe001307761675dce75"
+      "bytes": 13736,
+      "sha256": "cad4dfe6acf3d5903b40ab48c5c6f68d0017d94f37581ee450430a7437557972"
     },
     {
       "path": "cityscape.js",
       "source": "korean-racing/cityscape.js",
-      "bytes": 29173,
-      "sha256": "77a26c6acf12dac1ec382c90216d84cdd243c04fd7aec4868eae8148b14cb6a1"
+      "bytes": 42764,
+      "sha256": "da3f68d40a178995fb3d34775a06fdc2a792af49646d102e08673e2ac7d27e4a"
+    },
+    {
+      "path": "coast-drive.css",
+      "source": "korean-racing/coast-drive.css",
+      "bytes": 2203,
+      "sha256": "04b151200cf8c25c4714ba96f26070f210c7de2cf6f5fea5a3320832f0298850"
+    },
+    {
+      "path": "coast-drive.js",
+      "source": "korean-racing/coast-drive.js",
+      "bytes": 1553,
+      "sha256": "e03b377b183c6d17364e379233a34c1fd77c16365b1730f8989c68a7f1af3c6f"
+    },
+    {
+      "path": "coast-radio.js",
+      "source": "korean-racing/coast-radio.js",
+      "bytes": 5143,
+      "sha256": "08e9eb71db31cbc74df8af35091daa270bbecf2bca71328be5dda7ae897d9e70"
     },
     {
       "path": "coastal-rocks.js",
@@ -15291,20 +15321,20 @@
     {
       "path": "graphics.js",
       "source": "korean-racing/graphics.js",
-      "bytes": 1152,
-      "sha256": "5ff1be6b98e6710991240d1ef589999c3d35084a12fa836870674219280e7d95"
+      "bytes": 1985,
+      "sha256": "08ca66cdc580c71ad721a0fa504a6a57468c00ddef6c310e14e70afd840f527d"
     },
     {
       "path": "index.html",
       "source": "korean-racing/index.html",
-      "bytes": 17730,
-      "sha256": "494d5d21e8d427f90dc58b52eaad226d1506041f44dc1590e41dd3de0eed1129"
+      "bytes": 18524,
+      "sha256": "758598a37af367577376ded557f8383adbb73cc391db8b473f0e3e07cb7fd8a0"
     },
     {
       "path": "landscape.js",
       "source": "korean-racing/landscape.js",
-      "bytes": 23770,
-      "sha256": "fb9421c70d1af6c91889c91af9ffbd00bfd1b409054dd3f3b24745db185fb768"
+      "bytes": 23991,
+      "sha256": "5a7964c1ad97b92e019c1dd9d1e6af46f3eecfafb6df52bd0b3359574585c7b2"
     },
     {
       "path": "learning.js",
@@ -15321,14 +15351,14 @@
     {
       "path": "personalization.js",
       "source": "korean-racing/personalization.js",
-      "bytes": 5112,
-      "sha256": "c6be62d66f98aebdf1e2ccf3520e2bee5489ff9e9e503423f7db52c5ef3dd6b2"
+      "bytes": 8265,
+      "sha256": "24aa0bb50778d26447150a127ff67dfc31f35e43cd6d8695a57fe713172fb99a"
     },
     {
       "path": "play/rhythm/app.mjs",
       "source": "korean-rhythm/app.mjs",
-      "bytes": 21979,
-      "sha256": "764fc83ea1dd5de634e0af6db75ffbdbad81d478c8249bed07fd9788bd08ecdc"
+      "bytes": 22280,
+      "sha256": "9e49a6a2cb46d3490a58f3869020af7d601c80fe653174c6df020b0ecf36b39b"
     },
     {
       "path": "play/rhythm/assets/DMMono-OFL.txt",
@@ -15705,8 +15735,8 @@
     {
       "path": "play/rhythm/atlas-learning.js",
       "source": "korean-rhythm/atlas-learning.js",
-      "bytes": 391577,
-      "sha256": "a4acf55b4dc274b7cbe11620fcfabd75277fb8e8f33c53494698f093d7e15dea"
+      "bytes": 443608,
+      "sha256": "9cfae6599bf47ccaf4d6b9f9035375a794de75a2670425e2b38366f3e227523b"
     },
     {
       "path": "play/rhythm/audio.mjs",
@@ -15747,8 +15777,8 @@
     {
       "path": "play/rhythm/personalization.mjs",
       "source": "korean-rhythm/personalization.mjs",
-      "bytes": 4174,
-      "sha256": "c571e298d549ddc6c2e359bd560425d95057bd1a6f79bcfcc24134103e57f99e"
+      "bytes": 5066,
+      "sha256": "72d61990930e899ba98efec2df7e1980d340fee72ee476804e24c33213377511"
     },
     {
       "path": "play/rhythm/stage.mjs",
@@ -15759,8 +15789,8 @@
     {
       "path": "play/rhythm/style.css",
       "source": "korean-rhythm/style.css",
-      "bytes": 28499,
-      "sha256": "264fa87a40fbd96ada7b64b28bdcdd4fdbf36cb41a8e0a7828355c12bf243d43"
+      "bytes": 28817,
+      "sha256": "332de67e090cea8d7f07bcb674dfed4a7bd116c9fd3212e542d004a9f3c3e8aa"
     },
     {
       "path": "play/rhythm/suno-tracks.mjs",
@@ -15771,8 +15801,8 @@
     {
       "path": "play/runner/app.js",
       "source": "korean-runner/app.js",
-      "bytes": 24537,
-      "sha256": "112e315aeda8932aa83a9d4f45e3de8aba8b61caa16e75950c1853431ff055ec"
+      "bytes": 26039,
+      "sha256": "de9a964af94ea5b0d21176761cdd2c8a5b776ee9cb06bb4068d7a0f94f9b05a0"
     },
     {
       "path": "play/runner/art.mjs",
@@ -16081,10 +16111,82 @@
       "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
     },
     {
+      "path": "play/runner/assets/voice/check-duck-jump.mp3",
+      "source": "korean-runner/assets/voice/check-duck-jump.mp3",
+      "bytes": 39540,
+      "sha256": "412a8544d182a0ef1ae18fc02aa9e042d8896d62c6d56ae5356a951a460ed221"
+    },
+    {
+      "path": "play/runner/assets/voice/check-fence-jump.mp3",
+      "source": "korean-runner/assets/voice/check-fence-jump.mp3",
+      "bytes": 41629,
+      "sha256": "aeb6fe13459d19c65132cccc34245da02d8de5b24bd4586d8aaee96c2d0e00af"
+    },
+    {
+      "path": "play/runner/assets/voice/check-high-sign.mp3",
+      "source": "korean-runner/assets/voice/check-high-sign.mp3",
+      "bytes": 26792,
+      "sha256": "e6e213cb828cd563e8eab08c6243b3005573d34618bd8407c4ab134741330cbd"
+    },
+    {
+      "path": "play/runner/assets/voice/check-left-run.mp3",
+      "source": "korean-runner/assets/voice/check-left-run.mp3",
+      "bytes": 30136,
+      "sha256": "66c5124c4cd6129f3759fb4acc691fd42fb9eb536c88e248f1defa125a51cda0"
+    },
+    {
+      "path": "play/runner/assets/voice/check-middle-left.mp3",
+      "source": "korean-runner/assets/voice/check-middle-left.mp3",
+      "bytes": 29300,
+      "sha256": "87c430102b4b07b4d16f4275f339cb6c07cf70d35c9f463474037f0f02067179"
+    },
+    {
+      "path": "play/runner/assets/voice/check-no-fence.mp3",
+      "source": "korean-runner/assets/voice/check-no-fence.mp3",
+      "bytes": 26165,
+      "sha256": "71edf0900c6962e9a883627c11fe2c850481d576486d9280ae29d028314e20fd"
+    },
+    {
+      "path": "play/runner/assets/voice/check-not-left.mp3",
+      "source": "korean-runner/assets/voice/check-not-left.mp3",
+      "bytes": 35360,
+      "sha256": "d2349faf32004559a623c32213099632a5738f1e9c72d62c3b5a59363aed1db4"
+    },
+    {
+      "path": "play/runner/assets/voice/check-not-middle.mp3",
+      "source": "korean-runner/assets/voice/check-not-middle.mp3",
+      "bytes": 27628,
+      "sha256": "a665fa30b5f4a7711694f1287b5c8d5fb43886f0badb2b0f93b8c5bf978b245f"
+    },
+    {
+      "path": "play/runner/assets/voice/check-right-before-jump.mp3",
+      "source": "korean-runner/assets/voice/check-right-before-jump.mp3",
+      "bytes": 26374,
+      "sha256": "6572ebd9659c0560c7d15a6a336a6d205fb4b699dab1130a6a7989d4bfec0923"
+    },
+    {
+      "path": "play/runner/assets/voice/check-sign-duck.mp3",
+      "source": "korean-runner/assets/voice/check-sign-duck.mp3",
+      "bytes": 44346,
+      "sha256": "8bd919c097fa4bff314d9fa680b293a2f2dc75587772b80fef959666d2c31d16"
+    },
+    {
+      "path": "play/runner/assets/voice/check-star-middle.mp3",
+      "source": "korean-runner/assets/voice/check-star-middle.mp3",
+      "bytes": 39331,
+      "sha256": "625837f7f2d747f632de5cce48ef943f1b34d31e7dae65ac4d11258946860a7e"
+    },
+    {
+      "path": "play/runner/assets/voice/check-wide-left.mp3",
+      "source": "korean-runner/assets/voice/check-wide-left.mp3",
+      "bytes": 34315,
+      "sha256": "4ba9ad2591f0b64e669aa2afe0251aecc4bdf857ba98d280a1de2cb1ebe1d5fc"
+    },
+    {
       "path": "play/runner/assets/voice/jobs.json",
       "source": "korean-runner/assets/voice/jobs.json",
-      "bytes": 1505,
-      "sha256": "b79e4a16cd1aeb9b248b65ee9a6ebdc5b79ed736dac4a9872fb7b0eda091c482"
+      "bytes": 2829,
+      "sha256": "5c27c17aae68a0b3341cf17268dd0ed9a9e0a27a46a1fb84c91d5b52aeb53952"
     },
     {
       "path": "play/runner/assets/voice/jump-right.mp3",
@@ -16119,8 +16221,8 @@
     {
       "path": "play/runner/assets/voice/manifest.json",
       "source": "korean-runner/assets/voice/manifest.json",
-      "bytes": 5138,
-      "sha256": "bbd994eb9008b3e38006f9d2e4f79a8a58b7f43c3bf5dfe41138cb6ef478cf3c"
+      "bytes": 9113,
+      "sha256": "29e611f14a729bf5ab98536369797f7a21b5c1aa65cbd81cba97168810db32a2"
     },
     {
       "path": "play/runner/assets/voice/middle-slide.mp3",
@@ -16191,8 +16293,8 @@
     {
       "path": "play/runner/atlas-learning.js",
       "source": "korean-runner/atlas-learning.js",
-      "bytes": 391577,
-      "sha256": "a4acf55b4dc274b7cbe11620fcfabd75277fb8e8f33c53494698f093d7e15dea"
+      "bytes": 443608,
+      "sha256": "9cfae6599bf47ccaf4d6b9f9035375a794de75a2670425e2b38366f3e227523b"
     },
     {
       "path": "play/runner/audio.mjs",
@@ -16215,8 +16317,8 @@
     {
       "path": "play/runner/core.mjs",
       "source": "korean-runner/core.mjs",
-      "bytes": 9203,
-      "sha256": "d18023e6a0b3be2ecdb4f675e642310e44968bc77dbbef4e4d595411a5838406"
+      "bytes": 10223,
+      "sha256": "fc07de81722af72db23cfb91d3161d0fef57829f54eb6fac8b835278fe2b2c8f"
     },
     {
       "path": "play/runner/goals-ui.mjs",
@@ -16239,20 +16341,20 @@
     {
       "path": "play/runner/learning.mjs",
       "source": "korean-runner/learning.mjs",
-      "bytes": 1039,
-      "sha256": "148702443e0d4589cab3a1b4931c2f48e04478f876cef1dd799ef527db9b1318"
+      "bytes": 2817,
+      "sha256": "5763840e264891630f93b75988f2a1772536daaeb133c34232288a8c0fd356d5"
     },
     {
       "path": "play/runner/listening-check-ui.mjs",
       "source": "korean-runner/listening-check-ui.mjs",
-      "bytes": 5709,
-      "sha256": "12ce2323573fe0e6985e71c4c3a2b25a79c9c4573d1a747839c89ded30862790"
+      "bytes": 6219,
+      "sha256": "129b7a9fd04e297c28e3e2263899663d8488d127694760267faadf43004bbcd0"
     },
     {
       "path": "play/runner/listening-check.mjs",
       "source": "korean-runner/listening-check.mjs",
-      "bytes": 5925,
-      "sha256": "7f5ceabbb054e2a4f22633413c241e61075b8a9229e3b6dca2468690382c279f"
+      "bytes": 8914,
+      "sha256": "14f2713e3d128e0c18ec14a036ef45ff0f87bae288860993ddc9b229f7249a0a"
     },
     {
       "path": "play/runner/scenery-details.mjs",
@@ -16333,10 +16435,16 @@
       "sha256": "1221027dbac62e902a0faad8a40cdd069793dccc752e69005c51e1fa5498238a"
     },
     {
+      "path": "race-pacing.js",
+      "source": "korean-racing/race-pacing.js",
+      "bytes": 1334,
+      "sha256": "2a00a24badc0ebbc2fa95b6f82ebd73889c9bfd16744c7821ef70efdc06c045c"
+    },
+    {
       "path": "render-world.js",
       "source": "korean-racing/render-world.js",
-      "bytes": 12177,
-      "sha256": "12ddba343c016a31bb2b331f8e2aca8a04a06c14f2a31cfb4968d0e50f757918"
+      "bytes": 12196,
+      "sha256": "91c2027ddf95b379002005fd664b74bf6ca9c63aae4c95ab6c4f1003237baca0"
     },
     {
       "path": "scenery.js",
@@ -16347,8 +16455,8 @@
     {
       "path": "seascape-boats.js",
       "source": "korean-racing/seascape-boats.js",
-      "bytes": 14352,
-      "sha256": "4dc06b506850643451b418709d5cd999a5b573cbf7eee245fd82d101d035f48a"
+      "bytes": 16122,
+      "sha256": "dc864f1fb6f12f125fc0b54a31202450bc25e7f7f8b0e6622d9f1b02f869d34b"
     },
     {
       "path": "startup.js",
@@ -16371,8 +16479,8 @@
     {
       "path": "vehicles.js",
       "source": "korean-racing/vehicles.js",
-      "bytes": 34482,
-      "sha256": "b357943e0d4c3eb6c3570301f92b40e81559e8cc780c5527992966ea40c0a189"
+      "bytes": 40744,
+      "sha256": "4182086be807471f8f03ecf4d5c22a2b5f9112f477c0f7bf818b6e9ea89b1270"
     },
     {
       "path": "vendor/BufferGeometryUtils.js",
@@ -16443,13 +16551,13 @@
     {
       "path": "build-manifest.json",
       "generated": true,
-      "bytes": 609064,
-      "sha256": "418797da0351104fe27f70db13be026876a570b1444ed6d210829d42ec9e2d77"
+      "bytes": 613273,
+      "sha256": "952eca9dad5172a4f6d772e8c62e83f887a0b9ca3725aa3260d272e1324d2f51"
     }
   ],
   "zip": {
-    "path": "SYNK-LAB-PLAY-시안-v7-20261003.zip",
-    "bytes": 58863515,
-    "sha256": "699a23f19a62899fc67d83670ae895dbb47243fbc83869619f1664457bb1c9fb"
+    "path": "SYNK-LAB-PLAY-시안-v10-20261004.zip",
+    "bytes": 63822025,
+    "sha256": "0344264cc9a06015fc40f01e81ff217ca8251a55d5b0105ce2bc45fe3d36f650"
   }
 }

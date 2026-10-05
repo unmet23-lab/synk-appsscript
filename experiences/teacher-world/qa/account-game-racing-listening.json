@@ -1,0 +1,150 @@
+{
+  "ok": true,
+  "startedAt": "2026-10-04T10:03:27.815Z",
+  "verifiedAt": "2026-10-04T10:05:08.667Z",
+  "contentId": "racing-listening",
+  "gameId": "korean-racing",
+  "lifecycle": false,
+  "target": {
+    "items": [
+      {
+        "itemKey": "korean-racing:c01q1:v1",
+        "skillId": "ko.listening.detail",
+        "modality": "listening",
+        "familyKey": "korean-racing:c01q1:v1",
+        "difficulty": 1,
+        "responseFormat": "single-choice"
+      },
+      {
+        "itemKey": "korean-racing:c01q2:v1",
+        "skillId": "ko.listening.detail",
+        "modality": "listening",
+        "familyKey": "korean-racing:c01q2:v1",
+        "difficulty": 1,
+        "responseFormat": "single-choice"
+      },
+      {
+        "itemKey": "korean-racing:c01q3:v1",
+        "skillId": "ko.listening.detail",
+        "modality": "listening",
+        "familyKey": "korean-racing:c01q3:v1",
+        "difficulty": 1,
+        "responseFormat": "single-choice"
+      }
+    ],
+    "label": "듣고 세부 정보 찾기",
+    "policy": "learning-priority-3",
+    "reason": "듣고 세부 정보 찾기는 아직 기록이 적어요. 짧게 확인해 봐요.",
+    "skillId": "ko.listening.detail",
+    "version": 1,
+    "itemKeys": [
+      "korean-racing:c01q1:v1",
+      "korean-racing:c01q2:v1",
+      "korean-racing:c01q3:v1"
+    ],
+    "modality": "listening",
+    "difficulty": 1,
+    "familyKeys": [
+      "korean-racing:c01q1:v1",
+      "korean-racing:c01q2:v1",
+      "korean-racing:c01q3:v1"
+    ],
+    "freshCount": 3,
+    "description": "듣고 세부 정보 찾기 · 난도 1 · 목표 3문항 (새 문항 3, 복습 0)",
+    "reviewCount": 0,
+    "responseFormat": "single-choice",
+    "requiredAttempts": 3
+  },
+  "checks": [
+    {
+      "name": "real teacher UI created frozen individual target",
+      "ok": true
+    },
+    {
+      "name": "server run pins teacher target",
+      "ok": true
+    },
+    {
+      "name": "presented racing item belongs to frozen target c01q1",
+      "ok": true
+    },
+    {
+      "name": "presented racing item belongs to frozen target c01q2",
+      "ok": true
+    },
+    {
+      "name": "presented racing item belongs to frozen target c01q3",
+      "ok": true
+    },
+    {
+      "name": "actual game responses complete exact frozen target",
+      "ok": true
+    },
+    {
+      "name": "authored correct controls have expected correctness",
+      "ok": true,
+      "detail": {
+        "correct": 3,
+        "total": 3
+      }
+    },
+    {
+      "name": "completion does not claim efficacy",
+      "ok": true
+    },
+    {
+      "name": "responses are persisted in canonical SYNK ID storage",
+      "ok": true,
+      "detail": {
+        "count": 21
+      }
+    },
+    {
+      "name": "teacher app renders the completed result",
+      "ok": true
+    },
+    {
+      "name": "teacher authorized API returns the same submission",
+      "ok": true
+    },
+    {
+      "name": "WORLD reload retains completed assignment",
+      "ok": true
+    },
+    {
+      "name": "no browser or HTTP fixture runtime errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "trace": [
+    {
+      "itemId": "c01q1",
+      "modality": "sentence",
+      "input": "steer-and-go",
+      "audioCompleted": true
+    },
+    {
+      "itemId": "c01q2",
+      "modality": "sentence",
+      "input": "steer-and-go",
+      "audioCompleted": true
+    },
+    {
+      "itemId": "c01q3",
+      "modality": "sentence",
+      "input": "steer-and-go",
+      "audioCompleted": true
+    }
+  ],
+  "submission": {
+    "total": 3,
+    "correct": 3,
+    "assisted": 0,
+    "independent": 3
+  },
+  "errors": [],
+  "synthetic": true,
+  "production": false,
+  "completionSource": "real-game-controls-account-linked-http-postgresql"
+}

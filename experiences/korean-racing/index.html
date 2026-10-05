@@ -8,6 +8,7 @@
   <title>한국어가 속도가 되는 순간 · SYNK LAB PLAY</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23101b21'/%3E%3Cpath d='M18 46 34 14h14L32 46z' fill='%23c8f470'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="coast-drive.css">
   <link rel="stylesheet" href="garage.css">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
 </head>
@@ -55,8 +56,13 @@
       <div class="drive-feedback play-only"><span id="driving-note">안전 주행 중</span><strong id="combo"></strong></div><div id="toast" class="toast" role="status" aria-live="polite"></div>
       <div class="race-bottom play-only"><div class="steering"><button id="left" aria-label="왼쪽으로 이동">←</button><button id="go" aria-label="현재 차선으로 출발" title="현재 길 선택 · ↑ / W" disabled>↑<small>출발</small></button><button id="right" aria-label="오른쪽으로 이동">→</button></div><div class="nitro"><span id="nitro-label">LISTEN. CHOOSE. BOOST.</span><div><i id="nitro-fill"></i></div></div><div class="speed"><strong id="speed">0</strong><span>KM/H</span></div></div>
       <div class="demo-indicator play-only" id="demo-indicator" hidden>자동 시연 중 · 정답 게이트를 따라 달려요</div>
+      <div id="cruise-loop" class="cruise-loop" aria-hidden="true"></div>
+      <section id="cruise-banner" class="cruise-banner" aria-label="완주 후 드라이브" hidden>
+        <strong role="status">모든 문제를 마쳤어요.</strong><p>드라이브하며 쉬었다가 다음 코스로 넘어가요.</p><button id="cruise-track" type="button" aria-label="시티팝 해안선 재생">♫ SYNK CITY POP · 해안선</button>
+      </section>
+      <div id="cruise-action" class="cruise-action" hidden><button id="cruise-results" type="button"><span id="cruise-next">결과 · 다음 코스</span><span aria-hidden="true">↗</span></button></div>
       <div id="pause-panel" class="modal-backdrop" hidden><div class="pause-card"><span class="eyebrow">TAKE A BREATH</span><h2>잠깐 쉬어가요.</h2><button id="resume" class="start-button">이어서 달리기 <span>→</span></button><button id="exit" class="text-button">처음 화면으로</button></div></div>
-      <div id="results" class="modal-backdrop" hidden><div class="results-card"><span class="eyebrow" id="result-stage">COASTLINE · FINISH</span><h2>방금 들은 한국어가<br>조금 더 익숙해졌나요?</h2><div class="result-stats"><div><strong id="result-correct">0</strong><span>맞힌 문제</span></div><div><strong id="result-boost">0</strong><span>정답 부스터</span></div><div><strong id="result-rank">3</strong><span>완주 순위</span></div></div><p id="result-medal" class="result-medal"></p><div id="result-rewards" class="result-rewards" role="status"></div><details class="review-details"><summary>정답과 이유 다시 보기</summary><div id="answer-review"></div></details><div id="word-list" class="word-list"></div><button id="next-stage" class="start-button">다음 스테이지 <span>→</span></button><button id="result-garage" class="text-button">차고 · 상점 구경하기</button><button id="replay" class="text-button">이 스테이지 다시 달리기</button><button id="home" class="text-button">처음 화면으로</button><p class="result-note" id="result-note">직접 플레이한 단어 기록은 이 브라우저에 저장해요.</p></div></div>
+      <div id="results" class="modal-backdrop" hidden><div class="results-card"><span class="eyebrow" id="result-stage">COASTLINE · FINISH</span><h2>방금 들은 한국어가<br>조금 더 익숙해졌나요?</h2><div class="result-stats"><div><strong id="result-correct">0</strong><span>맞힌 문제</span></div><div><strong id="result-boost">0</strong><span>정답 부스터</span></div><div><strong id="result-rank">3</strong><span>완주 순위</span></div></div><p id="result-medal" class="result-medal"></p><div id="result-rewards" class="result-rewards" role="status"></div><details class="review-details"><summary>정답과 이유 다시 보기</summary><div id="answer-review"></div></details><div id="word-list" class="word-list"></div><button id="next-stage" class="start-button">다음 스테이지 <span>→</span></button><button id="return-cruise" class="text-button">드라이브로 돌아가기</button><button id="result-garage" class="text-button">차고 · 상점 구경하기</button><button id="replay" class="text-button">이 스테이지 다시 달리기</button><button id="home" class="text-button">처음 화면으로</button><p class="result-note" id="result-note">직접 플레이한 단어 기록은 이 브라우저에 저장해요.</p></div></div>
     </section>
     <section class="stage-section" id="stages" aria-labelledby="stage-heading">
       <div class="section-heading"><div><span class="eyebrow">LISTEN. RACE. REMEMBER.</span><h2 id="stage-heading">단어에서 문장으로,<br>한 코스씩 더 멀리.</h2></div><p>6단계 도전 코스에서 듣고 읽고 판단하세요.<br>기초 어휘 2,000개는 별도 연습에서 언제든 다시 만날 수 있어요.</p></div>

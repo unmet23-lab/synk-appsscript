@@ -10,7 +10,12 @@ export function buildCityLife(THREE, {anchors = [], groundHeight, pathX, surface
     if (![position.x,position.y,position.z].every(Number.isFinite)) throw new TypeError('City actors require finite world coordinates.');
     if (pathX(position.z)-position.x<9.8) throw new RangeError('City actors must remain behind the protected road shoulder.');
     const id=`${anchor.id}:${index}`, r=seed(id), height=1.66+seed(id+'height')*.22;
+    const attention=seed(id+'notice'),gesture=seed(id+'greeting');
+    const notices=anchor.kind==='cheer'?attention<.78:anchor.kind==='walk'?attention<.48:anchor.kind==='party'?attention<.23:false;
+    const response=notices?(anchor.kind==='party'||gesture<.34?'look':'wave'):'none';
     actors.push({id,index,kind:anchor.kind,anchor,position:{...position},r,phase:r*Math.PI*2,height,scale:height/1.78,reaction:0,reactionAge:0,
+      response,noticeArmed:true,noticeActive:false,noticeCount:0,noticeRange:41+seed(id+'range')*13,
+      noticeDelay:.12+seed(id+'delay')*.52,noticeHold:1.05+seed(id+'hold')*.65,
       skirt:seed(id+'skirt')>.72,coat:seed(id+'coat')>.62,phaseOffset:seed(id+'offset')*21,
       skin:Math.floor(seed(id+'skin')*5),outfit:Math.floor(seed(id+'outfit')*7),hair:Math.floor(seed(id+'hair')*4)});
   }
@@ -78,7 +83,7 @@ export function buildCityLife(THREE, {anchors = [], groundHeight, pathX, surface
   const yawRotation=new THREE.Quaternion(),partRotation=new THREE.Quaternion(),localEuler=new THREE.Euler();
   const sphere=new THREE.Sphere(new THREE.Vector3(),1.8),frustum=new THREE.Frustum(),projection=new THREE.Matrix4();
   let theme='coast',clock=0,lastTime=null,lastInput={},disposed=false;
-  const stats={actors:actors.length,visibleActors:0,animatedActors:0,drawCalls:0,shadowDrawCalls:0,visibleTriangles:0,storedTriangles:Object.values(buckets).reduce((n,b)=>n+b.triangles,0),quality:'high',theme,time:0};
+  const stats={version:9,actors:actors.length,visibleActors:0,animatedActors:0,reactingActors:0,greetingActors:0,drawCalls:0,shadowDrawCalls:0,visibleTriangles:0,storedTriangles:Object.values(buckets).reduce((n,b)=>n+b.triangles,0),quality:'high',theme,time:0};
   const poses=[]; group.userData.stats=stats;group.userData.actors=actors.map(a=>({id:a.id,kind:a.kind,height:a.height}));group.userData.poseSnapshots=poses;
   // Snapshot joints are world coordinates, permitting direct pose/seat/road QA
   // without adding a debug interface or altering any game state.
@@ -153,12 +158,14 @@ export function buildCityLife(THREE, {anchors = [], groundHeight, pathX, surface
     const projection=hint.reduce((n,v,i)=>n+v*unit[i],0),bend=hint.map((v,i)=>v-projection*unit[i]),size=Math.hypot(...bend)||1;
     return start.map((n,i)=>n+unit[i]*along+bend[i]/size*height);
   }
-  function drawActor(actor,t,playerS,playerX,animated,celebrating) {
+  function drawActor(actor,t,animated) {
     const p=actor.position,seated=actor.kind==='table',party=actor.kind==='party',s=actor.scale;
     let {x,y,z,yaw,walk}=placement(actor,t);
     const localTime=t+actor.phaseOffset,baseYaw=p.yaw??actor.anchor.yaw??0;
     const reaction=actor.reaction,look=actor.gazeAngle??baseYaw;
-    if(actor.kind==='cheer')yaw=baseYaw+Math.atan2(Math.sin(look-baseYaw),Math.cos(look-baseYaw))*reaction*.72;
+    // The spectator's feet stay planted. Only the upper body and head follow
+    // the car; rotating the complete rig used to swivel both soles on paving.
+    const gazeTurn=clamp(Math.atan2(Math.sin(look-yaw),Math.cos(look-yaw)),-.72,.72)*reaction;
     const cos=Math.cos(yaw),sin=Math.sin(yaw);
     const world=q=>[x+s*(cos*q[0]+sin*q[2]),y+s*q[1],z+s*(-sin*q[0]+cos*q[2])];
     const local=q=>{const dx=(q[0]-x)/s,dz=(q[2]-z)/s;return [cos*dx-sin*dz,(q[1]-y)/s,sin*dx+cos*dz];};
@@ -183,7 +190,7 @@ export function buildCityLife(THREE, {anchors = [], groundHeight, pathX, surface
     const drinkSip=(seated||party)?pulse(sipTime,6.45,.4,.85,.45):0;
     const dance=party&&actor.r>.5?(1-drinkLift)*pulse(localTime%11,1.2,1,4.2,1.4):0;
     const sway=Math.sin(localTime*1.55+actor.phase)*dance;
-    let pelvisX=sway*.032,pelvisYaw=0,shoulderTurn=sway*.037,stride=0;
+    let pelvisX=sway*.032,pelvisYaw=0,shoulderTurn=sway*.037+(actor.kind==='cheer'?gazeTurn*.24:0),stride=0;
     const seatHeight=Number.isFinite(p.seatHeight)?p.seatHeight:.57,hipZ=seated?-.075:0;
     let pelvisY=seated?(seatHeight+.10)/s:.925-Math.abs(sway)*.009;
     const footStates=[];
@@ -233,8 +240,7 @@ export function buildCityLife(THREE, {anchors = [], groundHeight, pathX, surface
       return [rotated[0]+pelvisX,rotated[1]*c-rotated[2]*sn+pelvisY+breathe,rotated[1]*sn+rotated[2]*c+hipZ];
     };
     const shoulderL=bodyPoint([-.211,.435,0]),shoulderR=bodyPoint([.211,.435,0]),headCenter=bodyPoint([0,.70,.006]);
-    const gazeTurn=clamp(Math.atan2(Math.sin(look-yaw),Math.cos(look-yaw)),-.65,.65)*reaction;
-    const headYaw=shoulderTurn+(seated||party?Math.sin(localTime*.39+actor.phase)*.065:gazeTurn*.72);
+    const headYaw=shoulderTurn+(seated||party?Math.sin(localTime*.39+actor.phase)*.065:0)+gazeTurn*.78*(1-drinkLift);
     const headPitch=(seated||party?Math.sin(localTime*1.65+actor.phase)*.035*listen:0)*(1-drinkLift);
     const headPoint=q=>{
       const c=Math.cos(headPitch),sn=Math.sin(headPitch),a=rotateY(q,headYaw),r=[a[0],a[1]*c-a[2]*sn,a[1]*sn+a[2]*c];
@@ -255,17 +261,10 @@ export function buildCityLife(THREE, {anchors = [], groundHeight, pathX, surface
       handR=[cupPosition[0]+.034,cupPosition[1]-.027,cupPosition[2]+.002];
     }
     let cheerBlend=0;
-    if(actor.kind==='cheer'||actor.kind==='walk'&&actor.r>.48){
-      const greeting=actor.reactionAge%(7.4+actor.r*1.5),envelope=pulse(greeting,.12+actor.r*.22,.68,2.2,.9);
-      cheerBlend=reaction*envelope*(actor.kind==='walk'?.7:1);
-      if(actor.r>.42){
-        const wave=Math.sin(actor.reactionAge*(4.0+actor.r*.7)+actor.phase);
-        handR=lerp(handR,bodyPoint([.315+wave*.057,.80,.09]),cheerBlend);
-      } else {
-        const clapPhase=(actor.reactionAge*1.65+actor.r)%1,open=.035+.115*(.5-.5*Math.cos(clapPhase*Math.PI*2));
-        handL=lerp(handL,bodyPoint([-open,.40,.32]),cheerBlend);
-        handR=lerp(handR,bodyPoint([open,.40,.32]),cheerBlend);
-      }
+    if(actor.response==='wave'){
+      cheerBlend=reaction*(actor.kind==='walk'?.68:1);
+      const wave=Math.sin(actor.reactionAge*(4.0+actor.r*.7)+actor.phase);
+      handR=lerp(handR,bodyPoint([.315+wave*.052,.72,.09]),cheerBlend);
     }
     const elbowL=joint(shoulderL,handL,.28,.265,[-1,-.18,.12]),elbowR=joint(shoulderR,handR,.28,.265,[1,-.18,.12]);
     const shirt=shirtColors[actor.outfit],trousers=trouserColors[actor.outfit],skin=skinColors[actor.skin],hair=hairColors[actor.hair];
@@ -307,7 +306,7 @@ export function buildCityLife(THREE, {anchors = [], groundHeight, pathX, surface
     }
     meshPart('shadow',[x,y+.012,z],[seated?.36:.28,seated?.43:.18,1],0,[-Math.PI*.5,0,yaw]);
     poses.push({id:actor.id,kind:actor.kind,position:{x,y,z},yaw,height:actor.height,seated,seatHeight,animated,bones:{upperLeg:upperLeg*s,lowerLeg:lowerLeg*s,upperArm:.28*s,forearm:.265*s},
-      motion:{speech,speaker,drinkLift,drinkSip,cheerBlend,reaction,feet:footStates,mouth:world(mouth),cupRim:rim?world(rim):null,pelvisYaw,shoulderYaw:shoulderTurn},
+      motion:{speech,speaker,drinkLift,drinkSip,cheerBlend,reaction,reactionType:actor.response,reactionCount:actor.noticeCount,reactionAge:actor.reactionAge,headYaw,feet:footStates,mouth:world(mouth),cupRim:rim?world(rim):null,pelvisYaw,shoulderYaw:shoulderTurn},
       joints:{hipLeft:world(hipL),hipRight:world(hipR),kneeLeft:world(kneeL),kneeRight:world(kneeR),ankleLeft:world(ankleL),ankleRight:world(ankleR),shoulderLeft:world(shoulderL),shoulderRight:world(shoulderR),elbowLeft:world(elbowL),elbowRight:world(elbowR),handLeft:world(handL),handRight:world(handR),head:world(headCenter)}});
   }
   function update(input={}) {
@@ -316,12 +315,20 @@ export function buildCityLife(THREE, {anchors = [], groundHeight, pathX, surface
     const previousClock=clock;
     if(Number.isFinite(time)){if(lastTime!==null&&!paused&&motion)clock+=clamp(time-lastTime,0,.15);lastTime=time;}
     const q=['high','balanced','low'].includes(quality)?quality:'balanced';
-    stats.quality=q;stats.theme=theme;stats.time=clock;stats.visibleActors=0;stats.animatedActors=0;stats.visibleTriangles=0;stats.drawCalls=0;poses.length=0;
+    stats.quality=q;stats.theme=theme;stats.time=clock;stats.visibleActors=0;stats.animatedActors=0;stats.reactingActors=0;stats.greetingActors=0;stats.visibleTriangles=0;stats.drawCalls=0;poses.length=0;
     for(const b of Object.values(buckets))b.count=0;
     if(camera){camera.updateMatrixWorld();projection.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse);frustum.setFromProjectionMatrix(projection);}
-    const distance=q==='high'?260:q==='balanced'?200:140;
+    const distance=q==='high'?260:q==='balanced'?200:140,reactionLimit=q==='low'?2:q==='balanced'?3:4;
+    let activeReactions=0;for(const actor of actors)if(actor.noticeActive)activeReactions++;
     if(group.visible)for(const actor of actors) {
       const current=placement(actor,actor.frozenTime??0),offset=current.z-playerS;
+      const carDistance=Math.hypot(current.x-playerX,current.z-playerS);
+      // A complete departure rearms the next pass. Stopping for a listening
+      // question must not make bystanders greet the same car indefinitely.
+      if(motion&&!paused&&carDistance>110&&!actor.noticeArmed){
+        if(actor.noticeActive)activeReactions--;
+        actor.noticeArmed=true;actor.noticeActive=false;actor.reaction=0;actor.reactionAge=0;
+      }
       if(offset < -28 || offset>distance)continue;
       if(Number.isFinite(actor.anchor.blockS)&&(Math.abs(actor.anchor.blockS-playerS)>=distance||actor.anchor.blockS-playerS<=-125))continue;
       // Keep both seated partners on lower tiers; reduce distant pedestrians.
@@ -333,17 +340,25 @@ export function buildCityLife(THREE, {anchors = [], groundHeight, pathX, surface
       // every render, so no 12/18 fps skeletal stepping is exposed up close.
       if(actor.frozenTime===undefined)actor.frozenTime=0;
       if(animated)actor.frozenTime+=clock-previousClock;
-      if(!actor.reactionTarget||animated)actor.reactionTarget={playerS,playerX,celebrating};
       if(animated){
-        const d=Math.hypot(current.x-playerX,current.z-playerS),target=clamp(((celebrating?58:43)-d)/22,0,1),dt=clock-previousClock;
-        actor.reaction+=(target-actor.reaction)*(1-Math.exp(-dt*3.2));
-        if(target>.15||actor.reaction>.05)actor.reactionAge+=dt;else actor.reactionAge=0;
-        if(actor.gazeAngle===undefined)actor.gazeAngle=actor.position.yaw??actor.anchor.yaw??0;
-        const targetYaw=Math.atan2(playerX-current.x,playerS-current.z),delta=Math.atan2(Math.sin(targetYaw-actor.gazeAngle),Math.cos(targetYaw-actor.gazeAngle));
-        actor.gazeAngle+=clamp(delta*(1-Math.exp(-dt*3.0)),-dt*1.45,dt*1.45);
+        const dt=clock-previousClock;
+        if(dt>0&&actor.response!=='none'&&actor.noticeArmed&&carDistance<actor.noticeRange+(celebrating?4:0)&&offset>-12&&activeReactions<reactionLimit){
+          actor.noticeArmed=false;actor.noticeActive=true;actor.noticeCount++;actor.reactionAge=0;activeReactions++;
+        }
+        if(actor.noticeActive){
+          actor.reactionAge+=dt;
+          actor.reaction=pulse(actor.reactionAge,actor.noticeDelay,.72,actor.noticeHold,1.05);
+          if(actor.reactionAge>=actor.noticeDelay+.72+actor.noticeHold+1.05){actor.noticeActive=false;actor.reaction=0;activeReactions--;}
+        }
+        if(actor.noticeActive){
+          if(actor.gazeAngle===undefined)actor.gazeAngle=actor.position.yaw??actor.anchor.yaw??0;
+          const targetYaw=Math.atan2(playerX-current.x,playerS-current.z),delta=Math.atan2(Math.sin(targetYaw-actor.gazeAngle),Math.cos(targetYaw-actor.gazeAngle));
+          actor.gazeAngle+=clamp(delta*(1-Math.exp(-dt*3.0)),-dt*1.45,dt*1.45);
+        }
       }
-      drawActor(actor,actor.frozenTime,actor.reactionTarget.playerS,actor.reactionTarget.playerX,animated,actor.reactionTarget.celebrating);
+      drawActor(actor,actor.frozenTime,animated);
       stats.visibleActors++;if(animated)stats.animatedActors++;
+      if(actor.reaction>.01){stats.reactingActors++;if(actor.response==='wave')stats.greetingActors++;}
     }
     for(const b of Object.values(buckets)) {
       b.mesh.count=b.count;b.mesh.visible=b.count>0;b.mesh.instanceMatrix.needsUpdate=true;if(b.mesh.instanceColor)b.mesh.instanceColor.needsUpdate=true;

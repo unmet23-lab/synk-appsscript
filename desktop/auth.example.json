@@ -6,6 +6,7 @@
   "clients": {
     "platform": { "clientId": "REPLACE_PLATFORM_PUBLIC_CLIENT_ID", "redirectUri": "http://127.0.0.1:43821/synk/oauth/platform/callback" },
     "world": { "clientId": "REPLACE_WORLD_PUBLIC_CLIENT_ID", "redirectUri": "http://127.0.0.1:43822/synk/oauth/world/callback" },
-    "messenger": { "clientId": "REPLACE_MESSENGER_PUBLIC_CLIENT_ID", "redirectUri": "http://127.0.0.1:43823/synk/oauth/messenger/callback" }
+    "messenger": { "clientId": "REPLACE_MESSENGER_PUBLIC_CLIENT_ID", "redirectUri": "http://127.0.0.1:43823/synk/oauth/messenger/callback" },
+    "teacher": { "clientId": "REPLACE_TEACHER_PUBLIC_CLIENT_ID", "redirectUri": "http://127.0.0.1:43824/synk/oauth/teacher/callback" }
   }
 }
