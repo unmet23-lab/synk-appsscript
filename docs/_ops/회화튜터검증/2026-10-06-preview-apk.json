@@ -1,0 +1,464 @@
+{
+  "kind": "internal-android-preview-apk-verification",
+  "assembledAtUtc": "2026-10-05T19:46:45.522Z",
+  "candidateCommit": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+  "sourceWorktreeClean": true,
+  "sourcePullRequest": "https://github.com/unmet23-lab/SYNK-talk/pull/6",
+  "sourceMerged": false,
+  "purpose": "Prepare current client build for physical-device verification; preserve deferred official review and server release.",
+  "preflight": {
+    "checkedAtUtc": "2026-10-05T15:34:49.340Z",
+    "commit": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+    "sourceClean": true,
+    "reads": [
+      {
+        "label": "usage",
+        "result": {
+          "plan": "Free",
+          "periodStart": "2026-10-01T00:00:00.000Z",
+          "periodEnd": "2026-11-01T00:00:00.000Z",
+          "builds": {
+            "used": 7,
+            "limit": 30,
+            "remaining": 23
+          },
+          "android": {
+            "used": 7,
+            "limit": 15,
+            "remaining": 8
+          }
+        }
+      },
+      {
+        "label": "candidate-builds",
+        "result": []
+      }
+    ],
+    "remoteReads": 2,
+    "billingChanged": false,
+    "newBuilds": 0,
+    "paidProviderCalls": 0,
+    "receipt": {
+      "file": "current-20261006-preview-preflight.receipt.json",
+      "sha256": "c2784df9a48ece614c9c85c1f4bdfaf68a5f78b3dd32b0fe1c55676ceff235b8"
+    }
+  },
+  "buildRequest": {
+    "requestedAtUtc": "2026-10-05T15:35:45.579Z",
+    "commit": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+    "branch": "codex/world-zero-cost-audit-20261005",
+    "dispatchCount": 1,
+    "accepted": true,
+    "prerequisites": [
+      {
+        "id": 37325737948,
+        "headSha": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+        "conclusion": "success"
+      }
+    ],
+    "freeAndroidRemainingBefore": 8,
+    "newPaidProviderCalls": 0,
+    "billingChanged": false,
+    "productionBuild": false,
+    "storeSubmitted": false,
+    "otaSubmitted": false,
+    "serverDeployed": false,
+    "workflowRunId": "37334100138",
+    "receipt": {
+      "file": "current-20261006-preview-dispatch.receipt.json",
+      "sha256": "3a107eeea00d736727e1bedbdb87be932a792018c822477d2e08ad083348885e"
+    },
+    "reruns": 0
+  },
+  "workflow": {
+    "runId": "37334100138",
+    "sourceCommit": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+    "event": "workflow_dispatch",
+    "status": "completed",
+    "conclusion": "cancelled",
+    "url": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/37334100138",
+    "verifyJobConclusion": "success",
+    "buildJobConclusion": "cancelled",
+    "githubArtifactCount": 0,
+    "cancellationReason": "The job has exceeded the maximum execution time of 1h30m0s",
+    "timeoutMinutes": 90,
+    "tests": {
+      "total": 3211,
+      "suites": 0,
+      "pass": 3202,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 9,
+      "todo": 0,
+      "durationMs": 361244.450078
+    },
+    "evaluation": {
+      "passed": 26,
+      "total": 26,
+      "aggregateLines": [
+        "verify\tUNKNOWN STEP\t2026-10-05T15:42:28.4076843Z 전체 통과  26/26"
+      ],
+      "input": "evals/출력_v1.json",
+      "kind": "stored-output-fixture-score",
+      "liveProviderEvaluation": false,
+      "providerCalls": 0
+    },
+    "unmeasuredEvaluationCases": 76,
+    "newModelEvaluationCalls": 0,
+    "skippedTests": [
+      {
+        "testNumber": 659,
+        "testName": "생성물이 원본과 같다 (형제 저장소 없으면 skip · F296)",
+        "reason": "형제 저장소가 없다(/home/runner/work/SYNK-talk/SYNK-appsscript) — as: 원문을 못 읽는다. 낡음은 «안 쟀다».",
+        "sourceFile": "tests/강사지식.test.js",
+        "titleLine": 191,
+        "skipLine": 193,
+        "category": "sibling-canonical-repository-absent"
+      },
+      {
+        "testNumber": 897,
+        "testName": "형제 저장소 SYNK-appsscript의 계약 파일이 이것과 같다 (줄바꿈만 제외)",
+        "reason": "형제 저장소 SYNK-appsscript가 이 기계에 없다 — 실물 대조는 로컬에서만",
+        "sourceFile": "tests/계약.test.js",
+        "titleLine": 326,
+        "skipLine": 329,
+        "category": "sibling-canonical-repository-absent"
+      },
+      {
+        "testNumber": 917,
+        "testName": "계약 사본이 정본(SYNK-appsscript)과 같은 바이트다 — 이 사본이 낡으면 문항 급수 검증이 낡은 자로 초록이 된다",
+        "reason": "정본 저장소가 이 기계에 없다(/home/runner/work/SYNK-talk/SYNK-appsscript) — CI 자리. 교차 대조는 이 기계의 스위트·배포 게이트가 진다",
+        "sourceFile": "tests/계약동기.test.js",
+        "titleLine": 28,
+        "skipLine": 30,
+        "category": "sibling-canonical-repository-absent"
+      },
+      {
+        "testNumber": 1317,
+        "testName": "드리프트 — 형제 저장소가 있으면 정본 수식이 내는 값과 전량이 같다",
+        "reason": "형제 저장소 부재 — 정본 대조는 로컬에서만",
+        "sourceFile": "tests/깊이.test.js",
+        "titleLine": 126,
+        "skipLine": 130,
+        "category": "sibling-canonical-repository-absent"
+      },
+      {
+        "testNumber": 1954,
+        "testName": "재현 — 49d4feb 직전을 기준으로 두면 그 커밋이 낡힌 다섯 함수가 나온다",
+        "reason": "49d4feb 이 이 사본의 이력에 없다 — 재료 없음(F296)",
+        "sourceFile": "tests/배포빚.test.js",
+        "titleLine": 215,
+        "skipLine": 219,
+        "category": "historical-git-commit-absent"
+      },
+      {
+        "testNumber": 1975,
+        "testName": "⑧ 실저장소 — git 밖 폴더에 배포 명령이 안 나가고 따로 한 줄로 뜬다 · --json 칸은 그대로 (재료 없으면 skip)",
+        "reason": "작업본에 git 밖 함수 폴더가 없다 — 잴 재료가 없다(F296)",
+        "sourceFile": "tests/배포빚.test.js",
+        "titleLine": 555,
+        "skipLine": 563,
+        "category": "untracked-function-fixture-absent"
+      },
+      {
+        "testNumber": 2119,
+        "testName": "SFX ③ — 21종이 있고, 형제 저장소가 있으면 사운드킷과 바이트 동일",
+        "reason": "형제 저장소 부재 — 바이트 대조는 로컬에서만",
+        "sourceFile": "tests/소리.test.js",
+        "titleLine": 62,
+        "skipLine": 70,
+        "category": "sibling-canonical-repository-absent"
+      },
+      {
+        "testNumber": 2254,
+        "testName": "🔴 형제(SYNK-appsscript)의 문자 클래스와 갈라지지 않았다",
+        "reason": "형제 저장소가 없다 — 대조 «못 했다»",
+        "sourceFile": "tests/옛글자.test.js",
+        "titleLine": 133,
+        "skipLine": 137,
+        "category": "sibling-canonical-repository-absent"
+      },
+      {
+        "testNumber": 3021,
+        "testName": "반입 — 형제 저장소가 있으면 정본과 문구 전량이 같다(사본 드리프트 탐지)",
+        "reason": "형제 저장소 부재 — 정본 대조는 로컬에서만",
+        "sourceFile": "tests/혼잣말.test.js",
+        "titleLine": 46,
+        "skipLine": 48,
+        "category": "sibling-canonical-repository-absent"
+      }
+    ],
+    "skipClassification": {
+      "sibling-canonical-repository-absent": 7,
+      "historical-git-commit-absent": 1,
+      "untracked-function-fixture-absent": 1
+    },
+    "changedRegressionPass": 82,
+    "changedRegressionSkipped": 0,
+    "jobs": [
+      {
+        "id": 111844351760,
+        "name": "verify",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 111847411979,
+        "name": "build",
+        "status": "completed",
+        "conclusion": "cancelled"
+      }
+    ],
+    "completedSafeLog": {
+      "file": "current-20261006-build-ci.log",
+      "sha256": "b1785e8bfbc45b1b69b05b3b869cec38db78062070160123c694cfd173189693"
+    },
+    "receipt": {
+      "file": "current-20261006-build-ci.receipt.json",
+      "sha256": "f4e281520f475ef7042366ee45552fe0290d3b096cffbf3191f13749c7d460bc"
+    }
+  },
+  "easBuild": {
+    "buildId": "002c4e64-7434-40ea-95b2-61be6c16a532",
+    "status": "FINISHED",
+    "completedAtUtc": "2026-10-05T17:46:33.797Z",
+    "submittedBuildIdMatchedCancelledWorkflowLog": true,
+    "record": {
+      "file": "current-apk-e3e08b0/build-identity.json",
+      "sha256": "25e978c2bf43a9cc99c61c067381153bcff3d5ea4da56be9fd8c462966582c3e"
+    },
+    "timeoutDiagnosis": {
+      "file": "preview-timeout-diagnosis-20261006.receipt.json",
+      "sha256": "6c8464d8c46ae08506ed527fd8e7013938de22740c9ff453fd6c6ad73772ecec"
+    }
+  },
+  "artifact": {
+    "collectionSource": "recover_existing_finished_eas_build",
+    "githubWorkflowArtifact": false,
+    "githubArtifactId": null,
+    "downloadAttempts": 1,
+    "downloadCompleted": true,
+    "metadataVerified": true,
+    "receipt": {
+      "file": "current-20261006-preview-recovery.receipt.json",
+      "sha256": "f96bada78ffda5a8ac4626212b040d21d14246ebbca5b5eee1e9bea0a584149e"
+    },
+    "apkFile": "C:\\Users\\q1212\\.codex\\worktrees\\world-efficiency-20261002\\current-apk-e3e08b0\\synk-talk-preview.apk",
+    "newBuildRequestsForRecovery": 0,
+    "reruns": 0
+  },
+  "previousAutomaticCompletion": {
+    "status": "needs_attention_no_automatic_retry",
+    "failedAtUtc": "2026-10-05T17:13:16.981Z",
+    "stoppedOnCancelledWorkflow": true,
+    "recoveryWasSeparate": true,
+    "receipt": {
+      "file": "current-20261006-preview-finish.receipt.json",
+      "sha256": "6288c061ac609bcc371e4faac579c224519bf4efb8c762259a514dd5c423be4a"
+    }
+  },
+  "apk": {
+    "verifiedAtUtc": "2026-10-05T19:37:58.346Z",
+    "commit": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+    "workflowRunId": "37334100138",
+    "buildId": "002c4e64-7434-40ea-95b2-61be6c16a532",
+    "profile": "preview",
+    "status": "FINISHED",
+    "platform": "ANDROID",
+    "distribution": "INTERNAL",
+    "projectId": "b09a2382-76d1-463a-abf1-957f96f7dedb",
+    "package": "lab.synk.talk",
+    "version": "0.2.0",
+    "versionCode": "1",
+    "runtimeVersion": "0.2.0",
+    "bytes": 146172579,
+    "sha256": "40c88942453d8a3ac6fc6b2974b5c7c156dc6572911a9778e22d8f5bccae593f",
+    "bundleCommit": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+    "bundleSha256": "350880b5b3cd7bde4a93acac21eec3b8eb9c77247a0b4011c55fa8b4123a66d3",
+    "bundleBytes": 4410096,
+    "bundleFormat": "Hermes bytecode",
+    "hermesHeaderVerified": true,
+    "hermesBytecodeFormatVersion": 98,
+    "abis": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "x86",
+      "x86_64"
+    ],
+    "immutableConfigurationCommit": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+    "appJsonSha256": "ac44f7f25c9f6d2d40769af856245d985ff3b151b934f9dafd9eceeb7901b917",
+    "easJsonSha256": "c0d0d66120677ace6404eb3d28f322c7b9ed48637b6504bf6b051acdc204d976",
+    "repositoryHelperSourceMatched": true,
+    "repositoryHelperSha256": "13b74430806667f061a404ac099cfcebd947c766c05fd8f0240a5cc3553f5f0a",
+    "actualEasBuildRecordCrossChecked": true,
+    "apkManifestCrossChecked": true,
+    "artifactMetadataCrossChecked": true,
+    "metadataCollectionSource": "local recovery of existing EAS build after GitHub runner timeout",
+    "githubArtifactVerified": false,
+    "originatingWorkflowConclusion": "cancelled",
+    "previewEnvironmentVerified": true,
+    "previewTutorEnabledConfigured": true,
+    "previewTutorNativeUiTested": false,
+    "productionTutorExplicitOffConfigured": true,
+    "productionNativeUiTested": false,
+    "productionServerFlagRecheckedByThisScript": false,
+    "sessionStaleFrontendMarkerVerified": true,
+    "additionalPlaybackFixInSourceCommit": true,
+    "actualDeviceTested": false,
+    "deviceRecordingTested": false,
+    "audioPlaybackListened": false,
+    "sdkOrAppInstalledByThisScript": false,
+    "remoteReads": 0,
+    "remoteDownloads": 0,
+    "providerCalls": 0,
+    "databaseQueries": 0,
+    "productionDeployments": 0,
+    "serverDeployments": 0,
+    "billingChanged": false,
+    "storeSubmitted": false,
+    "otaSubmitted": false,
+    "limitations": [
+      "Internal preview ON configuration and code-marker checks do not prove native UI entry, recording or listening.",
+      "Production OFF is an immutable build-profile setting; this script does not verify an installed production app or change the production server."
+    ],
+    "receipt": {
+      "file": "current-apk-e3e08b0/verification.json",
+      "sha256": "05dd21fe960bb606a76843fe110605020ec2a2ee9cc570d3b80c4c3f2495c0ed"
+    },
+    "includesAdditionalPlaybackFix": true,
+    "previous5aApkReused": false,
+    "artifactOnlyNotProductionRelease": true,
+    "signature": {
+      "checkedAtUtc": "2026-10-05T19:38:25.188Z",
+      "candidateCommit": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+      "apkSha256": "40c88942453d8a3ac6fc6b2974b5c7c156dc6572911a9778e22d8f5bccae593f",
+      "apkSignatureVerified": true,
+      "verified": true,
+      "certificateSha256": "fb66a7ab5d64a62f7e206cca1f6b7c1812b488fdf13fe851a93e69f546b793fb",
+      "v1": false,
+      "v2": true,
+      "v3": false,
+      "previousPreviewCommit": "5a9ae7a06d31e6f4a6fb0363b231f6347bb97e78",
+      "sameSignerAsPreviousPreview": true,
+      "installedDeviceSignatureCompared": false,
+      "actualDeviceTested": false,
+      "appsInstalled": 0,
+      "newDownloads": 0,
+      "remoteCalls": 0,
+      "receipt": {
+        "file": "current-apk-e3e08b0/signature-verification.json",
+        "sha256": "ff39f9e9b34f04d9e2643dc9c3597ed96c345a73dd02264ed91ccce0616f61b6"
+      }
+    }
+  },
+  "deviceReadiness": {
+    "checkedAtUtc": "2026-10-05T19:38:44.203Z",
+    "adbAvailable": true,
+    "adbExitCode": 0,
+    "devices": [],
+    "physicalDeviceCount": 0,
+    "authorizedPhysicalDeviceCount": 0,
+    "emulatorCount": 0,
+    "deviceIdentifiersSaved": false,
+    "appsInstalled": 0,
+    "deviceSettingsChanged": false,
+    "sdkInstalled": false,
+    "emulatorDownloaded": false,
+    "deviceRecordingTested": false,
+    "audioPlaybackListened": false,
+    "receipt": {
+      "file": "android-device-readiness-20261006.receipt.json",
+      "sha256": "edc1e0e608114a036f399aa4b55683ba8f56affe21f80d5892423722c8ad3dd4"
+    }
+  },
+  "physicalVerification": {
+    "status": "not_measured_no_connected_device_at_check",
+    "installed": false,
+    "recordingMeasured": false,
+    "playbackListened": false,
+    "cases": [
+      {
+        "case": "exact installed source",
+        "steps": "Install current APK preserving existing data; confirm arrival screen matches e3e08b0.",
+        "status": "not_run"
+      },
+      {
+        "case": "offline logout",
+        "steps": "Using a test account, disconnect network then choose 이 기기에서 로그아웃; reopen app and confirm signed-out screen and no previous-account history.",
+        "status": "not_run"
+      },
+      {
+        "case": "account ownership",
+        "steps": "Reconnect and switch between dedicated test accounts; delayed previous-account reads must not appear in the current account.",
+        "status": "not_run"
+      },
+      {
+        "case": "microphone permission and local recording",
+        "steps": "Verify permission denial/retry and short local recording. Do not submit to AI.",
+        "status": "not_run"
+      },
+      {
+        "case": "background and navigation",
+        "steps": "Record locally then background/return; interruption is visible. Start cached audio then background/navigate; old player cannot update new screen.",
+        "status": "not_run"
+      },
+      {
+        "case": "playback and retry",
+        "steps": "Use existing local or cached audio for repeated play/stop and retry; current stop control remains correct and old failure clears on successful playback.",
+        "status": "not_run"
+      }
+    ],
+    "paidConversationRoundtrip": {
+      "status": "deferred_cost_notice_and_current_server_release_required",
+      "performed": false
+    }
+  },
+  "deferredRelease": {
+    "officialClaudeReview": "deferred_by_user_not_run",
+    "newOfficialClaudeInvocations": 0,
+    "sourceMerged": false,
+    "affectedFunctions": [
+      "companion",
+      "correct",
+      "corrections",
+      "teach",
+      "transcribe",
+      "tutor"
+    ],
+    "functionDeployments": 0,
+    "migrationsApplied": 0,
+    "newClientApkDoesNotDeployServerChanges": true,
+    "productionBuilds": 0,
+    "storeSubmitted": false,
+    "otaPublished": false
+  },
+  "maintainedPolicy": {
+    "freeMonthlyUsd": 0.3,
+    "serverVerifiedPaidMonthlyUsd": 0.5,
+    "studentDailyUsd": 0.05,
+    "freeHardMonthlyUsd": 0.5,
+    "paidHardMonthlyUsd": 3,
+    "provisional": true,
+    "finalBusinessModel": false,
+    "productionTutorOff": true,
+    "liveSettingsRecheckedThisPhase": false,
+    "limitsChanged": false,
+    "modelsChanged": false,
+    "pricesChanged": false
+  },
+  "newPaidProviderCalls": 0,
+  "newRemoteDatabaseCalls": 0,
+  "canonicalDocumentTests": {
+    "status": "completed",
+    "tests": 59,
+    "pass": 59,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "todo": 0,
+    "log": {
+      "file": "current-20261006-preview-canonical-tests.log",
+      "sha256": "30c9cdf5c922424e69d1de6dd5a59ff432b5db640dcec5204b4f90f9c455d39f"
+    }
+  }
+}
