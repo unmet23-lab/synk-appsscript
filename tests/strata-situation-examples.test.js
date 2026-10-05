@@ -17,7 +17,7 @@ const raw = require('../strata/maps/topik-i.json');
 const { summarizeAccount } = require('../atlas/account-summary');
 
 const map = createMap(topikMap({ includeWords: false }));
-const layer = situationExamples(map);
+const layer = situationExamples(map, { grammarIn });
 const asOf = '2026-10-05T12:00:00.000Z';
 const load = rel => import(pathToFileURL(path.join(__dirname, '..', rel)).href);
 
@@ -42,7 +42,7 @@ test('the sentences are drafts until a teacher reviews them, and say so one by o
   const all = layer.all().flatMap(s => s.examples);
   assert.ok(all.every(e => e.confidence === 'ai_draft' && e.reviewed === source.review.reviewed.includes(e.id)));
   const one = structuredClone(source); one.review.reviewed = ['ex-travel-order-1'];
-  const marked = situationExamples(map, one).examplesFor('sit-travel-order');
+  const marked = situationExamples(map, { data: one }).examplesFor('sit-travel-order');
   assert.deepEqual(marked.map(e => e.reviewed), [true, false, false]);
 });
 
@@ -80,7 +80,7 @@ test('the map\'s form reader reads each sentence, and every point it names is a 
 });
 
 test('a broken layer is refused', () => {
-  const broken = mutate => { const data = structuredClone(source); mutate(data); return () => situationExamples(map, data); };
+  const broken = mutate => { const data = structuredClone(source); mutate(data); return () => situationExamples(map, { data }); };
   assert.throws(broken(d => { d.examples['sit-nowhere'] = d.examples['sit-travel-order']; }), /unknown situation/);
   assert.throws(broken(d => { delete d.examples['sit-travel-order']; }), /has no examples/);
   assert.throws(broken(d => { d.examples['sit-travel-order'][1][0] = 'ex-travel-order-1'; }), /invalid or duplicate example id/);
@@ -90,6 +90,16 @@ test('a broken layer is refused', () => {
   assert.throws(broken(d => { d.review.reviewed = ['ex-nowhere-1']; }), /is not an example/);
   assert.throws(broken(d => { d.review.confidence = 'authored'; }), /invalid review status/);
   assert.throws(() => situationExamples(null), /a map is required/);
+  assert.throws(() => situationExamples(map, { grammarIn: 'reader' }), /invalid form reader/);
+  assert.throws(() => situationExamples(map, { grammarIn: () => ['G999'] }), /unknown grammar/);
+});
+
+test('a host that only shows sentences carries no form reader: the layer requires nothing but its sentences', () => {
+  const shown = situationExamples(map);
+  assert.deepEqual(shown.examplesFor('sit-travel-order').map(e => [e.id, e.ko, e.grammar, e.reviewed]), [
+    ['ex-travel-order-1', '따뜻한 커피 한 잔 주세요.', null, false], ['ex-travel-order-2', '설탕은 빼 주세요.', null, false], ['ex-travel-order-3', '따뜻한 커피 대신 차 한 잔 주세요.', null, false]]);
+  const code = require('node:fs').readFileSync(require.resolve('../strata/topik-i-examples'), 'utf8');
+  assert.deepEqual([...code.matchAll(/require\(\s*['"]([^'"]+)['"]\s*\)/g)].map(m => m[1]), ['./topik-i.situation-examples.json']);
 });
 
 test('the layer stays out of the games\' map: no node, edge or version of the built map names an example', () => {

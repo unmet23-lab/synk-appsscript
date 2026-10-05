@@ -8,7 +8,8 @@ export const REASON_WORDS = { culture: '드라마·음악·웹툰', travel: '한
   work: '한국에서 일', career: '지금 하는 일', exam: '시험·자격', hobby: '배우는 즐거움', other: '다른 이유' };
 // A game names a Strata situation only where that situation is the game's own practice (a café's
 // orders, an entrance notice, spoken directions); a game that merely touches many everyday topics
-// names none. These links are a draft for teacher review. `slug` is the same game on synk.im/try/.
+// names none. These links are a draft for teacher review. `slug` is the same game's folder under
+// synk.im/try/, where it stays published without a link from the site (2026-10-05).
 export const WORLD_GAMES = Object.freeze([
   { path: 'korean-racing', slug: 'racing', label: '한국어 레이싱', situations: [] },
   { path: 'korean-runner', slug: 'runner', label: '바람길', situations: ['sit-travel-directions', 'sit-work-instructions'] },

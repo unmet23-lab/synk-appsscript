@@ -74,13 +74,11 @@ export function createAccountView({ client, product, guard, notice, logout, prev
     rows.push(chosen.length ? `고른 설정 · ${chosen.join(' · ')}` : '고른 설정 · 아직 없어요');
     const reasons = (summary.reasons || []).map(reason => REASON_WORDS[reason]).filter(Boolean);
     rows.push(reasons.length ? `배우는 이유 · ${reasons.join(' · ')}` : '배우는 이유 · 아직 밝히지 않았어요');
-    // Practice a declared reason picked, with Vellum's line. WORLD opens it from its game list below;
-    // elsewhere (the SYNK ID portal) the game's name links to the same game on synk.im/try/.
+    // Practice a declared reason picked, with Vellum's line. WORLD opens it from its game list below.
+    // The SYNK ID portal names the game without a link: since 2026-10-05 synk.im does not link into
+    // the games (they stay published at /try/, unlinked).
     const picks = picksForReasons(summary.forReasons);
-    for (const pick of picks) {
-      if (product === 'world') { rows.push(`이 이유로 고른 연습 · ${pick.label} — ${pick.line}`);continue; }
-      const row = element('li', '이 이유로 고른 연습 · '), link = element('a', pick.label);link.href = `/try/${pick.slug}/`;row.append(link, ` — ${pick.line}`);rows.push(row);
-    }
+    for (const pick of picks) rows.push(`이 이유로 고른 연습 · ${pick.label} — ${pick.line}`);
     // A sentence said where each reason leads (Strata's example layer), also for a reason no game serves.
     for (const said of sentencesForReasons(summary.forReasons, picks)) rows.push(`이 이유로 고른 말 · ${said.label} — “${said.ko}”`);
     const practice = summary.practice || {};

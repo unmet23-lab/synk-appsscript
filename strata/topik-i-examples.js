@@ -4,9 +4,9 @@
 // own, like the words and the form reader: a host that shows examples asks for it, and the games'
 // map and bundle do not carry it. An example shows where practice happens; it never moves
 // difficulty, a level or a grade. The sentences are drafts until a teacher reviews them, and each
-// one says so (`reviewed`).
+// one says so (`reviewed`). This module requires nothing but its sentences, so a host that only
+// shows them (the account server) carries neither the form reader nor its word list.
 const source = require('./topik-i.situation-examples.json');
-const { grammarIn } = require('./topik-i-forms');
 
 const fail = message => { throw new TypeError(`Strata examples: ${message}`); };
 const text = value => typeof value === 'string' && value.trim().length > 0;
@@ -15,11 +15,13 @@ const MAX_LENGTH = 30;
 
 // The examples of every situation in `map` (a createMap() result), checked against it: every key is
 // one of the map's situations and every situation has examples; ids are unique and say which
-// situation they belong to. `grammar` is what the map's own form reader reads in the sentence
-// (topik-i-forms.js grammarIn) — a hint for picking and for review, possibly empty.
-function situationExamples(map, data = source) {
+// situation they belong to. A host that wants each sentence's grammar passes the map's form reader
+// (topik-i-forms.js `grammarIn`): `grammar` is then what it reads in the sentence — a hint for
+// picking and for review, possibly empty. Without a reader `grammar` is null (not read).
+function situationExamples(map, { data = source, grammarIn = null } = {}) {
   if (typeof map?.getNode !== 'function' || typeof map.allNodes !== 'function') fail('a map is required');
   if (!text(data?.version) || !data.examples || typeof data.examples !== 'object') fail('invalid source');
+  if (grammarIn !== null && typeof grammarIn !== 'function') fail('invalid form reader');
   if (data.review?.confidence !== 'ai_draft' || !Array.isArray(data.review.reviewed)) fail('invalid review status');
   const reviewed = new Set(data.review.reviewed), ids = new Set(), bySituation = new Map();
   for (const [situation, rows] of Object.entries(data.examples)) {
@@ -33,9 +35,9 @@ function situationExamples(map, data = source) {
       if (!text(ko) || ko !== ko.trim() || !SENTENCE_END.test(ko) || ko.length > MAX_LENGTH) fail(`invalid sentence ${id}`);
       if (from !== undefined && !/^[a-z-]+\/[a-z0-9.-]+$/.test(from)) fail(`invalid origin ${id}`);
       ids.add(id);
-      const grammar = grammarIn(ko);
-      if (grammar.some(point => map.getNode(point)?.kind !== 'grammar_point')) fail(`unknown grammar in ${id}`);
-      return Object.freeze({ id, ko, grammar: Object.freeze(grammar), from: from || null,
+      const grammar = grammarIn ? grammarIn(ko) : null;
+      if (grammar && (!Array.isArray(grammar) || grammar.some(point => map.getNode(point)?.kind !== 'grammar_point'))) fail(`unknown grammar in ${id}`);
+      return Object.freeze({ id, ko, grammar: grammar && Object.freeze([...grammar]), from: from || null,
         confidence: data.review.confidence, reviewed: reviewed.has(id) });
     })));
   }

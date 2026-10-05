@@ -28,7 +28,7 @@ for (let i = 0; i < args.length; i++) {
 }
 const MANIFEST = 'sync-manifest.json';
 // The server bundles (Talk's tools/synk-server-build.js) inline these and what they require.
-const SERVER_ENTRIES = ['trail.js', 'engine.js', 'account-summary.js', 'strata/index.js', 'strata/maps/topik-i.json'];
+const SERVER_ENTRIES = ['trail.js', 'engine.js', 'account-summary.js', 'strata/index.js', 'strata/maps/topik-i.json', 'strata/topik-i-examples.js'];
 const consumers = {
   talk: { repo: process.env.SYNK_TALK_ROOT || path.resolve(root, '../SYNK-talk'), dir: 'lib/atlas', files: talkFiles, manifest: true, server: 'tools/synk-server-build.js' },
   // The letter page imports only these two scripts; do not publish unused modules. Its cache keys

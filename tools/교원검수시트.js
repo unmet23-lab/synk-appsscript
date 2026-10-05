@@ -129,7 +129,7 @@ async function buildRows() {
   const { REASON_WORDS, WORLD_GAMES } = await load('experiences/synk-account/src/atlas-words.mjs');
   const situation = new Map(situations.situations.map(([id, reason, label, when]) => [id, { reason, label, when }]));
   // 상황 예문
-  for (const { situation: id, examples } of situationExamples(map).all()) {
+  for (const { situation: id, examples } of situationExamples(map, { grammarIn }).all()) {
     const s = situation.get(id);
     for (const e of examples) add(`예문/${e.id}`, '상황 예문', `${REASON_WORDS[s.reason] || s.reason} · ${s.label} — ${s.when} 쓰는 말`, e.ko,
       e.from ? `게임 문항 글 그대로(${e.from})` : '새로 쓴 초안', e.reviewed ? '교원 확인을 마친 문장' : '', e.grammar.map(point => pointLabel.get(point)).join(' · '));

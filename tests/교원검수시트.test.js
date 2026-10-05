@@ -83,7 +83,7 @@ test('confirmed examples are written into the example layer in its own order, an
   const before = fs.readFileSync(source, 'utf8').split(/\r?\n/), after = fs.readFileSync(copy, 'utf8').split(/\r?\n/);
   assert.equal(after.length, before.length);
   assert.deepEqual(after.filter((line, i) => line !== before[i]), ['  "review": { "confidence": "ai_draft", "reviewed": ["ex-travel-order-1", "ex-people-greeting-2"] },']);
-  const layer = situationExamples(createMap(topikMap({ includeWords: false })), JSON.parse(fs.readFileSync(copy, 'utf8')));
+  const layer = situationExamples(createMap(topikMap({ includeWords: false })), { data: JSON.parse(fs.readFileSync(copy, 'utf8')) });
   assert.deepEqual(layer.examplesFor('sit-travel-order').map(e => e.reviewed), [true, false, false]);
   assert.deepEqual(applyConfirmedExamples(['ex-travel-order-1'], copy), { reviewed: 2, added: 0 }, 'confirming again changes nothing');
   assert.throws(() => applyConfirmedExamples(['ex-nowhere-1'], copy), /예문이 아닌 번호/);
