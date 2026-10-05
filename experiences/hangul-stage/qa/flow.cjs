@@ -128,6 +128,10 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     if (width === 390) await shot(page, 'song-vowel', width);
     const v2 = await page.evaluate(() => window.__hangulQA.songAt(22.3));
     check(`${width}px 모음 댄스 후렴: 여섯 모음을 차례로`, v2.kind === 'sweep' && v2.step >= 1 && await page.locator('#song-stage .song-tile.on').count() === 1, JSON.stringify(v2));
+    await page.locator(`#song-stage [data-i="${v2.step}"]`).click();
+    const lit = await page.locator(`#song-stage [data-i="${v2.step}"].hit`).count();
+    const hint = await page.textContent('#song-hint');
+    check(`${width}px 따라 누르기: 켜진 글자를 누르면 빛남(점수 없음)`, lit === 1 && /눌러/.test(hint), `빛남 ${lit} · ${hint}`);
     const ovs = await overflow(page);
     check(`${width}px 노래 화면 넘침 없음`, ovs.doc <= 0 && ovs.body <= 0 && ovs.vv <= 0, JSON.stringify(ovs));
     await page.click('#song-close');
