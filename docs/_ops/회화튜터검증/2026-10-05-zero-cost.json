@@ -1,6 +1,6 @@
 {
   "kind": "zero-provider-cost-verification",
-  "assembledAtUtc": "2026-10-05T13:11:23.885Z",
+  "assembledAtUtc": "2026-10-05T13:21:12.796Z",
   "repository": "unmet23-lab/SYNK-talk",
   "baseCommit": "fa7a9678989ce38a1bb5262c331f0f812e5744da",
   "candidateCommit": "5a9ae7a06d31e6f4a6fb0363b231f6347bb97e78",
@@ -170,7 +170,21 @@
     "previousAttemptCompleted": false,
     "reason": "Official Claude Code subscription session limit",
     "resetTimeReported": "23:00 Asia/Seoul",
-    "newCandidatePromptPrepared": true
+    "newCandidatePromptPrepared": true,
+    "latestAttempt": {
+      "checkedAtUtc": "2026-10-05T13:17:19.943Z",
+      "intendedReviewCommit": "5a9ae7a06d31e6f4a6fb0363b231f6347bb97e78",
+      "status": "blocked_session_limit",
+      "apiErrorStatus": 429,
+      "reviewCompleted": false,
+      "reviewedCommit": null,
+      "findings": null,
+      "resetTimeReported": "23:00 Asia/Seoul",
+      "promptSha256": "5c2bdce324bb843e4bda4b1b13f30148a658df2621221e81492560666b785418",
+      "rawResultSha256": "f63220e477d750d1c3cffff2ba4ab24935f5de6cf5a778d28743ec910b6a689d",
+      "subscriptionInputTokens": 0,
+      "subscriptionOutputTokens": 0
+    }
   },
   "ci": {
     "runId": "37306446859",
@@ -443,6 +457,51 @@
   "physicalDeviceTested": false,
   "deviceRecordingTested": false,
   "audioPlaybackListened": false,
+  "releaseReadiness": {
+    "checkedAtUtc": "2026-10-05T13:20:11.098Z",
+    "candidateCommit": "5a9ae7a06d31e6f4a6fb0363b231f6347bb97e78",
+    "readOnly": true,
+    "sourceClean": true,
+    "projects": [
+      {
+        "label": "rehearsal",
+        "status": "ACTIVE",
+        "active": true,
+        "version": 13,
+        "verifyJwt": true,
+        "updatedAt": 1791123136652,
+        "dbLatestMigration": "20261005010000_transcribe_gate_c16.sql",
+        "repositoryContractVersion": "c16",
+        "schemaReady": true,
+        "schemaQueryHttpStatus": 201,
+        "functionInventoryGets": 1,
+        "databaseSelects": 1
+      },
+      {
+        "label": "production",
+        "status": "ACTIVE",
+        "active": true,
+        "version": 11,
+        "verifyJwt": true,
+        "updatedAt": 1791123150164,
+        "dbLatestMigration": "20261005010000_transcribe_gate_c16.sql",
+        "repositoryContractVersion": "c16",
+        "schemaReady": true,
+        "schemaQueryHttpStatus": 201,
+        "functionInventoryGets": 1,
+        "databaseSelects": 1
+      }
+    ],
+    "remoteGetRequests": 2,
+    "remoteSqlSelects": 2,
+    "settingsWrites": 0,
+    "functionDeployments": 0,
+    "providerCalls": 0,
+    "migrationsApplied": 0,
+    "officialReviewCompleted": false,
+    "readyExceptOfficialReview": true,
+    "sourceBodyComparedByThisScript": false
+  },
   "sameOwnerRefresh": {
     "checkedAtUtc": "2026-10-05T12:42:58.305Z",
     "sourceCommit": "5a9ae7a06d31e6f4a6fb0363b231f6347bb97e78",
