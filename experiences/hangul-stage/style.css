@@ -179,6 +179,8 @@ h1,h2{margin:0;letter-spacing:-.01em}
 .mnemonic img{width:96px;height:96px;object-fit:contain}
 .mnemonic .mn-word{font:800 28px/1 var(--sans);color:var(--ink)}
 .mnemonic .mn-word b{color:var(--coral-deep)}
+.mnemonic.final .mn-word{display:grid;justify-items:start;gap:6px}
+.mnemonic .mn-split{font:800 15px/1 var(--sans);color:var(--muted)}
 .mnemonic .icon{--m:var(--i-speaker);width:18px;height:18px;color:var(--muted)}
 .derive{display:flex;align-items:center;justify-content:center;gap:10px}
 .derive .example{flex-direction:column;gap:2px;min-width:72px;padding:6px 14px 10px}

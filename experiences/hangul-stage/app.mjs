@@ -1,6 +1,6 @@
 // 한글 단계 MVP 화면(docs/한글단계_설계.md, 2026-10-03 한국어 MVP). 한국어만 쓰고, 글을 못 읽어도
 // 시범·그림·소리로 할 수 있게 만든다. 판단은 core.mjs, 아틀라스 기록은 learning.mjs, 소리는 audio.mjs가 맡는다.
-import { createPack, compose } from './pack.mjs';
+import { createPack, compose, decompose } from './pack.mjs';
 import { readProgress, planSession, answer, meet, finishSession, view, retryItem, canPlayMore, sessionsToday, letterOf, readableWords, graduationReady, graduate, SETTINGS } from './core.mjs';
 import { createCoach, isHosted, progressKey, createRecorder } from './learning.mjs';
 import * as audio from './audio.mjs';
@@ -197,9 +197,14 @@ function renderMeet(id) {
   const pad = tracePad(l.glyph);
   // 자음 그림 연상: 글자 모양이 든 그림과 그 소리로 시작하는 낱말(첫 글자를 강조). 누르면 낱말을 듣는다.
   const mn = pack.mnemonics[id];
-  const mnemonic = mn ? el('button', { class: 'mnemonic', type: 'button', 'aria-label': `${mn.word} 듣기`, onclick: () => audio.say(mn.word) },
+  // 받침은 그 받침으로 끝나는 낱말이라 「손 = 소 + ㄴ」처럼 받침이 붙는 모습을 함께 보인다.
+  const splitFinal = word => { const last = [...word].at(-1), dd = decompose(last); return dd ? `${[...word].slice(0, -1).join('')}${compose(dd.initial, dd.medial)} + ${l.glyph}` : ''; };
+  const mnemonic = mn ? el('button', { class: `mnemonic${l.role === 'final' ? ' final' : ''}`, type: 'button', 'aria-label': `${mn.word} 듣기`, onclick: () => audio.say(mn.word) },
     el('img', { src: mn.img, alt: '' }),
-    el('span', { class: 'mn-word', 'aria-hidden': 'true' }, el('b', {}, [...mn.word][0]), [...mn.word].slice(1).join('')), icon('speaker')) : null;
+    l.role === 'final'
+      ? el('span', { class: 'mn-word', 'aria-hidden': 'true' }, el('b', {}, mn.word), el('small', { class: 'mn-split' }, splitFinal(mn.word)))
+      : el('span', { class: 'mn-word', 'aria-hidden': 'true' }, el('b', {}, [...mn.word][0]), [...mn.word].slice(1).join('')),
+    icon('speaker')) : null;
   // 거센소리: 「ㄱ + 획 = ㅋ」과 두 소리(가 · 카)를 눌러 견준다.
   const asp = ASPIRATED[id];
   const sound = (cid, g) => el('button', { class: 'example', type: 'button', 'aria-label': `${pack.syllable(cid, 'v-a')} 듣기`, onclick: () => audio.say(pack.syllable(cid, 'v-a')) },

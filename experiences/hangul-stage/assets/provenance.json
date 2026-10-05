@@ -216,6 +216,48 @@
       "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-05 · 판 Documents/synk-vendor/hangul-mnemonic/sheet3_codex_20261005.png의 jeans · tools/펠트부품_오리기.py로 오림",
       "bytes": 134880,
       "sha256": "42dc16abde541589394abbca292a3959b90f2a0d1a9d6396ff83d83c163ca401"
+    },
+    {
+      "path": "mnemonic/f-n.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet4_codex_20261006.png의 hand · tools/펠트부품_오리기.py로 오림",
+      "bytes": 97506,
+      "sha256": "aec3e6c0517ae9f76967af0b8c86390c1d5bbc7bd633c37a34b2f83d24b83cf3"
+    },
+    {
+      "path": "mnemonic/f-r.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet4_codex_20261006.png의 star · tools/펠트부품_오리기.py로 오림",
+      "bytes": 95094,
+      "sha256": "cd4d6449ec2e9128e45de6ad7cba7bb7937f34dc201a65e32b9a32e8345dea21"
+    },
+    {
+      "path": "mnemonic/f-m.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet4_codex_20261006.png의 bear · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기)",
+      "bytes": 125996,
+      "sha256": "e356afcfb4ca1572ee50b94c04cdb6fb0b8e0d920c929511f1d6008aff22ada1"
+    },
+    {
+      "path": "mnemonic/f-ng.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet4_codex_20261006.png의 ball · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기)",
+      "bytes": 104616,
+      "sha256": "4526b5ea0f40acda2304684136827bbf7c82575328bd25d2acb5f6d3f8f60427"
+    },
+    {
+      "path": "mnemonic/f-g.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet4_codex_20261006.png의 book · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기)",
+      "bytes": 153772,
+      "sha256": "448580ae74d8559e91889878c56046f3dd6603975861134a5387f10966448403"
+    },
+    {
+      "path": "mnemonic/f-b.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet4_codex_20261006.png의 rice · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기)",
+      "bytes": 100930,
+      "sha256": "cc98cd560f340f02d57ed8adb10ecf044612eb2c295aac5f8e42868c57c85a42"
+    },
+    {
+      "path": "mnemonic/f-s.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet4_codex_20261006.png의 shirt · tools/펠트부품_오리기.py로 오림(흰 판 걷기 --고치기)",
+      "bytes": 155714,
+      "sha256": "c2bca248b947595966a7946123391d870fdc2bf3cb992305515f8a8a2ab012b0"
     }
   ]
 }

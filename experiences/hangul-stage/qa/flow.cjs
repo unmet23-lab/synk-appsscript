@@ -31,7 +31,7 @@ async function waitReady(page) {
 }
 const shots390 = width => width === 390;
 async function playSession(page, { width, shots, wrongOnce, started = false, end = '#finish:not([hidden])' }) {
-  let wrongDone = !wrongOnce, types = new Set(), demos = 0, retries = 0, steps = 0, sums = 0, finalsBuilt = 0, teachShown = 0, mnemonics = 0, derives = 0;
+  let wrongDone = !wrongOnce, types = new Set(), demos = 0, retries = 0, steps = 0, sums = 0, finalsBuilt = 0, teachShown = 0, mnemonics = 0, derives = 0, finalMnemonics = 0;
   const met = [], order = [];
   if (!started) {
     await page.click('#start');
@@ -55,6 +55,10 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
         const ok = await page.waitForFunction(() => { const i = document.querySelector('.meet .mnemonic img'); return !!i && i.complete && i.naturalWidth > 0; }, null, { timeout: 3000 }).then(() => true, () => false);
         if (ok) mnemonics += 1;
         if (shots && ok && !has('meet-consonant', width)) await shot(page, 'meet-consonant', width, { fullPage: true });
+      }
+      if (/^f-/.test(step.letter) && await page.locator('.meet .mnemonic').count()) {
+        const ok = await page.waitForFunction(() => { const i = document.querySelector('.meet .mnemonic img'); return !!i && i.complete && i.naturalWidth > 0; }, null, { timeout: 3000 }).then(() => true, () => false);
+        if (ok) finalMnemonics += 1;
       }
       if (shots && /^f-/.test(step.letter) && !has('meet-final', width)) {
         sums += await page.locator('.meet.final .sum').count();
@@ -111,7 +115,7 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     if (ov.doc > 0 || ov.body > 0 || ov.vv > 0) check(`${width}px 넘침 없음(${item.type})`, false, JSON.stringify(ov));
     await page.click('#dock .felt-cta');
   }
-  return { types: [...types], demos, retries, steps, sums, finalsBuilt, teachShown, met, order, mnemonics, derives };
+  return { types: [...types], demos, retries, steps, sums, finalsBuilt, teachShown, met, order, mnemonics, derives, finalMnemonics };
 }
 
 (async () => {
@@ -275,6 +279,7 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     check(`${width}px 받침 회차: 짝 고르기로 시작`, fourth.order[0] === 'pair', fourth.order.join(','));
     check(`${width}px 받침 회차: 몽글에게 가르쳐 주기(몽글이 든 글자가 보임)`, fourth.types.includes('teach') && fourth.teachShown >= 1, `꼴 ${fourth.types.join(',')}`);
     check(`${width}px 받침 회차: 짝·가르쳐 주기의 시범이 한 번씩`, ['pair', 'teach'].every(t => p4.demoSeen.filter(x => x === t).length === 1), p4.demoSeen.join(','));
+    check(`${width}px 받침 만나기 카드에 받침으로 끝나는 낱말 그림(책 = 채 + ㄱ)`, fourth.finalMnemonics >= 1, `그림 ${fourth.finalMnemonics}`);
     check(`${width}px 받침 회차: 받침 ㄱ·ㄷ을 만나기 카드로(아 + 받침 → 음절)`, fourth.met.some(id => U7.includes(id)) && fourth.sums >= 1, `만남 ${fourth.met.join(',')}`);
     await shot(page, 'finish-finals', width);
 
