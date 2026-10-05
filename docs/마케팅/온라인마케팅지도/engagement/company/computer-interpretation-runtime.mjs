@@ -26,15 +26,24 @@ const hooks = registerHooks({
     return result;
   },
 });
-let adapter;
+// This optional administrator feature must never stop the company host itself.
+// A missing or broken adapter source leaves the dashboard and messenger running:
+// the feature reports itself unavailable and no build is certified.
+let adapter = null, unavailable = null;
 try { adapter = await import(new URL('experiences/atlas-lab/model-extraction.mjs', root)); }
+// Keep an error class only. A loader message can quote local paths or source text.
+catch (cause) { unavailable = typeof cause?.code === 'string' && /^[A-Z_]{1,60}$/.test(cause.code) ? cause.code : 'ADAPTER_LOAD_FAILED'; }
 finally { hooks.deregister(); }
+const complete = adapter !== null && ['buildComputerModelRequest', 'parseComputerModelResponse'].every(name => typeof adapter[name] === 'function')
+  && typeof adapter.COMPUTER_MODEL === 'string';
+if (adapter !== null && !complete) { adapter = null; unavailable = 'ADAPTER_INCOMPLETE'; }
 const artifacts = paths.filter(path => captured.has(path)).map(path => ({ path, sha256: captured.get(path) }));
-const runtimeAttested = !preloaded && artifacts.length === paths.length;
+const runtimeAttested = adapter !== null && !preloaded && artifacts.length === paths.length;
 const proof = { version: 1, runtimeAttested, startedAt,
   buildId: runtimeAttested ? createHash('sha256').update(JSON.stringify(artifacts)).digest('hex') : null, artifacts };
 
-export const buildComputerModelRequest = adapter.buildComputerModelRequest;
-export const parseComputerModelResponse = adapter.parseComputerModelResponse;
-export const COMPUTER_MODEL = adapter.COMPUTER_MODEL;
+export const buildComputerModelRequest = adapter?.buildComputerModelRequest ?? null;
+export const parseComputerModelResponse = adapter?.parseComputerModelResponse ?? null;
+export const COMPUTER_MODEL = adapter?.COMPUTER_MODEL ?? null;
+export const computerAdapterStatus = () => ({ available: adapter !== null, reason: unavailable });
 export const computerRuntimeProof = () => JSON.parse(JSON.stringify(proof));

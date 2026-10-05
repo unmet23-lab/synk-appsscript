@@ -1,7 +1,8 @@
 // One product endpoint, one official provider request. The existing company
 // session owns authorization; Core owns source/field validation and user review.
+import { createHmac } from 'node:crypto';
 import { hash } from './store.mjs';
-import { buildComputerModelRequest, parseComputerModelResponse, COMPUTER_MODEL, computerRuntimeProof } from './computer-interpretation-runtime.mjs';
+import { buildComputerModelRequest, parseComputerModelResponse, COMPUTER_MODEL, computerRuntimeProof, computerAdapterStatus } from './computer-interpretation-runtime.mjs';
 
 const KIND = 'computerAIRequests';
 const ENDPOINT = 'https://api.openai.com/v1/responses';
@@ -18,6 +19,9 @@ const cost = (input, output, rates) => {
 };
 
 function configuration(env) {
+  // The adapter is optional for the host: without it nothing can be built, parsed
+  // or dispatched, while stored responses stay readable and deletable.
+  if (!computerAdapterStatus().available) return { reason: 'adapter-unavailable', message: 'AI 상담 모듈을 불러오지 못했어요. 서버의 상담 원본 파일을 확인해야 해요.' };
   if (env('SYNK_COMPUTER_AI_ENABLED') !== '1') return { reason: 'disabled', message: '관리자가 AI 상담을 아직 켜지 않았어요.' };
   const number = name => { const value = env(name); return typeof value === 'string' && /^[1-9][0-9]*$/.test(value) && Number.isSafeInteger(Number(value)) ? Number(value) : null; };
   const config = {
@@ -62,6 +66,9 @@ async function responsePayload(response) {
 
 export function createComputerInterpretationService({ store, clock = () => new Date().toISOString(), getEnv = name => process.env[name], fetchImpl = globalThis.fetch }) {
   const running = new Set(); let stopping = false, expiryTimer = null;
+  // The input fingerprint outlives response deletion and expiry. Key it with the
+  // store secret so the ledger alone cannot confirm a guessed source sentence.
+  const fingerprint = value => createHmac('sha256', store.key).update(value).digest('hex');
   const currentTime = () => {
     const at = clock(), ms = Date.parse(at);
     if (!Number.isFinite(ms)) throw error('서버의 보관 기준 시각을 확인해야 해요.', 503);
@@ -151,9 +158,12 @@ export function createComputerInterpretationService({ store, clock = () => new D
   }, 0n);
   const stoppedByUsage = () => store.all(KIND).some(row => row.usageOverrun === true);
   function state(user) {
-    purgeExpired();
     const base = { available: false, providerLabel: 'OpenAI', modelLabel: 'GPT-6 Luna', model: COMPUTER_MODEL, maxOutputTokens: null };
+    // This status is reachable without a login. Decide who is asking before
+    // opening the ledger's write transaction; the timer and authenticated
+    // requests already enforce expiry.
     try { authorized(user); } catch { return { ...base, reason: user ? 'admin-required' : 'session-required', message: '회사 관리자 계정으로 로그인하면 AI 상담 설정을 확인할 수 있어요.' }; }
+    purgeExpired();
     base.buildProof = computerRuntimeProof();
     const config = configuration(getEnv);
     if (config.reason) return { ...base, reason: config.reason, message: config.message };
@@ -175,7 +185,7 @@ export function createComputerInterpretationService({ store, clock = () => new D
     if (stopping) throw error('서버가 종료 중입니다.', 503);
     authorized(user); revalidate();
     purgeExpired();
-    const input = validate(raw), id = hash(`${user.id}:${input.id}`), digest = hash(JSON.stringify(input)), proof = computerRuntimeProof();
+    const input = validate(raw), id = hash(`${user.id}:${input.id}`), digest = fingerprint(JSON.stringify(input)), proof = computerRuntimeProof();
     if (input.expectedBuildId && (!proof.runtimeAttested || proof.buildId !== input.expectedBuildId)) throw error('요청한 평가 실행판과 현재 서버가 일치하지 않아요.', 409, 'SYNK_COMPUTER_AI_BUILD_MISMATCH');
     const existing = store.get(KIND, id);
     if (existing) return replay(existing, digest, input.expectedBuildId);

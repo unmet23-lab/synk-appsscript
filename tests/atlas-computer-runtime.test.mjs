@@ -66,3 +66,31 @@ test('caller cannot mutate the stored proof, and the hook is removed after adapt
     console.log(JSON.stringify({id,proof:m.computerRuntimeProof(),other:other.default}));`);
   assert.equal(result.proof.buildId, result.id); assert.notEqual(result.proof.artifacts[0].sha256, 'fake'); assert.equal(result.other, 42);
 });
+
+test('a missing or broken adapter source leaves the host modules loadable with the paid feature unavailable', async t => {
+  const company = 'docs/마케팅/온라인마케팅지도/engagement/company/', service = company + 'computer-interpretation-service.mjs', store = company + 'store.mjs';
+  for (const [breakage, reason] of [['missing', 'ERR_MODULE_NOT_FOUND'], ['syntax', 'ADAPTER_LOAD_FAILED']]) {
+    const f = await fixture(t);
+    for (const path of [service, store]) await fs.copyFile(join(root, path), join(f.directory, path));
+    if (breakage === 'missing') await fs.rm(join(f.directory, 'experiences/atlas-lab/model-extraction.mjs'));
+    else await fs.writeFile(join(f.directory, 'atlas/domain.js'), 'this is not JavaScript (');
+    // The company server imports exactly this service module at startup.
+    const result = await f.run(`import { Store } from './${store}';
+      const runtime = await import('./${runtime}'), { createComputerInterpretationService } = await import('./${service}');
+      const s = new Store('./data'), admin = s.createUser({ name: 'Fixture admin', email: 'admin@runtime-proof.example.test', role: 'admin' });
+      const service = createComputerInterpretationService({ store: s, getEnv: name => ({ SYNK_COMPUTER_AI_ENABLED: '1' })[name], fetchImpl: () => { throw new Error('No provider call allowed'); } });
+      const state = service.state(admin), privacy = service.privacy(admin);
+      const error = await service.interpret(admin, { id: '00000000-0000-4000-8000-000000000001', requestId: 'r', sourceId: 's', revision: 1, text: 'synthetic' })
+        .then(() => null, e => ({ status: e.status, code: e.code }));
+      await service.stop(); s.close();
+      console.log(JSON.stringify({ status: runtime.computerAdapterStatus(), proof: runtime.computerRuntimeProof(), model: runtime.COMPUTER_MODEL,
+        build: runtime.buildComputerModelRequest, state: { available: state.available, reason: state.reason }, canDelete: privacy.canDelete, error }));`);
+    assert.deepEqual(result.status, { available: false, reason }, breakage);
+    assert.equal(result.proof.runtimeAttested, false); assert.equal(result.proof.buildId, null);
+    assert.equal(result.model, null); assert.equal(result.build, null);
+    assert.deepEqual(result.state, { available: false, reason: 'adapter-unavailable' });
+    // Stored responses stay deletable; nothing can be dispatched.
+    assert.equal(result.canDelete, true);
+    assert.deepEqual(result.error, { status: 503, code: 'SYNK_COMPUTER_AI_UNAVAILABLE' });
+  }
+});

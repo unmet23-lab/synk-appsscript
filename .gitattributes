@@ -20,3 +20,15 @@ docs/_ops/장부/*.md merge=union
 
 # 루트 운영 JSONL 장부에만 적용한다. 다른 JSONL에 넓히지 않는다.
 docs/_ops/*.jsonl merge=union
+
+# Atlas 동결 평가가 해시로 묶은 원본·평가 문장·봉인 기록. 어느 작업본에서 꺼내도 같은 바이트(LF)여야
+# 캡처 도구와 서버의 실행판 확인이 통과한다. core.autocrlf가 켜진 새 체크아웃에서 깨지던 것을 막는다.
+atlas/domain.js text eol=lf
+atlas/interpretation.js text eol=lf
+atlas/temper-interpretation.js text eol=lf
+experiences/atlas-lab/interpretation.mjs text eol=lf
+experiences/atlas-lab/model-extraction.mjs text eol=lf
+docs/마케팅/맞춤도구/computer/content.js text eol=lf
+tests/fixtures/atlas-interpretation-heldout-v1.json text eol=lf
+tests/fixtures/atlas-interpretation-heldout-v1.manifest.json text eol=lf
+docs/_ops/qa/atlas-model-20261005/freeze.json text eol=lf

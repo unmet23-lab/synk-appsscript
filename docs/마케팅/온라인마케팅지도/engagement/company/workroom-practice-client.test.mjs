@@ -83,7 +83,7 @@ test('practice navigation reuses existing desk and publishing tools without a co
 test('next practice offers an applicable missed focus and keeps the employee free to choose a different task',()=>{
   const f=fixture();f.emit('change',{dataset:{wpField:'minutes'},value:'10'});f.emit('change',{dataset:{wpField:'goal'},value:'work'});f.start();
   f.evaluate(`wp.value.run.prompt=practiceModel.TASKS.meeting.template;wp.value.run.draft='지안은 10월 8일까지 안내 초안을 작성합니다. 예산 승인은 대기 중이며 도윤은 10월 6일까지 접근성 항목을 전달합니다.';wp.value.run.reviewed=true;for(const c of practiceModel.TASKS.meeting.checks)wp.value.run.answers[c.id]={kind:c.id==='missing'?'match':c.answer,source:c.source};wp.value.run.result=practiceModel.evaluate(wp.value.run)`);
-  f.action('complete');assert.equal(f.wp.value.run.step,'result');const html=f.evaluate('wpResult()');assert.match(html,/기획을 검증하기에서 이번에 놓친 유형/);assert.match(html,/선택한 업무에 그 유형이 있을 때/);
+  f.action('complete');assert.equal(f.wp.value.run.step,'result');const html=f.evaluate('wpResult()');assert.match(html,/최근 실습에서 다시 확인이 필요했던 유형을 「기획을 검증하기」 실습에서 먼저 확인하도록 제안합니다/);assert.match(html,/선택한 업무에 그 유형이 있을 때/);
   f.action('next');assert.equal(f.wp.value.settings.task,'planning');assert.equal(f.wp.mode,'setup');
   f.emit('change',{dataset:{wpField:'task'},value:'research'});f.start();assert.equal(f.wp.value.run.task,'research');assert.doesNotMatch(f.wp.value.run.reason,/누락·성공 기준/);
 });

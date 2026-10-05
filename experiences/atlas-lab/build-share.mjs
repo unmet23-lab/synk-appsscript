@@ -16,6 +16,10 @@ main = main.replace('<a class="back" href="/learning-hub/">← 맞춤 학습으�
   .replace('id="model-privacy" class="model-privacy"', 'id="model-privacy" class="model-privacy" hidden')
   .replace('/learning-hub/assets/sticker-book.webp', data('experiences/learning-hub/assets/sticker-book.webp', 'image/webp'))
   .replace(/<footer id="lab-privacy">.*?<\/footer>/s, '<footer id="lab-privacy">SYNK Atlas · 순간 맞춤 실험실 공유판 · 이 페이지는 아무것도 저장하거나 보내지 않아요.</footer>');
+// The share page must never contact a host. If a source attribute changes and one of the
+// replacements above silently misses, stop the build instead of shipping a live AI client.
+if (!main.includes('data-model-host="disabled"') || main.includes('data-model-host="same-origin"')
+  || !main.includes('id="model-privacy" class="model-privacy" hidden') || !main.includes('이 페이지는 아무것도 저장하거나 보내지 않아요.')) throw new Error('share page host isolation was not applied');
 let css = read('experiences/atlas-lab/lab.css')
   .replace('url(/learning-hub/assets/SUIT-Variable.woff2)', `url(${data('experiences/learning-hub/assets/SUIT-Variable.woff2', 'font/woff2')})`)
   .replace('url(/learning-hub/assets/InterTight-700.woff2)', `url(${data('experiences/learning-hub/assets/InterTight-700.woff2', 'font/woff2')})`)
@@ -38,12 +42,13 @@ lab = `const FLOW_RUSH = ${JSON.stringify(FLOW_RUSH)};\nconst LEVEL_WORDS = ${JS
   + read('experiences/atlas-lab/consultation.mjs').replace(/^export /gm, '') + '\n'
   + read('experiences/atlas-lab/interpretation.mjs').replace(/^export /gm, '') + '\n'
   + read('experiences/atlas-lab/model-host.mjs').replace(/^export /gm, '') + '\n' + matching + lab;
-const script = file => `<script>\n${read(file).replace(/<\/script/gi, '<\/script')}\n</script>`;
+// '<\\/script' keeps the backslash in the output; '<\/script' is the same string as '</script'.
+const script = file => `<script>\n${read(file).replace(/<\/script/gi, '<\\/script')}\n</script>`;
 const page = `<title>Atlas 순간 맞춤 실험실</title>\n<style>\n${css}\n</style>\n${main}\n`
   + script('experiences/learning-hub/atlas-learning.js') + '\n'
   + script('docs/마케팅/맞춤도구/computer/content.js') + '\n'
   + script('docs/마케팅/맞춤도구/computer/rules.js') + '\n'
   + script('atlas/domain.js') + '\n' + script('atlas/interpretation.js') + '\n' + script('atlas/temper-outcomes.js') + '\n'
-  + `<script type="module">\n${lab.replace(/<\/script/gi, '<\/script')}\n</script>\n`;
+  + `<script type="module">\n${lab.replace(/<\/script/gi, '<\\/script')}\n</script>\n`;
 fs.writeFileSync(out, page);
 console.log('wrote', out, (Buffer.byteLength(page) / 1024 / 1024).toFixed(2), 'MB');

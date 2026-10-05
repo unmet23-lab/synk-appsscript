@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, dirname, resolve } from 'node:path';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHash } from 'node:crypto';
 import { createCompanyApp } from './server.mjs';
 import { createComputerInterpretationService } from './computer-interpretation-service.mjs';
 import { Store } from './store.mjs';
@@ -336,4 +336,29 @@ test('optional evaluation build identity is authenticated, validated before rese
   const row = f.ledger()[0]; f.app.store.put('computerAIRequests', row.id, { ...row, buildId: '1'.repeat(64) });
   const mismatch = await f.request(endpoint, { body }); assert.equal(mismatch.status, 409); assert.equal(mismatch.data.code, 'SYNK_COMPUTER_AI_BUILD_MISMATCH');
   assert.equal(f.calls.length, 1);
+});
+
+test('status without administrator rights opens no ledger transaction, and the retained input fingerprint is keyed', async t => {
+  const directory = await mkdtemp(join(tmpdir(), 'synk-computer-status-')), store = new Store(directory), env = envDefaults();
+  let service;
+  t.after(async () => { await service?.stop(); store.close(); assert.equal(dirname(resolve(directory)), resolve(tmpdir())); assert.ok(directory.includes('synk-computer-status-')); await rm(directory, { recursive: true, force: true }); });
+  const admin = store.createUser({ name: 'Fixture admin', email: 'admin@computer-status.example.test', role: 'admin' });
+  const member = store.createUser({ name: 'Fixture member', email: 'member@computer-status.example.test', role: 'member' });
+  service = createComputerInterpretationService({ store, clock: () => at, getEnv: name => env[name], fetchImpl: async () => response() });
+  let transactions = 0; const transaction = store.transaction.bind(store);
+  store.transaction = fn => { transactions++; return transaction(fn); };
+  // GET /api/computer-interpretation is reachable without a login.
+  assert.equal(service.state(null).reason, 'session-required'); assert.equal(service.state(member).reason, 'admin-required');
+  assert.equal(transactions, 0);
+  assert.equal(service.state(admin).available, true); assert.ok(transactions > 0);
+  const body = input(), first = await service.interpret(admin, body), row = store.all('computerAIRequests')[0];
+  assert.match(row.digest, /^[0-9a-f]{64}$/);
+  // The other request fields stay in the same row after deletion or expiry. An unkeyed
+  // hash would let that row alone confirm a guessed source sentence.
+  const retained = { id: row.requestUUID, requestId: row.requestId, sourceId: row.sourceId, revision: row.revision, text };
+  assert.notEqual(row.digest, createHash('sha256').update(JSON.stringify(retained)).digest('hex'));
+  assert.deepEqual(await service.interpret(admin, body), first);
+  await assert.rejects(service.interpret(admin, { ...body, text: text + ' 추가' }), { code: 'SYNK_COMPUTER_AI_CONFLICT' });
+  service.removeResponses(admin, {});
+  assert.equal(store.all('computerAIRequests')[0].digest, row.digest);
 });

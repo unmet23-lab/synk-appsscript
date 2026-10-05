@@ -14,7 +14,7 @@
 - 비동기 화면 갱신 시 초안·선택·커서 위치를 보존하고 한글 조합 중 화면 교체를 보류한다. 저장 접근 거부·용량 부족·손상 기록은 화면에 표시하고 메모리 실습을 계속할 수 있다.
 - 공유 모델의 `startRun`·`completeRun`·`giveFeedback`은 마지막 `scope` 인자를, `restore`는 세 번째 `scope` 인자를 받는다. 생략 시 기존 시험 화면 scope를 유지한다. `persist`의 세 번째 인자는 호스트가 결정한 저장 키다.
 
-관련 검증: `node --test experiences/shift-workbench/model.test.mjs docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs docs/마케팅/온라인마케팅지도/engagement/company/workroom-client.test.mjs` **51/51 통과**. 실제로 놓친 유형이 있는 다음 업무 제안과, 직접 고른 업무에 없는 유형을 연습한다고 표시하지 않는 회귀를 포함한다. 회사 통합 화면의 브라우저 검사는 회사 QA 기록을 따른다.
+관련 검증: `node --test experiences/shift-workbench/model.test.mjs docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs docs/마케팅/온라인마케팅지도/engagement/company/workroom-client.test.mjs` **68/68 통과**(2026-10-06 검수 시점). 실제로 놓친 유형이 있는 다음 업무 제안과, 직접 고른 업무에 없는 유형을 연습한다고 표시하지 않는 회귀를 포함한다. 회사 통합 화면의 브라우저 검사는 회사 QA 기록을 따른다.
 
 ## 기존 독립 시험 화면 실행
 
@@ -32,7 +32,7 @@ node --test experiences/shift-workbench/model.test.mjs experiences/shift-workben
 - 초보 도움에서는 요청문 구조·가져오기 예시를 제공하며 독립 수행에서는 숨긴다. 요청문 단어 점검은 의미를 채점하는 AI가 아님을 명시한다.
 - 검토 판단과 근거 자료 번호가 모두 맞아야 확인 항목을 맞힌 것으로 기록한다. 첫 판단 뒤 정답·근거를 알려 주고 원래 판단은 유지한다.
 - 학습자가 결과를 직접 바꾸고 검토 확인을 해야 완료한다. 자유 문장 정확성은 자동 채점하지 않으며 정해진 확인 항목 결과와 구분한다.
-- 이전 실습에서 놓친 유형을 다음 실습의 앞쪽에 제시한다. 완료·명시적 피드백은 기존 Core 이벤트로 기록한다. 원시 답을 능력·성향으로 추론하거나 다른 도메인과 합치지 않는다.
+- 최근 20회·30일 기록에서 놓친 쪽이 우세한 유형을 다음 실습의 앞쪽에 제시한다. 앞서 맞힌 기록이 더 많으면 방금 놓친 유형도 빠진다(2026-10-05 Domain 연결 뒤의 동작, 이전 판은 직전에 놓친 유형을 앞에 냈다 — [검수 기록](../../docs/_ops/qa/atlas-review-20261006/README.md#shift)). 완료·명시적 피드백은 기존 Core 이벤트로 기록한다. 원시 답을 능력·성향으로 추론하거나 다른 도메인과 합치지 않는다.
 - 선택 조건의 실습 내 사용은 ‘이 조건으로 실습 시작’으로 동의받는다. 별도 체크를 고른 경우에만 선택 조건·요청문·답·직접 수정한 결과·최근 20회 기록을 이 기기 localStorage에 저장한다. 계정 동기화가 없으므로 공용 기기에서는 저장하지 않도록 안내한다. 저장 실패·복원 실패·초기화 실패를 표시한다.
 - 수정 결과와 검토 근거를 `synk-shift-practice.txt`로 내려받는다. MIME `text/plain;charset=utf-8`, 최대 64 KiB. 파일 생성은 사용자 클릭 시 브라우저에서만 실행한다.
 

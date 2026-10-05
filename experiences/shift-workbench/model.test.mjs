@@ -183,3 +183,10 @@ test('an already prepared screen stops explaining its order with subsequently ex
   session.exclude(completionId);s.events=session.events();
   assert.doesNotMatch(practiceReason(s),/지난 실습의/);assert.deepEqual(practiceBasis(s),[]);
 });
+
+test('a missing review module gives the prepared Korean notice instead of an internal adapter error',()=>{
+  const absent=Object.create(engine,{domain:{get(){throw new TypeError('Personalization: load Core domain capability first');}}});
+  const saved=globalThis.SynkAtlasDomain;delete globalThis.SynkAtlasDomain;
+  try{assert.throws(()=>startRun(newState(),{task:'meeting',goal:'clarity',minutes:5,support:'step'},absent,at),/검토 기록 모듈을 불러오지 못했어요/);}
+  finally{if(saved!==undefined)globalThis.SynkAtlasDomain=saved;}
+});

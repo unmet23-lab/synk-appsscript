@@ -152,7 +152,8 @@ export function practiceObservations(state,scope=SCOPE){
   });
 }
 function reviewDecision(state,candidates,engine,at,scope){
-  const domain=engine?.domain||globalThis.SynkAtlasDomain;
+  // The adapter's optional capability getter throws while the module is absent.
+  let domain=null;try{domain=engine?.domain;}catch{}domain||=globalThis.SynkAtlasDomain;
   if(!domain?.decide)throw new Error('검토 기록 모듈을 불러오지 못했어요. 새로고침해 주세요.');
   return domain.decide({contract:PRACTICE_CONTRACT,scope:{domain:scope.domain,subject:scope.personId,workspace:`p.${scope.productId}:c.${scope.contextId}:g.${state.profile.generation}`},observations:practiceObservations(state,scope),at,candidates});
 }

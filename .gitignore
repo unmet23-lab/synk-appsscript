@@ -224,3 +224,5 @@ experiences/korean-racing/site-package/
 experiences/namsan-urp/
 experiences/namsan-unreal/
 experiences/dokkaebi-express/
+# atlas-lab 브라우저 검수가 돌 때마다 다시 만드는 단일 HTML 공유판(약 1.9MB씩). 결과 json과 화면 캡처만 남긴다.
+experiences/atlas-lab/qa/**/*share*.html
