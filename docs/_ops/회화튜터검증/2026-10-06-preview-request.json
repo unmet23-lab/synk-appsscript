@@ -1,0 +1,127 @@
+{
+  "kind": "current-client-apk-build-request",
+  "recordedAtUtc": "2026-10-05T16:05:26.001Z",
+  "candidateCommit": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+  "workflowRunId": "37334100138",
+  "workflowUrl": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/37334100138",
+  "buildId": "002c4e64-7434-40ea-95b2-61be6c16a532",
+  "request": {
+    "requestedAtUtc": "2026-10-05T15:35:45.579Z",
+    "commit": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+    "branch": "codex/world-zero-cost-audit-20261005",
+    "dispatchCount": 1,
+    "accepted": true,
+    "prerequisites": [
+      {
+        "id": 37325737948,
+        "headSha": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+        "conclusion": "success"
+      }
+    ],
+    "freeAndroidRemainingBefore": 8,
+    "newPaidProviderCalls": 0,
+    "billingChanged": false,
+    "productionBuild": false,
+    "storeSubmitted": false,
+    "otaSubmitted": false,
+    "serverDeployed": false,
+    "receiptSha256": "3a107eeea00d736727e1bedbdb87be932a792018c822477d2e08ad083348885e"
+  },
+  "freeQuotaBefore": {
+    "plan": "Free",
+    "periodStart": "2026-10-01T00:00:00.000Z",
+    "periodEnd": "2026-11-01T00:00:00.000Z",
+    "builds": {
+      "used": 7,
+      "limit": 30,
+      "remaining": 23
+    },
+    "android": {
+      "used": 7,
+      "limit": 15,
+      "remaining": 8
+    }
+  },
+  "existingCandidateBuildsBefore": [],
+  "statusSnapshot": {
+    "checkedAtUtc": "2026-10-05T16:05:04.647Z",
+    "workflowStatus": "in_progress",
+    "workflowConclusion": "",
+    "builds": [
+      {
+        "id": "002c4e64-7434-40ea-95b2-61be6c16a532",
+        "commit": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+        "status": "IN_QUEUE",
+        "profile": "preview",
+        "platform": "ANDROID",
+        "project": "b09a2382-76d1-463a-abf1-957f96f7dedb",
+        "package": "lab.synk.talk",
+        "createdAt": "2026-10-05T15:44:01.021Z",
+        "artifactPresent": false
+      }
+    ],
+    "artifactPresent": false
+  },
+  "deviceCheck": {
+    "checkedAtUtc": "2026-10-05T15:34:30.836Z",
+    "adbAvailable": true,
+    "adbExitCode": 0,
+    "devices": [],
+    "physicalDeviceCount": 0,
+    "authorizedPhysicalDeviceCount": 0,
+    "emulatorCount": 0,
+    "deviceIdentifiersSaved": false,
+    "appsInstalled": 0,
+    "deviceSettingsChanged": false,
+    "sdkInstalled": false,
+    "emulatorDownloaded": false,
+    "deviceRecordingTested": false,
+    "audioPlaybackListened": false
+  },
+  "oneTimeCompletionProcessing": {
+    "status": "waiting_for_current_build",
+    "scope": "Accept only successful exact-source run, download one artifact, verify manifest/source/Hermes/signature, save local evidence.",
+    "receiptPath": "C:\\Users\\q1212\\.codex\\worktrees\\world-efficiency-20261002\\current-20261006-preview-finish.receipt.json",
+    "futureApkPath": "C:\\Users\\q1212\\.codex\\worktrees\\world-efficiency-20261002\\current-apk-e3e08b0\\synk-talk-preview.apk",
+    "scheduledAutomationCreated": false,
+    "aiModelWakeupsRequired": false
+  },
+  "noNewPaidProviderCalls": true,
+  "noNewServerDeployment": true,
+  "officialReviewDeferredByUser": true,
+  "sourceMerged": false,
+  "physicalDeviceTested": false,
+  "recordingTested": false,
+  "playbackListened": false,
+  "currentClientApkDoesNotDeployServerChanges": true,
+  "pendingServerFunctions": [
+    "companion",
+    "correct",
+    "corrections",
+    "teach",
+    "transcribe",
+    "tutor"
+  ],
+  "maintainedPolicy": {
+    "freeMonthlyUsd": 0.3,
+    "verifiedPaidMonthlyUsd": 0.5,
+    "dailyUsd": 0.05,
+    "freeHardMonthlyUsd": 0.5,
+    "paidHardMonthlyUsd": 3,
+    "productionTutorOff": true,
+    "finalBusinessModel": false,
+    "provisional": true,
+    "liveSettingsRecheckedThisPhase": false
+  },
+  "canonicalDocumentTests": {
+    "status": "completed",
+    "tests": 59,
+    "pass": 59,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "todo": 0,
+    "logFile": "current-20261006-preview-canonical-request-tests.log",
+    "logSha256": "a3eb84246bc08df93c6fcf636e50d3ab8f1083e5a6c0443d3ed841d18976245c"
+  }
+}
