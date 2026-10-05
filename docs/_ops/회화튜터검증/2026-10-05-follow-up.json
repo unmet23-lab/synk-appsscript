@@ -1,0 +1,591 @@
+{
+  "kind": "zero-paid-provider-cost-follow-up-verification",
+  "assembledAtUtc": "2026-10-05T14:52:30.692Z",
+  "repository": "unmet23-lab/SYNK-talk",
+  "baseCommit": "fa7a9678989ce38a1bb5262c331f0f812e5744da",
+  "previousCandidateCommit": "5a9ae7a06d31e6f4a6fb0363b231f6347bb97e78",
+  "candidateCommit": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+  "productFiles": [
+    {
+      "file": "App.js",
+      "sha256": "9fae95a4485fa3424eba08ee75d7d118d59178137df80c25502d1f2f3f9c6dd9"
+    },
+    {
+      "file": "eas.json",
+      "sha256": "c0d0d66120677ace6404eb3d28f322c7b9ed48637b6504bf6b051acdc204d976"
+    },
+    {
+      "file": "lib/ai-spend.js",
+      "sha256": "1f00bc2aadb150c71e53e19d8f8836908dad046193c2ac772da1f9acf847f085"
+    },
+    {
+      "file": "lib/tutor-provider.js",
+      "sha256": "3732417dd4d38e6e93821d3b4fde1bb6266ebe21397ea0bcb20f6f462ba78d96"
+    },
+    {
+      "file": "lib/tutor-runtime.js",
+      "sha256": "48b38102c6d4c62d56836fdd6552ab82bb84a0164a70a7f7d58c952b3405512a"
+    },
+    {
+      "file": "src/어제의나.js",
+      "sha256": "50cb009868dd7c9cffb1905df096416b847a1ea9b4ae57f871ad25feae897bbd"
+    },
+    {
+      "file": "src/튜터켜짐.js",
+      "sha256": "61a0513c3acc0c7217d423d9af593c21d1bc3535a5746c923010b4d0c0a150c6"
+    },
+    {
+      "file": "src/회화수업화면.js",
+      "sha256": "bb9aae1f775e15f857b98f877c541caf334893b619d3a923a1980344c2992d0e"
+    }
+  ],
+  "changedFiles": [
+    "App.js",
+    "eas.json",
+    "lib/ai-spend.js",
+    "lib/tutor-provider.js",
+    "lib/tutor-runtime.js",
+    "src/어제의나.js",
+    "src/튜터켜짐.js",
+    "src/회화수업화면.js",
+    "tests/ai-spend.test.js",
+    "tests/app-account-view.test.js",
+    "tests/lib/앱모듈세우기.js",
+    "tests/tutor-backend.test.js",
+    "tests/tutor-playback.test.js",
+    "tests/tutor-provider-billing.test.js",
+    "tests/내정보연결.test.js",
+    "tests/앱모듈세우기.test.js",
+    "tests/튜터빌드환경.test.js"
+  ],
+  "additionalChangedFiles": [
+    "lib/ai-spend.js",
+    "lib/tutor-provider.js",
+    "lib/tutor-runtime.js",
+    "src/회화수업화면.js",
+    "tests/ai-spend.test.js",
+    "tests/tutor-backend.test.js",
+    "tests/tutor-playback.test.js",
+    "tests/tutor-provider-billing.test.js"
+  ],
+  "resolvedDefects": [
+    {
+      "area": "paid-result-preservation",
+      "originalCommit": "8bd09113ed8ea5ed8795e37db7aef8067085f2b8",
+      "integratedCommit": "d9199a72bee10d9e7dc3ab5a960de575ca9326ee",
+      "behavior": "Successful paid response survives transient settlement failure; durable sent or uncertain reservation blocks repeat dispatch.",
+      "before": {
+        "tests": 2,
+        "pass": 0,
+        "fail": 2,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 2712.2975,
+        "logFile": "zero-cost-20261005-paid-result-before.log",
+        "logSha256": "d6208dc3a47aec4e50e77c28093921e8757da6637b42e9310e7dcf4a80f31a2c"
+      },
+      "after": {
+        "tests": 48,
+        "pass": 48,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 34461.363,
+        "logFile": "zero-cost-20261005-paid-result-after.log",
+        "logSha256": "6095d596062fd71e2bb0b37f521f0e610da5e89b7b6d63b830816906047c794a"
+      },
+      "scenarios": 3,
+      "realLocalSql": true,
+      "networkProvider": "synthetic stub"
+    },
+    {
+      "area": "tutor-dispatch-fence",
+      "originalCommit": "8f588dc18d64f5143503c7233b69c7e3583ff265",
+      "integratedCommit": "73bdd051e175c5e41d544768de81e6502bcd870d",
+      "defect": {
+        "file": "lib/tutor-runtime.js",
+        "beforeLine": 113,
+        "trigger": "Class end, auth-session revocation or voice-consent withdrawal commits while dispatched stage persistence is waiting and provider has not yet been invoked.",
+        "beforeProviderInvocations": 1,
+        "afterProviderInvocations": 0,
+        "beforeEndActualMicroUsd": 75,
+        "beforeRevocationHeldMicroUsd": 75,
+        "afterActualMicroUsd": 0,
+        "afterHeldMicroUsd": 0
+      },
+      "before": {
+        "tests": 4,
+        "pass": 1,
+        "fail": 3,
+        "skipped": 0,
+        "cancelled": 0,
+        "todo": 0,
+        "exitCode": 1,
+        "logFile": "tutor-dispatch-fence-before-20261005.log",
+        "logSha256": "4e0977426c17687294e6d1da8921fb8f8d5edfb0611f31662023dca2ecea871c"
+      },
+      "after": {
+        "tests": 37,
+        "pass": 37,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0,
+        "todo": 0,
+        "exitCode": 0,
+        "logFile": "tutor-dispatch-fence-after-20261005.log",
+        "logSha256": "2eb94f8d25ad529ef0509d0eed7899f6060e85db2268ac378f358daef72a1bca",
+        "testFiles": [
+          "tests/tutor-backend.test.js"
+        ]
+      },
+      "receipt": {
+        "file": "tutor-dispatch-fence-20261005.receipt.json",
+        "sha256": "77f6bdce1a89c0e20d3f77b653115fa6037a460a941461a6563c3e2d1aa66c47"
+      },
+      "reproduction": {
+        "file": "tutor-concurrency-preinvoke-20261005.receipt.json",
+        "sha256": "cdcfe5aa386316ec0302ce350422ee82893849f5369664de71b8a03aca5ab99c",
+        "realLocalSql": true,
+        "remoteDatabaseCalls": 0,
+        "paidProviderCalls": 0,
+        "networkAttempts": 0
+      },
+      "scope": "End/revocation commits during stage persistence wait, before provider invocation; does not claim atomic external HTTP cancellation."
+    },
+    {
+      "area": "invalid-provider-result-billing",
+      "originalCommit": "12baeca4ec9b06492c7eebe57e667d1662bd05d1",
+      "integratedCommit": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+      "defect": {
+        "priority": "P2",
+        "trigger": "HTTP200 dialogue includes valid token usage but result is truncated or invalid",
+        "reservedMicroUsd": 1094,
+        "evidencedActualMicroUsd": 285,
+        "excessHeldBeforeFixMicroUsd": 809,
+        "beforeLedgerState": "uncertain",
+        "afterLedgerState": "completed",
+        "turnStatusPreserved": "uncertain",
+        "ttsCalls": 0,
+        "providerCallsAfterReplay": 1
+      },
+      "before": {
+        "total": 6,
+        "pass": 2,
+        "fail": 4
+      },
+      "after": {
+        "total": 41,
+        "pass": 41,
+        "fail": 0,
+        "skip": 0
+      },
+      "receipt": {
+        "file": "zero-cost-20261005-tutor-provider-billing.receipt.json",
+        "sha256": "746d3502b92f0747b03f02418377ce0f7c19a8ebb91c4a69a3e8dadafe35db4a"
+      },
+      "behavior": "Use validated explicit duration or same-stage/model token counters for actual settlement. Unknown or contradictory evidence stays held; invalid answer stays final and starts no TTS or regeneration."
+    },
+    {
+      "area": "playback-state",
+      "originalCommit": "ebe0095e30db791edd4ae6e62e4b197c0b3c76dd",
+      "integratedCommit": "7a3c99b890ac9bc030a8f1b1422596619c1197f6",
+      "behavior": "Late superseded setup failure cannot overwrite current playback state; successful retry clears only previous playback error.",
+      "before": {
+        "tests": 9,
+        "pass": 6,
+        "fail": 3,
+        "evidenceType": "executing agent reproduction report; standalone log not retained"
+      },
+      "relatedAfter": {
+        "tests": 21,
+        "pass": 21,
+        "fail": 0,
+        "evidenceType": "executing agent test report"
+      },
+      "retainedFinalSourceEvidence": {
+        "testFile": "tests/tutor-playback.test.js",
+        "localFullSuiteIncluded": true,
+        "ciTests": 10,
+        "ciPass": 10,
+        "ciSkip": 0
+      },
+      "physicalPlaybackMeasured": false
+    }
+  ],
+  "localTests": {
+    "tests": 3211,
+    "pass": 3210,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 1,
+    "todo": 0,
+    "duration_ms": 93408.6238,
+    "logFile": "zero-cost-20261005-followup-all-tests.log",
+    "logSha256": "9b2a78b5dd7f6633fa380810d62cb65d851a3cd0c2fda835fdac41b49991b300",
+    "sourceCommit": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+    "nodeVersion": "v24.18.0",
+    "skipReason": "Git-outside fixture directory absent; changed regression files are not skipped."
+  },
+  "ci": {
+    "runId": 37325737948,
+    "sourceCommit": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+    "event": "pull_request",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/37325737948",
+    "total": 3211,
+    "suites": 0,
+    "pass": 3202,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 9,
+    "todo": 0,
+    "durationMs": 322705.816679,
+    "evalPass": 26,
+    "evalMeasured": 26,
+    "savedEvaluationOnly": true,
+    "unmeasuredEvaluationCases": 76,
+    "newModelCalls": 0,
+    "safeLog": {
+      "file": "zero-cost-20261005-followup-ci.log",
+      "sha256": "7cfe741031b62a10333a41f9bd05ce9466c54dc2f2cafa5f18732efcae050769"
+    },
+    "receipt": {
+      "file": "zero-cost-20261005-followup-ci.receipt.json",
+      "sha256": "b859983859a04a184108eba0dff06b9e457cacc54dd14d170854cee82e6e593d"
+    },
+    "skippedTests": [
+      {
+        "testNumber": 659,
+        "testName": "생성물이 원본과 같다 (형제 저장소 없으면 skip · F296)",
+        "reason": "형제 저장소가 없다(/home/runner/work/SYNK-talk/SYNK-appsscript) — as: 원문을 못 읽는다. 낡음은 «안 쟀다».",
+        "sourceFile": "tests/강사지식.test.js",
+        "titleLine": 191,
+        "skipLine": 193,
+        "category": "sibling-canonical-repository-absent"
+      },
+      {
+        "testNumber": 897,
+        "testName": "형제 저장소 SYNK-appsscript의 계약 파일이 이것과 같다 (줄바꿈만 제외)",
+        "reason": "형제 저장소 SYNK-appsscript가 이 기계에 없다 — 실물 대조는 로컬에서만",
+        "sourceFile": "tests/계약.test.js",
+        "titleLine": 326,
+        "skipLine": 329,
+        "category": "sibling-canonical-repository-absent"
+      },
+      {
+        "testNumber": 917,
+        "testName": "계약 사본이 정본(SYNK-appsscript)과 같은 바이트다 — 이 사본이 낡으면 문항 급수 검증이 낡은 자로 초록이 된다",
+        "reason": "정본 저장소가 이 기계에 없다(/home/runner/work/SYNK-talk/SYNK-appsscript) — CI 자리. 교차 대조는 이 기계의 스위트·배포 게이트가 진다",
+        "sourceFile": "tests/계약동기.test.js",
+        "titleLine": 28,
+        "skipLine": 30,
+        "category": "sibling-canonical-repository-absent"
+      },
+      {
+        "testNumber": 1317,
+        "testName": "드리프트 — 형제 저장소가 있으면 정본 수식이 내는 값과 전량이 같다",
+        "reason": "형제 저장소 부재 — 정본 대조는 로컬에서만",
+        "sourceFile": "tests/깊이.test.js",
+        "titleLine": 126,
+        "skipLine": 130,
+        "category": "sibling-canonical-repository-absent"
+      },
+      {
+        "testNumber": 1954,
+        "testName": "재현 — 49d4feb 직전을 기준으로 두면 그 커밋이 낡힌 다섯 함수가 나온다",
+        "reason": "49d4feb 이 이 사본의 이력에 없다 — 재료 없음(F296)",
+        "sourceFile": "tests/배포빚.test.js",
+        "titleLine": 215,
+        "skipLine": 219,
+        "category": "historical-git-commit-absent"
+      },
+      {
+        "testNumber": 1975,
+        "testName": "⑧ 실저장소 — git 밖 폴더에 배포 명령이 안 나가고 따로 한 줄로 뜬다 · --json 칸은 그대로 (재료 없으면 skip)",
+        "reason": "작업본에 git 밖 함수 폴더가 없다 — 잴 재료가 없다(F296)",
+        "sourceFile": "tests/배포빚.test.js",
+        "titleLine": 555,
+        "skipLine": 563,
+        "category": "untracked-function-fixture-absent"
+      },
+      {
+        "testNumber": 2119,
+        "testName": "SFX ③ — 21종이 있고, 형제 저장소가 있으면 사운드킷과 바이트 동일",
+        "reason": "형제 저장소 부재 — 바이트 대조는 로컬에서만",
+        "sourceFile": "tests/소리.test.js",
+        "titleLine": 62,
+        "skipLine": 70,
+        "category": "sibling-canonical-repository-absent"
+      },
+      {
+        "testNumber": 2254,
+        "testName": "🔴 형제(SYNK-appsscript)의 문자 클래스와 갈라지지 않았다",
+        "reason": "형제 저장소가 없다 — 대조 «못 했다»",
+        "sourceFile": "tests/옛글자.test.js",
+        "titleLine": 133,
+        "skipLine": 137,
+        "category": "sibling-canonical-repository-absent"
+      },
+      {
+        "testNumber": 3021,
+        "testName": "반입 — 형제 저장소가 있으면 정본과 문구 전량이 같다(사본 드리프트 탐지)",
+        "reason": "형제 저장소 부재 — 정본 대조는 로컬에서만",
+        "sourceFile": "tests/혼잣말.test.js",
+        "titleLine": 46,
+        "skipLine": 48,
+        "category": "sibling-canonical-repository-absent"
+      }
+    ],
+    "skipClassification": {
+      "sibling-canonical-repository-absent": 7,
+      "historical-git-commit-absent": 1,
+      "untracked-function-fixture-absent": 1
+    },
+    "changedRegressionResults": [
+      {
+        "sourceFile": "tests/ai-spend.test.js",
+        "expectedTopLevelTests": 27,
+        "passedTopLevelTests": 27,
+        "skipped": 0
+      },
+      {
+        "sourceFile": "tests/tutor-backend.test.js",
+        "expectedTopLevelTests": 37,
+        "passedTopLevelTests": 37,
+        "skipped": 0
+      },
+      {
+        "sourceFile": "tests/tutor-playback.test.js",
+        "expectedTopLevelTests": 10,
+        "passedTopLevelTests": 10,
+        "skipped": 0
+      },
+      {
+        "sourceFile": "tests/tutor-provider-billing.test.js",
+        "expectedTopLevelTests": 8,
+        "passedTopLevelTests": 8,
+        "skipped": 0
+      }
+    ],
+    "changedRegressionSkipped": 0,
+    "jobs": [
+      {
+        "id": 111815889011,
+        "name": "verify",
+        "conclusion": "success"
+      },
+      {
+        "id": 111818713618,
+        "name": "build",
+        "conclusion": "skipped"
+      }
+    ],
+    "buildJobSkippedByDispatchCondition": true,
+    "reruns": 0,
+    "workflowDispatches": 0
+  },
+  "productionAndroidExport": {
+    "commit": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+    "checkedAtUtc": "2026-10-05T13:40:09.310Z",
+    "exitCode": 0,
+    "output": "C:\\Users\\q1212\\.codex\\worktrees\\world-efficiency-20261002\\zero-cost-20261005-followup-android-export",
+    "profile": "production",
+    "tutorEnabled": false,
+    "dotenvDisabled": true,
+    "inheritedPublicEnvCleared": true,
+    "published": false,
+    "apkBuilt": false,
+    "physicalDeviceTested": false,
+    "paidProviderCalls": 0,
+    "bundle": {
+      "file": "_expo/static/js/android/index-84e6dfaf9498380a8f12b0fd130273ed.hbc",
+      "bytes": 5466472,
+      "sha256": "9114b0a806399cd293ce053189e6ed2752a4aa6bd4590d3db2baa48af129cadd",
+      "hermes": true,
+      "sourceCommitEmbedded": true,
+      "productionBackendEmbedded": true,
+      "assetCount": 62
+    },
+    "receipt": {
+      "file": "zero-cost-20261005-followup-android-export.receipt.json",
+      "sha256": "8d6217202165464a589bfe50bfd119e2b2436dc3cd8857acf8e10e8ea5787b90"
+    },
+    "artifactMeaning": "Local production JavaScript/Hermes and assets export, not an APK or native/device proof."
+  },
+  "policy": {
+    "provisional": true,
+    "freeMonthlyUsd": 0.3,
+    "verifiedPaidMonthlyUsd": 0.5,
+    "dailyUsd": 0.05,
+    "freeHardMonthlyUsd": 0.5,
+    "verifiedPaidHardMonthlyUsd": 3,
+    "finalBusinessModel": false,
+    "sharedStudentCap": false,
+    "academyException": false,
+    "serverTutorLiteralZeroMaintained": true,
+    "productionBuildTutorFlag": "0",
+    "policyChangedThisPhase": false,
+    "limitsRaised": false,
+    "modelsChanged": false,
+    "pricesChanged": false,
+    "databaseSchemaChanged": false,
+    "liveSettingsRecheckedThisPhase": false,
+    "authority": "2026-10-05 user decision in docs/_ops/결정.md; prior live read retained in historical evidence."
+  },
+  "sourceDelivery": {
+    "pullRequest": "https://github.com/unmet23-lab/SYNK-talk/pull/6",
+    "privateRepository": true,
+    "draft": true,
+    "pushed": true,
+    "merged": false
+  },
+  "officialReview": {
+    "preparedAtUtc": "2026-10-05T14:35:53.161Z",
+    "status": "deferred_by_user_not_run",
+    "intendedReviewCommit": "e3e08b0c63fc938a9077fbee06ff990ef7e5d32c",
+    "baseCommit": "fa7a9678989ce38a1bb5262c331f0f812e5744da",
+    "reviewCompleted": false,
+    "reviewedCommit": null,
+    "findings": null,
+    "targetFiles": [
+      "App.js",
+      "eas.json",
+      "lib/ai-spend.js",
+      "lib/tutor-provider.js",
+      "lib/tutor-runtime.js",
+      "src/어제의나.js",
+      "src/튜터켜짐.js",
+      "src/회화수업화면.js",
+      "tests/ai-spend.test.js",
+      "tests/app-account-view.test.js",
+      "tests/lib/앱모듈세우기.js",
+      "tests/tutor-backend.test.js",
+      "tests/tutor-playback.test.js",
+      "tests/tutor-provider-billing.test.js",
+      "tests/내정보연결.test.js",
+      "tests/앱모듈세우기.test.js",
+      "tests/튜터빌드환경.test.js"
+    ],
+    "promptSha256": "e5db87848b6f54dc2518c580fd699e40e5495fe552974a17be6abaa1e52fb31d",
+    "sourceClean": true,
+    "officialCliInvocations": 0,
+    "modelOverride": false,
+    "authChanges": false,
+    "paidProviderCalls": 0,
+    "remoteMutations": 0,
+    "receipt": {
+      "file": "zero-cost-20261005-followup-review-e3e08b0.pending.receipt.json",
+      "sha256": "0633fbc3064669b3c5afc73090531c14255044075fae0c9ab51eec495ac0bc03"
+    },
+    "promptFile": "zero-cost-20261005-followup-review-e3e08b0.pending.prompt.txt",
+    "reason": "User explicitly deferred final review until later.",
+    "historicalQuotaAttempt": "2026-10-05-zero-cost.json; historical attempt, not current blocking reason."
+  },
+  "futureRelease": {
+    "status": "deferred_with_final_review",
+    "affectedFunctions": [
+      {
+        "slug": "companion",
+        "디렉터리": "supabase/functions/companion",
+        "동봉": [
+          "lib/ai-spend.js"
+        ],
+        "본체": []
+      },
+      {
+        "slug": "correct",
+        "디렉터리": "supabase/functions/correct",
+        "동봉": [
+          "lib/ai-spend.js"
+        ],
+        "본체": []
+      },
+      {
+        "slug": "corrections",
+        "디렉터리": "supabase/functions/corrections",
+        "동봉": [
+          "lib/ai-spend.js"
+        ],
+        "본체": []
+      },
+      {
+        "slug": "teach",
+        "디렉터리": "supabase/functions/teach",
+        "동봉": [
+          "lib/ai-spend.js"
+        ],
+        "본체": []
+      },
+      {
+        "slug": "transcribe",
+        "디렉터리": "supabase/functions/transcribe",
+        "동봉": [
+          "lib/ai-spend.js"
+        ],
+        "본체": []
+      },
+      {
+        "slug": "tutor",
+        "디렉터리": "supabase/functions/tutor",
+        "동봉": [
+          "lib/tutor-runtime.js",
+          "lib/tutor-provider.js",
+          "lib/ai-spend.js"
+        ],
+        "본체": []
+      }
+    ],
+    "inventorySource": "tools/동봉신호.js existing local exports, current HEAD bundle inventory",
+    "changedSchema": false,
+    "functionDeployments": 0,
+    "migrationsApplied": 0,
+    "newEasBuilds": 0,
+    "storeSubmitted": false,
+    "otaPublished": false,
+    "publiclyPublished": false,
+    "oldTutorOnlyDeploymentPreparationCoversAllCurrentChanges": false
+  },
+  "existingPreviewApk": {
+    "commit": "5a9ae7a06d31e6f4a6fb0363b231f6347bb97e78",
+    "sha256": "f29130eb29ba9c62c5d3f83fed789dd00a0851babbfb343b8e7f5595e9a5487c",
+    "bytes": 146172467,
+    "buildId": "28231b21-57a0-4336-94ce-e74118282ea8",
+    "historicalEvidence": "2026-10-05-zero-cost.json",
+    "isCurrentCandidateApk": false,
+    "includesAdditionalPlaybackFix": false,
+    "newApkBuiltThisPhase": false
+  },
+  "additionalPhase": {
+    "paidProviderCalls": 0,
+    "remoteDatabaseCalls": 0,
+    "officialClaudeInvocations": 0,
+    "liveFunctionDeployments": 0,
+    "migrationsApplied": 0,
+    "newEasBuilds": 0,
+    "sourcePullRequestMerged": false,
+    "physicalDeviceTested": false,
+    "deviceRecordingTested": false,
+    "audioPlaybackListened": false
+  },
+  "canonicalDocumentTests": {
+    "status": "completed",
+    "tests": 59,
+    "pass": 59,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "duration_ms": 2285.9356,
+    "logFile": "zero-cost-20261005-followup-canonical-tests.log",
+    "logSha256": "de6ed68cbca58f2ce81bd18d41f8758b03353d72132665f8415aa1e6194417d8",
+    "testFiles": [
+      "tests/knowledge-management.test.js",
+      "tests/문서지도.test.js",
+      "tests/트랙위생.test.js",
+      "tests/결정정본.test.js"
+    ]
+  }
+}
