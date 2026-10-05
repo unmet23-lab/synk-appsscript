@@ -1,0 +1,18 @@
+{
+  "capturedAt": "2026-10-04T14:00:58.527Z",
+  "method": "Original pre-worker render-world.mjs preserved before runtime edits versus current pure generator, same original road and color formulas. All typed attribute and index bytes hashed in sorted attribute order then mesh order; bounds and row metadata compared exactly.",
+  "originalRenderWorldSha256": "91c2027ddf95b379002005fd664b74bf6ca9c63aae4c95ab6c4f1003237baca0",
+  "sources": {
+    "render-world.js": "2f66a6f7e780e1c29eeea467db17e4b51652118b92d740c1bf74d0311a0e4783",
+    "terrain-data.js": "42c3c3cdc90b54ce27a476fe7a73abab785ea1422f93db95b6560b61129558ba",
+    "landscape.js": "5a7964c1ad97b92e019c1dd9d1e6af46f3eecfafb6df52bd0b3359574585c7b2",
+    "course.js": "0a2924389f4783d01a7b259c83ea5d52050f9144a9e876099df5006986fbc409",
+    "terrain-worker.js": "ef413cd0448ed6605b2420172ff0f14f9d93913d568e34637fe917b63a2df1f1"
+  },
+  "originalGeometrySha256": "17bd7772a07ac572c43c5301f73989ca78667e0743484ac8f5084ec3b6353928",
+  "currentGeometrySha256": "17bd7772a07ac572c43c5301f73989ca78667e0743484ac8f5084ec3b6353928",
+  "geometryCount": 66,
+  "storedTriangles": 209472,
+  "storedVertices": 115288,
+  "boundsAndRowMetadataEqual": true
+}

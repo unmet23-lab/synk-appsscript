@@ -1,0 +1,729 @@
+{
+  "capturedAt": "2026-10-04T14:12:44.399Z",
+  "package": "C:\\Users\\q1212\\AppData\\Local\\Temp\\synk-racing-terrain-package-20261004",
+  "manifestGeneratedAt": "2026-10-04T14:12:43.978Z",
+  "byteCheck": {
+    "files": 2768,
+    "bytes": 85405291,
+    "mismatches": []
+  },
+  "pageErrors": [],
+  "consoleErrors": [],
+  "failedRequests": [],
+  "failedResponses": [],
+  "serverErrors": [],
+  "scriptResponses": [
+    {
+      "url": "http://127.0.0.1:60321/app.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/atlas-learning.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/vendor/DRACOLoader.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/narration.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/learning.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/personalization.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/driving.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/question-audio.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/vendor/GLTFLoader.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/campaign.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/coast-drive.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/finales.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/garage.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/race-pacing.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/coast-radio.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/tutorial.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/garage-ui.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/vehicles.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/drivers.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/graphics.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/course.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/atmosphere.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/render-world.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/scenery.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/landscape.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/vendor/three.module.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/terrain-startup.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/startup.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/coastal-rocks.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/seascape-boats.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/city-life.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/vendor/BufferGeometryUtils.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/garage-core.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/curriculum.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/terrain-data.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/vendor/three.core.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/cityscape.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/city-materials.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/terrain-worker.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/course.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/landscape.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "http://127.0.0.1:60321/terrain-data.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "url": "blob:http://127.0.0.1:60321/1a75c27a-e097-4f58-a7e1-caca662366c0",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": ""
+    },
+    {
+      "url": "blob:http://127.0.0.1:60321/1a75c27a-e097-4f58-a7e1-caca662366c0",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": ""
+    },
+    {
+      "url": "blob:http://127.0.0.1:60321/1a75c27a-e097-4f58-a7e1-caca662366c0",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": ""
+    },
+    {
+      "url": "blob:http://127.0.0.1:60321/1a75c27a-e097-4f58-a7e1-caca662366c0",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": ""
+    }
+  ],
+  "workers": [
+    "http://127.0.0.1:60321/terrain-worker.js",
+    "blob:http://127.0.0.1:60321/1a75c27a-e097-4f58-a7e1-caca662366c0",
+    "blob:http://127.0.0.1:60321/1a75c27a-e097-4f58-a7e1-caca662366c0",
+    "blob:http://127.0.0.1:60321/1a75c27a-e097-4f58-a7e1-caca662366c0",
+    "blob:http://127.0.0.1:60321/1a75c27a-e097-4f58-a7e1-caca662366c0"
+  ],
+  "manifestSha256": "4faf8bfe5c4c27140d35a874f749eeb6a971173328dfcafc0033063f2713cf03",
+  "terrainSources": {
+    "app.js": "825c7039ab7f6826644ed1fdc485ebff7eb59e7395cad42a15976b3638837ea9",
+    "course.js": "0a2924389f4783d01a7b259c83ea5d52050f9144a9e876099df5006986fbc409",
+    "garage-core.js": "2f87d1a65b1d426bdc86fa248014bc635015caf441bd25a640bdd6f8239845c6",
+    "render-world.js": "2f66a6f7e780e1c29eeea467db17e4b51652118b92d740c1bf74d0311a0e4783",
+    "terrain-data.js": "42c3c3cdc90b54ce27a476fe7a73abab785ea1422f93db95b6560b61129558ba",
+    "terrain-startup.js": "a304129900d969f3875004e2768c8d28c09c404238d4d9bad2e3c39fff0100a0",
+    "terrain-worker.js": "ef413cd0448ed6605b2420172ff0f14f9d93913d568e34637fe917b63a2df1f1"
+  },
+  "initialFailure": {
+    "capturedAt": "2026-10-04T14:10:35.279Z",
+    "jsNetworkFailures": [
+      {
+        "url": "http://127.0.0.1:52951/garage-core.js",
+        "status": 404,
+        "resourceType": "script",
+        "contentType": "text/plain"
+      },
+      {
+        "url": "http://127.0.0.1:52951/garage-core.js",
+        "resourceType": "script",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "serverErrors": [
+      {
+        "url": "/garage-core.js",
+        "error": "Error: ENOENT: no such file or directory, open 'C:\\Users\\q1212\\AppData\\Local\\Temp\\synk-racing-terrain-package-20261004\\garage-core.js'"
+      }
+    ],
+    "readinessError": "TimeoutError: page.waitForFunction: Timeout 30000ms exceeded."
+  },
+  "packageCorrection": "Added existing garage-core.js to the declared runtime input list; the original package omitted this garage.js dependency.",
+  "url": "http://127.0.0.1:60321/",
+  "navigation": {
+    "url": "http://127.0.0.1:60321/",
+    "status": 200
+  },
+  "observedReadyMs": 3299,
+  "snapshot": {
+    "questionPace": {
+      "holding": false,
+      "heldSpeed": null,
+      "lastAnswerAt": null
+    },
+    "coastDrive": {
+      "phase": "race",
+      "laps": 0
+    },
+    "coastRadio": {
+      "title": "해안선",
+      "prepared": false,
+      "playing": false,
+      "pending": false,
+      "blocked": false,
+      "disposed": false,
+      "active": false,
+      "enabled": true,
+      "paused": false,
+      "duck": false,
+      "time": 0,
+      "targetGain": 0,
+      "error": null,
+      "streaming": true
+    },
+    "ready": true,
+    "startup": {
+      "phase": "ready",
+      "compilePasses": 1,
+      "startedAt": 622,
+      "assetsMs": 527,
+      "terrainWaitMs": 372,
+      "terrainSource": "worker",
+      "terrainWorkerMs": 445,
+      "terrainMainMs": 24,
+      "terrainMs": 924,
+      "coastCityMs": 1054,
+      "vegetationMs": 1074,
+      "environmentMs": 1385,
+      "worldMs": 1526,
+      "parallelShaders": true,
+      "shadersMs": 2059,
+      "firstFrameMs": 2657,
+      "readyMs": 2658
+    },
+    "running": false,
+    "paused": false,
+    "auto": false,
+    "roundWasDemo": false,
+    "elapsed": 0,
+    "playerS": 75.2475,
+    "playerOffset": 0,
+    "tutorial": null,
+    "collection": {
+      "coins": 0,
+      "owned": [
+        "vehicle-coast",
+        "paint-mint",
+        "wheels-silver",
+        "trail-lime"
+      ],
+      "equipped": {
+        "vehicle": "coast",
+        "paint": "mint",
+        "wheels": "silver",
+        "trail": "lime",
+        "badge": null
+      },
+      "wish": "open",
+      "mission": {
+        "id": "2026-10-04:first-clear:challenge-01",
+        "date": "2026-10-04",
+        "kind": "first-clear",
+        "target": "challenge-01",
+        "collection": "campaign",
+        "title": "새로운 길을 열어요",
+        "description": "“아침의 작은 일”에서 5문제 중 4문제 이상 맞혀 첫 통과해요.",
+        "reward": 15,
+        "completed": false,
+        "completedAt": 0
+      },
+      "garageOpen": false,
+      "angle": 0.65
+    },
+    "driving": {
+      "collisions": 0,
+      "contactTimer": 0,
+      "combo": 0,
+      "bestCombo": 0,
+      "shield": 0,
+      "shieldBlocked": 0,
+      "rivals": [
+        {
+          "s": 103.2475,
+          "offset": -3.15
+        },
+        {
+          "s": 124.2475,
+          "offset": 3.1
+        }
+      ],
+      "waitingForChoice": true
+    },
+    "scenery": "bloom",
+    "atmosphere": {
+      "version": 9,
+      "waterTriangles": 2,
+      "waterPasses": 1,
+      "reflectionCameras": 0,
+      "shoreTextureBytes": 2048,
+      "sampledDepth": true,
+      "depthSamples": 1536,
+      "detail": 1,
+      "theme": "sunset"
+    },
+    "boats": {
+      "version": 8,
+      "boats": 4,
+      "sailboats": 2,
+      "cruisers": 2,
+      "visibleBoats": 2,
+      "animatedBoats": 2,
+      "visibleTriangles": 3324,
+      "storedTriangles": 6642,
+      "drawCalls": 9,
+      "shadowDrawCalls": 0,
+      "wakeDrawCalls": 1,
+      "quality": "high"
+    },
+    "boatPoses": [
+      {
+        "id": 0,
+        "kind": "sail",
+        "visible": true,
+        "animated": true,
+        "time": 0.055,
+        "position": [
+          157.08405484714024,
+          -2.1958761697246967,
+          650.0907499572829
+        ],
+        "rotation": [
+          0.00023757240134577546,
+          0.0009958853819760167,
+          0.0005196460023192315
+        ]
+      },
+      {
+        "id": 1,
+        "kind": "cruise",
+        "visible": true,
+        "animated": true,
+        "time": 0.055,
+        "position": [
+          155.79638539762726,
+          -2.102002365396607,
+          779.879000118104
+        ],
+        "rotation": [
+          0.00884542525147842,
+          3.139898651903266,
+          0.014719037170375811
+        ]
+      },
+      {
+        "id": 2,
+        "kind": "sail",
+        "visible": false,
+        "animated": false,
+        "time": 0.055,
+        "position": [
+          126.04608451351505,
+          -2.2351953524194537,
+          1119.9120000201917
+        ],
+        "rotation": [
+          -0.003042138324676937,
+          3.1410607422847505,
+          -0.0051865228226712105
+        ]
+      },
+      {
+        "id": 3,
+        "kind": "cruise",
+        "visible": false,
+        "animated": false,
+        "time": 0.055,
+        "position": [
+          130.96437384061232,
+          -2.2868384553385264,
+          1820.1292499501917
+        ],
+        "rotation": [
+          -0.007880872701783578,
+          0.0007513499186708951,
+          -0.013074577491446096
+        ]
+      }
+    ],
+    "rockShelves": {
+      "version": 7,
+      "placements": 5,
+      "nearTriangles": 10491,
+      "farTriangles": 2298,
+      "visible": 2,
+      "triangles": 12789,
+      "drawCalls": 2,
+      "shadowDrawCalls": 0
+    },
+    "landscape": {
+      "triangles": 25008,
+      "drawCalls": 4,
+      "islands": 5,
+      "rocks": 18,
+      "trees": 132,
+      "tidalTriangles": 384
+    },
+    "city": {
+      "shops": 22,
+      "homes": 3,
+      "towers": 12,
+      "blocks": 4,
+      "quality": "high",
+      "theme": "bloom",
+      "storedTriangles": 33778,
+      "visibleTriangles": 0,
+      "drawCalls": 0,
+      "shadowDrawCalls": 0,
+      "visibleShops": 0,
+      "roadMinimumClearance": 9.299996709700785,
+      "materials": {
+        "version": 9,
+        "metricUv": true,
+        "extraDrawCalls": 0,
+        "extraTriangles": 0,
+        "downloadedTextures": 0,
+        "interiorRays": 1
+      },
+      "materialDetail": 1
+    },
+    "cityLife": {
+      "version": 9,
+      "actors": 44,
+      "visibleActors": 0,
+      "animatedActors": 0,
+      "reactingActors": 0,
+      "greetingActors": 0,
+      "drawCalls": 0,
+      "shadowDrawCalls": 0,
+      "visibleTriangles": 0,
+      "storedTriangles": 458,
+      "quality": "high",
+      "theme": "bloom",
+      "time": 0.055
+    },
+    "groundProps": {
+      "rocks": 115,
+      "grass": 3966,
+      "excludedRocks": 65,
+      "excludedGrass": 534
+    },
+    "terrain": {
+      "chunkCount": 22,
+      "chunkLength": 125,
+      "sourceTriangles": 150700,
+      "storedTriangles": 209472,
+      "storedVertices": 115288,
+      "activeTriangles": 33662,
+      "activeDrawCalls": 14,
+      "submittedTriangles": 33662,
+      "submittedDrawCalls": 14,
+      "visibleTriangles": 33662,
+      "visibleDrawCalls": 14,
+      "quality": "high",
+      "triangleBudget": 46000,
+      "forwardDistance": 1500,
+      "levels": {
+        "near": 3,
+        "mid": 5,
+        "far": 6
+      },
+      "updates": 3,
+      "frustumChecked": true,
+      "activeRange": [
+        -150,
+        1600
+      ]
+    },
+    "vegetation": {
+      "trees": 130,
+      "pineTrees": 102,
+      "cherryTrees": 28,
+      "chunks": 7,
+      "landmarks": 3,
+      "triangles": 180328,
+      "drawCalls": 29,
+      "shadowDrawCalls": 17,
+      "visibleTriangles": 58980,
+      "visibleDrawCalls": 14,
+      "visibleShadowDrawCalls": 7,
+      "visibleFoliageTriangles": 28864,
+      "visibleFoliageCards": 3608,
+      "detailDistance": 460,
+      "quality": "high",
+      "theme": "bloom"
+    },
+    "screenX": 0.5604,
+    "driver": {
+      "name": "marin",
+      "mood": "base",
+      "seated": true
+    },
+    "vehicle": {
+      "triangles": 359302,
+      "drawCalls": 42,
+      "shadowTriangles": 156504,
+      "shadowDrawCalls": 22,
+      "geometryLevel": "high"
+    },
+    "velocity": 26,
+    "boost": 0,
+    "correct": 0,
+    "answers": [],
+    "flow": {
+      "cruise": 26,
+      "active": false,
+      "values": null
+    },
+    "stage": {
+      "id": "challenge-01",
+      "title": "아침의 작은 일",
+      "mode": "listen",
+      "level": 1,
+      "campaign": true,
+      "words": []
+    },
+    "gate": {
+      "s": 310,
+      "prompt": "무엇을 먹어요?",
+      "spoken": "아침에 빵을 먹어요. 무엇을 먹어요?",
+      "types": [
+        "c01q1o0",
+        "c01q1o1",
+        "c01q1o2"
+      ],
+      "questionId": "c01q1",
+      "announced": false
+    },
+    "quality": "high",
+    "narration": {
+      "playing": false,
+      "kind": null,
+      "queued": 0,
+      "played": []
+    },
+    "narrationUnavailable": false,
+    "learning": {
+      "words": 0,
+      "correctWords": 0,
+      "rounds": 0,
+      "cleared": 0
+    },
+    "render": {
+      "renderedFrames": 2,
+      "skippedPausedFrames": 0,
+      "programs": 50,
+      "pixelRatio": 1,
+      "calls": 269,
+      "triangles": 712885,
+      "geometries": 258,
+      "textures": 28,
+      "averageFps": 0
+    },
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "racingError": null,
+  "watchDisabled": false,
+  "loadingHidden": true,
+  "errorHidden": true,
+  "jsNetworkFailures": [],
+  "ok": true,
+  "closed": {
+    "browser": true,
+    "server": true
+  }
+}

@@ -1,0 +1,1204 @@
+{
+  "date": "2026-10-04",
+  "scope": "Local source at http://127.0.0.1:5197/. No deployment. Each group has 3 fresh Chrome processes, GPU ANGLE D3D11; phone is 390x844 touch/DPR3 emulation on the same PC, no CPU/network throttling. Runs sequential, not interleaved; scheduler/GPU variance is visible.",
+  "measurement": "CPU profile and long tasks are MAIN THREAD only. Worker compute time is explicit in startup. Before terrain time is the existing cumulative assetsMs to terrainMs interval (includes setup/any remaining font wait), after terrainMainMs directly times sky/road/terrain/water setup after waiting for worker. End-to-end button times include Playwright observation latency; initReadyMs is the app clock. No public-vs-local speedup claim.",
+  "sources": {
+    "app.js": "825c7039ab7f6826644ed1fdc485ebff7eb59e7395cad42a15976b3638837ea9",
+    "landscape.js": "5a7964c1ad97b92e019c1dd9d1e6af46f3eecfafb6df52bd0b3359574585c7b2",
+    "render-world.js": "2f66a6f7e780e1c29eeea467db17e4b51652118b92d740c1bf74d0311a0e4783",
+    "terrain-data.js": "42c3c3cdc90b54ce27a476fe7a73abab785ea1422f93db95b6560b61129558ba",
+    "terrain-worker.js": "ef413cd0448ed6605b2420172ff0f14f9d93913d568e34637fe917b63a2df1f1",
+    "terrain-startup.js": "a304129900d969f3875004e2768c8d28c09c404238d4d9bad2e3c39fff0100a0",
+    "course.js": "0a2924389f4783d01a7b259c83ea5d52050f9144a9e876099df5006986fbc409",
+    "startup.js": "894ccf0251c9121d703ff3c873ca3db572df324899a72e71d49bb5c675651f4d",
+    "build-site.mjs": "bfa0fab440237087f70a359b5629eaf26c56e3aebfec8b1ad3a2090c67581e34"
+  },
+  "summary": {
+    "desktop": {
+      "before": {
+        "buttonObservedMs": 3151,
+        "initReadyMs": 2332,
+        "assetsToTerrainMs": 483,
+        "terrainMainMs": null,
+        "hashMainSelfMs": 266.928,
+        "longTotalMs": 1751,
+        "maxLongMs": 483
+      },
+      "after": {
+        "buttonObservedMs": 3323,
+        "initReadyMs": 2498,
+        "assetsToTerrainMs": 399,
+        "terrainMainMs": 31,
+        "hashMainSelfMs": 34.603,
+        "longTotalMs": 1511,
+        "maxLongMs": 620
+      }
+    },
+    "phone": {
+      "before": {
+        "buttonObservedMs": 2531,
+        "initReadyMs": 2284,
+        "assetsToTerrainMs": 476,
+        "terrainMainMs": null,
+        "hashMainSelfMs": 240.531,
+        "longTotalMs": 1752,
+        "maxLongMs": 476
+      },
+      "after": {
+        "buttonObservedMs": 2417,
+        "initReadyMs": 2049,
+        "assetsToTerrainMs": 360,
+        "terrainMainMs": 30,
+        "hashMainSelfMs": 26.099,
+        "longTotalMs": 1102,
+        "maxLongMs": 383
+      }
+    }
+  },
+  "runs": [
+    {
+      "phase": "before",
+      "device": "desktop",
+      "run": 1,
+      "source": "terrain-startup-before-20261004-desktop-1.json",
+      "capturedAt": "2026-10-04T13:54:56.887Z",
+      "loadMs": 810,
+      "buttonObservedMs": 3725,
+      "startup": {
+        "phase": "ready",
+        "compilePasses": 1,
+        "startedAt": 673,
+        "assetsMs": 256,
+        "terrainMs": 790,
+        "coastCityMs": 957,
+        "vegetationMs": 981,
+        "environmentMs": 1303,
+        "worldMs": 1472,
+        "parallelShaders": true,
+        "shadersMs": 1956,
+        "firstFrameMs": 2451,
+        "readyMs": 2453
+      },
+      "assetsToTerrainMs": 534,
+      "longTasks": [
+        {
+          "startMs": 594,
+          "durationMs": 195
+        },
+        {
+          "startMs": 928,
+          "durationMs": 535
+        },
+        {
+          "startMs": 1466,
+          "durationMs": 164
+        },
+        {
+          "startMs": 1655,
+          "durationMs": 321
+        },
+        {
+          "startMs": 1976,
+          "durationMs": 231
+        },
+        {
+          "startMs": 2629,
+          "durationMs": 494
+        }
+      ],
+      "longTaskSummary": {
+        "count": 6,
+        "totalMs": 1940,
+        "maxMs": 535
+      },
+      "hashMainSelfMs": 273.808,
+      "network": {
+        "count": 67,
+        "bytes": 12946996,
+        "lastEndMs": 874.97998046875
+      },
+      "ready": true,
+      "terrain": {
+        "chunkCount": 22,
+        "chunkLength": 125,
+        "sourceTriangles": 150700,
+        "storedTriangles": 209472,
+        "storedVertices": 115288,
+        "activeTriangles": 33662,
+        "activeDrawCalls": 14,
+        "submittedTriangles": 33662,
+        "submittedDrawCalls": 14,
+        "visibleTriangles": 33662,
+        "visibleDrawCalls": 14,
+        "quality": "high",
+        "triangleBudget": 46000,
+        "forwardDistance": 1500,
+        "levels": {
+          "near": 3,
+          "mid": 5,
+          "far": 6
+        },
+        "updates": 5,
+        "frustumChecked": true,
+        "activeRange": [
+          -150,
+          1600
+        ]
+      },
+      "pageErrors": [],
+      "jsNetworkFailures": [],
+      "ok": true
+    },
+    {
+      "phase": "before",
+      "device": "desktop",
+      "run": 2,
+      "source": "terrain-startup-before-20261004-desktop-2.json",
+      "capturedAt": "2026-10-04T13:55:03.048Z",
+      "loadMs": 417,
+      "buttonObservedMs": 2548,
+      "startup": {
+        "phase": "ready",
+        "compilePasses": 1,
+        "startedAt": 348,
+        "assetsMs": 272,
+        "terrainMs": 755,
+        "coastCityMs": 901,
+        "vegetationMs": 927,
+        "environmentMs": 1172,
+        "worldMs": 1335,
+        "parallelShaders": true,
+        "shadersMs": 1789,
+        "firstFrameMs": 2143,
+        "readyMs": 2145
+      },
+      "assetsToTerrainMs": 483,
+      "longTasks": [
+        {
+          "startMs": 316,
+          "durationMs": 61
+        },
+        {
+          "startMs": 478,
+          "durationMs": 70
+        },
+        {
+          "startMs": 620,
+          "durationMs": 483
+        },
+        {
+          "startMs": 1105,
+          "durationMs": 143
+        },
+        {
+          "startMs": 1275,
+          "durationMs": 244
+        },
+        {
+          "startMs": 1521,
+          "durationMs": 211
+        },
+        {
+          "startMs": 2137,
+          "durationMs": 353
+        }
+      ],
+      "longTaskSummary": {
+        "count": 7,
+        "totalMs": 1565,
+        "maxMs": 483
+      },
+      "hashMainSelfMs": 266.928,
+      "network": {
+        "count": 67,
+        "bytes": 12946996,
+        "lastEndMs": 575.029052734375
+      },
+      "ready": true,
+      "terrain": {
+        "chunkCount": 22,
+        "chunkLength": 125,
+        "sourceTriangles": 150700,
+        "storedTriangles": 209472,
+        "storedVertices": 115288,
+        "activeTriangles": 33662,
+        "activeDrawCalls": 14,
+        "submittedTriangles": 33662,
+        "submittedDrawCalls": 14,
+        "visibleTriangles": 33662,
+        "visibleDrawCalls": 14,
+        "quality": "high",
+        "triangleBudget": 46000,
+        "forwardDistance": 1500,
+        "levels": {
+          "near": 3,
+          "mid": 5,
+          "far": 6
+        },
+        "updates": 3,
+        "frustumChecked": true,
+        "activeRange": [
+          -150,
+          1600
+        ]
+      },
+      "pageErrors": [],
+      "jsNetworkFailures": [],
+      "ok": true
+    },
+    {
+      "phase": "before",
+      "device": "desktop",
+      "run": 3,
+      "source": "terrain-startup-before-20261004-desktop-3.json",
+      "capturedAt": "2026-10-04T13:55:07.339Z",
+      "loadMs": 354,
+      "buttonObservedMs": 3151,
+      "startup": {
+        "phase": "ready",
+        "compilePasses": 1,
+        "startedAt": 278,
+        "assetsMs": 277,
+        "terrainMs": 756,
+        "coastCityMs": 919,
+        "vegetationMs": 946,
+        "environmentMs": 1202,
+        "worldMs": 1377,
+        "parallelShaders": true,
+        "shadersMs": 1860,
+        "firstFrameMs": 2331,
+        "readyMs": 2332
+      },
+      "assetsToTerrainMs": 479,
+      "longTasks": [
+        {
+          "startMs": 246,
+          "durationMs": 51
+        },
+        {
+          "startMs": 350,
+          "durationMs": 104
+        },
+        {
+          "startMs": 554,
+          "durationMs": 479
+        },
+        {
+          "startMs": 1037,
+          "durationMs": 160
+        },
+        {
+          "startMs": 1224,
+          "durationMs": 256
+        },
+        {
+          "startMs": 1481,
+          "durationMs": 230
+        },
+        {
+          "startMs": 2138,
+          "durationMs": 471
+        }
+      ],
+      "longTaskSummary": {
+        "count": 7,
+        "totalMs": 1751,
+        "maxMs": 479
+      },
+      "hashMainSelfMs": 266.035,
+      "network": {
+        "count": 67,
+        "bytes": 12946996,
+        "lastEndMs": 510.19091796875
+      },
+      "ready": true,
+      "terrain": {
+        "chunkCount": 22,
+        "chunkLength": 125,
+        "sourceTriangles": 150700,
+        "storedTriangles": 209472,
+        "storedVertices": 115288,
+        "activeTriangles": 33662,
+        "activeDrawCalls": 14,
+        "submittedTriangles": 33662,
+        "submittedDrawCalls": 14,
+        "visibleTriangles": 33662,
+        "visibleDrawCalls": 14,
+        "quality": "high",
+        "triangleBudget": 46000,
+        "forwardDistance": 1500,
+        "levels": {
+          "near": 3,
+          "mid": 5,
+          "far": 6
+        },
+        "updates": 5,
+        "frustumChecked": true,
+        "activeRange": [
+          -150,
+          1600
+        ]
+      },
+      "pageErrors": [],
+      "jsNetworkFailures": [],
+      "ok": true
+    },
+    {
+      "phase": "before",
+      "device": "phone",
+      "run": 1,
+      "source": "terrain-startup-before-20261004-phone-1.json",
+      "capturedAt": "2026-10-04T13:55:11.671Z",
+      "loadMs": 331,
+      "buttonObservedMs": 2531,
+      "startup": {
+        "phase": "ready",
+        "compilePasses": 1,
+        "startedAt": 153,
+        "assetsMs": 453,
+        "terrainMs": 929,
+        "coastCityMs": 1072,
+        "vegetationMs": 1090,
+        "environmentMs": 1329,
+        "worldMs": 1491,
+        "parallelShaders": true,
+        "shadersMs": 1943,
+        "firstFrameMs": 2282,
+        "readyMs": 2284
+      },
+      "assetsToTerrainMs": 476,
+      "longTasks": [
+        {
+          "startMs": 121,
+          "durationMs": 159
+        },
+        {
+          "startMs": 386,
+          "durationMs": 177
+        },
+        {
+          "startMs": 606,
+          "durationMs": 476
+        },
+        {
+          "startMs": 1084,
+          "durationMs": 140
+        },
+        {
+          "startMs": 1243,
+          "durationMs": 239
+        },
+        {
+          "startMs": 1483,
+          "durationMs": 222
+        },
+        {
+          "startMs": 2096,
+          "durationMs": 339
+        }
+      ],
+      "longTaskSummary": {
+        "count": 7,
+        "totalMs": 1752,
+        "maxMs": 476
+      },
+      "hashMainSelfMs": 240.531,
+      "network": {
+        "count": 67,
+        "bytes": 12176774,
+        "lastEndMs": 419.015625
+      },
+      "ready": true,
+      "terrain": {
+        "chunkCount": 22,
+        "chunkLength": 125,
+        "sourceTriangles": 150700,
+        "storedTriangles": 209472,
+        "storedVertices": 115288,
+        "activeTriangles": 30822,
+        "activeDrawCalls": 13,
+        "submittedTriangles": 30822,
+        "submittedDrawCalls": 13,
+        "visibleTriangles": 30822,
+        "visibleDrawCalls": 13,
+        "quality": "balanced",
+        "triangleBudget": 35000,
+        "forwardDistance": 1300,
+        "levels": {
+          "near": 3,
+          "mid": 3,
+          "far": 7
+        },
+        "updates": 3,
+        "frustumChecked": true,
+        "activeRange": [
+          -150,
+          1475
+        ]
+      },
+      "pageErrors": [],
+      "jsNetworkFailures": [],
+      "ok": true
+    },
+    {
+      "phase": "before",
+      "device": "phone",
+      "run": 2,
+      "source": "terrain-startup-before-20261004-phone-2.json",
+      "capturedAt": "2026-10-04T13:55:15.708Z",
+      "loadMs": 330,
+      "buttonObservedMs": 2440,
+      "startup": {
+        "phase": "ready",
+        "compilePasses": 1,
+        "startedAt": 123,
+        "assetsMs": 411,
+        "terrainMs": 885,
+        "coastCityMs": 1024,
+        "vegetationMs": 1043,
+        "environmentMs": 1286,
+        "worldMs": 1440,
+        "parallelShaders": true,
+        "shadersMs": 1904,
+        "firstFrameMs": 2268,
+        "readyMs": 2268
+      },
+      "assetsToTerrainMs": 474,
+      "longTasks": [
+        {
+          "startMs": 92,
+          "durationMs": 174
+        },
+        {
+          "startMs": 375,
+          "durationMs": 98
+        },
+        {
+          "startMs": 532,
+          "durationMs": 475
+        },
+        {
+          "startMs": 1010,
+          "durationMs": 137
+        },
+        {
+          "startMs": 1165,
+          "durationMs": 242
+        },
+        {
+          "startMs": 1409,
+          "durationMs": 203
+        },
+        {
+          "startMs": 2026,
+          "durationMs": 364
+        }
+      ],
+      "longTaskSummary": {
+        "count": 7,
+        "totalMs": 1693,
+        "maxMs": 475
+      },
+      "hashMainSelfMs": 236.389,
+      "network": {
+        "count": 67,
+        "bytes": 12176774,
+        "lastEndMs": 424.159912109375
+      },
+      "ready": true,
+      "terrain": {
+        "chunkCount": 22,
+        "chunkLength": 125,
+        "sourceTriangles": 150700,
+        "storedTriangles": 209472,
+        "storedVertices": 115288,
+        "activeTriangles": 30822,
+        "activeDrawCalls": 13,
+        "submittedTriangles": 30822,
+        "submittedDrawCalls": 13,
+        "visibleTriangles": 30822,
+        "visibleDrawCalls": 13,
+        "quality": "balanced",
+        "triangleBudget": 35000,
+        "forwardDistance": 1300,
+        "levels": {
+          "near": 3,
+          "mid": 3,
+          "far": 7
+        },
+        "updates": 3,
+        "frustumChecked": true,
+        "activeRange": [
+          -150,
+          1475
+        ]
+      },
+      "pageErrors": [],
+      "jsNetworkFailures": [],
+      "ok": true
+    },
+    {
+      "phase": "before",
+      "device": "phone",
+      "run": 3,
+      "source": "terrain-startup-before-20261004-phone-3.json",
+      "capturedAt": "2026-10-04T13:55:18.995Z",
+      "loadMs": 399,
+      "buttonObservedMs": 3264,
+      "startup": {
+        "phase": "ready",
+        "compilePasses": 1,
+        "startedAt": 303,
+        "assetsMs": 188,
+        "terrainMs": 725,
+        "coastCityMs": 951,
+        "vegetationMs": 973,
+        "environmentMs": 1281,
+        "worldMs": 1441,
+        "parallelShaders": true,
+        "shadersMs": 1908,
+        "firstFrameMs": 2428,
+        "readyMs": 2429
+      },
+      "assetsToTerrainMs": 537,
+      "longTasks": [
+        {
+          "startMs": 271,
+          "durationMs": 114
+        },
+        {
+          "startMs": 490,
+          "durationMs": 538
+        },
+        {
+          "startMs": 1032,
+          "durationMs": 222
+        },
+        {
+          "startMs": 1276,
+          "durationMs": 308
+        },
+        {
+          "startMs": 1586,
+          "durationMs": 222
+        },
+        {
+          "startMs": 2211,
+          "durationMs": 520
+        }
+      ],
+      "longTaskSummary": {
+        "count": 6,
+        "totalMs": 1924,
+        "maxMs": 538
+      },
+      "hashMainSelfMs": 304.257,
+      "network": {
+        "count": 67,
+        "bytes": 12176774,
+        "lastEndMs": 446.6201171875
+      },
+      "ready": true,
+      "terrain": {
+        "chunkCount": 22,
+        "chunkLength": 125,
+        "sourceTriangles": 150700,
+        "storedTriangles": 209472,
+        "storedVertices": 115288,
+        "activeTriangles": 30822,
+        "activeDrawCalls": 13,
+        "submittedTriangles": 30822,
+        "submittedDrawCalls": 13,
+        "visibleTriangles": 30822,
+        "visibleDrawCalls": 13,
+        "quality": "balanced",
+        "triangleBudget": 35000,
+        "forwardDistance": 1300,
+        "levels": {
+          "near": 3,
+          "mid": 3,
+          "far": 7
+        },
+        "updates": 5,
+        "frustumChecked": true,
+        "activeRange": [
+          -150,
+          1475
+        ]
+      },
+      "pageErrors": [],
+      "jsNetworkFailures": [],
+      "ok": true
+    },
+    {
+      "phase": "after",
+      "device": "desktop",
+      "run": 1,
+      "source": "terrain-startup-after-20261004-desktop-1.json",
+      "capturedAt": "2026-10-04T14:01:25.731Z",
+      "loadMs": 455,
+      "buttonObservedMs": 3323,
+      "startup": {
+        "phase": "ready",
+        "compilePasses": 1,
+        "startedAt": 328,
+        "assetsMs": 250,
+        "terrainWaitMs": 394,
+        "terrainSource": "worker",
+        "terrainWorkerMs": 502,
+        "terrainMainMs": 35,
+        "terrainMs": 681,
+        "coastCityMs": 858,
+        "vegetationMs": 877,
+        "environmentMs": 1185,
+        "worldMs": 1356,
+        "parallelShaders": true,
+        "shadersMs": 1834,
+        "firstFrameMs": 2454,
+        "readyMs": 2500
+      },
+      "assetsToTerrainMs": 431,
+      "longTasks": [
+        {
+          "startMs": 282,
+          "durationMs": 154
+        },
+        {
+          "startMs": 1010,
+          "durationMs": 175
+        },
+        {
+          "startMs": 1211,
+          "durationMs": 301
+        },
+        {
+          "startMs": 1516,
+          "durationMs": 253
+        },
+        {
+          "startMs": 2161,
+          "durationMs": 620
+        }
+      ],
+      "longTaskSummary": {
+        "count": 5,
+        "totalMs": 1503,
+        "maxMs": 620
+      },
+      "hashMainSelfMs": 34.035,
+      "network": {
+        "count": 74,
+        "bytes": 12986444,
+        "lastEndMs": 520.31201171875
+      },
+      "ready": true,
+      "terrain": {
+        "chunkCount": 22,
+        "chunkLength": 125,
+        "sourceTriangles": 150700,
+        "storedTriangles": 209472,
+        "storedVertices": 115288,
+        "activeTriangles": 33662,
+        "activeDrawCalls": 14,
+        "submittedTriangles": 33662,
+        "submittedDrawCalls": 14,
+        "visibleTriangles": 33662,
+        "visibleDrawCalls": 14,
+        "quality": "high",
+        "triangleBudget": 46000,
+        "forwardDistance": 1500,
+        "levels": {
+          "near": 3,
+          "mid": 5,
+          "far": 6
+        },
+        "updates": 5,
+        "frustumChecked": true,
+        "activeRange": [
+          -150,
+          1600
+        ]
+      },
+      "pageErrors": [],
+      "jsNetworkFailures": [],
+      "ok": true
+    },
+    {
+      "phase": "after",
+      "device": "desktop",
+      "run": 2,
+      "source": "terrain-startup-after-20261004-desktop-2.json",
+      "capturedAt": "2026-10-04T14:01:32.135Z",
+      "loadMs": 1112,
+      "buttonObservedMs": 4230,
+      "startup": {
+        "phase": "ready",
+        "compilePasses": 1,
+        "startedAt": 1034,
+        "assetsMs": 258,
+        "terrainWaitMs": 286,
+        "terrainSource": "worker",
+        "terrainWorkerMs": 421,
+        "terrainMainMs": 28,
+        "terrainMs": 574,
+        "coastCityMs": 713,
+        "vegetationMs": 729,
+        "environmentMs": 1073,
+        "worldMs": 1257,
+        "parallelShaders": true,
+        "shadersMs": 1734,
+        "firstFrameMs": 2482,
+        "readyMs": 2485
+      },
+      "assetsToTerrainMs": 316,
+      "longTasks": [
+        {
+          "startMs": 1002,
+          "durationMs": 80
+        },
+        {
+          "startMs": 1608,
+          "durationMs": 138
+        },
+        {
+          "startMs": 1763,
+          "durationMs": 344
+        },
+        {
+          "startMs": 2108,
+          "durationMs": 263
+        },
+        {
+          "startMs": 2767,
+          "durationMs": 747
+        }
+      ],
+      "longTaskSummary": {
+        "count": 5,
+        "totalMs": 1572,
+        "maxMs": 747
+      },
+      "hashMainSelfMs": 37.19,
+      "network": {
+        "count": 74,
+        "bytes": 12986444,
+        "lastEndMs": 1687.388916015625
+      },
+      "ready": true,
+      "terrain": {
+        "chunkCount": 22,
+        "chunkLength": 125,
+        "sourceTriangles": 150700,
+        "storedTriangles": 209472,
+        "storedVertices": 115288,
+        "activeTriangles": 33662,
+        "activeDrawCalls": 14,
+        "submittedTriangles": 33662,
+        "submittedDrawCalls": 14,
+        "visibleTriangles": 33662,
+        "visibleDrawCalls": 14,
+        "quality": "high",
+        "triangleBudget": 46000,
+        "forwardDistance": 1500,
+        "levels": {
+          "near": 3,
+          "mid": 5,
+          "far": 6
+        },
+        "updates": 6,
+        "frustumChecked": true,
+        "activeRange": [
+          -150,
+          1600
+        ]
+      },
+      "pageErrors": [],
+      "jsNetworkFailures": [],
+      "ok": true
+    },
+    {
+      "phase": "after",
+      "device": "desktop",
+      "run": 3,
+      "source": "terrain-startup-after-20261004-desktop-3.json",
+      "capturedAt": "2026-10-04T14:01:38.766Z",
+      "loadMs": 327,
+      "buttonObservedMs": 3177,
+      "startup": {
+        "phase": "ready",
+        "compilePasses": 1,
+        "startedAt": 131,
+        "assetsMs": 458,
+        "terrainWaitMs": 367,
+        "terrainSource": "worker",
+        "terrainWorkerMs": 441,
+        "terrainMainMs": 31,
+        "terrainMs": 857,
+        "coastCityMs": 1016,
+        "vegetationMs": 1035,
+        "environmentMs": 1379,
+        "worldMs": 1533,
+        "parallelShaders": true,
+        "shadersMs": 2020,
+        "firstFrameMs": 2497,
+        "readyMs": 2498
+      },
+      "assetsToTerrainMs": 399,
+      "longTasks": [
+        {
+          "startMs": 99,
+          "durationMs": 170
+        },
+        {
+          "startMs": 371,
+          "durationMs": 140
+        },
+        {
+          "startMs": 988,
+          "durationMs": 158
+        },
+        {
+          "startMs": 1167,
+          "durationMs": 344
+        },
+        {
+          "startMs": 1511,
+          "durationMs": 222
+        },
+        {
+          "startMs": 2151,
+          "durationMs": 477
+        }
+      ],
+      "longTaskSummary": {
+        "count": 6,
+        "totalMs": 1511,
+        "maxMs": 477
+      },
+      "hashMainSelfMs": 34.603,
+      "network": {
+        "count": 74,
+        "bytes": 12986444,
+        "lastEndMs": 539.048828125
+      },
+      "ready": true,
+      "terrain": {
+        "chunkCount": 22,
+        "chunkLength": 125,
+        "sourceTriangles": 150700,
+        "storedTriangles": 209472,
+        "storedVertices": 115288,
+        "activeTriangles": 33662,
+        "activeDrawCalls": 14,
+        "submittedTriangles": 33662,
+        "submittedDrawCalls": 14,
+        "visibleTriangles": 33662,
+        "visibleDrawCalls": 14,
+        "quality": "high",
+        "triangleBudget": 46000,
+        "forwardDistance": 1500,
+        "levels": {
+          "near": 3,
+          "mid": 5,
+          "far": 6
+        },
+        "updates": 5,
+        "frustumChecked": true,
+        "activeRange": [
+          -150,
+          1600
+        ]
+      },
+      "pageErrors": [],
+      "jsNetworkFailures": [],
+      "ok": true
+    },
+    {
+      "phase": "after",
+      "device": "phone",
+      "run": 1,
+      "source": "terrain-startup-after-20261004-phone-1.json",
+      "capturedAt": "2026-10-04T14:01:44.060Z",
+      "loadMs": 445,
+      "buttonObservedMs": 2417,
+      "startup": {
+        "phase": "ready",
+        "compilePasses": 1,
+        "startedAt": 335,
+        "assetsMs": 216,
+        "terrainWaitMs": 377,
+        "terrainSource": "worker",
+        "terrainWorkerMs": 468,
+        "terrainMainMs": 30,
+        "terrainMs": 623,
+        "coastCityMs": 766,
+        "vegetationMs": 785,
+        "environmentMs": 1025,
+        "worldMs": 1187,
+        "parallelShaders": true,
+        "shadersMs": 1663,
+        "firstFrameMs": 2047,
+        "readyMs": 2049
+      },
+      "assetsToTerrainMs": 407,
+      "longTasks": [
+        {
+          "startMs": 304,
+          "durationMs": 122
+        },
+        {
+          "startMs": 959,
+          "durationMs": 141
+        },
+        {
+          "startMs": 1120,
+          "durationMs": 240
+        },
+        {
+          "startMs": 1361,
+          "durationMs": 216
+        },
+        {
+          "startMs": 1998,
+          "durationMs": 383
+        }
+      ],
+      "longTaskSummary": {
+        "count": 5,
+        "totalMs": 1102,
+        "maxMs": 383
+      },
+      "hashMainSelfMs": 23.54,
+      "network": {
+        "count": 74,
+        "bytes": 12216222,
+        "lastEndMs": 500.669921875
+      },
+      "ready": true,
+      "terrain": {
+        "chunkCount": 22,
+        "chunkLength": 125,
+        "sourceTriangles": 150700,
+        "storedTriangles": 209472,
+        "storedVertices": 115288,
+        "activeTriangles": 30822,
+        "activeDrawCalls": 13,
+        "submittedTriangles": 30822,
+        "submittedDrawCalls": 13,
+        "visibleTriangles": 30822,
+        "visibleDrawCalls": 13,
+        "quality": "balanced",
+        "triangleBudget": 35000,
+        "forwardDistance": 1300,
+        "levels": {
+          "near": 3,
+          "mid": 3,
+          "far": 7
+        },
+        "updates": 3,
+        "frustumChecked": true,
+        "activeRange": [
+          -150,
+          1475
+        ]
+      },
+      "pageErrors": [],
+      "jsNetworkFailures": [],
+      "ok": true
+    },
+    {
+      "phase": "after",
+      "device": "phone",
+      "run": 2,
+      "source": "terrain-startup-after-20261004-phone-2.json",
+      "capturedAt": "2026-10-04T14:01:47.877Z",
+      "loadMs": 311,
+      "buttonObservedMs": 2284,
+      "startup": {
+        "phase": "ready",
+        "compilePasses": 1,
+        "startedAt": 263,
+        "assetsMs": 222,
+        "terrainWaitMs": 328,
+        "terrainSource": "worker",
+        "terrainWorkerMs": 452,
+        "terrainMainMs": 31,
+        "terrainMs": 582,
+        "coastCityMs": 729,
+        "vegetationMs": 748,
+        "environmentMs": 990,
+        "worldMs": 1150,
+        "parallelShaders": true,
+        "shadersMs": 1615,
+        "firstFrameMs": 1951,
+        "readyMs": 1952
+      },
+      "assetsToTerrainMs": 360,
+      "longTasks": [
+        {
+          "startMs": 227,
+          "durationMs": 53
+        },
+        {
+          "startMs": 846,
+          "durationMs": 146
+        },
+        {
+          "startMs": 1012,
+          "durationMs": 241
+        },
+        {
+          "startMs": 1254,
+          "durationMs": 218
+        },
+        {
+          "startMs": 1878,
+          "durationMs": 335
+        }
+      ],
+      "longTaskSummary": {
+        "count": 5,
+        "totalMs": 993,
+        "maxMs": 335
+      },
+      "hashMainSelfMs": 31.838,
+      "network": {
+        "count": 74,
+        "bytes": 12216222,
+        "lastEndMs": 437.9951171875
+      },
+      "ready": true,
+      "terrain": {
+        "chunkCount": 22,
+        "chunkLength": 125,
+        "sourceTriangles": 150700,
+        "storedTriangles": 209472,
+        "storedVertices": 115288,
+        "activeTriangles": 30822,
+        "activeDrawCalls": 13,
+        "submittedTriangles": 30822,
+        "submittedDrawCalls": 13,
+        "visibleTriangles": 30822,
+        "visibleDrawCalls": 13,
+        "quality": "balanced",
+        "triangleBudget": 35000,
+        "forwardDistance": 1300,
+        "levels": {
+          "near": 3,
+          "mid": 3,
+          "far": 7
+        },
+        "updates": 3,
+        "frustumChecked": true,
+        "activeRange": [
+          -150,
+          1475
+        ]
+      },
+      "pageErrors": [],
+      "jsNetworkFailures": [],
+      "ok": true
+    },
+    {
+      "phase": "after",
+      "device": "phone",
+      "run": 3,
+      "source": "terrain-startup-after-20261004-phone-3.json",
+      "capturedAt": "2026-10-04T14:01:51.002Z",
+      "loadMs": 352,
+      "buttonObservedMs": 2820,
+      "startup": {
+        "phase": "ready",
+        "compilePasses": 1,
+        "startedAt": 165,
+        "assetsMs": 391,
+        "terrainWaitMs": 241,
+        "terrainSource": "worker",
+        "terrainWorkerMs": 458,
+        "terrainMainMs": 29,
+        "terrainMs": 662,
+        "coastCityMs": 803,
+        "vegetationMs": 822,
+        "environmentMs": 1058,
+        "worldMs": 1232,
+        "parallelShaders": true,
+        "shadersMs": 1717,
+        "firstFrameMs": 2119,
+        "readyMs": 2121
+      },
+      "assetsToTerrainMs": 271,
+      "longTasks": [
+        {
+          "startMs": 135,
+          "durationMs": 162
+        },
+        {
+          "startMs": 407,
+          "durationMs": 92
+        },
+        {
+          "startMs": 827,
+          "durationMs": 140
+        },
+        {
+          "startMs": 987,
+          "durationMs": 235
+        },
+        {
+          "startMs": 1223,
+          "durationMs": 236
+        },
+        {
+          "startMs": 1881,
+          "durationMs": 402
+        }
+      ],
+      "longTaskSummary": {
+        "count": 6,
+        "totalMs": 1267,
+        "maxMs": 402
+      },
+      "hashMainSelfMs": 26.099,
+      "network": {
+        "count": 74,
+        "bytes": 12216222,
+        "lastEndMs": 449.878173828125
+      },
+      "ready": true,
+      "terrain": {
+        "chunkCount": 22,
+        "chunkLength": 125,
+        "sourceTriangles": 150700,
+        "storedTriangles": 209472,
+        "storedVertices": 115288,
+        "activeTriangles": 30822,
+        "activeDrawCalls": 13,
+        "submittedTriangles": 30822,
+        "submittedDrawCalls": 13,
+        "visibleTriangles": 30822,
+        "visibleDrawCalls": 13,
+        "quality": "balanced",
+        "triangleBudget": 35000,
+        "forwardDistance": 1300,
+        "levels": {
+          "near": 3,
+          "mid": 3,
+          "far": 7
+        },
+        "updates": 5,
+        "frustumChecked": true,
+        "activeRange": [
+          -150,
+          1475
+        ]
+      },
+      "pageErrors": [],
+      "jsNetworkFailures": [],
+      "ok": true
+    }
+  ],
+  "postMeasurementPackaging": {
+    "change": "Added existing garage-core.js dependency to the build list after the temporary package returned 404. Measured runtime modules unchanged.",
+    "buildSiteSha256": "80946d971b4aead312fe317acdc2d12f78d09b64c2525cbda361067aa007ef76"
+  }
+}

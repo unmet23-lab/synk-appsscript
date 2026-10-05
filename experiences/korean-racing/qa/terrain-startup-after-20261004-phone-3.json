@@ -1,0 +1,2709 @@
+{
+  "version": 2,
+  "capturedAt": "2026-10-04T14:01:51.002Z",
+  "pageUrl": "http://127.0.0.1:5197/",
+  "device": "phone",
+  "cache": "new browser/context",
+  "gpu": "Chrome headless, --enable-gpu --use-angle=d3d11",
+  "pageErrors": [],
+  "consoleErrors": [],
+  "failedRequests": [],
+  "scriptResponses": [
+    {
+      "url": "http://127.0.0.1:5197/app.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/atlas-learning.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/vendor/DRACOLoader.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/learning.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/narration.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/driving.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/question-audio.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/finales.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/campaign.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/personalization.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/vendor/GLTFLoader.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/coast-drive.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/race-pacing.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/garage.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/tutorial.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/garage-ui.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/graphics.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/drivers.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/vehicles.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/landscape.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/atmosphere.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/scenery.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/terrain-startup.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/course.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/coast-radio.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/coastal-rocks.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/startup.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/render-world.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/city-life.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/garage-core.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/vendor/BufferGeometryUtils.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/seascape-boats.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/cityscape.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/city-materials.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/terrain-data.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/curriculum.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/terrain-worker.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/course.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/landscape.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5197/terrain-data.js",
+      "status": 200
+    },
+    {
+      "url": "blob:http://127.0.0.1:5197/89b2122c-aca6-42a7-afef-b41021dbde58",
+      "status": 200
+    },
+    {
+      "url": "blob:http://127.0.0.1:5197/89b2122c-aca6-42a7-afef-b41021dbde58",
+      "status": 200
+    },
+    {
+      "url": "blob:http://127.0.0.1:5197/89b2122c-aca6-42a7-afef-b41021dbde58",
+      "status": 200
+    },
+    {
+      "url": "blob:http://127.0.0.1:5197/89b2122c-aca6-42a7-afef-b41021dbde58",
+      "status": 200
+    }
+  ],
+  "loadMs": 352,
+  "navigation": {
+    "url": "http://127.0.0.1:5197/",
+    "status": 200,
+    "ok": true
+  },
+  "readyMs": 2820,
+  "longTasks": [
+    {
+      "startMs": 135,
+      "durationMs": 162
+    },
+    {
+      "startMs": 407,
+      "durationMs": 92
+    },
+    {
+      "startMs": 827,
+      "durationMs": 140
+    },
+    {
+      "startMs": 987,
+      "durationMs": 235
+    },
+    {
+      "startMs": 1223,
+      "durationMs": 236
+    },
+    {
+      "startMs": 1881,
+      "durationMs": 402
+    }
+  ],
+  "snapshot": {
+    "questionPace": {
+      "holding": false,
+      "heldSpeed": null,
+      "lastAnswerAt": null
+    },
+    "coastDrive": {
+      "phase": "race",
+      "laps": 0
+    },
+    "coastRadio": {
+      "title": "해안선",
+      "prepared": false,
+      "playing": false,
+      "pending": false,
+      "blocked": false,
+      "disposed": false,
+      "active": false,
+      "enabled": true,
+      "paused": false,
+      "duck": false,
+      "time": 0,
+      "targetGain": 0,
+      "error": null,
+      "streaming": true
+    },
+    "ready": true,
+    "startup": {
+      "phase": "ready",
+      "compilePasses": 1,
+      "startedAt": 165,
+      "assetsMs": 391,
+      "terrainWaitMs": 241,
+      "terrainSource": "worker",
+      "terrainWorkerMs": 458,
+      "terrainMainMs": 29,
+      "terrainMs": 662,
+      "coastCityMs": 803,
+      "vegetationMs": 822,
+      "environmentMs": 1058,
+      "worldMs": 1232,
+      "parallelShaders": true,
+      "shadersMs": 1717,
+      "firstFrameMs": 2119,
+      "readyMs": 2121
+    },
+    "running": false,
+    "paused": false,
+    "auto": false,
+    "roundWasDemo": false,
+    "elapsed": 0,
+    "playerS": 77.69235000005366,
+    "playerOffset": 0,
+    "tutorial": null,
+    "collection": {
+      "coins": 0,
+      "owned": [
+        "vehicle-coast",
+        "paint-mint",
+        "wheels-silver",
+        "trail-lime"
+      ],
+      "equipped": {
+        "vehicle": "coast",
+        "paint": "mint",
+        "wheels": "silver",
+        "trail": "lime",
+        "badge": null
+      },
+      "wish": "open",
+      "mission": {
+        "id": "2026-10-04:first-clear:challenge-01",
+        "date": "2026-10-04",
+        "kind": "first-clear",
+        "target": "challenge-01",
+        "collection": "campaign",
+        "title": "새로운 길을 열어요",
+        "description": "“아침의 작은 일”에서 5문제 중 4문제 이상 맞혀 첫 통과해요.",
+        "reward": 15,
+        "completed": false,
+        "completedAt": 0
+      },
+      "garageOpen": false,
+      "angle": 0.65
+    },
+    "driving": {
+      "collisions": 0,
+      "contactTimer": 0,
+      "combo": 0,
+      "bestCombo": 0,
+      "shield": 0,
+      "shieldBlocked": 0,
+      "rivals": [
+        {
+          "s": 105.69235000005366,
+          "offset": -3.15
+        },
+        {
+          "s": 126.69235000005366,
+          "offset": 3.1
+        }
+      ],
+      "waitingForChoice": true
+    },
+    "scenery": "bloom",
+    "atmosphere": {
+      "version": 9,
+      "waterTriangles": 2,
+      "waterPasses": 1,
+      "reflectionCameras": 0,
+      "shoreTextureBytes": 2048,
+      "sampledDepth": true,
+      "depthSamples": 1536,
+      "detail": 0.62,
+      "theme": "sunset"
+    },
+    "boats": {
+      "version": 8,
+      "boats": 4,
+      "sailboats": 2,
+      "cruisers": 2,
+      "visibleBoats": 1,
+      "animatedBoats": 1,
+      "visibleTriangles": 1798,
+      "storedTriangles": 6642,
+      "drawCalls": 5,
+      "shadowDrawCalls": 0,
+      "wakeDrawCalls": 1,
+      "quality": "balanced"
+    },
+    "boatPoses": [
+      {
+        "id": 0,
+        "kind": "sail",
+        "visible": true,
+        "animated": true,
+        "time": 0.598300000011921,
+        "position": [
+          157.08935685682874,
+          -2.1566182889170538,
+          650.9871400126667
+        ],
+        "rotation": [
+          0.00254927412129585,
+          0.010834198749597844,
+          0.005521001935877731
+        ]
+      },
+      {
+        "id": 1,
+        "kind": "cruise",
+        "visible": false,
+        "animated": false,
+        "time": 0.598300000011921,
+        "position": [
+          155.80840999301137,
+          -2.1179167145594215,
+          778.6838920262799
+        ],
+        "rotation": [
+          0.0081181121550199,
+          3.1231628424190827,
+          0.012895358914050352
+        ]
+      },
+      {
+        "id": 2,
+        "kind": "sail",
+        "visible": false,
+        "animated": false,
+        "time": 0.598300000011921,
+        "position": [
+          126.04883059093623,
+          -2.2694073660036342,
+          1119.0427459919774
+        ],
+        "rotation": [
+          -0.005123235244074418,
+          3.1358061781587963,
+          -0.009609656031216511
+        ]
+      },
+      {
+        "id": 3,
+        "kind": "cruise",
+        "visible": false,
+        "animated": false,
+        "time": 0.598300000011921,
+        "position": [
+          130.97007101541743,
+          -2.2600767082565785,
+          1821.4059408841563
+        ],
+        "rotation": [
+          -0.0064937186889919354,
+          0.008173879741674972,
+          -0.009848482921787687
+        ]
+      }
+    ],
+    "rockShelves": {
+      "version": 7,
+      "placements": 5,
+      "nearTriangles": 10491,
+      "farTriangles": 2298,
+      "visible": 2,
+      "triangles": 12789,
+      "drawCalls": 2,
+      "shadowDrawCalls": 0
+    },
+    "landscape": {
+      "triangles": 25008,
+      "drawCalls": 4,
+      "islands": 5,
+      "rocks": 18,
+      "trees": 132,
+      "tidalTriangles": 384
+    },
+    "city": {
+      "shops": 22,
+      "homes": 3,
+      "towers": 12,
+      "blocks": 4,
+      "quality": "balanced",
+      "theme": "bloom",
+      "storedTriangles": 33778,
+      "visibleTriangles": 0,
+      "drawCalls": 0,
+      "shadowDrawCalls": 0,
+      "visibleShops": 0,
+      "roadMinimumClearance": 9.299996709700785,
+      "materials": {
+        "version": 9,
+        "metricUv": true,
+        "extraDrawCalls": 0,
+        "extraTriangles": 0,
+        "downloadedTextures": 0,
+        "interiorRays": 1
+      },
+      "materialDetail": 0.62
+    },
+    "cityLife": {
+      "version": 9,
+      "actors": 44,
+      "visibleActors": 0,
+      "animatedActors": 0,
+      "reactingActors": 0,
+      "greetingActors": 0,
+      "drawCalls": 0,
+      "shadowDrawCalls": 0,
+      "visibleTriangles": 0,
+      "storedTriangles": 458,
+      "quality": "balanced",
+      "theme": "bloom",
+      "time": 0.598300000011921
+    },
+    "groundProps": {
+      "rocks": 115,
+      "grass": 3966,
+      "excludedRocks": 65,
+      "excludedGrass": 534
+    },
+    "terrain": {
+      "chunkCount": 22,
+      "chunkLength": 125,
+      "sourceTriangles": 150700,
+      "storedTriangles": 209472,
+      "storedVertices": 115288,
+      "activeTriangles": 30822,
+      "activeDrawCalls": 13,
+      "submittedTriangles": 30822,
+      "submittedDrawCalls": 13,
+      "visibleTriangles": 30822,
+      "visibleDrawCalls": 13,
+      "quality": "balanced",
+      "triangleBudget": 35000,
+      "forwardDistance": 1300,
+      "levels": {
+        "near": 3,
+        "mid": 3,
+        "far": 7
+      },
+      "updates": 5,
+      "frustumChecked": true,
+      "activeRange": [
+        -150,
+        1475
+      ]
+    },
+    "vegetation": {
+      "trees": 130,
+      "pineTrees": 102,
+      "cherryTrees": 28,
+      "chunks": 7,
+      "landmarks": 3,
+      "triangles": 109048,
+      "drawCalls": 29,
+      "shadowDrawCalls": 5,
+      "visibleTriangles": 43800,
+      "visibleDrawCalls": 14,
+      "visibleShadowDrawCalls": 5,
+      "visibleFoliageTriangles": 17416,
+      "visibleFoliageCards": 2177,
+      "detailDistance": 340,
+      "quality": "balanced",
+      "theme": "bloom"
+    },
+    "screenX": 0.239,
+    "driver": {
+      "name": "marin",
+      "mood": "base",
+      "seated": true
+    },
+    "vehicle": {
+      "triangles": 359302,
+      "drawCalls": 42,
+      "shadowTriangles": 156504,
+      "shadowDrawCalls": 22,
+      "geometryLevel": "high"
+    },
+    "velocity": 26,
+    "boost": 0,
+    "correct": 0,
+    "answers": [],
+    "flow": {
+      "cruise": 26,
+      "active": false,
+      "values": null
+    },
+    "stage": {
+      "id": "challenge-01",
+      "title": "아침의 작은 일",
+      "mode": "listen",
+      "level": 1,
+      "campaign": true,
+      "words": []
+    },
+    "gate": {
+      "s": 310,
+      "prompt": "무엇을 먹어요?",
+      "spoken": "아침에 빵을 먹어요. 무엇을 먹어요?",
+      "types": [
+        "c01q1o0",
+        "c01q1o1",
+        "c01q1o2"
+      ],
+      "questionId": "c01q1",
+      "announced": false
+    },
+    "quality": "balanced",
+    "narration": {
+      "playing": false,
+      "kind": null,
+      "queued": 0,
+      "played": []
+    },
+    "narrationUnavailable": false,
+    "learning": {
+      "words": 0,
+      "correctWords": 0,
+      "rounds": 0,
+      "cleared": 0
+    },
+    "render": {
+      "renderedFrames": 35,
+      "skippedPausedFrames": 0,
+      "programs": 50,
+      "pixelRatio": 1.4,
+      "calls": 260,
+      "triangles": 692035,
+      "geometries": 249,
+      "textures": 28,
+      "averageFps": 0
+    },
+    "viewport": {
+      "width": 390,
+      "height": 844
+    }
+  },
+  "racingError": null,
+  "requestsBeforeReady": [
+    {
+      "url": "http://127.0.0.1:5197/",
+      "startMs": 19.9140625,
+      "endMs": 22.31005859375,
+      "bytes": 18537
+    },
+    {
+      "url": "http://127.0.0.1:5197/style.css",
+      "startMs": 34.552978515625,
+      "endMs": 41.06103515625,
+      "bytes": 48689
+    },
+    {
+      "url": "http://127.0.0.1:5197/coast-drive.css",
+      "startMs": 35.039794921875,
+      "endMs": 43.03076171875,
+      "bytes": 2215
+    },
+    {
+      "url": "http://127.0.0.1:5197/garage.css",
+      "startMs": 35.680908203125,
+      "endMs": 89.89697265625,
+      "bytes": 15052
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/brand-lab.webp",
+      "startMs": 36.2470703125,
+      "endMs": 91.173095703125,
+      "bytes": 126630
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/mascots/marin-base.webp",
+      "startMs": 37.48193359375,
+      "endMs": 92.678955078125,
+      "bytes": 144412
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/mascots/kkamong-base.webp",
+      "startMs": 38.257080078125,
+      "endMs": 95.136962890625,
+      "bytes": 92248
+    },
+    {
+      "url": "http://127.0.0.1:5197/app.js",
+      "startMs": 37.723876953125,
+      "endMs": 94.179931640625,
+      "bytes": 109447
+    },
+    {
+      "url": "http://127.0.0.1:5197/atlas-learning.js",
+      "startMs": 39.147216796875,
+      "endMs": 97.07421875,
+      "bytes": 443622
+    },
+    {
+      "url": "http://127.0.0.1:5197/vendor/DRACOLoader.js",
+      "startMs": 107.927978515625,
+      "endMs": 114.077880859375,
+      "bytes": 16794
+    },
+    {
+      "url": "http://127.0.0.1:5197/learning.js",
+      "startMs": 108.75390625,
+      "endMs": 115.538818359375,
+      "bytes": 5039
+    },
+    {
+      "url": "http://127.0.0.1:5197/narration.js",
+      "startMs": 110.2470703125,
+      "endMs": 117.09619140625,
+      "bytes": 4830
+    },
+    {
+      "url": "http://127.0.0.1:5197/driving.js",
+      "startMs": 113.97509765625,
+      "endMs": 123.64013671875,
+      "bytes": 1818
+    },
+    {
+      "url": "http://127.0.0.1:5197/question-audio.js",
+      "startMs": 113.68603515625,
+      "endMs": 122.85693359375,
+      "bytes": 682
+    },
+    {
+      "url": "http://127.0.0.1:5197/finales.js",
+      "startMs": 114.176025390625,
+      "endMs": 123.953125,
+      "bytes": 10371
+    },
+    {
+      "url": "http://127.0.0.1:5197/campaign.js",
+      "startMs": 113.779052734375,
+      "endMs": 123.7109375,
+      "bytes": 15325
+    },
+    {
+      "url": "http://127.0.0.1:5197/personalization.js",
+      "startMs": 114.099853515625,
+      "endMs": 124.227783203125,
+      "bytes": 8278
+    },
+    {
+      "url": "http://127.0.0.1:5197/vendor/GLTFLoader.js",
+      "startMs": 107.260009765625,
+      "endMs": 114.027099609375,
+      "bytes": 119636
+    },
+    {
+      "url": "http://127.0.0.1:5197/coast-drive.js",
+      "startMs": 114.89599609375,
+      "endMs": 125.969970703125,
+      "bytes": 1565
+    },
+    {
+      "url": "http://127.0.0.1:5197/race-pacing.js",
+      "startMs": 115.048095703125,
+      "endMs": 127.591064453125,
+      "bytes": 1346
+    },
+    {
+      "url": "http://127.0.0.1:5197/garage.js",
+      "startMs": 114.363037109375,
+      "endMs": 124.754150390625,
+      "bytes": 7070
+    },
+    {
+      "url": "http://127.0.0.1:5197/tutorial.js",
+      "startMs": 115.498046875,
+      "endMs": 128.85693359375,
+      "bytes": 2937
+    },
+    {
+      "url": "http://127.0.0.1:5197/garage-ui.js",
+      "startMs": 115.104248046875,
+      "endMs": 128.308349609375,
+      "bytes": 16622
+    },
+    {
+      "url": "http://127.0.0.1:5197/graphics.js",
+      "startMs": 115.56201171875,
+      "endMs": 128.970947265625,
+      "bytes": 1997
+    },
+    {
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "startMs": 106.2978515625,
+      "endMs": 113.636962890625,
+      "bytes": 603127
+    },
+    {
+      "url": "http://127.0.0.1:5197/drivers.js",
+      "startMs": 115.435791015625,
+      "endMs": 129.017822265625,
+      "bytes": 18131
+    },
+    {
+      "url": "http://127.0.0.1:5197/vehicles.js",
+      "startMs": 114.82275390625,
+      "endMs": 125.525634765625,
+      "bytes": 40757
+    },
+    {
+      "url": "http://127.0.0.1:5197/landscape.js",
+      "startMs": 116.508056640625,
+      "endMs": 132.47412109375,
+      "bytes": 24004
+    },
+    {
+      "url": "http://127.0.0.1:5197/atmosphere.js",
+      "startMs": 116.550048828125,
+      "endMs": 133.365966796875,
+      "bytes": 10056
+    },
+    {
+      "url": "http://127.0.0.1:5197/scenery.js",
+      "startMs": 116.452880859375,
+      "endMs": 133.5927734375,
+      "bytes": 36883
+    },
+    {
+      "url": "http://127.0.0.1:5197/terrain-startup.js",
+      "startMs": 116.965087890625,
+      "endMs": 135.52197265625,
+      "bytes": 1386
+    },
+    {
+      "url": "http://127.0.0.1:5197/course.js",
+      "startMs": 116.886962890625,
+      "endMs": 133.782958984375,
+      "bytes": 1136
+    },
+    {
+      "url": "http://127.0.0.1:5197/coast-radio.js",
+      "startMs": 114.976806640625,
+      "endMs": 133.2626953125,
+      "bytes": 5156
+    },
+    {
+      "url": "http://127.0.0.1:5197/coastal-rocks.js",
+      "startMs": 117.4228515625,
+      "endMs": 137.137939453125,
+      "bytes": 4893
+    },
+    {
+      "url": "http://127.0.0.1:5197/startup.js",
+      "startMs": 117.771728515625,
+      "endMs": 137.49462890625,
+      "bytes": 1522
+    },
+    {
+      "url": "http://127.0.0.1:5197/render-world.js",
+      "startMs": 116.821044921875,
+      "endMs": 134.09814453125,
+      "bytes": 10100
+    },
+    {
+      "url": "http://127.0.0.1:5197/city-life.js",
+      "startMs": 117.35888671875,
+      "endMs": 136.55078125,
+      "bytes": 28816
+    },
+    {
+      "url": "http://127.0.0.1:5197/garage-core.js",
+      "startMs": 125.0869140625,
+      "endMs": 132.3798828125,
+      "bytes": 9838
+    },
+    {
+      "url": "http://127.0.0.1:5197/vendor/BufferGeometryUtils.js",
+      "startMs": 120.994140625,
+      "endMs": 129.0341796875,
+      "bytes": 35552
+    },
+    {
+      "url": "http://127.0.0.1:5197/seascape-boats.js",
+      "startMs": 117.702880859375,
+      "endMs": 137.5478515625,
+      "bytes": 16135
+    },
+    {
+      "url": "http://127.0.0.1:5197/cityscape.js",
+      "startMs": 117.285888671875,
+      "endMs": 136.161865234375,
+      "bytes": 42777
+    },
+    {
+      "url": "http://127.0.0.1:5197/city-materials.js",
+      "startMs": 138.178955078125,
+      "endMs": 140.325927734375,
+      "bytes": 13749
+    },
+    {
+      "url": "http://127.0.0.1:5197/terrain-data.js",
+      "startMs": 137.8310546875,
+      "endMs": 140.053955078125,
+      "bytes": 7393
+    },
+    {
+      "url": "http://127.0.0.1:5197/curriculum.js",
+      "startMs": 120.821044921875,
+      "endMs": 130.608154296875,
+      "bytes": 284540
+    },
+    {
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "startMs": 125.218017578125,
+      "endMs": 135.320068359375,
+      "bytes": 1403470
+    },
+    {
+      "url": "http://127.0.0.1:5197/terrain-worker.js",
+      "startMs": 189.416015625,
+      "endMs": 320.573974609375,
+      "bytes": 0
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/car.glb",
+      "startMs": 185.5927734375,
+      "endMs": 194.32666015625,
+      "bytes": 1681587
+    },
+    {
+      "url": "http://127.0.0.1:5197/course.js",
+      "startMs": 330.26806640625,
+      "endMs": 341.507080078125,
+      "bytes": 1136
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/coastal-rocks-v6.glb",
+      "startMs": 185.93798828125,
+      "endMs": 196.1298828125,
+      "bytes": 1939875
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/road.jpg",
+      "startMs": 315.196044921875,
+      "endMs": 319.64697265625,
+      "bytes": 401329
+    },
+    {
+      "url": "http://127.0.0.1:5197/landscape.js",
+      "startMs": 330.453125,
+      "endMs": 341.7041015625,
+      "bytes": 24004
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/road-normal.jpg",
+      "startMs": 315.52880859375,
+      "endMs": 321.73681640625,
+      "bytes": 326730
+    },
+    {
+      "url": "http://127.0.0.1:5197/terrain-data.js",
+      "startMs": 330.4990234375,
+      "endMs": 341.883056640625,
+      "bytes": 7393
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/terrain-normal.jpg",
+      "startMs": 315.733154296875,
+      "endMs": 323.009033203125,
+      "bytes": 233786
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/azure-sky-v3-mobile.jpg",
+      "startMs": 316.095947265625,
+      "endMs": 322.287841796875,
+      "bytes": 78535
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/cliff.jpg",
+      "startMs": 316.18603515625,
+      "endMs": 325.89892578125,
+      "bytes": 289920
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/cliff-normal.jpg",
+      "startMs": 321.86376953125,
+      "endMs": 333.36376953125,
+      "bytes": 250108
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/beach.jpg",
+      "startMs": 324.446044921875,
+      "endMs": 338.18701171875,
+      "bytes": 244353
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/blossom-canopy-v2.webp",
+      "startMs": 324.759033203125,
+      "endMs": 339.151123046875,
+      "bytes": 276420
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/pine-canopy-v2.webp",
+      "startMs": 324.72119140625,
+      "endMs": 339.436279296875,
+      "bytes": 529238
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/golden-sky-v3-mobile.jpg",
+      "startMs": 325.27099609375,
+      "endMs": 339.320068359375,
+      "bytes": 71153
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/felt/driver-felt.webp",
+      "startMs": 326.885009765625,
+      "endMs": 341.364013671875,
+      "bytes": 29553
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/meadow-v2.jpg",
+      "startMs": 315.64501953125,
+      "endMs": 328.5791015625,
+      "bytes": 1120857
+    },
+    {
+      "url": "http://127.0.0.1:5197/vendor/draco_wasm_wrapper.js",
+      "startMs": 343.343017578125,
+      "endMs": 345.4111328125,
+      "bytes": 58469
+    },
+    {
+      "url": "http://127.0.0.1:5197/vendor/draco_decoder.wasm",
+      "startMs": 343.59912109375,
+      "endMs": 346.06103515625,
+      "bytes": 192434
+    },
+    {
+      "url": "blob:http://127.0.0.1:5197/aaa5a887-5c1e-44d5-b33d-13ca87bfedd9",
+      "startMs": 355.81201171875,
+      "endMs": 357.592041015625,
+      "bytes": -70
+    },
+    {
+      "url": "blob:http://127.0.0.1:5197/6d7756ed-0337-448e-9c80-7fb5bf01c0ce",
+      "startMs": 355.9580078125,
+      "endMs": 356.614990234375,
+      "bytes": -69
+    },
+    {
+      "url": "blob:http://127.0.0.1:5197/ffe6cb84-1fa9-4dea-921d-ee3f04d826d8",
+      "startMs": 356.05908203125,
+      "endMs": 357.048095703125,
+      "bytes": -69
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/suit.woff2",
+      "startMs": 316.7841796875,
+      "endMs": 449.878173828125,
+      "bytes": 624550
+    },
+    {
+      "url": "http://127.0.0.1:5197/assets/dm-mono.woff2",
+      "startMs": 316.96484375,
+      "endMs": 442.706787109375,
+      "bytes": 20653
+    },
+    {
+      "url": "blob:http://127.0.0.1:5197/89b2122c-aca6-42a7-afef-b41021dbde58",
+      "startMs": 361.02099609375,
+      "endMs": 421.072998046875,
+      "bytes": -59
+    },
+    {
+      "url": "blob:http://127.0.0.1:5197/89b2122c-aca6-42a7-afef-b41021dbde58",
+      "startMs": 361.7119140625,
+      "endMs": 421.494873046875,
+      "bytes": -59
+    },
+    {
+      "url": "blob:http://127.0.0.1:5197/89b2122c-aca6-42a7-afef-b41021dbde58",
+      "startMs": 362.214111328125,
+      "endMs": 421.8701171875,
+      "bytes": -59
+    },
+    {
+      "url": "blob:http://127.0.0.1:5197/89b2122c-aca6-42a7-afef-b41021dbde58",
+      "startMs": 362.512939453125,
+      "endMs": 422.23291015625,
+      "bytes": -59
+    }
+  ],
+  "network": {
+    "count": 74,
+    "bytes": 12216222,
+    "lastEndMs": 449.878173828125
+  },
+  "longTaskSummary": {
+    "count": 6,
+    "totalMs": 1267,
+    "maxMs": 402
+  },
+  "cpuSelf": [
+    {
+      "functionName": "(idle)",
+      "url": "",
+      "line": 0,
+      "selfMs": 1164.364
+    },
+    {
+      "functionName": "texSubImage2D",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 9825,
+      "selfMs": 254.011
+    },
+    {
+      "functionName": "(program)",
+      "url": "",
+      "line": 0,
+      "selfMs": 172.977
+    },
+    {
+      "functionName": "onFirstUse",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 6491,
+      "selfMs": 156.633
+    },
+    {
+      "functionName": "init",
+      "url": "http://127.0.0.1:5197/app.js",
+      "line": 566,
+      "selfMs": 129.924
+    },
+    {
+      "functionName": "getContext",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 15176,
+      "selfMs": 85.385
+    },
+    {
+      "functionName": "(garbage collector)",
+      "url": "",
+      "line": 0,
+      "selfMs": 73.665
+    },
+    {
+      "functionName": "combinedGeometry",
+      "url": "http://127.0.0.1:5197/vehicles.js",
+      "line": 175,
+      "selfMs": 35.922
+    },
+    {
+      "functionName": "Float32BufferAttribute",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 18744,
+      "selfMs": 26.682
+    },
+    {
+      "functionName": "hash",
+      "url": "http://127.0.0.1:5197/landscape.js",
+      "line": 7,
+      "selfMs": 26.099
+    },
+    {
+      "functionName": "merge",
+      "url": "http://127.0.0.1:5197/scenery.js",
+      "line": 408,
+      "selfMs": 22.516
+    },
+    {
+      "functionName": "WebGLShader",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 5571,
+      "selfMs": 16.73
+    },
+    {
+      "functionName": "part",
+      "url": "http://127.0.0.1:5197/cityscape.js",
+      "line": 43,
+      "selfMs": 15.144
+    },
+    {
+      "functionName": "copy",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 17920,
+      "selfMs": 14.37
+    },
+    {
+      "functionName": "applyMatrix4",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 4777,
+      "selfMs": 11.96
+    },
+    {
+      "functionName": "divideScalar",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 4890,
+      "selfMs": 11.865
+    },
+    {
+      "functionName": "generateSegment",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 37548,
+      "selfMs": 11.377
+    },
+    {
+      "functionName": "createBuffer",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 65,
+      "selfMs": 11.359
+    },
+    {
+      "functionName": "getZ",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 18203,
+      "selfMs": 11.03
+    },
+    {
+      "functionName": "multiplyMatrices",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 11843,
+      "selfMs": 10.629
+    },
+    {
+      "functionName": "computeBoundingSphere",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 19430,
+      "selfMs": 10.625
+    },
+    {
+      "functionName": "length",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 5098,
+      "selfMs": 10.253
+    },
+    {
+      "functionName": "convertBufferAttribute",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 19834,
+      "selfMs": 9.339
+    },
+    {
+      "functionName": "getX",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 18137,
+      "selfMs": 9.273
+    },
+    {
+      "functionName": "coins",
+      "url": "http://127.0.0.1:5197/garage-ui.js",
+      "line": 11,
+      "selfMs": 9.263
+    },
+    {
+      "functionName": "sample",
+      "url": "http://127.0.0.1:5197/landscape.js",
+      "line": 89,
+      "selfMs": 9.166
+    },
+    {
+      "functionName": "setProgram",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 17021,
+      "selfMs": 8.954
+    },
+    {
+      "functionName": "WebGLRenderer.renderBufferDirect",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 15935,
+      "selfMs": 8.615
+    },
+    {
+      "functionName": "pathX",
+      "url": "http://127.0.0.1:5197/course.js",
+      "line": 4,
+      "selfMs": 8.333
+    },
+    {
+      "functionName": "SphereGeometry",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 36872,
+      "selfMs": 7.517
+    },
+    {
+      "functionName": "Object3D",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 13222,
+      "selfMs": 6.766
+    },
+    {
+      "functionName": "WebGLRenderer.setSize",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 15460,
+      "selfMs": 6.408
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/cityscape.js",
+      "line": 558,
+      "selfMs": 6.093
+    },
+    {
+      "functionName": "fromBufferAttribute",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 5532,
+      "selfMs": 5.855
+    },
+    {
+      "functionName": "getParameters",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 6826,
+      "selfMs": 5.712
+    },
+    {
+      "functionName": "BufferAttribute",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 17750,
+      "selfMs": 5.229
+    },
+    {
+      "functionName": "distanceToSquared",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 5296,
+      "selfMs": 5.144
+    },
+    {
+      "functionName": "replaceLightNums",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 5805,
+      "selfMs": 4.934
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/app.js",
+      "line": 1,
+      "selfMs": 4.828
+    },
+    {
+      "functionName": "normalizeNormals",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 19810,
+      "selfMs": 4.651
+    },
+    {
+      "functionName": "subVectors",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 4654,
+      "selfMs": 4.6
+    },
+    {
+      "functionName": "getBindingState",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 1656,
+      "selfMs": 4.552
+    },
+    {
+      "functionName": "getY",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 18170,
+      "selfMs": 4.49
+    },
+    {
+      "functionName": "batchWheel",
+      "url": "http://127.0.0.1:5197/vehicles.js",
+      "line": 198,
+      "selfMs": 4.48
+    },
+    {
+      "functionName": "addMarin",
+      "url": "http://127.0.0.1:5197/drivers.js",
+      "line": 110,
+      "selfMs": 4.394
+    },
+    {
+      "functionName": "setup",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 1599,
+      "selfMs": 4.33
+    },
+    {
+      "functionName": "ribbon",
+      "url": "http://127.0.0.1:5197/app.js",
+      "line": 268,
+      "selfMs": 4.325
+    },
+    {
+      "functionName": "setValue",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 5410,
+      "selfMs": 4.257
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/vendor/GLTFLoader.js",
+      "line": 3386,
+      "selfMs": 4.121
+    },
+    {
+      "functionName": "buildSceneryDetails",
+      "url": "http://127.0.0.1:5197/scenery.js",
+      "line": 5,
+      "selfMs": 4.11
+    },
+    {
+      "functionName": "buildCoastalCity",
+      "url": "http://127.0.0.1:5197/cityscape.js",
+      "line": 7,
+      "selfMs": 4.016
+    },
+    {
+      "functionName": "min",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 4903,
+      "selfMs": 3.82
+    },
+    {
+      "functionName": "getPoint",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 32398,
+      "selfMs": 3.644
+    },
+    {
+      "functionName": "applyNormalMatrix",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 18041,
+      "selfMs": 3.533
+    },
+    {
+      "functionName": "BufferGeometry",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 18792,
+      "selfMs": 3.53
+    },
+    {
+      "functionName": "normalize",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 5121,
+      "selfMs": 3.364
+    },
+    {
+      "functionName": "upload",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 5536,
+      "selfMs": 3.284
+    },
+    {
+      "functionName": "noise",
+      "url": "http://127.0.0.1:5197/landscape.js",
+      "line": 8,
+      "selfMs": 3.275
+    },
+    {
+      "functionName": "refreshMaterialUniforms",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 13957,
+      "selfMs": 3.226
+    },
+    {
+      "functionName": "init",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 32259,
+      "selfMs": 3.199
+    },
+    {
+      "functionName": "applyMatrix3",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 4744,
+      "selfMs": 3.198
+    },
+    {
+      "functionName": "azimuth",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 31120,
+      "selfMs": 3.193
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/cityscape.js",
+      "line": 586,
+      "selfMs": 3.186
+    },
+    {
+      "functionName": "cloneUniforms",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 20884,
+      "selfMs": 3.186
+    },
+    {
+      "functionName": "copy",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 10340,
+      "selfMs": 3.168
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/learning.js",
+      "line": 1,
+      "selfMs": 3.161
+    },
+    {
+      "functionName": "setXYZ",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 18298,
+      "selfMs": 3.158
+    },
+    {
+      "functionName": "setAttribute",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 19007,
+      "selfMs": 3.155
+    },
+    {
+      "functionName": "setFromBufferAttribute",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 9518,
+      "selfMs": 3.154
+    },
+    {
+      "functionName": "getExtension",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 3740,
+      "selfMs": 3.142
+    },
+    {
+      "functionName": "renderObject",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 8731,
+      "selfMs": 3.128
+    },
+    {
+      "functionName": "addUV",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 35828,
+      "selfMs": 3.124
+    },
+    {
+      "functionName": "generateUUID",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 1825,
+      "selfMs": 3.117
+    },
+    {
+      "functionName": "getUtoTmapping",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 31630,
+      "selfMs": 3.112
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 44084,
+      "selfMs": 3.111
+    },
+    {
+      "functionName": "WebGLUniforms",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 5502,
+      "selfMs": 3.109
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 1,
+      "selfMs": 3.092
+    },
+    {
+      "functionName": "WebGLRenderer.render",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 16363,
+      "selfMs": 3.083
+    },
+    {
+      "functionName": "update",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 4326,
+      "selfMs": 3.069
+    },
+    {
+      "functionName": "createVertexArrayObject",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 1638,
+      "selfMs": 3.047
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/app.js",
+      "line": 251,
+      "selfMs": 3.042
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/scenery.js",
+      "line": 68,
+      "selfMs": 3.01
+    },
+    {
+      "functionName": "classify",
+      "url": "http://127.0.0.1:5197/landscape.js",
+      "line": 108,
+      "selfMs": 2.967
+    },
+    {
+      "functionName": "recommend",
+      "url": "http://127.0.0.1:5197/atlas-learning.js",
+      "line": 7550,
+      "selfMs": 2.942
+    },
+    {
+      "functionName": "architecturalFaceUv",
+      "url": "http://127.0.0.1:5197/city-materials.js",
+      "line": 4,
+      "selfMs": 2.844
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/drivers.js",
+      "line": 198,
+      "selfMs": 2.741
+    },
+    {
+      "functionName": "buildAlternativeCar",
+      "url": "http://127.0.0.1:5197/vehicles.js",
+      "line": 480,
+      "selfMs": 2.709
+    },
+    {
+      "functionName": "getNormalMatrix",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 5937,
+      "selfMs": 2.645
+    },
+    {
+      "functionName": "fibres",
+      "url": "http://127.0.0.1:5197/drivers.js",
+      "line": 76,
+      "selfMs": 2.628
+    },
+    {
+      "functionName": "render",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 4013,
+      "selfMs": 2.585
+    },
+    {
+      "functionName": "buildPlane",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 20753,
+      "selfMs": 2.526
+    },
+    {
+      "functionName": "random",
+      "url": "http://127.0.0.1:5197/app.js",
+      "line": 62,
+      "selfMs": 2.505
+    },
+    {
+      "functionName": "updateMatrix",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 14261,
+      "selfMs": 2.462
+    },
+    {
+      "functionName": "setValue",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 5520,
+      "selfMs": 2.458
+    },
+    {
+      "functionName": "getNextRenderItem",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 7564,
+      "selfMs": 2.38
+    },
+    {
+      "functionName": "fromArray",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 12544,
+      "selfMs": 2.379
+    },
+    {
+      "functionName": "material.onBeforeCompile",
+      "url": "http://127.0.0.1:5197/city-materials.js",
+      "line": 34,
+      "selfMs": 2.324
+    },
+    {
+      "functionName": "PlaneGeometry",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 36359,
+      "selfMs": 2.192
+    },
+    {
+      "functionName": "arraysEqual",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 4514,
+      "selfMs": 2.068
+    },
+    {
+      "functionName": "createCoastalBoats",
+      "url": "http://127.0.0.1:5197/seascape-boats.js",
+      "line": 3,
+      "selfMs": 2.006
+    },
+    {
+      "functionName": "smooth",
+      "url": "http://127.0.0.1:5197/landscape.js",
+      "line": 6,
+      "selfMs": 1.954
+    },
+    {
+      "functionName": "max",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 4920,
+      "selfMs": 1.924
+    },
+    {
+      "functionName": "getLengths",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 31575,
+      "selfMs": 1.802
+    },
+    {
+      "functionName": "setupTerrain",
+      "url": "http://127.0.0.1:5197/app.js",
+      "line": 310,
+      "selfMs": 1.79
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/atlas-learning.js",
+      "line": 6001,
+      "selfMs": 1.784
+    },
+    {
+      "functionName": "roadPoint",
+      "url": "http://127.0.0.1:5197/app.js",
+      "line": 63,
+      "selfMs": 1.761
+    },
+    {
+      "functionName": "rotateY",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 13711,
+      "selfMs": 1.737
+    },
+    {
+      "functionName": "createNodeMesh",
+      "url": "http://127.0.0.1:5197/vendor/GLTFLoader.js",
+      "line": 4226,
+      "selfMs": 1.736
+    },
+    {
+      "functionName": "defineContent",
+      "url": "http://127.0.0.1:5197/atlas-learning.js",
+      "line": 8419,
+      "selfMs": 1.727
+    },
+    {
+      "functionName": "resolveIncludes",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 5836,
+      "selfMs": 1.712
+    },
+    {
+      "functionName": "_allocateTargets",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 2930,
+      "selfMs": 1.711
+    },
+    {
+      "functionName": "setValueV1f",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 4568,
+      "selfMs": 1.688
+    },
+    {
+      "functionName": "buildCourseTerrain",
+      "url": "http://127.0.0.1:5197/render-world.js",
+      "line": 16,
+      "selfMs": 1.674
+    },
+    {
+      "functionName": "renderObjects",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 16814,
+      "selfMs": 1.673
+    },
+    {
+      "functionName": "shadowBatches",
+      "url": "http://127.0.0.1:5197/vehicles.js",
+      "line": 211,
+      "selfMs": 1.662
+    },
+    {
+      "functionName": "island",
+      "url": "http://127.0.0.1:5197/landscape.js",
+      "line": 84,
+      "selfMs": 1.653
+    },
+    {
+      "functionName": "quad",
+      "url": "http://127.0.0.1:5197/cityscape.js",
+      "line": 111,
+      "selfMs": 1.653
+    },
+    {
+      "functionName": "transformed",
+      "url": "http://127.0.0.1:5197/scenery.js",
+      "line": 391,
+      "selfMs": 1.641
+    },
+    {
+      "functionName": "footprint",
+      "url": "http://127.0.0.1:5197/scenery.js",
+      "line": 599,
+      "selfMs": 1.637
+    },
+    {
+      "functionName": "unique",
+      "url": "http://127.0.0.1:5197/terrain-data.js",
+      "line": 7,
+      "selfMs": 1.636
+    },
+    {
+      "functionName": "onUploadCallback",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 17863,
+      "selfMs": 1.634
+    },
+    {
+      "functionName": "feltSurface",
+      "url": "http://127.0.0.1:5197/drivers.js",
+      "line": 28,
+      "selfMs": 1.631
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/vendor/DRACOLoader.js",
+      "line": 362,
+      "selfMs": 1.629
+    },
+    {
+      "functionName": "get sheen",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 38839,
+      "selfMs": 1.627
+    },
+    {
+      "functionName": "getProgram",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 16874,
+      "selfMs": 1.624
+    },
+    {
+      "functionName": "sort",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 7642,
+      "selfMs": 1.62
+    },
+    {
+      "functionName": "parse",
+      "url": "http://127.0.0.1:5197/vendor/GLTFLoader.js",
+      "line": 415,
+      "selfMs": 1.618
+    },
+    {
+      "functionName": "GLTFBinaryExtension",
+      "url": "http://127.0.0.1:5197/vendor/GLTFLoader.js",
+      "line": 1916,
+      "selfMs": 1.617
+    },
+    {
+      "functionName": "setupVertexAttributes",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 1889,
+      "selfMs": 1.615
+    },
+    {
+      "functionName": "bindVertexArrayObject",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 1644,
+      "selfMs": 1.615
+    },
+    {
+      "functionName": "summarizeLearning",
+      "url": "http://127.0.0.1:5197/atlas-learning.js",
+      "line": 7517,
+      "selfMs": 1.614
+    },
+    {
+      "functionName": "TubeGeometry",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 37466,
+      "selfMs": 1.607
+    },
+    {
+      "functionName": "setValueV3f",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 4609,
+      "selfMs": 1.607
+    },
+    {
+      "functionName": "Uint16BufferAttribute",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 18507,
+      "selfMs": 1.605
+    },
+    {
+      "functionName": "copy",
+      "url": "http://127.0.0.1:5197/atlas-learning.js",
+      "line": 20,
+      "selfMs": 1.599
+    },
+    {
+      "functionName": "multiply",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 4070,
+      "selfMs": 1.598
+    },
+    {
+      "functionName": "WebGLRenderer.setClearColor",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 15679,
+      "selfMs": 1.597
+    },
+    {
+      "functionName": "intersectsObject",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 26484,
+      "selfMs": 1.595
+    },
+    {
+      "functionName": "parseUniform",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 5447,
+      "selfMs": 1.594
+    },
+    {
+      "functionName": "freeze",
+      "url": "http://127.0.0.1:5197/atlas-learning.js",
+      "line": 26,
+      "selfMs": 1.593
+    },
+    {
+      "functionName": "querySelectorAll",
+      "url": "",
+      "line": 0,
+      "selfMs": 1.591
+    },
+    {
+      "functionName": "cliffOffset",
+      "url": "http://127.0.0.1:5197/landscape.js",
+      "line": 16,
+      "selfMs": 1.591
+    },
+    {
+      "functionName": "setTheme",
+      "url": "http://127.0.0.1:5197/city-life.js",
+      "line": 370,
+      "selfMs": 1.591
+    },
+    {
+      "functionName": "setColorAt",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 25894,
+      "selfMs": 1.59
+    },
+    {
+      "functionName": "buildLidFaces",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 35660,
+      "selfMs": 1.59
+    },
+    {
+      "functionName": "Frustum",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 26368,
+      "selfMs": 1.587
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/landscape.js",
+      "line": 164,
+      "selfMs": 1.585
+    },
+    {
+      "functionName": "addLighting",
+      "url": "http://127.0.0.1:5197/vehicles.js",
+      "line": 252,
+      "selfMs": 1.585
+    },
+    {
+      "functionName": "generateBufferData",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 37522,
+      "selfMs": 1.585
+    },
+    {
+      "functionName": "worker.onmessage",
+      "url": "http://127.0.0.1:5197/terrain-startup.js",
+      "line": 17,
+      "selfMs": 1.584
+    },
+    {
+      "functionName": "_invokeAll",
+      "url": "http://127.0.0.1:5197/vendor/GLTFLoader.js",
+      "line": 2921,
+      "selfMs": 1.581
+    },
+    {
+      "functionName": "mesh",
+      "url": "http://127.0.0.1:5197/vehicles.js",
+      "line": 92,
+      "selfMs": 1.581
+    },
+    {
+      "functionName": "set image",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 7252,
+      "selfMs": 1.58
+    },
+    {
+      "functionName": "clone",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 17149,
+      "selfMs": 1.58
+    },
+    {
+      "functionName": "get",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 3864,
+      "selfMs": 1.579
+    },
+    {
+      "functionName": "applyMatrix4",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 10100,
+      "selfMs": 1.578
+    },
+    {
+      "functionName": "WebGLRenderer.setRenderTarget",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 17519,
+      "selfMs": 1.578
+    },
+    {
+      "functionName": "buildIslandForest",
+      "url": "http://127.0.0.1:5197/landscape.js",
+      "line": 270,
+      "selfMs": 1.576
+    },
+    {
+      "functionName": "updateWorldMatrix",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 21479,
+      "selfMs": 1.575
+    },
+    {
+      "functionName": "setMatrixAt",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 25913,
+      "selfMs": 1.574
+    },
+    {
+      "functionName": "renderObject",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 16843,
+      "selfMs": 1.574
+    },
+    {
+      "functionName": "WebGLState",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 8835,
+      "selfMs": 1.573
+    },
+    {
+      "functionName": "profileOf",
+      "url": "http://127.0.0.1:5197/atlas-learning.js",
+      "line": 9374,
+      "selfMs": 1.571
+    },
+    {
+      "functionName": "tube",
+      "url": "http://127.0.0.1:5197/vehicles.js",
+      "line": 108,
+      "selfMs": 1.57
+    },
+    {
+      "functionName": "renderScene",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 16663,
+      "selfMs": 1.57
+    },
+    {
+      "functionName": "batchStaticPanels",
+      "url": "http://127.0.0.1:5197/vehicles.js",
+      "line": 456,
+      "selfMs": 1.568
+    },
+    {
+      "functionName": "gardenWall",
+      "url": "http://127.0.0.1:5197/cityscape.js",
+      "line": 106,
+      "selfMs": 1.567
+    },
+    {
+      "functionName": "loadGeometries",
+      "url": "http://127.0.0.1:5197/vendor/GLTFLoader.js",
+      "line": 3806,
+      "selfMs": 1.566
+    },
+    {
+      "functionName": "getPoints",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 31519,
+      "selfMs": 1.565
+    },
+    {
+      "functionName": "placeTree",
+      "url": "http://127.0.0.1:5197/scenery.js",
+      "line": 80,
+      "selfMs": 1.564
+    },
+    {
+      "functionName": "LinearToSRGB",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 6497,
+      "selfMs": 1.564
+    },
+    {
+      "functionName": "pathAngle",
+      "url": "http://127.0.0.1:5197/course.js",
+      "line": 6,
+      "selfMs": 1.563
+    },
+    {
+      "functionName": "update",
+      "url": "http://127.0.0.1:5197/cityscape.js",
+      "line": 531,
+      "selfMs": 1.561
+    },
+    {
+      "functionName": "getState",
+      "url": "http://127.0.0.1:5197/app.js",
+      "line": 635,
+      "selfMs": 1.559
+    },
+    {
+      "functionName": "traverse",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 14198,
+      "selfMs": 1.557
+    },
+    {
+      "functionName": "initGLContext",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 15240,
+      "selfMs": 1.556
+    },
+    {
+      "functionName": "fbm",
+      "url": "http://127.0.0.1:5197/landscape.js",
+      "line": 12,
+      "selfMs": 1.555
+    },
+    {
+      "functionName": "SRGBToLinear",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 6491,
+      "selfMs": 1.554
+    },
+    {
+      "functionName": "getProgramCacheKey",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 7154,
+      "selfMs": 1.553
+    },
+    {
+      "functionName": "addUniform",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 5440,
+      "selfMs": 1.552
+    },
+    {
+      "functionName": "load",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 43981,
+      "selfMs": 1.551
+    },
+    {
+      "functionName": "updateMatrixWorld",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 21471,
+      "selfMs": 1.55
+    },
+    {
+      "functionName": "setValueM4Array",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 5147,
+      "selfMs": 1.545
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/cityscape.js",
+      "line": 242,
+      "selfMs": 1.543
+    },
+    {
+      "functionName": "InjectedScript",
+      "url": "",
+      "line": 6723,
+      "selfMs": 1.542
+    },
+    {
+      "functionName": "renderInstances",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 4021,
+      "selfMs": 1.534
+    },
+    {
+      "functionName": "setValueM3",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 4707,
+      "selfMs": 1.514
+    },
+    {
+      "functionName": "RegExp: ^[ \\t]*#include +<([\\w\\d./]+)>",
+      "url": "",
+      "line": 0,
+      "selfMs": 1.512
+    },
+    {
+      "functionName": "setup",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 7936,
+      "selfMs": 1.508
+    },
+    {
+      "functionName": "get",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 7453,
+      "selfMs": 1.507
+    },
+    {
+      "functionName": "initNonuniformCatmullRom",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 32276,
+      "selfMs": 1.504
+    },
+    {
+      "functionName": "foliage",
+      "url": "http://127.0.0.1:5197/scenery.js",
+      "line": 482,
+      "selfMs": 1.493
+    },
+    {
+      "functionName": "multiplyScalar",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 16060,
+      "selfMs": 1.493
+    },
+    {
+      "functionName": "get",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 217,
+      "selfMs": 1.49
+    },
+    {
+      "functionName": "generateTorso",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 30517,
+      "selfMs": 1.488
+    },
+    {
+      "functionName": "painterSortStable",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 7496,
+      "selfMs": 1.478
+    },
+    {
+      "functionName": "clamp",
+      "url": "http://127.0.0.1:5197/cityscape.js",
+      "line": 12,
+      "selfMs": 1.464
+    },
+    {
+      "functionName": "ExtrudeGeometry",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 35126,
+      "selfMs": 1.459
+    },
+    {
+      "functionName": "_blur",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 3158,
+      "selfMs": 1.436
+    },
+    {
+      "functionName": "newSession",
+      "url": "http://127.0.0.1:5197/atlas-learning.js",
+      "line": 9193,
+      "selfMs": 1.435
+    },
+    {
+      "functionName": "useProgram",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 9393,
+      "selfMs": 1.433
+    },
+    {
+      "functionName": "__require",
+      "url": "http://127.0.0.1:5197/atlas-learning.js",
+      "line": 5,
+      "selfMs": 1.432
+    },
+    {
+      "functionName": "set needsUpdate",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 17873,
+      "selfMs": 1.426
+    },
+    {
+      "functionName": "validateMap",
+      "url": "http://127.0.0.1:5197/atlas-learning.js",
+      "line": 33,
+      "selfMs": 1.415
+    },
+    {
+      "functionName": "setValues",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 16816,
+      "selfMs": 1.407
+    },
+    {
+      "functionName": "softenScanEdge",
+      "url": "http://127.0.0.1:5197/coastal-rocks.js",
+      "line": 3,
+      "selfMs": 1.386
+    },
+    {
+      "functionName": "gardenGround",
+      "url": "http://127.0.0.1:5197/cityscape.js",
+      "line": 82,
+      "selfMs": 1.378
+    },
+    {
+      "functionName": "top",
+      "url": "http://127.0.0.1:5197/vehicles.js",
+      "line": 305,
+      "selfMs": 1.375
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/vendor/GLTFLoader.js",
+      "line": 3130,
+      "selfMs": 1.364
+    },
+    {
+      "functionName": "rand",
+      "url": "http://127.0.0.1:5197/scenery.js",
+      "line": 15,
+      "selfMs": 1.363
+    },
+    {
+      "functionName": "getViewport",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 45362,
+      "selfMs": 1.356
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 16259,
+      "selfMs": 1.355
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/scenery.js",
+      "line": 411,
+      "selfMs": 1.335
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/cityscape.js",
+      "line": 559,
+      "selfMs": 1.295
+    },
+    {
+      "functionName": "update",
+      "url": "http://127.0.0.1:5197/seascape-boats.js",
+      "line": 170,
+      "selfMs": 1.295
+    },
+    {
+      "functionName": "equals",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 5483,
+      "selfMs": 1.29
+    },
+    {
+      "functionName": "serialize",
+      "url": "",
+      "line": 175,
+      "selfMs": 1.266
+    },
+    {
+      "functionName": "Group",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 22398,
+      "selfMs": 1.264
+    },
+    {
+      "functionName": "refs",
+      "url": "http://127.0.0.1:5197/atlas-learning.js",
+      "line": 36,
+      "selfMs": 1.26
+    },
+    {
+      "functionName": "part",
+      "url": "http://127.0.0.1:5197/seascape-boats.js",
+      "line": 17,
+      "selfMs": 1.255
+    },
+    {
+      "functionName": "subdivideFace",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 30916,
+      "selfMs": 1.24
+    },
+    {
+      "functionName": "needsUpdate",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 1723,
+      "selfMs": 1.208
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/vehicles.js",
+      "line": 314,
+      "selfMs": 1.199
+    },
+    {
+      "functionName": "updateBuffer",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 140,
+      "selfMs": 1.186
+    },
+    {
+      "functionName": "set",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 5684,
+      "selfMs": 1.183
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/atlas-learning.js",
+      "line": 6395,
+      "selfMs": 1.172
+    },
+    {
+      "functionName": "frame",
+      "url": "http://127.0.0.1:5197/app.js",
+      "line": 1000,
+      "selfMs": 1.16
+    },
+    {
+      "functionName": "seatMascot",
+      "url": "http://127.0.0.1:5197/app.js",
+      "line": 521,
+      "selfMs": 1.153
+    },
+    {
+      "functionName": "setMaterial",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 9581,
+      "selfMs": 1.133
+    },
+    {
+      "functionName": "update",
+      "url": "http://127.0.0.1:5197/city-life.js",
+      "line": 312,
+      "selfMs": 1.125
+    },
+    {
+      "functionName": "scrollTo",
+      "url": "",
+      "line": 0,
+      "selfMs": 1.116
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/scenery.js",
+      "line": 386,
+      "selfMs": 1.111
+    },
+    {
+      "functionName": "addVertex",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 35819,
+      "selfMs": 1.09
+    },
+    {
+      "functionName": "setIndex",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 18946,
+      "selfMs": 0.938
+    },
+    {
+      "functionName": "setHex",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 15505,
+      "selfMs": 0.923
+    },
+    {
+      "functionName": "generateUVs",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 31001,
+      "selfMs": 0.869
+    },
+    {
+      "functionName": "setupFrameBufferTexture",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 11672,
+      "selfMs": 0.848
+    },
+    {
+      "functionName": "height",
+      "url": "http://127.0.0.1:5197/landscape.js",
+      "line": 20,
+      "selfMs": 0.832
+    },
+    {
+      "functionName": "overlook",
+      "url": "http://127.0.0.1:5197/scenery.js",
+      "line": 205,
+      "selfMs": 0.799
+    },
+    {
+      "functionName": "hullPoint",
+      "url": "http://127.0.0.1:5197/seascape-boats.js",
+      "line": 37,
+      "selfMs": 0.66
+    },
+    {
+      "functionName": "edgeWeight",
+      "url": "http://127.0.0.1:5197/coastal-rocks.js",
+      "line": 6,
+      "selfMs": 0.635
+    },
+    {
+      "functionName": "roadster",
+      "url": "http://127.0.0.1:5197/vehicles.js",
+      "line": 413,
+      "selfMs": 0.63
+    },
+    {
+      "functionName": "getPoint",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 33353,
+      "selfMs": 0.62
+    },
+    {
+      "functionName": "getTangentAt",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 31745,
+      "selfMs": 0.598
+    },
+    {
+      "functionName": "at",
+      "url": "http://127.0.0.1:5197/seascape-boats.js",
+      "line": 94,
+      "selfMs": 0.558
+    },
+    {
+      "functionName": "pushVertex",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 31052,
+      "selfMs": 0.554
+    },
+    {
+      "functionName": "computeVertexNormals",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 19714,
+      "selfMs": 0.532
+    },
+    {
+      "functionName": "clone",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 18371,
+      "selfMs": 0.477
+    },
+    {
+      "functionName": "rally",
+      "url": "http://127.0.0.1:5197/vehicles.js",
+      "line": 433,
+      "selfMs": 0.448
+    },
+    {
+      "functionName": "computeBoundingSphere",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 25738,
+      "selfMs": 0.419
+    },
+    {
+      "functionName": "at",
+      "url": "http://127.0.0.1:5197/cityscape.js",
+      "line": 74,
+      "selfMs": 0.4
+    },
+    {
+      "functionName": "setX",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 18154,
+      "selfMs": 0.36
+    },
+    {
+      "functionName": "multiplyQuaternions",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 4095,
+      "selfMs": 0.35
+    },
+    {
+      "functionName": "PolyhedronGeometry",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 30837,
+      "selfMs": 0.34
+    },
+    {
+      "functionName": "visit",
+      "url": "http://127.0.0.1:5197/atlas-learning.js",
+      "line": 72,
+      "selfMs": 0.31
+    },
+    {
+      "functionName": "homeFacade",
+      "url": "http://127.0.0.1:5197/cityscape.js",
+      "line": 143,
+      "selfMs": 0.276
+    },
+    {
+      "functionName": "applyMatrix4",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 18018,
+      "selfMs": 0.227
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/scenery.js",
+      "line": 420,
+      "selfMs": 0.227
+    },
+    {
+      "functionName": "update",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 241,
+      "selfMs": 0.219
+    },
+    {
+      "functionName": "Uint32BufferAttribute",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 18553,
+      "selfMs": 0.198
+    },
+    {
+      "functionName": "(익명)",
+      "url": "http://127.0.0.1:5197/vehicles.js",
+      "line": 317,
+      "selfMs": 0.164
+    },
+    {
+      "functionName": "compose",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 12302,
+      "selfMs": 0.156
+    },
+    {
+      "functionName": "enableAttribute",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 1827,
+      "selfMs": 0.123
+    },
+    {
+      "functionName": "getTangent",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 31715,
+      "selfMs": 0.111
+    },
+    {
+      "functionName": "setFromMatrix4",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 5758,
+      "selfMs": 0.095
+    },
+    {
+      "functionName": "rotateX",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 13699,
+      "selfMs": 0.081
+    },
+    {
+      "functionName": "addGroup",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 19049,
+      "selfMs": 0.079
+    },
+    {
+      "functionName": "Mesh",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 20220,
+      "selfMs": 0.041
+    },
+    {
+      "functionName": "fromArray",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 6149,
+      "selfMs": 0.034
+    },
+    {
+      "functionName": "generateCap",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 30619,
+      "selfMs": 0.031
+    },
+    {
+      "functionName": "copyArray",
+      "url": "http://127.0.0.1:5197/vendor/three.module.js",
+      "line": 4528,
+      "selfMs": 0.021
+    },
+    {
+      "functionName": "getPointAt",
+      "url": "http://127.0.0.1:5197/vendor/three.core.js",
+      "line": 31505,
+      "selfMs": 0.02
+    },
+    {
+      "functionName": "buildingPart",
+      "url": "http://127.0.0.1:5197/cityscape.js",
+      "line": 79,
+      "selfMs": 0.011
+    }
+  ],
+  "cpuSampleMs": 2819.259,
+  "jsNetworkFailures": [],
+  "ok": true
+}
