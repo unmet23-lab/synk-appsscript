@@ -23,7 +23,7 @@ const htmlPath = path.join(dir, 'index.html');
 let html = fs.readFileSync(htmlPath, 'utf8');
 
 const FIRST = 0.3;       // 첫 말소리 시각
-const TAIL = 1.6;        // 마지막 말끝 뒤 여유(끝 장면이 읽히는 시간)
+const TAIL = 2.0;        // 마지막 말끝 뒤 여유(끝 장면이 읽히는 시간). 10-05 끝 장면이 마지막 한 줄(c5)뿐이라 1.6 → 2.0
 const STRENGTH = Number(arg('--strength') || 0.6);
 const DUCK_DB = -8;
 const ATTACK = 0.15, RELEASE_HOLD = 0.15, RELEASE = 0.45, MERGE = 1.0;

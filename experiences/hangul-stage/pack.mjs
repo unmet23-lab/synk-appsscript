@@ -37,6 +37,12 @@ const WORDS = ['아이', '오이', '이모', '아기', '나무', '다리', '머�
   '한국어', '학교', '수업', '밥', '집', '국', '약', '옷', '낮', '음식', '가족', '김밥', '비빔밥', '식당', '불고기', '수박', '책상'];
 // 앞으로 만날 마을의 간판 미리보기. 단원마다 하나씩 읽히게 골랐다(설계 §6의 2).
 const SIGNS = [['오이', 'U1'], ['나무', 'U2'], ['바다', 'U3'], ['가게', 'U4'], ['시장', 'U6'], ['식당', 'U7']];
+// 자음 그림 연상(2026-10-05 유호님 「그 조합으로」 — 조사: 글자 모양을 그림 안에 넣으면 소리가 더 잘 붙는다, 한글 성인 초급은 자음을 그림으로).
+// 그림의 생김새가 글자 모양이고 이름이 그 자음 소리로 시작한다. 그림은 assets/mnemonic/<id>.webp(Codex 그림 만들기 — ChatGPT 구독, API 아님).
+// 영어 단어 연상(ㄱ=gun)은 쓰지 않는다 — 20개국에 통하는 물건과 한국어 낱말. 글자는 그림에 굽지 않는다.
+const MNEMONICS = [['c-g', '가로등', '기둥과 위로 꺾인 팔'], ['c-n', '노트북', '세운 화면과 바닥'], ['c-d', '달', '오른쪽이 열린 초승달'],
+  ['c-r', '라면', '꼬불꼬불한 면'], ['c-m', '문', '네모'], ['c-b', '바구니', '손잡이 둘 달린 바구니'], ['c-s', '산', '뾰족한 봉우리'],
+  ['c-ng', '알', '동그라미 — 첫소리 ㅇ은 소리가 없어 「아」'], ['c-j', '자전거', ''], ['c-h', '해', '모자 쓴 해']];
 // 한글 이름 표기가 없으니 명패는 「한국어」 세 글자 판이다(설계 §9). 받침 칸은 받침 단원에서 채운다.
 const PLATE = '한국어';
 
@@ -81,6 +87,8 @@ export function createPack(layer) {
     return { text: ch, cells };
   });
 
+  const mnemonics = Object.fromEntries(MNEMONICS.filter(([id]) => byId.has(id)).map(([id, word, shape]) => [id, { word, shape, img: `assets/mnemonic/${id}.webp` }]));
+
   // 같은 소리로 들리는지: ㅐ/ㅔ를 같은 모음으로, 받침은 일곱 소리로 묶어 비교한다.
   const soundKey = text => [...text].map(ch => { const d = decompose(ch); return d ? `${d.initial}.${SAME_SOUND_MEDIAL.get(d.medial) ?? d.medial}.${d.final ? FINAL_SOUND.get(d.final) ?? d.final : 0}` : ch; }).join('|');
   const sameSound = (a, b) => soundKey(a) === soundKey(b);
@@ -102,10 +110,11 @@ export function createPack(layer) {
     for (const f of letters.filter(l => l.role === 'final')) for (const c of FINAL_FRAME.initials) for (const v of FINAL_FRAME.vowels) clips.add(syllable(c, v, f.id));
     for (const w of words) clips.add(w.text);
     for (const s of signs) clips.add(s.text);
+    for (const m of Object.values(mnemonics)) clips.add(m.word);
     clips.add(PLATE);
     return { pack_ver: PACK_VER, voice: null, clips: [...clips].sort() };
   }
 
-  return Object.freeze({ version: PACK_VER, letters, byId, units: layer.units, later: layer.later || [], words, signs, plate,
+  return Object.freeze({ version: PACK_VER, letters, byId, units: layer.units, later: layer.later || [], words, signs, plate, mnemonics,
     lettersIn, wordLetters, syllable, sameSound, related, audioManifest, SILENT, FINAL_FRAME });
 }

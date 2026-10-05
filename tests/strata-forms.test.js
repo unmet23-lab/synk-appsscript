@@ -141,3 +141,25 @@ test('the particle after a word, through a place noun between them', () => {
   assert.equal(particleAfter('마린은 과자를 상자 안에 넣어 줘.', '서랍'), null);
   assert.equal(particleAfter('과자 하나', '과자'), null);
 });
+
+test('forms that only look like another point are not read as it', () => {
+  // -겠- before 어요 is no past; a formal question is not -(으)니까; an adverb or a numeral before
+  // 주세요 is no verb (found on the situation examples, 2026-10-05).
+  const cases = [
+    ['잘 모르겠어요.', []],
+    ['네, 알겠어요.', []],
+    ['어제 집에 갔어요.', ['G208']],
+    ['교수님, 안녕하십니까?', []],
+    ['지금 갑니까?', []],
+    ['비가 오니까 우산을 쓰세요.', ['G410', 'G211']],
+    ['추우니까 문을 닫으세요.', ['G410', 'G211']],
+    ['수건을 더 주세요.', ['G211']],
+    ['하나 주세요.', ['G211']],
+    ['먼저 주세요.', ['G211']],
+    ['설탕은 빼 주세요.', ['G404']],
+    ['사진 보내 주세요.', ['G404']],
+  ];
+  for (const [sentence, ids] of cases) assert.deepEqual(grammarIn(sentence), ids, sentence);
+  assert.equal(grammarOf('모르겠어요'), null);
+  assert.equal(grammarOf('갔어요'), 'G208');
+});

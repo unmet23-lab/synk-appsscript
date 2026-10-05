@@ -40,8 +40,8 @@ while k < n:
         k = j
     else: k += 1
 
-ids = [s['id'] for s in plan['segments']]
-breaks = [al['segs'][i]['start'] for i in plan['take']['breaks']]
+ids = [s['id'] for s in plan['segments'] if s['id'] in al['segs']]   # 끝 문단만 읽힌 테이크(--segs)면 그 대사들만
+breaks = [al['segs'][i]['start'] for i in plan['take']['breaks'] if i in ids[1:]]
 # 잘라 낼 구간: [앞 무음], 긴 쉼의 가운데, [뒤 무음]
 cuts = [(0.0, max(0.0, on - LEAD))]
 for a, b in sil:

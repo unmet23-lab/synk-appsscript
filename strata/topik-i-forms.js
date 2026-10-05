@@ -11,7 +11,7 @@ const words = require('./topik-i.words.json');
 
 const HANGUL = 0xac00, SYLLABLES = 11172;
 const syllable = ch => { const c = (ch || '').charCodeAt(0) - HANGUL; return c >= 0 && c < SYLLABLES ? { vowel: Math.floor((c % 588) / 28), final: c % 28 } : null; };
-const FINAL_N = 4, FINAL_L = 8, FINAL_SS = 20;
+const FINAL_N = 4, FINAL_L = 8, FINAL_B = 17, FINAL_SS = 20;
 // ㅏ ㅐ ㅓ ㅕ ㅘ ㅙ ㅝ: the vowels a stem ends in before -아/어서 (가서, 해서, 먹어서, 마셔서, 와서, 봬서, 추워서).
 const A_EO = new Set([0, 1, 4, 6, 9, 10, 14]);
 const finalOf = word => syllable(word.slice(-1))?.final;
@@ -60,7 +60,8 @@ const ENDINGS = [
   ['G303', w => /러$/.test(w)],
   ['G311', w => /까요\??$/.test(w) && finalOf(before(w.replace(/\?$/, ''), '까요')) === FINAL_L],
   ['G612', w => /(게요|래요)$/.test(w) && finalOf(before(w, '게요')) === FINAL_L],
-  ['G410', w => /니까$/.test(w)],
+  // 안녕하십니까, 갑니까 are -습니까/-ㅂ니까: -(으)니까 never follows a syllable ending in ㅂ (입으니까, 추우니까).
+  ['G410', w => /니까$/.test(w) && finalOf(before(w, '니까')) !== FINAL_B],
   ['G610', w => /는데$/.test(w) || /데$/.test(w) && finalOf(before(w, '데')) === FINAL_N],
   // 5시까지만 is 까지 and 만, not -지만.
   ['G307', w => /지만$/.test(w) && !/까지만$/.test(w)],
@@ -71,8 +72,9 @@ const ENDINGS = [
   ['G412', w => /(지요|죠)\??$/.test(w)],
   ['G211', w => /세요$/.test(w)],
   ['G204', w => /(이에요|예요)$/.test(w)],
-  // A past ending: the syllable before 어요 carries ㅆ (갔어요, 쉬었어요), but 있어요 is the present of 있다.
-  ['G208', w => /어요$/.test(w) && finalOf(before(w, '어요')) === FINAL_SS && !/있어요$/.test(w)],
+  // A past ending: the syllable before 어요 carries ㅆ (갔어요, 쉬었어요), but 있어요 is the present of 있다
+  // and 모르겠어요, 알겠어요 carry -겠-.
+  ['G208', w => /어요$/.test(w) && finalOf(before(w, '어요')) === FINAL_SS && !/(있|겠)어요$/.test(w)],
   ['G501', (w, a) => /.는$/.test(w) && /^\s+[가-힣]/.test(a)],
 ];
 
@@ -95,6 +97,7 @@ const TIME_UNITS = new Set(['분', '초', '년', '주일', '개월']);
 // 만·까지·부터 after a noun, a numeral or a number are often what a rule turns on (5시까지만, 13살 이하만,
 // 지금부터), so a sentence names them. 편지만 is 만; 먹지만 is -지만.
 const NUMERALS = new Set(words.words.filter(([, , pos]) => pos === '수').map(([, word]) => word));
+const ADVERBS = new Set(words.words.filter(([, , pos]) => pos === '부').map(([, word]) => word));
 const stemLike = s => !!s && (NOUNS.has(s) || NUMERALS.has(s) || /\d/.test(s));
 function cruxParticles(word) {
   const ids = [];
@@ -127,8 +130,9 @@ const NUMBER = /\d+\s*(시간|시|분|초|살|세|개월|월|일|년|주|명|개
 // 빼 주세요, 넣어 주세요, 따뜻하게 해 주세요: -아/어 주세요 written with a space. The word before is a verb
 // in its -아/어 form (a stem ending in ㅏ ㅐ ㅓ ㅕ ㅘ ㅙ ㅝ with no final consonant); a TOPIK I noun is not
 // (사과 주세요, 차 주세요), and 한 잔 주세요 keeps plain -(으)세요. Only the polite 주세요: the plain
-// 넣어 줘 of a story request is left as it is.
-const SPACED_GIVE = w => !!w && w.length > 0 && !isNoun(w) && finalOf(w) === 0 && A_EO.has(syllable(w.slice(-1))?.vowel);
+// 넣어 줘 of a story request is left as it is. A TOPIK I adverb or numeral before 주세요 is no verb either
+// (더 주세요, 먼저 주세요, 하나 주세요).
+const SPACED_GIVE = w => !!w && w.length > 0 && !isNoun(w) && !ADVERBS.has(w) && !NUMERALS.has(w) && finalOf(w) === 0 && A_EO.has(syllable(w.slice(-1))?.vowel);
 function grammarIn(sentence) {
   const text = String(sentence ?? ''), found = [];
   const add = (id, at) => { if (!found.some(f => f.id === id)) found.push({ id, at }); };

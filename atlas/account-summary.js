@@ -11,12 +11,15 @@ const VERSION = 'atlas-account-summary-1';
 // The account log's scope (game-learning.js account store, synk-learning).
 const SCOPE = Object.freeze({ domain: 'LAB', workspace: 'learning', subject: 'device' });
 const SHOWN = 12;
+// Sentences shown for one situation.
+const EXAMPLES = 3;
 const time = value => typeof value === 'string' && Number.isFinite(Date.parse(value));
 const latest = (a, b) => (!a || (b && Date.parse(b) > Date.parse(a)) ? b : a);
 
-function summarizeAccount({ events, map, asOf, presentation = null, reasons = null } = {}) {
+function summarizeAccount({ events, map, asOf, presentation = null, reasons = null, examples = null } = {}) {
   if (!Array.isArray(events) || typeof map?.allNodes !== 'function' || !time(asOf)) throw new TypeError('Atlas summary: the log, a map and the time are required');
   if (reasons !== null && (!Array.isArray(reasons) || reasons.some(r => typeof r !== 'string'))) throw new TypeError('Atlas summary: invalid reasons');
+  if (examples !== null && typeof examples !== 'function') throw new TypeError('Atlas summary: invalid examples');
   const observed = Trail.summarize(events, { scope: SCOPE, asOf });
   const profile = Learning.summarizeLearning({ summary: observed, map, complete: true });
   const concepts = Learning.summarizeConcepts({ summary: observed, map, complete: true });
@@ -28,9 +31,13 @@ function summarizeAccount({ events, map, asOf, presentation = null, reasons = nu
   // Where each declared reason leads (Strata links.goals), with the line a product shows beside
   // practice it picks for that situation. A reason without situations (exam, hobby, other) claims
   // nothing. A reason changes only where practice happens, never difficulty or a level.
+  // When the host passes Strata's example layer (topik-i-examples.js examplesFor), each situation
+  // also carries a few sentences said there, each marked reviewed or still a draft. Without the
+  // layer the summary is as it was.
+  const said = id => (examples(id) || []).slice(0, EXAMPLES).map(e => ({ id: e.id, ko: e.ko, reviewed: e.reviewed === true }));
   const forReasons = !reasons || typeof map.forGoal !== 'function' ? [] : reasons.map(reason => ({ reason,
     situations: map.forGoal(reason).filter(n => n.kind === 'situation' && n.when_ko)
-      .map(n => ({ id: n.id, label: n.label_ko, line: situationLine({ when: n.when_ko }) })) })).filter(r => r.situations.length);
+      .map(n => ({ id: n.id, label: n.label_ko, line: situationLine({ when: n.when_ko }), ...(examples ? { examples: said(n.id) } : {}) })) })).filter(r => r.situations.length);
   return {
     version: VERSION, asOf,
     presentation: presentation && { ...presentation },

@@ -15,6 +15,6 @@ const adapter=await readFile(path.join(here,'collection-adapter.js'),'utf8');
 const output=path.join(here,'collection.js');
 await writeFile(output,'// Generated from korean-racing/garage-core.js and collection-adapter.js. Run node experiences/play-common/build-collection.mjs.\n'+bundled+'\n'+adapter);
 // Every mini-game that pays common coins loads the same bytes.
-const GAMES=['korean-rhythm','korean-runner','blank-slice','entry-check','story-classroom'];
+const GAMES=['korean-rhythm','korean-runner','blank-slice','entry-check','story-classroom','talk-rally'];
 for(const game of GAMES)await copyFile(output,path.join(root,'experiences',game,'collection.js'));
 console.log(`Canonical shared collection built and copied to ${GAMES.join(' / ')} (${Buffer.byteLength(bundled+adapter)} bytes).`);

@@ -9,6 +9,8 @@ const session = { access_token: 'synthetic-not-a-token', user: { id: 'synthetic-
 let signedIn = params.has('account') || params.has('authorization_id'), enabled = !params.has('disabled'), revision = 1, deleting = params.has('deleting'), deletion = deleting ? { request_id: '00000000-0000-4000-8000-000000000001', requested_at: new Date(Date.now() - 86400000).toISOString() } : null, authListener;
 // 계정 지우기 요청 줄(합성). 기한은 talk 계정 서비스처럼 요청 + 7일.
 const deletionRow = status => deletion && { ...deletion, kind: 'delete', status, completed_at: null, due_at: new Date(Date.parse(deletion.requested_at) + 7 * 86400000).toISOString() };
+// A situation as the summary sends it: Vellum's line and one sentence of Strata's example layer.
+const situation = ([id, label, when, ko]) => ({ id, label, line: `${when} 쓰는 말이라 골랐어요.`, examples: [{ id: `${id.replace('sit-', 'ex-')}-1`, ko, reviewed: false }] });
 const sdk = { auth: {
   getSession: async () => ({ data: { session: signedIn ? session : null } }), getUser: async () => params.has('fail-user') ? { error: new Error('합성 인증 확인 실패') } : ({ data: { user: session.user } }), onAuthStateChange: listener => { authListener = listener;return {}; },
   signInWithPassword: async () => { signedIn = true;authListener?.('SIGNED_IN', session);return { data: { session } }; },
@@ -27,10 +29,10 @@ const accountFactory = () => ({
   // A synthetic Atlas summary in the shape synk-account ?view=atlas returns.
   atlasSummary: async () => ({ shared: enabled ? 'practice-and-settings' : 'declared-only', learning: { enabled, revision }, summary: {
     presentation: enabled ? { support: 'step', textSize: 'large' } : null, reasons: ['travel', 'life'],
-    forReasons: [{ reason: 'travel', situations: [['sit-travel-directions', '길 묻기', '길을 물을 때'], ['sit-travel-order', '주문', '주문할 때'], ['sit-travel-transport', '교통', '버스나 지하철을 탈 때'],
-      ['sit-travel-lodging', '숙소', '숙소에서'], ['sit-travel-shopping', '쇼핑', '물건을 살 때']].map(([id, label, when]) => ({ id, label, line: `${when} 쓰는 말이라 골랐어요.` })) },
-    { reason: 'life', situations: [['sit-life-office', '주민센터·병원·은행', '주민센터·병원·은행에서'], ['sit-life-notice', '공공 안내문 읽기', '안내문을 읽을 때']]
-      .map(([id, label, when]) => ({ id, label, line: `${when} 쓰는 말이라 골랐어요.` })) }],
+    forReasons: [{ reason: 'travel', situations: [['sit-travel-directions', '길 묻기', '길을 물을 때', '지하철역이 어디예요?'], ['sit-travel-order', '주문', '주문할 때', '따뜻한 커피 한 잔 주세요.'], ['sit-travel-transport', '교통', '버스나 지하철을 탈 때', '이 버스는 명동에 가요?'],
+      ['sit-travel-lodging', '숙소', '숙소에서', '방을 예약했어요.'], ['sit-travel-shopping', '쇼핑', '물건을 살 때', '이거 얼마예요?']].map(situation) },
+    { reason: 'life', situations: [['sit-life-office', '주민센터·병원·은행', '주민센터·병원·은행에서', '주소를 바꾸러 왔어요.'], ['sit-life-notice', '공공 안내문 읽기', '안내문을 읽을 때', '수영 모자를 꼭 써야 합니다.']]
+      .map(situation) }],
     practice: enabled ? { answered: 18, independent: 12, assisted: 4, skills: [{ line: '최근 놓친 듣고 세부 정보 찾기를 조금 더 연습해 봐요.' }, { line: '낱말 듣기를 최근 혼자 해냈어요. 가볍게 이어가요.' }] } : { answered: 0, independent: 0, assisted: 0, skills: [] } } })
 });
 const notice = text => { document.getElementById('notice').textContent = `합성 화면 예시 · ${text}`; };

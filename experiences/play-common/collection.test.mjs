@@ -71,7 +71,7 @@ test('the coast badge is visible only when owned and equipped and garage links f
 });
 
 test('every coin-paying mini-game ships byte-identical copies of the generated canonical rules',async()=>{
-  for(const game of ['korean-rhythm','korean-runner','blank-slice','entry-check','story-classroom'])assert.equal(await fs.readFile(new URL(`../${game}/collection.js`,import.meta.url),'utf8'),source);
+  for(const game of ['korean-rhythm','korean-runner','blank-slice','entry-check','story-classroom','talk-rally'])assert.equal(await fs.readFile(new URL(`../${game}/collection.js`,import.meta.url),'utf8'),source);
 });
 
 test('the three reading games pay from the same wallet, by accuracy rather than round length',async()=>{
@@ -83,6 +83,17 @@ test('the three reading games pay from the same wallet, by accuracy rather than 
   assert.equal((await b.api.award(round('order-rush','order:one'))).reason,'invalid-round','a game outside the list pays nothing');
   assert.equal((await b.api.load()).coins,60);
   assert.equal(b.api.rewardText({reason:'unfinished'}),'한 판을 끝까지 마치면 공통 코인이 모여요.');
+});
+
+test('Talk Rally pays from the same wallet once a round of twelve exchanges is finished',async()=>{
+  const b=browser({pathname:'/try/talk-rally/'});
+  assert.equal(b.links[0].href,'/try/racing/?garage=1');
+  assert.equal(browser({pathname:'/talk-rally/'}).links[0].href,'/korean-racing/?garage=1','beside racing on a learning hub');
+  assert.equal((await b.api.award({...round('talk-rally','rally:one'),total:12,correct:11})).coins,24);
+  assert.equal((await b.api.award({...round('talk-rally','rally:two'),total:12,correct:12})).coins,25);
+  assert.equal((await b.api.award({...round('talk-rally','rally:quit'),total:12,correct:3,completed:false})).reason,'unfinished','leaving mid-round pays nothing');
+  assert.equal((await b.api.award({...round('talk-rally','rally:one'),total:12,correct:12})).reason,'duplicate-round');
+  assert.equal((await b.api.load()).coins,49);assert.equal(b.balances[0].textContent,'보유 49코인');
 });
 
 test('the daily limit says so, and the badge is named in words',async()=>{

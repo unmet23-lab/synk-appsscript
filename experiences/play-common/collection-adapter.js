@@ -6,7 +6,7 @@
   // Where racing's garage is for this page: inside racing's own package (/play/…), on synk.im (/try/…),
   // or beside the game on a local server or the learning hub (/blank-slice/ → /korean-racing/).
   const nestedPlay=pathname.match(/^(.*)\/play\/(?:rhythm|runner)\//);
-  const besideRacing=pathname.match(/^(.*)\/(?:korean-[a-z]+|learning-hub|blank-slice|entry-check|story-classroom|order-rush)\//);
+  const besideRacing=pathname.match(/^(.*)\/(?:korean-[a-z]+|learning-hub|blank-slice|entry-check|story-classroom|order-rush|talk-rally)\//);
   const racingPath=nestedPlay?nestedPlay[1]+'/':pathname.startsWith('/try/')?'/try/racing/':besideRacing?besideRacing[1]+'/korean-racing/':'/';
   const garageHref=racingPath+'?garage=1';
   function economy(){return Promise.resolve(global.SynkCollectionEconomy);}

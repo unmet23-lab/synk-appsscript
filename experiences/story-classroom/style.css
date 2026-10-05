@@ -35,10 +35,7 @@ h1,h2,h3,p{margin:0}
 .landing-description{font-size:17px;color:var(--muted);line-height:1.7}
 .landing-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:31px;align-items:center}
 .button-primary,.button-secondary{border-radius:17px;min-height:56px;padding:14px 24px;border:1px solid transparent;font-size:17px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:22px;letter-spacing:-.03em;transition:transform .18s,box-shadow .18s,background-color .18s}
-.button-primary{background-color:var(--coral-deep);background-image:linear-gradient(#ae322ae0,#ae322ae0),var(--felt);background-size:auto,240px;color:#fff;box-shadow:inset 0 -4px 0 #76201855,inset 0 1px 0 #ffffff33,0 5px 0 #74251f14}
 .button-primary svg,.button-secondary svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.button-primary:hover{transform:translateY(-2px);box-shadow:inset 0 -4px 0 #76201855,inset 0 1px 0 #ffffff33,0 7px 0 #74251f14}
-.button-primary:active{transform:translateY(2px);box-shadow:inset 0 3px 0 #76201855,0 2px 0 #74251f14}
 .button-secondary{background:linear-gradient(132deg,#fff,#f5f7fa);border-color:#cbd0d8;box-shadow:inset 1px 1px 0 #fff,0 3px 8px #18223609;color:var(--ink)}
 .button-secondary:hover{background:#fff;transform:translateY(-1px)}
 .reading-note{display:flex;align-items:center;gap:8px;margin-top:23px;color:var(--muted);font-size:12px;font-weight:500;letter-spacing:-.02em}
@@ -265,7 +262,7 @@ h1,h2,h3,p{margin:0}
 @media(min-width:1101px){.game{max-width:1180px;margin-inline:auto;padding-top:28px}.game-heading{margin-bottom:20px}.mission-copy p{font-size:17px;line-height:1.7}}
 @media(max-width:600px){.scene-column{display:contents}.scene-frame{grid-row:1}.mission-panel{grid-row:2}.dialogue{grid-row:3;margin-top:0}.game-layout{gap:19px}.missions,.missions ul,.missions ol{grid-template-columns:minmax(0,1fr);gap:10px}.mission,.missions>button,.missions li{padding:13px 15px;min-height:0;gap:11px;align-items:flex-start}.mission-copy p{font-size:18px;line-height:1.65;letter-spacing:-.03em}.mission-number,.mission-no{font-size:11px;min-width:19px;padding-top:6px}.mission-check{margin-top:6px;width:20px;height:20px;line-height:18px}.mission-copy small{font-size:11px;margin-top:3px}.mission-panel-heading{margin-bottom:11px}.mission-panel-heading h2{font-size:17px}.mission-footnote{margin:10px 3px 0}.game-layout:has(.stage:not([data-phase='play']):not([data-phase='review'])) .mission-panel{display:none}.scene-prop .scene-label,.scene-actor .scene-label{font-size:11px;line-height:1.3;padding:4px 7px}.scene-prop .scene-label{top:calc(100% - 12px)}.scene-actor .scene-label{margin-top:2px}.scene-target .scene-label{font-size:11px;line-height:1.3;padding:4px 7px}.scene-target[data-destination='drawer'] .scene-label{left:-29%;margin-top:0}}
 @media(max-width:600px){.game-layout:has(.stage:not([data-phase='play']):not([data-phase='review'])) .dialogue{grid-row:2}#cancel-selection{min-width:68px;font-size:11px;padding:8px 9px;border-radius:10px}}
-@media(max-width:600px){.scene-target[data-destination='drawer'] .scene-label{left:50%;top:0;margin-top:-1px;transform:translate(-50%,-100%)}}
+@media(max-width:600px){.scene-target[data-destination='drawer'] .scene-label,.scene-target[data-destination='bin'] .scene-label{left:50%;top:0;margin-top:-1px;transform:translate(-50%,-100%)}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}.scene-actor.walking>img,.scene-actor.walking .actor-body{transform:none}}
 
 /* Approved photographed felt UI. Reading passages keep a clean paper surface. */

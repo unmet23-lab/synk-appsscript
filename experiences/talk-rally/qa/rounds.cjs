@@ -4,7 +4,8 @@
 // 1판(처음): 쉬운 말부터 — 이어지는 말은 일부러 틀린다. 2~4판: 아틀라스 필요 순서로 — 모두 맞힌다.
 // 확인: 판마다 12개·두 학습 항목 4개 이상씩, 새 말과 조금 어려운 말이 나옴, 2판이 틀린 쪽(이어지는 말)을 앞에 둠,
 // 3판 뒤 다음 판 이유가 ‘조금 어려운 이어지는 말’로 넘어가고 4판에 실제로 나옴(쉬운 말이 학습 항목마다 15개라서 — content.mjs),
-// 음성 파일 응답이 모두 200, 결과 복습 12줄, 아틀라스 기록 수(서로 다른 말의 혼자 응답), 콘솔 오류 0.
+// 음성 파일 응답이 모두 200, 결과 복습 12줄, 아틀라스 기록 수(서로 다른 말의 혼자 응답), 콘솔 오류 0,
+// 공통 코인(판마다 완주 15 + 정답 비율 × 10: 8/12는 22, 다 맞히면 25 → 네 판 97).
 // 쓰는 법: node experiences/talk-rally/server.mjs 를 켠 뒤  node experiences/talk-rally/qa/rounds.cjs [desktop|phone]
 const path = require('node:path'), fs = require('node:fs');
 const NM = process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules');
@@ -57,7 +58,7 @@ async function run(browser, name) {
     await sleep(600);
     const end = await S();
     const log = await page.evaluate(() => ({ rows: document.querySelectorAll('#r-log li').length, listen: document.querySelectorAll('#r-log .say-again').length,
-      next: document.querySelector('#r-next-reason').textContent, correct: document.querySelector('#r-correct').textContent }));
+      next: document.querySelector('#r-next-reason').textContent, correct: document.querySelector('#r-correct').textContent, coins: document.querySelector('#r-coins')?.textContent }));
     const kinds = queue.map((id) => byId.get(id));
     const skills = kinds.reduce((m, x) => (m[x.skill] = (m[x.skill] || 0) + 1, m), {});
     check(queue.length === 12 && new Set(queue).size === 12, `${round}판 12개 서로 다름 ${queue}`);
@@ -65,7 +66,7 @@ async function run(browser, name) {
     check(log.rows === 12 && log.listen === 12, `${round}판 결과 복습 ${JSON.stringify(log)}`);
     check(end.results.length === 12, `${round}판 결과 ${end.results.length}`);
     rounds.push({ round, queue, added: queue.filter((id) => ADDED.includes(id)), d2: kinds.filter((x) => x.difficulty === 2).length,
-      follow: kinds.filter((x) => x.kind === 'follow').length, first4: queue.slice(0, 4), correct: log.correct, next: log.next });
+      follow: kinds.filter((x) => x.kind === 'follow').length, first4: queue.slice(0, 4), correct: log.correct, coins: log.coins, next: log.next });
     if (round < ROUNDS) await page.click('#r-again');
   }
   const seen = new Set(rounds.flatMap((r) => r.queue));
@@ -83,6 +84,11 @@ async function run(browser, name) {
   const cells = [...seen].reduce((m, id) => { const x = byId.get(id), k = `${x.skill}/${x.difficulty}`; m[k] = (m[k] || 0) + 1; return m; }, {});
   const expected = Object.values(cells).reduce((n, c) => n + Math.min(12, c), 0);
   check(answered === expected, `아틀라스 기록 수 ${answered} ≠ ${expected}(서로 다른 말 ${seen.size})`);
+  // 공통 코인: 판마다 한 번씩, 맞힌 비율대로
+  const wallet = await page.evaluate(() => JSON.parse(localStorage.getItem('SYNK_PLAY_COLLECTION_V1') || 'null'));
+  const want = rounds.reduce((n, r) => n + 15 + Math.round(10 * Number(r.correct) / 12), 0);
+  check(wallet?.coins === want && Object.keys(wallet.rewardedRounds).length === ROUNDS, `공통 코인 ${wallet?.coins} ≠ ${want}(판 ${Object.keys(wallet?.rewardedRounds || {}).length})`);
+  check(rounds.at(-1).coins === `공통 코인 +25 · 보유 ${want}`, `마지막 판의 코인 줄 ${rounds.at(-1).coins}`);
   check(!errors.length, `콘솔 오류 ${errors.join(' | ')}`);
   await ctx.close();
   return { name, seconds: Math.round((Date.now() - t0) / 1000), rounds, seen: seen.size, addedSeen: ADDED.filter((id) => seen.has(id)), voiceFiles: new Set(voice.map((v) => v.url)).size, fails };

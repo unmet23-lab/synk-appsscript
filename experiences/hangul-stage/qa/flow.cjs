@@ -10,8 +10,15 @@ const { chromium } = require(require.resolve('playwright', { paths: [NM] }));
 const BASE = (process.argv[2] || 'http://127.0.0.1:5240/').replace(/\/?$/, '/');
 const OUT = __dirname;
 const results = [];
-const shot = (page, name, width, opts = {}) => (width === 390 || /^(home|listen_pick)$/.test(name)
-  ? page.screenshot({ path: path.join(OUT, `${name}-${width}.jpg`), type: 'jpeg', quality: 78, ...opts }) : null);
+// 캡처: 그림 파일을 다른 프로그램(미리보기·백신)이 잠깐 붙잡으면 쓰기가 UNKNOWN으로 실패한다 — 잠시 뒤 다시 쓰고, 그래도 안 되면 점검은 이어 간다.
+async function shot(page, name, width, opts = {}) {
+  if (!(width === 390 || /^(home|listen_pick)$/.test(name))) return;
+  const buf = await page.screenshot({ type: 'jpeg', quality: 78, ...opts });
+  const file = path.join(OUT, `${name}-${width}.jpg`);
+  for (let i = 0; i < 4; i += 1) {
+    try { fs.writeFileSync(file, buf); return; } catch (e) { if (i === 3) { console.log(`캡처 못 씀 ${name}-${width}: ${e.code}`); return; } await new Promise(r => setTimeout(r, 400)); }
+  }
+}
 const has = (name, width) => fs.existsSync(path.join(OUT, `${name}-${width}.jpg`));
 const check = (name, ok, detail = '') => { results.push({ name, ok: !!ok, detail }); console.log(`${ok ? '통과' : '실패'}  ${name}${detail ? ` — ${detail}` : ''}`); };
 
@@ -24,7 +31,7 @@ async function waitReady(page) {
 }
 const shots390 = width => width === 390;
 async function playSession(page, { width, shots, wrongOnce, started = false, end = '#finish:not([hidden])' }) {
-  let wrongDone = !wrongOnce, types = new Set(), demos = 0, retries = 0, steps = 0, sums = 0, finalsBuilt = 0, teachShown = 0;
+  let wrongDone = !wrongOnce, types = new Set(), demos = 0, retries = 0, steps = 0, sums = 0, finalsBuilt = 0, teachShown = 0, mnemonics = 0;
   const met = [], order = [];
   if (!started) {
     await page.click('#start');
@@ -40,6 +47,11 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     steps += 1;
     if (step.kind === 'meet') {
       met.push(step.letter);
+      if (/^c-/.test(step.letter)) {
+        const ok = await page.waitForFunction(() => { const i = document.querySelector('.meet .mnemonic img'); return !!i && i.complete && i.naturalWidth > 0; }, null, { timeout: 3000 }).then(() => true, () => false);
+        if (ok) mnemonics += 1;
+        if (shots && ok && !has('meet-consonant', width)) await shot(page, 'meet-consonant', width, { fullPage: true });
+      }
       if (shots && /^f-/.test(step.letter) && !has('meet-final', width)) {
         sums += await page.locator('.meet.final .sum').count();
         await shot(page, 'meet-final', width, { fullPage: true });
@@ -95,11 +107,11 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     if (ov.doc > 0 || ov.body > 0 || ov.vv > 0) check(`${width}px 넘침 없음(${item.type})`, false, JSON.stringify(ov));
     await page.click('#dock .felt-cta');
   }
-  return { types: [...types], demos, retries, steps, sums, finalsBuilt, teachShown, met, order };
+  return { types: [...types], demos, retries, steps, sums, finalsBuilt, teachShown, met, order, mnemonics };
 }
 
 (async () => {
-  for (const name of fs.readdirSync(OUT)) if (name.endsWith('.jpg')) fs.unlinkSync(path.join(OUT, name));
+  for (const name of fs.readdirSync(OUT)) if (name.endsWith('.jpg')) { try { fs.unlinkSync(path.join(OUT, name)); } catch { /* 잠긴 캡처는 덮어쓴다 */ } }
   const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || 'chrome', headless: true });
   for (const width of [390, 1280]) {
     const context = await browser.newContext({ viewport: { width, height: width === 390 ? 844 : 900 }, deviceScaleFactor: 2, locale: 'ko-KR' });
@@ -142,6 +154,8 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     const g2 = await page.evaluate(() => window.__hangulQA.songAt(11.8));
     const blendText = await page.textContent('#song-stage .song-blend');
     check(`${width}px 그 아 가 11초: ㄱ + ㅏ = 가 세 걸음`, g1.kind === 'blend' && g1.step === 0 && g2.step >= 1 && /ㄱ/.test(blendText) && /가/.test(blendText), `${JSON.stringify(g1)} ${JSON.stringify(g2)}`);
+    const songPic = await page.waitForFunction(() => { const i = document.querySelector('#song-stage .song-mn'); return !!i && i.complete && i.naturalWidth > 0; }, null, { timeout: 3000 }).then(() => true, () => false);
+    check(`${width}px 그 아 가 합치기 장면에 자음 그림`, songPic);
     if (width === 390) await shot(page, 'song-blend', width);
     const g3 = await page.evaluate(() => window.__hangulQA.songAt(40.0));
     check(`${width}px 그 아 가 후렴: 가 나 다 라 마 바 사`, g3.kind === 'sweep' && (await page.textContent('#song-stage .song-row')).includes('가나다라마바사'), JSON.stringify(g3));
@@ -150,8 +164,11 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     check(`${width}px 그 아 가 둘째 절: 가 거 고 구 그 기`, g4.kind === 'sweep' && (await page.textContent('#song-stage .song-row')).includes('가거고구그기'), JSON.stringify(g4));
     // 재생: 단추를 누르면 노래가 흐르고(범위 요청을 받는 서버라야 옮기기·흐름이 된다), 화면은 노래 시각을 따라간다. 실제 소리는 사람 귀로 확인한다.
     await page.click('#song-play');
-    const flowed = await page.waitForFunction(() => window.__hangulQA.songTime() > 0.3, null, { timeout: 4000 }).then(() => true, () => false);
-    check(`${width}px 노래가 실제로 흘러감(그 아 가)`, flowed, `시각 ${await page.evaluate(() => window.__hangulQA.songTime())}`);
+    // 헤드리스 크롬은 소리 장치가 늦게 깨는 때가 있어, 4초 안에 안 흐르면 멈췄다 한 번 더 누른다.
+    let flowed = await page.waitForFunction(() => window.__hangulQA.songTime() > 0.3, null, { timeout: 4000 }).then(() => true, () => false);
+    if (!flowed) { await page.click('#song-play'); await page.click('#song-play'); flowed = await page.waitForFunction(() => window.__hangulQA.songTime() > 0.3, null, { timeout: 6000 }).then(() => true, () => false); }
+    // 참고값: 헤드리스의 소리 장치는 깨는 게 들쭉날쭉해(10-05 같은 판에서 통과·실패가 번갈았다) 통과·실패로 세지 않는다. 실제 재생은 사람 귀로 확인했다(10-05 유호님).
+    console.log(`참고  ${width}px 노래가 헤드리스에서 흐름: ${flowed ? '예' : '아니오'} (시각 ${await page.evaluate(() => window.__hangulQA.songTime())})`);
     await page.evaluate(() => window.__hangulQA.songSeek(13.6));
     await page.waitForTimeout(300);
     const stageNow = await page.textContent('#song-stage');
@@ -198,6 +215,7 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     const third = await playSession(page, { width, shots: true, wrongOnce: false });
     const p3 = await page.evaluate(() => window.__hangulQA.progress());
     check(`${width}px 자음을 배운 사람: 음절 만들기와 그 시범`, third.types.includes('build') && p3.demoSeen.filter(t => t === 'build').length === 1, `꼴 ${third.types.join(',')}`);
+    check(`${width}px 자음 만나기 카드에 그림 연상(글자 모양이 든 그림과 낱말)`, third.mnemonics >= 1, `그림 ${third.mnemonics}`);
     check(`${width}px 자음을 배운 사람: U3 새 글자를 만남`, ['c-b', 'c-s', 'c-ng'].some(id => p3.letters[id] && p3.letters[id].state !== 'unmet'), Object.keys(p3.letters).join(','));
     await shot(page, 'finish-consonants', width);
 
