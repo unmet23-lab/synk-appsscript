@@ -1,0 +1,470 @@
+{
+  "kind": "zero-provider-cost-verification",
+  "assembledAtUtc": "2026-10-05T13:11:23.885Z",
+  "repository": "unmet23-lab/SYNK-talk",
+  "baseCommit": "fa7a9678989ce38a1bb5262c331f0f812e5744da",
+  "candidateCommit": "5a9ae7a06d31e6f4a6fb0363b231f6347bb97e78",
+  "testedProductCommit": "00a534930deb554419322d994ea62255f4943e32",
+  "sameProductFiles": [
+    {
+      "file": "App.js",
+      "sha256": "9fae95a4485fa3424eba08ee75d7d118d59178137df80c25502d1f2f3f9c6dd9",
+      "matchesTestedProductSource": true
+    },
+    {
+      "file": "src/어제의나.js",
+      "sha256": "50cb009868dd7c9cffb1905df096416b847a1ea9b4ae57f871ad25feae897bbd",
+      "matchesTestedProductSource": true
+    },
+    {
+      "file": "src/튜터켜짐.js",
+      "sha256": "61a0513c3acc0c7217d423d9af593c21d1bc3535a5746c923010b4d0c0a150c6",
+      "matchesTestedProductSource": true
+    },
+    {
+      "file": "eas.json",
+      "sha256": "c0d0d66120677ace6404eb3d28f322c7b9ed48637b6504bf6b051acdc204d976",
+      "matchesTestedProductSource": true
+    },
+    {
+      "file": "lib/tutor-provider.js",
+      "sha256": "be049c9a1760b7f73a2b975cce92ee7ee6beb936983d08096958b1c168e55515",
+      "matchesTestedProductSource": true
+    },
+    {
+      "file": "lib/tutor-runtime.js",
+      "sha256": "fe55390bd3601611237ea4d1758775ccbaf8748ed71e72479708bfa735e04c9f",
+      "matchesTestedProductSource": true
+    }
+  ],
+  "resolvedDefects": [
+    {
+      "area": "account-view",
+      "behavior": "Previous account progress/goal/staff batch and late 401 retry crossed logout/account switch",
+      "beforeFailures": 6,
+      "relatedAfterPass": 75
+    },
+    {
+      "area": "stt-billing",
+      "behavior": "Provider billing duration discarded; file duration undercounted actual cost",
+      "fixture": {
+        "fileSeconds": 1,
+        "billedSeconds": 3,
+        "beforeActualMicroUsd": 75,
+        "afterActualMicroUsd": 225
+      },
+      "unconfirmedUsage": "hold reservation; keep completed answer and cached replay"
+    },
+    {
+      "area": "audio-boundary",
+      "behavior": "PCM shorter than 200ms passed after millisecond rounding",
+      "after": "Compare exact duration before preserving rounded metadata"
+    },
+    {
+      "area": "production-build",
+      "behavior": "Missing explicit flag inherited ambient tutor ON",
+      "after": "production EXPO_PUBLIC_TUTOR_ENABLED=0; preview/development=1 preserved"
+    }
+  ],
+  "localTests": {
+    "tests": 3187,
+    "pass": 3186,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 1,
+    "todo": 0,
+    "sourceCommit": "5a9ae7a06d31e6f4a6fb0363b231f6347bb97e78",
+    "nodeVersion": "v24.18.0",
+    "logFile": "zero-cost-20261005-verified-final-tests.log",
+    "logSha256": "d403ee8cce55edc891d3ec3c88ee97564319215cac013cbbef74f0b7a0c2596f",
+    "skipReason": "Git-outside fixture directory is absent; not an auth/audio test"
+  },
+  "costFaultMatrix": {
+    "sourceCommit": "00a534930deb554419322d994ea62255f4943e32",
+    "checks": 21,
+    "pass": 21,
+    "fail": 0,
+    "realLocalSql": true,
+    "remoteDatabaseCalls": 0,
+    "provider": "synthetic stub",
+    "receiptSha256": "1accf9407619762a3646f51417f77a0eba7718379495cf1efc0c097262c8ddbc"
+  },
+  "savedEvaluation": {
+    "pass": 26,
+    "measured": 26,
+    "unmeasured": 76,
+    "newModelCalls": 0,
+    "existingOutputOnly": true,
+    "runSourceCommit": "fa7a9678989ce38a1bb5262c331f0f812e5744da",
+    "evaluationNotRerunAfterAccountAndTutorFix": true,
+    "logSha256": "83cb1ef17c445b10d3f993bde35b9d8f54dbd07db01e4bb6ecbbdc3fc65113a8"
+  },
+  "productionAndroidExport": {
+    "commit": "00a534930deb554419322d994ea62255f4943e32",
+    "checkedAtUtc": "2026-10-05T11:50:15.007Z",
+    "exitCode": 0,
+    "output": "C:\\Users\\q1212\\.codex\\worktrees\\world-efficiency-20261002\\zero-cost-20261005-final-android-export",
+    "profile": "production",
+    "tutorEnabled": false,
+    "dotenvDisabled": true,
+    "inheritedPublicEnvCleared": true,
+    "published": false,
+    "apkBuilt": false,
+    "physicalDeviceTested": false,
+    "paidProviderCalls": 0,
+    "bundle": {
+      "file": "_expo/static/js/android/index-0a6edb6f1d91e51796b2b4408bc8d4ad.hbc",
+      "bytes": 5466279,
+      "sha256": "096e92e2604bf0c1a4827f5647bce7e81f218edcfee286c31517748030c94677",
+      "hermes": true,
+      "sourceCommitEmbedded": true,
+      "productionBackendEmbedded": true,
+      "assetCount": 62
+    },
+    "localToolchain": {
+      "node": "v24.18.0",
+      "modules": {
+        "expo": {
+          "installed": "57.0.22",
+          "locked": "57.0.22"
+        },
+        "babel-preset-expo": {
+          "installed": "57.0.11",
+          "locked": "57.0.11"
+        }
+      },
+      "lockVersionsMatched": true
+    }
+  },
+  "productionConfig": {
+    "checkedAtUtc": "2026-10-05T11:35:11.296Z",
+    "freeMonthlyUsd": 0.3,
+    "verifiedPaidMonthlyUsd": 0.5,
+    "dailyUsd": 0.05,
+    "tutorLiteralZeroMatches": true,
+    "priceTableMatches": true,
+    "metadataGetRequests": 1,
+    "settingsWrites": 0
+  },
+  "policy": {
+    "provisional": true,
+    "freeHardMonthlyUsd": 0.5,
+    "verifiedPaidHardMonthlyUsd": 3,
+    "finalBusinessModel": false,
+    "sharedStudentCap": false,
+    "academyException": false
+  },
+  "sourceDelivery": {
+    "pullRequest": "https://github.com/unmet23-lab/SYNK-talk/pull/6",
+    "privateRepository": true,
+    "draft": true,
+    "pushed": true,
+    "merged": false
+  },
+  "officialReview": {
+    "status": "pending",
+    "reviewedCommit": null,
+    "findings": null,
+    "previousAttemptSource": "00a534930deb554419322d994ea62255f4943e32",
+    "previousAttemptStatus": "blocked_session_limit",
+    "previousAttemptCompleted": false,
+    "reason": "Official Claude Code subscription session limit",
+    "resetTimeReported": "23:00 Asia/Seoul",
+    "newCandidatePromptPrepared": true
+  },
+  "ci": {
+    "runId": "37306446859",
+    "sourceCommit": "5a9ae7a06d31e6f4a6fb0363b231f6347bb97e78",
+    "event": "pull_request",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/37306446859",
+    "tests": 3187,
+    "pass": 3178,
+    "fail": 0,
+    "skipped": 9,
+    "cancelled": 0,
+    "todo": 0,
+    "evalPass": 26,
+    "evalMeasured": 26,
+    "ciLogSha256": "28589890a82f4dcaad1cf967a620377a8db79e440ed0fbe6261e3c6570927673",
+    "reruns": 0,
+    "skipsReceipt": {
+      "checkedAtUtc": "2026-10-05T12:09:59.120Z",
+      "sourceHead": "5a9ae7a06d31e6f4a6fb0363b231f6347bb97e78",
+      "runId": 37306446859,
+      "url": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/37306446859",
+      "conclusion": "success",
+      "ciLogSha256": "28589890a82f4dcaad1cf967a620377a8db79e440ed0fbe6261e3c6570927673",
+      "total": 3187,
+      "pass": 3178,
+      "fail": 0,
+      "skippedCount": 9,
+      "skippedTests": [
+        {
+          "testNumber": 635,
+          "testName": "생성물이 원본과 같다 (형제 저장소 없으면 skip · F296)",
+          "reason": "형제 저장소가 없다(/home/runner/work/SYNK-talk/SYNK-appsscript) — as: 원문을 못 읽는다. 낡음은 «안 쟀다»."
+        },
+        {
+          "testNumber": 873,
+          "testName": "형제 저장소 SYNK-appsscript의 계약 파일이 이것과 같다 (줄바꿈만 제외)",
+          "reason": "형제 저장소 SYNK-appsscript가 이 기계에 없다 — 실물 대조는 로컬에서만"
+        },
+        {
+          "testNumber": 893,
+          "testName": "계약 사본이 정본(SYNK-appsscript)과 같은 바이트다 — 이 사본이 낡으면 문항 급수 검증이 낡은 자로 초록이 된다",
+          "reason": "정본 저장소가 이 기계에 없다(/home/runner/work/SYNK-talk/SYNK-appsscript) — CI 자리. 교차 대조는 이 기계의 스위트·배포 게이트가 진다"
+        },
+        {
+          "testNumber": 1293,
+          "testName": "드리프트 — 형제 저장소가 있으면 정본 수식이 내는 값과 전량이 같다",
+          "reason": "형제 저장소 부재 — 정본 대조는 로컬에서만"
+        },
+        {
+          "testNumber": 1930,
+          "testName": "재현 — 49d4feb 직전을 기준으로 두면 그 커밋이 낡힌 다섯 함수가 나온다",
+          "reason": "49d4feb 이 이 사본의 이력에 없다 — 재료 없음(F296)"
+        },
+        {
+          "testNumber": 1951,
+          "testName": "⑧ 실저장소 — git 밖 폴더에 배포 명령이 안 나가고 따로 한 줄로 뜬다 · --json 칸은 그대로 (재료 없으면 skip)",
+          "reason": "작업본에 git 밖 함수 폴더가 없다 — 잴 재료가 없다(F296)"
+        },
+        {
+          "testNumber": 2095,
+          "testName": "SFX ③ — 21종이 있고, 형제 저장소가 있으면 사운드킷과 바이트 동일",
+          "reason": "형제 저장소 부재 — 바이트 대조는 로컬에서만"
+        },
+        {
+          "testNumber": 2230,
+          "testName": "🔴 형제(SYNK-appsscript)의 문자 클래스와 갈라지지 않았다",
+          "reason": "형제 저장소가 없다 — 대조 «못 했다»"
+        },
+        {
+          "testNumber": 2997,
+          "testName": "반입 — 형제 저장소가 있으면 정본과 문구 전량이 같다(사본 드리프트 탐지)",
+          "reason": "형제 저장소 부재 — 정본 대조는 로컬에서만"
+        }
+      ],
+      "additionalReadOnlyCompletedLogReads": 1,
+      "workflowDispatches": 0,
+      "reruns": 0,
+      "remoteMutations": 0,
+      "providerCalls": 0
+    },
+    "skipClassification": {
+      "counts": {
+        "sibling-canonical-repository-absent": 7,
+        "historical-git-commit-absent": 1,
+        "untracked-function-fixture-absent": 1
+      },
+      "skippedTests": [
+        {
+          "testNumber": 635,
+          "testName": "생성물이 원본과 같다 (형제 저장소 없으면 skip · F296)",
+          "reason": "형제 저장소가 없다(/home/runner/work/SYNK-talk/SYNK-appsscript) — as: 원문을 못 읽는다. 낡음은 «안 쟀다».",
+          "sourceFiles": [
+            "tests/강사지식.test.js"
+          ],
+          "category": "sibling-canonical-repository-absent",
+          "inChangedRegressionFiles": false
+        },
+        {
+          "testNumber": 873,
+          "testName": "형제 저장소 SYNK-appsscript의 계약 파일이 이것과 같다 (줄바꿈만 제외)",
+          "reason": "형제 저장소 SYNK-appsscript가 이 기계에 없다 — 실물 대조는 로컬에서만",
+          "sourceFiles": [
+            "tests/계약.test.js"
+          ],
+          "category": "sibling-canonical-repository-absent",
+          "inChangedRegressionFiles": false
+        },
+        {
+          "testNumber": 893,
+          "testName": "계약 사본이 정본(SYNK-appsscript)과 같은 바이트다 — 이 사본이 낡으면 문항 급수 검증이 낡은 자로 초록이 된다",
+          "reason": "정본 저장소가 이 기계에 없다(/home/runner/work/SYNK-talk/SYNK-appsscript) — CI 자리. 교차 대조는 이 기계의 스위트·배포 게이트가 진다",
+          "sourceFiles": [
+            "tests/계약동기.test.js"
+          ],
+          "category": "sibling-canonical-repository-absent",
+          "inChangedRegressionFiles": false
+        },
+        {
+          "testNumber": 1293,
+          "testName": "드리프트 — 형제 저장소가 있으면 정본 수식이 내는 값과 전량이 같다",
+          "reason": "형제 저장소 부재 — 정본 대조는 로컬에서만",
+          "sourceFiles": [
+            "tests/깊이.test.js"
+          ],
+          "category": "sibling-canonical-repository-absent",
+          "inChangedRegressionFiles": false
+        },
+        {
+          "testNumber": 1930,
+          "testName": "재현 — 49d4feb 직전을 기준으로 두면 그 커밋이 낡힌 다섯 함수가 나온다",
+          "reason": "49d4feb 이 이 사본의 이력에 없다 — 재료 없음(F296)",
+          "sourceFiles": [
+            "tests/배포빚.test.js"
+          ],
+          "category": "historical-git-commit-absent",
+          "inChangedRegressionFiles": false
+        },
+        {
+          "testNumber": 1951,
+          "testName": "⑧ 실저장소 — git 밖 폴더에 배포 명령이 안 나가고 따로 한 줄로 뜬다 · --json 칸은 그대로 (재료 없으면 skip)",
+          "reason": "작업본에 git 밖 함수 폴더가 없다 — 잴 재료가 없다(F296)",
+          "sourceFiles": [
+            "tests/배포빚.test.js"
+          ],
+          "category": "untracked-function-fixture-absent",
+          "inChangedRegressionFiles": false
+        },
+        {
+          "testNumber": 2095,
+          "testName": "SFX ③ — 21종이 있고, 형제 저장소가 있으면 사운드킷과 바이트 동일",
+          "reason": "형제 저장소 부재 — 바이트 대조는 로컬에서만",
+          "sourceFiles": [
+            "tests/소리.test.js"
+          ],
+          "category": "sibling-canonical-repository-absent",
+          "inChangedRegressionFiles": false
+        },
+        {
+          "testNumber": 2230,
+          "testName": "🔴 형제(SYNK-appsscript)의 문자 클래스와 갈라지지 않았다",
+          "reason": "형제 저장소가 없다 — 대조 «못 했다»",
+          "sourceFiles": [
+            "tests/옛글자.test.js"
+          ],
+          "category": "sibling-canonical-repository-absent",
+          "inChangedRegressionFiles": false
+        },
+        {
+          "testNumber": 2997,
+          "testName": "반입 — 형제 저장소가 있으면 정본과 문구 전량이 같다(사본 드리프트 탐지)",
+          "reason": "형제 저장소 부재 — 정본 대조는 로컬에서만",
+          "sourceFiles": [
+            "tests/혼잣말.test.js"
+          ],
+          "category": "sibling-canonical-repository-absent",
+          "inChangedRegressionFiles": false
+        }
+      ],
+      "changedRegressionSkipped": 0
+    }
+  },
+  "previewApk": {
+    "candidateCommit": "5a9ae7a06d31e6f4a6fb0363b231f6347bb97e78",
+    "status": "finished_and_locally_verified",
+    "internalOnly": true,
+    "freeAndroidRemainingBefore": 9,
+    "dispatches": 1,
+    "retries": 0,
+    "workflowRunId": "37307250916",
+    "workflowUrl": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/37307250916",
+    "serverCostFixDeployed": false,
+    "verifiedAtUtc": "2026-10-05T13:08:55.854Z",
+    "commit": "5a9ae7a06d31e6f4a6fb0363b231f6347bb97e78",
+    "buildId": "28231b21-57a0-4336-94ce-e74118282ea8",
+    "profile": "preview",
+    "platform": "ANDROID",
+    "distribution": "INTERNAL",
+    "projectId": "b09a2382-76d1-463a-abf1-957f96f7dedb",
+    "package": "lab.synk.talk",
+    "version": "0.2.0",
+    "versionCode": "1",
+    "runtimeVersion": "0.2.0",
+    "bytes": 146172467,
+    "sha256": "f29130eb29ba9c62c5d3f83fed789dd00a0851babbfb343b8e7f5595e9a5487c",
+    "bundleCommit": "5a9ae7a06d31e6f4a6fb0363b231f6347bb97e78",
+    "bundleSha256": "ab83cea4847e72bc7fcb993e33587ac0a9af9ced68e2c6c91674730ed422d5c9",
+    "bundleBytes": 4409984,
+    "bundleFormat": "Hermes bytecode",
+    "hermesHeaderVerified": true,
+    "hermesBytecodeFormatVersion": 98,
+    "abis": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "x86",
+      "x86_64"
+    ],
+    "immutableConfigurationCommit": "5a9ae7a06d31e6f4a6fb0363b231f6347bb97e78",
+    "appJsonSha256": "ac44f7f25c9f6d2d40769af856245d985ff3b151b934f9dafd9eceeb7901b917",
+    "easJsonSha256": "c0d0d66120677ace6404eb3d28f322c7b9ed48637b6504bf6b051acdc204d976",
+    "repositoryHelperSourceMatched": true,
+    "repositoryHelperSha256": "13b74430806667f061a404ac099cfcebd947c766c05fd8f0240a5cc3553f5f0a",
+    "actualEasBuildRecordCrossChecked": true,
+    "apkManifestCrossChecked": true,
+    "artifactMetadataCrossChecked": true,
+    "previewEnvironmentVerified": true,
+    "previewTutorEnabledConfigured": true,
+    "previewTutorNativeUiTested": false,
+    "productionTutorExplicitOffConfigured": true,
+    "productionNativeUiTested": false,
+    "productionServerFlagRecheckedByThisScript": false,
+    "sessionStaleFrontendMarkerVerified": true,
+    "actualDeviceTested": false,
+    "deviceRecordingTested": false,
+    "audioPlaybackListened": false,
+    "sdkOrAppInstalledByThisScript": false,
+    "remoteReads": 0,
+    "remoteDownloads": 0,
+    "providerCalls": 0,
+    "databaseQueries": 0,
+    "productionDeployments": 0,
+    "serverDeployments": 0,
+    "billingChanged": false,
+    "storeSubmitted": false,
+    "otaSubmitted": false,
+    "limitations": [
+      "Internal preview ON configuration and code-marker checks do not prove native UI entry, recording or listening.",
+      "Production OFF is an immutable build-profile setting; this script does not verify an installed production app or change the production server."
+    ],
+    "buildStatus": "FINISHED",
+    "completedWorkflow": {
+      "checkedAtUtc": "2026-10-05T13:01:49.036Z",
+      "status": "completed",
+      "conclusion": "success",
+      "artifactId": "11345919857",
+      "artifactName": "synk-talk-preview-5a9ae7a06d31e6f4a6fb0363b231f6347bb97e78",
+      "archiveBytes": 69106563,
+      "archiveSha256": "sha256:73ca64d35a1b8f0283f0c6e1a1e982ff0ba3e53a3763ecf591194077109f60ec",
+      "downloadCommandExitCode": 0
+    }
+  },
+  "newPaidProviderCalls": 0,
+  "liveFunctionDeployments": 0,
+  "migrationsApplied": 0,
+  "storeSubmitted": false,
+  "otaPublished": false,
+  "publiclyPublished": false,
+  "physicalDevicesConnected": 0,
+  "physicalDeviceTested": false,
+  "deviceRecordingTested": false,
+  "audioPlaybackListened": false,
+  "sameOwnerRefresh": {
+    "checkedAtUtc": "2026-10-05T12:42:58.305Z",
+    "sourceCommit": "5a9ae7a06d31e6f4a6fb0363b231f6347bb97e78",
+    "sameOwnerRefreshKeepsGuardValid": true,
+    "firstExpiredTokenRetriesOnce": true,
+    "nextReadUsesRefreshedTokenImmediately": true,
+    "refreshCalls": 1,
+    "progressRequests": 3,
+    "provider": "stub",
+    "remoteRequests": 0,
+    "realCredentialsRead": false,
+    "paidProviderCalls": 0
+  },
+  "canonicalDocumentTests": {
+    "tests": 59,
+    "pass": 59,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "total": 59,
+    "logFile": "zero-cost-20261005-canonical-final-doc-tests.log",
+    "logSha256": "d3fbc58c81538436f0c830868268e849ea4b995a67c97ac5e913c0af544baf10"
+  }
+}
