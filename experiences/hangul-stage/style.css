@@ -280,6 +280,8 @@ h1,h2{margin:0;letter-spacing:-.01em}
 .move .arrow.up{transform:rotate(-90deg)}
 .move .arrow.down{transform:rotate(90deg)}
 .song-stage [data-i]{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.song-stage [data-i].unmet{cursor:default}
+.song-tile.unmet,[data-i].unmet>.song-tile,[data-i].unmet>.song-mn{opacity:.3}
 .song-tile.hit,[data-i].hit>.song-tile{box-shadow:0 0 0 7px rgba(249,104,89,.32);border-radius:50%}
 .song-hint{margin:-6px 0 0;min-height:1.5em}
 .song-review{display:inline-flex;align-items:center;gap:8px;min-height:44px;border:0;padding:0 18px 3px;font:800 15px/1 var(--sans);color:var(--coral-deep);background:url(assets/kit/chip-blush-long.webp) center/100% 100% no-repeat}
