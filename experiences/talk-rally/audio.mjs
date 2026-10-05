@@ -55,7 +55,12 @@ const note = (kind, name, opts, delay = 0) => { if (log) log.push({ kind, name, 
 /**
  * 몽글의 말 하나를 끝까지 튼다. 끝나면 onEnd(true), 소리를 꺼 두었거나 틀 수 없으면 곧바로 onEnd(false).
  * 듣기 기록은 끝까지 들려준 말만 혼자 해낸 근거가 된다(learning.mjs heard).
+ * 소리 장치가 도중에 멈추면(기기의 소리 길이 바뀌는 중·전화 등) 끝났다는 신호가 오지 않는다. 게임은 그 신호에 공을 치므로,
+ * 말 길이 + VOICE_GUARD초가 지나도 신호가 없으면 스스로 넘긴다: 소리 시계가 말 길이만큼 갔으면 들려준 것(신호만 늦음),
+ * 아니면 못 들려준 것(onEnd(false) — 게임이 그 말을 글로 보여 준다). 10-05 확인 중 소리 장치가 잠깐 멈춰 게임이 몽글의 말에서
+ * 멈춰 있던 것을 보고 넣었다.
  */
+export const VOICE_GUARD = 1.5;
 export function speak(item, { onEnd = () => {} } = {}) {
   note('voice', item.id);
   const buf = voices.get(item.id);
@@ -63,11 +68,18 @@ export function speak(item, { onEnd = () => {} } = {}) {
     const wait = Math.min(3.2, Math.max(0.9, 0.35 + item.line.length * 0.11)), id = setTimeout(() => onEnd(false), wait * 1000);
     return { duration: wait, heard: false, stop: () => clearTimeout(id) };
   }
-  const src = ctx.createBufferSource(); src.buffer = buf; src.connect(bus.out);
-  let stopped = false;
-  src.onended = () => { if (!stopped) onEnd(true); };
+  const c = ctx, src = c.createBufferSource(); src.buffer = buf; src.connect(bus.out);
+  let done = false, guard = 0;
+  const finish = (heard) => { if (done) return; done = true; clearTimeout(guard); onEnd(heard); };
+  src.onended = () => finish(true);
+  const t0 = c.currentTime;
+  guard = setTimeout(() => {
+    const played = c.currentTime - t0 >= buf.duration - 0.05;
+    if (!played) { try { src.stop(); } catch { /* 시작도 못 함 */ } }
+    finish(played);
+  }, (buf.duration + VOICE_GUARD) * 1000);
   src.start();
-  return { duration: buf.duration, heard: true, stop: () => { stopped = true; try { src.stop(); } catch { /* 이미 끝남 */ } } };
+  return { duration: buf.duration, heard: true, stop: () => { done = true; clearTimeout(guard); try { src.stop(); } catch { /* 이미 끝남 */ } } };
 }
 
 /**

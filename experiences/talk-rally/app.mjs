@@ -18,6 +18,8 @@ const announce = (text) => { const n = $('#sr-live'); n.textContent = ''; reques
 const buzz = (ms) => { try { if (sound.isOn() && navigator.vibrate) navigator.vibrate(ms); } catch { /* 진동 없는 기기 */ } };
 const punch = (node) => { if (!node) return; node.classList.remove('punch'); void node.offsetWidth; node.classList.add('punch'); };
 const QA = new URLSearchParams(location.search).has('qa');
+// 공통 코인 스크립트(collection.js)를 읽지 못했으면 코인 줄을 숨긴다(모듈은 본문 끝 스크립트 뒤에 돈다).
+if (!globalThis.SynkPlayCollection) for (const n of document.querySelectorAll('.synk-collection-line')) n.hidden = true;
 const impacts = [];   // 확인용(?qa): 받아친 순간의 시각·판정
 
 /* ── 저장: 판 수·연습 여부·천천히 모드·최고 기록. 학습 기록은 아틀라스가 따로 맡는다 ── */
@@ -37,7 +39,7 @@ const atlas = (fn, fallback = null) => { if (!coach) return fallback; try { retu
 
 /* ── 상태 ── */
 const state = { run: 0, queue: [], index: 0, results: [], rally: 0, score: 0, cur: null, practice: false, paused: false, ranked: null,
-  flow: null, tired: false, pausedMs: 0, pausedAt: 0 };
+  flow: null, tired: false, pausedMs: 0, pausedAt: 0, coinRound: null };
 const live = (run) => run === state.run;
 // 순간 맞춤: 공이 오는 시간(= ‘빠르게!’를 받을 시간)만 이 사람에 맞춘다(연습 공 제외). 피곤한 날은 랠리가 이어져도 빨라지지 않는다.
 function startFlow() {
@@ -119,6 +121,8 @@ async function startRound() {
   const opening = startFlow();
   Object.assign(state, { index: 0, results: [], rally: 0, score: 0, cur: null, practice: false, paused: false,
     queue: composeRound(ITEMS, { ranked: state.ranked?.order, firstTime: progress.plays === 0, seed: progress.plays + 1 }) });
+  // 공통 코인(play-common): 이 판의 번호. 끝까지 마친 판만 받는다(그만두면 받지 않는다). 코인은 학습 기록에 쓰지 않는다.
+  state.coinRound = globalThis.SynkPlayCollection?.roundId('talk-rally') || null;
   updateHud(); renderCards(null); tip('공을 준비하고 있어요…', { silent: true });
   await sound.unlock();
   try { await Promise.all([ensureStage(), sound.preloadVoices([PRACTICE, ...state.queue])]); }
@@ -162,6 +166,7 @@ function renderCards(cur) {
 function nextItem() {
   if (!state.practice && state.index >= state.queue.length) return finish();
   const item = state.practice ? PRACTICE : state.queue[state.index];
+  if (state.cur?.texted) tip(null);   // 앞의 말을 글로 보여 줬으면 지운다(다음 말이 소리로 나올 때 앞 글이 남지 않게)
   const cur = { item, ex: state.practice ? null : atlas((c) => createExchange(c, item)), options: shuffled(item.options), choice: null,
     phase: 'talk', token: 0, hint: state.practice, waiting: false, quick: false, replayed: false, texted: false };
   state.cur = cur;
@@ -179,6 +184,8 @@ function speakCur(cur) {
   cur.speech = sound.speak(cur.item, { onEnd: (heard) => {
     if (!live(run) || state.cur !== cur || cur.phase !== 'talk') return;
     $('#speech').hidden = true;
+    // 소리가 도중에 끊겨 끝까지 못 들려줬으면(소리 장치 멈춤 등 — audio.mjs VOICE_GUARD) 말을 글로 보여 준다. 그 답은 도움으로 남는다
+    if (!heard && sound.isOn() && !cur.texted) { cur.ex?.help('text'); cur.texted = true; tip(`몽글: “${cur.item.line}”`); }
     cur.ex?.heard(heard);
     serve(cur);
   } });
@@ -356,6 +363,10 @@ function finish() {
   if (!progress.best || s.score > progress.best.score) progress.best = { score: s.score, rally: s.bestRally, correct: s.correct, total: s.total };
   save();
   sound.play('achieve');
+  // 완주 15 + 정답 비율 × 10(다른 게임과 같은 규칙). 맞힌 수는 결과 화면 그대로다 — 연습 공은 세지 않는다.
+  const coinRound = state.coinRound; state.coinRound = null; $('#r-coins').textContent = '';
+  if (coinRound) globalThis.SynkPlayCollection?.award({ game: 'talk-rally', total: s.total, correct: s.correct, completed: true, automatic: false, roundId: coinRound })
+    .then((result) => { $('#r-coins').textContent = globalThis.SynkPlayCollection.rewardText(result); });
   $('#r-title').textContent = ['다시 도전!', '좋아요!', '멋져요!', '완벽해요!'][s.stars];
   $('#r-kicker').textContent = prevBest && s.score > prevBest.score ? `말 랠리 · 새 최고 기록! (전 ${prevBest.score}점)` : '말 랠리 · 한 판';
   $('#r-correct').textContent = String(s.correct); $('#r-total').textContent = String(s.total);
