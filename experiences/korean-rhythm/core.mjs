@@ -1,6 +1,6 @@
-import {SUNO_RECORDINGS} from './suno-tracks.mjs?v=20261001-listen';
-import {LISTENING} from './listening.mjs?v=20261001-listen';
-import {NARRATION} from './narration.mjs?v=20261001-listen';
+import {SUNO_RECORDINGS} from './suno-tracks.mjs';
+import {LISTENING} from './listening.mjs';
+import {NARRATION} from './narration.mjs';
 export const LEVELS = {
   easy: {label:'편하게', step:1, window:.28, perfect:.115, great:.195, approach:3.5},
   normal: {label:'리드미컬', step:.5, window:.23, perfect:.085, great:.155, approach:2.9},
