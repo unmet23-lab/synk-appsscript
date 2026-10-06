@@ -31,11 +31,11 @@
     'an-files': { kind: 'official', label: 'Claude 도움말 · 업로드: 파일당 500MB, 대화당 20개, 지원 형식에 오디오는 없음', url: 'https://support.claude.com/en/articles/8241126' },
     'an-pricing': { kind: 'official', label: 'Claude 요금제 · 무료도 한 번에 읽는 양 최대 1M 토큰(모델별 다름), 사용량은 5시간 단위, Pro 월 20달러(연간 결제 시 월 17달러)', url: 'https://claude.com/pricing' },
     'an-accuracy': { kind: 'official', label: 'Claude 도움말 · Claude를 유일한 사실의 근거로 삼지 말 것', url: 'https://support.claude.com/en/articles/8525154' },
-    'gg-gems': { kind: 'official', label: 'Gemini 도움말(한국어) · Gem 만들기: 사이드바 열기 → Gems → 새 Gem → 이름·요청 사항·지식 → 저장', url: 'https://support.google.com/gemini/answer/15146780?hl=ko' },
-    'gg-gems-free': { kind: 'official', label: 'Google 블로그(2025-03-13) · Gem을 모든 사용자에게 무료로 제공', url: 'https://blog.google/products-and-platforms/products/gemini/new-gemini-app-features-march-2025/' },
-    'gg-skills': { kind: 'official', label: 'Gemini 도움말 · 개인 계정의 Gem은 2026년 11월부터 스킬로 자동 전환(파일 포함). 스킬은 18세 이상·활동 기록 보관이 켜져 있어야 함', url: 'https://support.google.com/gemini/answer/18560919' },
+    // 10-07 Gem → 스킬(AI 직원 매뉴얼 manual/content.js와 같은 출처). 옛 Gem 만들기(사이드바 → Gems)·Gem 무료 출처는 안내에 더 쓰지 않아 뺐다.
+    'gg-skills': { kind: 'official', label: 'Gemini 도움말(10-07 다시 확인) · 스킬 만들기: 설정 → 스킬 → 수동으로 만들기 → 이름·설명·요청 사항 → 만들기, 채팅에서 /로 불러 씀. 만 18세 이상 개인 Google 계정. 개인 계정의 Gem은 2026년 11월부터 스킬로 자동 전환(요청 사항·파일 포함)', url: 'https://support.google.com/gemini/answer/18560919?hl=ko' },
+    'gg-skills-blog': { kind: 'official', label: 'Google 블로그(2026-09-30) · 스킬이 Gemini 채팅에 전 세계로 들어오고 Gem을 대신함. Gem 지원 종료: 개인 계정 2026년 11월, Workspace 비즈니스·엔터프라이즈·비영리 2027년 3월, 교육 2027년 6월. 없어질 때 스킬로 자동으로 옮김', url: 'https://blog.google/products-and-platforms/products/gemini/automate-tasks-with-skills/' },
     'gg-activity': { kind: 'official', label: 'Gemini 도움말(한국어) · 활동 기록 보관: 켜 두면 생성형 AI 모델 학습 등 서비스 개선에 사용, 꺼도 최대 72시간 보관', url: 'https://support.google.com/gemini/answer/13278892?hl=ko' },
-    'gg-temp': { kind: 'official', label: 'Gemini 도움말 · 임시 채팅: 학습·맞춤에 쓰지 않음, 개인 계정만, 안에서 Gem은 못 씀', url: 'https://support.google.com/gemini/answer/13275745' },
+    'gg-temp': { kind: 'official', label: 'Gemini 도움말 · 임시 채팅: 학습·맞춤에 쓰지 않음, 개인 계정만, 안에서 Gem은 못 씀. 스킬을 쓸 수 있는지는 안내 없음(2026-10-07 확인)', url: 'https://support.google.com/gemini/answer/13275745' },
     'gg-limits': { kind: 'official', label: 'Gemini 도움말 · 요금제별 한도: 한 번에 읽는 양 무료 32K 토큰·AI Pro 1M, 파일 10개·파일당 100MB, 오디오 합계 무료 10분·Pro 3시간', url: 'https://support.google.com/gemini/answer/16275805' },
     'gg-workspace': { kind: 'official', label: 'Google Workspace 개인정보 허브 · 업무·학교 계정의 Gemini 대화는 허락 없이 조직 밖 모델 학습에 쓰지 않음', url: 'https://knowledge.workspace.google.com/admin/gemini/generative-ai-in-google-workspace-privacy-hub' },
     'gg-meet': { kind: 'official', label: 'Google Meet 도움말 · 회의록 작성(Take notes for me): 한국어 지원, 한 회의 한 언어, 무료 Gmail 불가(업무 계정·Google AI Pro 이상)', url: 'https://support.google.com/meet/answer/14754931' },
@@ -116,20 +116,20 @@
     'free-or-paid': {
       component: 'ai', covers: ['price', 'skip'], title: '유료 요금제가 필요할까',
       body: [
-        '회의 한두 번을 정리하는 데는 무료로 충분해요. 프로젝트(ChatGPT·Claude)와 Gem(Gemini)도 무료에서 쓸 수 있어요. Claude 무료는 프로젝트를 5개까지 만들 수 있어요.',
+        '회의 한두 번을 정리하는 데는 무료로 충분해요. 프로젝트(ChatGPT·Claude)와 스킬(Gemini)도 무료에서 쓸 수 있어요. Claude 무료는 프로젝트를 5개까지 만들 수 있고, Gemini 스킬은 만 18세 이상 개인 계정이면 돼요.',
         '유료가 값을 하는 경우는 세 가지예요. 1시간이 넘는 녹음 글을 자주 넣을 때(한 번에 읽는 양), 하루에 여러 회의를 정리할 때(사용량), 녹음 파일을 그대로 올릴 때(Gemini 무료는 오디오 합계 10분)예요. ChatGPT 무료는 파일을 하루 3개까지 올릴 수 있어요.',
         '2026년 9월 기준 한국 요금은 ChatGPT Go 월 13,000원·Plus 월 29,000원, Google AI Pro 월 29,000원이고, Claude Pro는 월 20달러예요. 회사 계정이 있다면 개인 결제보다 그걸 쓰는 게 안전하고 쌀 때가 많아요.',
       ],
-      src: ['oa-pricing', 'oa-projects', 'oa-files', 'an-projects', 'an-pricing', 'gg-limits', 'gg-plans'],
+      src: ['oa-pricing', 'oa-projects', 'oa-files', 'an-projects', 'an-pricing', 'gg-skills', 'gg-limits', 'gg-plans'],
     },
     'which-ai': {
       component: 'ai', covers: ['what', 'skip'], title: '어떤 AI든 회의록 정리는 잘해요',
       body: [
-        'ChatGPT·Claude·Gemini 모두 두서없는 기록을 요약·결정·할 일로 나누는 일을 잘해요. 차이는 이름과 한도예요. 규칙을 저장하는 곳이 ChatGPT와 Claude는 ‘프로젝트’, Gemini는 ‘Gem’이에요.',
+        'ChatGPT·Claude·Gemini 모두 두서없는 기록을 요약·결정·할 일로 나누는 일을 잘해요. 차이는 이름과 한도예요. 규칙을 저장하는 곳이 ChatGPT와 Claude는 ‘프로젝트’, Gemini는 ‘스킬’이에요.',
         '이미 쓰는 AI가 있다면 바꿀 필요가 없어요. 새로 고른다면 영상과 11쪽 PDF가 ChatGPT 화면으로 되어 있어 따라 하기 쉬워요. 긴 녹음 글을 자주 넣는다면 무료에서도 한 번에 많이 읽는 Claude가 편해요.',
         '따로 필요 없는 것: 회의록 전용 유료 앱. 메모나 녹음 글이 있다면 쓰던 AI와 요청문 하나로 충분해요.',
       ],
-      src: ['synk', 'an-pricing', 'oa-pricing'],
+      src: ['synk', 'an-pricing', 'oa-pricing', 'gg-skills'],
     },
     'hallucination': {
       component: 'format', covers: ['why', 'trap', 'check'], title: 'AI가 기록에 없는 내용을 채울 때',
@@ -150,13 +150,14 @@
       src: ['synk'],
     },
     'project-save': {
-      component: 'save', covers: ['what', 'why', 'skip', 'trap', 'check'], title: '프로젝트·Gem에 규칙을 저장하면',
+      component: 'save', covers: ['what', 'why', 'skip', 'trap', 'check'], title: '프로젝트·스킬에 규칙을 저장하면',
       body: [
-        '프로젝트(ChatGPT·Claude)와 Gem(Gemini)은 ‘규칙을 넣어 둔 전용 폴더’예요. 한 번 저장하면 다음 회의부터는 “이번 회의도 정리해줘” 한 줄과 기록만 보내도 같은 형식으로 나와요.',
+        '프로젝트(ChatGPT·Claude)와 스킬(Gemini)은 규칙을 한 번 넣어 두고 다시 꺼내 쓰는 곳이에요. 한 번 저장하면 다음 회의부터는 “이번 회의도 정리해줘” 한 줄과 기록만 보내도 같은 형식으로 나와요. Gemini는 새 채팅에서 /를 입력해 그 스킬을 고른 뒤 보내요.',
         '함정은 저장 위치예요. 계정 전체에 적용되는 ‘맞춤 지침’에 넣으면 회의와 상관없는 대화에도 섞여요. 그리고 지난 회의의 이름·날짜가 섞이지 않게 규칙 첫 줄에 ‘이번 메시지의 기록만 사용’을 넣었어요. ChatGPT는 프로젝트를 만들 때 ‘프로젝트 전용 메모리’를 고르면 다른 대화의 기억이 섞이지 않아요.',
-        '필요 없는 경우: 이번 한 번만 정리한다면 저장하지 않아도 돼요. 요청문 하나로 충분해요. Gemini의 Gem은 2026년 11월부터 개인 계정에서 ‘스킬’로 자동으로 바뀌어요. 저장해 둔 규칙은 그대로 옮겨져요.',
+        '필요 없는 경우: 이번 한 번만 정리한다면 저장하지 않아도 돼요. 요청문 하나로 충분해요. 이미 Gemini의 Gem에 규칙을 저장해 두셨다면 다시 만들지 않아도 돼요. 개인 계정의 Gem은 2026년 11월 17일부터 스킬로 자동으로 옮겨지고, 회사·학교 계정의 Gem은 2027년까지 쓸 수 있어요.',
+        '확인하는 법: 저장한 뒤 짧은 메모로 한 번 보내 보세요. 정해 둔 칸 순서대로 나오면 잘 들어간 거예요. Gemini는 /를 입력했을 때 목록에 ‘회의-정리’처럼 스킬 이름이 보이면 돼요. 이름의 띄어쓰기는 저절로 -로 바뀌어요.',
       ],
-      src: ['oa-projects', 'an-projects', 'gg-gems', 'gg-skills'],
+      src: ['oa-projects', 'an-projects', 'gg-skills', 'gg-skills-blog'],
     },
     'share-by-recipient': {
       component: 'share', covers: ['why', 'trap', 'check'], title: '받는 사람에 맞춰 바꿔 보내요',
@@ -253,7 +254,7 @@
         { id: 'app', label: 'AI', options: [
           { id: 'chatgpt', label: 'ChatGPT', tip: '영상과 11쪽 PDF가 ChatGPT 화면이라 그대로 따라 하면 돼요.' },
           { id: 'claude', label: 'Claude', tip: 'Claude는 ‘프로젝트’에 규칙을 저장해요. 무료도 5개까지 만들 수 있어요.' },
-          { id: 'gemini', label: 'Gemini', tip: 'Gemini는 ‘Gem’에 규칙을 저장해요. 2026년 11월부터 개인 계정의 Gem은 ‘스킬’로 자동으로 바뀌어요.' },
+          { id: 'gemini', label: 'Gemini', tip: 'Gemini는 ‘스킬’에 규칙을 저장하고, 새 채팅에서 /로 불러 써요.' },
           { id: 'none', label: '아직 없어요', tip: '기록 길이와 쓰임에 맞는 AI를 골라 드릴게요.' },
         ] },
         { id: 'plan', label: '요금제', options: [
@@ -262,7 +263,7 @@
           { id: 'work', label: '회사·학교 계정', tip: '회사 계정은 기본적으로 조직 밖 모델 학습에 쓰지 않아요. 회사 규칙이 먼저예요.' },
         ] },
       ],
-      tip: { title: '같은 기능, 다른 이름', body: ['규칙을 한 번 저장해 두는 기능이 ChatGPT와 Claude는 ‘프로젝트’, Gemini는 ‘Gem’이에요. 저장하는 칸 이름도 ‘지침’과 ‘요청 사항’으로 달라요.', '고른 AI의 실제 메뉴 순서대로 알려 드릴게요.'], visual: 'names' },
+      tip: { title: '같은 기능, 다른 이름', body: ['규칙을 한 번 저장해 두는 기능이 ChatGPT와 Claude는 ‘프로젝트’, Gemini는 ‘스킬’이에요. 저장하는 칸 이름도 ‘지침’과 ‘요청 사항’으로 달라요.', '고른 AI의 실제 메뉴 순서대로 알려 드릴게요.'], visual: 'names' },
     },
     {
       id: 'freq', type: 'single', eyebrow: '얼마나 자주', short: '정리 빈도',
@@ -273,7 +274,7 @@
         { id: 'weekly', label: '비슷한 회의를 자주', sub: '주간 회의, 정기 수업', tip: '규칙을 한 번 저장하면 다음부터는 한 줄이면 돼요.' },
         { id: 'many', label: '여러 종류 회의를 자주', sub: '회의마다 성격이 달라요', tip: '회의 종류별로 칸을 바꿔 쓰는 규칙을 만들어 드릴게요.' },
       ],
-      tip: { title: '처음 한 번만 길게, 다음부터는 한 줄', body: ['자주 정리한다면 규칙을 프로젝트나 Gem에 저장해 두세요. 매번 긴 요청문을 붙이지 않아도 같은 형식이 나와요.', '이번 한 번이라면 저장하지 않아도 돼요.'], visual: 'repeat' },
+      tip: { title: '처음 한 번만 길게, 다음부터는 한 줄', body: ['자주 정리한다면 규칙을 프로젝트나 스킬에 저장해 두세요. 매번 긴 요청문을 붙이지 않아도 같은 형식이 나와요.', '이번 한 번이라면 저장하지 않아도 돼요.'], visual: 'repeat' },
     },
     {
       id: 'share', type: 'multi', eyebrow: '누구에게', short: '받는 사람',

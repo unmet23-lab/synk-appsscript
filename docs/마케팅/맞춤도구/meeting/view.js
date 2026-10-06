@@ -44,7 +44,7 @@
     return `<div class="lanes" role="img" aria-label="처음에는 요청문과 기록을 함께 보내고, 규칙을 저장한 뒤에는 한 줄과 기록만 보낸다"><div class="lane"><b>처음 한 번</b><div class="flow"><span class="node">요청문</span><span class="arr">+</span><span class="node">회의 기록</span><span class="arr">→</span><span class="node hot">회의록</span></div></div><div class="lane"><b>규칙 저장 뒤</b><div class="flow"><span class="node">“이번 회의도 정리해줘”</span><span class="arr">+</span><span class="node">새 기록</span><span class="arr">→</span><span class="node hot">같은 형식</span></div></div></div>`;
   }
   function names() {
-    return `<div class="pool" role="img" aria-label="ChatGPT와 Claude는 프로젝트, Gemini는 Gem이라는 이름으로 규칙을 저장한다"><div class="p"><b>ChatGPT·Claude</b><div class="row"><span>프로젝트</span><span class="alt">지침</span></div></div><div class="p"><b>Gemini</b><div class="row"><span>Gem</span><span class="alt">요청 사항</span></div></div></div>`;
+    return `<div class="pool" role="img" aria-label="ChatGPT와 Claude는 프로젝트, Gemini는 스킬이라는 이름으로 규칙을 저장한다"><div class="p"><b>ChatGPT·Claude</b><div class="row"><span>프로젝트</span><span class="alt">지침</span></div></div><div class="p"><b>Gemini</b><div class="row"><span>스킬</span><span class="alt">요청 사항</span></div></div></div>`;
   }
 
   function visual(key) {
@@ -83,7 +83,7 @@
       '[나의 정리 순서]', ...rec.flow.map((x, i) => `${i + 1}. ${x.t}${x.d ? ` — ${x.d}` : ''}`), '',
       '[처음 정리할 때 보낼 요청문]', rec.prompts.first, '',
     ];
-    if (rec.save.recommend) lines.push(`[${rec.save.where}에 저장할 규칙]`, rec.prompts.rules, '', '[저장하는 곳]', ...rec.save.steps.map((x, i) => `${i + 1}. ${x.t}`), '', '[다음 회의 때]', rec.prompts.next, '');
+    if (rec.save.recommend) lines.push(`[${rec.save.where}에 저장할 규칙]`, rec.prompts.rules, '', '[저장하는 곳]', ...rec.save.steps.map((x, i) => `${i + 1}. ${x.t}`), ...[rec.save.miss, rec.save.note].filter(Boolean).map(x => `※ ${x.t}`), '', '[다음 회의 때]', rec.prompts.next, '');
     if (rec.prompts.share) lines.push('[보낼 글로 바꾸는 요청문]', rec.prompts.share, '');
     lines.push('[내 상황에 맞춘 설정]', ...rec.cards.map(c => `- ${c.k}: ${c.v}${c.s ? ` (${c.s})` : ''}`), '');
     lines.push('[나에게 필요한 팁]', ...rec.tips.filter(id => tips[id]).flatMap(id => [`· ${tips[id].title}`, ...tips[id].body.map(b => `  ${b}`)]), '');
@@ -116,7 +116,9 @@
 
     const flow = `<section class="formbox"><p class="eyebrow">이 순서대로 하세요</p><h2>${esc(rec.flowTitle)}</h2><ol class="steps">${rec.flow.map(x => `<li><div><b>${esc(x.t)}${x.src && x.src !== 'synk' ? badge(x.src) : ''}</b>${x.d && !quick ? `<p>${esc(x.d)}</p>` : ''}</div></li>`).join('')}</ol></section>`;
 
-    const saveBox = rec.save.recommend ? `<div class="copybox"><label for="t-rules">${esc(rec.save.where)}에 한 번 저장할 규칙</label><textarea id="t-rules" readonly spellcheck="false" style="min-height:260px">${esc(rec.prompts.rules)}</textarea><div class="row"><button type="button" class="btn soft" data-action="copy:rules">규칙 복사</button><span class="status" role="status"></span></div></div><div class="formbox" style="padding:18px 20px"><p class="eyebrow">저장하는 곳 · ${esc(rec.ai.label)}</p><ol class="plain" style="margin-top:8px">${rec.save.steps.map(x => `<li>${esc(x.t)}${badge(x.src)}</li>`).join('')}</ol>${rec.save.note ? `<p class="s" style="font-size:14px;color:var(--muted);margin:8px 0 0">${esc(rec.save.note.t)}${badge(rec.save.note.src)}</p>` : ''}</div>${copyBox('next', '다음 회의 때 보낼 한 줄', rec.prompts.next, '한 줄 복사', false, 110)}` : '';
+    // 저장하는 곳 아래 줄: 메뉴가 안 보일 때 할 일(miss, 예: 회사·학교 계정의 Gems) → 알아 둘 것(note).
+    const saveNote = x => (x ? `<p class="s" style="font-size:14px;color:var(--muted);margin:8px 0 0">${esc(x.t)}${badge(x.src)}</p>` : '');
+    const saveBox = rec.save.recommend ? `<div class="copybox"><label for="t-rules">${esc(rec.save.where)}에 한 번 저장할 규칙</label><textarea id="t-rules" readonly spellcheck="false" style="min-height:260px">${esc(rec.prompts.rules)}</textarea><div class="row"><button type="button" class="btn soft" data-action="copy:rules">규칙 복사</button><span class="status" role="status"></span></div></div><div class="formbox" style="padding:18px 20px"><p class="eyebrow">저장하는 곳 · ${esc(rec.ai.label)}</p><ol class="plain" style="margin-top:8px">${rec.save.steps.map(x => `<li>${esc(x.t)}${badge(x.src)}</li>`).join('')}</ol>${saveNote(rec.save.miss)}${saveNote(rec.save.note)}</div>${copyBox('next', '다음 회의 때 보낼 한 줄', rec.prompts.next, '한 줄 복사', false, 110)}` : '';
     const shareBox = rec.prompts.share ? copyBox('share', rec.shareLabel, rec.prompts.share, '요청문 복사', false, 200) : '';
     const take = `<section class="block">${H('가져가기', 'envelope', 8)}<p class="sub">${esc(rec.takeSub)}</p>${copyBox('first', '처음 정리할 때 보낼 요청문', rec.prompts.first, '요청문 복사', true, 300)}${saveBox}${shareBox}</section>`;
 

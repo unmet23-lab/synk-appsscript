@@ -48,10 +48,40 @@ test('한 번만이면 저장할 규칙을 보여 주지 않고, 자주면 AI에
   assert.match(gpt.headline.title, /ChatGPT 프로젝트에 규칙을 저장/);
   const claude = run({ freq: 'weekly', ai: { app: 'claude', plan: 'free' } });
   assert.match(claude.save.steps.map(x => x.t).join(' '), /Set project instructions/);
-  const gem = run({ freq: 'weekly', ai: { app: 'gemini', plan: 'free' } });
-  assert.equal(gem.save.name, 'Gem');
-  assert.match(gem.save.steps.map(x => x.t).join(' '), /스킬/);
-  assert.match(gem.prompts.rules, /^이 Gem은/);
+  const gemini = run({ freq: 'weekly', ai: { app: 'gemini', plan: 'free' } });
+  assert.equal(gemini.save.name, '스킬');
+  assert.match(gemini.save.steps.map(x => x.t).join(' '), /‘설정’\(톱니바퀴\) → ‘스킬’ → ‘수동으로 만들기’.*‘요청 사항’ 칸에 규칙.*\/를 입력해 ‘회의-정리’ 스킬을 고르고/);
+  assert.doesNotMatch(gemini.save.steps.map(x => x.t).join(' '), /Gem(?!ini)/);
+  assert.match(gemini.save.miss.t, /회사·학교 계정이라 ‘스킬’이 안 보이면.*‘Gems’.*2027년까지/);
+  assert.match(gemini.save.note.t, /11월 17일부터 스킬로/);
+  assert.match(gemini.headline.title, /Gemini 스킬에 규칙을 저장/);
+  assert.match(gemini.prompts.rules, /^이 스킬은/);
+  assert.ok(gemini.flow.some(s => /새 채팅에서 \/로 그 스킬을 고르고/.test(s.d)));
+});
+
+test('Gemini 안내는 스킬 기준: 회사·학교 계정 줄과 출처를 두고, 확인되지 않은 활동 기록 조건과 옛 Gem 경로는 쓰지 않는다', () => {
+  const V = require('./view.js');
+  const show = rec => V.result({ rec, answers: rec.answers, layout: 'guided', plan: null, checks: {}, feedbackGiven: null, content: C });
+  const gemini = run({ freq: 'weekly', ai: { app: 'gemini', plan: 'free' } });
+  const out = show(gemini);
+  assert.match(out.html, /회사·학교 계정이라 ‘스킬’이 안 보이면/);
+  assert.match(out.html, /11월 17일부터 스킬로/);
+  assert.match(out.texts.all, /※ 회사·학교 계정이라 ‘스킬’이 안 보이면/);
+  for (const s of ['gg-skills', 'gg-skills-blog']) assert.ok(gemini.sourcesUsed.includes(s), `출처 ${s}`);
+  assert.match(V.visual('names'), /<span>스킬<\/span>/);
+  // 질문·팁·출처와 Gemini 결과(민감도·회사 계정 여러 경우) 어디에도 옛 문장이 남지 않는다.
+  const texts = [JSON.stringify(C.steps), JSON.stringify(C.TIPS), JSON.stringify(C.SOURCES), V.visual('names')];
+  for (const a of [{}, { sensitive: 'unsure' }, { sensitive: 'personal' }, { sensitive: 'internal' }, { ai: { app: 'gemini', plan: 'work' } }]) {
+    const rec = run({ freq: 'weekly', ai: { app: 'gemini', plan: 'free' }, ...a });
+    texts.push(JSON.stringify(rec), show(rec).texts.all);
+  }
+  for (const t of texts) {
+    assert.doesNotMatch(t, /활동 기록 보관’?[을이] 켜/);
+    assert.doesNotMatch(t, /사이드바(의| 열기)[^.]{0,8}Gems/);
+    assert.doesNotMatch(t, /Gem은 ‘?스킬’?로 자동으로 바뀌어요/);
+  }
+  // 질문 화면의 Gemini 한 줄은 스킬만 말한다(회사·학교 계정 줄은 결과의 저장하는 곳 아래에).
+  assert.doesNotMatch(C.steps.find(s => s.id === 'ai').fields[0].options.find(o => o.id === 'gemini').tip, /Gem(?!ini)/);
 });
 
 test('AI가 없으면: 10분 이하 녹음만 → Gemini, 긴 기록 → Claude, 그 밖 → ChatGPT', () => {

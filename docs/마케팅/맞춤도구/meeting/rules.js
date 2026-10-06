@@ -40,7 +40,8 @@
   };
   const SECTIONS_SHORT = { team: '요약 · 결정 · 할 일 · 확인', client: '요약 · 요청 · 약속 · 숫자 · 확인 · 다음 연락', one: '요약 · 합의 · 할 일 · 다음 확인', class: '핵심 · 예시 · 과제 · 질문 · 준비', group: '결정 · 역할 · 일정 · 돈 · 확인' };
 
-  // AI별 저장 위치와 메뉴(2026-09 확인). 화면 언어에 따라 영어로 보일 수 있어 영어 이름을 함께 적는다.
+  // AI별 저장 위치와 메뉴(2026-09 확인, Gemini는 10-07). 화면 언어에 따라 영어로 보일 수 있어 영어 이름을 함께 적는다.
+  // note·miss = 저장하는 곳 아래에 붙는 줄(miss는 화면에 그 메뉴가 안 보일 때 할 일).
   const SAVE = {
     chatgpt: {
       name: '프로젝트', where: 'ChatGPT 프로젝트의 ‘지침’',
@@ -62,15 +63,19 @@
       open: '왼쪽 ‘프로젝트’에서 ‘회의 정리’를 열고 새 채팅에 보내요',
       note: null,
     },
+    // 10-07 Gem → 스킬(AI 직원 매뉴얼 manual/rules.js AI.gemini와 같은 기준). 사이드바의 Gems는 ‘설정’ 메뉴 안으로 들어갔고,
+    // 스킬은 만 18세 이상 개인 계정에서 된다(도움말). 회사·학교 계정은 스킬이 ‘곧’ 열리고 Gem을 2027년까지 쓴다(miss).
+    // 옛 출처의 ‘활동 기록 보관이 켜져 있어야 함’은 10-07 도움말에 없어 쓰지 않는다. 이름의 띄어쓰기는 저절로 -로 바뀐다(실제 화면).
     gemini: {
-      name: 'Gem', where: 'Gemini Gem의 ‘요청 사항’',
+      name: '스킬', where: 'Gemini 스킬의 ‘요청 사항’',
       steps: [
-        r('‘사이드바 열기’ → ‘Gems’ → ‘새 Gem’을 눌러요.', 'gg-gems'),
-        r('이름을 ‘회의 정리’로 적고 ‘요청 사항’ 칸에 규칙을 붙여 넣은 뒤 ‘저장’을 눌러요.', 'gg-gems'),
-        r('2026년 11월부터 개인 계정의 Gem은 ‘스킬’로 자동으로 바뀌어요. 저장한 규칙과 파일도 함께 옮겨져요.', 'gg-skills'),
+        r('왼쪽 메뉴 맨 아래 ‘설정’(톱니바퀴) → ‘스킬’ → ‘수동으로 만들기’를 눌러요.', 'gg-skills'),
+        r('이름은 ‘회의 정리’, 설명은 ‘회의 기록을 회의록으로 정리’처럼 적고, ‘요청 사항’ 칸에 규칙을 붙여 넣은 뒤 ‘만들기’를 눌러요. 이름의 띄어쓰기는 저절로 -로 바뀌어요.', 'gg-skills'),
+        r('다음부터는 새 채팅에서 /를 입력해 ‘회의-정리’ 스킬을 고르고 보내요.', 'gg-skills'),
       ],
-      open: '사이드바의 ‘Gems’에서 ‘회의 정리’를 열고 보내요',
-      note: r('스킬로 바뀐 뒤에는 18세 이상, ‘활동 기록 보관’이 켜진 개인 계정에서 쓸 수 있어요.', 'gg-skills'),
+      open: '새 채팅에서 /를 입력해 ‘회의-정리’ 스킬을 고르고 보내요',
+      miss: r('회사·학교 계정이라 ‘스킬’이 안 보이면, ‘Gems’에서 ‘새 Gem’을 만들어 ‘요청 사항’ 칸에 규칙을 넣고 ‘저장’을 눌러요. 회사·학교 계정의 Gem은 2027년까지 쓸 수 있어요.', 'gg-skills-blog'),
+      note: r('개인 계정의 Gem은 2026년 11월 17일부터 스킬로 자동으로 옮겨져요. 이미 Gem에 규칙을 저장해 두셨다면 그대로 두셔도 돼요.', 'gg-skills'),
     },
   };
 
@@ -88,7 +93,7 @@
     },
     gemini: {
       off: r('‘설정 및 도움말’ → ‘활동’에서 활동 기록 보관을 ‘사용 중지’하면 학습에 쓰이지 않아요. 꺼도 대화는 최대 72시간 보관돼요.', 'gg-activity'),
-      temp: r('민감한 회의는 ‘임시 채팅’으로 보내세요. 학습에 쓰이지 않아요. 임시 채팅 안에서는 Gem을 쓸 수 없으니 요청문 전체를 붙여요.', 'gg-temp'),
+      temp: r('민감한 회의는 ‘임시 채팅’으로 보내세요. 학습에 쓰이지 않아요. 임시 채팅에서는 저장해 둔 스킬·Gem에 기대지 말고 요청문 전체를 붙여요.', 'gg-temp'),
       work: r('업무·학교 계정의 Gemini 대화는 허락 없이 조직 밖 모델 학습에 쓰이지 않아요.', 'gg-workspace'),
     },
   };
@@ -220,7 +225,7 @@
     if (f.freq === 'many') yes.push(r('하루에 여러 회의를 정리한다면 무료 사용량이 모자랄 수 있어요. 한도에 걸릴 때 유료를 생각해도 늦지 않아요.'));
     if (has(f, 'audio') && ai.app === 'gemini' && f.audio.mins !== 'u10') yes.push(r('녹음 파일을 Gemini에 바로 올리려면: 무료는 오디오 합계 10분, Google AI Pro는 3시간까지예요.', 'gg-limits'));
     no.push(r(long ? '짧은 회의는 무료로 충분해요. 긴 기록이 가끔이라면 나눠 보내는 것으로 해결돼요.' : '메모나 1시간 안쪽 회의는 무료로 충분해요.'));
-    no.push({ chatgpt: r('규칙을 저장하는 프로젝트도 무료에서 쓸 수 있어요.', 'oa-projects'), claude: r('규칙을 저장하는 프로젝트도 무료에서 5개까지 만들 수 있어요.', 'an-projects'), gemini: r('규칙을 저장하는 Gem도 무료에서 만들 수 있어요.', 'gg-gems-free') }[ai.app]);
+    no.push({ chatgpt: r('규칙을 저장하는 프로젝트도 무료에서 쓸 수 있어요.', 'oa-projects'), claude: r('규칙을 저장하는 프로젝트도 무료에서 5개까지 만들 수 있어요.', 'an-projects'), gemini: r('규칙을 저장하는 스킬도 만 18세 이상 개인 계정이면 무료에서 만들 수 있어요.', 'gg-skills') }[ai.app]);
     return { verdict: yes.length ? 'some' : 'no', v: yes.length ? `${ai.label} 무료로 시작, 자주·길면 유료` : `${ai.label} 무료로 충분해요`, yes, no };
   }
 
@@ -283,7 +288,8 @@
   }
 
   function rulesText(f, ai, share) {
-    const place = SAVE[ai.app].name === 'Gem' ? '이 Gem은' : '이 프로젝트는';
+    // 스킬은 폴더가 아니라 /로 불러 쓰는 규칙이라 첫 줄을 따로 쓴다.
+    const intro = SAVE[ai.app].name === '스킬' ? '이 스킬은 회의 기록을 읽기 쉬운 회의록으로 정리할 때 씁니다.' : '이 프로젝트는 회의 기록을 읽기 쉬운 회의록으로 정리하는 공간입니다.';
     const kinds = f.record.map(x => RECORD[x]).join(', ');
     const R = [];
     R.push('이번 메시지의 회의 기록만 사용하세요. 지난 회의의 이름·날짜·업무를 섞지 마세요.');
@@ -304,7 +310,7 @@
     if (f.sensitive !== 'none') R.push('연락처·계좌번호 같은 개인정보는 회의록에 옮기지 말고 ‘(개인정보 생략)’으로 적으세요.');
     if (share) R.push(`사용자가 ‘보낼 글로 바꿔줘’라고 하면 ${share.names}에게 ${share.channel}로 보낼 글로 바꾸세요. ${shareRules(f, true).join(' ')}`);
     R.push('결과는 검토용 초안이에요. 외부 메시지 전송, 업무 배정, 일정 등록은 하지 마세요.');
-    return `${place} 회의 기록을 읽기 쉬운 회의록으로 정리하는 공간입니다.\n사용자가 ${josa(kinds, '을', '를')} 주면 다음 규칙을 따르세요.\n\n${R.map((x, i) => `${i + 1}. ${x}`).join('\n')}`;
+    return `${intro}\n사용자가 ${josa(kinds, '을', '를')} 주면 다음 규칙을 따르세요.\n\n${R.map((x, i) => `${i + 1}. ${x}`).join('\n')}`;
   }
 
   // 받는 사람별 규칙. polite=true는 저장할 규칙(존댓말), false는 채팅에 보내는 요청문(반말)이다.
@@ -354,7 +360,9 @@
     });
     S.push({ t: '이름·날짜·숫자를 원본과 대조하기', d: '특히 ‘확인 필요’와 기한 칸을 보세요. 틀린 곳은 같은 채팅에 “○○의 기한은 9월 30일이야, 고쳐줘”라고 말하면 돼요.', src: 'synk' });
     if (share) S.push({ t: `${share.names}에게 보낼 글로 바꿔 직접 보내기`, d: `‘보낼 글로 바꾸는 요청문’을 같은 채팅에 보내고, 읽어 본 뒤 복사해서 ${share.channel}로 보내요.`, src: 'synk' });
-    if (save.recommend) S.push({ t: `규칙을 ${ai.label} ${SAVE[ai.app].name}에 한 번 저장하기`, d: '다음 회의부터는 ‘이번 회의도 정리해줘’ 한 줄과 기록만 보내면 같은 형식으로 나와요.', src: 'synk' });
+    // Gemini 스킬은 새 채팅에서 /로 골라야 쓰인다.
+    const call = { gemini: '새 채팅에서 /로 그 스킬을 고르고 ' }[ai.app] || '';
+    if (save.recommend) S.push({ t: `규칙을 ${ai.label} ${SAVE[ai.app].name}에 한 번 저장하기`, d: `다음 회의부터는 ${call}‘이번 회의도 정리해줘’ 한 줄과 기록만 보내면 같은 형식으로 나와요.`, src: 'synk' });
     if (save.privateMode) S.push({ t: '요청문을 메모 앱에 저장해 두기', d: `다음 회의 때도 저장해 둔 요청문과 기록을 ${tempName}에 붙이면 같은 형식으로 나와요.`, src: 'synk' });
     return S;
   }
@@ -403,19 +411,20 @@
     const share = sharePlan(f);
     const paid = paidVerdict(f, ai);
     const privacy = privacyPlan(f, ai);
-    // 민감한 회의를 자주 정리하는데 Claude·Gemini라면, 시크릿·임시 채팅에서는 프로젝트·Gem을 못 쓴다.
+    // 민감한 회의를 자주 정리하는데 Claude·Gemini라면, 시크릿·임시 채팅에서는 프로젝트·Gem을 못 쓴다
+    // (Gemini 임시 채팅에서 스킬이 되는지는 10-07 도움말에 안내가 없다).
     // 그때는 규칙 대신 요청문을 메모 앱에 저장해 두고 매번 붙이게 한다(privateMode).
     const privateMode = f.freq !== 'once' && ai.plan !== 'work' && ['personal', 'internal'].includes(f.sensitive) && (ai.app === 'claude' || ai.app === 'gemini');
     const save = {
       recommend: f.freq !== 'once' && !privateMode, privateMode,
       where: SAVE[ai.app].where, name: SAVE[ai.app].name,
-      steps: SAVE[ai.app].steps, note: SAVE[ai.app].note,
+      steps: SAVE[ai.app].steps, note: SAVE[ai.app].note, miss: SAVE[ai.app].miss || null,
     };
+    // 10-07: Gemini ‘모름’ 알림(‘스킬은 활동 기록 보관을 켜야 쓴다’)은 근거가 도움말에서 확인되지 않아 뺐다.
     const warns = [];
     if (privateMode) warns.push(ai.app === 'claude'
       ? r('Claude 시크릿 채팅은 프로젝트 밖에서만 열려요. 그래서 민감한 회의는 규칙을 프로젝트에 저장하는 대신, 요청문을 메모 앱에 저장해 두고 매번 시크릿 채팅에 붙이는 방법으로 안내했어요.', 'an-incognito')
-      : r('Gemini 임시 채팅 안에서는 Gem을 쓸 수 없고, Gem이 11월에 스킬로 바뀐 뒤에는 ‘활동 기록 보관’을 켜야 써요. 그래서 민감한 회의는 요청문을 메모 앱에 저장해 두고 매번 임시 채팅에 붙이는 방법으로 안내했어요.', 'gg-temp'));
-    if (ai.app === 'gemini' && save.recommend && f.sensitive === 'unsure' && ai.plan !== 'work') warns.push(r('Gem이 11월에 스킬로 바뀐 뒤에는 ‘활동 기록 보관’을 켜야 쓸 수 있어요. 기록에 민감한 정보가 있다면 임시 채팅에 요청문 전체를 붙이는 방법이 더 안전해요.', 'gg-skills'));
+      : r('Gemini 임시 채팅에서는 저장해 둔 Gem을 쓸 수 없다고 안내돼 있고, 스킬을 쓸 수 있다는 안내도 아직 없어요. 그래서 민감한 회의는 규칙을 스킬에 저장하는 대신, 요청문을 메모 앱에 저장해 두고 매번 임시 채팅에 붙이는 방법으로 안내했어요.', 'gg-temp'));
 
     const prompts = { first: firstPrompt(f, ai, input), rules: rulesText(f, ai, share), next: nextLine(f, ai, input), share: sharePrompt(f, share) };
     const flow = flowSteps(f, ai, input, tr, share, save);
@@ -431,7 +440,7 @@
 
     const sourcesUsed = new Set();
     const collect = x => { if (x && x.src) sourcesUsed.add(x.src); };
-    [...ai.reasons, ...input.reasons, ...(tr ? tr.reasons : []), ...paid.yes, ...paid.no, ...privacy.reasons, ...(share ? share.reasons : []), ...save.steps, save.note, ...warns].forEach(collect);
+    [...ai.reasons, ...input.reasons, ...(tr ? tr.reasons : []), ...paid.yes, ...paid.no, ...privacy.reasons, ...(share ? share.reasons : []), ...save.steps, save.note, save.miss, ...warns].forEach(collect);
     for (const c of cards) (c.reasons || []).forEach(collect);
     flow.forEach(collect);
 
