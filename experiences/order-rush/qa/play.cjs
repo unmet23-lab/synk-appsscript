@@ -123,7 +123,7 @@ async function run(browser, name, view) {
       await page.click('#show-text'); await sleep(200);
       const text = await page.evaluate(() => document.querySelector('#order-text').textContent);
       check(await visible('#order-text'), '글로 보기: 문장이 보임');
-      const order = await page.evaluate((id) => import('./core.mjs').then((m) => m.ORDERS.find((o) => o.id === id)?.text), s.current.id);
+      const order = await page.evaluate((id) => import((document.querySelector('script[type="module"][src]')?.src || '').includes('.mjs') ? './core.mjs' : './core.js').then((m) => m.ORDERS.find((o) => o.id === id)?.text), s.current.id);
       check(text === `“${order}”`, `글로 보기 문장 ${text} ≠ ${order}`);
       await shot('text');
     }

@@ -9,8 +9,8 @@
 const path = require('node:path'), fs = require('node:fs');
 const NM = process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules');
 const { chromium } = require(require.resolve('playwright', { paths: [NM] }));
-const ORIGIN = process.env.RACING_ORIGIN || 'http://127.0.0.1:5281';
-const URL_BASE = `${ORIGIN}/korean-racing/`;
+const ORIGIN = process.env.RACING_ORIGIN || (process.env.RACING_URL ? new URL(process.env.RACING_URL).origin : 'http://127.0.0.1:5281');
+const URL_BASE = process.env.RACING_URL || `${ORIGIN}/korean-racing/`;   // 공개 후보 확인: RACING_URL=http://…/try/racing/
 const ROOT = path.join(__dirname, '..'), OUT = path.join(__dirname, 'shots');
 fs.mkdirSync(OUT, { recursive: true });
 const PHONE = { deviceScaleFactor: 2, isMobile: true, hasTouch: true };
@@ -131,7 +131,10 @@ async function run(browser, name, view) {
   check(lobby.start.bottom <= lobby.vh || name === 'small', `입구: 레이스 시작 단추가 첫 화면 밖 ${JSON.stringify(lobby.start)}`);
   check(lobby.balance === '보유 0코인', `입구 공통 코인 줄 ${lobby.balance}`);
   check(lobby.garage === URL_BASE + '?garage=1', `입구 공통 차고 링크 ${lobby.garage}`);
-  check(lobby.runner === `${ORIGIN}/korean-runner/` && lobby.runner2 === lobby.runner && lobby.rhythm === `${ORIGIN}/korean-rhythm/`, `학습 허브 경로의 다른 게임 링크 ${JSON.stringify(lobby)}`);
+  // 다른 게임 링크: 학습 허브(/korean-racing/)에서는 /korean-<게임>/, 공개 주소(/try/racing/)에서는 /try/<게임>/
+  const onTry = new URL(URL_BASE).pathname.startsWith('/try/');
+  const want = (g) => (onTry ? `${ORIGIN}/try/${g}/` : `${ORIGIN}/korean-${g}/`);
+  check(lobby.runner === want('runner') && lobby.runner2 === lobby.runner && lobby.rhythm === want('rhythm'), `다른 게임 링크 ${JSON.stringify(lobby)}`);
   notes.push(`입구: ${lobby.title} · ${lobby.cta}`);
 
   // 코스 고르기 창(desktop·phone): 열고 닫기

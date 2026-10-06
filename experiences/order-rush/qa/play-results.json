@@ -1,10 +1,35 @@
 [
   {
-    "name": "phone",
+    "name": "desktop",
     "errors": [],
     "fails": [],
     "notes": [
       "문 열기 → 첫 손님 0.2초",
+      "틀린 서빙 안내: 따뜻하게 부탁했어요.",
+      "공통 코인: 공통 코인 +24 · 보유 24",
+      "학습 기록: 혼자 해낸 응답 6 · 결과 이유 “듣고 세부 정보 찾기를 조금 더 확인해 봐요. 이 브라우저의 연습 기록을 사용해요.”",
+      "이번 영업에서 맞춘 것: 주문 종류 한 잔 기본 주문 → 빼기·바꾸기가 있는 주문"
+    ],
+    "shots": [
+      "play_desktop_00_lobby.png",
+      "play_desktop_01_listening.png",
+      "play_desktop_02_building.png",
+      "play_desktop_03_wrong.png",
+      "play_desktop_04_right.png",
+      "play_desktop_05_text.png",
+      "play_desktop_06_pause.png",
+      "play_desktop_07_results.png",
+      "play_desktop_08_results_full.png",
+      "play_desktop_09_lobby_again.png"
+    ],
+    "sec": 58
+  },
+  {
+    "name": "phone",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "문 열기 → 첫 손님 0.1초",
       "틀린 서빙 안내: 따뜻하게 부탁했어요.",
       "공통 코인: 공통 코인 +24 · 보유 24",
       "학습 기록: 혼자 해낸 응답 6 · 결과 이유 “듣고 세부 정보 찾기를 조금 더 확인해 봐요. 이 브라우저의 연습 기록을 사용해요.”",
@@ -26,6 +51,58 @@
       "play_phone_11_rush_queue.png",
       "play_phone_12_rush_switch.png"
     ],
-    "sec": 74
+    "sec": 73
+  },
+  {
+    "name": "small",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "문 열기 → 첫 손님 0.1초",
+      "틀린 서빙 안내: 따뜻하게 부탁했어요.",
+      "공통 코인: 공통 코인 +24 · 보유 24",
+      "학습 기록: 혼자 해낸 응답 6 · 결과 이유 “듣고 세부 정보 찾기를 조금 더 확인해 봐요. 이 브라우저의 연습 기록을 사용해요.”",
+      "이번 영업에서 맞춘 것: 주문 종류 한 잔 기본 주문 → 빼기·바꾸기가 있는 주문",
+      "소리 끔: 주문을 글로 보여 주고(글 도움), 다시 켜면 다시 듣기가 돌아옴"
+    ],
+    "shots": [
+      "play_small_00_lobby.png",
+      "play_small_01_listening.png",
+      "play_small_02_building.png",
+      "play_small_03_wrong.png",
+      "play_small_04_right.png",
+      "play_small_05_text.png",
+      "play_small_06_pause.png",
+      "play_small_07_results.png",
+      "play_small_08_results_full.png",
+      "play_small_09_lobby_again.png",
+      "play_small_10_mute_text.png"
+    ],
+    "sec": 59
+  },
+  {
+    "name": "reduced",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "문 열기 → 첫 손님 0.1초",
+      "틀린 서빙 안내: 따뜻하게 부탁했어요.",
+      "공통 코인: 공통 코인 +24 · 보유 24",
+      "학습 기록: 혼자 해낸 응답 6 · 결과 이유 “듣고 세부 정보 찾기를 조금 더 확인해 봐요. 이 브라우저의 연습 기록을 사용해요.”",
+      "이번 영업에서 맞춘 것: 주문 종류 한 잔 기본 주문 → 빼기·바꾸기가 있는 주문"
+    ],
+    "shots": [
+      "play_reduced_00_lobby.png",
+      "play_reduced_01_listening.png",
+      "play_reduced_02_building.png",
+      "play_reduced_03_wrong.png",
+      "play_reduced_04_right.png",
+      "play_reduced_05_text.png",
+      "play_reduced_06_pause.png",
+      "play_reduced_07_results.png",
+      "play_reduced_08_results_full.png",
+      "play_reduced_09_lobby_again.png"
+    ],
+    "sec": 54
   }
 ]
