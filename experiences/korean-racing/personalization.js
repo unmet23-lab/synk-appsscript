@@ -98,6 +98,44 @@ export function assignmentCandidates(target){
   if(!target)return RACING_CANDIDATES;
   return RACING_CANDIDATES.filter(c=>c.skillIds.includes(target.skillId)&&c.difficulty===target.difficulty&&c.modality===target.modality&&c.responseFormat===target.responseFormat&&target.familyKeys?.includes(c.itemKey)&&(!target.itemKeys?.length||target.itemKeys.includes(c.itemKey)));
 }
+
+// Reorder the authored course; free personalized practice may draw another item from
+// its allowed pool. Never call a repeat (or an incomplete history) a new check.
+export function racingFollowUp(coach,{current,remaining,stage,audioAvailable=true}){
+  if(!remaining.length)return {status:'complete',remaining};
+  const meta=racingItem(current),target=coach.assignment?.();
+  const source=stage.personalized?assignmentCandidates(target).map(c=>c.item):remaining;
+  const pool=source.filter(q=>{
+    const m=racingItem(q);
+    return m.itemKey!==meta.itemKey && m.skillId===meta.skillId && m.difficulty===meta.difficulty
+      && m.modality===meta.modality && m.responseFormat===meta.responseFormat
+      && (audioAvailable||m.modality!=='listening')
+      && (meta.conceptIds||[]).every(id=>m.conceptIds?.includes(id))
+      && coach.exposure?.(m)?.seen===false;
+  });
+  if(!pool.length)return {status:'unavailable',remaining};
+  const selected=coach.recommend(pool.map(q=>({...q,...racingItem(q),skillIds:[racingItem(q).skillId],label:q.prompt})),{audioAvailable})?.selected;
+  const next=pool.find(q=>(q.id||q.answer)===selected?.id);
+  if(!next)return {status:'unavailable',remaining};
+  const reordered=[...remaining],at=reordered.findIndex(q=>(q.id||q.answer)===(next.id||next.answer));
+  if(at>=0)[reordered[0],reordered[at]]=[reordered[at],reordered[0]];
+  else reordered[0]={...next,options:[...next.options]};
+  return {status:'new',remaining:reordered};
+}
+
+// Keep the explicit pair in this round only. The canonical answers stay in Trail.
+export function racingRecheck(coach,question,result){
+  if(!question.recheckSourceAttemptId||!result?.eventId)return null;
+  try{return coach?.recheck?.(question.recheckSourceAttemptId,result.eventId)||null;}
+  catch{return null;}
+}
+
+export function linkRacingRecheck(follow,source){
+  if(!follow)return null;
+  const remaining=follow.remaining.map(question=>{const {recheckSourceAttemptId,...clean}=question;return clean;});
+  if(follow.status==='new'&&source?.eventId&&remaining.length)remaining[0].recheckSourceAttemptId=source.eventId;
+  return {...follow,remaining};
+}
 export function racingTargetLabel(target){const labels={detail:'세부 내용',negation:'부정 표현',condition:'조건 표현',reason:'이유',main:'중심 내용',sequence:'순서',grammar:'문법',vocabulary:'어휘'};return `${target.modality==='reading'?'읽기':'듣기'} · ${labels[target.skillId.split('.').at(-1)]||'지정 표현'} · 난도 ${target.difficulty}`;}
 // `live` (coach.live(FLOW_RACE)) draws free practice at the item level the races reached, among Core's
 // leading choices (game-flow.js pick). A teacher's target sets its own level, so it keeps Core's choice.

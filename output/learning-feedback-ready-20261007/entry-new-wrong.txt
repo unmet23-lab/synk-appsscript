@@ -1,0 +1,80 @@
+- paragraph: "아차, 들어가면 안 됐어요. 통과를 골랐어요. 이 손님은 ‘수영 모자’ 규칙에 따라 거절해야 해요. 여우진: “고마워요!” 왜? 수영 모자를 꼭 써야 해요. 우진 씨는 모자가 없어요. 그 뒤에 생긴 일: 잠시 뒤, 우진 씨가 모자 없이 물에 들어갔다가 다시 밖으로 나왔어요. 다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요."
+- main:
+  - img "SYNK LAB"
+  - generic: 1일차
+  - strong: 하늘 수영장
+  - generic: 손님
+  - generic: 4 / 6
+  - generic: 연속
+  - generic: "0"
+  - button "잠깐 멈춤": Ⅱ
+  - region "입구 창문":
+    - figure:
+      - img "여우 손님 여우진"
+    - status:
+      - generic: 여우진
+      - paragraph: 모자는 집에 두고 왔어요. 그냥 들어가도 되지요?
+    - generic: 8월 6일 수요일
+    - generic: 오후 2시 15분
+  - region "검사 책상":
+    - article "하늘 수영장 이용 안내":
+      - generic: 이용 안내
+      - heading "하늘 수영장 이용 안내" [level=2]
+      - list:
+        - button "1 수영 모자를 꼭 써야 합니다." [disabled]:
+          - generic: "1"
+          - generic: 수영 모자를 꼭 써야 합니다.
+        - button "2 음식은 가지고 들어갈 수 없습니다. 물은 괜찮습니다." [disabled]:
+          - generic: "2"
+          - generic: 음식은 가지고 들어갈 수 없습니다. 물은 괜찮습니다.
+        - button "3 7살 이하 어린이는 어른과 함께 들어와야 합니다." [disabled]:
+          - generic: "3"
+          - generic: 7살 이하 어린이는 어른과 함께 들어와야 합니다.
+    - region "오늘의 손님":
+      - generic: 오늘의 손님
+      - list:
+        - img "김보리"
+        - img "맞음"
+        - img "나구리"
+        - img "맞음"
+        - img "박토순"
+        - img "맞음"
+        - img "여우진"
+        - img "다시 볼 것"
+        - img "남콩이"
+        - img "도다미"
+    - article "손님이 보여 준 표":
+      - generic: 하늘 수영장 입장권
+      - term: 이름
+      - definition: 여우진
+      - term: 구분
+      - definition: 어른 · 31살
+      - term: 날짜
+      - definition: 8월 6일
+    - article "손님의 짐":
+      - generic: 짐
+      - list:
+        - generic: 수건
+        - generic: 물병
+  - region "도장":
+    - button "거절" [disabled]:
+      - generic: 거절
+    - button "돋보기 힌트" [disabled]
+    - button "통과 →" [disabled]:
+      - generic: 통과
+      - generic: →
+  - text: 정답 · 거절 ①
+  - heading "아차, 들어가면 안 됐어요" [level=3]
+  - paragraph:
+    - img "여우진"
+    - generic: "여우진: “고마워요!”"
+  - paragraph:
+    - generic: 왜?
+    - text: 수영 모자를 꼭 써야 해요. 우진 씨는 모자가 없어요.
+  - paragraph: 통과를 골랐어요. 이 손님은 ‘수영 모자’ 규칙에 따라 거절해야 해요.
+  - complementary:
+    - text: 그 뒤에 생긴 일
+    - paragraph: 잠시 뒤, 우진 씨가 모자 없이 물에 들어갔다가 다시 밖으로 나왔어요.
+  - paragraph: 다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요. 다음 확인은 음성 없이 글로 읽어요.
+  - button "새 손님으로 확인" [active]:
+    - generic: 새 손님으로 확인

@@ -3,6 +3,7 @@
 // Strata supplies the curriculum nodes. One answer is evidence about this item
 // only: never a misconception, a mastery estimate or a learner trait.
 const VERDICTS = ['correct', 'incorrect', 'unassessed', 'skipped'];
+const { choiceRecord } = require('./trail');
 
 // Item-level nodes authored with the material come first (the first one is the
 // item's primary concept); exact error-tag links follow. Nothing is guessed.
@@ -50,14 +51,15 @@ function createPractice({ session, decision, map, task, assess, firstExposure = 
   const guarded = work => { try { return work(); } catch (error) { broken = true; throw error; } };
   return {
     presentation,
-    submit(response, { skipped = false, reason = null } = {}) {
+    submit(response, { skipped = false, reason = null, choice } = {}) {
       if (broken) throw new Error('Core: practice record incomplete');
+      const selected = choice === undefined ? null : choiceRecord(choice);
       const result = diagnose({ map, task, assessment: skipped ? { verdict: 'skipped', errorTags: [] } : assess(response) });
       const event = guarded(() => session.practice('attempted', { presentationId: presentation.id, attemptNo: attempts + 1,
-        verdict: result.verdict, errorTags: result.errorTags, ...(reason ? { reason } : {}) }));
+        verdict: result.verdict, errorTags: result.errorTags, ...(reason ? { reason } : {}), ...(selected ? { choice: selected } : {}) }));
       attempts += 1;
       if (!met) met = { itemKey: task.itemKey, conceptIds, at: event.at, verdict: result.verdict };
-      return { ...result, eventId: event.id, attemptNo: attempts };
+      return { ...result, eventId: event.id, attemptNo: attempts, ...(selected ? { choice: { ...selected } } : {}) };
     },
     // Help counts once it is on screen. Repeated renders of the same help are one exposure.
     delivered(help) {

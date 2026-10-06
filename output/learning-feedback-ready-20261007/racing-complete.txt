@@ -1,0 +1,77 @@
+- paragraph: 맞았어요 에. 가는 목적지에는 에를 써요.
+- text: → →
+- main:
+  - img "SYNK LAB"
+  - generic: RACE COMPLETE
+  - text: 나에게 맞는 5문항
+  - heading "코스 통과!" [level=1]
+  - paragraph:
+    - generic: "4"
+    - generic: / 5
+  - paragraph: 맞힌 문제
+  - paragraph
+  - generic: 순위
+  - generic: 1위
+  - generic: 부스터
+  - generic: 4번
+  - generic: 최고 콤보
+  - generic: "4"
+  - generic: 접촉
+  - generic: 8번
+  - paragraph: 통과했어요! 메달 둘을 받았어요.
+  - paragraph:
+    - status: 공통 코인 +23 · 보유 23
+    - link "공통 차고 →":
+      - /url: ./?garage=1
+  - article:
+    - generic: 이번 레이스의 문제
+    - list:
+      - generic "다시 볼 문제": "1"
+      - generic: 빈칸에 알맞은 말을 골라요.
+      - generic: 정답에서 · 고른 답 ‘에게’
+      - generic: "지문: 저는 도서관( ) 책을 읽어요. — 행동이 일어나는 장소에는 에서를 써요."
+      - button "에서 정답과 해설 다시 듣기": 다시 듣기
+      - generic "맞힘"
+      - generic: 빈칸에 알맞은 말을 골라요.
+      - generic: 정답에서
+      - generic: "지문: 집( ) 학교까지 걸어요. — 출발 장소에서 도착 장소까지 이어져요. 다른 새 문항은 도움 없이 맞혔어요."
+      - button "에서 정답과 해설 다시 듣기": 다시 듣기
+      - generic "맞힘"
+      - generic: 빈칸에 알맞은 말을 골라요.
+      - generic: 정답에게
+      - generic: "지문: 친구( ) 선물을 줘요. — 주는 대상에는 에게를 써요."
+      - button "에게 정답과 해설 다시 듣기": 다시 듣기
+      - generic "맞힘"
+      - generic: 빈칸에 알맞은 말을 골라요.
+      - generic: 정답에
+      - generic: "지문: 아침 아홉 시( ) 수업이 시작해요. — 시간에는 에를 써요."
+      - button "에 정답과 해설 다시 듣기": 다시 듣기
+      - generic "맞힘"
+      - generic: 빈칸에 알맞은 말을 골라요.
+      - generic: 정답에
+      - generic: "지문: 학교( ) 가요. — 가는 목적지에는 에를 써요."
+      - button "에 정답과 해설 다시 듣기": 다시 듣기
+  - article:
+    - generic: 보상과 기록
+    - list:
+      - generic: 레이스 완주
+      - generic: "+15"
+      - generic: 정답 보상
+      - generic: "+8"
+      - listitem: 브리즈 로드스터까지 97코인 남았어요
+    - paragraph: "도움·반복·조작 영향을 뺀 새 응답 5개를 맞춤 추천에 참고해요. 이번 주행에서 맞춘 것: 달리는 속도 94 → 72km/h. 직접 달린 기록은 이 브라우저에 저장했어요. 이 브라우저의 공통 학습 기록 · 학생 계정 연결 전"
+  - article:
+    - generic: 다음 레이스
+    - paragraph: "다음: 나에게 맞는 5문항"
+    - button "맞춤 5문항 달리기" [active]:
+      - generic: 맞춤 5문항 달리기
+    - button "드라이브로 돌아가기"
+    - button "이 코스 다시 달리기"
+    - button "공통 차고 구경"
+    - button "처음으로"
+    - paragraph:
+      - generic: 다른 게임
+      - link "바람길 →":
+        - /url: /korean-runner/
+      - link "말의 리듬 →":
+        - /url: /korean-rhythm/

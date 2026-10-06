@@ -51,6 +51,18 @@
 - `coach.assignment()`가 있으면(WORLD 안) 서버가 정한 영역·난도·응답 형식·문항/계열 목록 안에서만 최대 3개(또는 `requiredAttempts`)를 고른다. 자유 연습은 Core 추천과 노출 기록으로 고른다.
 - 끝까지 듣기 전에는 답을 막는다. 끝까지 들은 뒤의 재생만 재청취(도움)로 남기고, 그 재생이 끊겨도 답은 열려 있다. 불러오기에 실패한 뒤의 첫 재생은 첫 청취다. 들은 뒤 닫으면 ‘응답 없음’, 소리가 끊기면 다시 들은 뒤 답한다. WORLD 확인 도구가 쓰는 요소 이름(`#listening-check`·`#listening-check-dialog`·`#check-choices button`·`#check-replay`·`#check-next`·`#check-status`·`#check-feedback`·`#sound`)은 그대로 두었다.
 
+### 오답을 확인하고 다른 문장으로 이어가기 · 2026-10-07 로컬 구현
+
+답한 뒤에는 원문·고른 행동·맞는 행동과 기존 문항 해설을 함께 보여 준다. 오답일 때는 실제 고른 보기의 차이(반대 방향, 하지 않아도 되는 동작, 반대 순서, 빠진 두 번째 동작 등)를 짧게 짚는다. 학생이 왜 그렇게 생각했는지 추측하지 않는다. 설명은 자동으로 접히지 않고 ‘다음 지시 듣기’를 누를 때까지 남는다.
+
+답한 뒤 ‘다시 듣기’는 해설을 보며 복습하는 기능이다. 첫 답의 판정·독립 수행 자격·점수를 바꾸지 않고 추가 응답·도움·전달 이벤트도 기록하지 않는다. 답하기 전 다시 듣기는 기존처럼 도움으로 구분한다. 답변 기록에는 문항별 기계 ID 두 개(`choice.selectedId`·`choice.correctId`)만 선택 정보로 남기며 자유 입력이나 학생 식별 정보는 넣지 않는다. 전에 화면에 나오기만 했던 문항도 새 문항으로 표시하지 않는다. 실제 첫 평가 응답의 독립 자격은 기존 Core 규칙이 판단하며, 화면 노출 표시로 그 규칙을 바꾸지 않는다.
+
+확인판을 열 때 3문항 전부를 정하지 않고, 답한 뒤 다음 단추를 누르면 기존 Core로 다음 문항을 고른다. 오답 또는 도움 받은 정답 뒤에는 같은 영역·난도·응답 형식의 다른 미노출 문항을 우선한다. WORLD 안에서는 지정된 정확한 문항·계열 목록과 최대 총수를 지킨다. 같은 목표의 새 문항이 없으면 남은 연습 또는 지정 문항을 이어간다고 안내하고, 이미 만난 문항은 복습으로 표시한다. 과거 노출을 확인하지 못하면 새 문항이라고 표시하지 않는다. 문항을 생성하거나 같은 문항의 복습을 새 독립 정답으로 바꾸지 않는다. 현재 보유 문항은 12개 그대로이며 학습효과나 TOPIK 급수를 입증한 것은 아니다.
+
+의도적으로 고른 같은 목표의 새 후속 문항에 답하면, 직전 오답·도움 받은 답과 이번 답의 실제 기록 ID를 `coach.recheck()`로 확인해 결과줄을 붙인다. 도움 없는 정답·오답, 도움 받은 정답·오답, 기록 부족을 구분하는 이번 회차의 사실이며 교정의 효과나 학습효과를 입증하지 않는다. 일반 정답 뒤의 다음 문항에는 이 쌍을 재사용하지 않고 확인판을 닫으면 연결을 버린다. API가 없거나 읽기를 거절하면 줄을 숨기고 원래 판정은 유지한다.
+
+이 변경은 별도 듣기 확인판에 적용된다. 90초 달리기의 동작 카드·타이밍·복습 큐는 유지한다. 무료 Node 검증은 `node --test experiences/korean-runner/listening-check.test.mjs experiences/korean-runner/listening-feedback.test.mjs experiences/korean-runner/listening-recheck.test.mjs`이며, 실제 화면·소리·휴대폰에서 설명을 읽기 충분한지는 별도 브라우저 확인 대상이다.
+
 `listening-check.mjs`/`listening-check-ui.mjs`가 별도 이해 확인을 담당한다. 기존 Atlas 학습 API의 재사용이며 별도 판단 엔진이 아니다. 공식 TOPIK 채점·학생 학습효과 입증은 아니다.
 
 ## Atlas의 다음 부탁 선택
@@ -75,7 +87,7 @@
 
 ## 확인
 
-- 단위 시험: `node --test experiences/korean-runner/*.test.mjs` — **50개 통과**(2026-10-07). 판정·타이밍·부정·순서·충돌·90초 시연(`core`), 키 입력(`controls`), 음성 준비·멈춤 위치(`audio`), 순간 맞춤(`flow`), Atlas 연결(`learning`), 듣기 확인 12문항·문형·과제(`listening-check`), 좌표 기준·마을 배치(`course-motion`), 결과 숫자·듣기 능력 줄(`report`). `learning`·`flow`·`listening-check`·`report` 시험은 저장소의 Atlas·Strata 원본을 쓴다.
+- 단위 시험: `node --test experiences/korean-runner/*.test.mjs` — 기존 60개와 새 재확인 화면 8개가 통과했다(2026-10-07, Town 시험과 함께 실행). 판정·타이밍·부정·순서·충돌·90초 시연(`core`), 키 입력(`controls`), 음성 준비·멈춤 위치(`audio`), 순간 맞춤(`flow`), Atlas 연결(`learning`), 듣기 확인 12문항·문형·과제(`listening-check`), 오답별 교정·답 뒤 재생·미노출 후속 문항·목표/노출 경계(`listening-feedback`), 실제 답변 쌍·도움·측정 불가·닫기·API 부재(`listening-recheck`), 좌표 기준·마을 배치(`course-motion`), 결과 숫자·듣기 능력 줄(`report`). `learning`·`flow`·`listening-check`·`listening-feedback`·`listening-recheck`·`report` 시험은 저장소의 Atlas·Strata 원본을 쓴다. 화면 시험의 DOM·음성은 가상이며 실제 브라우저 청취 검증이 아니다.
 - 브라우저: `qa/play.cjs`(Playwright·크롬 헤드리스·실제 WebGL·실제 MP3, `?qa` 훅 `window.__runner`로 기다림만 빨리 감음). 장면 넷(컴퓨터 1440×900 · 휴대폰 390×844 · 320×568 · 움직임 줄이기 1280×800)마다 한 판을 끝까지 달려 해냄·글로 보기·놓침·멈춤을 지나 결과의 공통 코인 줄과 듣기 확인 세 문제까지 확인한다. 몽글 정면(-Z)과 길 결·풍경·표시선이 같은 거리만큼 +Z로 흐르는지, 쪽 넘김·가로 넘침, 단추·위 막대가 화면 안인지, 3D가 실제로 그려지는지, 11px보다 작은 글자, 콘솔 오류를 본다. 목소리 MP3를 막으면 시작하지 않고 다시 준비 창이 뜨는지도 본다(voicefail). 결과 `qa/play-results.json`, 장면 `qa/shots/`.
 - 미확인: 실제 휴대폰의 지속 성능·발열·스피커 청취([확인 절차](qa/MOBILE-CHECK.md)), 사람의 직접 플레이·청취, 학생 학습효과, 공개 배포.
 

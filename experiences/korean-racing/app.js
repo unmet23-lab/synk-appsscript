@@ -6,12 +6,12 @@
 import * as THREE from 'three';
 import { GLTFLoader } from './vendor/GLTFLoader.js';
 import { DRACOLoader } from './vendor/DRACOLoader.js';
-import { WORDS, STAGES, WORD_BY_ID, PROGRESS_KEY, makeQuestions, loadProgress, recordRound } from './learning.js';
+import { WORDS, STAGES, WORD_BY_ID, PROGRESS_KEY, makeQuestions, loadProgress, recordRound, answerFeedback } from './learning.js';
 import { Narrator } from './narration.js';
 import { LANE_AUDIO, questionNarration } from './question-audio.js';
 import { CAMPAIGN, campaignUnlocked, recommendedStage, medalFor } from './campaign.js';
 import { resolveContact, shieldContact, comboShield } from './driving.js';
-import { racingItem, personalizedStage, FLOW_RACE, FLOW_WORDS, BASE_CRUISE, racePressure, describeRace } from './personalization.js';
+import { racingItem, personalizedStage, racingFollowUp, racingRecheck, linkRacingRecheck, FLOW_RACE, FLOW_WORDS, BASE_CRUISE, racePressure, describeRace } from './personalization.js';
 import { finaleUnlocked } from './finales.js';
 import { VEHICLES, PAINTS, WHEELS, TRAILS, SHOP_ITEMS, loadGarage, saveGarage, dailyMission, awardRace } from './garage.js';
 import { buildAlternativeCar, customizeCar, createGarageStage, setVehicleQuality } from './vehicles.js';
@@ -826,7 +826,7 @@ function resultSummary({rank,total,passed,earned,saved,flowEnd,next}){
   // 낱말 문제에는 id가 없다: 정답 낱말로 찾는다(예전 결과 화면은 이 경우 첫 문제만 찾았다).
   const questions=answers.map(a=>{const q=questionBank.find(item=>a.id?item.id===a.id:item.answer===a.answer)||{};
     return {prompt:q.id?q.prompt:q.mode==='picture'?'들은 단어의 그림 고르기':'들은 단어 고르기',answer:q.word,chosen:a.correct?null:WORD_BY_ID[a.chosen]?.word,correct:a.correct,
-      why:q.id?[q.passage?`${q.mode==='reading'?'지문':'들은 말'}: ${q.passage.replace(/\n/g,' · ')}`:'',q.explanation||''].filter(Boolean).join(' — '):''};});
+      why:[q.id?[q.passage?`${q.mode==='reading'?'지문':'들은 말'}: ${q.passage.replace(/\n/g,' · ')}`:'',q.explanation||''].filter(Boolean).join(' — '):'',a.recheck?.line].filter(Boolean).join(' ')};});
   const nextReason=!next?'마지막 코스까지 왔어요. 메달을 더 모으거나 어휘 연습을 달려 봐요.':!demo&&!isUnlocked(next)?`${need}문제 이상 맞히면 다음 코스가 열려요. 이 코스를 한 번 더 달려 봐요.`
     :`다음: ${labelStage(next)}`;
   return {kicker:labelStage(selectedStage),demo,correct,total,medal,passed:!demo&&passed,rank,bestCombo,collisions,coinText,note,questions,rewards,plain,learning,nextReason,listen:i=>listenAgain(answers[i])};
@@ -860,10 +860,11 @@ function judgeGate(){
   const lane=clamp(Math.round((playerOffset+3.45)/3.45),0,2),chosen=gate.types[lane],success=chosen===gate.q.answer;
   if(gate.presentationId&&!roundWasDemo){
     const assessable=gate.intentChoice===chosen;
-    gate.learning=answerGate(gate.presentationId,{correct:success,assessable,reason:assessable?undefined:'motor'},
+    gate.learning=answerGate(gate.presentationId,{correct:success,assessable,reason:assessable?undefined:'motor',choice:{selectedId:chosen,correctId:gate.q.answer}},
       assessable?{pressure:racePressure({readyAt:gate.readyAt,choseAt:gate.choseAt,cruise,campaign:!!selectedStage.campaign,roadLeft:gate.readyRoad})}:{outcome:'void'});
   }
-  gate.judged=true;answers.push({id:gate.q.id,prompt:gate.q.prompt,answer:gate.q.answer,chosen,correct:success,learning:gate.learning});
+  gate.recheck=roundWasDemo?null:learn(c=>racingRecheck(c,gate.q,gate.learning));
+  gate.judged=true;answers.push({id:gate.q.id,prompt:gate.q.prompt,answer:gate.q.answer,chosen,correct:success,learning:gate.learning,recheck:gate.recheck});
   $('repeat-question').hidden=true;$('go').hidden=true;setQuestionExpanded(false);laneAim=null;
   hud.markLanes(chosen,gate.q.answer);
   if(success){
@@ -875,8 +876,26 @@ function judgeGate(){
   shield=comboShield(combo,success,shield);
   if(success&&combo%3===0){showToast(`${combo}콤보! 다음 접촉을 막는 보호막이 생겼어요`,3);speak(['shield-ready'],'연속 정답! 보호막이 생겼어.','reward');}
   setText($('combo'),[combo>=2?`${combo}콤보`:'',shield?'보호막':''].filter(Boolean).join(' · '));
-  hud.answerQuestion({ok:success,word:gate.q.word,why:gate.q.explanation||(success?'정답 부스터로 앞차를 따라잡아요.':'소리와 그림을 기억하고, 계속 달려요.')});
+  const needsPractice=!roundWasDemo&&(!success||gate.learning?.assisted);
+  const reviewing=needsPractice||!!gate.recheck?.line;
+  const follow=needsPractice&&gate.learning?.verdict!=='unassessed'?linkRacingRecheck(learn(c=>racingFollowUp(c,{current:gate.q,remaining:questionBank.slice(gateIndex+1),stage:selectedStage,audioAvailable:soundEnabled&&!narrationUnavailable})),gate.learning):null;
+  if(follow)questionBank.splice(gateIndex+1,questionBank.length-gateIndex-1,...follow.remaining);
+  const nextNote=follow?.status==='new'?' 같은 영역의 새 문제로 확인해 봐요.':follow?.status==='unavailable'?' 같은 목표의 새 문제를 확인하지 못해 예정된 코스를 이어가요.':'';
+  hud.answerQuestion({ok:success,word:gate.q.word,why:[answerFeedback(gate.q,chosen),gate.recheck?.line,nextNote].filter(Boolean).join(' '),hold:reviewing?null:4200});
+  gate.reviewing=reviewing;
+  if(reviewing){
+    velocity=0;inputs.left=inputs.right=false;
+    $('question-toggle').hidden=true;$('feedback-continue').hidden=false;
+    $('feedback-continue').textContent=follow?.status==='new'?'새 문제로 확인하기':'확인했어요 · 계속 달리기';
+    $('feedback-continue').focus({preventScroll:true});
+  }
   if(gate.presentationId)learn(c=>c.help(gate.presentationId,'answer'));
+}
+
+function continueFeedback(){
+  if(!running||paused||!gate?.reviewing)return;
+  gate.reviewing=false;inputs.left=inputs.right=false;questionPace.answered(elapsed);
+  hud.hideQuestion();$('question-toggle').hidden=false;silence();clock.getDelta();
 }
 
 /* ── 주행: 접촉·보호막·드라이브·레이스 한 걸음 ── */
@@ -948,6 +967,7 @@ function updateCoastDrive(dt){
   if(soundEnabled&&audio){motor.frequency.setTargetAtTime(45+velocity*1.8,audio.currentTime,.15);motorGain.gain.setTargetAtTime(narrator.playing?.01:.026,audio.currentTime,.18);windGain.gain.setTargetAtTime(velocity*(narrator.playing?.0002:.00055),audio.currentTime,.18);}
 }
 function updateGame(dt){
+  if(gate?.reviewing){velocity=0;setText($('speed'),0);return;}
   elapsed+=dt;
   if(gate?.announced&&(inputs.left||inputs.right))questionChosen=true;
   if(auto&&gate&&gate.announced&&!gate.judged)aimOffset=LANES[gate.types.indexOf(gate.q.answer)];
@@ -1113,6 +1133,7 @@ $('repeat-question').addEventListener('click', async () => {
 $('subtitles').addEventListener('click', () => { subtitlesOn = !subtitlesOn; $('subtitles').setAttribute('aria-pressed', String(subtitlesOn)); displayQuestion(); });
 $('question-toggle').addEventListener('click', () => { if (!running || paused || !gate?.announced || gate.judged) return; setQuestionExpanded(!questionExpanded); });
 $('go').addEventListener('click', chooseCurrentLane);
+$('feedback-continue').addEventListener('click', continueFeedback);
 $('tutorial-replay').addEventListener('click', () => { if (!ready) { lobbyNote('해안도로를 준비하고 있어요. 잠시 뒤에 다시 눌러 주세요.'); return; } startTutorial(); });
 $('tutorial-repeat').addEventListener('click', async () => {
   if (!tutorial || paused) return;

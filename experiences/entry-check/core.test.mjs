@@ -73,8 +73,8 @@ test('근무 구성: 어떤 필요 순서여도 안내문의 모든 규칙(알�
 
 test('근무 구성: 아틀라스 순서가 바뀌면 실제 손님 구성이 바뀐다', () => {
   const lib = VENUES.find((v) => v.id === 'library');
-  const negFirst = lib.cases.filter((c) => c.skill === 'ko.reading.condition').map((c) => c.id);
-  const detailFirst = lib.cases.filter((c) => c.skill === 'ko.reading.detail').map((c) => c.id);
+  const negFirst = lib.cases.filter((c) => !c.followupOnly && c.skill === 'ko.reading.condition').map((c) => c.id);
+  const detailFirst = lib.cases.filter((c) => !c.followupOnly && c.skill === 'ko.reading.detail').map((c) => c.id);
   const a = composeShift(lib, { ranked: negFirst }).map((c) => c.id);
   const b = composeShift(lib, { ranked: detailFirst }).map((c) => c.id);
   assert.notDeepEqual(a, b);

@@ -1,0 +1,217 @@
+{
+  "dateKst": "2026-10-07",
+  "scope": "Authored correction, optional choice IDs and same-goal unseen follow-up in four learning activities",
+  "status": "implemented-and-locally-verified",
+  "deployed": false,
+  "additionalPaidModelCalls": 0,
+  "additionalApiCostUsd": 0,
+  "testGroups": [
+    {
+      "name": "Core, Trail, learning sync, ledger and WORLD contracts",
+      "command": "node --test tests/atlas-choice-record.test.js tests/atlas-education.test.js tests/atlas-trail.test.js tests/atlas-learning.test.js tests/atlas-learning-sync.test.js tests/atlas-ledger.test.js tests/world-learning-host.test.js tests/atlas-game-flow.test.js tests/atlas-practice-outcome-boundaries.test.js",
+      "passed": 131,
+      "failed": 0
+    },
+    {
+      "name": "Runner",
+      "command": "node --test experiences/korean-runner/*.test.mjs",
+      "passed": 60,
+      "failed": 0
+    },
+    {
+      "name": "Entry",
+      "command": "node --test experiences/entry-check/*.test.mjs",
+      "passed": 40,
+      "failed": 0
+    },
+    {
+      "name": "Racing and Town reading",
+      "command": "node --test experiences/korean-racing/tests/*.test.mjs experiences/synk-town/understanding.test.mjs",
+      "passed": 215,
+      "failed": 0
+    },
+    {
+      "name": "SYNK-talk copies and local server contracts",
+      "cwd": "C:/Users/q1212/Documents/SYNK-talk",
+      "command": "node --test tests/atlas-copy.test.js tests/atlas-practice.test.js tests/synk-server.test.js tests/synk-learning-host.test.js",
+      "passed": 47,
+      "failed": 0
+    }
+  ],
+  "distinctPassedTests": 493,
+  "repeatedTestsNotAddedToTotal": [
+    {
+      "command": "node --test experiences/korean-racing/tests/personalization.test.mjs",
+      "passed": 7,
+      "reason": "Rechecked after feedback punctuation adjustment"
+    }
+  ],
+  "generatedChecks": [
+    {
+      "command": "node tools/build-game-learning.js --check",
+      "result": "passed: Strata map and nine game bundles"
+    },
+    {
+      "command": "node tools/build-synk-account.js --check",
+      "result": "passed: six account bundles, assets, copies and manifest"
+    },
+    {
+      "command": "node tools/sync-atlas.js --consumer talk --check",
+      "result": "passed: local canonical copies and server bundles"
+    }
+  ],
+  "browser": {
+    "method": "CUA DOM actions and screenshots in isolated loopback origins; no browser hidden-state injection",
+    "runner": {
+      "observations": [
+        "First fence question answered incorrectly; authored explanation and chosen-action contrast displayed",
+        "Replay after grading kept choices disabled and said original answer was not regraded",
+        "Next item was a different same-goal prompt at 2/3",
+        "Second wrong answer displayed its distinct correction and explicit next control"
+      ],
+      "evidence": [
+        "runner-feedback.txt",
+        "runner-feedback.png",
+        "runner-next.txt",
+        "runner-feedback-panel.txt",
+        "runner-feedback-panel.png"
+      ],
+      "viewportNote": "Runner panel screenshot uses default desktop panel (observed CSS viewport 554x704); it is not a 390px mobile capture",
+      "fullRoundCompleted": false
+    },
+    "entry": {
+      "observations": [
+        "Food-rule rejection of an allowed guest showed selected-rule correction",
+        "Next guest changed to unseen text-only follow-up pool09 at 2/6, preserving six slots",
+        "Incorrectly admitting guest without swimming cap showed cap-specific correction",
+        "390x844 and 320x568 showed no horizontal overflow; next button reachable by scrolling"
+      ],
+      "evidence": [
+        "entry-feedback-390.txt",
+        "entry-feedback-390.png",
+        "entry-next-390.txt",
+        "entry-next-390.png",
+        "entry-feedback-320.png"
+      ],
+      "fullRoundCompleted": false
+    },
+    "racing": {
+      "observations": [
+        "Skipped tutorial then chose milk for bread question",
+        "Wrong-answer correction showed choice, authored passage, explanation and same-goal follow-up control",
+        "Speed held at zero while review was open",
+        "Explicit continue resumed movement and reached question 2/5"
+      ],
+      "evidence": [
+        "racing-feedback.txt",
+        "racing-feedback.png"
+      ],
+      "limitations": [
+        "Screenshot predates final punctuation cleanup and short-viewport review-card overflow rule",
+        "No final responsive racing screenshot; review hold/timer and follow-up constraints covered by integration tests"
+      ],
+      "fullRoundCompleted": false
+    },
+    "town": {
+      "fixture": "qa-town.html mounts the actual reading markup, stylesheet, UI module and engine bundle with explicit synthetic linked transport; this does not verify WORLD authentication",
+      "observations": [
+        "Wrong festival-location option showed selected/correct labels and option-specific explanation",
+        "Next item changed to library-location question at 2/3",
+        "Completed three questions: one incorrect, two correct; three first independent attempts",
+        "DOM record inspector showed three versioned item keys and exact selectedId/correctId pairs",
+        "390x844 and 320x568 dialog within viewport, scrollable and no horizontal overflow"
+      ],
+      "evidence": [
+        "town-feedback-390.txt",
+        "town-feedback-390.png",
+        "town-next.txt",
+        "town-complete-320.png",
+        "town-records.txt"
+      ],
+      "fullRoundCompleted": true
+    }
+  },
+  "contractLimits": [
+    "Recent raw events retain validated machine choice IDs; folded older ledger preserves existing correctness and exposure aggregates, not full choice history",
+    "Freshness includes presented-only, helped and folded history; unknown history is not treated as unseen",
+    "Assignment item/family scope and round totals remain enforced",
+    "Entry follow-up-only additions are text-only and excluded from the existing voice generation list",
+    "Deploy server validation and new clients together when live deployment is separately authorized"
+  ],
+  "notVerified": [
+    "student learning effect or preference",
+    "teacher pedagogical review",
+    "real phone performance and touch",
+    "human listening quality",
+    "production account round trip",
+    "public deployment",
+    "AI provider quality advantage"
+  ],
+  "frozenAiComparisonPacketChanged": false,
+  "sourceHashes": [
+    {
+      "path": "atlas/education.js",
+      "sha256": "204e3d3f499aa5467ccf6dac88626f36800a9f50ade0de88c866faa5dd36ca98"
+    },
+    {
+      "path": "atlas/trail.js",
+      "sha256": "6e2124aa37ab3d09e47e1ca8cc35a1240d3ee77930daffb3ca910d6bfb799ffc"
+    },
+    {
+      "path": "atlas/game-learning.js",
+      "sha256": "f9367322f10828c9351ab7e738f99c2cf959f2bd5231961bf76fd8762c2442c7"
+    },
+    {
+      "path": "experiences/entry-check/correction.mjs",
+      "sha256": "a8036dd4e5f933e006c302377069e8bcf3f3439dd55d063c26f2f315035cd4a6"
+    },
+    {
+      "path": "experiences/entry-check/app.mjs",
+      "sha256": "123a74106ad09c90b25ef0234d34fd0e6e3b7438b06514f1dc0fc965e406045c"
+    },
+    {
+      "path": "experiences/entry-check/content.mjs",
+      "sha256": "acc159b5fbe2341c398fd408cc60c1043ce423d1a356f4655ce5116b81d9f775"
+    },
+    {
+      "path": "experiences/entry-check/learning.mjs",
+      "sha256": "992066efa51546505769dd1125e55ee932bded3025bbf2730bc8754a57b7eb07"
+    },
+    {
+      "path": "experiences/korean-runner/listening-check.mjs",
+      "sha256": "b49eede62673c894340a8a8dd18ef03eb7f2265fa12a205160a838d88594a5e4"
+    },
+    {
+      "path": "experiences/korean-runner/listening-check-ui.mjs",
+      "sha256": "9982c94d67a8b5fa74659d0d49832aec9e1808f6f38943e6e3576bd44aa94e15"
+    },
+    {
+      "path": "experiences/korean-racing/personalization.js",
+      "sha256": "881590ea2d89878338b8ae52ffe4a45a2190534a0a0e3cc8f1ebda46dfed0642"
+    },
+    {
+      "path": "experiences/korean-racing/learning.js",
+      "sha256": "9af8d9b1b1c8559273b2b651151567afc2cd7b8e5a17d6d0a81fdc8624360856"
+    },
+    {
+      "path": "experiences/korean-racing/app.js",
+      "sha256": "0d305ea3e62341cb9b0a02674595cc305289f4a769bf61cd84e28cf6d774cfe5"
+    },
+    {
+      "path": "experiences/korean-racing/hud.js",
+      "sha256": "b6c202f9c13f1b9c8193c00f536ca251651845a999d0e9c85938adbd96790c6e"
+    },
+    {
+      "path": "experiences/korean-racing/style.css",
+      "sha256": "8576006ca086d346c5c6d2e00ca8f47c952a4974d052fa9fa00c70b2d248c6e1"
+    },
+    {
+      "path": "experiences/synk-town/understanding.mjs",
+      "sha256": "78aba83b57ddb6a3183fd025da45b8302f4b06a11f20d233c8c0fe580019230c"
+    },
+    {
+      "path": "experiences/synk-town/understanding-ui.mjs",
+      "sha256": "a20c348bfbf1866b2a5da2f7af071b3646a0c3e64aa91254d3a2b2be4dd0a244"
+    }
+  ]
+}

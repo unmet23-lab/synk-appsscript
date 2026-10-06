@@ -1,0 +1,67 @@
+- paragraph: 다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요. 이 확인 손님은 음성 없이 글로 읽어요.
+- main:
+  - img "SYNK LAB"
+  - generic: 1일차
+  - strong: 하늘 수영장
+  - generic: 손님
+  - generic: 5 / 6
+  - generic: 연속
+  - generic: "0"
+  - button "잠깐 멈춤": Ⅱ
+  - region "입구 창문":
+    - figure:
+      - img "펭귄 손님 남콩이"
+    - status [active]:
+      - generic: 남콩이
+      - paragraph: 수영 모자를 가져왔어요. 들어가기 전에 쓸게요.
+    - generic: 8월 6일 수요일
+    - generic: 오후 2시 17분
+  - region "검사 책상":
+    - article "하늘 수영장 이용 안내":
+      - generic: 이용 안내
+      - heading "하늘 수영장 이용 안내" [level=2]
+      - list:
+        - button "1 수영 모자를 꼭 써야 합니다." [disabled]:
+          - generic: "1"
+          - generic: 수영 모자를 꼭 써야 합니다.
+        - button "2 음식은 가지고 들어갈 수 없습니다. 물은 괜찮습니다." [disabled]:
+          - generic: "2"
+          - generic: 음식은 가지고 들어갈 수 없습니다. 물은 괜찮습니다.
+        - button "3 7살 이하 어린이는 어른과 함께 들어와야 합니다." [disabled]:
+          - generic: "3"
+          - generic: 7살 이하 어린이는 어른과 함께 들어와야 합니다.
+    - region "오늘의 손님":
+      - generic: 오늘의 손님
+      - list:
+        - img "김보리"
+        - img "맞음"
+        - img "나구리"
+        - img "맞음"
+        - img "박토순"
+        - img "맞음"
+        - img "여우진"
+        - img "다시 볼 것"
+        - img "남콩이"
+        - img "도다미"
+    - article "손님이 보여 준 표":
+      - generic: 하늘 수영장 입장권
+      - term: 이름
+      - definition: 남콩이
+      - term: 구분
+      - definition: 어른 · 24살
+      - term: 날짜
+      - definition: 8월 6일
+    - article "손님의 짐":
+      - generic: 짐
+      - list:
+        - generic: 수영 모자
+        - generic: 수건
+  - region "도장":
+    - paragraph: 규칙을 모두 지키면 통과, 하나라도 어기면 거절이에요. 다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요. 이 확인 손님은 음성 없이 글로 읽어요.
+    - button "거절 ←":
+      - generic: 거절
+      - generic: ←
+    - button "돋보기 힌트"
+    - button "통과 →":
+      - generic: 통과
+      - generic: →

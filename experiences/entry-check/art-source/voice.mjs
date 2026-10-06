@@ -72,7 +72,8 @@ export function voiceLines() {
   for (const step of TUTORIAL) add(VOICE_ID.tutorial(step.id), step.text, 'narrator');
   for (const v of VENUES) {
     add(VOICE_ID.brief(v.id), `${BRIEF_LEAD[v.id]} ${v.briefing}`, 'narrator');
-    for (const c of v.cases) {
+    // Text-only confirmation scenes intentionally have no voice production scope.
+    for (const c of v.cases.filter(c => !c.textOnly)) {
       add(VOICE_ID.line(c.id), c.line, c.who);
       add(VOICE_ID.reply(c.id), c.reply, c.who);
       add(VOICE_ID.oops(c.id), c.oops, 'narrator');

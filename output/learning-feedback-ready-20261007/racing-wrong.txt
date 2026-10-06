@@ -1,0 +1,23 @@
+- paragraph: "정답은 에서. 고른 답은 “에게”예요. 안내문: “저는 도서관( ) 책을 읽어요.” 행동이 일어나는 장소에는 에서를 써요. 같은 영역의 새 문제로 확인해 봐요."
+- text: → →
+- main:
+  - img "SYNK LAB"
+  - strong: 레이싱
+  - generic: 문제
+  - generic: 1 / 5
+  - generic: 속도
+  - generic: 0km/h
+  - generic: 순위
+  - generic: 3 / 3
+  - button "잠깐 멈춤": Ⅱ
+  - region "해안도로 레이스. 문제를 듣고 답이 있는 차선으로 옮겨 통과해요.":
+    - generic: 읽기 1 / 5
+    - status: 음성 안내
+    - paragraph: "정답: 에서"
+    - paragraph: "고른 답은 “에게”예요. 안내문: “저는 도서관( ) 책을 읽어요.” 행동이 일어나는 장소에는 에서를 써요. 같은 영역의 새 문제로 확인해 봐요."
+    - button "새 문제로 확인하기" [active]
+    - button "자막"
+    - generic: 부스터
+    - button "왼쪽 차선으로": ←
+    - button "오른쪽 차선으로": →
+- text: → →

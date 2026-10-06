@@ -1,0 +1,61 @@
+- paragraph: 정확해요!. 네! 아빠랑 같이 올게요. 왜? 다미는 6살이에요. 7살 이하 어린이는 어른과 함께 들어와야 해요.
+- main:
+  - img "SYNK LAB"
+  - generic: SHIFT COMPLETE
+  - text: 하늘 수영장 · 1일차
+  - heading "좋은 근무!" [level=1]
+  - paragraph:
+    - generic: "5"
+    - generic: / 6
+  - paragraph
+  - paragraph: 첫 도장으로 5명을 바르게 처리했어요. 최고 3연속! 새 근무지 ‘별빛 도서관’이 열렸어요.
+  - paragraph:
+    - status
+    - link "공통 차고 →":
+      - /url: /korean-racing/?garage=1
+  - article:
+    - generic: 오늘의 근무 기록
+    - list:
+      - generic: 김보리 오후 2시 2분
+      - generic: 정답 통과
+      - img "맞음"
+      - generic: 나구리 오후 2시 6분
+      - generic: 정답 거절 · ② 음식
+      - img "맞음"
+      - generic: 박토순 오후 2시 11분
+      - generic: 정답 통과
+      - img "맞음"
+      - generic: 여우진 오후 2시 15분
+      - generic: 정답 거절 · ① 수영 모자 · 내 도장 통과
+      - img "다시 볼 것"
+      - generic: 남콩이 오후 2시 17분
+      - generic: 정답 통과
+      - generic: 다른 새 문항은 도움 없이 맞혔어요.
+      - img "맞음"
+      - generic: 도다미 오후 2시 20분
+      - generic: 정답 거절 · ③ 7살 이하 어린이
+      - img "맞음"
+  - article:
+    - generic: 읽기 능력 기록
+    - list:
+      - text: 읽고 세부 정보 찾기
+      - generic: 다음 연습
+      - emphasis: 이번 2/3
+      - generic: 확인하는 중이에요 · 혼자 푼 새 문항 2개 중 2개 맞힘
+      - generic: 읽고 부정·변경 이해하기
+      - emphasis: 이번 1/1
+      - generic: 확인하는 중이에요 · 혼자 푼 새 문항 1개 중 1개 맞힘
+      - generic: 읽고 조건 이해하기
+      - emphasis: 이번 2/2
+      - generic: 확인하는 중이에요 · 혼자 푼 새 문항 2개 중 2개 맞힘
+    - paragraph: 이 브라우저에 남은 공통 학습 기록 중 ‘글을 읽고 하나 고르기’ 응답만 봐요. 힌트를 본 도장은 혼자 해낸 기록으로 세지 않아요. TOPIK 급수나 합격 판정이 아니에요.
+  - article:
+    - generic: 다음 추천
+    - heading "2일차 · 별빛 도서관" [level=2]
+    - paragraph: 읽고 세부 정보 찾기를 조금 더 확인해 봐요.
+    - button "추천 근무 시작":
+      - generic: 추천 근무 시작
+    - button "같은 근무지 다시"
+    - button "근무지 고르기"
+    - link "다른 게임 추천 보기":
+      - /url: /learning-hub/

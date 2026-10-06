@@ -5,6 +5,7 @@ import { koreanTime, minutes, venueById, activeRules, memoActive, judge, compose
 import { GAME_ID, caseMetadata, rankCases, recommendVenue, answerPayload, skillReport, FLOW_ENTRY, magnifierAfter, FLOW_WORDS, assignmentCases, assignmentVenues, entryTargetLabel } from './learning.mjs';
 import * as sound from './audio.mjs';
 import { fitText, preloadImages } from './kit/lab.mjs';
+import { choiceId, choiceCorrection, immediateCheck, followUpResult } from './correction.mjs';
 
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
@@ -36,7 +37,7 @@ const runClosed=()=>{if(!coach||!hosted)return false;try{coach.assignment?.();re
 
 /* ── 상태 ── */
 const state = { venue: null, queue: [], index: 0, results: [], combo: 0, cur: null, memoShown: false, ranked: null, busy: false, shift: 0, guardUntil: 0,
-  flow: null, magnifierTimer: 0, flowLine: null };
+  flow: null, magnifierTimer: 0, flowLine: null, checkNotice: null };
 // 근무마다 번호를 올린다. 기다림(움직임·알림) 뒤에 번호가 바뀌었으면 그 근무는 끝난 것이라 이어 가지 않는다(나간 뒤 이전 근무가 뒤에서 진행되던 문제).
 const live = (token) => token === state.shift;
 // 덮개(안내·알림)를 닫은 직후의 두 번째 탭이 아래 도장 줄을 누르지 않게 잠깐 막는다.
@@ -130,12 +131,12 @@ function startShift(venueId, { tutorial = !progress.tutorial } = {}) {
   // 공통 코인(play-common): 이 근무의 번호. 연수 근무는 안내를 따라 찍은 도장이라 받지 않는다. 코인은 학습 기록에 쓰지 않는다.
   state.coinRound = tut.on ? null : (globalThis.SynkPlayCollection?.roundId('entry-check') || null);
   // 순간 맞춤: 돋보기가 스스로 나오는 때만 맞춘다(연수 근무는 정해진 대로).
-  clearTimeout(state.magnifierTimer); state.flowLine = null;
+  clearTimeout(state.magnifierTimer); state.flowLine = null; state.checkNotice = null;
   state.flow = tut.on ? null : atlas((c) => c.live?.(FLOW_ENTRY, { words: FLOW_WORDS }) ?? null);
   // 피곤한 날·오랜만인 날의 약속은 첫 손님 앞에서 한 줄로 알린다(지난번에 이어 가는 날은 말하지 않는다).
   state.flowLine = state.flow ? atlas(() => state.flow.intro().line?.text) || null : null;
   sound.preloadVoices([VOICE_ID.brief(v.id), VOICE_ID.memo(), ...(tut.on ? TUTORIAL.map((t) => VOICE_ID.tutorial(t.id)) : []),
-    ...state.queue.flatMap((c) => [VOICE_ID.line(c.id), VOICE_ID.reply(c.id), VOICE_ID.oops(c.id), VOICE_ID.thanks(c.who), VOICE_ID.why(c.who)]),
+    ...state.queue.filter(c => !c.textOnly).flatMap((c) => [VOICE_ID.line(c.id), VOICE_ID.reply(c.id), VOICE_ID.oops(c.id), VOICE_ID.thanks(c.who), VOICE_ID.why(c.who)]),
     ...[0, 1, 2, 3].map(VOICE_ID.result)]);
   // 앞 근무의 흔적 지우기(알림 창·판 높이 여백·동그라미·힌트·반응 스티커)
   $('#memo-alert').hidden = true; document.documentElement.style.removeProperty('--fb-room'); clearMarks(); $('#react').hidden = true;
@@ -253,7 +254,8 @@ function renderShiftLog() {
 async function nextGuest() {
   if (state.index >= state.queue.length) return finishShift();
   const v = state.venue, item = state.queue[state.index], who = CAST[item.who], token = state.shift;
-  state.cur = { item, pid: null, hint: 0, choosing: false, done: false, shownAt: 0, pausedMs: 0 };
+  state.cur = { item, pid: null, hint: 0, choosing: false, done: false, shownAt: 0, pausedMs: 0,
+    checkLink: state.checkNotice?.id === item.id ? state.checkNotice : null };
   clearMarks();
   $('#g-clock').textContent = koreanTime(item.at);
   updateHud();
@@ -287,6 +289,10 @@ async function nextGuest() {
   setDock('ready');
   // 지난 손님 뒤에 돋보기 시점이 바뀌었으면 무엇이 바뀌었는지만 한 줄로 알린다.
   if (state.flowLine) { $('#dock-hint').hidden = false; $('#dock-hint').textContent = state.flowLine; announce(state.flowLine); state.flowLine = null; }
+  if (state.checkNotice?.id === item.id || item.textOnly) {
+    const line = [state.checkNotice?.id === item.id ? state.checkNotice.line : '', item.textOnly ? '이 확인 손님은 음성 없이 글로 읽어요.' : ''].filter(Boolean).join(' ');
+    $('#dock-hint').hidden = false; $('#dock-hint').textContent += ` ${line}`; announce(line); state.checkNotice = null;
+  }
   scheduleMagnifier(token);
   $('#bubble').focus({ preventScroll: true });
   // 손님이 창문 앞에 선 뒤 말한다. 연수 단계가 있는 손님이면 대사 뒤에 안내 목소리가 이어진다.
@@ -294,7 +300,7 @@ async function nextGuest() {
   setTimeout(() => {
     if (!live(token) || state.index !== idx || state.cur?.done) return;
     if (tut.on && tutStep()?.guest === idx) showCoach({ withLine: true });
-    else {
+    else if (!item.textOnly) {
       sound.say(VOICE_ID.line(item.id));
       // The clue is in this line: hearing it read aloud is help for the reading task.
       if (item.look === 'line' && sound.isVoiceOn() && state.cur?.pid) atlas((c) => c.help(state.cur.pid, 'replay'));
@@ -431,11 +437,19 @@ async function decide(choice, e) {
   // 손님을 본 때부터 도장까지 걸린 시간(쉬기 창을 연 동안은 빼고). 엔진은 돋보기 없이 바르게 찍은 시간만 모아
   // 이 사람의 '머뭇거림' 기준으로 쓴다.
   const latencyMs = cur.shownAt ? Math.min(600000, Math.max(0, performance.now() - cur.shownAt - cur.pausedMs)) : null;
-  const out = state.flow ? atlas(() => state.flow.answer(cur.pid, answerPayload(result.correct), { latencyMs })) : null;
-  const rec = out ? out.recorded : atlas((c) => c.answer(cur.pid, answerPayload(result.correct)));
+  const payload = answerPayload(result.correct, { selectedId: choiceId(choice), correctId: choiceId(item.answer) });
+  const out = state.flow ? atlas(() => state.flow.answer(cur.pid, payload, { latencyMs })) : null;
+  const rec = out ? out.recorded : atlas((c) => c.answer(cur.pid, payload));
   if (out?.line) state.flowLine = out.line.text;
+  cur.recheck = followUpResult(coach, cur.checkLink, item, rec);
   state.results.push({ caseId: item.id, who: item.who, choice, expected: item.answer, correct: result.correct, skill: item.skill,
-    hinted: cur.hint > 0, guided: !!cur.guided, independent: !!rec?.independent });
+    hinted: cur.hint > 0, guided: !!cur.guided, independent: !!rec?.independent, recheck: cur.recheck });
+  if (!tut.on && !runClosed() && (!result.correct || cur.hint > 0 || cur.guided || rec?.assisted === true)) {
+    cur.followup = immediateCheck({ venue: v, queue: state.queue, index: state.index, item, coach, assignment: assignment(), seenIds: [...assignmentSeen] });
+    state.queue = cur.followup.queue;
+    if (cur.followup.item) state.checkNotice = { id: cur.followup.item.id, line: cur.followup.line,
+      status: cur.followup.status, sourceAttemptId: rec?.eventId || null };
+  }
   state.combo = result.correct ? state.combo + 1 : 0;
   setDock('done'); $('#stamps').hidden = false; $('#choose').hidden = true;
   for (const b of ['#btn-pass', '#btn-reject', '#btn-hint']) $(b).disabled = true;
@@ -456,8 +470,8 @@ async function decide(choice, e) {
   const wrongPassOrReject = showFeedback(item, choice, result);
   state.busy = false;
   // 손님의 대답(맞으면 고마운 말, 틀리면 '고마워요!/네? 왜요?'), 틀린 통과·거절이면 그 뒤에 생긴 일을 안내 목소리가 이어 읽는다
-  const voices = [result.correct ? VOICE_ID.reply(item.id) : choice === 'pass' ? VOICE_ID.thanks(item.who) : VOICE_ID.why(item.who)];
-  if (wrongPassOrReject) voices.push(VOICE_ID.oops(item.id));
+  const voices = item.textOnly ? [] : [result.correct ? VOICE_ID.reply(item.id) : choice === 'pass' ? VOICE_ID.thanks(item.who) : VOICE_ID.why(item.who)];
+  if (wrongPassOrReject && !item.textOnly) voices.push(VOICE_ID.oops(item.id));
   if (tut.on) { tutAdvance({ show: false }); voices.push(VOICE_ID.tutorial(tutStep()?.id)); showCoach({ silent: true }); }
   sound.sayAll(voices.filter(Boolean));
 }
@@ -507,12 +521,18 @@ function showFeedback(item, choice, result) {
   $('#fb-face').src = who.img; $('#fb-face').alt = who.name;
   $('#fb-reply').textContent = result.correct ? item.reply : choice === 'pass' ? `${who.name}: “고마워요!”` : `${who.name}: “네? 왜요?”`;
   $('#fb-why').textContent = item.why;
+  const correction = choiceCorrection(state.venue, item, choice);
+  $('#fb-correction').hidden = !correction; $('#fb-correction').textContent = correction;
+  $('#fb-recheck').hidden = !state.cur.recheck?.line; $('#fb-recheck').textContent = state.cur.recheck?.line || '';
+  const followup = state.cur.followup;
+  $('#fb-followup').hidden = !followup; $('#fb-followup').textContent = followup ? `${followup.line}${followup.item?.textOnly ? ' 다음 확인은 음성 없이 글로 읽어요.' : ''}` : '';
   const wrongPassOrReject = !result.correct && (choice === 'pass' || item.answer === 'pass');
   $('#fb-oops').hidden = !wrongPassOrReject; $('#fb-oops-text').textContent = item.oops;
-  $('#btn-next').querySelector('span').textContent = state.index + 1 >= state.queue.length ? '근무 마치기' : '다음 손님';
+  $('#btn-next').querySelector('span').textContent = state.index + 1 >= state.queue.length ? '근무 마치기'
+    : followup?.status === 'new' ? '새 손님으로 확인' : followup?.status === 'review' ? '복습 손님으로 확인' : '다음 손님';
   $('#fb-kicker').classList.toggle('ko', !result.correct);
   fb.hidden = false;
-  announce(`${$('#fb-title').textContent}. ${$('#fb-reply').textContent} 왜? ${item.why}${wrongPassOrReject ? ` 그 뒤에 생긴 일: ${item.oops}` : ''}`);
+  announce(`${$('#fb-title').textContent}. ${correction} ${$('#fb-reply').textContent} 왜? ${item.why}${wrongPassOrReject ? ` 그 뒤에 생긴 일: ${item.oops}` : ''} ${state.cur.recheck?.line || ''} ${followup?.line || ''}`);
   $('#fb-reply').closest('.fb-reply').classList.remove('speaking');
   $('#btn-next').focus({ preventScroll: true });
   // 휴대폰: 아래 판이 동그라미 친 규칙을 가리지 않게 그만큼 내려 볼 자리를 만들고 규칙을 판 위로 올린다
@@ -595,7 +615,7 @@ function finishShift() {
     const answer = r.expected === 'pass' ? '통과' : `거절 · ${ruleText(v, c, r.expected)}`;
     const li = el('li');
     li.innerHTML = `<img class="face" src="${who.img}" alt=""><span><b>${esc(who.name)} <small style="display:inline">${esc(koreanTime(c.at))}</small></b>
-      <small>정답 ${esc(answer)}${r.correct ? '' : ` · 내 도장 ${r.choice === 'pass' ? '통과' : `거절 · ${esc(ruleText(v, c, r.choice))}`}`}${r.guided ? ' · 연수' : r.hinted ? ' · 돋보기' : ''}</small></span>
+      <small>정답 ${esc(answer)}${r.correct ? '' : ` · 내 도장 ${r.choice === 'pass' ? '통과' : `거절 · ${esc(ruleText(v, c, r.choice))}`}`}${r.guided ? ' · 연수' : r.hinted ? ' · 돋보기' : ''}</small>${r.recheck?.line ? `<small>${esc(r.recheck.line)}</small>` : ''}</span>
       <img class="mark" src="${r.correct ? 'kit/felt/badge-check.webp' : 'assets/felt/drop.webp'}" alt="${r.correct ? '맞음' : '다시 볼 것'}">`;
     log.append(li);
   }

@@ -1,0 +1,403 @@
+{
+  "date": "2026-10-07",
+  "stageParent": "01a42543c823725238dc17bd260ce4effadebabc",
+  "status": "selected-source-snapshot-verified",
+  "tests": {
+    "passed": 536,
+    "failed": 0,
+    "file": "snapshot-tests-verified.txt"
+  },
+  "generatedChecks": {
+    "map": true,
+    "gameBundles": 9,
+    "file": "snapshot-build.txt"
+  },
+  "excluded": [
+    "Unrelated engine performance refactor and Trail createPracticeOutcomeIndex",
+    "Other track rows and assets"
+  ],
+  "fixtures": "Unchanged existing media and installed libraries linked read-only; staged source extracted from Git blobs. Initial snapshot omitted test helpers/assets; final snapshot completed and passed.",
+  "humanParticipants": 0,
+  "externalProviderCalls": 0,
+  "deployed": false,
+  "files": [
+    "atlas/education.js",
+    "atlas/game-learning.js",
+    "atlas/trail.js",
+    "docs/_ops/트랙.md",
+    "docs/교원검수/README.md",
+    "docs/교원검수/교원검수시트.csv",
+    "docs/교원검수/오답교정_새문항_검수부록.html",
+    "docs/교원검수/학생시험_20261007/README.md",
+    "docs/교원검수/학생시험_20261007/빈관찰표.json",
+    "docs/교원검수/학생시험_20261007/진행·관찰표.html",
+    "docs/아틀라스_교육업그레이드_20260930.md",
+    "experiences/blank-slice/atlas-learning.js",
+    "experiences/entry-check/README.md",
+    "experiences/entry-check/app.mjs",
+    "experiences/entry-check/art-source/voice.mjs",
+    "experiences/entry-check/atlas-learning.js",
+    "experiences/entry-check/confirmation-content.test.mjs",
+    "experiences/entry-check/content.mjs",
+    "experiences/entry-check/core.mjs",
+    "experiences/entry-check/core.test.mjs",
+    "experiences/entry-check/correction.mjs",
+    "experiences/entry-check/correction.test.mjs",
+    "experiences/entry-check/index.html",
+    "experiences/entry-check/learning.mjs",
+    "experiences/entry-check/learning.test.mjs",
+    "experiences/entry-check/narration.test.mjs",
+    "experiences/entry-check/recheck.test.mjs",
+    "experiences/entry-check/style.css",
+    "experiences/korean-racing/README.md",
+    "experiences/korean-racing/app.js",
+    "experiences/korean-racing/atlas-learning.js",
+    "experiences/korean-racing/hud.js",
+    "experiences/korean-racing/index.html",
+    "experiences/korean-racing/learning.js",
+    "experiences/korean-racing/personalization.js",
+    "experiences/korean-racing/style.css",
+    "experiences/korean-racing/tests/coast-drive-integration.test.mjs",
+    "experiences/korean-racing/tests/personalization.test.mjs",
+    "experiences/korean-rhythm/atlas-learning.js",
+    "experiences/korean-runner/README.md",
+    "experiences/korean-runner/atlas-learning.js",
+    "experiences/korean-runner/index.html",
+    "experiences/korean-runner/listening-check-ui.mjs",
+    "experiences/korean-runner/listening-check.mjs",
+    "experiences/korean-runner/listening-feedback.test.mjs",
+    "experiences/korean-runner/listening-recheck.test.mjs",
+    "experiences/korean-runner/style.css",
+    "experiences/learning-hub/atlas-learning.js",
+    "experiences/order-rush/atlas-learning.js",
+    "experiences/story-classroom/atlas-learning.js",
+    "experiences/synk-town/README.md",
+    "experiences/synk-town/understanding-ui.mjs",
+    "experiences/synk-town/understanding-ui.test.mjs",
+    "experiences/synk-town/understanding.mjs",
+    "experiences/synk-town/understanding.test.mjs",
+    "experiences/talk-rally/atlas-learning.js",
+    "output/learning-feedback-implementation-20261007/verification.json",
+    "output/learning-feedback-next-20261007/entry-coverage.json",
+    "output/learning-feedback-next-20261007/verification.json",
+    "output/learning-feedback-ready-20261007/entry-complete.png",
+    "output/learning-feedback-ready-20261007/entry-complete.txt",
+    "output/learning-feedback-ready-20261007/entry-coverage.json",
+    "output/learning-feedback-ready-20261007/entry-new-correct.png",
+    "output/learning-feedback-ready-20261007/entry-new-correct.txt",
+    "output/learning-feedback-ready-20261007/entry-new-item.txt",
+    "output/learning-feedback-ready-20261007/entry-new-wrong.txt",
+    "output/learning-feedback-ready-20261007/racing-complete.png",
+    "output/learning-feedback-ready-20261007/racing-complete.txt",
+    "output/learning-feedback-ready-20261007/racing-finish-cruise.txt",
+    "output/learning-feedback-ready-20261007/racing-independent.png",
+    "output/learning-feedback-ready-20261007/racing-independent.txt",
+    "output/learning-feedback-ready-20261007/racing-wrong.txt",
+    "output/learning-feedback-ready-20261007/runner-assisted-390.png",
+    "output/learning-feedback-ready-20261007/runner-assisted.txt",
+    "output/learning-feedback-ready-20261007/runner-complete-390.png",
+    "output/learning-feedback-ready-20261007/runner-complete.txt",
+    "output/learning-feedback-ready-20261007/runner-wrong.txt",
+    "output/learning-feedback-ready-20261007/student-guide-desktop.png",
+    "output/learning-feedback-ready-20261007/student-observation-desktop.png",
+    "output/learning-feedback-ready-20261007/teacher-appendix-desktop.png",
+    "output/learning-feedback-ready-20261007/teacher-final-tests.txt",
+    "output/learning-feedback-ready-20261007/teacher-town-desktop.png",
+    "output/learning-feedback-ready-20261007/tests.txt",
+    "output/learning-feedback-ready-20261007/town-complete.txt",
+    "output/learning-feedback-ready-20261007/town-delivered.txt",
+    "output/learning-feedback-ready-20261007/town-fixture.mjs",
+    "output/learning-feedback-ready-20261007/town-independent-desktop.png",
+    "output/learning-feedback-ready-20261007/town-independent.txt",
+    "output/learning-feedback-ready-20261007/town-second-round-final.txt",
+    "output/learning-feedback-ready-20261007/town-world-complete.txt",
+    "output/learning-feedback-ready-20261007/town-wrong.txt",
+    "output/learning-feedback-ready-20261007/verification.json",
+    "tests/atlas-choice-record.test.js",
+    "tests/atlas-recheck.test.js",
+    "tests/learning-blind-cases.test.mjs",
+    "tests/learning-blind-evaluation.test.mjs",
+    "tests/learning-blind-providers.test.mjs",
+    "tests/교원검수시트.test.js",
+    "tools/learning-blind-test.mjs",
+    "tools/learning-blind/README.md",
+    "tools/learning-blind/cases.mjs",
+    "tools/learning-blind/evaluation.mjs",
+    "tools/learning-blind/providers.mjs",
+    "tools/교원검수시트.js"
+  ],
+  "sourceBlobs": [
+    {
+      "file": "atlas/education.js",
+      "blob": "1de4f0d95774d075733d983b5c7c99ff4383ee84"
+    },
+    {
+      "file": "atlas/game-learning.js",
+      "blob": "1e1625985a4d6024f6579d9f47cf6f7fed727ee4"
+    },
+    {
+      "file": "atlas/trail.js",
+      "blob": "1744a59f0daa114592af4c9d7df2f4181f55a118"
+    },
+    {
+      "file": "docs/_ops/트랙.md",
+      "blob": "a43924384bfbbba422ea1828c4a1e51bc3c71241"
+    },
+    {
+      "file": "docs/교원검수/README.md",
+      "blob": "e0d24894ce1a01c9c5b32c4f089c379318d19161"
+    },
+    {
+      "file": "docs/교원검수/교원검수시트.csv",
+      "blob": "a69bcfeadad366d78f2dec344b847352f2b27253"
+    },
+    {
+      "file": "docs/교원검수/오답교정_새문항_검수부록.html",
+      "blob": "d33f502c2108f99c20aa0228e66e80e076f68118"
+    },
+    {
+      "file": "docs/교원검수/학생시험_20261007/README.md",
+      "blob": "957a0787ecebfe4c8ca470443b4b153346982a38"
+    },
+    {
+      "file": "docs/교원검수/학생시험_20261007/빈관찰표.json",
+      "blob": "229a151b1c184821801a8d7efa8c53427e82d427"
+    },
+    {
+      "file": "docs/교원검수/학생시험_20261007/진행·관찰표.html",
+      "blob": "9e8423219ec254520137271bc6b3a8b41331c6b3"
+    },
+    {
+      "file": "docs/아틀라스_교육업그레이드_20260930.md",
+      "blob": "1122f93a533b74e89e0b85ef22da7d170f93374d"
+    },
+    {
+      "file": "experiences/blank-slice/atlas-learning.js",
+      "blob": "bd2820884fa79f2c15c01e4f32d93c383c7d7287"
+    },
+    {
+      "file": "experiences/entry-check/README.md",
+      "blob": "41122b91eab260477c065496a30cd0e0b751214f"
+    },
+    {
+      "file": "experiences/entry-check/app.mjs",
+      "blob": "f5457d9ffdc2191e31fcc3b66b5962d2e33b994b"
+    },
+    {
+      "file": "experiences/entry-check/art-source/voice.mjs",
+      "blob": "59cc7077f9cdbde2aaa82b0be32d37bcb414f90d"
+    },
+    {
+      "file": "experiences/entry-check/atlas-learning.js",
+      "blob": "bd2820884fa79f2c15c01e4f32d93c383c7d7287"
+    },
+    {
+      "file": "experiences/entry-check/confirmation-content.test.mjs",
+      "blob": "73c8239e16dad0332c9c14a34eb8d346c1670dd1"
+    },
+    {
+      "file": "experiences/entry-check/content.mjs",
+      "blob": "2e4615e006e34b78110b8ceafd4e32909ba9c7d1"
+    },
+    {
+      "file": "experiences/entry-check/core.mjs",
+      "blob": "433a429a309df541a2a00a9a0048ef0191da3489"
+    },
+    {
+      "file": "experiences/entry-check/core.test.mjs",
+      "blob": "12a5f7fec9ec31941e7a9d711b2d175d7c27fcc6"
+    },
+    {
+      "file": "experiences/entry-check/correction.mjs",
+      "blob": "4e96302be2a7f618d31d0c0382a4a7799a80bc9c"
+    },
+    {
+      "file": "experiences/entry-check/correction.test.mjs",
+      "blob": "20b85ec27832b7da86e7549f563a8cf8ef25c117"
+    },
+    {
+      "file": "experiences/entry-check/index.html",
+      "blob": "09698e2cf2caba10e7475c1d79f7403ebd89098e"
+    },
+    {
+      "file": "experiences/entry-check/learning.mjs",
+      "blob": "5a5f70c854e325e83be28645f3612378bffef3c2"
+    },
+    {
+      "file": "experiences/entry-check/learning.test.mjs",
+      "blob": "e6918753cd88cba249fa453a453627fcfb5d97cd"
+    },
+    {
+      "file": "experiences/entry-check/narration.test.mjs",
+      "blob": "215e6c53ad618e2c2df35e5cb3ded9377fb9f325"
+    },
+    {
+      "file": "experiences/entry-check/recheck.test.mjs",
+      "blob": "3a30ccece298844a0b07cfbcc27a3c98d4e35e15"
+    },
+    {
+      "file": "experiences/entry-check/style.css",
+      "blob": "b5f5b4bf2979e3574fdc3a267ae829617c89e1a1"
+    },
+    {
+      "file": "experiences/korean-racing/README.md",
+      "blob": "ad5cc970ac0a28f3b85a97be16541ca4a862e4e0"
+    },
+    {
+      "file": "experiences/korean-racing/app.js",
+      "blob": "5a4654f6732894379a689e05d257d0901bf8d5d4"
+    },
+    {
+      "file": "experiences/korean-racing/atlas-learning.js",
+      "blob": "bd2820884fa79f2c15c01e4f32d93c383c7d7287"
+    },
+    {
+      "file": "experiences/korean-racing/hud.js",
+      "blob": "c0be84668c61abe0cf093a2f0743d770af26a79b"
+    },
+    {
+      "file": "experiences/korean-racing/index.html",
+      "blob": "c6c5cf5d99901caa9e1121d72d2d360d69c5feea"
+    },
+    {
+      "file": "experiences/korean-racing/learning.js",
+      "blob": "0c183b099e79ecd87858c6b07a56116558be0121"
+    },
+    {
+      "file": "experiences/korean-racing/personalization.js",
+      "blob": "333e018eb19eff520b9e85016346a4058fb798cd"
+    },
+    {
+      "file": "experiences/korean-racing/style.css",
+      "blob": "be3a3956ac51c43b342a8f209b104de75e97da10"
+    },
+    {
+      "file": "experiences/korean-racing/tests/coast-drive-integration.test.mjs",
+      "blob": "d4a7ce281bf18283f5aa5f5a7b1e4c3bf5c039da"
+    },
+    {
+      "file": "experiences/korean-racing/tests/personalization.test.mjs",
+      "blob": "e05f79baf976c28cce977761c7a822022199221b"
+    },
+    {
+      "file": "experiences/korean-rhythm/atlas-learning.js",
+      "blob": "bd2820884fa79f2c15c01e4f32d93c383c7d7287"
+    },
+    {
+      "file": "experiences/korean-runner/README.md",
+      "blob": "41eef077b37ab68d1979d78242ff705851028576"
+    },
+    {
+      "file": "experiences/korean-runner/atlas-learning.js",
+      "blob": "bd2820884fa79f2c15c01e4f32d93c383c7d7287"
+    },
+    {
+      "file": "experiences/korean-runner/index.html",
+      "blob": "58f623685c3a9f243a21d4c46fdf9975cddc9581"
+    },
+    {
+      "file": "experiences/korean-runner/listening-check-ui.mjs",
+      "blob": "bf6141a49e2a3f12fbd7f8471658e15ce17a596a"
+    },
+    {
+      "file": "experiences/korean-runner/listening-check.mjs",
+      "blob": "15f754bb27a84d438c084809aae1935f670ae14b"
+    },
+    {
+      "file": "experiences/korean-runner/listening-feedback.test.mjs",
+      "blob": "5116df80a975d0ad67908abe40f58a7579b4105e"
+    },
+    {
+      "file": "experiences/korean-runner/listening-recheck.test.mjs",
+      "blob": "8e93994308aaceb0dba7260e22704d29eed7ae43"
+    },
+    {
+      "file": "experiences/korean-runner/style.css",
+      "blob": "357bb99dc65c8fc1f6074db36ed298ed234d4968"
+    },
+    {
+      "file": "experiences/learning-hub/atlas-learning.js",
+      "blob": "bd2820884fa79f2c15c01e4f32d93c383c7d7287"
+    },
+    {
+      "file": "experiences/order-rush/atlas-learning.js",
+      "blob": "bd2820884fa79f2c15c01e4f32d93c383c7d7287"
+    },
+    {
+      "file": "experiences/story-classroom/atlas-learning.js",
+      "blob": "bd2820884fa79f2c15c01e4f32d93c383c7d7287"
+    },
+    {
+      "file": "experiences/synk-town/README.md",
+      "blob": "ab743266296babadb151d5a218ea67ed9b54b288"
+    },
+    {
+      "file": "experiences/synk-town/understanding-ui.mjs",
+      "blob": "117421033b3047fb6e98bb2868150b8389e51ae9"
+    },
+    {
+      "file": "experiences/synk-town/understanding-ui.test.mjs",
+      "blob": "c9ddbcc16d13a8a8e368fc2792b58d92521255c3"
+    },
+    {
+      "file": "experiences/synk-town/understanding.mjs",
+      "blob": "0746d430389e733f5e665a1cc62972369924d57e"
+    },
+    {
+      "file": "experiences/synk-town/understanding.test.mjs",
+      "blob": "8a0dae0fa00437ed5ff2a86cfce0918cce48b40b"
+    },
+    {
+      "file": "experiences/talk-rally/atlas-learning.js",
+      "blob": "bd2820884fa79f2c15c01e4f32d93c383c7d7287"
+    },
+    {
+      "file": "tests/atlas-choice-record.test.js",
+      "blob": "43c6a7a001b1edab524de7127f1a1086cadf4232"
+    },
+    {
+      "file": "tests/atlas-recheck.test.js",
+      "blob": "422d5592617f4f7373be7648a1c764d3fe977a6d"
+    },
+    {
+      "file": "tests/learning-blind-cases.test.mjs",
+      "blob": "bd70595114f3c3d724b80989a5c9760a1220e34a"
+    },
+    {
+      "file": "tests/learning-blind-evaluation.test.mjs",
+      "blob": "8f92ff74e66b18bd6c7c412a4812537adc723de0"
+    },
+    {
+      "file": "tests/learning-blind-providers.test.mjs",
+      "blob": "4949cd45c74eee55795db08dd8c1d39b7ff1c5c3"
+    },
+    {
+      "file": "tests/교원검수시트.test.js",
+      "blob": "645fd51d119e560a6ec39faee12296a5a0dfddab"
+    },
+    {
+      "file": "tools/learning-blind-test.mjs",
+      "blob": "656d3c63b18b5b4edbb1b506396eba10077510bf"
+    },
+    {
+      "file": "tools/learning-blind/README.md",
+      "blob": "ea0db0baf5f40cabfab0a5c53336f48199d3a2b0"
+    },
+    {
+      "file": "tools/learning-blind/cases.mjs",
+      "blob": "30e527c3d5c05ae166813ebc17a4f044afb95f9d"
+    },
+    {
+      "file": "tools/learning-blind/evaluation.mjs",
+      "blob": "47fdc6fb9f1849d36d2019945920183087513f49"
+    },
+    {
+      "file": "tools/learning-blind/providers.mjs",
+      "blob": "b558326d53ae7594bbde112cc4da1d33b97616bb"
+    },
+    {
+      "file": "tools/교원검수시트.js",
+      "blob": "e789597d76661e2ae3bf3b8718fef629971de9b2"
+    }
+  ]
+}

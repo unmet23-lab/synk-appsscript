@@ -34,12 +34,22 @@
     'practice.attempted': ['presentationId', 'attemptNo', 'verdict', 'errorTags'],
     'practice.delivery': ['presentationId', 'audio'],
   };
-  const OPTIONAL = { 'practice.presented': ['measure'], 'practice.attempted': ['reason'] };
+  const OPTIONAL = { 'practice.presented': ['measure'], 'practice.attempted': ['reason', 'choice'] };
   const VERDICTS = ['correct', 'incorrect', 'unassessed', 'skipped'];
   const copy = value => JSON.parse(JSON.stringify(value));
   const canonical = value => JSON.stringify(value, (_key, entry) => entry && typeof entry === 'object' && !Array.isArray(entry)
     ? Object.fromEntries(Object.keys(entry).sort().map(key => [key, entry[key]])) : entry);
   const id = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+  // Authored option IDs only: no answer text, identity, diagnosis or change to the verdict.
+  function choiceRecord(value) {
+    const optionId = entry => typeof entry === 'string' && /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$/.test(entry)
+      && !['constructor', 'prototype', '__proto__'].includes(entry);
+    if (!value || typeof value !== 'object' || Array.isArray(value)
+      || ![Object.prototype, null].includes(Object.getPrototypeOf(value))
+      || Object.keys(value).length !== 2 || !Object.hasOwn(value, 'selectedId') || !Object.hasOwn(value, 'correctId')
+      || !optionId(value.selectedId) || !optionId(value.correctId)) throw new TypeError('Trail: invalid choice IDs');
+    return { selectedId: value.selectedId, correctId: value.correctId };
+  }
   const time = value => { const n = Date.parse(value); if (typeof value !== 'string' || !Number.isFinite(n)) throw new TypeError('Trail: invalid time'); return n; };
   const key = scope => {
     if (!scope || typeof scope !== 'object' || Object.keys(scope).some(k => !['domain', 'workspace', 'subject'].includes(k))
@@ -82,6 +92,7 @@
     } else if (!id(event.presentationId) || !Number.isInteger(event.attemptNo) || event.attemptNo < 1
       || !VERDICTS.includes(event.verdict) || !uniqueList(event.errorTags, tag, 24)
       || (event.reason != null && !['motor', 'audio', 'unanswered', 'demo', 'visual', 'storage'].includes(event.reason))) throw new TypeError('Trail: invalid attempt');
+    if (event.type === TYPES[2] && Object.hasOwn(event, 'choice')) choiceRecord(event.choice);
     return event;
   }
   function linked(event, prior, parent, attempts) {
@@ -135,6 +146,7 @@
     presentationId: p.id, decisionId: p.decisionId, arm,
     taskId: p.taskId, taskVersion: p.taskVersion, itemKey: p.itemKey, conceptIds: [...p.conceptIds],
     attemptNo: event.attemptNo, verdict: event.verdict, errorTags: [...event.errorTags], assisted: j.assisted, exposure: j.exposure,
+    ...(Object.hasOwn(event, 'choice') ? { choice: choiceRecord(event.choice) } : {}),
     ...(p.measure ? { measure: { ...p.measure, responseFormat: p.measure.responseFormat || 'unknown' }, audio, exclusionReason: j.exclusionReason }
       : j.exclusionReason ? { exclusionReason: j.exclusionReason } : {}),
     independent: j.independent,
@@ -367,5 +379,5 @@
     }
     return facts;
   }
-  return Object.freeze({ VERSION, TYPES, BITS, traceKeys, validate, checkLink, link, vouch, summarize, createIndex, openHistory, remember, growth });
+  return Object.freeze({ VERSION, TYPES, BITS, traceKeys, choiceRecord, validate, checkLink, link, vouch, summarize, createIndex, openHistory, remember, growth });
 });

@@ -6,10 +6,10 @@ import {createCoastDrive} from '../coast-drive.js';
 import {createCoastRadio} from '../coast-radio.js';
 import {CAMPAIGN,CHAPTERS,campaignUnlocked,recommendedStage,medalFor} from '../campaign.js';
 import {FINALES,finaleUnlocked} from '../finales.js';
-import {makeQuestions,emptyProgress,recordRound,PROGRESS_KEY,STAGES,WORD_BY_ID} from '../learning.js';
+import {makeQuestions,emptyProgress,recordRound,PROGRESS_KEY,STAGES,WORD_BY_ID,answerFeedback} from '../learning.js';
 import {loadGarage,awardRace,SHOP_ITEMS} from '../garage.js';
 import {resolveContact,shieldContact,comboShield} from '../driving.js';
-import {BASE_CRUISE} from '../personalization.js';
+import {BASE_CRUISE,racingFollowUp,racingRecheck,linkRacingRecheck} from '../personalization.js';
 import {createQuestionPace,gatePosition,QUESTION_LEAD,rewardBoost,COMBO_BOOST_SECONDS} from '../race-pacing.js';
 
 // Execute production app functions, rather than restating their transitions in a
@@ -98,7 +98,7 @@ function setupRace({cruise=26,reading=false,muted=false}={}){
     // Isolate pacing from incidental traffic; these still pass through the real
     // traffic/contact routines throughout the simulated route.
     rivals:[{s:-1000,offset:-3.45,speed:26,mesh:{userData:{wheels:[]}}},{s:-1100,offset:3.45,speed:25,mesh:{userData:{wheels:[]}}}],
-    mascotMood(){},ding(){},presentGate:q=>`presentation-${q.id}`,
+    mascotMood(){},ding(){},presentGate:q=>`presentation-${q.id}`,answerFeedback,racingFollowUp,racingRecheck,linkRacingRecheck,
     answerGate:()=>({independent:true}),racePressure:()=>0,
     setQuestionExpanded(value){c.questionExpanded=value;},
     narrateQuestion(){
@@ -112,13 +112,50 @@ function setupRace({cruise=26,reading=false,muted=false}={}){
     }
   });
   if(reading){c.selectedStage=CAMPAIGN[2];c.questionBank=makeQuestions(c.selectedStage,()=>.3);}
-  for(const name of ['chooseCurrentLane','questionReady','displayQuestion','judgeGate','updateGame'])
+  for(const name of ['chooseCurrentLane','questionReady','displayQuestion','judgeGate','continueFeedback','updateGame'])
     vm.runInContext(appFunction(name),c,{filename:`app.js:${name}`});
   c.makeGate(0,gatePosition(0));c.gate.announced=true;c.questionChosen=true;
   c.playerOffset=c.LANES[c.gate.types.indexOf(c.gate.q.answer)];
   const step=(seconds,dt=1/60)=>{for(let i=0;i<Math.round(seconds/dt);i++)vm.runInContext(`updateGame(${dt})`,c);};
   return {...x,step};
 }
+
+test('wrong answer review waits without racing, timing pressure or a second score, then continues explicitly', () => {
+  const x=setupRace(),c=x.ctx;
+  const wrong=c.gate.types.find(id=>id!==c.gate.q.answer);
+  c.playerOffset=c.LANES[c.gate.types.indexOf(wrong)];
+  c.gate.intentChoice=wrong;
+  let captured;
+  c.answerGate=(_pid,response)=>{captured=response;return {verdict:'incorrect',independent:true,assisted:false};};
+  c.gate.presentationId='p1';
+  x.run('judgeGate');
+  assert.equal(c.gate.reviewing,true);
+  assert.equal(captured.choice.selectedId,wrong);assert.equal(captured.choice.correctId,c.gate.q.answer);
+  const at=c.playerS,time=c.elapsed,boost=c.boost;
+  x.step(30);
+  assert.equal(c.playerS,at);assert.equal(c.elapsed,time);assert.equal(c.boost,boost);
+  assert.equal(c.answers.length,1);assert.equal(x.$('feedback-continue').hidden,false);
+  x.run('continueFeedback');assert.equal(c.gate.reviewing,false);
+  x.step(.5);assert(c.playerS>at);assert.equal(c.answers.length,1);
+});
+
+test('a successful new check waits for acknowledgement without adding another remedial question',()=>{
+  const x=setupRace(),c=x.ctx;
+  c.gate.q={...c.gate.q,recheckSourceAttemptId:'prior-attempt'};
+  c.gate.intentChoice=c.gate.q.answer;c.gate.presentationId='next-presentation';
+  c.answerGate=()=>({eventId:'next-attempt',verdict:'correct',independent:true,assisted:false});
+  const calls=[];
+  c.learn=fn=>fn({recheck:(source,target)=>{calls.push([source,target]);return {status:'independent-correct',line:'다른 새 문항을 도움 없이 맞혔어요.'};},help(){},exposure(){throw Error('Must not queue after independent success');}});
+  let feedback;c.hud.answerQuestion=value=>{feedback=value;};
+  const before=c.questionBank.map(q=>q.id);
+  x.run('judgeGate');
+  assert.deepEqual(calls,[['prior-attempt','next-attempt']]);
+  assert.equal(c.gate.reviewing,true);assert.equal(feedback.hold,null);
+  assert.match(feedback.why,/도움 없이/);assert.deepEqual(c.questionBank.map(q=>q.id),before);
+  assert.equal(c.answers[0].recheck.status,'independent-correct');
+  const at=c.playerS;x.step(15);assert.equal(c.playerS,at);
+  x.run('continueFeedback');assert.equal(c.gate.reviewing,false);assert.equal(c.answers.length,1);
+});
 
 test('production finish commits a race once and enters driving without opening its result dialog',async()=>{
   const x=setup();x.run('finish');await flush();

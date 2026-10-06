@@ -1,0 +1,120 @@
+- main:
+  - link "synk":
+    - /url: ./local-world.html
+  - generic: SYNK WORLD
+  - paragraph: WORLD · 나의 교실
+  - heading "게임에서 연습하고, 선생님과 이어가요." [level=1]:
+    - text: 게임에서 연습하고,
+    - text: 선생님과 이어가요.
+  - paragraph:
+    - text: 읽기 연습과 게임의 학습 기록을 바탕으로
+    - text: 선생님이 보낸 과제를 이어서 풀어요.
+  - paragraph: 로컬 개발 연결 · 합성 학습 계정용입니다. 정식 SYNK ID 로그인·운영 학생 자료와 분리되어 있습니다.
+  - status: 게임에서 기록한 언어 응답을 이 학습에 연결합니다.
+  - paragraph: SYNK WORLD · 나의 교실
+  - heading "교육흐름 합성 검증의 과제와 연습" [level=2]
+  - paragraph: 선생님이 보낸 과제와 나에게 필요한 연습을 이어가요.
+  - button "새로고침"
+  - status: 학습 공유 켜짐 · 읽기는 서버에서 채점하며, 게임의 언어 응답은 도움·평가 제외 기록을 구분해 선생님에게 전달합니다.
+  - button "← 오늘의 학습 목록"
+  - heading "Town · 생활 안내 읽기 확인" [level=3]
+  - paragraph: 개발용 생활 체험과 별도 읽기 확인입니다. 꾸미기·이동·호감도는 실력으로 계산하지 않습니다.
+  - paragraph:
+    - strong: 이번 학습 목표
+    - text: · 읽고 세부 정보 찾기 · 난도 1 · 목표 3문항 (새 문항 3, 복습 0)
+  - paragraph: 이 목표에 맞는 3개의 서로 다른 문항에 답하면 완료됩니다. 다른 영역·난도, 조작 점수·같은 문항 반복·음성 실패는 완료 수에 넣지 않습니다.
+  - status: 3 / 3응답 · 혼자 2 · 도움 1 · 평가 제외 0
+  - paragraph: 학습 완료 · 담당 선생님에게 수행 기록을 전달했어요.
+  - button "게임 닫기"
+  - paragraph: 게임이 보고한 언어 응답을 사용합니다. TOPIK 급수나 학습 효과 판정은 아닙니다.
+  - heading "교육흐름 합성 검증의 개발용 WORLD 연결" [level=2]
+  - button "이 창의 연결 종료"
+  - heading "계정과 소속" [level=3]
+  - paragraph: SYNK ID · local-world-learner-1
+  - list:
+    - listitem: 학생
+  - paragraph: "로그인 연결: local-development"
+  - heading "학습 기록 연결" [level=3]
+  - paragraph: 이 개발 연결에서는 기록 동기화와 선생님에게 보여주기를 함께 켜고 끕니다. 기존 비회원 기록은 가져오지 않아요.
+  - checkbox "계정에 학습 기록 연결" [checked]
+  - generic: 계정에 학습 기록 연결
+  - heading "아틀라스가 기억하는 나" [level=3]
+  - paragraph: 요약을 불러오고 있어요.
+  - heading "이용 권한" [level=3]
+  - list:
+    - listitem: 현재 표시할 이용 권한이 없어요.
+  - heading "연결된 로그인" [level=3]
+  - paragraph: 표시할 로그인 기록이 없어요.
+  - heading "WORLD에서 이어서 연습해요." [level=2]
+  - paragraph: 계정 학습 기록을 연결했어요.
+  - heading "나에게 맞게 연습해요" [level=3]
+  - paragraph: 고른 도움 방식은 개인 연습·수업·다른 기기에서 이어져요. 오늘 컨디션은 이 기기에만 남아요.
+  - group "도움은 어떻게 받을까요?":
+    - paragraph: 도움은 어떻게 받을까요?
+    - button "단계별로 도와줘요"
+    - button "그때그때 맞춰 줘요"
+    - button "혼자 해 볼게요"
+  - group "오늘은 어때요?":
+    - paragraph: 오늘은 어때요?
+    - button "좋아요"
+    - button "보통이에요"
+    - button "피곤해요"
+    - button "시간이 없어요"
+  - button "한국어 레이싱"
+  - button "바람길"
+  - button "한국어 리듬"
+  - button "주문 폭주"
+  - button "입장 검사"
+  - button "선생님이 돌아왔다"
+  - button "빈칸 베기"
+  - iframe [active]:
+    - banner:
+      - img "synk"
+      - generic: 싱크타운
+      - generic: WORLD 연결 · 내 생활 체험
+      - button "도움"
+    - main:
+      - region "찻집 앞 작은 쉼터":
+        - paragraph: 작은 쉼터
+        - heading "어디에서 쉴까요?" [level=1]
+        - paragraph: 첫 방문
+        - img "찻집 안쪽의 기본 의자와 바깥의 빈 자리.":
+          - generic: 찻집
+          - generic: 안
+          - generic: 밖
+          - img "기존 의자"
+          - img "손님"
+          - generic: 손님
+          - img "찻집 주인"
+          - generic: 주인
+          - generic: 작은 자리가 기다리고 있어요.
+        - button "함께한 일"
+        - status: 이 학생의 생활 기록에 저장돼요. 생활 행동은 한국어 실력 점수가 아니에요.
+      - complementary "이야기와 행동":
+        - generic: 찻집 주인
+        - paragraph: 어디가 좋아요?
+        - generic "할 일":
+          - button "밖이 좋아요":
+            - generic: 밖이 좋아요
+          - button "안이 좋아요":
+            - generic: 안이 좋아요
+          - button "나중에요":
+            - generic: 나중에요
+        - button "뜻 보기"
+        - generic: 천천히 골라도 돼요.
+    - heading "안내문을 읽고 확인해요" [level=2]
+    - paragraph: 장소 · 금지 표현 · 순서, 짧은 안내문 세 개를 읽어요. 생활 체험의 이동이나 만들기는 채점하지 않아요.
+    - button "읽기 확인 3문항"
+    - generic "개발 체험 안내"
+    - dialog:
+      - heading "안내문 읽기 3 / 3" [level=2]
+      - button "닫기"
+      - paragraph: 토요일 공방 수업 안내입니다. 그림 수업은 오전 10시에, 컵 만들기는 오후 2시에 시작합니다.
+      - heading "컵 만들기 수업은 언제 시작하나요?" [level=3]
+      - button "오전 10시" [disabled]
+      - button "오전 2시" [disabled]
+      - button "오후 2시 · 내가 고른 답 · 정답" [disabled]
+      - button "힌트 보기" [disabled]
+      - status: 맞았어요. 컵 만들기 수업은 오후 2시에 시작합니다. 혼자 답한 읽기 확인으로 기록했어요. 다른 새 문항은 도움 없이 맞혔어요.
+      - button "읽기 확인 마치기"
+  - paragraph: 정식 계정과 별개인 개발 연결입니다. 게임 조작 점수와 언어 문항의 수행 근거를 구분합니다.

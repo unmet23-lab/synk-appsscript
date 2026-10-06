@@ -1,0 +1,3439 @@
+{
+  "schemaVersion": 2,
+  "createdAt": "2026-10-06T21:44:40.807Z",
+  "kind": "offline-authored-coverage",
+  "conditions": {
+    "synthetic": true,
+    "realStudents": false,
+    "externalApiCalls": 0,
+    "paidCost": 0,
+    "firstTime": true,
+    "ranked": null,
+    "assignment": null,
+    "initialHistory": "complete-unseen",
+    "wrongOrHelp": "hypothetical trigger; no actual learner answer",
+    "teacherReviewed": false,
+    "learningEffectMeasured": false,
+    "label": "4곳 모두 firstTime:true를 적용한 비교용 합성 구성"
+  },
+  "comparison": {
+    "previousPath": "output/learning-feedback-next-20261007/entry-coverage.json",
+    "previousSha256": "40ce800a421ddbfa956ca7a1613a2e746a1c571e3cd5a9c2a7b624eb2d96ca69",
+    "sameOriginalQueues": true,
+    "sameFirstTimeAndRanking": true,
+    "sameAssignmentAndExposureAssumptions": true,
+    "denominatorDefinition": "firstTime:true를 네 곳 모두 적용한 동일 조건의 이전/현재 합성 비교. 4곳×6위치=24 중 끝 손님4개 제외20. 각 위치는 독립 가정이며 연속20오답이나 실제 학생 동선을 뜻하지 않는다.",
+    "before": {
+      "freshFirstConfirmation": 8,
+      "sameRuleAndConceptFirstConfirmation": 6,
+      "nonFinalPositions": 20
+    },
+    "after": {
+      "freshFirstConfirmation": 18,
+      "sameRuleAndConceptAndLearningTargetFirstConfirmation": 17,
+      "nonFinalPositions": 20
+    },
+    "meaning": "8→18 및6→17은 이전 증거와 같은 firstTime:true 조건의 합성 가용성 비교다. 일반 실제 동선 수치·학생 정답률·교정 효과·검수된 난도 동등성으로 해석하지 않는다."
+  },
+  "authored": {
+    "total": 50,
+    "defaultEligible": 34,
+    "followupOnly": 16,
+    "newThisChange": [
+      {
+        "id": "pool-14",
+        "venueId": "pool",
+        "answer": "pass",
+        "learningTarget": "수영 모자 보유와 입장 전 착용",
+        "measurement": {
+          "id": "entry-check.pool-14",
+          "itemKey": "entry-check.pool-14.v1",
+          "familyKey": "entry-check.pool-14.v1",
+          "skillId": "ko.reading.detail",
+          "difficulty": 1,
+          "modality": "reading",
+          "responseFormat": "single-choice",
+          "audioRequired": false,
+          "confounded": false,
+          "conceptIds": [
+            "G403"
+          ]
+        },
+        "textOnly": true,
+        "followupOnly": true
+      },
+      {
+        "id": "library-10",
+        "venueId": "library",
+        "answer": "pass",
+        "learningTarget": "본인의 도서관 카드 보유",
+        "measurement": {
+          "id": "entry-check.library-10",
+          "itemKey": "entry-check.library-10.v1",
+          "familyKey": "entry-check.library-10.v1",
+          "skillId": "ko.reading.detail",
+          "difficulty": 1,
+          "modality": "reading",
+          "responseFormat": "single-choice",
+          "audioRequired": false,
+          "confounded": false,
+          "conceptIds": [
+            "G402"
+          ]
+        },
+        "textOnly": true,
+        "followupOnly": true
+      },
+      {
+        "id": "library-11",
+        "venueId": "library",
+        "answer": "pass",
+        "learningTarget": "음료의 뚜껑 조건",
+        "measurement": {
+          "id": "entry-check.library-11",
+          "itemKey": "entry-check.library-11.v1",
+          "familyKey": "entry-check.library-11.v1",
+          "skillId": "ko.reading.condition",
+          "difficulty": 2,
+          "modality": "reading",
+          "responseFormat": "single-choice",
+          "audioRequired": false,
+          "confounded": false,
+          "conceptIds": [
+            "G402",
+            "G401"
+          ]
+        },
+        "textOnly": true,
+        "followupOnly": true
+      },
+      {
+        "id": "museum-09",
+        "venueId": "museum",
+        "answer": "pass",
+        "learningTarget": "휴대폰 허용",
+        "measurement": {
+          "id": "entry-check.museum-09",
+          "itemKey": "entry-check.museum-09.v1",
+          "familyKey": "entry-check.museum-09.v1",
+          "skillId": "ko.reading.condition",
+          "difficulty": 1,
+          "modality": "reading",
+          "responseFormat": "single-choice",
+          "audioRequired": false,
+          "confounded": false,
+          "conceptIds": [
+            "G402"
+          ]
+        },
+        "textOnly": true,
+        "followupOnly": true
+      },
+      {
+        "id": "museum-10",
+        "venueId": "museum",
+        "answer": "camera",
+        "learningTarget": "카메라 반입 금지",
+        "measurement": {
+          "id": "entry-check.museum-10",
+          "itemKey": "entry-check.museum-10.v1",
+          "familyKey": "entry-check.museum-10.v1",
+          "skillId": "ko.reading.negation",
+          "difficulty": 1,
+          "modality": "reading",
+          "responseFormat": "single-choice",
+          "audioRequired": false,
+          "confounded": false,
+          "conceptIds": [
+            "G402"
+          ]
+        },
+        "textOnly": true,
+        "followupOnly": true
+      },
+      {
+        "id": "museum-11",
+        "venueId": "museum",
+        "answer": "pass",
+        "learningTarget": "13살 이하 어린이 표와 어른 표 구분",
+        "measurement": {
+          "id": "entry-check.museum-11",
+          "itemKey": "entry-check.museum-11.v1",
+          "familyKey": "entry-check.museum-11.v1",
+          "skillId": "ko.reading.condition",
+          "difficulty": 2,
+          "modality": "reading",
+          "responseFormat": "single-choice",
+          "audioRequired": false,
+          "confounded": false,
+          "conceptIds": [
+            "G212",
+            "S107",
+            "G402"
+          ]
+        },
+        "textOnly": true,
+        "followupOnly": true
+      },
+      {
+        "id": "concert-10",
+        "venueId": "concert",
+        "answer": "pass",
+        "learningTarget": "일정 변경 뒤에도 9일 표 허용",
+        "measurement": {
+          "id": "entry-check.concert-10",
+          "itemKey": "entry-check.concert-10.v1",
+          "familyKey": "entry-check.concert-10.v1",
+          "skillId": "ko.reading.negation",
+          "difficulty": 2,
+          "modality": "reading",
+          "responseFormat": "single-choice",
+          "audioRequired": false,
+          "confounded": false,
+          "conceptIds": [
+            "G212",
+            "G402"
+          ]
+        },
+        "textOnly": true,
+        "followupOnly": true
+      },
+      {
+        "id": "concert-11",
+        "venueId": "concert",
+        "answer": "chair",
+        "learningTarget": "의자 반입 금지",
+        "measurement": {
+          "id": "entry-check.concert-11",
+          "itemKey": "entry-check.concert-11.v1",
+          "familyKey": "entry-check.concert-11.v1",
+          "skillId": "ko.reading.negation",
+          "difficulty": 1,
+          "modality": "reading",
+          "responseFormat": "single-choice",
+          "audioRequired": false,
+          "confounded": false,
+          "conceptIds": [
+            "G505",
+            "G402"
+          ]
+        },
+        "textOnly": true,
+        "followupOnly": true
+      },
+      {
+        "id": "concert-12",
+        "venueId": "concert",
+        "answer": "pass",
+        "learningTarget": "표 날짜와 안내문의 허용 날짜 대조",
+        "measurement": {
+          "id": "entry-check.concert-12",
+          "itemKey": "entry-check.concert-12.v1",
+          "familyKey": "entry-check.concert-12.v1",
+          "skillId": "ko.reading.detail",
+          "difficulty": 2,
+          "modality": "reading",
+          "responseFormat": "single-choice",
+          "audioRequired": false,
+          "confounded": false,
+          "conceptIds": [
+            "G212",
+            "G402"
+          ]
+        },
+        "textOnly": true,
+        "followupOnly": true
+      },
+      {
+        "id": "concert-13",
+        "venueId": "concert",
+        "answer": "food",
+        "learningTarget": "6시 25분 알림 뒤 음식 반입 금지",
+        "measurement": {
+          "id": "entry-check.concert-13",
+          "itemKey": "entry-check.concert-13.v1",
+          "familyKey": "entry-check.concert-13.v1",
+          "skillId": "ko.reading.negation",
+          "difficulty": 2,
+          "modality": "reading",
+          "responseFormat": "single-choice",
+          "audioRequired": false,
+          "confounded": false,
+          "conceptIds": [
+            "S104",
+            "G402"
+          ]
+        },
+        "textOnly": true,
+        "followupOnly": true
+      },
+      {
+        "id": "concert-14",
+        "venueId": "concert",
+        "answer": "pass",
+        "learningTarget": "7살 이하 어린이의 보호자 동행",
+        "measurement": {
+          "id": "entry-check.concert-14",
+          "itemKey": "entry-check.concert-14.v1",
+          "familyKey": "entry-check.concert-14.v1",
+          "skillId": "ko.reading.condition",
+          "difficulty": 2,
+          "modality": "reading",
+          "responseFormat": "single-choice",
+          "audioRequired": false,
+          "confounded": false,
+          "conceptIds": [
+            "G212",
+            "G403"
+          ]
+        },
+        "textOnly": true,
+        "followupOnly": true
+      }
+    ],
+    "correctAnswers": {
+      "pass": 25,
+      "reject": 25
+    },
+    "newCorrectAnswers": {
+      "pass": 8,
+      "reject": 3
+    }
+  },
+  "summary": {
+    "firstShiftPositions": 24,
+    "nonFinalPositions": 20,
+    "freshFirstConfirmation": 18,
+    "sameRuleAndConceptFirstConfirmation": 17,
+    "sameRuleAndConceptAndLearningTargetFirstConfirmation": 17,
+    "freshSecondConfirmation": 4
+  },
+  "knownLimits": [
+    {
+      "itemId": "library-05",
+      "status": "new-different-target",
+      "nextItemId": "library-09",
+      "sourceTarget": "도서관 카드 종류",
+      "nextTarget": "입장 마감 시각",
+      "reason": "마지막 남은09가 원래 근무의 유일한 마감 시각 규칙이어서 카드 확인 손님으로 대체할 수 없다. 새문항18에는 포함하지만 같은 목표17에는 제외한다."
+    },
+    {
+      "itemId": "museum-04",
+      "status": "unavailable",
+      "reason": "65살 이상 무료 조건의 같은 난도 미노출 확인 원고가 없고, 기존06 어린이표는 다른 세부조건이다. 06을 바로 앞에 두면05의 도착시각을 거꾸로 돌려야 해서 진행하지 않는다."
+    },
+    {
+      "itemId": "museum-05",
+      "status": "unavailable",
+      "reason": "마지막 남은08의 유일한 입장 마감 규칙을 보존해야 하므로 같은 표·나이 확인을 끼울 수 없다."
+    },
+    {
+      "itemId": "pool-11",
+      "following": "pool-03",
+      "status": "unavailable-after-second-error",
+      "reason": "남은04(cap)·05(kid)와6명총수/시간을 보존해야 한다. 새14도 condition1 물허용 목표가 아니라 detail1 모자확인이므로 연결하지 않는다."
+    },
+    "각 근무 마지막 문항4개는 이번 회차에 새 응답을 더하지 않으므로 분모에서 제외한다.",
+    "다른 순위·노출 이력·WORLD 과제 범위·여러 항목의 연속 오답 조합은 이 기본 첫 근무 계산으로 보장하지 않는다.",
+    "같은 규칙·문형·학습목표 표시와 난도는 창작 원고의 분류이며 교원의 교육적 동등성 검수는 미확인이다."
+  ],
+  "sourceFiles": [
+    {
+      "path": "experiences/entry-check/content.mjs",
+      "sha256": "56a0111481a09c2b9fca40551a1101191fee85d90dbc6ff265e119fb5b06ca5f"
+    },
+    {
+      "path": "experiences/entry-check/correction.mjs",
+      "sha256": "cb9b2759b36e05c53b26815b47faf4485189c4c692590456746641464485bb2d"
+    },
+    {
+      "path": "experiences/entry-check/learning.mjs",
+      "sha256": "40dfab13bd168e83c51d9781cc6d80c7d059e46ab3b14fe494a43b0c13c9202a"
+    },
+    {
+      "path": "experiences/entry-check/core.mjs",
+      "sha256": "4c615813c5e709eb044523cb370172b48134288e8d310b07a72f1c8b298db447"
+    },
+    {
+      "path": "experiences/entry-check/confirmation-content.test.mjs",
+      "sha256": "f49fae3143e6fff447b4a381f45a584b11aba8f3a434e31e5222ef02cfd2cf02"
+    }
+  ],
+  "venues": [
+    {
+      "venueId": "pool",
+      "authoredCount": 14,
+      "reservedConfirmationCount": 6,
+      "originalFirstShift": [
+        "pool-01",
+        "pool-02",
+        "pool-03",
+        "pool-04",
+        "pool-05",
+        "pool-06"
+      ],
+      "summary": {
+        "denominator": 5,
+        "fresh": 5,
+        "sameRuleAndConceptAndTarget": 5
+      },
+      "cases": [
+        {
+          "itemId": "pool-01",
+          "index": 0,
+          "learningTarget": "수영 모자 보유와 입장 전 착용",
+          "measurement": {
+            "id": "entry-check.pool-01",
+            "itemKey": "entry-check.pool-01.v1",
+            "familyKey": "entry-check.pool-01.v1",
+            "skillId": "ko.reading.detail",
+            "difficulty": 1,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G403"
+            ]
+          },
+          "answer": "pass",
+          "evidence": [
+            "cap"
+          ],
+          "afterWrongOrHelp": {
+            "status": "new",
+            "itemId": "pool-09",
+            "learningTarget": "수영 모자 보유와 입장 전 착용",
+            "targetMeasurement": {
+              "id": "entry-check.pool-09",
+              "itemKey": "entry-check.pool-09.v1",
+              "familyKey": "entry-check.pool-09.v1",
+              "skillId": "ko.reading.detail",
+              "difficulty": 1,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G403"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "pool-01",
+              "pool-09",
+              "pool-02",
+              "pool-03",
+              "pool-04",
+              "pool-05"
+            ],
+            "remaining": [
+              {
+                "itemId": "pool-09",
+                "at": "14:04",
+                "answer": "cap"
+              },
+              {
+                "itemId": "pool-02",
+                "at": "14:06",
+                "answer": "food"
+              },
+              {
+                "itemId": "pool-03",
+                "at": "14:11",
+                "answer": "pass"
+              },
+              {
+                "itemId": "pool-04",
+                "at": "14:15",
+                "answer": "cap"
+              },
+              {
+                "itemId": "pool-05",
+                "at": "14:20",
+                "answer": "kid"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          },
+          "afterFirstConfirmationWrong": {
+            "status": "new",
+            "itemId": "pool-12",
+            "learningTarget": "수영 모자 보유와 입장 전 착용",
+            "targetMeasurement": {
+              "id": "entry-check.pool-12",
+              "itemKey": "entry-check.pool-12.v1",
+              "familyKey": "entry-check.pool-12.v1",
+              "skillId": "ko.reading.detail",
+              "difficulty": 1,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G403"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "pool-01",
+              "pool-09",
+              "pool-12",
+              "pool-02",
+              "pool-03",
+              "pool-05"
+            ],
+            "remaining": [
+              {
+                "itemId": "pool-12",
+                "at": "14:05",
+                "answer": "pass"
+              },
+              {
+                "itemId": "pool-02",
+                "at": "14:06",
+                "answer": "food"
+              },
+              {
+                "itemId": "pool-03",
+                "at": "14:11",
+                "answer": "pass"
+              },
+              {
+                "itemId": "pool-05",
+                "at": "14:20",
+                "answer": "kid"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          }
+        },
+        {
+          "itemId": "pool-02",
+          "index": 1,
+          "learningTarget": "음식 반입 금지",
+          "measurement": {
+            "id": "entry-check.pool-02",
+            "itemKey": "entry-check.pool-02.v1",
+            "familyKey": "entry-check.pool-02.v1",
+            "skillId": "ko.reading.negation",
+            "difficulty": 1,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G402"
+            ]
+          },
+          "answer": "food",
+          "evidence": [
+            "food"
+          ],
+          "afterWrongOrHelp": {
+            "status": "new",
+            "itemId": "pool-10",
+            "learningTarget": "음식 반입 금지",
+            "targetMeasurement": {
+              "id": "entry-check.pool-10",
+              "itemKey": "entry-check.pool-10.v1",
+              "familyKey": "entry-check.pool-10.v1",
+              "skillId": "ko.reading.negation",
+              "difficulty": 1,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G402"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "pool-01",
+              "pool-02",
+              "pool-10",
+              "pool-03",
+              "pool-04",
+              "pool-05"
+            ],
+            "remaining": [
+              {
+                "itemId": "pool-10",
+                "at": "14:09",
+                "answer": "food"
+              },
+              {
+                "itemId": "pool-03",
+                "at": "14:11",
+                "answer": "pass"
+              },
+              {
+                "itemId": "pool-04",
+                "at": "14:15",
+                "answer": "cap"
+              },
+              {
+                "itemId": "pool-05",
+                "at": "14:20",
+                "answer": "kid"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          },
+          "afterFirstConfirmationWrong": {
+            "status": "new",
+            "itemId": "pool-13",
+            "learningTarget": "음식 반입 금지",
+            "targetMeasurement": {
+              "id": "entry-check.pool-13",
+              "itemKey": "entry-check.pool-13.v1",
+              "familyKey": "entry-check.pool-13.v1",
+              "skillId": "ko.reading.negation",
+              "difficulty": 1,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G402"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "pool-01",
+              "pool-02",
+              "pool-10",
+              "pool-13",
+              "pool-04",
+              "pool-05"
+            ],
+            "remaining": [
+              {
+                "itemId": "pool-13",
+                "at": "14:10",
+                "answer": "pass"
+              },
+              {
+                "itemId": "pool-04",
+                "at": "14:15",
+                "answer": "cap"
+              },
+              {
+                "itemId": "pool-05",
+                "at": "14:20",
+                "answer": "kid"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          }
+        },
+        {
+          "itemId": "pool-03",
+          "index": 2,
+          "learningTarget": "물 허용",
+          "measurement": {
+            "id": "entry-check.pool-03",
+            "itemKey": "entry-check.pool-03.v1",
+            "familyKey": "entry-check.pool-03.v1",
+            "skillId": "ko.reading.condition",
+            "difficulty": 1,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G402"
+            ]
+          },
+          "answer": "pass",
+          "evidence": [
+            "food"
+          ],
+          "afterWrongOrHelp": {
+            "status": "new",
+            "itemId": "pool-11",
+            "learningTarget": "물 허용",
+            "targetMeasurement": {
+              "id": "entry-check.pool-11",
+              "itemKey": "entry-check.pool-11.v1",
+              "familyKey": "entry-check.pool-11.v1",
+              "skillId": "ko.reading.condition",
+              "difficulty": 1,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G402"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "pool-01",
+              "pool-02",
+              "pool-03",
+              "pool-11",
+              "pool-04",
+              "pool-05"
+            ],
+            "remaining": [
+              {
+                "itemId": "pool-11",
+                "at": "14:13",
+                "answer": "pass"
+              },
+              {
+                "itemId": "pool-04",
+                "at": "14:15",
+                "answer": "cap"
+              },
+              {
+                "itemId": "pool-05",
+                "at": "14:20",
+                "answer": "kid"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          },
+          "afterFirstConfirmationWrong": {
+            "status": "unavailable",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "남은 근무와 이번 목표 범위에서 바로 이어질 같은 목표의 새 손님을 준비하지 못했어요. 다음 손님은 원래 순서대로 진행해요.",
+            "queue": [
+              "pool-01",
+              "pool-02",
+              "pool-03",
+              "pool-11",
+              "pool-04",
+              "pool-05"
+            ],
+            "remaining": [
+              {
+                "itemId": "pool-04",
+                "at": "14:15",
+                "answer": "cap"
+              },
+              {
+                "itemId": "pool-05",
+                "at": "14:20",
+                "answer": "kid"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          }
+        },
+        {
+          "itemId": "pool-04",
+          "index": 3,
+          "learningTarget": "수영 모자 보유와 입장 전 착용",
+          "measurement": {
+            "id": "entry-check.pool-04",
+            "itemKey": "entry-check.pool-04.v1",
+            "familyKey": "entry-check.pool-04.v1",
+            "skillId": "ko.reading.detail",
+            "difficulty": 1,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G403"
+            ]
+          },
+          "answer": "cap",
+          "evidence": [
+            "cap"
+          ],
+          "afterWrongOrHelp": {
+            "status": "new",
+            "itemId": "pool-14",
+            "learningTarget": "수영 모자 보유와 입장 전 착용",
+            "targetMeasurement": {
+              "id": "entry-check.pool-14",
+              "itemKey": "entry-check.pool-14.v1",
+              "familyKey": "entry-check.pool-14.v1",
+              "skillId": "ko.reading.detail",
+              "difficulty": 1,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G403"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "pool-01",
+              "pool-02",
+              "pool-03",
+              "pool-04",
+              "pool-14",
+              "pool-05"
+            ],
+            "remaining": [
+              {
+                "itemId": "pool-14",
+                "at": "14:17",
+                "answer": "pass"
+              },
+              {
+                "itemId": "pool-05",
+                "at": "14:20",
+                "answer": "kid"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          },
+          "afterFirstConfirmationWrong": {
+            "status": "unavailable",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "남은 근무와 이번 목표 범위에서 바로 이어질 같은 목표의 새 손님을 준비하지 못했어요. 다음 손님은 원래 순서대로 진행해요.",
+            "queue": [
+              "pool-01",
+              "pool-02",
+              "pool-03",
+              "pool-04",
+              "pool-14",
+              "pool-05"
+            ],
+            "remaining": [
+              {
+                "itemId": "pool-05",
+                "at": "14:20",
+                "answer": "kid"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          }
+        },
+        {
+          "itemId": "pool-05",
+          "index": 4,
+          "learningTarget": "7살 이하 어린이의 어른 동행",
+          "measurement": {
+            "id": "entry-check.pool-05",
+            "itemKey": "entry-check.pool-05.v1",
+            "familyKey": "entry-check.pool-05.v1",
+            "skillId": "ko.reading.condition",
+            "difficulty": 2,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G212",
+              "G403"
+            ]
+          },
+          "answer": "kid",
+          "evidence": [
+            "kid"
+          ],
+          "afterWrongOrHelp": {
+            "status": "new",
+            "itemId": "pool-06",
+            "learningTarget": "7살 이하 어린이의 어른 동행",
+            "targetMeasurement": {
+              "id": "entry-check.pool-06",
+              "itemKey": "entry-check.pool-06.v1",
+              "familyKey": "entry-check.pool-06.v1",
+              "skillId": "ko.reading.condition",
+              "difficulty": 2,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G212",
+                "G403"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "pool-01",
+              "pool-02",
+              "pool-03",
+              "pool-04",
+              "pool-05",
+              "pool-06"
+            ],
+            "remaining": [
+              {
+                "itemId": "pool-06",
+                "at": "14:24",
+                "answer": "pass"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          },
+          "afterFirstConfirmationWrong": {
+            "status": "round-end",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "이번 근무의 마지막 손님이에요. 근무를 마친 뒤 다음 연습을 확인해요.",
+            "queue": [
+              "pool-01",
+              "pool-02",
+              "pool-03",
+              "pool-04",
+              "pool-05",
+              "pool-06"
+            ],
+            "remaining": [],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          }
+        },
+        {
+          "itemId": "pool-06",
+          "index": 5,
+          "learningTarget": "7살 이하 어린이의 어른 동행",
+          "measurement": {
+            "id": "entry-check.pool-06",
+            "itemKey": "entry-check.pool-06.v1",
+            "familyKey": "entry-check.pool-06.v1",
+            "skillId": "ko.reading.condition",
+            "difficulty": 2,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G212",
+              "G403"
+            ]
+          },
+          "answer": "pass",
+          "evidence": [
+            "kid"
+          ],
+          "afterWrongOrHelp": {
+            "status": "round-end",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "이번 근무의 마지막 손님이에요. 근무를 마친 뒤 다음 연습을 확인해요.",
+            "queue": [
+              "pool-01",
+              "pool-02",
+              "pool-03",
+              "pool-04",
+              "pool-05",
+              "pool-06"
+            ],
+            "remaining": [],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          },
+          "afterFirstConfirmationWrong": null
+        }
+      ]
+    },
+    {
+      "venueId": "library",
+      "authoredCount": 11,
+      "reservedConfirmationCount": 2,
+      "originalFirstShift": [
+        "library-01",
+        "library-02",
+        "library-03",
+        "library-04",
+        "library-05",
+        "library-09"
+      ],
+      "summary": {
+        "denominator": 5,
+        "fresh": 5,
+        "sameRuleAndConceptAndTarget": 4
+      },
+      "cases": [
+        {
+          "itemId": "library-01",
+          "index": 0,
+          "learningTarget": "본인의 도서관 카드 보유",
+          "measurement": {
+            "id": "entry-check.library-01",
+            "itemKey": "entry-check.library-01.v1",
+            "familyKey": "entry-check.library-01.v1",
+            "skillId": "ko.reading.detail",
+            "difficulty": 1,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G402"
+            ]
+          },
+          "answer": "pass",
+          "evidence": [
+            "card"
+          ],
+          "afterWrongOrHelp": {
+            "status": "new",
+            "itemId": "library-02",
+            "learningTarget": "본인의 도서관 카드 보유",
+            "targetMeasurement": {
+              "id": "entry-check.library-02",
+              "itemKey": "entry-check.library-02.v1",
+              "familyKey": "entry-check.library-02.v1",
+              "skillId": "ko.reading.detail",
+              "difficulty": 1,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G402"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "library-01",
+              "library-02",
+              "library-03",
+              "library-04",
+              "library-05",
+              "library-09"
+            ],
+            "remaining": [
+              {
+                "itemId": "library-02",
+                "at": "16:57",
+                "answer": "card"
+              },
+              {
+                "itemId": "library-03",
+                "at": "17:01",
+                "answer": "pass"
+              },
+              {
+                "itemId": "library-04",
+                "at": "17:06",
+                "answer": "food"
+              },
+              {
+                "itemId": "library-05",
+                "at": "17:10",
+                "answer": "card"
+              },
+              {
+                "itemId": "library-09",
+                "at": "17:34",
+                "answer": "time"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          },
+          "afterFirstConfirmationWrong": {
+            "status": "new",
+            "itemId": "library-10",
+            "learningTarget": "본인의 도서관 카드 보유",
+            "targetMeasurement": {
+              "id": "entry-check.library-10",
+              "itemKey": "entry-check.library-10.v1",
+              "familyKey": "entry-check.library-10.v1",
+              "skillId": "ko.reading.detail",
+              "difficulty": 1,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G402"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "library-01",
+              "library-02",
+              "library-10",
+              "library-03",
+              "library-04",
+              "library-09"
+            ],
+            "remaining": [
+              {
+                "itemId": "library-10",
+                "at": "16:59",
+                "answer": "pass"
+              },
+              {
+                "itemId": "library-03",
+                "at": "17:01",
+                "answer": "pass"
+              },
+              {
+                "itemId": "library-04",
+                "at": "17:06",
+                "answer": "food"
+              },
+              {
+                "itemId": "library-09",
+                "at": "17:34",
+                "answer": "time"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          }
+        },
+        {
+          "itemId": "library-02",
+          "index": 1,
+          "learningTarget": "본인의 도서관 카드 보유",
+          "measurement": {
+            "id": "entry-check.library-02",
+            "itemKey": "entry-check.library-02.v1",
+            "familyKey": "entry-check.library-02.v1",
+            "skillId": "ko.reading.detail",
+            "difficulty": 1,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G402"
+            ]
+          },
+          "answer": "card",
+          "evidence": [
+            "card"
+          ],
+          "afterWrongOrHelp": {
+            "status": "new",
+            "itemId": "library-10",
+            "learningTarget": "본인의 도서관 카드 보유",
+            "targetMeasurement": {
+              "id": "entry-check.library-10",
+              "itemKey": "entry-check.library-10.v1",
+              "familyKey": "entry-check.library-10.v1",
+              "skillId": "ko.reading.detail",
+              "difficulty": 1,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G402"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "library-01",
+              "library-02",
+              "library-10",
+              "library-03",
+              "library-04",
+              "library-09"
+            ],
+            "remaining": [
+              {
+                "itemId": "library-10",
+                "at": "16:59",
+                "answer": "pass"
+              },
+              {
+                "itemId": "library-03",
+                "at": "17:01",
+                "answer": "pass"
+              },
+              {
+                "itemId": "library-04",
+                "at": "17:06",
+                "answer": "food"
+              },
+              {
+                "itemId": "library-09",
+                "at": "17:34",
+                "answer": "time"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          },
+          "afterFirstConfirmationWrong": {
+            "status": "unavailable",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "남은 근무와 이번 목표 범위에서 바로 이어질 같은 목표의 새 손님을 준비하지 못했어요. 다음 손님은 원래 순서대로 진행해요.",
+            "queue": [
+              "library-01",
+              "library-02",
+              "library-10",
+              "library-03",
+              "library-04",
+              "library-09"
+            ],
+            "remaining": [
+              {
+                "itemId": "library-03",
+                "at": "17:01",
+                "answer": "pass"
+              },
+              {
+                "itemId": "library-04",
+                "at": "17:06",
+                "answer": "food"
+              },
+              {
+                "itemId": "library-09",
+                "at": "17:34",
+                "answer": "time"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          }
+        },
+        {
+          "itemId": "library-03",
+          "index": 2,
+          "learningTarget": "음료의 뚜껑 조건",
+          "measurement": {
+            "id": "entry-check.library-03",
+            "itemKey": "entry-check.library-03.v1",
+            "familyKey": "entry-check.library-03.v1",
+            "skillId": "ko.reading.condition",
+            "difficulty": 2,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G402",
+              "G401"
+            ]
+          },
+          "answer": "pass",
+          "evidence": [
+            "food"
+          ],
+          "afterWrongOrHelp": {
+            "status": "new",
+            "itemId": "library-04",
+            "learningTarget": "음료의 뚜껑 조건",
+            "targetMeasurement": {
+              "id": "entry-check.library-04",
+              "itemKey": "entry-check.library-04.v1",
+              "familyKey": "entry-check.library-04.v1",
+              "skillId": "ko.reading.condition",
+              "difficulty": 2,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G402",
+                "G401"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "library-01",
+              "library-02",
+              "library-03",
+              "library-04",
+              "library-05",
+              "library-09"
+            ],
+            "remaining": [
+              {
+                "itemId": "library-04",
+                "at": "17:06",
+                "answer": "food"
+              },
+              {
+                "itemId": "library-05",
+                "at": "17:10",
+                "answer": "card"
+              },
+              {
+                "itemId": "library-09",
+                "at": "17:34",
+                "answer": "time"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          },
+          "afterFirstConfirmationWrong": {
+            "status": "new",
+            "itemId": "library-11",
+            "learningTarget": "음료의 뚜껑 조건",
+            "targetMeasurement": {
+              "id": "entry-check.library-11",
+              "itemKey": "entry-check.library-11.v1",
+              "familyKey": "entry-check.library-11.v1",
+              "skillId": "ko.reading.condition",
+              "difficulty": 2,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G402",
+                "G401"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "library-01",
+              "library-02",
+              "library-03",
+              "library-04",
+              "library-11",
+              "library-09"
+            ],
+            "remaining": [
+              {
+                "itemId": "library-11",
+                "at": "17:08",
+                "answer": "pass"
+              },
+              {
+                "itemId": "library-09",
+                "at": "17:34",
+                "answer": "time"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          }
+        },
+        {
+          "itemId": "library-04",
+          "index": 3,
+          "learningTarget": "음료의 뚜껑 조건",
+          "measurement": {
+            "id": "entry-check.library-04",
+            "itemKey": "entry-check.library-04.v1",
+            "familyKey": "entry-check.library-04.v1",
+            "skillId": "ko.reading.condition",
+            "difficulty": 2,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G402",
+              "G401"
+            ]
+          },
+          "answer": "food",
+          "evidence": [
+            "food"
+          ],
+          "afterWrongOrHelp": {
+            "status": "new",
+            "itemId": "library-11",
+            "learningTarget": "음료의 뚜껑 조건",
+            "targetMeasurement": {
+              "id": "entry-check.library-11",
+              "itemKey": "entry-check.library-11.v1",
+              "familyKey": "entry-check.library-11.v1",
+              "skillId": "ko.reading.condition",
+              "difficulty": 2,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G402",
+                "G401"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "library-01",
+              "library-02",
+              "library-03",
+              "library-04",
+              "library-11",
+              "library-09"
+            ],
+            "remaining": [
+              {
+                "itemId": "library-11",
+                "at": "17:08",
+                "answer": "pass"
+              },
+              {
+                "itemId": "library-09",
+                "at": "17:34",
+                "answer": "time"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          },
+          "afterFirstConfirmationWrong": {
+            "status": "unavailable",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "남은 근무와 이번 목표 범위에서 바로 이어질 같은 목표의 새 손님을 준비하지 못했어요. 다음 손님은 원래 순서대로 진행해요.",
+            "queue": [
+              "library-01",
+              "library-02",
+              "library-03",
+              "library-04",
+              "library-11",
+              "library-09"
+            ],
+            "remaining": [
+              {
+                "itemId": "library-09",
+                "at": "17:34",
+                "answer": "time"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          }
+        },
+        {
+          "itemId": "library-05",
+          "index": 4,
+          "learningTarget": "도서관 카드 종류",
+          "measurement": {
+            "id": "entry-check.library-05",
+            "itemKey": "entry-check.library-05.v1",
+            "familyKey": "entry-check.library-05.v1",
+            "skillId": "ko.reading.detail",
+            "difficulty": 2,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G402"
+            ]
+          },
+          "answer": "card",
+          "evidence": [
+            "card"
+          ],
+          "afterWrongOrHelp": {
+            "status": "new",
+            "itemId": "library-09",
+            "learningTarget": "입장 마감 시각",
+            "targetMeasurement": {
+              "id": "entry-check.library-09",
+              "itemKey": "entry-check.library-09.v1",
+              "familyKey": "entry-check.library-09.v1",
+              "skillId": "ko.reading.detail",
+              "difficulty": 2,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G212",
+                "S104",
+                "G402"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 난도의 읽기 항목을 확인해요. 안내 규칙·표현은 달라질 수 있어요.",
+            "queue": [
+              "library-01",
+              "library-02",
+              "library-03",
+              "library-04",
+              "library-05",
+              "library-09"
+            ],
+            "remaining": [
+              {
+                "itemId": "library-09",
+                "at": "17:34",
+                "answer": "time"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": false,
+              "sameLearningTarget": false
+            }
+          },
+          "afterFirstConfirmationWrong": {
+            "status": "round-end",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "이번 근무의 마지막 손님이에요. 근무를 마친 뒤 다음 연습을 확인해요.",
+            "queue": [
+              "library-01",
+              "library-02",
+              "library-03",
+              "library-04",
+              "library-05",
+              "library-09"
+            ],
+            "remaining": [],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          }
+        },
+        {
+          "itemId": "library-09",
+          "index": 5,
+          "learningTarget": "입장 마감 시각",
+          "measurement": {
+            "id": "entry-check.library-09",
+            "itemKey": "entry-check.library-09.v1",
+            "familyKey": "entry-check.library-09.v1",
+            "skillId": "ko.reading.detail",
+            "difficulty": 2,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G212",
+              "S104",
+              "G402"
+            ]
+          },
+          "answer": "time",
+          "evidence": [
+            "time"
+          ],
+          "afterWrongOrHelp": {
+            "status": "round-end",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "이번 근무의 마지막 손님이에요. 근무를 마친 뒤 다음 연습을 확인해요.",
+            "queue": [
+              "library-01",
+              "library-02",
+              "library-03",
+              "library-04",
+              "library-05",
+              "library-09"
+            ],
+            "remaining": [],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          },
+          "afterFirstConfirmationWrong": null
+        }
+      ]
+    },
+    {
+      "venueId": "museum",
+      "authoredCount": 11,
+      "reservedConfirmationCount": 3,
+      "originalFirstShift": [
+        "museum-01",
+        "museum-02",
+        "museum-03",
+        "museum-04",
+        "museum-05",
+        "museum-08"
+      ],
+      "summary": {
+        "denominator": 5,
+        "fresh": 3,
+        "sameRuleAndConceptAndTarget": 3
+      },
+      "cases": [
+        {
+          "itemId": "museum-01",
+          "index": 0,
+          "learningTarget": "휴대폰 허용",
+          "measurement": {
+            "id": "entry-check.museum-01",
+            "itemKey": "entry-check.museum-01.v1",
+            "familyKey": "entry-check.museum-01.v1",
+            "skillId": "ko.reading.condition",
+            "difficulty": 1,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G402"
+            ]
+          },
+          "answer": "pass",
+          "evidence": [
+            "camera"
+          ],
+          "afterWrongOrHelp": {
+            "status": "new",
+            "itemId": "museum-09",
+            "learningTarget": "휴대폰 허용",
+            "targetMeasurement": {
+              "id": "entry-check.museum-09",
+              "itemKey": "entry-check.museum-09.v1",
+              "familyKey": "entry-check.museum-09.v1",
+              "skillId": "ko.reading.condition",
+              "difficulty": 1,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G402"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "museum-01",
+              "museum-09",
+              "museum-02",
+              "museum-03",
+              "museum-04",
+              "museum-08"
+            ],
+            "remaining": [
+              {
+                "itemId": "museum-09",
+                "at": "16:24",
+                "answer": "pass"
+              },
+              {
+                "itemId": "museum-02",
+                "at": "16:27",
+                "answer": "camera"
+              },
+              {
+                "itemId": "museum-03",
+                "at": "16:32",
+                "answer": "fee"
+              },
+              {
+                "itemId": "museum-04",
+                "at": "16:37",
+                "answer": "pass"
+              },
+              {
+                "itemId": "museum-08",
+                "at": "17:04",
+                "answer": "time"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          },
+          "afterFirstConfirmationWrong": {
+            "status": "unavailable",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "남은 근무와 이번 목표 범위에서 바로 이어질 같은 목표의 새 손님을 준비하지 못했어요. 다음 손님은 원래 순서대로 진행해요.",
+            "queue": [
+              "museum-01",
+              "museum-09",
+              "museum-02",
+              "museum-03",
+              "museum-04",
+              "museum-08"
+            ],
+            "remaining": [
+              {
+                "itemId": "museum-02",
+                "at": "16:27",
+                "answer": "camera"
+              },
+              {
+                "itemId": "museum-03",
+                "at": "16:32",
+                "answer": "fee"
+              },
+              {
+                "itemId": "museum-04",
+                "at": "16:37",
+                "answer": "pass"
+              },
+              {
+                "itemId": "museum-08",
+                "at": "17:04",
+                "answer": "time"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          }
+        },
+        {
+          "itemId": "museum-02",
+          "index": 1,
+          "learningTarget": "카메라 반입 금지",
+          "measurement": {
+            "id": "entry-check.museum-02",
+            "itemKey": "entry-check.museum-02.v1",
+            "familyKey": "entry-check.museum-02.v1",
+            "skillId": "ko.reading.negation",
+            "difficulty": 1,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G402"
+            ]
+          },
+          "answer": "camera",
+          "evidence": [
+            "camera"
+          ],
+          "afterWrongOrHelp": {
+            "status": "new",
+            "itemId": "museum-10",
+            "learningTarget": "카메라 반입 금지",
+            "targetMeasurement": {
+              "id": "entry-check.museum-10",
+              "itemKey": "entry-check.museum-10.v1",
+              "familyKey": "entry-check.museum-10.v1",
+              "skillId": "ko.reading.negation",
+              "difficulty": 1,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G402"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "museum-01",
+              "museum-02",
+              "museum-10",
+              "museum-03",
+              "museum-04",
+              "museum-08"
+            ],
+            "remaining": [
+              {
+                "itemId": "museum-10",
+                "at": "16:29",
+                "answer": "camera"
+              },
+              {
+                "itemId": "museum-03",
+                "at": "16:32",
+                "answer": "fee"
+              },
+              {
+                "itemId": "museum-04",
+                "at": "16:37",
+                "answer": "pass"
+              },
+              {
+                "itemId": "museum-08",
+                "at": "17:04",
+                "answer": "time"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          },
+          "afterFirstConfirmationWrong": {
+            "status": "unavailable",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "남은 근무와 이번 목표 범위에서 바로 이어질 같은 목표의 새 손님을 준비하지 못했어요. 다음 손님은 원래 순서대로 진행해요.",
+            "queue": [
+              "museum-01",
+              "museum-02",
+              "museum-10",
+              "museum-03",
+              "museum-04",
+              "museum-08"
+            ],
+            "remaining": [
+              {
+                "itemId": "museum-03",
+                "at": "16:32",
+                "answer": "fee"
+              },
+              {
+                "itemId": "museum-04",
+                "at": "16:37",
+                "answer": "pass"
+              },
+              {
+                "itemId": "museum-08",
+                "at": "17:04",
+                "answer": "time"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          }
+        },
+        {
+          "itemId": "museum-03",
+          "index": 2,
+          "learningTarget": "13살 이하 어린이 표와 어른 표 구분",
+          "measurement": {
+            "id": "entry-check.museum-03",
+            "itemKey": "entry-check.museum-03.v1",
+            "familyKey": "entry-check.museum-03.v1",
+            "skillId": "ko.reading.condition",
+            "difficulty": 2,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G212",
+              "S107",
+              "G402"
+            ]
+          },
+          "answer": "fee",
+          "evidence": [
+            "fee"
+          ],
+          "afterWrongOrHelp": {
+            "status": "new",
+            "itemId": "museum-11",
+            "learningTarget": "13살 이하 어린이 표와 어른 표 구분",
+            "targetMeasurement": {
+              "id": "entry-check.museum-11",
+              "itemKey": "entry-check.museum-11.v1",
+              "familyKey": "entry-check.museum-11.v1",
+              "skillId": "ko.reading.condition",
+              "difficulty": 2,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G212",
+                "S107",
+                "G402"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "museum-01",
+              "museum-02",
+              "museum-03",
+              "museum-11",
+              "museum-04",
+              "museum-08"
+            ],
+            "remaining": [
+              {
+                "itemId": "museum-11",
+                "at": "16:34",
+                "answer": "pass"
+              },
+              {
+                "itemId": "museum-04",
+                "at": "16:37",
+                "answer": "pass"
+              },
+              {
+                "itemId": "museum-08",
+                "at": "17:04",
+                "answer": "time"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          },
+          "afterFirstConfirmationWrong": {
+            "status": "unavailable",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "남은 근무와 이번 목표 범위에서 바로 이어질 같은 목표의 새 손님을 준비하지 못했어요. 다음 손님은 원래 순서대로 진행해요.",
+            "queue": [
+              "museum-01",
+              "museum-02",
+              "museum-03",
+              "museum-11",
+              "museum-04",
+              "museum-08"
+            ],
+            "remaining": [
+              {
+                "itemId": "museum-04",
+                "at": "16:37",
+                "answer": "pass"
+              },
+              {
+                "itemId": "museum-08",
+                "at": "17:04",
+                "answer": "time"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          }
+        },
+        {
+          "itemId": "museum-04",
+          "index": 3,
+          "learningTarget": "65살 이상 무료",
+          "measurement": {
+            "id": "entry-check.museum-04",
+            "itemKey": "entry-check.museum-04.v1",
+            "familyKey": "entry-check.museum-04.v1",
+            "skillId": "ko.reading.condition",
+            "difficulty": 1,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G212",
+              "S107",
+              "G402"
+            ]
+          },
+          "answer": "pass",
+          "evidence": [
+            "fee"
+          ],
+          "afterWrongOrHelp": {
+            "status": "unavailable",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "남은 근무와 이번 목표 범위에서 바로 이어질 같은 목표의 새 손님을 준비하지 못했어요. 다음 손님은 원래 순서대로 진행해요.",
+            "queue": [
+              "museum-01",
+              "museum-02",
+              "museum-03",
+              "museum-04",
+              "museum-05",
+              "museum-08"
+            ],
+            "remaining": [
+              {
+                "itemId": "museum-05",
+                "at": "16:43",
+                "answer": "fee"
+              },
+              {
+                "itemId": "museum-08",
+                "at": "17:04",
+                "answer": "time"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          },
+          "afterFirstConfirmationWrong": null
+        },
+        {
+          "itemId": "museum-05",
+          "index": 4,
+          "learningTarget": "65살 이상 무료",
+          "measurement": {
+            "id": "entry-check.museum-05",
+            "itemKey": "entry-check.museum-05.v1",
+            "familyKey": "entry-check.museum-05.v1",
+            "skillId": "ko.reading.condition",
+            "difficulty": 2,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G212",
+              "S107",
+              "G402"
+            ]
+          },
+          "answer": "fee",
+          "evidence": [
+            "fee"
+          ],
+          "afterWrongOrHelp": {
+            "status": "unavailable",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "남은 근무와 이번 목표 범위에서 바로 이어질 같은 목표의 새 손님을 준비하지 못했어요. 다음 손님은 원래 순서대로 진행해요.",
+            "queue": [
+              "museum-01",
+              "museum-02",
+              "museum-03",
+              "museum-04",
+              "museum-05",
+              "museum-08"
+            ],
+            "remaining": [
+              {
+                "itemId": "museum-08",
+                "at": "17:04",
+                "answer": "time"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          },
+          "afterFirstConfirmationWrong": null
+        },
+        {
+          "itemId": "museum-08",
+          "index": 5,
+          "learningTarget": "입장 마감 시각",
+          "measurement": {
+            "id": "entry-check.museum-08",
+            "itemKey": "entry-check.museum-08.v1",
+            "familyKey": "entry-check.museum-08.v1",
+            "skillId": "ko.reading.detail",
+            "difficulty": 2,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G212",
+              "S105",
+              "S107",
+              "G402"
+            ]
+          },
+          "answer": "time",
+          "evidence": [
+            "time"
+          ],
+          "afterWrongOrHelp": {
+            "status": "round-end",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "이번 근무의 마지막 손님이에요. 근무를 마친 뒤 다음 연습을 확인해요.",
+            "queue": [
+              "museum-01",
+              "museum-02",
+              "museum-03",
+              "museum-04",
+              "museum-05",
+              "museum-08"
+            ],
+            "remaining": [],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          },
+          "afterFirstConfirmationWrong": null
+        }
+      ]
+    },
+    {
+      "venueId": "concert",
+      "authoredCount": 14,
+      "reservedConfirmationCount": 5,
+      "originalFirstShift": [
+        "concert-01",
+        "concert-02",
+        "concert-03",
+        "concert-05",
+        "concert-07",
+        "concert-08"
+      ],
+      "summary": {
+        "denominator": 5,
+        "fresh": 5,
+        "sameRuleAndConceptAndTarget": 5
+      },
+      "cases": [
+        {
+          "itemId": "concert-01",
+          "index": 0,
+          "learningTarget": "일정 변경 뒤에도 9일 표 허용",
+          "measurement": {
+            "id": "entry-check.concert-01",
+            "itemKey": "entry-check.concert-01.v1",
+            "familyKey": "entry-check.concert-01.v1",
+            "skillId": "ko.reading.negation",
+            "difficulty": 2,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G212",
+              "G402"
+            ]
+          },
+          "answer": "pass",
+          "evidence": [
+            "date"
+          ],
+          "afterWrongOrHelp": {
+            "status": "new",
+            "itemId": "concert-10",
+            "learningTarget": "일정 변경 뒤에도 9일 표 허용",
+            "targetMeasurement": {
+              "id": "entry-check.concert-10",
+              "itemKey": "entry-check.concert-10.v1",
+              "familyKey": "entry-check.concert-10.v1",
+              "skillId": "ko.reading.negation",
+              "difficulty": 2,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G212",
+                "G402"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "concert-01",
+              "concert-10",
+              "concert-02",
+              "concert-03",
+              "concert-05",
+              "concert-07"
+            ],
+            "remaining": [
+              {
+                "itemId": "concert-10",
+                "at": "18:05",
+                "answer": "pass"
+              },
+              {
+                "itemId": "concert-02",
+                "at": "18:08",
+                "answer": "chair"
+              },
+              {
+                "itemId": "concert-03",
+                "at": "18:13",
+                "answer": "date"
+              },
+              {
+                "itemId": "concert-05",
+                "at": "18:28",
+                "answer": "food"
+              },
+              {
+                "itemId": "concert-07",
+                "at": "18:38",
+                "answer": "kid"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          },
+          "afterFirstConfirmationWrong": {
+            "status": "unavailable",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "남은 근무와 이번 목표 범위에서 바로 이어질 같은 목표의 새 손님을 준비하지 못했어요. 다음 손님은 원래 순서대로 진행해요.",
+            "queue": [
+              "concert-01",
+              "concert-10",
+              "concert-02",
+              "concert-03",
+              "concert-05",
+              "concert-07"
+            ],
+            "remaining": [
+              {
+                "itemId": "concert-02",
+                "at": "18:08",
+                "answer": "chair"
+              },
+              {
+                "itemId": "concert-03",
+                "at": "18:13",
+                "answer": "date"
+              },
+              {
+                "itemId": "concert-05",
+                "at": "18:28",
+                "answer": "food"
+              },
+              {
+                "itemId": "concert-07",
+                "at": "18:38",
+                "answer": "kid"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          }
+        },
+        {
+          "itemId": "concert-02",
+          "index": 1,
+          "learningTarget": "의자 반입 금지",
+          "measurement": {
+            "id": "entry-check.concert-02",
+            "itemKey": "entry-check.concert-02.v1",
+            "familyKey": "entry-check.concert-02.v1",
+            "skillId": "ko.reading.negation",
+            "difficulty": 1,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G505",
+              "G402"
+            ]
+          },
+          "answer": "chair",
+          "evidence": [
+            "chair"
+          ],
+          "afterWrongOrHelp": {
+            "status": "new",
+            "itemId": "concert-11",
+            "learningTarget": "의자 반입 금지",
+            "targetMeasurement": {
+              "id": "entry-check.concert-11",
+              "itemKey": "entry-check.concert-11.v1",
+              "familyKey": "entry-check.concert-11.v1",
+              "skillId": "ko.reading.negation",
+              "difficulty": 1,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G505",
+                "G402"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "concert-01",
+              "concert-02",
+              "concert-11",
+              "concert-03",
+              "concert-05",
+              "concert-07"
+            ],
+            "remaining": [
+              {
+                "itemId": "concert-11",
+                "at": "18:10",
+                "answer": "chair"
+              },
+              {
+                "itemId": "concert-03",
+                "at": "18:13",
+                "answer": "date"
+              },
+              {
+                "itemId": "concert-05",
+                "at": "18:28",
+                "answer": "food"
+              },
+              {
+                "itemId": "concert-07",
+                "at": "18:38",
+                "answer": "kid"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          },
+          "afterFirstConfirmationWrong": {
+            "status": "unavailable",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "남은 근무와 이번 목표 범위에서 바로 이어질 같은 목표의 새 손님을 준비하지 못했어요. 다음 손님은 원래 순서대로 진행해요.",
+            "queue": [
+              "concert-01",
+              "concert-02",
+              "concert-11",
+              "concert-03",
+              "concert-05",
+              "concert-07"
+            ],
+            "remaining": [
+              {
+                "itemId": "concert-03",
+                "at": "18:13",
+                "answer": "date"
+              },
+              {
+                "itemId": "concert-05",
+                "at": "18:28",
+                "answer": "food"
+              },
+              {
+                "itemId": "concert-07",
+                "at": "18:38",
+                "answer": "kid"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          }
+        },
+        {
+          "itemId": "concert-03",
+          "index": 2,
+          "learningTarget": "표 날짜와 안내문의 허용 날짜 대조",
+          "measurement": {
+            "id": "entry-check.concert-03",
+            "itemKey": "entry-check.concert-03.v1",
+            "familyKey": "entry-check.concert-03.v1",
+            "skillId": "ko.reading.detail",
+            "difficulty": 2,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G212",
+              "G402"
+            ]
+          },
+          "answer": "date",
+          "evidence": [
+            "date"
+          ],
+          "afterWrongOrHelp": {
+            "status": "new",
+            "itemId": "concert-12",
+            "learningTarget": "표 날짜와 안내문의 허용 날짜 대조",
+            "targetMeasurement": {
+              "id": "entry-check.concert-12",
+              "itemKey": "entry-check.concert-12.v1",
+              "familyKey": "entry-check.concert-12.v1",
+              "skillId": "ko.reading.detail",
+              "difficulty": 2,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G212",
+                "G402"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "concert-01",
+              "concert-02",
+              "concert-03",
+              "concert-12",
+              "concert-05",
+              "concert-07"
+            ],
+            "remaining": [
+              {
+                "itemId": "concert-12",
+                "at": "18:16",
+                "answer": "pass"
+              },
+              {
+                "itemId": "concert-05",
+                "at": "18:28",
+                "answer": "food"
+              },
+              {
+                "itemId": "concert-07",
+                "at": "18:38",
+                "answer": "kid"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          },
+          "afterFirstConfirmationWrong": {
+            "status": "unavailable",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "남은 근무와 이번 목표 범위에서 바로 이어질 같은 목표의 새 손님을 준비하지 못했어요. 다음 손님은 원래 순서대로 진행해요.",
+            "queue": [
+              "concert-01",
+              "concert-02",
+              "concert-03",
+              "concert-12",
+              "concert-05",
+              "concert-07"
+            ],
+            "remaining": [
+              {
+                "itemId": "concert-05",
+                "at": "18:28",
+                "answer": "food"
+              },
+              {
+                "itemId": "concert-07",
+                "at": "18:38",
+                "answer": "kid"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          }
+        },
+        {
+          "itemId": "concert-05",
+          "index": 3,
+          "learningTarget": "6시 25분 알림 뒤 음식 반입 금지",
+          "measurement": {
+            "id": "entry-check.concert-05",
+            "itemKey": "entry-check.concert-05.v1",
+            "familyKey": "entry-check.concert-05.v1",
+            "skillId": "ko.reading.negation",
+            "difficulty": 2,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "S104",
+              "G402"
+            ]
+          },
+          "answer": "food",
+          "evidence": [
+            "food"
+          ],
+          "afterWrongOrHelp": {
+            "status": "new",
+            "itemId": "concert-13",
+            "learningTarget": "6시 25분 알림 뒤 음식 반입 금지",
+            "targetMeasurement": {
+              "id": "entry-check.concert-13",
+              "itemKey": "entry-check.concert-13.v1",
+              "familyKey": "entry-check.concert-13.v1",
+              "skillId": "ko.reading.negation",
+              "difficulty": 2,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "S104",
+                "G402"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "concert-01",
+              "concert-02",
+              "concert-03",
+              "concert-05",
+              "concert-13",
+              "concert-07"
+            ],
+            "remaining": [
+              {
+                "itemId": "concert-13",
+                "at": "18:30",
+                "answer": "food"
+              },
+              {
+                "itemId": "concert-07",
+                "at": "18:38",
+                "answer": "kid"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          },
+          "afterFirstConfirmationWrong": {
+            "status": "unavailable",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "남은 근무와 이번 목표 범위에서 바로 이어질 같은 목표의 새 손님을 준비하지 못했어요. 다음 손님은 원래 순서대로 진행해요.",
+            "queue": [
+              "concert-01",
+              "concert-02",
+              "concert-03",
+              "concert-05",
+              "concert-13",
+              "concert-07"
+            ],
+            "remaining": [
+              {
+                "itemId": "concert-07",
+                "at": "18:38",
+                "answer": "kid"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          }
+        },
+        {
+          "itemId": "concert-07",
+          "index": 4,
+          "learningTarget": "7살 이하 어린이의 보호자 동행",
+          "measurement": {
+            "id": "entry-check.concert-07",
+            "itemKey": "entry-check.concert-07.v1",
+            "familyKey": "entry-check.concert-07.v1",
+            "skillId": "ko.reading.condition",
+            "difficulty": 2,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G212",
+              "G403"
+            ]
+          },
+          "answer": "kid",
+          "evidence": [
+            "kid"
+          ],
+          "afterWrongOrHelp": {
+            "status": "new",
+            "itemId": "concert-14",
+            "learningTarget": "7살 이하 어린이의 보호자 동행",
+            "targetMeasurement": {
+              "id": "entry-check.concert-14",
+              "itemKey": "entry-check.concert-14.v1",
+              "familyKey": "entry-check.concert-14.v1",
+              "skillId": "ko.reading.condition",
+              "difficulty": 2,
+              "modality": "reading",
+              "responseFormat": "single-choice",
+              "audioRequired": false,
+              "confounded": false,
+              "conceptIds": [
+                "G212",
+                "G403"
+              ]
+            },
+            "line": "다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.",
+            "queue": [
+              "concert-01",
+              "concert-02",
+              "concert-03",
+              "concert-05",
+              "concert-07",
+              "concert-14"
+            ],
+            "remaining": [
+              {
+                "itemId": "concert-14",
+                "at": "18:41",
+                "answer": "pass"
+              }
+            ],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": true,
+              "sameRuleAndConcept": true,
+              "sameLearningTarget": true
+            }
+          },
+          "afterFirstConfirmationWrong": {
+            "status": "round-end",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "이번 근무의 마지막 손님이에요. 근무를 마친 뒤 다음 연습을 확인해요.",
+            "queue": [
+              "concert-01",
+              "concert-02",
+              "concert-03",
+              "concert-05",
+              "concert-07",
+              "concert-14"
+            ],
+            "remaining": [],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          }
+        },
+        {
+          "itemId": "concert-08",
+          "index": 5,
+          "learningTarget": "7살 이하 어린이의 보호자 동행",
+          "measurement": {
+            "id": "entry-check.concert-08",
+            "itemKey": "entry-check.concert-08.v1",
+            "familyKey": "entry-check.concert-08.v1",
+            "skillId": "ko.reading.condition",
+            "difficulty": 1,
+            "modality": "reading",
+            "responseFormat": "single-choice",
+            "audioRequired": false,
+            "confounded": false,
+            "conceptIds": [
+              "G212",
+              "G403"
+            ]
+          },
+          "answer": "pass",
+          "evidence": [
+            "kid"
+          ],
+          "afterWrongOrHelp": {
+            "status": "round-end",
+            "itemId": null,
+            "learningTarget": null,
+            "targetMeasurement": null,
+            "line": "이번 근무의 마지막 손님이에요. 근무를 마친 뒤 다음 연습을 확인해요.",
+            "queue": [
+              "concert-01",
+              "concert-02",
+              "concert-03",
+              "concert-05",
+              "concert-07",
+              "concert-08"
+            ],
+            "remaining": [],
+            "checks": {
+              "sameCount": true,
+              "uniqueItemIds": true,
+              "chronological": true,
+              "prefixPreserved": true,
+              "answerCoveragePreserved": true,
+              "memoCoveragePreserved": true,
+              "sameMeasurement": null,
+              "sameRuleAndConcept": null,
+              "sameLearningTarget": null
+            }
+          },
+          "afterFirstConfirmationWrong": null
+        }
+      ]
+    }
+  ],
+  "updatedAt": "2026-10-06T21:58:30.317Z",
+  "verification": {
+    "command": "node --test experiences/entry-check/*.test.mjs",
+    "passed": 63,
+    "failed": 0,
+    "diffCheckPassed": true,
+    "voiceGenerationCalls": 0,
+    "actualStudentTrials": 0,
+    "teacherReviewCompleted": false,
+    "checkedAt": "2026-10-06T21:52:01.074Z"
+  },
+  "supplementary": {
+    "firstTimeFalse": {
+      "conditions": {
+        "synthetic": true,
+        "firstTime": false,
+        "ranked": null,
+        "assignment": null,
+        "initialHistory": "complete-unseen",
+        "actualStudentTrials": 0,
+        "paidCalls": 0
+      },
+      "summary": {
+        "allPositions": 24,
+        "excludedFinalPositions": 4,
+        "nonFinalPositions": 20,
+        "freshFirstConfirmation": 16,
+        "sameRuleAndConceptAndLearningTargetFirstConfirmation": 15
+      },
+      "comparisonScope": "현재 원고의 별도 보조 계산이며8→18의 이전동일조건 비교와 섞지 않는다. 교원부록의 끝위치포함분모에서는16/24,같은목표15/24이고 끝4개를빼면16/20,15/20이다.",
+      "difference": "음악회 true=01,02,03,05,07,08; false=01,02,03,04,05,07. false에서는04의 같은목표후속이없고05뒤유일한kid07을음식후속으로대체할수없다. 다른3곳기본구성은같다.",
+      "checks": "총수·고유문항·도착시각·기존정답유형·음악회알림전후구성검사통과",
+      "venues": [
+        {
+          "venueId": "pool",
+          "queue": [
+            "pool-01",
+            "pool-02",
+            "pool-03",
+            "pool-04",
+            "pool-05",
+            "pool-06"
+          ],
+          "cases": [
+            {
+              "itemId": "pool-01",
+              "index": 0,
+              "status": "new",
+              "nextItemId": "pool-09",
+              "sameRuleAndConcept": true,
+              "queue": [
+                "pool-01",
+                "pool-09",
+                "pool-02",
+                "pool-03",
+                "pool-04",
+                "pool-05"
+              ]
+            },
+            {
+              "itemId": "pool-02",
+              "index": 1,
+              "status": "new",
+              "nextItemId": "pool-10",
+              "sameRuleAndConcept": true,
+              "queue": [
+                "pool-01",
+                "pool-02",
+                "pool-10",
+                "pool-03",
+                "pool-04",
+                "pool-05"
+              ]
+            },
+            {
+              "itemId": "pool-03",
+              "index": 2,
+              "status": "new",
+              "nextItemId": "pool-11",
+              "sameRuleAndConcept": true,
+              "queue": [
+                "pool-01",
+                "pool-02",
+                "pool-03",
+                "pool-11",
+                "pool-04",
+                "pool-05"
+              ]
+            },
+            {
+              "itemId": "pool-04",
+              "index": 3,
+              "status": "new",
+              "nextItemId": "pool-14",
+              "sameRuleAndConcept": true,
+              "queue": [
+                "pool-01",
+                "pool-02",
+                "pool-03",
+                "pool-04",
+                "pool-14",
+                "pool-05"
+              ]
+            },
+            {
+              "itemId": "pool-05",
+              "index": 4,
+              "status": "new",
+              "nextItemId": "pool-06",
+              "sameRuleAndConcept": true,
+              "queue": [
+                "pool-01",
+                "pool-02",
+                "pool-03",
+                "pool-04",
+                "pool-05",
+                "pool-06"
+              ]
+            },
+            {
+              "itemId": "pool-06",
+              "index": 5,
+              "status": "round-end",
+              "nextItemId": null,
+              "sameRuleAndConcept": null,
+              "queue": [
+                "pool-01",
+                "pool-02",
+                "pool-03",
+                "pool-04",
+                "pool-05",
+                "pool-06"
+              ]
+            }
+          ]
+        },
+        {
+          "venueId": "library",
+          "queue": [
+            "library-01",
+            "library-02",
+            "library-03",
+            "library-04",
+            "library-05",
+            "library-09"
+          ],
+          "cases": [
+            {
+              "itemId": "library-01",
+              "index": 0,
+              "status": "new",
+              "nextItemId": "library-02",
+              "sameRuleAndConcept": true,
+              "queue": [
+                "library-01",
+                "library-02",
+                "library-03",
+                "library-04",
+                "library-05",
+                "library-09"
+              ]
+            },
+            {
+              "itemId": "library-02",
+              "index": 1,
+              "status": "new",
+              "nextItemId": "library-10",
+              "sameRuleAndConcept": true,
+              "queue": [
+                "library-01",
+                "library-02",
+                "library-10",
+                "library-03",
+                "library-04",
+                "library-09"
+              ]
+            },
+            {
+              "itemId": "library-03",
+              "index": 2,
+              "status": "new",
+              "nextItemId": "library-04",
+              "sameRuleAndConcept": true,
+              "queue": [
+                "library-01",
+                "library-02",
+                "library-03",
+                "library-04",
+                "library-05",
+                "library-09"
+              ]
+            },
+            {
+              "itemId": "library-04",
+              "index": 3,
+              "status": "new",
+              "nextItemId": "library-11",
+              "sameRuleAndConcept": true,
+              "queue": [
+                "library-01",
+                "library-02",
+                "library-03",
+                "library-04",
+                "library-11",
+                "library-09"
+              ]
+            },
+            {
+              "itemId": "library-05",
+              "index": 4,
+              "status": "new",
+              "nextItemId": "library-09",
+              "sameRuleAndConcept": false,
+              "queue": [
+                "library-01",
+                "library-02",
+                "library-03",
+                "library-04",
+                "library-05",
+                "library-09"
+              ]
+            },
+            {
+              "itemId": "library-09",
+              "index": 5,
+              "status": "round-end",
+              "nextItemId": null,
+              "sameRuleAndConcept": null,
+              "queue": [
+                "library-01",
+                "library-02",
+                "library-03",
+                "library-04",
+                "library-05",
+                "library-09"
+              ]
+            }
+          ]
+        },
+        {
+          "venueId": "museum",
+          "queue": [
+            "museum-01",
+            "museum-02",
+            "museum-03",
+            "museum-04",
+            "museum-05",
+            "museum-08"
+          ],
+          "cases": [
+            {
+              "itemId": "museum-01",
+              "index": 0,
+              "status": "new",
+              "nextItemId": "museum-09",
+              "sameRuleAndConcept": true,
+              "queue": [
+                "museum-01",
+                "museum-09",
+                "museum-02",
+                "museum-03",
+                "museum-04",
+                "museum-08"
+              ]
+            },
+            {
+              "itemId": "museum-02",
+              "index": 1,
+              "status": "new",
+              "nextItemId": "museum-10",
+              "sameRuleAndConcept": true,
+              "queue": [
+                "museum-01",
+                "museum-02",
+                "museum-10",
+                "museum-03",
+                "museum-04",
+                "museum-08"
+              ]
+            },
+            {
+              "itemId": "museum-03",
+              "index": 2,
+              "status": "new",
+              "nextItemId": "museum-11",
+              "sameRuleAndConcept": true,
+              "queue": [
+                "museum-01",
+                "museum-02",
+                "museum-03",
+                "museum-11",
+                "museum-04",
+                "museum-08"
+              ]
+            },
+            {
+              "itemId": "museum-04",
+              "index": 3,
+              "status": "unavailable",
+              "nextItemId": null,
+              "sameRuleAndConcept": null,
+              "queue": [
+                "museum-01",
+                "museum-02",
+                "museum-03",
+                "museum-04",
+                "museum-05",
+                "museum-08"
+              ]
+            },
+            {
+              "itemId": "museum-05",
+              "index": 4,
+              "status": "unavailable",
+              "nextItemId": null,
+              "sameRuleAndConcept": null,
+              "queue": [
+                "museum-01",
+                "museum-02",
+                "museum-03",
+                "museum-04",
+                "museum-05",
+                "museum-08"
+              ]
+            },
+            {
+              "itemId": "museum-08",
+              "index": 5,
+              "status": "round-end",
+              "nextItemId": null,
+              "sameRuleAndConcept": null,
+              "queue": [
+                "museum-01",
+                "museum-02",
+                "museum-03",
+                "museum-04",
+                "museum-05",
+                "museum-08"
+              ]
+            }
+          ]
+        },
+        {
+          "venueId": "concert",
+          "queue": [
+            "concert-01",
+            "concert-02",
+            "concert-03",
+            "concert-04",
+            "concert-05",
+            "concert-07"
+          ],
+          "cases": [
+            {
+              "itemId": "concert-01",
+              "index": 0,
+              "status": "new",
+              "nextItemId": "concert-10",
+              "sameRuleAndConcept": true,
+              "queue": [
+                "concert-01",
+                "concert-10",
+                "concert-02",
+                "concert-03",
+                "concert-05",
+                "concert-07"
+              ]
+            },
+            {
+              "itemId": "concert-02",
+              "index": 1,
+              "status": "new",
+              "nextItemId": "concert-11",
+              "sameRuleAndConcept": true,
+              "queue": [
+                "concert-01",
+                "concert-02",
+                "concert-11",
+                "concert-03",
+                "concert-05",
+                "concert-07"
+              ]
+            },
+            {
+              "itemId": "concert-03",
+              "index": 2,
+              "status": "new",
+              "nextItemId": "concert-12",
+              "sameRuleAndConcept": true,
+              "queue": [
+                "concert-01",
+                "concert-02",
+                "concert-03",
+                "concert-12",
+                "concert-05",
+                "concert-07"
+              ]
+            },
+            {
+              "itemId": "concert-04",
+              "index": 3,
+              "status": "unavailable",
+              "nextItemId": null,
+              "sameRuleAndConcept": null,
+              "queue": [
+                "concert-01",
+                "concert-02",
+                "concert-03",
+                "concert-04",
+                "concert-05",
+                "concert-07"
+              ]
+            },
+            {
+              "itemId": "concert-05",
+              "index": 4,
+              "status": "unavailable",
+              "nextItemId": null,
+              "sameRuleAndConcept": null,
+              "queue": [
+                "concert-01",
+                "concert-02",
+                "concert-03",
+                "concert-04",
+                "concert-05",
+                "concert-07"
+              ]
+            },
+            {
+              "itemId": "concert-07",
+              "index": 5,
+              "status": "round-end",
+              "nextItemId": null,
+              "sameRuleAndConcept": null,
+              "queue": [
+                "concert-01",
+                "concert-02",
+                "concert-03",
+                "concert-04",
+                "concert-05",
+                "concert-07"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "runtimeCaveat": "실제 app은 firstTime=!progress.tutorial로 초회옵션을 정하고 필요순위·노출·WORLD범위도 적용한다. true/false 합성 계산 모두 일반 실제동선을 보장하지 않으며 학생시험은 수영장한근무를 관찰한다.",
+  "documentation": {
+    "path": "experiences/entry-check/README.md",
+    "sha256": "351cf1d1952fc714176d22a6190dd651c5e3e0f87d0b48ceee261dfb53279695"
+  }
+}

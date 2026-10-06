@@ -1,0 +1,138 @@
+{
+  "schemaVersion": "synk-student-observation-20261007-v1",
+  "status": "prepared-not-run",
+  "participantCount": 0,
+  "resultsCount": 0,
+  "humanReviewCompleted": false,
+  "learningEffect": null,
+  "modelWinner": null,
+  "participants": [],
+  "instructions": "원본은 빈 양식으로 보존. 참가자 코드만 사용하여 별도 작성본에 participantTemplate을 복사. 관측하지 않은 값은 null/빈 배열로 남김. 신원 정보, 계정 토큰, 사진/음성/대화 원문 금지. 외부 서비스 전송 없음.",
+  "codebook": {
+    "activity": ["entry-check", "korean-runner-listening-check", "synk-town-reading-check"],
+    "activityStatus": ["not_run", "completed", "partial", "stopped", "skipped"],
+    "priorExposure": ["unseen-confirmed", "tutorial", "earlier-presentation", "earlier-answer-or-reveal", "unknown"],
+    "followupStatus": ["new", "review", "unknown", "unavailable", "round-end", "not-observed"],
+    "ruleMatch": ["same-rule", "same-skill-only", "unknown"],
+    "firstResponseVerdict": ["correct", "incorrect", "unassessed"],
+    "uiHelpKind": ["hint", "text", "replay-after-complete-listen", "answer-reveal", "none", "unknown"],
+    "teacherInterventionKind": ["procedure-or-device", "language-hint-or-translation", "answer-or-rule-reveal", "none", "unknown"],
+    "pairSignal": ["independent-correct", "independent-incorrect", "assisted-correct", "assisted-incorrect", "unavailable", "not_observed"],
+    "unavailableReason": ["same-item-or-family", "measurement-mismatch", "unknown-exposure", "audio-or-storage-failure", "unknown-first-response", "unknown-item-id", "external-language-help-mismatch", "other"],
+    "usabilityVerdict": ["without-procedure-help", "with-procedure-help", "not-observed", "unknown"]
+  },
+  "participantTemplate": {
+    "participantCode": null,
+    "observerCode": null,
+    "sessionDate": null,
+    "participationExplained": null,
+    "adultParticipant": null,
+    "deviceCategory": null,
+    "viewportSize": null,
+    "origin": null,
+    "buildOrSourceHash": null,
+    "sourceReviewReference": null,
+    "retentionAndDeletionDate": null,
+    "selectedActivity": null,
+    "selectionReason": null,
+    "elapsedSeconds": null,
+    "stopOrSkipReason": null,
+    "tutorialItemIdsSeen": [],
+    "activities": [],
+    "teacherInterventions": [],
+    "pairs": [],
+    "retrospective": {
+      "nextActionUnderstood": null,
+      "answerDifferenceUnderstood": null,
+      "readingTimeEnough": null,
+      "observerBehaviorSummary": null
+    },
+    "counts": {
+      "activitiesStarted": null,
+      "activitiesCompleted": null,
+      "activitiesStopped": null,
+      "activitiesSkipped": null,
+      "naturalWrongOrAssistedResponses": null,
+      "freshFollowupsProposed": null,
+      "pairsActuallyAttempted": null,
+      "pairsWithExposureGoalHelpConfirmed": null
+    },
+    "nextFix": null
+  },
+  "activityTemplate": {
+    "activity": null,
+    "status": "not_run",
+    "actualFirstResponseCount": null,
+    "procedureHelpCount": null,
+    "languageHelpCount": null,
+    "stuckPointCount": null,
+    "stopReason": null,
+    "assignment": {
+      "skillId": null,
+      "difficulty": null,
+      "responseFormat": null,
+      "itemKeys": [],
+      "familyKeys": [],
+      "requiredAttempts": null
+    },
+    "observations": []
+  },
+  "interventionTemplate": {
+    "activity": null,
+    "itemId": null,
+    "when": null,
+    "kind": null,
+    "observerBehaviorSummary": null
+  },
+  "pairTemplate": {
+    "activity": null,
+    "source": {
+      "itemId": null,
+      "familyKey": null,
+      "skillId": null,
+      "difficulty": null,
+      "responseFormat": null,
+      "selectedId": null,
+      "firstResponseVerdict": null,
+      "uiAssisted": null,
+      "teacherLanguageHelp": null,
+      "priorExposure": "unknown"
+    },
+    "feedback": {
+      "visible": null,
+      "secondsObserved": null,
+      "readingBlocked": null,
+      "teacherLanguageCorrection": null
+    },
+    "followup": {
+      "status": null,
+      "sameMeasurementConfirmed": null,
+      "differentItemAndFamilyConfirmed": null,
+      "ruleMatch": "unknown",
+      "sourceAttemptIdIfAvailable": null,
+      "targetAttemptIdIfAvailable": null
+    },
+    "target": {
+      "itemId": null,
+      "familyKey": null,
+      "skillId": null,
+      "difficulty": null,
+      "responseFormat": null,
+      "selectedId": null,
+      "priorExposure": "unknown",
+      "firstResponseConfirmed": null,
+      "firstResponseVerdict": null,
+      "audioCompletedIfRequired": null,
+      "uiHelpKinds": [],
+      "uiAssisted": null,
+      "teacherLanguageHelp": null,
+      "teacherProcedureHelp": null,
+      "uiRecheckLine": null,
+      "uiRecheckStatusIfAvailable": null
+    },
+    "observerSignal": null,
+    "unavailableOrUnobservedReason": null,
+    "uiObservationMismatch": null,
+    "learningEffectClaim": false
+  }
+}

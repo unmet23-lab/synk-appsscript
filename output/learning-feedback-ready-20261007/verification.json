@@ -1,0 +1,422 @@
+{
+  "version": "learning-feedback-ready-1",
+  "status": "local-implementation-and-study-preparation-complete",
+  "date": "2026-10-07",
+  "scope": "Authored question expansion, actual browser functional runs, teacher review packet and blank student study kit.",
+  "externalApiCalls": 0,
+  "additionalApiCostUSD": 0,
+  "publicDeployment": false,
+  "participants": 0,
+  "studentResults": 0,
+  "humanTeacherReviewCompleted": false,
+  "learningEffectMeasured": false,
+  "modelWinner": null,
+  "entry": {
+    "total": 50,
+    "defaultEligible": 34,
+    "followupOnly": 16,
+    "added": 11,
+    "roundSize": 6,
+    "coverageFile": "entry-coverage.json",
+    "comparison": "Matched synthetic firstTime:true at all4 venues:8/20 to18/20 fresh,6/20 to17/20 same rule/concept/target. firstTime:false:16/20 and15/20. Not actual student rates."
+  },
+  "tests": {
+    "command": "node --test experiences/entry-check/*.test.mjs tests/교원검수시트.test.js",
+    "pass": 75,
+    "fail": 0,
+    "evidence": "tests.txt",
+    "finalTeacherRetest": {
+      "pass": 12,
+      "fail": 0,
+      "evidence": "teacher-final-tests.txt",
+      "notAddedToTotal": true
+    },
+    "previous518NotAdded": true
+  },
+  "generatedChecks": [
+    {
+      "command": "node tools/build-game-learning.js --check",
+      "passed": true
+    },
+    {
+      "command": "node tools/build-synk-account.js --check",
+      "passed": true
+    },
+    {
+      "command": "node tools/sync-atlas.js --consumer talk --check",
+      "passed": true
+    }
+  ],
+  "browser": {
+    "method": "CUA semantic UI interactions. Synthetic QA responses only. No injected answers/storage; Town fixture creates isolated local synthetic login only.",
+    "entry": {
+      "completed": 6,
+      "correct": 5,
+      "pair": [
+        "pool-04",
+        "pool-14"
+      ],
+      "result": "independent-correct",
+      "tutorial": "Skipped at step1; original tutorial response not claimed independent",
+      "staleResultAbsentOnFinalNormalCorrect": true,
+      "evidence": [
+        "entry-new-wrong.txt",
+        "entry-new-item.txt",
+        "entry-new-correct.txt",
+        "entry-new-correct.png",
+        "entry-complete.txt",
+        "entry-complete.png"
+      ]
+    },
+    "runner": {
+      "completed": 3,
+      "correct": 2,
+      "postAnswerReplay": true,
+      "rescoring": false,
+      "newAssistedCorrect": true,
+      "newIndependentCorrect": true,
+      "resultModalClosed": true,
+      "evidence": [
+        "runner-wrong.txt",
+        "runner-assisted.txt",
+        "runner-complete.txt",
+        "runner-complete-390.png"
+      ]
+    },
+    "town": {
+      "completedRounds": 2,
+      "questionsPerRound": 3,
+      "localSyntheticOnly": true,
+      "finalDelivery": "3/3 responses: independent2 helped1 excluded0; completion delivered",
+      "independentAndAssistedRechecks": true,
+      "mobileVerified": false,
+      "evidence": [
+        "town-wrong.txt",
+        "town-independent.txt",
+        "town-independent-desktop.png",
+        "town-second-round-final.txt",
+        "town-delivered.txt"
+      ]
+    },
+    "racing": {
+      "completed": 5,
+      "correct": 4,
+      "wrongFeedbackWaitsForContinue": true,
+      "newIndependentCorrect": true,
+      "cruiseAfterFinish": true,
+      "resultSummaryVerified": true,
+      "evidence": [
+        "racing-wrong.txt",
+        "racing-independent.txt",
+        "racing-independent.png",
+        "racing-finish-cruise.txt",
+        "racing-complete.txt",
+        "racing-complete.png"
+      ]
+    },
+    "materials": {
+      "teacherRendered": true,
+      "studentGuideAndObservationRendered": true,
+      "evidence": [
+        "teacher-appendix-desktop.png",
+        "teacher-town-desktop.png",
+        "student-guide-desktop.png",
+        "student-observation-desktop.png"
+      ]
+    }
+  },
+  "limits": [
+    "No teacher judgment or real student participation.",
+    "Forced wrong answers were synthetic developer QA; student protocol allows natural errors only.",
+    "No causal learning effect, mastery, TOPIK level or model superiority measured.",
+    "Actual phone use/performance, physical print, human listening quality and production sync unverified.",
+    "Town mobile screenshot unreliable; excluded.",
+    "No deployment, new audio generation or additional provider calls."
+  ],
+  "checkedAt": "2026-10-06T22:04:22.231Z",
+  "teacher": {
+    "rows": 560,
+    "counts": {
+      "게임 문항": {
+        "모두": 361,
+        "맞음": 0,
+        "고침": 0,
+        "빼기": 0,
+        "아직": 361
+      },
+      "게임 글": {
+        "모두": 26,
+        "맞음": 0,
+        "고침": 0,
+        "빼기": 0,
+        "아직": 26
+      },
+      "상황 예문": {
+        "모두": 78,
+        "맞음": 0,
+        "고침": 0,
+        "빼기": 0,
+        "아직": 78
+      },
+      "게임↔상황": {
+        "모두": 8,
+        "맞음": 0,
+        "고침": 0,
+        "빼기": 0,
+        "아직": 8
+      },
+      "문형→능력": {
+        "모두": 87,
+        "맞음": 0,
+        "고침": 0,
+        "빼기": 0,
+        "아직": 87
+      }
+    },
+    "questions": 170,
+    "wrongCorrections": 397,
+    "pairs": 48,
+    "newPairs": 36,
+    "appendixMatchesGenerator": true,
+    "studentFontCheckPassed": true
+  },
+  "sourceHashes": [
+    {
+      "file": "atlas/game-learning.js",
+      "sha256": "2ef932958c8ac65f936d5a95b59f0aa589640bd978a0bb9c92b2e0d48acd58f6"
+    },
+    {
+      "file": "atlas/trail.js",
+      "sha256": "6e2124aa37ab3d09e47e1ca8cc35a1240d3ee77930daffb3ca910d6bfb799ffc"
+    },
+    {
+      "file": "atlas/learning.js",
+      "sha256": "2d6df3f4e74ba0534cf0d130da7cc412bfa68c686bb0232c23c7bd30562f4858"
+    },
+    {
+      "file": "experiences/entry-check/content.mjs",
+      "sha256": "56a0111481a09c2b9fca40551a1101191fee85d90dbc6ff265e119fb5b06ca5f"
+    },
+    {
+      "file": "experiences/entry-check/core.mjs",
+      "sha256": "4c615813c5e709eb044523cb370172b48134288e8d310b07a72f1c8b298db447"
+    },
+    {
+      "file": "experiences/entry-check/learning.mjs",
+      "sha256": "40dfab13bd168e83c51d9781cc6d80c7d059e46ab3b14fe494a43b0c13c9202a"
+    },
+    {
+      "file": "experiences/entry-check/correction.mjs",
+      "sha256": "cb9b2759b36e05c53b26815b47faf4485189c4c692590456746641464485bb2d"
+    },
+    {
+      "file": "experiences/korean-runner/listening-check.mjs",
+      "sha256": "8bbcdd4649c372dae3af8d12e58632e9445cee6f6481365a4c4d5980ac2030e0"
+    },
+    {
+      "file": "experiences/korean-runner/instructions.mjs",
+      "sha256": "543f9b3cc035c2684032c76870279a7323ef6374e7a4e120bcbd809c72c30eb4"
+    },
+    {
+      "file": "experiences/korean-racing/campaign.js",
+      "sha256": "7fcdb924b59a7218a99eb42f2733f6ccbe7037e54289efcf13e235c39d7f314f"
+    },
+    {
+      "file": "experiences/korean-racing/finales.js",
+      "sha256": "11b554e4934ac37c1a827ecfaa57cf81b4caf1920d488deb251bc6eec0460010"
+    },
+    {
+      "file": "experiences/korean-racing/learning.js",
+      "sha256": "9af8d9b1b1c8559273b2b651151567afc2cd7b8e5a17d6d0a81fdc8624360856"
+    },
+    {
+      "file": "experiences/korean-racing/personalization.js",
+      "sha256": "5e0ce9e78afec1734eb5084a80fb196d28061bfb1de6e3a7e01855e97d813afc"
+    },
+    {
+      "file": "experiences/synk-town/understanding.mjs",
+      "sha256": "78aba83b57ddb6a3183fd025da45b8302f4b06a11f20d233c8c0fe580019230c"
+    },
+    {
+      "file": "experiences/entry-check/app.mjs",
+      "sha256": "0ee27f31042a2d36942e30b03d2a01aa2728f0cbe338da3281450dd37d34b7d0"
+    },
+    {
+      "file": "experiences/entry-check/README.md",
+      "sha256": "351cf1d1952fc714176d22a6190dd651c5e3e0f87d0b48ceee261dfb53279695"
+    },
+    {
+      "file": "experiences/entry-check/confirmation-content.test.mjs",
+      "sha256": "f49fae3143e6fff447b4a381f45a584b11aba8f3a434e31e5222ef02cfd2cf02"
+    },
+    {
+      "file": "tools/교원검수시트.js",
+      "sha256": "32687224b6b45b8c87c72b3d5226c4cd2d533e6a87ead33c73de6be926fce43c"
+    },
+    {
+      "file": "tests/교원검수시트.test.js",
+      "sha256": "85d275a50ca93b2b5b32083813fdccb7c219669df96aa47508163dc2148249ae"
+    },
+    {
+      "file": "docs/교원검수/README.md",
+      "sha256": "f6348d9e102e4e120402e9b4059c42125d70c401d038458e6c0d7951bd1cf205"
+    },
+    {
+      "file": "docs/교원검수/교원검수시트.csv",
+      "sha256": "1766937ee4e88e55c796117678077ff4196a5e8553d9cdb6d5fd662bfe5a2645"
+    },
+    {
+      "file": "docs/교원검수/오답교정_새문항_검수부록.html",
+      "sha256": "2d358f3edb9ec95bfb8b9ee536efc3f3bc69765704246704045df4d5b12a5ea0"
+    },
+    {
+      "file": "docs/교원검수/학생시험_20261007/README.md",
+      "sha256": "a5fae49d5d70d22a0bfd175a1c2a8908b73b5fb251928f6f2b3ed7ceb71fbbea"
+    },
+    {
+      "file": "docs/교원검수/학생시험_20261007/진행·관찰표.html",
+      "sha256": "d61052e6bdd2d737915c2a5dedcd5612056e2c6fa9c6e0e528b894fec482dbde"
+    },
+    {
+      "file": "docs/교원검수/학생시험_20261007/빈관찰표.json",
+      "sha256": "069e49337833400abe701b65dd9471c7edaa92ac464ae6d2b2102a4c821b609a"
+    }
+  ],
+  "evidenceHashes": [
+    {
+      "file": "entry-complete.png",
+      "sha256": "074d702999e259347241f8f13d878a011f3f8a564ec6171e132917c44247a077"
+    },
+    {
+      "file": "entry-complete.txt",
+      "sha256": "7b4c2ab88357a7206cddc2f504861c71dbcbfca1b7b9722be0e9451a4220ad65"
+    },
+    {
+      "file": "entry-coverage.json",
+      "sha256": "63cc74b3c9bd0530c29afcab68843ad63df7b0f09de732b1ce0355152bb3fbed"
+    },
+    {
+      "file": "entry-new-correct.png",
+      "sha256": "6fe6175729638a126078f99512c18f659e3b0d0a119e5fb4b5c2c6242f2e6197"
+    },
+    {
+      "file": "entry-new-correct.txt",
+      "sha256": "6be10f2c4176a5aac607b5a9811b3f34e3692e45d0935335190c1a895a26f1b2"
+    },
+    {
+      "file": "entry-new-item.txt",
+      "sha256": "0b598beeda503f35bbdb6941c1f5e4f7a1ce388b28f04a357bcdb05e3a27205e"
+    },
+    {
+      "file": "entry-new-wrong.txt",
+      "sha256": "e74bd57b4856748c3d29d9373749bf23727db0fe3e01d9d764eac16b62919d27"
+    },
+    {
+      "file": "racing-complete.png",
+      "sha256": "a3f2c786c7527cf997faf0b59d7c919afa9a8505c6f856b60e576d4251571d72"
+    },
+    {
+      "file": "racing-complete.txt",
+      "sha256": "65fc241caff5498e727e8153b64d9c4c8e2afdf674742de46a71f6ea15c8ac08"
+    },
+    {
+      "file": "racing-finish-cruise.txt",
+      "sha256": "a599650b281c0274695e154a9df55e9cf82fca7b4207f1fe5883fa0dfff2ebcf"
+    },
+    {
+      "file": "racing-independent.png",
+      "sha256": "0dc4a6a7046cfe8a383450c2de9234599f3cfea13f142a656df3dfba05665b36"
+    },
+    {
+      "file": "racing-independent.txt",
+      "sha256": "194b60c6fe72919d4c6bae66bba40210d9802a76626eca511c2a2700daa0b37c"
+    },
+    {
+      "file": "racing-wrong.txt",
+      "sha256": "23452bcc9286d80fd00e97855867d975467708e16c3c6986937a86d8eba2c046"
+    },
+    {
+      "file": "runner-assisted-390.png",
+      "sha256": "76a8b11aaa9ae4634114145d1632c23dd13826e283f79bd75caf144aca7cb929"
+    },
+    {
+      "file": "runner-assisted.txt",
+      "sha256": "7a0a9abd9ae09dba8ee61fb8085a75e29e7efb7b0e455d0f1357ca3aa58256b9"
+    },
+    {
+      "file": "runner-complete-390.png",
+      "sha256": "6af21a4f2c7e487d32dca54ab03de49a39cd823927b55671428671b7da8e3f58"
+    },
+    {
+      "file": "runner-complete.txt",
+      "sha256": "537a45fc5b13ed31514c18687e50ae61fb9a65bad7b617abed35fde44e1f3d43"
+    },
+    {
+      "file": "runner-wrong.txt",
+      "sha256": "07175f5650eb0af8e89bf18baa9cdfd5902f7a433e219635bba092e86a54f68a"
+    },
+    {
+      "file": "student-guide-desktop.png",
+      "sha256": "229280e78f8cbd92a7c0cf1be0df967129afbd36ec1973cae8bba0145f5854d2"
+    },
+    {
+      "file": "student-observation-desktop.png",
+      "sha256": "e6517ae9c4ed231a096bc7d9d8155ecc08033be3e970b95763d6846691060ed1"
+    },
+    {
+      "file": "teacher-appendix-desktop.png",
+      "sha256": "3b427d86000b4d0a64a95e98ef72bdb6fb552de7587063ccd8030e76a8eaaf18"
+    },
+    {
+      "file": "teacher-final-tests.txt",
+      "sha256": "e63c15ff81c91662cfbc64e30f49affb1db51148f1d945d7ccbf468a8d9f8786"
+    },
+    {
+      "file": "teacher-town-desktop.png",
+      "sha256": "8582b0c573c11127d5d83b3058ccad0f86321d15217a491e5721b20c903ed394"
+    },
+    {
+      "file": "tests.txt",
+      "sha256": "673e02a11dc17a24b261a2cc60768ccb25fa1728599c937442013dbe007e16b9"
+    },
+    {
+      "file": "town-complete.txt",
+      "sha256": "305cc2400447ebf97d2e96089902dca23d5a808ae7f3925b4d68173448b5550a"
+    },
+    {
+      "file": "town-delivered.txt",
+      "sha256": "6f1e3666678583226b2444e31b5ce7bce4885e306a0b64296c97ad0d4c21bbac"
+    },
+    {
+      "file": "town-fixture.mjs",
+      "sha256": "e6b05e7db31fc3cc55a1cd6b4942278125dcc19485c6b9945d2215bedb034a06"
+    },
+    {
+      "file": "town-independent-desktop.png",
+      "sha256": "d74370875fecc449a6d92c636e4957039e235d06fcc1f8577d95d5662bb82979"
+    },
+    {
+      "file": "town-independent.txt",
+      "sha256": "618b2532c69c4b716e997a535fef6fc4f1f0fbd52f86c9b86a4a836763357346"
+    },
+    {
+      "file": "town-second-round-final.txt",
+      "sha256": "0d7e5c9232f5531bbce1ac04c6a3b237de754656766f4968871aa16fa9a5e13b"
+    },
+    {
+      "file": "town-world-complete.txt",
+      "sha256": "2daf5bf5d8c3f25d00b77163aac35eadc5e2164cbb6aef94046255d87ace48a2"
+    },
+    {
+      "file": "town-wrong.txt",
+      "sha256": "b336637cffc386d4c8d26f2d00350d649902d8415882b13b819d32fde0e7c1b5"
+    }
+  ],
+  "cleanup": {
+    "temporaryTabsClosed": 6,
+    "temporaryServersStopped": 3,
+    "originalBlindReviewPreserved": true,
+    "localJoinFileRemoved": true
+  },
+  "diffCheckPassed": true
+}

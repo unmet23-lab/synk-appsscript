@@ -54,5 +54,9 @@ test('목소리: 원고의 모든 줄이 구워져 있고, 구운 글이 지금 
     assert.ok(fs.existsSync(path.join(here, 'assets', 'voice', `${l.id}.mp3`)), `${l.id}.mp3`);
   }
   // 손님마다 대사·대답·그 뒤에 생긴 일이 다 있다
-  for (const v of VENUES) for (const c of v.cases) for (const id of [VOICE_ID.line(c.id), VOICE_ID.reply(c.id), VOICE_ID.oops(c.id)]) assert.ok(manifest.lines[id], id);
+  for (const v of VENUES) for (const c of v.cases.filter(c => !c.textOnly)) for (const id of [VOICE_ID.line(c.id), VOICE_ID.reply(c.id), VOICE_ID.oops(c.id)]) assert.ok(manifest.lines[id], id);
+  for (const c of VENUES.flatMap(v => v.cases).filter(c => c.textOnly)) {
+    assert.ok(c.followupOnly, '음성 없는 손님은 확인용 원고로 명시한다');
+    assert.ok(!voiceLines().some(line => line.id === VOICE_ID.line(c.id)), '무료 글 읽기 문항을 음성 제작 대상으로 넣지 않는다');
+  }
 });

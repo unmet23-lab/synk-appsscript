@@ -39,14 +39,15 @@ export function judge(item, choice) {
  * 고른 뒤에는 도착 시각 순서로 줄을 세운다.
  */
 export function composeShift(venue, { ranked = null, size = SHIFT_SIZE, firstTime = false } = {}) {
-  const byId = new Map(venue.cases.map((c) => [c.id, c]));
-  const order = [...(ranked || []).filter((id) => byId.has(id)), ...venue.cases.map((c) => c.id)]
+  const authored = venue.cases.filter(c => !c.followupOnly);
+  const byId = new Map(authored.map((c) => [c.id, c]));
+  const order = [...(ranked || []).filter((id) => byId.has(id)), ...authored.map((c) => c.id)]
     .filter((id, i, a) => a.indexOf(id) === i).map((id) => byId.get(id));
-  const n = Math.min(size, venue.cases.length);
+  const n = Math.min(size, authored.length);
   const picked = [];
   const add = (c) => { if (c && !picked.includes(c) && picked.length < n) picked.push(c); };
   const memoAt = venue.memo ? minutes(venue.memo.at) : null;
-  if (firstTime) add(venue.cases.filter((c) => c.answer === 'pass' && c.difficulty === 1).sort((a, b) => minutes(a.at) - minutes(b.at))[0]);
+  if (firstTime) add(authored.filter((c) => c.answer === 'pass' && c.difficulty === 1).sort((a, b) => minutes(a.at) - minutes(b.at))[0]);
   const ruleIds = [...venue.notice.rules.map((r) => r.id), ...(venue.memo ? [venue.memo.rule.id] : [])];
   for (const id of ruleIds) if (!picked.some((c) => c.answer === id)) add(order.find((c) => c.answer === id));
   if (!picked.some((c) => c.answer === 'pass')) add(order.find((c) => c.answer === 'pass'));

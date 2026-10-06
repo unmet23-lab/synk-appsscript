@@ -55,15 +55,17 @@ export function caseCandidates(cases) {
   return cases.map((c) => {
     const m = caseMetadata(c);
     return { id: m.id, caseId: c.id, skillIds: [m.skillId], difficulty: m.difficulty, modality: m.modality,
-      responseFormat: m.responseFormat, itemKey: m.itemKey, conceptIds: m.conceptIds };
+      responseFormat: m.responseFormat, itemKey: m.itemKey, familyKey: m.familyKey, conceptIds: m.conceptIds };
   });
 }
 
-/** 한 근무지 안에서 필요 순서. 아틀라스를 못 쓰면 null(원고 순서로 진행). */
+/** 자유 근무의 기본 손님 필요 순서. 확인용은 오답 뒤 또는 명시된 WORLD 과제에서만 쓴다. */
 export function rankCases(coach, cases) {
   if (!coach) return null;
+  const baseCases = cases.filter(c => !c.followupOnly);
+  if (!baseCases.length) return null;
   try {
-    const r = coach.recommend(caseCandidates(cases), { audioAvailable: true });
+    const r = coach.recommend(caseCandidates(baseCases), { audioAvailable: true });
     if (r.status !== 'ready') return null;
     return { order: [r.selected, ...r.alternatives].map((x) => x.caseId), reason: r.reason, skillId: r.focusSkillId, state: r.state };
   } catch { return null; }
@@ -77,18 +79,18 @@ export function recommendVenue(coach, venueIds) {
   const venues = VENUES.filter((v) => venueIds.includes(v.id));
   if (!coach || !venues.length) return null;
   try {
-    const cands = venues.flatMap((v) => caseCandidates(v.cases).map((c) => ({ ...c, venueId: v.id })));
+    const cands = venues.flatMap((v) => caseCandidates(v.cases.filter(c => !c.followupOnly)).map((c) => ({ ...c, venueId: v.id })));
     const r = coach.recommend(cands, { audioAvailable: true });
     if (r.status !== 'ready') return null;
     const skill = r.focusSkillId || r.selected.skillIds[0];
-    const count = (v) => v.cases.filter((c) => c.skill === skill).length;
+    const count = (v) => v.cases.filter((c) => !c.followupOnly && c.skill === skill).length;
     const best = [...venues].sort((a, b) => count(b) - count(a) || (b.id === r.selected.venueId) - (a.id === r.selected.venueId) || a.day - b.day)[0];
     return { venueId: best.id, reason: r.reason, skillId: skill, state: r.state, count: count(best) };
   } catch { return null; }
 }
 
 /** 도장(응답)을 아틀라스 답안으로. 안내문은 늘 보이는 읽기 지문이라 도움으로 세지 않는다(레이싱 읽기 관례). */
-export const answerPayload = (correct) => ({ correct, assessable: true });
+export const answerPayload = (correct, choice) => ({ correct, assessable: true, ...(choice ? { choice: { selectedId: choice.selectedId, correctId: choice.correctId } } : {}) });
 
 const STATUS = {
   unseen: { text: '아직 기록이 적어요', tone: 'quiet' },

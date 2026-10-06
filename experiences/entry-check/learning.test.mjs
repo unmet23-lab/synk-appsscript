@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { VENUES } from './content.mjs';
 import { composeShift } from './core.mjs';
-import { caseMetadata, caseCandidates, rankCases, recommendVenue, answerPayload, skillReport } from './learning.mjs';
+import { caseMetadata, caseCandidates, rankCases, recommendVenue, answerPayload, skillReport, assignmentCases } from './learning.mjs';
 
 const require = createRequire(import.meta.url);
 const { createGame } = require('../../atlas/game-learning.js');
@@ -17,6 +17,32 @@ function coach(store = new Map()) {
 const all = VENUES.flatMap((v) => v.cases);
 const byId = (id) => all.find((c) => c.id === id);
 const play = (g, c, correct, { hint = false } = {}) => { const pid = g.present(caseMetadata(c)); if (hint) g.help(pid, 'hint'); return g.answer(pid, answerPayload(correct)); };
+
+test('free-shift ranking only offers ordinary authored guests, while WORLD keeps explicitly assigned confirmations', () => {
+  const lib = VENUES.find(v => v.id === 'library'), base = lib.cases.filter(c => !c.followupOnly), reserved = lib.cases.filter(c => c.followupOnly);
+  let offered = null;
+  const ranked = rankCases({ recommend(candidates) {
+    offered = candidates;
+    return { status: 'ready', selected: candidates[0], alternatives: candidates.slice(1), focusSkillId: candidates[0].skillIds[0], reason: '기본 손님 순서' };
+  } }, lib.cases);
+  assert.deepEqual(offered.map(c => c.caseId), base.map(c => c.id));
+  assert.deepEqual(ranked.order, base.map(c => c.id));
+  assert.equal(rankCases({ recommend() { assert.fail('확인용만 있는 자유 근무는 추천하지 않는다'); } }, reserved), null);
+  const item = reserved[0], meta = caseMetadata(item);
+  assert.deepEqual(assignmentCases(lib.cases, { ...meta, familyKeys: [meta.familyKey], itemKeys: [meta.itemKey], requiredAttempts: 1 }), [item]);
+});
+
+test('free-shift venue recommendation and reported target count exclude confirmation-only inventory', () => {
+  const venues = VENUES.filter(v => ['library', 'museum'].includes(v.id));
+  let offered = null;
+  const result = recommendVenue({ recommend(candidates) {
+    offered = candidates;
+    return { status: 'ready', selected: candidates.find(c => c.caseId === 'library-03'), focusSkillId: 'ko.reading.condition', reason: '조건 읽기 연습' };
+  } }, venues.map(v => v.id));
+  assert.equal(offered.length, 17);
+  assert.ok(offered.every(c => !byId(c.caseId).followupOnly));
+  assert.equal(result.venueId, 'museum'); assert.equal(result.count, 5);
+});
 
 test('문항 정보: 지도에 있는 읽기 항목·고정 키·한 개 고르기 형식', () => {
   const ids = new Set(map.allNodes().map((n) => n.id));
@@ -54,7 +80,7 @@ test('실제 엔진: 같은 학습 항목을 거듭 놓치면 그 항목의 손�
   assert.equal(top.skill, 'ko.reading.condition', '보충이 필요한 조건 읽기 손님이 첫 순위');
   assert.match(ranked.reason, /조건/);
   const shift = composeShift(lib, { ranked: ranked.order });
-  for (const c of lib.cases.filter((x) => x.skill === 'ko.reading.condition')) assert.ok(shift.includes(c), `${c.id}가 근무에 들어온다`);
+  for (const c of lib.cases.filter((x) => !x.followupOnly && x.skill === 'ko.reading.condition')) assert.ok(shift.includes(c), `${c.id}가 근무에 들어온다`);
   const report = skillReport(g.summary());
   const cond = report.find((r) => r.id === 'ko.reading.condition');
   assert.equal(cond.status, 'practice');

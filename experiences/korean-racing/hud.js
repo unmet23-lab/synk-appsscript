@@ -21,6 +21,7 @@ export function showQuestion({ phase, tag, ask, passage = null, caption = null, 
   box.hidden = false;
   box.dataset.phase = phase;
   delete box.dataset.result;
+  $('#feedback-continue').hidden = true;
   $('#q-tag').textContent = tag;
   $('#prompt').textContent = ask;
   $('#question-passage').hidden = !passage;
@@ -29,6 +30,7 @@ export function showQuestion({ phase, tag, ask, passage = null, caption = null, 
   if (caption) $('#voice-caption').textContent = caption;
   $('#question-help').textContent = help;
   const toggle = $('#question-toggle');
+  toggle.hidden = false;
   toggle.textContent = expanded ? '접기' : '글로 보기';
   toggle.setAttribute('aria-expanded', String(expanded));
 }
@@ -40,12 +42,13 @@ export function answerQuestion({ ok, word, why = '', hold = 4200 }) {
   box.dataset.phase = 'answer';
   box.dataset.result = ok ? 'ok' : 'miss';
   box.classList.remove('narrating');
+  $('#question-toggle').hidden = true;
   $('#prompt').innerHTML = ok ? `맞았어요! ${esc(word)}` : `정답: <b>${esc(word)}</b>`;
   $('#question-passage').hidden = true;
   $('#voice-caption').hidden = true;
   $('#question-help').textContent = why;
   clearTimeout(answerTimer);
-  answerTimer = setTimeout(hideQuestion, hold);
+  if (hold !== null) answerTimer = setTimeout(hideQuestion, hold);
   announce(`${ok ? '맞았어요' : '정답은'} ${word}. ${why}`);
 }
 
@@ -53,6 +56,7 @@ export function hideQuestion() {
   clearTimeout(answerTimer);
   const box = card();
   box.hidden = true;
+  $('#feedback-continue').hidden = true;
   box.dataset.phase = 'idle';
   delete box.dataset.result;
   box.classList.remove('narrating');

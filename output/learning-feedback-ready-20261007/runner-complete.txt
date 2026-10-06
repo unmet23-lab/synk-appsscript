@@ -1,0 +1,74 @@
+- paragraph
+- main:
+  - link "바람길 처음으로":
+    - /url: ./
+    - img "SYNK LAB"
+  - generic: LAB · LISTEN & MOVE
+  - button "소리 끄기" [pressed]:
+    - generic: 소리
+  - text: WIND RUN · AN ACTION GAME
+  - heading "바람길" [level=1]
+  - paragraph:
+    - text: 들은 대로
+    - text: 몸이 먼저 움직여요!
+  - figure:
+    - generic: 바람
+    - generic: 울타리를 뛰어넘으세요!
+  - article:
+    - generic: 오늘의 달리기
+    - heading "90초 바람길" [level=2]
+    - paragraph: 듣고 세부 정보 찾기는 아직 기록이 적어요. 짧게 확인해 봐요.
+    - button "바람길 달리기":
+      - generic: 바람길 달리기
+    - button "듣기 확인 3문제"
+    - paragraph:
+      - generic: 보유 0코인
+      - link "공통 차고 →":
+        - /url: /korean-racing/?garage=1
+  - region "하는 방법":
+    - generic: 하는 방법
+    - list:
+      - generic: "1"
+      - strong: 부탁 듣기
+      - generic: 바람이 짧게 부탁해요. 글은 보이지 않아요. 꼭 필요하면 ‘글로 보기’를 눌러요.
+      - generic: "2"
+      - strong: 들은 대로 움직이기
+      - generic: 왼쪽·오른쪽으로 길을 바꾸고, 울타리는 점프, 표지판은 숙이기. ‘하지 말라’는 말과 두 동작의 순서도 잘 들어요.
+      - generic: "3"
+      - strong: 끝까지 달리기
+      - generic: 해낸 부탁마다 등불이 켜져요. 세 번 연속이면 바람막이 한 번 지켜 줘요. 90초를 다 달리면 도착!
+    - paragraph: 휴대폰은 아래 펠트 단추나 화면 밀기로, 컴퓨터는 방향키(또는 A·D·W·S, 점프는 Space도)로 움직여요. Esc로 잠깐 멈춰요.
+  - paragraph: TOPIK I 듣기의 짧은 지시(방향·동작·하지 말라는 말·순서)를 알아듣는 힘을 몸으로 연습해요. 성공 수·별은 TOPIK 급수가 아니에요.
+  - paragraph: 달리기의 동작은 장면을 보고도 할 수 있어서 듣기 실력 기록으로 쓰지 않아요. ‘듣기 확인’에서 끝까지 듣고 혼자 고른 답만 듣기 기록이 돼요.
+  - paragraph:
+    - text: 학습 기록은 이 브라우저에만 남고, 같은 주소에서 연 다른 SYNK 게임과 함께 써요.
+    - button "이 브라우저의 모든 게임 학습 기록 지우기"
+- dialog "듣고, 들은 행동을 골라요":
+  - generic: LISTENING CHECK
+  - generic: 3 / 3
+  - button "닫기"
+  - heading "듣고, 들은 행동을 골라요" [level=2]
+  - paragraph: 달리지 않고 듣는 확인이에요. 목소리를 끝까지 들은 뒤 답을 골라요.
+  - paragraph: 같은 듣기 목표를 다른 새 문장으로 확인해요. 아직 만나지 않은 문항이에요.
+  - generic: 바람
+  - button "다시 듣기"
+  - status: 정답과 해설을 확인하거나 다시 들을 수 있어요. 다음 단추를 누를 때까지 기다릴게요.
+  - group "들은 행동 고르기":
+    - 'button "1번: 가운데 길로 가기" [disabled]':
+      - generic: "1"
+      - generic: 가운데 길로 가기
+    - 'button "2번: 왼쪽 길로 가기" [disabled]':
+      - generic: "2"
+      - generic: 왼쪽 길로 가기
+    - 'button "3번: 오른쪽 길로 가기" [disabled]':
+      - generic: "3"
+      - generic: 오른쪽 길로 가기
+  - status:
+    - text: 맞았어요. 가운데 길에 별이 있어요. 별이 있는 길로 가세요.
+    - generic: "고른 행동: 가운데 길로 가기 · 맞는 행동: 가운데 길로 가기"
+    - generic: 별이 있는 길은 가운데예요.
+    - generic: 처음 듣고 혼자 답한 기록이에요.
+    - generic: 다른 새 문항은 도움 없이 맞혔어요.
+    - generic: "이번 확인: 3문제 중 2문제를 맞혔어요."
+  - button "확인 마치기" [active]:
+    - generic: 확인 마치기

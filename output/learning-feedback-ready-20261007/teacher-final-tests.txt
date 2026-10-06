@@ -1,0 +1,20 @@
+✔ the sheet lists every kind of thing a teacher reviews, each row once under a stable number (69.5332ms)
+✔ the sheet is a CSV a spreadsheet opens, and reads back cell for cell (11.6468ms)
+✔ the sheet in the repository is the blank form, in the same columns (6.9653ms)
+✔ a sheet a teacher has written in is not replaced by a blank one in passing (61.4309ms)
+✔ a reviewed sheet is counted against the sources as they are now, and nothing written is dropped silently (2.6786ms)
+✔ a confirmed sentence is written into the example layer with its words, and nothing else moves (23.1322ms)
+✔ applying refuses a source where the change would land outside review.reviewed (7.7417ms)
+✔ the CSV includes current Town checks and racing sentence/finale items under stable source IDs (2.1028ms)
+✔ feedback appendix preserves every authored choice and pairs only actual same-measure new items (235.0379ms)
+✔ appendix regeneration never overwrites manual review edits and refuses an unmarked HTML file (143.5017ms)
+✔ unmarked new teacher rows and additional input columns survive blank-sheet regeneration (26.2167ms)
+✔ an approval cannot survive changed answers, explanations or measurement tags with identical prompt words (0.9118ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 766.9647

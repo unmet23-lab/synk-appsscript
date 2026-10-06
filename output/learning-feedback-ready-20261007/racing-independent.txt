@@ -1,0 +1,23 @@
+- paragraph: 맞았어요 에서. 출발 장소에서 도착 장소까지 이어져요. 다른 새 문항은 도움 없이 맞혔어요.
+- text: → →
+- main:
+  - img "SYNK LAB"
+  - strong: 레이싱
+  - generic: 문제
+  - generic: 2 / 5
+  - generic: 속도
+  - generic: 0km/h
+  - generic: 순위
+  - generic: 3 / 3
+  - button "잠깐 멈춤": Ⅱ
+  - region "해안도로 레이스. 문제를 듣고 답이 있는 차선으로 옮겨 통과해요.":
+    - generic: 읽기 2 / 5
+    - status: 음성 안내
+    - paragraph: 맞았어요! 에서
+    - paragraph: 출발 장소에서 도착 장소까지 이어져요. 다른 새 문항은 도움 없이 맞혔어요.
+    - button "확인했어요 · 계속 달리기" [active]
+    - button "자막"
+    - generic: 부스터 켜짐
+    - button "왼쪽 차선으로": ←
+    - button "오른쪽 차선으로": →
+- text: → →

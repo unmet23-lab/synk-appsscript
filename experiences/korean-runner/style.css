@@ -148,6 +148,12 @@ dialog.check h2{margin:8px 0 4px;font-size:22px}
 .check-feedback{font:700 14.5px/1.55 var(--sans);color:var(--ink)}
 .check-feedback:empty{display:none}
 .check-feedback q{font-weight:800;quotes:"“" "”"}
+.check-plan{font:600 13px/1.5 var(--sans);color:var(--ink-2);margin-bottom:12px!important}
+.check-plan:empty{display:none}
+.check-feedback .selection,.check-feedback .explanation,.check-feedback .correction,.check-feedback .record{display:block;margin-top:8px}
+.check-feedback .selection{font-weight:600;color:var(--ink-2)}
+.check-feedback .correction{color:var(--coral-deep)}
+.check-feedback .record{font-weight:500;font-size:13px;color:var(--ink-2)}
 .check-feedback .sum{display:block;margin-top:6px;color:var(--coral-deep)}
 #check-next{margin-top:12px}
 

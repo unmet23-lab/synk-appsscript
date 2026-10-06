@@ -14,10 +14,12 @@
 // 「갈래」와 「내용」을 적은 새 줄로 넣는다.
 const fs = require('node:fs');
 const path = require('node:path');
+const crypto = require('node:crypto');
 const { pathToFileURL } = require('node:url');
 
 const root = path.resolve(__dirname, '..');
 const SHEET = 'docs/교원검수/교원검수시트.csv';
+const APPENDIX = 'docs/교원검수/오답교정_새문항_검수부록.html';
 const EXAMPLES = 'strata/topik-i.situation-examples.json';
 const COLUMNS = ['번호', '갈래', '자리', '내용', '정답·보기', '풀이', '읽힌 문형', '확인', '고친 내용', '메모', '검수자', '날짜'];
 const KINDS = ['게임 문항', '게임 글', '상황 예문', '게임↔상황', '문형→능력'];
@@ -119,6 +121,18 @@ async function buildRows() {
     const word = new Map(WORDS.map(w => [w.id, w.word]));
     for (const s of STAGES.filter(stage => stage.band === 'theme')) add(`문항/korean-racing/${s.id}`, '게임 문항', `한국어 레이싱 · ${s.number}단계 「${s.title}」 · ${s.mode === 'picture' ? '그림 보고 고르기' : '듣고 고르기'}`,
       s.words.map(id => word.get(id)).join(' · '), '주제에 맞는 낱말 다섯 개');
+    const { CAMPAIGN } = await load('experiences/korean-racing/campaign.js');
+    const { FINALES } = await load('experiences/korean-racing/finales.js');
+    const { WORD_BY_ID } = await load('experiences/korean-racing/learning.js');
+    for (const stage of [...CAMPAIGN, ...FINALES]) for (const item of stage.items) add(`문항/korean-racing/${item.id}`, '게임 문항',
+      `한국어 레이싱 · ${stage.title} · ${item.mode === 'reading' ? '읽기' : '듣기'}`, `${item.passage} / 질문: ${item.prompt}`,
+      `정답 ${WORD_BY_ID[item.answer].word} · 보기 ${item.options.map(id => WORD_BY_ID[id].word).join(' / ')}`, item.explanation, read(item.passage));
+  }
+  // SYNK Town의 안내문 읽기 확인
+  {
+    const { READING_CHECKS } = await load('experiences/synk-town/understanding.mjs');
+    for (const item of READING_CHECKS) add(`문항/synk-town/${item.id}`, '게임 문항', `SYNK Town · 안내문 읽기 · ${item.skill}`,
+      `${item.passage} / 질문: ${item.question}`, `정답 ${item.choices[item.correct]} · 보기 ${item.choices.join(' / ')}`, item.explanation, read(item.passage));
   }
   // 말 랠리
   {
@@ -154,6 +168,131 @@ async function buildRows() {
   const ids = new Set();
   for (const row of rows) { if (!row.내용 || ids.has(row.번호) || !KINDS.includes(row.갈래)) throw new Error(`교원 검수 시트: 잘못된 줄 ${row.번호}`); ids.add(row.번호); }
   return rows;
+}
+
+// The original feedback functions and next-item selectors run on isolated synthetic
+// memory. This is a teacher's content/connection review packet, never student evidence.
+async function buildFeedbackReview() {
+  const { createGame } = require('../atlas/game-browser');
+  const fresh = gameId => { const memory = new Map(); let at = Date.parse('2026-10-07T00:00:00Z'); return createGame({ gameId, fold: false,
+    storage: { getItem: key => memory.get(key) ?? null, setItem: (key, value) => memory.set(key, value) }, clock: () => new Date(at += 1000).toISOString() }); };
+  const answer = (coach, metadata, correct) => { const pid = coach.present(metadata); if (metadata.audioRequired) coach.delivery(pid, { audio: 'completed' }); return coach.answer(pid, { correct, assessable: true }); };
+  const activities = [];
+  const activity = (gameId, label, files) => { const value = { gameId, label, sourceFiles: files.map(file => ({ file, sha256: crypto.createHash('sha256').update(fs.readFileSync(path.join(root, file))).digest('hex') })), items: [], pairs: [] }; activities.push(value); return value; };
+  const pair = (activity, id, coach, source, sourceResult, follow, target, metadata) => {
+    const targetMetadata = target ? metadata(target) : null;
+    const measured = follow.status === 'new' && target ? coach.recheck(sourceResult.eventId, answer(coach, targetMetadata, true).eventId) : null;
+    activity.pairs.push({ id, sourceId: source.id, targetId: target?.id || null, status: follow.status, line: follow.line || '',
+      sourceMetadata: metadata(source), targetMetadata, measured: measured ? { status: measured.status, line: measured.line, learningEffectClaim: measured.learningEffectClaim } : null });
+  };
+  {
+    const { VENUES, ITEMS } = await load('experiences/entry-check/content.mjs');
+    const { choicesFor, activeRules, composeShift } = await load('experiences/entry-check/core.mjs');
+    const { caseMetadata } = await load('experiences/entry-check/learning.mjs');
+    const { choiceId, choiceCorrection, immediateCheck } = await load('experiences/entry-check/correction.mjs');
+    const a = activity('entry-check', '입장 검사', ['experiences/entry-check/content.mjs', 'experiences/entry-check/core.mjs', 'experiences/entry-check/learning.mjs', 'experiences/entry-check/correction.mjs']);
+    for (const venue of VENUES) {
+      for (const item of venue.cases) {
+        const rules = activeRules(venue, item.at), label = id => id === 'pass' ? '통과' : `거절: ${rules.find(rule => rule.id === id)?.text || id}`;
+        a.items.push({ id: item.id, metadata: caseMetadata(item), prompt: `${venue.name} · ${item.at} · ${item.line}`,
+          context: [`안내: ${rules.map(rule => rule.text).join(' / ')}`, item.doc ? `${item.doc.title}: ${item.doc.rows.map(([key, value]) => `${key} ${value}`).join(' / ')}` : '표·카드 없음', `짐: ${(item.items || []).map(value => { const [id, count] = Array.isArray(value) ? value : [value, 1]; return `${ITEMS[id] || id}${count > 1 ? ` ${count}개` : ''} (${id})`; }).join(' / ') || '없음'}`, `원고 근거: ${item.evidence.join(', ')}`, item.followupOnly ? '글 전용 후속 확인 원고' : '기본 근무 원고'].join('\n'), explanation: item.why,
+          choices: choicesFor(venue, item.at).map(id => ({ id: choiceId(id), label: label(id), correct: id === item.answer, feedback: choiceCorrection(venue, item, id) })) });
+      }
+      const queue = composeShift(venue, { firstTime: false });
+      for (let index = 0; index < queue.length; index++) {
+        const coach = fresh('entry-check'); for (const earlier of queue.slice(0, index)) answer(coach, caseMetadata(earlier), true);
+        const source = queue[index], recorded = answer(coach, caseMetadata(source), false);
+        const follow = immediateCheck({ venue, queue, index, item: source, coach });
+        pair(a, `${venue.id}.default-${index + 1}`, coach, source, recorded, follow, follow.item, caseMetadata);
+      }
+    }
+  }
+  {
+    const { LISTENING_CHECKS, checkMetadata, listeningCheckFeedback, createListeningCheckRound, createListeningCheck } = await load('experiences/korean-runner/listening-check.mjs');
+    const a = activity('korean-runner', '바람길 듣기 확인', ['experiences/korean-runner/listening-check.mjs', 'experiences/korean-runner/instructions.mjs']);
+    for (const item of LISTENING_CHECKS) a.items.push({ id: item.id, metadata: checkMetadata(item), prompt: item.text, context: '실제 화면에서는 최초 응답 뒤 문장을 보여 줌. 선택 전에 필수 음성을 끝까지 들음.', explanation: item.explanation,
+      choices: item.choices.map((label, selected) => ({ id: item.choiceIds[selected], label, correct: selected === item.correct, feedback: listeningCheckFeedback(item, selected).correction || '' })) });
+    for (const skillId of [...new Set(LISTENING_CHECKS.map(item => checkMetadata(item).skillId))]) {
+      const pool = LISTENING_CHECKS.filter(item => checkMetadata(item).skillId === skillId), coach = fresh('korean-runner');
+      const assignment = { ...checkMetadata(pool[0]), familyKeys: pool.map(item => checkMetadata(item).familyKey), itemKeys: pool.map(item => checkMetadata(item).itemKey), requiredAttempts: 3 };
+      const round = createListeningCheckRound(coach, { assignment }), first = round.next(), check = createListeningCheck(coach);
+      const token = check.begin(first.item); check.delivery(token, 'completed'); const recorded = check.answer((first.item.correct + 1) % first.item.choices.length);
+      const follow = round.next(check.current); pair(a, skillId, coach, first.item, recorded, { status: follow.followup?.status || follow.status, line: follow.note }, follow.item, checkMetadata);
+    }
+  }
+  {
+    const { CAMPAIGN } = await load('experiences/korean-racing/campaign.js');
+    const { FINALES } = await load('experiences/korean-racing/finales.js');
+    const { WORD_BY_ID, answerFeedback } = await load('experiences/korean-racing/learning.js');
+    const { racingItem, racingFollowUp } = await load('experiences/korean-racing/personalization.js');
+    const a = activity('korean-racing', '한국어 레이싱 문장 코스·피날레', ['experiences/korean-racing/campaign.js', 'experiences/korean-racing/finales.js', 'experiences/korean-racing/learning.js', 'experiences/korean-racing/personalization.js']);
+    for (const stage of [...CAMPAIGN, ...FINALES]) {
+      for (const item of stage.items) a.items.push({ id: item.id, metadata: racingItem(item), prompt: `${item.passage}\n${item.prompt}`, context: `${stage.title} · ${item.mode === 'reading' ? '읽기 지문 표시' : '필수 음성 완료 조건'}`, explanation: item.explanation,
+        choices: item.options.map(id => ({ id, label: WORD_BY_ID[id].word, correct: id === item.answer, feedback: answerFeedback(item, id) })) });
+      const coach = fresh('korean-racing'), source = stage.items[0], recorded = answer(coach, racingItem(source), false);
+      const follow = racingFollowUp(coach, { current: source, remaining: stage.items.slice(1), stage });
+      pair(a, stage.id, coach, source, recorded, follow, follow.status === 'new' ? follow.remaining[0] : null, racingItem);
+    }
+  }
+  {
+    const { READING_CHECKS, readingMetadata, readingFeedback, selectReadingChecks, readingFollowUp } = await load('experiences/synk-town/understanding.mjs');
+    const a = activity('synk-town', 'SYNK Town 안내문 읽기', ['experiences/synk-town/understanding.mjs']);
+    for (const item of READING_CHECKS) a.items.push({ id: item.id, metadata: readingMetadata(item), prompt: `${item.passage}\n${item.question}`, context: `문항 도움: ${item.hint}`, explanation: item.explanation,
+      choices: item.choices.map((label, selected) => ({ id: `option-${selected}`, label, correct: selected === item.correct, feedback: readingFeedback(item, selected) })) });
+    for (const skill of [...new Set(READING_CHECKS.map(item => item.skill))]) {
+      const pool = READING_CHECKS.filter(item => item.skill === skill), coach = fresh('synk-town');
+      coach.assignment = () => ({ ...readingMetadata(pool[0]), familyKeys: pool.map(item => readingMetadata(item).familyKey), itemKeys: pool.map(item => readingMetadata(item).itemKey), requiredAttempts: 3 });
+      const round = selectReadingChecks(coach), source = round[0], recorded = answer(coach, readingMetadata(source), false), follow = readingFollowUp(coach, source, round, 0);
+      pair(a, skill, coach, source, recorded, follow, follow.item, readingMetadata);
+    }
+  }
+  for (const activity of activities) {
+    const first = activity.pairs.find(pair => pair.status === 'new'); activity.resultLines = [];
+    if (first) for (const helped of [false, true]) for (const correct of [false, true]) {
+      const coach = fresh(activity.gameId), source = answer(coach, first.sourceMetadata, false), pid = coach.present(first.targetMetadata);
+      if (first.targetMetadata.audioRequired) coach.delivery(pid, { audio: 'completed' });
+      if (helped) coach.help(pid, 'hint');
+      const target = coach.answer(pid, { correct, assessable: true }), observed = coach.recheck(source.eventId, target.eventId);
+      activity.resultLines.push({ status: observed.status, line: observed.line });
+    }
+  }
+  const sourceFiles = ['atlas/game-learning.js', 'atlas/trail.js', 'atlas/learning.js'].map(file => ({ file, sha256: crypto.createHash('sha256').update(fs.readFileSync(path.join(root, file))).digest('hex') }));
+  return { version: 'teacher-feedback-review-1', reviewStatus: 'awaiting-teacher-review', studentData: false, learningEffectClaim: false, sourceFiles, activities };
+}
+
+const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
+function feedbackHtml(packet) {
+  const e = escapeHtml, font = require('./lib/브랜드폰트').블록();
+  const review = '<p class="review">확인(맞음 / 고침 / 빼기): __________　검수자·날짜: __________<br>고친 내용·메모: __________________________________________________________</p>';
+  const metadata = item => `${item.skillId} · 난도 ${item.difficulty} · ${item.modality} · ${item.responseFormat}\nitemKey: ${item.itemKey}\nfamilyKey: ${item.familyKey}${item.conceptIds?.length ? `\n내용 태그: ${item.conceptIds.join(', ')}` : ''}`;
+  const body = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>오답 교정·새 문항 연결 교원 검수 부록</title>${font}<style>body{font-family:'SUIT Variable',sans-serif;color:#222;background:#fff;max-width:1000px;margin:32px auto;padding:0 20px;line-height:1.65}h1{font-size:26px}h2{font-size:22px;border-bottom:2px solid #444;padding-top:24px}h3{font-size:18px;margin-bottom:8px}article{border-top:1px solid #ccc;padding:14px 0;break-inside:avoid}p{white-space:pre-wrap;overflow-wrap:anywhere}.meta,small{font-size:13px;color:#555}.review{border-left:3px solid #bbb;padding:8px 12px;color:#333;min-height:52px}table{width:100%;border-collapse:collapse}th,td{text-align:left;vertical-align:top;border-bottom:1px solid #ddd;padding:8px;overflow-wrap:anywhere}th{background:#f1f1f1}.source{font-size:12px}a{color:#245878}@media(max-width:600px){body{padding:0 12px;margin:16px auto}table{font-size:13px}th,td{padding:6px}}@media print{body{max-width:none;margin:0;font-size:11px}h1{font-size:20px}h2{break-before:page}a{color:inherit;text-decoration:none}.review{min-height:64px}}</style></head><body><h1>오답 교정·새 문항 연결 교원 검수 부록</h1>
+<p>검수 대기. 실제 문항과 선택별 교정 글을 원본 함수에서 추출했습니다. 아래 연결쌍은 실제 선택 함수를 합성 메모리에서 실행한 대표 사례입니다. 학생 기록은 없습니다. 학생의 학습 효과나 교원 승인을 뜻하지 않습니다.</p>
+<p>검토할 것: 정답이 하나인지, 교정 글이 고른 답과 원문에 맞는지, 후속 문항이 같은 측정 목표·난도·입력·응답형식을 유지하는지, 내용 태그가 달라질 때 같은 표현을 확인한다고 말해도 되는지. 교정의 원인 효과를 추론하지 않습니다.</p>
+<p>입장 검사 연결은 연수 이후 기본 구성(firstTime:false), 별도 과제·순위 없음으로 계산합니다. 끝 손님을 포함한 24위치 중 새 연결 16개이며, 끝 4곳을 뺀 분모에서는 16/20입니다. 네 근무지 모두 초회 옵션을 적용한 별도 합성 비교(18/20)와 구성·분모가 다릅니다. 실제 노출과 응답 순서에 따른 결과를 보장하지 않습니다.</p>
+<p>빈 검수란에 인쇄하여 적거나 다른 이름의 작성본으로 기록해 주세요. 이 HTML은 입력 저장 기능이 없습니다. CSV 문항 승인은 교원검수시트.csv의 같은 문항 번호로 적고, 부록의 교정·연결 의견은 아래 번호로 별도 작성본에 남깁니다.</p>
+<nav>${packet.activities.map(a => `<a href="#${e(a.gameId)}">${e(a.label)}</a>`).join(' · ')}</nav>
+<details><summary>공통 판독 코드·SHA-256</summary>${packet.sourceFiles.map(source => `<p class="source">${e(source.file)}<br>${e(source.sha256)}</p>`).join('')}</details>
+${packet.activities.map(a => `<section id="${e(a.gameId)}"><h2>${e(a.label)}</h2><p>문항 ${a.items.length}개 · 오답별 교정 ${a.items.reduce((n, item) => n + item.choices.filter(choice => !choice.correct).length, 0)}개 · 합성 대표 연결 ${a.pairs.length}개(새 문항 ${a.pairs.filter(pair => pair.status === 'new').length}개)</p>
+<details><summary>원본 경로·SHA-256</summary>${a.sourceFiles.map(source => `<p class="source">${e(source.file)}<br>${e(source.sha256)}</p>`).join('')}</details>
+<h3>새 문항 결과 표시 문구</h3><p>같은 실제 문항쌍의 합성 응답 조건을 바꿔 추출했습니다. 도움·정오 구분의 뜻과 표현을 검토해 주세요.</p>${a.resultLines.map(result => `<p>${e(result.status)}: ${e(result.line)}</p>`).join('')}${review}
+${a.items.map(item => `<article id="item-${e(a.gameId)}-${e(item.id)}"><h3>문항/${e(a.gameId)}/${e(item.id)}</h3><p>${e(item.prompt)}</p><p>${e(item.context)}</p><p class="meta">${e(metadata(item.metadata))}</p><p>원문 풀이: ${e(item.explanation)}</p><table><thead><tr><th>선택 ID·보기</th><th>정오</th><th>실제 교정·피드백</th></tr></thead><tbody>${item.choices.map(choice => `<tr><td>${e(choice.id)}<br>${e(choice.label)}</td><td>${choice.correct ? '정답' : '오답'}</td><td>${e(choice.feedback) || '추가 교정문 없음'}</td></tr>`).join('')}</tbody></table>${review}</article>`).join('')}
+<h3>합성 대표 후속 연결</h3><p>조건: 이전 문항은 첫 오답, 도움 없이 응답. Runner·Racing 필수 음성은 완료로 기록하는 합성 조건입니다. 새 문항이 선택되면 첫 응답을 정답으로 가정하여 공통 recheck의 표시도 추출했습니다. 연결 불가·회차 끝도 남깁니다. 실제 이력·선택 순서·목표 지정에 따라 연결은 바뀌며 모든 가능한 쌍을 열거한 것은 아닙니다.</p>
+${a.pairs.map(pair => `<article><h3>연결/${e(a.gameId)}/${e(pair.id)}</h3><p><a href="#item-${e(a.gameId)}-${e(pair.sourceId)}">${e(pair.sourceId)}</a> → ${pair.targetId ? `<a href="#item-${e(a.gameId)}-${e(pair.targetId)}">${e(pair.targetId)}</a>` : '다음 새 문항 없음'} · 선택 결과 ${e(pair.status)}</p><p>${e(pair.line)}</p><p class="meta">이전: ${e(metadata(pair.sourceMetadata))}${pair.targetMetadata ? `\n다음: ${e(metadata(pair.targetMetadata))}` : ''}</p>${pair.measured ? `<p>합성 응답 표시(${e(pair.measured.status)}): ${e(pair.measured.line)}</p>` : ''}${review}</article>`).join('')}</section>`).join('')}
+</body></html>\n`;
+  return `<!-- generated-teacher-review-sha256:${crypto.createHash('sha256').update(body).digest('hex')} -->\n${body}`;
+}
+
+// Manual edits (including a filled review line) are never replaced, even when the
+// source changed. A teacher's written copy remains under another filename.
+function writeFeedbackAppendix(html, target, { dryRun = false } = {}) {
+  if (fs.existsSync(target)) {
+    const before = fs.readFileSync(target, 'utf8'); if (before === html) return 'same';
+    const match = /^<!-- generated-teacher-review-sha256:([a-f0-9]{64}) -->\r?\n([\s\S]*)$/.exec(before);
+    if (!match || crypto.createHash('sha256').update(match[2]).digest('hex') !== match[1]) throw new Error(`교원 검수 부록: ${path.basename(target)} 에 수작업 변경이 있어 보존했다. 작성본을 다른 이름으로 두고 생성한다.`);
+  }
+  if (dryRun) return 'ready';
+  fs.mkdirSync(path.dirname(target), { recursive: true }); const temporary = `${target}.tmp-${process.pid}`;
+  fs.writeFileSync(temporary, html); fs.renameSync(temporary, target); return 'written';
 }
 
 // RFC 4180, every field quoted. Excel reads the byte order mark as UTF-8. A value a spreadsheet would
@@ -200,12 +339,14 @@ function review(reviewedRows, currentRows) {
     seen.add(row.번호);
     const verdict = VERDICT.get((row.확인 || '').trim().toLowerCase());
     if (verdict === undefined) { report.unclear.push({ 번호: row.번호, 확인: row.확인 }); continue; }
-    const fixed = row['고친 내용'] || '', memo = row.메모 || '', edited = one(row.내용) !== now.내용;
+    const changedColumns = ['갈래', '자리', '내용', '정답·보기', '풀이', '읽힌 문형'].filter(column => one(row[column]) !== one(now[column]));
+    const fixed = row['고친 내용'] || '', memo = row.메모 || '', edited = changedColumns.length > 0;
     if (verdict === 'open') {
       if (fixed || memo || edited) report.noted.push({ 번호: row.번호, 지금: now.내용, 시트: edited ? row.내용 : '', 고친: fixed, 메모: memo });
       continue;
     }
-    if (edited) { report.changed.push({ 번호: row.번호, 시트: row.내용, 지금: now.내용, 확인: row.확인 }); continue; }
+    if (edited) { report.changed.push({ 번호: row.번호, 시트: row.내용, 지금: now.내용, 확인: row.확인,
+      ...(changedColumns.some(column => column !== '내용') ? { 바뀐칸: changedColumns } : {}) }); continue; }
     const count = report.counts[now.갈래];
     if (verdict === 'fix' || (verdict === 'ok' && fixed)) { count.고침 += 1; report.fixes.push({ 번호: row.번호, 지금: now.내용, 고친: fixed, 메모: memo }); }
     else if (verdict === 'ok') { count.맞음 += 1; if (now.갈래 === '상황 예문') report.confirmedExamples.push({ id: row.번호.slice('예문/'.length), ko: now.내용 }); }
@@ -247,7 +388,8 @@ function writeSheet(rows, target, overwrite = false) {
   if (fs.existsSync(target) && fs.readFileSync(target, 'utf8').replace(/\r\n/g, '\n') === csv.replace(/\r\n/g, '\n')) return 'same';
   if (fs.existsSync(target) && !overwrite) {
     let written;
-    try { written = parseCsv(fs.readFileSync(target, 'utf8')).filter(row => row.확인 || row['고친 내용'] || row.메모 || row.검수자 || row.날짜).length; } catch { written = -1; }
+    try { written = parseCsv(fs.readFileSync(target, 'utf8')).filter(row => row.확인 || row['고친 내용'] || row.메모 || row.검수자 || row.날짜
+      || !row.번호 && row.내용 || Object.entries(row).some(([column, value]) => !COLUMNS.includes(column) && value)).length; } catch { written = -1; }
     if (written) throw new Error(written > 0 ? `교원 검수 시트: ${path.basename(target)} 에 교원이 적은 줄이 ${written}개 있다. 검수한 파일은 다른 이름으로 두고 --읽기 로 읽는다. 빈 시트로 바꾸려면 --덮어쓰기`
       : `교원 검수 시트: ${path.basename(target)} 를 읽지 못했다. 빈 시트로 바꾸려면 --덮어쓰기`);
   }
@@ -261,8 +403,11 @@ async function main() {
   if (!args.every(known) || (args.includes('--적용') && readAt < 0) || (args.includes('--덮어쓰기') && readAt >= 0)) throw new Error('쓰는 법: node tools/교원검수시트.js [--덮어쓰기] | --읽기 <검수한.csv> [--적용]');
   const rows = await buildRows();
   if (readAt < 0) {
+    const packet = await buildFeedbackReview(), html = feedbackHtml(packet), appendix = path.join(root, APPENDIX);
+    writeFeedbackAppendix(html, appendix, { dryRun: true });
     const same = writeSheet(rows, path.join(root, SHEET), args.includes('--덮어쓰기')) === 'same';
     console.log(`${same ? '그대로' : '다시 만듦'} ${SHEET} · ${rows.length}줄 (${KINDS.map(kind => `${kind} ${rows.filter(row => row.갈래 === kind).length}`).join(' · ')})`);
+    const result = writeFeedbackAppendix(html, appendix); console.log(`${result === 'same' ? '그대로' : '만듦'} ${APPENDIX} · 교원 검수 대기 · 문항 ${packet.activities.reduce((n, activity) => n + activity.items.length, 0)}개 · 합성 연결 ${packet.activities.reduce((n, activity) => n + activity.pairs.length, 0)}개`);
     return;
   }
   const file = args[readAt + 1];
@@ -274,7 +419,7 @@ async function main() {
   list('빼기', report.drops, d => `${d.번호}: 「${d.지금}」${d.메모 ? ` (${d.메모})` : ''}`);
   list('새 문항', report.added, a => `[${a.갈래}] ${a.자리 ? `${a.자리} · ` : ''}${a.내용}${a['정답·보기'] ? ` · ${a['정답·보기']}` : ''}`);
   list('「확인」은 비었는데 적은 것이 있는 줄(세지 않음 — 확인 칸을 채워 다시 읽는다)', report.noted, n => `${n.번호}: 「${n.지금}」${n.시트 ? ` · 시트의 내용 「${n.시트}」` : ''}${n.고친 ? ` · 고친 내용 「${n.고친}」` : ''}${n.메모 ? ` · 메모 ${n.메모}` : ''}`);
-  list('시트를 만든 뒤 원본이 바뀐 줄(다시 확인)', report.changed, c => `${c.번호}: 시트 「${c.시트}」 · 지금 「${c.지금}」`);
+  list('시트를 만든 뒤 원본이 바뀐 줄(다시 확인)', report.changed, c => `${c.번호}: 시트 「${c.시트}」 · 지금 「${c.지금}」${c.바뀐칸 ? ` · 다시 볼 칸: ${c.바뀐칸.join(', ')}` : ''}`);
   list('「확인」 칸을 읽지 못한 줄', report.unclear, u => `${u.번호}: ${u.확인}`);
   list('두 번 나온 번호(첫 줄만 셈)', report.duplicates, d => `${d.번호}${d.확인 ? `: 둘째 줄의 확인 ${d.확인}` : ''}`);
   list('모르는 번호', report.unknown, u => u);
@@ -282,5 +427,5 @@ async function main() {
   else if (report.confirmedExamples.length) console.log(`\n「맞음」인 상황 예문 ${report.confirmedExamples.length}개 — --적용 을 붙이면 예문 원천에 적는다.`);
 }
 
-module.exports = { buildRows, toCsv, parseCsv, review, applyConfirmedExamples, writeSheet, COLUMNS, KINDS, SHEET };
+module.exports = { buildRows, buildFeedbackReview, feedbackHtml, writeFeedbackAppendix, toCsv, parseCsv, review, applyConfirmedExamples, writeSheet, COLUMNS, KINDS, SHEET, APPENDIX };
 if (require.main === module) main().catch(error => { console.error(error.message); process.exit(1); });

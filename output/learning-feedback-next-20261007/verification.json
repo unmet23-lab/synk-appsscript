@@ -1,0 +1,207 @@
+{
+  "schemaVersion": 1,
+  "localDate": "2026-10-07",
+  "scope": "Local authored followup outcomes in Entry, Racing, Runner listening check, and Town reading; two additional Entry reserve items",
+  "externalProviderCalls": 0,
+  "additionalApiCostUsd": 0,
+  "deployed": false,
+  "realStudentDataUsed": false,
+  "teacherReviewed": false,
+  "learningEffectMeasured": false,
+  "tests": [
+    {
+      "cwd": "C:/Users/q1212/Documents/SYNK-appsscript",
+      "command": "node --test experiences/entry-check/*.test.mjs",
+      "passed": 46,
+      "failed": 0,
+      "finalContentIncluded": true
+    },
+    {
+      "cwd": "C:/Users/q1212/Documents/SYNK-appsscript",
+      "command": "node --test experiences/korean-racing/tests/*.test.mjs",
+      "passed": 208,
+      "failed": 0
+    },
+    {
+      "cwd": "C:/Users/q1212/Documents/SYNK-appsscript",
+      "command": "node --test tests/atlas-recheck.test.js tests/atlas-choice-record.test.js tests/atlas-learning.test.js tests/atlas-learning-sync.test.js tests/atlas-ledger.test.js tests/world-learning-host.test.js tests/atlas-game-flow.test.js",
+      "passed": 99,
+      "failed": 0
+    },
+    {
+      "cwd": "C:/Users/q1212/Documents/SYNK-appsscript",
+      "command": "node --test experiences/korean-runner/*.test.mjs experiences/synk-town/*.test.mjs",
+      "passed": 118,
+      "failed": 0
+    },
+    {
+      "cwd": "C:/Users/q1212/Documents/SYNK-talk",
+      "command": "node --test tests/atlas-copy.test.js tests/atlas-practice.test.js tests/synk-server.test.js tests/synk-learning-host.test.js",
+      "passed": 47,
+      "failed": 0
+    }
+  ],
+  "testTotal": {
+    "passed": 518,
+    "failed": 0,
+    "note": "Selected disjoint file groups; repeated executions are not added. File selection differs from the earlier 493-test report. Not the whole repository suite."
+  },
+  "generatedChecks": [
+    {
+      "command": "node tools/build-game-learning.js --check",
+      "status": "passed"
+    },
+    {
+      "command": "node tools/build-synk-account.js --check",
+      "status": "passed"
+    },
+    {
+      "command": "node tools/sync-atlas.js --consumer talk --check",
+      "status": "passed"
+    }
+  ],
+  "browser": {
+    "surface": "Codex in-app browser; isolated temporary local origin",
+    "url": "http://127.0.0.1:58028/entry-check/",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "completedItems": 6,
+    "firstAnswerCorrect": 4,
+    "sequence": [
+      {
+        "item": "pool-01",
+        "answer": "reject-cap",
+        "outcome": "incorrect"
+      },
+      {
+        "item": "pool-09",
+        "answer": "pass",
+        "outcome": "independent-incorrect",
+        "source": "pool-01"
+      },
+      {
+        "item": "pool-12",
+        "answer": "pass",
+        "outcome": "independent-correct",
+        "source": "pool-09"
+      },
+      {
+        "item": "pool-02",
+        "answer": "reject-food",
+        "outcome": "correct",
+        "staleRecheckAbsent": true
+      },
+      {
+        "item": "pool-03",
+        "answer": "pass",
+        "outcome": "correct"
+      },
+      {
+        "item": "pool-05",
+        "answer": "reject-kid",
+        "outcome": "correct"
+      }
+    ],
+    "observations": [
+      "First error immediately schedules an authored new item within the six-person shift.",
+      "Second error displays that the new item was answered independently but incorrectly.",
+      "Third item displays independent correct on a different authored scene.",
+      "Normal subsequent correct answers do not reuse the preceding recheck relation.",
+      "Final result rows retain both recheck outcomes for the current round.",
+      "At 390px viewport, document width is 390px and no horizontal overflow was observed."
+    ],
+    "evidence": [
+      "entry-second-error.txt",
+      "entry-independent-success.txt",
+      "entry-independent-success-390.png",
+      "entry-complete.txt",
+      "entry-complete-390.png"
+    ],
+    "contentCorrectionAfterPageLoad": "The pool-12 dialogue was changed from already wearing a cap to bringing it and putting it on before entry, matching the cap in the bag and the bare-headed character art. The successful-answer screenshot predates this wording correction. The completed-results screenshot does not show the superseded wording. Final content passed the full 46-test Entry suite; the final dialogue wording was not replayed in this browser run.",
+    "notVerifiedInThisBrowserRun": [
+      "Assisted target outcomes (covered by Core/UI automated tests)",
+      "Runner, Town, and Racing new recheck UI (covered by automated Core/UI/production-function tests)",
+      "Human audio quality, physical mobile-device performance, account sync, and live deployment"
+    ]
+  },
+  "coverage": {
+    "evidence": "entry-coverage.json",
+    "firstShiftPositions": 24,
+    "nonFinalPositions": 20,
+    "freshFirstConfirmation": 8,
+    "sameRuleAndConceptFirstConfirmation": 6,
+    "freshSecondConfirmation": 2,
+    "interpretation": "Offline all-unseen default first-shift scenarios without assignment restrictions. Not learner outcomes or coverage for every history/error combination."
+  },
+  "limits": [
+    "Source/target relation is explicit and held in the current game round; no durable linked intervention history was added.",
+    "Recheck is read-only and does not change first verdict, assistance status, learning aggregates, or recommendation policy.",
+    "Only complete available raw evidence may support a result. Folded/missing/unreadable history and closed WORLD runs cannot be silently treated as success.",
+    "Matching skill and difficulty alone does not prove the same underlying rule or concept, nor correction effectiveness.",
+    "Authored new items and explanations still need teacher review and student evaluation."
+  ],
+  "sourceHashes": [
+    {
+      "path": "atlas/game-learning.js",
+      "sha256": "2ef932958c8ac65f936d5a95b59f0aa589640bd978a0bb9c92b2e0d48acd58f6"
+    },
+    {
+      "path": "tests/atlas-recheck.test.js",
+      "sha256": "0169f912d7de5104637479f4795a908cf2b3e43ed92e34152876d9e34481c5d8"
+    },
+    {
+      "path": "experiences/entry-check/app.mjs",
+      "sha256": "0ee27f31042a2d36942e30b03d2a01aa2728f0cbe338da3281450dd37d34b7d0"
+    },
+    {
+      "path": "experiences/entry-check/correction.mjs",
+      "sha256": "22fadd1554e5df34aa1e6c0c509872eb5d50a54d4899599579121ff5b474b2e4"
+    },
+    {
+      "path": "experiences/entry-check/content.mjs",
+      "sha256": "d338b5585b9bb6cc093e962510c70a069bc39315ee13825ed33365c423f80f40"
+    },
+    {
+      "path": "experiences/entry-check/recheck.test.mjs",
+      "sha256": "5039363823479850a41bc2dc9c31d857244f234f1df3930e5963d9cf9a3682f6"
+    },
+    {
+      "path": "experiences/korean-racing/app.js",
+      "sha256": "938f61c518bfcd76f02e8e9d011485a1006e8cb37c158226d7949457a064c27b"
+    },
+    {
+      "path": "experiences/korean-racing/personalization.js",
+      "sha256": "5e0ce9e78afec1734eb5084a80fb196d28061bfb1de6e3a7e01855e97d813afc"
+    },
+    {
+      "path": "experiences/korean-racing/tests/personalization.test.mjs",
+      "sha256": "44d3c676e30ad06010bb18515ef168ef5de1dc38945219eaf3a6dd8f060817b0"
+    },
+    {
+      "path": "experiences/korean-racing/tests/coast-drive-integration.test.mjs",
+      "sha256": "89d7166e0b3808039b9ac12d426361a0fb2047c81eb06ff6b0313b39d93c8d5c"
+    },
+    {
+      "path": "experiences/korean-runner/listening-check.mjs",
+      "sha256": "8bbcdd4649c372dae3af8d12e58632e9445cee6f6481365a4c4d5980ac2030e0"
+    },
+    {
+      "path": "experiences/korean-runner/listening-check-ui.mjs",
+      "sha256": "dbbdc96fe872a5805e35549ebb04429680240709f8e60a4d989d90c30e5e15a9"
+    },
+    {
+      "path": "experiences/korean-runner/listening-recheck.test.mjs",
+      "sha256": "a6797e7683f2c00e6354ef7784fb241cd9bb9c48b8ecc33861c5a307a35726a3"
+    },
+    {
+      "path": "experiences/synk-town/understanding-ui.mjs",
+      "sha256": "546c20db1da390eaa7b4b07ca1cba0c5d13dac26575c55d161a45c36927c6969"
+    },
+    {
+      "path": "experiences/synk-town/understanding-ui.test.mjs",
+      "sha256": "d8b73226de212be7745dd9c4337ec0c72e7e99e0192afcca1cdf1e167f47a018"
+    }
+  ]
+}

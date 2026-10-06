@@ -61,10 +61,11 @@ export function readingMetadata(item) {
 }
 export function readingAnswer(item, selected) {
   if (!Number.isInteger(selected) || selected < 0 || selected >= item.choices.length) throw Error('답을 골라 주세요.');
-  return { correct: selected === item.correct, assessable: true };
+  return { correct: selected === item.correct, assessable: true,
+    choice: { selectedId: `option-${selected}`, correctId: `option-${item.correct}` } };
 }
-export function selectReadingChecks(coach, { assignment = coach.assignment?.() ?? null, limit = 3 } = {}) {
-  let pool = READING_CHECKS.filter(item => {
+function allowedChecks(assignment) {
+  return READING_CHECKS.filter(item => {
     if (!assignment) return true;
     const m = readingMetadata(item);
     return m.skillId === assignment.skillId && m.difficulty === assignment.difficulty
@@ -72,6 +73,9 @@ export function selectReadingChecks(coach, { assignment = coach.assignment?.() ?
       && Array.isArray(assignment.familyKeys) && assignment.familyKeys.includes(m.familyKey)
       && Array.isArray(assignment.itemKeys) && assignment.itemKeys.includes(m.itemKey);
   });
+}
+export function selectReadingChecks(coach, { assignment = coach.assignment?.() ?? null, limit = 3 } = {}) {
+  let pool = allowedChecks(assignment);
   const count = Math.min(limit, assignment?.requiredAttempts ?? limit), selected = [];
   while (pool.length && selected.length < count) {
     const candidates = pool.map(item => { const m = readingMetadata(item); return { ...item, ...m, skillIds: [m.skillId], label: item.question }; });
@@ -80,4 +84,45 @@ export function selectReadingChecks(coach, { assignment = coach.assignment?.() ?
     selected.push(next); pool = pool.filter(item => item.id !== next.id);
   }
   return selected;
+}
+
+// Authored contrasts for the selected option, not a diagnosis of the learner.
+const CORRECTIONS = {
+  'town-reading-place': ['밖의 자리는 내일부터예요. 오늘 이용할 수 있는 곳을 찾아요.', null, '내일부터라는 말은 밖의 자리에만 해당해요. 안의 쉼터는 오늘도 열어요.'],
+  'town-reading-negation': ['의자에서는 차를 마셔도 돼요. 마시지 말라는 장소를 찾아요.', '찻집 안 전체를 금지한 안내가 아니에요. 금지한 장소는 안내판 앞이에요.'],
+  'town-reading-sequence': [null, '주문은 자리에 앉은 뒤예요. 가장 먼저 하는 일은 그림 확인이에요.', '앉기는 쉼터에 온 뒤예요. 그 전에 안내판 그림을 확인해요.'],
+  'town-detail-market': ['공원 입구는 과일 시장이에요. 질문은 꽃 시장을 물어요.', null, '이 안내에서 찻집은 꽃 시장의 장소가 아니에요. 빵집 옆을 찾아요.'],
+  'town-detail-library': ['1층은 어린이 책이 있는 곳이에요. 한국어 책은 2층이에요.', '안내에는 3층에 한국어 책이 있다고 쓰여 있지 않아요. 2층을 찾아요.'],
+  'town-detail-lost': [null, '안내 데스크는 가방이 있는 곳이에요. 우산은 관리실에 있어요.', '버스 정류장은 이 안내의 보관 장소가 아니에요. 우산은 관리실에 있어요.'],
+  'town-detail-festival': ['무대 오른쪽은 음식을 파는 곳이에요. 공연은 왼쪽이에요.', null, '공원 밖이라는 안내는 없어요. 음악 공연은 무대 왼쪽이에요.'],
+  'town-detail-workshop': ['오전 10시는 그림 수업이에요. 컵 만들기 시간을 찾아요.', '숫자 2뿐 아니라 오후도 확인해요. 컵 만들기는 오후 2시예요.'],
+  'town-negation-flowers': [null, '사진은 찍어도 된다고 했어요. 금지한 행동은 꽃 꺾기예요.', '꽃은 구경해 달라고 했어요. 꺾는 행동만 금지했어요.'],
+  'town-negation-books': ['책 읽기를 금지한 안내가 아니에요. 읽은 뒤 책을 놓는 방법에 관한 안내예요.', null, '바구니에 놓는 것은 해야 하는 행동이에요. 책장에 직접 꽂지 말라고 했어요.'],
+  'town-negation-bike': ['자전거에서 내리는 것은 해야 하는 행동이에요.', '걸어가는 것은 해야 하는 행동이에요. 타고 가는 것을 금지했어요.'],
+  'town-negation-desk': [null, '가위 사용은 허용했어요. 가져가는 것만 금지했어요.', '상자에 넣는 것은 사용 후 해야 하는 행동이에요.'],
+  'town-negation-bus': ['노란 선 뒤는 기다려야 하는 곳이에요. 문 앞에 서 있지 말라고 했어요.', null, '의자 옆을 금지했다는 말은 없어요. 금지한 곳은 버스 문 앞이에요.'],
+  'town-sequence-borrow': ['반납은 돌아올 때예요. 우산을 고르기 전에는 이름을 적어요.', '집에 돌아가는 순서는 안내에 없어요. 먼저 이름을 적어요.'],
+  'town-sequence-class': [null, '손 씻기는 앞치마를 입기 전이에요. 질문은 입은 다음을 물어요.', '집에 가기는 이 수업 순서에 없어요. 앞치마를 입은 뒤 재료를 받아요.'],
+  'town-sequence-parcel': ['선물 넣기는 첫 번째예요. 마지막에는 받는 사람 이름을 써요.', null, '상자를 닫은 뒤 이름을 쓰는 일이 남아 있어요.'],
+  'town-sequence-garden': ['물 주기는 씨앗을 심은 뒤예요. 심기 전에는 흙을 넣어요.', '꽃 꺾기는 이 순서에 없어요. 먼저 흙을 넣어요.'],
+  'town-sequence-ticket': [null, '이미 산 표를 다시 사는 것이 아니에요. 입구에서 보여 주세요.', '밖으로 나가는 것이 아니에요. 산 표를 입구에서 보여 주고 들어가요.'],
+};
+export function readingFeedback(item, selected) {
+  readingAnswer(item, selected);
+  return selected === item.correct ? item.explanation
+    : `고른 답: ${item.choices[selected]}. ${CORRECTIONS[item.id]?.[selected] || item.explanation} 정답: ${item.choices[item.correct]}.`;
+}
+export function readingFollowUp(coach, item, round, index) {
+  if (index + 1 >= round.length) return { round, status: 'complete' };
+  const used = new Set(round.slice(0, index + 1).map(q => q.id));
+  const pool = allowedChecks(coach.assignment?.() ?? null).filter(q => q.skill === item.skill && !used.has(q.id)
+    && coach.exposure?.(readingMetadata(q))?.seen === false);
+  if (!pool.length) return { round, status: 'unavailable' };
+  const candidates = pool.map(q => ({ ...readingMetadata(q), ...q, skillIds: [readingMetadata(q).skillId], label: q.question }));
+  const plan = coach.recommend(candidates), next = pool.find(q => q.id === plan?.selected?.id);
+  if (!next) return { round, status: 'unavailable' };
+  const updated = [...round], existing = updated.findIndex((q, i) => i > index && q.id === next.id);
+  if (existing > index) [updated[index + 1], updated[existing]] = [updated[existing], updated[index + 1]];
+  else updated[index + 1] = next;
+  return { round: updated, status: 'new', item: next };
 }

@@ -116,6 +116,8 @@ body.playing{overflow:hidden}
 .q-tools{display:flex;flex-wrap:wrap;gap:6px}
 .q-tools .chip-btn{min-height:36px;padding:0 13px 3px;font-size:13px}
 .qcard[data-phase=answer] .q-tools{display:none}
+.qcard[data-phase=answer] .q-tools:has(#feedback-continue:not([hidden])){display:flex}
+.qcard[data-phase=answer]:has(#feedback-continue:not([hidden])){max-height:calc(100dvh - 150px);overflow:auto;overscroll-behavior:contain}
 .qcard[data-phase=listening] #question-toggle{display:none}   /* 들을 때는 글을 꺼내지 않는다(다 듣고 나면 ‘글로 보기’) */
 @keyframes cardIn{from{opacity:0}to{opacity:1}}
 @keyframes dots{0%,100%{opacity:.3}50%{opacity:1}}

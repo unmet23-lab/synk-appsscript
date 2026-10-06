@@ -308,6 +308,76 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
       const profile = summary();
       return { ...Learning.recommend({ profile, candidates, presentations: view().presentations, prior: ledger, ...options }), storage: profile.storage };
     },
+    // Display exposure is stricter than independent-attempt qualification: an item
+    // shown without an answer is still not a never-shown item. Both include folded history.
+    exposure(item) {
+      if (!identifier(item?.itemKey) || !identifier(item.familyKey || item.itemKey)) throw new TypeError('Atlas: invalid exposure item');
+      refresh();
+      const family = item.familyKey || item.itemKey;
+      const shown = log().some(e => e.type === 'practice.presented' && (e.itemKey === item.itemKey || (e.measure?.familyKey || e.itemKey) === family))
+        || (ledger?.presented || []).some(([_task, priorItem, priorFamily]) => priorItem === item.itemKey || priorFamily === family);
+      return { seen: shown || provenance().index.met(item.itemKey, family) ? true
+        : complete && readable && writable ? false : null };
+    },
+    // A consumer supplies the two attempts it deliberately joined in this round.
+    // This reads recent full events only: no durable lineage, profile update or causal claim.
+    recheck(sourceAttemptId, targetAttemptId) {
+      if (![sourceAttemptId, targetAttemptId].every(identifier)) throw new TypeError('Atlas: invalid recheck attempt IDs');
+      const result = { sourceAttemptId, targetAttemptId, correctionObserved: false, correctionEventIds: [], learningEffectClaim: false };
+      const unavailable = reason => ({ ...result, status: 'unavailable', line: '새 문항 확인 결과를 판단할 기록이 충분하지 않아요.', reason });
+      try { refresh(); } catch { return unavailable('incomplete-history'); }
+      if (!complete || !readable || !writable || ledger?.adjusted) return unavailable('incomplete-history');
+      const events = log(), positions = new Map(events.map((event, index) => [event.id, index]));
+      const byId = new Map(events.map(event => [event.id, event]));
+      const sourceEvent = byId.get(sourceAttemptId), targetEvent = byId.get(targetAttemptId);
+      if (sourceEvent?.type !== 'practice.attempted' || targetEvent?.type !== 'practice.attempted') return unavailable('missing-attempt');
+      if (sourceEvent.attemptNo !== 1 || targetEvent.attemptNo !== 1) return unavailable('not-first-attempt');
+      const sourcePresentation = byId.get(sourceEvent.presentationId), targetPresentation = byId.get(targetEvent.presentationId);
+      const sourceDecision = byId.get(sourcePresentation?.decisionId), targetDecision = byId.get(targetPresentation?.decisionId);
+      if (sourcePresentation?.type !== 'practice.presented' || targetPresentation?.type !== 'practice.presented'
+        || sourceDecision?.type !== 'decision.made' || targetDecision?.type !== 'decision.made') return unavailable('missing-parent');
+      const sourceCompletion = events.find(event => event.type === 'experience.completed' && event.decisionId === sourceDecision.id);
+      const targetCompletion = events.find(event => event.type === 'experience.completed' && event.decisionId === targetDecision.id);
+      if (!sourceCompletion || !targetCompletion) return unavailable('missing-completion');
+      const now = Date.parse(monotonicClock());
+      const visible = event => Date.parse(event.at) <= now && Date.parse(event.recordedAt) <= now;
+      const before = (a, b) => positions.get(a.id) < positions.get(b.id)
+        && Date.parse(a.at) <= Date.parse(b.at) && Date.parse(a.recordedAt) <= Date.parse(b.recordedAt);
+      const required = [sourceDecision, sourcePresentation, sourceEvent, sourceCompletion, targetDecision, targetPresentation, targetEvent, targetCompletion];
+      if (!required.every(visible) || !before(sourcePresentation, sourceEvent) || !before(sourceEvent, targetPresentation)
+        || !before(targetPresentation, targetEvent) || !before(sourceEvent, sourceCompletion) || !before(targetEvent, targetCompletion)) return unavailable('invalid-order');
+      const relevant = new Set(required.map(event => event.id));
+      for (const event of events) if (['practice.helped', 'practice.delivery'].includes(event.type)
+        && (event.presentationId === sourcePresentation.id && before(event, sourceEvent)
+          || event.presentationId === targetPresentation.id && before(event, targetEvent))) relevant.add(event.id);
+      if (events.some(event => event.type === 'record.excluded' && relevant.has(event.targetId))) return unavailable('excluded-evidence');
+      if (sourceDecision.experienceId !== targetDecision.experienceId) return unavailable('different-game');
+      const a = sourcePresentation.measure, b = targetPresentation.measure;
+      if (!a || !b || !Learning.RESPONSE_FORMATS.includes(a.responseFormat) || a.responseFormat === 'unknown'
+        || ['skillId', 'difficulty', 'responseFormat', 'modality', 'audioRequired'].some(key => a[key] !== b[key])
+        || sourcePresentation.taskVersion !== targetPresentation.taskVersion) return unavailable('different-measurement');
+      if (sourcePresentation.itemKey === targetPresentation.itemKey || a.familyKey === b.familyKey) return unavailable('same-family');
+      // Trail's exposure is based on attempts/reveals. "New" here additionally forbids
+      // a previous presentation, including one with no answer and folded presentations.
+      const priorPresentation = events.some(event => event.type === 'practice.presented' && event.id !== targetPresentation.id
+        && (positions.get(event.id) < positions.get(targetPresentation.id) || Date.parse(event.at) < Date.parse(targetPresentation.at))
+        && (event.itemKey === targetPresentation.itemKey || (event.measure?.familyKey || event.itemKey) === b.familyKey));
+      if (priorPresentation || (ledger?.presented || []).some(([_task, item, family]) => item === targetPresentation.itemKey || family === b.familyKey)) return unavailable('previously-presented');
+      const observed = view(), source = observed.attempts.find(row => row.eventId === sourceAttemptId), target = observed.attempts.find(row => row.eventId === targetAttemptId);
+      if (!source || !target || source.exclusionReason || target.exclusionReason
+        || !['correct', 'incorrect'].includes(source.verdict) || !['correct', 'incorrect'].includes(target.verdict)) return unavailable('unassessable');
+      if (source.verdict === 'correct' && source.assisted !== true) return unavailable('source-not-recheck');
+      if (targetPresentation.firstExposure !== true || target.exposure !== 'new' || ![true, false].includes(target.assisted)
+        || target.assisted === false && !target.independent) return unavailable('unknown-provenance');
+      const corrections = observed.help.filter(help => help.presentationId === sourcePresentation.id && help.level === 'answer'
+        && before(sourceEvent, byId.get(help.eventId)) && before(byId.get(help.eventId), targetPresentation));
+      const status = `${target.assisted ? 'assisted' : 'independent'}-${target.verdict}`;
+      const lines = { 'independent-correct': '다른 새 문항은 도움 없이 맞혔어요.', 'independent-incorrect': '다른 새 문항은 도움 없이 풀었지만 틀렸어요.',
+        'assisted-correct': '다른 새 문항은 도움을 보고 맞혔어요.', 'assisted-incorrect': '다른 새 문항은 도움을 보고 풀었지만 틀렸어요.' };
+      return { ...result, status, line: lines[status], correctionObserved: corrections.length > 0, correctionEventIds: corrections.map(help => help.eventId),
+        source: { verdict: source.verdict, assisted: source.assisted, independent: source.independent },
+        target: { verdict: target.verdict, assisted: target.assisted, independent: target.independent } };
+    },
     present(item, context = {}) {
       refresh();
       if (!context || typeof context !== 'object' || Object.keys(context).some(k => k !== 'flow') || (context.flow != null && (typeof context.flow !== 'object' || Array.isArray(context.flow)))) throw new TypeError('Atlas: invalid presentation context');
@@ -348,20 +418,21 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     answer(pid, result) {
       const p = requireActive(pid);
       if (!result || ![true, false, null].includes(result.correct) || typeof result.assessable !== 'boolean') throw new TypeError('Atlas: answer must identify assessability');
+      const choice = Object.hasOwn(result, 'choice') ? Trail.choiceRecord(result.choice) : null;
       const attemptNo = result.attemptNo ?? 1;
       if (!Number.isInteger(attemptNo) || attemptNo < 1 || attemptNo > p.results.length + 1) throw new TypeError('Atlas: attempts must be consecutive');
-      if (p.results[attemptNo - 1]) return { ...p.results[attemptNo - 1] };
+      if (p.results[attemptNo - 1]) { const saved = p.results[attemptNo - 1]; return { ...saved, ...(saved.choice ? { choice: { ...saved.choice } } : {}) }; }
       const reason = p.measure.confounded ? (result.reason || 'visual') : p.measure.audioRequired && p.audio !== 'completed' ? 'audio'
         : !readable || !writable ? 'storage' : result.reason;
       const assessable = result.assessable && !p.measure.confounded && (!p.measure.audioRequired || p.audio === 'completed') && readable && writable;
-      const attempt = p.practice.submit({ ...result, assessable }, { reason: reason || null });
+      const attempt = p.practice.submit({ ...result, assessable }, { reason: reason || null, ...(choice ? { choice } : {}) });
       session.complete(p.decision); persist();
       // The row summarize() would give this answer, read from the index when it is exact.
       const known = provenance(), row = known.index.attempt(attempt.eventId);
       const actual = known.index.exact ? (row && !row.omitted ? row : undefined) : view().attempts.find(a => a.eventId === attempt.eventId);
       const recorded = { ...attempt, independent: !!actual?.independent && complete && writable, reason: reason || null,
         assisted: actual?.assisted ?? null, exposure: actual?.exposure ?? null };
-      p.results.push(recorded); return { ...recorded };
+      p.results.push(recorded); return { ...recorded, ...(recorded.choice ? { choice: { ...recorded.choice } } : {}) };
     },
     exclude(eventId) { refresh(); const event = session.exclude(eventId); persist(); return event; },
     events() { refresh(); return session.events(); },
