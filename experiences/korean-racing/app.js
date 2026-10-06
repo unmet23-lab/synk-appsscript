@@ -1048,7 +1048,7 @@ $('cruise-track').addEventListener('click',async()=>{soundEnabled=true;soundTouc
 $('nav-garage').addEventListener('click',openGarage);$('result-garage').addEventListener('click',openGarage);$('records-garage').addEventListener('click',openGarage);
 $('nav-race').addEventListener('click',()=>{if(garageOpen)garageUI.close();home();});
 $('nav-records').addEventListener('click',()=>{if(garageOpen)garageUI.close();renderCollection();$('records').scrollIntoView({behavior:'smooth',block:'start'});});
-for(const [id,game] of [['runner-play','runner'],['rhythm-play','rhythm'],['runner-card-play','runner'],['rhythm-card-play','rhythm']])$(id).href=location.pathname.startsWith('/korean-racing/')?`/korean-${game}/`:new URL(`./play/${game}/`,location.href).href;
+for(const [id,game] of [['runner-play','runner'],['rhythm-play','rhythm'],['runner-card-play','runner'],['rhythm-card-play','rhythm']])$(id).href=location.pathname.startsWith('/korean-racing/')?`/korean-${game}/`:location.pathname.startsWith('/try/')?`/try/${game}/`:new URL(`./play/${game}/`,location.href).href;
 window.addEventListener('storage',e=>{if(e.key==='SYNK_PLAY_COLLECTION_V1'){garage=loadGarageSafe();renderCollection();if(garageOpen){garageUI.render();previewEquipment(garageUI.previewItem);}}});
 $('repeat-question').addEventListener('click',async()=>{if(!running||paused||gate?.judged)return;if(!soundEnabled){soundEnabled=true;soundTouched=true;updateSoundButton();setQuestionExpanded(false);}await ensureAudio();narrateQuestion(true);});
 $('subtitles').addEventListener('change',displayQuestion);

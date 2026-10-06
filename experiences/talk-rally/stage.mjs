@@ -47,8 +47,8 @@ function arc(a, b, apex, k) {
 
 export async function createStage({ host, overlay, onBounce, onOpponentHit, onHold, onArrive, onPadLanded, onCaught, onMissed, reducedMotion = () => false }) {
   await document.fonts?.load?.('900 80px SUIT').catch(() => {});
-  const [coralImg, creamImg, ...faceImgs] = await Promise.all([loadImg('assets/kit/tex-coral.webp'), loadImg('assets/kit/tex-cream.webp'),
-    ...Object.values(FACES).map((f) => loadImg(`assets/brand/${f}.webp`))]);
+  const [coralImg, creamImg, ...faceImgs] = await Promise.all([loadImg('kit/felt/tex-coral.webp'), loadImg('kit/felt/tex-cream.webp'),
+    ...Object.values(FACES).map((f) => loadImg(`kit/brand/${f}.webp`))]);
 
   // WebGL을 만들 수 없으면 여기서 오류가 난다. 부른 쪽(app.mjs)이 안내하고 입구로 돌아간다
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
