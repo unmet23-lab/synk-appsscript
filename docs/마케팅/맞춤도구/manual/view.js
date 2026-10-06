@@ -146,23 +146,26 @@
     // 그림 안내(10-07): 그 단계 아래에 실제 화면. 누르면 원래 크기로 열린다.
     const figs = (s, i) => ((s.guide && s.guide.figs) || []).filter(f => f.step === i).map(f => `<figure class="guide-shot"><a href="${esc(f.src)}" target="_blank" rel="noopener"><img src="${esc(f.src)}" width="${f.w}" height="${f.h}" loading="lazy" alt="${esc(f.alt)}"></a><figcaption>${esc(f.cap)}</figcaption></figure>`).join('');
     // 휴대폰 폭으로 찍은 그림(ChatGPT)과 컴퓨터 화면을 자른 그림(Gemini)은 안내 말이 다르다.
+    // 10-07 검토 4차(꽃집): 「앱 모양이 그림과 다르면 제가 잘못 누른 줄 알겠어요. 그림 보기 전에 알려 주세요」 → 단계 위에 둔다.
     const guideNote = s => {
       if (!s.guide) return '';
       const day = esc(s.guide.shot.replace(/-/g, '.'));
       const how = s.guide.view === 'desktop'
-        ? `그림은 컴퓨터에서 연 웹 ${esc(s.label)} 화면을 필요한 곳만 잘라 보여 드려요(${day}). 휴대폰 앱은 메뉴 자리가 조금 다를 수 있어요.`
-        : `그림은 웹 ${esc(s.label)}를 휴대폰 크기로 찍은 화면이에요(${day}). 앱이나 화면 설정에 따라 색과 배치가 조금 다를 수 있어요.`;
+        ? `아래 그림은 컴퓨터에서 연 웹 ${esc(s.label)} 화면을 필요한 곳만 잘라 보여 드려요(${day}). 휴대폰 앱은 메뉴 자리가 조금 달라도, 같은 이름의 메뉴를 누르면 돼요.`
+        : `아래 그림은 웹 ${esc(s.label)}를 휴대폰 크기로 찍은 화면이에요(${day}). 앱은 색과 배치가 조금 달라도, 같은 이름의 메뉴를 누르면 돼요.`;
       return `<p class="guide-note">${how} 그림을 누르면 크게 보여요.</p>`;
     };
     // 안내대로 안 보일 때 할 일(Claude 요금제별 화면, Gemini 회사·학교 계정). 간단히 보기에서도 보인다.
     const missNote = s => (s.miss ? `<p class="path-note">${esc(s.miss.t)}</p>` : '');
+    // 잘 들어갔는지: 매뉴얼의 [보고 방식](세 줄 보고)이 보이는지로 본다. 10-07 Gemini 스킬 시험에서 스킬이 안 붙은 답만 세 줄 보고가 없었다.
+    const CHECK_LEAD = '<b>잘 들어갔는지 보는 법</b> 일을 맡기면 답 맨 위에 ‘한 일 · 확인한 것 · 내 차례’ 세 줄 보고가 나와요. 이 세 줄이 보이면 매뉴얼대로 일하는 거예요.';
     const saveSteps = s => s.steps.map((x, i) => step(i + 2, esc(x.t), `${i === 0 ? `<div class="row opens">${openLink(s)}</div>` : ''}${figs(s, i)}`)).join('');
     let keepBody;
     if (!multi) {
       const s = rec.saves[0];
-      keepBody = `<p class="what">${esc(s.what)}</p><ol class="usesteps">${copyStep}${saveSteps(s)}</ol>${missNote(s)}${guideNote(s)}<p class="path-note">잘 들어갔는지 보려면 ${esc(s.checkIn)} “이 매뉴얼에서 내가 허락해야 하는 일을 말해 줘”라고 물어보세요. 사람 차례가 그대로 나오면 잘 들어간 거예요.</p>${s.note && !quick ? `<p class="path-note">${esc(s.note.t)}</p>` : ''}<p class="path-src">메뉴 순서는 ${esc(s.label)} 공식 도움말${s.guide ? '과 실제 화면' : ''} 기준이에요${badge(s.steps[0].src)} 화면 언어나 업데이트에 따라 이름이 조금 다를 수 있어요.</p>`;
+      keepBody = `<p class="what">${esc(s.what)}</p>${guideNote(s)}<ol class="usesteps">${copyStep}${saveSteps(s)}</ol><p class="path-note check">${CHECK_LEAD} 세 줄이 없으면 ${esc(s.checkMiss)}</p>${missNote(s)}${s.note && !quick ? `<p class="path-note">${esc(s.note.t)}</p>` : ''}<p class="path-src">메뉴 순서는 ${esc(s.label)} 공식 도움말${s.guide ? '과 실제 화면' : ''} 기준이에요${badge(s.steps[0].src)} 화면 언어나 업데이트에 따라 이름이 조금 다를 수 있어요.</p>`;
     } else {
-      keepBody = `<p class="what">ChatGPT·Claude는 ‘프로젝트’, Gemini는 ‘스킬’에 매뉴얼을 넣어 둘 수 있어요. 한 번 넣어 두면 다음부터는 한 줄만 보내도 매뉴얼대로 일해요.</p><ol class="usesteps">${copyStep}</ol>${rec.saves.map((s, j) => `<details class="appbox"${j === 0 ? ' open' : ''}><summary>${esc(s.label)}에 넣기</summary><ol class="usesteps">${saveSteps(s)}</ol>${missNote(s)}${guideNote(s)}</details>`).join('')}<p class="path-src">메뉴 순서는 각 AI의 공식 도움말과 실제 화면 기준이에요${badge(rec.saves[0].steps[0].src)} 화면 언어나 업데이트에 따라 이름이 조금 다를 수 있어요.</p>`;
+      keepBody = `<p class="what">ChatGPT·Claude는 ‘프로젝트’, Gemini는 ‘스킬’에 매뉴얼을 넣어 둘 수 있어요. 한 번 넣어 두면 다음부터는 한 줄만 보내도 매뉴얼대로 일해요.</p><ol class="usesteps">${copyStep}</ol>${rec.saves.map((s, j) => `<details class="appbox"${j === 0 ? ' open' : ''}><summary>${esc(s.label)}에 넣기</summary>${guideNote(s)}<ol class="usesteps">${saveSteps(s)}</ol>${missNote(s)}</details>`).join('')}<p class="path-note check">${CHECK_LEAD} 세 줄이 없으면 ChatGPT·Claude는 그 프로젝트 안의 새 채팅에서 보냈는지, Gemini는 /로 스킬을 골랐는지 확인해요.</p><p class="path-src">메뉴 순서는 각 AI의 공식 도움말과 실제 화면 기준이에요${badge(rec.saves[0].steps[0].src)} 화면 언어나 업데이트에 따라 이름이 조금 다를 수 있어요.</p>`;
     }
     const keepPanel = `<div class="path" id="path-keep" role="tabpanel" aria-labelledby="tab-keep" data-panel="keep"${P === 'keep' ? '' : ' hidden'}>${keepBody}</div>`;
 

@@ -302,7 +302,7 @@ a{color:var(--ink)}
 .guide-shot a{display:block;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 0 0 1px var(--line)}
 .guide-shot img{display:block;width:100%;height:auto}
 .guide-shot figcaption{margin:6px 2px 0;font-size:14px;line-height:1.5;color:var(--ink-2)}
-.guide-note{margin:12px 0 0;max-width:42em;font-size:13px;line-height:1.55;color:var(--ink-3)}
+.guide-note{margin:12px 0 0;max-width:42em;font-size:14px;line-height:1.55;color:var(--ink-2)}
 @media(min-width:701px){.guide-shot{max-width:440px}}
 @media print{.guide-shot a{box-shadow:inset 0 0 0 1px #999}}
 /* 컴퓨터에서 이어 하기: 흰 판 한 줄 + 링크 복사 */
@@ -312,6 +312,9 @@ a{color:var(--ink)}
 .pc .row .status{flex-basis:100%;font:600 14px/1.5 var(--sans);color:var(--ink)}
 .pc .row .status:empty{display:none}
 .path-note{margin:12px 0 0;font-size:14.5px;line-height:1.6;color:var(--ink-2)}
+/* 잘 들어갔는지 보는 법(10-07 검토 4차: 「긴 문단 사이에 있어 설정이 끝났다고 생각하고 나갈 수 있어요」) */
+.path-note.check{padding:12px 14px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px var(--line);border-left:4px solid var(--butter)}
+.path-note.check b{display:block;margin:0 0 2px;color:var(--ink)}
 /* 넓은 화면에서도 읽는 줄은 짧게(판은 넓게, 글은 42em 안쪽) */
 .usesteps .t,.usesteps .d,.path-note,.path-src,.path .what,.me-sub{max-width:42em}
 .path-src{margin:12px 0 0;font-size:13px;line-height:1.55;color:var(--ink-3)}

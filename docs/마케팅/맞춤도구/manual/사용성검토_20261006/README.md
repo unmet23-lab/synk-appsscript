@@ -9,10 +9,13 @@ GPT(Codex CLI, ChatGPT 구독)에 휴대폰 화면 묶음을 보여 주고, 처�
 | `1차_v3/` | v3 결과 화면(커밋 0d375797f) 검토 |
 | `2차_v4/` | v4 첫 판 검토: 01 써 보기, 탭 둘 |
 | `3차_v4둘째/` | v4 둘째 판 검토: 오늘 맡길 일, 붙일 글 복사, 넣어 두기 탭 안의 화면까지 |
-| `화면/` | 차수마다 결과 화면을 한 장으로 줄인 것 |
+| `4차_v4그림/` | 10-07 공개본(synk.im/builds, ChatGPT 그림 안내) 검토. 넣어 두기 탭을 끝까지 세 장(18~20)으로 보여 줬어요. 요청문은 `요청문_4차.md`(화면 번호 줄과 6번 「그림 안내」 질문만 다름) |
+| `화면/` | 차수마다 결과 화면을 한 장으로 줄인 것. 4차는 넣어 두기 탭 세 장(`4차_v4그림_넣어두기.jpg`) |
 
 다시 해 보려면 이렇게 해요.
 
 1. 화면을 찍어요. 휴대폰 390×844 크기로 첫 화면, 질문 다섯 개, 결과를 한 화면씩 내려 찍어요.
 2. 사람마다 같은 화면 묶음을 붙여 보내요. 명령은 `codex exec --skip-git-repo-check -C <폴더> -s read-only -c model_reasoning_effort="high" -i <화면들> -o last.txt - < prompt.md`예요.
 3. 검토자는 정지 화면만 보고, 착하게 봐주지 말라는 요청을 받아요. 그래서 실제로 눌러 보는 사람보다 엄해요. 점수보다 「어디서 멈추는지」를 봐요.
+
+4차는 모델을 `-m gpt-6-astra`로 고정하고 Codex 기억을 껐어요(`-c features.memories=false -c memories.use_memories=false -c memories.generate_memories=false --ephemeral`).
