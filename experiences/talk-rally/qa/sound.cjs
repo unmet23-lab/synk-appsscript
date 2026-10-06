@@ -13,6 +13,10 @@ const LIST = [
   ['hit-ok', 'hitOk', 0.5], ['quick', 'quick', 0.6], ['hit-wrong', 'hitWrong', 0.4], ['smash', 'smash', 0.9], ['opponent', 'opponent', 0.3],
   ['bounce-near', 'bounceNear', 0.2], ['bounce-far', 'bounceFar', 0.2], ['swing-soft', 'swingSoft', 0.4], ['swing-hard', 'swingHard', 0.4],
   ['exchange', 'exchange', 4.4], ['wrong', 'wrong', 1.9], ['rally', 'rally', 5.6], ['stress', 'stress', 1.8], ['stars', 'stars', 1.4],
+  // 안내 음성(2026-10-07): 하나씩, 결과 장면(성취·별·안내), 시작 안내 뒤 몽글의 첫 말
+  ['narr-intro', 'narr:intro', 4.2], ['narr-practice', 'narr:practice-done', 2.6], ['narr-daily', 'narr:daily-intro', 4.4], ['narr-best', 'narr:daily-best', 1.9],
+  ['narr-r3', 'narr:result-3', 3.0], ['narr-r2', 'narr:result-2', 1.5], ['narr-r1', 'narr:result-1', 3.0], ['narr-r0', 'narr:result-0', 2.8],
+  ['results', 'results', 3.9], ['intro-then-line', 'introThenLine', 5.6],
 ];
 (async () => {
   const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || 'chrome', headless: true });
@@ -22,7 +26,7 @@ const LIST = [
   await page.waitForFunction(() => window.__lab);
   for (const [name, scene, sec] of LIST) {
     const b64 = await page.evaluate(async ({ scene, sec }) => {
-      const m = /^(kit|voice):(.+)$/.exec(scene);
+      const m = /^(kit|voice|narr):(.+)$/.exec(scene);
       const events = m ? [{ t: 0.02, kind: m[1], name: m[2] }] : window.__lab.SEQ[scene]().map((e) => ({ ...e, t: e.t + 0.02 }));
       return window.__lab.render(events, sec);
     }, { scene, sec });

@@ -1,0 +1,9 @@
+{
+  "sourceKey": "7fe09a1e6a16b9e572f4890f1531fa7a178c30ad7a8ad851a204e2274eee2820",
+  "text": "완벽해요! 모두 받아쳤어요.",
+  "loudnorm": "measured I -> volume to -20.5 LUFS (linear)",
+  "pause": "silenceremove=stop_periods=-1:stop_duration=0.25:stop_threshold=-40dB:stop_silence=0.28",
+  "voice": "ko-KR-InJoonNeural",
+  "rate": "-6%",
+  "pitch": "+0Hz"
+}

@@ -1,0 +1,9 @@
+{
+  "sourceKey": "444262b0683674e4012e3b5fd531c02be641984aceb9044b0b11b60bb87c5aab",
+  "text": "오늘 최고 기록이에요!",
+  "loudnorm": "measured I -> volume to -20.5 LUFS (linear)",
+  "pause": "silenceremove=stop_periods=-1:stop_duration=0.25:stop_threshold=-40dB:stop_silence=0.28",
+  "voice": "ko-KR-InJoonNeural",
+  "rate": "-6%",
+  "pitch": "+0Hz"
+}

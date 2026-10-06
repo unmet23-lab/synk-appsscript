@@ -100,3 +100,71 @@
   .hero-art .hero-mongle{width:min(31%,150px)}
 }
 @media (max-width:359px){.hero-art{display:none}}
+
+/* ── 하루 도전(2026-10-07): 입구의 크림 펠트 단추(시작보다 한 단계 아래) + 오늘 상태 한 줄, 결과의 기록 판 ── */
+.daily-start{display:grid;gap:6px}
+.daily-start .felt-cta{min-height:82px;padding:10px 16px 16px 32px}   /* 두 줄 글자가 펠트 판의 실땀 안쪽에 들게 */
+.felt-cta.cream .daily-label{display:grid;gap:4px;text-align:left}
+.felt-cta.cream .daily-label b{font:800 17px/1.1 var(--sans)}
+.felt-cta.cream .daily-label small{font:700 12.5px/1.2 var(--sans);color:var(--ink-2)}
+#daily-line{padding-left:4px;color:var(--ink-2);font-weight:600}
+.r-say{margin:6px 0 0;font:800 clamp(18px,4.6vw,26px)/1.3 var(--sans);letter-spacing:-.02em}
+.daily-rec{display:grid;gap:10px}
+.daily-rec .chip-btn{justify-self:start}
+.daily-best{margin:2px 0 0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.daily-best b{font:900 clamp(24px,6.4vw,30px)/1.15 var(--sans);letter-spacing:-.03em}
+.tag.new-best{color:#3a2a08;background-image:url(kit/felt/cushion-butter-strip.webp)}   /* 작은 부품이라 실땀 없는 버터 쿠션 */
+.week-title{margin:2px 0 -4px;font-weight:700;color:var(--ink-2)}
+/* 최근 7일: 마친 날은 펠트 체크 배지, 안 한 날은 빈 크림 펠트 원(회색으로 죽이지 않는다), 오늘은 크림 칼선 */
+.week{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}
+.week li{display:grid;justify-items:center;gap:3px;min-width:0}
+.week small{font:700 12px/1.2 var(--sans);color:var(--ink-2);white-space:nowrap}
+.week i{width:28px;height:28px;background:url(kit/felt/badge-cream.webp) center/contain no-repeat}
+.week li.done i{background-image:url(kit/felt/badge-check.webp)}
+.week li.today i{filter:var(--sticker) drop-shadow(0 2px 3px rgba(73,45,30,.25))}
+.week li.today small{color:var(--coral-deep)}
+.week b{font:700 11.5px/1.2 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:-.01em;color:var(--ink);white-space:nowrap}   /* 네 자리 점수 일곱이 320px에서도 붙지 않게(고정폭 글꼴은 너무 넓었다) */
+@media (max-width:359px){.week b{font-size:10.5px}}
+.week li.empty b{color:var(--muted)}
+/* ── 꾸미기(2026-10-07): 라켓·공 줄. 견본은 크림 펠트 원(사진)을 그 색으로 물들인 것(레이싱 차고와 같은 방식 — 결은 사진 그대로) ── */
+.plan-side{display:grid;gap:14px;align-content:start}
+.gear{padding:18px;display:grid;gap:12px}
+.gear-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px}
+.gear-coins{font:700 13.5px/1.3 var(--sans);color:var(--ink-2)}
+.gear-rows{display:grid;gap:10px}
+.gear-row{display:grid;grid-template-columns:2.6em minmax(0,1fr);align-items:start;column-gap:8px}
+.gear-kind{padding-top:16px;font:800 15px/1.2 var(--sans)}
+.gear-swatches{display:grid;grid-template-columns:repeat(4,minmax(0,84px));gap:4px}
+.gear-swatch{position:relative;display:grid;justify-items:center;gap:1px;min-width:0;padding:6px 0 4px;border:0;background:none;color:var(--ink);transition:transform .14s var(--ease)}
+.gear-swatch .swatch{position:relative;display:block;width:44px;height:44px;margin-bottom:3px;isolation:isolate;background:url(kit/felt/badge-cream.webp) center/contain no-repeat;filter:drop-shadow(0 2px 2px rgba(73,45,30,.25))}
+.gear-swatch .swatch::before{content:"";position:absolute;inset:0;background:var(--c,#c9ced3);mix-blend-mode:multiply;
+  -webkit-mask:url(kit/felt/badge-cream.webp) center/contain no-repeat;mask:url(kit/felt/badge-cream.webp) center/contain no-repeat}
+.gear-swatch:active{transform:translateY(2px)}
+.gear-swatch[aria-pressed=true]{transform:translateY(-4px)}
+.gear-swatch[aria-pressed=true] .swatch{filter:var(--sticker) drop-shadow(0 6px 6px rgba(73,45,30,.28))}   /* 고른 견본: 크림 칼선 스티커 */
+.gear-swatch.equipped::after{content:"";position:absolute;left:calc(50% + 10px);top:0;width:22px;height:22px;background:url(kit/felt/badge-check.webp) center/contain no-repeat;filter:drop-shadow(0 2px 2px rgba(73,45,30,.3))}
+.g-name{font:800 13px/1.25 var(--sans);white-space:nowrap}
+.g-state{font:600 11.5px/1.25 var(--sans);color:var(--ink-2);white-space:nowrap}
+.gear-swatch.equipped .g-state{color:var(--coral-deep)}
+.gear-act{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 12px;border-radius:14px;background:var(--cream)}
+.gear-act:empty{display:none}
+.gear-pick{margin:0;display:grid;gap:1px;margin-right:auto}
+.gear-pick b{font:800 16px/1.3 var(--sans)}
+.gear-pick span{font:700 13px/1.3 var(--sans);color:var(--ink-2)}
+.gear-have,.gear-need{margin:0;font:700 14px/1.4 var(--sans)}
+.gear-have{display:flex;align-items:center;gap:8px}
+.gear-have .check{width:24px;height:24px;flex:none;background:url(kit/felt/badge-check.webp) center/contain no-repeat}
+.gear-need b{color:var(--coral-deep)}
+.chip-btn.buy{background-image:url(kit/felt/cushion-butter-strip.webp);color:#3a2a08}   /* 사기: 실땀 없는 버터 쿠션 */
+.gear-note{margin:0;font:700 13.5px/1.45 var(--sans);color:var(--ink-2)}
+.gear-note:empty{display:none}
+.gear-note[data-kind=error]{color:var(--coral-deep)}
+@media (max-width:359px){.gear-row{grid-template-columns:minmax(0,1fr)}.gear-kind{padding-top:0}.gear-swatch .swatch{width:40px;height:40px}}
+@media (min-width:960px){.plan-side{gap:18px}.gear{padding:20px 22px}}
+
+@media (min-width:960px){   /* 결과 넓은 화면: 하루 도전 판과 다음 판을 셋째 줄에 겹쳐 쌓는다 */
+  .res-grid.daily-on .daily-rec{grid-column:3;grid-row:1}
+  .res-grid.daily-on .log{grid-column:1;grid-row:1 / span 2}
+  .res-grid.daily-on .skills{grid-column:2;grid-row:1 / span 2}
+  .res-grid.daily-on .next{grid-column:3;grid-row:2}
+}

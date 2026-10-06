@@ -1,0 +1,95 @@
+{
+  "generatedAt": "2026-10-06T22:32:41.021795+00:00",
+  "humanRecording": false,
+  "normalization": "앞뒤 빈 소리 자름, 문장 사이 쉼 0.28초로 줄임, 통합 음량을 재어 -20.5 LUFS로 고정 이득(몽글의 말 -18.4보다 조금 낮게); mono 24 kHz MP3 96 kbps",
+  "lines": [
+    {
+      "id": "intro",
+      "text": "몽글이 말을 걸어요. 알맞은 대답으로 받아쳐요!",
+      "file": "assets/narration/intro.mp3",
+      "sha256": "c4d440488bec9961af91075057e39f795e0172010f2b594d64f4b982a4c6e9da",
+      "bytes": 46412,
+      "durationSeconds": 3.788,
+      "peakDbfs": -5.88,
+      "rmsDbfs": -21.22,
+      "integratedLufs": -21.0
+    },
+    {
+      "id": "practice-done",
+      "text": "좋아요! 이제 시작해요.",
+      "file": "assets/narration/practice-done.mp3",
+      "sha256": "ededc866508ab653a14c5f0973707af7b261a5cd193c74ed7d6c6eebd9bbdc20",
+      "bytes": 27404,
+      "durationSeconds": 2.186,
+      "peakDbfs": -5.75,
+      "rmsDbfs": -21.9,
+      "integratedLufs": -20.9
+    },
+    {
+      "id": "daily-intro",
+      "text": "하루 도전이에요. 오늘은 모두 같은 열두 번이에요.",
+      "file": "assets/narration/daily-intro.mp3",
+      "sha256": "187b0c2610f0525206f79d1392155d8a78288902377c4fa209dddb3ead5f93e2",
+      "bytes": 49292,
+      "durationSeconds": 4.03,
+      "peakDbfs": -7.18,
+      "rmsDbfs": -20.96,
+      "integratedLufs": -21.0
+    },
+    {
+      "id": "daily-best",
+      "text": "오늘 최고 기록이에요!",
+      "file": "assets/narration/daily-best.mp3",
+      "sha256": "f03c2f9467ae69a3fe14acac9f38498f88ba03966f0959d2d06d18470e6b130e",
+      "bytes": 19340,
+      "durationSeconds": 1.536,
+      "peakDbfs": -7.95,
+      "rmsDbfs": -20.8,
+      "integratedLufs": -20.9
+    },
+    {
+      "id": "result-3",
+      "text": "완벽해요! 모두 받아쳤어요.",
+      "file": "assets/narration/result-3.mp3",
+      "sha256": "10ca7db89ba33f0a15fac271e2d5b9484c22fbb5f6c4f9af3bfaf3e7a5e1229a",
+      "bytes": 32012,
+      "durationSeconds": 2.571,
+      "peakDbfs": -5.45,
+      "rmsDbfs": -21.62,
+      "integratedLufs": -20.9
+    },
+    {
+      "id": "result-2",
+      "text": "아주 잘했어요!",
+      "file": "assets/narration/result-2.mp3",
+      "sha256": "bf10c24ad3bb2b833f344fb6ccd688ee53bdd51ae0fab5fb2a5ce524eab4ec0c",
+      "bytes": 14444,
+      "durationSeconds": 1.115,
+      "peakDbfs": -7.49,
+      "rmsDbfs": -21.8,
+      "integratedLufs": -21.0
+    },
+    {
+      "id": "result-1",
+      "text": "잘했어요! 조금만 더 해 봐요.",
+      "file": "assets/narration/result-1.mp3",
+      "sha256": "678782e431b06688503d433521780bdb26a3559a495b52400b28d222354b44ef",
+      "bytes": 31724,
+      "durationSeconds": 2.558,
+      "peakDbfs": -6.69,
+      "rmsDbfs": -21.61,
+      "integratedLufs": -20.9
+    },
+    {
+      "id": "result-0",
+      "text": "괜찮아요. 다시 해 볼까요?",
+      "file": "assets/narration/result-0.mp3",
+      "sha256": "e813c447102e51f1c82f4c010acf12636e8e05ab53c6929b77db40ca24f81826",
+      "bytes": 29132,
+      "durationSeconds": 2.331,
+      "peakDbfs": -6.86,
+      "rmsDbfs": -21.79,
+      "integratedLufs": -21.0
+    }
+  ]
+}
