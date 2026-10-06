@@ -4,8 +4,8 @@
 
 2026-10-03 유호님 요청 「ep01도 gpt로 만든거라 좀 별로같아. 니 스타일데로 아까 알려준 방식 잘 적용해서 하나 만들어봐줄래? 그리고 목소리는 타입캐스트에 내 목소리 학습시킨거있어 그걸 사용해줘봐」로 만들었다. 10-04 시청 뒤 「목소리가 좀 별로네. 차라리 다른 성우 api 쓰는게 낫겠다. 뭔가 부자연스러운데? 흐름이 뚝뚝 끊기는 느낌이야」 → 대본을 한 번에 읽힌 AI 성우로 바꿨다. 10-05 1번 목소리 판을 보고 「다 좋은데 마지막에 이 프롬프트랑 적용방법이나 pdf나 우리 기업이 추구하는 개인화 프로그램의 장점을 여기서 어필할수있으면 좋겠어」 → 끝 문단을 「PDF 대신 내 일에 맞춘 프로그램」으로 새로 썼다. 10-06 「괜찮은데 초반에 몽골어 영상이 만들어지고 이런것보다 브랜딩마케팅용으로 제작한 페북, 인스타, 자동게시 예약이 끝났어요라고 어필하는게 훨씬 시청자입장에서 훨씬 직관적」, 「대본, 목소리, 몽골어검수, 게시문구, 업로드, 예약 이 부분이 약간 지루해서 약간만 빠르게」, 「전체적으로 만족스럽거든?」 → 첫 문단을 고쳤다. **게시 전.**
 
-- 렌더(10-06): `renders/yuhobuilds_한줄시켰더니_A_인스타.mp4`(0초 훅 질문형)·`…_B_유튜브.mp4`(결과 먼저). 47.5초, 1번 목소리(Gemini Charon). 앞 판들은 이 이름으로 덮어썼다(git 밖).
-- HyperFrames `0.8.114`, `npm run check` 오류 0.
+- 렌더(10-06): `renders/yuhobuilds_한줄시켰더니_A_인스타.mp4`(0초 훅 질문형)·`…_B_유튜브.mp4`(결과 먼저). 47.5초, 1번 목소리(Gemini Charon). 앞 판들은 이 이름으로 덮어썼다(git 밖). 10-06 저녁 유호님 「좋아. 진행해」 → 끝 화면의 맞춤 도구 첫 화면을 새 디자인(synk.im 홈페이지 언어, 맞춤도구 커밋 2c333bb3f·a85d7c39c)으로 다시 찍어 두 판을 다시 렌더했다. 그 앞 장면은 이전 판과 같다(시점 8곳 비교, 크게 다른 픽셀 0~0.15%).
+- HyperFrames `0.8.137`(10-06 저녁 0.8.114에서 올림), `npm run check` 오류 0.
 
 ## 첫 문단 · 브랜딩용 페북·인스타 자동 게시 예약(10-06)
 
@@ -60,10 +60,10 @@ node 음성/한번에_생성.cjs --유료-api --voices Charon --tag open --n 3 -
 HF_HUB_OFFLINE=1 STT_MODEL=large-v3-turbo python 음성/한번에_맞추기.py 음성/후보/3.8-flash__Charon_open_1.wav --segs h1,h2,p1,p2
 python 음성/테이크_다듬기.py 음성/후보/3.8-flash__Charon_open_1.wav --out 후보/다듬기/Charon_open_1
 python 음성/테이크_잇기.py 후보/다듬기/Charon_open_1:h1-p2 후보/다듬기/Charon:s0-i2 후보/다듬기/Charon_end_1:c1-c5 --pause-at s0=0.59,c1=0.45   # (음성 폴더에서) → take/
-node 음성/넣기.cjs --carve ~/.claude/skills/hyperframes-audio/scripts/carve.mjs --core <@hyperframes/core 0.8.114 설치 폴더>
-npx --yes hyperframes@0.8.114 check
-npx --yes hyperframes@0.8.114 render --quality delivery --output renders/yuhobuilds_한줄시켰더니_A_인스타.mp4
-npx --yes hyperframes@0.8.114 render --quality delivery --variables '{"hook":"B"}' --output renders/yuhobuilds_한줄시켰더니_B_유튜브.mp4
+node 음성/넣기.cjs --carve ~/.claude/skills/hyperframes-audio/scripts/carve.mjs --core <@hyperframes/core 0.8.137 설치 폴더>
+npx --yes hyperframes@0.8.137 check
+npx --yes hyperframes@0.8.137 render --quality delivery --output renders/yuhobuilds_한줄시켰더니_A_인스타.mp4
+npx --yes hyperframes@0.8.137 render --quality delivery --variables '{"hook":"B"}' --output renders/yuhobuilds_한줄시켰더니_B_유튜브.mp4
 node 음성/후보_듣기.cjs 음성/후보/듣기_목록.json --copy <바탕화면 폴더>   # 후보 듣기 페이지
 ```
 
@@ -74,7 +74,7 @@ node 음성/후보_듣기.cjs 음성/후보/듣기_목록.json --copy <바탕화
 ## 화면 재료
 
 - 얼굴(끝 화면 아치·표지): 10-05 유호님 「이 사진을 우리가 만든 내 모델컷 있잖아. 이걸로 바꿔줘」 → 키트의 인터뷰 정면 사진 대신 PULSE 캐스팅북 확정 모델컷(`docs/마케팅/PULSE_AI모델_캐스팅_20260930/raw/M-yuho-hero-v5.png`, 10-01 시안 B 방식)을 아치 비율로 잘라 `assets/media/face/yuho_model_cut.webp`(800×978)로 쓴다.
-- 실제 캡처: Business Suite 예약 목록(`assets/media/shots/bs_scheduled.png`, 10-03 크롬 unmet23), LAB 릴스 렌더본(`lab_reel.mp4`, git 밖 — LAB 폴더 `renders/…_MN_v2.mp4` 사본), 맞춤 도구 화면(`assets/media/tool/01~06`, 로컬 빌드를 390×844@3으로 캡처, `녹화기록.json`).
+- 실제 캡처: Business Suite 예약 목록(`assets/media/shots/bs_scheduled.png`, 10-03 크롬 unmet23), LAB 릴스 렌더본(`lab_reel.mp4`, git 밖 — LAB 폴더 `renders/…_MN_v2.mp4` 사본), 맞춤 도구 화면(`assets/media/tool/01~06`, 로컬 빌드를 390×844@3으로 캡처, `녹화기록.json`. 10-06 저녁 새 디자인으로 다시 찍음).
 - 키트: `node tools/SNS키트_영상연결.js <이 폴더>`로 `assets/synk-kit/`을 다시 넣는다(LAB처럼 `motion.js`만 저장소에 둔다).
 - 효과음: 브랜드 사운드킷 + Pixabay(상업 이용 가능, [CREDITS](assets/media/sound/CREDITS_pixabay.md)).
 
