@@ -7,7 +7,8 @@
 <title>입장 검사 · SYNK LAB PLAY</title>
 <meta name="description" content="안내문을 읽고 들어갈 수 있는 손님만 통과시키는 한국어 읽기 게임. TOPIK I 읽기의 안내문·내용 일치를 연습합니다.">
 <link rel="icon" href="assets/felt/stamp-pass.webp" type="image/webp">
-<link rel="preload" href="assets/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="kit/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="kit/lab.css">
 <link rel="stylesheet" href="style.css">
 <script src="./atlas-learning.js"></script>
 <script type="module" src="./app.mjs"></script>
@@ -36,7 +37,7 @@
 <!-- 입구 -->
 <main id="lobby" class="screen lobby" data-acc="lab">
   <header class="topbar on-field">
-    <a class="logo-tag" href="./" aria-label="입장 검사 처음으로"><img src="assets/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></a>
+    <a class="logo-tag" href="./" aria-label="입장 검사 처음으로"><img src="kit/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></a>
     <span class="kicker">LAB · READ &amp; PLAY</span>
     <button class="sound-toggle" type="button" aria-pressed="true" data-sound-toggle><span class="sr">소리</span></button>
   </header>
@@ -90,7 +91,7 @@
 <!-- 근무 -->
 <main id="game" class="screen game" hidden>
   <header class="topbar game-bar">
-    <img class="logo-mini" src="assets/brand/logo-lab.webp" alt="SYNK LAB" width="78" height="24">
+    <img class="logo-mini" src="kit/brand/logo-lab.webp" alt="SYNK LAB" width="78" height="24">
     <div class="shift-meta"><span id="g-day" class="chip">1일차</span><strong id="g-venue">하늘 수영장</strong></div>
     <div class="hud" aria-live="polite">
       <span class="pill"><small>손님</small><b id="g-count">1 / 6</b></span>
@@ -153,9 +154,9 @@
     <section class="dock" aria-label="도장">
       <p class="dock-hint" id="dock-hint">안내문을 읽고 도장을 골라요.</p>
       <div class="stamps" id="stamps">
-        <button id="btn-reject" class="stamp-btn reject" type="button" aria-keyshortcuts="ArrowLeft"><img src="assets/felt/stamp-reject.webp" alt=""><span>거절</span><kbd>←</kbd></button>
+        <button id="btn-reject" class="stamp-btn reject" type="button" aria-keyshortcuts="ArrowLeft" data-felt="blush"><img src="assets/felt/stamp-reject.webp" alt=""><span>거절</span><kbd>←</kbd></button>
         <button id="btn-hint" class="hint-btn" type="button" aria-label="돋보기 힌트" aria-keyshortcuts="H"><img src="assets/felt/magnifier.webp" alt=""></button>
-        <button id="btn-pass" class="stamp-btn pass" type="button" aria-keyshortcuts="ArrowRight"><img src="assets/felt/stamp-pass.webp" alt=""><span>통과</span><kbd>→</kbd></button>
+        <button id="btn-pass" class="stamp-btn pass" type="button" aria-keyshortcuts="ArrowRight" data-felt="butter"><img src="assets/felt/stamp-pass.webp" alt=""><span>통과</span><kbd>→</kbd></button>
       </div>
       <div class="choose" id="choose" hidden>
         <p><strong>어느 규칙 때문에 거절할까요?</strong> 안내문에서 골라요.</p>
@@ -179,7 +180,7 @@
   <section class="briefing" id="memo-alert" hidden role="dialog" aria-modal="true" aria-labelledby="alert-title">
     <div class="brief-card memo-card">
       <img class="pin" src="assets/felt/pin-coral.webp" alt="">
-      <img class="brief-mongle diecut" src="assets/brand/mongle-curious.webp" alt="">
+      <img class="brief-mongle diecut" src="kit/brand/mongle-curious.webp" alt="">
       <span class="kicker ko" id="alert-from">공원 관리실 · 오후 6시 25분</span>
       <h2 id="alert-title">새 알림이 왔어요</h2>
       <p class="alert-rule" id="alert-rule"></p>
@@ -219,7 +220,7 @@
 <!-- 결과 -->
 <main id="results" class="screen results" hidden data-acc="lab">
   <header class="topbar on-field">
-    <span class="logo-tag"><img src="assets/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></span>
+    <span class="logo-tag"><img src="kit/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></span>
     <span class="kicker">SHIFT COMPLETE</span>
   </header>
   <section class="res-hero">
@@ -233,7 +234,7 @@
       <p class="r-help" id="r-help" hidden><span>돋보기 없이도 잘 찾았어요. 다음 손님부터 돋보기를 조금 늦게 보여 줄까요?</span>
         <button id="r-help-yes" class="chip-btn" type="button">늦게 보여 줘요</button><button id="r-help-no" class="chip-btn" type="button">지금처럼</button></p>
     </div>
-    <img class="res-mongle diecut" id="r-mongle" src="assets/brand/mongle-smile.webp" alt="">
+    <img class="res-mongle diecut" id="r-mongle" src="kit/brand/mongle-smile.webp" alt="">
   </section>
   <section class="res-grid">
     <article class="paper log">
@@ -259,7 +260,7 @@
   </section>
 </main>
 
-<dialog id="pause-dialog" class="paper">
+<dialog id="pause-dialog" class="paper lab-dialog">
   <span class="kicker">PAUSED</span>
   <h2>잠깐 쉬어요</h2>
   <p>근무 시간은 멈춰 있어요. 이어서 하거나 근무지를 다시 고를 수 있어요.</p>

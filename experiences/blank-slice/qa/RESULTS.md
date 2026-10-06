@@ -2,6 +2,12 @@
 
 로컬 MVP의 구현 확인 범위다. 학생 대상 학습 효과·교원 검수·실기기 성능·공개 배포의 증거가 아니다.
 
+## 4차 · SYNK LAB PLAY 키트로 옮김 (2026-10-07)
+
+- 바꾼 것: `index.html`·`sound-lab.html`이 `kit/lab.css` → `style.css`를 읽고, 로고·몽글·펠트 부품·글꼴은 `kit/`에서 읽는다(멈춤 창은 `dialog.lab-dialog`). `style.css`는 빈칸 베기에만 있는 규칙과 키트와 값이 다른 곳(코랄 면 kicker 색, 못 받은 별 `sparkle-off`, 결과 기록의 펠트 표시 img)만 남겼다(223 → 54줄). 키트와 겹치던 `assets/kit/`·`assets/brand/`·`assets/fonts/`와 어디서도 읽지 않던 펠트 조각(badge-pass·heart·magnifier·pin-butter·pin-coral)·판(slab-cream·tex-blush·tex-butter)·mongle-body는 지웠다. 남은 고유 자산: `assets/hero-pieces.webp`·`assets/felt/drop.webp`·`assets/felt/sparkle-off.webp`·`assets/sound/`.
+- 화면이 그대로인지: 커밋된 판(3e4afee34)과 옮긴 판을 같은 난수·같은 자판 조작으로 일곱 장면씩 390×844(dpr 2)·1280×800에서 찍어 비교했다(3D 판 canvas는 둘 다 숨김). 다른 픽셀(엄격 / pixelmatch 0.1): 입구 0.066~0.100% / 0.018~0.045%, 결과 0.417~0.882% / 0.026~0.067%, 게임·멈춤·해설·멈춘 보기·멈춘 보기 해설 0%. 다른 곳은 둘뿐이다 — ① 키트의 공통 코인 줄(글자 ink-2, 링크 굵게) ② 결과 기록의 체크 배지가 키트 판(같은 펠트 그림의 128px 판, 전에는 160px 판)이 된 것. 같은 판끼리 두 번 찍은 잡음은 0%. 소리 듣기 페이지는 0%.
+- 시험: 단위 30/30(core·flow·grammar-links·learning·sfx), 키트 사본 9/9, `qa/feel-flow.cjs`·`qa/review-fixes.cjs` 모두 통과(느린 펠트 결 흉내의 경로를 `kit/felt/tex-cream.webp`로 고침), `qa/capture.cjs` 네 화면 오류 0·가로 넘침 0·결과 10/12(계획대로 맞힘·틀림·놓침)·다시 그음 0·움직임 줄이기에서 도는 애니메이션 0. 비교 장면과 나란히 놓은 시트는 `qa/shots/kit-20261007/`(git 제외).
+
 ## 3차 · 놓친 문장만 읽기 확인 (2026-10-03, 유호님 「3번으로 해줘」)
 
 - 03:08~03:14에 다른 세션(GPT)이 원본을 바꿨다: 모든 베기에서 맞음·틀림 반응(‘팅’·금빛·점수)을 없애고(`hit(null)`), 벤 뒤 멈춘 보기에서 다시 답한 것만 읽기 기록으로 남겼다. 확정한 손맛(10-02)을 바꾸는 일이라 공개하지 않고 세 가지 안을 여쭸고, 유호님이 3번을 골랐다: **벨 때의 손맛은 그대로, 읽기 확인은 두 번 다 놓친 문장에만.**

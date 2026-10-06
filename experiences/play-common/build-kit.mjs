@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const KIT_SRC = path.join(here, 'kit');
 // 키트로 옮긴 게임. 옮길 때마다 여기에 더한다.
-export const KIT_GAMES = ['talk-rally', 'order-rush', 'story-classroom', 'korean-rhythm', 'korean-runner'];
+export const KIT_GAMES = ['talk-rally', 'order-rush', 'story-classroom', 'korean-rhythm', 'korean-runner', 'korean-racing', 'blank-slice', 'entry-check'];
 
 export function kitFiles(dir = KIT_SRC, base = '') {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((d) => {
