@@ -1,0 +1,4 @@
+# Confirmed public mapping/binding/journal JSON belongs in source control.
+# Process locks and atomic-write intermediates do not.
+*.lock
+*.tmp-*

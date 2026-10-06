@@ -8,16 +8,7 @@ const TALK_ROOT = process.env.SYNK_TALK_ROOT || path.resolve(__dirname, '../../.
 const credentials = require(path.join(TALK_ROOT, 'lib', '자격증명.js'));
 
 // Public OAuth clients registered for SYNK products (public values, no secret).
-const CLIENTS = Object.freeze({
-  production: Object.freeze({
-    world: '52e3e2ac-e26f-46c4-948a-e4ef84982141',      // SYNK WORLD app (synktalk://oauth/callback)
-    tools: '291a98a7-4fa8-44fe-b5de-8acb790bea21',      // synk.im custom tools (platform product, reads chosen settings)
-  }),
-  rehearsal: Object.freeze({
-    world: 'f1a08dbc-2677-46bf-9146-db65688bf445',
-  }),
-});
-const TOOL_REDIRECTS = Object.freeze(['https://synk.im/brief/computer/', 'https://synk.im/brief/meeting/']);
+const { LEGACY_CLIENT_IDS: CLIENTS, TOOL_REDIRECTS } = require('./registry.cjs');
 
 function target(argv = process.argv) {
   const production = argv.includes('--운영');
