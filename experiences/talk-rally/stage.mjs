@@ -18,9 +18,9 @@ const TABLE = { w: 1.525, l: 2.74 };
 export const LANES = [-0.46, 0, 0.46];           // 대답 칸 1·2·3의 x
 const PAD_Z = -0.82, HIT = { y: 0.24, z: 1.46 }, OPP = { y: 0.3, z: -1.52 };
 const PAD_COLORS = [   // 대답 칸·카드의 펠트 색(자리마다 같다 — 색으로 정답이 드러나지 않게 보기를 섞는다)
-  { base: '#fbd3c6', ink: '#7a2e20', glow: 0xffc6b5 },   // 1 연코랄
-  { base: '#f5c445', ink: '#3a2a08', glow: 0xffe08a },   // 2 버터
-  { base: '#9fd0ea', ink: '#0f3d57', glow: 0xbfe6fb },   // 3 하늘
+  { base: '#f0cbbc', ink: '#7a2e20', glow: 0xffc6b5 },   // 1 분홍 펠트(대답 카드의 쿠션 판과 같은 색)
+  { base: '#f2be3e', ink: '#3a2a08', glow: 0xffe08a },   // 2 버터 펠트
+  { base: '#2d5ab8', ink: '#fffaf2', glow: 0x9db8ff },   // 3 라피스 펠트
 ];
 const FACES = { idle: 'mongle-curious', talk: 'mongle-focus', happy: 'mongle-cheer', calm: 'mongle-smile' };
 const easeOut = (k) => 1 - Math.pow(1 - k, 3);

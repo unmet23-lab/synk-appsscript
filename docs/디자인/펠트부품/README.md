@@ -51,6 +51,7 @@
 
 - 그림 경로를 CSS 변수(`--x:url(...)`)에 넣어 다른 문서에서 `var()`로 쓰면 그 문서 기준으로 풀려 조용히 안 그려진다. 경로는 쓰는 문서 기준으로 적는다.
 - 펠트 부품 위 글자는 대비를 확인한다(코랄 판 위 흰 글자는 굵게 + 옅은 그림자).
+- 쿠션 판(`assets/cushion/`)은 가장자리가 부풀어 평평한 면이 판 상자보다 작다(위 빛받이 약 5%, 아래 옆면 약 19%). 글자는 그 면 가운데에 두고 양옆은 판 폭의 10%쯤 비운다. 번호처럼 따로 붙는 것은 면을 차지하지 않게 모서리에 단 크림 단추로 뺀다 — 2026-10-06 유호님이 말 랠리 시안을 보고 「둥글게 바뀌면서 면적이 작아졌잖아. 글씨 배치를 이 면적에 맞게」. 판은 쓰는 상자 비율로 늘여(`펠트판_늘이기.py`) 모서리·옆면이 찌그러지지 않게 한다.
 - 실제 적용 예: [레슨 화면 시안](../앱시안_20261002/lesson/after/index.html), [주문 폭주 시안](../앱시안_20261002/order-rush-kit/).
 
 ## 마감 점검표 · 보이기 전에
@@ -77,6 +78,7 @@
 | 폴더 | 부품 |
 |---|---|
 | [`assets/ui/`](assets/ui/) | `badge-check`(체크 배지) · `badge-coral` · `badge-cream`(빈 원) · `chip-blush`(+`-long`) · `tag-cream`(꼬리표) · `slab-coral` · `slab-cream` · `slab-blush`(+`-long`) · `swatch-coral` · `swatch-blush` · `tex-coral` · `tex-blush` |
+| [`assets/cushion/`](assets/cushion/) | 2026-10-06 도톰한 쿠션 판(약 1.4:1, 모서리 둥긂, 실땀·글자 없음): `cushion-blush` · `cushion-butter` · `cushion-lapis` · `cushion-cream`. ChatGPT 구독(Codex CLI)으로 한 판에 구웠다(참고 사진: 몽글·펠트 노트북·색 견본, 원본 `raw/cushion판_20261006.png`). 흰 띠 0~0.01%, [어두운 바탕·종이 바탕 시트](확인시트/쿠션판_어두운바탕_종이바탕.jpg). 첫 사용: 말 랠리 대답 카드(`experiences/talk-rally/assets/felt/card-*` 1.6·2.4·3.2:1, 입구 칩 6:1) |
 | [`assets/builds/`](assets/builds/) | 2026-10-06 yuhobuilds(검정·버터) 판, ChatGPT 구독(Codex CLI)으로 한 판에 구움: `badge-check`(버터 원 + 검은 체크) · `badge-butter` · `badge-cream` · `badge-black` · `slab-butter` · `slab-black`(+`-long`) · `tile-cream` · `tile-butter`(+`-long`·`-wide` 8.4:1) · `chip-butter` · `chip-cream` · `chip-black`(+`-long`). 1536 판은 같은 줄 부품이 그림자로 이어져 오리기 도구가 한 덩어리로 봤다 → 2배로 키운 판에서 부품마다 상자를 잘라 하나씩 오렸다. 흰 띠 0~0.61%(검은 원만 0.5% 넘음, 어두운 바탕에 쓰지 않는다). 첫 사용: 맞춤 도구 `manual`(웹 사본 `맞춤도구/assets/fb-*`) |
 | [`assets/재료/`](assets/재료/) | `coffee` · `tea` · `milk` · `ice` · `sugar` · `cold`(주문 폭주 재료) |
 | [`assets/배경/`](assets/배경/) | `disc-black` · `disc-lapis` · `disc-coral`(큰 원판) · `ring-butter`(고리) · `note-brief`(메모) · `swatch-*` · `tex-*`(결 조각) · `seam-*`(2×2 거울 타일, 작은 면만) · `wide-*`(넓은 판 2560×1440: cream·black·lapis·butter, `ui/wide-coral`) |
