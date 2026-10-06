@@ -44,7 +44,7 @@ const FREE_ITEMS = SHOP_ITEMS.filter(item=>item.price===0).map(item=>item.id);
 const DEFAULT_EQUIPMENT = {vehicle:'coast',paint:'mint',wheels:'silver',trail:'lime',badge:null};
 export const REWARDS = Object.freeze({finish:15,correct:2,firstClear:10,correction:5,mission:15,dailyRaceLimit:10,miniGameAccuracy:10});
 // Mini-games that share this wallet. Each pays only after its own complete-round condition.
-export const MINI_GAMES = Object.freeze(['rhythm','runner','blank-slice','entry-check','story-classroom','talk-rally']);
+export const MINI_GAMES = Object.freeze(['rhythm','runner','blank-slice','entry-check','story-classroom','talk-rally','order-rush']);
 export const integer = (value,fallback=0,max=1_000_000_000) => typeof value==='number'&&Number.isFinite(value)?Math.max(0,Math.min(max,Math.floor(value))):fallback;
 export const object = value => value&&typeof value==='object'&&!Array.isArray(value)?value:{};
 export const safeKey = key => typeof key==='string'&&key.length>0&&key.length<=180&&!['__proto__','prototype','constructor'].includes(key);

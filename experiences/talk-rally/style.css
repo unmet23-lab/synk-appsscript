@@ -1,227 +1,8 @@
-/* 말 랠리 — 빈칸 베기의 펠트 화면 양식(docs/디자인/펠트부품)을 그대로 쓰고, 탁구 화면에 필요한 것만 뒤에 더했다. */
-/* 빈칸 베기 · SYNK LAB PLAY
- * 출발점: docs/디자인/SNS키트(색 면으로 멈추게, 흰 종이로 읽히게, 펠트로 SYNK인 걸 알게)
- *        docs/디자인/펠트부품(누르는 부품과 큰 색 면은 실제 펠트, 읽는 면은 종이). 펠트는 구운 사진만 쓴다.
- * 3D 조각의 펠트 결도 같은 펠트 사진(tex-cream)을 곱해서 만든다(stage.mjs).
- */
-@font-face{font-family:SUIT;src:url(assets/fonts/SUIT-Variable.woff2) format("woff2");font-weight:100 900;font-display:swap}
-@font-face{font-family:"DM Mono";src:url(assets/fonts/DMMono-Medium.ttf) format("truetype");font-weight:500;font-display:swap}
-@font-face{font-family:"Inter Tight";src:url(assets/fonts/InterTight-Medium.ttf) format("truetype");font-weight:500;font-display:swap}
-@font-face{font-family:"Inter Tight";src:url(assets/fonts/InterTight-Bold.ttf) format("truetype");font-weight:700;font-display:swap}
-
-:root{
-  --coral:#f96859;--coral-deep:#ae322a;--coral-wash:#fef0e9;--blush:#fbd3c6;
-  --ink:#2b2320;--ink-2:#575046;--muted:#6b645b;--line:#ede7dc;
-  --paper:#fffdf8;--cream:#fbf7f0;--sand:#f3eadf;
-  --meadow:#7db45a;--meadow-deep:#3f6b2e;--lapis:#3d6bc9;--butter:#f5c445;--marker:#ffe07a;
-  --focus:#24448c;
-  --sans:SUIT,"Inter Tight",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  --mono:"DM Mono",SUIT,ui-monospace,monospace;
-  --shadow-paper:0 1px 0 rgba(43,35,32,.05),0 10px 24px -14px rgba(73,45,30,.38);
-  --shadow-felt:drop-shadow(0 8px 10px rgba(120,60,40,.2));
-  --ease:cubic-bezier(.2,.8,.2,1);
-  --sticker:drop-shadow(2.5px 0 0 #fffaf2) drop-shadow(-2.5px 0 0 #fffaf2) drop-shadow(0 2.5px 0 #fffaf2) drop-shadow(0 -2.5px 0 #fffaf2);   /* 고른 펠트 판: 크림 칼선을 두른 스티커처럼(판 모양을 따라감) */
-}
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
-body{margin:0;background:var(--cream);color:var(--ink);font:500 16px/1.55 var(--sans);word-break:keep-all;overflow-wrap:anywhere;-webkit-font-smoothing:antialiased}
-img{display:block;max-width:100%}
-button{font:inherit;color:inherit;cursor:pointer}
-button:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:10px}
-[hidden]{display:none!important}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.kicker{font:500 11px/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
-.kicker.ko{font:700 12.5px/1.3 var(--sans);letter-spacing:.01em;text-transform:none}
-.fine{font-size:12.5px;line-height:1.55;color:var(--muted);margin:0}
-.text-link{border:0;background:none;padding:0;font-size:inherit;color:inherit;text-decoration:underline;text-underline-offset:3px}
-
-/* ── 펠트 부품 ── */
-.paper{background:var(--paper);border-radius:20px;box-shadow:var(--shadow-paper)}
-.tag{display:inline-flex;align-items:center;justify-self:start;width:fit-content;min-height:28px;padding:4px 14px 7px;font:800 12.5px/1 var(--sans);color:var(--coral-deep);
-  background:url(assets/kit/chip-blush-long.webp) center/100% 100% no-repeat}
-.num{display:inline-grid;place-items:center;width:30px;height:30px;flex:none;font:700 14px/1 var(--mono);color:#fff;
-  background:url(assets/kit/badge-coral.webp) center/contain no-repeat;text-shadow:0 1px 1px rgba(120,30,20,.35)}
-.felt-cta{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:62px;border:0;
-  padding:0 14px 6px 24px;font:800 18px/1 var(--sans);letter-spacing:-.01em;background:center/100% 100% no-repeat;filter:var(--shadow-felt);
-  transition:transform .12s var(--ease),filter .12s var(--ease)}
-.felt-cta.coral{background-image:url(assets/kit/slab-coral-long.webp);color:#fff;text-shadow:0 1px 1px rgba(120,30,20,.4)}
-.felt-cta.cream{background-image:url(assets/kit/slab-cream-long.webp);color:var(--ink)}
-.felt-cta .disc{width:38px;height:38px;flex:none;background:url(assets/kit/badge-cream.webp) center/contain no-repeat;position:relative}
-.felt-cta .disc::after{content:"";position:absolute;inset:0;margin:auto;width:13px;height:13px;border:solid var(--coral-deep);border-width:2.5px 2.5px 0 0;transform:translate(-2px,1px) rotate(45deg)}
-.felt-cta:active{transform:translateY(3px);filter:drop-shadow(0 3px 4px rgba(120,60,40,.2))}
-.chip-btn{display:inline-flex;align-items:center;justify-content:center;flex:none;white-space:nowrap;min-height:42px;padding:0 18px 3px;border:0;font:700 14px/1 var(--sans);color:var(--ink);
-  background:url(assets/kit/chip-blush-long.webp) center/100% 100% no-repeat;text-decoration:none;transition:transform .12s var(--ease)}
-.chip-btn:active{transform:translateY(2px)}
-.chip-btn[aria-pressed=true]{color:var(--coral-deep)}
-.chip-btn.wide{min-height:52px;background-image:url(assets/kit/slab-cream-long.webp);filter:var(--shadow-felt)}
-.diecut{filter:drop-shadow(0 0 0 #fff) drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(0 10px 12px rgba(80,25,15,.25))}
-.disc-btn{width:42px;height:42px;flex:none;border:0;background:url(assets/kit/badge-cream.webp) center/contain no-repeat;font:700 13px/1 var(--mono)}
-
-/* ── 위 막대 ── */
-.topbar{display:flex;align-items:center;gap:12px;padding:14px 16px}
-.topbar.on-field .kicker{color:rgba(43,35,32,.78)}
-.logo-tag{display:inline-grid;place-items:center;padding:6px 14px 9px;background:url(assets/kit/tag-cream.webp) center/100% 100% no-repeat}
-.logo-tag img{width:92px;height:auto}
-.sound-toggle{margin-left:auto;width:44px;height:44px;border:0;background:url(assets/kit/badge-cream.webp) center/contain no-repeat;position:relative}
-.sound-toggle::before{content:"";position:absolute;inset:0;margin:auto;width:18px;height:18px;background:var(--ink);
-  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 9h4l5-4v14l-5-4H4z'/%3E%3Cpath d='M16 8.5a5 5 0 0 1 0 7M18.6 6a8.5 8.5 0 0 1 0 12' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
-  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 9h4l5-4v14l-5-4H4z'/%3E%3Cpath d='M16 8.5a5 5 0 0 1 0 7M18.6 6a8.5 8.5 0 0 1 0 12' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
-.sound-toggle[aria-pressed=false]::before{opacity:.35}
-
-/* ── 입구 ── */
-.lobby{min-height:100svh;background:var(--cream)}
-.lobby>.topbar,.lobby>.hero,.results>.topbar,.res-hero{background:linear-gradient(rgba(249,104,89,.36),rgba(249,104,89,.36)),url(assets/kit/tex-coral.webp) 0 0/190px 190px,var(--coral)}
-.hero{position:relative;display:grid;gap:8px;padding:6px 16px 52px;overflow:hidden}
-.hero h1{margin:6px 0 0;font:900 clamp(64px,19vw,148px)/.92 var(--sans);letter-spacing:-.055em;color:var(--ink);text-shadow:0 1px 0 rgba(255,255,255,.22),0 -1px 0 rgba(120,30,20,.22)}
-.hero .lede{margin:14px 0 0;font:800 clamp(21px,5.6vw,30px)/1.32 var(--sans);letter-spacing:-.02em}
-.crayon-under{background:linear-gradient(transparent 62%,var(--marker) 62%);color:inherit;padding:0 .08em}
-.hero .sub{max-width:34em;margin:10px 0 0;font-size:15px;line-height:1.6;color:rgba(43,35,32,.86)}
-.hero-art{position:relative;margin:14px 0 0;height:min(76vw,340px)}
-.hero-sentence{position:absolute;left:4%;right:10%;top:4%;padding:14px 16px;font:800 clamp(16px,4.4vw,21px)/1.4 var(--sans);text-align:center}
-.hero-sentence .hb{display:inline-block;min-width:1.8em;padding:0 .3em;border-radius:8px;background:var(--marker);color:var(--ink)}
-/* 입구 그림의 낱말 조각: 게임의 3D 펠트 조각을 실제 무대에서 찍은 그림(qa/bake-hero.cjs) */
-.hero-pieces{position:absolute;left:0;top:28%;width:94%;height:auto;pointer-events:none}
-.slash{position:absolute;left:24%;top:26%;width:30%;height:6px;border-radius:6px;background:linear-gradient(90deg,rgba(255,255,255,0),#fff 40%,#fff 70%,rgba(255,255,255,0));transform:rotate(-24deg);box-shadow:0 0 14px rgba(249,104,89,.6)}
-.hero-mongle{position:absolute;right:0;bottom:2%;width:min(30%,150px)}
-
-.plan{position:relative;z-index:1;margin:-28px 0 0;padding:0 16px;display:grid;gap:14px}
-.start-card{padding:20px 18px 18px;display:grid;gap:10px}
-.start-card h2{margin:4px 0 0;font:800 26px/1.2 var(--sans);letter-spacing:-.02em}
-.start-card h2 b{color:var(--coral-deep)}
-.reason{margin:0;font-size:15px;line-height:1.6;color:var(--ink-2)}
-.start-options{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
-.how{padding:18px;display:grid;gap:12px}
-.how-steps{list-style:none;margin:0;padding:0;display:grid;gap:10px}
-.how-steps li{display:grid;grid-template-columns:auto 1fr;column-gap:12px;align-items:center;padding:10px 12px;border-radius:14px;background:var(--cream)}
-.how-steps strong{font:800 16px/1.35 var(--sans)}
-.how-steps span{grid-column:2;font-size:14px;line-height:1.5;color:var(--ink-2)}
-.lobby-foot{padding:18px 18px 40px;display:grid;gap:8px;font-size:12.5px;line-height:1.6;color:var(--muted)}
-.lobby-foot p{margin:0}
-
-/* ── 게임 ── */
-.game{height:100svh;display:flex;flex-direction:column;background:var(--cream);overflow:hidden}
-.game-bar{position:relative;z-index:5;gap:10px;padding:10px 12px;background:rgba(255,253,248,.94);border-bottom:1px solid var(--line)}
-.logo-mini{width:70px;height:auto}
-.game-title{font:800 15px/1.2 var(--sans);white-space:nowrap}
-.hud{display:flex;gap:6px;margin-left:auto}
-.pill{display:grid;justify-items:center;min-width:52px;padding:3px 10px 6px;background:url(assets/kit/chip-blush-long.webp) center/100% 100% no-repeat}
-.pill small{font:500 11px/1.1 var(--mono);letter-spacing:.06em;color:var(--ink-2)}
-.pill b{font:500 13px/1.1 var(--mono);white-space:nowrap}
-.pill.punch{animation:punch .32s var(--ease)}
-.pill.combo[data-tier="2"] b{color:var(--coral-deep)}
-.pill.combo[data-tier="3"] b{color:var(--coral-deep);background:linear-gradient(transparent 55%,var(--marker) 55%)}
-
-/* 판: 크림 펠트 벽 + 아래 코랄 펠트 받침. 3D 조각의 그림자가 벽에 떨어진다 */
-.arena{position:relative;flex:1;min-height:0;overflow:hidden;touch-action:none;
-  background:radial-gradient(ellipse at 50% 38%,rgba(255,255,255,.35),rgba(255,255,255,0) 60%),
-    linear-gradient(rgba(251,247,240,.38),rgba(251,247,240,.38)),url(assets/kit/wide-cream.webp) center/max(2560px,100%) auto no-repeat,#efe3d0}
-.arena::after{content:"";position:absolute;left:0;right:0;bottom:0;height:16px;z-index:0;
-  background:linear-gradient(rgba(249,104,89,.3),rgba(249,104,89,.3)),url(assets/kit/tex-coral.webp) 0 0/150px 150px,var(--coral);box-shadow:0 -6px 14px -8px rgba(120,40,25,.45)}
-.stage-gl{position:absolute;inset:0;z-index:1;pointer-events:none}
-.trail{position:absolute;inset:0;z-index:2;touch-action:none;cursor:crosshair}
-.sentence{position:absolute;z-index:3;left:50%;top:12px;transform:translateX(-50%);width:min(760px,calc(100% - 24px));padding:12px 18px 16px;display:grid;gap:4px;text-align:center;pointer-events:none}
-.s-text{margin:0;font:800 clamp(19px,5vw,30px)/1.45 var(--sans);letter-spacing:-.02em}
-.blank{display:inline-block;min-width:2.6em;margin:0 .12em;padding:0 .3em;border-radius:10px;vertical-align:baseline;line-height:1.25;
-  background:var(--cream);box-shadow:inset 0 0 0 2.5px rgba(249,104,89,.55),inset 0 -4px 0 rgba(0,0,0,.05);color:transparent;transition:background .2s ease}
-.blank.filled{color:var(--ink);min-width:0;margin:0 .02em;padding:0 .14em}
-.blank.ok{background:var(--marker);box-shadow:inset 0 0 0 2.5px rgba(245,196,69,.9)}
-.blank.answer{background:var(--coral-wash);color:var(--coral-deep);box-shadow:inset 0 0 0 2.5px rgba(249,104,89,.7)}
-/* 낱말이 끼워지는 순간: 납작하게 눌렸다가 튀어 오르며 제자리 */
-.blank.snap{animation:snap .42s cubic-bezier(.2,.9,.3,1.25) both}
-.sentence.done{box-shadow:0 0 0 3px var(--marker),var(--shadow-paper)}
-.tip{position:absolute;z-index:3;left:50%;bottom:28px;transform:translateX(-50%);width:min(560px,calc(100% - 28px));margin:0;padding:10px 16px 12px;border-radius:16px;
-  background:rgba(255,253,248,.96);box-shadow:var(--shadow-paper);text-align:center;font:700 15px/1.45 var(--sans);pointer-events:none}
-.pop{position:absolute;z-index:4;margin:0;transform:translate(-50%,-50%);font:900 24px/1 var(--sans);color:var(--coral-deep);text-shadow:0 2px 0 #fff,0 0 12px rgba(255,255,255,.9);pointer-events:none;white-space:nowrap}
-.pop.go{animation:popUp .9s var(--ease) both}
-/* 연속이 길수록 점수 글자가 커진다(3연속·6연속) */
-.pop[data-tier="2"]{font-size:28px}
-.pop[data-tier="3"]{font-size:32px;color:#c2402f}
+/* 말 랠리 — 공통 화면(입구·게임 바·안내·멈춤·결과·펠트 부품)은 kit/lab.css(SYNK LAB PLAY 키트, 원본 experiences/play-common/kit/).
+ * 여기에는 말 랠리에만 있는 것: 입구 그림, 탁구 화면, 대답 카드(펠트 쿠션), 공이 기다릴 때 안내, 해설·복습 줄. */
 .pop[data-kind="quick"]{color:#1d5f99}   /* 빠르게: 하늘 펠트의 짙은 파랑(스매시·랠리 점수와 구분) */
-.spark{position:absolute;z-index:4;width:22px;height:22px;background:url(assets/felt/sparkle.webp) center/contain no-repeat;pointer-events:none}
-.fly-chip{position:absolute;z-index:4;padding:6px 14px 8px;border-radius:12px;background:var(--marker);font:800 22px/1 var(--sans);color:var(--ink);pointer-events:none;
-  box-shadow:0 10px 18px -8px rgba(60,30,20,.45);transform:translate(-50%,-50%)}
-.explain{position:absolute;z-index:4;left:50%;bottom:24px;transform:translateX(-50%);width:min(560px,calc(100% - 24px));padding:16px 16px 14px;display:grid;gap:8px;
-  animation:sheetUp .32s var(--ease) both}
-.x-sentence{margin:0;font:800 19px/1.45 var(--sans)}
-.x-sentence b{padding:0 .2em;border-radius:6px;background:var(--marker)}
-.x-why{margin:0;font-size:15px;line-height:1.55;color:var(--ink-2)}
-.x-why b{display:inline-block;margin-right:4px;padding:1px 8px 2px;border-radius:999px;background:var(--marker);font:800 12px/1.5 var(--sans);color:var(--ink)}
-
-/* ── 결과 ── */
-.results{min-height:100svh;background:var(--cream)}
-.res-hero{position:relative;display:grid;grid-template-columns:1fr auto;align-items:end;padding:4px 16px 48px}
-.res-hero h1{margin:6px 0 0;font:900 clamp(40px,11vw,76px)/1 var(--sans);letter-spacing:-.045em}
-.big{margin:10px 0 0;display:flex;align-items:baseline;gap:8px}
-.big b{font:900 clamp(80px,24vw,140px)/.9 var(--sans);letter-spacing:-.06em;color:var(--ink)}
-.big span{font:500 26px/1 var(--mono);color:rgba(43,35,32,.8)}
-.big i{font-style:normal}
-.stars{display:flex;gap:4px;margin:8px 0 0}
-.stars i{width:34px;height:34px;background:url(assets/felt/sparkle.webp) center/contain no-repeat;filter:grayscale(1) opacity(.3)}
-.stars i.on{filter:none;animation:pop .3s var(--ease) both}
-.r-note{margin:10px 0 0;font-size:15px;color:rgba(43,35,32,.86)}
-.res-mongle{width:min(30vw,170px);height:auto;margin-bottom:-6px}
-.res-grid{position:relative;z-index:1;margin:-26px 0 0;padding:0 16px 40px;display:grid;gap:14px}
-.res-grid .paper{padding:18px}
-.log ol{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
-.log li{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:start;padding:8px 0;border-top:1px solid var(--line)}
 .say-again{min-height:34px;padding:0 12px 2px;font-size:13px;align-self:center}
 .x-tools{display:flex;flex-wrap:wrap;gap:8px}
-.log li:first-child{border-top:0}
-.log .mark{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;font:800 14px/1 var(--sans);background:var(--cream)}
-.log li.ok .mark{background:#e6f2dc;color:var(--meadow-deep)}
-.log li.ko .mark{background:var(--coral-wash);color:var(--coral-deep)}
-.log .sent{display:block;font:700 15px/1.45 var(--sans)}
-.log .sent b{padding:0 .15em;border-radius:5px;background:var(--marker)}
-.log small{display:block;font-size:12.5px;color:var(--muted)}
-.skills ul{list-style:none;margin:10px 0 10px;padding:0;display:grid;gap:10px}
-.skills li{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;padding:10px 12px;border-radius:14px;background:var(--cream)}
-.skills li b{font:800 15px/1.3 var(--sans)}
-.skills li span{font-size:13px;line-height:1.45;color:var(--ink-2)}
-.skills li em{grid-row:1/span 2;grid-column:2;font:500 12px/1 var(--mono);font-style:normal;color:var(--ink-2)}
-.skills li.focus{background:var(--coral-wash);box-shadow:inset 0 0 0 2px rgba(249,104,89,.45)}
-.skills li.good{background:#eef6e6}
-.next-tag{display:inline-block;margin-left:6px;padding:2px 8px 3px;border-radius:999px;background:var(--coral);color:#fff;font:800 11px/1.3 var(--sans);font-style:normal;vertical-align:2px}
-.next{display:grid;gap:12px}
-.r-actions{display:flex;flex-wrap:wrap;gap:8px}
-
-dialog#pause-dialog{border:0;padding:24px 20px 20px;width:min(420px,calc(100% - 32px));color:var(--ink)}
-dialog#pause-dialog::backdrop{background:rgba(43,35,32,.36)}
-dialog h2{margin:4px 0 6px;font:900 24px/1.2 var(--sans)}
-dialog p{margin:0 0 14px;color:var(--ink-2);font-size:15px}
-.dialog-actions{display:grid;gap:10px}
-.dialog-toggles{display:flex;flex-wrap:wrap;gap:8px}
-
-@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06);opacity:1}100%{transform:scale(1)}}
-@keyframes punch{0%{transform:scale(1)}40%{transform:scale(1.14)}100%{transform:scale(1)}}
-@keyframes sheetUp{from{transform:translate(-50%,24px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
-@keyframes popUp{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}16%{opacity:1;transform:translate(-50%,-50%) scale(1.28)}30%{transform:translate(-50%,-58%) scale(1)}100%{opacity:0;transform:translate(-50%,-150%) scale(.96)}}
-@keyframes snap{0%{transform:scale(1.32,.78)}35%{transform:scale(.9,1.12)}65%{transform:scale(1.05,.97)}100%{transform:scale(1)}}
-@media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
-  .pop.go{animation:none}   /* 점수 글자는 움직이지 않고 0.9초 보였다 사라진다(popUp의 마지막 장면이 투명이라 그대로 두면 안 보인다) */
-}
-
-@media (min-width:960px){
-  body{font-size:17px}
-  .topbar{padding:18px 32px}
-  .hero{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);align-items:center;gap:24px;padding:10px 32px 64px}
-  .hero-art{height:400px;margin:0}
-  .plan{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:start;padding:0 32px;margin-top:-34px;gap:18px}
-  .start-card{padding:24px}
-  .how-steps{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .how-steps li{grid-template-columns:1fr;row-gap:6px;align-items:start}
-  .how-steps span{grid-column:1}
-  .lobby-foot{padding:20px 34px 48px}
-  .game-bar{padding:12px 24px}
-  .sentence{top:20px;padding:16px 26px 20px}
-  .res-hero{padding:4px 32px 64px}
-  .res-grid{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,.9fr);padding:0 32px 48px;align-items:start}
-}
-@media (max-width:359px){
-  .game-title,.logo-mini{display:none}
-  .pill{min-width:46px;padding:3px 8px 6px}
-}
-
 /* ── 말 랠리 ── */
 /* 입구 그림: 몽글의 말풍선, 대답 카드 셋(맞는 카드가 튀어나옴), 공 */
 .hero-bubble{position:absolute;left:4%;top:4%;padding:12px 18px 14px;border-radius:22px 22px 22px 6px;font:800 clamp(19px,4.8vw,28px)/1.3 var(--sans);letter-spacing:-.02em}
@@ -229,10 +10,10 @@ dialog p{margin:0 0 14px;color:var(--ink-2);font-size:15px}
 /* 대답 칩: 게임 카드와 같은 펠트 쿠션 판을 길게 늘인 것(6:1). 번호는 크림 펠트 단추, 글자는 판의 평평한 면 높이에 맞춰 위 여백을 아래보다 작게 */
 .card-chip{display:flex;align-items:center;gap:.45em;width:min(100%,15em);padding:.4em 1em .7em .5em;font:800 clamp(15px,3.8vw,19px)/1.2 var(--sans);
   background:transparent center/100% 100% no-repeat;filter:drop-shadow(0 4px 5px rgba(73,45,30,.18))}
-.card-chip .no{flex:none;display:grid;place-items:center;width:1.3em;height:1.3em;background:url(assets/kit/badge-cream.webp) center/contain no-repeat;color:#2b2320;text-shadow:none;font:800 max(11px,.62em)/1 var(--mono)}
-.card-chip.c1{background-image:url(assets/felt/chip-blush-long.webp);color:#5c2318}
-.card-chip.c2{background-image:url(assets/felt/chip-butter-long.webp);color:#3a2a08}
-.card-chip.c3{background-image:url(assets/felt/chip-lapis-long.webp);color:#fffaf2;text-shadow:0 1px 1px rgba(16,36,96,.45)}
+.card-chip .no{flex:none;display:grid;place-items:center;width:1.3em;height:1.3em;background:url(kit/felt/badge-cream.webp) center/contain no-repeat;color:#2b2320;text-shadow:none;font:800 max(11px,.62em)/1 var(--mono)}
+.card-chip.c1{background-image:url(kit/felt/cushion-blush-strip.webp);color:#5c2318}
+.card-chip.c2{background-image:url(kit/felt/cushion-butter-strip.webp);color:#3a2a08}
+.card-chip.c3{background-image:url(kit/felt/cushion-lapis-strip.webp);color:#fffaf2;text-shadow:0 1px 1px rgba(16,36,96,.45)}
 .card-chip.on{transform:translateX(14px);filter:var(--sticker) drop-shadow(0 8px 8px rgba(73,45,30,.25))}
 .hero-ball{position:absolute;right:33%;top:30%;width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fffdf3,#f6dc8f 70%);box-shadow:0 8px 12px -6px rgba(120,60,40,.45)}
 .hero-art .hero-mongle{width:min(34%,180px)}
@@ -250,25 +31,25 @@ dialog p{margin:0 0 14px;color:var(--ink-2);font-size:15px}
 .card{position:relative;display:grid;grid-template-columns:minmax(0,1fr);align-content:center;min-height:78px;padding:8px 9% 18px;border:0;text-align:center;
   font:800 clamp(15px,3.9vw,20px)/1.28 var(--sans);letter-spacing:-.01em;word-break:keep-all;overflow-wrap:anywhere;
   background:transparent center/100% 100% no-repeat;filter:drop-shadow(0 4px 5px rgba(73,45,30,.14));transition:transform .14s var(--ease),opacity .2s,filter .16s}
-.card .no{position:absolute;left:-4px;top:-10px;display:grid;place-items:center;width:26px;height:26px;background:url(assets/kit/badge-cream.webp) center/contain no-repeat;
+.card .no{position:absolute;left:-4px;top:-10px;display:grid;place-items:center;width:26px;height:26px;background:url(kit/felt/badge-cream.webp) center/contain no-repeat;
   color:#2b2320;text-shadow:none;font:800 12px/1 var(--mono);filter:drop-shadow(0 2px 2px rgba(73,45,30,.22))}
-.card.l0{background-image:url(assets/felt/card-blush-wide.webp);color:#5c2318}
-.card.l1{background-image:url(assets/felt/card-butter-wide.webp);color:#3a2a08}
-.card.l2{background-image:url(assets/felt/card-lapis-wide.webp);color:#fffaf2;text-shadow:0 1px 1px rgba(16,36,96,.45)}
+.card.l0{background-image:url(kit/felt/cushion-blush-wide.webp);color:#5c2318}
+.card.l1{background-image:url(kit/felt/cushion-butter-wide.webp);color:#3a2a08}
+.card.l2{background-image:url(kit/felt/cushion-lapis-wide.webp);color:#fffaf2;text-shadow:0 1px 1px rgba(16,36,96,.45)}
 @media (max-width:700px){   /* 판 비율을 카드 비율에 맞춘다(휴대폰 1.6:1, 중간 2.4:1, 넓은 화면 3.2:1) — 모서리·옆면이 찌그러지지 않게 */
-  .card.l0{background-image:url(assets/felt/card-blush-mid.webp)}
-  .card.l1{background-image:url(assets/felt/card-butter-mid.webp)}
-  .card.l2{background-image:url(assets/felt/card-lapis-mid.webp)}
+  .card.l0{background-image:url(kit/felt/cushion-blush-mid.webp)}
+  .card.l1{background-image:url(kit/felt/cushion-butter-mid.webp)}
+  .card.l2{background-image:url(kit/felt/cushion-lapis-mid.webp)}
 }
 @media (max-width:500px){
-  .card.l0{background-image:url(assets/felt/card-blush-phone.webp)}
-  .card.l1{background-image:url(assets/felt/card-butter-phone.webp)}
-  .card.l2{background-image:url(assets/felt/card-lapis-phone.webp)}
+  .card.l0{background-image:url(kit/felt/cushion-blush-phone.webp)}
+  .card.l1{background-image:url(kit/felt/cushion-butter-phone.webp)}
+  .card.l2{background-image:url(kit/felt/cushion-lapis-phone.webp)}
 }
 .card:active{transform:translateY(3px)}   /* 눌림 = 3px 내려앉기 */
 .card[aria-pressed=true]{transform:translateY(-8px);filter:var(--sticker) drop-shadow(0 12px 10px rgba(73,45,30,.32))}
 /* 맞는 카드: 모서리에 코랄 펠트 체크 배지(틀린 카드에는 따로 표시하지 않는다) */
-.card.right::after{content:"";position:absolute;right:-6px;top:-14px;width:38px;height:38px;background:url(assets/felt/badge-check.webp) center/contain no-repeat;filter:drop-shadow(0 3px 3px rgba(73,45,30,.3))}
+.card.right::after{content:"";position:absolute;right:-6px;top:-14px;width:38px;height:38px;background:url(kit/felt/badge-check.webp) center/contain no-repeat;filter:drop-shadow(0 3px 3px rgba(73,45,30,.3))}
 .card.dim{opacity:.5}
 /* 펠트 판을 다 받기 전(느린 연결의 첫 카드): 같은 색 납작한 판 — 라피스 위 크림 글자가 바닥에 묻히지 않게(app.mjs preloadFelt) */
 .cards:not(.felt-ready) .card{background-image:none;border-radius:16px}

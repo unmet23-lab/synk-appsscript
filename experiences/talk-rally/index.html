@@ -6,8 +6,9 @@
 <meta name="theme-color" content="#f96859">
 <title>말 랠리 · SYNK LAB PLAY</title>
 <meta name="description" content="몽글이 한국어로 말을 걸며 공을 치면, 알맞은 대답 쪽으로 받아치는 한국어 듣기 탁구 게임. TOPIK I 듣기의 알맞은 대답·이어지는 말을 연습합니다.">
-<link rel="icon" href="assets/felt/sparkle.webp" type="image/webp">
-<link rel="preload" href="assets/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="kit/felt/sparkle.webp" type="image/webp">
+<link rel="preload" href="kit/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="kit/lab.css">
 <link rel="stylesheet" href="style.css">
 <script src="./atlas-learning.js"></script>
 <script type="module" src="./app.mjs"></script>
@@ -18,7 +19,7 @@
 <!-- 입구 -->
 <main id="lobby" class="screen lobby">
   <header class="topbar on-field">
-    <a class="logo-tag" href="./" aria-label="말 랠리 처음으로"><img src="assets/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></a>
+    <a class="logo-tag" href="./" aria-label="말 랠리 처음으로"><img src="kit/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></a>
     <span class="kicker">LAB · LISTEN &amp; PLAY</span>
     <button class="sound-toggle" type="button" aria-pressed="true" data-sound-toggle><span class="sr">소리</span></button>
   </header>
@@ -34,7 +35,7 @@
       <div class="hero-bubble paper">생일 축하해요!</div>
       <div class="hero-cards"><span class="card-chip c1"><b class="no">1</b>미안해요.</span><span class="card-chip c2 on"><b class="no">2</b>고마워요.</span><span class="card-chip c3"><b class="no">3</b>괜찮아요.</span></div>
       <i class="hero-ball"></i>
-      <img class="hero-mongle diecut" src="assets/brand/mongle-cheer.webp" alt="">
+      <img class="hero-mongle diecut" src="kit/brand/mongle-cheer.webp" alt="">
     </figure>
   </section>
 
@@ -72,7 +73,7 @@
 <!-- 게임 -->
 <main id="game" class="screen game" hidden>
   <header class="topbar game-bar">
-    <img class="logo-mini" src="assets/brand/logo-lab.webp" alt="SYNK LAB" width="78" height="24">
+    <img class="logo-mini" src="kit/brand/logo-lab.webp" alt="SYNK LAB" width="78" height="24">
     <strong class="game-title">말 랠리</strong>
     <div class="hud" aria-live="off">
       <span class="pill"><small>주고받기</small><b id="g-count">1 / 12</b></span>
@@ -107,7 +108,7 @@
 <!-- 결과 -->
 <main id="results" class="screen results" hidden>
   <header class="topbar on-field">
-    <span class="logo-tag"><img src="assets/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></span>
+    <span class="logo-tag"><img src="kit/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></span>
     <span class="kicker">ROUND COMPLETE</span>
   </header>
   <section class="res-hero">
@@ -119,7 +120,7 @@
       <p class="r-note" id="r-note"></p>
       <p class="synk-collection-line"><span id="r-coins" role="status"></span><a data-collection-garage href="/try/racing/?garage=1">공통 차고 →</a></p>
     </div>
-    <img class="res-mongle diecut" id="r-mongle" src="assets/brand/mongle-smile.webp" alt="">
+    <img class="res-mongle diecut" id="r-mongle" src="kit/brand/mongle-smile.webp" alt="">
   </section>
   <section class="res-grid">
     <article class="paper log">
@@ -143,7 +144,7 @@
   </section>
 </main>
 
-<dialog id="pause-dialog" class="paper">
+<dialog id="pause-dialog" class="paper lab-dialog">
   <span class="kicker">PAUSED</span>
   <h2>잠깐 쉬어요</h2>
   <p>공이 멈춰 있어요. 이어서 하거나 처음으로 돌아갈 수 있어요.</p>
