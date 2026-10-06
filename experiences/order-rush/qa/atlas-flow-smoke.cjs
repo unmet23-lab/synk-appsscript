@@ -7,14 +7,15 @@ const path = require('node:path');
 const fs = require('node:fs');
 const { chromium } = require(require.resolve('playwright', { paths: [process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')] }));
 const base = process.env.SYNK_QA_BASE || 'http://127.0.0.1:4291';
-const shot = name => path.join(__dirname, name);
+const shot = name => path.join(__dirname, 'shots', name);   // 캡처는 qa/shots/에
 // Serve the current customers correctly, right after each order is heard.
 const SERVE = `async n => {
   const core = await import('/order-rush/core.mjs');
   const byId = Object.fromEntries([...core.ORDERS, ...core.REVIEW].map(o => [o.id, o]));
   const sleep = ms => new Promise(r => setTimeout(r, ms)), click = s => document.querySelector(s).click(), out = [];
   for (let k = 0; k < n; k += 1) {
-    for (let i = 0; i < 150 && !(window.synkCafe.current && window.synkCafe.current.audioCompleted); i += 1) await sleep(100);
+    // 줄이 비면 다음 손님은 영업 시간 10초 뒤에 오고 주문은 3~6초다: 끝까지 듣기 전에 서빙하지 않게 30초까지 기다린다
+    for (let i = 0; i < 300 && !(window.synkCafe.current && window.synkCafe.current.audioCompleted); i += 1) await sleep(100);
     const cur = window.synkCafe.current; if (!cur) break;
     byId[cur.id].cups.forEach((cup, i) => {
       if (i > 0) click('#add-cup');
@@ -36,11 +37,13 @@ const SERVE = `async n => {
   const open = async (viewport = { width: 1280, height: 900 }) => {
     const context = await browser.newContext({ viewport, reducedMotion: 'reduce' });
     const page = await context.newPage(); page.on('pageerror', e => errors.push(e.message));
-    await page.goto(`${base}/order-rush/`); await page.locator('#learning-reason').filter({ hasText: '기록' }).waitFor();
+    await page.goto(`${base}/order-rush/?qa`); await page.locator('#learning-reason').filter({ hasText: '기록' }).waitFor();
     return { context, page };
   };
+  // 2026-10-06 화면: 속도는 「나에게 맞춘 속도」 칩 하나(눌림 = 맞춤, 안 눌림 = 정해진 속도)
   const rush = async (page, flow = 'auto') => {
-    await page.locator('[data-mode="rush"]').click(); await page.locator(`[data-flow="${flow}"]`).click();
+    await page.locator('[data-mode="rush"]').click();
+    if ((await page.locator('#flow-toggle').getAttribute('aria-pressed') === 'true') !== (flow === 'auto')) await page.locator('#flow-toggle').click();
     await page.locator('#start').click(); await page.waitForFunction(() => window.synkCafe.current?.audioCompleted);
   };
   try {
@@ -54,7 +57,8 @@ const SERVE = `async n => {
     const last = result.quick.at(-1).tuning;
     assert.ok(last.patience < 42 || last.spawnEvery < 10 || last.queueMax > 3, 'the rush got busier');
     await quick.page.screenshot({ path: shot('flow-game-desktop.png') });
-    await quick.page.locator('#finish').click(); await quick.page.locator('#results').waitFor({ state: 'visible' });
+    // 영업 중간에 결과를 보는 단추는 없앴다(처음으로는 결과 없이 나간다) → 확인 도구의 끝내기(?qa)
+    await quick.page.evaluate(() => window.__rush.finish()); await quick.page.locator('#results').waitFor({ state: 'visible' });
     result.quickSummary = await quick.page.locator('#result-flow li').allTextContents();
     assert.ok(result.quickSummary.length > 0 && !result.quickSummary[0].includes('그대로'), 'the summary names what changed');
     await quick.page.locator('#result-flow').scrollIntoViewIfNeeded();
@@ -92,7 +96,7 @@ const SERVE = `async n => {
     const tired = await open();
     await tired.page.goto(`${base}/learning-hub/`); await tired.page.locator('[data-today="tired"]').click();
     result.tiredHubNote = await tired.page.locator('#today-note').textContent();
-    await tired.page.goto(`${base}/order-rush/`); await tired.page.locator('#learning-reason').filter({ hasText: '기록' }).waitFor();
+    await tired.page.goto(`${base}/order-rush/?qa`); await tired.page.locator('#learning-reason').filter({ hasText: '기록' }).waitFor();
     await rush(tired.page);
     result.tiredLine = await tired.page.locator('#flow-line').textContent();
     result.tiredStart = await tired.page.evaluate(() => window.synkCafe.tuning);
