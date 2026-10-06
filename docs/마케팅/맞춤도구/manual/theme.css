@@ -1,192 +1,371 @@
 /* yuhobuilds · AI 직원 매뉴얼 만들기 — 도구 쪽 테마.
  * 원본: SYNK-appsscript/docs/마케팅/맞춤도구/manual/theme.css
- * 공통 양식(scrapbook.css)과 도구 틀(core/wizard.css)은 그대로 두고, 이 파일이 app.css 뒤에서 변수와 몇 곳만 덮는다.
- * 색: SNS 제작 키트 §4의 yuhobuilds(builds) 테마 — 검정 #0A0A0A + 버터 #F5C445 강조, 실땀은 버터.
- * 큰 검은 면(결과 머리)과 주 버튼은 펠트 부품의 실제 검은 펠트 결(tex-black)을 곱게 깔고 같은 색을 덮는다(펠트 부품 README ‘큰 색 면’).
+ * 공통 양식(scrapbook.css)과 도구 틀(core/wizard.css)은 그대로 두고, 이 파일이 app.css 뒤에서 덮는다.
+ *
+ * 2026-10-06 다시 씀 — synk.im 홈페이지(SYNK·LAB·SHIFT·PULSE·PATH·창업자, 10-06 공개판)의 디자인 언어로.
+ *   유호님 「저번에 우리 사이트 6~7개에서 트렌디한 디자인 참고 많이했었는데 이거 활용해서 마감 제대로 해줄수있어?」
+ *   → 「사이트 제대로 찾아보고 우리 브랜드키트에 적용 한거 맞아?」(같은 날 낮에 만든 펠트 판 마감은 홈페이지를 보지 않고 만들었다)
+ * 값은 공개 중인 synk.im/homepage.css에서 그대로 옮겼다.
+ *   - 잉크 #0a0a0a와 투명도 단계(.68 · .62 · .3), 선(.14 · .08), 회색 판 #f4f4f5 · #ececee
+ *   - 떠 있는 유리 캡슐(.header.bar): 흰 유리 + 왼쪽 위에서 드는 햇빛 테두리, 로고는 맑은 유리 알 안에
+ *   - 제목은 첫 줄 굵게(700) 둘째 줄 가늘게(300). 영어 작은 꼬리표는 모노 대문자 + 오른쪽으로 가는 선
+ *   - 한 화면에 채운 단추는 하나(알약), 나머지는 밑줄 글자. 목록은 위에 잉크 선, 칸마다 가는 선
+ *   - 브랜드 면: 둥근 큰 색 면 + 결(field-grain) + 왼쪽 위 빛, 그 위에 펠트 오브젝트 하나
+ * yuhobuilds 색(SNS 키트 builds): 검정 면 + 흰 글자 + 버터 #F5C445. 색 면은 첫 화면과 결과 머리에만 쓴다.
+ * 유리(DESIGN §2): 떠 있는 조작층(머리줄·이동 바·하단 바·보기 고르기)과 고른 선택지. 고른 선택지는 맑은 유리 알 + 바닥에 맺히는 버터 빛.
+ * 펠트: 오브젝트 한 권(assets/hero-manual.webp = 펠트 부품 assets/builds)과 고른 표시의 버터 체크 배지(fb-badge-check).
  */
+@font-face{font-family:'Inter Tight';font-weight:100 399;font-display:swap;src:url(assets/InterTight-400.woff2) format('woff2')}
+
 :root{
+  --ink:#0a0a0a;--text:#0a0a0a;--ink-2:rgba(10,10,10,.68);--ink-3:rgba(10,10,10,.62);--ink-4:rgba(10,10,10,.3);
+  --muted:rgba(10,10,10,.68);--faint:rgba(10,10,10,.62);
+  --line:rgba(10,10,10,.14);--line-soft:rgba(10,10,10,.08);--hairline:0 0 0 1px rgba(10,10,10,.1);
+  --plate:#f4f4f5;--plate-deep:#ececee;
+  --brand:#0a0a0a;--brand-ink:#0a0a0a;--brand-wash:#f4f4f5;--brand-soft:#ececee;--focus:#0a0a0a;
+  --butter:#f5c445;
+  --on-field:#fff;--on-field-2:rgba(255,255,255,.8);--on-field-3:rgba(255,255,255,.6);--on-field-line:rgba(255,255,255,.2);
+  --field-surface:url(assets/field-grain.webp) 0 0/192px 192px repeat,radial-gradient(1000px 560px at 12% -200px,rgba(255,255,255,.14),rgba(255,255,255,0) 70%),#0a0a0a;
+  --field-radius:clamp(22px,2vw,30px);--field-inset:8px;
+  --pad:20px;--bar-h:70px;
+  --fast:160ms;--ease:cubic-bezier(.2,.7,.2,1);
   --thread:url(assets/thread-butter.webp);
-  --brand:#0a0a0a;--brand-ink:#0a0a0a;--brand-soft:#ffebb0;--brand-wash:#fff8e1;
-  --marker:#f5c445;--focus:#0a0a0a;
-  --doodle-mark:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 40' preserveAspectRatio='none'%3E%3Cpath d='M6 24C60 14 140 16 234 20' fill='none' stroke='%23f5c445' stroke-width='22' stroke-linecap='round' opacity='.8'/%3E%3C/svg%3E");
-  --doodle-line:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 24' preserveAspectRatio='none'%3E%3Cpath d='M4 15C50 7 110 19 160 11S225 9 236 12' fill='none' stroke='%23f5c445' stroke-width='6' stroke-linecap='round'/%3E%3Cpath d='M12 19C62 12 122 21 172 15S220 14 230 16' fill='none' stroke='%23f5c445' stroke-width='2.4' stroke-linecap='round' opacity='.7'/%3E%3C/svg%3E");
-  --doodle-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 70'%3E%3Cg fill='none' stroke='%23e0a91c' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M112 10C84 6 40 14 18 50'/%3E%3Cpath d='M14 32l4 19 18-6'/%3E%3C/g%3E%3C/svg%3E");
-  --felt-press:inset 0 -3px 0 #000,0 2px 0 rgba(16,19,26,.14),0 10px 18px -12px rgba(0,0,0,.85);
-  --emboss:0 1px 0 rgba(255,255,255,.95),0 -1px 0 rgba(16,19,26,.16),0 3px 6px rgba(0,0,0,.14);
-  --felt-black:linear-gradient(rgba(10,10,10,.5),rgba(10,10,10,.5)),url(assets/tex-black.webp) 0 0/190px 190px,#0a0a0a;
+  --sticker-check:url(assets/fb-badge-check.webp);
+  --glass-dock:linear-gradient(180deg,rgba(255,255,255,.9),rgba(250,250,251,.84));
+  --glass-dock-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(10,10,10,.035),0 0 0 .5px rgba(10,10,10,.12),0 1px 2px rgba(10,10,10,.05),0 14px 34px -18px rgba(10,10,10,.28);
+  --glass-rim:radial-gradient(160px 60px at 16% 0%,#fff,rgba(255,255,255,0) 70%),linear-gradient(118deg,#fff 0%,rgba(255,255,255,.2) 22%,rgba(255,255,255,0) 50%,rgba(255,255,255,.15) 78%,rgba(255,255,255,.75) 100%);
+  --bead:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.62));
+  --bead-shadow:inset 0 1px 0 #fff,inset 0 -1px 0 rgba(10,10,10,.04),0 0 0 .5px rgba(10,10,10,.1),0 4px 12px -6px rgba(10,10,10,.3);
+  --bead-shadow-hover:inset 0 1px 0 #fff,inset 0 -1px 0 rgba(10,10,10,.04),0 0 0 .5px rgba(10,10,10,.16),0 6px 16px -6px rgba(10,10,10,.34);
+}
+@media(min-width:700px){:root{--pad:clamp(24px,3.4vw,40px);--field-inset:clamp(8px,.8vw,12px);--bar-h:76px}}
+
+body{background:#fff;color:var(--ink);letter-spacing:-.012em;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.tool{max-width:1180px;padding:0 var(--pad) 64px}
+:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+a{color:var(--ink)}
+
+/* 떠 있는 유리 층(머리줄·질문 이동 바·결과 하단 바) 공통: 흰 유리 + 테두리 햇빛 */
+.bar,.stage .main>.nav,.dock{isolation:isolate;border:0;border-image:none;border-radius:999px;background:var(--glass-dock);-webkit-backdrop-filter:saturate(1.1) blur(20px);backdrop-filter:saturate(1.1) blur(20px);box-shadow:var(--glass-dock-shadow)}
+.bar::before,.stage .main>.nav::before,.dock::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;z-index:-1;background:var(--glass-rim);-webkit-mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+
+/* ── 머리줄: synk.im의 떠 있는 유리 캡슐. 로고는 맑은 유리 알 안에 ── */
+.bar{position:sticky;top:10px;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:8px;height:56px;margin:14px 0 0;padding:0 6px}
+.bar .brand{height:44px;padding:0 16px 0 14px;gap:9px;border-radius:999px;background:var(--bead);box-shadow:var(--bead-shadow);transition:box-shadow var(--fast) var(--ease)}
+.bar .brand:hover{box-shadow:var(--bead-shadow-hover)}
+.bar .brand img{height:21px}
+.bar .brand span{font:700 14px/1 var(--sans);letter-spacing:-.02em;color:var(--ink)}
+.bar-tools{gap:4px}
+.switch{min-height:44px;padding:0 12px;border-radius:999px;font:500 14px/1 var(--sans);letter-spacing:-.015em;color:var(--ink-2);transition:background-color var(--fast) var(--ease),color var(--fast) var(--ease)}
+.switch:hover{color:var(--ink);background:rgba(10,10,10,.045)}
+.switch .track{width:34px;height:20px;background:rgba(10,10,10,.16)}
+.switch .track::after{top:2px;left:2px;width:16px;height:16px;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.switch[aria-checked="true"] .track{background:var(--ink)}
+.switch[aria-checked="true"] .track::after{transform:translateX(14px);background:var(--butter)}
+@media(min-width:700px){
+ .bar{width:fit-content;max-width:100%;margin-left:auto;margin-right:auto;gap:28px;height:62px;padding:0 8px 0 7px}
+ .bar .brand{height:48px;padding:0 20px 0 18px}
+ .bar .brand img{height:23px}
 }
 
-/* 첫 화면: 그림자를 청금석 대신 중립으로 */
-.intro .art img{filter:drop-shadow(0 14px 18px rgba(16,19,26,.16))}
-.intro .art img.flat{filter:drop-shadow(0 12px 16px rgba(16,19,26,.14))}
-.intro .meta li:nth-child(3){background:#fff}
+/* ── 첫 화면: 검은 브랜드 면(synk.im 브랜드 면과 같은 짜임). 유리 캡슐이 면 위에 뜬다 ── */
+.intro{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr);gap:0;align-items:start;margin:calc(var(--field-inset) - var(--bar-h)) calc(var(--field-inset) - var(--pad)) 0;padding:calc(var(--bar-h) - var(--field-inset) + 40px) calc(var(--pad) - var(--field-inset)) 30px;border-radius:var(--field-radius);background:var(--field-surface);color:var(--on-field);overflow:hidden}
+.intro>div:first-child{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.intro .eyebrow{display:flex;align-items:center;gap:16px;align-self:stretch;margin:0 0 22px;font:400 11px/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--on-field-3)}
+.intro .eyebrow::after{content:"";flex:1;border-top:1px solid var(--on-field-line)}
+.intro h1{margin:0;font-family:var(--sans);font-size:clamp(38px,5vw,64px);line-height:1.06;letter-spacing:-.05em;font-weight:300;color:var(--on-field);text-wrap:balance}
+.intro h1 .title-lead{font-weight:700}
+.intro h1 .hl{background:none;padding:0;color:var(--butter)}
+.intro p.lead{margin:24px 0 0;max-width:30em;font-size:clamp(17px,1.4vw,19px);line-height:1.6;font-weight:500;letter-spacing:-.02em;color:var(--on-field-2)}
+.intro .meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;align-self:stretch;max-width:560px;margin:28px 0 0;padding:0;border-top:1px solid var(--on-field-line);list-style:none}
+.intro .meta li,.intro .meta li:nth-child(n){display:flex;align-items:center;min-height:46px;padding:10px 14px 10px 0;border:0;border-bottom:1px solid var(--on-field-line);border-radius:0;background:none;box-shadow:none;transform:none;font:600 14px/1.35 var(--sans);letter-spacing:-.015em;color:var(--on-field)}
+.intro .meta li:nth-child(even){padding-left:14px;border-left:1px solid var(--on-field-line)}
+@media(min-width:900px){
+ .intro .meta{display:flex;flex-wrap:wrap;max-width:none;border-bottom:1px solid var(--on-field-line)}
+ .intro .meta li,.intro .meta li:nth-child(n){padding:12px 18px;border-bottom:0;border-left:1px solid var(--on-field-line)}
+ .intro .meta li:first-child{padding-left:0;border-left:0}
+}
+.intro .start{display:flex;margin:30px 0 0}
+.intro .start::after{content:none}
+.intro .start .btn.primary{min-height:54px;padding:0 24px 0 28px;gap:12px;background:var(--butter);color:var(--ink);font:700 16.5px/1.2 var(--sans);letter-spacing:-.02em;box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
+.intro .start .btn.primary:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 12px 28px -12px rgba(245,196,69,.7)}
+.intro .hint{margin:16px 0 0;color:var(--on-field-3)}
+.intro .linkbtn{color:var(--on-field);text-decoration-color:var(--on-field-line)}
+.intro .privacy{margin:22px 0 0;max-width:34em;font-size:13.5px;line-height:1.6;color:var(--on-field-3)}
+.intro .account-note{color:var(--on-field-3)}
+.intro :focus-visible{outline-color:#fff}
+/* 오브젝트: 면 위에 하나. 뒤에 버터 빛이 옅게 고인다 */
+.intro .art{position:relative;display:grid;place-items:center;order:0;min-height:0;margin:34px 0 4px}
+.intro .art::before{content:"";position:absolute;left:50%;top:54%;width:min(520px,120%);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(245,196,69,.2),rgba(245,196,69,.05) 58%,rgba(245,196,69,0));pointer-events:none;z-index:-1}
+.hero-obj{margin:0;width:min(230px,62%)}
+.intro .art .hero-obj img{display:block;width:100%;height:auto;filter:drop-shadow(0 28px 30px rgba(0,0,0,.62)) drop-shadow(0 4px 6px rgba(0,0,0,.4))}
+@media(min-width:900px){
+ .intro{grid-template-columns:minmax(0,7fr) minmax(0,5fr);column-gap:clamp(24px,4vw,64px);align-items:center;min-height:min(700px,calc(100svh - 12px));padding-bottom:clamp(36px,4vw,56px)}
+ .intro .art{margin:0}
+ .hero-obj{width:min(330px,80%)}
+}
 
-/* 선택지: 고른 상태는 버터 결의 유리, 번호 테두리는 검정 */
-.glass[aria-pressed="true"],.glass[aria-checked="true"]{--glass-color:#b8860b}
-.opt strong::before{box-shadow:inset 0 0 0 1px rgba(10,10,10,.28)}
-.opt[aria-checked="true"],.opt[aria-pressed="true"]{box-shadow:var(--glass-shadow),inset 0 3px 8px rgba(184,134,11,.24)}
-.opt[aria-pressed="true"] strong,.opt[aria-checked="true"] strong{color:#0a0a0a}
+/* ── 질문 화면 ── */
+.stage{margin-top:clamp(26px,4vw,48px);gap:clamp(36px,4vw,56px)}
+@media(min-width:881px){.stage:not(.single){grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr)}.aside{top:calc(var(--bar-h) + 20px)}}
+.progress{display:flex;align-items:center;gap:14px;margin:0 0 clamp(26px,3.4vw,40px)}
+.progress span{order:-1;font:400 12px/1 var(--mono);letter-spacing:.08em;color:var(--ink-3)}
+.progress .meter{flex:1;height:2px;border-radius:2px;background:var(--line-soft);overflow:hidden}
+.progress .meter::before{content:none}
+.progress .meter i{display:block;height:100%;border:0;border-image:none;border-radius:2px;background:var(--ink)}
+.stage .main>.eyebrow{display:flex;align-items:center;gap:10px;margin:0 0 16px;font:650 14px/1.4 var(--sans);letter-spacing:-.01em;color:var(--ink)}
+.stage .main>.eyebrow::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--butter);box-shadow:0 0 0 3px rgba(245,196,69,.28)}
+.stage .main>.eyebrow::after{content:"";flex:1;border-top:1px solid var(--line)}
+.q{margin:0 0 14px;font-size:clamp(30px,4.4vw,50px);line-height:1.12;letter-spacing:-.05em;font-weight:700;text-wrap:balance}
+.q-sub{margin:0 0 clamp(24px,3vw,32px);max-width:34em;font-size:17px;line-height:1.6;color:var(--ink-2)}
 
-/* 주 버튼: 검은 펠트 판. 못 누를 때는 탁한 회색 대신 같은 펠트를 옅게(펠트 부품 마감 점검표) */
-.btn.primary{background:var(--felt-black);color:#fff}
-.btn.primary:disabled{background:var(--felt-black);color:#fff;opacity:.3;box-shadow:none}
+/* 선택지: 회색 판. 고르면 맑은 유리 알이 되고(흰 면 + 잉크 테 + 위쪽 반사) 바닥에 버터 빛이 맺힌다 */
+.opts{gap:10px}
+.opt.glass{position:relative;isolation:auto;grid-template-columns:minmax(0,1fr) 28px;gap:14px;min-height:78px;padding:16px 18px 16px 20px;border:0;border-radius:20px;background:var(--plate);box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;text-shadow:none;color:var(--ink);transition:background-color var(--fast) var(--ease),box-shadow var(--fast) var(--ease),transform var(--fast) var(--ease)}
+.opt.glass::before{content:none}
+.opt.glass::after{content:"";position:absolute;inset:auto 20% auto 20%;top:calc(100% - 10px);height:18px;border:0;border-radius:50%;background:radial-gradient(closest-side,rgba(245,196,69,.55),rgba(245,196,69,0));filter:blur(4px);opacity:0;pointer-events:none;z-index:-1;transition:opacity var(--fast) var(--ease)}
+.opt.glass[aria-checked="true"],.opt.glass[aria-pressed="true"]{background:linear-gradient(180deg,#fff 0%,#fff 60%,#fbfbfb 100%);box-shadow:inset 0 1px 0 #fff,0 0 0 1.5px var(--ink),0 16px 30px -18px rgba(10,10,10,.42)}
+.opt.glass[aria-checked="true"]::after,.opt.glass[aria-pressed="true"]::after{opacity:1}
+@media(hover:hover){
+ .opt.glass:hover{background-color:var(--plate-deep);transform:none}
+ .opt.glass[aria-checked="true"]:hover,.opt.glass[aria-pressed="true"]:hover{background:linear-gradient(180deg,#fff 0%,#fff 60%,#fbfbfb 100%)}
+}
+.opt.glass:active{transform:scale(.99)}
+.opt strong{font-size:17px;line-height:1.38;font-weight:650;letter-spacing:-.02em;color:var(--ink)}
+.opt small{margin-top:4px;font-size:14px;line-height:1.5;color:var(--ink-2)}
+.opt strong::before{content:counter(opt,upper-alpha);display:inline-block;min-width:0;height:auto;margin:0 10px 0 0;padding:0;border-radius:0;background:none;box-shadow:none;font:400 12px/1 var(--mono);letter-spacing:.06em;color:var(--ink-3);vertical-align:1px}
+.opt[aria-checked="true"] strong::before,.opt[aria-pressed="true"] strong::before{color:var(--ink)}
+.opt[aria-pressed="true"] strong,.opt[aria-checked="true"] strong{color:var(--ink)}
+.opt .mark,.opt.multi .mark{width:28px;height:28px;border:1px solid rgba(10,10,10,.22);border-radius:50%;background:#fff;box-shadow:inset 0 1px 1px rgba(10,10,10,.06)}
+.opt[aria-checked="true"] .mark,.opt[aria-pressed="true"] .mark{border:0;background:var(--sticker-check) center/100% 100% no-repeat;box-shadow:none;transform:rotate(-8deg) scale(1.16);filter:drop-shadow(0 2px 2px rgba(10,10,10,.18))}
+.opt:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
 
-/* 마감 점검표(2026-10-02): 납작한 사각 테이프와 글자 옆 흩어진 색점은 싸 보인다 → 이 도구에서는 쓰지 않는다 */
-.tip::before,.copybox.main::before{content:none}
-.r-top.cheer::after{content:none}
+/* 고른 뒤 한 줄 */
+.picked{grid-template-columns:20px minmax(0,1fr);gap:10px;margin:18px 0 0;padding:14px 18px;border-radius:18px;background:#fff;box-shadow:0 0 0 1px var(--line);color:var(--ink)}
+.picked svg{width:20px;height:20px;color:var(--ink)}
+.picked p{font-size:15.5px;line-height:1.6;color:var(--ink-2)}
 
-/* 결과 머리: 검은 펠트 위 버터 실땀 네 모서리 */
-.r-top{background:var(--felt-black)}
-.r-top .shot{box-shadow:0 0 0 4px #fff,0 0 0 6px var(--butter),0 16px 26px -12px rgba(0,0,0,.7)}
-.r-top .facts{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0;padding:0;list-style:none}
-.r-top .facts li{padding:5px 11px;border-radius:30px;font:500 13px/1.3 var(--mono);letter-spacing:.02em;color:#0a0a0a;background:var(--butter)}
-.r-top .facts li:nth-child(n+2){color:#fff;background:transparent;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.55)}
+/* 이동: 아래에 붙는 유리 바. 앞으로는 검은 알약, 뒤로는 밑줄 글자 */
+.stage .main>.nav{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:20;display:flex;align-items:center;gap:8px;margin:24px 0 0;padding:6px}
+.stage .main>.nav .btn.ghost{min-height:46px}
+.stage .main>.nav .btn.primary{min-height:48px;padding:0 22px 0 26px}
+.hint{color:var(--ink-3)}
 
-/* 결론 카드·순서 번호·출처 꼬리표 */
-.spec.key{box-shadow:var(--edge),6px 6px 0 var(--butter)}
-ol.steps>li::before{background:#0a0a0a}
-ol.steps>li:nth-child(3n+2)::before{background:var(--butter);color:#0a0a0a}
-ol.steps>li:nth-child(3n+3)::before{background:#0a0a0a}
-.src.official{background:#0a0a0a;color:#fff}
-.src.community{background:#eceff3;color:#3a3d42}
-.src.synk{background:var(--butter-soft);color:var(--butter-deep)}
-.src.case{background:var(--butter);color:#0a0a0a}
+/* 단추: synk.im .primary-link와 .quiet-link */
+.btn{min-height:48px;padding:0 22px;gap:10px;border:0;border-radius:999px;font:650 15.5px/1.25 var(--sans);letter-spacing:-.015em;text-decoration:none;transition:background-color var(--fast) var(--ease),box-shadow var(--fast) var(--ease),color var(--fast) var(--ease),transform var(--fast) var(--ease)}
+.btn svg{width:17px;height:17px}
+.btn.primary{background:var(--ink);color:#fff;box-shadow:none;filter:none}
+.btn.primary:hover{box-shadow:0 10px 24px -14px rgba(10,10,10,.6)}
+.btn.primary:active{transform:translateY(1px);box-shadow:none}
+.btn.primary:disabled{background:transparent;color:rgba(10,10,10,.36);box-shadow:inset 0 0 0 1px rgba(10,10,10,.14);opacity:1;cursor:not-allowed;transform:none}
+.btn.soft{background:var(--bead);color:var(--ink);box-shadow:var(--bead-shadow)}
+.btn.soft:hover{box-shadow:var(--bead-shadow-hover)}
+.btn.soft:active{transform:translateY(1px)}
+.btn.ghost{padding:0 14px;background:none;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:7px;text-decoration-color:var(--ink-4)}
+.btn.ghost:hover{text-decoration-color:var(--ink)}
 
-/* 요청문 창(웹코어 하나): 검은 제목줄 + 검은 윤곽·그림자 */
-.copybox.main textarea{min-height:420px;font-size:15px;line-height:1.72}
-.manual-note{margin:-6px 0 22px;padding:12px 14px;border-radius:14px;background:var(--brand-wash);font-size:14.5px;line-height:1.6;color:#2b2414}
+/* 알아 두면 좋은 팁: 회색 판 하나. 데스크톱에서는 오른쪽에 붙어 따라온다 */
+.tip{position:relative;margin:0;padding:clamp(22px,2.6vw,28px);border:0;border-image:none;border-radius:24px;background:var(--plate)}
+.tip::before{content:none}
+.tip .tip-head{display:flex;align-items:center;gap:8px;margin:0 0 14px;font:650 13px/1.4 var(--sans);letter-spacing:-.01em;color:var(--ink-2)}
+.tip .tip-head svg,.tip-closed summary svg{width:16px;height:16px;color:var(--ink)}
+.tip h3{margin:0 0 10px;font-size:clamp(20px,1.9vw,23px);line-height:1.32;letter-spacing:-.035em;font-weight:700}
+.tip p{margin:0 0 10px;font-size:15.5px;line-height:1.72;color:var(--ink-2)}
+.tip .vis{margin:18px 0 2px}
+.tip-closed{margin:0}
+.tip-closed summary{gap:8px;min-height:48px;padding:0 18px;border-radius:999px;background:var(--plate);font:600 14.5px/1.3 var(--sans);letter-spacing:-.015em;color:var(--ink)}
+.tip-closed[open] summary{margin-bottom:12px}
 
-/* 한 줄 명령 */
-.cmds{margin:0 0 24px}
-.cmds>p{margin:0 0 10px;font:500 12.5px/1.4 var(--mono);letter-spacing:.02em;color:#0a0a0a}
-.cmdlist{list-style:none;margin:0;padding:0;display:grid;gap:10px}
-.cmdlist li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:12px 12px 12px 16px;border-radius:16px;background:#fff;box-shadow:var(--hairline)}
-.cmdlist .say{margin:0;font-size:16px;line-height:1.5;font-weight:650}
+/* 팁 안의 그림: 회색 판 위 흰 칸. AI가 하는 칸은 잉크, 사람 차례는 버터 */
+.lane{grid-template-columns:96px minmax(0,1fr)}
+.lane b{font-size:13px;font-weight:650;color:var(--ink-2)}
+.lane .node{padding:6px 11px;border-radius:999px;background:#fff;font-size:13px;font-weight:600}
+.lane .node.hot{background:var(--ink);color:#fff}
+.lane .arr{color:var(--ink-4)}
+@media(max-width:560px){.lane{grid-template-columns:minmax(0,1fr);gap:6px}}
+.ladder{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}
+.ladder li{position:relative;padding:11px 8px 10px;border-radius:14px;background:#fff;font-size:12.5px;line-height:1.35;font-weight:650;text-align:center;color:var(--ink-2)}
+.ladder li small{display:block;margin-top:2px;font-size:11.5px;font-weight:500;color:var(--ink-3)}
+.ladder li.on{background:var(--ink);color:#fff}
+.ladder li.on small{color:rgba(255,255,255,.66)}
+.ladder li.human{background:var(--butter);color:var(--ink)}
+.ladder li.human small{color:rgba(10,10,10,.62)}
+.ladder-cap{margin:10px 0 0;font-size:13px;color:var(--ink-3)}
+.mn{display:grid;gap:8px}
+.mn div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:12px 14px;border-radius:14px;background:#fff}
+.mn b{font-size:15px;font-weight:700}
+.mn span{grid-column:1;font-size:13px;color:var(--ink-2)}
+.mn em{grid-row:1 / span 2;grid-column:2;padding:5px 10px;border-radius:999px;background:var(--plate);font:600 12px/1.2 var(--sans);font-style:normal}
+.mn .bad{box-shadow:inset 3px 0 0 #ae322a}
+.mn .bad em{color:#ae322a}
+.mn .good{box-shadow:inset 3px 0 0 var(--ink)}
+.stopflow{display:grid;grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr);gap:8px;align-items:stretch}
+.stopflow .col{padding:12px;border-radius:16px;background:#fff;font-size:13px;line-height:1.5}
+.stopflow .col b{display:block;margin-bottom:6px;font-size:12.5px}
+.stopflow .col span{display:inline-block;margin:0 4px 4px 0;padding:3px 9px;border-radius:999px;background:var(--plate);font-weight:600}
+.stopflow .col.human{background:var(--ink);color:#fff}
+.stopflow .col.human span{background:var(--butter);color:var(--ink)}
+.stopflow .pause{display:grid;place-items:center;border-radius:12px;background:var(--butter);color:var(--ink);font:500 12px/1.2 var(--mono);letter-spacing:.08em;writing-mode:vertical-rl}
+@media(max-width:420px){.ladder{grid-template-columns:repeat(2,minmax(0,1fr))}.stopflow{grid-template-columns:minmax(0,1fr)}.stopflow .pause{padding:6px;writing-mode:horizontal-tb}}
+.pool .p{border-radius:16px;background:#fff}
+.pool .row span{border-radius:999px;background:var(--plate);color:var(--ink)}
+.pool .row span.alt{background:var(--ink);color:#fff}
+
+/* ── 결과: 검은 브랜드 면 머리 → 보기 고르기 → 번호 구획 ── */
+.stage.single{margin-top:0}
+.result{max-width:none}
+.r-top{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr);column-gap:0;align-items:end;margin:calc(var(--field-inset) - var(--bar-h)) calc(var(--field-inset) - var(--pad)) 0;padding:calc(var(--bar-h) - var(--field-inset) + 36px) calc(var(--pad) - var(--field-inset)) 30px;border:0;border-image:none;border-radius:var(--field-radius);background:var(--field-surface);color:var(--on-field);overflow:hidden}
+.r-top::before,.r-top::after,.r-top.cheer::after{content:none}
+.r-top .rec{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;max-width:none;margin:0 0 20px;padding:0;font:400 11px/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--on-field-3)}
+.r-top .rec::after{content:"";flex:1;min-width:32px;border-top:1px solid var(--on-field-line)}
+.r-top .rec .stamp{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--on-field-line);color:var(--on-field);transform:none}
+.r-top h1{margin:0;font-size:clamp(34px,5.4vw,64px);line-height:1.08;letter-spacing:-.05em;font-weight:700;color:var(--on-field);text-wrap:balance}
+.r-top .hl{background:none;padding:0;color:var(--butter)}
+.r-top>p{margin:18px 0 0;max-width:34em;font-size:clamp(16px,1.4vw,18px);line-height:1.6;color:var(--on-field-2)}
+.r-top .facts{display:flex;flex-wrap:wrap;gap:0;margin:24px 0 0;padding:0;border-top:1px solid var(--on-field-line);list-style:none}
+.r-top .facts li,.r-top .facts li:nth-child(n+2){margin:0;padding:12px 16px 0 0;border-radius:0;background:none;box-shadow:none;font:600 14px/1.35 var(--sans);letter-spacing:-.015em;color:var(--on-field)}
+.r-top .facts li+li{padding-left:16px;border-left:1px solid var(--on-field-line)}
+.r-top .because{margin-top:14px;font-size:13.5px;color:var(--on-field-3)}
+.r-top .shot{width:min(180px,46%);height:auto;margin:0;border-radius:0;overflow:visible;background:none;box-shadow:none}
+.r-top .shot img{width:100%;height:auto;padding:0;object-fit:contain;filter:drop-shadow(0 24px 28px rgba(0,0,0,.6)) drop-shadow(0 4px 6px rgba(0,0,0,.4))}
+@media(min-width:701px){
+ .r-top{grid-template-columns:minmax(0,1fr) auto;column-gap:clamp(24px,4vw,64px)}
+ .r-top>:not(.shot){grid-column:1}
+ .r-top .shot{grid-column:2;grid-row:1 / span 6;align-self:center;width:clamp(150px,18vw,230px)}
+}
+.r-top :focus-visible{outline-color:#fff}
+
+/* 보기 고르기: 회색 홈 위 맑은 유리 알(synk.im .visual-scene-nav) */
+.layout{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:clamp(22px,3vw,30px) 0 0}
+.layout>span{font:650 13px/1.4 var(--sans);letter-spacing:-.01em;color:var(--ink-3)}
+.seg{display:inline-flex;gap:2px;padding:4px;border-radius:999px;background:var(--plate)}
+.seg .chip.glass{min-height:40px;padding:0 18px;border:0;border-radius:999px;background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;text-shadow:none;font:600 14px/1 var(--sans);letter-spacing:-.015em;color:var(--ink-2)}
+.seg .chip.glass::before,.seg .chip.glass::after{content:none}
+.seg .chip.glass:hover{color:var(--ink);transform:none}
+.seg .chip.glass[aria-checked="true"]{color:var(--ink);background:var(--bead);box-shadow:var(--bead-shadow)}
+
+.warn{margin:20px 0 0;padding:16px 18px;border-radius:18px;background:#fff;box-shadow:0 0 0 1.5px var(--ink);color:var(--ink);font-size:15.5px;line-height:1.6}
+
+/* 번호 구획: 모노 번호 + 가는 선, 그 아래 큰 제목 */
+section.block{margin:0;padding:clamp(56px,7vw,88px) 0 0;border:0;border-image:none}
+section.block>h2{display:grid;gap:16px;margin:0 0 14px;font-size:clamp(28px,3.4vw,42px);line-height:1.14;letter-spacing:-.045em;font-weight:700}
+section.block>h2 .no{display:flex;align-items:center;gap:16px;margin:0;padding:0;border-radius:0;background:none;font:400 11px/1.4 var(--mono);letter-spacing:.1em;color:var(--ink-3)}
+section.block>h2 .no::after{content:"";flex:1;border-top:1px solid var(--line)}
+section.block>p.sub{margin:0 0 24px;max-width:38em;font-size:17px;line-height:1.62;color:var(--ink-2)}
+
+/* 매뉴얼 창: 회색 판 안의 흰 종이 */
+.copybox{position:relative;margin:0 0 18px;padding:6px;border-radius:26px;background:var(--plate);box-shadow:none}
+.copybox::before,.copybox.main::before{content:none}
+.copybox.main{box-shadow:none}
+.copybox label,.copybox.main label{display:flex;align-items:center;gap:8px;margin:0;padding:12px 14px;border-radius:0;background:none;color:var(--ink-2);font:650 13.5px/1.4 var(--sans);letter-spacing:-.01em}
+.copybox label::after{content:none}
+.copybox textarea{display:block;width:100%;min-height:220px;padding:20px 22px;border:0;border-radius:20px;background:#fff;box-shadow:0 0 0 1px var(--line-soft);font-size:15.5px;line-height:1.78;color:var(--ink)}
+.copybox.main textarea{min-height:440px}
+.copybox .row,.copybox.main .row{margin:0;padding:12px 8px 8px;border-top:0}
+.status{color:var(--ink)}
+.manual-note{margin:0 0 22px;padding:14px 16px;border-radius:16px;background:#fff;box-shadow:0 0 0 1px var(--line);font-size:14.5px;line-height:1.6;color:var(--ink-2)}
+
+/* 한 줄 명령: 잉크 선 아래 가는 선으로 나눈 줄 */
+.cmds{margin:30px 0 0}
+.cmds>p{margin:0 0 12px;font:650 13.5px/1.4 var(--sans);letter-spacing:-.01em;color:var(--ink)}
+.cmdlist{display:grid;gap:0;margin:0;padding:0;border-top:1px solid var(--ink);list-style:none}
+.cmdlist li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line);border-radius:0;background:none;box-shadow:none}
+.cmdlist .say{margin:0;font-size:17px;line-height:1.5;font-weight:600;letter-spacing:-.02em}
 .cmdlist .row{display:contents}
-.cmdlist .btn{min-height:44px;padding:0 14px;font-size:15px}
-.cmdlist .status{grid-column:1 / -1;font-size:13px;min-height:0}
+.cmdlist .btn{min-height:40px;padding:0 16px;font-size:14px}
+.cmdlist .status{grid-column:1 / -1;min-height:0;font-size:13px}
 .cmdlist .status:empty{display:none}
 .cmdlist textarea.fallback{grid-column:1 / -1;min-height:80px}
-.picked{color:#1d1a12}
 
-/* 질문 팁의 그림 */
-.ladder{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}
-.ladder li{position:relative;padding:10px 8px 9px;border-radius:12px;background:#f3f4f6;font-size:12.5px;line-height:1.35;font-weight:700;text-align:center;color:#3a3d42}
-.ladder li small{display:block;font-weight:600;font-size:11.5px;color:var(--faint);margin-top:2px}
-.ladder li.on{background:var(--butter-soft);color:#0a0a0a;box-shadow:inset 0 0 0 1.5px #0a0a0a}
-.ladder li.human{background:#0a0a0a;color:#fff}
-.ladder li.human small{color:#d7d9dd}
-.ladder-cap{font-size:13px;color:var(--faint);margin:8px 0 0}
-.mn{display:grid;gap:8px}
-.mn div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:11px 13px;border-radius:12px;background:#f5f6f8}
-.mn b{font-size:15px;font-weight:700}
-.mn span{font-size:13px;color:#3a3d42;grid-column:1}
-.mn em{grid-row:1 / span 2;grid-column:2;font-style:normal;font:500 12px/1.2 var(--mono);padding:4px 8px;border-radius:8px;background:#fff;box-shadow:var(--hairline)}
-.mn .bad{background:var(--coral-wash)}
-.mn .bad em{color:var(--coral-deep)}
-.mn .good{background:var(--butter-soft)}
-.stopflow{display:grid;grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr);gap:8px;align-items:stretch}
-.stopflow .col{padding:11px 12px;border-radius:12px;background:#f5f6f8;font-size:13px;line-height:1.5}
-.stopflow .col b{display:block;font-size:12.5px;margin-bottom:6px}
-.stopflow .col span{display:inline-block;margin:0 4px 4px 0;padding:3px 8px;border-radius:8px;background:#fff;box-shadow:var(--hairline);font-weight:650}
-.stopflow .col.human{background:#0a0a0a;color:#fff}
-.stopflow .col.human span{background:var(--butter);color:#0a0a0a;box-shadow:none}
-.stopflow .pause{display:grid;place-items:center;font:500 12px/1.2 var(--mono);writing-mode:vertical-rl;letter-spacing:.08em;border-radius:10px;background:var(--butter-soft);color:#0a0a0a}
-@media(max-width:420px){.ladder{grid-template-columns:repeat(2,minmax(0,1fr))}.stopflow{grid-template-columns:minmax(0,1fr)}.stopflow .pause{writing-mode:horizontal-tb;padding:6px}}
+/* 매뉴얼을 넣는 곳·요금제 */
+.formbox{margin:0 0 12px;padding:clamp(22px,2.8vw,30px);border-radius:24px;background:var(--plate);box-shadow:none}
+.formbox .eyebrow{display:block;margin:0 0 10px;font:650 13px/1.4 var(--sans);letter-spacing:-.01em;color:var(--ink-3)}
+.formbox h2{margin:0 0 16px;font-size:clamp(22px,2.4vw,28px);line-height:1.25;letter-spacing:-.04em;font-weight:700}
+.formbox ol.plain{margin:0;padding:0;border-top:1px solid var(--line);list-style:none;counter-reset:pl}
+.formbox ol.plain li{position:relative;margin:0;padding:13px 0 13px 40px;border-bottom:1px solid var(--line-soft);font-size:15.5px;line-height:1.6;counter-increment:pl}
+.formbox ol.plain li:last-child{border-bottom:0}
+.formbox ol.plain li::before{content:counter(pl,decimal-leading-zero);position:absolute;left:0;top:15px;font:400 12px/1.4 var(--mono);letter-spacing:.06em;color:var(--ink-3)}
+.spec.key{margin:0;padding:clamp(22px,2.8vw,30px);border-radius:24px;background:#fff;box-shadow:0 0 0 1px var(--line)}
+.spec .k{margin:0 0 6px;font:650 13px/1.4 var(--sans);letter-spacing:-.01em;color:var(--ink-3)}
+.spec.key .v.small{margin:0;font-size:clamp(19px,2vw,22px);line-height:1.4;font-weight:700;letter-spacing:-.03em;color:var(--ink);text-shadow:none}
+.why{gap:0;margin:16px 0 0}
+.why li{padding:12px 0;border-top:1px solid var(--line-soft);font-size:15px;line-height:1.6;color:var(--ink)}
+.why.npu li b{display:inline-block;margin-right:6px;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:650;vertical-align:1px}
+.why.npu b.yes{background:var(--butter);color:var(--ink)}
+.why.npu b.no{background:var(--plate);color:var(--ink-2)}
 
-.pool .row span{background:var(--butter-soft);color:#0a0a0a}
-.pool .row span.alt{background:#0a0a0a;color:#fff}
-.lane .node.hot{background:var(--butter);color:#0a0a0a}
-@media(max-width:560px){.lane{grid-template-columns:minmax(0,1fr);gap:6px}}
+/* 사람 차례 확인표: 줄 목록, 체크하면 버터 펠트 배지 */
+.checks{gap:0;border-top:1px solid var(--ink)}
+.checks label{grid-template-columns:28px minmax(0,1fr);gap:14px;align-items:start;padding:16px 2px;border-radius:0;background:none;box-shadow:none;border-bottom:1px solid var(--line)}
+.checks input{appearance:none;-webkit-appearance:none;width:26px;height:26px;margin:0;border:1px solid rgba(10,10,10,.24);border-radius:50%;background:#fff;box-shadow:inset 0 1px 1px rgba(10,10,10,.06);cursor:pointer}
+.checks input:checked{border:0;box-shadow:none;background:var(--sticker-check) center/100% 100% no-repeat;transform:rotate(-8deg) scale(1.12)}
+.checks input:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.checks b{font-size:16.5px;font-weight:650;letter-spacing:-.02em}
+.checks small{margin-top:3px;font-size:14.5px;line-height:1.55;color:var(--ink-2)}
 
-/* 신경 쓰지 않아도 되는 것 */
-.why.npu b.no{background:#eceff3;color:#3a3d42}
-.why.npu b.yes{background:var(--butter-soft);color:#0a0a0a}
+/* 펼치는 줄(나에게 의미 있는 것·출처): synk.im 자주 묻는 질문 줄과 같은 + 단추 */
+.tipcards{gap:0;border-top:1px solid var(--ink)}
+.tipcard,.tipcard[open]{border-radius:0;background:none;box-shadow:none;border-bottom:1px solid var(--line)}
+.tipcard>summary,details.sources>summary{display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:64px;padding:16px 0;list-style:none;font-size:17px;font-weight:650;letter-spacing:-.02em;color:var(--ink)}
+.tipcard>summary::-webkit-details-marker,details.sources>summary::-webkit-details-marker{display:none}
+.tipcard>summary::before,details.sources>summary::before{content:none}
+.tipcard>summary,details.sources>summary{text-align:left}
+.tipcard>summary::after,details.sources>summary::after{content:"+";flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:999px;background:var(--plate);font:400 17px/1 var(--sans);color:var(--ink-2);transition:transform var(--fast) var(--ease),background-color var(--fast) var(--ease),color var(--fast) var(--ease)}
+.tipcard[open]>summary::after,details.sources[open]>summary::after{transform:rotate(45deg);background:var(--ink);color:#fff}
+.tipcard[open]>summary{color:var(--ink)}
+.tipbody{padding:0 44px 20px 0}
+.tipbody p{margin:0 0 10px;font-size:15.5px;line-height:1.75;color:var(--ink-2)}
+details.sources{margin:clamp(56px,7vw,88px) 0 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--line)}
+details.sources ul{margin:0 0 12px;padding-left:1.1em;font-size:14px;color:var(--ink-2)}
+details.sources a{color:var(--ink)}
 
-/* 인쇄: 검은 펠트 머리는 흰 종이로(공통 인쇄 규칙보다 이 파일이 뒤라 여기서 다시 맞춘다) */
-@media print{.r-top{background:#fff;color:#000}.r-top .hl{color:#000}.r-top .facts li,.r-top .facts li:nth-child(n+2){color:#000;background:#fff;box-shadow:inset 0 0 0 1px #999}.r-top .rec .stamp{color:#333}.cmdlist .btn,.cmdlist .status{display:none}}
+/* 출처 꼬리표 */
+.src{margin-left:6px;padding:2px 8px;border-radius:999px;font:600 11px/1.5 var(--sans);letter-spacing:0;vertical-align:2px}
+.src.official{background:var(--ink);color:#fff}
+.src.community{background:var(--plate);color:var(--ink-2)}
+.src.synk{background:var(--plate-deep);color:var(--ink)}
+.src.case{background:var(--butter);color:var(--ink)}
+
+/* 저장·반응·답 바꾸기: 회색 알약, 고른 반응은 잉크 */
+.take,.fb{gap:8px}
+.fb .chip.glass,.take .chip.glass{min-height:44px;padding:0 18px;border:0;border-radius:999px;background:var(--plate);box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;text-shadow:none;font:600 14.5px/1 var(--sans);letter-spacing:-.015em;color:var(--ink)}
+.fb .chip.glass::before,.fb .chip.glass::after,.take .chip.glass::before,.take .chip.glass::after{content:none}
+@media(hover:hover){.fb .chip.glass:not(:disabled):hover,.take .chip.glass:hover{background:var(--plate-deep);transform:none}}
+.fb .chip.glass[aria-pressed="true"]{background:var(--ink);color:#fff}
+.fb .chip.glass:disabled{cursor:default}
+.fb .chip.glass:disabled:not([aria-pressed="true"]){opacity:.45}
+.fbnote{color:var(--ink-2)}
+.result>.nav{justify-content:center;margin:44px 0 0}
+
+/* 결과 하단 바: 아래에 붙는 유리 캡슐 */
+.dock{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:20;gap:6px;width:max-content;max-width:100%;margin:28px auto 0;padding:6px}
+.dock .btn{min-height:48px;padding:0 22px;font-size:15.5px}
+
+.foot{margin-top:clamp(56px,7vw,88px);padding-top:22px;border-top:1px solid var(--line);font-size:13.5px;color:var(--ink-3)}
+.foot a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--ink-4);text-underline-offset:4px}
+.foot button{color:var(--ink);font-weight:600}
+.linkbtn{color:var(--ink);font-weight:600;text-decoration-color:var(--ink-4);text-underline-offset:5px}
+.toast{padding:12px 20px 12px 14px;border-radius:999px;background:var(--ink);font-weight:600}
+
+@media(forced-colors:active){
+ .bar,.stage .main>.nav,.dock,.intro,.r-top,.opt.glass{border:1px solid CanvasText}
+ .bar::before,.stage .main>.nav::before,.dock::before,.opt.glass::after,.intro .art::before{display:none}
+ .opt.glass[aria-checked="true"],.opt.glass[aria-pressed="true"]{border:2px solid Highlight}
+}
+
+/* 인쇄: 검은 면은 흰 종이로, 떠 있는 층은 걷는다(공통 인쇄 규칙보다 이 파일이 뒤라 여기서 다시 맞춘다) */
+@media print{
+ .bar{position:static;margin:0 0 12px;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+ .bar::before,.dock::before,.stage .main>.nav::before{display:none}
+ .intro,.r-top{margin:0;padding:12px 0;border-radius:0;background:#fff;color:#000}
+ .r-top h1,.r-top>p,.r-top .rec,.r-top .facts li,.r-top .because,.r-top .hl{color:#000}
+ .r-top .rec .stamp{box-shadow:inset 0 0 0 1px #999;color:#333}
+ .r-top .facts,.r-top .facts li+li,.r-top .rec::after{border-color:#999}
+ .r-top .shot{display:none}
+ section.block{padding-top:16px}
+ .cmdlist .btn,.cmdlist .status{display:none}
+ .opt.glass,.chip.glass,.btn{background:#fff!important;box-shadow:inset 0 0 0 1px #999!important}
+}
 /* 매뉴얼 전문: 화면에서는 글 상자, 인쇄에서는 잘리지 않는 전문 */
 .manual-print{display:none}
 @media print{.copybox.main textarea{display:none}.manual-print{display:block;margin:0;padding:14px 16px;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;font:13px/1.65 var(--sans);color:#000}}
-
-/* ─────────────────────────────────────────────────────────────
- * 10-06 마감: 유리를 걷고 실제 펠트로.
- * 유호님 「프로그램 ui ux가 좀 촌스럽고 특히 글래시한 느낌이 좀 많이 아쉬운데? … 마감 제대로 해줄수있어?」
- * 펠트 부품 원칙(docs/디자인/펠트부품/README.md): 누르는 곳(선택지·단추·칩·배지)은 실제 펠트 판, 읽는 곳은 흰 종이.
- * fb-* = 같은 날 한 판에서 구운 버터·검정·크림 펠트(assets/builds), 한 판이라 실·빛·털 결이 같다.
- * 마감 점검표: 작은 크기의 실땀 사진 줄은 점선처럼 보인다 → 머리줄·진행 막대·구획 선에서 걷는다. 탁한 회색 비활성·무거운 검은 윤곽도 걷는다.
- * ───────────────────────────────────────────────────────────── */
-:root{--sticker-check:url(assets/fb-badge-check.webp)}
-
-/* 머리줄과 구획: 가는 선 */
-.bar{border-bottom:1px solid #ecebe6;border-image:none;padding:14px 0 12px}
-section.block{border-top:1px solid #ecebe6;border-image:none;padding-top:34px}
-.switch .track{background:#e4e2dc}
-.switch[aria-checked="true"] .track{background:#0a0a0a}
-.switch[aria-checked="true"] .track::after{background:var(--butter)}
-
-/* 펠트 판 공통: 판에 두께와 그림자가 있으니 CSS 윤곽·그림자·흐림은 넣지 않는다 */
-.opt.glass,.chip.glass,.btn.primary,.btn.soft,.intro .meta li{border:0;border-radius:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;text-shadow:none;background-color:transparent;background-position:center;background-size:100% 100%;background-repeat:no-repeat}
-.opt.glass::before,.opt.glass::after,.chip.glass::before,.chip.glass::after{content:none}
-
-/* 첫 화면 칩: 크림 펠트 칩, 첫 칩만 버터 */
-.intro .meta{gap:6px 4px}
-.intro .meta li,.intro .meta li:nth-child(n){padding:10px 17px 11px;background:url(assets/fb-chip-cream-long.webp) center/100% 100% no-repeat;color:#2b2a26;font-size:13.5px;font-weight:700}
-.intro .meta li:nth-child(1){background:url(assets/fb-chip-butter-long.webp) center/100% 100% no-repeat;color:#0a0a0a}
-.intro .meta li:nth-child(3){background:url(assets/fb-chip-cream-wide.webp) center/100% 100% no-repeat}
-
-/* 진행: 실땀 대신 검은 막대 */
-.progress .meter{height:6px;border-radius:6px;background:#efeee9;overflow:hidden}
-.progress .meter::before{content:none}
-.progress .meter i{height:100%;border:0;border-image:none;border-radius:6px;background:#0a0a0a}
-
-/* 선택지: 크림 펠트 판 → 고르면 연한 버터 판 + 버터 체크 배지 */
-.opts{gap:8px 12px}
-.opt.glass{min-height:72px;padding:17px 20px 19px 22px;background-image:url(assets/fb-tile-cream-long.webp)}
-.opt.glass[aria-checked="true"],.opt.glass[aria-pressed="true"]{background-image:url(assets/fb-tile-butter-long.webp);box-shadow:none}
-@media(min-width:561px){.opts.one .opt.glass{background-image:url(assets/fb-tile-cream-wide.webp)}.opts.one .opt.glass[aria-checked="true"],.opts.one .opt.glass[aria-pressed="true"]{background-image:url(assets/fb-tile-butter-wide.webp)}}
-.opt strong{color:#141310}
-.opt small{color:#5f5b52}
-.opt strong::before{min-width:0;height:auto;padding:0;margin:0 10px 0 0;border-radius:0;background:none;box-shadow:none;color:#6f6a5e;font:600 12.5px/1 var(--mono);vertical-align:1px}
-.opt[aria-checked="true"] strong::before,.opt[aria-pressed="true"] strong::before{color:#7a5c08}
-.opt .mark,.opt.multi .mark{width:30px;height:30px;border:0;border-radius:50%;background:url(assets/fb-badge-cream.webp) center/100% 100% no-repeat}
-.opt[aria-checked="true"] .mark,.opt[aria-pressed="true"] .mark{background:url(assets/fb-badge-check.webp) center/100% 100% no-repeat;transform:rotate(-8deg) scale(1.12);filter:none}
-.opt{transition:transform .15s ease,filter .15s ease}
-@media(hover:hover){.opt.glass:hover{transform:translateY(-1px);filter:drop-shadow(0 6px 8px rgba(40,32,10,.10))}}
-.opt.glass:active{transform:translateY(1px);filter:none}
-.opt:focus-visible{outline:3px solid #0a0a0a;outline-offset:1px;border-radius:20px}
-
-/* 고른 뒤 한 줄과 팁: 테두리 없는 옅은 면 */
-.picked{background:#fff6da;box-shadow:none;border-radius:18px;color:#2b2414}
-.picked svg{color:#b8860b}
-.tip{border:0;border-image:none;border-radius:22px;background:#f7f6f2;padding:22px 22px 20px}
-.tip .tip-head{color:#7a6a3a}
-.tip .tip-head svg{color:#b8860b}
-.tip-closed summary,.tip-closed summary svg{color:#0a0a0a}
-.ladder li,.mn div,.stopflow .col{background:#fff}
-
-/* 단추: 주 행동은 검은 펠트, 보조는 크림 펠트. 눌리면 2px 내려앉는다 */
-.btn.primary,.btn.primary:disabled{min-height:56px;min-width:150px;padding:0 30px;color:#fff;background-image:url(assets/fb-chip-black-long.webp);filter:drop-shadow(0 6px 8px rgba(0,0,0,.16))}
-.btn.primary:active{transform:translateY(2px);box-shadow:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.16))}
-.btn.primary:disabled{background:url(assets/fb-chip-black-long.webp) center/100% 100% no-repeat;opacity:.3;filter:none;cursor:not-allowed}
-.intro .start .btn.primary{min-width:220px;background-image:url(assets/fb-chip-black-wide.webp)}
-.btn.soft{min-height:48px;padding:0 20px;color:#141310;background-image:url(assets/fb-chip-cream-long.webp)}
-.btn.soft:active{transform:translateY(2px)}
-.btn.ghost{color:#3a3832}
-
-/* 보기 고르기(간단히·기본·자세히): 크림 칩, 고른 것은 버터 칩 */
-.chip.glass{min-height:42px;padding:8px 17px 9px;color:#2b2a26;background-image:url(assets/fb-chip-cream-long.webp)}
-.chip.glass[aria-checked="true"],.chip.glass[aria-pressed="true"]{color:#0a0a0a;background-image:url(assets/fb-chip-butter-long.webp)}
-
-/* 결과 구획 번호·확인표·복사 알림 */
-section.block>h2 .no{background:#fff3cc;color:#6b5000}
-.checks input{width:28px;height:28px;border:0;border-radius:50%;background:url(assets/fb-badge-cream.webp) center/100% 100% no-repeat}
-.checks input:checked{background:url(assets/fb-badge-check.webp) center/100% 100% no-repeat;transform:rotate(-8deg)}
-.cmdlist li{box-shadow:0 0 0 1px #ecebe6}
-
-/* 하단 바: 흰 바탕 위 펠트 단추 둘 */
-.dock{border-radius:26px;padding:8px 10px;box-shadow:0 0 0 1px #ecebe6,0 16px 30px -18px rgba(0,0,0,.35)}
-.dock .btn{min-height:50px}
-.dock .btn.primary{min-width:0;padding:0 24px}
-
-@media print{.opt.glass,.chip.glass,.btn,.intro .meta li{background:#fff!important;box-shadow:inset 0 0 0 1px #999}}

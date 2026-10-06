@@ -24,17 +24,17 @@
   }
   const kindText = (id, s) => (id === 'case' ? '실제 사례' : KIND_TEXT[s.kind] || '');
 
-  // 첫 화면: 펠트 메모(매뉴얼 한 장) 위에 펠트 스티커 세 장(책·사람·체크).
+  // 첫 화면: 펠트 매뉴얼 한 권(버터 표지·검은 책등·체크 배지). synk.im 브랜드 면의 펠트 오브젝트처럼 하나만 세운다.
   function hero() {
-    return '<div class="collage"><span class="spark"></span><img class="main flat" src="assets/note-felt.webp" width="340" height="248" alt=""><img class="stk s1" src="assets/sticker-book.webp" alt=""><img class="stk s2" src="assets/sticker-person.webp" alt=""><img class="stk s3" src="assets/sticker-check.webp" alt=""></div>';
+    return '<figure class="hero-obj"><img src="assets/hero-manual.webp" width="766" height="1148" alt=""></figure>';
   }
   function marked(title, marks) {
     const t = esc(title);
     for (const m of marks) { const e = esc(m); const i = t.indexOf(e); if (m && i >= 0) return `${t.slice(0, i)}<span class="hl">${e}</span>${t.slice(i + e.length)}`; }
     return t;
   }
-  const sticker = (name, r) => `<img class="stk" src="assets/sticker-${name}.webp" alt=""${r ? ` style="--r:${r}deg"` : ''}>`;
-  const head = (no, title, stk, r) => `<h2><span class="no">${String(no).padStart(2, '0')}</span>${esc(title)}${stk ? sticker(stk, r) : ''}</h2>`;
+  // 구획 머리: 모노 번호와 가는 선, 그 아래 제목(synk.im 구획 머리와 같은 짜임). 스티커는 붙이지 않는다.
+  const head = (no, title) => `<h2><span class="no">${String(no).padStart(2, '0')}</span>${esc(title)}</h2>`;
 
   // ── 질문 팁의 그림 ──
   function oneline() {
@@ -155,7 +155,7 @@
     const editable = content.steps.filter(s => !s.when || s.when(ctx.answers)).map(s => `<button type="button" class="glass chip" data-action="edit:${esc(s.id)}">${esc(s.short || s.eyebrow || s.title)}</button>`).join('');
     const edit = `<section class="block no-print">${H('답 바꿔 보기')}<p class="sub">하나만 바꿔도 매뉴얼과 한 줄 명령이 다시 만들어져요.</p><div class="take">${editable}</div></section>`;
 
-    const html = `<article class="result"><header class="r-top${rec.warns.length ? '' : ' cheer'}"><p class="rec"><span class="stamp">${esc(content.checked.replace(/-/g, '.'))} 기준</span><span>${esc(content.series)} · 내 AI 직원 매뉴얼</span></p><h1 id="q" tabindex="-1">${marked(rec.headline.title, [rec.headline.mark])}</h1><p>${esc(rec.headline.sub)}</p><ul class="facts" aria-label="매뉴얼 요약">${rec.facts.map(x => `<li>${esc(x)}</li>`).join('')}</ul><figure class="shot" aria-hidden="true"><img src="assets/note-felt.webp" alt=""></figure></header><div class="layout"><span>보기</span><div class="seg" role="radiogroup" aria-label="결과 분량">${seg}</div></div>${warns}${take}${save}${checklist}${tipsHtml}${skip}${saveRow}${fb}${edit}${sourcesBox}<div class="nav no-print"><button type="button" class="btn ghost" data-action="restart">처음부터 다시</button></div><div class="dock no-print" role="group" aria-label="바로 쓰기"><button type="button" class="btn primary" data-proxy="copy:manual">매뉴얼 복사</button><button type="button" class="btn soft" data-proxy="share">내 결과 링크</button></div></article>`;
+    const html = `<article class="result"><header class="r-top${rec.warns.length ? '' : ' cheer'}"><p class="rec"><span class="stamp">${esc(content.checked.replace(/-/g, '.'))} 기준</span><span>${esc(content.series)} · 내 AI 직원 매뉴얼</span></p><h1 id="q" tabindex="-1">${marked(rec.headline.title, [rec.headline.mark])}</h1><p>${esc(rec.headline.sub)}</p><ul class="facts" aria-label="매뉴얼 요약">${rec.facts.map(x => `<li>${esc(x)}</li>`).join('')}</ul><figure class="shot" aria-hidden="true"><img src="assets/hero-manual.webp" width="766" height="1148" alt=""></figure></header><div class="layout"><span>보기</span><div class="seg" role="radiogroup" aria-label="결과 분량">${seg}</div></div>${warns}${take}${save}${checklist}${tipsHtml}${skip}${saveRow}${fb}${edit}${sourcesBox}<div class="nav no-print"><button type="button" class="btn ghost" data-action="restart">처음부터 다시</button></div><div class="dock no-print" role="group" aria-label="바로 쓰기"><button type="button" class="btn primary" data-proxy="copy:manual">매뉴얼 복사</button><button type="button" class="btn soft" data-proxy="share">내 결과 링크</button></div></article>`;
     const texts = { manual: rec.manual, all: summaryText(rec, content) };
     rec.commands.forEach((c, i) => { texts[`cmd${i}`] = c; });
     return { html, texts };

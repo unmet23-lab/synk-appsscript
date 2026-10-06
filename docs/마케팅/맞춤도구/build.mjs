@@ -27,8 +27,9 @@ const TOOLS = {
   computer: { out: 'brief/computer', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: [...SHARED_ASSETS, 'laptop-felt.webp'] },
   meeting: { out: 'brief/meeting', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: [...SHARED_ASSETS, 'meeting-hero.webp'], keep: ['meeting-guide.pdf', 'meeting-kit.zip'] },
   // yuhobuilds 허브(synk.im/builds/)의 첫 도구. theme.css = 도구 쪽 색(검정·버터). outside = 도구 폴더 밖에 둘 파일(허브 첫 화면).
-  // fb-* = 10-06 버터·검정 실제 펠트 판(docs/디자인/펠트부품/assets/builds를 늘이고 줄인 웹 사본). 유리 선택 카드·단추 대신 쓴다.
-  manual: { out: 'builds/manual', files: ['content.js', 'rules.js', 'view.js', 'index.html', 'theme.css'], assets: ['favicon-32.png', 'thread-butter.webp', 'logo-synk.webp', 'note-felt.webp', 'tex-black.webp', 'sticker-check.webp', 'sticker-book.webp', 'sticker-person.webp', 'sticker-search.webp', ...['badge-butter', 'badge-check', 'badge-cream', 'chip-butter-long', 'chip-butter-wide', 'chip-cream-long', 'chip-cream-wide', 'chip-black-long', 'chip-black-wide', 'slab-black-long', 'slab-butter-long', 'tile-butter-long', 'tile-butter-wide', 'tile-cream-long', 'tile-cream-wide'].map((n) => `fb-${n}.webp`)], outside: { 'builds-index.html': 'builds/index.html' } },
+  // 10-06 저녁: synk.im 홈페이지 디자인 언어(theme.css 머리말). hero-manual = 펠트 매뉴얼 오브젝트(docs/디자인/펠트부품/assets/builds),
+  // field-grain = synk.im 브랜드 면의 결, fb-badge-check = 고른 표시의 버터 펠트 배지.
+  manual: { out: 'builds/manual', files: ['content.js', 'rules.js', 'view.js', 'index.html', 'theme.css'], assets: ['favicon-32.png', 'thread-butter.webp', 'logo-synk.webp', 'hero-manual.webp', 'field-grain.webp', 'fb-badge-check.webp'], outside: { 'builds-index.html': 'builds/index.html' } },
 };
 
 const sha = file => createHash('sha256').update(fs.readFileSync(file)).digest('hex');
@@ -59,6 +60,7 @@ function subsetFont(textFiles, outFile) {
 // 브랜드 서체 규칙(DESIGN §3): 한글은 SUIT, 라틴은 Inter Tight, 숫자·코드는 DM Mono. 라틴 글자만 남긴 작은 파일을 만든다.
 const BRAND_FONT_DIR = path.join(REPO, 'docs/브랜드_폰트');
 const LATIN_FONTS = [
+  ['InterTight/InterTight-Regular.ttf', 'InterTight-400.woff2'],
   ['InterTight/InterTight-Medium.ttf', 'InterTight-500.woff2'],
   ['InterTight/InterTight-Bold.ttf', 'InterTight-700.woff2'],
   ['DM_Mono/DMMono-Regular.ttf', 'DMMono-400.woff2'],

@@ -3,40 +3,40 @@
 <head>
 <meta charset="utf-8">
 <title>og · manual</title>
-<!-- 링크 미리보기(1200×630) 원고. build.mjs가 Chrome으로 og.png를 찍는다. 펠트 스크랩북 링크 카드 양식 + yuhobuilds 색(검정·버터). -->
+<!-- 링크 미리보기(1200×630) 원고. build.mjs가 Chrome으로 og.png를 찍는다.
+     2026-10-06: synk.im 홈페이지 언어(검은 브랜드 면 + 결 + 굵은/가는 두 줄 제목 + 모노 꼬리표 + 펠트 오브젝트 하나)로 다시 짰다. 도구 첫 화면과 같다. -->
 <style>
 @font-face{font-family:'SUIT Variable';font-weight:100 900;src:url(../../../../브랜드_폰트/SUIT/SUIT-Variable.woff2) format('woff2')}
-@font-face{font-family:'Inter Tight';font-weight:700;src:url(../../../../브랜드_폰트/InterTight/InterTight-Bold.ttf)}
-@font-face{font-family:'DM Mono';font-weight:500;src:url(../../../../브랜드_폰트/DM_Mono/DMMono-Medium.ttf)}
+@font-face{font-family:'Inter Tight';font-weight:100 499;src:url(../../../../브랜드_폰트/InterTight/InterTight-Regular.ttf)}
+@font-face{font-family:'Inter Tight';font-weight:500 900;src:url(../../../../브랜드_폰트/InterTight/InterTight-Bold.ttf)}
+@font-face{font-family:'DM Mono';font-weight:400 700;src:url(../../../../브랜드_폰트/DM_Mono/DMMono-Regular.ttf)}
 *{box-sizing:border-box}
 html,body{margin:0;width:1200px;height:630px;overflow:hidden;background:#fff}
-body{font-family:'SUIT Variable','Inter Tight',sans-serif;color:#0a0a0a;word-break:keep-all}
-.card{position:absolute;inset:34px;padding:50px 58px;display:grid;grid-template-columns:1fr 400px;align-items:center;gap:26px}
-.card::before{content:'';position:absolute;inset:0;border:1px solid transparent;border-image:url(../../assets/thread-butter.webp) 250 / 40px / 0 round;-webkit-mask:linear-gradient(#000 0 0) 0 0/110px 110px no-repeat,linear-gradient(#000 0 0) 100% 0/110px 110px no-repeat,linear-gradient(#000 0 0) 0 100%/110px 110px no-repeat,linear-gradient(#000 0 0) 100% 100%/110px 110px no-repeat}
-.rec{display:flex;align-items:center;gap:14px;margin-bottom:22px;font:500 21px/1 'DM Mono','SUIT Variable',monospace;color:#565a61}
-.rec img{height:34px}
-h1{font-size:64px;line-height:1.14;letter-spacing:-.05em;margin:0 0 22px;font-weight:830}
-.hl{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 40' preserveAspectRatio='none'%3E%3Cpath d='M6 24C60 14 140 16 234 20' fill='none' stroke='%23f5c445' stroke-width='22' stroke-linecap='round' opacity='.8'/%3E%3C/svg%3E") no-repeat 0 74%/100% .6em}
-p{font-size:28px;line-height:1.42;margin:0;color:#23262b;font-weight:600}
-p b{color:#0a0a0a}
-.url{display:inline-block;margin-top:26px;padding:10px 18px;border-radius:14px;background:#fff;box-shadow:0 0 0 2px #0a0a0a,5px 5px 0 #0a0a0a;font:700 24px/1.2 'Inter Tight','SUIT Variable',sans-serif;color:#0a0a0a}
-.art{position:relative;height:420px;display:grid;place-items:center}
-.art .main{width:380px;height:auto;filter:drop-shadow(0 14px 18px rgba(16,19,26,.16))}
-.stk{position:absolute;filter:drop-shadow(3px 0 0 #fff) drop-shadow(-3px 0 0 #fff) drop-shadow(0 3px 0 #fff) drop-shadow(0 -3px 0 #fff) drop-shadow(0 8px 10px rgba(16,19,26,.2))}
-.s1{width:110px;top:26px;right:4px;transform:rotate(10deg)}
-.s2{width:78px;bottom:34px;left:-6px;transform:rotate(-12deg)}
-.s3{width:74px;bottom:20px;right:40px;transform:rotate(6deg)}
+body{font-family:'Inter Tight','SUIT Variable',sans-serif;color:#fff;word-break:keep-all;-webkit-font-smoothing:antialiased}
+.field{position:absolute;inset:14px;display:grid;grid-template-columns:minmax(0,1fr) 360px;align-items:center;gap:20px;padding:56px 60px 56px 64px;border-radius:30px;overflow:hidden;isolation:isolate;
+ background:url(../../assets/field-grain.webp) 0 0/192px 192px repeat,radial-gradient(900px 520px at 10% -180px,rgba(255,255,255,.15),rgba(255,255,255,0) 70%),#0a0a0a}
+.eyebrow{display:flex;align-items:center;gap:18px;margin:0 0 30px;font:400 17px/1.4 'DM Mono','SUIT Variable',monospace;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.eyebrow::after{content:'';flex:1;border-top:1.5px solid rgba(255,255,255,.2)}
+h1{margin:0;font-size:76px;line-height:1.06;letter-spacing:-.05em;font-weight:300}
+h1 b{font-weight:700}
+h1 span{color:#f5c445}
+p{margin:26px 0 0;font-size:27px;line-height:1.45;font-weight:500;letter-spacing:-.02em;color:rgba(255,255,255,.82)}
+.url{display:inline-flex;align-items:center;gap:12px;margin-top:34px;height:60px;padding:0 26px 0 28px;border-radius:999px;background:#f5c445;color:#0a0a0a;font:700 25px/1 'Inter Tight','SUIT Variable',sans-serif;letter-spacing:-.02em}
+.url i{font-style:normal;font-weight:400}
+.art{position:relative;display:grid;place-items:center;height:100%}
+.art::before{content:'';position:absolute;left:50%;top:52%;width:560px;height:560px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(245,196,69,.24),rgba(245,196,69,.06) 58%,rgba(245,196,69,0));z-index:-1}
+.art img{width:300px;height:auto;filter:drop-shadow(0 30px 34px rgba(0,0,0,.65)) drop-shadow(0 4px 6px rgba(0,0,0,.4))}
 </style>
 </head>
 <body>
-<div class="card">
+<div class="field">
   <div>
-    <div class="rec"><img src="../../assets/logo-synk.webp" alt=""><span>yuhobuilds</span></div>
-    <h1>내 일에 맞는<br><span class="hl">AI 직원 매뉴얼</span></h1>
-    <p>질문 다섯 개면 만들어져요.<br><b>한 번 깔아 두면 다음부턴 한 줄로.</b></p>
-    <div class="url">synk.im/builds</div>
+    <p class="eyebrow">yuhobuilds — AI 직원 매뉴얼</p>
+    <h1><b>내 일에 맞는</b><br><span>AI 직원 매뉴얼</span></h1>
+    <p>질문 다섯 개면 만들어져요. 한 번 깔아 두면 다음부턴 한 줄로.</p>
+    <div class="url">synk.im/builds <i>↗</i></div>
   </div>
-  <div class="art"><img class="main" src="../../assets/note-felt.webp" alt=""><img class="stk s1" src="../../assets/sticker-book.webp" alt=""><img class="stk s2" src="../../assets/sticker-person.webp" alt=""><img class="stk s3" src="../../assets/sticker-check.webp" alt=""></div>
+  <div class="art"><img src="../../assets/hero-manual.webp" alt=""></div>
 </div>
 </body>
 </html>
