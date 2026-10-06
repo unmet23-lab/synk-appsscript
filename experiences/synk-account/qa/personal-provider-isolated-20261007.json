@@ -1,0 +1,71 @@
+{
+  "startedAt": "2026-10-06T15:44:01.261Z",
+  "endedAt": "2026-10-06T15:46:15.448Z",
+  "toolSha256": "c263a9bc735d0ccfacf2b4b522b68542db9f338aedcb980c24725efc9e5a8689",
+  "exitCode": 0,
+  "target": "synk-core-rehearsal",
+  "mode": "provider-rehearsal",
+  "checks": [
+    "care_EMPTY_AND_ISOLATED",
+    "care_SAVE",
+    "care_SECOND_LOGIN_LOAD",
+    "care_OTHER_ACCOUNT_EMPTY",
+    "care_STALE_CAS",
+    "care_CONCURRENT_CAS",
+    "care_DELETE_TOMBSTONE",
+    "care_STALE_CANNOT_REVIVE",
+    "path_EMPTY_AND_ISOLATED",
+    "path_SAVE",
+    "path_SECOND_LOGIN_LOAD",
+    "path_OTHER_ACCOUNT_EMPTY",
+    "path_STALE_CAS",
+    "path_CONCURRENT_CAS",
+    "path_DELETE_TOMBSTONE",
+    "path_STALE_CANNOT_REVIVE",
+    "rehearsal_EMPTY_AND_ISOLATED",
+    "rehearsal_SAVE",
+    "rehearsal_SECOND_LOGIN_LOAD",
+    "rehearsal_OTHER_ACCOUNT_EMPTY",
+    "rehearsal_STALE_CAS",
+    "rehearsal_CONCURRENT_CAS",
+    "rehearsal_DELETE_TOMBSTONE",
+    "rehearsal_STALE_CANNOT_REVIVE",
+    "MEDIA_RESERVATION",
+    "MEDIA_CONFIRMED_EXACT",
+    "PHOTO_ORIGINAL_SHA256",
+    "PHOTO_OTHER_ACCOUNT_DENIED",
+    "FAMILY_REFERENCED_PHOTO_PROTECTED",
+    "FAMILY_DELETE_TOMBSTONE",
+    "FAMILY_DELETE_REVOKES_PHOTO",
+    "UNREFERENCED_PHOTO_DELETE"
+  ],
+  "passed": 32,
+  "cleanup": {
+    "createdAuthAccounts": 2,
+    "deletedAccountTombstones": 2,
+    "removedObjects": 4,
+    "verifiedEmptyPrefixes": 4,
+    "authUsers": 0,
+    "activeAccounts": 0,
+    "privateRows": 0,
+    "pendingUploadExpiryRecheck": true,
+    "complete": true,
+    "issues": [],
+    "errors": []
+  },
+  "limitations": {
+    "oauthClientRegistration": false,
+    "oauthPkce": false,
+    "physicalDevices": false,
+    "paidAI": false
+  },
+  "deployment": {
+    "matched": 0,
+    "unmeasured": 3
+  },
+  "recovery": {
+    "journalStored": true,
+    "directory": "output/.env.synk-personal-rehearsal",
+    "cleanupOnly": false
+  }
+}

@@ -1,0 +1,413 @@
+{
+  "version": "fortune-account-20261006",
+  "syntheticAccountsOnly": true,
+  "viewports": [
+    {
+      "state": "home",
+      "width": 320,
+      "pageWidth": 320,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "western-result",
+      "width": 320,
+      "pageWidth": 320,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "saju-result",
+      "width": 320,
+      "pageWidth": 320,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "home",
+      "width": 390,
+      "pageWidth": 390,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "western-result",
+      "width": 390,
+      "pageWidth": 390,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "saju-result",
+      "width": 390,
+      "pageWidth": 390,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "home",
+      "width": 768,
+      "pageWidth": 768,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "western-result",
+      "width": 768,
+      "pageWidth": 768,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "saju-result",
+      "width": 768,
+      "pageWidth": 768,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "home",
+      "width": 1280,
+      "pageWidth": 1280,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "western-result",
+      "width": 1280,
+      "pageWidth": 1280,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "saju-result",
+      "width": 1280,
+      "pageWidth": 1280,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "signed-in-history",
+      "width": 320,
+      "pageWidth": 320,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "signed-in-saju-guide",
+      "width": 320,
+      "pageWidth": 320,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "signed-in-week",
+      "width": 320,
+      "pageWidth": 320,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "signed-in-history",
+      "width": 390,
+      "pageWidth": 390,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "signed-in-saju-guide",
+      "width": 390,
+      "pageWidth": 390,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "signed-in-week",
+      "width": 390,
+      "pageWidth": 390,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "signed-in-history",
+      "width": 768,
+      "pageWidth": 768,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "signed-in-saju-guide",
+      "width": 768,
+      "pageWidth": 768,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "signed-in-week",
+      "width": 768,
+      "pageWidth": 768,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "signed-in-history",
+      "width": 1280,
+      "pageWidth": 1280,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "signed-in-saju-guide",
+      "width": 1280,
+      "pageWidth": 1280,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "signed-in-week",
+      "width": 1280,
+      "pageWidth": 1280,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    }
+  ],
+  "clipboard": {
+    "westernNative": "passed",
+    "sajuNative": "passed",
+    "westernFallback": "passed",
+    "sajuFallback": "passed",
+    "lateSuccessAfterModeChange": "passed",
+    "lateFailureAfterModeChange": "passed"
+  },
+  "modeSwitch": {
+    "unselectedModeHidesPreviousResult": true,
+    "eachModeRestoresSelectionAndInput": true,
+    "staleCopyCleared": true
+  },
+  "birthInput": {
+    "editInvalidatesPreviousResultAndCopy": true,
+    "unknownTimeLeavesHourEmpty": true,
+    "unknownTimeBoundaryWithholdsUncertainPillars": true,
+    "futureDateBlocked": true,
+    "before1900Blocked": true
+  },
+  "midnight": {
+    "western": {
+      "timezone": "America/Los_Angeles",
+      "oldDay": "2026-10-06",
+      "newDay": "2026-10-07",
+      "inputPreserved": true,
+      "westernTitleChanged": true,
+      "birthPillarsUnchanged": false,
+      "staleCopyHidden": true,
+      "freshCopyDate": true
+    },
+    "korean": {
+      "timezone": "America/Los_Angeles",
+      "oldDay": "2026-10-06",
+      "newDay": "2026-10-07",
+      "inputPreserved": true,
+      "westernTitleChanged": false,
+      "birthPillarsUnchanged": true,
+      "staleCopyHidden": true,
+      "freshCopyDate": true
+    }
+  },
+  "keyboard": {
+    "modeEnterAndSpace": true,
+    "signSpace": true,
+    "sajuSubmitEnter": true,
+    "resultTitleFocus": true,
+    "returnToSelectedSignOrBirth": true
+  },
+  "account": {
+    "explicitProfileAndReadingSave": true,
+    "noAutoSave": true,
+    "editsDuringSaveRemainDraftAcrossModeAndDate": true,
+    "revisitRestoresProfilePreferencesAndEntries": true,
+    "storageContainsOnlySyntheticAuthTokens": true,
+    "conflictPreservesServerAndDraftUntilReload": true,
+    "unavailableBlocksSaveButAllowsRetry": true,
+    "jsonExportIncludesProfileAndNotes": true,
+    "filtersAndReopen": true,
+    "individualDeleteAndConfirmedWholeDeletePersist": true,
+    "twoAccountsNeverShareProfileOrHistory": true,
+    "logoutFencesDelayedSaveAndRemovesSession": true
+  },
+  "enrichment": {
+    "switchingToSajuWithoutBirthHidesWesternWeek": true,
+    "birthdaySuggestionAndBothGuides": true,
+    "weekSevenDatesAndSelectDay": true,
+    "unsavedDraftAcrossModes": true,
+    "unsavedDraftsAreIndependentByDate": true
+  },
+  "errors": [],
+  "externalRequests": [],
+  "nonReadRequests": [],
+  "mockedRequests": [
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-account",
+      "account": "a"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-fortune",
+      "account": "a"
+    },
+    {
+      "method": "POST",
+      "path": "/functions/v1/synk-fortune",
+      "account": "a"
+    },
+    {
+      "method": "POST",
+      "path": "/functions/v1/synk-fortune",
+      "account": "a"
+    },
+    {
+      "method": "POST",
+      "path": "/functions/v1/synk-fortune",
+      "account": "a"
+    },
+    {
+      "method": "POST",
+      "path": "/functions/v1/synk-fortune",
+      "account": "a"
+    },
+    {
+      "method": "POST",
+      "path": "/functions/v1/synk-fortune",
+      "account": "a"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-account",
+      "account": "a"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-fortune",
+      "account": "a"
+    },
+    {
+      "method": "POST",
+      "path": "/functions/v1/synk-fortune",
+      "account": "a"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-account",
+      "account": "a"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-fortune",
+      "account": "a"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-account",
+      "account": "a"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-fortune",
+      "account": "a"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-account",
+      "account": "a"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-fortune",
+      "account": "a"
+    },
+    {
+      "method": "POST",
+      "path": "/functions/v1/synk-fortune",
+      "account": "a"
+    },
+    {
+      "method": "POST",
+      "path": "/functions/v1/synk-fortune",
+      "account": "a"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-account",
+      "account": "a"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-fortune",
+      "account": "a"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-account",
+      "account": "a"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-fortune",
+      "account": "a"
+    },
+    {
+      "method": "POST",
+      "path": "/functions/v1/synk-fortune",
+      "account": "a"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-account",
+      "account": "b"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-fortune",
+      "account": "b"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-account",
+      "account": "b"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-fortune",
+      "account": "b"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-account",
+      "account": "a"
+    },
+    {
+      "method": "GET",
+      "path": "/functions/v1/synk-fortune",
+      "account": "a"
+    },
+    {
+      "method": "POST",
+      "path": "/functions/v1/synk-fortune",
+      "account": "a"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/v1/logout",
+      "account": "a"
+    }
+  ],
+  "expectedNetworkErrors": [
+    "Failed to load resource: the server responded with a status of 409 (Conflict)",
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+  ],
+  "allWesternSigns": 12,
+  "clearInputAndResults": "passed",
+  "guestStorageWrites": 0,
+  "guestCookies": 0,
+  "reloadStartsEmpty": true
+}

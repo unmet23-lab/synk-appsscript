@@ -7,6 +7,7 @@ const {createClientLifecycle}=require('./client-lifecycle.cjs');
 const {loadDevelopmentReleases}=require('./local-releases.cjs');
 const {createNativeContent}=require('./native-content.cjs');
 const {configuration}=require('./auth-config.cjs');
+const {resolveAuthConfigPath}=require('./auth-config-path.cjs');
 const {createTokenStore}=require('./auth-store.cjs');
 const {createAuthService,publicError}=require('./auth-service.cjs');
 const {createCompanyRequests}=require('./company-requests.cjs');
@@ -23,7 +24,7 @@ else {
   const clientId=process.argv.find(a=>a.startsWith('--client='))?.slice(9)||'platform';
   runtime={clientId,mode:'development',entry:DEV_URLS[clientId],releases:[]};
   if(clientId==='platform')runtime.releases=loadDevelopmentReleases({root:path.resolve(__dirname,'..'),platform:process.platform,arch:process.arch});
-  developmentAuthConfigPath=process.argv.find(a=>a.startsWith('--auth-config='))?.slice(14);
+  developmentAuthConfigPath=resolveAuthConfigPath();
   if(developmentAuthConfigPath)runtime.auth=JSON.parse(fs.readFileSync(path.resolve(developmentAuthConfigPath),'utf8'));
 }
 if(!Object.hasOwn(CLIENTS,runtime.clientId)||!['development','release'].includes(runtime.mode)||!safeEntry(runtime.entry,runtime.mode)||(runtime.clientId==='platform'&&runtime.entry!==PLATFORM_ENTRY)||(runtime.clientId!=='platform'&&runtime.entry===PLATFORM_ENTRY))throw Error('Invalid desktop runtime configuration');
@@ -31,13 +32,13 @@ const smoke=runtime.mode==='development'&&process.argv.includes('--synk-smoke');
 const current=identity(runtime.clientId,runtime.mode),entry=runtime.entry;
 const teacherPreview=createTeacherPreview({packaged,mode:runtime.mode,clientId:runtime.clientId,executable:process.execPath,appRoot:app.getAppPath(),spawn,authConfigPath:developmentAuthConfigPath});
 const smokeArtifacts=smoke?(packaged?path.join(app.getPath('temp'),'SYNK Desktop Smoke',current.sessionScope):path.join(__dirname,'..','artifacts')):null;
-const authConfig=configuration(runtime.auth,runtime.clientId,runtime.mode);
+const authConfig=configuration(runtime.mode==='development'&&!runtime.auth?.clients?.[runtime.clientId]?null:runtime.auth,runtime.clientId,runtime.mode);
 app.setName(current.productName);
 app.setPath('userData',path.join(app.getPath('appData'),'SYNK Desktop',current.sessionScope+(smoke?'.smoke':'')));
 app.setPath('sessionData',path.join(app.getPath('userData'),'Session'));
 if(process.platform==='win32')app.setAppUserModelId(current.appId);
 let window,protocolRegistered=false,auth,installations;
-const productPreviews=createProductPreviews({packaged,mode:runtime.mode,clientId:runtime.clientId,executable:process.execPath,appRoot:app.getAppPath(),spawn,accountStatus:()=>auth?.status()});
+const productPreviews=createProductPreviews({packaged,mode:runtime.mode,clientId:runtime.clientId,executable:process.execPath,appRoot:app.getAppPath(),spawn,authConfigPath:developmentAuthConfigPath,accountStatus:()=>auth?.status()});
 app.on('before-quit',()=>{auth?.dispose();installations?.dispose();});
 if(!app.requestSingleInstanceLock())app.quit();
 else {
@@ -69,7 +70,7 @@ function createWindow(){
   if(!protocolRegistered){const nativeContent=createNativeContent({appRoot:app.getAppPath()});ownSession.protocol.handle('synk-desktop',request=>request.url.startsWith('synk-desktop://platform/')&&runtime.clientId==='platform'?nativeContent(request):new Response(`<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${current.productName}</title><h1>${current.name}</h1><p>앱 연결을 준비하고 있어요.</p><p>${runtime.mode==='development'?'개발 미리보기입니다. 해당 로컬 서버를 시작한 뒤 앱을 다시 열어 주세요.':'지금은 연결할 수 없어요. 잠시 뒤 다시 열어 주세요.'}</p></html>`,{headers:{'content-type':'text/html; charset=utf-8','content-security-policy':"default-src 'none'; base-uri 'none'; frame-ancestors 'none'"}}));}
   protocolRegistered=true;
   const isPlatform=runtime.clientId==='platform';
-  window=new BrowserWindow({width:isPlatform?1440:1180,height:isPlatform?940:860,minWidth:isPlatform?960:720,minHeight:isPlatform?680:580,title:current.productName,icon:path.join(app.getAppPath(),'assets',runtime.clientId+'.png'),show:false,autoHideMenuBar:true,frame:!isPlatform,backgroundColor:isPlatform?'#f6f4ef':'#ffffff',webPreferences:preferences(path.join(__dirname,'preload.cjs'),partition)});
+  window=new BrowserWindow({width:isPlatform?1440:1180,height:isPlatform?940:860,minWidth:isPlatform?960:720,minHeight:isPlatform?680:580,title:current.productName,icon:path.join(app.getAppPath(),'assets',runtime.clientId+'.png'),show:false,autoHideMenuBar:true,frame:!isPlatform,backgroundColor:isPlatform?'#08090C':'#ffffff',webPreferences:preferences(path.join(__dirname,'preload.cjs'),partition)});
   Menu.setApplicationMenu(process.platform==='darwin'?Menu.buildFromTemplate([{label:current.productName,submenu:[{role:'about'},{role:'quit'}]},{label:'Edit',submenu:[{role:'undo'},{role:'redo'},{type:'separator'},{role:'cut'},{role:'copy'},{role:'paste'},{role:'selectAll'}]}]):null);
   const contents=window.webContents;
   if(smoke)contents.on('console-message',details=>{if(details.level==='error')smokeConsoleErrors.push({message:details.message.slice(0,300),source:details.sourceId.split('?')[0],line:details.lineNumber});});

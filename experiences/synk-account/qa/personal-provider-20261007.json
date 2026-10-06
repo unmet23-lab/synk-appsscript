@@ -1,0 +1,70 @@
+{
+  "startedAt": "2026-10-06T15:23:49.242Z",
+  "endedAt": "2026-10-06T15:26:07.204Z",
+  "commit": "285bf919fe5273d2a0b40f339bfd26d4e5e530b8",
+  "toolSha256": "18657c911966687c0567b5fdfc4c61bfae303c446da8c396404da24cb89ef5a2",
+  "exitCode": 1,
+  "target": "synk-core-rehearsal",
+  "mode": "provider-rehearsal",
+  "checks": [
+    "care_EMPTY_AND_ISOLATED",
+    "care_SAVE",
+    "care_SECOND_LOGIN_LOAD",
+    "care_OTHER_ACCOUNT_EMPTY",
+    "care_STALE_CAS",
+    "care_CONCURRENT_CAS",
+    "care_DELETE_TOMBSTONE",
+    "care_STALE_CANNOT_REVIVE",
+    "path_EMPTY_AND_ISOLATED",
+    "path_SAVE",
+    "path_SECOND_LOGIN_LOAD",
+    "path_OTHER_ACCOUNT_EMPTY",
+    "path_STALE_CAS",
+    "path_CONCURRENT_CAS",
+    "path_DELETE_TOMBSTONE",
+    "path_STALE_CANNOT_REVIVE",
+    "rehearsal_EMPTY_AND_ISOLATED",
+    "rehearsal_SAVE",
+    "rehearsal_SECOND_LOGIN_LOAD",
+    "rehearsal_OTHER_ACCOUNT_EMPTY",
+    "rehearsal_STALE_CAS",
+    "rehearsal_CONCURRENT_CAS",
+    "rehearsal_DELETE_TOMBSTONE",
+    "rehearsal_STALE_CANNOT_REVIVE",
+    "MEDIA_RESERVATION",
+    "MEDIA_CONFIRMED_EXACT",
+    "PHOTO_ORIGINAL_SHA256",
+    "PHOTO_OTHER_ACCOUNT_DENIED",
+    "FAMILY_REFERENCED_PHOTO_PROTECTED",
+    "FAMILY_DELETE_TOMBSTONE",
+    "FAMILY_DELETE_REVOKES_PHOTO",
+    "UNREFERENCED_PHOTO_DELETE"
+  ],
+  "passed": 32,
+  "cleanup": {
+    "createdAuthAccounts": 2,
+    "deletedAccountTombstones": 0,
+    "removedObjects": 0,
+    "verifiedEmptyPrefixes": 0,
+    "pendingUploadExpiryRecheck": true,
+    "complete": false,
+    "issues": [
+      "ACCOUNT_DISCOVERY",
+      "AUTH_REMOVAL",
+      "AUTH_REMOVAL",
+      "CLEANUP_VERIFICATION"
+    ]
+  },
+  "limitations": {
+    "oauthClientRegistration": false,
+    "oauthPkce": false,
+    "physicalDevices": false,
+    "paidAI": false
+  },
+  "deployment": {
+    "matched": 0,
+    "unmeasured": 3
+  },
+  "error": "CLEANUP_NEEDS_ATTENTION",
+  "ok": false
+}

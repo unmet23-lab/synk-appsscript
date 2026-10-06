@@ -1,0 +1,61 @@
+{
+  "at": "2026-10-06T20:10:26.670Z",
+  "mode": "synthetic-portal-local-family-browser-return",
+  "checks": [
+    {
+      "name": "approved-shape reaches the actual family shell",
+      "ok": true
+    },
+    {
+      "name": "approved-shape renders without 375px overflow",
+      "ok": true
+    },
+    {
+      "name": "approved-shape with no pending login never exchanges a token",
+      "ok": true
+    },
+    {
+      "name": "denied-shape reaches the actual family shell",
+      "ok": true
+    },
+    {
+      "name": "denied-shape renders without 375px overflow",
+      "ok": true
+    },
+    {
+      "name": "denied-shape with no pending login never exchanges a token",
+      "ok": true
+    },
+    {
+      "name": "both actual Chrome requests are cross-site GET document navigations",
+      "ok": true
+    },
+    {
+      "name": "no browser runtime errors or external provider calls",
+      "ok": true
+    }
+  ],
+  "receivedNavigations": [
+    {
+      "path": "/",
+      "method": "GET",
+      "mode": "navigate",
+      "destination": "document"
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "mode": "navigate",
+      "destination": "document"
+    }
+  ],
+  "errors": [],
+  "blockedExternal": [],
+  "realAuthentication": false,
+  "tokenExchange": false,
+  "existingProfilesTouched": false,
+  "runtime4296Changed": false,
+  "ok": true,
+  "passed": 8,
+  "total": 8
+}

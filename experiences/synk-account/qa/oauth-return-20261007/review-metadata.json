@@ -1,0 +1,48 @@
+{
+  "startedAt": "2026-10-06T20:08:35.108Z",
+  "requestedModel": "claude-opus-5-5",
+  "requestedEffort": "max",
+  "cli": "official Claude Code",
+  "authMethod": "claude.ai",
+  "subscriptionType": "max",
+  "tools": [
+    "Read",
+    "Glob",
+    "Grep"
+  ],
+  "scope": "read-only OAuth local return",
+  "files": [
+    {
+      "file": "experiences/synk-account/oauth-return.mjs",
+      "sha256": "e2856b06a1d0999e65ab76875dd6368b82397e5a15456bc0d56bcbe975a9fc03"
+    },
+    {
+      "file": "experiences/synk-account/server-shared.mjs",
+      "sha256": "d9c38d42aadc984a3e1ad504df3ec154e0e98a02a4aef528dfa8ab981ba8de26"
+    },
+    {
+      "file": "experiences/synk-account/tests/oauth-return.test.mjs",
+      "sha256": "532462b48b7e55731ce8fbc8c8a535b4d08bcb2af3513e64b53e44a34ece63b4"
+    },
+    {
+      "file": "experiences/relationship-care/server.mjs",
+      "sha256": "8b63bc404c5182392db25f62542e7cc54e103845fb3d62ea91ea12975c698934"
+    },
+    {
+      "file": "experiences/relationship-care/tests/server.test.mjs",
+      "sha256": "13fa15a946b9e10317cfbbb6c339b242f4cf1c4caa43578d7cb94cda83a14280"
+    },
+    {
+      "file": "experiences/family-album/server.mjs",
+      "sha256": "a58b944188351c401e77a9c597d4676a8fee16b1eb6dfdb1369ae705ef34be78"
+    },
+    {
+      "file": "experiences/family-album/tests/server.test.mjs",
+      "sha256": "82436d701ec8519ea4297229641c8225eab480d2311815f6a6d5f3b675758b4d"
+    },
+    {
+      "file": "experiences/synk-account/src/core.mjs",
+      "sha256": "5c85d1d957403ba1b04795e115d9cb40f26ede59e8dbbfbaa743666ee3e1cbbd"
+    }
+  ]
+}

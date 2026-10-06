@@ -1,0 +1,146 @@
+{
+  "version": "western-and-saju-20261006",
+  "viewports": [
+    {
+      "state": "home",
+      "width": 320,
+      "pageWidth": 320,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "western-result",
+      "width": 320,
+      "pageWidth": 320,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "saju-result",
+      "width": 320,
+      "pageWidth": 320,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "home",
+      "width": 390,
+      "pageWidth": 390,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "western-result",
+      "width": 390,
+      "pageWidth": 390,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "saju-result",
+      "width": 390,
+      "pageWidth": 390,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "home",
+      "width": 768,
+      "pageWidth": 768,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "western-result",
+      "width": 768,
+      "pageWidth": 768,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "saju-result",
+      "width": 768,
+      "pageWidth": 768,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "home",
+      "width": 1280,
+      "pageWidth": 1280,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "western-result",
+      "width": 1280,
+      "pageWidth": 1280,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    },
+    {
+      "state": "saju-result",
+      "width": 1280,
+      "pageWidth": 1280,
+      "minButtonHeight": 44,
+      "minTextSize": 11
+    }
+  ],
+  "clipboard": {
+    "westernNative": "passed",
+    "sajuNative": "passed",
+    "westernFallback": "passed",
+    "sajuFallback": "passed",
+    "lateSuccessAfterModeChange": "passed",
+    "lateFailureAfterModeChange": "passed"
+  },
+  "modeSwitch": {
+    "unselectedModeHidesPreviousResult": true,
+    "eachModeRestoresSelectionAndInput": true,
+    "staleCopyCleared": true
+  },
+  "birthInput": {
+    "editInvalidatesPreviousResultAndCopy": true,
+    "unknownTimeLeavesHourEmpty": true,
+    "unknownTimeBoundaryWithholdsUncertainPillars": true,
+    "futureDateBlocked": true,
+    "before1900Blocked": true
+  },
+  "midnight": {
+    "western": {
+      "timezone": "America/Los_Angeles",
+      "oldDay": "2026-10-06",
+      "newDay": "2026-10-07",
+      "inputPreserved": true,
+      "westernTitleChanged": true,
+      "birthPillarsUnchanged": false,
+      "staleCopyHidden": true,
+      "freshCopyDate": true
+    },
+    "korean": {
+      "timezone": "America/Los_Angeles",
+      "oldDay": "2026-10-06",
+      "newDay": "2026-10-07",
+      "inputPreserved": true,
+      "westernTitleChanged": false,
+      "birthPillarsUnchanged": true,
+      "staleCopyHidden": true,
+      "freshCopyDate": true
+    }
+  },
+  "keyboard": {
+    "modeEnterAndSpace": true,
+    "signSpace": true,
+    "sajuSubmitEnter": true,
+    "resultTitleFocus": true,
+    "returnToSelectedSignOrBirth": true
+  },
+  "errors": [],
+  "externalRequests": [],
+  "nonReadRequests": [],
+  "allWesternSigns": 12,
+  "clearInputAndResults": "passed",
+  "storageWrites": 0,
+  "cookies": 0,
+  "reloadStartsEmpty": true
+}

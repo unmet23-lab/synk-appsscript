@@ -1,0 +1,18 @@
+사용자가 모든 SYNK 앱/서비스를 하나의 기존 SYNK ID로 통합하고, 플레저 및 개인 기록을 계정에 저장하도록 요청했습니다. 지금은 로컬 구현과 합성 테스트가 완료됐고 운영 적용 전 최종 읽기 전용 검수입니다.
+
+AGENTS.md 및 docs/AI_운영원칙.md를 따르세요. 자격증명 파일(.env, config.json, auth-config.json), 사용자 자료, 홈 디렉터리는 읽거나 출력하지 마세요. 수정/커밋/네트워크/배포는 하지 마세요. 다른 작업의 dirty 변경이 많으므로 아래 지정한 변경과 연관 원문만 읽으세요. 도구는 Read,Glob,Grep만 제공됩니다.
+
+검수 파일 범위:
+SYNK-appsscript/experiences/relationship-care/{account.mjs,care-sync.mjs,model.mjs,app.mjs,server.mjs,tests/*.test.mjs}
+SYNK-appsscript/experiences/synk-account/src/{product-account.mjs,document-sync.mjs,personal-data.mjs,personal-media.mjs,account-notebook.mjs,core.mjs}
+SYNK-appsscript/experiences/synk-account/server-shared.mjs 및 tests/{personal-account,personal-media,shared-server}.test.mjs
+SYNK-appsscript/experiences/{path-vr,conversation-rehearsal,family-album}/{app.mjs,server.mjs}
+SYNK-appsscript/desktop/src/{personal-account,personal-requests,personal-preload,care-account,care-requests,care-preload}.cjs (존재하는 파일만)
+SYNK-talk/lib/{synk-care-server,synk-care-store,synk-personal-server,synk-personal-store,synk-personal-media}.js
+SYNK-talk/supabase/functions/{synk-care,synk-personal,personal-media-cleanup}/index.ts
+SYNK-talk/supabase/migrations/{20261006100000_synk_care_c16,20261007010000_synk_personal_c16}.sql
+SYNK-talk/docs/개인자료_계정보관_API.md
+
+중점: 기존 중앙 SYNK ID 재사용, 검증된 계정/세션 소유권, API 요청/응답 계약, account A→B 전환 및 늦은 async 결과 격리, CAS/삭제 tombstone, 사진·음성 원본 크기/SHA256/MIME/서명 URL 검증과 불변성, orphan 삭제/계정삭제, 기존서비스를 망가뜨리지 않는 두 최소 migration. 개인정보/인증/실제 데이터 손실/사용 불가능 문제만 우선 보고. 이미 수정한 POST query 문제는 최신 파일 기준으로 보세요. 운영과 실제사용자 로그인 왕복은 아직 미실행이며 완료로 부르지 않습니다.
+
+결과는 한국어로, 실제 문제마다 심각도(P0/P1/P2), 절대파일경로와 줄, 재현 가능한 원인/실패 동작/최소수정 제안. 추정만으로 문제를 만들지 말고 읽지 못한 범위도 밝히세요. 마지막에는 검수한 범위의 운영 적용 가능 여부(가능/수정 필요/근거 부족)를 적으세요.

@@ -1,0 +1,7 @@
+직전 Opus 5.5 코어 후속 검수에서 P2-E 한 건과 권장 P3만 남았습니다. 공식 claude-opus-5-5 / --effort max를 유지하며 Read/Glob/Grep 읽기만 하세요. 이번에는 아래 UI 차이와 회귀만 검사하고 이전에 해결한 서버/다른 기능 전체를 다시 읽지 마세요. .env·키·토큰·실사용자 자료 접근 금지.
+
+- experiences/relationship-care/app.mjs의 account-import-device에서 preparations를 합친 후 .slice(-500)를 적용했습니다. qa/account-sync-smoke.cjs의 마지막 cap 시나리오와 qa/account-sync-20261006/result.json을 확인하세요. 실제 Chrome43/43, 계정500+새guest1에서 사람/일정/원문/기억 유지, 준비500유지 및 guest원본유지를 확인했습니다.
+- 같은 app.mjs의 person-history 기억/원문 삭제는 revokeCareMemory 결과로 지워질 저장 문구/복사 기록 수를 확인창에 표시합니다. 짧은 단어가 포함된 문구도 삭제될 수 있음을 알립니다. 사용자 확인 중 state 객체가 바뀌면 삭제하지 않고 다시 확인하도록 하여 안내한 대상과 실제 삭제가 달라지지 않게 했습니다. 기존 계정세대/사람검사도 유지합니다. qa/personalization-smoke.cjs는 실제 확인창 문구1개·복사1개 수와 삭제후 다음안부 재사용차단을 확인하고33/33 통과했습니다.
+- 모델/서버/runtime은 직전 통과판에서 바뀌지 않았습니다. 리허설2migration/3functions/flags 및 두 공급자 합성시험→운영계정연결 순서는 유지합니다. 등록 도구는 별도 동일Opus5.5/max 검수에서 통과했습니다.
+
+실제 남은 문제만 파일·줄·재현근거로 짧게 보고하고, P2-E 해결 및 해당 UI 운영 적용 여부를 알려 주세요. 시험실행·SHA계산·원격확인은 이번읽기검수범위가 아니며 그 범위를 정직하게 유지하세요.

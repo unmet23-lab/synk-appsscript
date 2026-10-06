@@ -1,8 +1,66 @@
 # SYNK 데스크톱 클라이언트
 
+## 2026-10-06 플랫폼 화면 리디자인 — 싱ㅋ 시그널
+
+유호님 요청(「GPT가 만든 플랫폼 디자인이 촌스럽다. 기능적이면서 최신·젊은 디자인으로 전부 교체, 홈페이지의 싱ㅋ처럼 쿨하게」)으로 런처 화면 전체를 Claude가 다시 그렸다. 기능·권한·IPC·저장 키·요소 ID는 그대로이고 겉모습과 화면 구성만 바꿨다. 규칙과 새 앱을 더하는 법은 [플랫폼 화면 — 싱ㅋ 시그널](../docs/디자인/플랫폼_시그널/README.md), Recent(옛 Godly) 136개 항목 조사는 [조사 기록](../docs/디자인/플랫폼_시그널/조사_20261006.md)에 있다. 웹 플랫폼(`experiences/synk-account/platform.html`)도 같은 언어로 바꿨다.
+
+- 밤(기본)·낮·기기 설정 테마를 설정에서 고른다(이 기기의 `synk-platform-theme`). 플랫폼 창 배경도 밤 바탕 `#08090C`로 바꿨다.
+- 앱마다 사업 색 포스터에 큰 한글 이름(월드·메신저·패스·펄스·플레저·운세…). 승인 그림은 흑백 곱하기 이중톤으로만 쓰고 펠트 판 단추·칩은 쓰지 않는다. 상단 한 줄(싱ㅋ 표식·알약 메뉴·계정), 왼쪽 라이브러리(글자 타일·LED 상태), 아래 떠 있는 상태 알약.
+- 같은 날 GPT의 「무료 운세」 추가와 3방향으로 합쳤다(운세 포스터는 팝 `#E05C97`, 혜택이 넷이면 2×2). 합친 상태에서 `node --test desktop/tests/*.test.cjs` 168/168, `experiences/synk-account` 95/95, 숨김 Electron 반응형 87/87·회원 혜택 19/19·플레저 런처·운세 38/38(합성 계정, 로그인·설치·외부 요청 없음). 0.4.0 설치 패키지는 다시 묶지 않았다(이전 화면).
+
+## 2026-10-06 회원 혜택 — SYNK FOR YOU
+
+상단 **회원 혜택** 메뉴와 라이브러리 소개 배너를 추가했다. 브랜드 문구는 **소중한 순간을, 더 잘.**이며, **플레저 → 무료 운세 → 중요한 대화 리허설 → 가족 이야기 앨범** 순서로 네 서비스를 소개한다. 기간제 무료체험으로 표시하지 않고 **SYNK 회원 무료 제공 예정**으로 안내한다.
+
+공개 소개는 로그인·앱 메뉴 권한과 분리된다. 네 서비스의 소개·상세·이동·검색 결과는 모두 볼 수 있지만, 실행은 각각 서버 `library.care`·`library.fortune`·`library.rehearsal`·`library.family-album` 권한과 미패키징 PC 개발판의 `productPreviewsAvailable` 검사를 모두 만족해야 한다. 공개 카탈로그·학생 역할·관심사나 다른 서비스 권한만으로 실행 권한이 생기지 않는다. 공유 카탈로그는 [`renderer/benefits.mjs`](renderer/benefits.mjs)이며 웹 플랫폼도 이 파일을 읽는다.
+
+리허설과 가족 앨범도 별도 로컬 개발 클라이언트로 연결했다. 회원 무료 제공은 운영 방향이며, 정식 계정 동기화·온라인 공동 편집·운영 이용권 배포는 아직 없다.
+
+| 개발 클라이언트 | 로컬 서버 | 실행 | 별도 저장소·세션 |
+|---|---|---|---|
+| 무료 운세 | `http://127.0.0.1:4299/` · `node experiences/daily-fortune/server.mjs` | `npm --prefix desktop run dev:fortune` | `im.synk.fortune.preview` |
+| 중요한 대화 리허설 | `http://127.0.0.1:4297/` · `node experiences/conversation-rehearsal/server.mjs` | `npm --prefix desktop run dev:rehearsal` | `im.synk.rehearsal.preview` |
+| 가족 이야기 앨범 | `http://127.0.0.1:4298/` · `node experiences/family-album/server.mjs` | `npm --prefix desktop run dev:family-album` | `im.synk.family-album.preview` |
+
+리허설은 준비된 시나리오·직접 작성한 답변·자기 회고·재시도 비교를 사용한다. 생성형 AI 대화로 표시하지 않는다. 가족 앨범은 사진·이야기·원래 녹음한 음성과 누가 보탠 기억인지를 이 기기에 저장한다. 온라인 가족 초대·공유로 표시하지 않는다. 네이티브 마이크 권한은 계속 거절하며 음성 파일 첨부와 고정 브라우저 열기를 사용한다.
+
+네이티브 내보내기는 자기 앱의 루트 문서가 만든 동일 출처 Blob만 받는다. 리허설은 `synk-rehearsal.json`(`application/json`, 최대 500,000 bytes)과 `synk-rehearsal-book.html`(`text/html`, 최대 2 MiB), 가족 앨범은 `synk-family-album.json`(`application/json`, 최대 32 MiB)과 `synk-family-album.zip`(`application/zip`, 최대 64 MiB)을 허용한다. 소장용 파일은 독립 열람·인쇄와 원본 보관용이며 복원은 기존 JSON 파일로 한다. 저장 중 커진 파일도 취소한다. 기존 플레저 ICS·JSON 상한과 PATH 다운로드 금지는 유지한다.
+
+무료 운세는 **별자리 운세 / 한국 사주**를 선택한다. 별자리는 12궁의 오늘 운세, 사주는 양력 생년월일·출생시각(시간 모름 가능)으로 KST 기준 만세력 네 기둥·일간·겉글자 오행 분포와 전통 상징에 따른 풀이를 제공한다. 이번 주 읽을거리·풀이 안내와 함께 로그인한 계정에 출생정보·선호 방식·결과·실천 메모를 직접 저장하는 보관함을 추가했다. 비회원 입력은 메모리만 사용하며 유료 AI 호출은 없다. 계정 저장은 고유 `fortune` OAuth 키와 별도 암호화 저장소, 고정 `synk-fortune` API로 연결한다. 2026-10-06 운영·리허설 DB와 함수 v1, 전용 OAuth·동의 포털·로컬 공개 설정을 연결했고 리허설 합성 계정으로 실제 OAuth 저장 왕복을 확인했다. 운영 설정의 네이티브 기동은 configured/ready/secureStorage true·signedIn false이며 실제 회원 로그인·두 실물 기기 검증은 미실행이다. 구현·실행·검증 범위는 [무료 운세 README](../experiences/daily-fortune/README.md)를 따른다. 웹은 loopback 개발 환경에만 고정 앱 링크를 표시하며, 운영 이용권 부여·일반 공개 운세 웹 호스팅·새 설치본 배포는 이번 반영 범위에 포함하지 않는다.
+
+계정·보관함 확장판의 초기 검증 이력(2026-10-06): 앱 58/58·관련 데스크톱/웹 55/55·중앙 백엔드 80/80 시험과 [합성 계정 브라우저 24상태](../experiences/daily-fortune/qa/account-browser-smoke.json)를 통과했다. [당시 운세 네이티브 창](artifacts/fortune-account-native-20261006.json)은 독립 프로필·6개 인증/요청 메서드·암호화 저장소 가용성을 확인한 로그인 미설정 이력이다. 후속 앱 60개 시험과 운영 설정 기동·원격 연결 결과는 [현재 운세 원문](../experiences/daily-fortune/README.md)에 있으며, 두 기록 모두 실제 회원 인증 완료를 뜻하지 않는다.
+
+계정·보관함 추가 전 별자리·사주판 검증 이력(2026-10-06): 앱 자동 시험 20/20, 관련 플랫폼 자동 시험 56/56, 웹 빌드 일치 검사를 통과했다. [당시 Chrome 상호작용 검사](../experiences/daily-fortune/qa/saju-browser-smoke.json)에서 네 화면 폭의 선택·사주 계산·복사·초기화와 저장/외부 전송 없음을 확인했고, [당시 네이티브 창](artifacts/fortune-saju-native-20261006.json)도 새 앱을 오류 없이 로드했다. 계정 확장판의 최신 검증과 구분한다.
+
+별자리·사주 추가 전 무료 운세 연결 검증 이력(2026-10-06): 데스크톱·웹 관련 자동 시험 175/175, [플랫폼 실제 화면 38/38](artifacts/fortune-platform-20261006.json)을 통과했다. 1280·390·320px에서 플레저 다음 배치·검색·상세·이미지와 합성 이용권/철회를 확인했다. [독립 운세 클라이언트](artifacts/fortune-client-native-20261006.json)도 숨김 Electron에서 4299 로드·독립 세션·콘솔 오류 없음으로 확인했다. 운영 로그인·회원 권한 부여·배포 검증은 아니다.
+
+운세 추가 전 검증 이력: 후속 두 앱 연결을 포함한 전체 데스크톱 시험 **166/166** 통과. 고정 포트·별도 세션·제품 간 권한 거절·서버 메뉴 권한 철회·정확한 파일명/MIME/용량·사후 스트림 상한·개인화 목록을 확인했다. 이번 두 앱의 실제 화면 검증은 각 앱의 QA 범위를 따른다. 아래 숨김 Electron 캡처는 두 서비스가 소개 상태였던 초기 회원 혜택 화면의 이력이며 현재 두 앱 실행 검증을 뜻하지 않는다.
+
+초기 소개 화면 검증 이력: 1280·390·320px에서 목록·세 상세·돌아가기·권한 철회·기존 플레저 미리보기 브리지 연결 **19/19**. 가로 넘침·이미지 로딩 오류·콘솔 오류·외부 요청 0개. [당시 결과](artifacts/benefits-native-20261005.json), [PC 화면](artifacts/platform-benefits-1280.png), [320px 화면](artifacts/platform-benefits-320.png). 운영 로그인·실제 앱 실행·유료 AI·설치 패키지 재배포를 뜻하지 않는다.
+
+## 2026-10-05 SYNK 플레저 초기 개발
+
+제품 목록에 **SYNK 플레저**를 추가했다. 2026-10-05 사용자 요청으로 이전 가칭 챙김에서 플레저로 이름을 확정했다. 생일·경조사와 관계별 말투를 준비하는 [관계 챙김 로컬 MVP](../experiences/relationship-care/README.md)이며, 플랫폼과 별도인 `im.synk.care.preview` 프로필·Chromium 세션을 사용한다. 소스 제품 목록은 기존 6개와 플레저를 합쳐 7개다.
+
+소스 플랫폼은 서버가 확인한 `product:platform,key:library.care` 메뉴 권한이 있을 때만 플레저를 표시한다. 학생·회사 역할이나 관심사에서 이 권한을 추론하지 않으며 운영 이용권을 부여하지 않았다. 미패키징 개발 플랫폼에서 **플레저 MVP 열기**를 누르면 고정된 로컬 앱을 별도 프로세스로 연다. 운영 로그인이 없는 개발 검토는 다음 명령을 사용한다.
+
+```powershell
+# 저장소 루트: 먼저 앱 서버 실행
+node experiences/relationship-care/server.mjs
+# 다른 터미널: 별도 개발 클라이언트 실행
+cd desktop
+npm run dev:care
+```
+
+고정 입구는 `http://127.0.0.1:4296/`다. `synkProduct.openInBrowser()`도 이 주소만 열며 임의 URL·인증 토큰·회사 자료를 받지 않는다. 네이티브 저장은 자기 문서가 만든 동일 출처 Blob 중 `synk-care.ics`(`text/calendar`, 최대 1 MiB), `synk-care.json`(`application/json`, 최대 4 MiB)만 저장 대화상자로 연결한다. PATH의 다운로드 금지와 별도 세션은 유지한다.
+
+초기판은 이 PC에서 준비된 받아쓰기와 전사된 대화에서 관찰한 특징을 사용한다. 화자와 원하는 표현은 직접 확인하고, 일정·메시지 초안을 고친다. 외부 AI·자동 발송·운영 SYNK ID 동기화·백그라운드 푸시·새 배포 패키지는 연결하지 않았다. 네이티브 미리보기의 OS 알림 권한도 열지 않았으며 앱 내 일정 안내와 캘린더 파일을 사용한다.
+
+확인 명령은 `node --test desktop/tests/*.test.cjs`(156개 통과)와 서버 실행 뒤 `node desktop/tools/care-native-smoke.cjs`다. 후자는 실제 숨김 Electron에서 합성 메뉴 권한의 런처 1280/390/320px, 계정 전환과 제품 미리보기 호출, 앱의 네이티브 CSP, 합성 ICS/JSON 저장 완료를 검사한다. 운영 로그인·실제 연락·유료 AI는 호출하지 않는다. [네이티브 11/11 및 실제 product-main 부팅 검증](artifacts/care-native-20261005.json)을 통과했다. 별도 세션·실제 preload·Node 차단과 합성 ICS/JSON의 DownloadItem `completed` 및 저장 본문 일치를 확인했다. 앱 서버 없이 `--launcher-only`를 붙인 [런처 6/6 검증](artifacts/care-launcher-20261005.json)도 가능하다. 1280/390/320px의 가로 넘침·이미지·계정 전환과 미리보기 호출을 통과했고 [PC 화면](artifacts/platform-care-1280.png)과 [320px 화면](artifacts/platform-care-320.png)을 직접 확인했다. 콘솔 오류·외부 요청은 0개였다.
+
 ## 2026-10-02 현재 소스 — 내 작업실 통합
 
-현재 **소스 개발 플랫폼**의 제품 목록은 WORLD·메신저·교사·PATH·PULSE·외부 창작자/파트너(Partners) 6개다. 실제 라이브러리는 계정 권한에 해당하는 항목만 표시한다. 교사·PATH는 별도 로컬 MVP, PULSE·Partners는 준비 중 상세다. 설치·실행·최근 이용 시간은 실제 확인된 상태만 표시한다.
+2026-10-02 당시 **소스 개발 플랫폼**의 제품 목록은 WORLD·메신저·교사·PATH·PULSE·외부 창작자/파트너(Partners) 6개였다. 실제 라이브러리는 계정 권한에 해당하는 항목만 표시한다. 교사·PATH는 별도 로컬 MVP, PULSE·Partners는 준비 중 상세다. 설치·실행·최근 이용 시간은 실제 확인된 상태만 표시한다.
 
 **Studio의 제작·검토와 SHIFT의 AI 업무 연습은 SYNK Messenger → 내 작업실로 통합했다.** 플랫폼의 독립 Studio/SHIFT 항목, SHIFT 네이티브 미리보기와 `dev:shift` 명령을 종료했다. 제작 데스크·제작 도구·게시 전 점검은 기존 회사 작업 흐름을 사용하며 AI 업무 연습은 같은 작업실 안에서 이어간다. [회사 작업실 구현 범위](../docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE.md), [재사용하는 실습 모듈](../experiences/shift-workbench/README.md)을 따른다. 별도 외부 기업 교육 고객 공간은 만들지 않는다. SHIFT 사업 브랜드와 기존 실습 원본·개인 저장 데이터는 삭제하지 않았다.
 

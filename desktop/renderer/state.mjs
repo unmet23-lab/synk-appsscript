@@ -1,3 +1,4 @@
+import {MEMBER_BENEFITS} from './benefits.mjs';
 export const INSTALLABLE_IDS=['world','messenger'];
 export const APPS={
   world:{name:'SYNK WORLD',short:'WORLD',icon:'world.png',category:'PLAY · LEARN · CONNECT',description:'놀다 보면, 나의 세계가 넓어진다.',cover:'world-cover.webp',alt:'리듬 게임에 사용된 펠트 세계의 장면',caption:'SIGNAL RHYTHM · WORLD의 게임 아트',stage:'development',audience:'한국어를 배우는 학생',keywords:'월드 학습 게임 학생 토픽 TOPIK',summary:'미니게임·Town·숙제·AI 코칭을 연결하는 학습 클라이언트입니다.'},
@@ -6,7 +7,16 @@ export const APPS={
   path:{name:'SYNK PATH',short:'PATH',icon:'world.png',category:'EXPLORE · PRACTICE · PREPARE',description:'한국에서의 첫날을, 먼저 경험해 보세요.',cover:'world.png',alt:'진로 준비를 나타내는 승인 펠트 책',caption:'VR CAMPUS PRACTICE · LOCAL MVP',stage:'preview',previewLabel:'VR 상황 연습 · 로컬 MVP',audience:'한국 유학·진로·취업을 준비하는 학습자',keywords:'패스 VR 가상 캠퍼스 진로 진학 취업 이력서 면접 목표',summary:'가상 캠퍼스의 안내데스크·수업실·진로상담실을 탐색하며 상황을 연습합니다. 내가 고른 목표와 시간에 맞춰 첫 연습을 추천하고 다음 준비를 정리합니다.',boundary:'가상 상황을 사용하는 로컬 MVP입니다. VR은 지원 브라우저·장비가 필요하며 실제 헤드셋 검증은 남아 있습니다. 실제 학교·기업 연결과 진학·취업 보장은 제공하지 않습니다.',features:[['공간을 직접 탐색','PC·모바일의 3D 화면과 지원 브라우저의 VR에서 같은 공간을 탐색합니다.'],['나에게 필요한 상황 연습','목표와 가용 시간에 맞춰 연습을 고르고 선택의 이유와 다음 준비 항목을 확인합니다.'],['준비 기록 이어가기','이 기기에 저장하는 데 동의하면 연습 기록을 이어가고 언제든 삭제할 수 있습니다.']]},
   pulse:{name:'SYNK PULSE',short:'PULSE',icon:'messenger.png',category:'BRIEF · CREATE · DELIVER',description:'고객의 생각이, 작품으로 이어지는 곳.',cover:'laptop.webp',alt:'고객과 작품 협업을 나타내는 승인 펠트 노트북',caption:'CLIENT & CREATIVE WORK · IN PLANNING',stage:'planned',audience:'PULSE 고객·프로젝트 제작 담당자·작품 팬',keywords:'펄스 고객 작품 프로젝트 발주 피드백 영상 브랜드',summary:'고객의 요청·검토·최종 전달과 자체 작품·IP를 만나는 공간을 준비합니다.',boundary:'확장 후보 · 준비 중. 플랫폼 안에서 발주·결제·고객 전달을 운영하는 단계는 아닙니다.',features:[['요청 정리','목적·대상·일정과 필요한 결과물을 프로젝트별로 정리할 계획입니다.'],['작품 검토','시안별 의견과 수정 상태를 모아 확인한 내용을 추적하는 흐름을 준비합니다.'],['최종 전달','승인한 결과물과 사용 범위·전달 기록을 함께 보관할 계획입니다.'],['작품과 IP','자체 작품 감상·팬 참여·이용권과 라이선스를 작품별 권리 범위에 맞춰 준비합니다.']]},
   partners:{name:'SYNK Partners',short:'PARTNERS',icon:'world.png',category:'CREATE · SHARE · CONNECT',description:'좋은 콘텐츠와 제작자가 만나는 곳.',cover:'world.png',alt:'외부 제작자의 콘텐츠를 나타내는 승인 펠트 책',caption:'CREATOR & PARTNER MARKET · IN PLANNING',stage:'planned',audience:'외부 창작자·교육 콘텐츠 파트너',keywords:'파트너 창작자 외부 시장 마켓 콘텐츠 판매',summary:'외부 창작자와 파트너가 검수된 콘텐츠를 소개하고 협업할 수 있는 시장을 준비합니다.',boundary:'확장 후보 · 준비 중. 입점·판매·결제·정산 기능과 공개 마켓은 아직 열지 않았습니다.',features:[['작품 소개','창작자와 콘텐츠의 목적·대상·사용 조건을 확인할 수 있게 구성할 계획입니다.'],['품질과 권리','교육 품질과 저작권·사용 허가를 검토하는 기준을 준비합니다.'],['파트너 협업','입점·운영·정산에 필요한 계약과 권한을 정한 뒤 실제 거래를 연결할 계획입니다.']]},
+  care:{name:'SYNK 플레저',short:'플레저',icon:'care-note.webp',category:'REMEMBER · CARE · CONNECT',description:'소중한 사람을, 내 방식으로 잊지 않고.',cover:'care-note.webp',alt:'다가오는 날을 기억하는 별표가 붙은 승인 펠트 메모',caption:'RELATIONSHIP CARE · LOCAL MVP',stage:'preview',previewLabel:'플레저 · 로컬 MVP',audience:'생일·경조사를 놓치지 않고 챙기고 싶은 사람',keywords:'플레저 챙김 관계 생일 경조사 기념일 결혼 부고 연락 말투 녹음 대화',summary:'한 사람과 나눈 대화에서 말투의 특징을 확인하고, 다가오는 생일·경조사와 메시지 초안을 함께 준비합니다.',boundary:'로컬 MVP. 이 PC에서 준비된 받아쓰기와 대화의 규칙 기반 분석을 사용하며 화자와 선호는 직접 확인합니다. 클라우드 AI·백그라운드 푸시·자동 발송은 아직 연결하지 않았습니다.',features:[['사람마다 다른 말투','직접 제공한 대화와 수정한 선호를 바탕으로 관계별 표현을 정리합니다. 관찰된 말투와 원하는 표현을 구분합니다.'],['다가오는 일정 챙기기','생일·경조사를 등록하고 예정된 알림과 준비 상태를 확인합니다. 일정 파일로 캘린더에 옮길 수 있습니다.'],['보내기 전 직접 확인','메시지 초안을 고치고 복사한 뒤 직접 연락합니다. 앱은 상대에게 자동으로 보내지 않습니다.']]},
 };
+for(const benefit of MEMBER_BENEFITS.filter(item=>['fortune','rehearsal','family-album'].includes(item.id))){
+  if(benefit.id==='fortune'){
+    APPS.fortune={name:'SYNK 무료 운세',short:'무료 운세',icon:benefit.asset,category:'TODAY · LUCK · SMILE',description:benefit.headline,cover:benefit.asset,alt:benefit.alt,caption:'SYNK FOR YOU · LOCAL MVP',stage:'preview',previewLabel:'무료 운세 · 로컬 MVP',audience:'오늘을 가볍게 시작하고 싶은 사람',keywords:'운세 무료 오늘 이번주 별자리 zodiac horoscope 한국 사주 saju 만세력 생년월일 출생시각 일간 오행 행운 색 숫자 일상 계정 저장 보관함 메모 실천 기록 내보내기',summary:benefit.description,boundary:benefit.availability,features:benefit.steps.map(step=>[step.title,step.body])};
+    continue;
+  }
+  const rehearsal=benefit.id==='rehearsal';
+  APPS[benefit.id]={name:'SYNK '+benefit.name,short:rehearsal?'대화 리허설':'가족 앨범',icon:benefit.asset,category:rehearsal?'PREPARE · PRACTICE · REFLECT':'PHOTO · STORY · VOICE',description:benefit.headline,cover:benefit.asset,alt:benefit.alt,caption:'SYNK FOR YOU · LOCAL MVP',stage:'preview',previewLabel:benefit.name+' · 로컬 MVP',audience:rehearsal?'중요한 대화를 미리 연습하고 싶은 사람':'사진과 실제 목소리로 가족의 이야기를 남기고 싶은 사람',keywords:rehearsal?'리허설 대화 부탁 거절 면접 업무 연습 회고 재시도':'가족 앨범 사진 이야기 녹음 목소리 기억 추억',summary:benefit.description,boundary:benefit.availability,features:benefit.steps.map(step=>[step.title,step.body])};
+}
 // Division colours: docs/디자인_토큰.json, SNS키트/README.md and approved palette.
 // Studio and SHIFT are workroom features in Messenger, not separate apps.
 export const BRAND_PRESENTATION={
@@ -16,8 +26,15 @@ export const BRAND_PRESENTATION={
   path:{brand:'PATH · 다음 길',accent:'#526956',ink:'#526956',icon:'path-cover.png',cover:'path-cover.png',alt:'유학 계획 노트에서 대학 건물로 이어지는 초록색 펠트 길'},
   pulse:{brand:'PULSE · 작품',accent:'#99295D',ink:'#99295D',icon:'pulse-cover.png',cover:'pulse-cover.png',alt:'작품을 담은 베리색 펠트 레코드와 사용 범위 서류'},
   partners:{brand:'SYNK · 파트너',accent:'#F5C445',ink:'#7E5A10'},
+  care:{brand:'SYNK · 일상',accent:'#3D6BC9',ink:'#24448C'},
+  fortune:{brand:'SYNK · 회원 혜택',accent:'#F5C445',ink:'#7E5A10'},
+  rehearsal:{brand:'SYNK · 회원 혜택',accent:'#F96859',ink:'#AE322A'},
+  'family-album':{brand:'SYNK · 회원 혜택',accent:'#F5C445',ink:'#7E5A10'},
 };
-for(const [id,presentation] of Object.entries(BRAND_PRESENTATION))Object.assign(APPS[id],presentation);
+// 2026-10-06 platform redesign: each app is shown as a big Hangul word (the homepage 싱ㅋ idea)
+// and a one-syllable tile. Display only; ids, names and entitlements are unchanged.
+const DISPLAY_WORDS={world:['월드','월'],messenger:['메신저','메'],teacher:['교사','교'],path:['패스','패'],pulse:['펄스','펄'],partners:['파트너스','파'],care:['플레저','플'],fortune:['운세','운'],rehearsal:['리허설','리'],'family-album':['가족\n앨범','가']};
+for(const [id,presentation] of Object.entries(BRAND_PRESENTATION)){const short=String(APPS[id].short||APPS[id].name),[word,mark]=DISPLAY_WORDS[id]||[short,short.slice(0,1)];Object.assign(APPS[id],presentation,{word,mark});}
 export const APP_IDS=Object.keys(APPS);
 export function clientRows(snapshot=[],{native=true}={}){return APP_IDS.map(id=>{const app=APPS[id];if(app.stage==='planned')return {id,status:'planned',canLaunch:false,reason:'PRODUCT_PLANNED'};if(app.stage==='preview')return {id,status:'preview',canLaunch:false,reason:'LOCAL_PREVIEW'};return snapshot.find(row=>row?.id===id)||{id,status:'unavailable',reason:native?'CHECKING':'BROWSER_PREVIEW'};});}
 export function matchesLibrary(id,{search='',filter='all',favorites=[],client}={}){const app=APPS[id];if(!app)return false;const text=[app.name,app.keywords,app.audience,app.summary].join(' ').toLowerCase();if(search.trim()&&!text.includes(search.trim().toLowerCase()))return false;if(filter==='installed'&&!client?.canLaunch)return false;if(filter==='favorites'&&!favorites.includes(id))return false;if(filter==='planned'&&app.stage!=='planned')return false;if(filter==='development'&&app.stage==='planned')return false;return true;}
@@ -28,16 +45,16 @@ export function primaryAction(client,{native=true,busy=false,teacherPreviewAvail
   if(busy)return {label:'확인 중…',action:'none',disabled:true};
   if(APPS[client?.id]?.stage==='planned'||client?.status==='planned')return {label:'준비 중',action:'none',disabled:true};
   if(client?.id==='teacher')return native&&teacherPreviewAvailable?{label:'교사 앱 미리보기',action:'teacher-preview',disabled:false}:{label:native?'로컬 MVP 준비 중':'교사 앱 · 로컬 MVP',action:'none',disabled:true};
-  if(client?.id==='path')return native&&Array.isArray(productPreviewsAvailable)&&productPreviewsAvailable.includes(client.id)?{label:APPS[client.id].short+' MVP 열기',action:'product-preview',disabled:false}:{label:native?'로컬 MVP 준비 중':'PC 앱 · 로컬 MVP',action:'none',disabled:true};
+  if(['path','care','fortune','rehearsal','family-album'].includes(client?.id))return native&&Array.isArray(productPreviewsAvailable)&&productPreviewsAvailable.includes(client.id)?{label:APPS[client.id].short+' MVP 열기',action:'product-preview',disabled:false}:{label:native?'로컬 MVP 준비 중':'PC 앱 · 로컬 MVP',action:'none',disabled:true};
   if(!native)return {label:'PC 앱에서 설치',action:'none',disabled:true};
   if(!client)return {label:'확인 중…',action:'none',disabled:true};
-  if(client.canLaunch)return {label:'▶ 실행',action:'launch',disabled:false};
+  if(client.canLaunch)return {label:'실행',action:'launch',disabled:false};
   const installer=client.installer||{};
   if(installer.status==='preparing')return {label:'설치 파일 준비 중',action:'none',disabled:true};
   if(installer.status==='opening')return {label:'설치 파일 확인 중',action:'none',disabled:true};
   if(installer.status==='installer-opened')return {label:'설치 상태 확인',action:'refresh',disabled:false};
   if(installer.canOpen)return {label:'설치 시작',action:'open',disabled:false};
-  if(installer.canPrepare)return {label:installer.status==='error'?'다시 준비':'↓ 설치 준비',action:'prepare',disabled:false};
+  if(installer.canPrepare)return {label:installer.status==='error'?'다시 준비':'설치 준비',action:'prepare',disabled:false};
   return {label:'배포 준비 중',action:'none',disabled:true};
 }
 export function installerLabel(installer={}){return ({idle:'설치 파일 준비 가능',preparing:'설치 파일 복사·확인 중',opening:'설치 프로그램 여는 중',ready:'설치 파일 준비 완료','installer-opened':'설치 마법사를 열었어요',cancelled:'준비 취소됨',error:'설치 준비를 완료하지 못했어요',unavailable:'배포 준비 중'})[installer.status]||'배포 준비 중';}

@@ -1,0 +1,280 @@
+{
+  "synthetic": true,
+  "realBrowser": "isolated Chrome, one context, shared localStorage",
+  "actualModule": "http://127.0.0.1:4296/synk-account/src/document-sync.mjs",
+  "startedAt": "2026-10-06T14:59:57.505Z",
+  "checks": [
+    {
+      "name": "a real second tab writes a pending original into shared localStorage",
+      "passed": true,
+      "detail": {
+        "state": {
+          "version": 1,
+          "text": "server initial"
+        },
+        "status": {
+          "status": "saving",
+          "revision": 0,
+          "accountId": "synthetic-shared-cache-owner",
+          "pending": true,
+          "pendingStored": true,
+          "localPersistenceError": false,
+          "localRecords": {
+            "count": 2,
+            "pending": 2,
+            "corrupt": 0,
+            "exportable": 2,
+            "unknown": 0,
+            "error": null
+          },
+          "localDrafts": [
+            {
+              "id": "229a0c94-ea4d-4389-ae04-730d64a4767d",
+              "createdAt": "2026-10-06T14:59:59.144Z",
+              "baseRevision": 0,
+              "itemCount": 0,
+              "copies": 1
+            }
+          ],
+          "warning": null,
+          "error": null
+        },
+        "entries": [
+          {
+            "key": "synthetic.shared-cache.qa.6bd523a9-b48d-4f82-bedf-a4a06fffd911.late-ack.synthetic-shared-cache-owner:draft:229a0c94-ea4d-4389-ae04-730d64a4767d",
+            "raw": "{\"version\":1,\"accountId\":\"synthetic-shared-cache-owner\",\"draftId\":\"229a0c94-ea4d-4389-ae04-730d64a4767d\",\"createdAt\":\"2026-10-06T14:59:59.144Z\",\"baseRevision\":0,\"state\":{\"version\":1,\"text\":\"B unsent original\"},\"pending\":true}"
+          },
+          {
+            "key": "synthetic.shared-cache.qa.6bd523a9-b48d-4f82-bedf-a4a06fffd911.late-ack.synthetic-shared-cache-owner:draft:a3f4c276-f2e3-4540-ad6c-05ba6600b9f3",
+            "raw": "{\"version\":1,\"accountId\":\"synthetic-shared-cache-owner\",\"draftId\":\"a3f4c276-f2e3-4540-ad6c-05ba6600b9f3\",\"createdAt\":\"2026-10-06T14:59:59.136Z\",\"baseRevision\":0,\"state\":{\"version\":1,\"text\":\"A sent snapshot\"},\"pending\":true}"
+          }
+        ],
+        "backup": {
+          "format": "synk-account-local-recovery",
+          "version": 1,
+          "scope": "synk-personal",
+          "resource": "family-album",
+          "accountId": "synthetic-shared-cache-owner",
+          "entries": [
+            {
+              "key": "synthetic.shared-cache.qa.6bd523a9-b48d-4f82-bedf-a4a06fffd911.late-ack.synthetic-shared-cache-owner:draft:229a0c94-ea4d-4389-ae04-730d64a4767d",
+              "raw": "{\"version\":1,\"accountId\":\"synthetic-shared-cache-owner\",\"draftId\":\"229a0c94-ea4d-4389-ae04-730d64a4767d\",\"createdAt\":\"2026-10-06T14:59:59.144Z\",\"baseRevision\":0,\"state\":{\"version\":1,\"text\":\"B unsent original\"},\"pending\":true}"
+            },
+            {
+              "key": "synthetic.shared-cache.qa.6bd523a9-b48d-4f82-bedf-a4a06fffd911.late-ack.synthetic-shared-cache-owner:draft:a3f4c276-f2e3-4540-ad6c-05ba6600b9f3",
+              "raw": "{\"version\":1,\"accountId\":\"synthetic-shared-cache-owner\",\"draftId\":\"a3f4c276-f2e3-4540-ad6c-05ba6600b9f3\",\"createdAt\":\"2026-10-06T14:59:59.136Z\",\"baseRevision\":0,\"state\":{\"version\":1,\"text\":\"A sent snapshot\"},\"pending\":true}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "first tab save receives its held acknowledgement",
+      "passed": true
+    },
+    {
+      "name": "A late ACK never deletes closed B unsent original",
+      "passed": true
+    },
+    {
+      "name": "A acknowledgement clears only the sent A snapshot",
+      "passed": true
+    },
+    {
+      "name": "single pending original waits for explicit recovery choice",
+      "passed": true
+    },
+    {
+      "name": "a newly opened tab recovers B exact pending original",
+      "passed": true
+    },
+    {
+      "name": "recovered stale revision reports CAS conflict rather than silently overwriting A",
+      "passed": true
+    },
+    {
+      "name": "explicit local resolution saves the recovered B original",
+      "passed": true
+    },
+    {
+      "name": "successfully resolved recovered draft leaves no completed cache",
+      "passed": true
+    },
+    {
+      "name": "independent tab edits retain two exact originals instead of overwriting a single key",
+      "passed": true
+    },
+    {
+      "name": "fresh open stops with an explicit local draft conflict",
+      "passed": true
+    },
+    {
+      "name": "opening competing drafts makes no implicit save",
+      "passed": true
+    },
+    {
+      "name": "recovery export retains both exact original strings",
+      "passed": true
+    },
+    {
+      "name": "offered draft ID identifies a preserved export entry",
+      "passed": true
+    },
+    {
+      "name": "explicit draft selection recovers the requested original",
+      "passed": true
+    },
+    {
+      "name": "selected draft can save with server CAS",
+      "passed": true
+    },
+    {
+      "name": "selected draft ACK preserves the other tab original exactly",
+      "passed": true
+    },
+    {
+      "name": "the remaining unselected original is recoverable on another fresh open",
+      "passed": true
+    },
+    {
+      "name": "explicit remote view succeeds without deleting a preserved draft",
+      "passed": true
+    },
+    {
+      "name": "remote view displays server state while exact local recovery remains",
+      "passed": true
+    },
+    {
+      "name": "authenticated explicit clear removes only this owner after opening server state",
+      "passed": true
+    },
+    {
+      "name": "signed-out export and clearing are rejected",
+      "passed": true
+    },
+    {
+      "name": "new tab offers the active writer single draft without taking it over",
+      "passed": true
+    },
+    {
+      "name": "real storage event unlocks the other tab after the last draft ACK with no relogin",
+      "passed": true
+    },
+    {
+      "name": "served module did not change during the browser run",
+      "passed": true
+    },
+    {
+      "name": "browser page execution raised no uncaught errors",
+      "passed": true
+    }
+  ],
+  "requests": [
+    {
+      "case": "late-ack",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "late-ack",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "late-ack",
+      "action": "personalSave",
+      "expectedRevision": 0
+    },
+    {
+      "case": "late-ack",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "late-ack",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "late-ack",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "late-ack",
+      "action": "personalSave",
+      "expectedRevision": 1
+    },
+    {
+      "case": "parallel-drafts",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "parallel-drafts",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "parallel-drafts",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "parallel-drafts",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "parallel-drafts",
+      "action": "personalSave",
+      "expectedRevision": 0
+    },
+    {
+      "case": "parallel-drafts",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "parallel-drafts",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "parallel-drafts",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "single-live",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "single-live",
+      "action": "personalSave",
+      "expectedRevision": 0
+    },
+    {
+      "case": "single-live",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "single-live",
+      "action": "personalLoad",
+      "expectedRevision": null
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "authenticated-recovery-late-ack-preserved.png",
+    "authenticated-recovery-local-draft-choice.png",
+    "authenticated-recovery-explicit-clear.png"
+  ],
+  "remoteMutation": false,
+  "realLogin": false,
+  "moduleSha256": "884acaf10998ffe246fd486eeb563572c7611bddafeed6f5df2bb92b0c90f729",
+  "passed": 26,
+  "finishedAt": "2026-10-06T15:00:03.119Z"
+}
