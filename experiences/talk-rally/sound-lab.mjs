@@ -2,6 +2,7 @@
 // 확인용으로 같은 소리를 파일처럼 굽는 기능(window.__lab.render)도 여기 있다(qa/sound.cjs가 쓴다).
 import { createBus, VOICES } from './sfx.mjs';
 import { FILES } from './audio.mjs';
+import { NARRATION_LINES } from './narration.mjs';
 
 const T = (t, kind, name, opts) => ({ t, kind, name, opts });
 const LANE = [-0.74, 0, 0.74];
@@ -30,19 +31,27 @@ export const SEQ = {
   stress: () => [T(0, 'voice', 'r06'), T(0.1, 'sfx', 'hit', { correct: true, rally: 9, smash: true, power: 1, x: 0 }), T(0.12, 'sfx', 'bounce', { near: 1, x: 0 }),
     T(0.14, 'kit', 'joy2'), T(0.15, 'kit', 'achieve'), T(0.16, 'sfx', 'opponent', { power: 1, x: 0.3 })],
   stars: () => [T(0, 'kit', 'achieve'), ...[0, 1, 2].map((i) => T(0.3 + i * 0.22, 'sfx', 'star', { i }))],
+  /** 결과 장면: 성취 → 별 셋 → 1.05초 뒤 결과 안내 음성(게임과 같은 간격) */
+  results: () => [T(0, 'kit', 'achieve'), ...[0, 1, 2].map((i) => T(0.3 + i * 0.22, 'sfx', 'star', { i })), T(1.05, 'narr', 'result-3')],
+  /** 안내와 몽글: 시작 안내가 끝나고 0.5초 뒤 몽글의 첫 말(게임과 같은 순서) — 두 목소리의 크기를 견준다 */
+  introThenLine: () => [T(0, 'narr', 'intro'), T(3.79 + 0.5, 'voice', 'f01')],
 };
+/** 안내 음성 하나씩(시청 페이지 단추·qa/sound.cjs). */
+for (const n of NARRATION_LINES) SEQ[`narr:${n.id}`] = () => [T(0, 'narr', n.id)];
 
 async function loadInto(c, map, entries) {
   await Promise.all(entries.map(async ([k, url]) => { try { map.set(k, await c.decodeAudioData(await (await fetch(url)).arrayBuffer())); } catch { /* 없어도 계속 */ } }));
 }
 const VOICE_IDS = ['f01', 'r06'];
-async function loadAll(c, kit) { await loadInto(c, kit, [...Object.entries(FILES), ...VOICE_IDS.map((id) => [`voice:${id}`, `assets/voice/${id}.mp3`])]); }
+async function loadAll(c, kit) {
+  await loadInto(c, kit, [...Object.entries(FILES), ...VOICE_IDS.map((id) => [`voice:${id}`, `assets/voice/${id}.mp3`]), ...NARRATION_LINES.map((n) => [`narr:${n.id}`, n.file])]);
+}
 
 function schedule(b, kit, events, t0) {
   for (const e of events) {
     const at = t0 + e.t;
     if (e.kind === 'sfx') VOICES[e.name](b, at, e.opts || {});
-    else { const buf = kit.get(e.kind === 'voice' ? `voice:${e.name}` : e.name); if (!buf) continue; const s = b.c.createBufferSource(); s.buffer = buf; s.connect(b.out); s.start(at); }
+    else { const buf = kit.get(e.kind === 'voice' || e.kind === 'narr' ? `${e.kind}:${e.name}` : e.name); if (!buf) continue; const s = b.c.createBufferSource(); s.buffer = buf; s.connect(b.out); s.start(at); }
   }
 }
 

@@ -8,8 +8,11 @@ import { shuffled, composeRound, pointsFor, isSmash, scoreRound, flightTime, swi
 import { GAME_ID, rankItems, createExchange, skillReport, FLOW_RALLY, FLOW_WORDS, rallyObservation } from './learning.mjs';
 import * as sound from './audio.mjs';
 import { swingPower } from './sfx.mjs';
-import { createStage, LANES } from './stage.mjs';
+import { createStage, LANES, WALL_SRC } from './stage.mjs';
 import { fitText, preloadImages } from './kit/lab.mjs';
+import { DAILY_KEY, seoulDate, dailyRound, dailyOptions, emptyRecords, normalizeRecords, recordDaily, dailyStatus, recentDays } from './daily.mjs';
+import { NARRATION, NARRATION_LINES, resultLine } from './narration.mjs';
+import { createGearPanel, DEFAULT_GEAR } from './gear.mjs';
 
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
@@ -32,6 +35,12 @@ function load() {
 }
 const progress = load();
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(progress)); saved = true; } catch { saved = false; } };
+/* ── 하루 도전 기록(이 브라우저, 날짜마다 최고·판 수). 저장이 막혀도 게임은 그대로이고 기록만 남지 않는다 ── */
+let dailySaved = true;
+function loadDaily() { try { const r = normalizeRecords(JSON.parse(localStorage.getItem(DAILY_KEY) || 'null')); dailySaved = true; return r; } catch { dailySaved = false; return emptyRecords(); } }
+function saveDaily(records) { try { localStorage.setItem(DAILY_KEY, JSON.stringify(records)); dailySaved = true; } catch { dailySaved = false; } return dailySaved; }
+const num = (n) => Number(n).toLocaleString('ko-KR');
+const monthDay = (d) => `${Number(d.slice(5, 7))}월 ${Number(d.slice(8, 10))}일`;
 
 /* ── 아틀라스 ── */
 let coach = null;
@@ -40,7 +49,7 @@ const atlas = (fn, fallback = null) => { if (!coach) return fallback; try { retu
 
 /* ── 상태 ── */
 const state = { run: 0, queue: [], index: 0, results: [], rally: 0, score: 0, cur: null, practice: false, paused: false, ranked: null,
-  flow: null, tired: false, pausedMs: 0, pausedAt: 0, coinRound: null };
+  flow: null, tired: false, pausedMs: 0, pausedAt: 0, coinRound: null, mode: 'normal', dailyDate: null };
 const live = (run) => run === state.run;
 // 순간 맞춤: 공이 오는 시간(= ‘빠르게!’를 받을 시간)만 이 사람에 맞춘다(연습 공 제외). 피곤한 날은 랠리가 이어져도 빨라지지 않는다.
 function startFlow() {
@@ -60,6 +69,11 @@ function followFlow(cur, lane) {
   if (out?.line) { tip(out.line.text); const run = state.run; setTimeout(() => { if (live(run) && $('#tip').textContent === out.line.text) tip(null); }, 2200); }
 }
 let stage = null;
+// 꾸미기: 공통 코인으로 산 라켓·공의 색(gear.mjs). 무대가 아직 없으면 만들 때 입힌다
+let gear = { ...DEFAULT_GEAR };
+const gearPanel = createGearPanel({ root: $('#gear'), onGear: (colors) => { gear = colors; stage?.setGear(colors); } });
+// 안내 음성(나레이션): 이번 접속에서 들려준 시작 안내(보통 판·하루 도전 각각 한 번)
+const heardIntro = new Set();
 let lineVoice = null;   // 다시 듣기·천천히 듣기·해설·결과에서 듣는 몽글의 말(한 번에 하나만)
 function playLine(item, { slow = false } = {}) { stopLine(); lineVoice = slow ? sound.speakSlow(item) : sound.speak(item); }
 function stopLine() { lineVoice?.stop(); lineVoice = null; }
@@ -83,16 +97,26 @@ const show = (id) => {
 
 /* ── 입구 ── */
 function renderLobby() {
-  state.run += 1; stopVoices(state.cur); state.cur = null; stage?.clear(); hideWait(); hideExplain(); renderCards(null);
+  state.run += 1; stopVoices(state.cur); sound.stopNarration(); state.cur = null; stage?.clear(); hideWait(); hideExplain(); renderCards(null);
   state.ranked = progress.plays === 0 ? null : atlas((c) => rankItems(c, ITEMS, { audioAvailable: sound.isOn() }));
   $('#l-reason').textContent = progress.plays === 0 ? '처음이라 쉬운 말부터 시작해요. 첫 공은 연습이에요.'
     : state.ranked?.reason ? `${state.ranked.reason} 그 말들을 먼저 넣었어요.` : '새 말을 섞어 한 판을 만들어요.';
   const best = progress.best;
   $('#best-line').hidden = !best; if (best) $('#best-line').textContent = `최고 ${best.score}점 · 랠리 ${best.rally}번`;
+  renderDailyLine();
+  gearPanel.refresh();   // 한 판 뒤 코인이 늘었으면 살 수 있는 것이 바뀐다
   const warn = atlas((c) => c.summary().storage?.warning) || (!coach ? '학습 기록을 쓸 수 없어 기본 순서로 진행해요.' : null) || (!saved ? '이 브라우저에 진행을 저장할 수 없어요.' : null);
   $('#storage-note').hidden = !warn; $('#storage-note').textContent = warn || '';
   syncToggles();
   show('lobby');
+}
+
+/** 입구의 하루 도전 한 줄: 오늘 했는지·오늘 최고·연속 일수(오늘 아직이면 오늘 하면 며칠째인지). */
+function renderDailyLine() {
+  const today = seoulDate(), st = dailyStatus(loadDaily(), today);
+  $('#daily-line').textContent = !dailySaved ? '이 브라우저에 기록을 남길 수 없지만 도전은 할 수 있어요.'
+    : st.played ? `오늘 최고 ${num(st.best.score)}점 · ${st.streak}일 연속`
+      : st.streak ? `오늘 아직 안 했어요 · 오늘 하면 ${st.streak + 1}일 연속` : '오늘 아직 안 했어요 · 연속 0일';
 }
 
 function syncToggles() {
@@ -102,6 +126,7 @@ function syncToggles() {
   }
   $('#sound-note').hidden = sound.isOn();
   for (const t of [$('#slow-toggle'), $('#slow-toggle-2')]) { t.setAttribute('aria-pressed', String(progress.slow)); t.textContent = progress.slow ? '천천히 모드 켜짐' : '천천히 모드 꺼짐'; }
+  const n = $('#narration-toggle'); n.setAttribute('aria-pressed', String(sound.narrationIsOn())); n.textContent = sound.narrationIsOn() ? '안내 음성 켜짐' : '안내 음성 꺼짐';
 }
 
 /* ── 한 판 ── */
@@ -109,24 +134,31 @@ let stageReady = null;
 function ensureStage() {
   if (!stageReady) {
     stageReady = createStage({ host: $('#arena'), overlay: $('#fx'), onBounce, onOpponentHit, onHold, onArrive, onPadLanded, onCaught, onMissed, reducedMotion: reduced })
-      .then((s) => { stage = s; return s; })
+      .then((s) => { stage = s; s.setGear(gear); return s; })
       .catch((e) => { stageReady = null; throw e; });
   }
   return stageReady.then((s) => { s.setActive(!$('#game').hidden); s.resize(); return s; });
 }
 
-async function startRound() {
+/**
+ * 한 판 시작. mode 'daily'는 하루 도전: 그날(서울 날짜) 모두에게 같은 12번(daily.mjs — 학습 기록을 읽지 않는다).
+ * 연습 공(처음 한 번)·아틀라스 기록·순간 맞춤·공통 코인은 보통 판과 같다.
+ */
+async function startRound(mode = 'normal') {
   show('game');
   state.run += 1;
+  sound.stopNarration();
   const run = state.run;
   const opening = startFlow();
-  Object.assign(state, { index: 0, results: [], rally: 0, score: 0, cur: null, practice: false, paused: false,
-    queue: composeRound(ITEMS, { ranked: state.ranked?.order, firstTime: progress.plays === 0, seed: progress.plays + 1 }) });
+  const daily = mode === 'daily', date = daily ? seoulDate() : null;
+  Object.assign(state, { index: 0, results: [], rally: 0, score: 0, cur: null, practice: false, paused: false, mode: daily ? 'daily' : 'normal', dailyDate: date,
+    queue: daily ? dailyRound(date) : composeRound(ITEMS, { ranked: state.ranked?.order, firstTime: progress.plays === 0, seed: progress.plays + 1 }) });
+  $('.game-title').textContent = daily ? '하루 도전' : '말 랠리';
   // 공통 코인(play-common): 이 판의 번호. 끝까지 마친 판만 받는다(그만두면 받지 않는다). 코인은 학습 기록에 쓰지 않는다.
   state.coinRound = globalThis.SynkPlayCollection?.roundId('talk-rally') || null;
   updateHud(); renderCards(null); tip('공을 준비하고 있어요…', { silent: true });
   await sound.unlock();
-  try { await Promise.all([ensureStage(), sound.preloadVoices([PRACTICE, ...state.queue])]); }
+  try { await Promise.all([ensureStage(), sound.preloadVoices([PRACTICE, ...state.queue]), sound.preloadNarration(NARRATION_LINES)]); }
   catch {
     renderLobby();
     $('#storage-note').hidden = false;
@@ -136,6 +168,15 @@ async function startRound() {
   if (!live(run)) return;
   tip(null);
   stage.pause(state.paused);
+  // 시작 안내 음성: 이번 접속에서 처음 여는 보통 판·하루 도전에 한 번. 같은 문장을 안내 글로도 보인다. 끝나야 몽글이 말한다(틀 수 없으면 곧바로)
+  const intro = daily ? NARRATION.dailyIntro : NARRATION.intro;
+  if (!heardIntro.has(intro.id) && sound.canNarrate(intro.id)) {
+    heardIntro.add(intro.id);
+    tip(intro.text);
+    await sound.narrate(intro.id);
+    if (!live(run)) return;
+    tip(null);
+  }
   if (!progress.practiced) { state.practice = true; tip('연습이에요. 공은 고를 때까지 기다려 줘요. 빛나는 카드를 위로 긋거나 눌러 보세요.'); }
   else if (opening) { tip(opening); setTimeout(() => { if (live(run) && $('#tip').textContent === opening) tip(null); }, 2600); }
   after(opening && !state.practice ? 1200 : 500, () => nextItem());
@@ -179,6 +220,8 @@ function preloadFelt() {
   preloadImages(urls)
     .then(() => { if (feltSize === size) $('#cards').classList.add('felt-ready'); });
 }
+// 배경 벽 그림도 입구에서 받아 둔다(카드 펠트를 기다리게 하지 않게 따로). 무대는 이 그림을 받은 뒤에 첫 장면을 그린다(stage.mjs)
+preloadImages([WALL_SRC]);
 preloadFelt();
 let fitTimer = 0;
 window.addEventListener('resize', () => { clearTimeout(fitTimer); fitTimer = setTimeout(() => { preloadFelt(); fitCards(); }, 120); });
@@ -188,7 +231,9 @@ function nextItem() {
   if (!state.practice && state.index >= state.queue.length) return finish();
   const item = state.practice ? PRACTICE : state.queue[state.index];
   if (state.cur?.texted) tip(null);   // 앞의 말을 글로 보여 줬으면 지운다(다음 말이 소리로 나올 때 앞 글이 남지 않게)
-  const cur = { item, ex: state.practice ? null : atlas((c) => createExchange(c, item)), options: shuffled(item.options), choice: null,
+  // 하루 도전의 대답 카드 순서는 그날 모두에게 같다(연습 공은 따로 섞는다)
+  const options = state.mode === 'daily' && !state.practice ? dailyOptions(item, state.dailyDate) : shuffled(item.options);
+  const cur = { item, ex: state.practice ? null : atlas((c) => createExchange(c, item)), options, choice: null,
     phase: 'talk', token: 0, hint: state.practice, waiting: false, quick: false, replayed: false, texted: false };
   state.cur = cur;
   hideExplain(); hideWait(); renderCards(cur); updateHud();
@@ -303,7 +348,13 @@ function onCaught() {
   cur.phase = 'done';
   if (state.practice) {
     progress.practiced = true; save(); state.practice = false; state.rally = 0;
-    tip('좋아요! 이제 시작해요. 공이 닿기 전에 고르면 ‘빠르게!’ 보너스예요.'); after(1400, () => { tip(null); nextItem(); });
+    // 안내 음성 「좋아요! 이제 시작해요.」가 끝나고(그리고 원래처럼 1.4초가 지나고) 첫 말로. 틀 수 없으면 1.4초만 기다린다
+    tip(`${NARRATION.practiceDone.text} 공이 닿기 전에 고르면 ‘빠르게!’ 보너스예요.`);
+    const run = state.run;
+    let waited = false, said = !sound.canNarrate(NARRATION.practiceDone.id);
+    const go = () => { if (waited && said && live(run)) { tip(null); nextItem(); } };
+    if (!said) sound.narrate(NARRATION.practiceDone.id).then(() => { said = true; go(); });
+    after(1400, () => { waited = true; go(); });
     return;
   }
   after(380, () => { state.index += 1; nextItem(); });
@@ -379,21 +430,35 @@ function finish() {
   endFlow();
   state.cur = null; stage.clear(); renderCards(null); tip(null); hideWait();
   stopLine();
-  const s = scoreRound(state.results), prevBest = progress.best;
+  const s = scoreRound(state.results), prevBest = progress.best, daily = state.mode === 'daily';
   progress.plays += 1;
-  if (!progress.best || s.score > progress.best.score) progress.best = { score: s.score, rally: s.bestRally, correct: s.correct, total: s.total };
+  // 보통 판의 최고 기록과 하루 도전의 날짜별 기록은 따로 둔다(하루 도전은 그날 모두 같은 판이라 그날끼리만 견준다)
+  if (!daily && (!progress.best || s.score > progress.best.score)) progress.best = { score: s.score, rally: s.bestRally, correct: s.correct, total: s.total };
   save();
+  const dres = daily ? recordDaily(loadDaily(), state.dailyDate, s) : null;
+  if (dres) saveDaily(dres.records);
   sound.play('achieve');
   // 완주 15 + 정답 비율 × 10(다른 게임과 같은 규칙). 맞힌 수는 결과 화면 그대로다 — 연습 공은 세지 않는다.
   const coinRound = state.coinRound; state.coinRound = null; $('#r-coins').textContent = '';
   if (coinRound) globalThis.SynkPlayCollection?.award({ game: 'talk-rally', total: s.total, correct: s.correct, completed: true, automatic: false, roundId: coinRound })
     .then((result) => { $('#r-coins').textContent = globalThis.SynkPlayCollection.rewardText(result); });
-  $('#r-title').textContent = ['다시 도전!', '좋아요!', '멋져요!', '완벽해요!'][s.stars];
-  $('#r-kicker').textContent = prevBest && s.score > prevBest.score ? `말 랠리 · 새 최고 기록! (전 ${prevBest.score}점)` : '말 랠리 · 한 판';
+  // 제목은 결과 안내 음성과 같은 문장(첫 문장은 제목, 나머지는 그 아래 한 줄)
+  const tier = resultLine(s.stars);
+  $('#r-title').textContent = tier.title; $('#r-say').textContent = tier.say; $('#r-say').hidden = !tier.say;
+  $('#r-kicker').textContent = daily ? `말 랠리 · 하루 도전 ${monthDay(state.dailyDate)}${dres.newBest ? ' · 새 최고 기록!' : ''}`
+    : prevBest && s.score > prevBest.score ? `말 랠리 · 새 최고 기록! (전 ${prevBest.score}점)` : '말 랠리 · 한 판';
+  renderDailyResult(dres, s);
   $('#r-correct').textContent = String(s.correct); $('#r-total').textContent = String(s.total);
   $('#r-stars').innerHTML = [1, 2, 3].map((i) => `<i class="${i <= s.stars ? 'on' : ''}" style="animation-delay:${0.3 + (i - 1) * 0.22}s"></i>`).join('');
   $('#r-stars').setAttribute('aria-label', `별 3개 중 ${s.stars}개`);
   for (let i = 0; i < s.stars; i++) setTimeout(() => sound.sfx('star', { i }), 300 + i * 220);
+  // 결과 안내 음성: 성취음·별 뒤에 제목과 같은 문장, 하루 도전에서 그날 기록을 넘었으면 이어서 「오늘 최고 기록이에요!」.
+  // 복습의 「듣기」(몽글의 말)나 다음 판·처음으로가 누르는 순간 멈춘다
+  const sayLines = [tier.id, ...(dres?.newBest ? [NARRATION.dailyBest.id] : [])];
+  after(1050, async () => {
+    const run = state.run;
+    for (const id of sayLines) { if (!live(run) || $('#results').hidden) return; if (!(await sound.narrate(id))) return; }
+  });
   $('#r-mongle').src = s.stars >= 2 ? 'kit/brand/mongle-cheer.webp' : 'kit/brand/mongle-smile.webp';
   const notes = [`점수 ${s.score}점`, `최고 랠리 ${s.bestRally}번`, `빠른 대답 ${s.quick}번`];
   if (s.helped) notes.push(`다시 듣기·글로 보기를 쓴 말 ${s.helped}개`);
@@ -417,6 +482,25 @@ function finish() {
   $('#r-hub').hidden = !location.pathname.includes('/talk-rally/');
   show('results');
   $('#r-title').focus({ preventScroll: true });
+}
+
+/** 하루 도전 결과 판: 오늘 최고(넘었으면 「새 최고 기록!」), 연속 일수, 오늘 몇 번째인지, 최근 7일. 보통 판에서는 숨긴다. */
+function renderDailyResult(dres, s) {
+  const card = $('#r-daily'), grid = card.closest('.res-grid');
+  card.hidden = !dres; grid.classList.toggle('daily-on', !!dres);
+  if (!dres) return;
+  const date = state.dailyDate, st = dailyStatus(dres.records, date);
+  $('#r-daily-best').textContent = `오늘 최고 ${num(dres.best.score)}점`;
+  $('#r-daily-new').hidden = !dres.newBest;
+  $('#r-daily-note').textContent = [dres.newBest ? `${NARRATION.dailyBest.text} 전 ${num(dres.prevBest)}점 → 이번 ${num(s.score)}점` : `이번 ${num(s.score)}점`,
+    `${st.streak}일 연속`, `오늘 ${dres.plays}번째 도전`].join(' · ') + (dailySaved ? '' : ' · 이 브라우저에 기록을 남기지 못했어요');
+  const week = $('#r-week'); week.textContent = '';
+  for (const d of recentDays(dres.records, date)) {
+    const li = el('li', `${d.best != null ? 'done' : 'empty'}${d.today ? ' today' : ''}`);
+    li.setAttribute('aria-label', `${monthDay(d.date)} ${d.weekday}요일 · ${d.best != null ? `최고 ${num(d.best)}점` : '안 함'}`);
+    li.innerHTML = `<small aria-hidden="true">${d.today ? '오늘' : d.weekday}</small><i aria-hidden="true"></i><b aria-hidden="true">${d.best != null ? num(d.best) : '–'}</b>`;
+    week.append(li);
+  }
 }
 
 function nextLine(next) {
@@ -443,7 +527,7 @@ function pause(open = true) {
   if (open && $('#game').hidden) return;
   const cur = state.cur;
   if (open && !state.paused && cur?.phase === 'talk') { cur.speech?.stop(); cur.speechCut = true; }   // 말하던 중이면 멈추고, 이어 하면 처음부터 다시 말한다
-  if (open && !state.paused) stopLine();   // 다시 듣기는 멈추고, 이어 하면 단추로 다시 듣는다
+  if (open && !state.paused) { stopLine(); sound.stopNarration(); }   // 다시 듣기·안내 음성은 멈추고, 이어 하면 단추로 다시 듣는다
   // 쉬는 시간은 순간 맞춤의 ‘고르기까지 쓴 시간’에서 뺀다
   if (open && !state.paused) state.pausedAt = performance.now();
   if (!open && state.paused && state.pausedAt) { state.pausedMs += performance.now() - state.pausedAt; state.pausedAt = 0; }
@@ -485,10 +569,13 @@ window.addEventListener('pointercancel', () => { drag = null; stage?.strokeEnd(f
 
 /* ── 이벤트 ── */
 $('#btn-start').onclick = () => startRound();
+$('#btn-daily').onclick = () => startRound('daily');
 $('#r-again').onclick = () => { stopLine(); startRound(); };
+$('#r-daily-again').onclick = () => { stopLine(); startRound('daily'); };
 $('#r-home').onclick = () => { stopLine(); renderLobby(); };
 for (const t of document.querySelectorAll('[data-sound-toggle]')) t.onclick = () => { sound.setOn(!sound.isOn()); syncToggles(); if (sound.isOn()) { sound.unlock(); sound.play('tap'); } };
 for (const t of [$('#slow-toggle'), $('#slow-toggle-2')]) t.onclick = () => { progress.slow = !progress.slow; save(); syncToggles(); };
+$('#narration-toggle').onclick = () => { sound.setNarration(!sound.narrationIsOn()); syncToggles(); };
 $('#reset-learning').onclick = () => {
   if (!coach) return;
   if (!window.confirm('같은 주소에서 연 모든 SYNK 게임의 학습 기록을 지울까요? 최고 기록은 그대로 남아요.')) return;
@@ -513,14 +600,16 @@ renderLobby();
 if (QA) {
   window.__rally = {
     state: () => ({ index: state.index, queue: state.queue.map((x) => x.id), results: state.results.map((r) => ({ ...r })), rally: state.rally, score: state.score, practice: state.practice,
+      mode: state.mode, dailyDate: state.dailyDate,
       cur: state.cur && { id: state.cur.item.id, answer: state.cur.item.answer, options: [...state.cur.options], choice: state.cur.choice, phase: state.cur.phase,
         waiting: state.cur.waiting, quick: state.cur.quick } }),
     choose: (lane) => choose(lane, { tapped: true }),
-    progress: () => JSON.parse(JSON.stringify(progress)), summary: () => atlas((c) => c.summary()),
+    progress: () => JSON.parse(JSON.stringify(progress)), summary: () => atlas((c) => c.summary()), daily: () => loadDaily(),
     flow: () => (state.flow ? { flight: flightScale(), tired: state.tired } : null),
     sound: { start: () => sound.startLog(), take: () => sound.takeLog(), slow: () => sound.slowState() },
     impacts: () => impacts.splice(0),
     stage: () => stage,
+    gear: () => ({ ...gear }),
     fitCards: () => fitCards(),   // qa/cards-fit.cjs: 모든 대답을 카드에 넣어 볼 때
   };
 }

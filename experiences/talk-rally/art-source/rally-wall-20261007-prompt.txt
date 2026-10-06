@@ -1,0 +1,17 @@
+Use your image generation tool to create exactly one image, then reply with only the saved file path on one line. Do not write any code or files yourself.
+
+The attached images are references for the material only: real wool felt (the cream felt texture, the lapis and butter felt cushions, and the felt mascot). Match that exact handmade felt look: soft fuzzy wool fibers, gentle needle-felted edges, warm natural light.
+
+Image to make: a wide, perfectly straight-on photo of a handmade wool-felt back wall for a cozy indoor ping-pong corner. It will be shown behind a 3D felt ping-pong table in a Korean-learning game for all ages, so it must be calm and must not compete with the game.
+
+Layout, landscape 3:2, the wall fills the whole frame edge to edge:
+- Wall: warm cream wool felt (#fbf7f0) covering most of the image, with only its natural fiber texture.
+- Bottom 22%: a lapis-blue wool felt wainscot band (#3d6bc9) across the full width, with a thin butter-yellow felt trim strip (#f5c445) along its top edge.
+- One felt window in the left third and one in the right third, rounded corners, cream felt frames, pale sky-blue felt inside with one small soft white felt cloud and the round top of a muted sage-green felt tree.
+- Along the top edge: a felt bunting garland of small rounded triangles in coral (#f96859), butter yellow (#f5c445), lapis (#3d6bc9) and blush pink (#fbd3c6), hanging in two shallow swoops from the corners to the middle.
+- Bottom-left corner, standing in front of the wainscot: a small felt pot (coral) with a plant of round sage-green felt leaves. Bottom-right corner: a small woven-looking felt basket holding three cream felt balls.
+- The middle third of the wall must stay calm and empty cream felt between the windows (a coral felt mascot will stand in front of it).
+
+Camera and light: exactly frontal, no perspective, no tilt, no vignette, soft even daylight, only small soft shadows where felt pieces overlap the wall.
+
+Do not include: any text, letters, numbers, logos, signs, people, animals, mascots or faces, a ping-pong table, rackets, a net, a floor, picture frames around the whole image, stitched outline lines around shapes, harsh shadows, or a dark background.

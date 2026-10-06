@@ -41,27 +41,41 @@
 
   <section class="plan">
     <article class="paper start-card">
-      <span class="tag">오늘의 한 판</span>
+      <span class="tag">나에게 맞춘 한 판</span>
       <h2>주고받기 <b id="l-count">12</b>번</h2>
       <p id="l-reason" class="reason">처음이라 쉬운 말부터 시작해요. 첫 공은 연습이에요.</p>
       <button id="btn-start" class="felt-cta coral" type="button"><span>시작</span><i class="disc" aria-hidden="true"></i></button>
+      <div class="daily-start">
+        <button id="btn-daily" class="felt-cta cream" type="button" aria-describedby="daily-line"><span class="daily-label"><b>하루 도전</b><small>오늘은 모두 같은 12번</small></span><i class="disc" aria-hidden="true"></i></button>
+        <p id="daily-line" class="fine">오늘 아직 안 했어요 · 연속 0일</p>
+      </div>
       <div class="start-options">
         <button id="slow-toggle" class="chip-btn" type="button" aria-pressed="false">천천히 모드 꺼짐</button>
+        <button id="narration-toggle" class="chip-btn" type="button" aria-pressed="true">안내 음성 켜짐</button>
         <span class="fine" id="best-line" hidden></span>
       </div>
       <p id="sound-note" class="fine warn" hidden>듣기 게임이에요. 소리를 켜야 몽글의 말이 들리고 학습 기록에도 남아요.</p>
       <p id="storage-note" class="fine" hidden></p>
       <p class="synk-collection-line"><span data-collection-balance>코인을 불러오고 있어요.</span><a data-collection-garage href="/try/racing/?garage=1">공통 차고 →</a></p>
     </article>
-    <section class="paper how" aria-labelledby="how-title">
-      <span class="tag" id="how-title">하는 방법</span>
-      <ol class="how-steps">
-        <li><b class="num">1</b><strong>듣기</strong><span>몽글이 공을 치며 한마디 해요. 글은 보이지 않아요.</span></li>
-        <li><b class="num">2</b><strong>대답 고르기</strong><span>아래 카드 셋 중 알맞은 대답을 위로 긋거나 눌러요. 공은 고를 때까지 라켓 앞에서 기다려 줘요.</span></li>
-        <li><b class="num">3</b><strong>받아치기</strong><span>고르면 그 칸으로 받아쳐요. 공이 닿기 전에 고르면 ‘빠르게!’ 보너스, 세 번 연속이면 스매시! 틀리면 맞는 대답과 이유가 나와요.</span></li>
-      </ol>
-      <p class="fine">넓은 화면에서는 숫자 키(1~3)로도 골라요. 공이 기다리는 동안 다시 듣기·천천히 듣기·글로 보기를 쓸 수 있어요.</p>
-    </section>
+    <div class="plan-side">
+      <section class="paper how" aria-labelledby="how-title">
+        <span class="tag" id="how-title">하는 방법</span>
+        <ol class="how-steps">
+          <li><b class="num">1</b><strong>듣기</strong><span>몽글이 공을 치며 한마디 해요. 글은 보이지 않아요.</span></li>
+          <li><b class="num">2</b><strong>대답 고르기</strong><span>아래 카드 셋 중 알맞은 대답을 위로 긋거나 눌러요. 공은 고를 때까지 라켓 앞에서 기다려 줘요.</span></li>
+          <li><b class="num">3</b><strong>받아치기</strong><span>고르면 그 칸으로 받아쳐요. 공이 닿기 전에 고르면 ‘빠르게!’ 보너스, 세 번 연속이면 스매시! 틀리면 맞는 대답과 이유가 나와요.</span></li>
+        </ol>
+        <p class="fine">넓은 화면에서는 숫자 키(1~3)로도 골라요. 공이 기다리는 동안 다시 듣기·천천히 듣기·글로 보기를 쓸 수 있어요.</p>
+      </section>
+      <section class="paper gear" id="gear" aria-labelledby="gear-title">
+        <div class="gear-head"><span class="tag" id="gear-title">꾸미기</span><span class="gear-coins" data-collection-balance>코인을 불러오고 있어요.</span></div>
+        <p class="fine">게임을 끝까지 마치면 모이는 공통 코인으로 내 라켓과 공의 색을 바꿔요. 점수에는 영향이 없어요.</p>
+        <div id="gear-rows" class="gear-rows"></div>
+        <div id="gear-act" class="gear-act"></div>
+        <p id="gear-note" class="gear-note" role="status"></p>
+      </section>
+    </div>
   </section>
 
   <footer class="lobby-foot">
@@ -114,7 +128,8 @@
   <section class="res-hero">
     <div>
       <span class="kicker ko" id="r-kicker">말 랠리 · 한 판</span>
-      <h1 id="r-title" tabindex="-1">좋아요!</h1>
+      <h1 id="r-title" tabindex="-1">아주 잘했어요!</h1>
+      <p class="r-say" id="r-say" hidden></p>
       <p class="big"><b id="r-correct">9</b><span>/ <i id="r-total">12</i></span></p>
       <p class="stars" id="r-stars" aria-label="별 3개 중 2개"></p>
       <p class="r-note" id="r-note"></p>
@@ -123,6 +138,15 @@
     <img class="res-mongle diecut" id="r-mongle" src="kit/brand/mongle-smile.webp" alt="">
   </section>
   <section class="res-grid">
+    <article class="paper daily-rec" id="r-daily" hidden>
+      <span class="tag">하루 도전 기록</span>
+      <p class="daily-best"><b id="r-daily-best">오늘 최고 0점</b><span class="tag new-best" id="r-daily-new" hidden>새 최고 기록!</span></p>
+      <p class="reason" id="r-daily-note"></p>
+      <p class="fine week-title">최근 7일</p>
+      <ol class="week" id="r-week" aria-label="최근 7일 하루 도전 기록"></ol>
+      <p class="fine">하루 도전은 이 브라우저에만 남는 내 기록이에요. 다른 사람과 견주는 순위는 아직 없어요.</p>
+      <button id="r-daily-again" class="chip-btn" type="button">하루 도전 다시 하기</button>
+    </article>
     <article class="paper log">
       <span class="tag">이번 판의 말</span>
       <ol id="r-log"></ol>

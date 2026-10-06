@@ -1,0 +1,9 @@
+{
+  "sourceKey": "c1f982d59213109409c46f0f868efe450b5c432559d41ac75d2e5b97b2689b0b",
+  "text": "하루 도전이에요. 오늘은 모두 같은 열두 번이에요.",
+  "loudnorm": "measured I -> volume to -20.5 LUFS (linear)",
+  "pause": "silenceremove=stop_periods=-1:stop_duration=0.25:stop_threshold=-40dB:stop_silence=0.28",
+  "voice": "ko-KR-InJoonNeural",
+  "rate": "-6%",
+  "pitch": "+0Hz"
+}

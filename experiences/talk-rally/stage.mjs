@@ -2,6 +2,7 @@
 // 공은 고를 때까지 기다려 준다(10-03): 아직 고르지 않았으면 라켓 바로 앞에서 부드럽게 느려져 멈추고, 고르면(release) 남은 길을 단숨에 와서 받아친다.
 // 카메라는 움직이지 않는다(흔들기·기울이기·확대 없음 — 멀미). 몽글 그림도 움직이지 않고 표정 그림만 바뀐다.
 // 타격감은 멈칫(히트스톱), 맞는 순간 번쩍임, 반짝이, 대답 칸 빛, 스매시의 느린 화면으로 낸다. 소리·진동은 app.mjs가 같은 순간에 낸다.
+// 2026-10-07: 몽글 뒤 펠트 벽(WALL — 화면 비율마다 맞추고 움직이지 않음), 꾸미기 색의 펠트 라켓 판·공·공 꼬리(setGear).
 import * as THREE from './vendor/three.module.js';
 
 /** 손맛 수치(ms). */
@@ -23,6 +24,16 @@ const PAD_COLORS = [   // 대답 칸·카드의 펠트 색(자리마다 같다 �
   { base: '#2d5ab8', ink: '#fffaf2', glow: 0x9db8ff },   // 3 라피스 펠트
 ];
 const FACES = { idle: 'mongle-curious', talk: 'mongle-focus', happy: 'mongle-cheer', calm: 'mongle-smile' };
+/**
+ * 배경 벽(2026-10-07): 바닥이 끝나는 곳(몽글 바로 뒤)에 선 펠트 벽. 그림(assets/scene/rally-wall.webp, 3:2)은 위에서부터
+ * 가랜드(~16%), 창문 둘이 있는 크림 벽, 버터 띠(73.4~76.2%), 라피스 징두리(아래 ~24%)다. 화면 비율마다 resize에서 맞춘다(fitWall):
+ * 그림 아래 끝을 바닥 선에 세우고, 그림 높이는 보이는 벽 높이(바닥 선 ~ 화면 위)에 맞추되 가랜드가 몽글 머리 위로 비키게 키운다.
+ * 버터 띠는 몽글의 파란 라켓보다 14px 아래에 둔다(라피스 징두리 뒤에서 라켓이 묻히지 않게 — 넘치는 비율에서만 그림 전체를 내린다).
+ * 넓은 화면에서 그림 양옆은 그림 가운데의 빈 벽 띠(창문·가랜드 없는 512px)를 거울로 이어 붙인 민 벽으로 채운다. 움직이지 않는다.
+ */
+export const WALL_SRC = 'assets/scene/rally-wall.webp';
+const WALL = { src: WALL_SRC, z: -2.3, aspect: 1536 / 1024, trimTop: 0.734, buntingBottom: 0.16, floorY: -0.76,
+  strip: { x: 512, w: 512, cleanFrom: 185 }, tint: 0xf1ece5, racketGap: 14, mongleGap: 8 };
 const easeOut = (k) => 1 - Math.pow(1 - k, 3);
 
 function roundedRect(w, h, r) {
@@ -47,7 +58,8 @@ function arc(a, b, apex, k) {
 
 export async function createStage({ host, overlay, onBounce, onOpponentHit, onHold, onArrive, onPadLanded, onCaught, onMissed, reducedMotion = () => false }) {
   await document.fonts?.load?.('900 80px SUIT').catch(() => {});
-  const [coralImg, creamImg, ...faceImgs] = await Promise.all([loadImg('kit/felt/tex-coral.webp'), loadImg('kit/felt/tex-cream.webp'),
+  // 벽 그림도 같이 받는다 — 무대의 첫 장면부터 벽이 있게(받지 못하면 벽 없이 원래 모습)
+  const [coralImg, creamImg, wallImg, ...faceImgs] = await Promise.all([loadImg('kit/felt/tex-coral.webp'), loadImg('kit/felt/tex-cream.webp'), loadImg(WALL.src),
     ...Object.values(FACES).map((f) => loadImg(`kit/brand/${f}.webp`))]);
 
   // WebGL을 만들 수 없으면 여기서 오류가 난다. 부른 쪽(app.mjs)이 안내하고 입구로 돌아간다
@@ -74,6 +86,41 @@ export async function createStage({ host, overlay, onBounce, onOpponentHit, onHo
   const tex = (img, rep) => { const t = new THREE.Texture(img || undefined); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rep, rep); t.needsUpdate = !!img; return t; };
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.MeshStandardMaterial({ map: tex(creamImg, 7), color: 0xf3e6d2, roughness: 1 }));
   floor.rotation.x = -Math.PI / 2; floor.position.y = -0.76; floor.receiveShadow = true; scene.add(floor);
+
+  // 배경 벽(WALL): 그림 판 하나 + 양옆 민 벽 둘. 빛을 받지 않고 그림 그대로 그리되 조금 차분하게(WALL.tint) — 탁구대·몽글이 앞에 서 보이게
+  let wall = null;
+  if (wallImg) {
+    // 민 벽 띠: 그림 가운데의 빈 크림 벽·버터 띠·라피스 징두리(창문 없음). 맨 위 가랜드 줄은 바로 아래 크림 벽을 위아래로 뒤집어 덮는다
+    const W0 = wallImg.naturalWidth, H0 = wallImg.naturalHeight, c = WALL.strip.cleanFrom, strip = document.createElement('canvas');
+    strip.width = WALL.strip.w; strip.height = H0;
+    { const g = strip.getContext('2d');
+      g.drawImage(wallImg, WALL.strip.x, 0, WALL.strip.w, H0, 0, 0, WALL.strip.w, H0);
+      g.save(); g.translate(0, c); g.scale(1, -1); g.drawImage(wallImg, WALL.strip.x, c, WALL.strip.w, c, 0, 0, WALL.strip.w, c); g.restore(); }
+    // 그림 판: 양쪽 가장자리(폭의 4.5%)의 버터 띠 위만 옆 민 벽과 같은 결로 부드럽게 넘긴다 — 그림 가장자리가 가운데보다 조금 밝아 이음매 줄이 보였다.
+    // 띠·징두리(화분·바구니가 있는 아래)는 그대로 둔다
+    const pc = document.createElement('canvas'); pc.width = W0; pc.height = H0;
+    const pg = pc.getContext('2d', { willReadFrequently: true }); pg.drawImage(wallImg, 0, 0);
+    try {   // 픽셀을 읽지 못하는 환경이면(다른 출처 그림 등) 넘기기 없이 그림 그대로 쓴다 — 무대는 멈추지 않는다
+      const g = pg, F = Math.round(W0 * 0.045), rows = Math.round(H0 * WALL.trimTop) - 2;
+      const sg = strip.getContext('2d', { willReadFrequently: true }), sd = sg.getImageData(0, 0, F, rows).data;
+      for (const right of [false, true]) {
+        const x0 = right ? W0 - F : 0, d = g.getImageData(x0, 0, F, rows), px = d.data;
+        for (let y = 0; y < rows; y++) for (let i = 0; i < F; i++) {
+          const fromEdge = right ? F - 1 - i : i, k = fromEdge / F, a = k * k * (3 - 2 * k);   // 가장자리 0 → 안쪽 1(부드럽게)
+          const p = (y * F + i) * 4, q = (y * F + fromEdge) * 4;   // 민 벽은 이음매에서 거울로 이어지므로 가장자리에서 같은 거리의 띠 칸
+          for (let ch = 0; ch < 3; ch++) px[p + ch] = Math.round(sd[q + ch] + (px[p + ch] - sd[q + ch]) * a);
+        }
+        g.putImageData(d, x0, 0);
+      }
+    } catch { pg.drawImage(wallImg, 0, 0); }
+    const map = new THREE.CanvasTexture(pc); map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 4;
+    const panel = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map, color: WALL.tint }));
+    const side = () => { const t = new THREE.CanvasTexture(strip); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = THREE.MirroredRepeatWrapping; t.anisotropy = 4; return t; };
+    const extL = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: side(), color: WALL.tint }));
+    const extR = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: side(), color: WALL.tint }));
+    scene.add(panel, extL, extR);
+    wall = { panel, extL, extR, info: null };
+  }
 
   // 탁구대 윗면: 코랄 펠트 + 흰 테두리·가운데 줄(캔버스로 그린다)
   const topCanvas = document.createElement('canvas'); topCanvas.width = 512; topCanvas.height = 920;
@@ -132,22 +179,57 @@ export async function createStage({ host, overlay, onBounce, onOpponentHit, onHo
   const faceKeys = Object.keys(FACES);
   const setFace = (k) => { const i = Math.max(0, faceKeys.indexOf(k)); if (faceTex[i].image) mongle.material.map = faceTex[i]; };
 
-  // 라켓: 빨간 고무 판 + 나무 손잡이(펠트 질감)
-  function paddle(color) {
+  // 꾸미기(2026-10-07)의 펠트 결: 바닥과 같은 크림 펠트 사진(tex-cream)에서 색을 빼고 결의 밝기만 남겨(평균 0.93, 결은 3.5배 또렷하게),
+  // 장착한 색과 곱한다 — 작은 라켓·공에서도 펠트로 보이고, 색은 팔레트 그대로 남는다.
+  const feltDetail = (() => {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 256;
+    const g = cv.getContext('2d', { willReadFrequently: true });
+    g.fillStyle = '#eeeeee'; g.fillRect(0, 0, 256, 256);   // 펠트 사진을 못 읽으면 고른 밝기(색만 입힌다)
+    if (creamImg) {
+      try {
+        g.drawImage(creamImg, 0, 0, 256, 256);
+        const d = g.getImageData(0, 0, 256, 256), px = d.data; let sum = 0;
+        for (let i = 0; i < px.length; i += 4) sum += 0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2];
+        const mean = sum / (px.length / 4);
+        for (let i = 0; i < px.length; i += 4) {
+          const l = 0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2], v = Math.round(255 * Math.min(1, Math.max(0, 0.93 + 3.5 * (l - mean) / mean)));
+          px[i] = px[i + 1] = px[i + 2] = v;
+        }
+        g.putImageData(d, 0, 0);
+      } catch { g.fillStyle = '#eeeeee'; g.fillRect(0, 0, 256, 256); }
+    }
+    return cv;
+  })();
+  const feltMap = (rx, ry) => { const t = new THREE.CanvasTexture(feltDetail); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); return t; };
+
+  // 라켓: 판 + 나무 손잡이. 내 라켓 판은 꾸미기 색의 펠트(setGear), 몽글 라켓은 원래 파랑 그대로
+  function paddle(color, map = null) {
     const g = new THREE.Group();
-    const face = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.085, 0.018, 28), new THREE.MeshStandardMaterial({ color, roughness: 0.85 }));
+    const face = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.085, 0.018, 28), new THREE.MeshStandardMaterial({ color, map, roughness: map ? 1 : 0.85 }));
     face.rotation.x = Math.PI / 2; face.castShadow = true; g.add(face);
     const handle = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.1, 0.022), new THREE.MeshStandardMaterial({ color: 0xc89b6d, roughness: 0.8 }));
     handle.position.y = -0.12; handle.castShadow = true; g.add(handle);
+    g.userData.face = face;
     return g;
   }
-  const myPaddle = paddle(0xd63c2a); scene.add(myPaddle);
+  const myPaddle = paddle(0xd63c2a, feltMap(1, 1)); scene.add(myPaddle);
   const oppPaddle = paddle(0x3d6bc9); scene.add(oppPaddle);
   oppPaddle.position.set(0.36, OPP.y, OPP.z - 0.05); oppPaddle.rotation.y = Math.PI;
 
-  // 공: 버터색 펠트 공(실제보다 크게 — 잘 보이게) + 탁구대 위 둥근 그림자
-  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.042, 24, 16), new THREE.MeshStandardMaterial({ color: 0xfff1c9, roughness: 0.7, emissive: 0x2a1c00, emissiveIntensity: 0.25 }));
+  // 공: 펠트 공(실제보다 크게 — 잘 보이게, 기본은 원래의 크림색). 꾸미기 색으로 바뀌고 같은 색을 옅게 스스로 밝혀 그늘에서도 보이게 한다
+  const ballMat = new THREE.MeshStandardMaterial({ color: 0xfff1c9, map: feltMap(2, 1), roughness: 0.9, emissive: 0xfff1c9, emissiveIntensity: 0.12 });
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.042, 24, 16), ballMat);
   ball.castShadow = true; ball.visible = false; scene.add(ball);
+  let tailColor = '#fff6d6';   // 공 꼬리: 공 색을 흰색 쪽으로 30% 옅게
+  const gearNow = { racket: '#d63c2a', ball: '#fff1c9' };
+  function setGear({ racket, ball: ballColor } = {}) {
+    if (/^#[0-9a-f]{6}$/i.test(racket || '')) { myPaddle.userData.face.material.color.set(racket); gearNow.racket = racket; }
+    if (/^#[0-9a-f]{6}$/i.test(ballColor || '')) {
+      ballMat.color.set(ballColor); ballMat.emissive.set(ballColor); gearNow.ball = ballColor;
+      const n = parseInt(ballColor.slice(1), 16), mix = (c) => Math.round(c + (255 - c) * 0.3);
+      tailColor = `rgb(${mix(n >> 16)},${mix((n >> 8) & 255)},${mix(n & 255)})`;
+    }
+  }
 
   const ctx2d = overlay.getContext('2d');
   const edge = new THREE.Vector3();   // 기다리는 공의 화면 크기를 잴 때 쓰는 점
@@ -175,11 +257,55 @@ export async function createStage({ host, overlay, onBounce, onOpponentHit, onHo
     camera.position.set(...pos);
     camera.lookAt(...look);
     camera.updateProjectionMatrix();
+    camera.updateMatrixWorld();
+    fitWall();
     draw();
   }
 
   /** 3D 점 → 화면 좌표(px). */
   function project(v) { const p = v.clone().project(camera); return { x: (p.x + 1) / 2 * W, y: (1 - p.y) / 2 * H, z: p.z }; }
+
+  /** 화면 점(px)을 지나는 시선이 벽면(z = WALL.z)과 만나는 높이 y. */
+  const ray = new THREE.Vector3(), fwd = new THREE.Vector3();
+  function wallYAt(sx, sy) {
+    ray.set(sx / W * 2 - 1, 1 - sy / H * 2, 0.5).unproject(camera).sub(camera.position);
+    return camera.position.y + ray.y * (WALL.z - camera.position.z) / ray.z;
+  }
+  /**
+   * 벽을 이 화면 비율에 맞춘다(카메라를 정한 뒤 한 번 — 움직이지 않는다).
+   * 그림 높이 h = max(보이는 벽 높이, 가랜드가 몽글 머리 위로 비키는 높이). 버터 띠가 몽글 라켓 아래 racketGap(px)보다 높아지면
+   * 그림 전체를 그만큼 바닥 아래로 내린다(sink — 지금 다섯 화면에서는 0). 양옆이 비면 민 벽으로 화면 끝까지 채운다.
+   */
+  function fitWall() {
+    if (!wall) return;
+    const top = wallYAt(W / 2, 0), floorY = WALL.floorY;
+    camera.getWorldDirection(fwd);
+    const depth = (y) => new THREE.Vector3(0, y, WALL.z).sub(camera.position).dot(fwd);
+    const tanH = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect;
+    const halfW = Math.max(depth(floorY), depth(top)) * tanH * 1.03;   // 보이는 벽에서 가장 넓은 곳(바닥 선) + 여유
+    const racket = project(new THREE.Vector3(0.36, OPP.y - 0.085, OPP.z - 0.05)), trimMax = wallYAt(racket.x, racket.y + WALL.racketGap);
+    const head = project(new THREE.Vector3(-0.14, 0.57, -2.12)), buntingMin = wallYAt(head.x, head.y - WALL.mongleGap);
+    let h = Math.max(top - floorY, (buntingMin - floorY) / (1 - WALL.buntingBottom)) * 1.001, y0 = floorY;
+    if (floorY + (1 - WALL.trimTop) * h > trimMax) {   // 버터 띠가 라켓에 닿는다: 띠를 trimMax에 두고, 그림 위 끝이 화면 위를 덮게 키운다
+      h = Math.max(h, (top - trimMax) / WALL.trimTop * 1.001);
+      y0 = trimMax - (1 - WALL.trimTop) * h;
+    }
+    const sink = floorY - y0, w = h * WALL.aspect, side = Math.max(0, halfW - w / 2), stripW = w * WALL.strip.w / 1536;
+    wall.panel.scale.set(w, h, 1); wall.panel.position.set(0, y0 + h / 2, WALL.z);
+    for (const [m, sign] of [[wall.extL, -1], [wall.extR, 1]]) {
+      m.visible = side > 0.001;
+      const sw = side + 0.004;   // 그림 판 뒤로 살짝 겹쳐 이음매에 틈이 없게
+      m.scale.set(sw, h, 1); m.position.set(sign * (w / 2 + side / 2 - 0.002), y0 + h / 2, WALL.z - 0.001);
+      const t = m.material.map; t.repeat.set(sw / stripW, 1); t.offset.set(sign < 0 ? -sw / stripW : 0, 0);   // 그림과 닿는 쪽이 띠의 첫 줄
+    }
+    // 확인용(?qa): 화면에서의 자리(px)
+    const at = (x, y) => project(new THREE.Vector3(x, y, WALL.z));
+    wall.info = { h, w, sink, side, halfW, top, W, H,
+      trimY: at(0.36, y0 + (1 - WALL.trimTop) * h).y, racketBottomY: racket.y,
+      buntingY: at(-0.14, y0 + (1 - WALL.buntingBottom) * h).y, mongleTopY: head.y,
+      floorLineY: at(0, floorY).y, wallTopY: at(0, y0 + h).y, leftX: at(-(w / 2 + side), floorY).x, rightX: at(w / 2 + side, floorY).x,
+      panelLeftX: at(-w / 2, floorY).x, panelRightX: at(w / 2, floorY).x };
+  }
 
   function setLane(next) {
     const to = next == null ? 0 : (next - 1) * 0.42;
@@ -309,7 +435,7 @@ export async function createStage({ host, overlay, onBounce, onOpponentHit, onHo
     while (tail.length && now - tail[0].t > 110) tail.shift();
     if (tail.length > 1) {
       const p0 = project(ball.position), q0 = project(edge.copy(ball.position).setX(ball.position.x + 0.042)), rb = Math.max(4, Math.hypot(q0.x - p0.x, q0.y - p0.y));
-      ctx2d.fillStyle = '#fff6d6';
+      ctx2d.fillStyle = tailColor;
       for (let i = 0; i < tail.length - 1; i++) {
         const a = tail[i], k = 1 - (now - a.t) / 110;
         ctx2d.globalAlpha = 0.3 * k; ctx2d.beginPath(); ctx2d.arc(a.x, a.y, rb * (0.35 + 0.55 * k), 0, Math.PI * 2); ctx2d.fill();
@@ -382,7 +508,9 @@ export async function createStage({ host, overlay, onBounce, onOpponentHit, onHo
   warmUp();
 
   return {
-    serve, release, setLane, setFace, resize, warmUp,
+    serve, release, setLane, setFace, resize, warmUp, setGear,
+    gear: () => ({ ...gearNow, tail: tailColor }),
+    wallInfo: () => (wall?.info ? { ...wall.info } : null),
     holding: () => !!(path?.serve && path.waiting && !path.released),
     lanes: LANES.length,
     padColors: PAD_COLORS.map((c) => c.base),

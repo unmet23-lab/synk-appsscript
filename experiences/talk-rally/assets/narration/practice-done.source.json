@@ -1,0 +1,9 @@
+{
+  "sourceKey": "735e1690b8579f00a04f17382ec4006f7fdf275232177db1e87f3991c047aec2",
+  "text": "좋아요! 이제 시작해요.",
+  "loudnorm": "measured I -> volume to -20.5 LUFS (linear)",
+  "pause": "silenceremove=stop_periods=-1:stop_duration=0.25:stop_threshold=-40dB:stop_silence=0.28",
+  "voice": "ko-KR-InJoonNeural",
+  "rate": "-6%",
+  "pitch": "+0Hz"
+}
