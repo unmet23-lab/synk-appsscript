@@ -2,21 +2,76 @@ import { createAccountClient } from './generated/account-client.cjs';
 import { PRODUCTS, authorizationProduct, trustedConsentRedirect } from './core.mjs';
 import { createAccountView } from './account-view.mjs';
 const $ = id => document.getElementById(id);
-export async function mountPortal({ config, sdk, accountFactory = createAccountClient, preview = false }) {
-  const notice = (text, error = false) => { $('notice').textContent = text;$('notice').className = `notice${error ? ' error' : ''}`; };
+const AUTH_LABELS = { login: '로그인', signup: '이메일로 가입', recover: '재설정 메일 보내기', reset: '새 비밀번호 저장' };
+const RATE_ACTIONS = { login: '로그인', signup: '가입 메일', recover: '비밀번호 재설정 메일', reset: '비밀번호 변경', consent: '계정 연결' };
+const RATE_CODES = new Set(['over_email_send_rate_limit', 'over_sms_send_rate_limit', 'over_request_rate_limit', 'rate_limit_exceeded']);
+export function authRateLimit(error) {
+  const message = typeof error?.message === 'string' ? error.message : '';
+  const seconds = message.match(/(?:request this after|try again (?:after|in)|retry (?:after|in))\s+(\d+)\s+seconds?\b/i)?.[1];
+  if (!RATE_CODES.has(error?.code) && error?.status !== 429 && !/rate.?limit|too many requests/i.test(message)
+    && !/for security purposes, you can only request this after \d+ seconds?/i.test(message)) return null;
+  const value = error?.retryAfter ?? error?.retry_after ?? seconds;
+  const wait = typeof value === 'number' || typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : NaN;
+  return { waitSeconds: Number.isSafeInteger(wait) && wait > 0 && wait <= 86400 ? wait : null };
+}
+export async function mountPortal({ config, sdk, accountFactory = createAccountClient, preview = false,
+  cooldownClock = { now: () => Date.now(), setTimeout: (fn, ms) => setTimeout(fn, ms), clearTimeout: id => clearTimeout(id) } }) {
+  let noticeScope = null;
+  const setText = (node, text) => { if (node.textContent !== text) node.textContent = text; };
+  const notice = (text, error = false, reveal = false) => {
+    noticeScope = null;const node = $('notice');setText(node, text);node.className = `notice${error ? ' error' : ''}`;
+    if (reveal) { node.setAttribute('tabindex', '-1');node.focus?.({ preventScroll: true });node.scrollIntoView?.({ block: 'center' }); }
+  };
   if (preview) $('preview-banner').hidden = false;
   $('learning-link').href = config.learningUrl;
   if (!config.configured) { $('setup').hidden = false;notice('계정 서비스 설정 전 · 기본 학습은 계속 사용할 수 있어요.');return; }
-  let mode = new URL(location.href).searchParams.get('view') === 'reset' ? 'reset' : 'login', session = null, generation = 0, entryId = 0, authOperation = false, view = null, details = null, subject = null;
+  let mode = new URL(location.href).searchParams.get('view') === 'reset' ? 'reset' : 'login', session = null, generation = 0, entryId = 0, authOperation = false, consentOperation = null, view = null, details = null, subject = null, closed = false;
+  const cooldowns = new Map();let cooldownTimer = null;
+  // The main notice is the only live region. This copy keeps the instruction beside its button.
+  const feedback = target => { const node = document.createElement('p');node.className = 'notice error';node.hidden = true;target.before(node);return node; };
+  const authFeedback = feedback($('auth-submit')), consentFeedback = feedback($('approve').closest('.actions'));
+  const remaining = scope => Math.max(0, Math.ceil(((cooldowns.get(scope)?.until || 0) - cooldownClock.now()) / 1000));
+  const scopeVisible = scope => scope === 'consent' ? !$('consent').hidden : !$('auth-panel').hidden && scope === mode;
+  const cooldownText = (scope, waiting) => waiting
+    ? `${RATE_ACTIONS[scope]} 요청이 잠시 제한됐어요. 버튼의 남은 시간이 지나면 다시 눌러 주세요. 자동으로 다시 보내지 않아요.`
+    : '대기 시간이 지났어요. 입력 내용을 확인한 뒤 버튼을 눌러 다시 요청해 주세요. 자동으로 다시 보내지 않아요.';
+  const cooldownMessage = scope => { const record = cooldowns.get(scope);return record.until ? cooldownText(scope, remaining(scope) > 0) : record.message; };
+  function renderControls() {
+    const authSeconds = remaining(mode), consentSeconds = remaining('consent');
+    $('auth-submit').disabled = authOperation || authSeconds > 0;
+    setText($('auth-submit'), authOperation ? '요청을 보내고 있어요…' : authSeconds ? `${authSeconds}초 뒤 다시 요청` : AUTH_LABELS[mode]);
+    document.querySelectorAll('[data-view]').forEach(button => { button.disabled = authOperation; });
+    $('approve').disabled = $('deny').disabled = !!consentOperation || consentSeconds > 0;
+    setText($('approve'), consentSeconds ? `${consentSeconds}초 뒤 다시 요청` : '연결하기');
+    for (const [scope, node] of [[mode, authFeedback], ['consent', consentFeedback]]) {
+      const record = cooldowns.get(scope);node.hidden = !record || !scopeVisible(scope);
+      if (record) setText(node, cooldownMessage(scope));
+    }
+  }
+  function tickCooldowns() {
+    if (cooldownTimer !== null) cooldownClock.clearTimeout(cooldownTimer);cooldownTimer = null;if (closed) return;
+    renderControls();
+    if (noticeScope && scopeVisible(noticeScope) && cooldowns.has(noticeScope)) setText($('notice'), cooldownMessage(noticeScope));
+    if ([...cooldowns.keys()].some(scope => remaining(scope) > 0)) cooldownTimer = cooldownClock.setTimeout(tickCooldowns, 1000);
+  }
+  function clearCooldowns() { if (cooldownTimer !== null) cooldownClock.clearTimeout(cooldownTimer);cooldownTimer = null;cooldowns.clear();noticeScope = null;authFeedback.hidden = consentFeedback.hidden = true;renderControls(); }
   const bounded = async promise => { let timer;try { return await Promise.race([promise, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('연결을 확인하는 데 시간이 걸려요. 다시 로그인해 주세요.')), 12000); })]); } finally { clearTimeout(timer); } };
-  const report = error => { if (error.code !== 'ACCOUNT_CHANGED') notice(error.message || '지금은 요청을 마치지 못했어요.', true); };
+  const report = (error, scope = mode) => {
+    if (closed || error?.code === 'ACCOUNT_CHANGED') return;
+    const limited = authRateLimit(error);
+    if (!limited) { notice(error?.message || '지금은 요청을 마치지 못했어요.', true);return; }
+    const message = `${RATE_ACTIONS[scope]} 요청이 잠시 제한됐어요. 서버가 대기 시간을 알려 주지 않았어요. 잠시 후 직접 다시 시도해 주세요.`;
+    cooldowns.set(scope, { until: limited.waitSeconds ? cooldownClock.now() + limited.waitSeconds * 1000 : null, message });
+    notice(cooldownMessage(scope), true);noticeScope = scope;
+    if (cooldownTimer !== null) cooldownClock.clearTimeout(cooldownTimer);tickCooldowns();
+  };
   const authorizationId = new URL(location.href).searchParams.get('authorization_id');
   const setMode = value => {
     mode = value;$('auth-heading').textContent = ({ login: '다시 만나서 반가워요.', signup: '나만의 SYNK를 시작해요.', recover: '비밀번호를 다시 정해요.', reset: '새 비밀번호를 정해 주세요.' })[mode];
     $('auth-copy').textContent = mode === 'recover' ? '가입한 이메일로 재설정 링크를 보내 드려요.' : mode === 'signup' ? '이메일로 일반 계정을 만들어요. 학생 권한은 소속 확인 뒤 연결돼요.' : '이메일과 비밀번호로 내 계정에 들어가요.';
     $('password-label').hidden = mode === 'recover';$('password').required = mode !== 'recover';$('password').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
     $('email').closest('label').hidden = mode === 'reset';$('email').required = mode !== 'reset';$('signup-choices').hidden = mode !== 'signup';
-    $('auth-submit').textContent = ({ login: '로그인', signup: '이메일로 가입', recover: '재설정 메일 보내기', reset: '새 비밀번호 저장' })[mode];
+    renderControls();
     document.querySelectorAll('[data-view]').forEach(button => { button.hidden = button.dataset.view === mode || mode === 'login' && button.dataset.view === 'login'; });
   };
   const guarded = token => () => { if (token !== generation || !session) throw Object.assign(new Error('로그인 상태가 바뀌었어요.'), { code: 'ACCOUNT_CHANGED' }); };
@@ -60,7 +115,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       } catch { /* A server failure must not prevent clearing this browser's SDK session. */ }
       // A different account arriving from another tab must not be signed out by this request.
       try { check(); } catch { await enter();return; }
-      generation++;view?.stop();session = null;subject = null;
+      generation++;view?.stop();session = null;subject = null;consentOperation = null;clearCooldowns();
       try { await bounded(sdk.auth.signOut({ scope: 'local' })); } catch { /* Verify local cleanup below, independently of the server result. */ }
       let cleared = false;
       try { const result = await bounded(sdk.auth.getSession());cleared = !result.error && result.data?.session === null; } catch {}
@@ -69,43 +124,59 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
         : note || (preview ? '예시 계정을 닫았어요. 실제 다른 제품의 로그인은 종료하지 않았어요.'
           : !complete ? '이 브라우저에서 로그아웃했어요. 서버의 로그인 종료는 연결 후 다시 확인해 주세요.'
           : request.scope === 'all' ? '모든 제품에 로그인 종료를 요청하고 이 브라우저에서 로그아웃했어요.' : '이 브라우저에서 로그아웃했어요.'), !cleared || !preview && !complete);
-    } finally { authOperation = false; }
+    } finally { authOperation = false;renderControls(); }
   }
-  document.querySelectorAll('[data-view]').forEach(button => { button.onclick = () => setMode(button.dataset.view); });
+  document.querySelectorAll('[data-view]').forEach(button => { button.onclick = () => {
+    if (closed || authOperation) return;
+    setMode(button.dataset.view);
+    if (cooldowns.has(mode)) { notice(cooldownMessage(mode), true);noticeScope = mode;tickCooldowns(); }
+    else notice('입력 내용을 확인한 뒤 원하는 요청을 선택해 주세요.');
+  }; });
   $('auth-form').onsubmit = async event => {
-    event.preventDefault();$('auth-submit').disabled = true;authOperation = true;
+    event.preventDefault();if (closed || authOperation || remaining(mode) > 0) return;
+    const requestMode = mode, token = generation;
+    authOperation = true;cooldowns.delete(requestMode);renderControls();
     try {
       let result;
       const email = $('email').value.trim(), password = $('password').value;
       const callback = new URL(config.portalUrl);if (authorizationId) callback.searchParams.set('authorization_id', authorizationId);
       // The sign-up choices travel with the account (user_metadata.synk_signup): the account server starts
       // learning storage on the first sign-in only when the person ticked it here (SYNK-talk synk-auth.js).
-      if (mode === 'signup' && !$('signup-age').checked) throw new Error('만 14세 이상만 가입할 수 있어요. 확인란을 선택해 주세요.');
-      if (mode === 'signup') result = await sdk.auth.signUp({ email, password, options: { emailRedirectTo: callback.href,
+      if (requestMode === 'signup' && !$('signup-age').checked) throw new Error('만 14세 이상만 가입할 수 있어요. 확인란을 선택해 주세요.');
+      if (requestMode === 'signup') result = await sdk.auth.signUp({ email, password, options: { emailRedirectTo: callback.href,
         data: { synk_signup: { version: 'synk-signup-1', learning: $('signup-learning').checked, age14: true } } } });
-      else if (mode === 'recover') { callback.searchParams.set('view', 'reset');result = await sdk.auth.resetPasswordForEmail(email, { redirectTo: callback.href }); }
-      else if (mode === 'reset') result = await sdk.auth.updateUser({ password });
+      else if (requestMode === 'recover') { callback.searchParams.set('view', 'reset');result = await sdk.auth.resetPasswordForEmail(email, { redirectTo: callback.href }); }
+      else if (requestMode === 'reset') result = await sdk.auth.updateUser({ password });
       else result = await sdk.auth.signInWithPassword({ email, password });
+      if (closed) return;
+      if (mode !== requestMode || token !== generation && (!result.data?.session?.user?.id || result.data.session.user.id !== subject)) { await enter();return; }
       if (result.error) throw result.error;
       $('password').value = '';
-      if (mode === 'recover' || mode === 'signup' && !result.data?.session) notice('메일함에서 안내를 확인해 주세요. 메일이 보이지 않으면 스팸함도 확인해 주세요.');
-      else if (mode === 'reset') { mode = 'login';notice('새 비밀번호를 저장했어요.');await enter(); }
-      else { session = result.data.session;generation++;subject = session?.user?.id;await enter(); }
-    } catch (error) { report(error); }
-    finally { $('auth-submit').disabled = false;authOperation = false; }
+      if (requestMode === 'recover' || requestMode === 'signup' && !result.data?.session) notice(`${requestMode === 'signup' ? '가입 확인 메일을 요청했어요.' : '비밀번호 재설정 메일을 요청했어요.'} 메일함에서 안내를 확인해 주세요. 메일이 보이지 않으면 스팸함도 확인해 주세요.`, false, true);
+      else if (requestMode === 'reset') { mode = 'login';notice('새 비밀번호를 저장했어요.');await enter(); }
+      else { session = result.data.session;generation++;subject = session?.user?.id;clearCooldowns();await enter(); }
+    } catch (error) { if (token === generation && mode === requestMode) report(error, requestMode);else if (!closed) await enter(); }
+    finally { authOperation = false;renderControls(); }
   };
   for (const [id, method] of [['approve', 'approveAuthorization'], ['deny', 'denyAuthorization']]) $(id).onclick = async () => {
-    $('approve').disabled = $('deny').disabled = true;const token = generation;
-    try { const result = await bounded(sdk.auth.oauth[method](authorizationId, { skipBrowserRedirect: true }));guarded(token)();if (result.error) throw result.error;location.assign(trustedConsentRedirect(result.data.redirect_url, config, details?.client?.id)); }
-    catch (error) { report(error);$('approve').disabled = $('deny').disabled = false; }
+    if (closed || consentOperation || remaining('consent') > 0) return;
+    const operation = { redirecting: false }, token = generation;
+    consentOperation = operation;cooldowns.delete('consent');renderControls();
+    try {
+      const result = await bounded(sdk.auth.oauth[method](authorizationId, { skipBrowserRedirect: true }));guarded(token)();if (result.error) throw result.error;
+      const target = trustedConsentRedirect(result.data.redirect_url, config, details?.client?.id);
+      operation.redirecting = true;location.assign(target);
+    } catch (error) { operation.redirecting = false;if (token === generation) report(error, 'consent'); }
+    finally { if (consentOperation === operation && !operation.redirecting) { consentOperation = null;renderControls(); } }
   };
   sdk.auth.onAuthStateChange((event, value) => { queueMicrotask(() => {
-    const next = value?.user?.id || null;if (next !== subject) { generation++;subject = next;view?.stop(); }session = value;
+    if (closed) return;
+    const next = value?.user?.id || null;if (next !== subject) { generation++;subject = next;view?.stop();consentOperation = null;clearCooldowns(); }session = value;
     if (event === 'PASSWORD_RECOVERY') mode = 'reset';
     if (!authOperation && event !== 'TOKEN_REFRESHED' && event !== 'INITIAL_SESSION') void enter().catch(report);
   }); });
   const result = await bounded(sdk.auth.getSession());session = result.data?.session;subject = session?.user?.id || null;setMode(mode);
   await enter().catch(report);
-  window.addEventListener('pagehide', () => { generation++;view?.stop(); });
+  window.addEventListener('pagehide', () => { closed = true;generation++;view?.stop();consentOperation = null;clearCooldowns(); });
   window.addEventListener('pageshow', event => { if(event.persisted) location.reload(); });
 }
