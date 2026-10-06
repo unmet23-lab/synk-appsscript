@@ -184,122 +184,6 @@
       "usage": "Keep full 1024x1024 transparent canvas and aspect ratio. Happy filename refers to approved 응원 pose."
     },
     {
-      "path": "assets/brand-lab.webp",
-      "kind": "brand",
-      "source": "experiences/korean-racing/assets/brand-lab.webp",
-      "method": "byte-for-byte local copy; source preserved",
-      "bytes": 126616,
-      "sha256": "b1e0ec28fa10cc446952afa82bc58cea3e58b3ddbf9a169e27cbcaec30695b0e",
-      "width": 1173,
-      "height": 360,
-      "alphaExtrema": [
-        0,
-        255
-      ],
-      "alphaBBox": [
-        31,
-        32,
-        1137,
-        329
-      ]
-    },
-    {
-      "path": "assets/thread.webp",
-      "kind": "thread",
-      "source": "docs/마케팅/맞춤도구/assets/thread-shift.webp",
-      "method": "byte-for-byte local copy; source preserved",
-      "bytes": 159706,
-      "sha256": "123cc5ccf392346e5beffc2f195c3b0315fddcfb24881b33fefdba110061d483",
-      "width": 1254,
-      "height": 1254,
-      "alphaExtrema": [
-        0,
-        255
-      ],
-      "alphaBBox": [
-        35,
-        39,
-        1234,
-        1234
-      ]
-    },
-    {
-      "path": "assets/felt.webp",
-      "kind": "felt",
-      "source": "experiences/korean-runner/assets/felt.webp",
-      "method": "byte-for-byte local copy; source preserved",
-      "bytes": 77674,
-      "sha256": "63526708186cfef84f7559628b38ad8663c22a222976242e0a401f75f3865b2b",
-      "width": 512,
-      "height": 512,
-      "alphaExtrema": [
-        255,
-        255
-      ],
-      "alphaBBox": [
-        0,
-        0,
-        512,
-        512
-      ]
-    },
-    {
-      "path": "assets/SUIT-Variable.woff2",
-      "kind": "font",
-      "source": "docs/브랜드_폰트/SUIT/SUIT-Variable.woff2",
-      "method": "byte-for-byte local copy; source preserved",
-      "bytes": 624536,
-      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
-    },
-    {
-      "path": "assets/InterTight-Medium.ttf",
-      "kind": "font",
-      "source": "docs/브랜드_폰트/InterTight/InterTight-Medium.ttf",
-      "method": "byte-for-byte local copy; source preserved",
-      "bytes": 309140,
-      "sha256": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1"
-    },
-    {
-      "path": "assets/InterTight-Bold.ttf",
-      "kind": "font",
-      "source": "docs/브랜드_폰트/InterTight/InterTight-Bold.ttf",
-      "method": "byte-for-byte local copy; source preserved",
-      "bytes": 310440,
-      "sha256": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca"
-    },
-    {
-      "path": "assets/DMMono-Regular.ttf",
-      "kind": "font",
-      "source": "docs/브랜드_폰트/DM_Mono/DMMono-Regular.ttf",
-      "method": "byte-for-byte local copy; source preserved",
-      "bytes": 49744,
-      "sha256": "55b4c98f123daebb3ed27947ba47b2af00554fc6284d639a540bcef5e6258ad2"
-    },
-    {
-      "path": "assets/SUIT-OFL.txt",
-      "kind": "license",
-      "source": "docs/브랜드_폰트/SUIT/LICENSE_OFL.txt",
-      "method": "byte-for-byte local copy; source preserved",
-      "bytes": 4380,
-      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9"
-    },
-    {
-      "path": "assets/InterTight-OFL.txt",
-      "kind": "license",
-      "source": "docs/브랜드_폰트/InterTight/OFL.txt",
-      "method": "byte-for-byte local copy; source preserved",
-      "bytes": 4383,
-      "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58"
-    },
-    {
-      "path": "assets/DMMono-OFL.txt",
-      "kind": "license",
-      "source": "docs/브랜드_폰트/DM_Mono/OFL.txt",
-      "method": "byte-for-byte local copy; source preserved",
-      "bytes": 4484,
-      "sha256": "2bada5ea45c3c63b7f1ea1f88ce9672c9e4f0c42b2c3b7378949084fe55a3066"
-    },
-    {
       "path": "assets/sound-earn.wav",
       "kind": "sound",
       "source": "docs/브랜드_사운드킷/synk-sound-earn.wav",
@@ -360,58 +244,11 @@
       ],
       "sourceApprovedDerived": "docs/캐릭터/화면_1024/몽글_본체.webp",
       "usage": "Keep full 1024x1024 transparent canvas and aspect ratio."
-    },
-    {
-      "path": "assets/thread-line.webp",
-      "kind": "thread",
-      "source": "docs/마케팅/맞춤도구/assets/thread-shift.webp",
-      "method": "Lossless crop of approved upper horizontal real stitch photograph. No redraw, recolour or new generation; source preserved.",
-      "cropXYXY": [
-        194,
-        80,
-        1018,
-        160
-      ],
-      "bytes": 54166,
-      "sha256": "88a4dde82ea36e72c7bbb6d0069ef8a5003b0b7624abedc4d36b275a410f13ea",
-      "width": 824,
-      "height": 80,
-      "alphaExtrema": [
-        0,
-        255
-      ],
-      "alphaBBox": [
-        0,
-        12,
-        824,
-        65
-      ],
-      "usage": "Thin horizontal separator. Full texture remains available in assets/thread.webp."
     }
   ],
   "fonts": {
-    "SUIT Variable": {
-      "file": "assets/SUIT-Variable.woff2",
-      "weight": "100 900",
-      "role": "Korean"
-    },
-    "Inter Tight": [
-      {
-        "file": "assets/InterTight-Medium.ttf",
-        "weight": 500,
-        "role": "Latin, Cyrillic and Mongolian full approved font"
-      },
-      {
-        "file": "assets/InterTight-Bold.ttf",
-        "weight": 700,
-        "role": "Latin, Cyrillic and Mongolian heading"
-      }
-    ],
-    "DM Mono": {
-      "file": "assets/DMMono-Regular.ttf",
-      "weight": 400,
-      "role": "numbers and short labels"
-    }
+    "source": "kit/fonts (SYNK LAB PLAY kit, original experiences/play-common/kit/fonts)",
+    "note": "Since 2026-10-06 the game uses the shared kit fonts and keeps no font copies of its own."
   },
   "audio": {
     "uiEffects": "Existing approved sound kit WAV copies; no custom UI failure tones. All event buffers use the same global sound gain.",
@@ -428,5 +265,23 @@
     "music": "Original local procedural score in audio.mjs: sparse C pentatonic sine/triangle pizzicato, lowpass, short decay, 72 BPM, 16-bar loop. Fixed 13.6dB music trim yields measured stereo BGM peak -28.99dBFS; common approved UI event gain remains 0.42. This is background music rather than a new branded UI-kit event.",
     "voice": "No TTS, mission narration or guide imitation. Critical story information remains text.",
     "operation": "User gesture unlock; no autoplay before start(). suspend clears pending loop and nodes; start resumes a single loop; destroy closes context."
+  },
+  "retired": {
+    "date": "2026-10-06",
+    "reason": "SYNK LAB PLAY kit provides the LAB logo, fonts and felt UI parts (kit/brand, kit/fonts, kit/felt).",
+    "paths": [
+      "assets/brand-lab.webp",
+      "assets/thread.webp",
+      "assets/thread-line.webp",
+      "assets/felt.webp",
+      "assets/SUIT-Variable.woff2",
+      "assets/InterTight-Medium.ttf",
+      "assets/InterTight-Bold.ttf",
+      "assets/DMMono-Regular.ttf",
+      "assets/SUIT-OFL.txt",
+      "assets/InterTight-OFL.txt",
+      "assets/DMMono-OFL.txt",
+      "assets/ui/ (felt UI copies and their provenance.json)"
+    ]
   }
 }

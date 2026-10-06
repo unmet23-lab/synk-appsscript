@@ -1,0 +1,108 @@
+[
+  {
+    "name": "desktop",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "틀림 쪽지: wrong",
+      "이어 하기: outro · 장면 1 · 마친 부탁 2",
+      "다시 듣기: playing mission-clue-flowers",
+      "결과: 첫 시도 8/9 · 별 2 · 도움 없이 처음 해낸 부탁 7개 · 힌트 1개 · 음성으로 들은 부탁 1개",
+      "공통 코인: 공통 코인 +23 · 보유 23",
+      "읽기 능력 줄: 읽고 대상·위치 찾기 이번 4/4 확인하는 중이에요 / 읽고 부정·변경 이해하기 이번 1/2 확인하는 중이에요 / 읽고 행동 순서 이해하기 이번 3/3 확인하는 중이에요"
+    ],
+    "shots": [
+      "play_desktop_00_lobby.png",
+      "play_desktop_01_story_beat.png",
+      "play_desktop_02_picks_mismatch.png",
+      "play_desktop_03_request_picks.png",
+      "play_desktop_04_wrong_note.png",
+      "play_desktop_05_right.png",
+      "play_desktop_06_review.png",
+      "play_desktop_07_results.png",
+      "play_desktop_08_results_full.png",
+      "play_desktop_09_pause.png",
+      "play_desktop_10_journal.png"
+    ],
+    "sec": 31
+  },
+  {
+    "name": "phone",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "틀림 쪽지: wrong",
+      "다시 듣기: playing mission-clue-flowers",
+      "새 글 종이: 끌어 놓기로 옮김",
+      "결과: 첫 시도 8/9 · 별 2 · 도움 없이 처음 해낸 부탁 7개 · 힌트 1개 · 음성으로 들은 부탁 1개",
+      "공통 코인: 공통 코인 +23 · 보유 23",
+      "읽기 능력 줄: 읽고 대상·위치 찾기 이번 4/4 확인하는 중이에요 / 읽고 부정·변경 이해하기 이번 1/2 확인하는 중이에요 / 읽고 행동 순서 이해하기 이번 3/3 확인하는 중이에요"
+    ],
+    "shots": [
+      "play_phone_00_lobby.png",
+      "play_phone_01_story_beat.png",
+      "play_phone_02_picks_mismatch.png",
+      "play_phone_03_request_picks.png",
+      "play_phone_04_wrong_note.png",
+      "play_phone_05_right.png",
+      "play_phone_06_review.png",
+      "play_phone_07_results.png",
+      "play_phone_08_results_full.png",
+      "play_phone_09_pause.png",
+      "play_phone_10_journal.png"
+    ],
+    "sec": 32
+  },
+  {
+    "name": "small",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "틀림 쪽지: wrong compact",
+      "다시 듣기: playing mission-clue-flowers",
+      "결과: 첫 시도 8/9 · 별 2 · 도움 없이 처음 해낸 부탁 7개 · 힌트 1개 · 음성으로 들은 부탁 1개",
+      "공통 코인: 공통 코인 +23 · 보유 23",
+      "읽기 능력 줄: 읽고 대상·위치 찾기 이번 4/4 확인하는 중이에요 / 읽고 부정·변경 이해하기 이번 1/2 확인하는 중이에요 / 읽고 행동 순서 이해하기 이번 3/3 확인하는 중이에요"
+    ],
+    "shots": [
+      "play_small_00_lobby.png",
+      "play_small_01_story_beat.png",
+      "play_small_02_picks_mismatch.png",
+      "play_small_03_request_picks.png",
+      "play_small_04_wrong_note.png",
+      "play_small_05_right.png",
+      "play_small_06_review.png",
+      "play_small_07_results.png",
+      "play_small_08_results_full.png",
+      "play_small_09_pause.png",
+      "play_small_10_journal.png"
+    ],
+    "sec": 30
+  },
+  {
+    "name": "reduced",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "틀림 쪽지: wrong",
+      "다시 듣기: playing mission-clue-flowers",
+      "결과: 첫 시도 8/9 · 별 2 · 도움 없이 처음 해낸 부탁 7개 · 힌트 1개 · 음성으로 들은 부탁 1개",
+      "공통 코인: 공통 코인 +23 · 보유 23",
+      "읽기 능력 줄: 읽고 대상·위치 찾기 이번 4/4 확인하는 중이에요 / 읽고 부정·변경 이해하기 이번 1/2 확인하는 중이에요 / 읽고 행동 순서 이해하기 이번 3/3 확인하는 중이에요"
+    ],
+    "shots": [
+      "play_reduced_00_lobby.png",
+      "play_reduced_01_story_beat.png",
+      "play_reduced_02_picks_mismatch.png",
+      "play_reduced_03_request_picks.png",
+      "play_reduced_04_wrong_note.png",
+      "play_reduced_05_right.png",
+      "play_reduced_06_review.png",
+      "play_reduced_07_results.png",
+      "play_reduced_08_results_full.png",
+      "play_reduced_09_pause.png",
+      "play_reduced_10_journal.png"
+    ],
+    "sec": 17
+  }
+]
