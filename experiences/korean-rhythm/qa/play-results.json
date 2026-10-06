@@ -1,0 +1,110 @@
+[
+  {
+    "name": "desktop",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "곡 타일: 초록(고름) · 해안선 · 네 시",
+      "무대 열기 → 시작 카운트 0.6초(음원·문장 받기 포함)",
+      "캔버스 1440×833 불투명 100% · 색 61가지",
+      "결과: 4/5 · 별 2 · 공통 코인 +23 · 보유 23",
+      "듣기 기록: 세부 내용 이번 2/3 / 부정 표현 이번 2/2 · 도움·반복을 제외한 새 응답 4개를 맞춤 추천에 참고해요. 읽기 능력은 이 곡으로 판단하지 않아요. · 이번 곡은 판정 폭을 조금 넓혀서 맞췄어요. 다음 곡도 이어서 맞춰요.",
+      "다음 곡: 다음 곡으로 ‘해안선’을 추천해요. 듣고 이유 이해하기는 아직 기록이 적어요. 짧게 확인해 봐요.",
+      "판정 글자 23번(딱!·좋아요·아쉬워요)",
+      "새 문장 확인: 잘 들었어요."
+    ],
+    "shots": [
+      "play_desktop_00_lobby.png",
+      "play_desktop_01_playing.png",
+      "play_desktop_02_pause.png",
+      "play_desktop_03_question.png",
+      "play_desktop_04_wrong.png",
+      "play_desktop_05_question_text.png",
+      "play_desktop_06_results.png",
+      "play_desktop_07_results_full.png",
+      "play_desktop_08_results_recall.png"
+    ],
+    "sec": 73
+  },
+  {
+    "name": "phone",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "곡 타일: 초록(고름) · 해안선 · 네 시",
+      "무대 열기 → 시작 카운트 0.6초(음원·문장 받기 포함)",
+      "캔버스 780×1562 불투명 100% · 색 88가지",
+      "결과: 4/5 · 별 2 · 공통 코인 +23 · 보유 23",
+      "듣기 기록: 세부 내용 이번 2/3 / 부정 표현 이번 2/2 · 도움·반복을 제외한 새 응답 4개를 맞춤 추천에 참고해요. 읽기 능력은 이 곡으로 판단하지 않아요. · 이번 곡은 판정 폭을 조금 넓혀서 맞췄어요. 다음 곡도 이어서 맞춰요.",
+      "다음 곡: 다음 곡으로 ‘해안선’을 추천해요. 듣고 이유 이해하기는 아직 기록이 적어요. 짧게 확인해 봐요.",
+      "판정 글자 22번(딱!·좋아요·아쉬워요)",
+      "새 문장 확인: 잘 들었어요."
+    ],
+    "shots": [
+      "play_phone_00_lobby.png",
+      "play_phone_01_playing.png",
+      "play_phone_02_pause.png",
+      "play_phone_03_question.png",
+      "play_phone_04_wrong.png",
+      "play_phone_05_question_text.png",
+      "play_phone_06_results.png",
+      "play_phone_07_results_full.png",
+      "play_phone_08_results_recall.png"
+    ],
+    "sec": 73
+  },
+  {
+    "name": "small",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "곡 타일: 초록(고름) · 해안선 · 네 시",
+      "무대 열기 → 시작 카운트 0.5초(음원·문장 받기 포함)",
+      "캔버스 640×1030 불투명 100% · 색 95가지",
+      "결과: 4/5 · 별 2 · 공통 코인 +23 · 보유 23",
+      "듣기 기록: 세부 내용 이번 2/3 / 부정 표현 이번 2/2 · 도움·반복을 제외한 새 응답 4개를 맞춤 추천에 참고해요. 읽기 능력은 이 곡으로 판단하지 않아요. · 이번 곡은 판정 폭을 조금 넓혀서 맞췄어요. 다음 곡도 이어서 맞춰요.",
+      "다음 곡: 다음 곡으로 ‘해안선’을 추천해요. 듣고 이유 이해하기는 아직 기록이 적어요. 짧게 확인해 봐요.",
+      "판정 글자 23번(딱!·아쉬워요·좋아요)",
+      "새 문장 확인: 잘 들었어요."
+    ],
+    "shots": [
+      "play_small_00_lobby.png",
+      "play_small_01_playing.png",
+      "play_small_02_pause.png",
+      "play_small_03_question.png",
+      "play_small_04_wrong.png",
+      "play_small_05_question_text.png",
+      "play_small_06_results.png",
+      "play_small_07_results_full.png",
+      "play_small_08_results_recall.png"
+    ],
+    "sec": 72
+  },
+  {
+    "name": "reduced",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "곡 타일: 초록(고름) · 해안선 · 네 시",
+      "무대 열기 → 시작 카운트 0.6초(음원·문장 받기 포함)",
+      "캔버스 1280×733 불투명 100% · 색 64가지",
+      "결과: 4/5 · 별 2 · 공통 코인 +23 · 보유 23",
+      "듣기 기록: 세부 내용 이번 2/3 / 부정 표현 이번 2/2 · 도움·반복을 제외한 새 응답 4개를 맞춤 추천에 참고해요. 읽기 능력은 이 곡으로 판단하지 않아요. · 이번 곡은 판정 폭을 조금 넓혀서 맞췄어요. 다음 곡도 이어서 맞춰요.",
+      "다음 곡: 다음 곡으로 ‘해안선’을 추천해요. 듣고 이유 이해하기는 아직 기록이 적어요. 짧게 확인해 봐요.",
+      "판정 글자 20번(딱!·아쉬워요·좋아요)",
+      "새 문장 확인: 잘 들었어요."
+    ],
+    "shots": [
+      "play_reduced_00_lobby.png",
+      "play_reduced_01_playing.png",
+      "play_reduced_02_pause.png",
+      "play_reduced_03_question.png",
+      "play_reduced_04_wrong.png",
+      "play_reduced_05_question_text.png",
+      "play_reduced_06_results.png",
+      "play_reduced_07_results_full.png",
+      "play_reduced_08_results_recall.png"
+    ],
+    "sec": 72
+  }
+]

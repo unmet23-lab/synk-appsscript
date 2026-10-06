@@ -79,7 +79,7 @@ async function firstToss(S) { for (let i = 0; i < 80; i++) { const st = await S(
     // ④ 무대 준비 중 쉬기: 펠트 결 그림을 1.5초 늦게 줘서 느린 망을 흉내 내고, 시작 직후 Esc
     {
       const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
-      await context.route('**/assets/kit/tex-cream.webp', async (route) => { await sleep(1500); await route.continue(); });
+      await context.route('**/kit/felt/tex-cream.webp', async (route) => { await sleep(1500); await route.continue(); });
       const page = await context.newPage(), errors = [];
       page.on('pageerror', (e) => errors.push(e.message));
       await page.goto(URL_BASE + '?qa');

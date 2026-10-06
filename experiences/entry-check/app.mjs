@@ -4,6 +4,7 @@ import { TUTORIAL, TUTORIAL_CASES, VOICE_ID } from './narration.mjs';
 import { koreanTime, minutes, venueById, activeRules, memoActive, judge, composeShift, scoreShift, unlocked, itemLabel } from './core.mjs';
 import { GAME_ID, caseMetadata, rankCases, recommendVenue, answerPayload, skillReport, FLOW_ENTRY, magnifierAfter, FLOW_WORDS, assignmentCases, assignmentVenues, entryTargetLabel } from './learning.mjs';
 import * as sound from './audio.mjs';
+import { fitText, preloadImages } from './kit/lab.mjs';
 
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
@@ -152,6 +153,7 @@ function startShift(venueId, { tutorial = !progress.tutorial } = {}) {
   $('#guest').classList.add('enter'); $('#bubble').classList.add('quiet'); $('#feedback').hidden = true;
   setDock('idle');
   show('game');
+  fitCushions();
   // 근무 전 안내
   $('#brief-date').textContent = v.date;
   $('#brief-day').textContent = `${v.day}일차`;
@@ -174,17 +176,60 @@ function tutorialQueue(v) {
     .sort((a, b) => minutes(a.at) - minutes(b.at));
 }
 
+/** 안내문 규칙. 거절 이유를 고를 때는 같은 자리에서 펠트 쿠션 판이 된다(규칙 번호 순서로 분홍·버터·라피스, 알림 ④는 분홍). */
+const RULE_FELT = ['blush', 'butter', 'lapis'];
 function renderRules(rules, into = $('#rules'), startNo = 1) {
   into.textContent = '';
   rules.forEach((r, i) => {
     const li = el('li');
     const b = el('button', 'rule'); b.type = 'button'; b.disabled = true; b.dataset.rule = r.id;
+    b.dataset.felt = RULE_FELT[(startNo + i - 1) % RULE_FELT.length];
     b.innerHTML = `<span class="rn">${startNo + i}</span><span class="rt">${esc(r.text)}</span>`;
     b.onclick = (e) => chooseRule(r.id, e);
     li.append(b); into.append(li);
   });
+  fitCushions();
 }
 const ruleButtons = () => [...document.querySelectorAll('#notice .rule')];
+
+/* ── 펠트 쿠션 판(도장 판·거절 이유): 판 비율에 맞는 쿠션 그림을 고르고(모서리·옆면이 찌그러지지 않게), 그 그림을 다 받기 전에는 같은 색 납작한 판 ── */
+const CUSHION = [['phone', 1.6], ['mid', 2.4], ['wide', 3.2], ['strip', 6]];
+const cushionShape = (w, h) => CUSHION.reduce((best, c) => (Math.abs(Math.log(w / h / c[1])) < Math.abs(Math.log(w / h / best[1])) ? c : best))[0];
+const feltLoaded = new Set(), feltLoading = new Set();
+function fitCushions() {
+  const fresh = new Set(), notice = $('#notice'), probe = !notice.classList.contains('cushions');
+  // 규칙은 쿠션 판일 때의 크기로 잰다(고르기 전에 그 판 그림을 미리 받으려고). 재는 동안만 붙였다 떼므로 화면에는 그려지지 않는다
+  if (probe) notice.classList.add('cushions');
+  for (const b of document.querySelectorAll('#game [data-felt]')) {
+    if (!b.offsetWidth || !b.offsetHeight) continue;   // 숨은 판(근무 화면이 닫혔거나 고르는 동안의 도장 판)은 보일 때 다시 잰다
+    b.dataset.shape = cushionShape(b.offsetWidth, b.offsetHeight);
+    const url = `kit/felt/cushion-${b.dataset.felt}-${b.dataset.shape}.webp`;
+    b.toggleAttribute('data-felt-wait', !feltLoaded.has(url));
+    if (!feltLoaded.has(url) && !feltLoading.has(url)) fresh.add(url);
+  }
+  if (probe) notice.classList.remove('cushions');
+  // 도장 판 글자: 판의 평평한 면보다 길면 그 판만 글자를 줄인다(키트 fitText — 한 줄)
+  for (const s of document.querySelectorAll('.stamp-btn span')) if (s.offsetWidth) fitText(s, { maxLines: 1, minPx: 15, commaBreak: false });
+  if (!fresh.size) return;
+  for (const u of fresh) feltLoading.add(u);
+  preloadImages([...fresh]).then(() => { for (const u of fresh) { feltLoading.delete(u); feltLoaded.add(u); } fitCushions(); });
+}
+/** 도장을 찍은 뒤: 고른 판은 스티커처럼 들리고, 맞는 판에는 체크 배지(틀린 판에는 표시하지 않는다). 다음 손님에서 지운다. */
+function markCushions(item, choice) {
+  const picked = choice === 'pass' ? '#btn-pass' : '#btn-reject', right = item.answer === 'pass' ? '#btn-pass' : '#btn-reject';
+  $(picked).classList.add('picked'); $(right).classList.add('right');
+  if (choice === 'pass' || !$('#notice').classList.contains('cushions')) return;
+  for (const r of ruleButtons()) {
+    const id = r.dataset.rule;
+    r.classList.toggle('picked', id === choice);
+    r.classList.toggle('right', id === item.answer);
+    r.classList.toggle('dim', id !== choice && id !== item.answer && !item.evidence.includes(id));
+  }
+}
+function clearCushions() {
+  for (const n of document.querySelectorAll('#game .picked, #game .right, #notice .rule.dim')) n.classList.remove('picked', 'right', 'dim');
+  $('#notice').classList.remove('cushions');
+}
 
 function updateHud() {
   $('#g-count').textContent = `${Math.min(state.index + 1, state.queue.length)} / ${state.queue.length}`;
@@ -199,7 +244,7 @@ function renderShiftLog() {
   state.queue.forEach((c, i) => {
     const r = state.results[i], who = CAST[c.who];
     const li = el('li', r ? 'done' : i === state.index ? 'now' : 'later');
-    li.innerHTML = `<img class="face" src="${who.img}" alt="${esc(who.name)}">${r ? `<img class="mark" src="${r.correct ? 'assets/kit/badge-check.webp' : 'assets/felt/drop.webp'}" alt="${r.correct ? '맞음' : '다시 볼 것'}">` : ''}`;
+    li.innerHTML = `<img class="face" src="${who.img}" alt="${esc(who.name)}">${r ? `<img class="mark" src="${r.correct ? 'kit/felt/badge-check.webp' : 'assets/felt/drop.webp'}" alt="${r.correct ? '맞음' : '다시 볼 것'}">` : ''}`;
     ol.append(li);
   });
 }
@@ -304,6 +349,8 @@ function setDock(mode) {
   $('#notice').classList.toggle('choosing', mode === 'choosing');
   const only = tut.on && tutStep()?.wait?.startsWith('rule:') ? tutStep().wait.slice(5) : null;   // 연수: 고를 규칙 하나만 연다
   for (const r of ruleButtons()) r.disabled = mode !== 'choosing' || (only && r.dataset.rule !== only);
+  // 거절 이유를 고를 때는 안내문 규칙이 같은 자리에서 펠트 쿠션 판이 된다. 도장을 찍은 뒤(done)에는 고른 판·맞는 판을 보이려고 그대로 두고 다음 손님에서 걷는다
+  if (mode !== 'done') { clearCushions(); if (mode === 'choosing') { $('#notice').classList.add('cushions'); fitCushions(); } }
   $('#btn-cancel').hidden = tut.on;
   const msg = { idle: '안내문을 읽고 도장을 골라요.', memo: '새 알림이 왔어요! 안내문 아래를 먼저 읽어요.',
     ready: tut.on ? '' : state.index === 0 ? '① 안내문 → ② 손님의 말·표·짐 → ③ 도장. 시간 제한은 없어요.' : '규칙을 모두 지키면 통과, 하나라도 어기면 거절이에요.',
@@ -393,6 +440,7 @@ async function decide(choice, e) {
   setDock('done'); $('#stamps').hidden = false; $('#choose').hidden = true;
   for (const b of ['#btn-pass', '#btn-reject', '#btn-hint']) $(b).disabled = true;
   $('#notice').classList.remove('choosing'); for (const r of ruleButtons()) r.disabled = true;
+  markCushions(item, choice);
   // 도장
   const kind = choice === 'pass' ? 'pass' : 'reject';
   stampDoc(kind, v);
@@ -442,6 +490,7 @@ function clearMarks() {
   document.querySelectorAll('#notice .rule .circle').forEach((n) => n.remove());
   document.querySelectorAll('.hint').forEach((n) => n.classList.remove('hint'));
   $('#clock-wrap').classList.remove('flag');
+  clearCushions();
 }
 
 function ruleNo(id) { const i = activeRules(state.venue, state.cur.item.at).findIndex((r) => r.id === id); return i + 1; }
@@ -450,11 +499,11 @@ const NO = ['', '①', '②', '③', '④', '⑤'];
 function showFeedback(item, choice, result) {
   const who = CAST[item.who], fb = $('#feedback');
   fb.classList.toggle('miss', !result.correct);
-  $('#fb-badge').src = result.correct ? 'assets/kit/badge-check.webp' : 'assets/felt/drop.webp';
+  $('#fb-badge').src = result.correct ? 'kit/felt/badge-check.webp' : 'assets/felt/drop.webp';
   $('#fb-kicker').textContent = result.correct ? 'CORRECT' : `정답 · ${item.answer === 'pass' ? '통과' : `거절 ${NO[ruleNo(item.answer)] || ''}`}`;
   $('#fb-title').textContent = result.correct ? (state.combo >= 3 ? `정확해요! ${state.combo}연속` : '정확해요!')
     : choice === 'pass' ? '아차, 들어가면 안 됐어요' : item.answer === 'pass' ? '아차, 들어가도 됐어요' : '거절은 맞지만 이유가 달라요';
-  $('#fb-mongle').src = result.correct ? 'assets/brand/mongle-smile.webp' : 'assets/brand/mongle-curious.webp';
+  $('#fb-mongle').src = result.correct ? 'kit/brand/mongle-smile.webp' : 'kit/brand/mongle-curious.webp';
   $('#fb-face').src = who.img; $('#fb-face').alt = who.name;
   $('#fb-reply').textContent = result.correct ? item.reply : choice === 'pass' ? `${who.name}: “고마워요!”` : `${who.name}: “네? 왜요?”`;
   $('#fb-why').textContent = item.why;
@@ -527,7 +576,7 @@ function finishShift() {
   $('#r-correct').textContent = String(score.correct); $('#r-total').textContent = String(score.total);
   $('#r-stars').innerHTML = [1, 2, 3].map((i) => `<i class="${i <= score.stars ? 'on' : ''}"></i>`).join('');
   $('#r-stars').setAttribute('aria-label', `별 3개 중 ${score.stars}개`);
-  $('#r-mongle').src = score.stars >= 2 ? 'assets/brand/mongle-smile.webp' : 'assets/brand/mongle-cheer.webp';
+  $('#r-mongle').src = score.stars >= 2 ? 'kit/brand/mongle-smile.webp' : 'kit/brand/mongle-cheer.webp';
   const notes = [`첫 도장으로 ${score.correct}명을 바르게 처리했어요.`];
   if (score.helped) notes.push(`돋보기를 쓴 손님은 ${score.helped}명이에요.`);
   if (score.bestRun >= 3) notes.push(`최고 ${score.bestRun}연속!`);
@@ -547,7 +596,7 @@ function finishShift() {
     const li = el('li');
     li.innerHTML = `<img class="face" src="${who.img}" alt=""><span><b>${esc(who.name)} <small style="display:inline">${esc(koreanTime(c.at))}</small></b>
       <small>정답 ${esc(answer)}${r.correct ? '' : ` · 내 도장 ${r.choice === 'pass' ? '통과' : `거절 · ${esc(ruleText(v, c, r.choice))}`}`}${r.guided ? ' · 연수' : r.hinted ? ' · 돋보기' : ''}</small></span>
-      <img class="mark" src="${r.correct ? 'assets/kit/badge-check.webp' : 'assets/felt/drop.webp'}" alt="${r.correct ? '맞음' : '다시 볼 것'}">`;
+      <img class="mark" src="${r.correct ? 'kit/felt/badge-check.webp' : 'assets/felt/drop.webp'}" alt="${r.correct ? '맞음' : '다시 볼 것'}">`;
     log.append(li);
   }
   const next = renderNext(v);
@@ -657,11 +706,14 @@ document.addEventListener('keydown', (e) => {
   else if (e.code === 'KeyH' || e.key.toLowerCase() === 'h') { e.preventDefault(); useHint(e); }
   else if (e.key === 'Escape') { e.preventDefault(); openPause(); }
 });
+let cushionTimer = 0;
 window.addEventListener('resize', () => {
   if (!state.venue || $('#game').hidden) return;
   if (isNarrow() !== narrowNow) { narrowNow = isNarrow(); setScene(state.venue); }
   placeCoach();
+  clearTimeout(cushionTimer); cushionTimer = setTimeout(fitCushions, 120);
 });
+document.fonts?.ready.then(() => { if (!$('#game').hidden) fitCushions(); });
 $('#scene-video').addEventListener('playing', (e) => e.target.classList.add('on'));
 document.addEventListener('visibilitychange', () => {
   const vid = $('#scene-video');

@@ -1,0 +1,126 @@
+{
+  "at": "2026-10-06T18:17:12.700Z",
+  "origin": "http://127.0.0.1:5301",
+  "results": [
+    {
+      "name": "desktop",
+      "shots": [
+        "play_desktop_00_lobby.png",
+        "play_desktop_01_courses.png",
+        "play_desktop_02_tutorial.png",
+        "play_desktop_03_tutorial_choose.png",
+        "play_desktop_04_tutorial_done.png",
+        "play_desktop_05_question_listening.png",
+        "play_desktop_06_question_choose.png",
+        "play_desktop_07_text_help.png",
+        "play_desktop_08_right.png",
+        "play_desktop_09_wrong.png",
+        "play_desktop_10_pause.png",
+        "play_desktop_11_cruise.png",
+        "play_desktop_12_results.png"
+      ],
+      "notes": [
+        "입구: 아침의 작은 일 · 조작 연습부터 시작",
+        "시작 단추 → 레이스 0.0초",
+        "게이트 화면 상자 {\"left\":660,\"top\":433,\"right\":789,\"bottom\":482} · 내 차 {\"left\":612,\"top\":611,\"right\":819,\"bottom\":810}",
+        "드라이브 중 화면 갱신 약 60fps",
+        "결과: 4/5 · 공통 코인 +48 · 보유 48"
+      ],
+      "fails": [],
+      "errors": [],
+      "seconds": 57
+    },
+    {
+      "name": "phone",
+      "shots": [
+        "play_phone_00_lobby.png",
+        "play_phone_01_courses.png",
+        "play_phone_02_question_listening.png",
+        "play_phone_03_question_choose.png",
+        "play_phone_04_text_help.png",
+        "play_phone_05_right.png",
+        "play_phone_06_wrong.png",
+        "play_phone_07_pause.png",
+        "play_phone_08_cruise.png",
+        "play_phone_09_results.png"
+      ],
+      "notes": [
+        "입구: 아침의 작은 일 · 레이스 시작",
+        "시작 단추 → 레이스 0.0초",
+        "게이트 화면 상자 {\"left\":142,\"top\":411,\"right\":256,\"bottom\":454} · 내 차 {\"left\":97,\"top\":555,\"right\":285,\"bottom\":732}",
+        "드라이브 중 화면 갱신 약 60fps",
+        "결과: 4/5 · 공통 코인 +48 · 보유 48"
+      ],
+      "fails": [],
+      "errors": [],
+      "seconds": 33
+    },
+    {
+      "name": "small",
+      "shots": [
+        "play_small_00_lobby.png",
+        "play_small_01_question_listening.png",
+        "play_small_02_question_choose.png",
+        "play_small_03_text_help.png",
+        "play_small_04_right.png",
+        "play_small_05_wrong.png",
+        "play_small_06_pause.png",
+        "play_small_07_cruise.png",
+        "play_small_08_results.png"
+      ],
+      "notes": [
+        "입구: 아침의 작은 일 · 레이스 시작",
+        "시작 단추 → 레이스 0.1초",
+        "게이트 화면 상자 {\"left\":128,\"top\":280,\"right\":198,\"bottom\":306} · 내 차 {\"left\":113,\"top\":352,\"right\":202,\"bottom\":432}",
+        "드라이브 중 화면 갱신 약 61fps",
+        "결과: 4/5 · 공통 코인 +48 · 보유 48"
+      ],
+      "fails": [],
+      "errors": [],
+      "seconds": 31
+    },
+    {
+      "name": "reduced",
+      "shots": [
+        "play_reduced_00_lobby.png",
+        "play_reduced_01_question_listening.png",
+        "play_reduced_02_question_choose.png",
+        "play_reduced_03_text_help.png",
+        "play_reduced_04_right.png",
+        "play_reduced_05_wrong.png",
+        "play_reduced_06_pause.png",
+        "play_reduced_07_cruise.png",
+        "play_reduced_08_results.png"
+      ],
+      "notes": [
+        "입구: 아침의 작은 일 · 레이스 시작",
+        "시작 단추 → 레이스 0.0초",
+        "게이트 화면 상자 {\"left\":587,\"top\":389,\"right\":701,\"bottom\":432} · 내 차 {\"left\":545,\"top\":546,\"right\":727,\"bottom\":721}",
+        "드라이브 중 화면 갱신 약 60fps",
+        "결과: 4/5 · 공통 코인 +48 · 보유 48"
+      ],
+      "fails": [],
+      "errors": [],
+      "seconds": 31
+    },
+    {
+      "name": "garage",
+      "shots": [
+        "play_garage_desktop_00_open.png",
+        "play_garage_desktop_01_equipped.png",
+        "play_garage_desktop_02_full.png",
+        "play_garage_phone_00_open.png",
+        "play_garage_phone_01_equipped.png",
+        "play_garage_phone_02_full.png"
+      ],
+      "notes": [
+        "desktop: 260 → 브리즈 로드스터 120코인으로 사서 장착 → 140",
+        "phone: 260 → 브리즈 로드스터 120코인으로 사서 장착 → 140",
+        "/try/racing/: 바람길 → /try/runner/ · 말의 리듬 → /try/rhythm/ · 공통 차고 → /try/racing/?garage=1"
+      ],
+      "fails": [],
+      "errors": [],
+      "seconds": 15
+    }
+  ]
+}

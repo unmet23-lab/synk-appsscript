@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-06",
+  "use": "교실 무대의 이름표·부탁 탭·상태 알약. 작은 부품이라 실땀 판 대신 실땀 없는 크림 쿠션 펠트를 늘여 쓴다(docs/디자인/펠트부품 마감 점검표).",
+  "files": [
+    {
+      "path": "assets/felt/name-cream.webp",
+      "source": "docs/디자인/펠트부품/assets/cushion/cushion-cream.webp",
+      "sourceSha256": "6f5d6593da6f7e845a33f3579f684be82ef8b81dc7a80555962261824a442c1a",
+      "method": "python tools/펠트판_늘이기.py <source> <path> --비율 2.2 --높이 96 --품질 88 (가운데를 좌우 반전으로 이어 늘임, 알파 무손실)",
+      "whiteBandCheck": "python tools/펠트부품_오리기.py --검사 → 0.00%",
+      "bytes": 6628,
+      "sha256": "a8b4aaf7e6dc49aac3f22569080903b2366d8c902a1a1f7b45f454d048551f3d",
+      "width": 211,
+      "height": 96
+    },
+    {
+      "path": "assets/felt/name-cream-long.webp",
+      "source": "docs/디자인/펠트부품/assets/cushion/cushion-cream.webp",
+      "sourceSha256": "6f5d6593da6f7e845a33f3579f684be82ef8b81dc7a80555962261824a442c1a",
+      "method": "python tools/펠트판_늘이기.py <source> <path> --비율 3.2 --높이 96 --품질 88 (가운데를 좌우 반전으로 이어 늘임, 알파 무손실)",
+      "whiteBandCheck": "python tools/펠트부품_오리기.py --검사 → 0.00%",
+      "bytes": 8850,
+      "sha256": "485fc8a3cb4942f2e539064585b1dd1fa2f1be4038d475b38131eee39dac27de",
+      "width": 307,
+      "height": 96
+    }
+  ]
+}

@@ -1,280 +1,355 @@
+// 바람길 — 3D 펠트 길과 마을(Three.js r180).
+// 크림 펠트 땅 위로 모래빛 펠트 길(세 칸)과 코랄 펠트 연석이 뒤로 이어지고, 길가에는 펠트 덤불·나무·집이 선다. 먼 곳은 판 뒤의 크림 펠트 벽
+// (kit .arena) 색의 안개로 녹아든다. 모든 면은 kit/felt의 실제 펠트 사진(tex-cream·tex-coral)을 곱해 그린다 — 납작한 색을 그대로 내지 않는다.
+// 움직임은 course-motion.mjs 한 기준을 따른다: 몽글은 -Z(길 앞)를 보고, 길·풍경·표시선은 달린 만큼 +Z로 지나간다.
+// 카메라는 화면 크기가 바뀔 때만 자리를 잡고 그 뒤로 움직이지 않는다(흔들기·따라가기·기울이기 없음 — 멀미).
+// 몽글은 게임에 필요한 움직임만 한다: 옆 길로 옮기기(그쪽으로 잠깐 돌아봄)·뛰기·숙이기. 출렁임·찌그러짐·흔들림을 더하지 않는다.
 import * as T from './vendor/three.module.js';
-import {LANES} from './core.mjs';
-import {mergeGeometries} from './vendor/BufferGeometryUtils.js';
-import {createCosmeticLayer,normalizeCosmetics,SCENERY_THEMES} from './world-cosmetics.mjs';
-import {createSceneryDetails} from './scenery-details.mjs';
+import { LANES } from './core.mjs';
+import { loopedWorldZ, eventWorldZ, runnerYaw, forwardForYaw, groundOffset, texelWorldZ, SCENERY_RECYCLE_Z } from './course-motion.mjs';
+import { sceneryLayout, TILE, TILES, LOOP, VIEW, PALETTE, SIGNS } from './scenery.mjs';
 
-const C={coral:0xFD9C87,blue:0x6488B6,green:0x87A98C,yellow:0xF4CF86,wood:0xA38369,roof:0x477185,white:0xFFFFFF};
-const lerp=T.MathUtils.lerp;
-export async function createWorld(canvas,{quality='experience',reduced=false}={}){
-  const renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
-  renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.02;
-  renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
-  const scene=new T.Scene();scene.fog=new T.Fog(0xD2E8EB,145,350);
-  const camera=new T.PerspectiveCamera(48,1,.1,550);
-  const clock={value:0};let mode=quality,motion=reduced,frame=0,totalFrame=0,last=performance.now(),fps=60;
-  const textures=new T.TextureLoader();
-  const wool=await textures.loadAsync('./assets/felt.webp');wool.wrapS=wool.wrapT=T.RepeatWrapping;wool.colorSpace=T.SRGBColorSpace;wool.repeat.set(2,2);wool.anisotropy=4;
-  const bump=wool.clone();bump.colorSpace=T.NoColorSpace;bump.needsUpdate=true;
-  const materials=new Map(),objects=new Map(),labelMaterials=new Map();
-  const geometries={ball:new T.SphereGeometry(1,20,14),box:new T.BoxGeometry(1,1,1),cylinder:new T.CylinderGeometry(1,1,1,12),cone:new T.ConeGeometry(1,1,12)};
-  function felt(color){if(!materials.has(color))materials.set(color,new T.MeshStandardMaterial({color,roughness:.94,bumpMap:bump,bumpScale:.055,map:wool,side:T.DoubleSide}));return materials.get(color);}
-  function plain(color,roughness=.7){return new T.MeshStandardMaterial({color,roughness});}
-  const sceneryMaterials=new Map();
-  function sceneryFelt(color){if(!sceneryMaterials.has(color))sceneryMaterials.set(color,felt(color).clone());return sceneryMaterials.get(color);}
-  const metal=plain(0xE9BF72,.33),dark=plain(0x284555,.36),glass=new T.MeshPhysicalMaterial({color:0x8ABCCB,roughness:.13,metalness:.2,transparent:true,opacity:.8});
-  function mesh(g,m,p,s,parent=scene){const a=new T.Mesh(g,m);a.position.set(...p);if(s)a.scale.set(...s);a.castShadow=true;a.receiveShadow=true;parent.add(a);return a;}
-  const box=(p,s,c,parent=scene)=>mesh(geometries.box,typeof c==='number'?felt(c):c,p,s,parent);
-  const ball=(p,s,c,parent=scene)=>mesh(geometries.ball,typeof c==='number'?felt(c):c,p,s,parent);
-  const cyl=(p,s,c,parent=scene)=>mesh(geometries.cylinder,typeof c==='number'?felt(c):c,p,s,parent);
-  function texture(w,h,paint){const el=document.createElement('canvas');el.width=w;el.height=h;paint(el.getContext('2d'),w,h);const tx=new T.CanvasTexture(el);tx.colorSpace=T.SRGBColorSpace;return tx;}
-  function batch(group){
-    group.updateMatrixWorld(true);const inverse=group.matrixWorld.clone().invert(),batches=new Map(),original=[];
-    group.traverse(m=>{if(!m.isMesh||Array.isArray(m.material))return;const key=m.material.uuid+':'+m.castShadow;let list=batches.get(key);if(!list){list={material:m.material,cast:m.castShadow,geo:[]};batches.set(key,list);}list.geo.push(m.geometry.clone().applyMatrix4(inverse.clone().multiply(m.matrixWorld)));original.push(m);});
-    for(const m of original)m.parent.remove(m);
-    for(const b of batches.values()){const geo=mergeGeometries(b.geo,false);b.geo.forEach(g=>g.dispose());if(geo){const m=new T.Mesh(geo,b.material);m.castShadow=b.cast;m.receiveShadow=true;group.add(m);}}
-  }
+const FELT = 'kit/felt/';
+// 판 뒤 크림 펠트 벽(kit .arena)의 지평선 언저리 색. 먼 길과 마을이 이 색으로 녹아 벽과 이어진다.
+export const FOG_COLOR = 0xf1e8de;
+const GROUND = Object.freeze({ width: 150, length: 190, centerZ: -78, meters: 2.6 });   // 크림 땅: Z +17 ~ −173
+const PATH = Object.freeze({ half: 3.7, meters: 7.4 });                                 // 모래빛 길(폭 7.4m), 펠트 한 장이 7.4m를 덮는다
+const CURB = Object.freeze({ width: 0.36, height: 0.13, meters: 2.2 });
+const GRAIN_METERS = 1.6;   // 마을 물건에 깔리는 펠트 결 한 장의 크기
+const loadImg = (src) => new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+const color = (hex) => new T.Color(hex);
 
-  // A broad sky, distant layered mountains, and directional sunlight establish depth.
-  const skies=new Map();
-  function makeSky(theme){return texture(2048,1024,(ctx,w,h)=>{
-    const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,theme.sky[0]);g.addColorStop(.43,theme.sky[1]);g.addColorStop(.66,theme.sky[2]);g.addColorStop(1,theme.sky[3]);ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
-    for(let i=0;i<24;i++){const x=(i*193)%w,y=190+(i*87)%290;ctx.fillStyle='rgba(255,255,255,.20)';ctx.beginPath();ctx.ellipse(x,y,85+i%5*17,11+i%4*5,0,0,Math.PI*2);ctx.fill();}
-    if(theme===SCENERY_THEMES.moonlight)for(let i=0;i<65;i++){ctx.fillStyle='rgba(255,242,206,.70)';ctx.beginPath();ctx.arc((i*173.3)%w,70+(i*81.7)%(h*.48),i%7===0?1.8:1.1,0,Math.PI*2);ctx.fill();}
-  });}
-  const skyTexture=makeSky(SCENERY_THEMES.village);skies.set('village',skyTexture);
-  const sky=mesh(new T.SphereGeometry(450,32,18),new T.MeshBasicMaterial({map:skyTexture,side:T.BackSide,toneMapped:false}),[0,0,0],null);sky.castShadow=sky.receiveShadow=false;
-  const hemisphere=new T.HemisphereLight(0xE0F1FF,0xA78C77,1.7);scene.add(hemisphere);
-  const sun=new T.DirectionalLight(0xFFF0D4,2.9);sun.position.set(-23,33,-35);sun.target.position.set(0,0,-35);scene.add(sun,sun.target);
-  sun.castShadow=true;sun.shadow.camera.left=-26;sun.shadow.camera.right=26;sun.shadow.camera.top=25;sun.shadow.camera.bottom=-25;sun.shadow.camera.near=.5;sun.shadow.camera.far=120;sun.shadow.normalBias=.06;sun.shadow.bias=-.0002;
-  const sunDisc=mesh(new T.SphereGeometry(11,24,16),new T.MeshBasicMaterial({color:0xFFE9BD,toneMapped:false}),[-65,59,-210]);sunDisc.castShadow=false;
-  for(let layer=0;layer<3;layer++){
-    const points=[],indices=[],count=37,z=-190-layer*53;
-    for(let i=0;i<count;i++){
-      const x=-290+i*580/(count-1),height=14+layer*9+Math.sin(i*.72+layer)*8+Math.sin(i*.28+1.8)*12;
-      points.push(x,-8,z,x,height,z);
-      if(i<count-1){const a=i*2;indices.push(a,a+1,a+2,a+1,a+3,a+2);}
-    }
-    const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(points,3));geo.setIndex(indices);geo.computeVertexNormals();
-    const mountain=mesh(geo,new T.MeshBasicMaterial({color:[0x91B0B9,0xACC2C9,0xC3D3D4][layer],side:T.DoubleSide}),[0,0,0]);mountain.castShadow=false;
-  }
-  // Long mirrored river strips are shader-driven; highlights follow one sun direction.
-  const waterMat=new T.ShaderMaterial({uniforms:{time:clock},vertexShader:'varying vec3 vP;void main(){vec4 p=modelMatrix*vec4(position,1.);vP=p.xyz;gl_Position=projectionMatrix*viewMatrix*p;}',fragmentShader:`
-    uniform float time;varying vec3 vP;
-    void main(){vec2 p=vP.xz;vec3 n=normalize(vec3(sin(p.x*.55+p.y*.2+time*.7)*.06,1.,cos(p.x*.2-p.y*.62-time*.5)*.06));vec3 v=normalize(cameraPosition-vP);float fres=pow(1.-max(0.,dot(v,n)),3.);vec3 col=mix(vec3(.26,.57,.59),vec3(.7,.82,.79),fres);float sparkle=pow(max(0.,dot(reflect(normalize(vec3(.4,-.7,.6)),n),v)),48.);col+=vec3(1.,.9,.67)*sparkle*.6;float lines=sin(p.x*.9+p.y*.6+time)*sin(p.x*.3-p.y*1.1);col+=lines*.016;float haze=smoothstep(45.,240.,length(cameraPosition-vP));col=mix(col,vec3(.77,.87,.86),haze);gl_FragColor=vec4(col,1.);\n#include <tonemapping_fragment>\n#include <colorspace_fragment>}`});
-  const water=mesh(new T.PlaneGeometry(700,500),waterMat,[0,-1.1,-190]);water.rotation.x=-Math.PI/2;water.castShadow=false;water.receiveShadow=false;
-
-  const groundMaterial=sceneryFelt(0x91AE95),bankMaterial=sceneryFelt(0x8EAA93);
-  const ground=box([0,-.6,-120],[24,1,290],groundMaterial);ground.castShadow=false;
-  for(const side of [-1,1]){
-    box([side*17,-.26,-120],[10,.05,290],waterMat).castShadow=false;
-    box([side*49,-.6,-120],[54,1,290],bankMaterial).castShadow=false;
-    box([side*12.15,-.26,-120],[.3,.4,290],0xA8B9A4).castShadow=false;
-  }
-  const roadMat=felt(0xD4D6CA).clone(),edgeMat=felt(0xA5B6AE),markMat=felt(0xFFFFFF);
-  const tiles=[];
-  for(let i=0;i<32;i++){
-    const group=new T.Group();scene.add(group);group.userData.base=i*8;
-    box([0,-.14,0],[8.5,.25,7.93],roadMat,group).castShadow=false;
-    for(const side of [-1,1]){
-      box([side*4.45,-.03,0],[.45,.35,8],edgeMat,group);
-      box([side*1.175,.007,0],[.045,.012,1.7],markMat,group).castShadow=false;
-      box([side*4.06,.006,0],[.045,.01,7.8],markMat,group).castShadow=false;
-    }
-    batch(group);tiles.push(group);
-  }
-  // Scenery tiles recycle behind the camera: no growing object list during long runs.
-  const scenery=[];
-  function roof(parent,width=5,depth=4,color=C.roof){
-    const geo=new T.BufferGeometry(),p=[],uv=[],idx=[],nx=20;
-    for(let j=0;j<=1;j++)for(let i=0;i<=nx;i++){
-      const x=(i/nx-.5)*width,y=.95*Math.pow(1-Math.abs(x)/(width/2),.78)+.22*Math.pow(Math.abs(x)/(width/2),10);
-      p.push(x,y,(j-.5)*depth);uv.push(i/nx*3,j*2);
-    }
-    for(let i=0;i<nx;i++){const a=i,b=i+nx+1;idx.push(a,b,a+1,a+1,b,b+1);}
-    geo.setAttribute('position',new T.Float32BufferAttribute(p,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.setIndex(idx);geo.computeVertexNormals();
-    const r=mesh(geo,sceneryFelt(color),[0,3.0,0],null,parent);
-    for(let i=0;i<11;i++){const x=(i/10-.5)*width,y=.95*Math.pow(1-Math.abs(x)/(width/2),.78)+.22*Math.pow(Math.abs(x)/(width/2),10);const ridge=cyl([x,3.04+y,0],[.034,depth,.034],sceneryFelt(color),parent);ridge.rotation.x=Math.PI/2;}
-    return r;
-  }
-  function hanok(parent,side,i){
-    const h=new T.Group();parent.add(h);h.position.set(side*(8.6+(i%3)*1.0),0,-2);h.rotation.y=side*.08;
-    box([0,1.35,0],[4.0,2.6,3.3],i%3===0?0xF1D5C7:0xEEECE0,h);
-    box([0,.16,0],[4.7,.3,3.9],0xC2B5A2,h);roof(h,5.1,4.3,i%3===0?0x648B99:C.roof);
-    for(const x of [-1.76,0,1.76])box([x,1.4,1.69],[.16,2.6,.15],C.wood,h);
-    for(const x of [-.85,.85]){box([x,1.32,1.67],[1.18,1.6,.06],0xF9E4B6,h);for(let j=0;j<3;j++)box([x-.36+j*.36,1.32,1.72],[.035,1.5,.04],C.wood,h);for(let j=0;j<4;j++)box([x,.72+j*.39,1.73],[1.14,.035,.04],C.wood,h);}
-    box([0,2.92,1.75],[4.2,.15,.2],C.wood,h);
-    const sign=label(i%3===0?'꽃집':i%3===1?'책방':'차 한 잔',0x335665);mesh(new T.PlaneGeometry(1.2,.42),sign,[0,2.61,1.78],null,h).castShadow=false;
-    for(const x of [-2.3,2.3]){cyl([x,.25,2.05],[.34,.5,.34],0xB79778,h);ball([x,.68,2.05],[.45,.48,.45],C.green,h);}
-    return h;
-  }
-  function tree(parent,x,z,variant){
-    const g=new T.Group();parent.add(g);g.position.set(x,0,z);
-    const trunk=cyl([0,1.3,0],[.17,2.6,.17],C.wood,g);trunk.rotation.z=x>0?-.08:.08;
-    const palette=variant?[0xEBC2BB,0xF4D2C3,0xE5AEA7]:[0x80A98A,0x93B799,0xA3C3A4];
-    for(let k=0;k<5;k++)ball([Math.sin(k*2.4)*.72,2.8+Math.cos(k*1.7)*.38,Math.cos(k*2.4)*.65],[1.1,1.05,1.05],sceneryFelt(palette[k%3]),g);
-    return g;
-  }
-  function lamp(parent,x,z){cyl([x,1.5,z],[.055,3,.055],C.wood,parent);const cap=box([x,3.15,z],[.75,.1,.66],C.roof,parent);cap.rotation.z=.02;ball([x,2.84,z],[.32,.36,.28],new T.MeshStandardMaterial({color:0xFFE3AA,emissive:0xE9AB63,emissiveIntensity:.14,roughness:.8}),parent);}
-  for(let i=0;i<10;i++){
-    const g=new T.Group();scene.add(g);g.userData.base=i*25;
-    for(const side of [-1,1]){
-      hanok(g,side,i+(side===1?1:0));tree(g,side*7.1,-11,i%3!==2);tree(g,side*(25+(i%2)*3),-5,false);
-      lamp(g,side*5.05,-8);
-      // Small flower beds and stone paths lead from the course into the village.
-      box([side*6.1,-.015,1],[2.7,.15,2.6],0xBDC8B7,g);
-      for(let k=0;k<4;k++)ball([side*(5.4+k*.27),.18,3.7],[.17,.2,.17],k%2?C.yellow:0xDCAFAF,g);
-      for(let k=0;k<6;k++){
-        const stem=cyl([side*(5.3+(k%3)*.27),.23,-4.2-Math.floor(k/3)*.35],[.016,.43,.016],0x78966E,g);stem.castShadow=false;
-        ball([stem.position.x,.46,stem.position.z],[.12,.08,.12],k%2?0xF4CF86:0xE0AAB3,g).castShadow=false;
+/** 여러 기하를 하나로(정점 색 + 펠트 결 상자 투영 UV). 칸 하나·장애물 하나가 그리기 한 번이 된다. */
+function mergeParts(parts) {
+  let nv = 0, ni = 0;
+  for (const { geo } of parts) { nv += geo.attributes.position.count; ni += geo.index ? geo.index.count : geo.attributes.position.count; }
+  const pos = new Float32Array(nv * 3), nor = new Float32Array(nv * 3), uv = new Float32Array(nv * 2), col = new Float32Array(nv * 3);
+  const idx = new (nv > 65535 ? Uint32Array : Uint16Array)(ni);
+  let vo = 0, io = 0;
+  for (const { geo, tint, uvMode } of parts) {
+    const p = geo.attributes.position, n = geo.attributes.normal, own = geo.attributes.uv;
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), y = p.getY(i), z = p.getZ(i), nx = n.getX(i), ny = n.getY(i), nz = n.getZ(i), k = vo + i;
+      pos.set([x, y, z], k * 3); nor.set([nx, ny, nz], k * 3); col.set([tint.r, tint.g, tint.b], k * 3);
+      if (uvMode === 'own' && own) uv.set([own.getX(i), own.getY(i)], k * 2);
+      else {
+        const ax = Math.abs(nx), ay = Math.abs(ny), az = Math.abs(nz);
+        const [u, v] = ay >= ax && ay >= az ? [x, z] : ax >= az ? [z, y] : [x, y];
+        uv.set([u / GRAIN_METERS, v / GRAIN_METERS], k * 2);
       }
     }
-    if(i%3===0){
-      const arch=new T.Group();arch.position.z=-16;g.add(arch);
-      for(const side of [-1,1]){box([side*4.7,2.65,0],[.2,5.3,.22],C.wood,arch);box([side*4.7,4.5,0],[.6,.12,.55],C.roof,arch);}
-      const ropePoints=[];for(let k=0;k<=20;k++)ropePoints.push(new T.Vector3(-4.7+k*.47,5.0-Math.sin(k/20*Math.PI)*.65,0));
-      mesh(new T.TubeGeometry(new T.CatmullRomCurve3(ropePoints),32,.021,5,false),felt(C.wood),[0,0,0],null,arch);
-      for(let k=0;k<7;k++){const x=-3.5+k*1.16,y=4.98-Math.sin((x+4.7)/9.4*Math.PI)*.65;cyl([x,y-.15,0],[.015,.3,.015],C.wood,arch);ball([x,y-.47,0],[.24,.29,.24],k%2?C.coral:C.yellow,arch);cyl([x,y-.78,0],[.04,.22,.04],C.wood,arch);}
-    }
-    batch(g);scenery.push(g);
+    if (geo.index) for (let i = 0; i < geo.index.count; i++) idx[io + i] = geo.index.getX(i) + vo;
+    else for (let i = 0; i < p.count; i++) idx[io + i] = i + vo;
+    io += geo.index ? geo.index.count : p.count; vo += p.count;
   }
-  // Decorative future Korean skyline remains in the far distance.
-  const pagoda=new T.Group();pagoda.position.set(23,0,-155);scene.add(pagoda);
-  for(let i=0;i<4;i++){box([0,2+i*3.0,0],[3.5-i*.45,2.8,3.5-i*.45],0xE3E0CE,pagoda);const g=new T.Group();g.position.y=2+i*3;pagoda.add(g);roof(g,5.6-i*.55,5.1-i*.55,C.roof);}
-  cyl([-29,13,-205],[.6,26,.6],0xD4DEE0);ball([-29,27,-205],[2.8,1.1,2.8],0xB2CACC);cyl([-29,31,-205],[.08,7,.08],0xD4DEE0);
+  const g = new T.BufferGeometry();
+  g.setAttribute('position', new T.BufferAttribute(pos, 3)); g.setAttribute('normal', new T.BufferAttribute(nor, 3));
+  g.setAttribute('uv', new T.BufferAttribute(uv, 2)); g.setAttribute('color', new T.BufferAttribute(col, 3));
+  g.setIndex(new T.BufferAttribute(idx, 1)); g.computeBoundingSphere();
+  return g;
+}
 
-  function label(text,color=0x335C9D){
-    const key=text+':'+color;if(labelMaterials.has(key))return labelMaterials.get(key);
-    const tx=texture(512,160,(ctx,w,h)=>{ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.font='800 66px SUIT';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#'+color.toString(16).padStart(6,'0');ctx.fillText(text,w/2,h/2+3);});
-    const material=new T.MeshBasicMaterial({map:tx,transparent:false,side:T.DoubleSide});labelMaterials.set(key,material);return material;
+export async function createWorld(canvas, { reduced = () => false } = {}) {
+  await document.fonts?.load?.('800 64px SUIT').catch(() => {});
+  const [creamImg, coralImg, badgeImg] = await Promise.all(['tex-cream', 'tex-coral', 'badge-cream'].map((n) => loadImg(`${FELT}${n}.webp`)));
+
+  // WebGL을 만들 수 없으면 여기서 오류가 난다. 부른 쪽(app.mjs)이 안내하고 입구로 돌아간다
+  const renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+  renderer.outputColorSpace = T.SRGBColorSpace;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
+  renderer.setClearColor(0x000000, 0);
+  const aniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+
+  const scene = new T.Scene();
+  scene.fog = new T.Fog(FOG_COLOR, VIEW.fogNear, VIEW.fogFar);
+  const camera = new T.PerspectiveCamera(50, 1, 0.1, 400);
+
+  // 빛: 부드러운 하늘빛 + 왼쪽 위 뒤에서 오는 햇빛 하나(그림자는 몽글 앞쪽으로 길게 눕는다). 반들거림 없음(거칠기 1)
+  scene.add(new T.HemisphereLight(0xfffaf3, 0xe4d2bc, 1.75));
+  const sun = new T.DirectionalLight(0xfff4e4, 2.55);
+  sun.position.set(-13, 15, 5); sun.target.position.set(0, 0, -6);
+  sun.castShadow = true;
+  Object.assign(sun.shadow.camera, { left: -17, right: 17, top: 26, bottom: -20, near: 1, far: 70 });
+  sun.shadow.radius = 4; sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.03;
+  scene.add(sun, sun.target);
+
+  const feltTex = (img, rx = 1, ry = 1) => {
+    const t = new T.Texture(img || undefined); t.colorSpace = T.SRGBColorSpace; t.wrapS = t.wrapT = T.RepeatWrapping;
+    t.repeat.set(rx, ry); t.anisotropy = aniso; t.needsUpdate = !!img; return t;
+  };
+  const canvasTex = (w, h, paint) => {
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h; paint(cv.getContext('2d'), w, h);
+    const t = new T.CanvasTexture(cv); t.colorSpace = T.SRGBColorSpace; t.anisotropy = aniso; return t;
+  };
+  const tile = (g, img, w, h, size) => { if (!img) return; for (let y = 0; y < h; y += size) for (let x = 0; x < w; x += size) g.drawImage(img, x, y, size, size); };
+  // 코랄 펠트 결: 키트의 코랄 머리 면처럼 사진 위에 같은 코랄을 옅게 덮는다(사진 그대로는 3D 빛에서 너무 붉게 보였다)
+  const coralFelt = (rx, ry) => { const t = canvasTex(256, 256, (g, w, h) => { if (coralImg) g.drawImage(coralImg, 0, 0, w, h); else { g.fillStyle = '#f96859'; g.fillRect(0, 0, w, h); } g.fillStyle = 'rgba(252,132,116,.42)'; g.fillRect(0, 0, w, h); });
+    t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(rx, ry); return t; };
+
+  // ── 바닥: 크림 펠트 땅 · 모래빛 펠트 길(가운데 두 줄은 크림 펠트 점선) · 코랄 펠트 연석. 결을 옮겨 흐르게 한다 ──
+  const groundTex = feltTex(creamImg, GROUND.width / GROUND.meters, GROUND.length / GROUND.meters);
+  const ground = new T.Mesh(new T.PlaneGeometry(GROUND.width, GROUND.length), new T.MeshStandardMaterial({ map: groundTex, color: 0xfffdf8, roughness: 1 }));
+  ground.rotation.x = -Math.PI / 2; ground.position.set(0, -0.03, GROUND.centerZ); ground.receiveShadow = true; scene.add(ground);
+
+  const pathTex = canvasTex(512, 512, (g, w, h) => {
+    tile(g, creamImg, w, h, w / 3);                                     // 펠트 한 장 ≈ 2.5m
+    g.globalCompositeOperation = 'multiply'; g.fillStyle = '#f0dcbb'; g.fillRect(0, 0, w, h);   // 모래빛
+    g.globalCompositeOperation = 'source-over';
+    const px = w / (PATH.half * 2);
+    for (const lx of [-1.175, 1.175]) {                                 // 칸 사이 크림 점선(2.2m 줄 + 1.5m 틈)
+      const x = w / 2 + lx * px;
+      for (let k = 0; k < 2; k++) {
+        const y0 = k * h / 2, y1 = y0 + h / 2 * (2.2 / 3.7);
+        g.save(); g.beginPath(); g.roundRect(x - 4.5, y0, 9, y1 - y0, 4.5); g.clip();
+        tile(g, creamImg, w, h, w / 3); g.fillStyle = 'rgba(255,251,242,.55)'; g.fillRect(0, 0, w, h); g.restore();
+      }
+    }
+    const edge = g.createLinearGradient(0, 0, w, 0);                     // 연석 쪽 가장자리를 살짝 어둡게(길이 깊어 보이게)
+    edge.addColorStop(0, 'rgba(150,110,70,.18)'); edge.addColorStop(0.06, 'rgba(150,110,70,0)'); edge.addColorStop(0.94, 'rgba(150,110,70,0)'); edge.addColorStop(1, 'rgba(150,110,70,.18)');
+    g.fillStyle = edge; g.fillRect(0, 0, w, h);
+  });
+  pathTex.wrapS = pathTex.wrapT = T.RepeatWrapping; pathTex.repeat.set(1, GROUND.length / PATH.meters);
+  const path = new T.Mesh(new T.PlaneGeometry(PATH.half * 2, GROUND.length), new T.MeshStandardMaterial({ map: pathTex, roughness: 1 }));
+  path.rotation.x = -Math.PI / 2; path.position.set(0, 0, GROUND.centerZ); path.receiveShadow = true; scene.add(path);
+
+  // 연석: 윗면과 길 쪽 옆면(둘 다 v가 -Z로 커지게 눕혀 같은 결 흐름을 쓴다)
+  const curbTex = coralFelt(1, GROUND.length / CURB.meters);
+  const curbMat = new T.MeshStandardMaterial({ map: curbTex, roughness: 1 });
+  for (const side of [-1, 1]) {
+    const top = new T.PlaneGeometry(CURB.width, GROUND.length); top.rotateX(-Math.PI / 2); top.translate(side * (PATH.half + CURB.width / 2), CURB.height, 0);
+    const face = new T.PlaneGeometry(CURB.height, GROUND.length); face.rotateX(-Math.PI / 2); face.rotateZ(side > 0 ? Math.PI / 2 : -Math.PI / 2);   // 길 가운데를 본다
+    face.translate(side * PATH.half, CURB.height / 2, 0);
+    for (const g of [top, face]) { const m = new T.Mesh(g, curbMat); m.position.z = GROUND.centerZ; m.receiveShadow = true; m.castShadow = false; scene.add(m); }
   }
-  // Same armless bell geometry as the existing village game, adapted to Three.js.
-  const player=new T.Group(),bodyRoot=new T.Group();player.add(bodyRoot);scene.add(player);player.position.z=3;
-  const p=[],uv=[],idx=[],rings=28,segments=56,height=1.38;
-  for(let j=0;j<=rings;j++){const t=j/rings,y=height*(1-t),radius=.697*Math.pow(Math.sin(t*Math.PI/2),.45)*(1-.035*Math.pow(t,8));for(let i=0;i<=segments;i++){const a=i/segments*Math.PI*2,lobe=Math.cos(a*7),rim=Math.pow(t,10),r=radius*(1+rim*lobe*.045);p.push(Math.cos(a)*r,y+rim*(.055+.032*lobe),Math.sin(a)*r*.88);uv.push(i/segments*2,t*2);}}
-  for(let j=0;j<rings;j++)for(let i=0;i<segments;i++){const a=j*(segments+1)+i,b=a+segments+1;idx.push(a,a+1,b,a+1,b+1,b);}
-  const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(p,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.setIndex(idx);geo.computeVertexNormals();
-  mesh(geo,felt(C.coral),[0,0,0],null,bodyRoot);
-  for(const side of [-1,1]){ball([side*.231,.911,.409],[.069,.073,.048],plain(0x261D22,.12),bodyRoot);ball([side*.231-.018,.931,.452],[.0125,.0125,.008],plain(0xFFFFFF,.2),bodyRoot);}
-  const hemPath=[];for(let i=0;i<=112;i++){const a=i/112*Math.PI*2,lobe=Math.cos(a*7),r=.673*(1+lobe*.045);hemPath.push(new T.Vector3(Math.cos(a)*r,.055+.032*lobe,Math.sin(a)*r*.88));}
-  mesh(new T.TubeGeometry(new T.CatmullRomCurve3(hemPath),112,.012,5,false),felt(0xFBB7A3),[0,0,0],null,bodyRoot);
-  const shadowTexture=texture(128,128,(ctx,w,h)=>{const g=ctx.createRadialGradient(w/2,h/2,5,w/2,h/2,62);g.addColorStop(0,'rgba(41,61,53,.34)');g.addColorStop(.5,'rgba(41,61,53,.18)');g.addColorStop(1,'rgba(41,61,53,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);});
-  const contact=mesh(new T.PlaneGeometry(2.2,1.8),new T.MeshBasicMaterial({map:shadowTexture,transparent:true,depthWrite:false}),[0,.02,3]);contact.rotation.x=-Math.PI/2;contact.castShadow=false;
-  const shield=mesh(new T.SphereGeometry(1.0,32,20),new T.MeshPhysicalMaterial({color:0xAACFDE,roughness:.04,metalness:.15,transparent:true,opacity:.16,side:T.DoubleSide,depthWrite:false}),[0,.65,0],[1,1.1,1],player);shield.visible=false;shield.castShadow=false;
-  const cosmetics=createCosmeticLayer({scene,felt,plain,mergeGeometries});
-  const sceneryDetails=createSceneryDetails({scene,felt});
-  let selection=normalizeCosmetics(),shopPreview=false,previewHeight=null,previewTop=null,previewNeedsFraming=false;
-  const petalGeo=new T.SphereGeometry(1,8,6),petalMat=felt(0xFFE1D5).clone();
-  const petalMesh=new T.InstancedMesh(petalGeo,petalMat,70),dummy=new T.Object3D();scene.add(petalMesh);
-  const petalData=Array.from({length:70},(_,i)=>({x:Math.sin(i*19.7)*20,y:1+(i*1.77)%8,z:-((i*7.83)%100),phase:i*2.17}));
-  const particles=[];
-  function burst(x,y,z,color=0xF4CF86){const count=motion?3:mode==='experience'?9:5;for(let i=0;i<count&&particles.length<54;i++){const dot=ball([x,y,z],[.05,.05,.05],plain(color));dot.castShadow=false;particles.push({mesh:dot,v:new T.Vector3((Math.random()-.5)*3,1+Math.random()*2,(Math.random()-.5)*3),ttl:.6});}}
-  function makeObstacle(e){
-    const g=new T.Group();
-    if(e.type==='barrier'){
-      for(const side of [-1,1])box([side*.69,.47,0],[.14,.94,.24],0xB68E71,g);
-      box([0,.78,0],[1.64,.53,.32],0xF4CF86,g);
-      for(let k=0;k<3;k++){const s=box([-.48+k*.48,.78,.17],[.17,.56,.018],0xC29357,g);s.rotation.z=-.25;}
-      if(!e.mission)mesh(new T.PlaneGeometry(.4,.3),label('↑',0x684922),[0,.82,.19],null,g).castShadow=false;
-    }else if(e.type==='arch'){
-      for(const side of [-1,1])box([side*.81,1.18,0],[.16,2.36,.26],C.wood,g);
-      box([0,1.65,0],[1.95,.7,.48],C.blue,g);
-      if(!e.mission)mesh(new T.PlaneGeometry(.55,.34),label('↓'),[0,1.65,.25],null,g).castShadow=false;
-      cyl([-.89,2.38,0],[.13,.28,.13],C.yellow,g);cyl([.89,2.38,0],[.13,.28,.13],C.yellow,g);
-    }else{
-      box([0,1.12,0],[1.65,2.1,2.9],C.green,g);box([0,2.19,0],[1.75,.2,3.02],C.roof,g);
-      box([0,1.56,1.46],[1.35,.69,.055],glass,g);box([0,.71,1.49],[1.7,.16,.04],0xE4CFAC,g);
-      for(const s of [-1,1]){ball([s*.55,.87,1.51],[.11,.09,.06],C.yellow,g);for(const z of [-.85,.85]){const wheel=cyl([s*.77,.23,z],[.24,.13,.24],dark,g);wheel.rotation.z=Math.PI/2;}}
+
+  // ── 마을: 칸마다 한 덩어리(크림 펠트 결 × 정점 색) + 간판 한 덩어리 ──
+  const grain = feltTex(creamImg);
+  const feltMat = new T.MeshStandardMaterial({ map: grain, vertexColors: true, roughness: 1, metalness: 0 });
+  const unit = (() => {
+    const tri = new T.Shape([new T.Vector2(-0.5, 0), new T.Vector2(0.5, 0), new T.Vector2(0, 1)]);
+    const prism = new T.ExtrudeGeometry(tri, { depth: 1, bevelEnabled: false }); prism.translate(0, 0, -0.5);
+    return { ball: new T.SphereGeometry(1, 16, 11), bead: new T.SphereGeometry(1, 8, 6), box: new T.BoxGeometry(1, 1, 1), cyl: new T.CylinderGeometry(1, 1, 1, 12), prism, sign: new T.PlaneGeometry(1, 1) };
+  })();
+  const m4 = new T.Matrix4(), q = new T.Quaternion(), e = new T.Euler(), v3 = new T.Vector3(), s3 = new T.Vector3();
+  const placed = (kind, p, s, ry = 0, rz = 0) => {
+    const g = unit[kind === 'ball' && Math.max(...s) < 0.25 ? 'bead' : kind].clone();   // 작은 꽃·손잡이는 낮은 면 수
+    g.applyMatrix4(m4.compose(v3.set(...p), q.setFromEuler(e.set(0, ry, rz)), s3.set(...s))); return g;
+  };
+  const signTex = canvasTex(512, 512, (g, w, h) => {
+    tile(g, creamImg, w, h, 128);
+    g.fillStyle = 'rgba(255,250,240,.35)'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#5b3a2c'; g.font = '800 82px SUIT, "Apple SD Gothic Neo", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    SIGNS.forEach((word, i) => g.fillText(word, w / 2, i * 128 + 66, w - 40));
+  });
+  const signMat = new T.MeshStandardMaterial({ map: signTex, roughness: 1 });
+  const layout = sceneryLayout();
+  const tiles = [];
+  for (let t = 0; t < TILES; t++) {
+    const group = new T.Group(); group.name = `scenery-tile-${t}`; group.userData.base = t * TILE; scene.add(group);
+    const parts = [], signs = [];
+    for (const item of layout.filter((x) => x.tile === t)) {
+      if (item.kind === 'sign') {
+        const g = placed('sign', item.p, [item.s[0], item.s[1], 1], item.ry), uv = g.attributes.uv;
+        for (let i = 0; i < uv.count; i++) uv.setY(i, 1 - (item.sign + 1 - uv.getY(i)) / SIGNS.length);   // 간판 줄(위에서 sign번째)
+        signs.push({ geo: g, tint: color(0xffffff), uvMode: 'own' });
+      } else parts.push({ geo: placed(item.kind, item.p, item.s, item.ry), tint: color(item.color) });
+    }
+    const body = new T.Mesh(mergeParts(parts), feltMat); body.castShadow = true; body.receiveShadow = true; group.add(body);
+    if (signs.length) { const board = new T.Mesh(mergeParts(signs), signMat); board.receiveShadow = true; group.add(board); }
+    parts.forEach((x) => x.geo.dispose()); signs.forEach((x) => x.geo.dispose());
+    tiles.push(group);
+  }
+  // 먼 언덕: 마을 뒤로 낮게 겹친 펠트 언덕(움직이지 않는 배경, 안개가 벽 색으로 녹인다)
+  {
+    const parts = [];
+    const hills = [[-62, -92, 30, 9, 0], [-22, -118, 34, 11, 1], [26, -104, 36, 10, 2], [70, -96, 32, 12, 0], [-104, -112, 36, 13, 2], [110, -118, 40, 12, 1], [0, -140, 46, 14, 0]];
+    const tints = [0xb9d79c, 0xf7cfc3, 0xd9e8c6];
+    for (const [x, z, r, h, c] of hills) parts.push({ geo: placed('ball', [x, -1, z], [r, h, r * 0.55]), tint: color(tints[c]) });
+    const far = new T.Mesh(mergeParts(parts), feltMat); far.name = 'far-hills'; scene.add(far);
+  }
+
+  // ── 몽글: 팔 없는 종 모양·물결 밑단(이전 바람길 몽글 형상), 코랄 펠트 + 크림 밑단 + 검은 구슬 눈 ──
+  const player = new T.Group(), body = new T.Group(); player.add(body); scene.add(player); player.position.z = VIEW.playerZ;
+  const mongleMat = new T.MeshStandardMaterial({ map: coralFelt(2, 1.4), roughness: 1, transparent: true });
+  {
+    const p = [], uv = [], idx = [], rings = 28, segments = 56, height = 1.38;
+    for (let j = 0; j <= rings; j++) {
+      const t = j / rings, y = height * (1 - t), radius = 0.697 * Math.pow(Math.sin(t * Math.PI / 2), 0.45) * (1 - 0.035 * Math.pow(t, 8));
+      for (let i = 0; i <= segments; i++) {
+        const a = i / segments * Math.PI * 2, lobe = Math.cos(a * 7), rim = Math.pow(t, 8), r = radius * (1 + rim * lobe * 0.07);   // 물결 밑단(브랜드 몽글처럼 뒤에서도 보이게)
+        p.push(Math.cos(a) * r, y + rim * (0.06 + 0.05 * lobe), Math.sin(a) * r * 0.88); uv.push(i / segments, t);
+      }
+    }
+    for (let j = 0; j < rings; j++) for (let i = 0; i < segments; i++) { const a = j * (segments + 1) + i, b = a + segments + 1; idx.push(a, a + 1, b, a + 1, b + 1, b); }
+    const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.Float32BufferAttribute(p, 3)); geo.setAttribute('uv', new T.Float32BufferAttribute(uv, 2)); geo.setIndex(idx); geo.computeVertexNormals();
+    const shell = new T.Mesh(geo, mongleMat); shell.castShadow = true; body.add(shell);
+    const eye = new T.MeshStandardMaterial({ color: 0x241c1f, roughness: 0.35 }), shine = new T.MeshBasicMaterial({ color: 0xffffff });
+    for (const side of [-1, 1]) {
+      const ball = new T.Mesh(unit.ball, eye); ball.position.set(side * 0.231, 0.911, 0.409); ball.scale.set(0.069, 0.073, 0.048); body.add(ball);
+      const dot = new T.Mesh(unit.ball, shine); dot.position.set(side * 0.231 - 0.018, 0.931, 0.452); dot.scale.set(0.0125, 0.0125, 0.008); body.add(dot);
+    }
+    const hem = []; for (let i = 0; i <= 112; i++) { const a = i / 112 * Math.PI * 2, lobe = Math.cos(a * 7), r = 0.68 * (1 + lobe * 0.07); hem.push(new T.Vector3(Math.cos(a) * r, 0.085 + 0.05 * lobe, Math.sin(a) * r * 0.88)); }
+    body.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(hem, true), 112, 0.02, 6, true), new T.MeshStandardMaterial({ color: 0xfff3dd, roughness: 1 })));
+  }
+  const shadowTex = canvasTex(128, 128, (g, w, h) => { const r = g.createRadialGradient(w / 2, h / 2, 4, w / 2, h / 2, 62); r.addColorStop(0, 'rgba(92,60,40,.36)'); r.addColorStop(0.55, 'rgba(92,60,40,.16)'); r.addColorStop(1, 'rgba(92,60,40,0)'); g.fillStyle = r; g.fillRect(0, 0, w, h); });
+  const contact = new T.Mesh(new T.PlaneGeometry(2.0, 1.6), new T.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false, fog: false }));
+  contact.rotation.x = -Math.PI / 2; contact.position.set(0, 0.012, VIEW.playerZ); scene.add(contact);
+  const shield = new T.Mesh(new T.SphereGeometry(1, 32, 20), new T.MeshStandardMaterial({ color: 0xfff6e8, roughness: 0.85, transparent: true, opacity: 0.24, depthWrite: false }));
+  shield.scale.set(1.02, 1.04, 1.02); shield.position.y = 0.68; shield.visible = false; player.add(shield);
+
+  // ── 지나가는 것: 울타리·표지판·전차·표시선(문 모양 등불 줄). 모양은 한 번 만들어 같이 쓴다 ──
+  const P = PALETTE;
+  const kit = (list) => mergeParts(list.map(([kind, c, p, s, ry = 0, rz = 0]) => ({ geo: placed(kind, p, s, ry, rz), tint: color(c) })));
+  const shapes = {
+    barrier: kit([['box', P.wood, [-0.74, 0.52, 0], [0.15, 1.04, 0.18]], ['box', P.wood, [0.74, 0.52, 0], [0.15, 1.04, 0.18]],
+      ['box', 0xeab23c, [0, 0.84, 0], [1.64, 0.16, 0.16]], ['box', 0xeab23c, [0, 0.42, 0], [1.64, 0.14, 0.16]],
+      ...[-0.52, -0.26, 0, 0.26, 0.52].map((x) => ['box', P.butter, [x, 0.6, 0.06], [0.17, 0.92, 0.08]]),
+      ...[-0.52, -0.26, 0, 0.26, 0.52].map((x) => ['ball', P.butter, [x, 1.06, 0.06], [0.085, 0.07, 0.04]])]),
+    arch: kit([['box', P.wood, [-0.82, 1.17, 0], [0.14, 2.34, 0.2]], ['box', P.wood, [0.82, 1.17, 0], [0.14, 2.34, 0.2]],
+      ['box', P.lapis, [0, 1.63, 0], [1.92, 0.62, 0.26]], ['ball', P.butter, [-0.82, 2.4, 0], [0.13, 0.11, 0.13]], ['ball', P.butter, [0.82, 2.4, 0], [0.13, 0.11, 0.13]]]),
+    tram: kit([['box', 0x8fc07a, [0, 1.12, 0], [1.66, 1.9, 2.8]], ['box', P.coral, [0, 2.17, 0], [1.78, 0.2, 2.95]],
+      ['box', P.cream, [0, 1.5, 1.41], [1.32, 0.62, 0.04]], ['box', P.cream, [0.84, 1.5, 0], [0.04, 0.6, 2.2]], ['box', P.cream, [-0.84, 1.5, 0], [0.04, 0.6, 2.2]],
+      ['box', 0xe9dcc6, [0, 0.66, 1.42], [1.6, 0.14, 0.05]], ['ball', P.butter, [-0.52, 0.86, 1.43], [0.11, 0.09, 0.05]], ['ball', P.butter, [0.52, 0.86, 1.43], [0.11, 0.09, 0.05]],
+      ...[-0.86, 0.86].flatMap((x) => [-0.9, 0.9].map((z) => ['cyl', P.woodDark, [x, 0.24, z], [0.24, 0.12, 0.24], 0, Math.PI / 2]))]),
+    gate: kit([['box', P.cream, [0, 0.025, 0], [PATH.half * 2, 0.04, 0.42]],
+      ['cyl', P.wood, [-4.32, 3.2, 0], [0.1, 6.4, 0.1]], ['cyl', P.wood, [4.32, 3.2, 0], [0.1, 6.4, 0.1]],
+      ['ball', P.coral, [-4.32, 6.44, 0], [0.16, 0.14, 0.16]], ['ball', P.coral, [4.32, 6.44, 0], [0.16, 0.14, 0.16]],
+      ['box', P.woodDark, [0, 6.22, 0], [8.64, 0.07, 0.07]],
+      ...LANES.flatMap((x) => [['box', P.woodDark, [x, 6.06, 0], [0.025, 0.3, 0.025]], ['cyl', P.coral, [x, 5.92, 0], [0.17, 0.12, 0.17]], ['cyl', P.coral, [x, 5.28, 0], [0.12, 0.08, 0.12]]])]),
+    lanterns: mergeParts(LANES.map((x) => ({ geo: placed('ball', [x, 5.6, 0], [0.3, 0.33, 0.3]), tint: color(0xffffff) }))),
+  };
+  const badgeMats = Object.fromEntries(['↑', '↓'].map((glyph) => [glyph, new T.MeshBasicMaterial({ transparent: true, depthWrite: false, map: canvasTex(128, 128, (g, w, h) => {
+    if (badgeImg) g.drawImage(badgeImg, 4, 4, w - 8, h - 8); else { g.fillStyle = '#fbf3e6'; g.beginPath(); g.arc(w / 2, h / 2, 58, 0, 7); g.fill(); }
+    g.fillStyle = '#7a3a26'; g.font = '900 78px SUIT, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(glyph, w / 2 - 2, h / 2 - 2);
+  }) })]));
+  const badgeGeo = new T.PlaneGeometry(0.48, 0.48);
+  const lanternBase = new T.MeshStandardMaterial({ map: grain, color: 0xffe6a0, roughness: 1, emissive: 0xffb54a, emissiveIntensity: 0 });
+
+  function makeEvent(e) {
+    const g = new T.Group();
+    if (e.kind === 'mark') {
+      const gate = new T.Mesh(shapes.gate, feltMat); gate.castShadow = true; gate.receiveShadow = true; g.add(gate);
+      const lamps = new T.Mesh(shapes.lanterns, lanternBase.clone()); lamps.castShadow = true; g.add(lamps);
+      g.userData.lamps = lamps.material;
+    } else {
+      const m = new T.Mesh(shapes[e.type] || shapes.tram, feltMat); m.castShadow = true; m.receiveShadow = true; g.add(m);
+      if (!e.mission && (e.type === 'barrier' || e.type === 'arch')) {   // 부탁이 아닌 장애물에만 할 일 배지(부탁은 귀로 듣는다)
+        const b = new T.Mesh(badgeGeo, badgeMats[e.type === 'barrier' ? '↑' : '↓']); b.position.set(0, e.type === 'barrier' ? 0.62 : 1.64, e.type === 'barrier' ? 0.13 : 0.15); g.add(b);
+      }
     }
     return g;
   }
-  function makeCoin(){const g=new T.Group();const ring=mesh(new T.TorusGeometry(.24,.062,8,24),metal,[0,.85,0],null,g);const star=new T.Shape();for(let i=0;i<10;i++){const a=i*Math.PI/5+Math.PI/2,r=i%2?.083:.18;if(i===0)star.moveTo(Math.cos(a)*r,Math.sin(a)*r);else star.lineTo(Math.cos(a)*r,Math.sin(a)*r);}mesh(new T.ExtrudeGeometry(star,{depth:.07,bevelEnabled:true,bevelThickness:.025,bevelSize:.012,bevelSegments:1}),metal,[0,.85,-.035],null,g);return g;}
-  function makeMark(e){
-    const root=new T.Group();
-    const stripe=box([0,.021,0],[7.4,.035,.16],0xEEE4C6,root);stripe.castShadow=false;
-    const glow=new T.MeshBasicMaterial({color:0xF4D393,transparent:true,opacity:.3,depthWrite:false});
-    for(const x of LANES){
-      const ring=mesh(new T.TorusGeometry(.55,.023,5,32),glow,[x,.037,0],null,root);ring.rotation.x=-Math.PI/2;ring.castShadow=false;
-      if(e.step.action==='lane'){
-        cyl([x,.21,-.4],[.10,.42,.10],C.wood,root);
-        const lantern=cosmetics.makeLantern(selection.lantern);lantern.position.set(x,.67,-.4);root.add(lantern);
+  const objects = new Map();   // 사건 → 그룹
+  function dropEvent(e, g) { scene.remove(g); if (g.userData.lamps) g.userData.lamps.dispose(); objects.delete(e); }
+  function syncEvents(model, dt) {
+    const keep = new Set();
+    for (const e of model?.events || []) {
+      if (e.kind === 'coin') continue;   // 별 줍기는 없다(보상은 공통 코인 하나)
+      const ahead = e.d - model.distance;
+      if (ahead > 175 || ahead < -14) continue;
+      keep.add(e);
+      let g = objects.get(e);
+      if (!g) { g = makeEvent(e); scene.add(g); objects.set(e, g); }
+      g.position.set(e.kind === 'mark' ? 0 : LANES[e.lane], 0, eventWorldZ(e.d, model.distance, VIEW.playerZ));
+      if (g.userData.knock != null) {   // 부딪힌 장애물은 0.3초 동안 작아지며 비켜 준다(카메라는 흔들지 않는다)
+        g.userData.knock = Math.min(1, g.userData.knock + dt / 0.3);
+        g.scale.setScalar(Math.max(0.001, 1 - g.userData.knock));
       }
+      if (g.userData.lamps) g.userData.lamps.emissiveIntensity = g.userData.lit ? 0.95 : 0;
     }
-    for(const side of [-1,1]){cyl([side*4.0,.75,0],[.03,1.5,.03],C.wood,root);const lantern=cosmetics.makeLantern(selection.lantern);lantern.position.set(side*4.0,1.52,0);lantern.scale.setScalar(.56);root.add(lantern);}
-    return root;
+    for (const [e, g] of objects) if (!keep.has(e)) dropEvent(e, g);
   }
-  let attract=28,shake=0;
-  function removeEvent(obj){
-    scene.remove(obj);const shared=new Set([...materials.values(),...labelMaterials.values(),metal,dark,glass,...cosmetics.sharedMaterials]),sharedGeometry=new Set([...Object.values(geometries),...cosmetics.sharedGeometries]);
-    obj.traverse(a=>{if(!a.isMesh)return;if(!sharedGeometry.has(a.geometry))a.geometry.dispose();if(!shared.has(a.material)){if(a.material.map&&a.material.map!==wool&&a.material.map!==bump)a.material.map.dispose();a.material.dispose();}});
+
+  // ── 카메라: 화면 비율에 맞춰 한 번 자리를 잡는다. 세로 화면은 길 세 칸이 폭에 들도록 뒤로 물러난다 ──
+  let W = 1, H = 1;
+  const focus = new T.Vector3(0, 0.85, VIEW.playerZ);
+  function frame() {
+    const aspect = W / H, portrait = aspect < 1;
+    const vfov = portrait ? 58 : 44, tanV = Math.tan(vfov * Math.PI / 360), tanH = tanV * aspect;
+    const pitch = (portrait ? 27.5 : 26) * Math.PI / 180;
+    const depth = portrait ? Math.min(11.4, Math.max(8.8, 4.0 / tanH)) : 10.6;
+    camera.fov = vfov; camera.aspect = aspect;
+    camera.position.set(0, focus.y + depth * Math.sin(pitch), focus.z + depth * Math.cos(pitch));
+    camera.lookAt(focus);
+    // 몽글을 화면 아래쪽에 둔다: 카메라를 기울이지 않고 화면 창만 옮긴다(렌즈 옮기기)
+    const want = portrait ? 0.79 : 0.74;
+    camera.setViewOffset(W, H, 0, -(want - 0.5) * H, W, H);
+    camera.updateProjectionMatrix();
   }
-  function syncEvents(model){
-    const active=new Set(model.events.filter(e=>e.d-model.distance<170&&e.d-model.distance>-8&&!e.resolved));
-    for(const [e,obj] of objects){if(!active.has(e)){removeEvent(obj);objects.delete(e);}}
-    for(const e of active){let g=objects.get(e);if(!g){g=e.kind==='coin'?makeCoin():e.kind==='mark'?makeMark(e):makeObstacle(e);scene.add(g);objects.set(e,g);}g.position.set(e.kind==='mark'?0:LANES[e.lane],0,3-(e.d-model.distance));if(e.kind==='coin'){g.rotation.y=clock.value*2.3;g.position.y=Math.sin(clock.value*3+e.d)*.10;}}
+  function resize() {
+    const r = canvas.getBoundingClientRect();
+    W = Math.max(1, r.width); H = Math.max(1, r.height);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    renderer.setPixelRatio(dpr); renderer.setSize(W, H, false);
+    sun.shadow.mapSize.set(W * dpr > 1400 ? 2048 : 1024, W * dpr > 1400 ? 2048 : 1024);
+    if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; }
+    frame();
   }
-  function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setPixelRatio(Math.min(devicePixelRatio,mode==='experience'?1.65:1));renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
-  function setQuality(value){mode=value;sun.shadow.mapSize.set(mode==='experience'?2048:1024,mode==='experience'?2048:1024);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}renderer.shadowMap.needsUpdate=true;resize();}
-  function setCosmetics(value){
-    const next=normalizeCosmetics(value),theme=SCENERY_THEMES[next.scenery];
-    if(next.lantern!==selection.lantern)for(const [e,g]of objects){if(e.kind==='mark'){removeEvent(g);objects.delete(e);}}
-    selection=next;cosmetics.setSelection(selection);sceneryDetails.setTheme(selection.scenery);
-    if(!skies.has(selection.scenery))skies.set(selection.scenery,makeSky(theme));sky.material.map=skies.get(selection.scenery);sky.material.needsUpdate=true;
-    scene.fog.color.setHex(theme.fog);hemisphere.color.setHex(theme.hemi);hemisphere.intensity=theme.ambient;sun.color.setHex(theme.sun);sun.intensity=theme.direct;sunDisc.material.color.setHex(theme.sunDisc);
-    groundMaterial.color.setHex(theme.ground);bankMaterial.color.setHex(theme.ground);roadMat.color.setHex(theme.road);
-    for(const color of [C.roof,0x648B99])sceneryFelt(color).color.setHex(theme.roof);
-    [0x80A98A,0x93B799,0xA3C3A4,0xEBC2BB,0xF4D2C3,0xE5AEA7].forEach((color,i)=>sceneryFelt(color).color.setHex(theme.foliage[i]));
-    petalMat.color.setHex(selection.scenery==='snow'?0xF6FCFC:selection.scenery==='moonlight'?0xF0DDA4:0xFFE1D5);
+  const project = (x, y, z) => { const p = new T.Vector3(x, y, z).project(camera); return { x: (p.x + 1) / 2 * W, y: (1 - p.y) / 2 * H }; };
+
+  let distance = 0, frames = 0, lastYaw = Math.PI;
+  function place(d) {
+    distance = d;
+    groundTex.offset.y = groundOffset(d, GROUND.meters);
+    pathTex.offset.y = groundOffset(d, PATH.meters);
+    curbTex.offset.y = groundOffset(d, CURB.meters);
+    for (const g of tiles) g.position.z = loopedWorldZ(g.userData.base, d, LOOP, SCENERY_RECYCLE_Z);
   }
-  function setShopPreview(value,{previewHeight:height=null,previewTop:top=null}={}){shopPreview=!!value;previewHeight=height;previewTop=top;previewNeedsFraming=shopPreview;cosmetics.setPreview(shopPreview);if(!shopPreview)camera.clearViewOffset();}
-  setQuality(mode);window.addEventListener('resize',resize);
+  place(0);
+
+  function render(dt, model) {
+    frames += 1;
+    place(model ? model.distance : distance);
+    syncEvents(model, dt);
+    const x = model ? model.x : 0, y = model ? model.y : 0, slide = model ? model.slide > 0 && model.y < 0.15 : false;
+    player.position.set(x, y + 0.004, VIEW.playerZ);
+    lastYaw = runnerYaw(model ? LANES[model.lane] - model.x : 0);
+    body.rotation.set(0, lastYaw, 0);
+    body.scale.set(slide ? 1.16 : 1, slide ? 0.5 : 1, slide ? 1.16 : 1);   // 숙이기: 몸을 낮춘다(표지판 아래로 지나가는 동작 그 자체)
+    mongleMat.opacity = model && model.invincible > 0 ? 0.5 : 1;          // 부딪힌 뒤 잠깐: 깜빡이지 않고 옅게만
+    shield.visible = !!model && model.shield > 0;
+    contact.position.x = x; contact.material.opacity = 1 - Math.min(0.7, y * 0.32); contact.scale.setScalar(1 + y * 0.12);
+    renderer.render(scene, camera);
+  }
+
+  const ro = new ResizeObserver(resize); ro.observe(canvas);
+  resize();
+  // 셰이더를 미리 데운다(첫 장면에서 화면이 굳지 않게)
+  renderer.compile(scene, camera);
+
   return {
-    setQuality,setMotion:value=>{motion=value;},setCosmetics,setShopPreview,
-    previewCosmetics(value){setCosmetics(value);if(!shopPreview)setShopPreview(true);},
-    effect(type,model){cosmetics.effect(type,model);if(type==='coin')burst(model.x,.85,3);if(type==='step'||type==='correct')burst(model.x,1.0,3,{paper:0xF4CF86,flower:0xEBAFB8,firefly:0xB5DCC4}[selection.lantern]);if(type==='hit'){shake=.32;burst(model.x,.5,3,0xF96859);}if(type==='shield'||type==='earnedShield')burst(model.x,.8,3,0xAACEDE);if(type==='land')burst(model.x,.035,3,0xD4D6CA);},
-    render(dt,model,{running=false,paused=false,shopPreview:previewValue=shopPreview}={}){
-      if(previewValue!==shopPreview)setShopPreview(previewValue);
-      clock.value+=dt;frame++;totalFrame++;const now=performance.now();if(now-last>1000){fps=Math.round(frame*1000/(now-last));frame=0;last=now;}
-      if(!running)attract+=dt*2.0;
-      const distance=running?model.distance:attract;
-      for(const g of tiles)g.position.z=14-((g.userData.base+distance)%256);
-      for(const g of scenery)g.position.z=16-((g.userData.base+distance)%250);
-      sceneryDetails.update(distance,{quality:mode,reduced:motion});
-      if(running)syncEvents(model);else if(objects.size){for(const [,g]of objects)removeEvent(g);objects.clear();}
-      const mobile=canvas.clientWidth<700;
-      const shopArea=mobile?{top:previewTop??(canvas.clientHeight<=700?70:80),height:previewHeight??(canvas.clientHeight<=700?155:200)}:null;
-      // The mobile caption and reset button occupy the lower 60px of this small window.
-      // Fit the whole 3m celebration, lantern and companion into the remaining upper area.
-      const shopSafeHeight=shopArea?Math.max(40,shopArea.height-60):0;
-      const shopDistance=shopArea?canvas.clientHeight*3.4/(2*Math.tan(43*Math.PI/360)*shopSafeHeight):0;
-      const targetCam=shopPreview?mobile?new T.Vector3(0,1.45+shopDistance*.10,-2+shopDistance):new T.Vector3(0,3.5,9):running?new T.Vector3(model.x*.23,5.25,11.8):mobile?new T.Vector3(5.5,6.2,13):new T.Vector3(8.2,7.8,16.3);
-      const cameraTarget=shopPreview?new T.Vector3(0,mobile?1.45:.95,-2):running?new T.Vector3(model.x*.14,1.05,-15):mobile?new T.Vector3(0,-1,-8):new T.Vector3(-3.8,1.3,-17);
-      if(shopPreview&&mobile&&previewNeedsFraming){camera.position.copy(targetCam);camera.fov=43;}previewNeedsFraming=false;
-      camera.position.lerp(targetCam,1-Math.exp(-dt*3.5));
-      if(shake>0){shake-=dt;if(!motion){camera.position.x+=Math.sin(clock.value*75)*shake*.3;camera.position.y+=Math.cos(clock.value*64)*shake*.16;}}
-      camera.lookAt(cameraTarget);
-      const portraitFov=Math.max(48,Math.min(74,2*Math.atan(.29/camera.aspect)*180/Math.PI));
-      const fov=shopPreview?mobile?43:42:running?mobile?portraitFov:48:mobile?44:46;camera.fov=lerp(camera.fov,fov,1-Math.exp(-dt*3));
-      if(shopPreview){const w=canvas.clientWidth,h=canvas.clientHeight,centerY=mobile?(shopArea.top+shopSafeHeight*.5)/h:.45;camera.setViewOffset(w,h,mobile?0:w*.20,h*(.5-centerY),w,h);}else if(camera.view?.enabled)camera.clearViewOffset();camera.updateProjectionMatrix();
-      player.position.x=shopPreview?0:running?model.x:mobile?1.5:2.1;player.position.y=running&&!shopPreview?model.y+.03:.03;player.position.z=shopPreview?-2:running?3:mobile?-8:-3;player.scale.setScalar(shopPreview?mobile?1.0:1.35:!running&&mobile?1.4:1);
-      const speed=running?(paused?0:model.speed||14):9;
-      const sway=Math.sin(clock.value*speed*1.15)*.058;
-      bodyRoot.rotation.z=running?-((LANES[model.lane]-model.x)*.1)+sway:sway;
-      // Turning is strongest at the menu, keeping the original face visible without a new design.
-      bodyRoot.rotation.y=running?Math.PI+.18+Math.sin(clock.value*2)*.04:.38;
-      const squash=running&&model.slide>0?.43:1;
-      bodyRoot.scale.set(1+(1-squash)*.38,squash,1+(1-squash)*.20);
-      if((!running||model.y===0)&&squash===1)bodyRoot.position.y=Math.abs(Math.sin(clock.value*speed*1.15))*.10;
-      else bodyRoot.position.y=0;
-      player.visible=!(running&&model.invincible>0&&Math.sin(clock.value*32)<-.25);
-      shield.visible=running&&model.shield>0;shield.rotation.y=clock.value*.3;
-      contact.position.x=player.position.x;contact.position.z=player.position.z;contact.material.opacity=1-Math.min(.7,player.position.y*.25);contact.scale.setScalar(1+player.position.y*.15);
-      const ambientCount=motion?0:mode==='experience'?selection.scenery==='moonlight'?24:70:30;petalMesh.count=ambientCount;
-      for(let i=0;i<ambientCount;i++){const a=petalData[i],t=clock.value,x=Math.abs(a.x)<4?(a.x<0?-1:1)*(5+Math.abs(a.x)):a.x;dummy.position.set(x+Math.sin(t*.65+a.phase)*1.0,selection.scenery==='snow'?((a.y+9-t*.32)%9+9)%9:a.y-Math.sin(t*.32+a.phase)*1.8,12-((-a.z+distance*.55+t*1.3)%110));dummy.rotation.set(t*.6+a.phase,t*.3,Math.sin(t+a.phase));dummy.scale.set(selection.scenery==='snow'?.045:.085,selection.scenery==='snow'?.045:.019,selection.scenery==='snow'?.045:.051);dummy.updateMatrix();petalMesh.setMatrixAt(i,dummy.matrix);}petalMesh.instanceMatrix.needsUpdate=true;
-      cosmetics.update(dt,model,{running,paused,preview:shopPreview,player,quality:mode,reduced:motion});
-      for(let i=particles.length-1;i>=0;i--){const a=particles[i];a.ttl-=dt;a.mesh.position.addScaledVector(a.v,dt);a.v.y-=dt*5;a.mesh.scale.setScalar(Math.max(0,a.ttl)*.09);if(a.ttl<=0){scene.remove(a.mesh);a.mesh.material.dispose();particles.splice(i,1);}}
-      renderer.render(scene,camera);
+    render, resize, project,
+    /** 몽글 머리 위(점수 글자 자리)의 화면 좌표 */
+    runnerScreen: (model) => project(model ? model.x : 0, (model ? model.y : 0) + 1.75, VIEW.playerZ),
+    /** 표시선 하나를 지나며 해낸 동작: 그 문의 등불을 켠다 */
+    light(step) { for (const [e, g] of objects) if (e.kind === 'mark' && e.step === step) g.userData.lit = true; },
+    /** 부딪힌 장애물: 몽글 칸에서 막 지난 것 */
+    knock(model) {
+      let best = null, gap = Infinity;
+      for (const [e, g] of objects) if (e.kind === 'obstacle' && Math.abs(LANES[e.lane] - model.x) < 0.9 && Math.abs(e.d - model.distance) < gap) { gap = Math.abs(e.d - model.distance); best = g; }
+      if (best && gap < 3) best.userData.knock = 0;
     },
-    get info(){return {renderer:'Three.js '+T.REVISION,quality:mode,fps,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,width:canvas.width,height:canvas.height,eventObjects:objects.size,frames:totalFrame,armlessMongle:true,cosmetics:cosmetics.info,sceneryDetails:sceneryDetails.info,shopPreview,ambientParticles:petalMesh.count,particles:particles.length};}
+    clear() { for (const [e, g] of objects) dropEvent(e, g); place(0); },
+    /** 확인용(?qa): 흐름 표본 — 길 결·풍경 칸·사건이 같은 거리만큼 +Z로 왔는지, 몽글이 어디를 보는지 */
+    motion(model) {
+      const sample = 0.37, road = { repeat: pathTex.repeat.y, length: GROUND.length, centerZ: GROUND.centerZ };
+      const ev = model?.events.find((x) => x.kind !== 'coin' && objects.has(x));
+      return { distance, roadOffset: pathTex.offset.y, roadTexelZ: texelWorldZ(sample, pathTex.offset.y, road), roadMeters: PATH.meters,
+        sceneryZ: tiles.map((g) => g.position.z), loop: LOOP, event: ev ? { d: ev.d, z: objects.get(ev).position.z } : null,
+        yaw: lastYaw, forward: forwardForYaw(lastYaw), camera: camera.position.toArray(), playerZ: VIEW.playerZ };
+    },
+    /** 확인용(?qa): 지금 장면을 그려 격자 픽셀을 읽는다(그림이 실제로 나오는지) */
+    sample(model) {
+      render(0, model);
+      const gl = renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, px = new Uint8Array(4), colors = new Set();
+      let drawn = 0, n = 0;
+      for (let j = 1; j < 12; j++) for (let i = 1; i < 12; i++) {
+        gl.readPixels(Math.floor(w * i / 12), Math.floor(h * j / 12), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); n += 1;
+        if (px[3] > 0) drawn += 1; colors.add(`${px[0] >> 3},${px[1] >> 3},${px[2] >> 3}`);
+      }
+      return { drawn, n, colors: colors.size, width: w, height: h };
+    },
+    get info() { return { renderer: `Three.js ${T.REVISION}`, frames, drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, events: objects.size, width: W, height: H }; },
+    destroy() { ro.disconnect(); renderer.dispose(); },
   };
 }

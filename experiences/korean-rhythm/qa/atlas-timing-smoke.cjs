@@ -13,7 +13,7 @@ const base = process.env.SYNK_QA_BASE || 'http://127.0.0.1:4291';
       const context = await browser.newContext({ viewport: { width: 1280, height: 860 }, reducedMotion: 'reduce' });
       const page = await context.newPage(); page.on('pageerror', e => errors.push(e.message));
       await page.goto(`${base}/korean-rhythm/`); await page.locator('#start-button').waitFor();
-      if (!auto) { await page.locator('#settings-button').click(); await page.locator('#timing-setting').uncheck(); await page.locator('#settings-dialog [data-close]').last().click(); }
+      if (!auto) { await page.locator('#settings-button').click(); await page.locator('#settings-dialog [data-timing-toggle]').click(); await page.locator('#settings-close').click(); }   // 2026-10-07 펠트 판: 체크 상자 → 칩
       await page.locator('#start-button').click();
       await page.waitForFunction(() => window.synkRhythm.snapshot().screen === 'game' && window.synkRhythm.snapshot().time > 0, null, { timeout: 60000 });
       // Nobody taps: every passing note is missed.

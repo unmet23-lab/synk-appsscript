@@ -25,8 +25,10 @@ function appFunction(name){
   assert(end>start,`Missing app function boundary: ${name}`);
   return (appSource.slice(Math.max(0,start-6),start)==='async '?'async ':'')+appSource.slice(start,end);
 }
-const productionFunctions=['syncCoastRadio','silence','finish','nextStage','showCruiseResults','returnToCruise',
-  'pause','resume','updateContacts','updateCoastDrive','toggleSound','updateSoundButton'];
+const productionFunctions=['syncCoastRadio','silence','finish','resultSummary','nextStage','showCruiseResults','returnToCruise',
+  'pause','resume','updateContacts','updateCoastDrive','toggleSound','updateSoundButton','setText'];
+// Screen drawing lives in hud.js/results.js/screens.js; a catch-all no-op stands in for the race HUD here.
+const noopHud=()=>new Proxy({},{get:(target,key)=>target[key]??(()=>{})});
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 
 function setup({score=5,demo=false,cruise=26}={}){
@@ -36,7 +38,8 @@ function setup({score=5,demo=false,cruise=26}={}){
     return {hidden:true,disabled:false,textContent:'',firstChild:{textContent:''},style:{},children:[],
       classList:{add:x=>classes.add(x),remove:x=>classes.delete(x),contains:x=>classes.has(x),toggle(x,value){if(value)classes.add(x);else classes.delete(x);}},
       replaceChildren(...items){this.children=items;},append(...items){this.children.push(...items);},appendChild(item){this.children.push(item);return item;},
-      setAttribute(){},addEventListener(){},scrollIntoView(){},focus(){this.focused=true;},blur(){this.focused=false;}};
+      setAttribute(){},addEventListener(){},scrollIntoView(){},focus(){this.focused=true;},blur(){this.focused=false;},
+      showModal(){this.open=true;},close(){this.open=false;}};
   }
   const $=id=>{if(!nodes.has(id))nodes.set(id,node());return nodes.get(id);};
   const localStorage={getItem:key=>storage.get(key)||null,setItem(key,value){storage.set(key,value);if(key===PROGRESS_KEY)counts.progress++;}};
@@ -55,7 +58,7 @@ function setup({score=5,demo=false,cruise=26}={}){
     garage:loadGarage(localStorage),roundId:'integration-round-1',PROGRESS_KEY,SHOP_ITEMS,
     collisions:2,combo:score,bestCombo:score,shield:0,shieldBlocked:0,shieldFlash:0,contactTimer:0,
     rivals:[{s:1400,offset:-3.15,speed:26,mesh:{userData:{wheels:[]}}},{s:1420,offset:3.1,speed:25,mesh:{userData:{wheels:[]}}}],
-    stage:node(),car:{rotation:{z:0},userData:{jets:[{visible:false,scale:{y:0}}]}},wheels:[],camera:{position:{copy(){}}},
+    stage:node(),screenEl:node(),car:{rotation:{z:0},userData:{jets:[{visible:false,scale:{y:0}}]}},wheels:[],camera:{position:{copy(){}}},
     mobile:false,reducedMotion:false,gate:null,toastTime:2,laterToast:null,flowStart:null,
     soundEnabled:true,soundTouched:false,audio,motor:{frequency:{setTargetAtTime(){}}},motorGain:gain(),windGain:gain(),
     clock:{getDelta:()=>.016},narrator:{playing:false,activeKind:null,queue:[],cancel(){counts.cancel++;this.playing=false;this.activeKind=null;this.queue=[];coastRadio.setState({duck:false});}},
@@ -63,7 +66,11 @@ function setup({score=5,demo=false,cruise=26}={}){
     medalFor,recommendedStage,nextPersonalized:()=>null,labelStage:s=>s.title,
     resolveContact,shieldContact,clamp:(x,min,max)=>Math.max(min,Math.min(max,x)),lerp:(a,b,t)=>a+(b-a)*t,
     placeCar(){},roadPoint:()=>({}),setQuestionExpanded(){},disposeGate(){context.gate=null;},
-    endLive:()=>null,renderStages(){},wishText:()=>'',learningScope:()=>'',describeRace:()=>[],
+    endLive:()=>null,renderLobby(){},wishText:()=>'',learningScope:()=>'',describeRace:()=>[],
+    hud:noopHud(),subtitlesOn:false,renderQuestion(){},syncSoundToggles(){},WORD_BY_ID,
+    showScreen(id){for(const name of ['lobby','game','results','garage'])$(name).hidden=name!==id;},
+    showRace(){context.showScreen('game');},openDialog(d){d.showModal();},closeDialog(d){d.close();},
+    renderResults(summary){context.lastResults=summary;},
     loadGarageSafe:()=>loadGarage(localStorage),
     storeGarage(state){counts.garage++;context.garage=state;},
     awardRace(...args){counts.award++;return awardRace(...args);},
@@ -74,7 +81,7 @@ function setup({score=5,demo=false,cruise=26}={}){
     displayQuestion(){},narrateQuestion(){},repeatTutorial(){},tutorialDelivered(){},renderTutorial(){},learn(){},
   });
   for(const name of productionFunctions)vm.runInContext(appFunction(name),context,{filename:`app.js:${name}`});
-  $('results').hidden=true;$('pause-panel').hidden=true;
+  $('results').hidden=true;$('pause-dialog').open=false;
   return {ctx:context,$,counts,storage,media,run:name=>vm.runInContext(`${name}()`,context)};
 }
 
@@ -116,7 +123,7 @@ function setupRace({cruise=26,reading=false,muted=false}={}){
 test('production finish commits a race once and enters driving without opening its result dialog',async()=>{
   const x=setup();x.run('finish');await flush();
   assert.equal(x.ctx.coastDrive.snapshot().phase,'drive');assert.equal(x.ctx.running,true);assert.equal(x.$('results').hidden,true);
-  assert.equal(x.$('cruise-banner').hidden,false);assert.equal(x.$('cruise-action').hidden,false);assert(x.ctx.stage.classList.contains('coasting'));
+  assert.equal(x.$('cruise-banner').hidden,false);assert.equal(x.$('cruise-action').hidden,false);assert(x.ctx.screenEl.classList.contains('coasting'));
   assert.equal(x.counts.award,1);assert.equal(x.counts.record,1);assert.equal(x.counts.garage,1);assert.equal(x.counts.progress,1);
   assert.equal(x.ctx.progress.rounds,1);assert.equal(x.ctx.coastRadio.snapshot().playing,true);
   const saved=x.storage.get(PROGRESS_KEY),coins=x.ctx.garage.coins;
@@ -138,9 +145,9 @@ test('production demo completion preserves progress and never saves coins across
 
 test('production pause/resume, mute/unmute and hidden-tab synchronization control one stream',async()=>{
   const x=setup();x.run('finish');await flush();x.media.currentTime=23;
-  x.run('pause');assert.equal(x.ctx.paused,true);assert.equal(x.$('pause-panel').hidden,false);assert.equal(x.media.paused,true);
+  x.run('pause');assert.equal(x.ctx.paused,true);assert.equal(x.$('pause-dialog').open,true);assert.equal(x.media.paused,true);
   assert.equal(x.media.currentTime,23);assert.equal(x.ctx.inputs.left,false);
-  x.run('resume');await flush();assert.equal(x.ctx.paused,false);assert.equal(x.$('pause-panel').hidden,true);assert.equal(x.ctx.coastRadio.snapshot().playing,true);
+  x.run('resume');await flush();assert.equal(x.ctx.paused,false);assert.equal(x.$('pause-dialog').open,false);assert.equal(x.ctx.coastRadio.snapshot().playing,true);
   await x.run('toggleSound');assert.equal(x.ctx.soundEnabled,false);assert.equal(x.media.paused,true);assert.equal(x.media.currentTime,23);
   await x.run('toggleSound');await flush();assert.equal(x.ctx.soundEnabled,true);assert.equal(x.ctx.coastRadio.snapshot().playing,true);
   x.ctx.document.hidden=true;x.run('syncCoastRadio');assert.equal(x.media.paused,true);assert.equal(x.media.currentTime,23);
@@ -158,7 +165,8 @@ test('production driving contact still separates/slows cars without rewriting a 
 
 test('last wrong answers still lead to rest driving and unavailable next courses keep results reachable',async()=>{
   const x=setup({score:0});x.run('finish');await flush();assert.equal(x.ctx.coastDrive.driving,true);
-  assert.equal(x.$('result-correct').textContent,'0/5');assert.equal(x.$('next-stage').disabled,true);
+  assert.equal(x.ctx.lastResults.correct,0);assert.equal(x.ctx.lastResults.total,5);assert.equal(x.ctx.lastResults.passed,false);
+  assert.equal(x.$('next-stage').disabled,true);assert.equal(x.$('next-stage').hidden,true,'an unavailable next course is not shown as a grey button');
   x.run('showCruiseResults');assert.equal(x.$('results').hidden,false);assert.equal(x.$('return-cruise').focused,true);
   x.run('returnToCruise');await flush();assert.equal(x.ctx.running,true);assert.equal(x.counts.record,1);
 });
@@ -257,4 +265,16 @@ test('the production last gate enters coast driving before the road end while it
   for(let i=0;i<360;i++)vm.runInContext('updateCoastDrive(1/60)',c);
   assert(c.playerS<2150);assert.equal(c.coastDrive.snapshot().laps,1);
   assert.equal(c.narrator.playing,true);assert.equal(x.counts.record,1);assert.equal(x.counts.award,1);
+});
+
+test('↑ right after tapping an answer tag keeps the tapped lane; while steering it takes the lane the car is in',()=>{
+  const x=setupRace(),c=x.ctx;
+  const target=c.gate.types.indexOf(c.gate.q.answer),other=(target+1)%3;
+  c.questionChosen=false;c.playerOffset=c.LANES[other];c.laneAim=c.LANES[target];c.inputs={left:false,right:false};
+  x.run('chooseCurrentLane');
+  assert.equal(c.gate.intentChoice,c.gate.q.answer,'the tag choice is not replaced by the lane the car has not left yet');
+  assert.equal(c.laneAim,c.LANES[target]);assert.equal(c.questionChosen,true);
+  c.inputs={left:true,right:false};c.playerOffset=c.LANES[other];
+  x.run('chooseCurrentLane');
+  assert.equal(c.gate.intentChoice,c.gate.types[other],'holding a direction chooses where the car is');
 });

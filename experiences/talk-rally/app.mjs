@@ -9,6 +9,7 @@ import { GAME_ID, rankItems, createExchange, skillReport, FLOW_RALLY, FLOW_WORDS
 import * as sound from './audio.mjs';
 import { swingPower } from './sfx.mjs';
 import { createStage, LANES } from './stage.mjs';
+import { fitText, preloadImages } from './kit/lab.mjs';
 
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
@@ -164,26 +165,9 @@ function renderCards(cur) {
   fitCards();
 }
 
-/** 대답 카드 글자 맞춤. 한 줄에 안 들어가는 대답은 쉼표 뒤에서 줄을 바꾼다(‘아니요, / 물이 커요.’ — 뒷말이 한 줄에 들 때만, 아니면 고르게 접는다).
- *  낱말 하나가 펠트 면보다 길거나(‘다녀오겠습니다.’) 세 줄이 되면 그 카드만 글자를 0.5px씩 줄인다.
- *  낱말 중간에서 끊지 않게 .say는 넘치게 두고 재며, 가장 작게(12px) 줄여도 넘칠 때만 끊는다. ‘만날 거예요’처럼 매인 말은 앞말과 떼지 않는다. */
-const BOUND = /(\S+ 거예요\S*)/;
-const sayNodes = (s) => s.split(BOUND).filter(Boolean).map((p) => (BOUND.test(p) ? Object.assign(document.createElement('span'), { className: 'nb', textContent: p }) : p));
-function fitCards() {
-  for (const b of $('#cards').children) {
-    const say = b.querySelector('.say'); if (!say) continue;
-    const text = (say.dataset.text ??= say.textContent), cut = text.indexOf(', ');
-    say.replaceChildren(...sayNodes(text)); say.style.fontSize = ''; say.style.overflowWrap = '';
-    const line = () => parseFloat(getComputedStyle(say).lineHeight);
-    const over = () => say.scrollWidth > say.clientWidth + 0.5 || say.scrollHeight > line() * 2 + 2;
-    if (cut > 0 && say.scrollHeight > line() * 1.5) {
-      say.replaceChildren(...sayNodes(text.slice(0, cut + 2)), document.createElement('br'), ...sayNodes(text.slice(cut + 2)));
-      if (over()) say.replaceChildren(...sayNodes(text));
-    }
-    for (let size = parseFloat(getComputedStyle(say).fontSize); over() && size > 12; ) { size -= 0.5; say.style.fontSize = `${size}px`; }
-    if (over()) say.style.overflowWrap = 'anywhere';
-  }
-}
+/** 대답 카드 글자 맞춤(키트 fitText): 한 줄에 안 들어가면 쉼표 뒤에서(‘아니요, / 물이 커요.’), 아니면 어절 단위로 고르게 접고,
+ *  낱말이 펠트 면보다 길면(‘다녀오겠습니다.’) 그 카드만 글자를 줄인다. 낱말 중간에서 끊지 않는다. */
+function fitCards() { for (const b of $('#cards').children) { const say = b.querySelector('.say'); if (say) fitText(say); } }
 /** 대답 카드의 펠트 판을 입구에서 미리 받아 둔다. 카드는 첫 공에서야 그려져 그때 받으면 첫 카드가 잠깐 펠트 없이 글자만 보였다
  *  (라피스 위 크림 글자가 바닥에 묻힘 — 10-06 움직임 줄이기 확인에서 찾음). 다 받기 전에는 같은 색 납작한 판으로 보인다(style.css .felt-ready). */
 let feltSize = '';
@@ -191,8 +175,8 @@ function preloadFelt() {
   const size = matchMedia('(max-width:500px)').matches ? 'phone' : matchMedia('(max-width:700px)').matches ? 'mid' : 'wide';
   if (size === feltSize) return;
   feltSize = size; $('#cards').classList.remove('felt-ready');
-  const urls = ['blush', 'butter', 'lapis'].map((c) => `assets/felt/card-${c}-${size}.webp`).concat('assets/felt/badge-check.webp');
-  Promise.all(urls.map((u) => { const im = new Image(); im.src = u; return im.decode().catch(() => {}); }))
+  const urls = ['blush', 'butter', 'lapis'].map((c) => `kit/felt/cushion-${c}-${size}.webp`).concat('kit/felt/badge-check.webp');
+  preloadImages(urls)
     .then(() => { if (feltSize === size) $('#cards').classList.add('felt-ready'); });
 }
 preloadFelt();
@@ -410,7 +394,7 @@ function finish() {
   $('#r-stars').innerHTML = [1, 2, 3].map((i) => `<i class="${i <= s.stars ? 'on' : ''}" style="animation-delay:${0.3 + (i - 1) * 0.22}s"></i>`).join('');
   $('#r-stars').setAttribute('aria-label', `별 3개 중 ${s.stars}개`);
   for (let i = 0; i < s.stars; i++) setTimeout(() => sound.sfx('star', { i }), 300 + i * 220);
-  $('#r-mongle').src = s.stars >= 2 ? 'assets/brand/mongle-cheer.webp' : 'assets/brand/mongle-smile.webp';
+  $('#r-mongle').src = s.stars >= 2 ? 'kit/brand/mongle-cheer.webp' : 'kit/brand/mongle-smile.webp';
   const notes = [`점수 ${s.score}점`, `최고 랠리 ${s.bestRally}번`, `빠른 대답 ${s.quick}번`];
   if (s.helped) notes.push(`다시 듣기·글로 보기를 쓴 말 ${s.helped}개`);
   $('#r-note').textContent = notes.join(' · ');

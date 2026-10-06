@@ -109,28 +109,12 @@ for scene, key in [('수영장', 'pool'), ('도서관', 'library'), ('미술관'
     small = save_webp(fit(im, 960, 700), os.path.join(OUT, 'scenes', key + '-m.webp'), 82)
     report['장면'][key] = {'원본': latest(scene).split(os.sep)[-1], '큰': big, '작은': small}
 
-# 4) 승인 원본에서 복사(줄인 사본)
+# 4) 승인 원본에서 복사(줄인 사본). 로고·몽글 표정·공통 펠트 부품(배지·판·칩·꼬리표·결)은 SYNK LAB PLAY 키트(kit/)가 준다(2026-10-07) —
+#    여기서는 키트에 없는 것만 복사한다. 짐 칸 판(slab-cream)은 복사한 뒤 fix_plate.py로 흰 판을 걷는다.
 COPY = [
     ('docs/디자인/SNS키트/assets/mascot-몽글_본체.webp', 'brand/mongle-body.webp', 560),
-    ('docs/디자인/SNS키트/assets/mascot-몽글_눈웃음.webp', 'brand/mongle-smile.webp', 560),
-    ('docs/디자인/SNS키트/assets/mascot-몽글_응원.webp', 'brand/mongle-cheer.webp', 560),
-    ('docs/디자인/SNS키트/assets/mascot-몽글_궁금함.webp', 'brand/mongle-curious.webp', 560),
-    ('docs/디자인/SNS키트/assets/mascot-몽글_집중.webp', 'brand/mongle-focus.webp', 560),
-    ('docs/디자인/SNS키트/assets/logo-lab.webp', 'brand/logo-lab.webp', 520),
-    ('docs/디자인/펠트부품/assets/ui/tex-coral.webp', 'kit/tex-coral.webp', None),
-    ('docs/디자인/펠트부품/assets/ui/tex-blush.webp', 'kit/tex-blush.webp', None),
-    ('docs/디자인/펠트부품/assets/배경/tex-cream.webp', 'kit/tex-cream.webp', None),
-    ('docs/디자인/펠트부품/assets/배경/tex-butter.webp', 'kit/tex-butter.webp', None),
-    ('docs/디자인/펠트부품/assets/ui/slab-coral-long.webp', 'kit/slab-coral-long.webp', 1400),
-    ('docs/디자인/펠트부품/assets/ui/slab-cream-long.webp', 'kit/slab-cream-long.webp', 1400),
-    ('docs/디자인/펠트부품/assets/ui/slab-blush-long.webp', 'kit/slab-blush-long.webp', 1400),
-    ('docs/디자인/펠트부품/assets/ui/slab-cream.webp', 'kit/slab-cream.webp', 700),
-    ('docs/디자인/펠트부품/assets/ui/slab-blush.webp', 'kit/slab-blush.webp', 700),
-    ('docs/디자인/펠트부품/assets/ui/chip-blush-long.webp', 'kit/chip-blush-long.webp', 700),
-    ('docs/디자인/펠트부품/assets/ui/badge-cream.webp', 'kit/badge-cream.webp', 160),
-    ('docs/디자인/펠트부품/assets/ui/badge-coral.webp', 'kit/badge-coral.webp', 160),
-    ('docs/디자인/펠트부품/assets/ui/badge-check.webp', 'kit/badge-check.webp', 160),
-    ('docs/디자인/펠트부품/assets/ui/tag-cream.webp', 'kit/tag-cream.webp', 400),
+    ('docs/디자인/펠트부품/assets/ui/tex-blush.webp', 'felt/tex-blush.webp', None),
+    ('docs/디자인/펠트부품/assets/ui/slab-cream.webp', 'felt/slab-cream.webp', 700),
 ]
 for src, dst, side in COPY:
     s = os.path.join(REPO, src)

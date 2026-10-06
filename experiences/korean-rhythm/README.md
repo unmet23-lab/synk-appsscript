@@ -6,6 +6,20 @@
 
 사용자 요청: 오투잼처럼 타이밍을 맞추는 재미를 유지하면서 한국어·TOPIK 학습을 돕고, 인기 리듬 게임의 특성과 높은 그래픽 품질을 적용한다.
 
+## SYNK LAB PLAY 펠트 판 — 2026-10-07
+
+2026-10-06 유호님이 예전 화면(검은 우주 무대)을 싫어해 「니 방식대로 싹다 리디자인 및 재설계 해도 좋으니까 제대로 부탁해」 → 말 랠리·이야기 교실과 같은 [SYNK LAB PLAY 키트](kit/README.md)(`kit/`, 원본 `experiences/play-common/kit/`) 한 벌로 다시 짰다. 판정·보면·듣기 문항·학습 기록·판정 폭 맞춤·공통 코인의 동작은 그대로다(기존 시험 37개 그대로 통과).
+
+- **입구**(`#lobby`): 키트 구조 그대로 — 위 막대(로고 꼬리표·`LAB · LISTEN & PLAY`·배경 음악 단추) → 코랄 펠트 머리 면(제목·두 줄 lede·입구 그림) → 종이 카드 둘(오늘의 한 곡 · 하는 방법 셋) → TOPIK 안내. 입구 그림은 게임과 같은 펠트 레인·판정선·O/X 배지를 멈춘 채 그린 캔버스(`stage.mjs` preview) + 몽글. 곡 셋은 도톰한 펠트 쿠션 타일(초록 분홍·해안선 라피스·네 시 버터, 고른 곡은 들뜨고 크림 칼선 + 펠트 체크, Atlas 추천 곡은 「추천」 꼬리표), 그 아래 추천 이유 한 줄, 코랄 펠트 `무대 열기`, 박자 난이도 칩 셋, `소리·박자 설정` 칩, 공통 코인 줄. 플레이 전 사용법 창은 없앴다(하는 방법 카드가 맡는다). 무대 열기 단추는 320×568~1440×900의 첫 화면에 든다.
+- **무대**(`#game`, 한 화면 고정·페이지 스크롤 없음): 키트 게임 바(로고·`말의 리듬`·점수·콤보·문제 `n / 5` 알약·멈춤) + 캔버스 무대. 크림 펠트 벽(`wide-cream`) 아래 코랄 펠트 바닥(`tex-coral`)을 깊이에 맞춰 원근으로 깔고, 쿠션 띠(`cushion-lapis-strip` O · `cushion-blush-strip` X)를 세워 화면 줄마다 그 깊이의 조각으로 그린 레인 둘이 아래 두 단추 가운데로 모인다(레인이 띠보다 길어 둥근 두 끝은 그대로, 가운데 결만 거울로 홀수 번 이음). 판정선은 크림 펠트 결로 채운 띠, 노트는 크림 펠트 배지에 O·X 글자, 긴 노트 몸통은 크림 펠트 띠, 듣기 문제의 답 노트는 큰 배지 + 둘레의 빛(고른 답은 크림 칼선). 몽글은 레인이 시작하는 먼 끝에 서서 표정만 바뀐다(듣기 → 집중, 맞힘 → 활짝, 그 밖 → 웃음·갸웃, 움직이지 않음). 판정 글자는 딱! · 좋아요 · 아쉬워요(놓친 노트에는 글자 없음). 흔들림·화면 흔들기 없음, 효과 줄이기(또는 움직임 줄이기 설정)에서는 반짝이·번쩍임을 줄이고 글자는 움직이지 않는다.
+- **듣기 문제 카드**(종이, 위쪽): 듣기 n / 5 꼬리표 → 「잘 들어 보세요」 → 「맞는 내용일까요?」 → 「들은 내용과 맞으면 O, 아니면 X」 → 답한 뒤 「잘 들었어요!」(펠트 체크) 또는 「다시 들어 봐요」(빨간 X 없음) + 정답. 듣는 동안 O·X 단추는 색은 그대로 두고 글자만 옅게·「듣는 중」으로 쉰다(그때 누른 것은 답이 아니다). 답한 뒤에는 바로 다음 노트를 칠 수 있다(예전에는 카드가 사라질 때까지 터치 단추가 잠겨 답 뒤 1초쯤의 노트를 칠 수 없었다). **글로 보기**: 문장은 평소 글로 보이지 않고, 누르면 들은 문장과 질문을 보여 준다. 그 문제는 Atlas에 `help('text')`로 남아 혼자 해낸 응답으로 세지 않는다.
+- **O·X 단추**: 도톰한 펠트 쿠션(O 라피스 · X 분홍, 넓은 화면은 2.4:1 판), 큰 글자 + 맞아요/아니에요, 모서리에 F·J 크림 단추. 누르면 3px 내려앉고, 고른 답은 크림 칼선, 맞는 답에는 펠트 체크 배지.
+- **결과**(`#results`): 키트 구조 — `무대 끝!`, 큰 숫자 = 맞힌 문장 n / 5, 별(5개 → 3, 4개 → 2, 3개 이상 → 1), 박자 점수·정확도·최대 콤보 알약, 공통 코인 줄(`#r-coins`, 곡을 자연스럽게 끝까지 마쳤을 때만 받는다) → 이번 곡의 문장(문장·질문·정답·해설, 맞힘 펠트 체크 / 다시 볼 문장은 크림 원에 번호, 문장마다 `다시 듣기`) · 듣기 기록(이번 곡의 능력별 맞힘, Atlas 문구: 새 응답 수·판정 폭 맞춤, 새 문장 확인) · 다음 곡(추천 이유 · `다시 하기` · `다른 곡 고르기` · `처음으로`). 결과의 다시 듣기가 새 문장 확인 소리를 끊으면 그 새 문장은 끝까지 들은 것으로 치지 않는다.
+- **설정·멈춤**: 입구의 `소리·박자 설정`(배경 음악 — 문장 소리는 늘 들림 · 판정 폭 맞춤 · 효과 줄이기 · 박자 보정 −/+ 10ms, ±200ms). 멈춤 창(`dialog.lab-dialog`): 이어 하기 · 배경 음악 · 효과 줄이기 · 박자 보정 · 처음으로. 배경 음악·박자 보정은 이 브라우저에 기억한다. Space·Esc로 멈추고 다시 Space·Esc로 이어 한다.
+- 키트가 대신하는 예전 글꼴·로고·펠트 사본(`assets/*.ttf`·SUIT·`logo-*.svg`·`sticker-book`·`thread`·`assets/felt/`)은 지웠다. `assets/signal-stage.webp`(와 원본 PNG)는 게임이 더 쓰지 않지만 `desktop/tools/build-renderer-assets.cjs`가 WORLD 표지로 복사하므로 남겼다. 가져오기의 `?v=` 꼬리는 걷었다.
+- 확인용 훅 `?qa` → `window.__rhythm`(state · autoplay · plan · seek). 실제 입력 함수로 노트를 치고 문제마다 맞게/틀리게 답하며, 기다림만 줄인다(문장은 끝까지 듣는다). `window.synkRhythm`(읽기 전용 확인 창)은 예전 확인 도구를 위해 같은 모양으로 둔다.
+- 확인: `qa/play.cjs`(헤드리스 크롬, 1440×900 · 390×844 터치 · 320×568 · 움직임 줄이기 1280×800) — 한 곡을 처음부터 결과까지(맞힘·틀림·글로 보기·멈춤·결과의 다시 듣기·새 문장 확인·코인 `공통 코인 +23 · 보유 23`), 게임 화면 스크롤·가로 넘침·확대 없음, 단추·HUD가 화면 안, 캔버스가 실제로 그려짐, 콘솔 오류 0. 결과는 [`qa/play-results.json`](qa/play-results.json), 장면은 `qa/shots/`(git 제외). 실제 휴대폰의 다중 터치·지연·발열과 귀로 듣는 확인은 아직이다.
+
 ## 음악 제작 기준 — 사용자 확정
 
 2026-10-01 후속 요청: **리듬게임은 우리가 만든 Suno 노래로 구성한다.** 곡 선정과 보면·무대·학습 구간 설계의 기준이다.
@@ -28,8 +42,8 @@ node experiences/korean-rhythm/server.mjs
 다시 켤 때는 이 폴더의 `Start-Game.ps1`도 사용할 수 있다. Node가 설치된 현재 컴퓨터에서 로컬 서버만 실행한다. 외부 서버·계정·API·유료 호출은 필요하지 않는다. ES 모듈과 로컬 폰트를 쓰므로 `index.html`을 더블클릭하는 file URL 실행을 배포 방법으로 삼지 않는다.
 
 - 키보드: **F · J / ← · →**, 일시 정지: **Space / Escape**.
-- 터치: 아래의 두 레인 버튼. 롱노트는 계속 누른다.
-- 듣기 구간: 문장과 질문을 끝까지 듣고, 맞으면 왼쪽 O, 아니면 오른쪽 X를 박자에 맞춰 누른다. 듣는 동안 일반 노트를 비우고 배경 음악을 낮춘다. 문항 내용은 플레이 중 글자로 보여주지 않는다.
+- 터치: 아래의 O·X 펠트 단추 둘. 롱노트는 계속 누른다.
+- 듣기 구간: 문장과 질문을 끝까지 듣고, 맞으면 왼쪽 O, 아니면 오른쪽 X를 박자에 맞춰 누른다. 듣는 동안 일반 노트를 비우고 배경 음악을 낮춘다. 문항 내용은 플레이 중 글자로 보여주지 않고, ‘글로 보기’를 누를 때만 보여 준다(도움으로 기록, 2026-10-07).
 - 3곡, 곡마다 리듬 난이도 3단계. 한국어 내용은 곡으로, 노트 밀도와 판정 폭은 리듬 난이도로 고른다.
 - 배경 음악은 우리가 만든 Suno 한국어 노래 원곡이다. 시작 카운트와 작은 키 사운드만 Web Audio로 만든다. 현재 학습 방식은 한국어 **듣기·내용 판단**이다. 배경 음악을 꺼도 문제 나레이션은 들린다.
 
@@ -58,6 +72,8 @@ node experiences/korean-rhythm/server.mjs
 
 ## 그래픽과 소리의 실제 구현
 
+> 2026-10-07부터 화면은 위의 「SYNK LAB PLAY 펠트 판」이다. 아래 무대 그림·로비 설명 네 줄은 예전 판의 기록이다(`signal-stage` 그림은 WORLD 표지 때문에 파일만 남았다). 소리 구현(아래 두 줄)은 그대로다.
+
 - `assets/signal-stage-original.png`: 내장 **image_gen**으로 새로 생성한 1672×941 무대 원본. 아래에 실제 제출 프롬프트를 보존했다.
 - `assets/signal-stage.webp`: 같은 원본의 WebP 배포용 인코딩, 269,190바이트. 원본 보존.
 - 배경은 생성한 정지 그림, 노트·롱노트·판정선·입자·박자에 반응하는 빛은 **Canvas 2D 실시간 렌더링**이다. 실제 3D 메시나 PBR 게임 엔진은 아니다.
@@ -77,10 +93,13 @@ Use case: stylized-concept. Asset type: premium original environment background 
 
 ## 파일과 검증
 
-`index.html` · `style.css` = 화면, `listening.mjs` = 듣기 문항·변형·복습, `narration.mjs` = 음성 길이·경로, `core.mjs` = 보면·독립 판정, `audio.mjs` = 음악·나레이션과 공통 시계, `stage.mjs` = 실시간 무대, `app.mjs` = 입력·화면 흐름, `server.mjs` = 이 컴퓨터 전용 정적 서버.
+`index.html` · `style.css` = 화면(키트 `kit/lab.css` 다음에 게임 고유 규칙만), `listening.mjs` = 듣기 문항·변형·복습, `narration.mjs` = 음성 길이·경로, `core.mjs` = 보면·독립 판정, `audio.mjs` = 음악·나레이션과 공통 시계(확인용 `seek`), `stage.mjs` = 펠트 캔버스 무대(게임·입구 그림), `app.mjs` = 입력·화면 흐름·학습 기록 연결, `personalization.mjs` = 문항↔능력·판정 폭 맞춤, `kit/` = SYNK LAB PLAY 키트 사본(직접 고치지 않음), `server.mjs` = 이 컴퓨터 전용 정적 서버.
+
+실행에 필요한 파일(공개 묶음): `index.html` `style.css` `app.mjs` `core.mjs` `audio.mjs` `stage.mjs` `suno-tracks.mjs` `listening.mjs` `narration.mjs` `personalization.mjs` `atlas-learning.js` `collection.js` `assets/`(music·narration) `kit/`(lab.css·lab.mjs·felt·brand·fonts).
 
 ```powershell
-node --test experiences/korean-rhythm/core.test.mjs experiences/korean-rhythm/audio.test.mjs
+node --test experiences/korean-rhythm/core.test.mjs experiences/korean-rhythm/audio.test.mjs experiences/korean-rhythm/flow.test.mjs experiences/korean-rhythm/app-learning.test.mjs experiences/korean-rhythm/assignment-target.test.mjs experiences/korean-rhythm/grammar-links.test.mjs experiences/korean-rhythm/personalization.test.mjs
+node experiences/korean-rhythm/qa/play.cjs            # experiences 폴더를 정적 서버로 띄운 뒤(RHYTHM_URL, 기본 http://127.0.0.1:5261/korean-rhythm/)
 ```
 
 [검증 기록](qa/RESULTS.md), [실제 브라우저 근거](qa/browser-evidence.json).

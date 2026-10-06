@@ -34,7 +34,7 @@ from scipy import ndimage as ndi
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, '..', '..', '..'))
 FELT = os.path.join(ROOT, 'experiences', 'entry-check', 'assets', 'felt')
-KIT = os.path.join(ROOT, 'experiences', 'entry-check', 'assets', 'kit')
+KIT = os.path.join(ROOT, 'experiences', 'entry-check', 'kit', 'felt')   # SYNK LAB PLAY 키트 사본(별·크림 배지는 키트에서 읽는다)
 SLICE_FELT = os.path.join(ROOT, 'experiences', 'blank-slice', 'assets', 'felt')
 CUTTER = os.path.join(ROOT, 'tools', '펠트부품_오리기.py')
 RECORD = os.path.join(HERE, 'finish_parts.json')
@@ -76,7 +76,7 @@ def save(pixels, path):
 
 
 def unlit_star():
-    sources = [os.path.join(FELT, 'sparkle.webp'), os.path.join(KIT, 'badge-cream.webp')]
+    sources = [os.path.join(KIT, 'sparkle.webp'), os.path.join(KIT, 'badge-cream.webp')]
     made_from = [digest(p) for p in sources]
     targets = [os.path.join(folder, 'sparkle-off.webp') for folder in (FELT, SLICE_FELT)]
     if record.get('sparkle-off.inputs') == made_from and all(finished(t) for t in targets):

@@ -11,7 +11,7 @@ const {chromium}=require(require.resolve('playwright',{paths:[process.env.SYNK_Q
  const base=process.env.SYNK_QA_BASE||'http://127.0.0.1:4280';
  const result={origin:base};
  try{
-  await page.goto(`${base}/order-rush/`);await page.locator('#learning-reason').filter({hasText:'기록'}).waitFor();
+  await page.goto(`${base}/order-rush/?qa`);await page.locator('#learning-reason').filter({hasText:'기록'}).waitFor();
   await page.screenshot({path:path.join(__dirname,'atlas-cafe-desktop.png'),fullPage:true});
   await page.locator('#start').click();await page.waitForFunction(()=>window.synkCafe.current?.audioCompleted);
   assert.equal(await page.evaluate(()=>window.synkCafe.current.id),'o01');
@@ -21,7 +21,8 @@ const {chromium}=require(require.resolve('playwright',{paths:[process.env.SYNK_Q
   await page.locator('#show-text').click();await page.locator('[data-ingredient="coffee"]').click();await page.locator('[data-ingredient="ice"]').click();await page.locator('#serve').click();
   await page.waitForFunction(()=>window.synkCafe.current?.id!=='o02');
   result.afterTextHelp=await page.evaluate(()=>window.synkCafe.learning.independent);assert.equal(result.afterTextHelp,1);
-  await page.locator('#finish').click();await page.locator('#results').waitFor({state:'visible'});
+  // 2026-10-06: 영업 중간에 결과를 보는 단추를 없앴다 → 확인 도구의 끝내기(?qa)
+  await page.evaluate(()=>window.__rush.finish());await page.locator('#results').waitFor({state:'visible'});
   await page.screenshot({path:path.join(__dirname,'atlas-cafe-results.png'),fullPage:true});
   await page.reload();result.afterReload=await page.evaluate(()=>window.synkCafe.learning.independent);assert.equal(result.afterReload,1);
   await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(__dirname,'atlas-cafe-mobile.png'),fullPage:true});
