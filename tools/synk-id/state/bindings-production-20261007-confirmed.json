@@ -1,0 +1,19 @@
+{
+  "fortune-browser": "adec83c7-79d3-4685-b350-7bd0bd37e824",
+  "fortune-native": "88ecd6c3-7b11-4630-853d-4be21f321af9",
+  "platform-native": "9d7f276d-58bf-4c98-a7fd-9c3da0a40408",
+  "world-native": "a256e2f3-62f5-4a18-80f5-c3342c463dd0",
+  "messenger-native": "57824287-1db2-4fdd-a29b-ec059d85f136",
+  "teacher-native": "5e3730e8-8cf4-4e7e-aa92-c3f1582996b5",
+  "care-native": "3313e645-6e13-466c-a788-bc203dcb7219",
+  "rehearsal-native": "17e1fbfb-8899-4186-8cf7-a40b1732b84e",
+  "family-album-native": "4f1c015d-0523-4b61-9b10-6c3faa09217a",
+  "path-native": "9c1f7c0e-db52-42eb-949e-9f2d7e5d4220",
+  "platform-browser": "6cde60e1-d9c4-489e-8a36-3a2ff392e077",
+  "world-browser": "d4f8347e-72a4-4c8c-8d5f-00aece7ac137",
+  "messenger-browser": "040530fe-6181-45fd-ba85-51a31872edbf",
+  "care-browser": "a21621ff-6897-44c4-9a88-233deedbe1cb",
+  "rehearsal-browser": "d578f783-64a0-4a97-b780-04246d669f43",
+  "family-album-browser": "0f9f91d5-4032-4ff3-bb8d-2af1c646633a",
+  "path-browser": "c28ef42a-1b79-428a-816e-97779df8c800"
+}
