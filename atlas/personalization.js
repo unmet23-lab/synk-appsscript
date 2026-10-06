@@ -270,7 +270,107 @@
     current.feedback(completed.id, options.value);
     return current.events();
   }
-  return Object.freeze({ VERSION, OPTIONS, FIELDS, REASONS, REASON_GOAL, MAX_REASONS, DEFAULT_PRESENTATION, createProfile, updateProfile, clearProfile,
+  // Product-declared preferences, separate from the learning profile above. The host
+  // authenticates the actor, authorizes remembering these choices, and verifies the
+  // feedback reference. A proposal is never a fact or an inferred personal trait.
+  const PREFERENCE_VERSION = 'core-preference-context-1';
+  const preferenceToken = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value)
+    && !['__proto__', 'prototype', 'constructor'].includes(value);
+  const canonical = value => JSON.stringify(value, (_key, item) => record(item)
+    ? Object.fromEntries(Object.keys(item).sort().map(key => [key, item[key]])) : item);
+  const PREFERENCE_KEYS = Object.freeze({ set: ['field', 'value', 'duration'], withdraw: ['field', 'duration'], reset: [], close: [],
+    propose: ['field', 'value', 'feedbackId'], apply: ['proposalId', 'duration'], dismiss: ['proposalId'] });
+  const preferenceBase = ['version', 'id', 'scope', 'contract', 'encounterId', 'at', 'kind', 'source'];
+  function preferenceReplay({ contract, scope, events = [], encounterId, at } = {}) {
+    checkScope(scope); instant(at);
+    if (!preferenceToken(encounterId)) fail('invalid preference encounter');
+    const domain = getDomain();
+    if (!domain?.validateContract) fail('load Core domain capability first');
+    const fields = domain.validateContract(contract), reference = { id: contract.id, version: contract.version, purpose: contract.purpose };
+    if (!Array.isArray(events) || events.length > 10000) fail('invalid preference history');
+    const ongoing = new Map(), once = new Map(), pending = new Map(), closed = new Set(), seen = new Map(), unique = [];
+    let previousAt = -Infinity;
+    const clearPendingField = field => { for (const [id, event] of pending) if (event.field === field) pending.delete(id); };
+    const onceFor = id => { if (!once.has(id)) once.set(id, new Map()); return once.get(id); };
+    const isValue = (field, value) => field.kind === 'enum' ? field.values.includes(value)
+      : field.kind === 'boolean' ? typeof value === 'boolean'
+        : typeof value === 'number' && Number.isFinite(value) && value >= field.range[0] && value <= field.range[1];
+    for (const event of events) {
+      if (!record(event) || !Object.hasOwn(PREFERENCE_KEYS, event.kind)) fail('invalid preference event kind');
+      const keys = [...preferenceBase, ...PREFERENCE_KEYS[event.kind]];
+      if (!exact(event, keys) || keys.some(key => !Object.hasOwn(event, key)) || event.version !== PREFERENCE_VERSION
+        || !preferenceToken(event.id) || !preferenceToken(event.encounterId)) fail('invalid preference event');
+      checkScope(event.scope);
+      if (scopeKey(event.scope) !== scopeKey(scope) || canonical(event.contract) !== canonical(reference)) fail('foreign preference scope or contract');
+      if (event.source !== (event.kind === 'apply' ? 'feedback-confirmed' : 'explicit')) fail('invalid preference source');
+      // PULSE may use a customer's direct choices, but its existing boundary
+      // excludes personal feedback learning, including reviewed suggestions.
+      if (scope.domain === 'PULSE' && ['propose', 'apply'].includes(event.kind)) fail('PULSE does not learn a personal behavioral profile');
+      const eventAt = instant(event.at);
+      if (eventAt > instant(at)) fail('future preference event');
+      if (seen.has(event.id)) {
+        if (canonical(seen.get(event.id)) !== canonical(event)) fail('conflicting preference event id');
+        continue;
+      }
+      if (eventAt < previousAt) fail('preference event time reversal');
+      previousAt = eventAt;
+      if (Object.hasOwn(event, 'field') && !fields.has(event.field)) fail('unknown preference field');
+      if (Object.hasOwn(event, 'value') && !isValue(fields.get(event.field), event.value)) fail('invalid preference value');
+      if (Object.hasOwn(event, 'duration') && !['once', 'ongoing'].includes(event.duration)) fail('invalid preference duration');
+      for (const key of ['proposalId', 'feedbackId']) if (Object.hasOwn(event, key) && !preferenceToken(event[key])) fail(`invalid ${key}`);
+      if (closed.has(event.encounterId) && ['set', 'propose', 'apply'].includes(event.kind)) fail('preference encounter is closed');
+      if (event.kind === 'propose') pending.set(event.id, event);
+      else if (event.kind === 'apply' || event.kind === 'dismiss') {
+        const proposal = pending.get(event.proposalId);
+        if (!proposal || proposal.encounterId !== event.encounterId) fail('preference proposal is not pending in this encounter');
+        pending.delete(proposal.id);
+        if (event.kind === 'apply') {
+          const applied = { ...event, field: proposal.field, value: proposal.value, feedbackId: proposal.feedbackId };
+          (event.duration === 'ongoing' ? ongoing : onceFor(event.encounterId)).set(proposal.field, applied);
+          if (event.duration === 'ongoing') onceFor(event.encounterId).delete(proposal.field);
+          clearPendingField(proposal.field);
+        }
+      } else if (event.kind === 'set') {
+        (event.duration === 'ongoing' ? ongoing : onceFor(event.encounterId)).set(event.field, event);
+        if (event.duration === 'ongoing') onceFor(event.encounterId).delete(event.field);
+        clearPendingField(event.field);
+      } else if (event.kind === 'withdraw') {
+        (event.duration === 'ongoing' ? ongoing : onceFor(event.encounterId)).delete(event.field);
+        clearPendingField(event.field);
+      } else if (event.kind === 'reset') {
+        ongoing.clear(); once.clear(); pending.clear(); // Do not reopen ended encounters.
+      } else if (event.kind === 'close') {
+        closed.add(event.encounterId); once.delete(event.encounterId);
+        for (const [id, proposal] of pending) if (proposal.encounterId === event.encounterId) pending.delete(id);
+      }
+      seen.set(event.id, event); unique.push(event);
+    }
+    const selected = new Map([...ongoing, ...(once.get(encounterId) || [])]), values = {}, provenance = {};
+    for (const [field, event] of selected) {
+      values[field] = event.value;
+      provenance[field] = { eventId: event.id, source: event.source, duration: event.duration, encounterId: event.encounterId, at: event.at,
+        ...(event.proposalId ? { proposalId: event.proposalId, feedbackId: event.feedbackId } : {}) };
+    }
+    return { projection: { version: PREFERENCE_VERSION, values, provenance, closed: closed.has(encounterId),
+      pendingProposals: [...pending.values()].filter(event => event.encounterId === encounterId).map(event => ({ id: event.id,
+        field: event.field, value: event.value, feedbackId: event.feedbackId, encounterId: event.encounterId, at: event.at })) }, events: unique };
+  }
+  function projectPreferences(input = {}) { return copy(preferenceReplay(input).projection); }
+  function recordPreference(input = {}) {
+    if (!record(input) || !Object.hasOwn(PREFERENCE_KEYS, input.kind)) fail('invalid preference action');
+    const { contract, scope, encounterId, at, id, kind, events = [] } = input;
+    const extraKeys = PREFERENCE_KEYS[kind], keys = ['contract', 'scope', 'events', 'encounterId', 'at', 'id', 'kind', ...extraKeys];
+    if (!exact(input, keys)) fail('unsupported preference action input');
+    // Validate the supplied history first; callers cannot smuggle a different
+    // actor, purpose, value, time or implicit source into an existing log.
+    const prior = preferenceReplay({ contract, scope, events, encounterId, at }).events;
+    const event = { version: PREFERENCE_VERSION, id, scope: copy(scope), contract: { id: contract.id, version: contract.version, purpose: contract.purpose },
+      encounterId, at, kind, source: kind === 'apply' ? 'feedback-confirmed' : 'explicit' };
+    for (const key of extraKeys) { if (!Object.hasOwn(input, key)) fail(`missing preference ${key}`); event[key] = input[key]; }
+    return copy(preferenceReplay({ contract, scope, events: [...prior, event], encounterId, at }).events);
+  }
+  const preferences = Object.freeze({ project: projectPreferences, record: recordPreference });
+  return Object.freeze({ VERSION, PREFERENCE_VERSION, preferences, OPTIONS, FIELDS, REASONS, REASON_GOAL, MAX_REASONS, DEFAULT_PRESENTATION, createProfile, updateProfile, clearProfile,
     selectPersonalization, recordCompletion, recordFeedback, coreScope, validateProfile: checkProfile,
     // Optional Core capability: products that need field-based decisions load it.
     get domain() { const domain = getDomain(); if (!domain?.decide) fail('load Core domain capability first'); return domain; } });
