@@ -1,6 +1,6 @@
 # 원본(experiences/order-rush)에서 그대로 복사한 큰 파일. 시안 실행에만 필요하고 저장소에는 올리지 않는다.
 # 다시 채우기: cp -r experiences/order-rush/audio experiences/order-rush/vendor docs/디자인/앱시안_20261002/order-rush-kit/
-#           cp experiences/order-rush/assets/SUIT-Variable.woff2 docs/디자인/앱시안_20261002/order-rush-kit/assets/
+#           cp experiences/order-rush/kit/fonts/SUIT-Variable.woff2 docs/디자인/앱시안_20261002/order-rush-kit/assets/   (2026-10-06부터 글꼴은 키트에)
 audio/
 vendor/
 assets/SUIT-Variable.woff2

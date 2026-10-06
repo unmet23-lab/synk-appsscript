@@ -1,0 +1,31 @@
+[
+  {
+    "name": "phone",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "문 열기 → 첫 손님 0.2초",
+      "틀린 서빙 안내: 따뜻하게 부탁했어요.",
+      "공통 코인: 공통 코인 +24 · 보유 24",
+      "학습 기록: 혼자 해낸 응답 6 · 결과 이유 “듣고 세부 정보 찾기를 조금 더 확인해 봐요. 이 브라우저의 연습 기록을 사용해요.”",
+      "이번 영업에서 맞춘 것: 주문 종류 한 잔 기본 주문 → 빼기·바꾸기가 있는 주문",
+      "점심 러시: 줄 2명, 남은 시간 82초"
+    ],
+    "shots": [
+      "play_phone_00_lobby.png",
+      "play_phone_01_listening.png",
+      "play_phone_02_building.png",
+      "play_phone_03_wrong.png",
+      "play_phone_04_right.png",
+      "play_phone_05_text.png",
+      "play_phone_06_pause.png",
+      "play_phone_07_results.png",
+      "play_phone_08_results_full.png",
+      "play_phone_09_lobby_again.png",
+      "play_phone_10_rush_lobby.png",
+      "play_phone_11_rush_queue.png",
+      "play_phone_12_rush_switch.png"
+    ],
+    "sec": 74
+  }
+]
