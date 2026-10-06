@@ -24,7 +24,7 @@
       "play_desktop_09_pause.png",
       "play_desktop_10_journal.png"
     ],
-    "sec": 31
+    "sec": 29
   },
   {
     "name": "phone",
@@ -51,7 +51,7 @@
       "play_phone_09_pause.png",
       "play_phone_10_journal.png"
     ],
-    "sec": 32
+    "sec": 30
   },
   {
     "name": "small",
