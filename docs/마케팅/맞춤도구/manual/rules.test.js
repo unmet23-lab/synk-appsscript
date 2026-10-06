@@ -215,6 +215,62 @@ test('이상한 값은 버리고 빈 답은 보통값으로 채운다', () => {
   assert.equal(rec.filled.ai, 'chatgpt');
 });
 
+// 10-06 효과 시험(같은 일을 매뉴얼 없음·흔한 프롬프트·이 매뉴얼로 맡겨 비교)에서 나온 결함과 개인화 확장을 지킨다.
+const ME_FULL = { name: '성수동 흑임자카페', about: '원두와 디저트를 파는 동네 카페', people: '회사 근처 20~30대 단골', avoid: '과장 표현', voice: '오늘도 따뜻한 한 잔 준비해 둘게요.\n편하게 들러 주세요!' };
+
+test('내 정보: 적은 것만 [나와 내 일]·말투 기준·쓰지 말 것으로 들어가고, 비우면 전과 같은 글', () => {
+  const plain = R.compute(VIDEO).manual;
+  assert.equal(R.compute(VIDEO, {}).manual, plain);
+  assert.equal(R.compute(VIDEO, { name: '   ', voice: '\n\n' }).manual, plain, '빈칸·공백만이면 그대로');
+  const m = R.compute(VIDEO, ME_FULL).manual;
+  assert.match(m, /당신은 성수동 흑임자카페의 SNS 게시물을 만드는 AI 직원/);
+  assert.ok(m.indexOf('[나와 내 일]') > 0 && m.indexOf('[나와 내 일]') < m.indexOf('[맡은 일]'), '내 일은 맡은 일보다 앞');
+  assert.match(m, /- 하는 일: 원두와 디저트를 파는 동네 카페/);
+  assert.match(m, /- 주로 상대하는 사람: 회사 근처 20~30대 단골/);
+  assert.match(m, /- 말투 기준: 제 평소 문장이에요\. 문장을 그대로 옮기지 말고 말투\(끝맺음·길이·분위기\)만 따라 써요\. “오늘도 따뜻한 한 잔 준비해 둘게요\. 편하게 들러 주세요!”/);
+  assert.match(m, /- 쓰지 말 것: 과장 표현/);
+  const toneOnly = R.compute({ ...VIDEO, checks: ['tone'] }).manual;
+  assert.match(toneOnly, /말투 기준: \(제가 쓴 문장 두세 개를/, '말투 예시가 없고 맞춤법·말투를 고르면 빈칸 안내');
+  assert.doesNotMatch(R.compute({ ...VIDEO, checks: ['tone'] }, { voice: '안녕하세요.' }).manual, /여기에 붙여 넣으세요/, '예시를 적으면 빈칸 안내는 빠진다');
+});
+
+test('내 정보는 줄바꿈·길이를 다듬고, 답(결과 링크)에는 들어가지 않는다', () => {
+  const c = R.cleanMe({ name: '가\n나  다', about: 'x'.repeat(500), voice: 'a\nb', evil: 'no' });
+  assert.equal(c.name, '가 나 다');
+  assert.equal(c.about.length, R.ME.find(f => f.id === 'about').max);
+  assert.equal(c.voice, 'a b');
+  assert.equal(c.evil, undefined);
+  const rec = R.compute(VIDEO, ME_FULL);
+  assert.deepEqual(Object.keys(rec.answers).sort(), ['ai', 'checks', 'finish', 'stops', 'task'], '공유 링크는 답만 담는다');
+});
+
+test('시험에서 나온 결함: 빠진 정보는 비워 두고 끝까지, 답장은 공감하되 약속은 정책 안, 개인정보는 1:1 답장에 필요한 것만', () => {
+  for (const task of Object.keys(R.TASK)) {
+    const m = R.compute({ ...VIDEO, task }).manual;
+    assert.match(m, /빠진 정보는 짐작하지 말고 \[확인 필요\]로 비워 둬요\. 자료끼리 맞지 않으면 확실한 쪽만 써요.*나머지는 바로 쓸 수 있게 끝까지 만들고, 물을 것은 맨 아래에 모아요/, task);
+  }
+  const reply = R.compute({ task: 'reply', finish: 'ready', checks: ['facts', 'tone', 'privacy'], stops: Object.keys(R.STOP), ai: 'chatgpt' }).manual;
+  assert.match(reply, /인사와 공감 한 줄로 시작하고/);
+  assert.match(reply, /약속이 되는 말은 제가 준 정책에 있는 것만/);
+  assert.match(reply, /고객만 아는 것\(받은 날짜·개봉 여부\)은 답장에서 묻고/);
+  assert.match(reply, /도움이 될 대안이 있으면 함께 알리고, 다음에 할 일과 맺음 인사로 끝내요/);
+  assert.match(R.compute(VIDEO).manual, /첫 줄에는 보는 사람이 멈출 이유\(무엇을 얻는지\), 다음에 언제·어디서, 끝에 할 일/);
+  assert.doesNotMatch(reply, /사과·환불·보상 약속은 제 허락 없이/, '사과까지 막으면 답장이 차가워진다');
+  assert.match(reply, /1:1 답장에는 받는 분 이름·주문번호만 쓰고, 전화번호·주소·계좌번호는 다시 쓰지 않아요/);
+  assert.match(R.CHECK.tone.line, /위의 말투 기준/, '말투 기준은 검수보다 위에 있다');
+});
+
+test('결과 화면: 쓰는 순서 세 칸, 내 정보 칸 다섯, 앱 안 브라우저 안내(평소엔 숨김)', () => {
+  const rec = R.compute(VIDEO);
+  const out = V.result({ rec, answers: rec.answers, layout: 'guided', plan: null, tipsOn: true, checks: {}, feedbackGiven: null, content: C, rules: R });
+  assert.equal((out.html.match(/<li><b>0[123]<\/b>/g) || []).length, 3);
+  assert.ok(out.html.indexOf('class="howto"') < out.html.indexOf('copybox main'), '쓰는 순서가 매뉴얼보다 먼저');
+  assert.equal((out.html.match(/data-me-field="/g) || []).length, R.ME.length);
+  assert.ok(out.html.indexOf('data-me') < out.html.indexOf('copybox main'), '내 정보 칸은 매뉴얼 바로 위');
+  assert.match(out.html, /<p class="inapp" hidden>/);
+  assert.equal(typeof V.bindResult, 'function');
+});
+
 test('계산 규칙과 화면에는 네트워크·저장소·AI 호출이 없다', () => {
   for (const f of ['rules.js', 'content.js', 'view.js']) {
     const src = fs.readFileSync(path.join(__dirname, f), 'utf8');

@@ -9,7 +9,7 @@
   else root.SynkManualRules = factory();
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
-  const VERSION = 'manual-rules-v1-2026-10-03';
+  const VERSION = 'manual-rules-v3-2026-10-06';
   const r = (t, src = 'synk') => ({ t, src });
   const list = v => (Array.isArray(v) ? v : []);
 
@@ -19,13 +19,16 @@
       name: 'SNS 게시물 만들기', short: 'SNS 게시물', role: 'SNS 게시물을 만드는', until: '올리기 직전까지',
       ready: '올릴 곳별 최종 문구·해시태그·이미지 설명·예약 시간 제안', act: '올리기·예약',
       duty: ['제가 주는 소식·사진·자료로 SNS 게시물(글, 카드 문구, 짧은 영상 문구)을 만들어요.', '올릴 곳(인스타그램·유튜브 등)을 말하지 않았으면 먼저 물어봐요.'],
-      rules: ['첫 줄에는 보는 사람이 멈출 이유(무엇을 얻는지)를 써요.', '사진·영상은 제가 준 것만 써요. 새로 만든 이미지가 있으면 그렇다고 알려 줘요.', '해시태그는 다섯 개 안쪽으로 써요.'],
+      // 10-06 시험: 흔한 프롬프트(해시태그 10개)와 일부 답이 링크를 본문에 넣었다. 인스타그램은 해시태그 다섯 개까지, 본문 링크는 눌리지 않는다
+      // 2차 시험: 안전은 지켰지만 글이 밋밋했다 → 잘 쓴 게시물의 짜임(멈출 이유 → 언제·어디서 → 할 일)을 기준으로 둔다
+      rules: ['첫 줄에는 보는 사람이 멈출 이유(무엇을 얻는지), 다음에 언제·어디서, 끝에 할 일(방문·예약)을 짧게 써요. 이모지는 한두 개만.', '사진·영상은 제가 준 것만 써요. 새로 만든 이미지가 있으면 그렇다고 알려 줘요.', '해시태그는 다섯 개 안쪽으로 써요.', '인스타그램 본문 링크는 눌리지 않아요. 링크는 ‘프로필 링크’나 스토리 링크 스티커로 안내해요.'],
     },
     reply: {
       name: '고객 문의 답장', short: '고객 답장', role: '고객 문의에 답장을 쓰는', until: '보내기 직전까지',
       ready: '보낼 답장 최종본과 받는 사람·제목', act: '보내기',
       duty: ['고객 문의(메일·DM·리뷰)에 보낼 답장을 써요.', '가격·일정·환불 같은 정책은 제가 준 자료에 있는 것만 써요.'],
-      rules: ['모르는 사실(재고·가격·일정)은 지어내지 말고 ‘확인 필요’로 남긴 뒤 저에게 물어봐요.', '사과·환불·보상 약속은 제 허락 없이 쓰지 않아요.', '첫 문장에서 고객이 물은 것에 바로 답해요.'],
+      // 10-06 시험: ‘사과·환불·보상 약속은 허락 없이 쓰지 않기’만 있으면 인사·공감까지 빠져 답장이 차가워졌다 → 공감은 하고, 약속만 정책 안에서
+      rules: ['인사와 공감 한 줄로 시작하고, 바로 다음 문장에서 고객이 물은 것에 답해요.', '환불·교환·보상처럼 약속이 되는 말은 제가 준 정책에 있는 것만 써요. 그 밖의 약속은 제 허락을 받아요.', '모르는 사실은 지어내지 않아요. 고객만 아는 것(받은 날짜·개봉 여부)은 답장에서 묻고, 가게만 아는 것(재고·일정)은 ‘확인 필요’로 남겨 물어봐요.', '정책 안에서 도움이 될 대안이 있으면 함께 알리고, 다음에 할 일과 맺음 인사로 끝내요.'],
     },
     research: {
       name: '자료 조사·정리', short: '자료 조사', role: '자료를 조사하고 정리하는', until: '공유하기 직전까지',
@@ -63,11 +66,12 @@
   // 끝내기 전 검수: 고른 항목마다 구체적인 확인 방법 한 줄(추천기준 §5).
   const CHECK = {
     facts: { name: '사실·숫자', line: '숫자·날짜·이름마다 근거(제가 준 자료나 링크)와 대조해요. 근거가 없으면 지우거나 ‘확인 필요’로 표시해요.' },
-    tone: { name: '맞춤법·말투', line: '맞춤법과 띄어쓰기를 한 번 더 보고, 아래 말투 기준과 비교해 어색한 문장을 고쳐요.' },
+    tone: { name: '맞춤법·말투', line: '맞춤법·띄어쓰기를 다시 보고, 위의 말투 기준과 비교해 어색한 문장을 고쳐요.' },
     lang: { name: '외국어 뜻', line: '번역문을 한국어로 다시 옮겨 원래 뜻과 비교해요. 두 가지로 읽히는 문장은 고치고, 공개 전에 원어민 확인이 필요하다고 보고해요.' },
     links: { name: '링크·주소', line: '모든 링크를 직접 열어 열리는지, 맞는 곳인지 확인해요. 열어 보지 못한 링크는 그렇다고 표시해요.' },
     rights: { name: '저작권·초상권', line: '쓴 사진·음악·글의 출처를 적어요. 출처나 허락이 없는 것, 실제 사람의 얼굴·목소리는 쓰지 말고 저에게 물어봐요.' },
-    privacy: { name: '개인정보', line: '결과에 이름·연락처·주소·계좌번호가 남았는지 찾아 지우거나 가려요. 일에 필요 없는 개인정보는 다시 쓰지 않아요.' },
+    // 10-06 시험: ‘결과에 남은 이름·연락처 지우기’만 있으면 1:1 답장에서도 받는 분 이름·주문번호까지 지웠다 → 공개·제3자 글과 1:1 답장을 나눈다
+    privacy: { name: '개인정보', line: '공개 글이나 다른 사람에게 가는 글에서 이름·연락처·주소·계좌번호를 지우거나 가려요. 1:1 답장에는 받는 분 이름·주문번호만 쓰고, 전화번호·주소·계좌번호는 다시 쓰지 않아요.' },
   };
   // 일마다 자주 필요한 검수. 고르지 않았으면 결과에서 한 줄로 알려 준다(매뉴얼에 억지로 넣지 않는다).
   const RECOMMEND = { sns: ['facts', 'tone', 'links', 'rights'], reply: ['facts', 'tone', 'privacy'], research: ['facts', 'links'], docs: ['facts', 'tone'], translate: ['lang', 'tone'], build: ['links', 'privacy'] };
@@ -164,16 +168,51 @@
     return word + (/[013678LMNlmn]$/.test(last) ? withBatchim : without);
   };
 
-  function manualText(f) {
+  // 내 정보(선택). 결과 화면의 칸에 적으면 매뉴얼에 들어간다. 이 화면 밖으로 보내지 않고 저장하지도 않는다(view.js).
+  // 10-06 유호님 「영상 속 내용을 우리 synk 만의 장점(개인화)를 제대로 살려서 … 기존 프롬프트·pdf보다 더 기능적이고 효과가 좋은지」
+  // → 다섯 답만으로는 일의 방식만 맞춰지고 가게·브랜드는 비어 있었다. 질문은 다섯 개 그대로 두고, 결과에서 원하는 만큼만 채운다.
+  const ME = [
+    { id: 'name', label: '가게·브랜드 이름', ph: '예: 성수동 흑임자카페', max: 40 },
+    { id: 'about', label: '무엇을 하는 곳인가요', ph: '예: 원두와 디저트를 파는 동네 카페', max: 80 },
+    { id: 'people', label: '주로 누구에게 쓰나요', ph: '예: 회사 근처 20~30대 단골', max: 80 },
+    { id: 'avoid', label: '쓰지 말 것', ph: '예: 과장 표현, 다른 가게 언급', max: 80 },
+    { id: 'voice', label: '내 말투 예시(두세 문장)', ph: '예: 오늘도 따뜻한 한 잔 준비해 둘게요. 편하게 들러 주세요.', max: 240, multi: true },
+  ];
+  function cleanMe(me) {
+    const out = {};
+    for (const f of ME) {
+      let v = me && typeof me[f.id] === 'string' ? me[f.id] : '';
+      v = v.replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g, ' ');
+      v = f.multi ? v.split('\n').map(s => s.replace(/\s+/g, ' ').trim()).filter(Boolean).join(' ') : v.replace(/\s+/g, ' ');
+      v = v.trim().slice(0, f.max).trim();
+      if (v) out[f.id] = v;
+    }
+    return out;
+  }
+
+  function manualText(f, me) {
     const t = TASK[f.task];
+    const m = cleanMe(me);
     const L = [];
     L.push(`내 AI 직원 매뉴얼 · ${t.name}`, '');
-    L.push(`이 공간에서 당신은 ${t.role} AI 직원이에요. 제가 한 줄로 일을 맡기면 아래 기준대로 끝까지 해 오세요.`, '');
+    L.push(`이 공간에서 당신은 ${m.name ? `${m.name}의 ` : ''}${t.role} AI 직원이에요. 제가 한 줄로 일을 맡기면 아래 기준대로 끝까지 해 오세요.`, '');
+    if (m.name || m.about || m.people) {
+      L.push('[나와 내 일]');
+      if (m.name) L.push(`- 이름: ${m.name}`);
+      if (m.about) L.push(`- 하는 일: ${m.about}`);
+      if (m.people) L.push(`- 주로 상대하는 사람: ${m.people}`);
+      L.push('');
+    }
     L.push('[맡은 일]', ...t.duty.map(x => `- ${x}`), '');
     L.push('[완성 기준]', `- ${FINISH[f.finish].line(t)}`, '');
     L.push('[만들 때 지킬 것]', ...t.rules.map(x => `- ${x}`));
-    if (f.checks.includes('tone')) L.push('- 말투 기준: (제가 쓴 문장 두세 개를 여기에 붙여 넣으세요. 비워 두면 짧고 친근한 존댓말)');
-    L.push('- 지시에 빠진 정보가 있으면 짐작하지 말고 한 번에 모아서 물어봐요.', '');
+    // 2차 시험: 예시 문장을 그대로 붙여 넣어 어색했다 → 문장은 옮기지 말고 말투만
+    if (m.voice) L.push(`- 말투 기준: 제 평소 문장이에요. 문장을 그대로 옮기지 말고 말투(끝맺음·길이·분위기)만 따라 써요. “${m.voice}”`);
+    else if (f.checks.includes('tone')) L.push('- 말투 기준: (제가 쓴 문장 두세 개를 여기에 붙여 넣으세요. 비워 두면 짧고 친근한 존댓말)');
+    if (m.avoid) L.push(`- 쓰지 말 것: ${m.avoid}`);
+    // 10-06 시험: ‘빠진 정보는 짐작하지 말고 모아서 물어봐요’만 있으면 결과물 없이 질문만 돌려줄 때가 있었다 → 비워 두고 나머지는 끝까지
+    // 2차 시험: 요일이 맞지 않자 날짜까지 비워 글이 약해졌다 → 맞지 않는 부분만 빼고 확실한 것은 쓴다
+    L.push('- 빠진 정보는 짐작하지 말고 [확인 필요]로 비워 둬요. 자료끼리 맞지 않으면 확실한 쪽만 써요(예: 날짜는 쓰고 어긋난 요일은 빼기). 나머지는 바로 쓸 수 있게 끝까지 만들고, 물을 것은 맨 아래에 모아요.', '');
     L.push('[끝내기 전 검수]', ...f.checks.map(id => `- ${CHECK[id].name}: ${CHECK[id].line}`), '');
     L.push('[혼자 하지 말 것 = 사람 차례]', '아래 일은 하기 직전에 멈추고, 무엇을 왜 하려는지 보여 준 뒤 제 허락을 기다려요. 허락은 그 일 한 번에만 해당해요.');
     L.push(...f.stops.map(id => `- ${STOP[id].line}`));
@@ -244,13 +283,13 @@
     return S;
   }
 
-  function compute(answers) {
+  function compute(answers, me) {
     const a = sanitize(answers || {});
     const f = filled(a);
     const t = TASK[f.task];
     const saves = saveList(f);
     const plan = planVerdict(f, saves);
-    const manual = manualText(f);
+    const manual = manualText(f, me);
     const missing = (RECOMMEND[f.task] || []).filter(id => !f.checks.includes(id));
     const warns = [];
     if (f.finish === 'ready' && !f.stops.includes('publish')) warns.push(r(`‘올리기 직전까지’를 골랐는데 ‘공개 게시·발송’을 사람 차례에서 뺐어요. 매뉴얼의 완성 기준에 “${t.act} 버튼은 누르지 말고 멈춰요”를 넣어 두었지만, 화면을 직접 누르는 기능을 쓴다면 사람 차례에도 넣는 게 안전해요.`, 'owasp-llm'));
@@ -274,5 +313,5 @@
     };
   }
 
-  return Object.freeze({ VERSION, TASK, FINISH, CHECK, STOP, AI_IDS, RECOMMEND, sanitize, filled, compute, josa });
+  return Object.freeze({ VERSION, TASK, FINISH, CHECK, STOP, AI_IDS, RECOMMEND, ME, cleanMe, sanitize, filled, compute, josa });
 });

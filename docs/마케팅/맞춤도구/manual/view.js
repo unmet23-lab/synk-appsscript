@@ -115,7 +115,7 @@
   }
 
   function result(ctx) {
-    const { rec, layout, plan, checks, feedbackGiven, content } = ctx;
+    const { rec, layout, plan, checks, feedbackGiven, content, rules } = ctx;
     SOURCES = content.SOURCES;
     const deep = layout === 'deep', quick = layout === 'quick';
     const because = plan && plan.selected && plan.selected.id === layout
@@ -129,7 +129,10 @@
     const where = rec.saves.length > 1 ? '쓰는 AI의 지침 칸' : rec.saves[0].where;
     const missing = rec.missing.length ? `<p class="manual-note">${esc(rec.task.short)}에서 자주 필요한 검수 중 ‘${esc(rec.missing.join('’, ‘'))}’은 고르지 않으셨어요. 필요하면 아래 ‘답 바꿔 보기’에서 더하세요.</p>` : '';
     const cmds = `<div class="cmds"><p>깔아 둔 뒤에는 이렇게 한 줄로</p><ol class="cmdlist">${rec.commands.map((c, i) => `<li><p class="say">“${esc(c)}”</p><div class="row"><button type="button" class="btn soft" data-action="copy:cmd${i}" data-what="한 줄 명령">복사</button><span class="status" role="status"></span></div></li>`).join('')}</ol></div>`;
-    const take = `<section class="block">${H('내 AI 직원 매뉴얼', 'book', 6)}<p class="sub">${esc(where)}에 이 글을 통째로 붙여 넣으세요. 내 일에 맞게 고쳐 써도 돼요.</p>${copyBox('manual', '내 AI 직원 매뉴얼 · 지침 칸에 그대로 붙여 넣기', rec.manual, '매뉴얼 복사', true)}${missing}${cmds}</section>`;
+    // 내 정보(선택): 적는 대로 아래 매뉴얼에 들어간다. 저장·전송 없이 이 화면 안에서만(bindResult). 결과 링크에도 들어가지 않는다.
+    const meForm = `<div class="me" data-me><p class="me-head"><b>내 정보 넣기</b><span>선택 · 적는 대로 아래 매뉴얼에 들어가요</span></p><div class="me-grid">${rules && rules.ME ? rules.ME.map(f => `<label class="${f.multi ? 'wide' : ''}"><span>${esc(f.label)}</span>${f.multi ? `<textarea data-me-field="${f.id}" rows="2" maxlength="${f.max}" placeholder="${esc(f.ph)}"></textarea>` : `<input type="text" data-me-field="${f.id}" maxlength="${f.max}" placeholder="${esc(f.ph)}" autocomplete="off">`}</label>`).join('') : ''}</div><p class="me-note">적은 내용은 서버로 보내지 않고 저장하지도 않아요. 이 화면을 닫으면 사라지고, 결과 링크에도 들어가지 않아요.</p></div>`;
+    const inapp = '<p class="inapp" hidden>인스타그램 같은 앱 안에서 열었어요. 복사가 안 되면 오른쪽 위 메뉴(⋯)에서 ‘외부 브라우저로 열기’를 눌러 주세요.</p>';
+    const take = `<section class="block">${H('내 AI 직원 매뉴얼', 'book', 6)}<p class="sub">${esc(where)}에 이 글을 통째로 붙여 넣으세요. 가게·브랜드 정보를 적으면 내 일에 더 맞춰져요.</p>${meForm}${inapp}${copyBox('manual', '내 AI 직원 매뉴얼 · 지침 칸에 그대로 붙여 넣기', rec.manual, '매뉴얼 복사', true)}${missing}${cmds}</section>`;
 
     const saveBoxes = rec.saves.map(s => `<div class="formbox"><p class="eyebrow">매뉴얼을 넣는 곳 · ${esc(s.label)}</p><h2>${esc(s.where)}</h2><ol class="plain">${s.steps.map(x => `<li>${esc(x.t)}${badge(x.src)}</li>`).join('')}</ol>${s.note && !quick ? `<p class="s" style="font-size:14px;color:var(--muted);margin:8px 0 0">${esc(s.note.t)}${badge(s.note.src)}</p>` : ''}</div>`).join('');
     const planBox = `<div class="spec key"><p class="k">요금제</p><p class="v small">${esc(rec.plan.v)}</p><ul class="why npu">${rec.plan.yes.map(x => `<li><b class="yes">무료로 충분</b> ${esc(x.t)}${badge(x.src)}</li>`).join('')}${quick ? '' : rec.plan.roomy.map(x => `<li><b class="no">여유가 되면</b> ${esc(x.t)}${badge(x.src)}</li>`).join('')}</ul></div>`;
@@ -150,16 +153,42 @@
     for (const id of rec.tips) for (const s of (tipBank[id] || {}).src || []) used.add(s);
     for (const x of rec.skip) used.add(x.src);
     const srcList = Object.entries(content.SOURCES).filter(([id]) => used.has(id) || id === 'synk' || id === 'case');
-    const sourcesBox = `<details class="sources"${deep ? ' open' : ''}><summary>출처와 기준 (${esc(content.checked)} 확인)</summary><ul>${srcList.map(([id, s]) => `<li><span class="src ${esc(s.kind)}${id === 'case' ? ' case' : ''}">${kindText(id, s)}</span> ${s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>` : esc(s.label)}</li>`).join('')}</ul><p style="font-size:14px;color:var(--muted)">하는 일의 내용은 이 화면에 입력하지 않아요. 매뉴얼은 이 화면 안에서 규칙으로 만들고, 실제 일은 여러분이 쓰는 AI에서 해요. AI 앱의 메뉴 이름은 화면 언어와 업데이트에 따라 조금 다를 수 있어요.</p></details>`;
+    const sourcesBox = `<details class="sources"${deep ? ' open' : ''}><summary>출처와 기준 (${esc(content.checked)} 확인)</summary><ul>${srcList.map(([id, s]) => `<li><span class="src ${esc(s.kind)}${id === 'case' ? ' case' : ''}">${kindText(id, s)}</span> ${s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>` : esc(s.label)}</li>`).join('')}</ul><p style="font-size:14px;color:var(--muted)">적은 내 정보는 서버로 보내지 않고 저장하지도 않아요. 매뉴얼은 이 화면 안에서 규칙으로 만들고, 실제 일은 여러분이 쓰는 AI에서 해요. AI 앱의 메뉴 이름은 화면 언어와 업데이트에 따라 조금 다를 수 있어요.</p></details>`;
 
     const editable = content.steps.filter(s => !s.when || s.when(ctx.answers)).map(s => `<button type="button" class="glass chip" data-action="edit:${esc(s.id)}">${esc(s.short || s.eyebrow || s.title)}</button>`).join('');
     const edit = `<section class="block no-print">${H('답 바꿔 보기')}<p class="sub">하나만 바꿔도 매뉴얼과 한 줄 명령이 다시 만들어져요.</p><div class="take">${editable}</div></section>`;
 
-    const html = `<article class="result"><header class="r-top${rec.warns.length ? '' : ' cheer'}"><p class="rec"><span class="stamp">${esc(content.checked.replace(/-/g, '.'))} 기준</span><span>${esc(content.series)} · 내 AI 직원 매뉴얼</span></p><h1 id="q" tabindex="-1">${marked(rec.headline.title, [rec.headline.mark])}</h1><p>${esc(rec.headline.sub)}</p><ul class="facts" aria-label="매뉴얼 요약">${rec.facts.map(x => `<li>${esc(x)}</li>`).join('')}</ul><figure class="shot" aria-hidden="true"><img src="assets/hero-manual.webp" width="766" height="1148" alt=""></figure></header><div class="layout"><span>보기</span><div class="seg" role="radiogroup" aria-label="결과 분량">${seg}</div></div>${warns}${take}${save}${checklist}${tipsHtml}${skip}${saveRow}${fb}${edit}${sourcesBox}<div class="nav no-print"><button type="button" class="btn ghost" data-action="restart">처음부터 다시</button></div><div class="dock no-print" role="group" aria-label="바로 쓰기"><button type="button" class="btn primary" data-proxy="copy:manual">매뉴얼 복사</button><button type="button" class="btn soft" data-proxy="share">내 결과 링크</button></div></article>`;
+    // 쓰는 순서(10-06 사용성 검토): 결과가 길어도 처음 할 일 세 가지가 머리 바로 아래 보이게
+    const howto = `<ol class="howto" aria-label="쓰는 순서"><li><b>01</b><span>아래 매뉴얼 복사</span></li><li><b>02</b><span>${esc(where)}에 붙여 넣기</span></li><li><b>03</b><span>그 안에서 새 채팅에 한 줄 보내기</span></li></ol>`;
+    const html = `<article class="result"><header class="r-top${rec.warns.length ? '' : ' cheer'}"><p class="rec"><span class="stamp">${esc(content.checked.replace(/-/g, '.'))} 기준</span><span>${esc(content.series)} · 내 AI 직원 매뉴얼</span></p><h1 id="q" tabindex="-1">${marked(rec.headline.title, [rec.headline.mark])}</h1><p>${esc(rec.headline.sub)}</p><ul class="facts" aria-label="매뉴얼 요약">${rec.facts.map(x => `<li>${esc(x)}</li>`).join('')}</ul><figure class="shot" aria-hidden="true"><img src="assets/hero-manual.webp" width="766" height="1148" alt=""></figure></header>${howto}<div class="layout"><span>보기</span><div class="seg" role="radiogroup" aria-label="결과 분량">${seg}</div></div>${warns}${take}${save}${checklist}${tipsHtml}${skip}${saveRow}${fb}${edit}${sourcesBox}<div class="nav no-print"><button type="button" class="btn ghost" data-action="restart">처음부터 다시</button></div><div class="dock no-print" role="group" aria-label="바로 쓰기"><button type="button" class="btn primary" data-proxy="copy:manual">매뉴얼 복사</button><button type="button" class="btn soft" data-proxy="share">내 결과 링크</button></div></article>`;
     const texts = { manual: rec.manual, all: summaryText(rec, content) };
     rec.commands.forEach((c, i) => { texts[`cmd${i}`] = c; });
     return { html, texts };
   }
 
-  return Object.freeze({ hero, visual, aside, bindAny, result, summaryText });
+  // 내 정보는 이 변수에만 둔다(저장소·네트워크 없음). 답을 바꿔 결과를 다시 그려도 화면을 닫기 전까지는 남는다.
+  let ME_NOW = {};
+  function bindResult(el, ctx) {
+    const ua = (root.navigator && root.navigator.userAgent) || '';
+    if (/Instagram|FBAN|FBAV|KAKAOTALK|NAVER\(inapp|Line\/|DaumApps|everytimeApp/i.test(ua)) { const n = el.querySelector('.inapp'); if (n) n.hidden = false; }
+    const box = el.querySelector('[data-me]');
+    if (!box || !ctx || !ctx.rules) return;
+    const fields = [...box.querySelectorAll('[data-me-field]')];
+    fields.forEach(f => { const v = ME_NOW[f.getAttribute('data-me-field')]; if (typeof v === 'string') f.value = v; });
+    const apply = () => {
+      const v = {};
+      fields.forEach(f => { v[f.getAttribute('data-me-field')] = f.value; });
+      ME_NOW = v;
+      const rec = ctx.rules.compute(ctx.answers, v);
+      const ta = el.querySelector('#t-manual');
+      if (ta) ta.value = rec.manual;
+      const pre = el.querySelector('.manual-print');
+      if (pre) pre.textContent = rec.manual;
+      if (el._texts) { el._texts.manual = rec.manual; el._texts.all = summaryText(rec, ctx.content); }
+    };
+    if (fields.some(f => f.value.trim())) apply();
+    box.addEventListener('input', apply);
+  }
+
+  return Object.freeze({ hero, visual, aside, bindAny, bindResult, result, summaryText });
 });
