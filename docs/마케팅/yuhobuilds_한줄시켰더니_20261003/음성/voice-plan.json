@@ -16,12 +16,20 @@
       "Situation: he is casually telling a close friend what happened yesterday when he gave his AI assistant a single one-line instruction. A hint of a smile in the voice.",
       "Flow: read the whole transcript as one continuous story, the way people really talk. Do not restart the intonation at every sentence. A clause that ends with a comma carries straight on into the next clause with only a tiny breath. Pauses between sentences stay short, about a third of a second.",
       "Pace: brisk, like a short-form video narrator, about six Korean syllables per second, while every word stays clear.",
-      "Delivery: lists are light and rhythmic. The setbacks sound amused, not upset. The ending is warm and inviting.",
+      "Delivery: lists are quick and snappy, with only tiny breaths between items. The setbacks sound amused, not upset. The ending is warm and inviting.",
       "Pronunciation: standard Seoul Korean. Read the Latin letters AI as 에이아이. Pronounce every ㅅ and ㅆ crisply.",
       "Read only the transcript below, once, from its first word to its last, exactly as written. Do not add, skip, repeat or change any words. Never read these notes."
     ],
     "notes_history": "10-04 1차 메모는 연출 지점을 대본 문장으로 짚었다 → 12개 중 7개가 문장을 건너뛰거나 지어내거나 메모를 읽었다. 2차 메모는 대본 문장을 인용하지 않는다.",
-    "ending_note": "10-05 유호님 「마지막에 … 개인화 프로그램의 장점을 여기서 어필」 → 끝 문단(c1~c5)을 새로 썼다. 앞부분(h1~i2)은 유호님이 「다 좋은데」라고 한 1번 테이크를 그대로 두고, 끝 문단만 같은 목소리로 한 번에 읽혀 문단 경계(i2 뒤 쉼)에서 잇는다(음성/테이크_잇기.py)."
+    "ending_note": "10-05 유호님 「마지막에 … 개인화 프로그램의 장점을 여기서 어필」 → 끝 문단(c1~c5)을 새로 썼다. 앞부분(h1~i2)은 유호님이 「다 좋은데」라고 한 1번 테이크를 그대로 두고, 끝 문단만 같은 목소리로 한 번에 읽혀 문단 경계(i2 뒤 쉼)에서 잇는다(음성/테이크_잇기.py).",
+    "tight": {
+      "p1": 0.16
+    },
+    "tight_note": "10-06 유호님 「대본, 목소리, 몽골어검수, 게시문구, 업로드, 예약 이 부분이 약간 지루해서 약간만 빠르게」 → 테이크_다듬기.py가 tight 대사 안의 쉼을 그 값(초)까지만 남기고, speed 대사는 음높이를 둔 채 그 배로 빠르게 한다.",
+    "opening_note": "10-06 유호님 「초반에 몽골어 영상이 만들어지고 이런것보다 브랜딩마케팅용으로 제작한 페북, 인스타, 자동게시 예약이 끝났어요라고 어필하는게 시청자입장에서 훨씬 직관적」 → h2를 바꾸고 첫 문단(h1~p2)만 같은 목소리로 다시 읽혀 문단 경계(s0 앞 쉼)에서 잇는다.",
+    "speed": {
+      "p1": 1.1
+    }
   },
   "scenes_note": "장면 전환: 그 장면 첫 대사(at) 시작보다 lead초 앞. 앞 대사가 그때까지 안 끝나면 앞 대사 끝 − 0.06초로 늦춘다(넣기.cjs). kind는 index.html이 쓰는 전환 모양이다.",
   "scenes": {
@@ -86,10 +94,10 @@
     },
     {
       "id": "h2",
-      "text": "몽골어 영상이 만들어지고, 예약까지 끝났어요.",
+      "text": "브랜딩용 페북, 인스타 영상이 만들어지고, 자동 게시 예약까지 끝났어요.",
       "cap": [
-        "몽골어 영상이 만들어지고,",
-        "*예약까지* 끝났어요."
+        "브랜딩용 페북, 인스타 영상이 만들어지고,",
+        "*자동 게시 예약까지* 끝났어요."
       ]
     },
     {

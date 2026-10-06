@@ -1,5 +1,6 @@
 # 고른 테이크를 영상용으로 다듬는다: 잘린 꼭대기를 되살리고(adeclip), 긴 쉼만 줄이고(말은 손대지 않는다), 48kHz로 올리고,
 # 큰 소리만 리미터로 눌러 −15 LUFS(10-03 판 목소리와 같은 크기)에 맞춘다.
+# voice-plan take.tight {대사: 초}는 그 대사 안의 쉼 상한, take.speed {대사: 배}는 그 대사만 음높이를 둔 채 빠르게(10-06 목록).
 # 낱말 시각(<후보>.align.json, 한번에_맞추기.py가 만든다)도 줄인 만큼 당겨서 take/take.json에 적는다.
 # 쉼 상한: voice-plan.json take.breaks에 든 대사 앞(화제가 바뀌는 곳)은 0.6초, 나머지는 0.42초. 앞 무음 0.05초, 뒤 0.35초.
 # 실행(음성 폴더에서): python 테이크_다듬기.py 후보/3.8-flash__Charon_r2.wav [--out 후보/다듬기/Charon]   (기본 take/)
@@ -42,10 +43,13 @@ while k < n:
 
 ids = [s['id'] for s in plan['segments'] if s['id'] in al['segs']]   # 끝 문단만 읽힌 테이크(--segs)면 그 대사들만
 breaks = [al['segs'][i]['start'] for i in plan['take']['breaks'] if i in ids[1:]]
+# take.tight {대사: 초}: 그 대사 안의 쉼은 그 값까지만(10-06 목록을 조금 빠르게)
+tight = [(al['segs'][i]['start'], al['segs'][i]['end'], v) for i, v in plan['take'].get('tight', {}).items() if i in ids]
 # 잘라 낼 구간: [앞 무음], 긴 쉼의 가운데, [뒤 무음]
 cuts = [(0.0, max(0.0, on - LEAD))]
 for a, b in sil:
     cap = CAP_BREAK if any(a - 0.2 <= t <= b + 0.2 for t in breaks) else CAP
+    cap = min([cap] + [v for s, e, v in tight if s < (a + b) / 2 < e])
     if b - a > cap:
         keep_head = cap * 0.45; keep_tail = cap - keep_head
         cuts.append((a + keep_head, b - keep_tail))
@@ -78,7 +82,27 @@ def remap2(t):
     m = remap(t); joins = sum(1 for a, _ in pieces[1:] if remap(a) <= m + 1e-9 and a > pieces[0][0])
     return max(0.0, m - joins * XF)
 
+# take.speed {대사: 배}: 그 대사만 음높이는 두고 조금 빠르게(atempo). 앞뒤는 쉼 속이라 10ms 교차로 잇고, 낱말 시각도 같이 당긴다(10-06 목록)
 os.makedirs(out_dir, exist_ok=True)
+maps = []   # (시작, 끝, 실제 배율) — 앞 구간을 줄인 뒤의 시각 기준
+def remap3(t):
+    t = remap2(t)
+    for s, e, f in maps:
+        t = t if t <= s else (t - (e - s) * (1 - 1 / f) if t >= e else s + (t - s) / f)
+    return t
+for i, f in sorted(((i, v) for i, v in plan['take'].get('speed', {}).items() if i in ids and v != 1), key=lambda kv: al['segs'][kv[0]]['start']):
+    rs, re_ = max(0.0, remap3(al['segs'][i]['start']) - 0.03), remap3(al['segs'][i]['end']) + 0.03
+    a, b = int(rs * sr), min(len(out), int(re_ * sr))
+    sp_in, sp_out = os.path.join(out_dir, '_sp_in.wav'), os.path.join(out_dir, '_sp_out.wav')
+    wavfile.write(sp_in, sr, out[a:b].astype(np.float32))
+    subprocess.run(['ffmpeg', '-y', '-v', 'error', '-i', sp_in, '-af', f'atempo={f}', '-c:a', 'pcm_f32le', sp_out], check=True)
+    fast = wavfile.read(sp_out)[1].astype(np.float32); os.remove(sp_in); os.remove(sp_out)
+    k = int(0.01 * sr); r = np.linspace(0, 1, k, dtype=np.float32)
+    fast[:k] = out[a:a + k] * (1 - r) + fast[:k] * r
+    fast[-k:] = fast[-k:] * (1 - r) + out[b - k:b] * r
+    out = np.concatenate([out[:a], fast, out[b:]])
+    maps.append((a / sr, b / sr, (b - a) / len(fast)))
+
 tmp = os.path.join(out_dir, '_tmp.wav')
 wavfile.write(tmp, sr, out.astype(np.float32))   # 32비트 실수: 되살린 꼭대기가 1을 넘어도 여기서 자르지 않는다
 def measure(path):
@@ -97,13 +121,14 @@ out = wavfile.read(dst)[1]
 segs = {}
 for i in ids:
     s = al['segs'][i]
-    segs[i] = {'start': round(remap2(s['start']), 3), 'end': round(remap2(s['end']), 3), 'tokens': [round(remap2(t), 3) for t in s['tokens']]}
+    segs[i] = {'start': round(remap3(s['start']), 3), 'end': round(remap3(s['end']), 3), 'tokens': [round(remap3(t), 3) for t in s['tokens']]}
 for a, b in zip(ids, ids[1:]):   # 대사 경계가 겹치면 뒤 대사 시작에 맞춘다
     if segs[a]['end'] > segs[b]['start']: segs[a]['end'] = segs[b]['start']
 info = {'source': os.path.basename(src), 'engine': meta['engine'], 'model': meta['model'], 'voice': meta['voice'], 'made': meta['made'],
         'seconds': round(len(out) / sr, 3), 'rate': sr, 'declipped_samples': clipped, 'loudness_before': I, 'gain_db': round(gain, 2),
         'limiter': 'alimiter' in af, 'target_lufs': TARGET, 'loudness': I2, 'peak_dbfs': peak2,
         'cuts': [[round(a, 3), round(b, 3)] for a, b in cuts], 'removed_s': round(sum(b - a for a, b in cuts), 2),
+        'speed': [[round(s, 3), round(e, 3), round(f, 4)] for s, e, f in maps],
         'match': al['match'], 'stt': al.get('stt'), 'segs': segs}
 json.dump(info, open(os.path.join(out_dir, 'take.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 print(f"{info['source']} → {os.path.relpath(dst, here)} {info['seconds']}초(원래 {len(x) / sr:.2f}초, 쉼 {len(cuts) - 2}곳에서 {info['removed_s']}초 줄임) · 되살린 잘림 {clipped}표본 · {I:.1f} → {I2:.1f} LUFS, 꼭대기 {peak2:.1f}dBFS")
