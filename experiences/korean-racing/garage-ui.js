@@ -30,7 +30,7 @@ const GLYPHS = {
   paint: '<path d="M32 8C28 17 18 26 18 35a14 14 0 0 0 28 0C46 26 36 17 32 8Z"/>',
   wheels: '<circle cx="32" cy="32" r="17" fill="none" stroke-width="6"/><circle cx="32" cy="32" r="5"/><path d="M32 15v34M15 32h34" stroke-width="4" fill="none"/>',
   trail: '<path d="m36 8-17 25h12l-5 23 19-29H33Z"/>',
-  racket: '<circle cx="32" cy="25" r="16"/><rect x="28" y="38" width="8" height="19" rx="3"/>',
+  racket: '<g transform="rotate(-40 32 32)"><ellipse cx="32" cy="23" rx="14" ry="16.5"/><rect x="27.5" y="35" width="9" height="21" rx="3.5"/></g><circle cx="52" cy="14" r="5.5"/>',   // 탁구 라켓과 공(돋보기·열쇠 구멍으로 보이지 않게)
   ball: '<circle cx="32" cy="32" r="12"/>',
 };
 /** 꾸미기 그림: 크림 펠트 원을 그 색으로 물들이고(실제 펠트 사진) 작은 그림 글자를 얹는다. 배지는 펠트 체크 배지 그대로. */
