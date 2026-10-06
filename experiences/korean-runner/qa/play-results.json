@@ -1,0 +1,118 @@
+[
+  {
+    "name": "desktop",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "시작 단추 → 달리기 0.3초(목소리 16개·3D 준비 포함)",
+      "흐름 표본: 5.44m 달리는 동안 길 결·풍경·표시선 모두 +Z로 같은 거리, 몽글 정면 z=-1.000 · 그림 칸 114/121·색 46",
+      "결과: 도착! 10/11 · 별 2 · 달린 거리 1,440m · 최고 연속 7번 · 바람막 3번 · 글로 본 부탁 1개 · 공통 코인 +24 · 보유 24",
+      "부탁 흐름: jump · left · middle(글) · no-jump✗ · not-left · not-right · not-slide · right · no-jump · slide · jump-right",
+      "듣기 능력 줄(확인 전): 방향·동작 듣기 이번 5/5 듣기 확인 기록이 아직 없어요 / 하지 말라는 말 이번 4/5 듣기 확인 기록이 아직 없어요 / 두 동작의 순서 이번 1/1 듣기 확인 기록이 아직 없어요"
+    ],
+    "shots": [
+      "play_desktop_00_lobby.png",
+      "play_desktop_01_running_instruction.png",
+      "play_desktop_02_success.png",
+      "play_desktop_03_text_help.png",
+      "play_desktop_04_miss_note.png",
+      "play_desktop_05_pause.png",
+      "play_desktop_06_results.png",
+      "play_desktop_07_results_full.png",
+      "play_desktop_08_check_question.png",
+      "play_desktop_09_check_answered.png",
+      "play_desktop_10_check_done.png"
+    ],
+    "sec": 70
+  },
+  {
+    "name": "phone",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "시작 단추 → 달리기 0.2초(목소리 16개·3D 준비 포함)",
+      "흐름 표본: 5.87m 달리는 동안 길 결·풍경·표시선 모두 +Z로 같은 거리, 몽글 정면 z=-1.000 · 그림 칸 88/121·색 37",
+      "결과: 도착! 10/11 · 별 2 · 달린 거리 1,439m · 최고 연속 7번 · 바람막 3번 · 글로 본 부탁 1개 · 공통 코인 +24 · 보유 24",
+      "부탁 흐름: jump · left · middle(글) · no-jump✗ · not-left · not-right · not-slide · right · no-jump · slide · jump-right",
+      "듣기 능력 줄(확인 전): 방향·동작 듣기 이번 5/5 듣기 확인 기록이 아직 없어요 / 하지 말라는 말 이번 4/5 듣기 확인 기록이 아직 없어요 / 두 동작의 순서 이번 1/1 듣기 확인 기록이 아직 없어요"
+    ],
+    "shots": [
+      "play_phone_00_lobby.png",
+      "play_phone_01_running_instruction.png",
+      "play_phone_02_success.png",
+      "play_phone_03_text_help.png",
+      "play_phone_04_miss_note.png",
+      "play_phone_05_pause.png",
+      "play_phone_06_results.png",
+      "play_phone_07_results_full.png",
+      "play_phone_08_check_question.png",
+      "play_phone_09_check_answered.png",
+      "play_phone_10_check_done.png"
+    ],
+    "sec": 72
+  },
+  {
+    "name": "small",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "시작 단추 → 달리기 0.2초(목소리 16개·3D 준비 포함)",
+      "흐름 표본: 6.09m 달리는 동안 길 결·풍경·표시선 모두 +Z로 같은 거리, 몽글 정면 z=-1.000 · 그림 칸 88/121·색 37",
+      "결과: 도착! 10/11 · 별 2 · 달린 거리 1,439m · 최고 연속 7번 · 바람막 3번 · 글로 본 부탁 1개 · 공통 코인 +24 · 보유 24",
+      "부탁 흐름: jump · left · middle(글) · no-jump✗ · not-left · not-right · not-slide · right · no-jump · slide · jump-right",
+      "듣기 능력 줄(확인 전): 방향·동작 듣기 이번 5/5 듣기 확인 기록이 아직 없어요 / 하지 말라는 말 이번 4/5 듣기 확인 기록이 아직 없어요 / 두 동작의 순서 이번 1/1 듣기 확인 기록이 아직 없어요"
+    ],
+    "shots": [
+      "play_small_00_lobby.png",
+      "play_small_01_running_instruction.png",
+      "play_small_02_success.png",
+      "play_small_03_text_help.png",
+      "play_small_04_miss_note.png",
+      "play_small_05_pause.png",
+      "play_small_06_results.png",
+      "play_small_07_results_full.png",
+      "play_small_08_check_question.png",
+      "play_small_09_check_answered.png",
+      "play_small_10_check_done.png"
+    ],
+    "sec": 71
+  },
+  {
+    "name": "reduced",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "시작 단추 → 달리기 0.2초(목소리 16개·3D 준비 포함)",
+      "흐름 표본: 5.44m 달리는 동안 길 결·풍경·표시선 모두 +Z로 같은 거리, 몽글 정면 z=-1.000 · 그림 칸 114/121·색 44",
+      "결과: 도착! 10/11 · 별 2 · 달린 거리 1,441m · 최고 연속 7번 · 바람막 3번 · 글로 본 부탁 1개 · 공통 코인 +24 · 보유 24",
+      "부탁 흐름: jump · left · middle(글) · no-jump✗ · not-left · not-right · not-slide · right · no-jump · slide · jump-right",
+      "듣기 능력 줄(확인 전): 방향·동작 듣기 이번 5/5 듣기 확인 기록이 아직 없어요 / 하지 말라는 말 이번 4/5 듣기 확인 기록이 아직 없어요 / 두 동작의 순서 이번 1/1 듣기 확인 기록이 아직 없어요"
+    ],
+    "shots": [
+      "play_reduced_00_lobby.png",
+      "play_reduced_01_running_instruction.png",
+      "play_reduced_02_success.png",
+      "play_reduced_03_text_help.png",
+      "play_reduced_04_miss_note.png",
+      "play_reduced_05_pause.png",
+      "play_reduced_06_results.png",
+      "play_reduced_07_results_full.png",
+      "play_reduced_08_check_question.png",
+      "play_reduced_09_check_answered.png",
+      "play_reduced_10_check_done.png"
+    ],
+    "sec": 69
+  },
+  {
+    "name": "voicefail",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "MP3를 막으면 시작하지 않고 다시 준비 창 → 막은 것을 풀고 다시 준비하면 달린다"
+    ],
+    "shots": [
+      "play_voicefail_00_dialog.png"
+    ],
+    "sec": 2
+  }
+]
