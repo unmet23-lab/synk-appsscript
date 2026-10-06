@@ -4,7 +4,11 @@
 // → 말하는 중 멈춤·이어 하기 → 나머지 맞힘 → 결과 → 처음으로. 공은 고를 때까지 기다려 준다(10-03 「공이 기다려 줘요」).
 // 화면마다(컴퓨터·휴대폰·320px·움직임 줄이기) 장면을 찍고, 점수·랠리·스매시·학습 기록·저장·넘침·콘솔 오류를 확인한다.
 // 그 밖의 장면: mute(소리를 끈 채 — 말이 글로, 평가하지 않음) · stall(소리 장치가 도중에 멈춤 — 멈춰 있지 않고 글로 보여 준 뒤 공을 침).
-// 쓰는 법: node experiences/talk-rally/server.mjs 를 켠 뒤  node experiences/talk-rally/qa/play.cjs [desktop|phone|small|reduced|mute|stall]
+// 2026-10-07 더함: 한 판마다 안내 음성(시작·연습 공 뒤·결과 — 몽글의 말과 겹치지 않음, 같은 문장이 글로) ·
+//   daily(하루 도전: 그날 모두 같은 12번·카드 순서, 새 최고·연속 일수·최근 7일, 처음 하는 사람의 연습 공, 코인) ·
+//   shop(꾸미기: 옛 지갑에 코인을 넣고 라켓·공을 사서 장착 → 3D 색·꼬리, 코인 모자람 안내, 다시 열어도 그대로) ·
+//   wall(배경 벽: 다섯 화면 비율에서 버터 띠가 몽글 라켓 아래, 가랜드가 몽글 머리 위, 화면을 다 덮음).
+// 쓰는 법: node experiences/talk-rally/server.mjs 를 켠 뒤  node experiences/talk-rally/qa/play.cjs [desktop|phone|small|reduced|mute|stall|daily|shop|wall]
 const path = require('node:path'), fs = require('node:fs');
 const NM = process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules');
 const { chromium } = require(require.resolve('playwright', { paths: [NM] }));
@@ -30,6 +34,20 @@ const PLAN = [
 // → (150 + 170 + 240) + (100 + 170 + 240 + 210 + 230 + 300 + 250 + 250) = 560 + 1750
 // 공통 코인: 끝까지 마친 판에 완주 15 + 정답 비율 × 10(반올림) → 11/12는 15 + 9 = 24
 const EXPECT = { correct: 11, total: 12, stars: 2, bestRally: 8, score: 2310, smashAt: [2, 6, 9], quick: 10, coins: 24 };
+/**
+ * 안내 음성 기록 검사: 몽글의 말(다시 듣기 포함)이 안내가 끝나기 전(또는 멈추기 전)에 시작하지 않는다.
+ * 돌려주는 값: 안내마다 { name, start, end, nextVoiceGap(안내가 끝난 뒤 다음 몽글의 말까지 ms) }
+ */
+function narrationTimeline(sounds) {
+  const voices = sounds.filter((e) => e.kind === 'voice' || e.kind === 'voice-slow').map((e) => e.t);
+  return sounds.filter((e) => e.kind === 'narration').map((n) => {
+    const stop = sounds.find((e) => e.kind === 'narration-stop' && e.name === n.name && e.t >= n.t);
+    const end = Math.min(n.t + (n.opts?.duration || 0) * 1000, stop ? stop.t : Infinity);
+    const next = voices.find((t) => t >= n.t);
+    return { name: n.name, start: n.t, end, stopped: !!stop && stop.t < n.t + (n.opts?.duration || 0) * 1000, overlap: voices.some((t) => t > n.t + 1 && t < end - 30),
+      nextVoiceGap: next == null ? null : Math.round(next - end) };
+  });
+}
 
 async function run(browser, name, view) {
   const ctx = await browser.newContext(view), page = await ctx.newPage(), errors = [], shots = [], notes = [], fails = [], sounds = [];
@@ -81,7 +99,10 @@ async function run(browser, name, view) {
   });
   const lastPop = (kind) => page.evaluate((k) => [...window.__pops].reverse().find((r) => r.kind === k) || null, kind);
   await page.evaluate(() => window.__rally.sound.start());
-  await fit('입구(시작 단추가 첫 화면에)', ['#btn-start']); await shot('lobby');
+  await fit('입구(시작 단추가 첫 화면에)', ['#btn-start']); await shot('lobby'); await shot('lobby_full', { fullPage: true });
+  const dailyFirst = await page.evaluate(() => { const b = document.querySelector('#btn-daily').getBoundingClientRect(); return b.bottom <= innerHeight; });
+  notes.push(`하루 도전 단추가 첫 화면에 ${dailyFirst ? '들어옴' : '안 들어옴(스크롤하면 보임)'}`);
+  const introText = await page.evaluate(async () => (await import((document.querySelector('script[type="module"][src]')?.src || '').includes('.mjs') ? './narration.mjs' : './narration.js')).NARRATION.intro.text);
   // 공통 코인: 입구에 잔액과 차고 링크(새 브라우저라 0). 공개 주소(/try/…)에서는 레이싱 차고로 이어진다
   const coin0 = await page.evaluate(() => { const line = document.querySelector('#lobby .synk-collection-line'); return { shown: !!line && !line.hidden && line.getBoundingClientRect().height > 0,
     text: line?.querySelector('[data-collection-balance]')?.textContent, href: line?.querySelector('[data-collection-garage]')?.getAttribute('href'), want: window.SynkPlayCollection?.garageHref, path: location.pathname }; });
@@ -89,6 +110,11 @@ async function run(browser, name, view) {
   check(coin0.href === coin0.want && (!coin0.path.startsWith('/try/') || coin0.href === '/try/racing/?garage=1'), `차고 링크 ${coin0.href}`);
   const t0 = Date.now();
   await page.click('#btn-start');
+  // 시작 안내 음성(이번 접속의 첫 판): 같은 문장이 안내 글로 보이고, 끝나야 몽글이 말한다(아래 안내 음성 기록 검사)
+  let introTip = '';
+  for (let k = 0; k < 80 && introTip !== introText; k++) { introTip = await page.evaluate(() => { const n = document.querySelector('#tip'); return n.hidden ? '' : n.textContent; }); if (introTip !== introText) await sleep(50); }
+  check(introTip === introText, `시작 안내 음성의 문장이 안내 글로 보이지 않음 (${introTip})`);
+  if (name === 'phone') await shot('intro_narration');
 
   // 연습: 빛나는 카드만 받는다(다른 카드는 안내만)
   let s = await waitFor((x) => x.practice && x.cur?.phase === 'talk', '연습 시작');
@@ -239,9 +265,18 @@ async function run(browser, name, view) {
   check(nTotal === 11, `혼자 고른 듣기 응답 수 ${nTotal} ≠ 11(기다리며 다시 듣기·글로 보기를 쓴 1개는 도움 응답)`);
   const stored = await page.evaluate(() => { try { const keys = Object.keys(localStorage).filter((k) => k.startsWith('synk.atlas.learning.v1')), raw = keys.map((k) => localStorage.getItem(k)).join(''); return { keys, bytes: raw.length, mine: (raw.match(/talk-rally\./g) || []).length }; } catch (e) { return String(e); } });
   check(stored.mine > 0, `공통 학습 기록에 말 랠리 문항이 없음 ${JSON.stringify(stored)}`);
-  await takeSounds();
+  await sleep(1500); await takeSounds();
   const count = (k, n) => sounds.filter((e) => e.kind === k && e.name === n).length;
   check(!sounds.some((e) => e.kind === 'sfx' && e.name === 'hit' && e.opts?.correct === false && e.opts?.smash), '틀림에 스매시 소리');
+  // 안내 음성: 시작 → 연습 공 뒤 → 결과(별 2 = ‘아주 잘했어요!’). 몽글의 말과 겹치지 않고, 판을 그 길이보다 오래 붙잡지 않는다
+  const tl = narrationTimeline(sounds);
+  check(tl.map((x) => x.name).join() === `intro,practice-done,result-${EXPECT.stars}`, `안내 음성 순서 ${tl.map((x) => x.name).join()}`);
+  check(!tl.some((x) => x.overlap), `안내 음성이 몽글의 말과 겹침 ${JSON.stringify(tl)}`);
+  // 안내가 끝나는 때는 소리 시계(끝 신호), 기록 시각은 페이지 시계라 몇 ms 어긋난다(10-07 휴대폰 −5ms) — ±40ms까지는 이어서 말한 것으로 본다
+  for (const id of ['intro', 'practice-done']) { const g = tl.find((x) => x.name === id)?.nextVoiceGap; check(g != null && g >= -40 && g < 1500, `${id} 안내 뒤 몽글의 말까지 ${g}ms`); }
+  notes.push(`안내 음성: ${tl.map((x) => `${x.name} ${Math.round(x.end - x.start)}ms${x.stopped ? '(복습 듣기가 멈춤)' : ''}${x.nextVoiceGap != null ? ` → 몽글 ${x.nextVoiceGap}ms 뒤` : ''}`).join(' · ')}`);
+  const say = await page.evaluate(() => ({ title: document.querySelector('#r-title').textContent, say: document.querySelector('#r-say').hidden ? '' : document.querySelector('#r-say').textContent }));
+  check(say.title === '아주 잘했어요!' && say.say === '', `결과 제목이 결과 안내와 같은 문장 ${JSON.stringify(say)}`);
   notes.push(`소리: 음성 ${sounds.filter((e) => e.kind === 'voice').length}(연습·12개·멈춤 뒤 다시·다시 듣기·해설·복습) · 천천히 ${sounds.filter((e) => e.kind === 'voice-slow').length} · 획득(빠르게) ${count('kit', 'earn')} · 몽글 침 ${count('sfx', 'opponent')} · 튀김 ${count('sfx', 'bounce')} · 받아치기 ${count('sfx', 'hit')} · 휙 ${count('sfx', 'swing')} · 별 ${count('sfx', 'star')} · 성취 ${count('kit', 'achieve')}`);
   notes.push(`결과 능력 줄: ${st.skills.join(' / ')}`);
   notes.push(`다음 판: ${st.next}`);
@@ -266,6 +301,7 @@ async function runMute(browser) {
   const check = (ok, what) => { if (!ok) fails.push(what); };
   const waitFor = async (pred, what, timeout = 20000) => { const t0 = Date.now(); let s = null; while (Date.now() - t0 < timeout) { s = await S(); if (pred(s)) return s; await sleep(25); } throw new Error(`mute: 기다림 초과 — ${what}`); };
   await page.goto(URL_BASE + '?qa'); await page.waitForSelector('#btn-start'); await sleep(700);
+  await page.evaluate(() => window.__rally.sound.start());
   await page.click('#lobby [data-sound-toggle]');
   check(await page.evaluate(() => !document.querySelector('#sound-note').hidden && localStorage.getItem('synk.talk-rally.sound') === 'off'), '소리 끔 안내·저장');
   await page.click('#btn-start');
@@ -294,6 +330,8 @@ async function runMute(browser) {
   const wallet = await page.evaluate(() => JSON.parse(localStorage.getItem('SYNK_PLAY_COLLECTION_V1') || 'null'));
   check(!wallet || (wallet.coins === 0 && !Object.keys(wallet.rewardedRounds || {}).length), `그만둔 판에 코인 ${JSON.stringify(wallet && { coins: wallet.coins })}`);
   check((await page.textContent('#lobby [data-collection-balance]')) === '보유 0코인', '그만둔 뒤 입구 잔액');
+  const log = await page.evaluate(() => window.__rally.sound.take());
+  check(!log.some((e) => e.kind === 'narration'), `소리를 끄면 안내 음성도 없다 ${log.filter((e) => e.kind === 'narration').map((e) => e.name)}`);
   await ctx.close();
   return { name: 'mute', errors, fails, notes, shots };
 }
@@ -358,6 +396,177 @@ async function runStall(browser) {
   return { name: 'stall', errors, fails, notes, shots };
 }
 
+/** 새 장면의 공통 준비: 콘솔 오류 모으기, 장면 이름이 붙은 화면 찍기, 미리 넣을 저장 값. */
+async function openScene(browser, view, seed, label) {
+  const ctx = await browser.newContext(view), page = await ctx.newPage(), errors = [], shots = [];
+  page.on('pageerror', (e) => errors.push(String(e))); page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+  if (seed) await ctx.addInitScript((s) => { try { if (localStorage.getItem('qa-seeded')) return; for (const [k, v] of Object.entries(s)) localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v)); localStorage.setItem('qa-seeded', '1'); } catch { /* 저장 공간 없음 */ } }, seed);
+  const shot = async (tag, opts = {}, target = page) => { const f = `play_${label}_${String(shots.length).padStart(2, '0')}_${tag}.png`; await target.screenshot({ path: path.join(OUT, f), ...opts }); shots.push(f); };
+  return { ctx, page, errors, shots, shot };
+}
+const seoulDay = (n = 0) => new Date(Date.now() + 9 * 3600e3 + n * 86400e3).toISOString().slice(0, 10);
+
+/**
+ * 하루 도전: 그날 모두 같은 12번(학습 기록과 상관없이 daily.mjs와 같은 판·같은 카드 순서), 개인 기록, 연속 일수, 코인, 안내 음성.
+ * 컴퓨터: 이미 해 본 사람 — 어제 기록과 오늘 낮은 기록(300점)을 넣어 두어 이번 판이 새 최고, 이틀 연속. 다 맞힌다.
+ * 휴대폰: 처음 하는 사람 — 하루 도전에서도 연습 공이 먼저 나오고, 오늘 첫 판이라 새 최고 표시는 없다. 하루 연속.
+ */
+async function runDaily(browser) {
+  const out = { name: 'daily', errors: [], fails: [], notes: [], shots: [] };
+  for (const [label, view, returning] of [['desktop', VIEWS.desktop, true], ['phone', VIEWS.phone, false]]) {
+    const seed = returning ? {
+      'synk.talk-rally.v1': { v: 1, plays: 3, practiced: true, slow: false, best: { score: 1500, rally: 5, correct: 10, total: 12 } },
+      'synk.talk-rally.daily.v1': { v: 1, days: { [seoulDay(-1)]: { plays: 1, best: { score: 900, correct: 9, total: 12, stars: 1, rally: 4 } }, [seoulDay(0)]: { plays: 1, best: { score: 300, correct: 4, total: 12, stars: 0, rally: 2 } } } },
+    } : null;
+    const { ctx, page, errors, shots, shot } = await openScene(browser, view, seed, `daily_${label}`);
+    const check = (ok, what) => { if (!ok) out.fails.push(`${label}: ${what}`); };
+    const S = () => page.evaluate(() => window.__rally.state());
+    await page.goto(URL_BASE + '?qa'); await page.waitForSelector('#btn-daily'); await sleep(800);
+    await page.evaluate(() => window.__rally.sound.start());
+    const line0 = await page.textContent('#daily-line');
+    check(line0 === (returning ? '오늘 최고 300점 · 2일 연속' : '오늘 아직 안 했어요 · 연속 0일'), `입구 하루 도전 줄 ${line0}`);
+    const tag = await page.textContent('.start-card .tag');
+    check(tag === '나에게 맞춘 한 판' && (await page.textContent('#btn-daily')).includes('오늘은 모두 같은 12번'), `보통 판과 하루 도전 이름 ${tag}`);
+    await shot('lobby'); await shot('lobby_full', { fullPage: true });
+    const want = await page.evaluate(async () => {
+      const d = await import((document.querySelector('script[type="module"][src]')?.src || '').includes('.mjs') ? './daily.mjs' : './daily.js');
+      const n = await import((document.querySelector('script[type="module"][src]')?.src || '').includes('.mjs') ? './narration.mjs' : './narration.js');
+      const date = d.seoulDate(), round = d.dailyRound(date);
+      return { date, ids: round.map((x) => x.id), options: round.map((x) => d.dailyOptions(x, date)), introText: n.NARRATION.dailyIntro.text };
+    });
+    await page.click('#btn-daily');
+    let tip = '';
+    for (let k = 0; k < 80 && tip !== want.introText; k++) { tip = await page.evaluate(() => { const n = document.querySelector('#tip'); return n.hidden ? '' : n.textContent; }); if (tip !== want.introText) await sleep(50); }
+    check(tip === want.introText, `하루 도전 시작 안내 글 ${tip}`);
+    const first = await (async () => { const t0 = Date.now(); let s; while (Date.now() - t0 < 25000) { s = await S(); if (s.cur) return s; await sleep(30); } return s; })();
+    check(first.mode === 'daily' && first.dailyDate === want.date && JSON.stringify(first.queue) === JSON.stringify(want.ids), `그날의 12번 ${JSON.stringify({ mode: first.mode, date: first.dailyDate, queue: first.queue, want: want.ids })}`);
+    check(first.practice === !returning, `연습 공은 처음 하는 사람만 ${first.practice}`);
+    check((await page.textContent('.game-title')) === '하루 도전', '게임 바 제목');
+    let practiceSeen = false, shotPlay = false;
+    for (let guard = 0; guard < 14; guard++) {
+      const t0 = Date.now(); let s;
+      while (Date.now() - t0 < 25000) { s = await S(); if ((s.cur && ['talk', 'flight'].includes(s.cur.phase) && s.cur.choice == null) || !(await page.evaluate(() => document.querySelector('#results').hidden))) break; await sleep(30); }
+      if (!(await page.evaluate(() => document.querySelector('#results').hidden))) break;
+      if (s.practice) practiceSeen = true;
+      else check(JSON.stringify(s.cur.options) === JSON.stringify(want.options[s.index]), `${s.index + 1}번째 카드 순서 ${s.cur.options} ≠ ${want.options[s.index]}`);
+      if (!s.practice && s.index === 4 && !shotPlay) { await sleep(500); await shot('play'); shotPlay = true; s = await S(); if (!s.cur || s.cur.choice != null) continue; }
+      await page.click(`#cards .card.l${s.cur.options.indexOf(s.cur.answer)}`);
+      await sleep(80);
+    }
+    check(practiceSeen === !returning, `연습 공 ${practiceSeen}`);
+    await page.waitForSelector('#results:not([hidden])', { timeout: 40000 }); await sleep(1300);
+    const r = await page.evaluate(() => ({ kicker: document.querySelector('#r-kicker').textContent, title: document.querySelector('#r-title').textContent, say: document.querySelector('#r-say').textContent,
+      card: !document.querySelector('#r-daily').hidden, isNew: !document.querySelector('#r-daily-new').hidden, best: document.querySelector('#r-daily-best').textContent, note: document.querySelector('#r-daily-note').textContent,
+      week: [...document.querySelectorAll('#r-week li')].map((li) => li.className), coins: document.querySelector('#r-coins').textContent, score: window.__rally.state().score,
+      daily: window.__rally.daily(), progress: window.__rally.progress(), wallet: JSON.parse(localStorage.getItem('SYNK_PLAY_COLLECTION_V1') || 'null') }));
+    const today = r.daily.days[want.date], num = (n) => n.toLocaleString('ko-KR');
+    check(r.kicker.startsWith('말 랠리 · 하루 도전') && r.kicker.includes('새 최고 기록!') === returning, `결과 머리 ${r.kicker}`);
+    check(r.title === '완벽해요!' && r.say === '모두 받아쳤어요.', `다 맞힌 결과 문장 ${r.title} / ${r.say}`);
+    check(r.card && r.isNew === returning && r.best === `오늘 최고 ${num(r.score)}점`, `하루 도전 기록 판 ${JSON.stringify({ card: r.card, isNew: r.isNew, best: r.best })}`);
+    check(r.note.includes(returning ? '2일 연속' : '1일 연속') && r.note.includes(returning ? '오늘 2번째 도전' : '오늘 1번째 도전') && (!returning || r.note.includes('오늘 최고 기록이에요!')), `기록 판 글 ${r.note}`);
+    check(r.week.length === 7 && r.week[6].includes('done') && r.week[6].includes('today') && (r.week[5].includes('done') === returning), `최근 7일 ${r.week.join('|')}`);
+    check(today && today.plays === (returning ? 2 : 1) && today.best.score === r.score && today.best.correct === 12, `하루 도전 저장 ${JSON.stringify(today)}`);
+    check(returning ? r.progress.best?.score === 1500 : r.progress.best === null, `보통 판 최고 기록은 하루 도전으로 바뀌지 않는다 ${JSON.stringify(r.progress.best)}`);
+    check(r.progress.practiced === true && r.progress.plays === (returning ? 4 : 1), `진행 저장 ${JSON.stringify(r.progress)}`);
+    const paid = Object.keys(r.wallet?.rewardedRounds || {});
+    check(r.coins === '공통 코인 +25 · 보유 25' && r.wallet?.coins === 25 && paid.length === 1 && paid[0].startsWith('talk-rally:'), `코인 ${r.coins} ${JSON.stringify(paid)}`);
+    const sum = await page.evaluate(() => window.__rally.summary());
+    const n = (sum?.skills || []).reduce((a, sk) => a + Object.values(sk.levels || {}).reduce((b, l) => b + (l.formats?.['single-choice']?.n || 0), 0), 0);
+    check(n === 12, `하루 도전도 보통 판처럼 아틀라스에 기록(혼자 고른 듣기 응답 ${n})`);
+    await shot('results'); await shot('results_full', { fullPage: true });
+    await sleep(returning ? 4200 : 2600);   // 결과 안내 음성이 끝나기를 기다린다
+    const sounds = await page.evaluate(() => window.__rally.sound.take());
+    const tl = narrationTimeline(sounds);
+    const wantNarr = ['daily-intro', ...(returning ? [] : ['practice-done']), 'result-3', ...(returning ? ['daily-best'] : [])];
+    check(tl.map((x) => x.name).join() === wantNarr.join(), `하루 도전 안내 음성 ${tl.map((x) => x.name).join()} ≠ ${wantNarr.join()}`);
+    check(!tl.some((x) => x.overlap), `안내 음성이 몽글의 말과 겹침 ${JSON.stringify(tl)}`);
+    await page.click('#r-home'); await sleep(500);
+    const line1 = await page.textContent('#daily-line');
+    check(line1 === `오늘 최고 ${num(r.score)}점 · ${returning ? 2 : 1}일 연속`, `다시 입구의 하루 도전 줄 ${line1}`);
+    out.notes.push(`${label}(${returning ? '해 본 사람' : '처음'}): ${want.date} ${want.ids.join(' ')} → ${r.score}점 · ${r.kicker} · ${r.note} · 입구 「${line1}」 · 안내 ${tl.map((x) => x.name).join('→')}`);
+    if (errors.length) out.fails.push(`${label}: 콘솔 오류 ${errors.join(' | ')}`);
+    out.shots.push(...shots);
+    await ctx.close();
+  }
+  return out;
+}
+
+/**
+ * 꾸미기: 라켓·공 칸이 없던 옛 지갑(코인 100)으로 시작한다. 라피스 공(45) → 라피스 라켓(50) 사서 장착 → 버터 라켓(40)은 코인이 모자라 단추 없이 안내 →
+ * 가진 코랄 라켓으로 바꿨다가 다시 라피스 → 한 판에서 3D 라켓 판·공·공 꼬리 색 → 다시 열어도 그대로. 옛 지갑의 다른 칸은 그대로 남는다.
+ */
+async function runShop(browser) {
+  const out = { name: 'shop', errors: [], fails: [], notes: [], shots: [] };
+  const legacy = { version: 1, coins: 100, totalEarned: 140, owned: ['vehicle-coast', 'paint-mint', 'wheels-silver', 'trail-lime', 'paint-coral'], equipped: { vehicle: 'coast', paint: 'coral', wheels: 'silver', trail: 'lime', badge: null },
+    wish: 'open', rewardedRounds: { 'rhythm:old': { date: '2026-10-05', coins: 25 } }, firstClears: {}, corrections: {}, dailyRaceCounts: { '2026-10-05': 1 }, missions: {} };
+  const { ctx, page, errors, shots, shot } = await openScene(browser, VIEWS.phone, { SYNK_PLAY_COLLECTION_V1: legacy, 'synk.talk-rally.v1': { v: 1, plays: 1, practiced: true, slow: false, best: null }, 'synk.talk-rally.narration': 'off' }, 'shop_phone');
+  const check = (ok, what) => { if (!ok) out.fails.push(what); };
+  await page.goto(URL_BASE + '?qa'); await page.waitForSelector('#gear .gear-swatch'); await sleep(600);
+  const G = () => page.evaluate(() => ({ items: [...document.querySelectorAll('#gear .gear-swatch')].map((b) => b.dataset.item), equipped: [...document.querySelectorAll('#gear .gear-swatch.equipped')].map((b) => b.dataset.item).sort().join(),
+    pressed: document.querySelector('#gear .gear-swatch[aria-pressed=true]')?.dataset.item, act: document.querySelector('#gear-act').innerText.replace(/\s+/g, ' ').trim(), note: document.querySelector('#gear-note').textContent,
+    coins: [...new Set([...document.querySelectorAll('[data-collection-balance]')].map((n) => n.textContent))].join(), buy: !!document.querySelector('#gear [data-action="buy"]'), equip: !!document.querySelector('#gear [data-action="equip"]'),
+    disabled: document.querySelectorAll('#gear button[disabled]').length, gear: window.__rally.gear(), wallet: JSON.parse(localStorage.getItem('SYNK_PLAY_COLLECTION_V1') || 'null') }));
+  const pick = async (id) => { await page.click(`#gear [data-item="${id}"]`); await sleep(150); return G(); };
+  const act = async (a) => { await page.click(`#gear [data-action="${a}"]`); await sleep(450); return G(); };
+  let g = await G();
+  check(g.items.length === 8 && g.equipped === 'ball-cream,racket-coral' && g.pressed === 'racket-coral' && g.coins === '보유 100코인' && /지금 쓰는 중이에요/.test(g.act), `꾸미기 처음 ${JSON.stringify(g)}`);
+  await page.locator('#gear').scrollIntoViewIfNeeded(); await sleep(200); await shot('panel_before', {}, page.locator('#gear'));
+  g = await pick('ball-lapis'); check(g.buy && /45코인으로 사서 장착하기/.test(g.act), `라피스 공 고름 ${g.act}`);
+  g = await act('buy');
+  check(g.note === '라피스 공을 샀어요. 바로 장착했어요.' && g.equipped === 'ball-lapis,racket-coral' && g.coins === '보유 55코인' && g.gear.ball === '#3d6bc9', `라피스 공 사기 ${JSON.stringify(g)}`);
+  g = await pick('racket-lapis'); g = await act('buy');
+  check(g.note === '라피스 라켓을 샀어요. 바로 장착했어요.' && g.equipped === 'ball-lapis,racket-lapis' && g.coins === '보유 5코인' && g.gear.racket === '#3d6bc9', `라피스 라켓 사기 ${JSON.stringify(g)}`);
+  g = await pick('racket-butter');
+  check(!g.buy && !g.equip && g.disabled === 0 && g.act.includes('코인이 부족해요. 앞으로 35코인 더 모으면 살 수 있어요.'), `코인이 모자란 라켓 ${g.act}`);
+  g = await pick('racket-coral'); check(g.equip, '가진 라켓은 장착하기');
+  g = await act('equip'); check(g.note === '코랄 라켓으로 바꿨어요.' && g.equipped === 'ball-lapis,racket-coral' && g.gear.racket === '#d63c2a', `가진 라켓으로 바꾸기 ${JSON.stringify(g)}`);
+  g = await pick('racket-lapis'); g = await act('equip'); check(g.equipped === 'ball-lapis,racket-lapis', '다시 라피스 라켓');
+  await shot('panel_after', {}, page.locator('#gear'));
+  const w = g.wallet;
+  check(w.coins === 5 && w.totalEarned === 140 && w.equipped.racket === 'lapis' && w.equipped.ball === 'lapis' && w.equipped.paint === 'coral' && w.owned.includes('paint-coral') && w.owned.includes('racket-lapis') && w.owned.includes('ball-lapis')
+    && JSON.stringify(w.rewardedRounds) === JSON.stringify(legacy.rewardedRounds), `공통 지갑(옛 칸 그대로) ${JSON.stringify(w)}`);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.click('#btn-start');
+  const t0 = Date.now(); while (Date.now() - t0 < 25000) { const s = await page.evaluate(() => window.__rally.state()); if (s.cur?.phase === 'flight') break; await sleep(30); }
+  await sleep(450);
+  const sg = await page.evaluate(() => window.__rally.stage().gear());
+  check(sg.racket === '#3d6bc9' && sg.ball === '#3d6bc9' && sg.tail === 'rgb(119,151,217)', `3D 라켓·공·꼬리 색 ${JSON.stringify(sg)}`);
+  await shot('play');
+  await page.reload(); await page.waitForSelector('#gear .gear-swatch'); await sleep(600);
+  g = await G();
+  check(g.equipped === 'ball-lapis,racket-lapis' && g.coins === '보유 5코인', `다시 열어도 그대로 ${JSON.stringify({ equipped: g.equipped, coins: g.coins })}`);
+  out.notes.push(`100코인 → 라피스 공 45 → 라피스 라켓 50 → ${g.coins} · 버터 라켓(40)은 「코인이 부족해요」 · 3D ${JSON.stringify(sg)}`);
+  if (errors.length) out.fails.push(`콘솔 오류 ${errors.join(' | ')}`);
+  out.shots.push(...shots);
+  await ctx.close();
+  return out;
+}
+
+/** 배경 벽: 다섯 화면 비율에서 첫 공이 나는 동안 찍고, 버터 띠·가랜드·덮음을 잰다(stage.wallInfo). */
+async function runWall(browser) {
+  const out = { name: 'wall', errors: [], fails: [], notes: [], shots: [] };
+  const WALL_VIEWS = { d1440: VIEWS.desktop, d1280: { viewport: { width: 1280, height: 800 } }, p390: VIEWS.phone, p320: VIEWS.small, t768: { viewport: { width: 768, height: 1024 }, ...PHONE } };
+  for (const [label, view] of Object.entries(WALL_VIEWS)) {
+    const { ctx, page, errors, shots, shot } = await openScene(browser, view, { 'synk.talk-rally.v1': { v: 1, plays: 1, practiced: true, slow: false, best: null }, 'synk.talk-rally.narration': 'off' }, `wall_${label}`);
+    const check = (ok, what) => { if (!ok) out.fails.push(`${label}: ${what}`); };
+    await page.goto(URL_BASE + '?qa'); await page.waitForSelector('#btn-start'); await sleep(500);
+    await page.click('#btn-start');
+    const t0 = Date.now(); while (Date.now() - t0 < 25000) { const s = await page.evaluate(() => window.__rally.state()); if (s.cur?.phase === 'flight') break; await sleep(30); }
+    await sleep(150); await shot('play');
+    const i = await page.evaluate(() => window.__rally.stage().wallInfo());
+    if (!i) { check(false, '벽 그림을 읽지 못함'); await ctx.close(); continue; }
+    check(i.trimY - i.racketBottomY >= 13, `버터 띠가 몽글 라켓 아래로 ${Math.round(i.trimY - i.racketBottomY)}px(13 이상)`);
+    check(i.buntingY <= i.mongleTopY - 6, `가랜드가 몽글 머리 위로 ${Math.round(i.mongleTopY - i.buntingY)}px`);
+    check(i.wallTopY <= 0.5 && i.leftX <= 0.5 && i.rightX >= i.W - 0.5 && i.floorLineY > 0 && i.floorLineY < i.H, `벽이 화면을 다 덮음 ${JSON.stringify({ top: i.wallTopY, left: i.leftX, right: i.rightX, floor: i.floorLineY })}`);
+    check(i.sink < 0.05, `그림을 바닥 아래로 내린 양 ${i.sink.toFixed(3)}`);
+    out.notes.push(`${label}: 띠-라켓 ${Math.round(i.trimY - i.racketBottomY)}px · 가랜드-몽글 ${Math.round(i.mongleTopY - i.buntingY)}px · 바닥 선 y${Math.round(i.floorLineY)} · 그림 폭 ${Math.round(i.panelRightX - i.panelLeftX)}px(옆 민 벽 ${i.side > 0.001 ? '있음' : '없음'}) · 내림 ${i.sink.toFixed(3)}`);
+    if (errors.length) out.fails.push(`${label}: 콘솔 오류 ${errors.join(' | ')}`);
+    out.shots.push(...shots);
+    await ctx.close();
+  }
+  return out;
+}
+
 (async () => {
   const pick = process.argv[2];
   const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--enable-gpu', '--use-angle=d3d11', '--autoplay-policy=no-user-gesture-required'] });
@@ -373,7 +582,7 @@ async function runStall(browser) {
     for (const e of r.errors.slice(0, 5)) console.log('  ! ', e);
     for (const n of r.notes) console.log('  ·', n);
   }
-  for (const [name, scene] of [['mute', runMute], ['stall', runStall]]) {
+  for (const [name, scene] of [['mute', runMute], ['stall', runStall], ['daily', runDaily], ['shop', runShop], ['wall', runWall]]) {
     if (pick && pick !== name) continue;
     const t = Date.now();
     try { const r = await scene(browser); r.sec = Math.round((Date.now() - t) / 1000); all.push(r); }

@@ -4,13 +4,15 @@
     "errors": [],
     "fails": [],
     "notes": [
-      "시작 단추 → 첫 말 0.7초",
+      "하루 도전 단추가 첫 화면에 들어옴",
+      "시작 단추 → 첫 말 5.0초",
       "공이 나는 동안 초당 그림 61장(헤드리스)",
       "천천히 듣기: 누른 뒤 50ms 안에 재생(미리 불러 둠) · 0.75배",
-      "기다리던 공: 고른 뒤 받아치기까지 143ms(누르기 포함)",
+      "기다리던 공: 고른 뒤 받아치기까지 145ms(누르기 포함)",
       "공이 오는 시간 배율(순간 맞춤, 말마다): 1 → 1 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.9 → 0.9 → 0.9",
       "공통 코인: 공통 코인 +24 · 보유 24",
       "학습 기록 — 세부: 난도1: recent-independent n7 맞6 도움1, 난도2: unseen n0 맞0, 난도3: unseen n0 맞0 / 핵심: 난도1: recent-independent n4 맞4, 난도2: unseen n0 맞0, 난도3: unseen n0 맞0",
+      "안내 음성: intro 3788ms → 몽글 779ms 뒤 · practice-done 2186ms → 몽글 30ms 뒤 · result-2 571ms(복습 듣기가 멈춤) → 몽글 0ms 뒤",
       "소리: 음성 17(연습·12개·멈춤 뒤 다시·다시 듣기·해설·복습) · 천천히 1 · 획득(빠르게) 7 · 몽글 침 13 · 튀김 26 · 받아치기 13 · 휙 13 · 별 2 · 성취 1",
       "결과 능력 줄: 듣고 세부 정보 찾기 이번 7/8 쉬운 말: 최근 혼자 해냈어요 · 조금 어려운 말: 아직 기록이 적어요 · 혼자 고른 새 문항 7개 중 6개 맞힘 / 듣고 핵심 이해하기 다음 연습 이번 4/4 쉬운 말: 최근 혼자 해냈어요 · 조금 어려운 말: 아직 기록이 적어요 · 혼자 고른 새 문항 4개 중 4개 맞힘",
       "다음 판: 듣고 핵심 이해하기는 아직 기록이 적어요. 짧게 확인해 봐요. 다음 판에는 조금 어려운 ‘이어지는 말’ 문항을 먼저 넣어요.",
@@ -18,32 +20,35 @@
     ],
     "shots": [
       "play_desktop_00_lobby.png",
-      "play_desktop_01_practice_talk.png",
-      "play_desktop_02_chosen.png",
-      "play_desktop_03_smash.png",
-      "play_desktop_04_wrong_explain.png",
-      "play_desktop_05_wait.png",
-      "play_desktop_06_wait_text.png",
-      "play_desktop_07_pause.png",
-      "play_desktop_08_smash2.png",
-      "play_desktop_09_results.png",
-      "play_desktop_10_results_full.png",
-      "play_desktop_11_lobby_again.png"
+      "play_desktop_01_lobby_full.png",
+      "play_desktop_02_practice_talk.png",
+      "play_desktop_03_chosen.png",
+      "play_desktop_04_smash.png",
+      "play_desktop_05_wrong_explain.png",
+      "play_desktop_06_wait.png",
+      "play_desktop_07_wait_text.png",
+      "play_desktop_08_pause.png",
+      "play_desktop_09_smash2.png",
+      "play_desktop_10_results.png",
+      "play_desktop_11_results_full.png",
+      "play_desktop_12_lobby_again.png"
     ],
-    "sec": 79
+    "sec": 87
   },
   {
     "name": "phone",
     "errors": [],
     "fails": [],
     "notes": [
-      "시작 단추 → 첫 말 0.6초",
+      "하루 도전 단추가 첫 화면에 들어옴",
+      "시작 단추 → 첫 말 4.4초",
       "공이 나는 동안 초당 그림 61장(헤드리스)",
       "천천히 듣기: 누른 뒤 50ms 안에 재생(미리 불러 둠) · 0.75배",
-      "기다리던 공: 고른 뒤 받아치기까지 153ms(누르기 포함)",
+      "기다리던 공: 고른 뒤 받아치기까지 161ms(누르기 포함)",
       "공이 오는 시간 배율(순간 맞춤, 말마다): 1 → 1 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.9 → 0.9 → 0.9",
       "공통 코인: 공통 코인 +24 · 보유 24",
       "학습 기록 — 세부: 난도1: recent-independent n7 맞6 도움1, 난도2: unseen n0 맞0, 난도3: unseen n0 맞0 / 핵심: 난도1: recent-independent n4 맞4, 난도2: unseen n0 맞0, 난도3: unseen n0 맞0",
+      "안내 음성: intro 3788ms → 몽글 503ms 뒤 · practice-done 2186ms → 몽글 17ms 뒤 · result-2 670ms(복습 듣기가 멈춤) → 몽글 0ms 뒤",
       "소리: 음성 17(연습·12개·멈춤 뒤 다시·다시 듣기·해설·복습) · 천천히 1 · 획득(빠르게) 7 · 몽글 침 13 · 튀김 26 · 받아치기 13 · 휙 13 · 별 2 · 성취 1",
       "결과 능력 줄: 듣고 세부 정보 찾기 이번 7/8 쉬운 말: 최근 혼자 해냈어요 · 조금 어려운 말: 아직 기록이 적어요 · 혼자 고른 새 문항 7개 중 6개 맞힘 / 듣고 핵심 이해하기 다음 연습 이번 4/4 쉬운 말: 최근 혼자 해냈어요 · 조금 어려운 말: 아직 기록이 적어요 · 혼자 고른 새 문항 4개 중 4개 맞힘",
       "다음 판: 듣고 핵심 이해하기는 아직 기록이 적어요. 짧게 확인해 봐요. 다음 판에는 조금 어려운 ‘이어지는 말’ 문항을 먼저 넣어요.",
@@ -51,32 +56,36 @@
     ],
     "shots": [
       "play_phone_00_lobby.png",
-      "play_phone_01_practice_talk.png",
-      "play_phone_02_chosen.png",
-      "play_phone_03_smash.png",
-      "play_phone_04_wrong_explain.png",
-      "play_phone_05_wait.png",
-      "play_phone_06_wait_text.png",
-      "play_phone_07_pause.png",
-      "play_phone_08_smash2.png",
-      "play_phone_09_results.png",
-      "play_phone_10_results_full.png",
-      "play_phone_11_lobby_again.png"
+      "play_phone_01_lobby_full.png",
+      "play_phone_02_intro_narration.png",
+      "play_phone_03_practice_talk.png",
+      "play_phone_04_chosen.png",
+      "play_phone_05_smash.png",
+      "play_phone_06_wrong_explain.png",
+      "play_phone_07_wait.png",
+      "play_phone_08_wait_text.png",
+      "play_phone_09_pause.png",
+      "play_phone_10_smash2.png",
+      "play_phone_11_results.png",
+      "play_phone_12_results_full.png",
+      "play_phone_13_lobby_again.png"
     ],
-    "sec": 78
+    "sec": 85
   },
   {
     "name": "small",
     "errors": [],
     "fails": [],
     "notes": [
-      "시작 단추 → 첫 말 0.6초",
-      "공이 나는 동안 초당 그림 61장(헤드리스)",
+      "하루 도전 단추가 첫 화면에 들어옴",
+      "시작 단추 → 첫 말 4.4초",
+      "공이 나는 동안 초당 그림 60장(헤드리스)",
       "천천히 듣기: 누른 뒤 50ms 안에 재생(미리 불러 둠) · 0.75배",
-      "기다리던 공: 고른 뒤 받아치기까지 144ms(누르기 포함)",
+      "기다리던 공: 고른 뒤 받아치기까지 141ms(누르기 포함)",
       "공이 오는 시간 배율(순간 맞춤, 말마다): 1 → 1 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.9 → 0.9 → 0.9",
       "공통 코인: 공통 코인 +24 · 보유 24",
       "학습 기록 — 세부: 난도1: recent-independent n7 맞6 도움1, 난도2: unseen n0 맞0, 난도3: unseen n0 맞0 / 핵심: 난도1: recent-independent n4 맞4, 난도2: unseen n0 맞0, 난도3: unseen n0 맞0",
+      "안내 음성: intro 3788ms → 몽글 489ms 뒤 · practice-done 2186ms → 몽글 15ms 뒤 · result-2 1115ms → 몽글 112ms 뒤",
       "소리: 음성 17(연습·12개·멈춤 뒤 다시·다시 듣기·해설·복습) · 천천히 1 · 획득(빠르게) 7 · 몽글 침 13 · 튀김 26 · 받아치기 13 · 휙 13 · 별 2 · 성취 1",
       "결과 능력 줄: 듣고 세부 정보 찾기 이번 7/8 쉬운 말: 최근 혼자 해냈어요 · 조금 어려운 말: 아직 기록이 적어요 · 혼자 고른 새 문항 7개 중 6개 맞힘 / 듣고 핵심 이해하기 다음 연습 이번 4/4 쉬운 말: 최근 혼자 해냈어요 · 조금 어려운 말: 아직 기록이 적어요 · 혼자 고른 새 문항 4개 중 4개 맞힘",
       "다음 판: 듣고 핵심 이해하기는 아직 기록이 적어요. 짧게 확인해 봐요. 다음 판에는 조금 어려운 ‘이어지는 말’ 문항을 먼저 넣어요.",
@@ -84,32 +93,35 @@
     ],
     "shots": [
       "play_small_00_lobby.png",
-      "play_small_01_practice_talk.png",
-      "play_small_02_chosen.png",
-      "play_small_03_smash.png",
-      "play_small_04_wrong_explain.png",
-      "play_small_05_wait.png",
-      "play_small_06_wait_text.png",
-      "play_small_07_pause.png",
-      "play_small_08_smash2.png",
-      "play_small_09_results.png",
-      "play_small_10_results_full.png",
-      "play_small_11_lobby_again.png"
+      "play_small_01_lobby_full.png",
+      "play_small_02_practice_talk.png",
+      "play_small_03_chosen.png",
+      "play_small_04_smash.png",
+      "play_small_05_wrong_explain.png",
+      "play_small_06_wait.png",
+      "play_small_07_wait_text.png",
+      "play_small_08_pause.png",
+      "play_small_09_smash2.png",
+      "play_small_10_results.png",
+      "play_small_11_results_full.png",
+      "play_small_12_lobby_again.png"
     ],
-    "sec": 78
+    "sec": 85
   },
   {
     "name": "reduced",
     "errors": [],
     "fails": [],
     "notes": [
-      "시작 단추 → 첫 말 0.6초",
+      "하루 도전 단추가 첫 화면에 안 들어옴(스크롤하면 보임)",
+      "시작 단추 → 첫 말 4.5초",
       "공이 나는 동안 초당 그림 61장(헤드리스)",
       "천천히 듣기: 누른 뒤 50ms 안에 재생(미리 불러 둠) · 0.75배",
-      "기다리던 공: 고른 뒤 받아치기까지 147ms(누르기 포함)",
+      "기다리던 공: 고른 뒤 받아치기까지 157ms(누르기 포함)",
       "공이 오는 시간 배율(순간 맞춤, 말마다): 1 → 1 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.95 → 0.9 → 0.9 → 0.9",
       "공통 코인: 공통 코인 +24 · 보유 24",
       "학습 기록 — 세부: 난도1: recent-independent n7 맞6 도움1, 난도2: unseen n0 맞0, 난도3: unseen n0 맞0 / 핵심: 난도1: recent-independent n4 맞4, 난도2: unseen n0 맞0, 난도3: unseen n0 맞0",
+      "안내 음성: intro 3788ms → 몽글 508ms 뒤 · practice-done 2186ms → 몽글 18ms 뒤 · result-2 913ms(복습 듣기가 멈춤) → 몽글 0ms 뒤",
       "소리: 음성 17(연습·12개·멈춤 뒤 다시·다시 듣기·해설·복습) · 천천히 1 · 획득(빠르게) 7 · 몽글 침 13 · 튀김 26 · 받아치기 13 · 휙 13 · 별 2 · 성취 1",
       "결과 능력 줄: 듣고 세부 정보 찾기 이번 7/8 쉬운 말: 최근 혼자 해냈어요 · 조금 어려운 말: 아직 기록이 적어요 · 혼자 고른 새 문항 7개 중 6개 맞힘 / 듣고 핵심 이해하기 다음 연습 이번 4/4 쉬운 말: 최근 혼자 해냈어요 · 조금 어려운 말: 아직 기록이 적어요 · 혼자 고른 새 문항 4개 중 4개 맞힘",
       "다음 판: 듣고 핵심 이해하기는 아직 기록이 적어요. 짧게 확인해 봐요. 다음 판에는 조금 어려운 ‘이어지는 말’ 문항을 먼저 넣어요.",
@@ -117,19 +129,20 @@
     ],
     "shots": [
       "play_reduced_00_lobby.png",
-      "play_reduced_01_practice_talk.png",
-      "play_reduced_02_chosen.png",
-      "play_reduced_03_smash.png",
-      "play_reduced_04_wrong_explain.png",
-      "play_reduced_05_wait.png",
-      "play_reduced_06_wait_text.png",
-      "play_reduced_07_pause.png",
-      "play_reduced_08_smash2.png",
-      "play_reduced_09_results.png",
-      "play_reduced_10_results_full.png",
-      "play_reduced_11_lobby_again.png"
+      "play_reduced_01_lobby_full.png",
+      "play_reduced_02_practice_talk.png",
+      "play_reduced_03_chosen.png",
+      "play_reduced_04_smash.png",
+      "play_reduced_05_wrong_explain.png",
+      "play_reduced_06_wait.png",
+      "play_reduced_07_wait_text.png",
+      "play_reduced_08_pause.png",
+      "play_reduced_09_smash2.png",
+      "play_reduced_10_results.png",
+      "play_reduced_11_results_full.png",
+      "play_reduced_12_lobby_again.png"
     ],
-    "sec": 77
+    "sec": 85
   },
   {
     "name": "mute",
@@ -142,7 +155,7 @@
     "shots": [
       "play_mute_00_text.png"
     ],
-    "sec": 22
+    "sec": 23
   },
   {
     "name": "stall",
@@ -154,6 +167,62 @@
     "shots": [
       "play_stall_00_text.png"
     ],
-    "sec": 33
+    "sec": 39
+  },
+  {
+    "name": "daily",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "desktop(해 본 사람): 2026-10-07 r05 w07 r04 f17 f23 f07 r07 r08 f12 w08 w09 w11 → 2900점 · 말 랠리 · 하루 도전 10월 7일 · 새 최고 기록! · 오늘 최고 기록이에요! 전 300점 → 이번 2,900점 · 2일 연속 · 오늘 2번째 도전 · 입구 「오늘 최고 2,900점 · 2일 연속」 · 안내 daily-intro→result-3→daily-best",
+      "phone(처음): 2026-10-07 r05 w07 r04 f17 f23 f07 r07 r08 f12 w08 w09 w11 → 2900점 · 말 랠리 · 하루 도전 10월 7일 · 이번 2,900점 · 1일 연속 · 오늘 1번째 도전 · 입구 「오늘 최고 2,900점 · 1일 연속」 · 안내 daily-intro→practice-done→result-3"
+    ],
+    "shots": [
+      "play_daily_desktop_00_lobby.png",
+      "play_daily_desktop_01_lobby_full.png",
+      "play_daily_desktop_02_play.png",
+      "play_daily_desktop_03_results.png",
+      "play_daily_desktop_04_results_full.png",
+      "play_daily_phone_00_lobby.png",
+      "play_daily_phone_01_lobby_full.png",
+      "play_daily_phone_02_play.png",
+      "play_daily_phone_03_results.png",
+      "play_daily_phone_04_results_full.png"
+    ],
+    "sec": 157
+  },
+  {
+    "name": "shop",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "100코인 → 라피스 공 45 → 라피스 라켓 50 → 보유 5코인 · 버터 라켓(40)은 「코인이 부족해요」 · 3D {\"racket\":\"#3d6bc9\",\"ball\":\"#3d6bc9\",\"tail\":\"rgb(119,151,217)\"}"
+    ],
+    "shots": [
+      "play_shop_phone_00_panel_before.png",
+      "play_shop_phone_01_panel_after.png",
+      "play_shop_phone_02_play.png"
+    ],
+    "sec": 8
+  },
+  {
+    "name": "wall",
+    "errors": [],
+    "fails": [],
+    "notes": [
+      "d1440: 띠-라켓 69px · 가랜드-몽글 8px · 바닥 선 y288 · 그림 폭 440px(옆 민 벽 있음) · 내림 0.000",
+      "d1280: 띠-라켓 61px · 가랜드-몽글 8px · 바닥 선 y254 · 그림 폭 389px(옆 민 벽 있음) · 내림 0.000",
+      "p390: 띠-라켓 14px · 가랜드-몽글 100px · 바닥 선 y309 · 그림 폭 424px(옆 민 벽 없음) · 내림 0.030",
+      "p320: 띠-라켓 14px · 가랜드-몽글 54px · 바닥 선 y197 · 그림 폭 267px(옆 민 벽 있음) · 내림 0.012",
+      "t768: 띠-라켓 42px · 가랜드-몽글 73px · 바닥 선 y365 · 그림 폭 493px(옆 민 벽 있음) · 내림 0.000"
+    ],
+    "shots": [
+      "play_wall_d1440_00_play.png",
+      "play_wall_d1280_00_play.png",
+      "play_wall_p390_00_play.png",
+      "play_wall_p320_00_play.png",
+      "play_wall_t768_00_play.png"
+    ],
+    "sec": 16
   }
 ]
