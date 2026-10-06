@@ -282,12 +282,25 @@ async function garageScene(browser) {
     const wide = await page.evaluate(() => ({ wide: document.documentElement.scrollWidth > innerWidth + 1, zoomed: innerWidth > (window.visualViewport?.width ?? innerWidth) + 1 }));
     check(!wide.wide && !wide.zoomed, `차고 가로 넘침 ${JSON.stringify(wide)}`);
     const f1 = `play_garage_${label}_01_equipped.png`; await page.screenshot({ path: path.join(OUT, f1) }); out.shots.push(f1);
-    const f2 = `play_garage_${label}_02_full.png`; await page.screenshot({ path: path.join(OUT, f2), fullPage: true }); out.shots.push(f2);
+    // 말 랠리 칸(2026-10-07): 같은 지갑으로 라켓을 사서 장착한다. 차 미리보기는 장착한 차 그대로다
+    await page.click('#garage-tab-rally'); await sleep(300);
+    const r0 = await page.evaluate(() => ({ items: [...document.querySelectorAll('.garage-item')].map((b) => b.dataset.item), equipped: [...document.querySelectorAll('.garage-item.equipped')].map((b) => b.dataset.item).sort(),
+      selected: document.querySelector('.garage-item.selected')?.dataset.item, tab: document.querySelector('#garage-tab-rally')?.getAttribute('aria-selected') }));
+    check(r0.tab === 'true' && r0.items.length === 8 && r0.items.every((id) => /^(racket|ball)-/.test(id)) && r0.equipped.join() === 'ball-cream,racket-coral' && r0.selected === 'racket-coral', `말 랠리 칸 ${JSON.stringify(r0)}`);
+    await page.click('.garage-item[data-item="racket-butter"]'); await sleep(300);
+    await page.click('[data-action="buy"]'); await sleep(300);
+    await page.click('[data-action="equip"]'); await sleep(600);
+    const r1 = await page.evaluate(() => ({ coins: document.querySelector('#garage-coins').textContent, equipped: [...document.querySelectorAll('.garage-item.equipped')].map((b) => b.dataset.item).sort(),
+      have: document.querySelector('.garage-have')?.textContent, preview: window.__racing.snapshot().collection.preview, ball: window.__racing.snapshot().collection.equipped.ball,
+      racket: window.__racing.snapshot().collection.equipped.racket, vehicle: window.__racing.snapshot().collection.equipped.vehicle }));
+    check(r1.coins === '100' && r1.equipped.join() === 'ball-cream,racket-butter' && r1.racket === 'butter' && r1.vehicle === 'open' && r1.preview === 'open' && /말 랠리/.test(r1.have || ''), `말 랠리 라켓 사고 장착 ${JSON.stringify(r1)}`);
+    const fr = `play_garage_${label}_02_rally.png`; await page.screenshot({ path: path.join(OUT, fr) }); out.shots.push(fr);
+    const f2 = `play_garage_${label}_03_full.png`; await page.screenshot({ path: path.join(OUT, f2), fullPage: true }); out.shots.push(f2);
     await page.click('#garage-close');
     await page.waitForFunction(() => !document.querySelector('#lobby').hidden);
-    check((await page.evaluate(() => document.querySelector('#lobby [data-collection-balance]').textContent)) === '보유 140코인', '차고를 닫은 뒤 입구 잔액');
+    check((await page.evaluate(() => document.querySelector('#lobby [data-collection-balance]').textContent)) === '보유 100코인', '차고를 닫은 뒤 입구 잔액');
     check(!(await page.evaluate(() => location.search.includes('garage=1'))), '차고를 닫으면 주소에서 garage=1을 뺀다');
-    out.notes.push(`${label}: 260 → 브리즈 로드스터 120코인으로 사서 장착 → ${h.coins}`);
+    out.notes.push(`${label}: 260 → 브리즈 로드스터 120코인으로 사서 장착 → ${h.coins} → 말 랠리 칸에서 버터 라켓 40코인으로 사서 장착 → ${r1.coins}`);
     if (errors.length) out.fails.push(`${label}: 콘솔 오류 ${errors.join(' | ')}`);
     await ctx.close();
   }
