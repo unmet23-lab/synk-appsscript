@@ -1,0 +1,3729 @@
+{
+  "kind": "synthetic-local-evidence",
+  "at": "2026-10-06T10:00:00.000Z",
+  "fixture": true,
+  "paidCalls": 0,
+  "reports": [
+    {
+      "id": "usual-quiet",
+      "input": {
+        "version": "path-travel-personal-v2",
+        "scope": {
+          "personId": "local-visitor",
+          "productId": "path-travel",
+          "contextId": "seoul",
+          "domain": "PATH"
+        },
+        "encounterId": "seoul-trip-1",
+        "trip": 1,
+        "serial": 3,
+        "events": [
+          {
+            "version": "core-preference-context-1",
+            "id": "travel-1",
+            "scope": {
+              "personId": "local-visitor",
+              "productId": "path-travel",
+              "contextId": "seoul",
+              "domain": "PATH"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "encounterId": "seoul-trip-1",
+            "at": "2026-10-06T10:00:00.000Z",
+            "kind": "set",
+            "source": "explicit",
+            "field": "hotelNoise",
+            "value": 0.2,
+            "duration": "ongoing"
+          },
+          {
+            "version": "core-preference-context-1",
+            "id": "travel-2",
+            "scope": {
+              "personId": "local-visitor",
+              "productId": "path-travel",
+              "contextId": "seoul",
+              "domain": "PATH"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "encounterId": "seoul-trip-1",
+            "at": "2026-10-06T10:00:00.000Z",
+            "kind": "set",
+            "source": "explicit",
+            "field": "hotelNoise.mode",
+            "value": "require",
+            "duration": "ongoing"
+          },
+          {
+            "version": "core-preference-context-1",
+            "id": "travel-3",
+            "scope": {
+              "personId": "local-visitor",
+              "productId": "path-travel",
+              "contextId": "seoul",
+              "domain": "PATH"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "encounterId": "seoul-trip-1",
+            "at": "2026-10-06T10:00:00.000Z",
+            "kind": "set",
+            "source": "explicit",
+            "field": "hotelNoise.importance",
+            "value": 3,
+            "duration": "ongoing"
+          }
+        ]
+      },
+      "result": {
+        "status": "ready",
+        "selectedId": "lunch-jongno-a.activity-jongno-a.dinner-jongno-a.hotel-seongsu-b",
+        "hotel": "성수 조용한 호텔 B",
+        "cost": 187600,
+        "fitDetails": [
+          {
+            "field": "hotelNoise",
+            "label": "숙소 소음 허용",
+            "wanted": "아주 조용해야 해요",
+            "actual": "아주 조용한 편",
+            "fit": "met",
+            "mode": "require",
+            "importance": 3,
+            "evidence": [
+              "travel-1"
+            ],
+            "source": "explicit",
+            "duration": "ongoing",
+            "eventId": "travel-1",
+            "contribution": 9,
+            "appliedBy": "Core Domain"
+          }
+        ]
+      },
+      "audit": {
+        "domainVersion": "core-domain-1",
+        "preferenceVersion": "core-preference-context-1",
+        "travelVersion": "core-travel-feasibility-1",
+        "declaredFields": [
+          "hotelNoise"
+        ],
+        "observations": [
+          {
+            "id": "travel-1",
+            "scope": {
+              "domain": "PATH",
+              "workspace": "path-travel-seoul",
+              "subject": "local-visitor"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "field": "hotelNoise",
+            "value": 0.2,
+            "source": "declared",
+            "at": "2026-10-06T10:00:00.000Z",
+            "until": "2026-11-05T10:00:00.000Z",
+            "refs": [
+              "travel-1"
+            ]
+          },
+          {
+            "id": "travel-2",
+            "scope": {
+              "domain": "PATH",
+              "workspace": "path-travel-seoul",
+              "subject": "local-visitor"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "field": "hotelNoise.mode",
+            "value": "require",
+            "source": "declared",
+            "at": "2026-10-06T10:00:00.000Z",
+            "until": "2026-11-05T10:00:00.000Z",
+            "refs": [
+              "travel-2"
+            ]
+          },
+          {
+            "id": "travel-3",
+            "scope": {
+              "domain": "PATH",
+              "workspace": "path-travel-seoul",
+              "subject": "local-visitor"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "field": "hotelNoise.importance",
+            "value": 3,
+            "source": "declared",
+            "at": "2026-10-06T10:00:00.000Z",
+            "until": "2026-11-05T10:00:00.000Z",
+            "refs": [
+              "travel-3"
+            ]
+          }
+        ],
+        "unknownMasks": [],
+        "understanding": {
+          "version": "core-domain-1",
+          "contract": {
+            "id": "path-travel-person",
+            "version": "2",
+            "purpose": "seoul-day-stay"
+          },
+          "scope": {
+            "domain": "PATH",
+            "workspace": "path-travel-seoul",
+            "subject": "local-visitor"
+          },
+          "at": "2026-10-06T10:00:00.000Z",
+          "fields": [
+            {
+              "id": "budget",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "budget.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "budget.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "dayStart",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "dayStart.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "dayStart.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "priority",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "priority.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "priority.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "food",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "food.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "food.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "night",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "night.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "night.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "pace",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "pace.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "pace.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "transport",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "transport.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "transport.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotel",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotel.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotel.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "rain",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "rain.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "rain.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "alcohol",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "alcohol.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "alcohol.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelNoise",
+              "status": "declared",
+              "value": 0.2,
+              "usable": true,
+              "evidence": [
+                "travel-1"
+              ],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelNoise.mode",
+              "status": "declared",
+              "value": "require",
+              "usable": true,
+              "evidence": [
+                "travel-2"
+              ],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelNoise.importance",
+              "status": "declared",
+              "value": 3,
+              "usable": true,
+              "evidence": [
+                "travel-3"
+              ],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelCleanliness",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelCleanliness.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelCleanliness.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelCentrality",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelCentrality.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelCentrality.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelMaxPrice",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelMaxPrice.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelMaxPrice.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "spice",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "spice.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "spice.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "vegetarian",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "vegetarian.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "vegetarian.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "foodNovelty",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "foodNovelty.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "foodNovelty.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "maxWait",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "maxWait.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "maxWait.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "mealMaxPrice",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "mealMaxPrice.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "mealMaxPrice.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "crowd",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "crowd.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "crowd.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "activityIndoor",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "activityIndoor.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "activityIndoor.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "nightEnergy",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "nightEnergy.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "nightEnergy.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "nightMusic",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "nightMusic.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "nightMusic.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "conversation",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "conversation.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "conversation.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "walkLimit",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "walkLimit.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "walkLimit.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "returnBy",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "returnBy.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "returnBy.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            }
+          ],
+          "needsCheck": [],
+          "calibrated": false
+        },
+        "decisionReasons": [
+          {
+            "criterion": "hotelNoise",
+            "field": "hotelNoise",
+            "value": 0.2,
+            "candidateValue": 0.1,
+            "contribution": 9,
+            "evidence": [
+              "travel-1"
+            ],
+            "status": "declared"
+          }
+        ],
+        "policyReasons": [
+          {
+            "objective": "policyHotel",
+            "feature": "policyHotel",
+            "candidateValue": 0.75,
+            "contribution": 2.25
+          },
+          {
+            "objective": "policyFood",
+            "feature": "policyFood",
+            "candidateValue": 1,
+            "contribution": 3
+          },
+          {
+            "objective": "policyNight",
+            "feature": "policyNight",
+            "candidateValue": 0,
+            "contribution": 0
+          },
+          {
+            "objective": "policyValue",
+            "feature": "policyValue",
+            "candidateValue": 0.24960000000000004,
+            "contribution": 0.7488000000000001
+          },
+          {
+            "objective": "policyConvenience",
+            "feature": "policyConvenience",
+            "candidateValue": 0.48,
+            "contribution": 1.44
+          }
+        ],
+        "selectedId": "lunch-jongno-a.activity-jongno-a.dinner-jongno-a.hotel-seongsu-b",
+        "calibrated": false,
+        "source": "local-structured-choices"
+      }
+    },
+    {
+      "id": "this-trip-lively",
+      "input": {
+        "version": "path-travel-personal-v2",
+        "scope": {
+          "personId": "local-visitor",
+          "productId": "path-travel",
+          "contextId": "seoul",
+          "domain": "PATH"
+        },
+        "encounterId": "seoul-trip-1",
+        "trip": 1,
+        "serial": 6,
+        "events": [
+          {
+            "version": "core-preference-context-1",
+            "id": "travel-1",
+            "scope": {
+              "personId": "local-visitor",
+              "productId": "path-travel",
+              "contextId": "seoul",
+              "domain": "PATH"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "encounterId": "seoul-trip-1",
+            "at": "2026-10-06T10:00:00.000Z",
+            "kind": "set",
+            "source": "explicit",
+            "field": "hotelNoise",
+            "value": 0.2,
+            "duration": "ongoing"
+          },
+          {
+            "version": "core-preference-context-1",
+            "id": "travel-2",
+            "scope": {
+              "personId": "local-visitor",
+              "productId": "path-travel",
+              "contextId": "seoul",
+              "domain": "PATH"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "encounterId": "seoul-trip-1",
+            "at": "2026-10-06T10:00:00.000Z",
+            "kind": "set",
+            "source": "explicit",
+            "field": "hotelNoise.mode",
+            "value": "require",
+            "duration": "ongoing"
+          },
+          {
+            "version": "core-preference-context-1",
+            "id": "travel-3",
+            "scope": {
+              "personId": "local-visitor",
+              "productId": "path-travel",
+              "contextId": "seoul",
+              "domain": "PATH"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "encounterId": "seoul-trip-1",
+            "at": "2026-10-06T10:00:00.000Z",
+            "kind": "set",
+            "source": "explicit",
+            "field": "hotelNoise.importance",
+            "value": 3,
+            "duration": "ongoing"
+          },
+          {
+            "version": "core-preference-context-1",
+            "id": "travel-4",
+            "scope": {
+              "personId": "local-visitor",
+              "productId": "path-travel",
+              "contextId": "seoul",
+              "domain": "PATH"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "encounterId": "seoul-trip-1",
+            "at": "2026-10-06T10:00:00.000Z",
+            "kind": "set",
+            "source": "explicit",
+            "field": "hotelNoise",
+            "value": 0.8,
+            "duration": "once"
+          },
+          {
+            "version": "core-preference-context-1",
+            "id": "travel-5",
+            "scope": {
+              "personId": "local-visitor",
+              "productId": "path-travel",
+              "contextId": "seoul",
+              "domain": "PATH"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "encounterId": "seoul-trip-1",
+            "at": "2026-10-06T10:00:00.000Z",
+            "kind": "set",
+            "source": "explicit",
+            "field": "hotelNoise.mode",
+            "value": "require",
+            "duration": "once"
+          },
+          {
+            "version": "core-preference-context-1",
+            "id": "travel-6",
+            "scope": {
+              "personId": "local-visitor",
+              "productId": "path-travel",
+              "contextId": "seoul",
+              "domain": "PATH"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "encounterId": "seoul-trip-1",
+            "at": "2026-10-06T10:00:00.000Z",
+            "kind": "set",
+            "source": "explicit",
+            "field": "hotelNoise.importance",
+            "value": 3,
+            "duration": "once"
+          }
+        ]
+      },
+      "result": {
+        "status": "ready",
+        "selectedId": "lunch-jongno-a.activity-jongno-a.dinner-jongno-a.hotel-jongno-a",
+        "hotel": "종로 작은 스테이 A",
+        "cost": 117300,
+        "fitDetails": [
+          {
+            "field": "hotelNoise",
+            "label": "숙소 소음 허용",
+            "wanted": "활기찬 곳도 괜찮아요",
+            "actual": "주변 소음이 있는 편",
+            "fit": "met",
+            "mode": "require",
+            "importance": 3,
+            "evidence": [
+              "travel-4"
+            ],
+            "source": "explicit",
+            "duration": "once",
+            "eventId": "travel-4",
+            "contribution": 9,
+            "appliedBy": "Core Domain"
+          }
+        ]
+      },
+      "audit": {
+        "domainVersion": "core-domain-1",
+        "preferenceVersion": "core-preference-context-1",
+        "travelVersion": "core-travel-feasibility-1",
+        "declaredFields": [
+          "hotelNoise"
+        ],
+        "observations": [
+          {
+            "id": "travel-4",
+            "scope": {
+              "domain": "PATH",
+              "workspace": "path-travel-seoul",
+              "subject": "local-visitor"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "field": "hotelNoise",
+            "value": 0.8,
+            "source": "declared",
+            "at": "2026-10-06T10:00:00.000Z",
+            "until": "2026-11-05T10:00:00.000Z",
+            "refs": [
+              "travel-4"
+            ]
+          },
+          {
+            "id": "travel-5",
+            "scope": {
+              "domain": "PATH",
+              "workspace": "path-travel-seoul",
+              "subject": "local-visitor"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "field": "hotelNoise.mode",
+            "value": "require",
+            "source": "declared",
+            "at": "2026-10-06T10:00:00.000Z",
+            "until": "2026-11-05T10:00:00.000Z",
+            "refs": [
+              "travel-5"
+            ]
+          },
+          {
+            "id": "travel-6",
+            "scope": {
+              "domain": "PATH",
+              "workspace": "path-travel-seoul",
+              "subject": "local-visitor"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "field": "hotelNoise.importance",
+            "value": 3,
+            "source": "declared",
+            "at": "2026-10-06T10:00:00.000Z",
+            "until": "2026-11-05T10:00:00.000Z",
+            "refs": [
+              "travel-6"
+            ]
+          }
+        ],
+        "unknownMasks": [],
+        "understanding": {
+          "version": "core-domain-1",
+          "contract": {
+            "id": "path-travel-person",
+            "version": "2",
+            "purpose": "seoul-day-stay"
+          },
+          "scope": {
+            "domain": "PATH",
+            "workspace": "path-travel-seoul",
+            "subject": "local-visitor"
+          },
+          "at": "2026-10-06T10:00:00.000Z",
+          "fields": [
+            {
+              "id": "budget",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "budget.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "budget.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "dayStart",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "dayStart.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "dayStart.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "priority",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "priority.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "priority.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "food",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "food.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "food.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "night",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "night.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "night.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "pace",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "pace.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "pace.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "transport",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "transport.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "transport.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotel",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotel.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotel.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "rain",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "rain.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "rain.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "alcohol",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "alcohol.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "alcohol.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelNoise",
+              "status": "declared",
+              "value": 0.8,
+              "usable": true,
+              "evidence": [
+                "travel-4"
+              ],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelNoise.mode",
+              "status": "declared",
+              "value": "require",
+              "usable": true,
+              "evidence": [
+                "travel-5"
+              ],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelNoise.importance",
+              "status": "declared",
+              "value": 3,
+              "usable": true,
+              "evidence": [
+                "travel-6"
+              ],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelCleanliness",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelCleanliness.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelCleanliness.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelCentrality",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelCentrality.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelCentrality.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelMaxPrice",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelMaxPrice.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelMaxPrice.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "spice",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "spice.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "spice.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "vegetarian",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "vegetarian.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "vegetarian.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "foodNovelty",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "foodNovelty.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "foodNovelty.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "maxWait",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "maxWait.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "maxWait.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "mealMaxPrice",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "mealMaxPrice.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "mealMaxPrice.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "crowd",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "crowd.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "crowd.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "activityIndoor",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "activityIndoor.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "activityIndoor.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "nightEnergy",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "nightEnergy.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "nightEnergy.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "nightMusic",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "nightMusic.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "nightMusic.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "conversation",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "conversation.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "conversation.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "walkLimit",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "walkLimit.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "walkLimit.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "returnBy",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "returnBy.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "returnBy.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            }
+          ],
+          "needsCheck": [],
+          "calibrated": false
+        },
+        "decisionReasons": [
+          {
+            "criterion": "hotelNoise",
+            "field": "hotelNoise",
+            "value": 0.8,
+            "candidateValue": 0.65,
+            "contribution": 9,
+            "evidence": [
+              "travel-4"
+            ],
+            "status": "declared"
+          }
+        ],
+        "policyReasons": [
+          {
+            "objective": "policyHotel",
+            "feature": "policyHotel",
+            "candidateValue": 0.9,
+            "contribution": 2.7
+          },
+          {
+            "objective": "policyFood",
+            "feature": "policyFood",
+            "candidateValue": 1,
+            "contribution": 3
+          },
+          {
+            "objective": "policyNight",
+            "feature": "policyNight",
+            "candidateValue": 0,
+            "contribution": 0
+          },
+          {
+            "objective": "policyValue",
+            "feature": "policyValue",
+            "candidateValue": 0.5307999999999999,
+            "contribution": 1.5923999999999998
+          },
+          {
+            "objective": "policyConvenience",
+            "feature": "policyConvenience",
+            "candidateValue": 0.52,
+            "contribution": 1.56
+          }
+        ],
+        "selectedId": "lunch-jongno-a.activity-jongno-a.dinner-jongno-a.hotel-jongno-a",
+        "calibrated": false,
+        "source": "local-structured-choices"
+      }
+    },
+    {
+      "id": "next-trip-restore",
+      "input": {
+        "version": "path-travel-personal-v2",
+        "scope": {
+          "personId": "local-visitor",
+          "productId": "path-travel",
+          "contextId": "seoul",
+          "domain": "PATH"
+        },
+        "encounterId": "seoul-trip-2",
+        "trip": 2,
+        "serial": 7,
+        "events": [
+          {
+            "version": "core-preference-context-1",
+            "id": "travel-1",
+            "scope": {
+              "personId": "local-visitor",
+              "productId": "path-travel",
+              "contextId": "seoul",
+              "domain": "PATH"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "encounterId": "seoul-trip-1",
+            "at": "2026-10-06T10:00:00.000Z",
+            "kind": "set",
+            "source": "explicit",
+            "field": "hotelNoise",
+            "value": 0.2,
+            "duration": "ongoing"
+          },
+          {
+            "version": "core-preference-context-1",
+            "id": "travel-2",
+            "scope": {
+              "personId": "local-visitor",
+              "productId": "path-travel",
+              "contextId": "seoul",
+              "domain": "PATH"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "encounterId": "seoul-trip-1",
+            "at": "2026-10-06T10:00:00.000Z",
+            "kind": "set",
+            "source": "explicit",
+            "field": "hotelNoise.mode",
+            "value": "require",
+            "duration": "ongoing"
+          },
+          {
+            "version": "core-preference-context-1",
+            "id": "travel-3",
+            "scope": {
+              "personId": "local-visitor",
+              "productId": "path-travel",
+              "contextId": "seoul",
+              "domain": "PATH"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "encounterId": "seoul-trip-1",
+            "at": "2026-10-06T10:00:00.000Z",
+            "kind": "set",
+            "source": "explicit",
+            "field": "hotelNoise.importance",
+            "value": 3,
+            "duration": "ongoing"
+          },
+          {
+            "version": "core-preference-context-1",
+            "id": "travel-4",
+            "scope": {
+              "personId": "local-visitor",
+              "productId": "path-travel",
+              "contextId": "seoul",
+              "domain": "PATH"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "encounterId": "seoul-trip-1",
+            "at": "2026-10-06T10:00:00.000Z",
+            "kind": "set",
+            "source": "explicit",
+            "field": "hotelNoise",
+            "value": 0.8,
+            "duration": "once"
+          },
+          {
+            "version": "core-preference-context-1",
+            "id": "travel-5",
+            "scope": {
+              "personId": "local-visitor",
+              "productId": "path-travel",
+              "contextId": "seoul",
+              "domain": "PATH"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "encounterId": "seoul-trip-1",
+            "at": "2026-10-06T10:00:00.000Z",
+            "kind": "set",
+            "source": "explicit",
+            "field": "hotelNoise.mode",
+            "value": "require",
+            "duration": "once"
+          },
+          {
+            "version": "core-preference-context-1",
+            "id": "travel-6",
+            "scope": {
+              "personId": "local-visitor",
+              "productId": "path-travel",
+              "contextId": "seoul",
+              "domain": "PATH"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "encounterId": "seoul-trip-1",
+            "at": "2026-10-06T10:00:00.000Z",
+            "kind": "set",
+            "source": "explicit",
+            "field": "hotelNoise.importance",
+            "value": 3,
+            "duration": "once"
+          },
+          {
+            "version": "core-preference-context-1",
+            "id": "travel-7",
+            "scope": {
+              "personId": "local-visitor",
+              "productId": "path-travel",
+              "contextId": "seoul",
+              "domain": "PATH"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "encounterId": "seoul-trip-1",
+            "at": "2026-10-06T10:00:00.000Z",
+            "kind": "close",
+            "source": "explicit"
+          }
+        ]
+      },
+      "result": {
+        "status": "ready",
+        "selectedId": "lunch-jongno-a.activity-jongno-a.dinner-jongno-a.hotel-seongsu-b",
+        "hotel": "성수 조용한 호텔 B",
+        "cost": 187600,
+        "fitDetails": [
+          {
+            "field": "hotelNoise",
+            "label": "숙소 소음 허용",
+            "wanted": "아주 조용해야 해요",
+            "actual": "아주 조용한 편",
+            "fit": "met",
+            "mode": "require",
+            "importance": 3,
+            "evidence": [
+              "travel-1"
+            ],
+            "source": "explicit",
+            "duration": "ongoing",
+            "eventId": "travel-1",
+            "contribution": 9,
+            "appliedBy": "Core Domain"
+          }
+        ]
+      },
+      "audit": {
+        "domainVersion": "core-domain-1",
+        "preferenceVersion": "core-preference-context-1",
+        "travelVersion": "core-travel-feasibility-1",
+        "declaredFields": [
+          "hotelNoise"
+        ],
+        "observations": [
+          {
+            "id": "travel-1",
+            "scope": {
+              "domain": "PATH",
+              "workspace": "path-travel-seoul",
+              "subject": "local-visitor"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "field": "hotelNoise",
+            "value": 0.2,
+            "source": "declared",
+            "at": "2026-10-06T10:00:00.000Z",
+            "until": "2026-11-05T10:00:00.000Z",
+            "refs": [
+              "travel-1"
+            ]
+          },
+          {
+            "id": "travel-2",
+            "scope": {
+              "domain": "PATH",
+              "workspace": "path-travel-seoul",
+              "subject": "local-visitor"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "field": "hotelNoise.mode",
+            "value": "require",
+            "source": "declared",
+            "at": "2026-10-06T10:00:00.000Z",
+            "until": "2026-11-05T10:00:00.000Z",
+            "refs": [
+              "travel-2"
+            ]
+          },
+          {
+            "id": "travel-3",
+            "scope": {
+              "domain": "PATH",
+              "workspace": "path-travel-seoul",
+              "subject": "local-visitor"
+            },
+            "contract": {
+              "id": "path-travel-person",
+              "version": "2",
+              "purpose": "seoul-day-stay"
+            },
+            "field": "hotelNoise.importance",
+            "value": 3,
+            "source": "declared",
+            "at": "2026-10-06T10:00:00.000Z",
+            "until": "2026-11-05T10:00:00.000Z",
+            "refs": [
+              "travel-3"
+            ]
+          }
+        ],
+        "unknownMasks": [],
+        "understanding": {
+          "version": "core-domain-1",
+          "contract": {
+            "id": "path-travel-person",
+            "version": "2",
+            "purpose": "seoul-day-stay"
+          },
+          "scope": {
+            "domain": "PATH",
+            "workspace": "path-travel-seoul",
+            "subject": "local-visitor"
+          },
+          "at": "2026-10-06T10:00:00.000Z",
+          "fields": [
+            {
+              "id": "budget",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "budget.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "budget.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "dayStart",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "dayStart.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "dayStart.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "priority",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "priority.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "priority.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "food",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "food.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "food.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "night",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "night.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "night.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "pace",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "pace.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "pace.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "transport",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "transport.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "transport.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotel",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotel.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotel.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "rain",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "rain.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "rain.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "alcohol",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "alcohol.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "alcohol.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelNoise",
+              "status": "declared",
+              "value": 0.2,
+              "usable": true,
+              "evidence": [
+                "travel-1"
+              ],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelNoise.mode",
+              "status": "declared",
+              "value": "require",
+              "usable": true,
+              "evidence": [
+                "travel-2"
+              ],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelNoise.importance",
+              "status": "declared",
+              "value": 3,
+              "usable": true,
+              "evidence": [
+                "travel-3"
+              ],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelCleanliness",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelCleanliness.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelCleanliness.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelCentrality",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelCentrality.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelCentrality.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelMaxPrice",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelMaxPrice.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "hotelMaxPrice.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "spice",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "spice.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "spice.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "vegetarian",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "vegetarian.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "vegetarian.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "foodNovelty",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "foodNovelty.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "foodNovelty.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "maxWait",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "maxWait.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "maxWait.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "mealMaxPrice",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "mealMaxPrice.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "mealMaxPrice.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "crowd",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "crowd.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "crowd.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "activityIndoor",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "activityIndoor.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "activityIndoor.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "nightEnergy",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "nightEnergy.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "nightEnergy.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "nightMusic",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "nightMusic.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "nightMusic.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "conversation",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "conversation.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "conversation.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "walkLimit",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "walkLimit.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "walkLimit.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "returnBy",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "returnBy.mode",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            },
+            {
+              "id": "returnBy.importance",
+              "status": "unknown",
+              "value": null,
+              "usable": false,
+              "evidence": [],
+              "independent": 0,
+              "agreement": null,
+              "alternatives": [],
+              "proposals": [],
+              "excluded": []
+            }
+          ],
+          "needsCheck": [],
+          "calibrated": false
+        },
+        "decisionReasons": [
+          {
+            "criterion": "hotelNoise",
+            "field": "hotelNoise",
+            "value": 0.2,
+            "candidateValue": 0.1,
+            "contribution": 9,
+            "evidence": [
+              "travel-1"
+            ],
+            "status": "declared"
+          }
+        ],
+        "policyReasons": [
+          {
+            "objective": "policyHotel",
+            "feature": "policyHotel",
+            "candidateValue": 0.75,
+            "contribution": 2.25
+          },
+          {
+            "objective": "policyFood",
+            "feature": "policyFood",
+            "candidateValue": 1,
+            "contribution": 3
+          },
+          {
+            "objective": "policyNight",
+            "feature": "policyNight",
+            "candidateValue": 0,
+            "contribution": 0
+          },
+          {
+            "objective": "policyValue",
+            "feature": "policyValue",
+            "candidateValue": 0.24960000000000004,
+            "contribution": 0.7488000000000001
+          },
+          {
+            "objective": "policyConvenience",
+            "feature": "policyConvenience",
+            "candidateValue": 0.48,
+            "contribution": 1.44
+          }
+        ],
+        "selectedId": "lunch-jongno-a.activity-jongno-a.dinner-jongno-a.hotel-seongsu-b",
+        "calibrated": false,
+        "source": "local-structured-choices"
+      }
+    }
+  ]
+}

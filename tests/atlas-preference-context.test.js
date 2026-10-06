@@ -19,6 +19,31 @@ const add = (events, id, kind, extra = {}) => P.record(input(events, { id, kind,
 const view = (events, extra = {}) => P.project(input(events, extra));
 const freeze = value => { if (value && typeof value === 'object') { Object.freeze(value); for (const part of Object.values(value)) freeze(part); } return value; };
 
+test('layers exposes independent baseline and current provenance while project retains its exact contract', () => {
+  let events = add([], 'usual-layer', 'set', { field: 'minutes', value: 90, duration: 'ongoing' });
+  events = add(events, 'temporary-layer', 'set', { field: 'minutes', value: 40, duration: 'once' });
+  const layers = P.layers(input(events));
+  assert.equal(layers.version, 'core-preference-layers-1');
+  assert.deepEqual(layers.baseline.values, { minutes: 90 }); assert.deepEqual(layers.context.values, { minutes: 40 });
+  assert.equal(layers.baseline.provenance.minutes.eventId, 'usual-layer');
+  assert.equal(layers.context.provenance.minutes.eventId, 'temporary-layer');
+  assert.deepEqual(layers.effective, view(events));
+  assert.deepEqual(Object.keys(view(events)).sort(), ['closed', 'pendingProposals', 'provenance', 'values', 'version']);
+  layers.baseline.values.minutes = 20; assert.equal(P.layers(input(events)).baseline.values.minutes, 90);
+});
+
+test('layers observes withdrawal and closure without exposing old overrides or another encounter', () => {
+  let events = add([], 'usual-layer', 'set', { field: 'minutes', value: 90, duration: 'ongoing' });
+  events = add(events, 'temporary-layer', 'set', { field: 'minutes', value: 40, duration: 'once' });
+  assert.deepEqual(P.layers(input(events, { encounterId: 'meeting-2' })).context.values, {});
+  events = add(events, 'close-layer', 'close');
+  let layers = P.layers(input(events)); assert.equal(layers.context.closed, true);
+  assert.deepEqual(layers.context.values, {}); assert.deepEqual(layers.effective.values, { minutes: 90 });
+  events = add(events, 'withdraw-layer', 'withdraw', { field: 'minutes', duration: 'ongoing' });
+  layers = P.layers(input(events)); assert.deepEqual(layers.baseline.values, {}); assert.deepEqual(layers.effective.values, {});
+  assert.throws(() => P.layers(input(events, { scope: { ...scope, personId: 'other-person' } })), /scope/);
+});
+
 test('one-encounter override restores the ongoing declaration in a new encounter', () => {
   let events = add([], 'usual', 'set', { field: 'atmosphere', value: 'quiet', duration: 'ongoing' });
   events = add(events, 'today', 'set', { field: 'atmosphere', value: 'lively', duration: 'once' });

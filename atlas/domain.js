@@ -32,7 +32,7 @@
     return finite(value) && value >= field.range[0] && value <= field.range[1];
   }
   function validateContract(contract) {
-    if (!keys(contract, ['id', 'version', 'purpose', 'fields', 'criteria']) || !token(contract.id) || !token(contract.version) || !token(contract.purpose)
+    if (!keys(contract, ['id', 'version', 'purpose', 'fields', 'criteria', 'objectives']) || !token(contract.id) || !token(contract.version) || !token(contract.purpose)
       || !Array.isArray(contract.fields) || !contract.fields.length || contract.fields.length > 100 || !Array.isArray(contract.criteria) || contract.criteria.length > 100) fail('invalid contract');
     const fields = new Map(), criteria = new Set();
     for (const field of contract.fields) {
@@ -54,6 +54,19 @@
         || (criterion.required != null && typeof criterion.required !== 'boolean') || !['match', 'different', 'at-least', 'at-most'].includes(criterion.prefer || 'match')) fail('invalid criterion');
       if (['at-least', 'at-most'].includes(criterion.prefer) && fields.get(criterion.field).kind !== 'number') fail('numeric comparison requires a number');
       criteria.add(criterion.id);
+    }
+    // Policy objectives are product choices, never fabricated declarations about
+    // a person. Keep them separate from criteria backed by the person's facts.
+    if (own(contract, 'objectives')) {
+      if (!Array.isArray(contract.objectives) || contract.objectives.length > 100) fail('invalid objectives');
+      const objectives = new Set();
+      for (const objective of contract.objectives) {
+        if (!keys(objective, ['id', 'feature', 'range', 'weight', 'prefer']) || !token(objective.id) || objectives.has(objective.id)
+          || !token(objective.feature) || !Array.isArray(objective.range) || objective.range.length !== 2
+          || !objective.range.every(finite) || objective.range[0] >= objective.range[1] || !finite(objective.range[1] - objective.range[0])
+          || !finite(objective.weight) || objective.weight < 0 || !['higher', 'lower'].includes(objective.prefer)) fail('invalid objective');
+        objectives.add(objective.id);
+      }
     }
     return fields;
   }
@@ -187,7 +200,9 @@
   }
   function decide({ contract, scope, observations = [], at, candidates } = {}) {
     const understanding = project(contract, scope, observations, at), specs = new Map(contract.fields.map(f => [f.id, f]));
-    const facts = new Map(understanding.fields.map(f => [f.id, f])), allowed = new Set(contract.criteria.map(c => c.feature));
+    const objectives = contract.objectives ?? [];
+    const facts = new Map(understanding.fields.map(f => [f.id, f]));
+    const allowed = new Set([...contract.criteria, ...objectives].map(c => c.feature));
     if (!Array.isArray(candidates) || candidates.length > 10000) fail('invalid candidates');
     const ids = new Set(), ranked = [], excluded = [];
     for (const candidate of candidates) {
@@ -196,8 +211,12 @@
         || (candidate.exclusions != null && (!Array.isArray(candidate.exclusions) || candidate.exclusions.some(r => !token(r))))) fail('invalid candidate');
       ids.add(candidate.id);
       for (const c of contract.criteria) if (own(candidate.features, c.feature) && !validValue(specs.get(c.field), candidate.features[c.feature])) fail('invalid candidate feature');
+      for (const objective of objectives) if (own(candidate.features, objective.feature)) {
+        const value = candidate.features[objective.feature];
+        if (!finite(value) || value < objective.range[0] || value > objective.range[1]) fail('invalid objective feature');
+      }
       if (candidate.eligible === false || candidate.exclusions?.length) { excluded.push({ id: candidate.id, reasons: candidate.exclusions?.length ? candidate.exclusions : ['ineligible'] }); continue; }
-      let score = 0; const reasons = [], blocked = [];
+      let score = 0; const reasons = [], policyReasons = [], blocked = [];
       for (const c of contract.criteria) {
         const fact = facts.get(c.field), field = specs.get(c.field), has = own(candidate.features, c.feature), v = candidate.features[c.feature];
         if (!fact.usable || !has) { if (c.required) blocked.push(`unknown:${c.id}`); continue; }
@@ -214,8 +233,17 @@
         if (!finite(score)) fail('policy utility overflow');
         reasons.push({ criterion: c.id, field: c.field, value: fact.value, candidateValue: v, contribution, evidence: fact.evidence, status: fact.status });
       }
+      for (const objective of objectives) {
+        if (!own(candidate.features, objective.feature)) continue;
+        const candidateValue = candidate.features[objective.feature];
+        const fraction = (candidateValue - objective.range[0]) / (objective.range[1] - objective.range[0]);
+        const contribution = (objective.prefer === 'higher' ? fraction : 1 - fraction) * objective.weight;
+        score += contribution;
+        if (!finite(score)) fail('policy utility overflow');
+        policyReasons.push({ objective: objective.id, feature: objective.feature, candidateValue, contribution });
+      }
       if (blocked.length) excluded.push({ id: candidate.id, reasons: blocked });
-      else ranked.push({ id: candidate.id, score, reasons });
+      else ranked.push({ id: candidate.id, score, reasons, ...(own(contract, 'objectives') ? { policyReasons } : {}) });
     }
     ranked.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
     return copy({ version: VERSION, contract: understanding.contract, scope, at, status: ranked.length ? 'ready' : 'unavailable',

@@ -345,17 +345,58 @@
       }
       seen.set(event.id, event); unique.push(event);
     }
-    const selected = new Map([...ongoing, ...(once.get(encounterId) || [])]), values = {}, provenance = {};
-    for (const [field, event] of selected) {
-      values[field] = event.value;
-      provenance[field] = { eventId: event.id, source: event.source, duration: event.duration, encounterId: event.encounterId, at: event.at,
-        ...(event.proposalId ? { proposalId: event.proposalId, feedbackId: event.feedbackId } : {}) };
-    }
-    return { projection: { version: PREFERENCE_VERSION, values, provenance, closed: closed.has(encounterId),
+    const readLayer = selected => {
+      const values = {}, provenance = {};
+      for (const [field, event] of selected) {
+        values[field] = event.value;
+        provenance[field] = { eventId: event.id, source: event.source, duration: event.duration, encounterId: event.encounterId, at: event.at,
+          ...(event.proposalId ? { proposalId: event.proposalId, feedbackId: event.feedbackId } : {}) };
+      }
+      return { values, provenance };
+    };
+    const baseline = readLayer(ongoing), context = readLayer(once.get(encounterId) || []);
+    const projection = { version: PREFERENCE_VERSION, values: { ...baseline.values, ...context.values },
+      provenance: { ...baseline.provenance, ...context.provenance }, closed: closed.has(encounterId),
       pendingProposals: [...pending.values()].filter(event => event.encounterId === encounterId).map(event => ({ id: event.id,
-        field: event.field, value: event.value, feedbackId: event.feedbackId, encounterId: event.encounterId, at: event.at })) }, events: unique };
+        field: event.field, value: event.value, feedbackId: event.feedbackId, encounterId: event.encounterId, at: event.at })) };
+    return { projection, layers: { version: 'core-preference-layers-1', baseline,
+      context: { encounterId, ...context, closed: closed.has(encounterId) }, effective: projection }, events: unique };
   }
   function projectPreferences(input = {}) { return copy(preferenceReplay(input).projection); }
+  function preferenceLayers(input = {}) { return copy(preferenceReplay(input).layers); }
+  // Map only the effective explicit choices into Domain without replacing their
+  // original timestamp or turning product defaults into personal declarations.
+  // The host owns the workspace namespace, authentication, permission and an
+  // explicit-unknown mask. This bridge checks person/domain identity only.
+  function preferencesToDomain(input = {}) {
+    if (!exact(input, ['contract', 'scope', 'events', 'encounterId', 'at', 'domainScope'])) fail('unsupported preference bridge input');
+    const { contract, scope, events = [], encounterId, at, domainScope } = input;
+    checkScope(scope);
+    if (!record(domainScope) || domainScope.subject !== scope.personId || domainScope.domain !== scope.domain) fail('foreign preference bridge subject or domain');
+    const domain = getDomain();
+    if (!domain?.understand) fail('load Core domain capability first');
+    // Domain validates the complete target scope even if no values exist.
+    domain.understand({ contract, scope: domainScope, observations: [], at });
+    const layers = preferenceLayers({ contract, scope, events, encounterId, at });
+    const fields = new Map(contract.fields.map(field => [field.id, field]));
+    const reference = { id: contract.id, version: contract.version, purpose: contract.purpose };
+    const observations = [], lineage = [];
+    for (const [field, value] of Object.entries(layers.effective.values)) {
+      const origin = layers.effective.provenance[field];
+      const began = instant(origin.at), expires = began + (fields.get(field).maxAgeDays ?? 30) * 86400000;
+      if (!Number.isFinite(expires) || Math.abs(expires) > 8640000000000000 || Math.trunc(expires) <= began) fail('invalid preference bridge lifetime');
+      const until = new Date(expires).toISOString();
+      const refs = [...new Set([origin.eventId, origin.proposalId, origin.feedbackId].filter(Boolean))];
+      observations.push({ id: origin.eventId, scope: copy(domainScope), contract: copy(reference), field, value,
+        source: 'declared', at: origin.at, until, refs });
+      lineage.push({ field, eventId: origin.eventId, source: origin.source, duration: origin.duration,
+        encounterId: origin.encounterId, at: origin.at, until });
+    }
+    // Expired effective choices are deliberately retained: Domain marks them
+    // expired instead of refreshing them or reviving an older baseline value.
+    const understanding = domain.understand({ contract, scope: domainScope, observations, at });
+    return copy({ observations, layers, understanding, lineage });
+  }
   function recordPreference(input = {}) {
     if (!record(input) || !Object.hasOwn(PREFERENCE_KEYS, input.kind)) fail('invalid preference action');
     const { contract, scope, encounterId, at, id, kind, events = [] } = input;
@@ -369,7 +410,7 @@
     for (const key of extraKeys) { if (!Object.hasOwn(input, key)) fail(`missing preference ${key}`); event[key] = input[key]; }
     return copy(preferenceReplay({ contract, scope, events: [...prior, event], encounterId, at }).events);
   }
-  const preferences = Object.freeze({ project: projectPreferences, record: recordPreference });
+  const preferences = Object.freeze({ project: projectPreferences, record: recordPreference, layers: preferenceLayers, toDomain: preferencesToDomain });
   return Object.freeze({ VERSION, PREFERENCE_VERSION, preferences, OPTIONS, FIELDS, REASONS, REASON_GOAL, MAX_REASONS, DEFAULT_PRESENTATION, createProfile, updateProfile, clearProfile,
     selectPersonalization, recordCompletion, recordFeedback, coreScope, validateProfile: checkProfile,
     // Optional Core capability: products that need field-based decisions load it.
