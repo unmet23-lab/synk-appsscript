@@ -27,7 +27,8 @@ const TOOLS = {
   computer: { out: 'brief/computer', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: [...SHARED_ASSETS, 'laptop-felt.webp'] },
   meeting: { out: 'brief/meeting', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: [...SHARED_ASSETS, 'meeting-hero.webp'], keep: ['meeting-guide.pdf', 'meeting-kit.zip'] },
   // yuhobuilds 허브(synk.im/builds/)의 첫 도구. theme.css = 도구 쪽 색(검정·버터). outside = 도구 폴더 밖에 둘 파일(허브 첫 화면).
-  manual: { out: 'builds/manual', files: ['content.js', 'rules.js', 'view.js', 'index.html', 'theme.css'], assets: ['favicon-32.png', 'thread-butter.webp', 'logo-synk.webp', 'note-felt.webp', 'tex-black.webp', 'sticker-check.webp', 'sticker-book.webp', 'sticker-person.webp', 'sticker-search.webp'], outside: { 'builds-index.html': 'builds/index.html' } },
+  // fb-* = 10-06 버터·검정 실제 펠트 판(docs/디자인/펠트부품/assets/builds를 늘이고 줄인 웹 사본). 유리 선택 카드·단추 대신 쓴다.
+  manual: { out: 'builds/manual', files: ['content.js', 'rules.js', 'view.js', 'index.html', 'theme.css'], assets: ['favicon-32.png', 'thread-butter.webp', 'logo-synk.webp', 'note-felt.webp', 'tex-black.webp', 'sticker-check.webp', 'sticker-book.webp', 'sticker-person.webp', 'sticker-search.webp', ...['badge-butter', 'badge-check', 'badge-cream', 'chip-butter-long', 'chip-butter-wide', 'chip-cream-long', 'chip-cream-wide', 'chip-black-long', 'chip-black-wide', 'slab-black-long', 'slab-butter-long', 'tile-butter-long', 'tile-butter-wide', 'tile-cream-long', 'tile-cream-wide'].map((n) => `fb-${n}.webp`)], outside: { 'builds-index.html': 'builds/index.html' } },
 };
 
 const sha = file => createHash('sha256').update(fs.readFileSync(file)).digest('hex');
