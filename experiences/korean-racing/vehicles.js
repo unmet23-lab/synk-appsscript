@@ -586,9 +586,10 @@ export function customizeCar(car,{paint,wheelColor,trailColor,badge}={}) {
 
 export function createGarageStage(scene) {
   const group=new THREE.Group();group.name='garage-stage';group.visible=false;
-  const platform=new THREE.MeshStandardMaterial({color:0x27383d,roughness:.42,metalness:.28});
+  // 2026-10-07 SYNK LAB PLAY 펠트 계열: 무광 크림 원판 + 코랄 테두리(어두운 남색·청록 원판을 걷음)
+  const platform=new THREE.MeshStandardMaterial({color:0xe9d2b4,roughness:1,metalness:0});
   mesh(group,new THREE.CylinderGeometry(3.95,4.18,.16,64),platform,[0,-.095,0]).castShadow=false;
-  mesh(group,new THREE.TorusGeometry(3.89,.026,6,64),new THREE.MeshBasicMaterial({color:0x97d4c9}),[0,-.01,0],[Math.PI/2,0,0]);
+  mesh(group,new THREE.TorusGeometry(3.89,.05,8,64),new THREE.MeshStandardMaterial({color:0xf2735f,roughness:1}),[0,-.01,0],[Math.PI/2,0,0]);
   // The world already supplies sun, ambient and HDR reflections. Gentle studio
   // accents preserve paint / felt detail rather than stacking a second full sun.
   const key=new THREE.DirectionalLight(0xfff1dc,.80);key.position.set(-3,7,4);key.target.position.set(0,.7,0);group.add(key,key.target);
