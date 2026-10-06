@@ -20,6 +20,7 @@ export function setOn(value) {
   enabled = !!value;
   try { localStorage.setItem(KEY, enabled ? 'on' : 'off'); } catch { /* 이번 접속에만 */ }
   if (bus) bus.out.gain.value = enabled ? 1 : 0;
+  if (!enabled) stopNarration();   // 소리를 끄면 안내도 곧바로 멈추고 판을 붙잡지 않는다
 }
 
 async function loadInto(c, map, entries) {
@@ -62,6 +63,7 @@ const note = (kind, name, opts, delay = 0) => { if (log) log.push({ kind, name, 
  */
 export const VOICE_GUARD = 1.5;
 export function speak(item, { onEnd = () => {} } = {}) {
+  stopNarration();   // 안내 음성은 몽글의 말 위에 겹치지 않는다
   note('voice', item.id);
   const buf = voices.get(item.id);
   if (!enabled || !ctx || ctx.state !== 'running' || !buf) {   // 글로 보여 주는 동안 읽을 시간(말 길이에 맞춰 0.9~3.2초)
@@ -97,6 +99,7 @@ export function prepareSlow(item) {
   try { const el = slowElement(); if (!el.src.endsWith(item.voice.replace(/^\.?\//, ''))) { el.pause(); el.src = item.voice; } } catch { /* 미리 못 불러도 누를 때 부른다 */ }
 }
 export function speakSlow(item, { rate = 0.75, onEnd = () => {} } = {}) {
+  stopNarration();
   note('voice-slow', item.id, { rate });
   if (!enabled || !ctx || ctx.state !== 'running') { onEnd(false); return { stop() {} }; }
   try {
@@ -113,6 +116,50 @@ export function speakSlow(item, { rate = 0.75, onEnd = () => {} } = {}) {
   } catch { onEnd(false); return { stop() {} }; }
 }
 export const slowState = () => (slowEl ? { rate: slowEl.playbackRate, paused: slowEl.paused, time: slowEl.currentTime, src: slowEl.src.split('/').pop(), ready: slowEl.readyState, net: slowEl.networkState, error: slowEl.error?.code || null, ended: slowEl.ended } : null);
+
+/* ── 안내 음성(나레이션, 2026-10-07) ──
+ * 판이 바뀌는 때에만 튼다(한 판 시작·연습 공 뒤·결과 — app.mjs). 같은 소리 길이라 소리 끄기를 따르고, 입구의 「안내 음성」으로 따로 끈다.
+ * 판을 그 말 길이보다 오래 붙잡지 않는다: 틀 수 없으면 곧바로, 끝났다는 신호가 오지 않으면 말 길이 + NARRATION_GUARD초 뒤에 넘긴다
+ * (몽글의 말 VOICE_GUARD와 같은 생각). 몽글의 말·다시 듣기가 시작되면 먼저 멈춘다. */
+const NARRATION_KEY = 'synk.talk-rally.narration';
+export const NARRATION_GUARD = 0.3;
+let narrationOn = (() => { try { return localStorage.getItem(NARRATION_KEY) !== 'off'; } catch { return true; } })();
+const narrations = new Map();
+let narrating = null;
+export const narrationIsOn = () => narrationOn;
+export function setNarration(value) {
+  narrationOn = !!value;
+  try { localStorage.setItem(NARRATION_KEY, narrationOn ? 'on' : 'off'); } catch { /* 이번 접속에만 */ }
+  if (!narrationOn) stopNarration();
+}
+/** 안내 문장 파일을 미리 풀어 둔다(작은 파일 여덟 개). */
+export async function preloadNarration(lines) {
+  if (!ctx) return;
+  await loadInto(ctx, narrations, lines.map((x) => [x.id, x.file]));
+}
+export const canNarrate = (id) => enabled && narrationOn && !!ctx && ctx.state === 'running' && narrations.has(id);
+/** 안내 한 줄. 끝까지 들려주면 true, 틀 수 없거나 도중에 멈추면 false로 풀리는 약속. */
+export function narrate(id) {
+  stopNarration();
+  if (!canNarrate(id)) return Promise.resolve(false);
+  const buf = narrations.get(id), src = ctx.createBufferSource(); src.buffer = buf; src.connect(bus.out);
+  note('narration', id, { duration: buf.duration });
+  return new Promise((resolve) => {
+    let done = false, guard = 0;
+    const finish = (played) => { if (done) return; done = true; clearTimeout(guard); if (narrating?.src === src) narrating = null; resolve(played); };
+    src.onended = () => finish(true);
+    guard = setTimeout(() => { try { src.stop(); } catch { /* 시작도 못 함 */ } finish(false); }, (buf.duration + NARRATION_GUARD) * 1000);
+    narrating = { id, src, finish };
+    src.start();
+  });
+}
+export function stopNarration() {
+  const n = narrating; narrating = null;
+  if (!n) return;
+  note('narration-stop', n.id);
+  try { n.src.stop(); } catch { /* 이미 끝남 */ }
+  n.finish(false);
+}
 
 /** 사운드킷 파일 하나. delay초 뒤에 울릴 수 있다. */
 export function play(name, { delay = 0 } = {}) {
