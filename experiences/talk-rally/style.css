@@ -123,7 +123,8 @@
 .week li.done i{background-image:url(kit/felt/badge-check.webp)}
 .week li.today i{filter:var(--sticker) drop-shadow(0 2px 3px rgba(73,45,30,.25))}
 .week li.today small{color:var(--coral-deep)}
-.week b{font:500 11px/1.2 var(--mono);color:var(--ink);white-space:nowrap}
+.week b{font:700 11.5px/1.2 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:-.01em;color:var(--ink);white-space:nowrap}   /* 네 자리 점수 일곱이 320px에서도 붙지 않게(고정폭 글꼴은 너무 넓었다) */
+@media (max-width:359px){.week b{font-size:10.5px}}
 .week li.empty b{color:var(--muted)}
 /* ── 꾸미기(2026-10-07): 라켓·공 줄. 견본은 크림 펠트 원(사진)을 그 색으로 물들인 것(레이싱 차고와 같은 방식 — 결은 사진 그대로) ── */
 .plan-side{display:grid;gap:14px;align-content:start}
