@@ -6,8 +6,9 @@
 <meta name="theme-color" content="#f96859">
 <title>빈칸 베기 · SYNK LAB PLAY</title>
 <meta name="description" content="문장을 읽고 빈칸에 맞는 낱말 조각만 베는 한국어 읽기 액션 게임. TOPIK I 읽기의 빈칸 채우기(낱말·조사·문형)를 연습합니다.">
-<link rel="icon" href="assets/felt/sparkle.webp" type="image/webp">
-<link rel="preload" href="assets/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="kit/felt/sparkle.webp" type="image/webp">
+<link rel="preload" href="kit/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="kit/lab.css">
 <link rel="stylesheet" href="style.css">
 <script src="./atlas-learning.js"></script>
 <script type="module" src="./app.mjs"></script>
@@ -18,7 +19,7 @@
 <!-- 입구 -->
 <main id="lobby" class="screen lobby">
   <header class="topbar on-field">
-    <a class="logo-tag" href="./" aria-label="빈칸 베기 처음으로"><img src="assets/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></a>
+    <a class="logo-tag" href="./" aria-label="빈칸 베기 처음으로"><img src="kit/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></a>
     <span class="kicker">LAB · READ &amp; PLAY</span>
     <button class="sound-toggle" type="button" aria-pressed="true" data-sound-toggle><span class="sr">소리</span></button>
   </header>
@@ -34,7 +35,7 @@
       <div class="hero-sentence paper">목이 말라요. <b class="hb">물</b>을 마시고 싶어요.</div>
       <img class="hero-pieces" src="assets/hero-pieces.webp" alt="" width="1100" height="414">
       <i class="slash"></i>
-      <img class="hero-mongle diecut" src="assets/brand/mongle-cheer.webp" alt="">
+      <img class="hero-mongle diecut" src="kit/brand/mongle-cheer.webp" alt="">
     </figure>
   </section>
 
@@ -71,7 +72,7 @@
 <!-- 게임 -->
 <main id="game" class="screen game" hidden>
   <header class="topbar game-bar">
-    <img class="logo-mini" src="assets/brand/logo-lab.webp" alt="SYNK LAB" width="78" height="24">
+    <img class="logo-mini" src="kit/brand/logo-lab.webp" alt="SYNK LAB" width="78" height="24">
     <strong class="game-title">빈칸 베기</strong>
     <div class="hud" aria-live="off">
       <span class="pill"><small>문장</small><b id="g-count">1 / 12</b></span>
@@ -108,7 +109,7 @@
 <!-- 결과 -->
 <main id="results" class="screen results" hidden>
   <header class="topbar on-field">
-    <span class="logo-tag"><img src="assets/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></span>
+    <span class="logo-tag"><img src="kit/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></span>
     <span class="kicker">ROUND COMPLETE</span>
   </header>
   <section class="res-hero">
@@ -120,7 +121,7 @@
       <p class="r-note" id="r-note"></p>
       <p class="synk-collection-line"><span id="r-coins" role="status"></span><a data-collection-garage href="/try/racing/?garage=1">공통 차고 →</a></p>
     </div>
-    <img class="res-mongle diecut" id="r-mongle" src="assets/brand/mongle-smile.webp" alt="">
+    <img class="res-mongle diecut" id="r-mongle" src="kit/brand/mongle-smile.webp" alt="">
   </section>
   <section class="res-grid">
     <article class="paper log">
@@ -144,7 +145,7 @@
   </section>
 </main>
 
-<dialog id="pause-dialog" class="paper">
+<dialog id="pause-dialog" class="paper lab-dialog">
   <span class="kicker">PAUSED</span>
   <h2>잠깐 쉬어요</h2>
   <p>조각이 멈춰 있어요. 이어서 하거나 처음으로 돌아갈 수 있어요.</p>

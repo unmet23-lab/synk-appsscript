@@ -452,7 +452,7 @@ function finish() {
   $('#r-stars').innerHTML = [1, 2, 3].map((i) => `<i class="${i <= s.stars ? 'on' : ''}" style="animation-delay:${0.3 + (i - 1) * 0.22}s"></i>`).join('');
   $('#r-stars').setAttribute('aria-label', `별 3개 중 ${s.stars}개`);
   for (let i = 0; i < s.stars; i++) setTimeout(() => sound.sfx('star', { i }), 300 + i * 220);
-  $('#r-mongle').src = s.stars >= 2 ? 'assets/brand/mongle-smile.webp' : 'assets/brand/mongle-cheer.webp';
+  $('#r-mongle').src = s.stars >= 2 ? 'kit/brand/mongle-smile.webp' : 'kit/brand/mongle-cheer.webp';
   const notes = [`점수 ${s.score}점`];
   if (s.bestRun >= 3) notes.push(`최고 ${s.bestRun}연속`);
   if (s.missed) notes.push(`놓친 문장 ${s.missed}개(멈춘 보기에서 ${state.results.filter((r) => r.correct === null && r.readingCorrect).length}개 맞힘)`);
@@ -462,7 +462,7 @@ function finish() {
     const item = ITEMS.find((x) => x.id === r.itemId);
     const li = el('li', r.correct === true ? 'ok' : r.correct === false ? 'ko' : 'miss');
     const mark = r.correct === true ? '맞음' : r.correct === false ? '다시 볼 것' : '놓침';
-    li.innerHTML = `<img class="mark" src="${r.correct === true ? 'assets/kit/badge-check.webp' : r.correct === false ? 'assets/felt/drop.webp' : 'assets/kit/badge-cream.webp'}" alt="${mark}">
+    li.innerHTML = `<img class="mark" src="${r.correct === true ? 'kit/felt/badge-check.webp' : r.correct === false ? 'assets/felt/drop.webp' : 'kit/felt/badge-cream.webp'}" alt="${mark}">
       <span class="body"><span class="sent">${esc(filled(item, '\u0000')).replace('\u0000', `<b>${esc(item.answer)}</b>`)}</span>
       <small>${esc(KIND_LABEL[item.kind] || '')}${r.correct === false ? ` · 벤 말 ‘${esc(r.choice)}’` : ''}${r.correct === null ? ` · 놓침 · 멈춘 보기에서 고른 답 ‘${esc(r.readingChoice)}’ ${r.readingCorrect ? '맞음' : '다시 볼 것'}` : ''}</small></span>`;
     log.append(li);

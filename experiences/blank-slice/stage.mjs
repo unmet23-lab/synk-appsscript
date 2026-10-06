@@ -63,7 +63,7 @@ function star4(g, x, y, r, rot) {
 
 export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, onSwing, reducedMotion = () => false }) {
   await document.fonts?.load?.('800 80px SUIT').catch(() => {});
-  const feltImg = await new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = 'assets/kit/tex-cream.webp'; });
+  const feltImg = await new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = 'kit/felt/tex-cream.webp'; });
 
   // WebGL을 만들 수 없으면 여기서 오류가 난다. 부른 쪽(app.mjs)이 안내하고 입구로 돌아간다
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });

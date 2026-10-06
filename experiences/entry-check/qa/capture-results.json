@@ -1,6 +1,6 @@
 {
- "url": "http://127.0.0.1:5215/",
- "at": "2026-10-02T12:00:45.720Z",
+ "url": "http://127.0.0.1:5291/entry-check/",
+ "at": "2026-10-06T17:19:30.728Z",
  "views": {
   "mobile": {
    "shots": [
@@ -151,7 +151,6 @@
      "reply-pool-03",
      "line-pool-04",
      "thanks-fox",
-     "nar-oops-pool-04",
      "line-pool-05",
      "reply-pool-05",
      "line-pool-06",
@@ -325,7 +324,6 @@
      "reply-pool-03",
      "line-pool-04",
      "thanks-fox",
-     "nar-oops-pool-04",
      "line-pool-05",
      "reply-pool-05",
      "line-pool-06",
