@@ -244,18 +244,87 @@ a{color:var(--ink)}
 .seg .chip.glass::before,.seg .chip.glass::after{content:none}
 .seg .chip.glass:hover{color:var(--ink);transform:none}
 .seg .chip.glass[aria-checked="true"]{color:var(--ink);background:var(--bead);box-shadow:var(--bead-shadow)}
+.layout .because{flex-basis:100%;margin:0;font-size:13.5px;line-height:1.5;color:var(--ink-3)}
 
-/* 쓰는 순서 세 칸: 결과 머리 바로 아래, 잉크 선 위에 번호와 굵은 글자 */
-.howto{display:grid;grid-template-columns:minmax(0,1fr);margin:clamp(22px,3vw,30px) 0 0;padding:0;border-top:1px solid var(--ink);list-style:none}
-.howto li{display:flex;align-items:baseline;gap:14px;padding:14px 0;border-bottom:1px solid var(--line);font:650 17px/1.4 var(--sans);letter-spacing:-.02em;color:var(--ink)}
-.howto b{flex:none;font:400 12px/1 var(--mono);letter-spacing:.08em;color:var(--ink-3)}
-@media(min-width:701px){.howto{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:24px}.howto li{border-bottom:0}}
+/* 01 써 보기(10-06 밤 처음 쓰는 사람 검토): 결과 머리 바로 아래. 가게 정보(선택) → 쓰는 방법 둘(탭) → 단계마다 단추 */
+.result>section.use{padding-top:clamp(36px,5vw,56px)}
 
 /* 내 정보 넣기(선택): 흰 판 안의 회색 칸. 적는 대로 매뉴얼에 들어간다 */
 .me{margin:0 0 16px;padding:clamp(18px,2.4vw,24px);border-radius:24px;background:#fff;box-shadow:0 0 0 1px var(--line)}
-.me-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin:0 0 14px}
+.me-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin:0 0 6px}
 .me-head b{font:700 19px/1.3 var(--sans);letter-spacing:-.03em;color:var(--ink)}
 .me-head span{font:500 14.5px/1.4 var(--sans);color:var(--ink-2)}
+.me-sub{margin:0 0 14px;font-size:15px;line-height:1.55;color:var(--ink-2)}
+.me-more{margin:12px 0 0;border-top:1px solid var(--line-soft)}
+.me-more>summary{display:flex;flex-wrap:wrap;align-items:center;gap:2px 10px;min-height:48px;padding:10px 40px 10px 0;position:relative;list-style:none;cursor:pointer}
+.me-more>summary::-webkit-details-marker{display:none}
+.me-more>summary b{font:650 15.5px/1.3 var(--sans);letter-spacing:-.015em;color:var(--ink)}
+.me-more>summary span{font:500 13.5px/1.4 var(--sans);color:var(--ink-2)}
+.me-more>summary::after{content:"+";position:absolute;right:0;top:50%;display:grid;place-items:center;width:28px;height:28px;margin-top:-14px;border-radius:999px;background:var(--plate);font:400 17px/1 var(--sans);color:var(--ink-2);transition:transform var(--fast) var(--ease),background-color var(--fast) var(--ease),color var(--fast) var(--ease)}
+.me-more[open]>summary::after{transform:rotate(45deg);background:var(--ink);color:#fff}
+.me-more>.me-grid{padding:4px 0 2px}
+
+/* 쓰는 방법 둘: 회색 홈 위 맑은 유리 알(보기 고르기와 같은 짜임). 글자는 두 줄(이름 + 한 줄 설명) */
+.paths{margin:0}
+.pathseg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px;padding:4px;border-radius:22px;background:var(--plate)}
+.pathseg [role="tab"]{display:grid;gap:3px;justify-items:start;min-height:60px;padding:10px 16px;border:0;border-radius:18px;background:transparent;text-align:left;cursor:pointer;color:var(--ink-2);transition:background-color var(--fast) var(--ease),box-shadow var(--fast) var(--ease),color var(--fast) var(--ease)}
+.pathseg [role="tab"] b{font:700 16px/1.25 var(--sans);letter-spacing:-.02em}
+.pathseg [role="tab"] small{font:500 13px/1.3 var(--sans);letter-spacing:-.01em;color:var(--ink-2)}
+.pathseg [role="tab"][aria-selected="true"]{color:var(--ink);background:var(--bead);box-shadow:var(--bead-shadow)}
+.pathseg [role="tab"]:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+@media(hover:hover){.pathseg [role="tab"]:not([aria-selected="true"]):hover{color:var(--ink);background:rgba(255,255,255,.55)}}
+.path{margin:10px 0 0;padding:clamp(18px,2.4vw,26px);border-radius:24px;background:var(--plate)}
+.path[hidden]{display:none}
+.path .what{margin:0 0 14px;padding:14px 16px;border-radius:16px;background:#fff;font-size:15.5px;line-height:1.6;color:var(--ink)}
+/* 단계: 흰 알 번호 + 굵은 한 줄 + 설명 + 단추. 칸마다 가는 선 */
+.usesteps{display:grid;gap:0;margin:0;padding:0;list-style:none}
+.usesteps>li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;align-items:start;padding:14px 0;border-top:1px solid var(--line-soft)}
+.usesteps>li:first-child{border-top:0;padding-top:4px}
+.usesteps .k{display:grid;place-items:center;width:30px;height:30px;margin-top:-2px;border-radius:999px;background:var(--bead);box-shadow:var(--bead-shadow);font:700 14px/1 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink)}
+.usesteps .t{margin:0;font:650 16.5px/1.45 var(--sans);letter-spacing:-.02em;color:var(--ink)}
+.usesteps .d{margin:4px 0 0;font-size:15px;line-height:1.6;color:var(--ink-2)}
+.usesteps .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:10px 0 0}
+.usesteps .row .status{flex-basis:100%;font:600 14px/1.5 var(--sans);color:var(--ink)}
+.usesteps .row .status:empty{display:none}
+.usesteps textarea.fallback{display:block;width:100%;min-height:120px;margin:10px 0 0;padding:12px 14px;border:0;border-radius:14px;background:#fff;font-size:14px}
+.usesteps .eg{display:flex;gap:10px;align-items:baseline;margin:10px 0 0;padding:12px 14px;border-radius:14px;background:#fff;font:600 15px/1.5 var(--sans);letter-spacing:-.015em;color:var(--ink)}
+.usesteps .eg span{flex:none;padding:2px 8px;border-radius:999px;background:var(--butter);font:650 12px/1.5 var(--sans);color:var(--ink)}
+.btn .ext{margin-left:-2px;font-weight:500}
+/* 오늘 맡길 일(선택): 흰 칸. 적은 일은 복사할 글 끝 ‘이번 일:’ 뒤에 붙는다 */
+.usesteps .task{display:grid;gap:6px;margin:10px 0 0}
+.usesteps .task>span{font:650 14px/1.3 var(--sans);letter-spacing:-.01em;color:var(--ink-2)}
+.usesteps .task textarea{display:block;width:100%;min-height:88px;padding:12px 14px;border:0;border-radius:14px;background:#fff;box-shadow:0 0 0 1px var(--line);font:500 16px/1.5 var(--sans);color:var(--ink);resize:vertical;transition:box-shadow var(--fast) var(--ease)}
+.usesteps .task textarea::placeholder{color:rgba(10,10,10,.45)}
+.usesteps .task textarea:focus{outline:none;box-shadow:inset 0 0 0 2px var(--ink)}
+.path .goto{margin:4px 0 0 -14px;min-height:44px}
+/* 컴퓨터에서 이어 하기: 흰 판 한 줄 + 링크 복사 */
+.pc{margin:14px 0 0;padding:16px 18px;border-radius:18px;background:#fff;box-shadow:0 0 0 1px var(--line)}
+.pc p{margin:0;max-width:42em;font-size:14.5px;line-height:1.6;color:var(--ink-2)}
+.pc .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:10px 0 0}
+.pc .row .status{flex-basis:100%;font:600 14px/1.5 var(--sans);color:var(--ink)}
+.pc .row .status:empty{display:none}
+.path-note{margin:12px 0 0;font-size:14.5px;line-height:1.6;color:var(--ink-2)}
+/* 넓은 화면에서도 읽는 줄은 짧게(판은 넓게, 글은 42em 안쪽) */
+.usesteps .t,.usesteps .d,.path-note,.path-src,.path .what,.me-sub{max-width:42em}
+.path-src{margin:12px 0 0;font-size:13px;line-height:1.55;color:var(--ink-3)}
+.path-src .src{margin:0 4px 0 2px}
+.appbox{margin:10px 0 0;padding:0 16px;border-radius:18px;background:#fff}
+.appbox>summary{display:flex;align-items:center;justify-content:space-between;min-height:52px;list-style:none;cursor:pointer;font:700 16px/1.3 var(--sans);letter-spacing:-.02em}
+.appbox>summary::-webkit-details-marker{display:none}
+.appbox>summary::after{content:"+";display:grid;place-items:center;width:28px;height:28px;border-radius:999px;background:var(--plate);font:400 17px/1 var(--sans);color:var(--ink-2)}
+.appbox>summary::after{transition:transform var(--fast) var(--ease)}
+.appbox[open]>summary::after{transform:rotate(45deg);background:var(--ink);color:#fff}
+.appbox .usesteps>li:first-child{border-top:1px solid var(--line-soft);padding-top:14px}
+/* 매뉴얼 전문(접힘) */
+.peek{margin:16px 0 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.peek>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;list-style:none;cursor:pointer;font:650 16px/1.3 var(--sans);letter-spacing:-.02em;color:var(--ink)}
+.peek>summary::-webkit-details-marker{display:none}
+.peek>summary::after{content:"+";flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:999px;background:var(--plate);font:400 17px/1 var(--sans);color:var(--ink-2);transition:transform var(--fast) var(--ease)}
+.peek[open]>summary::after{transform:rotate(45deg);background:var(--ink);color:#fff}
+.peek .copybox{margin:4px 0 16px}
+/* 공통 틀(core)의 접힘 화살표는 빼고 오른쪽 + 하나만 쓴다(펼치는 줄과 같은 표시) */
+.me-more>summary::before,.peek>summary::before,.appbox>summary::before,.paid>summary::before{content:none}
+.use .manual-note{margin:14px 0 0}
 .me-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 @media(min-width:701px){.me-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.me-grid .wide{grid-column:1 / -1}}
 .me-grid label{display:grid;gap:6px;margin:0}
@@ -300,6 +369,11 @@ section.block>p.sub{margin:0 0 24px;max-width:38em;font-size:17px;line-height:1.
 .cmdlist .status{grid-column:1 / -1;min-height:0;font-size:13px}
 .cmdlist .status:empty{display:none}
 .cmdlist textarea.fallback{grid-column:1 / -1;min-height:80px}
+.cmdlist.plainsay li{grid-template-columns:minmax(0,1fr)}
+/* 여기까지면 바로 쓸 수 있어요(10-06 검토 3차): 버터 띠 하나로 할 일과 읽을거리를 나눈다 */
+.doneline{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin:clamp(40px,5vw,56px) 0 0;padding:18px 20px;border-radius:18px;background:var(--butter);color:var(--ink)}
+.doneline b{font:700 17px/1.4 var(--sans);letter-spacing:-.02em}
+.doneline span{font:500 15px/1.5 var(--sans);color:rgba(10,10,10,.75)}
 
 /* 매뉴얼을 넣는 곳·요금제 */
 .formbox{margin:0 0 12px;padding:clamp(22px,2.8vw,30px);border-radius:24px;background:var(--plate);box-shadow:none}
@@ -317,6 +391,14 @@ section.block>p.sub{margin:0 0 24px;max-width:38em;font-size:17px;line-height:1.
 .why.npu li b{display:inline-block;margin-right:6px;padding:2px 9px;border-radius:999px;font-size:12.5px;font-weight:650;vertical-align:1px}
 .why.npu b.yes{background:var(--butter);color:var(--ink)}
 .why.npu b.no{background:var(--plate);color:var(--ink-2)}
+.paid{margin:14px 0 0;border-top:1px solid var(--line-soft)}
+.paid>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:8px 0;list-style:none;cursor:pointer;font:600 14.5px/1.4 var(--sans);letter-spacing:-.015em;color:var(--ink-2)}
+.paid>summary::-webkit-details-marker{display:none}
+.paid>summary::after{content:"+";flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:999px;background:var(--plate);font:400 16px/1 var(--sans);color:var(--ink-2)}
+.paid>summary::after{transition:transform var(--fast) var(--ease)}
+.paid[open]>summary::after{transform:rotate(45deg);background:var(--ink);color:#fff}
+.paid .why{margin:0}
+.why.skip{margin:22px 0 0}
 
 /* 사람 차례 확인표: 줄 목록, 체크하면 버터 펠트 배지 */
 .checks{gap:0;border-top:1px solid var(--ink)}
@@ -364,6 +446,7 @@ details.sources a{color:var(--ink)}
 /* 결과 하단 바: 아래에 붙는 유리 캡슐 */
 .dock{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:20;gap:6px;width:max-content;max-width:100%;margin:28px auto 0;padding:6px}
 .dock .btn{min-height:48px;padding:0 22px;font-size:15.5px}
+@media(max-width:380px){.dock .btn{padding:0 16px;font-size:15px}}
 
 .foot{margin-top:clamp(56px,7vw,88px);padding-top:22px;border-top:1px solid var(--line);font-size:13.5px;color:var(--ink-3)}
 .foot a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink);text-decoration:underline;text-decoration-color:var(--ink-4);text-underline-offset:4px}
@@ -390,6 +473,11 @@ details.sources a{color:var(--ink)}
  .cmdlist .btn,.cmdlist .status{display:none}
  .opt.glass,.chip.glass,.btn{background:#fff!important;box-shadow:inset 0 0 0 1px #999!important}
 }
-/* 매뉴얼 전문: 화면에서는 글 상자, 인쇄에서는 잘리지 않는 전문 */
+/* 매뉴얼 전문: 화면에서는 접힌 글 상자, 인쇄에서는 잘리지 않는 전문. 인쇄에는 단추·탭·입력 칸을 빼고 두 방법의 단계를 모두 싣는다 */
 .manual-print{display:none}
-@media print{.copybox.main textarea{display:none}.manual-print{display:block;margin:0;padding:14px 16px;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;font:13px/1.65 var(--sans);color:#000}}
+@media print{
+ .copybox.main textarea,.peek>summary,.pathseg,.me,.usesteps .row,.dock,.layout{display:none}
+ .manual-print{display:block;margin:0;padding:14px 16px;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;font:13px/1.65 var(--sans);color:#000}
+ .path,.path[hidden]{display:block;background:#fff;padding:8px 0}
+ .usesteps .k{box-shadow:inset 0 0 0 1px #999;background:#fff}
+}

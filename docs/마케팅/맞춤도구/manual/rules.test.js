@@ -112,7 +112,7 @@ test('넣는 곳: AI마다 실제 메뉴, 여러 개면 세 곳 모두', () => {
   assert.ok(gem.tips.includes('save-gem-skill'));
   const multi = run({ ai: 'multi' });
   assert.deepEqual(multi.saves.map(s => s.app), ['chatgpt', 'claude', 'gemini']);
-  assert.match(multi.headline.sub, /쓰는 AI의 프로젝트·Gem에 깔아 두면/);
+  assert.match(multi.headline.sub, /^쓰는 AI에 붙여 넣으면 이 기준대로 일해요/);
 });
 
 test('요금제: 무료로 충분이 먼저, 올리기 직전까지면 여유가 되면 에이전트', () => {
@@ -152,14 +152,14 @@ test('신경 쓰지 않아도 되는 것: 사람마다 다르게', () => {
 test('영상 예시 답: SNS · 올리기 직전까지 · 사실·외국어·링크 · 다섯 개 · Claude', () => {
   const rec = R.compute(VIDEO);
   assert.equal(rec.headline.title, 'SNS 게시물, 올리기 직전까지 맡기는 매뉴얼');
-  assert.match(rec.headline.sub, /^Claude 프로젝트의 지침에 깔아 두면/);
+  assert.match(rec.headline.sub, /^Claude에 붙여 넣으면 이 기준대로 일해요\./);
   assert.match(rec.headline.sub, /결제·가입·게시·삭제·내 글 수정 앞에서는 멈추고/);
   assert.equal(rec.warns.length, 0);
   const lines = rec.manual.split('\n');
   const checks = lines.slice(lines.indexOf('[끝내기 전 검수]') + 1, lines.indexOf('[혼자 하지 말 것 = 사람 차례]') - 1);
   assert.deepEqual(checks.map(l => l.split(':')[0]), ['- 사실·숫자', '- 외국어 뜻', '- 링크·주소']);
   assert.equal(rec.manual.split('\n').filter(l => Object.values(R.STOP).some(s => l === `- ${s.line}`)).length, 5);
-  assert.deepEqual(rec.facts, ['검수 3가지', '사람 차례 5가지', '보고 세 줄']);
+  assert.deepEqual(rec.facts, ['검수 3가지', '사람 차례 5가지', 'AI가 세 줄로 보고']);
   assert.deepEqual(rec.missing, ['맞춤법·말투', '저작권·초상권']);
   assert.ok(rec.tips.includes('stop-mywords') && rec.tips.includes('check-lang') && rec.tips.includes('stop-agent'));
 });
@@ -192,7 +192,8 @@ test('결과 화면: 요청문 창 하나, 매뉴얼 복사, 한 줄 명령 복�
   assert.equal((out.html.match(/class="copybox main"/g) || []).length, 1);
   assert.equal(out.texts.manual, rec.manual);
   assert.deepEqual([out.texts.cmd0, out.texts.cmd1, out.texts.cmd2], rec.commands);
-  assert.match(out.html, /data-proxy="copy:manual"/);
+  assert.match(out.html, /data-proxy="copy:trial"/, '하단 바는 처음에 바로 써 보기 글 복사');
+  assert.equal(out.texts.trial, rec.trial);
   assert.match(out.html, /class="src synk case"[^>]*>실제 사례</);
   assert.match(out.html, /class="src official"[^>]*>공식</);
   assert.ok(out.html.indexOf('copybox main') < out.html.indexOf('사람 차례 확인표'), '매뉴얼이 확인표보다 먼저');
@@ -260,15 +261,67 @@ test('시험에서 나온 결함: 빠진 정보는 비워 두고 끝까지, 답�
   assert.match(R.CHECK.tone.line, /위의 말투 기준/, '말투 기준은 검수보다 위에 있다');
 });
 
-test('결과 화면: 쓰는 순서 세 칸, 내 정보 칸 다섯, 앱 안 브라우저 안내(평소엔 숨김)', () => {
+test('결과 화면: 01 써 보기가 맨 위(가게 정보 → 쓰는 방법 둘 → 단계마다 단추), 매뉴얼 전문은 접힘, 앱 안 안내(평소엔 숨김)', () => {
   const rec = R.compute(VIDEO);
   const out = V.result({ rec, answers: rec.answers, layout: 'guided', plan: null, tipsOn: true, checks: {}, feedbackGiven: null, content: C, rules: R });
-  assert.equal((out.html.match(/<li><b>0[123]<\/b>/g) || []).length, 3);
-  assert.ok(out.html.indexOf('class="howto"') < out.html.indexOf('copybox main'), '쓰는 순서가 매뉴얼보다 먼저');
+  const at = x => { const i = out.html.indexOf(x); assert.ok(i >= 0, `${x} 없음`); return i; };
+  assert.ok(at('class="r-top') < at('class="block use"') && at('class="block use"') < at('한 줄로 맡기는 예') && at('한 줄로 맡기는 예') < at('사람 차례 확인표'), '써 보기 → 한 줄 예 → 확인표');
+  assert.ok(at('data-me') < at('role="tablist"') && at('role="tablist"') < at('data-action="copy:trial"') && at('data-action="copy:trial"') < at('data-action="copy:manual"'), '가게 정보 → 탭 → 써 보기 복사 → 매뉴얼 복사');
+  assert.equal((out.html.match(/role="tab" /g) || []).length, 2);
   assert.equal((out.html.match(/data-me-field="/g) || []).length, R.ME.length);
-  assert.ok(out.html.indexOf('data-me') < out.html.indexOf('copybox main'), '내 정보 칸은 매뉴얼 바로 위');
+  assert.match(out.html, /<details class="me-more">/, '나머지 가게 정보는 접어 둔다');
+  assert.match(out.html, /<details class="peek"><summary>복사할 매뉴얼 전문 보기/, '매뉴얼 전문은 접어 둔다(기본 분량)');
   assert.match(out.html, /<p class="inapp" hidden>/);
+  assert.match(out.html, /href="https:\/\/claude\.ai\/new" target="_blank" rel="noopener"/);
+  assert.match(out.html, /data-done="복사했어요\. 이제 Claude를 열어 새 채팅에 붙여 넣고 보내세요\."/);
+  assert.match(out.html, /<textarea data-task rows="3" maxlength="600" placeholder="예: 이번 주 새 소식 게시물/, '오늘 맡길 일 칸(일마다 예시)');
+  assert.match(out.html, />Claude에 붙일 글 복사</);
+  assert.match(out.html, /data-goto-path="keep"/, '바로 써 보기에서 넣어 두기로 잇는 단추');
+  assert.ok(at('class="paths"') < at('class="pc"') && at('class="pc"') < at('class="peek"'), '컴퓨터에서 이어 하기는 쓰는 방법 바로 아래');
+  assert.match(out.html, /data-proxy="copy:trial" data-dock-copy>붙일 글 복사</);
+  assert.ok(at('한 줄로 맡기는 예') < at('class="doneline"') && at('class="doneline"') < at('사람 차례 확인표'), '쓰는 데 필요한 것은 여기까지라는 경계');
+  assert.doesNotMatch(out.html, /data-action="copy:(cmd\d|all)"/, '복사 단추는 할 일(붙일 글·매뉴얼·링크)에만');
+  assert.doesNotMatch(out.html, /class="howto"/);
   assert.equal(typeof V.bindResult, 'function');
+  const multi = R.compute({ ...VIDEO, ai: 'multi' });
+  const mo = V.result({ rec: multi, answers: multi.answers, layout: 'guided', plan: null, tipsOn: true, checks: {}, feedbackGiven: null, content: C, rules: R });
+  assert.equal((mo.html.match(/<details class="appbox"/g) || []).length, 3, '여러 AI면 넣는 곳을 AI마다 접어 둔다');
+  assert.match(mo.html, /data-scroll="use-h"/);
+});
+
+test('바로 써 보기 글: 매뉴얼 + ‘이번 일:’ 끝줄, 비우면 준비됐다고 짧게 답하게', () => {
+  const rec = R.compute(VIDEO, ME_FULL);
+  assert.ok(rec.trial.startsWith(rec.manual + '\n\n---\n'));
+  assert.ok(rec.trial.endsWith('\n이번 일: '));
+  assert.match(rec.trial, /‘이번 일’이 비어 있으면 준비됐다고 한 줄로 답하고, 무엇을 맡길지 물어봐 주세요/);
+  assert.doesNotMatch(rec.manual, /이번 일:/, '넣어 둘 매뉴얼에는 끝줄이 없다');
+});
+
+test('늘 쓰는 정보: 맡길 일마다 이름이 다르고, 적으면 [나와 내 일]에 그 이름으로 들어간다', () => {
+  assert.equal(R.meFields('reply').find(f => f.id === 'info').label, '우리 가게 규정(환불·교환·배송)');
+  assert.equal(R.meFields('sns').find(f => f.id === 'info').label, '늘 넣는 안내(위치·영업시간·예약)');
+  for (const task of Object.keys(R.TASK)) assert.ok(R.INFO[task] && R.INFO[task].ph.startsWith('예: '), task);
+  const m = R.compute({ ...base, task: 'reply' }, { info: '미개봉 7일 안 환불\n개봉 후 교환만' }).manual;
+  assert.match(m, /\[나와 내 일\]\n- 우리 가게 규정\(환불·교환·배송\): 미개봉 7일 안 환불 \/ 개봉 후 교환만/);
+  assert.deepEqual(R.meFields('sns').filter(f => !f.more).map(f => f.id), ['name', 'info'], '처음 보이는 칸은 이름과 늘 쓰는 정보');
+  assert.equal(R.compute(VIDEO).me.length, R.ME.length);
+});
+
+test('오늘 맡길 일 예시: 일마다 있고, 일과 자료를 한 번에 적는 짧은 글', () => {
+  for (const task of Object.keys(R.TASK)) {
+    const x = R.TASK[task].sample;
+    assert.ok(typeof x === 'string' && x.length >= 20 && x.length <= 70, `${task}: ${x}`);
+  }
+});
+
+test('여는 주소: AI마다 https 주소(복사한 글은 싣지 않음), 쉬운 말 한 줄, 이름 예시는 맡길 일에 맞춘다', () => {
+  for (const ai of [...R.AI_IDS, 'multi']) for (const x of run({ ai }).saves) {
+    assert.match(x.open, /^https:\/\/[a-z.]+\/[a-z/]*$/, `${ai}: ${x.open}`);
+    assert.ok(x.what && x.what.length > 20, `${ai}: 쉬운 말 한 줄`);
+    assert.ok(x.steps.every(st => !st.t.includes('{직원}')));
+  }
+  assert.match(run({ task: 'reply', ai: 'chatgpt' }).saves[0].steps[0].t, /예: 고객 답장 직원/);
+  assert.match(run({ ai: 'chatgpt' }).saves[0].steps[0].t, /사이드바\(지난 채팅 목록이 있는 메뉴\)/);
 });
 
 test('계산 규칙과 화면에는 네트워크·저장소·AI 호출이 없다', () => {

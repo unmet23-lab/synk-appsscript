@@ -271,7 +271,8 @@
         if (!text) return;
         const ok = await copyText(text);
         const row = act.parentElement, st = row.querySelector('.status');
-        const done = name === 'share' ? '내 결과 링크를 복사했어요. 나중에 이 링크로 다시 열 수 있어요.' : '복사했어요.';
+        // 다음에 할 일을 알려 주는 단추는 data-done에 완료 문장을 둔다(예: “복사했어요. 이제 ChatGPT를 여세요.”).
+        const done = act.dataset.done || (name === 'share' ? '내 결과 링크를 복사했어요. 나중에 이 링크로 다시 열 수 있어요.' : '복사했어요.');
         // 인앱 브라우저처럼 복사가 막히면 글자 상자를 펼쳐 직접 고를 수 있게 한다.
         let box = row.parentElement.querySelector('textarea.fallback');
         if (!ok) {
