@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {CAMPAIGN} from '../campaign.js';
 import {FINALES} from '../finales.js';
 import {STAGES,emptyProgress,makeQuestions,recordRound} from '../learning.js';
-import {GARAGE_KEY,SHOP_ITEMS,VEHICLES,FINALE_REWARDS,emptyGarage,loadGarage,saveGarage,buyItem,equipItem,setWish,awardRace,awardMiniGame,dailyMission,seoulDate} from '../garage.js';
+import {GARAGE_KEY,SHOP_ITEMS,VEHICLES,RACKETS,BALLS,FINALE_REWARDS,emptyGarage,loadGarage,saveGarage,buyItem,equipItem,setWish,awardRace,awardMiniGame,dailyMission,seoulDate} from '../garage.js';
 
 const now=Date.parse('2026-10-02T04:00:00Z');
 const answers=(stage,score=stage.campaign?stage.items.length:stage.words.length)=>makeQuestions(stage,()=>.4).map((q,i)=>({...q,correct:i<score}));
@@ -130,4 +130,43 @@ test('a finale mistake is a real daily retrieval target and survives shared-wall
   const earned=award(emptyGarage(),stage,{roundId:'finale-retrieval',beforeProgress:progress});
   assert(earned.missionCompleted);assert.equal(earned.state.missions[seoulDate(now)].target,stage.items[4].id);
   const restored=loadGarage({getItem:()=>JSON.stringify(earned.state)});assert.deepEqual(restored.missions,earned.state.missions);
+});
+
+// 2026-10-07 말 랠리의 라켓·공(같은 지갑). 그전에 저장한 지갑은 새 종류만 무료 기본값을 받고 나머지는 그대로다.
+const legacyWallet=()=>({version:1,coins:87,totalEarned:140,owned:['vehicle-coast','paint-mint','wheels-silver','trail-lime','vehicle-open','paint-coral'],
+  equipped:{vehicle:'open',paint:'coral',wheels:'silver',trail:'lime',badge:null},wish:'rally',rewardedRounds:{'talk-rally:a':{date:'2026-10-05',coins:24}},
+  firstClears:{'challenge-01':true},corrections:{'campaign:c01q1':true},dailyRaceCounts:{'2026-10-05':3},missions:{}});
+
+test('a wallet saved before the Talk Rally kinds loads unchanged; the racket and ball start as the free defaults',()=>{
+  const saved=legacyWallet(),restored=loadGarage({getItem:()=>JSON.stringify(saved)});
+  assert.equal(restored.coins,87);assert.equal(restored.totalEarned,140);assert.equal(restored.wish,'rally');
+  for(const kind of ['vehicle','paint','wheels','trail','badge'])assert.equal(restored.equipped[kind],saved.equipped[kind],kind);
+  assert.equal(restored.equipped.racket,'coral');assert.equal(restored.equipped.ball,'cream');
+  for(const id of saved.owned)assert(restored.owned.includes(id),id);
+  assert(restored.owned.includes('racket-coral')&&restored.owned.includes('ball-cream'),'free defaults are owned');
+  assert(!restored.owned.some(id=>/^(racket|ball)-/.test(id)&&!['racket-coral','ball-cream'].includes(id)),'no paid racket or ball appears from nowhere');
+  assert.deepEqual(restored.rewardedRounds,saved.rewardedRounds);assert.deepEqual(restored.firstClears,saved.firstClears);
+  assert.deepEqual(restored.corrections,saved.corrections);assert.deepEqual(restored.dailyRaceCounts,saved.dailyRaceCounts);
+  // An unknown or unowned racket/ball in a saved record falls back to the free one instead of breaking the load.
+  const odd=loadGarage({getItem:()=>JSON.stringify({...saved,equipped:{...saved.equipped,racket:'lapis',ball:'gold'}})});
+  assert.equal(odd.equipped.racket,'coral');assert.equal(odd.equipped.ball,'cream');assert.equal(odd.coins,87);
+});
+
+test('Talk Rally rackets and balls are bought and equipped like any other cosmetic, with palette colours and fair prices',()=>{
+  assert.equal(RACKETS.filter(x=>x.price===0).length,1);assert.equal(BALLS.filter(x=>x.price===0).length,1);
+  for(const item of SHOP_ITEMS.filter(x=>x.kind==='racket'||x.kind==='ball')){
+    assert.match(item.color,/^#[0-9a-f]{6}$/);assert.ok(item.label&&item.name.startsWith(item.label),item.id);
+    assert.ok(item.price===0||(item.price>=30&&item.price<=60),`${item.id} price ${item.price} sits with paints (35~50), about two finished rounds`);
+  }
+  const garage={...emptyGarage(),coins:60,totalEarned:60};
+  assert.equal(buyItem(garage,'racket-lapis').state.coins,10);
+  assert.equal(buyItem(garage,'racket-coral').reason,'owned','the free racket is already owned');
+  assert.equal(buyItem({...garage,coins:20},'ball-lapis').reason,'insufficient');
+  assert.equal(equipItem(garage,'ball-butter').reason,'unowned');
+  assert.equal(buyItem(garage,'racket-gold').reason,'unknown');
+  const bought=buyItem(garage,'ball-butter');assert(bought.ok);
+  const equipped=equipItem(bought.state,'ball-butter');assert(equipped.ok);assert.equal(equipped.state.equipped.ball,'butter');
+  assert.equal(equipped.state.equipped.vehicle,'coast','equipping a ball leaves the car alone');
+  let stored;assert(saveGarage(equipped.state,{setItem:(key,value)=>{stored=value;}}));
+  const again=loadGarage({getItem:()=>stored});assert.equal(again.equipped.ball,'butter');assert.equal(again.coins,25);
 });

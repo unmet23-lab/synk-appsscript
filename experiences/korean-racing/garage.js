@@ -5,7 +5,7 @@ import {FINALE_REWARDS,REWARDS,integer,object,safeKey,validTime,seoulDate,normal
 
 // Racing's part of the shared collection: daily missions and the race reward. The ledger itself
 // (items, wallet, equipment, the mini-game reward) is garage-core.js, which mini-games load alone.
-export {GARAGE_KEY,VEHICLES,PAINTS,WHEELS,TRAILS,SHOP_ITEMS,FINALE_REWARDS,MINI_GAMES,seoulDate,emptyGarage,buyItem,equipItem,setWish,awardMiniGame} from './garage-core.js';
+export {GARAGE_KEY,VEHICLES,PAINTS,WHEELS,TRAILS,RACKETS,BALLS,SHOP_ITEMS,FINALE_REWARDS,MINI_GAMES,seoulDate,emptyGarage,buyItem,equipItem,setWish,awardMiniGame} from './garage-core.js';
 const QUESTION_BY_ID = {...CHALLENGE_BY_ID,...FINALE_QUESTION_BY_ID};
 
 // A stored mission is kept only if its course or word still exists, and is rebuilt from racing's data.

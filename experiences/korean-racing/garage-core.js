@@ -31,17 +31,33 @@ export const TRAILS = [
   {id:'starlight',name:'별빛 부스터',price:null,unlockOnly:true,color:'#ced2ff'}
 ];
 const badge = {id:'badge-coast',kind:'badge',value:'coast',name:'코스트 챔피언',price:null,unlockOnly:true,color:'#d1e6da',description:'네 번째 챕터 결승 기념 배지'};
+// Talk Rally's racket face and ball (2026-10-07). Felt colours from the SYNK palette; the free ones keep the
+// game's original look. `label` is the short colour name shown under a swatch where the row already says what it is.
+export const RACKETS = [
+  {id:'coral',name:'코랄 라켓',label:'코랄',price:0,color:'#d63c2a'},
+  {id:'butter',name:'버터 라켓',label:'버터',price:40,color:'#f5c445'},
+  {id:'blush',name:'연분홍 라켓',label:'연분홍',price:40,color:'#fbd3c6'},
+  {id:'lapis',name:'라피스 라켓',label:'라피스',price:50,color:'#3d6bc9'}
+];
+export const BALLS = [
+  {id:'cream',name:'크림 공',label:'크림',price:0,color:'#fff1c9'},
+  {id:'butter',name:'버터 공',label:'버터',price:35,color:'#f5c445'},
+  {id:'blush',name:'연분홍 공',label:'연분홍',price:35,color:'#fbd3c6'},
+  {id:'lapis',name:'라피스 공',label:'라피스',price:45,color:'#3d6bc9'}
+];
 const catalogue = (kind,items) => items.map(item=>({...item,id:`${kind}-${item.id}`,kind,value:item.id}));
 export const SHOP_ITEMS = [
   ...catalogue('vehicle',VEHICLES),...catalogue('paint',PAINTS),
   ...catalogue('wheels',WHEELS).map(item=>item.value==='blossom'?{...item,id:'wheel-blossom'}:item),
-  ...catalogue('trail',TRAILS),badge
+  ...catalogue('trail',TRAILS),badge,
+  ...catalogue('racket',RACKETS),...catalogue('ball',BALLS)
 ];
 export const FINALE_REWARDS = Object.freeze({1:'paint-aurora',2:'wheel-blossom',3:'trail-starlight',4:'badge-coast',5:'paint-sunset',6:'vehicle-finale'});
 const BY_ID = Object.fromEntries(SHOP_ITEMS.map(item=>[item.id,item]));
 const itemById = id => typeof id==='string'&&Object.hasOwn(BY_ID,id)?BY_ID[id]:null;
 const FREE_ITEMS = SHOP_ITEMS.filter(item=>item.price===0).map(item=>item.id);
-const DEFAULT_EQUIPMENT = {vehicle:'coast',paint:'mint',wheels:'silver',trail:'lime',badge:null};
+// A wallet saved before a kind existed simply gets that kind's free default (normalizeGarage restores field by field).
+export const DEFAULT_EQUIPMENT = Object.freeze({vehicle:'coast',paint:'mint',wheels:'silver',trail:'lime',badge:null,racket:'coral',ball:'cream'});
 export const REWARDS = Object.freeze({finish:15,correct:2,firstClear:10,correction:5,mission:15,dailyRaceLimit:10,miniGameAccuracy:10});
 // Mini-games that share this wallet. Each pays only after its own complete-round condition.
 export const MINI_GAMES = Object.freeze(['rhythm','runner','blank-slice','entry-check','story-classroom','talk-rally','order-rush']);

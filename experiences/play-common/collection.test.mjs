@@ -106,6 +106,30 @@ test('Order Rush pays from the same wallet once the cafe shift is finished',asyn
   assert.equal((await b.api.load()).coins,48);
 });
 
+test('buy() spends coins with the garage rule, saves only a valid purchase, and the bought racket or ball can then be equipped',async()=>{
+  const b=browser({pathname:'/try/talk-rally/'});
+  const start=emptyGarage();start.coins=70;start.totalEarned=70;assert(await b.api.save(start));
+  assert.equal((await b.api.buy('ball-lapis')).ok,true);
+  let now=await b.api.load();assert.equal(now.coins,25);assert(now.owned.includes('ball-lapis'));assert.equal(now.equipped.ball,'cream','buying alone does not equip');
+  assert.equal(b.balances[0].textContent,'보유 25코인','the coin line updates after a purchase');
+  assert.equal((await b.api.buy('racket-lapis')).reason,'insufficient');assert.equal((await b.api.load()).coins,25,'a refused purchase spends nothing');
+  assert.equal((await b.api.buy('ball-lapis')).reason,'owned');assert.equal((await b.api.buy('racket-nope')).reason,'unknown');
+  assert.equal((await b.api.equip('ball-lapis')).ok,true);now=await b.api.load();assert.equal(now.equipped.ball,'lapis');assert.equal(now.equipped.racket,'coral');
+  const kinds=(await b.api.catalog()).filter(item=>item.kind==='racket'||item.kind==='ball');
+  assert.equal(JSON.stringify(kinds.filter(item=>item.price===0).map(item=>item.id).sort()),JSON.stringify(['ball-cream','racket-coral']));
+  const blocked=browser({blocked:true});assert.equal((await blocked.api.buy('ball-lapis')).reason,'storage-unavailable');
+});
+
+test('an older saved wallet keeps every field through the shared adapter and only gains the free racket and ball',async()=>{
+  const b=browser({pathname:'/try/talk-rally/'}),legacy={version:1,coins:33,totalEarned:58,owned:['vehicle-coast','paint-mint','wheels-silver','trail-lime','paint-pearl'],
+    equipped:{vehicle:'coast',paint:'pearl',wheels:'silver',trail:'lime',badge:null},wish:'open',rewardedRounds:{'rhythm:x':{date:'2026-10-04',coins:25}},firstClears:{},corrections:{},dailyRaceCounts:{'2026-10-04':1},missions:{}};
+  b.data.set(GARAGE_KEY,JSON.stringify(legacy));
+  const loaded=await b.api.load();
+  assert.equal(loaded.coins,33);assert.equal(loaded.equipped.paint,'pearl');assert.equal(JSON.stringify(loaded.rewardedRounds),JSON.stringify(legacy.rewardedRounds));
+  assert.equal(loaded.equipped.racket,'coral');assert.equal(loaded.equipped.ball,'cream');
+  assert.equal(JSON.stringify(loaded.owned.filter(id=>!/^(racket|ball)-/.test(id)).sort()),JSON.stringify([...legacy.owned].sort()));
+});
+
 test('the daily limit says so, and the badge is named in words',async()=>{
   const b=browser();
   for(let i=0;i<10;i++)await b.api.award(round('rhythm',`cap:${i}`,5));

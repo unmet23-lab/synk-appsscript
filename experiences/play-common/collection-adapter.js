@@ -23,10 +23,21 @@
       return {...result,saved:true};
     }catch{return {coins:0,reason:'unavailable',saved:false,state:null};}
   }
+  // Blocked storage would otherwise load as an empty wallet and report "not owned"/"not enough coins".
+  function readable(store){if(!store)return false;try{store.getItem(KEY);return true;}catch{return false;}}
   async function equip(itemId){
-    const store=storage();if(!store)return {ok:false,reason:'storage-unavailable'};
+    const store=storage();if(!readable(store))return {ok:false,reason:'storage-unavailable'};
     try{
       const module=await economy(),result=module.equipItem(module.loadGarage(store),itemId);
+      if(result.ok&&!module.saveGarage(result.state,store))return {...result,ok:false,reason:'storage-unavailable'};
+      refreshBadges(result.state);return result;
+    }catch{return {ok:false,reason:'unavailable'};}
+  }
+  // A purchase spends coins with the same rule as racing's garage (buyItem) and saves only when the purchase is valid.
+  async function buy(itemId){
+    const store=storage();if(!readable(store))return {ok:false,reason:'storage-unavailable'};
+    try{
+      const module=await economy(),result=module.buyItem(module.loadGarage(store),itemId);
       if(result.ok&&!module.saveGarage(result.state,store))return {...result,ok:false,reason:'storage-unavailable'};
       refreshBadges(result.state);return result;
     }catch{return {ok:false,reason:'unavailable'};}
@@ -51,7 +62,7 @@
   function connectLinks(){for(const node of global.document?.querySelectorAll('[data-collection-garage]')||[])node.href=garageHref;}
   const style=global.document?.createElement('style');
   if(style){style.textContent='.synk-collection-line{display:flex;align-items:center;flex-wrap:wrap;gap:8px 18px;font-size:13px;line-height:1.6;margin:14px 0}.synk-collection-line a{color:inherit;text-underline-offset:4px}.synk-collection-badge{font-size:12px;line-height:1.4;white-space:nowrap;opacity:.8}.synk-collection-badge[hidden],.synk-collection-line[hidden]{display:none!important}';global.document.head?.append(style);}
-  global.SynkPlayCollection=Object.freeze({key:KEY,load,save,award,equip,catalog,roundId,refreshBadges,rewardText,garageHref});
+  global.SynkPlayCollection=Object.freeze({key:KEY,load,save,award,equip,buy,catalog,roundId,refreshBadges,rewardText,garageHref});
   // A page may load this before its body is parsed; wire the links once the document is ready.
   if(global.document?.readyState==='loading')global.document.addEventListener?.('DOMContentLoaded',()=>{connectLinks();refreshBadges();});
   connectLinks();refreshBadges();
