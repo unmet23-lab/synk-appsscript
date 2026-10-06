@@ -321,7 +321,24 @@ test('여는 주소: AI마다 https 주소(복사한 글은 싣지 않음), 쉬�
     assert.ok(x.steps.every(st => !st.t.includes('{직원}')));
   }
   assert.match(run({ task: 'reply', ai: 'chatgpt' }).saves[0].steps[0].t, /예: 고객 답장 직원/);
-  assert.match(run({ ai: 'chatgpt' }).saves[0].steps[0].t, /사이드바\(지난 채팅 목록이 있는 메뉴\)/);
+  assert.match(run({ ai: 'chatgpt' }).saves[0].steps[0].t, /사이드바\(지난 채팅 목록이 있는 메뉴\)에서 ‘프로젝트’ 옆 \+를 누르고, 이름을 적어 ‘프로젝트 만들기’/);
+});
+
+test('그림 안내: ChatGPT 넣어 두기 단계에 실제 화면 네 장(설명·대체 글·크기), 다른 AI는 글로만', () => {
+  const g = run({ ai: 'chatgpt' }).saves[0].guide;
+  assert.equal(g.figs.length, 4);
+  for (const f of g.figs) {
+    assert.ok(fs.existsSync(path.join(__dirname, '..', f.src)), f.src);
+    assert.ok(f.cap && f.alt && f.w > 0 && f.h > 0 && (f.step === 0 || f.step === 1), f.src);
+  }
+  assert.equal(run({ ai: 'claude' }).saves[0].guide, undefined);
+  const rec = R.compute({ ...VIDEO, ai: 'chatgpt' });
+  const out = V.result({ rec, answers: rec.answers, layout: 'guided', plan: null, tipsOn: true, checks: {}, feedbackGiven: null, content: C, rules: R });
+  assert.equal((out.html.match(/<figure class="guide-shot">/g) || []).length, 4);
+  assert.match(out.html, /<img src="assets\/gpt-guide-1-sidebar\.webp" width="643" height="600" loading="lazy" alt="ChatGPT 사이드바/);
+  assert.match(out.html, /class="guide-note">/);
+  const cl = R.compute(VIDEO);
+  assert.doesNotMatch(V.result({ rec: cl, answers: cl.answers, layout: 'guided', plan: null, tipsOn: true, checks: {}, feedbackGiven: null, content: C, rules: R }).html, /guide-shot/);
 });
 
 test('계산 규칙과 화면에는 네트워크·저장소·AI 호출이 없다', () => {

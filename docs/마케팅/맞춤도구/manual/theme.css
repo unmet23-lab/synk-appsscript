@@ -297,6 +297,14 @@ a{color:var(--ink)}
 .usesteps .task textarea::placeholder{color:rgba(10,10,10,.45)}
 .usesteps .task textarea:focus{outline:none;box-shadow:inset 0 0 0 2px var(--ink)}
 .path .goto{margin:4px 0 0 -14px;min-height:44px}
+/* 그림 안내(10-07): 실제 ChatGPT 화면에 버터 테. 어두운 화면이라 판 위에 검은 사진으로 놓고, 누르면 크게 */
+.guide-shot{margin:12px 0 0}
+.guide-shot a{display:block;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 0 0 1px var(--line)}
+.guide-shot img{display:block;width:100%;height:auto}
+.guide-shot figcaption{margin:6px 2px 0;font-size:14px;line-height:1.5;color:var(--ink-2)}
+.guide-note{margin:12px 0 0;max-width:42em;font-size:13px;line-height:1.55;color:var(--ink-3)}
+@media(min-width:701px){.guide-shot{max-width:440px}}
+@media print{.guide-shot a{box-shadow:inset 0 0 0 1px #999}}
 /* 컴퓨터에서 이어 하기: 흰 판 한 줄 + 링크 복사 */
 .pc{margin:14px 0 0;padding:16px 18px;border-radius:18px;background:#fff;box-shadow:0 0 0 1px var(--line)}
 .pc p{margin:0;max-width:42em;font-size:14.5px;line-height:1.6;color:var(--ink-2)}

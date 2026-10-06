@@ -568,7 +568,8 @@
       M.focus(tl, '#s11-vf', s11in + 0.1);
       M.photo(tl, '#s11-face', s11in + 0.16, { y: -70 });
       M.fade(tl, '#s11-name', s11in + 0.42);
-      tl.fromTo('#s11-shot img', { y: 0 }, { y: -240, duration: 1.8, ease: 'power2.inOut', immediateRender: false }, s11in + 0.5);
+      // 10-07 첫 화면 다시 찍음(설명이 짧아짐): 제목 둘째 줄부터 메타 줄까지 보이고 시작 단추는 창 밖(-212)
+      tl.fromTo('#s11-shot img', { y: 0 }, { y: -212, duration: 1.8, ease: 'power2.inOut', immediateRender: false }, s11in + 0.5);
       M.press(tl, '#s11-q5, #s11-free, #s11-link', T('c5', 0), { stagger: 0.12, dur: 0.28 });
       M.punch(tl, '#s11-link', T('c5', 2), { to: 1.08 });
       M.fade(tl, '#s11-foot', EN('c5') + 0.5);

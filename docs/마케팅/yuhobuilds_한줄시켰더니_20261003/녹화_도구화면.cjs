@@ -1,6 +1,7 @@
 // 실제 「AI 직원 매뉴얼 만들기」(synk.im/builds/ → /builds/manual/) 화면을 휴대폰 크기로 한 장면씩 찍는다.
 // 배포 전이라 로컬 미리보기(docs/마케팅/맞춤도구/serve.mjs, http://127.0.0.1:4391)를 찍는다. 배포 뒤에는 BASE만 https://synk.im 으로 바꾼다.
 // 결과는 assets/media/tool/ 의 PNG(390×844 배율 3 = 1170×2532)와 녹화기록.json. 다시 찍기: node 녹화_도구화면.cjs
+// 영상(index.html)이 쓰는 것은 01_start.webp 하나다(끝 화면). PNG에서 폭 880 webp로 줄여 쓴다.
 // 예시 답은 영상 실화와 같다: SNS 게시물 / 올리기 직전까지 / 사실·숫자·외국어 뜻·링크 / 다섯 개 모두 / Claude.
 // 영상 안의 도구 장면은 이 사진들을 그대로 보여 준다(화면을 다시 그리거나 꾸미지 않는다).
 const path = require('path');
@@ -70,9 +71,12 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     await wait(400);
     await top();
     await shot('04_result_top', '결과 머리');
-    await page.evaluate(() => { const el = document.querySelector('.copybox.main'); const r = el.getBoundingClientRect(); window.scrollTo(0, Math.max(0, r.top + window.scrollY - (window.innerHeight - r.height) / 2)); });
+    // 10-06 밤 v4: 결과 머리 아래가 ‘01 써 보기’(가게 정보 → 쓰는 방법 둘 → 단계마다 단추)다. 매뉴얼 전문은 접혀 있다.
+    await page.evaluate(() => { const el = document.querySelector('.pathseg'); const r = el.getBoundingClientRect(); window.scrollTo(0, Math.max(0, r.top + window.scrollY - 110)); });
     await wait(400);
-    await shot('05_result_manual', '매뉴얼 창이 화면 가운데');
+    await shot('05_result_use', '01 써 보기: 쓰는 방법 탭과 바로 써 보기 첫 단계');
+    await page.evaluate(() => { const d = document.querySelector('.peek'); if (d) d.open = true; const el = document.querySelector('.copybox.main'); const r = el.getBoundingClientRect(); window.scrollTo(0, Math.max(0, r.top + window.scrollY - (window.innerHeight - r.height) / 2)); });
+    await wait(400);
     // 덤: 매뉴얼 창 안을 ‘끝내기 전 검수’부터 보이게 내린 장면
     // 줄바꿈까지 같은 그림자 상자로 ‘[끝내기 전 검수]’의 실제 높이를 잰다.
     await page.evaluate(() => {
