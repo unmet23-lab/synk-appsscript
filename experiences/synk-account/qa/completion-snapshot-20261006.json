@@ -1,0 +1,43 @@
+{
+  "at": "2026-10-06T12:59:06.148Z",
+  "sourceSha256": {
+    "experiences/synk-account/src/document-sync.mjs": "2845f3fc2c29753ac2f5ef7826b5fae0a182991cf40178303d7a3f3fd3af6229",
+    "experiences/synk-account/src/account-notebook.mjs": "c92ae7ef1a610d67c2bfc61e5749bead18201312f98cae1af0ab0bdf59b5c3a3",
+    "experiences/relationship-care/app.mjs": "18b1989a7fd04b80abf8cdc69de7ae047b0fe2b49ca520a59136b824721a23d8",
+    "experiences/family-album/app.mjs": "ef50a94624ab13eab14f270bf6b0796006a2f9a14a8570b24a6e4215c7198cce",
+    "experiences/path-vr/app.mjs": "0047b63cbc9498c8272c856126608dba9f450b0201af9bd0256bc5a81e224091",
+    "experiences/conversation-rehearsal/app.mjs": "63191fdbffc1328eff60342203042a881b4bb1d2f52a2d9defc0d7230bb0b994",
+    "tests/synk-document-sync.test.mjs": "b09bb17d7fdae96601cb7a07aac992f43bd68496154b1e98f9df0b12106e57e9",
+    "experiences/relationship-care/tests/care-sync.test.mjs": "120352fd05983163beac11ef4b9a42f411aa5f40421adaf47bd949b54f70864c"
+  },
+  "browser": [
+    {
+      "file": "experiences/synk-account/qa/personal-apps-20261006/results.json",
+      "checks": 66,
+      "errors": 0
+    },
+    {
+      "file": "experiences/relationship-care/qa/account-sync-20261006/result.json",
+      "checks": 39,
+      "errors": 0
+    },
+    {
+      "file": "experiences/synk-account/qa/shared-cache-20261006/result.json",
+      "checks": 24,
+      "errors": 0
+    }
+  ],
+  "unit": {
+    "file": "experiences/synk-account/qa/unified-account-unit-20261006.txt",
+    "passed": 201
+  },
+  "review": {
+    "requestedModel": "claude-opus-5-5",
+    "requestedEffort": "max",
+    "status": "blocked_by_session_usage_limit",
+    "resetAsReported": "2026-10-06 22:50 Asia/Seoul",
+    "result": "experiences/synk-account/qa/unified-account-opus55-review-20261006.json"
+  },
+  "remoteMutation": false,
+  "realUserLogin": false
+}

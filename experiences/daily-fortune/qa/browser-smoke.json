@@ -1,0 +1,42 @@
+{
+  "viewports": [
+    {
+      "width": 320,
+      "pageWidth": 320,
+      "minButtonHeight": 62,
+      "minTextSize": 11
+    },
+    {
+      "width": 390,
+      "pageWidth": 390,
+      "minButtonHeight": 62,
+      "minTextSize": 11
+    },
+    {
+      "width": 768,
+      "pageWidth": 768,
+      "minButtonHeight": 62,
+      "minTextSize": 11
+    },
+    {
+      "width": 1280,
+      "pageWidth": 1280,
+      "minButtonHeight": 62,
+      "minTextSize": 11
+    }
+  ],
+  "clipboard": {
+    "native": "passed",
+    "fallback": "passed"
+  },
+  "midnight": {
+    "timezone": "America/Los_Angeles",
+    "oldDay": "2026-10-06",
+    "newDay": "2026-10-07",
+    "selectionPreserved": true,
+    "staleCopyHidden": true
+  },
+  "errors": [],
+  "allSigns": "passed",
+  "storageWrites": 0
+}

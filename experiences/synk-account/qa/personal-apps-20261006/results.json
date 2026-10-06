@@ -1,0 +1,358 @@
+{
+  "at": "2026-10-06T14:57:01.849Z",
+  "checks": [
+    {
+      "name": "PATH login never uploads guest",
+      "passed": true
+    },
+    {
+      "name": "PATH account initially empty",
+      "passed": true
+    },
+    {
+      "name": "PATH save ACK preserves chosen answer",
+      "passed": true
+    },
+    {
+      "name": "PATH successful save has no account copy on device",
+      "passed": true
+    },
+    {
+      "name": "PATH state omits device consent",
+      "passed": true
+    },
+    {
+      "name": "PATH offline retains local next step",
+      "passed": true
+    },
+    {
+      "name": "PATH cross-device conflict exposed",
+      "passed": true
+    },
+    {
+      "name": "PATH explicit remote choice loads remote zone",
+      "passed": true
+    },
+    {
+      "name": "path-account-375: viewport and images",
+      "passed": true,
+      "detail": {
+        "width": 375,
+        "scroll": 375,
+        "images": []
+      }
+    },
+    {
+      "name": "PATH signout restores original guest",
+      "passed": true
+    },
+    {
+      "name": "path-guest-1440: viewport and images",
+      "passed": true,
+      "detail": {
+        "width": 1440,
+        "scroll": 1440,
+        "images": []
+      }
+    },
+    {
+      "name": "pending outbox remains after logout with explicit device notice",
+      "passed": true
+    },
+    {
+      "name": "signed-out visitor cannot export or clear another account draft",
+      "passed": true
+    },
+    {
+      "name": "pending recovery file contains exact raw only for this app",
+      "passed": true
+    },
+    {
+      "name": "cancelling device clear preserves outbox",
+      "passed": true
+    },
+    {
+      "name": "confirmed device clear leaves remote and other app untouched",
+      "passed": true
+    },
+    {
+      "name": "corrupt cache warning remains after remote load and raw is unchanged",
+      "passed": true
+    },
+    {
+      "name": "verified account can explicitly clear its own corrupt recovery when not editing",
+      "passed": true
+    },
+    {
+      "name": "corrupt recovery export preserves unreadable bytes",
+      "passed": true
+    },
+    {
+      "name": "corrupt cache new edits warn before logout and cancel keeps editor",
+      "passed": true
+    },
+    {
+      "name": "signed-out notice shows only local record presence and preserves corrupt raw",
+      "passed": true
+    },
+    {
+      "name": "signed-out corrupt recovery cannot be exported or cleared",
+      "passed": true
+    },
+    {
+      "name": "corrupt raw is deleted only by its verified owner action",
+      "passed": true
+    },
+    {
+      "name": "quota refusal leaves latest PATH answer only in memory",
+      "passed": true
+    },
+    {
+      "name": "quota failure signout requires explicit loss warning and cancel preserves editor",
+      "passed": true
+    },
+    {
+      "name": "cancelled quota logout can retry latest in-memory state",
+      "passed": true
+    },
+    {
+      "name": "multiple pending drafts block implicit selection and editing",
+      "passed": true
+    },
+    {
+      "name": "draft chooser shows creation times and preserves alternatives",
+      "passed": true
+    },
+    {
+      "name": "local-drafts-375: viewport and images",
+      "passed": true,
+      "detail": {
+        "width": 375,
+        "scroll": 375,
+        "images": []
+      }
+    },
+    {
+      "name": "explicit pending draft selection opens chosen content",
+      "passed": true
+    },
+    {
+      "name": "saving chosen draft keeps the other draft selectable and exact",
+      "passed": true
+    },
+    {
+      "name": "remaining draft selection obeys server revision conflict",
+      "passed": true
+    },
+    {
+      "name": "rehearsal login never uploads guest",
+      "passed": true
+    },
+    {
+      "name": "rehearsal explicit guest import",
+      "passed": true
+    },
+    {
+      "name": "rehearsal save ACK preserves editor",
+      "passed": true
+    },
+    {
+      "name": "rehearsal-account-375: viewport and images",
+      "passed": true,
+      "detail": {
+        "width": 375,
+        "scroll": 375,
+        "images": []
+      }
+    },
+    {
+      "name": "rehearsal account switch does not carry prior account records",
+      "passed": true
+    },
+    {
+      "name": "rehearsal guest storage preserved",
+      "passed": true
+    },
+    {
+      "name": "rehearsal switching accounts preserves original guest save preference",
+      "passed": true
+    },
+    {
+      "name": "rehearsal-guest-1440: viewport and images",
+      "passed": true,
+      "detail": {
+        "width": 1440,
+        "scroll": 1440,
+        "images": []
+      }
+    },
+    {
+      "name": "family login never uploads guest",
+      "passed": true
+    },
+    {
+      "name": "family explicit text album import",
+      "passed": true
+    },
+    {
+      "name": "family original stored as confirmed reference",
+      "passed": true
+    },
+    {
+      "name": "family original hydrated into gallery",
+      "passed": true
+    },
+    {
+      "name": "family failed original hydration prevents editing incomplete account data",
+      "passed": true
+    },
+    {
+      "name": "family same revision original read can recover explicitly",
+      "passed": true
+    },
+    {
+      "name": "family ASSET_NOT_FOUND shows pending original retention accurately",
+      "passed": true
+    },
+    {
+      "name": "family ASSET_NOT_FOUND retry reuploads current original and replaces ref",
+      "passed": true
+    },
+    {
+      "name": "family ASSET_NOT_CONFIRMED shows pending original retention accurately",
+      "passed": true
+    },
+    {
+      "name": "family ASSET_NOT_CONFIRMED retry reuploads current original and replaces ref",
+      "passed": true
+    },
+    {
+      "name": "family upload quota refusal is an error with concrete removal-first guidance",
+      "passed": true
+    },
+    {
+      "name": "family unuploaded original prevents silent navigation loss",
+      "passed": true
+    },
+    {
+      "name": "family rejected original remains available for explicit retry",
+      "passed": true
+    },
+    {
+      "name": "family new browser context restores exact original bytes",
+      "passed": true
+    },
+    {
+      "name": "family second context only reads account state",
+      "passed": true
+    },
+    {
+      "name": "family whole album deletion requires confirmation",
+      "passed": true
+    },
+    {
+      "name": "family whole account album delete reaches CAS operation",
+      "passed": true
+    },
+    {
+      "name": "family whole album deletion removes completed device cache",
+      "passed": true
+    },
+    {
+      "name": "family missing pending original refresh retains unsaved manifest",
+      "passed": true
+    },
+    {
+      "name": "family recovery confirms switching screen while preserving unsaved recovery",
+      "passed": true
+    },
+    {
+      "name": "family cancelled recovery preserves pending state",
+      "passed": true
+    },
+    {
+      "name": "family confirmed recovery restores last committed album and preserves outbox",
+      "passed": true
+    },
+    {
+      "name": "family-account-375: viewport and images",
+      "passed": true,
+      "detail": {
+        "width": 375,
+        "scroll": 375,
+        "images": []
+      }
+    },
+    {
+      "name": "family late hydration cannot replace guest",
+      "passed": true
+    },
+    {
+      "name": "family signout restores guest page",
+      "passed": true
+    },
+    {
+      "name": "family-guest-1440: viewport and images",
+      "passed": true,
+      "detail": {
+        "width": 1440,
+        "scroll": 1440,
+        "images": []
+      }
+    },
+    {
+      "name": "family quota fixture stores three real 5MiB originals under 20MiB cap",
+      "passed": true
+    },
+    {
+      "name": "family acknowledged page removal immediately releases its server original",
+      "passed": true
+    },
+    {
+      "name": "family delete undo only reuploads removed original and avoids orphan quota growth",
+      "passed": true
+    },
+    {
+      "name": "family saving a removed photo immediately releases quota",
+      "passed": true
+    },
+    {
+      "name": "family reinserting the same photo never reuses its deleted server ref",
+      "passed": true
+    },
+    {
+      "name": "family missing-original retry uploads exactly one file and preserves healthy refs",
+      "passed": true
+    },
+    {
+      "name": "family whole-album delete releases all originals",
+      "passed": true
+    },
+    {
+      "name": "family whole-album delete clears cache before the same originals are imported again",
+      "passed": true
+    },
+    {
+      "name": "no uncaught page exceptions",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "no missing application resources",
+      "passed": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "screenshots": [
+    "path-account-375",
+    "path-guest-1440",
+    "local-drafts-375",
+    "rehearsal-account-375",
+    "rehearsal-guest-1440",
+    "family-account-375",
+    "family-guest-1440"
+  ],
+  "ok": true
+}

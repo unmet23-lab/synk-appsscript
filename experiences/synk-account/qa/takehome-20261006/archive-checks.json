@@ -1,0 +1,12 @@
+[
+  {
+    "kind": "photo",
+    "same_original": true,
+    "same_file": true
+  },
+  {
+    "kind": "audio",
+    "same_original": true,
+    "same_file": true
+  }
+]

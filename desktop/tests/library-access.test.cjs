@@ -37,3 +37,21 @@ test('missing or unavailable contracts fail closed instead of using universal de
 });
 
 test('retired Studio and SHIFT menu grants never migrate into company access',()=>{const retired=['studio','shift'].map(id=>({product:'platform',key:'library.'+id}));assert.deepEqual(projectLibrary(payload([],retired),now),{status:'ready',appIds:[]});assert.deepEqual(projectLibrary(payload([teacher],retired),now).appIds,['teacher']);assert.deepEqual(projectLibrary(payload([],retired.concat({product:'platform',key:'library.messenger'})),now).appIds,['messenger']);});
+test('care is visible only with its own active menu grant and does not add company or learning rights',()=>{
+  const grant={product:'platform',key:'library.care'};
+  assert.deepEqual(projectLibrary(payload([],[grant]),now).appIds,['care']);
+  assert.deepEqual(projectLibrary(payload([learner],[grant]),now).appIds,['world','care']);
+  assert.deepEqual(projectLibrary(payload([],[{...grant,revoked_at:'2026-10-01T00:00:00Z'}]),now).appIds,[]);
+  assert.deepEqual(projectLibrary(payload([],[{...grant,product:'care'}]),now).appIds,[]);
+});
+
+test('member benefit app menu rights are exact, independent and expire normally',()=>{
+  for(const id of ['fortune','rehearsal','family-album']){
+    const grant={product:'platform',key:'library.'+id,valid_until:'2026-10-02T00:00:01Z'};
+    assert.deepEqual(projectLibrary(payload([],[grant]),now).appIds,[id]);
+    assert.deepEqual(projectLibrary(payload([],[grant]),now+1000).appIds,[]);
+    for(const patch of [{product:id},{key:'library.'+id+'.extra'},{active:false},{revoked_at:'2026-10-01T00:00:00Z'}])assert.deepEqual(projectLibrary(payload([],[{...grant,...patch}]),now).appIds,[]);
+  }
+  assert.deepEqual(projectLibrary(payload([learner]),now).appIds,['world']);
+  assert.deepEqual(projectLibrary(payload([],[{product:'platform',key:'library.care'}]),now).appIds,['care']);
+});

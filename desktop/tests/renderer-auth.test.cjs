@@ -36,8 +36,8 @@ async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bri
     onAuthChanged:callback=>subscribe('auth',callback),onClientsChanged:callback=>subscribe('clients',callback),onClientProgress:callback=>subscribe('progress',callback),...bridgeOverrides};
   const owner=initialAuth.signedIn?initialAuth.account?.synk_user_id:null;
   const storage=new Map([[viewKey(owner),initialPreferences],[personalKey(owner),personalPreferences],...storageEntries]);
-  const modules={};for(const file of ['state','personalization','library'])modules[file]=await import('../renderer/'+file+'.mjs');
-  const source=fs.readFileSync(path.join(__dirname,'../renderer/launcher.mjs'),'utf8').replace(/^import \{([^}]+)\} from '\.\/(state|personalization|library)\.mjs';/gm,(_all,names,file)=>'const {'+names+'}=globalThis.rendererModules.'+file+';');
+  const modules={};for(const file of ['state','personalization','library','benefits'])modules[file]=await import('../renderer/'+file+'.mjs');
+  const source=fs.readFileSync(path.join(__dirname,'../renderer/launcher.mjs'),'utf8').replace(/^import \{([^}]+)\} from '\.\/(state|personalization|library|benefits)\.mjs';/gm,(_all,names,file)=>'const {'+names+'}=globalThis.rendererModules.'+file+';');
   const context={rendererModules:modules,SynkAtlasPersonalization:personalEngine,document,window:{addEventListener(){}},synkDesktop:bridge,
     localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)},setTimeout:()=>0,clearTimeout(){},Intl,Date};
   vm.createContext(context);vm.runInContext(source,context,{filename:'desktop/renderer/launcher.mjs'});
@@ -130,3 +130,46 @@ for(const [label,result,pattern]of [
 
 test('retired Studio and SHIFT selections stay hidden and cannot launch or grant Messenger',async()=>{for(const id of ['studio','shift']){let calls=0;const f=await fixture({initialAuth:account('legacy-'+id,[id]),initialPreferences:JSON.stringify({selected:id,favorites:[id]}),initialClients:[{id,canLaunch:true}],bridgeOverrides:{getEnvironment:async()=>({...environment,productPreviewsAvailable:['path','shift']}),openProductPreview:async()=>{calls++;},launch:async()=>{calls++;}}});assert.equal(await f.ready,'true');assert.deepEqual(f.ids(),[]);assert.equal(f.element('app-detail').hidden,true);await f.action({app:id});await f.action({command:'product-preview',client:id});await f.action({command:'launch',client:'messenger'});assert.equal(calls,0);assert.doesNotMatch(f.element('download-list').innerHTML,/Messenger/);}});
 test('Messenger workroom lists production review and AI practice without duplicate apps',async()=>{const f=await fixture({initialAuth:account('workroom-member',['messenger','studio','shift']),initialPreferences:JSON.stringify({selected:'shift',favorites:['studio','shift']})});assert.equal(await f.ready,'true');assert.deepEqual(f.ids(),['messenger']);assert.equal(f.element('breadcrumb-app').textContent,'SYNK Messenger');assert.match(f.element('detail-content').innerHTML,/제작 데스크/);assert.match(f.element('detail-content').innerHTML,/게시 전 점검/);assert.match(f.element('detail-content').innerHTML,/AI 업무 연습/);assert.equal(f.element('favorite').attributes.get('aria-pressed'),'false');});
+
+test('public benefit introductions never grant a guest app or a preview action',async()=>{
+  let calls=0;const f=await fixture({initialAuth:signedOut,bridgeOverrides:{getEnvironment:async()=>({...environment,productPreviewsAvailable:['care','fortune','rehearsal','family-album']}),openProductPreview:async()=>{calls++;return {ok:true};}}});
+  assert.equal(await f.ready,'true');await f.action({view:'benefits'});
+  assert.equal(f.element('view-benefits').hidden,false);assert.deepEqual(f.ids(),['world']);
+  for(const id of ['care','fortune','rehearsal','family-album']){
+    await f.action({benefit:id});assert.equal(f.element('benefit-detail').hidden,false);
+    assert.match(f.element('benefit-detail').innerHTML,/회원 무료 제공 예정/);
+    assert.doesNotMatch(f.element('benefit-detail').innerHTML,/data-benefit-preview/);
+    await f.action({benefitPreview:id});
+  }
+  assert.equal(calls,0);assert.deepEqual(f.ids(),['world']);
+  await f.action({view:'benefits'});assert.equal(f.element('benefits-overview').hidden,false);assert.equal(f.element('benefit-detail').hidden,true);
+});
+
+test('benefit preview needs both native capability and current server entitlement, including after revocation',async()=>{
+  let calls=0;const f=await fixture({initialAuth:account('care-member',['care']),bridgeOverrides:{getEnvironment:async()=>({...environment,productPreviewsAvailable:['care']}),openProductPreview:async id=>{assert.equal(id,'care');calls++;return {ok:true};}}});
+  assert.equal(await f.ready,'true');await f.action({benefit:'care'});assert.match(f.element('benefit-detail').innerHTML,/data-benefit-preview="care"/);
+  await f.action({benefitPreview:'care'});assert.equal(calls,1);
+  f.emit('auth',account('care-member',[],{sessionGeneration:2}));
+  assert.doesNotMatch(f.element('benefit-detail').innerHTML,/data-benefit-preview/);await f.action({benefitPreview:'care'});assert.equal(calls,1);
+  const noCapability=await fixture({initialAuth:account('care-member',['care']),bridgeOverrides:{openProductPreview:async()=>{calls++;}}});
+  assert.equal(await noCapability.ready,'true');await noCapability.action({benefit:'care'});assert.doesNotMatch(noCapability.element('benefit-detail').innerHTML,/data-benefit-preview/);await noCapability.action({benefitPreview:'care'});assert.equal(calls,1);
+});
+
+test('benefit search opens a public detail without replacing authorized app selections',async()=>{
+  const f=await fixture({initialAuth:account('student-search',['world'])});assert.equal(await f.ready,'true');
+  f.input('search','가족');assert.equal(f.element('benefits-search').hidden,false);assert.match(f.element('benefits-search').innerHTML,/data-benefit="family-album"/);
+  await f.action({benefit:'family-album'});assert.equal(f.element('view-benefits').hidden,false);assert.match(f.element('benefit-detail').innerHTML,/사진 뒤의 이야기/);assert.equal(f.element('breadcrumb-app').textContent,'SYNK WORLD');
+  f.input('search','');assert.equal(f.element('benefits-search').hidden,true);assert.deepEqual(f.ids(),['world']);
+});
+
+test('member benefit clients launch only their own local preview after exact entitlement checks',async()=>{
+  for(const id of ['fortune','rehearsal','family-album']){
+    const calls=[],f=await fixture({initialAuth:account('benefit-'+id,[id]),bridgeOverrides:{getEnvironment:async()=>({...environment,productPreviewsAvailable:[id]}),openProductPreview:async actual=>{calls.push(actual);return {ok:true};},launch:async()=>assert.fail('must not use package launch')}});
+    assert.equal(await f.ready,'true');assert.deepEqual(f.ids(),[id]);assert.equal(f.element('primary-action').dataset.action,'product-preview');
+    await f.action({benefit:id});assert.match(f.element('benefit-detail').innerHTML,new RegExp('data-benefit-preview="'+id+'"'));
+    assert.doesNotMatch(f.element('benefit-detail').innerHTML,/플레저 개발 미리보기 열기/);
+    await f.action({benefitPreview:id});assert.deepEqual(calls,[id]);
+    const other=id==='rehearsal'?'family-album':'rehearsal';await f.action({benefit:other});assert.doesNotMatch(f.element('benefit-detail').innerHTML,/data-benefit-preview/);await f.action({benefitPreview:other});assert.deepEqual(calls,[id]);
+    f.emit('auth',account('benefit-'+id,[],{sessionGeneration:2}));await f.action({benefitPreview:id});assert.deepEqual(calls,[id]);
+  }
+});

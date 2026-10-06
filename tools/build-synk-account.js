@@ -36,6 +36,7 @@ output('src/generated/world-learning-host.cjs', fs.readFileSync(path.join(source
 for (const file of ['SUIT-Variable.woff2', 'InterTight-700.woff2', 'scrapbook.css', 'sticker-book.webp', 'thread-shift.webp']) output(`assets/${file}`, fs.readFileSync(path.join(sourceRoot, 'experiences/learning-hub/assets', file)));
 for (const file of ['slab-coral-long.webp', 'slab-cream-long.webp', 'chip-blush-long.webp', 'badge-cream.webp', 'badge-check.webp']) output(`assets/${file}`, fs.readFileSync(path.join(sourceRoot, 'docs/디자인/펠트부품/assets/ui', file)));
 output('assets/tex-blush.webp', fs.readFileSync(path.join(sourceRoot, 'docs/디자인/펠트부품/assets/ui/tex-blush.webp')));
+for (const file of ['care-note.webp', 'fortune-star.avif', 'teacher-cover.png', 'studio-camera.webp', 'wide-lapis.webp', 'wide-butter.webp']) output(`assets/member/${file}`, fs.readFileSync(path.join(sourceRoot, 'desktop/assets/launcher', file)));
 for (const file of ['laptop-felt.webp', 'sticker-search.webp', 'sticker-person.webp']) output(`assets/${file}`, fs.readFileSync(path.join(sourceRoot, 'docs/마케팅/맞춤도구/assets', file)));
 output('assets/synk-logo.svg', fs.readFileSync(path.join(sourceRoot, 'docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg')));
 for (const id of ['platform', 'world']) output(`assets/app-${id}.png`, fs.readFileSync(path.join(sourceRoot, `desktop/assets/${id}.png`)));

@@ -5,7 +5,7 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   getEnvironment:()=>ipcRenderer.invoke('synk:environment'),
   getClients:()=>ipcRenderer.invoke('synk:clients'),
   openTeacherPreview:()=>ipcRenderer.invoke('synk:teacher-preview'),
-  openProductPreview:id=>typeof id==='string'&&id==='path'?ipcRenderer.invoke('synk:product-preview',id):Promise.resolve({ok:false,code:'UNKNOWN_PREVIEW'}),
+  openProductPreview:id=>typeof id==='string'&&['path','care','fortune','rehearsal','family-album'].includes(id)?ipcRenderer.invoke('synk:product-preview',id):Promise.resolve({ok:false,code:'UNKNOWN_PREVIEW'}),
   prepareClient:id=>typeof id==='string'&&['world','messenger'].includes(id)?ipcRenderer.invoke('synk:prepare-client',id):Promise.resolve({ok:false,code:'UNKNOWN_CLIENT'}),
   cancelPreparation:id=>typeof id==='string'&&['world','messenger'].includes(id)?ipcRenderer.invoke('synk:cancel-preparation',id):Promise.resolve({ok:false,code:'UNKNOWN_CLIENT'}),
   openInstaller:id=>typeof id==='string'&&['world','messenger'].includes(id)?ipcRenderer.invoke('synk:open-installer',id):Promise.resolve({ok:false,code:'UNKNOWN_CLIENT'}),

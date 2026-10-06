@@ -7,7 +7,7 @@ const close=server=>new Promise(r=>{server.closeAllConnections();server.close(r)
 const secure={isEncryptionAvailable:()=>true,encryptString:text=>{const cipher=crypto.createCipheriv('aes-256-gcm',Buffer.alloc(32,7),Buffer.alloc(12,9));return Buffer.concat([cipher.update(text),cipher.final(),cipher.getAuthTag()]);},decryptString:data=>{const decipher=crypto.createDecipheriv('aes-256-gcm',Buffer.alloc(32,7),Buffer.alloc(12,9));decipher.setAuthTag(data.subarray(-16));return Buffer.concat([decipher.update(data.subarray(0,-16)),decipher.final()]).toString();}};
 async function fixture(t,{product='platform',secureStorage=secure,openFail=false}={}){
   const directory=await fs.mkdtemp(path.join(os.tmpdir(),'synk-auth-test-'));const portProbe=http.createServer(),callbackPort=await listen(portProbe);await close(portProbe);
-  let opened,clock=1000000,serial=0,codeCount=0,refreshCount=0,logoutCount=0,delayToken=null,tokenStatus=200,wrongSubject=false,accountStatus=200,userStatus=200,nonJson=false,accountPayload={account:{synk_user_id:'stable-synthetic-id',status:'active',profile:{display_name:'합성 계정'}},memberships:[],entitlements:[]};const requests=[],codes=new Map(),active=new Set(),accountResponses=[],classroomResponses=[];
+  let opened,clock=1000000,serial=0,codeCount=0,refreshCount=0,logoutCount=0,delayToken=null,tokenStatus=200,wrongSubject=false,accountStatus=200,userStatus=200,nonJson=false,accountPayload={account:{synk_user_id:'stable-synthetic-id',status:'active',profile:{display_name:'합성 계정'}},memberships:[],entitlements:[]};const requests=[],codes=new Map(),active=new Set(),accountResponses=[],classroomResponses=[],fortuneResponses=[],careResponses=[],personalResponses=[];
   const server=http.createServer(async(req,res)=>{
     const u=new URL(req.url,'http://127.0.0.1');let body='';for await(const chunk of req)body+=chunk;
     const reply=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(data));};requests.push({path:u.pathname,query:Object.fromEntries(u.searchParams),method:req.method,headers:req.headers,body});
@@ -25,6 +25,9 @@ async function fixture(t,{product='platform',secureStorage=secure,openFail=false
       return reply(accountStatus,accountStatus===200?{ok:true,...accountPayload,sessions:[{id:'00000000-0000-4000-8000-000000000001',current:true,revoked:false}],access_token:'must-be-redacted'}:{ok:false,error:{code:accountStatus===503?'UNAVAILABLE':'SESSION_REVOKED'}});
     }
     if(u.pathname==='/functions/v1/synk-learning')return reply(200,{ok:true,events:[],cursor:0,revision:1});
+    if(u.pathname==='/functions/v1/synk-care'){const queued=careResponses.shift();if(queued){await queued.wait;return reply(queued.status??200,queued.data);}return reply(200,{ok:true,scope:'synk-care',accountId:accountPayload.account.synk_user_id,revision:0,updatedAt:null,state:null,nested:{access_token:'must-not-reach-renderer',refresh_token:'must-not-reach-renderer'}});}
+    if(u.pathname==='/functions/v1/synk-personal'){const queued=personalResponses.shift();if(queued){await queued.wait;return reply(queued.status??200,queued.data);}return reply(200,{ok:true,scope:'synk-personal',resource:product,accountId:accountPayload.account.synk_user_id,revision:0,updatedAt:null,state:null,nested:{access_token:'must-not-reach-renderer',refresh_token:'must-not-reach-renderer'}});}
+    if(u.pathname==='/functions/v1/synk-fortune'){const queued=fortuneResponses.shift();if(queued){await queued.wait;return reply(queued.status??200,queued.data);}return reply(200,{ok:true,account:{synk_user_id:'stable-synthetic-id'},revision:0,state:{version:1,profile:null,preferences:{mode:'western',signId:null},entries:[]},nested:{access_token:'must-not-reach-renderer',refresh_token:'must-not-reach-renderer'}});}
     if(u.pathname.startsWith('/functions/v1/synk-classroom/api/')){const queued=classroomResponses.shift();if(queued){await queued.wait;return reply(queued.status??200,queued.data);}return reply(200,{ok:true,classes:[],nested:{access_token:'must-not-reach-renderer',refresh_token:'must-not-reach-renderer'}});}
     reply(404,{ok:false});
   });
@@ -32,8 +35,104 @@ async function fixture(t,{product='platform',secureStorage=secure,openFail=false
   const config=configuration(raw,product,'development');const store=()=>createTokenStore({directory,safeStorage:secureStorage,scope:product,configFingerprint:config.fingerprint,platform:'win32'});const services=[];
   const create=()=>{const service=createAuthService({config,store:store(),now:()=>clock,openExternal:async url=>{if(openFail)throw Error('SYNTHETIC_OPEN_FAILED');opened=url;},timeoutMs:3000});services.push(service);return service;};
   const service=create();t.after(async()=>{for(const s of services)s.dispose();await close(server);await fs.rm(directory,{recursive:true,force:true});});
-  return {service,create,store,config,raw,directory,requests,get opened(){return opened;},get codeCount(){return codeCount;},get refreshCount(){return refreshCount;},get logoutCount(){return logoutCount;},setClock:value=>{clock=value;},delay:promise=>{delayToken=promise;},tokenStatus:value=>{tokenStatus=value;},wrongSubject:()=>{wrongSubject=true;},accountStatus:value=>{accountStatus=value;},accountPayload:value=>{accountPayload={...accountPayload,...value};},queueAccount:value=>accountResponses.push(value),queueClassroom:value=>classroomResponses.push(value),userStatus:value=>{userStatus=value;},nonJson:()=>{nonJson=true;},async login(){await service.initialize();await service.signIn();const response=await fetch(opened);assert.equal(response.status,200);await waitFor(()=>service.status().signedIn);}};
+  return {service,create,store,config,raw,directory,requests,get opened(){return opened;},get codeCount(){return codeCount;},get refreshCount(){return refreshCount;},get logoutCount(){return logoutCount;},setClock:value=>{clock=value;},delay:promise=>{delayToken=promise;},tokenStatus:value=>{tokenStatus=value;},wrongSubject:()=>{wrongSubject=true;},accountStatus:value=>{accountStatus=value;},accountPayload:value=>{accountPayload={...accountPayload,...value};},queueAccount:value=>accountResponses.push(value),queueClassroom:value=>classroomResponses.push(value),queueFortune:value=>fortuneResponses.push(value),queueCare:value=>careResponses.push(value),queuePersonal:value=>personalResponses.push(value),userStatus:value=>{userStatus=value;},nonJson:()=>{nonJson=true;},async login(){await service.initialize();await service.signIn();const response=await fetch(opened);assert.equal(response.status,200);await waitFor(()=>service.status().signedIn);}};
 }
+
+test('personal apps reuse real PKCE, main-held tokens and fixed per-client data resources',async t=>{
+  for(const product of ['path','rehearsal','family-album']){
+    const f=await fixture(t,{product});await f.login();assert.equal(f.config.product,'platform');assert.equal(f.config.clientKey,product);
+    const loaded=await f.service.accountRequest('personalLoad');assert.equal(loaded.ok,true);assert.deepEqual(loaded.nested,{});
+    assert.equal((await f.service.accountRequest('personalSave',{expected_revision:0,state:{version:1}})).ok,true);
+    assert.equal((await f.service.accountRequest('personalDelete',{expected_revision:1})).ok,true);
+    const calls=f.requests.filter(call=>call.path==='/functions/v1/synk-personal');assert.deepEqual(calls[0].query,{resource:product});assert.equal(JSON.parse(calls[1].body).resource,product);
+    for(const call of calls){assert.equal(call.headers.authorization,'Bearer synthetic-access-1');assert.equal(call.headers['x-synk-product'],'platform');}
+    for(const operation of ['setLearning','careLoad','fortuneGet','classroom','revokeAll'])assert.equal((await f.service.accountRequest(operation,{})).error.code,'INVALID_REQUEST');
+    assert.equal((await f.service.accountRequest('personalLoad',{resource:'care'})).error.code,'INVALID_REQUEST');
+    assert.doesNotMatch(JSON.stringify({loaded,status:f.service.status()}),/synthetic-access|synthetic-refresh|must-not-reach-renderer/);
+  }
+});
+
+test('personal transport rotates once, preserves CAS and rejects wrong resource or account responses',async t=>{
+  const f=await fixture(t,{product:'path'});await f.login();f.queuePersonal({status:401,data:{ok:false,error:{code:'AUTH_REQUIRED'}}});
+  assert.equal((await f.service.accountRequest('personalLoad')).ok,true);assert.equal(f.refreshCount,1);
+  f.queuePersonal({status:409,data:{ok:false,error:{code:'REVISION_CONFLICT'},revision:8}});const conflict=await f.service.accountRequest('personalDelete',{expected_revision:0});assert.equal(conflict.revision,8);assert.equal(conflict.error.status,409);
+  for(const patch of [{resource:'family-album'},{accountId:'someone-else'}]){
+    if(!f.service.status().signedIn)await f.login();f.queuePersonal({data:{ok:true,scope:'synk-personal',resource:'path',accountId:'stable-synthetic-id',revision:0,state:null,...patch}});
+    assert.equal((await f.service.accountRequest('personalLoad')).ok,false);assert.equal(f.service.status().signedIn,false);
+  }
+});
+
+test('native personal API preserves only a missing original UUID for targeted retry',async t=>{
+  const f=await fixture(t,{product:'family-album'});await f.login();const assetId='22222222-2222-4222-8222-222222222222';
+  for(const [code,id,expected] of [['ASSET_NOT_FOUND',assetId,assetId],['ASSET_NOT_CONFIRMED',assetId,assetId],['ASSET_NOT_FOUND','private/not-an-id',undefined],['MEDIA_QUOTA_EXCEEDED',assetId,undefined]]){
+    f.queuePersonal({status:404,data:{ok:false,error:{code,assetId:id,details:'private provider details'}}});
+    const result=await f.service.accountRequest('personalSave',{expected_revision:0,state:{version:1}});
+    assert.equal(result.error.code,code);assert.equal(result.error.assetId,expected);assert.equal(result.error.details,undefined);
+  }
+});
+
+test('logout fences a delayed personal document before it reaches the renderer',async t=>{
+  const f=await fixture(t,{product:'rehearsal'});await f.login();let release;
+  f.queuePersonal({wait:new Promise(resolve=>{release=resolve;}),data:{ok:true,scope:'synk-personal',resource:'rehearsal',accountId:'stable-synthetic-id',revision:0,state:{private:'previous account'}}});
+  const pending=f.service.accountRequest('personalLoad');await waitFor(()=>f.requests.some(call=>call.path==='/functions/v1/synk-personal'));await f.service.signOut();release();
+  const response=await pending;assert.equal(response.ok,false);assert.equal(response.state,undefined);
+});
+
+test('care uses canonical PKCE and main-only credentials for its fixed account state route',async t=>{
+  const f=await fixture(t,{product:'care'}),state={version:1,people:[],events:[],drafts:[],completions:[]};
+  assert.equal((await f.service.accountRequest('careLoad')).error.code,'AUTH_REQUIRED');
+  await f.login();assert.equal(f.config.product,'platform');assert.equal(f.config.clientKey,'care');
+  const result=await f.service.accountRequest('careLoad');assert.equal(result.ok,true);assert.deepEqual(result.nested,{});
+  assert.equal((await f.service.accountRequest('careSave',{expected_revision:0,state})).ok,true);
+  assert.equal((await f.service.accountRequest('careDelete',{expected_revision:1})).ok,true);
+  const calls=f.requests.filter(request=>request.path==='/functions/v1/synk-care');assert.equal(calls.length,3);
+  assert.deepEqual(JSON.parse(calls[1].body),{action:'save',expected_revision:0,state});
+  assert.deepEqual(JSON.parse(calls[2].body),{action:'delete',expected_revision:1});
+  for(const call of calls){assert.equal(call.headers.authorization,'Bearer synthetic-access-1');assert.equal(call.headers['x-synk-product'],'platform');assert.equal(call.headers['x-synk-contract'],'1');}
+  for(const operation of ['requestDeletion','setLearning','memoryGet','classroom','fortuneGet','revokeAll'])assert.equal((await f.service.accountRequest(operation,{})).error.code,'INVALID_REQUEST');
+  assert.doesNotMatch(JSON.stringify({status:f.service.status(),result}),/synthetic-access|synthetic-refresh|must-not-reach-renderer|code_verifier/);
+});
+
+test('care refresh retries once and preserves CAS conflicts without replacing account state',async t=>{
+  const f=await fixture(t,{product:'care'});await f.login();f.queueCare({status:401,data:{ok:false,error:{code:'AUTH_REQUIRED'}}});
+  assert.equal((await f.service.accountRequest('careLoad')).ok,true);assert.equal(f.refreshCount,1);
+  const calls=f.requests.filter(request=>request.path==='/functions/v1/synk-care');assert.equal(calls[0].headers.authorization,'Bearer synthetic-access-1');assert.equal(calls[1].headers.authorization,'Bearer synthetic-access-2');
+  f.queueCare({status:409,data:{ok:false,error:{code:'REVISION_CONFLICT'},revision:8}});
+  const conflict=await f.service.accountRequest('careDelete',{expected_revision:1});assert.equal(conflict.error.code,'REVISION_CONFLICT');assert.equal(conflict.error.status,409);assert.equal(conflict.revision,8);assert.equal(f.service.status().signedIn,true);
+});
+
+test('care cannot deliver a mismatched account response or finish a read after logout',async t=>{
+  const f=await fixture(t,{product:'care'});await f.login();
+  f.queueCare({data:{ok:true,scope:'synk-care',accountId:'another-account',revision:1,state:{private:'other owner'}}});
+  const wrong=await f.service.accountRequest('careLoad');assert.equal(wrong.ok,false);assert.equal(wrong.state,undefined);assert.equal(f.service.status().signedIn,false);
+  await f.login();let release;
+  f.queueCare({wait:new Promise(resolve=>{release=resolve;}),data:{ok:true,scope:'synk-care',accountId:'stable-synthetic-id',revision:1,state:{private:'old account'}}});
+  const pending=f.service.accountRequest('careLoad');await waitFor(()=>f.requests.filter(request=>request.path==='/functions/v1/synk-care').length===2);await f.service.signOut();release();
+  const late=await pending;assert.equal(late.ok,false);assert.equal(late.state,undefined);assert.equal(f.service.status().signedIn,false);
+});
+
+test('fortune native OAuth owns its token while account storage uses the platform product and fixed routes',async t=>{
+  const f=await fixture(t,{product:'fortune'});await f.login();
+  assert.equal(f.config.clientKey,'fortune');assert.equal(f.config.product,'platform');assert.equal(new URL(f.opened).searchParams.get('client_id'),'synthetic-client-fortune');
+  const state={version:1,profile:{birthDate:'2000-01-07',birthTime:null,calendar:'solar',timeZone:'Asia/Seoul'},preferences:{mode:'korean',signId:null},entries:[]};
+  const read=await f.service.accountRequest('fortuneGet',{});assert.equal(read.ok,true);assert.deepEqual(read.nested,{});
+  assert.equal((await f.service.accountRequest('fortunePut',{expected_revision:0,state})).ok,true);
+  assert.equal((await f.service.accountRequest('fortuneDelete',{expected_revision:1})).ok,true);
+  const requests=f.requests.filter(row=>row.path==='/functions/v1/synk-fortune');assert.equal(requests.length,3);
+  assert.deepEqual(requests.map(row=>row.method),['GET','POST','POST']);assert.deepEqual(JSON.parse(requests[1].body),{action:'save',expected_revision:0,state});assert.deepEqual(JSON.parse(requests[2].body),{action:'delete',expected_revision:1});
+  for(const row of requests){assert.equal(row.headers['x-synk-product'],'platform');assert.equal(row.headers.authorization,'Bearer synthetic-access-1');}
+  assert.doesNotMatch(JSON.stringify(f.service.status()),/synthetic-access|synthetic-refresh/);
+});
+
+test('fortune account transport refreshes once, keeps revision conflicts and fences a response after logout',async t=>{
+  const f=await fixture(t,{product:'fortune'});await f.login();f.queueFortune({status:401,data:{ok:false,error:{code:'AUTH_REQUIRED'}}});
+  assert.equal((await f.service.accountRequest('fortuneGet')).ok,true);assert.equal(f.refreshCount,1);
+  f.queueFortune({status:409,data:{ok:false,error:{code:'REVISION_CONFLICT'},revision:8}});
+  const conflict=await f.service.accountRequest('fortuneDelete',{expected_revision:0});assert.equal(conflict.error.code,'REVISION_CONFLICT');assert.equal(conflict.revision,8);
+  let release;f.queueFortune({wait:new Promise(resolve=>{release=resolve;}),data:{ok:true,state:{private:'prior account'}}});
+  const waiting=f.service.accountRequest('fortuneGet');await waitFor(()=>f.requests.filter(row=>row.path==='/functions/v1/synk-fortune').length===4);await f.service.signOut();release();
+  const result=await waiting;assert.equal(result.ok,false);assert.equal(result.state,undefined);assert.equal(f.service.status().signedIn,false);
+});
 
 test('classroom requests use main credentials, product identity and class URL without exposing tokens',async t=>{
   for(const product of ['world','platform']){const f=await fixture(t,{product});await f.login();

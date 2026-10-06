@@ -1,0 +1,17 @@
+직전 2026-10-06 코어 최종 검수의 후속 수정 검수입니다. 공식 claude-opus-5-5 / --effort max 그대로 읽기만 하세요. 다른 모델로 대체하지 마세요. Read/Glob/Grep만 사용하세요. .env, 인증 설정 원문, 키·토큰·실사용자 자료를 읽거나 출력하지 마세요. 코드 변경·명령 실행·원격 요청은 하지 마세요.
+
+이번에는 직전 지적의 수정 경로와 새 리허설 도구만 좁게 검사합니다. 전체 Atlas나 모든 제품을 새로 전수 탐색하지 마세요. 실제 수정 대상과 회귀 시험을 함께 읽고 깨지는 경로가 있으면 파일·줄·재현 근거를 적으세요. 결과는 해결/남은 실제 문제/읽지 못한 범위/리허설 및 운영 적용 판단으로 간결하게 주세요. 이전 세션 모델 사용량 누적은 이번 실제 모델 증명이 아니므로 자신이 사용한 실제 모델을 정확히 말하세요.
+
+작업 원본 C:/Users/q1212/Documents/SYNK-appsscript, 서버 후보 C:/Users/q1212/Documents/SYNK-talk-care-release-20261006입니다. 공유 SYNK-talk의 다른 미커밋 파일은 배포 대상이 아닙니다. 후보 auth/store 기준 HEAD d739dfb42f8ab32d240ca0d044e37c201f359586를 유지합니다. 신규 migration 2개만 적용하며 기존 DB/계정/운세 권한 변경은 하지 않습니다.
+
+검사 목록:
+가족 앨범 cache 구현은 새 experiences/family-album/account-media.mjs로 분리했으며 tests/account-media.test.mjs에 실제 5MiB×3 쿼터·삭제·undo·재시도 회귀가 있습니다. 이 파일과 server.mjs의 공개 module 연결도 포함하세요.
+1. P1-A 가족앨범 삭제/undo/동일파일 재추가: experiences/family-album/app.mjs, synk-account/src/account-notebook.mjs/document-sync.mjs/product-account.mjs. 저장 성공 ACK에 연결된 manifest 차이로 해제된 ref만 cache에서 제외하고, remove 성공 cache clear, 재시도는 서버가 지정한 missing asset만 재업로드. 서버 후보 lib/synk-personal-store.js/server.js 오류의 assetId(형식 검증) 전달. native desktop/src/auth-service.cjs + personal-account.cjs에서 해당 오류가 유지되는 경로를 확인. 브라우저 mock의 즉시 참조삭제+20MiB quota 회귀는 experiences/synk-account/qa/personal-apps-smoke.cjs와 관련 새 QA 파일을 확인.
+2. P2-A 원문 철회: relationship-care/model.mjs의 revokeCareMemory는 원문/기억/후속 챙김과 같은 사람의 삭제한 기억 텍스트가 들어간 savedMessages 및 drafts를 제거합니다. app.mjs 확인문구/세대 검사/세션 초안 무효화. 실제 연락 기록·별도 일정·다른 사람 문구는 유지. tests/care-personalization.test.mjs 및 qa/personalization-smoke.cjs를 확인하세요. 기존 동일 인용 중복 방지 수정도 현재 composeDraft에 있습니다.
+3. P2-B 계정별 미저장 복구: document-sync/account-notebook과 care app 복구 버튼. 비로그인은 개수만 표시; 로그인은 envelope와 key 소유자가 현재 accountId로 일치하는 기록만 내보내거나 삭제. 소유 미상 손상 raw 보존. P3-2 0개 충돌 복구, P3-3 기존 단일 초안도 직접 선택 후에만 전송. 늦은 ACK/계정전환 보호를 유지하는지 확인.
+4. P2-C NUL/단독 surrogate: care model clean()과 personal-data.mjs의 jsonCopy가 거부하며 정상 한국어·이모지는 유지. 후보 tests/synk-care.test.js/personal.test.js는 400과 revision 유지 후 정상 저장을 확인. 공유/후보 runtime은 최종 코드로 재생성했고 --check 통과했습니다. 후보 backend43/43은 experiences/relationship-care/qa/personalization-backend-final-20261006.txt, 26파일 SHA는 tools/synk-id/qa/operational-core-release-sha-20261006.json에 있습니다.
+5. P2-D PC 다운로드: desktop/src/product-preview.cjs/product-main.cjs 복구 JSON 4종 명시허용과 거부시 알림, 해당 tests. P3-4 준비기록은 최근500건 rolling, UI에 최근500 명시, 선택/평가 지속시험.
+6. P3-1 실제 합성 서버 시험 정리: 후보 tools/synk-personal-api-rehearsal.js preflight에서 삭제상태를 지원하는 20261003000000까지 요구. tests/synk-personal-api-rehearsal.test.js가 선행조건 없으면 사용자 생성0 확인. 원격 읽기 증거 tools/synk-id/qa/care-cleanup-prerequisite-20261006.json에 양환경 지원 true. 계정/객체 삭제는 이 도구가 생성한 합성 표식과 정확한 소유자만 대상으로 합니다.
+7. 새 도구 tools/synk-id/qa/care-pkce-rehearsal.cjs 및 .test.cjs: 기본 prepare, --run 리허설 전용, 완료등록journal/현재매핑digest/프로젝트명/정확한 실제 클라이언트 재검증 후 합성2계정. 기존 공식 Core PKCE 함수를 사용해 Auth authorize→동의 API→callback검증→token교환→care 저장/조회/CAS/격리/삭제를 밟습니다. 계정 정리는 정확한 nonce/email/admin marker/단독auth연결 확인 뒤 normal delete-request만 남기며 7일유예 purge미확인은 명시합니다. 실제 사용자/물리두기기/브라우저UI/native vault 검증이라고 주장하지 않습니다. 비밀 로그·다른 사용자 노출·잘못된 원격 삭제·실패후 정리 누락만 집중 확인하세요. 등록 실행기 변경은 다른 Claude 검수 범위입니다.
+
+배포 계획: 위 코어 검수 + 별도 등록검수 통과 후 리허설에 최소 2migration/3functions, 기능 플래그만 활성화하고 기존 매핑은 그대로 보존합니다. 준비된 두 공급자 합성시험이 실제 통과해야 운영 연결로 넘어갑니다. 운영 공개 동의 포털은 현재 config의 authorizationClients 항목만 병합하며 기존 게시본 자산을 대체하지 않습니다. 유료 기능 AI 호출 없음. 계정 등록/공개 config 변경 검수는 별도 진행 중이므로 그 부분을 통과했다고 대신 판단하지 마세요.

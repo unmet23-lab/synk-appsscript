@@ -1,0 +1,18 @@
+이번 검수는 SYNK 계정 OAuth 콜백의 로컬 서버 진입 예외만 다룹니다. 한국어로 읽기 전용 검수를 해 주세요. 파일 수정, 시험·명령 실행, 웹·공급자 접근, 이메일 발송, 실제 사용자 데이터 접근은 금지합니다. .env, 자격증명·계정 설정·사용자 저장 자료는 읽지 마세요. Read/Glob/Grep만 제공합니다. 새 세션이며 다른 작업으로 범위를 넓히지 마세요.
+
+먼저 docs/AI_운영원칙.md와 AGENTS.md의 공통 기준을 읽으세요. 검수 대상 소스는 다음뿐입니다.
+1. experiences/synk-account/oauth-return.mjs (새 서버 전용 순수 판정)
+2. experiences/synk-account/server-shared.mjs
+3. experiences/synk-account/tests/oauth-return.test.mjs
+4. experiences/relationship-care/server.mjs
+5. experiences/relationship-care/tests/server.test.mjs
+6. experiences/family-album/server.mjs
+7. experiences/family-album/tests/server.test.mjs
+보호 계약 확인용 참조: experiences/synk-account/src/core.mjs의 readConfig/consumeCallback/pending state 및 PKCE 검증 부분. 다른 제품 파일은 읽지 마세요.
+검증 증거만 참조: experiences/synk-account/qa/oauth-return-20261007/result.json 및 experiences/synk-account/qa/oauth-return-smoke.cjs.
+
+고친 문제: 로컬 서버의 sec-fetch-site: cross-site 일괄 403이 정상 외부 SYNK ID 동의 화면에서 돌아온 OAuth GET navigation까지 막았습니다. 변경 후 검증된 해당 앱 client의 정확한 loopback origin/root redirect와 응답 query 형태에 맞는 GET, Sec-Fetch-Mode=navigate, Sec-Fetch-Dest=document만 shell에 도달합니다. API/POST/static/subresource/다른 path·port·host·client 또는 무설정의 cross-site 차단을 유지해야 합니다. 이 판정은 서버에서 OAuth를 인증하지 않으며 브라우저의 기존 consumeCallback이 일치 pending state/유효기간/PKCE/정확 redirect를 검사해야 합니다.
+
+root 실행 결과: 관련 단위 46/46 통과. 합성 포털에서 실제 Chrome cross-site 승인 code형/거절 error형을 가족 앨범 shell로 보내는 8/8 통과. pending 로그인 없는 반환은 token exchange가 없어야 합니다. 이 숫자는 전달한 실행 증거이고 당신이 직접 실행한 것으로 쓰지 마세요. 실제 운영 공급자 재로그인·메일·사용자자료 왕복을 검증한 결과도 아닙니다.
+
+P0~P2의 실제 문제만 찾으세요. 근거 파일·줄·깨지는 사용자 행동·구체 재현 요청 형태를 함께 적으세요. 의심만인 사항이나 범위 밖 기존 설계를 지적으로 만들지 마세요. 오류 없으면 통과 및 읽은 범위·검증 한계를 짧게 적으세요. 필요하면 46개 실행 증거는 root 제공이고 8개는 파일 확인이라고 구분하세요. 최종 결론은 통과/수정 필요/검수 미완료 중 하나로 분명히 제시하세요. 실제 모델은 응답에서 알 수 있는 만큼만 말하고 max 설정은 호출 인자로만 확인 가능하면 그렇게 밝히세요.

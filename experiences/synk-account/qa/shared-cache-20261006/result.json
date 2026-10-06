@@ -1,0 +1,182 @@
+{
+  "synthetic": true,
+  "realBrowser": "isolated Chrome, one context, shared localStorage",
+  "actualModule": "http://127.0.0.1:4296/synk-account/src/document-sync.mjs",
+  "startedAt": "2026-10-06T12:53:56.654Z",
+  "checks": [
+    {
+      "name": "a real second tab writes a pending original into shared localStorage",
+      "passed": true
+    },
+    {
+      "name": "first tab save receives its held acknowledgement",
+      "passed": true
+    },
+    {
+      "name": "A late ACK never deletes closed B unsent original",
+      "passed": true
+    },
+    {
+      "name": "A acknowledgement clears only the sent A snapshot",
+      "passed": true
+    },
+    {
+      "name": "a newly opened tab recovers B exact pending original",
+      "passed": true
+    },
+    {
+      "name": "recovered stale revision reports CAS conflict rather than silently overwriting A",
+      "passed": true
+    },
+    {
+      "name": "explicit local resolution saves the recovered B original",
+      "passed": true
+    },
+    {
+      "name": "successfully resolved recovered draft leaves no completed cache",
+      "passed": true
+    },
+    {
+      "name": "independent tab edits retain two exact originals instead of overwriting a single key",
+      "passed": true
+    },
+    {
+      "name": "fresh open stops with an explicit local draft conflict",
+      "passed": true
+    },
+    {
+      "name": "opening competing drafts makes no implicit save",
+      "passed": true
+    },
+    {
+      "name": "recovery export retains both exact original strings",
+      "passed": true
+    },
+    {
+      "name": "offered draft ID identifies a preserved export entry",
+      "passed": true
+    },
+    {
+      "name": "explicit draft selection recovers the requested original",
+      "passed": true
+    },
+    {
+      "name": "selected draft can save with server CAS",
+      "passed": true
+    },
+    {
+      "name": "selected draft ACK preserves the other tab original exactly",
+      "passed": true
+    },
+    {
+      "name": "the remaining unselected original is recoverable on another fresh open",
+      "passed": true
+    },
+    {
+      "name": "explicit remote view succeeds without deleting a preserved draft",
+      "passed": true
+    },
+    {
+      "name": "remote view displays server state while exact local recovery remains",
+      "passed": true
+    },
+    {
+      "name": "active local clear is refused with a visible error",
+      "passed": true
+    },
+    {
+      "name": "refused clear retains the pending original",
+      "passed": true
+    },
+    {
+      "name": "closed explicit clear removes only this product prefix",
+      "passed": true
+    },
+    {
+      "name": "served module did not change during the browser run",
+      "passed": true
+    },
+    {
+      "name": "browser page execution raised no uncaught errors",
+      "passed": true
+    }
+  ],
+  "requests": [
+    {
+      "case": "late-ack",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "late-ack",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "late-ack",
+      "action": "personalSave",
+      "expectedRevision": 0
+    },
+    {
+      "case": "late-ack",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "late-ack",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "late-ack",
+      "action": "personalSave",
+      "expectedRevision": 1
+    },
+    {
+      "case": "parallel-drafts",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "parallel-drafts",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "parallel-drafts",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "parallel-drafts",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "parallel-drafts",
+      "action": "personalSave",
+      "expectedRevision": 0
+    },
+    {
+      "case": "parallel-drafts",
+      "action": "personalLoad",
+      "expectedRevision": null
+    },
+    {
+      "case": "parallel-drafts",
+      "action": "personalLoad",
+      "expectedRevision": null
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "result-late-ack-preserved.png",
+    "result-local-draft-choice.png",
+    "result-explicit-clear.png"
+  ],
+  "remoteMutation": false,
+  "realLogin": false,
+  "moduleSha256": "2845f3fc2c29753ac2f5ef7826b5fae0a182991cf40178303d7a3f3fd3af6229",
+  "passed": 24,
+  "finishedAt": "2026-10-06T12:53:59.514Z"
+}

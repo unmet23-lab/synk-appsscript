@@ -14,6 +14,8 @@ const sources={
   'shift-cover.png':'docs/디자인/웹_단락이미지/20260919/shift-ai-workshop.png',
   'path-cover.png':'docs/디자인/웹_단락이미지/20260919/path-study-plan.png',
   'pulse-cover.png':'docs/디자인/웹_단락이미지/20260919/pulse-music-rights.png',
+  'care-note.webp':'docs/디자인/펠트부품/assets/배경/note-brief.webp',
+  'fortune-star.avif':'docs/Loom_자산/구움/공방_별똥별.avif',
   'studio-camera.webp':'experiences/entry-check/assets/items/camera.webp',
   'wide-coral.webp':'docs/디자인/펠트부품/assets/ui/wide-coral.webp',
   'wide-lapis.webp':'docs/디자인/펠트부품/assets/배경/wide-lapis.webp',

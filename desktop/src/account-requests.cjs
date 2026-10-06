@@ -1,6 +1,8 @@
 'use strict';
 const {classroomRequestSpec}=require('./classroom-requests.cjs');
-function requestSpec(operation,params={},appVersion='0.1.0',product){
+const {PERSONAL_OPERATIONS,personalRequestSpec}=require('./personal-requests.cjs');
+function requestSpec(operation,params={},appVersion='0.1.0',product,clientKey){
+  if(PERSONAL_OPERATIONS.includes(operation))return personalRequestSpec(operation,params,product,clientKey);
   const invalid=()=>{throw Object.assign(new Error('요청 형식을 확인해 주세요.'),{code:'INVALID_REQUEST'});};
   if(!params||typeof params!=='object'||Array.isArray(params))invalid();
   const keys=(allowed)=>{if(Object.keys(params).some(k=>!allowed.includes(k)))invalid();};
@@ -29,6 +31,27 @@ function requestSpec(operation,params={},appVersion='0.1.0',product){
     case 'learningPost':keys(['revision','events']);if(!Array.isArray(params.events)||params.events.length>256||Buffer.byteLength(JSON.stringify({revision:params.revision,events:params.events}))>262144)invalid();return {path:'synk-learning',body:{revision:integer(params.revision),events:params.events}};
     case 'memoryGet':keys(['revision']);return {path:`synk-learning?view=memory&revision=${integer(params.revision)}`};
     case 'memoryPost':keys(['revision','entries']);if(!Array.isArray(params.entries)||params.entries.length>256||Buffer.byteLength(JSON.stringify({revision:params.revision,memory:params.entries}))>262144)invalid();return {path:'synk-learning',body:{revision:integer(params.revision),memory:params.entries}};
+    case 'careLoad':keys([]);if(product!=='platform')invalid();return {path:'synk-care'};
+    case 'careSave':{
+      keys(['expected_revision','state']);
+      const state=params.state;
+      if(product!=='platform'||!state||typeof state!=='object'||Array.isArray(state)||state.version!==1||Object.keys(state).some(key=>!['version','people','events','drafts','completions','sources','memories','activities','followups','preparations'].includes(key))||!['people','events','drafts','completions'].every(key=>Array.isArray(state[key]))||!['sources','memories','activities','followups','preparations'].every(key=>state[key]===undefined||Array.isArray(state[key])))invalid();
+      const body={action:'save',expected_revision:integer(params.expected_revision),state};
+      let serialized;try{serialized=JSON.stringify(body,(_key,value)=>{if(value===undefined||typeof value==='function'||typeof value==='symbol'||typeof value==='bigint'||typeof value==='number'&&!Number.isFinite(value))invalid();return value;});}catch{invalid();}
+      if(Buffer.byteLength(serialized,'utf8')>4*1024*1024+32768)invalid();
+      return {path:'synk-care',body:JSON.parse(serialized)};
+    }
+    case 'careDelete':keys(['expected_revision']);if(product!=='platform')invalid();return {path:'synk-care',body:{action:'delete',expected_revision:integer(params.expected_revision)}};
+    case 'fortuneGet':keys([]);if(product!=='platform')invalid();return {path:'synk-fortune'};
+    case 'fortunePut':{
+      keys(['expected_revision','state']);if(product!=='platform'||!params.state||typeof params.state!=='object'||Array.isArray(params.state))invalid();
+      const state=params.state;
+      if(state.version!==1||Object.keys(state).some(key=>!['version','profile','preferences','entries'].includes(key))||!Object.hasOwn(state,'profile')||state.profile!==null&&(typeof state.profile!=='object'||Array.isArray(state.profile))||!state.preferences||typeof state.preferences!=='object'||Array.isArray(state.preferences)||!Array.isArray(state.entries)||state.entries.length>90)invalid();
+      const body={action:'save',expected_revision:integer(params.expected_revision),state:params.state};
+      let serialized;try{serialized=JSON.stringify(body,(_key,value)=>{if(value===undefined||typeof value==='function'||typeof value==='symbol'||typeof value==='bigint'||typeof value==='number'&&!Number.isFinite(value))invalid();return value;});}catch{invalid();}
+      if(Buffer.byteLength(serialized,'utf8')>65536)invalid();return {path:'synk-fortune',body};
+    }
+    case 'fortuneDelete':keys(['expected_revision']);if(product!=='platform')invalid();return {path:'synk-fortune',body:{action:'delete',expected_revision:integer(params.expected_revision)}};
     default:invalid();
   }
 }
