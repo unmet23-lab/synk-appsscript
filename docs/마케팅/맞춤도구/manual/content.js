@@ -35,7 +35,9 @@
     'an-pricing': { kind: 'official', label: 'Claude 요금제 · Pro 월 20달러(미국, 세금 별도). 한국에서 열면 부가세 10% 포함 월 22달러로 표시', url: 'https://claude.com/pricing' },
     'gg-gems': { kind: 'official', label: 'Gemini 도움말(한국어) · Gem 만들기: 사이드바 열기 → Gem → 새 Gem → 이름·요청 사항 → 저장', url: 'https://support.google.com/gemini/answer/15146780?hl=ko' },
     'gg-gems-free': { kind: 'official', label: 'Google 블로그(2025-03-13) · Gem을 모든 Gemini 사용자에게 무료로 제공', url: 'https://blog.google/products/gemini/new-gemini-app-features-march-2025/' },
-    'gg-skills': { kind: 'official', label: 'Gemini 도움말 · 개인 계정의 Gem은 2026년 11월부터 스킬로 자동 전환(요청 사항·파일 포함), 스킬은 18세 이상·활동 기록 보관 필요', url: 'https://support.google.com/gemini/answer/18560919' },
+    'gg-skills': { kind: 'official', label: 'Gemini 도움말(10-07 다시 확인) · 스킬 만들기: 설정 → 스킬 → 수동으로 만들기 → 이름·설명·요청 사항 → 만들기, 채팅에서 /로 불러 씀. 만 18세 이상 개인 Google 계정. 개인 계정의 Gem은 2026년 11월부터 스킬로 자동 전환(요청 사항·파일 포함)', url: 'https://support.google.com/gemini/answer/18560919?hl=ko' },
+    'gg-skills-blog': { kind: 'official', label: 'Google 블로그(2026-09-30) · 스킬이 Gemini 채팅에 전 세계로 들어오고 Gem을 대신함. Gem 지원 종료: 개인 계정 2026년 11월, Workspace 비즈니스 2027년 3월, 교육 2027년 6월', url: 'https://blog.google/products-and-platforms/products/gemini/automate-tasks-with-skills/' },
+    'synk-claude-max': { kind: 'synk', label: 'SYNK 확인(2026-10-07) · Claude Max 요금제 계정에서 ‘프로젝트 → 새 프로젝트’를 누르면 코딩 작업용 코디네이터 프로젝트(이름·목표·컨텍스트, 지침 칸 없음)가 만들어졌어요. 무료·Pro 화면은 공식 도움말(Set project instructions → Save instructions) 기준으로 안내해요.' },
     'gg-agent': { kind: 'official', label: 'Gemini 도움말 · 에이전트 기능: 구매·메시지 보내기 같은 중요한 행동 전에 사용자 확인', url: 'https://support.google.com/gemini/answer/16596215' },
     'gg-mistakes': { kind: 'official', label: 'Gemini 도움말 · Gemini는 실수를 할 수 있으므로 다시 확인할 것', url: 'https://support.google.com/gemini/answer/13594961?hl=ko' },
     'gg-activity': { kind: 'official', label: 'Gemini 도움말(한국어) · 활동 기록 보관: 켜 두면 생성형 AI 모델 학습 등 서비스 개선에 사용, 꺼도 최대 72시간 보관', url: 'https://support.google.com/gemini/answer/13278892?hl=ko' },
@@ -183,20 +185,20 @@
     'save-free': {
       component: 'save', covers: ['what', 'price', 'skip'], title: '매뉴얼 저장은 무료로 충분해요',
       body: [
-        'ChatGPT 프로젝트, Claude 프로젝트, Gemini Gem 모두 무료 요금제에서 만들 수 있어요. ChatGPT는 2025년 9월부터 무료에도 프로젝트를 열었고, Claude 무료는 프로젝트를 5개까지, Gemini Gem은 2025년 3월부터 모든 사용자에게 무료예요.',
+        'ChatGPT 프로젝트, Claude 프로젝트, Gemini 스킬 모두 무료 요금제에서 만들 수 있어요. ChatGPT는 2025년 9월부터 무료에도 프로젝트를 열었고, Claude 무료는 프로젝트를 5개까지, Gemini 스킬은 만 18세 이상 개인 계정이면 무료로도 써요.',
         '돈이 드는 건 매뉴얼이 아니라 일하는 양과 방식이에요. 화면을 직접 눌러 일을 끝내는 기능은 유료 요금제에서 되고, 2026년 10월 한국에서 보이는 값은 ChatGPT Plus 월 29,000원, Google AI Pro 월 29,000원, Claude Pro 월 22달러(부가세 포함)예요.',
         '그래서 나는: 무료로 매뉴얼을 넣어 두고 한두 주 써 본 뒤, 한도에 자주 걸리거나 올리기 직전까지 화면 작업을 맡기고 싶을 때 유료를 생각해도 늦지 않아요.',
       ],
-      src: ['oa-release', 'an-projects', 'gg-gems-free', 'oa-pricing', 'gg-plans', 'an-pricing', 'oa-cloud'],
+      src: ['oa-release', 'an-projects', 'gg-skills', 'oa-pricing', 'gg-plans', 'an-pricing', 'oa-cloud'],
     },
     'save-gem-skill': {
-      component: 'save', covers: ['trap', 'check'], title: 'Gemini의 Gem은 11월부터 ‘스킬’로 바뀌어요',
+      component: 'save', covers: ['trap', 'check'], title: 'Gemini는 Gem 대신 ‘스킬’에 넣어 두세요',
       body: [
-        'Google은 개인 계정의 Gem을 2026년 11월부터 ‘스킬’로 자동 전환한다고 안내해요. 넣어 둔 요청 사항과 파일은 함께 옮겨져요.',
-        '함정: 스킬은 18세 이상, ‘활동 기록 보관’을 켠 계정에서 쓸 수 있어요. 활동 기록 보관을 켜 두면 대화가 서비스 개선에 쓰일 수 있으니, 매뉴얼에도 대화에도 개인정보를 넣지 마세요.',
-        '확인하는 법: 11월 이후 Gemini를 열면 스킬 목록에서 이 매뉴얼의 이름을 찾아, 요청 사항이 그대로인지 한 번 보세요.',
+        'Google은 Gem 대신 ‘스킬’을 쓰도록 바꾸고 있어요. 개인 계정의 Gem은 2026년 11월 17일부터 스킬로 자동으로 옮겨지니, 처음부터 스킬에 넣어 두면 다시 옮길 일이 없어요.',
+        '함정: 스킬은 만 18세 이상의 개인 계정에서 써요. 회사·학교 계정은 아직 Gem을 쓰고, 2027년에 바뀌어요. 활동 기록 보관을 켜 두면 대화가 서비스 개선에 쓰일 수 있으니, 매뉴얼에도 대화에도 개인정보를 넣지 마세요.',
+        '확인하는 법: 새 채팅에서 /를 입력했을 때 목록에 스킬 이름이 보이면 잘 들어간 거예요.',
       ],
-      src: ['gg-skills', 'gg-activity'],
+      src: ['gg-skills', 'gg-skills-blog', 'gg-activity'],
     },
     'report-3': {
       component: 'report', covers: ['why', 'check'], title: '세 줄 보고가 검수를 끝까지 하게 해요',
@@ -270,10 +272,10 @@
       options: [
         { id: 'chatgpt', label: 'ChatGPT', sub: 'OpenAI', tip: 'ChatGPT에 맞춰 알려 드릴게요. 새 채팅에 붙여 바로 써 보거나, 프로젝트에 넣어 둘 수 있어요.' },
         { id: 'claude', label: 'Claude', sub: 'Anthropic', tip: 'Claude에 맞춰 알려 드릴게요. 새 채팅에 붙여 바로 써 보거나, 프로젝트에 넣어 둘 수 있어요(무료는 5개까지).' },
-        { id: 'gemini', label: 'Gemini', sub: 'Google', tip: 'Gemini에 맞춰 알려 드릴게요. 새 채팅에 붙여 바로 써 보거나, Gem에 넣어 둘 수 있어요. Gem은 11월부터 스킬로 바뀌어요.' },
+        { id: 'gemini', label: 'Gemini', sub: 'Google', tip: 'Gemini에 맞춰 알려 드릴게요. 새 채팅에 붙여 바로 써 보거나, 스킬에 넣어 둘 수 있어요.' },
         { id: 'multi', label: '여러 개를 같이 써요', sub: '일마다 다른 AI', tip: '매뉴얼은 같은 글을 그대로 쓰면 돼요. 세 AI에서 쓰는 법을 모두 알려 드릴게요.' },
       ],
-      tip: { title: '써 보기는 새 채팅에, 계속 쓰려면 일 전용 공간에', body: ['어느 AI든 새 채팅에 매뉴얼을 붙여 넣으면 바로 써 볼 수 있어요. 계속 쓰려면 일 전용 공간에 한 번 넣어 두세요. ChatGPT와 Claude는 ‘프로젝트’, Gemini는 ‘Gem’이에요.', '계정 전체에 적용되는 설정에 넣으면 모든 대화에 섞이니, 이 일 전용 공간이 좋아요. 고른 AI의 실제 메뉴 순서대로 알려 드릴게요.'], visual: 'names' },
+      tip: { title: '써 보기는 새 채팅에, 계속 쓰려면 일 전용 공간에', body: ['어느 AI든 새 채팅에 매뉴얼을 붙여 넣으면 바로 써 볼 수 있어요. 계속 쓰려면 일 전용 공간에 한 번 넣어 두세요. ChatGPT와 Claude는 ‘프로젝트’, Gemini는 ‘스킬’이에요.', '계정 전체에 적용되는 설정에 넣으면 모든 대화에 섞이니, 이 일 전용 공간이 좋아요. 고른 AI의 실제 메뉴 순서대로 알려 드릴게요.'], visual: 'names' },
     },
   ];
 

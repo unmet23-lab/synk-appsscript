@@ -106,10 +106,14 @@ test('넣는 곳: AI마다 실제 메뉴, 여러 개면 세 곳 모두', () => {
   const claude = run({ ai: 'claude' });
   assert.match(claude.saves[0].steps.map(x => x.t).join(' '), /Set project instructions/);
   const gem = run({ ai: 'gemini' });
-  assert.equal(gem.saves[0].place, 'Gem');
-  assert.match(gem.saves[0].steps.map(x => x.t).join(' '), /요청 사항/);
-  assert.match(gem.saves[0].note.t, /스킬/);
+  assert.equal(gem.saves[0].place, '스킬');
+  assert.match(gem.saves[0].steps.map(x => x.t).join(' '), /‘설정’\(톱니바퀴\) → ‘스킬’ → ‘수동으로 만들기’.*‘요청 사항’ 칸에 매뉴얼.*\/를 입력해 그 스킬을 고르고/);
+  assert.doesNotMatch(gem.saves[0].steps.map(x => x.t).join(' '), /Gem|\{직원\}|\{일\}/);
+  assert.match(gem.saves[0].miss.t, /회사·학교 계정.*‘Gems’/);
+  assert.match(gem.saves[0].note.t, /11월 17일부터 스킬로/);
   assert.ok(gem.tips.includes('save-gem-skill'));
+  assert.ok(gem.sourcesUsed.includes('gg-skills-blog'), '안 보일 때 줄의 출처도 출처 목록에');
+  assert.match(claude.saves[0].miss.t, /지침 칸이 안 보이면 ‘바로 써 보기’/);
   const multi = run({ ai: 'multi' });
   assert.deepEqual(multi.saves.map(s => s.app), ['chatgpt', 'claude', 'gemini']);
   assert.match(multi.headline.sub, /^쓰는 AI에 붙여 넣으면 이 기준대로 일해요/);
@@ -324,21 +328,45 @@ test('여는 주소: AI마다 https 주소(복사한 글은 싣지 않음), 쉬�
   assert.match(run({ ai: 'chatgpt' }).saves[0].steps[0].t, /사이드바\(지난 채팅 목록이 있는 메뉴\)에서 ‘프로젝트’ 옆 \+를 누르고, 이름을 적어 ‘프로젝트 만들기’/);
 });
 
-test('그림 안내: ChatGPT 넣어 두기 단계에 실제 화면 네 장(설명·대체 글·크기), 다른 AI는 글로만', () => {
-  const g = run({ ai: 'chatgpt' }).saves[0].guide;
-  assert.equal(g.figs.length, 4);
-  for (const f of g.figs) {
-    assert.ok(fs.existsSync(path.join(__dirname, '..', f.src)), f.src);
-    assert.ok(f.cap && f.alt && f.w > 0 && f.h > 0 && (f.step === 0 || f.step === 1), f.src);
+test('그림 안내: ChatGPT(휴대폰 폭)·Gemini(컴퓨터 화면)는 넣어 두기 단계에 실제 화면 네 장씩, Claude는 글로만', () => {
+  const show = rec => V.result({ rec, answers: rec.answers, layout: 'guided', plan: null, tipsOn: true, checks: {}, feedbackGiven: null, content: C, rules: R }).html;
+  // build.mjs는 불러오면 빌드가 돌아서 글로 읽는다: manual 줄의 assets에 그림이 모두 있어야 공개본에 실린다.
+  const manualLine = fs.readFileSync(path.join(__dirname, '..', 'build.mjs'), 'utf8').split('\n').find(l => /^\s*manual: \{ out: 'builds\/manual'/.test(l)) || '';
+  for (const [ai, view] of [['chatgpt', 'phone'], ['gemini', 'desktop']]) {
+    const g = run({ ai }).saves[0].guide;
+    assert.equal(g.view, view, ai);
+    assert.equal(g.figs.length, 4, ai);
+    for (const f of g.figs) {
+      assert.ok(fs.existsSync(path.join(__dirname, '..', f.src)), f.src);
+      assert.ok(f.cap && f.alt && f.w > 0 && f.h > 0 && (f.step === 0 || f.step === 1), f.src);
+      assert.ok(manualLine.includes(`'${path.basename(f.src)}'`), `공개 빌드에 ${f.src}`);
+    }
   }
   assert.equal(run({ ai: 'claude' }).saves[0].guide, undefined);
-  const rec = R.compute({ ...VIDEO, ai: 'chatgpt' });
-  const out = V.result({ rec, answers: rec.answers, layout: 'guided', plan: null, tipsOn: true, checks: {}, feedbackGiven: null, content: C, rules: R });
-  assert.equal((out.html.match(/<figure class="guide-shot">/g) || []).length, 4);
-  assert.match(out.html, /<img src="assets\/gpt-guide-1-sidebar\.webp" width="643" height="600" loading="lazy" alt="ChatGPT 사이드바/);
-  assert.match(out.html, /class="guide-note">/);
-  const cl = R.compute(VIDEO);
-  assert.doesNotMatch(V.result({ rec: cl, answers: cl.answers, layout: 'guided', plan: null, tipsOn: true, checks: {}, feedbackGiven: null, content: C, rules: R }).html, /guide-shot/);
+
+  const gpt = show(R.compute({ ...VIDEO, ai: 'chatgpt' }));
+  assert.equal((gpt.match(/<figure class="guide-shot">/g) || []).length, 4);
+  assert.match(gpt, /<img src="assets\/gpt-guide-1-sidebar\.webp" width="643" height="600" loading="lazy" alt="ChatGPT 사이드바/);
+  assert.match(gpt, /class="guide-note">그림은 웹 ChatGPT를 휴대폰 크기로 찍은 화면이에요\(2026\.10\.07\)/);
+  assert.match(gpt, /잘 들어갔는지 보려면 그 프로젝트의 새 채팅에서 “/);
+
+  const gem = show(R.compute({ ...VIDEO, ai: 'gemini' }));
+  assert.equal((gem.match(/<figure class="guide-shot">/g) || []).length, 4);
+  assert.match(gem, /<img src="assets\/gemini-guide-4-form\.webp" width="900" height="386" loading="lazy" alt="스킬 만들기 화면/);
+  assert.match(gem, /class="guide-note">그림은 컴퓨터에서 연 웹 Gemini 화면을 필요한 곳만 잘라 보여 드려요\(2026\.10\.07\)/);
+  assert.match(gem, /이름\(예: SNS 게시물 직원\)과 설명\(예: SNS 게시물 맡길 때 쓰는 매뉴얼\)/);
+  assert.match(gem, /잘 들어갔는지 보려면 새 채팅에서 \/를 입력해 그 스킬을 고른 뒤 “/);
+  assert.match(gem, /<p class="path-note">회사·학교 계정이라 ‘스킬’이 안 보이면/);
+
+  const cl = show(R.compute(VIDEO));
+  assert.doesNotMatch(cl, /guide-shot/);
+  assert.match(cl, /<p class="path-note">요금제나 계정에 따라 ‘프로젝트’ 화면이 이 안내와 다를 수 있어요/);
+
+  // 여러 AI: 접힌 상자마다 자기 그림과 ‘안 보일 때’ 줄
+  const multi = show(R.compute({ ...VIDEO, ai: 'multi' }));
+  assert.equal((multi.match(/<figure class="guide-shot">/g) || []).length, 8);
+  assert.match(multi, /Gemini는 ‘스킬’에 매뉴얼을 넣어 둘 수 있어요/);
+  assert.doesNotMatch(multi, /‘Gem’이라는/);
 });
 
 test('계산 규칙과 화면에는 네트워크·저장소·AI 호출이 없다', () => {

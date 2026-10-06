@@ -110,11 +110,13 @@
   const AI = {
     chatgpt: {
       label: 'ChatGPT', place: '프로젝트', where: 'ChatGPT 프로젝트의 ‘지침’', open: 'https://chatgpt.com/',
-      what: '프로젝트는 ChatGPT 안에 만드는 일 전용 폴더예요. 폴더의 ‘지침’ 칸에 매뉴얼을 넣어 두면, 그 폴더에서 새 채팅을 열 때마다 ChatGPT가 먼저 읽어요.',
+      checkIn: '그 프로젝트의 새 채팅에서',
+      what:'프로젝트는 ChatGPT 안에 만드는 일 전용 폴더예요. 폴더의 ‘지침’ 칸에 매뉴얼을 넣어 두면, 그 폴더에서 새 채팅을 열 때마다 ChatGPT가 먼저 읽어요.',
       // 그림 안내(10-07 유호님 「실제 앱 화면에 누를곳을 표시할 그림을 원해」): 웹 ChatGPT를 휴대폰 폭으로 찍고, 개인 항목은 가리고 누를 곳에 버터 테.
-      // step = steps의 몇 번째 단계 아래에 보일지. 그림 파일은 docs/마케팅/맞춤도구/assets/gpt-guide-*.webp
+      // step = steps의 몇 번째 단계 아래에 보일지, view = phone(휴대폰 폭으로 찍음) | desktop(컴퓨터 화면에서 필요한 곳만 자름).
+      // 그림 파일은 docs/마케팅/맞춤도구/assets/{gpt,gemini}-guide-*.webp
       guide: {
-        shot: '2026-10-07',
+        shot: '2026-10-07', view: 'phone',
         figs: [
           { step: 0, src: 'assets/gpt-guide-1-sidebar.webp', w: 643, h: 600, cap: '사이드바가 안 보이면 왼쪽 위 단추로 열고, ‘프로젝트’ 옆 +를 눌러요.', alt: 'ChatGPT 사이드바. 왼쪽 위 사이드바 단추와 ‘프로젝트’ 줄 오른쪽의 + 단추에 노란 테가 있다.' },
           { step: 0, src: 'assets/gpt-guide-2-create.webp', w: 900, h: 459, cap: '이름을 적고 ‘프로젝트 만들기’를 눌러요.', alt: '프로젝트 만들기 창. 프로젝트 이름 칸과 프로젝트 만들기 단추에 노란 테가 있다.' },
@@ -133,7 +135,11 @@
     },
     claude: {
       label: 'Claude', place: '프로젝트', where: 'Claude 프로젝트의 지침', open: 'https://claude.ai/new',
-      what: '프로젝트는 Claude 안에 만드는 일 전용 폴더예요. 폴더의 지침 칸에 매뉴얼을 넣어 두면, 그 폴더의 모든 대화에서 Claude가 먼저 읽어요.',
+      checkIn: '그 프로젝트의 새 채팅에서',
+      // 10-07 확인: Max 요금제 계정에서는 ‘프로젝트 → 새 프로젝트’가 코딩 작업용 코디네이터 프로젝트(지침 칸 없음)로 열렸다.
+      // 그 계정 화면은 무료·Pro와 달라 그림을 넣지 않고(유호님 「글 안내 유지」), 다를 때 할 일을 한 줄 둔다.
+      miss: r('요금제나 계정에 따라 ‘프로젝트’ 화면이 이 안내와 다를 수 있어요. 유료 요금제에서는 코딩 작업용 프로젝트 화면이 열리기도 해요. 지침 칸이 안 보이면 ‘바로 써 보기’로 새 채팅에 붙여 쓰세요.', 'synk-claude-max'),
+      what:'프로젝트는 Claude 안에 만드는 일 전용 폴더예요. 폴더의 지침 칸에 매뉴얼을 넣어 두면, 그 폴더의 모든 대화에서 Claude가 먼저 읽어요.',
       steps: [
         r('왼쪽 메뉴의 ‘Projects’(프로젝트) → ‘+ New Project’로 새 프로젝트를 만들고 이름을 적어요. 예: {직원}', 'an-instructions'),
         r('프로젝트 화면의 ‘Set project instructions’(지침 설정)를 눌러 매뉴얼을 붙여 넣고 ‘Save instructions’를 눌러요.', 'an-instructions'),
@@ -143,16 +149,29 @@
       free: r('프로젝트는 무료 요금제에서도 5개까지 만들 수 있어요.', 'an-projects'),
       agent: r('브라우저를 직접 눌러 일하는 ‘Claude in Chrome’은 유료 요금제(Pro·Max·Team·Enterprise)에서 돼요. 권한 모드는 하나씩 허락하는 ‘Manually approve’로 두는 게 안전해요.', 'an-chrome-perm'),
     },
+    // 10-07 유호님 「스킬로 안내」: 개인 계정의 Gem은 2026-11-17부터 스킬로 옮겨지고(회사·학교 계정은 2027년), 사이드바의 Gems도 ‘설정’ 메뉴 안으로 들어갔다.
+    // 그림은 컴퓨터 웹 화면을 잘랐다(Gemini는 다른 페이지 안에 띄우는 것을 막아 휴대폰 폭으로 못 찍음). 이름의 띄어쓰기는 저절로 -로 바뀐다(실제 화면 확인).
     gemini: {
-      label: 'Gemini', place: 'Gem', where: 'Gemini Gem의 ‘요청 사항’', open: 'https://gemini.google.com/app',
-      what: 'Gem은 Gemini 안에 만드는 나만의 AI 직원이에요. ‘요청 사항’ 칸에 매뉴얼을 넣어 두면, 그 Gem을 열 때마다 매뉴얼대로 일해요.',
+      label: 'Gemini', place: '스킬', where: 'Gemini 스킬의 ‘요청 사항’', open: 'https://gemini.google.com/app',
+      checkIn: '새 채팅에서 /를 입력해 그 스킬을 고른 뒤',
+      what: '스킬은 Gemini에 넣어 두는 나만의 일 매뉴얼이에요. ‘요청 사항’ 칸에 매뉴얼을 넣어 두면, 새 채팅에서 /로 불러 쓸 때마다 매뉴얼대로 일해요.',
+      guide: {
+        shot: '2026-10-07', view: 'desktop',
+        figs: [
+          { step: 0, src: 'assets/gemini-guide-1-settings.webp', w: 580, h: 610, cap: '왼쪽 메뉴 맨 아래 톱니바퀴(설정)를 눌러요.', alt: 'Gemini 왼쪽 메뉴의 아래쪽. 맨 아래 톱니바퀴 설정 단추에 노란 테가 있다. 최근 대화와 계정 이름은 회색 막대로 가렸다.' },
+          { step: 0, src: 'assets/gemini-guide-2-menu.webp', w: 640, h: 614, cap: '펼쳐진 메뉴에서 ‘스킬’을 골라요.', alt: '설정 메뉴. 스킬 항목에 노란 테가 있고, 바로 아래에 Gems가 있다.' },
+          { step: 0, src: 'assets/gemini-guide-3-skills.webp', w: 864, h: 168, cap: '스킬 화면에서 ‘수동으로 만들기’를 눌러요.', alt: '스킬 화면. 수동으로 만들기 단추에 노란 테가 있다.' },
+          { step: 1, src: 'assets/gemini-guide-4-form.webp', w: 900, h: 386, cap: '이름과 설명을 적고, ‘요청 사항’에 매뉴얼을 붙여 넣은 뒤 오른쪽 위 ‘만들기’를 눌러요.', alt: '스킬 만들기 화면. 이름·설명 칸, 요청 사항 칸, 오른쪽 위 만들기 단추에 노란 테가 있다.' },
+        ],
+      },
       steps: [
-        r('‘사이드바 열기’ → ‘Gems’ → ‘새 Gem’을 눌러요.', 'gg-gems'),
-        r('이름(예: {직원})을 적고 ‘요청 사항’ 칸에 매뉴얼을 붙여 넣은 뒤 ‘저장’을 눌러요.', 'gg-gems'),
-        r('다음부터는 사이드바의 Gem 목록에서 그 Gem을 열고 한 줄만 보내요.', 'gg-gems'),
+        r('왼쪽 메뉴 맨 아래 ‘설정’(톱니바퀴) → ‘스킬’ → ‘수동으로 만들기’를 눌러요.', 'gg-skills'),
+        r('이름(예: {직원})과 설명(예: {일} 맡길 때 쓰는 매뉴얼)을 적고, ‘요청 사항’ 칸에 매뉴얼을 붙여 넣은 뒤 ‘만들기’를 눌러요. 이름의 띄어쓰기는 저절로 -로 바뀌어요.', 'gg-skills'),
+        r('다음부터는 새 채팅에서 /를 입력해 그 스킬을 고르고 한 줄만 보내요.', 'gg-skills'),
       ],
-      note: r('2026년 11월부터 개인 계정의 Gem은 ‘스킬’로 자동으로 바뀌어요. 넣어 둔 요청 사항은 그대로 옮겨져요.', 'gg-skills'),
-      free: r('Gem은 무료 계정에서도 만들 수 있어요.', 'gg-gems-free'),
+      miss: r('회사·학교 계정이라 ‘스킬’이 안 보이면, ‘Gems’에서 ‘새 Gem’을 만들어 ‘요청 사항’ 칸에 넣고 ‘저장’을 눌러요. 회사·학교 계정의 Gem은 2027년까지 쓸 수 있어요.', 'gg-skills-blog'),
+      note: r('개인 계정의 Gem은 2026년 11월 17일부터 스킬로 자동으로 옮겨져요. 이미 Gem에 넣어 두셨다면 그대로 두셔도 돼요.', 'gg-skills'),
+      free: r('스킬은 만 18세 이상의 개인 Google 계정이면 무료로도 쓸 수 있어요.', 'gg-skills'),
       agent: r('화면을 직접 눌러 일을 끝내는 에이전트 기능은 유료 요금제에서 돼요.', 'gg-agent'),
     },
   };
@@ -272,8 +291,9 @@
 
   function saveList(f) {
     const ids = f.ai === 'multi' ? AI_IDS : [f.ai];
-    const staff = `${TASK[f.task].short} 직원`;
-    return ids.map(id => ({ app: id, ...AI[id], steps: AI[id].steps.map(x => ({ ...x, t: x.t.replace('{직원}', staff) })) }));
+    // {직원} = 이름 예시, {일} = 맡길 일(Gemini 스킬 설명 예시). 한 단계에 여러 번 나와도 모두 바꾼다.
+    const fill = t => t.replace(/\{직원\}/g, `${TASK[f.task].short} 직원`).replace(/\{일\}/g, TASK[f.task].short);
+    return ids.map(id => ({ app: id, ...AI[id], steps: AI[id].steps.map(x => ({ ...x, t: fill(x.t) })) }));
   }
 
   // 무료로 충분한 것(가성비)과 여유가 되면(유료). 매뉴얼 저장은 세 AI 모두 무료에서 된다.
@@ -341,7 +361,7 @@
 
     const sourcesUsed = new Set(['synk', 'case']);
     const collect = x => { if (x && x.src) sourcesUsed.add(x.src); };
-    for (const s of saves) { s.steps.forEach(collect); collect(s.note); collect(s.free); collect(s.agent); }
+    for (const s of saves) { s.steps.forEach(collect); collect(s.note); collect(s.miss); collect(s.free); collect(s.agent); }
     plan.yes.forEach(collect); plan.roomy.forEach(collect); warns.forEach(collect);
 
     // 10-06 처음 쓰는 사람 검토: 「‘깔아 둔다’가 복사인지 설치인지 모르겠어요」 → 머리글에는 메뉴 이름 대신 할 일만

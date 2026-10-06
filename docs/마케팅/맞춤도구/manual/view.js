@@ -56,7 +56,7 @@
     return '<div class="stopflow" role="img" aria-label="AI는 만들기, 검수, 준비, 보고를 하고, 결제·가입·게시·삭제·내 글 수정 앞에서 멈춰 사람에게 묻는다"><div class="col"><b>AI가 하는 일</b><span>만들기</span><span>검수</span><span>준비</span><span>보고</span></div><div class="pause">멈춤</div><div class="col human"><b>사람 차례</b><span>결제</span><span>가입</span><span>게시</span><span>삭제</span><span>내 글 수정</span></div></div>';
   }
   function names() {
-    return '<div class="pool" role="img" aria-label="바로 써 볼 때는 어느 AI든 새 채팅에 붙여 넣고, 계속 쓸 때는 ChatGPT와 Claude는 프로젝트의 지침, Gemini는 Gem의 요청 사항에 넣는다"><div class="p"><b>바로 써 보기</b><div class="row"><span>새 채팅</span><span class="alt">붙여 넣기</span></div></div><div class="p"><b>ChatGPT·Claude</b><div class="row"><span>프로젝트</span><span class="alt">지침</span></div></div><div class="p"><b>Gemini</b><div class="row"><span>Gem</span><span class="alt">요청 사항</span></div></div></div>';
+    return '<div class="pool" role="img" aria-label="바로 써 볼 때는 어느 AI든 새 채팅에 붙여 넣고, 계속 쓸 때는 ChatGPT와 Claude는 프로젝트의 지침, Gemini는 스킬의 요청 사항에 넣는다"><div class="p"><b>바로 써 보기</b><div class="row"><span>새 채팅</span><span class="alt">붙여 넣기</span></div></div><div class="p"><b>ChatGPT·Claude</b><div class="row"><span>프로젝트</span><span class="alt">지침</span></div></div><div class="p"><b>Gemini</b><div class="row"><span>스킬</span><span class="alt">요청 사항</span></div></div></div>';
   }
   function visual(key, answers) {
     if (key === 'oneline') return oneline();
@@ -145,14 +145,24 @@
     const copyStep = step(1, '매뉴얼을 복사해요', copyRow('manual', '매뉴얼 복사', '매뉴얼', keepDone));
     // 그림 안내(10-07): 그 단계 아래에 실제 화면. 누르면 원래 크기로 열린다.
     const figs = (s, i) => ((s.guide && s.guide.figs) || []).filter(f => f.step === i).map(f => `<figure class="guide-shot"><a href="${esc(f.src)}" target="_blank" rel="noopener"><img src="${esc(f.src)}" width="${f.w}" height="${f.h}" loading="lazy" alt="${esc(f.alt)}"></a><figcaption>${esc(f.cap)}</figcaption></figure>`).join('');
-    const guideNote = s => (s.guide ? `<p class="guide-note">그림은 웹 ${esc(s.label)}를 휴대폰 크기로 찍은 화면이에요(${esc(s.guide.shot.replace(/-/g, '.'))}). 앱이나 화면 설정에 따라 색과 배치가 조금 다를 수 있어요. 그림을 누르면 크게 보여요.</p>` : '');
+    // 휴대폰 폭으로 찍은 그림(ChatGPT)과 컴퓨터 화면을 자른 그림(Gemini)은 안내 말이 다르다.
+    const guideNote = s => {
+      if (!s.guide) return '';
+      const day = esc(s.guide.shot.replace(/-/g, '.'));
+      const how = s.guide.view === 'desktop'
+        ? `그림은 컴퓨터에서 연 웹 ${esc(s.label)} 화면을 필요한 곳만 잘라 보여 드려요(${day}). 휴대폰 앱은 메뉴 자리가 조금 다를 수 있어요.`
+        : `그림은 웹 ${esc(s.label)}를 휴대폰 크기로 찍은 화면이에요(${day}). 앱이나 화면 설정에 따라 색과 배치가 조금 다를 수 있어요.`;
+      return `<p class="guide-note">${how} 그림을 누르면 크게 보여요.</p>`;
+    };
+    // 안내대로 안 보일 때 할 일(Claude 요금제별 화면, Gemini 회사·학교 계정). 간단히 보기에서도 보인다.
+    const missNote = s => (s.miss ? `<p class="path-note">${esc(s.miss.t)}</p>` : '');
     const saveSteps = s => s.steps.map((x, i) => step(i + 2, esc(x.t), `${i === 0 ? `<div class="row opens">${openLink(s)}</div>` : ''}${figs(s, i)}`)).join('');
     let keepBody;
     if (!multi) {
       const s = rec.saves[0];
-      keepBody = `<p class="what">${esc(s.what)}</p><ol class="usesteps">${copyStep}${saveSteps(s)}</ol>${guideNote(s)}<p class="path-note">잘 들어갔는지 보려면 그 ${esc(s.place)}의 새 채팅에서 “이 매뉴얼에서 내가 허락해야 하는 일을 말해 줘”라고 물어보세요. 사람 차례가 그대로 나오면 잘 들어간 거예요.</p>${s.note && !quick ? `<p class="path-note">${esc(s.note.t)}</p>` : ''}<p class="path-src">메뉴 순서는 ${esc(s.label)} 공식 도움말 기준이에요${badge(s.steps[0].src)} 화면 언어나 업데이트에 따라 이름이 조금 다를 수 있어요.</p>`;
+      keepBody = `<p class="what">${esc(s.what)}</p><ol class="usesteps">${copyStep}${saveSteps(s)}</ol>${missNote(s)}${guideNote(s)}<p class="path-note">잘 들어갔는지 보려면 ${esc(s.checkIn)} “이 매뉴얼에서 내가 허락해야 하는 일을 말해 줘”라고 물어보세요. 사람 차례가 그대로 나오면 잘 들어간 거예요.</p>${s.note && !quick ? `<p class="path-note">${esc(s.note.t)}</p>` : ''}<p class="path-src">메뉴 순서는 ${esc(s.label)} 공식 도움말${s.guide ? '과 실제 화면' : ''} 기준이에요${badge(s.steps[0].src)} 화면 언어나 업데이트에 따라 이름이 조금 다를 수 있어요.</p>`;
     } else {
-      keepBody = `<p class="what">ChatGPT·Claude는 ‘프로젝트’, Gemini는 ‘Gem’이라는 일 전용 공간이 있어요. 그 공간의 지침 칸에 매뉴얼을 넣어 두면, 새 채팅을 열 때마다 AI가 먼저 읽어요.</p><ol class="usesteps">${copyStep}</ol>${rec.saves.map((s, j) => `<details class="appbox"${j === 0 ? ' open' : ''}><summary>${esc(s.label)}에 넣기</summary><ol class="usesteps">${saveSteps(s)}</ol>${guideNote(s)}</details>`).join('')}<p class="path-src">메뉴 순서는 각 AI의 공식 도움말 기준이에요${badge(rec.saves[0].steps[0].src)} 화면 언어나 업데이트에 따라 이름이 조금 다를 수 있어요.</p>`;
+      keepBody = `<p class="what">ChatGPT·Claude는 ‘프로젝트’, Gemini는 ‘스킬’에 매뉴얼을 넣어 둘 수 있어요. 한 번 넣어 두면 다음부터는 한 줄만 보내도 매뉴얼대로 일해요.</p><ol class="usesteps">${copyStep}</ol>${rec.saves.map((s, j) => `<details class="appbox"${j === 0 ? ' open' : ''}><summary>${esc(s.label)}에 넣기</summary><ol class="usesteps">${saveSteps(s)}</ol>${missNote(s)}${guideNote(s)}</details>`).join('')}<p class="path-src">메뉴 순서는 각 AI의 공식 도움말과 실제 화면 기준이에요${badge(rec.saves[0].steps[0].src)} 화면 언어나 업데이트에 따라 이름이 조금 다를 수 있어요.</p>`;
     }
     const keepPanel = `<div class="path" id="path-keep" role="tabpanel" aria-labelledby="tab-keep" data-panel="keep"${P === 'keep' ? '' : ' hidden'}>${keepBody}</div>`;
 

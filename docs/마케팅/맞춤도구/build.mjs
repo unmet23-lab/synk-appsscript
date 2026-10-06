@@ -29,7 +29,7 @@ const TOOLS = {
   // yuhobuilds 허브(synk.im/builds/)의 첫 도구. theme.css = 도구 쪽 색(검정·버터). outside = 도구 폴더 밖에 둘 파일(허브 첫 화면).
   // 10-06 저녁: synk.im 홈페이지 디자인 언어(theme.css 머리말). hero-manual = 펠트 매뉴얼 오브젝트(docs/디자인/펠트부품/assets/builds),
   // field-grain = synk.im 브랜드 면의 결, fb-badge-check = 고른 표시의 버터 펠트 배지.
-  manual: { out: 'builds/manual', files: ['content.js', 'rules.js', 'view.js', 'index.html', 'theme.css'], assets: ['favicon-32.png', 'thread-butter.webp', 'logo-synk.webp', 'hero-manual.webp', 'field-grain.webp', 'fb-badge-check.webp', 'gpt-guide-1-sidebar.webp', 'gpt-guide-2-create.webp', 'gpt-guide-3-menu.webp', 'gpt-guide-4-instructions.webp'], outside: { 'builds-index.html': 'builds/index.html' } },
+  manual: { out: 'builds/manual', files: ['content.js', 'rules.js', 'view.js', 'index.html', 'theme.css'], assets: ['favicon-32.png', 'thread-butter.webp', 'logo-synk.webp', 'hero-manual.webp', 'field-grain.webp', 'fb-badge-check.webp', 'gpt-guide-1-sidebar.webp', 'gpt-guide-2-create.webp', 'gpt-guide-3-menu.webp', 'gpt-guide-4-instructions.webp', 'gemini-guide-1-settings.webp', 'gemini-guide-2-menu.webp', 'gemini-guide-3-skills.webp', 'gemini-guide-4-form.webp'], outside: { 'builds-index.html': 'builds/index.html' } },
 };
 
 const sha = file => createHash('sha256').update(fs.readFileSync(file)).digest('hex');
