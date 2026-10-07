@@ -177,6 +177,7 @@ function synkbrief관리메뉴() {
     .addItem('2. 자료 등록표 열기', 'synkbrief등록표열기')
     .addItem('3. 등록 내용 적용', 'synkbrief등록적용')
     .addItem('연결 상태 확인', 'synkbrief상태보기')
+    .addItem('운영 알림 읽기 키 연결', 'synkbrief운영알림연결창')
     .addItem('자동 발송 켜기', 'synkbrief운영시작')
     .addItem('자동 발송 일시 중지', 'synkbrief운영중지').addToUi();
 }
@@ -349,7 +350,32 @@ function synkbrief정기점검() {
   } finally { lock.releaseLock(); }
 }
 
-// 편집기에서 명시 실행한다. 읽기 키는 프로젝트의 Script Properties에 먼저 저장한다.
+// 연결된 관리 시트의 메뉴에서만 연다. 입력값은 HTML/반환값/로그에 다시 넣지 않는다.
+function synkbrief운영알림연결창() {
+  synkbrief_관리자확인_();
+  const html = '<!doctype html><html lang="ko"><meta charset="utf-8"><style>body{font:16px sans-serif;padding:20px;line-height:1.7}input{box-sizing:border-box;width:100%;padding:12px}button{margin-top:16px;padding:12px 20px}#status{white-space:pre-wrap}</style><h2>운영 알림 읽기 키 연결</h2><p>비공개 읽기 키로 운영 상태 조회를 확인한 뒤 저장합니다. 이 단계에서는 메일을 보내거나 정기 점검을 켜지 않습니다.</p><input id="key" type="password" autocomplete="off" spellcheck="false" maxlength="64" aria-label="운영 알림 읽기 키"><button id="save">연결 확인하고 저장</button><p id="status" role="status"></p><script>document.getElementById("save").onclick=function(){var b=this,k=document.getElementById("key"),s=document.getElementById("status"),value=k.value;k.value="";b.disabled=true;s.textContent="연결 확인 중…";google.script.run.withSuccessHandler(function(){s.textContent="읽기 키 연결을 확인하고 저장했습니다. 정기 점검과 메일 발송은 별도 단계입니다.";b.disabled=false}).withFailureHandler(function(){s.textContent="연결하지 못했습니다. 관리자 권한과 입력값을 확인해 주세요.";b.disabled=false}).synkbrief운영알림키저장(value);value="";};</script></html>';
+  SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(html).setWidth(480).setHeight(390), '운영 알림 비공개 연결');
+}
+
+function synkbrief운영알림키저장(key) {
+  let lock, acquired = false;
+  try {
+    synkbrief_관리자확인_();
+    if (typeof key !== 'string' || !/^[A-Za-z0-9_-]{64}$/.test(key)) throw new Error('invalid');
+    lock = LockService.getScriptLock();
+    acquired = lock.tryLock(10000);
+    if (!acquired) throw new Error('busy');
+    // 연결 계정/예약이 아직 준비되지 않았어도 인증된 정상 형식의 응답이면 키를 연결할 수 있다.
+    const status = synkbrief_운영상태읽기_(key);
+    if (status.validated !== true) throw new Error('unverified');
+    PropertiesService.getScriptProperties().setProperty('SYNKBRIEF_OPS_READ_KEY', key);
+    return { ok: true, configured: true };
+  } catch (_) {
+    throw new Error('운영 알림 읽기 키를 연결하지 못했습니다. 관리자 권한과 입력값을 확인해 주세요.');
+  } finally { if (acquired) lock.releaseLock(); }
+}
+
+// 편집기에서 명시 실행한다. 읽기 키는 관리자 연결창에서 먼저 저장한다.
 // 이 함수는 메일을 보내지 않지만 최초 실행 시 Google 메일 발송 권한 승인이 필요할 수 있다.
 function synkbrief운영알림설정() {
   synkbrief_관리자확인_();
@@ -403,7 +429,7 @@ function synkbrief운영알림시험() {
 
 function synkbrief_운영상태읽기_(key) {
   const now = new Date().toISOString();
-  const failed = (health, http) => ({ healthy: false, at: now, rows: [{ name: 'ops-status', health: health, http: http || 0, at: now }] });
+  const failed = (health, http) => ({ validated: false, healthy: false, at: now, rows: [{ name: 'ops-status', health: health, http: http || 0, at: now }] });
   if (!key || key.length < 32 || /\s/.test(key)) return failed('read_key_missing', 0);
   let response;
   try {
@@ -419,18 +445,23 @@ function synkbrief_운영상태읽기_(key) {
     const body = JSON.parse(text);
     if (!body || body.ok !== true || typeof body.healthy !== 'boolean' || !Array.isArray(body.accounts) || body.accounts.length > 100 || !Array.isArray(body.jobs) || body.jobs.length > 10) return failed('invalid_response', 200);
     const checked = Date.parse(body.checked_at);
-    if (!Number.isFinite(checked) || Date.now() - checked > 600000 || checked - Date.now() > 300000) return failed('stale_response', 200);
+    if (typeof body.checked_at !== 'string' || !Number.isFinite(checked) || Date.now() - checked > 600000 || checked - Date.now() > 300000) return failed('stale_response', 200);
     const safeTime = value => { const at = typeof value === 'string' ? Date.parse(value) : NaN; return Number.isFinite(at) ? new Date(at).toISOString() : '-'; };
     const safeHttp = value => Number.isInteger(value) && value >= 100 && value <= 599 ? value : 0;
     const healthCodes = ['ok', 'healthy', 'pending', 'unknown', 'missing', 'disabled', 'failed', 'stale', 'auth-needed', 'auth-failed', 'refresh-failed', 'stop-identity-needed', 'send-failed', 'unhealthy'];
     const safeHealth = value => healthCodes.indexOf(value) >= 0 ? value : 'unknown';
+    const optionalTime = value => value == null || (typeof value === 'string' && Number.isFinite(Date.parse(value)));
+    const optionalHttp = value => value == null || (Number.isInteger(value) && value >= 100 && value <= 599);
+    body.jobs.forEach(job => {
+      if (!job || typeof job.jobname !== 'string' || !/^[a-z0-9_-]{1,64}$/.test(job.jobname) || typeof job.active !== 'boolean' || typeof job.health !== 'string' || !optionalTime(job.last_run_at) || !optionalHttp(job.http_status)) throw new Error('shape');
+    });
     const rows = [];
     let healthy = body.healthy;
     const seen = Object.create(null);
     body.accounts.forEach(account => {
-      if (!account || typeof account.connected !== 'boolean') throw new Error('shape');
+      if (!account || typeof account.username !== 'string' || !/^[a-zA-Z0-9._]{1,30}$/.test(account.username) || typeof account.connected !== 'boolean' || typeof account.health !== 'string' || !optionalTime(account.token_expires_at) || !optionalTime(account.last_failure_at) || !optionalHttp(account.http_status)) throw new Error('shape');
       if (!account.connected) return;
-      if (typeof account.username !== 'string' || !/^[a-zA-Z0-9._]{1,30}$/.test(account.username) || seen[account.username]) throw new Error('shape');
+      if (seen[account.username]) throw new Error('shape');
       seen[account.username] = true;
       const health = safeHealth(account.health);
       if (health !== 'ok' && health !== 'healthy') healthy = false;
@@ -449,6 +480,6 @@ function synkbrief_운영상태읽기_(key) {
     // 정상 시각/HTTP 성공의 변화는 장애 알림을 만들지 않는다.
     const issues = healthy ? [] : rows.filter(r => r.health !== 'ok' && r.health !== 'healthy' && r.health !== 'pending');
     issues.sort((a, b) => a.name.localeCompare(b.name));
-    return { healthy: healthy, at: new Date(checked).toISOString(), rows: issues };
+    return { validated: true, healthy: healthy, at: new Date(checked).toISOString(), rows: issues };
   } catch (_) { return failed('invalid_response', 200); }
 }

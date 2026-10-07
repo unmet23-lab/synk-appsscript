@@ -69,7 +69,7 @@ test('서버 200이어도 손상·오래된 응답·누락/꺼진 잡·계정 �
   for(const mutate of variants){const f=fixture();mutate(f);assert.equal(f.run().healthy,false);assert.equal(f.emails.length,1);assert.doesNotMatch(f.emails[0].body,/SECRET/);}
 });
 test('원문과 임의 health를 메일·속성으로 복사하지 않는다',()=>{
-  const f=fixture();f.payload.healthy=false;f.payload.accounts[0].health='SECRET token '+KEY;f.payload.accounts[0].last_failure_at='SECRET';f.payload.accounts[0].http_status='SECRET';f.payload.raw='PRIVATE COMMENT';
+  const f=fixture();f.payload.healthy=false;f.payload.accounts[0].health='SECRET token '+KEY;f.payload.raw='PRIVATE COMMENT';
   f.run();assert.match(f.emails[0].body,/@yuhobuilds \| unknown/);assert.doesNotMatch(JSON.stringify(f.emails)+f.values.get('SYNKBRIEF_OPS_NOTICE'),/SECRET|PRIVATE|test-only/);
 });
 test('서버가 정의한 인증·갱신·수신거부 신원·발송 장애 코드를 그대로 구분한다',()=>{
@@ -101,4 +101,44 @@ test('연결 시험은 관리자·잠금·quota를 확인하고 전달 미확인
   assert.equal(f.context.synkbrief운영알림시험().state,'quota_exhausted');assert.equal(f.values.has('SYNKBRIEF_OPS_MAIL_TEST'),false);
   f.quota=1;f.mailError=true;assert.throws(()=>f.context.synkbrief운영알림시험(),/전달 여부/);assert.equal(JSON.parse(f.values.get('SYNKBRIEF_OPS_MAIL_TEST')).delivery,'unknown');
   assert.equal(f.context.synkbrief운영알림시험().state,'delivery_unknown');assert.equal(f.emails.length,1);assert.equal(f.released,true);
+});
+
+test('읽기 키 연결은 관리자와 정확한 64자 base64url 및 잠금을 확인한 뒤에만 조회한다',()=>{
+  const incoming='a'.repeat(64);
+  for(const configure of [f=>{f.context.Session.getActiveUser=()=>({getEmail:()=>''});},f=>{f.context.Session.getEffectiveUser=()=>({getEmail:()=> 'another@example.test'});},f=>{f.lock=false;}]){
+    const f=fixture(),before=[...f.values];configure(f);assert.throws(()=>f.context.synkbrief운영알림키저장(incoming),/연결하지 못했습니다/);
+    assert.equal(f.calls.length,0);assert.deepEqual([...f.values],before);
+  }
+  for(const value of [undefined,null,64,'a'.repeat(63),'a'.repeat(65),'a'.repeat(63)+'=','a'.repeat(63)+'.',' '+incoming]){
+    const f=fixture();assert.throws(()=>f.context.synkbrief운영알림키저장(value),/연결하지 못했습니다/);assert.equal(f.calls.length,0);assert.equal(f.values.get('SYNKBRIEF_OPS_READ_KEY'),KEY);
+  }
+});
+test('읽기 키 연결의 HTTP·통신·형식 실패는 이전 키와 다른 속성을 보존하며 원인을 노출하지 않는다',()=>{
+  const incoming='b'.repeat(64);
+  for(const configure of [f=>{f.http=401;},f=>{f.http=302;},f=>{f.http=503;},f=>{f.fetchError=true;},f=>{f.raw='SECRET response';},f=>{f.payload.ok=false;},f=>{f.payload.jobs[0].active='true';},f=>{f.payload.accounts[0].http_status='SECRET';},f=>{f.payload.accounts[0].last_failure_at='SECRET';},f=>{delete f.payload.accounts[1].username;},f=>{f.payload.checked_at=[new Date().toISOString()];},f=>{f.payload.checked_at=new Date(Date.now()-700000).toISOString();}]){
+    const f=fixture(),before=[...f.values];configure(f);
+    assert.throws(()=>f.context.synkbrief운영알림키저장(incoming),error=>{assert.doesNotMatch(error.message,/SECRET|bbbb|401|503/);return /연결하지 못했습니다/.test(error.message);});
+    assert.deepEqual([...f.values],before);assert.equal(f.emails.length,0);assert.equal(f.triggers.length,0);assert.equal(f.quotaChecks,undefined);assert.equal(f.released,true);
+  }
+});
+test('인증된 정상 응답이면 장애 상태에서도 키 하나만 저장하고 비밀값·메일·타이머를 반환하거나 실행하지 않는다',()=>{
+  const incoming='C_d-'.repeat(16);
+  for(const enabled of ['0',undefined]){
+    const f=fixture();if(enabled===undefined)f.values.delete('SYNKBRIEF_OPS_MONITOR_ENABLED');else f.values.set('SYNKBRIEF_OPS_MONITOR_ENABLED',enabled);
+    f.values.set('unrelated','preserve');const before=new Map(f.values);breakAccount(f,'send-failed');
+    const result=f.context.synkbrief운영알림키저장(incoming);assert.deepEqual(JSON.parse(JSON.stringify(result)),{ok:true,configured:true});assert.doesNotMatch(JSON.stringify(result),/C_d-|Bearer/);
+    before.set('SYNKBRIEF_OPS_READ_KEY',incoming);assert.deepEqual([...f.values],[...before]);
+    assert.equal(f.calls.length,1);assert.equal(f.calls[0].options.headers.Authorization,'Bearer '+incoming);assert.equal(f.calls[0].options.followRedirects,false);
+    assert.equal(f.emails.length,0);assert.equal(f.triggers.length,0);assert.equal(f.deleted.length,0);assert.equal(f.quotaChecks,undefined);
+  }
+});
+test('관리 시트 메뉴의 비밀번호 모달은 저장된 키를 읽거나 서버 조회 없이 열며 익명 호출은 차단한다',()=>{
+  const f=fixture(),items=[];let html,shown=0;const output={setWidth(){return this;},setHeight(){return this;}};
+  const menu={addItem:(label,handler)=>{items.push({label,handler});return menu;},addSeparator:()=>menu,addToUi(){}};
+  f.context.HtmlService={createHtmlOutput:value=>{html=value;return output;}};
+  f.context.SpreadsheetApp={getUi:()=>({createMenu:()=>menu,showModalDialog:()=>{shown++;}})};
+  f.context.synkbrief관리메뉴();assert.ok(items.some(x=>x.handler==='synkbrief운영알림연결창'));
+  f.context.synkbrief운영알림연결창();assert.equal(shown,1);assert.match(html,/type="password"/);assert.match(html,/synkbrief운영알림키저장\(value\)/);assert.doesNotMatch(html,new RegExp(KEY));
+  assert.equal(f.calls.length,0);assert.equal(f.emails.length,0);assert.equal(f.triggers.length,0);
+  f.context.Session.getActiveUser=()=>({getEmail:()=>''});assert.throws(()=>f.context.synkbrief운영알림연결창(),/관리자/);assert.equal(shown,1);
 });
