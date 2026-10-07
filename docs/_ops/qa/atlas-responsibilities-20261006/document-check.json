@@ -1,0 +1,191 @@
+{
+  "checkedAt": "2026-10-06T14:37:25.521Z",
+  "scope": "new responsibility/delivery sections and owner paragraphs; unrelated historical document links not audited",
+  "blocks": 11,
+  "links": 36,
+  "decisionColumns": 4,
+  "trackBytes": 596,
+  "errors": [],
+  "checked": [
+    {
+      "source": "docs/엔진8종_상향설계_v3.md",
+      "link": "사업발전_정본.md#management-principles",
+      "ok": true
+    },
+    {
+      "source": "docs/엔진8종_상향설계_v3.md",
+      "link": "../tests/atlas-practice-outcome-boundaries.test.js",
+      "ok": true
+    },
+    {
+      "source": "docs/엔진8종_상향설계_v3.md",
+      "link": "../tests/atlas-outcomes.test.js",
+      "ok": true
+    },
+    {
+      "source": "docs/엔진8종_상향설계_v3.md",
+      "link": "../tests/atlas-cross-product-boundaries.test.mjs",
+      "ok": true
+    },
+    {
+      "source": "docs/엔진8종_상향설계_v3.md",
+      "link": "../experiences/shift-workbench/model.test.mjs",
+      "ok": true
+    },
+    {
+      "source": "docs/엔진8종_상향설계_v3.md",
+      "link": "./_ops/qa/atlas-responsibilities-20261006/report.json",
+      "ok": true
+    },
+    {
+      "source": "docs/엔진8종_상향설계_v3.md",
+      "link": "./_ops/qa/atlas-review-20261006/README.md#shift",
+      "ok": true
+    },
+    {
+      "source": "docs/엔진8종_상향설계_v3.md",
+      "link": "./_ops/qa/atlas-responsibilities-20261006/existing-shift-generation-boundary.txt",
+      "ok": true
+    },
+    {
+      "source": "docs/아틀라스_설계.md",
+      "link": "사업발전_정본.md#management-principles",
+      "ok": true
+    },
+    {
+      "source": "docs/아틀라스_설계.md",
+      "link": "엔진8종_상향설계_v3.md#engine-contract-boundaries",
+      "ok": true
+    },
+    {
+      "source": "docs/아틀라스_설계.md",
+      "link": "../atlas/domain.js",
+      "ok": true
+    },
+    {
+      "source": "docs/아틀라스_설계.md",
+      "link": "../atlas/ask.js",
+      "ok": true
+    },
+    {
+      "source": "docs/아틀라스_설계.md",
+      "link": "../atlas/interpretation.js",
+      "ok": true
+    },
+    {
+      "source": "docs/아틀라스_설계.md",
+      "link": "../atlas/learning.js",
+      "ok": true
+    },
+    {
+      "source": "docs/아틀라스_설계.md",
+      "link": "../atlas/education.js",
+      "ok": true
+    },
+    {
+      "source": "docs/아틀라스_설계.md",
+      "link": "../atlas/travel.js",
+      "ok": true
+    },
+    {
+      "source": "docs/아틀라스_설계.md",
+      "link": "엔진8종_상향설계_v3.md#engine-boundary-delivery-20261006",
+      "ok": true
+    },
+    {
+      "source": "docs/코어엔진_설계.md",
+      "link": "../tests/atlas-practice-outcome-boundaries.test.js",
+      "ok": true
+    },
+    {
+      "source": "docs/코어엔진_설계.md",
+      "link": "../tests/atlas-cross-product-boundaries.test.mjs",
+      "ok": true
+    },
+    {
+      "source": "docs/코어엔진_설계.md",
+      "link": "../atlas/travel.js",
+      "ok": true
+    },
+    {
+      "source": "docs/코어엔진_설계.md",
+      "link": "../experiences/path-travel/profile.mjs",
+      "ok": true
+    },
+    {
+      "source": "docs/코어엔진_설계.md",
+      "link": "../experiences/path-travel/model.mjs",
+      "ok": true
+    },
+    {
+      "source": "docs/코어엔진_설계.md",
+      "link": "../tests/atlas-travel.test.mjs",
+      "ok": true
+    },
+    {
+      "source": "docs/코어엔진_설계.md",
+      "link": "../tests/atlas-domain-objectives.test.js",
+      "ok": true
+    },
+    {
+      "source": "docs/코어엔진_설계.md",
+      "link": "../tests/atlas-preference-domain-bridge.test.js",
+      "ok": true
+    },
+    {
+      "source": "docs/코어엔진_설계.md",
+      "link": "../tests/path-travel-personalization.test.mjs",
+      "ok": true
+    },
+    {
+      "source": "docs/코어엔진_설계.md",
+      "link": "../experiences/path-travel/qa/RESULTS.md",
+      "ok": true
+    },
+    {
+      "source": "docs/궤적_원장기록_실행지.md",
+      "link": "../tests/atlas-practice-outcome-boundaries.test.js",
+      "ok": true
+    },
+    {
+      "source": "docs/궤적_원장기록_실행지.md",
+      "link": "../tests/atlas-cross-product-boundaries.test.mjs",
+      "ok": true
+    },
+    {
+      "source": "docs/아틀라스_공통능력_고도화_20261005.md",
+      "link": "../experiences/shift-workbench/model.mjs",
+      "ok": true
+    },
+    {
+      "source": "docs/아틀라스_공통능력_고도화_20261005.md",
+      "link": "../tests/atlas-cross-product-boundaries.test.mjs",
+      "ok": true
+    },
+    {
+      "source": "experiences/path-travel/README.md",
+      "link": "../../atlas/travel.js",
+      "ok": true
+    },
+    {
+      "source": "docs/_ops/결정.md",
+      "link": "../엔진8종_상향설계_v3.md#engine-boundary-delivery-20261006",
+      "ok": true
+    },
+    {
+      "source": "docs/_ops/결정.md",
+      "link": "qa/atlas-responsibilities-20261006/report.json",
+      "ok": true
+    },
+    {
+      "source": "docs/_ops/트랙.md",
+      "link": "../엔진8종_상향설계_v3.md#engine-boundary-delivery-20261006",
+      "ok": true
+    },
+    {
+      "source": "docs/_ops/트랙.md",
+      "link": "qa/atlas-responsibilities-20261006/report.json",
+      "ok": true
+    }
+  ]
+}

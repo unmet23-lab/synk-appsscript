@@ -20,6 +20,51 @@ const bridge = (events = [], extra = {}) => P.toDomain({ ...initial(events), dom
 const field = (result, id) => result.understanding.fields.find(row => row.id === id);
 const freeze = value => { if (value && typeof value === 'object') { Object.freeze(value); Object.values(value).forEach(freeze); } return value; };
 
+test('explicit until shortens but never extends a contract lifetime and retains the original declaration timestamp', () => {
+  for (const [deadline, expected] of [[time(1), time(1)], [time(4), time(2)]]) {
+    const events = add([], 'deadline-food', 'set', { field: 'food', value: 'local', duration: 'ongoing', until: deadline });
+    const result = bridge(events, { at: time(0.5) });
+    assert.equal(result.observations[0].at, time(0)); assert.equal(result.observations[0].until, expected);
+    assert.equal(result.lineage[0].until, expected); assert.equal(result.layers.baseline.provenance.food.until, deadline);
+    const expired = bridge(events, { at: expected }); assert.equal(field(expired, 'food').status, 'expired'); assert.equal(field(expired, 'food').usable, false);
+  }
+});
+
+test('expired explicit deadlines reach Domain as expired evidence so missing hard conditions cannot silently pass', () => {
+  const hard = { ...contract, criteria: [{ ...contract.criteria[0], required: true }] };
+  let events = add([], 'old', 'set', { contract: hard, field: 'food', value: 'local', duration: 'ongoing' });
+  events = add(events, 'deadline', 'set', { contract: hard, field: 'food', value: 'fine', duration: 'ongoing', until: time(1) });
+  const result = bridge(events, { contract: hard, at: time(1) });
+  assert.deepEqual(result.layers.effective.values, {}); assert.equal(result.observations[0].id, 'deadline');
+  assert.equal(result.observations[0].until, time(1)); assert.equal(field(result, 'food').status, 'expired');
+  const decision = Domain.decide({ contract: hard, scope: domainScope, observations: result.observations, at: time(1), candidates: [{ id: 'fine-food', features: { food: 'fine' } }] });
+  assert.equal(decision.selected, null); assert.deepEqual(decision.excluded[0].reasons, ['unknown:food-fit']);
+  events = add(events, 'forget', 'withdraw', { contract: hard, at: time(1), field: 'food', duration: 'ongoing' });
+  assert.deepEqual(bridge(events, { contract: hard, at: time(1) }).observations, []);
+});
+
+test('once deadline restores only the current baseline and exports its original expiry rather than the ending override', () => {
+  let events = add([], 'usual', 'set', { field: 'food', value: 'local', duration: 'ongoing', until: time(5) });
+  events = add(events, 'this-trip', 'set', { at: time(0.5), field: 'food', value: 'fine', duration: 'once', until: time(1) });
+  const restored = bridge(events, { at: time(1) });
+  assert.equal(restored.observations[0].id, 'usual'); assert.equal(restored.observations[0].at, time(0)); assert.equal(restored.observations[0].until, time(2));
+  assert.equal(field(restored, 'food').value, 'local'); assert.equal(restored.layers.context.expired[0].eventId, 'this-trip');
+  assert.equal(field(bridge(events, { at: time(2) }), 'food').status, 'expired', 'returning to baseline does not refresh its contract age');
+  const noBaseline = add([], 'only-once', 'set', { field: 'food', value: 'fine', duration: 'once', until: time(1) });
+  assert.equal(bridge(noBaseline, { at: time(1) }).observations[0].id, 'only-once');
+});
+
+test('feedback until preserves provenance and current masks remain the product responsibility', () => {
+  let events = add([], 'idea', 'propose', { field: 'food', value: 'fine', feedbackId: 'feedback' });
+  events = add(events, 'applied', 'apply', { at: time(0.5), proposalId: 'idea', duration: 'ongoing', until: time(1) });
+  const result = bridge(events, { at: time(1) });
+  assert.deepEqual(result.observations[0].refs, ['applied', 'idea', 'feedback']); assert.equal(result.lineage[0].source, 'feedback-confirmed');
+  assert.equal(result.observations[0].at, time(0.5)); assert.equal(result.observations[0].until, time(1));
+  assert.throws(() => bridge(events, { at: time(1), unknown: ['food'] }), /unsupported/, 'an implicit mask cannot silently rewrite the bridge');
+  const masked = result.observations.filter(row => row.field !== 'food');
+  assert.equal(Domain.understand({ contract, scope: domainScope, observations: masked, at: time(1) }).fields.find(row => row.id === 'food').status, 'unknown');
+});
+
 test('empty or proposed-only preferences create no personal declarations', () => {
   assert.deepEqual(bridge().observations, []); assert.deepEqual(bridge().lineage, []);
   const proposed = add([], 'suggestion', 'propose', { field: 'food', value: 'fine', feedbackId: 'feedback-1' });

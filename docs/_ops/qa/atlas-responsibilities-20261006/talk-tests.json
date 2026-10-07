@@ -1,0 +1,40 @@
+{
+  "startedAt": "2026-10-06T14:21:13.866Z",
+  "finishedAt": "2026-10-06T14:21:22.946Z",
+  "cwd": "C:\\Users\\q1212\\Documents\\SYNK-talk",
+  "command": [
+    "node",
+    "--test",
+    "--test-reporter=tap",
+    "--test-concurrency=3",
+    "tests/atlas-copy.test.js",
+    "tests/atlas-session.test.js",
+    "tests/atlas-session-storage.test.js",
+    "tests/atlas-practice.test.js",
+    "tests/atlas-strata-drift.test.js",
+    "tests/atlas-account-memory.test.js",
+    "tests/app-learning.test.js",
+    "tests/app-learning-storage.test.js",
+    "tests/synk-learning-host.test.js"
+  ],
+  "files": [
+    "tests/atlas-copy.test.js",
+    "tests/atlas-session.test.js",
+    "tests/atlas-session-storage.test.js",
+    "tests/atlas-practice.test.js",
+    "tests/atlas-strata-drift.test.js",
+    "tests/atlas-account-memory.test.js",
+    "tests/app-learning.test.js",
+    "tests/app-learning-storage.test.js",
+    "tests/synk-learning-host.test.js"
+  ],
+  "exitCode": 0,
+  "counts": {
+    "tests": 53,
+    "pass": 53,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  }
+}

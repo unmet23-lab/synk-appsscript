@@ -14,8 +14,8 @@
    * evaluation, without randomization, causal inference, calibration or promotion.
    */
   const OUTCOMES_VERSION = 'temper-outcomes-1';
-  function evaluateOutcomes({ contract, decisions = [], exposures = [], outcomes = [], policies,
-    subjects, asOf, minimumSubjects = 5 } = {}) {
+  function evaluateOutcomes({ contract, decisions = [], exposures = [], outcomes = [], revisions = [], policies,
+    subjects, asOf, minimumSubjects = 5, strictProvenance = false } = {}) {
     const fail = message => { throw new TypeError(`Temper outcomes: ${message}`); };
     const object = value => !!value && typeof value === 'object' && !Array.isArray(value);
     const token = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
@@ -40,6 +40,11 @@
       return JSON.stringify([policy.id, policy.version]);
     };
     if (!exact(contract, ['id', 'version', 'scope', 'outcome']) || !token(contract.id) || !token(contract.version)) fail('invalid contract');
+    const sameContract = ref => exact(ref, ['id', 'version']) && ref.id === contract.id && ref.version === contract.version;
+    if (typeof strictProvenance !== 'boolean' || !Array.isArray(revisions)) fail('invalid provenance options');
+    // Legacy records inherit their contract through the decision. New provenance
+    // consumers bind every record explicitly so colliding product IDs cannot join.
+    const trace = strictProvenance || revisions.length > 0;
     const boundary = scopeKey(contract.scope), target = contract.outcome;
     if (!exact(target, ['id', 'kind', 'direction', 'windowMs'], ['allowedValues', 'range']) || !token(target.id)
       || !['binary', 'numeric'].includes(target.kind) || !['higher', 'lower'].includes(target.direction)
@@ -74,14 +79,16 @@
       return found;
     };
     const ds = records(decisions, 'decisions', ['contract', 'policy', 'candidateIds', 'selectedId'], ['cost', 'latencyMs']);
-    const es = records(exposures, 'exposures', ['decisionId', 'candidateId']);
-    const os = records(outcomes, 'outcomes', ['exposureId', 'value']);
-    const costUnits = new Set(), delivered = new Map(), observed = new Map();
+    const es = records(exposures, 'exposures', ['decisionId', 'candidateId'], ['contract']);
+    const os = records(outcomes, 'outcomes', ['exposureId', 'value'], ['contract']);
+    if (trace) duplicateCounts.revisions = 0;
+    const rs = records(revisions, 'revisions', ['contract', 'targetId', 'action', 'sourceRef'], ['value']);
+    const costUnits = new Set(), delivered = new Map(), observed = new Map(), originalOutcomes = new Map();
     const sameParent = (row, parent) => parent && row.subject === parent.subject
       && scopeKey(row.scope) === scopeKey(parent.scope) && instant(row.at) >= instant(parent.at)
       && instant(row.recordedAt ?? row.at) >= instant(parent.recordedAt ?? parent.at);
     for (const row of ds.values()) {
-      if (!exact(row.contract, ['id', 'version']) || row.contract.id !== contract.id || row.contract.version !== contract.version) fail('decision outcome contract mismatch');
+      if (!sameContract(row.contract)) fail('decision outcome contract mismatch');
       if (!keys.includes(policyKey(row.policy))) fail('decision uses an unrequested policy');
       if (!Array.isArray(row.candidateIds) || !row.candidateIds.every(token)
         || new Set(row.candidateIds).size !== row.candidateIds.length
@@ -94,6 +101,7 @@
     }
     if (costUnits.size > 1) fail('incompatible cost units');
     for (const row of es.values()) {
+      if ((trace || Object.hasOwn(row, 'contract')) && !sameContract(row.contract)) fail('exposure outcome contract mismatch');
       const parent = ds.get(row.decisionId);
       if (!token(row.decisionId) || !token(row.candidateId) || !sameParent(row, parent)
         || row.candidateId !== parent.selectedId) fail('exposure requires the selected candidate and prior decision in the same scope and subject');
@@ -101,10 +109,45 @@
       delivered.set(parent.id, row);
     }
     for (const row of os.values()) {
+      if ((trace || Object.hasOwn(row, 'contract')) && !sameContract(row.contract)) fail('outcome contract mismatch');
       const parent = es.get(row.exposureId);
       if (!token(row.exposureId) || !sameParent(row, parent) || !valueOk(row.value)) fail('outcome requires valid value and prior exposure in the same scope and subject');
       if (observed.has(parent.id)) fail('multiple outcomes for one exposure');
       observed.set(parent.id, row);
+      originalOutcomes.set(parent.id, row);
+    }
+    // Revisions correct an existing reported value; they do not backdate a new
+    // response. A changed intention or new behavior needs a new product observation.
+    // sourceRef names the host-owned source event. The host verifies authenticity,
+    // authorization and consent; this module only verifies the supplied lineage.
+    const successor = new Map();
+    for (const row of rs.values()) {
+      if (os.has(row.id)) fail('revision id conflicts with an outcome');
+      if (!sameContract(row.contract)) fail('revision outcome contract mismatch');
+      if (!token(row.targetId) || !token(row.sourceRef) || !['correct', 'withdraw'].includes(row.action)
+        || (row.action === 'correct' ? !valueOk(row.value) : Object.hasOwn(row, 'value'))) fail('invalid revision');
+      const parent = os.get(row.targetId) || rs.get(row.targetId);
+      if (!sameParent(row, parent)) fail('revision requires a prior outcome or revision in the same scope and subject');
+      if (parent.action === 'withdraw') fail('withdrawn outcomes cannot be restored');
+      if (successor.has(parent.id)) fail('multiple revisions for one target');
+      successor.set(parent.id, row);
+    }
+    const checked = new Set();
+    for (const row of rs.values()) {
+      const path = new Set(); let current = row;
+      while (current && !checked.has(current.id)) {
+        if (path.has(current.id)) fail('revision cycle');
+        path.add(current.id); current = rs.get(current.targetId);
+      }
+      for (const id of path) checked.add(id);
+    }
+    const histories = new Map();
+    for (const original of os.values()) {
+      const history = []; let current = original;
+      while (successor.has(current.id)) { current = successor.get(current.id); history.push(current); }
+      histories.set(original.id, history);
+      if (current.action === 'withdraw') observed.delete(original.exposureId);
+      else if (current !== original) observed.set(original.exposureId, { ...original, value: current.value });
     }
     const sum = values => {
       const total = values.reduce((accumulated, value) => accumulated + value, 0);
@@ -155,6 +198,16 @@
     const directedDifference = difference === null ? null : difference * (target.direction === 'higher' ? 1 : -1);
     return { version: OUTCOMES_VERSION, contract: { id: contract.id, version: contract.version, scope: { ...contract.scope }, outcome: JSON.parse(JSON.stringify(target)) },
       asOf, minimumSubjects, byPolicy, duplicates: duplicateCounts,
+      ...(trace ? { provenance: { version: 'temper-outcome-provenance-1', chains: [...ds.values()].sort((a, b) => a.id.localeCompare(b.id)).map(decision => {
+        const exposure = delivered.get(decision.id), original = exposure && originalOutcomes.get(exposure.id);
+        const history = original ? histories.get(original.id) : [], latest = history.at(-1);
+        return { decisionId: decision.id, exposureId: exposure?.id || null, outcomeId: original?.id || null,
+          status: decision.selectedId === null ? 'abstained' : !exposure ? 'undelivered' : !original ? 'unobserved'
+            : latest?.action === 'withdraw' ? 'withdrawn' : latest ? 'corrected' : 'observed',
+          effectiveOutcomeId: original && latest?.action !== 'withdraw' ? latest?.id || original.id : null,
+          revisions: history.map(row => ({ id: row.id, targetId: row.targetId, action: row.action, sourceRef: row.sourceRef,
+            at: row.at, recordedAt: row.recordedAt ?? row.at, ...(row.action === 'correct' ? { value: row.value } : {}) })) };
+      }) } } : {}),
       comparison: { status: comparable ? 'measured' : 'insufficient_evidence', difference, directedDifference,
         direction: directedDifference === null ? 'unknown' : directedDifference < 0 ? 'worse' : directedDifference > 0 ? 'better' : 'unchanged',
         unit: 'subject-mean-of-observed-matured-outcomes' },
@@ -163,5 +216,41 @@
         'Observed outcomes describe the supplied records; missing responses are unknown, not failures.',
         'Selection, nonresponse and different people can bias policy means; this is not a causal or significance test.'] };
   }
-  return Object.freeze({ OUTCOMES_VERSION, evaluateOutcomes });
+  /** A person's own preparation history, without a fabricated comparison policy.
+   * The host supplies an authorized, product-scoped set. Missing self-reports stay
+   * missing; these descriptive means never measure another person's feelings.
+   */
+  function summarizePreparation({ scope, subject, records = [], asOf } = {}) {
+    const object = value => !!value && typeof value === 'object' && !Array.isArray(value);
+    const token = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+    const fail = message => { throw new TypeError(`Temper preparation: ${message}`); };
+    if (!object(scope) || Object.keys(scope).sort().join(',') !== 'domain,purpose,workspace' || !Object.values(scope).every(token) || scope.domain === 'PULSE' || !token(subject)) fail('invalid boundary');
+    const time = value => { const at = typeof value === 'string' ? Date.parse(value) : NaN; if (!Number.isFinite(at)) fail('invalid time'); return at; };
+    const cutoff = time(asOf), seen = new Set(), durations = [], ratings = [];
+    let selected = 0;
+    if (!Array.isArray(records) || records.length > 10000) fail('invalid records');
+    for (const row of records) {
+      if (!object(row) || Object.keys(row).some(key => !['id', 'scope', 'subject', 'shownAt', 'selectedAt', 'elapsedSeconds', 'satisfaction', 'satisfactionAt'].includes(key)) || !token(row.id) || row.subject !== subject || !object(row.scope) || Object.keys(row.scope).length !== 3 || Object.keys(scope).some(key => row.scope[key] !== scope[key])) fail('foreign or invalid record');
+      if (seen.has(row.id)) fail('duplicate record');
+      seen.add(row.id);
+      const shown = time(row.shownAt), chosen = row.selectedAt == null ? null : time(row.selectedAt);
+      if (shown > cutoff || chosen !== null && (chosen < shown || chosen > cutoff)) fail('invalid selection chronology');
+      if (chosen !== null) selected += 1;
+      if (row.elapsedSeconds != null) {
+        if (chosen === null || !Number.isSafeInteger(row.elapsedSeconds) || row.elapsedSeconds < 0 || row.elapsedSeconds > 86400 || row.elapsedSeconds > Math.floor((chosen - shown) / 1000)) fail('invalid preparation duration');
+        durations.push(row.elapsedSeconds);
+      }
+      if ((row.satisfaction == null) !== (row.satisfactionAt == null)) fail('incomplete self-report');
+      if (row.satisfaction != null) {
+        const rated = time(row.satisfactionAt);
+        if (chosen === null || rated < chosen || rated > cutoff || !Number.isInteger(row.satisfaction) || row.satisfaction < 1 || row.satisfaction > 5) fail('invalid self-report');
+        ratings.push(row.satisfaction);
+      }
+    }
+    const mean = values => values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
+    return { version: 'temper-preparation-1', shown: records.length, selected, unselected: records.length - selected,
+      timed: durations.length, averageSeconds: mean(durations), rated: ratings.length, unrated: selected - ratings.length,
+      averageSatisfaction: mean(ratings), causalClaim: false, relationshipQuality: null };
+  }
+  return Object.freeze({ OUTCOMES_VERSION, evaluateOutcomes, summarizePreparation });
 });

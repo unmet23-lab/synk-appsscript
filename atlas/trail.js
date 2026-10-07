@@ -356,6 +356,39 @@
     const added = summary.met.filter(r => record(r) && !known.has(r.itemKey));
     return { records: [...history.records, ...added].map(copy), partial: history.partial };
   }
+  /* Qualification for the legacy learning policy, not a universal product success score.
+   * The summary must come from summarize(), which checks help, delivery, exclusions and
+   * first exposure. The host still owns identity and source authorization. Snapshot the
+   * proof fields once so later mutation of the caller's summary cannot change this view.
+   * Core supplies the time window and owns scoring/choice; Trail only returns source IDs. */
+  function createPracticeOutcomeIndex(summary) {
+    if (!summary || summary.version !== VERSION || !Array.isArray(summary.attempts)) throw new TypeError('Trail: use a practice summary');
+    const owner = key(summary.scope), cutoff = time(summary.asOf), recordedCutoff = time(summary.recordedAsOf ?? summary.asOf);
+    const attempts = new Map();
+    for (const item of summary.attempts) {
+      if (!id(item.eventId) || !id(item.presentationId) || !id(item.decisionId) || !Array.isArray(item.conceptIds)
+        || item.conceptIds.some(value => !id(value)) || attempts.has(item.eventId)) throw new TypeError('Trail: invalid practice outcome evidence');
+      const at = time(item.at), recordedAt = time(item.recordedAt);
+      if (recordedAt < at || at > cutoff || recordedAt > recordedCutoff) throw new TypeError('Trail: practice evidence outside summary');
+      attempts.set(item.eventId, { eventId: item.eventId, presentationId: item.presentationId, decisionId: item.decisionId,
+        conceptIds: [...item.conceptIds], at, recordedAt, qualified: item.independent === true && item.assisted === false
+          && item.exposure === 'new' && item.verdict === 'correct' && !item.exclusionReason });
+    }
+    return Object.freeze({ find(outcome, { targetLine, since, maxAgeMs } = {}) {
+      if (!outcome || outcome.type !== 'outcome.observed' || !id(outcome.id) || key(outcome.scope) !== owner
+        || typeof targetLine !== 'string' || !/^(need|due|trait):[a-zA-Z0-9_.:-]{1,120}$/.test(targetLine)
+        || !Number.isFinite(maxAgeMs) || maxAgeMs < 0) throw new TypeError('Trail: invalid practice outcome query');
+      const start = time(since), at = time(outcome.at), recordedAt = time(outcome.recordedAt);
+      if (at > cutoff || recordedAt > recordedCutoff || recordedAt < at || at < start || cutoff - at > maxAgeMs
+        || outcome.measure !== 'independent' || outcome.assisted !== false || outcome.targetLine !== targetLine) return null;
+      const attempt = attempts.get(outcome.attemptId);
+      // A curriculum need names its Strata concept, including the legacy skill/node prefixes.
+      const concept = targetLine.replace(/^(need|due):/, '').replace(/^(skill|node)\./, '');
+      if (!attempt?.qualified || attempt.decisionId !== outcome.decisionId || !attempt.conceptIds.includes(concept)
+        || attempt.at < start || attempt.at > at || attempt.recordedAt > recordedAt || cutoff - attempt.at > maxAgeMs) return null;
+      return { evidence: [outcome.id, attempt.eventId, attempt.presentationId] };
+    } });
+  }
   /* "It was wrong before; today a new item was right on its own."
    * `history` is the one opened at the start of this round. A fact needs a wrong first
    * attempt on the same primary concept (the first conceptId) and a later independent
@@ -379,5 +412,5 @@
     }
     return facts;
   }
-  return Object.freeze({ VERSION, TYPES, BITS, traceKeys, choiceRecord, validate, checkLink, link, vouch, summarize, createIndex, openHistory, remember, growth });
+  return Object.freeze({ VERSION, TYPES, BITS, traceKeys, choiceRecord, validate, checkLink, link, vouch, summarize, createIndex, createPracticeOutcomeIndex, openHistory, remember, growth });
 });

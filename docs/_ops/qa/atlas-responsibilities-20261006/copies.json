@@ -1,0 +1,20 @@
+[
+  {
+    "command": [
+      "node",
+      "tools/build-game-learning.js",
+      "--check"
+    ],
+    "exitCode": 0,
+    "output": "verified strata\\maps\\topik-i.json\nverified experiences\\korean-racing\\atlas-learning.js\nverified experiences\\korean-runner\\atlas-learning.js\nverified experiences\\korean-rhythm\\atlas-learning.js\nverified experiences\\order-rush\\atlas-learning.js\nverified experiences\\learning-hub\\atlas-learning.js\nverified experiences\\entry-check\\atlas-learning.js\nverified experiences\\story-classroom\\atlas-learning.js\nverified experiences\\blank-slice\\atlas-learning.js\nverified experiences\\talk-rally\\atlas-learning.js\n"
+  },
+  {
+    "command": [
+      "node",
+      "tools/sync-atlas.js",
+      "--check"
+    ],
+    "exitCode": 0,
+    "output": "verified talk\n"
+  }
+]

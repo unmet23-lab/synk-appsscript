@@ -1,0 +1,7 @@
+Atlas copies differ (5):
+  - SYNK-talk/lib/atlas/engine.js: differs from the canonical source
+  - SYNK-talk/lib/atlas/trail.js: differs from the canonical source
+  - SYNK-talk/lib/atlas/sync-manifest.json: out of date
+  - SYNK-website/dist/try/letter/atlas/engine.js: missing
+  - SYNK-website/dist/try/letter/atlas/experiences.js: missing
+Run: node tools/sync-atlas.js
