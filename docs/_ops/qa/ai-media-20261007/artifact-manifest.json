@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "verified_at": "2026-10-07T21:56:16.7541869+09:00",
+  "images": [
+    {
+      "path": "output/imagegen/20261007-sunburst-models/01-yuho-sunburst-high-2k.png",
+      "bytes": 4930950,
+      "sha256": "a931094c50a8f6c6bddbb25e6fbaec96416ba9511bfeabc0bddeb4226c7c4282",
+      "width": 1744,
+      "height": 2336,
+      "provider": "Higgsfield",
+      "provider_display_name": "GPT Image 2.5",
+      "model": "sunburst",
+      "quality": "high",
+      "resolution": "2k",
+      "generation_status": "completed"
+    },
+    {
+      "path": "output/imagegen/20261007-sunburst-models/02-woman-a-sunburst-low-1k.png",
+      "bytes": 1418369,
+      "sha256": "e3faa24c1e69e649d6a20cdd27abbcf288ba6e6f4ba5f6e089c75f5629f17b77",
+      "width": 896,
+      "height": 1120,
+      "provider": "Higgsfield",
+      "provider_display_name": "GPT Image 2.5",
+      "model": "sunburst",
+      "quality": "low",
+      "resolution": "1k",
+      "generation_status": "completed"
+    },
+    {
+      "path": "output/imagegen/20261007-sunburst-models/03-woman-b-sunburst-low-1k.png",
+      "bytes": 1550110,
+      "sha256": "91fd64ce21d02a22613b34b257a461e85342c14d0a607d8e3c4387926dce064a",
+      "width": 896,
+      "height": 1120,
+      "provider": "Higgsfield",
+      "provider_display_name": "GPT Image 2.5",
+      "model": "sunburst",
+      "quality": "low",
+      "resolution": "1k",
+      "generation_status": "completed"
+    },
+    {
+      "path": "output/imagegen/20261007-sunburst-models/04-man-a-sunburst-low-1k.png",
+      "bytes": 1421175,
+      "sha256": "0bb4df47a0b974ce37a8b0a03dbb33ae8aec442201edfdd459ca9ebbbafc4d27",
+      "width": 896,
+      "height": 1120,
+      "provider": "Higgsfield",
+      "provider_display_name": "GPT Image 2.5",
+      "model": "sunburst",
+      "quality": "low",
+      "resolution": "1k",
+      "generation_status": "completed"
+    },
+    {
+      "path": "output/imagegen/20261007-sunburst-models/05-man-b-sunburst-low-1k.png",
+      "bytes": 1402599,
+      "sha256": "57e80246813b58f6d834e379c9615e313d6786cfda7daaa9a15b03b717a337ee",
+      "width": 896,
+      "height": 1120,
+      "provider": "Higgsfield",
+      "provider_display_name": "GPT Image 2.5",
+      "model": "sunburst",
+      "quality": "low",
+      "resolution": "1k",
+      "generation_status": "completed"
+    }
+  ],
+  "h3_application": {
+    "status": "submitted_awaiting_review",
+    "submitted": true,
+    "license_granted": false,
+    "submission_confirmed_at": "2026-10-07T21:44:05.4168439+09:00",
+    "confirmation_heading": "Request Submitted",
+    "local_status_path": "output/licensing/minimax-h3/20261007/application-status.json",
+    "local_status_sha256": "682a9e705793b5f08ae3879ceb525ac4f3aa9b80bd299e2670c013f6f72fb3a9",
+    "submission_screenshot_path": "output/licensing/minimax-h3/20261007/application-submitted.jpg",
+    "submission_screenshot_sha256": "99040fbb97910e3b242db14ac722abc44acac89bb1f23aad29bb9e6e98dcaf48"
+  }
+}
