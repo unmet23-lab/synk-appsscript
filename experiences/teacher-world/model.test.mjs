@@ -105,6 +105,26 @@ test('teacher can revise title, reason and due date while unrelated teacher cann
   assert.equal(getStudentWorkspace(s,nara,options).assignments[0].title,'도서관 운영시간');
 });
 
+test('an edit may leave the student note empty unless the task overrides the recommendation',()=>{
+  // The edit dialog sends the note field as reason; it is optional when the task follows Core's recommendation.
+  const s=state(),a=assign(s);
+  const edited=updateAssignment(s,DEMO_TEACHER,{assignmentId:a.id,revision:1,title:'도서관 운영시간',reason:''},options).assignment;
+  assert.equal(edited.revision,2);assert.equal(edited.title,'도서관 운영시간');assert.equal(edited.reason,'');
+  const o=assign(s,{contentId:'reading-condition',reason:'조건 표현을 먼저 확인해요'});
+  throwsCode(()=>updateAssignment(s,DEMO_TEACHER,{assignmentId:o.id,revision:1,reason:'  '},options),'OVERRIDE_REASON_REQUIRED');
+  assert.equal(updateAssignment(s,DEMO_TEACHER,{assignmentId:o.id,revision:1,reason:'조건 표현부터 다시 봐요'},options).assignment.reason,'조건 표현부터 다시 봐요');
+});
+
+test('input errors name the field with the particle its last syllable takes',()=>{
+  const s=state(),a=assign(s),message=(fn)=>{try{fn();}catch(e){return e.message;}return null;};
+  assert.equal(message(()=>updateAssignment(s,DEMO_TEACHER,{assignmentId:a.id,title:' '},options)),'과제 제목을 확인해 주세요.');
+  assert.equal(message(()=>updateAssignment(s,DEMO_TEACHER,{assignmentId:a.id,reason:'가'.repeat(501)},options)),'변경 이유를 확인해 주세요.');
+  assert.equal(message(()=>assign(s,{reason:'가'.repeat(501)})),'배정 이유를 확인해 주세요.');
+  assert.equal(message(()=>cancelAssignment(s,DEMO_TEACHER,{assignmentId:a.id,reason:'가'.repeat(501)},options)),'취소 이유를 확인해 주세요.');
+  assert.equal(message(()=>assign(s,{idempotencyKey:' '})),'재전송 식별자를 확인해 주세요.');
+  assert.equal(message(()=>addObservation(s,DEMO_TEACHER,{learnerId:'demo-nara',classId:'class-morning',skillId:'ko.reading.detail',note:' ',idempotencyKey:'note-1'},options)),'관찰 내용을 확인해 주세요.');
+});
+
 test('student sees only own assignments and never receives answer keys before submission',()=>{
   const s=state(),a=assign(s),w=getStudentWorkspace(s,nara,options);
   assert.equal(w.assignments[0].id,a.id);assert.equal(w.assignments[0].content.questions.length,3);

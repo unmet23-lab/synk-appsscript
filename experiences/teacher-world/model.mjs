@@ -84,7 +84,9 @@ export class TeacherModelError extends Error {
 }
 const fail=(code,message,status=400)=>{throw new TeacherModelError(code,message,status);};
 function clock(options={}){const raw=options.now??Date.now(),time=typeof raw==='string'?Date.parse(raw):raw;if(!Number.isFinite(time)||!Number.isFinite(new Date(time).getTime()))fail('INVALID_TIME','시간을 확인하지 못했어요.');return time;}
-function text(value,name,max,{optional=false}={}){if(optional&&(value==null||typeof value==='string'&&!value.trim()))return '';if(typeof value!=='string'||!value.trim()||value.trim().length>max)fail('INVALID_INPUT',`${name}을 확인해 주세요.`);return value.trim();}
+// The object particle follows the field name's last syllable: 과제 제목을, 변경 이유를.
+const objectParticle=name=>{const c=name.charCodeAt(name.length-1)-0xac00;return c>=0&&c<=11171&&c%28?'을':'를';};
+function text(value,name,max,{optional=false}={}){if(optional&&(value==null||typeof value==='string'&&!value.trim()))return '';if(typeof value!=='string'||!value.trim()||value.trim().length>max)fail('INVALID_INPUT',`${name}${objectParticle(name)} 확인해 주세요.`);return value.trim();}
 function object(value){if(!value||typeof value!=='object'||Array.isArray(value))fail('INVALID_INPUT','요청 내용을 확인해 주세요.');return value;}
 function idempotencyKey(value){const key=text(value,'재전송 식별자',100);if(!/^[a-zA-Z0-9_.:-]+$/.test(key))fail('INVALID_INPUT','재전송 식별자를 확인해 주세요.');return key;}
 function scope(state,actor,role){
@@ -206,7 +208,9 @@ export function updateAssignment(state,actor,payload,options={}){
   if(assignment.status!=='active')fail('ASSIGNMENT_CANCELLED','취소한 과제는 변경할 수 없어요.',409);
   if(payload.revision!=null&&payload.revision!==assignment.revision)fail('REVISION_CONFLICT','과제가 변경되었어요. 최신 내용을 다시 확인해 주세요.',409);
   if(['learnerIds','classId','contentId'].some(key=>Object.hasOwn(payload,key)))fail('ASSIGNMENT_SCOPE_FIXED','학생과 활동을 바꾸려면 새 과제를 배정해 주세요.',409);
-  const title=payload.title==null?assignment.title:text(payload.title,'과제 제목',100),dueAt=payload.dueAt==null?assignment.dueAt:dueDate(payload.dueAt,now),reason=payload.reason==null?assignment.reason:text(payload.reason,'변경 이유',500);
+  const title=payload.title==null?assignment.title:text(payload.title,'과제 제목',100),dueAt=payload.dueAt==null?assignment.dueAt:dueDate(payload.dueAt,now),reason=payload.reason==null?assignment.reason:text(payload.reason,'변경 이유',500,{optional:true});
+  // Same rule as creation: the note may be empty unless the task overrides Core's recommendation.
+  if(!reason&&assignment.recommendations?.some(row=>row.teacherOverride))fail('OVERRIDE_REASON_REQUIRED','추천과 다른 과제를 배정하는 이유를 짧게 적어 주세요.');
   assignment.title=title;assignment.dueAt=dueAt;assignment.reason=reason;assignment.revision++;assignment.updatedAt=new Date(now).toISOString();audit(state,actor,'assignment.updated',assignment.id,assignment.updatedAt);
   return {ok:true,assignment:assignmentView(state,assignment,now)};
 }
