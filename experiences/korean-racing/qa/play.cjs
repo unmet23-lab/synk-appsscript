@@ -3,6 +3,9 @@
 // 순서: 입구(공통 코인 줄·다른 게임 링크) → (desktop만) 첫 조작 연습을 끝까지 → 레이스 다섯 문제
 //   1번: 음성을 끝까지 듣고 ‘글로 보기’로 지문을 펼친 뒤 답 꼬리표로 맞힘 · 2번: 틀린 길(키보드) · 3번: 멈춤·이어 하기 뒤 ↑ 단추로 맞힘 · 4·5번: 맞힘
 //   → 완주 뒤 드라이브 → 결과(공통 코인 줄·문제 목록·다시 듣기) → 처음으로(보유 코인이 늘었는지).
+//   다시 보기(2026-10-07~): 도움을 쓰고 맞히거나 틀리거나 다시 확인 문제에 답하면 차가 서서 해설을 띄우고
+//   ‘확인했어요 · 계속 달리기’(또는 ‘새 문제로 확인하기’, #feedback-continue)를 기다린다 — 차가 서 있는지·해설·배치를 보고 그 단추를 실제로 누른다.
+//   단추가 없는 옛 판(공개판 원본)에서는 이 단계를 건너뛴다.
 // 장면마다 3D 게이트·내 차의 화면 상자를 재서 문제 카드·차선 꼬리표·단추가 게이트와 차를 가리지 않는지, 가로 넘침·화면 밖·콘솔 오류를 본다.
 // garage 장면: 공통 차고(?garage=1)에서 차를 사고 장착한다(코인을 미리 넣어 둔다). /try/racing/ 주소에서 다른 게임 링크가 맞게 바뀌는지도 본다.
 // 쓰는 법: experiences 폴더를 정적 서버로 띄운 뒤(예: 5281)  node experiences/korean-racing/qa/play.cjs [desktop|phone|small|reduced|garage …]
@@ -60,18 +63,40 @@ async function run(browser, name, view) {
   const shots = [], notes = [], fails = [];
   const check = (ok, what) => { if (!ok) fails.push(what); };
   const shot = async (label) => { const f = `play_${name}_${String(shots.length).padStart(2, '0')}_${label}.png`; await page.screenshot({ path: path.join(OUT, f) }); shots.push(f); };
-  const Q = () => page.evaluate(() => window.__racingQA.state());
+  // reviewing: 다시 보기 단추가 떠서 차가 서 있다(그동안은 빨리 감아도 레이스가 나아가지 않는다)
+  const Q = () => page.evaluate(() => { const b = document.querySelector('#feedback-continue'); return { ...window.__racingQA.state(), reviewing: !!b && !b.hidden }; });
   const L = () => page.evaluate(() => window.__racingQA.layout());
   async function waitFor(pred, what, { timeout = 30000, every = 60 } = {}) {
     const t0 = Date.now(); let s = null;
     while (Date.now() - t0 < timeout) { s = await Q(); if (pred(s)) return s; await sleep(every); }
-    throw new Error(`${name}: 기다림 초과 — ${what} ${JSON.stringify(s && { gateIndex: s.gateIndex, gate: s.gate, tutorial: s.tutorial, coast: s.coast, screen: s.screen })}`);
+    throw new Error(`${name}: 기다림 초과 — ${what} ${JSON.stringify(s && { gateIndex: s.gateIndex, gate: s.gate, tutorial: s.tutorial, coast: s.coast, screen: s.screen, reviewing: s.reviewing })}`);
   }
   const advance = (sec) => page.evaluate((s) => window.__racingQA.advance(s), sec);
   async function advanceUntil(pred, what, { step = .25, limit = 60 } = {}) {
-    for (let t = 0; t < limit; t += step) { const s = await Q(); if (pred(s)) return s; await advance(step); }
+    for (let t = 0; t < limit; t += step) {
+      const s = await Q(); if (pred(s)) return s;
+      if (s.reviewing) throw new Error(`${name}: 빨리 감기로도 안 됨 — ${what}: 다시 보기 단추(#feedback-continue)를 누르지 않아 차가 서 있음 ${JSON.stringify(s.gate)}`);
+      await advance(step);
+    }
     const s = await Q(); if (pred(s)) return s;
     throw new Error(`${name}: 빨리 감기로도 안 됨 — ${what} ${JSON.stringify(s.gate)}`);
+  }
+  // 다시 보기: 단추가 떴으면 해설·단추 글·차가 서 있는지·배치를 보고 실제로 누른다. must면 떠야 한다(단추가 없는 옛 판은 빼고). 뜬 단추 글을 돌려준다.
+  async function review(label, { must = false } = {}) {
+    const r = await page.evaluate(() => { const b = document.querySelector('#feedback-continue'), box = b?.getBoundingClientRect();
+      return { exists: !!b, shown: !!b && !b.hidden && box.height > 0, text: b?.textContent, why: document.querySelector('#question-help').textContent, phase: document.querySelector('#question').dataset.phase }; });
+    if (must && r.exists) check(r.shown, `${label}: 다시 보기 단추가 떠야 함 ${JSON.stringify(r)}`);
+    if (!r.shown) return null;
+    check(['확인했어요 · 계속 달리기', '새 문제로 확인하기'].includes(r.text) && r.phase === 'answer' && r.why.trim().length > 0, `${label}: 다시 보기 해설·단추 ${JSON.stringify(r)}`);
+    await advance(1);
+    const st = await Q();
+    check(st.reviewing && st.velocity === 0, `${label}: 다시 보기 동안 차가 서 있어야 함 (속도 ${st.velocity})`);
+    await layout(`${label} 다시 보기`, { gate: false });
+    await page.click('#feedback-continue'); await sleep(150);
+    const after = await page.evaluate(() => ({ button: !document.querySelector('#feedback-continue').hidden, card: !document.querySelector('#question').hidden }));
+    check(!after.button && !after.card, `${label}: 단추를 누르면 해설을 닫고 달려야 함 ${JSON.stringify(after)}`);
+    notes.push(`${label}: 다시 보기 「${r.text}」 — ${r.why.slice(0, 90)}`);
+    return r.text;
   }
   // 넘침: 가로 스크롤·휴대폰 축소(innerWidth > visualViewport.width)
   async function fit(label) {
@@ -197,6 +222,7 @@ async function run(browser, name, view) {
     tagRight: !!document.querySelector('#lane-choices .lane-tag.right'), pop: !document.querySelector('#pop').hidden }));
   check(right.result === 'ok' && right.tagRight, `정답 표시 ${JSON.stringify(right)}`);
   await layout('정답', { gate: false });
+  await review('1번(글로 보고 맞힘)', { must: !!s.answers[0].learning?.assisted });
   // 2번: 틀린 길의 꼬리표를 누른다
   s = await advanceUntil((x) => x.gateIndex === 1 && x.gate?.announced, '2번 문제 나옴');
   await page.evaluate(() => window.__racingQA.hearNow());
@@ -209,6 +235,7 @@ async function run(browser, name, view) {
     redX: /[×✕✗]/.test(document.querySelector('#question').textContent) }));
   check(wrong.result === 'miss' && wrong.ask.startsWith('정답:') && !wrong.redX, `틀림 쪽지 ${JSON.stringify(wrong)}`);
   await layout('틀림', { gate: false });
+  await review('2번(틀림)', { must: true });
   // 3번: 멈춤 → 이어 하기 → ↑ 단추
   s = await advanceUntil((x) => x.gateIndex === 2 && x.gate?.announced, '3번 문제 나옴');
   await page.click('#pause'); await sleep(300);
@@ -221,6 +248,7 @@ async function run(browser, name, view) {
   await clickLane(s.gate.answer); await page.click('#go');
   s = await advanceUntil((x) => x.answers.length === 3, '3번 판정');
   check(s.answers[2].correct === true, '3번은 맞아야 함');
+  await review('3번', { must: !!s.answers[2].recheck?.line });   // 2번 뒤 새 문제로 확인하는 문항이면 결과 줄을 읽을 시간을 준다
   // 4번: 키보드 ←→로 옮기고 ↑ · 5번: 화면 단추 ←→로 옮기고 ‘이 길로’
   for (const [n, how] of [[4, 'key'], [5, 'button']]) {
     s = await advanceUntil((x) => x.gateIndex === n - 1 && x.gate?.announced, `${n}번 문제 나옴`);
@@ -229,6 +257,7 @@ async function run(browser, name, view) {
     if (how === 'key') await page.keyboard.press('ArrowUp'); else await page.click('#go');
     s = await advanceUntil((x) => x.answers.length === n, `${n}번 판정`);
     check(s.answers[n - 1].correct === true, `${n}번(${how === 'key' ? '키보드' : '화면 단추'}) 맞아야 함 ${JSON.stringify(s.answers[n - 1].chosen)}`);
+    await review(`${n}번`, { must: !!s.answers[n - 1].recheck?.line });
   }
   check(s.answers.filter((a) => a.correct).length === 4, `맞힘 4개 ${JSON.stringify(s.answers.map((a) => a.correct))}`);
   s = await advanceUntil((x) => x.coast.phase === 'drive', '완주 뒤 드라이브', { limit: 20, step: 1 / 15 });
