@@ -123,9 +123,9 @@
     },
     {
       "path": "songs/vowel-dance.mp3",
-      "from": "Suno 399224fa-4ca7-42ee-854d-fbd7ea288bde · 공식 내려받기 MP3 2026-10-04(유호님 허락) · 원본 Documents/synk-vendor/hangul-songs/vowel-dance_399224fa.mp3",
-      "bytes": 1317968,
-      "sha256": "3d53b8f3e76dd44ca98c88c5bc00c19beb90645e22b5a47e032b1374353a0fdf"
+      "from": "Suno 399224fa-4ca7-42ee-854d-fbd7ea288bde · 공식 내려받기 MP3 2026-10-04(유호님 허락) · 2026-10-07 둘째 후렴 첫 줄(36초쯤) 발음만 고침: Suno 편집기 구간 바꾸기 후보 321aaf44-8f1e-4d5e-8f70-5df2dbedb9f9(공식 내려받기, 유호님 허락)의 34.78~45.075초를 원곡에 끼우고 MP3 192kbps로 다시 구움(유호님 「원곡보다 훨씬 좋다」) · 원본·끼우기 스크립트 Documents/synk-vendor/hangul-songs/vowel-dance-fix-20261007/",
+      "bytes": 1315653,
+      "sha256": "9098d5c9bfa91f10ceeb2434bf24bebedec1d70d9e766d43d4ab1789c7c50395"
     },
     {
       "path": "songs/geu-a-ga.mp3",
