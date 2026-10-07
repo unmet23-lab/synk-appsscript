@@ -1,0 +1,299 @@
+{
+ "note": "미니게임 목소리 제작 기록(tools/미니게임_목소리.cjs). qa/·*.source.json이라 공개 묶음에서 빠진다. 배역·설정의 원본은 tools/minigame-voice-casting.json.",
+ "provider": "Typecast",
+ "model": "ssfm-v30",
+ "post": "앞 0.12초·끝 0.74초 여백, -21.4 LUFS 고정 이득 → wav 22050Hz 16bit mono → 그 wav에서 MP3 64kbps (지금 Windows 음성 파일의 실측과 같게)",
+ "updatedAt": "2026-10-07T11:21:58.048Z",
+ "voices": {
+  "wind": {
+   "label": "바람",
+   "id": "tc_62e8f21e979b3860fe2f6a24",
+   "name": "혜리",
+   "preview": "https://static2.typecast.ai/c/251023_preview/hyelee_mixdown.mp3",
+   "measure": "음높이 333Hz · 밝기 1798Hz · 억양 폭 12.1반음 · 빠르기 6.1 · 숏폼·광고",
+   "why": "유호님이 고른 밝은 목소리"
+  }
+ },
+ "lines": {
+  "left": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "62c6d1141acf206f52bfe63b612209fe",
+   "sha": {
+    "assets/voice/left.wav": "2a87ec7ef9e0a877",
+    "assets/voice/left.mp3": "7c8dd6cef3173745"
+   }
+  },
+  "jump": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "bf6cbc57d9fffdba6d26db4688ebd0dd",
+   "sha": {
+    "assets/voice/jump.wav": "6efdd2852a9cd97f",
+    "assets/voice/jump.mp3": "a2d6869c0c3cffa8"
+   }
+  },
+  "right": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "fa27717a944e2b8da5dcbf478d8a1f7a",
+   "sha": {
+    "assets/voice/right.wav": "552bd2c2cefa9471",
+    "assets/voice/right.mp3": "4c13329c918b1564"
+   }
+  },
+  "slide": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "122a10c8458309c224cbc59427824e33",
+   "sha": {
+    "assets/voice/slide.wav": "a91e91dbb5580562",
+    "assets/voice/slide.mp3": "07e1a4a8dd146a14"
+   }
+  },
+  "middle": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "6affa9f3be12c8d050ec14a5e4a0c921",
+   "sha": {
+    "assets/voice/middle.wav": "ae5087bb59f6ec4a",
+    "assets/voice/middle.mp3": "827ce16f0655ad28"
+   }
+  },
+  "no-jump": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "72d2661aa5204b32ba609e41864ca5e9",
+   "sha": {
+    "assets/voice/no-jump.wav": "ce6481d3e0a8a843",
+    "assets/voice/no-jump.mp3": "065e71e0df7c1ba7"
+   }
+  },
+  "left-jump": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "d9bbccfbca19494376563bb57e7831e0",
+   "sha": {
+    "assets/voice/left-jump.wav": "22d4e786bd078813",
+    "assets/voice/left-jump.mp3": "ca6f2632061597f5"
+   }
+  },
+  "middle-slide": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "d1e841f5d44d3073ec18df6a7b1702b5",
+   "sha": {
+    "assets/voice/middle-slide.wav": "bc047347300f0522",
+    "assets/voice/middle-slide.mp3": "858e57ada4431ece"
+   }
+  },
+  "not-right": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "f77c9714f8c3ff45335b8fc9b8e94f41",
+   "sha": {
+    "assets/voice/not-right.wav": "4bbc9cff26574479",
+    "assets/voice/not-right.mp3": "7480a71dd9f024ef"
+   }
+  },
+  "jump-right": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "2cfb4a956f18b61e367fdf81d6a5d9d2",
+   "sha": {
+    "assets/voice/jump-right.wav": "7e8b42058b036f67",
+    "assets/voice/jump-right.mp3": "c43ce27e8c94edf4"
+   }
+  },
+  "slide-left": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "d9e26594a00147bb7858fa459bb17fd8",
+   "sha": {
+    "assets/voice/slide-left.wav": "5ab5c104722cf07a",
+    "assets/voice/slide-left.mp3": "daac72a56b76b4e7"
+   }
+  },
+  "not-left": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "6ed51ed409dee300722c4510aad33ee5",
+   "sha": {
+    "assets/voice/not-left.wav": "715099ba600403c4",
+    "assets/voice/not-left.mp3": "96745e3ce710dd5b"
+   }
+  },
+  "right-slide": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "fbf4a99542a5948b471d96971c5c44bb",
+   "sha": {
+    "assets/voice/right-slide.wav": "5a1f92e4cf6f5a6a",
+    "assets/voice/right-slide.mp3": "1e56294c5c209507"
+   }
+  },
+  "jump-stay": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "58ba6d1153a924419b29dd6e7d954f1b",
+   "sha": {
+    "assets/voice/jump-stay.wav": "a3446242daa0f599",
+    "assets/voice/jump-stay.mp3": "82735ad65318ce81"
+   }
+  },
+  "right-middle": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "45e8ef64662d4e7e0f8c535864d1e531",
+   "sha": {
+    "assets/voice/right-middle.wav": "9a4d2b773787f0d7",
+    "assets/voice/right-middle.mp3": "f9a3a6185fd74635"
+   }
+  },
+  "not-slide": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "cd617290b02ee02b36c98f1b20615a8a",
+   "sha": {
+    "assets/voice/not-slide.wav": "8ae53d5ebdd3d236",
+    "assets/voice/not-slide.mp3": "dd53c2e51ba5abe1"
+   }
+  },
+  "check-star-middle": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "13fe183a30a00f3cf9bda34559f885e9",
+   "sha": {
+    "assets/voice/check-star-middle.wav": "302177747ed553b7",
+    "assets/voice/check-star-middle.mp3": "1c197e0d4e1d8e47"
+   }
+  },
+  "check-wide-left": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "a0530287430948bcfe14dca871600e8c",
+   "sha": {
+    "assets/voice/check-wide-left.wav": "7e1af5961ae433e9",
+    "assets/voice/check-wide-left.mp3": "24edccd9ea6d9e8c"
+   }
+  },
+  "check-fence-jump": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "a620ced54ebea882770851265ec53004",
+   "sha": {
+    "assets/voice/check-fence-jump.wav": "b36c2687e5f0004b",
+    "assets/voice/check-fence-jump.mp3": "201fb16c466516a1"
+   }
+  },
+  "check-sign-duck": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "f4ed27fd46b283d7fdaadeca622f3617",
+   "sha": {
+    "assets/voice/check-sign-duck.wav": "88a8b0634499b427",
+    "assets/voice/check-sign-duck.mp3": "69ea055a165f2168"
+   }
+  },
+  "check-not-middle": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "3960d89b15d4561378d15ecef50cce12",
+   "sha": {
+    "assets/voice/check-not-middle.wav": "6e799007fb9ea5c5",
+    "assets/voice/check-not-middle.mp3": "2f0f2376d03f9716"
+   }
+  },
+  "check-no-fence": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "5a67ad944da68ea5d973942bba3aeef9",
+   "sha": {
+    "assets/voice/check-no-fence.wav": "13112411913a8d22",
+    "assets/voice/check-no-fence.mp3": "fe19073ace74f4f7"
+   }
+  },
+  "check-high-sign": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "f517fa71b9c3c749f3cc800e7c4da970",
+   "sha": {
+    "assets/voice/check-high-sign.wav": "6b973609fa4b1ea8",
+    "assets/voice/check-high-sign.mp3": "6a2592f2bbb15628"
+   }
+  },
+  "check-not-left": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "4a8b1ed5d4f13214ecab21340e71bd8b",
+   "sha": {
+    "assets/voice/check-not-left.wav": "81d8e1c1c5b3aeb3",
+    "assets/voice/check-not-left.mp3": "a3bd4994520f169e"
+   }
+  },
+  "check-duck-jump": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "536e74d96c87591da0c0eeeebfb7d184",
+   "sha": {
+    "assets/voice/check-duck-jump.wav": "d11c28c646de6092",
+    "assets/voice/check-duck-jump.mp3": "972d316869f4f05f"
+   }
+  },
+  "check-middle-left": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "5ec12f06ab7f96e8c82d29736d166423",
+   "sha": {
+    "assets/voice/check-middle-left.wav": "fc42b0da448559ac",
+    "assets/voice/check-middle-left.mp3": "a795bc87f19aa05b"
+   }
+  },
+  "check-right-before-jump": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "f950b639119d1958ce32b5af2037181f",
+   "sha": {
+    "assets/voice/check-right-before-jump.wav": "8e2f0936c92f3a55",
+    "assets/voice/check-right-before-jump.mp3": "4f2a759ea3aa3a04"
+   }
+  },
+  "check-left-run": {
+   "role": "wind",
+   "voice": "혜리",
+   "tempo": 1,
+   "key": "417f14529c91e24c927155c87fb07cf8",
+   "sha": {
+    "assets/voice/check-left-run.wav": "02ec262a313d3b26",
+    "assets/voice/check-left-run.mp3": "a9442b1e03455582"
+   }
+  }
+ }
+}

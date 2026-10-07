@@ -1,8 +1,15 @@
 {
-  "sourceKey": "02a03cd7ccd0b31a9e6eb02cd46fd82c43ebb990eff46b1e3b18e17430f3783e",
+  "sourceKey": "9eb089bc2b176414f737e571487d3555",
   "text": "이번 글에서는 까몽이 과자를 옮겨요. 아까의 상자가 아니라 선반 위에 놓아요.",
   "speaker": "teacher",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-7%",
-  "pitch": "-2Hz"
+  "voice": "효은",
+  "voiceId": "tc_691d49ccc47926d741f15913",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

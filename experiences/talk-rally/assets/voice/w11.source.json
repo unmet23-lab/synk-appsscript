@@ -1,7 +1,14 @@
 {
-  "sourceKey": "d34c0fffc952494a411ea5c8b62747637e287dc59159ee9c522970c9bcad3075",
+  "sourceKey": "89efc9acea8cf544f39795603852194f",
   "text": "주말에 뭐 할 거예요?",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-8%",
-  "pitch": "+8Hz"
+  "voice": "선하",
+  "voiceId": "tc_649408f268febb61286eec85",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "몽글: 지금 generate-voice.py와 같은 앞뒤 자르기 + loudnorm I=-18 TP=-2.5 LRA=7 · 안내: generate-narration.py와 같은 자르기·쉼 0.28초 + 재어서 -20.5 LUFS → MP3 mono 24kHz 96kbps"
 }

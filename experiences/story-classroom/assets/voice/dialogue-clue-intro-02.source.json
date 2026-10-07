@@ -1,8 +1,15 @@
 {
-  "sourceKey": "8ca02ec2c3ce79daf436e6ea01a11821296ed009d05dc8f7536f974ac15a7443",
+  "sourceKey": "640e703b3a4e4431f3276245c40aae14",
   "text": "꽃 확인. 세 송이. …예쁘다.",
   "speaker": "marin",
-  "voice": "ko-KR-InJoonNeural",
-  "rate": "-10%",
-  "pitch": "-4Hz"
+  "voice": "한결",
+  "voiceId": "tc_677f2aa4a854ddffa0ebda89",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.9,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

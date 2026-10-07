@@ -1,49 +1,48 @@
 {
-  "voice": "Microsoft Heami Desktop",
-  "engine": "Windows System.Speech",
+  "voice": "해설",
   "format": "MP3 mono 24kHz 48kbps",
   "clips": [
     {
       "id": "shield-ready",
       "text": "연속 정답! 보호막이 생겼어. 다음 접촉을 막아 줄게.",
-      "duration": 7.112,
-      "bytes": 43292,
-      "rms": 2566
+      "duration": 4.987,
+      "bytes": 30476,
+      "rms": 2094
     },
     {
       "id": "shield-block",
       "text": "보호막으로 속도를 지켰어. 계속 달려 보자!",
-      "duration": 5.339,
-      "bytes": 32636,
-      "rms": 2687
+      "duration": 3.876,
+      "bytes": 23852,
+      "rms": 2082
     },
     {
       "id": "garage-earned",
       "text": "오늘의 여행 보상을 받았어. 차고에서 새 꾸미기를 살펴볼까?",
-      "duration": 6.487,
-      "bytes": 39548,
-      "rms": 2871
+      "duration": 5.433,
+      "bytes": 33212,
+      "rms": 2158
     },
     {
       "id": "garage-wish",
       "text": "완주 보상을 받았어! 찜한 자동차에 한 걸음 더 가까워졌네. 차고에서 확인해 봐!",
-      "duration": 9.055,
-      "bytes": 54956,
-      "rms": 2641
+      "duration": 7.532,
+      "bytes": 45740,
+      "rms": 2206
     },
     {
       "id": "mission-complete",
       "text": "오늘의 미션까지 성공했어! 미션 코인도 함께 받았어.",
-      "duration": 6.274,
-      "bytes": 38252,
-      "rms": 2640
+      "duration": 4.588,
+      "bytes": 28172,
+      "rms": 2139
     },
     {
       "id": "finale-unlock",
       "text": "챕터 결승전 통과! 특별한 컬렉션이 열렸어. 차고에서 장착해 보자!",
-      "duration": 8.538,
-      "bytes": 51788,
-      "rms": 2503
+      "duration": 5.575,
+      "bytes": 34076,
+      "rms": 2117
     }
   ]
 }

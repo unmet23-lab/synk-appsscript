@@ -1,8 +1,15 @@
 {
-  "sourceKey": "3a2d04b0e61951ea4cf783146d1e0072b0b404a96fe364c3fb5bb010c6cbee24",
+  "sourceKey": "a6a820e364cf5b1f5da083f40f40b258",
   "text": "임무 완료. 과자, 상자에 도착.",
   "speaker": "marin",
-  "voice": "ko-KR-InJoonNeural",
-  "rate": "-10%",
-  "pitch": "-4Hz"
+  "voice": "한결",
+  "voiceId": "tc_677f2aa4a854ddffa0ebda89",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.9,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

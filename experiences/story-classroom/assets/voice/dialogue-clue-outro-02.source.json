@@ -1,8 +1,15 @@
 {
-  "sourceKey": "df40289c1b5a7f2124b6649c0ae42e203a20e1696a33a300c63108611e17290f",
+  "sourceKey": "52e971841078e1ce8c30ad081209e7eb",
   "text": "오늘 내 생일인 걸 어떻게 알았니?",
   "speaker": "teacher",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-7%",
-  "pitch": "-2Hz"
+  "voice": "효은",
+  "voiceId": "tc_691d49ccc47926d741f15913",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

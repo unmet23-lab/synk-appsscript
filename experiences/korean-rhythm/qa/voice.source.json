@@ -1,0 +1,424 @@
+{
+ "note": "미니게임 목소리 제작 기록(tools/미니게임_목소리.cjs). qa/·*.source.json이라 공개 묶음에서 빠진다. 배역·설정의 원본은 tools/minigame-voice-casting.json.",
+ "provider": "Typecast",
+ "model": "ssfm-v30",
+ "post": "앞 0.23초·끝 0.97초 여백(지금 파일 실측) + 지금 build-narration.py와 같은 loudnorm I=-16 TP=-1 LRA=7 → MP3 mono 24kHz 64kbps",
+ "updatedAt": "2026-10-07T11:21:48.305Z",
+ "voices": {
+  "narrator": {
+   "label": "해설",
+   "id": "tc_69f2e455ea79fd197aa0476f",
+   "name": "서현",
+   "preview": "https://static2.typecast.ai/c/260430_seohyeon/seohyeon_mixdown.mp3",
+   "measure": "음높이 157Hz · 밝기 673Hz · 억양 폭 11.2반음 · 빠르기 5.19 · 아나운서·대화",
+   "why": "유호님이 고른 설명 목소리 — 낮고 차분하다"
+  }
+ },
+ "lines": {
+  "t0q0v0": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "9390c8c9dc57fb7ceb5836a261889977",
+   "sha": {
+    "assets/narration/t0q0v0.mp3": "235cb3295607f114"
+   }
+  },
+  "t0q0v1": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "5faeed5bf0628b00118647baa4cf9815",
+   "sha": {
+    "assets/narration/t0q0v1.mp3": "f80c2cca81cb5333"
+   }
+  },
+  "t0q0r": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "ba81809f6561679504259ed488ed2816",
+   "sha": {
+    "assets/narration/t0q0r.mp3": "b26e54c20cadbe41"
+   }
+  },
+  "t0q1v0": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "f244175509e4dc9eec6bddf0b447feb2",
+   "sha": {
+    "assets/narration/t0q1v0.mp3": "d8e98675b82b40b2"
+   }
+  },
+  "t0q1v1": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "6ba3937393cdd169ebbb8c5eb10cfedb",
+   "sha": {
+    "assets/narration/t0q1v1.mp3": "abeae87bf8df20ac"
+   }
+  },
+  "t0q1r": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "95ad86011665724136e58ab38537aee3",
+   "sha": {
+    "assets/narration/t0q1r.mp3": "b4e1c4160525f77e"
+   }
+  },
+  "t0q2v0": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "e13da184d9f083f2040295c3ce248b7b",
+   "sha": {
+    "assets/narration/t0q2v0.mp3": "dc2ff6df11ef9ac2"
+   }
+  },
+  "t0q2v1": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "5e92f3f9d57ee066125f27773e2b2472",
+   "sha": {
+    "assets/narration/t0q2v1.mp3": "27617734b16fac1b"
+   }
+  },
+  "t0q2r": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "29e58d6f09a9167d9d151e2f9c54a115",
+   "sha": {
+    "assets/narration/t0q2r.mp3": "1e02f1dfb079a03b"
+   }
+  },
+  "t0q3v0": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "7ca5b876a2bdfe91b8a4dcc8733d7071",
+   "sha": {
+    "assets/narration/t0q3v0.mp3": "5a5ce5d335b5826c"
+   }
+  },
+  "t0q3v1": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "c416779fb89e1faef4c95d521154de46",
+   "sha": {
+    "assets/narration/t0q3v1.mp3": "aa85280dfe72c406"
+   }
+  },
+  "t0q3r": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "3aa1512bf5cf1e11dea6cab9cabf36d2",
+   "sha": {
+    "assets/narration/t0q3r.mp3": "3c87e7b35341ce7b"
+   }
+  },
+  "t0q4v0": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "793ca87a8fec6c242a446e7f51629c00",
+   "sha": {
+    "assets/narration/t0q4v0.mp3": "987dda51ba1cbed2"
+   }
+  },
+  "t0q4v1": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "66b45d114b46544970461d2e7e859e39",
+   "sha": {
+    "assets/narration/t0q4v1.mp3": "ae701f167e70483d"
+   }
+  },
+  "t0q4r": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "e5cc49dc9ca042ed57b11b28ea310bd9",
+   "sha": {
+    "assets/narration/t0q4r.mp3": "93f38ff5bf8524b5"
+   }
+  },
+  "t1q0v0": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "d80dffaabcedc1956690cab1a0750be1",
+   "sha": {
+    "assets/narration/t1q0v0.mp3": "2f93a2eec82507f2"
+   }
+  },
+  "t1q0v1": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "2ccb4188c0d2857d08312ec611ad7dc0",
+   "sha": {
+    "assets/narration/t1q0v1.mp3": "90d88a894ab00533"
+   }
+  },
+  "t1q0r": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "ce99a83f59d64faa21fa27b844081ec7",
+   "sha": {
+    "assets/narration/t1q0r.mp3": "630f709949548bdf"
+   }
+  },
+  "t1q1v0": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "45a5322fc7a41c874a28abd951fc0e4f",
+   "sha": {
+    "assets/narration/t1q1v0.mp3": "c7ad58ae93d16241"
+   }
+  },
+  "t1q1v1": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "acbcda3497a9e8b35800963506de4984",
+   "sha": {
+    "assets/narration/t1q1v1.mp3": "c45b6d0b2d120b88"
+   }
+  },
+  "t1q1r": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "278552fba8dcf57d122053d2bc4366d9",
+   "sha": {
+    "assets/narration/t1q1r.mp3": "f1e1ff578028e53c"
+   }
+  },
+  "t1q2v0": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "931091a498c78eb8f8d7fe8b0ddbee2d",
+   "sha": {
+    "assets/narration/t1q2v0.mp3": "caf38dd0cb936351"
+   }
+  },
+  "t1q2v1": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "a715aeaf294dc1ae386de404a3573984",
+   "sha": {
+    "assets/narration/t1q2v1.mp3": "726a69831fbe11d6"
+   }
+  },
+  "t1q2r": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "2c17460aa7625230d6125d16cb9f939c",
+   "sha": {
+    "assets/narration/t1q2r.mp3": "b2b750b2c3e7fc5e"
+   }
+  },
+  "t1q3v0": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "d74552e449b4cdb542cae6ed380120bb",
+   "sha": {
+    "assets/narration/t1q3v0.mp3": "88563e2373f0c2f3"
+   }
+  },
+  "t1q3v1": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "5596d9a7ed3ec97602d505ceb6572745",
+   "sha": {
+    "assets/narration/t1q3v1.mp3": "a509c3b807555d62"
+   }
+  },
+  "t1q3r": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "77382fe014984649929023f54712a1e9",
+   "sha": {
+    "assets/narration/t1q3r.mp3": "46ef98e37007f7d8"
+   }
+  },
+  "t1q4v0": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "f068757bcf2d6ebbbc80d06af5832ce9",
+   "sha": {
+    "assets/narration/t1q4v0.mp3": "d781ad25c507b3d6"
+   }
+  },
+  "t1q4v1": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "f93e9bd5ff5ba33f93833ea8af95c76c",
+   "sha": {
+    "assets/narration/t1q4v1.mp3": "837c84b2a9a44cea"
+   }
+  },
+  "t1q4r": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "e0cb87bf2851460256883b0334b89ffd",
+   "sha": {
+    "assets/narration/t1q4r.mp3": "8a30fc13e63ab0a2"
+   }
+  },
+  "t2q0v0": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "b4c3d9bb45df30e8666405d1f1abb726",
+   "sha": {
+    "assets/narration/t2q0v0.mp3": "6e8e636b9e767e16"
+   }
+  },
+  "t2q0v1": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "4a5fe2f8c85fc751b33967b33210f244",
+   "sha": {
+    "assets/narration/t2q0v1.mp3": "2387e42bd0174875"
+   }
+  },
+  "t2q0r": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "646e43bda1ddc5f0af164590109c6099",
+   "sha": {
+    "assets/narration/t2q0r.mp3": "c6a49d6f8fad3abd"
+   }
+  },
+  "t2q1v0": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "52b3db889fd568542e0e738084aca090",
+   "sha": {
+    "assets/narration/t2q1v0.mp3": "9d5d9d4d70e7b14c"
+   }
+  },
+  "t2q1v1": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "2dbfeed6025f8e1535dc8624424673a7",
+   "sha": {
+    "assets/narration/t2q1v1.mp3": "9c4697d7af134c80"
+   }
+  },
+  "t2q1r": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "c6d0535a8064d0403be7b160d0a39e3d",
+   "sha": {
+    "assets/narration/t2q1r.mp3": "be8bf9702f5dbd3f"
+   }
+  },
+  "t2q2v0": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "42bf09fe64066a3ca6a595dce0c6b77c",
+   "sha": {
+    "assets/narration/t2q2v0.mp3": "f9bed1cad13b934c"
+   }
+  },
+  "t2q2v1": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "ac8a6eb091e8e1353d04662bfb98441d",
+   "sha": {
+    "assets/narration/t2q2v1.mp3": "d50be756cd69870f"
+   }
+  },
+  "t2q2r": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "fcb693b45480f5d31366b9e43d46fdfe",
+   "sha": {
+    "assets/narration/t2q2r.mp3": "d3275365111d9ce3"
+   }
+  },
+  "t2q3v0": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "3a6f4a25fc8d472dfd5b6e01b8737acf",
+   "sha": {
+    "assets/narration/t2q3v0.mp3": "506ff41e767b1fcf"
+   }
+  },
+  "t2q3v1": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "b3cf7aedd162d543dd545afc925c6d24",
+   "sha": {
+    "assets/narration/t2q3v1.mp3": "e5a434916545180e"
+   }
+  },
+  "t2q3r": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "155ce9b1fda42406053dcb481023b437",
+   "sha": {
+    "assets/narration/t2q3r.mp3": "88c5ba830988c396"
+   }
+  },
+  "t2q4v0": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "600817c5d3fdb5879d9a3e508989831b",
+   "sha": {
+    "assets/narration/t2q4v0.mp3": "2a785fe467a17a58"
+   }
+  },
+  "t2q4v1": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "1f8f913fff9390750522195a2037a201",
+   "sha": {
+    "assets/narration/t2q4v1.mp3": "6475237272ae4b06"
+   }
+  },
+  "t2q4r": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "8c9382380d45279b078fffa30e4c9cbb",
+   "sha": {
+    "assets/narration/t2q4r.mp3": "8b728744bf8f264f"
+   }
+  }
+ }
+}

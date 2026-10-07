@@ -1,8 +1,15 @@
 {
-  "sourceKey": "cca419e7994babd5caaa55e2c557bc2240cbdd19f9e3a598a396de8441f21b95",
+  "sourceKey": "cbae8b97b023d6085cbe707909b99bac",
   "text": "꽃을 놓은 뒤, 까몽은 편지를 칠판에 붙여 줘.",
   "speaker": "teacher",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-7%",
-  "pitch": "-2Hz"
+  "voice": "효은",
+  "voiceId": "tc_691d49ccc47926d741f15913",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

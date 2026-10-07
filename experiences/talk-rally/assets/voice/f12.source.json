@@ -1,7 +1,14 @@
 {
-  "sourceKey": "6b528caa5c80a094a48eae5546bd6ba485d253bfe8ce9093f6353c35f8c0bec4",
+  "sourceKey": "a2abb5fbbabf876aadd01f6d994464dd",
   "text": "주말 잘 보내세요.",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-8%",
-  "pitch": "+8Hz"
+  "voice": "선하",
+  "voiceId": "tc_649408f268febb61286eec85",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "몽글: 지금 generate-voice.py와 같은 앞뒤 자르기 + loudnorm I=-18 TP=-2.5 LRA=7 · 안내: generate-narration.py와 같은 자르기·쉼 0.28초 + 재어서 -20.5 LUFS → MP3 mono 24kHz 96kbps"
 }

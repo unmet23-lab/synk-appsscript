@@ -1,0 +1,1444 @@
+{
+ "note": "미니게임 목소리 제작 기록(tools/미니게임_목소리.cjs). qa/·*.source.json이라 공개 묶음에서 빠진다. 배역·설정의 원본은 tools/minigame-voice-casting.json.",
+ "provider": "Typecast",
+ "model": "ssfm-v30",
+ "post": "지금 voice.mjs encode()와 같음: 앞뒤 -48dB 자르기, loudnorm I=-17 TP=-1.5 LRA=11, 앞 40ms·끝 0.12초 → MP3 mono 24kHz 48kbps",
+ "updatedAt": "2026-10-07T11:21:33.370Z",
+ "voices": {
+  "narrator": {
+   "label": "해설",
+   "id": "tc_69f2e455ea79fd197aa0476f",
+   "name": "서현",
+   "preview": "https://static2.typecast.ai/c/260430_seohyeon/seohyeon_mixdown.mp3",
+   "measure": "음높이 157Hz · 밝기 673Hz · 억양 폭 11.2반음 · 빠르기 5.19 · 아나운서·대화",
+   "why": "유호님이 고른 설명 목소리 — 낮고 차분하다"
+  },
+  "bear": {
+   "label": "곰(김보리, 21살)",
+   "id": "tc_66c6ce224dadfe518fbbdef2",
+   "name": "태민",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142625_66c6ce224dadfe518fbbdef2_SSFM-V3_0.mp3",
+   "measure": "음높이 225Hz · 밝기 1211Hz · 억양 폭 7.9반음 · 빠르기 6.15 · 대화",
+   "why": "대화용 — 「너도 가끔은 실패해도 괜찮으니까」 친구에게 말하듯 밝다"
+  },
+  "raccoon": {
+   "label": "너구리(나구리, 45살)",
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤",
+   "preview": "https://static2.typecast.ai/c/260618_Doyoon/Doyoon_mixdown.mp3",
+   "measure": "음높이 127Hz · 밝기 772Hz · 억양 폭 10.2반음 · 빠르기 5.07 · 대화·숏폼",
+   "why": "대화·숏폼용 — 「아 자기관리는 어떻게 하는지 궁금하시다고요?」 느긋하고 수다스럽다"
+  },
+  "rabbit": {
+   "label": "토끼(박토순, 72살)",
+   "id": "tc_6731b3ac075b04a944644234",
+   "name": "한영",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142755_6731b3ac075b04a944644234_SSFM-V3_0.mp3",
+   "measure": "음높이 216Hz · 밝기 1245Hz · 억양 폭 9.5반음 · 빠르기 4.65 · 라디오·오디오북",
+   "why": "라디오·오디오북용 — 느리고(4.65) 부드럽다",
+   "settings": {
+    "tempo": 0.88
+   }
+  },
+  "fox": {
+   "label": "여우(여우진, 31살)",
+   "id": "tc_662a05b17419f60500ac5630",
+   "name": "이준",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142205_662a05b17419f60500ac5630_SSFM-V3_0.mp3",
+   "measure": "음높이 166Hz · 밝기 896Hz · 억양 폭 6.5반음 · 빠르기 6.4 · 대화",
+   "why": "대화용 — 빠른 편(6.4)이고 단정하다"
+  },
+  "squirrel": {
+   "label": "다람쥐(도다미, 6살)",
+   "id": "tc_659684d457333e980515bc6d",
+   "name": "꼬미",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250930105205_659684d457333e980515bc6d_SSFM-V3_0.mp3",
+   "measure": "음높이 410Hz · 밝기 1710Hz · 억양 폭 11.2반음 · 빠르기 5.68 · 교육",
+   "why": "교육용 — 목록에서 가장 높은 목소리(410Hz), 「친구들 걸을 때…」 아이 말투"
+  },
+  "hedgehog": {
+   "label": "고슴도치(고도치, 9살)",
+   "id": "tc_5c547545fcfee90007fed459",
+   "name": "주원",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142352_5c547545fcfee90007fed459_SSFM-V3_0.mp3",
+   "measure": "음높이 296Hz · 밝기 1783Hz · 억양 폭 8.1반음 · 빠르기 6.38 · 숏폼",
+   "why": "숏폼용 — 높고(296Hz) 「씩씩한 에너지」 말투"
+  },
+  "penguin": {
+   "label": "펭귄(남콩이, 24살)",
+   "id": "tc_692799c46508f6b9468c54c7",
+   "name": "다은",
+   "preview": "https://static2.typecast.ai/c/251127_daeun/daeun_mixdown.mp3",
+   "measure": "음높이 276Hz · 밝기 1455Hz · 억양 폭 11.8반음 · 빠르기 5.4 · 숏폼·대화",
+   "why": "숏폼·대화용 — 「여러분 제가 이번에…」 밝고 친근하다"
+  },
+  "ducks": {
+   "label": "오리(오순, 34살)",
+   "id": "tc_6a7446c19f2d7dfed990a900",
+   "name": "은경",
+   "preview": "https://static2.typecast.ai/c/260806_eunkyung/eunkyung_mixdown.mp3",
+   "measure": "음높이 234Hz · 밝기 968Hz · 억양 폭 10.4반음 · 빠르기 5.47 · 대화·라디오",
+   "why": "대화·라디오용 — 「방을 청소하다 보면…」 따뜻한 생활 말투"
+  },
+  "panda": {
+   "label": "판다(이단비, 15살)",
+   "id": "tc_622964d6255364be41659078",
+   "name": "세나",
+   "preview": "https://static2.typecast.ai/c/251023_preview/sena_mixdown.mp3",
+   "measure": "음높이 302Hz · 밝기 1541Hz · 억양 폭 12.8반음 · 빠르기 5.52 · 대화",
+   "why": "대화용 — 「아 진짜 시험 보기 싫다」 학생 말투"
+  },
+  "otter": {
+   "label": "수달(수달수, 62살)",
+   "id": "tc_65e02cd537dfdac4257ca957",
+   "name": "지리산",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/251021111303_65e02cd537dfdac4257ca957_SSFM-V3_0.mp3",
+   "measure": "음높이 95Hz · 밝기 577Hz · 억양 폭 4.1반음 · 빠르기 6.39 · 게임·숏폼",
+   "why": "게임용 — 목록에서 가장 낮은 남성(95Hz), 거친 결",
+   "settings": {
+    "tempo": 0.9
+   }
+  },
+  "deer": {
+   "label": "사슴(노나래, 26살)",
+   "id": "tc_67c90ad544cf859417f2fc3a",
+   "name": "예진",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142036_67c90ad544cf859417f2fc3a_SSFM-V3_0.mp3",
+   "measure": "음높이 196Hz · 밝기 884Hz · 억양 폭 9반음 · 빠르기 5.58 · 대화",
+   "why": "대화용 — 낮고 부드럽다"
+  },
+  "sheep": {
+   "label": "양(양솜이, 22살)",
+   "id": "tc_6335061c3c90cf9e5b6b9fff",
+   "name": "다나",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250930110847_6335061c3c90cf9e5b6b9fff_SSFM-V3_0.mp3",
+   "measure": "음높이 311Hz · 밝기 1309Hz · 억양 폭 13.3반음 · 빠르기 6.44 · 숏폼",
+   "why": "숏폼용 — 높고 환하다"
+  }
+ },
+ "lines": {
+  "nar-tut-guest": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "78f7ec484b9b62e1dc35b9e7ca9bd1c4",
+   "sha": {
+    "assets/voice/nar-tut-guest.mp3": "b3dc93f30fd14d49"
+   }
+  },
+  "nar-tut-notice": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "37e3aac7d762c6918460ef3b0385f2e3",
+   "sha": {
+    "assets/voice/nar-tut-notice.mp3": "f2f95cef2fec6fc8"
+   }
+  },
+  "nar-tut-papers": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "660dc369d3aaa34d15b23a62007712c4",
+   "sha": {
+    "assets/voice/nar-tut-papers.mp3": "274a42a2f7952728"
+   }
+  },
+  "nar-tut-pass": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "ad888d70a95f7c536f664743e738e2ed",
+   "sha": {
+    "assets/voice/nar-tut-pass.mp3": "d038e6d246d542cc"
+   }
+  },
+  "nar-tut-why": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "5d45e64e05b2b4843aa7d9ac283cf467",
+   "sha": {
+    "assets/voice/nar-tut-why.mp3": "662adad211e07721"
+   }
+  },
+  "nar-tut-tray": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "2bd85b2f7dda1eb71215221789f5aece",
+   "sha": {
+    "assets/voice/nar-tut-tray.mp3": "e579d2d5e98d55ea"
+   }
+  },
+  "nar-tut-rule": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "61c958a89ca5f472b1e93a8864e231ee",
+   "sha": {
+    "assets/voice/nar-tut-rule.mp3": "2b9ea11a154f3c14"
+   }
+  },
+  "nar-tut-reject": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "2ebc07a62f6e6dc3d3ae16491842b648",
+   "sha": {
+    "assets/voice/nar-tut-reject.mp3": "bebfe865d3ac63f9"
+   }
+  },
+  "nar-tut-choose": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "ce47f85fb4fb7bace61e9ff6c39388ce",
+   "sha": {
+    "assets/voice/nar-tut-choose.mp3": "5379ebb4ef8c48f8"
+   }
+  },
+  "nar-tut-why2": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "59d15930b2ec3e652fb2e3c33d15e7e2",
+   "sha": {
+    "assets/voice/nar-tut-why2.mp3": "8eb3ad8a098b5ed5"
+   }
+  },
+  "nar-tut-hint": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "590b1fa5eff0a3d03f55177fca24b4ca",
+   "sha": {
+    "assets/voice/nar-tut-hint.mp3": "d6c5cc8008d989c6"
+   }
+  },
+  "nar-tut-free": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "1bbf0bc8f05b7207f8e483b8eba25aef",
+   "sha": {
+    "assets/voice/nar-tut-free.mp3": "8fd212ffcceab0d4"
+   }
+  },
+  "nar-brief-pool": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "94ec5af185fc533f7a5105c40a9289d1",
+   "sha": {
+    "assets/voice/nar-brief-pool.mp3": "90aa7b2f061f7bde"
+   }
+  },
+  "line-pool-01": {
+   "role": "bear",
+   "voice": "태민",
+   "tempo": 0.92,
+   "key": "d7805ef9ce410f73aca7e4d75a908642",
+   "sha": {
+    "assets/voice/line-pool-01.mp3": "0451a79ee5cb45d8"
+   }
+  },
+  "reply-pool-01": {
+   "role": "bear",
+   "voice": "태민",
+   "tempo": 0.92,
+   "key": "a03372987151a77109fd6896adb1bae0",
+   "sha": {
+    "assets/voice/reply-pool-01.mp3": "5ca4f1715508f7e1"
+   }
+  },
+  "nar-oops-pool-01": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "fe8e04339ed3c6b2c0493fc7c7795a1d",
+   "sha": {
+    "assets/voice/nar-oops-pool-01.mp3": "58b30431a4724715"
+   }
+  },
+  "line-pool-02": {
+   "role": "raccoon",
+   "voice": "도윤",
+   "tempo": 0.92,
+   "key": "fcc47b3a8f1082c38d2e05b1c60aa9be",
+   "sha": {
+    "assets/voice/line-pool-02.mp3": "5609f9ff3530b5f9"
+   }
+  },
+  "reply-pool-02": {
+   "role": "raccoon",
+   "voice": "도윤",
+   "tempo": 0.92,
+   "key": "7e7c165346a1b181bfc51a890c133394",
+   "sha": {
+    "assets/voice/reply-pool-02.mp3": "1c29508b1c3917a6"
+   }
+  },
+  "nar-oops-pool-02": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "1e9f130eb38efd8d1dad6e3dff315df3",
+   "sha": {
+    "assets/voice/nar-oops-pool-02.mp3": "e055dce08a9a22fc"
+   }
+  },
+  "line-pool-03": {
+   "role": "rabbit",
+   "voice": "한영",
+   "tempo": 0.88,
+   "key": "effa8fc56c282289f584ecd9053132c4",
+   "sha": {
+    "assets/voice/line-pool-03.mp3": "fcfd44b7148316a8"
+   }
+  },
+  "reply-pool-03": {
+   "role": "rabbit",
+   "voice": "한영",
+   "tempo": 0.88,
+   "key": "53e29482dc9519c3f4e03a5124fe6665",
+   "sha": {
+    "assets/voice/reply-pool-03.mp3": "01876b7a87c97898"
+   }
+  },
+  "nar-oops-pool-03": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "a52bdf17bfd3287900c7a090841ac01b",
+   "sha": {
+    "assets/voice/nar-oops-pool-03.mp3": "141e439b2fc2ffcc"
+   }
+  },
+  "line-pool-04": {
+   "role": "fox",
+   "voice": "이준",
+   "tempo": 0.92,
+   "key": "82b4ab4babbf212ababad25fa85e35e8",
+   "sha": {
+    "assets/voice/line-pool-04.mp3": "f22ba2197a6d8304"
+   }
+  },
+  "reply-pool-04": {
+   "role": "fox",
+   "voice": "이준",
+   "tempo": 0.92,
+   "key": "5d252f9e244475ddeb27ae16ae885167",
+   "sha": {
+    "assets/voice/reply-pool-04.mp3": "d1ac6953669b3760"
+   }
+  },
+  "nar-oops-pool-04": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "19341ef41fec6a8dd1abfa0cf7e46a9a",
+   "sha": {
+    "assets/voice/nar-oops-pool-04.mp3": "95bfea6120165755"
+   }
+  },
+  "line-pool-05": {
+   "role": "squirrel",
+   "voice": "꼬미",
+   "tempo": 0.92,
+   "key": "b11e23b0665f9cd2486268358ef361ec",
+   "sha": {
+    "assets/voice/line-pool-05.mp3": "81ee756827e49eed"
+   }
+  },
+  "reply-pool-05": {
+   "role": "squirrel",
+   "voice": "꼬미",
+   "tempo": 0.92,
+   "key": "2c58db665e14d5da467827a1c48d84f0",
+   "sha": {
+    "assets/voice/reply-pool-05.mp3": "f7f56a58d41e0e3a"
+   }
+  },
+  "nar-oops-pool-05": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "91370ac12f695071def4fed3b6244d88",
+   "sha": {
+    "assets/voice/nar-oops-pool-05.mp3": "a7f9ae657e1a8022"
+   }
+  },
+  "line-pool-06": {
+   "role": "hedgehog",
+   "voice": "주원",
+   "tempo": 0.92,
+   "key": "2d2de45d80cf79755cf4a50fb363718e",
+   "sha": {
+    "assets/voice/line-pool-06.mp3": "fe37c01a435c662f"
+   }
+  },
+  "reply-pool-06": {
+   "role": "hedgehog",
+   "voice": "주원",
+   "tempo": 0.92,
+   "key": "4e4afda5d93f74f076eb33eabe47f454",
+   "sha": {
+    "assets/voice/reply-pool-06.mp3": "8b6111b15908d525"
+   }
+  },
+  "nar-oops-pool-06": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "a285907614d4d26b3979859e85229124",
+   "sha": {
+    "assets/voice/nar-oops-pool-06.mp3": "8fd043da38fbaaa1"
+   }
+  },
+  "line-pool-07": {
+   "role": "penguin",
+   "voice": "다은",
+   "tempo": 0.92,
+   "key": "81d2be4f89c8cfea705f8b66acb472c3",
+   "sha": {
+    "assets/voice/line-pool-07.mp3": "49aea2ce1899f242"
+   }
+  },
+  "reply-pool-07": {
+   "role": "penguin",
+   "voice": "다은",
+   "tempo": 0.92,
+   "key": "e2b8de6b0bddc0a903624709c4fa6a11",
+   "sha": {
+    "assets/voice/reply-pool-07.mp3": "e60822756419c076"
+   }
+  },
+  "nar-oops-pool-07": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "5b33fec28c6688a6197ff94ceb32556a",
+   "sha": {
+    "assets/voice/nar-oops-pool-07.mp3": "a9e376b6fa8782f8"
+   }
+  },
+  "line-pool-08": {
+   "role": "ducks",
+   "voice": "은경",
+   "tempo": 0.92,
+   "key": "6f568fc93cb6a777086515bfefd32bdc",
+   "sha": {
+    "assets/voice/line-pool-08.mp3": "379276354a985048"
+   }
+  },
+  "reply-pool-08": {
+   "role": "ducks",
+   "voice": "은경",
+   "tempo": 0.92,
+   "key": "de75da81a8cdf1772952e10fd23b7751",
+   "sha": {
+    "assets/voice/reply-pool-08.mp3": "41d6d0dc700d3cad"
+   }
+  },
+  "nar-oops-pool-08": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "ee6050b5e38107054ada7c1fc1bdcc70",
+   "sha": {
+    "assets/voice/nar-oops-pool-08.mp3": "550caee774f9df9b"
+   }
+  },
+  "nar-brief-library": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "33f52937019047d78d2b575f6f7543e5",
+   "sha": {
+    "assets/voice/nar-brief-library.mp3": "299d0d561e128f29"
+   }
+  },
+  "line-library-01": {
+   "role": "bear",
+   "voice": "태민",
+   "tempo": 0.92,
+   "key": "d0ce7726d2c7aeb6279fec4c0c7e9f37",
+   "sha": {
+    "assets/voice/line-library-01.mp3": "68b7fcbee8892064"
+   }
+  },
+  "reply-library-01": {
+   "role": "bear",
+   "voice": "태민",
+   "tempo": 0.92,
+   "key": "28ddb66ee7cdd68eabb9559dd4dc397f",
+   "sha": {
+    "assets/voice/reply-library-01.mp3": "160401330437a8fe"
+   }
+  },
+  "nar-oops-library-01": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "67566cbd3f2b710a7d03911b3b29cc55",
+   "sha": {
+    "assets/voice/nar-oops-library-01.mp3": "fedb6f410584d7b0"
+   }
+  },
+  "line-library-02": {
+   "role": "raccoon",
+   "voice": "도윤",
+   "tempo": 0.92,
+   "key": "ceca20dc90dbc58e0bca81e2b1411a83",
+   "sha": {
+    "assets/voice/line-library-02.mp3": "a56caaf1e1420550"
+   }
+  },
+  "reply-library-02": {
+   "role": "raccoon",
+   "voice": "도윤",
+   "tempo": 0.92,
+   "key": "f575e580ce45904470b2f616670ba987",
+   "sha": {
+    "assets/voice/reply-library-02.mp3": "4140953ec7048430"
+   }
+  },
+  "nar-oops-library-02": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "586b82901cab0afafb2cf1d08b53f3d5",
+   "sha": {
+    "assets/voice/nar-oops-library-02.mp3": "005404422beb74da"
+   }
+  },
+  "line-library-03": {
+   "role": "rabbit",
+   "voice": "한영",
+   "tempo": 0.88,
+   "key": "2f32643052fed2e6a824f5cc79169b3b",
+   "sha": {
+    "assets/voice/line-library-03.mp3": "a163ca982412087a"
+   }
+  },
+  "reply-library-03": {
+   "role": "rabbit",
+   "voice": "한영",
+   "tempo": 0.88,
+   "key": "c038865164ce9fc329eb6120fbc132c5",
+   "sha": {
+    "assets/voice/reply-library-03.mp3": "ed2d9f5ab05750a6"
+   }
+  },
+  "nar-oops-library-03": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "0b3b47faa00008496ebc618d38d489d8",
+   "sha": {
+    "assets/voice/nar-oops-library-03.mp3": "22048d80e8a58a94"
+   }
+  },
+  "line-library-04": {
+   "role": "fox",
+   "voice": "이준",
+   "tempo": 0.92,
+   "key": "85ea8e090e214757c2b371d24480f849",
+   "sha": {
+    "assets/voice/line-library-04.mp3": "75f1744ac02ed98e"
+   }
+  },
+  "reply-library-04": {
+   "role": "fox",
+   "voice": "이준",
+   "tempo": 0.92,
+   "key": "507cf8a8fa05e8d257f71b4848c65b16",
+   "sha": {
+    "assets/voice/reply-library-04.mp3": "5150b6bed09f2c36"
+   }
+  },
+  "nar-oops-library-04": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "e9b97fa41677d46e84944936ebe88742",
+   "sha": {
+    "assets/voice/nar-oops-library-04.mp3": "15c6e4e2187c556e"
+   }
+  },
+  "line-library-05": {
+   "role": "squirrel",
+   "voice": "꼬미",
+   "tempo": 0.92,
+   "key": "d2c943ecfa5b23ef5edd4cb5116e5671",
+   "sha": {
+    "assets/voice/line-library-05.mp3": "682c2ea61f6cc877"
+   }
+  },
+  "reply-library-05": {
+   "role": "squirrel",
+   "voice": "꼬미",
+   "tempo": 0.92,
+   "key": "00110d62514a70beab606ab06f3896f5",
+   "sha": {
+    "assets/voice/reply-library-05.mp3": "de60c86ac3a30919"
+   }
+  },
+  "nar-oops-library-05": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "34e0eb0d45cad1361149ea24f5fafad8",
+   "sha": {
+    "assets/voice/nar-oops-library-05.mp3": "599efdf287d5aa7a"
+   }
+  },
+  "line-library-06": {
+   "role": "penguin",
+   "voice": "다은",
+   "tempo": 0.92,
+   "key": "10305a384b78d9d4bb5f8c8b95439524",
+   "sha": {
+    "assets/voice/line-library-06.mp3": "5eea367098cf5f73"
+   }
+  },
+  "reply-library-06": {
+   "role": "penguin",
+   "voice": "다은",
+   "tempo": 0.92,
+   "key": "b003322fdd3cc5e16e7c5c471f8756af",
+   "sha": {
+    "assets/voice/reply-library-06.mp3": "f24c876ad57d5036"
+   }
+  },
+  "nar-oops-library-06": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "e60542390afd8b19c3dda8d848d9834f",
+   "sha": {
+    "assets/voice/nar-oops-library-06.mp3": "cf9f57ad3d5c142c"
+   }
+  },
+  "line-library-07": {
+   "role": "panda",
+   "voice": "세나",
+   "tempo": 0.92,
+   "key": "fedae904c444029eb19cee83dd752c4e",
+   "sha": {
+    "assets/voice/line-library-07.mp3": "1dce3f984f785e01"
+   }
+  },
+  "reply-library-07": {
+   "role": "panda",
+   "voice": "세나",
+   "tempo": 0.92,
+   "key": "29d8b12275b7bd81da604be2121ee55b",
+   "sha": {
+    "assets/voice/reply-library-07.mp3": "b0ecdd831125c4db"
+   }
+  },
+  "nar-oops-library-07": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "b415d0d953e291e84f056df3731fb069",
+   "sha": {
+    "assets/voice/nar-oops-library-07.mp3": "95f9b3d8eecff176"
+   }
+  },
+  "line-library-08": {
+   "role": "hedgehog",
+   "voice": "주원",
+   "tempo": 0.92,
+   "key": "17664ec4f68f74037fc17a6768d3f41d",
+   "sha": {
+    "assets/voice/line-library-08.mp3": "663a2435732c32dc"
+   }
+  },
+  "reply-library-08": {
+   "role": "hedgehog",
+   "voice": "주원",
+   "tempo": 0.92,
+   "key": "812bc38af06213f6c9f9f234bf3fefb9",
+   "sha": {
+    "assets/voice/reply-library-08.mp3": "4ce77de72780888f"
+   }
+  },
+  "nar-oops-library-08": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "a2db9e6ce0e8ff0ec70e796832ac88ee",
+   "sha": {
+    "assets/voice/nar-oops-library-08.mp3": "cffda04a1a7ec87e"
+   }
+  },
+  "line-library-09": {
+   "role": "otter",
+   "voice": "지리산",
+   "tempo": 0.9,
+   "key": "94ab384d51507397a426cf6901790eac",
+   "sha": {
+    "assets/voice/line-library-09.mp3": "7c35086ebba3111b"
+   }
+  },
+  "reply-library-09": {
+   "role": "otter",
+   "voice": "지리산",
+   "tempo": 0.9,
+   "key": "2f85213a95c721d7591a7c93d3857bca",
+   "sha": {
+    "assets/voice/reply-library-09.mp3": "f3da4d34d534d9d8"
+   }
+  },
+  "nar-oops-library-09": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "885bb7bcf0c1ffd5a6d6c93845ad6daf",
+   "sha": {
+    "assets/voice/nar-oops-library-09.mp3": "25b7422e4c69c104"
+   }
+  },
+  "nar-brief-museum": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "7ad64b1b21bd82c2a43bd5f70d775f7c",
+   "sha": {
+    "assets/voice/nar-brief-museum.mp3": "082d275d82f8f5b3"
+   }
+  },
+  "line-museum-01": {
+   "role": "deer",
+   "voice": "예진",
+   "tempo": 0.92,
+   "key": "62ec97e0602429242529250483e22099",
+   "sha": {
+    "assets/voice/line-museum-01.mp3": "f50a563edc23cd41"
+   }
+  },
+  "reply-museum-01": {
+   "role": "deer",
+   "voice": "예진",
+   "tempo": 0.92,
+   "key": "f513da6afa20b32764230e58d393a549",
+   "sha": {
+    "assets/voice/reply-museum-01.mp3": "1b0e30bf9d970250"
+   }
+  },
+  "nar-oops-museum-01": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "181e40a52527e333d8bd8aa80a8c46ce",
+   "sha": {
+    "assets/voice/nar-oops-museum-01.mp3": "af8074139db6b74a"
+   }
+  },
+  "line-museum-02": {
+   "role": "sheep",
+   "voice": "다나",
+   "tempo": 0.92,
+   "key": "e729258bf391a462f028e061fb640a97",
+   "sha": {
+    "assets/voice/line-museum-02.mp3": "b08b8dda525a625d"
+   }
+  },
+  "reply-museum-02": {
+   "role": "sheep",
+   "voice": "다나",
+   "tempo": 0.92,
+   "key": "4ae742f3ce84f196a19a86c15f483399",
+   "sha": {
+    "assets/voice/reply-museum-02.mp3": "03cd6deca4e2f126"
+   }
+  },
+  "nar-oops-museum-02": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "8214c968f8176ea297d893945cd59037",
+   "sha": {
+    "assets/voice/nar-oops-museum-02.mp3": "9cc049b01e089ae4"
+   }
+  },
+  "line-museum-03": {
+   "role": "panda",
+   "voice": "세나",
+   "tempo": 0.92,
+   "key": "dc44e94fbf3c557d3f4277d9bba66855",
+   "sha": {
+    "assets/voice/line-museum-03.mp3": "cfb0b254309cca83"
+   }
+  },
+  "reply-museum-03": {
+   "role": "panda",
+   "voice": "세나",
+   "tempo": 0.92,
+   "key": "814ce6c3ccdc885af353220193cf5fb1",
+   "sha": {
+    "assets/voice/reply-museum-03.mp3": "d88e6c611e083868"
+   }
+  },
+  "nar-oops-museum-03": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "b9ba38e7208096e154065bc4c6f75fac",
+   "sha": {
+    "assets/voice/nar-oops-museum-03.mp3": "f971b8a81df97bd4"
+   }
+  },
+  "line-museum-04": {
+   "role": "rabbit",
+   "voice": "한영",
+   "tempo": 0.88,
+   "key": "fb63284eac91f6c393402b2d29c958db",
+   "sha": {
+    "assets/voice/line-museum-04.mp3": "5afd63f4ab850cdc"
+   }
+  },
+  "reply-museum-04": {
+   "role": "rabbit",
+   "voice": "한영",
+   "tempo": 0.88,
+   "key": "1cf69be21896a5530bfe0001bb419f94",
+   "sha": {
+    "assets/voice/reply-museum-04.mp3": "9cca5ae3922d8612"
+   }
+  },
+  "nar-oops-museum-04": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "b35173eab0074f138b14150e221c1c9d",
+   "sha": {
+    "assets/voice/nar-oops-museum-04.mp3": "a80fafbe5341bff5"
+   }
+  },
+  "line-museum-05": {
+   "role": "otter",
+   "voice": "지리산",
+   "tempo": 0.9,
+   "key": "dd93fe2c2d8974e3207a03a7c87c73dc",
+   "sha": {
+    "assets/voice/line-museum-05.mp3": "920d284a873df4b2"
+   }
+  },
+  "reply-museum-05": {
+   "role": "otter",
+   "voice": "지리산",
+   "tempo": 0.9,
+   "key": "aabf32b5aa757ea52e7eae501b170b49",
+   "sha": {
+    "assets/voice/reply-museum-05.mp3": "c8c602322d43d800"
+   }
+  },
+  "nar-oops-museum-05": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "e212fedd6279e9f3e19f177c1516821c",
+   "sha": {
+    "assets/voice/nar-oops-museum-05.mp3": "2da70ebf56292221"
+   }
+  },
+  "line-museum-06": {
+   "role": "hedgehog",
+   "voice": "주원",
+   "tempo": 0.92,
+   "key": "f7a1b9845868b86a8bab49e956922adb",
+   "sha": {
+    "assets/voice/line-museum-06.mp3": "ee4b39f1e3f5993e"
+   }
+  },
+  "reply-museum-06": {
+   "role": "hedgehog",
+   "voice": "주원",
+   "tempo": 0.92,
+   "key": "b75bda8bf582ffcb42dc263ce6ce3ae9",
+   "sha": {
+    "assets/voice/reply-museum-06.mp3": "63957886d2c7533b"
+   }
+  },
+  "nar-oops-museum-06": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "4f5a0213fd146a23859221b316c134f8",
+   "sha": {
+    "assets/voice/nar-oops-museum-06.mp3": "a977f7c283588aeb"
+   }
+  },
+  "line-museum-07": {
+   "role": "raccoon",
+   "voice": "도윤",
+   "tempo": 0.92,
+   "key": "c2b49f437001cc68ccc7d24be545d379",
+   "sha": {
+    "assets/voice/line-museum-07.mp3": "7d3e09c239fa36f5"
+   }
+  },
+  "reply-museum-07": {
+   "role": "raccoon",
+   "voice": "도윤",
+   "tempo": 0.92,
+   "key": "837fffc60f2f1af6bfd5fe36ff64bee3",
+   "sha": {
+    "assets/voice/reply-museum-07.mp3": "c76f24800e3862d6"
+   }
+  },
+  "nar-oops-museum-07": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "7b03a6a562c7e218d1e64562a2663b89",
+   "sha": {
+    "assets/voice/nar-oops-museum-07.mp3": "d822c21248147172"
+   }
+  },
+  "line-museum-08": {
+   "role": "bear",
+   "voice": "태민",
+   "tempo": 0.92,
+   "key": "9ec309ed392e79967619c05cee3e7ccf",
+   "sha": {
+    "assets/voice/line-museum-08.mp3": "33b0cfbf0c3501f1"
+   }
+  },
+  "reply-museum-08": {
+   "role": "bear",
+   "voice": "태민",
+   "tempo": 0.92,
+   "key": "aede448fb24cdc959ca8d3ffed670281",
+   "sha": {
+    "assets/voice/reply-museum-08.mp3": "3e669da33a206b25"
+   }
+  },
+  "nar-oops-museum-08": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "f540911dd79abb8b592d2c6738682b6f",
+   "sha": {
+    "assets/voice/nar-oops-museum-08.mp3": "70aabca8e10e38e5"
+   }
+  },
+  "nar-brief-concert": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "006740ff86b6010e942f63889245c590",
+   "sha": {
+    "assets/voice/nar-brief-concert.mp3": "fe53a66d8ed06c61"
+   }
+  },
+  "line-concert-01": {
+   "role": "sheep",
+   "voice": "다나",
+   "tempo": 0.92,
+   "key": "1663eb5e5eb372b1fe1875b32f4e5cc0",
+   "sha": {
+    "assets/voice/line-concert-01.mp3": "5344adb566c57079"
+   }
+  },
+  "reply-concert-01": {
+   "role": "sheep",
+   "voice": "다나",
+   "tempo": 0.92,
+   "key": "df16f19cfb7d338a80e1e91f539f0069",
+   "sha": {
+    "assets/voice/reply-concert-01.mp3": "160e1b25035e12ef"
+   }
+  },
+  "nar-oops-concert-01": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "a15d80e7fefbcbb32ebce74d328c4f07",
+   "sha": {
+    "assets/voice/nar-oops-concert-01.mp3": "7463289adfb749c7"
+   }
+  },
+  "line-concert-02": {
+   "role": "fox",
+   "voice": "이준",
+   "tempo": 0.92,
+   "key": "7dcec4895092d862edddbf4c9df90170",
+   "sha": {
+    "assets/voice/line-concert-02.mp3": "793575701b87286d"
+   }
+  },
+  "reply-concert-02": {
+   "role": "fox",
+   "voice": "이준",
+   "tempo": 0.92,
+   "key": "25dd356b604784e40847bd0abe3292fc",
+   "sha": {
+    "assets/voice/reply-concert-02.mp3": "b7416fd41597575c"
+   }
+  },
+  "nar-oops-concert-02": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "98a6f3fa26a1a85046833320c0dad2d6",
+   "sha": {
+    "assets/voice/nar-oops-concert-02.mp3": "3f9d80d1a3cfa0b9"
+   }
+  },
+  "line-concert-03": {
+   "role": "penguin",
+   "voice": "다은",
+   "tempo": 0.92,
+   "key": "036edab8ae3c3f83efe1bff59e5431c8",
+   "sha": {
+    "assets/voice/line-concert-03.mp3": "26ef18471c40cbb6"
+   }
+  },
+  "reply-concert-03": {
+   "role": "penguin",
+   "voice": "다은",
+   "tempo": 0.92,
+   "key": "a7334caf895e39f978e1f8ce3f37c4d3",
+   "sha": {
+    "assets/voice/reply-concert-03.mp3": "cf94d26b6f99d0b5"
+   }
+  },
+  "nar-oops-concert-03": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "ef88db91d4ce787d20aff72ad9eee1ad",
+   "sha": {
+    "assets/voice/nar-oops-concert-03.mp3": "81d996bf51ff833e"
+   }
+  },
+  "line-concert-04": {
+   "role": "bear",
+   "voice": "태민",
+   "tempo": 0.92,
+   "key": "16ddc86d1b3fc47e06f45aa253f32dae",
+   "sha": {
+    "assets/voice/line-concert-04.mp3": "182580e47b79697d"
+   }
+  },
+  "reply-concert-04": {
+   "role": "bear",
+   "voice": "태민",
+   "tempo": 0.92,
+   "key": "01bc44f01524a807d25aed1e6478c3d1",
+   "sha": {
+    "assets/voice/reply-concert-04.mp3": "38e01afa58c93894"
+   }
+  },
+  "nar-oops-concert-04": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "fcd085a761cd848591fd14358deb9dac",
+   "sha": {
+    "assets/voice/nar-oops-concert-04.mp3": "923ab91ef77766a6"
+   }
+  },
+  "line-concert-05": {
+   "role": "raccoon",
+   "voice": "도윤",
+   "tempo": 0.92,
+   "key": "12b39ddec8f502fbe754237745b4ce1e",
+   "sha": {
+    "assets/voice/line-concert-05.mp3": "cf7c77e4483f1980"
+   }
+  },
+  "reply-concert-05": {
+   "role": "raccoon",
+   "voice": "도윤",
+   "tempo": 0.92,
+   "key": "d51ce32ff6fe7ba188854f47f9fdd194",
+   "sha": {
+    "assets/voice/reply-concert-05.mp3": "84aeaf453e19c668"
+   }
+  },
+  "nar-oops-concert-05": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "362c9c229b44d1c31132325bf9d4167d",
+   "sha": {
+    "assets/voice/nar-oops-concert-05.mp3": "11a4429464fd4fc6"
+   }
+  },
+  "line-concert-06": {
+   "role": "rabbit",
+   "voice": "한영",
+   "tempo": 0.88,
+   "key": "0d00ddc8a57f2093ecabc9a1de45c288",
+   "sha": {
+    "assets/voice/line-concert-06.mp3": "477ddaf90123065c"
+   }
+  },
+  "reply-concert-06": {
+   "role": "rabbit",
+   "voice": "한영",
+   "tempo": 0.88,
+   "key": "952015e3b2233a96d33f23145e17a2e0",
+   "sha": {
+    "assets/voice/reply-concert-06.mp3": "840ee27dea006462"
+   }
+  },
+  "nar-oops-concert-06": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "f756b0af0b4086811abe762907c9123f",
+   "sha": {
+    "assets/voice/nar-oops-concert-06.mp3": "ae299b1aeb60e479"
+   }
+  },
+  "line-concert-07": {
+   "role": "squirrel",
+   "voice": "꼬미",
+   "tempo": 0.92,
+   "key": "45dfe94d9880a243c2102e8460cdf9bf",
+   "sha": {
+    "assets/voice/line-concert-07.mp3": "72a213877bb501ee"
+   }
+  },
+  "reply-concert-07": {
+   "role": "squirrel",
+   "voice": "꼬미",
+   "tempo": 0.92,
+   "key": "f517d50d8ebd5c6036fc433af0b36d9c",
+   "sha": {
+    "assets/voice/reply-concert-07.mp3": "592695e53d01a315"
+   }
+  },
+  "nar-oops-concert-07": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "a83c205305cce5d1cf333ded6d22a6c0",
+   "sha": {
+    "assets/voice/nar-oops-concert-07.mp3": "c3e2faf04fb0a910"
+   }
+  },
+  "line-concert-08": {
+   "role": "ducks",
+   "voice": "은경",
+   "tempo": 0.92,
+   "key": "5ad87e1945a32b8d8afe05503d591ca1",
+   "sha": {
+    "assets/voice/line-concert-08.mp3": "71ee39cd7aa2e787"
+   }
+  },
+  "reply-concert-08": {
+   "role": "ducks",
+   "voice": "은경",
+   "tempo": 0.92,
+   "key": "ac1b86a743efb7407d93f46d1495505b",
+   "sha": {
+    "assets/voice/reply-concert-08.mp3": "294ea688a9edd0a2"
+   }
+  },
+  "nar-oops-concert-08": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "5d76f1867c1dc750b93fdcb5db92c683",
+   "sha": {
+    "assets/voice/nar-oops-concert-08.mp3": "fa681a40f9f490eb"
+   }
+  },
+  "line-concert-09": {
+   "role": "otter",
+   "voice": "지리산",
+   "tempo": 0.9,
+   "key": "8d16ae02f4a0e9ef9c1a9339a9926eea",
+   "sha": {
+    "assets/voice/line-concert-09.mp3": "617440b082e5a456"
+   }
+  },
+  "reply-concert-09": {
+   "role": "otter",
+   "voice": "지리산",
+   "tempo": 0.9,
+   "key": "396880343b91bb296af2b798e8dbaa0c",
+   "sha": {
+    "assets/voice/reply-concert-09.mp3": "414f2dd6b04ef383"
+   }
+  },
+  "nar-oops-concert-09": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "026335a3d98739bf171bc6b65b4a93c6",
+   "sha": {
+    "assets/voice/nar-oops-concert-09.mp3": "3b3a05c5f60d68e4"
+   }
+  },
+  "nar-memo": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "cee8f356850478717b0bc17c57851381",
+   "sha": {
+    "assets/voice/nar-memo.mp3": "99ee960262a6a5f6"
+   }
+  },
+  "nar-result-0": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "279b93ce340e7dc30a39334b8621b5e6",
+   "sha": {
+    "assets/voice/nar-result-0.mp3": "6397ddc4731ea83b"
+   }
+  },
+  "nar-result-1": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "36e22ef24653bc768c082e6ee9d887a4",
+   "sha": {
+    "assets/voice/nar-result-1.mp3": "3830f467419ac676"
+   }
+  },
+  "nar-result-2": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "0b6512b5f836ba7879a6948d7b93c286",
+   "sha": {
+    "assets/voice/nar-result-2.mp3": "29573d3bfee42480"
+   }
+  },
+  "nar-result-3": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.92,
+   "key": "2025a3bcd31bad75e6945c820c8452d7",
+   "sha": {
+    "assets/voice/nar-result-3.mp3": "288e3d102bdce170"
+   }
+  },
+  "thanks-bear": {
+   "role": "bear",
+   "voice": "태민",
+   "tempo": 0.92,
+   "key": "a9fb4ba57e20f4ff712a1476b382eadd",
+   "sha": {
+    "assets/voice/thanks-bear.mp3": "f4f32ccea3cdece7"
+   }
+  },
+  "why-bear": {
+   "role": "bear",
+   "voice": "태민",
+   "tempo": 0.92,
+   "key": "49beb91ebbb695271a497f7edf9925db",
+   "sha": {
+    "assets/voice/why-bear.mp3": "670a29d6f053cb19"
+   }
+  },
+  "thanks-raccoon": {
+   "role": "raccoon",
+   "voice": "도윤",
+   "tempo": 0.92,
+   "key": "b3b7e1e7c157d552c1a33bf1766890df",
+   "sha": {
+    "assets/voice/thanks-raccoon.mp3": "fff91e7122069ef5"
+   }
+  },
+  "why-raccoon": {
+   "role": "raccoon",
+   "voice": "도윤",
+   "tempo": 0.92,
+   "key": "f01388792cbe809fe6e13e5d9f26663c",
+   "sha": {
+    "assets/voice/why-raccoon.mp3": "bf7e7e4217cc13bf"
+   }
+  },
+  "thanks-rabbit": {
+   "role": "rabbit",
+   "voice": "한영",
+   "tempo": 0.88,
+   "key": "b9c79c96af11edf9193c3ba466d2ebff",
+   "sha": {
+    "assets/voice/thanks-rabbit.mp3": "04bdbd170852b78e"
+   }
+  },
+  "why-rabbit": {
+   "role": "rabbit",
+   "voice": "한영",
+   "tempo": 0.88,
+   "key": "3feca4874271be2c8b0737f7ef995ad5",
+   "sha": {
+    "assets/voice/why-rabbit.mp3": "cdbe8ba7fa3257d3"
+   }
+  },
+  "thanks-fox": {
+   "role": "fox",
+   "voice": "이준",
+   "tempo": 0.92,
+   "key": "ad7b1cf28116594480923637841b0385",
+   "sha": {
+    "assets/voice/thanks-fox.mp3": "50987b8ed769acb7"
+   }
+  },
+  "why-fox": {
+   "role": "fox",
+   "voice": "이준",
+   "tempo": 0.92,
+   "key": "91e31ff05e5e0d962292ab9769ce9c9f",
+   "sha": {
+    "assets/voice/why-fox.mp3": "cd143d95ac03c086"
+   }
+  },
+  "thanks-squirrel": {
+   "role": "squirrel",
+   "voice": "꼬미",
+   "tempo": 0.92,
+   "key": "28dd6a5ffc3db09a6a7036d040216857",
+   "sha": {
+    "assets/voice/thanks-squirrel.mp3": "dcd4dd132230d913"
+   }
+  },
+  "why-squirrel": {
+   "role": "squirrel",
+   "voice": "꼬미",
+   "tempo": 0.92,
+   "key": "f9163791b3c25623e907828937823548",
+   "sha": {
+    "assets/voice/why-squirrel.mp3": "c94aa3da1a19f9c2"
+   }
+  },
+  "thanks-hedgehog": {
+   "role": "hedgehog",
+   "voice": "주원",
+   "tempo": 0.92,
+   "key": "5815d1a9d5415adfa0633145c0f11757",
+   "sha": {
+    "assets/voice/thanks-hedgehog.mp3": "3c64cbdcea5ab902"
+   }
+  },
+  "why-hedgehog": {
+   "role": "hedgehog",
+   "voice": "주원",
+   "tempo": 0.92,
+   "key": "8a377aff3afba47ef506923867a68029",
+   "sha": {
+    "assets/voice/why-hedgehog.mp3": "9268ad6bac35dbbc"
+   }
+  },
+  "thanks-penguin": {
+   "role": "penguin",
+   "voice": "다은",
+   "tempo": 0.92,
+   "key": "46111229b2ac0b4bee38b827737f5bd3",
+   "sha": {
+    "assets/voice/thanks-penguin.mp3": "9971a7c024d68c62"
+   }
+  },
+  "why-penguin": {
+   "role": "penguin",
+   "voice": "다은",
+   "tempo": 0.92,
+   "key": "67cc3de00c49bd53e3f75b47f735d18e",
+   "sha": {
+    "assets/voice/why-penguin.mp3": "10b51164a79b8e74"
+   }
+  },
+  "thanks-ducks": {
+   "role": "ducks",
+   "voice": "은경",
+   "tempo": 0.92,
+   "key": "e0e8007d13b3578088aa6f58be09d042",
+   "sha": {
+    "assets/voice/thanks-ducks.mp3": "b8beaefab8f6980e"
+   }
+  },
+  "why-ducks": {
+   "role": "ducks",
+   "voice": "은경",
+   "tempo": 0.92,
+   "key": "7319ad3c871ea93c0c69dbac6d6aaa83",
+   "sha": {
+    "assets/voice/why-ducks.mp3": "78f0cf48efb0df89"
+   }
+  },
+  "thanks-otter": {
+   "role": "otter",
+   "voice": "지리산",
+   "tempo": 0.9,
+   "key": "ff3c80055c2ab922d85d4ac1c5265754",
+   "sha": {
+    "assets/voice/thanks-otter.mp3": "4de567f09c38b6c7"
+   }
+  },
+  "why-otter": {
+   "role": "otter",
+   "voice": "지리산",
+   "tempo": 0.9,
+   "key": "2d7ad9014012c55150b3c0edeccecb2e",
+   "sha": {
+    "assets/voice/why-otter.mp3": "15b1bec93d8f2cbd"
+   }
+  },
+  "thanks-deer": {
+   "role": "deer",
+   "voice": "예진",
+   "tempo": 0.92,
+   "key": "28858611c5bfba656f2116197e9a7fe6",
+   "sha": {
+    "assets/voice/thanks-deer.mp3": "6aae7475d020fb4e"
+   }
+  },
+  "why-deer": {
+   "role": "deer",
+   "voice": "예진",
+   "tempo": 0.92,
+   "key": "f9e66b9431bc591140a3423bffc4354c",
+   "sha": {
+    "assets/voice/why-deer.mp3": "0b423f17951c4292"
+   }
+  },
+  "thanks-panda": {
+   "role": "panda",
+   "voice": "세나",
+   "tempo": 0.92,
+   "key": "ace104c3267c994cbb2099f9da389b77",
+   "sha": {
+    "assets/voice/thanks-panda.mp3": "2d2efde72c17a395"
+   }
+  },
+  "why-panda": {
+   "role": "panda",
+   "voice": "세나",
+   "tempo": 0.92,
+   "key": "57ace0af316f22e39e1f9c9d9ee19544",
+   "sha": {
+    "assets/voice/why-panda.mp3": "aa2e4ecc63ef66c3"
+   }
+  },
+  "thanks-sheep": {
+   "role": "sheep",
+   "voice": "다나",
+   "tempo": 0.92,
+   "key": "0da44d4f4f87538ec1d8029380e657d6",
+   "sha": {
+    "assets/voice/thanks-sheep.mp3": "c2bc5094f9480570"
+   }
+  },
+  "why-sheep": {
+   "role": "sheep",
+   "voice": "다나",
+   "tempo": 0.92,
+   "key": "adb9a58a1057888630f249028ad921cb",
+   "sha": {
+    "assets/voice/why-sheep.mp3": "e437f930082b81db"
+   }
+  }
+ }
+}

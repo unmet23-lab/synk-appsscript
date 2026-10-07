@@ -1,8 +1,15 @@
 {
-  "sourceKey": "0fc9464cc0d53d622d38d53dbae2a2b1d054540683669016002ab6140eaf4678",
+  "sourceKey": "7fa738b0da51f14bead64e8d4ed93041",
   "text": "내가 준비했지. …편지는 세 번 고쳐 썼어.",
   "speaker": "kkamong",
-  "voice": "ko-KR-HyunsuMultilingualNeural",
-  "rate": "-4%",
-  "pitch": "+3Hz"
+  "voice": "몽군",
+  "voiceId": "tc_6731b32e075b04a9446441a0",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

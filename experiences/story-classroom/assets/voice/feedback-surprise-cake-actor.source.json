@@ -1,8 +1,15 @@
 {
-  "sourceKey": "495964c53792e035a31de677bfd1c6c8dc125cded859b0a82fb058fa206e9267",
+  "sourceKey": "10de205647151123d116170fb0618ed8",
   "text": "내가 다 하려고 했는데… 이번에는 까몽 차례네! 글에서 친구 이름을 다시 찾아봐.",
   "speaker": "kkamong",
-  "voice": "ko-KR-HyunsuMultilingualNeural",
-  "rate": "-4%",
-  "pitch": "+3Hz"
+  "voice": "몽군",
+  "voiceId": "tc_6731b32e075b04a9446441a0",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

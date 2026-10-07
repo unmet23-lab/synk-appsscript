@@ -1,0 +1,641 @@
+{
+  "note": "미니게임 목소리 배역 제안(2026-10-07, tools/미니게임_목소리.cjs가 읽는다). 해설(서현)·바람(혜리)은 유호님이 고른 목소리이고 나머지는 제안이다 — 화면에서 공식 미리듣기와 샘플을 듣고 「이 목소리로 바꾸기」로 고른다. 후보는 Typecast ssfm-v30 한국어 목록 359개 가운데 공식 미리듣기의 말소리가 한국어로 받아 적힌 목소리(237개 — 영어 105·일본어 13·중국어 2·기타 2개 미리듣기는 뺌)에서, 성별은 지금 게임과 같게 두고, 미리듣기에서 잰 음높이·밝기·억양 폭·빠르기와 쓰임새(애니·게임·교육·오디오북 등)·미리듣기 말투로 골랐다. 목록의 나이 칸은 모두 young_adult라 아이·노인 배역은 음높이·빠르기·쓰임새로 고른 것이다. 측정은 귀로 듣는 판단을 대신하지 않는다. 빠르기(tempo)는 지금 파이프라인이 느리게 읽히던 곳(레이싱 rate -1, 이야기 교실 -3~-10%, 리듬·말 랠리 -6~-8%, 입장 검사 「초급이 알아듣게 느긋하게」, 주문 폭주 rate -1)은 0.92(조금 느리게), 그대로였던 바람길(rate 0)은 1.0, 말 랠리 안내는 4.5초 한도가 있어 0.94. 감정은 모두 normal(배역의 색은 목소리 고르기로 낸다).",
+  "model": "ssfm-v30",
+  "language": "kor",
+  "defaults": {
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 0.92,
+    "seed": 1007,
+    "targetLufs": -17
+  },
+  "measured": "2026-10-07 · 공식 미리듣기(공개 주소) 앞 320KB를 받아 앞 22초에서 YIN 음높이 중앙값·10~90% 억양 폭(반음)·스펙트럼 무게중심(밝기)·에너지 봉우리 수/초(빠르기 참고), faster-whisper small로 말소리 언어 확인. 받은 파일은 저장소 밖 Documents/synk-vendor/minigame-voice/previews/.",
+  "help": "설정 덮어쓰기: 배역 기본(roles.<배역>.settings) ← 게임별(games.<게임>.<배역>) ← 줄별(lines[\"<게임>/<id>\"], 예: 길이 한도에 걸린 줄 {\"tempo\": 1.05}, 다른 목소리 {\"voice\": {\"id\": \"tc_…\", \"name\": \"…\"}}). 목소리·설정·글이 바뀐 줄만 새로 부르고, 나머지는 받아 둔 원본을 쓴다. 기본 목소리는 화면의 「이 목소리로 바꾸기」로도 바꾼다(fixed 배역 제외).",
+  "roles": {
+    "narrator": {
+      "label": "해설",
+      "gender": "female",
+      "fixed": "유호님이 고른 차분한 설명 목소리(10-03 「혜리랑 우리가 고른 서현이 제일 낫네」)",
+      "usedIn": [
+        "레이싱 전부",
+        "입장 검사 안내",
+        "말의 리듬 문장",
+        "이야기 교실 해설",
+        "말 랠리 안내"
+      ],
+      "character": "차분하고 또박또박한 설명",
+      "voice": {
+        "id": "tc_69f2e455ea79fd197aa0476f",
+        "name": "서현",
+        "preview": "https://static2.typecast.ai/c/260430_seohyeon/seohyeon_mixdown.mp3",
+        "measure": "음높이 157Hz · 밝기 673Hz · 억양 폭 11.2반음 · 빠르기 5.19 · 아나운서·대화",
+        "why": "유호님이 고른 설명 목소리 — 낮고 차분하다"
+      },
+      "alternates": [
+        {
+          "id": "tc_68ddea1e462b169ddd20b74d",
+          "name": "이현",
+          "preview": "https://static2.typecast.ai/c/251002_leehyun/leehyun_mixdown.mp3",
+          "measure": "음높이 211Hz · 밝기 782Hz · 억양 폭 10.3반음 · 빠르기 4.88 · 교육·대화",
+          "why": "교육·대화용 — 「여러분은 이 그림을 보시면…」 설명하는 말투, 조금 느리다"
+        },
+        {
+          "id": "tc_6731b2b2478a48710ecc9158",
+          "name": "진희",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142448_6731b2b2478a48710ecc9158_SSFM-V3_0.mp3",
+          "measure": "음높이 225Hz · 밝기 925Hz · 억양 폭 10.5반음 · 빠르기 4.45 · 아나운서·뉴스",
+          "why": "아나운서·뉴스용 — 느리고 또렷하다"
+        }
+      ],
+      "why": "학습 게임의 문제·안내를 맡는다. 말 랠리 안내는 옛 판에서 몽글과 헷갈리지 않게 남성 목소리였는데 이번에는 해설(서현)로 맞췄다 — 몽글과 다른 목소리라 시험(narration.test)의 「몽글과 다른 목소리」는 지킨다. 귀로 들어 보고 남성이 낫다면 games[\"talk-rally\"].narrator에 voice를 둔다."
+    },
+    "wind": {
+      "label": "바람",
+      "gender": "female",
+      "fixed": "유호님이 고른 밝은 목소리(10-03 한글 단계 「혜리」)",
+      "usedIn": [
+        "바람길 부탁·듣기 확인"
+      ],
+      "character": "밝고 상쾌하게 부탁하는 바람",
+      "voice": {
+        "id": "tc_62e8f21e979b3860fe2f6a24",
+        "name": "혜리",
+        "preview": "https://static2.typecast.ai/c/251023_preview/hyelee_mixdown.mp3",
+        "measure": "음높이 333Hz · 밝기 1798Hz · 억양 폭 12.1반음 · 빠르기 6.1 · 숏폼·광고",
+        "why": "유호님이 고른 밝은 목소리"
+      },
+      "alternates": [
+        {
+          "id": "tc_5ebea1a364afaf00087fc2fb",
+          "name": "정희",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142320_5ebea1a364afaf00087fc2fb_SSFM-V3_0.mp3",
+          "measure": "음높이 291Hz · 밝기 1596Hz · 억양 폭 11.5반음 · 빠르기 6.23 · 교육",
+          "why": "교육용 가운데 밝은 쪽 — 또박또박한 안내(한글 단계 후보였다)"
+        },
+        {
+          "id": "tc_66d91c60da8dd20be59cd40b",
+          "name": "윤서",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142131_66d91c60da8dd20be59cd40b_SSFM-V3_0.mp3",
+          "measure": "음높이 314Hz · 밝기 1682Hz · 억양 폭 9.5반음 · 빠르기 6.52 · 대화",
+          "why": "밝은 대화체 — 높고 밝다"
+        }
+      ],
+      "why": "바람길은 짧은 부탁을 듣고 몸으로 따라 하는 게임이라 밝고 또렷한 혜리. 지금 파이프라인이 늦추지 않았으므로 빠르기 1.0(부탁은 끝 여백 0.74초까지 5.3초 안이어야 한다)."
+    },
+    "mongle": {
+      "label": "몽글",
+      "gender": "female",
+      "usedIn": [
+        "말 랠리 몽글의 말",
+        "이야기 교실 몽글"
+      ],
+      "character": "세상에 묻는 호기심 많은 주인공 — 귀엽고 다정하게, 초급이 알아듣게 또렷이",
+      "voice": {
+        "id": "tc_649408f268febb61286eec85",
+        "name": "선하",
+        "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141652_649408f268febb61286eec85_SSFM-V3_0.mp3",
+        "measure": "음높이 302Hz · 밝기 1510Hz · 억양 폭 10.6반음 · 빠르기 5.55 · 교육",
+        "why": "교육용 — 높고 밝은데(302Hz) 빠르기가 보통이라 또렷하다"
+      },
+      "alternates": [
+        {
+          "id": "tc_632293ed2f894f2211e8c597",
+          "name": "햄쮸",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142807_632293ed2f894f2211e8c597_SSFM-V3_0.mp3",
+          "measure": "음높이 333Hz · 밝기 1857Hz · 억양 폭 11.5반음 · 빠르기 5.92 · 애니",
+          "why": "애니용 — 더 귀여운 캐릭터 목소리(333Hz)"
+        },
+        {
+          "id": "tc_65cd94c242e2d9d9c9c905e7",
+          "name": "은하",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/251017141243_65cd94c242e2d9d9c9c905e7_SSFM-V3_0.mp3",
+          "measure": "음높이 302Hz · 밝기 1631Hz · 억양 폭 7.5반음 · 빠르기 5.93 · 숏폼",
+          "why": "높고 밝은데 억양 폭이 좁아(7.5반음) 차분하다"
+        }
+      ],
+      "why": "말 랠리와 이야기 교실에서 같은 목소리. 옛 판은 같은 여성 목소리를 높게 올려 썼다. 「귀엽고 다정하게, 또렷함이 먼저」라 캐릭터 전용 목소리보다 높고 밝은 교육용을 기본으로, 더 귀여운 쪽(햄쮸)과 더 차분한 쪽(은하)을 후보로 두었다."
+    },
+    "kkamong": {
+      "label": "까몽",
+      "gender": "male",
+      "usedIn": [
+        "이야기 교실 까몽"
+      ],
+      "character": "허세가 무너지는 아기 용 — 장난스럽고 젊게",
+      "voice": {
+        "id": "tc_6731b32e075b04a9446441a0",
+        "name": "몽군",
+        "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141421_6731b32e075b04a9446441a0_SSFM-V3_0.mp3",
+        "measure": "음높이 276Hz · 밝기 1408Hz · 억양 폭 6.6반음 · 빠르기 6.39 · 애니·게임·대화",
+        "why": "애니·게임·대화용 — 남성 가운데 높은 편(276Hz), 장난기 있는 캐릭터"
+      },
+      "alternates": [
+        {
+          "id": "tc_6386d6aceb3125e51e3234e8",
+          "name": "졸리",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142345_6386d6aceb3125e51e3234e8_SSFM-V3_0.mp3",
+          "measure": "음높이 262Hz · 밝기 1403Hz · 억양 폭 10.3반음 · 빠르기 5.7 · 애니",
+          "why": "애니용 — 높고 밝은 남성 캐릭터"
+        },
+        {
+          "id": "tc_6747f7c4b4470b54ab8a06bc",
+          "name": "김고트",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141044_6747f7c4b4470b54ab8a06bc_SSFM-V3_0.mp3",
+          "measure": "음높이 250Hz · 밝기 1676Hz · 억양 폭 6.3반음 · 빠르기 5.64 · 게임·애니·광고",
+          "why": "게임·애니용 — 밝고 높다"
+        }
+      ],
+      "why": "옛 판은 젊은 남성 목소리를 조금 올려 썼다. 까몽은 셋 중 제일 큰데 아기 용이라 높고 장난스러운 남성 캐릭터 목소리."
+    },
+    "marin": {
+      "label": "마린",
+      "gender": "male",
+      "usedIn": [
+        "이야기 교실 마린"
+      ],
+      "character": "보고하는 T 골렘 — 무표정하고 정밀하게, 느낌표 없이",
+      "voice": {
+        "id": "tc_677f2aa4a854ddffa0ebda89",
+        "name": "한결",
+        "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142742_677f2aa4a854ddffa0ebda89_SSFM-V3_0.mp3",
+        "measure": "음높이 117Hz · 밝기 673Hz · 억양 폭 4.4반음 · 빠르기 5.06 · 다큐",
+        "why": "다큐용 — 낮고(117Hz) 억양 폭이 좁다(4.4반음), 차분한 보고 말투"
+      },
+      "alternates": [
+        {
+          "id": "tc_61377fdaa23e3c47ccf5e93e",
+          "name": "로보",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141306_61377fdaa23e3c47ccf5e93e_SSFM-V3_0.mp3",
+          "measure": "음높이 148Hz · 밝기 1010Hz · 억양 폭 4.6반음 · 빠르기 4.99 · 안내 음성",
+          "why": "안내 음성용 — 미리듣기에서 「내 차가운 음성과 귀여운 매력」이라 소개하는 로봇 같은 목소리"
+        },
+        {
+          "id": "tc_607ee367b245628c62b6ae98",
+          "name": "파캉",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142658_607ee367b245628c62b6ae98_SSFM-V3_0.mp3",
+          "measure": "음높이 123Hz · 밝기 838Hz · 억양 폭 1.9반음 · 빠르기 5.33 · 게임",
+          "why": "게임용 — 억양 폭이 가장 좁은 쪽(1.9반음), 기계처럼 고르다"
+        }
+      ],
+      "settings": {
+        "tempo": 0.9
+      },
+      "why": "옛 판은 낮은 남성 목소리를 더 낮추고 10% 늦췄다(무표정한 보고). 억양 폭이 좁은 낮은 목소리를 기본으로, 무표정 속 다정이 새는 마린에 맞을 수 있는 로보를 후보로 두었다. 빠르기 0.9."
+    },
+    "teacher": {
+      "label": "선생님",
+      "gender": "female",
+      "usedIn": [
+        "이야기 교실 선생님"
+      ],
+      "character": "돌아온 선생님 — 따뜻하고 또렷한 교사",
+      "voice": {
+        "id": "tc_691d49ccc47926d741f15913",
+        "name": "효은",
+        "preview": "https://static2.typecast.ai/c/251119_hyoeun/hyoeun_mixdown.mp3",
+        "measure": "음높이 242Hz · 밝기 1105Hz · 억양 폭 12반음 · 빠르기 5.87 · 교육·라디오",
+        "why": "교육·라디오용 — 「자, 제가 질문을 하나 드릴 건데요」 교사 말투"
+      },
+      "alternates": [
+        {
+          "id": "tc_63745dd5e0b6db6f3cf10924",
+          "name": "미진",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141450_63745dd5e0b6db6f3cf10924_SSFM-V3_0.mp3",
+          "measure": "음높이 254Hz · 밝기 1521Hz · 억양 폭 9.8반음 · 빠르기 5.47 · 교육",
+          "why": "교육용 — 밝고 또렷하다"
+        },
+        {
+          "id": "tc_68f9c6a72f0f04a417bb136f",
+          "name": "문정",
+          "preview": "https://static2.typecast.ai/c/251023_moonjung/moonjung_mixdown.mp3",
+          "measure": "음높이 246Hz · 밝기 1001Hz · 억양 폭 12반음 · 빠르기 5.72 · 교육·대화",
+          "why": "교육·대화용 — 친절한 안내 말투"
+        }
+      ],
+      "why": "해설(서현)과 같은 장면에 나오므로 다른 여성 목소리. 교육용 가운데 교사 말투가 뚜렷한 쪽."
+    },
+    "bear": {
+      "label": "곰(김보리, 21살)",
+      "gender": "male",
+      "usedIn": [
+        "입장 검사",
+        "주문 폭주"
+      ],
+      "character": "명랑하고 친절한 20대 초반 청년",
+      "voice": {
+        "id": "tc_66c6ce224dadfe518fbbdef2",
+        "name": "태민",
+        "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142625_66c6ce224dadfe518fbbdef2_SSFM-V3_0.mp3",
+        "measure": "음높이 225Hz · 밝기 1211Hz · 억양 폭 7.9반음 · 빠르기 6.15 · 대화",
+        "why": "대화용 — 「너도 가끔은 실패해도 괜찮으니까」 친구에게 말하듯 밝다"
+      },
+      "alternates": [
+        {
+          "id": "tc_686dc43ebd6351e06ee64d74",
+          "name": "원우",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/251017135545_686dc43ebd6351e06ee64d74_SSFM-V3_0.mp3",
+          "measure": "음높이 136Hz · 밝기 987Hz · 억양 폭 9.6반음 · 빠르기 5.34 · 대화·라디오",
+          "why": "대화·라디오용 — 밝고 다정한 청년"
+        },
+        {
+          "id": "tc_668f4f533ea5c6ce5e43fd48",
+          "name": "우성",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142102_668f4f533ea5c6ce5e43fd48_SSFM-V3_0.mp3",
+          "measure": "음높이 163Hz · 밝기 1030Hz · 억양 폭 10.1반음 · 빠르기 6.15 · 라디오",
+          "why": "라디오용 — 「와, 이 소식 진짜…」 신난 말투"
+        }
+      ],
+      "why": "옛 판 설정 「a cheerful, friendly young man in his early twenties」."
+    },
+    "raccoon": {
+      "label": "너구리(나구리, 45살)",
+      "gender": "male",
+      "usedIn": [
+        "입장 검사",
+        "주문 폭주"
+      ],
+      "character": "느긋하고 말 많은 40대 아저씨",
+      "voice": {
+        "id": "tc_6a3350f8e5a50a4abe948fa8",
+        "name": "도윤",
+        "preview": "https://static2.typecast.ai/c/260618_Doyoon/Doyoon_mixdown.mp3",
+        "measure": "음높이 127Hz · 밝기 772Hz · 억양 폭 10.2반음 · 빠르기 5.07 · 대화·숏폼",
+        "why": "대화·숏폼용 — 「아 자기관리는 어떻게 하는지 궁금하시다고요?」 느긋하고 수다스럽다"
+      },
+      "alternates": [
+        {
+          "id": "tc_68d4b115f0486108a7eefb37",
+          "name": "강일",
+          "preview": "https://static2.typecast.ai/c/250925_kangil/kangil_mixdown.mp3",
+          "measure": "음높이 146Hz · 밝기 873Hz · 억양 폭 7.7반음 · 빠르기 5.81 · 라디오·아나운서",
+          "why": "라디오·아나운서용 — 진행자처럼 말이 많다"
+        },
+        {
+          "id": "tc_6059dad0b83880769a50502f",
+          "name": "박창수",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/251016115409_6059dad0b83880769a50502f_SSFM-V3_0.mp3",
+          "measure": "음높이 125Hz · 밝기 1053Hz · 억양 폭 5.6반음 · 빠르기 6.57 · 대화·숏폼",
+          "why": "대화·숏폼용 — 너스레가 있는 아저씨 말투"
+        }
+      ],
+      "why": "옛 판 설정 「an easygoing, chatty middle-aged man in his mid-forties」."
+    },
+    "rabbit": {
+      "label": "토끼(박토순, 72살)",
+      "gender": "female",
+      "usedIn": [
+        "입장 검사",
+        "주문 폭주"
+      ],
+      "character": "느리고 부드러운 70대 할머니",
+      "voice": {
+        "id": "tc_6731b3ac075b04a944644234",
+        "name": "한영",
+        "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142755_6731b3ac075b04a944644234_SSFM-V3_0.mp3",
+        "measure": "음높이 216Hz · 밝기 1245Hz · 억양 폭 9.5반음 · 빠르기 4.65 · 라디오·오디오북",
+        "why": "라디오·오디오북용 — 느리고(4.65) 부드럽다"
+      },
+      "alternates": [
+        {
+          "id": "tc_6699eb0f10b8e361d6a9aba1",
+          "name": "민정",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141456_6699eb0f10b8e361d6a9aba1_SSFM-V3_0.mp3",
+          "measure": "음높이 235Hz · 밝기 887Hz · 억양 폭 9.7반음 · 빠르기 4.56 · 오디오북",
+          "why": "오디오북용 — 가장 느린 쪽(4.56), 차분하다"
+        },
+        {
+          "id": "tc_66c6ce360614b40f9fe13439",
+          "name": "인혜",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250930101730_66c6ce360614b40f9fe13439_SSFM-V3_0.mp3",
+          "measure": "음높이 172Hz · 밝기 778Hz · 억양 폭 11반음 · 빠르기 5.2 · 다큐",
+          "why": "다큐용 — 낮고(172Hz) 차분하다"
+        }
+      ],
+      "settings": {
+        "tempo": 0.88
+      },
+      "why": "옛 판 설정 「a kind, gentle grandmother in her seventies who speaks slowly and softly」. 할머니 목소리가 목록에 따로 없어 느리고 부드러운 여성 목소리에 빠르기 0.88."
+    },
+    "fox": {
+      "label": "여우(여우진, 31살)",
+      "gender": "male",
+      "usedIn": [
+        "입장 검사",
+        "주문 폭주"
+      ],
+      "character": "예의 바르고 조금 바쁜 30대 회사원",
+      "voice": {
+        "id": "tc_662a05b17419f60500ac5630",
+        "name": "이준",
+        "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142205_662a05b17419f60500ac5630_SSFM-V3_0.mp3",
+        "measure": "음높이 166Hz · 밝기 896Hz · 억양 폭 6.5반음 · 빠르기 6.4 · 대화",
+        "why": "대화용 — 빠른 편(6.4)이고 단정하다"
+      },
+      "alternates": [
+        {
+          "id": "tc_678884b481dfbfa3e4075a18",
+          "name": "장운",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142230_678884b481dfbfa3e4075a18_SSFM-V3_0.mp3",
+          "measure": "음높이 167Hz · 밝기 814Hz · 억양 폭 7.7반음 · 빠르기 6.48 · 대화",
+          "why": "대화용 — 빠르고 가볍다"
+        },
+        {
+          "id": "tc_65571d3fb22102b993a24350",
+          "name": "재영",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/251017142240_65571d3fb22102b993a24350_SSFM-V3_0.mp3",
+          "measure": "음높이 162Hz · 밝기 880Hz · 억양 폭 9.9반음 · 빠르기 6.01 · 교육",
+          "why": "교육용 — 단정한 설명 말투"
+        }
+      ],
+      "why": "옛 판 설정 「a polite office worker in his early thirties, a little hurried」."
+    },
+    "squirrel": {
+      "label": "다람쥐(도다미, 6살)",
+      "gender": "female",
+      "usedIn": [
+        "입장 검사",
+        "주문 폭주"
+      ],
+      "character": "재잘거리는 여섯 살 여자아이",
+      "voice": {
+        "id": "tc_659684d457333e980515bc6d",
+        "name": "꼬미",
+        "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250930105205_659684d457333e980515bc6d_SSFM-V3_0.mp3",
+        "measure": "음높이 410Hz · 밝기 1710Hz · 억양 폭 11.2반음 · 빠르기 5.68 · 교육",
+        "why": "교육용 — 목록에서 가장 높은 목소리(410Hz), 「친구들 걸을 때…」 아이 말투"
+      },
+      "alternates": [
+        {
+          "id": "tc_62b17f026fe31dc29ac8e94e",
+          "name": "소율",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/251017114147_62b17f026fe31dc29ac8e94e_SSFM-V3_0.mp3",
+          "measure": "음높이 390Hz · 밝기 1955Hz · 억양 폭 15.9반음 · 빠르기 5.19 · 숏폼",
+          "why": "숏폼용 — 아주 높고 밝다(390Hz)"
+        },
+        {
+          "id": "tc_618203f635ea62f8574c7d8a",
+          "name": "보라",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/251016120209_618203f635ea62f8574c7d8a_SSFM-V3_0.mp3",
+          "measure": "음높이 356Hz · 밝기 2094Hz · 억양 폭 9.5반음 · 빠르기 5.97 · 게임",
+          "why": "게임용 — 높고(356Hz) 가장 밝은 쪽"
+        }
+      ],
+      "why": "옛 판 설정 「a bubbly six-year-old girl with a high, bright child voice」."
+    },
+    "hedgehog": {
+      "label": "고슴도치(고도치, 9살)",
+      "gender": "male",
+      "usedIn": [
+        "입장 검사",
+        "주문 폭주"
+      ],
+      "character": "힘이 넘치는 아홉 살 남자아이",
+      "voice": {
+        "id": "tc_5c547545fcfee90007fed459",
+        "name": "주원",
+        "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142352_5c547545fcfee90007fed459_SSFM-V3_0.mp3",
+        "measure": "음높이 296Hz · 밝기 1783Hz · 억양 폭 8.1반음 · 빠르기 6.38 · 숏폼",
+        "why": "숏폼용 — 높고(296Hz) 「씩씩한 에너지」 말투"
+      },
+      "alternates": [
+        {
+          "id": "tc_67d2346b8572120c4aa63e33",
+          "name": "세우",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/251017112921_67d2346b8572120c4aa63e33_SSFM-V3_0.mp3",
+          "measure": "음높이 302Hz · 밝기 1380Hz · 억양 폭 6.4반음 · 빠르기 6.47 · 게임·애니",
+          "why": "게임·애니용 — 남성 가운데 가장 높은 쪽(302Hz), 「나라고 당하고 사는 게 좋겠냐?」 소년 말투"
+        },
+        {
+          "id": "tc_6359e7ea258d1b6dc3abe6e6",
+          "name": "구리",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250930103636_6359e7ea258d1b6dc3abe6e6_SSFM-V3_0.mp3",
+          "measure": "음높이 291Hz · 밝기 1616Hz · 억양 폭 9.7반음 · 빠르기 4.98 · 애니",
+          "why": "애니용 — 「오잉 오잉 이거 머지」 높고 어린 캐릭터"
+        }
+      ],
+      "why": "옛 판 설정 「an energetic nine-year-old boy with a bright child voice」. 아이 목소리가 목록에 따로 없어 높은 남성 캐릭터 목소리.",
+      "chosen": {
+        "at": "2026-10-07T11:00:24.505Z",
+        "note": "화면에서 고름(귀 확인 뒤)"
+      }
+    },
+    "penguin": {
+      "label": "펭귄(남콩이, 24살)",
+      "gender": "female",
+      "usedIn": [
+        "입장 검사",
+        "주문 폭주"
+      ],
+      "character": "밝고 친절한 20대 중반",
+      "voice": {
+        "id": "tc_692799c46508f6b9468c54c7",
+        "name": "다은",
+        "preview": "https://static2.typecast.ai/c/251127_daeun/daeun_mixdown.mp3",
+        "measure": "음높이 276Hz · 밝기 1455Hz · 억양 폭 11.8반음 · 빠르기 5.4 · 숏폼·대화",
+        "why": "숏폼·대화용 — 「여러분 제가 이번에…」 밝고 친근하다"
+      },
+      "alternates": [
+        {
+          "id": "tc_6620d242904c5eef906092eb",
+          "name": "미리내",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141434_6620d242904c5eef906092eb_SSFM-V3_0.mp3",
+          "measure": "음높이 286Hz · 밝기 1546Hz · 억양 폭 9.2반음 · 빠르기 7.04 · 뉴스·숏폼",
+          "why": "뉴스·숏폼용 — 밝고 빠르며 또렷하다"
+        },
+        {
+          "id": "tc_65f280ecf1a9fb325938fdf9",
+          "name": "지현",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142431_65f280ecf1a9fb325938fdf9_SSFM-V3_0.mp3",
+          "measure": "음높이 232Hz · 밝기 1081Hz · 억양 폭 10.7반음 · 빠르기 5.04 · 숏폼",
+          "why": "숏폼용 — 친근하다"
+        }
+      ],
+      "why": "옛 판 설정 「a bright, friendly young woman in her mid-twenties」."
+    },
+    "ducks": {
+      "label": "오리(오순, 34살)",
+      "gender": "female",
+      "usedIn": [
+        "입장 검사",
+        "주문 폭주"
+      ],
+      "character": "따뜻하고 다정한 30대 엄마",
+      "voice": {
+        "id": "tc_6a7446c19f2d7dfed990a900",
+        "name": "은경",
+        "preview": "https://static2.typecast.ai/c/260806_eunkyung/eunkyung_mixdown.mp3",
+        "measure": "음높이 234Hz · 밝기 968Hz · 억양 폭 10.4반음 · 빠르기 5.47 · 대화·라디오",
+        "why": "대화·라디오용 — 「방을 청소하다 보면…」 따뜻한 생활 말투"
+      },
+      "alternates": [
+        {
+          "id": "tc_661797923ed12f31b61c4b5f",
+          "name": "한솔",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142751_661797923ed12f31b61c4b5f_SSFM-V3_0.mp3",
+          "measure": "음높이 229Hz · 밝기 1109Hz · 억양 폭 7.8반음 · 빠르기 5.41 · 오디오북",
+          "why": "오디오북용 — 차분하고 따뜻하다"
+        },
+        {
+          "id": "tc_68785db8ba9cd7503f27d921",
+          "name": "고운",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141005_68785db8ba9cd7503f27d921_SSFM-V3_0.mp3",
+          "measure": "음높이 219Hz · 밝기 1091Hz · 억양 폭 11.3반음 · 빠르기 4.78 · 대화·라디오",
+          "why": "대화·라디오용 — 부드럽다"
+        }
+      ],
+      "why": "옛 판 설정 「a warm, gentle mother in her thirties」."
+    },
+    "otter": {
+      "label": "수달(수달수, 62살)",
+      "gender": "male",
+      "usedIn": [
+        "입장 검사",
+        "주문 폭주"
+      ],
+      "character": "낮고 조금 거친 사람 좋은 60대 할아버지",
+      "voice": {
+        "id": "tc_65e02cd537dfdac4257ca957",
+        "name": "지리산",
+        "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/251021111303_65e02cd537dfdac4257ca957_SSFM-V3_0.mp3",
+        "measure": "음높이 95Hz · 밝기 577Hz · 억양 폭 4.1반음 · 빠르기 6.39 · 게임·숏폼",
+        "why": "게임용 — 목록에서 가장 낮은 남성(95Hz), 거친 결"
+      },
+      "alternates": [
+        {
+          "id": "tc_5c3c52cb5827e00008dd7f3b",
+          "name": "범수",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141523_5c3c52cb5827e00008dd7f3b_SSFM-V3_0.mp3",
+          "measure": "음높이 113Hz · 밝기 867Hz · 억양 폭 6.7반음 · 빠르기 4.76 · 다큐",
+          "why": "다큐용 — 낮고(113Hz) 느리다(4.76), 차분한 어르신 말투"
+        },
+        {
+          "id": "tc_6583e03a2b34c151305ff09d",
+          "name": "호영",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142902_6583e03a2b34c151305ff09d_SSFM-V3_0.mp3",
+          "measure": "음높이 128Hz · 밝기 733Hz · 억양 폭 6.6반음 · 빠르기 4.64 · 오디오북",
+          "why": "오디오북용 — 낮고 느리다(4.6)"
+        }
+      ],
+      "settings": {
+        "tempo": 0.9
+      },
+      "why": "옛 판 설정 「a good-natured grandfather in his sixties with a low, slightly gravelly voice」. 빠르기 0.9."
+    },
+    "deer": {
+      "label": "사슴(노나래, 26살)",
+      "gender": "female",
+      "usedIn": [
+        "입장 검사",
+        "주문 폭주"
+      ],
+      "character": "조용하고 차분한 20대",
+      "voice": {
+        "id": "tc_67c90ad544cf859417f2fc3a",
+        "name": "예진",
+        "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142036_67c90ad544cf859417f2fc3a_SSFM-V3_0.mp3",
+        "measure": "음높이 196Hz · 밝기 884Hz · 억양 폭 9반음 · 빠르기 5.58 · 대화",
+        "why": "대화용 — 낮고 부드럽다"
+      },
+      "alternates": [
+        {
+          "id": "tc_66ab0e26ec23f325b7ad51df",
+          "name": "예슬",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142031_66ab0e26ec23f325b7ad51df_SSFM-V3_0.mp3",
+          "measure": "음높이 219Hz · 밝기 819Hz · 억양 폭 7.6반음 · 빠르기 4.89 · 라디오",
+          "why": "라디오용 — 억양 폭이 좁고 차분하다"
+        },
+        {
+          "id": "tc_66f4ecb5b1a24ceec9f6ccf0",
+          "name": "주영",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/251017150527_66f4ecb5b1a24ceec9f6ccf0_SSFM-V3_0.mp3",
+          "measure": "음높이 208Hz · 밝기 880Hz · 억양 폭 9.6반음 · 빠르기 5.26 · 라디오",
+          "why": "라디오용 — 차분하다"
+        }
+      ],
+      "why": "옛 판 설정 「a calm, soft-spoken young woman in her twenties」."
+    },
+    "panda": {
+      "label": "판다(이단비, 15살)",
+      "gender": "female",
+      "usedIn": [
+        "입장 검사",
+        "주문 폭주"
+      ],
+      "character": "밝지만 조금 수줍은 중학생",
+      "voice": {
+        "id": "tc_622964d6255364be41659078",
+        "name": "세나",
+        "preview": "https://static2.typecast.ai/c/251023_preview/sena_mixdown.mp3",
+        "measure": "음높이 302Hz · 밝기 1541Hz · 억양 폭 12.8반음 · 빠르기 5.52 · 대화",
+        "why": "대화용 — 「아 진짜 시험 보기 싫다」 학생 말투"
+      },
+      "alternates": [
+        {
+          "id": "tc_663343c5b1f85ebd9f4896b9",
+          "name": "은채",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142141_663343c5b1f85ebd9f4896b9_SSFM-V3_0.mp3",
+          "measure": "음높이 308Hz · 밝기 1149Hz · 억양 폭 8.1반음 · 빠르기 4.69 · 교육·뉴스·숏폼",
+          "why": "교육·뉴스용 — 높고 느리다(4.7), 조심스럽다"
+        },
+        {
+          "id": "tc_61f084d860b9b6b40388f868",
+          "name": "라라",
+          "preview": "https://static2.typecast.ai/c/251023_preview/lala_mixdown.mp3",
+          "measure": "음높이 302Hz · 밝기 1903Hz · 억양 폭 7.9반음 · 빠르기 5.45 · 숏폼",
+          "why": "숏폼용 — 높고 밝다"
+        }
+      ],
+      "why": "옛 판 설정 「a fifteen-year-old middle school girl, bright and a little shy」."
+    },
+    "sheep": {
+      "label": "양(양솜이, 22살)",
+      "gender": "female",
+      "usedIn": [
+        "입장 검사",
+        "주문 폭주"
+      ],
+      "character": "신나고 상냥한 20대 초반",
+      "voice": {
+        "id": "tc_6335061c3c90cf9e5b6b9fff",
+        "name": "다나",
+        "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250930110847_6335061c3c90cf9e5b6b9fff_SSFM-V3_0.mp3",
+        "measure": "음높이 311Hz · 밝기 1309Hz · 억양 폭 13.3반음 · 빠르기 6.44 · 숏폼",
+        "why": "숏폼용 — 높고 환하다"
+      },
+      "alternates": [
+        {
+          "id": "tc_6731b36bd944a485bc4070fd",
+          "name": "민주",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141458_6731b36bd944a485bc4070fd_SSFM-V3_0.mp3",
+          "measure": "음높이 296Hz · 밝기 1047Hz · 억양 폭 11.1반음 · 빠르기 6.81 · 대화·숏폼",
+          "why": "대화·숏폼용 — 「팬들이 다 같이 춤추기 시작하는데」 신난 말투"
+        },
+        {
+          "id": "tc_65d6f8ee2b58da07b6284a56",
+          "name": "혜나",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142839_65d6f8ee2b58da07b6284a56_SSFM-V3_0.mp3",
+          "measure": "음높이 308Hz · 밝기 1094Hz · 억양 폭 10.8반음 · 빠르기 7.29 · 광고",
+          "why": "광고용 — 빠르고 재치 있다"
+        }
+      ],
+      "why": "옛 판 설정 「an excited, sweet young woman in her early twenties」.",
+      "chosen": {
+        "at": "2026-10-07T11:00:24.598Z",
+        "note": "화면에서 고름(귀 확인 뒤)"
+      }
+    }
+  },
+  "games": {
+    "korean-runner": {
+      "wind": {
+        "tempo": 1
+      }
+    },
+    "talk-rally": {
+      "narrator": {
+        "tempo": 0.94
+      }
+    }
+  },
+  "lines": {}
+}

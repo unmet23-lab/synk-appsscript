@@ -1,8 +1,15 @@
 {
-  "sourceKey": "91701222d8ed54b0c0c98e8ab28730654ac766adbf164de3ba06af05a82c7143",
+  "sourceKey": "88affbf229681a47d9defabb8c7a220a",
   "text": "어? 이 종이에 글자가 있어! 버려도 되는 걸까?",
   "speaker": "mongle",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-3%",
-  "pitch": "+8Hz"
+  "voice": "선하",
+  "voiceId": "tc_649408f268febb61286eec85",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }
