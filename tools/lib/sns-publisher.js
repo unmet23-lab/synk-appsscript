@@ -264,6 +264,13 @@ function packageFromFolder(folder, accountConfig) {
     || findFiles(folder, /^cover\.(?:jpe?g|png|webp)$/i)[0] || null;
   const document = findFiles(folder, /\.(?:pdf)$/i)[0] || null;
   const subtitles = findFiles(folder, /^subtitles-[a-z-]+\.srt$/i);
+  // YouTube 재생목록(선택): 원고.json의 playlist { title, description, visibility, language }. 같은 제목이 채널에 없으면 만든다
+  const playlist = raw.playlist && String(raw.playlist.title || '').trim() ? {
+    title: String(raw.playlist.title).trim(),
+    description: String(raw.playlist.description || ''),
+    visibility: raw.playlist.visibility || 'private',
+    ...(raw.playlist.language ? { language: String(raw.playlist.language) } : {}),
+  } : null;
 
   const deps = [dependency(sourceFile, 'metadata')];
   for (const [file, role] of [[titleFile, 'title'], [postFile, 'post-copy'], [bodyFile, 'article'], [linkFile, 'link']]) {
@@ -285,6 +292,7 @@ function packageFromFolder(folder, accountConfig) {
     link,
     alt: Array.isArray(raw.alt) ? raw.alt : [],
     dependencies: dependencies.map(({ role, path: file, bytes, sha256: digest }) => ({ role, path: file, bytes, sha256: digest })),
+    ...(playlist ? { playlist } : {}),
   };
 
   return {
@@ -306,6 +314,7 @@ function packageFromFolder(folder, accountConfig) {
     thumbnail: thumbnail ? relativeFromRepo(thumbnail) : null,
     document: document ? relativeFromRepo(document) : null,
     subtitles: subtitles.map(relativeFromRepo),
+    ...(playlist ? { playlist } : {}),
     dependencies,
     contentHash: sha256(JSON.stringify(hashMaterial)),
     publisher: account.publisher,
@@ -335,6 +344,7 @@ function validateItem(item) {
   if (!item.title) errors.push('제목 없음');
   if (!item.text) errors.push('본문 없음');
   if (item.platform === 'youtube' && !item.video) errors.push('video.mp4 없음');
+  if (item.playlist && item.platform !== 'youtube') errors.push('재생목록은 YouTube만 지원');
   if (['instagram', 'facebook', 'pinterest', 'kakao-channel', 'telegram'].includes(item.platform)
       && !item.video && item.images.length === 0) errors.push('게시할 이미지/영상 없음');
   if (item.platform === 'tiktok' && !item.video) errors.push('video.mp4 없음');
@@ -419,11 +429,14 @@ function publicationHash(item, account, credential = {}) {
     ...(item.images || []).map((file) => [file, 'image']),
     ...(item.subtitles || []).map((file) => [file, 'subtitle']),
   ].filter(([file]) => file).map(([file, role]) => dependency(resolveRepoPath(file), role));
+  const itemPart = pick(item, ['id', 'accountKey', 'account', 'platform', 'publisher', 'language',
+    'title', 'text', 'alt', 'link', 'folder', 'video', 'images', 'thumbnail', 'document',
+    'subtitles', 'remoteMediaUrls', 'publish', 'dependencies']);
+  // 재생목록은 있는 항목에만 넣는다 — 재생목록이 없는 기존 계획의 승인 해시가 바뀌지 않게
+  if (item.playlist) itemPart.playlist = item.playlist;
   return sha256(stableJson({
     version: 2,
-    item: pick(item, ['id', 'accountKey', 'account', 'platform', 'publisher', 'language',
-      'title', 'text', 'alt', 'link', 'folder', 'video', 'images', 'thumbnail', 'document',
-      'subtitles', 'remoteMediaUrls', 'publish', 'dependencies']),
+    item: itemPart,
     account: pick(account, ['platform', 'handle', 'publisher', 'expectedChannelId',
       'expectedHandle', 'expectedChannelTitle', 'categoryId', 'madeForKids', 'chatId',
       'graphVersion', 'apiVersion', 'editorUrl']),
@@ -806,6 +819,59 @@ async function openCredentialForm(accountKey, accountsFile = DEFAULT_ACCOUNTS, {
   finally { clearTimeout(timeout); }
 }
 
+// 올린 영상을 재생목록에 넣는다. 같은 제목의 재생목록이 채널에 있으면 그것을 쓰고, 없으면 playlist.visibility(기본 비공개)로 만든다.
+// 이미 들어 있는 영상은 다시 넣지 않는다. 방금 만든 재생목록은 몇 초 동안 조회·넣기에 「없다」(404)고 답한다(2026-10-08 실제 발행에서
+// 겪음) — 그래서 새 목록은 조회를 건너뛰고(비어 있으니), 넣기가 404면 잠시 뒤 다시 한다.
+async function youtubeAddToPlaylist(videoId, playlist, token, fetchImpl = fetch, { retryDelayMs = 3000, retries = 6 } = {}) {
+  const auth = { authorization: `Bearer ${token.accessToken}` };
+  let id = null;
+  let created = false;
+  let pageToken = '';
+  do {
+    const response = await fetchWithRetry(`https://www.googleapis.com/youtube/v3/playlists?part=snippet&mine=true&maxResults=50${pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : ''}`, { headers: auth }, { fetchImpl });
+    const body = await responseJson(response);
+    if (!response.ok) throw new Error(`YouTube 재생목록 조회 실패 ${response.status}: ${apiMessage(body)}`);
+    id = (body.items || []).find((p) => p.snippet?.title === playlist.title)?.id || null;
+    pageToken = body.nextPageToken || '';
+  } while (!id && pageToken);
+  if (!id) {
+    const response = await fetchWithRetry('https://www.googleapis.com/youtube/v3/playlists?part=snippet,status', {
+      method: 'POST',
+      headers: { ...auth, 'content-type': 'application/json; charset=UTF-8' },
+      body: JSON.stringify({
+        snippet: { title: playlist.title.slice(0, 150), description: String(playlist.description || '').slice(0, 5000), ...(playlist.language ? { defaultLanguage: playlist.language } : {}) },
+        status: { privacyStatus: playlist.visibility || 'private' },
+      }),
+    }, { fetchImpl });
+    const body = await responseJson(response);
+    if (!response.ok || !body.id) throw new Error(`YouTube 재생목록 만들기 실패 ${response.status}: ${apiMessage(body)}`);
+    id = body.id;
+    created = true;
+  }
+  let itemId = null;
+  if (!created) {
+    const listed = await fetchWithRetry(`https://www.googleapis.com/youtube/v3/playlistItems?part=id&playlistId=${encodeURIComponent(id)}&videoId=${encodeURIComponent(videoId)}`, { headers: auth }, { fetchImpl });
+    const listedBody = await responseJson(listed);
+    if (!listed.ok) throw new Error(`YouTube 재생목록 항목 조회 실패 ${listed.status}: ${apiMessage(listedBody)}`);
+    itemId = listedBody.items?.[0]?.id || null;
+  }
+  for (let attempt = 0; !itemId; attempt += 1) {
+    const response = await fetchWithRetry('https://www.googleapis.com/youtube/v3/playlistItems?part=snippet', {
+      method: 'POST',
+      headers: { ...auth, 'content-type': 'application/json; charset=UTF-8' },
+      body: JSON.stringify({ snippet: { playlistId: id, resourceId: { kind: 'youtube#video', videoId } } }),
+    }, { fetchImpl });
+    const body = await responseJson(response);
+    if (response.ok) { itemId = body.id || 'added'; break; }
+    if (response.status === 404 && created && attempt < retries) {
+      await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+      continue;
+    }
+    throw new Error(`YouTube 재생목록에 넣기 실패 ${response.status}: ${apiMessage(body)}`);
+  }
+  return { id, title: playlist.title, created, itemId, url: `https://www.youtube.com/playlist?list=${id}` };
+}
+
 async function youtubeUpload(item, account, credential, options = {}) {
   const fetchImpl = options.fetchImpl || fetch;
   const { token, channel } = await youtubeChannel(credential, fetchImpl);
@@ -880,7 +946,7 @@ async function youtubeUpload(item, account, credential, options = {}) {
   }
   if (!video?.id) throw new Error('YouTube가 영상 ID를 돌려주지 않았습니다.');
 
-  const partial = { state: 'partial', id: video.id, url: `https://www.youtube.com/watch?v=${video.id}`, thumbnail: null, captions: [] };
+  const partial = { state: 'partial', id: video.id, url: `https://www.youtube.com/watch?v=${video.id}`, thumbnail: null, captions: [], ...(item.playlist ? { playlist: null } : {}) };
   const snapshot = () => ({ ...partial, captions: [...partial.captions] });
   const checkpoint = async () => { await options.onProgress?.(snapshot()); };
   try {
@@ -915,6 +981,10 @@ async function youtubeUpload(item, account, credential, options = {}) {
       const body = await responseJson(response);
       if (!response.ok) throw new Error(`YouTube ${language} 자막 업로드 실패 ${response.status}: ${apiMessage(body)}`);
       partial.captions.push({ language, id: body.id || null });
+      await checkpoint();
+    }
+    if (item.playlist?.title) {
+      partial.playlist = await youtubeAddToPlaylist(video.id, item.playlist, token, fetchImpl, options.playlistRetry);
       await checkpoint();
     }
     return { ...snapshot(), state: item.publish?.publishAt ? 'scheduled' : visibility };
@@ -1216,6 +1286,61 @@ async function publishPlan(planFile, ids, { accountsFile, fetchImpl = fetch, rea
   return { resultFile, result };
 }
 
+// 비공개로 올려 검수한 YouTube 항목을 공개로 바꾼다(재생목록이 있으면 재생목록도). 영상·재생목록의 다른 설정은 읽은 값 그대로 두고
+// 공개 여부만 바꾸며, 근거(유호님 승인)를 결과 파일에 남긴다.
+async function youtubeMakePublic(planFile, itemId, note, { accountsFile, fetchImpl = fetch, readCredentialImpl = readCredential } = {}) {
+  if (!String(note || '').trim()) throw new Error('공개 전환에는 --근거(유호님 승인)가 필요합니다.');
+  const plan = readJson(planFile);
+  const config = loadAccounts(accountsFile || resolveRepoPath(plan.accountsFile));
+  const item = plan.items.find((candidate) => candidate.id === itemId);
+  if (!item || item.platform !== 'youtube') throw new Error(`계획에 YouTube 항목 ${itemId}가 없습니다.`);
+  const account = config.accounts[item.accountKey];
+  if (!account) throw new Error(`${item.accountKey} 계정 설정이 없습니다.`);
+  const resultFile = resultFileFor(planFile);
+  const result = fs.existsSync(resultFile) ? readJson(resultFile) : null;
+  const done = result?.items?.[itemId];
+  if (!done?.id || !['private', 'unlisted', 'public'].includes(done.state)) {
+    throw new Error(`${itemId}는 올린 영상이 없거나 상태가 ${done?.state || '없음'}입니다.`);
+  }
+  const credential = readCredentialImpl(item.accountKey, { allowLegacy: true });
+  const { token, channel } = await youtubeChannel(credential, fetchImpl);
+  if (!matchesYoutubeAccount(channel, account)) throw new Error(`${itemId}: YouTube 인증 채널이 다릅니다.`);
+  const auth = { authorization: `Bearer ${token.accessToken}` };
+  const get = async (url, what) => {
+    const response = await fetchWithRetry(url, { headers: auth }, { fetchImpl });
+    const body = await responseJson(response);
+    if (!response.ok) throw new Error(`YouTube ${what} 조회 실패 ${response.status}: ${apiMessage(body)}`);
+    const found = body.items?.[0];
+    if (!found) throw new Error(`YouTube ${what}을(를) 찾지 못했습니다.`);
+    return found;
+  };
+  const put = async (url, payload, what) => {
+    const response = await fetchWithRetry(url, { method: 'PUT', headers: { ...auth, 'content-type': 'application/json; charset=UTF-8' }, body: JSON.stringify(payload) }, { fetchImpl });
+    const body = await responseJson(response);
+    if (!response.ok) throw new Error(`YouTube ${what} 공개 전환 실패 ${response.status}: ${apiMessage(body)}`);
+    return body;
+  };
+  const video = await get(`https://www.googleapis.com/youtube/v3/videos?part=status&id=${encodeURIComponent(done.id)}`, '영상');
+  const s = video.status || {};
+  if (s.privacyStatus !== 'public') {
+    const status = { privacyStatus: 'public', selfDeclaredMadeForKids: s.selfDeclaredMadeForKids ?? Boolean(account.madeForKids) };
+    for (const key of ['embeddable', 'license', 'publicStatsViewable', 'containsSyntheticMedia']) if (s[key] !== undefined) status[key] = s[key];
+    await put('https://www.googleapis.com/youtube/v3/videos?part=status', { id: done.id, status }, '영상');
+  }
+  let playlist = done.playlist || null;
+  if (playlist?.id) {
+    const found = await get(`https://www.googleapis.com/youtube/v3/playlists?part=snippet,status&id=${encodeURIComponent(playlist.id)}`, '재생목록');
+    if (found.status?.privacyStatus !== 'public') {
+      const snippet = { title: found.snippet.title, description: found.snippet.description || '', ...(found.snippet.defaultLanguage ? { defaultLanguage: found.snippet.defaultLanguage } : {}) };
+      await put('https://www.googleapis.com/youtube/v3/playlists?part=snippet,status', { id: found.id, snippet, status: { privacyStatus: 'public' } }, '재생목록');
+    }
+    playlist = { ...playlist, visibility: 'public' };
+  }
+  result.items[itemId] = { ...done, state: 'public', publicAt: new Date().toISOString(), publicNote: note, ...(playlist ? { playlist } : {}) };
+  writeJsonAtomic(resultFile, result);
+  return { resultFile, item: result.items[itemId] };
+}
+
 function setClipboard(text) {
   const result = spawnSync('powershell.exe', ['-NoProfile', '-Command', '$input | Set-Clipboard'], {
     input: text,
@@ -1268,7 +1393,9 @@ module.exports = {
   authorizeYoutube,
   openCredentialForm,
   splitText,
+  youtubeAddToPlaylist,
   youtubeUpload,
+  youtubeMakePublic,
   telegramPublish,
   pinterestPublish,
   facebookPublish,

@@ -1,0 +1,21 @@
+{
+ "id": "01-lab-youtube",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "title": "All 10 Korean vowels in one song! 아 야 어 여 오 요 우 유 으 이 #learnkorean",
+ "caption": "게시문안.txt를 쓴다",
+ "alt": [
+  "A felt kid and the coral felt mascot Mongle dance the Korean vowels ㅏ ㅓ ㅗ ㅜ ㅡ ㅣ under a white card reading “All 10 Korean vowels in one song!”"
+ ],
+ "playlist": {
+  "title": "Hangul for Beginners · 한글 초보단계",
+  "description": "Start Korean from zero: learn Hangul (the Korean alphabet) with short songs and dances from SYNK LAB and Mongle. One new video at a time.\n\n한글 초보단계 — 노래와 동작으로 한글을 처음부터.",
+  "visibility": "private",
+  "language": "en"
+ },
+ "_비고": "10-08 유호님 「아야어요오유우이 이 노래 synk lab 유튜브에 재생목록에 한글 초보단계 만들어서 올리는거 어때? 앞으로 만드는것들 하나씩 올리자」 → 방식 안내 뒤 「웅 진행해줘」. video.mp4 = 모음 댄스 전곡 v5의 유튜브 판(첫 화면 영어 한 줄, SNS 키트 LAB, 54.8초 9:16 → 쇼츠). 음악은 Suno Premier 공식 내려받기 두 곡을 끼운 고친 판(experiences/hangul-stage/songs/README.md). 비공개로 올리고 유호님 확인 뒤 --공개로 바꾼다(한글날 10-09 아침 권장). 재생목록도 비공개로 만들어 공개 때 함께 바꾼다. 원본 Documents/synk-vendor/hangul-mascot-video/vowel-dance-full-yt/. video.mp4는 *.mp4 규칙으로 git 밖이다.",
+ "version": "v5-yt"
+}

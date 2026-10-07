@@ -12,6 +12,7 @@ const {
   authorizeYoutube,
   openCredentialForm,
   publishPlan,
+  youtubeMakePublic,
   openManualItem,
 } = require('./lib/sns-publisher.js');
 
@@ -31,6 +32,7 @@ SYNK SNS 발행기
   node tools/sns-발행.js --준비 --묶음 <폴더> --출력 <계획.json>
   node tools/sns-발행.js --승인 <계획.json> [--항목 id,id] --근거 "유호님 최종 검수"
   node tools/sns-발행.js --발행 <계획.json> [--항목 id,id]
+  node tools/sns-발행.js --공개 <계획.json> --항목 <id> --근거 "유호님 공개 승인"
   node tools/sns-발행.js --수동열기 <계획.json> --항목 <id>
 
   --계정설정 <계정.json>  명시한 계정 설정 사용 (계획 작업은 기본적으로 계획의 설정 사용)
@@ -40,6 +42,8 @@ SYNK SNS 발행기
   · --발행은 현재 해시로 승인된 항목만 처리합니다.
   · 같은 계획의 성공 결과와 YouTube 부분 완료 ID는 옆 .결과.json에 남습니다.
   · partial/publishing 항목은 원격 결과 확인 전 재발행하지 않습니다.
+  · YouTube는 비공개로 올라갑니다. 원고.json의 playlist(제목)가 있으면 그 재생목록에 넣습니다(없으면 비공개로 만듦).
+  · --공개는 검수한 비공개 영상(과 재생목록)을 공개로 바꾸고 근거를 결과에 남깁니다.
   · 다른 계획이나 브라우저에서 게시한 콘텐츠의 중복은 감지하지 못합니다.
   · 비밀키는 Windows 자격 증명 보관소에만 들어갑니다.
 `);
@@ -136,6 +140,15 @@ async function main() {
     console.log(`\n✅ 발행 처리 종료\n   결과: ${resultFile}\n`);
     for (const [id, item] of Object.entries(result.items)) console.log(`   · ${id}: ${item.state}${item.url ? ` · ${item.url}` : ''}`);
     console.log('');
+    return;
+  }
+
+  if (arg('--공개')) {
+    const planFile = absolute(arg('--공개'));
+    const selected = ids();
+    if (selected.length !== 1) throw new Error('--공개는 --항목을 하나만 지정합니다.');
+    const { resultFile, item } = await youtubeMakePublic(planFile, selected[0], arg('--근거'), { accountsFile: arg('--계정설정') ? accountsFile : undefined });
+    console.log(`\n✅ 공개로 바꿨습니다: ${item.url}${item.playlist?.url ? `\n   재생목록: ${item.playlist.url}` : ''}\n   결과: ${resultFile}\n`);
     return;
   }
 
