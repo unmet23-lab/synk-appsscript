@@ -1,8 +1,15 @@
 {
-  "sourceKey": "980197112a79d4598e9612174bb3074c31ff05e082a8813e7b68b51b74f1a918",
+  "sourceKey": "45cfa1e25cb24be88aca53573a5bdac0",
   "text": "이제 새 글을 읽고 마지막 정리를 해 보자. 이번에는 친구와 장소가 달라.",
   "speaker": "teacher",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-7%",
-  "pitch": "-2Hz"
+  "voice": "효은",
+  "voiceId": "tc_691d49ccc47926d741f15913",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

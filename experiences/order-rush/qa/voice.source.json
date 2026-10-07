@@ -1,0 +1,248 @@
+{
+ "note": "미니게임 목소리 제작 기록(tools/미니게임_목소리.cjs). qa/·*.source.json이라 공개 묶음에서 빠진다. 배역·설정의 원본은 tools/minigame-voice-casting.json.",
+ "provider": "Typecast",
+ "model": "ssfm-v30",
+ "post": "앞 0.13초·끝 0.83초 여백, -22.5 LUFS 고정 이득 → wav 22050Hz 16bit mono (지금 Windows 음성 파일의 실측과 같게)",
+ "updatedAt": "2026-10-07T11:21:59.536Z",
+ "voices": {
+  "bear": {
+   "label": "곰(김보리, 21살)",
+   "id": "tc_66c6ce224dadfe518fbbdef2",
+   "name": "태민",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142625_66c6ce224dadfe518fbbdef2_SSFM-V3_0.mp3",
+   "measure": "음높이 225Hz · 밝기 1211Hz · 억양 폭 7.9반음 · 빠르기 6.15 · 대화",
+   "why": "대화용 — 「너도 가끔은 실패해도 괜찮으니까」 친구에게 말하듯 밝다"
+  },
+  "fox": {
+   "label": "여우(여우진, 31살)",
+   "id": "tc_662a05b17419f60500ac5630",
+   "name": "이준",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142205_662a05b17419f60500ac5630_SSFM-V3_0.mp3",
+   "measure": "음높이 166Hz · 밝기 896Hz · 억양 폭 6.5반음 · 빠르기 6.4 · 대화",
+   "why": "대화용 — 빠른 편(6.4)이고 단정하다"
+  },
+  "rabbit": {
+   "label": "토끼(박토순, 72살)",
+   "id": "tc_6731b3ac075b04a944644234",
+   "name": "한영",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142755_6731b3ac075b04a944644234_SSFM-V3_0.mp3",
+   "measure": "음높이 216Hz · 밝기 1245Hz · 억양 폭 9.5반음 · 빠르기 4.65 · 라디오·오디오북",
+   "why": "라디오·오디오북용 — 느리고(4.65) 부드럽다",
+   "settings": {
+    "tempo": 0.88
+   }
+  },
+  "deer": {
+   "label": "사슴(노나래, 26살)",
+   "id": "tc_67c90ad544cf859417f2fc3a",
+   "name": "예진",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142036_67c90ad544cf859417f2fc3a_SSFM-V3_0.mp3",
+   "measure": "음높이 196Hz · 밝기 884Hz · 억양 폭 9반음 · 빠르기 5.58 · 대화",
+   "why": "대화용 — 낮고 부드럽다"
+  },
+  "otter": {
+   "label": "수달(수달수, 62살)",
+   "id": "tc_65e02cd537dfdac4257ca957",
+   "name": "지리산",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/251021111303_65e02cd537dfdac4257ca957_SSFM-V3_0.mp3",
+   "measure": "음높이 95Hz · 밝기 577Hz · 억양 폭 4.1반음 · 빠르기 6.39 · 게임·숏폼",
+   "why": "게임용 — 목록에서 가장 낮은 남성(95Hz), 거친 결",
+   "settings": {
+    "tempo": 0.9
+   }
+  },
+  "raccoon": {
+   "label": "너구리(나구리, 45살)",
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤",
+   "preview": "https://static2.typecast.ai/c/260618_Doyoon/Doyoon_mixdown.mp3",
+   "measure": "음높이 127Hz · 밝기 772Hz · 억양 폭 10.2반음 · 빠르기 5.07 · 대화·숏폼",
+   "why": "대화·숏폼용 — 「아 자기관리는 어떻게 하는지 궁금하시다고요?」 느긋하고 수다스럽다"
+  },
+  "sheep": {
+   "label": "양(양솜이, 22살)",
+   "id": "tc_6335061c3c90cf9e5b6b9fff",
+   "name": "다나",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250930110847_6335061c3c90cf9e5b6b9fff_SSFM-V3_0.mp3",
+   "measure": "음높이 311Hz · 밝기 1309Hz · 억양 폭 13.3반음 · 빠르기 6.44 · 숏폼",
+   "why": "숏폼용 — 높고 환하다"
+  },
+  "ducks": {
+   "label": "오리(오순, 34살)",
+   "id": "tc_6a7446c19f2d7dfed990a900",
+   "name": "은경",
+   "preview": "https://static2.typecast.ai/c/260806_eunkyung/eunkyung_mixdown.mp3",
+   "measure": "음높이 234Hz · 밝기 968Hz · 억양 폭 10.4반음 · 빠르기 5.47 · 대화·라디오",
+   "why": "대화·라디오용 — 「방을 청소하다 보면…」 따뜻한 생활 말투"
+  },
+  "hedgehog": {
+   "label": "고슴도치(고도치, 9살)",
+   "id": "tc_5c547545fcfee90007fed459",
+   "name": "주원",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142352_5c547545fcfee90007fed459_SSFM-V3_0.mp3",
+   "measure": "음높이 296Hz · 밝기 1783Hz · 억양 폭 8.1반음 · 빠르기 6.38 · 숏폼",
+   "why": "숏폼용 — 높고(296Hz) 「씩씩한 에너지」 말투"
+  },
+  "panda": {
+   "label": "판다(이단비, 15살)",
+   "id": "tc_622964d6255364be41659078",
+   "name": "세나",
+   "preview": "https://static2.typecast.ai/c/251023_preview/sena_mixdown.mp3",
+   "measure": "음높이 302Hz · 밝기 1541Hz · 억양 폭 12.8반음 · 빠르기 5.52 · 대화",
+   "why": "대화용 — 「아 진짜 시험 보기 싫다」 학생 말투"
+  },
+  "penguin": {
+   "label": "펭귄(남콩이, 24살)",
+   "id": "tc_692799c46508f6b9468c54c7",
+   "name": "다은",
+   "preview": "https://static2.typecast.ai/c/251127_daeun/daeun_mixdown.mp3",
+   "measure": "음높이 276Hz · 밝기 1455Hz · 억양 폭 11.8반음 · 빠르기 5.4 · 숏폼·대화",
+   "why": "숏폼·대화용 — 「여러분 제가 이번에…」 밝고 친근하다"
+  },
+  "squirrel": {
+   "label": "다람쥐(도다미, 6살)",
+   "id": "tc_659684d457333e980515bc6d",
+   "name": "꼬미",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250930105205_659684d457333e980515bc6d_SSFM-V3_0.mp3",
+   "measure": "음높이 410Hz · 밝기 1710Hz · 억양 폭 11.2반음 · 빠르기 5.68 · 교육",
+   "why": "교육용 — 목록에서 가장 높은 목소리(410Hz), 「친구들 걸을 때…」 아이 말투"
+  }
+ },
+ "lines": {
+  "o01": {
+   "role": "bear",
+   "voice": "태민",
+   "tempo": 0.92,
+   "key": "1102d82fdd676145c9ce92e6f24221c1",
+   "sha": {
+    "audio/o01.wav": "b79f5bd18663d687"
+   }
+  },
+  "o02": {
+   "role": "fox",
+   "voice": "이준",
+   "tempo": 0.92,
+   "key": "7f58888f3536dd06ff44b2255068eeb9",
+   "sha": {
+    "audio/o02.wav": "058eeadcbe386060"
+   }
+  },
+  "o03": {
+   "role": "rabbit",
+   "voice": "한영",
+   "tempo": 0.88,
+   "key": "898f8320f25fa84137ad19d3c5c8962c",
+   "sha": {
+    "audio/o03.wav": "00aaf721a3c0a880"
+   }
+  },
+  "o04": {
+   "role": "deer",
+   "voice": "예진",
+   "tempo": 0.92,
+   "key": "6eae01428d1c67bffc19cd64f8aeaa7c",
+   "sha": {
+    "audio/o04.wav": "0d04ddc13acaca04"
+   }
+  },
+  "o05": {
+   "role": "otter",
+   "voice": "지리산",
+   "tempo": 0.9,
+   "key": "fd58a8bb612c3c6e431a6a2befbefe10",
+   "sha": {
+    "audio/o05.wav": "65476c08bc4497f7"
+   }
+  },
+  "o06": {
+   "role": "raccoon",
+   "voice": "도윤",
+   "tempo": 0.92,
+   "key": "91ff21f68d2465d65789218515b544ba",
+   "sha": {
+    "audio/o06.wav": "bc1bc03fd8c1fe03"
+   }
+  },
+  "o07": {
+   "role": "sheep",
+   "voice": "다나",
+   "tempo": 0.92,
+   "key": "f15f0ffdf3808b1d782a67b24481ab86",
+   "sha": {
+    "audio/o07.wav": "06f8e528556f6a51"
+   }
+  },
+  "o08": {
+   "role": "ducks",
+   "voice": "은경",
+   "tempo": 0.92,
+   "key": "0d1973953172e762926c6b8a5ae51a86",
+   "sha": {
+    "audio/o08.wav": "bd418d40f6a009ec"
+   }
+  },
+  "o09": {
+   "role": "hedgehog",
+   "voice": "주원",
+   "tempo": 0.92,
+   "key": "2bfbe75ab8b8902546c91366fce65b04",
+   "sha": {
+    "audio/o09.wav": "e2fcefc6303b9e92"
+   }
+  },
+  "o10": {
+   "role": "panda",
+   "voice": "세나",
+   "tempo": 0.92,
+   "key": "79eeded8caf7af03a03ce4bca38ac7b5",
+   "sha": {
+    "audio/o10.wav": "bd44149111438215"
+   }
+  },
+  "o11": {
+   "role": "penguin",
+   "voice": "다은",
+   "tempo": 0.92,
+   "key": "107b01e1b00fdab9e611e7a4918f3a23",
+   "sha": {
+    "audio/o11.wav": "02e9259cf3165e1b"
+   }
+  },
+  "o12": {
+   "role": "squirrel",
+   "voice": "꼬미",
+   "tempo": 0.92,
+   "key": "8ebddf057ca769936552289cc1c6bddd",
+   "sha": {
+    "audio/o12.wav": "ab2d42f7356af5c8"
+   }
+  },
+  "r01": {
+   "role": "deer",
+   "voice": "예진",
+   "tempo": 0.92,
+   "key": "0ba5fdc13c4de05b386a1f7cf1472afb",
+   "sha": {
+    "audio/r01.wav": "a20062a34371825b"
+   }
+  },
+  "r02": {
+   "role": "ducks",
+   "voice": "은경",
+   "tempo": 0.92,
+   "key": "9c08159d42e0c04d5019edeee3410a81",
+   "sha": {
+    "audio/r02.wav": "e3891d19a4cc1a92"
+   }
+  },
+  "r03": {
+   "role": "panda",
+   "voice": "세나",
+   "tempo": 0.92,
+   "key": "1677d23820cea8893c000155914c3b23",
+   "sha": {
+    "audio/r03.wav": "b2123a8bd911b2f4"
+   }
+  }
+ }
+}

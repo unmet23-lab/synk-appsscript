@@ -1,7 +1,14 @@
 {
-  "sourceKey": "920c40a26862ded7742bf44fa6e508e71d19ff4022829863351c4c0de1ff88f9",
+  "sourceKey": "cbe2282c7a6dd7004c8a88360a48939f",
   "text": "무슨 음식을 좋아해요?",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-8%",
-  "pitch": "+8Hz"
+  "voice": "선하",
+  "voiceId": "tc_649408f268febb61286eec85",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "몽글: 지금 generate-voice.py와 같은 앞뒤 자르기 + loudnorm I=-18 TP=-2.5 LRA=7 · 안내: generate-narration.py와 같은 자르기·쉼 0.28초 + 재어서 -20.5 LUFS → MP3 mono 24kHz 96kbps"
 }

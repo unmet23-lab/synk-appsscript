@@ -1,8 +1,15 @@
 {
-  "sourceKey": "4414e33c0d777bc6f6890c4370707ebb784970cd14f304f34ed842373de06740",
+  "sourceKey": "39fa65a746309d45e5b44f76c1cbcb4b",
   "text": "어? 편지도 있어! 누가 썼을까?",
   "speaker": "mongle",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-3%",
-  "pitch": "+8Hz"
+  "voice": "선하",
+  "voiceId": "tc_649408f268febb61286eec85",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

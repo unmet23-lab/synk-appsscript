@@ -1,13 +1,12 @@
 {
-  "voice": "Microsoft Heami Desktop",
-  "rate": 0,
+  "voice": "바람",
   "clips": [
     {
       "id": "left",
       "text": "왼쪽 길로 가세요.",
-      "seconds": 2.079138,
-      "bytes": 17388,
-      "sha256": "60e7586f2767afafd2c1acfc5b2d2ff1a6ac3c875086dda67fee4061c233c103",
+      "seconds": 1.785125,
+      "bytes": 15089,
+      "sha256": "7c8dd6cef31737458c9aacc84a19cf439d3c4bf6b2124613ee40e38d148e2dc6",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -15,9 +14,9 @@
     {
       "id": "jump",
       "text": "낮은 울타리를 뛰어넘으세요.",
-      "seconds": 2.904036,
-      "bytes": 24075,
-      "sha256": "9fbf90eb20777036dac8a738a4a13e1d9655bada9a05c228d71e75aceb866e83",
+      "seconds": 2.22254,
+      "bytes": 18642,
+      "sha256": "a2d6869c0c3cffa86462603c74f313141d5a40fa2f81e319e30c4b8017a84bbf",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -25,9 +24,9 @@
     {
       "id": "right",
       "text": "오른쪽 길로 가세요.",
-      "seconds": 2.174059,
-      "bytes": 18224,
-      "sha256": "dd1b8dcd73c765da1ff44b983fa083a5ab9283df07ceeb7e3d3a8a6db9d8ba81",
+      "seconds": 1.875193,
+      "bytes": 15716,
+      "sha256": "4c13329c918b1564bbdc4cc37620705e6c53472da04b1e93dfcd920dd06f3c54",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -35,9 +34,9 @@
     {
       "id": "slide",
       "text": "표지판 아래로 몸을 숙여 지나가세요.",
-      "seconds": 3.413923,
-      "bytes": 28046,
-      "sha256": "03c4ac0ba745fca4f4650c4ac57d80e7724bd46359b2b8b96117989410943edd",
+      "seconds": 2.698231,
+      "bytes": 22403,
+      "sha256": "07e1a4a8dd146a14ef570e01362682d20b37d03fa4b7e9b87cfa9f20bcbe8830",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -45,9 +44,9 @@
     {
       "id": "middle",
       "text": "가운데 길로 가세요.",
-      "seconds": 2.219093,
-      "bytes": 18433,
-      "sha256": "d151a7e150b28b5762f6048775ab907c5f62166b061bc86ebc48b501bb7ce0a3",
+      "seconds": 1.885215,
+      "bytes": 15925,
+      "sha256": "827ce16f0655ad289038a63edaa5a5df41b30592351d1c6b197367869262e157",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -55,9 +54,9 @@
     {
       "id": "no-jump",
       "text": "이번에는 뛰지 말고 그대로 달리세요.",
-      "seconds": 3.298912,
-      "bytes": 27210,
-      "sha256": "785017849cd57b74fb32303072e3bbe8ad916eb7ac85714237d8496239a36e24",
+      "seconds": 2.90644,
+      "bytes": 24075,
+      "sha256": "065e71e0df7c1ba72bc20e7dfcba3bfdcb6d9c498d4faa7c492eb8d2292e4da2",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -65,9 +64,9 @@
     {
       "id": "left-jump",
       "text": "왼쪽으로 간 다음, 울타리를 뛰어넘으세요.",
-      "seconds": 4.043855,
-      "bytes": 33061,
-      "sha256": "900ed159732c92180589824284c768a85ed232cb704350c6b899a08905e027ae",
+      "seconds": 3.24322,
+      "bytes": 26792,
+      "sha256": "ca6f2632061597f5d12356066920955da17aae1711019ee561382c9d77df8857",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -75,9 +74,9 @@
     {
       "id": "middle-slide",
       "text": "가운데로 간 뒤, 몸을 숙이세요.",
-      "seconds": 3.384036,
-      "bytes": 27837,
-      "sha256": "c3785125a2ae1bf45a47a5baf24fde114b7b9572aa26b8e9f8a78558bc3d32fc",
+      "seconds": 2.539909,
+      "bytes": 21149,
+      "sha256": "858e57ada4431ece0e7362f8a15138e8c6919dce88f3b35a416b5aba59ae94b4",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -85,9 +84,9 @@
     {
       "id": "not-right",
       "text": "오른쪽으로 가지 말고 왼쪽으로 가세요.",
-      "seconds": 3.283719,
-      "bytes": 27001,
-      "sha256": "63db1fb6776a8c2e52144e81432c8a78635ee47e6c1769bfafae0b359cf511e6",
+      "seconds": 2.85161,
+      "bytes": 23657,
+      "sha256": "7480a71dd9f024efa26e9bc1f0a9b4d4e95b0eed1ec343823203cc430694bbe6",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -95,9 +94,9 @@
     {
       "id": "jump-right",
       "text": "울타리를 뛰어넘은 뒤, 오른쪽으로 가세요.",
-      "seconds": 3.95873,
-      "bytes": 32434,
-      "sha256": "bddd00a5ea4f0a668481b69291d95feb0db86f68ff3a898a248a54ad32e49503",
+      "seconds": 2.962585,
+      "bytes": 24493,
+      "sha256": "c43ce27e8c94edf4d620a10eb4519ed29695c2a08c11169f9bd9968e34d0d345",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -105,9 +104,9 @@
     {
       "id": "slide-left",
       "text": "몸을 숙인 다음, 왼쪽으로 가세요.",
-      "seconds": 3.499138,
-      "bytes": 28673,
-      "sha256": "574ddb827274e88cfc2435dbfb588af95430ece5e1aaf0486c54dbd3f0ffed88",
+      "seconds": 2.67737,
+      "bytes": 22194,
+      "sha256": "daac72a56b76b4e730c5fb4714ac6ccc060e2bb475e020c7290708722542fa19",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -115,9 +114,9 @@
     {
       "id": "not-left",
       "text": "왼쪽으로 가지 말고 가운데로 가세요.",
-      "seconds": 3.278866,
-      "bytes": 27001,
-      "sha256": "e7d79cf6d2a48d14a328d60d396c08d9978e0acbe54372dc5ba3a0732be49468",
+      "seconds": 2.835011,
+      "bytes": 23448,
+      "sha256": "96745e3ce710dd5b5f4c2bb1629e2c224f13b8e2a3984cc2c6639b183f295409",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -125,9 +124,9 @@
     {
       "id": "right-slide",
       "text": "오른쪽으로 간 다음, 표지판 아래로 지나가세요.",
-      "seconds": 4.463855,
-      "bytes": 36405,
-      "sha256": "ab4314dab4902568b119fa184ec530e7eb9b54445499db3b24e246f0e2b4437b",
+      "seconds": 3.375238,
+      "bytes": 27837,
+      "sha256": "1e56294c5c2095076761751032713b2333c26d19fab5d8af6965581a9c7d5390",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -135,9 +134,9 @@
     {
       "id": "jump-stay",
       "text": "한 번 뛰어넘고, 다음 표시선에서는 뛰지 마세요.",
-      "seconds": 4.87873,
-      "bytes": 39749,
-      "sha256": "730c6ea96fe6292f4e5cc25f704e3bc313a3e84e1ae23478841acaf38ab04382",
+      "seconds": 3.408889,
+      "bytes": 28046,
+      "sha256": "82735ad65318ce81e336ba76821eff6b4deaf5ae5fa018fe3f068c328b77fff6",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -145,9 +144,9 @@
     {
       "id": "right-middle",
       "text": "오른쪽으로 갔다가 가운데로 돌아오세요.",
-      "seconds": 3.54381,
-      "bytes": 29091,
-      "sha256": "54ccb2c5c69b0066affa3669e77bd1a396a801c39675738c1452110af6711e28",
+      "seconds": 2.790748,
+      "bytes": 23030,
+      "sha256": "f9a3a6185fd7463585692db0804339d11e441f8ed7fe5f4e62cc97ba2209a2a8",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -155,9 +154,9 @@
     {
       "id": "not-slide",
       "text": "이번에는 몸을 숙이지 말고 그대로 달리세요.",
-      "seconds": 3.863764,
-      "bytes": 31598,
-      "sha256": "929d55ba53cba76fcd8331deb716f6b7d4074876c9f006fc953ea718eb9235da",
+      "seconds": 3.268435,
+      "bytes": 27001,
+      "sha256": "dd53c2e51ba5abe11378f49c6bc95b5de9d221812cf8087e37358dfafb4bc0b7",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -165,9 +164,9 @@
     {
       "id": "check-star-middle",
       "text": "가운데 길에 별이 있어요. 별이 있는 길로 가세요.",
-      "seconds": 4.813651,
-      "bytes": 39331,
-      "sha256": "625837f7f2d747f632de5cce48ef943f1b34d31e7dae65ac4d11258946860a7e",
+      "seconds": 3.335283,
+      "bytes": 27419,
+      "sha256": "1c197e0d4e1d8e47131a9cf56d12338f7393b3f7304e9882941c7bae661d2bfd",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -175,9 +174,9 @@
     {
       "id": "check-wide-left",
       "text": "왼쪽 길이 넓어요. 넓은 길로 가세요.",
-      "seconds": 4.193923,
-      "bytes": 34315,
-      "sha256": "4ba9ad2591f0b64e669aa2afe0251aecc4bdf857ba98d280a1de2cb1ebe1d5fc",
+      "seconds": 2.793651,
+      "bytes": 23030,
+      "sha256": "24edccd9ea6d9e8cea1a5cb5f7406c104c98ec7ddc18512e2c4e535bb90e9eba",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -185,9 +184,9 @@
     {
       "id": "check-fence-jump",
       "text": "앞에 낮은 울타리가 있어요. 울타리를 넘어가세요.",
-      "seconds": 5.103764,
-      "bytes": 41629,
-      "sha256": "aeb6fe13459d19c65132cccc34245da02d8de5b24bd4586d8aaee96c2d0e00af",
+      "seconds": 3.458549,
+      "bytes": 28464,
+      "sha256": "201fb16c466516a1e09d8cf3dc0ae3a3d4e39ea1e6def879a3ed3dcd11d2c2a5",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -195,9 +194,9 @@
     {
       "id": "check-sign-duck",
       "text": "앞에 낮은 표지판이 있어요. 머리를 숙이고 지나가세요.",
-      "seconds": 5.438685,
-      "bytes": 44346,
-      "sha256": "8bd919c097fa4bff314d9fa680b293a2f2dc75587772b80fef959666d2c31d16",
+      "seconds": 3.580907,
+      "bytes": 29509,
+      "sha256": "69ea055a165f2168fab3802ce141c45430d8792cb77b83b69dac7f5232bd84f5",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -205,9 +204,9 @@
     {
       "id": "check-not-middle",
       "text": "가운데로 가지 말고 오른쪽으로 가세요.",
-      "seconds": 3.348753,
-      "bytes": 27628,
-      "sha256": "a665fa30b5f4a7711694f1287b5c8d5fb43886f0badb2b0f93b8c5bf978b245f",
+      "seconds": 2.965714,
+      "bytes": 24493,
+      "sha256": "2f0f2376d03f9716d79e84dbaea8e8e125055059568cc68f4e0c6fa857797d8d",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -215,9 +214,9 @@
     {
       "id": "check-no-fence",
       "text": "울타리가 없으니까 뛰지 않아도 돼요.",
-      "seconds": 3.174104,
-      "bytes": 26165,
-      "sha256": "71edf0900c6962e9a883627c11fe2c850481d576486d9280ae29d028314e20fd",
+      "seconds": 2.823356,
+      "bytes": 23448,
+      "sha256": "fe19073ace74f4f7c551d6ebe4068705640428bbad295137a1b05e8fedc93405",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -225,9 +224,9 @@
     {
       "id": "check-high-sign",
       "text": "표지판이 높아서 숙이지 않아도 돼요.",
-      "seconds": 3.263946,
-      "bytes": 26792,
-      "sha256": "e6e213cb828cd563e8eab08c6243b3005573d34618bd8407c4ab134741330cbd",
+      "seconds": 2.650068,
+      "bytes": 21985,
+      "sha256": "6a2592f2bbb15628d1b7f4b5f8fe4fd5e4123330b84df227e153de165d81984d",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -235,9 +234,9 @@
     {
       "id": "check-not-left",
       "text": "왼쪽으로 가지 마세요. 오른쪽 길이 좋아요.",
-      "seconds": 4.333787,
-      "bytes": 35360,
-      "sha256": "d2349faf32004559a623c32213099632a5738f1e9c72d62c3b5a59363aed1db4",
+      "seconds": 3.041905,
+      "bytes": 25120,
+      "sha256": "a3bd4994520f169ef74fe4d6935bd7ae6dc72fab19761b11b071c2f5535bf809",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -245,9 +244,9 @@
     {
       "id": "check-duck-jump",
       "text": "먼저 몸을 숙이고, 그다음에 울타리를 뛰어넘으세요.",
-      "seconds": 4.838821,
-      "bytes": 39540,
-      "sha256": "412a8544d182a0ef1ae18fc02aa9e042d8896d62c6d56ae5356a951a460ed221",
+      "seconds": 3.714966,
+      "bytes": 30554,
+      "sha256": "972d316869f4f05fa82a700a1c062adb9b4119f003c4f443ff1246855449b5e4",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -255,9 +254,9 @@
     {
       "id": "check-middle-left",
       "text": "가운데로 간 다음, 왼쪽으로 가세요.",
-      "seconds": 3.573968,
-      "bytes": 29300,
-      "sha256": "87c430102b4b07b4d16f4275f339cb6c07cf70d35c9f463474037f0f02067179",
+      "seconds": 2.713107,
+      "bytes": 22403,
+      "sha256": "a795bc87f19aa05b50d7386dd84cbaf9d7ba190cbf0a8b4757381c91c2d151d0",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -265,9 +264,9 @@
     {
       "id": "check-right-before-jump",
       "text": "뛰어넘기 전에 오른쪽으로 가세요.",
-      "seconds": 3.203991,
-      "bytes": 26374,
-      "sha256": "6572ebd9659c0560c7d15a6a336a6d205fb4b699dab1130a6a7989d4bfec0923",
+      "seconds": 2.57746,
+      "bytes": 21358,
+      "sha256": "4f2a759ea3aa3a04517a49323cc6cee958cf3b31bc49371f44e4074de99de8e1",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -275,13 +274,13 @@
     {
       "id": "check-left-run",
       "text": "왼쪽으로 간 다음, 그냥 달리세요.",
-      "seconds": 3.674014,
-      "bytes": 30136,
-      "sha256": "66c5124c4cd6129f3759fb4acc691fd42fb9eb536c88e248f1defa125a51cda0",
+      "seconds": 2.62907,
+      "bytes": 21776,
+      "sha256": "a9442b1e03455582821e72ac3871ecc8b0cbf168f5348d6408535de4ff201add",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
     }
   ],
-  "totalBytes": 847142
+  "totalBytes": 659056
 }

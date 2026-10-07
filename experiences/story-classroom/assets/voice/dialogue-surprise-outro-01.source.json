@@ -1,8 +1,15 @@
 {
-  "sourceKey": "12521e166eaaf41e509f289b4b64aa67780d020c48b7909b14e9bc8a64847379",
+  "sourceKey": "6779b55a13132e28b506e3801c68005f",
   "text": "파티 준비 완료. …선생님, 생일 축하합니다.",
   "speaker": "marin",
-  "voice": "ko-KR-InJoonNeural",
-  "rate": "-10%",
-  "pitch": "-4Hz"
+  "voice": "한결",
+  "voiceId": "tc_677f2aa4a854ddffa0ebda89",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.9,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

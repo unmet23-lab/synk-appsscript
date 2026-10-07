@@ -1,8 +1,15 @@
 {
-  "sourceKey": "d2fdd3c419339f47351cfac609f5fd1a88647b0a3fbe44842e3f3a235a5c311a",
+  "sourceKey": "b1568a2d35491466445638039d052d8c",
   "text": "친구와 물건을 먼저 골라 주세요.",
   "speaker": "teacher",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-7%",
-  "pitch": "-2Hz"
+  "voice": "효은",
+  "voiceId": "tc_691d49ccc47926d741f15913",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

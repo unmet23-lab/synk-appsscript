@@ -1,8 +1,15 @@
 {
-  "sourceKey": "63a943d7c698b3fb6003a5e02df42395e861019e7bcbbb01b762ebd98a1e4306",
+  "sourceKey": "f580e994b6ef3d28c55c0170ea30db63",
   "text": "이게 다 뭐야!",
   "speaker": "teacher",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-7%",
-  "pitch": "-2Hz"
+  "voice": "효은",
+  "voiceId": "tc_691d49ccc47926d741f15913",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

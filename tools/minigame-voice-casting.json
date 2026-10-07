@@ -391,19 +391,19 @@
       ],
       "character": "힘이 넘치는 아홉 살 남자아이",
       "voice": {
-        "id": "tc_67d2346b8572120c4aa63e33",
-        "name": "세우",
-        "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/251017112921_67d2346b8572120c4aa63e33_SSFM-V3_0.mp3",
-        "measure": "음높이 302Hz · 밝기 1380Hz · 억양 폭 6.4반음 · 빠르기 6.47 · 게임·애니",
-        "why": "게임·애니용 — 남성 가운데 가장 높은 쪽(302Hz), 「나라고 당하고 사는 게 좋겠냐?」 소년 말투"
+        "id": "tc_5c547545fcfee90007fed459",
+        "name": "주원",
+        "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142352_5c547545fcfee90007fed459_SSFM-V3_0.mp3",
+        "measure": "음높이 296Hz · 밝기 1783Hz · 억양 폭 8.1반음 · 빠르기 6.38 · 숏폼",
+        "why": "숏폼용 — 높고(296Hz) 「씩씩한 에너지」 말투"
       },
       "alternates": [
         {
-          "id": "tc_5c547545fcfee90007fed459",
-          "name": "주원",
-          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142352_5c547545fcfee90007fed459_SSFM-V3_0.mp3",
-          "measure": "음높이 296Hz · 밝기 1783Hz · 억양 폭 8.1반음 · 빠르기 6.38 · 숏폼",
-          "why": "숏폼용 — 높고(296Hz) 「씩씩한 에너지」 말투"
+          "id": "tc_67d2346b8572120c4aa63e33",
+          "name": "세우",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/251017112921_67d2346b8572120c4aa63e33_SSFM-V3_0.mp3",
+          "measure": "음높이 302Hz · 밝기 1380Hz · 억양 폭 6.4반음 · 빠르기 6.47 · 게임·애니",
+          "why": "게임·애니용 — 남성 가운데 가장 높은 쪽(302Hz), 「나라고 당하고 사는 게 좋겠냐?」 소년 말투"
         },
         {
           "id": "tc_6359e7ea258d1b6dc3abe6e6",
@@ -413,7 +413,11 @@
           "why": "애니용 — 「오잉 오잉 이거 머지」 높고 어린 캐릭터"
         }
       ],
-      "why": "옛 판 설정 「an energetic nine-year-old boy with a bright child voice」. 아이 목소리가 목록에 따로 없어 높은 남성 캐릭터 목소리."
+      "why": "옛 판 설정 「an energetic nine-year-old boy with a bright child voice」. 아이 목소리가 목록에 따로 없어 높은 남성 캐릭터 목소리.",
+      "chosen": {
+        "at": "2026-10-07T11:00:24.505Z",
+        "note": "화면에서 고름(귀 확인 뒤)"
+      }
     },
     "penguin": {
       "label": "펭귄(남콩이, 24살)",
@@ -592,29 +596,33 @@
       ],
       "character": "신나고 상냥한 20대 초반",
       "voice": {
-        "id": "tc_6731b36bd944a485bc4070fd",
-        "name": "민주",
-        "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141458_6731b36bd944a485bc4070fd_SSFM-V3_0.mp3",
-        "measure": "음높이 296Hz · 밝기 1047Hz · 억양 폭 11.1반음 · 빠르기 6.81 · 대화·숏폼",
-        "why": "대화·숏폼용 — 「팬들이 다 같이 춤추기 시작하는데」 신난 말투"
+        "id": "tc_6335061c3c90cf9e5b6b9fff",
+        "name": "다나",
+        "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250930110847_6335061c3c90cf9e5b6b9fff_SSFM-V3_0.mp3",
+        "measure": "음높이 311Hz · 밝기 1309Hz · 억양 폭 13.3반음 · 빠르기 6.44 · 숏폼",
+        "why": "숏폼용 — 높고 환하다"
       },
       "alternates": [
+        {
+          "id": "tc_6731b36bd944a485bc4070fd",
+          "name": "민주",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141458_6731b36bd944a485bc4070fd_SSFM-V3_0.mp3",
+          "measure": "음높이 296Hz · 밝기 1047Hz · 억양 폭 11.1반음 · 빠르기 6.81 · 대화·숏폼",
+          "why": "대화·숏폼용 — 「팬들이 다 같이 춤추기 시작하는데」 신난 말투"
+        },
         {
           "id": "tc_65d6f8ee2b58da07b6284a56",
           "name": "혜나",
           "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142839_65d6f8ee2b58da07b6284a56_SSFM-V3_0.mp3",
           "measure": "음높이 308Hz · 밝기 1094Hz · 억양 폭 10.8반음 · 빠르기 7.29 · 광고",
           "why": "광고용 — 빠르고 재치 있다"
-        },
-        {
-          "id": "tc_6335061c3c90cf9e5b6b9fff",
-          "name": "다나",
-          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250930110847_6335061c3c90cf9e5b6b9fff_SSFM-V3_0.mp3",
-          "measure": "음높이 311Hz · 밝기 1309Hz · 억양 폭 13.3반음 · 빠르기 6.44 · 숏폼",
-          "why": "숏폼용 — 높고 환하다"
         }
       ],
-      "why": "옛 판 설정 「an excited, sweet young woman in her early twenties」."
+      "why": "옛 판 설정 「an excited, sweet young woman in her early twenties」.",
+      "chosen": {
+        "at": "2026-10-07T11:00:24.598Z",
+        "note": "화면에서 고름(귀 확인 뒤)"
+      }
     }
   },
   "games": {

@@ -1,8 +1,15 @@
 {
-  "sourceKey": "29297773ca2f42e1d73cf177c0485af4a78ab93576351d03e6ad11af5f624381",
+  "sourceKey": "ccd17c2529235836528f0c6a091c43de",
   "text": "순서 확인. 먼저 케이크부터. 그다음 리본.",
   "speaker": "marin",
-  "voice": "ko-KR-InJoonNeural",
-  "rate": "-10%",
-  "pitch": "-4Hz"
+  "voice": "한결",
+  "voiceId": "tc_677f2aa4a854ddffa0ebda89",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.9,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

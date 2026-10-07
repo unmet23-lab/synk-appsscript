@@ -1,8 +1,15 @@
 {
-  "sourceKey": "7eaef8ab10ecb866394b601614be431db05a13eb15d9024ec5cee087be833a08",
+  "sourceKey": "584fc7a9cafa042a4113d68c293caa61",
   "text": "우와! 교실이 파티 장소가 됐어!",
   "speaker": "mongle",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-3%",
-  "pitch": "+8Hz"
+  "voice": "선하",
+  "voiceId": "tc_649408f268febb61286eec85",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

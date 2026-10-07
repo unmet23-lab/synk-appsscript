@@ -1,8 +1,15 @@
 {
-  "sourceKey": "1272eca09a2f919c24d3be754a1870efa9debd11b8de70e3d028c1cea29a4911",
+  "sourceKey": "fc760e5d9622f8da34bb7c807852bc31",
   "text": "확인. 이미 완료한 임무.",
   "speaker": "marin",
-  "voice": "ko-KR-InJoonNeural",
-  "rate": "-10%",
-  "pitch": "-4Hz"
+  "voice": "한결",
+  "voiceId": "tc_677f2aa4a854ddffa0ebda89",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.9,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

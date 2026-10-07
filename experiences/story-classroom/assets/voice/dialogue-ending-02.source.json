@@ -1,8 +1,15 @@
 {
-  "sourceKey": "e73de45dee7351675f47f9bd418a1e877a608c663db7c5176a62bd9349415ed1",
+  "sourceKey": "67a76dd5b5b305a42ef4482762bf5fd1",
   "text": "내 작전은 완벽했지. …네가 도와줘서 다행이야.",
   "speaker": "kkamong",
-  "voice": "ko-KR-HyunsuMultilingualNeural",
-  "rate": "-4%",
-  "pitch": "+3Hz"
+  "voice": "몽군",
+  "voiceId": "tc_6731b32e075b04a9446441a0",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

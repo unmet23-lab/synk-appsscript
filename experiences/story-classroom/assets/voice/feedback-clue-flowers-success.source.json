@@ -1,8 +1,15 @@
 {
-  "sourceKey": "a71001d23f15bd0f44d1996b3e2d635564f61508254b55c8cf11be02c2059baf",
+  "sourceKey": "3790ea6da962bf16ad764d2a7800dd13",
   "text": "임무 완료. 꽃, 책상에 도착.",
   "speaker": "marin",
-  "voice": "ko-KR-InJoonNeural",
-  "rate": "-10%",
-  "pitch": "-4Hz"
+  "voice": "한결",
+  "voiceId": "tc_677f2aa4a854ddffa0ebda89",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.9,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

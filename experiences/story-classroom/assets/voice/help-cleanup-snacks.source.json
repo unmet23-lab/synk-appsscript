@@ -1,8 +1,15 @@
 {
-  "sourceKey": "3e15e13785cdffa71f42a282b3c5a5f722f7d119f52c001807783476f518ed6f",
+  "sourceKey": "ee52fa63461b23b4f7674dfeac782611",
   "text": "과자를 옮기는 친구는 마린이에요. 과자가 갈 곳은 상자 안이에요.",
   "speaker": "teacher",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-7%",
-  "pitch": "-2Hz"
+  "voice": "효은",
+  "voiceId": "tc_691d49ccc47926d741f15913",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

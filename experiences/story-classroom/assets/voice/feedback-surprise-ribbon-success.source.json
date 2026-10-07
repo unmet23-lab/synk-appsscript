@@ -1,8 +1,15 @@
 {
-  "sourceKey": "a0907d3b96cfee2833c07bb705b38578cb5063708e4d1a07a2628a8b780ef5e2",
+  "sourceKey": "23aba502f378d8bf1c3b2c64094dc48e",
   "text": "임무 완료. 리본, 칠판에 도착.",
   "speaker": "marin",
-  "voice": "ko-KR-InJoonNeural",
-  "rate": "-10%",
-  "pitch": "-4Hz"
+  "voice": "한결",
+  "voiceId": "tc_677f2aa4a854ddffa0ebda89",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.9,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

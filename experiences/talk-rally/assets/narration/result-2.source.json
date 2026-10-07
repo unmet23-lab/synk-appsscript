@@ -1,9 +1,14 @@
 {
-  "sourceKey": "b2b1e1ab33dc7e0ab0adba6320a3a84514a781bc939efb03aac65ea6d2c3a7e2",
+  "sourceKey": "f90178a7f8160cb3c04fbad83609ccdb",
   "text": "아주 잘했어요!",
-  "loudnorm": "measured I -> volume to -20.5 LUFS (linear)",
-  "pause": "silenceremove=stop_periods=-1:stop_duration=0.25:stop_threshold=-40dB:stop_silence=0.28",
-  "voice": "ko-KR-InJoonNeural",
-  "rate": "-6%",
-  "pitch": "+0Hz"
+  "voice": "서현",
+  "voiceId": "tc_69f2e455ea79fd197aa0476f",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.94,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "몽글: 지금 generate-voice.py와 같은 앞뒤 자르기 + loudnorm I=-18 TP=-2.5 LRA=7 · 안내: generate-narration.py와 같은 자르기·쉼 0.28초 + 재어서 -20.5 LUFS → MP3 mono 24kHz 96kbps"
 }
