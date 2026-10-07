@@ -403,6 +403,83 @@ test('YouTube 공개 전환은 근거를 요구하고 영상·재생목록의 �
   assert.equal(responses.length, 0);
 });
 
+function makePublicFixture(previous) {
+  const dir = tempDir();
+  const accountsFile = path.join(dir, 'accounts.json');
+  fs.writeFileSync(accountsFile, JSON.stringify({ accounts: { 'test-yt': { platform: 'youtube', publisher: 'direct-api', expectedChannelId: 'channel-1', madeForKids: false } } }));
+  const planFile = path.join(dir, '계획.json');
+  fs.writeFileSync(planFile, JSON.stringify({ accountsFile: path.relative(REPO_ROOT, accountsFile).replaceAll('\\', '/'), items: [{ id: '01-test-yt', accountKey: 'test-yt', platform: 'youtube' }] }));
+  fs.writeFileSync(resultFileFor(planFile), JSON.stringify({ items: { '01-test-yt': { id: 'video-1', url: 'https://www.youtube.com/watch?v=video-1', playlist: { id: 'pl-1', url: 'https://www.youtube.com/playlist?list=pl-1' }, ...previous } } }));
+  return planFile;
+}
+
+test('YouTube 예약 공개: 영상은 비공개+publishAt로 예약하고 재생목록은 지금 공개하며, 합성 표시를 켜고 401은 다시 묻는다', async () => {
+  const planFile = makePublicFixture({ state: 'private' });
+  const { youtubeMakePublic } = require('../tools/lib/sns-publisher.js');
+  const credential = () => ({ clientId: 'id', clientSecret: 'secret', refreshToken: 'refresh' });
+  const now = () => new Date('2026-10-08T05:00:00+09:00');
+  await assert.rejects(() => youtubeMakePublic(planFile, '01-test-yt', '승인', { readCredentialImpl: credential, now, publishAt: '2026-10-09T08:00:00' }), /시간대/);
+  await assert.rejects(() => youtubeMakePublic(planFile, '01-test-yt', '승인', { readCredentialImpl: credential, now, publishAt: '2026-10-08T05:03:00+09:00' }), /지났거나/);
+  const calls = [];
+  const authError = () => new Response(JSON.stringify({ error: { code: 401, message: 'Request had invalid authentication credentials.', errors: [{ reason: 'authError' }] } }), { status: 401 });
+  const responses = [
+    new Response(JSON.stringify({ access_token: 'access', scope: 'scope' }), { status: 200 }),
+    authError(),
+    new Response(JSON.stringify({ items: [{ id: 'channel-1', snippet: { title: 'SYNK LAB' } }] }), { status: 200 }),
+    new Response(JSON.stringify({ items: [{ id: 'video-1', status: { uploadStatus: 'processed', privacyStatus: 'private', license: 'youtube', embeddable: true, publicStatsViewable: true, selfDeclaredMadeForKids: false } }] }), { status: 200 }),
+    authError(),
+    new Response(JSON.stringify({ id: 'video-1' }), { status: 200 }),
+    new Response(JSON.stringify({ items: [{ id: 'pl-1', snippet: { title: '한글 초보단계', description: '설명' }, status: { privacyStatus: 'private' } }] }), { status: 200 }),
+    new Response(JSON.stringify({ id: 'pl-1' }), { status: 200 }),
+  ];
+  const { item } = await youtubeMakePublic(planFile, '01-test-yt', '유호님 「10/9 오전 8시 예약」', {
+    readCredentialImpl: credential, now, publishAt: '2026-10-09T08:00:00+09:00', syntheticMedia: true, retry401: { retries: 5, delayMs: 0 },
+    fetchImpl: async (url, options) => { calls.push({ url, options }); return responses.shift(); },
+  });
+  const puts = calls.filter((c) => c.options?.method === 'PUT');
+  assert.equal(puts.length, 3); // 영상 예약(401 뒤 다시) 두 번 + 재생목록 한 번
+  assert.deepEqual(JSON.parse(puts[1].options.body), { id: 'video-1', status: {
+    privacyStatus: 'private', publishAt: '2026-10-08T23:00:00.000Z', selfDeclaredMadeForKids: false,
+    embeddable: true, license: 'youtube', publicStatsViewable: true, containsSyntheticMedia: true,
+  } });
+  assert.deepEqual(JSON.parse(puts[2].options.body).status, { privacyStatus: 'public' });
+  assert.equal(item.state, 'scheduled');
+  assert.equal(item.publishAt, '2026-10-08T23:00:00.000Z');
+  assert.equal(item.scheduledAt, '2026-10-07T20:00:00.000Z');
+  assert.equal(item.containsSyntheticMedia, true);
+  assert.equal(item.publicNote, '유호님 「10/9 오전 8시 예약」');
+  assert.equal(item.playlist.visibility, 'public');
+  assert.equal(responses.length, 0);
+});
+
+test('YouTube 예약 공개: 이미 공개된 영상은 예약하지 않고, 예약해 둔 항목을 다시 --공개하면 바뀐 것만 고치고 처음 근거를 남긴다', async () => {
+  const { youtubeMakePublic } = require('../tools/lib/sns-publisher.js');
+  const credential = () => ({ clientId: 'id', clientSecret: 'secret', refreshToken: 'refresh' });
+  const now = () => new Date('2026-10-09T09:00:00+09:00');
+  const publicVideo = () => new Response(JSON.stringify({ items: [{ id: 'video-1', status: { privacyStatus: 'public', license: 'youtube', embeddable: true, publicStatsViewable: true, selfDeclaredMadeForKids: false, containsSyntheticMedia: true } }] }), { status: 200 });
+  const publicList = () => new Response(JSON.stringify({ items: [{ id: 'pl-1', snippet: { title: '한글 초보단계' }, status: { privacyStatus: 'public' } }] }), { status: 200 });
+
+  const early = makePublicFixture({ state: 'private' });
+  const refused = [...ytAuth(), publicVideo()];
+  await assert.rejects(() => youtubeMakePublic(early, '01-test-yt', '승인', {
+    readCredentialImpl: credential, now, publishAt: '2026-10-10T08:00:00+09:00', fetchImpl: async () => refused.shift(),
+  }), /이미 public/);
+
+  const planFile = makePublicFixture({ state: 'scheduled', publishAt: '2026-10-08T23:00:00.000Z', publicNote: '처음 승인', containsSyntheticMedia: true });
+  const calls = [];
+  const responses = [...ytAuth(), publicVideo(), publicList()];
+  const { item } = await youtubeMakePublic(planFile, '01-test-yt', '공개 확인', {
+    readCredentialImpl: credential, now, syntheticMedia: true,
+    fetchImpl: async (url, options) => { calls.push({ url, options }); return responses.shift(); },
+  });
+  assert.equal(calls.some((c) => c.options?.method === 'PUT'), false);
+  assert.equal(item.state, 'public');
+  assert.equal(item.publicNote, '처음 승인');
+  assert.equal(item.publicConfirmNote, '공개 확인');
+  assert.equal(item.publishAt, '2026-10-08T23:00:00.000Z');
+  assert.equal(responses.length, 0);
+});
+
 test('Telegram 발행기는 사진과 긴 본문을 누락 없이 나눠 보낸다', async () => {
   const dir = tempDir();
   const image = path.join(dir, 'upload-01.jpg');
