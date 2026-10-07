@@ -11,6 +11,9 @@ const HOME=process.env.USERPROFILE || 'C:/Users/q1212';
 const PROGRAMS=process.env.ProgramFiles || 'C:/Program Files';
 const firstExisting=paths=>paths.find(p=>existsSync(p)) || null;
 const quotePS=value=>"'"+value.replaceAll("'","''")+"'";
+// The object particle follows a Korean name's last syllable (Unity 게임을, Unity 프로젝트를). The one
+// English name, Epic Games Launcher, is read as 런처 like the page copy ("Launcher가"), so it takes 를.
+const objectParticle=name=>{const c=name.charCodeAt(name.length-1)-0xac00;return c>=0&&c<=11171&&c%28?'을':'를';};
 const RENDER_VIEWS=[['01-garden','정원 산책길'],['02-mongle','몽글의 가까운 재질'],['03-terrace','전망대의 먼 풍경']];
 
 // Report contents can attest to a frame, but can never choose a served path.
@@ -154,7 +157,7 @@ export function createLauncher({port=5195,resolve=resolveEngine,open=openNative}
         busy[engine]=true;
         try {
           await open(target);
-          return send(res,200,{ok:true,message:`${target.opened}을 열었어요. Windows의 새 창을 확인해 주세요. 게임 실행 완료를 뜻하지는 않아요.`});
+          return send(res,200,{ok:true,message:`${target.opened}${objectParticle(target.opened)} 열었어요. Windows의 새 창을 확인해 주세요. 게임 실행 완료를 뜻하지는 않아요.`});
         } catch(error) {return send(res,409,{ok:false,message:error.message});}
         finally {busy[engine]=false;}
       } catch {return send(res,400,{ok:false,message:'요청을 읽지 못했어요. 다시 눌러 주세요.'});}
