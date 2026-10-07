@@ -141,20 +141,78 @@ test('an import with no canonical source stops before anything is written', t =>
   assert.equal(fs.existsSync(path.join(website, 'dist')), false);
 });
 
-test('default keeps both consumers, and validates all targets before any mutation', t => {
+test('default checks and syncs Talk without recreating the retired website consumer', t => {
   const { talk, website, run } = fixture(t);
+  fs.writeFileSync(path.join(website, 'existing-page.html'), '<p>current website</p>');
+  const before = run('--check');
+  assert.notEqual(before.status, 0, 'Talk has not been synced yet');
+  assert.match(before.stderr, /talk\/lib\/atlas\/engine\.js: missing/);
+  assert.doesNotMatch(before.stderr, /website/);
+  assert.equal(fs.existsSync(path.join(talk, 'lib')), false, 'check writes nothing');
+  assert.equal(fs.existsSync(path.join(website, 'dist')), false);
+  const first = run();
+  assert.equal(first.status, 0, first.stderr);
+  const verified = run('--check');
+  assert.equal(verified.status, 0, verified.stderr);
+  assert.match(verified.stdout, /verified talk/);
+  assert.equal(fs.existsSync(path.join(website, 'dist')), false, 'a retired consumer is not recreated');
+  assert.equal(fs.readFileSync(path.join(website, 'existing-page.html'), 'utf8'), '<p>current website</p>');
+  fs.appendFileSync(path.join(talk, 'lib/atlas/engine.js'), '\n// drift');
+  const drift = run('--check');
+  assert.notEqual(drift.status, 0);
+  assert.match(drift.stderr, /talk\/lib\/atlas\/engine\.js: differs/);
+  assert.match(fs.readFileSync(path.join(talk, 'lib/atlas/engine.js'), 'utf8'), /drift/, 'check does not fix drift');
+  assert.equal(fs.existsSync(path.join(website, 'dist')), false);
+  // A missing sibling checkout also has no bearing on the current default consumer.
   fs.unlinkSync(path.join(website, 'package.json'));
-  assert.notEqual(run().status, 0);
-  assert.equal(fs.existsSync(path.join(talk, 'lib')), false);
-  fs.writeFileSync(path.join(website, 'package.json'), '{}');
   assert.equal(run().status, 0);
-  assert.deepEqual(fs.readdirSync(path.join(website, 'dist/try/letter/atlas')).sort(), ['engine.js', 'experiences.js']);
   assert.equal(run('--check').status, 0);
+  assert.equal(fs.existsSync(path.join(website, 'dist')), false);
 });
 
-test('website sync copies only its imports and preserves files outside that consumer contract', t => {
+test('default leaves even an old website checkout and its owned copies untouched', t => {
+  const { website, run } = fixture(t);
+  fs.writeFileSync(path.join(website, 'sync-letter-copy.mjs'), "throw new Error('not a default consumer');\n");
+  const atlas = path.join(website, 'dist/try/letter/atlas');
+  fs.mkdirSync(atlas, { recursive: true });
+  fs.writeFileSync(path.join(atlas, 'engine.js'), '// old checkout copy');
+  fs.writeFileSync(path.join(atlas, 'local-custom.js'), '// existing consumer work');
+  assert.equal(run().status, 0);
+  assert.equal(run('--check').status, 0);
+  assert.deepEqual(fs.readdirSync(atlas).sort(), ['engine.js', 'local-custom.js']);
+  assert.equal(fs.readFileSync(path.join(atlas, 'engine.js'), 'utf8'), '// old checkout copy');
+  assert.equal(fs.readFileSync(path.join(atlas, 'local-custom.js'), 'utf8'), '// existing consumer work');
+});
+
+test('explicit retired website selection reports the absent consumer before any mutation', t => {
+  const { talk, website, run } = fixture(t);
+  fs.writeFileSync(path.join(website, 'existing-page.html'), '<p>current website</p>');
+  for (const args of [[], ['--check'], ['--consumer', 'talk'], ['--consumer', 'talk', '--check']]) {
+    const result = run(...args, '--consumer', 'website');
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Retired website letter consumer: .*sync-letter-copy\.mjs is absent/);
+    assert.match(result.stderr, /No files were changed/);
+    assert.doesNotMatch(result.stdout, /verified website/);
+    assert.equal(fs.existsSync(path.join(talk, 'lib')), false, 'every selected consumer is validated first');
+    assert.equal(fs.existsSync(path.join(website, 'dist')), false);
+    assert.equal(fs.readFileSync(path.join(website, 'existing-page.html'), 'utf8'), '<p>current website</p>');
+  }
+});
+
+test('multiple explicit consumers still validate all checkout roots before any mutation', t => {
+  const { talk, website, run } = fixture(t);
+  fs.unlinkSync(path.join(website, 'package.json'));
+  const result = run('--consumer', 'talk', '--consumer', 'website');
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Missing consumer:/);
+  assert.equal(fs.existsSync(path.join(talk, 'lib')), false);
+  assert.equal(fs.existsSync(path.join(website, 'dist')), false);
+});
+
+test('explicit legacy website sync copies only its imports and preserves files outside that consumer contract', t => {
   const { talk, website, run } = fixture(t);
   fs.unlinkSync(path.join(talk, 'package.json'));
+  fs.writeFileSync(path.join(website, 'sync-letter-copy.mjs'), '// existing legacy letter generator\n');
   const atlas = path.join(website, 'dist/try/letter/atlas');
   fs.mkdirSync(atlas, { recursive: true });
   fs.writeFileSync(path.join(atlas, 'local-custom.js'), '// existing consumer work');

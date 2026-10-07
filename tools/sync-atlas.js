@@ -9,8 +9,9 @@
  *   4. regenerates Talk's server bundles (the event validator and the account summary) with Talk's
  *      own tools/synk-server-build.js,
  *   5. writes lib/atlas/sync-manifest.json, which Talk's tests check without this repository.
- * The website letter page loads two scripts directly, so it keeps an explicit list; after a change
- * the website's own sync-letter-copy.mjs recomputes the page's cache keys (`?v=`).
+ * Talk is the default consumer. The website letter page has retired and is never recreated by
+ * default. --consumer website is only for an older checkout that still owns sync-letter-copy.mjs;
+ * that checkout's generator recomputes its letter page's cache keys (`?v=`) after a copy changes.
  * --check changes nothing and lists every difference at once (exit 1 when there is any).
  * Usage: node tools/sync-atlas.js [--check] [--consumer talk|website] */
 const fs = require('node:fs');
@@ -31,8 +32,8 @@ const MANIFEST = 'sync-manifest.json';
 const SERVER_ENTRIES = ['trail.js', 'engine.js', 'account-summary.js', 'strata/index.js', 'strata/maps/topik-i.json', 'strata/topik-i-examples.js'];
 const consumers = {
   talk: { repo: process.env.SYNK_TALK_ROOT || path.resolve(root, '../SYNK-talk'), dir: 'lib/atlas', files: talkFiles, manifest: true, server: 'tools/synk-server-build.js' },
-  // The letter page imports only these two scripts; do not publish unused modules. Its cache keys
-  // (`?v=`) hash these files, so the website's own sync-letter-copy.mjs runs after a change.
+  // Explicit legacy support only: the retired letter consumer must still own its generator.
+  // Never infer an active consumer from leftover dist files or restore the removed generator.
   website: { repo: process.env.SYNK_WEBSITE_ROOT || path.resolve(root, '../SYNK-website'), dir: 'dist/try/letter/atlas', files: () => ['engine.js', 'experiences.js'], after: 'sync-letter-copy.mjs' },
 };
 // Git normalizes these JS/JSON text files. Hash logical content so a clean Linux checkout
@@ -83,9 +84,18 @@ function talkFiles(repo) {
   return [...need].sort();
 }
 
-const targets = (selected.size ? [...selected] : Object.keys(consumers)).map(name => ({ name, ...consumers[name] }));
+const targets = (selected.size ? [...selected] : ['talk']).map(name => ({ name, ...consumers[name] }));
 // Validate every selected consumer, and what each needs, before writing any copies.
-for (const t of targets) if (!fs.existsSync(path.join(t.repo, 'package.json'))) throw new Error('Missing consumer: ' + t.repo);
+for (const t of targets) {
+  if (!fs.existsSync(path.join(t.repo, 'package.json'))) throw new Error('Missing consumer: ' + t.repo);
+  if (t.after) {
+    const generator = path.join(t.repo, t.after);
+    if (!fs.existsSync(generator) || !fs.statSync(generator).isFile()) {
+      console.error(`Retired website letter consumer: ${generator} is absent. No files were changed. The default consumer is Talk; --consumer website requires an existing legacy letter checkout.`);
+      process.exit(1);
+    }
+  }
+}
 for (const t of targets) t.need = t.files(t.repo);
 const problems = [];
 for (const t of targets) {
@@ -107,7 +117,7 @@ for (const t of targets) {
     console.log(`synced ${label}/${name} ${hashes[name].slice(0, 12)}`);
   }
   // The consumer's own step that depends on these files (the website's cache keys).
-  if (t.after && changed && fs.existsSync(path.join(t.repo, t.after))) {
+  if (t.after && changed) {
     const step = spawnSync(process.execPath, [t.after], { cwd: t.repo, encoding: 'utf8' });
     if (step.status === 0) console.log(`ran ${path.basename(t.repo)}/${t.after}`);
     else problems.push(`${path.basename(t.repo)}/${t.after} failed after the copy: ${(step.stderr || step.stdout).trim().split('\n').at(-1)}`);
