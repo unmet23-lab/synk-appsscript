@@ -51,7 +51,7 @@ node tools/build-hangul-stage.js [--check]    # 한글 층 지도와 학습 묶�
 
 ### 노래
 
-- 곡은 Suno Premier v6로 Claude가 프롬프트를 짜서 만들었다(10-04 유호님 「노래는 니가 프롬프트 짜서 직접 제작해줘」). 곡마다 두 버전을 만들어 넷 다 Suno 공식 내려받기(MP3 192kbps)로 받고(이번 달 내려받기 43 → 39), 받아쓰기(faster-whisper large-v3-turbo)로 가사가 다 불린 쪽을 골랐다: 모음 댄스 `399224fa`, 그 아 가 `61cb6e8e`. 원본 넷은 저장소 밖 `Documents/synk-vendor/hangul-songs/`에, 쓰는 둘은 `assets/songs/`에 바이트 그대로 있다([assets/provenance.json](assets/provenance.json)).
+- 곡은 Suno Premier v6로 Claude가 프롬프트를 짜서 만들었다(10-04 유호님 「노래는 니가 프롬프트 짜서 직접 제작해줘」). 곡마다 두 버전을 만들어 넷 다 Suno 공식 내려받기(MP3 192kbps)로 받고(이번 달 내려받기 43 → 39), 받아쓰기(faster-whisper large-v3-turbo)로 가사가 다 불린 쪽을 골랐다: 모음 댄스 `399224fa`, 그 아 가 `61cb6e8e`. 원본 넷은 저장소 밖 `Documents/synk-vendor/hangul-songs/`에, 쓰는 둘은 `assets/songs/`에 있다([assets/provenance.json](assets/provenance.json)) — 그 아 가는 바이트 그대로, 모음 댄스는 10-07에 둘째 후렴 첫 줄(36초쯤) 발음만 Suno 편집기 구간 바꾸기로 고친 판이다([songs/README.md](songs/README.md#만든-기록)).
 - 시각 표([songs.mjs](songs.mjs))는 받아쓰기의 낱말 시각으로 줄의 시작을 잡고 후렴은 줄 안에서 고르게 나눴다. 노래 받아쓰기는 거칠어 ±0.2초쯤 어긋날 수 있어 귀로 듣고 숫자를 고친다. 소리 시작점(온셋)은 16분음표 간격의 박자 소리에 묻혀 목소리만 따로 잡을 수 없었다.
 - 받아쓰기로 보면 모음 댄스는 어/여가 오/요처럼 적히는 곳이 있고 그 아 가의 후렴 끝 두 번은 「까나나나」처럼 적혔지만, 10-05 유호님이 들어 보고 「괜찮아」라고 했다(MVP).
 - 단독 미리보기 서버([server.mjs](server.mjs))도 학습 허브 서버처럼 범위 요청(206)을 받는다 — 받지 않으면 브라우저가 노래를 옮길 수 없는 소리로 보고 재생이 멈췄다(헤드리스 점검에서 발견).
