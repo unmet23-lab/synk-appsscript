@@ -77,8 +77,9 @@ function 환경(props = {}) {
   const 트리거 = [];
   const 기록 = { 만든트리거: [], 지운트리거: [], 웹훅: [] };
   const 만들기 = (name) => {
-    const b = { timeBased: () => b, atHour: () => b, everyDays: () => b,
-      create: () => { const t = { getHandlerFunction: () => name }; 트리거.push(t); 기록.만든트리거.push(name); return t; } };
+    let minutes;
+    const b = { timeBased: () => b, everyMinutes: n => { minutes = n; return b; },
+      create: () => { const t = { getHandlerFunction: () => name, getEventType: () => 'CLOCK', minutes }; 트리거.push(t); 기록.만든트리거.push(name); return t; } };
     return b;
   };
   const ctx = vm.createContext({
@@ -90,6 +91,7 @@ function 환경(props = {}) {
     },
     LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock() {} }) },
     ScriptApp: {
+      EventType: { CLOCK: 'CLOCK' },
       getProjectTriggers: () => 트리거.slice(),
       deleteTrigger: (t) => { 트리거.splice(트리거.indexOf(t), 1); 기록.지운트리거.push(t.getHandlerFunction()); },
       newTrigger: 만들기,
@@ -98,7 +100,7 @@ function 환경(props = {}) {
   vm.runInContext(읽기('Code.js'), ctx);
   ctx.synkbrief_웹훅_ = (e, body) => { 기록.웹훅.push(body); return body && body.object === 'instagram' ? { ok: true, channel: 'synkbrief' } : null; };
   ctx.synkbrief정기점검 = () => {};
-  const 옛트리거 = (names) => names.forEach((n) => 트리거.push({ getHandlerFunction: () => n }));
+  const 옛트리거 = (names) => names.forEach((n) => 트리거.push({ getHandlerFunction: () => n, getEventType: () => 'CLOCK' }));
   return { ctx, 트리거, 기록, 옛트리거 };
 }
 
@@ -130,8 +132,8 @@ test('doGet은 검증 토큰이 맞을 때만 Meta 확인 값을 돌려준다', 
 const 옛트리거이름 = ['parentSweep', 'dailyBackupJob', 'morningJobs', 'sendMorningDigestJob', 'calcAllJob', 'momentSweepJob',
   'nightJobs', 'weeklyJobs', 'monthlyJobs', 'monthlyReportCardsJob', 'monthlyReportJob', '교재연동Nightly', 'onConsultEdit', 'onHwFeedbackEdit'];
 
-test('옛 학원 트리거가 깨어나면 모두 지우고 synkbrief 점검 트리거 하나만 남긴다', () => {
-  const { ctx, 트리거, 기록, 옛트리거 } = 환경();
+test('명시 활성화·읽기 키가 있으면 옛 트리거를 정리하고 15분 운영 점검 하나를 복구한다', () => {
+  const { ctx, 트리거, 기록, 옛트리거 } = 환경({ SYNKBRIEF_OPS_MONITOR_ENABLED: '1', SYNKBRIEF_OPS_READ_KEY: 'test-only-ops-key-abcdefghijklmnopqrstuvwxyz' });
   옛트리거(옛트리거이름);
   ctx.parentSweep();
   assert.deepEqual(트리거.map((t) => t.getHandlerFunction()), ['synkbrief정기점검']);
@@ -139,6 +141,33 @@ test('옛 학원 트리거가 깨어나면 모두 지우고 synkbrief 점검 트
   ctx.트리거정리();
   assert.deepEqual(트리거.map((t) => t.getHandlerFunction()), ['synkbrief정기점검'], '두 번 돌려도 하나만 남는다');
   assert.equal(기록.만든트리거.length, 1);
+  assert.equal(트리거[0].minutes, 15);
+});
+
+test('운영 알림 미설치·비활성화·유효한 키 누락이면 정리가 새 타이머를 만들지 않는다', () => {
+  for (const props of [{}, { SYNKBRIEF_OPS_READ_KEY: 'test-only-ops-key-abcdefghijklmnopqrstuvwxyz' },
+    { SYNKBRIEF_OPS_MONITOR_ENABLED: '0', SYNKBRIEF_OPS_READ_KEY: 'test-only-ops-key-abcdefghijklmnopqrstuvwxyz' },
+    { SYNKBRIEF_OPS_MONITOR_ENABLED: '1' }, { SYNKBRIEF_OPS_MONITOR_ENABLED: '1', SYNKBRIEF_OPS_READ_KEY: 'short' },
+    { SYNKBRIEF_OPS_MONITOR_ENABLED: '1', SYNKBRIEF_OPS_READ_KEY: 'invalid read key with whitespace abcdefghijk' }]) {
+    const { ctx, 트리거, 기록, 옛트리거 } = 환경(props);
+    옛트리거(옛트리거이름); ctx.parentSweep();
+    assert.equal(트리거.length, 0); assert.equal(기록.만든트리거.length, 0);
+    assert.equal(기록.지운트리거.length, 옛트리거이름.length);
+  }
+});
+
+test('기존 운영 점검 타이머는 설정 유무와 무관하게 같은 객체로 보존한다', () => {
+  const { ctx, 트리거, 기록, 옛트리거 } = 환경();
+  const installed = { getHandlerFunction: () => 'synkbrief정기점검', getEventType: () => 'CLOCK', minutes: 15 };
+  트리거.push(installed); 옛트리거(['parentSweep']); ctx.트리거정리();
+  assert.equal(트리거.length, 1); assert.equal(트리거[0], installed); assert.equal(기록.만든트리거.length, 0);
+});
+
+test('다른 이벤트의 동일 handler는 정기 타이머가 있는 것으로 오인하지 않는다', () => {
+  const { ctx, 트리거, 기록 } = 환경({ SYNKBRIEF_OPS_MONITOR_ENABLED: '1', SYNKBRIEF_OPS_READ_KEY: 'test-only-ops-key-abcdefghijklmnopqrstuvwxyz' });
+  const edit = { getHandlerFunction: () => 'synkbrief정기점검', getEventType: () => 'EDIT' };
+  트리거.push(edit); ctx.트리거정리();
+  assert.equal(트리거.includes(edit), true); assert.equal(기록.만든트리거.length, 1); assert.equal(트리거[1].minutes, 15);
 });
 
 test('옛 트리거 이름마다 정리 함수가 있다', () => {

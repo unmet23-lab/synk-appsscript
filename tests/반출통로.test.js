@@ -21,14 +21,17 @@ const 벤더표_ = [
   ['GoogleSlides', /docs\.google\.com/],
   ['MetaGraph', /graph\.facebook\.com/],
   ['InstagramGraph', /graph\.instagram\.com/],
+  ['SupabaseOps', /qiwxeddwwnzkwalpsuty\.supabase\.co/],
   ['GitHub', /api\.github\.com/],
   ['GoogleDrive', /drive\.google\.com/],
 ];
 
 /** 선언표 — 이 수가 사는 유일한 자리다. 늘리거나 줄일 때는 같은 커밋에서 여기를 고친다. */
 const 나가는자리_ = [
-  { file: '엔진_synkbrief.js', vendor: 'InstagramGraph', n: 4,
-    뭐: 'synkbrief 요청 DM 답장·전용 계정 확인·본인 게시물 조회·토큰 갱신. 나가는 것은 댓글 ID나 요청자 IGSID, 전용 토큰, 공개 자료 링크다' },
+  { file: '엔진_synkbrief.js', vendor: 'InstagramGraph', n: 3,
+    뭐: 'synkbrief 요청 DM 답장·전용 계정 확인·본인 게시물 조회. 나가는 것은 댓글 ID나 요청자 IGSID, 전용 토큰, 공개 자료 링크다' },
+  { file: '엔진_synkbrief.js', vendor: 'SupabaseOps', n: 1,
+    뭐: '고정 운영 상태 주소에 전용 읽기 키만 보낸다. 원문 댓글·DM·Meta 토큰은 보내지 않는다' },
 ];
 const 선언합계_ = 나가는자리_.reduce((a, r) => a + r.n, 0);
 

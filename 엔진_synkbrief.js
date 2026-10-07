@@ -2,7 +2,8 @@
  * 상담 봇과 계정·토큰·설정·중복 기록을 분리하며 기본 발송은 꺼져 있다.
  * SYNKBRIEF_CAMPAIGN_INDEX와 편별 속성은 관리표의 '등록 내용 적용'이 갱신한다.
  * 직접 DM 경로는 별도 캠페인을 지정하고 명시 활성화한 경우에만 사용한다.
- * 팔로우 요청은 영상 CTA다. 자료를 팔로우 여부로 잠그지는 않는다.
+ * 신규 요청 자료 DM은 Supabase가 담당하며 팔로우를 필수 조건으로 삼지 않는다.
+ * 이 파일의 구형 발송기는 OFF를 유지하고, 운영 상태 조회와 장애 메일을 담당한다.
  * 공개 자료는 가상 회의 예시이며, 원문 댓글·DM·사용자 이름을 저장하지 않는다.
  */
 const SYNKBRIEF_MEETING_URL = 'https://synk.im/brief/meeting/';
@@ -308,24 +309,146 @@ function synkbrief_발송로그_(p, campaign, state, code) {
 
 function synkbrief정기점검() {
   const p = PropertiesService.getScriptProperties();
-  const token = p.getProperty('SYNKBRIEF_IG_TOKEN');
-  if (!token) { p.setProperty('SYNKBRIEF_HEALTH', '인증 연결 필요'); return; }
+  // Meta 토큰 갱신은 Supabase Vault/cron의 책임이다. 설치 전에는 기존 일일 트리거도 조용히 멈춘다.
+  if (p.getProperty('SYNKBRIEF_OPS_MONITOR_ENABLED') !== '1') return { ok: true, state: 'disabled' };
   const lock = LockService.getScriptLock();
-  if (!lock.tryLock(10000)) return;
+  if (!lock.tryLock(1000)) return { ok: true, state: 'busy' };
   try {
-    synkbrief_계정확인_(token);
-    p.setProperty('SYNKBRIEF_HEALTH', '정상 · ' + new Date().toISOString());
-    const last = Date.parse(p.getProperty('SYNKBRIEF_TOKEN_SAVED_AT') || '');
-    if (!last) throw new Error('token-date');
-    // Meta 장기 토큰은 발급 24시간 뒤부터 갱신할 수 있다. 매일 확인하고 7일마다 갱신한다.
-    if (Date.now() - last < 7 * 86400000) return;
-    const res = UrlFetchApp.fetch('https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=' + encodeURIComponent(token), { muteHttpExceptions: true });
-    const body = JSON.parse(res.getContentText());
-    if (res.getResponseCode() !== 200 || !body.access_token || Number(body.expires_in) < 86400) throw new Error('refresh');
-    p.setProperties({ SYNKBRIEF_IG_TOKEN: body.access_token, SYNKBRIEF_TOKEN_SAVED_AT: new Date().toISOString(), SYNKBRIEF_TOKEN_EXPIRES_AT: new Date(Date.now() + Number(body.expires_in) * 1000).toISOString(), SYNKBRIEF_HEALTH: '정상 · ' + new Date().toISOString() });
-  } catch (_) {
-    p.setProperty('SYNKBRIEF_HEALTH', '인증 자동 갱신 실패 · 연결 상태 확인 필요');
-    synkbrief_발송로그_(p, 'system', '인증 갱신 실패', 0);
-    throw new Error('synkbrief 인증 자동 갱신 실패. 관리자 메뉴에서 인증을 다시 연결해 주세요.');
+    const status = synkbrief_운영상태읽기_(p.getProperty('SYNKBRIEF_OPS_READ_KEY'));
+    const signature = JSON.stringify([status.healthy, status.rows.map(r => [r.name, r.health, r.http])]);
+    const hash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, signature).map(b => ('0' + (b & 255).toString(16)).slice(-2)).join('');
+    let previous = null;
+    try { previous = JSON.parse(p.getProperty('SYNKBRIEF_OPS_NOTICE') || 'null'); } catch (_) { /* 손상된 상태는 새 관측으로 복구한다. */ }
+    const record = { hash: hash, healthy: status.healthy, at: new Date().toISOString(), delivery: 'baseline' };
+    p.setProperty('SYNKBRIEF_OPS_LAST_CHECK', JSON.stringify({ healthy: status.healthy, at: record.at }));
+    if (previous && previous.hash === hash) return { ok: previous.delivery !== 'unknown' && previous.delivery !== 'pending', state: previous.delivery === 'unknown' || previous.delivery === 'pending' ? 'delivery_unknown' : 'unchanged', healthy: status.healthy };
+    if (!previous && status.healthy) {
+      p.setProperty('SYNKBRIEF_OPS_NOTICE', JSON.stringify(record));
+      return { ok: true, state: 'baseline', healthy: true };
+    }
+    // 일일 잔여 수신자 수가 없으면 상태를 소비하지 않아 다음 회차에 다시 시도한다.
+    if (MailApp.getRemainingDailyQuota() < 1) return { ok: false, state: 'quota_exhausted', healthy: status.healthy };
+    record.delivery = 'pending';
+    p.setProperty('SYNKBRIEF_OPS_NOTICE', JSON.stringify(record));
+    try {
+      MailApp.sendEmail({
+        to: 'unmet23@gmail.com',
+        subject: status.healthy ? '[SYNK DM] 운영 복구' : '[SYNK DM] 운영 이상',
+        body: '확인 시각: ' + status.at + '\n상태: ' + (status.healthy ? '정상' : '확인 필요') + '\n\n' + status.rows.map(r => r.name + ' | ' + r.health + ' | 시각 ' + r.at + ' | HTTP ' + (r.http || '-')).join('\n'),
+        name: 'SYNK'
+      });
+      record.delivery = 'sent';
+      p.setProperty('SYNKBRIEF_OPS_NOTICE', JSON.stringify(record));
+      return { ok: true, state: 'sent', healthy: status.healthy };
+    } catch (_) {
+      // 수신 여부가 불명확한 발송을 자동으로 반복하지 않는다. 원본 예외·본문은 저장하지 않는다.
+      record.delivery = 'unknown';
+      p.setProperty('SYNKBRIEF_OPS_NOTICE', JSON.stringify(record));
+      throw new Error('SYNK DM 운영 알림 전달 여부를 확인하지 못했습니다. 같은 상태는 자동 재발송하지 않습니다.');
+    }
   } finally { lock.releaseLock(); }
+}
+
+// 편집기에서 명시 실행한다. 읽기 키는 프로젝트의 Script Properties에 먼저 저장한다.
+// 이 함수는 메일을 보내지 않지만 최초 실행 시 Google 메일 발송 권한 승인이 필요할 수 있다.
+function synkbrief운영알림설정() {
+  synkbrief_관리자확인_();
+  const p = PropertiesService.getScriptProperties();
+  const key = p.getProperty('SYNKBRIEF_OPS_READ_KEY');
+  if (!key || key.length < 32 || /\s/.test(key)) throw new Error('SYNKBRIEF_OPS_READ_KEY를 Script Properties에 먼저 저장해 주세요.');
+  MailApp.getRemainingDailyQuota();
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) throw new Error('운영 점검이 실행 중입니다. 잠시 뒤 다시 설정해 주세요.');
+  try {
+    const old = ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'synkbrief정기점검' && t.getEventType() === ScriptApp.EventType.CLOCK);
+    // 생성 실패 시 기존 타이머를 보존한다. 다른 handler/이벤트 트리거는 건드리지 않는다.
+    ScriptApp.newTrigger('synkbrief정기점검').timeBased().everyMinutes(15).create();
+    old.forEach(t => ScriptApp.deleteTrigger(t));
+    p.setProperty('SYNKBRIEF_OPS_MONITOR_ENABLED', '1');
+    return { ok: true, enabled: true, intervalMinutes: 15, recipient: 'unmet23@gmail.com', emailSent: false };
+  } finally { lock.releaseLock(); }
+}
+
+// 사용자가 시험 메일 1통을 승인한 뒤 관리자 편집기에서 실행한다. 재실행으로 초기화하지 않는다.
+function synkbrief운영알림시험() {
+  synkbrief_관리자확인_();
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) throw new Error('운영 점검이 실행 중입니다. 잠시 뒤 다시 시험해 주세요.');
+  try {
+    const p = PropertiesService.getScriptProperties();
+    const previous = p.getProperty('SYNKBRIEF_OPS_MAIL_TEST');
+    if (previous) {
+      let delivered = false;
+      try { delivered = JSON.parse(previous).delivery === 'sent'; } catch (_) { /* 손상된 기록도 재발송하지 않는다. */ }
+      return { ok: delivered, state: delivered ? 'already_sent' : 'delivery_unknown', emailSent: false };
+    }
+    if (MailApp.getRemainingDailyQuota() < 1) return { ok: false, state: 'quota_exhausted', emailSent: false };
+    const record = { at: new Date().toISOString(), delivery: 'pending' };
+    p.setProperty('SYNKBRIEF_OPS_MAIL_TEST', JSON.stringify(record));
+    try {
+      MailApp.sendEmail({
+        to: 'unmet23@gmail.com', subject: '[SYNK DM] 알림 연결 시험', name: 'SYNK',
+        body: 'SYNK DM 운영 알림의 메일 연결을 확인하기 위한 시험 메일입니다.\n운영 장애가 발생했다는 알림이 아닙니다.\n확인 시각: ' + record.at
+      });
+      record.delivery = 'sent';
+      p.setProperty('SYNKBRIEF_OPS_MAIL_TEST', JSON.stringify(record));
+      return { ok: true, state: 'sent', emailSent: true };
+    } catch (_) {
+      record.delivery = 'unknown';
+      p.setProperty('SYNKBRIEF_OPS_MAIL_TEST', JSON.stringify(record));
+      throw new Error('SYNK DM 시험 메일 전달 여부를 확인하지 못했습니다. 자동 재발송하지 않습니다.');
+    }
+  } finally { lock.releaseLock(); }
+}
+
+function synkbrief_운영상태읽기_(key) {
+  const now = new Date().toISOString();
+  const failed = (health, http) => ({ healthy: false, at: now, rows: [{ name: 'ops-status', health: health, http: http || 0, at: now }] });
+  if (!key || key.length < 32 || /\s/.test(key)) return failed('read_key_missing', 0);
+  let response;
+  try {
+    response = UrlFetchApp.fetch('https://qiwxeddwwnzkwalpsuty.supabase.co/functions/v1/synkbrief-dm?task=ops-status', {
+      method: 'get', headers: { Authorization: 'Bearer ' + key }, muteHttpExceptions: true, followRedirects: false
+    });
+  } catch (_) { return failed('fetch_failed', 0); }
+  const http = response.getResponseCode();
+  if (http !== 200) return failed('http_error', Number.isInteger(http) && http >= 100 && http <= 599 ? http : 0);
+  try {
+    const text = response.getContentText();
+    if (text.length > 32768) return failed('invalid_response', 200);
+    const body = JSON.parse(text);
+    if (!body || body.ok !== true || typeof body.healthy !== 'boolean' || !Array.isArray(body.accounts) || body.accounts.length > 100 || !Array.isArray(body.jobs) || body.jobs.length > 10) return failed('invalid_response', 200);
+    const checked = Date.parse(body.checked_at);
+    if (!Number.isFinite(checked) || Date.now() - checked > 600000 || checked - Date.now() > 300000) return failed('stale_response', 200);
+    const safeTime = value => { const at = typeof value === 'string' ? Date.parse(value) : NaN; return Number.isFinite(at) ? new Date(at).toISOString() : '-'; };
+    const safeHttp = value => Number.isInteger(value) && value >= 100 && value <= 599 ? value : 0;
+    const healthCodes = ['ok', 'healthy', 'pending', 'unknown', 'missing', 'disabled', 'failed', 'stale', 'auth-needed', 'auth-failed', 'refresh-failed', 'stop-identity-needed', 'send-failed', 'unhealthy'];
+    const safeHealth = value => healthCodes.indexOf(value) >= 0 ? value : 'unknown';
+    const rows = [];
+    let healthy = body.healthy;
+    const seen = Object.create(null);
+    body.accounts.forEach(account => {
+      if (!account || typeof account.connected !== 'boolean') throw new Error('shape');
+      if (!account.connected) return;
+      if (typeof account.username !== 'string' || !/^[a-zA-Z0-9._]{1,30}$/.test(account.username) || seen[account.username]) throw new Error('shape');
+      seen[account.username] = true;
+      const health = safeHealth(account.health);
+      if (health !== 'ok' && health !== 'healthy') healthy = false;
+      rows.push({ name: '@' + account.username, health: health, http: safeHttp(account.http_status), at: safeTime(account.last_failure_at || account.token_expires_at) });
+    });
+    ['synkbrief-refresh', 'synkbrief-retention'].forEach(name => {
+      const matches = body.jobs.filter(job => job && job.jobname === name);
+      if (matches.length > 1) throw new Error('shape');
+      const job = matches[0];
+      const health = !job ? 'missing' : job.active !== true ? 'disabled' : safeHealth(job.health);
+      if (health !== 'ok' && health !== 'healthy' && health !== 'pending') healthy = false;
+      rows.push({ name: name, health: health, http: job ? safeHttp(job.http_status) : 0, at: job ? safeTime(job.last_run_at) : '-' });
+    });
+    if (!rows.some(r => r.name.charAt(0) === '@')) { healthy = false; rows.push({ name: 'accounts', health: 'missing', http: 0, at: '-' }); }
+    if (!body.healthy && rows.every(r => r.health === 'ok' || r.health === 'healthy' || r.health === 'pending')) rows.push({ name: 'ops-status', health: 'unhealthy', http: 200, at: new Date(checked).toISOString() });
+    // 정상 시각/HTTP 성공의 변화는 장애 알림을 만들지 않는다.
+    const issues = healthy ? [] : rows.filter(r => r.health !== 'ok' && r.health !== 'healthy' && r.health !== 'pending');
+    issues.sort((a, b) => a.name.localeCompare(b.name));
+    return { healthy: healthy, at: new Date(checked).toISOString(), rows: issues };
+  } catch (_) { return failed('invalid_response', 200); }
 }
