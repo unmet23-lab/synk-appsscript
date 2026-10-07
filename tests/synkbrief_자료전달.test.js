@@ -40,14 +40,11 @@ test('올바른 계정 인증 저장은 발송을 켜지 않고 비밀값을 반
   const f=fixture({},()=>({getResponseCode:()=>200,getContentText:()=>JSON.stringify({user_id:'17841433358976667',username:'synkbrief'})}));
   const r=f.context.synkbrief인증저장('IGAA_abcdefghijklmnopqrstuvwxyz123456789');assert.equal(r.configured,true);assert.equal(f.values.get('SYNKBRIEF_DM_ENABLED'),'0');assert.doesNotMatch(JSON.stringify(r),/IGAA/);
 });
-test('새 토큰은 계정만 확인하고 일주일 뒤에 갱신한다',()=>{
-  const f=fixture({SYNKBRIEF_TOKEN_SAVED_AT:new Date().toISOString()},()=>({getResponseCode:()=>200,getContentText:()=>JSON.stringify({user_id:'17841433358976667',username:'synkbrief'})}));
-  f.context.synkbrief정기점검();assert.equal(f.calls.length,1);assert.doesNotMatch(f.calls[0].url,/refresh_access_token/);
-});
-test('자동 갱신 실패는 기존 토큰 보존 및 비밀값 없는 오류를 남긴다',()=>{
-  const f=fixture({SYNKBRIEF_TOKEN_SAVED_AT:new Date(Date.now()-8*86400000).toISOString()});let n=0;
-  f.context.UrlFetchApp.fetch=()=>{if(n++===0)return {getResponseCode:()=>200,getContentText:()=>JSON.stringify({user_id:'17841433358976667',username:'synkbrief'})};throw Error('secret-in-error');};
-  const old=f.values.get('SYNKBRIEF_IG_TOKEN');assert.throws(()=>f.context.synkbrief정기점검(),/갱신 실패/);assert.equal(f.values.get('SYNKBRIEF_IG_TOKEN'),old);assert.doesNotMatch(f.values.get('SYNKBRIEF_HEALTH'),/secret-in-error/);
+test('기존 점검 트리거는 운영 알림 설치 전 네트워크 호출과 토큰 교체를 하지 않는다',()=>{
+  const f=fixture({SYNKBRIEF_TOKEN_SAVED_AT:new Date(Date.now()-8*86400000).toISOString()});
+  const old=f.values.get('SYNKBRIEF_IG_TOKEN');
+  assert.equal(f.context.synkbrief정기점검().state,'disabled');
+  assert.equal(f.calls.length,0);assert.equal(f.values.get('SYNKBRIEF_IG_TOKEN'),old);
 });
 
 function registryFixture(rows, media) {
