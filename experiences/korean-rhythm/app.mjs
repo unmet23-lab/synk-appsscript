@@ -6,7 +6,7 @@
 import { TRACKS, LEVELS, RoundState } from './core.mjs';
 import { MusicPlayer } from './audio.mjs';
 import { Stage } from './stage.mjs';
-import { rhythmItem, FLOW_RHYTHM, timingObservation, timingSummary, assignmentTracks, assignmentTrack, rhythmTargetLabel } from './personalization.mjs';
+import { rhythmItem, FLOW_RHYTHM, timingObservation, timingSummary, assignmentTracks, assignmentTrack, rhythmTargetLabel, nextTrackLine } from './personalization.mjs';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -433,7 +433,7 @@ function finish() {
     .then((result) => { if (state.round === r) coins.textContent = globalThis.SynkPlayCollection.rewardText(result); });
   const next = renderRecommendation();
   $('r-next-reason').textContent = next.candidate
-    ? `다음 곡으로 ‘${next.candidate.label}’을 추천해요.${next.reason ? ` ${next.reason}` : ''}`
+    ? nextTrackLine(next.candidate.label, next.reason)
     : '다음에는 다른 곡이나 박자 난이도로 들어 봐요.';
   state.recallIndex = 0;
   $('recall-content').hidden = true; $('recall-intro').hidden = false;

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ITEMS, PRACTICE, SKILL_LABEL } from './content.mjs';
-import { parts, filled, judge, rng, shuffled, composeRound, pointsFor, scoreRound, hangTime, readDelay, tossLayout, segmentEntry, validateItems } from './core.mjs';
+import { parts, filled, judge, josa, rng, shuffled, composeRound, pointsFor, scoreRound, hangTime, readDelay, tossLayout, segmentEntry, validateItems } from './core.mjs';
 
 test('원고: 36문장 모두 검사 통과(빈칸 하나·보기 넷·정답 첫 보기·학습 항목·난도·설명), 연습 문장도', () => {
   assert.deepEqual(validateItems(ITEMS), []);
@@ -18,6 +18,18 @@ test('빈칸 뒤 조사가 붙은 문장은 보기가 모두 같은 받침 조�
     const after = parts(x.text)[1];
     if (/^(을|은|이)(?![가-힣])/.test(after) || /^(을|은|이) /.test(after)) assert.ok(x.options.every(hasBatchim), `${x.id}: ‘${after.slice(0, 2)}’ 앞 보기는 모두 받침`);
     if (/^(를|는|가)[ .]/.test(after)) assert.ok(x.options.every((w) => !hasBatchim(w)), `${x.id}: ‘${after.slice(0, 2)}’ 앞 보기는 모두 받침 없음`);
+  }
+});
+
+test('연습 안내의 조사는 낱말의 받침을 따른다 — 정답은 우유예요, ‘의자’는 · ‘병원’은', () => {
+  // app.mjs 연습 문장 알림의 「정답은 N번 ○○이에요/예요」와 틀린 조각의 「‘○○’은/는 빈칸에 맞지 않아요」
+  assert.equal(`${PRACTICE.answer}${josa(PRACTICE.answer, '이에요', '예요')}`, '우유예요');
+  for (const w of PRACTICE.options) assert.equal(josa(w, '은', '는'), '는', w);
+  const words = new Set(ITEMS.flatMap((x) => x.options));
+  for (const [w, topic, copula] of [['병원', '은', '이에요'], ['물', '은', '이에요'], ['개', '는', '예요'], ['먹어요', '는', '예요']]) {
+    assert.ok(words.has(w), `${w}: 원고의 보기`);
+    assert.equal(josa(w, '은', '는'), topic, w);
+    assert.equal(josa(w, '이에요', '예요'), copula, w);
   }
 });
 
