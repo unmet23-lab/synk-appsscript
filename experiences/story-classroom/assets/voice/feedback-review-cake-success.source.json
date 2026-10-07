@@ -1,8 +1,15 @@
 {
-  "sourceKey": "e2159ee1f38ce93b3b749aaf76bbbd7e84f0233669a3dc97d7f60631306f1919",
+  "sourceKey": "1c209a0be0ff1da4fb2a960b7bae5f49",
   "text": "임무 완료. 케이크, 선반에 도착.",
   "speaker": "marin",
-  "voice": "ko-KR-InJoonNeural",
-  "rate": "-10%",
-  "pitch": "-4Hz"
+  "voice": "한결",
+  "voiceId": "tc_677f2aa4a854ddffa0ebda89",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.9,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

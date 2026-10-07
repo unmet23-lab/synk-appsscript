@@ -1,8 +1,15 @@
 {
-  "sourceKey": "6a3e77cea936f011e1a1e142580f02c665f83bc29b4269982f4a2767a3e8679a",
+  "sourceKey": "f6ebec6d449fc801b87e9f61f77d49a2",
   "text": "“꽃을 놓은 뒤”이므로 꽃을 먼저 놓아요. 그다음 까몽이 편지를 칠판에 붙여요.",
   "speaker": "teacher",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-7%",
-  "pitch": "-2Hz"
+  "voice": "효은",
+  "voiceId": "tc_691d49ccc47926d741f15913",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

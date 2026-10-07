@@ -1,8 +1,15 @@
 {
-  "sourceKey": "4cc2c301e0fc46f5656ec9d3994a4701ff53281f1c7c0e1d0791357e697369b6",
+  "sourceKey": "af3a08eca90b97e0a7263f4e620eacbf",
   "text": "상황 보고. 선생님 도착. 정리 필요.",
   "speaker": "marin",
-  "voice": "ko-KR-InJoonNeural",
-  "rate": "-10%",
-  "pitch": "-4Hz"
+  "voice": "한결",
+  "voiceId": "tc_677f2aa4a854ddffa0ebda89",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.9,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

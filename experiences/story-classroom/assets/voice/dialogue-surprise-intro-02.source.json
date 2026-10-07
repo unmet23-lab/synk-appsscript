@@ -1,8 +1,15 @@
 {
-  "sourceKey": "2e2ee91d3abb02c0ada2d4a698531f08391710da49a0dd2a2a213741aa564332",
+  "sourceKey": "fd0da05e7b00c9c5329995b4cc563c10",
   "text": "아직 케이크를 못 봤는데?",
   "speaker": "teacher",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-7%",
-  "pitch": "-2Hz"
+  "voice": "효은",
+  "voiceId": "tc_691d49ccc47926d741f15913",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

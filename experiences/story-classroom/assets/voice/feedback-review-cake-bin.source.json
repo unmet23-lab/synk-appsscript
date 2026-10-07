@@ -1,8 +1,15 @@
 {
-  "sourceKey": "4f2d8cda360e0e9515e1a736fa471615acc9afd16805edc85c0826a0a7b3cf81",
+  "sourceKey": "ee420e2d77a88ffa12909745d6171e35",
   "text": "내가 구할게! 케이크는 버릴 물건이 아니야. 글에서 놓을 곳을 다시 찾아봐.",
   "speaker": "kkamong",
-  "voice": "ko-KR-HyunsuMultilingualNeural",
-  "rate": "-4%",
-  "pitch": "+3Hz"
+  "voice": "몽군",
+  "voiceId": "tc_6731b32e075b04a9446441a0",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

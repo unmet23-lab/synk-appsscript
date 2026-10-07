@@ -1,8 +1,15 @@
 {
-  "sourceKey": "9735c3330bf255d1d2db15f9be48d9147e3d30ed1e0372ff45fbe82c2f87eb3e",
+  "sourceKey": "bcbcaa248de9701738751cb5b119ea21",
   "text": "마린은 꽃을 책상 위에 놓아 줘.",
   "speaker": "teacher",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-7%",
-  "pitch": "-2Hz"
+  "voice": "효은",
+  "voiceId": "tc_691d49ccc47926d741f15913",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

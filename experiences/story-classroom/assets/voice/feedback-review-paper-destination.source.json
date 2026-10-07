@@ -1,8 +1,15 @@
 {
-  "sourceKey": "47f7252b8731aa10009510723b03fb3783d6508173cb48cc7fa240cc09a47ffc",
+  "sourceKey": "3196a74a68d99006125eb52c292cf64d",
   "text": "어? 상자에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
   "speaker": "mongle",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-3%",
-  "pitch": "+8Hz"
+  "voice": "선하",
+  "voiceId": "tc_649408f268febb61286eec85",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

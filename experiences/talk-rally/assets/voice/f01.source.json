@@ -1,7 +1,14 @@
 {
-  "sourceKey": "f938836395b66a57e3a1767eee8ed119d2bd85051b0757dc57dd4bd2c969dc18",
+  "sourceKey": "cd76cd7ca7de2fe020c5dda3ed3fd08c",
   "text": "생일 축하해요.",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-8%",
-  "pitch": "+8Hz"
+  "voice": "선하",
+  "voiceId": "tc_649408f268febb61286eec85",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "몽글: 지금 generate-voice.py와 같은 앞뒤 자르기 + loudnorm I=-18 TP=-2.5 LRA=7 · 안내: generate-narration.py와 같은 자르기·쉼 0.28초 + 재어서 -20.5 LUFS → MP3 mono 24kHz 96kbps"
 }

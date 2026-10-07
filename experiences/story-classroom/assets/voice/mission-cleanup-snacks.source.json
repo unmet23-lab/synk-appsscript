@@ -1,8 +1,15 @@
 {
-  "sourceKey": "b43724b3e16071f2290e2ca5daa4ef8a6d2b7abafab130daa70bb952598fd347",
+  "sourceKey": "edbe80fea8bcc2627abcc7e846da4217",
   "text": "마린은 과자를 상자 안에 넣어 줘.",
   "speaker": "teacher",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-7%",
-  "pitch": "-2Hz"
+  "voice": "효은",
+  "voiceId": "tc_691d49ccc47926d741f15913",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

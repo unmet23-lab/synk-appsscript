@@ -1,8 +1,15 @@
 {
-  "sourceKey": "cb69bd1ea3fee243d13594120e3ab58b2170b1d425dd0a6d1097057172b7f621",
+  "sourceKey": "0c93ee636e681e7925cdf8fad76f201e",
   "text": "이번에는 까몽이 케이크를 옮겨요. 케이크는 책상 위에 놓아요.",
   "speaker": "teacher",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-7%",
-  "pitch": "-2Hz"
+  "voice": "효은",
+  "voiceId": "tc_691d49ccc47926d741f15913",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

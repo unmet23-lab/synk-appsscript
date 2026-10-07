@@ -1,0 +1,522 @@
+{
+ "note": "미니게임 목소리 제작 기록(tools/미니게임_목소리.cjs). qa/·*.source.json이라 공개 묶음에서 빠진다. 배역·설정의 원본은 tools/minigame-voice-casting.json.",
+ "provider": "Typecast",
+ "model": "ssfm-v30",
+ "post": "몽글: 지금 generate-voice.py와 같은 앞뒤 자르기 + loudnorm I=-18 TP=-2.5 LRA=7 · 안내: generate-narration.py와 같은 자르기·쉼 0.28초 + 재어서 -20.5 LUFS → MP3 mono 24kHz 96kbps",
+ "updatedAt": "2026-10-07T11:21:54.242Z",
+ "voices": {
+  "mongle": {
+   "label": "몽글",
+   "id": "tc_649408f268febb61286eec85",
+   "name": "선하",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141652_649408f268febb61286eec85_SSFM-V3_0.mp3",
+   "measure": "음높이 302Hz · 밝기 1510Hz · 억양 폭 10.6반음 · 빠르기 5.55 · 교육",
+   "why": "교육용 — 높고 밝은데(302Hz) 빠르기가 보통이라 또렷하다"
+  },
+  "narrator": {
+   "label": "해설",
+   "id": "tc_69f2e455ea79fd197aa0476f",
+   "name": "서현",
+   "preview": "https://static2.typecast.ai/c/260430_seohyeon/seohyeon_mixdown.mp3",
+   "measure": "음높이 157Hz · 밝기 673Hz · 억양 폭 11.2반음 · 빠르기 5.19 · 아나운서·대화",
+   "why": "유호님이 고른 설명 목소리 — 낮고 차분하다"
+  }
+ },
+ "lines": {
+  "p00": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "5f6be677beef581ebbb6b86ac604c694",
+   "sha": {
+    "assets/voice/p00.mp3": "77601b4912584df9"
+   }
+  },
+  "r01": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "e3ef61f8930e84b8216e05ab7181ca1b",
+   "sha": {
+    "assets/voice/r01.mp3": "5196c16844b69e33"
+   }
+  },
+  "r02": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "815857b7b0d4e1d4db26839e1d396639",
+   "sha": {
+    "assets/voice/r02.mp3": "817af08a4123e4a5"
+   }
+  },
+  "r03": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "0356fb1538b8f2fb48f6e9c60820aa7f",
+   "sha": {
+    "assets/voice/r03.mp3": "d2cdf22dab8a8cb0"
+   }
+  },
+  "r04": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "ed7a3a33a625d1f4243034a823800056",
+   "sha": {
+    "assets/voice/r04.mp3": "d79b3374f9d984b0"
+   }
+  },
+  "r05": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "dd9921feae65c2ba41ae9b332ca1c424",
+   "sha": {
+    "assets/voice/r05.mp3": "0c5bc38ed1f2ecf1"
+   }
+  },
+  "r06": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "59739b061643a95306b87b371fb76dd6",
+   "sha": {
+    "assets/voice/r06.mp3": "6abefe485f40cd1f"
+   }
+  },
+  "w01": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "7062b78cb7fb3f05a00704afc302f5de",
+   "sha": {
+    "assets/voice/w01.mp3": "0f1c8e256d8a96ba"
+   }
+  },
+  "w02": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "afdc6bc59badc39e9ff05a70fa46422d",
+   "sha": {
+    "assets/voice/w02.mp3": "b19db6895c10a863"
+   }
+  },
+  "w03": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "d5ee0b63933404244f44b2b5ba1635cb",
+   "sha": {
+    "assets/voice/w03.mp3": "bdd22b56b002b578"
+   }
+  },
+  "w04": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "71320e9e82c71240c896df49862450e9",
+   "sha": {
+    "assets/voice/w04.mp3": "81a14f47d22dbd4e"
+   }
+  },
+  "w05": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "cbe2282c7a6dd7004c8a88360a48939f",
+   "sha": {
+    "assets/voice/w05.mp3": "58e9bacfeac88a9d"
+   }
+  },
+  "w06": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "d0db1e2bb8540dc72a4566b6c1ef8f0b",
+   "sha": {
+    "assets/voice/w06.mp3": "6f884e46efced82e"
+   }
+  },
+  "w07": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "9c3beab6a68382a388f1dc304bc005fd",
+   "sha": {
+    "assets/voice/w07.mp3": "a3f4041cbbc6f4e3"
+   }
+  },
+  "w08": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "1c75ca2c1ecba1e9d21b20ae223a173c",
+   "sha": {
+    "assets/voice/w08.mp3": "d23639a868ff7131"
+   }
+  },
+  "f01": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "cd76cd7ca7de2fe020c5dda3ed3fd08c",
+   "sha": {
+    "assets/voice/f01.mp3": "d85da5083276cd4d"
+   }
+  },
+  "f02": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "9075c146e4d52fcf3da3ed0c4b8d260e",
+   "sha": {
+    "assets/voice/f02.mp3": "59d71ffa2a38c190"
+   }
+  },
+  "f03": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "b6c9eeea3990dff612dd9d4aa83e0317",
+   "sha": {
+    "assets/voice/f03.mp3": "d52cb8e2d3811e91"
+   }
+  },
+  "f04": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "25eab09319e7e86479c9a798810acfb5",
+   "sha": {
+    "assets/voice/f04.mp3": "a73dfde9fc47b6a3"
+   }
+  },
+  "f05": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "fbd539e5041c775c2025c1ade77cb79f",
+   "sha": {
+    "assets/voice/f05.mp3": "e5c0866da93adeb5"
+   }
+  },
+  "f06": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "7153937331199a599ab0844ca1472156",
+   "sha": {
+    "assets/voice/f06.mp3": "cc7a8b7e892704f6"
+   }
+  },
+  "f07": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "fcaf6e1501137ddbb5d390a880c992aa",
+   "sha": {
+    "assets/voice/f07.mp3": "e9d0e807a2e2f9e9"
+   }
+  },
+  "f08": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "b2d0579c2b8e10ab3a53b41bf5d08298",
+   "sha": {
+    "assets/voice/f08.mp3": "fd3e886c1b5032a6"
+   }
+  },
+  "f09": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "b1de2cb0d9a2b9cea32e21240decf55c",
+   "sha": {
+    "assets/voice/f09.mp3": "de065c8218e8ecfa"
+   }
+  },
+  "f10": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "e1c1f31d3fabb9df58af0a2adafd6350",
+   "sha": {
+    "assets/voice/f10.mp3": "602cf0ff26b2c679"
+   }
+  },
+  "f11": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "c8c61e63d016e17d8811db068ea3b007",
+   "sha": {
+    "assets/voice/f11.mp3": "ef21c1a22520773c"
+   }
+  },
+  "f12": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "a2abb5fbbabf876aadd01f6d994464dd",
+   "sha": {
+    "assets/voice/f12.mp3": "a86aa63f7c63142c"
+   }
+  },
+  "r07": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "d78588d6bebf1136f56c1c33e5c5f355",
+   "sha": {
+    "assets/voice/r07.mp3": "729243db4b3710e8"
+   }
+  },
+  "r08": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "e1b929bac47b202cce5e977caea66f74",
+   "sha": {
+    "assets/voice/r08.mp3": "c4f40012c17c0f79"
+   }
+  },
+  "r09": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "63d8909c9ab2bf92dc8c2945757d98a4",
+   "sha": {
+    "assets/voice/r09.mp3": "2843151c88c55da0"
+   }
+  },
+  "r10": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "d71cc903262b43afde7ac54039696640",
+   "sha": {
+    "assets/voice/r10.mp3": "3384cc956fcea350"
+   }
+  },
+  "w09": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "732c7b35b76f2e612d49de1c11028b66",
+   "sha": {
+    "assets/voice/w09.mp3": "b874ae273362e139"
+   }
+  },
+  "w10": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "fc0779626e37f668030cb2bd97c1c0f3",
+   "sha": {
+    "assets/voice/w10.mp3": "295a12c8a8a8d70a"
+   }
+  },
+  "w11": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "89efc9acea8cf544f39795603852194f",
+   "sha": {
+    "assets/voice/w11.mp3": "c077f87fced2e6ed"
+   }
+  },
+  "w12": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "67d10e5cb623aa3b8a354f5db4bfa5f8",
+   "sha": {
+    "assets/voice/w12.mp3": "b173bd7941109af2"
+   }
+  },
+  "w13": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "f4becc399fbb9f7f72c10a40d193063e",
+   "sha": {
+    "assets/voice/w13.mp3": "f494665539394fdf"
+   }
+  },
+  "f13": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "08e6ef302bc296eba271f2b3fd85c16b",
+   "sha": {
+    "assets/voice/f13.mp3": "aafe4854a79b4dcb"
+   }
+  },
+  "f14": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "726dc218a9221cf149114e30d84abf37",
+   "sha": {
+    "assets/voice/f14.mp3": "7a3b075a75aa6761"
+   }
+  },
+  "f15": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "034fec08081d6ab570b6fd5b456ea560",
+   "sha": {
+    "assets/voice/f15.mp3": "328c53130571a2b6"
+   }
+  },
+  "f16": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "9e33a3ba43197201383b19529c2e442f",
+   "sha": {
+    "assets/voice/f16.mp3": "0bf0fccd1e69cee8"
+   }
+  },
+  "f17": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "48f76d59516307ffcc09c3e9b42a0887",
+   "sha": {
+    "assets/voice/f17.mp3": "9794a8a62144bfdc"
+   }
+  },
+  "f18": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "126bf2fb114bd7cd1ca412c48275bef0",
+   "sha": {
+    "assets/voice/f18.mp3": "a9b956e5b0f096e6"
+   }
+  },
+  "f19": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "7b7e76a565894c802c29811b157e5a5c",
+   "sha": {
+    "assets/voice/f19.mp3": "9cbb19206c9fe461"
+   }
+  },
+  "f20": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "422cb96ae88a243df52ea86c42b4b6eb",
+   "sha": {
+    "assets/voice/f20.mp3": "71705b961296344b"
+   }
+  },
+  "f21": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "06e917dacd7ddaabc2ee7f48e588d752",
+   "sha": {
+    "assets/voice/f21.mp3": "0d1f8bebb4f66083"
+   }
+  },
+  "f22": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "15d78b0e9c521fc66f3bbf8f9310a2c0",
+   "sha": {
+    "assets/voice/f22.mp3": "639201ba8edb57ca"
+   }
+  },
+  "f23": {
+   "role": "mongle",
+   "voice": "선하",
+   "tempo": 0.92,
+   "key": "1501cc80f6e6bb53092e9c0e41ed344e",
+   "sha": {
+    "assets/voice/f23.mp3": "77e4539c3c8b3085"
+   }
+  },
+  "intro": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.94,
+   "key": "2a4fa0d61392170ac780046a4ffa6586",
+   "sha": {
+    "assets/narration/intro.mp3": "6dfad0a252555c0c"
+   }
+  },
+  "practice-done": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.94,
+   "key": "ebddb3f11446c32258ab637f5e1e69ba",
+   "sha": {
+    "assets/narration/practice-done.mp3": "822ce8e495d3587c"
+   }
+  },
+  "daily-intro": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.94,
+   "key": "d6b64d047f9a244b303458e6b3df7672",
+   "sha": {
+    "assets/narration/daily-intro.mp3": "65998877a854e710"
+   }
+  },
+  "daily-best": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.94,
+   "key": "cc9af34cfa129fa65347aaf078cdabe5",
+   "sha": {
+    "assets/narration/daily-best.mp3": "6156b4b7e8df112d"
+   }
+  },
+  "result-3": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.94,
+   "key": "717b99fda6b5bf234196fbe92a5323b0",
+   "sha": {
+    "assets/narration/result-3.mp3": "e411bb127226a736"
+   }
+  },
+  "result-2": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.94,
+   "key": "f90178a7f8160cb3c04fbad83609ccdb",
+   "sha": {
+    "assets/narration/result-2.mp3": "678cc7b5a4bba307"
+   }
+  },
+  "result-1": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.94,
+   "key": "6c5edcb89aa0ad2187f9284b49653b80",
+   "sha": {
+    "assets/narration/result-1.mp3": "99b2ca0ed9b44fbd"
+   }
+  },
+  "result-0": {
+   "role": "narrator",
+   "voice": "서현",
+   "tempo": 0.94,
+   "key": "2a7c69af7c40adc3a93d52805337e56c",
+   "sha": {
+    "assets/narration/result-0.mp3": "a40b19b4cff424e0"
+   }
+  }
+ }
+}

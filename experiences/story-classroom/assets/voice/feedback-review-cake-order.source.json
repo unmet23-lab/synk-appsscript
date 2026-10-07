@@ -1,8 +1,15 @@
 {
-  "sourceKey": "aedc0117b79ab98de531e92f5087c6dd6b56378500d737d2a8342e95e2132326",
+  "sourceKey": "ba30898c7a8ed19d293615f031c2030f",
   "text": "순서 확인. 먼저 과자부터. 그다음 케이크.",
   "speaker": "marin",
-  "voice": "ko-KR-InJoonNeural",
-  "rate": "-10%",
-  "pitch": "-4Hz"
+  "voice": "한결",
+  "voiceId": "tc_677f2aa4a854ddffa0ebda89",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.9,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

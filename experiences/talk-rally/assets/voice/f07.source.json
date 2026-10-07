@@ -1,7 +1,14 @@
 {
-  "sourceKey": "9aca8d532184d7355ac1470ea15fccc2a34056f29ba4497873980b1cd5dcefb9",
+  "sourceKey": "fcaf6e1501137ddbb5d390a880c992aa",
   "text": "도와줘서 고마워요.",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-8%",
-  "pitch": "+8Hz"
+  "voice": "선하",
+  "voiceId": "tc_649408f268febb61286eec85",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "몽글: 지금 generate-voice.py와 같은 앞뒤 자르기 + loudnorm I=-18 TP=-2.5 LRA=7 · 안내: generate-narration.py와 같은 자르기·쉼 0.28초 + 재어서 -20.5 LUFS → MP3 mono 24kHz 96kbps"
 }

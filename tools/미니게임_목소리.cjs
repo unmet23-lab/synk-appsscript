@@ -412,7 +412,8 @@ function serve() {
       return reply(res, 404, { error: 'Not found' });
     } catch (error) { reply(res, 400, { error: error.message }); }
   }).listen(PORT, '127.0.0.1', async () => {
-    watchKeyFile();
+    // 흐름 시험(가짜 Typecast)에서는 보안 폴더의 실제 키 파일을 읽지 않는다(10-07 시험이 실제 키를 가짜 서버로 보내 실패 문구에 찍힘).
+    if (!process.env.SYNK_TYPECAST_API || arg('--key-file')) watchKeyFile();
     try {
       const r = await V.dryRun({ catalog: loadCatalog() });
       console.log(`미니게임 목소리: ${ORIGIN} — ${r.totals.lines}줄 ${r.totals.chars}자(부를 글자 ${r.totals.billable}) · 받아 둔 원본 ${r.totals.cached}/${r.totals.requests}${r.problems.length ? ` · 미리보기 문제 ${r.problems.length}개(--dry-run으로 확인)` : ''}`);

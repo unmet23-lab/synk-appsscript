@@ -153,7 +153,8 @@ test('가짜 Typecast로 처음부터 끝까지: 키 연결 → 샘플 → 다�
     for (const file of [...filesUnder(vendor), ...filesUnder(copy)]) assert.ok(!fs.readFileSync(file).includes(KEY), '키가 파일에 남음: ' + file);
     assert.ok(!a.output().includes(KEY) && !b.output().includes(KEY), '키가 출력에 남음');
     assert.ok(!JSON.stringify(await b.status()).includes(KEY));
-    assert.deepEqual([...mock.seenKeys].filter(k => k !== KEY), [], '다른 키를 보내지 않는다');
+    // 키 값은 실패 문구에도 찍지 않는다(개수만).
+    assert.equal([...mock.seenKeys].filter(k => k !== KEY).length, 0, '다른 키를 보내지 않는다');
   } finally {
     for (const t of tools) t.child.kill();
     await new Promise(r => mock.server.close(r));

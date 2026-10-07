@@ -1,8 +1,15 @@
 {
-  "sourceKey": "1f83d1d08b52dd65591cd7a7c073a41ef57eb56ea2798eb75e7ed429f171946e",
+  "sourceKey": "e3ce75bab6a98adb5e76a10cb0a8c259",
   "text": "쉬는 시간이 끝났어요. 교실에는 과자와 종이가 가득해요.",
   "speaker": "narrator",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-8%",
-  "pitch": "+0Hz"
+  "voice": "서현",
+  "voiceId": "tc_69f2e455ea79fd197aa0476f",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

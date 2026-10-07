@@ -1,8 +1,15 @@
 {
-  "sourceKey": "b86e1a4bb02c649a6ef6eeda3b3ab199676ac588bd3dd4e7a933b60031c6135e",
+  "sourceKey": "a35ee79b7fdd50227c198a2bf09337b4",
   "text": "케이크를 놓은 다음, 마린은 리본을 칠판에 붙여 줘.",
   "speaker": "teacher",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-7%",
-  "pitch": "-2Hz"
+  "voice": "효은",
+  "voiceId": "tc_691d49ccc47926d741f15913",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

@@ -1,8 +1,15 @@
 {
-  "sourceKey": "afb318c5483dc2b92827a80a5d30709678619548ea2cf4f06472ab4dd2fe54dd",
+  "sourceKey": "7b4a13efed9f54d099a872be2400af09",
   "text": "훗. 내가 해냈지! 케이크도 제자리를 찾았어.",
   "speaker": "kkamong",
-  "voice": "ko-KR-HyunsuMultilingualNeural",
-  "rate": "-4%",
-  "pitch": "+3Hz"
+  "voice": "몽군",
+  "voiceId": "tc_6731b32e075b04a9446441a0",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

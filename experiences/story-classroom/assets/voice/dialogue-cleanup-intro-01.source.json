@@ -1,8 +1,15 @@
 {
-  "sourceKey": "c74aa1eeb4e3edc04916bcb4ef24ea5ada4005aabbc52bac962a4c2cf62aa616",
+  "sourceKey": "524b7664d62572ab5b78b005c4408d61",
   "text": "마린, 까몽. 먼저 교실을 정리하자.",
   "speaker": "teacher",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-7%",
-  "pitch": "-2Hz"
+  "voice": "효은",
+  "voiceId": "tc_691d49ccc47926d741f15913",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

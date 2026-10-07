@@ -1,8 +1,15 @@
 {
-  "sourceKey": "6101515e6a4a436d481e890463e82a08ce2aec6637405087653b7a44916b0016",
+  "sourceKey": "a61c543af543d5551cf4acfdd3cd11b5",
   "text": "어? 책상에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
   "speaker": "mongle",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-3%",
-  "pitch": "+8Hz"
+  "voice": "선하",
+  "voiceId": "tc_649408f268febb61286eec85",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

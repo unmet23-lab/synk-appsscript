@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-04T09:43:53.192675+00:00",
+  "generatedAt": "2026-10-07T11:21:54.242Z",
   "humanRecording": false,
   "normalization": "앞뒤 빈 소리 자름, loudnorm I=-18 TP=-2.5 LRA=7; mono 24 kHz MP3 96 kbps",
   "lines": [
@@ -7,471 +7,471 @@
       "id": "p00",
       "text": "안녕하세요?",
       "file": "assets/voice/p00.mp3",
-      "sha256": "6fe0a71afcb241f421dcd8730634bf477c5cc0e477f0084a03c9d008cf41dc14",
-      "bytes": 13004,
-      "durationSeconds": 1.001,
-      "peakDbfs": -5.28,
-      "rmsDbfs": -18.47
+      "sha256": "77601b4912584df916e79badeb1e193c8607261802071ddf81bf697a040c59a3",
+      "bytes": 13292,
+      "durationSeconds": 1.013,
+      "peakDbfs": -3.35,
+      "rmsDbfs": -20.12
     },
     {
       "id": "r01",
       "text": "물이 있어요?",
       "file": "assets/voice/r01.mp3",
-      "sha256": "c96fb06f16188ec16e7571a948c47d5fe8d0f0a2de2c4e77b885a760142c11ab",
-      "bytes": 13004,
-      "durationSeconds": 1.008,
-      "peakDbfs": -4.33,
-      "rmsDbfs": -18.2
+      "sha256": "5196c16844b69e338f2186fc1b112b8b473474b0a26b9d11893a9eb6bf73d198",
+      "bytes": 12716,
+      "durationSeconds": 0.979,
+      "peakDbfs": -6.88,
+      "rmsDbfs": -19.3
     },
     {
       "id": "r02",
       "text": "동생이 있어요?",
       "file": "assets/voice/r02.mp3",
-      "sha256": "d033a1810a29c4f5f198b0bc091be0335391dc534aa5f95dfe541247e4aa63eb",
-      "bytes": 15308,
-      "durationSeconds": 1.194,
-      "peakDbfs": -5.65,
-      "rmsDbfs": -18.62
+      "sha256": "817af08a4123e4a5532bdea318ad8ba05a2d0a625c9205eb7b056827a3ad1cfd",
+      "bytes": 15884,
+      "durationSeconds": 1.226,
+      "peakDbfs": -6.71,
+      "rmsDbfs": -18.83
     },
     {
       "id": "r03",
       "text": "학생이에요?",
       "file": "assets/voice/r03.mp3",
-      "sha256": "6b2d01b82bb82111266319856a2491ea4a9cead0434b2279773a435d998c33e4",
-      "bytes": 13004,
-      "durationSeconds": 1.004,
-      "peakDbfs": -5.68,
-      "rmsDbfs": -19.15
+      "sha256": "d2cdf22dab8a8cb0d1b18ea4924911f6724728f56da7cb5aa9e4ca9a2dfe6946",
+      "bytes": 13580,
+      "durationSeconds": 1.034,
+      "peakDbfs": -4.85,
+      "rmsDbfs": -19.52
     },
     {
       "id": "r04",
       "text": "커피를 마셔요?",
       "file": "assets/voice/r04.mp3",
-      "sha256": "30d9008022bbefef964b59d09fde5029bb7c5365b089741969444ed4bca1cd7f",
-      "bytes": 14732,
-      "durationSeconds": 1.139,
-      "peakDbfs": -5.57,
-      "rmsDbfs": -18.92
+      "sha256": "d79b3374f9d984b01aa817e6355a47ac49192fd8042c0205b3b64cb6f306df36",
+      "bytes": 15020,
+      "durationSeconds": 1.158,
+      "peakDbfs": -4.71,
+      "rmsDbfs": -19.22
     },
     {
       "id": "r05",
       "text": "오늘 바빠요?",
       "file": "assets/voice/r05.mp3",
-      "sha256": "2e6ba71971bf3f978d953956b337f6c60485f4e990dc0df0a098680c79f5478d",
-      "bytes": 13580,
-      "durationSeconds": 1.045,
-      "peakDbfs": -4.38,
-      "rmsDbfs": -17.97
+      "sha256": "0c5bc38ed1f2ecf19c4943a6ccc0454c7468f787d454d8ad720ce8d0f9921654",
+      "bytes": 14156,
+      "durationSeconds": 1.085,
+      "peakDbfs": -5.47,
+      "rmsDbfs": -18.65
     },
     {
       "id": "r06",
       "text": "한국 음식을 좋아해요?",
       "file": "assets/voice/r06.mp3",
-      "sha256": "13f5d582392599fed44a2c9ad801592e59951abd7af201c263a1b9964335bc04",
-      "bytes": 21356,
-      "durationSeconds": 1.689,
-      "peakDbfs": -6.26,
-      "rmsDbfs": -18.59
+      "sha256": "6abefe485f40cd1f7046633521f92e9902f4bc07399e5a813390c0057bd9a6a5",
+      "bytes": 21644,
+      "durationSeconds": 1.723,
+      "peakDbfs": -3.62,
+      "rmsDbfs": -19.01
     },
     {
       "id": "w01",
       "text": "어디에 가요?",
       "file": "assets/voice/w01.mp3",
-      "sha256": "fde9babae7b30f5366a980a18c359a6fec81ec4e682f5e9b6c7a3437836c8489",
-      "bytes": 12716,
-      "durationSeconds": 0.969,
-      "peakDbfs": -5.56,
-      "rmsDbfs": -18.88
+      "sha256": "0f1c8e256d8a96bab22efedbcfa508e25dad647c95151987f8390f34f597c23a",
+      "bytes": 14444,
+      "durationSeconds": 1.117,
+      "peakDbfs": -5.04,
+      "rmsDbfs": -18.3
     },
     {
       "id": "w02",
       "text": "언제 만나요?",
       "file": "assets/voice/w02.mp3",
-      "sha256": "03c4027bcb3fbfd81eb6234c9ba9575294e63e20902c9743dd80abe036109ed5",
-      "bytes": 14156,
-      "durationSeconds": 1.086,
-      "peakDbfs": -5.57,
-      "rmsDbfs": -18.47
+      "sha256": "b19db6895c10a8633262c563365f8a2fc5339bf258acb534cfcdbca83cb48160",
+      "bytes": 14444,
+      "durationSeconds": 1.122,
+      "peakDbfs": -4.46,
+      "rmsDbfs": -18.43
     },
     {
       "id": "w03",
       "text": "누구하고 살아요?",
       "file": "assets/voice/w03.mp3",
-      "sha256": "b90a8c79c600b685245ef149b4ce45b70987f7d73daf63afb63eb572ba7da7b6",
-      "bytes": 15596,
-      "durationSeconds": 1.223,
-      "peakDbfs": -5.58,
-      "rmsDbfs": -18.56
+      "sha256": "bdd22b56b002b578a76c33a20581d376c9db7e26e020600b9c48791771f76de2",
+      "bytes": 17036,
+      "durationSeconds": 1.327,
+      "peakDbfs": -4.65,
+      "rmsDbfs": -19.03
     },
     {
       "id": "w04",
       "text": "몇 시에 일어나요?",
       "file": "assets/voice/w04.mp3",
-      "sha256": "fb11aa5e2dc9fbd07b5bbac66c7ebf9df04bdb3bcd1eae406e70983acc56e009",
-      "bytes": 15596,
-      "durationSeconds": 1.206,
-      "peakDbfs": -6.77,
-      "rmsDbfs": -18.59
+      "sha256": "81a14f47d22dbd4e0b4ad4a2d025bf46350684721eea9cf55bf50b2b40d774cd",
+      "bytes": 18476,
+      "durationSeconds": 1.462,
+      "peakDbfs": -4.02,
+      "rmsDbfs": -18.98
     },
     {
       "id": "w05",
       "text": "무슨 음식을 좋아해요?",
       "file": "assets/voice/w05.mp3",
-      "sha256": "aa82b319fda36cb13a7a7bcc274b3cd2812f7a0976318a996313718af7be6d1a",
-      "bytes": 21068,
-      "durationSeconds": 1.66,
-      "peakDbfs": -6.2,
-      "rmsDbfs": -18.54
+      "sha256": "58e9bacfeac88a9d31109d6490379cbf46a98f4f4eb1c3b6f0f7dc61c6afbf6e",
+      "bytes": 21356,
+      "durationSeconds": 1.694,
+      "peakDbfs": -5.13,
+      "rmsDbfs": -19.27
     },
     {
       "id": "w06",
       "text": "주말에 뭐 했어요?",
       "file": "assets/voice/w06.mp3",
-      "sha256": "9c1b104f0e2cff9d81e72d02a2d4969b2090bee7a0925389479204c279388953",
-      "bytes": 17612,
-      "durationSeconds": 1.387,
-      "peakDbfs": -5.76,
-      "rmsDbfs": -18.46
+      "sha256": "6f884e46efced82e32639e83a5b09c5c840e3569b5dbc4dbdfc5bba2ce2b0761",
+      "bytes": 21932,
+      "durationSeconds": 1.734,
+      "peakDbfs": -4.96,
+      "rmsDbfs": -18.99
     },
     {
       "id": "w07",
       "text": "이 가방 얼마예요?",
       "file": "assets/voice/w07.mp3",
-      "sha256": "13c8289345a403c78ae0a569ef8baf4ddb26ba94225b4f52aa0b57860333d3c1",
-      "bytes": 17900,
-      "durationSeconds": 1.403,
-      "peakDbfs": -6.07,
-      "rmsDbfs": -18.45
+      "sha256": "a3f4041cbbc6f4e3f4b905b91c888a20ef61863301468e0d3033e024eee0924d",
+      "bytes": 22220,
+      "durationSeconds": 1.773,
+      "peakDbfs": -4.12,
+      "rmsDbfs": -18.61
     },
     {
       "id": "w08",
       "text": "왜 늦었어요?",
       "file": "assets/voice/w08.mp3",
-      "sha256": "50ac33b6739af404da044c0920f99cea873643418d5d5e6339b57f8d7b35755e",
-      "bytes": 15596,
-      "durationSeconds": 1.211,
-      "peakDbfs": -5.0,
-      "rmsDbfs": -18.15
+      "sha256": "d23639a868ff71318c2c19af3beb25171b290bb99d02c9e1102a72a4f399557c",
+      "bytes": 19052,
+      "durationSeconds": 1.498,
+      "peakDbfs": -4.44,
+      "rmsDbfs": -19.04
     },
     {
       "id": "f01",
       "text": "생일 축하해요.",
       "file": "assets/voice/f01.mp3",
-      "sha256": "96c6acfdb4dc4ca23b856559f1830c868323846f44d89584c3358385d0049b8a",
-      "bytes": 15596,
-      "durationSeconds": 1.218,
-      "peakDbfs": -5.08,
-      "rmsDbfs": -18.71
+      "sha256": "d85da5083276cd4dc612a71300bd39f02b9d0e653a6a0a03f419a4b324147b20",
+      "bytes": 18476,
+      "durationSeconds": 1.451,
+      "peakDbfs": -6.21,
+      "rmsDbfs": -19.68
     },
     {
       "id": "f02",
       "text": "늦어서 미안해요.",
       "file": "assets/voice/f02.mp3",
-      "sha256": "60124b5c0ca9ccb5aa2206f92de4a3aa8b7d6b20c8ce014f2319b78133e16d8b",
-      "bytes": 17324,
-      "durationSeconds": 1.352,
-      "peakDbfs": -5.78,
-      "rmsDbfs": -18.63
+      "sha256": "59d71ffa2a38c190c3e855234b9b0b062086e8deea9bb99baa83dbf323de840b",
+      "bytes": 25676,
+      "durationSeconds": 2.051,
+      "peakDbfs": -6.12,
+      "rmsDbfs": -19.39
     },
     {
       "id": "f03",
       "text": "맛있게 드세요.",
       "file": "assets/voice/f03.mp3",
-      "sha256": "8b1533bdb047abe7be262b9529ca64645e6159907af0f0aec59ec372bd3f1c80",
-      "bytes": 13580,
-      "durationSeconds": 1.055,
-      "peakDbfs": -5.55,
-      "rmsDbfs": -18.76
+      "sha256": "d52cb8e2d3811e914e6dd7992b91ec7d00dab1c245b1a1d0bad321eef421531e",
+      "bytes": 16460,
+      "durationSeconds": 1.29,
+      "peakDbfs": -2.99,
+      "rmsDbfs": -19.17
     },
     {
       "id": "f04",
       "text": "안녕히 가세요.",
       "file": "assets/voice/f04.mp3",
-      "sha256": "f11e1a6a37e04956192b8df670ea2c12021f4c09ff1bf03de1a6e617e4696883",
-      "bytes": 14444,
-      "durationSeconds": 1.124,
-      "peakDbfs": -6.38,
-      "rmsDbfs": -18.34
+      "sha256": "a73dfde9fc47b6a3a27c6bb5ae7b4b87e00ee15fb983344a785bf47c9f2e7850",
+      "bytes": 17612,
+      "durationSeconds": 1.376,
+      "peakDbfs": -2.98,
+      "rmsDbfs": -19.23
     },
     {
       "id": "f05",
       "text": "처음 뵙겠습니다.",
       "file": "assets/voice/f05.mp3",
-      "sha256": "1d331dd09909d5d7d71f167435fb6f84a3a8e21c90edcd6180430a8f9fe4a891",
-      "bytes": 17900,
-      "durationSeconds": 1.394,
-      "peakDbfs": -6.04,
-      "rmsDbfs": -18.74
+      "sha256": "e5c0866da93adeb5ac557982e1250f665c2dd4f9102cc0e2f6fd395a5366c83a",
+      "bytes": 19340,
+      "durationSeconds": 1.525,
+      "peakDbfs": -4.81,
+      "rmsDbfs": -18.97
     },
     {
       "id": "f06",
       "text": "어서 오세요.",
       "file": "assets/voice/f06.mp3",
-      "sha256": "a7c4585984f396fac2d3c1aa612d0a76a785560ecfe94243c9c10aab843787c5",
-      "bytes": 13004,
-      "durationSeconds": 0.989,
-      "peakDbfs": -6.16,
-      "rmsDbfs": -18.99
+      "sha256": "cc7a8b7e892704f6667b614a71ac0385904aaeca09767b14526b547a0175a160",
+      "bytes": 14444,
+      "durationSeconds": 1.114,
+      "peakDbfs": -4.96,
+      "rmsDbfs": -19.4
     },
     {
       "id": "f07",
       "text": "도와줘서 고마워요.",
       "file": "assets/voice/f07.mp3",
-      "sha256": "eb13f8d358f2253a76b4c3fd728f55810e43fed74ed86f7cee7e74064f1522e6",
-      "bytes": 18476,
-      "durationSeconds": 1.457,
-      "peakDbfs": -5.35,
-      "rmsDbfs": -18.35
+      "sha256": "e9d0e807a2e2f9e91caaed95199fb1e298cb72404e4250c055457a50355480a9",
+      "bytes": 21644,
+      "durationSeconds": 1.706,
+      "peakDbfs": -5.23,
+      "rmsDbfs": -18.77
     },
     {
       "id": "f08",
       "text": "다녀오겠습니다.",
       "file": "assets/voice/f08.mp3",
-      "sha256": "008ccccca5277e6c0857463ad925973159cd8224eaa572e4b935d97974220526",
-      "bytes": 16172,
-      "durationSeconds": 1.261,
-      "peakDbfs": -6.17,
-      "rmsDbfs": -18.64
+      "sha256": "fd3e886c1b5032a6274389ab6ad55cb4a0293120eff64d692e200977db4be9b1",
+      "bytes": 16748,
+      "durationSeconds": 1.303,
+      "peakDbfs": -4.01,
+      "rmsDbfs": -18.61
     },
     {
       "id": "f09",
       "text": "잘 자요.",
       "file": "assets/voice/f09.mp3",
-      "sha256": "cbf18a94d2e0323c416d866d5662ef95c18221ef4c6ef7d0b5faae247af8c3b2",
-      "bytes": 11276,
-      "durationSeconds": 0.863,
-      "peakDbfs": -5.55,
-      "rmsDbfs": -18.97
+      "sha256": "de065c8218e8ecfaff15bbb84452135339565981e2702044c340f6bfd6f54ca5",
+      "bytes": 13580,
+      "durationSeconds": 1.045,
+      "peakDbfs": -5.41,
+      "rmsDbfs": -19.49
     },
     {
       "id": "f10",
       "text": "이거 선물이에요.",
       "file": "assets/voice/f10.mp3",
-      "sha256": "3b7c09b13cc7a3ef2b89c6d56147d514fcc3c24d2926e4ca745961c725977746",
-      "bytes": 15884,
-      "durationSeconds": 1.245,
-      "peakDbfs": -6.62,
-      "rmsDbfs": -18.62
+      "sha256": "602cf0ff26b2c67989a0d487806164e5d409e78050b2bd1777ac8d4c444c0bd3",
+      "bytes": 20204,
+      "durationSeconds": 1.592,
+      "peakDbfs": -5.8,
+      "rmsDbfs": -18.77
     },
     {
       "id": "f11",
       "text": "여보세요?",
       "file": "assets/voice/f11.mp3",
-      "sha256": "75c07b2684136d23c83206c1150eac0ec944ab94996144acc22fa186a82ab271",
+      "sha256": "ef21c1a22520773cf7c9cb23cf3635460cb6638d20a05f00de1ea8fc1ee78c9a",
       "bytes": 11852,
-      "durationSeconds": 0.897,
-      "peakDbfs": -5.2,
-      "rmsDbfs": -18.71
+      "durationSeconds": 0.89,
+      "peakDbfs": -4.35,
+      "rmsDbfs": -19.14
     },
     {
       "id": "f12",
       "text": "주말 잘 보내세요.",
       "file": "assets/voice/f12.mp3",
-      "sha256": "4b883edd48993ea9062ac46d164fda1991e721c6ea854ef5cdb02bd6a64dc519",
-      "bytes": 19916,
-      "durationSeconds": 1.568,
-      "peakDbfs": -5.9,
-      "rmsDbfs": -18.47
+      "sha256": "a86aa63f7c63142c97e65f015317a85b67dc32f58a1e5757dcc137f34e77cbc8",
+      "bytes": 22796,
+      "durationSeconds": 1.821,
+      "peakDbfs": -6.09,
+      "rmsDbfs": -19.02
     },
     {
       "id": "r07",
       "text": "숙제를 다 했어요?",
       "file": "assets/voice/r07.mp3",
-      "sha256": "6abb1734398495203e665902d048a2a779f9d9c9e08c0f2b3c76c2fa9c54f095",
-      "bytes": 18188,
-      "durationSeconds": 1.421,
-      "peakDbfs": -4.97,
-      "rmsDbfs": -18.81
+      "sha256": "729243db4b3710e8484866f9852a982effaf2f947c03993a063429be6a2a0e9c",
+      "bytes": 20204,
+      "durationSeconds": 1.595,
+      "peakDbfs": -6.65,
+      "rmsDbfs": -19.91
     },
     {
       "id": "r08",
       "text": "부산에 가 봤어요?",
       "file": "assets/voice/r08.mp3",
-      "sha256": "92bb8af53662a41f3ad132e484315179c44166f8c006ccdad4274c079d42af2d",
-      "bytes": 17324,
-      "durationSeconds": 1.346,
-      "peakDbfs": -3.14,
-      "rmsDbfs": -18.64
+      "sha256": "c4f40012c17c0f7901bb4c3a04cecaf1e29e88722a37f49aa49fb16a3a1e8241",
+      "bytes": 18764,
+      "durationSeconds": 1.481,
+      "peakDbfs": -5.78,
+      "rmsDbfs": -19.53
     },
     {
       "id": "r09",
       "text": "같이 점심 먹을래요?",
       "file": "assets/voice/r09.mp3",
-      "sha256": "29cd683c5b394e4e4eee16adad6d3cac8583d817f7550f86b40a4b70efca53f4",
-      "bytes": 20204,
-      "durationSeconds": 1.592,
-      "peakDbfs": -5.93,
-      "rmsDbfs": -18.76
+      "sha256": "2843151c88c55da06b3d70f4b5180104a9b3f41da11d3f6774eafb14923acdd9",
+      "bytes": 21356,
+      "durationSeconds": 1.696,
+      "peakDbfs": -5.12,
+      "rmsDbfs": -19.19
     },
     {
       "id": "r10",
       "text": "집이 멀어요?",
       "file": "assets/voice/r10.mp3",
-      "sha256": "40cf60416aa77d1d60ea18e33f25af2beab5bac9e82895665f37c64accdd2670",
-      "bytes": 13868,
-      "durationSeconds": 1.079,
-      "peakDbfs": -5.61,
-      "rmsDbfs": -18.64
+      "sha256": "3384cc956fcea35000383a2ee94506908c55c88ac3f26fb715a9220e994f47a3",
+      "bytes": 17612,
+      "durationSeconds": 1.37,
+      "peakDbfs": -3.98,
+      "rmsDbfs": -19
     },
     {
       "id": "w09",
       "text": "어떻게 왔어요?",
       "file": "assets/voice/w09.mp3",
-      "sha256": "6e75953155274f909b64f2ff8b2013b2a4fa7152f5670a90fd07aefbf9386637",
-      "bytes": 15596,
-      "durationSeconds": 1.224,
-      "peakDbfs": -3.93,
-      "rmsDbfs": -18.66
+      "sha256": "b874ae273362e1398def31bd099b7c6d52f0495f2aadeb8b3b6d16768122a016",
+      "bytes": 16172,
+      "durationSeconds": 1.26,
+      "peakDbfs": -3.08,
+      "rmsDbfs": -19.64
     },
     {
       "id": "w10",
       "text": "모두 몇 분이세요?",
       "file": "assets/voice/w10.mp3",
-      "sha256": "a1d18d6e628bc325f4c68dcc8e32fea25404b97eb695be160655e78522af84ea",
-      "bytes": 17324,
-      "durationSeconds": 1.346,
-      "peakDbfs": -6.47,
-      "rmsDbfs": -18.21
+      "sha256": "295a12c8a8a8d70a2ed536c4ad407d03754976d9841df3e04bf599c8fe7fd972",
+      "bytes": 22220,
+      "durationSeconds": 1.754,
+      "peakDbfs": -5.44,
+      "rmsDbfs": -18.39
     },
     {
       "id": "w11",
       "text": "주말에 뭐 할 거예요?",
       "file": "assets/voice/w11.mp3",
-      "sha256": "f1bcaa2d29d0a14d02fbb752de97471bbe2cbc968549e1f4b4c364b33bd64178",
-      "bytes": 18476,
-      "durationSeconds": 1.462,
-      "peakDbfs": -5.13,
-      "rmsDbfs": -18.45
+      "sha256": "c077f87fced2e6ed39381ef4a649c368dfaa43c207e35a6ec5cff5cedd098351",
+      "bytes": 21932,
+      "durationSeconds": 1.735,
+      "peakDbfs": -5.48,
+      "rmsDbfs": -18.96
     },
     {
       "id": "w12",
       "text": "어디가 아파요?",
       "file": "assets/voice/w12.mp3",
-      "sha256": "42d68ea2893cea15f300de648d8ee60df4af8e7700c3a0dc5de7bac8753b2019",
-      "bytes": 15308,
-      "durationSeconds": 1.185,
-      "peakDbfs": -4.94,
-      "rmsDbfs": -18.71
+      "sha256": "b173bd7941109af2a7636a5e0614947c57cc421f4df4af16c022ad8feb891952",
+      "bytes": 14444,
+      "durationSeconds": 1.124,
+      "peakDbfs": -4.41,
+      "rmsDbfs": -18.22
     },
     {
       "id": "w13",
       "text": "이 옷 어때요?",
       "file": "assets/voice/w13.mp3",
-      "sha256": "3b44bd62c2cf9dbeb0ec086f0baec13a4d6968ad5b2e70e760a892eb17c60a3c",
-      "bytes": 14444,
-      "durationSeconds": 1.115,
-      "peakDbfs": -5.58,
-      "rmsDbfs": -17.71
+      "sha256": "f494665539394fdfe315f5afc569624ee809e68947bff425ffb0bb09999848de",
+      "bytes": 17036,
+      "durationSeconds": 1.344,
+      "peakDbfs": -3.56,
+      "rmsDbfs": -18.23
     },
     {
       "id": "f13",
       "text": "실례합니다.",
       "file": "assets/voice/f13.mp3",
-      "sha256": "fd2c9e23a596b6f98027d1968d74bc1c092f4d1a75cdb54d4de34eae733bf00d",
-      "bytes": 13292,
-      "durationSeconds": 1.012,
-      "peakDbfs": -7.65,
-      "rmsDbfs": -18.9
+      "sha256": "aafe4854a79b4dcb6b20c3d13dd3f59f120e9611d123a6abf038abe67a28103e",
+      "bytes": 14156,
+      "durationSeconds": 1.104,
+      "peakDbfs": -5.18,
+      "rmsDbfs": -19.75
     },
     {
       "id": "f14",
       "text": "오랜만이에요.",
       "file": "assets/voice/f14.mp3",
-      "sha256": "e16b4b380756ab4e7692f1299e98ac9db0b37f4a35f2d8e647215fcacfa435d6",
-      "bytes": 14156,
-      "durationSeconds": 1.093,
-      "peakDbfs": -8.46,
-      "rmsDbfs": -18.93
+      "sha256": "7a3b075a75aa676181a9331e59caea360cbf62adc80a823789322584e002a63b",
+      "bytes": 15596,
+      "durationSeconds": 1.209,
+      "peakDbfs": -5.85,
+      "rmsDbfs": -18.53
     },
     {
       "id": "f15",
       "text": "잘 먹었습니다.",
       "file": "assets/voice/f15.mp3",
-      "sha256": "4939a31c8a9450080b8b1a375cf6aad0c3151c9d2aa29dba940e98bd8b7e0db8",
-      "bytes": 15884,
-      "durationSeconds": 1.228,
-      "peakDbfs": -6.16,
-      "rmsDbfs": -18.73
+      "sha256": "328c53130571a2b67ce6f66362b81efcc0bdc4ecff78e5c79fac8066e946f44c",
+      "bytes": 18188,
+      "durationSeconds": 1.435,
+      "peakDbfs": -4.7,
+      "rmsDbfs": -19.28
     },
     {
       "id": "f16",
       "text": "먼저 갈게요.",
       "file": "assets/voice/f16.mp3",
-      "sha256": "996e912071379169f147227ded1f63e25211cbcbe7f5f8cc8081657c3fd62f13",
-      "bytes": 14444,
-      "durationSeconds": 1.106,
-      "peakDbfs": -3.52,
-      "rmsDbfs": -18.0
+      "sha256": "0bf0fccd1e69cee8ad70fe42a5c6243df9ad4bd6ca2be782961d5e6ba3e56ce8",
+      "bytes": 15020,
+      "durationSeconds": 1.158,
+      "peakDbfs": -4.7,
+      "rmsDbfs": -18.6
     },
     {
       "id": "f17",
       "text": "잠깐만 기다리세요.",
       "file": "assets/voice/f17.mp3",
-      "sha256": "aad2f7fcdc9b88d7659f4e864c9a3be23343258bfd5e4c071d2806e35d8c1775",
-      "bytes": 19052,
-      "durationSeconds": 1.496,
-      "peakDbfs": -6.44,
-      "rmsDbfs": -18.85
+      "sha256": "9794a8a62144bfdc42570ef0b295e4920ddf4799418f2938838255db18bd52db",
+      "bytes": 21932,
+      "durationSeconds": 1.73,
+      "peakDbfs": -3.42,
+      "rmsDbfs": -18.76
     },
     {
       "id": "f18",
       "text": "전화 잘못 거셨어요.",
       "file": "assets/voice/f18.mp3",
-      "sha256": "aaefe1c4a771326335da4670f43ecfa58580b8322492772c448e6bc626c358f1",
-      "bytes": 20780,
-      "durationSeconds": 1.635,
-      "peakDbfs": -4.92,
-      "rmsDbfs": -18.36
+      "sha256": "a9b956e5b0f096e6969a01ee5a46e5c3fdc205816e293156e813723f40caed6c",
+      "bytes": 25964,
+      "durationSeconds": 2.086,
+      "peakDbfs": -4.05,
+      "rmsDbfs": -19.06
     },
     {
       "id": "f19",
       "text": "좀 도와주세요.",
       "file": "assets/voice/f19.mp3",
-      "sha256": "6c2041dcfebe97a4e8bd7ee89b0688a4abd4e62f48d0358464a78accba4831d2",
-      "bytes": 17036,
-      "durationSeconds": 1.323,
-      "peakDbfs": -6.3,
-      "rmsDbfs": -18.29
+      "sha256": "9cbb19206c9fe461af7984d60d0c521b11ca864d8181f6f790c2891fc8cd79e2",
+      "bytes": 18764,
+      "durationSeconds": 1.479,
+      "peakDbfs": -5.72,
+      "rmsDbfs": -18.96
     },
     {
       "id": "f20",
       "text": "안녕히 계세요.",
       "file": "assets/voice/f20.mp3",
-      "sha256": "e1458d1523a40e5c4b0bda718e7cdf7a4ead98b85e7fc154cc6b047a7ded5b7a",
-      "bytes": 15020,
-      "durationSeconds": 1.165,
-      "peakDbfs": -7.12,
-      "rmsDbfs": -18.55
+      "sha256": "71705b961296344b5c12cd4c8d345508f934ef3289a97c06baf0aa6e219dc8ed",
+      "bytes": 17036,
+      "durationSeconds": 1.343,
+      "peakDbfs": -3.1,
+      "rmsDbfs": -19.92
     },
     {
       "id": "f21",
       "text": "잘 먹겠습니다.",
       "file": "assets/voice/f21.mp3",
-      "sha256": "6f2887402bdd921b2ed0265d3c96d53d3d9b2b96e5e8903ad04dccfc2d55f571",
-      "bytes": 16172,
-      "durationSeconds": 1.259,
-      "peakDbfs": -6.29,
-      "rmsDbfs": -18.79
+      "sha256": "0d1f8bebb4f660833a4c9f7fb064c011efd26c5c0513e65bcbd2e5e3819cee22",
+      "bytes": 21932,
+      "durationSeconds": 1.73,
+      "peakDbfs": -5.61,
+      "rmsDbfs": -19.38
     },
     {
       "id": "f22",
       "text": "만나서 반가워요.",
       "file": "assets/voice/f22.mp3",
-      "sha256": "56078bc55ee742bf3f1de98479d9f5dea6859008213dae5a5205822e604e73e9",
-      "bytes": 17612,
-      "durationSeconds": 1.387,
-      "peakDbfs": -5.19,
-      "rmsDbfs": -18.54
+      "sha256": "639201ba8edb57ca866f1c32d0d3f172cef4ac1640869ed6c3f47cb58e9d7c91",
+      "bytes": 22508,
+      "durationSeconds": 1.789,
+      "peakDbfs": -3.86,
+      "rmsDbfs": -18.85
     },
     {
       "id": "f23",
       "text": "잘 다녀오세요.",
       "file": "assets/voice/f23.mp3",
-      "sha256": "ca4fc678e5fce6abca1f9984f958b236275654465b1a2b876fb01892688ed3d3",
-      "bytes": 16748,
-      "durationSeconds": 1.304,
-      "peakDbfs": -6.27,
-      "rmsDbfs": -18.54
+      "sha256": "77e4539c3c8b3085b46a297fd7f83f3d81da885ccca63db88afcc41ede3aa486",
+      "bytes": 17900,
+      "durationSeconds": 1.394,
+      "peakDbfs": -5.06,
+      "rmsDbfs": -19.31
     }
   ]
 }

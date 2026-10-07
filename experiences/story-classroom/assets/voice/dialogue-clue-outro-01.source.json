@@ -1,8 +1,15 @@
 {
-  "sourceKey": "c7c8f00268eba01421cc4811c7a9989519629b1938042eb59b336fad228db2f6",
+  "sourceKey": "a84c77f08754e330659b308fa86bb6c0",
   "text": "편지를 펼쳤어요. “선생님, 생일 축하해요!”라고 쓰여 있어요.",
   "speaker": "narrator",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "-8%",
-  "pitch": "+0Hz"
+  "voice": "서현",
+  "voiceId": "tc_69f2e455ea79fd197aa0476f",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }

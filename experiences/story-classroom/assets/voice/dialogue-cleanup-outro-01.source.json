@@ -1,8 +1,15 @@
 {
-  "sourceKey": "2f40a0254e3b93d7f69e93d6e155fbf958e0b295b6d034fcdd01aeff6fd6a3a9",
+  "sourceKey": "1da0a608efe63f71af61b8a1deb9c9b3",
   "text": "이 몸의 정리 실력, 봤지? …종이도 안 구겼어.",
   "speaker": "kkamong",
-  "voice": "ko-KR-HyunsuMultilingualNeural",
-  "rate": "-4%",
-  "pitch": "+3Hz"
+  "voice": "몽군",
+  "voiceId": "tc_6731b32e075b04a9446441a0",
+  "provider": "Typecast",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1007,
+  "targetLufs": -17,
+  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps"
 }
