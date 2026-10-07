@@ -58,44 +58,35 @@ export const SONGS = Object.freeze([
     ],
   },
   {
-    id: 'geu-a-ga', title: '그 아 가', src: 'assets/songs/geu-a-ga.mp3', duration: 74.4, bpm: 101.3,
-    suno: '61cb6e8e-bb9b-4660-bba6-51e4a66a487f', teaches: ['c-g', 'c-n', 'c-d', 'c-r', 'c-m', 'c-b', 'c-s', 'c-ng', 'c-j', 'c-h', 'c-k', 'c-t', 'c-p', 'c-ch'],
-    review: [10.7, 43.4], // 회차 끝 30초 장단: 합치기 열네 자음 → 「그 더하기 아는? 가!」 → 후렴 앞부분
-    cues: [
-      line(0, 4.1, 'Ready? 한글!'),
-      blend(4.26, 6.9, 'c-g', '그, 아, 가!'),
-      blend(10.89, 12.1, 'c-g', '그 아 가!'),
-      blend(12.1, 13.3, 'c-n', '느 아 나!'),
-      blend(13.3, 14.55, 'c-d', '드 아 다!'),
-      blend(14.55, 15.8, 'c-r', '르 아 라!'),
-      blend(15.8, 17.0, 'c-m', '므 아 마!'),
-      blend(17.0, 18.12, 'c-b', '브 아 바!'),
-      blend(18.12, 19.3, 'c-s', '스 아 사!'),
-      blend(19.3, 20.5, 'c-ng', '쉿! 아!'),
-      blend(20.5, 21.72, 'c-j', '즈 아 자!'),
-      blend(21.72, 22.96, 'c-ch', '츠 아 차!'),
-      blend(22.96, 24.16, 'c-k', '크 아 카!'),
-      blend(24.16, 25.42, 'c-t', '트 아 타!'),
-      blend(25.42, 26.9, 'c-p', '프 아 파!'),
-      blend(27.0, 28.9, 'c-h', '흐 아 하!'),
-      { kind: 'blend', t: 28.96, end: 32.4, consonant: 'c-g', vowel: 'v-a', at: [28.96, 30.0, 31.9], text: '그 더하기 아는? 가!' },
-      { kind: 'blend', t: 32.42, end: 34.7, consonant: 'c-n', vowel: 'v-a', at: [32.42, 33.26, 34.4], text: '느 더하기 아는? 나!' },
-      line(34.78, 39.4, '합쳐 봐, 하나 둘 셋!'),
-      sweep(39.54, 41.0, ROW1, { text: '가 나 다 라 마 바 사!', syllables: true }),
-      sweep(41.0, 43.0, ROW2, { text: '아 자 차 카 타 파 하!', syllables: true }),
-      sweep(43.52, 45.7, ROW1, { text: '가 나 다 라 마 바 사!', syllables: true }),
-      sweep(48.06, 49.4, ROW2, { text: '아 자 차 카 타 파 하!', syllables: true }),
-      sweep(49.46, 51.8, BASIC, { text: '가 거 고 구 그 기!', consonant: 'c-g' }),
-      sweep(51.9, 54.0, BASIC, { text: '나 너 노 누 느 니!', consonant: 'c-n' }),
-      sweep(54.12, 56.5, BASIC, { text: '다 더 도 두 드 디!', consonant: 'c-d' }),
-      sweep(56.62, 58.4, BASIC, { text: '라 러 로 루 르 리!', consonant: 'c-r' }),
-      sweep(58.44, 60.4, ROW1, { text: '가 나 다 라 마 바 사!', syllables: true }),
-      sweep(60.4, 62.5, ROW2, { text: '아 자 차 카 타 파 하!', syllables: true }),
-      sweep(63.18, 65.6, ROW1, { text: '가 나 다 라 마 바 사!', syllables: true }),
-      sweep(65.6, 68.2, ROW2, { text: '아 자 차 카 타 파 하!', syllables: true }),
-      blend(68.5, 70.3, 'c-g', '그, 아, 가!'),
-      line(70.38, 74.4, '이제 읽을 수 있어!'),
-    ],
+    // 10-08 노래 v2(Suno 644b446b): 옛 곡(61cb6e8e)이 후렴에서 「바바」「타타」처럼 음절을 두 번 불러 처음 배우는 사람이 헷갈려서, 줄마다
+    // 8음절로 맞춘 가사(후렴 끝 「짝!」, 둘째 절 끝 「짝 짝!」)로 다시 만들었다(유호님 「C로 가자」). 시각은 소리를 재서 박자 눈금
+    // (100.02 BPM, 첫 박 0.284초) 위에 둔다 — 받아쓰기 낱말 시각은 빠른 줄에서 1~2박씩 틀린다. 노래는 후렴을 한 번 더 이어 부른다.
+    id: 'geu-a-ga', title: '그 아 가', src: 'assets/songs/geu-a-ga.mp3', duration: 81.16, bpm: 100.0,
+    suno: '644b446b-0387-48f2-a6cc-58163c232f4f', teaches: ['c-g', 'c-n', 'c-d', 'c-r', 'c-m', 'c-b', 'c-s', 'c-ng', 'c-j', 'c-h', 'c-k', 'c-t', 'c-p', 'c-ch'],
+    review: [13.9, 43.3], // 회차 끝 30초 장단: 합치기 열네 자음 → 「그 더하기 아는? 가!」 → 「합쳐 봐」 → 후렴 두 줄
+    cues: (() => {
+      const g = k => +(0.284 + (60 / 100.02) * k).toFixed(3);
+      const on = k => +(g(k) - 0.15).toFixed(3); // 줄 신호는 첫 소리보다 조금 먼저 켠다
+      const CONS = ['c-g', 'c-n', 'c-d', 'c-r', 'c-m', 'c-b', 'c-s', 'c-ng', 'c-j', 'c-ch', 'c-k', 'c-t', 'c-p', 'c-h'];
+      const TEXT = ['그 아 가!', '느 아 나!', '드 아 다!', '르 아 라!', '므 아 마!', '브 아 바!', '스 아 사!', '쉿! 아!', '즈 아 자!', '츠 아 차!', '크 아 카!', '트 아 타!', '프 아 파!', '흐 아 하!'];
+      const bl = (t, end, consonant, at, text) => ({ kind: 'blend', t, end, consonant, vowel: 'v-a', at, text });
+      // 글자 줄은 8분음표마다 한 칸(후렴 일곱 칸 + 「짝」, 둘째 절 여섯 칸 + 「짝 짝」)
+      const sw = (L, letters, text, extra) => sweep(on(L), on(L + 4), letters, { at: [0, 0.5, 1, 1.5, 2, 2.5, 3].slice(0, letters.length).map(o => g(L + o)), text, ...extra });
+      const out = [line(0, 3.0, 'Ready? 한글!'), bl(3.0, on(23), 'c-g', [3.17, 3.88, 4.47], '그, 아, 가!')];
+      // 1절: 자음 g(23+2k) · 아 g(23.5+2k) · 음절 g(24+2k) — 쉿 줄은 쉿 g(37) · 아 g(38)
+      CONS.forEach((c, k) => out.push(bl(on(23 + 2 * k), on(25 + 2 * k), c, c === 'c-ng' ? [g(37), g(38), g(38)] : [g(23 + 2 * k), g(23.5 + 2 * k), g(24 + 2 * k)], TEXT[k])));
+      out.push(bl(on(51), on(55), 'c-g', [g(51), g(53), g(54)], '그 더하기 아는? 가!'));
+      out.push(bl(on(55), g(58.5), 'c-n', [g(55), g(57), g(58)], '느 더하기 아는? 나!'));
+      out.push(line(g(58.5), on(64), '합쳐 봐, 하나 둘 셋!'));
+      const chorus = starts => starts.forEach((L, n) => out.push(sw(L, n % 2 ? ROW2 : ROW1, n % 2 ? '아 자 차 카 타 파 하 짝!' : '가 나 다 라 마 바 사 짝!', { syllables: true })));
+      chorus([64, 68, 72, 76, 80, 84, 88, 92]);
+      [['c-g', '가 거 고 구 그 기 짝 짝!'], ['c-n', '나 너 노 누 느 니 짝 짝!'], ['c-d', '다 더 도 두 드 디 짝 짝!'], ['c-r', '라 러 로 루 르 리 짝 짝!']]
+        .forEach(([c, text], n) => out.push(sw(96 + 4 * n, BASIC, text, { consonant: c })));
+      chorus([112, 116, 120, 124]);
+      out.push(bl(on(128), 78.45, 'c-g', [g(128), g(129), g(130)], '그, 아, 가!'));
+      out.push(line(78.45, 81.16, '이제 읽을 수 있어!'));
+      return out;
+    })(),
   },
 ]);
 

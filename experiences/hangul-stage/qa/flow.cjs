@@ -173,17 +173,17 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     await page.waitForSelector('#home:not([hidden])');
     await page.locator('#songs .song-card').nth(1).click();
     await page.waitForSelector('#song:not([hidden])');
-    const g1 = await page.evaluate(() => window.__hangulQA.songAt(11.0));
-    const g2 = await page.evaluate(() => window.__hangulQA.songAt(11.8));
+    const g1 = await page.evaluate(() => window.__hangulQA.songAt(14.2));
+    const g2 = await page.evaluate(() => window.__hangulQA.songAt(14.5));
     const blendText = await page.textContent('#song-stage .song-blend');
-    check(`${width}px 그 아 가 11초: ㄱ + ㅏ = 가 세 걸음`, g1.kind === 'blend' && g1.step === 0 && g2.step >= 1 && /ㄱ/.test(blendText) && /가/.test(blendText), `${JSON.stringify(g1)} ${JSON.stringify(g2)}`);
+    check(`${width}px 그 아 가 14초: ㄱ + ㅏ = 가 세 걸음`, g1.kind === 'blend' && g1.step === 0 && g2.step >= 1 && /ㄱ/.test(blendText) && /가/.test(blendText), `${JSON.stringify(g1)} ${JSON.stringify(g2)}`);
     const songPic = await page.waitForFunction(() => { const i = document.querySelector('#song-stage .song-mn'); return !!i && i.complete && i.naturalWidth > 0; }, null, { timeout: 3000 }).then(() => true, () => false);
     check(`${width}px 그 아 가 합치기 장면에 자음 그림`, songPic);
     if (width === 390) await shot(page, 'song-blend', width);
     const g3 = await page.evaluate(() => window.__hangulQA.songAt(40.0));
     check(`${width}px 그 아 가 후렴: 가 나 다 라 마 바 사`, g3.kind === 'sweep' && (await page.textContent('#song-stage .song-row')).includes('가나다라마바사'), JSON.stringify(g3));
     if (width === 390) await shot(page, 'song-sweep', width);
-    const g4 = await page.evaluate(() => window.__hangulQA.songAt(49.9));
+    const g4 = await page.evaluate(() => window.__hangulQA.songAt(58.5));
     check(`${width}px 그 아 가 둘째 절: 가 거 고 구 그 기`, g4.kind === 'sweep' && (await page.textContent('#song-stage .song-row')).includes('가거고구그기'), JSON.stringify(g4));
     // 재생: 단추를 누르면 노래가 흐르고(범위 요청을 받는 서버라야 옮기기·흐름이 된다), 화면은 노래 시각을 따라간다. 실제 소리는 사람 귀로 확인한다.
     await page.click('#song-play');
@@ -192,10 +192,10 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     if (!flowed) { await page.click('#song-play'); await page.click('#song-play'); flowed = await page.waitForFunction(() => window.__hangulQA.songTime() > 0.3, null, { timeout: 6000 }).then(() => true, () => false); }
     // 참고값: 헤드리스의 소리 장치는 깨는 게 들쭉날쭉해(10-05 같은 판에서 통과·실패가 번갈았다) 통과·실패로 세지 않는다. 실제 재생은 사람 귀로 확인했다(10-05 유호님).
     console.log(`참고  ${width}px 노래가 헤드리스에서 흐름: ${flowed ? '예' : '아니오'} (시각 ${await page.evaluate(() => window.__hangulQA.songTime())})`);
-    await page.evaluate(() => window.__hangulQA.songSeek(13.6));
+    await page.evaluate(() => window.__hangulQA.songSeek(16.6));
     await page.waitForTimeout(300);
     const stageNow = await page.textContent('#song-stage');
-    check(`${width}px 재생 중 화면이 노래 시각을 따라감(13.6초로 옮기면 ㄷ + ㅏ = 다)`, stageNow.includes('ㄷ') && stageNow.includes('다'), `${await page.evaluate(() => window.__hangulQA.songTime())} ${stageNow}`);
+    check(`${width}px 재생 중 화면이 노래 시각을 따라감(16.6초로 옮기면 ㄷ + ㅏ = 다)`, stageNow.includes('ㄷ') && stageNow.includes('다'), `${await page.evaluate(() => window.__hangulQA.songTime())} ${stageNow}`);
     await page.click('#song-play');
     await page.click('#song-close');
     await page.waitForSelector('#home:not([hidden])');
