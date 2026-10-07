@@ -142,3 +142,62 @@ test('관리 시트 메뉴의 비밀번호 모달은 저장된 키를 읽거나 
   assert.equal(f.calls.length,0);assert.equal(f.emails.length,0);assert.equal(f.triggers.length,0);
   f.context.Session.getActiveUser=()=>({getEmail:()=>''});assert.throws(()=>f.context.synkbrief운영알림연결창(),/관리자/);assert.equal(shown,1);
 });
+
+function observeStatus(f) {
+  const logs=[];f.context.console={log:value=>logs.push(value)};
+  const value=JSON.parse(JSON.stringify(f.context.synkbrief운영알림상태()));
+  assert.equal(logs.length,1);assert.deepEqual(JSON.parse(logs[0]),value);
+  return {value,log:logs[0]};
+}
+
+test('운영 상태 조회는 승인된 상태만 출력하고 HTTP·메일·속성·트리거를 바꾸지 않는다',()=>{
+  const f=fixture(),at='2026-10-08T01:02:03.000Z';
+  f.values.set('SYNKBRIEF_OPS_MAIL_TEST',JSON.stringify({delivery:'sent',at}));
+  f.values.set('SYNKBRIEF_OPS_NOTICE',JSON.stringify({delivery:'baseline',healthy:true,at,hash:'PRIVATE_HASH'}));
+  f.values.set('SYNKBRIEF_OPS_LAST_CHECK',JSON.stringify({healthy:false,at}));
+  f.triggers=[trigger('synkbrief정기점검','CLOCK'),trigger('other','CLOCK'),trigger('synkbrief정기점검','EDIT')];
+  const before=[...f.values],timers=[...f.triggers];
+  const allowed=new Set(['SYNKBRIEF_OPS_MAIL_TEST','SYNKBRIEF_OPS_NOTICE','SYNKBRIEF_OPS_LAST_CHECK','SYNKBRIEF_OPS_READ_KEY','SYNKBRIEF_OPS_MONITOR_ENABLED']);
+  const forbidden=()=>{throw Error('unexpected mutation');};
+  f.context.PropertiesService.getScriptProperties=()=>({getProperty:key=>{assert.ok(allowed.has(key));return f.values.get(key);},setProperty:forbidden,deleteProperty:forbidden,getProperties:forbidden});
+  f.context.ScriptApp.newTrigger=forbidden;f.context.ScriptApp.deleteTrigger=forbidden;
+  const {value,log}=observeStatus(f);
+  assert.deepEqual(value,{enabled:true,keyConfigured:true,mailTest:{state:'sent',at},notice:{delivery:'baseline',healthy:true,at},lastCheck:{at,healthy:false},currentMailQuota:100,timers:{ownerScope:'current_user',handler:'synkbrief정기점검',count:1}});
+  assert.deepEqual([...f.values],before);assert.deepEqual(f.triggers,timers);
+  assert.equal(f.calls.length,0);assert.equal(f.emails.length,0);assert.equal(f.deleted.length,0);assert.equal(f.quotaChecks,1);assert.equal(f.released,undefined);
+  assert.doesNotMatch(log,/PRIVATE_HASH|old-meta-token|test-only|Bearer|owner@example/);
+});
+
+test('운영 상태 조회는 관리자 확인 전에 속성·quota·트리거·로그에 접근하지 않는다',()=>{
+  for(const configure of [f=>{f.context.Session.getActiveUser=()=>({getEmail:()=>''});},f=>{f.context.Session.getEffectiveUser=()=>({getEmail:()=> 'other@example.test'});},f=>{f.context.Session.getActiveUser=()=>{throw Error('PRIVATE '+KEY);};}]){
+    const f=fixture();configure(f);let touched=0;
+    const forbidden=()=>{touched++;throw Error('PRIVATE');};
+    f.context.PropertiesService.getScriptProperties=forbidden;f.context.MailApp.getRemainingDailyQuota=forbidden;f.context.ScriptApp.getProjectTriggers=forbidden;f.context.console={log:forbidden};
+    assert.throws(()=>f.context.synkbrief운영알림상태(),error=>{assert.doesNotMatch(error.message,/PRIVATE|test-only/);return /관리자/.test(error.message);});assert.equal(touched,0);assert.equal(f.calls.length,0);assert.equal(f.emails.length,0);
+  }
+});
+
+test('운영 상태 조회는 손상된 속성·임의 필드·날짜·문자열 boolean의 원문을 노출하지 않는다',()=>{
+  const samples=['PRIVATE '+KEY,'null','[]','123',JSON.stringify({delivery:'PRIVATE '+KEY,at:'PRIVATE',healthy:'PRIVATE',hash:KEY,error:'PRIVATE',recipient:'private@example.test'}),JSON.stringify({delivery:['sent'],at:['2026-10-08T01:02:03.000Z'],healthy:'true'}),'x'.repeat(4097)];
+  for(const raw of samples){const f=fixture();for(const name of ['SYNKBRIEF_OPS_MAIL_TEST','SYNKBRIEF_OPS_NOTICE','SYNKBRIEF_OPS_LAST_CHECK'])f.values.set(name,raw);const {value,log}=observeStatus(f);
+    assert.deepEqual(value.mailTest,{state:'invalid',at:null});assert.deepEqual(value.notice,{delivery:'invalid',healthy:null,at:null});assert.deepEqual(value.lastCheck,{at:null,healthy:null});
+    assert.doesNotMatch(log,/PRIVATE|test-only|private@example|Bearer/);assert.equal(f.calls.length,0);assert.equal(f.emails.length,0);
+  }
+  for(const at of ['2026-02-30T01:02:03.000Z','2026-10-08','2026-10-08T01:02:03.000Z PRIVATE']){const f=fixture();f.values.set('SYNKBRIEF_OPS_MAIL_TEST',JSON.stringify({delivery:'sent',at}));assert.equal(observeStatus(f).value.mailTest.at,null);}
+});
+
+test('운영 상태 조회는 기록 없음·pending·sent·unknown과 현재 quota 0을 구분한다',()=>{
+  const f=fixture();f.quota=0;f.values.set('SYNKBRIEF_OPS_MONITOR_ENABLED','true');f.values.delete('SYNKBRIEF_OPS_READ_KEY');
+  let value=observeStatus(f).value;assert.equal(value.enabled,false);assert.equal(value.keyConfigured,false);assert.deepEqual(value.mailTest,{state:'not_recorded',at:null});assert.equal(value.currentMailQuota,0);assert.equal(value.timers.count,0);
+  const at='2026-10-08T01:02:03.000Z';
+  for(const state of ['pending','sent','unknown']){f.values.set('SYNKBRIEF_OPS_MAIL_TEST',JSON.stringify({delivery:state,at}));value=observeStatus(f).value;assert.deepEqual(value.mailTest,{state,at});}
+  assert.equal(f.emails.length,0);assert.equal(f.calls.length,0);
+});
+
+test('운영 상태 조회 실패는 quota·트리거를 0으로 오인하거나 서비스 예외 원문을 노출하지 않는다',()=>{
+  for(const quota of [-1,NaN,Infinity,'100']){const f=fixture();f.quota=quota;assert.equal(observeStatus(f).value.currentMailQuota,null);}
+  const f=fixture();f.context.MailApp.getRemainingDailyQuota=()=>{throw Error('PRIVATE '+KEY);};f.context.ScriptApp.getProjectTriggers=()=>{throw Error('PRIVATE '+KEY);};
+  const {value,log}=observeStatus(f);assert.equal(value.currentMailQuota,null);assert.equal(value.timers.count,null);assert.doesNotMatch(log,/PRIVATE|test-only/);
+  f.context.PropertiesService.getScriptProperties=()=>{throw Error('PRIVATE '+KEY);};
+  assert.throws(()=>f.context.synkbrief운영알림상태(),error=>{assert.doesNotMatch(error.message,/PRIVATE|test-only/);return /상태를 읽지 못했습니다/.test(error.message);});
+});
