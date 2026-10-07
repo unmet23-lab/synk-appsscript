@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { createPack, decompose } from './pack.mjs';
+import { createPack, decompose, josa } from './pack.mjs';
 import { emptyProgress, readProgress, planSession, answer, meet, finishSession, view, letterOf, retryItem, nextLetters, canPlayMore, graduationReady, graduate, SETTINGS } from './core.mjs';
 
 const layer = JSON.parse(fs.readFileSync(new URL('../../strata/hangul.json', import.meta.url), 'utf8'));
@@ -359,4 +359,19 @@ test('된소리를 헷갈리면(ㄲ을 ㄱ으로) 다음 회차 첫 문항이 �
   const first = items(plan)[0];
   assert.equal(first.type, 'pair');
   assert.deepEqual(first.options.map(o => o.letter).sort(), ['c-g', 'c-kk']);
+});
+
+test('오답 안내의 조사는 끝 음절의 받침을 따른다 — 각이 아니라 간이에요 · 다가 아니라 나예요, 사람은 · 엄마는', () => {
+  // app.mjs 글자 만들기의 「○○이/가 아니라 ○○이에요/예요」와 보고 고르기의 「○○은/는 이 소리예요」
+  const wrongBuild = (made, target) => `${made}${josa(made, '이', '가')} 아니라 ${target}${josa(target, '이에요', '예요')}`;
+  assert.equal(wrongBuild(pack.syllable('c-g', 'v-a', 'f-g'), pack.syllable('c-g', 'v-a', 'f-n')), '각이 아니라 간이에요');
+  assert.equal(wrongBuild(pack.syllable('c-d', 'v-a'), pack.syllable('c-n', 'v-a')), '다가 아니라 나예요');
+  assert.equal(wrongBuild(pack.syllable(null, 'v-a', 'f-r'), pack.syllable(null, 'v-a')), '알이 아니라 아예요');
+  for (const [word, particle] of [['사람', '은'], ['물', '은'], ['엄마', '는'], ['바나나', '는']]) {
+    assert.ok(pack.words.some(w => w.text === word), `${word}: 이 판의 낱말`);
+    assert.equal(josa(word, '은', '는'), particle, word);
+  }
+  // 글자 만나기의 짝 안내는 낱자를 이름으로 읽는다: ㅂ과 ㅍ(피읖)은 짝, ㅏ(아)는
+  assert.equal(josa(pack.byId.get('c-p').glyph, '은', '는'), '은');
+  assert.equal(josa(pack.byId.get('v-a').glyph, '은', '는'), '는');
 });

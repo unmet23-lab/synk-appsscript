@@ -11,6 +11,13 @@ export function decompose(ch) {
   if (code < 0 || code > 11171) return null;
   return { initial: Math.floor(code / 588), medial: Math.floor((code % 588) / 28), final: code % 28 };
 }
+// 받침에 맞는 조사: 끝 음절에 받침이 있으면 앞의 것, 없으면 뒤의 것(산이에요·나예요, 각이·가가, 산은·나는).
+// 낱자는 이름으로 읽는다 — 자음(기역·피읖…)은 받침이 있고 모음(아·야…)은 없다.
+export function josa(word, withFinal, without) {
+  const ch = String(word).slice(-1), code = ch.charCodeAt(0);
+  if (code >= 0x3131 && code <= 0x314e) return withFinal;
+  return decompose(ch)?.final ? withFinal : without;
+}
 const INITIALS = [...'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ'];
 const FINALS = ['', ...'ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ'];
 const SILENT = 11; // 첫소리 ㅇ: 소리가 없고 모음을 받쳐 준다

@@ -1,6 +1,6 @@
 // 한글 단계 MVP 화면(docs/한글단계_설계.md, 2026-10-03 한국어 MVP). 한국어만 쓰고, 글을 못 읽어도
 // 시범·그림·소리로 할 수 있게 만든다. 판단은 core.mjs, 아틀라스 기록은 learning.mjs, 소리는 audio.mjs가 맡는다.
-import { createPack, compose, decompose } from './pack.mjs';
+import { createPack, compose, decompose, josa } from './pack.mjs';
 import { readProgress, planSession, answer, meet, finishSession, view, retryItem, canPlayMore, sessionsToday, letterOf, readableWords, graduationReady, graduate, SETTINGS } from './core.mjs';
 import { createCoach, isHosted, progressKey, createRecorder } from './learning.mjs';
 import * as audio from './audio.mjs';
@@ -232,7 +232,7 @@ function renderMeet(id) {
   const op = t => el('span', { class: 'op', 'aria-hidden': 'true' }, t);
   const stroke = () => el('span', { class: 'piece stroke-piece', 'aria-hidden': 'true' });
   const asp = ASPIRATED[id], tense = TENSE[id], comp = COMPOUND[id];
-  const derive = asp ? el('div', { class: 'derive', 'aria-label': asp[1] ? `${glyph(asp[0])}에 획을 더하면 ${l.glyph}` : `${glyph(asp[0])}과 ${l.glyph}는 짝` },
+  const derive = asp ? el('div', { class: 'derive', 'aria-label': asp[1] ? `${glyph(asp[0])}에 획을 더하면 ${l.glyph}` : `${glyph(asp[0])}과 ${l.glyph}${josa(l.glyph, '은', '는')} 짝` },
     sound(asp[0]), asp[1] ? [op('+'), stroke(), op('=')] : null, sound(id))
     : tense ? el('div', { class: 'derive', 'aria-label': `${glyph(tense[0])}을 둘 쓰면 ${l.glyph}` },
       sound(tense[0]), op('+'), el('span', { class: 'piece twin-piece', 'aria-hidden': 'true' }, glyph(tense[0])), op('='), sound(id))
@@ -426,7 +426,7 @@ function renderSee(item) {
     if (!correct) options[state.picked].classList.add('wrong');
     rec.answer(state.pid, correct);
     settle(item, { correct, assisted: state.assisted, confused: correct ? [] : [[item.target.letter, o.letter]], listening: false });
-    feedback(correct, correct ? '맞아요' : `${item.target.text}는 이 소리예요`);
+    feedback(correct, correct ? '맞아요' : `${item.target.text}${josa(item.target.text, '은', '는')} 이 소리예요`);
     if (!correct) { await audio.say(o.text); await audio.wait(250); }
     await audio.say(item.target.text);
   }
@@ -477,7 +477,7 @@ function renderBuild(item) {
     rec.answer(state.pid, correct);
     settle(item, { correct, assisted: state.assisted, replays: state.replays, perLetter: { [t.consonant]: cOk, [t.vowel]: vOk, ...(withFinal ? { [t.final]: fOk } : {}) },
       confused: [...(cOk ? [] : [[t.consonant, state.c]]), ...(vOk ? [] : [[t.vowel, state.v]]), ...(fOk ? [] : [[t.final, state.f]])] });
-    feedback(correct, correct ? '맞아요' : `${made}가 아니라 ${t.text}예요`);
+    feedback(correct, correct ? '맞아요' : `${made}${josa(made, '이', '가')} 아니라 ${t.text}${josa(t.text, '이에요', '예요')}`);
     if (!correct) { await audio.say(made); await audio.wait(250); await audio.say(t.text); }
   }
   const pieceOf = kind => { const [buttons, ids] = rows[kind]; return buttons[ids.indexOf(t[{ c: 'consonant', v: 'vowel', f: 'final' }[kind]])]; };

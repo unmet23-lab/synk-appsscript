@@ -170,3 +170,23 @@ test('불확실한 사주 가이드는 빈 기둥을 유지하고 0개 오행을
   for (const element of guide.elements.filter(item => item.count === 0)) assert.match(element.reading, /능력이 없다는 뜻은 아니에요/);
   assert.throws(() => getSajuGuide(getFortune('rat', '2026-10-06')), TypeError);
 });
+
+test('사주 기둥 풀이의 조사는 괄호 안 한글의 받침을 따른다(을축이에요·갑자예요, 갑은·무는, 목으로·화로)', () => {
+  const final = word => (word.charCodeAt(word.length - 1) - 0xac00) % 28;
+  const days = new Map();
+  for (let i = 0; i < 60; i += 1) {
+    const saju = getSaju({ birthDate: new Date(Date.UTC(2001, 0, 1 + i)).toISOString().slice(0, 10), birthTime: '12:00' }, '2026-10-06');
+    days.set(saju.pillars[2].hangul, { pillar: saju.pillars[2], reading: getSajuGuide(saju).pillars[2].reading });
+  }
+  assert.equal(days.size, 60, '예순 날의 일주로 육십갑자를 모두 본다');
+  for (const { pillar: p, reading } of days.values()) {
+    assert.ok(reading.startsWith(`${p.hanja}(${p.hangul})${final(p.hangul) ? '이에요' : '예요'}. `), reading);
+    assert.ok(reading.includes(`(${p.stem.hangul})${final(p.stem.hangul) ? '은' : '는'} ${p.stem.element},`), reading);
+    assert.ok(reading.includes(`(${p.branch.hangul})${final(p.branch.hangul) ? '은' : '는'} 대표 오행`), reading);
+    const f = final(p.branch.element);
+    assert.ok(reading.endsWith(`${p.branch.element}${f && f !== 8 ? '으로' : '로'} 셌어요.`), reading);
+  }
+  assert.equal(days.get('을축').reading, '乙丑(을축)이에요. 천간 乙(을)은 목, 지지 丑(축)은 대표 오행 토로 셌어요.');
+  assert.equal(days.get('갑자').reading, '甲子(갑자)예요. 천간 甲(갑)은 목, 지지 子(자)는 대표 오행 수로 셌어요.');
+  assert.equal(days.get('무인').reading, '戊寅(무인)이에요. 천간 戊(무)는 토, 지지 寅(인)은 대표 오행 목으로 셌어요.');
+});

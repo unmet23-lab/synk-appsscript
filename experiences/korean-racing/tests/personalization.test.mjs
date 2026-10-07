@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {CAMPAIGN} from '../campaign.js';
+import {FINALES} from '../finales.js';
 import {racingItem,personalizedStage,RACING_CANDIDATES,racingFollowUp,racingRecheck,linkRacingRecheck} from '../personalization.js';
-import {answerFeedback, WORD_BY_ID} from '../learning.js';
+import {answerFeedback, WORD_BY_ID, WORDS, STAGES, makeQuestions} from '../learning.js';
 const {createGame}=createRequire(import.meta.url)('../../../atlas/game-browser.js');
 const storage=()=>{const data=new Map();return {getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v)};};
 
@@ -51,6 +52,23 @@ test('wrong-choice feedback preserves the chosen label and authored reason',()=>
   assert.ok(answerFeedback(item,wrong).includes(WORD_BY_ID[wrong].word));
   assert.ok(answerFeedback(item,wrong).includes(item.explanation));
   assert.equal(answerFeedback(item,item.answer),item.explanation);
+});
+
+test('feedback follows the last syllable: “병원”이에요 · “우유”예요, in word stages and sentence courses',()=>{
+  const id=word=>WORDS.find(w=>w.word===word).id;
+  const asked=word=>makeQuestions(STAGES.find(s=>s.words.includes(id(word))),()=>.4).find(q=>q.answer===id(word));
+  assert.equal(answerFeedback(asked('병원'),id('병원')),'들은 낱말은 병원이에요.');
+  assert.equal(answerFeedback(asked('우유'),id('우유')),'들은 낱말은 우유예요.');
+  assert.equal(answerFeedback(asked('병원'),id('우유')),'고른 답은 “우유”예요. 들은 낱말은 병원이에요.');
+  assert.equal(answerFeedback(asked('우유'),id('병원')),'고른 답은 “병원”이에요. 들은 낱말은 우유예요.');
+  const hasFinal=word=>{const c=word.charCodeAt(word.length-1)-0xac00;assert.ok(c>=0&&c<=11171,word);return c%28!==0;};
+  const kinds=new Set();
+  for(const item of [...CAMPAIGN,...FINALES].flatMap(s=>s.items))for(const choice of item.options.filter(o=>o!==item.answer)){
+    const word=WORD_BY_ID[choice].word,said=answerFeedback(item,choice);
+    assert.ok(said.startsWith(`고른 답은 “${word}”${hasFinal(word)?'이에요':'예요'}. `),said);
+    kinds.add(hasFinal(word));
+  }
+  assert.deepEqual([...kinds].sort(),[false,true],'both kinds of wrong choice are checked');
 });
 
 test('same-course follow-up preserves total, content scope and excludes previously answered items',()=>{
