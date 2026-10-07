@@ -350,6 +350,58 @@ function synkbrief정기점검() {
   } finally { lock.releaseLock(); }
 }
 
+// 관리자 편집기의 관측 전용 함수. 원본 속성·키·예외를 로그/반환값에 복사하지 않는다.
+function synkbrief운영알림상태() {
+  try { synkbrief_관리자확인_(); }
+  catch (_) { throw new Error('프로젝트 관리자 로그인이 필요합니다.'); }
+  try {
+    const p = PropertiesService.getScriptProperties();
+    const readRecord = name => {
+      const raw = p.getProperty(name);
+      if (!raw) return { missing: true, value: {} };
+      try {
+        if (typeof raw !== 'string' || raw.length > 4096) throw new Error('shape');
+        const value = JSON.parse(raw);
+        if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('shape');
+        return { missing: false, value: value };
+      } catch (_) { return { missing: false, value: {} }; }
+    };
+    const safeTime = value => {
+      if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) return null;
+      const time = Date.parse(value);
+      return Number.isFinite(time) && new Date(time).toISOString() === value ? value : null;
+    };
+    const delivery = (record, allowed) => record.missing ? 'not_recorded'
+      : allowed.indexOf(record.value.delivery) >= 0 ? record.value.delivery : 'invalid';
+    const mail = readRecord('SYNKBRIEF_OPS_MAIL_TEST');
+    const notice = readRecord('SYNKBRIEF_OPS_NOTICE');
+    const last = readRecord('SYNKBRIEF_OPS_LAST_CHECK');
+    const key = p.getProperty('SYNKBRIEF_OPS_READ_KEY');
+    let quota = null, timerCount = null;
+    try {
+      const value = MailApp.getRemainingDailyQuota();
+      if (Number.isInteger(value) && value >= 0) quota = value;
+    } catch (_) { /* 권한/조회 실패는 원본 예외 대신 null로 표시한다. */ }
+    try {
+      // 이 API는 실행 계정 소유 트리거만 반환한다. 다른 소유자의 트리거 수나 실제 간격은 단정하지 않는다.
+      timerCount = ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'synkbrief정기점검'
+        && t.getEventType() === ScriptApp.EventType.CLOCK).length;
+    } catch (_) { /* 트리거 조회 실패와 0개를 구분한다. */ }
+    const result = {
+      enabled: p.getProperty('SYNKBRIEF_OPS_MONITOR_ENABLED') === '1',
+      keyConfigured: typeof key === 'string' && key.length >= 32 && !/\s/.test(key),
+      mailTest: { state: delivery(mail, ['pending', 'sent', 'unknown']), at: safeTime(mail.value.at) },
+      notice: { delivery: delivery(notice, ['baseline', 'pending', 'sent', 'unknown']),
+        healthy: typeof notice.value.healthy === 'boolean' ? notice.value.healthy : null, at: safeTime(notice.value.at) },
+      lastCheck: { at: safeTime(last.value.at), healthy: typeof last.value.healthy === 'boolean' ? last.value.healthy : null },
+      currentMailQuota: quota,
+      timers: { ownerScope: 'current_user', handler: 'synkbrief정기점검', count: timerCount }
+    };
+    console.log(JSON.stringify(result));
+    return result;
+  } catch (_) { throw new Error('운영 알림 상태를 읽지 못했습니다.'); }
+}
+
 // 연결된 관리 시트의 메뉴에서만 연다. 입력값은 HTML/반환값/로그에 다시 넣지 않는다.
 function synkbrief운영알림연결창() {
   synkbrief_관리자확인_();
