@@ -6,9 +6,9 @@ import os from 'node:os';
 import path from 'node:path';
 import {createLauncher,resolveRenders} from './server.mjs';
 
-async function setup(t, open=async()=>{}) {
+async function setup(t, open=async()=>{}, opened=engine=>engine) {
   const calls=[];
-  const server=createLauncher({resolve:engine=>({editorInstalled:false,gameBuilt:false,phase:'needs-install',canLaunch:true,message:'install',executable:`C:/known/${engine}.exe`,args:[],opened:engine}),open:async target=>{calls.push(target);await open(target);}});
+  const server=createLauncher({resolve:engine=>({editorInstalled:false,gameBuilt:false,phase:'needs-install',canLaunch:true,message:'install',executable:`C:/known/${engine}.exe`,args:[],opened:opened(engine)}),open:async target=>{calls.push(target);await open(target);}});
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   t.after(()=>new Promise(resolve=>{server.closeAllConnections();server.close(resolve)}));
   const request=(route,method='GET',body,headers={})=>new Promise((resolve,reject)=>{
@@ -55,6 +55,13 @@ test('a pending Windows dialog prevents duplicate or second-engine launches',asy
   assert.equal((await request('/api/launch','POST',{engine:'unreal'},authorized)).status,409);
   complete();assert.equal((await first).body.ok,true);assert.equal(calls.length,1);
   assert.equal((await request('/api/status')).body.unity.busy,false);
+});
+test('the launch message puts the particle each opened name takes',async t=>{
+  // The six names resolve() can open: Korean names follow their last syllable, Epic Games Launcher is read 런처.
+  let name='';const {request,authorized}=await setup(t,undefined,()=>name);const said=[];
+  for(name of ['Unity 게임','Unity 프로젝트','Unity 설치 창','Unreal 게임','Unreal 프로젝트','Epic Games Launcher'])
+    said.push((await request('/api/launch','POST',{engine:'unity'},authorized)).body.message.split('.')[0]);
+  assert.deepEqual(said,['Unity 게임을 열었어요','Unity 프로젝트를 열었어요','Unity 설치 창을 열었어요','Unreal 게임을 열었어요','Unreal 프로젝트를 열었어요','Epic Games Launcher를 열었어요']);
 });
 test('Windows cancellation is a visible failure, never a successful game launch',async t=>{
   const {request,authorized}=await setup(t,()=>{throw new Error('cancelled')});
