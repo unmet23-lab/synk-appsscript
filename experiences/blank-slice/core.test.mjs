@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ITEMS, PRACTICE, SKILL_LABEL } from './content.mjs';
-import { parts, filled, judge, josa, rng, shuffled, composeRound, pointsFor, scoreRound, hangTime, readDelay, tossLayout, segmentEntry, validateItems } from './core.mjs';
+import { parts, filled, judge, josa, readBlank, rng, shuffled, composeRound, pointsFor, scoreRound, hangTime, readDelay, tossLayout, segmentEntry, validateItems } from './core.mjs';
 
 test('원고: 36문장 모두 검사 통과(빈칸 하나·보기 넷·정답 첫 보기·학습 항목·난도·설명), 연습 문장도', () => {
   assert.deepEqual(validateItems(ITEMS), []);
@@ -31,6 +31,16 @@ test('연습 안내의 조사는 낱말의 받침을 따른다 — 정답은 우
     assert.equal(josa(w, '은', '는'), topic, w);
     assert.equal(josa(w, '이에요', '예요'), copula, w);
   }
+});
+
+test('화면 읽기 문장은 빈칸을 ‘빈칸’으로 읽고 뒤 조사도 맞춘다 — 빈칸을 마셔요(빈칸를 아님)', () => {
+  assert.equal(readBlank(PRACTICE.text), '저는 매일 아침에 빈칸을 마셔요.');
+  assert.equal(readBlank('목이 말라요. {}을 마시고 싶어요.'), '목이 말라요. 빈칸을 마시고 싶어요.');
+  assert.equal(readBlank('{}가 있어요.'), '빈칸이 있어요.');
+  assert.equal(readBlank('{}로 가요.'), '빈칸으로 가요.');
+  assert.equal(readBlank('학교{} 친구를 만나요.'), '학교빈칸 친구를 만나요.');
+  assert.equal(readBlank('{}에서 편지를 보내요.'), '빈칸에서 편지를 보내요.');
+  for (const x of [...ITEMS, PRACTICE]) assert.doesNotMatch(readBlank(x.text), /빈칸(를|가|는|와|로)(?![가-힣])/, x.id);
 });
 
 test('빈칸 나누기·채우기·판정', () => {

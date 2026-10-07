@@ -2,7 +2,7 @@
 // 손맛: 베는 순간의 소리·진동·점수 튀기는 여기서, 멈칫·칼빛·부스러기는 stage.mjs에서 같은 순간에 낸다.
 // 맞힌 낱말이 빈칸에 끼워지는 순간에는 ‘톡’과 사운드킷 ‘획득’(픽), 빈칸 눌림, 반짝이, 점수 올라가기가 함께 온다.
 import { ITEMS, PRACTICE, SKILL_LABEL, KIND_LABEL } from './content.mjs';
-import { parts, filled, josa, shuffled, composeRound, pointsFor, scoreRound, hangTime, readDelay } from './core.mjs';
+import { parts, filled, josa, readBlank, shuffled, composeRound, pointsFor, scoreRound, hangTime, readDelay } from './core.mjs';
 import { GAME_ID, rankItems, createReadingConfirmation, skillReport, assignmentItems, assignmentLabel, FLOW_SLICE, FLOW_WORDS, sliceObservation } from './learning.mjs';
 import * as sound from './audio.mjs';
 import { swingPower } from './sfx.mjs';
@@ -196,7 +196,7 @@ function startPractice() {
   renderSentence(PRACTICE, { kicker: '연습 문장' });
   tip('빛나는 조각이 빈칸에 맞는 말이에요. 손가락이나 마우스로 그어 베어 보세요.', { silent: true });
   // 화면 읽기 프로그램에는 문장·보기·정답 번호까지 알린다(빛은 눈으로만 보이니까)
-  announce(`연습 문장. ${PRACTICE.text.replace('{}', '빈칸')} 보기: ${opts.map((w, i) => `${i + 1} ${w}`).join(', ')}. 정답은 ${opts.indexOf(PRACTICE.answer) + 1}번 ${PRACTICE.answer}${josa(PRACTICE.answer, '이에요', '예요')}. 그어 베거나 숫자 키로 베어 보세요.`);
+  announce(`연습 문장. ${readBlank(PRACTICE.text)} 보기: ${opts.map((w, i) => `${i + 1} ${w}`).join(', ')}. 정답은 ${opts.indexOf(PRACTICE.answer) + 1}번 ${PRACTICE.answer}${josa(PRACTICE.answer, '이에요', '예요')}. 그어 베거나 숫자 키로 베어 보세요.`);
   after(900, practiceToss);
 }
 function practiceToss() {
@@ -233,7 +233,7 @@ function nextItem() {
   updateHud();
   hideExplain();
   hideAnswerCheck();
-  announce(`${state.index + 1}번 문장. ${item.text.replace('{}', '빈칸')} 보기: ${cur.options.map((w, i) => `${i + 1} ${w}`).join(', ')}`);
+  announce(`${state.index + 1}번 문장. ${readBlank(item.text)} 보기: ${cur.options.map((w, i) => `${i + 1} ${w}`).join(', ')}`);
   after(readDelay(item.text, { slow: progress.slow }), () => { if (state.cur === cur && !cur.done) tossCur(); });
 }
 
