@@ -1,0 +1,36 @@
+{
+  "schema": "synk-sns-publish-result/v1",
+  "plan": "docs/마케팅/LAB_한글초보_모음댄스_20261008/게시/계획.json",
+  "items": {
+    "01-lab-youtube": {
+      "contentHash": "74e369f41f79b7da8cf66ac2627eb009a5531532018fab2a78fe98ee0dd463cd",
+      "publicationHash": "02b3513b055bba77fd7dcc8fe5f7ff84c5d8db3acbb246da0d2dd791cbc227fe",
+      "startedAt": "2026-10-07T15:28:34.802Z",
+      "state": "private",
+      "id": "G21IYoeTEPQ",
+      "url": "https://www.youtube.com/watch?v=G21IYoeTEPQ",
+      "thumbnail": null,
+      "captions": [
+        {
+          "language": "en",
+          "id": "AUieDaY2n-M9oY06qr0N8yoQ0MHduOcsBf2_7sonx84xFp5CTQ"
+        }
+      ],
+      "playlist": {
+        "id": "PLYT8yGgE4144",
+        "title": "Hangul for Beginners · 한글 초보단계",
+        "created": true,
+        "itemId": "UExZVDh5R2dFNDE0NC41NkI0NEY2RDEwNTU3Q0M2",
+        "url": "https://www.youtube.com/playlist?list=PLYT8yGgE4144",
+        "visibility": "private"
+      },
+      "finishedAt": "2026-10-07T15:31:17.859Z",
+      "recovery": {
+        "from": "partial",
+        "failedAt": "2026-10-07T15:28:45.916Z",
+        "error": "YouTube 재생목록 항목 조회 실패 404: The playlist identified with the request's <code>playlistId</code> parameter cannot be found. (기존 YouTube 영상 G21IYoeTEPQ; 새로 업로드하지 말고 기존 영상 확인 필요)",
+        "note": "방금 만든 재생목록이 404로 답해 넣기 전에 멈춤 → 같은 목록에 넣어 마무리(도구도 고침)"
+      }
+    }
+  }
+}

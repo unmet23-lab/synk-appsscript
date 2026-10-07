@@ -267,6 +267,142 @@ test('YouTube 발행기는 재개 가능 업로드로 영상과 썸네일을 올
   assert.match(calls[4].url, /thumbnails\/set/);
 });
 
+function youtubeFixture(extra = {}) {
+  const dir = tempDir();
+  const video = path.join(dir, 'video.mp4');
+  fs.writeFileSync(video, Buffer.alloc(1024, 1));
+  return {
+    dir,
+    item: {
+      id: 'fixture-youtube', title: '시험 영상', text: '시험 본문', language: 'en',
+      video: path.relative(REPO_ROOT, video).replaceAll('\\', '/'),
+      subtitles: [], publish: { visibility: 'private', publishAt: null, notifySubscribers: false }, ...extra,
+    },
+  };
+}
+const ytAuth = () => [
+  new Response(JSON.stringify({ access_token: 'access', scope: 'scope' }), { status: 200 }),
+  new Response(JSON.stringify({ items: [{ id: 'channel-1', snippet: { title: 'SYNK LAB' } }] }), { status: 200 }),
+];
+const ytUploaded = () => [
+  new Response('', { status: 200, headers: { location: 'https://upload.invalid/session' } }),
+  new Response(JSON.stringify({ id: 'video-1' }), { status: 201 }),
+];
+
+test('YouTube 재생목록: 같은 제목이 없으면 비공개로 만들고 영상을 넣는다', async () => {
+  const { item } = youtubeFixture({ playlist: { title: 'Hangul for Beginners · 한글 초보단계', description: '설명', visibility: 'private', language: 'en' } });
+  const calls = [];
+  const responses = [
+    ...ytAuth(), ...ytUploaded(),
+    new Response(JSON.stringify({ items: [{ id: 'other', snippet: { title: '다른 목록' } }] }), { status: 200 }),
+    new Response(JSON.stringify({ id: 'pl-1' }), { status: 200 }),
+    new Response(JSON.stringify({ id: 'pli-1' }), { status: 200 }),
+  ];
+  const progress = [];
+  const result = await youtubeUpload(item, { expectedChannelId: 'channel-1', categoryId: '27', madeForKids: false },
+    { clientId: 'id', clientSecret: 'secret', refreshToken: 'refresh' }, {
+      fetchImpl: async (url, options) => { calls.push({ url, options }); return responses.shift(); },
+      onProgress: (p) => progress.push(p),
+    });
+  assert.equal(result.state, 'private');
+  assert.deepEqual(result.playlist, { id: 'pl-1', title: 'Hangul for Beginners · 한글 초보단계', created: true, itemId: 'pli-1', url: 'https://www.youtube.com/playlist?list=pl-1' });
+  const created = JSON.parse(calls[5].options.body);
+  assert.match(calls[5].url, /playlists\?part=snippet,status$/);
+  assert.equal(created.status.privacyStatus, 'private');
+  assert.equal(created.snippet.defaultLanguage, 'en');
+  // 방금 만든 목록은 비어 있어 「이미 들었나」 조회 없이 바로 넣는다
+  assert.equal(calls.some((c) => /playlistItems\?part=id/.test(c.url)), false);
+  assert.match(calls[6].url, /playlistItems\?part=snippet$/);
+  assert.deepEqual(JSON.parse(calls[6].options.body).snippet, { playlistId: 'pl-1', resourceId: { kind: 'youtube#video', videoId: 'video-1' } });
+  assert.equal(progress.at(-1).playlist.id, 'pl-1');
+  assert.equal(responses.length, 0);
+});
+
+test('YouTube 재생목록: 방금 만든 목록이 「없다」(404)고 하면 잠시 뒤 다시 넣는다', async () => {
+  const { item } = youtubeFixture({ playlist: { title: '한글 초보단계', description: '', visibility: 'private' } });
+  const calls = [];
+  const notFound = () => new Response(JSON.stringify({ error: { message: 'The playlist identified with the request\'s playlistId parameter cannot be found.' } }), { status: 404 });
+  const responses = [
+    ...ytAuth(), ...ytUploaded(),
+    new Response(JSON.stringify({ items: [] }), { status: 200 }),
+    new Response(JSON.stringify({ id: 'pl-2' }), { status: 200 }),
+    notFound(), notFound(),
+    new Response(JSON.stringify({ id: 'pli-2' }), { status: 200 }),
+  ];
+  const result = await youtubeUpload(item, { expectedChannelId: 'channel-1' }, { clientId: 'id', clientSecret: 'secret', refreshToken: 'refresh' }, {
+    fetchImpl: async (url, options) => { calls.push({ url, options }); return responses.shift(); },
+    playlistRetry: { retryDelayMs: 0 },
+  });
+  assert.equal(result.playlist.id, 'pl-2');
+  assert.equal(result.playlist.itemId, 'pli-2');
+  assert.equal(calls.filter((c) => /playlistItems\?part=snippet$/.test(c.url)).length, 3);
+  assert.equal(responses.length, 0);
+});
+
+test('YouTube 재생목록: 같은 제목이 있으면 그 목록을 쓰고 이미 든 영상은 다시 넣지 않는다', async () => {
+  const { item } = youtubeFixture({ playlist: { title: '한글 초보단계', description: '', visibility: 'private' } });
+  const calls = [];
+  const responses = [
+    ...ytAuth(), ...ytUploaded(),
+    new Response(JSON.stringify({ items: [], nextPageToken: 'p2' }), { status: 200 }),
+    new Response(JSON.stringify({ items: [{ id: 'pl-9', snippet: { title: '한글 초보단계' } }] }), { status: 200 }),
+    new Response(JSON.stringify({ items: [{ id: 'pli-9' }] }), { status: 200 }),
+  ];
+  const result = await youtubeUpload(item, { expectedChannelId: 'channel-1' }, { clientId: 'id', clientSecret: 'secret', refreshToken: 'refresh' }, {
+    fetchImpl: async (url, options) => { calls.push({ url, options }); return responses.shift(); },
+  });
+  assert.equal(result.playlist.id, 'pl-9');
+  assert.equal(result.playlist.created, false);
+  assert.equal(result.playlist.itemId, 'pli-9');
+  assert.match(calls[5].url, /pageToken=p2/);
+  assert.equal(calls.some((c) => c.options?.method === 'POST' && /playlist/.test(c.url)), false);
+});
+
+test('재생목록은 있는 항목만 승인 해시에 들어가고 없는 항목의 해시는 그대로다', () => {
+  const { item } = youtubeFixture();
+  const account = { platform: 'youtube', expectedChannelId: 'channel-1' };
+  const base = publicationHash(item, account);
+  assert.equal(publicationHash({ ...item, playlist: undefined }, account), base);
+  const withList = publicationHash({ ...item, playlist: { title: '한글 초보단계', description: '', visibility: 'private' } }, account);
+  assert.notEqual(withList, base);
+  assert.notEqual(publicationHash({ ...item, playlist: { title: '다른 목록', description: '', visibility: 'private' } }, account), withList);
+  assert.deepEqual(validateItem({ ...item, platform: 'telegram', images: ['a.jpg'], playlist: { title: 'x' } }).filter((e) => /재생목록/.test(e)), ['재생목록은 YouTube만 지원']);
+});
+
+test('YouTube 공개 전환은 근거를 요구하고 영상·재생목록의 공개 여부만 바꿔 결과에 남긴다', async () => {
+  const dir = tempDir();
+  const accountsFile = path.join(dir, 'accounts.json');
+  fs.writeFileSync(accountsFile, JSON.stringify({ accounts: { 'test-yt': { platform: 'youtube', publisher: 'direct-api', expectedChannelId: 'channel-1', madeForKids: false } } }));
+  const planFile = path.join(dir, '계획.json');
+  fs.writeFileSync(planFile, JSON.stringify({ accountsFile: path.relative(REPO_ROOT, accountsFile).replaceAll('\\', '/'), items: [{ id: '01-test-yt', accountKey: 'test-yt', platform: 'youtube' }] }));
+  fs.writeFileSync(resultFileFor(planFile), JSON.stringify({ items: { '01-test-yt': { state: 'private', id: 'video-1', url: 'https://www.youtube.com/watch?v=video-1', playlist: { id: 'pl-1', url: 'https://www.youtube.com/playlist?list=pl-1' } } } }));
+  const { youtubeMakePublic } = require('../tools/lib/sns-publisher.js');
+  const credential = () => ({ clientId: 'id', clientSecret: 'secret', refreshToken: 'refresh' });
+  await assert.rejects(() => youtubeMakePublic(planFile, '01-test-yt', '', { readCredentialImpl: credential }), /근거/);
+  const calls = [];
+  const responses = [
+    ...ytAuth(),
+    new Response(JSON.stringify({ items: [{ id: 'video-1', status: { uploadStatus: 'processed', privacyStatus: 'private', license: 'youtube', embeddable: true, publicStatsViewable: true, selfDeclaredMadeForKids: false } }] }), { status: 200 }),
+    new Response(JSON.stringify({ id: 'video-1' }), { status: 200 }),
+    new Response(JSON.stringify({ items: [{ id: 'pl-1', snippet: { title: '한글 초보단계', description: '설명', defaultLanguage: 'en' }, status: { privacyStatus: 'private' } }] }), { status: 200 }),
+    new Response(JSON.stringify({ id: 'pl-1' }), { status: 200 }),
+  ];
+  const { item } = await youtubeMakePublic(planFile, '01-test-yt', '유호님 공개 승인', {
+    readCredentialImpl: credential,
+    fetchImpl: async (url, options) => { calls.push({ url, options }); return responses.shift(); },
+  });
+  const videoPut = JSON.parse(calls[3].options.body);
+  assert.equal(calls[3].options.method, 'PUT');
+  assert.deepEqual(videoPut, { id: 'video-1', status: { privacyStatus: 'public', selfDeclaredMadeForKids: false, embeddable: true, license: 'youtube', publicStatsViewable: true } });
+  const listPut = JSON.parse(calls[5].options.body);
+  assert.deepEqual(listPut, { id: 'pl-1', snippet: { title: '한글 초보단계', description: '설명', defaultLanguage: 'en' }, status: { privacyStatus: 'public' } });
+  assert.equal(item.state, 'public');
+  assert.equal(item.publicNote, '유호님 공개 승인');
+  assert.equal(item.playlist.visibility, 'public');
+  assert.equal(JSON.parse(fs.readFileSync(resultFileFor(planFile), 'utf8')).items['01-test-yt'].state, 'public');
+  assert.equal(responses.length, 0);
+});
+
 test('Telegram 발행기는 사진과 긴 본문을 누락 없이 나눠 보낸다', async () => {
   const dir = tempDir();
   const image = path.join(dir, 'upload-01.jpg');
