@@ -125,6 +125,29 @@ async function cli() {
 // ── Typecast 연결(키는 메모리에만) ─────────────────────────────────────────
 let key = '', account = null, expiresAt = null, expiryTimer = null;
 const forget = () => { key = ''; account = null; expiresAt = null; clearTimeout(expiryTimer); };
+// 키 파일(10-07 유호님 「브라우저가 안 보여서」): 유호님이 이 PC의 보안 폴더에 키를 둔 파일을 두면 10초마다 보고 연결한다.
+// 키는 메모리로만 읽고 화면·기록·파일에 출력하지 않는다. 파일은 지우거나 고치지 않는다. 같은 내용으로 연결이 실패하면 다시 시도하지 않는다.
+const KEY_FILE = arg('--key-file') || path.join(os.homedir(), 'SYNK_보안', '타입캐스트.txt');
+function watchKeyFile() {
+  let failedHash = null, busy = false;
+  const tick = async () => {
+    if (key || busy || !fs.existsSync(KEY_FILE)) return;
+    busy = true;
+    try {
+      const candidate = (fs.readFileSync(KEY_FILE, 'utf8').split(/\r?\n/).map(s => s.trim()).find(Boolean) || '');
+      const hash = crypto.createHash('sha256').update(candidate).digest('hex');
+      if (candidate.length < 10 || hash === failedHash) return;
+      try {
+        const sub = await api('/v1/users/me/subscription', 'GET', null, candidate);
+        if (credits(sub).left < 1000) { failedHash = hash; say('키 파일 연결: 월 제공 크레딧이 부족해 연결하지 않음'); return; }
+        forget(); key = candidate; account = { plan: sub.plan }; expiresAt = new Date(Date.now() + 7200000).toISOString();
+        expiryTimer = setTimeout(forget, 7200000); expiryTimer.unref();
+        say('연결됨(보안 폴더의 키 파일에서 — 키는 메모리에만)');
+      } catch (e) { failedHash = hash; say('키 파일 연결 실패: ' + (e.status ? 'Typecast HTTP ' + e.status : '연결 오류')); }
+    } finally { busy = false; }
+  };
+  setInterval(tick, 10000).unref(); tick();
+}
 async function api(route, method = 'GET', body, candidate = key) {
   const response = await fetch(API + route, { method, headers: { 'X-API-KEY': candidate, 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(180000) });
   if (!response.ok) { const e = Error('Typecast HTTP ' + response.status); e.status = response.status; e.retryAfter = Number(response.headers.get('retry-after')) || null; throw e; }
@@ -389,6 +412,7 @@ function serve() {
       return reply(res, 404, { error: 'Not found' });
     } catch (error) { reply(res, 400, { error: error.message }); }
   }).listen(PORT, '127.0.0.1', async () => {
+    watchKeyFile();
     try {
       const r = await V.dryRun({ catalog: loadCatalog() });
       console.log(`미니게임 목소리: ${ORIGIN} — ${r.totals.lines}줄 ${r.totals.chars}자(부를 글자 ${r.totals.billable}) · 받아 둔 원본 ${r.totals.cached}/${r.totals.requests}${r.problems.length ? ` · 미리보기 문제 ${r.problems.length}개(--dry-run으로 확인)` : ''}`);
