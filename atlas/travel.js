@@ -1,4 +1,7 @@
-/* Core travel bundle feasibility. The product supplies scoped requirements,
+/* Travel specialist bundle feasibility, separate from Core's common decision policy.
+ * This legacy atlas/ path, global name and version remain compatibility identifiers;
+ * the module is a reusable travel capability, not a ninth Atlas engine.
+ * The product supplies scoped requirements,
  * already extended prices, local absolute minutes and source evidence.
  * This pure validator does not rank, fetch, route, reserve or authenticate.
  */

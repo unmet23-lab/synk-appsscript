@@ -1,0 +1,18 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "tests/atlas.test.js",
+    "tests/atlas-core-boundaries.test.js",
+    "tests/atlas-trail.test.js",
+    "tests/atlas-temper.test.js",
+    "tests/atlas-loop.test.js",
+    "tests/atlas-provenance-review.test.js",
+    "tests/atlas-domain.test.js",
+    "tests/atlas-domain-objectives.test.js",
+    "tests/atlas-outcomes.test.js",
+    "tests/atlas-travel.test.mjs"
+  ],
+  "exitCode": 0,
+  "scope": "Local synthetic tests; no customer effect or deployment evidence"
+}

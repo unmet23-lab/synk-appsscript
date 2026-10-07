@@ -1,0 +1,526 @@
+{
+  "schema": "synk-atlas-responsibility-audit-1",
+  "date": "2026-10-06",
+  "status": "local-implementation-and-regression-verified",
+  "scope": "8개 엔진 책임 정리 + Core/Trail/Temper 우선 구조 개선 + 실제 LAB/SHIFT 연결 + 기존 계약판 호환과 소비 사본 검증",
+  "steps": [
+    {
+      "step": 1,
+      "status": "complete",
+      "result": "8개 엔진의 입력·출력·분야 전문 모듈·제품 호스트 경계 및 후속 우선순위를 정본에 반영"
+    },
+    {
+      "step": 2,
+      "status": "complete",
+      "result": "Core 학습 근거 자격 판정을 Trail.createPracticeOutcomeIndex로 이동. Core 정책·임계값 유지. Temper 계약 참조·정정·철회·출처 계보를 선택 기능으로 추가"
+    },
+    {
+      "step": 3,
+      "status": "complete",
+      "result": "LAB entry-check의 실제 학습 API·생성 브라우저 번들 및 SHIFT workbench의 실제 모델에서 서로 다른 성공 정의·권한 범위·제외/철회 검증"
+    },
+    {
+      "step": 4,
+      "status": "complete",
+      "result": "동일 계약판의 구형 SHIFT 저장과 기존 Temper 호출 호환. 9개 학습 번들 및 Talk 사본·서버 번들 반영. 폐기 website 소비처 재생성 방지"
+    }
+  ],
+  "invariants": [
+    "Atlas는 기존 8개 엔진의 총칭이며 9번째 엔진·자체 실행 하네스 없음",
+    "앱별 의미·결과 정의는 전문 모듈, 계정·동의·저장·격리·삭제·과금은 제품 호스트",
+    "학습 첫 노출·도움·정답을 업무·여행·운세의 공통 성공 기준으로 강제하지 않음",
+    "정정은 원응답 시각·관측창을 연장하지 않음; 철회해도 원기록·전달은 보존",
+    "무응답과 철회 결과를 부정 응답으로 취급하지 않음; 인과·유의성·자동 승격 주장 없음"
+  ],
+  "consumers": [
+    {
+      "product": "LAB entry-check",
+      "execution": "real product adapter and generated browser bundle in Node VM",
+      "capabilities": "Core + Trail/Temper educational APIs",
+      "metric": "independent first-new practice correctness",
+      "authenticationProof": "synthetic host scope checks only"
+    },
+    {
+      "product": "SHIFT workbench/company connection",
+      "execution": "real workbench model, local server and company client tests",
+      "capabilities": "Core personalization/domain + Temper outcome accounting",
+      "metric": "initial-review-match-ratio in fictional task",
+      "authenticationProof": "synthetic local owner/workspace/contract checks only; not B2B production SSO"
+    }
+  ],
+  "verification": {
+    "baseline": {
+      "file": "baseline.json",
+      "tests": 125,
+      "pass": 125,
+      "scope": "pre-change selected 10 suites; not added to final total"
+    },
+    "runs": [
+      {
+        "startedAt": "2026-10-06T14:21:13.871Z",
+        "finishedAt": "2026-10-06T14:21:27.984Z",
+        "command": [
+          "node",
+          "--test",
+          "--test-reporter=tap",
+          "--test-concurrency=4",
+          "tests/atlas-account-summary.test.js",
+          "tests/atlas-ask-value.test.js",
+          "tests/atlas-ask.test.js",
+          "tests/atlas-core-boundaries.test.js",
+          "tests/atlas-delivery-exclusion.test.js",
+          "tests/atlas-domain-objectives.test.js",
+          "tests/atlas-domain.test.js",
+          "tests/atlas-education.test.js",
+          "tests/atlas-family.test.js",
+          "tests/atlas-flow.test.js",
+          "tests/atlas-formats.test.js",
+          "tests/atlas-game-flow.test.js",
+          "tests/atlas-incremental.test.js",
+          "tests/atlas-interpretation-evaluation.test.js",
+          "tests/atlas-interpretation.test.js",
+          "tests/atlas-lab-consultation.test.js",
+          "tests/atlas-lab-interpretation.test.js",
+          "tests/atlas-lab-model-host.test.js",
+          "tests/atlas-label-anchor.test.js",
+          "tests/atlas-learning-sync.test.js",
+          "tests/atlas-learning.test.js",
+          "tests/atlas-ledger-recovery.test.js",
+          "tests/atlas-ledger-sync.test.js",
+          "tests/atlas-ledger.test.js",
+          "tests/atlas-life.test.js",
+          "tests/atlas-loop.test.js",
+          "tests/atlas-memory-sync.test.js",
+          "tests/atlas-model-extraction.test.js",
+          "tests/atlas-no-feedback.test.js",
+          "tests/atlas-outcomes.test.js",
+          "tests/atlas-personalization-conflict.test.js",
+          "tests/atlas-personalization.test.js",
+          "tests/atlas-practice-outcome-boundaries.test.js",
+          "tests/atlas-preference-context.test.js",
+          "tests/atlas-preference-domain-bridge.test.js",
+          "tests/atlas-preferences.test.js",
+          "tests/atlas-preparation-outcomes.test.js",
+          "tests/atlas-provenance-review.test.js",
+          "tests/atlas-review-fixes.test.js",
+          "tests/atlas-storage-failure.test.js",
+          "tests/atlas-sync-fixes.test.js",
+          "tests/atlas-temper-flow.test.js",
+          "tests/atlas-temper.test.js",
+          "tests/atlas-topik-layers.test.js",
+          "tests/atlas-trail-followup.test.js",
+          "tests/atlas-trail.test.js",
+          "tests/atlas-vellum-expression.test.js",
+          "tests/atlas-vellum-flow.test.js",
+          "tests/atlas-work.test.js",
+          "tests/atlas.test.js",
+          "tests/atlas-travel.test.mjs",
+          "tests/atlas-cross-product-boundaries.test.mjs",
+          "tests/sync-atlas.test.js",
+          "experiences/shift-workbench/model.test.mjs",
+          "experiences/shift-workbench/server.test.mjs",
+          "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+          "docs/마케팅/온라인마케팅지도/engagement/company/workroom-client.test.mjs"
+        ],
+        "files": [
+          "tests/atlas-account-summary.test.js",
+          "tests/atlas-ask-value.test.js",
+          "tests/atlas-ask.test.js",
+          "tests/atlas-core-boundaries.test.js",
+          "tests/atlas-delivery-exclusion.test.js",
+          "tests/atlas-domain-objectives.test.js",
+          "tests/atlas-domain.test.js",
+          "tests/atlas-education.test.js",
+          "tests/atlas-family.test.js",
+          "tests/atlas-flow.test.js",
+          "tests/atlas-formats.test.js",
+          "tests/atlas-game-flow.test.js",
+          "tests/atlas-incremental.test.js",
+          "tests/atlas-interpretation-evaluation.test.js",
+          "tests/atlas-interpretation.test.js",
+          "tests/atlas-lab-consultation.test.js",
+          "tests/atlas-lab-interpretation.test.js",
+          "tests/atlas-lab-model-host.test.js",
+          "tests/atlas-label-anchor.test.js",
+          "tests/atlas-learning-sync.test.js",
+          "tests/atlas-learning.test.js",
+          "tests/atlas-ledger-recovery.test.js",
+          "tests/atlas-ledger-sync.test.js",
+          "tests/atlas-ledger.test.js",
+          "tests/atlas-life.test.js",
+          "tests/atlas-loop.test.js",
+          "tests/atlas-memory-sync.test.js",
+          "tests/atlas-model-extraction.test.js",
+          "tests/atlas-no-feedback.test.js",
+          "tests/atlas-outcomes.test.js",
+          "tests/atlas-personalization-conflict.test.js",
+          "tests/atlas-personalization.test.js",
+          "tests/atlas-practice-outcome-boundaries.test.js",
+          "tests/atlas-preference-context.test.js",
+          "tests/atlas-preference-domain-bridge.test.js",
+          "tests/atlas-preferences.test.js",
+          "tests/atlas-preparation-outcomes.test.js",
+          "tests/atlas-provenance-review.test.js",
+          "tests/atlas-review-fixes.test.js",
+          "tests/atlas-storage-failure.test.js",
+          "tests/atlas-sync-fixes.test.js",
+          "tests/atlas-temper-flow.test.js",
+          "tests/atlas-temper.test.js",
+          "tests/atlas-topik-layers.test.js",
+          "tests/atlas-trail-followup.test.js",
+          "tests/atlas-trail.test.js",
+          "tests/atlas-vellum-expression.test.js",
+          "tests/atlas-vellum-flow.test.js",
+          "tests/atlas-work.test.js",
+          "tests/atlas.test.js",
+          "tests/atlas-travel.test.mjs",
+          "tests/atlas-cross-product-boundaries.test.mjs",
+          "tests/sync-atlas.test.js",
+          "experiences/shift-workbench/model.test.mjs",
+          "experiences/shift-workbench/server.test.mjs",
+          "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+          "docs/마케팅/온라인마케팅지도/engagement/company/workroom-client.test.mjs"
+        ],
+        "exitCode": 0,
+        "counts": {
+          "tests": 663,
+          "pass": 663,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "log": "tests-final.txt"
+      },
+      {
+        "startedAt": "2026-10-06T14:21:13.866Z",
+        "finishedAt": "2026-10-06T14:21:22.946Z",
+        "cwd": "C:\\Users\\q1212\\Documents\\SYNK-talk",
+        "command": [
+          "node",
+          "--test",
+          "--test-reporter=tap",
+          "--test-concurrency=3",
+          "tests/atlas-copy.test.js",
+          "tests/atlas-session.test.js",
+          "tests/atlas-session-storage.test.js",
+          "tests/atlas-practice.test.js",
+          "tests/atlas-strata-drift.test.js",
+          "tests/atlas-account-memory.test.js",
+          "tests/app-learning.test.js",
+          "tests/app-learning-storage.test.js",
+          "tests/synk-learning-host.test.js"
+        ],
+        "files": [
+          "tests/atlas-copy.test.js",
+          "tests/atlas-session.test.js",
+          "tests/atlas-session-storage.test.js",
+          "tests/atlas-practice.test.js",
+          "tests/atlas-strata-drift.test.js",
+          "tests/atlas-account-memory.test.js",
+          "tests/app-learning.test.js",
+          "tests/app-learning-storage.test.js",
+          "tests/synk-learning-host.test.js"
+        ],
+        "exitCode": 0,
+        "counts": {
+          "tests": 53,
+          "pass": 53,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "log": "talk-tests.txt"
+      }
+    ],
+    "finalTotals": {
+      "tests": 716,
+      "pass": 716,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0
+    },
+    "copies": [
+      {
+        "command": [
+          "node",
+          "tools/build-game-learning.js",
+          "--check"
+        ],
+        "exitCode": 0,
+        "output": "verified strata\\maps\\topik-i.json\nverified experiences\\korean-racing\\atlas-learning.js\nverified experiences\\korean-runner\\atlas-learning.js\nverified experiences\\korean-rhythm\\atlas-learning.js\nverified experiences\\order-rush\\atlas-learning.js\nverified experiences\\learning-hub\\atlas-learning.js\nverified experiences\\entry-check\\atlas-learning.js\nverified experiences\\story-classroom\\atlas-learning.js\nverified experiences\\blank-slice\\atlas-learning.js\nverified experiences\\talk-rally\\atlas-learning.js\n"
+      },
+      {
+        "command": [
+          "node",
+          "tools/sync-atlas.js",
+          "--check"
+        ],
+        "exitCode": 0,
+        "output": "verified talk\n"
+      }
+    ],
+    "review": "Independent read-only Core/Trail and Temper/SHIFT reviews found no actionable runtime regression. Documentation review corrected the caller name from understand to decide.",
+    "sourceTimes": "All six changed runtime/tool files predate the final main test run; hashes captured after that run. No runtime edits were made afterward.",
+    "knownUnresolved": {
+      "name": "Existing SHIFT profile generation migration",
+      "reproduction": "node docs/_ops/qa/atlas-review-20261006/repro/shift-generation-change.mjs",
+      "log": "existing-shift-generation-boundary.txt",
+      "result": "Existing failures reproduced for evaluation, restore and completion after reconsent/setting deletion; not part of the 716 passing tests",
+      "scope": "Neither current SHIFT screen exposes that operation. Retained as an existing product follow-up; not counted as fixed."
+    },
+    "documentation": {
+      "log": "document-check.json",
+      "blocks": 11,
+      "links": 36,
+      "errors": 0,
+      "decisionColumns": 4,
+      "trackBytes": 596
+    },
+    "finalDiffCheck": {
+      "exitCode": 0,
+      "output": "",
+      "log": "diff-check.json"
+    },
+    "finalHashCheck": {
+      "mismatches": [],
+      "checkedAt": "2026-10-06T14:38:00.911Z"
+    }
+  },
+  "files": {
+    "runtime": [
+      {
+        "file": "atlas/engine.js",
+        "sha256": "10e702c122ad582044468e32369872f4b1686c3c251b5c4b5e157c7d4be1285b",
+        "bytes": 35154,
+        "modifiedAt": "2026-10-06T14:06:08.855Z"
+      },
+      {
+        "file": "atlas/trail.js",
+        "sha256": "c9a943ab58f26757d2b7cdbfa4eaff027b966282ad537acf16c7bd556d6f69d3",
+        "bytes": 29511,
+        "modifiedAt": "2026-10-06T14:09:03.362Z"
+      },
+      {
+        "file": "atlas/temper-outcomes.js",
+        "sha256": "a6ab147b062455c9f0df7fae662d91360d28840312d556f776fcc337c375d763",
+        "bytes": 19440,
+        "modifiedAt": "2026-10-06T14:05:35.415Z"
+      },
+      {
+        "file": "atlas/travel.js",
+        "sha256": "0c0c65b97addb5afd69966f9620133abae88aa2154cecf1ff322678bfdba7ef2",
+        "bytes": 9203,
+        "modifiedAt": "2026-10-06T14:06:08.857Z"
+      },
+      {
+        "file": "experiences/shift-workbench/model.mjs",
+        "sha256": "03891eaa5475680ee5d2e728ef19c84c7dc89980b54b48aefb7543942b4ecfea",
+        "bytes": 32984,
+        "modifiedAt": "2026-10-06T14:06:10.045Z"
+      },
+      {
+        "file": "tools/sync-atlas.js",
+        "sha256": "ae278e9b6adad3d1e17e8e1654ae152ffe96bd7c2886411a4956e8409cb501f5",
+        "bytes": 11219,
+        "modifiedAt": "2026-10-06T14:17:59.436Z"
+      }
+    ],
+    "tests": [
+      {
+        "file": "tests/atlas-practice-outcome-boundaries.test.js",
+        "sha256": "ab0024b8b10db4d26608de9c71abbede07abb5b5981034bc1f9f077bd4101983",
+        "bytes": 6237,
+        "modifiedAt": "2026-10-06T14:10:06.908Z"
+      },
+      {
+        "file": "tests/atlas-cross-product-boundaries.test.mjs",
+        "sha256": "a7188267f0e6432bfd810626fdebb45f2f8d667d2203b1a96c7952730860b6df",
+        "bytes": 7539,
+        "modifiedAt": "2026-10-06T14:08:16.592Z"
+      },
+      {
+        "file": "tests/atlas-outcomes.test.js",
+        "sha256": "175658d24da2f2a35f495b8545b4542e7dcc9817733814a964358deaa2b76be7",
+        "bytes": 18222,
+        "modifiedAt": "2026-10-06T14:06:24.523Z"
+      },
+      {
+        "file": "tests/sync-atlas.test.js",
+        "sha256": "89f07bb8edc52cc5843e820005af95df033a9af6feb66f3c530283dca2dfcd37",
+        "bytes": 16460,
+        "modifiedAt": "2026-10-06T14:17:59.442Z"
+      },
+      {
+        "file": "experiences/shift-workbench/model.test.mjs",
+        "sha256": "50c5aefd6c4cf194bb2786a19bf080df8b8b722a5d15c052dcc802e798e4f1a8",
+        "bytes": 23077,
+        "modifiedAt": "2026-10-06T14:06:40.976Z"
+      }
+    ],
+    "documents": [
+      {
+        "file": "docs/엔진8종_상향설계_v3.md",
+        "sha256": "69b5e7fe09b4bc89a9c02ff90db0e59dbfe5c34aebef95362bca78342b658ef1",
+        "bytes": 107209,
+        "modifiedAt": "2026-10-06T14:37:24.153Z"
+      },
+      {
+        "file": "docs/아틀라스_설계.md",
+        "sha256": "8cb3b816691d7f6f87c13243ab1f4b69b6a9a359d90cff62853a04f74b5545fe",
+        "bytes": 115009,
+        "modifiedAt": "2026-10-06T14:35:02.502Z"
+      },
+      {
+        "file": "docs/코어엔진_설계.md",
+        "sha256": "90fb793ec967a2322e9b75cd0e9b75d5045fac27d1d6271d92d2a709650ee6a7",
+        "bytes": 47913,
+        "modifiedAt": "2026-10-06T14:23:39.794Z"
+      },
+      {
+        "file": "docs/궤적_원장기록_실행지.md",
+        "sha256": "1b9a9ed3e4e38b3bc9bc72f7e6d1ba7adf8d21cbf5bb905e459f2fbae4593582",
+        "bytes": 16073,
+        "modifiedAt": "2026-10-06T14:19:57.263Z"
+      },
+      {
+        "file": "docs/아틀라스_공통능력_고도화_20261005.md",
+        "sha256": "07927fd043cb547aaf08db0a5709e0b880f675e18ce0a1e969c8334351ec9896",
+        "bytes": 119752,
+        "modifiedAt": "2026-10-06T14:22:49.141Z"
+      },
+      {
+        "file": "experiences/path-travel/README.md",
+        "sha256": "3e5de6d4e4ec042a43fcff17ae1ad5c6879d6b7a570335f33034fb201934330d",
+        "bytes": 11678,
+        "modifiedAt": "2026-10-06T14:19:57.267Z"
+      },
+      {
+        "file": "docs/_ops/결정.md",
+        "sha256": "869e214b4626cbfbe94f3b555011e7d8d6af09cea677588b8b485d101ff8de41",
+        "bytes": 149718,
+        "modifiedAt": "2026-10-06T14:33:46.108Z"
+      },
+      {
+        "file": "docs/_ops/트랙.md",
+        "sha256": "5efd19d6a2459ff125531a1a5d8e43d3a63a4f3402fd401db97b2696213e1631",
+        "bytes": 83213,
+        "modifiedAt": "2026-10-06T14:33:46.108Z"
+      }
+    ],
+    "generatedLearning": [
+      {
+        "file": "experiences/korean-racing/atlas-learning.js",
+        "sha256": "2077e01188407201c6002484f8c40939309431339c61e1ff1ac674f6217aa63b",
+        "bytes": 450220,
+        "modifiedAt": "2026-10-06T14:12:35.216Z"
+      },
+      {
+        "file": "experiences/korean-runner/atlas-learning.js",
+        "sha256": "2077e01188407201c6002484f8c40939309431339c61e1ff1ac674f6217aa63b",
+        "bytes": 450220,
+        "modifiedAt": "2026-10-06T14:12:35.221Z"
+      },
+      {
+        "file": "experiences/korean-rhythm/atlas-learning.js",
+        "sha256": "2077e01188407201c6002484f8c40939309431339c61e1ff1ac674f6217aa63b",
+        "bytes": 450220,
+        "modifiedAt": "2026-10-06T14:12:35.236Z"
+      },
+      {
+        "file": "experiences/order-rush/atlas-learning.js",
+        "sha256": "2077e01188407201c6002484f8c40939309431339c61e1ff1ac674f6217aa63b",
+        "bytes": 450220,
+        "modifiedAt": "2026-10-06T14:12:35.245Z"
+      },
+      {
+        "file": "experiences/learning-hub/atlas-learning.js",
+        "sha256": "2077e01188407201c6002484f8c40939309431339c61e1ff1ac674f6217aa63b",
+        "bytes": 450220,
+        "modifiedAt": "2026-10-06T14:12:35.250Z"
+      },
+      {
+        "file": "experiences/entry-check/atlas-learning.js",
+        "sha256": "2077e01188407201c6002484f8c40939309431339c61e1ff1ac674f6217aa63b",
+        "bytes": 450220,
+        "modifiedAt": "2026-10-06T14:12:35.263Z"
+      },
+      {
+        "file": "experiences/story-classroom/atlas-learning.js",
+        "sha256": "2077e01188407201c6002484f8c40939309431339c61e1ff1ac674f6217aa63b",
+        "bytes": 450220,
+        "modifiedAt": "2026-10-06T14:12:35.270Z"
+      },
+      {
+        "file": "experiences/blank-slice/atlas-learning.js",
+        "sha256": "2077e01188407201c6002484f8c40939309431339c61e1ff1ac674f6217aa63b",
+        "bytes": 450220,
+        "modifiedAt": "2026-10-06T14:12:35.286Z"
+      },
+      {
+        "file": "experiences/talk-rally/atlas-learning.js",
+        "sha256": "2077e01188407201c6002484f8c40939309431339c61e1ff1ac674f6217aa63b",
+        "bytes": 450220,
+        "modifiedAt": "2026-10-06T14:12:35.299Z"
+      }
+    ],
+    "talkLocalCopies": [
+      {
+        "file": "../SYNK-talk/lib/atlas/engine.js",
+        "sha256": "10e702c122ad582044468e32369872f4b1686c3c251b5c4b5e157c7d4be1285b",
+        "bytes": 35154,
+        "modifiedAt": "2026-10-06T14:18:14.834Z"
+      },
+      {
+        "file": "../SYNK-talk/lib/atlas/trail.js",
+        "sha256": "c9a943ab58f26757d2b7cdbfa4eaff027b966282ad537acf16c7bd556d6f69d3",
+        "bytes": 29511,
+        "modifiedAt": "2026-10-06T14:18:14.850Z"
+      },
+      {
+        "file": "../SYNK-talk/lib/atlas/sync-manifest.json",
+        "sha256": "281de10b13577c8714654fda00c3d1e2f2a8fd7168d3389ee0b728eef5a17a3a",
+        "bytes": 2137,
+        "modifiedAt": "2026-10-06T14:18:14.852Z"
+      },
+      {
+        "file": "../SYNK-talk/supabase/functions/_shared/synk-atlas.js",
+        "sha256": "d2e40b260171fd44ef87506dcda172e6abd84d3692c96f80f4c6aa034594096f",
+        "bytes": 64991,
+        "modifiedAt": "2026-10-06T14:18:14.855Z"
+      },
+      {
+        "file": "../SYNK-talk/supabase/functions/_shared/synk-atlas-summary.js",
+        "sha256": "9fbc36020a370c2571c8d48cf28305b7437decb15e62912f982e51ac711aece2",
+        "bytes": 164058,
+        "modifiedAt": "2026-10-06T14:18:14.857Z"
+      }
+    ]
+  },
+  "compatibility": {
+    "corePolicyUnchanged": "atlas-2.4.0",
+    "coreEvents": "existing versions remain accepted",
+    "temper": "without strictProvenance or revisions, legacy input and output shape retained; explicit mismatched contract rejected",
+    "shift": "missing record-level contract references in same-contract saves are bound only in evaluation copies after lineage checks; originals untouched",
+    "travel": "legacy file/global/version remain compatibility identifiers for a travel specialist, not a new common engine",
+    "website": "default consumer is Talk; explicit legacy website requires its preexisting dedicated generator; current retired site left unchanged"
+  },
+  "remainingBoundaries": [
+    "기존 미해결 SHIFT 제품 과제와 미래 계약·정책·문항 판본의 저장 이행을 이번 호환 완료로 간주하지 않음",
+    "실제 고객 업무 도입·고객사 인증/격리/삭제/과금의 운영 검증·반복 공급 수익성은 별도",
+    "Vellum/Strata/Prism/Loom/Reed는 책임과 우선순위 정리이며 이번에 전체 코드를 새로 개발한 것이 아님",
+    "운영 서버 배포 순서와 실제 계정/두 기기 왕복은 기존 별도 작업을 유지"
+  ],
+  "notPerformed": [
+    "public deployment",
+    "database migration",
+    "paid AI/provider calls",
+    "production SSO/tenant-isolation audit",
+    "real customer effect or causal evaluation",
+    "new standalone harness",
+    "commit or push"
+  ],
+  "unrelatedChanges": "Shared workspaces contain unrelated dirty changes; these were preserved. File hashes describe the complete current file, not sole authorship of every line.",
+  "createdAt": "2026-10-06T14:35:03.182Z"
+}

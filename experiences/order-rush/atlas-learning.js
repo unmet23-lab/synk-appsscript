@@ -6386,6 +6386,34 @@ var SynkLearning = (() => {
           const added = summary.met.filter((r) => record(r) && !known.has(r.itemKey));
           return { records: [...history.records, ...added].map(copy), partial: history.partial };
         }
+        function createPracticeOutcomeIndex(summary) {
+          if (!summary || summary.version !== VERSION || !Array.isArray(summary.attempts)) throw new TypeError("Trail: use a practice summary");
+          const owner = key(summary.scope), cutoff = time(summary.asOf), recordedCutoff = time(summary.recordedAsOf ?? summary.asOf);
+          const attempts = /* @__PURE__ */ new Map();
+          for (const item of summary.attempts) {
+            if (!id(item.eventId) || !id(item.presentationId) || !id(item.decisionId) || !Array.isArray(item.conceptIds) || item.conceptIds.some((value) => !id(value)) || attempts.has(item.eventId)) throw new TypeError("Trail: invalid practice outcome evidence");
+            const at = time(item.at), recordedAt = time(item.recordedAt);
+            if (recordedAt < at || at > cutoff || recordedAt > recordedCutoff) throw new TypeError("Trail: practice evidence outside summary");
+            attempts.set(item.eventId, {
+              eventId: item.eventId,
+              presentationId: item.presentationId,
+              decisionId: item.decisionId,
+              conceptIds: [...item.conceptIds],
+              at,
+              recordedAt,
+              qualified: item.independent === true && item.assisted === false && item.exposure === "new" && item.verdict === "correct" && !item.exclusionReason
+            });
+          }
+          return Object.freeze({ find(outcome, { targetLine, since, maxAgeMs } = {}) {
+            if (!outcome || outcome.type !== "outcome.observed" || !id(outcome.id) || key(outcome.scope) !== owner || typeof targetLine !== "string" || !/^(need|due|trait):[a-zA-Z0-9_.:-]{1,120}$/.test(targetLine) || !Number.isFinite(maxAgeMs) || maxAgeMs < 0) throw new TypeError("Trail: invalid practice outcome query");
+            const start = time(since), at = time(outcome.at), recordedAt = time(outcome.recordedAt);
+            if (at > cutoff || recordedAt > recordedCutoff || recordedAt < at || at < start || cutoff - at > maxAgeMs || outcome.measure !== "independent" || outcome.assisted !== false || outcome.targetLine !== targetLine) return null;
+            const attempt = attempts.get(outcome.attemptId);
+            const concept = targetLine.replace(/^(need|due):/, "").replace(/^(skill|node)\./, "");
+            if (!attempt?.qualified || attempt.decisionId !== outcome.decisionId || !attempt.conceptIds.includes(concept) || attempt.at < start || attempt.at > at || attempt.recordedAt > recordedAt || cutoff - attempt.at > maxAgeMs) return null;
+            return { evidence: [outcome.id, attempt.eventId, attempt.presentationId] };
+          } });
+        }
         function growth(summary, history) {
           if (!summary || summary.version !== VERSION || !Array.isArray(summary.attempts)) throw new TypeError("Trail: use a practice summary");
           if (!opened(history)) throw new TypeError("Trail: open the history first");
@@ -6405,7 +6433,7 @@ var SynkLearning = (() => {
           }
           return facts;
         }
-        return Object.freeze({ VERSION, TYPES, BITS, traceKeys, choiceRecord, validate, checkLink, link, vouch, summarize, createIndex, openHistory, remember, growth });
+        return Object.freeze({ VERSION, TYPES, BITS, traceKeys, choiceRecord, validate, checkLink, link, vouch, summarize, createIndex, createPracticeOutcomeIndex, openHistory, remember, growth });
       });
     }
   });
@@ -6702,13 +6730,15 @@ var SynkLearning = (() => {
           const last = mine.at(-1) ? view.decisions.get(mine.at(-1).decisionId) : null;
           let performance = false;
           const performanceProof = [];
-          const attempts = state.outcomes.some((o) => o.attemptId) ? new Map(trail().summarize(events, { scope, asOf: at, recordedAsOf: recordedAt }).attempts.map((item) => [item.eventId, item])) : /* @__PURE__ */ new Map();
-          const improved = (leverId, optionId, line) => state.outcomes.find((o) => {
-            if (o.value == null || o.value < 0.8 || o.assisted !== false || o.measure !== "independent" || o.targetLine !== line.key || view.cutoff - ms(o.at) > RECENT || ms(o.at) < ms(line.at) || picked(view.decisions.get(o.decisionId), leverId) !== optionId) return false;
-            const attempt = attempts.get(o.attemptId);
-            const concept = line.key.replace(/^(need|due):/, "").replace(/^(skill|node)\./, "");
-            return attempt && attempt.decisionId === o.decisionId && attempt.exposure === "new" && attempt.independent === true && attempt.assisted === false && attempt.verdict === "correct" && attempt.conceptIds.includes(concept) && ms(attempt.at) >= ms(line.at) && ms(attempt.at) <= ms(o.at) && ms(attempt.recordedAt) <= ms(o.recordedAt) && view.cutoff - ms(attempt.at) <= RECENT;
-          });
+          const outcomeEvidence = state.outcomes.some((o) => o.attemptId) ? trail().createPracticeOutcomeIndex(trail().summarize(events, { scope, asOf: at, recordedAsOf: recordedAt })) : null;
+          const improved = (leverId, optionId, line) => {
+            for (const outcome of state.outcomes) {
+              if (outcome.value == null || outcome.value < 0.8 || picked(view.decisions.get(outcome.decisionId), leverId) !== optionId) continue;
+              const proof = outcomeEvidence?.find(outcome, { targetLine: line.key, since: line.at, maxAgeMs: RECENT });
+              if (proof) return proof;
+            }
+            return null;
+          };
           const aim = (leverId, option, content, notes, proof) => {
             let total = 0, due = false;
             for (const line of usable) if (option.targets?.includes(line.key)) {
@@ -6719,7 +6749,7 @@ var SynkLearning = (() => {
                 weight *= 0.5;
                 performance = true;
                 notes.push("outcome.improved");
-                const refs = [result.id, result.attemptId, attempts.get(result.attemptId).presentationId, ...line.evidence];
+                const refs = [...result.evidence, ...line.evidence];
                 proof.push(...refs);
                 performanceProof.push(...refs);
               }

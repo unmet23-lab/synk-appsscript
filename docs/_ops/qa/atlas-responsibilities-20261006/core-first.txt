@@ -1,0 +1,430 @@
+TAP version 13
+# Subtest: a session captures its original owner; host or returned object mutation cannot switch it
+ok 1 - a session captures its original owner; host or returned object mutation cannot switch it
+  ---
+  duration_ms: 12.9969
+  type: 'test'
+  ...
+# Subtest: recommendation avoids a recently shown content family even when item and choice IDs differ
+ok 2 - recommendation avoids a recently shown content family even when item and choice IDs differ
+  ---
+  duration_ms: 22.7289
+  type: 'test'
+  ...
+# Subtest: matching task, item and family count one presentation, with legacy item matching intact
+ok 3 - matching task, item and family count one presentation, with legacy item matching intact
+  ---
+  duration_ms: 45.3687
+  type: 'test'
+  ...
+# Subtest: a correct result with help and an exclusion reason is not a supported language success
+ok 4 - a correct result with help and an exclusion reason is not a supported language success
+  ---
+  duration_ms: 33.9004
+  type: 'test'
+  ...
+# Subtest: a reveal after both variants opened prevents an independent answer on the sibling
+ok 5 - a reveal after both variants opened prevents an independent answer on the sibling
+  ---
+  duration_ms: 49.3467
+  type: 'test'
+  ...
+# Subtest: a first attempt on a concurrently open variant prevents duplicate independent evidence
+ok 6 - a first attempt on a concurrently open variant prevents duplicate independent evidence
+  ---
+  duration_ms: 8.55
+  type: 'test'
+  ...
+# Subtest: excluded family help still counts as exposure, and later help does not rewrite the past
+ok 7 - excluded family help still counts as exposure, and later help does not rewrite the past
+  ---
+  duration_ms: 8.1449
+  type: 'test'
+  ...
+# Subtest: a changed family label cannot hide help on the same item key
+ok 8 - a changed family label cannot hide help on the same item key
+  ---
+  duration_ms: 4.9384
+  type: 'test'
+  ...
+# Subtest: what was observed changes what is practised; one thin observation does not, until the person confirms it
+ok 9 - what was observed changes what is practised; one thin observation does not, until the person confirms it
+  ---
+  duration_ms: 88.5694
+  type: 'test'
+  ...
+# Subtest: the person can say "no": a guess about them stays denied, a need reopens only on later evidence, nothing is deleted
+ok 10 - the person can say "no": a guess about them stays denied, a need reopens only on later evidence, nothing is deleted
+  ---
+  duration_ms: 2.2655
+  type: 'test'
+  ...
+# Subtest: what the person set themselves beats observation, learning and the baseline share
+ok 11 - what the person set themselves beats observation, learning and the baseline share
+  ---
+  duration_ms: 0.9649
+  type: 'test'
+  ...
+# Subtest: learning within one person: a way that works is kept, two "not for me" answers make room for another way
+ok 12 - learning within one person: a way that works is kept, two "not for me" answers make room for another way
+  ---
+  duration_ms: 6.6692
+  type: 'test'
+  ...
+# Subtest: a checked result feeds the next choice: independent success lowers that aim, assisted success and "not yet measurable" do not
+ok 13 - a checked result feeds the next choice: independent success lowers that aim, assisted success and "not yet measurable" do not
+  ---
+  duration_ms: 29.6784
+  type: 'test'
+  ...
+# Subtest: outcome numbers do not relax a need without the matching new independent correct attempt
+ok 14 - outcome numbers do not relax a need without the matching new independent correct attempt
+  ---
+  duration_ms: 37.1524
+  type: 'test'
+  ...
+# Subtest: practice provenance lives in the same session log and rejects raw text, missing parents and outcome proof gaps
+ok 15 - practice provenance lives in the same session log and rejects raw text, missing parents and outcome proof gaps
+  ---
+  duration_ms: 2.0939
+  type: 'test'
+  ...
+# Subtest: a delayed outcome cannot reuse an old correct attempt to erase a newer need
+ok 16 - a delayed outcome cannot reuse an old correct attempt to erase a newer need
+  ---
+  duration_ms: 1.437
+  type: 'test'
+  ...
+# Subtest: a proof survives other reports on the same decision; state hands out copies of the log
+ok 17 - a proof survives other reports on the same decision; state hands out copies of the log
+  ---
+  duration_ms: 9.5378
+  type: 'test'
+  ...
+# Subtest: the browser kernel loads Trail only when practice is used, in either script load order
+ok 18 - the browser kernel loads Trail only when practice is used, in either script load order
+  ---
+  duration_ms: 11.4341
+  type: 'test'
+  ...
+# Subtest: content takes turns when nothing is known, and a due review may repeat
+ok 19 - content takes turns when nothing is known, and a due review may repeat
+  ---
+  duration_ms: 1.9851
+  type: 'test'
+  ...
+# Subtest: the baseline share: a seeded part of the rounds ignores what was learned, never what was set, and says so
+ok 20 - the baseline share: a seeded part of the rounds ignores what was learned, never what was set, and says so
+  ---
+  duration_ms: 86.5278
+  type: 'test'
+  ...
+# Subtest: a decision can be recomputed from its history: same events and time give the same arm, seed and bundle
+ok 21 - a decision can be recomputed from its history: same events and time give the same arm, seed and bundle
+  ---
+  duration_ms: 4.5147
+  type: 'test'
+  ...
+# Subtest: observations expire, and an expired latest observation does not revive an older one
+ok 22 - observations expire, and an expired latest observation does not revive an older one
+  ---
+  duration_ms: 0.5568
+  type: 'test'
+  ...
+# Subtest: "what I came to know about you": what the person said and what was observed are listed apart
+ok 23 - "what I came to know about you": what the person said and what was observed are listed apart
+  ---
+  duration_ms: 0.8627
+  type: 'test'
+  ...
+# Subtest: PULSE keeps no personal observations and takes no baseline share
+ok 24 - PULSE keeps no personal observations and takes no baseline share
+  ---
+  duration_ms: 9.3639
+  type: 'test'
+  ...
+# Subtest: what an assessment means cannot be a lever; broken input is visible
+ok 25 - what an assessment means cannot be a lever; broken input is visible
+  ---
+  duration_ms: 7
+  type: 'test'
+  ...
+# Subtest: the letter adapter: the reason shown is true to the decision, and the person sees sentences, never raw keys
+ok 26 - the letter adapter: the reason shown is true to the decision, and the person sees sentences, never raw keys
+  ---
+  duration_ms: 7.1815
+  type: 'test'
+  ...
+# Subtest: standalone or connected: without a ready plan an engine keeps its own default; atlas-1 histories still load
+ok 27 - standalone or connected: without a ready plan an engine keeps its own default; atlas-1 histories still load
+  ---
+  duration_ms: 1.1154
+  type: 'test'
+  ...
+# Subtest: explicit measurement exclusion survives Trail, Temper, game summary and a saved-log reload
+ok 28 - explicit measurement exclusion survives Trail, Temper, game summary and a saved-log reload
+  ---
+  duration_ms: 89.3881
+  type: 'test'
+  ...
+# Subtest: Temper rechecks measurement exclusion, audio delivery and visual confounds
+ok 29 - Temper rechecks measurement exclusion, audio delivery and visual confounds
+  ---
+  duration_ms: 0.5372
+  type: 'test'
+  ...
+# Subtest: same-input comparison keeps exposure and authored measurement conditions in its identity
+ok 30 - same-input comparison keeps exposure and authored measurement conditions in its identity
+  ---
+  duration_ms: 2.1845
+  type: 'test'
+  ...
+# Subtest: Trail accepts identical serialized retries regardless of object key order
+ok 31 - Trail accepts identical serialized retries regardless of object key order
+  ---
+  duration_ms: 2.5366
+  type: 'test'
+  ...
+# Subtest: same-input runs report the measured difference without causal or learning claims
+ok 32 - same-input runs report the measured difference without causal or learning claims
+  ---
+  duration_ms: 14.1639
+  type: 'test'
+  ...
+# Subtest: assisted, unknown, repeats, skips and unassessed have explicit counts, not inflated denominators
+ok 33 - assisted, unknown, repeats, skips and unassessed have explicit counts, not inflated denominators
+  ---
+  duration_ms: 1.7553
+  type: 'test'
+  ...
+# Subtest: independent attempts are read per concept and per comparison arm
+ok 34 - independent attempts are read per concept and per comparison arm
+  ---
+  duration_ms: 2.4623
+  type: 'test'
+  ...
+# Subtest: no independent sample is not zero accuracy or improvement
+ok 35 - no independent sample is not zero accuracy or improvement
+  ---
+  duration_ms: 0.6211
+  type: 'test'
+  ...
+# Subtest: unpaired account/task/version evidence is not comparable
+ok 36 - unpaired account/task/version evidence is not comparable
+  ---
+  duration_ms: 3.4003
+  type: 'test'
+  ...
+# Subtest: forged derived independent flag alone cannot turn helped success into independent evidence
+ok 37 - forged derived independent flag alone cannot turn helped success into independent evidence
+  ---
+  duration_ms: 0.3063
+  type: 'test'
+  ...
+# Subtest: concept names from data cannot reach Object.prototype
+ok 38 - concept names from data cannot reach Object.prototype
+  ---
+  duration_ms: 0.2788
+  type: 'test'
+  ...
+# Subtest: evaluation-only groups compare two arms person by person and flag the group a new way leaves worse
+ok 39 - evaluation-only groups compare two arms person by person and flag the group a new way leaves worse
+  ---
+  duration_ms: 8.682
+  type: 'test'
+  ...
+# Subtest: a group below the minimum is not compared and its size is not shown
+ok 40 - a group below the minimum is not compared and its size is not shown
+  ---
+  duration_ms: 1.6784
+  type: 'test'
+  ...
+# Subtest: no answer, unlabelled people and assisted attempts do not form or fill a group
+ok 41 - no answer, unlabelled people and assisted attempts do not form or fill a group
+  ---
+  duration_ms: 3.1189
+  type: 'test'
+  ...
+# Subtest: the per-cell minimum is the one in the shared contract
+ok 42 - the per-cell minimum is the one in the shared contract
+  ---
+  duration_ms: 7.8907
+  type: 'test'
+  ...
+# Subtest: independent evidence needs a verified first exposure; seen or unknown history never counts
+ok 43 - independent evidence needs a verified first exposure; seen or unknown history never counts
+  ---
+  duration_ms: 12.9574
+  type: 'test'
+  ...
+# Subtest: cue/explanation/answer change assistance; no help after an attempt rewrites that attempt
+ok 44 - cue/explanation/answer change assistance; no help after an attempt rewrites that attempt
+  ---
+  duration_ms: 1.0195
+  type: 'test'
+  ...
+# Subtest: new presentation of an already attempted or revealed item is not independent transfer
+ok 45 - new presentation of an already attempted or revealed item is not independent transfer
+  ---
+  duration_ms: 1.9282
+  type: 'test'
+  ...
+# Subtest: analytical exclusions cannot erase actual help exposure or prior attempts
+ok 46 - analytical exclusions cannot erase actual help exposure or prior attempts
+  ---
+  duration_ms: 0.902
+  type: 'test'
+  ...
+# Subtest: causal links require same account/content, prior decision, and consecutive attempts
+ok 47 - causal links require same account/content, prior decision, and consecutive attempts
+  ---
+  duration_ms: 0.7381
+  type: 'test'
+  ...
+# Subtest: as-of and recorded-as-of cutoffs prevent future/late evidence and deduplicate exact retries
+ok 48 - as-of and recorded-as-of cutoffs prevent future/late evidence and deduplicate exact retries
+  ---
+  duration_ms: 0.802
+  type: 'test'
+  ...
+# Subtest: skips and unassessed attempts cannot become independent success or failure
+ok 49 - skips and unassessed attempts cannot become independent success or failure
+  ---
+  duration_ms: 0.7348
+  type: 'test'
+  ...
+# Subtest: excluding a decision hides its analytics, but its previously seen answer still affects later evidence
+ok 50 - excluding a decision hides its analytics, but its previously seen answer still affects later evidence
+  ---
+  duration_ms: 0.3541
+  type: 'test'
+  ...
+# Subtest: a late-recorded earlier hint remains earlier provenance and does not mutate the provided log
+ok 51 - a late-recorded earlier hint remains earlier provenance and does not mutate the provided log
+  ---
+  duration_ms: 0.3749
+  type: 'test'
+  ...
+# Subtest: each attempt carries the comparison arm recorded on its decision
+ok 52 - each attempt carries the comparison arm recorded on its decision
+  ---
+  duration_ms: 0.7143
+  type: 'test'
+  ...
+# Subtest: a stored history opens once: complete, partial or unreadable decide what a first exposure can be
+ok 53 - a stored history opens once: complete, partial or unreadable decide what a first exposure can be
+  ---
+  duration_ms: 0.6597
+  type: 'test'
+  ...
+# Subtest: remember adds only items first met now, excluded or revealed ones included, without text or help
+ok 54 - remember adds only items first met now, excluded or revealed ones included, without text or help
+  ---
+  duration_ms: 1.3064
+  type: 'test'
+  ...
+# Subtest: growth needs an earlier wrong first attempt and a new independent correct item on the same primary concept
+ok 55 - growth needs an earlier wrong first attempt and a new independent correct item on the same primary concept
+  ---
+  duration_ms: 2.1701
+  type: 'test'
+  ...
+# Subtest: pending records from an interrupted round count as met; an unreadable pending list makes the history partial
+ok 56 - pending records from an interrupted round count as met; an unreadable pending list makes the history partial
+  ---
+  duration_ms: 0.3936
+  type: 'test'
+  ...
+# Subtest: one session, two rounds: the round filter reports only its own attempts and growth never repeats a fact
+ok 57 - one session, two rounds: the round filter reports only its own attempts and growth never repeats a fact
+  ---
+  duration_ms: 0.8819
+  type: 'test'
+  ...
+# Subtest: a device clock stepping back cannot turn help or an earlier attempt into independent evidence
+ok 58 - a device clock stepping back cannot turn help or an earlier attempt into independent evidence
+  ---
+  duration_ms: 0.6412
+  type: 'test'
+  ...
+# Subtest: new declarations change actual choice, expired temporary context does not revive old context
+ok 59 - new declarations change actual choice, expired temporary context does not revive old context
+  ---
+  duration_ms: 76.2311
+  type: 'test'
+  ...
+# Subtest: completion -> explicit feedback -> next decision changes; no skill claim
+ok 60 - completion -> explicit feedback -> next decision changes; no skill claim
+  ---
+  duration_ms: 1.3555
+  type: 'test'
+  ...
+# Subtest: correcting feedback and excluding evidence affects next decisions without deleting original
+ok 61 - correcting feedback and excluding evidence affects next decisions without deleting original
+  ---
+  duration_ms: 3.5749
+  type: 'test'
+  ...
+# Subtest: explicit time limits take precedence over outcome preference; unavailable is not fake fallback
+ok 62 - explicit time limits take precedence over outcome preference; unavailable is not fake fallback
+  ---
+  duration_ms: 1.1393
+  type: 'test'
+  ...
+# Subtest: as-of and recorded-as-of exclude late and future evidence
+ok 63 - as-of and recorded-as-of exclude late and future evidence
+  ---
+  duration_ms: 1.438
+  type: 'test'
+  ...
+# Subtest: subject, workspace and domain isolation; explicit PULSE context but no personal outcome inference
+ok 64 - subject, workspace and domain isolation; explicit PULSE context but no personal outcome inference
+  ---
+  duration_ms: 2.3033
+  type: 'test'
+  ...
+# Subtest: feedback cannot be fabricated without a completed decision or attached across scopes
+ok 65 - feedback cannot be fabricated without a completed decision or attached across scopes
+  ---
+  duration_ms: 0.8699
+  type: 'test'
+  ...
+# Subtest: history roundtrip reproduces a decision; domain isolation uses synthetic inputs, not product adapters
+ok 66 - history roundtrip reproduces a decision; domain isolation uses synthetic inputs, not product adapters
+  ---
+  duration_ms: 2.7395
+  type: 'test'
+  ...
+# Subtest: the LAB experience adapter cannot be silently reused as a SHIFT, PULSE or PATH product
+ok 67 - the LAB experience adapter cannot be silently reused as a SHIFT, PULSE or PATH product
+  ---
+  duration_ms: 0.4919
+  type: 'test'
+  ...
+# Subtest: repeated IDs are idempotent, conflicts and broken input are visible
+ok 68 - repeated IDs are idempotent, conflicts and broken input are visible
+  ---
+  duration_ms: 0.829
+  type: 'test'
+  ...
+# Subtest: feedback becomes unknown after its window, zero feedback is not negative feedback
+ok 69 - feedback becomes unknown after its window, zero feedback is not negative feedback
+  ---
+  duration_ms: 0.5878
+  type: 'test'
+  ...
+# Subtest: same-millisecond corrections follow append order, never random ID lexical order
+ok 70 - same-millisecond corrections follow append order, never random ID lexical order
+  ---
+  duration_ms: 0.2778
+  type: 'test'
+  ...
+1..70
+# tests 70
+# suites 0
+# pass 70
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 919.3025

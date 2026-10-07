@@ -280,6 +280,7 @@
     ? Object.fromEntries(Object.keys(item).sort().map(key => [key, item[key]])) : item);
   const PREFERENCE_KEYS = Object.freeze({ set: ['field', 'value', 'duration'], withdraw: ['field', 'duration'], reset: [], close: [],
     propose: ['field', 'value', 'feedbackId'], apply: ['proposalId', 'duration'], dismiss: ['proposalId'] });
+  const preferenceOptional = kind => ['set', 'apply'].includes(kind) ? ['until'] : [];
   const preferenceBase = ['version', 'id', 'scope', 'contract', 'encounterId', 'at', 'kind', 'source'];
   function preferenceReplay({ contract, scope, events = [], encounterId, at } = {}) {
     checkScope(scope); instant(at);
@@ -298,7 +299,7 @@
     for (const event of events) {
       if (!record(event) || !Object.hasOwn(PREFERENCE_KEYS, event.kind)) fail('invalid preference event kind');
       const keys = [...preferenceBase, ...PREFERENCE_KEYS[event.kind]];
-      if (!exact(event, keys) || keys.some(key => !Object.hasOwn(event, key)) || event.version !== PREFERENCE_VERSION
+      if (!exact(event, [...keys, ...preferenceOptional(event.kind)]) || keys.some(key => !Object.hasOwn(event, key)) || event.version !== PREFERENCE_VERSION
         || !preferenceToken(event.id) || !preferenceToken(event.encounterId)) fail('invalid preference event');
       checkScope(event.scope);
       if (scopeKey(event.scope) !== scopeKey(scope) || canonical(event.contract) !== canonical(reference)) fail('foreign preference scope or contract');
@@ -307,6 +308,7 @@
       // excludes personal feedback learning, including reviewed suggestions.
       if (scope.domain === 'PULSE' && ['propose', 'apply'].includes(event.kind)) fail('PULSE does not learn a personal behavioral profile');
       const eventAt = instant(event.at);
+      if (Object.hasOwn(event, 'until') && instant(event.until) <= eventAt) fail('preference deadline must be after its declaration');
       if (eventAt > instant(at)) fail('future preference event');
       if (seen.has(event.id)) {
         if (canonical(seen.get(event.id)) !== canonical(event)) fail('conflicting preference event id');
@@ -345,18 +347,26 @@
       }
       seen.set(event.id, event); unique.push(event);
     }
+    const origin = event => ({ eventId: event.id, source: event.source, duration: event.duration, encounterId: event.encounterId, at: event.at,
+      ...(Object.hasOwn(event, 'until') ? { until: event.until } : {}),
+      ...(event.proposalId ? { proposalId: event.proposalId, feedbackId: event.feedbackId } : {}) });
+    const expiredAt = event => Object.hasOwn(event, 'until') && instant(at) >= instant(event.until);
     const readLayer = selected => {
-      const values = {}, provenance = {};
+      const values = {}, provenance = {}, expired = [];
       for (const [field, event] of selected) {
+        if (expiredAt(event)) { expired.push({ field, value: event.value, ...origin(event) }); continue; }
         values[field] = event.value;
-        provenance[field] = { eventId: event.id, source: event.source, duration: event.duration, encounterId: event.encounterId, at: event.at,
-          ...(event.proposalId ? { proposalId: event.proposalId, feedbackId: event.feedbackId } : {}) };
+        provenance[field] = origin(event);
       }
-      return { values, provenance };
+      return { values, provenance, ...(expired.length ? { expired } : {}) };
     };
     const baseline = readLayer(ongoing), context = readLayer(once.get(encounterId) || []);
-    const projection = { version: PREFERENCE_VERSION, values: { ...baseline.values, ...context.values },
-      provenance: { ...baseline.provenance, ...context.provenance }, closed: closed.has(encounterId),
+    // A deadline ends the current declaration, never searches its history for an
+    // older value. An expired once choice may reveal the still-current baseline.
+    const effective = { values: { ...baseline.values, ...context.values }, provenance: { ...baseline.provenance, ...context.provenance } };
+    const expired = [...(baseline.expired || []), ...(context.expired || [])];
+    if (expired.length) effective.expired = expired;
+    const projection = { version: PREFERENCE_VERSION, ...effective, closed: closed.has(encounterId),
       pendingProposals: [...pending.values()].filter(event => event.encounterId === encounterId).map(event => ({ id: event.id,
         field: event.field, value: event.value, feedbackId: event.feedbackId, encounterId: event.encounterId, at: event.at })) };
     return { projection, layers: { version: 'core-preference-layers-1', baseline,
@@ -381,9 +391,15 @@
     const fields = new Map(contract.fields.map(field => [field.id, field]));
     const reference = { id: contract.id, version: contract.version, purpose: contract.purpose };
     const observations = [], lineage = [];
-    for (const [field, value] of Object.entries(layers.effective.values)) {
-      const origin = layers.effective.provenance[field];
-      const began = instant(origin.at), expires = began + (fields.get(field).maxAgeDays ?? 30) * 86400000;
+    const selected = new Map(Object.entries(layers.effective.values).map(([field, value]) => [field, { value, origin: layers.effective.provenance[field] }]));
+    // Keep a currently expired declaration as expired evidence when no live
+    // layer remains. This lets a required field fail closed with its real cause.
+    for (const expired of layers.effective.expired || []) if (!Object.hasOwn(layers.effective.values, expired.field)) {
+      const { field, value, ...origin } = expired; selected.set(field, { value, origin });
+    }
+    for (const [field, { value, origin }] of selected) {
+      const began = instant(origin.at), contractExpiry = began + (fields.get(field).maxAgeDays ?? 30) * 86400000;
+      const expires = origin.until ? Math.min(contractExpiry, instant(origin.until)) : contractExpiry;
       if (!Number.isFinite(expires) || Math.abs(expires) > 8640000000000000 || Math.trunc(expires) <= began) fail('invalid preference bridge lifetime');
       const until = new Date(expires).toISOString();
       const refs = [...new Set([origin.eventId, origin.proposalId, origin.feedbackId].filter(Boolean))];
@@ -400,7 +416,7 @@
   function recordPreference(input = {}) {
     if (!record(input) || !Object.hasOwn(PREFERENCE_KEYS, input.kind)) fail('invalid preference action');
     const { contract, scope, encounterId, at, id, kind, events = [] } = input;
-    const extraKeys = PREFERENCE_KEYS[kind], keys = ['contract', 'scope', 'events', 'encounterId', 'at', 'id', 'kind', ...extraKeys];
+    const extraKeys = PREFERENCE_KEYS[kind], optionalKeys = preferenceOptional(kind), keys = ['contract', 'scope', 'events', 'encounterId', 'at', 'id', 'kind', ...extraKeys, ...optionalKeys];
     if (!exact(input, keys)) fail('unsupported preference action input');
     // Validate the supplied history first; callers cannot smuggle a different
     // actor, purpose, value, time or implicit source into an existing log.
@@ -408,6 +424,7 @@
     const event = { version: PREFERENCE_VERSION, id, scope: copy(scope), contract: { id: contract.id, version: contract.version, purpose: contract.purpose },
       encounterId, at, kind, source: kind === 'apply' ? 'feedback-confirmed' : 'explicit' };
     for (const key of extraKeys) { if (!Object.hasOwn(input, key)) fail(`missing preference ${key}`); event[key] = input[key]; }
+    for (const key of optionalKeys) if (Object.hasOwn(input, key)) event[key] = input[key];
     return copy(preferenceReplay({ contract, scope, events: [...prior, event], encounterId, at }).events);
   }
   const preferences = Object.freeze({ project: projectPreferences, record: recordPreference, layers: preferenceLayers, toDomain: preferencesToDomain });

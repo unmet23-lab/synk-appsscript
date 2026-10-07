@@ -190,3 +190,131 @@ test('late ingestion cannot be inserted into an earlier evaluation snapshot or p
   f.outcomes[0].recordedAt = at(2); f.exposures[0].recordedAt = at(3);
   assert.throws(() => Temper.evaluateOutcomes(f), /prior exposure/);
 });
+
+function bindRecords(f) {
+  for (const row of [...f.exposures, ...f.outcomes]) row.contract = { id: f.contract.id, version: f.contract.version };
+  return f;
+}
+function revise(f, { id = 'r-one', targetId = 'o-one', action = 'correct', value = 0, subject = 'one', atSeconds = 3 } = {}) {
+  const row = { id, subject, scope: { ...f.contract.scope }, contract: { id: f.contract.id, version: f.contract.version },
+    at: at(atSeconds), targetId, action, sourceRef: `source.${id}`, ...(action === 'correct' ? { value } : {}) };
+  (f.revisions ||= []).push(row); return row;
+}
+
+test('explicit outcome contract references reject same-ID records from another product or version', () => {
+  const f = fixture(); add(f, { id: 'one' });
+  const legacy = Temper.evaluateOutcomes(f);
+  assert.deepEqual(Temper.evaluateOutcomes({ ...f, revisions: [] }), legacy);
+  assert.equal(Object.hasOwn(legacy, 'provenance'), false);
+  bindRecords(f);
+  assert.deepEqual(Temper.evaluateOutcomes(f), legacy, 'optional matching references do not change legacy output');
+  for (const name of ['exposures', 'outcomes']) for (const key of ['id', 'version']) {
+    const invalid = clone(f); invalid[name][0].contract[key] = 'another';
+    assert.throws(() => Temper.evaluateOutcomes(invalid), /contract mismatch/);
+  }
+  for (const name of ['exposures', 'outcomes']) {
+    const invalid = clone(f); delete invalid[name][0].contract;
+    assert.throws(() => Temper.evaluateOutcomes({ ...invalid, strictProvenance: true }), /contract mismatch/);
+    revise(invalid);
+    assert.throws(() => Temper.evaluateOutcomes(invalid), /contract mismatch/);
+  }
+});
+
+test('successive corrections retain the delivered source and replace only the observed value', () => {
+  const f = fixture(); add(f, { id: 'one' }); bindRecords(f);
+  revise(f);
+  let r = Temper.evaluateOutcomes(f);
+  assert.equal(r.byPolicy[0].mean, 0);
+  assert.equal(r.byPolicy[0].counts.observed, 1);
+  revise(f, { id: 'r-two', targetId: 'r-one', value: 1, atSeconds: 4 });
+  f.revisions.reverse(); // Arrival array order does not define revision causality.
+  const before = clone(f);
+  r = Temper.evaluateOutcomes(f);
+  assert.equal(r.byPolicy[0].mean, 1);
+  assert.deepEqual(r.provenance.chains[0], { decisionId: 'd-one', exposureId: 'e-one', outcomeId: 'o-one',
+    status: 'corrected', effectiveOutcomeId: 'r-two', revisions: [
+      { id: 'r-one', targetId: 'o-one', action: 'correct', sourceRef: 'source.r-one', at: at(3), recordedAt: at(3), value: 0 },
+      { id: 'r-two', targetId: 'r-one', action: 'correct', sourceRef: 'source.r-two', at: at(4), recordedAt: at(4), value: 1 },
+    ] });
+  assert.deepEqual(f, before);
+  r.provenance.chains[0].revisions[0].value = 1;
+  assert.deepEqual(f, before, 'returned provenance cannot mutate the source records');
+  assert.equal(r.causalClaim, false); assert.equal(r.significanceTested, false); assert.equal(r.policyPromotion, false);
+});
+
+test('withdrawals remove usable observations without erasing actual delivery or converting missing to failure', () => {
+  const f = fixture(); add(f, { id: 'one' }); add(f, { id: 'two' }); bindRecords(f);
+  revise(f); revise(f, { id: 'r-withdraw', targetId: 'r-one', action: 'withdraw', atSeconds: 4 });
+  const r = Temper.evaluateOutcomes(f), p = r.byPolicy[0];
+  assert.equal(p.counts.delivered, 2); assert.equal(p.counts.matured, 2);
+  assert.equal(p.counts.observed, 1); assert.equal(p.counts.missing, 1);
+  assert.equal(p.mean, 1); assert.equal(p.measurementCompletion, 0.5);
+  assert.equal(r.provenance.chains[0].status, 'withdrawn');
+  assert.equal(r.provenance.chains[0].effectiveOutcomeId, null);
+  assert.equal(r.provenance.chains[0].outcomeId, 'o-one');
+  assert.equal(r.provenance.chains[0].revisions[1].sourceRef, 'source.r-withdraw');
+  revise(f, { id: 'r-restore', targetId: 'r-withdraw', atSeconds: 5 });
+  assert.throws(() => Temper.evaluateOutcomes(f), /cannot be restored/);
+});
+
+test('provenance distinguishes actual delivery and missing results for each selected or abstained decision', () => {
+  const f = fixture(); add(f, { id: 'one' }); add(f, { id: 'missing', value: null });
+  add(f, { id: 'not-seen', delivered: false }); add(f, { id: 'none-fit', abstained: true }); bindRecords(f);
+  const r = Temper.evaluateOutcomes({ ...f, strictProvenance: true });
+  assert.deepEqual(Object.fromEntries(r.provenance.chains.map(row => [row.decisionId, row.status])), {
+    'd-missing': 'unobserved', 'd-none-fit': 'abstained', 'd-not-seen': 'undelivered', 'd-one': 'observed',
+  });
+  assert.equal(r.provenance.chains.find(row => row.decisionId === 'd-one').effectiveOutcomeId, 'o-one');
+  assert.equal(r.provenance.chains.find(row => row.decisionId === 'd-missing').outcomeId, null);
+});
+
+test('revision retries are idempotent while conflicts, branches, cycles and foreign lineage fail closed', () => {
+  const f = fixture(); add(f, { id: 'one' }); bindRecords(f); revise(f);
+  const retry = clone(f); retry.revisions.push(clone(retry.revisions[0]));
+  const r = Temper.evaluateOutcomes(retry);
+  assert.equal(r.duplicates.revisions, 1);
+  assert.equal(r.provenance.chains[0].revisions.length, 1);
+  const mutations = [
+    f => { f.revisions.push({ ...clone(f.revisions[0]), value: 1 }); },
+    f => { f.revisions.push({ ...clone(f.revisions[0]), id: 'branch' }); },
+    f => { f.revisions[0].targetId = 'unknown'; },
+    f => { f.revisions[0].targetId = 'r-one'; },
+    f => { f.revisions[0].id = 'o-one'; },
+    f => { f.revisions[0].contract.version = 'foreign'; },
+    f => { f.revisions[0].scope.workspace = 'team-b'; },
+    f => { f.revisions[0].scope.purpose = 'other-purpose'; },
+    f => { f.subjects.push('other'); f.revisions[0].subject = 'other'; },
+    f => { f.revisions[0].value = 2; },
+    f => { delete f.revisions[0].sourceRef; },
+    f => { f.revisions[0].rawText = 'private text'; },
+    f => { f.revisions[0].action = 'withdraw'; }, // Withdrawal must carry no replacement value.
+  ];
+  for (const mutate of mutations) {
+    const invalid = clone(f); mutate(invalid);
+    assert.throws(() => Temper.evaluateOutcomes(invalid), /Temper outcomes:/);
+  }
+  const cycle = clone(f); cycle.revisions = [cycle.revisions[0], { ...cycle.revisions[0], id: 'r-two', targetId: 'r-one' }];
+  cycle.revisions[0].targetId = 'r-two';
+  assert.throws(() => Temper.evaluateOutcomes(cycle), /revision cycle/);
+});
+
+test('revision time and ingestion order respect the entire chain and never move observation windows', () => {
+  const f = fixture(); add(f, { id: 'one' }); bindRecords(f); revise(f);
+  for (const mutate of [
+    f => { f.revisions[0].at = at(1); },
+    f => { f.revisions[0].recordedAt = at(2); },
+    f => { f.outcomes[0].recordedAt = at(4); },
+    f => { f.revisions[0].at = at(101); },
+    f => { f.revisions[0].recordedAt = at(101); },
+    f => { revise(f, { id: 'r-two', targetId: 'r-one', atSeconds: 2 }); },
+  ]) {
+    const invalid = clone(f); mutate(invalid);
+    assert.throws(() => Temper.evaluateOutcomes(invalid), /prior outcome or revision|before occurrence|after evaluation time/);
+  }
+  f.revisions[0].at = at(90); f.revisions[0].recordedAt = at(99);
+  assert.equal(Temper.evaluateOutcomes(f).byPolicy[0].counts.observed, 1, 'correcting an in-window reported value retains its occurrence time');
+  f.outcomes[0].at = at(30);
+  const late = Temper.evaluateOutcomes(f).byPolicy[0];
+  assert.equal(late.counts.late, 1); assert.equal(late.counts.observed, 0);
+  assert.equal(late.mean, null, 'a late outcome cannot be made in-window by correction');
+});
