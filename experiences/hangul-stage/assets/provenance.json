@@ -129,9 +129,9 @@
     },
     {
       "path": "songs/geu-a-ga.mp3",
-      "from": "Suno 61cb6e8e-bb9b-4660-bba6-51e4a66a487f · 공식 내려받기 MP3 2026-10-04(유호님 허락) · 원본 Documents/synk-vendor/hangul-songs/geu-a-ga_61cb6e8e.mp3",
-      "bytes": 1781481,
-      "sha256": "c7077d4c8753ed1a107c47daea2d1030e0bda0fd07d10175230ac13b7a4eab76"
+      "from": "Suno 644b446b-0387-48f2-a6cc-58163c232f4f · 공식 내려받기 MP3 2026-10-08(유호님 「C로 가자 받아서」) · 옛 곡 61cb6e8e가 후렴에서 음절을 두 번 불러(바바·타타) 줄마다 8음절 가사(후렴 끝 「짝!」)로 다시 만든 네 후보 가운데 유호님이 고름 · 원본 Documents/synk-vendor/hangul-songs/geu-a-ga-v2_644b446b.mp3",
+      "bytes": 1923668,
+      "sha256": "d56d0c4e133f7e2c169a70e8e7b76ee93b4463e976d9bcc097e9e36d85b4f374"
     },
     {
       "path": "mnemonic/c-g.webp",
