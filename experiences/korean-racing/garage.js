@@ -1,4 +1,4 @@
-import { WORDS, STAGES, WORD_BY_ID } from './learning.js';
+import { WORDS, STAGES, WORD_BY_ID, josa } from './learning.js';
 import { CAMPAIGN, CHALLENGE_BY_ID } from './campaign.js';
 import { FINALE_QUESTION_BY_ID } from './finales.js';
 import {FINALE_REWARDS,REWARDS,integer,object,safeKey,validTime,seoulDate,normalizeGarage,loadGarage as loadLedger,saveGarage as saveLedger} from './garage-core.js';
@@ -21,9 +21,9 @@ export function saveGarage(state,storage) { return saveLedger(state,storage,raci
 
 function missionFor(date,kind,target,collection='campaign') {
   if(kind==='correction'){
-    const item=collection==='campaign'?QUESTION_BY_ID[target]:WORD_BY_ID[target];
+    const item=collection==='campaign'?QUESTION_BY_ID[target]:WORD_BY_ID[target],label=collection==='campaign'?item.prompt:item.word;
     return {id:`${date}:correction:${collection}:${target}`,date,kind,target,collection,
-      title:'놓친 힌트를 다시 잡아요',description:collection==='campaign'?`놓쳤던 “${item.prompt}”를 다시 맞혀요.`:`놓쳤던 “${item.word}”를 다시 맞혀요.`,reward:REWARDS.mission,completed:false,completedAt:0};
+      title:'놓친 힌트를 다시 잡아요',description:`놓쳤던 “${label}”${josa(label,'을','를')} 다시 맞혀요.`,reward:REWARDS.mission,completed:false,completedAt:0};
   }
   const stage=CAMPAIGN.find(s=>s.id===target);
   return {id:`${date}:first-clear:${target}`,date,kind,target,collection:'campaign',

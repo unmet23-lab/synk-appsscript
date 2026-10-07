@@ -5,6 +5,8 @@ export const BLANK = '{}';
 export const parts = (text) => { const i = text.indexOf(BLANK); return [text.slice(0, i), text.slice(i + BLANK.length)]; };
 export const filled = (item, word) => item.text.replace(BLANK, word);
 export const judge = (item, word) => ({ correct: word === item.answer });
+/** 받침에 맞는 조사: 끝 글자에 받침이 있으면 앞의 것, 없으면 뒤의 것(가방은·우유는, 가방이에요·우유예요). */
+export const josa = (word, withBatchim, without) => { const c = String(word).charCodeAt(String(word).length - 1) - 0xac00; return c >= 0 && c <= 11171 && c % 28 ? withBatchim : without; };
 
 /** 시험용 결정적 난수(xorshift). */
 export function rng(seed = 1) {

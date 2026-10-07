@@ -28,6 +28,8 @@ export function assignmentTracks(target){
  return RHYTHM_CANDIDATES.filter(c=>c.difficulty===target.difficulty&&c.modality===target.modality&&c.responseFormat===target.responseFormat&&c.familyKeys.some((key,i)=>target.familyKeys?.includes(key)&&rhythmItem(c.trackId,{sourceIndex:i}).skillId===target.skillId&&(!target.itemKeys?.length||[0,1].some(v=>target.itemKeys.includes(`${key}:claim${v}`)))));
 }
 export function rhythmTargetLabel(target){return `이번 목표: 듣기 · ${{detail:'세부 내용',negation:'부정 표현',condition:'조건 표현',reason:'이유',main:'중심 내용'}[target.skillId.split('.').at(-1)]||'지정 표현'} · 난도 ${target.difficulty}. 지정된 ${target.requiredAttempts}문항에 응답해요.`;}
+// The results line naming the next song: the object particle follows the title's last syllable (‘해안선’을, ‘네 시’를).
+export function nextTrackLine(label,reason){const c=String(label).charCodeAt(String(label).length-1)-0xac00;return `다음 곡으로 ‘${label}’${c>=0&&c<=11171&&c%28?'을':'를'} 추천해요.${reason?` ${reason}`:''}`;}
 // Preserve a complete song and its timing while selecting only authorized claim
 // variants for its target families. Other questions still belong to the song.
 export function assignmentTrack(track,target){

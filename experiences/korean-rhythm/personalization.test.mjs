@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {TRACKS,RoundState} from './core.mjs';
-import {rhythmItem,RHYTHM_CANDIDATES} from './personalization.mjs';
+import {rhythmItem,RHYTHM_CANDIDATES,nextTrackLine} from './personalization.mjs';
 const {createGame}=createRequire(import.meta.url)('../../atlas/game-browser.js');
 const storage=()=>{const data=new Map();return {getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v)};};
 test('song, spoken claim and transfer item have stable identities without counting O/X variants as new content',()=>{
@@ -39,4 +39,11 @@ test('a later O/X claim of an already answered sentence is practice, not a fresh
     const pid=coach.present(rhythmItem(0,{...q,variant}));coach.delivery(pid,{audio:'completed'});
     assert.equal(coach.answer(pid,{correct:true,assessable:true}).independent,i===0);
   }
+});
+test('the next-song line takes the particle the title needs: ‘해안선’을 · ‘네 시’를',()=>{
+  const titles=RHYTHM_CANDIDATES.map(c=>c.label);
+  assert.ok(titles.includes('해안선')&&titles.includes('네 시'),'the shipped songs have titles with and without a final consonant');
+  assert.equal(nextTrackLine('해안선',null),'다음 곡으로 ‘해안선’을 추천해요.');
+  assert.equal(nextTrackLine('네 시',null),'다음 곡으로 ‘네 시’를 추천해요.');
+  assert.equal(nextTrackLine('초록','놓친 문장을 다시 들어요.'),'다음 곡으로 ‘초록’을 추천해요. 놓친 문장을 다시 들어요.');
 });

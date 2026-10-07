@@ -2,6 +2,7 @@
 // 규칙(사기·장착·찜·미션)은 garage.js·garage-core.js가 맡고, 여기서는 키트 부품으로 그린다:
 // 종이 판 위의 펠트 쿠션 카드(장착 = 크림 칼선 + 펠트 체크, 보는 중 = 들뜸), 코인 알약, 펠트 단추. 3D 미리보기 캔버스는 app.js가 #garage-world에 넣는다.
 import { SHOP_ITEMS, VEHICLES, FINALE_REWARDS, emptyGarage, buyItem, equipItem, setWish, dailyMission } from './garage.js';
+import { josa } from './learning.js';
 
 // 말 랠리 칸(2026-10-07): 같은 지갑으로 사는 말 랠리의 라켓·공. 차에는 입히지 않아서 3D 미리보기는 장착한 차 그대로다.
 const CATEGORIES = [
@@ -210,7 +211,7 @@ export function createGarageUI({ onPreview = () => {}, onEquip = () => {}, onClo
     try { latest = state(); } catch { setNotice('차고 기록을 읽지 못했어요. 잠시 후 다시 시도해 주세요.', 'error'); return; }
     if (action === 'wish') {
       if (!persist(setWish(latest, latest.wish === item.value ? null : item.value))) return;
-      setNotice(latest.wish === item.value ? '다음 목표를 새로 골라도 좋아요.' : `${item.name}를 다음 목표로 찜했어요.`); render(); return;
+      setNotice(latest.wish === item.value ? '다음 목표를 새로 골라도 좋아요.' : `${item.name}${josa(item.name, '을', '를')} 다음 목표로 찜했어요.`); render(); return;
     }
     const result = action === 'buy' ? buyItem(latest, item.id) : equipItem(latest, item.id);
     if (!result.ok) {

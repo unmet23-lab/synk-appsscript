@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {CAMPAIGN} from '../campaign.js';
 import {FINALES} from '../finales.js';
-import {STAGES,emptyProgress,makeQuestions,recordRound} from '../learning.js';
+import {STAGES,WORDS,emptyProgress,makeQuestions,recordRound,josa} from '../learning.js';
 import {GARAGE_KEY,SHOP_ITEMS,VEHICLES,RACKETS,BALLS,FINALE_REWARDS,emptyGarage,loadGarage,saveGarage,buyItem,equipItem,setWish,awardRace,awardMiniGame,dailyMission,seoulDate} from '../garage.js';
 
 const now=Date.parse('2026-10-02T04:00:00Z');
@@ -75,6 +75,21 @@ test('today’s single mission chooses the most recent real mistake and correcti
   const repeated=award(recovered.state,review,{beforeProgress:progress,roundId:'recover-again'});
   assert.equal(repeated.coins,17,'replaying stale mistake progress cannot repeat the one-off or daily bonus');
   assert.equal(repeated.state.corrections[`words:${word}`],true);
+});
+
+test('the correction mission and the wish notice put the particle the last syllable needs',()=>{
+  const id=word=>WORDS.find(w=>w.word===word).id;
+  const missed=word=>dailyMission({words:{[id(word)]:{seen:1,correct:0,wrong:1,lastAt:now-1000,lastCorrect:false}}},now);
+  assert.equal(missed('병원').description,'놓쳤던 “병원”을 다시 맞혀요.');
+  assert.equal(missed('우유').description,'놓쳤던 “우유”를 다시 맞혀요.');
+  // 문장 코스 문항은 물음표로 끝나도 마지막 음절(요)을 따른다
+  const asked=CAMPAIGN.flatMap(s=>s.items).find(q=>q.prompt.endsWith('?'));
+  assert.equal(dailyMission({challenges:{[asked.id]:{seen:1,correct:0,wrong:1,lastAt:now-1000,lastCorrect:false}}},now).description,`놓쳤던 “${asked.prompt}”를 다시 맞혀요.`);
+  // 찜 알림(garage-ui.js)이 차고 이름에 붙이는 조사: 받침 있는 이름·없는 이름·영문으로 끝나는 이름
+  const names=new Set(SHOP_ITEMS.map(item=>item.name));
+  for(const [name,particle] of [['코랄','을'],['라피스 공','을'],['코스트 챔피언','을'],['민트','를'],['브리즈 로드스터','를'],['코스트 GT','를']]){
+    assert.ok(names.has(name),name);assert.equal(josa(name,'을','를'),particle,name);
+  }
 });
 
 test('Seoul midnight rolls the daily goal and base-reward allowance, while unique learning bonuses survive the generous replay limit',()=>{
