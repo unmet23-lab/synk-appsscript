@@ -128,19 +128,32 @@ const job = (game, id, role, text, outputs, extra = {}) => ({ game, id, role, te
 
 // 레이싱: audio-source/*-jobs.json → wav(24kHz, 고정 이득·여백) → MP3 mono 24kHz 48kbps. 목록: 길이·RMS는 wav에서(encode-narration.py),
 // 처음 하기 9개는 verify-tutorial-audio.py처럼 풀어 본 값과 sha256까지.
+// 레이싱 안내문 문제의 「소리로 읽을 글」(10-07): 빗금(/)을 「슬래시」로 읽고 「화~일」을 「화일」로 읽어 뜻이 사라져서, 이 다섯 줄만
+// 빗금을 끊어 읽기로, 「화~일」을 「화요일부터 일요일까지」로, 「:」를 쉼으로, 「..」을 마침표 하나로 바꿔 굽는다. 화면 글자와 목록의 text는 그대로다.
+const RACING_SPOKEN = {
+  c09q1q: '도서관 안내. 월요일 휴관. 화요일부터 일요일까지, 9시부터 18시까지. 도서관에 갈 수 없는 날은 언제예요?',
+  c10q3q: '세탁소. 평일 10시부터 19시까지. 토요일 10시부터 15시까지. 일요일 휴무. 토요일 오후 4시에 이용할 수 있어요?',
+  c10q5q: '한국어 동아리. 금요일 오후 5시. 2층 교실. 참가비 없음. 맞는 내용은 무엇이에요?',
+  f03q3q: '일정표. 수요일, 청소. 목요일, 장보기. 금요일, 요리. 장을 보는 날은 언제예요?',
+  f06q4q: '도서관 행사. 오후 1시, 영화 보기. 오후 3시, 작가와의 만남. 작가와의 만남은 미리 신청한 사람만 참가할 수 있습니다. 지수는 신청하지 않았고 오후 2시에 도착했습니다. 지수에 대한 설명으로 맞는 것은 무엇이에요?',
+  // 낱말 하나짜리 중 옛 목소리는 받아쓰기가 알아듣고 새 목소리는 크게 틀린 19개(10-07 로컬 받아쓰기 대조)는 끝에 마침표를 붙여 다시 굽는다.
+  f05q4o1: '집 안.', w1751: '너머.', w0476: '오래.', w1001: '년대.', w1595: '도로.', w1813: '쏟다.', w1416: '무용.', w1217: '모임.', w0397: '일하다.', w0486: '나중.',
+  w0604: '지하.', w0150: '그것.', w1799: '부근.', w1810: '시내.', w0393: '밑.', w1118: '군.', w0138: '년.', w0940: '뿐.', w1708: '오직.',
+};
 const racing = {
   id: 'korean-racing', label: '레이싱', speakers: { narrator: 'narrator' },
   post: '앞 0.15초·끝 0.85초 여백, 고정 이득(MP3 -23.5 LUFS) → MP3 mono 24kHz 48kbps (지금 Windows 음성 파일의 실측과 같게)',
   async jobs(repo = REPO) {
     const dir = gameDir(this.id, repo), out = [];
     for (const [manifest, jobsFile] of RACING_GROUPS)
-      for (const j of readJson(path.join(dir, 'audio-source', jobsFile))) out.push(job(this.id, j.id, 'narrator', j.text, [`assets/narration/${j.id}.mp3`], { group: manifest }));
+      for (const j of readJson(path.join(dir, 'audio-source', jobsFile)))
+        out.push(job(this.id, j.id, 'narrator', RACING_SPOKEN[j.id] || j.text, [`assets/narration/${j.id}.mp3`], { group: manifest, ...(RACING_SPOKEN[j.id] ? { display: j.text } : {}) }));
     return out;
   },
   current(repo = REPO) { return listFiles(path.join(gameDir(this.id, repo), 'assets', 'narration'), /\.mp3$/).map(f => 'assets/narration/' + f); },
   shipped(repo = REPO) {
     const dir = path.join(gameDir(this.id, repo), 'assets', 'narration');
-    return RACING_GROUPS.flatMap(([m]) => readJson(path.join(dir, m)).clips.map(c => ({ id: c.id, text: c.text })));
+    return RACING_GROUPS.flatMap(([m]) => readJson(path.join(dir, m)).clips.map(c => ({ id: c.id, text: RACING_SPOKEN[c.id] || c.text })));
   },
   async process(j, raw, stage) {
     const wav = path.join(stage, '_wav', j.id + '.wav'), mp3 = abs(stage, j.outputs[0]);
