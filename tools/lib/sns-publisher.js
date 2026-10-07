@@ -1288,8 +1288,24 @@ async function publishPlan(planFile, ids, { accountsFile, fetchImpl = fetch, rea
 
 // 비공개로 올려 검수한 YouTube 항목을 공개로 바꾼다(재생목록이 있으면 재생목록도). 영상·재생목록의 다른 설정은 읽은 값 그대로 두고
 // 공개 여부만 바꾸며, 근거(유호님 승인)를 결과 파일에 남긴다.
-async function youtubeMakePublic(planFile, itemId, note, { accountsFile, fetchImpl = fetch, readCredentialImpl = readCredential } = {}) {
+// publishAt을 주면 영상은 그 시각에 YouTube가 공개하도록 예약하고(비공개 + publishAt — 한 번도 공개한 적 없는 영상만) 재생목록은 지금 공개한다.
+// syntheticMedia는 YouTube의 '변경되거나 합성된 콘텐츠' 표시(status.containsSyntheticMedia)를 켠다. AI로 만든 음악이 중심인 영상은
+// YouTube 규정상 표시 대상이다(2026-10-08 유호님 「켜기」). 주지 않으면 영상에 있던 값을 그대로 둔다.
+// 2026-10-08 새벽 구글 인증이 같은 토큰에 무작위로 401을 돌려줬다. 여기 요청은 다시 보내도 같은 값을 쓰므로 YouTube API의 401은 잠시 뒤 다시 묻는다.
+async function youtubeMakePublic(planFile, itemId, note, {
+  accountsFile, fetchImpl = fetch, readCredentialImpl = readCredential, publishAt = null, syntheticMedia = false,
+  now = () => new Date(), retry401 = { retries: 5, delayMs: 2000 },
+} = {}) {
   if (!String(note || '').trim()) throw new Error('공개 전환에는 --근거(유호님 승인)가 필요합니다.');
+  let scheduleAt = null;
+  if (publishAt) {
+    const text = String(publishAt).trim();
+    if (!/(?:Z|[+-]\d{2}:?\d{2})$/i.test(text)) throw new Error(`예약 시각에 시간대를 붙여 주세요(예: 2026-10-09T08:00:00+09:00): ${publishAt}`);
+    const when = new Date(text);
+    if (Number.isNaN(when.getTime())) throw new Error(`예약 시각을 읽지 못했습니다: ${publishAt}`);
+    if (when.getTime() <= now().getTime() + 5 * 60 * 1000) throw new Error(`예약 시각이 지났거나 5분 안입니다: ${publishAt} — 바로 공개하려면 --시각 없이 실행하세요.`);
+    scheduleAt = when.toISOString();
+  }
   const plan = readJson(planFile);
   const config = loadAccounts(accountsFile || resolveRepoPath(plan.accountsFile));
   const item = plan.items.find((candidate) => candidate.id === itemId);
@@ -1299,15 +1315,22 @@ async function youtubeMakePublic(planFile, itemId, note, { accountsFile, fetchIm
   const resultFile = resultFileFor(planFile);
   const result = fs.existsSync(resultFile) ? readJson(resultFile) : null;
   const done = result?.items?.[itemId];
-  if (!done?.id || !['private', 'unlisted', 'public'].includes(done.state)) {
+  if (!done?.id || !['private', 'unlisted', 'public', 'scheduled'].includes(done.state)) {
     throw new Error(`${itemId}는 올린 영상이 없거나 상태가 ${done?.state || '없음'}입니다.`);
   }
+  const retrying = async (url, options) => {
+    for (let attempt = 0; ; attempt += 1) {
+      const response = await fetchImpl(url, options);
+      if (response.status !== 401 || attempt >= retry401.retries || !String(url).startsWith('https://www.googleapis.com/youtube/')) return response;
+      await new Promise((resolve) => setTimeout(resolve, retry401.delayMs));
+    }
+  };
   const credential = readCredentialImpl(item.accountKey, { allowLegacy: true });
-  const { token, channel } = await youtubeChannel(credential, fetchImpl);
+  const { token, channel } = await youtubeChannel(credential, retrying);
   if (!matchesYoutubeAccount(channel, account)) throw new Error(`${itemId}: YouTube 인증 채널이 다릅니다.`);
   const auth = { authorization: `Bearer ${token.accessToken}` };
   const get = async (url, what) => {
-    const response = await fetchWithRetry(url, { headers: auth }, { fetchImpl });
+    const response = await fetchWithRetry(url, { headers: auth }, { fetchImpl: retrying });
     const body = await responseJson(response);
     if (!response.ok) throw new Error(`YouTube ${what} 조회 실패 ${response.status}: ${apiMessage(body)}`);
     const found = body.items?.[0];
@@ -1315,28 +1338,46 @@ async function youtubeMakePublic(planFile, itemId, note, { accountsFile, fetchIm
     return found;
   };
   const put = async (url, payload, what) => {
-    const response = await fetchWithRetry(url, { method: 'PUT', headers: { ...auth, 'content-type': 'application/json; charset=UTF-8' }, body: JSON.stringify(payload) }, { fetchImpl });
+    const response = await fetchWithRetry(url, { method: 'PUT', headers: { ...auth, 'content-type': 'application/json; charset=UTF-8' }, body: JSON.stringify(payload) }, { fetchImpl: retrying });
     const body = await responseJson(response);
-    if (!response.ok) throw new Error(`YouTube ${what} 공개 전환 실패 ${response.status}: ${apiMessage(body)}`);
+    if (!response.ok) throw new Error(`YouTube ${what} 실패 ${response.status}: ${apiMessage(body)}`);
     return body;
   };
   const video = await get(`https://www.googleapis.com/youtube/v3/videos?part=status&id=${encodeURIComponent(done.id)}`, '영상');
   const s = video.status || {};
-  if (s.privacyStatus !== 'public') {
-    const status = { privacyStatus: 'public', selfDeclaredMadeForKids: s.selfDeclaredMadeForKids ?? Boolean(account.madeForKids) };
-    for (const key of ['embeddable', 'license', 'publicStatsViewable', 'containsSyntheticMedia']) if (s[key] !== undefined) status[key] = s[key];
-    await put('https://www.googleapis.com/youtube/v3/videos?part=status', { id: done.id, status }, '영상');
+  // part=status를 PUT하면 빠진 값은 지워지므로 읽은 값을 그대로 다시 싣는다. 예약 없이 공개하면 publishAt이 빠져 예약도 풀린다.
+  const status = { privacyStatus: scheduleAt ? 'private' : 'public', ...(scheduleAt ? { publishAt: scheduleAt } : {}), selfDeclaredMadeForKids: s.selfDeclaredMadeForKids ?? Boolean(account.madeForKids) };
+  for (const key of ['embeddable', 'license', 'publicStatsViewable', 'containsSyntheticMedia']) if (s[key] !== undefined) status[key] = s[key];
+  if (syntheticMedia) status.containsSyntheticMedia = true;
+  const syntheticChanged = status.containsSyntheticMedia !== s.containsSyntheticMedia;
+  if (scheduleAt) {
+    if (s.privacyStatus !== 'private') throw new Error(`${itemId}: 영상이 이미 ${s.privacyStatus} 상태라 예약할 수 없습니다(예약은 한 번도 공개하지 않은 비공개 영상만).`);
+    if (Date.parse(s.publishAt || '') !== Date.parse(scheduleAt) || syntheticChanged) {
+      await put('https://www.googleapis.com/youtube/v3/videos?part=status', { id: done.id, status }, '영상 공개 예약');
+    }
+  } else if (s.privacyStatus !== 'public' || syntheticChanged) {
+    await put('https://www.googleapis.com/youtube/v3/videos?part=status', { id: done.id, status }, '영상 공개 전환');
   }
   let playlist = done.playlist || null;
   if (playlist?.id) {
     const found = await get(`https://www.googleapis.com/youtube/v3/playlists?part=snippet,status&id=${encodeURIComponent(playlist.id)}`, '재생목록');
     if (found.status?.privacyStatus !== 'public') {
       const snippet = { title: found.snippet.title, description: found.snippet.description || '', ...(found.snippet.defaultLanguage ? { defaultLanguage: found.snippet.defaultLanguage } : {}) };
-      await put('https://www.googleapis.com/youtube/v3/playlists?part=snippet,status', { id: found.id, snippet, status: { privacyStatus: 'public' } }, '재생목록');
+      await put('https://www.googleapis.com/youtube/v3/playlists?part=snippet,status', { id: found.id, snippet, status: { privacyStatus: 'public' } }, '재생목록 공개 전환');
     }
     playlist = { ...playlist, visibility: 'public' };
   }
-  result.items[itemId] = { ...done, state: 'public', publicAt: new Date().toISOString(), publicNote: note, ...(playlist ? { playlist } : {}) };
+  const at = now().toISOString();
+  // 예약해 둔 항목을 나중에 다시 --공개하면 처음 승인 근거는 publicNote에 그대로 두고 이번 근거를 publicConfirmNote에 남긴다.
+  const confirmingSchedule = !scheduleAt && done.state === 'scheduled' && done.publicNote;
+  result.items[itemId] = {
+    ...done,
+    state: scheduleAt ? 'scheduled' : 'public',
+    ...(scheduleAt ? { publishAt: scheduleAt, scheduledAt: at } : { publicAt: at }),
+    ...(confirmingSchedule ? { publicConfirmNote: note } : { publicNote: note }),
+    ...(status.containsSyntheticMedia !== undefined ? { containsSyntheticMedia: status.containsSyntheticMedia } : {}),
+    ...(playlist ? { playlist } : {}),
+  };
   writeJsonAtomic(resultFile, result);
   return { resultFile, item: result.items[itemId] };
 }
