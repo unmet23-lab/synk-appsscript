@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-10-07T00:56:47.905Z",
+  "url": "https://synk.im/id/",
+  "existingRealSession": true,
+  "accountVisible": true,
+  "authHidden": true,
+  "nextVisible": true,
+  "notice": "로그인됐어요. 아래에서 서비스를 이어 쓰거나 내 계정을 관리할 수 있어요.",
+  "noticeSize": "17px",
+  "overflow": false,
+  "consoleErrors": 0,
+  "mobile": {
+    "captureHeight": 534,
+    "ctaFontSize": "18px",
+    "ctaHeight": 60,
+    "noticeFontSize": "17px",
+    "overflow": false,
+    "viewportWidth": 375
+  }
+}

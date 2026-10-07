@@ -1,0 +1,59 @@
+{
+  "checkedAt": "2026-10-07T00:51:22.128Z",
+  "baselinePublicCommit": "5f6d8e98b9a44981472e18a2af305349c823de73",
+  "modules": [
+    {
+      "file": "app.mjs",
+      "sha256": "315ba6856cd6cbb00d5e5a5e9b0824a2e0996936ec4dda93c6ec3a0fae4a109c",
+      "equalsBaseline": true
+    },
+    {
+      "file": "core.mjs",
+      "sha256": "2f669904b5977cbea6432b199d5ba2488407b2dc5b9aa4ee1a68c6bf051ea2f0",
+      "equalsBaseline": true
+    },
+    {
+      "file": "account-view.mjs",
+      "sha256": "29b4028a395ba3a3f84ef50855f93ecb19165f5720d946d2e523ffe535c1879b",
+      "equalsBaseline": true
+    },
+    {
+      "file": "atlas-words.mjs",
+      "sha256": "d67027128de2ad458a397940428690f84289329e501e74b7c559e5f74a9e6c13",
+      "equalsBaseline": true
+    },
+    {
+      "file": "generated/account-client.cjs",
+      "sha256": "fab03bc8f1db7167b0eaf6d356089b1498c192d3b79df88e0df026907276987c",
+      "equalsBaseline": true
+    },
+    {
+      "file": "generated/world-learning-host.cjs",
+      "sha256": "513f58e4c1ff084e6a2b23a71f401bf53fc6968bea95f9527340672297acf639",
+      "equalsBaseline": true
+    }
+  ],
+  "portalEqualsRoot": true,
+  "files": [
+    {
+      "file": "src/portal.mjs",
+      "sha256": "e97ef3515905deaa8c5294e830fe82b517b3e0e9586c1e7ff0ddadb2289b3b4e",
+      "bytes": 26402
+    },
+    {
+      "file": "index.html",
+      "sha256": "b17c3fa5a5d77763019479feeea8814e68b9c41871956a849fabb38a6783346c",
+      "bytes": 5653
+    },
+    {
+      "file": "style.css",
+      "sha256": "04c70cb27b20019e6ce6a6ce3a773aef19e8fe771a3303ccfa2593a2a1ceeade",
+      "bytes": 12353
+    },
+    {
+      "file": "dist/app.js",
+      "sha256": "94b68b085193ab2d2282b388d7ac3ae17d0719e68dfadfc16ea3f6ca035b85c7",
+      "bytes": 376745
+    }
+  ]
+}

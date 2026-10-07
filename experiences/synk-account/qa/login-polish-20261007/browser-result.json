@@ -1,0 +1,80 @@
+{
+  "date": "2026-10-07",
+  "scope": "Local synthetic SDK in actual IAB browser; no real signup, email or credential submission",
+  "viewport": [
+    {
+      "width": 375,
+      "height": 812
+    },
+    {
+      "width": 1280,
+      "height": 900
+    }
+  ],
+  "loginError": {
+    "koreanMessage": true,
+    "inlineVisible": true,
+    "focus": "notice",
+    "noticeFontPx": 17,
+    "inlineFontPx": 16,
+    "inputFontPx": 18,
+    "overflow": false
+  },
+  "signup": {
+    "pendingDisablesSubmitAndModeButtons": true,
+    "agePreserved": true,
+    "learningChoicePreserved": true,
+    "passwordClearedOnSuccess": true,
+    "successNoticeAndInlineVisible": true,
+    "liveRegions": 1,
+    "overflow": false
+  },
+  "rateLimit": {
+    "serverWaitSeconds": 5,
+    "disabledWithCountdownObserved": true,
+    "autoRetry": false,
+    "requestsAfterExpiry": 1,
+    "manualRetryRequests": 2
+  },
+  "callbackError": {
+    "existingAccountRetained": true,
+    "callbackCodeRemoved": true,
+    "authorizationParameterPreserved": true,
+    "automaticConsentBlocked": true,
+    "serviceCtaHidden": true,
+    "overflow": false
+  },
+  "directAccount": {
+    "verifiedAccountShown": true,
+    "authPanelHidden": true,
+    "serviceCtaVisible": true,
+    "careHref": "https://synk.im/care/",
+    "sameUserEventAccountChecks": 1,
+    "overflow": false
+  },
+  "consent": {
+    "registrationProduct": "platform",
+    "trustedRedirect": "https://synk.im/care/",
+    "name": "SYNK 플레저",
+    "buttonHeightPx": 60,
+    "buttonFontPx": 18,
+    "mobileOverflow": false
+  },
+  "consoleErrors": 0,
+  "phoneHardwareTest": "Deferred by user",
+  "recoveryCallback": {
+    "koreanRecoveryMessage": true,
+    "overflow": false,
+    "codeRemoved": true,
+    "passwordFieldHidden": true,
+    "expiredCodeShowsRecover": true
+  },
+  "feltAssets": {
+    "fixedFixturePort": 4326,
+    "initialFixtureIssue": "Windows path normalization returned 403",
+    "creamBytes": 359780,
+    "creamHttpStatus": 200,
+    "renderedWithFinalCss": true,
+    "creamMime": "image/webp"
+  }
+}

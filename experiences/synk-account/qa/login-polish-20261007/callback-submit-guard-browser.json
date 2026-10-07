@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-10-07T00:48:00.409Z",
+  "synthetic": true,
+  "realAuthRequests": false,
+  "viewport": {
+    "width": 375,
+    "height": 812
+  },
+  "afterTwelveSecondTimeout": {
+    "submitDisabled": true,
+    "label": "확인 링크 처리 중…",
+    "noticeFontSize": "17px",
+    "overflow": false,
+    "requestCount": 0
+  },
+  "signupSwitchKeptLocked": true,
+  "afterFinalCallback": {
+    "codeRemoved": true,
+    "metrics": "요청 0회 / 계정 확인 0회",
+    "overflow": false,
+    "submitEnabled": true,
+    "submitLabel": "로그인"
+  },
+  "consoleErrors": 0
+}

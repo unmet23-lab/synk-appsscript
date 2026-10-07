@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-10-07T00:58:54.109Z",
+  "destination": "https://synk.im/care/",
+  "usedPreviouslyApprovedConnection": true,
+  "reenteredViaAccountConnect": true,
+  "credentialsReentered": false,
+  "newPermissionGranted": false,
+  "recordModified": false,
+  "connectionStatus": "SYNK 계정에 저장했어요",
+  "syntheticRecordVisible": true,
+  "overflow": false,
+  "consoleErrors": 0,
+  "mobile": {
+    "width": 375,
+    "height": 812,
+    "overflow": false
+  }
+}

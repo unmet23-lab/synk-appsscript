@@ -1,0 +1,46 @@
+{
+  "checkedAt": "2026-10-07T00:54:40.680Z",
+  "executable": "C:/Users/q1212/.local/bin/claude.exe",
+  "arguments": [
+    "--model",
+    "claude-opus-5-5",
+    "--effort",
+    "max",
+    "--print",
+    "--output-format",
+    "json",
+    "--tools",
+    "Read,Grep",
+    "--allowedTools",
+    "Read,Grep"
+  ],
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "subtype": "success",
+  "isError": false,
+  "processExitCode": 0,
+  "verdict": "No P0-P2; reviewed current callback, pending form, account wording and late null-session findings resolved",
+  "files": [
+    {
+      "file": "src/portal.mjs",
+      "sha256": "e97ef3515905deaa8c5294e830fe82b517b3e0e9586c1e7ff0ddadb2289b3b4e",
+      "bytes": 26402
+    },
+    {
+      "file": "index.html",
+      "sha256": "b17c3fa5a5d77763019479feeea8814e68b9c41871956a849fabb38a6783346c",
+      "bytes": 5653
+    },
+    {
+      "file": "style.css",
+      "sha256": "04c70cb27b20019e6ce6a6ce3a773aef19e8fe771a3303ccfa2593a2a1ceeade",
+      "bytes": 12353
+    },
+    {
+      "file": "dist/app.js",
+      "sha256": "94b68b085193ab2d2282b388d7ac3ae17d0719e68dfadfc16ea3f6ca035b85c7",
+      "bytes": 376745
+    }
+  ]
+}

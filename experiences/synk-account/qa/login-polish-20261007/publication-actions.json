@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-10-07T01:05:53.886Z",
+  "commit": "8239752c7626012502b0e287e1c96b312af5d712",
+  "runs": [
+    {
+      "conclusion": "success",
+      "databaseId": 37554431041,
+      "headSha": "8239752c7626012502b0e287e1c96b312af5d712",
+      "name": "pages build and deployment",
+      "status": "completed",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/37554431041"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 37554431147,
+      "headSha": "8239752c7626012502b0e287e1c96b312af5d712",
+      "name": "synk.im 배포 점검",
+      "status": "completed",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/37554431147"
+    }
+  ]
+}
