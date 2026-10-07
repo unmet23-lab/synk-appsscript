@@ -66,6 +66,15 @@ async function run(browser, name, view) {
   check(coin0.href === coin0.want, `차고 링크 ${coin0.href}`);
 
   // ── 한 판 ──
+  // 점수 글자(#pop)는 0.9초만 떠 있다: 뜰 때마다 화면 안에서 글·그때 카드 단계·자리를 적어 둔다(찍는 데 걸리는 시간과 상관없이 보려고)
+  await page.evaluate(() => {
+    const p = document.querySelector('#pop'); window.__qaPops = [];
+    new MutationObserver(() => {
+      if (p.hidden) return;
+      const x = parseFloat(p.style.left), y = parseFloat(p.style.top);
+      window.__qaPops.push({ text: p.textContent, phase: document.querySelector('#say').dataset.phase, x, y, inside: x >= 0 && x <= innerWidth && y >= 0 && y <= innerHeight });
+    }).observe(p, { attributes: true, attributeFilter: ['hidden', 'class'], childList: true, characterData: true, subtree: true });
+  });
   const t0 = Date.now();
   await press('#start');
   await waitFor((s) => s.running && s.screen === 'game', '달리기 시작');
@@ -89,11 +98,11 @@ async function run(browser, name, view) {
   if (m1.event && m2.event && m1.event.d === m2.event.d) check(Math.abs((m2.event.z - m1.event.z) - dd) < 0.02, `표시선 흐름 ${m2.event.z - m1.event.z} vs ${dd}`);
   notes.push(`흐름 표본: ${dd.toFixed(2)}m 달리는 동안 길 결·풍경·표시선 모두 +Z로 같은 거리, 몽글 정면 z=${m2.forward.z.toFixed(3)} · 그림 칸 ${sample.drawn}/${sample.n}·색 ${sample.colors}`);
 
-  // 첫 부탁 해냄: 카드에 펠트 체크 + ‘좋아요!’
+  // 첫 부탁 해냄: 카드에 펠트 체크 + ‘좋아요!’ — 점수 글자는 지금 떠 있는지가 아니라 뜰 때 적어 둔 기록으로 본다(기록이 늦으면 1.5초까지 기다린다)
   s = await waitFor((x) => x.card?.phase === 'done', '첫 부탁 해냄');
   await sleep(160); await shot('success');
-  const popOk = await page.evaluate(() => { const p = document.querySelector('#pop'); return { shown: !p.hidden, text: p.textContent }; });
-  check(popOk.shown && popOk.text.startsWith('좋아요'), `해냄 점수 글자 ${JSON.stringify(popOk)}`);
+  const popOk = await page.waitForFunction(() => window.__qaPops[0], null, { timeout: 1500 }).then((h) => h.jsonValue()).catch(() => null);
+  check(popOk && popOk.text.startsWith('좋아요') && popOk.phase === 'done' && popOk.inside, `해냄 점수 글자 ${JSON.stringify(popOk)}`);
 
   // 움직이기 입력: 부탁 사이에 실제 키(컴퓨터)·펠트 단추(휴대폰)로 길을 바꾼다
   await page.evaluate(() => window.__runner.auto(false));
