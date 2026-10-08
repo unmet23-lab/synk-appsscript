@@ -1,0 +1,563 @@
+{
+  "status": "passed",
+  "scope": "local-public-candidate",
+  "passed": 31,
+  "failed": 0,
+  "breakdown": {
+    "games": 16,
+    "tools": 6,
+    "travel": 2,
+    "anonymousId": 4,
+    "preservedPages": 3
+  },
+  "paidCalls": 0,
+  "loggedIntoRealAccount": false,
+  "rows": [
+    {
+      "route": "/try/rhythm/",
+      "width": 1280,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/rhythm/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/racing/",
+      "width": 1280,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/racing/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/runner/",
+      "width": 1280,
+      "kind": "game-start-and-runtime",
+      "presentations": 1,
+      "attempts": 0,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/runner/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/order-rush/",
+      "width": 1280,
+      "kind": "game-start-and-runtime",
+      "presentations": 1,
+      "attempts": 0,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/order-rush/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/story-classroom/",
+      "width": 1280,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/story-classroom/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/blank-slice/",
+      "width": 1280,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/blank-slice/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/talk-rally/",
+      "width": 1280,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/talk-rally/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/racing/",
+      "width": 390,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/racing/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/rhythm/",
+      "width": 390,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/rhythm/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/runner/",
+      "width": 390,
+      "kind": "game-start-and-runtime",
+      "presentations": 1,
+      "attempts": 0,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/runner/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/order-rush/",
+      "width": 390,
+      "kind": "game-start-and-runtime",
+      "presentations": 1,
+      "attempts": 0,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/order-rush/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/story-classroom/",
+      "width": 390,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/story-classroom/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/blank-slice/",
+      "width": 390,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/blank-slice/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/talk-rally/",
+      "width": 390,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/talk-rally/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/id/",
+      "width": 1280,
+      "kind": "anonymous-account-page-and-learning-runtime",
+      "storageAvailable": true,
+      "title": "내 SYNK로 이어가요.",
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/id/vendor/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/id-rehearsal/",
+      "width": 1280,
+      "kind": "anonymous-account-page-and-learning-runtime",
+      "storageAvailable": true,
+      "title": "어디서 시작하든,\n내 SYNK로.",
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/id-rehearsal/vendor/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/id/",
+      "width": 390,
+      "kind": "anonymous-account-page-and-learning-runtime",
+      "storageAvailable": true,
+      "title": "내 SYNK로 이어가요.",
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/id/vendor/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/id-rehearsal/",
+      "width": 390,
+      "kind": "anonymous-account-page-and-learning-runtime",
+      "storageAvailable": true,
+      "title": "어디서 시작하든,\n내 SYNK로.",
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/id-rehearsal/vendor/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/",
+      "width": 390,
+      "kind": "preserved-home",
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": []
+    },
+    {
+      "route": "/lab/",
+      "width": 390,
+      "kind": "preserved-home",
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": []
+    },
+    {
+      "route": "/atlas/",
+      "width": 390,
+      "kind": "preserved-home",
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": []
+    },
+    {
+      "route": "/try/entry-check/",
+      "width": 1280,
+      "kind": "game-start-and-runtime",
+      "presentations": 1,
+      "attempts": 1,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/entry-check/atlas-learning.js?v=43f511c88e01",
+        "/try/entry-check/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/entry-check/",
+      "width": 390,
+      "kind": "game-start-and-runtime",
+      "presentations": 1,
+      "attempts": 1,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/entry-check/atlas-learning.js?v=43f511c88e01",
+        "/try/entry-check/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/brief/computer/",
+      "width": 1280,
+      "kind": "wizard-result-feedback-reopen",
+      "resultTitle": "맥 미니 · 램 16GB · SSD 512GB",
+      "events": 3,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/brief/computer/atlas-engine.js?v=80e6c7048b52",
+        "/brief/computer/atlas-engine.js?v=80e6c7048b52"
+      ]
+    },
+    {
+      "route": "/brief/meeting/",
+      "width": 1280,
+      "kind": "wizard-result-feedback-reopen",
+      "resultTitle": "이번엔 ChatGPT에 요청문 하나면 돼요",
+      "events": 3,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/brief/meeting/atlas-engine.js?v=80e6c7048b52",
+        "/brief/meeting/atlas-engine.js?v=80e6c7048b52"
+      ]
+    },
+    {
+      "route": "/builds/manual/",
+      "width": 1280,
+      "kind": "wizard-result-feedback-reopen",
+      "resultTitle": "SNS 게시물 초안, 한 줄로 맡기는 매뉴얼",
+      "events": 3,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/builds/manual/atlas-engine.js?v=80e6c7048b52",
+        "/builds/manual/atlas-engine.js?v=80e6c7048b52"
+      ]
+    },
+    {
+      "route": "/try/travel/",
+      "width": 1280,
+      "kind": "travel-preference-reopen-and-current-real-course",
+      "recommendationLength": 1885,
+      "courseStops": 3,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/travel/atlas/engine.js?v=80e6c7048b52",
+        "/try/travel/atlas/engine.js?v=80e6c7048b52"
+      ]
+    },
+    {
+      "route": "/brief/computer/",
+      "width": 390,
+      "kind": "wizard-result-feedback-reopen",
+      "resultTitle": "맥 미니 · 램 16GB · SSD 512GB",
+      "events": 3,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/brief/computer/atlas-engine.js?v=80e6c7048b52",
+        "/brief/computer/atlas-engine.js?v=80e6c7048b52"
+      ]
+    },
+    {
+      "route": "/brief/meeting/",
+      "width": 390,
+      "kind": "wizard-result-feedback-reopen",
+      "resultTitle": "이번엔 ChatGPT에 요청문 하나면 돼요",
+      "events": 3,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/brief/meeting/atlas-engine.js?v=80e6c7048b52",
+        "/brief/meeting/atlas-engine.js?v=80e6c7048b52"
+      ]
+    },
+    {
+      "route": "/builds/manual/",
+      "width": 390,
+      "kind": "wizard-result-feedback-reopen",
+      "resultTitle": "SNS 게시물 초안, 한 줄로 맡기는 매뉴얼",
+      "events": 3,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/builds/manual/atlas-engine.js?v=80e6c7048b52",
+        "/builds/manual/atlas-engine.js?v=80e6c7048b52"
+      ]
+    },
+    {
+      "route": "/try/travel/",
+      "width": 390,
+      "kind": "travel-preference-reopen-and-current-real-course",
+      "recommendationLength": 1885,
+      "courseStops": 3,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/travel/atlas/engine.js?v=80e6c7048b52",
+        "/try/travel/atlas/engine.js?v=80e6c7048b52"
+      ]
+    }
+  ],
+  "initialHarnessFailures": {
+    "count": 10,
+    "source": "public-browser-first.json",
+    "resolvedIn": "public-browser-retry.json",
+    "reason": [
+      "entry-check: respect existing 450ms tutorial-to-input guard, then test actual attempt event instead of assuming every product passes choice",
+      "tools: actual saved event is feedback.given, not assumed experience.feedback",
+      "travel: runtime preset id is food, not static template foodie"
+    ],
+    "productChangesForRetry": 0
+  },
+  "lastCacheNormalizationCheck": {
+    "source": "public-browser-final-travel.json",
+    "passed": 2,
+    "note": "Travel module query hashes use actual LF Git blob bytes; reran both widths after final candidate generation."
+  },
+  "limitations": [
+    "Headless local browser, not a physical mobile device",
+    "No actual authentication, server AI calls, or post-deployment verification",
+    "Game start/render checks for all eight games; full user answer/save/reopen checked on entry-check and all ten learning adapters covered by shared-storage VM tests"
+  ]
+}

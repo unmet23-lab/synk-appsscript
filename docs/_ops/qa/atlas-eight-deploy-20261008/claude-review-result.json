@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-10-08T01:12:44.718Z",
+  "cli": "official Claude Code 2.1.292",
+  "requestedModel": "claude-opus-5-5",
+  "requestedEffort": "max",
+  "actualInitModel": "claude-opus-5-5",
+  "auth": {
+    "authMethod": "claude.ai",
+    "subscriptionType": "max",
+    "apiProvider": "firstParty"
+  },
+  "completed": false,
+  "status": "weekly_usage_limit",
+  "message": "You've hit your weekly limit · resets Oct 12, 7pm (Asia/Seoul)",
+  "resultSubtype": "success",
+  "resultIsError": true,
+  "actualResponseModels": [
+    "<synthetic>"
+  ],
+  "modelUsageKeys": [],
+  "fallbackAttempted": false,
+  "paidApiCalled": false,
+  "deploymentPerformed": false,
+  "requiredPolicy": "docs/AI_운영원칙.md: live output requires Claude Opus 5.5 max final review"
+}

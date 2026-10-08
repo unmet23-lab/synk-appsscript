@@ -1,0 +1,61 @@
+{
+  "readOnly": true,
+  "results": [
+    {
+      "environment": "rehearsal",
+      "ref": "baasvefzinrxaryksayl",
+      "slug": "synk-account",
+      "version": {
+        "slug": "synk-account",
+        "version": 30,
+        "status": "ACTIVE",
+        "verifyJwt": true,
+        "updatedAt": "2026-10-05T11:11:27.338Z"
+      },
+      "exitCode": 1,
+      "output": "· synk-account  🔴 다르다 — 배포본에 없는 판: synk-atlas.mjs, synk-atlas-summary.mjs · 바이트 8/10 · 본체(index.ts) 앵커 0/0 ⚠판을 못 가른다 · 시각 축 ○\n\n[배포대조] 리허설 — 다름 1 · 미측정 0 · 전체 1\n[배포대조] ⚠ 이 실행이 **안 본** 판: 운영 — 위 초록은 «리허설» 하나의 초록이다. 두 판을 한 번에: node tools/배포빚.js\n[배포대조] 대상 ▸ synk-core-rehearsal  (baasvefzinrxaryksayl)"
+    },
+    {
+      "environment": "rehearsal",
+      "ref": "baasvefzinrxaryksayl",
+      "slug": "synk-learning",
+      "version": {
+        "slug": "synk-learning",
+        "version": 26,
+        "status": "ACTIVE",
+        "verifyJwt": true,
+        "updatedAt": "2026-10-03T13:38:03.809Z"
+      },
+      "exitCode": 1,
+      "output": "· synk-learning  🔴 다르다 — 배포본에 없는 판: synk-atlas.mjs · 바이트 8/9 · 본체(index.ts) 앵커 0/0 ⚠판을 못 가른다 · 시각 축 ○\n\n[배포대조] 리허설 — 다름 1 · 미측정 0 · 전체 1\n[배포대조] ⚠ 이 실행이 **안 본** 판: 운영 — 위 초록은 «리허설» 하나의 초록이다. 두 판을 한 번에: node tools/배포빚.js\n[배포대조] 대상 ▸ synk-core-rehearsal  (baasvefzinrxaryksayl)"
+    },
+    {
+      "environment": "production",
+      "ref": "qiwxeddwwnzkwalpsuty",
+      "slug": "synk-account",
+      "version": {
+        "slug": "synk-account",
+        "version": 40,
+        "status": "ACTIVE",
+        "verifyJwt": true,
+        "updatedAt": "2026-10-05T11:12:16.717Z"
+      },
+      "exitCode": 1,
+      "output": "· synk-account  🔴 다르다 — 배포본에 없는 판: synk-atlas.mjs, synk-atlas-summary.mjs · 바이트 8/10 · 본체(index.ts) 앵커 0/0 ⚠판을 못 가른다 · 시각 축 ○\n\n[배포대조] 운영 — 다름 1 · 미측정 0 · 전체 1\n[배포대조] ⚠ 이 실행이 **안 본** 판: 리허설 — 위 초록은 «운영» 하나의 초록이다. 두 판을 한 번에: node tools/배포빚.js\n[배포대조] 🔴 **운영**(Synk Core · qiwxeddwwnzkwalpsuty)을 **읽습니다** — 이 갈래로 쓰기는 못 나갑니다(쓰려면 --운영).\n[배포대조] 대상 ▸ Synk Core  (qiwxeddwwnzkwalpsuty)"
+    },
+    {
+      "environment": "production",
+      "ref": "qiwxeddwwnzkwalpsuty",
+      "slug": "synk-learning",
+      "version": {
+        "slug": "synk-learning",
+        "version": 36,
+        "status": "ACTIVE",
+        "verifyJwt": true,
+        "updatedAt": "2026-10-04T09:35:13.693Z"
+      },
+      "exitCode": 1,
+      "output": "· synk-learning  🔴 다르다 — 배포본에 없는 판: synk-atlas.mjs · 바이트 8/9 · 본체(index.ts) 앵커 0/0 ⚠판을 못 가른다 · 시각 축 ○\n\n[배포대조] 운영 — 다름 1 · 미측정 0 · 전체 1\n[배포대조] ⚠ 이 실행이 **안 본** 판: 리허설 — 위 초록은 «운영» 하나의 초록이다. 두 판을 한 번에: node tools/배포빚.js\n[배포대조] 🔴 **운영**(Synk Core · qiwxeddwwnzkwalpsuty)을 **읽습니다** — 이 갈래로 쓰기는 못 나갑니다(쓰려면 --운영).\n[배포대조] 대상 ▸ Synk Core  (qiwxeddwwnzkwalpsuty)"
+    }
+  ]
+}

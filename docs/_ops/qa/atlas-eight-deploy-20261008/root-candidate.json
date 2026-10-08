@@ -1,0 +1,43 @@
+{
+  "base": "b9bd8d7b7",
+  "head": "001d225cfd532bfedfc92ab542f0f60b16f1a3f2",
+  "npmInstall": {
+    "command": "npm ci --ignore-scripts --no-audit --no-fund",
+    "exitCode": 0,
+    "packagesAdded": 4
+  },
+  "conflictResolution": "Retained upstream build-share with matching static import guard and all newer meeting/discovery/regions/journey/participant code; file unchanged against base",
+  "diffSHA256": "b238fb2d74ffdb878319ac59234f8b01d8ec74474b557e9d5090f9fbb900a609",
+  "diffCheckExitCode": 0,
+  "status": "",
+  "copiesExitCode": 0,
+  "frozenPlanExitCode": 0,
+  "browserExitCode": 0,
+  "companyRuntime": "Existing main local process unchanged; not restarted or deployed",
+  "pushed": false,
+  "worktree": "C:\\Users\\q1212\\.codex\\worktrees\\atlas-eight-release\\SYNK-appsscript",
+  "branch": "codex/atlas-eight-release-20261008",
+  "baseFull": "b9bd8d7b74464c4e4ec39e7afdf524c0cfa4df24",
+  "unit": {
+    "files": 72,
+    "tests": 851,
+    "passed": 851,
+    "failed": 0,
+    "exitCode": 0,
+    "changedDuringRun": []
+  },
+  "finalizedAt": "2026-10-08T01:15:50.773Z",
+  "checkoutCorrection": {
+    "file": "atlas/personalization.js",
+    "semanticChange": false,
+    "gitChange": false,
+    "evidence": "root-newline-normalization.json",
+    "firstRun": "root-unit-first.json"
+  },
+  "review": {
+    "status": "pending",
+    "owner": "parent",
+    "note": "Official Claude final review handled by parent; no public deployment or default branch push performed by this subagent"
+  },
+  "upstreamBuildShareUnchanged": true
+}

@@ -1,0 +1,314 @@
+{
+  "status": "prepared-not-pushed",
+  "candidateRoot": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-candidate",
+  "publicBase": "3b3aacf29448410091b141cf72af8cf0fa2b008a",
+  "canonicalCommit": "8e668dedd8785cb5642e86a4c4baad1bccc27261",
+  "websiteCommit": "bff0f32f83bdbe73867f275671db01feaf2ac2c3",
+  "engineFiles": 14,
+  "changedFiles": 34,
+  "changes": [
+    {
+      "file": "try/racing/atlas-learning.js",
+      "kind": "canonical-engine",
+      "beforeSha256": "d727e171a46f839175ee59ff5472dd7468ef66c94c18b5b44bf297fec4a5e8a4",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "bytes": 459735
+    },
+    {
+      "file": "try/racing/index.html",
+      "kind": "cache-reference",
+      "beforeSha256": "3787941a4b7232436bf45c766468b8fb7242e973cb050c3d12fc90eab080bd81",
+      "sha256": "3d9462e9b84efcf14b2ecc5dfa91b61f391961527f4290509b3580dc133214d0",
+      "bytes": 18562
+    },
+    {
+      "file": "try/runner/atlas-learning.js",
+      "kind": "canonical-engine",
+      "beforeSha256": "d727e171a46f839175ee59ff5472dd7468ef66c94c18b5b44bf297fec4a5e8a4",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "bytes": 459735
+    },
+    {
+      "file": "try/runner/index.html",
+      "kind": "cache-reference",
+      "beforeSha256": "e77ad36ce4f04b997f1ea2460c325a5d515fff86af534046f9a09dbf814c3db4",
+      "sha256": "11b3b0c60be437f15d7340d44bd14c21ea122dd4057cc140418796abc4171c8d",
+      "bytes": 12541
+    },
+    {
+      "file": "try/rhythm/atlas-learning.js",
+      "kind": "canonical-engine",
+      "beforeSha256": "d727e171a46f839175ee59ff5472dd7468ef66c94c18b5b44bf297fec4a5e8a4",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "bytes": 459735
+    },
+    {
+      "file": "try/rhythm/index.html",
+      "kind": "cache-reference",
+      "beforeSha256": "d7955f3b6663ef4f312297e9e36961c534e167f7b530922f2cdddb0ecd1aa982",
+      "sha256": "19e12ac4e19a1171c0605e7e99c4f30140ec6c2a54ca68a97f71371dfd364ece",
+      "bytes": 13533
+    },
+    {
+      "file": "try/order-rush/atlas-learning.js",
+      "kind": "canonical-engine",
+      "beforeSha256": "d727e171a46f839175ee59ff5472dd7468ef66c94c18b5b44bf297fec4a5e8a4",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "bytes": 459735
+    },
+    {
+      "file": "try/order-rush/index.html",
+      "kind": "cache-reference",
+      "beforeSha256": "a5997c0339998e9e3d3077c4e94fed5375577ef78be263e60cda896066887470",
+      "sha256": "fb7f98bab0bf0a26d5fbd5d1cb6644223d3ae1a8a4603f27260caad645b9117b",
+      "bytes": 13367
+    },
+    {
+      "file": "try/story-classroom/atlas-learning.js",
+      "kind": "canonical-engine",
+      "beforeSha256": "d727e171a46f839175ee59ff5472dd7468ef66c94c18b5b44bf297fec4a5e8a4",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "bytes": 459735
+    },
+    {
+      "file": "try/story-classroom/index.html",
+      "kind": "cache-reference",
+      "beforeSha256": "ad7546a5560157b9b7300d2fd196b40e7238be7fff6b0f8db02371c47883fd09",
+      "sha256": "a628636f602e94a1f3f9cf2fc3c10531e6810767341f9810024b9a84530a7632",
+      "bytes": 13311
+    },
+    {
+      "file": "try/entry-check/atlas-learning.js",
+      "kind": "canonical-engine",
+      "beforeSha256": "d727e171a46f839175ee59ff5472dd7468ef66c94c18b5b44bf297fec4a5e8a4",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "bytes": 459735
+    },
+    {
+      "file": "try/entry-check/index.html",
+      "kind": "cache-reference",
+      "beforeSha256": "efc02e64a48de79684d7932f9e13cf1887314b6e6e52aa362d6f0984ead29f9f",
+      "sha256": "df658231c48abc5714ac5be2f1260ac52c6c39a682e220af2066026c1eee90f3",
+      "bytes": 17049
+    },
+    {
+      "file": "try/blank-slice/atlas-learning.js",
+      "kind": "canonical-engine",
+      "beforeSha256": "d727e171a46f839175ee59ff5472dd7468ef66c94c18b5b44bf297fec4a5e8a4",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "bytes": 459735
+    },
+    {
+      "file": "try/blank-slice/index.html",
+      "kind": "cache-reference",
+      "beforeSha256": "84042784fc791ef81831df9941696be2b2df37445ecc26189c1459481edb1861",
+      "sha256": "7cf0af93379dedefc6c3e10fcc44ebd6324b76d12de9ac7177c30cc445db58fe",
+      "bytes": 9186
+    },
+    {
+      "file": "try/talk-rally/atlas-learning.js",
+      "kind": "canonical-engine",
+      "beforeSha256": "d727e171a46f839175ee59ff5472dd7468ef66c94c18b5b44bf297fec4a5e8a4",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "bytes": 459735
+    },
+    {
+      "file": "try/talk-rally/index.html",
+      "kind": "cache-reference",
+      "beforeSha256": "fa0594d678d388e3a76df34c1196a3aa32c9b7a9b028b3b91eae35ba7d6523aa",
+      "sha256": "55055d6ce80389ce84f3a88b84db23a93f5b82eec87e60b5aff9754502d6fef0",
+      "bytes": 11850
+    },
+    {
+      "file": "try/travel/atlas/engine.js",
+      "kind": "canonical-engine",
+      "beforeSha256": "a9acdc11b43b9f89313bb6b3effca33521c8293eb6650d28cf380fa1fc9d22b2",
+      "sha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "bytes": 35540
+    },
+    {
+      "file": "brief/computer/atlas-engine.js",
+      "kind": "canonical-engine",
+      "beforeSha256": "2c738172e6e4f6787bd37fc33d2eaa96339c6d16a95d86552332fa2daa558d26",
+      "sha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "bytes": 35540
+    },
+    {
+      "file": "brief/computer/index.html",
+      "kind": "cache-reference",
+      "beforeSha256": "a1c72dfab46c1d251a6a1c8e576eaa0ae49a83232775f7c05661183799e8d5c0",
+      "sha256": "7be8a5714a93f3e6424aaaec7566d9744d05c19478e6792337b673b3f6f5cd3f",
+      "bytes": 3396
+    },
+    {
+      "file": "brief/meeting/atlas-engine.js",
+      "kind": "canonical-engine",
+      "beforeSha256": "2c738172e6e4f6787bd37fc33d2eaa96339c6d16a95d86552332fa2daa558d26",
+      "sha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "bytes": 35540
+    },
+    {
+      "file": "brief/meeting/index.html",
+      "kind": "cache-reference",
+      "beforeSha256": "74bad0e342c76800227491cc6e4cddba4080d0727a87e3891231026d15ea5501",
+      "sha256": "90de03785ee2cf5efc27f411ad7305ff074248486370d3da4a90a264277ce01c",
+      "bytes": 3522
+    },
+    {
+      "file": "builds/manual/atlas-engine.js",
+      "kind": "canonical-engine",
+      "beforeSha256": "09298b66f5fe6cfa43c768bdcbca46601b139936b7068e2f9b5d3dbf9ba2f67a",
+      "sha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "bytes": 35540
+    },
+    {
+      "file": "builds/manual/index.html",
+      "kind": "cache-reference",
+      "beforeSha256": "12e2ad3ed44c4ba3f6f5464122760211aa0b60b495af1a92474e32b532e51d10",
+      "sha256": "794de22e8102bdb83068673c443647c2902ec5fe1b7474eda6167af4998122d8",
+      "bytes": 3428
+    },
+    {
+      "file": "id/vendor/atlas-learning.js",
+      "kind": "canonical-engine",
+      "beforeSha256": "d727e171a46f839175ee59ff5472dd7468ef66c94c18b5b44bf297fec4a5e8a4",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "bytes": 459735
+    },
+    {
+      "file": "id/index.html",
+      "kind": "cache-reference",
+      "beforeSha256": "431516f90a8b314c3466598c5f301bb3db3c66aedd20304f6fb408e437531efa",
+      "sha256": "641a6c7af0fcf075ea0118e38091d3b668a07e33924a53e2b5a2c054d82a1b04",
+      "bytes": 5668
+    },
+    {
+      "file": "id-rehearsal/vendor/atlas-learning.js",
+      "kind": "canonical-engine",
+      "beforeSha256": "d727e171a46f839175ee59ff5472dd7468ef66c94c18b5b44bf297fec4a5e8a4",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "bytes": 459735
+    },
+    {
+      "file": "id-rehearsal/index.html",
+      "kind": "cache-reference",
+      "beforeSha256": "c72a12e20f4f01b71546801779318311de0ca8bfa49c12060c8c77e8ce9237b2",
+      "sha256": "e099d54b375cc0ecef1a959e49c62b943d3c2b40a05c8fb8ad650b96062e1af2",
+      "bytes": 4745
+    },
+    {
+      "file": "try/travel/profile.mjs",
+      "kind": "transitive-cache-reference",
+      "beforeSha256": "de14414de92021867a663c6826d25624eb1f25605710c260f604ee16152d315b",
+      "sha256": "dcc86f8037d07819abe9b83295e137d2d54dd30f976c64529a33928e1808d14e",
+      "bytes": 18157
+    },
+    {
+      "file": "try/travel/model.mjs",
+      "kind": "transitive-cache-reference",
+      "beforeSha256": "bdf8fc5f7ddf172057e74cd9bca4bfacae64e25029a63f4bb8c751c454ac992d",
+      "sha256": "d46684a47584bfb63a71891ced6f356e02733764db32c5249fce08008c944e1c",
+      "bytes": 28758
+    },
+    {
+      "file": "try/travel/storage.mjs",
+      "kind": "transitive-cache-reference",
+      "beforeSha256": "87977ba0a9a4f6331610a6aa5a0fe92ab65f7bbc91a6d7be925085c19f259ebf",
+      "sha256": "9390df6f4af9cbe78296c98f39eb49d1ea56129022727b791eac34be73710335",
+      "bytes": 3535
+    },
+    {
+      "file": "try/travel/extractor.mjs",
+      "kind": "transitive-cache-reference",
+      "beforeSha256": "534ec06b0ca060b2fe427776a0c26753119cb02d62a0e32ae508b2af89a4ec4a",
+      "sha256": "e916565a6125d026851e2084cfe5f3081f522250050a295b726391b6d12a8fa0",
+      "bytes": 12543
+    },
+    {
+      "file": "try/travel/conversation.mjs",
+      "kind": "transitive-cache-reference",
+      "beforeSha256": "7bdb10d45aad181654912b956313083d64273d134c7433566dbf74c3d43ddada",
+      "sha256": "3542da88d4898a8c9108ae44e2f84ae21c6250df97a70edf497676612cb42302",
+      "bytes": 6323
+    },
+    {
+      "file": "try/travel/app.mjs",
+      "kind": "transitive-cache-reference",
+      "beforeSha256": "f6bf09cd3a860742fa614a300342f9c7ab737e9cceaf65ff4ebed96a92c437b2",
+      "sha256": "ef8cbcf914f74b85171c75efd4e8f6bd29cd3980841f4229753f25dcc53b8910",
+      "bytes": 60572
+    },
+    {
+      "file": "try/travel/index.html",
+      "kind": "transitive-cache-reference",
+      "beforeSha256": "76e3c5610257266f2be2a5c71bd7f179c4452f2cda9a9465cc71483228cd1d95",
+      "sha256": "c5321e53c40f30c46b85e45ed3f8ae3e544c6c6ee4061fa9580be315484c13c6",
+      "bytes": 31606
+    }
+  ],
+  "unchangedConsumers": [
+    {
+      "file": "try/travel/atlas/personalization.js",
+      "reason": "exact canonical bytes"
+    },
+    {
+      "file": "try/travel/atlas/domain.js",
+      "reason": "exact canonical bytes"
+    },
+    {
+      "file": "try/travel/atlas/interpretation.js",
+      "reason": "exact canonical bytes"
+    },
+    {
+      "file": "try/travel/atlas/ask.js",
+      "reason": "exact canonical bytes"
+    },
+    {
+      "file": "try/travel/atlas/travel.js",
+      "reason": "exact canonical bytes"
+    },
+    {
+      "file": "care/vendor/atlas/domain.js",
+      "reason": "exact canonical bytes"
+    },
+    {
+      "file": "care/vendor/atlas/ask.js",
+      "reason": "exact canonical bytes"
+    },
+    {
+      "file": "care/vendor/atlas/temper-outcomes.js",
+      "reason": "equivalent canonical content with existing line endings preserved"
+    },
+    {
+      "file": "care/vendor/atlas/trail-followup.js",
+      "reason": "exact canonical bytes"
+    },
+    {
+      "file": "care/vendor/atlas/vellum-expression.js",
+      "reason": "exact canonical bytes"
+    }
+  ],
+  "hangul": {
+    "publicRoutePresent": false,
+    "note": "No hangul path or matching path history in fetched main; do not add an unpublished product."
+  },
+  "publicUrls": [
+    "https://synk.im/try/racing/atlas-learning.js",
+    "https://synk.im/try/runner/atlas-learning.js",
+    "https://synk.im/try/rhythm/atlas-learning.js",
+    "https://synk.im/try/order-rush/atlas-learning.js",
+    "https://synk.im/try/story-classroom/atlas-learning.js",
+    "https://synk.im/try/entry-check/atlas-learning.js",
+    "https://synk.im/try/blank-slice/atlas-learning.js",
+    "https://synk.im/try/talk-rally/atlas-learning.js",
+    "https://synk.im/try/travel/atlas/engine.js",
+    "https://synk.im/brief/computer/atlas-engine.js",
+    "https://synk.im/brief/meeting/atlas-engine.js",
+    "https://synk.im/builds/manual/atlas-engine.js",
+    "https://synk.im/id/vendor/atlas-learning.js",
+    "https://synk.im/id-rehearsal/vendor/atlas-learning.js"
+  ],
+  "patchSha256": "8fda616d0236e89f6a1ade89344086718e65e59ba69a9544560d27d7ad872bec",
+  "pushed": false,
+  "deployed": false
+}

@@ -1,0 +1,356 @@
+{
+  "at": "2026-10-08T01:20:19.725Z",
+  "status": "passed-local-candidate",
+  "candidateRoot": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-candidate",
+  "base": "3b3aacf29448410091b141cf72af8cf0fa2b008a",
+  "canonicalCommit": "8e668dedd8785cb5642e86a4c4baad1bccc27261",
+  "changedFiles": 34,
+  "canonicalPayloadsChanged": 14,
+  "cacheFilesChanged": 20,
+  "canonicalConsumersVerified": 24,
+  "canonicalRows": [
+    {
+      "file": "try/racing/atlas-learning.js",
+      "source": "experiences/korean-racing/atlas-learning.js",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "canonicalSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "exact": true,
+      "existingLineEndingOnly": false
+    },
+    {
+      "file": "try/runner/atlas-learning.js",
+      "source": "experiences/korean-runner/atlas-learning.js",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "canonicalSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "exact": true,
+      "existingLineEndingOnly": false
+    },
+    {
+      "file": "try/rhythm/atlas-learning.js",
+      "source": "experiences/korean-rhythm/atlas-learning.js",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "canonicalSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "exact": true,
+      "existingLineEndingOnly": false
+    },
+    {
+      "file": "try/order-rush/atlas-learning.js",
+      "source": "experiences/order-rush/atlas-learning.js",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "canonicalSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "exact": true,
+      "existingLineEndingOnly": false
+    },
+    {
+      "file": "try/story-classroom/atlas-learning.js",
+      "source": "experiences/story-classroom/atlas-learning.js",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "canonicalSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "exact": true,
+      "existingLineEndingOnly": false
+    },
+    {
+      "file": "try/entry-check/atlas-learning.js",
+      "source": "experiences/entry-check/atlas-learning.js",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "canonicalSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "exact": true,
+      "existingLineEndingOnly": false
+    },
+    {
+      "file": "try/blank-slice/atlas-learning.js",
+      "source": "experiences/blank-slice/atlas-learning.js",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "canonicalSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "exact": true,
+      "existingLineEndingOnly": false
+    },
+    {
+      "file": "try/talk-rally/atlas-learning.js",
+      "source": "experiences/talk-rally/atlas-learning.js",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "canonicalSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "exact": true,
+      "existingLineEndingOnly": false
+    },
+    {
+      "file": "try/travel/atlas/engine.js",
+      "source": "atlas/engine.js",
+      "sha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "canonicalSha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "exact": true,
+      "existingLineEndingOnly": false
+    },
+    {
+      "file": "try/travel/atlas/personalization.js",
+      "source": "atlas/personalization.js",
+      "sha256": "82788ca0c7852263f5df6bd68cd19546466b339f5196322efa3cd5b634df20a9",
+      "canonicalSha256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+      "exact": false,
+      "existingLineEndingOnly": true
+    },
+    {
+      "file": "try/travel/atlas/domain.js",
+      "source": "atlas/domain.js",
+      "sha256": "c9d5604a9a4b19c420f0875dc173fe30fe11fece523b30fdb97c8eee20166da1",
+      "canonicalSha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+      "exact": false,
+      "existingLineEndingOnly": true
+    },
+    {
+      "file": "try/travel/atlas/interpretation.js",
+      "source": "atlas/interpretation.js",
+      "sha256": "39519367eadd66f521252b4d071fa24fca1601a79f5bbd91fddc27916239861d",
+      "canonicalSha256": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e",
+      "exact": false,
+      "existingLineEndingOnly": true
+    },
+    {
+      "file": "try/travel/atlas/ask.js",
+      "source": "atlas/ask.js",
+      "sha256": "a0a3241fa6ddb219e371cc87c84dceff27bbf35222d9f3c96ccf35b5e27d6f93",
+      "canonicalSha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "exact": false,
+      "existingLineEndingOnly": true
+    },
+    {
+      "file": "try/travel/atlas/travel.js",
+      "source": "atlas/travel.js",
+      "sha256": "7b2ab8e5c8e193aa8984df80bd83bcb7a4626d43d8ab168bc8780b87dc7a5b21",
+      "canonicalSha256": "0c0c65b97addb5afd69966f9620133abae88aa2154cecf1ff322678bfdba7ef2",
+      "exact": false,
+      "existingLineEndingOnly": true
+    },
+    {
+      "file": "brief/computer/atlas-engine.js",
+      "source": "atlas/engine.js",
+      "sha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "canonicalSha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "exact": true,
+      "existingLineEndingOnly": false
+    },
+    {
+      "file": "brief/meeting/atlas-engine.js",
+      "source": "atlas/engine.js",
+      "sha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "canonicalSha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "exact": true,
+      "existingLineEndingOnly": false
+    },
+    {
+      "file": "builds/manual/atlas-engine.js",
+      "source": "atlas/engine.js",
+      "sha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "canonicalSha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "exact": true,
+      "existingLineEndingOnly": false
+    },
+    {
+      "file": "id/vendor/atlas-learning.js",
+      "source": "experiences/learning-hub/atlas-learning.js",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "canonicalSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "exact": true,
+      "existingLineEndingOnly": false
+    },
+    {
+      "file": "id-rehearsal/vendor/atlas-learning.js",
+      "source": "experiences/learning-hub/atlas-learning.js",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "canonicalSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "exact": true,
+      "existingLineEndingOnly": false
+    },
+    {
+      "file": "care/vendor/atlas/domain.js",
+      "source": "atlas/domain.js",
+      "sha256": "c9d5604a9a4b19c420f0875dc173fe30fe11fece523b30fdb97c8eee20166da1",
+      "canonicalSha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+      "exact": false,
+      "existingLineEndingOnly": true
+    },
+    {
+      "file": "care/vendor/atlas/ask.js",
+      "source": "atlas/ask.js",
+      "sha256": "a0a3241fa6ddb219e371cc87c84dceff27bbf35222d9f3c96ccf35b5e27d6f93",
+      "canonicalSha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "exact": false,
+      "existingLineEndingOnly": true
+    },
+    {
+      "file": "care/vendor/atlas/temper-outcomes.js",
+      "source": "atlas/temper-outcomes.js",
+      "sha256": "a6ab147b062455c9f0df7fae662d91360d28840312d556f776fcc337c375d763",
+      "canonicalSha256": "d8e0a3f794190593a7a4b1286428bfd402163a2507863ec20afbbccbe3b0ad32",
+      "exact": false,
+      "existingLineEndingOnly": true
+    },
+    {
+      "file": "care/vendor/atlas/trail-followup.js",
+      "source": "atlas/trail-followup.js",
+      "sha256": "036c2eb2b67a7f7dfb322a1ad2af67606022d0ea3fa63e7332d8464cc0d2e409",
+      "canonicalSha256": "4d0e90889fe4678e658db4a838c8d3d3190be72b12139969e9dad987266f99e1",
+      "exact": false,
+      "existingLineEndingOnly": true
+    },
+    {
+      "file": "care/vendor/atlas/vellum-expression.js",
+      "source": "atlas/vellum-expression.js",
+      "sha256": "0481ef1aaf675f1d1b83eba161b165baad0072e6f926ee18d44a714fdbc77c2f",
+      "canonicalSha256": "a677829210a20b521aa341e0268cce4221f29ef495238e8f7ee5915a5779a237",
+      "exact": false,
+      "existingLineEndingOnly": true
+    }
+  ],
+  "cacheReferencesVerified": 26,
+  "cacheRefs": [
+    {
+      "file": "try/racing/index.html",
+      "target": "try/racing/atlas-learning.js",
+      "token": "43f511c88e01"
+    },
+    {
+      "file": "try/runner/index.html",
+      "target": "try/runner/atlas-learning.js",
+      "token": "43f511c88e01"
+    },
+    {
+      "file": "try/rhythm/index.html",
+      "target": "try/rhythm/atlas-learning.js",
+      "token": "43f511c88e01"
+    },
+    {
+      "file": "try/order-rush/index.html",
+      "target": "try/order-rush/atlas-learning.js",
+      "token": "43f511c88e01"
+    },
+    {
+      "file": "try/story-classroom/index.html",
+      "target": "try/story-classroom/atlas-learning.js",
+      "token": "43f511c88e01"
+    },
+    {
+      "file": "try/entry-check/index.html",
+      "target": "try/entry-check/atlas-learning.js",
+      "token": "43f511c88e01"
+    },
+    {
+      "file": "try/blank-slice/index.html",
+      "target": "try/blank-slice/atlas-learning.js",
+      "token": "43f511c88e01"
+    },
+    {
+      "file": "try/talk-rally/index.html",
+      "target": "try/talk-rally/atlas-learning.js",
+      "token": "43f511c88e01"
+    },
+    {
+      "file": "brief/computer/index.html",
+      "target": "brief/computer/atlas-engine.js",
+      "token": "80e6c7048b52"
+    },
+    {
+      "file": "brief/meeting/index.html",
+      "target": "brief/meeting/atlas-engine.js",
+      "token": "80e6c7048b52"
+    },
+    {
+      "file": "builds/manual/index.html",
+      "target": "builds/manual/atlas-engine.js",
+      "token": "80e6c7048b52"
+    },
+    {
+      "file": "id/index.html",
+      "target": "id/vendor/atlas-learning.js",
+      "token": "43f511c88e01"
+    },
+    {
+      "file": "id-rehearsal/index.html",
+      "target": "id-rehearsal/vendor/atlas-learning.js",
+      "token": "43f511c88e01"
+    },
+    {
+      "file": "try/travel/profile.mjs",
+      "target": "try/travel/atlas/engine.js",
+      "token": "80e6c7048b52"
+    },
+    {
+      "file": "try/travel/model.mjs",
+      "target": "try/travel/profile.mjs",
+      "token": "dcc86f8037d0"
+    },
+    {
+      "file": "try/travel/model.mjs",
+      "target": "try/travel/profile.mjs",
+      "token": "dcc86f8037d0"
+    },
+    {
+      "file": "try/travel/storage.mjs",
+      "target": "try/travel/model.mjs",
+      "token": "d46684a47584"
+    },
+    {
+      "file": "try/travel/storage.mjs",
+      "target": "try/travel/profile.mjs",
+      "token": "dcc86f8037d0"
+    },
+    {
+      "file": "try/travel/extractor.mjs",
+      "target": "try/travel/profile.mjs",
+      "token": "dcc86f8037d0"
+    },
+    {
+      "file": "try/travel/conversation.mjs",
+      "target": "try/travel/profile.mjs",
+      "token": "dcc86f8037d0"
+    },
+    {
+      "file": "try/travel/conversation.mjs",
+      "target": "try/travel/extractor.mjs",
+      "token": "e916565a6125"
+    },
+    {
+      "file": "try/travel/app.mjs",
+      "target": "try/travel/model.mjs",
+      "token": "d46684a47584"
+    },
+    {
+      "file": "try/travel/app.mjs",
+      "target": "try/travel/storage.mjs",
+      "token": "9390df6f4af9"
+    },
+    {
+      "file": "try/travel/app.mjs",
+      "target": "try/travel/profile.mjs",
+      "token": "dcc86f8037d0"
+    },
+    {
+      "file": "try/travel/app.mjs",
+      "target": "try/travel/conversation.mjs",
+      "token": "3542da88d489"
+    },
+    {
+      "file": "try/travel/index.html",
+      "target": "try/travel/app.mjs",
+      "token": "ef8cbcf914f7"
+    }
+  ],
+  "syntaxChecks": 20,
+  "diffCheck": true,
+  "browser": {
+    "passed": 31,
+    "failed": 0,
+    "report": "public-browser-combined.json"
+  },
+  "runtime": {
+    "passed": 24,
+    "report": "public-runtime.json"
+  },
+  "publicBaseline": {
+    "passed": 50,
+    "report": "public-live-baseline.json",
+    "meaning": "Current live bytes equal fetched public main; this is not verification of the new deployment."
+  },
+  "pushed": false,
+  "deployed": false
+}

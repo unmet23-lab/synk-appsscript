@@ -1,0 +1,237 @@
+{
+  "base": "3b3aacf29448410091b141cf72af8cf0fa2b008a",
+  "canonicalCommit": "8e668dedd8785cb5642e86a4c4baad1bccc27261",
+  "rows": [
+    {
+      "published": "try/racing/atlas-learning.js",
+      "source": "experiences/korean-racing/atlas-learning.js",
+      "oldBytes": 442986,
+      "newBytes": 459735,
+      "oldSha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "newSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "same": false,
+      "sameAfterLF": false
+    },
+    {
+      "published": "try/runner/atlas-learning.js",
+      "source": "experiences/korean-runner/atlas-learning.js",
+      "oldBytes": 442986,
+      "newBytes": 459735,
+      "oldSha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "newSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "same": false,
+      "sameAfterLF": false
+    },
+    {
+      "published": "try/rhythm/atlas-learning.js",
+      "source": "experiences/korean-rhythm/atlas-learning.js",
+      "oldBytes": 442986,
+      "newBytes": 459735,
+      "oldSha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "newSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "same": false,
+      "sameAfterLF": false
+    },
+    {
+      "published": "try/order-rush/atlas-learning.js",
+      "source": "experiences/order-rush/atlas-learning.js",
+      "oldBytes": 442986,
+      "newBytes": 459735,
+      "oldSha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "newSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "same": false,
+      "sameAfterLF": false
+    },
+    {
+      "published": "try/story-classroom/atlas-learning.js",
+      "source": "experiences/story-classroom/atlas-learning.js",
+      "oldBytes": 442986,
+      "newBytes": 459735,
+      "oldSha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "newSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "same": false,
+      "sameAfterLF": false
+    },
+    {
+      "published": "try/entry-check/atlas-learning.js",
+      "source": "experiences/entry-check/atlas-learning.js",
+      "oldBytes": 442986,
+      "newBytes": 459735,
+      "oldSha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "newSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "same": false,
+      "sameAfterLF": false
+    },
+    {
+      "published": "try/blank-slice/atlas-learning.js",
+      "source": "experiences/blank-slice/atlas-learning.js",
+      "oldBytes": 442986,
+      "newBytes": 459735,
+      "oldSha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "newSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "same": false,
+      "sameAfterLF": false
+    },
+    {
+      "published": "try/talk-rally/atlas-learning.js",
+      "source": "experiences/talk-rally/atlas-learning.js",
+      "oldBytes": 442986,
+      "newBytes": 459735,
+      "oldSha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "newSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "same": false,
+      "sameAfterLF": false
+    },
+    {
+      "published": "try/travel/atlas/engine.js",
+      "source": "atlas/engine.js",
+      "oldBytes": 35154,
+      "newBytes": 35540,
+      "oldSha256": "10e702c122ad582044468e32369872f4b1686c3c251b5c4b5e157c7d4be1285b",
+      "newSha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "same": false,
+      "sameAfterLF": false
+    },
+    {
+      "published": "try/travel/atlas/personalization.js",
+      "source": "atlas/personalization.js",
+      "oldBytes": 32366,
+      "newBytes": 32366,
+      "oldSha256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+      "newSha256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+      "same": true
+    },
+    {
+      "published": "try/travel/atlas/domain.js",
+      "source": "atlas/domain.js",
+      "oldBytes": 19777,
+      "newBytes": 19777,
+      "oldSha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+      "newSha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+      "same": true
+    },
+    {
+      "published": "try/travel/atlas/interpretation.js",
+      "source": "atlas/interpretation.js",
+      "oldBytes": 11124,
+      "newBytes": 11124,
+      "oldSha256": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e",
+      "newSha256": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e",
+      "same": true
+    },
+    {
+      "published": "try/travel/atlas/ask.js",
+      "source": "atlas/ask.js",
+      "oldBytes": 12003,
+      "newBytes": 12003,
+      "oldSha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "newSha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "same": true
+    },
+    {
+      "published": "try/travel/atlas/travel.js",
+      "source": "atlas/travel.js",
+      "oldBytes": 9203,
+      "newBytes": 9203,
+      "oldSha256": "0c0c65b97addb5afd69966f9620133abae88aa2154cecf1ff322678bfdba7ef2",
+      "newSha256": "0c0c65b97addb5afd69966f9620133abae88aa2154cecf1ff322678bfdba7ef2",
+      "same": true
+    },
+    {
+      "published": "brief/computer/atlas-engine.js",
+      "source": "atlas/engine.js",
+      "oldBytes": 26068,
+      "newBytes": 35540,
+      "oldSha256": "886258ae59a872a16a4eff6dad58a7c84647591090347952052e814bd39a6b66",
+      "newSha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "same": false,
+      "sameAfterLF": false
+    },
+    {
+      "published": "brief/meeting/atlas-engine.js",
+      "source": "atlas/engine.js",
+      "oldBytes": 26068,
+      "newBytes": 35540,
+      "oldSha256": "886258ae59a872a16a4eff6dad58a7c84647591090347952052e814bd39a6b66",
+      "newSha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "same": false,
+      "sameAfterLF": false
+    },
+    {
+      "published": "builds/manual/atlas-engine.js",
+      "source": "atlas/engine.js",
+      "oldBytes": 35631,
+      "newBytes": 35540,
+      "oldSha256": "f8c38132ca967e95c91bc9bc95fd39cf33d3a9b9a643244d1262deea6047999f",
+      "newSha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "same": false,
+      "sameAfterLF": false
+    },
+    {
+      "published": "id/vendor/atlas-learning.js",
+      "source": "experiences/learning-hub/atlas-learning.js",
+      "oldBytes": 442986,
+      "newBytes": 459735,
+      "oldSha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "newSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "same": false,
+      "sameAfterLF": false
+    },
+    {
+      "published": "id-rehearsal/vendor/atlas-learning.js",
+      "source": "experiences/learning-hub/atlas-learning.js",
+      "oldBytes": 442986,
+      "newBytes": 459735,
+      "oldSha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "newSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "same": false,
+      "sameAfterLF": false
+    },
+    {
+      "published": "care/vendor/atlas/domain.js",
+      "source": "atlas/domain.js",
+      "oldBytes": 19777,
+      "newBytes": 19777,
+      "oldSha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+      "newSha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+      "same": true
+    },
+    {
+      "published": "care/vendor/atlas/ask.js",
+      "source": "atlas/ask.js",
+      "oldBytes": 12003,
+      "newBytes": 12003,
+      "oldSha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "newSha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "same": true
+    },
+    {
+      "published": "care/vendor/atlas/temper-outcomes.js",
+      "source": "atlas/temper-outcomes.js",
+      "oldBytes": 19440,
+      "newBytes": 19294,
+      "oldSha256": "a6ab147b062455c9f0df7fae662d91360d28840312d556f776fcc337c375d763",
+      "newSha256": "d8e0a3f794190593a7a4b1286428bfd402163a2507863ec20afbbccbe3b0ad32",
+      "same": false,
+      "sameAfterLF": true
+    },
+    {
+      "published": "care/vendor/atlas/trail-followup.js",
+      "source": "atlas/trail-followup.js",
+      "oldBytes": 2998,
+      "newBytes": 2998,
+      "oldSha256": "4d0e90889fe4678e658db4a838c8d3d3190be72b12139969e9dad987266f99e1",
+      "newSha256": "4d0e90889fe4678e658db4a838c8d3d3190be72b12139969e9dad987266f99e1",
+      "same": true
+    },
+    {
+      "published": "care/vendor/atlas/vellum-expression.js",
+      "source": "atlas/vellum-expression.js",
+      "oldBytes": 6493,
+      "newBytes": 6493,
+      "oldSha256": "a677829210a20b521aa341e0268cce4221f29ef495238e8f7ee5915a5779a237",
+      "newSha256": "a677829210a20b521aa341e0268cce4221f29ef495238e8f7ee5915a5779a237",
+      "same": true
+    }
+  ]
+}

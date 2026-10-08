@@ -1,0 +1,507 @@
+{
+  "at": "2026-10-08T01:11:12.611Z",
+  "base": "3b3aacf29448410091b141cf72af8cf0fa2b008a",
+  "status": "passed",
+  "rows": [
+    {
+      "file": "atlas/index.html",
+      "url": "https://synk.im/atlas/index.html",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "bytes": 84712,
+      "sha256": "30fa0e62fbc0e8dbf277753961fd8ae9cbc81735885e553485831e22b68c499b",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "brief/computer/atlas-engine.js",
+      "url": "https://synk.im/brief/computer/atlas-engine.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 26068,
+      "sha256": "886258ae59a872a16a4eff6dad58a7c84647591090347952052e814bd39a6b66",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "brief/computer/index.html",
+      "url": "https://synk.im/brief/computer/index.html",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "bytes": 3379,
+      "sha256": "cf8c30855d9e24e2e01c1831a8e4fc82f1d0e44968c3605813a209b7eeb6888a",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "brief/meeting/atlas-engine.js",
+      "url": "https://synk.im/brief/meeting/atlas-engine.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 26068,
+      "sha256": "886258ae59a872a16a4eff6dad58a7c84647591090347952052e814bd39a6b66",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "brief/meeting/index.html",
+      "url": "https://synk.im/brief/meeting/index.html",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "bytes": 3505,
+      "sha256": "ee155fd1cd818ffcd743a2e85511173af7a5fcf9c1022d26939a3d69bba4b5be",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "builds/manual/atlas-engine.js",
+      "url": "https://synk.im/builds/manual/atlas-engine.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 35631,
+      "sha256": "f8c38132ca967e95c91bc9bc95fd39cf33d3a9b9a643244d1262deea6047999f",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "builds/manual/index.html",
+      "url": "https://synk.im/builds/manual/index.html",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "bytes": 3411,
+      "sha256": "d03eb6c387ddf6bd0d6d447232302dc99d70e9ac4ce31b6bc9d48c86d84453af",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "care/vendor/atlas/ask.js",
+      "url": "https://synk.im/care/vendor/atlas/ask.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 12003,
+      "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "care/vendor/atlas/domain.js",
+      "url": "https://synk.im/care/vendor/atlas/domain.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 19777,
+      "sha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "care/vendor/atlas/temper-outcomes.js",
+      "url": "https://synk.im/care/vendor/atlas/temper-outcomes.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 19440,
+      "sha256": "a6ab147b062455c9f0df7fae662d91360d28840312d556f776fcc337c375d763",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "care/vendor/atlas/trail-followup.js",
+      "url": "https://synk.im/care/vendor/atlas/trail-followup.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 2998,
+      "sha256": "4d0e90889fe4678e658db4a838c8d3d3190be72b12139969e9dad987266f99e1",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "care/vendor/atlas/vellum-expression.js",
+      "url": "https://synk.im/care/vendor/atlas/vellum-expression.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 6493,
+      "sha256": "a677829210a20b521aa341e0268cce4221f29ef495238e8f7ee5915a5779a237",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "hangul/index.html",
+      "url": "https://synk.im/hangul/index.html",
+      "status": 404,
+      "type": "text/html; charset=utf-8",
+      "bytes": 9379,
+      "sha256": "b620507312c5e97566a3c6cfaf99144fefc18a0da7d941401dfa0f5f58fb0368",
+      "matchesFetchedMain": null,
+      "expectedStatus": 404
+    },
+    {
+      "file": "id-rehearsal/index.html",
+      "url": "https://synk.im/id-rehearsal/index.html",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "bytes": 4730,
+      "sha256": "badafda705fa99f7fd634e8a119fe0ea7a7bc4b071666f4e8b0f963e0fed85f1",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "id-rehearsal/vendor/atlas-learning.js",
+      "url": "https://synk.im/id-rehearsal/vendor/atlas-learning.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 442986,
+      "sha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "id/index.html",
+      "url": "https://synk.im/id/index.html",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "bytes": 5653,
+      "sha256": "b17c3fa5a5d77763019479feeea8814e68b9c41871956a849fabb38a6783346c",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "id/vendor/atlas-learning.js",
+      "url": "https://synk.im/id/vendor/atlas-learning.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 442986,
+      "sha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "index.html",
+      "url": "https://synk.im/index.html",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "bytes": 33006,
+      "sha256": "80735d017758d572155c8a9bdb92a6a1172db1127cb889330fe3e973383af430",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "lab/index.html",
+      "url": "https://synk.im/lab/index.html",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "bytes": 61027,
+      "sha256": "3c5c9df9a119f2015a9e3bdd3af24579626496c981a81cc803963e733696d17d",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/blank-slice/atlas-learning.js",
+      "url": "https://synk.im/try/blank-slice/atlas-learning.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 442986,
+      "sha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/blank-slice/index.html",
+      "url": "https://synk.im/try/blank-slice/index.html",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "bytes": 9171,
+      "sha256": "04be7872176744a03962e758f35822b3d6f5edfb8d26f6e77bfb0956b1fc2e4e",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/entry-check/atlas-learning.js",
+      "url": "https://synk.im/try/entry-check/atlas-learning.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 442986,
+      "sha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/entry-check/index.html",
+      "url": "https://synk.im/try/entry-check/index.html",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "bytes": 17034,
+      "sha256": "fbfddc5eff6218691f602857bedc1223cb8f9218ca849ad120a4f8e540248d7b",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/hangul-stage/index.html",
+      "url": "https://synk.im/try/hangul-stage/index.html",
+      "status": 404,
+      "type": "text/html; charset=utf-8",
+      "bytes": 9379,
+      "sha256": "b620507312c5e97566a3c6cfaf99144fefc18a0da7d941401dfa0f5f58fb0368",
+      "matchesFetchedMain": null,
+      "expectedStatus": 404
+    },
+    {
+      "file": "try/hangul/index.html",
+      "url": "https://synk.im/try/hangul/index.html",
+      "status": 404,
+      "type": "text/html; charset=utf-8",
+      "bytes": 9379,
+      "sha256": "b620507312c5e97566a3c6cfaf99144fefc18a0da7d941401dfa0f5f58fb0368",
+      "matchesFetchedMain": null,
+      "expectedStatus": 404
+    },
+    {
+      "file": "try/order-rush/atlas-learning.js",
+      "url": "https://synk.im/try/order-rush/atlas-learning.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 442986,
+      "sha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/order-rush/index.html",
+      "url": "https://synk.im/try/order-rush/index.html",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "bytes": 13352,
+      "sha256": "b3f897a6330729ec307b5c5c4874a5d48864082c259bab6caf8f90feceedf786",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/racing/atlas-learning.js",
+      "url": "https://synk.im/try/racing/atlas-learning.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 442986,
+      "sha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/racing/index.html",
+      "url": "https://synk.im/try/racing/index.html",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "bytes": 18547,
+      "sha256": "ea412275e7f14966aa07ca15b6819ada20403f848a784c08e630dccef0793dd2",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/rhythm/atlas-learning.js",
+      "url": "https://synk.im/try/rhythm/atlas-learning.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 442986,
+      "sha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/rhythm/index.html",
+      "url": "https://synk.im/try/rhythm/index.html",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "bytes": 13518,
+      "sha256": "4dfc479015c32bc57c28f7c9b695949fa73aaed10fdf266f0dd3faa7d1231ed1",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/runner/atlas-learning.js",
+      "url": "https://synk.im/try/runner/atlas-learning.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 442986,
+      "sha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/runner/index.html",
+      "url": "https://synk.im/try/runner/index.html",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "bytes": 12526,
+      "sha256": "ca0b89bea49be9d681947d54021bb36d69c23b46a23eb1c16c4422d35047418c",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/story-classroom/atlas-learning.js",
+      "url": "https://synk.im/try/story-classroom/atlas-learning.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 442986,
+      "sha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/story-classroom/index.html",
+      "url": "https://synk.im/try/story-classroom/index.html",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "bytes": 13296,
+      "sha256": "1174c83361ae7d64141884b8841a67fb662e1d8afe04115c6f159d33705b15c1",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/talk-rally/atlas-learning.js",
+      "url": "https://synk.im/try/talk-rally/atlas-learning.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 442986,
+      "sha256": "f6de771a07dc6d3d0208614ae619b4b2af1765a956687f9c0820abce0d1e1230",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/talk-rally/index.html",
+      "url": "https://synk.im/try/talk-rally/index.html",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "bytes": 11835,
+      "sha256": "147f78996c23c1ebba8e0b82b4042366755c301ed3797e7c4abf90a20edd7a39",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/travel/app.mjs",
+      "url": "https://synk.im/try/travel/app.mjs",
+      "status": 200,
+      "type": "text/javascript; charset=utf-8",
+      "bytes": 60512,
+      "sha256": "66b3b3a63f37ed443536b887f98bf12c0e7ba3d56ba2a1f196d91acabc462e7e",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/travel/atlas/ask.js",
+      "url": "https://synk.im/try/travel/atlas/ask.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 12003,
+      "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/travel/atlas/domain.js",
+      "url": "https://synk.im/try/travel/atlas/domain.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 19777,
+      "sha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/travel/atlas/engine.js",
+      "url": "https://synk.im/try/travel/atlas/engine.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 35154,
+      "sha256": "10e702c122ad582044468e32369872f4b1686c3c251b5c4b5e157c7d4be1285b",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/travel/atlas/interpretation.js",
+      "url": "https://synk.im/try/travel/atlas/interpretation.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 11124,
+      "sha256": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/travel/atlas/personalization.js",
+      "url": "https://synk.im/try/travel/atlas/personalization.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 32366,
+      "sha256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/travel/atlas/travel.js",
+      "url": "https://synk.im/try/travel/atlas/travel.js",
+      "status": 200,
+      "type": "application/javascript; charset=utf-8",
+      "bytes": 9203,
+      "sha256": "0c0c65b97addb5afd69966f9620133abae88aa2154cecf1ff322678bfdba7ef2",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/travel/conversation.mjs",
+      "url": "https://synk.im/try/travel/conversation.mjs",
+      "status": 200,
+      "type": "text/javascript; charset=utf-8",
+      "bytes": 6293,
+      "sha256": "e23024854c4afed11b8a93d11308978fa465115c89d5ffaa513c8585d75ff4ec",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/travel/extractor.mjs",
+      "url": "https://synk.im/try/travel/extractor.mjs",
+      "status": 200,
+      "type": "text/javascript; charset=utf-8",
+      "bytes": 12528,
+      "sha256": "dff6a85cb9e5bf4d87e1bc5ae845b3c43bbeafd30164dec3cb0e01e463188298",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/travel/index.html",
+      "url": "https://synk.im/try/travel/index.html",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "bytes": 31591,
+      "sha256": "09724f18d85af6449f8f5f3ebea267767be93540fff4dba1940254918e3c7557",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/travel/model.mjs",
+      "url": "https://synk.im/try/travel/model.mjs",
+      "status": 200,
+      "type": "text/javascript; charset=utf-8",
+      "bytes": 28728,
+      "sha256": "8034c53cbf03a90e9e9456ce3aa635666838a15415d89f4548a0ddc2ea763d34",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/travel/profile.mjs",
+      "url": "https://synk.im/try/travel/profile.mjs",
+      "status": 200,
+      "type": "text/javascript; charset=utf-8",
+      "bytes": 18142,
+      "sha256": "b9bd984cfd728c8c6a0ca7a0cc13ce43799fa91a5204bf7440bd5d50d82d1a38",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    },
+    {
+      "file": "try/travel/storage.mjs",
+      "url": "https://synk.im/try/travel/storage.mjs",
+      "status": 200,
+      "type": "text/javascript; charset=utf-8",
+      "bytes": 3505,
+      "sha256": "35cc4cc6e40fc9b06c35979e6d16901204935f79db346f956351998e05bc72b9",
+      "matchesFetchedMain": true,
+      "expectedStatus": 200
+    }
+  ]
+}
