@@ -1,0 +1,36 @@
+{
+  "status": "preserved-and-patch-verified",
+  "at": "2026-10-08T00:59:58.252Z",
+  "target": "experiences/atlas-lab/build-share.mjs",
+  "patch": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\share-pending-integration.patch",
+    "sha256": "b327eaf004a8ae4dc29a8c75a994dd98e28c64a31c3fdd196419599893c57c7f",
+    "bytes": 1977
+  },
+  "before": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\share-pending-integration\\before\\experiences\\atlas-lab\\build-share.mjs",
+    "sha256": "147565d1b0ccc3eca7f43c953395f8f3416924d6ec61dd0cbf10895749691e83"
+  },
+  "after": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\build-share.mjs",
+    "sha256": "2fe37a10db501ab87d808b99cef5aa68491c1dff7cebe60534103c8d40799385"
+  },
+  "changes": [
+    "Declare exact region import and read/validate discovery source once.",
+    "Inline meeting-regions exports inside the discovery closure.",
+    "Remove the exact region import from the discovery source before inlining."
+  ],
+  "excludes": [
+    "Static import/export leftover guard: already included in the isolated remote base.",
+    "Pre-existing meeting/discovery/journey/participant work and all of its other build-share edits."
+  ],
+  "dependency": "Apply when the existing dirty discovery/discovery-ui/meeting-regions integration is committed. This is a patch against that local integration state, not the older remote build-share without discovery.",
+  "validation": {
+    "appliesToBefore": true,
+    "reconstructsCurrentSourceExactBytes": true,
+    "syntax": "passed",
+    "sharedSourceUnchanged": true
+  },
+  "relatedBehaviorEvidence": ".tmp/atlas-eight-fix-20261008/consultation-browser/result.json (8 paths passed after this region fix)",
+  "committedOrPushedByThisStep": false
+}

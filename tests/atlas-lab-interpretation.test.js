@@ -329,3 +329,88 @@ test('new ownership forms still withhold negative, conditional, past and other-p
     assert.ok(result.held.length, text);
   }
 });
+
+test('complete predicates and whole subjects prevent substring facts from denial, transitions and other people', async () => {
+  const texts = [
+    '제 램은 16GB가 아닙니다.', '지금 램은 8GB가 아닌 16GB입니다.', '현재 RAM은 64GB가 아님.',
+    '예산은 100~150만원이 아닙니다.', '제 램은 16GB였다가 32GB로 올렸어요.',
+    '제 램은 8GB에서 16GB로 바꿨어요.', '지금 램은 8GB에서 32GB가 됐어요.',
+    'Tom은 프리미어로 4K 영상을 편집해요.', '민수 컴퓨터가 있어요.', '민수만 맥이 편해요.',
+    '팀장님도 윈도우가 편해요.', '3팀은 프리미어로 영상을 편집해요.', '형 노트북이 있어요.',
+    '제 램은 16GB인 것 같아요.', '제 램은 16GB일 거예요.', '제 램은 32GB면 좋겠어요.',
+    '사려고 봐 둔 램 32GB 노트북이 있어요.', '제 램은 32GB로 늘릴 거예요.', '제 램은 16GB 이상이어야 해요.',
+    'Ollama는 무거워서 ChatGPT를 써요.', 'LM Studio는 지웠고 Gemini를 써요.',
+    '로컬 AI보다 웹 AI를 써요.', '포토샵보다 캔바를 써요.', '아이패드를 매일 들고 다녀요.',
+    '4K 모니터로 영상을 편집해요.', '내 컴퓨터에서 ChatGPT 같은 AI를 사용해요.',
+  ];
+  for (const text of texts) {
+    const instance = await session(text), result = instance.analyze();
+    assert.deepEqual(result.proposals, [], text);
+    assert.ok(result.held.length, text);
+    assert.deepEqual(result.answers, { uses: [] });
+    for (const h of result.held) assert.equal(text.slice(h.start, h.end), h.quote);
+  }
+});
+
+test('supported self/current statements retain useful facts without confusing cloud AI, monitor size or parameter count', async () => {
+  const texts = [
+    ['저는 프리미어로 4K 영상을 편집합니다.', [['uses.video', true], ['video.app', 'premiere'], ['video.res', '4k']]],
+    ['제 컴퓨터에서 웹 AI를 써요.', [['uses.web', true]]],
+    ['지금 제 컴퓨터에서 ChatGPT를 사용합니다.', [['uses.web', true]]],
+    ['저는 포토샵으로 사진을 보정해요.', [['uses.photo', true], ['photo', 'adobe']]],
+    ['제 노트북을 매일 들고 다녀요.', [['place', 'carry']]],
+    ['내 데스크톱을 집에서만 씁니다.', [['place', 'home']]],
+    ['제 예산은 150만원에서 250만원 사이입니다.', [['budget', '150_250']]],
+    ['컴퓨터를 새로 살 거예요.', [['owned', 'new']]],
+    ['Ollama로 8B 모델을 돌립니다.', [['uses.localai', true], ['localai.small', true]]],
+  ];
+  for (const [text, expected] of texts) {
+    const instance = await session(text), result = instance.analyze();
+    assert.deepEqual(result.proposals.map(p => [p.field, p.value]), expected, text);
+    assert.ok(result.proposals.every(p => p.status === 'pending'));
+    assert.deepEqual(result.answers, { uses: [] });
+    for (const p of result.proposals) for (const e of p.evidence) assert.equal(text.slice(e.start, e.end), e.quote);
+  }
+  const instance = await session('제 램은 16GB가 아닙니다. 현재 램은 32GB입니다.');
+  const result = instance.analyze();
+  assert.deepEqual(result.proposals.map(p => [p.field, p.value]), [['owned', 'have'], ['current.ram', '32']]);
+  assert.equal(result.held.length, 1);
+});
+
+test('source edits retire dependent manual details before a removed use or device can be enabled again', async () => {
+  for (const change of [instance => instance.clearText(), instance => instance.setText('윈도우가 편해요.')]) {
+    const instance = await session('로컬 AI 70B를 돌려요. 램 8GB 노트북이 있어요.');
+    instance.analyze(); confirmAll(instance);
+    instance.setManual('localai', ['large']); instance.setManual('current.os', 'win11'); instance.setManual('budget', 'lt100');
+    change(instance);
+    assert.equal(Object.hasOwn(instance.snapshot().manual, 'localai'), false);
+    assert.equal(Object.hasOwn(instance.snapshot().manual, 'current.os'), false);
+    instance.setManualMember('uses.localai', true); instance.setManual('owned', 'have');
+    assert.equal(instance.snapshot().answers.localai, undefined);
+    assert.equal(instance.snapshot().answers['current.os'], undefined);
+    assert.equal(instance.snapshot().answers.budget, 'lt100');
+  }
+});
+
+test('quoted or unresolved subject context cannot leak through a period, while an explicit self statement resumes matching', async () => {
+  for (const text of [
+    '친구가 “프리미어로 영상을 편집해요. 맥이 편해요. 매일 들고 다녀요.”라고 했어요.',
+    'Tom은 컴퓨터를 좋아해요. 프리미어로 4K 영상을 편집해요.',
+    '예전 이야기예요. 램 8GB 노트북이 있어요.',
+  ]) {
+    const instance = await session(text), result = instance.analyze();
+    assert.deepEqual(result.proposals, [], text);
+    for (const h of result.held) assert.equal(text.slice(h.start, h.end), h.quote);
+  }
+  const instance = await session('Tom은 영상을 편집해요. 저는 웹 AI를 써요. 맥이 편해요.');
+  assert.deepEqual(instance.analyze().proposals.map(p => [p.field, p.value]), [['uses.web', true], ['os', 'mac']]);
+});
+
+test('source edits preserve details whose parent is still explicitly manual, and unchanged text does not retire facts', async () => {
+  const instance = await session('로컬 AI 70B를 돌려요.'); instance.analyze(); confirmAll(instance);
+  instance.setManual('uses', ['localai']); instance.setManual('localai', ['large']);
+  instance.setText('로컬 AI 70B를 돌려요.');
+  assert.ok(instance.snapshot().proposals.some(p => p.review?.action === 'confirm'));
+  instance.clearText();
+  assert.deepEqual(instance.snapshot().answers, { uses: ['localai'], localai: ['large'] });
+});

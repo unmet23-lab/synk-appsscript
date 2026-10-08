@@ -1,0 +1,78 @@
+
+## 부정
+"제 램은 16GB가 아닙니다."
+    -> owned=have [self/current/pending], current.ram=16 [self/current/pending]
+"지금 램은 8GB가 아닌 16GB입니다."
+    -> owned=have [self/current/pending], current.ram=8 [self/current/pending]
+"예산은 100~150만원이 아닙니다."
+    -> budget=100_150 [self/current/pending]
+"LM Studio는 지웠고 Gemini를 써요."
+    -> uses.web=true [self/current/pending], uses.localai=true [self/current/pending]
+"Ollama는 무거워서 ChatGPT를 써요."
+    -> uses.web=true [self/current/pending], uses.localai=true [self/current/pending]
+"현재 RAM은 64GB가 아님."
+    -> owned=have [self/current/pending], current.ram=32 [self/current/pending]
+
+## 과거
+"제 램은 16GB였다가 32GB로 올렸어요."
+    -> owned=have [self/current/pending], current.ram=16 [self/current/pending]
+"제 램은 8GB에서 16GB로 바꿨어요."
+    -> owned=have [self/current/pending], current.ram=8 [self/current/pending]
+"지금 램은 8GB에서 32GB가 됐어요."
+    -> owned=have [self/current/pending], current.ram=8 [self/current/pending]
+
+## 타인
+"Tom은 프리미어로 4K 영상을 편집해요."
+    -> uses.video=true [self/current/pending], video.app=premiere [self/current/pending], video.res=4k [self/current/pending]
+"민수 컴퓨터가 있어요."
+    -> owned=have [self/current/pending]
+"민수만 맥이 편해요."
+    -> os=mac [self/current/pending]
+"팀장님도 윈도우가 편해요."
+    -> os=win [self/current/pending]
+"3팀은 프리미어로 영상을 편집해요."
+    -> uses.video=true [self/current/pending], video.app=premiere [self/current/pending]
+"형 노트북이 있어요."
+    -> owned=have [self/current/pending], current.kind=laptop [self/current/pending]
+
+## 불확실·희망·계획
+"제 램은 16GB인 것 같아요."
+    -> owned=have [self/current/pending], current.ram=16 [self/current/pending]
+"제 램은 16GB일 거예요."
+    -> owned=have [self/current/pending], current.ram=16 [self/current/pending]
+"제 램은 32GB면 좋겠어요."
+    -> owned=have [self/current/pending], current.ram=32 [self/current/pending]
+"사려고 봐 둔 램 32GB 노트북이 있어요."
+    -> owned=have [self/current/pending], current.kind=laptop [self/current/pending], current.ram=32 [self/current/pending]
+"제 램은 32GB로 늘릴 거예요."
+    -> owned=have [self/current/pending], current.ram=32 [self/current/pending]
+"제 램은 16GB 이상이어야 해요."
+    -> owned=have [self/current/pending], current.ram=16 [self/current/pending]
+
+## 대상 혼동
+"제 컴퓨터에서 웹 AI를 써요."
+    -> uses.web=true [self/current/pending], uses.localai=true [self/current/pending]
+"내 컴퓨터에서 ChatGPT 같은 AI를 사용해요."
+    -> (제안 없음) | 보류: 다른 사람의 이야기일 수 있어요.
+"로컬 AI보다 웹 AI를 써요."
+    -> uses.web=true [self/current/pending], uses.localai=true [self/current/pending]
+"포토샵보다 캔바를 써요."
+    -> uses.photo=true [self/current/pending], photo=adobe [self/current/pending]
+"아이패드를 매일 들고 다녀요."
+    -> place=carry [self/current/pending]
+"4K 모니터로 영상을 편집해요."
+    -> uses.video=true [self/current/pending], video.res=4k [self/current/pending]
+
+## 대조(시험이 보류를 기대하는 같은 유형)
+"친구 컴퓨터가 있어요."
+    -> (제안 없음) | 보류: 다른 사람의 이야기일 수 있어요.
+"제 램은 16GB였어요."
+    -> (제안 없음) | 보류: 과거와 현재를 구분해서 직접 선택해 주세요.
+"민수는 프리미어로 영상을 편집해요."
+    -> (제안 없음) | 보류: 다른 사람의 이야기일 수 있어요.
+"제 램은 아마 32GB인 것 같아요."
+    -> (제안 없음) | 보류: 조건이나 불확실한 뜻은 직접 선택으로 확인해 주세요.
+"램 32GB 노트북을 원해요."
+    -> (제안 없음) | 보류: 지원하는 명시 표현과 맞지 않아요. 아래에서 직접 골라 주세요.
+
+offset mismatches: 0

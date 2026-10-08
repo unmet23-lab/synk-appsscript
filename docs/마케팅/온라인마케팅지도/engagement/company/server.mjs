@@ -398,7 +398,15 @@ export function createCompanyApp(options={}) {
         admin(user);if(url.search)throw httpError('AI 상담 요청 주소를 확인해 주세요.');
         const originalHash=auth.hash,originalUser=user.id;
         const revalidate=()=>{const latest=session(req);if(!latest||latest.hash!==originalHash||latest.user.id!==originalUser||req.headers['x-csrf-token']!==latest.body.csrfToken)throw httpError('로그인 상태를 다시 확인해 주세요.',401);admin(latest.user);};
-        return send(res,200,await computerInterpretation.interpret(user,input,{revalidate}));
+        try{return send(res,200,await computerInterpretation.interpret(user,input,{revalidate}));}
+        catch(error){
+          if(error.code==='SYNK_COMPUTER_AI_RESPONSE_INVALID'&&error.captureReceipt){
+            revalidate();
+            const {version,id,requestId,revision,buildId,status}=error.captureReceipt;
+            return send(res,error.status,{error:safeError(error.message),code:error.code,captureReceipt:{version,id,requestId,revision,buildId,status}});
+          }
+          throw error;
+        }
       }
       if(path==='/api/assistant')return send(res,200,assistant.answer(user,input,req));
       if(path==='/api/crew-profile')return send(res,200,crewProfiles.save(user,input));

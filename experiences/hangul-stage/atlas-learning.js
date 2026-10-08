@@ -196,11 +196,16 @@ var SynkLearning = (() => {
           "practice.attempted": ["presentationId", "attemptNo", "verdict", "errorTags"],
           "practice.delivery": ["presentationId", "audio"]
         };
-        const OPTIONAL = { "practice.presented": ["measure"], "practice.attempted": ["reason"] };
+        const OPTIONAL = { "practice.presented": ["measure"], "practice.attempted": ["reason", "choice"] };
         const VERDICTS = ["correct", "incorrect", "unassessed", "skipped"];
         const copy = (value) => JSON.parse(JSON.stringify(value));
         const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key2) => [key2, entry[key2]])) : entry);
         const id = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+        function choiceRecord(value) {
+          const optionId = (entry) => typeof entry === "string" && /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$/.test(entry) && !["constructor", "prototype", "__proto__"].includes(entry);
+          if (!value || typeof value !== "object" || Array.isArray(value) || ![Object.prototype, null].includes(Object.getPrototypeOf(value)) || Object.keys(value).length !== 2 || !Object.hasOwn(value, "selectedId") || !Object.hasOwn(value, "correctId") || !optionId(value.selectedId) || !optionId(value.correctId)) throw new TypeError("Trail: invalid choice IDs");
+          return { selectedId: value.selectedId, correctId: value.correctId };
+        }
         const time = (value) => {
           const n = Date.parse(value);
           if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Trail: invalid time");
@@ -240,6 +245,7 @@ var SynkLearning = (() => {
           } else if (event.type === TYPES[3]) {
             if (!id(event.presentationId) || !["pending", "completed", "failed"].includes(event.audio)) throw new TypeError("Trail: invalid audio delivery");
           } else if (!id(event.presentationId) || !Number.isInteger(event.attemptNo) || event.attemptNo < 1 || !VERDICTS.includes(event.verdict) || !uniqueList(event.errorTags, tag, 24) || event.reason != null && !["motor", "audio", "unanswered", "demo", "visual", "storage"].includes(event.reason)) throw new TypeError("Trail: invalid attempt");
+          if (event.type === TYPES[2] && Object.hasOwn(event, "choice")) choiceRecord(event.choice);
           return event;
         }
         function linked(event, prior, parent, attempts) {
@@ -305,6 +311,7 @@ var SynkLearning = (() => {
           errorTags: [...event.errorTags],
           assisted: j.assisted,
           exposure: j.exposure,
+          ...Object.hasOwn(event, "choice") ? { choice: choiceRecord(event.choice) } : {},
           ...p.measure ? { measure: { ...p.measure, responseFormat: p.measure.responseFormat || "unknown" }, audio, exclusionReason: j.exclusionReason } : j.exclusionReason ? { exclusionReason: j.exclusionReason } : {},
           independent: j.independent
         });
@@ -358,7 +365,7 @@ var SynkLearning = (() => {
           let excludedAttempts = 0;
           visible.forEach((event, index) => {
             if (event.type === TYPES[3]) {
-              audioByPresentation.set(event.presentationId, event.audio);
+              audioByPresentation.set(event.presentationId, excluded.has(event.id) ? "pending" : event.audio);
               return;
             }
             if (event.type === TYPES[0]) {
@@ -425,7 +432,7 @@ var SynkLearning = (() => {
         }
         function createIndex({ scope, prior = null }) {
           const scopeId = key(scope);
-          const presentations = /* @__PURE__ */ new Map(), audio = /* @__PURE__ */ new Map(), arms = /* @__PURE__ */ new Map(), excluded = /* @__PURE__ */ new Set();
+          const presentations = /* @__PURE__ */ new Map(), audio = /* @__PURE__ */ new Map(), deliveries = /* @__PURE__ */ new Map(), audioCover = /* @__PURE__ */ new Map(), arms = /* @__PURE__ */ new Map(), excluded = /* @__PURE__ */ new Set();
           const helped = /* @__PURE__ */ new Set(), seen = /* @__PURE__ */ new Set(), rows = /* @__PURE__ */ new Map(), covering = /* @__PURE__ */ new Map();
           for (const [k, bits] of Object.entries(prior?.keys || {})) {
             if (bits & BITS.attempt) {
@@ -455,6 +462,15 @@ var SynkLearning = (() => {
             if (event.type === "record.excluded") {
               excluded.add(event.targetId);
               for (const row2 of covering.get(event.targetId) || []) row2.omitted = true;
+              const current = audio.get(deliveries.get(event.targetId));
+              if (current?.id === event.targetId) current.value = "pending";
+              for (const row2 of audioCover.get(event.targetId) || []) {
+                row2.audio = "pending";
+                if (row2.measure.audioRequired) {
+                  row2.independent = false;
+                  row2.exclusionReason ||= "audio";
+                }
+              }
               return null;
             }
             if (event.type === TYPES[0]) {
@@ -462,7 +478,8 @@ var SynkLearning = (() => {
               return null;
             }
             if (event.type === TYPES[3]) {
-              audio.set(event.presentationId, event.audio);
+              deliveries.set(event.id, event.presentationId);
+              audio.set(event.presentationId, { id: event.id, value: excluded.has(event.id) ? "pending" : event.audio });
               return null;
             }
             if (event.type !== TYPES[1] && event.type !== TYPES[2]) return null;
@@ -480,8 +497,12 @@ var SynkLearning = (() => {
               return null;
             }
             const prior2 = (kinds) => keys.some((k) => kinds.some((kind) => kind === "attempt" ? seen.has(`attempt|${k}`) : helped.has(`${kind}|${k}`)));
-            const delivered = audio.get(p.id) || "pending";
+            const proof = audio.get(p.id), delivered = proof?.value || "pending";
             const row = attemptRow(event, p, arms.get(p.decisionId) ?? null, delivered, judge(event, p, prior2, delivered));
+            if (proof && row.measure) {
+              if (!audioCover.has(proof.id)) audioCover.set(proof.id, []);
+              audioCover.get(proof.id).push(row);
+            }
             row.omitted = excluded.has(event.id) || excluded.has(p.id) || excluded.has(p.decisionId);
             for (const k of keys) {
               seen.add(`attempt|${k}`);
@@ -530,6 +551,34 @@ var SynkLearning = (() => {
           const added = summary.met.filter((r) => record(r) && !known.has(r.itemKey));
           return { records: [...history.records, ...added].map(copy), partial: history.partial };
         }
+        function createPracticeOutcomeIndex(summary) {
+          if (!summary || summary.version !== VERSION || !Array.isArray(summary.attempts)) throw new TypeError("Trail: use a practice summary");
+          const owner = key(summary.scope), cutoff = time(summary.asOf), recordedCutoff = time(summary.recordedAsOf ?? summary.asOf);
+          const attempts = /* @__PURE__ */ new Map();
+          for (const item of summary.attempts) {
+            if (!id(item.eventId) || !id(item.presentationId) || !id(item.decisionId) || !Array.isArray(item.conceptIds) || item.conceptIds.some((value) => !id(value)) || attempts.has(item.eventId)) throw new TypeError("Trail: invalid practice outcome evidence");
+            const at = time(item.at), recordedAt = time(item.recordedAt);
+            if (recordedAt < at || at > cutoff || recordedAt > recordedCutoff) throw new TypeError("Trail: practice evidence outside summary");
+            attempts.set(item.eventId, {
+              eventId: item.eventId,
+              presentationId: item.presentationId,
+              decisionId: item.decisionId,
+              conceptIds: [...item.conceptIds],
+              at,
+              recordedAt,
+              qualified: item.independent === true && item.assisted === false && item.exposure === "new" && item.verdict === "correct" && !item.exclusionReason
+            });
+          }
+          return Object.freeze({ find(outcome, { targetLine, since, maxAgeMs } = {}) {
+            if (!outcome || outcome.type !== "outcome.observed" || !id(outcome.id) || key(outcome.scope) !== owner || typeof targetLine !== "string" || !/^(need|due|trait):[a-zA-Z0-9_.:-]{1,120}$/.test(targetLine) || !Number.isFinite(maxAgeMs) || maxAgeMs < 0) throw new TypeError("Trail: invalid practice outcome query");
+            const start = time(since), at = time(outcome.at), recordedAt = time(outcome.recordedAt);
+            if (at > cutoff || recordedAt > recordedCutoff || recordedAt < at || at < start || cutoff - at > maxAgeMs || outcome.measure !== "independent" || outcome.assisted !== false || outcome.targetLine !== targetLine) return null;
+            const attempt = attempts.get(outcome.attemptId);
+            const concept = targetLine.replace(/^(need|due):/, "").replace(/^(skill|node)\./, "");
+            if (!attempt?.qualified || attempt.decisionId !== outcome.decisionId || !attempt.conceptIds.includes(concept) || attempt.at < start || attempt.at > at || attempt.recordedAt > recordedAt || cutoff - attempt.at > maxAgeMs) return null;
+            return { evidence: [outcome.id, attempt.eventId, attempt.presentationId] };
+          } });
+        }
         function growth(summary, history) {
           if (!summary || summary.version !== VERSION || !Array.isArray(summary.attempts)) throw new TypeError("Trail: use a practice summary");
           if (!opened(history)) throw new TypeError("Trail: open the history first");
@@ -549,7 +598,7 @@ var SynkLearning = (() => {
           }
           return facts;
         }
-        return Object.freeze({ VERSION, TYPES, BITS, traceKeys, validate, checkLink, link, vouch, summarize, createIndex, openHistory, remember, growth });
+        return Object.freeze({ VERSION, TYPES, BITS, traceKeys, choiceRecord, validate, checkLink, link, vouch, summarize, createIndex, createPracticeOutcomeIndex, openHistory, remember, growth });
       });
     }
   });
@@ -562,8 +611,8 @@ var SynkLearning = (() => {
         else root.SynkAtlas = factory(() => root.SynkAtlasTrail || root.SynkTrail);
       })(typeof globalThis !== "undefined" ? globalThis : exports, function(getTrail) {
         "use strict";
-        const VERSION = "atlas-2.3.0";
-        const POLICIES = ["atlas-1.0.0", "atlas-2.0.0", "atlas-2.1.0", "atlas-2.2.0", VERSION];
+        const VERSION = "atlas-2.4.0";
+        const POLICIES = ["atlas-1.0.0", "atlas-2.0.0", "atlas-2.1.0", "atlas-2.2.0", "atlas-2.3.0", VERSION];
         const trail = () => {
           const module2 = getTrail();
           if (!module2 || typeof module2.validate !== "function" || typeof module2.checkLink !== "function" || typeof module2.summarize !== "function") throw new Error("Atlas: Trail practice module unavailable");
@@ -585,6 +634,7 @@ var SynkLearning = (() => {
         const ARMS = ["adapted", "baseline"];
         const DAY = 864e5, RECENT = 30 * DAY;
         const copy = (value) => JSON.parse(JSON.stringify(value));
+        const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
         const freeze = (value) => {
           if (value && typeof value === "object" && !Object.isFrozen(value)) {
             Object.freeze(value);
@@ -677,7 +727,7 @@ var SynkLearning = (() => {
           };
           const previous = lookup.byId(event.id);
           if (previous) {
-            if (JSON.stringify(previous) !== JSON.stringify(event)) throw new Error("Atlas: conflicting event id");
+            if (canonical(previous) !== canonical(event)) throw new Error("Atlas: conflicting event id");
             return false;
           }
           if (isPractice(event)) {
@@ -769,7 +819,8 @@ var SynkLearning = (() => {
               usable: !denied && (sufficiency !== "thin" || status === "confirmed")
             });
           }
-          const completed = new Map(ordered.filter((e) => e.type === "experience.completed" && !excluded.has(e.id)).map((e) => [e.id, e]));
+          const decisions = new Map(ordered.filter((e) => e.type === "decision.made" && !excluded.has(e.id)).map((e) => [e.id, e]));
+          const completed = new Map(ordered.filter((e) => e.type === "experience.completed" && !excluded.has(e.id) && decisions.has(e.decisionId)).map((e) => [e.id, e]));
           const responses = /* @__PURE__ */ new Map();
           if (personal) for (const event of ordered) {
             if (event.type !== "feedback.given" || !completed.has(event.completionId)) continue;
@@ -780,10 +831,9 @@ var SynkLearning = (() => {
               responses.set(event.completionId, copy({ ...event, experienceId: completion.experienceId, variant: completion.variant }));
             }
           }
-          const decisions = new Map(ordered.filter((e) => e.type === "decision.made" && !excluded.has(e.id)).map((e) => [e.id, e]));
           const latestOutcome = /* @__PURE__ */ new Map();
           if (personal) for (const event of ordered) {
-            if (event.type === "outcome.observed" && !excluded.has(event.id) && decisions.has(event.decisionId)) latestOutcome.set(`${event.decisionId}|${event.measure}|${event.window}|${event.targetLine ?? ""}`, event);
+            if (event.type === "outcome.observed" && decisions.has(event.decisionId)) latestOutcome.set(`${event.decisionId}|${event.measure}|${event.window}|${event.targetLine ?? ""}`, event);
           }
           const rounds = {};
           for (const event of ordered) if (event.type === "experience.completed") rounds[event.experienceId] = (rounds[event.experienceId] || 0) + 1;
@@ -798,7 +848,7 @@ var SynkLearning = (() => {
             feedback: [...responses.values()].filter((e) => !excluded.has(e.id)),
             excluded: [...excluded],
             lines,
-            outcomes: [...latestOutcome.values()].map(copy),
+            outcomes: [...latestOutcome.values()].filter((e) => !excluded.has(e.id)).map(copy),
             rounds
           };
           return { state, cutoff, personal, decisions, completed };
@@ -846,13 +896,15 @@ var SynkLearning = (() => {
           const last = mine.at(-1) ? view.decisions.get(mine.at(-1).decisionId) : null;
           let performance = false;
           const performanceProof = [];
-          const attempts = state.outcomes.some((o) => o.attemptId) ? new Map(trail().summarize(events, { scope, asOf: at, recordedAsOf: recordedAt }).attempts.map((item) => [item.eventId, item])) : /* @__PURE__ */ new Map();
-          const improved = (leverId, optionId, line) => state.outcomes.find((o) => {
-            if (o.value == null || o.value < 0.8 || o.assisted !== false || o.measure !== "independent" || o.targetLine !== line.key || view.cutoff - ms(o.at) > RECENT || ms(o.at) < ms(line.at) || picked(view.decisions.get(o.decisionId), leverId) !== optionId) return false;
-            const attempt = attempts.get(o.attemptId);
-            const concept = line.key.replace(/^(need|due):/, "").replace(/^(skill|node)\./, "");
-            return attempt && attempt.decisionId === o.decisionId && attempt.exposure === "new" && attempt.independent === true && attempt.assisted === false && attempt.verdict === "correct" && attempt.conceptIds.includes(concept) && ms(attempt.at) >= ms(line.at) && ms(attempt.at) <= ms(o.at) && ms(attempt.recordedAt) <= ms(o.recordedAt) && view.cutoff - ms(attempt.at) <= RECENT;
-          });
+          const outcomeEvidence = state.outcomes.some((o) => o.attemptId) ? trail().createPracticeOutcomeIndex(trail().summarize(events, { scope, asOf: at, recordedAsOf: recordedAt })) : null;
+          const improved = (leverId, optionId, line) => {
+            for (const outcome of state.outcomes) {
+              if (outcome.value == null || outcome.value < 0.8 || picked(view.decisions.get(outcome.decisionId), leverId) !== optionId) continue;
+              const proof = outcomeEvidence?.find(outcome, { targetLine: line.key, since: line.at, maxAgeMs: RECENT });
+              if (proof) return proof;
+            }
+            return null;
+          };
           const aim = (leverId, option, content, notes, proof) => {
             let total = 0, due = false;
             for (const line of usable) if (option.targets?.includes(line.key)) {
@@ -863,7 +915,7 @@ var SynkLearning = (() => {
                 weight *= 0.5;
                 performance = true;
                 notes.push("outcome.improved");
-                const refs = [result.id, result.attemptId, attempts.get(result.attemptId).presentationId, ...line.evidence];
+                const refs = [...result.evidence, ...line.evidence];
                 proof.push(...refs);
                 performanceProof.push(...refs);
               }
@@ -903,12 +955,11 @@ var SynkLearning = (() => {
             for (const done of mine) {
               if (view.cutoff - ms(done.at) > RECENT || picked(view.decisions.get(done.decisionId), leverId) !== optionId) continue;
               const answer = state.feedback.find((item) => item.completionId === done.id);
-              if (!answer) s += 0.25;
-              else if (answer.value === "helpful") {
+              if (answer?.value === "helpful") {
                 s += 1;
                 helped += 1;
                 proof.push(answer.id, done.id);
-              } else if (answer.value === "not_fit") {
+              } else if (answer?.value === "not_fit") {
                 f += 1;
                 proof.push(answer.id, done.id);
               }
@@ -1115,6 +1166,7 @@ var SynkLearning = (() => {
     "atlas/education.js"(exports, module) {
       "use strict";
       var VERDICTS = ["correct", "incorrect", "unassessed", "skipped"];
+      var { choiceRecord } = require_trail();
       function conceptsFor(map, task) {
         const ids = [];
         for (const id of task.concepts || []) {
@@ -1170,19 +1222,21 @@ var SynkLearning = (() => {
         };
         return {
           presentation,
-          submit(response, { skipped = false, reason = null } = {}) {
+          submit(response, { skipped = false, reason = null, choice } = {}) {
             if (broken) throw new Error("Core: practice record incomplete");
+            const selected = choice === void 0 ? null : choiceRecord(choice);
             const result = diagnose({ map, task, assessment: skipped ? { verdict: "skipped", errorTags: [] } : assess(response) });
             const event = guarded(() => session.practice("attempted", {
               presentationId: presentation.id,
               attemptNo: attempts + 1,
               verdict: result.verdict,
               errorTags: result.errorTags,
-              ...reason ? { reason } : {}
+              ...reason ? { reason } : {},
+              ...selected ? { choice: selected } : {}
             }));
             attempts += 1;
             if (!met) met = { itemKey: task.itemKey, conceptIds, at: event.at, verdict: result.verdict };
-            return { ...result, eventId: event.id, attemptNo: attempts };
+            return { ...result, eventId: event.id, attemptNo: attempts, ...selected ? { choice: { ...selected } } : {} };
           },
           // Help counts once it is on screen. Repeated renders of the same help are one exposure.
           delivered(help) {
@@ -3680,6 +3734,74 @@ var SynkLearning = (() => {
             const profile = summary();
             return { ...Learning.recommend({ profile, candidates, presentations: view().presentations, prior: ledger, ...options }), storage: profile.storage };
           },
+          // Display exposure is stricter than independent-attempt qualification: an item
+          // shown without an answer is still not a never-shown item. Both include folded history.
+          exposure(item) {
+            if (!identifier(item?.itemKey) || !identifier(item.familyKey || item.itemKey)) throw new TypeError("Atlas: invalid exposure item");
+            refresh();
+            const family = item.familyKey || item.itemKey;
+            const shown = log().some((e) => e.type === "practice.presented" && (e.itemKey === item.itemKey || (e.measure?.familyKey || e.itemKey) === family)) || (ledger?.presented || []).some(([_task, priorItem, priorFamily]) => priorItem === item.itemKey || priorFamily === family);
+            return { seen: shown || provenance().index.met(item.itemKey, family) ? true : complete && readable && writable ? false : null };
+          },
+          // A consumer supplies the two attempts it deliberately joined in this round.
+          // This reads recent full events only: no durable lineage, profile update or causal claim.
+          recheck(sourceAttemptId, targetAttemptId) {
+            if (![sourceAttemptId, targetAttemptId].every(identifier)) throw new TypeError("Atlas: invalid recheck attempt IDs");
+            const result = { sourceAttemptId, targetAttemptId, correctionObserved: false, correctionEventIds: [], learningEffectClaim: false };
+            const unavailable = (reason) => ({ ...result, status: "unavailable", line: "새 문항 확인 결과를 판단할 기록이 충분하지 않아요.", reason });
+            try {
+              refresh();
+            } catch {
+              return unavailable("incomplete-history");
+            }
+            if (!complete || !readable || !writable || ledger?.adjusted) return unavailable("incomplete-history");
+            const events = log(), positions = new Map(events.map((event, index) => [event.id, index]));
+            const byId = new Map(events.map((event) => [event.id, event]));
+            const sourceEvent = byId.get(sourceAttemptId), targetEvent = byId.get(targetAttemptId);
+            if (sourceEvent?.type !== "practice.attempted" || targetEvent?.type !== "practice.attempted") return unavailable("missing-attempt");
+            if (sourceEvent.attemptNo !== 1 || targetEvent.attemptNo !== 1) return unavailable("not-first-attempt");
+            const sourcePresentation = byId.get(sourceEvent.presentationId), targetPresentation = byId.get(targetEvent.presentationId);
+            const sourceDecision = byId.get(sourcePresentation?.decisionId), targetDecision = byId.get(targetPresentation?.decisionId);
+            if (sourcePresentation?.type !== "practice.presented" || targetPresentation?.type !== "practice.presented" || sourceDecision?.type !== "decision.made" || targetDecision?.type !== "decision.made") return unavailable("missing-parent");
+            const sourceCompletion = events.find((event) => event.type === "experience.completed" && event.decisionId === sourceDecision.id);
+            const targetCompletion = events.find((event) => event.type === "experience.completed" && event.decisionId === targetDecision.id);
+            if (!sourceCompletion || !targetCompletion) return unavailable("missing-completion");
+            const now = Date.parse(monotonicClock());
+            const visible = (event) => Date.parse(event.at) <= now && Date.parse(event.recordedAt) <= now;
+            const before = (a2, b2) => positions.get(a2.id) < positions.get(b2.id) && Date.parse(a2.at) <= Date.parse(b2.at) && Date.parse(a2.recordedAt) <= Date.parse(b2.recordedAt);
+            const required = [sourceDecision, sourcePresentation, sourceEvent, sourceCompletion, targetDecision, targetPresentation, targetEvent, targetCompletion];
+            if (!required.every(visible) || !before(sourcePresentation, sourceEvent) || !before(sourceEvent, targetPresentation) || !before(targetPresentation, targetEvent) || !before(sourceEvent, sourceCompletion) || !before(targetEvent, targetCompletion)) return unavailable("invalid-order");
+            const relevant = new Set(required.map((event) => event.id));
+            for (const event of events) if (["practice.helped", "practice.delivery"].includes(event.type) && (event.presentationId === sourcePresentation.id && before(event, sourceEvent) || event.presentationId === targetPresentation.id && before(event, targetEvent))) relevant.add(event.id);
+            if (events.some((event) => event.type === "record.excluded" && relevant.has(event.targetId))) return unavailable("excluded-evidence");
+            if (sourceDecision.experienceId !== targetDecision.experienceId) return unavailable("different-game");
+            const a = sourcePresentation.measure, b = targetPresentation.measure;
+            if (!a || !b || !Learning.RESPONSE_FORMATS.includes(a.responseFormat) || a.responseFormat === "unknown" || ["skillId", "difficulty", "responseFormat", "modality", "audioRequired"].some((key2) => a[key2] !== b[key2]) || sourcePresentation.taskVersion !== targetPresentation.taskVersion) return unavailable("different-measurement");
+            if (sourcePresentation.itemKey === targetPresentation.itemKey || a.familyKey === b.familyKey) return unavailable("same-family");
+            const priorPresentation = events.some((event) => event.type === "practice.presented" && event.id !== targetPresentation.id && (positions.get(event.id) < positions.get(targetPresentation.id) || Date.parse(event.at) < Date.parse(targetPresentation.at)) && (event.itemKey === targetPresentation.itemKey || (event.measure?.familyKey || event.itemKey) === b.familyKey));
+            if (priorPresentation || (ledger?.presented || []).some(([_task, item, family]) => item === targetPresentation.itemKey || family === b.familyKey)) return unavailable("previously-presented");
+            const observed = view(), source = observed.attempts.find((row) => row.eventId === sourceAttemptId), target = observed.attempts.find((row) => row.eventId === targetAttemptId);
+            if (!source || !target || source.exclusionReason || target.exclusionReason || !["correct", "incorrect"].includes(source.verdict) || !["correct", "incorrect"].includes(target.verdict)) return unavailable("unassessable");
+            if (source.verdict === "correct" && source.assisted !== true) return unavailable("source-not-recheck");
+            if (targetPresentation.firstExposure !== true || target.exposure !== "new" || ![true, false].includes(target.assisted) || target.assisted === false && !target.independent) return unavailable("unknown-provenance");
+            const corrections = observed.help.filter((help) => help.presentationId === sourcePresentation.id && help.level === "answer" && before(sourceEvent, byId.get(help.eventId)) && before(byId.get(help.eventId), targetPresentation));
+            const status = `${target.assisted ? "assisted" : "independent"}-${target.verdict}`;
+            const lines = {
+              "independent-correct": "다른 새 문항은 도움 없이 맞혔어요.",
+              "independent-incorrect": "다른 새 문항은 도움 없이 풀었지만 틀렸어요.",
+              "assisted-correct": "다른 새 문항은 도움을 보고 맞혔어요.",
+              "assisted-incorrect": "다른 새 문항은 도움을 보고 풀었지만 틀렸어요."
+            };
+            return {
+              ...result,
+              status,
+              line: lines[status],
+              correctionObserved: corrections.length > 0,
+              correctionEventIds: corrections.map((help) => help.eventId),
+              source: { verdict: source.verdict, assisted: source.assisted, independent: source.independent },
+              target: { verdict: target.verdict, assisted: target.assisted, independent: target.independent }
+            };
+          },
           present(item, context = {}) {
             refresh();
             if (!context || typeof context !== "object" || Object.keys(context).some((k) => k !== "flow") || context.flow != null && (typeof context.flow !== "object" || Array.isArray(context.flow))) throw new TypeError("Atlas: invalid presentation context");
@@ -3742,12 +3864,16 @@ var SynkLearning = (() => {
           answer(pid, result) {
             const p = requireActive(pid);
             if (!result || ![true, false, null].includes(result.correct) || typeof result.assessable !== "boolean") throw new TypeError("Atlas: answer must identify assessability");
+            const choice = Object.hasOwn(result, "choice") ? Trail.choiceRecord(result.choice) : null;
             const attemptNo = result.attemptNo ?? 1;
             if (!Number.isInteger(attemptNo) || attemptNo < 1 || attemptNo > p.results.length + 1) throw new TypeError("Atlas: attempts must be consecutive");
-            if (p.results[attemptNo - 1]) return { ...p.results[attemptNo - 1] };
+            if (p.results[attemptNo - 1]) {
+              const saved = p.results[attemptNo - 1];
+              return { ...saved, ...saved.choice ? { choice: { ...saved.choice } } : {} };
+            }
             const reason = p.measure.confounded ? result.reason || "visual" : p.measure.audioRequired && p.audio !== "completed" ? "audio" : !readable || !writable ? "storage" : result.reason;
             const assessable = result.assessable && !p.measure.confounded && (!p.measure.audioRequired || p.audio === "completed") && readable && writable;
-            const attempt = p.practice.submit({ ...result, assessable }, { reason: reason || null });
+            const attempt = p.practice.submit({ ...result, assessable }, { reason: reason || null, ...choice ? { choice } : {} });
             session.complete(p.decision);
             persist();
             const known = provenance(), row = known.index.attempt(attempt.eventId);
@@ -3760,7 +3886,7 @@ var SynkLearning = (() => {
               exposure: actual?.exposure ?? null
             };
             p.results.push(recorded);
-            return { ...recorded };
+            return { ...recorded, ...recorded.choice ? { choice: { ...recorded.choice } } : {} };
           },
           exclude(eventId) {
             refresh();

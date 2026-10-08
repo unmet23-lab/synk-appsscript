@@ -1,0 +1,4180 @@
+TAP version 13
+# Subtest: fresh workroom identities restore the requested production tool from the current URL
+ok 1 - fresh workroom identities restore the requested production tool from the current URL
+  ---
+  duration_ms: 7.2136
+  type: 'test'
+  ...
+# Subtest: workroom URL parsing accepts known sections and rejects unknown sections or tools
+ok 2 - workroom URL parsing accepts known sections and rejects unknown sections or tools
+  ---
+  duration_ms: 6.1354
+  type: 'test'
+  ...
+# Subtest: a content API failure preserves useful guide data and a retry updates the missing section
+ok 3 - a content API failure preserves useful guide data and a retry updates the missing section
+  ---
+  duration_ms: 1.2524
+  type: 'test'
+  ...
+# Subtest: late guide responses do not restore data after logout and a fresh A login
+ok 4 - late guide responses do not restore data after logout and a fresh A login
+  ---
+  duration_ms: 0.9851
+  type: 'test'
+  ...
+# Subtest: late guide responses do not restore data after logout and a fresh B login
+ok 5 - late guide responses do not restore data after logout and a fresh B login
+  ---
+  duration_ms: 0.9271
+  type: 'test'
+  ...
+# Subtest: own-page filtering, safe links and viewer restrictions survive permissive channel metadata
+ok 6 - own-page filtering, safe links and viewer restrictions survive permissive channel metadata
+  ---
+  duration_ms: 1.1076
+  type: 'test'
+  ...
+# Subtest: new planning templates ignore legacy completed reviews across identities and always copy nine empty checks
+ok 7 - new planning templates ignore legacy completed reviews across identities and always copy nine empty checks
+  ---
+  duration_ms: 2.6797
+  type: 'test'
+  ...
+# Subtest: clipboard fallback also provides a blank canonical review template without restoring old marks
+ok 8 - clipboard fallback also provides a blank canonical review template without restoring old marks
+  ---
+  duration_ms: 1.494
+  type: 'test'
+  ...
+# Subtest: a chosen template opens a fresh existing plan without generating or saving a draft
+ok 9 - a chosen template opens a fresh existing plan without generating or saving a draft
+  ---
+  duration_ms: 1.8069
+  type: 'test'
+  ...
+# Subtest: workroom observation dates keep KST and unknown reactions do not become zero
+ok 10 - workroom observation dates keep KST and unknown reactions do not become zero
+  ---
+  duration_ms: 16.8711
+  type: 'test'
+  ...
+# Subtest: daily trends render collected local items and honest connection states without external launcher cards or combined rankings
+ok 11 - daily trends render collected local items and honest connection states without external launcher cards or combined rankings
+  ---
+  duration_ms: 4.5124
+  type: 'test'
+  ...
+# Subtest: country and platform filters retain missing connection states while preventing unrelated country items from appearing
+ok 12 - country and platform filters retain missing connection states while preventing unrelated country items from appearing
+  ---
+  duration_ms: 1.8501
+  type: 'test'
+  ...
+# Subtest: a daily response from an older date cannot replace the latest chosen date or clear its loading state
+ok 13 - a daily response from an older date cannot replace the latest chosen date or clear its loading state
+  ---
+  duration_ms: 3.0046
+  type: 'test'
+  ...
+# Subtest: late daily responses are ignored after logout and fresh A login
+ok 14 - late daily responses are ignored after logout and fresh A login
+  ---
+  duration_ms: 1.1847
+  type: 'test'
+  ...
+# Subtest: late daily responses are ignored after logout and fresh B login
+ok 15 - late daily responses are ignored after logout and fresh B login
+  ---
+  duration_ms: 1.0848
+  type: 'test'
+  ...
+# Subtest: only admins can collect; duplicate force clicks stay locked and refresh only after collection completes
+ok 16 - only admins can collect; duplicate force clicks stay locked and refresh only after collection completes
+  ---
+  duration_ms: 7.4625
+  type: 'test'
+  ...
+# Subtest: an old collection completion cannot fetch or repaint after a same-user session reset
+ok 17 - an old collection completion cannot fetch or repaint after a same-user session reset
+  ---
+  duration_ms: 1.0262
+  type: 'test'
+  ...
+# Subtest: daily settings validate KST time and at least one supported country without silently inventing scope
+ok 18 - daily settings validate KST time and at least one supported country without silently inventing scope
+  ---
+  duration_ms: 2.1716
+  type: 'test'
+  ...
+# Subtest: a collected trend prepares a local fresh plan with exact subject and provenance without generating or saving
+ok 19 - a collected trend prepares a local fresh plan with exact subject and provenance without generating or saving
+  ---
+  duration_ms: 1.8084
+  type: 'test'
+  ...
+# Subtest: switching date while a trend plan is loading cannot navigate with the old item
+ok 20 - switching date while a trend plan is loading cannot navigate with the old item
+  ---
+  duration_ms: 1.3248
+  type: 'test'
+  ...
+# Subtest: daily feed remains readable when company guide is missing and never presents fallback data as today
+ok 21 - daily feed remains readable when company guide is missing and never presents fallback data as today
+  ---
+  duration_ms: 1.8275
+  type: 'test'
+  ...
+# Subtest: a long source shows ten rows once and exposes one twenty-more control with truthful totals
+ok 22 - a long source shows ten rows once and exposes one twenty-more control with truthful totals
+  ---
+  duration_ms: 4.6475
+  type: 'test'
+  ...
+# Subtest: unranked search interest and retained timestamps do not masquerade as fresh ranked entries
+ok 23 - unranked search interest and retained timestamps do not masquerade as fresh ranked entries
+  ---
+  duration_ms: 1.7207
+  type: 'test'
+  ...
+# Subtest: running native collection polls only the visible trends panel and stops after completion
+ok 24 - running native collection polls only the visible trends panel and stops after completion
+  ---
+  duration_ms: 3.9177
+  type: 'test'
+  ...
+# Subtest: hiding or leaving the trends panel cancels an in-flight poll and prevents its late repaint
+ok 25 - hiding or leaving the trends panel cancels an in-flight poll and prevents its late repaint
+  ---
+  duration_ms: 1.2888
+  type: 'test'
+  ...
+# Subtest: stale active data and a changed KST day automatically refetch without converting a chosen historical date to today
+ok 26 - stale active data and a changed KST day automatically refetch without converting a chosen historical date to today
+  ---
+  duration_ms: 2.017
+  type: 'test'
+  ...
+# Subtest: admin settings save sends validated fields once and refreshes after success while preserving an unrelated newer modal
+ok 27 - admin settings save sends validated fields once and refreshes after success while preserving an unrelated newer modal
+  ---
+  duration_ms: 1.529
+  type: 'test'
+  ...
+# Subtest: settings responses cannot close or populate another user session
+ok 28 - settings responses cannot close or populate another user session
+  ---
+  duration_ms: 1.024
+  type: 'test'
+  ...
+# Subtest: a practice decision is recorded as displayed only after its current DOM marker exists
+ok 29 - a practice decision is recorded as displayed only after its current DOM marker exists
+  ---
+  duration_ms: 24.4427
+  type: 'test'
+  ...
+# Subtest: practice reads only the active employee key and never imports the standalone visitor record
+ok 30 - practice reads only the active employee key and never imports the standalone visitor record
+  ---
+  duration_ms: 4.3716
+  type: 'test'
+  ...
+# Subtest: opt-in settings are not saved before a valid first profile; inputs then save only to the member key
+ok 31 - opt-in settings are not saved before a valid first profile; inputs then save only to the member key
+  ---
+  duration_ms: 10.0192
+  type: 'test'
+  ...
+# Subtest: account switches and logout clear memory while retaining explicitly saved records in their own scopes
+ok 32 - account switches and logout clear memory while retaining explicitly saved records in their own scopes
+  ---
+  duration_ms: 7.7923
+  type: 'test'
+  ...
+# Subtest: late input events from another account cannot mutate the previous account draft
+ok 33 - late input events from another account cannot mutate the previous account draft
+  ---
+  duration_ms: 5.1137
+  type: 'test'
+  ...
+# Subtest: blocked localStorage reads and writes degrade to visible in-memory practice without crashing
+ok 34 - blocked localStorage reads and writes degrade to visible in-memory practice without crashing
+  ---
+  duration_ms: 4.9585
+  type: 'test'
+  ...
+# Subtest: module errors stay still until explicit retry and do not create a render retry loop
+ok 35 - module errors stay still until explicit retry and do not create a render retry loop
+  ---
+  duration_ms: 3.178
+  type: 'test'
+  ...
+# Subtest: shell snapshots restore textarea caret and scroll only for the same active identity
+ok 36 - shell snapshots restore textarea caret and scroll only for the same active identity
+  ---
+  duration_ms: 6.3472
+  type: 'test'
+  ...
+# Subtest: draft edits clear the review acknowledgement and stored HTML renders as literal text
+ok 37 - draft edits clear the review acknowledgement and stored HTML renders as literal text
+  ---
+  duration_ms: 6.1375
+  type: 'test'
+  ...
+# Subtest: practice navigation reuses existing desk and publishing tools without a company write request
+ok 38 - practice navigation reuses existing desk and publishing tools without a company write request
+  ---
+  duration_ms: 4.1055
+  type: 'test'
+  ...
+# Subtest: next practice offers an applicable missed focus and keeps the employee free to choose a different task
+ok 39 - next practice offers an applicable missed focus and keeps the employee free to choose a different task
+  ---
+  duration_ms: 8.9236
+  type: 'test'
+  ...
+# Subtest: saved work keeps requests and drafts readable without scores or an analytical reuse claim
+ok 40 - saved work keeps requests and drafts readable without scores or an analytical reuse claim
+  ---
+  duration_ms: 10.6802
+  type: 'test'
+  ...
+# Subtest: turning storage off preserves in-memory saved work and clear erases it only for the current account
+ok 41 - turning storage off preserves in-memory saved work and clear erases it only for the current account
+  ---
+  duration_ms: 6.0778
+  type: 'test'
+  ...
+# Subtest: account sync opt-in is independent of device storage and does not upload before an actual profile
+ok 42 - account sync opt-in is independent of device storage and does not upload before an actual profile
+  ---
+  duration_ms: 15.8883
+  type: 'test'
+  ...
+# Subtest: turning device storage off keeps account sync on, while turning sync off stops later uploads
+ok 43 - turning device storage off keeps account sync on, while turning sync off stops later uploads
+  ---
+  duration_ms: 8.1955
+  type: 'test'
+  ...
+# Subtest: Core limits a short session and only receives actual declared settings
+ok 44 - Core limits a short session and only receives actual declared settings
+  ---
+  duration_ms: 19.0525
+  type: 'test'
+  ...
+# Subtest: different purpose and time change the actual practice scope
+ok 45 - different purpose and time change the actual practice scope
+  ---
+  duration_ms: 0.9806
+  type: 'test'
+  ...
+# Subtest: more-practice feedback selects a deeper feasible practice, without forcing it just because time is available
+ok 46 - more-practice feedback selects a deeper feasible practice, without forcing it just because time is available
+  ---
+  duration_ms: 6.1615
+  type: 'test'
+  ...
+# Subtest: wrong source is not credited even when the judgment matches
+ok 47 - wrong source is not credited even when the judgment matches
+  ---
+  duration_ms: 1.2732
+  type: 'test'
+  ...
+# Subtest: incomplete answers cannot complete the practice
+ok 48 - incomplete answers cannot complete the practice
+  ---
+  duration_ms: 1.2194
+  type: 'test'
+  ...
+# Subtest: unchanged sample and unconfirmed edits cannot masquerade as completion
+ok 49 - unchanged sample and unconfirmed edits cannot masquerade as completion
+  ---
+  duration_ms: 0.9223
+  type: 'test'
+  ...
+# Subtest: completion and explicit feedback use existing Core events exactly once
+ok 50 - completion and explicit feedback use existing Core events exactly once
+  ---
+  duration_ms: 1.722
+  type: 'test'
+  ...
+# Subtest: missed evidence controls the next check order without declaring an ability
+ok 51 - missed evidence controls the next check order without declaring an ability
+  ---
+  duration_ms: 2.8273
+  type: 'test'
+  ...
+# Subtest: a missed completeness check suggests a matching new task but never claims an absent focus in an explicitly chosen task
+ok 52 - a missed completeness check suggests a matching new task but never claims an absent focus in an explicitly chosen task
+  ---
+  duration_ms: 4.5124
+  type: 'test'
+  ...
+# Subtest: storage is opt in, failure is visible, and restart preserves only this scope
+ok 53 - storage is opt in, failure is visible, and restart preserves only this scope
+  ---
+  duration_ms: 4.3301
+  type: 'test'
+  ...
+# Subtest: tampered and oversized stored sessions are rejected
+ok 54 - tampered and oversized stored sessions are rejected
+  ---
+  duration_ms: 1.5909
+  type: 'test'
+  ...
+# Subtest: text output preserves literal user text while HTML rendering escapes it
+ok 55 - text output preserves literal user text while HTML rendering escapes it
+  ---
+  duration_ms: 0.7531
+  type: 'test'
+  ...
+# Subtest: company hosts use an explicit member scope for selection, completion, feedback and restore
+ok 56 - company hosts use an explicit member scope for selection, completion, feedback and restore
+  ---
+  duration_ms: 3.798
+  type: 'test'
+  ...
+# Subtest: unobserved focus survives another successful task and the shown reason refers to its actual completion
+ok 57 - unobserved focus survives another successful task and the shown reason refers to its actual completion
+  ---
+  duration_ms: 12.9754
+  type: 'test'
+  ...
+# Subtest: conflicting checks stay unresolved rather than becoming a fixed weakness or silently erased
+ok 58 - conflicting checks stay unresolved rather than becoming a fixed weakness or silently erased
+  ---
+  duration_ms: 4.6121
+  type: 'test'
+  ...
+# Subtest: legacy missed summaries do not invent unpresented successes and expire after their declared lifetime
+ok 59 - legacy missed summaries do not invent unpresented successes and expire after their declared lifetime
+  ---
+  duration_ms: 2.0779
+  type: 'test'
+  ...
+# Subtest: decision, displayed practice and result are separate; no display or unanswered display is not failure
+ok 60 - decision, displayed practice and result are separate; no display or unanswered display is not failure
+  ---
+  duration_ms: 4.1772
+  type: 'test'
+  ...
+# Subtest: restoring outcome records rejects another purpose and keeps the declared storage boundary
+ok 61 - restoring outcome records rejects another purpose and keeps the declared storage boundary
+  ---
+  duration_ms: 2.3017
+  type: 'test'
+  ...
+# Subtest: restoring a summary verifies its actual completion, decision, task, time and presented checks
+ok 62 - restoring a summary verifies its actual completion, decision, task, time and presented checks
+  ---
+  duration_ms: 7.6318
+  type: 'test'
+  ...
+# Subtest: restoring outcome values and times agrees with the actual completed review
+ok 63 - restoring outcome values and times agrees with the actual completed review
+  ---
+  duration_ms: 5.5295
+  type: 'test'
+  ...
+# Subtest: 25 practice roundtrips retain complete evaluable chains only while their review summaries remain
+ok 64 - 25 practice roundtrips retain complete evaluable chains only while their review summaries remain
+  ---
+  duration_ms: 203.4006
+  type: 'test'
+  ...
+# Subtest: malformed stored recommendation cannot select a nonexistent task or render foreign evidence
+ok 65 - malformed stored recommendation cannot select a nonexistent task or render foreign evidence
+  ---
+  duration_ms: 2.7325
+  type: 'test'
+  ...
+# Subtest: the ordering policy measures all initially reviewed checks, not only its first selected check
+ok 66 - the ordering policy measures all initially reviewed checks, not only its first selected check
+  ---
+  duration_ms: 1.8487
+  type: 'test'
+  ...
+# Subtest: excluding a completion removes its observations, cached explanation and next recommendation
+ok 67 - excluding a completion removes its observations, cached explanation and next recommendation
+  ---
+  duration_ms: 3.941
+  type: 'test'
+  ...
+# Subtest: excluding a decision removes its observations, cached explanation and next recommendation
+ok 68 - excluding a decision removes its observations, cached explanation and next recommendation
+  ---
+  duration_ms: 2.0128
+  type: 'test'
+  ...
+# Subtest: excluding a completion also removes its result from descriptive outcome accounting
+ok 69 - excluding a completion also removes its result from descriptive outcome accounting
+  ---
+  duration_ms: 1.5926
+  type: 'test'
+  ...
+# Subtest: excluding a decision also removes its result from descriptive outcome accounting
+ok 70 - excluding a decision also removes its result from descriptive outcome accounting
+  ---
+  duration_ms: 1.3788
+  type: 'test'
+  ...
+# Subtest: an already prepared screen stops explaining its order with subsequently excluded evidence
+ok 71 - an already prepared screen stops explaining its order with subsequently excluded evidence
+  ---
+  duration_ms: 2.2028
+  type: 'test'
+  ...
+# Subtest: a missing review module gives the prepared Korean notice instead of an internal adapter error
+ok 72 - a missing review module gives the prepared Korean notice instead of an internal adapter error
+  ---
+  duration_ms: 0.5289
+  type: 'test'
+  ...
+# Subtest: actual review delivery and results bind their outcome definition while old saves remain readable
+ok 73 - actual review delivery and results bind their outcome definition while old saves remain readable
+  ---
+  duration_ms: 4.3441
+  type: 'test'
+  ...
+# Subtest: a review withdrawal retains the actual source chain and cannot be injected as a saved revision
+ok 74 - a review withdrawal retains the actual source chain and cannot be injected as a saved revision
+  ---
+  duration_ms: 2.1934
+  type: 'test'
+  ...
+# Subtest: local page, approved assets and original Core scripts are actually served
+ok 75 - local page, approved assets and original Core scripts are actually served
+  ---
+  duration_ms: 96.0448
+  type: 'test'
+  ...
+# Subtest: health reports local mode and no AI or production connection
+ok 76 - health reports local mode and no AI or production connection
+  ---
+  duration_ms: 14.9026
+  type: 'test'
+  ...
+# Subtest: private sources, tests, manifests and traversal routes are not exposed
+ok 77 - private sources, tests, manifests and traversal routes are not exposed
+  ---
+  duration_ms: 81.4645
+  type: 'test'
+  ...
+# Subtest: wrong host, cross-origin requests and writes are rejected
+ok 78 - wrong host, cross-origin requests and writes are rejected
+  ---
+  duration_ms: 39.8053
+  type: 'test'
+  ...
+# Subtest: HEAD is supported and malformed encoding is bounded
+ok 79 - HEAD is supported and malformed encoding is bounded
+  ---
+  duration_ms: 11.0546
+  type: 'test'
+  ...
+# Subtest: an empty account says nothing about the person beyond what they chose
+ok 80 - an empty account says nothing about the person beyond what they chose
+  ---
+  duration_ms: 2.7962
+  type: 'test'
+  ...
+# Subtest: practice is read by the same rules as the games, with the ability that needs practice first
+ok 81 - practice is read by the same rules as the games, with the ability that needs practice first
+  ---
+  duration_ms: 11.024
+  type: 'test'
+  ...
+# Subtest: declared decision loss can prioritize a rare important answer over frequent cosmetic changes
+ok 82 - declared decision loss can prioritize a rare important answer over frequent cosmetic changes
+  ---
+  duration_ms: 2.5468
+  type: 'test'
+  ...
+# Subtest: the current and proposed decisions are valued against the same hypothetical answer
+ok 83 - the current and proposed decisions are valued against the same hypothetical answer
+  ---
+  duration_ms: 0.8665
+  type: 'test'
+  ...
+# Subtest: answer availability and question burden can make an otherwise useful question not worth asking
+ok 84 - answer availability and question burden can make an otherwise useful question not worth asking
+  ---
+  duration_ms: 0.3833
+  type: 'test'
+  ...
+# Subtest: a changed but worse recommendation is skipped and an unchanged decision gains no question
+ok 85 - a changed but worse recommendation is skipped and an unchanged decision gains no question
+  ---
+  duration_ms: 0.2717
+  type: 'test'
+  ...
+# Subtest: denied, recently asked, answered and budgeted questions stay closed in value mode
+ok 86 - denied, recently asked, answered and budgeted questions stay closed in value mode
+  ---
+  duration_ms: 0.3879
+  type: 'test'
+  ...
+# Subtest: complete probabilities are normalized within rounding tolerance and impossible answers give no value
+ok 87 - complete probabilities are normalized within rounding tolerance and impossible answers give no value
+  ---
+  duration_ms: 0.2762
+  type: 'test'
+  ...
+# Subtest: mixed, impossible, nonnumeric and nonfinite answer distributions are rejected
+ok 88 - mixed, impossible, nonnumeric and nonfinite answer distributions are rejected
+  ---
+  duration_ms: 0.5878
+  type: 'test'
+  ...
+# Subtest: utility, loss, response chance and burden require finite values and a declared evaluator
+ok 89 - utility, loss, response chance and burden require finite values and a declared evaluator
+  ---
+  duration_ms: 1.1405
+  type: 'test'
+  ...
+# Subtest: finite inputs whose subtraction overflows are refused rather than producing an infinite priority
+ok 90 - finite inputs whose subtraction overflows are refused rather than producing an infinite priority
+  ---
+  duration_ms: 0.3948
+  type: 'test'
+  ...
+# Subtest: small positive policy values are not rounded out of the decision
+ok 91 - small positive policy values are not rounded out of the decision
+  ---
+  duration_ms: 0.4237
+  type: 'test'
+  ...
+# Subtest: the Core adapter forwards value evaluation while preserving real event history
+ok 92 - the Core adapter forwards value evaluation while preserving real event history
+  ---
+  duration_ms: 2.3686
+  type: 'test'
+  ...
+# Subtest: all option IDs remain own outcomes through ranking and serialization without changing the prototype
+ok 93 - all option IDs remain own outcomes through ranking and serialization without changing the prototype
+  ---
+  duration_ms: 0.2968
+  type: 'test'
+  ...
+# Subtest: bounded scenario options support all six-choice multi-select combinations
+ok 94 - bounded scenario options support all six-choice multi-select combinations
+  ---
+  duration_ms: 0.4889
+  type: 'test'
+  ...
+# Subtest: a question whose answers change nothing for this person is skipped
+ok 95 - a question whose answers change nothing for this person is skipped
+  ---
+  duration_ms: 1.8898
+  type: 'test'
+  ...
+# Subtest: one question a day, never one the person declined, never one asked within seven days
+ok 96 - one question a day, never one the person declined, never one asked within seven days
+  ---
+  duration_ms: 0.492
+  type: 'test'
+  ...
+# Subtest: a change of content counts twice a change of shape
+ok 97 - a change of content counts twice a change of shape
+  ---
+  duration_ms: 0.1918
+  type: 'test'
+  ...
+# Subtest: with an Atlas session, an empty setting that would change the plan is asked; a known one is not
+ok 98 - with an Atlas session, an empty setting that would change the plan is asked; a known one is not
+  ---
+  duration_ms: 13.4136
+  type: 'test'
+  ...
+# Subtest: Core choice metadata reaches the event and Trail without changing the authored assessment
+ok 99 - Core choice metadata reaches the event and Trail without changing the authored assessment
+  ---
+  duration_ms: 6.5726
+  type: 'test'
+  ...
+# Subtest: choice is optional and rejects text, identifiers outside bounds and extra metadata atomically
+ok 100 - choice is optional and rejects text, identifiers outside bounds and extra metadata atomically
+  ---
+  duration_ms: 2.8196
+  type: 'test'
+  ...
+# Subtest: wrong, hint and retry keep distinct choices without rehabilitating the first independent error
+ok 101 - wrong, hint and retry keep distinct choices without rehabilitating the first independent error
+  ---
+  duration_ms: 2.4708
+  type: 'test'
+  ...
+# Subtest: choice records survive local reopen and never alter unassessed delivery qualification
+ok 102 - choice records survive local reopen and never alter unassessed delivery qualification
+  ---
+  duration_ms: 2.2854
+  type: 'test'
+  ...
+# Subtest: display exposure includes unanswered presentations while preserving partial-history uncertainty
+ok 103 - display exposure includes unanswered presentations while preserving partial-history uncertainty
+  ---
+  duration_ms: 1.47
+  type: 'test'
+  ...
+# Subtest: folding preserves exposure and learning counts while recent choice events remain available
+ok 104 - folding preserves exposure and learning counts while recent choice events remain available
+  ---
+  duration_ms: 40.1786
+  type: 'test'
+  ...
+# Subtest: account sync transports exact choice IDs and a second device preserves evidence and exposure
+ok 105 - account sync transports exact choice IDs and a second device preserves evidence and exposure
+  ---
+  duration_ms: 4.0929
+  type: 'test'
+  ...
+# Subtest: WORLD guards the new read method, transports choice metadata and closes access with its run
+ok 106 - WORLD guards the new read method, transports choice metadata and closes access with its run
+  ---
+  duration_ms: 3.0811
+  type: 'test'
+  ...
+# Subtest: explicit condition admits one alternative and keeps primary distinct without mutations
+ok 107 - explicit condition admits one alternative and keeps primary distinct without mutations
+  ---
+  duration_ms: 8.1471
+  type: 'test'
+  ...
+# Subtest: missing, unusable or expired candidate condition never admits an alternative
+ok 108 - missing, unusable or expired candidate condition never admits an alternative
+  ---
+  duration_ms: 0.6969
+  type: 'test'
+  ...
+# Subtest: missing or expired primary feature remains unknown
+ok 109 - missing or expired primary feature remains unknown
+  ---
+  duration_ms: 0.442
+  type: 'test'
+  ...
+# Subtest: required preference defeats even a satisfied alternative
+ok 110 - required preference defeats even a satisfied alternative
+  ---
+  duration_ms: 0.2818
+  type: 'test'
+  ...
+# Subtest: source substitution, unknown, same-value re-declaration and explicit invalidation stop a rule
+ok 111 - source substitution, unknown, same-value re-declaration and explicit invalidation stop a rule
+  ---
+  duration_ms: 0.6329
+  type: 'test'
+  ...
+# Subtest: rule and source deadlines are inclusive and context scope cannot carry into another encounter
+ok 112 - rule and source deadlines are inclusive and context scope cannot carry into another encounter
+  ---
+  duration_ms: 1.1541
+  type: 'test'
+  ...
+# Subtest: declaration cannot widen once scope or outlive an explicit source deadline
+ok 113 - declaration cannot widen once scope or outlive an explicit source deadline
+  ---
+  duration_ms: 0.6283
+  type: 'test'
+  ...
+# Subtest: scope and recursive allowlists reject foreign owners and executable/free-form conditions
+ok 114 - scope and recursive allowlists reject foreign owners and executable/free-form conditions
+  ---
+  duration_ms: 0.7532
+  type: 'test'
+  ...
+# Subtest: candidate fact and current preference allowlists fail closed on invalid values or hidden attributes
+ok 115 - candidate fact and current preference allowlists fail closed on invalid values or hidden attributes
+  ---
+  duration_ms: 1.4298
+  type: 'test'
+  ...
+# Subtest: Ask can stop while the product still needs a buying budget
+ok 116 - Ask can stop while the product still needs a buying budget
+  ---
+  duration_ms: 12.6748
+  type: 'test'
+  ...
+# Subtest: unknown and malformed budgets cannot confirm a purchase, while any OS is a real preference
+ok 117 - unknown and malformed budgets cannot confirm a purchase, while any OS is a real preference
+  ---
+  duration_ms: 1.1515
+  type: 'test'
+  ...
+# Subtest: reuse can finish without a budget, but missing current-device evidence is not a buying decision
+ok 118 - reuse can finish without a budget, but missing current-device evidence is not a buying decision
+  ---
+  duration_ms: 1.2548
+  type: 'test'
+  ...
+# Subtest: a confirmed insufficient machine and an explicit extra purchase open buying requirements
+ok 119 - a confirmed insufficient machine and an explicit extra purchase open buying requirements
+  ---
+  duration_ms: 3.0658
+  type: 'test'
+  ...
+# Subtest: heavy work and insufficient memory require the machine type needed by the existing advice branches
+ok 120 - heavy work and insufficient memory require the machine type needed by the existing advice branches
+  ---
+  duration_ms: 1.6884
+  type: 'test'
+  ...
+# Subtest: workload edits recalculate requirements and inactive old unknowns cannot block a different use
+ok 121 - workload edits recalculate requirements and inactive old unknowns cannot block a different use
+  ---
+  duration_ms: 1.4971
+  type: 'test'
+  ...
+# Subtest: uncertain, duplicate and empty multi-select inputs never establish a known workload
+ok 122 - uncertain, duplicate and empty multi-select inputs never establish a known workload
+  ---
+  duration_ms: 2.6785
+  type: 'test'
+  ...
+# Subtest: confirmed inputs do not erase feasibility warnings or turn an untried machine into measured success
+ok 123 - confirmed inputs do not erase feasibility warnings or turn an untried machine into measured success
+  ---
+  duration_ms: 0.6179
+  type: 'test'
+  ...
+# Subtest: completion is a fresh nonmutating snapshot and an unknown field is never known
+ok 124 - completion is a fresh nonmutating snapshot and an unknown field is never known
+  ---
+  duration_ms: 1.4054
+  type: 'test'
+  ...
+# Subtest: when the consultation stops asking, its advice rarely differs from the fully answered advice
+ok 125 - when the consultation stops asking, its advice rarely differs from the fully answered advice
+  ---
+  duration_ms: 3526.1246
+  type: 'test'
+  ...
+# Subtest: the measurement is reproducible and refuses unusable arguments
+ok 126 - the measurement is reproducible and refuses unusable arguments
+  ---
+  duration_ms: 984.7438
+  type: 'test'
+  ...
+# Subtest: a session captures its original owner; host or returned object mutation cannot switch it
+ok 127 - a session captures its original owner; host or returned object mutation cannot switch it
+  ---
+  duration_ms: 4.7839
+  type: 'test'
+  ...
+# Subtest: recommendation avoids a recently shown content family even when item and choice IDs differ
+ok 128 - recommendation avoids a recently shown content family even when item and choice IDs differ
+  ---
+  duration_ms: 7.6166
+  type: 'test'
+  ...
+# Subtest: matching task, item and family count one presentation, with legacy item matching intact
+ok 129 - matching task, item and family count one presentation, with legacy item matching intact
+  ---
+  duration_ms: 10.7831
+  type: 'test'
+  ...
+# Subtest: a correct result with help and an exclusion reason is not a supported language success
+ok 130 - a correct result with help and an exclusion reason is not a supported language success
+  ---
+  duration_ms: 10.1323
+  type: 'test'
+  ...
+# Subtest: actual LAB entry checks and SHIFT workroom reuse Core with distinct evidence and success contracts
+ok 131 - actual LAB entry checks and SHIFT workroom reuse Core with distinct evidence and success contracts
+  ---
+  duration_ms: 50.453
+  type: 'test'
+  ...
+# Subtest: actual products preserve host identity boundaries instead of merging the same synthetic person across brands
+ok 132 - actual products preserve host identity boundaries instead of merging the same synthetic person across brands
+  ---
+  duration_ms: 8.2143
+  type: 'test'
+  ...
+# Subtest: withdrawal removes analytical use in each product without rewriting what was shown or answered
+ok 133 - withdrawal removes analytical use in each product without rewriting what was shown or answered
+  ---
+  duration_ms: 13.344
+  type: 'test'
+  ...
+# Subtest: the existing generated LAB browser consumer executes its real item adapter
+ok 134 - the existing generated LAB browser consumer executes its real item adapter
+  ---
+  duration_ms: 33.6259
+  type: 'test'
+  ...
+# Subtest: withdrawing audio completion removes its analytical proof in batch, incremental and restored histories
+ok 135 - withdrawing audio completion removes its analytical proof in batch, incremental and restored histories
+  ---
+  duration_ms: 12.171
+  type: 'test'
+  ...
+# Subtest: withdrawal before an answer stays unknown and does not revive an older completion
+ok 136 - withdrawal before an answer stays unknown and does not revive an older completion
+  ---
+  duration_ms: 2.2024
+  type: 'test'
+  ...
+# Subtest: delivery withdrawal changes only answers that used it; later playback cannot repair an earlier answer
+ok 137 - delivery withdrawal changes only answers that used it; later playback cannot repair an earlier answer
+  ---
+  duration_ms: 2.8597
+  type: 'test'
+  ...
+# Subtest: excluding optional audio never invents a reading failure or erases help and explicit exclusions
+ok 138 - excluding optional audio never invents a reading failure or erases help and explicit exclusions
+  ---
+  duration_ms: 6.3712
+  type: 'test'
+  ...
+# Subtest: game state, restored storage and folded ledger retain the lost delivery proof without losing exposure history
+ok 139 - game state, restored storage and folded ledger retain the lost delivery proof without losing exposure history
+  ---
+  duration_ms: 58.5289
+  type: 'test'
+  ...
+# Subtest: policy objectives can rank without declaring invented personal facts
+ok 140 - policy objectives can rank without declaring invented personal facts
+  ---
+  duration_ms: 2.5665
+  type: 'test'
+  ...
+# Subtest: real personal criteria and product policy keep separate explanations and sum contributions
+ok 141 - real personal criteria and product policy keep separate explanations and sum contributions
+  ---
+  duration_ms: 0.3738
+  type: 'test'
+  ...
+# Subtest: higher and lower objectives normalize their declared nonzero ranges
+ok 142 - higher and lower objectives normalize their declared nonzero ranges
+  ---
+  duration_ms: 0.9492
+  type: 'test'
+  ...
+# Subtest: policy utility cannot rescue a failed or unknown required personal condition
+ok 143 - policy utility cannot rescue a failed or unknown required personal condition
+  ---
+  duration_ms: 0.4427
+  type: 'test'
+  ...
+# Subtest: missing objective features contribute nothing without becoming false user evidence
+ok 144 - missing objective features contribute nothing without becoming false user evidence
+  ---
+  duration_ms: 0.2314
+  type: 'test'
+  ...
+# Subtest: contracts without objectives preserve the previous ranked and selected shapes
+ok 145 - contracts without objectives preserve the previous ranked and selected shapes
+  ---
+  duration_ms: 0.3574
+  type: 'test'
+  ...
+# Subtest: objective schema and feature values reject malformed ranges, unsupported policies and unsafe utilities
+ok 146 - objective schema and feature values reject malformed ranges, unsupported policies and unsafe utilities
+  ---
+  duration_ms: 1.0872
+  type: 'test'
+  ...
+# Subtest: objective calculations neither mutate inputs nor alias their policy or evidence output
+ok 147 - objective calculations neither mutate inputs nor alias their policy or evidence output
+  ---
+  duration_ms: 0.3691
+  type: 'test'
+  ...
+# Subtest: large numeric histories preserve exact frequencies and independent evidence counts
+ok 148 - large numeric histories preserve exact frequencies and independent evidence counts
+  ---
+  duration_ms: 97.4977
+  type: 'test'
+  ...
+# Subtest: SHIFT decides from product fields and blocks impossible deadlines regardless of preference score
+ok 149 - SHIFT decides from product fields and blocks impossible deadlines regardless of preference score
+  ---
+  duration_ms: 1.7749
+  type: 'test'
+  ...
+# Subtest: a purchasing product uses price and offline capability without learning or activity vocabulary
+ok 150 - a purchasing product uses price and offline capability without learning or activity vocabulary
+  ---
+  duration_ms: 0.9088
+  type: 'test'
+  ...
+# Subtest: no usable required fact gives unavailable rather than an arbitrary recommendation
+ok 151 - no usable required fact gives unavailable rather than an arbitrary recommendation
+  ---
+  duration_ms: 0.3647
+  type: 'test'
+  ...
+# Subtest: repeated events from one occasion do not become independent evidence and replay is idempotent
+ok 152 - repeated events from one occasion do not become independent evidence and replay is idempotent
+  ---
+  duration_ms: 0.9403
+  type: 'test'
+  ...
+# Subtest: contradictory independent evidence stays unresolved with the alternatives and sources visible
+ok 153 - contradictory independent evidence stays unresolved with the alternatives and sources visible
+  ---
+  duration_ms: 7.6556
+  type: 'test'
+  ...
+# Subtest: declared preference wins over observations and withdrawal cannot be undone by old or new observations
+ok 154 - declared preference wins over observations and withdrawal cannot be undone by old or new observations
+  ---
+  duration_ms: 0.6095
+  type: 'test'
+  ...
+# Subtest: expired declarations and late-arriving evidence do not resurrect older preferences or enter an earlier view
+ok 155 - expired declarations and late-arriving evidence do not resurrect older preferences or enter an earlier view
+  ---
+  duration_ms: 0.3076
+  type: 'test'
+  ...
+# Subtest: corrections replace their actual source and cannot overwrite a different field or source kind
+ok 156 - corrections replace their actual source and cannot overwrite a different field or source kind
+  ---
+  duration_ms: 0.4889
+  type: 'test'
+  ...
+# Subtest: cyclic corrections are rejected instead of silently removing every source
+ok 157 - cyclic corrections are rejected instead of silently removing every source
+  ---
+  duration_ms: 0.3434
+  type: 'test'
+  ...
+# Subtest: same-time conflicting versions need explicit supersession instead of depending on input order
+ok 158 - same-time conflicting versions need explicit supersession instead of depending on input order
+  ---
+  duration_ms: 1.04
+  type: 'test'
+  ...
+# Subtest: inferred proposals need internal original evidence and remain unconfirmed rather than becoming a trait
+ok 159 - inferred proposals need internal original evidence and remain unconfirmed rather than becoming a trait
+  ---
+  duration_ms: 0.6393
+  type: 'test'
+  ...
+# Subtest: proposals cannot revive expired, confounded, withdrawn or replaced source evidence
+ok 160 - proposals cannot revive expired, confounded, withdrawn or replaced source evidence
+  ---
+  duration_ms: 0.7031
+  type: 'test'
+  ...
+# Subtest: fresh confounded or unassessed evidence is unusable and requests checking, not labeled expired
+ok 161 - fresh confounded or unassessed evidence is unusable and requests checking, not labeled expired
+  ---
+  duration_ms: 0.174
+  type: 'test'
+  ...
+# Subtest: the newest unusable entry for one occasion cannot revive an older usable entry
+ok 162 - the newest unusable entry for one occasion cannot revive an older usable entry
+  ---
+  duration_ms: 0.1709
+  type: 'test'
+  ...
+# Subtest: field lifetime excludes stale observations and numeric consensus uses declared tolerance
+ok 163 - field lifetime excludes stale observations and numeric consensus uses declared tolerance
+  ---
+  duration_ms: 0.3424
+  type: 'test'
+  ...
+# Subtest: the supplied scope is an isolation key, not authority to use another person, workspace or business
+ok 164 - the supplied scope is an isolation key, not authority to use another person, workspace or business
+  ---
+  duration_ms: 0.4037
+  type: 'test'
+  ...
+# Subtest: observations cannot be silently repurposed across contracts, versions or purposes
+ok 165 - observations cannot be silently repurposed across contracts, versions or purposes
+  ---
+  duration_ms: 0.3251
+  type: 'test'
+  ...
+# Subtest: PULSE accepts deliberate settings but never personal observation or inferred profiles
+ok 166 - PULSE accepts deliberate settings but never personal observation or inferred profiles
+  ---
+  duration_ms: 0.1828
+  type: 'test'
+  ...
+# Subtest: malformed references, invalid source values and chronology are refused
+ok 167 - malformed references, invalid source values and chronology are refused
+  ---
+  duration_ms: 0.4955
+  type: 'test'
+  ...
+# Subtest: policy changes affect recommendations without rewriting the same personal evidence
+ok 168 - policy changes affect recommendations without rewriting the same personal evidence
+  ---
+  duration_ms: 0.5368
+  type: 'test'
+  ...
+# Subtest: unknown candidate features and nonfinite criterion weights cannot enter policy calculations
+ok 169 - unknown candidate features and nonfinite criterion weights cannot enter policy calculations
+  ---
+  duration_ms: 0.4403
+  type: 'test'
+  ...
+# Subtest: a required numeric difference means outside tolerance, including facts inside the numeric range
+ok 170 - a required numeric difference means outside tolerance, including facts inside the numeric range
+  ---
+  duration_ms: 0.3653
+  type: 'test'
+  ...
+# Subtest: numeric ranges and policy sums cannot silently turn nonfinite results into null scores
+ok 171 - numeric ranges and policy sums cannot silently turn nonfinite results into null scores
+  ---
+  duration_ms: 0.3782
+  type: 'test'
+  ...
+# Subtest: the median of large finite numeric observations remains finite and within the declared range
+ok 172 - the median of large finite numeric observations remains finite and within the declared range
+  ---
+  duration_ms: 0.2347
+  type: 'test'
+  ...
+# Subtest: Core: only assessed errors on the measured axis are diagnosed; unknowns stay unassessed
+ok 173 - Core: only assessed errors on the measured axis are diagnosed; unknowns stay unassessed
+  ---
+  duration_ms: 1.3773
+  type: 'test'
+  ...
+# Subtest: Core: missing links stay missing; an unknown curriculum node is an error, not a guess
+ok 174 - Core: missing links stay missing; an unknown curriculum node is an error, not a guess
+  ---
+  duration_ms: 0.3615
+  type: 'test'
+  ...
+# Subtest: Vellum: the default review opens the answer; a chosen step starts with the cue; a correct item opens nothing
+ok 175 - Vellum: the default review opens the answer; a chosen step starts with the cue; a correct item opens nothing
+  ---
+  duration_ms: 0.2022
+  type: 'test'
+  ...
+# Subtest: Vellum §8-5: a stuck learner is offered the cue once; declining or working alone suppresses it
+ok 176 - Vellum §8-5: a stuck learner is offered the cue once; declining or working alone suppresses it
+  ---
+  duration_ms: 0.1291
+  type: 'test'
+  ...
+# Subtest: help on screen is recorded once and survives preference changes and analytical exclusion
+ok 177 - help on screen is recorded once and survives preference changes and analytical exclusion
+  ---
+  duration_ms: 4.5894
+  type: 'test'
+  ...
+# Subtest: a cue taken while stuck makes that first attempt assisted, not independent
+ok 178 - a cue taken while stuck makes that first attempt assisted, not independent
+  ---
+  duration_ms: 0.8275
+  type: 'test'
+  ...
+# Subtest: skip and repeated success are separated from new independent opportunities
+ok 179 - skip and repeated success are separated from new independent opportunities
+  ---
+  duration_ms: 1.573
+  type: 'test'
+  ...
+# Subtest: seen-before or unknown history never expands the independent denominator
+ok 180 - seen-before or unknown history never expands the independent denominator
+  ---
+  duration_ms: 1.0362
+  type: 'test'
+  ...
+# Subtest: response text is consumed by the grader and absent from the shared session log
+ok 181 - response text is consumed by the grader and absent from the shared session log
+  ---
+  duration_ms: 0.697
+  type: 'test'
+  ...
+# Subtest: a failed attempt or help write leaves the record incomplete; later answers are not relabelled
+ok 182 - a failed attempt or help write leaves the record incomplete; later answers are not relabelled
+  ---
+  duration_ms: 1.0567
+  type: 'test'
+  ...
+# Subtest: an exact replay counts once; a conflicting replay cannot rewrite a first answer
+ok 183 - an exact replay counts once; a conflicting replay cannot rewrite a first answer
+  ---
+  duration_ms: 0.9004
+  type: 'test'
+  ...
+# Subtest: unknown assistance, satisfaction and a proofless claimed success cannot reduce content need
+ok 184 - unknown assistance, satisfaction and a proofless claimed success cannot reduce content need
+  ---
+  duration_ms: 3.2351
+  type: 'test'
+  ...
+# Subtest: a linked first-exposure unassisted success really reduces the matching need
+ok 185 - a linked first-exposure unassisted success really reduces the matching need
+  ---
+  duration_ms: 1.4237
+  type: 'test'
+  ...
+# Subtest: evidence from another concept, decision, retry or a seen item cannot improve this target
+ok 186 - evidence from another concept, decision, retry or a seen item cannot improve this target
+  ---
+  duration_ms: 2.3578
+  type: 'test'
+  ...
+# Subtest: a late report of an old successful attempt cannot cancel a newer error observation
+ok 187 - a late report of an old successful attempt cannot cancel a newer error observation
+  ---
+  duration_ms: 0.5292
+  type: 'test'
+  ...
+# Subtest: denied or expired observations stop steering the current recommendation
+ok 188 - denied or expired observations stop steering the current recommendation
+  ---
+  duration_ms: 0.4208
+  type: 'test'
+  ...
+# Subtest: cross-account practice linkage and personal practice in PULSE are rejected
+ok 189 - cross-account practice linkage and personal practice in PULSE are rejected
+  ---
+  duration_ms: 0.43
+  type: 'test'
+  ...
+# Subtest: future and late-recorded attempts do not contaminate historical summaries
+ok 190 - future and late-recorded attempts do not contaminate historical summaries
+  ---
+  duration_ms: 0.6959
+  type: 'test'
+  ...
+# Subtest: growth reads an earlier wrong first attempt against today's first-exposure success on the same node
+ok 191 - growth reads an earlier wrong first attempt against today's first-exposure success on the same node
+  ---
+  duration_ms: 0.576
+  type: 'test'
+  ...
+# Subtest: help that is on screen but cannot be recorded leaves the record incomplete
+ok 192 - help that is on screen but cannot be recorded leaves the record incomplete
+  ---
+  duration_ms: 0.5645
+  type: 'test'
+  ...
+# Subtest: a grader that repeats an error tag still records the attempt once, with one tag
+ok 193 - a grader that repeats an error tag still records the attempt once, with one tag
+  ---
+  duration_ms: 0.2826
+  type: 'test'
+  ...
+# Subtest: met() gives the record to keep as soon as the item was answered or its answer shown
+ok 194 - met() gives the record to keep as soon as the item was answered or its answer shown
+  ---
+  duration_ms: 0.6001
+  type: 'test'
+  ...
+# Subtest: a reveal after both variants opened prevents an independent answer on the sibling
+ok 195 - a reveal after both variants opened prevents an independent answer on the sibling
+  ---
+  duration_ms: 9.9823
+  type: 'test'
+  ...
+# Subtest: a first attempt on a concurrently open variant prevents duplicate independent evidence
+ok 196 - a first attempt on a concurrently open variant prevents duplicate independent evidence
+  ---
+  duration_ms: 1.6741
+  type: 'test'
+  ...
+# Subtest: excluded family help still counts as exposure, and later help does not rewrite the past
+ok 197 - excluded family help still counts as exposure, and later help does not rewrite the past
+  ---
+  duration_ms: 3.5753
+  type: 'test'
+  ...
+# Subtest: a changed family label cannot hide help on the same item key
+ok 198 - a changed family label cannot hide help on the same item key
+  ---
+  duration_ms: 1.2244
+  type: 'test'
+  ...
+# Subtest: a new person starts exactly at the content defaults, with no demographic input accepted
+ok 199 - a new person starts exactly at the content defaults, with no demographic input accepted
+  ---
+  duration_ms: 5.2632
+  type: 'test'
+  ...
+# Subtest: item difficulty is the first content knob and the spec is validated
+ok 200 - item difficulty is the first content knob and the spec is validated
+  ---
+  duration_ms: 0.2547
+  type: 'test'
+  ...
+# Subtest: quiet successes raise one knob by one step at a time; a miss eases
+ok 201 - quiet successes raise one knob by one step at a time; a miss eases
+  ---
+  duration_ms: 2.2312
+  type: 'test'
+  ...
+# Subtest: help never raises the challenge, however many assisted successes there are
+ok 202 - help never raises the challenge, however many assisted successes there are
+  ---
+  duration_ms: 0.602
+  type: 'test'
+  ...
+# Subtest: help on a hard item never lifts the estimate, and an assisted success never triggers a raise that was due
+ok 203 - help on a hard item never lifts the estimate, and an assisted success never triggers a raise that was due
+  ---
+  duration_ms: 4.0058
+  type: 'test'
+  ...
+# Subtest: a timeout eases time first; a content miss eases content first
+ok 204 - a timeout eases time first; a content miss eases content first
+  ---
+  duration_ms: 0.394
+  type: 'test'
+  ...
+# Subtest: successes that used most of the time never speed things up
+ok 205 - successes that used most of the time never speed things up
+  ---
+  duration_ms: 0.6876
+  type: 'test'
+  ...
+# Subtest: declared choices hold: locks, declared-only knobs, fixed mode and the comparison arm
+ok 206 - declared choices hold: locks, declared-only knobs, fixed mode and the comparison arm
+  ---
+  duration_ms: 1.5092
+  type: 'test'
+  ...
+# Subtest: skipped or void responses are not evidence and move nothing
+ok 207 - skipped or void responses are not evidence and move nothing
+  ---
+  duration_ms: 0.3896
+  type: 'test'
+  ...
+# Subtest: memory resumes where the person left off; a long gap starts lighter without counting days
+ok 208 - memory resumes where the person left off; a long gap starts lighter without counting days
+  ---
+  duration_ms: 0.8128
+  type: 'test'
+  ...
+# Subtest: a prior from other practice starts higher only when that practice was independent
+ok 209 - a prior from other practice starts higher only when that practice was independent
+  ---
+  duration_ms: 0.8154
+  type: 'test'
+  ...
+# Subtest: a tired day never makes anything harder, offers no less help, and its start line says only that
+ok 210 - a tired day never makes anything harder, offers no less help, and its start line says only that
+  ---
+  duration_ms: 1.8039
+  type: 'test'
+  ...
+# Subtest: an opening taken for today alone is not kept: the next day starts where adapted play reached
+ok 211 - an opening taken for today alone is not kept: the next day starts where adapted play reached
+  ---
+  duration_ms: 0.9839
+  type: 'test'
+  ...
+# Subtest: successes in a row, with help or without, are counted for the offer of less help; a miss ends the run
+ok 212 - successes in a row, with help or without, are counted for the offer of less help; a miss ends the run
+  ---
+  duration_ms: 0.5779
+  type: 'test'
+  ...
+# Subtest: less help the person accepted is kept: the next round does not quietly take it back
+ok 213 - less help the person accepted is kept: the next round does not quietly take it back
+  ---
+  duration_ms: 0.28
+  type: 'test'
+  ...
+# Subtest: a day chosen to be easier lifts both aims: for the same answers, time pressure is never higher than on a normal day
+ok 214 - a day chosen to be easier lifts both aims: for the same answers, time pressure is never higher than on a normal day
+  ---
+  duration_ms: 97.3079
+  type: 'test'
+  ...
+# Subtest: a skipped or void response is not a pause: the rails count answers only
+ok 215 - a skipped or void response is not a pause: the rails count answers only
+  ---
+  duration_ms: 0.937
+  type: 'test'
+  ...
+# Subtest: a fixed round or a knob set by hand never overwrites where adapted play had reached
+ok 216 - a fixed round or a knob set by hand never overwrites where adapted play had reached
+  ---
+  duration_ms: 1.7303
+  type: 'test'
+  ...
+# Subtest: a missed answer never raises anything, even when the other part looks ready
+ok 217 - a missed answer never raises anything, even when the other part looks ready
+  ---
+  duration_ms: 0.5068
+  type: 'test'
+  ...
+# Subtest: a raise is not taken where the next answer would ease it straight back
+ok 218 - a raise is not taken where the next answer would ease it straight back
+  ---
+  duration_ms: 0.698
+  type: 'test'
+  ...
+# Subtest: a quiet streak only steps up to a level the person can still meet near the aim
+ok 219 - a quiet streak only steps up to a level the person can still meet near the aim
+  ---
+  duration_ms: 0.587
+  type: 'test'
+  ...
+# Subtest: less help is only ever accepted, one step, and never in the same response as another change
+ok 220 - less help is only ever accepted, one step, and never in the same response as another change
+  ---
+  duration_ms: 0.5675
+  type: 'test'
+  ...
+# Subtest: the floor names the dimension that has no easier step left
+ok 221 - the floor names the dimension that has no easier step left
+  ---
+  duration_ms: 0.4923
+  type: 'test'
+  ...
+# Subtest: the same inputs give the same decisions
+ok 222 - the same inputs give the same decisions
+  ---
+  duration_ms: 1.0474
+  type: 'test'
+  ...
+# Subtest: a chosen help style holds the help knob; "choose" leaves help to the round
+ok 223 - a chosen help style holds the help knob; "choose" leaves help to the round
+  ---
+  duration_ms: 1.8147
+  type: 'test'
+  ...
+# Subtest: text size, motion and explanation set the declared knob of the same name, nothing else
+ok 224 - text size, motion and explanation set the declared knob of the same name, nothing else
+  ---
+  duration_ms: 0.3548
+  type: 'test'
+  ...
+# Subtest: only presentation settings are accepted, in the personalization adapter vocabulary
+ok 225 - only presentation settings are accepted, in the personalization adapter vocabulary
+  ---
+  duration_ms: 1.5991
+  type: 'test'
+  ...
+# Subtest: from a remembered profile to the round: the person’s own choice, or a fitting default for a first time
+ok 226 - from a remembered profile to the round: the person’s own choice, or a fitting default for a first time
+  ---
+  duration_ms: 7.7016
+  type: 'test'
+  ...
+# Subtest: binary success cannot establish single-choice stability or lower its priority
+ok 227 - binary success cannot establish single-choice stability or lower its priority
+  ---
+  duration_ms: 13.508
+  type: 'test'
+  ...
+# Subtest: binary errors do not establish a weakness in another response format
+ok 228 - binary errors do not establish a weakness in another response format
+  ---
+  duration_ms: 2.8316
+  type: 'test'
+  ...
+# Subtest: harder candidates require evidence from the same format at the preceding difficulty
+ok 229 - harder candidates require evidence from the same format at the preceding difficulty
+  ---
+  duration_ms: 6.6723
+  type: 'test'
+  ...
+# Subtest: compatibility totals show one representative format rather than a pooled success rate
+ok 230 - compatibility totals show one representative format rather than a pooled success rate
+  ---
+  duration_ms: 2.4338
+  type: 'test'
+  ...
+# Subtest: legacy measures without a format remain unknown after reload and cannot prove a known format
+ok 231 - legacy measures without a format remain unknown after reload and cannot prove a known format
+  ---
+  duration_ms: 3.6988
+  type: 'test'
+  ...
+# Subtest: matching format evidence is reused by another game and content-family exposure survives a format change
+ok 232 - matching format evidence is reused by another game and content-family exposure survives a format change
+  ---
+  duration_ms: 2.1348
+  type: 'test'
+  ...
+# Subtest: unsupported response formats are rejected at both the host and stored-event boundaries
+ok 233 - unsupported response formats are rejected at both the host and stored-event boundaries
+  ---
+  duration_ms: 1.0825
+  type: 'test'
+  ...
+# Subtest: an unassessed action does not hide another format with usable evidence in the display summary
+ok 234 - an unassessed action does not hide another format with usable evidence in the display summary
+  ---
+  duration_ms: 1.2085
+  type: 'test'
+  ...
+# Subtest: a game uses the challenge in a few lines; settings move with responses and are kept with each decision
+ok 235 - a game uses the challenge in a few lines; settings move with responses and are kept with each decision
+  ---
+  duration_ms: 26.0466
+  type: 'test'
+  ...
+# Subtest: the challenge never changes what Trail counts as independent learning evidence
+ok 236 - the challenge never changes what Trail counts as independent learning evidence
+  ---
+  duration_ms: 4.9936
+  type: 'test'
+  ...
+# Subtest: help shown before an answer never raises the challenge; Trail decides what was assisted
+ok 237 - help shown before an answer never raises the challenge; Trail decides what was assisted
+  ---
+  duration_ms: 5.3785
+  type: 'test'
+  ...
+# Subtest: a response without an answer (audio failed, nothing chosen) moves nothing unless the content names it
+ok 238 - a response without an answer (audio failed, nothing chosen) moves nothing unless the content names it
+  ---
+  duration_ms: 3.4054
+  type: 'test'
+  ...
+# Subtest: a missed customer eases time without counting as a language error
+ok 239 - a missed customer eases time without counting as a language error
+  ---
+  duration_ms: 1.0549
+  type: 'test'
+  ...
+# Subtest: memory resumes on the next visit; another content starts from independent practice elsewhere
+ok 240 - memory resumes on the next visit; another content starts from independent practice elsewhere
+  ---
+  duration_ms: 15.7128
+  type: 'test'
+  ...
+# Subtest: today's condition lasts for the local day and reset clears every trace of the challenge
+ok 241 - today's condition lasts for the local day and reset clears every trace of the challenge
+  ---
+  duration_ms: 1.59
+  type: 'test'
+  ...
+# Subtest: when the challenge picks another item, the reason shown is that item's own
+ok 242 - when the challenge picks another item, the reason shown is that item's own
+  ---
+  duration_ms: 2.7627
+  type: 'test'
+  ...
+# Subtest: a practice need Core saw stays the ability practised; the flow level only chooses how hard within it
+ok 243 - a practice need Core saw stays the ability practised; the flow level only chooses how hard within it
+  ---
+  duration_ms: 11.2886
+  type: 'test'
+  ...
+# Subtest: where help shows at once, steady successes still bring the offer of less help, and a no is kept
+ok 244 - where help shows at once, steady successes still bring the offer of less help, and a no is kept
+  ---
+  duration_ms: 1.8948
+  type: 'test'
+  ...
+# Subtest: a reset in one tab is not undone by a round still open in another
+ok 245 - a reset in one tab is not undone by a round still open in another
+  ---
+  duration_ms: 1.2834
+  type: 'test'
+  ...
+# Subtest: less help is offered after quiet successes, accepted one step at a time, and a no is remembered
+ok 246 - less help is offered after quiet successes, accepted one step at a time, and a no is remembered
+  ---
+  duration_ms: 11.7274
+  type: 'test'
+  ...
+# Subtest: a game passes the settings the person chose; a lock the content set for itself still wins
+ok 247 - a game passes the settings the person chose; a lock the content set for itself still wins
+  ---
+  duration_ms: 0.6572
+  type: 'test'
+  ...
+# Subtest: the help style a person chose on this device reaches every game until they change it or reset
+ok 248 - the help style a person chose on this device reaches every game until they change it or reset
+  ---
+  duration_ms: 1.0799
+  type: 'test'
+  ...
+# Subtest: each answer read from the incremental index equals the whole-log summary at that moment
+ok 249 - each answer read from the incremental index equals the whole-log summary at that moment
+  ---
+  duration_ms: 3986.6906
+  type: 'test'
+  ...
+# Subtest: the learning basis read per item equals the same cell of the full profile
+ok 250 - the learning basis read per item equals the same cell of the full profile
+  ---
+  duration_ms: 178.4718
+  type: 'test'
+  ...
+# Subtest: an exclusion recorded after an answer removes it from the per-item basis, as it does from the profile
+ok 251 - an exclusion recorded after an answer removes it from the per-item basis, as it does from the profile
+  ---
+  duration_ms: 4.245
+  type: 'test'
+  ...
+# Subtest: a log that arrives out of time order falls back to the whole-log reading
+ok 252 - a log that arrives out of time order falls back to the whole-log reading
+  ---
+  duration_ms: 2.5098
+  type: 'test'
+  ...
+# Subtest: a long history does not make each answer proportionally slower
+ok 253 - a long history does not make each answer proportionally slower
+  ---
+  duration_ms: 835.4904
+  type: 'test'
+  ...
+# Subtest: the authored source dataset covers semantic risks with independent explicit expectations
+ok 254 - the authored source dataset covers semantic risks with independent explicit expectations
+  ---
+  duration_ms: 2.8519
+  type: 'test'
+  ...
+# Subtest: authored vocabulary matches the existing product choices without generating expected answers
+ok 255 - authored vocabulary matches the existing product choices without generating expected answers
+  ---
+  duration_ms: 0.375
+  type: 'test'
+  ...
+# Subtest: missing runs remain not_run with no invented score or source accuracy claim
+ok 256 - missing runs remain not_run with no invented score or source accuracy claim
+  ---
+  duration_ms: 0.8647
+  type: 'test'
+  ...
+# Subtest: perfect authored-answer replay verifies scoring only, not interpretation accuracy
+ok 257 - perfect authored-answer replay verifies scoring only, not interpretation accuracy
+  ---
+  duration_ms: 1.0047
+  type: 'test'
+  ...
+# Subtest: permitted ownership is optional and never changes the required-field recall denominator
+ok 258 - permitted ownership is optional and never changes the required-field recall denominator
+  ---
+  duration_ms: 0.6498
+  type: 'test'
+  ...
+# Subtest: permission is limited to its exact authored field and value and cannot hide a contradiction
+ok 259 - permission is limited to its exact authored field and value and cannot hide a contradiction
+  ---
+  duration_ms: 0.5615
+  type: 'test'
+  ...
+# Subtest: permitted facts cannot conflict with required, unknown or forbidden authored expectations
+ok 260 - permitted facts cannot conflict with required, unknown or forbidden authored expectations
+  ---
+  duration_ms: 1.352
+  type: 'test'
+  ...
+# Subtest: all 28 manually reviewed cases keep their 20 required facts and explicit optional ownership scope
+ok 261 - all 28 manually reviewed cases keep their 20 required facts and explicit optional ownership scope
+  ---
+  duration_ms: 1.075
+  type: 'test'
+  ...
+# Subtest: wrong facts, absent facts and added claims are distinguished at field level
+ok 262 - wrong facts, absent facts and added claims are distinguished at field level
+  ---
+  duration_ms: 0.5349
+  type: 'test'
+  ...
+# Subtest: other-person, past, uncertain and hypothetical proposals remain withheld
+ok 263 - other-person, past, uncertain and hypothetical proposals remain withheld
+  ---
+  duration_ms: 0.7048
+  type: 'test'
+  ...
+# Subtest: a source quote is necessary but does not turn semantically wrong attribution into a supported fact
+ok 264 - a source quote is necessary but does not turn semantically wrong attribution into a supported fact
+  ---
+  duration_ms: 0.1675
+  type: 'test'
+  ...
+# Subtest: malformed output or evidence is a failed attempt, never a missing run or discarded denominator
+ok 265 - malformed output or evidence is a failed attempt, never a missing run or discarded denominator
+  ---
+  duration_ms: 1.3175
+  type: 'test'
+  ...
+# Subtest: UTF-16 evidence offsets match String.slice even with preceding supplementary characters
+ok 266 - UTF-16 evidence offsets match String.slice even with preceding supplementary characters
+  ---
+  duration_ms: 0.4862
+  type: 'test'
+  ...
+# Subtest: proposal limits and quotation rejection match the Core interpretation boundary
+ok 267 - proposal limits and quotation rejection match the Core interpretation boundary
+  ---
+  duration_ms: 16.2419
+  type: 'test'
+  ...
+# Subtest: oversized source and malformed dataset field definitions fail before scoring
+ok 268 - oversized source and malformed dataset field definitions fail before scoring
+  ---
+  duration_ms: 1.3396
+  type: 'test'
+  ...
+# Subtest: empty performed output is abstention; an absent case is not_run
+ok 269 - empty performed output is abstention; an absent case is not_run
+  ---
+  duration_ms: 0.2414
+  type: 'test'
+  ...
+# Subtest: same-value repeats do not inflate exact fields and contradicting proposals cannot pass
+ok 270 - same-value repeats do not inflate exact fields and contradicting proposals cannot pass
+  ---
+  duration_ms: 0.2418
+  type: 'test'
+  ...
+# Subtest: batch provenance, dataset identity and duplicate case references are explicit boundaries
+ok 271 - batch provenance, dataset identity and duplicate case references are explicit boundaries
+  ---
+  duration_ms: 0.9679
+  type: 'test'
+  ...
+# Subtest: CLI without outputs truthfully records no extractor execution
+ok 272 - CLI without outputs truthfully records no extractor execution
+  ---
+  duration_ms: 127.9701
+  type: 'test'
+  ...
+# Subtest: CLI evaluates saved output separately from proposal replay and refuses a mismatched dataset
+ok 273 - CLI evaluates saved output separately from proposal replay and refuses a mismatched dataset
+  ---
+  duration_ms: 307.5601
+  type: 'test'
+  ...
+# Subtest: saved baseline comparisons use the same cases and expose unmatched attempts without declaring superiority
+ok 274 - saved baseline comparisons use the same cases and expose unmatched attempts without declaring superiority
+  ---
+  duration_ms: 127.0623
+  type: 'test'
+  ...
+# Subtest: an independently authored loss table makes a useful question worth 1.5 policy units
+ok 275 - an independently authored loss table makes a useful question worth 1.5 policy units
+  ---
+  duration_ms: 1.283
+  type: 'test'
+  ...
+# Subtest: an independently authored hard cap defeats a high soft preference and unknown caps abstain
+ok 276 - an independently authored hard cap defeats a high soft preference and unknown caps abstain
+  ---
+  duration_ms: 1.0803
+  type: 'test'
+  ...
+# Subtest: raw interpretation proposals remain unconfirmed and cannot satisfy a required recommendation fact
+ok 277 - raw interpretation proposals remain unconfirmed and cannot satisfy a required recommendation fact
+  ---
+  duration_ms: 6.8645
+  type: 'test'
+  ...
+# Subtest: an explicit confirmation creates a scoped declaration and only that confirmed field becomes usable
+ok 278 - an explicit confirmation creates a scoped declaration and only that confirmed field becomes usable
+  ---
+  duration_ms: 5.0208
+  type: 'test'
+  ...
+# Subtest: confirmed numeric constraints reach the existing Core decision rather than a separate ranking rule
+ok 279 - confirmed numeric constraints reach the existing Core decision rather than a separate ranking rule
+  ---
+  duration_ms: 2.1146
+  type: 'test'
+  ...
+# Subtest: correction is an explicit user value and preserves false and zero without coercion
+ok 280 - correction is an explicit user value and preserves false and zero without coercion
+  ---
+  duration_ms: 1.7086
+  type: 'test'
+  ...
+# Subtest: field names, value types and ranges must match the product contract exactly
+ok 281 - field names, value types and ranges must match the product contract exactly
+  ---
+  duration_ms: 1.5392
+  type: 'test'
+  ...
+# Subtest: other-person, historical, hypothetical and uncertain proposals cannot be confirmed as current facts
+ok 282 - other-person, historical, hypothetical and uncertain proposals cannot be confirmed as current facts
+  ---
+  duration_ms: 2.8222
+  type: 'test'
+  ...
+# Subtest: different proposed values stay visibly conflicted until the person supplies a correction
+ok 283 - different proposed values stay visibly conflicted until the person supplies a correction
+  ---
+  duration_ms: 2.0957
+  type: 'test'
+  ...
+# Subtest: rejecting a conflicting alternative makes the remaining proposal eligible for confirmation
+ok 284 - rejecting a conflicting alternative makes the remaining proposal eligible for confirmation
+  ---
+  duration_ms: 3.5476
+  type: 'test'
+  ...
+# Subtest: a rejected or withdrawn alternative still conflicts with another active value when reconfirmed
+ok 285 - a rejected or withdrawn alternative still conflicts with another active value when reconfirmed
+  ---
+  duration_ms: 6.3738
+  type: 'test'
+  ...
+# Subtest: matching proposals are not treated as a contradiction or automatic independent proof
+ok 286 - matching proposals are not treated as a contradiction or automatic independent proof
+  ---
+  duration_ms: 0.6413
+  type: 'test'
+  ...
+# Subtest: UTF-16 source offsets and exact quotations preserve an emoji before the claimed span
+ok 287 - UTF-16 source offsets and exact quotations preserve an emoji before the claimed span
+  ---
+  duration_ms: 1.2426
+  type: 'test'
+  ...
+# Subtest: invented quotes, nonexistent sources and invalid spans are rejected before review
+ok 288 - invented quotes, nonexistent sources and invalid spans are rejected before review
+  ---
+  duration_ms: 0.8558
+  type: 'test'
+  ...
+# Subtest: a source from another person, workspace or product scope cannot be interpreted here
+ok 289 - a source from another person, workspace or product scope cannot be interpreted here
+  ---
+  duration_ms: 0.4109
+  type: 'test'
+  ...
+# Subtest: a future source or a review earlier than its source is rejected
+ok 290 - a future source or a review earlier than its source is rejected
+  ---
+  duration_ms: 0.2419
+  type: 'test'
+  ...
+# Subtest: same-time reviews use explicit array order and supersede the prior declaration
+ok 291 - same-time reviews use explicit array order and supersede the prior declaration
+  ---
+  duration_ms: 1.4294
+  type: 'test'
+  ...
+# Subtest: out-of-order reviews and future review replay do not rewrite a past state
+ok 292 - out-of-order reviews and future review replay do not rewrite a past state
+  ---
+  duration_ms: 0.9446
+  type: 'test'
+  ...
+# Subtest: reject leaves a pending proposal unconfirmed, while withdrawal removes an earlier confirmed declaration
+ok 293 - reject leaves a pending proposal unconfirmed, while withdrawal removes an earlier confirmed declaration
+  ---
+  duration_ms: 1.979
+  type: 'test'
+  ...
+# Subtest: withdrawing a newer declaration cannot resurrect a different older confirmed value
+ok 294 - withdrawing a newer declaration cannot resurrect a different older confirmed value
+  ---
+  duration_ms: 1.6324
+  type: 'test'
+  ...
+# Subtest: the entire source and reviewed proposal are bound, even if the cited substring is unchanged
+ok 295 - the entire source and reviewed proposal are bound, even if the cited substring is unchanged
+  ---
+  duration_ms: 2.4318
+  type: 'test'
+  ...
+# Subtest: excluding a reviewed source invalidates its declaration without invalidating the original review basis
+ok 296 - excluding a reviewed source invalidates its declaration without invalidating the original review basis
+  ---
+  duration_ms: 1.7886
+  type: 'test'
+  ...
+# Subtest: excluding the latest source does not revive an earlier declaration from a different source
+ok 297 - excluding the latest source does not revive an earlier declaration from a different source
+  ---
+  duration_ms: 1.0067
+  type: 'test'
+  ...
+# Subtest: withdrawing an old source does not erase a later confirmation from a new usable source
+ok 298 - withdrawing an old source does not erase a later confirmation from a new usable source
+  ---
+  duration_ms: 1.3208
+  type: 'test'
+  ...
+# Subtest: rejecting a different proposal for the same field preserves the already confirmed declaration
+ok 299 - rejecting a different proposal for the same field preserves the already confirmed declaration
+  ---
+  duration_ms: 0.9253
+  type: 'test'
+  ...
+# Subtest: a later-added conflicting interpretation cannot retroactively invalidate an actual user confirmation
+ok 300 - a later-added conflicting interpretation cannot retroactively invalidate an actual user confirmation
+  ---
+  duration_ms: 2.594
+  type: 'test'
+  ...
+# Subtest: replaying the identical review is idempotent and a changed review with the same ID is rejected
+ok 301 - replaying the identical review is idempotent and a changed review with the same ID is rejected
+  ---
+  duration_ms: 0.7428
+  type: 'test'
+  ...
+# Subtest: a confirmed extraction expires with its source while a new correction has its own declaration time
+ok 302 - a confirmed extraction expires with its source while a new correction has its own declaration time
+  ---
+  duration_ms: 0.6908
+  type: 'test'
+  ...
+# Subtest: source and proposal collection limits reject oversized inputs
+ok 303 - source and proposal collection limits reject oversized inputs
+  ---
+  duration_ms: 0.3631
+  type: 'test'
+  ...
+# Subtest: two hundred reviews remain valid but the next review cannot grow the bounded event log
+ok 304 - two hundred reviews remain valid but the next review cannot grow the bounded event log
+  ---
+  duration_ms: 1220.8795
+  type: 'test'
+  ...
+# Subtest: a review targets one known proposal and uses an allowed action
+ok 305 - a review targets one known proposal and uses an allowed action
+  ---
+  duration_ms: 1.0838
+  type: 'test'
+  ...
+# Subtest: review creation and resolution do not mutate the original source, proposal or existing events
+ok 306 - review creation and resolution do not mutate the original source, proposal or existing events
+  ---
+  duration_ms: 0.9704
+  type: 'test'
+  ...
+# Subtest: real local-AI workload capacity supplies a distinct question-value basis
+ok 307 - real local-AI workload capacity supplies a distinct question-value basis
+  ---
+  duration_ms: 41.8718
+  type: 'test'
+  ...
+# Subtest: a question whose answer raises the recommended purchase capacity has value even when the lower amount would still run
+ok 308 - a question whose answer raises the recommended purchase capacity has value even when the lower amount would still run
+  ---
+  duration_ms: 12.1322
+  type: 'test'
+  ...
+# Subtest: underpowered recommendations lose value against the same declared task and unnecessary capacity is penalized
+ok 309 - underpowered recommendations lose value against the same declared task and unnecessary capacity is penalized
+  ---
+  duration_ms: 0.3189
+  type: 'test'
+  ...
+# Subtest: unified memory and discrete graphics each use their own platform workload requirements
+ok 310 - unified memory and discrete graphics each use their own platform workload requirements
+  ---
+  duration_ms: 0.2574
+  type: 'test'
+  ...
+# Subtest: budget warnings have question value even when the hardware recommendation stays identical
+ok 311 - budget warnings have question value even when the hardware recommendation stays identical
+  ---
+  duration_ms: 1.93
+  type: 'test'
+  ...
+# Subtest: owning a computer opens its real check questions and enough RAM preserves a keep-before-buy recommendation
+ok 312 - owning a computer opens its real check questions and enough RAM preserves a keep-before-buy recommendation
+  ---
+  duration_ms: 9.2801
+  type: 'test'
+  ...
+# Subtest: actual current-system warnings appear in the same result the question value evaluates
+ok 313 - actual current-system warnings appear in the same result the question value evaluates
+  ---
+  duration_ms: 0.4114
+  type: 'test'
+  ...
+# Subtest: multi-select analysis covers the original six choices and combined AI platform requirements
+ok 314 - multi-select analysis covers the original six choices and combined AI platform requirements
+  ---
+  duration_ms: 13.8126
+  type: 'test'
+  ...
+# Subtest: mobile-development platform conflicts keep the code question valuable when capacities do not change
+ok 315 - mobile-development platform conflicts keep the code question valuable when capacities do not change
+  ---
+  duration_ms: 3.6426
+  type: 'test'
+  ...
+# Subtest: device-kind advice retains SYNK-origin actions as one diagnosis condition
+ok 316 - device-kind advice retains SYNK-origin actions as one diagnosis condition
+  ---
+  duration_ms: 4.1603
+  type: 'test'
+  ...
+# Subtest: advice semantics survive display wording changes and every conflict is shown
+ok 317 - advice semantics survive display wording changes and every conflict is shown
+  ---
+  duration_ms: 1.2135
+  type: 'test'
+  ...
+# Subtest: answered questions are not repeated and changing the chosen use does not mutate the caller records
+ok 318 - answered questions are not repeated and changing the chosen use does not mutate the caller records
+  ---
+  duration_ms: 1.4857
+  type: 'test'
+  ...
+# Subtest: the product catalog derives primitive fields and human choices from the canonical content
+ok 319 - the product catalog derives primitive fields and human choices from the canonical content
+  ---
+  duration_ms: 3.8897
+  type: 'test'
+  ...
+# Subtest: explicit phrases create quoted pending proposals and change no recommendation answers before review
+ok 320 - explicit phrases create quoted pending proposals and change no recommendation answers before review
+  ---
+  duration_ms: 43.208
+  type: 'test'
+  ...
+# Subtest: negation, past, hypothetical, uncertainty, quoted advice and other subjects are held rather than self facts
+ok 321 - negation, past, hypothetical, uncertainty, quoted advice and other subjects are held rather than self facts
+  ---
+  duration_ms: 14.213
+  type: 'test'
+  ...
+# Subtest: owned hardware is not inferred from a desired purchase or an OS preference
+ok 322 - owned hardware is not inferred from a desired purchase or an OS preference
+  ---
+  duration_ms: 3.0478
+  type: 'test'
+  ...
+# Subtest: local AI combinations keep separate quoted atoms and no unspecified member is false
+ok 323 - local AI combinations keep separate quoted atoms and no unspecified member is false
+  ---
+  duration_ms: 12.7049
+  type: 'test'
+  ...
+# Subtest: confirming an actual field removes only that answered question from Ask
+ok 324 - confirming an actual field removes only that answered question from Ask
+  ---
+  duration_ms: 24.1452
+  type: 'test'
+  ...
+# Subtest: conflicting proposals cannot be confirmed and an explicit correction uses the new user value
+ok 325 - conflicting proposals cannot be confirmed and an explicit correction uses the new user value
+  ---
+  duration_ms: 5.8031
+  type: 'test'
+  ...
+# Subtest: rejection and withdrawal remove only their reviewed field and never create an empty completed multi-answer
+ok 326 - rejection and withdrawal remove only their reviewed field and never create an empty completed multi-answer
+  ---
+  duration_ms: 28.4978
+  type: 'test'
+  ...
+# Subtest: manual values always win over confirmations and corrections and survive clearing the source
+ok 327 - manual values always win over confirmations and corrections and survive clearing the source
+  ---
+  duration_ms: 7.2383
+  type: 'test'
+  ...
+# Subtest: a manually clicked member does not promote other text-derived members into manual answers
+ok 328 - a manually clicked member does not promote other text-derived members into manual answers
+  ---
+  duration_ms: 27.5527
+  type: 'test'
+  ...
+# Subtest: a complete manually confirmed multi-set overrides text members and invalid values are refused
+ok 329 - a complete manually confirmed multi-set overrides text members and invalid values are refused
+  ---
+  duration_ms: 6.1776
+  type: 'test'
+  ...
+# Subtest: editing or replacing source text immediately withdraws old text facts while preserving manual facts
+ok 330 - editing or replacing source text immediately withdraws old text facts while preserving manual facts
+  ---
+  duration_ms: 26.0075
+  type: 'test'
+  ...
+# Subtest: host request/ingest is replaceable, source-bound and rejects late responses after edits or manual choices
+ok 331 - host request/ingest is replaceable, source-bound and rejects late responses after edits or manual choices
+  ---
+  duration_ms: 2.3663
+  type: 'test'
+  ...
+# Subtest: malformed or failed same-source re-analysis preserves confirmed answers; valid replacement requires new reviews
+ok 332 - malformed or failed same-source re-analysis preserves confirmed answers; valid replacement requires new reviews
+  ---
+  duration_ms: 24.0724
+  type: 'test'
+  ...
+# Subtest: host held quotes and mode metadata are bounded and source-checked before committing
+ok 333 - host held quotes and mode metadata are bounded and source-checked before committing
+  ---
+  duration_ms: 24.4874
+  type: 'test'
+  ...
+# Subtest: quoted external proposal packets use the same review gate rather than auto-applying model output
+ok 334 - quoted external proposal packets use the same review gate rather than auto-applying model output
+  ---
+  duration_ms: 2.0591
+  type: 'test'
+  ...
+# Subtest: UTF-16 quote offsets survive emoji and repeated statements are bounded without duplicate facts
+ok 335 - UTF-16 quote offsets survive emoji and repeated statements are bounded without duplicate facts
+  ---
+  duration_ms: 4.4025
+  type: 'test'
+  ...
+# Subtest: plain particles, polite endings and explicit currency range connectors preserve the same fields
+ok 336 - plain particles, polite endings and explicit currency range connectors preserve the same fields
+  ---
+  duration_ms: 5.2735
+  type: 'test'
+  ...
+# Subtest: turning a use off retires its manually answered details, while other uses and global conditions remain
+ok 337 - turning a use off retires its manually answered details, while other uses and global conditions remain
+  ---
+  duration_ms: 19.4758
+  type: 'test'
+  ...
+# Subtest: parent removal withdraws confirmed text details without deleting proposals and allows explicit reconfirmation
+ok 338 - parent removal withdraws confirmed text details without deleting proposals and allows explicit reconfirmation
+  ---
+  duration_ms: 14.1082
+  type: 'test'
+  ...
+# Subtest: withdrawing or correcting a text parent retires both manual and reviewed detail answers
+ok 339 - withdrawing or correcting a text parent retires both manual and reviewed detail answers
+  ---
+  duration_ms: 27.4395
+  type: 'test'
+  ...
+# Subtest: changing ownership retires device details from manual and source records instead of hiding them until have returns
+ok 340 - changing ownership retires device details from manual and source records instead of hiding them until have returns
+  ---
+  duration_ms: 53.6749
+  type: 'test'
+  ...
+# Subtest: changing a confirmed ownership proposal also retires current-device details
+ok 341 - changing a confirmed ownership proposal also retires current-device details
+  ---
+  duration_ms: 19.0161
+  type: 'test'
+  ...
+# Subtest: detail-first confirmation remains pending behind its parent and initial activation does not discard it
+ok 342 - detail-first confirmation remains pending behind its parent and initial activation does not discard it
+  ---
+  duration_ms: 17.3332
+  type: 'test'
+  ...
+# Subtest: full-set manual selection and later member changes cannot override one another by object insertion order
+ok 343 - full-set manual selection and later member changes cannot override one another by object insertion order
+  ---
+  duration_ms: 4.0413
+  type: 'test'
+  ...
+# Subtest: ordinary explicit activities, present RAM categories and portability statements accept common formal endings
+ok 344 - ordinary explicit activities, present RAM categories and portability statements accept common formal endings
+  ---
+  duration_ms: 7.2989
+  type: 'test'
+  ...
+# Subtest: formal grammar expansion does not promote negated, past, reported or hypothetical sentences
+ok 345 - formal grammar expansion does not promote negated, past, reported or hypothetical sentences
+  ---
+  duration_ms: 8.8473
+  type: 'test'
+  ...
+# Subtest: ownership particles and first-person possessive forms support present device and local AI declarations
+ok 346 - ownership particles and first-person possessive forms support present device and local AI declarations
+  ---
+  duration_ms: 8.1316
+  type: 'test'
+  ...
+# Subtest: new ownership forms still withhold negative, conditional, past and other-person statements
+ok 347 - new ownership forms still withhold negative, conditional, past and other-person statements
+  ---
+  duration_ms: 4.0076
+  type: 'test'
+  ...
+# Subtest: share-disabled clients never probe authentication or send a source
+ok 348 - share-disabled clients never probe authentication or send a source
+  ---
+  duration_ms: 2.2726
+  type: 'test'
+  ...
+# Subtest: available host requires an authenticated same-origin session and exposes no CSRF token in state
+ok 349 - available host requires an authenticated same-origin session and exposes no CSRF token in state
+  ---
+  duration_ms: 28.0609
+  type: 'test'
+  ...
+# Subtest: unavailable hosts and missing sessions cannot make a paid request
+ok 350 - unavailable hosts and missing sessions cannot make a paid request
+  ---
+  duration_ms: 1.3282
+  type: 'test'
+  ...
+# Subtest: server response deletion stays available without AI privileges and sends only an empty body
+ok 351 - server response deletion stays available without AI privileges and sends only an empty body
+  ---
+  duration_ms: 1.4063
+  type: 'test'
+  ...
+# Subtest: failed or malformed deletion never changes stored response count to zero
+ok 352 - failed or malformed deletion never changes stored response count to zero
+  ---
+  duration_ms: 4.2903
+  type: 'test'
+  ...
+# Subtest: expired response has a distinct result so the UI can require a fresh explicit request
+ok 353 - expired response has a distinct result so the UI can require a fresh explicit request
+  ---
+  duration_ms: 0.9804
+  type: 'test'
+  ...
+# Subtest: the request sends only UUID, UI binding, citation source ID and text with CSRF protection
+ok 354 - the request sends only UUID, UI binding, citation source ID and text with CSRF protection
+  ---
+  duration_ms: 0.6165
+  type: 'test'
+  ...
+# Subtest: failed requests are not automatically retried and explicit retry reuses exactly the same UUID and packet
+ok 355 - failed requests are not automatically retried and explicit retry reuses exactly the same UUID and packet
+  ---
+  duration_ms: 0.4493
+  type: 'test'
+  ...
+# Subtest: cancellation refuses a late response even when the transport ignores abort
+ok 356 - cancellation refuses a late response even when the transport ignores abort
+  ---
+  duration_ms: 0.4967
+  type: 'test'
+  ...
+# Subtest: timeouts abort the transport once and do not retry
+ok 357 - timeouts abort the transport once and do not retry
+  ---
+  duration_ms: 8.5659
+  type: 'test'
+  ...
+# Subtest: invalid JSON, mismatched binding and expired sessions are rejected
+ok 358 - invalid JSON, mismatched binding and expired sessions are rejected
+  ---
+  duration_ms: 1.8277
+  type: 'test'
+  ...
+# Subtest: hovering adjacent features preserves their established label sides and follows gentle node motion
+ok 359 - hovering adjacent features preserves their established label sides and follows gentle node motion
+  ---
+  duration_ms: 10.6697
+  type: 'test'
+  ...
+# Subtest: append-only events converge on another device through advancing pages without changing evidence
+ok 360 - append-only events converge on another device through advancing pages without changing evidence
+  ---
+  duration_ms: 12.5527
+  type: 'test'
+  ...
+# Subtest: lost acknowledgement retries identical event IDs and bodies without replacing the server log
+ok 361 - lost acknowledgement retries identical event IDs and bodies without replacing the server log
+  ---
+  duration_ms: 2.496
+  type: 'test'
+  ...
+# Subtest: partial acknowledgement removes only accepted IDs and retries the remaining ordered events
+ok 362 - partial acknowledgement removes only accepted IDs and retries the remaining ordered events
+  ---
+  duration_ms: 1.9507
+  type: 'test'
+  ...
+# Subtest: offline outbox survives closing and a new instance resumes without adopting guest storage
+ok 363 - offline outbox survives closing and a new instance resumes without adopting guest storage
+  ---
+  duration_ms: 2.6459
+  type: 'test'
+  ...
+# Subtest: a stopped account cannot apply an old pull response or acknowledge an old upload
+ok 364 - a stopped account cannot apply an old pull response or acknowledge an old upload
+  ---
+  duration_ms: 5.5118
+  type: 'test'
+  ...
+# Subtest: revision change, disabled consent and event conflict block retries and preserve the old outbox
+ok 365 - revision change, disabled consent and event conflict block retries and preserve the old outbox
+  ---
+  duration_ms: 2.4851
+  type: 'test'
+  ...
+# Subtest: a refusal of a WORLD run’s entries that sending again cannot fix stops after one try and keeps the outbox
+ok 366 - a refusal of a WORLD run’s entries that sending again cannot fix stops after one try and keeps the outbox
+  ---
+  duration_ms: 2.9454
+  type: 'test'
+  ...
+# Subtest: reusing an old consent store for a new revision is blocked before any network call
+ok 367 - reusing an old consent store for a new revision is blocked before any network call
+  ---
+  duration_ms: 1.0363
+  type: 'test'
+  ...
+# Subtest: stalled cursors, unsent acknowledgements and conflicting imported IDs cannot erase pending work
+ok 368 - stalled cursors, unsent acknowledgements and conflicting imported IDs cannot erase pending work
+  ---
+  duration_ms: 1.5533
+  type: 'test'
+  ...
+# Subtest: JSON property order is immaterial while duplicate raw event content remains exact
+ok 369 - JSON property order is immaterial while duplicate raw event content remains exact
+  ---
+  duration_ms: 1.9924
+  type: 'test'
+  ...
+# Subtest: empty or already imported pages do not rewrite durable learning history
+ok 370 - empty or already imported pages do not rewrite durable learning history
+  ---
+  duration_ms: 0.8539
+  type: 'test'
+  ...
+# Subtest: a flush requested during a pull uploads pending history before resolving
+ok 371 - a flush requested during a pull uploads pending history before resolving
+  ---
+  duration_ms: 2.2437
+  type: 'test'
+  ...
+# Subtest: an empty pull repairs a stale disk snapshot before the account is reopened
+ok 372 - an empty pull repairs a stale disk snapshot before the account is reopened
+  ---
+  duration_ms: 1.7441
+  type: 'test'
+  ...
+# Subtest: transient failures have bounded attempts and backoff and can be retried explicitly
+ok 373 - transient failures have bounded attempts and backoff and can be retried explicitly
+  ---
+  duration_ms: 0.413
+  type: 'test'
+  ...
+# Subtest: a hanging transport times out within bounded retries
+ok 374 - a hanging transport times out within bounded retries
+  ---
+  duration_ms: 24.2844
+  type: 'test'
+  ...
+# Subtest: account reset cannot masquerade as deleting remote records; device reset is unchanged
+ok 375 - account reset cannot masquerade as deleting remote records; device reset is unchanged
+  ---
+  duration_ms: 1.6746
+  type: 'test'
+  ...
+# Subtest: corrupt or unavailable outbox storage is preserved and prevents transmission
+ok 376 - corrupt or unavailable outbox storage is preserved and prevents transmission
+  ---
+  duration_ms: 0.8306
+  type: 'test'
+  ...
+# Subtest: passing account options over a guest or another account store never adopts that history
+ok 377 - passing account options over a guest or another account store never adopts that history
+  ---
+  duration_ms: 1.2474
+  type: 'test'
+  ...
+# Subtest: opposite observed needs select different actual candidate content; unseen is not weak
+ok 378 - opposite observed needs select different actual candidate content; unseen is not weak
+  ---
+  duration_ms: 22.3245
+  type: 'test'
+  ...
+# Subtest: another game and a reload consume the same local log; another host scope is isolated
+ok 379 - another game and a reload consume the same local log; another host scope is isolated
+  ---
+  duration_ms: 4.7061
+  type: 'test'
+  ...
+# Subtest: text, hint, answer and additional replay cannot become independent success
+ok 380 - text, hint, answer and additional replay cannot become independent success
+  ---
+  duration_ms: 4.2406
+  type: 'test'
+  ...
+# Subtest: failed or unfinished audio, action confounds, demo and no response are excluded
+ok 381 - failed or unfinished audio, action confounds, demo and no response are excluded
+  ---
+  duration_ms: 2.5033
+  type: 'test'
+  ...
+# Subtest: same item, answer-option variants and analytical exclusion never reset exposure
+ok 382 - same item, answer-option variants and analytical exclusion never reset exposure
+  ---
+  duration_ms: 1.5263
+  type: 'test'
+  ...
+# Subtest: double submits are idempotent and do not overwrite an initial failure
+ok 383 - double submits are idempotent and do not overwrite an initial failure
+  ---
+  duration_ms: 0.9994
+  type: 'test'
+  ...
+# Subtest: help or audio completion after an answer cannot rewrite earlier provenance
+ok 384 - help or audio completion after an answer cannot rewrite earlier provenance
+  ---
+  duration_ms: 2.2416
+  type: 'test'
+  ...
+# Subtest: explicit retries remain recorded after help without rewriting first-response evidence
+ok 385 - explicit retries remain recorded after help without rewriting first-response evidence
+  ---
+  duration_ms: 0.8675
+  type: 'test'
+  ...
+# Subtest: language difficulty, modality and old evidence remain separate
+ok 386 - language difficulty, modality and old evidence remain separate
+  ---
+  duration_ms: 2.0338
+  type: 'test'
+  ...
+# Subtest: audio-unavailable is a current condition; it never creates a listening weakness
+ok 387 - audio-unavailable is a current condition; it never creates a listening weakness
+  ---
+  duration_ms: 1.496
+  type: 'test'
+  ...
+# Subtest: two already-open games merge writes and resets invalidate stale presentations
+ok 388 - two already-open games merge writes and resets invalidate stale presentations
+  ---
+  duration_ms: 3.1436
+  type: 'test'
+  ...
+# Subtest: corrupt, inaccessible, partial or quota-failed storage cannot invent a clean history
+ok 389 - corrupt, inaccessible, partial or quota-failed storage cannot invent a clean history
+  ---
+  duration_ms: 1.2927
+  type: 'test'
+  ...
+# Subtest: stored evidence carries no response text and a forged map/field cannot enter
+ok 390 - stored evidence carries no response text and a forged map/field cannot enter
+  ---
+  duration_ms: 0.8005
+  type: 'test'
+  ...
+# Subtest: later diverse successes reduce a prior need and recorded choice has the same basis
+ok 391 - later diverse successes reduce a prior need and recorded choice has the same basis
+  ---
+  duration_ms: 5.4563
+  type: 'test'
+  ...
+# Subtest: a few earlier mistakes do not keep recent diverse success in a permanent practice state
+ok 392 - a few earlier mistakes do not keep recent diverse success in a permanent practice state
+  ---
+  duration_ms: 4.0765
+  type: 'test'
+  ...
+# Subtest: an exclusion from another device also removes a folded helped answer
+ok 393 - an exclusion from another device also removes a folded helped answer
+  ---
+  duration_ms: 122.6042
+  type: 'test'
+  ...
+# Subtest: the outbox keeps ids only, and an outbox written before is read and sent
+ok 394 - the outbox keeps ids only, and an outbox written before is read and sent
+  ---
+  duration_ms: 9.0801
+  type: 'test'
+  ...
+# Subtest: an acknowledged entry lost under an older write comes back from the server
+ok 395 - an acknowledged entry lost under an older write comes back from the server
+  ---
+  duration_ms: 227.8036
+  type: 'test'
+  ...
+# Subtest: a game whose newer fold was written over still hands its synchroniser what it folded
+ok 396 - a game whose newer fold was written over still hands its synchroniser what it folded
+  ---
+  duration_ms: 60.6533
+  type: 'test'
+  ...
+# Subtest: a closing tab writes back the entries another tab wrote over
+ok 397 - a closing tab writes back the entries another tab wrote over
+  ---
+  duration_ms: 3.1985
+  type: 'test'
+  ...
+# Subtest: an item still unanswered in this tab never folds
+ok 398 - an item still unanswered in this tab never folds
+  ---
+  duration_ms: 43.4285
+  type: 'test'
+  ...
+# Subtest: folds come in batches, not one item at a time
+ok 399 - folds come in batches, not one item at a time
+  ---
+  duration_ms: 1249.7827
+  type: 'test'
+  ...
+# Subtest: a synchronised store folds only what the server sent back and reads like a full copy
+ok 400 - a synchronised store folds only what the server sent back and reads like a full copy
+  ---
+  duration_ms: 3735.4266
+  type: 'test'
+  ...
+# Subtest: nothing folds before the server has sent an entry back
+ok 401 - nothing folds before the server has sent an entry back
+  ---
+  duration_ms: 179.7498
+  type: 'test'
+  ...
+# Subtest: late entries from another device never make a folding store claim more than the whole log
+ok 402 - late entries from another device never make a folding store claim more than the whole log
+  ---
+  duration_ms: 3231.2875
+  type: 'test'
+  ...
+# Subtest: an unanswered item stays until another device answers it
+ok 403 - an unanswered item stays until another device answers it
+  ---
+  duration_ms: 520.7552
+  type: 'test'
+  ...
+# Subtest: a late answer on the same item, filed under another family, still stops a folded first answer
+ok 404 - a late answer on the same item, filed under another family, still stops a folded first answer
+  ---
+  duration_ms: 128.1681
+  type: 'test'
+  ...
+# Subtest: an open item read before newer folded items still counts for them
+ok 405 - an open item read before newer folded items still counts for them
+  ---
+  duration_ms: 1388.847
+  type: 'test'
+  ...
+# Subtest: an item folded in another tab ends there too
+ok 406 - an item folded in another tab ends there too
+  ---
+  duration_ms: 22.0233
+  type: 'test'
+  ...
+# Subtest: a store synchronised before folding settles at its first complete pull, then folds
+ok 407 - a store synchronised before folding settles at its first complete pull, then folds
+  ---
+  duration_ms: 1284.6099
+  type: 'test'
+  ...
+# Subtest: a game beside the account synchroniser folds with it and reads like a full copy
+ok 408 - a game beside the account synchroniser folds with it and reads like a full copy
+  ---
+  duration_ms: 1053.925
+  type: 'test'
+  ...
+# Subtest: syncPort.ids() names the kept entries, in log order, without copying them
+ok 409 - syncPort.ids() names the kept entries, in log order, without copying them
+  ---
+  duration_ms: 14.0063
+  type: 'test'
+  ...
+# Subtest: a history folded without a server is never sent, even once sharing is turned on
+ok 410 - a history folded without a server is never sent, even once sharing is turned on
+  ---
+  duration_ms: 37.4884
+  type: 'test'
+  ...
+# Subtest: a folding game answers, profiles, counts and recommends exactly like one that keeps everything
+ok 411 - a folding game answers, profiles, counts and recommends exactly like one that keeps everything
+  ---
+  duration_ms: 1285.1733
+  type: 'test'
+  ...
+# Subtest: a reopened game reads the folded history exactly as the game that wrote it
+ok 412 - a reopened game reads the folded history exactly as the game that wrote it
+  ---
+  duration_ms: 124.9304
+  type: 'test'
+  ...
+# Subtest: two tabs folding the same history stay consistent with a single tab that keeps everything
+ok 413 - two tabs folding the same history stay consistent with a single tab that keeps everything
+  ---
+  duration_ms: 1054.5919
+  type: 'test'
+  ...
+# Subtest: a folded answer can no longer be excluded; a reset clears the ledger
+ok 414 - a folded answer can no longer be excluded; a reset clears the ledger
+  ---
+  duration_ms: 82.5683
+  type: 'test'
+  ...
+# Subtest: a tampered ledger leaves the history unreadable and untouched
+ok 415 - a tampered ledger leaves the history unreadable and untouched
+  ---
+  duration_ms: 61.7455
+  type: 'test'
+  ...
+# Subtest: a long history stays small and quick: 5,000 items with the default fold
+ok 416 - a long history stays small and quick: 5,000 items with the default fold
+  ---
+  duration_ms: 3842.8436
+  type: 'test'
+  ...
+# Subtest: confirmed action remains pending after interruption; only a real host ack suppresses first thanks
+ok 417 - confirmed action remains pending after interruption; only a real host ack suppresses first thanks
+  ---
+  duration_ms: 5.4409
+  type: 'test'
+  ...
+# Subtest: exact event retries ignore JSON key order, conflicting IDs and regressive sequence are rejected
+ok 418 - exact event retries ignore JSON key order, conflicting IDs and regressive sequence are rejected
+  ---
+  duration_ms: 0.9309
+  type: 'test'
+  ...
+# Subtest: facts require prior valid causes; later correction invalidates dependant facts, not delivery history
+ok 419 - facts require prior valid causes; later correction invalidates dependant facts, not delivery history
+  ---
+  duration_ms: 1.5776
+  type: 'test'
+  ...
+# Subtest: an unwitnessed NPC cannot use a fact; a witnessed handover permits only that fact
+ok 420 - an unwitnessed NPC cannot use a fact; a witnessed handover permits only that fact
+  ---
+  duration_ms: 0.8455
+  type: 'test'
+  ...
+# Subtest: withdrawal blocks pending reactions and cannot be bypassed through a knowledge-source summary
+ok 421 - withdrawal blocks pending reactions and cannot be bypassed through a knowledge-source summary
+  ---
+  duration_ms: 0.6601
+  type: 'test'
+  ...
+# Subtest: correcting the communication source removes derived NPC knowledge without deleting the original fact
+ok 422 - correcting the communication source removes derived NPC knowledge without deleting the original fact
+  ---
+  duration_ms: 0.3677
+  type: 'test'
+  ...
+# Subtest: stale plans and stale render acks are rejected; old achievement remains historical
+ok 423 - stale plans and stale render acks are rejected; old achievement remains historical
+  ---
+  duration_ms: 0.3333
+  type: 'test'
+  ...
+# Subtest: a lost ack retries its delivery ID once, even after the world changes; conflicting receipts fail
+ok 424 - a lost ack retries its delivery ID once, even after the world changes; conflicting receipts fail
+  ---
+  duration_ms: 0.5199
+  type: 'test'
+  ...
+# Subtest: first-thanks semantics survive new wording, while another NPC and repeatable daily use remain eligible
+ok 425 - first-thanks semantics survive new wording, while another NPC and repeatable daily use remain eligible
+  ---
+  duration_ms: 0.5487
+  type: 'test'
+  ...
+# Subtest: scope changes and incomplete restore fail closed instead of making a first encounter
+ok 426 - scope changes and incomplete restore fail closed instead of making a first encounter
+  ---
+  duration_ms: 0.5242
+  type: 'test'
+  ...
+# Subtest: Boolean conditions fail closed when missing, including a required false condition
+ok 427 - Boolean conditions fail closed when missing, including a required false condition
+  ---
+  duration_ms: 0.3509
+  type: 'test'
+  ...
+# Subtest: selection is deterministic, preserves authored references and does not mutate facts or candidates
+ok 428 - selection is deterministic, preserves authored references and does not mutate facts or candidates
+  ---
+  duration_ms: 0.2694
+  type: 'test'
+  ...
+# Subtest: life contracts reject raw dialogue and practice events instead of expanding the learning payload
+ok 429 - life contracts reject raw dialogue and practice events instead of expanding the learning payload
+  ---
+  duration_ms: 0.2713
+  type: 'test'
+  ...
+# Subtest: the same contracts support a second cup-delivery example without shelter-specific branches
+ok 430 - the same contracts support a second cup-delivery example without shelter-specific branches
+  ---
+  duration_ms: 0.3501
+  type: 'test'
+  ...
+# Subtest: UMD browser globals and CommonJS produce the same plan without model or host services
+ok 431 - UMD browser globals and CommonJS produce the same plan without model or host services
+  ---
+  duration_ms: 4.0263
+  type: 'test'
+  ...
+# Subtest: what was observed changes what is practised; one thin observation does not, until the person confirms it
+ok 432 - what was observed changes what is practised; one thin observation does not, until the person confirms it
+  ---
+  duration_ms: 22.5598
+  type: 'test'
+  ...
+# Subtest: the person can say "no": a guess about them stays denied, a need reopens only on later evidence, nothing is deleted
+ok 433 - the person can say "no": a guess about them stays denied, a need reopens only on later evidence, nothing is deleted
+  ---
+  duration_ms: 1.6646
+  type: 'test'
+  ...
+# Subtest: what the person set themselves beats observation, learning and the baseline share
+ok 434 - what the person set themselves beats observation, learning and the baseline share
+  ---
+  duration_ms: 0.7441
+  type: 'test'
+  ...
+# Subtest: learning within one person: a way that works is kept, two "not for me" answers make room for another way
+ok 435 - learning within one person: a way that works is kept, two "not for me" answers make room for another way
+  ---
+  duration_ms: 4.426
+  type: 'test'
+  ...
+# Subtest: a checked result feeds the next choice: independent success lowers that aim, assisted success and "not yet measurable" do not
+ok 436 - a checked result feeds the next choice: independent success lowers that aim, assisted success and "not yet measurable" do not
+  ---
+  duration_ms: 9.1411
+  type: 'test'
+  ...
+# Subtest: outcome numbers do not relax a need without the matching new independent correct attempt
+ok 437 - outcome numbers do not relax a need without the matching new independent correct attempt
+  ---
+  duration_ms: 16.8349
+  type: 'test'
+  ...
+# Subtest: practice provenance lives in the same session log and rejects raw text, missing parents and outcome proof gaps
+ok 438 - practice provenance lives in the same session log and rejects raw text, missing parents and outcome proof gaps
+  ---
+  duration_ms: 1.2164
+  type: 'test'
+  ...
+# Subtest: a delayed outcome cannot reuse an old correct attempt to erase a newer need
+ok 439 - a delayed outcome cannot reuse an old correct attempt to erase a newer need
+  ---
+  duration_ms: 0.788
+  type: 'test'
+  ...
+# Subtest: a proof survives other reports on the same decision; state hands out copies of the log
+ok 440 - a proof survives other reports on the same decision; state hands out copies of the log
+  ---
+  duration_ms: 3.5035
+  type: 'test'
+  ...
+# Subtest: the browser kernel loads Trail only when practice is used, in either script load order
+ok 441 - the browser kernel loads Trail only when practice is used, in either script load order
+  ---
+  duration_ms: 7.7876
+  type: 'test'
+  ...
+# Subtest: content takes turns when nothing is known, and a due review may repeat
+ok 442 - content takes turns when nothing is known, and a due review may repeat
+  ---
+  duration_ms: 1.7082
+  type: 'test'
+  ...
+# Subtest: the baseline share: a seeded part of the rounds ignores what was learned, never what was set, and says so
+ok 443 - the baseline share: a seeded part of the rounds ignores what was learned, never what was set, and says so
+  ---
+  duration_ms: 61.2505
+  type: 'test'
+  ...
+# Subtest: a decision can be recomputed from its history: same events and time give the same arm, seed and bundle
+ok 444 - a decision can be recomputed from its history: same events and time give the same arm, seed and bundle
+  ---
+  duration_ms: 1.56
+  type: 'test'
+  ...
+# Subtest: observations expire, and an expired latest observation does not revive an older one
+ok 445 - observations expire, and an expired latest observation does not revive an older one
+  ---
+  duration_ms: 0.6946
+  type: 'test'
+  ...
+# Subtest: "what I came to know about you": what the person said and what was observed are listed apart
+ok 446 - "what I came to know about you": what the person said and what was observed are listed apart
+  ---
+  duration_ms: 1.2046
+  type: 'test'
+  ...
+# Subtest: PULSE keeps no personal observations and takes no baseline share
+ok 447 - PULSE keeps no personal observations and takes no baseline share
+  ---
+  duration_ms: 5.4733
+  type: 'test'
+  ...
+# Subtest: what an assessment means cannot be a lever; broken input is visible
+ok 448 - what an assessment means cannot be a lever; broken input is visible
+  ---
+  duration_ms: 1.5453
+  type: 'test'
+  ...
+# Subtest: the letter adapter: the reason shown is true to the decision, and the person sees sentences, never raw keys
+ok 449 - the letter adapter: the reason shown is true to the decision, and the person sees sentences, never raw keys
+  ---
+  duration_ms: 4.2566
+  type: 'test'
+  ...
+# Subtest: standalone or connected: without a ready plan an engine keeps its own default; atlas-1 histories still load
+ok 450 - standalone or connected: without a ready plan an engine keeps its own default; atlas-1 histories still load
+  ---
+  duration_ms: 1.5041
+  type: 'test'
+  ...
+# Subtest: the chosen help style and a content’s moment memory continue on another device
+ok 451 - the chosen help style and a content’s moment memory continue on another device
+  ---
+  duration_ms: 32.3601
+  type: 'test'
+  ...
+# Subtest: the newer choice wins in both directions, and a forgotten choice does not come back
+ok 452 - the newer choice wins in both directions, and a forgotten choice does not come back
+  ---
+  duration_ms: 4.4564
+  type: 'test'
+  ...
+# Subtest: a declined less-help offer travels; today’s condition stays on the device
+ok 453 - a declined less-help offer travels; today’s condition stays on the device
+  ---
+  duration_ms: 1.4413
+  type: 'test'
+  ...
+# Subtest: changes are sent shortly after they happen; another device’s values are never echoed back
+ok 454 - changes are sent shortly after they happen; another device’s values are never echoed back
+  ---
+  duration_ms: 6.1141
+  type: 'test'
+  ...
+# Subtest: offline keeps working on the device; the next start sends what is newer without an outbox
+ok 455 - offline keeps working on the device; the next start sends what is newer without an outbox
+  ---
+  duration_ms: 3.1954
+  type: 'test'
+  ...
+# Subtest: consent, revision and sign-in problems stop the synchroniser instead of retrying
+ok 456 - consent, revision and sign-in problems stop the synchroniser instead of retrying
+  ---
+  duration_ms: 1.2527
+  type: 'test'
+  ...
+# Subtest: only an account store with a transport can synchronise; a device store stays on the device
+ok 457 - only an account store with a transport can synchronise; a device store stays on the device
+  ---
+  duration_ms: 0.6092
+  type: 'test'
+  ...
+# Subtest: an entry the server would refuse is not sent, and the rest still goes
+ok 458 - an entry the server would refuse is not sent, and the rest still goes
+  ---
+  duration_ms: 0.772
+  type: 'test'
+  ...
+# Subtest: merge takes only newer values, entry by entry, and ignores what is not a memory
+ok 459 - merge takes only newer values, entry by entry, and ignores what is not a memory
+  ---
+  duration_ms: 2.278
+  type: 'test'
+  ...
+# Subtest: request uses the official bounded Responses shape and separates untrusted source from instructions
+ok 460 - request uses the official bounded Responses shape and separates untrusted source from instructions
+  ---
+  duration_ms: 7.7538
+  type: 'test'
+  ...
+# Subtest: source, scope, model and output size are checked before any call is possible
+ok 461 - source, scope, model and output size are checked before any call is possible
+  ---
+  duration_ms: 0.9921
+  type: 'test'
+  ...
+# Subtest: exact quotes are converted to UTF-16 spans and remain unusable until review
+ok 462 - exact quotes are converted to UTF-16 spans and remain unusable until review
+  ---
+  duration_ms: 7.5482
+  type: 'test'
+  ...
+# Subtest: repeated quotes use the requested exact occurrence including overlapping starts
+ok 463 - repeated quotes use the requested exact occurrence including overlapping starts
+  ---
+  duration_ms: 1.3908
+  type: 'test'
+  ...
+# Subtest: invented, normalized, invalid occurrence and half-surrogate quotes are rejected atomically
+ok 464 - invented, normalized, invalid occurrence and half-surrogate quotes are rejected atomically
+  ---
+  duration_ms: 2.1395
+  type: 'test'
+  ...
+# Subtest: cross-field values, invented fields and extra confirmation instructions are rejected
+ok 465 - cross-field values, invented fields and extra confirmation instructions are rejected
+  ---
+  duration_ms: 1.6059
+  type: 'test'
+  ...
+# Subtest: other people, past claims and conflicting values still go through the Core review gate
+ok 466 - other people, past claims and conflicting values still go through the Core review gate
+  ---
+  duration_ms: 1.571
+  type: 'test'
+  ...
+# Subtest: incomplete, failed and refusal outputs cannot masquerade as an empty successful extraction
+ok 467 - incomplete, failed and refusal outputs cannot masquerade as an empty successful extraction
+  ---
+  duration_ms: 1.6154
+  type: 'test'
+  ...
+# Subtest: malformed, multiple, tool, wrong-model and oversized provider outputs fail closed
+ok 468 - malformed, multiple, tool, wrong-model and oversized provider outputs fail closed
+  ---
+  duration_ms: 1.8163
+  type: 'test'
+  ...
+# Subtest: oversized and malformed hold reasons are not rendered; valid original span is preserved
+ok 469 - oversized and malformed hold reasons are not rendered; valid original span is preserved
+  ---
+  duration_ms: 2.0474
+  type: 'test'
+  ...
+# Subtest: each request gets independent schema/context objects and unknown input cannot rewrite system rules
+ok 470 - each request gets independent schema/context objects and unknown input cannot rewrite system rules
+  ---
+  duration_ms: 1.8674
+  type: 'test'
+  ...
+# Subtest: many unreported completions cannot invent favorable evidence or delay a change requested by actual feedback
+ok 471 - many unreported completions cannot invent favorable evidence or delay a change requested by actual feedback
+  ---
+  duration_ms: 24.9165
+  type: 'test'
+  ...
+# Subtest: requests about amount do not silently endorse a help style
+ok 472 - requests about amount do not silently endorse a help style
+  ---
+  duration_ms: 11.2755
+  type: 'test'
+  ...
+# Subtest: explicit helpful feedback retains its positive meaning while withdrawing it removes that weight
+ok 473 - explicit helpful feedback retains its positive meaning while withdrawing it removes that weight
+  ---
+  duration_ms: 1.271
+  type: 'test'
+  ...
+# Subtest: excluding a decision removes its derived preference from mode selection while preserving round history
+ok 474 - excluding a decision removes its derived preference from mode selection while preserving round history
+  ---
+  duration_ms: 0.7078
+  type: 'test'
+  ...
+# Subtest: atlas-2.3 histories remain readable and new decisions receive the current policy version
+ok 475 - atlas-2.3 histories remain readable and new decisions receive the current policy version
+  ---
+  duration_ms: 0.9408
+  type: 'test'
+  ...
+# Subtest: product outcomes join actual delivery and keep abstention, undelivered, pending, missing and late distinct
+ok 476 - product outcomes join actual delivery and keep abstention, undelivered, pending, missing and late distinct
+  ---
+  duration_ms: 7.9549
+  type: 'test'
+  ...
+# Subtest: policy comparison weights people equally despite repeat use and uses full policy versions
+ok 477 - policy comparison weights people equally despite repeat use and uses full policy versions
+  ---
+  duration_ms: 2.7389
+  type: 'test'
+  ...
+# Subtest: minimum evidence counts people, not repeated decisions, and absent samples have null means
+ok 478 - minimum evidence counts people, not repeated decisions, and absent samples have null means
+  ---
+  duration_ms: 0.6936
+  type: 'test'
+  ...
+# Subtest: identical outcome sets retain the same mean and direction regardless of arrival order
+ok 479 - identical outcome sets retain the same mean and direction regardless of arrival order
+  ---
+  duration_ms: 1.0041
+  type: 'test'
+  ...
+# Subtest: numeric products supply their own range and whether lower or higher is preferable
+ok 480 - numeric products supply their own range and whether lower or higher is preferable
+  ---
+  duration_ms: 0.8386
+  type: 'test'
+  ...
+# Subtest: cost and latency coverage remain explicit and mixed cost units are never silently converted
+ok 481 - cost and latency coverage remain explicit and mixed cost units are never silently converted
+  ---
+  duration_ms: 0.4169
+  type: 'test'
+  ...
+# Subtest: exact retries are idempotent but conflicting copies and multiple deliveries or outcomes are rejected
+ok 482 - exact retries are idempotent but conflicting copies and multiple deliveries or outcomes are rejected
+  ---
+  duration_ms: 0.9083
+  type: 'test'
+  ...
+# Subtest: authorization scope, purpose and person must hold across the entire decision to outcome chain
+ok 483 - authorization scope, purpose and person must hold across the entire decision to outcome chain
+  ---
+  duration_ms: 0.6913
+  type: 'test'
+  ...
+# Subtest: forged, unselected and out-of-order evidence cannot acquire a successful result
+ok 484 - forged, unselected and out-of-order evidence cannot acquire a successful result
+  ---
+  duration_ms: 1.0598
+  type: 'test'
+  ...
+# Subtest: malformed contracts and non-finite metrics fail closed without mutating caller records
+ok 485 - malformed contracts and non-finite metrics fail closed without mutating caller records
+  ---
+  duration_ms: 0.9089
+  type: 'test'
+  ...
+# Subtest: late ingestion cannot be inserted into an earlier evaluation snapshot or precede its parent record
+ok 486 - late ingestion cannot be inserted into an earlier evaluation snapshot or precede its parent record
+  ---
+  duration_ms: 0.5161
+  type: 'test'
+  ...
+# Subtest: explicit outcome contract references reject same-ID records from another product or version
+ok 487 - explicit outcome contract references reject same-ID records from another product or version
+  ---
+  duration_ms: 1.3696
+  type: 'test'
+  ...
+# Subtest: successive corrections retain the delivered source and replace only the observed value
+ok 488 - successive corrections retain the delivered source and replace only the observed value
+  ---
+  duration_ms: 0.6084
+  type: 'test'
+  ...
+# Subtest: withdrawals remove usable observations without erasing actual delivery or converting missing to failure
+ok 489 - withdrawals remove usable observations without erasing actual delivery or converting missing to failure
+  ---
+  duration_ms: 8.5873
+  type: 'test'
+  ...
+# Subtest: provenance distinguishes actual delivery and missing results for each selected or abstained decision
+ok 490 - provenance distinguishes actual delivery and missing results for each selected or abstained decision
+  ---
+  duration_ms: 0.6838
+  type: 'test'
+  ...
+# Subtest: revision retries are idempotent while conflicts, branches, cycles and foreign lineage fail closed
+ok 491 - revision retries are idempotent while conflicts, branches, cycles and foreign lineage fail closed
+  ---
+  duration_ms: 2.5971
+  type: 'test'
+  ...
+# Subtest: revision time and ingestion order respect the entire chain and never move observation windows
+ok 492 - revision time and ingestion order respect the entire chain and never move observation windows
+  ---
+  duration_ms: 1.0926
+  type: 'test'
+  ...
+# Subtest: an edit made from an older copy of the profile is refused, not written over
+ok 493 - an edit made from an older copy of the profile is refused, not written over
+  ---
+  duration_ms: 5.551
+  type: 'test'
+  ...
+# Subtest: the revision must be a whole number, and leaving it out keeps the old behaviour
+ok 494 - the revision must be a whole number, and leaving it out keeps the old behaviour
+  ---
+  duration_ms: 0.5332
+  type: 'test'
+  ...
+# Subtest: explicit purposes of learner, teacher, worker and client produce different Core choices
+ok 495 - explicit purposes of learner, teacher, worker and client produce different Core choices
+  ---
+  duration_ms: 18.987
+  type: 'test'
+  ...
+# Subtest: same exact declarations produce same result regardless of product persona
+ok 496 - same exact declarations produce same result regardless of product persona
+  ---
+  duration_ms: 3.5568
+  type: 'test'
+  ...
+# Subtest: cold start and skipping need no personal fields, storage or invented ability
+ok 497 - cold start and skipping need no personal fields, storage or invented ability
+  ---
+  duration_ms: 2.1087
+  type: 'test'
+  ...
+# Subtest: remembering fields requires explicit consent; true is not accepted as a string
+ok 498 - remembering fields requires explicit consent; true is not accepted as a string
+  ---
+  duration_ms: 1.0128
+  type: 'test'
+  ...
+# Subtest: age, gender, names, diagnoses and hidden behavioral estimates are not accepted
+ok 499 - age, gender, names, diagnoses and hidden behavioral estimates are not accepted
+  ---
+  duration_ms: 1.0397
+  type: 'test'
+  ...
+# Subtest: precise time and sound requirements exclude infeasible items, even if they match the goal
+ok 500 - precise time and sound requirements exclude infeasible items, even if they match the goal
+  ---
+  duration_ms: 0.937
+  type: 'test'
+  ...
+# Subtest: no feasible material produces an unavailable plan, never a broken substitute
+ok 501 - no feasible material produces an unavailable plan, never a broken substitute
+  ---
+  duration_ms: 12.9475
+  type: 'test'
+  ...
+# Subtest: explicit experience and accessibility change presentation without changing assessment standards
+ok 502 - explicit experience and accessibility change presentation without changing assessment standards
+  ---
+  duration_ms: 1.9222
+  type: 'test'
+  ...
+# Subtest: updates are detached, editable and individually clearable with no older declaration revival
+ok 503 - updates are detached, editable and individually clearable with no older declaration revival
+  ---
+  duration_ms: 3.4177
+  type: 'test'
+  ...
+# Subtest: declared independent support takes precedence over an incompatible goal-matched presentation
+ok 504 - declared independent support takes precedence over an incompatible goal-matched presentation
+  ---
+  duration_ms: 2.112
+  type: 'test'
+  ...
+# Subtest: product/context/person/domain isolation rejects profile or history reuse
+ok 505 - product/context/person/domain isolation rejects profile or history reuse
+  ---
+  duration_ms: 3.0211
+  type: 'test'
+  ...
+# Subtest: SYNK shared product domain works and is isolated from all brand domains
+ok 506 - SYNK shared product domain works and is isolated from all brand domains
+  ---
+  duration_ms: 3.0121
+  type: 'test'
+  ...
+# Subtest: completion plus not-fit feedback changes the next real Core recommendation
+ok 507 - completion plus not-fit feedback changes the next real Core recommendation
+  ---
+  duration_ms: 6.2853
+  type: 'test'
+  ...
+# Subtest: too-much feedback reduces the next plan amount without a person-ability claim
+ok 508 - too-much feedback reduces the next plan amount without a person-ability claim
+  ---
+  duration_ms: 1.7088
+  type: 'test'
+  ...
+# Subtest: a teacher asking for another way gets an available alternative despite the previous goal match
+ok 509 - a teacher asking for another way gets an available alternative despite the previous goal match
+  ---
+  duration_ms: 4.4971
+  type: 'test'
+  ...
+# Subtest: disable/delete/skip erase values and make stale history unusable after re-consent
+ok 510 - disable/delete/skip erase values and make stale history unusable after re-consent
+  ---
+  duration_ms: 4.2574
+  type: 'test'
+  ...
+# Subtest: PULSE accepts customer declarations but preserves its ban on personal behavioral learning
+ok 511 - PULSE accepts customer declarations but preserves its ban on personal behavioral learning
+  ---
+  duration_ms: 1.2327
+  type: 'test'
+  ...
+# Subtest: malformed, foreign, future and unauthorized observation sources fail closed
+ok 512 - malformed, foreign, future and unauthorized observation sources fail closed
+  ---
+  duration_ms: 0.9208
+  type: 'test'
+  ...
+# Subtest: invalid candidates cannot hide behind a filter
+ok 513 - invalid candidates cannot hide behind a filter
+  ---
+  duration_ms: 0.4367
+  type: 'test'
+  ...
+# Subtest: browser bundle uses the same existing Core and public adapter as CommonJS
+ok 514 - browser bundle uses the same existing Core and public adapter as CommonJS
+  ---
+  duration_ms: 9.9848
+  type: 'test'
+  ...
+# Subtest: declared learning reasons reach Core only as one broad goal, never as ability or level
+ok 515 - declared learning reasons reach Core only as one broad goal, never as ability or level
+  ---
+  duration_ms: 2.0695
+  type: 'test'
+  ...
+# Subtest: reasons are stored unordered in contract order; empty, four, repeated or unknown reasons fail
+ok 516 - reasons are stored unordered in contract order; empty, four, repeated or unknown reasons fail
+  ---
+  duration_ms: 0.6604
+  type: 'test'
+  ...
+# Subtest: reasons with different goals stay undecided and ask only when the biggest one changes the plan
+ok 517 - reasons with different goals stay undecided and ask only when the biggest one changes the plan
+  ---
+  duration_ms: 4.6549
+  type: 'test'
+  ...
+# Subtest: the biggest reason decides the goal and is forgotten when the reasons change
+ok 518 - the biggest reason decides the goal and is forgotten when the reasons change
+  ---
+  duration_ms: 0.8623
+  type: 'test'
+  ...
+# Subtest: the shared contract and Core agree on the reasons and their broad goals
+ok 519 - the shared contract and Core agree on the reasons and their broad goals
+  ---
+  duration_ms: 1.5506
+  type: 'test'
+  ...
+# Subtest: Trail qualifies educational evidence; Core retains the score threshold and decision policy
+ok 520 - Trail qualifies educational evidence; Core retains the score threshold and decision policy
+  ---
+  duration_ms: 12.0439
+  type: 'test'
+  ...
+# Subtest: help, seen items, incorrect answers and another concept cannot prove independent success
+ok 521 - help, seen items, incorrect answers and another concept cannot prove independent success
+  ---
+  duration_ms: 4.2376
+  type: 'test'
+  ...
+# Subtest: exclusion removes analytical proof while retaining the item exposure and original records
+ok 522 - exclusion removes analytical proof while retaining the item exposure and original records
+  ---
+  duration_ms: 1.2149
+  type: 'test'
+  ...
+# Subtest: a qualified snapshot rejects another owner and cannot borrow a mismatched decision or target
+ok 523 - a qualified snapshot rejects another owner and cannot borrow a mismatched decision or target
+  ---
+  duration_ms: 1.1531
+  type: 'test'
+  ...
+# Subtest: evidence obeys both occurrence and recording cutoffs and the current observation window
+ok 524 - evidence obeys both occurrence and recording cutoffs and the current observation window
+  ---
+  duration_ms: 0.8986
+  type: 'test'
+  ...
+# Subtest: later mutation of a summary or returned proof cannot change the captured evidence
+ok 525 - later mutation of a summary or returned proof cannot change the captured evidence
+  ---
+  duration_ms: 0.819
+  type: 'test'
+  ...
+# Subtest: duplicate or out-of-window summary evidence is rejected before it can affect a decision
+ok 526 - duplicate or out-of-window summary evidence is rejected before it can affect a decision
+  ---
+  duration_ms: 1.0308
+  type: 'test'
+  ...
+# Subtest: explicit deadlines expire at equality while preserving detached current source metadata
+ok 527 - explicit deadlines expire at equality while preserving detached current source metadata
+  ---
+  duration_ms: 13.2303
+  type: 'test'
+  ...
+# Subtest: expired newest ongoing values never resurrect an older declaration in the same scope
+ok 528 - expired newest ongoing values never resurrect an older declaration in the same scope
+  ---
+  duration_ms: 1.462
+  type: 'test'
+  ...
+# Subtest: an expired once choice returns to the current live baseline, never an older once choice
+ok 529 - an expired once choice returns to the current live baseline, never an older once choice
+  ---
+  duration_ms: 1.3177
+  type: 'test'
+  ...
+# Subtest: baseline expiry stays visible independently even when a live once value could satisfy a soft preference
+ok 530 - baseline expiry stays visible independently even when a live once value could satisfy a soft preference
+  ---
+  duration_ms: 0.5157
+  type: 'test'
+  ...
+# Subtest: withdrawal, reset and close remove current expired records as well as live values without history revival
+ok 531 - withdrawal, reset and close remove current expired records as well as live values without history revival
+  ---
+  duration_ms: 1.7017
+  type: 'test'
+  ...
+# Subtest: ongoing corrections discard the current once declaration even if the correction later expires
+ok 532 - ongoing corrections discard the current once declaration even if the correction later expires
+  ---
+  duration_ms: 0.5032
+  type: 'test'
+  ...
+# Subtest: feedback application accepts an explicit deadline but keeps proposal, feedback and confirmation distinct
+ok 533 - feedback application accepts an explicit deadline but keeps proposal, feedback and confirmation distinct
+  ---
+  duration_ms: 1.3716
+  type: 'test'
+  ...
+# Subtest: invalid deadlines, stale applications and until on non-application actions are rejected without consuming proposals
+ok 534 - invalid deadlines, stale applications and until on non-application actions are rejected without consuming proposals
+  ---
+  duration_ms: 2.249
+  type: 'test'
+  ...
+# Subtest: deadline changes are substantive event content and saved projections remain chronological and detached
+ok 535 - deadline changes are substantive event content and saved projections remain chronological and detached
+  ---
+  duration_ms: 1.2221
+  type: 'test'
+  ...
+# Subtest: layers exposes independent baseline and current provenance while project retains its exact contract
+ok 536 - layers exposes independent baseline and current provenance while project retains its exact contract
+  ---
+  duration_ms: 0.6639
+  type: 'test'
+  ...
+# Subtest: layers observes withdrawal and closure without exposing old overrides or another encounter
+ok 537 - layers observes withdrawal and closure without exposing old overrides or another encounter
+  ---
+  duration_ms: 1.0664
+  type: 'test'
+  ...
+# Subtest: one-encounter override restores the ongoing declaration in a new encounter
+ok 538 - one-encounter override restores the ongoing declaration in a new encounter
+  ---
+  duration_ms: 1.025
+  type: 'test'
+  ...
+# Subtest: closing an encounter expires the override and proposals without erasing ongoing settings
+ok 539 - closing an encounter expires the override and proposals without erasing ongoing settings
+  ---
+  duration_ms: 2.0481
+  type: 'test'
+  ...
+# Subtest: withdrawal never revives an older once or ongoing value
+ok 540 - withdrawal never revives an older once or ongoing value
+  ---
+  duration_ms: 2.5758
+  type: 'test'
+  ...
+# Subtest: an explicit ongoing correction takes effect immediately over the current override
+ok 541 - an explicit ongoing correction takes effect immediately over the current override
+  ---
+  duration_ms: 0.9095
+  type: 'test'
+  ...
+# Subtest: feedback proposals do not affect recommendations until a separate explicit application
+ok 542 - feedback proposals do not affect recommendations until a separate explicit application
+  ---
+  duration_ms: 1.5473
+  type: 'test'
+  ...
+# Subtest: confirmed feedback can be scoped to the next encounter without changing other encounters
+ok 543 - confirmed feedback can be scoped to the next encounter without changing other encounters
+  ---
+  duration_ms: 0.8018
+  type: 'test'
+  ...
+# Subtest: new declarations, withdrawals, resets and rejection prevent stale proposals from overwriting a correction
+ok 544 - new declarations, withdrawals, resets and rejection prevent stale proposals from overwriting a correction
+  ---
+  duration_ms: 2.0543
+  type: 'test'
+  ...
+# Subtest: reset clears ongoing and every encounter override, including inactive contexts
+ok 545 - reset clears ongoing and every encounter override, including inactive contexts
+  ---
+  duration_ms: 1.1645
+  type: 'test'
+  ...
+# Subtest: person, product, purpose, stable context, domain and contract version never cross scopes
+ok 546 - person, product, purpose, stable context, domain and contract version never cross scopes
+  ---
+  duration_ms: 1.3972
+  type: 'test'
+  ...
+# Subtest: unapproved values, traits, sources and event properties are rejected
+ok 547 - unapproved values, traits, sources and event properties are rejected
+  ---
+  duration_ms: 1.7549
+  type: 'test'
+  ...
+# Subtest: PULSE allows direct settings and withdrawal while rejecting feedback proposals and applications
+ok 548 - PULSE allows direct settings and withdrawal while rejecting feedback proposals and applications
+  ---
+  duration_ms: 2.2399
+  type: 'test'
+  ...
+# Subtest: PULSE projection cannot replay forged or imported personal feedback events
+ok 549 - PULSE projection cannot replay forged or imported personal feedback events
+  ---
+  duration_ms: 0.7207
+  type: 'test'
+  ...
+# Subtest: event replay has exact deduplication, conflicting-ID rejection and strict chronology
+ok 550 - event replay has exact deduplication, conflicting-ID rejection and strict chronology
+  ---
+  duration_ms: 2.0733
+  type: 'test'
+  ...
+# Subtest: the pure API neither mutates nor aliases frozen source events and declarations
+ok 551 - the pure API neither mutates nor aliases frozen source events and declarations
+  ---
+  duration_ms: 0.517
+  type: 'test'
+  ...
+# Subtest: the existing UMD exposes the optional capability without changing learning profile APIs
+ok 552 - the existing UMD exposes the optional capability without changing learning profile APIs
+  ---
+  duration_ms: 8.5927
+  type: 'test'
+  ...
+# Subtest: explicit until shortens but never extends a contract lifetime and retains the original declaration timestamp
+ok 553 - explicit until shortens but never extends a contract lifetime and retains the original declaration timestamp
+  ---
+  duration_ms: 10.1144
+  type: 'test'
+  ...
+# Subtest: expired explicit deadlines reach Domain as expired evidence so missing hard conditions cannot silently pass
+ok 554 - expired explicit deadlines reach Domain as expired evidence so missing hard conditions cannot silently pass
+  ---
+  duration_ms: 3.2025
+  type: 'test'
+  ...
+# Subtest: once deadline restores only the current baseline and exports its original expiry rather than the ending override
+ok 555 - once deadline restores only the current baseline and exports its original expiry rather than the ending override
+  ---
+  duration_ms: 1.3189
+  type: 'test'
+  ...
+# Subtest: feedback until preserves provenance and current masks remain the product responsibility
+ok 556 - feedback until preserves provenance and current masks remain the product responsibility
+  ---
+  duration_ms: 1.4405
+  type: 'test'
+  ...
+# Subtest: empty or proposed-only preferences create no personal declarations
+ok 557 - empty or proposed-only preferences create no personal declarations
+  ---
+  duration_ms: 0.6897
+  type: 'test'
+  ...
+# Subtest: explicit value, event id, original time and finite lifetime reach Domain and decision evidence
+ok 558 - explicit value, event id, original time and finite lifetime reach Domain and decision evidence
+  ---
+  duration_ms: 0.7527
+  type: 'test'
+  ...
+# Subtest: once overrides baseline; closure restores only the surviving ongoing declaration
+ok 559 - once overrides baseline; closure restores only the surviving ongoing declaration
+  ---
+  duration_ms: 1.2126
+  type: 'test'
+  ...
+# Subtest: correction and withdrawal do not resurrect superseded choices or export revoked values
+ok 560 - correction and withdrawal do not resurrect superseded choices or export revoked values
+  ---
+  duration_ms: 3.2818
+  type: 'test'
+  ...
+# Subtest: expiration retains the original observation and never restarts its clock on projection
+ok 561 - expiration retains the original observation and never restarts its clock on projection
+  ---
+  duration_ms: 3.4705
+  type: 'test'
+  ...
+# Subtest: confirmed feedback preserves application, proposal and feedback references separately from declared source
+ok 562 - confirmed feedback preserves application, proposal and feedback references separately from declared source
+  ---
+  duration_ms: 1.9498
+  type: 'test'
+  ...
+# Subtest: subject, domain and preference product/context/contract boundaries cannot be relabeled
+ok 563 - subject, domain and preference product/context/contract boundaries cannot be relabeled
+  ---
+  duration_ms: 3.1114
+  type: 'test'
+  ...
+# Subtest: bridge remains pure and cloned for frozen inputs, returned observations, layers and lineage
+ok 564 - bridge remains pure and cloned for frozen inputs, returned observations, layers and lineage
+  ---
+  duration_ms: 7.8792
+  type: 'test'
+  ...
+# Subtest: browser loading uses existing Core/Domain dependency paths and supports policy objectives
+ok 565 - browser loading uses existing Core/Domain dependency paths and supports policy objectives
+  ---
+  duration_ms: 14.5293
+  type: 'test'
+  ...
+# Subtest: the shared module works in CommonJS and as a browser global without network dependencies
+ok 566 - the shared module works in CommonJS and as a browser global without network dependencies
+  ---
+  duration_ms: 2.6767
+  type: 'test'
+  ...
+# Subtest: reserved Atlas dimensions are detected even when their type or dimension is malformed
+ok 567 - reserved Atlas dimensions are detected even when their type or dimension is malformed
+  ---
+  duration_ms: 2.4819
+  type: 'test'
+  ...
+# Subtest: preference semantic validation rejects unsupported Atlas claims and extra raw payload fields
+ok 568 - preference semantic validation rejects unsupported Atlas claims and extra raw payload fields
+  ---
+  duration_ms: 1.3986
+  type: 'test'
+  ...
+# Subtest: producer returns a complete c16 envelope with deterministic canonical JSON and no extra fields
+ok 569 - producer returns a complete c16 envelope with deterministic canonical JSON and no extra fields
+  ---
+  duration_ms: 0.7963
+  type: 'test'
+  ...
+# Subtest: row projection exports only the latest declared preference and its server revision
+ok 570 - row projection exports only the latest declared preference and its server revision
+  ---
+  duration_ms: 0.5752
+  type: 'test'
+  ...
+# Subtest: server rows accept valid PostgreSQL Date values without widening the public snapshot contract
+ok 571 - server rows accept valid PostgreSQL Date values without widening the public snapshot contract
+  ---
+  duration_ms: 1.0937
+  type: 'test'
+  ...
+# Subtest: snapshot validation normalizes, is JSON-idempotent and never mutates or exports extra fields
+ok 572 - snapshot validation normalizes, is JSON-idempotent and never mutates or exports extra fields
+  ---
+  duration_ms: 0.2518
+  type: 'test'
+  ...
+# Subtest: snapshot rejects unsupported versions, inconsistent empty values, invalid IDs and invalid calendar times
+ok 573 - snapshot rejects unsupported versions, inconsistent empty values, invalid IDs and invalid calendar times
+  ---
+  duration_ms: 0.4684
+  type: 'test'
+  ...
+# Subtest: server preference survives a fresh session and changes the actual letter guidance
+ok 574 - server preference survives a fresh session and changes the actual letter guidance
+  ---
+  duration_ms: 16.5061
+  type: 'test'
+  ...
+# Subtest: replaying one revision is idempotent even if JSON input fields arrive in a different order
+ok 575 - replaying one revision is idempotent even if JSON input fields arrive in a different order
+  ---
+  duration_ms: 0.6465
+  type: 'test'
+  ...
+# Subtest: a reset retains a null declaration and prevents an older declared help setting from reviving
+ok 576 - a reset retains a null declaration and prevents an older declared help setting from reviving
+  ---
+  duration_ms: 1.0435
+  type: 'test'
+  ...
+# Subtest: kernel projection takes only explicit LAB scope identifiers and ignores untrusted extra fields
+ok 577 - kernel projection takes only explicit LAB scope identifiers and ignores untrusted extra fields
+  ---
+  duration_ms: 0.4329
+  type: 'test'
+  ...
+# Subtest: a second reviewed experience has its own declaration and cannot accept a letter snapshot
+ok 578 - a second reviewed experience has its own declaration and cannot accept a letter snapshot
+  ---
+  duration_ms: 3.0671
+  type: 'test'
+  ...
+# Subtest: describes actual preparation and explicit feedback, missing is never zero or failure
+ok 579 - describes actual preparation and explicit feedback, missing is never zero or failure
+  ---
+  duration_ms: 1.5784
+  type: 'test'
+  ...
+# Subtest: rejects foreign scopes, duplicate records and invented time or ratings
+ok 580 - rejects foreign scopes, duplicate records and invented time or ratings
+  ---
+  duration_ms: 1.4595
+  type: 'test'
+  ...
+# Subtest: explicit measurement exclusion survives Trail, Temper, game summary and a saved-log reload
+ok 581 - explicit measurement exclusion survives Trail, Temper, game summary and a saved-log reload
+  ---
+  duration_ms: 48.8445
+  type: 'test'
+  ...
+# Subtest: Temper rechecks measurement exclusion, audio delivery and visual confounds
+ok 582 - Temper rechecks measurement exclusion, audio delivery and visual confounds
+  ---
+  duration_ms: 0.5089
+  type: 'test'
+  ...
+# Subtest: same-input comparison keeps exposure and authored measurement conditions in its identity
+ok 583 - same-input comparison keeps exposure and authored measurement conditions in its identity
+  ---
+  duration_ms: 2.6423
+  type: 'test'
+  ...
+# Subtest: Trail accepts identical serialized retries regardless of object key order
+ok 584 - Trail accepts identical serialized retries regardless of object key order
+  ---
+  duration_ms: 0.7284
+  type: 'test'
+  ...
+# Subtest: learner-facing reasons pick 은/을 after a final consonant and 는/를 after a vowel
+ok 585 - learner-facing reasons pick 은/을 after a final consonant and 는/를 after a vowel
+  ---
+  duration_ms: 1.0612
+  type: 'test'
+  ...
+# Subtest: "not for me" keeps every refused way out while an unrefused one remains
+ok 586 - "not for me" keeps every refused way out while an unrefused one remains
+  ---
+  duration_ms: 35.7454
+  type: 'test'
+  ...
+# Subtest: the most recent response decides, even when it changes an older round
+ok 587 - the most recent response decides, even when it changes an older round
+  ---
+  duration_ms: 1.6483
+  type: 'test'
+  ...
+# Subtest: a long chain of shared causes is checked in linear time
+ok 588 - a long chain of shared causes is checked in linear time
+  ---
+  duration_ms: 4.4946
+  type: 'test'
+  ...
+# Subtest: what an NPC saw for itself survives a correction of a relayed message
+ok 589 - what an NPC saw for itself survives a correction of a relayed message
+  ---
+  duration_ms: 2.0149
+  type: 'test'
+  ...
+# Subtest: stored work cards are checked like new ones and only reviewed fields are returned
+ok 590 - stored work cards are checked like new ones and only reviewed fields are returned
+  ---
+  duration_ms: 0.7905
+  type: 'test'
+  ...
+# Subtest: a help style derived from "new to this" prefers fitting ways and matches what is shown
+ok 591 - a help style derived from "new to this" prefers fitting ways and matches what is shown
+  ---
+  duration_ms: 0.6401
+  type: 'test'
+  ...
+# Subtest: a candidate whose every item family was already presented goes behind one that can still give a first try
+ok 592 - a candidate whose every item family was already presented goes behind one that can still give a first try
+  ---
+  duration_ms: 28.746
+  type: 'test'
+  ...
+# Subtest: a failed original-event save invalidates an already synced account even when outbox metadata remains writable
+ok 593 - a failed original-event save invalidates an already synced account even when outbox metadata remains writable
+  ---
+  duration_ms: 14.1285
+  type: 'test'
+  ...
+# Subtest: late successful GET cannot restore synced status after an event save fails during that GET
+ok 594 - late successful GET cannot restore synced status after an event save fails during that GET
+  ---
+  duration_ms: 5.6164
+  type: 'test'
+  ...
+# Subtest: a WORLD child game original-event failure blocks its primary account synchronizer and all siblings lose completeness
+ok 595 - a WORLD child game original-event failure blocks its primary account synchronizer and all siblings lose completeness
+  ---
+  duration_ms: 6.1688
+  type: 'test'
+  ...
+# Subtest: an original-event store already unwritable at construction never starts network synchronization
+ok 596 - an original-event store already unwritable at construction never starts network synchronization
+  ---
+  duration_ms: 3.4611
+  type: 'test'
+  ...
+# Subtest: a conflicting event written by another instance invalidates the sync status before the next network retry
+ok 597 - a conflicting event written by another instance invalidates the sync status before the next network retry
+  ---
+  duration_ms: 3.4415
+  type: 'test'
+  ...
+# Subtest: the 20,000-event limit cannot leave synced status while newer local observations fail to persist
+ok 598 - the 20,000-event limit cannot leave synced status while newer local observations fail to persist
+  ---
+  duration_ms: 783.4532
+  type: 'test'
+  ...
+# Subtest: the account-wide adapter is built by the host page's own engine, not by the first game frame
+ok 599 - the account-wide adapter is built by the host page's own engine, not by the first game frame
+  ---
+  duration_ms: 8.7262
+  type: 'test'
+  ...
+# Subtest: with sharing off, a signed-in device keeps usable evidence like a guest device
+ok 600 - with sharing off, a signed-in device keeps usable evidence like a guest device
+  ---
+  duration_ms: 10.4874
+  type: 'test'
+  ...
+# Subtest: another device's clock running a year ahead does not pin this device's time
+ok 601 - another device's clock running a year ahead does not pin this device's time
+  ---
+  duration_ms: 4.2148
+  type: 'test'
+  ...
+# Subtest: the guard allows one knob, one step, inside bounds, never a declared-only knob, and stops on hold
+ok 602 - the guard allows one knob, one step, inside bounds, never a declared-only knob, and stops on hold
+  ---
+  duration_ms: 3.2025
+  type: 'test'
+  ...
+# Subtest: the guard keeps responses calm: one change each, no bounce back up, a pause after a raise
+ok 603 - the guard keeps responses calm: one change each, no bounce back up, a pause after a raise
+  ---
+  duration_ms: 1.328
+  type: 'test'
+  ...
+# Subtest: virtual people are described by behaviour only
+ok 604 - virtual people are described by behaviour only
+  ---
+  duration_ms: 0.8977
+  type: 'test'
+  ...
+# Subtest: simulation: invariants hold, results repeat, and people far from the default are served better than fixed settings
+ok 605 - simulation: invariants hold, results repeat, and people far from the default are served better than fixed settings
+  ---
+  duration_ms: 34.6386
+  type: 'test'
+  ...
+# Subtest: the simulation catches a broken rule: a guard that lets help raise the challenge is visible
+ok 606 - the simulation catches a broken rule: a guard that lets help raise the challenge is visible
+  ---
+  duration_ms: 8.5588
+  type: 'test'
+  ...
+# Subtest: same-input runs report the measured difference without causal or learning claims
+ok 607 - same-input runs report the measured difference without causal or learning claims
+  ---
+  duration_ms: 6.5721
+  type: 'test'
+  ...
+# Subtest: assisted, unknown, repeats, skips and unassessed have explicit counts, not inflated denominators
+ok 608 - assisted, unknown, repeats, skips and unassessed have explicit counts, not inflated denominators
+  ---
+  duration_ms: 1.149
+  type: 'test'
+  ...
+# Subtest: independent attempts are read per concept and per comparison arm
+ok 609 - independent attempts are read per concept and per comparison arm
+  ---
+  duration_ms: 1.64
+  type: 'test'
+  ...
+# Subtest: no independent sample is not zero accuracy or improvement
+ok 610 - no independent sample is not zero accuracy or improvement
+  ---
+  duration_ms: 0.5174
+  type: 'test'
+  ...
+# Subtest: unpaired account/task/version evidence is not comparable
+ok 611 - unpaired account/task/version evidence is not comparable
+  ---
+  duration_ms: 2.2617
+  type: 'test'
+  ...
+# Subtest: forged derived independent flag alone cannot turn helped success into independent evidence
+ok 612 - forged derived independent flag alone cannot turn helped success into independent evidence
+  ---
+  duration_ms: 0.1845
+  type: 'test'
+  ...
+# Subtest: concept names from data cannot reach Object.prototype
+ok 613 - concept names from data cannot reach Object.prototype
+  ---
+  duration_ms: 0.1925
+  type: 'test'
+  ...
+# Subtest: evaluation-only groups compare two arms person by person and flag the group a new way leaves worse
+ok 614 - evaluation-only groups compare two arms person by person and flag the group a new way leaves worse
+  ---
+  duration_ms: 1.0066
+  type: 'test'
+  ...
+# Subtest: a group below the minimum is not compared and its size is not shown
+ok 615 - a group below the minimum is not compared and its size is not shown
+  ---
+  duration_ms: 0.3505
+  type: 'test'
+  ...
+# Subtest: no answer, unlabelled people and assisted attempts do not form or fill a group
+ok 616 - no answer, unlabelled people and assisted attempts do not form or fill a group
+  ---
+  duration_ms: 0.5513
+  type: 'test'
+  ...
+# Subtest: the per-cell minimum is the one in the shared contract
+ok 617 - the per-cell minimum is the one in the shared contract
+  ---
+  duration_ms: 0.4797
+  type: 'test'
+  ...
+# Subtest: the map holds abilities, grammar and words, and none of them claims a TOPIK grade
+ok 618 - the map holds abilities, grammar and words, and none of them claims a TOPIK grade
+  ---
+  duration_ms: 2.9252
+  type: 'test'
+  ...
+# Subtest: an item names the words and grammar it uses; abilities and unknown ids are refused there
+ok 619 - an item names the words and grammar it uses; abilities and unknown ids are refused there
+  ---
+  duration_ms: 8.9068
+  type: 'test'
+  ...
+# Subtest: words missed on separate first tries are named as content to practise; a word got right is not
+ok 620 - words missed on separate first tries are named as content to practise; a word got right is not
+  ---
+  duration_ms: 12.1609
+  type: 'test'
+  ...
+# Subtest: between candidates of one ability, the one using recently missed content is offered first
+ok 621 - between candidates of one ability, the one using recently missed content is offered first
+  ---
+  duration_ms: 5.9788
+  type: 'test'
+  ...
+# Subtest: missed content never puts another ability ahead of the one its own state ranks first
+ok 622 - missed content never puts another ability ahead of the one its own state ranks first
+  ---
+  duration_ms: 7.6905
+  type: 'test'
+  ...
+# Subtest: timeline sorts explicit plans and keeps done and dismissed apart
+ok 623 - timeline sorts explicit plans and keeps done and dismissed apart
+  ---
+  duration_ms: 23.5906
+  type: 'test'
+  ...
+# Subtest: preparing contact never marks it done; later, done and dismiss are explicit patches
+ok 624 - preparing contact never marks it done; later, done and dismiss are explicit patches
+  ---
+  duration_ms: 1.301
+  type: 'test'
+  ...
+# Subtest: ambiguous or invalid calendar inputs and duplicate records are rejected
+ok 625 - ambiguous or invalid calendar inputs and duplicate records are rejected
+  ---
+  duration_ms: 0.3883
+  type: 'test'
+  ...
+# Subtest: browser entry works without a module loader or storage
+ok 626 - browser entry works without a module loader or storage
+  ---
+  duration_ms: 1.8002
+  type: 'test'
+  ...
+# Subtest: independent evidence needs a verified first exposure; seen or unknown history never counts
+ok 627 - independent evidence needs a verified first exposure; seen or unknown history never counts
+  ---
+  duration_ms: 7.5025
+  type: 'test'
+  ...
+# Subtest: cue/explanation/answer change assistance; no help after an attempt rewrites that attempt
+ok 628 - cue/explanation/answer change assistance; no help after an attempt rewrites that attempt
+  ---
+  duration_ms: 0.8091
+  type: 'test'
+  ...
+# Subtest: new presentation of an already attempted or revealed item is not independent transfer
+ok 629 - new presentation of an already attempted or revealed item is not independent transfer
+  ---
+  duration_ms: 1.468
+  type: 'test'
+  ...
+# Subtest: analytical exclusions cannot erase actual help exposure or prior attempts
+ok 630 - analytical exclusions cannot erase actual help exposure or prior attempts
+  ---
+  duration_ms: 0.5818
+  type: 'test'
+  ...
+# Subtest: causal links require same account/content, prior decision, and consecutive attempts
+ok 631 - causal links require same account/content, prior decision, and consecutive attempts
+  ---
+  duration_ms: 0.5741
+  type: 'test'
+  ...
+# Subtest: as-of and recorded-as-of cutoffs prevent future/late evidence and deduplicate exact retries
+ok 632 - as-of and recorded-as-of cutoffs prevent future/late evidence and deduplicate exact retries
+  ---
+  duration_ms: 0.5149
+  type: 'test'
+  ...
+# Subtest: skips and unassessed attempts cannot become independent success or failure
+ok 633 - skips and unassessed attempts cannot become independent success or failure
+  ---
+  duration_ms: 0.4417
+  type: 'test'
+  ...
+# Subtest: excluding a decision hides its analytics, but its previously seen answer still affects later evidence
+ok 634 - excluding a decision hides its analytics, but its previously seen answer still affects later evidence
+  ---
+  duration_ms: 0.2639
+  type: 'test'
+  ...
+# Subtest: a late-recorded earlier hint remains earlier provenance and does not mutate the provided log
+ok 635 - a late-recorded earlier hint remains earlier provenance and does not mutate the provided log
+  ---
+  duration_ms: 0.3015
+  type: 'test'
+  ...
+# Subtest: each attempt carries the comparison arm recorded on its decision
+ok 636 - each attempt carries the comparison arm recorded on its decision
+  ---
+  duration_ms: 0.4058
+  type: 'test'
+  ...
+# Subtest: a stored history opens once: complete, partial or unreadable decide what a first exposure can be
+ok 637 - a stored history opens once: complete, partial or unreadable decide what a first exposure can be
+  ---
+  duration_ms: 0.5294
+  type: 'test'
+  ...
+# Subtest: remember adds only items first met now, excluded or revealed ones included, without text or help
+ok 638 - remember adds only items first met now, excluded or revealed ones included, without text or help
+  ---
+  duration_ms: 0.879
+  type: 'test'
+  ...
+# Subtest: growth needs an earlier wrong first attempt and a new independent correct item on the same primary concept
+ok 639 - growth needs an earlier wrong first attempt and a new independent correct item on the same primary concept
+  ---
+  duration_ms: 1.6396
+  type: 'test'
+  ...
+# Subtest: pending records from an interrupted round count as met; an unreadable pending list makes the history partial
+ok 640 - pending records from an interrupted round count as met; an unreadable pending list makes the history partial
+  ---
+  duration_ms: 0.3104
+  type: 'test'
+  ...
+# Subtest: one session, two rounds: the round filter reports only its own attempts and growth never repeats a fact
+ok 641 - one session, two rounds: the round filter reports only its own attempts and growth never repeats a fact
+  ---
+  duration_ms: 0.6802
+  type: 'test'
+  ...
+# Subtest: a device clock stepping back cannot turn help or an earlier attempt into independent evidence
+ok 642 - a device clock stepping back cannot turn help or an earlier attempt into independent evidence
+  ---
+  duration_ms: 0.5045
+  type: 'test'
+  ...
+# Subtest: fresh feasible plan returns total extended prices without mutating input or retaining references
+ok 643 - fresh feasible plan returns total extended prices without mutating input or retaining references
+  ---
+  duration_ms: 2.9663
+  type: 'test'
+  ...
+# Subtest: component prices within budget do not hide the bundle sum exceeding it
+ok 644 - component prices within budget do not hide the bundle sum exceeding it
+  ---
+  duration_ms: 0.5214
+  type: 'test'
+  ...
+# Subtest: unknown cost remains null and is pending; known subtotal can independently reject
+ok 645 - unknown cost remains null and is pending; known subtotal can independently reject
+  ---
+  duration_ms: 0.3356
+  type: 'test'
+  ...
+# Subtest: explicit free items cost zero while absent or invented unknown amounts are invalid
+ok 646 - explicit free items cost zero while absent or invented unknown amounts are invalid
+  ---
+  duration_ms: 1.2411
+  type: 'test'
+  ...
+# Subtest: currency mismatch never adds foreign units to a won total
+ok 647 - currency mismatch never adds foreign units to a won total
+  ---
+  duration_ms: 0.3162
+  type: 'test'
+  ...
+# Subtest: explicit hard condition failure rejects despite unknown facts or a low cost
+ok 648 - explicit hard condition failure rejects despite unknown facts or a low cost
+  ---
+  duration_ms: 0.2052
+  type: 'test'
+  ...
+# Subtest: hard conditions stay pending when null, omitted, or their applicable kind is absent
+ok 649 - hard conditions stay pending when null, omitted, or their applicable kind is absent
+  ---
+  duration_ms: 1.4742
+  type: 'test'
+  ...
+# Subtest: all targeted items must satisfy a requirement; unrelated item needs no copied preference
+ok 650 - all targeted items must satisfy a requirement; unrelated item needs no copied preference
+  ---
+  duration_ms: 0.4645
+  type: 'test'
+  ...
+# Subtest: overlap is detected regardless of array order and adjacent intervals are allowed
+ok 651 - overlap is detected regardless of array order and adjacent intervals are allowed
+  ---
+  duration_ms: 0.5044
+  type: 'test'
+  ...
+# Subtest: absolute minutes carry a midnight schedule into the next day and enforce the window
+ok 652 - absolute minutes carry a midnight schedule into the next day and enforce the window
+  ---
+  duration_ms: 0.4435
+  type: 'test'
+  ...
+# Subtest: walking limit sums all items and does not confuse travel duration with walking
+ok 653 - walking limit sums all items and does not confuse travel duration with walking
+  ---
+  duration_ms: 0.2826
+  type: 'test'
+  ...
+# Subtest: missing locked booking or a forbidden item rejects the plan
+ok 654 - missing locked booking or a forbidden item rejects the plan
+  ---
+  duration_ms: 0.3354
+  type: 'test'
+  ...
+# Subtest: expired or future evidence is pending; fixtures require explicit opt-in and stay marked demo
+ok 655 - expired or future evidence is pending; fixtures require explicit opt-in and stay marked demo
+  ---
+  duration_ms: 0.4498
+  type: 'test'
+  ...
+# Subtest: invalid schema, duplicate IDs, non-finite bounds and unsafe sums fail instead of fabricating results
+ok 656 - invalid schema, duplicate IDs, non-finite bounds and unsafe sums fail instead of fabricating results
+  ---
+  duration_ms: 0.9478
+  type: 'test'
+  ...
+# Subtest: empty candidate list remains empty and browser UMD exports the same API
+ok 657 - empty candidate list remains empty and browser UMD exports the same API
+  ---
+  duration_ms: 1.6439
+  type: 'test'
+  ...
+# Subtest: visible shortening and complete emoji removal are observations, including flags and keycaps
+ok 658 - visible shortening and complete emoji removal are observations, including flags and keycaps
+  ---
+  duration_ms: 2.5258
+  type: 'test'
+  ...
+# Subtest: only an exact standalone deletion becomes an avoid-phrase candidate
+ok 659 - only an exact standalone deletion becomes an avoid-phrase candidate
+  ---
+  duration_ms: 1.2753
+  type: 'test'
+  ...
+# Subtest: literal names respect boundaries, recipient names and host-supplied suffixes
+ok 660 - literal names respect boundaries, recipient names and host-supplied suffixes
+  ---
+  duration_ms: 4.7671
+  type: 'test'
+  ...
+# Subtest: host date observations and promises keep exact evidence and never claim overall correctness
+ok 661 - host date observations and promises keep exact evidence and never claim overall correctness
+  ---
+  duration_ms: 1.8437
+  type: 'test'
+  ...
+# Subtest: input limits fail explicitly and browser entry has the same pure contract
+ok 662 - input limits fail explicitly and browser entry has the same pure contract
+  ---
+  duration_ms: 3.3174
+  type: 'test'
+  ...
+# Subtest: stuck is measured against the person, not one clock for everyone
+ok 663 - stuck is measured against the person, not one clock for everyone
+  ---
+  duration_ms: 1.9584
+  type: 'test'
+  ...
+# Subtest: less help is offered after three quiet successes, never against a declared choice or right after a no
+ok 664 - less help is offered after three quiet successes, never against a declared choice or right after a no
+  ---
+  duration_ms: 0.3097
+  type: 'test'
+  ...
+# Subtest: where help shows before every answer, one more success in a row than a quiet streak needs also asks
+ok 665 - where help shows before every answer, one more success in a row than a quiet streak needs also asks
+  ---
+  duration_ms: 0.5051
+  type: 'test'
+  ...
+# Subtest: lines say what changed in plain words, in two levels, and contents may use their own words
+ok 666 - lines say what changed in plain words, in two levels, and contents may use their own words
+  ---
+  duration_ms: 0.4173
+  type: 'test'
+  ...
+# Subtest: Atlas work loads independently in CommonJS and browser without learning state or external capabilities
+ok 667 - Atlas work loads independently in CommonJS and browser without learning state or external capabilities
+  ---
+  duration_ms: 2.3881
+  type: 'test'
+  ...
+# Subtest: profile input uses explicit confirmation and injected catalog only; descriptive personal data is rejected
+ok 668 - profile input uses explicit confirmation and injected catalog only; descriptive personal data is rejected
+  ---
+  duration_ms: 1.0492
+  type: 'test'
+  ...
+# Subtest: manual selection preserves order, deduplicates people and skills, and never includes a stronger unselected card
+ok 669 - manual selection preserves order, deduplicates people and skills, and never includes a stronger unselected card
+  ---
+  duration_ms: 1.5476
+  type: 'test'
+  ...
+# Subtest: zero hours, missing hours and low hours remain selected and are distinguished without filling unknown collaboration
+ok 670 - zero hours, missing hours and low hours remain selected and are distinguished without filling unknown collaboration
+  ---
+  duration_ms: 0.307
+  type: 'test'
+  ...
+# Subtest: unshared, unconfirmed and unsupported-schema cards cannot be evaluated
+ok 671 - unshared, unconfirmed and unsupported-schema cards cannot be evaluated
+  ---
+  duration_ms: 0.7853
+  type: 'test'
+  ...
+# Subtest: new declarations change actual choice, expired temporary context does not revive old context
+ok 672 - new declarations change actual choice, expired temporary context does not revive old context
+  ---
+  duration_ms: 19.2003
+  type: 'test'
+  ...
+# Subtest: completion -> explicit feedback -> next decision changes; no skill claim
+ok 673 - completion -> explicit feedback -> next decision changes; no skill claim
+  ---
+  duration_ms: 1.1771
+  type: 'test'
+  ...
+# Subtest: correcting feedback and excluding evidence affects next decisions without deleting original
+ok 674 - correcting feedback and excluding evidence affects next decisions without deleting original
+  ---
+  duration_ms: 2.1213
+  type: 'test'
+  ...
+# Subtest: explicit time limits take precedence over outcome preference; unavailable is not fake fallback
+ok 675 - explicit time limits take precedence over outcome preference; unavailable is not fake fallback
+  ---
+  duration_ms: 0.618
+  type: 'test'
+  ...
+# Subtest: as-of and recorded-as-of exclude late and future evidence
+ok 676 - as-of and recorded-as-of exclude late and future evidence
+  ---
+  duration_ms: 0.7486
+  type: 'test'
+  ...
+# Subtest: subject, workspace and domain isolation; explicit PULSE context but no personal outcome inference
+ok 677 - subject, workspace and domain isolation; explicit PULSE context but no personal outcome inference
+  ---
+  duration_ms: 0.9304
+  type: 'test'
+  ...
+# Subtest: feedback cannot be fabricated without a completed decision or attached across scopes
+ok 678 - feedback cannot be fabricated without a completed decision or attached across scopes
+  ---
+  duration_ms: 0.5312
+  type: 'test'
+  ...
+# Subtest: history roundtrip reproduces a decision; domain isolation uses synthetic inputs, not product adapters
+ok 679 - history roundtrip reproduces a decision; domain isolation uses synthetic inputs, not product adapters
+  ---
+  duration_ms: 1.8438
+  type: 'test'
+  ...
+# Subtest: the LAB experience adapter cannot be silently reused as a SHIFT, PULSE or PATH product
+ok 680 - the LAB experience adapter cannot be silently reused as a SHIFT, PULSE or PATH product
+  ---
+  duration_ms: 0.2757
+  type: 'test'
+  ...
+# Subtest: repeated IDs are idempotent, conflicts and broken input are visible
+ok 681 - repeated IDs are idempotent, conflicts and broken input are visible
+  ---
+  duration_ms: 0.5202
+  type: 'test'
+  ...
+# Subtest: feedback becomes unknown after its window, zero feedback is not negative feedback
+ok 682 - feedback becomes unknown after its window, zero feedback is not negative feedback
+  ---
+  duration_ms: 0.3733
+  type: 'test'
+  ...
+# Subtest: same-millisecond corrections follow append order, never random ID lexical order
+ok 683 - same-millisecond corrections follow append order, never random ID lexical order
+  ---
+  duration_ms: 0.2529
+  type: 'test'
+  ...
+# Subtest: Talk receives exactly what it imports and what that loads, with a manifest its own tests can read
+ok 684 - Talk receives exactly what it imports and what that loads, with a manifest its own tests can read
+  ---
+  duration_ms: 751.4497
+  type: 'test'
+  ...
+# Subtest: LF and CRLF checkouts keep the same manifest and do not rewrite equivalent source
+ok 685 - LF and CRLF checkouts keep the same manifest and do not rewrite equivalent source
+  ---
+  duration_ms: 485.5043
+  type: 'test'
+  ...
+# Subtest: a copy nothing imports any more is removed; Talk's own files and edited copies are kept
+ok 686 - a copy nothing imports any more is removed; Talk's own files and edited copies are kept
+  ---
+  duration_ms: 607.8323
+  type: 'test'
+  ...
+# Subtest: the server bundle is rebuilt by Talk's own generator in the same run and checked
+ok 687 - the server bundle is rebuilt by Talk's own generator in the same run and checked
+  ---
+  duration_ms: 472.3018
+  type: 'test'
+  ...
+# Subtest: an import with no canonical source stops before anything is written
+ok 688 - an import with no canonical source stops before anything is written
+  ---
+  duration_ms: 141.1834
+  type: 'test'
+  ...
+# Subtest: default checks and syncs Talk without recreating the retired website consumer
+ok 689 - default checks and syncs Talk without recreating the retired website consumer
+  ---
+  duration_ms: 880.577
+  type: 'test'
+  ...
+# Subtest: default leaves even an old website checkout and its owned copies untouched
+ok 690 - default leaves even an old website checkout and its owned copies untouched
+  ---
+  duration_ms: 325.5232
+  type: 'test'
+  ...
+# Subtest: explicit retired website selection reports the absent consumer before any mutation
+ok 691 - explicit retired website selection reports the absent consumer before any mutation
+  ---
+  duration_ms: 441.1242
+  type: 'test'
+  ...
+# Subtest: multiple explicit consumers still validate all checkout roots before any mutation
+ok 692 - multiple explicit consumers still validate all checkout roots before any mutation
+  ---
+  duration_ms: 104.3482
+  type: 'test'
+  ...
+# Subtest: explicit legacy website sync copies only its imports and preserves files outside that consumer contract
+ok 693 - explicit legacy website sync copies only its imports and preserves files outside that consumer contract
+  ---
+  duration_ms: 349.045
+  type: 'test'
+  ...
+# Subtest: after the website copy changes, the website's own cache-key step runs; with nothing new it does not
+ok 694 - after the website copy changes, the website's own cache-key step runs; with nothing new it does not
+  ---
+  duration_ms: 467.4883
+  type: 'test'
+  ...
+# Subtest: unknown or missing selectors fail without falling back to every consumer
+ok 695 - unknown or missing selectors fail without falling back to every consumer
+  ---
+  duration_ms: 247.466
+  type: 'test'
+  ...
+1..695
+# tests 695
+# suites 0
+# pass 695
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 14878.518

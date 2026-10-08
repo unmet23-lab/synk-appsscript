@@ -3,10 +3,13 @@
   "private": true,
   "description": "SYNK LAB 엔진 저장소. 개발 도구는 배포집합에 포함하지 않는다.",
   "devDependencies": {
+    "esbuild": "0.28.1",
     "odiff-bin": "^4.5.0"
   },
   "scripts": {
     "test": "node tools/test-ci.js",
+    "check:atlas": "node tools/sync-atlas.js --all --check",
+    "check:atlas:local": "node tools/sync-atlas.js --all --check --local",
     "check:knowledge": "node tools/doc-graph.js --summary",
     "check:worktree": "node tools/worktree-hygiene.js",
     "sns:연결점검": "node tools/sns-발행.js --연결점검",

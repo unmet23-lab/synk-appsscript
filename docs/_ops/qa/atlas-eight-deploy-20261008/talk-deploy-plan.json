@@ -1,0 +1,236 @@
+{
+  "preparedAt": "2026-10-08T01:08:00.077Z",
+  "status": "prepared_deployment_waits_for_required_official_review",
+  "repository": "unmet23-lab/SYNK-talk",
+  "checkout": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\talk-push-worktree",
+  "branch": "codex/atlas-eight-fix-20261008",
+  "head": "1d6daa89cdba690b6da507cdfdcea89fbdfb3abf",
+  "latestRemoteMaster": "b3ffe17147c4579bc245b6a255dcf559b6de14c4",
+  "integration": {
+    "remoteMasterIsAncestor": true,
+    "ahead": 1,
+    "behind": 0,
+    "worktreeClean": true,
+    "requiresMerge": false,
+    "defaultBranchPushPerformed": false,
+    "latestFetchRemoteMaster": "b3ffe17147c4579bc245b6a255dcf559b6de14c4",
+    "candidateClean": true
+  },
+  "diff": {
+    "files": [
+      "bots/송출/재생목록.js",
+      "lib/atlas/education.js",
+      "lib/atlas/engine.js",
+      "lib/atlas/game-learning.js",
+      "lib/atlas/sync-manifest.json",
+      "lib/atlas/trail.js",
+      "lib/라디오곡차례.js",
+      "supabase/functions/_shared/synk-atlas-summary.js",
+      "supabase/functions/_shared/synk-atlas.js",
+      "tests/라디오곡차례.test.js"
+    ],
+    "migrationFiles": [],
+    "scope": "Atlas source copies and generated server bundles; Reed comments and local regression tests; original jazz/nature work excluded"
+  },
+  "functions": [
+    {
+      "slug": "synk-account",
+      "fileCount": 11,
+      "files": [
+        {
+          "name": "index.ts",
+          "bytes": 1255,
+          "sha256": "27c237055117480875b90249f1e9614b7d0ce4ea80718d6916beab22ccfb5b25"
+        },
+        {
+          "name": "synk-auth.mjs",
+          "bytes": 4318,
+          "sha256": "d8c26d05a846f35dc69cfecd83326b5f63a396e1c268c1e299293e1170f27d59"
+        },
+        {
+          "name": "release-policy.mjs",
+          "bytes": 4963,
+          "sha256": "6168a37abb42cdcbf61e060f91b9fd53b363b229b0882dffa9ab136803c8e406"
+        },
+        {
+          "name": "계약판.mjs",
+          "bytes": 6199,
+          "sha256": "8f3c6b43edbb9331b251ad5b99b419f729bc79bc0bc985bc89b6a583788853d4"
+        },
+        {
+          "name": "sha256.mjs",
+          "bytes": 6439,
+          "sha256": "9fbbd80c93df47c45d6f5d1e83a4aa23446f521599a525991809865db60a9e3b"
+        },
+        {
+          "name": "synk-store.mjs",
+          "bytes": 18672,
+          "sha256": "5b11643a2e38a9bca37bcfc8ac6de25b38228dfe969054aa95eec91e83972e80"
+        },
+        {
+          "name": "내정보규칙.mjs",
+          "bytes": 10360,
+          "sha256": "9b094fd9491e97d8d603e9dde5a8a7edefc80da1d99ff2ca13066f7a6108bb5e"
+        },
+        {
+          "name": "synk-server.mjs",
+          "bytes": 18303,
+          "sha256": "3c789503f2b5f31d6857b6afe2213d4d8cbcc52beb44314433ee14cedd556958"
+        },
+        {
+          "name": "synk-atlas.mjs",
+          "bytes": 66437,
+          "sha256": "33cc267abb38af996097b10326ed67b91441300733862e242c092e403a57e2b8"
+        },
+        {
+          "name": "atlas-memory-rules.mjs",
+          "bytes": 3647,
+          "sha256": "2a7b59615d4bb5c9187b8ba48291529a7cf4061119c3e10dd5284141e3684c5b"
+        },
+        {
+          "name": "synk-atlas-summary.mjs",
+          "bytes": 176746,
+          "sha256": "faf1abf030445125a66a24aa2ff92a1ef16b4461713e2e33767962678c2197bf"
+        }
+      ]
+    },
+    {
+      "slug": "synk-learning",
+      "fileCount": 10,
+      "files": [
+        {
+          "name": "index.ts",
+          "bytes": 1001,
+          "sha256": "c826a3da519aff8e6366b8a669b752b02625dd4ef171a4b2ab18cfcb6e90c74d"
+        },
+        {
+          "name": "synk-auth.mjs",
+          "bytes": 4318,
+          "sha256": "d8c26d05a846f35dc69cfecd83326b5f63a396e1c268c1e299293e1170f27d59"
+        },
+        {
+          "name": "release-policy.mjs",
+          "bytes": 4963,
+          "sha256": "6168a37abb42cdcbf61e060f91b9fd53b363b229b0882dffa9ab136803c8e406"
+        },
+        {
+          "name": "계약판.mjs",
+          "bytes": 6199,
+          "sha256": "8f3c6b43edbb9331b251ad5b99b419f729bc79bc0bc985bc89b6a583788853d4"
+        },
+        {
+          "name": "sha256.mjs",
+          "bytes": 6439,
+          "sha256": "9fbbd80c93df47c45d6f5d1e83a4aa23446f521599a525991809865db60a9e3b"
+        },
+        {
+          "name": "synk-store.mjs",
+          "bytes": 18672,
+          "sha256": "5b11643a2e38a9bca37bcfc8ac6de25b38228dfe969054aa95eec91e83972e80"
+        },
+        {
+          "name": "내정보규칙.mjs",
+          "bytes": 10360,
+          "sha256": "9b094fd9491e97d8d603e9dde5a8a7edefc80da1d99ff2ca13066f7a6108bb5e"
+        },
+        {
+          "name": "synk-server.mjs",
+          "bytes": 18303,
+          "sha256": "3c789503f2b5f31d6857b6afe2213d4d8cbcc52beb44314433ee14cedd556958"
+        },
+        {
+          "name": "synk-atlas.mjs",
+          "bytes": 66437,
+          "sha256": "33cc267abb38af996097b10326ed67b91441300733862e242c092e403a57e2b8"
+        },
+        {
+          "name": "atlas-memory-rules.mjs",
+          "bytes": 3647,
+          "sha256": "2a7b59615d4bb5c9187b8ba48291529a7cf4061119c3e10dd5284141e3684c5b"
+        }
+      ]
+    }
+  ],
+  "readOnlyBefore": "talk-deploy-before.json",
+  "validation": {
+    "existingFeatureTests": {
+      "tests": 81,
+      "passed": 81,
+      "failed": 0,
+      "skipped": 0,
+      "record": "talk-push-result.json"
+    },
+    "deploymentContractTests": {
+      "command": "node --test --test-reporter=tap tests/원격배포.test.js tests/배포대조.test.js tests/동봉CJS.test.js tests/동봉신호.test.js tests/자격증명.test.js",
+      "tests": 105,
+      "passed": 105,
+      "failed": 0,
+      "skipped": 0,
+      "log": "talk-deploy-contract-tests.tap"
+    },
+    "generatedBundlesFromRemoteGenerator": true,
+    "strataExamplesRetained": true,
+    "remoteEntrypoints": {
+      "sourceMapWholeSourceEqual": 4,
+      "compiledAstEqual": 4,
+      "total": 4
+    },
+    "anonymousIngress": {
+      "GET401": 4,
+      "OPTIONS204": 4,
+      "total": 8,
+      "credentialsSent": false,
+      "learnerDataRead": false
+    }
+  },
+  "deploymentPlan": {
+    "credentialSource": "Read existing C:/Users/q1212/Documents/SYNK-talk/lib/자격증명.js loader into child-process environment; do not copy .env or print credential values.",
+    "targets": [
+      {
+        "environment": "rehearsal",
+        "projectRef": "baasvefzinrxaryksayl",
+        "commands": [
+          "node tools/원격배포.js supabase/functions/synk-account --적용",
+          "node tools/원격배포.js supabase/functions/synk-learning --적용"
+        ]
+      },
+      {
+        "environment": "production",
+        "projectRef": "qiwxeddwwnzkwalpsuty",
+        "commands": [
+          "node tools/원격배포.js supabase/functions/synk-account --적용 --운영",
+          "node tools/원격배포.js supabase/functions/synk-learning --적용 --운영"
+        ]
+      }
+    ],
+    "postDeploy": "For each environment, run tools/배포대조.js synk-account and synk-learning with explicit SUPABASE_PROJECT_REF and no --도장 unless ledger write requested; compare active versions and source fingerprints. Existing deployment tool appends deployment ledger entries.",
+    "preserve": [
+      "verify_jwt=true",
+      "existing secrets and release policy",
+      "database schema",
+      "real accounts and records",
+      "remote Strata examples"
+    ],
+    "excluded": [
+      "events: no current Atlas dependency",
+      "Reed live radio: only comments/tests changed",
+      "EAS app build and store publication",
+      "paid API or learner mutation smoke"
+    ]
+  },
+  "remaining": [
+    "Official Claude Opus 5.5 max final review is incomplete due to the reported weekly limit. External deployment and default branch push remain on hold.",
+    "After authorization to proceed and completed applicable review, re-fetch master immediately before integration and repeat safe post-deployment source and anonymous ingress checks."
+  ],
+  "finalReview": {
+    "completed": false,
+    "reportedByParent": true,
+    "model": "claude-opus-5-5",
+    "effort": "max",
+    "failure": "weekly usage limit; no completed review",
+    "reportedReset": "2026-10-12 19:00 Asia/Seoul",
+    "deploymentAndDefaultBranchPushHeld": true
+  },
+  "readOnlyEntrypointReview": "talk-entrypoint-review/entrypoint-comparison.json",
+  "anonymousIngress": "talk-entrypoint-review/anonymous-ingress.json"
+}

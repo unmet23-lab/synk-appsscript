@@ -1,0 +1,15 @@
+const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto'), { spawnSync } = require('node:child_process');
+const root = process.cwd(), qa = path.join(root, '.tmp/atlas-eight-fix-20261008');
+const old = JSON.parse(fs.readFileSync('docs/_ops/qa/atlas-eight-audit-20261008/core-suite.json'));
+const capture=JSON.parse(fs.readFileSync(path.join(qa,'capture-result.json')));
+const extra=['tests/atlas-interpretation-capture.test.mjs','tests/atlas-capture-company.test.mjs','tests/atlas-computer-runtime.test.mjs','docs/마케팅/온라인마케팅지도/engagement/company/server-computer-interpretation.test.mjs','docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync.test.mjs','tests/atlas-consultation-fidelity.test.mjs'];
+const files = [...new Set([...old.files, ...extra, 'tests/atlas-core-record-compatibility.test.js', 'tests/atlas-copy-set.test.js', 'tests/atlas-learning-copy-compatibility.test.js', 'tests/sync-atlas.test.js', 'tests/prism계약.test.js', 'tests/prism범위래칫.test.js', 'tests/prism래칫회귀.test.js', 'tests/prism대장절.test.js', 'desktop/tests/renderer-personalization.test.cjs'])].sort();
+const watched = [...new Set([...files, ...capture.files.map(x=>x.path), ...fs.readdirSync('atlas').filter(x=>/\.(js|json)$/.test(x)).map(x=>'atlas/'+x), 'experiences/atlas-lab/interpretation.mjs','experiences/atlas-lab/consultation.mjs','tools/lib/atlas-copies.js','tools/build-atlas-lab-share.mjs','docs/_ops/qa/atlas-model-20261005/freeze.json'].filter(f=>fs.existsSync(f)))];
+const snapshot = () => Object.fromEntries(watched.map(file=>[file, crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex')]));
+const before=snapshot(), start=new Date().toISOString();
+const result=spawnSync(process.execPath,['--test','--test-reporter=tap',...files],{encoding:'utf8',maxBuffer:20e6});
+const output=result.stdout+result.stderr;fs.writeFileSync(path.join(qa,'core-suite.tap'),output);
+const after=snapshot(), changed=watched.filter(f=>before[f]!==after[f]);
+const summary={start,end:new Date().toISOString(),node:process.version,files,exitCode:result.status,tests:Number(output.match(/# tests (\d+)/)?.[1]),passed:Number(output.match(/# pass (\d+)/)?.[1]),failed:Number(output.match(/# fail (\d+)/)?.[1]),changedDuringRun:changed,sha256:after};
+fs.writeFileSync(path.join(qa,'core-suite.json'),JSON.stringify(summary,null,2)+'\n');console.log(JSON.stringify({...summary,sha256:undefined,files:files.length}));
+process.exitCode=result.status || (changed.length?2:0);

@@ -100,6 +100,10 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 24
+      - name: install deterministic build dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: verify all local Atlas consumer copies
+        run: npm run check:atlas:local
       - name: node --check all .js files
         run: |
           set -e
@@ -137,10 +141,9 @@ jobs:
             || echo "(not ok 0건 — 실패가 TAP 밖에서 났다: 스폰 실패·구문 오류 쪽을 본다)"
           echo "::endgroup::"
           exit "$rc"
-      # 🔴 Prism 접점 래칫 — 학생·학부모가 보는 자리가 Prism 산출을 읽으면 여기서 빨개진다.
-      #    설계 정본(docs/엔진8종_상향설계_v3.md §8-3 U0)의 「같은 커밋에서 CI 가 빨개집니다」가 이 단계다.
-      #    발주서(docs/_ops/발주/prism_U0_검증기.md 판 v4)는 `.github/` 를 실행자 금지 경로로 두어
-      #    도구와 시험만 세웠고, 이 배선은 «합칠 때 사람이 단다»고 못 박았다 — 이 단계가 그것이다.
+      # Prism 원본 참조 검사 — 루트·atlas·experiences·strata·bots의 새 소비자를 확인한다.
+      #    현재 활성 집단 산출 소비자는 없다. 미등록 참조와 학생·학부모 직접 참조를 잡는다.
+      #    의존성·빌드·QA·시험은 기본에서 제외한다. 정적 검사는 실제 데이터 흐름·권한 증명이 아니다.
       #    ⚠ 파이프를 붙이지 않는다. 붙이면 래칫의 종료코드가 파이프 것으로 덮여 실패가 통과로 보인다.
       #    종료코드 0 = 통과 · 1 = 금지된 참조가 있다 · 2 = 확인 불가.
       #    **1 과 2 를 둘 다 빨갛게 둔다** — 「확인 불가」를 초록으로 넘기면 «자가 못 본 것»이 통과가 된다.

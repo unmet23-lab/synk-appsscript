@@ -1,0 +1,315 @@
+{
+  "status": "pushed-and-remote-verified",
+  "at": "2026-10-08T00:55:18.373Z",
+  "repository": "C:\\Users\\q1212\\Documents\\SYNK-website",
+  "branch": "codex/company-conversations",
+  "base": "7b58d449a59b59ff415c60d48115f990579cbe7c",
+  "stagedSharedIndex": [],
+  "workingTreeAndSharedIndexPreserved": true,
+  "remote": {
+    "name": "origin",
+    "url": "git@github.com:unmet23-lab/SYNK-website.git",
+    "liveRemoteHead": "7b58d449a59b59ff415c60d48115f990579cbe7c",
+    "ahead": 0,
+    "behind": 0,
+    "visibility": "private",
+    "hasPages": false,
+    "workflows": 0,
+    "localGithubDirectory": false,
+    "publiclyDeploysOnPush": false
+  },
+  "dist": {
+    "trackedCount": 312,
+    "scopedTrackedAtBase": 0,
+    "scopedIgnored": false,
+    "newFiles": 14
+  },
+  "patch": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\website-atlas-only.patch",
+    "sha256": "33d9db9c603e01c93413ad6fb9d6cf73bc3892ebe5a7742c3546f26f75be8fd3",
+    "bytes": 3884620,
+    "selectedIndex": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\website-atlas-select.index",
+    "validationIndex": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\website-atlas-validate.index",
+    "selectedPaths": [
+      "dist/try/blank-slice/atlas-learning.js",
+      "dist/try/entry-check/atlas-learning.js",
+      "dist/try/order-rush/atlas-learning.js",
+      "dist/try/racing/atlas-learning.js",
+      "dist/try/rhythm/atlas-learning.js",
+      "dist/try/runner/atlas-learning.js",
+      "dist/try/story-classroom/atlas-learning.js",
+      "dist/try/talk-rally/atlas-learning.js",
+      "dist/try/travel/atlas/ask.js",
+      "dist/try/travel/atlas/domain.js",
+      "dist/try/travel/atlas/engine.js",
+      "dist/try/travel/atlas/interpretation.js",
+      "dist/try/travel/atlas/personalization.js",
+      "dist/try/travel/atlas/travel.js",
+      "qa/RESULTS.md"
+    ],
+    "baseApplyCheck": "passed",
+    "diffWhitespaceCheck": "passed",
+    "qaSectionOnly": "## 2026-10-08 Atlas 소비 사본 — 로컬 갱신\n\nappsscript의 Core 기록 호환 수정에 맞춰 현재 `dist/try/` 게임 8개의 `atlas-learning.js`와 여행의 Atlas 6개 파일을 정본과 대조·갱신했다. 관련 게임·여행 생성기는 기존 정본을 그대로 소비한다. `node tools/sync-atlas.js --all --check`가 학습 10개 번들·22개 파일 사본·Talk 앱/서버·Strata 지도를 함께 확인한다. 홈페이지 화면/콘텐츠를 다시 만들거나 공개한 단계는 아니다. [통합 검증 기록](../../SYNK-appsscript/docs/_ops/qa/atlas-eight-fix-20261008/README.md)."
+  },
+  "verification": {
+    "syntaxFiles": 14,
+    "canonicalExactBytes": 14
+  },
+  "files": [
+    {
+      "file": "dist/try/racing/atlas-learning.js",
+      "canonical": "experiences/korean-racing/atlas-learning.js",
+      "bytes": 459735,
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "trackedAtBase": false,
+      "gitBlobSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "gitBlobMatchesCanonicalAfterLFNormalization": true
+    },
+    {
+      "file": "dist/try/runner/atlas-learning.js",
+      "canonical": "experiences/korean-runner/atlas-learning.js",
+      "bytes": 459735,
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "trackedAtBase": false,
+      "gitBlobSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "gitBlobMatchesCanonicalAfterLFNormalization": true
+    },
+    {
+      "file": "dist/try/rhythm/atlas-learning.js",
+      "canonical": "experiences/korean-rhythm/atlas-learning.js",
+      "bytes": 459735,
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "trackedAtBase": false,
+      "gitBlobSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "gitBlobMatchesCanonicalAfterLFNormalization": true
+    },
+    {
+      "file": "dist/try/order-rush/atlas-learning.js",
+      "canonical": "experiences/order-rush/atlas-learning.js",
+      "bytes": 459735,
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "trackedAtBase": false,
+      "gitBlobSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "gitBlobMatchesCanonicalAfterLFNormalization": true
+    },
+    {
+      "file": "dist/try/story-classroom/atlas-learning.js",
+      "canonical": "experiences/story-classroom/atlas-learning.js",
+      "bytes": 459735,
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "trackedAtBase": false,
+      "gitBlobSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "gitBlobMatchesCanonicalAfterLFNormalization": true
+    },
+    {
+      "file": "dist/try/entry-check/atlas-learning.js",
+      "canonical": "experiences/entry-check/atlas-learning.js",
+      "bytes": 459735,
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "trackedAtBase": false,
+      "gitBlobSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "gitBlobMatchesCanonicalAfterLFNormalization": true
+    },
+    {
+      "file": "dist/try/blank-slice/atlas-learning.js",
+      "canonical": "experiences/blank-slice/atlas-learning.js",
+      "bytes": 459735,
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "trackedAtBase": false,
+      "gitBlobSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "gitBlobMatchesCanonicalAfterLFNormalization": true
+    },
+    {
+      "file": "dist/try/talk-rally/atlas-learning.js",
+      "canonical": "experiences/talk-rally/atlas-learning.js",
+      "bytes": 459735,
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "trackedAtBase": false,
+      "gitBlobSha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "gitBlobMatchesCanonicalAfterLFNormalization": true
+    },
+    {
+      "file": "dist/try/travel/atlas/engine.js",
+      "canonical": "atlas/engine.js",
+      "bytes": 35540,
+      "sha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "trackedAtBase": false,
+      "gitBlobSha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "gitBlobMatchesCanonicalAfterLFNormalization": true
+    },
+    {
+      "file": "dist/try/travel/atlas/personalization.js",
+      "canonical": "atlas/personalization.js",
+      "bytes": 32366,
+      "sha256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+      "trackedAtBase": false,
+      "gitBlobSha256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+      "gitBlobMatchesCanonicalAfterLFNormalization": true
+    },
+    {
+      "file": "dist/try/travel/atlas/domain.js",
+      "canonical": "atlas/domain.js",
+      "bytes": 19777,
+      "sha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+      "trackedAtBase": false,
+      "gitBlobSha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+      "gitBlobMatchesCanonicalAfterLFNormalization": true
+    },
+    {
+      "file": "dist/try/travel/atlas/interpretation.js",
+      "canonical": "atlas/interpretation.js",
+      "bytes": 11124,
+      "sha256": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e",
+      "trackedAtBase": false,
+      "gitBlobSha256": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e",
+      "gitBlobMatchesCanonicalAfterLFNormalization": true
+    },
+    {
+      "file": "dist/try/travel/atlas/ask.js",
+      "canonical": "atlas/ask.js",
+      "bytes": 12003,
+      "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "trackedAtBase": false,
+      "gitBlobSha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "gitBlobMatchesCanonicalAfterLFNormalization": true
+    },
+    {
+      "file": "dist/try/travel/atlas/travel.js",
+      "canonical": "atlas/travel.js",
+      "bytes": 9203,
+      "sha256": "0c0c65b97addb5afd69966f9620133abae88aa2154cecf1ff322678bfdba7ef2",
+      "trackedAtBase": false,
+      "gitBlobSha256": "0c0c65b97addb5afd69966f9620133abae88aa2154cecf1ff322678bfdba7ef2",
+      "gitBlobMatchesCanonicalAfterLFNormalization": true
+    }
+  ],
+  "dependencies": {
+    "canonicalRepo": "C:\\Users\\q1212\\Documents\\SYNK-appsscript",
+    "canonicalCommit": "Root must pin the matching appsscript commit after it is created.",
+    "games": {
+      "trackedGenerators": [
+        "sync-rhythm-experience.mjs",
+        "sync-play-games.mjs"
+      ],
+      "canonical": [
+        "tools/build-game-learning.js",
+        "atlas/* and strata sources imported by the bundle builder",
+        "experiences/<game>/atlas-learning.js"
+      ],
+      "note": "The selected branch stores only the current Atlas consumer bundles; existing game pages/assets under dist/try are untracked and outside this commit."
+    },
+    "travel": {
+      "source": [
+        "atlas/engine.js",
+        "atlas/personalization.js",
+        "atlas/domain.js",
+        "atlas/interpretation.js",
+        "atlas/ask.js",
+        "atlas/travel.js"
+      ],
+      "existingUntrackedGenerator": "sync-travel-experience.mjs",
+      "otherExistingUntrackedRuntime": "experiences/path-travel-derived dist/try/travel product and assets",
+      "note": "The 6 engine copies alone are not a standalone travel page or full clean-checkout website build. The older website HEAD does not include the separate existing travel generator/runtime work."
+    }
+  },
+  "excluded": [
+    "all other homepage source/content/dist changes",
+    "all other qa/RESULTS.md entries",
+    "untracked complete games/travel pages/assets and earlier QA",
+    "synk-policy deployment repository"
+  ],
+  "committed": true,
+  "pushed": true,
+  "deployed": false,
+  "commit": "bff0f32f83bdbe73867f275671db01feaf2ac2c3",
+  "tree": "ad2cc0063446a11c054d9019becda89b755876ef",
+  "preservationBranch": "codex/atlas-eight-fix-20261008",
+  "generatorChecks": {
+    "command": "node --test qa/travel-build.test.mjs qa/rhythm-sync.test.mjs",
+    "passed": 5,
+    "failed": 1,
+    "travel": "5/5 passed",
+    "rhythm": {
+      "status": "pre-existing failure outside this selection",
+      "missing": "kit/josa.js",
+      "producer": "sync-rhythm-experience.mjs:16",
+      "consumer": "SYNK-appsscript/experiences/korean-rhythm/personalization.mjs:2",
+      "reason": "The producer renames only kit/lab.mjs to .js, while personalization.mjs import relocation expects kit/josa.js.",
+      "sourceModifiedByThisTask": false
+    }
+  },
+  "remoteVerified": {
+    "files": [
+      {
+        "filename": "dist/try/blank-slice/atlas-learning.js",
+        "status": "added"
+      },
+      {
+        "filename": "dist/try/entry-check/atlas-learning.js",
+        "status": "added"
+      },
+      {
+        "filename": "dist/try/order-rush/atlas-learning.js",
+        "status": "added"
+      },
+      {
+        "filename": "dist/try/racing/atlas-learning.js",
+        "status": "added"
+      },
+      {
+        "filename": "dist/try/rhythm/atlas-learning.js",
+        "status": "added"
+      },
+      {
+        "filename": "dist/try/runner/atlas-learning.js",
+        "status": "added"
+      },
+      {
+        "filename": "dist/try/story-classroom/atlas-learning.js",
+        "status": "added"
+      },
+      {
+        "filename": "dist/try/talk-rally/atlas-learning.js",
+        "status": "added"
+      },
+      {
+        "filename": "dist/try/travel/atlas/ask.js",
+        "status": "added"
+      },
+      {
+        "filename": "dist/try/travel/atlas/domain.js",
+        "status": "added"
+      },
+      {
+        "filename": "dist/try/travel/atlas/engine.js",
+        "status": "added"
+      },
+      {
+        "filename": "dist/try/travel/atlas/interpretation.js",
+        "status": "added"
+      },
+      {
+        "filename": "dist/try/travel/atlas/personalization.js",
+        "status": "added"
+      },
+      {
+        "filename": "dist/try/travel/atlas/travel.js",
+        "status": "added"
+      },
+      {
+        "filename": "qa/RESULTS.md",
+        "status": "modified"
+      }
+    ],
+    "sha": "bff0f32f83bdbe73867f275671db01feaf2ac2c3",
+    "tree": "ad2cc0063446a11c054d9019becda89b755876ef"
+  },
+  "pushOutput": "To github.com:unmet23-lab/SYNK-website.git\n*\tbff0f32f83bdbe73867f275671db01feaf2ac2c3:refs/heads/codex/atlas-eight-fix-20261008\t[new branch]\nDone",
+  "sharedCheckoutPreserved": {
+    "head": "7b58d449a59b59ff415c60d48115f990579cbe7c",
+    "branch": "codex/company-conversations",
+    "statusSha256": "b1b4d7716e22c05b00b6891d07e728066f63fe1d490d661ea268979bbe094324",
+    "indexListingSha256": "21b53d5435a8e04f5a1cb8dde21f5e1ec5ad1a468e2cc23b1b50d42ea7402f46",
+    "exactBeforeAfterMatch": true
+  }
+}

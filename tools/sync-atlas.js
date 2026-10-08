@@ -13,13 +13,24 @@
  * default. --consumer website is only for an older checkout that still owns sync-letter-copy.mjs;
  * that checkout's generator recomputes its letter page's cache keys (`?v=`) after a copy changes.
  * --check changes nothing and lists every difference at once (exit 1 when there is any).
- * Usage: node tools/sync-atlas.js [--check] [--consumer talk|website] */
+ * --all includes 10 learning bundles, PATH/launcher/tools, Talk and current website staging.
+ * --all --local checks/builds only this repository (CI); omitted siblings are explicit.
+ * Usage: node tools/sync-atlas.js [--check] [--consumer talk|website]
+ *        node tools/sync-atlas.js --all [--check] [--local] */
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { spawnSync } = require('node:child_process');
 const root = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
+if (args.includes('--all')) {
+  if (args.some(arg => !['--all', '--check', '--local'].includes(arg))) throw new Error('Usage: sync-atlas.js --all [--check] [--local]');
+  const result = require('./lib/atlas-copies').runAll({ root, check: args.includes('--check'), local: args.includes('--local'),
+    ...(process.env.SYNK_TALK_ROOT ? { talkRoot: path.resolve(process.env.SYNK_TALK_ROOT) } : {}),
+    ...(process.env.SYNK_WEBSITE_ROOT ? { websiteRoot: path.resolve(process.env.SYNK_WEBSITE_ROOT) } : {}) });
+  console.log(JSON.stringify(result, null, 2));
+  process.exit(result.ok ? 0 : 1);
+}
 let check = false;
 const selected = new Set();
 for (let i = 0; i < args.length; i++) {

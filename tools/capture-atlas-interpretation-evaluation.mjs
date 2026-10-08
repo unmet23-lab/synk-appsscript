@@ -26,6 +26,8 @@ Capture environment: SYNK_COMPUTER_EVALUATION_APPROVED=1,
  SYNK_COMPUTER_EVALUATION_ORIGIN=http://127.0.0.1:PORT,
  SYNK_COMPUTER_EVALUATION_SESSION_COOKIE and SYNK_COMPUTER_EVALUATION_CSRF.
 No automatic retries. A later explicit capture invocation reuses saved request UUIDs.
+Only an authenticated host receipt binding this request and frozen build can close an invalid result.
+Such failures remain failed evaluation runs; pending/uncertain or unproved replies stop capture.
 Capture requires proof of the five actually loaded host modules, matching the frozen build on every request and response.
 Old capture directories without runtime attestation cannot be resumed.
 At most 30 POST attempts over this output directory's lifetime; --max-calls also limits this invocation.
@@ -112,6 +114,21 @@ function requestBody(item, request, expectedBuildId) {
   // Deliberate whitelist: do not spread the authored case or source into the body.
   return { id: request.id, requestId: request.requestId, revision: request.revision, sourceId: item.source.id, text: item.source.text, expectedBuildId };
 }
+const TERMINAL_FAILURE = 'SYNK_COMPUTER_AI_RESPONSE_INVALID';
+const failureOutput = () => ({ proposals: null });
+function verifyFailureReceipt(receipt, request, buildId) {
+  const fields = ['version', 'id', 'requestId', 'revision', 'buildId', 'status'];
+  if (!plain(receipt) || Object.keys(receipt).length !== fields.length || !fields.every(key => Object.hasOwn(receipt, key))
+    || receipt.version !== 1 || receipt.status !== 'invalid' || receipt.id !== request.id
+    || receipt.requestId !== request.requestId || receipt.revision !== request.revision || receipt.buildId !== buildId) fail('HOST_FAILURE_RECEIPT_MISMATCH');
+  return { version: 1, id: receipt.id, requestId: receipt.requestId, revision: receipt.revision, buildId: receipt.buildId, status: 'invalid' };
+}
+function recordFailure(errors, request, index) {
+  if (!errors.entries.some(row => row.requestId === request.requestId && row.result === 'failed' && row.category === TERMINAL_FAILURE)) {
+    errors.entries.push({ at: request.completedAt, index: index + 1, requestId: request.requestId,
+      category: TERMINAL_FAILURE, result: 'failed', runRecorded: true, automaticRetry: false });
+  }
+}
 
 export async function createEvaluationPlan(options = {}) {
   const data = await loadDataset(options);
@@ -163,8 +180,12 @@ function validateManifest(manifest, data, frozen, origin, proof) {
       || request.sourceId !== item.source.id || request.textSha256 !== hash(item.source.text)
       || request.requestId !== `evaluation-${index + 1}` || request.revision !== index + 1
       || !Number.isInteger(request.attempts) || request.attempts < 0
-      || !['planned', 'dispatching', 'succeeded', 'unknown'].includes(request.status)
+      || !['planned', 'dispatching', 'succeeded', 'failed', 'unknown'].includes(request.status)
       || request.status === 'planned' && request.attempts !== 0 || request.status !== 'planned' && request.attempts < 1) fail('INVALID_CAPTURE_REQUEST_LEDGER');
+    if (Object.hasOwn(request, 'failureReceipt')) {
+      if (!['dispatching', 'failed'].includes(request.status) || !isoTime(request.completedAt)) fail('INVALID_CAPTURE_REQUEST_LEDGER');
+      verifyFailureReceipt(request.failureReceipt, request, proof.buildId);
+    } else if (request.status === 'failed') fail('INVALID_CAPTURE_REQUEST_LEDGER');
     ids.add(request.id); totalAttempts += request.attempts;
   });
   if (totalAttempts > LIMIT) fail('CAPTURE_LIFETIME_LIMIT_EXCEEDED');
@@ -218,14 +239,21 @@ export async function captureEvaluation(options = {}, dependencies = {}) {
     for (const run of saved.runs) {
       const request = manifest.requests.find(row => row.caseId === run.caseId);
       if (!plain(run) || !request || !Object.hasOwn(run, 'output') || runs.has(run.caseId)
-        || !['dispatching', 'succeeded'].includes(request.status)) fail('SAVED_OUTPUT_LEDGER_MISMATCH');
+        || !['dispatching', 'succeeded', 'failed'].includes(request.status)
+        || request.failureReceipt && !same(run.output, failureOutput())) fail('SAVED_OUTPUT_LEDGER_MISMATCH');
       runs.set(run.caseId, run.output);
       // Recover an interrupted save between outputs.json and ledger persistence.
-      request.status = 'succeeded';
+      request.status = request.failureReceipt ? 'failed' : 'succeeded';
     }
     if (manifest.requests.some(row => row.status === 'succeeded' && !runs.has(row.caseId))) fail('SAVED_OUTPUT_MISSING');
     const errors = previousErrors?.value || { version: VERSION, datasetSha256: data.sha256, freezeManifestSha256: frozen.sha256, entries: [] };
     if (errors.version !== VERSION || errors.datasetSha256 !== data.sha256 || errors.freezeManifestSha256 !== frozen.sha256 || !Array.isArray(errors.entries)) fail('SAVED_ERROR_LEDGER_MISMATCH');
+    // A bound terminal receipt is saved before outputs/errors. If those later
+    // writes were interrupted, recover the failed run without dispatching again.
+    manifest.requests.forEach((request, index) => {
+      if (!request.failureReceipt) return;
+      runs.set(request.caseId, failureOutput()); request.status = 'failed'; recordFailure(errors, request, index);
+    });
     // A restart with identical loaded code is allowed. Preserve the original
     // start time and record the current host instance for every invocation.
     manifest.hostInvocations.push({ at: now(), hostBuildId: proof.buildId, hostStartedAt: proof.startedAt });
@@ -246,14 +274,18 @@ export async function captureEvaluation(options = {}, dependencies = {}) {
       // Reserve one attempt before sending. A crash may conservatively consume a
       // slot without sending; it cannot silently permit more than 30 sends.
       await atomicJSON(paths.manifest, manifest);
-      let response, payload;
+      let response, payload, receipt;
       try {
         response = await fetchImpl(`${auth.origin}/api/computer-interpretation`, { method: 'POST', headers: { ...auth.headers, 'Content-Type': 'application/json' },
           body: JSON.stringify(requestBody(item, request, proof.buildId)), redirect: 'error', signal: AbortSignal.timeout(60000) });
-        if (!response.ok) fail('HOST_CAPTURE_HTTP_FAILURE');
         payload = await readResponse(response);
-        if (!plain(payload) || payload.requestId !== request.requestId || payload.revision !== request.revision) fail('HOST_RESPONSE_IDENTITY_MISMATCH');
-        if (payload.buildId !== proof.buildId) fail('HOST_RESPONSE_BUILD_MISMATCH');
+        if (!response.ok) {
+          if (payload?.code !== TERMINAL_FAILURE || ![409, 502].includes(response.status) || !Object.hasOwn(payload, 'captureReceipt')) fail('HOST_CAPTURE_HTTP_FAILURE');
+          receipt = verifyFailureReceipt(payload.captureReceipt, request, proof.buildId);
+        } else {
+          if (!plain(payload) || payload.requestId !== request.requestId || payload.revision !== request.revision) fail('HOST_RESPONSE_IDENTITY_MISMATCH');
+          if (payload.buildId !== proof.buildId) fail('HOST_RESPONSE_BUILD_MISMATCH');
+        }
       } catch (error) {
         request.status = 'unknown'; request.lastFailureAt = now();
         stopped = error instanceof CaptureError ? error.code : 'HOST_CAPTURE_TRANSPORT_FAILURE';
@@ -261,6 +293,17 @@ export async function captureEvaluation(options = {}, dependencies = {}) {
           ...(response ? { httpStatus: response.status } : {}), result: 'unknown', runRecorded: false, automaticRetry: false });
         await atomicJSON(paths.errors, errors); await atomicJSON(paths.manifest, manifest);
         break;
+      }
+      if (receipt) {
+        // This is a completed invalid attempt, never an empty successful extraction.
+        // Persist only the receipt and fixed code, not provider/host error text.
+        request.failureReceipt = receipt; request.completedAt = now();
+        await atomicJSON(paths.manifest, manifest);
+        runs.set(item.id, failureOutput()); recordFailure(errors, request, index);
+        await atomicJSON(paths.outputs, outputBundle(data, frozen, [...runs].map(([caseId, output]) => ({ caseId, output }))));
+        await atomicJSON(paths.errors, errors);
+        request.status = 'failed'; await atomicJSON(paths.manifest, manifest);
+        continue;
       }
       // Preserve malformed returned proposals for offline failure accounting.
       // Missing/non-JSON/identity-mismatched responses instead remain missing runs.
@@ -273,7 +316,8 @@ export async function captureEvaluation(options = {}, dependencies = {}) {
     }
     return { version: VERSION, mode: 'capture', status: runs.size === LIMIT ? 'complete' : stopped === 'CALL_LIMIT' ? 'partial-limit' : 'stopped',
       datasetSha256: data.sha256, freezeManifestSha256: frozen.sha256, counts: { cases: LIMIT, recordedRuns: runs.size,
-        missingRuns: LIMIT - runs.size, postsThisInvocation, lifetimePostAttempts: totalAttempts, errors: errors.entries.length },
+        missingRuns: LIMIT - runs.size, failedRuns: manifest.requests.filter(row => row.status === 'failed').length,
+        postsThisInvocation, lifetimePostAttempts: totalAttempts, errors: errors.entries.length },
       ...(stopped ? { stopCategory: stopped } : {}), expectedAnswersIncludedInRequests: false, automaticRetries: 0,
       hostPromptSnapshotAttested: true, hostBuildId: proof.buildId, hostStartedAt: proof.startedAt,
       generalAccuracyEstablished: false, performanceScored: false };

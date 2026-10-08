@@ -1,0 +1,43 @@
+{
+  "ok": true,
+  "scope": "local",
+  "generatedBundles": 10,
+  "rawCopies": 7,
+  "problems": [],
+  "results": [
+    {
+      "label": "learning: 9 games",
+      "command": [
+        "node",
+        "tools/build-game-learning.js",
+        "--check"
+      ],
+      "exitCode": 0,
+      "output": "verified strata\\maps\\topik-i.json\nverified experiences\\korean-racing\\atlas-learning.js\nverified experiences\\korean-runner\\atlas-learning.js\nverified experiences\\korean-rhythm\\atlas-learning.js\nverified experiences\\order-rush\\atlas-learning.js\nverified experiences\\learning-hub\\atlas-learning.js\nverified experiences\\entry-check\\atlas-learning.js\nverified experiences\\story-classroom\\atlas-learning.js\nverified experiences\\blank-slice\\atlas-learning.js\nverified experiences\\talk-rally\\atlas-learning.js"
+    },
+    {
+      "label": "learning: Hangul",
+      "command": [
+        "node",
+        "tools/build-hangul-stage.js",
+        "--check"
+      ],
+      "exitCode": 0,
+      "output": "verified strata\\maps\\hangul.json\nverified experiences\\hangul-stage\\atlas-learning.js"
+    },
+    {
+      "label": "raw consumers and engine metadata",
+      "problems": [],
+      "changed": [],
+      "copies": 7
+    }
+  ],
+  "excluded": [
+    "historical QA/release archives",
+    "retired website letter",
+    "Talk checkout",
+    "website staging",
+    "Strata sibling source validation",
+    "deployed servers and public pages"
+  ]
+}

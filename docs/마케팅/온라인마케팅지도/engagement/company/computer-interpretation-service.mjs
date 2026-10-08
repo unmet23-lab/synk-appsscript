@@ -64,6 +64,24 @@ async function responsePayload(response) {
   } finally { await reader.cancel().catch(() => {}); reader.releaseLock(); }
 }
 
+function authenticationRejection(status, payload) {
+  // Only a bounded, ordinary authentication/permission error envelope proves
+  // this call was rejected before generation. Other responses remain uncertain.
+  const plain = value => value && typeof value === 'object' && !Array.isArray(value);
+  const reason = payload?.error;
+  return [401, 403].includes(status) && plain(payload) && Object.keys(payload).length === 1
+    && plain(reason) && Object.keys(reason).every(key => ['message', 'type', 'code', 'param'].includes(key))
+    && typeof reason.message === 'string'
+    && ['invalid_request_error', 'authentication_error', 'permission_error'].includes(reason.type);
+}
+
+function invalidReason(cause, payload, model, usageOverrun) {
+  if (usageOverrun) return 'usage-bound-exceeded';
+  if (cause?.code === 'MODEL_RESPONSE_INVALID' && payload.model !== model) return 'model-mismatch';
+  return ({ MODEL_REFUSED: 'model-refused', MODEL_RESPONSE_INCOMPLETE: 'model-response-incomplete',
+    MODEL_QUOTE_INVALID: 'model-quote-invalid', MODEL_RESPONSE_INVALID: 'model-response-invalid' })[cause?.code] || 'model-response-invalid';
+}
+
 export function createComputerInterpretationService({ store, clock = () => new Date().toISOString(), getEnv = name => process.env[name], fetchImpl = globalThis.fetch }) {
   const running = new Set(); let stopping = false, expiryTimer = null;
   // The input fingerprint outlives response deletion and expiry. Key it with the
@@ -177,9 +195,21 @@ export function createComputerInterpretationService({ store, clock = () => new D
     if (row.digest !== digest) throw error('같은 요청 번호에 다른 원문을 보낼 수 없어요.', 409, 'SYNK_COMPUTER_AI_CONFLICT');
     if (row.responseRemovedAt) throw removed();
     if (row.status === 'completed') return store.decrypt(row.resultCiphertext);
+    if (row.status === 'invalid') throw invalidResult(row, 409);
+    if (row.status === 'rejected') throw providerRejected(409);
     // A pending row may belong to another process, or be left by a crash.
     // Neither case permits another paid dispatch under the same request UUID.
     throw error('이 요청은 이미 접수됐습니다. 처리 또는 비용 확인이 필요해 자동 재시도하지 않아요.', 409, 'SYNK_COMPUTER_AI_ALREADY_SENT');
+  }
+  function providerRejected(status = 502) {
+    return error('AI 제공자가 키 또는 권한을 거절했어요. 이 요청은 다시 전송하지 않습니다. 관리자 설정을 확인해 주세요.', status, 'SYNK_COMPUTER_AI_PROVIDER_REJECTED');
+  }
+  function invalidResult(row, status = 502) {
+    // This receipt only reports a finished invalid attempt. It neither releases
+    // accounted cost nor proves a pending/uncertain provider dispatch completed.
+    return Object.assign(error('AI 조건이나 원문 인용을 검증하지 못했어요. 기존 선택은 유지됩니다.', status, 'SYNK_COMPUTER_AI_RESPONSE_INVALID'), {
+      captureReceipt: { version: 1, id: row.requestUUID, requestId: row.requestId, revision: row.revision, buildId: row.buildId, status: 'invalid' },
+    });
   }
   async function run(user, raw, revalidate) {
     if (stopping) throw error('서버가 종료 중입니다.', 503);
@@ -220,15 +250,21 @@ export function createComputerInterpretationService({ store, clock = () => new D
     catch (cause) { update({ status: 'cancelled', accountedMicroUSD: 0 }); throw cause; }
     // Persist before starting I/O: a process death after this point remains held.
     if (update({ status: 'sent' }).responseRemovedAt) { update({ status: 'cancelled', accountedMicroUSD: 0 }); throw removed(); }
-    let payload;
+    let payload, rejectedStatus = null;
     try {
       const response = await fetchImpl(ENDPOINT, { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(45000),
         headers: { Authorization: `Bearer ${config.key}`, 'Content-Type': 'application/json' }, body: serialized });
-      if (!response.ok) { await response.body?.cancel().catch(() => {}); throw error('AI 제공자가 응답을 완료하지 않았어요.', 502); }
-      payload = await responsePayload(response);
+      if (!response.ok) {
+        if ([401, 403].includes(response.status) && authenticationRejection(response.status, await responsePayload(response))) rejectedStatus = response.status;
+        else { await response.body?.cancel().catch(() => {}); throw error('AI 제공자가 응답을 완료하지 않았어요.', 502); }
+      } else payload = await responsePayload(response);
     } catch {
       if (update({ status: 'uncertain', failure: 'provider-response-unconfirmed' }).responseRemovedAt) throw removed();
       throw error('AI 응답을 확인하지 못했어요. 비용 예약을 유지하며 자동 재시도하지 않습니다.', 502, 'SYNK_COMPUTER_AI_UNCERTAIN');
+    }
+    if (rejectedStatus !== null) {
+      if (update({ status: 'rejected', failure: 'provider-authentication-rejected', providerStatus: rejectedStatus, accountedMicroUSD: 0 }).responseRemovedAt) throw removed();
+      authorized(user); revalidate(); throw providerRejected();
     }
     const usage = payload?.usage;
     if (!integer(usage?.input_tokens) || !integer(usage?.output_tokens) || !integer(usage?.total_tokens)
@@ -242,12 +278,16 @@ export function createComputerInterpretationService({ store, clock = () => new D
     const usageOverrun = usage.input_tokens > inputBound || usage.output_tokens > config.maxOutputTokens || charged > reserved;
     // Settle known provider usage even when the interpretation is invalid or the
     // session was revoked during the request. Never store raw provider text.
-    if (update({ status: 'invalid', accountedMicroUSD: charged, usage: { input: usage.input_tokens, output: usage.output_tokens }, usageOverrun }).responseRemovedAt) throw removed();
+    if (update({ status: 'invalid', failure: 'response-validation-unfinished', accountedMicroUSD: charged, usage: { input: usage.input_tokens, output: usage.output_tokens }, usageOverrun }).responseRemovedAt) throw removed();
     let parsed;
     try { if (usageOverrun) throw error('usage bound exceeded'); parsed = parseComputerModelResponse(payload, context); }
-    catch { throw error('AI 조건이나 원문 인용을 검증하지 못했어요. 기존 선택은 유지됩니다.', 502, 'SYNK_COMPUTER_AI_RESPONSE_INVALID'); }
+    catch (cause) {
+      const row = update({ failure: invalidReason(cause, payload, context.model, usageOverrun) });
+      if (row.responseRemovedAt) throw removed();
+      authorized(user); revalidate(); throw invalidResult(row);
+    }
     const result = { requestId: input.requestId, revision: input.revision, buildId: proof.buildId, ...parsed };
-    if (update({ status: 'completed', resultCiphertext: store.encrypt(result) }).responseRemovedAt) throw removed();
+    if (update({ status: 'completed', failure: null, resultCiphertext: store.encrypt(result) }).responseRemovedAt) throw removed();
     authorized(user); revalidate();
     return result;
   }

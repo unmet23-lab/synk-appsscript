@@ -1,0 +1,49 @@
+{
+  "date": "2026-10-08",
+  "repository": "unmet23-lab/SYNK-talk",
+  "branch": "codex/atlas-eight-fix-20261008",
+  "base": "b3ffe17147c4579bc245b6a255dcf559b6de14c4",
+  "commit": "1d6daa89cdba690b6da507cdfdcea89fbdfb3abf",
+  "remoteSha": "1d6daa89cdba690b6da507cdfdcea89fbdfb3abf",
+  "worktree": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\talk-push-worktree",
+  "worktreeStatus": "",
+  "files": [
+    "bots/송출/재생목록.js",
+    "lib/atlas/education.js",
+    "lib/atlas/engine.js",
+    "lib/atlas/game-learning.js",
+    "lib/atlas/sync-manifest.json",
+    "lib/atlas/trail.js",
+    "lib/라디오곡차례.js",
+    "supabase/functions/_shared/synk-atlas-summary.js",
+    "supabase/functions/_shared/synk-atlas.js",
+    "tests/라디오곡차례.test.js"
+  ],
+  "validation": {
+    "command": "node --test --test-reporter=tap tests/atlas-copy.test.js tests/atlas-practice.test.js tests/atlas-session.test.js tests/atlas-session-storage.test.js tests/atlas-strata-drift.test.js tests/atlas-account-memory.test.js tests/synk-learning-host.test.js tests/synk-server.test.js tests/라디오곡차례.test.js",
+    "tests": 81,
+    "pass": 81,
+    "fail": 0,
+    "skipped": 0,
+    "dependencySource": "Existing SYNK-talk/node_modules via NODE_PATH; no install or paid calls",
+    "canonicalCopyCheck": "verified talk",
+    "diffCheckPassed": true,
+    "precommitGuardPassed": true
+  },
+  "preservation": {
+    "originalBranch": "master",
+    "originalHead": "40cddefd69b48482b48f62a491183b586175cce1",
+    "originalStagedFiles": 0,
+    "unrelatedJazzNatureChangesPreserved": true,
+    "remoteStrataExamplesPreserved": true,
+    "serverGeneratorFrom": "origin/master",
+    "excludedLocalAheadCommits": 9
+  },
+  "publishing": {
+    "pushed": true,
+    "pullRequestCreated": false,
+    "deployed": false,
+    "autoDeploymentFound": false,
+    "ciScope": "master push and pull_request; EAS build manual workflow_dispatch only"
+  }
+}

@@ -9,7 +9,7 @@ if (args.some(a => a !== '--check')) throw new Error('Usage: node tools/build-ga
 const check = args.includes('--check');
 // Abilities, grammar, words and the situations a learning reason leads to are separate sources; the
 // map's version covers all four.
-const read = rel => { const bytes = fs.readFileSync(path.join(root, rel)); return { rel, json: JSON.parse(bytes), sha: crypto.createHash('sha256').update(bytes).digest('hex') }; };
+const read = rel => { const bytes = fs.readFileSync(path.join(root, rel), 'utf8').replace(/\r\n/g, '\n'); return { rel, json: JSON.parse(bytes), sha: crypto.createHash('sha256').update(bytes).digest('hex') }; };
 const taxonomy = read('strata/topik-i.skills.json'), grammar = read('strata/topik-i.grammar.json'), words = read('strata/topik-i.words.json');
 const situations = read('strata/topik-i.situations.json');
 const version = crypto.createHash('sha256').update(taxonomy.sha + grammar.sha + words.sha + situations.sha).digest('hex');
@@ -42,7 +42,7 @@ validateMap(map);
 // Words are expanded at run time (strata/topik-i.js); the complete map must be valid too.
 validateMap(require('../strata/topik-i').topikMap({ base: map }));
 function output(destination, content) {
-  const data = Buffer.from(content), same = fs.existsSync(destination) && fs.readFileSync(destination).equals(data);
+  const data = Buffer.from(content), same = fs.existsSync(destination) && fs.readFileSync(destination, 'utf8').replace(/\r\n/g, '\n') === data.toString('utf8').replace(/\r\n/g, '\n');
   if (check && !same) throw new Error(`Learning source differs: ${path.relative(root, destination)}`);
   if (!check && !same) { fs.mkdirSync(path.dirname(destination), { recursive: true }); fs.writeFileSync(destination, data); }
   console.log(`${check ? 'verified' : same ? 'unchanged' : 'built'} ${path.relative(root, destination)}`);
@@ -52,6 +52,6 @@ const esbuild = require(require.resolve('esbuild', { paths: [root, path.join(roo
 const bundled = esbuild.buildSync({ absWorkingDir: root, entryPoints: ['atlas/game-browser.js'], bundle: true,
   write: false, platform: 'browser', format: 'iife', globalName: 'SynkLearning', target: ['es2022'], charset: 'utf8',
   banner: { js: '// Generated from atlas/ and strata/. Change canonical sources; run tools/build-game-learning.js.' } });
-for (const game of ['korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'learning-hub', 'entry-check', 'story-classroom', 'blank-slice', 'talk-rally']) {
+for (const game of require('./lib/atlas-copies').GAMES) {
   output(path.join(root, 'experiences', game, 'atlas-learning.js'), bundled.outputFiles[0].contents);
 }

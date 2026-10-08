@@ -1,4 +1,4 @@
-// Real-browser regression for consultation completion, separate from Ask priority.
+// Real-browser regression for useful questions followed by required confirmations.
 // Synthetic manual choices only. Every API is mocked; external requests are blocked.
 // Run: node tests/atlas-lab-completion-smoke.mjs
 import assert from 'node:assert/strict';
@@ -12,7 +12,8 @@ import { createServer } from '../experiences/learning-hub/server.mjs';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require(require.resolve('playwright', { paths: [process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')] }));
-const output = fileURLToPath(new URL('../experiences/atlas-lab/qa/completion/', import.meta.url));
+const output = process.env.SYNK_CONSULTATION_QA_OUTPUT ? path.resolve(process.env.SYNK_CONSULTATION_QA_OUTPUT)
+  : fileURLToPath(new URL('../experiences/atlas-lab/qa/completion/', import.meta.url));
 const report = { version: 1, at: new Date().toISOString(), status: 'running', kind: 'synthetic-consultation-completion-browser',
   modelCalls: 0, externalApiCost: 0, deployed: false, errors: [], missing: [], failedRequests: [], externalRequests: [], unexpectedApiRequests: [], apiMocks: [], paths: [], screenshots: [] };
 const completion = page => page.evaluate(() => window.synkAtlasLab.consult().completion);
@@ -32,11 +33,12 @@ async function chooseBudget(page, value) {
   await page.locator(`#budget-options [data-budget="${value}"]`).click();
   assert.equal((await answers(page)).budget, value);
 }
-async function finishAsk(page, choices) {
+async function finishAsk(page, choices, { stopBefore = null } = {}) {
   const trace = [];
   for (let i = 0; i < 20; i += 1) {
     const question = await page.evaluate(() => window.synkAtlasLab.consult().question ?? null);
     if (!question) return trace;
+    if (question.id === stopBefore) return trace;
     assert.ok(Object.hasOwn(choices, question.id), `unscripted Ask question ${question.id}`);
     const values = Array.isArray(choices[question.id]) ? choices[question.id] : [choices[question.id]];
     for (const value of values) {
@@ -103,9 +105,14 @@ async function purchaseAndBranch(page, label) {
   assert.equal(initial.completion.status, 'not-started');
   assert.equal(initial.statusAttribute, 'not-started'); assert.equal(initial.completion.path, 'undetermined');
   await page.locator('#uses [data-use="web"]').click();
-  const askTrace = await finishAsk(page, primaryChoices);
-  assert.deepEqual(askTrace.map(row => row.field).sort(), ['os', 'owned', 'place'], 'completion must not change the existing web Ask sequence');
-  assert.equal(await page.locator('#ask .ask-card').count(), 0);
+  const askTrace = await finishAsk(page, primaryChoices, { stopBefore: 'budget' });
+  assert.deepEqual(askTrace.map(row => row.field).sort(), ['os', 'owned', 'place'], 'useful questions keep their order before the required confirmation');
+  assert.equal(await page.locator('#ask .ask-card').count(), 1);
+  const requiredQuestion = await page.evaluate(() => window.synkAtlasLab.consult());
+  assert.equal(requiredQuestion.question.id, 'budget');
+  assert.equal(requiredQuestion.reason, 'required-input-confirmation');
+  assert.ok(!requiredQuestion.ranked.some(entry => entry.id === 'budget' && entry.skippable));
+  assert.match(await page.locator('#ask .mini').first().textContent(), /기본 조건/);
   const provisional = await snapshot(page);
   assert.equal(provisional.completion.status, 'provisional');
   assert.equal(provisional.completion.path, 'purchase');
@@ -117,7 +124,8 @@ async function purchaseAndBranch(page, label) {
   await openDetails(page, 'budget-review');
   const provisionalLayout = await checkLayout(page, label + '-purchase-provisional');
   await capture(page, label + '-purchase-provisional');
-  await chooseBudget(page, 'lt100');
+  const confirmationTrace = await finishAsk(page, primaryChoices);
+  assert.deepEqual(confirmationTrace.map(row => row.field), ['budget']);
   const ready = await snapshot(page);
   assert.equal(ready.completion.status, 'ready'); assert.deepEqual(ready.completion.unresolvedRequiredFields, []);
   assert.equal(ready.completion.budget.state, 'known'); assert.equal(ready.statusAttribute, 'ready');
@@ -127,6 +135,7 @@ async function purchaseAndBranch(page, label) {
   assert.equal(unknown.completion.status, 'provisional'); assert.ok(unknown.completion.unresolvedRequiredFields.includes('budget'));
   assert.equal(unknown.completion.budget.state, 'unknown'); assert.equal(unknown.statusAttribute, 'provisional');
   assert.match(unknown.detailsText, /예산/);
+  assert.equal(await page.locator('#ask .ask-card').count(), 0, 'unknown is not a loop asking the same question again');
   await chooseBudget(page, 'lt100');
   assert.equal((await completion(page)).status, 'ready');
 
@@ -158,7 +167,7 @@ async function purchaseAndBranch(page, label) {
   assert.ok((await completion(page)).unresolvedRequiredFields.includes('localai'), 'reselected work must be confirmed again');
   await chooseRequired(page, 'localai', ['large', 'image']);
   assert.equal((await completion(page)).status, 'ready');
-  report.paths.push({ label, kind: 'purchase-and-new-work', initial, askTrace, provisional, provisionalLayout, ready, unknown, branchMissing, requiredTrace, branchReady });
+  report.paths.push({ label, kind: 'purchase-and-new-work', initial, askTrace, confirmationTrace, provisional, provisionalLayout, ready, unknown, branchMissing, requiredTrace, branchReady });
 }
 async function reuse(page, label) {
   await page.locator('#uses [data-use="web"]').click();

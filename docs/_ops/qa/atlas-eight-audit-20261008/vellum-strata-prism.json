@@ -1,0 +1,169 @@
+{
+  "scope": [
+    "Vellum",
+    "Strata",
+    "Prism"
+  ],
+  "date": "2026-10-08",
+  "readOnly": true,
+  "tests": [
+    {
+      "command": "node --test tests/atlas-vellum-flow.test.js tests/atlas-vellum-expression.test.js tests/atlas-life.test.js tests/strata.test.js tests/strata-situations.test.js tests/strata-situation-examples.test.js tests/strata-forms.test.js tests/prism계약.test.js tests/prism대장절.test.js tests/prism래칫회귀.test.js tests/prism범위래칫.test.js",
+      "passed": 135,
+      "failed": 0
+    },
+    {
+      "command": "node --test experiences/synk-town/core.test.mjs experiences/relationship-care/tests/care-support.test.mjs",
+      "passed": 31,
+      "failed": 0
+    }
+  ],
+  "checks": [
+    {
+      "command": "node tools/strata-build.js --check",
+      "result": "passed"
+    },
+    {
+      "command": "node tools/build-game-learning.js --check",
+      "result": "passed; TOPIK I map and 9 bundles"
+    },
+    {
+      "command": "node tools/build-hangul-stage.js --check",
+      "result": "failed; map passed, experiences/hangul-stage/atlas-learning.js differs"
+    },
+    {
+      "command": "node tools/prism래칫.js",
+      "result": "passed; 3 root JS files, 0 references, 2 registered consumers; both consumers deleted"
+    }
+  ],
+  "maps": [
+    {
+      "name": "ko",
+      "mapVersion": "strata-ko-1-b91f23e62ef678cb",
+      "nodeKinds": {
+        "grammar_point": 91,
+        "skill": 30
+      },
+      "prerequisites": 0,
+      "goals": 0,
+      "unlinkedGrammar": 62
+    },
+    {
+      "name": "topik-i",
+      "mapVersion": "topik-i-practice-1-c6e2390a4b06",
+      "nodeKinds": {
+        "skill": 15,
+        "grammar_point": 87,
+        "situation": 26
+      },
+      "prerequisites": 0,
+      "goals": 7,
+      "unlinkedGrammar": 0
+    },
+    {
+      "name": "hangul",
+      "mapVersion": "hangul-4-a2d24bbbec6c",
+      "nodeKinds": {
+        "skill": 2,
+        "letter": 49
+      },
+      "prerequisites": 215,
+      "goals": 0,
+      "unlinkedGrammar": 0
+    }
+  ],
+  "findings": [
+    {
+      "priority": "P1",
+      "file": "experiences/hangul-stage/atlas-learning.js",
+      "line": 199,
+      "title": "구형 한글 번들이 최신 공통 학습 기록을 읽지 못함",
+      "cause": "practice.attempted optional fields allow reason only; modern choice field is rejected at line 229",
+      "impact": "entry-check choice event in shared device storage causes hangul storage.available false; history reading and durable practice storage unavailable",
+      "repro": "hangul-storage-repro.cjs",
+      "evidence": "hangul-storage-repro.json",
+      "consumers": [
+        {
+          "file": "experiences/entry-check/app.mjs",
+          "line": 28
+        },
+        {
+          "file": "experiences/entry-check/app.mjs",
+          "line": 440
+        },
+        {
+          "file": "experiences/hangul-stage/learning.mjs",
+          "line": 26
+        },
+        {
+          "file": "experiences/hangul-stage/index.html",
+          "line": 12
+        }
+      ],
+      "versions": {
+        "bundled": "atlas-2.3.0",
+        "canonical": "atlas-2.4.0"
+      },
+      "sharedStorage": [
+        {
+          "file": "atlas/game-learning.js",
+          "line": 15,
+          "key": "synk.atlas.learning.v1"
+        },
+        {
+          "file": "atlas/game-learning.js",
+          "line": 34,
+          "formula": "KEY + . + learnerKey(default=device)"
+        },
+        {
+          "file": "experiences/hangul-stage/atlas-learning.js",
+          "line": 3311,
+          "key": "synk.atlas.learning.v1"
+        },
+        {
+          "file": "experiences/hangul-stage/atlas-learning.js",
+          "line": 3330,
+          "formula": "KEY + . + learnerKey(default=device)"
+        }
+      ]
+    }
+  ],
+  "status": {
+    "Vellum": "learning support, Town grounded reactions and relationship-care expression review implemented and consumers tested; no reproduced Vellum runtime failure",
+    "Strata": "hash/lookup/cycle/AI-draft contracts implemented; ko prerequisites absent and 62 grammar nodes unmapped; TOPIK I/hangul/goal layers distinct; stale hangul consumer defect",
+    "Prism": "contract and static reference checks remain; no active group aggregate producer/consumer identified in atlas/experiences or inspected Talk lib/functions; retired collector explicitly removed; future production group pipeline not complete"
+  },
+  "limits": [
+    "No public deployment verification",
+    "No live accounts or paid AI",
+    "No performance benchmark or clinical/educational effect measurement",
+    "No source changes; audit artifacts only"
+  ],
+  "prismReadiness": {
+    "ratchetDefault": {
+      "file": "tools/prism래칫.js",
+      "line": 24,
+      "scope": "*.js root only"
+    },
+    "ci": {
+      "file": ".github/workflows/syntax-check.yml",
+      "line": 148,
+      "command": "node tools/prism래칫.js"
+    },
+    "retiredRegisteredConsumers": [
+      {
+        "file": "docs/_ops/prism_접점등록.json",
+        "line": 4,
+        "path": "엔진_운영배치.js",
+        "exists": false
+      },
+      {
+        "file": "docs/_ops/prism_접점등록.json",
+        "line": 9,
+        "path": "엔진_폼리포트.js",
+        "exists": false
+      }
+    ],
+    "boundary": "Ready as limited static tooling, not validated production group analysis or actual-consumer guard"
+  }
+}

@@ -40,6 +40,8 @@
   const ARMS = ['adapted', 'baseline'];
   const DAY = 86400000, RECENT = 30 * DAY;
   const copy = value => JSON.parse(JSON.stringify(value));
+  const canonical = value => JSON.stringify(value, (_key, entry) => entry && typeof entry === 'object' && !Array.isArray(entry)
+    ? Object.fromEntries(Object.keys(entry).sort().map(key => [key, entry[key]])) : entry);
   const freeze = value => {
     if (value && typeof value === 'object' && !Object.isFrozen(value)) { Object.freeze(value); for (const k of Object.keys(value)) freeze(value[k]); }
     return value;
@@ -118,7 +120,7 @@
     const find = (id, type) => { const found = lookup.byId(id); return found && (!type || found.type === type) ? found : undefined; };
     const previous = lookup.byId(event.id);
     if (previous) {
-      if (JSON.stringify(previous) !== JSON.stringify(event)) throw new Error('Atlas: conflicting event id');
+      if (canonical(previous) !== canonical(event)) throw new Error('Atlas: conflicting event id');
       return false;
     }
     if (isPractice(event)) {
@@ -214,14 +216,16 @@
     const latestOutcome = new Map();
     // The newest report per decision, measure, window and target line: a proof for one
     // line is never replaced by a report about another line or by a proofless report.
+    // Resolve the newest report before exclusion, just as for feedback and context:
+    // removing its analytical use must not restore an older success for that group.
     if (personal) for (const event of ordered) {
-      if (event.type === 'outcome.observed' && !excluded.has(event.id) && decisions.has(event.decisionId)) latestOutcome.set(`${event.decisionId}|${event.measure}|${event.window}|${event.targetLine ?? ''}`, event);
+      if (event.type === 'outcome.observed' && decisions.has(event.decisionId)) latestOutcome.set(`${event.decisionId}|${event.measure}|${event.window}|${event.targetLine ?? ''}`, event);
     }
     // A round is one finished experience. Excluding a completion removes it as evidence, not as history.
     const rounds = {};
     for (const event of ordered) if (event.type === 'experience.completed') rounds[event.experienceId] = (rounds[event.experienceId] || 0) + 1;
     const state = { version: VERSION, scope: copy(scope), asOf, recordedAsOf, context, evidence, expired,
-      feedback: [...responses.values()].filter(e => !excluded.has(e.id)), excluded: [...excluded], lines, outcomes: [...latestOutcome.values()].map(copy), rounds };
+      feedback: [...responses.values()].filter(e => !excluded.has(e.id)), excluded: [...excluded], lines, outcomes: [...latestOutcome.values()].filter(e => !excluded.has(e.id)).map(copy), rounds };
     return { state, cutoff, personal, decisions, completed };
   }
   function understand(events, scope, asOf, recordedAsOf = asOf) { return read(events, scope, asOf, recordedAsOf).state; }

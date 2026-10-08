@@ -24,7 +24,7 @@ const { validateMap } = require(path.join(root, 'strata'));
 const map = hangulMap(JSON.parse(text), { path: rel, sha256 });
 validateMap(map);
 function output(destination, content) {
-  const data = Buffer.from(content), same = fs.existsSync(destination) && fs.readFileSync(destination).equals(data);
+  const data = Buffer.from(content), same = fs.existsSync(destination) && fs.readFileSync(destination, 'utf8').replace(/\r\n/g, '\n') === data.toString('utf8').replace(/\r\n/g, '\n');
   if (check && !same) throw new Error(`Hangul stage source differs: ${path.relative(root, destination)}`);
   if (!check && !same) { fs.mkdirSync(path.dirname(destination), { recursive: true }); fs.writeFileSync(destination, data); }
   console.log(`${check ? 'verified' : same ? 'unchanged' : 'built'} ${path.relative(root, destination)}`);
