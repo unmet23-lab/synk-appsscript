@@ -1,0 +1,65 @@
+✔ public deadlines are independent and omitted keys preserve an already-ended saved deadline (2.1845ms)
+✔ an unchanged past deadline round-trips only its exact unchanged saved answer (0.3505ms)
+✔ changing a saved answer while omitting deadlines cannot resurrect its expired publication (0.179ms)
+✔ only explicit null clears a public deadline and a new deadline must be canonical and future (0.3099ms)
+✔ orphan deadline keys and executable expiration getters are rejected (0.1735ms)
+✔ the exact public deadline removes only the current value and retains its required guard and raw owner record (0.3656ms)
+✔ a projected meeting-region array is an independent copy and malformed stored deadlines fail closed (0.1997ms)
+✔ HTTP expired public self answers leave owner raw and private answers intact while peer comparison sees no old value (771.2322ms)
+✔ HTTP expired required public wants remains a pending mandatory guard, including formerly any (1270.1372ms)
+✔ HTTP old clients and unchanged past deadline round-trips cannot revive a saved expired public answer (889.693ms)
+✔ HTTP invalid expiry inputs reject atomically without changing profile or private state (583.2356ms)
+✔ HTTP baseline publication preserves an independent public deadline and never copies the private answer deadline (651.2574ms)
+✖ HTTP all public and private regions expiring together cannot fall through to the no-region legacy guard (804.3893ms)
+✔ HTTP outstanding acceptance rechecks the sender current mandatory comparison and keeps explicit decline available (1119.8575ms)
+✔ HTTP sender public required expiry blocks pending acceptance without demanding new recipient private answers (722.4316ms)
+✔ HTTP normal profile-only recipient acceptance still works when current published answers have no deadlines (802.9799ms)
+✔ HTTP crossing a peer public deadline invalidates a live private preview without any saved revision changing (651.4797ms)
+✔ HTTP crossing the owner own public deadline also invalidates a preview whose private criteria stayed the same (573.4883ms)
+✔ HTTP accepted introductions and confirmed appointments survive public deadline expiry while schedule hints use only current availability (1293.0842ms)
+✖ HTTP alignment consumes current public fields and a deadline-only edit invalidates the former alignment key (1290.2616ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 18
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 11532.4394
+
+✖ failing tests:
+
+test at tests\atlas-dating-public-expiry.test.mjs:85:1
+✖ HTTP all public and private regions expiring together cannot fall through to the no-region legacy guard (804.3893ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  400 !== 403
+  
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-public-expiry.test.mjs:86:641)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 400,
+    expected: 403,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\atlas-dating-public-expiry.test.mjs:106:1
+✖ HTTP alignment consumes current public fields and a deadline-only edit invalidates the former alignment key (1290.2616ms)
+  AssertionError [ERR_ASSERTION]: Expected "actual" to be strictly unequal to:
+  
+  undefined
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-public-expiry.test.mjs:107:395)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }

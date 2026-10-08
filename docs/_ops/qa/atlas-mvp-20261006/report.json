@@ -1,0 +1,608 @@
+{
+  "at": "2026-10-06T11:04:10.555Z",
+  "localDate": "2026-10-06",
+  "status": "local-fictional-mvp-implemented-and-free-checks-passed",
+  "authorization": "Implement and design now; run free checks now. Paid AI activation or refinement, paid tests and model evaluation remain deferred. Tutor untouched.",
+  "implementation": {
+    "core": "Added backward-compatible preferences.layers; record/project event meanings and shape retained.",
+    "newEngine": false,
+    "product": [
+      "Baseline/current-context/unknown/hard conditions and explicit context expiry",
+      "Own attendance enables private reflection, retained after next encounter",
+      "Private reconnect intent is separate from sent invitations and concrete acceptances",
+      "Explicit opt-in IndexedDB snapshot, resume, transactional revision checks and deletion generation",
+      "Loopback host with one-use role bootstrap, separate HttpOnly session cookie paths, CSRF, revision/idempotency and actor-filtered projection"
+    ],
+    "host": {
+      "loopbackOnly": true,
+      "fictionalRoles": 2,
+      "persistence": "memory-only",
+      "sessionTtlHours": 24,
+      "pairTtlHours": 72,
+      "refresh": "manual",
+      "identityVerification": false
+    },
+    "storage": {
+      "default": "off",
+      "contents": "fictional discovery answers, selection, meeting and private reflection",
+      "resume": "explicit click",
+      "crossTab": "atomic conflict rejection, no automatic merge",
+      "crossDevice": false
+    }
+  },
+  "tests": {
+    "passed": 715,
+    "failed": 0,
+    "skipped": 0,
+    "path": "docs/_ops/qa/atlas-mvp-20261006/tests.tap",
+    "sha256": "4927c77ab336f3292db2fad2f6b7006ddfc8968496f2f0db5536da758323a1f2",
+    "files": [
+      "tests\\atlas.test.js",
+      "tests\\atlas-work.test.js",
+      "tests\\atlas-vellum-flow.test.js",
+      "tests\\atlas-trail.test.js",
+      "tests\\atlas-topik-layers.test.js",
+      "tests\\atlas-temper.test.js",
+      "tests\\atlas-temper-flow.test.js",
+      "tests\\atlas-sync-fixes.test.js",
+      "tests\\atlas-storage-failure.test.js",
+      "tests\\atlas-ledger-recovery.test.js",
+      "tests\\atlas-review-fixes.test.js",
+      "tests\\atlas-provenance-review.test.js",
+      "tests\\atlas-learning.test.js",
+      "tests\\atlas-preferences.test.js",
+      "tests\\atlas-learning-sync.test.js",
+      "tests\\atlas-personalization.test.js",
+      "tests\\atlas-label-anchor.test.js",
+      "tests\\atlas-lab-model-host.test.js",
+      "tests\\atlas-personalization-conflict.test.js",
+      "tests\\atlas-lab-interpretation.test.js",
+      "tests\\atlas-outcomes.test.js",
+      "tests\\atlas-lab-consultation.test.js",
+      "tests\\atlas-no-feedback.test.js",
+      "tests\\atlas-interpretation.test.js",
+      "tests\\atlas-model-extraction.test.js",
+      "tests\\atlas-interpretation-evaluation.test.js",
+      "tests\\atlas-memory-sync.test.js",
+      "tests\\atlas-incremental.test.js",
+      "tests\\atlas-loop.test.js",
+      "tests\\atlas-life.test.js",
+      "tests\\atlas-game-flow.test.js",
+      "tests\\atlas-formats.test.js",
+      "tests\\atlas-flow.test.js",
+      "tests\\atlas-family.test.js",
+      "tests\\atlas-education.test.js",
+      "tests\\atlas-domain.test.js",
+      "tests\\atlas-delivery-exclusion.test.js",
+      "tests\\atlas-core-boundaries.test.js",
+      "tests\\atlas-ledger.test.js",
+      "tests\\atlas-ask.test.js",
+      "tests\\atlas-ask-value.test.js",
+      "tests\\atlas-account-summary.test.js",
+      "tests\\atlas-ledger-sync.test.js",
+      "docs/마케팅/온라인마케팅지도/engagement/company/server-computer-interpretation.test.mjs",
+      "docs/마케팅/온라인마케팅지도/engagement/company/server-assistant.test.mjs",
+      "docs/마케팅/온라인마케팅지도/engagement/company/creator-tools-server.test.mjs",
+      "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice.test.mjs",
+      "tests/atlas-interpretation-capture.test.mjs",
+      "tests/atlas-computer-runtime.test.mjs",
+      "tests/atlas-capture-company.test.mjs",
+      "tests/atlas-consultation-evaluation.test.mjs",
+      "tests/atlas-matching.test.mjs",
+      "experiences/learning-hub/server.test.mjs",
+      "tests/atlas-consultation-completion.test.mjs",
+      "tests/atlas-preference-context.test.js",
+      "tests/atlas-meeting.test.mjs",
+      "tests/atlas-discovery.test.mjs",
+      "tests/atlas-reconnect.test.mjs",
+      "tests/atlas-journey-host.test.mjs",
+      "tests/atlas-participant-ui.test.mjs"
+    ]
+  },
+  "browserChecks": [
+    {
+      "kind": "next",
+      "path": "docs/_ops/qa/atlas-mvp-20261006/next-browser.json",
+      "sha256": "a39108da9a7bdade748ef118de4c501a4b9605d5c8855a09dd8c56cf3cf8b1e8",
+      "source": "experiences/atlas-lab/qa/next/result.json",
+      "at": "2026-10-06T10:58:02.791Z",
+      "status": "passed",
+      "pathGroups": 6,
+      "screenshotCount": 8,
+      "errors": 0,
+      "missing": null,
+      "failedRequests": null,
+      "externalRequests": 0,
+      "modelCalls": 0
+    },
+    {
+      "kind": "journey",
+      "path": "docs/_ops/qa/atlas-mvp-20261006/journey-browser.json",
+      "sha256": "5e68c1652897d34c07b68ebbce090beda106bc7cf7497fb0fe96a197570b9245",
+      "source": "experiences/atlas-lab/qa/journey/result.json",
+      "at": "2026-10-06T11:01:04.082Z",
+      "status": "passed",
+      "pathGroups": 6,
+      "screenshotCount": 21,
+      "errors": 0,
+      "missing": 0,
+      "failedRequests": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    },
+    {
+      "kind": "discovery",
+      "path": "docs/_ops/qa/atlas-mvp-20261006/discovery-browser.json",
+      "sha256": "465619b88981dedd8eef405fa7f3e709688507fbe0123b607d732a9769092a9e",
+      "source": "experiences/atlas-lab/qa/discovery/result.json",
+      "at": "2026-10-06T11:02:04.733Z",
+      "status": "passed",
+      "pathGroups": 6,
+      "screenshotCount": 17,
+      "errors": 0,
+      "missing": 0,
+      "failedRequests": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    },
+    {
+      "kind": "meeting",
+      "path": "docs/_ops/qa/atlas-mvp-20261006/meeting-browser.json",
+      "sha256": "387bd585f09f4f438953452aead8ea667663db58cf660caf7c33e888b0d9d677",
+      "source": "experiences/atlas-lab/qa/meeting/result.json",
+      "at": "2026-10-06T11:02:57.060Z",
+      "status": "passed",
+      "pathGroups": 6,
+      "screenshotCount": 17,
+      "errors": 0,
+      "missing": 0,
+      "failedRequests": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    }
+  ],
+  "independentReview": [
+    "Discovery hard conditions, explicit unknown, expiry and handoff boundaries reviewed with minimal execution",
+    "Meeting/reconnect wrapper independently read; blocking invalidates old acceptances; delayed private reflection has regression tests",
+    "Participant UI reproduced stale GET restoring blocked profile, hidden deferred feedback and accepted-invitation withdrawal; fixed and verified with 4 module/DOM tests",
+    "Host verified with 16 loopback HTTP tests including competing deletion and server close during upload"
+  ],
+  "retryNotes": [
+    {
+      "path": "experiences/atlas-lab/qa/next/initial-delete-ui-failure.json",
+      "note": "First new browser run found disabled refresh left after deleting the pair; ended controls now cleared. Final six groups passed."
+    },
+    {
+      "path": "docs/_ops/qa/atlas-mvp-20261006/discovery-stale-copy-assertion.json",
+      "note": "Older smoke expected retired unknown wording; updated to current baseline-masking wording while retaining behavior assertions."
+    },
+    {
+      "note": "New context browser assertion initially expected {active:false}; documented inactive meeting snapshot is null. Corrected test expectation; no product change."
+    },
+    {
+      "note": "Participant UI old assertion expected no feedback buttons after next; updated to past encounter identity and disabled answered state, and added unanswered past reflection test."
+    }
+  ],
+  "frozenEvaluation": {
+    "status": "paid-evaluation-deferred",
+    "checks": 9,
+    "allUnchanged": true,
+    "method": "hash-only-no-heldout-content-inspection",
+    "path": "docs/_ops/qa/atlas-mvp-20261006/frozen-check.json"
+  },
+  "changedPaths": [
+    "atlas/personalization.js",
+    "experiences/atlas-lab/discovery.mjs",
+    "experiences/atlas-lab/discovery-ui.mjs",
+    "experiences/atlas-lab/meeting.mjs",
+    "experiences/atlas-lab/meeting-ui.mjs",
+    "experiences/atlas-lab/reconnect.mjs",
+    "experiences/atlas-lab/journey-host.mjs",
+    "experiences/atlas-lab/journey-memory.mjs",
+    "experiences/atlas-lab/participant.mjs",
+    "experiences/atlas-lab/participant.html",
+    "experiences/atlas-lab/participant-launcher.mjs",
+    "experiences/atlas-lab/lab.js",
+    "experiences/atlas-lab/lab.css",
+    "experiences/atlas-lab/index.html",
+    "experiences/atlas-lab/build-share.mjs",
+    "experiences/learning-hub/server.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs",
+    "tests/atlas-preference-context.test.js",
+    "tests/atlas-discovery.test.mjs",
+    "tests/atlas-meeting.test.mjs",
+    "tests/atlas-reconnect.test.mjs",
+    "tests/atlas-journey-host.test.mjs",
+    "tests/atlas-participant-ui.test.mjs",
+    "tests/atlas-next-smoke.mjs",
+    "tests/atlas-discovery-smoke.mjs",
+    "docs/코어엔진_설계.md",
+    "docs/아틀라스_공통능력_고도화_20261005.md",
+    "docs/_ops/트랙.md"
+  ],
+  "sourceHashes": [
+    {
+      "path": "atlas/personalization.js",
+      "sha256": "a0e061751608b1553bf96f964d48ac3bbd4362997250cca66a0eca010c3418ee"
+    },
+    {
+      "path": "experiences/atlas-lab/discovery.mjs",
+      "sha256": "a16b587666ac2f73373979fea06471106f3f651e75eb1dbe9918c967269b9423"
+    },
+    {
+      "path": "experiences/atlas-lab/discovery-ui.mjs",
+      "sha256": "46bfd410427deaa4dc189c064659a34415843145074a3fdff6da355c67870d11"
+    },
+    {
+      "path": "experiences/atlas-lab/meeting.mjs",
+      "sha256": "b3fb34c84bc7a765f7f3e7ef7f11804d31a8b5fc7d9c51a2a6a77408d95ba883"
+    },
+    {
+      "path": "experiences/atlas-lab/meeting-ui.mjs",
+      "sha256": "7936e09ed6fd692b0232ac3949cfb1630ce756eb28fcf0df1ae32743232d491a"
+    },
+    {
+      "path": "experiences/atlas-lab/reconnect.mjs",
+      "sha256": "595dc290df7ce7080bf9bb2bf1eedd7c22ec40f301a3c8d51816ea1c008980e5"
+    },
+    {
+      "path": "experiences/atlas-lab/journey-host.mjs",
+      "sha256": "1f37a942326e92965428e44f5359dedec6555b513e1bf105be704069d0780785"
+    },
+    {
+      "path": "experiences/atlas-lab/journey-memory.mjs",
+      "sha256": "901224083f1b504044c3ab65a8ad6f2dadc3cc9008bce5d66cde6ede1fecdaea"
+    },
+    {
+      "path": "experiences/atlas-lab/participant.mjs",
+      "sha256": "aaf148e5762d8c17a1ffedf65fec8fdf6653823b11f86a0069184300942dc818"
+    },
+    {
+      "path": "experiences/atlas-lab/participant.html",
+      "sha256": "3580cf52e280ba308c3827933a926a66a7a71f1ff5697cd7e3542d6a2b4a20c1"
+    },
+    {
+      "path": "experiences/atlas-lab/participant-launcher.mjs",
+      "sha256": "b9036cf81290197a3e0f81381e8546dd30a91887aff42775de0815547b0e0799"
+    },
+    {
+      "path": "experiences/atlas-lab/lab.js",
+      "sha256": "94a12261cb9af6fabe7f3ff1fec262c3565e2a7d9eab59141cfd06cfd9a42eab"
+    },
+    {
+      "path": "experiences/atlas-lab/lab.css",
+      "sha256": "3b314c30d0eaf1661818c5988d39c0f07b5f2227303ee51d05ffd430179e6341"
+    },
+    {
+      "path": "experiences/atlas-lab/index.html",
+      "sha256": "7f27a30e6fd8c2dc6bea888183ff9a367cd898f2b80fc7c7604085c7ba2be679"
+    },
+    {
+      "path": "experiences/atlas-lab/build-share.mjs",
+      "sha256": "c1e4004e8c70d4859818ac14a2bb26ed7fe0b53c955f13ebc71902565671a805"
+    },
+    {
+      "path": "experiences/learning-hub/server.mjs",
+      "sha256": "a928cdcef74d125095bb0868970ecdc71b5c64a48f1e5cd59cce2b4965687b03"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs",
+      "sha256": "b417abed89b43bec6ba5ea00eb802f8f191711060974aea6e3f7381270b3c2fb"
+    },
+    {
+      "path": "tests/atlas-preference-context.test.js",
+      "sha256": "50b47aafae04ea98bfe8f6c1f414c23dabb02c015342e5359255f2b2ae915b3e"
+    },
+    {
+      "path": "tests/atlas-discovery.test.mjs",
+      "sha256": "5ca1839e48d8b8ec35983f54d23cbff088dcc1a3b6ea99693c9b351fb8d80398"
+    },
+    {
+      "path": "tests/atlas-meeting.test.mjs",
+      "sha256": "838c3bec6a727a297c76ba288b839ebbfa653c549720b5c76e16519d07b6288d"
+    },
+    {
+      "path": "tests/atlas-reconnect.test.mjs",
+      "sha256": "6fceb490e3762f5a062dde19baf212167bced44dfbf312bb77ffedaffd0ad6a5"
+    },
+    {
+      "path": "tests/atlas-journey-host.test.mjs",
+      "sha256": "623fecc99b03db0cc72e92d5d282876bce5fe8ede05ca55604ec49e05d45a615"
+    },
+    {
+      "path": "tests/atlas-participant-ui.test.mjs",
+      "sha256": "d2a7b9ec1530cc7cf990a9dc1733beb6c5b804f6a0e5eb169e4b2ca97225c3cf"
+    },
+    {
+      "path": "tests/atlas-next-smoke.mjs",
+      "sha256": "6f5dabec72eb3cf02f2a6f5828ee5d35342a447da62d88327c75dc2a2b7d02e1"
+    },
+    {
+      "path": "tests/atlas-discovery-smoke.mjs",
+      "sha256": "c4a51b200dad4cb21b47680296aada74eb37f8fef6e7ac052e8032713b7a9e68"
+    },
+    {
+      "path": "docs/코어엔진_설계.md",
+      "sha256": "1d8b55a0b8816a3153a082f4073b406aa81c7dc91fd5aa38d13ac05894bf3a26"
+    },
+    {
+      "path": "docs/아틀라스_공통능력_고도화_20261005.md",
+      "sha256": "433aeac6715fdca31506b4d9b7d492b86aff60e4a36ca0a983f63c0c6485db4d"
+    },
+    {
+      "path": "docs/_ops/트랙.md",
+      "sha256": "3a8813dc9fa2e4594889d4eb66622224b025e46b6c146ed2ab12f478f6843128"
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "experiences/atlas-lab/qa/next/context-1280.png",
+      "sha256": "ebe5be03bdbaf1ff4a83f18b90874c4df74262aa140adce3b949839144a384e4"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/next/context-320.png",
+      "sha256": "a73ea2d38eaef9ed98ab12b147c3923975f88080ae33677b9a53ef42035b21bb"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/next/memory-1280.png",
+      "sha256": "19e1d1feb548ae717e39a90958a5edb9bdfe517b82eb347cfc119fada998d1e4"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/next/memory-390.png",
+      "sha256": "b65205e339bced1ab48f39762f97db8ae824efae7fdfb2ce7d1aa9c165195c6a"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/next/participant-1280-private.png",
+      "sha256": "381bccd3e1e33d79668ff763a2d2a296e2a17063ba67725a94103b54f9e14fc3"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/next/participant-1280-closed.png",
+      "sha256": "d0cef4ef97fe4a2049bbe64636e8b71ea3ae1dd6b7be6fc9002f952602a7814f"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/next/participant-320-private.png",
+      "sha256": "f662f68808baf10deb171558fa17db02c3cee64fb43d420be19ed69e6792ae17"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/next/participant-320-closed.png",
+      "sha256": "5c793a66be83a32aa7ab95bcb1023d84bdc4e9c7657a7544c078d9f9c5242ebe"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/local-1280-preview.png",
+      "sha256": "a39b0f567884c936411707d7b032a4274de9f7b4a1054c34e4f5255878ef6c1c"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/local-1280-closed.png",
+      "sha256": "e794e2189443b87fda37a3d3789d4bdedb838befc4a851172b767bd2f910de14"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/local-1280-same-candidate.png",
+      "sha256": "fbdeeaf4c6d876bcd78b3212c470f9e744124af97bf0923608ffe56340fbee05"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/local-1280-feedback-retained.png",
+      "sha256": "4550a027f5578afe3fd7c7e9197e17bb339452008989b621d64982b52f685108"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/desktop-cancelled-selection.png",
+      "sha256": "e794e2189443b87fda37a3d3789d4bdedb838befc4a851172b767bd2f910de14"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/local-390-preview.png",
+      "sha256": "d228be9e4b0e788c2c1059f1b6af665143e42d8d40c74959400c2db4d3fb265b"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/local-390-closed.png",
+      "sha256": "fd9df8ae1ff84c74aca5553285f420b0b5a454749ddd9690bc447aeba148a0e9"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/local-390-same-candidate.png",
+      "sha256": "7158c08faa932c55edcf1317ef1844a502ed55fde4e0a2e54d377aa6017a6db7"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/local-390-feedback-retained.png",
+      "sha256": "fd4cf4f7b00dca7dd0dfa98d16441d6131b1ca4a896ebdc5ea3db1d544e5eef6"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/local-320-preview.png",
+      "sha256": "9b639f63ebb2250d2db38270f57f92cf0864761c1166cba5959beca2e1812c8d"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/local-320-closed.png",
+      "sha256": "a7cf82372e20b8fd8ece64700804c307c5c1d8bfc716c3b8ab70acd6e5d52db5"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/local-320-same-candidate.png",
+      "sha256": "5fe72a83117d9aef2a5e65be41cd40efbfec571adc435986b2521dd017fcb76d"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/local-320-feedback-retained.png",
+      "sha256": "d8fc7faa79cf00b5edcd9ce03ec587cb67f452af3defc090aa477bc5a168fc10"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/file-share-390-preview.png",
+      "sha256": "c44400c37b6d1b07bb0d5d43833e779f1e25476d0917bdf857a5f3e84f0ac1d9"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/file-share-390-closed.png",
+      "sha256": "bfce5bf297a3e2cbb79a8020d85988eb0f438fd1249040ee2bb529d697ef3c8f"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/file-share-390-same-candidate.png",
+      "sha256": "e124ef01785ebb8dc132ba859cef9490427b776a63c1faa377bc5fea635c8897"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/file-share-390-feedback-retained.png",
+      "sha256": "7143d67f34228fbb638c41b97584a2fa891f3be41165d0b650487aa800d5ddfb"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/http-share-390-preview.png",
+      "sha256": "c44400c37b6d1b07bb0d5d43833e779f1e25476d0917bdf857a5f3e84f0ac1d9"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/http-share-390-closed.png",
+      "sha256": "bfce5bf297a3e2cbb79a8020d85988eb0f438fd1249040ee2bb529d697ef3c8f"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/http-share-390-same-candidate.png",
+      "sha256": "e124ef01785ebb8dc132ba859cef9490427b776a63c1faa377bc5fea635c8897"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/journey/http-share-390-feedback-retained.png",
+      "sha256": "7143d67f34228fbb638c41b97584a2fa891f3be41165d0b650487aa800d5ddfb"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/discovery/local-1280-initial-candidates.png",
+      "sha256": "2750349b93a4aae0a096e512d4a5c4c9ca63b6b8cfd23485043d5c5d04a90e22"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/discovery/local-1280-changed-preference.png",
+      "sha256": "acc99f13455b2891987065ab03ea3e762317daa1711b5022724b81278227b1f0"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/discovery/local-1280-consent-cleared.png",
+      "sha256": "a03dcf57653068012e0ef872afee6a7777a5fe18a7403eb9d0d3ae79a319ec5e"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/discovery/desktop-reciprocal-confirmed.png",
+      "sha256": "3dc55679809f0cb9f7e2e214385b7f5c233595c943f17790f4252626753eb1b7"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/discovery/desktop-no-eligible.png",
+      "sha256": "c89c51398d6427cf77382bcc477d39683cec50f3bebca6d835eab4ff94487e19"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/discovery/local-390-initial-candidates.png",
+      "sha256": "efc8877a687bd932c9a17b5412420ea11d1da65fc53f70931965ac535efc6141"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/discovery/local-390-changed-preference.png",
+      "sha256": "5f132ce8851f665af764c37c9cddc2ef5820e4dba0c7989ce29a7e41f644a604"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/discovery/local-390-consent-cleared.png",
+      "sha256": "ec76ace6e624dd590f4c7eefaee5120aae68cadf502019198360bf95ef260cd1"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/discovery/local-320-initial-candidates.png",
+      "sha256": "3989dc149b08ebec6b09054cdefb859559d8d32c83ea106a0795f3c85d4d13e2"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/discovery/local-320-changed-preference.png",
+      "sha256": "4f13f9b8ff302e04ca431b0db8316037c37b960b65c9704c249d4b06308a8c7a"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/discovery/local-320-consent-cleared.png",
+      "sha256": "d625c2d6b36e361e1e9cb1d223e7ca52ff6665cb05a25c7fe33b3de2805164b0"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/discovery/file-share-390-initial-candidates.png",
+      "sha256": "2d57ccab09dd4a7cab5e3be8a47dcbb7b92b67d2ab51d34abe5bbb44e4fbedda"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/discovery/file-share-390-changed-preference.png",
+      "sha256": "ed061c333a70e5299eb77bbc6d24120db9ebe6230c89d94e1424eafdf69d0a36"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/discovery/file-share-390-consent-cleared.png",
+      "sha256": "1b46e6fc082c94ad888e4a65c210bd4810b9ba0427cbcffb9006095770597de1"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/discovery/http-share-390-initial-candidates.png",
+      "sha256": "2d57ccab09dd4a7cab5e3be8a47dcbb7b92b67d2ab51d34abe5bbb44e4fbedda"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/discovery/http-share-390-changed-preference.png",
+      "sha256": "ed061c333a70e5299eb77bbc6d24120db9ebe6230c89d94e1424eafdf69d0a36"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/discovery/http-share-390-consent-cleared.png",
+      "sha256": "1b46e6fc082c94ad888e4a65c210bd4810b9ba0427cbcffb9006095770597de1"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/meeting/local-1280-private-pending.png",
+      "sha256": "c5fa2e5c5e6965130239a6d67f55e460bf00bf436a697e635000fe463387777e"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/meeting/local-1280-explicit-change.png",
+      "sha256": "9a4d6bfe5b673ec879515952053f545a74600ee555d206dff91441d7937cdd2c"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/meeting/local-1280-next.png",
+      "sha256": "f6f47d6f5e28045aa7d4676a6d9ffb81fa09165e487fd7ffd3ac6854f62dda08"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/meeting/desktop-deferred-feedback.png",
+      "sha256": "b39b4b95588054beb0a1b6b0dcf8442e988d13e396e51f88b5ef596aa7d296fb"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/meeting/desktop-boundary.png",
+      "sha256": "7cb990785330c45ee29fba32da2b511493788798369cb4277e64a8fc764ff4b4"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/meeting/local-390-private-pending.png",
+      "sha256": "e8804f9f548a1d9f4ebd17ec27420a2ea0cfddf1eb2fd5973346882302b5378b"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/meeting/local-390-explicit-change.png",
+      "sha256": "912f943ad8ec1d51ace071530c351f2377b305802014c9585002172043aad3ee"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/meeting/local-390-next.png",
+      "sha256": "091b5e4df53afe34aee4a2691fa4dc10b2990c3d5b4db36146d4d645cbea9d06"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/meeting/local-320-private-pending.png",
+      "sha256": "9688db1860884b0ddf0f800791c91fea887466a3cd148aced25e91479ba73e9a"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/meeting/local-320-explicit-change.png",
+      "sha256": "e1e3da7f8edfa17fe6e516b568764cc1d5ce3dfe0d4690f1a3a0b1dc9cf937a7"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/meeting/local-320-next.png",
+      "sha256": "adce285cd61a4d1d83592f1eeae5c8d25778092b35dbf81c986ce32d6651ce80"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/meeting/file-share-390-private-pending.png",
+      "sha256": "58a1a7d405df7c79d9393c8daea54eb3da168aaa7225d3e661c01bbd5ac18158"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/meeting/file-share-390-explicit-change.png",
+      "sha256": "da3ad95ebfd3ef64babbdc424f453702d489ab472317822114ca8b873a06da4e"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/meeting/file-share-390-next.png",
+      "sha256": "c621e858dcb5ef49e8e9849d2e5c440ec8d5ed4643560ca1808da59e809db312"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/meeting/http-share-390-private-pending.png",
+      "sha256": "58a1a7d405df7c79d9393c8daea54eb3da168aaa7225d3e661c01bbd5ac18158"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/meeting/http-share-390-explicit-change.png",
+      "sha256": "da3ad95ebfd3ef64babbdc424f453702d489ab472317822114ca8b873a06da4e"
+    },
+    {
+      "path": "experiences/atlas-lab/qa/meeting/http-share-390-next.png",
+      "sha256": "c621e858dcb5ef49e8e9849d2e5c440ec8d5ed4643560ca1808da59e809db312"
+    }
+  ],
+  "outcome": {
+    "modelCalls": 0,
+    "externalApiCost": 0,
+    "actualPeople": 0,
+    "deployed": false,
+    "liveSettingsChanged": false,
+    "preview": "http://127.0.0.1:63018/atlas-lab/?mvp=1#discovery-title"
+  },
+  "limitations": [
+    "Fictional declarations and finite candidates are not inferred personality, attraction or measured relationship quality.",
+    "The two roles belong to one local walkthrough; real identity/adult checks, remote accounts, production storage and cross-device deletion are not implemented.",
+    "Pause and block are scoped to the current pair, not service-wide account settings.",
+    "Partner updates are fetched manually; no push eviction or background synchronization.",
+    "Standalone share page has local memory and role host disabled.",
+    "Participant data lifetime is bounded by both invitation and session/pair expiry.",
+    "Actual-user satisfaction remains unmeasured."
+  ]
+}

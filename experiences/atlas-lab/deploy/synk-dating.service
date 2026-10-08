@@ -1,0 +1,31 @@
+[Unit]
+Description=SYNK dating account host
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=synk-dating
+Group=synk-dating
+WorkingDirectory=/opt/synk-dating/app
+EnvironmentFile=/etc/synk-dating/runtime.env
+ExecStartPre=/usr/bin/node experiences/atlas-lab/dating-server.mjs --check-config
+ExecStart=/usr/bin/node experiences/atlas-lab/dating-server.mjs
+StateDirectory=synk-dating
+StateDirectoryMode=0700
+UMask=0077
+Restart=on-failure
+RestartSec=5s
+KillSignal=SIGTERM
+TimeoutStopSec=30s
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+RestrictSUIDSGID=true
+LimitNOFILE=8192
+
+[Install]
+WantedBy=multi-user.target

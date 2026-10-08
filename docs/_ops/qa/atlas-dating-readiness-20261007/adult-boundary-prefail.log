@@ -1,0 +1,50 @@
+✖ once-required policy survives deletion of every account document and blocks declaration-only disclosure by a new account after restart (394.7677ms)
+✖ same-sequence equivocation remains fenced across restart and only a higher trusted claim can permit explicit resume (190.4865ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 763.4747
+
+✖ failing tests:
+
+test at tests\atlas-dating-adult.test.mjs:225:1
+✖ once-required policy survives deletion of every account document and blocks declaration-only disclosure by a new account after restart (394.7677ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-adult.test.mjs:230:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\atlas-dating-adult.test.mjs:235:1
+✖ same-sequence equivocation remains fenced across restart and only a higher trusted claim can permit explicit resume (190.4865ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'verified'
+  - 'unavailable'
+  
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-adult.test.mjs:240:40)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'unavailable',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

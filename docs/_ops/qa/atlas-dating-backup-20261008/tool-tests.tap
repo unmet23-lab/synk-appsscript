@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: actual CLI config checks are read-only and create/verify/restore preserves its sources then resumes through the existing gate
+ok 1 - actual CLI config checks are read-only and create/verify/restore preserves its sources then resumes through the existing gate
+  ---
+  duration_ms: 1164.39
+  type: 'test'
+  ...
+# Subtest: old consistent paired backups can be archived but a stale independent latest export cannot authorize copying for resume
+ok 2 - old consistent paired backups can be archived but a stale independent latest export cannot authorize copying for resume
+  ---
+  duration_ms: 241.0614
+  type: 'test'
+  ...
+# Subtest: fresh independent deletion or a newer restriction rejects a mutually coherent older backup
+ok 3 - fresh independent deletion or a newer restriction rejects a mutually coherent older backup
+  ---
+  duration_ms: 200.9346
+  type: 'test'
+  ...
+# Subtest: bundle manifests require an independent hash and exact inventory with unchanged payload bytes
+ok 4 - bundle manifests require an independent hash and exact inventory with unchanged payload bytes
+  ---
+  duration_ms: 236.4025
+  type: 'test'
+  ...
+# Subtest: mismatched environments and unconfirmed writers fail before any destination is created
+ok 5 - mismatched environments and unconfirmed writers fail before any destination is created
+  ---
+  duration_ms: 209.0539
+  type: 'test'
+  ...
+# Subtest: existing backup and restoration destinations are preserved instead of overwritten
+ok 6 - existing backup and restoration destinations are preserved instead of overwritten
+  ---
+  duration_ms: 182.0818
+  type: 'test'
+  ...
+# Subtest: sidecars and linked input/output paths are rejected without changing source files
+ok 7 - sidecars and linked input/output paths are rejected without changing source files
+  ---
+  duration_ms: 134.7139
+  type: 'test'
+  ...
+# Subtest: private config and outputs cannot live in either source repository and CLI errors omit paths or private data
+ok 8 - private config and outputs cannot live in either source repository and CLI errors omit paths or private data
+  ---
+  duration_ms: 250.0365
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2760.9812

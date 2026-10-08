@@ -1,0 +1,173 @@
+{
+  "version": 1,
+  "kind": "atlas-dating-bounded-verification-and-ledger-export",
+  "date": "2026-10-08",
+  "status": "passed",
+  "scope": [
+    "Bounded adult assertion processing without treating local overload as revocation",
+    "Consistent read-only central ledger export into the existing dating restore gate"
+  ],
+  "tests": {
+    "uniquePassed": 150,
+    "failed": 0,
+    "skipped": 0,
+    "suites": [
+      {
+        "name": "existing product, runtime, lifecycle, availability and shutdown regression",
+        "count": 97,
+        "command": "node --test tests/atlas-dating-runtime.test.mjs tests/atlas-dating-service.test.mjs tests/atlas-dating-lifecycle-service.test.mjs tests/atlas-dating-availability-service.test.mjs tests/atlas-dating-shutdown.test.mjs",
+        "durationMs": 387656.4984,
+        "log": "core-regression.tap",
+        "execution": "root local tool run"
+      },
+      {
+        "name": "adult assertions and concurrency",
+        "count": 33,
+        "command": "node --test --test-timeout=15000 tests/atlas-dating-adult.test.mjs tests/atlas-dating-adult-concurrency.test.mjs",
+        "durationMs": 14035.8623,
+        "execution": "delegated local tool run",
+        "rawLogSaved": false
+      },
+      {
+        "name": "adult capacity HTTP integration",
+        "count": 7,
+        "command": "node --test tests/atlas-dating-adult-capacity.test.mjs",
+        "execution": "delegated local tool run",
+        "rawLogSaved": false
+      },
+      {
+        "name": "central ledger export and restore integration",
+        "count": 13,
+        "cwd": "../SYNK-talk",
+        "command": "node --test --test-timeout=120000 tests/synk-account-restore-export.test.js",
+        "execution": "delegated local tool run",
+        "rawLogSaved": false
+      }
+    ]
+  },
+  "adultVerification": {
+    "maxActive": 8,
+    "maxQueued": 16,
+    "waitMs": 500,
+    "executionTimeoutMs": 2000,
+    "configurableLimits": {
+      "maxActive": [
+        1,
+        64
+      ],
+      "maxQueued": [
+        0,
+        256
+      ],
+      "waitMs": [
+        1,
+        5000
+      ],
+      "executionTimeoutMs": [
+        1,
+        8000
+      ]
+    },
+    "singleFlight": "Same subject and identical observation time, in-flight only; maximum 64 joined callers. No completed-result cache or merging across observation times.",
+    "actualPromiseRetainsSlotAfterTimeoutOrCancellation": true,
+    "sweep": {
+      "maxActive": 2,
+      "maxQueued": 8,
+      "waitMs": 1000,
+      "maxWorkersPerRequest": 4,
+      "budgetMs": 8000,
+      "monotonicDeadlineRechecked": true
+    },
+    "overload": "429 account-busy with Retry-After 1 before applying partial checks; existing consents, pairs and account revisions preserved.",
+    "providerFailure": "Actual injected verifier errors or started-call timeouts still produce unavailable and preserve the existing disclosure protection.",
+    "functionalEvidence": [
+      "32 synthetic accounts with at most four workers for one HTTP request",
+      "Concurrent requests share eligible in-flight work; total verifier concurrency is bounded",
+      "Queued and active cancellation prevent further checks",
+      "Late completion after service close cannot access SQLite",
+      "Eight-second sweep expiry applies no partial evidence"
+    ]
+  },
+  "centralExport": {
+    "ownerRepository": "../SYNK-talk",
+    "commands": [
+      "--check-config",
+      "--snapshot",
+      "--latest"
+    ],
+    "configAndDataOutsideBothRepositories": true,
+    "readOnlyRepeatableRead": true,
+    "actualTransactionSettingsChecked": true,
+    "timestamp": "Central transaction_timestamp",
+    "tables": 4,
+    "necessaryColumnsOnly": true,
+    "maxRowsPerTable": 100000,
+    "maxJsonBytes": 16777216,
+    "freshConnectionPerExport": true,
+    "noDefaultDatabaseConnection": true,
+    "databaseEnv": "SYNK_ACCOUNT_RESTORE_DATABASE_URL",
+    "privateAtomicNoOverwriteOutput": true,
+    "productAndPairedFilesRechecked": true,
+    "publicPathsAndLinksRejected": true,
+    "stdinOrStdoutRawLedger": false,
+    "summary": "Counts, SHA and explicit validation boundaries only",
+    "evidence": "Local PGlite executes the production SELECT statements through a transaction adapter; generated paired/latest files pass the existing inspectDatingRestore gate. A newer central hold rejects the old product/paired state.",
+    "writerFreezeVerified": false,
+    "databaseToApiMappingVerified": false,
+    "remoteLatestVerified": false,
+    "databaseBackupCreated": false
+  },
+  "review": {
+    "readOnlyIndependentSourceReview": true,
+    "postgresBeginOptionPathInspectedLocally": true,
+    "confirmedAdditionalP1P2": 0,
+    "reviewIsNotProductionVerification": true
+  },
+  "resolvedFindings": [
+    "The old late-success/new-revocation fixture used identical observation times, now intentionally shared. Advancing by one millisecond was still behind the persisted logical clock. The fixture now advances by one second and preserves its original sequence/revocation/restart assertions.",
+    "The new HTTP fixture initially lacked the candidate availability prerequisite and retained the copied discovery owner. Both synthetic fixture issues were corrected before the final seven passing tests.",
+    "Local capacity errors are propagated separately from real verifier failure so they cannot silently clear consent or close introductions.",
+    "The sweep uses a separate cancellation controller so a time-budget rejection remains 429 rather than being replaced by a caller-cancelled error."
+  ],
+  "limits": {
+    "realProviderRequests": 0,
+    "remoteDatabaseConnections": 0,
+    "externalApiCost": 0,
+    "modelCalls": 0,
+    "publicDeployment": false,
+    "productionDatabaseRestore": false,
+    "realAdultProviderConnected": false,
+    "physicalDevices": 0,
+    "actualParticipants": 0,
+    "performanceBenchmark": false,
+    "satisfactionEffectVerified": false,
+    "newBrowserRuns": 0,
+    "browserReason": "No browser code or UI changed; the existing account-busy response contract is reused. New verification covers server HTTP and local database behavior.",
+    "tutorDeferred": true,
+    "recruitmentDeferred": true
+  },
+  "cleanup": {
+    "newCapacityAndExportFixturesCleaned": true,
+    "legacyAdultAndServiceFixtures": "Existing tests retain isolated temporary databases; no unrelated cleanup was attempted."
+  },
+  "remaining": [
+    "Operational confirmation of all central writers and dispatchers stopped",
+    "Least-privilege production DB connection and verified DB/API environment mapping",
+    "Trusted independent current central ledger preservation",
+    "Real HTTPS/account/adult-provider and physical-phone rollout checks"
+  ],
+  "sourceSha256": {
+    "experiences/atlas-lab/dating-adult.mjs": "41d9db2f95edbee0842d25cbcd672cccac5b11c1c1be8bfab85aefd833076545",
+    "experiences/atlas-lab/dating-service.mjs": "cef366d04812bfe57d1ba642afef68d49726bf8c44296286db3ef0770549ccf2",
+    "experiences/atlas-lab/dating-runtime.mjs": "a8e41e4f95db51c3f51f292ab6f5c028c86ad599d5d1a37ff40fba6513b8577a",
+    "experiences/atlas-lab/dating-admission.mjs": "d77aaba11bfc35a5129ef2a6c9284ac8a2a630c23939e5db5a9d3d20ccd93878",
+    "experiences/atlas-lab/dating-restore.mjs": "bf90708150385b495fdb3454870b61014b0eaa3fc11055e71a117cb8119f5971",
+    "tests/atlas-dating-adult.test.mjs": "6356bc181a21e6c34433de83d9910206791b685840f0dbc0ce60b7a874c451d4",
+    "tests/atlas-dating-adult-concurrency.test.mjs": "30455b1a38b87c42d7cd82c64dec977e209dd587286af038fa16d61fd7044236",
+    "tests/atlas-dating-adult-capacity.test.mjs": "9df9a797d37a3ec57c4ea1c5c10476545c4f325e7585b57f0f81634717625f7a",
+    "tests/atlas-dating-runtime.test.mjs": "8ecb483054344a5f727a806a0bb0a2ef49a461fbf6321701414b407c826d9d61",
+    "../SYNK-talk/lib/synk-account-restore-export.js": "1f81f83b7c46ea52c5b12770e069fe639a468284413e15103083c971698338b8",
+    "../SYNK-talk/tools/synk-account-restore-export.js": "89c5f5f8058c950f04491d3ada49a569f837b7b30e7c0d630d719e0caf2cbdb0",
+    "../SYNK-talk/tests/synk-account-restore-export.test.js": "1c42d76147687b6f4f42281d5a07ccf760cb5b48b1a0bc6fd6f278a0db7053d4"
+  }
+}

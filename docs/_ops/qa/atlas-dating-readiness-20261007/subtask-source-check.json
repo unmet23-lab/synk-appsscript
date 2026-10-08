@@ -1,0 +1,78 @@
+{
+  "at": "2026-10-07T10:56:52.548Z",
+  "allMatched": true,
+  "sources": [
+    {
+      "path": "experiences/atlas-lab/discovery-guidance.mjs",
+      "sha256": "ce57fb7a939c5a867d1c93e0a37c63a47a90c8da02962dce7e5c37b811b0c768"
+    },
+    {
+      "path": "tests/atlas-discovery-guidance.test.mjs",
+      "sha256": "274a5dff5401cb3e11c9256a86d3592608e3e6839f0de3e1873870476fe2a15c"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-adult.mjs",
+      "sha256": "be6594cf17ec01ca0ca352f3819d8f2726a21771d681e36f729075dad8ef2555"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-service.mjs",
+      "sha256": "278b72f4a47127739787b8f7c153958e5fab80e196501e62e7550f4065c47977"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-server.mjs",
+      "sha256": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-store.mjs",
+      "sha256": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505"
+    },
+    {
+      "path": "tests/atlas-dating-adult.test.mjs",
+      "sha256": "1079beb4deb6beb7eb29f194af621d1da7ffce2997f4f83fb6dee128d6a13180"
+    },
+    {
+      "path": "tests/atlas-dating-backup-restore.test.mjs",
+      "sha256": "2eadb0ce511bf75f6317244996ffd7d373a49be02a16bb967b93aa2080194235"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-store.mjs",
+      "sha256": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-service.mjs",
+      "sha256": "278b72f4a47127739787b8f7c153958e5fab80e196501e62e7550f4065c47977"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-server.mjs",
+      "sha256": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-lifecycle.mjs",
+      "sha256": "78e5b2b1a2bb44e505ac19633649390fe985d1dcabd3f86e1749532984a951f6"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-adult.mjs",
+      "sha256": "be6594cf17ec01ca0ca352f3819d8f2726a21771d681e36f729075dad8ef2555"
+    },
+    {
+      "path": "../SYNK-talk/tests/lib/account-lifecycle-fixture.js",
+      "sha256": "ba37dc9739210a9e16cd1723fe6150ad92ab9ad6e5324e1b47afa699d3e803a7"
+    },
+    {
+      "path": "../SYNK-talk/tests/lib/postgres-json-fixture.js",
+      "sha256": "3fa6f3d9b36b814712f95762ab16b97f861580c6a29bd60096cb8b395b5b248f"
+    },
+    {
+      "path": "../SYNK-talk/lib/synk-account-lifecycle.js",
+      "sha256": "5c993a74670418e97606ea4d411997d6626521bf054d5e3832436df6ce124b88"
+    },
+    {
+      "path": "../SYNK-talk/supabase/migrations/20261007020000_synk_account_lifecycle_c16.sql",
+      "sha256": "a22224fcce7ace0678b36a53ba9246aba89f1fabeb3a85016feb8dd1fc6f63a0"
+    },
+    {
+      "path": "../SYNK-talk/supabase/migrations/20261007030000_synk_account_availability_c16.sql",
+      "sha256": "550d19cbefd11a3f1c119915e167f944ba1a7f6407797ef6e7ab3f29f9a73137"
+    }
+  ]
+}

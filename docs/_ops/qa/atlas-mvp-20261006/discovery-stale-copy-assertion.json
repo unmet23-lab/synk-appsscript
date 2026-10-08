@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "status": "failed",
+  "at": "2026-10-06T11:01:49.579Z",
+  "kind": "fictional-candidate-discovery-browser-ux",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualPeople": 0,
+  "deployed": false,
+  "errors": [],
+  "missing": [],
+  "failedRequests": [],
+  "externalRequests": [],
+  "unexpectedRequests": [],
+  "mockedApi": [
+    {
+      "label": "local-1280",
+      "path": "/api/computer-interpretation"
+    },
+    {
+      "label": "local-1280",
+      "path": "/api/me"
+    }
+  ],
+  "paths": [
+    {
+      "label": "local-1280",
+      "checks": [
+        "keyboard-consent-and-visible-focus",
+        "questionnaire-self-and-wants-separate",
+        "five-public-candidates",
+        "reciprocal-required-exclusion",
+        "unknown-schedule-pending",
+        "preference-changes-candidate-and-reason",
+        "change-clears-selection",
+        "cancel-does-not-infer-dislike",
+        "consent-withdrawal-hides-results",
+        "reconsent-does-not-restore-selection",
+        "unknown-consent-hides-results"
+      ],
+      "onboardingTrace": [
+        {
+          "field": "consent",
+          "value": true,
+          "focus": {
+            "visible": true,
+            "outline": "solid",
+            "width": "3px"
+          }
+        },
+        {
+          "field": "availability",
+          "value": "weekend"
+        },
+        {
+          "field": "self.pace",
+          "value": "listen"
+        },
+        {
+          "field": "wants.pace",
+          "value": "lead"
+        },
+        {
+          "field": "wants.plan",
+          "value": "planned"
+        },
+        {
+          "field": "self.plan",
+          "value": "planned",
+          "via": "explicit-editor"
+        }
+      ],
+      "beforeCandidate": "candidate-1",
+      "afterCandidate": "candidate-2",
+      "changeReason": "상대에게 바라는 대화 방식: ‘차분히 듣고 응답하는 사람’을 앞으로도 적용해요. 쌍방 조건을 다시 살펴봤어요. 먼저 살펴볼 후보가 달라졌어요.",
+      "layout": {
+        "width": 1280,
+        "documentWidth": 1280,
+        "overflowing": []
+      }
+    }
+  ],
+  "screenshots": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-1280-initial-candidates.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-1280-changed-preference.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-1280-consent-cleared.png"
+  ],
+  "failure": "AssertionError [ERR_ASSERTION]: The input did not match the regular expression /어느 쪽이든.*바꾸지/. Input:\n\n'이번에는 미확인으로 남겨요. 평소 답이나 상관없다는 답으로 채우지 않아요.'\n\n    at boundaries (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-discovery-smoke.mjs:181:10)\n    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-discovery-smoke.mjs:245:121"
+}

@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-07T19:29:19.400Z",
+  "publicInput": {
+    "keys": [
+      "version",
+      "environment",
+      "supabaseUrl",
+      "accountApiUrl",
+      "supabasePublishableKey",
+      "portalUrl",
+      "clients"
+    ],
+    "environment": "rehearsal",
+    "supabaseUrl": "https://baasvefzinrxaryksayl.supabase.co",
+    "portalUrl": "https://synk.im/id-rehearsal/",
+    "clients": 0
+  },
+  "preservedFiles": {
+    "desktop/auth-config.json": "97438fc8022ea55f29a5b9f08414a7ce501ea7551d04dcc7132c8ffc9d699431",
+    "experiences/synk-account/config.json": "94ebb4336a55daffa83fa9666d4afc65fe295d499c725f0b305cc2083d6c3eaf",
+    "experiences/daily-fortune/account.config.json": "7ff45f47188d540c33006fb86cbf202bee0b5591d61aa465c12b011a6f1605ef",
+    "tools/synk-id/state/provision-production.json": "b1aaef7dc79a1ef06372feea662223af5ec6b4bd84515748050c14e11625a418"
+  }
+}

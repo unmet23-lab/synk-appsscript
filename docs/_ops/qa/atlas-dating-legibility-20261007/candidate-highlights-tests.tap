@@ -1,0 +1,26 @@
+✔ current effective priority order selects at most two canonical own labels without changing any source (98.6824ms)
+✔ no priority declaration returns no highlights and never promotes existing matched reasons (46.844ms)
+✔ a known difference stays different even if arbitrary reason copy says perfect agreement (52.4502ms)
+✔ a missing public answer remains explicitly unconfirmed rather than matched (48.8344ms)
+✔ an explicit any declaration is neutral and does not imply a stronger fit (52.045ms)
+✔ only a current satisfied contact allowance is labelled conditional, distinct from matching the preference (166.8025ms)
+✔ unknown public allowance evidence stays different; a stale or unsupported allowance cannot become conditional (137.5426ms)
+✔ only current known own wants declarations qualify; explicit unknown and expired values are not filled from history (96.7575ms)
+✔ partner-owned, non-editable and ambiguous own reasons cannot be used as a highlight (126.2015ms)
+✔ own reason value, source and provenance must agree with the current effective declaration (242.4719ms)
+✔ an independently supplied stale candidate reason cannot replace the current public projection (55.6183ms)
+✔ current temporary answer provenance is labelled context and past source expiry is excluded at the exact boundary (67.2508ms)
+✔ expired baseline importance cannot be shown through stale effective priorities (45.3222ms)
+✔ temporary importance ends at its declared boundary and a fresh projection uses only the valid baseline order (75.4362ms)
+✔ dated declarations require the explicit server clock and never consult the device clock (102.4733ms)
+✔ closed, withdrawn, malformed and duplicate-priority projections fail closed without inventing reasons (289.4684ms)
+✔ unrelated private metadata and accessor properties are neither read nor echoed (43.1137ms)
+✔ required own comparison keeps its baseline authority and is omitted during a conflicting temporary answer (85.1628ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1971.6697

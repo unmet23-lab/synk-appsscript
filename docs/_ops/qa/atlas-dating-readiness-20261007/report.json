@@ -1,0 +1,136 @@
+{
+  "at": "2026-10-07T10:56:52.911Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "Separate missing own required confirmation from authorized current public-information waiting, without lowering conditions or exposing private peer data.",
+    "Display first-recommendation preparation, currently usable recommendations and optional questions without completion percentages or all-answer counts.",
+    "Injected server-only minimal adult assertion contract, durable required policy, persistent conflict fence, expiry/revocation/error holds and explicit new consent and acceptance.",
+    "Physical paired PGlite dump/load and SQLite backup/restore under quiesced synthetic writers, with receipt, high-water, deletion and mismatch checks."
+  ],
+  "tests": {
+    "uniqueCases": 285,
+    "passed": 285,
+    "failed": 0,
+    "totalExecutions": 285,
+    "groups": [
+      {
+        "name": "discovery guidance, readiness and personalization",
+        "log": "helper-tests.log",
+        "tests": 129,
+        "pass": 129,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "sha256": "cb33c9d0140216c3eb4390c1b493c10923ad8aaf967627d5fc2a205cf51b23f6"
+      },
+      {
+        "name": "server adult assertion and enforcement",
+        "log": "adult-tests-final.log",
+        "tests": 21,
+        "pass": 21,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "sha256": "f6f38eb869c0f809508326ab39e9e97154b2fb59d1bcccb352cd45ce138014ce"
+      },
+      {
+        "name": "service, availability and receipt regression",
+        "log": "adult-service-regression.log",
+        "tests": 75,
+        "pass": 75,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "sha256": "f9868a504bd471245efbf105584231bf9dcbf3a068ee83bb43e657fbbeef4535"
+      },
+      {
+        "name": "account, checkpoint, delivery, live and lifecycle",
+        "log": "client-lifecycle-final-tests.log",
+        "tests": 55,
+        "pass": 55,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "sha256": "6725b87320f439db2a40618d2bc6244c75bb6b2ee54775129b0496dc0b7b0e68"
+      },
+      {
+        "name": "actual paired PGlite and SQLite backup restore",
+        "log": "backup-tests-final-source.tap",
+        "tests": 5,
+        "pass": 5,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "sha256": "f9861e3368e452099927a0155ec49a37ec74a410600a85c28dd6fab0b2c451aa"
+      }
+    ]
+  },
+  "browserPaths": 36,
+  "browser": [
+    {
+      "kind": "dating-readiness",
+      "paths": 9,
+      "at": "2026-10-07T10:53:06.646Z",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "log": "browser-new.log"
+    },
+    {
+      "kind": "dating-availability-recovery",
+      "paths": 9,
+      "at": "2026-10-07T10:49:58.569Z",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "log": "browser-availability-regression.log"
+    },
+    {
+      "kind": "dating",
+      "paths": 18,
+      "at": "2026-10-07T10:53:38.049Z",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "log": "browser-dating-regression.log"
+    }
+  ],
+  "preview": {
+    "url": "http://127.0.0.1:51072/atlas-lab/dating.html",
+    "filesMatched": 11,
+    "isolatedDemo": true
+  },
+  "engineCodeChangedByThisBatch": 0,
+  "newEngines": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "tutorChanges": 0,
+  "publicDeployment": false,
+  "remoteMigration": false,
+  "limitations": [
+    "All checks use synthetic local identities, loopback HTTP and local PGlite/SQLite. Real OAuth, adult supplier, legal age threshold, physical devices and participant satisfaction are unverified.",
+    "No actual verification provider, webhook, bulk retrieval, operating schedule or paid AI is enabled. Revocation is observed on the next configured local request.",
+    "The demo remains declaration-only with verified:false; a demo declaration is not server adult verification.",
+    "Paired snapshots are sequential and consistent only because writers and admission are quiesced. The test does not install production automatic restore or an atomic cross-database backup.",
+    "Coherent old paired backups require newer sequence or erasure knowledge outside the pair to detect later holds/deletion. The synthetic knownLatest input is not a production witness implementation.",
+    "Production encrypted backup storage, retention, restored policy admission, remote DB recovery and actual operational effects remain unimplemented or unverified.",
+    "Paid AI activation/evaluation, tutor and participant recruitment remain deferred."
+  ],
+  "evidence": [
+    "test-deduplication.json",
+    "subtask-source-check.json",
+    "final-source-check.json",
+    "helper-subtask.json",
+    "adult-subtask.json",
+    "adult-boundary-prefail.log",
+    "backup-subtask.json",
+    "browser-batch.json",
+    "browser-before-fixture-correction.json",
+    "preview-check.json",
+    "screenshots.json",
+    "sources.json",
+    "frozen-check.json",
+    "run-note.json"
+  ]
+}

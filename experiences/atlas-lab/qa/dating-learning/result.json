@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-06T19:35:28.837Z",
+  "status": "passed",
+  "kind": "synthetic-explicit-learning-browser",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "paths": [
+    "optional question explains declared decision value without probabilities; explicit unknown remains unknown and uses one question without fabricated preferences",
+    "empty recommendations: one explicit availability preview preserves fields until apply, keeps hard criteria and hidden candidates, restores only the eligible candidate, and does not inherit a correction source after leaving its profile screen",
+    "own completed meeting enables one private source-bound criterion review; peer completion is independent; response and cancel preserve preferences; expired preview is rejected; explicit apply changes only context priority; a later declaration blocks reuse",
+    "worse followup offers a source-bound restore preview, cancel keeps the edit, apply restores only that field and preserves unrelated later answers; a later edit of the same field disables restoration and peer sees no private followup"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "question-value-390.png",
+    "empty-result-one-condition-preview-390.png",
+    "own-criterion-reflection-390.png",
+    "criterion-priority-preview-390.png",
+    "worse-source-restore-preview-390.png",
+    "final-private-recovery-320.png",
+    "peer-private-isolation-1280.png"
+  ]
+}

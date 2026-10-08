@@ -1,0 +1,22 @@
+✔ real local PostgreSQL export creates private paired/latest inputs accepted by the dating restore gate (2483.3968ms)
+✔ latest uses a new central transaction and exposes a new hold missing from the old paired backup (1393.0677ms)
+✔ latest preserves the dispatcher timestamps for availability and terminal deletion (1531.1677ms)
+✔ transaction rejects real writes, rolls back on error, closes, and leaves no output (1749.5857ms)
+✔ database errors and close errors are sanitized and do not publish evidence (1775.7105ms)
+✔ product changes during the central read fail instead of exporting a mixed pair (1846.4258ms)
+✔ configuration-only mode makes no connection or files; missing database URL never falls back to defaults (16.2247ms)
+✔ writer confirmation, environment mismatch, existing output and public repository paths fail before connection (18.8806ms)
+✔ latest rejects mismatched paired identity and never merely relabels the old paired data (11.6681ms)
+✔ symlink directories and uncheckpointed SQLite are rejected before database access (17.8839ms)
+✔ actual CLI emits only a safe configuration summary or fixed error without opening a database (253.9119ms)
+✔ unsafe isolation confirmation aborts before any account rows are collected (0.4254ms)
+✔ an output race preserves the other file and partial staging writes never publish a final JSON (1872.0418ms)
+✔ latest refuses changed paired evidence or an old database clock without writing its destination (1665.9509ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14851.4444

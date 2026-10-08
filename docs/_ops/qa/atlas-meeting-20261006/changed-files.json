@@ -1,0 +1,19 @@
+[
+  "atlas/personalization.js",
+  "experiences/atlas-lab/meeting.mjs",
+  "experiences/atlas-lab/meeting-ui.mjs",
+  "experiences/atlas-lab/lab.js",
+  "experiences/atlas-lab/lab.css",
+  "experiences/atlas-lab/index.html",
+  "experiences/atlas-lab/build-share.mjs",
+  "experiences/learning-hub/server.mjs",
+  "experiences/learning-hub/server.test.mjs",
+  "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs",
+  "docs/마케팅/온라인마케팅지도/engagement/company/server-computer-interpretation.test.mjs",
+  "tests/atlas-preference-context.test.js",
+  "tests/atlas-meeting.test.mjs",
+  "tests/atlas-meeting-smoke.mjs",
+  "docs/코어엔진_설계.md",
+  "docs/아틀라스_공통능력_고도화_20261005.md",
+  "docs/_ops/트랙.md"
+]

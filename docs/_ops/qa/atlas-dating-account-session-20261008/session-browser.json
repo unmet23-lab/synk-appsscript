@@ -1,0 +1,63 @@
+{
+  "at": "2026-10-07T18:59:19.303Z",
+  "kind": "synthetic-account-session-browser",
+  "status": "passed",
+  "actualUsers": 0,
+  "physicalDevices": 0,
+  "realIdentityProviderCalls": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [
+    "local logout clears private DOM, draft controls, navigation and stored credentials before a delayed synthetic identity response; the second isolated session of the same synthetic account remains usable, and reload cannot recreate the logged-out session",
+    "a synthetic identity logout network failure keeps the page locally signed out and presents the server-termination limitation without restoring the former private view",
+    "an authorized state response captured before logout and delivered afterward cannot restore the former private view or credentials",
+    "ordinary browser offline failure preserves the current synthetic session and own draft; the real online event then receives local-service HTTP 401 for only the revoked token and clears the private DOM, while the other isolated session remains authorized"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "delayed-logout-private-dom-boundary-390.png",
+    "logout-provider-unreachable-local-cleared-320.png",
+    "offline-return-revoked-clears-private-view-390.png"
+  ],
+  "logoutObservations": [
+    {
+      "case": "delayed-success",
+      "phase": "remote-response-pending",
+      "viewCleared": true,
+      "credentialCleared": true,
+      "privateTextInDOM": false,
+      "draftInDOM": false,
+      "privateControls": 0,
+      "signInVisible": true,
+      "navigationHidden": true
+    },
+    {
+      "case": "network-failure",
+      "phase": "remote-response-pending",
+      "viewCleared": true,
+      "credentialCleared": true,
+      "privateTextInDOM": false,
+      "draftInDOM": false,
+      "privateControls": 0,
+      "signInVisible": true,
+      "navigationHidden": true
+    }
+  ],
+  "sourcesBefore": {
+    "dating-account.mjs": "f45df51b75d7ee502baa36e44c6c1fc31258fdd6238f9591736f1da2e24c94e6",
+    "dating-ui.mjs": "c30023f676d1291d93f7ea71db8b6c8116362c3849b0aedc4b49f32821425951",
+    "dating-live.mjs": "b19c3c166ab75f378039d76820a972db8a42396b4f8b88742310be6f50266e5d",
+    "dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-service.mjs": "c0929e57802e406b242e00811d85aa814d419bf9963eb757ed6035c70199e9fa"
+  },
+  "sourcesAfter": {
+    "dating-account.mjs": "f45df51b75d7ee502baa36e44c6c1fc31258fdd6238f9591736f1da2e24c94e6",
+    "dating-ui.mjs": "c30023f676d1291d93f7ea71db8b6c8116362c3849b0aedc4b49f32821425951",
+    "dating-live.mjs": "b19c3c166ab75f378039d76820a972db8a42396b4f8b88742310be6f50266e5d",
+    "dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-service.mjs": "c0929e57802e406b242e00811d85aa814d419bf9963eb757ed6035c70199e9fa"
+  }
+}

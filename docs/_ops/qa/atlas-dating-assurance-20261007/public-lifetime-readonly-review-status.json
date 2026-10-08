@@ -1,0 +1,46 @@
+{
+  "task": "readonly-public-lifetime-ui-review",
+  "productEdits": 0,
+  "exploratoryEvidence": "docs/_ops/qa/atlas-dating-assurance-20261007/public-lifetime-readonly-review.json",
+  "screenshot": "docs/_ops/qa/atlas-dating-assurance-20261007/public-lifetime-review-320.png",
+  "confirmedWorking": [
+    "public field deadline expires without clearing the saved raw answer",
+    "expired public must-have checkbox remains selected",
+    "unrelated public draft is restored after expiry polling",
+    "unchanged past public deadline round-trips while another answer changes",
+    "320px document width is 320px; page errors and external requests zero"
+  ],
+  "findings": [
+    {
+      "priority": "P2",
+      "source": "experiences/atlas-lab/dating-ui.mjs:1144",
+      "problem": "changing an expired published answer while keeping its expired deadline produced generic HTTP400 guidance",
+      "status": "root fix observed in source; final root browser verification pending",
+      "fixLines": [
+        1144,
+        1145,
+        1146,
+        1147,
+        1148
+      ]
+    },
+    {
+      "priority": "P2",
+      "source": "experiences/atlas-lab/dating-ui.mjs:1120",
+      "problem": "editing a disclosure form after its review could leave a previously captured payload available to save",
+      "status": "root fix observed in source; final root browser verification pending",
+      "fixLines": [
+        1120,
+        1121
+      ]
+    }
+  ],
+  "finalReadHashes": {
+    "experiences/atlas-lab/dating-live.mjs": "bb17da22edbd39f09c44d08f0ee06cfafd0d2fee1f01a56274c2ed87ecdfbad3",
+    "experiences/atlas-lab/dating-ui.mjs": "b99d048d320821237f00a627f8191643ce13caf73d478156f5342f95e8d39467"
+  },
+  "limitations": [
+    "exploratory browser evidence describes the pre-fix behavior; original JSON preserved",
+    "no runtime claim for the root fixes; parent owns final browser regression"
+  ]
+}

@@ -1,0 +1,10 @@
+✔ real canonical purge SQL, outbox worker and product HTTP receiver erase together; a lost acknowledgment retries safely after restart (2345.4491ms)
+✔ canonical status transactions and the shared worker stop exposure without owner login, then require fresh consent before a new introduction (2129.1011ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4682.8143

@@ -1,0 +1,146 @@
+TAP version 13
+# Subtest: context transition explains temporary answers, regions, priorities and exclusions while preserving must-haves and hiding
+ok 1 - context transition explains temporary answers, regions, priorities and exclusions while preserving must-haves and hiding
+  ---
+  duration_ms: 2472.6628
+  type: 'test'
+  ...
+# Subtest: context transition returns explicit unknown to known baseline and missing or expired baseline to unconfirmed
+not ok 2 - context transition returns explicit unknown to known baseline and missing or expired baseline to unconfirmed
+  ---
+  duration_ms: 366.414
+  type: 'test'
+  location: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-context-transition.test.mjs:48:1'
+  failureType: 'testCodeFailure'
+  error: 'Personalization: invalid preference value'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    fail (C:\Users\q1212\Documents\SYNK-appsscript\atlas\personalization.js:33:35)
+    preferenceReplay (C:\Users\q1212\Documents\SYNK-appsscript\atlas\personalization.js:320:92)
+    Object.recordPreference [as record] (C:\Users\q1212\Documents\SYNK-appsscript\atlas\personalization.js:428:17)
+    replay (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/discovery.mjs:679:38)
+    appendRecord (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/discovery.mjs:763:80)
+    Object.record (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/discovery.mjs:765:42)
+    set (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-context-transition.test.mjs:17:54)
+    TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-context-transition.test.mjs:53:11)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1325:25)
+  ...
+# Subtest: a hidden baseline deadline invalidates the next-context preview even while the temporary effective answer remains live
+ok 3 - a hidden baseline deadline invalidates the next-context preview even while the temporary effective answer remains live
+  ---
+  duration_ms: 1436.4599
+  type: 'test'
+  ...
+# Subtest: closed contexts can review the next context but revoked consent and tampered transition cannot apply
+ok 4 - closed contexts can review the next context but revoked consent and tampered transition cannot apply
+  ---
+  duration_ms: 925.9268
+  type: 'test'
+  ...
+# Subtest: next context ends only its conditional allowance and retains the explicitly approved baseline allowance
+ok 5 - next context ends only its conditional allowance and retains the explicitly approved baseline allowance
+  ---
+  duration_ms: 2563.6122
+  type: 'test'
+  ...
+# Subtest: retained priority and timed hiding expiry are review changes while ordinary passage of time is not
+ok 6 - retained priority and timed hiding expiry are review changes while ordinary passage of time is not
+  ---
+  duration_ms: 1092.6017
+  type: 'test'
+  ...
+# Subtest: HTTP context preview and cancellation never write preferences, exposure or a receipt and reveal only owner transition metadata
+not ok 7 - HTTP context preview and cancellation never write preferences, exposure or a receipt and reveal only owner transition metadata
+  ---
+  duration_ms: 3647.4225
+  type: 'test'
+  location: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-context-transition.test.mjs:143:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"ok":false,"error":{"code":"invalid-action"}}
+    
+    400 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 400
+  operator: 'strictEqual'
+  stack: |-
+    Object.ok (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-context-transition.test.mjs:129:92)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-context-transition.test.mjs:147:3)
+    async Test.run (node:internal/test_runner/test:1332:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+  ...
+# Subtest: HTTP apply records reviewed old-context exposure and the new context atomically once and matches preview tie order
+ok 8 - HTTP apply records reviewed old-context exposure and the new context atomically once and matches preview tie order
+  ---
+  duration_ms: 1295.6949
+  type: 'test'
+  ...
+# Subtest: HTTP duplicate old-context exposure is not counted twice in the reviewed next-context global tie order
+ok 9 - HTTP duplicate old-context exposure is not counted twice in the reviewed next-context global tie order
+  ---
+  duration_ms: 1450.9114
+  type: 'test'
+  ...
+# Subtest: HTTP rejects foreign, duplicate, hidden and correction-linked exposure input while closed contexts accept only empty exposure
+ok 10 - HTTP rejects foreign, duplicate, hidden and correction-linked exposure input while closed contexts accept only empty exposure
+  ---
+  duration_ms: 1640.6963
+  type: 'test'
+  ...
+# Subtest: HTTP rejects a stale reviewed return when a hidden baseline answer expires without an account revision change
+ok 11 - HTTP rejects a stale reviewed return when a hidden baseline answer expires without an account revision change
+  ---
+  duration_ms: 1407.8375
+  type: 'test'
+  ...
+# Subtest: HTTP apply guards actor, CAS, changed public pool and withdrawn storage consent without partial exposure
+not ok 12 - HTTP apply guards actor, CAS, changed public pool and withdrawn storage consent without partial exposure
+  ---
+  duration_ms: 2219.2804
+  type: 'test'
+  location: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-context-transition.test.mjs:204:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + null
+    - undefined
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  actual: ~
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-context-transition.test.mjs:217:53)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async Test.run (node:internal/test_runner/test:1332:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+  ...
+# Subtest: HTTP expose failure rolls back the entire exposure/context/receipt transaction and permits the same request retry
+ok 13 - HTTP expose failure rolls back the entire exposure/context/receipt transaction and permits the same request retry
+  ---
+  duration_ms: 1440.7302
+  type: 'test'
+  ...
+# Subtest: HTTP receipt failure rolls back the entire exposure/context/receipt transaction and permits the same request retry
+ok 14 - HTTP receipt failure rolls back the entire exposure/context/receipt transaction and permits the same request retry
+  ---
+  duration_ms: 1344.5623
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 11
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 23551.3727

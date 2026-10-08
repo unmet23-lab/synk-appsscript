@@ -1,0 +1,400 @@
+TAP version 13
+# Subtest: preference summary shows only required, known priorities, active context and unknown declarations without repeating ordinary baseline answers
+ok 1 - preference summary shows only required, known priorities, active context and unknown declarations without repeating ordinary baseline answers
+  ---
+  duration_ms: 1080.0701
+  type: 'test'
+  ...
+# Subtest: summary keeps the baseline must-have visible beside conflicting context and does not let an unknown or missing hard answer inherit soft context
+ok 2 - summary keeps the baseline must-have visible beside conflicting context and does not let an unknown or missing hard answer inherit soft context
+  ---
+  duration_ms: 2768.69
+  type: 'test'
+  ...
+# Subtest: summary returns to a live baseline after context expiry, preserves explicit any and distinguishes expired baseline from unknown
+ok 3 - summary returns to a live baseline after context expiry, preserves explicit any and distinguishes expired baseline from unknown
+  ---
+  duration_ms: 4558.7499
+  type: 'test'
+  ...
+# Subtest: summary validates priority limits, ignores other private projections and does not ask questions or read source events
+ok 4 - summary validates priority limits, ignores other private projections and does not ask questions or read source events
+  ---
+  duration_ms: 2765.5066
+  type: 'test'
+  ...
+# Subtest: comparison uses the two declared priority fields and their existing own-direction reasons
+ok 5 - comparison uses the two declared priority fields and their existing own-direction reasons
+  ---
+  duration_ms: 2.4511
+  type: 'test'
+  ...
+# Subtest: without priorities the user chooses one or two comparison fields without changing recommendation settings
+ok 6 - without priorities the user chooses one or two comparison fields without changing recommendation settings
+  ---
+  duration_ms: 2.2197
+  type: 'test'
+  ...
+# Subtest: invalid, duplicate, revoked, held or excluded selections return no candidate identity or explanation
+ok 7 - invalid, duplicate, revoked, held or excluded selections return no candidate identity or explanation
+  ---
+  duration_ms: 2.0736
+  type: 'test'
+  ...
+# Subtest: same result is based on structured comparison, never candidate names or localized wording
+ok 8 - same result is based on structured comparison, never candidate names or localized wording
+  ---
+  duration_ms: 0.3684
+  type: 'test'
+  ...
+# Subtest: unknown, absent, duplicate and legacy textual reasons never invent a comparison
+ok 9 - unknown, absent, duplicate and legacy textual reasons never invent a comparison
+  ---
+  duration_ms: 0.3177
+  type: 'test'
+  ...
+# Subtest: condition satisfied from structured contact metadata is distinct from a primary match
+ok 10 - condition satisfied from structured contact metadata is distinct from a primary match
+  ---
+  duration_ms: 0.3562
+  type: 'test'
+  ...
+# Subtest: explicit any is a known comparison result, and raw candidate values or private data are never read
+ok 11 - explicit any is a known comparison result, and raw candidate values or private data are never read
+  ---
+  duration_ms: 0.2578
+  type: 'test'
+  ...
+# Subtest: comparison results are detached and cannot change the source view
+ok 12 - comparison results are detached and cannot change the source view
+  ---
+  duration_ms: 0.2821
+  type: 'test'
+  ...
+# Subtest: actual Discovery comparison metadata exposes the expected tradeoff without inspecting raw candidates
+ok 13 - actual Discovery comparison metadata exposes the expected tradeoff without inspecting raw candidates
+  ---
+  duration_ms: 545.8684
+  type: 'test'
+  ...
+# Subtest: disclosure differences compare valid ongoing self answers only, not wants, consent or availability
+ok 14 - disclosure differences compare valid ongoing self answers only, not wants, consent or availability
+  ---
+  duration_ms: 237.5598
+  type: 'test'
+  ...
+# Subtest: context-only, expired, missing and once provenance can never be published as an ongoing answer
+ok 15 - context-only, expired, missing and once provenance can never be published as an ongoing answer
+  ---
+  duration_ms: 1555.2495
+  type: 'test'
+  ...
+# Subtest: disclosure requires current active account/storage projection and never grants public visibility
+ok 16 - disclosure requires current active account/storage projection and never grants public visibility
+  ---
+  duration_ms: 1234.2449
+  type: 'test'
+  ...
+# Subtest: disclosure ignores private reasons and arbitrary malformed public values and returns detached summaries
+ok 17 - disclosure ignores private reasons and arbitrary malformed public values and returns detached summaries
+  ---
+  duration_ms: 239.8684
+  type: 'test'
+  ...
+# Subtest: actual preference expiry removes a previously publishable baseline while keeping saved public data unchanged
+ok 18 - actual preference expiry removes a previously publishable baseline while keeping saved public data unchanged
+  ---
+  duration_ms: 769.8338
+  type: 'test'
+  ...
+# Subtest: central hold and explicit-resume requirements invalidate an old authorized draft even while the local actor remains active
+ok 19 - central hold and explicit-resume requirements invalidate an old authorized draft even while the local actor remains active
+  ---
+  duration_ms: 3.535
+  type: 'test'
+  ...
+# Subtest: adult verification read clocks do not queue new responses, but current verification authority does invalidate old previews
+ok 20 - adult verification read clocks do not queue new responses, but current verification authority does invalidate old previews
+  ---
+  duration_ms: 2.341
+  type: 'test'
+  ...
+# Subtest: read clocks, rotating recommendation receipts and revisions are unchanged
+ok 21 - read clocks, rotating recommendation receipts and revisions are unchanged
+  ---
+  duration_ms: 0.635
+  type: 'test'
+  ...
+# Subtest: ordinary new inbox response and private reflection notify without invalidating drafts
+ok 22 - ordinary new inbox response and private reflection notify without invalidating drafts
+  ---
+  duration_ms: 1.8555
+  type: 'test'
+  ...
+# Subtest: additional candidates notify; reordering a pool does not withdraw existing permissions
+ok 23 - additional candidates notify; reordering a pool does not withdraw existing permissions
+  ---
+  duration_ms: 1.16
+  type: 'test'
+  ...
+# Subtest: final deletion, disappearing view or identity switch cannot preserve the previous account
+ok 24 - final deletion, disappearing view or identity switch cannot preserve the previous account
+  ---
+  duration_ms: 0.3145
+  type: 'test'
+  ...
+# Subtest: own suspension, pause, adult and all three consent boundaries invalidate the view
+ok 25 - own suspension, pause, adult and all three consent boundaries invalidate the view
+  ---
+  duration_ms: 1.0881
+  type: 'test'
+  ...
+# Subtest: own source lineage, answer expiry, context and priority changes invalidate stale forms
+ok 26 - own source lineage, answer expiry, context and priority changes invalidate stale forms
+  ---
+  duration_ms: 1.6709
+  type: 'test'
+  ...
+# Subtest: conditional preference source or permission changes invalidate its original draft
+ok 27 - conditional preference source or permission changes invalidate its original draft
+  ---
+  duration_ms: 0.5628
+  type: 'test'
+  ...
+# Subtest: withdrawing or altering an already disclosed candidate invalidates the stale public view
+ok 28 - withdrawing or altering an already disclosed candidate invalidates the stale public view
+  ---
+  duration_ms: 1.5565
+  type: 'test'
+  ...
+# Subtest: connection closure, pause, invitation replacement and acceptance change invalidate
+ok 29 - connection closure, pause, invitation replacement and acceptance change invalidate
+  ---
+  duration_ms: 2.1429
+  type: 'test'
+  ...
+# Subtest: proposal replacement and time-based response permissions invalidate even without revisions
+ok 30 - proposal replacement and time-based response permissions invalidate even without revisions
+  ---
+  duration_ms: 1.2751
+  type: 'test'
+  ...
+# Subtest: alignment offer and option permissions invalidate; peer reaction alone only notifies
+ok 31 - alignment offer and option permissions invalidate; peer reaction alone only notifies
+  ---
+  duration_ms: 0.597
+  type: 'test'
+  ...
+# Subtest: classification neither mutates inputs nor returns private content or identifiers
+ok 32 - classification neither mutates inputs nor returns private content or identifiers
+  ---
+  duration_ms: 1.9177
+  type: 'test'
+  ...
+# Subtest: account loss excludes a closed pair and preserves sessions during network or provider outages
+ok 33 - account loss excludes a closed pair and preserves sessions during network or provider outages
+  ---
+  duration_ms: 0.3986
+  type: 'test'
+  ...
+# Subtest: actual authorized connected views stay unchanged on reread and invalidate on public withdrawal
+ok 34 - actual authorized connected views stay unchanged on reread and invalidate on public withdrawal
+  ---
+  duration_ms: 3751.3416
+  type: 'test'
+  ...
+# Subtest: access, onboarding, pause, storage and profile visibility are distinguished before candidate recovery
+ok 35 - access, onboarding, pause, storage and profile visibility are distinguished before candidate recovery
+  ---
+  duration_ms: 182.0872
+  type: 'test'
+  ...
+# Subtest: consent missing and explicit no are separate and neither action automatically grants consent
+ok 36 - consent missing and explicit no are separate and neither action automatically grants consent
+  ---
+  duration_ms: 120.0896
+  type: 'test'
+  ...
+# Subtest: own schedule and independently required baseline answers get a concrete question without silently changing requirements
+ok 37 - own schedule and independently required baseline answers get a concrete question without silently changing requirements
+  ---
+  duration_ms: 543.6993
+  type: 'test'
+  ...
+# Subtest: conflict recovery cancels only the conflicting current choice and retains the hard requirement
+ok 38 - conflict recovery cancels only the conflicting current choice and retains the hard requirement
+  ---
+  duration_ms: 757.4682
+  type: 'test'
+  ...
+# Subtest: closed and expired contexts require an explicit new context, without resurrecting a selection
+ok 39 - closed and expired contexts require an explicit new context, without resurrecting a selection
+  ---
+  duration_ms: 229.7277
+  type: 'test'
+  ...
+# Subtest: visible pool emptiness does not infer nonpublic accounts, rejection or attraction
+ok 40 - visible pool emptiness does not infer nonpublic accounts, rejection or attraction
+  ---
+  duration_ms: 16.7484
+  type: 'test'
+  ...
+# Subtest: current skips offer individual restoration first while a new context remains explicit
+ok 41 - current skips offer individual restoration first while a new context remains explicit
+  ---
+  duration_ms: 772.4886
+  type: 'test'
+  ...
+# Subtest: legacy or unrelated exclusion tickets cannot offer a current individual-restoration list
+ok 42 - legacy or unrelated exclusion tickets cannot offer a current individual-restoration list
+  ---
+  duration_ms: 73.8364
+  type: 'test'
+  ...
+# Subtest: opening the current exclusion list cannot mutate context answers or other exclusions
+ok 43 - opening the current exclusion list cannot mutate context answers or other exclusions
+  ---
+  duration_ms: 487.2631
+  type: 'test'
+  ...
+# Subtest: missing counterpart schedule is claimed only for an exact currently visible profile ID with a pending row
+ok 44 - missing counterpart schedule is claimed only for an exact currently visible profile ID with a pending row
+  ---
+  duration_ms: 99.8878
+  type: 'test'
+  ...
+# Subtest: a missing own answer needed for reciprocal comparison is offered before waiting on other people
+ok 45 - a missing own answer needed for reciprocal comparison is offered before waiting on other people
+  ---
+  duration_ms: 75.5884
+  type: 'test'
+  ...
+# Subtest: hard mismatch invites checking the recorded criteria without recommending a weaker requirement
+ok 46 - hard mismatch invites checking the recorded criteria without recommending a weaker requirement
+  ---
+  duration_ms: 85.053
+  type: 'test'
+  ...
+# Subtest: ready recommendations return no empty-state guidance and malformed projections stay unclassified
+ok 47 - ready recommendations return no empty-state guidance and malformed projections stay unclassified
+  ---
+  duration_ms: 368.4896
+  type: 'test'
+  ...
+# Subtest: guidance is pure, detached, and never reads raw state or private records
+ok 48 - guidance is pure, detached, and never reads raw state or private records
+  ---
+  duration_ms: 141.2657
+  type: 'test'
+  ...
+# Subtest: a confirmed own hard answer and missing current public counterpart answer explain pending without exporting identities or values
+ok 49 - a confirmed own hard answer and missing current public counterpart answer explain pending without exporting identities or values
+  ---
+  duration_ms: 38.8237
+  type: 'test'
+  ...
+# Subtest: specific public pending requires the same authorized profile, missing machine field, and unchanged structured hard comparison
+ok 50 - specific public pending requires the same authorized profile, missing machine field, and unchanged structured hard comparison
+  ---
+  duration_ms: 68.1626
+  type: 'test'
+  ...
+# Subtest: a present but different contact answer is excluded rather than described as a missing public answer
+ok 51 - a present but different contact answer is excluded rather than described as a missing public answer
+  ---
+  duration_ms: 76.3604
+  type: 'test'
+  ...
+# Subtest: a missing own required answer stays preparation work and is not attributed to public counterpart gaps
+ok 52 - a missing own required answer stays preparation work and is not attributed to public counterpart gaps
+  ---
+  duration_ms: 65.6584
+  type: 'test'
+  ...
+# Subtest: readiness remains ready with an eligible row while another pending row needs an own reciprocal answer
+ok 53 - readiness remains ready with an eligible row while another pending row needs an own reciprocal answer
+  ---
+  duration_ms: 110.0064
+  type: 'test'
+  ...
+# Subtest: ready comparison remains available while another current public contact answer is pending
+ok 54 - ready comparison remains available while another current public contact answer is pending
+  ---
+  duration_ms: 186.7118
+  type: 'test'
+  ...
+# Subtest: public schedule readiness uses structured own comparison proof as well as the exact currently missing public schedule
+ok 55 - public schedule readiness uses structured own comparison proof as well as the exact currently missing public schedule
+  ---
+  duration_ms: 79.0505
+  type: 'test'
+  ...
+# Subtest: missing notice for a conditional soft preference never relabels a known contact mismatch as a required public gap
+ok 56 - missing notice for a conditional soft preference never relabels a known contact mismatch as a required public gap
+  ---
+  duration_ms: 185.6858
+  type: 'test'
+  ...
+# Subtest: without an eligible row the current mandatory reciprocal question is preparation work before refreshing others
+ok 57 - without an eligible row the current mandatory reciprocal question is preparation work before refreshing others
+  ---
+  duration_ms: 35.8969
+  type: 'test'
+  ...
+# Subtest: current optional questions are separate from ready comparison and answer coverage is never read as completion
+ok 58 - current optional questions are separate from ready comparison and answer coverage is never read as completion
+  ---
+  duration_ms: 364.2568
+  type: 'test'
+  ...
+# Subtest: completed optional daily budget does not revoke currently ready recommendations
+ok 59 - completed optional daily budget does not revoke currently ready recommendations
+  ---
+  duration_ms: 1479.149
+  type: 'test'
+  ...
+# Subtest: account lifecycle, central restriction and required adult verification do not read latent discovery or public profiles
+ok 60 - account lifecycle, central restriction and required adult verification do not read latent discovery or public profiles
+  ---
+  duration_ms: 1951.6407
+  type: 'test'
+  ...
+# Subtest: optional adult verification is not a new gate while verified resume still requires explicit public scope
+ok 61 - optional adult verification is not a new gate while verified resume still requires explicit public scope
+  ---
+  duration_ms: 411.1124
+  type: 'test'
+  ...
+# Subtest: unfinished start, pause and independently disabled scopes remain preparation work without reading hidden candidate data
+ok 62 - unfinished start, pause and independently disabled scopes remain preparation work without reading hidden candidate data
+  ---
+  duration_ms: 717.0628
+  type: 'test'
+  ...
+# Subtest: an empty public pool and current hard mismatch distinguish next action without claiming optional answers are necessary
+ok 63 - an empty public pool and current hard mismatch distinguish next action without claiming optional answers are necessary
+  ---
+  duration_ms: 53.3858
+  type: 'test'
+  ...
+# Subtest: unknown or contradictory projections cannot make readiness complete
+ok 64 - unknown or contradictory projections cannot make readiness complete
+  ---
+  duration_ms: 961.9671
+  type: 'test'
+  ...
+# Subtest: readiness is detached and never reads private records, scores, historical profiles or free-form explanation text
+ok 65 - readiness is detached and never reads private records, scores, historical profiles or free-form explanation text
+  ---
+  duration_ms: 46.0796
+  type: 'test'
+  ...
+1..65
+# tests 65
+# suites 0
+# pass 65
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 15932.9698

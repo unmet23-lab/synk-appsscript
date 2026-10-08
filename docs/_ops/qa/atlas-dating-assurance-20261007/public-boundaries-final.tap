@@ -1,0 +1,28 @@
+TAP version 13
+# Subtest: HTTP owner public availability expiry blocks a new send even while current private availability remains known
+ok 1 - HTTP owner public availability expiry blocks a new send even while current private availability remains known
+  ---
+  duration_ms: 745.0326
+  type: 'test'
+  ...
+# Subtest: HTTP sender private required deadline ending before acceptance does not copy a public answer to revive the request
+ok 2 - HTTP sender private required deadline ending before acceptance does not copy a public answer to revive the request
+  ---
+  duration_ms: 872.4859
+  type: 'test'
+  ...
+# Subtest: HTTP public notice expiry ends a conditional allowance record without changing the private original contact preference
+ok 3 - HTTP public notice expiry ends a conditional allowance record without changing the private original contact preference
+  ---
+  duration_ms: 1074.5946
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2858.2393

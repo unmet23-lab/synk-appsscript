@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "supabaseUrl": "",
+  "supabasePublishableKey": "",
+  "accountApiUrl": "",
+  "portalUrl": "",
+  "clients": {
+    "platform": {
+      "clientId": "",
+      "redirectUri": "https://dating.example.invalid/atlas-lab/dating.html"
+    }
+  }
+}

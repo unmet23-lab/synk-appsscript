@@ -1,0 +1,18 @@
+{
+  "engineCodeChangedByThisBatch": 0,
+  "newEngines": 0,
+  "checks": [
+    {
+      "path": "atlas/ask.js",
+      "same": true
+    },
+    {
+      "path": "atlas/personalization.js",
+      "same": true
+    },
+    {
+      "path": "atlas/conditional-preference.js",
+      "same": true
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "at": "2026-10-08T00:55:32.363Z",
+  "status": "validated-for-scoped-commit",
+  "request": "Commit and push completed Atlas dating work, then close",
+  "scope": {
+    "appsscript": "Dating MVP, Atlas Lab discovery/meeting/journey, local server, backup/package tooling, tests and historical QA, task-owned design sections 1-43",
+    "talk": "Central dating account lifecycle, availability and restore export",
+    "selectedPaths": 1557,
+    "excluded": [
+      "actual account.config.json",
+      "shared Core/Temper audit changes",
+      "computer interpretation/capture changes",
+      "unrelated worktree changes",
+      "generated standalone HTML"
+    ],
+    "sharedWorkPreserved": true
+  },
+  "git": {
+    "appsscriptBase": "7bc792392767b90eb52b7bb66c934c56548d4ce9",
+    "appsscriptRemoteObserved": "5fd526deff1fadb9f529ac4ed501a7d3ffb6bde6",
+    "appsscriptCommit": "The commit introducing this report; resolve with git log -1 --follow -- docs/_ops/qa/atlas-dating-close-20261008/report.json",
+    "talkCommit": "b3ffe17147c4579bc245b6a255dcf559b6de14c4",
+    "talkPush": "Verified origin/master at this SHA. App push is verified separately after commit."
+  },
+  "validation": {
+    "node": "v24.18.0",
+    "integration": {
+      "files": 69,
+      "firstRun": {
+        "passed": 1030,
+        "failed": 2
+      },
+      "repairs": [
+        {
+          "file": "tests/atlas-dating-allowance-review-service.test.mjs",
+          "reason": "Retired wants.purpose fixture replaced with relationshipGoal, and explicit candidate goal evidence; assertions retained",
+          "rerunPassed": 1,
+          "log": "allowance-fixture-final.tap"
+        },
+        {
+          "file": "experiences/atlas-lab/discovery-evaluation.mjs",
+          "reason": "Synthetic purpose-open scenario now records relationshipGoal; all 12 declared expectations retained",
+          "rerunPassed": 4,
+          "log": "discovery-evaluation-final.tap"
+        }
+      ],
+      "finalCoveredTests": 1035,
+      "explanation": "1030 original passes plus 1 corrected test and 4 tests from the originally failing evaluation module. Full batch was not repeated."
+    },
+    "crossRepository": {
+      "passed": 9,
+      "log": "cross-repo-tests.tap"
+    },
+    "backupAndDeploymentConfiguration": {
+      "passed": 11,
+      "skipped": 1,
+      "skipReason": "Actual Caddy binary TLS test not rerun without explicit SYNK_QA_CADDY; no binary download",
+      "log": "backup-config-tests.tap"
+    },
+    "learningHub": {
+      "passed": 2,
+      "mode": "existing clean-checkout CI mode",
+      "omittedAssertion": "Ignored synk-account/dist/platform.js build is absent in isolated checkout. Initial local-mode test failed on this absent build; clean-checkout mode diagnoses and skips only this path.",
+      "log": "learning-hub-clean-checkout.tap"
+    },
+    "talk": {
+      "passed": 58,
+      "logs": [
+        "talk-lifecycle-schema-tests.tap",
+        "talk-restore-export-tests.tap"
+      ]
+    },
+    "browser": {
+      "pageLifecycle": {
+        "status": "passed",
+        "paths": 10,
+        "nativeBackForwardCacheObserved": false,
+        "result": "../../../../experiences/atlas-lab/qa/dating-page-lifecycle/result.json"
+      },
+      "journey": {
+        "status": "passed",
+        "pathGroups": 6,
+        "result": "../../../../experiences/atlas-lab/qa/journey/result.json"
+      },
+      "shareBuild": "Passed using isolated repository; output outside Git"
+    },
+    "remainingFailures": 0
+  },
+  "deliveryBoundaries": {
+    "deployed": false,
+    "remoteDatabaseChanged": false,
+    "paidModelCalls": 0,
+    "actualParticipants": 0,
+    "physicalDevices": 0,
+    "historicalQa": "Other QA directories and packages are historical results at their recorded source hashes; this report describes the isolated commit checks.",
+    "previousZip": "Earlier shared-tree ZIP is historical and is not claimed to match this scoped commit, which excludes unrelated engine changes."
+  },
+  "remaining": [
+    "Production host, HTTPS and operating OAuth registration",
+    "Adult verification provider integration and central operational rollout",
+    "Encrypted operational backup and physical-device checks",
+    "Native browser cache restoration on a real supported device; injected persisted lifecycle was checked locally",
+    "Tutor, paid AI/model evaluation and participant recruitment remain deferred"
+  ],
+  "evidence": [
+    {
+      "file": "allowance-fixture-final.tap",
+      "sha256": "357cf069d6d035c02ff631addd84a8e23fd502f3fd49e91cd31f1fe40fc9ad45"
+    },
+    {
+      "file": "allowance-probe.tap",
+      "sha256": "222cdb564e0c1c32d0811c8ca504b17093e20aa049c7b5bd7110053337b7c51a"
+    },
+    {
+      "file": "backup-config-tests.tap",
+      "sha256": "2cca22df7def98c77f5920e4294e19113ed28699ae83f75212f5589d0ab34231"
+    },
+    {
+      "file": "cross-repo-tests.tap",
+      "sha256": "fd575907666833ab780d2857c80f292e55e5eeb25274c1be1196aee3044068e4"
+    },
+    {
+      "file": "discovery-evaluation-final.tap",
+      "sha256": "b38fa23cbc25962cac38d8827823aa0f51cc1297bbae108039de4611848639fd"
+    },
+    {
+      "file": "integration-tests.tap",
+      "sha256": "10820f7b5b8f859fca9e20921894c8da78df065035fd58c66f355258a976baf2"
+    },
+    {
+      "file": "journey-smoke.log",
+      "sha256": "6486a14055973df7ea40a56468e31dc9193ddb3f7efb711bfcfb57c6f96008e5"
+    },
+    {
+      "file": "learning-hub-clean-checkout.tap",
+      "sha256": "012c0de26d091471326fd13f22d418cf042bbea33fcc5d247e314b57c6cd6989"
+    },
+    {
+      "file": "learning-hub-tests.tap",
+      "sha256": "4d850707ee9d65d048bb545dd33bc1239bf2cbf54551759a59ece47b625fb7f4"
+    },
+    {
+      "file": "page-lifecycle-smoke.log",
+      "sha256": "31670173156677e14cab26342ab3585459fcd479525bd954d86ea8a176a909c6"
+    },
+    {
+      "file": "talk-lifecycle-schema-tests.tap",
+      "sha256": "f517636fbded79f71813eb6afeb094ed7d1f4c32c931095a31703006a774c955"
+    },
+    {
+      "file": "talk-restore-export-tests.tap",
+      "sha256": "d56bd9f25ab9d4ceac1ff470b028733c4380f103e1bc13e692b0371c871b76a7"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "initialFailures": [
+    "Central immutability test attempted to delete a nonexistent synthetic UUID; fixture now targets the actual event.",
+    "Receiver helper mixed HTTP status with deleted result status; fixed assertion.",
+    "Receiver cleanup hook ordering held a second SQLite connection open on Windows; finally now closes it first.",
+    "Alignment absence is null, not undefined; fixed fixture expectation.",
+    "Integration active view omits deleted=false; fixed assertion.",
+    "New independent migration was missing schema-test prerequisite registration and versioned constraint names; fixed without weakening checks."
+  ],
+  "finalFailures": 0,
+  "paidCalls": 0,
+  "realAccountsDeleted": 0,
+  "migrationsAppliedRemotely": false,
+  "dispatcherScheduled": false
+}

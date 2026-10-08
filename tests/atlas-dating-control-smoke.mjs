@@ -1,0 +1,115 @@
+// Free isolated browser checks: synthetic identities, loopback and no paid provider.
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import net from 'node:net';
+import {randomUUID,createHash} from 'node:crypto';
+import {createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
+import {createDatingServer} from '../experiences/atlas-lab/dating-server.mjs';
+const require=createRequire(import.meta.url);
+const {chromium}=require(require.resolve('playwright',{paths:[process.env.SYNK_QA_NODE_MODULES||path.join(process.env.USERPROFILE,'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')]}));
+const out=fileURLToPath(new URL('../experiences/atlas-lab/qa/dating-control/',import.meta.url));
+const tmp=await fs.mkdtemp(path.join(os.tmpdir(),'synk-dating-control-browser-'));
+const START='2026-10-10T03:00:00.000Z',ids=['70000000-0000-4000-8000-000000000001','70000000-0000-4000-8000-000000000002'];
+const tokens=['synthetic-control-owner','synthetic-control-peer'],fixtures=[];
+const sourceNames=['dating-ui.mjs','dating-live.mjs','dating.css','discovery.mjs','introduction-guidance.mjs','preference-deadline.mjs','meeting-regions.mjs','discovery-guidance.mjs','dating-insights.mjs','product-experience.mjs','dating-service.mjs','dating-server.mjs','dating-store.mjs'];
+const report={at:new Date().toISOString(),status:'running',actualUsers:0,modelCalls:0,externalApiCost:0,paths:[],errors:[],externalRequests:[],screenshots:[]};
+let browser;
+async function sourceHashes(){const value={};for(const name of sourceNames)value[name]=createHash('sha256').update(await fs.readFile(fileURLToPath(new URL('../experiences/atlas-lab/'+name,import.meta.url)))).digest('hex');return value;}
+const snap=page=>page.evaluate(()=>window.synkDating.snapshot());
+const idle=page=>page.waitForFunction(()=>!document.getElementById('content').hasAttribute('aria-busy'));
+async function click(page,key,holder=page){const control=holder.locator(`[data-action="${key}"]`);for(const ancestor of await control.locator('xpath=ancestor::details').all())if(!await ancestor.evaluate(node=>node.open))await reveal(ancestor);await control.click();await idle(page);}
+async function reveal(box){for(const ancestor of await box.locator('xpath=ancestor::details').all())if(!await ancestor.evaluate(n=>n.open))await reveal(ancestor);if(!await box.evaluate(n=>n.open))await box.locator(':scope > summary').click();return box;}
+async function poll(page){await page.evaluate(()=>window.synkDating.refreshUpdates());await idle(page);}
+const fieldOf=(view,id)=>view.discovery.fields.find(item=>item.id===id);
+async function shot(page,name){await page.evaluate(()=>document.fonts.ready);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,name+' overflow');assert.deepEqual(await page.locator('img').evaluateAll(nodes=>nodes.filter(n=>!n.complete||!n.naturalWidth).map(n=>n.src)),[]);await page.screenshot({path:path.join(out,name+'.png'),fullPage:true});report.screenshots.push(name+'.png');}
+async function fixture(name){
+  const reservation=net.createServer();await new Promise(resolve=>reservation.listen(0,'127.0.0.1',resolve));const port=reservation.address().port;await new Promise(resolve=>reservation.close(resolve));let now=Date.parse(START);
+  const accountConfig={version:1,supabaseUrl:'https://synthetic-identity.example.test',supabasePublishableKey:'sb_publishable_synthetic_fixture',accountApiUrl:'https://synthetic-identity.example.test',portalUrl:'https://synthetic-identity.example.test/id/',clients:{platform:{clientId:'synthetic-control-browser',redirectUri:`http://127.0.0.1:${port}/atlas-lab/dating.html`}}};
+  const server=createDatingServer({mode:'account',databasePath:path.join(tmp,name+'.sqlite'),clock:()=>new Date(now),accountConfig,verify:async token=>tokens.includes(token)?{accountId:ids[tokens.indexOf(token)]}:null});
+  await new Promise(resolve=>server.listen(port,'127.0.0.1',resolve));const f={server,origin:`http://127.0.0.1:${port}`,accountConfig,now:()=>now,advance:ms=>{now+=ms;}};fixtures.push(f);return f;
+}
+async function call(f,route,index,body){const response=await fetch(f.origin+'/api/atlas-dating'+route,{method:body?'POST':'GET',headers:{Origin:f.origin,Authorization:'Bearer '+tokens[index],...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const value=await response.json();assert.equal(response.status,200,`${route}: ${JSON.stringify(value.error)}`);return value;}
+async function action(f,index,value){const current=await call(f,'/state',index);return call(f,'/action',index,{requestId:randomUUID(),expectedRevision:current.view.revision,action:value});}
+const answer=(f,index,field,value,extra={})=>action(f,index,{kind:'discovery',action:{kind:'set',field,value,...extra}});
+async function seed(f,index,{publicRegions=['seoul-center'],privateRegions=['seoul-center'],extraAnswers={}}={}){
+  await action(f,index,{kind:'profile',profile:{nickname:`조절 검사 가상 ${index+1}`,region:'가상 소개 지역',intro:'무료 확인을 위한 합성 소개',values:{availability:'weekend','self.contact':'daily','self.notice':'advance',...(publicRegions?{'self.meetingRegions':publicRegions}:{})},required:[]}});
+  await action(f,index,{kind:'adult',declared:true});await action(f,index,{kind:'consents',consents:{profilePublic:true,receiveInvitations:true,storePreferences:true}});
+  for(const [field,value]of Object.entries({consent:true,availability:'weekend','wants.contact':'daily','wants.plan':'planned',...(privateRegions?{'self.meetingRegions':privateRegions}:{}),...extraAnswers}))await answer(f,index,field,value);
+}
+async function pageFor(f,index=0,width=390,timezoneId='Asia/Seoul'){
+  const context=await browser.newContext({viewport:{width,height:950},timezoneId,serviceWorkers:'block'});
+  await context.route('**/*',route=>{const url=new URL(route.request().url());if(url.origin!==f.origin){report.externalRequests.push(url.origin);return route.abort();}return route.continue();});
+  await context.addInitScript(({config,token})=>sessionStorage.setItem('synk.oauth.session.dating',JSON.stringify({binding:[config.supabaseUrl,config.accountApiUrl,config.clients.platform.clientId,config.clients.platform.redirectUri].join('|'),session:{access_token:token,refresh_token:'synthetic-unused',expires_at:Date.now()+3600000}})),{config:f.accountConfig,token:tokens[index]});
+  const page=await context.newPage();page.setDefaultTimeout(15000);page.on('pageerror',error=>report.errors.push(error.message));page.on('dialog',dialog=>dialog.accept());await page.goto(f.origin+'/atlas-lab/dating.html');
+  try{await page.waitForFunction(()=>!!window.synkDating?.snapshot().view);await idle(page);}catch(error){report.loadingDiagnosis=await page.locator('body').innerText();throw error;}return page;
+}
+async function guidedIntroduction(){
+  const f=await fixture('guidance');await seed(f,0,{publicRegions:null});await seed(f,1);const page=await pageFor(f,0,320);
+  let card=page.locator(`[data-candidate="${ids[1]}"]`),before=(await snap(page)).view;
+  assert.equal(before.discovery.candidates.find(item=>item.id===ids[1]).canConnect,false);assert.equal(await card.locator('[data-introduction-guidance="own-public-meeting-regions-missing"]').count(),1);
+  await click(page,'intro-guidance-action',card);assert.equal(await page.locator('[data-disclosure]').evaluate(node=>node.open),true);assert.equal((await snap(page)).view.revision,before.revision);assert.equal((await snap(page)).view.profile.values['self.meetingRegions'],undefined);await shot(page,'guide-opens-own-disclosure-320');
+  report.paths.push('blocked introduction explains missing own public area and opens the separate disclosure form without publishing or copying the private answer');
+  const group=page.locator('[data-region-picker="public-self.meetingRegions"]');await group.locator('input[value="seoul-center"]').check();await click(page,'save-disclosure');assert.equal((await snap(page)).view.profile.values['self.meetingRegions'],undefined);await click(page,'save-regions-disclosure');await click(page,'nav-discover');assert.equal((await snap(page)).view.discovery.candidates.find(item=>item.id===ids[1]).canConnect,true);
+  await action(f,0,{kind:'consents',consents:{profilePublic:true,receiveInvitations:false,storePreferences:true}});await poll(page);card=page.locator(`[data-candidate="${ids[1]}"]`);assert.equal(await card.locator('[data-introduction-guidance="own-invitations-off"]').count(),1);before=(await snap(page)).view;await click(page,'intro-guidance-action',card);assert.equal(await page.locator('[name="invites"]').isChecked(),false);assert.equal((await snap(page)).view.revision,before.revision);await shot(page,'guide-opens-own-settings-320');
+  report.paths.push('own invitation consent explains the block and navigates to settings without enabling it or sending a request');
+  await action(f,0,{kind:'consents',consents:{profilePublic:true,receiveInvitations:true,storePreferences:true}});await answer(f,1,'self.meetingRegions',['busan']);await poll(page);await click(page,'nav-discover');card=page.locator(`[data-candidate="${ids[1]}"]`);const guide=card.locator('[data-introduction-guidance="introduction-confirmation-pending"]');assert.equal(await guide.count(),1);assert.doesNotMatch(await guide.innerText(),/부산|busan|상대의 초대|상대의 지역/);assert.doesNotMatch(JSON.stringify((await snap(page)).view.discovery.candidates),/busan|부산/);before=(await snap(page)).view;await click(page,'intro-guidance-action',card);assert.equal((await snap(page)).view.revision,before.revision);assert.equal((await snap(page)).view.pairs.length,0);await shot(page,'unknown-peer-cause-stays-private-320');
+  report.paths.push('a counterpart private incompatibility stays a generic current-state check; refresh leaks no private area and neither changes criteria nor creates an introduction');await page.context().close();
+}
+async function connected(f){
+  const sent=await action(f,0,{kind:'connect',targetAccountId:ids[1]}),pairId=sent.result.pairId,pair=(await call(f,'/state',1)).view.pairs.find(item=>item.pairId===pairId);
+  await action(f,1,{kind:'introduction',pairId,expectedIntroductionRevision:pair.introduction.revision,action:{kind:'respond',introductionId:sent.result.introductionId,value:'accept'}});
+  const pairAction=async(index,event)=>{const item=(await call(f,'/state',index)).view.pairs.find(item=>item.pairId===pairId);return action(f,index,{kind:'appointment',pairId,expectedPairRevision:item.view.revision,action:event});};
+  const proposed=await pairAction(0,{kind:'propose',schedule:{startsAt:new Date(f.now()+3600000).toISOString(),endsAt:new Date(f.now()+5400000).toISOString(),timeZone:'Asia/Seoul',place:'가상 회차 확인 카페',note:''}}),appointmentId=proposed.view.pairs.find(item=>item.pairId===pairId).view.currentId;
+  for(const index of [0,1])await pairAction(index,{kind:'respond',appointmentId,proposalVersion:1,value:'accept'});return {pairId,appointmentId};
+}
+async function nextContext(){
+  const f=await fixture('transition');await seed(f,0);await seed(f,1);const linked=await connected(f);
+  await action(f,0,{kind:'discovery',action:{kind:'priorities',fields:['wants.plan'],target:'baseline'}});
+  await action(f,0,{kind:'discovery',action:{kind:'priorities',fields:['wants.contact'],target:'context'}});
+  const preview=await call(f,'/preview',0,{expectedRevision:(await call(f,'/state',0)).view.revision,action:{kind:'conditional-set',ruleId:'contact-with-notice',target:'context'}});
+  await action(f,0,{kind:'apply-preview',preview:preview.preview.token});
+  await answer(f,0,'self.meetingRegions',['busan'],{target:'context'});
+  const page=await pageFor(f,0,390);await click(page,'nav-discover');const old=(await snap(page)).view;await click(page,'new-context');assert.equal((await snap(page)).view.revision,old.revision);
+  const transition=page.locator('[data-context-transition]');assert.match(await transition.innerText(),/부산|서울|이번에 더 중요|허용 조건/);await reveal(transition.locator('details'));assert.match(await transition.innerText(),/필수|일정|평소/);await page.setViewportSize({width:320,height:950});await shot(page,'next-context-before-after-320');await click(page,'preview-cancel');let after=(await snap(page)).view;assert.equal(after.revision,old.revision);assert.deepEqual(after.discovery.exposure,old.discovery.exposure);assert.equal(after.discovery.context.id,old.discovery.context.id);
+  report.paths.push('next-context preview lists ending temporary region, importance and allowance plus returned baseline; cancelling leaves context, exposure and all saved values unchanged');
+  await click(page,'new-context');await page.waitForSelector('[data-context-transition]');await click(page,'preview-apply');after=(await snap(page)).view;assert.notEqual(after.discovery.context.id,old.discovery.context.id);assert.deepEqual(fieldOf(after,'self.meetingRegions').value,['seoul-center']);assert.deepEqual(after.discovery.priorities.effective,['wants.plan']);assert.notEqual(after.discovery.conditionalPreference.effective.status,'active');assert.equal(after.pairs.find(item=>item.pairId===linked.pairId).introduction.accepted,true);assert.equal(after.pairs.find(item=>item.pairId===linked.pairId).view.appointments.find(item=>item.id===linked.appointmentId).status,'confirmed');await shot(page,'next-context-keeps-introduction-and-date-320');
+  report.paths.push('explicit next-context apply restores valid baseline region and importance, ends only temporary allowance, and preserves the already accepted introduction and confirmed appointment');
+  await action(f,0,{kind:'discovery',action:{kind:'close-context'}});await poll(page);await click(page,'nav-discover');await click(page,'new-context');await page.waitForSelector('[data-context-transition]');await click(page,'preview-apply');assert.equal((await snap(page)).view.discovery.context.closed,false);
+  report.paths.push('an already ended context also requires a readable new-context preview and explicit confirmation before reopening');await page.context().close();
+}
+async function deadlineChoices(){
+  const f=await fixture('deadlines');await seed(f,0);await seed(f,1);const page=await pageFor(f,0,390,'America/Los_Angeles');await click(page,'nav-profile');
+  let box=await reveal(page.locator('[data-preference-field="wants.contact"]'));await box.locator('[name="value"]').selectOption('few-days');await box.locator('[name="scope"]').selectOption('context');await box.locator('[name="until-mode"]').selectOption('today');const old=(await snap(page)).view;await click(page,'edit-wants.contact',box);await page.waitForSelector('[data-preview="pending"]');assert.match(await page.locator('[data-deadline-confirmation]').innerText(),/한국시간 2026-10-11 00:00:00|하루|평소/);assert.equal((await snap(page)).view.revision,old.revision);await shot(page,'today-korean-midnight-and-return-390');await click(page,'preview-cancel');
+  box=await reveal(page.locator('[data-preference-field="wants.contact"]'));assert.equal(await box.locator('[name="until-mode"]').inputValue(),'today');await click(page,'edit-wants.contact',box);await click(page,'preview-apply');let view=(await snap(page)).view;assert.equal(fieldOf(view,'wants.contact').effective.provenance.until,'2026-10-10T15:00:00.000Z');assert.equal(fieldOf(view,'wants.contact').baseline.value,'daily');
+  report.paths.push('today-only uses the server Korean midnight even in a Los Angeles browser, shows the return baseline, preserves the cancelled draft and applies the exact declared deadline');
+  box=await reveal(page.locator('[data-preference-field="wants.plan"]'));await box.locator('[name="value"]').selectOption('spontaneous');await box.locator('[name="scope"]').selectOption('baseline');await box.locator('[name="until-mode"]').selectOption('context');assert.equal(await box.locator('[name="scope"]').inputValue(),'context');await click(page,'edit-wants.plan',box);assert.match(await page.locator('[data-deadline-confirmation]').innerText(),/이번 추천|평소/);await click(page,'preview-apply');view=(await snap(page)).view;assert.equal(fieldOf(view,'wants.plan').source,'context');assert.equal(fieldOf(view,'wants.plan').effective.provenance.until,undefined);assert.equal(fieldOf(view,'wants.plan').baseline.value,'planned');
+  report.paths.push('recommendation-only explicitly switches the scope to context without inventing an expiry date or overwriting the baseline');
+  box=await reveal(page.locator('[data-preference-field="wants.plan"]'));await box.locator('[name="until"]').fill('2000-01-01T12:00');assert.equal(await box.locator('[name="until-mode"]').inputValue(),'custom');const revision=view.revision;await click(page,'edit-wants.plan',box);assert.equal((await snap(page)).view.revision,revision);assert.equal(await page.locator('[data-preview="pending"]').count(),0);assert.match(await page.locator('#notice').innerText(),/기한|시점/);
+  report.paths.push('a manually entered past date switches to custom mode but cannot create a preview or mutate the answer');
+  const noContext=await reveal(page.locator('[data-preference-field="self.plan"]'));assert.equal(await noContext.locator('[name="until-mode"] option[value="context"]').count(),0);
+  report.paths.push('ordinary self answers keep their supported ongoing scope and never offer an unsupported temporary conversion');await page.context().close();
+}
+async function boundedChoices(){
+  const f=await fixture('bounded');await seed(f,0);await seed(f,1);
+  const end=new Date(f.now()+3600000).toISOString();await answer(f,0,'wants.contact','daily',{target:'baseline',until:end});
+  const page=await pageFor(f,0,320);await click(page,'nav-profile');const conditional=await reveal(page.locator('[data-conditional-preference]'));await conditional.locator('[name="conditional-scope"]').selectOption('context');await conditional.locator('[name="conditional-until-mode"]').selectOption('today');await click(page,'conditional-preview',conditional);assert.match(await page.locator('[data-deadline-confirmation]').innerText(),/원래 답|더 빨리/);await shot(page,'today-clamped-to-original-answer-320');await click(page,'preview-apply');let view=(await snap(page)).view;assert.equal(view.discovery.conditionalPreference.context.rule.until,end);assert.equal(fieldOf(view,'wants.contact').value,'daily');
+  report.paths.push('today-only conditional allowance clamps to the earlier current original-answer deadline and leaves the original preference unchanged');
+  const priorities=await reveal(page.locator('details').filter({has:page.locator(':scope > summary',{hasText:'나에게 더 중요한 기준'})}).last());await priorities.locator('[name="priority-wants.contact"]').check();await priorities.locator('[name="priority-until-mode"]').selectOption('today');await click(page,'priority-preview',priorities);assert.match(await page.locator('[data-deadline-confirmation]').innerText(),/원래 답|더 빨리/);await click(page,'preview-apply');view=(await snap(page)).view;assert.equal(view.discovery.priorities.deadlines.context,end);
+  report.paths.push('ordinary importance quick selection also clamps to the selected answer lifetime instead of offering an invalid longer preview');
+  const bounded=await reveal(page.locator('[data-conditional-preference]'));await bounded.locator('[name="conditional-until"]').fill('2026-10-11T00:00');const revision=view.revision;await click(page,'conditional-preview',bounded);assert.equal((await snap(page)).view.revision,revision);assert.equal(await page.locator('[data-preview="pending"]').count(),0);
+  report.paths.push('custom allowance dates that exceed the original answer deadline remain unsaved and require a corrected date');await page.context().close();
+}
+async function newCriterionDeadline(){
+  const f=await fixture('new-criterion-deadline');await seed(f,0,{extraAnswers:{'wants.pace':'lead'}});await seed(f,1);await action(f,0,{kind:'discovery',action:{kind:'priorities',fields:['wants.contact'],target:'baseline'}});const linked=await connected(f);f.advance(95*60000);
+  const end=new Date(f.now()+3600000).toISOString();await answer(f,0,'wants.pace','lead',{target:'baseline',until:end});
+  const own=(await call(f,'/state',0)).view.pairs.find(item=>item.pairId===linked.pairId);await action(f,0,{kind:'appointment',pairId:linked.pairId,expectedPairRevision:own.view.revision,action:{kind:'complete',appointmentId:linked.appointmentId}});
+  const page=await pageFor(f,0,390);await click(page,'nav-inbox');const reflection=await reveal(page.locator(`[data-meeting-reflection="${linked.appointmentId}"]`));await reflection.locator('[name="reflection-topic"]').selectOption('new-criterion');let box=page.locator(`[data-new-criterion="${linked.appointmentId}"]`);await box.locator('[name="new-criterion-field"]').selectOption('wants.pace');await box.locator('[name="new-criterion-confirm"]').check();await click(page,'new-criterion-save',box);
+  box=page.locator(`[data-new-criterion="${linked.appointmentId}"]`);await box.locator('[name="new-criterion-until-mode"]').selectOption('today');await click(page,'new-criterion-preview',box);assert.match(await page.locator('[data-deadline-confirmation]').innerText(),/원래 답|더 빨리/);assert.match(await page.locator('[data-new-criterion-confirmation]').innerText(),/이번 추천|대화/);await shot(page,'new-criterion-today-clamped-to-own-answer-390');await click(page,'preview-apply');const view=(await snap(page)).view;assert.equal(view.discovery.priorities.deadlines.context,end);assert.deepEqual(view.discovery.priorities.baseline,['wants.contact']);assert.ok(view.discovery.priorities.effective.includes('wants.pace'));assert.equal(fieldOf(view,'wants.pace').baseline.value,'lead');
+  report.paths.push('completed-meeting new importance today shortcut clamps to its confirmed own-answer lifetime and preserves the original baseline importance and answer');await page.context().close();
+}
+try{await fs.mkdir(out,{recursive:true});report.sourceBefore=await sourceHashes();browser=await chromium.launch({channel:'chrome',headless:true});await guidedIntroduction();await nextContext();await deadlineChoices();await boundedChoices();await newCriterionDeadline();assert.deepEqual(report.errors,[]);assert.deepEqual(report.externalRequests,[]);assert.deepEqual(await sourceHashes(),report.sourceBefore);report.status='passed';}
+catch(error){report.status='failed';report.failure=error.stack;throw error;}
+finally{report.sourceSha256=await sourceHashes();report.sourceStable=JSON.stringify(report.sourceBefore)===JSON.stringify(report.sourceSha256);await fs.mkdir(out,{recursive:true});await fs.writeFile(path.join(out,'result.json'),JSON.stringify(report,null,2)+'\n');await browser?.close();for(const f of fixtures){f.server.closeAllConnections();await new Promise(resolve=>f.server.close(resolve));}const target=path.resolve(tmp);assert.equal(path.dirname(target),path.resolve(os.tmpdir()));assert.ok(path.basename(target).startsWith('synk-dating-control-browser-'));await fs.rm(target,{recursive:true,force:true});console.log(JSON.stringify(report,null,2));}

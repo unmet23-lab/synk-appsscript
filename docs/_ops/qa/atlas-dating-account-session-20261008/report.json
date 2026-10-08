@@ -1,0 +1,86 @@
+{
+  "at": "2026-10-07T19:11:48.057Z",
+  "status": "passed-in-scope",
+  "scope": "local account connection and immediate logout privacy",
+  "sources": {
+    "experiences/atlas-lab/dating-account.mjs": "f45df51b75d7ee502baa36e44c6c1fc31258fdd6238f9591736f1da2e24c94e6",
+    "experiences/atlas-lab/dating-ui.mjs": "c30023f676d1291d93f7ea71db8b6c8116362c3849b0aedc4b49f32821425951",
+    "experiences/atlas-lab/dating-live.mjs": "b19c3c166ab75f378039d76820a972db8a42396b4f8b88742310be6f50266e5d",
+    "experiences/atlas-lab/dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "experiences/atlas-lab/dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "experiences/atlas-lab/dating-service.mjs": "c0929e57802e406b242e00811d85aa814d419bf9963eb757ed6035c70199e9fa",
+    "tests/atlas-dating-account-session-smoke.mjs": "99e2f9b6efaac1b1409df2637058cdad3c23af4468a6af52a845b45aafa548ad",
+    "tests/atlas-dating-oauth-smoke.mjs": "1e5a5c3e37f4642775b07f9cec339bb47e40c7e359b959b9b815ce1e7fd46972",
+    "experiences/synk-account/src/core.mjs": "5c85d1d957403ba1b04795e115d9cb40f26ede59e8dbbfbaa743666ee3e1cbbd"
+  },
+  "unit": {
+    "command": "node --test --test-reporter=tap tests/atlas-dating-account.test.mjs tests/atlas-dating-live.test.mjs tests/atlas-dating-delivery.test.mjs tests/atlas-dating-checkpoint.test.mjs",
+    "tests": 48,
+    "passed": 48,
+    "failed": 0,
+    "result": "contracts.tap"
+  },
+  "browser": {
+    "passed": 9,
+    "session": 4,
+    "oauth": 5,
+    "errors": 0,
+    "externalRequests": 0,
+    "results": [
+      "session-browser.json",
+      "oauth-browser.json"
+    ]
+  },
+  "reproducedAndFixed": {
+    "evidence": "logout-before-fix.json",
+    "before": "Credentials and internal view were cleared but private DOM and unsaved inputs remained during remote logout.",
+    "after": "Private DOM and drafts are removed before awaiting remote logout; remote failure and late replies do not restore them."
+  },
+  "visual": {
+    "sessionScreenshots": [
+      "../../../../experiences/atlas-lab/qa/dating-account-session/delayed-logout-private-dom-boundary-390.png",
+      "../../../../experiences/atlas-lab/qa/dating-account-session/logout-provider-unreachable-local-cleared-320.png",
+      "../../../../experiences/atlas-lab/qa/dating-account-session/offline-return-revoked-clears-private-view-390.png"
+    ],
+    "oauthScreenshots": [
+      "../../../../experiences/atlas-lab/qa/dating-oauth/oauth-saved-account-390.png",
+      "../../../../experiences/atlas-lab/qa/dating-oauth/oauth-second-context-restored-390.png",
+      "../../../../experiences/atlas-lab/qa/dating-oauth/oauth-cancelled-390.png",
+      "../../../../experiences/atlas-lab/qa/dating-oauth/oauth-state-rejected-390.png",
+      "../../../../experiences/atlas-lab/qa/dating-oauth/oauth-replay-rejected-390.png"
+    ],
+    "rootReviewed": [
+      "delayed-logout-private-dom-boundary-390.png",
+      "logout-provider-unreachable-local-cleared-320.png",
+      "oauth-second-context-restored-390.png",
+      "oauth-state-rejected-390.png"
+    ]
+  },
+  "environment": {
+    "at": "2026-10-07T19:01:01.753Z",
+    "preview": "http://127.0.0.1:54532/atlas-lab/dating.html",
+    "mode": "demo",
+    "demoEnabled": true,
+    "accountClientConfigured": false,
+    "processAccountConfigPathSet": false,
+    "servedUiMatches": true,
+    "uiSha256": "c30023f676d1291d93f7ea71db8b6c8116362c3849b0aedc4b49f32821425951"
+  },
+  "readiness": "account-readiness.json",
+  "modelCalls": 0,
+  "actualUsers": 0,
+  "physicalDevices": 0,
+  "realIdentityProviderCalls": 0,
+  "publicDeployment": false,
+  "limitations": [
+    "Current preview remains demo with no dating account config.",
+    "OAuth passed against a test-only loopback identity server, not the real SYNK ID provider.",
+    "Known local registration evidence is absent; remote registration was not queried.",
+    "Actual service callback registration, public config and consent/client mapping must be confirmed before real-provider and phone checks.",
+    "Paid AI, tutor work and participant recruitment remain deferred."
+  ],
+  "firstRunNotes": [
+    "The pre-fix logout browser assertion failed as intended and is preserved.",
+    "The first OAuth fixture CSP blocked the return redirect. Only the test fixture allowlist was corrected; final product authentication rules were not relaxed."
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "at": "2026-10-07T00:27:52.500Z",
+  "status": "passed",
+  "kind": "synthetic-availability-recovery-browser",
+  "actualUsers": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [
+    "an actually committed POST with a lost response survives reload only as a six-field receipt marker without body or credential; restored recovery performs a GET with no additional action POST and then removes the marker",
+    "a never-delivered request restores only GET receipt recovery after reload; a missing receipt remains uncertain, mutations stay locked and no retry body or unsaved certainty is invented",
+    "opening another actual demo actor in the same tab clears the previous receipt marker without transferring its pending request or sending an action",
+    "the real beforeunload dialog lets the person dismiss departure and retain the unsent input, or explicitly accept departure without pretending that the draft was saved",
+    "a failed state GET changes only connection health and retains the last successful check time, user notice and focused draft; an unchanged successful poll restores connected status without a stale error or response banner",
+    "a real browser offline-to-online event invokes the production recovery handler and applies a counterpart public withdrawal while retaining an unrelated own draft",
+    "an actual version-2 central hold reaches the synthetic account server during preview and uncertain delivery; the production poll masks profile, recommendation and pair data and clears preview, private drafts, pending request and receipt marker",
+    "a central active event keeps publicity and invitations off and requires an explicit settings choice; resuming those permissions does not revive the former introduction acceptance or closed pair"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "reload-checks-receipt-without-resending-390.png",
+    "missing-receipt-remains-get-only-320.png",
+    "connection-restored-preserves-own-input-390.png",
+    "central-hold-masks-private-view-320.png"
+  ],
+  "dialogs": [
+    {
+      "type": "beforeunload",
+      "decision": "accept"
+    },
+    {
+      "type": "beforeunload",
+      "decision": "accept"
+    },
+    {
+      "type": "beforeunload",
+      "decision": "accept"
+    },
+    {
+      "type": "beforeunload",
+      "decision": "dismiss"
+    },
+    {
+      "type": "beforeunload",
+      "decision": "accept"
+    }
+  ]
+}

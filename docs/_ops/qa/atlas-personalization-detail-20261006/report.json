@@ -1,0 +1,186 @@
+{
+  "at": "2026-10-06T13:15:50.238Z",
+  "status": "affected-regression-passed-existing-freeze-mismatch",
+  "scope": [
+    "private choice reasons and separate advance-notice preference",
+    "up to two explicit important criteria",
+    "editable recommendation provenance and preview/apply/cancel",
+    "shared Core per-field expiry and original-time Domain projection",
+    "Korea-day optional question budget and seven-day deferral",
+    "private goal, intent fit, question burden and post-meeting comfort with separate evaluation consent"
+  ],
+  "engineChange": {
+    "core": "atlas/personalization.js optional until, expired provenance and toDomain deadline",
+    "reused": [
+      "Core Domain",
+      "Core Ask",
+      "Temper evaluateOutcomes"
+    ],
+    "product": [
+      "experiences/atlas-lab/discovery.mjs",
+      "experiences/atlas-lab/product-experience.mjs",
+      "experiences/atlas-lab/dating-service.mjs",
+      "experiences/atlas-lab/dating-ui.mjs"
+    ]
+  },
+  "tests": {
+    "file": "docs/_ops/qa/atlas-personalization-detail-20261006/tests.txt",
+    "format": "node-spec",
+    "manifest": "docs/_ops/qa/atlas-personalization-detail-20261006/test-files.json",
+    "files": 29,
+    "tests": 451,
+    "passed": 451,
+    "failed": 0,
+    "skipped": 0
+  },
+  "browsers": {
+    "dating": {
+      "status": "passed",
+      "paths": 18,
+      "errors": [],
+      "externalRequests": [],
+      "report": "docs/_ops/qa/atlas-personalization-detail-20261006/dating-browser.json",
+      "screenshots": [
+        "landing-320.png",
+        "recommendations-390.png",
+        "preference-preview-390.png",
+        "expired-preference-390.png",
+        "experience-history-390.png",
+        "changes-before-accept-1280.png",
+        "agreed-1280.png",
+        "reflection-390.png",
+        "deleted-320.png"
+      ]
+    },
+    "discovery": {
+      "status": "passed",
+      "paths": 6,
+      "errors": [],
+      "externalRequests": [],
+      "report": "docs/_ops/qa/atlas-personalization-detail-20261006/discovery-browser.json",
+      "screenshots": [
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-1280-initial-candidates.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-1280-changed-preference.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-1280-consent-cleared.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\desktop-reciprocal-confirmed.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\desktop-no-eligible.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-390-initial-candidates.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-390-changed-preference.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-390-consent-cleared.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-320-initial-candidates.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-320-changed-preference.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-320-consent-cleared.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\file-share-390-initial-candidates.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\file-share-390-changed-preference.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\file-share-390-consent-cleared.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\http-share-390-initial-candidates.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\http-share-390-changed-preference.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\http-share-390-consent-cleared.png"
+      ]
+    },
+    "journey": {
+      "status": "passed",
+      "paths": 6,
+      "errors": [],
+      "externalRequests": [],
+      "report": "docs/_ops/qa/atlas-personalization-detail-20261006/journey-browser.json",
+      "screenshots": [
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-1280-preview.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-1280-closed.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-1280-same-candidate.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-1280-feedback-retained.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\desktop-cancelled-selection.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-390-preview.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-390-closed.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-390-same-candidate.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-390-feedback-retained.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-320-preview.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-320-closed.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-320-same-candidate.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-320-feedback-retained.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\file-share-390-preview.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\file-share-390-closed.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\file-share-390-same-candidate.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\file-share-390-feedback-retained.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\http-share-390-preview.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\http-share-390-closed.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\http-share-390-same-candidate.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\http-share-390-feedback-retained.png"
+      ]
+    },
+    "meeting": {
+      "status": "passed",
+      "paths": 6,
+      "errors": [],
+      "externalRequests": [],
+      "report": "docs/_ops/qa/atlas-personalization-detail-20261006/meeting-browser.json",
+      "screenshots": [
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\local-1280-private-pending.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\local-1280-explicit-change.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\local-1280-next.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\desktop-deferred-feedback.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\desktop-boundary.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\local-390-private-pending.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\local-390-explicit-change.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\local-390-next.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\local-320-private-pending.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\local-320-explicit-change.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\local-320-next.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\file-share-390-private-pending.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\file-share-390-explicit-change.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\file-share-390-next.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\http-share-390-private-pending.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\http-share-390-explicit-change.png",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\http-share-390-next.png"
+      ]
+    }
+  },
+  "browserPaths": 36,
+  "independentReview": {
+    "confirmedDefects": 2,
+    "fixed": [
+      "same response resave preserves original observation time",
+      "new post-expiry preview applies while pre-expiry preview remains stale"
+    ],
+    "httpBoundaries": [
+      "former candidate names and IDs hidden after disclosure withdrawal",
+      "evaluation re-enable does not restore historical eligibility",
+      "preference storage withdrawal deletes private experience",
+      "own comfort withdrawal after counterpart deletion",
+      "suspended account can withdraw own response/consent"
+    ]
+  },
+  "freeze": {
+    "method": "hash-only-no-heldout-content-inspection",
+    "matched": 8,
+    "total": 9,
+    "mismatches": [
+      {
+        "path": "atlas/domain.js",
+        "expected": "9951725913b41d97052f2f396b1ef4463c7c47e75a218f72096999d6f8d6b046",
+        "actual": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+        "same": false
+      }
+    ],
+    "priorFullRegression": "docs/_ops/qa/atlas-experience-loop-20261006/report.json",
+    "fullRegressionRerun": false,
+    "impact": "Existing model-capture freeze precondition remains unresolved; no frozen manifest was updated and old model evaluation is not evidence for current Core."
+  },
+  "preview": {
+    "url": "http://127.0.0.1:62964/atlas-lab/dating.html",
+    "check": "docs/_ops/qa/atlas-personalization-detail-20261006/preview-check.json",
+    "panelOpen": "queued",
+    "existingLocalDatabasePreserved": true
+  },
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "remoteDeployment": false,
+  "notVerified": [
+    "actual satisfaction improvement",
+    "real central SYNK login and age verification",
+    "physical multiple-device operation",
+    "production backup and account-deletion integration"
+  ],
+  "deferred": "Paid AI activation/evaluation and tutor work remain deferred."
+}

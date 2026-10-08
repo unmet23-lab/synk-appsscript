@@ -1,0 +1,39 @@
+{
+  "at": "2026-10-06T21:56:31.050Z",
+  "status": "passed",
+  "modelCalls": 0,
+  "actualUsers": 0,
+  "paths": [
+    "separate role sign-in, explicit adult statement, profile and storage consent",
+    "empty recommendation explains missing own schedule; action opens exact field without answering it",
+    "optional question stop, candidate-only feedback and next round",
+    "explicit preference edit and undo; independent public disclosure",
+    "explicit important criteria preview is read-only; cancel preserves revision; apply saves personal priority",
+    "private reason proposes a separate explicit criterion; field deadline expires without extending or reviving prior temporary answer",
+    "reason correction opens its own answer; personal success goal, separate evaluation consent and optional burden response stay private",
+    "introduction request and rejection gate; recipient reopens before new request; mutual introduction precedes schedule",
+    "failed send preserves date and message without automatic retry",
+    "counterpart acceptance appears through automatic inbox refresh",
+    "two independent roles accept, date change clears both previous acceptances",
+    "real schedule end enables own reflection; counterpart never receives private reflection",
+    "finished meeting supports independent private comfort response and withdrawal without changing the partner",
+    "private reflection suggestion requires apply; undo and reload work; forty-minute new draft consumes hint once without sharing cause",
+    "schedule-only rejection opens an alternative draft; meeting rejection stops repeat requests; own reopening does not restore consent",
+    "pause keeps existing appointments and private reflection while stopping new proposals",
+    "account-wide block closes every pair; reporter sees status but not operator notes",
+    "second browser context resumes account; deletion reaches old context"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "landing-320.png",
+    "recommendations-390.png",
+    "preference-preview-390.png",
+    "expired-preference-390.png",
+    "experience-history-390.png",
+    "changes-before-accept-1280.png",
+    "agreed-1280.png",
+    "reflection-390.png",
+    "deleted-320.png"
+  ]
+}

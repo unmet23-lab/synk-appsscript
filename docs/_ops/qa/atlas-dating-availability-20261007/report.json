@@ -1,0 +1,115 @@
+{
+  "at": "2026-10-07T00:34:37.494Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "Central requested/disabled availability propagates through authenticated version2 events; monotonic ordering, consent reset, explicit resume and no old acceptance revival.",
+    "Same-tab reload restores only a minimal session receipt marker and owned GET confirmation, without original body, credential, automatic POST or reload resend.",
+    "Connection health and successful-check timestamp recover on state GET, online and visible-tab triggers without overwriting action notices or valid drafts."
+  ],
+  "tests": {
+    "uniqueCases": 172,
+    "passed": 172,
+    "failed": 0,
+    "totalExecutions": 177,
+    "duplicateReceiptExecutions": 5,
+    "groups": [
+      {
+        "name": "central SQL and worker",
+        "log": "producer-tests.log",
+        "tests": 43,
+        "pass": 43,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "name": "availability receiver",
+        "log": "receiver-tests-final.tap",
+        "tests": 13,
+        "pass": 13,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "name": "service, final deletion and receipt regression",
+        "log": "receiver-regression-final.tap",
+        "tests": 70,
+        "pass": 70,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "name": "account, checkpoint, delivery, live view and receipt",
+        "log": "client-recovery-final-tests.log",
+        "tests": 49,
+        "pass": 49,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "name": "actual central to product integration",
+        "log": "central-integration-tests.log",
+        "tests": 2,
+        "pass": 2,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  "browserPaths": 22,
+  "browser": [
+    {
+      "kind": "dating-availability-recovery",
+      "paths": 9,
+      "at": "2026-10-07T00:34:02.002Z",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    },
+    {
+      "kind": "dating-live-recovery",
+      "paths": 13,
+      "at": "2026-10-07T00:23:32.586Z",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    }
+  ],
+  "preview": {
+    "url": "http://127.0.0.1:58309/atlas-lab/dating.html",
+    "filesMatched": 11,
+    "isolatedDemo": true
+  },
+  "engineCodeChangedByThisBatch": 0,
+  "newEngines": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "tutorChanges": 0,
+  "publicDeployment": false,
+  "remoteMigration": false,
+  "limitations": [
+    "Synthetic local identities, PostgreSQL/PGlite, SQLite and loopback only; actual OAuth/adult verification, production operation and real-device/user satisfaction remain unverified.",
+    "Central delivery worker, secrets, remote SQL and schedule remain disabled; exposure can remain until the event is received and current view checked.",
+    "Receipt marker persists at most24hours in the same-tab session only, includes a minimal actor identifier and is not anonymous or full-input/cross-device backup.",
+    "An absent receipt remains inconclusive and reload recovery does not resend. Browser departure confirmation is browser-dependent.",
+    "Production central status, per-subject sequence and outbox backups/restoration need joint validation before operation.",
+    "Paid AI features, paid model evaluation, tutor and participant recruitment remain deferred."
+  ],
+  "evidence": [
+    "test-deduplication.json",
+    "subtask-source-check.json",
+    "receiver-introduction-aba.json",
+    "default-entry-before-fix.json",
+    "boot-auth-before-fix.json",
+    "preview-check.json",
+    "screenshots.json",
+    "sources.json",
+    "frozen-check.json",
+    "run-note.json"
+  ]
+}

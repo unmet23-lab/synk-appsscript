@@ -1,0 +1,86 @@
+{
+  "at": "2026-10-07T18:39:04.289Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "schedule-field-validation",
+    "usability-guide-optional-tasks"
+  ],
+  "sources": {
+    "experiences/atlas-lab/dating-ui.mjs": "050f1bc5e856cd25595f15cff28ba382a813866204965469533b13ad594a7e76",
+    "experiences/atlas-lab/usability.html": "8313706cb939af86c10f3ced37727b6e91c66ff5ffd543095dd9600090e365f2",
+    "tests/atlas-dating-schedule-validation-smoke.mjs": "fd5aee8eb3f77502db3d72dc14d1acac5db4589ba2d25fa494b7398ab0757999",
+    "experiences/atlas-lab/appointments.mjs": "0a5f4ccb75325340ad8d3f501bc9efe6e5278f7507296f79ea3db4ebdca255b9",
+    "experiences/atlas-lab/dating-journey.mjs": "853a07ec7e0214046836f5379069f824f92921b0372c3fd7320cfd5394d4788d",
+    "tests/atlas-appointments.test.mjs": "ebf96d6ab2920b05a75d234cad4a9017a3e35f05707da67f7f49f341bcb2fc19",
+    "tests/atlas-dating-journey.test.mjs": "56119003d553b985e9340c00ee6b4e8642ba57d1e399a606d14d315fb41e2cb2"
+  },
+  "unitAndHTTP": {
+    "command": "node --test tests/atlas-appointments.test.mjs tests/atlas-dating-journey.test.mjs",
+    "tests": 55,
+    "passed": 55,
+    "failed": 0,
+    "exitCode": 0
+  },
+  "browser": {
+    "passed": 29,
+    "newSchedule": 18,
+    "existingContinuity": 11,
+    "errors": 0,
+    "externalRequests": 0,
+    "results": [
+      "schedule-browser.json",
+      "input-continuity-browser.json"
+    ]
+  },
+  "visual": {
+    "scheduleScreenshots": [
+      "../../../../experiences/atlas-lab/qa/dating-schedule-validation/required-errors-320.png",
+      "../../../../experiences/atlas-lab/qa/dating-schedule-validation/past-start-error-390.png",
+      "../../../../experiences/atlas-lab/qa/dating-schedule-validation/corrected-new-schedule-390.png",
+      "../../../../experiences/atlas-lab/qa/dating-schedule-validation/revision-error-320.png",
+      "../../../../experiences/atlas-lab/qa/dating-schedule-validation/corrected-revision-320.png"
+    ],
+    "rootReviewed": [
+      "revision-error-320.png",
+      "past-start-error-390.png",
+      "usability-optional-320.png"
+    ],
+    "guideScreenshots": [
+      "usability-optional-320.png",
+      "usability-optional-390.png"
+    ],
+    "guideWidths": [
+      320,
+      390,
+      900
+    ],
+    "guideOverflow": false,
+    "guidePrintMedia": "facilitator hidden, table minimum width removed; physical print not checked"
+  },
+  "repairedDuringVerification": "First revision click could be cancelled when blur validation revealed an error and moved the send button. Validation is deferred to its click when focus moves to that form send button. Identical focus assertion passed after repair.",
+  "preview": {
+    "url": "http://127.0.0.1:54532/atlas-lab/dating.html",
+    "guide": "http://127.0.0.1:54532/atlas-lab/usability.html",
+    "served": [
+      {
+        "file": "dating-ui.mjs",
+        "sha256": "050f1bc5e856cd25595f15cff28ba382a813866204965469533b13ad594a7e76",
+        "matches": true
+      },
+      {
+        "file": "usability.html",
+        "sha256": "8313706cb939af86c10f3ced37727b6e91c66ff5ffd543095dd9600090e365f2",
+        "matches": true
+      }
+    ]
+  },
+  "modelCalls": 0,
+  "actualUsers": 0,
+  "publicDeployment": false,
+  "limitations": [
+    "Client validation uses the latest known server time plus elapsed form time; server validation remains final.",
+    "Unsent drafts only survive navigation in the current tab.",
+    "Browser sizes are emulated; real-device use and user satisfaction were not measured.",
+    "Paid AI calls and evaluations, tutor work, and participant recruitment remain deferred."
+  ]
+}

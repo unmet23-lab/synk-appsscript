@@ -1,0 +1,181 @@
+{
+  "at": "2026-10-06T19:40:51.262Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "one optional reflection topic at a time with independent private records",
+    "explicit reuse of shared place and duration after own busy response; fresh dates and independent acceptance",
+    "four-group current preference summary with direct correction routes",
+    "verified condition changes since an explicitly viewed recommendation without historical peer disclosure or causal claims"
+  ],
+  "engine": {
+    "originalEnginesAdded": 0,
+    "originalEngineFilesChangedByThisBatch": 0,
+    "reused": [
+      "Core Domain",
+      "Core Ask",
+      "Core preference and context contracts",
+      "Temper observation contract"
+    ],
+    "productAdapters": [
+      "dating-ui.mjs",
+      "dating-insights.mjs",
+      "dating-journey.mjs",
+      "discovery.mjs",
+      "dating-service.mjs"
+    ]
+  },
+  "tests": {
+    "at": "2026-10-06T19:40:12.812Z",
+    "fileCount": 35,
+    "exitCode": 0,
+    "tests": 562,
+    "pass": 562,
+    "fail": 0,
+    "skipped": 0
+  },
+  "browsers": {
+    "dating": {
+      "status": "passed",
+      "at": "2026-10-06T19:34:14.047Z",
+      "completedAt": "2026-10-06T19:35:00.395Z",
+      "paths": 18,
+      "result": "experiences/atlas-lab/qa/dating/result.json",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "screenshots": 9
+    },
+    "dating-clarity": {
+      "status": "passed",
+      "at": "2026-10-06T19:35:06.660Z",
+      "completedAt": "2026-10-06T19:35:21.319Z",
+      "paths": 4,
+      "result": "experiences/atlas-lab/qa/dating-clarity/result.json",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "screenshots": 6
+    },
+    "dating-learning": {
+      "status": "passed",
+      "at": "2026-10-06T19:35:28.837Z",
+      "completedAt": "2026-10-06T19:36:32.956Z",
+      "paths": 4,
+      "result": "experiences/atlas-lab/qa/dating-learning/result.json",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "screenshots": 7
+    }
+  },
+  "browserPaths": 26,
+  "independentReview": {
+    "scope": "new reflection entry, draft authorization and invalidation, preference projection and explicit exposure boundaries",
+    "result": "No unresolved findings within reviewed scope",
+    "regression": "tests/atlas-dating-clarity-smoke.mjs"
+  },
+  "preview": {
+    "at": "2026-10-06T19:38:01.178Z",
+    "origin": "http://127.0.0.1:54612",
+    "checks": [
+      {
+        "file": "dating.html",
+        "status": 200,
+        "same": true,
+        "sha256": "650f4ff313ec199a3258c399e38353230efcc72f4540f6c25027944cebdf981b"
+      },
+      {
+        "file": "dating.css",
+        "status": 200,
+        "same": true,
+        "sha256": "1ef2972beb9042db7b2306c9d81a21b34c63bce573f923627943cead844cf14d"
+      },
+      {
+        "file": "dating-ui.mjs",
+        "status": 200,
+        "same": true,
+        "sha256": "b46dfabe85d6d672099aca9dbf6f6046b6db5754d2e5b3fc3cffe99fbec7a51b"
+      },
+      {
+        "file": "dating-account.mjs",
+        "status": 200,
+        "same": true,
+        "sha256": "88befe24ab60d9508de07c8278a270ab706b0b9e5a29e78f7279331fbc729306"
+      },
+      {
+        "file": "dating-journey.mjs",
+        "status": 200,
+        "same": true,
+        "sha256": "853a07ec7e0214046836f5379069f824f92921b0372c3fd7320cfd5394d4788d"
+      },
+      {
+        "file": "dating-insights.mjs",
+        "status": 200,
+        "same": true,
+        "sha256": "083e8dcade09c640af55641a4df5f4597d7d77ffb7c28846c3cea5f3ef553676"
+      },
+      {
+        "file": "discovery.mjs",
+        "status": 200,
+        "same": true,
+        "sha256": "c0138698c2873e48eebe77938cdab4159419db9bab82b6f68ce500dfae2032fa"
+      },
+      {
+        "file": "discovery-guidance.mjs",
+        "status": 200,
+        "same": true,
+        "sha256": "97c585efd946b5c81a7af3719b76b8c8bd8875ebc7182fda424cffc853106a41"
+      }
+    ],
+    "mode": "demo",
+    "demoRoles": [
+      "adult-a",
+      "adult-b",
+      "sample-1",
+      "sample-2",
+      "sample-3",
+      "operator"
+    ],
+    "browser": {
+      "newDeliverableTab": true,
+      "url": "http://127.0.0.1:54612/atlas-lab/dating.html",
+      "verified": "CUA accessibility tree: SYNK landing with demo start; no user account actions"
+    }
+  },
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "remoteDeployment": false,
+  "notVerified": [
+    "real-user understanding, input burden or satisfaction improvement",
+    "real SYNK identity and adult verification",
+    "physical two-device use",
+    "operational backups and account deletion integration",
+    "public deployment"
+  ],
+  "deferred": [
+    "paid AI features and model evaluation",
+    "AI conversation tutor"
+  ],
+  "freeze": {
+    "matched": 8,
+    "total": 9,
+    "mismatches": [
+      {
+        "path": "atlas/domain.js",
+        "expected": "9951725913b41d97052f2f396b1ef4463c7c47e75a218f72096999d6f8d6b046",
+        "actual": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+        "same": false
+      }
+    ],
+    "fullRepositoryRegressionRerun": false,
+    "impact": "Existing atlas/domain.js mismatch against the previous paid-model evaluation freeze remains. No held-out content or freeze baseline was edited."
+  },
+  "finalCheck": {
+    "at": "2026-10-06T19:42:34.430Z",
+    "sourceCount": 57,
+    "drift": 0,
+    "localLinks": 13,
+    "missingLinks": 0
+  }
+}

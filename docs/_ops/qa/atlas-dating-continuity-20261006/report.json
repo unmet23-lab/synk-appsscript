@@ -1,0 +1,170 @@
+{
+  "at": "2026-10-06T14:24:03.087Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "same recommendation account through introduction and appointment",
+    "dates from both current public availability declarations",
+    "explicit 7/30 day candidate hiding and unchanged result explanation",
+    "one current action with optional secondary discovery"
+  ],
+  "engine": {
+    "originalEnginesAdded": 0,
+    "originalEngineFilesChangedByThisBatch": 0,
+    "reused": [
+      "Core Domain",
+      "Core Ask",
+      "Core preference contracts",
+      "existing introduction and appointment contracts"
+    ]
+  },
+  "tests": {
+    "at": "2026-10-06T14:20:56.879Z",
+    "fileCount": 33,
+    "exitCode": 0,
+    "tests": 524,
+    "pass": 524,
+    "fail": 0,
+    "skipped": 0
+  },
+  "browsers": {
+    "dating": {
+      "status": "passed",
+      "paths": 18,
+      "result": "experiences/atlas-lab/qa/dating/result.json",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    },
+    "dating-insights": {
+      "status": "passed",
+      "paths": 5,
+      "result": "experiences/atlas-lab/qa/dating-insights/result.json",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    },
+    "dating-continuity": {
+      "status": "passed",
+      "paths": 6,
+      "result": "experiences/atlas-lab/qa/dating-continuity/result.json",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    },
+    "discovery": {
+      "status": "passed",
+      "paths": 6,
+      "result": "experiences/atlas-lab/qa/discovery/result.json",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    },
+    "journey": {
+      "status": "passed",
+      "paths": 6,
+      "result": "experiences/atlas-lab/qa/journey/result.json",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    },
+    "meeting": {
+      "status": "passed",
+      "paths": 6,
+      "result": "experiences/atlas-lab/qa/meeting/result.json",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    }
+  },
+  "browserPaths": 47,
+  "independentReview": {
+    "findingsFixed": [
+      "auto-calculated end persisted after clearing duration",
+      "closed pair history suppressed a permitted new introduction",
+      "unanswered consent allowed a failing expose/next-context action"
+    ],
+    "regression": "tests/atlas-dating-continuity-smoke.mjs",
+    "otherCheck": "collapsed candidate DOM must not count as displayed exposure"
+  },
+  "freeze": {
+    "matched": 8,
+    "total": 9,
+    "mismatches": [
+      {
+        "path": "atlas/domain.js",
+        "expected": "9951725913b41d97052f2f396b1ef4463c7c47e75a218f72096999d6f8d6b046",
+        "actual": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+        "same": false
+      }
+    ],
+    "fullRegressionRerun": false,
+    "priorFullRegression": "docs/_ops/qa/atlas-experience-loop-20261006/report.json",
+    "impact": "Existing model-capture hash mismatch remains; frozen manifests and held-out records were not edited."
+  },
+  "preview": {
+    "at": "2026-10-06T14:22:50.302Z",
+    "origin": "http://127.0.0.1:55525",
+    "checks": [
+      {
+        "file": "dating.html",
+        "status": 200,
+        "same": true,
+        "sha256": "650f4ff313ec199a3258c399e38353230efcc72f4540f6c25027944cebdf981b"
+      },
+      {
+        "file": "dating-ui.mjs",
+        "status": 200,
+        "same": true,
+        "sha256": "2251b912705b3d440e7f7b2b53f2af5dbf1f8bbe0f886ad99b1219542620b3a8"
+      },
+      {
+        "file": "dating-account.mjs",
+        "status": 200,
+        "same": true,
+        "sha256": "6c8d5a403798087fa25eb59d34fddb65db3f2eef0ddc526928b7e9d5f1953ef8"
+      },
+      {
+        "file": "dating-journey.mjs",
+        "status": 200,
+        "same": true,
+        "sha256": "25fdd3fc428c0f1878fb6149d7ddb55ad0ea8f026be46882da66109be43de3b8"
+      },
+      {
+        "file": "discovery.mjs",
+        "status": 200,
+        "same": true,
+        "sha256": "1320bfc208cd0e78713a145fc3d0d0c92684b11eb16037ec48a8b6be07e0f032"
+      },
+      {
+        "file": "discovery-guidance.mjs",
+        "status": 200,
+        "same": true,
+        "sha256": "c12cb9a944c498a53785dc1f44111e19d5708073aee3c8466f01961ad9e0cc79"
+      }
+    ],
+    "mode": "demo",
+    "demoRoles": [
+      "adult-a",
+      "adult-b",
+      "sample-1",
+      "sample-2",
+      "sample-3",
+      "operator"
+    ]
+  },
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "remoteDeployment": false,
+  "notVerified": [
+    "real SYNK identity login and adult verification",
+    "physical two-device use",
+    "real user understanding, burden and satisfaction",
+    "operational backups and account deletion integration",
+    "public deployment"
+  ],
+  "deferred": [
+    "paid AI features and model evaluation",
+    "AI conversation tutor"
+  ]
+}

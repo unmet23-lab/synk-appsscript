@@ -1,0 +1,172 @@
+TAP version 13
+# Subtest: paired PGlite dump/load and SQLite backup restore a lost-ack hold, replay exactly, and require fresh consent and acceptance
+ok 1 - paired PGlite dump/load and SQLite backup restore a lost-ack hold, replay exactly, and require fresh consent and acceptance
+  ---
+  duration_ms: 9147.4699
+  type: 'test'
+  ...
+# Subtest: restored final deletion receipt and tombstone survive worker replay and every later active event
+ok 2 - restored final deletion receipt and tombstone survive worker replay and every later active event
+  ---
+  duration_ms: 5532.0785
+  type: 'test'
+  ...
+# Subtest: a missing central cursor or product lifecycle ledger fails read-only admission before the host is opened
+ok 3 - a missing central cursor or product lifecycle ledger fails read-only admission before the host is opened
+  ---
+  duration_ms: 6436.5932
+  type: 'test'
+  ...
+# Subtest: individually valid snapshots from different delivery points fail paired restore admission
+ok 4 - individually valid snapshots from different delivery points fail paired restore admission
+  ---
+  duration_ms: 6069.9698
+  type: 'test'
+  ...
+# Subtest: two coherent old backups need newer deletion and sequence knowledge outside the pair to reject rollback
+ok 5 - two coherent old backups need newer deletion and sequence knowledge outside the pair to reject rollback
+  ---
+  duration_ms: 4963.7765
+  type: 'test'
+  ...
+# Subtest: actual --check-restore prints a redacted summary without DB writes, adult imports, account calls or a listener
+ok 6 - actual --check-restore prints a redacted summary without DB writes, adult imports, account calls or a listener
+  ---
+  duration_ms: 351.5646
+  type: 'test'
+  ...
+# Subtest: actual --resume-after-restore admits the same files and serves account config without verifier injection or account calls
+ok 7 - actual --resume-after-restore admits the same files and serves account config without verifier injection or account calls
+  ---
+  duration_ms: 964.853
+  type: 'test'
+  ...
+# Subtest: evidence changed by an imported adult adapter after inspection is rejected before reopening the product DB or listening
+ok 8 - evidence changed by an imported adult adapter after inspection is rejected before reopening the product DB or listening
+  ---
+  duration_ms: 780.3365
+  type: 'test'
+  ...
+# Subtest: configured restore evidence cannot be bypassed by default startup, and stale latest evidence cannot resume
+ok 9 - configured restore evidence cannot be bypassed by default startup, and stale latest evidence cannot resume
+  ---
+  duration_ms: 1052.6189
+  type: 'test'
+  ...
+# Subtest: offline admission reads the checkpointed database unchanged, redacts identities, and is one-use
+ok 10 - offline admission reads the checkpointed database unchanged, redacts identities, and is one-use
+  ---
+  duration_ms: 163.1279
+  type: 'test'
+  ...
+# Subtest: missing database or independent evidence cannot create a database or authorize a restart
+ok 11 - missing database or independent evidence cannot create a database or authorize a restart
+  ---
+  duration_ms: 163.8086
+  type: 'test'
+  ...
+# Subtest: an operator latest export must have explicit provenance and a bounded fresh timestamp
+ok 12 - an operator latest export must have explicit provenance and a bounded fresh timestamp
+  ---
+  duration_ms: 543.4594
+  type: 'test'
+  ...
+# Subtest: two mutually coherent old backups cannot pass a newer independent hold sequence
+ok 13 - two mutually coherent old backups cannot pass a newer independent hold sequence
+  ---
+  duration_ms: 304.6236
+  type: 'test'
+  ...
+# Subtest: two mutually coherent old backups cannot resurrect an independently known terminal deletion
+ok 14 - two mutually coherent old backups cannot resurrect an independently known terminal deletion
+  ---
+  duration_ms: 249.8399
+  type: 'test'
+  ...
+# Subtest: latest exports must match the service environment and stable ledger status, not merely counters
+ok 15 - latest exports must match the service environment and stable ledger status, not merely counters
+  ---
+  duration_ms: 656.1672
+  type: 'test'
+  ...
+# Subtest: even a coherent pending hold requires product state to be fenced before reopening
+ok 16 - even a coherent pending hold requires product state to be fenced before reopening
+  ---
+  duration_ms: 364.4392
+  type: 'test'
+  ...
+# Subtest: changed database, latest evidence, or environment invalidates and consumes a prior admission
+ok 17 - changed database, latest evidence, or environment invalidates and consumes a prior admission
+  ---
+  duration_ms: 288.647
+  type: 'test'
+  ...
+# Subtest: admission expires and rejects clock rollback before any service opens the database
+ok 18 - admission expires and rejects clock rollback before any service opens the database
+  ---
+  duration_ms: 374.6791
+  type: 'test'
+  ...
+# Subtest: uncheckpointed sidecars are rejected before readonly SQLite access and when added after inspection
+ok 19 - uncheckpointed sidecars are rejected before readonly SQLite access and when added after inspection
+  ---
+  duration_ms: 154.5882
+  type: 'test'
+  ...
+# Subtest: suspended product accounts remain suspended and are compatible with central active accounts
+ok 20 - suspended product accounts remain suspended and are compatible with central active accounts
+  ---
+  duration_ms: 133.3432
+  type: 'test'
+  ...
+# Subtest: missing tables, malformed receipts, and checksum damage fail closed
+ok 21 - missing tables, malformed receipts, and checksum damage fail closed
+  ---
+  duration_ms: 247.6687
+  type: 'test'
+  ...
+# Subtest: empty central and product inventories, demo databases, and malformed evidence cannot authorize restore
+ok 22 - empty central and product inventories, demo databases, and malformed evidence cannot authorize restore
+  ---
+  duration_ms: 1092.7078
+  type: 'test'
+  ...
+# Subtest: valid deleted tombstones require deletion ledger and no private document
+ok 23 - valid deleted tombstones require deletion ledger and no private document
+  ---
+  duration_ms: 188.863
+  type: 'test'
+  ...
+# Subtest: restore evidence cannot live inside the public experiences directory
+ok 24 - restore evidence cannot live inside the public experiences directory
+  ---
+  duration_ms: 776.5985
+  type: 'test'
+  ...
+# Subtest: invalid SQLite bytes are rejected without leaking raw input or generating sidecars
+ok 25 - invalid SQLite bytes are rejected without leaking raw input or generating sidecars
+  ---
+  duration_ms: 223.5687
+  type: 'test'
+  ...
+# Subtest: a tombstone cannot admit restored private introductions left outside the account document
+ok 26 - a tombstone cannot admit restored private introductions left outside the account document
+  ---
+  duration_ms: 227.5761
+  type: 'test'
+  ...
+# Subtest: a lost-ack pending event still requires the local receipt committed with its fence
+ok 27 - a lost-ack pending event still requires the local receipt committed with its fence
+  ---
+  duration_ms: 497.6096
+  type: 'test'
+  ...
+1..27
+# tests 27
+# suites 0
+# pass 27
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 32470.3562

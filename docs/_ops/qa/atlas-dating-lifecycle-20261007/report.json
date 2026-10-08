@@ -1,0 +1,86 @@
+{
+  "at": "2026-10-06T23:33:49.333Z",
+  "status": "passed-in-scope",
+  "tests": {
+    "tests": 141,
+    "pass": 141,
+    "fail": 0,
+    "groups": [
+      {
+        "log": "central-final-tests.log",
+        "tests": 61,
+        "pass": 61,
+        "fail": 0
+      },
+      {
+        "log": "receiver-tests.log",
+        "tests": 8,
+        "pass": 8,
+        "fail": 0
+      },
+      {
+        "log": "integration-guidance-final.log",
+        "tests": 15,
+        "pass": 15,
+        "fail": 0
+      },
+      {
+        "log": "product-tests.log",
+        "file": "tests/atlas-dating-service.test.mjs",
+        "tests": 57,
+        "pass": 57,
+        "fail": 0,
+        "note": "57 service passes from initial mixed run; corrected receiver cases counted only in final receiver log"
+      }
+    ]
+  },
+  "browserPaths": 38,
+  "browser": [
+    {
+      "kind": "dating-exclusion-guidance",
+      "paths": 5,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    },
+    {
+      "kind": "dating",
+      "paths": 18,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    },
+    {
+      "kind": "dating-clarity",
+      "paths": 4,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    },
+    {
+      "kind": "dating-input-continuity",
+      "paths": 11,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    }
+  ],
+  "preview": {
+    "url": "http://127.0.0.1:56112/atlas-lab/dating.html",
+    "filesMatched": 8,
+    "isolatedDemo": true
+  },
+  "engineCodeChangedByThisBatch": 0,
+  "newEngines": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "publicDeployment": false,
+  "centralProductionEnabled": false,
+  "limitations": [
+    "Synthetic local PGlite canonical purge/grace SQL and SQLite HTTP integration only; live Supabase/account/adult verification untested.",
+    "Delivery must run and acknowledge before product deletion is confirmed; pending/disabled visibility propagation is outside this terminal-only contract.",
+    "Production DB migration, dispatcher credentials/schedule, independent deletion ledger backup and operational restore remain unverified.",
+    "Real participant satisfaction and physical two-device use unmeasured; paid AI, tutor and participant recruitment deferred."
+  ]
+}

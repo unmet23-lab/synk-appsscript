@@ -1,0 +1,340 @@
+TAP version 13
+# Subtest: first asks explicit discovery consent before showing any candidates or invented profile
+ok 1 - first asks explicit discovery consent before showing any candidates or invented profile
+  ---
+  duration_ms: 14.2557
+  type: 'test'
+  ...
+# Subtest: ready has three eligible candidates, one reciprocal must-have failure and one unknown schedule
+ok 2 - ready has three eligible candidates, one reciprocal must-have failure and one unknown schedule
+  ---
+  duration_ms: 82.4435
+  type: 'test'
+  ...
+# Subtest: the candidate the user wants still fails if the candidate requires a different self style
+ok 3 - the candidate the user wants still fails if the candidate requires a different self style
+  ---
+  duration_ms: 147.3496
+  type: 'test'
+  ...
+# Subtest: situational wants change real candidate order without changing own style or inventing candidate liking
+ok 4 - situational wants change real candidate order without changing own style or inventing candidate liking
+  ---
+  duration_ms: 81.3567
+  type: 'test'
+  ...
+# Subtest: soft mismatch is eligible while explicit wants must-have strictly excludes it
+ok 5 - soft mismatch is eligible while explicit wants must-have strictly excludes it
+  ---
+  duration_ms: 139.6723
+  type: 'test'
+  ...
+# Subtest: schedule is mandatory; explicit either schedule works but absent schedule is never filled in
+ok 6 - schedule is mandatory; explicit either schedule works but absent schedule is never filled in
+  ---
+  duration_ms: 210.3258
+  type: 'test'
+  ...
+# Subtest: boundary with no eligible candidates never substitutes an excluded or unknown person
+ok 7 - boundary with no eligible candidates never substitutes an excluded or unknown person
+  ---
+  duration_ms: 119.1421
+  type: 'test'
+  ...
+# Subtest: consent withdrawal and clearing hide all candidates, change history and selection; restoring needs new selection
+ok 8 - consent withdrawal and clearing hide all candidates, change history and selection; restoring needs new selection
+  ---
+  duration_ms: 269.8808
+  type: 'test'
+  ...
+# Subtest: select is only a cancelable user choice and does not alter own profile or imply mutual acceptance
+ok 9 - select is only a cancelable user choice and does not alter own profile or imply mutual acceptance
+  ---
+  duration_ms: 191.1635
+  type: 'test'
+  ...
+# Subtest: any explicit set or clear invalidates an old selection, including repeating the same answer
+ok 10 - any explicit set or clear invalidates an old selection, including repeating the same answer
+  ---
+  duration_ms: 627.3713
+  type: 'test'
+  ...
+# Subtest: skipping unknown wants preserves the exact ranking and unknown value; known or mandatory fields cannot be skipped
+ok 11 - skipping unknown wants preserves the exact ranking and unknown value; known or mandatory fields cannot be skipped
+  ---
+  duration_ms: 338.415
+  type: 'test'
+  ...
+# Subtest: no personal wants and equal policy ranks are explicitly described without a compatibility number
+ok 12 - no personal wants and equal policy ranks are explicitly described without a compatibility number
+  ---
+  duration_ms: 114.4541
+  type: 'test'
+  ...
+# Subtest: Domain runs both directions and Ask evaluates the same ordered eligible set through scoped preferences
+ok 13 - Domain runs both directions and Ask evaluates the same ordered eligible set through scoped preferences
+  ---
+  duration_ms: 100.054
+  type: 'test'
+  ...
+# Subtest: no consent also prevents all candidate decision calls, not just final visual display
+ok 14 - no consent also prevents all candidate decision calls, not just final visual display
+  ---
+  duration_ms: 0.5006
+  type: 'test'
+  ...
+# Subtest: strict finite replay rejects foreign actors, invalid flags, fake fields, unknown candidates and noncanonical times
+ok 15 - strict finite replay rejects foreign actors, invalid flags, fake fields, unknown candidates and noncanonical times
+  ---
+  duration_ms: 149.4405
+  type: 'test'
+  ...
+# Subtest: clearing a required answer preserves the requirement; reanswering cannot silently relax it
+ok 16 - clearing a required answer preserves the requirement; reanswering cannot silently relax it
+  ---
+  duration_ms: 232.2407
+  type: 'test'
+  ...
+# Subtest: reciprocal matches stay in the reciprocal explanation rather than masquerading as my own wants
+ok 17 - reciprocal matches stay in the reciprocal explanation rather than masquerading as my own wants
+  ---
+  duration_ms: 41.5847
+  type: 'test'
+  ...
+# Subtest: preview shows the actual reordered candidate list without changing state, selection, requirements or handoff
+ok 18 - preview shows the actual reordered candidate list without changing state, selection, requirements or handoff
+  ---
+  duration_ms: 187.702
+  type: 'test'
+  ...
+# Subtest: applying a reviewed preview equals the ordinary explicit action and clears the old selection
+ok 19 - applying a reviewed preview equals the ordinary explicit action and clears the old selection
+  ---
+  duration_ms: 712.1391
+  type: 'test'
+  ...
+# Subtest: clearing a mandatory answer in a preview preserves the real setting and shows hypothetical holds
+ok 20 - clearing a mandatory answer in a preview preserves the real setting and shows hypothetical holds
+  ---
+  duration_ms: 866.9208
+  type: 'test'
+  ...
+# Subtest: preview reports newly eligible and still-held people without relaxing the other side requirements
+ok 21 - preview reports newly eligible and still-held people without relaxing the other side requirements
+  ---
+  duration_ms: 278.8712
+  type: 'test'
+  ...
+# Subtest: preview application rejects changed sources, including equal-length alternate states and intervening selection changes
+ok 22 - preview application rejects changed sources, including equal-length alternate states and intervening selection changes
+  ---
+  duration_ms: 486.2229
+  type: 'test'
+  ...
+# Subtest: preview application rejects modified actions, candidate changes, extra fields and invented confirmation text
+ok 23 - preview application rejects modified actions, candidate changes, extra fields and invented confirmation text
+  ---
+  duration_ms: 1064.5417
+  type: 'test'
+  ...
+# Subtest: handoff contains only the selected public identity and both explicit schedules, without meeting consent or inferred preferences
+ok 24 - handoff contains only the selected public identity and both explicit schedules, without meeting consent or inferred preferences
+  ---
+  duration_ms: 503.9453
+  type: 'test'
+  ...
+# Subtest: handoff keys preserve revisits but distinguish reselection, different candidates and equal-count condition changes
+ok 25 - handoff keys preserve revisits but distinguish reselection, different candidates and equal-count condition changes
+  ---
+  duration_ms: 672.3257
+  type: 'test'
+  ...
+# Subtest: answers, consent and selection withdrawal immediately remove handoff and old meeting identity cannot revive
+ok 26 - answers, consent and selection withdrawal immediately remove handoff and old meeting identity cannot revive
+  ---
+  duration_ms: 477.019
+  type: 'test'
+  ...
+# Subtest: hypothetical consent cannot authorize candidate disclosure: consent changes are direct and other previews require current consent
+ok 27 - hypothetical consent cannot authorize candidate disclosure: consent changes are direct and other previews require current consent
+  ---
+  duration_ms: 537.9843
+  type: 'test'
+  ...
+# Subtest: finite fictional catalog and initial unknowns do not invent A preferences or consent
+ok 28 - finite fictional catalog and initial unknowns do not invent A preferences or consent
+  ---
+  duration_ms: 25.3148
+  type: 'test'
+  ...
+# Subtest: wanted experience chooses a concrete plan through Core, Ask and scoped preferences
+ok 29 - wanted experience chooses a concrete plan through Core, Ask and scoped preferences
+  ---
+  duration_ms: 11.7995
+  type: 'test'
+  ...
+# Subtest: both availability and consent are hard requirements, with explicit any distinct from unknown
+ok 30 - both availability and consent are hard requirements, with explicit any distinct from unknown
+  ---
+  duration_ms: 28.1735
+  type: 'test'
+  ...
+# Subtest: soft differences are visible and optional must-have conditions are never silently removed
+ok 31 - soft differences are visible and optional must-have conditions are never silently removed
+  ---
+  duration_ms: 25.7601
+  type: 'test'
+  ...
+# Subtest: editing a concrete plan invalidates both old views and acceptances, and raw stale bindings fail replay
+ok 32 - editing a concrete plan invalidates both old views and acceptances, and raw stale bindings fail replay
+  ---
+  duration_ms: 42.1835
+  type: 'test'
+  ...
+# Subtest: busy is not dislike, and busy/decline/withdraw allow a new encounter without a false meeting
+ok 33 - busy is not dislike, and busy/decline/withdraw allow a new encounter without a false meeting
+  ---
+  duration_ms: 146.3575
+  type: 'test'
+  ...
+# Subtest: unanswered is not a negative outcome and cannot auto-complete an encounter
+ok 34 - unanswered is not a negative outcome and cannot auto-complete an encounter
+  ---
+  duration_ms: 23.7949
+  type: 'test'
+  ...
+# Subtest: feedback needs current mutual acceptance and independent meeting confirmations
+ok 35 - feedback needs current mutual acceptance and independent meeting confirmations
+  ---
+  duration_ms: 35.2711
+  type: 'test'
+  ...
+# Subtest: too-long feedback creates a private pending change, not an approved preference or inferred trait
+ok 36 - too-long feedback creates a private pending change, not an approved preference or inferred trait
+  ---
+  duration_ms: 40.98
+  type: 'test'
+  ...
+# Subtest: explicit next-only approval changes the next draft to 40, and disappears after that encounter closes
+ok 37 - explicit next-only approval changes the next draft to 40, and disappears after that encounter closes
+  ---
+  duration_ms: 95.0421
+  type: 'test'
+  ...
+# Subtest: ongoing approval persists but stays private until a concrete new proposal is explicitly shared
+ok 38 - ongoing approval persists but stays private until a concrete new proposal is explicitly shared
+  ---
+  duration_ms: 89.5285
+  type: 'test'
+  ...
+# Subtest: activity feedback changes only the proposed activity, while felt-good creates no manufactured preference
+ok 39 - activity feedback changes only the proposed activity, while felt-good creates no manufactured preference
+  ---
+  duration_ms: 67.8105
+  type: 'test'
+  ...
+# Subtest: another actor cannot apply or dismiss private feedback; old applied proposals cannot be replayed
+ok 40 - another actor cannot apply or dismiss private feedback; old applied proposals cannot be replayed
+  ---
+  duration_ms: 44.384
+  type: 'test'
+  ...
+# Subtest: declining a feedback change leaves the recommendation unchanged; a still-pending next proposal remains usable after advancing
+ok 41 - declining a feedback change leaves the recommendation unchanged; a still-pending next proposal remains usable after advancing
+  ---
+  duration_ms: 54.8161
+  type: 'test'
+  ...
+# Subtest: withdrawing a once setting returns to ongoing; withdrawing ongoing does not resurrect its overwritten predecessor
+ok 42 - withdrawing a once setting returns to ongoing; withdrawing ongoing does not resurrect its overwritten predecessor
+  ---
+  duration_ms: 90.8867
+  type: 'test'
+  ...
+# Subtest: private hard constraints are checked before acceptance without exposing their value to the other person
+ok 43 - private hard constraints are checked before acceptance without exposing their value to the other person
+  ---
+  duration_ms: 32.0649
+  type: 'test'
+  ...
+# Subtest: consent withdrawal invalidates old acceptance; restoring consent does not revive it
+ok 44 - consent withdrawal invalidates old acceptance; restoring consent does not revive it
+  ---
+  duration_ms: 46.7662
+  type: 'test'
+  ...
+# Subtest: pure replay rejects foreign actors, unsupported fields, forged feedback links and timestamp aliases
+ok 45 - pure replay rejects foreign actors, unsupported fields, forged feedback links and timestamp aliases
+  ---
+  duration_ms: 12.6638
+  type: 'test'
+  ...
+# Subtest: joint proposal explanations describe the displayed edited plan, including approved feedback differences
+ok 46 - joint proposal explanations describe the displayed edited plan, including approved feedback differences
+  ---
+  duration_ms: 56.6549
+  type: 'test'
+  ...
+# Subtest: required confirmations precede optional Ask questions; skipping leaves unknown and never blocks proposing
+ok 47 - required confirmations precede optional Ask questions; skipping leaves unknown and never blocks proposing
+  ---
+  duration_ms: 103.4782
+  type: 'test'
+  ...
+# Subtest: settings after the first meeting confirmation affect only the next encounter and cannot trap the other confirmation
+ok 48 - settings after the first meeting confirmation affect only the next encounter and cannot trap the other confirmation
+  ---
+  duration_ms: 289.9674
+  type: 'test'
+  ...
+# Subtest: an unapplied change from the prior encounter cannot invalidate a partially confirmed new meeting
+ok 49 - an unapplied change from the prior encounter cannot invalidate a partially confirmed new meeting
+  ---
+  duration_ms: 94.9253
+  type: 'test'
+  ...
+# Subtest: a selected discovery candidate transfers only schedule and identity, never consent or meeting preferences
+ok 50 - a selected discovery candidate transfers only schedule and identity, never consent or meeting preferences
+  ---
+  duration_ms: 8.4815
+  type: 'test'
+  ...
+# Subtest: connected initial questions request both meeting consents and guide a role switch without accepting on their behalf
+ok 51 - connected initial questions request both meeting consents and guide a role switch without accepting on their behalf
+  ---
+  duration_ms: 19.7097
+  type: 'test'
+  ...
+# Subtest: each selected connection receives a separate Core preference scope and Domain workspace
+ok 52 - each selected connection receives a separate Core preference scope and Domain workspace
+  ---
+  duration_ms: 6.1568
+  type: 'test'
+  ...
+# Subtest: a different candidate starts fresh while the prior connection keeps its once, ongoing, acceptance and private feedback
+ok 53 - a different candidate starts fresh while the prior connection keeps its once, ongoing, acceptance and private feedback
+  ---
+  duration_ms: 76.3457
+  type: 'test'
+  ...
+# Subtest: changing a seed cannot relabel old choices, acceptance or feedback as a different candidate or revision
+ok 54 - changing a seed cannot relabel old choices, acceptance or feedback as a different candidate or revision
+  ---
+  duration_ms: 70.321
+  type: 'test'
+  ...
+# Subtest: the discovery seed is strict, detached, finite and cannot insert approval or private data
+ok 55 - the discovery seed is strict, detached, finite and cannot insert approval or private data
+  ---
+  duration_ms: 15.6952
+  type: 'test'
+  ...
+1..55
+# tests 55
+# suites 0
+# pass 55
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 8768.058

@@ -1,0 +1,598 @@
+TAP version 13
+# Subtest: preference summary shows only required, known priorities, active context and unknown declarations without repeating ordinary baseline answers
+ok 1 - preference summary shows only required, known priorities, active context and unknown declarations without repeating ordinary baseline answers
+  ---
+  duration_ms: 585.648
+  type: 'test'
+  ...
+# Subtest: summary keeps the baseline must-have visible beside conflicting context and does not let an unknown or missing hard answer inherit soft context
+ok 2 - summary keeps the baseline must-have visible beside conflicting context and does not let an unknown or missing hard answer inherit soft context
+  ---
+  duration_ms: 1364.2284
+  type: 'test'
+  ...
+# Subtest: summary returns to a live baseline after context expiry, preserves explicit any and distinguishes expired baseline from unknown
+ok 3 - summary returns to a live baseline after context expiry, preserves explicit any and distinguishes expired baseline from unknown
+  ---
+  duration_ms: 1876.9445
+  type: 'test'
+  ...
+# Subtest: summary validates priority limits, ignores other private projections and does not ask questions or read source events
+ok 4 - summary validates priority limits, ignores other private projections and does not ask questions or read source events
+  ---
+  duration_ms: 1404.8342
+  type: 'test'
+  ...
+# Subtest: comparison uses the two declared priority fields and their existing own-direction reasons
+ok 5 - comparison uses the two declared priority fields and their existing own-direction reasons
+  ---
+  duration_ms: 0.7877
+  type: 'test'
+  ...
+# Subtest: without priorities the user chooses one or two comparison fields without changing recommendation settings
+ok 6 - without priorities the user chooses one or two comparison fields without changing recommendation settings
+  ---
+  duration_ms: 0.3979
+  type: 'test'
+  ...
+# Subtest: invalid, duplicate, revoked, held or excluded selections return no candidate identity or explanation
+ok 7 - invalid, duplicate, revoked, held or excluded selections return no candidate identity or explanation
+  ---
+  duration_ms: 0.3079
+  type: 'test'
+  ...
+# Subtest: same result is based on structured comparison, never candidate names or localized wording
+ok 8 - same result is based on structured comparison, never candidate names or localized wording
+  ---
+  duration_ms: 0.179
+  type: 'test'
+  ...
+# Subtest: unknown, absent, duplicate and legacy textual reasons never invent a comparison
+ok 9 - unknown, absent, duplicate and legacy textual reasons never invent a comparison
+  ---
+  duration_ms: 0.1797
+  type: 'test'
+  ...
+# Subtest: condition satisfied from structured contact metadata is distinct from a primary match
+ok 10 - condition satisfied from structured contact metadata is distinct from a primary match
+  ---
+  duration_ms: 0.2088
+  type: 'test'
+  ...
+# Subtest: explicit any is a known comparison result, and raw candidate values or private data are never read
+ok 11 - explicit any is a known comparison result, and raw candidate values or private data are never read
+  ---
+  duration_ms: 0.1684
+  type: 'test'
+  ...
+# Subtest: comparison results are detached and cannot change the source view
+ok 12 - comparison results are detached and cannot change the source view
+  ---
+  duration_ms: 0.159
+  type: 'test'
+  ...
+# Subtest: actual Discovery comparison metadata exposes the expected tradeoff without inspecting raw candidates
+ok 13 - actual Discovery comparison metadata exposes the expected tradeoff without inspecting raw candidates
+  ---
+  duration_ms: 381.3947
+  type: 'test'
+  ...
+# Subtest: disclosure differences compare valid ongoing self answers only, not wants, consent or availability
+ok 14 - disclosure differences compare valid ongoing self answers only, not wants, consent or availability
+  ---
+  duration_ms: 194.6558
+  type: 'test'
+  ...
+# Subtest: context-only, expired, missing and once provenance can never be published as an ongoing answer
+ok 15 - context-only, expired, missing and once provenance can never be published as an ongoing answer
+  ---
+  duration_ms: 1154.2355
+  type: 'test'
+  ...
+# Subtest: disclosure requires current active account/storage projection and never grants public visibility
+ok 16 - disclosure requires current active account/storage projection and never grants public visibility
+  ---
+  duration_ms: 1042.7404
+  type: 'test'
+  ...
+# Subtest: disclosure ignores private reasons and arbitrary malformed public values and returns detached summaries
+ok 17 - disclosure ignores private reasons and arbitrary malformed public values and returns detached summaries
+  ---
+  duration_ms: 226.9583
+  type: 'test'
+  ...
+# Subtest: actual preference expiry removes a previously publishable baseline while keeping saved public data unchanged
+ok 18 - actual preference expiry removes a previously publishable baseline while keeping saved public data unchanged
+  ---
+  duration_ms: 1092.1227
+  type: 'test'
+  ...
+# Subtest: central hold and explicit-resume requirements invalidate an old authorized draft even while the local actor remains active
+ok 19 - central hold and explicit-resume requirements invalidate an old authorized draft even while the local actor remains active
+  ---
+  duration_ms: 2.348
+  type: 'test'
+  ...
+# Subtest: adult verification read clocks do not queue new responses, but current verification authority does invalidate old previews
+ok 20 - adult verification read clocks do not queue new responses, but current verification authority does invalidate old previews
+  ---
+  duration_ms: 1.0016
+  type: 'test'
+  ...
+# Subtest: read clocks, rotating recommendation receipts and revisions are unchanged
+ok 21 - read clocks, rotating recommendation receipts and revisions are unchanged
+  ---
+  duration_ms: 0.3428
+  type: 'test'
+  ...
+# Subtest: ordinary new inbox response and private reflection notify without invalidating drafts
+ok 22 - ordinary new inbox response and private reflection notify without invalidating drafts
+  ---
+  duration_ms: 0.9022
+  type: 'test'
+  ...
+# Subtest: additional candidates notify; reordering a pool does not withdraw existing permissions
+ok 23 - additional candidates notify; reordering a pool does not withdraw existing permissions
+  ---
+  duration_ms: 0.457
+  type: 'test'
+  ...
+# Subtest: final deletion, disappearing view or identity switch cannot preserve the previous account
+ok 24 - final deletion, disappearing view or identity switch cannot preserve the previous account
+  ---
+  duration_ms: 0.1114
+  type: 'test'
+  ...
+# Subtest: own suspension, pause, adult and all three consent boundaries invalidate the view
+ok 25 - own suspension, pause, adult and all three consent boundaries invalidate the view
+  ---
+  duration_ms: 0.4541
+  type: 'test'
+  ...
+# Subtest: own source lineage, answer expiry, context and priority changes invalidate stale forms
+ok 26 - own source lineage, answer expiry, context and priority changes invalidate stale forms
+  ---
+  duration_ms: 0.6058
+  type: 'test'
+  ...
+# Subtest: conditional preference source or permission changes invalidate its original draft
+ok 27 - conditional preference source or permission changes invalidate its original draft
+  ---
+  duration_ms: 0.2642
+  type: 'test'
+  ...
+# Subtest: withdrawing or altering an already disclosed candidate invalidates the stale public view
+ok 28 - withdrawing or altering an already disclosed candidate invalidates the stale public view
+  ---
+  duration_ms: 0.7491
+  type: 'test'
+  ...
+# Subtest: connection closure, pause, invitation replacement and acceptance change invalidate
+ok 29 - connection closure, pause, invitation replacement and acceptance change invalidate
+  ---
+  duration_ms: 0.6866
+  type: 'test'
+  ...
+# Subtest: proposal replacement and time-based response permissions invalidate even without revisions
+ok 30 - proposal replacement and time-based response permissions invalidate even without revisions
+  ---
+  duration_ms: 0.5106
+  type: 'test'
+  ...
+# Subtest: alignment offer and option permissions invalidate; peer reaction alone only notifies
+ok 31 - alignment offer and option permissions invalidate; peer reaction alone only notifies
+  ---
+  duration_ms: 0.299
+  type: 'test'
+  ...
+# Subtest: classification neither mutates inputs nor returns private content or identifiers
+ok 32 - classification neither mutates inputs nor returns private content or identifiers
+  ---
+  duration_ms: 0.9091
+  type: 'test'
+  ...
+# Subtest: account loss excludes a closed pair and preserves sessions during network or provider outages
+ok 33 - account loss excludes a closed pair and preserves sessions during network or provider outages
+  ---
+  duration_ms: 0.1196
+  type: 'test'
+  ...
+# Subtest: actual authorized connected views stay unchanged on reread and invalidate on public withdrawal
+ok 34 - actual authorized connected views stay unchanged on reread and invalidate on public withdrawal
+  ---
+  duration_ms: 2106.0599
+  type: 'test'
+  ...
+# Subtest: stability reuses Ask hypothetical decisions and separates own answer coverage from probabilities
+ok 35 - stability reuses Ask hypothetical decisions and separates own answer coverage from probabilities
+  ---
+  duration_ms: 220.6292
+  type: 'test'
+  ...
+# Subtest: joint leaders are compared as sets, including a tie becoming one leader
+ok 36 - joint leaders are compared as sets, including a tie becoming one leader
+  ---
+  duration_ms: 32.1379
+  type: 'test'
+  ...
+# Subtest: privacy, pause and daily allowance do not expose extra counterfactual questions or scenes
+ok 37 - privacy, pause and daily allowance do not expose extra counterfactual questions or scenes
+  ---
+  duration_ms: 755.2111
+  type: 'test'
+  ...
+# Subtest: scenes respect a deferred field and mandatory unanswered prerequisites
+ok 38 - scenes respect a deferred field and mandatory unanswered prerequisites
+  ---
+  duration_ms: 665.6925
+  type: 'test'
+  ...
+# Subtest: a private scene reaction preserves answers, ranking and selection until a pure preview is explicitly applied
+ok 39 - a private scene reaction preserves answers, ranking and selection until a pure preview is explicitly applied
+  ---
+  duration_ms: 1263.3538
+  type: 'test'
+  ...
+# Subtest: neither and depends are reactions, never any, an invented preference or an available suggestion
+ok 40 - neither and depends are reactions, never any, an invented preference or an available suggestion
+  ---
+  duration_ms: 962.8453
+  type: 'test'
+  ...
+# Subtest: scene approval preserves hard baseline and the original deadline instead of silently extending or relaxing it
+ok 41 - scene approval preserves hard baseline and the original deadline instead of silently extending or relaxing it
+  ---
+  duration_ms: 955.5455
+  type: 'test'
+  ...
+# Subtest: stale, withdrawn and foreign scene sources cannot be applied; a manual correction wins
+ok 42 - stale, withdrawn and foreign scene sources cannot be applied; a manual correction wins
+  ---
+  duration_ms: 1062.2199
+  type: 'test'
+  ...
+# Subtest: withdrawing a reaction keeps a separately approved setting, and next context ends that temporary setting
+ok 43 - withdrawing a reaction keeps a separately approved setting, and next context ends that temporary setting
+  ---
+  duration_ms: 1083.3733
+  type: 'test'
+  ...
+# Subtest: reconfirming the same answer or changing it away and back cannot revive an old scene proposal
+ok 44 - reconfirming the same answer or changing it away and back cannot revive an old scene proposal
+  ---
+  duration_ms: 1161.8613
+  type: 'test'
+  ...
+# Subtest: new context, revoked discovery consent and elapsed source deadline retire unapproved scene suggestions
+ok 45 - new context, revoked discovery consent and elapsed source deadline retire unapproved scene suggestions
+  ---
+  duration_ms: 2835.5171
+  type: 'test'
+  ...
+# Subtest: comparison metadata comes from matching values, not Korean text parsing
+ok 46 - comparison metadata comes from matching values, not Korean text parsing
+  ---
+  duration_ms: 364.12
+  type: 'test'
+  ...
+# Subtest: relationship examples cover the three independently declared values on each axis and vary only their target
+ok 47 - relationship examples cover the three independently declared values on each axis and vary only their target
+  ---
+  duration_ms: 3431.6989
+  type: 'test'
+  ...
+# Subtest: relationship-goal: a private response and preview preserve answers, ranking and selection until explicit application
+ok 48 - relationship-goal: a private response and preview preserve answers, ranking and selection until explicit application
+  ---
+  duration_ms: 1554.0141
+  type: 'test'
+  ...
+# Subtest: relationship-goal-open: a private response and preview preserve answers, ranking and selection until explicit application
+ok 49 - relationship-goal-open: a private response and preview preserve answers, ranking and selection until explicit application
+  ---
+  duration_ms: 1641.8924
+  type: 'test'
+  ...
+# Subtest: relationship-speed: a private response and preview preserve answers, ranking and selection until explicit application
+ok 50 - relationship-speed: a private response and preview preserve answers, ranking and selection until explicit application
+  ---
+  duration_ms: 2198.9079
+  type: 'test'
+  ...
+# Subtest: relationship-speed-flexible: a private response and preview preserve answers, ranking and selection until explicit application
+ok 51 - relationship-speed-flexible: a private response and preview preserve answers, ranking and selection until explicit application
+  ---
+  duration_ms: 3252.0973
+  type: 'test'
+  ...
+# Subtest: neither and depends never become a relationship declaration or an assumed cross-axis answer
+ok 52 - neither and depends never become a relationship declaration or an assumed cross-axis answer
+  ---
+  duration_ms: 13077.158
+  type: 'test'
+  ...
+# Subtest: new scenes share the existing daily budget across axes and remain blocked by pause, defer and mandatory confirmation
+ok 53 - new scenes share the existing daily budget across axes and remain blocked by pause, defer and mandatory confirmation
+  ---
+  duration_ms: 2802.0896
+  type: 'test'
+  ...
+# Subtest: withdrawing a relationship reaction invalidates its proposal but preserves a separately approved answer until its context ends
+ok 54 - withdrawing a relationship reaction invalidates its proposal but preserves a separately approved answer until its context ends
+  ---
+  duration_ms: 9808.677
+  type: 'test'
+  ...
+# Subtest: two comparisons on the same relationship axis cannot revive stale or changed private sources
+ok 55 - two comparisons on the same relationship axis cannot revive stale or changed private sources
+  ---
+  duration_ms: 2757.2147
+  type: 'test'
+  ...
+# Subtest: scene confirmation keeps the goal must-have and source deadline while changing only the temporary goal
+ok 56 - scene confirmation keeps the goal must-have and source deadline while changing only the temporary goal
+  ---
+  duration_ms: 2557.0163
+  type: 'test'
+  ...
+# Subtest: private relationship reactions stay out of candidate and handoff projections and do not survive revoked consent
+ok 57 - private relationship reactions stay out of candidate and handoff projections and do not survive revoked consent
+  ---
+  duration_ms: 1511.434
+  type: 'test'
+  ...
+# Subtest: relationship goal and speed are independent explicit axes and are separate from conversation pace
+ok 58 - relationship goal and speed are independent explicit axes and are separate from conversation pace
+  ---
+  duration_ms: 179.0795
+  type: 'test'
+  ...
+# Subtest: explicit goals and speeds change the actual comparison and priority weighs the selected axis
+ok 59 - explicit goals and speeds change the actual comparison and priority weighs the selected axis
+  ---
+  duration_ms: 312.7048
+  type: 'test'
+  ...
+# Subtest: independent mandatory goal and speed preserve mismatch, unknown and reciprocal own-answer confirmation
+ok 60 - independent mandatory goal and speed preserve mismatch, unknown and reciprocal own-answer confirmation
+  ---
+  duration_ms: 249.0666
+  type: 'test'
+  ...
+# Subtest: speed scope, expiry, preview and undo do not rewrite goal, public facts or old version-one events
+ok 61 - speed scope, expiry, preview and undo do not rewrite goal, public facts or old version-one events
+  ---
+  duration_ms: 189.5606
+  type: 'test'
+  ...
+# Subtest: all three legacy combined answers remain history and never fill either new axis or ranking
+ok 62 - all three legacy combined answers remain history and never fill either new axis or ranking
+  ---
+  duration_ms: 460.174
+  type: 'test'
+  ...
+# Subtest: a legacy must-have remains pending until direct retirement, even after both new answers are supplied
+ok 63 - a legacy must-have remains pending until direct retirement, even after both new answers are supplied
+  ---
+  duration_ms: 170.6088
+  type: 'test'
+  ...
+# Subtest: current actions cannot create a combined legacy answer or change its value while retiring the old requirement
+ok 64 - current actions cannot create a combined legacy answer or change its value while retiring the old requirement
+  ---
+  duration_ms: 26.6457
+  type: 'test'
+  ...
+# Subtest: a historical version-one selection under a combined hard answer does not revive current recommendation rights
+ok 65 - a historical version-one selection under a combined hard answer does not revive current recommendation rights
+  ---
+  duration_ms: 212.0954
+  type: 'test'
+  ...
+# Subtest: expired or withdrawn old hard answers can be explicitly retired without setting a new legacy value
+ok 66 - expired or withdrawn old hard answers can be explicitly retired without setting a new legacy value
+  ---
+  duration_ms: 92.3545
+  type: 'test'
+  ...
+# Subtest: version-one displayed bases with the historical fourteen fields replay while new records bind all fields
+ok 67 - version-one displayed bases with the historical fourteen fields replay while new records bind all fields
+  ---
+  duration_ms: 313.99
+  type: 'test'
+  ...
+# Subtest: both missing meeting areas retain legacy comparison; a public declared area requires my direct answer
+ok 68 - both missing meeting areas retain legacy comparison; a public declared area requires my direct answer
+  ---
+  duration_ms: 77.8075
+  type: 'test'
+  ...
+# Subtest: only exact voluntary area intersection admits a recommendation; broad text does not fill IDs
+ok 69 - only exact voluntary area intersection admits a recommendation; broad text does not fill IDs
+  ---
+  duration_ms: 245.5886
+  type: 'test'
+  ...
+# Subtest: regions normalize and copy only validated sets and cannot be supplied as a partner private wish
+ok 70 - regions normalize and copy only validated sets and cannot be supplied as a partner private wish
+  ---
+  duration_ms: 21.7764
+  type: 'test'
+  ...
+# Subtest: private meeting area baseline/context masks, expiry and undo preserve explicit lifetime without backfill
+ok 71 - private meeting area baseline/context masks, expiry and undo preserve explicit lifetime without backfill
+  ---
+  duration_ms: 244.4165
+  type: 'test'
+  ...
+# Subtest: meeting area preview leaves state/selection unchanged until apply and expiry rejects stale restoration
+ok 72 - meeting area preview leaves state/selection unchanged until apply and expiry rejects stale restoration
+  ---
+  duration_ms: 113.5159
+  type: 'test'
+  ...
+# Subtest: time-limited priority expires to the current baseline and never resurrects an earlier context priority
+ok 73 - time-limited priority expires to the current baseline and never resurrects an earlier context priority
+  ---
+  duration_ms: 294.4196
+  type: 'test'
+  ...
+# Subtest: priority deadlines cannot outlive selected answer/context and equal expiry is allowed
+ok 74 - priority deadlines cannot outlive selected answer/context and equal expiry is allowed
+  ---
+  duration_ms: 39.0149
+  type: 'test'
+  ...
+# Subtest: priority undo preserves old deadline and cannot revive a priority whose earlier deadline ended
+ok 75 - priority undo preserves old deadline and cannot revive a priority whose earlier deadline ended
+  ---
+  duration_ms: 40.7741
+  type: 'test'
+  ...
+# Subtest: thin meeting declaration reads no peer ranking or Ask, copies only the owner area set and does not mutate the log
+ok 76 - thin meeting declaration reads no peer ranking or Ask, copies only the owner area set and does not mutate the log
+  ---
+  duration_ms: 14.3639
+  type: 'test'
+  ...
+# Subtest: thin meeting declaration keeps current consent, explicit unknown and active context gates
+ok 77 - thin meeting declaration keeps current consent, explicit unknown and active context gates
+  ---
+  duration_ms: 6.8926
+  type: 'test'
+  ...
+# Subtest: thin meeting declaration honors latest baseline expiry and context fallback without reviving older declarations
+ok 78 - thin meeting declaration honors latest baseline expiry and context fallback without reviving older declarations
+  ---
+  duration_ms: 20.4138
+  type: 'test'
+  ...
+# Subtest: today uses the next Korean midnight and an exclusive ISO boundary
+ok 79 - today uses the next Korean midnight and an exclusive ISO boundary
+  ---
+  duration_ms: 2.1164
+  type: 'test'
+  ...
+# Subtest: Korean midnight is a new today while the preceding millisecond ends the previous today
+ok 80 - Korean midnight is a new today while the preceding millisecond ends the previous today
+  ---
+  duration_ms: 0.1675
+  type: 'test'
+  ...
+# Subtest: Korean day arithmetic handles month, year and leap-day rollover
+ok 81 - Korean day arithmetic handles month, year and leap-day rollover
+  ---
+  duration_ms: 0.1615
+  type: 'test'
+  ...
+# Subtest: server as-of determines today independently of device clock skew
+ok 82 - server as-of determines today independently of device clock skew
+  ---
+  duration_ms: 0.6036
+  type: 'test'
+  ...
+# Subtest: the device timezone and daylight-saving settings do not alter the Korean boundary or explanation
+ok 83 - the device timezone and daylight-saving settings do not alter the Korean boundary or explanation
+  ---
+  duration_ms: 14.5499
+  type: 'test'
+  ...
+# Subtest: today clamps to the shortest applicable answer, current importance or context limit
+ok 84 - today clamps to the shortest applicable answer, current importance or context limit
+  ---
+  duration_ms: 0.4743
+  type: 'test'
+  ...
+# Subtest: equal limits do not falsely clamp and ties explain both current constraints
+ok 85 - equal limits do not falsely clamp and ties explain both current constraints
+  ---
+  duration_ms: 0.2085
+  type: 'test'
+  ...
+# Subtest: baseline choices do not inherit or revive the current context lifetime
+ok 86 - baseline choices do not inherit or revive the current context lifetime
+  ---
+  duration_ms: 0.547
+  type: 'test'
+  ...
+# Subtest: context quick selection explicitly narrows baseline to context without a new timestamp declaration
+ok 87 - context quick selection explicitly narrows baseline to context without a new timestamp declaration
+  ---
+  duration_ms: 0.2177
+  type: 'test'
+  ...
+# Subtest: context mode never promotes a temporary choice to baseline and honors earlier source limits
+ok 88 - context mode never promotes a temporary choice to baseline and honors earlier source limits
+  ---
+  duration_ms: 0.373
+  type: 'test'
+  ...
+# Subtest: context without a fixed current end stays tied to the recommendation rather than inventing a date
+ok 89 - context without a fixed current end stays tied to the recommendation rather than inventing a date
+  ---
+  duration_ms: 0.8815
+  type: 'test'
+  ...
+# Subtest: scope mode preserves existing selected scope and distinguishes explicit from inherited lifetime
+ok 90 - scope mode preserves existing selected scope and distinguishes explicit from inherited lifetime
+  ---
+  duration_ms: 0.2442
+  type: 'test'
+  ...
+# Subtest: custom requires a canonical future ISO instant and keeps an allowed explicit boundary
+ok 91 - custom requires a canonical future ISO instant and keeps an allowed explicit boundary
+  ---
+  duration_ms: 0.373
+  type: 'test'
+  ...
+# Subtest: custom rejects exceeding any applicable upper bound instead of silently changing the owner choice
+ok 92 - custom rejects exceeding any applicable upper bound instead of silently changing the owner choice
+  ---
+  duration_ms: 0.2436
+  type: 'test'
+  ...
+# Subtest: expired current source limits require reconfirmation instead of generating past or extended deadlines
+ok 93 - expired current source limits require reconfirmation instead of generating past or extended deadlines
+  ---
+  duration_ms: 0.7851
+  type: 'test'
+  ...
+# Subtest: timestamps do not accept datetime-local, offsets, rounding, invalid calendar dates or non-string coercion
+ok 94 - timestamps do not accept datetime-local, offsets, rounding, invalid calendar dates or non-string coercion
+  ---
+  duration_ms: 0.5911
+  type: 'test'
+  ...
+# Subtest: precision in inherited end times is shown honestly and absent limits remain absent
+ok 95 - precision in inherited end times is shown honestly and absent limits remain absent
+  ---
+  duration_ms: 0.1272
+  type: 'test'
+  ...
+# Subtest: unrecognized modes, unsupported scopes, duplicate targets and unnecessary until fields are rejected
+ok 96 - unrecognized modes, unsupported scopes, duplicate targets and unnecessary until fields are rejected
+  ---
+  duration_ms: 0.3351
+  type: 'test'
+  ...
+# Subtest: the helper accepts no private profiles, peer data or executable accessors and returns only own deadline policy
+ok 97 - the helper accepts no private profiles, peer data or executable accessors and returns only own deadline policy
+  ---
+  duration_ms: 0.3146
+  type: 'test'
+  ...
+# Subtest: historical prototype pollution cannot create an inherited clock or hidden answer lifetime
+ok 98 - historical prototype pollution cannot create an inherited clock or hidden answer lifetime
+  ---
+  duration_ms: 0.1705
+  type: 'test'
+  ...
+1..98
+# tests 98
+# suites 0
+# pass 98
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 44816.4461

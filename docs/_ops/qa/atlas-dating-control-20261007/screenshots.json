@@ -1,0 +1,50 @@
+[
+  {
+    "path": "guide-opens-own-disclosure-320.png",
+    "width": 320,
+    "height": 6632,
+    "sha256": "c034f224ce78ec6e635c9bbe7103c8851eebf58fad82afccccf6af82a7f1d535"
+  },
+  {
+    "path": "guide-opens-own-settings-320.png",
+    "width": 320,
+    "height": 1436,
+    "sha256": "077d3a9a1277f0fa0e5c963ebd1a522199da1c2d8bf4c0de837071e1c6eee9e3"
+  },
+  {
+    "path": "unknown-peer-cause-stays-private-320.png",
+    "width": 320,
+    "height": 2201,
+    "sha256": "a2e3d9317f73f3cf11dbc72df6a817e6328ef439575f989ee84a275c3e325d5e"
+  },
+  {
+    "path": "next-context-before-after-320.png",
+    "width": 320,
+    "height": 2994,
+    "sha256": "34a91b487dea7dcfbc3a287962d8e3caad948576f534c364d8b06b5d135353d9"
+  },
+  {
+    "path": "next-context-keeps-introduction-and-date-320.png",
+    "width": 320,
+    "height": 1258,
+    "sha256": "8518438a67006959ed1873f81a7790447171988d7f7bc57af7f1566297ca0159"
+  },
+  {
+    "path": "today-korean-midnight-and-return-390.png",
+    "width": 390,
+    "height": 1989,
+    "sha256": "8c442f7a9387ba3f2d52875b1111d2148dd8e9f6420cee589595b5d999ad0dd3"
+  },
+  {
+    "path": "today-clamped-to-original-answer-320.png",
+    "width": 320,
+    "height": 2012,
+    "sha256": "9cd83f5dc3b94c320266d60d114582d99df631d6ea4a59bad73b815d5b3bb676"
+  },
+  {
+    "path": "new-criterion-today-clamped-to-own-answer-390.png",
+    "width": 390,
+    "height": 1872,
+    "sha256": "7e351f0f9213b18e390c511b332819b7083d9906fb841a81f04a623f81303741"
+  }
+]

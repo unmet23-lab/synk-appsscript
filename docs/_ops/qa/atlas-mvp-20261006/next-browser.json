@@ -1,0 +1,94 @@
+{
+  "at": "2026-10-06T10:58:02.791Z",
+  "status": "passed",
+  "modelCalls": 0,
+  "actualUsers": 0,
+  "externalRequests": [],
+  "errors": [],
+  "paths": [
+    {
+      "label": "context-1280",
+      "checks": [
+        "baseline-context-preview",
+        "apply-without-overwriting-baseline",
+        "explicit-unknown",
+        "revert",
+        "close-invalidates-meeting",
+        "new-context-preserves-baseline"
+      ]
+    },
+    {
+      "label": "context-320",
+      "checks": [
+        "baseline-context-preview",
+        "apply-without-overwriting-baseline",
+        "explicit-unknown",
+        "revert",
+        "close-invalidates-meeting",
+        "new-context-preserves-baseline"
+      ]
+    },
+    {
+      "label": "memory-1280",
+      "checks": [
+        "default-no-save",
+        "opt-in",
+        "reload-resume",
+        "same-candidate",
+        "atomic-stale-tab-rejection",
+        "deletion-not-resurrected"
+      ]
+    },
+    {
+      "label": "memory-390",
+      "checks": [
+        "default-no-save",
+        "opt-in",
+        "reload-resume",
+        "same-candidate",
+        "atomic-stale-tab-rejection",
+        "deletion-not-resurrected"
+      ]
+    },
+    {
+      "label": "participant-1280",
+      "checks": [
+        "same-cookie-jar-role-isolation",
+        "separate-consent",
+        "mutual-concrete-acceptance",
+        "self-only-completion-feedback",
+        "private-intent",
+        "explicit-send",
+        "busy-reopen",
+        "block-redaction",
+        "own-session-reload",
+        "pair-delete"
+      ]
+    },
+    {
+      "label": "participant-320",
+      "checks": [
+        "same-cookie-jar-role-isolation",
+        "separate-consent",
+        "mutual-concrete-acceptance",
+        "self-only-completion-feedback",
+        "private-intent",
+        "explicit-send",
+        "busy-reopen",
+        "block-redaction",
+        "own-session-reload",
+        "pair-delete"
+      ]
+    }
+  ],
+  "screenshots": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\next\\context-1280.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\next\\context-320.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\next\\memory-1280.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\next\\memory-390.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\next\\participant-1280-private.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\next\\participant-1280-closed.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\next\\participant-320-private.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\next\\participant-320-closed.png"
+  ]
+}

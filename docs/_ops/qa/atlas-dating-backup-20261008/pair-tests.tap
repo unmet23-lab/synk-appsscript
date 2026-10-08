@@ -1,0 +1,190 @@
+TAP version 13
+# Subtest: an old consistent pair stays byte-identical and yields no restart admission or private data
+ok 1 - an old consistent pair stays byte-identical and yields no restart admission or private data
+  ---
+  duration_ms: 96.916
+  type: 'test'
+  ...
+# Subtest: old paired data still needs separately fresh latest evidence for the existing restart gate
+ok 2 - old paired data still needs separately fresh latest evidence for the existing restart gate
+  ---
+  duration_ms: 158.7541
+  type: 'test'
+  ...
+# Subtest: future capture, wrong kind, mismatched environment and checksum damage fail pair validation
+ok 3 - future capture, wrong kind, mismatched environment and checksum damage fail pair validation
+  ---
+  duration_ms: 119.743
+  type: 'test'
+  ...
+# Subtest: a pending lost-ack event cannot lose its local receipt while retaining the availability fence
+ok 4 - a pending lost-ack event cannot lose its local receipt while retaining the availability fence
+  ---
+  duration_ms: 214.8581
+  type: 'test'
+  ...
+# Subtest: deleted account tombstones cannot coexist with restored private introduction history
+ok 5 - deleted account tombstones cannot coexist with restored private introduction history
+  ---
+  duration_ms: 318.0266
+  type: 'test'
+  ...
+# Subtest: missing schema, empty pair and demo storage fail instead of creating a valid backup
+ok 6 - missing schema, empty pair and demo storage fail instead of creating a valid backup
+  ---
+  duration_ms: 356.1851
+  type: 'test'
+  ...
+# Subtest: uncheckpointed database sidecars prevent pair checks without touching the source
+ok 7 - uncheckpointed database sidecars prevent pair checks without touching the source
+  ---
+  duration_ms: 87.3189
+  type: 'test'
+  ...
+# Subtest: pair file changes during a check are detected by the final fingerprint comparison
+ok 8 - pair file changes during a check are detected by the final fingerprint comparison
+  ---
+  duration_ms: 103.4926
+  type: 'test'
+  ...
+# Subtest: actual --check-restore prints a redacted summary without DB writes, adult imports, account calls or a listener
+ok 9 - actual --check-restore prints a redacted summary without DB writes, adult imports, account calls or a listener
+  ---
+  duration_ms: 432.0976
+  type: 'test'
+  ...
+# Subtest: actual --resume-after-restore admits the same files and serves account config without verifier injection or account calls
+ok 10 - actual --resume-after-restore admits the same files and serves account config without verifier injection or account calls
+  ---
+  duration_ms: 613.3659
+  type: 'test'
+  ...
+# Subtest: evidence changed by an imported adult adapter after inspection is rejected before reopening the product DB or listening
+ok 11 - evidence changed by an imported adult adapter after inspection is rejected before reopening the product DB or listening
+  ---
+  duration_ms: 324.3777
+  type: 'test'
+  ...
+# Subtest: configured restore evidence cannot be bypassed by default startup, and stale latest evidence cannot resume
+ok 12 - configured restore evidence cannot be bypassed by default startup, and stale latest evidence cannot resume
+  ---
+  duration_ms: 420.8485
+  type: 'test'
+  ...
+# Subtest: offline admission reads the checkpointed database unchanged, redacts identities, and is one-use
+ok 13 - offline admission reads the checkpointed database unchanged, redacts identities, and is one-use
+  ---
+  duration_ms: 147.7414
+  type: 'test'
+  ...
+# Subtest: missing database or independent evidence cannot create a database or authorize a restart
+ok 14 - missing database or independent evidence cannot create a database or authorize a restart
+  ---
+  duration_ms: 120.541
+  type: 'test'
+  ...
+# Subtest: an operator latest export must have explicit provenance and a bounded fresh timestamp
+ok 15 - an operator latest export must have explicit provenance and a bounded fresh timestamp
+  ---
+  duration_ms: 156.6662
+  type: 'test'
+  ...
+# Subtest: two mutually coherent old backups cannot pass a newer independent hold sequence
+ok 16 - two mutually coherent old backups cannot pass a newer independent hold sequence
+  ---
+  duration_ms: 377.8625
+  type: 'test'
+  ...
+# Subtest: two mutually coherent old backups cannot resurrect an independently known terminal deletion
+ok 17 - two mutually coherent old backups cannot resurrect an independently known terminal deletion
+  ---
+  duration_ms: 102.9104
+  type: 'test'
+  ...
+# Subtest: latest exports must match the service environment and stable ledger status, not merely counters
+ok 18 - latest exports must match the service environment and stable ledger status, not merely counters
+  ---
+  duration_ms: 130.0043
+  type: 'test'
+  ...
+# Subtest: even a coherent pending hold requires product state to be fenced before reopening
+ok 19 - even a coherent pending hold requires product state to be fenced before reopening
+  ---
+  duration_ms: 146.4631
+  type: 'test'
+  ...
+# Subtest: changed database, latest evidence, or environment invalidates and consumes a prior admission
+ok 20 - changed database, latest evidence, or environment invalidates and consumes a prior admission
+  ---
+  duration_ms: 148.0769
+  type: 'test'
+  ...
+# Subtest: admission expires and rejects clock rollback before any service opens the database
+ok 21 - admission expires and rejects clock rollback before any service opens the database
+  ---
+  duration_ms: 130.3117
+  type: 'test'
+  ...
+# Subtest: uncheckpointed sidecars are rejected before readonly SQLite access and when added after inspection
+ok 22 - uncheckpointed sidecars are rejected before readonly SQLite access and when added after inspection
+  ---
+  duration_ms: 71.9183
+  type: 'test'
+  ...
+# Subtest: suspended product accounts remain suspended and are compatible with central active accounts
+ok 23 - suspended product accounts remain suspended and are compatible with central active accounts
+  ---
+  duration_ms: 69.0074
+  type: 'test'
+  ...
+# Subtest: missing tables, malformed receipts, and checksum damage fail closed
+ok 24 - missing tables, malformed receipts, and checksum damage fail closed
+  ---
+  duration_ms: 107.7978
+  type: 'test'
+  ...
+# Subtest: empty central and product inventories, demo databases, and malformed evidence cannot authorize restore
+ok 25 - empty central and product inventories, demo databases, and malformed evidence cannot authorize restore
+  ---
+  duration_ms: 232.8464
+  type: 'test'
+  ...
+# Subtest: valid deleted tombstones require deletion ledger and no private document
+ok 26 - valid deleted tombstones require deletion ledger and no private document
+  ---
+  duration_ms: 108.936
+  type: 'test'
+  ...
+# Subtest: restore evidence cannot live inside the public experiences directory
+ok 27 - restore evidence cannot live inside the public experiences directory
+  ---
+  duration_ms: 108.058
+  type: 'test'
+  ...
+# Subtest: invalid SQLite bytes are rejected without leaking raw input or generating sidecars
+ok 28 - invalid SQLite bytes are rejected without leaking raw input or generating sidecars
+  ---
+  duration_ms: 112.0213
+  type: 'test'
+  ...
+# Subtest: a tombstone cannot admit restored private introductions left outside the account document
+ok 29 - a tombstone cannot admit restored private introductions left outside the account document
+  ---
+  duration_ms: 92.8597
+  type: 'test'
+  ...
+# Subtest: a lost-ack pending event still requires the local receipt committed with its fence
+ok 30 - a lost-ack pending event still requires the local receipt committed with its fence
+  ---
+  duration_ms: 126.6988
+  type: 'test'
+  ...
+1..30
+# tests 30
+# suites 0
+# pass 30
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2621.9559

@@ -1,0 +1,542 @@
+{
+  "version": 1,
+  "status": "passed",
+  "at": "2026-10-06T14:14:08.602Z",
+  "kind": "fictional-candidate-discovery-browser-ux",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualPeople": 0,
+  "deployed": false,
+  "errors": [],
+  "missing": [],
+  "failedRequests": [],
+  "externalRequests": [],
+  "unexpectedRequests": [],
+  "mockedApi": [
+    {
+      "label": "local-1280",
+      "path": "/api/computer-interpretation"
+    },
+    {
+      "label": "local-1280",
+      "path": "/api/me"
+    },
+    {
+      "label": "local-390",
+      "path": "/api/computer-interpretation"
+    },
+    {
+      "label": "local-390",
+      "path": "/api/me"
+    },
+    {
+      "label": "local-320",
+      "path": "/api/computer-interpretation"
+    },
+    {
+      "label": "local-320",
+      "path": "/api/me"
+    }
+  ],
+  "paths": [
+    {
+      "label": "local-1280",
+      "checks": [
+        "keyboard-consent-and-visible-focus",
+        "questionnaire-self-and-wants-separate",
+        "expanded-purpose-contact-rhythm-explicit-answers",
+        "five-public-candidates",
+        "reciprocal-required-exclusion",
+        "unknown-schedule-pending",
+        "preference-changes-candidate-and-reason",
+        "change-clears-selection",
+        "cancel-does-not-infer-dislike",
+        "consent-withdrawal-hides-results",
+        "reconsent-does-not-restore-selection",
+        "unknown-consent-hides-results"
+      ],
+      "onboardingTrace": [
+        {
+          "field": "consent",
+          "value": true,
+          "focus": {
+            "visible": true,
+            "outline": "solid",
+            "width": "3px"
+          }
+        },
+        {
+          "field": "availability",
+          "value": "weekend"
+        },
+        {
+          "field": "self.pace",
+          "value": "listen"
+        },
+        {
+          "field": "wants.pace",
+          "value": "lead"
+        },
+        {
+          "field": "wants.plan",
+          "value": "planned"
+        },
+        {
+          "field": "wants.purpose",
+          "value": "any"
+        },
+        {
+          "field": "wants.contact",
+          "value": "any"
+        },
+        {
+          "field": "wants.rhythm",
+          "value": "any"
+        },
+        {
+          "field": "wants.notice",
+          "value": "any"
+        },
+        {
+          "field": "self.plan",
+          "value": "planned",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.purpose",
+          "value": "gradual",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.contact",
+          "value": "few-days",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.rhythm",
+          "value": "early",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.notice",
+          "value": "advance",
+          "via": "explicit-editor"
+        }
+      ],
+      "beforeCandidate": "candidate-1",
+      "afterCandidate": "candidate-2",
+      "changeReason": "상대에게 바라는 대화 방식: ‘차분히 듣고 응답하는 사람’을 앞으로도 적용해요. 쌍방 조건을 다시 살펴봤어요. 먼저 살펴볼 후보가 달라졌어요.",
+      "layout": {
+        "width": 1280,
+        "documentWidth": 1280,
+        "overflowing": []
+      }
+    },
+    {
+      "label": "desktop-extra-boundaries",
+      "checks": [
+        "unknown-skip-does-not-answer-or-rerank",
+        "own-required-condition-excludes",
+        "clearing-required-answer-keeps-requirement-and-holds-recommendation",
+        "required-question-cannot-be-skipped",
+        "required-answer-preserves-requirement",
+        "missing-self-keeps-reciprocal-check-pending",
+        "explicit-self-releases-reciprocal-check",
+        "no-eligible-does-not-relax-conditions",
+        "reset-clears-answers-and-selection"
+      ]
+    },
+    {
+      "label": "local-390",
+      "checks": [
+        "keyboard-consent-and-visible-focus",
+        "questionnaire-self-and-wants-separate",
+        "expanded-purpose-contact-rhythm-explicit-answers",
+        "five-public-candidates",
+        "reciprocal-required-exclusion",
+        "unknown-schedule-pending",
+        "preference-changes-candidate-and-reason",
+        "change-clears-selection",
+        "cancel-does-not-infer-dislike",
+        "consent-withdrawal-hides-results",
+        "reconsent-does-not-restore-selection",
+        "unknown-consent-hides-results"
+      ],
+      "onboardingTrace": [
+        {
+          "field": "consent",
+          "value": true,
+          "focus": {
+            "visible": true,
+            "outline": "solid",
+            "width": "3px"
+          }
+        },
+        {
+          "field": "availability",
+          "value": "weekend"
+        },
+        {
+          "field": "self.pace",
+          "value": "listen"
+        },
+        {
+          "field": "wants.pace",
+          "value": "lead"
+        },
+        {
+          "field": "wants.plan",
+          "value": "planned"
+        },
+        {
+          "field": "wants.purpose",
+          "value": "any"
+        },
+        {
+          "field": "wants.contact",
+          "value": "any"
+        },
+        {
+          "field": "wants.rhythm",
+          "value": "any"
+        },
+        {
+          "field": "wants.notice",
+          "value": "any"
+        },
+        {
+          "field": "self.plan",
+          "value": "planned",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.purpose",
+          "value": "gradual",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.contact",
+          "value": "few-days",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.rhythm",
+          "value": "early",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.notice",
+          "value": "advance",
+          "via": "explicit-editor"
+        }
+      ],
+      "beforeCandidate": "candidate-1",
+      "afterCandidate": "candidate-2",
+      "changeReason": "상대에게 바라는 대화 방식: ‘차분히 듣고 응답하는 사람’을 앞으로도 적용해요. 쌍방 조건을 다시 살펴봤어요. 먼저 살펴볼 후보가 달라졌어요.",
+      "layout": {
+        "width": 390,
+        "documentWidth": 390,
+        "overflowing": []
+      }
+    },
+    {
+      "label": "local-320",
+      "checks": [
+        "keyboard-consent-and-visible-focus",
+        "questionnaire-self-and-wants-separate",
+        "expanded-purpose-contact-rhythm-explicit-answers",
+        "five-public-candidates",
+        "reciprocal-required-exclusion",
+        "unknown-schedule-pending",
+        "preference-changes-candidate-and-reason",
+        "change-clears-selection",
+        "cancel-does-not-infer-dislike",
+        "consent-withdrawal-hides-results",
+        "reconsent-does-not-restore-selection",
+        "unknown-consent-hides-results"
+      ],
+      "onboardingTrace": [
+        {
+          "field": "consent",
+          "value": true,
+          "focus": {
+            "visible": true,
+            "outline": "solid",
+            "width": "3px"
+          }
+        },
+        {
+          "field": "availability",
+          "value": "weekend"
+        },
+        {
+          "field": "self.pace",
+          "value": "listen"
+        },
+        {
+          "field": "wants.pace",
+          "value": "lead"
+        },
+        {
+          "field": "wants.plan",
+          "value": "planned"
+        },
+        {
+          "field": "wants.purpose",
+          "value": "any"
+        },
+        {
+          "field": "wants.contact",
+          "value": "any"
+        },
+        {
+          "field": "wants.rhythm",
+          "value": "any"
+        },
+        {
+          "field": "wants.notice",
+          "value": "any"
+        },
+        {
+          "field": "self.plan",
+          "value": "planned",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.purpose",
+          "value": "gradual",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.contact",
+          "value": "few-days",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.rhythm",
+          "value": "early",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.notice",
+          "value": "advance",
+          "via": "explicit-editor"
+        }
+      ],
+      "beforeCandidate": "candidate-1",
+      "afterCandidate": "candidate-2",
+      "changeReason": "상대에게 바라는 대화 방식: ‘차분히 듣고 응답하는 사람’을 앞으로도 적용해요. 쌍방 조건을 다시 살펴봤어요. 먼저 살펴볼 후보가 달라졌어요.",
+      "layout": {
+        "width": 320,
+        "documentWidth": 320,
+        "overflowing": []
+      }
+    },
+    {
+      "label": "file-share-390",
+      "checks": [
+        "keyboard-consent-and-visible-focus",
+        "questionnaire-self-and-wants-separate",
+        "expanded-purpose-contact-rhythm-explicit-answers",
+        "five-public-candidates",
+        "reciprocal-required-exclusion",
+        "unknown-schedule-pending",
+        "preference-changes-candidate-and-reason",
+        "change-clears-selection",
+        "cancel-does-not-infer-dislike",
+        "consent-withdrawal-hides-results",
+        "reconsent-does-not-restore-selection",
+        "unknown-consent-hides-results"
+      ],
+      "onboardingTrace": [
+        {
+          "field": "consent",
+          "value": true,
+          "focus": {
+            "visible": true,
+            "outline": "solid",
+            "width": "3px"
+          }
+        },
+        {
+          "field": "availability",
+          "value": "weekend"
+        },
+        {
+          "field": "self.pace",
+          "value": "listen"
+        },
+        {
+          "field": "wants.pace",
+          "value": "lead"
+        },
+        {
+          "field": "wants.plan",
+          "value": "planned"
+        },
+        {
+          "field": "wants.purpose",
+          "value": "any"
+        },
+        {
+          "field": "wants.contact",
+          "value": "any"
+        },
+        {
+          "field": "wants.rhythm",
+          "value": "any"
+        },
+        {
+          "field": "wants.notice",
+          "value": "any"
+        },
+        {
+          "field": "self.plan",
+          "value": "planned",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.purpose",
+          "value": "gradual",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.contact",
+          "value": "few-days",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.rhythm",
+          "value": "early",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.notice",
+          "value": "advance",
+          "via": "explicit-editor"
+        }
+      ],
+      "beforeCandidate": "candidate-1",
+      "afterCandidate": "candidate-2",
+      "changeReason": "상대에게 바라는 대화 방식: ‘차분히 듣고 응답하는 사람’을 앞으로도 적용해요. 쌍방 조건을 다시 살펴봤어요. 먼저 살펴볼 후보가 달라졌어요.",
+      "layout": {
+        "width": 390,
+        "documentWidth": 390,
+        "overflowing": []
+      }
+    },
+    {
+      "label": "http-share-390",
+      "checks": [
+        "keyboard-consent-and-visible-focus",
+        "questionnaire-self-and-wants-separate",
+        "expanded-purpose-contact-rhythm-explicit-answers",
+        "five-public-candidates",
+        "reciprocal-required-exclusion",
+        "unknown-schedule-pending",
+        "preference-changes-candidate-and-reason",
+        "change-clears-selection",
+        "cancel-does-not-infer-dislike",
+        "consent-withdrawal-hides-results",
+        "reconsent-does-not-restore-selection",
+        "unknown-consent-hides-results"
+      ],
+      "onboardingTrace": [
+        {
+          "field": "consent",
+          "value": true,
+          "focus": {
+            "visible": true,
+            "outline": "solid",
+            "width": "3px"
+          }
+        },
+        {
+          "field": "availability",
+          "value": "weekend"
+        },
+        {
+          "field": "self.pace",
+          "value": "listen"
+        },
+        {
+          "field": "wants.pace",
+          "value": "lead"
+        },
+        {
+          "field": "wants.plan",
+          "value": "planned"
+        },
+        {
+          "field": "wants.purpose",
+          "value": "any"
+        },
+        {
+          "field": "wants.contact",
+          "value": "any"
+        },
+        {
+          "field": "wants.rhythm",
+          "value": "any"
+        },
+        {
+          "field": "wants.notice",
+          "value": "any"
+        },
+        {
+          "field": "self.plan",
+          "value": "planned",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.purpose",
+          "value": "gradual",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.contact",
+          "value": "few-days",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.rhythm",
+          "value": "early",
+          "via": "explicit-editor"
+        },
+        {
+          "field": "self.notice",
+          "value": "advance",
+          "via": "explicit-editor"
+        }
+      ],
+      "beforeCandidate": "candidate-1",
+      "afterCandidate": "candidate-2",
+      "changeReason": "상대에게 바라는 대화 방식: ‘차분히 듣고 응답하는 사람’을 앞으로도 적용해요. 쌍방 조건을 다시 살펴봤어요. 먼저 살펴볼 후보가 달라졌어요.",
+      "layout": {
+        "width": 390,
+        "documentWidth": 390,
+        "overflowing": []
+      }
+    }
+  ],
+  "screenshots": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-1280-initial-candidates.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-1280-changed-preference.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-1280-consent-cleared.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\desktop-reciprocal-confirmed.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\desktop-no-eligible.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-390-initial-candidates.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-390-changed-preference.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-390-consent-cleared.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-320-initial-candidates.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-320-changed-preference.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\local-320-consent-cleared.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\file-share-390-initial-candidates.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\file-share-390-changed-preference.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\file-share-390-consent-cleared.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\http-share-390-initial-candidates.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\http-share-390-changed-preference.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\http-share-390-consent-cleared.png"
+  ],
+  "share": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\discovery\\share.html"
+}

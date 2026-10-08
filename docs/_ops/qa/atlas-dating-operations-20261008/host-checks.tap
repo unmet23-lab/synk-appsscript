@@ -1,0 +1,394 @@
+TAP version 13
+# Subtest: receipt checkpoint binding uses only the public registration or demo surface and excludes OAuth secrets and query parameters
+ok 1 - receipt checkpoint binding uses only the public registration or demo surface and excludes OAuth secrets and query parameters
+  ---
+  duration_ms: 166.1593
+  type: 'test'
+  ...
+# Subtest: demo credentials are memory-only, distinct from a real SYNK session
+ok 2 - demo credentials are memory-only, distinct from a real SYNK session
+  ---
+  duration_ms: 3.0562
+  type: 'test'
+  ...
+# Subtest: an OAuth session is bound to its registered identity origin and product client
+ok 3 - an OAuth session is bound to its registered identity origin and product client
+  ---
+  duration_ms: 0.9594
+  type: 'test'
+  ...
+# Subtest: account requests use SYNK bearer but never send private records to the identity host
+ok 4 - account requests use SYNK bearer but never send private records to the identity host
+  ---
+  duration_ms: 1.0355
+  type: 'test'
+  ...
+# Subtest: revoked identity clears stored credentials and does not retry the mutation
+ok 5 - revoked identity clears stored credentials and does not retry the mutation
+  ---
+  duration_ms: 1.0146
+  type: 'test'
+  ...
+# Subtest: logout rejects a late response from the prior identity
+ok 6 - logout rejects a late response from the prior identity
+  ---
+  duration_ms: 2.3017
+  type: 'test'
+  ...
+# Subtest: dating PKCE uses its own pending namespace without overwriting platform login
+ok 7 - dating PKCE uses its own pending namespace without overwriting platform login
+  ---
+  duration_ms: 10.4242
+  type: 'test'
+  ...
+# Subtest: renewal is single-flight and a logout during refresh cannot restore a session
+ok 8 - renewal is single-flight and a logout during refresh cannot restore a session
+  ---
+  duration_ms: 1.5381
+  type: 'test'
+  ...
+# Subtest: a revoked refresh credential clears the session; a transient provider outage preserves it
+ok 9 - a revoked refresh credential clears the session; a transient provider outage preserves it
+  ---
+  duration_ms: 2.3899
+  type: 'test'
+  ...
+# Subtest: only dispatched action uncertainty is marked: transport, unreadable JSON/body and server outage; definitive rejection and GET are separate
+ok 10 - only dispatched action uncertainty is marked: transport, unreadable JSON/body and server outage; definitive rejection and GET are separate
+  ---
+  duration_ms: 11.5448
+  type: 'test'
+  ...
+# Subtest: logout or disposal during a dispatched mutation does not turn a stale response into a recoverable write
+ok 11 - logout or disposal during a dispatched mutation does not turn a stale response into a recoverable write
+  ---
+  duration_ms: 1.2775
+  type: 'test'
+  ...
+# Subtest: a malformed authentication rejection clears credentials and never remains uncertain
+ok 12 - a malformed authentication rejection clears credentials and never remains uncertain
+  ---
+  duration_ms: 0.5641
+  type: 'test'
+  ...
+# Subtest: busy and explicit restart rejections preserve login and allow only an explicit new attempt
+ok 13 - busy and explicit restart rejections preserve login and allow only an explicit new attempt
+  ---
+  duration_ms: 1.6994
+  type: 'test'
+  ...
+# Subtest: only a complete explicit 503 restart envelope removes action uncertainty
+ok 14 - only a complete explicit 503 restart envelope removes action uncertainty
+  ---
+  duration_ms: 2.0772
+  type: 'test'
+  ...
+# Subtest: state retrieval failures do not claim that a change failed to save
+ok 15 - state retrieval failures do not claim that a change failed to save
+  ---
+  duration_ms: 1.7263
+  type: 'test'
+  ...
+# Subtest: a lost response keeps an immutable tab-only envelope, blocks new writes, and retries the same UUID and body only explicitly
+ok 16 - a lost response keeps an immutable tab-only envelope, blocks new writes, and retries the same UUID and body only explicitly
+  ---
+  duration_ms: 11.132
+  type: 'test'
+  ...
+# Subtest: a missing receipt is inconclusive and an exact applied receipt resolves with the latest view
+ok 17 - a missing receipt is inconclusive and an exact applied receipt resolves with the latest view
+  ---
+  duration_ms: 3.0105
+  type: 'test'
+  ...
+# Subtest: receipt transport or malformed/mismatched replies preserve pending; definitive rejection clears it
+ok 18 - receipt transport or malformed/mismatched replies preserve pending; definitive rejection clears it
+  ---
+  duration_ms: 2.0541
+  type: 'test'
+  ...
+# Subtest: repeated uncertain retries retain pending, but revision rejection clears it
+ok 19 - repeated uncertain retries retain pending, but revision rejection clears it
+  ---
+  duration_ms: 0.6757
+  type: 'test'
+  ...
+# Subtest: identity changes and explicit lifecycle clearing discard pending and reject late private responses
+ok 20 - identity changes and explicit lifecycle clearing discard pending and reject late private responses
+  ---
+  duration_ms: 12.7953
+  type: 'test'
+  ...
+# Subtest: concurrent checks/retries cannot launch duplicate traffic and ordinary definite failures do not leave pending
+ok 21 - concurrent checks/retries cannot launch duplicate traffic and ordinary definite failures do not leave pending
+  ---
+  duration_ms: 1.1937
+  type: 'test'
+  ...
+# Subtest: an incomplete or other actor’s action response stays unresolved instead of publishing the wrong view
+ok 22 - an incomplete or other actor’s action response stays unresolved instead of publishing the wrong view
+  ---
+  duration_ms: 1.4481
+  type: 'test'
+  ...
+# Subtest: standalone dating files are an exact closed browser dependency graph
+ok 23 - standalone dating files are an exact closed browser dependency graph
+  ---
+  duration_ms: 90.2296
+  type: 'test'
+  ...
+# Subtest: raw traversal, encoded paths, aliases and unknown files never map to a dating public file
+ok 24 - raw traversal, encoded paths, aliases and unknown files never map to a dating public file
+  ---
+  duration_ms: 1.1551
+  type: 'test'
+  ...
+# Subtest: standalone host serves every browser dependency and only its own root and config
+ok 25 - standalone host serves every browser dependency and only its own root and config
+  ---
+  duration_ms: 793.0535
+  type: 'test'
+  ...
+# Subtest: standalone host does not dispatch unrelated APIs or normalized traversal to a service
+ok 26 - standalone host does not dispatch unrelated APIs or normalized traversal to a service
+  ---
+  duration_ms: 38.1674
+  type: 'test'
+  ...
+# Subtest: request guard runs before public config, files, redirect and service actions
+ok 27 - request guard runs before public config, files, redirect and service actions
+  ---
+  duration_ms: 12.8346
+  type: 'test'
+  ...
+# Subtest: request guard can finish a response and accepted requests continue
+ok 28 - request guard can finish a response and accepted requests continue
+  ---
+  duration_ms: 12.985
+  type: 'test'
+  ...
+# Subtest: reviewed names cannot publish files through a symlink or junction
+ok 29 - reviewed names cannot publish files through a symlink or junction
+  ---
+  duration_ms: 85.5976
+  type: 'test'
+  ...
+# Subtest: development hub retains other product entry points while dating server code stays private
+ok 30 - development hub retains other product entry points while dating server code stays private
+  ---
+  duration_ms: 195.9806
+  type: 'test'
+  ...
+# Subtest: an account host derives its fixed port from the registered callback and rejects mismatched or ephemeral ports
+ok 31 - an account host derives its fixed port from the registered callback and rejects mismatched or ephemeral ports
+  ---
+  duration_ms: 60.3125
+  type: 'test'
+  ...
+# Subtest: restore mode requires paired paths, an explicit account database and an explicit check or resume command
+ok 32 - restore mode requires paired paths, an explicit account database and an explicit check or resume command
+  ---
+  duration_ms: 15.2185
+  type: 'test'
+  ...
+# Subtest: the local CLI refuses callbacks it cannot serve and account files do not fall back to demo
+ok 33 - the local CLI refuses callbacks it cannot serve and account files do not fall back to demo
+  ---
+  duration_ms: 34.8414
+  type: 'test'
+  ...
+# Subtest: HTTPS proxy configuration pins the public callback separately from its private listening port
+ok 34 - HTTPS proxy configuration pins the public callback separately from its private listening port
+  ---
+  duration_ms: 508.9329
+  type: 'test'
+  ...
+# Subtest: public transport settings cannot silently enable demo or accept ambiguous trust declarations
+ok 35 - public transport settings cannot silently enable demo or accept ambiguous trust declarations
+  ---
+  duration_ms: 60.3522
+  type: 'test'
+  ...
+# Subtest: a public host rejects a callback for another origin or page before opening storage
+ok 36 - a public host rejects a callback for another origin or page before opening storage
+  ---
+  duration_ms: 50.4678
+  type: 'test'
+  ...
+# Subtest: the actual public factory guards configuration, static files and APIs before authentication
+ok 37 - the actual public factory guards configuration, static files and APIs before authentication
+  ---
+  duration_ms: 498.5329
+  type: 'test'
+  ...
+# Subtest: configuration inspection is redacted and never evaluates an adult module, opens SQLite or starts a server
+ok 38 - configuration inspection is redacted and never evaluates an adult module, opens SQLite or starts a server
+  ---
+  duration_ms: 219.6399
+  type: 'test'
+  ...
+# Subtest: only an explicit account server loads a trusted adult adapter and loading never invokes verify
+ok 39 - only an explicit account server loads a trusted adult adapter and loading never invokes verify
+  ---
+  duration_ms: 22.9727
+  type: 'test'
+  ...
+# Subtest: invalid adult adapters and private provider errors produce only fixed configuration errors
+ok 40 - invalid adult adapters and private provider errors produce only fixed configuration errors
+  ---
+  duration_ms: 34.1466
+  type: 'test'
+  ...
+# Subtest: the lifecycle receiver and CLI accept only the same 32 to 256 character contract as the central sender
+ok 41 - the lifecycle receiver and CLI accept only the same 32 to 256 character contract as the central sender
+  ---
+  duration_ms: 19.7357
+  type: 'test'
+  ...
+# Subtest: CLI malformed files and unknown arguments exit without printing private JSON or creating a database
+ok 42 - CLI malformed files and unknown arguments exit without printing private JSON or creating a database
+  ---
+  duration_ms: 776.5917
+  type: 'test'
+  ...
+# Subtest: an occupied fixed callback port stops the CLI instead of moving the account host to an unregistered port
+ok 43 - an occupied fixed callback port stops the CLI instead of moving the account host to an unregistered port
+  ---
+  duration_ms: 786.8196
+  type: 'test'
+  ...
+# Subtest: the actual CLI wires the adult and lifecycle adapters while public configuration contains neither
+ok 44 - the actual CLI wires the adult and lifecycle adapters while public configuration contains neither
+  ---
+  duration_ms: 433.6135
+  type: 'test'
+  ...
+# Subtest: shutdown lets an accepted save finish and rejects a later pipelined request before dispatch
+ok 45 - shutdown lets an accepted save finish and rejects a later pipelined request before dispatch
+  ---
+  duration_ms: 562.4787
+  type: 'test'
+  ...
+# Subtest: a bounded forced stop prevents a late authentication from writing after SQLite closes
+ok 46 - a bounded forced stop prevents a late authentication from writing after SQLite closes
+  ---
+  duration_ms: 279.2376
+  type: 'test'
+  ...
+# Subtest: draining rejects public config and mutation without reading the body or invoking a handler
+ok 47 - draining rejects public config and mutation without reading the body or invoking a handler
+  ---
+  duration_ms: 1.0042
+  type: 'test'
+  ...
+# Subtest: CLI signal wiring drains once and removes handlers; forced completion exits nonzero
+ok 48 - CLI signal wiring drains once and removes handlers; forced completion exits nonzero
+  ---
+  duration_ms: 0.8701
+  type: 'test'
+  ...
+# Subtest: invalid shutdown bounds fail before a listener or database is created
+ok 49 - invalid shutdown bounds fail before a listener or database is created
+  ---
+  duration_ms: 0.6627
+  type: 'test'
+  ...
+# Subtest: public transport requires account mode, a pure HTTPS origin and an explicit finite exact proxy list
+ok 50 - public transport requires account mode, a pure HTTPS origin and an explicit finite exact proxy list
+  ---
+  duration_ms: 8.2563
+  type: 'test'
+  ...
+# Subtest: HTTPS proxy origin supports safe navigation, HEAD and same-origin browser writes
+ok 51 - HTTPS proxy origin supports safe navigation, HEAD and same-origin browser writes
+  ---
+  duration_ms: 1.3482
+  type: 'test'
+  ...
+# Subtest: private listener, backend authority and exact proxy peer remain mandatory
+ok 52 - private listener, backend authority and exact proxy peer remain mandatory
+  ---
+  duration_ms: 1.1699
+  type: 'test'
+  ...
+# Subtest: IPv4-mapped IPv6 addresses are normalized for both registration and peer matching
+ok 53 - IPv4-mapped IPv6 addresses are normalized for both registration and peer matching
+  ---
+  duration_ms: 1.1783
+  type: 'test'
+  ...
+# Subtest: forwarded scheme, hostname and explicit port cannot be inferred from other headers
+ok 54 - forwarded scheme, hostname and explicit port cannot be inferred from other headers
+  ---
+  duration_ms: 0.6358
+  type: 'test'
+  ...
+# Subtest: raw duplicate, comma-joined, array and mixed forwarding headers are rejected
+ok 55 - raw duplicate, comma-joined, array and mixed forwarding headers are rejected
+  ---
+  duration_ms: 1.0056
+  type: 'test'
+  ...
+# Subtest: cross-site and same-site browser traffic, missing mutation origin and sibling origins are rejected
+ok 56 - cross-site and same-site browser traffic, missing mutation origin and sibling origins are rejected
+  ---
+  duration_ms: 1.9332
+  type: 'test'
+  ...
+# Subtest: the public OAuth callback permits cross-site GET navigation without relaxing authenticated API origins
+ok 57 - the public OAuth callback permits cross-site GET navigation without relaxing authenticated API origins
+  ---
+  duration_ms: 0.6555
+  type: 'test'
+  ...
+# Subtest: public resource navigation still requires the trusted proxy, exact forwarding authority and unique headers
+ok 58 - public resource navigation still requires the trusted proxy, exact forwarding authority and unique headers
+  ---
+  duration_ms: 0.6275
+  type: 'test'
+  ...
+# Subtest: public lifecycle uses the same trusted proxy path while forbidding browser context
+ok 59 - public lifecycle uses the same trusted proxy path while forbidding browser context
+  ---
+  duration_ms: 0.4998
+  type: 'test'
+  ...
+# Subtest: unconfigured local mode retains its original loopback origin and separate lifecycle contract
+ok 60 - unconfigured local mode retains its original loopback origin and separate lifecycle contract
+  ---
+  duration_ms: 0.5394
+  type: 'test'
+  ...
+# Subtest: real HTTP parser duplicates and spoofed browser origins fail before authentication or mutation
+ok 61 - real HTTP parser duplicates and spoofed browser origins fail before authentication or mutation
+  ---
+  duration_ms: 395.5841
+  type: 'test'
+  ...
+# Subtest: real lifecycle requests require both proxy verification and their independent server credential
+ok 62 - real lifecycle requests require both proxy verification and their independent server credential
+  ---
+  duration_ms: 197.4683
+  type: 'test'
+  ...
+# Subtest: local account entry serves only reviewed public files, never its build sources or dependencies
+ok 63 - local account entry serves only reviewed public files, never its build sources or dependencies
+  ---
+  duration_ms: 57.0701
+  type: 'test'
+  ...
+# Subtest: local root opens the platform while the learning hub remains directly available
+ok 64 - local root opens the platform while the learning hub remains directly available
+  ---
+  duration_ms: 400.4638
+  type: 'test'
+  ...
+1..64
+# tests 64
+# suites 0
+# pass 64
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6716.4947

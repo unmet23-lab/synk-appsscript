@@ -1,0 +1,40 @@
+{
+  "at": "2026-10-07T00:25:07.3335858Z",
+  "scope": "introduction-retirement-generation",
+  "initialRecord": "receiver-subtask-initial.json",
+  "beforeFix": {
+    "reproduced": true,
+    "peerAccountRevisionUnchanged": true,
+    "introductionRevisionReused": 2,
+    "staleRequestHttpStatus": 200,
+    "log": "receiver-introduction-aba-before-fix.tap"
+  },
+  "afterFix": {
+    "publicGeneration": "SQLite row revision increments independently of adapter events",
+    "staleRequestHttpStatus": 409,
+    "adapterDocumentRevision": "events.length retained",
+    "restartChecked": true,
+    "freshReopenPassed": true,
+    "tests": 13,
+    "passed": 13,
+    "failed": 0,
+    "log": "receiver-tests-final.tap",
+    "sourceHashes": [
+      {
+        "path": "experiences/atlas-lab/dating-store.mjs",
+        "sha256": "be7ed02c8bed2d05b2942cde64935c07e45c63afc65d00274c9ffd788894b98f"
+      },
+      {
+        "path": "experiences/atlas-lab/dating-service.mjs",
+        "sha256": "bd21ef3253f52b508e7518819fae5e0b0010325bf44e964333532d66618e4794"
+      },
+      {
+        "path": "tests/atlas-dating-availability-service.test.mjs",
+        "sha256": "38e9c8a4f2b0eea50254880bfa476a44c7eca5f0eba70ef806ff838c55dd6064"
+      }
+    ]
+  },
+  "paidCalls": 0,
+  "actualUsers": 0,
+  "deployed": false
+}

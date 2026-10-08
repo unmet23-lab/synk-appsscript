@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "kind": "atlas-dating-onboarding-compact",
+  "date": "2026-10-08",
+  "status": "passed",
+  "changes": [
+    "Name input follows the single short heading; repeated readiness panel removed from first setup only",
+    "Saved settings are a collapsed native disclosure after the name; counts use saved server state",
+    "Adult declaration and three independent optional consents remain outside the disclosure with their explanations",
+    "Usability observation copy updated to the same saved-settings label"
+  ],
+  "validation": {
+    "browserPathsPassed": 27,
+    "browserErrors": 0,
+    "externalRequests": 0,
+    "sourceFilesMatched": 14,
+    "onboarding": {
+      "paths": 18,
+      "result": "experiences/atlas-lab/qa/dating-onboarding-compact/onboarding/result.json",
+      "command": "node tests/atlas-dating-onboarding-smoke.mjs",
+      "env": {
+        "SYNK_QA_ONBOARDING_OUT": "experiences/atlas-lab/qa/dating-onboarding-compact/onboarding"
+      }
+    },
+    "readiness": {
+      "paths": 9,
+      "result": "experiences/atlas-lab/qa/dating-onboarding-compact/readiness/result.json",
+      "command": "node tests/atlas-dating-readiness-smoke.mjs",
+      "env": {
+        "SYNK_QA_READINESS_OUT": "experiences/atlas-lab/qa/dating-onboarding-compact/readiness"
+      }
+    },
+    "baseline": {
+      "result": "experiences/atlas-lab/qa/dating-onboarding-compact/baseline/result.json",
+      "countsAsFunctionalTest": false
+    },
+    "layouts": [
+      {
+        "width": 320,
+        "height": 844,
+        "before": {
+          "width": 320,
+          "height": 844,
+          "nicknameTop": 882.921875,
+          "nicknameBottom": 931.3125,
+          "firstViewportFullyVisible": false,
+          "horizontalOverflow": false
+        },
+        "after": {
+          "width": 320,
+          "height": 844,
+          "nicknameTop": 456.796875,
+          "nicknameBottom": 505.1875,
+          "firstViewportFullyVisible": true,
+          "horizontalOverflow": false
+        },
+        "movedUpPx": 426.125
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "before": {
+          "width": 390,
+          "height": 844,
+          "nicknameTop": 796.796875,
+          "nicknameBottom": 845.1875,
+          "firstViewportFullyVisible": false,
+          "horizontalOverflow": false
+        },
+        "after": {
+          "width": 390,
+          "height": 844,
+          "nicknameTop": 421.796875,
+          "nicknameBottom": 470.1875,
+          "firstViewportFullyVisible": true,
+          "horizontalOverflow": false
+        },
+        "movedUpPx": 375
+      }
+    ],
+    "behavior": [
+      "Native summary opens with Enter and closes with Space without POST or revision change",
+      "Typing never increments saved count",
+      "Same-tab draft and every explicit consent survive navigation",
+      "Partial setup resumes with the saved 2/3 state",
+      "Private all-off completion, failed save, receipt recovery and conflict flows remain valid"
+    ],
+    "visualReview": [
+      "320px first viewport",
+      "390px whole first-setup form",
+      "Saved-state disclosure and partial resume inspected by delegated reviewer"
+    ],
+    "evidenceScope": "Synthetic sessions, local SQLite and loopback browser; no real identity provider or physical device."
+  },
+  "limits": {
+    "modelCalls": 0,
+    "externalApiCost": 0,
+    "realProviderRequests": 0,
+    "actualParticipants": 0,
+    "physicalDevices": 0,
+    "publicDeployment": false,
+    "engineChanges": 0,
+    "backendChanges": 0,
+    "completionRateMeasured": false,
+    "satisfactionEffectVerified": false,
+    "tutorDeferred": true,
+    "recruitmentDeferred": true
+  },
+  "sourceSha256": {
+    "experiences/atlas-lab/dating-ui.mjs": "f190cc1e4b3e6b006f47246dfacd25089121a3f79b2d83947ba24aec8323b62b",
+    "experiences/atlas-lab/dating-live.mjs": "b19c3c166ab75f378039d76820a972db8a42396b4f8b88742310be6f50266e5d",
+    "experiences/atlas-lab/dating.css": "28d130eeda73754eac3b61b5a63265bdba90e92bce29ce83991bcce6cb7d3a9a",
+    "experiences/atlas-lab/profile-editing-drafts.mjs": "ba6808e6362a2e10310c313c541e4236d65739383ba6ed243f23bae2363560f6",
+    "experiences/atlas-lab/onboarding-drafts.mjs": "befe9826c9bd6b7d27a4dbff9c924e305d1f53d25bb2781e8ae00dceec2c7940",
+    "experiences/atlas-lab/dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "experiences/atlas-lab/dating-service.mjs": "cef366d04812bfe57d1ba642afef68d49726bf8c44296286db3ef0770549ccf2",
+    "experiences/atlas-lab/dating-server.mjs": "f751e49c634a17bbd977574555b9550e802bf8cb08a8234d5d2ce9168e8641c2",
+    "experiences/atlas-lab/dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505",
+    "experiences/atlas-lab/discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "experiences/atlas-lab/dating-adult.mjs": "41d9db2f95edbee0842d25cbcd672cccac5b11c1c1be8bfab85aefd833076545",
+    "experiences/atlas-lab/usability.html": "e7a0b0b3374499c49c20962a4d13c9f216a1b94f26c080b48b8066b65308cd56",
+    "tests/atlas-dating-onboarding-smoke.mjs": "b9a19f106142354d08b7cd7f204f418a3ca2fde85a23ed51d61ea4555d8b3e53",
+    "tests/atlas-dating-readiness-smoke.mjs": "212a3e525e0336cf9f77458dcde99b785afd39575bc8d5c8d88446e8fa8394e4"
+  }
+}

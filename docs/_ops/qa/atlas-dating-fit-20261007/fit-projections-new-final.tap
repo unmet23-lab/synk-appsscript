@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: public meeting regions require my own actual answer and cannot mark preparation confirmed
+ok 1 - public meeting regions require my own actual answer and cannot mark preparation confirmed
+  ---
+  duration_ms: 64.2704
+  type: 'test'
+  ...
+# Subtest: missing public region attribution uses my confirmed array and current authorized public profile without private data
+ok 2 - missing public region attribution uses my confirmed array and current authorized public profile without private data
+  ---
+  duration_ms: 49.4988
+  type: 'test'
+  ...
+# Subtest: ambiguous stale and malformed public region proof is not presented as a known missing public answer
+ok 3 - ambiguous stale and malformed public region proof is not presented as a known missing public answer
+  ---
+  duration_ms: 48.6709
+  type: 'test'
+  ...
+# Subtest: region publication compares ongoing baseline instead of current context and returns detached arrays
+ok 4 - region publication compares ongoing baseline instead of current context and returns detached arrays
+  ---
+  duration_ms: 44.8753
+  type: 'test'
+  ...
+# Subtest: expired or malformed private region answers and malformed public arrays do not become publishable answers
+ok 5 - expired or malformed private region answers and malformed public arrays do not become publishable answers
+  ---
+  duration_ms: 135.8575
+  type: 'test'
+  ...
+# Subtest: legacy mixed answers do not add unknown question burden or publish as new relationship axes
+ok 6 - legacy mixed answers do not add unknown question burden or publish as new relationship axes
+  ---
+  duration_ms: 34.2391
+  type: 'test'
+  ...
+# Subtest: changed or withdrawn own criterion review invalidates an old draft without returning its private content
+ok 7 - changed or withdrawn own criterion review invalidates an old draft without returning its private content
+  ---
+  duration_ms: 55.3778
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 759.1252

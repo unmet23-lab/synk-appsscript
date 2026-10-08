@@ -1,0 +1,23 @@
+✔ real canonical purge SQL, outbox worker and product HTTP receiver erase together; a lost acknowledgment retries safely after restart (3744.9543ms)
+✔ access, onboarding, pause, storage and profile visibility are distinguished before candidate recovery (105.5788ms)
+✔ consent missing and explicit no are separate and neither action automatically grants consent (88.0431ms)
+✔ own schedule and independently required baseline answers get a concrete question without silently changing requirements (403.9598ms)
+✔ conflict recovery cancels only the conflicting current choice and retains the hard requirement (561.4497ms)
+✔ closed and expired contexts require an explicit new context, without resurrecting a selection (247.4277ms)
+✔ visible pool emptiness does not infer nonpublic accounts, rejection or attraction (11.2257ms)
+✔ current skips offer individual restoration first while a new context remains explicit (438.9732ms)
+✔ legacy or unrelated exclusion tickets cannot offer a current individual-restoration list (38.1427ms)
+✔ opening the current exclusion list cannot mutate context answers or other exclusions (214.0759ms)
+✔ missing counterpart schedule is claimed only for an exact currently visible profile ID with a pending row (29.835ms)
+✔ a missing own answer needed for reciprocal comparison is offered before waiting on other people (37.2067ms)
+✔ hard mismatch invites checking the recorded criteria without recommending a weaker requirement (39.7871ms)
+✔ ready recommendations return no empty-state guidance and malformed projections stay unclassified (178.0416ms)
+✔ guidance is pure, detached, and never reads raw state or private records (88.229ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4031.7311

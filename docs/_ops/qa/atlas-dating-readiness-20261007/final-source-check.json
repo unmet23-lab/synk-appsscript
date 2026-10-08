@@ -1,0 +1,20 @@
+{
+  "syntaxFiles": [
+    "experiences/atlas-lab/discovery-guidance.mjs",
+    "experiences/atlas-lab/dating-adult.mjs",
+    "experiences/atlas-lab/dating-store.mjs",
+    "experiences/atlas-lab/dating-service.mjs",
+    "experiences/atlas-lab/dating-server.mjs",
+    "experiences/atlas-lab/dating-ui.mjs",
+    "experiences/atlas-lab/dating-live.mjs",
+    "tests/atlas-discovery-guidance.test.mjs",
+    "tests/atlas-dating-adult.test.mjs",
+    "tests/atlas-dating-backup-restore.test.mjs",
+    "tests/atlas-dating-readiness-smoke.mjs",
+    "tests/atlas-dating-live.test.mjs",
+    "tests/atlas-dating-smoke.mjs",
+    "docs/_ops/qa/atlas-dating-readiness-20261007/finalize.mjs"
+  ],
+  "syntaxPassed": 14,
+  "diffExit": 0
+}

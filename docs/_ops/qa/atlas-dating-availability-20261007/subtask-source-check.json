@@ -1,0 +1,111 @@
+{
+  "at": "2026-10-07T00:34:37.328Z",
+  "allMatched": true,
+  "sources": [
+    {
+      "repository": "SYNK-talk",
+      "path": "lib/synk-account-lifecycle.js",
+      "sha256": "5c993a74670418e97606ea4d411997d6626521bf054d5e3832436df6ce124b88"
+    },
+    {
+      "repository": "SYNK-talk",
+      "path": "tools/synk-account-lifecycle.js",
+      "sha256": "1b12c2f810ef664475192d329a8fda06f90f30f00ae0aab65b0b6cfef2e453ca"
+    },
+    {
+      "repository": "SYNK-talk",
+      "path": "supabase/migrations/20261007020000_synk_account_lifecycle_c16.sql",
+      "sha256": "a22224fcce7ace0678b36a53ba9246aba89f1fabeb3a85016feb8dd1fc6f63a0"
+    },
+    {
+      "repository": "SYNK-talk",
+      "path": "supabase/migrations/20261007030000_synk_account_availability_c16.sql",
+      "sha256": "550d19cbefd11a3f1c119915e167f944ba1a7f6407797ef6e7ab3f29f9a73137"
+    },
+    {
+      "repository": "SYNK-talk",
+      "path": "supabase/L0_스키마.sql",
+      "sha256": "0c6ce6c364903f576e5dc03379a6b52bd2fd9fef1ef6b3b913629f469b97d742"
+    },
+    {
+      "repository": "SYNK-talk",
+      "path": "supabase/확인_적용후상태.sql",
+      "sha256": "8f48d53e76366ec981af046d7b21eac44953e74ba60778fe1aaca608c9f35503"
+    },
+    {
+      "repository": "SYNK-talk",
+      "path": "tests/lib/account-lifecycle-fixture.js",
+      "sha256": "ba37dc9739210a9e16cd1723fe6150ad92ab9ad6e5324e1b47afa699d3e803a7"
+    },
+    {
+      "repository": "SYNK-talk",
+      "path": "tests/synk-account-availability.test.js",
+      "sha256": "543dafea1717a89b22e6cf081312882ea00843ecdfb654d737d84bf919b34216"
+    },
+    {
+      "repository": "SYNK-talk",
+      "path": "tests/synk-account-lifecycle.test.js",
+      "sha256": "03df2191bad992dbc0be12cc9d9091904fdf71f9c9515b13a603900055999795"
+    },
+    {
+      "repository": "SYNK-talk",
+      "path": "tests/L0스키마.test.js",
+      "sha256": "9228b56f2d0133d4c112969a89d1290309b916e7aa528436517b15faa5fc4124"
+    },
+    {
+      "repository": "SYNK-talk",
+      "path": "docs/C0_API계약.md",
+      "sha256": "44947202379384a57414f2c0e1103c0a33a84d65dee0cba8daa5d5ba105ccfd0"
+    },
+    {
+      "repository": "SYNK-talk",
+      "path": "docs/L0_데이터계약.md",
+      "sha256": "9fc7f98689175ba328a7b19d0114413667b772349dbbef700efdd464851c1745"
+    },
+    {
+      "repository": "SYNK-talk",
+      "path": "docs/공통계정_운영기준.md",
+      "sha256": "465c0a9c6b15681d8897dcdadaf403a3fbd1ae5d60935d53200103c9a3860e09"
+    },
+    {
+      "repository": "SYNK-appsscript",
+      "path": "experiences/atlas-lab/dating-lifecycle.mjs",
+      "sha256": "78e5b2b1a2bb44e505ac19633649390fe985d1dcabd3f86e1749532984a951f6"
+    },
+    {
+      "repository": "SYNK-appsscript",
+      "path": "experiences/atlas-lab/dating-store.mjs",
+      "sha256": "be7ed02c8bed2d05b2942cde64935c07e45c63afc65d00274c9ffd788894b98f"
+    },
+    {
+      "repository": "SYNK-appsscript",
+      "path": "experiences/atlas-lab/dating-service.mjs",
+      "sha256": "bd21ef3253f52b508e7518819fae5e0b0010325bf44e964333532d66618e4794"
+    },
+    {
+      "repository": "SYNK-appsscript",
+      "path": "tests/atlas-dating-availability-service.test.mjs",
+      "sha256": "38e9c8a4f2b0eea50254880bfa476a44c7eca5f0eba70ef806ff838c55dd6064"
+    },
+    {
+      "repository": "SYNK-appsscript",
+      "path": "experiences/atlas-lab/dating-delivery.mjs",
+      "sha256": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d"
+    },
+    {
+      "repository": "SYNK-appsscript",
+      "path": "experiences/atlas-lab/dating-checkpoint.mjs",
+      "sha256": "ea1725c2e8da3fbe19701095b861840680d8f72c3da4769bcf3a31ba19d14812"
+    },
+    {
+      "repository": "SYNK-appsscript",
+      "path": "tests/atlas-dating-delivery.test.mjs",
+      "sha256": "ddf6315b08fa479133a54bf7aebb31f475bfeedcf74ad0763b47a10109b8583f"
+    },
+    {
+      "repository": "SYNK-appsscript",
+      "path": "tests/atlas-dating-checkpoint.test.mjs",
+      "sha256": "837476f95b1594dccc332d5e4ac04cad31fcaaeaeda2e46b4d953c68a6c76c5c"
+    }
+  ]
+}

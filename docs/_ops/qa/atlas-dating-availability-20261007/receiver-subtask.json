@@ -1,0 +1,89 @@
+{
+  "at": "2026-10-07T00:26:47.7663562Z",
+  "status": "passed",
+  "scope": "availability-receiver-local",
+  "actualUsers": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "deployed": false,
+  "realAccountUsed": false,
+  "sourceHashes": [
+    {
+      "path": "experiences/atlas-lab/dating-lifecycle.mjs",
+      "sha256": "78e5b2b1a2bb44e505ac19633649390fe985d1dcabd3f86e1749532984a951f6"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-store.mjs",
+      "sha256": "be7ed02c8bed2d05b2942cde64935c07e45c63afc65d00274c9ffd788894b98f"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-service.mjs",
+      "sha256": "bd21ef3253f52b508e7518819fae5e0b0010325bf44e964333532d66618e4794"
+    },
+    {
+      "path": "tests/atlas-dating-availability-service.test.mjs",
+      "sha256": "38e9c8a4f2b0eea50254880bfa476a44c7eca5f0eba70ef806ff838c55dd6064"
+    }
+  ],
+  "tests": {
+    "newReceiver": 13,
+    "existingService": 57,
+    "terminalLifecycle": 8,
+    "receiptRecovery": 5,
+    "uniqueTotal": 83,
+    "failed": 0,
+    "skipped": 0,
+    "cancelled": 0
+  },
+  "logs": [
+    "receiver-tests-final.tap",
+    "receiver-regression-final.tap"
+  ],
+  "contracts": {
+    "v1": "Preserved account.deleted seven-field envelope and acknowledgment",
+    "v2": "account.availability nine fields; positive safe integer sequence",
+    "delivery": "Exact duplicate acknowledgment, persisted high-water mark, older sequence ignored, conflicting same sequence rejected",
+    "terminal": "Deleted account never revived by availability events",
+    "separation": "Central gate does not change local suspension",
+    "temporaryHold": "Public and invitation consents off; private preferences, experience, completed facts, reflections and archived introduction preserved",
+    "resume": "Central active releases the central gate; explicit consents and per-pair receiving reopen required before a new introduction",
+    "blockedOwnView": "Only identity, local status, centralAvailability and empty candidate/pair/inbox projections",
+    "replay": "Existing POST receipt uses current masked view; receipt GET and new mutations are denied while centrally blocked",
+    "introductionGeneration": "Public introduction revision uses a monotonically increasing SQLite row generation, separate from archived/reset event-document revision; stale peer reopen rejected after central hold and resume"
+  },
+  "initialRun": {
+    "tests": 12,
+    "passed": 11,
+    "failed": 1,
+    "reason": "Test fixture attempted a fresh introduction from an actor without required recommendation confirmation",
+    "repair": "Use the prepared original actor after its explicit per-pair reopen; peer accepts the new introduction",
+    "productionChangeForFailure": false
+  },
+  "notes": [
+    "Final hashes correspond to the 13 receiver plus 70 existing regression tests after the introduction CAS fix.",
+    "The initial 83-test record and its original hashes are preserved separately; it included one previous central deletion integration and 12 receiver tests.",
+    "Parent latest two-case central integration is checked separately and is not counted in this receiver subtask total.",
+    "Only temporary synthetic databases and loopback HTTP used. No migration, production schedule, external request or paid call enabled."
+  ],
+  "abaReproduction": {
+    "at": "2026-10-07T00:23:51.6887433Z",
+    "observed": "HTTP 200 applied stale peer reopen, expected HTTP 409",
+    "log": "receiver-introduction-aba-before-fix.tap",
+    "sourceHashes": [
+      {
+        "path": "experiences/atlas-lab/dating-store.mjs",
+        "sha256": "e4f575bd5c0ac70bcd3a9bc70b6ded36b1a60e9048c12321e34878a360c26ccf"
+      },
+      {
+        "path": "experiences/atlas-lab/dating-service.mjs",
+        "sha256": "aed6c47b0693af145376998337596f606fe3d57061decefc9996ca96eb62244d"
+      },
+      {
+        "path": "tests/atlas-dating-availability-service.test.mjs",
+        "sha256": "38e9c8a4f2b0eea50254880bfa476a44c7eca5f0eba70ef806ff838c55dd6064"
+      }
+    ]
+  },
+  "initialVerification": "receiver-subtask-initial.json",
+  "introductionFixEvidence": "receiver-introduction-aba.json"
+}

@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-07T18:59:53.3741864Z",
+  "method": "view_image",
+  "checked": [
+    "delayed-logout-private-dom-boundary-390.png",
+    "logout-provider-unreachable-local-cleared-320.png",
+    "offline-return-revoked-clears-private-view-390.png"
+  ],
+  "outcome": "passed",
+  "findings": [
+    "로그아웃 직후 390px 화면은 진입 화면으로 전환되어 이름, 소개, 입력 양식이 남지 않음.",
+    "원격 종료 실패 320px 화면에서 로컬 로그아웃과 서버 종료 확인 안내가 읽히고 넘침 없음.",
+    "오프라인 복귀 후 토큰 거절 390px 화면은 계정 확인 안내와 진입 화면만 표시됨."
+  ],
+  "limits": [
+    "합성 계정과 로컬 서버를 사용한 Chromium 검증.",
+    "실제 인증 제공자와 실물 휴대폰 검증은 하지 않음."
+  ]
+}

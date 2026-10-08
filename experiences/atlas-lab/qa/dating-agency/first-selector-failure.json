@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-06T21:44:55.477Z",
+  "status": "failed",
+  "kind": "synthetic-dating-agency-browser",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "paths": [],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [],
+  "failure": "locator.evaluate: Timeout 12000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-candidate=\"demo:sample-1\"]').locator('details').filter({ has: locator('[data-candidate=\"demo:sample-1\"]').locator('[data-action=\"exclude\"]') })\u001b[22m\n\n    at reveal (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-agency-smoke.mjs:20:52)\n    at exclude (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-agency-smoke.mjs:63:9)\n    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-agency-smoke.mjs:95:3"
+}

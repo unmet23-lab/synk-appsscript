@@ -1,0 +1,91 @@
+{
+  "at": "2026-10-06T20:13:12.158Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "One optional first-meeting coordination prompt from current mutually public differences",
+    "Independent shared yes/different/withdrawal, current introduction and source generation checks",
+    "Confirmed appointments stay independent; unsent schedule drafts survive coordination responses",
+    "Anonymous free usability tasks, facilitator instructions and blank printable observations"
+  ],
+  "engine": {
+    "engineOriginalEditsByThisBatch": 0,
+    "originalEnginesAdded": 0,
+    "reused": [
+      "Existing Core Domain/Ask and preferences in recommendations",
+      "Existing Temper observations in private feedback"
+    ],
+    "productAdapters": [
+      "meeting-alignment.mjs",
+      "dating-service.mjs",
+      "dating-store.mjs",
+      "dating-ui.mjs"
+    ]
+  },
+  "tests": {
+    "at": "2026-10-06T20:13:11.918Z",
+    "fileCount": 37,
+    "tests": 575,
+    "pass": 575,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "browsers": [
+    {
+      "kind": "dating-alignment",
+      "status": "passed",
+      "at": "2026-10-06T20:09:56.797Z",
+      "paths": 6,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "screenshots": 7,
+      "result": "experiences/atlas-lab/qa/dating-alignment/result.json"
+    },
+    {
+      "kind": "dating",
+      "status": "passed",
+      "at": "2026-10-06T20:06:29.386Z",
+      "paths": 18,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "screenshots": 9,
+      "result": "experiences/atlas-lab/qa/dating/result.json"
+    },
+    {
+      "kind": "dating-clarity",
+      "status": "passed",
+      "at": "2026-10-06T20:06:34.319Z",
+      "paths": 4,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "screenshots": 6,
+      "result": "experiences/atlas-lab/qa/dating-clarity/result.json"
+    }
+  ],
+  "browserPaths": 28,
+  "preview": {
+    "url": "http://127.0.0.1:60835/atlas-lab/dating.html",
+    "guide": "http://127.0.0.1:60835/atlas-lab/usability.html",
+    "isolatedPreview": true,
+    "filesMatched": 8
+  },
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "publicDeployment": false,
+  "limitations": [
+    "Real adult usability sessions have not been run; 5-8 is an exploratory plan.",
+    "Meeting start is a preparation cutoff, not evidence of an actual meeting.",
+    "Real identity/adult verification, physical two-device use and production operation remain unverified.",
+    "Paid AI, paid evaluations and tutor remain deferred.",
+    "Old model freeze still matches 8/9 with the pre-existing atlas/domain.js mismatch; no paid evaluation or heldout content inspection."
+  ],
+  "artifacts": {
+    "guide": "experiences/atlas-lab/usability.html",
+    "design": "docs/아틀라스_공통능력_고도화_20261005.md#15-첫-만남에서-맞출-한-가지와-무료-사용성-확인-준비-2026-10-07-후속",
+    "tests": "docs/_ops/qa/atlas-dating-alignment-20261007/tests.tap"
+  }
+}

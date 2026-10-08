@@ -1,0 +1,24 @@
+{
+  "kind": "synthetic-editing-visual-review",
+  "status": "reviewed",
+  "actualUsers": 0,
+  "widths": [320, 390],
+  "reviewedViewportScreenshots": [
+    "navigation-retains-unsaved-profile-390-viewport.png",
+    "basic-save-retains-public-draft-320-viewport.png",
+    "explicit-discard-preserves-other-draft-320-viewport.png",
+    "expiry-discards-stale-public-draft-390-viewport.png",
+    "required-and-custom-deadline-draft-restored-320-viewport.png",
+    "receipt-recovery-returns-to-preview-390-viewport.png",
+    "unsaved-return-shows-saved-preview-390-viewport.png",
+    "profile-edit-returns-to-original-preview-320-viewport.png"
+  ],
+  "observations": [
+    "Draft status and explicit discard controls remain legible without horizontal clipping at 320 and 390 pixels.",
+    "Required checkbox, custom deadline selector, local datetime input and current deadline explanation remain readable at 320 pixels.",
+    "Saved preview values and per-field edit buttons remain legible after ordinary save and receipt recovery.",
+    "Existing felt controls retain their texture and spacing; the inspected screenshots show no overlapping labels or broken image assets."
+  ],
+  "limits": "Synthetic local desktop-browser viewport checks; not actual-device, recruited-user, satisfaction or production-release evidence.",
+  "fixtureRepair": "The extended first run stopped because its test tried to fill a basic editor that had correctly collapsed after save. The fixture was amended to explicitly reopen the editor; the final 23-path run passed with stable product sources."
+}

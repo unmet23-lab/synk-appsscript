@@ -1,0 +1,31 @@
+✔ the adult assertion trusts only the exact pinned server contract, never a DOB, client token or different subject (11.1575ms)
+✔ a bounded verifier receives only the verified account subject and abort signal; errors never become verified or a declaration fallback (4.425ms)
+✔ the default account path remains declaration-only, does not invoke a provider, and cannot be promoted by client verified fields (4846.5096ms)
+✔ a recovered verification requires explicit consent and peer reopening; old acceptances and closed pair IDs stay retired (13626.7101ms)
+✔ turning on enforcement cannot convert a declaration-only accepted relationship into a verified accepted one (3109.3502ms)
+✔ a local suspension cannot be cleared by a recovered adult assertion or consent set while suspended (2394.6358ms)
+✔ omitting an enforced database verifier on restart fails closed instead of downgrading to the declaration-only default (4776.1659ms)
+✔ once-required policy survives deletion of every account document and blocks declaration-only disclosure by a new account after restart (1212.9533ms)
+✔ cancellation permits explicit consent resume and a new introduction, never an old appointment or acceptance (20574.0649ms)
+✔ active-first reordering conservatively requires resume while the baseline active one preserves healthy consent (2554.7428ms)
+✔ central release cannot clear a local suspension or silently reactivate consent set under suspension (1849.1865ms)
+✔ a missing lifecycle receipt rolls the gate, original history and consent changes back as one transaction (3535.6474ms)
+✔ canonical status transactions and the shared worker stop exposure without owner login, then require fresh consent before a new introduction (17954.1602ms)
+✔ criterion preview survives a new context only for unchanged baseline sources and never revives after redeclaration, withdrawal or deletion (41617.4121ms)
+✔ worse restoration rejects same-field redeclaration, source withdrawal, current expiry and forged preview sources (42608.1435ms)
+✔ priority restoration preserves field edits and is invalidated by a later priority declaration or a new context (38715.9925ms)
+✔ onboarding and disclosure remain separate from private preferences and self-declaration is never verified (2965.7689ms)
+✔ blocks, disclosure and adult withdrawal close every pair without restoring old acceptances (25420.5937ms)
+✔ legacy confirmed appointments retain completion and reflection but cannot imply an introduction agreement (4133.6916ms)
+✔ a busy date response preserves introduction consent while cancelling unanswered requests cannot pressure-retry (5256.325ms)
+✔ old decision reports keep their basis while withdrawn peer labels vanish; suspended users can retract consent and answers (1528.2554ms)
+✔ legacy fixed-candidate discovery migrates once, preserves personal declarations and existing pairs, and never rebinds old candidate evidence (3462.1883ms)
+✔ a full legacy log migrates without reviving cleared mandatory values or expiring baselines, and preserves its original archive (9287.2203ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 175766.5635

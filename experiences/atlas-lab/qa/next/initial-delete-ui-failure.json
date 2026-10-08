@@ -1,0 +1,39 @@
+{
+  "at": "2026-10-06T10:54:58.647Z",
+  "status": "failed",
+  "modelCalls": 0,
+  "actualUsers": 0,
+  "externalRequests": [],
+  "errors": [],
+  "paths": [
+    {
+      "label": "memory-1280",
+      "checks": [
+        "default-no-save",
+        "opt-in",
+        "reload-resume",
+        "same-candidate",
+        "atomic-stale-tab-rejection",
+        "deletion-not-resurrected"
+      ]
+    },
+    {
+      "label": "memory-390",
+      "checks": [
+        "default-no-save",
+        "opt-in",
+        "reload-resume",
+        "same-candidate",
+        "atomic-stale-tab-rejection",
+        "deletion-not-resurrected"
+      ]
+    }
+  ],
+  "screenshots": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\next\\memory-1280.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\next\\memory-390.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\next\\participant-1280-private.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\next\\participant-1280-closed.png"
+  ],
+  "failure": "page.waitForFunction: Timeout 15000ms exceeded.\n    at click (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-next-smoke.mjs:65:81)\n    at async participantPath (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-next-smoke.mjs:98:3)\n    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-next-smoke.mjs:105:50"
+}

@@ -1,0 +1,9 @@
+{
+  "experiences/atlas-lab/dating-service.mjs": "d9cf0fd76fb4be78551d8133d4c8b9263d990107996c84539b8ae9bf2d1ba396",
+  "tests/atlas-dating-service.test.mjs": "bbf454f64b05a4eb8e521d1629baa63611fb0cb1616221f830244e460d218d29",
+  "experiences/atlas-lab/meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+  "experiences/atlas-lab/product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+  "tests/atlas-product-experience.test.mjs": "6215bb1e6d039f56b15bb42be637bae7b78d0f4c12e988d73612751deceec773",
+  "experiences/atlas-lab/discovery.mjs": "c749e44049329aabd5151dc04009392e92c268426c3ce086eb451a6142c98219",
+  "tests/atlas-dating-new-criterion.test.mjs": "1f9124956d81aee0a191d0aff432639c57d3b2a3ecb43f1eba60eafdd6428e90"
+}

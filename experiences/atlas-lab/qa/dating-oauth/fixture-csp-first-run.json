@@ -1,0 +1,44 @@
+{
+  "kind": "synthetic-dating-oauth-browser",
+  "at": "2026-10-07T19:07:41.070Z",
+  "status": "failed",
+  "actualUsers": 0,
+  "realProviderRequests": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "credentialInjection": false,
+  "verifierInjection": false,
+  "paths": [],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [],
+  "counters": {
+    "authorize": 1,
+    "decisions": 1,
+    "tokenRequests": 0,
+    "acceptedS256": 0,
+    "rejectedTokens": 0,
+    "centralIdentityChecks": 0,
+    "productActions": 0
+  },
+  "sourceBefore": {
+    "dating-ui.mjs": "c30023f676d1291d93f7ea71db8b6c8116362c3849b0aedc4b49f32821425951",
+    "dating-account.mjs": "f45df51b75d7ee502baa36e44c6c1fc31258fdd6238f9591736f1da2e24c94e6",
+    "dating-auth.mjs": "84fc7df71c8b8539afd4fb60241093af27ba7d898d377f35cf1f0ded8f1077b8",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-service.mjs": "c0929e57802e406b242e00811d85aa814d419bf9963eb757ed6035c70199e9fa",
+    "synk-account/core.mjs": "5c85d1d957403ba1b04795e115d9cb40f26ede59e8dbbfbaa743666ee3e1cbbd",
+    "atlas-dating-oauth-smoke.mjs": "75a10a33909cd40a617b259db5e35960dd9ab564de3cd0a29861e9710eda759f"
+  },
+  "failure": "page.waitForURL: Timeout 15000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at decide (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-oauth-smoke.mjs:98:116)\n    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-oauth-smoke.mjs:116:54",
+  "sourceSha256": {
+    "dating-ui.mjs": "c30023f676d1291d93f7ea71db8b6c8116362c3849b0aedc4b49f32821425951",
+    "dating-account.mjs": "f45df51b75d7ee502baa36e44c6c1fc31258fdd6238f9591736f1da2e24c94e6",
+    "dating-auth.mjs": "84fc7df71c8b8539afd4fb60241093af27ba7d898d377f35cf1f0ded8f1077b8",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-service.mjs": "c0929e57802e406b242e00811d85aa814d419bf9963eb757ed6035c70199e9fa",
+    "synk-account/core.mjs": "5c85d1d957403ba1b04795e115d9cb40f26ede59e8dbbfbaa743666ee3e1cbbd",
+    "atlas-dating-oauth-smoke.mjs": "75a10a33909cd40a617b259db5e35960dd9ab564de3cd0a29861e9710eda759f"
+  },
+  "sourceStable": true
+}

@@ -1,0 +1,49 @@
+{
+  "mode": "provider-pkce-rehearsal",
+  "environment": "rehearsal",
+  "syntheticAccountsOnly": true,
+  "checks": [
+    "TWO_PKCE_SESSIONS_SAME_OWNER",
+    "FRESH_SYNTHETIC_ACCOUNTS_EMPTY",
+    "ATOMIC_PRIVATE_ONBOARDING_SAVE",
+    "SECOND_SESSION_EXACT_RESTORE",
+    "OTHER_ACCOUNT_ISOLATED",
+    "STALE_CAS_PRESERVES_DATA",
+    "CONCURRENT_CAS_SINGLE_WINNER",
+    "LOCAL_LOGOUT_CLEARS_ONLY_ITS_SESSION",
+    "PRODUCT_DELETE_TOMBSTONE",
+    "STALE_CANNOT_REVIVE_DELETED_DATA"
+  ],
+  "authorizationResponses": {
+    "consentRequired": 2,
+    "alreadyApproved": 1
+  },
+  "cleanup": {
+    "attemptedAccounts": 2,
+    "knownSyntheticAccounts": 2,
+    "deleteRequestsAccepted": 2,
+    "verifiedDeletionPending": 2,
+    "requestsComplete": true,
+    "authUsersMayRemain": true,
+    "datingDocumentDeletionVerified": true,
+    "localDatabaseRemoved": true,
+    "deletionGraceDays": 7,
+    "purgeVerified": false,
+    "issues": []
+  },
+  "limitations": {
+    "paidAI": false,
+    "realAccounts": false,
+    "physicalDevices": false,
+    "browserUI": false,
+    "publicConsentPortalUI": false,
+    "nativeVault": false,
+    "adultProvider": false,
+    "centralLifecycleDelivery": false,
+    "accountPurgeVerified": false
+  },
+  "ok": true,
+  "roundtripPassed": true,
+  "phase": "dating-roundtrip",
+  "passed": 10
+}

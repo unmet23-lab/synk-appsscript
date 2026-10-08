@@ -1,0 +1,111 @@
+✔ lifecycle verifier is explicitly configured, server-only and constant-length digest comparison accepts only its configured token (3.4719ms)
+✔ the actual route fails closed for absent configuration, browser origins, user credentials, foreign events and demo identities (613.3851ms)
+✖ central deletion reuses product erasure and preserves only the other person’s own private reflection (1266.1833ms)
+✔ exact duplicates keep response and revisions stable through restart while event ID content conflicts roll back (422.5214ms)
+✔ delayed terminal deletion and unseen subjects create durable tombstones, while excessive future dates never erase (145.4721ms)
+✔ receipt storage failure rolls erasure and peer archival back atomically, then the same event can retry (476.4064ms)
+✖ lifecycle and an ordinary stale CAS write cannot leave an active account, including a second SQLite connection (161.8445ms)
+✔ an already deleted local account stays deleted without an extra revision and deletion bypasses a full introduction log (798.0578ms)
+✔ criterion reflection uses the connection snapshot, only own completion, and an explicit priority preview without relaxing required values (4596.3691ms)
+✔ criterion preview survives a new context only for unchanged baseline sources and never revives after redeclaration, withdrawal or deletion (9738.3304ms)
+✔ once-only and expired criterion sources cannot be promoted to a new recommendation context (12809.0498ms)
+✔ worse restoration previews only the original correction, preserves later unrelated edits, and never restores selection or acceptances (6208.3997ms)
+✔ worse restoration rejects same-field redeclaration, source withdrawal, current expiry and forged preview sources (23464.7083ms)
+✔ priority restoration preserves field edits and is invalidated by a later priority declaration or a new context (26528.4706ms)
+✔ separate explicit SQLite stores refuse public paths and demo/account mode reuse (70.7732ms)
+✔ fictional role login is explicit; account service never accepts demo login or decode-only identities (173.2661ms)
+✔ central account verification forwards the exact bearer and uses only active synk_user_id (1.6367ms)
+✔ onboarding and disclosure remain separate from private preferences and self-declaration is never verified (425.5497ms)
+✔ atomic revision CAS, idempotency and actor isolation work across two SQLite connections (231.5894ms)
+✔ appointment revisions and participant-private reflection are persisted and inbox is viewer-specific (5303.5675ms)
+✔ blocks, disclosure and adult withdrawal close every pair without restoring old acceptances (20257.3075ms)
+✔ account pause preserves agreed appointments and private reflection while blocking new commitments (4536.8296ms)
+✔ reports remain private, operators are server-granted and suspending a target closes its pairs (2484.8577ms)
+✔ suspension revokes operator report reads as well as processing and replay never returns stale private reports (471.8466ms)
+✔ deletion scrubs private rows, leaves a tombstone, and stale writes stay rejected after restart (3141.3831ms)
+✔ account verifier runs on every request and cannot grant operator powers through client claims (82.3552ms)
+✔ invalid product action rolls back the account, pair and receipt together (3219.8433ms)
+✔ a failure while producing the response rolls back already-written account, pair and receipt (2663.7252ms)
+✔ first discovery opens without invented answers and server-stamped actions remain immediately readable (2631.098ms)
+✔ account recommendations consume only disclosed eligible profiles and survive candidate privacy withdrawal (1615.9811ms)
+✔ guessing a disclosed account ID cannot bypass fresh mutual matching prerequisites (792.1651ms)
+✔ closing preserves only my readable reflection and counterpart deletion keeps my words without its profile (4454.2525ms)
+✔ account-wide exposure balancing changes only tied priorities and records each viewer/context/candidate once (2396.9963ms)
+✔ account deletion removes its exposure references and ordinary responses never include other viewers logs (459.0996ms)
+✔ the persisted clock prevents expired discovery and appointment revivals after a backward-clock restart (3359.5176ms)
+✔ introduction delivery, mutual intent and date acceptance are separate persisted stages (3612.397ms)
+✔ declined introduction cannot be resent through block/unblock, a new pair, or an old success replay (4384.4182ms)
+✔ introduction revision conflicts are atomic and pause blocks new intent while allowing withdrawal (2699.7344ms)
+✔ legacy confirmed appointments retain completion and reflection but cannot imply an introduction agreement (4158.6802ms)
+✔ date decline binds the account pair and one explicit own reopening clears both gates without restoring acceptances (4775.3772ms)
+✔ date expiry closes its recipient gate across restart and does not count as a decline (5037.6827ms)
+✔ a busy date response preserves introduction consent while cancelling unanswered requests cannot pressure-retry (5068.1025ms)
+✔ unanswered introduction expiry is not rejection and cooldown is durable across restart (11065.4943ms)
+✔ preview is private and does not save an answer; explicit apply checks revision, expiry and owner (5224.877ms)
+✔ preview applies the current exposure tie order and rejects changed pool or global exposure (10018.6104ms)
+✔ own recommendation experience requires an issued current decision and explicit delivery, never GET exposure (7668.9221ms)
+✔ explicit result review and introduction request retain the comparison basis without recording GETs or replay duplicates (1519.8521ms)
+✔ experience evaluation withdrawal is prospective on reenable and storage withdrawal removes all personal outcome data (2742.4964ms)
+✔ comfort requires own completion, is separate from reflection, and remains withdrawable after counterpart deletion (4999.2596ms)
+✔ an answer expiring inside the five-minute preview period invalidates the reviewed result (2413.2055ms)
+✔ old decision reports keep their basis while withdrawn peer labels vanish; suspended users can retract consent and answers (1268.1414ms)
+✔ an explicitly reviewed correction links the next delivered recommendation privately and persists across restart (6632.3929ms)
+✔ changing or withdrawing the source invalidates a preview and followup without reverting the chosen preferences (5715.2149ms)
+✔ no-op or unlinked changes never invent a correction; undo followed by re-entry cannot revive an old correction (6842.7349ms)
+✔ expired correction and a newly started situation do not link the next result, while a fresh post-expiry preview remains applicable (7011.0029ms)
+✔ priority corrections use the same explicit source link and storage withdrawal removes the full comparison trail (4405.7112ms)
+✔ baseline publication patches only explicitly selected valid self fields and never enables disclosure or copies a context answer (1516.4414ms)
+✔ expired, cleared and missing baseline values cannot be published; deletion removes correction records (3516.5181ms)
+✔ counterpart disclosure withdrawal hides correction references and suspending the owner still permits comparison withdrawal (2393.9292ms)
+✔ explicit demo start creates absent sample accounts only, while account mode never bootstraps fictional identities (295.4594ms)
+✔ the recommended demo identity is the invited identity and only its own role can accept before separate date acceptance (1397.4139ms)
+✔ demo visibility and reciprocal requirements use the same saved public profile; hidden IDs cannot bypass connect (2881.0404ms)
+✔ legacy fixed-candidate discovery migrates once, preserves personal declarations and existing pairs, and never rebinds old candidate evidence (3460.2485ms)
+✔ a full legacy log migrates without reviving cleared mandatory values or expiring baselines, and preserves its original archive (13839.1842ms)
+✔ schedule context reads only currently public availability and disappears when pair access is withdrawn (3233.5829ms)
+✔ access, onboarding, pause, storage and profile visibility are distinguished before candidate recovery (80.6676ms)
+✔ consent missing and explicit no are separate and neither action automatically grants consent (74.7625ms)
+✔ own schedule and independently required baseline answers get a concrete question without silently changing requirements (278.159ms)
+✔ conflict recovery cancels only the conflicting current choice and retains the hard requirement (366.2757ms)
+✔ closed and expired contexts require an explicit new context, without resurrecting a selection (157.0169ms)
+✔ visible pool emptiness does not infer nonpublic accounts, rejection or attraction (10.5328ms)
+✔ current skips offer individual restoration first while a new context remains explicit (310.3893ms)
+✔ legacy or unrelated exclusion tickets cannot offer a current individual-restoration list (35.7597ms)
+✔ opening the current exclusion list cannot mutate context answers or other exclusions (155.1226ms)
+✔ missing counterpart schedule is claimed only for an exact currently visible profile ID with a pending row (23.2606ms)
+✔ a missing own answer needed for reciprocal comparison is offered before waiting on other people (30.5356ms)
+✔ hard mismatch invites checking the recorded criteria without recommending a weaker requirement (27.9445ms)
+✔ ready recommendations return no empty-state guidance and malformed projections stay unclassified (135.7722ms)
+✔ guidance is pure, detached, and never reads raw state or private records (68.2929ms)
+ℹ tests 79
+ℹ suites 0
+ℹ pass 77
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 282272.0533
+
+✖ failing tests:
+
+test at tests\atlas-dating-lifecycle-service.test.mjs:62:1
+✖ central deletion reuses product erasure and preserves only the other person’s own private reflection (1266.1833ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'deleted' !== 200
+  
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-lifecycle-service.test.mjs:69:57)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'deleted',
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\atlas-dating-lifecycle-service.test.mjs:101:1
+✖ lifecycle and an ordinary stale CAS write cannot leave an active account, including a second SQLite connection (161.8445ms)
+  [Error: EBUSY: resource busy or locked, unlink 'C:\Users\q1212\AppData\Local\Temp\synk-lifecycle-pIYoB7\account.sqlite-wal'] { errno: -4082, code: 'EBUSY', syscall: 'unlink', path: 'C:\\Users\\q1212\\AppData\\Local\\Temp\\synk-lifecycle-pIYoB7\\account.sqlite-wal' }

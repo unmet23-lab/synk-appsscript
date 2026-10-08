@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-07T19:28:44.524Z",
+  "environment": "rehearsal",
+  "mode": "read-only-schema-presence",
+  "tables": {
+    "deletion": "engine.synk_account_lifecycle",
+    "availability": "engine.synk_account_availability",
+    "cursor": "engine.synk_account_availability_cursor"
+  },
+  "deletion_outbox": false,
+  "availability_outbox": false,
+  "availability_cursor": false,
+  "migrationApplied": false,
+  "deliveryRun": false,
+  "operationalConnectionVerified": false
+}

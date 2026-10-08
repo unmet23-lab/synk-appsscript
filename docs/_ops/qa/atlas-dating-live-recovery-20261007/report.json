@@ -1,0 +1,122 @@
+{
+  "at": "2026-10-07T00:02:42.261Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "Typing does not stop visibility/authority checks; ordinary responses wait behind an explicit banner, authority changes prune invalid drafts.",
+    "An uncertain mutation remains memory-only and blocks additional mutations; owned receipt GET or explicit identical retry recovers without a new UUID."
+  ],
+  "tests": {
+    "tests": 117,
+    "pass": 117,
+    "fail": 0,
+    "groups": [
+      {
+        "log": "delivery-final-tests.log",
+        "tests": 23,
+        "pass": 23,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "log": "live-helper-tests.tap",
+        "tests": 14,
+        "pass": 14,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "log": "relevant-api-regression.log",
+        "tests": 23,
+        "pass": 23,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "tests": 57,
+        "pass": 57,
+        "fail": 0,
+        "note": "56 original cases passed; the one overly restrictive suspended POST replay change was removed and that existing case rerun. Distinct cases only; not a full rerun after correction."
+      }
+    ]
+  },
+  "browserPaths": 70,
+  "browser": [
+    {
+      "kind": "dating-live-recovery",
+      "paths": 13,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "at": "2026-10-07T00:01:50.751Z"
+    },
+    {
+      "kind": "dating",
+      "paths": 18,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "at": "2026-10-06T23:50:54.131Z"
+    },
+    {
+      "kind": "dating-input-continuity",
+      "paths": 11,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "at": "2026-10-06T23:44:44.844Z"
+    },
+    {
+      "kind": "dating-conditional-draft",
+      "paths": 9,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "at": "2026-10-06T23:55:27.796Z"
+    },
+    {
+      "kind": "dating-flexibility",
+      "paths": 10,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "at": "2026-10-06T23:52:09.030Z"
+    },
+    {
+      "kind": "dating-clarity",
+      "paths": 4,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "at": "2026-10-06T23:46:23.920Z"
+    },
+    {
+      "kind": "dating-exclusion-guidance",
+      "paths": 5,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "at": "2026-10-06T23:46:42.256Z"
+    }
+  ],
+  "preview": {
+    "url": "http://127.0.0.1:55508/atlas-lab/dating.html",
+    "filesMatched": 10,
+    "isolatedDemo": true
+  },
+  "engineCodeChangedByThisBatch": 0,
+  "newEngines": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "publicDeployment": false,
+  "limitations": [
+    "Synthetic local identities only; actual central login/adult verification, physical devices, satisfaction and production operation remain unverified.",
+    "Visible idle-request tabs poll every12seconds; hidden tabs and executing actions do not poll. This is not guaranteed push delivery.",
+    "Drafts and pending envelopes are tab memory only and disappear on full page reload/tab closure.",
+    "Central deletion-requested/restricted candidate-visibility propagation is still a separate next task; final-deletion delivery remains disabled in production.",
+    "Paid AI, paid evaluation, tutor and participant recruitment remain deferred."
+  ]
+}

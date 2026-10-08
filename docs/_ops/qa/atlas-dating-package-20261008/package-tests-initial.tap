@@ -1,0 +1,45 @@
+TAP version 13
+# Subtest: the explicit package list covers the actual static and delayed CJS dependency graph plus every browser file
+ok 1 - the explicit package list covers the actual static and delayed CJS dependency graph plus every browser file
+  ---
+  duration_ms: 18.7463
+  type: 'test'
+  ...
+# Subtest: isolated package starts from another cwd under a module parent and serves only the reviewed surface
+not ok 2 - isolated package starts from another cwd under a module parent and serves only the reviewed surface
+  ---
+  duration_ms: 1228.6579
+  type: 'test'
+  location: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-package.test.mjs:58:1'
+  failureType: 'testCodeFailure'
+  error: 'fetch failed'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  ...
+# Subtest: canary operational files stay outside the allowlist and existing or in-checkout targets remain untouched
+ok 3 - canary operational files stay outside the allowlist and existing or in-checkout targets remain untouched
+  ---
+  duration_ms: 453.7658
+  type: 'test'
+  ...
+# Subtest: independent manifest hash, payload integrity and exact file inventory reject tampering
+ok 4 - independent manifest hash, payload integrity and exact file inventory reject tampering
+  ---
+  duration_ms: 297.2039
+  type: 'test'
+  ...
+# Subtest: linked source roots, source ancestors and output directories are refused
+ok 5 - linked source roots, source ancestors and output directories are refused
+  ---
+  duration_ms: 334.5257
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 4
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2486.5295

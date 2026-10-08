@@ -1,0 +1,10 @@
+{
+  "at": "2026-10-07T19:01:01.753Z",
+  "preview": "http://127.0.0.1:54532/atlas-lab/dating.html",
+  "mode": "demo",
+  "demoEnabled": true,
+  "accountClientConfigured": false,
+  "processAccountConfigPathSet": false,
+  "servedUiMatches": true,
+  "uiSha256": "c30023f676d1291d93f7ea71db8b6c8116362c3849b0aedc4b49f32821425951"
+}

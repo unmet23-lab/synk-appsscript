@@ -1,0 +1,866 @@
+TAP version 13
+# Subtest: only named game assets are served, not repository files or QA artifacts
+ok 1 - only named game assets are served, not repository files or QA artifacts
+  ---
+  duration_ms: 2.0059
+  type: 'test'
+  ...
+# Subtest: the Atlas lab serves named consultation rules and optional Core capabilities only
+ok 2 - the Atlas lab serves named consultation rules and optional Core capabilities only
+  ---
+  duration_ms: 2.0474
+  type: 'test'
+  ...
+# Subtest: account classrooms serve teacher UI and Town assets while model, answer keys and stored state stay private
+ok 3 - account classrooms serve teacher UI and Town assets while model, answer keys and stored state stay private
+  ---
+  duration_ms: 0.8253
+  type: 'test'
+  ...
+# Subtest: shared origin serves executable common bundles with nosniff-safe MIME
+ok 4 - shared origin serves executable common bundles with nosniff-safe MIME
+  ---
+  duration_ms: 949.4667
+  type: 'test'
+  ...
+# Subtest: new pair has no invented responses or inbox, and public views are detached from stored state
+ok 5 - new pair has no invented responses or inbox, and public views are detached from stored state
+  ---
+  duration_ms: 28.2133
+  type: 'test'
+  ...
+# Subtest: ISO offsets are normalized to the same instant and IANA zone remains explicit for display
+ok 6 - ISO offsets are normalized to the same instant and IANA zone remains explicit for display
+  ---
+  duration_ms: 426.6357
+  type: 'test'
+  ...
+# Subtest: invalid dates, ambiguous local instants, bad zones, nonfuture starts and inverted intervals fail
+ok 7 - invalid dates, ambiguous local instants, bad zones, nonfuture starts and inverted intervals fail
+  ---
+  duration_ms: 8.4976
+  type: 'test'
+  ...
+# Subtest: explicit deadlines must be future, within 72 hours and no later than the schedule start
+ok 8 - explicit deadlines must be future, within 72 hours and no later than the schedule start
+  ---
+  duration_ms: 8.4576
+  type: 'test'
+  ...
+# Subtest: a proposal and a single acceptance never fabricate the other acceptance
+ok 9 - a proposal and a single acceptance never fabricate the other acceptance
+  ---
+  duration_ms: 18.9103
+  type: 'test'
+  ...
+# Subtest: either participant may propose a change; it preserves old snapshots and requires two fresh acceptances
+ok 10 - either participant may propose a change; it preserves old snapshots and requires two fresh acceptances
+  ---
+  duration_ms: 20.1198
+  type: 'test'
+  ...
+# Subtest: declining a revised version cannot restore the previously confirmed version
+ok 11 - declining a revised version cannot restore the previously confirmed version
+  ---
+  duration_ms: 32.1112
+  type: 'test'
+  ...
+# Subtest: deadline exactly expires without manufacturing a decline and reading is pure and repeatable
+ok 12 - deadline exactly expires without manufacturing a decline and reading is pure and repeatable
+  ---
+  duration_ms: 5.8535
+  type: 'test'
+  ...
+# Subtest: an expiry inbox item can be marked read after its virtual expiry, without duplication
+ok 13 - an expiry inbox item can be marked read after its virtual expiry, without duplication
+  ---
+  duration_ms: 2.2231
+  type: 'test'
+  ...
+# Subtest: confirmation before expiry remains valid after the response deadline but cannot be revised after its start
+ok 14 - confirmation before expiry remains valid after the response deadline but cannot be revised after its start
+  ---
+  duration_ms: 11.0866
+  type: 'test'
+  ...
+# Subtest: cancellation closes pending or confirmed appointments and cannot be reversed by old responses
+ok 15 - cancellation closes pending or confirmed appointments and cannot be reversed by old responses
+  ---
+  duration_ms: 20.436
+  type: 'test'
+  ...
+# Subtest: completion requires a finished mutual agreement and records only the actor confirmation
+ok 16 - completion requires a finished mutual agreement and records only the actor confirmation
+  ---
+  duration_ms: 45.3053
+  type: 'test'
+  ...
+# Subtest: own reflection needs only own completion; no private content enters partner cards, history or inbox
+ok 17 - own reflection needs only own completion; no private content enters partner cards, history or inbox
+  ---
+  duration_ms: 26.8312
+  type: 'test'
+  ...
+# Subtest: an ended appointment never waits on the other completion before a new proposal or late own reflection
+ok 18 - an ended appointment never waits on the other completion before a new proposal or late own reflection
+  ---
+  duration_ms: 27.5913
+  type: 'test'
+  ...
+# Subtest: inbox read state belongs to its recipient and is never a public read receipt
+ok 19 - inbox read state belongs to its recipient and is never a public read receipt
+  ---
+  duration_ms: 10.0127
+  type: 'test'
+  ...
+# Subtest: notification preferences are personal, retain inbox content and do not replay suppressed alerts
+ok 20 - notification preferences are personal, retain inbox content and do not replay suppressed alerts
+  ---
+  duration_ms: 14.1963
+  type: 'test'
+  ...
+# Subtest: CAS rejects a competing write; one upcoming appointment per pair prevents duplicate proposals
+ok 21 - CAS rejects a competing write; one upcoming appointment per pair prevents duplicate proposals
+  ---
+  duration_ms: 8.3232
+  type: 'test'
+  ...
+# Subtest: exact retries preserve schedule, deadline, revision and inbox after unrelated writes or time passing
+ok 22 - exact retries preserve schedule, deadline, revision and inbox after unrelated writes or time passing
+  ---
+  duration_ms: 4.8543
+  type: 'test'
+  ...
+# Subtest: the same request identifier is independently scoped to each authenticated actor
+ok 23 - the same request identifier is independently scoped to each authenticated actor
+  ---
+  duration_ms: 0.8335
+  type: 'test'
+  ...
+# Subtest: foreign actors, extra action fields, cross-pair logs and tampered revisions fail closed
+ok 24 - foreign actors, extra action fields, cross-pair logs and tampered revisions fail closed
+  ---
+  duration_ms: 13.1641
+  type: 'test'
+  ...
+# Subtest: stored events use canonical nondecreasing time; projections cannot hide future events
+ok 25 - stored events use canonical nondecreasing time; projections cannot hide future events
+  ---
+  duration_ms: 7.8425
+  type: 'test'
+  ...
+# Subtest: injected clock is used only when the host does not provide a time
+ok 26 - injected clock is used only when the host does not provide a time
+  ---
+  duration_ms: 1.2769
+  type: 'test'
+  ...
+# Subtest: only the person who declined can reopen the exact closed invitation; no old acceptance returns
+ok 27 - only the person who declined can reopen the exact closed invitation; no old acceptance returns
+  ---
+  duration_ms: 18.6067
+  type: 'test'
+  ...
+# Subtest: busy is a scheduling answer and allows another proposal without inventing relationship rejection
+ok 28 - busy is a scheduling answer and allows another proposal without inventing relationship rejection
+  ---
+  duration_ms: 5.1277
+  type: 'test'
+  ...
+# Subtest: a silent recipient must reopen an expired invitation, while their explicit acceptance is not silence
+ok 29 - a silent recipient must reopen an expired invitation, while their explicit acceptance is not silence
+  ---
+  duration_ms: 22.0906
+  type: 'test'
+  ...
+# Subtest: cancel-and-resend cannot bypass the unanswered recipient gate
+ok 30 - cancel-and-resend cannot bypass the unanswered recipient gate
+  ---
+  duration_ms: 19.6796
+  type: 'test'
+  ...
+# Subtest: legacy follow-ups remain readable but newly appended actions enforce the receiving boundary
+ok 31 - legacy follow-ups remain readable but newly appended actions enforce the receiving boundary
+  ---
+  duration_ms: 20.4055
+  type: 'test'
+  ...
+# Subtest: too-long creates only an actor-private source-bound suggestion and never changes the existing schedule
+ok 32 - too-long creates only an actor-private source-bound suggestion and never changes the existing schedule
+  ---
+  duration_ms: 18.1974
+  type: 'test'
+  ...
+# Subtest: duration rule rounds two thirds down to five minutes with a floor of fifteen and no needless short suggestion
+ok 33 - duration rule rounds two thirds down to five minutes with a floor of fifteen and no needless short suggestion
+  ---
+  duration_ms: 92.572
+  type: 'test'
+  ...
+# Subtest: explicit apply changes only the next own form; undo and dismiss never notify the partner
+ok 34 - explicit apply changes only the next own form; undo and dismiss never notify the partner
+  ---
+  duration_ms: 45.4082
+  type: 'test'
+  ...
+# Subtest: correcting the source reflection invalidates an applied suggestion and stale apply/undo cannot restore it
+ok 35 - correcting the source reflection invalidates an applied suggestion and stale apply/undo cannot restore it
+  ---
+  duration_ms: 28.6232
+  type: 'test'
+  ...
+# Subtest: an applied hint is consumed once after explicit sending and neither duration nor private reasons are auto-inserted
+ok 36 - an applied hint is consumed once after explicit sending and neither duration nor private reasons are auto-inserted
+  ---
+  duration_ms: 17.9355
+  type: 'test'
+  ...
+# Subtest: change-activity is only private guidance until the person chooses a place themselves
+ok 37 - change-activity is only private guidance until the person chooses a place themselves
+  ---
+  duration_ms: 13.3789
+  type: 'test'
+  ...
+# Subtest: proposal changes compare the immediately preceding public schedule, never reflection or prior acceptance
+ok 38 - proposal changes compare the immediately preceding public schedule, never reflection or prior acceptance
+  ---
+  duration_ms: 13.1585
+  type: 'test'
+  ...
+# Subtest: resending an unchanged schedule cannot clear acceptances or renew a response deadline
+ok 39 - resending an unchanged schedule cannot clear acceptances or renew a response deadline
+  ---
+  duration_ms: 8.3947
+  type: 'test'
+  ...
+# Subtest: undo cancels only this application: the same source can be applied again or explicitly dismissed
+ok 40 - undo cancels only this application: the same source can be applied again or explicitly dismissed
+  ---
+  duration_ms: 96.0691
+  type: 'test'
+  ...
+# Subtest: declared decision loss can prioritize a rare important answer over frequent cosmetic changes
+ok 41 - declared decision loss can prioritize a rare important answer over frequent cosmetic changes
+  ---
+  duration_ms: 4.0859
+  type: 'test'
+  ...
+# Subtest: the current and proposed decisions are valued against the same hypothetical answer
+ok 42 - the current and proposed decisions are valued against the same hypothetical answer
+  ---
+  duration_ms: 1.434
+  type: 'test'
+  ...
+# Subtest: answer availability and question burden can make an otherwise useful question not worth asking
+ok 43 - answer availability and question burden can make an otherwise useful question not worth asking
+  ---
+  duration_ms: 0.8115
+  type: 'test'
+  ...
+# Subtest: a changed but worse recommendation is skipped and an unchanged decision gains no question
+ok 44 - a changed but worse recommendation is skipped and an unchanged decision gains no question
+  ---
+  duration_ms: 0.5145
+  type: 'test'
+  ...
+# Subtest: denied, recently asked, answered and budgeted questions stay closed in value mode
+ok 45 - denied, recently asked, answered and budgeted questions stay closed in value mode
+  ---
+  duration_ms: 0.6749
+  type: 'test'
+  ...
+# Subtest: complete probabilities are normalized within rounding tolerance and impossible answers give no value
+ok 46 - complete probabilities are normalized within rounding tolerance and impossible answers give no value
+  ---
+  duration_ms: 3.2994
+  type: 'test'
+  ...
+# Subtest: mixed, impossible, nonnumeric and nonfinite answer distributions are rejected
+ok 47 - mixed, impossible, nonnumeric and nonfinite answer distributions are rejected
+  ---
+  duration_ms: 3.3364
+  type: 'test'
+  ...
+# Subtest: utility, loss, response chance and burden require finite values and a declared evaluator
+ok 48 - utility, loss, response chance and burden require finite values and a declared evaluator
+  ---
+  duration_ms: 2.1923
+  type: 'test'
+  ...
+# Subtest: finite inputs whose subtraction overflows are refused rather than producing an infinite priority
+ok 49 - finite inputs whose subtraction overflows are refused rather than producing an infinite priority
+  ---
+  duration_ms: 0.5845
+  type: 'test'
+  ...
+# Subtest: small positive policy values are not rounded out of the decision
+ok 50 - small positive policy values are not rounded out of the decision
+  ---
+  duration_ms: 0.5197
+  type: 'test'
+  ...
+# Subtest: the Core adapter forwards value evaluation while preserving real event history
+ok 51 - the Core adapter forwards value evaluation while preserving real event history
+  ---
+  duration_ms: 3.9699
+  type: 'test'
+  ...
+# Subtest: all option IDs remain own outcomes through ranking and serialization without changing the prototype
+ok 52 - all option IDs remain own outcomes through ranking and serialization without changing the prototype
+  ---
+  duration_ms: 0.4878
+  type: 'test'
+  ...
+# Subtest: bounded scenario options support all six-choice multi-select combinations
+ok 53 - bounded scenario options support all six-choice multi-select combinations
+  ---
+  duration_ms: 0.8132
+  type: 'test'
+  ...
+# Subtest: a question whose answers change nothing for this person is skipped
+ok 54 - a question whose answers change nothing for this person is skipped
+  ---
+  duration_ms: 11.015
+  type: 'test'
+  ...
+# Subtest: one question a day, never one the person declined, never one asked within seven days
+ok 55 - one question a day, never one the person declined, never one asked within seven days
+  ---
+  duration_ms: 1.1671
+  type: 'test'
+  ...
+# Subtest: a change of content counts twice a change of shape
+ok 56 - a change of content counts twice a change of shape
+  ---
+  duration_ms: 0.4073
+  type: 'test'
+  ...
+# Subtest: with an Atlas session, an empty setting that would change the plan is asked; a known one is not
+ok 57 - with an Atlas session, an empty setting that would change the plan is asked; a known one is not
+  ---
+  duration_ms: 34.2574
+  type: 'test'
+  ...
+# Subtest: explicit condition admits one alternative and keeps primary distinct without mutations
+ok 58 - explicit condition admits one alternative and keeps primary distinct without mutations
+  ---
+  duration_ms: 33.0505
+  type: 'test'
+  ...
+# Subtest: missing, unusable or expired candidate condition never admits an alternative
+ok 59 - missing, unusable or expired candidate condition never admits an alternative
+  ---
+  duration_ms: 3.9723
+  type: 'test'
+  ...
+# Subtest: missing or expired primary feature remains unknown
+ok 60 - missing or expired primary feature remains unknown
+  ---
+  duration_ms: 1.27
+  type: 'test'
+  ...
+# Subtest: required preference defeats even a satisfied alternative
+ok 61 - required preference defeats even a satisfied alternative
+  ---
+  duration_ms: 1.3566
+  type: 'test'
+  ...
+# Subtest: source substitution, unknown, same-value re-declaration and explicit invalidation stop a rule
+ok 62 - source substitution, unknown, same-value re-declaration and explicit invalidation stop a rule
+  ---
+  duration_ms: 2.4856
+  type: 'test'
+  ...
+# Subtest: rule and source deadlines are inclusive and context scope cannot carry into another encounter
+ok 63 - rule and source deadlines are inclusive and context scope cannot carry into another encounter
+  ---
+  duration_ms: 2.591
+  type: 'test'
+  ...
+# Subtest: declaration cannot widen once scope or outlive an explicit source deadline
+ok 64 - declaration cannot widen once scope or outlive an explicit source deadline
+  ---
+  duration_ms: 2.6985
+  type: 'test'
+  ...
+# Subtest: scope and recursive allowlists reject foreign owners and executable/free-form conditions
+ok 65 - scope and recursive allowlists reject foreign owners and executable/free-form conditions
+  ---
+  duration_ms: 2.635
+  type: 'test'
+  ...
+# Subtest: candidate fact and current preference allowlists fail closed on invalid values or hidden attributes
+ok 66 - candidate fact and current preference allowlists fail closed on invalid values or hidden attributes
+  ---
+  duration_ms: 3.5383
+  type: 'test'
+  ...
+# Subtest: demo credentials are memory-only, distinct from a real SYNK session
+ok 67 - demo credentials are memory-only, distinct from a real SYNK session
+  ---
+  duration_ms: 59.2806
+  type: 'test'
+  ...
+# Subtest: an OAuth session is bound to its registered identity origin and product client
+ok 68 - an OAuth session is bound to its registered identity origin and product client
+  ---
+  duration_ms: 2.2555
+  type: 'test'
+  ...
+# Subtest: account requests use SYNK bearer but never send private records to the identity host
+ok 69 - account requests use SYNK bearer but never send private records to the identity host
+  ---
+  duration_ms: 2.033
+  type: 'test'
+  ...
+# Subtest: revoked identity clears stored credentials and does not retry the mutation
+ok 70 - revoked identity clears stored credentials and does not retry the mutation
+  ---
+  duration_ms: 1.8003
+  type: 'test'
+  ...
+# Subtest: logout rejects a late response from the prior identity
+ok 71 - logout rejects a late response from the prior identity
+  ---
+  duration_ms: 2.6576
+  type: 'test'
+  ...
+# Subtest: dating PKCE uses its own pending namespace without overwriting platform login
+ok 72 - dating PKCE uses its own pending namespace without overwriting platform login
+  ---
+  duration_ms: 44.0989
+  type: 'test'
+  ...
+# Subtest: renewal is single-flight and a logout during refresh cannot restore a session
+ok 73 - renewal is single-flight and a logout during refresh cannot restore a session
+  ---
+  duration_ms: 1.819
+  type: 'test'
+  ...
+# Subtest: a revoked refresh credential clears the session; a transient provider outage preserves it
+ok 74 - a revoked refresh credential clears the session; a transient provider outage preserves it
+  ---
+  duration_ms: 5.3401
+  type: 'test'
+  ...
+# Subtest: two explicit responses persist across restart; receipts prevent duplicate writes and no preference changes
+ok 75 - two explicit responses persist across restart; receipts prevent duplicate writes and no preference changes
+  ---
+  duration_ms: 25599.6671
+  type: 'test'
+  ...
+# Subtest: public answer removed and restored or pause resumed never revives agreement
+ok 76 - public answer removed and restored or pause resumed never revives agreement
+  ---
+  duration_ms: 27991.4017
+  type: 'test'
+  ...
+# Subtest: private preference changes do not change public question, and another account cannot answer
+ok 77 - private preference changes do not change public question, and another account cannot answer
+  ---
+  duration_ms: 8971.9816
+  type: 'test'
+  ...
+# Subtest: peer response CAS and public permission withdrawal reject stale decisions atomically
+ok 78 - peer response CAS and public permission withdrawal reject stale decisions atomically
+  ---
+  duration_ms: 10336.181
+  type: 'test'
+  ...
+# Subtest: a confirmed appointment cancelled before starting keeps preparation available
+ok 79 - a confirmed appointment cancelled before starting keeps preparation available
+  ---
+  duration_ms: 8392.5949
+  type: 'test'
+  ...
+# Subtest: first confirmed start consumes coordination even if cancelled afterwards, and schedules are independent
+ok 80 - first confirmed start consumes coordination even if cancelled afterwards, and schedules are independent
+  ---
+  duration_ms: 25322.8785
+  type: 'test'
+  ...
+# Subtest: withdrawn introduction and new introduction cannot inherit old responses; delete erases alignment storage
+ok 81 - withdrawn introduction and new introduction cannot inherit old responses; delete erases alignment storage
+  ---
+  duration_ms: 11995.7255
+  type: 'test'
+  ...
+# Subtest: alternative proposal clears both answers, persists across restart and requires both fresh confirmations
+ok 82 - alternative proposal clears both answers, persists across restart and requires both fresh confirmations
+  ---
+  duration_ms: 14979.472
+  type: 'test'
+  ...
+# Subtest: two concurrent option proposals use pair CAS and cancelling cannot resurrect baseline agreement
+ok 83 - two concurrent option proposals use pair CAS and cancelling cannot resurrect baseline agreement
+  ---
+  duration_ms: 9174.3937
+  type: 'test'
+  ...
+# Subtest: option injection is rejected and restored public facts never restore a previous alternative
+ok 84 - option injection is rejected and restored public facts never restore a previous alternative
+  ---
+  duration_ms: 6665.8588
+  type: 'test'
+  ...
+# Subtest: alternative request replay makes one proposal, and first meeting start rejects changing it
+ok 85 - alternative request replay makes one proposal, and first meeting start rejects changing it
+  ---
+  duration_ms: 13123.3447
+  type: 'test'
+  ...
+# Subtest: only explicit preview application persists the private rule and server restart preserves it
+ok 86 - only explicit preview application persists the private rule and server restart preserves it
+  ---
+  duration_ms: 24142.6536
+  type: 'test'
+  ...
+# Subtest: public condition changes invalidate a reviewed preview and withdrawn notice cannot earn conditional credit
+ok 87 - public condition changes invalidate a reviewed preview and withdrawn notice cannot earn conditional credit
+  ---
+  duration_ms: 29419.7582
+  type: 'test'
+  ...
+# Subtest: direct writes and forged rule content are rejected; hard primary criterion remains strict
+ok 88 - direct writes and forged rule content are rejected; hard primary criterion remains strict
+  ---
+  duration_ms: 17323.2283
+  type: 'test'
+  ...
+# Subtest: a source deadline during preview invalidates application and storage withdrawal erases rule events
+ok 89 - a source deadline during preview invalidates application and storage withdrawal erases rule events
+  ---
+  duration_ms: 5946.0656
+  type: 'test'
+  ...
+# Subtest: explicit rule withdrawal uses its own preview and leaves the primary declaration untouched
+ok 90 - explicit rule withdrawal uses its own preview and leaves the primary declaration untouched
+  ---
+  duration_ms: 21509.171
+  type: 'test'
+  ...
+# Subtest: preference summary shows only required, known priorities, active context and unknown declarations without repeating ordinary baseline answers
+ok 91 - preference summary shows only required, known priorities, active context and unknown declarations without repeating ordinary baseline answers
+  ---
+  duration_ms: 854.8522
+  type: 'test'
+  ...
+# Subtest: summary keeps the baseline must-have visible beside conflicting context and does not let an unknown or missing hard answer inherit soft context
+ok 92 - summary keeps the baseline must-have visible beside conflicting context and does not let an unknown or missing hard answer inherit soft context
+  ---
+  duration_ms: 6868.0993
+  type: 'test'
+  ...
+# Subtest: summary returns to a live baseline after context expiry, preserves explicit any and distinguishes expired baseline from unknown
+ok 93 - summary returns to a live baseline after context expiry, preserves explicit any and distinguishes expired baseline from unknown
+  ---
+  duration_ms: 12452.1977
+  type: 'test'
+  ...
+# Subtest: summary validates priority limits, ignores other private projections and does not ask questions or read source events
+ok 94 - summary validates priority limits, ignores other private projections and does not ask questions or read source events
+  ---
+  duration_ms: 5128.4333
+  type: 'test'
+  ...
+# Subtest: comparison uses the two declared priority fields and their existing own-direction reasons
+ok 95 - comparison uses the two declared priority fields and their existing own-direction reasons
+  ---
+  duration_ms: 4.4821
+  type: 'test'
+  ...
+# Subtest: without priorities the user chooses one or two comparison fields without changing recommendation settings
+ok 96 - without priorities the user chooses one or two comparison fields without changing recommendation settings
+  ---
+  duration_ms: 0.8255
+  type: 'test'
+  ...
+# Subtest: invalid, duplicate, revoked, held or excluded selections return no candidate identity or explanation
+ok 97 - invalid, duplicate, revoked, held or excluded selections return no candidate identity or explanation
+  ---
+  duration_ms: 1.1768
+  type: 'test'
+  ...
+# Subtest: same result is based on structured comparison, never candidate names or localized wording
+ok 98 - same result is based on structured comparison, never candidate names or localized wording
+  ---
+  duration_ms: 0.3555
+  type: 'test'
+  ...
+# Subtest: unknown, absent, duplicate and legacy textual reasons never invent a comparison
+ok 99 - unknown, absent, duplicate and legacy textual reasons never invent a comparison
+  ---
+  duration_ms: 0.3974
+  type: 'test'
+  ...
+# Subtest: condition satisfied from structured contact metadata is distinct from a primary match
+ok 100 - condition satisfied from structured contact metadata is distinct from a primary match
+  ---
+  duration_ms: 0.8518
+  type: 'test'
+  ...
+# Subtest: explicit any is a known comparison result, and raw candidate values or private data are never read
+ok 101 - explicit any is a known comparison result, and raw candidate values or private data are never read
+  ---
+  duration_ms: 0.4439
+  type: 'test'
+  ...
+# Subtest: comparison results are detached and cannot change the source view
+ok 102 - comparison results are detached and cannot change the source view
+  ---
+  duration_ms: 0.547
+  type: 'test'
+  ...
+# Subtest: actual Discovery comparison metadata exposes the expected tradeoff without inspecting raw candidates
+ok 103 - actual Discovery comparison metadata exposes the expected tradeoff without inspecting raw candidates
+  ---
+  duration_ms: 1364.3915
+  type: 'test'
+  ...
+# Subtest: disclosure differences compare valid ongoing self answers only, not wants, consent or availability
+ok 104 - disclosure differences compare valid ongoing self answers only, not wants, consent or availability
+  ---
+  duration_ms: 706.7698
+  type: 'test'
+  ...
+# Subtest: context-only, expired, missing and once provenance can never be published as an ongoing answer
+ok 105 - context-only, expired, missing and once provenance can never be published as an ongoing answer
+  ---
+  duration_ms: 6139.9303
+  type: 'test'
+  ...
+# Subtest: disclosure requires current active account/storage projection and never grants public visibility
+ok 106 - disclosure requires current active account/storage projection and never grants public visibility
+  ---
+  duration_ms: 5069.241
+  type: 'test'
+  ...
+# Subtest: disclosure ignores private reasons and arbitrary malformed public values and returns detached summaries
+ok 107 - disclosure ignores private reasons and arbitrary malformed public values and returns detached summaries
+  ---
+  duration_ms: 615.4801
+  type: 'test'
+  ...
+# Subtest: actual preference expiry removes a previously publishable baseline while keeping saved public data unchanged
+ok 108 - actual preference expiry removes a previously publishable baseline while keeping saved public data unchanged
+  ---
+  duration_ms: 1895.9156
+  type: 'test'
+  ...
+# Subtest: only my latest busy appointment offers its shared place and whole-minute duration for explicit reuse
+ok 109 - only my latest busy appointment offers its shared place and whole-minute duration for explicit reuse
+  ---
+  duration_ms: 69.9683
+  type: 'test'
+  ...
+# Subtest: cancelled, declined, paused, closed, superseded or no-longer-authorized appointments offer no reuse
+ok 110 - cancelled, declined, paused, closed, superseded or no-longer-authorized appointments offer no reuse
+  ---
+  duration_ms: 34.4292
+  type: 'test'
+  ...
+# Subtest: reuse never rounds unsupported durations or copies malformed place, date, note or arbitrary fields
+ok 111 - reuse never rounds unsupported durations or copies malformed place, date, note or arbitrary fields
+  ---
+  duration_ms: 4.9338
+  type: 'test'
+  ...
+# Subtest: received introduction response precedes schedule response, preparation, confirmation and waiting
+ok 112 - received introduction response precedes schedule response, preparation, confirmation and waiting
+  ---
+  duration_ms: 1.3933
+  type: 'test'
+  ...
+# Subtest: preparation never replaces an existing unfinished appointment even if a malformed flag allows another proposal
+ok 113 - preparation never replaces an existing unfinished appointment even if a malformed flag allows another proposal
+  ---
+  duration_ms: 0.453
+  type: 'test'
+  ...
+# Subtest: my unanswered concrete proposal has a waiting state without inferring rejection or sending a new request
+ok 114 - my unanswered concrete proposal has a waiting state without inferring rejection or sending a new request
+  ---
+  duration_ms: 0.4271
+  type: 'test'
+  ...
+# Subtest: completion is an explicit navigation target and pausing still permits checking an existing confirmed meeting
+ok 115 - completion is an explicit navigation target and pausing still permits checking an existing confirmed meeting
+  ---
+  duration_ms: 10.3343
+  type: 'test'
+  ...
+# Subtest: closed, foreign, duplicate-person, wrong-pair and inaccessible projections never expose partner labels
+ok 116 - closed, foreign, duplicate-person, wrong-pair and inaccessible projections never expose partner labels
+  ---
+  duration_ms: 0.9396
+  type: 'test'
+  ...
+# Subtest: urgent responses use stable deadline and pair ordering, independent of list ordering
+ok 117 - urgent responses use stable deadline and pair ordering, independent of list ordering
+  ---
+  duration_ms: 2.3439
+  type: 'test'
+  ...
+# Subtest: journey focus never reads private reflections or preference hints
+ok 118 - journey focus never reads private reflections or preference hints
+  ---
+  duration_ms: 0.8874
+  type: 'test'
+  ...
+# Subtest: weekend declarations yield only three explicit future calendar dates, with no time, duration or place
+ok 119 - weekend declarations yield only three explicit future calendar dates, with no time, duration or place
+  ---
+  duration_ms: 12.3767
+  type: 'test'
+  ...
+# Subtest: weekday means weekday evening while any intersects only the explicitly known counterpart choice
+ok 120 - weekday means weekday evening while any intersects only the explicitly known counterpart choice
+  ---
+  duration_ms: 4.1266
+  type: 'test'
+  ...
+# Subtest: one-sided unknown, both unknown and explicit nonoverlap never manufacture a shared date
+ok 121 - one-sided unknown, both unknown and explicit nonoverlap never manufacture a shared date
+  ---
+  duration_ms: 2.0545
+  type: 'test'
+  ...
+# Subtest: the calendar day is taken from the chosen timezone and never assumes the UTC date
+ok 122 - the calendar day is taken from the chosen timezone and never assumes the UTC date
+  ---
+  duration_ms: 2.974
+  type: 'test'
+  ...
+# Subtest: spring and autumn DST transitions preserve the chosen civil days without promising a real local clock time
+ok 123 - spring and autumn DST transitions preserve the chosen civil days without promising a real local clock time
+  ---
+  duration_ms: 5.4907
+  type: 'test'
+  ...
+# Subtest: leap dates and a skipped date-line day are treated as calendar facts
+ok 124 - leap dates and a skipped date-line day are treated as calendar facts
+  ---
+  duration_ms: 2.028
+  type: 'test'
+  ...
+# Subtest: invalid timezone, time, publication source or enum returns a safe empty result rather than a thrown error
+ok 125 - invalid timezone, time, publication source or enum returns a safe empty result rather than a thrown error
+  ---
+  duration_ms: 1.559
+  type: 'test'
+  ...
+# Subtest: calendar projection does not read private information or mutate the public context
+ok 126 - calendar projection does not read private information or mutate the public context
+  ---
+  duration_ms: 2.1767
+  type: 'test'
+  ...
+# Subtest: actual authorized service pairs feed public-only calendar context and current journey focus, then redact after withdrawal
+ok 127 - actual authorized service pairs feed public-only calendar context and current journey focus, then redact after withdrawal
+  ---
+  duration_ms: 22471.9315
+  type: 'test'
+  ...
+# Subtest: criterion reflection uses the connection snapshot, only own completion, and an explicit priority preview without relaxing required values
+ok 128 - criterion reflection uses the connection snapshot, only own completion, and an explicit priority preview without relaxing required values
+  ---
+  duration_ms: 73888.2903
+  type: 'test'
+  ...
+# Subtest: criterion preview survives a new context only for unchanged baseline sources and never revives after redeclaration, withdrawal or deletion
+ok 129 - criterion preview survives a new context only for unchanged baseline sources and never revives after redeclaration, withdrawal or deletion
+  ---
+  duration_ms: 65081.4299
+  type: 'test'
+  ...
+# Subtest: once-only and expired criterion sources cannot be promoted to a new recommendation context
+ok 130 - once-only and expired criterion sources cannot be promoted to a new recommendation context
+  ---
+  duration_ms: 43486.2309
+  type: 'test'
+  ...
+# Subtest: worse restoration previews only the original correction, preserves later unrelated edits, and never restores selection or acceptances
+ok 131 - worse restoration previews only the original correction, preserves later unrelated edits, and never restores selection or acceptances
+  ---
+  duration_ms: 10830.3365
+  type: 'test'
+  ...
+# Subtest: worse restoration rejects same-field redeclaration, source withdrawal, current expiry and forged preview sources
+ok 132 - worse restoration rejects same-field redeclaration, source withdrawal, current expiry and forged preview sources
+  ---
+  duration_ms: 29072.8416
+  type: 'test'
+  ...
+# Subtest: priority restoration preserves field edits and is invalidated by a later priority declaration or a new context
+ok 133 - priority restoration preserves field edits and is invalidated by a later priority declaration or a new context
+  ---
+  duration_ms: 25637.3891
+  type: 'test'
+  ...
+# Subtest: separate explicit SQLite stores refuse public paths and demo/account mode reuse
+ok 134 - separate explicit SQLite stores refuse public paths and demo/account mode reuse
+  ---
+  duration_ms: 86.3275
+  type: 'test'
+  ...
+# Subtest: fictional role login is explicit; account service never accepts demo login or decode-only identities
+ok 135 - fictional role login is explicit; account service never accepts demo login or decode-only identities
+  ---
+  duration_ms: 190.2843
+  type: 'test'
+  ...
+# Subtest: central account verification forwards the exact bearer and uses only active synk_user_id
+ok 136 - central account verification forwards the exact bearer and uses only active synk_user_id
+  ---
+  duration_ms: 3.0563
+  type: 'test'
+  ...
+# Subtest: onboarding and disclosure remain separate from private preferences and self-declaration is never verified
+ok 137 - onboarding and disclosure remain separate from private preferences and self-declaration is never verified
+  ---
+  duration_ms: 472.6159
+  type: 'test'
+  ...
+# Subtest: atomic revision CAS, idempotency and actor isolation work across two SQLite connections
+ok 138 - atomic revision CAS, idempotency and actor isolation work across two SQLite connections
+  ---
+  duration_ms: 190.1202
+  type: 'test'
+  ...
+# Subtest: appointment revisions and participant-private reflection are persisted and inbox is viewer-specific
+ok 139 - appointment revisions and participant-private reflection are persisted and inbox is viewer-specific
+  ---
+  duration_ms: 4048.3994
+  type: 'test'
+  ...
+# Subtest: blocks, disclosure and adult withdrawal close every pair without restoring old acceptances
+ok 140 - blocks, disclosure and adult withdrawal close every pair without restoring old acceptances
+  ---
+  duration_ms: 32959.1672
+  type: 'test'
+  ...
+# Subtest: account pause preserves agreed appointments and private reflection while blocking new commitments
+ok 141 - account pause preserves agreed appointments and private reflection while blocking new commitments
+  ---
+  duration_ms: 4877.6313
+  type: 'test'
+  ...
+# Subtest: reports remain private, operators are server-granted and suspending a target closes its pairs
+ok 142 - reports remain private, operators are server-granted and suspending a target closes its pairs
+  ---
+  duration_ms: 3837.8528
+  type: 'test'
+  ...
+# Subtest: suspension revokes operator report reads as well as processing and replay never returns stale private reports
+ok 143 - suspension revokes operator report reads as well as processing and replay never returns stale private reports
+  ---
+  duration_ms: 706.8405
+  type: 'test'
+  ...
+# Subtest: deletion scrubs private rows, leaves a tombstone, and stale writes stay rejected after restart
+ok 144 - deletion scrubs private rows, leaves a tombstone, and stale writes stay rejected after restart
+  ---
+  duration_ms: 3155.2347
+  type: 'test'
+  ...
+# Subtest: account verifier runs on every request and cannot grant operator powers through client cla

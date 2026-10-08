@@ -1,0 +1,12 @@
+{
+  "kind": "observed-run-diagnostic-summary",
+  "source": "exec session 96358 final output",
+  "status": "failed-before-journey",
+  "pathGroupsCompleted": 0,
+  "stage": "page.goto local atlas-lab, waitUntil networkidle",
+  "navigationTimeoutMs": 10000,
+  "observedError": "page.goto: Timeout 10000ms exceeded.",
+  "context": "Other repository tests and browser QA were running concurrently. That is context, not a proven cause.",
+  "followup": "Only the navigation deadline was raised to 30000ms; action deadlines remain 10000ms. The following full run passed all six path groups. See result.json.",
+  "note": "This is a summary of the observed tool output, not a preserved original report."
+}

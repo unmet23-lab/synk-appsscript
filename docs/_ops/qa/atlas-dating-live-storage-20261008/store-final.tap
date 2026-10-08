@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: actual SQLITE_FULL auto-rollback preserves the original error instead of masking it with a second rollback error
+ok 1 - actual SQLITE_FULL auto-rollback preserves the original error instead of masking it with a second rollback error
+  ---
+  duration_ms: 63.2098
+  type: 'test'
+  ...
+# Subtest: actual receipt-trigger SQLITE_FULL atomically rolls back profile, pair, clock, exposure and receipt before retry
+ok 2 - actual receipt-trigger SQLITE_FULL atomically rolls back profile, pair, clock, exposure and receipt before retry
+  ---
+  duration_ms: 57.4653
+  type: 'test'
+  ...
+# Subtest: actual SQLITE_READONLY from query_only rolls back and permits the same write once SQLite becomes writable
+ok 3 - actual SQLITE_READONLY from query_only rolls back and permits the same write once SQLite becomes writable
+  ---
+  duration_ms: 38.7861
+  type: 'test'
+  ...
+# Subtest: actual SQLITE_BUSY before BEGIN executes no callback and can recover after competing writer releases the lock
+ok 4 - actual SQLITE_BUSY before BEGIN executes no callback and can recover after competing writer releases the lock
+  ---
+  duration_ms: 48.8779
+  type: 'test'
+  ...
+# Subtest: actual SQLITE_BUSY at COMMIT rolls back completed writes and receipt before a successful retry
+ok 5 - actual SQLITE_BUSY at COMMIT rolls back completed writes and receipt before a successful retry
+  ---
+  duration_ms: 70.2423
+  type: 'test'
+  ...
+# Subtest: real receipt uniqueness failure preserves original SQLite constraint error and rolls back earlier profile writes
+ok 6 - real receipt uniqueness failure preserves original SQLite constraint error and rolls back earlier profile writes
+  ---
+  duration_ms: 47.5742
+  type: 'test'
+  ...
+# Subtest: if transaction cleanup itself fails the original write error survives and the connection is no longer reusable
+ok 7 - if transaction cleanup itself fails the original write error survives and the connection is no longer reusable
+  ---
+  duration_ms: 116.7914
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 521.4538

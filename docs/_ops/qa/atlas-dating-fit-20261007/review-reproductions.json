@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "task": "meeting-regions-read-only-fit-review",
+  "scope": "Only new relationship/meeting-area/importance-experience integration and the reproduced fixes; not a full security or product audit.",
+  "syntheticOnly": true,
+  "paidCalls": 0,
+  "externalRequests": 0,
+  "productSourceEdits": 0,
+  "mainTestCountContribution": 0,
+  "cases": [
+    {
+      "id": "expired-context-priority-blocks-new-criterion",
+      "priority": "P1",
+      "trigger": "After a confirmed appointment completion, keep wants.plan as baseline priority; create the same context priority with a five-second lifetime; wait six seconds; save a confirmed more-important wants.contact reflection.",
+      "before": {
+        "method": "fresh local synthetic HTTP reproduction before the fix",
+        "rawContext": [
+          "wants.plan"
+        ],
+        "effective": [
+          "wants.plan"
+        ],
+        "expiredContext": true,
+        "reflectionSaveStatus": 200,
+        "newContextPreviewStatus": 400,
+        "error": "invalid-action"
+      },
+      "after": {
+        "method": "fresh local synthetic HTTP reproduction against repaired source",
+        "reflectionSaveStatus": 200,
+        "newContextPreviewStatus": 200,
+        "newBaselinePreviewStatus": 200,
+        "contextPreviewUntil": null,
+        "baselinePreviewUntil": null,
+        "canApplyBaseline": true
+      },
+      "source": [
+        {
+          "path": "experiences/atlas-lab/dating-service.mjs",
+          "line": 402,
+          "detail": "effectivePriorityTarget excludes an expired context layer"
+        },
+        {
+          "path": "experiences/atlas-lab/dating-service.mjs",
+          "line": 443,
+          "detail": "the bound lifetime uses only the effective priority deadline"
+        }
+      ],
+      "resolved": true
+    },
+    {
+      "id": "region-incompatibility-hides-decline",
+      "priority": "P1",
+      "trigger": "Send a pending introduction with matching confirmed private/public Seoul-center areas, then change the recipient private current area to Busan.",
+      "before": {
+        "method": "read-only source inspection and existing synthetic HTTP test contract",
+        "serviceCanRespond": false,
+        "uiAcceptAndDeclineBothRequireCanRespond": true,
+        "directDeclineRemainsPermitted": true
+      },
+      "after": {
+        "method": "fresh local synthetic HTTP reproduction and narrow UI source inspection",
+        "canRespond": false,
+        "canDecline": true,
+        "declineStatus": 200,
+        "finalAccepted": false,
+        "uiDeclineUsesCanDecline": true
+      },
+      "source": [
+        {
+          "path": "experiences/atlas-lab/dating-service.mjs",
+          "line": 148,
+          "detail": "canDecline is copied before compatibility removes acceptance permission"
+        },
+        {
+          "path": "experiences/atlas-lab/dating-ui.mjs",
+          "line": 1031,
+          "detail": "decline rendering uses canDecline independently from accept"
+        }
+      ],
+      "resolved": true
+    },
+    {
+      "id": "one-priority-offers-invalid-replacement",
+      "priority": "P1",
+      "trigger": "After a confirmed more-important reflection, with only wants.plan already important, choose that existing criterion in the replacement dropdown.",
+      "before": {
+        "method": "fresh local synthetic HTTP reproduction and narrow UI source inspection",
+        "offeredReplacementFields": [
+          "wants.plan"
+        ],
+        "keepExistingPreviewStatus": 200,
+        "chooseReplacementPreviewStatus": 400,
+        "error": "criterion-replacement-required"
+      },
+      "after": {
+        "method": "narrow source inspection of the previously failing UI branch",
+        "existingPriorityCount": 1,
+        "offeredReplacementFields": [],
+        "keepExistingIsTheOnlyOption": true
+      },
+      "source": [
+        {
+          "path": "experiences/atlas-lab/dating-ui.mjs",
+          "line": 495,
+          "detail": "replacement choices are offered only when two importance slots are occupied"
+        }
+      ],
+      "resolved": true
+    },
+    {
+      "id": "expired-context-priority-summary-scope",
+      "priority": "P2",
+      "trigger": "Read preference summary exactly at a context priority deadline while a baseline priority remains valid.",
+      "before": {
+        "method": "narrow source inspection before the fix",
+        "detail": "summary used the raw non-null context layer to label a baseline-effective priority as current-context"
+      },
+      "after": {
+        "method": "fresh pure-function execution after the fix",
+        "displayedDetail": "평소에 더 중요하게 비교해요."
+      },
+      "source": [
+        {
+          "path": "experiences/atlas-lab/dating-insights.mjs",
+          "line": 56,
+          "detail": "context scope excludes expired context priorities"
+        }
+      ],
+      "resolved": true
+    }
+  ],
+  "sources": [
+    {
+      "path": "experiences/atlas-lab/discovery.mjs",
+      "sha256": "c749e44049329aabd5151dc04009392e92c268426c3ce086eb451a6142c98219"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-service.mjs",
+      "sha256": "256fd661beb4d47bcb1dd1cd6cdab572b0ca43dba08d32a198c751672fa41161"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-ui.mjs",
+      "sha256": "fdfc961ce658e0224ef176f4d3c5fcf27bc9bdfbeb9a9f4539e25e43f767869b"
+    },
+    {
+      "path": "experiences/atlas-lab/discovery-guidance.mjs",
+      "sha256": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-insights.mjs",
+      "sha256": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49"
+    },
+    {
+      "path": "experiences/atlas-lab/product-experience.mjs",
+      "sha256": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf"
+    }
+  ],
+  "limitations": [
+    "No real OAuth or adult provider, participants, remote database, deployment or satisfaction evidence.",
+    "UI replacement-choice and decline rendering fixes were inspected in source; this record does not claim a new browser execution.",
+    "The old decline failure was verified from source and the existing synthetic HTTP test contract; this record distinguishes it from fresh HTTP reproduction."
+  ],
+  "nonBlockingObservation": {
+    "id": "shared-region-specific-label-hint",
+    "method": "fresh pure-function execution",
+    "matchingRegionReasonPresent": true,
+    "candidateMeetingRegionsPropertyPresent": false,
+    "detail": "The generic region-match reason works. The UI specific-area hint guarded by candidate.meetingRegions.shared has no candidate projection. This is not a failure of eligibility/acceptance checks and no specific-area card-display completion claim is made here."
+  }
+}

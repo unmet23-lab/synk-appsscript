@@ -1,0 +1,604 @@
+TAP version 13
+# Subtest: preview and cancellation are pure; only application records explicit conditional acceptance
+ok 1 - preview and cancellation are pure; only application records explicit conditional acceptance
+  ---
+  duration_ms: 832.1919
+  type: 'test'
+  ...
+# Subtest: same other facts rank primary above conditional above mismatch through existing Core Domain policy objectives
+ok 2 - same other facts rank primary above conditional above mismatch through existing Core Domain policy objectives
+  ---
+  duration_ms: 218.1693
+  type: 'test'
+  ...
+# Subtest: missing public notice never triggers allowance and its explanatory state is unknown
+ok 3 - missing public notice never triggers allowance and its explanatory state is unknown
+  ---
+  duration_ms: 56.3916
+  type: 'test'
+  ...
+# Subtest: my hard contact requirement and every reciprocal/other hard condition remain strict
+ok 4 - my hard contact requirement and every reciprocal/other hard condition remain strict
+  ---
+  duration_ms: 1650.3383
+  type: 'test'
+  ...
+# Subtest: clear is previewed, keeps original answers and retracts only its selected allowance layer
+ok 5 - clear is previewed, keeps original answers and retracts only its selected allowance layer
+  ---
+  duration_ms: 1089.6849
+  type: 'test'
+  ...
+# Subtest: same-value redeclaration permanently invalidates old allowance even after field undo
+ok 6 - same-value redeclaration permanently invalidates old allowance even after field undo
+  ---
+  duration_ms: 1279.8554
+  type: 'test'
+  ...
+# Subtest: unknown, override and reversion cannot revive a baseline allowance
+ok 7 - unknown, override and reversion cannot revive a baseline allowance
+  ---
+  duration_ms: 1943.1696
+  type: 'test'
+  ...
+# Subtest: baseline rule survives an unchanged new encounter; context allowance ends with its encounter
+ok 8 - baseline rule survives an unchanged new encounter; context allowance ends with its encounter
+  ---
+  duration_ms: 1378.2544
+  type: 'test'
+  ...
+# Subtest: once original preference cannot be widened by baseline allowance
+ok 9 - once original preference cannot be widened by baseline allowance
+  ---
+  duration_ms: 375.679
+  type: 'test'
+  ...
+# Subtest: source deadline, own allowance deadline and stale previews fail closed without extra writes
+ok 10 - source deadline, own allowance deadline and stale previews fail closed without extra writes
+  ---
+  duration_ms: 1573.7034
+  type: 'test'
+  ...
+# Subtest: a changed or expired allowance clears selected handoff and exposes a truthful recommendation change
+ok 11 - a changed or expired allowance clears selected handoff and exposes a truthful recommendation change
+  ---
+  duration_ms: 1275.3722
+  type: 'test'
+  ...
+# Subtest: conditional rule events reject altered source, arbitrary rules, payload fields and unavailable module
+ok 12 - conditional rule events reject altered source, arbitrary rules, payload fields and unavailable module
+  ---
+  duration_ms: 857.8587
+  type: 'test'
+  ...
+# Subtest: legacy comparison, Ask behavior, exposure basis and handoff remain byte-compatible without rules
+ok 13 - legacy comparison, Ask behavior, exposure basis and handoff remain byte-compatible without rules
+  ---
+  duration_ms: 433.0372
+  type: 'test'
+  ...
+# Subtest: hiding, question controls and hypothetical answers never copy or infer acceptance
+ok 14 - hiding, question controls and hypothetical answers never copy or infer acceptance
+  ---
+  duration_ms: 698.1007
+  type: 'test'
+  ...
+# Subtest: explicit priority changes the expected tradeoff, never the hard eligibility or either answer
+ok 15 - explicit priority changes the expected tradeoff, never the hard eligibility or either answer
+  ---
+  duration_ms: 1123.3217
+  type: 'test'
+  ...
+# Subtest: priority scope, empty selection, preview purity and stale application preserve explicit choices
+ok 16 - priority scope, empty selection, preview purity and stale application preserve explicit choices
+  ---
+  duration_ms: 1448.503
+  type: 'test'
+  ...
+# Subtest: structured explanations bind my editable answer to its actual layer and keep partner declarations read-only
+ok 17 - structured explanations bind my editable answer to its actual layer and keep partner declarations read-only
+  ---
+  duration_ms: 262.6442
+  type: 'test'
+  ...
+# Subtest: private contact background creates a separate notice suggestion without changing ranking, selection or fields
+ok 18 - private contact background creates a separate notice suggestion without changing ranking, selection or fields
+  ---
+  duration_ms: 855.2725
+  type: 'test'
+  ...
+# Subtest: brief optional budget uses Ask, stops after two and does not backfill legacy answers or reset on context/mode changes
+ok 19 - brief optional budget uses Ask, stops after two and does not backfill legacy answers or reset on context/mode changes
+  ---
+  duration_ms: 1339.1062
+  type: 'test'
+  ...
+# Subtest: the selected optional question can rest seven days across contexts, without becoming false or any
+ok 20 - the selected optional question can rest seven days across contexts, without becoming false or any
+  ---
+  duration_ms: 814.3559
+  type: 'test'
+  ...
+# Subtest: optional allowance resets at Korean midnight, never at UTC midnight and never by changing modes
+ok 21 - optional allowance resets at Korean midnight, never at UTC midnight and never by changing modes
+  ---
+  duration_ms: 783.639
+  type: 'test'
+  ...
+# Subtest: self notice is optional unless explicitly required by a public counterpart
+ok 22 - self notice is optional unless explicitly required by a public counterpart
+  ---
+  duration_ms: 13.8267
+  type: 'test'
+  ...
+# Subtest: optional self notice can be deferred without inventing a declaration or changing the candidate comparison
+ok 23 - optional self notice can be deferred without inventing a declaration or changing the candidate comparison
+  ---
+  duration_ms: 80.6799
+  type: 'test'
+  ...
+# Subtest: once deadline returns to baseline with accurate source and invalidates the prior selection even if still eligible
+ok 24 - once deadline returns to baseline with accurate source and invalidates the prior selection even if still eligible
+  ---
+  duration_ms: 350.4017
+  type: 'test'
+  ...
+# Subtest: expired ongoing hard answer remains required and unknown, without old baseline or context substitution
+ok 25 - expired ongoing hard answer remains required and unknown, without old baseline or context substitution
+  ---
+  duration_ms: 184.6826
+  type: 'test'
+  ...
+# Subtest: undo preserves the original deadline and cannot resurrect a value after it elapsed
+ok 26 - undo preserves the original deadline and cannot resurrect a value after it elapsed
+  ---
+  duration_ms: 582.478
+  type: 'test'
+  ...
+# Subtest: an explicit unknown masks an expired baseline without falsely calling the new answer expired
+ok 27 - an explicit unknown masks an expired baseline without falsely calling the new answer expired
+  ---
+  duration_ms: 232.061
+  type: 'test'
+  ...
+# Subtest: time-only preference expiry invalidates a preview and deadlines are canonical future instants
+ok 28 - time-only preference expiry invalidates a preview and deadlines are canonical future instants
+  ---
+  duration_ms: 405.4348
+  type: 'test'
+  ...
+# Subtest: a fresh preview made after expiry applies using its current comparison, without replaying the pre-expiry result
+ok 29 - a fresh preview made after expiry applies using its current comparison, without replaying the pre-expiry result
+  ---
+  duration_ms: 608.0593
+  type: 'test'
+  ...
+# Subtest: 7-day hiding retains its original deadline across contexts and expires exactly at equality
+ok 30 - 7-day hiding retains its original deadline across contexts and expires exactly at equality
+  ---
+  duration_ms: 669.4518
+  type: 'test'
+  ...
+# Subtest: 30-day hiding and direct withdrawal restore only current eligibility, never a selected or accepted person
+ok 31 - 30-day hiding and direct withdrawal restore only current eligibility, never a selected or accepted person
+  ---
+  duration_ms: 419.226
+  type: 'test'
+  ...
+# Subtest: expiry does not override a later hard answer or current-only skip
+ok 32 - expiry does not override a later hard answer or current-only skip
+  ---
+  duration_ms: 576.3644
+  type: 'test'
+  ...
+# Subtest: hiding never turns a no-attraction reason into a general preference and does not expose nonconsenting identities
+ok 33 - hiding never turns a no-attraction reason into a general preference and does not expose nonconsenting identities
+  ---
+  duration_ms: 615.3772
+  type: 'test'
+  ...
+# Subtest: removing disclosure redacts the hidden person but keeps the original private deadline if that same authorized identity returns
+ok 34 - removing disclosure redacts the hidden person but keeps the original private deadline if that same authorized identity returns
+  ---
+  duration_ms: 134.5903
+  type: 'test'
+  ...
+# Subtest: hidden lists disappear with discovery consent, stay private across reenabling, and cannot be used to restore a selection
+ok 35 - hidden lists disappear with discovery consent, stay private across reenabling, and cannot be used to restore a selection
+  ---
+  duration_ms: 523.9726
+  type: 'test'
+  ...
+# Subtest: a hidden person cannot keep requiring optional answers on their behalf
+ok 36 - a hidden person cannot keep requiring optional answers on their behalf
+  ---
+  duration_ms: 75.4618
+  type: 'test'
+  ...
+# Subtest: a shown comparison stays unchanged across a new context when declared answers and the public pool did not change
+ok 37 - a shown comparison stays unchanged across a new context when declared answers and the public pool did not change
+  ---
+  duration_ms: 654.1133
+  type: 'test'
+  ...
+# Subtest: the historical pool fingerprint detects newly public information rather than replaying old exposure against today
+ok 38 - the historical pool fingerprint detects newly public information rather than replaying old exposure against today
+  ---
+  duration_ms: 77.5101
+  type: 'test'
+  ...
+# Subtest: rotating equally ranked people is not misreported as new conditions or a better result
+ok 39 - rotating equally ranked people is not misreported as new conditions or a better result
+  ---
+  duration_ms: 63.9895
+  type: 'test'
+  ...
+# Subtest: legacy exposures remain readable without inventing a stored historical pool and caller-supplied fingerprints are rejected
+ok 40 - legacy exposures remain readable without inventing a stored historical pool and caller-supplied fingerprints are rejected
+  ---
+  duration_ms: 376.7718
+  type: 'test'
+  ...
+# Subtest: explicitly viewing an empty result records the comparison without inventing candidate exposures
+ok 41 - explicitly viewing an empty result records the comparison without inventing candidate exposures
+  ---
+  duration_ms: 38.7251
+  type: 'test'
+  ...
+# Subtest: no-candidate guidance respects period hiding instead of offering a context reset as if it removed it
+ok 42 - no-candidate guidance respects period hiding instead of offering a context reset as if it removed it
+  ---
+  duration_ms: 52.4646
+  type: 'test'
+  ...
+# Subtest: expanded situational declarations remain unknown in legacy records and change ranking only after an explicit answer
+ok 43 - expanded situational declarations remain unknown in legacy records and change ranking only after an explicit answer
+  ---
+  duration_ms: 2202.5653
+  type: 'test'
+  ...
+# Subtest: candidate feedback does not infer preferences and skip-current lasts only for its context
+ok 44 - candidate feedback does not infer preferences and skip-current lasts only for its context
+  ---
+  duration_ms: 1104.4583
+  type: 'test'
+  ...
+# Subtest: question pause suppresses only optional choices and resume retains missing answers
+ok 45 - question pause suppresses only optional choices and resume retains missing answers
+  ---
+  duration_ms: 241.2034
+  type: 'test'
+  ...
+# Subtest: field undo restores prior layers and hard requirements but never selection, consent, or an old context
+ok 46 - field undo restores prior layers and hard requirements but never selection, consent, or an old context
+  ---
+  duration_ms: 1167.6077
+  type: 'test'
+  ...
+# Subtest: exposure rotates only exactly tied eligible candidates and cannot improve an excluded or weaker candidate
+ok 47 - exposure rotates only exactly tied eligible candidates and cannot improve an excluded or weaker candidate
+  ---
+  duration_ms: 944.6089
+  type: 'test'
+  ...
+# Subtest: external public pool uses the same reciprocal constraints without demo profiles, invented values, or synthetic meeting seeds
+ok 48 - external public pool uses the same reciprocal constraints without demo profiles, invented values, or synthetic meeting seeds
+  ---
+  duration_ms: 85.2491
+  type: 'test'
+  ...
+# Subtest: removed or undisclosed external profiles cannot break history replay or leak through feedback, exposure, preview, or selection
+ok 49 - removed or undisclosed external profiles cannot break history replay or leak through feedback, exposure, preview, or selection
+  ---
+  duration_ms: 179.571
+  type: 'test'
+  ...
+# Subtest: external profile changes invalidate an old selection without making private answers unreadable
+ok 50 - external profile changes invalidate an old selection without making private answers unreadable
+  ---
+  duration_ms: 94.7753
+  type: 'test'
+  ...
+# Subtest: external candidate validation is finite and a non-consenting profile never enters Core or Ask
+ok 51 - external candidate validation is finite and a non-consenting profile never enters Core or Ask
+  ---
+  duration_ms: 38.7356
+  type: 'test'
+  ...
+# Subtest: legacy UI handlers pause questions, record private reasons, and skip only the current candidate
+ok 52 - legacy UI handlers pause questions, record private reasons, and skip only the current candidate
+  ---
+  duration_ms: 1145.6351
+  type: 'test'
+  ...
+# Subtest: legacy UI handlers undo a field without restoring selection and rotate equal-condition candidates
+ok 53 - legacy UI handlers undo a field without restoring selection and rotate equal-condition candidates
+  ---
+  duration_ms: 1413.0379
+  type: 'test'
+  ...
+# Subtest: UI export and restore are detached, validate before replacement, and resynchronize the selected handoff
+ok 54 - UI export and restore are detached, validate before replacement, and resynchronize the selected handoff
+  ---
+  duration_ms: 958.5467
+  type: 'test'
+  ...
+# Subtest: UI context controls apply a temporary choice, unknown mask, revert, and new-context reset through real handlers
+ok 55 - UI context controls apply a temporary choice, unknown mask, revert, and new-context reset through real handlers
+  ---
+  duration_ms: 1533.2441
+  type: 'test'
+  ...
+# Subtest: UI preview uses one clock reading even when wall time advances between calls
+ok 56 - UI preview uses one clock reading even when wall time advances between calls
+  ---
+  duration_ms: 670.4255
+  type: 'test'
+  ...
+# Subtest: switching an edit scope preserves the answer the user has just selected
+ok 57 - switching an edit scope preserves the answer the user has just selected
+  ---
+  duration_ms: 399.9964
+  type: 'test'
+  ...
+# Subtest: an observed expiry cannot reopen an old selection after the UI wall clock moves backward
+ok 58 - an observed expiry cannot reopen an old selection after the UI wall clock moves backward
+  ---
+  duration_ms: 566.2489
+  type: 'test'
+  ...
+# Subtest: live scenarios can start before the fixed fixture clock and accept a real future deadline
+ok 59 - live scenarios can start before the fixed fixture clock and accept a real future deadline
+  ---
+  duration_ms: 327.348
+  type: 'test'
+  ...
+# Subtest: live UI uses real time for initial answers and explicit scenario resets, while restored future logs stay ordered
+ok 60 - live UI uses real time for initial answers and explicit scenario resets, while restored future logs stay ordered
+  ---
+  duration_ms: 844.8395
+  type: 'test'
+  ...
+# Subtest: UI reaches an explicitly scheduled expiry without another click and invalidates the connected candidate
+ok 61 - UI reaches an explicitly scheduled expiry without another click and invalidates the connected candidate
+  ---
+  duration_ms: 380.025
+  type: 'test'
+  ...
+# Subtest: current-context choices preserve the baseline and return to it only after an explicit revert
+ok 62 - current-context choices preserve the baseline and return to it only after an explicit revert
+  ---
+  duration_ms: 466.5974
+  type: 'test'
+  ...
+# Subtest: explicit unknown masks the baseline, any is a known value, and cancellation restores the baseline
+ok 63 - explicit unknown masks the baseline, any is a known value, and cancellation restores the baseline
+  ---
+  duration_ms: 556.0163
+  type: 'test'
+  ...
+# Subtest: deleting a baseline answer preserves this-context unknown and does not repeat the declined optional question
+ok 64 - deleting a baseline answer preserves this-context unknown and does not repeat the declined optional question
+  ---
+  duration_ms: 504.3926
+  type: 'test'
+  ...
+# Subtest: temporary soft choices cannot replace or relax an independently confirmed must-have
+ok 65 - temporary soft choices cannot replace or relax an independently confirmed must-have
+  ---
+  duration_ms: 933.6029
+  type: 'test'
+  ...
+# Subtest: clearing a baseline required answer stays pending even if a current soft answer exists
+ok 66 - clearing a baseline required answer stays pending even if a current soft answer exists
+  ---
+  duration_ms: 576.5273
+  type: 'test'
+  ...
+# Subtest: explicit unknown on a required choice asks again without replacing the stored must-have
+ok 67 - explicit unknown on a required choice asks again without replacing the stored must-have
+  ---
+  duration_ms: 326.2288
+  type: 'test'
+  ...
+# Subtest: baseline edits clear the current override and unknown mask, while deleted baseline values never return
+ok 68 - baseline edits clear the current override and unknown mask, while deleted baseline values never return
+  ---
+  duration_ms: 756.1275
+  type: 'test'
+  ...
+# Subtest: ending a discovery hides its candidates and handoff; a new context restores only current baseline declarations
+ok 69 - ending a discovery hides its candidates and handoff; a new context restores only current baseline declarations
+  ---
+  duration_ms: 736.1521
+  type: 'test'
+  ...
+# Subtest: explicit expiry uses caller time without imposing an automatic lifetime and rejects stale preview application
+ok 70 - explicit expiry uses caller time without imposing an automatic lifetime and rejects stale preview application
+  ---
+  duration_ms: 702.6792
+  type: 'test'
+  ...
+# Subtest: scope-specific previews are pure, preserve hard constraints and become stale after context closure
+ok 71 - scope-specific previews are pure, preserve hard constraints and become stale after context closure
+  ---
+  duration_ms: 585.4663
+  type: 'test'
+  ...
+# Subtest: consent and self declarations never become temporary inferred choices; availability remains directly declared
+ok 72 - consent and self declarations never become temporary inferred choices; availability remains directly declared
+  ---
+  duration_ms: 697.1522
+  type: 'test'
+  ...
+# Subtest: first asks explicit discovery consent before showing any candidates or invented profile
+ok 73 - first asks explicit discovery consent before showing any candidates or invented profile
+  ---
+  duration_ms: 2.4291
+  type: 'test'
+  ...
+# Subtest: ready has three eligible candidates, one reciprocal must-have failure and one unknown schedule
+ok 74 - ready has three eligible candidates, one reciprocal must-have failure and one unknown schedule
+  ---
+  duration_ms: 283.0782
+  type: 'test'
+  ...
+# Subtest: the candidate the user wants still fails if the candidate requires a different self style
+ok 75 - the candidate the user wants still fails if the candidate requires a different self style
+  ---
+  duration_ms: 329.7231
+  type: 'test'
+  ...
+# Subtest: situational wants change real candidate order without changing own style or inventing candidate liking
+ok 76 - situational wants change real candidate order without changing own style or inventing candidate liking
+  ---
+  duration_ms: 233.5264
+  type: 'test'
+  ...
+# Subtest: soft mismatch is eligible while explicit wants must-have strictly excludes it
+ok 77 - soft mismatch is eligible while explicit wants must-have strictly excludes it
+  ---
+  duration_ms: 541.8946
+  type: 'test'
+  ...
+# Subtest: schedule is mandatory; explicit either schedule works but absent schedule is never filled in
+ok 78 - schedule is mandatory; explicit either schedule works but absent schedule is never filled in
+  ---
+  duration_ms: 581.4281
+  type: 'test'
+  ...
+# Subtest: boundary with no eligible candidates never substitutes an excluded or unknown person
+ok 79 - boundary with no eligible candidates never substitutes an excluded or unknown person
+  ---
+  duration_ms: 281.9656
+  type: 'test'
+  ...
+# Subtest: consent withdrawal and clearing hide all candidates, change history and selection; restoring needs new selection
+ok 80 - consent withdrawal and clearing hide all candidates, change history and selection; restoring needs new selection
+  ---
+  duration_ms: 575.9147
+  type: 'test'
+  ...
+# Subtest: select is only a cancelable user choice and does not alter own profile or imply mutual acceptance
+ok 81 - select is only a cancelable user choice and does not alter own profile or imply mutual acceptance
+  ---
+  duration_ms: 382.1898
+  type: 'test'
+  ...
+# Subtest: any explicit set or clear invalidates an old selection, including repeating the same answer
+ok 82 - any explicit set or clear invalidates an old selection, including repeating the same answer
+  ---
+  duration_ms: 1299.7049
+  type: 'test'
+  ...
+# Subtest: skipping unknown wants preserves the exact ranking and unknown value; known or mandatory fields cannot be skipped
+ok 83 - skipping unknown wants preserves the exact ranking and unknown value; known or mandatory fields cannot be skipped
+  ---
+  duration_ms: 472.5296
+  type: 'test'
+  ...
+# Subtest: no personal wants and equal policy ranks are explicitly described without a compatibility number
+ok 84 - no personal wants and equal policy ranks are explicitly described without a compatibility number
+  ---
+  duration_ms: 316.8926
+  type: 'test'
+  ...
+# Subtest: Domain runs both directions and Ask evaluates the same ordered eligible set through scoped preferences
+ok 85 - Domain runs both directions and Ask evaluates the same ordered eligible set through scoped preferences
+  ---
+  duration_ms: 266.0479
+  type: 'test'
+  ...
+# Subtest: no consent also prevents all candidate decision calls, not just final visual display
+ok 86 - no consent also prevents all candidate decision calls, not just final visual display
+  ---
+  duration_ms: 0.7487
+  type: 'test'
+  ...
+# Subtest: strict finite replay rejects foreign actors, invalid flags, fake fields, unknown candidates and noncanonical times
+ok 87 - strict finite replay rejects foreign actors, invalid flags, fake fields, unknown candidates and noncanonical times
+  ---
+  duration_ms: 407.681
+  type: 'test'
+  ...
+# Subtest: clearing a required answer preserves the requirement; reanswering cannot silently relax it
+ok 88 - clearing a required answer preserves the requirement; reanswering cannot silently relax it
+  ---
+  duration_ms: 679.266
+  type: 'test'
+  ...
+# Subtest: reciprocal matches stay in the reciprocal explanation rather than masquerading as my own wants
+ok 89 - reciprocal matches stay in the reciprocal explanation rather than masquerading as my own wants
+  ---
+  duration_ms: 128.5062
+  type: 'test'
+  ...
+# Subtest: preview shows the actual reordered candidate list without changing state, selection, requirements or handoff
+ok 90 - preview shows the actual reordered candidate list without changing state, selection, requirements or handoff
+  ---
+  duration_ms: 336.1404
+  type: 'test'
+  ...
+# Subtest: applying a reviewed preview equals the ordinary explicit action and clears the old selection
+ok 91 - applying a reviewed preview equals the ordinary explicit action and clears the old selection
+  ---
+  duration_ms: 582.9941
+  type: 'test'
+  ...
+# Subtest: clearing a mandatory answer in a preview preserves the real setting and shows hypothetical holds
+ok 92 - clearing a mandatory answer in a preview preserves the real setting and shows hypothetical holds
+  ---
+  duration_ms: 604.7279
+  type: 'test'
+  ...
+# Subtest: preview reports newly eligible and still-held people without relaxing the other side requirements
+ok 93 - preview reports newly eligible and still-held people without relaxing the other side requirements
+  ---
+  duration_ms: 185.3848
+  type: 'test'
+  ...
+# Subtest: preview application rejects changed sources, including equal-length alternate states and intervening selection changes
+ok 94 - preview application rejects changed sources, including equal-length alternate states and intervening selection changes
+  ---
+  duration_ms: 420.6985
+  type: 'test'
+  ...
+# Subtest: preview application rejects modified actions, candidate changes, extra fields and invented confirmation text
+ok 95 - preview application rejects modified actions, candidate changes, extra fields and invented confirmation text
+  ---
+  duration_ms: 1099.4424
+  type: 'test'
+  ...
+# Subtest: handoff contains only the selected public identity and both explicit schedules, without meeting consent or inferred preferences
+ok 96 - handoff contains only the selected public identity and both explicit schedules, without meeting consent or inferred preferences
+  ---
+  duration_ms: 433.5646
+  type: 'test'
+  ...
+# Subtest: handoff keys preserve revisits but distinguish reselection, different candidates and equal-count condition changes
+ok 97 - handoff keys preserve revisits but distinguish reselection, different candidates and equal-count condition changes
+  ---
+  duration_ms: 517.407
+  type: 'test'
+  ...
+# Subtest: answers, consent and selection withdrawal immediately remove handoff and old meeting identity cannot revive
+ok 98 - answers, consent and selection withdrawal immediately remove handoff and old meeting identity cannot revive
+  ---
+  duration_ms: 440.7831
+  type: 'test'
+  ...
+# Subtest: hypothetical consent cannot authorize candidate disclosure: consent changes are direct and other previews require current consent
+ok 99 - hypothetical consent cannot authorize candidate disclosure: consent changes are direct and other previews require current consent
+  ---
+  duration_ms: 467.1281
+  type: 'test'
+  ...
+1..99
+# tests 99
+# suites 0
+# pass 99
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 33193.3883

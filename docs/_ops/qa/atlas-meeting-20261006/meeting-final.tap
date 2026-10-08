@@ -1,0 +1,142 @@
+TAP version 13
+# Subtest: finite fictional catalog and initial unknowns do not invent A preferences or consent
+ok 1 - finite fictional catalog and initial unknowns do not invent A preferences or consent
+  ---
+  duration_ms: 37.6791
+  type: 'test'
+  ...
+# Subtest: wanted experience chooses a concrete plan through Core, Ask and scoped preferences
+ok 2 - wanted experience chooses a concrete plan through Core, Ask and scoped preferences
+  ---
+  duration_ms: 21.7988
+  type: 'test'
+  ...
+# Subtest: both availability and consent are hard requirements, with explicit any distinct from unknown
+ok 3 - both availability and consent are hard requirements, with explicit any distinct from unknown
+  ---
+  duration_ms: 42.5131
+  type: 'test'
+  ...
+# Subtest: soft differences are visible and optional must-have conditions are never silently removed
+ok 4 - soft differences are visible and optional must-have conditions are never silently removed
+  ---
+  duration_ms: 37.8422
+  type: 'test'
+  ...
+# Subtest: editing a concrete plan invalidates both old views and acceptances, and raw stale bindings fail replay
+ok 5 - editing a concrete plan invalidates both old views and acceptances, and raw stale bindings fail replay
+  ---
+  duration_ms: 64.3204
+  type: 'test'
+  ...
+# Subtest: busy is not dislike, and busy/decline/withdraw allow a new encounter without a false meeting
+ok 6 - busy is not dislike, and busy/decline/withdraw allow a new encounter without a false meeting
+  ---
+  duration_ms: 174.4403
+  type: 'test'
+  ...
+# Subtest: unanswered is not a negative outcome and cannot auto-complete an encounter
+ok 7 - unanswered is not a negative outcome and cannot auto-complete an encounter
+  ---
+  duration_ms: 50.1732
+  type: 'test'
+  ...
+# Subtest: feedback needs current mutual acceptance and independent meeting confirmations
+ok 8 - feedback needs current mutual acceptance and independent meeting confirmations
+  ---
+  duration_ms: 89.7297
+  type: 'test'
+  ...
+# Subtest: too-long feedback creates a private pending change, not an approved preference or inferred trait
+ok 9 - too-long feedback creates a private pending change, not an approved preference or inferred trait
+  ---
+  duration_ms: 65.2121
+  type: 'test'
+  ...
+# Subtest: explicit next-only approval changes the next draft to 40, and disappears after that encounter closes
+ok 10 - explicit next-only approval changes the next draft to 40, and disappears after that encounter closes
+  ---
+  duration_ms: 156.4515
+  type: 'test'
+  ...
+# Subtest: ongoing approval persists but stays private until a concrete new proposal is explicitly shared
+ok 11 - ongoing approval persists but stays private until a concrete new proposal is explicitly shared
+  ---
+  duration_ms: 128.2325
+  type: 'test'
+  ...
+# Subtest: activity feedback changes only the proposed activity, while felt-good creates no manufactured preference
+ok 12 - activity feedback changes only the proposed activity, while felt-good creates no manufactured preference
+  ---
+  duration_ms: 103.3796
+  type: 'test'
+  ...
+# Subtest: another actor cannot apply or dismiss private feedback; old applied proposals cannot be replayed
+ok 13 - another actor cannot apply or dismiss private feedback; old applied proposals cannot be replayed
+  ---
+  duration_ms: 61.451
+  type: 'test'
+  ...
+# Subtest: declining a feedback change leaves the recommendation unchanged; a still-pending next proposal remains usable after advancing
+ok 14 - declining a feedback change leaves the recommendation unchanged; a still-pending next proposal remains usable after advancing
+  ---
+  duration_ms: 114.2641
+  type: 'test'
+  ...
+# Subtest: withdrawing a once setting returns to ongoing; withdrawing ongoing does not resurrect its overwritten predecessor
+ok 15 - withdrawing a once setting returns to ongoing; withdrawing ongoing does not resurrect its overwritten predecessor
+  ---
+  duration_ms: 143.8849
+  type: 'test'
+  ...
+# Subtest: private hard constraints are checked before acceptance without exposing their value to the other person
+ok 16 - private hard constraints are checked before acceptance without exposing their value to the other person
+  ---
+  duration_ms: 70.419
+  type: 'test'
+  ...
+# Subtest: consent withdrawal invalidates old acceptance; restoring consent does not revive it
+ok 17 - consent withdrawal invalidates old acceptance; restoring consent does not revive it
+  ---
+  duration_ms: 61.2736
+  type: 'test'
+  ...
+# Subtest: pure replay rejects foreign actors, unsupported fields, forged feedback links and timestamp aliases
+ok 18 - pure replay rejects foreign actors, unsupported fields, forged feedback links and timestamp aliases
+  ---
+  duration_ms: 30.7717
+  type: 'test'
+  ...
+# Subtest: joint proposal explanations describe the displayed edited plan, including approved feedback differences
+ok 19 - joint proposal explanations describe the displayed edited plan, including approved feedback differences
+  ---
+  duration_ms: 110.9124
+  type: 'test'
+  ...
+# Subtest: required confirmations precede optional Ask questions; skipping leaves unknown and never blocks proposing
+ok 20 - required confirmations precede optional Ask questions; skipping leaves unknown and never blocks proposing
+  ---
+  duration_ms: 180.8739
+  type: 'test'
+  ...
+# Subtest: settings after the first meeting confirmation affect only the next encounter and cannot trap the other confirmation
+ok 21 - settings after the first meeting confirmation affect only the next encounter and cannot trap the other confirmation
+  ---
+  duration_ms: 307.2304
+  type: 'test'
+  ...
+# Subtest: an unapplied change from the prior encounter cannot invalidate a partially confirmed new meeting
+ok 22 - an unapplied change from the prior encounter cannot invalidate a partially confirmed new meeting
+  ---
+  duration_ms: 147.8723
+  type: 'test'
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2423.7464

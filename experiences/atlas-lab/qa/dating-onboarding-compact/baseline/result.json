@@ -1,0 +1,59 @@
+{
+  "kind": "synthetic-dating-onboarding-browser",
+  "at": "2026-10-07T21:28:42.992Z",
+  "status": "passed",
+  "actualUsers": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "initial-first-setup-320.png",
+    "initial-first-setup-320-viewport.png",
+    "initial-first-setup-390.png",
+    "initial-first-setup-390-viewport.png"
+  ],
+  "posts": [],
+  "sourceBefore": {
+    "dating-ui.mjs": "0df15de8382dd5da39297310f10faa40454d30e6a6071125bdcd5d2a83b79bd2",
+    "dating-live.mjs": "b19c3c166ab75f378039d76820a972db8a42396b4f8b88742310be6f50266e5d",
+    "dating.css": "90a1f6dca2652d56c9a52d84ce1b3df1e37796febf7fa5b9e703e134c3363c8b",
+    "profile-editing-drafts.mjs": "ba6808e6362a2e10310c313c541e4236d65739383ba6ed243f23bae2363560f6",
+    "onboarding-drafts.mjs": "befe9826c9bd6b7d27a4dbff9c924e305d1f53d25bb2781e8ae00dceec2c7940",
+    "dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "dating-service.mjs": "cef366d04812bfe57d1ba642afef68d49726bf8c44296286db3ef0770549ccf2",
+    "dating-server.mjs": "f751e49c634a17bbd977574555b9550e802bf8cb08a8234d5d2ce9168e8641c2",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505"
+  },
+  "initialLayout": [
+    {
+      "width": 320,
+      "height": 844,
+      "nicknameTop": 882.921875,
+      "nicknameBottom": 931.3125,
+      "firstViewportFullyVisible": false,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "nicknameTop": 796.796875,
+      "nicknameBottom": 845.1875,
+      "firstViewportFullyVisible": false,
+      "horizontalOverflow": false
+    }
+  ],
+  "sourceSha256": {
+    "dating-ui.mjs": "0df15de8382dd5da39297310f10faa40454d30e6a6071125bdcd5d2a83b79bd2",
+    "dating-live.mjs": "b19c3c166ab75f378039d76820a972db8a42396b4f8b88742310be6f50266e5d",
+    "dating.css": "90a1f6dca2652d56c9a52d84ce1b3df1e37796febf7fa5b9e703e134c3363c8b",
+    "profile-editing-drafts.mjs": "ba6808e6362a2e10310c313c541e4236d65739383ba6ed243f23bae2363560f6",
+    "onboarding-drafts.mjs": "befe9826c9bd6b7d27a4dbff9c924e305d1f53d25bb2781e8ae00dceec2c7940",
+    "dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "dating-service.mjs": "cef366d04812bfe57d1ba642afef68d49726bf8c44296286db3ef0770549ccf2",
+    "dating-server.mjs": "f751e49c634a17bbd977574555b9550e802bf8cb08a8234d5d2ce9168e8641c2",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505"
+  },
+  "sourceStable": true
+}

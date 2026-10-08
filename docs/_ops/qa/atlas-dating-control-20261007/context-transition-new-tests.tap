@@ -1,0 +1,94 @@
+TAP version 13
+# Subtest: context transition explains temporary answers, regions, priorities and exclusions while preserving must-haves and hiding
+ok 1 - context transition explains temporary answers, regions, priorities and exclusions while preserving must-haves and hiding
+  ---
+  duration_ms: 1995.7167
+  type: 'test'
+  ...
+# Subtest: context transition returns explicit unknown to known baseline and missing or expired baseline to unconfirmed
+ok 2 - context transition returns explicit unknown to known baseline and missing or expired baseline to unconfirmed
+  ---
+  duration_ms: 475.3517
+  type: 'test'
+  ...
+# Subtest: a hidden baseline deadline invalidates the next-context preview even while the temporary effective answer remains live
+ok 3 - a hidden baseline deadline invalidates the next-context preview even while the temporary effective answer remains live
+  ---
+  duration_ms: 1187.6428
+  type: 'test'
+  ...
+# Subtest: closed contexts can review the next context but revoked consent and tampered transition cannot apply
+ok 4 - closed contexts can review the next context but revoked consent and tampered transition cannot apply
+  ---
+  duration_ms: 839.3455
+  type: 'test'
+  ...
+# Subtest: next context ends only its conditional allowance and retains the explicitly approved baseline allowance
+ok 5 - next context ends only its conditional allowance and retains the explicitly approved baseline allowance
+  ---
+  duration_ms: 2051.9163
+  type: 'test'
+  ...
+# Subtest: retained priority and timed hiding expiry are review changes while ordinary passage of time is not
+ok 6 - retained priority and timed hiding expiry are review changes while ordinary passage of time is not
+  ---
+  duration_ms: 898.5577
+  type: 'test'
+  ...
+# Subtest: HTTP context preview and cancellation never write preferences, exposure or a receipt and reveal only owner transition metadata
+ok 7 - HTTP context preview and cancellation never write preferences, exposure or a receipt and reveal only owner transition metadata
+  ---
+  duration_ms: 1233.4602
+  type: 'test'
+  ...
+# Subtest: HTTP apply records reviewed old-context exposure and the new context atomically once and matches preview tie order
+ok 8 - HTTP apply records reviewed old-context exposure and the new context atomically once and matches preview tie order
+  ---
+  duration_ms: 1401.8237
+  type: 'test'
+  ...
+# Subtest: HTTP duplicate old-context exposure is not counted twice in the reviewed next-context global tie order
+ok 9 - HTTP duplicate old-context exposure is not counted twice in the reviewed next-context global tie order
+  ---
+  duration_ms: 1235.8341
+  type: 'test'
+  ...
+# Subtest: HTTP rejects foreign, duplicate, hidden and correction-linked exposure input while closed contexts accept only empty exposure
+ok 10 - HTTP rejects foreign, duplicate, hidden and correction-linked exposure input while closed contexts accept only empty exposure
+  ---
+  duration_ms: 1500.7836
+  type: 'test'
+  ...
+# Subtest: HTTP rejects a stale reviewed return when a hidden baseline answer expires without an account revision change
+ok 11 - HTTP rejects a stale reviewed return when a hidden baseline answer expires without an account revision change
+  ---
+  duration_ms: 1257.3651
+  type: 'test'
+  ...
+# Subtest: HTTP apply guards actor, CAS, changed public pool and withdrawn storage consent without partial exposure
+ok 12 - HTTP apply guards actor, CAS, changed public pool and withdrawn storage consent without partial exposure
+  ---
+  duration_ms: 1974.2528
+  type: 'test'
+  ...
+# Subtest: HTTP expose failure rolls back the entire exposure/context/receipt transaction and permits the same request retry
+ok 13 - HTTP expose failure rolls back the entire exposure/context/receipt transaction and permits the same request retry
+  ---
+  duration_ms: 1097.8496
+  type: 'test'
+  ...
+# Subtest: HTTP receipt failure rolls back the entire exposure/context/receipt transaction and permits the same request retry
+ok 14 - HTTP receipt failure rolls back the entire exposure/context/receipt transaction and permits the same request retry
+  ---
+  duration_ms: 1171.2061
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 18486.9087

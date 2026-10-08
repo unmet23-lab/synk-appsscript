@@ -1,0 +1,34 @@
+{
+  "mode": "provider-pkce-rehearsal",
+  "environment": "rehearsal",
+  "syntheticAccountsOnly": true,
+  "checks": [],
+  "cleanup": {
+    "attemptedAccounts": 2,
+    "knownSyntheticAccounts": 2,
+    "deleteRequestsAccepted": 2,
+    "verifiedDeletionPending": 2,
+    "requestsComplete": true,
+    "authUsersMayRemain": true,
+    "datingDocumentDeletionVerified": false,
+    "localDatabaseRemoved": true,
+    "deletionGraceDays": 7,
+    "purgeVerified": false,
+    "issues": []
+  },
+  "limitations": {
+    "paidAI": false,
+    "realAccounts": false,
+    "physicalDevices": false,
+    "browserUI": false,
+    "publicConsentPortalUI": false,
+    "nativeVault": false,
+    "adultProvider": false,
+    "centralLifecycleDelivery": false,
+    "accountPurgeVerified": false
+  },
+  "ok": false,
+  "error": "AUTHORIZATION_CLIENT_MISMATCH",
+  "phase": "oauth-pkce",
+  "passed": 0
+}

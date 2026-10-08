@@ -1,0 +1,159 @@
+{
+  "at": "2026-10-07T12:08:13.608Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "Independent relationship goal and starting speed with historical combined declarations preserved",
+    "Explicit private and public meeting regions, exact intersection and mutual new-introduction gates",
+    "Newly important own criterion from a completed meeting, explicit preview/apply and next delivered recommendation followup"
+  ],
+  "tests": {
+    "uniqueCases": 378,
+    "passed": 378,
+    "failed": 0,
+    "totalExecutions": 409,
+    "overlapCases": 31,
+    "groups": [
+      {
+        "name": "discovery relationship, preference, old contracts and guidance",
+        "log": "discovery-final.log",
+        "sha256": "65bca69b6af8ef11ac8e5e23e5bb98b4c8912aada10b0e0aec09e07d52ea360b",
+        "tests": 150,
+        "pass": 150,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "name": "explicit broad meeting region validation and exact intersection",
+        "log": "meeting-regions-tests.tap",
+        "sha256": "0aa6bc4e2d732e6e4256db3a0d31f8bbed5c5c76ee542c7a1dc055faf4fa5bcb",
+        "tests": 11,
+        "pass": 11,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "name": "completed meeting new criterion and actual HTTP",
+        "log": "docs/_ops/qa/atlas-dating-fit-20261007/new-criterion-new-tests.tap",
+        "sha256": "43a3e5a8f165357689db0cd4c02a6df82542511b5fd4535785df041c5137bc4b",
+        "tests": 17,
+        "pass": 17,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "name": "full final service regression",
+        "log": "docs/_ops/qa/atlas-dating-fit-20261007/final-service-regression.tap",
+        "sha256": "f0eb9e0058ef5ae8af43f66e1d7fd94c357b111be07847e47b1949f93a1b908a",
+        "tests": 57,
+        "pass": 57,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "name": "final projections, live invalidation, guidance and disclosure",
+        "log": "fit-projections-final.tap",
+        "sha256": "8634d1982324eaffac70cea44b36f1dc0f6843eb2660e9b6cd960028898bb5cd",
+        "tests": 73,
+        "pass": 73,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "name": "mutual regions, adult, central availability and receipt regression",
+        "log": "backend-final.tap",
+        "sha256": "2c9cd88bbd67f29731cd21eb503b33547114eac4db4efd6b96972ed1690cdbe2",
+        "tests": 45,
+        "pass": 45,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "name": "account, checkpoint, delivery and lifecycle regression",
+        "log": "client-lifecycle-final.tap",
+        "sha256": "5bca5827cf213fa62c1408d59c31840e1db396dc86f0d6df5e049b42aaf3f1d8",
+        "tests": 37,
+        "pass": 37,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "name": "physical paired PGlite and SQLite backup restore",
+        "log": "backup-final.tap",
+        "sha256": "eeb2a4d0722275ac4c8cf3a51db3efb5a828f7cc06e803f883a9535a48c215ce",
+        "tests": 5,
+        "pass": 5,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "name": "unchanged pure product regression extracted from preserved mixed run",
+        "log": "docs/_ops/qa/atlas-dating-fit-20261007/new-criterion-tests.tap",
+        "tests": 14,
+        "pass": 14,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "sha256": "1c9f2580a14c8ddedf64322ddf5fd1db74c3166a0e1fab374c9359ff40b4b08c",
+        "note": "Only these fourteen passed pure product cases count; the same mixed run contains seven fixture failures and one service regression, all excluded and fixed separately."
+      }
+    ]
+  },
+  "browserPaths": 42,
+  "browser": [
+    {
+      "name": "new fit flows",
+      "paths": 15,
+      "at": "2026-10-07T11:55:38.776Z",
+      "record": "browser-new-result.json",
+      "errors": 0,
+      "externalRequests": 0
+    },
+    {
+      "name": "existing introduction and meeting",
+      "paths": 18,
+      "at": "2026-10-07T11:57:07.965Z",
+      "record": "browser-dating-result.json",
+      "errors": 0,
+      "externalRequests": 0
+    },
+    {
+      "name": "existing readiness and adult gating",
+      "paths": 9,
+      "at": "2026-10-07T11:59:52.265Z",
+      "record": "browser-readiness-result.json",
+      "errors": 0,
+      "externalRequests": 0
+    }
+  ],
+  "mobileScreenshots": 14,
+  "preview": {
+    "url": "http://127.0.0.1:63567/atlas-lab/dating.html",
+    "filesMatched": 14,
+    "isolatedDemo": true
+  },
+  "sourceStable": true,
+  "engineCodeChangedByThisBatch": 0,
+  "newEngines": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "tutorChanges": 0,
+  "publicDeployment": false,
+  "remoteMigration": false,
+  "limitations": [
+    "Synthetic local identities, injected local authorization, loopback browsers and local databases; real OAuth, actual meetings, physical devices and satisfaction improvement are unverified.",
+    "Broad region IDs do not establish travel distance, actual venue availability, GPS or adjacent-area compatibility; only explicitly chosen exact intersections compare.",
+    "Historical mixed relationship answers are not mapped to new axes; a previous required condition remains until the owner explicitly retires it.",
+    "New criterion reflection is private, does not infer peer behavior, does not change historical connection importance, and never applies by saving alone.",
+    "Existing Core/Domain/Ask/Temper are reused with product-specific typed declarations and guards; this batch does not change underlying engine code or weights.",
+    "Paid AI activation/evaluation, tutor, real participant recruitment, operating provider configuration and public deployment remain deferred."
+  ]
+}

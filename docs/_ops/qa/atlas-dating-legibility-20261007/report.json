@@ -1,0 +1,497 @@
+{
+  "at": "2026-10-07T14:53:50.323Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "direct-public-expiry-reconfirmation",
+    "public-profile-management-independent-of-private-storage",
+    "current-priority-first-candidate-highlights"
+  ],
+  "tests": {
+    "uniqueCases": 209,
+    "pass": 209,
+    "fail": 0,
+    "groups": [
+      {
+        "log": "client-final.tap",
+        "format": "tap",
+        "sha256": "bbc77d848038f61e69dea1032154e30bae4f82af617e22e2997196a26976db7b",
+        "tests": 65,
+        "pass": 65,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "log": "server-final.tap",
+        "format": "tap",
+        "sha256": "5aae34f2803f4453c04f6bfe6dbfcae13e8ecae4feeefc73ef80131603b55d61",
+        "tests": 57,
+        "pass": 57,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "log": "public-guidance-tests.tap",
+        "format": "tap",
+        "sha256": "5e34ee6f8948b155242977a155f93c064a2430e0347f822ab75f86c6a873323d",
+        "tests": 69,
+        "pass": 69,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "log": "candidate-highlights-tests.tap",
+        "format": "spec",
+        "sha256": "5f7131a69adb7f59c39e286b9d912b6db611552a953f597faf964d3441f4683d",
+        "tests": 18,
+        "pass": 18,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  "browserPaths": 55,
+  "browser": [
+    {
+      "name": "dating-legibility",
+      "paths": 15,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "screenshots/dating-legibility-storage-off-settings-public-management-320.png",
+          "width": 320,
+          "height": 5915,
+          "sha256": "72aac436a696c1f18be7fe208c29aabdb1dc5072d69b5cec7123415450e7206b"
+        },
+        {
+          "file": "screenshots/dating-legibility-storage-off-settings-public-management-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "ed8595340e72e51e74748bca1b6ba206d8c101a768079fef74c349ac5a366996"
+        },
+        {
+          "file": "screenshots/dating-legibility-storage-off-profile-preserves-expired-required-390.png",
+          "width": 390,
+          "height": 4924,
+          "sha256": "e508423229db4381e07f62c3e3d0ed5d59d49ed88bcc1616836e1ac623104399"
+        },
+        {
+          "file": "screenshots/dating-legibility-storage-off-profile-preserves-expired-required-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "53ba70d0af0743e7b0238e9d3055caf0a7e1d78889bad12eed43c21844eb1e5e"
+        },
+        {
+          "file": "screenshots/dating-legibility-paused-storage-off-public-edit-390.png",
+          "width": 390,
+          "height": 1550,
+          "sha256": "84a78db60fcf2d63cea04ca7c21d653406cabca59d20278b2ddb0e44713cfb28"
+        },
+        {
+          "file": "screenshots/dating-legibility-paused-storage-off-public-edit-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "bb1be2a6f2def3d1930336b342297ac96e027ef16799f93bda9f2012505f41ff"
+        },
+        {
+          "file": "screenshots/dating-legibility-home-expiry-opens-exact-public-field-390.png",
+          "width": 390,
+          "height": 7742,
+          "sha256": "99df938d5fce8dafde0f5f3316068b7a9233d2a9a9c1e41a5ef2d6f9d6dbb72f"
+        },
+        {
+          "file": "screenshots/dating-legibility-home-expiry-opens-exact-public-field-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "d3c2e31b4471c15c25d5beb63f6ffcda0f99ff3d78dc664220624c2a6cff000c"
+        },
+        {
+          "file": "screenshots/dating-legibility-card-expiry-action-opens-public-lifetime-320.png",
+          "width": 320,
+          "height": 7912,
+          "sha256": "158b464f87ee624fd6dcb1479c8d8a4b6153af8d55f27ce3869715fd440280e9"
+        },
+        {
+          "file": "screenshots/dating-legibility-card-expiry-action-opens-public-lifetime-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "98a68146749995655bcbacfec5ca8eb39b674515cb79c24c49e23ea6fc9a02dc"
+        },
+        {
+          "file": "screenshots/dating-legibility-priority-match-current-public-comparison-390.png",
+          "width": 390,
+          "height": 2330,
+          "sha256": "1fe4cb8ec6a41f222393b45e8d8a293a8c0a3fc45596a1e19423b9312385744d"
+        },
+        {
+          "file": "screenshots/dating-legibility-priority-match-current-public-comparison-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "e49aa755b5ea37d532183c95e838ad770c545ca97e1590290429dfed4bb80612"
+        },
+        {
+          "file": "screenshots/dating-legibility-priority-different-current-public-comparison-390.png",
+          "width": 390,
+          "height": 5332,
+          "sha256": "458b863513ebc6fcd74c68cda5201313aa91d0e105270096dc03c324617c0502"
+        },
+        {
+          "file": "screenshots/dating-legibility-priority-different-current-public-comparison-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "958707b2f6d683f0434d6ee7e3055e57501819f54989b7ba17a201db1c9c5b99"
+        },
+        {
+          "file": "screenshots/dating-legibility-priority-unknown-current-public-comparison-390.png",
+          "width": 390,
+          "height": 5332,
+          "sha256": "9f06c0232755080511d2d77a31b40f07902c17fd52e657d803b0b8895a271b61"
+        },
+        {
+          "file": "screenshots/dating-legibility-priority-unknown-current-public-comparison-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "fa6eda2add590dd499f1cdc3444dcf18f374bb60b68c98483fb62fe2a61957a6"
+        },
+        {
+          "file": "screenshots/dating-legibility-priority-conditional-current-public-comparison-390.png",
+          "width": 390,
+          "height": 5332,
+          "sha256": "9f06c0232755080511d2d77a31b40f07902c17fd52e657d803b0b8895a271b61"
+        },
+        {
+          "file": "screenshots/dating-legibility-priority-conditional-current-public-comparison-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "6854c78c0f0d027187eb70c98b0d6292ffd4a385577091ed0ba86ca87b4cea51"
+        },
+        {
+          "file": "screenshots/dating-legibility-highlight-action-opens-own-private-answer-320.png",
+          "width": 320,
+          "height": 5378,
+          "sha256": "ca63dda7b00d0e01b5f0b87d933dcb5eafab83c15ea1c2ccefef3cb60f1ba1a0"
+        },
+        {
+          "file": "screenshots/dating-legibility-highlight-action-opens-own-private-answer-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "48ca3be8a8ca6c90bec3948924f2ca2a2fd82ffbe0f0ccfc9d23906befa89bf3"
+        },
+        {
+          "file": "screenshots/dating-legibility-pending-owner-expired-public-conditions-390.png",
+          "width": 390,
+          "height": 1286,
+          "sha256": "6c8c0004b1e2bcd14c3e9106805d1fa2c990e44db23c61521ad378a7bf9fe382"
+        },
+        {
+          "file": "screenshots/dating-legibility-pending-owner-expired-public-conditions-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "182f6d1667fd2858bc18be0fde792409709d1b6e09bcba5396916ea04ce0a96b"
+        },
+        {
+          "file": "screenshots/dating-legibility-pending-required-public-focus-320.png",
+          "width": 320,
+          "height": 7944,
+          "sha256": "8d4294d75562e1fb118089aef93dbff0d965c010c909337b0ce844c096fb5675"
+        },
+        {
+          "file": "screenshots/dating-legibility-pending-required-public-focus-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "8fc0a8ee9ac567ef83a58420305568c2ae277a5d86fb191fb255ebfb678cf5a9"
+        },
+        {
+          "file": "screenshots/dating-legibility-pending-peer-expiry-general-guidance-320.png",
+          "width": 320,
+          "height": 1129,
+          "sha256": "d7985b50fe4b3de2915e230f595da0542ea49bdae3c2b6a33854f0a337082e9c"
+        },
+        {
+          "file": "screenshots/dating-legibility-pending-peer-expiry-general-guidance-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "059b3c2c15c0fab5fc5e74275212ba461513f2ab5dc28da2e1c3b1d4fe53215a"
+        },
+        {
+          "file": "screenshots/dating-legibility-pending-current-region-difference-general-guidance-390.png",
+          "width": 390,
+          "height": 1051,
+          "sha256": "f0aee5535b622af12b1e7f13611e6474a189aa89f392f75090d65fa69dc4e6f5"
+        },
+        {
+          "file": "screenshots/dating-legibility-pending-current-region-difference-general-guidance-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "d02a836121fb446e1a1afd9cdf286f8012790f5557f0b957c4cb49a5301ce3fb"
+        }
+      ]
+    },
+    {
+      "name": "dating-public-expiry",
+      "paths": 8,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "screenshots/dating-public-expiry-public-deadline-review-390.png",
+          "width": 390,
+          "height": 7700,
+          "sha256": "b7ca24ed7879422292d4100304d8724a4a639f2fd434b84cc66f7caa32c66076"
+        },
+        {
+          "file": "screenshots/dating-public-expiry-public-review-viewport-390.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "f9ff39fb7a7268fa078e2277f472a0ab1441a74d51132f044874150ebcb54cc4"
+        },
+        {
+          "file": "screenshots/dating-public-expiry-expired-disclosure-needs-confirmation-320.png",
+          "width": 320,
+          "height": 7587,
+          "sha256": "233927c6663334d6d282abf5896b666fb69e69c60ac222b0ea3e71a0bb86a820"
+        },
+        {
+          "file": "screenshots/dating-public-expiry-public-expired-viewport-320.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "5fa437c0689aa3b9b10191e8a628609c7a9e7ec97be83f5218eed5ed80f89c7e"
+        },
+        {
+          "file": "screenshots/dating-public-expiry-explicit-public-reconfirmation-320.png",
+          "width": 320,
+          "height": 3604,
+          "sha256": "fe7bb49c9acd4c79aa9bf228207ea3644d58040df5220f2518932370adf4c520"
+        }
+      ]
+    },
+    {
+      "name": "dating-control",
+      "paths": 14,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "screenshots/dating-control-guide-opens-own-disclosure-320.png",
+          "width": 320,
+          "height": 7900,
+          "sha256": "ec3eb3809f740ea194184c23e873c1a0444f6d0f3d6380302fe3be2a2cc9635c"
+        },
+        {
+          "file": "screenshots/dating-control-guide-opens-own-settings-320.png",
+          "width": 320,
+          "height": 1509,
+          "sha256": "05cbc03b82cb330b8fd9614865cb01cd66c1d8079e66d41b3f1522f2578c2e3c"
+        },
+        {
+          "file": "screenshots/dating-control-unknown-peer-cause-stays-private-320.png",
+          "width": 320,
+          "height": 2201,
+          "sha256": "5890af632a7a3f7f7cd71ee121bc9fd947b357dacf3689bc4334e0ade553bf63"
+        },
+        {
+          "file": "screenshots/dating-control-next-context-before-after-320.png",
+          "width": 320,
+          "height": 2994,
+          "sha256": "f4a15385686870f3376aee17b34080adad29e456bc856f8a6a921a7677f5469c"
+        },
+        {
+          "file": "screenshots/dating-control-next-context-keeps-introduction-and-date-320.png",
+          "width": 320,
+          "height": 1258,
+          "sha256": "04cc9306479fccdcf6b096446643db6416da5e74b11fbbf8677510c4374be192"
+        },
+        {
+          "file": "screenshots/dating-control-today-korean-midnight-and-return-390.png",
+          "width": 390,
+          "height": 1989,
+          "sha256": "8ad8484795c0cde43cea155d860cc4fc205506fbfb3a68cdbe0aeb758f3cc1b5"
+        },
+        {
+          "file": "screenshots/dating-control-today-clamped-to-original-answer-320.png",
+          "width": 320,
+          "height": 2012,
+          "sha256": "5dfcd44d2a4a2b191228a7fa0a0c91f0b7cfeb8e23a3e9d6849eddbf2c7ef4ce"
+        },
+        {
+          "file": "screenshots/dating-control-new-criterion-today-clamped-to-own-answer-390.png",
+          "width": 390,
+          "height": 1872,
+          "sha256": "69d5b9688c7d478c51fc953aac108cee3dda7aca8e23ebdf843e13abbb21276e"
+        }
+      ]
+    },
+    {
+      "name": "dating",
+      "paths": 18,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "screenshots/dating-landing-320.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "f38b233c4557a312c085e8328fb84872425d79ee22bc58e87929646763bc5774"
+        },
+        {
+          "file": "screenshots/dating-recommendations-390.png",
+          "width": 390,
+          "height": 2369,
+          "sha256": "d3fe55e57d7e5a5182f30025695061d33a77450e9ee9f7d8cf63dfc9234b46ec"
+        },
+        {
+          "file": "screenshots/dating-preference-preview-390.png",
+          "width": 390,
+          "height": 1507,
+          "sha256": "2b06f02aa594ec9b6d9d802dcdecfbdc27a4c591203655fcb58da5e76720eb14"
+        },
+        {
+          "file": "screenshots/dating-expired-preference-390.png",
+          "width": 390,
+          "height": 4718,
+          "sha256": "0182fcb5285466d75bc9f0ba8cfb135760080a2e81c7750f6f64e337b023b06f"
+        },
+        {
+          "file": "screenshots/dating-experience-history-390.png",
+          "width": 390,
+          "height": 1683,
+          "sha256": "ec60623eb2ef622882fd459baf67028ef899e67163819d894a8403f382d3c5cf"
+        },
+        {
+          "file": "screenshots/dating-changes-before-accept-1280.png",
+          "width": 1280,
+          "height": 1901,
+          "sha256": "9bd10e6e5111e9e0b9de814e6b33a9e9ce18fd501f6d9463b9a711fae324415e"
+        },
+        {
+          "file": "screenshots/dating-agreed-1280.png",
+          "width": 1280,
+          "height": 1901,
+          "sha256": "c584ee0e529a8e2c58925108a23ec6e27f8720f6f1ad3edad97d076b285e716b"
+        },
+        {
+          "file": "screenshots/dating-reflection-390.png",
+          "width": 390,
+          "height": 3020,
+          "sha256": "971b42aa0581a5dfa017d0d3fd6c7623e63c0b2dcc6e55271ddeee447e5d58ec"
+        },
+        {
+          "file": "screenshots/dating-deleted-320.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "9ec1b4f5b5cb6e10b177f82d08b6dd3942072c4bad4413cb8278e0919496d89d"
+        }
+      ]
+    }
+  ],
+  "served": [
+    {
+      "name": "candidate-highlights.mjs",
+      "sha256": "64bca3aa0f7ed996fa6e04d410f3227f5883b899cc79ba2736d6b19c17d05882"
+    },
+    {
+      "name": "dating.html",
+      "sha256": "3d04f09caa98147ead0f9cb83f860b78971c308312d178454b25979cf8908770"
+    },
+    {
+      "name": "dating.css",
+      "sha256": "d3241785ded82a9eb57846f06a62225c5faf8859e809bdd03eb236bda97805c0"
+    },
+    {
+      "name": "dating-ui.mjs",
+      "sha256": "ecf85970d647dedacff5322a67379435112c950473f93614223f763a154fd64c"
+    },
+    {
+      "name": "dating-live.mjs",
+      "sha256": "bb17da22edbd39f09c44d08f0ee06cfafd0d2fee1f01a56274c2ed87ecdfbad3"
+    },
+    {
+      "name": "dating-insights.mjs",
+      "sha256": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49"
+    },
+    {
+      "name": "discovery.mjs",
+      "sha256": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a"
+    },
+    {
+      "name": "public-profile.mjs",
+      "sha256": "75a51c725459b38ca29c1c1e36e434b4b2e843635b07331dc1d7f05ed60c8245"
+    },
+    {
+      "name": "preference-deadline.mjs",
+      "sha256": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc"
+    },
+    {
+      "name": "introduction-guidance.mjs",
+      "sha256": "f5545cda2d8ef6df286bf377d2183646dce4b58b3668c5ffcd727687a1baebae"
+    },
+    {
+      "name": "meeting-regions.mjs",
+      "sha256": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017"
+    },
+    {
+      "name": "product-experience.mjs",
+      "sha256": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf"
+    },
+    {
+      "name": "discovery-guidance.mjs",
+      "sha256": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2"
+    }
+  ],
+  "syntax": [
+    "experiences/atlas-lab/candidate-highlights.mjs",
+    "experiences/atlas-lab/dating-ui.mjs",
+    "experiences/atlas-lab/dating-live.mjs",
+    "experiences/atlas-lab/dating-insights.mjs",
+    "experiences/atlas-lab/discovery.mjs",
+    "experiences/atlas-lab/public-profile.mjs",
+    "experiences/atlas-lab/dating-service.mjs",
+    "experiences/atlas-lab/dating-server.mjs",
+    "experiences/atlas-lab/dating-store.mjs",
+    "experiences/atlas-lab/preference-deadline.mjs",
+    "experiences/atlas-lab/introduction-guidance.mjs",
+    "experiences/atlas-lab/meeting-regions.mjs",
+    "experiences/atlas-lab/product-experience.mjs",
+    "experiences/atlas-lab/discovery-guidance.mjs"
+  ],
+  "scopedDiffCheck": 0,
+  "engineChecks": [
+    {
+      "path": "atlas/ask.js",
+      "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "unchanged": true
+    },
+    {
+      "path": "atlas/personalization.js",
+      "sha256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+      "unchanged": true
+    },
+    {
+      "path": "atlas/conditional-preference.js",
+      "sha256": "6b814ec429c7a29643f958b6cb09ef4efc96f22913d3e873dbb095f8f09e3d4e",
+      "unchanged": true
+    }
+  ],
+  "engineCodeChangedByBatch": 0,
+  "newEngines": 0,
+  "actualUsers": 0,
+  "paidModelCalls": 0,
+  "externalApiCost": 0,
+  "publicDeployment": false,
+  "preview": "http://127.0.0.1:54824/atlas-lab/dating.html",
+  "reviewRepairs": [
+    "Own expired public answers open the exact public editor",
+    "Public management stays available with private storage disabled and while paused",
+    "Chosen priorities expose match, difference and unknown before general reasons",
+    "Pending introductions no longer describe every public-answer restriction as a regional mismatch; only own expired essential fields have direct edit links"
+  ],
+  "limitations": [
+    "Synthetic local HTTP and browser checks do not verify real user satisfaction, real devices, real identity providers or deployment",
+    "Paid AI, model evaluations, tutor and participant recruitment remain deferred"
+  ],
+  "initialFixtureCorrection": "The initial candidate-highlight fixture omitted published consent; corrected in test data without changing product source."
+}

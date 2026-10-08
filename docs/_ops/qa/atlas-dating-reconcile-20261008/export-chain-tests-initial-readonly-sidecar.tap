@@ -1,0 +1,50 @@
+TAP version 13
+# Subtest: real PostgreSQL export to backup/reconcile/resume and dispatcher redelivery: disabled-active
+not ok 1 - real PostgreSQL export to backup/reconcile/resume and dispatcher redelivery: disabled-active
+  ---
+  duration_ms: 2001.8569
+  type: 'test'
+  location: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-reconcile-export.test.mjs:27:58'
+  failureType: 'testCodeFailure'
+  error: 'restore-database-not-checkpointed'
+  code: 'restore-database-not-checkpointed'
+  stack: |-
+    fail (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-restore.mjs:17:44)
+    requireThat (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-restore.mjs:18:60)
+    checkpointed (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-restore.mjs:124:54)
+    consumeDatingRestoreAdmission (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-restore.mjs:309:3)
+    createDatingServer (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-server.mjs:31:5)
+    TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-reconcile-export.test.mjs:91:13)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async Test.run (node:internal/test_runner/test:1332:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...
+# Subtest: real PostgreSQL export to backup/reconcile/resume and dispatcher redelivery: deleted
+not ok 2 - real PostgreSQL export to backup/reconcile/resume and dispatcher redelivery: deleted
+  ---
+  duration_ms: 1678.2343
+  type: 'test'
+  location: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-reconcile-export.test.mjs:27:58'
+  failureType: 'testCodeFailure'
+  error: 'restore-database-not-checkpointed'
+  code: 'restore-database-not-checkpointed'
+  stack: |-
+    fail (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-restore.mjs:17:44)
+    requireThat (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-restore.mjs:18:60)
+    checkpointed (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-restore.mjs:124:54)
+    consumeDatingRestoreAdmission (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-restore.mjs:309:3)
+    createDatingServer (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-server.mjs:31:5)
+    TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-reconcile-export.test.mjs:91:13)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async Test.run (node:internal/test_runner/test:1332:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3915.942

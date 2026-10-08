@@ -1,0 +1,80 @@
+{
+  "at": "2026-10-07T10:55:00.8449412Z",
+  "status": "passed",
+  "uniqueBrowserPaths": 36,
+  "actualUsers": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "externalRequests": [],
+  "errors": [],
+  "sourceBeforeFinalReadiness": {
+    "dating-ui.mjs": "3ba8057af75e84c7b31c7a55db5b6f68cdac90cfbf4457cee13847547a78584a",
+    "dating-live.mjs": "e17a03169e96ee452a44aec443eb0b20b175824999b39037219802d8a15b6ea8",
+    "discovery-guidance.mjs": "ce57fb7a939c5a867d1c93e0a37c63a47a90c8da02962dce7e5c37b811b0c768",
+    "dating-adult.mjs": "be6594cf17ec01ca0ca352f3819d8f2726a21771d681e36f729075dad8ef2555",
+    "dating-service.mjs": "278b72f4a47127739787b8f7c153958e5fab80e196501e62e7550f4065c47977",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6"
+  },
+  "sourceAfterFinalDating": {
+    "dating-ui.mjs": "3ba8057af75e84c7b31c7a55db5b6f68cdac90cfbf4457cee13847547a78584a",
+    "dating-live.mjs": "e17a03169e96ee452a44aec443eb0b20b175824999b39037219802d8a15b6ea8",
+    "discovery-guidance.mjs": "ce57fb7a939c5a867d1c93e0a37c63a47a90c8da02962dce7e5c37b811b0c768",
+    "dating-adult.mjs": "be6594cf17ec01ca0ca352f3819d8f2726a21771d681e36f729075dad8ef2555",
+    "dating-service.mjs": "278b72f4a47127739787b8f7c153958e5fab80e196501e62e7550f4065c47977",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6"
+  },
+  "finalSourceStable": true,
+  "groups": [
+    {
+      "name": "readiness",
+      "status": "passed",
+      "pathCount": 9,
+      "at": "2026-10-07T10:53:06.646Z",
+      "result": "experiences/atlas-lab/qa/dating-readiness/result.json",
+      "sourceScope": "Final adult policy and final public-answer guidance title",
+      "screenshots": [
+        "first-recommendation-onboarding-320.png",
+        "required-confirmations-ready-390.png",
+        "own-ready-public-information-pending-390.png",
+        "eligible-with-other-pending-320.png",
+        "own-adult-unavailable-management-320.png",
+        "adult-expired-closes-former-introduction-390.png",
+        "adult-verified-requires-explicit-resume-390.png"
+      ]
+    },
+    {
+      "name": "availability-recovery",
+      "status": "passed",
+      "pathCount": 9,
+      "at": "2026-10-07T10:49:58.569Z",
+      "result": "experiences/atlas-lab/qa/dating-availability-recovery/result.json",
+      "sourceScope": "Final adult policy; before the subsequent public-answer guidance title change",
+      "titleImpact": "Fixture uses no guidance title text assertions; guidance ID, action and classification were unchanged",
+      "nearbyVerifiedSourceReference": {
+        "dating-ui.mjs": "3ba8057af75e84c7b31c7a55db5b6f68cdac90cfbf4457cee13847547a78584a",
+        "dating-live.mjs": "e17a03169e96ee452a44aec443eb0b20b175824999b39037219802d8a15b6ea8",
+        "discovery-guidance.mjs": "84b627e188be548f1b403c3b1942e65f087500fd58e3320952124d416caee6d1",
+        "dating-adult.mjs": "be6594cf17ec01ca0ca352f3819d8f2726a21771d681e36f729075dad8ef2555",
+        "dating-service.mjs": "278b72f4a47127739787b8f7c153958e5fab80e196501e62e7550f4065c47977",
+        "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505",
+        "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6"
+      }
+    },
+    {
+      "name": "dating-regression",
+      "status": "passed",
+      "pathCount": 18,
+      "at": "2026-10-07T10:53:38.049Z",
+      "result": "experiences/atlas-lab/qa/dating/result.json",
+      "sourceScope": "Final adult policy and final public-answer guidance title"
+    }
+  ],
+  "testSha256": {
+    "atlas-dating-readiness-smoke.mjs": "eba462b2d1165350a2071df5d0ffeeeccfc235991389b0b5a8d25154194677fe",
+    "atlas-dating-smoke.mjs": "7c671ddfd5015655117f58c5f06886f7bf8f3d8030e796a72a7fe3bad4513766"
+  },
+  "visualInspection": "All seven readiness mobile captures directly viewed; horizontal-overflow and missing-image checks passed during capture",
+  "cleanup": "All temporary databases created by the new readiness fixture were removed by the same Node fixture after closing its owned servers"
+}

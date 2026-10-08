@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-06T19:35:06.660Z",
+  "status": "passed",
+  "kind": "synthetic-dating-clarity-browser",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "paths": [
+    "four-group current preference summary separates hard criteria, priorities, temporary choices and unknowns; correction opens its exact field without a mutation",
+    "revisit explains a known answer expiry, own explicit edit and public-pool change without resurrecting a withdrawn candidate identity or inferring attraction",
+    "busy closes only the old schedule; explicit reuse copies public place and duration to an unsent editable draft with blank dates and note; the new proposal has no inherited acceptance",
+    "one meeting reflection entry reveals only the explicitly selected topic; topic choice writes nothing and each save changes only its own record; extra topics stay optional and all private responses remain hidden from the other role"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "current-preference-summary-390.png",
+    "recommendation-expiry-reason-390.png",
+    "recommendation-known-changes-390.png",
+    "explicit-reschedule-draft-1280.png",
+    "one-reflection-at-a-time-390.png",
+    "one-reflection-at-a-time-320.png"
+  ],
+  "completedAt": "2026-10-06T19:35:21.319Z"
+}

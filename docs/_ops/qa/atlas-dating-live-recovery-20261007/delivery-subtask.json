@@ -1,0 +1,51 @@
+{
+  "scope": "Authenticated receipt and in-memory explicit delivery recovery",
+  "newAndAccountTests": {
+    "pass": 23,
+    "fail": 0,
+    "files": 3,
+    "log": "delivery-tests.log"
+  },
+  "existingServiceRegression": {
+    "initialPass": 56,
+    "initialFail": 1,
+    "initialLog": "dating-service-regression.log",
+    "correctedCasePass": 1,
+    "correctedCaseFail": 0,
+    "correctedLog": "dating-service-recovery-regression.log",
+    "distinctCasesPassed": 57,
+    "fullSuiteRerunAfterFix": false
+  },
+  "distinctCasesPassed": 80,
+  "paidCalls": 0,
+  "actualParticipants": 0,
+  "remoteDeployment": false,
+  "actualCentralLoginVerified": false,
+  "runNote": "Initial new tests passed22, then delivery response binding case added for final23. An added suspended POST replay guard broke the existing current-view contract; removed only that guard, kept GET receipt403, and verified that replay does not mutate or restore operator permission. The failed existing case passed targeted rerun; previous56 passed cases were not rerun or counted twice.",
+  "sourceHashes": [
+    {
+      "file": "experiences/atlas-lab/dating-service.mjs",
+      "sha256": "4da5353ef31d6077e01d80d410cf932e82ff511c451834cd5c4977c745cf50dc"
+    },
+    {
+      "file": "experiences/atlas-lab/dating-account.mjs",
+      "sha256": "51eb6dcf30ebcf5cbe6fa075b5d9e50b3612f0a4cf5150103cfedc703bfa3479"
+    },
+    {
+      "file": "experiences/atlas-lab/dating-delivery.mjs",
+      "sha256": "2a147d735ef34713c99e7fe762845024234485a35a598b7656370197cd65d9ae"
+    },
+    {
+      "file": "tests/atlas-dating-account.test.mjs",
+      "sha256": "4cda7064402d280f302a49faf68eaf6146f9207a50319ac47cde9412fa6f7677"
+    },
+    {
+      "file": "tests/atlas-dating-delivery.test.mjs",
+      "sha256": "ddf6315b08fa479133a54bf7aebb31f475bfeedcf74ad0763b47a10109b8583f"
+    },
+    {
+      "file": "tests/atlas-dating-receipt-service.test.mjs",
+      "sha256": "d598fa0a1a22a4a8938d83cfe5eb33f7b6d023e1d5338cb82ea3c3d37bc2aa3f"
+    }
+  ]
+}

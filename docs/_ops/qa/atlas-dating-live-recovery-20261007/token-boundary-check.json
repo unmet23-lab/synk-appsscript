@@ -1,0 +1,22 @@
+{
+  "before": {
+    "elapsedMinutes": 6,
+    "tokenRenewed": false,
+    "ownRevisionUnchanged": true,
+    "hasNewResponse": false,
+    "reviewHttpStatus": 409,
+    "reviewErrorCode": "preview-stale",
+    "recordsAdded": 0,
+    "opaqueValuesRecorded": false
+  },
+  "after": {
+    "elapsedMinutes": 6,
+    "tokenRenewed": true,
+    "ownRevisionUnchanged": true,
+    "hasNewResponse": false,
+    "reviewHttpStatus": 200,
+    "reviewErrorCode": null,
+    "recordsAdded": 1,
+    "opaqueValuesRecorded": false
+  }
+}

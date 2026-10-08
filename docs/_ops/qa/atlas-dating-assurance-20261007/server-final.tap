@@ -1,0 +1,994 @@
+TAP version 13
+# Subtest: two explicit responses persist across restart; receipts prevent duplicate writes and no preference changes
+ok 1 - two explicit responses persist across restart; receipts prevent duplicate writes and no preference changes
+  ---
+  duration_ms: 1658.292
+  type: 'test'
+  ...
+# Subtest: public answer removed and restored or pause resumed never revives agreement
+ok 2 - public answer removed and restored or pause resumed never revives agreement
+  ---
+  duration_ms: 1795.4721
+  type: 'test'
+  ...
+# Subtest: private preference changes do not change public question, and another account cannot answer
+ok 3 - private preference changes do not change public question, and another account cannot answer
+  ---
+  duration_ms: 1038.2314
+  type: 'test'
+  ...
+# Subtest: peer response CAS and public permission withdrawal reject stale decisions atomically
+ok 4 - peer response CAS and public permission withdrawal reject stale decisions atomically
+  ---
+  duration_ms: 2475.8386
+  type: 'test'
+  ...
+# Subtest: a confirmed appointment cancelled before starting keeps preparation available
+ok 5 - a confirmed appointment cancelled before starting keeps preparation available
+  ---
+  duration_ms: 1405.1238
+  type: 'test'
+  ...
+# Subtest: first confirmed start consumes coordination even if cancelled afterwards, and schedules are independent
+ok 6 - first confirmed start consumes coordination even if cancelled afterwards, and schedules are independent
+  ---
+  duration_ms: 1924.0826
+  type: 'test'
+  ...
+# Subtest: withdrawn introduction and new introduction cannot inherit old responses; delete erases alignment storage
+ok 7 - withdrawn introduction and new introduction cannot inherit old responses; delete erases alignment storage
+  ---
+  duration_ms: 2535.712
+  type: 'test'
+  ...
+# Subtest: alternative proposal clears both answers, persists across restart and requires both fresh confirmations
+ok 8 - alternative proposal clears both answers, persists across restart and requires both fresh confirmations
+  ---
+  duration_ms: 1707.7575
+  type: 'test'
+  ...
+# Subtest: two concurrent option proposals use pair CAS and cancelling cannot resurrect baseline agreement
+ok 9 - two concurrent option proposals use pair CAS and cancelling cannot resurrect baseline agreement
+  ---
+  duration_ms: 1737.2515
+  type: 'test'
+  ...
+# Subtest: option injection is rejected and restored public facts never restore a previous alternative
+ok 10 - option injection is rejected and restored public facts never restore a previous alternative
+  ---
+  duration_ms: 1711.4976
+  type: 'test'
+  ...
+# Subtest: alternative request replay makes one proposal, and first meeting start rejects changing it
+ok 11 - alternative request replay makes one proposal, and first meeting start rejects changing it
+  ---
+  duration_ms: 1935.9943
+  type: 'test'
+  ...
+# Subtest: context transition explains temporary answers, regions, priorities and exclusions while preserving must-haves and hiding
+ok 12 - context transition explains temporary answers, regions, priorities and exclusions while preserving must-haves and hiding
+  ---
+  duration_ms: 2415.5614
+  type: 'test'
+  ...
+# Subtest: context transition returns explicit unknown to known baseline and missing or expired baseline to unconfirmed
+ok 13 - context transition returns explicit unknown to known baseline and missing or expired baseline to unconfirmed
+  ---
+  duration_ms: 646.7996
+  type: 'test'
+  ...
+# Subtest: a hidden baseline deadline invalidates the next-context preview even while the temporary effective answer remains live
+ok 14 - a hidden baseline deadline invalidates the next-context preview even while the temporary effective answer remains live
+  ---
+  duration_ms: 1500.3512
+  type: 'test'
+  ...
+# Subtest: closed contexts can review the next context but revoked consent and tampered transition cannot apply
+ok 15 - closed contexts can review the next context but revoked consent and tampered transition cannot apply
+  ---
+  duration_ms: 1004.5124
+  type: 'test'
+  ...
+# Subtest: next context ends only its conditional allowance and retains the explicitly approved baseline allowance
+ok 16 - next context ends only its conditional allowance and retains the explicitly approved baseline allowance
+  ---
+  duration_ms: 2674.1458
+  type: 'test'
+  ...
+# Subtest: retained priority and timed hiding expiry are review changes while ordinary passage of time is not
+ok 17 - retained priority and timed hiding expiry are review changes while ordinary passage of time is not
+  ---
+  duration_ms: 1191.51
+  type: 'test'
+  ...
+# Subtest: HTTP context preview and cancellation never write preferences, exposure or a receipt and reveal only owner transition metadata
+ok 18 - HTTP context preview and cancellation never write preferences, exposure or a receipt and reveal only owner transition metadata
+  ---
+  duration_ms: 1797.6559
+  type: 'test'
+  ...
+# Subtest: HTTP apply records reviewed old-context exposure and the new context atomically once and matches preview tie order
+ok 19 - HTTP apply records reviewed old-context exposure and the new context atomically once and matches preview tie order
+  ---
+  duration_ms: 1411.6954
+  type: 'test'
+  ...
+# Subtest: HTTP duplicate old-context exposure is not counted twice in the reviewed next-context global tie order
+ok 20 - HTTP duplicate old-context exposure is not counted twice in the reviewed next-context global tie order
+  ---
+  duration_ms: 1257.0197
+  type: 'test'
+  ...
+# Subtest: HTTP rejects foreign, duplicate, hidden and correction-linked exposure input while closed contexts accept only empty exposure
+ok 21 - HTTP rejects foreign, duplicate, hidden and correction-linked exposure input while closed contexts accept only empty exposure
+  ---
+  duration_ms: 1772.3988
+  type: 'test'
+  ...
+# Subtest: HTTP rejects a stale reviewed return when a hidden baseline answer expires without an account revision change
+ok 22 - HTTP rejects a stale reviewed return when a hidden baseline answer expires without an account revision change
+  ---
+  duration_ms: 1383.2177
+  type: 'test'
+  ...
+# Subtest: HTTP apply guards actor, CAS, changed public pool and withdrawn storage consent without partial exposure
+ok 23 - HTTP apply guards actor, CAS, changed public pool and withdrawn storage consent without partial exposure
+  ---
+  duration_ms: 1945.1859
+  type: 'test'
+  ...
+# Subtest: HTTP expose failure rolls back the entire exposure/context/receipt transaction and permits the same request retry
+ok 24 - HTTP expose failure rolls back the entire exposure/context/receipt transaction and permits the same request retry
+  ---
+  duration_ms: 1481.4468
+  type: 'test'
+  ...
+# Subtest: HTTP receipt failure rolls back the entire exposure/context/receipt transaction and permits the same request retry
+ok 25 - HTTP receipt failure rolls back the entire exposure/context/receipt transaction and permits the same request retry
+  ---
+  duration_ms: 1487.7583
+  type: 'test'
+  ...
+# Subtest: authorized actor-specific opaque draft guards stay stable across reads, notification settings and private goals
+ok 26 - authorized actor-specific opaque draft guards stay stable across reads, notification settings and private goals
+  ---
+  duration_ms: 2354.9755
+  type: 'test'
+  ...
+# Subtest: public proposal and response lineage changes the guard without replacing existing pair CAS checks
+ok 27 - public proposal and response lineage changes the guard without replacing existing pair CAS checks
+  ---
+  duration_ms: 2081.3603
+  type: 'test'
+  ...
+# Subtest: public completion changes the guard; counterpart private reflection and form hints do not alter mine
+ok 28 - public completion changes the guard; counterpart private reflection and form hints do not alter mine
+  ---
+  duration_ms: 2988.6152
+  type: 'test'
+  ...
+# Subtest: pause and own storage withdrawal round trips between reads cannot revive an old draft guard
+ok 29 - pause and own storage withdrawal round trips between reads cannot revive an old draft guard
+  ---
+  duration_ms: 1388.6248
+  type: 'test'
+  ...
+# Subtest: public availability and introduction withdrawal change the guard; another actor has no pair or guard
+ok 30 - public availability and introduction withdrawal change the guard; another actor has no pair or guard
+  ---
+  duration_ms: 1301.8559
+  type: 'test'
+  ...
+# Subtest: public withdrawal closes the pair and neither restoring disclosure nor missing legacy counters leaks a guard
+ok 31 - public withdrawal closes the pair and neither restoring disclosure nor missing legacy counters leaks a guard
+  ---
+  duration_ms: 1264.6113
+  type: 'test'
+  ...
+# Subtest: region profile rejects empty duplicate oversized and free-text arrays without changing private or public state
+ok 32 - region profile rejects empty duplicate oversized and free-text arrays without changing private or public state
+  ---
+  duration_ms: 694.6269
+  type: 'test'
+  ...
+# Subtest: private region declaration and explicit baseline publication stay separate without enabling disclosure or invitations
+ok 33 - private region declaration and explicit baseline publication stay separate without enabling disclosure or invitations
+  ---
+  duration_ms: 531.4916
+  type: 'test'
+  ...
+# Subtest: new introduction checks both private-to-current-public region directions without exposing the recipient private region
+ok 34 - new introduction checks both private-to-current-public region directions without exposing the recipient private region
+  ---
+  duration_ms: 826.6886
+  type: 'test'
+  ...
+# Subtest: pending acceptance rechecks current regions while direct rejection remains available
+ok 35 - pending acceptance rechecks current regions while direct rejection remains available
+  ---
+  duration_ms: 1009.5882
+  type: 'test'
+  ...
+# Subtest: a completed acceptance is not retroactively cancelled when the next recommendation region changes
+ok 36 - a completed acceptance is not retroactively cancelled when the next recommendation region changes
+  ---
+  duration_ms: 1239.8366
+  type: 'test'
+  ...
+# Subtest: exact private region expiry blocks a new introduction without copying an expired answer from public profile
+ok 37 - exact private region expiry blocks a new introduction without copying an expired answer from public profile
+  ---
+  duration_ms: 1619.6614
+  type: 'test'
+  ...
+# Subtest: a current connect permission returns null without evaluating any other getter
+ok 38 - a current connect permission returns null without evaluating any other getter
+  ---
+  duration_ms: 0.8228
+  type: 'test'
+  ...
+# Subtest: an unknown or malformed connect projection never invents a settings or area cause
+ok 39 - an unknown or malformed connect projection never invents a settings or area cause
+  ---
+  duration_ms: 1.6164
+  type: 'test'
+  ...
+# Subtest: the owner invitation setting provides a direct settings action before region or history reads
+ok 40 - the owner invitation setting provides a direct settings action before region or history reads
+  ---
+  duration_ms: 0.2252
+  type: 'test'
+  ...
+# Subtest: missing areas on both sides retain the legacy comparison instead of requiring a new answer
+ok 41 - missing areas on both sides retain the legacy comparison instead of requiring a new answer
+  ---
+  duration_ms: 0.2528
+  type: 'test'
+  ...
+# Subtest: a current authorized public peer area requires a direct owner private answer without copying it
+ok 42 - a current authorized public peer area requires a direct owner private answer without copying it
+  ---
+  duration_ms: 0.3703
+  type: 'test'
+  ...
+# Subtest: the owner public area is evidence that a current private choice is needed and is never that choice
+ok 43 - the owner public area is evidence that a current private choice is needed and is never that choice
+  ---
+  duration_ms: 0.1628
+  type: 'test'
+  ...
+# Subtest: known owner private areas and absent own publication navigate to disclosure rather than private editing
+ok 44 - known owner private areas and absent own publication navigate to disclosure rather than private editing
+  ---
+  duration_ms: 0.1758
+  type: 'test'
+  ...
+# Subtest: disjoint owner private and owner public choices are described only as an own observable difference
+ok 45 - disjoint owner private and owner public choices are described only as an own observable difference
+  ---
+  duration_ms: 0.658
+  type: 'test'
+  ...
+# Subtest: overlapping own areas do not reveal a hidden peer private incompatibility or peer settings
+ok 46 - overlapping own areas do not reveal a hidden peer private incompatibility or peer settings
+  ---
+  duration_ms: 0.3632
+  type: 'test'
+  ...
+# Subtest: free-form area descriptions and malformed lists never map into a direct meeting-area declaration
+ok 47 - free-form area descriptions and malformed lists never map into a direct meeting-area declaration
+  ---
+  duration_ms: 0.5118
+  type: 'test'
+  ...
+# Subtest: accessors inside an alleged public area array are never evaluated
+ok 48 - accessors inside an alleged public area array are never evaluated
+  ---
+  duration_ms: 0.2097
+  type: 'test'
+  ...
+# Subtest: an existing owner reopen permission produces a pair action without an identifier
+ok 49 - an existing owner reopen permission produces a pair action without an identifier
+  ---
+  duration_ms: 0.1949
+  type: 'test'
+  ...
+# Subtest: an unbound alleged reopen right cannot create a pair navigation
+ok 50 - an unbound alleged reopen right cannot create a pair navigation
+  ---
+  duration_ms: 0.1116
+  type: 'test'
+  ...
+# Subtest: accepted introductions navigate to the existing owner pair rather than submitting another request
+ok 51 - accepted introductions navigate to the existing owner pair rather than submitting another request
+  ---
+  duration_ms: 0.1104
+  type: 'test'
+  ...
+# Subtest: a current accepted pair takes precedence over new-introduction area gaps without reading those areas
+ok 52 - a current accepted pair takes precedence over new-introduction area gaps without reading those areas
+  ---
+  duration_ms: 0.0798
+  type: 'test'
+  ...
+# Subtest: a receiver with only decline permission gets the existing request action and no invented acceptance claim
+ok 53 - a receiver with only decline permission gets the existing request action and no invented acceptance claim
+  ---
+  duration_ms: 0.1181
+  type: 'test'
+  ...
+# Subtest: a sent pending request describes only known own history and does not speculate about silence
+ok 54 - a sent pending request describes only known own history and does not speculate about silence
+  ---
+  duration_ms: 0.1483
+  type: 'test'
+  ...
+# Subtest: expired requests without an own current right get generic refresh rather than a hidden receiving cause
+ok 55 - expired requests without an own current right get generic refresh rather than a hidden receiving cause
+  ---
+  duration_ms: 0.1743
+  type: 'test'
+  ...
+# Subtest: returned navigation cannot mutate frozen source areas or a later independent result
+ok 56 - returned navigation cannot mutate frozen source areas or a later independent result
+  ---
+  duration_ms: 0.2125
+  type: 'test'
+  ...
+# Subtest: HTTP own invitation-off guidance opens settings and does not mutate consent or permit a stale connect
+ok 57 - HTTP own invitation-off guidance opens settings and does not mutate consent or permit a stale connect
+  ---
+  duration_ms: 557.1684
+  type: 'test'
+  ...
+# Subtest: HTTP a current private owner region without own publication points only to separate disclosure
+ok 58 - HTTP a current private owner region without own publication points only to separate disclosure
+  ---
+  duration_ms: 490.905
+  type: 'test'
+  ...
+# Subtest: HTTP a disclosed region cannot invent an owner private declaration and produces the direct answer action
+ok 59 - HTTP a disclosed region cannot invent an owner private declaration and produces the direct answer action
+  ---
+  duration_ms: 455.0184
+  type: 'test'
+  ...
+# Subtest: HTTP hidden counterpart private incompatibility and invitation-off cases share generic refresh without leaking their cause
+ok 60 - HTTP hidden counterpart private incompatibility and invitation-off cases share generic refresh without leaking their cause
+  ---
+  duration_ms: 654.4555
+  type: 'test'
+  ...
+# Subtest: HTTP a saved connectable projection is not authority after hidden peer region expiry
+ok 61 - HTTP a saved connectable projection is not authority after hidden peer region expiry
+  ---
+  duration_ms: 654.7122
+  type: 'test'
+  ...
+# Subtest: HTTP own private expiry asks for a new direct answer and never copies the still-public old region
+ok 62 - HTTP own private expiry asks for a new direct answer and never copies the still-public old region
+  ---
+  duration_ms: 809.6639
+  type: 'test'
+  ...
+# Subtest: HTTP closed receiving history exposes only the owner reopen action while the other account gets generic refresh
+ok 63 - HTTP closed receiving history exposes only the owner reopen action while the other account gets generic refresh
+  ---
+  duration_ms: 1420.0972
+  type: 'test'
+  ...
+# Subtest: HTTP expiry respects the distinct sender cooldown and recipient current reopening right
+ok 64 - HTTP expiry respects the distinct sender cooldown and recipient current reopening right
+  ---
+  duration_ms: 1490.9793
+  type: 'test'
+  ...
+# Subtest: HTTP an already accepted introduction remains an existing-pair action when next-introduction area requirements change
+ok 65 - HTTP an already accepted introduction remains an existing-pair action when next-introduction area requirements change
+  ---
+  duration_ms: 811.5677
+  type: 'test'
+  ...
+# Subtest: new criterion keeps connection importance unchanged and records only the current confirmed own answer
+ok 66 - new criterion keeps connection importance unchanged and records only the current confirmed own answer
+  ---
+  duration_ms: 4.0437
+  type: 'test'
+  ...
+# Subtest: new criterion requires a valid explicit answer snapshot and a fixed completed proposal
+ok 67 - new criterion requires a valid explicit answer snapshot and a fixed completed proposal
+  ---
+  duration_ms: 0.9446
+  type: 'test'
+  ...
+# Subtest: new criterion apply source links only the next matching delivered recommendation, with a private meeting source
+ok 68 - new criterion apply source links only the next matching delivered recommendation, with a private meeting source
+  ---
+  duration_ms: 6.7587
+  type: 'test'
+  ...
+# Subtest: new criterion context, basis and source peer availability remain independent link gates
+ok 69 - new criterion context, basis and source peer availability remain independent link gates
+  ---
+  duration_ms: 0.9876
+  type: 'test'
+  ...
+# Subtest: withdrawing or replacing new reflection irreversibly invalidates followup, including same-timestamp re-entry
+ok 70 - withdrawing or replacing new reflection irreversibly invalidates followup, including same-timestamp re-entry
+  ---
+  duration_ms: 1.8975
+  type: 'test'
+  ...
+# Subtest: new criterion comparison expires at the bound declaration deadline and cannot outlive it
+ok 71 - new criterion comparison expires at the bound declaration deadline and cannot outlive it
+  ---
+  duration_ms: 1.1807
+  type: 'test'
+  ...
+# Subtest: new criterion evaluation stays prospective and unknown remains separate from failure
+ok 72 - new criterion evaluation stays prospective and unknown remains separate from failure
+  ---
+  duration_ms: 2.2988
+  type: 'test'
+  ...
+# Subtest: HTTP new criterion uses own completed appointment and confirmed answer without changing criteria or peer records
+ok 73 - HTTP new criterion uses own completed appointment and confirmed answer without changing criteria or peer records
+  ---
+  duration_ms: 5718.1086
+  type: 'test'
+  ...
+# Subtest: HTTP new criterion preview reveals source and scope, needs explicit apply, and follows the next delivered result
+ok 74 - HTTP new criterion preview reveals source and scope, needs explicit apply, and follows the next delivered result
+  ---
+  duration_ms: 6984.6669
+  type: 'test'
+  ...
+# Subtest: HTTP two importance slots require the owner to choose replacement and never relax a required answer
+ok 75 - HTTP two importance slots require the owner to choose replacement and never relax a required answer
+  ---
+  duration_ms: 6005.1257
+  type: 'test'
+  ...
+# Subtest: HTTP current declaration changes, unknown answers and stale review source cannot authorize the old preview
+ok 76 - HTTP current declaration changes, unknown answers and stale review source cannot authorize the old preview
+  ---
+  duration_ms: 6947.9274
+  type: 'test'
+  ...
+# Subtest: HTTP bounded new importance expires and a once-only own answer cannot be promoted to baseline
+ok 77 - HTTP bounded new importance expires and a once-only own answer cannot be promoted to baseline
+  ---
+  duration_ms: 6066.0692
+  type: 'test'
+  ...
+# Subtest: HTTP withdrawal and peer deletion stop new criterion changes while own saved reflection can still be erased
+ok 78 - HTTP withdrawal and peer deletion stop new criterion changes while own saved reflection can still be erased
+  ---
+  duration_ms: 5897.5422
+  type: 'test'
+  ...
+# Subtest: HTTP retry of applied new importance is idempotent and returns current withdrawn source without reviving it
+ok 79 - HTTP retry of applied new importance is idempotent and returns current withdrawn source without reviving it
+  ---
+  duration_ms: 5759.0657
+  type: 'test'
+  ...
+# Subtest: HTTP pause preserves private completed reflection without opening recommendation discovery and allows owner withdrawal
+ok 80 - HTTP pause preserves private completed reflection without opening recommendation discovery and allows owner withdrawal
+  ---
+  duration_ms: 4417.4607
+  type: 'test'
+  ...
+# Subtest: HTTP expired temporary importance uses the live baseline scope and never reuses the expired deadline
+ok 81 - HTTP expired temporary importance uses the live baseline scope and never reuses the expired deadline
+  ---
+  duration_ms: 8583.042
+  type: 'test'
+  ...
+# Subtest: HTTP expired baseline importance can be replaced with a newly confirmed baseline criterion
+ok 82 - HTTP expired baseline importance can be replaced with a newly confirmed baseline criterion
+  ---
+  duration_ms: 6199.3975
+  type: 'test'
+  ...
+# Subtest: public deadlines are independent and omitted keys preserve an already-ended saved deadline
+ok 83 - public deadlines are independent and omitted keys preserve an already-ended saved deadline
+  ---
+  duration_ms: 2.7516
+  type: 'test'
+  ...
+# Subtest: an unchanged past deadline round-trips only its exact unchanged saved answer
+ok 84 - an unchanged past deadline round-trips only its exact unchanged saved answer
+  ---
+  duration_ms: 0.4271
+  type: 'test'
+  ...
+# Subtest: changing a saved answer while omitting deadlines cannot resurrect its expired publication
+ok 85 - changing a saved answer while omitting deadlines cannot resurrect its expired publication
+  ---
+  duration_ms: 0.2081
+  type: 'test'
+  ...
+# Subtest: only explicit null clears a public deadline and a new deadline must be canonical and future
+ok 86 - only explicit null clears a public deadline and a new deadline must be canonical and future
+  ---
+  duration_ms: 0.2136
+  type: 'test'
+  ...
+# Subtest: orphan deadline keys and executable expiration getters are rejected
+ok 87 - orphan deadline keys and executable expiration getters are rejected
+  ---
+  duration_ms: 1.0386
+  type: 'test'
+  ...
+# Subtest: the exact public deadline removes only the current value and retains its required guard and raw owner record
+ok 88 - the exact public deadline removes only the current value and retains its required guard and raw owner record
+  ---
+  duration_ms: 0.4023
+  type: 'test'
+  ...
+# Subtest: a projected meeting-region array is an independent copy and malformed stored deadlines fail closed
+ok 89 - a projected meeting-region array is an independent copy and malformed stored deadlines fail closed
+  ---
+  duration_ms: 0.2403
+  type: 'test'
+  ...
+# Subtest: HTTP expired public self answers leave owner raw and private answers intact while peer comparison sees no old value
+ok 90 - HTTP expired public self answers leave owner raw and private answers intact while peer comparison sees no old value
+  ---
+  duration_ms: 593.865
+  type: 'test'
+  ...
+# Subtest: HTTP expired required public wants remains a pending mandatory guard, including formerly any
+ok 91 - HTTP expired required public wants remains a pending mandatory guard, including formerly any
+  ---
+  duration_ms: 1021.8298
+  type: 'test'
+  ...
+# Subtest: HTTP old clients and unchanged past deadline round-trips cannot revive a saved expired public answer
+ok 92 - HTTP old clients and unchanged past deadline round-trips cannot revive a saved expired public answer
+  ---
+  duration_ms: 721.828
+  type: 'test'
+  ...
+# Subtest: HTTP invalid expiry inputs reject atomically without changing profile or private state
+ok 93 - HTTP invalid expiry inputs reject atomically without changing profile or private state
+  ---
+  duration_ms: 407.5178
+  type: 'test'
+  ...
+# Subtest: HTTP baseline publication preserves an independent public deadline and never copies the private answer deadline
+ok 94 - HTTP baseline publication preserves an independent public deadline and never copies the private answer deadline
+  ---
+  duration_ms: 652.1676
+  type: 'test'
+  ...
+# Subtest: HTTP all public and private regions expiring together cannot fall through to the no-region legacy guard
+ok 95 - HTTP all public and private regions expiring together cannot fall through to the no-region legacy guard
+  ---
+  duration_ms: 906.1914
+  type: 'test'
+  ...
+# Subtest: HTTP outstanding acceptance rechecks the sender current mandatory comparison and keeps explicit decline available
+ok 96 - HTTP outstanding acceptance rechecks the sender current mandatory comparison and keeps explicit decline available
+  ---
+  duration_ms: 1827.364
+  type: 'test'
+  ...
+# Subtest: HTTP sender public required expiry blocks pending acceptance without demanding new recipient private answers
+ok 97 - HTTP sender public required expiry blocks pending acceptance without demanding new recipient private answers
+  ---
+  duration_ms: 609.7224
+  type: 'test'
+  ...
+# Subtest: HTTP normal profile-only recipient acceptance still works when current published answers have no deadlines
+ok 98 - HTTP normal profile-only recipient acceptance still works when current published answers have no deadlines
+  ---
+  duration_ms: 654.0556
+  type: 'test'
+  ...
+# Subtest: HTTP crossing a peer public deadline invalidates a live private preview without any saved revision changing
+ok 99 - HTTP crossing a peer public deadline invalidates a live private preview without any saved revision changing
+  ---
+  duration_ms: 673.7444
+  type: 'test'
+  ...
+# Subtest: HTTP crossing the owner own public deadline also invalidates a preview whose private criteria stayed the same
+ok 100 - HTTP crossing the owner own public deadline also invalidates a preview whose private criteria stayed the same
+  ---
+  duration_ms: 478.7924
+  type: 'test'
+  ...
+# Subtest: HTTP accepted introductions and confirmed appointments survive public deadline expiry while schedule hints use only current availability
+ok 101 - HTTP accepted introductions and confirmed appointments survive public deadline expiry while schedule hints use only current availability
+  ---
+  duration_ms: 1044.4434
+  type: 'test'
+  ...
+# Subtest: HTTP alignment consumes current public fields and a deadline-only edit invalidates the former alignment key
+ok 102 - HTTP alignment consumes current public fields and a deadline-only edit invalidates the former alignment key
+  ---
+  duration_ms: 1179.585
+  type: 'test'
+  ...
+# Subtest: receipts reveal only the authenticated actor’s outcome, keep current view separate from applied revision, and never return the action body
+ok 103 - receipts reveal only the authenticated actor’s outcome, keep current view separate from applied revision, and never return the action body
+  ---
+  duration_ms: 206.1169
+  type: 'test'
+  ...
+# Subtest: receipt queries and methods are strict and cross-origin calls cannot read outcomes
+ok 104 - receipt queries and methods are strict and cross-origin calls cannot read outcomes
+  ---
+  duration_ms: 101.1184
+  type: 'test'
+  ...
+# Subtest: old receipts cannot bypass current suspended/deleted account gates or revive a mutation
+ok 105 - old receipts cannot bypass current suspended/deleted account gates or revive a mutation
+  ---
+  duration_ms: 116.8069
+  type: 'test'
+  ...
+# Subtest: a missing receipt during a delayed POST never proves absence; one explicit retry commits the same envelope once
+ok 106 - a missing receipt during a delayed POST never proves absence; one explicit retry commits the same envelope once
+  ---
+  duration_ms: 69.8672
+  type: 'test'
+  ...
+# Subtest: real HTTP lost response is classified by account client and resolved by delivery receipt without replaying the private mutation
+ok 107 - real HTTP lost response is classified by account client and resolved by delivery receipt without replaying the private mutation
+  ---
+  duration_ms: 60.4216
+  type: 'test'
+  ...
+# Subtest: criterion reflection uses the connection snapshot, only own completion, and an explicit priority preview without relaxing required values
+ok 108 - criterion reflection uses the connection snapshot, only own completion, and an explicit priority preview without relaxing required values
+  ---
+  duration_ms: 6223.4011
+  type: 'test'
+  ...
+# Subtest: criterion preview survives a new context only for unchanged baseline sources and never revives after redeclaration, withdrawal or deletion
+ok 109 - criterion preview survives a new context only for unchanged baseline sources and never revives after redeclaration, withdrawal or deletion
+  ---
+  duration_ms: 7098.7176
+  type: 'test'
+  ...
+# Subtest: once-only and expired criterion sources cannot be promoted to a new recommendation context
+ok 110 - once-only and expired criterion sources cannot be promoted to a new recommendation context
+  ---
+  duration_ms: 8912.9612
+  type: 'test'
+  ...
+# Subtest: worse restoration previews only the original correction, preserves later unrelated edits, and never restores selection or acceptances
+ok 111 - worse restoration previews only the original correction, preserves later unrelated edits, and never restores selection or acceptances
+  ---
+  duration_ms: 4365.14
+  type: 'test'
+  ...
+# Subtest: worse restoration rejects same-field redeclaration, source withdrawal, current expiry and forged preview sources
+ok 112 - worse restoration rejects same-field redeclaration, source withdrawal, current expiry and forged preview sources
+  ---
+  duration_ms: 18093.7163
+  type: 'test'
+  ...
+# Subtest: priority restoration preserves field edits and is invalidated by a later priority declaration or a new context
+ok 113 - priority restoration preserves field edits and is invalidated by a later priority declaration or a new context
+  ---
+  duration_ms: 17107.8297
+  type: 'test'
+  ...
+# Subtest: separate explicit SQLite stores refuse public paths and demo/account mode reuse
+ok 114 - separate explicit SQLite stores refuse public paths and demo/account mode reuse
+  ---
+  duration_ms: 113.1167
+  type: 'test'
+  ...
+# Subtest: fictional role login is explicit; account service never accepts demo login or decode-only identities
+ok 115 - fictional role login is explicit; account service never accepts demo login or decode-only identities
+  ---
+  duration_ms: 333.1912
+  type: 'test'
+  ...
+# Subtest: central account verification forwards the exact bearer and uses only active synk_user_id
+ok 116 - central account verification forwards the exact bearer and uses only active synk_user_id
+  ---
+  duration_ms: 1.0595
+  type: 'test'
+  ...
+# Subtest: onboarding and disclosure remain separate from private preferences and self-declaration is never verified
+ok 117 - onboarding and disclosure remain separate from private preferences and self-declaration is never verified
+  ---
+  duration_ms: 578.5461
+  type: 'test'
+  ...
+# Subtest: atomic revision CAS, idempotency and actor isolation work across two SQLite connections
+ok 118 - atomic revision CAS, idempotency and actor isolation work across two SQLite connections
+  ---
+  duration_ms: 219.7941
+  type: 'test'
+  ...
+# Subtest: appointment revisions and participant-private reflection are persisted and inbox is viewer-specific
+ok 119 - appointment revisions and participant-private reflection are persisted and inbox is viewer-specific
+  ---
+  duration_ms: 3419.6805
+  type: 'test'
+  ...
+# Subtest: blocks, disclosure and adult withdrawal close every pair without restoring old acceptances
+ok 120 - blocks, disclosure and adult withdrawal close every pair without restoring old acceptances
+  ---
+  duration_ms: 17062.1052
+  type: 'test'
+  ...
+# Subtest: account pause preserves agreed appointments and private reflection while blocking new commitments
+ok 121 - account pause preserves agreed appointments and private reflection while blocking new commitments
+  ---
+  duration_ms: 2989.3873
+  type: 'test'
+  ...
+# Subtest: reports remain private, operators are server-granted and suspending a target closes its pairs
+ok 122 - reports remain private, operators are server-granted and suspending a target closes its pairs
+  ---
+  duration_ms: 4851.2236
+  type: 'test'
+  ...
+# Subtest: suspension revokes operator report reads as well as processing and replay never returns stale private reports
+ok 123 - suspension revokes operator report reads as well as processing and replay never returns stale private reports
+  ---
+  duration_ms: 653.2924
+  type: 'test'
+  ...
+# Subtest: deletion scrubs private rows, leaves a tombstone, and stale writes stay rejected after restart
+ok 124 - deletion scrubs private rows, leaves a tombstone, and stale writes stay rejected after restart
+  ---
+  duration_ms: 2527.3203
+  type: 'test'
+  ...
+# Subtest: account verifier runs on every request and cannot grant operator powers through client claims
+ok 125 - account verifier runs on every request and cannot grant operator powers through client claims
+  ---
+  duration_ms: 106.0088
+  type: 'test'
+  ...
+# Subtest: invalid product action rolls back the account, pair and receipt together
+ok 126 - invalid product action rolls back the account, pair and receipt together
+  ---
+  duration_ms: 2568.4482
+  type: 'test'
+  ...
+# Subtest: a failure while producing the response rolls back already-written account, pair and receipt
+ok 127 - a failure while producing the response rolls back already-written account, pair and receipt
+  ---
+  duration_ms: 2221.1225
+  type: 'test'
+  ...
+# Subtest: first discovery opens without invented answers and server-stamped actions remain immediately readable
+ok 128 - first discovery opens without invented answers and server-stamped actions remain immediately readable
+  ---
+  duration_ms: 1211.4477
+  type: 'test'
+  ...
+# Subtest: account recommendations consume only disclosed eligible profiles and survive candidate privacy withdrawal
+ok 129 - account recommendations consume only disclosed eligible profiles and survive candidate privacy withdrawal
+  ---
+  duration_ms: 1549.0432
+  type: 'test'
+  ...
+# Subtest: guessing a disclosed account ID cannot bypass fresh mutual matching prerequisites
+ok 130 - guessing a disclosed account ID cannot bypass fresh mutual matching prerequisites
+  ---
+  duration_ms: 1065.5512
+  type: 'test'
+  ...
+# Subtest: closing preserves only my readable reflection and counterpart deletion keeps my words without its profile
+ok 131 - closing preserves only my readable reflection and counterpart deletion keeps my words without its profile
+  ---
+  duration_ms: 5670.3389
+  type: 'test'
+  ...
+# Subtest: account-wide exposure balancing changes only tied priorities and records each viewer/context/candidate once
+ok 132 - account-wide exposure balancing changes only tied priorities and records each viewer/context/candidate once
+  ---
+  duration_ms: 2890.3759
+  type: 'test'
+  ...
+# Subtest: account deletion removes its exposure references and ordinary responses never include other viewers logs
+ok 133 - account deletion removes its exposure references and ordinary responses never include other viewers logs
+  ---
+  duration_ms: 715.6662
+  type: 'test'
+  ...
+# Subtest: the persisted clock prevents expired discovery and appointment revivals after a backward-clock restart
+ok 134 - the persisted clock prevents expired discovery and appointment revivals after a backward-clock restart
+  ---
+  duration_ms: 3410.8455
+  type: 'test'
+  ...
+# Subtest: introduction delivery, mutual intent and date acceptance are separate persisted stages
+ok 135 - introduction delivery, mutual intent and date acceptance are separate persisted stages
+  ---
+  duration_ms: 4057.8118
+  type: 'test'
+  ...
+# Subtest: declined introduction cannot be resent through block/unblock, a new pair, or an old success replay
+ok 136 - declined introduction cannot be resent through block/unblock, a new pair, or an old success replay
+  ---
+  duration_ms: 7921.1462
+  type: 'test'
+  ...
+# Subtest: introduction revision conflicts are atomic and pause blocks new intent while allowing withdrawal
+ok 137 - introduction revision conflicts are atomic and pause blocks new intent while allowing withdrawal
+  ---
+  duration_ms: 6145.9152
+  type: 'test'
+  ...
+# Subtest: legacy confirmed appointments retain completion and reflection but cannot imply an introduction agreement
+ok 138 - legacy confirmed appointments retain completion and reflection but cannot imply an introduction agreement
+  ---
+  duration_ms: 6032.1668
+  type: 'test'
+  ...
+# Subtest: date decline binds the account pair and one explicit own reopening clears both gates without restoring acceptances
+ok 139 - date decline binds the account pair and one explicit own reopening clears both gates without restoring acceptances
+  ---
+  duration_ms: 13842.0373
+  type: 'test'
+  ...
+# Subtest: date expiry closes its recipient gate across restart and does not count as a decline
+ok 140 - date expiry closes its recipient gate across restart and does not count as a decline
+  ---
+  duration_ms: 8455.0285
+  type: 'test'
+  ...
+# Subtest: a busy date response preserves introduction consent while cancelling unanswered requests cannot pressure-retry
+ok 141 - a busy date response preserves introduction consent while cancelling unanswered requests cannot pressure-retry
+  ---
+  duration_ms: 9836.2414
+  type: 'test'
+  ...
+# Subtest: unanswered introduction expiry is not rejection and cooldown is durable across restart
+ok 142 - unanswered introduction expiry is not rejection and cooldown is durable across restart
+  ---
+  duration_ms: 9419.2725
+  type: 'test'
+  ...
+# Subtest: preview is private and does not save an answer; explicit apply checks revision, expiry and owner
+ok 143 - preview is private and does not save an answer; explicit apply checks revision, expiry and owner
+  ---
+  duration_ms: 4856.9539
+  type: 'test'
+  ...
+# Subtest: preview applies the current exposure tie order and rejects changed pool or global exposure
+ok 144 - preview applies the current exposure tie order and rejects changed pool or global exposure
+  ---
+  duration_ms: 3948.9377
+  type: 'test'
+  ...
+# Subtest: own recommendation experience requires an issued current decision and explicit delivery, never GET exposure
+ok 145 - own recommendation experience requires an issued current decision and explicit delivery, never GET exposure
+  ---
+  duration_ms: 5221.0464
+  type: 'test'
+  ...
+# Subtest: explicit result review and introduction request retain the comparison basis without recording GETs or replay duplicates
+ok 146 - explicit result review and introduction request retain the comparison basis without recording GETs or replay duplicates
+  ---
+  duration_ms: 1640.6285
+  type: 'test'
+  ...
+# Subtest: experience evaluation withdrawal is prospective on reenable and storage withdrawal removes all personal outcome data
+ok 147 - experience evaluation withdrawal is prospective on reenable and storage withdrawal removes all personal outcome data
+  ---
+  duration_ms: 2993.6272
+  type: 'test'
+  ...
+# Subtest: comfort requires own completion, is separate from reflection, and remains withdrawable after counterpart deletion
+ok 148 - comfort requires own completion, is separate from reflection, and remains withdrawable after counterpart deletion
+  ---
+  duration_ms: 6426.7941
+  type: 'test'
+  ...
+# Subtest: an answer expiring inside the five-minute preview period invalidates the reviewed result
+ok 149 - an answer expiring inside the five-minute preview period invalidates the reviewed result
+  ---
+  duration_ms: 2810.1747
+  type: 'test'
+  ...
+# Subtest: old decision reports keep their basis while withdrawn peer labels vanish; suspended users can retract consent and answers
+ok 150 - old decision reports keep their basis while withdrawn peer labels vanish; suspended users can retract consent and answers
+  ---
+  duration_ms: 1658.1559
+  type: 'test'
+  ...
+# Subtest: an explicitly reviewed correction links the next delivered recommendation privately and persists across restart
+ok 151 - an explicitly reviewed correction links the next delivered recommendation privately and persists across restart
+  ---
+  duration_ms: 10923.9239
+  type: 'test'
+  ...
+# Subtest: changing or withdrawing the source invalidates a preview and followup without reverting the chosen preferences
+ok 152 - changing or withdrawing the source invalidates a preview and followup without reverting the chosen preferences
+  ---
+  duration_ms: 8358.9271
+  type: 'test'
+  ...
+# Subtest: no-op or unlinked changes never invent a correction; undo followed by re-entry cannot revive an old correction
+ok 153 - no-op or unlinked changes never invent a correction; undo followed by re-entry cannot revive an old correction
+  ---
+  duration_ms: 8382.2626
+  type: 'test'
+  ...
+# Subtest: expired correction and a newly started situation do not link the next result, while a fresh post-expiry preview remains applicable
+ok 154 - expired correction and a newly started situation do not link the next result, while a fresh post-expiry preview remains applicable
+  ---
+  duration_ms: 10305.7332
+  type: 'test'
+  ...
+# Subtest: priority corrections use the same explicit source link and storage withdrawal removes the full comparison trail
+ok 155 - priority corrections use the same explicit source link and storage withdrawal removes the full comparison trail
+  ---
+  duration_ms: 8555.3537
+  type: 'test'
+  ...
+# Subtest: baseline publication patches only explicitly selected valid self fields and never enables disclosure or copies a context answer
+ok 156 - baseline publication patches only explicitly selected valid self fields and never enables disclosure or copies a context answer
+  ---
+  duration_ms: 3336.8796
+  type: 'test'
+  ...
+# Subtest: expired, cleared and missing baseline values cannot be published; deletion removes correction records
+ok 157 - expired, cleared and missing baseline values cannot be published; deletion removes correction records
+  ---
+  duration_ms: 8037.9708
+  type: 'test'
+  ...
+# Subtest: counterpart disclosure withdrawal hides correction references and suspending the owner still permits comparison withdrawal
+ok 158 - counterpart disclosure withdrawal hides correction references and suspending the owner still permits comparison withdrawal
+  ---
+  duration_ms: 4339.8453
+  type: 'test'
+  ...
+# Subtest: explicit demo start creates absent sample accounts only, while account mode never bootstraps fictional identities
+ok 159 - explicit demo start creates absent sample accounts only, while account mode never bootstraps fictional identities
+  ---
+  duration_ms: 612.2709
+  type: 'test'
+  ...
+# Subtest: the recommended demo identity is the invited identity and only its own role can accept before separate date acceptance
+ok 160 - the recommended demo identity is the invited identity and only its own role can accept before separate date acceptance
+  ---
+  duration_ms: 3684.277
+  type: 'test'
+  ...
+# Subtest: demo visibility and reciprocal requirements use the same saved public profile; hidden IDs cannot bypass connect
+ok 161 - demo visibility and reciprocal requirements use the same saved public profile; hidden IDs cannot bypass connect
+  ---
+  duration_ms: 3756.9232
+  type: 'test'
+  ...
+# Subtest: legacy fixed-candidate discovery migrates once, preserves personal declarations and existing pairs, and never rebinds old candidate evidence
+ok 162 - legacy fixed-candidate discovery migrates once, preserves personal declarations and existing pairs, and never rebinds old candidate evidence
+  ---
+  duration_ms: 5301.0904
+  type: 'test'
+  ...
+# Subtest: a full legacy log migrates without reviving cleared mandatory values or expiring baselines, and preserves its original archive
+ok 163 - a full legacy log migrates without reviving cleared mandatory values or expiring baselines, and preserves its original archive
+  ---
+  duration_ms: 13068.4049
+  type: 'test'
+  ...
+# Subtest: schedule context reads only currently public availability and disappears when pair access is withdrawn
+ok 164 - schedule context reads only currently public availability and disappears when pair access is withdrawn
+  ---
+  duration_ms: 4831.0871
+  type: 'test'
+  ...
+1..164
+# tests 164
+# suites 0
+# pass 164
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 305050.5224

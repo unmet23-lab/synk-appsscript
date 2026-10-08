@@ -1,0 +1,67 @@
+{
+  "at": "2026-10-08T00:29:55.028Z",
+  "status": "failed",
+  "kind": "synthetic-availability-recovery-browser",
+  "actualUsers": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [
+    "starting from the default landing through the demo button preserves the adult role across reload; an actually committed POST with a lost response restores only a six-field receipt marker without body or credential and performs a GET with no additional action POST",
+    "a never-delivered request restores only GET receipt recovery after reload; a missing receipt remains uncertain, mutations stay locked and no retry body or unsaved certainty is invented",
+    "opening another actual demo actor in the same tab clears the previous receipt marker without transferring its pending request or sending an action"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "reload-checks-receipt-without-resending-390.png",
+    "missing-receipt-remains-get-only-320.png"
+  ],
+  "dialogs": [
+    {
+      "type": "beforeunload",
+      "decision": "accept"
+    },
+    {
+      "type": "beforeunload",
+      "decision": "accept"
+    },
+    {
+      "type": "beforeunload",
+      "decision": "accept"
+    },
+    {
+      "type": "beforeunload",
+      "decision": "dismiss"
+    },
+    {
+      "type": "beforeunload",
+      "decision": "accept"
+    }
+  ],
+  "defaultEntryRecovery": {
+    "startedThroughDefaultLanding": true,
+    "rolePreservedInURL": true,
+    "actorRetained": true,
+    "receiptGets": 1,
+    "additionalActionPosts": 0,
+    "checkpointCleared": true
+  },
+  "failure": "page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at http://127.0.0.1:64522/atlas-lab/usability.html\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:64522/atlas-lab/usability.html\", waiting until \"load\"\u001b[22m\n\n    at unloadPath (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-availability-recovery-smoke.mjs:99:52)\n    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-availability-recovery-smoke.mjs:167:177"
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at http://127.0.0.1:64522/atlas-lab/usability.html
+Call log:
+  - navigating to "http://127.0.0.1:64522/atlas-lab/usability.html", waiting until "load"
+
+    at unloadPath (C:\Users\q1212\Documents\SYNK-appsscript\tests\atlas-dating-availability-recovery-smoke.mjs:99:52)
+    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-availability-recovery-smoke.mjs:167:177 {
+  log: [
+    '  - navigating to "http://127.0.0.1:64522/atlas-lab/usability.html", waiting until "load"'
+  ],
+  name: 'Error'
+}
+
+Node.js v24.18.0

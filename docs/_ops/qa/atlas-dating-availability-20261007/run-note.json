@@ -1,0 +1,37 @@
+{
+  "initialFailures": [
+    "Four checkpoint fixture variables used accountId instead of actorId; corrected fixture, preserved initial log.",
+    "A fresh introduction fixture omitted recommendation confirmation; corrected actor/explicit per-peer reopen rather than weakening the product contract.",
+    "The central integration fixture tried connecting before explicit per-peer reopen; HTTP403 was expected. Corrected fixture and preserved initial log.",
+    "A stale counterpart reopen reused introduction revision2 after central hold and resume and incorrectly returned200. Preserved reproduction; separate monotonic row revision now rejects it with409, including after restart.",
+    "Independent review found normal landing demo entry did not retain its public role for reload, and boot auth-loss did not clear the old receipt marker. Preserved pre-fix browser evidence; URL role continuity and boot cleanup were repaired."
+  ],
+  "reviewFixes": [
+    "Central hold clears all private drafts and pending confirmation, so its notice now says they were cleared; it no longer claims valid inputs were retained.",
+    "Native beforeunload affects browser navigation fixtures; regression uses explicit dialog acceptance, while the new browser suite separately checks both dismiss and accept."
+  ],
+  "coverage": {
+    "allBackendGroupsRerunAfterIntroductionFix": true,
+    "newBrowserNineRerunAfterEntryAndBootFix": true,
+    "existingBrowserThirteenRunBeforeEntryAndBootFix": true,
+    "existingThirteenAffectedByEntryAndBootFix": false,
+    "receiptFiveCasesCountedOnce": true
+  },
+  "bfcache": {
+    "currentNoStoreBackNavigationBootsNewDocument": true,
+    "cachedRestoreNotReproduced": true,
+    "reference": "../atlas-dating-next-audit-20261007/bfcache-audit.json"
+  },
+  "earlierCleanup": {
+    "action": "Recursive deletion of the previous BFCache audit temporary folder",
+    "automaticReview": "blocked by policy",
+    "bypass": false,
+    "folder": "synk-bfcache-audit-032a90a1-333b-4903-ba15-c78c102f4a91",
+    "browserAndServerEnded": true
+  },
+  "finalFailures": 0,
+  "paidCalls": 0,
+  "actualUsers": 0,
+  "remoteMigration": false,
+  "publicDeployment": false
+}

@@ -1,0 +1,21 @@
+{
+  "kind": "synthetic-dating-https-visual-review",
+  "at": "2026-10-07T20:01:00Z",
+  "method": "Opened all four PNG captures with view_image after the passing HTTPS browser test.",
+  "screenshots": [
+    "https-signed-out-390.png",
+    "https-private-account-saved-390.png",
+    "https-independent-account-restored-1280.png",
+    "https-logged-out-390.png"
+  ],
+  "checked": [
+    "390-pixel sign-in and signed-out pages show a readable primary SYNK ID control, complete felt image/button assets, and no visible horizontal clipping.",
+    "390- and 1280-pixel restored pages show the connected account and private-consent guidance without pretending that recommendations are ready.",
+    "The laboratory link is absent on the standalone account host, and logout removes the connected-account navigation.",
+    "Browser screenshots are local synthetic evidence, not physical-phone or publicly deployed service evidence."
+  ],
+  "fixtureNote": "The preserved first-run report contains a Playwright ERR_ABORTED for an intercepted synthetic logout 204 response after the application had processed success. The fixture was changed to an allowed 200 JSON success response and waits for enabled sign-in controls before reload. No product logout code changed. The final result has zero failed requests.",
+  "physicalDevices": 0,
+  "realProviderRequests": 0,
+  "trustStoreModified": false
+}

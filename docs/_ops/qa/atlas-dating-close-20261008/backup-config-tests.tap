@@ -1,0 +1,82 @@
+TAP version 13
+# Subtest: actual CLI config checks are read-only and create/verify/restore preserves its sources then resumes through the existing gate
+ok 1 - actual CLI config checks are read-only and create/verify/restore preserves its sources then resumes through the existing gate
+  ---
+  duration_ms: 1189.7307
+  type: 'test'
+  ...
+# Subtest: old consistent paired backups can be archived but a stale independent latest export cannot authorize copying for resume
+ok 2 - old consistent paired backups can be archived but a stale independent latest export cannot authorize copying for resume
+  ---
+  duration_ms: 249.0744
+  type: 'test'
+  ...
+# Subtest: fresh independent deletion or a newer restriction rejects a mutually coherent older backup
+ok 3 - fresh independent deletion or a newer restriction rejects a mutually coherent older backup
+  ---
+  duration_ms: 330.0264
+  type: 'test'
+  ...
+# Subtest: actual reconciliation CLI applies a hold then reactivation without restoring public consent or changing the original backup
+ok 4 - actual reconciliation CLI applies a hold then reactivation without restoring public consent or changing the original backup
+  ---
+  duration_ms: 695.6036
+  type: 'test'
+  ...
+# Subtest: reconciliation CLI applies a terminal deletion into a separate copy before granting any resume inspection
+ok 5 - reconciliation CLI applies a terminal deletion into a separate copy before granting any resume inspection
+  ---
+  duration_ms: 549.6338
+  type: 'test'
+  ...
+# Subtest: bundle manifests require an independent hash and exact inventory with unchanged payload bytes
+ok 6 - bundle manifests require an independent hash and exact inventory with unchanged payload bytes
+  ---
+  duration_ms: 558.8416
+  type: 'test'
+  ...
+# Subtest: mismatched environments and unconfirmed writers fail before any destination is created
+ok 7 - mismatched environments and unconfirmed writers fail before any destination is created
+  ---
+  duration_ms: 618.784
+  type: 'test'
+  ...
+# Subtest: existing backup and restoration destinations are preserved instead of overwritten
+ok 8 - existing backup and restoration destinations are preserved instead of overwritten
+  ---
+  duration_ms: 372.8764
+  type: 'test'
+  ...
+# Subtest: sidecars and linked input/output paths are rejected without changing source files
+ok 9 - sidecars and linked input/output paths are rejected without changing source files
+  ---
+  duration_ms: 1318.1231
+  type: 'test'
+  ...
+# Subtest: private config and outputs cannot live in either source repository and CLI errors omit paths or private data
+ok 10 - private config and outputs cannot live in either source repository and CLI errors omit paths or private data
+  ---
+  duration_ms: 557.0383
+  type: 'test'
+  ...
+# Subtest: unfilled deployment account example fails configuration-only startup without creating product data
+ok 11 - unfilled deployment account example fails configuration-only startup without creating product data
+  ---
+  duration_ms: 146.2256
+  type: 'test'
+  ...
+# Subtest: actual Caddy template validates and enforces the standalone TLS, persistence and redacted failure contracts
+ok 12 - actual Caddy template validates and enforces the standalone TLS, persistence and redacted failure contracts # SKIP Set SYNK_QA_CADDY to an explicitly installed Caddy binary; no download is performed.
+  ---
+  duration_ms: 0.6946
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 1
+# todo 0
+# duration_ms 6622.9206

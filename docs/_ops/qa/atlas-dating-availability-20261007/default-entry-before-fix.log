@@ -1,0 +1,40 @@
+{
+  "at": "2026-10-07T00:31:41.604Z",
+  "status": "failed",
+  "kind": "synthetic-availability-recovery-browser",
+  "actualUsers": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [],
+  "dialogs": [
+    {
+      "type": "beforeunload",
+      "decision": "accept"
+    }
+  ],
+  "defaultEntryRecovery": {
+    "startedThroughDefaultLanding": true,
+    "rolePreservedInURL": false,
+    "hasView": false,
+    "hasPendingDelivery": false,
+    "pendingCheckOnly": false,
+    "checkpointStillPresent": true,
+    "additionalActionPosts": 0
+  },
+  "failure": "page.waitForFunction: Timeout 5000ms exceeded.\n    at checkpointPaths (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-availability-recovery-smoke.mjs:69:14)\n    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-availability-recovery-smoke.mjs:150:106"
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+page.waitForFunction: Timeout 5000ms exceeded.
+    at checkpointPaths (C:\Users\q1212\Documents\SYNK-appsscript\tests\atlas-dating-availability-recovery-smoke.mjs:69:14)
+    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-availability-recovery-smoke.mjs:150:106 {
+  log: [],
+  name: 'TimeoutError'
+}
+
+Node.js v24.18.0

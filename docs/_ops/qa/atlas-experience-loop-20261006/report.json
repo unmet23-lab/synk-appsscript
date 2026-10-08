@@ -1,0 +1,79 @@
+{
+  "at": "2026-10-06T12:28:12.086Z",
+  "status": "product-verified-with-existing-freeze-mismatch",
+  "scope": [
+    "separate introduction and appointment consent",
+    "recipient-controlled receiving and retry gates",
+    "private reflection suggestions with explicit apply/undo",
+    "one next action for empty recommendations",
+    "proposal change comparison and busy alternative draft"
+  ],
+  "productTests": {
+    "file": "docs/_ops/qa/atlas-experience-loop-20261006/product-tests.tap",
+    "tests": 153,
+    "passed": 153,
+    "failed": 0,
+    "skipped": 0
+  },
+  "fullRegression": {
+    "file": "docs/_ops/qa/atlas-experience-loop-20261006/tests.tap",
+    "tests": 843,
+    "passed": 824,
+    "failed": 19,
+    "skipped": 0
+  },
+  "browser": {
+    "status": "passed",
+    "paths": 14,
+    "errors": [],
+    "externalRequests": [],
+    "report": "docs/_ops/qa/atlas-experience-loop-20261006/browser-result.json",
+    "screenshots": [
+      "experiences/atlas-lab/qa/dating/landing-320.png",
+      "experiences/atlas-lab/qa/dating/recommendations-390.png",
+      "experiences/atlas-lab/qa/dating/changes-before-accept-1280.png",
+      "experiences/atlas-lab/qa/dating/agreed-1280.png",
+      "experiences/atlas-lab/qa/dating/reflection-390.png",
+      "experiences/atlas-lab/qa/dating/deleted-320.png"
+    ]
+  },
+  "freeze": {
+    "matched": 8,
+    "total": 9,
+    "mismatches": [
+      {
+        "path": "atlas/domain.js",
+        "expected": "9951725913b41d97052f2f396b1ef4463c7c47e75a218f72096999d6f8d6b046",
+        "actual": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+        "same": false
+      }
+    ],
+    "impact": "18 capture tests stopped in before-hook and 1 company capture test stopped in verifyFreeze; no functional assertion result for those 19; prior frozen evaluation is not proof for current Core; no freeze update or Core edit in this task"
+  },
+  "independentReview": {
+    "appointmentsAndIntroductions": "42/42 before final undo/reapply addition",
+    "serviceBoundaryCases": "6/6",
+    "additionalConfirmedDefects": 0
+  },
+  "preview": {
+    "url": "http://127.0.0.1:59043/atlas-lab/dating.html",
+    "servedSourceCheck": "docs/_ops/qa/atlas-experience-loop-20261006/preview-check.json",
+    "panelOpen": "queued"
+  },
+  "modelCalls": 0,
+  "actualUsers": 0,
+  "remoteDeployment": false,
+  "unchangedScope": "Paid AI activation/evaluation and tutor work remain deferred.",
+  "notVerified": [
+    "real central SYNK login round trip",
+    "identity-provider age verification",
+    "physical multi-device operation",
+    "production backup and account deletion integration",
+    "actual satisfaction or meeting success"
+  ],
+  "priorLegacyBrowserEvidence": {
+    "path": "docs/_ops/qa/atlas-product-20261006/report.json",
+    "groups": 28,
+    "rerunThisTurn": false
+  }
+}

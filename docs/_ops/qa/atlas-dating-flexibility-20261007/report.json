@@ -1,0 +1,98 @@
+{
+  "at": "2026-10-06T20:42:08.143Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "Authored alternative proposal followed by two new explicit confirmations for the current option version",
+    "Legacy default agreement compatibility, stale proposal protection and independent scheduling",
+    "Explicit conditional preference with current public facts, original source, hard criteria and expiry checks",
+    "Schedule drafts retain automatic or manually edited end times after coordination responses",
+    "Anonymous free usability tasks updated to cover alternative proposals and conditional acceptance"
+  ],
+  "engine": {
+    "existingEngineFilesModifiedByThisBatch": 0,
+    "coreModulesAdded": [
+      "atlas/conditional-preference.js"
+    ],
+    "originalEnginesAdded": 0,
+    "reused": [
+      "Existing Core Domain/Ask and preference contracts",
+      "Existing Domain policy objectives",
+      "Existing Temper observation contracts"
+    ],
+    "productAdapters": [
+      "meeting-alignment.mjs",
+      "discovery.mjs",
+      "dating-service.mjs",
+      "dating-ui.mjs",
+      "dating-insights.mjs"
+    ]
+  },
+  "tests": {
+    "at": "2026-10-06T20:42:07.827Z",
+    "fileCount": 40,
+    "tests": 614,
+    "pass": 614,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "browsers": [
+    {
+      "kind": "dating-flexibility",
+      "status": "passed",
+      "at": "2026-10-06T20:31:53.332Z",
+      "paths": 10,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "screenshots": 9,
+      "result": "experiences/atlas-lab/qa/dating-flexibility/result.json"
+    },
+    {
+      "kind": "dating",
+      "status": "passed",
+      "at": "2026-10-06T20:29:19.066Z",
+      "paths": 18,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "screenshots": 9,
+      "result": "experiences/atlas-lab/qa/dating/result.json"
+    },
+    {
+      "kind": "dating-clarity",
+      "status": "passed",
+      "at": "2026-10-06T20:35:37.229Z",
+      "paths": 4,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "screenshots": 6,
+      "result": "experiences/atlas-lab/qa/dating-clarity/result.json"
+    }
+  ],
+  "browserPaths": 32,
+  "preview": {
+    "url": "http://127.0.0.1:53146/atlas-lab/dating.html",
+    "guide": "http://127.0.0.1:53146/atlas-lab/usability.html",
+    "isolatedPreview": true,
+    "filesMatched": 8
+  },
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "publicDeployment": false,
+  "limitations": [
+    "Real adult usability sessions have not been run; 5-8 is an exploratory plan.",
+    "Meeting start is a preparation cutoff, not evidence of an actual meeting.",
+    "Real identity/adult verification, physical two-device use and production operation remain unverified.",
+    "Paid AI, paid evaluations and tutor remain deferred.",
+    "Old model freeze still matches 8/9 with the pre-existing atlas/domain.js mismatch; no paid evaluation or heldout content inspection."
+  ],
+  "artifacts": {
+    "guide": "experiences/atlas-lab/usability.html",
+    "design": "docs/아틀라스_공통능력_고도화_20261005.md#16-새-만남-방식의-합의와-조건부-선호-2026-10-07-후속",
+    "coreContract": "docs/코어엔진_설계.md#3-4-1-직접-확인한-조건부-허용--공통-구현-2026-10-07",
+    "tests": "docs/_ops/qa/atlas-dating-flexibility-20261007/tests.tap"
+  }
+}

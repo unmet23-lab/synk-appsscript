@@ -1,0 +1,485 @@
+{
+  "at": "2026-10-07T14:18:37.217Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "importance-history-and-explicit-undo",
+    "independent-public-answer-deadlines",
+    "independent-relationship-goal-and-speed-scenes"
+  ],
+  "tests": {
+    "uniqueCases": 265,
+    "pass": 265,
+    "fail": 0,
+    "groups": [
+      {
+        "log": "client-final.tap",
+        "sha256": "ed99f9f5d045668a11e27b702dc90e92f53735b8c1bc6414a298a4cc5d0df879",
+        "tests": 98,
+        "pass": 98,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "log": "server-final.tap",
+        "sha256": "a5649a607326e061cff40cd77c3cb8530186527dcf71676cbfd9552e8ba418df",
+        "tests": 164,
+        "pass": 164,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "log": "public-boundaries-final.tap",
+        "sha256": "109f32df32c9256d9ab3e424ac71426db23cfbcd1ac3eebd5f99ea00fde3d509",
+        "tests": 3,
+        "pass": 3,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  "browserPaths": 66,
+  "browser": [
+    {
+      "name": "dating-public-expiry",
+      "paths": 8,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "screenshots/dating-public-expiry-public-deadline-review-390.png",
+          "width": 390,
+          "height": 8089,
+          "sha256": "abddda53e80458071ea7aafcc774e7cf7a113a8e1cfecd46b86bcb9e25cc1588"
+        },
+        {
+          "file": "screenshots/dating-public-expiry-public-review-viewport-390.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "d1c95dee7d764fbd3872531cbb93400aaf4521f0ee0dc124ef789b6da7ad7a64"
+        },
+        {
+          "file": "screenshots/dating-public-expiry-expired-disclosure-needs-confirmation-320.png",
+          "width": 320,
+          "height": 7964,
+          "sha256": "d585039e4cb5f8546280fc0691f2fcac27bbd58781a6eedeb55398aaf12e7e11"
+        },
+        {
+          "file": "screenshots/dating-public-expiry-public-expired-viewport-320.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "4024f4285506e0f91442e51a9be46f2fea3ecffa77c719ccd565e9c59c662ca3"
+        },
+        {
+          "file": "screenshots/dating-public-expiry-explicit-public-reconfirmation-320.png",
+          "width": 320,
+          "height": 3604,
+          "sha256": "c153e828504e54d3af0e5a3e6dfacb531a8a16f39d3d9c0b23f53d4dfc7ed76d"
+        }
+      ]
+    },
+    {
+      "name": "dating-assurance",
+      "paths": 11,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "screenshots/dating-assurance-importance-baseline-undo-preview-320.png",
+          "width": 320,
+          "height": 1560,
+          "sha256": "625a1b6c8df62a7d13f2f39d7f02b9108498ca4188ed49159ac51123b6f184a1"
+        },
+        {
+          "file": "screenshots/dating-assurance-importance-baseline-undo-applied-320.png",
+          "width": 320,
+          "height": 4144,
+          "sha256": "095a7ce9c630ed124a2a5bc028c1e0c35ba088d48d2728fd30d1b51db954db7f"
+        },
+        {
+          "file": "screenshots/dating-assurance-importance-baseline-undo-history-viewport-320.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "45c967abb0fb0c24fb101b33d2dea52ab3da531f31a50c709ad875dd571b88c0"
+        },
+        {
+          "file": "screenshots/dating-assurance-importance-context-undo-preview-390.png",
+          "width": 390,
+          "height": 1560,
+          "sha256": "596919d1b584990d3d4c9ee9571a5235350525bdd270781af6f29def6027101a"
+        },
+        {
+          "file": "screenshots/dating-assurance-importance-context-undo-applied-390.png",
+          "width": 390,
+          "height": 4039,
+          "sha256": "6cbf6ea40ba2dc0c7dc1b50923e42b96ea73e06dd0acc13907e2e4a97f2bffcc"
+        },
+        {
+          "file": "screenshots/dating-assurance-importance-context-undo-history-viewport-390.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "aaae3935d8d6c3bf3cb1d63110fcb8ee87fd7d6bceabfcb480061b9e4d742511"
+        },
+        {
+          "file": "screenshots/dating-assurance-importance-baseline-expired-source-320.png",
+          "width": 320,
+          "height": 1533,
+          "sha256": "3ab57edfcc8c14524344baaf8e41f1bafaa5a29f24162336c1cc45b54190d3f1"
+        },
+        {
+          "file": "screenshots/dating-assurance-importance-context-expired-source-320.png",
+          "width": 320,
+          "height": 1555,
+          "sha256": "f3d0522545c073e5c66cf3726f9723a7499aabb85709246495ca7d4a4cda5e86"
+        },
+        {
+          "file": "screenshots/dating-assurance-relationship-relationship-goal-explicit-preview-390.png",
+          "width": 390,
+          "height": 1341,
+          "sha256": "79d398bd69f0dd13b47e13ec3b68aaa9a475aa5395d647e4fcd8f00747c728d1"
+        },
+        {
+          "file": "screenshots/dating-assurance-relationship-relationship-goal-withdraw-keeps-applied-answer-390.png",
+          "width": 390,
+          "height": 1966,
+          "sha256": "698f30b6dd1a4db91c4a4ac50be5374ec3735777e5117cc13b4adcc901b89d10"
+        },
+        {
+          "file": "screenshots/dating-assurance-relationship-relationship-goal-withdrawn-scene-viewport-390.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "84615e8f8f3966324f608f6e930382feb0373328f262507a94fcf768a5599ab0"
+        },
+        {
+          "file": "screenshots/dating-assurance-relationship-relationship-speed-explicit-preview-320.png",
+          "width": 320,
+          "height": 1367,
+          "sha256": "7881271d2d54ad735cc8e7cdd7e55b9a56208d982a7e2c33b16a1f38cbe76ca1"
+        },
+        {
+          "file": "screenshots/dating-assurance-relationship-relationship-speed-withdraw-keeps-applied-answer-320.png",
+          "width": 320,
+          "height": 2101,
+          "sha256": "3929602528879099fc495bea39ae4a6cdaaf66f5f8be586e5d7daaa8c72bb85d"
+        },
+        {
+          "file": "screenshots/dating-assurance-relationship-relationship-speed-withdrawn-scene-viewport-320.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "1a8c591158dadba46e3b08ef1c3093be71311830a876807995f688519ac11a33"
+        }
+      ]
+    },
+    {
+      "name": "dating-control",
+      "paths": 14,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "screenshots/dating-control-guide-opens-own-disclosure-320.png",
+          "width": 320,
+          "height": 7998,
+          "sha256": "e0036c52883e8711fb6be13c63ee36b59e275a89bbb33be696193cba265666fa"
+        },
+        {
+          "file": "screenshots/dating-control-guide-opens-own-settings-320.png",
+          "width": 320,
+          "height": 1436,
+          "sha256": "709280156afab68dac8d6fe6f93af615a994498d1f4b30434c95afb0623df0be"
+        },
+        {
+          "file": "screenshots/dating-control-unknown-peer-cause-stays-private-320.png",
+          "width": 320,
+          "height": 2201,
+          "sha256": "6763dc9d6db00e04f7906e53fe3a659970bb4ee6ab2fff22264554c28a289a69"
+        },
+        {
+          "file": "screenshots/dating-control-next-context-before-after-320.png",
+          "width": 320,
+          "height": 2994,
+          "sha256": "5c7598893b246f1dd52491790249c6a1d3f9a81787d07f4492f28c4f9a52af63"
+        },
+        {
+          "file": "screenshots/dating-control-next-context-keeps-introduction-and-date-320.png",
+          "width": 320,
+          "height": 1258,
+          "sha256": "23a17dc697465e3f6ab1512f43afb3f45271905fde0a2ad61c597a00be17a2c7"
+        },
+        {
+          "file": "screenshots/dating-control-today-korean-midnight-and-return-390.png",
+          "width": 390,
+          "height": 1989,
+          "sha256": "3fbc2d349c1a96011d21b22b6c184f52db2be9f5b3cff154f7cae19a55f62742"
+        },
+        {
+          "file": "screenshots/dating-control-today-clamped-to-original-answer-320.png",
+          "width": 320,
+          "height": 2012,
+          "sha256": "9852c475c52bcee3ed0ab16316e91ccef1a3b8fb248953b2e2a69b22e8d46ce1"
+        },
+        {
+          "file": "screenshots/dating-control-new-criterion-today-clamped-to-own-answer-390.png",
+          "width": 390,
+          "height": 1872,
+          "sha256": "a637403762cc41b3a1623af0107536da10b1561a67b5f60058bccdf518a01d97"
+        }
+      ]
+    },
+    {
+      "name": "dating-fit",
+      "paths": 15,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "screenshots/dating-fit-legacy-relation-kept-unmapped-320.png",
+          "width": 320,
+          "height": 3655,
+          "sha256": "f4e84d15e6ed413ba86b504066c0235a97f6c032d50b6cff1e4676dbcc69c2bf"
+        },
+        {
+          "file": "screenshots/dating-fit-serious-relationship-at-gradual-speed-390.png",
+          "width": 390,
+          "height": 4439,
+          "sha256": "86e578ce629ca5d233e4d044ad16fd28e577550c6628aa88ad2c34e5dec0f721"
+        },
+        {
+          "file": "screenshots/dating-fit-separate-relationship-reasons-390.png",
+          "width": 390,
+          "height": 4850,
+          "sha256": "3e4c1ee0352b84100b0586ad58622b08079659a1f33a32325ccceddde9f10ccb"
+        },
+        {
+          "file": "screenshots/dating-fit-explicit-meeting-region-private-picker-320.png",
+          "width": 320,
+          "height": 5006,
+          "sha256": "99fb81c8c6b3e3e857f989cfd0b1307f8beb066dee8d5c04670d248fb3f87822"
+        },
+        {
+          "file": "screenshots/dating-fit-private-regions-do-not-fill-public-evidence-390.png",
+          "width": 390,
+          "height": 1764,
+          "sha256": "9a598e3b775c03faf4b9d7829e3bc3d91b2cf0cb870813fb4ca7df1ddf2905f6"
+        },
+        {
+          "file": "screenshots/dating-fit-disjoint-public-areas-exclude-without-expansion-390.png",
+          "width": 390,
+          "height": 1559,
+          "sha256": "c219b712ec7c2545a2ad9ec086cd876bdf8dbfb4026dfbed5f7d22b1c074f909"
+        },
+        {
+          "file": "screenshots/dating-fit-withdrawn-public-region-polls-back-to-pending-390.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "88d621f41ea3d7deb58d0116010ae0a418d22134590e95d1c3ed822c7793c300"
+        },
+        {
+          "file": "screenshots/dating-fit-blocked-acceptance-keeps-explicit-decline-390.png",
+          "width": 390,
+          "height": 1073,
+          "sha256": "4602749b9e4ea3c68e467c34c1e2b6566fdfb652a9c7a4deb4a7ef3c478cffdc"
+        },
+        {
+          "file": "screenshots/dating-fit-new-criterion-confirmed-reflection-keeps-ranking-390.png",
+          "width": 390,
+          "height": 2994,
+          "sha256": "d0f80612e044bfdaa3bde86edfcf402e81df33ef022b9602e40c7148b71a0b6c"
+        },
+        {
+          "file": "screenshots/dating-fit-new-criterion-replacement-and-deadline-preview-320.png",
+          "width": 320,
+          "height": 2032,
+          "sha256": "20d049be67da86030ccce4f713530741a9911557d2a473b7ca89df018bf2fed5"
+        },
+        {
+          "file": "screenshots/dating-fit-new-criterion-explicitly-applied-390.png",
+          "width": 390,
+          "height": 2621,
+          "sha256": "8e03845841781af5a3c3389ac17abe5428832dffc14efcd6d7410f28019af1e7"
+        },
+        {
+          "file": "screenshots/dating-fit-next-experience-linked-to-new-criterion-390.png",
+          "width": 390,
+          "height": 2649,
+          "sha256": "dffaf4f61ae38d7b71d1ba7dee4cdfbada10f24f7686e0560fc75bf9afbe1ad3"
+        },
+        {
+          "file": "screenshots/dating-fit-withdrawn-reflection-invalidates-link-not-applied-choice-390.png",
+          "width": 390,
+          "height": 3471,
+          "sha256": "0d3e52664a98fdb68fd09cdfdaea4fdb2e09875b978e2fdfa0b5f16ee9478f67"
+        },
+        {
+          "file": "screenshots/dating-fit-one-priority-keeps-existing-and-adds-new-320.png",
+          "width": 320,
+          "height": 1905,
+          "sha256": "fcb95902bdf547d5313dd713c36252a819b95291b82330f54d4b43676c785313"
+        }
+      ]
+    },
+    {
+      "name": "dating",
+      "paths": 18,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "screenshots/dating-landing-320.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "f38b233c4557a312c085e8328fb84872425d79ee22bc58e87929646763bc5774"
+        },
+        {
+          "file": "screenshots/dating-recommendations-390.png",
+          "width": 390,
+          "height": 2369,
+          "sha256": "6406b5d158153b92ea8671a9870a015c0eefa7f6e4aae831a4a9f9582adff71c"
+        },
+        {
+          "file": "screenshots/dating-preference-preview-390.png",
+          "width": 390,
+          "height": 1507,
+          "sha256": "48ce77502a359a234614ec92f1f53e11737cdfa1eda2ca8fdc3536191813df20"
+        },
+        {
+          "file": "screenshots/dating-expired-preference-390.png",
+          "width": 390,
+          "height": 4718,
+          "sha256": "ec7d30d176a241f871e77d510f8e5ac6896c49b23669d1085200c46c1042195a"
+        },
+        {
+          "file": "screenshots/dating-experience-history-390.png",
+          "width": 390,
+          "height": 1610,
+          "sha256": "a79ae8251ac8a26c11b2187f7f94c893cd4f1370a624bdc59df8499dd5905482"
+        },
+        {
+          "file": "screenshots/dating-changes-before-accept-1280.png",
+          "width": 1280,
+          "height": 1901,
+          "sha256": "ad1da4c80825b506f973928aaf175d56a105b0eda48f4ceaaf6f70dd39a43f41"
+        },
+        {
+          "file": "screenshots/dating-agreed-1280.png",
+          "width": 1280,
+          "height": 1901,
+          "sha256": "4007c8bd51868dde4418850ea4990bde8a5ef92eeb859bb9f25a8f7afc31801f"
+        },
+        {
+          "file": "screenshots/dating-reflection-390.png",
+          "width": 390,
+          "height": 3020,
+          "sha256": "86008c6084710098393236d4059060b3a6fa71c4cf01f23df87a4fd72ef0be9f"
+        },
+        {
+          "file": "screenshots/dating-deleted-320.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "285c2c458540b236f5ec1aedfe63e4d26544eca658351a81cbde60863050b96f"
+        }
+      ]
+    }
+  ],
+  "served": [
+    {
+      "name": "dating.html",
+      "sha256": "3d04f09caa98147ead0f9cb83f860b78971c308312d178454b25979cf8908770"
+    },
+    {
+      "name": "dating.css",
+      "sha256": "d3241785ded82a9eb57846f06a62225c5faf8859e809bdd03eb236bda97805c0"
+    },
+    {
+      "name": "dating-ui.mjs",
+      "sha256": "d30472658ea2cba17118c926fb6673c5d42c2908d503f85199613f998c553254"
+    },
+    {
+      "name": "dating-live.mjs",
+      "sha256": "bb17da22edbd39f09c44d08f0ee06cfafd0d2fee1f01a56274c2ed87ecdfbad3"
+    },
+    {
+      "name": "dating-insights.mjs",
+      "sha256": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49"
+    },
+    {
+      "name": "discovery.mjs",
+      "sha256": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a"
+    },
+    {
+      "name": "public-profile.mjs",
+      "sha256": "75a51c725459b38ca29c1c1e36e434b4b2e843635b07331dc1d7f05ed60c8245"
+    },
+    {
+      "name": "preference-deadline.mjs",
+      "sha256": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc"
+    },
+    {
+      "name": "introduction-guidance.mjs",
+      "sha256": "10da87ed71b7282afa53393efbc487d8a99b3cd85f091e492c61958af51e0670"
+    },
+    {
+      "name": "meeting-regions.mjs",
+      "sha256": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017"
+    },
+    {
+      "name": "product-experience.mjs",
+      "sha256": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf"
+    },
+    {
+      "name": "discovery-guidance.mjs",
+      "sha256": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2"
+    }
+  ],
+  "syntax": [
+    "experiences/atlas-lab/dating-ui.mjs",
+    "experiences/atlas-lab/dating-live.mjs",
+    "experiences/atlas-lab/dating-insights.mjs",
+    "experiences/atlas-lab/discovery.mjs",
+    "experiences/atlas-lab/public-profile.mjs",
+    "experiences/atlas-lab/dating-service.mjs",
+    "experiences/atlas-lab/dating-server.mjs",
+    "experiences/atlas-lab/dating-store.mjs",
+    "experiences/atlas-lab/preference-deadline.mjs",
+    "experiences/atlas-lab/introduction-guidance.mjs",
+    "experiences/atlas-lab/meeting-regions.mjs",
+    "experiences/atlas-lab/product-experience.mjs",
+    "experiences/atlas-lab/discovery-guidance.mjs"
+  ],
+  "scopedDiffCheck": 0,
+  "engineChecks": [
+    {
+      "path": "atlas/ask.js",
+      "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "unchanged": true
+    },
+    {
+      "path": "atlas/personalization.js",
+      "sha256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+      "unchanged": true
+    },
+    {
+      "path": "atlas/conditional-preference.js",
+      "sha256": "6b814ec429c7a29643f958b6cb09ef4efc96f22913d3e873dbb095f8f09e3d4e",
+      "unchanged": true
+    }
+  ],
+  "engineCodeChangedByBatch": 0,
+  "newEngines": 0,
+  "actualUsers": 0,
+  "paidModelCalls": 0,
+  "externalApiCost": 0,
+  "publicDeployment": false,
+  "preview": "http://127.0.0.1:54310/atlas-lab/dating.html",
+  "reviewRepairs": [
+    "Changing disclosure inputs clears its prior confirmation payload",
+    "Editing an expired public answer requires a new explicit deadline and actionable local guidance",
+    "Public deadline summaries explicitly use Korean time"
+  ],
+  "limitations": [
+    "Synthetic local HTTP and browser checks do not verify real user satisfaction, real devices, real identity providers or deployment",
+    "Paid AI, model evaluations, tutor and participant recruitment remain deferred"
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "at": "2026-10-07T19:42:48.941Z",
+  "scope": "rehearsal-provider-authentication-and-local-product-runtime",
+  "ok": true,
+  "releaseReady": false,
+  "registration": {
+    "environment": "rehearsal",
+    "previousClients": 18,
+    "clients": 19,
+    "mappingVerified": true,
+    "client": "dating-browser",
+    "callback": "http://127.0.0.1:4300/atlas-lab/dating.html",
+    "otherAppConfigsPreserved": true
+  },
+  "validation": {
+    "unit": [
+      {
+        "file": "contracts.tap",
+        "tests": 84,
+        "passed": 84,
+        "failed": 0
+      },
+      {
+        "file": "provider-runtime.tap",
+        "tests": 25,
+        "passed": 25,
+        "failed": 0
+      }
+    ],
+    "executions": 109,
+    "duplicateRuntimeChecks": 9,
+    "uniquePassed": 100,
+    "providerChecks": 10,
+    "providerAuthorizationResponses": {
+      "consentRequired": 2,
+      "alreadyApproved": 1
+    },
+    "realProviderContacted": true,
+    "publicBrowserPortalVerified": false,
+    "physicalDevices": 0,
+    "paidAICalls": 0
+  },
+  "cleanup": {
+    "syntheticAccountsCreated": 4,
+    "normalDeleteRequests": 4,
+    "deletionPendingConfirmed": 4,
+    "deletionGraceDays": 7,
+    "purgeVerified": false,
+    "localDatabasesRemoved": true
+  },
+  "initialFailure": {
+    "file": "provider-first-run.json",
+    "code": "AUTHORIZATION_CLIENT_MISMATCH",
+    "resolution": "Probe supports both documented consent-required and already-approved responses; callback/state/S256 checks retained."
+  },
+  "runtime": {
+    "configured": true,
+    "mode": "account",
+    "host": "127.0.0.1",
+    "port": 4300,
+    "accountConfigured": true,
+    "callbackPortMatched": true,
+    "lifecycleConfigured": false,
+    "adultAdapterPresent": false,
+    "adultAdapterContractChecked": false,
+    "providerTested": false,
+    "databaseOpened": false,
+    "listening": false
+  },
+  "lifecycle": {
+    "at": "2026-10-07T19:28:44.524Z",
+    "environment": "rehearsal",
+    "mode": "read-only-schema-presence",
+    "tables": {
+      "deletion": "engine.synk_account_lifecycle",
+      "availability": "engine.synk_account_availability",
+      "cursor": "engine.synk_account_availability_cursor"
+    },
+    "deletion_outbox": false,
+    "availability_outbox": false,
+    "availability_cursor": false,
+    "migrationApplied": false,
+    "deliveryRun": false,
+    "operationalConnectionVerified": false
+  },
+  "portal": {
+    "candidate": "portal-config.candidate.json",
+    "before": "portal-config.before.json",
+    "addedClients": 1,
+    "published": false
+  },
+  "remaining": [
+    "Review and publish prepared consent configuration",
+    "HTTPS product hosting and physical-phone/PC checks",
+    "Select and connect actual adult verification provider",
+    "Apply central lifecycle/availability schema and configure trusted delivery host",
+    "Verify eventual central account purge after grace period"
+  ],
+  "preservedDeferrals": [
+    "paid AI calls",
+    "paid model evaluation",
+    "conversation tutor",
+    "participant recruitment"
+  ],
+  "sources": {
+    "tools/synk-id/registry.cjs": "d1bf41573269944e517f8439b400f40af5cb44a163bd015e56c3af98545f0ad8",
+    "tools/synk-id/public-config.cjs": "f394fea8a67c8238b37cda240e76bbd5e3ada400d5c3ec83ca526b5778532e42",
+    "tools/synk-id/public-config.test.cjs": "44aa164edbc5b9f7f5079ee044b7cc1c721801d589610030f1237dfc0c72e741",
+    "tools/synk-id/prepare-portal.test.mjs": "22813357e9a3651e9120e3e4c40de6ecd69a5080a1719dfbde3d25aa2cfb0f0f",
+    "tests/synk-id-provision-apply.test.cjs": "448581fe5d5047a93a721d689ca74f01acc4650eb488bfe9f7c30f5645898f29",
+    "tools/synk-id/qa/dating-pkce-rehearsal.cjs": "ce23dcb6033fc1f5efe177484bfb5ab3825a21acf70cb980f23e07f3c96fe5ad",
+    "tools/synk-id/qa/dating-pkce-rehearsal.test.cjs": "0e4d01d0a29e251380ec74da939d73dfd2566b4c6aa13a68dfe11c1f227440a7",
+    "experiences/atlas-lab/dating-runtime.mjs": "4cab90895d79135825b992312df4027fcd8279189acc2136823eabce0620f3b8",
+    "experiences/atlas-lab/dating-server.mjs": "6c76b37f82ed7a72597a5cd70921793bbd6cb868d09b38b5ba5ab66eccea5fd7",
+    "experiences/atlas-lab/dating-lifecycle.mjs": "6633a9dbc6d51394fe680f34b42c1d9c0748b5a9889194b8c9d92aa25486a942",
+    "experiences/atlas-lab/dating-account.mjs": "f45df51b75d7ee502baa36e44c6c1fc31258fdd6238f9591736f1da2e24c94e6",
+    "experiences/atlas-lab/dating-auth.mjs": "84fc7df71c8b8539afd4fb60241093af27ba7d898d377f35cf1f0ded8f1077b8",
+    "experiences/atlas-lab/dating-service.mjs": "c0929e57802e406b242e00811d85aa814d419bf9963eb757ed6035c70199e9fa",
+    "experiences/atlas-lab/dating-ui.mjs": "c30023f676d1291d93f7ea71db8b6c8116362c3849b0aedc4b49f32821425951",
+    "experiences/atlas-lab/account.config.json": "57d1bb8a82cfa3c60e7cbe9570e8da5faa6136822c6b559d45159de807205dbe",
+    "tests/atlas-dating-runtime.test.mjs": "a1936b554344f09a571216bc51a42dd58a7be0b350798065f4c5375173f9a1e4",
+    "tools/synk-id/state/provision-rehearsal.json": "cb795efff28d7d060cac836ff7a4a651d329c795bd4aa3550a92c14c63c963f4"
+  }
+}

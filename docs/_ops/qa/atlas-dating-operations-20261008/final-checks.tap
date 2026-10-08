@@ -1,0 +1,616 @@
+TAP version 13
+# Subtest: receipt checkpoint binding uses only the public registration or demo surface and excludes OAuth secrets and query parameters
+ok 1 - receipt checkpoint binding uses only the public registration or demo surface and excludes OAuth secrets and query parameters
+  ---
+  duration_ms: 42.3191
+  type: 'test'
+  ...
+# Subtest: demo credentials are memory-only, distinct from a real SYNK session
+ok 2 - demo credentials are memory-only, distinct from a real SYNK session
+  ---
+  duration_ms: 3.3574
+  type: 'test'
+  ...
+# Subtest: an OAuth session is bound to its registered identity origin and product client
+ok 3 - an OAuth session is bound to its registered identity origin and product client
+  ---
+  duration_ms: 1.2108
+  type: 'test'
+  ...
+# Subtest: account requests use SYNK bearer but never send private records to the identity host
+ok 4 - account requests use SYNK bearer but never send private records to the identity host
+  ---
+  duration_ms: 1.1663
+  type: 'test'
+  ...
+# Subtest: revoked identity clears stored credentials and does not retry the mutation
+ok 5 - revoked identity clears stored credentials and does not retry the mutation
+  ---
+  duration_ms: 1.1088
+  type: 'test'
+  ...
+# Subtest: logout rejects a late response from the prior identity
+ok 6 - logout rejects a late response from the prior identity
+  ---
+  duration_ms: 2.8688
+  type: 'test'
+  ...
+# Subtest: dating PKCE uses its own pending namespace without overwriting platform login
+ok 7 - dating PKCE uses its own pending namespace without overwriting platform login
+  ---
+  duration_ms: 22.8635
+  type: 'test'
+  ...
+# Subtest: renewal is single-flight and a logout during refresh cannot restore a session
+ok 8 - renewal is single-flight and a logout during refresh cannot restore a session
+  ---
+  duration_ms: 2.8501
+  type: 'test'
+  ...
+# Subtest: a revoked refresh credential clears the session; a transient provider outage preserves it
+ok 9 - a revoked refresh credential clears the session; a transient provider outage preserves it
+  ---
+  duration_ms: 2.3143
+  type: 'test'
+  ...
+# Subtest: only dispatched action uncertainty is marked: transport, unreadable JSON/body and server outage; definitive rejection and GET are separate
+ok 10 - only dispatched action uncertainty is marked: transport, unreadable JSON/body and server outage; definitive rejection and GET are separate
+  ---
+  duration_ms: 8.2458
+  type: 'test'
+  ...
+# Subtest: logout or disposal during a dispatched mutation does not turn a stale response into a recoverable write
+ok 11 - logout or disposal during a dispatched mutation does not turn a stale response into a recoverable write
+  ---
+  duration_ms: 1.1059
+  type: 'test'
+  ...
+# Subtest: a malformed authentication rejection clears credentials and never remains uncertain
+ok 12 - a malformed authentication rejection clears credentials and never remains uncertain
+  ---
+  duration_ms: 0.6533
+  type: 'test'
+  ...
+# Subtest: busy and explicit restart rejections preserve login and allow only an explicit new attempt
+ok 13 - busy and explicit restart rejections preserve login and allow only an explicit new attempt
+  ---
+  duration_ms: 1.2397
+  type: 'test'
+  ...
+# Subtest: only a complete explicit 503 restart envelope removes action uncertainty
+ok 14 - only a complete explicit 503 restart envelope removes action uncertainty
+  ---
+  duration_ms: 1.7005
+  type: 'test'
+  ...
+# Subtest: state retrieval failures do not claim that a change failed to save
+ok 15 - state retrieval failures do not claim that a change failed to save
+  ---
+  duration_ms: 1.0151
+  type: 'test'
+  ...
+# Subtest: admission defaults bound active verification to eight and reject invalid or unbounded settings
+ok 16 - admission defaults bound active verification to eight and reject invalid or unbounded settings
+  ---
+  duration_ms: 3.6541
+  type: 'test'
+  ...
+# Subtest: queued verification starts in FIFO order and a verifier failure releases capacity
+ok 17 - queued verification starts in FIFO order and a verifier failure releases capacity
+  ---
+  duration_ms: 4.8751
+  type: 'test'
+  ...
+# Subtest: queue deadline never releases an active verifier slot or calls an expired job
+ok 18 - queue deadline never releases an active verifier slot or calls an expired job
+  ---
+  duration_ms: 65.8621
+  type: 'test'
+  ...
+# Subtest: cancelling queued and active clients removes only queued work until the verifier actually settles
+ok 19 - cancelling queued and active clients removes only queued work until the verifier actually settles
+  ---
+  duration_ms: 0.7164
+  type: 'test'
+  ...
+# Subtest: closing admission rejects queued and future work without pretending an active verifier has stopped
+ok 20 - closing admission rejects queued and future work without pretending an active verifier has stopped
+  ---
+  duration_ms: 15.082
+  type: 'test'
+  ...
+# Subtest: a delayed timer cannot admit work whose monotonic queue deadline has already passed
+ok 21 - a delayed timer cannot admit work whose monotonic queue deadline has already passed
+  ---
+  duration_ms: 31.2012
+  type: 'test'
+  ...
+# Subtest: close or cancellation before the invocation microtask prevents an external verifier from starting
+ok 22 - close or cancellation before the invocation microtask prevents an external verifier from starting
+  ---
+  duration_ms: 0.9867
+  type: 'test'
+  ...
+# Subtest: HTTP queue overflow and deadline return retry guidance before auth or any database transaction
+ok 23 - HTTP queue overflow and deadline return retry guidance before auth or any database transaction
+  ---
+  duration_ms: 762.5241
+  type: 'test'
+  ...
+# Subtest: HTTP client cancellation removes queued verification and an abandoned active request cannot write
+ok 24 - HTTP client cancellation removes queued verification and an abandoned active request cannot write
+  ---
+  duration_ms: 797.6415
+  type: 'test'
+  ...
+# Subtest: service close rejects waiting HTTP work and late verifier completion never reopens or touches storage
+ok 25 - service close rejects waiting HTTP work and late verifier completion never reopens or touches storage
+  ---
+  duration_ms: 735.3489
+  type: 'test'
+  ...
+# Subtest: HTTP verifier failure frees capacity and demo sessions do not need account admission
+ok 26 - HTTP verifier failure frees capacity and demo sessions do not need account admission
+  ---
+  duration_ms: 4718.1159
+  type: 'test'
+  ...
+# Subtest: paired PGlite dump/load and SQLite backup restore a lost-ack hold, replay exactly, and require fresh consent and acceptance
+ok 27 - paired PGlite dump/load and SQLite backup restore a lost-ack hold, replay exactly, and require fresh consent and acceptance
+  ---
+  duration_ms: 19090.5376
+  type: 'test'
+  ...
+# Subtest: restored final deletion receipt and tombstone survive worker replay and every later active event
+ok 28 - restored final deletion receipt and tombstone survive worker replay and every later active event
+  ---
+  duration_ms: 6014.4692
+  type: 'test'
+  ...
+# Subtest: a missing central cursor or product lifecycle ledger fails read-only admission before the host is opened
+ok 29 - a missing central cursor or product lifecycle ledger fails read-only admission before the host is opened
+  ---
+  duration_ms: 6173.6138
+  type: 'test'
+  ...
+# Subtest: individually valid snapshots from different delivery points fail paired restore admission
+ok 30 - individually valid snapshots from different delivery points fail paired restore admission
+  ---
+  duration_ms: 6454.4551
+  type: 'test'
+  ...
+# Subtest: two coherent old backups need newer deletion and sequence knowledge outside the pair to reject rollback
+ok 31 - two coherent old backups need newer deletion and sequence knowledge outside the pair to reject rollback
+  ---
+  duration_ms: 5506.6897
+  type: 'test'
+  ...
+# Subtest: a lost response keeps an immutable tab-only envelope, blocks new writes, and retries the same UUID and body only explicitly
+ok 32 - a lost response keeps an immutable tab-only envelope, blocks new writes, and retries the same UUID and body only explicitly
+  ---
+  duration_ms: 4.5495
+  type: 'test'
+  ...
+# Subtest: a missing receipt is inconclusive and an exact applied receipt resolves with the latest view
+ok 33 - a missing receipt is inconclusive and an exact applied receipt resolves with the latest view
+  ---
+  duration_ms: 0.8649
+  type: 'test'
+  ...
+# Subtest: receipt transport or malformed/mismatched replies preserve pending; definitive rejection clears it
+ok 34 - receipt transport or malformed/mismatched replies preserve pending; definitive rejection clears it
+  ---
+  duration_ms: 1.8707
+  type: 'test'
+  ...
+# Subtest: repeated uncertain retries retain pending, but revision rejection clears it
+ok 35 - repeated uncertain retries retain pending, but revision rejection clears it
+  ---
+  duration_ms: 0.9742
+  type: 'test'
+  ...
+# Subtest: identity changes and explicit lifecycle clearing discard pending and reject late private responses
+ok 36 - identity changes and explicit lifecycle clearing discard pending and reject late private responses
+  ---
+  duration_ms: 0.749
+  type: 'test'
+  ...
+# Subtest: concurrent checks/retries cannot launch duplicate traffic and ordinary definite failures do not leave pending
+ok 37 - concurrent checks/retries cannot launch duplicate traffic and ordinary definite failures do not leave pending
+  ---
+  duration_ms: 0.9034
+  type: 'test'
+  ...
+# Subtest: an incomplete or other actor’s action response stays unresolved instead of publishing the wrong view
+ok 38 - an incomplete or other actor’s action response stays unresolved instead of publishing the wrong view
+  ---
+  duration_ms: 0.8063
+  type: 'test'
+  ...
+# Subtest: standalone dating files are an exact closed browser dependency graph
+ok 39 - standalone dating files are an exact closed browser dependency graph
+  ---
+  duration_ms: 353.8451
+  type: 'test'
+  ...
+# Subtest: raw traversal, encoded paths, aliases and unknown files never map to a dating public file
+ok 40 - raw traversal, encoded paths, aliases and unknown files never map to a dating public file
+  ---
+  duration_ms: 0.9289
+  type: 'test'
+  ...
+# Subtest: standalone host serves every browser dependency and only its own root and config
+ok 41 - standalone host serves every browser dependency and only its own root and config
+  ---
+  duration_ms: 450.8668
+  type: 'test'
+  ...
+# Subtest: standalone host does not dispatch unrelated APIs or normalized traversal to a service
+ok 42 - standalone host does not dispatch unrelated APIs or normalized traversal to a service
+  ---
+  duration_ms: 24.9745
+  type: 'test'
+  ...
+# Subtest: request guard runs before public config, files, redirect and service actions
+ok 43 - request guard runs before public config, files, redirect and service actions
+  ---
+  duration_ms: 7.2186
+  type: 'test'
+  ...
+# Subtest: request guard can finish a response and accepted requests continue
+ok 44 - request guard can finish a response and accepted requests continue
+  ---
+  duration_ms: 7.1938
+  type: 'test'
+  ...
+# Subtest: reviewed names cannot publish files through a symlink or junction
+ok 45 - reviewed names cannot publish files through a symlink or junction
+  ---
+  duration_ms: 88.7834
+  type: 'test'
+  ...
+# Subtest: development hub retains other product entry points while dating server code stays private
+ok 46 - development hub retains other product entry points while dating server code stays private
+  ---
+  duration_ms: 170.2444
+  type: 'test'
+  ...
+# Subtest: actual --check-restore prints a redacted summary without DB writes, adult imports, account calls or a listener
+ok 47 - actual --check-restore prints a redacted summary without DB writes, adult imports, account calls or a listener
+  ---
+  duration_ms: 1515.153
+  type: 'test'
+  ...
+# Subtest: actual --resume-after-restore admits the same files and serves account config without verifier injection or account calls
+ok 48 - actual --resume-after-restore admits the same files and serves account config without verifier injection or account calls
+  ---
+  duration_ms: 3103.7946
+  type: 'test'
+  ...
+# Subtest: evidence changed by an imported adult adapter after inspection is rejected before reopening the product DB or listening
+ok 49 - evidence changed by an imported adult adapter after inspection is rejected before reopening the product DB or listening
+  ---
+  duration_ms: 2449.8777
+  type: 'test'
+  ...
+# Subtest: configured restore evidence cannot be bypassed by default startup, and stale latest evidence cannot resume
+ok 50 - configured restore evidence cannot be bypassed by default startup, and stale latest evidence cannot resume
+  ---
+  duration_ms: 1268.3614
+  type: 'test'
+  ...
+# Subtest: offline admission reads the checkpointed database unchanged, redacts identities, and is one-use
+ok 51 - offline admission reads the checkpointed database unchanged, redacts identities, and is one-use
+  ---
+  duration_ms: 931.0541
+  type: 'test'
+  ...
+# Subtest: missing database or independent evidence cannot create a database or authorize a restart
+ok 52 - missing database or independent evidence cannot create a database or authorize a restart
+  ---
+  duration_ms: 569.3954
+  type: 'test'
+  ...
+# Subtest: an operator latest export must have explicit provenance and a bounded fresh timestamp
+ok 53 - an operator latest export must have explicit provenance and a bounded fresh timestamp
+  ---
+  duration_ms: 1057.2953
+  type: 'test'
+  ...
+# Subtest: two mutually coherent old backups cannot pass a newer independent hold sequence
+ok 54 - two mutually coherent old backups cannot pass a newer independent hold sequence
+  ---
+  duration_ms: 2732.7179
+  type: 'test'
+  ...
+# Subtest: two mutually coherent old backups cannot resurrect an independently known terminal deletion
+ok 55 - two mutually coherent old backups cannot resurrect an independently known terminal deletion
+  ---
+  duration_ms: 1751.4052
+  type: 'test'
+  ...
+# Subtest: latest exports must match the service environment and stable ledger status, not merely counters
+ok 56 - latest exports must match the service environment and stable ledger status, not merely counters
+  ---
+  duration_ms: 744.7486
+  type: 'test'
+  ...
+# Subtest: even a coherent pending hold requires product state to be fenced before reopening
+ok 57 - even a coherent pending hold requires product state to be fenced before reopening
+  ---
+  duration_ms: 313.8157
+  type: 'test'
+  ...
+# Subtest: changed database, latest evidence, or environment invalidates and consumes a prior admission
+ok 58 - changed database, latest evidence, or environment invalidates and consumes a prior admission
+  ---
+  duration_ms: 454.2028
+  type: 'test'
+  ...
+# Subtest: admission expires and rejects clock rollback before any service opens the database
+ok 59 - admission expires and rejects clock rollback before any service opens the database
+  ---
+  duration_ms: 230.7296
+  type: 'test'
+  ...
+# Subtest: uncheckpointed sidecars are rejected before readonly SQLite access and when added after inspection
+ok 60 - uncheckpointed sidecars are rejected before readonly SQLite access and when added after inspection
+  ---
+  duration_ms: 213.2878
+  type: 'test'
+  ...
+# Subtest: suspended product accounts remain suspended and are compatible with central active accounts
+ok 61 - suspended product accounts remain suspended and are compatible with central active accounts
+  ---
+  duration_ms: 169.3463
+  type: 'test'
+  ...
+# Subtest: missing tables, malformed receipts, and checksum damage fail closed
+ok 62 - missing tables, malformed receipts, and checksum damage fail closed
+  ---
+  duration_ms: 556.0895
+  type: 'test'
+  ...
+# Subtest: empty central and product inventories, demo databases, and malformed evidence cannot authorize restore
+ok 63 - empty central and product inventories, demo databases, and malformed evidence cannot authorize restore
+  ---
+  duration_ms: 590.9912
+  type: 'test'
+  ...
+# Subtest: valid deleted tombstones require deletion ledger and no private document
+ok 64 - valid deleted tombstones require deletion ledger and no private document
+  ---
+  duration_ms: 362.622
+  type: 'test'
+  ...
+# Subtest: restore evidence cannot live inside the public experiences directory
+ok 65 - restore evidence cannot live inside the public experiences directory
+  ---
+  duration_ms: 142.993
+  type: 'test'
+  ...
+# Subtest: invalid SQLite bytes are rejected without leaking raw input or generating sidecars
+ok 66 - invalid SQLite bytes are rejected without leaking raw input or generating sidecars
+  ---
+  duration_ms: 562.9261
+  type: 'test'
+  ...
+# Subtest: a tombstone cannot admit restored private introductions left outside the account document
+ok 67 - a tombstone cannot admit restored private introductions left outside the account document
+  ---
+  duration_ms: 695.1166
+  type: 'test'
+  ...
+# Subtest: an account host derives its fixed port from the registered callback and rejects mismatched or ephemeral ports
+ok 68 - an account host derives its fixed port from the registered callback and rejects mismatched or ephemeral ports
+  ---
+  duration_ms: 77.537
+  type: 'test'
+  ...
+# Subtest: restore mode requires paired paths, an explicit account database and an explicit check or resume command
+ok 69 - restore mode requires paired paths, an explicit account database and an explicit check or resume command
+  ---
+  duration_ms: 138.4772
+  type: 'test'
+  ...
+# Subtest: the local CLI refuses callbacks it cannot serve and account files do not fall back to demo
+ok 70 - the local CLI refuses callbacks it cannot serve and account files do not fall back to demo
+  ---
+  duration_ms: 158.8084
+  type: 'test'
+  ...
+# Subtest: HTTPS proxy configuration pins the public callback separately from its private listening port
+ok 71 - HTTPS proxy configuration pins the public callback separately from its private listening port
+  ---
+  duration_ms: 369.6142
+  type: 'test'
+  ...
+# Subtest: public transport settings cannot silently enable demo or accept ambiguous trust declarations
+ok 72 - public transport settings cannot silently enable demo or accept ambiguous trust declarations
+  ---
+  duration_ms: 6.9586
+  type: 'test'
+  ...
+# Subtest: a public host rejects a callback for another origin or page before opening storage
+ok 73 - a public host rejects a callback for another origin or page before opening storage
+  ---
+  duration_ms: 41.3036
+  type: 'test'
+  ...
+# Subtest: the actual public factory guards configuration, static files and APIs before authentication
+ok 74 - the actual public factory guards configuration, static files and APIs before authentication
+  ---
+  duration_ms: 1171.916
+  type: 'test'
+  ...
+# Subtest: configuration inspection is redacted and never evaluates an adult module, opens SQLite or starts a server
+ok 75 - configuration inspection is redacted and never evaluates an adult module, opens SQLite or starts a server
+  ---
+  duration_ms: 1903.5936
+  type: 'test'
+  ...
+# Subtest: only an explicit account server loads a trusted adult adapter and loading never invokes verify
+ok 76 - only an explicit account server loads a trusted adult adapter and loading never invokes verify
+  ---
+  duration_ms: 347.9749
+  type: 'test'
+  ...
+# Subtest: invalid adult adapters and private provider errors produce only fixed configuration errors
+ok 77 - invalid adult adapters and private provider errors produce only fixed configuration errors
+  ---
+  duration_ms: 258.5841
+  type: 'test'
+  ...
+# Subtest: the lifecycle receiver and CLI accept only the same 32 to 256 character contract as the central sender
+ok 78 - the lifecycle receiver and CLI accept only the same 32 to 256 character contract as the central sender
+  ---
+  duration_ms: 391.5002
+  type: 'test'
+  ...
+# Subtest: CLI malformed files and unknown arguments exit without printing private JSON or creating a database
+ok 79 - CLI malformed files and unknown arguments exit without printing private JSON or creating a database
+  ---
+  duration_ms: 1627.6438
+  type: 'test'
+  ...
+# Subtest: an occupied fixed callback port stops the CLI instead of moving the account host to an unregistered port
+ok 80 - an occupied fixed callback port stops the CLI instead of moving the account host to an unregistered port
+  ---
+  duration_ms: 811.1271
+  type: 'test'
+  ...
+# Subtest: the actual CLI wires the adult and lifecycle adapters while public configuration contains neither
+ok 81 - the actual CLI wires the adult and lifecycle adapters while public configuration contains neither
+  ---
+  duration_ms: 662.9695
+  type: 'test'
+  ...
+# Subtest: shutdown lets an accepted save finish and rejects a later pipelined request before dispatch
+ok 82 - shutdown lets an accepted save finish and rejects a later pipelined request before dispatch
+  ---
+  duration_ms: 1104.5238
+  type: 'test'
+  ...
+# Subtest: a bounded forced stop prevents a late authentication from writing after SQLite closes
+ok 83 - a bounded forced stop prevents a late authentication from writing after SQLite closes
+  ---
+  duration_ms: 750.4179
+  type: 'test'
+  ...
+# Subtest: draining rejects public config and mutation without reading the body or invoking a handler
+ok 84 - draining rejects public config and mutation without reading the body or invoking a handler
+  ---
+  duration_ms: 0.7466
+  type: 'test'
+  ...
+# Subtest: CLI signal wiring drains once and removes handlers; forced completion exits nonzero
+ok 85 - CLI signal wiring drains once and removes handlers; forced completion exits nonzero
+  ---
+  duration_ms: 0.5846
+  type: 'test'
+  ...
+# Subtest: invalid shutdown bounds fail before a listener or database is created
+ok 86 - invalid shutdown bounds fail before a listener or database is created
+  ---
+  duration_ms: 1.0554
+  type: 'test'
+  ...
+# Subtest: public transport requires account mode, a pure HTTPS origin and an explicit finite exact proxy list
+ok 87 - public transport requires account mode, a pure HTTPS origin and an explicit finite exact proxy list
+  ---
+  duration_ms: 9.9479
+  type: 'test'
+  ...
+# Subtest: HTTPS proxy origin supports safe navigation, HEAD and same-origin browser writes
+ok 88 - HTTPS proxy origin supports safe navigation, HEAD and same-origin browser writes
+  ---
+  duration_ms: 1.1997
+  type: 'test'
+  ...
+# Subtest: private listener, backend authority and exact proxy peer remain mandatory
+ok 89 - private listener, backend authority and exact proxy peer remain mandatory
+  ---
+  duration_ms: 1.2418
+  type: 'test'
+  ...
+# Subtest: IPv4-mapped IPv6 addresses are normalized for both registration and peer matching
+ok 90 - IPv4-mapped IPv6 addresses are normalized for both registration and peer matching
+  ---
+  duration_ms: 2.284
+  type: 'test'
+  ...
+# Subtest: forwarded scheme, hostname and explicit port cannot be inferred from other headers
+ok 91 - forwarded scheme, hostname and explicit port cannot be inferred from other headers
+  ---
+  duration_ms: 1.2821
+  type: 'test'
+  ...
+# Subtest: raw duplicate, comma-joined, array and mixed forwarding headers are rejected
+ok 92 - raw duplicate, comma-joined, array and mixed forwarding headers are rejected
+  ---
+  duration_ms: 3.0243
+  type: 'test'
+  ...
+# Subtest: cross-site and same-site browser traffic, missing mutation origin and sibling origins are rejected
+ok 93 - cross-site and same-site browser traffic, missing mutation origin and sibling origins are rejected
+  ---
+  duration_ms: 5.2861
+  type: 'test'
+  ...
+# Subtest: the public OAuth callback permits cross-site GET navigation without relaxing authenticated API origins
+ok 94 - the public OAuth callback permits cross-site GET navigation without relaxing authenticated API origins
+  ---
+  duration_ms: 0.8432
+  type: 'test'
+  ...
+# Subtest: public resource navigation still requires the trusted proxy, exact forwarding authority and unique headers
+ok 95 - public resource navigation still requires the trusted proxy, exact forwarding authority and unique headers
+  ---
+  duration_ms: 0.6829
+  type: 'test'
+  ...
+# Subtest: public lifecycle uses the same trusted proxy path while forbidding browser context
+ok 96 - public lifecycle uses the same trusted proxy path while forbidding browser context
+  ---
+  duration_ms: 0.6579
+  type: 'test'
+  ...
+# Subtest: unconfigured local mode retains its original loopback origin and separate lifecycle contract
+ok 97 - unconfigured local mode retains its original loopback origin and separate lifecycle contract
+  ---
+  duration_ms: 0.5072
+  type: 'test'
+  ...
+# Subtest: real HTTP parser duplicates and spoofed browser origins fail before authentication or mutation
+ok 98 - real HTTP parser duplicates and spoofed browser origins fail before authentication or mutation
+  ---
+  duration_ms: 927.4319
+  type: 'test'
+  ...
+# Subtest: real lifecycle requests require both proxy verification and their independent server credential
+ok 99 - real lifecycle requests require both proxy verification and their independent server credential
+  ---
+  duration_ms: 538.8387
+  type: 'test'
+  ...
+# Subtest: local account entry serves only reviewed public files, never its build sources or dependencies
+ok 100 - local account entry serves only reviewed public files, never its build sources or dependencies
+  ---
+  duration_ms: 139.0892
+  type: 'test'
+  ...
+# Subtest: local root opens the platform while the learning hub remains directly available
+ok 101 - local root opens the platform while the learning hub remains directly available
+  ---
+  duration_ms: 136.9407
+  type: 'test'
+  ...
+1..101
+# tests 101
+# suites 0
+# pass 101
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 44088.2533

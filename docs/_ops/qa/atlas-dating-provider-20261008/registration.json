@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-07T19:31:40.414Z",
+  "environment": "rehearsal",
+  "mode": "apply",
+  "registered": 19,
+  "pending": [
+    "teacher-browser"
+  ],
+  "bindingRequired": [],
+  "registrationsNeeded": [],
+  "mappingVerified": true,
+  "mappingEntries": 19,
+  "files": [
+    {
+      "path": "experiences/atlas-lab/account.config.json",
+      "action": "create",
+      "written": true
+    }
+  ],
+  "liveLoginVerified": false,
+  "productionChanged": false,
+  "otherAppConfigsWritten": false,
+  "portalPublished": false
+}

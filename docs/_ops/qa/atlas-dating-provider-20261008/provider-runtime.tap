@@ -1,0 +1,160 @@
+TAP version 13
+# Subtest: real canonical purge SQL, outbox worker and product HTTP receiver erase together; a lost acknowledgment retries safely after restart
+ok 1 - real canonical purge SQL, outbox worker and product HTTP receiver erase together; a lost acknowledgment retries safely after restart
+  ---
+  duration_ms: 5515.5786
+  type: 'test'
+  ...
+# Subtest: canonical status transactions and the shared worker stop exposure without owner login, then require fresh consent before a new introduction
+ok 2 - canonical status transactions and the shared worker stop exposure without owner login, then require fresh consent before a new introduction
+  ---
+  duration_ms: 3476.5215
+  type: 'test'
+  ...
+# Subtest: an account host derives its fixed port from the registered callback and rejects mismatched or ephemeral ports
+ok 3 - an account host derives its fixed port from the registered callback and rejects mismatched or ephemeral ports
+  ---
+  duration_ms: 121.7072
+  type: 'test'
+  ...
+# Subtest: the local CLI refuses callbacks it cannot serve and account files do not fall back to demo
+ok 4 - the local CLI refuses callbacks it cannot serve and account files do not fall back to demo
+  ---
+  duration_ms: 77.3317
+  type: 'test'
+  ...
+# Subtest: configuration inspection is redacted and never evaluates an adult module, opens SQLite or starts a server
+ok 5 - configuration inspection is redacted and never evaluates an adult module, opens SQLite or starts a server
+  ---
+  duration_ms: 232.7433
+  type: 'test'
+  ...
+# Subtest: only an explicit account server loads a trusted adult adapter and loading never invokes verify
+ok 6 - only an explicit account server loads a trusted adult adapter and loading never invokes verify
+  ---
+  duration_ms: 32.46
+  type: 'test'
+  ...
+# Subtest: invalid adult adapters and private provider errors produce only fixed configuration errors
+ok 7 - invalid adult adapters and private provider errors produce only fixed configuration errors
+  ---
+  duration_ms: 37.6178
+  type: 'test'
+  ...
+# Subtest: the lifecycle receiver and CLI accept only the same 32 to 256 character contract as the central sender
+ok 8 - the lifecycle receiver and CLI accept only the same 32 to 256 character contract as the central sender
+  ---
+  duration_ms: 20.1422
+  type: 'test'
+  ...
+# Subtest: CLI malformed files and unknown arguments exit without printing private JSON or creating a database
+ok 9 - CLI malformed files and unknown arguments exit without printing private JSON or creating a database
+  ---
+  duration_ms: 879.7288
+  type: 'test'
+  ...
+# Subtest: an occupied fixed callback port stops the CLI instead of moving the account host to an unregistered port
+ok 10 - an occupied fixed callback port stops the CLI instead of moving the account host to an unregistered port
+  ---
+  duration_ms: 922.8524
+  type: 'test'
+  ...
+# Subtest: the actual CLI wires the adult and lifecycle adapters while public configuration contains neither
+ok 11 - the actual CLI wires the adult and lifecycle adapters while public configuration contains neither
+  ---
+  duration_ms: 689.4647
+  type: 'test'
+  ...
+# Subtest: 기본 실행은 자격증명·파일·네트워크 없이 준비 요약만 반환하고 다른 실행 플래그를 거부한다
+ok 12 - 기본 실행은 자격증명·파일·네트워크 없이 준비 요약만 반환하고 다른 실행 플래그를 거부한다
+  ---
+  duration_ms: 10.3127
+  type: 'test'
+  ...
+# Subtest: 완료된 실제 binding·공개설정·리허설 과녁·기간을 확인하며 추정 ID를 허용하지 않는다
+ok 13 - 완료된 실제 binding·공개설정·리허설 과녁·기간을 확인하며 추정 ID를 허용하지 않는다
+  ---
+  duration_ms: 0.6481
+  type: 'test'
+  ...
+# Subtest: 실제 dating-account PKCE 코드와 기본 중앙 verifier 및 SQLite에서 두 세션 CAS·로그아웃·삭제를 왕복한다
+ok 14 - 실제 dating-account PKCE 코드와 기본 중앙 verifier 및 SQLite에서 두 세션 CAS·로그아웃·삭제를 왕복한다
+  ---
+  duration_ms: 636.2465
+  type: 'test'
+  ...
+# Subtest: 공급자 로그아웃이 원래 동의 세션까지 철회해도 정확한 합성 계정으로 다시 로그인하여 정리한다
+ok 15 - 공급자 로그아웃이 원래 동의 세션까지 철회해도 정확한 합성 계정으로 다시 로그인하여 정리한다
+  ---
+  duration_ms: 1058.852
+  type: 'test'
+  ...
+# Subtest: 기존 승인 OAuthRedirect는 재승인 없이 같은 콜백 state와 S256 교환을 거친다
+ok 16 - 기존 승인 OAuthRedirect는 재승인 없이 같은 콜백 state와 S256 교환을 거친다
+  ---
+  duration_ms: 470.657
+  type: 'test'
+  ...
+# Subtest: 기존 승인 응답의 잘못된 주소·state·중복 코드·혼합 client는 두 번째 교환 전에 거부한다
+ok 17 - 기존 승인 응답의 잘못된 주소·state·중복 코드·혼합 client는 두 번째 교환 전에 거부한다
+  ---
+  duration_ms: 1444.424
+  type: 'test'
+  ...
+# Subtest: 동의 상세의 client와 authorization ID 불일치는 redirect 분기로 우회하지 않는다
+ok 18 - 동의 상세의 client와 authorization ID 불일치는 redirect 분기로 우회하지 않는다
+  ---
+  duration_ms: 842.2985
+  type: 'test'
+  ...
+# Subtest: 프로젝트·매핑·함수·클라이언트 불일치는 합성 계정 생성 전 중단한다
+ok 19 - 프로젝트·매핑·함수·클라이언트 불일치는 합성 계정 생성 전 중단한다
+  ---
+  duration_ms: 1.9267
+  type: 'test'
+  ...
+# Subtest: 포털·callback state·토큰 client 위조는 실제 Core 검사를 통과하지 못하고 두 합성 계정 정리는 계속한다
+ok 20 - 포털·callback state·토큰 client 위조는 실제 Core 검사를 통과하지 못하고 두 합성 계정 정리는 계속한다
+  ---
+  duration_ms: 1135.7487
+  type: 'test'
+  ...
+# Subtest: 생성 ACK가 유실되어도 정확한 합성 email+관리자 표식으로만 찾아 일반 삭제 요청을 남긴다
+ok 21 - 생성 ACK가 유실되어도 정확한 합성 email+관리자 표식으로만 찾아 일반 삭제 요청을 남긴다
+  ---
+  duration_ms: 2.3564
+  type: 'test'
+  ...
+# Subtest: 표식 불일치나 다른 Auth와 공유한 소유자는 삭제하지 않고 미완료로 보고한다
+ok 22 - 표식 불일치나 다른 Auth와 공유한 소유자는 삭제하지 않고 미완료로 보고한다
+  ---
+  duration_ms: 1493.3553
+  type: 'test'
+  ...
+# Subtest: 본문에 비밀을 실은 실패와 정리 실패도 원문을 출력하지 않고 모든 합성 계정을 시도한다
+ok 23 - 본문에 비밀을 실은 실패와 정리 실패도 원문을 출력하지 않고 모든 합성 계정을 시도한다
+  ---
+  duration_ms: 210.9729
+  type: 'test'
+  ...
+# Subtest: 생성 응답과 정확한 ID 복구가 모두 실패하면 다른 계정을 찾거나 삭제하지 않는다
+ok 24 - 생성 응답과 정확한 ID 복구가 모두 실패하면 다른 계정을 찾거나 삭제하지 않는다
+  ---
+  duration_ms: 2.1053
+  type: 'test'
+  ...
+# Subtest: 로컬 ID 기록 실패도 알려진 생성 ID 정리를 건너뛰지 않고 파일 내용을 오류로 노출하지 않는다
+ok 25 - 로컬 ID 기록 실패도 알려진 생성 ID 정리를 건너뛰지 않고 파일 내용을 오류로 노출하지 않는다
+  ---
+  duration_ms: 2.0871
+  type: 'test'
+  ...
+1..25
+# tests 25
+# suites 0
+# pass 25
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9620.3113

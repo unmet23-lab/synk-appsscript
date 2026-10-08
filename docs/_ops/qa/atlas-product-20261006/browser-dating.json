@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-06T12:03:01.049Z",
+  "status": "passed",
+  "modelCalls": 0,
+  "actualUsers": 0,
+  "paths": [
+    "separate role sign-in, explicit adult statement, profile and storage consent",
+    "optional question stop, candidate-only feedback and next round",
+    "explicit preference edit and undo; independent public disclosure",
+    "failed send preserves date and message without automatic retry",
+    "counterpart acceptance appears through automatic inbox refresh",
+    "two independent roles accept, date change clears both previous acceptances",
+    "real schedule end enables own reflection; counterpart never receives private reflection",
+    "pause keeps existing appointments and private reflection while stopping new proposals",
+    "account-wide block closes every pair; reporter sees status but not operator notes",
+    "second browser context resumes account; deletion reaches old context"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "landing-320.png",
+    "recommendations-390.png",
+    "agreed-1280.png",
+    "reflection-390.png",
+    "deleted-320.png"
+  ]
+}

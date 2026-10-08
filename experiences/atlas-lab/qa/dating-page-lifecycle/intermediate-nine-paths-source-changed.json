@@ -1,0 +1,135 @@
+{
+  "at": "2026-10-08T00:32:34.307Z",
+  "status": "passed",
+  "kind": "synthetic-page-lifecycle-browser",
+  "actualUsers": 0,
+  "physicalDevices": 0,
+  "realIdentityProviderCalls": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [
+    {
+      "scenario": "editable-return",
+      "native": false,
+      "inputPreserved": true,
+      "pollingRecovered": true,
+      "manualSavePosts": 1
+    },
+    {
+      "scenario": "native-navigation-without-cache",
+      "native": false,
+      "pendingCheckOnly": true,
+      "additionalActionPosts": 0
+    },
+    {
+      "scenario": "uncertain-save-return",
+      "native": false,
+      "inputAndReceiptPreserved": true,
+      "automaticActionPosts": 0,
+      "explicitRetrySameEnvelope": true,
+      "revisionIncrement": 1,
+      "receiptIncrement": 1
+    },
+    {
+      "scenario": "stale-state-crossing-return",
+      "injected": true,
+      "oldResponseIgnored": true,
+      "freshStateRead": true,
+      "actionPosts": 0
+    },
+    {
+      "scenario": "manual-state-crossing-return",
+      "injected": true,
+      "oldResponseIgnored": true,
+      "freshStateRead": true,
+      "actionPosts": 0
+    },
+    {
+      "scenario": "initial-state-crossing-return",
+      "injected": true,
+      "freshViewLoaded": true,
+      "checkpointRestored": true,
+      "actionPosts": 0,
+      "activePollingIntervals": 1
+    },
+    {
+      "scenario": "revoked-session-crossing-return",
+      "injected": true,
+      "privateViewCleared": true,
+      "checkpointCleared": true,
+      "credentialCleared": true,
+      "additionalActionPosts": 0
+    },
+    {
+      "scenario": "repeat-suspend-return",
+      "injected": true,
+      "cycles": 3,
+      "queriesWhileSuspended": 0,
+      "activePollingIntervals": 1,
+      "actionPosts": 0
+    },
+    {
+      "scenario": "final-disposal",
+      "injected": true,
+      "disposedClientCannotBeRevived": true,
+      "actionPosts": 0
+    }
+  ],
+  "navigation": [
+    {
+      "scenario": "editable-return",
+      "sameInstance": false,
+      "events": [
+        {
+          "name": "pageshow",
+          "persisted": false,
+          "trusted": true
+        }
+      ],
+      "native": false,
+      "fallback": "synthetic persisted PageTransitionEvent after actual browser navigation"
+    },
+    {
+      "scenario": "uncertain-save-return",
+      "sameInstance": false,
+      "events": [
+        {
+          "name": "pageshow",
+          "persisted": false,
+          "trusted": true
+        }
+      ],
+      "native": false
+    }
+  ],
+  "screenshots": [
+    "editable-return-can-save-390.png",
+    "pending-return-awaits-explicit-retry-320.png"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "sourceBefore": {
+    "dating-ui.mjs": "5e63f0344136d0ad3808ab9dea327377974951f6c97ea3b0dfb0593b720e047d",
+    "dating-account.mjs": "82c5ee4bbc4fba314299e092e5c6362d53d929e00d11483edf03c92d5889888f",
+    "dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "dating-checkpoint.mjs": "ea1725c2e8da3fbe19701095b861840680d8f72c3da4769bcf3a31ba19d14812",
+    "dating-server.mjs": "c70bc542c5d2560de42561c5fb4c490cae7f6137ed5a0b375e5529da27b55881",
+    "dating-service.mjs": "1e424717f99ff7d8968b2f33d5c685252757cf34a4c623c122ae3faebdbc2f39"
+  },
+  "activeRecovery": {
+    "native": false,
+    "inputPreserved": true,
+    "stateRequestsBefore": 3,
+    "stateRequestsAfter": 4,
+    "notice": ""
+  },
+  "sourceAfter": {
+    "dating-ui.mjs": "196cb7446889dd1ed7bf451a9ed1e0fa4faccde57912c3a54520ce238b56bb89",
+    "dating-account.mjs": "82c5ee4bbc4fba314299e092e5c6362d53d929e00d11483edf03c92d5889888f",
+    "dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "dating-checkpoint.mjs": "ea1725c2e8da3fbe19701095b861840680d8f72c3da4769bcf3a31ba19d14812",
+    "dating-server.mjs": "c70bc542c5d2560de42561c5fb4c490cae7f6137ed5a0b375e5529da27b55881",
+    "dating-service.mjs": "1e424717f99ff7d8968b2f33d5c685252757cf34a4c623c122ae3faebdbc2f39"
+  },
+  "sourceStable": false
+}

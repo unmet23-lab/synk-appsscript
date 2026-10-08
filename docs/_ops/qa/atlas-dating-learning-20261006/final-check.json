@@ -1,0 +1,72 @@
+{
+  "at": "2026-10-06T15:09:01.734Z",
+  "sourceCount": 55,
+  "drift": [],
+  "links": [
+    {
+      "file": "docs/아틀라스_공통능력_고도화_20261005.md",
+      "target": "_ops/qa/atlas-dating-learning-20261006/report.json",
+      "exists": true
+    },
+    {
+      "file": "docs/아틀라스_공통능력_고도화_20261005.md",
+      "target": "../atlas/ask.js",
+      "exists": true
+    },
+    {
+      "file": "docs/아틀라스_공통능력_고도화_20261005.md",
+      "target": "../atlas/domain.js",
+      "exists": true
+    },
+    {
+      "file": "docs/아틀라스_공통능력_고도화_20261005.md",
+      "target": "../atlas/personalization.js",
+      "exists": true
+    },
+    {
+      "file": "docs/아틀라스_공통능력_고도화_20261005.md",
+      "target": "../experiences/atlas-lab/discovery.mjs",
+      "exists": true
+    },
+    {
+      "file": "docs/아틀라스_공통능력_고도화_20261005.md",
+      "target": "../experiences/atlas-lab/product-experience.mjs",
+      "exists": true
+    },
+    {
+      "file": "docs/아틀라스_공통능력_고도화_20261005.md",
+      "target": "../experiences/atlas-lab/dating-service.mjs",
+      "exists": true
+    },
+    {
+      "file": "docs/아틀라스_공통능력_고도화_20261005.md",
+      "target": "../experiences/atlas-lab/dating-ui.mjs",
+      "exists": true
+    },
+    {
+      "file": "docs/_ops/트랙.md",
+      "target": "../아틀라스_공통능력_고도화_20261005.md",
+      "exists": true
+    },
+    {
+      "file": "docs/_ops/트랙.md",
+      "target": "qa/atlas-dating-learning-20261006/report.json",
+      "exists": true
+    },
+    {
+      "file": "docs/_ops/트랙.md",
+      "target": "../아틀라스_공통능력_고도화_20261005.md",
+      "exists": true
+    },
+    {
+      "file": "docs/_ops/트랙.md",
+      "target": "qa/atlas-dating-continuity-20261006/report.json",
+      "exists": true
+    },
+    {
+      "file": "docs/_ops/트랙.md",
+      "target": "../아틀라스_공통능력_고도화_20261005.md",
+      "exists": true
+    }
+  ]
+}

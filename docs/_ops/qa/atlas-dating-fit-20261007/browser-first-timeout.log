@@ -1,0 +1,51 @@
+{
+  "at": "2026-10-07T11:45:03.009Z",
+  "status": "failed",
+  "kind": "synthetic-dating-fit-browser",
+  "actualUsers": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [],
+  "sourceSha256": {
+    "dating-ui.mjs": "dcf18c1baaadd7a009830ead9465c11f982617624ff8f04a85158e3b959d1d8b",
+    "dating-live.mjs": "ffff4ee3097c976c169f07a07954fc735f9467654a7ce3f02baa0ceae9e6c9fa",
+    "dating.css": "d3241785ded82a9eb57846f06a62225c5faf8859e809bdd03eb236bda97805c0",
+    "discovery.mjs": "c749e44049329aabd5151dc04009392e92c268426c3ce086eb451a6142c98219",
+    "meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+    "discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+    "dating-service.mjs": "a81cc61f38638a448d1e3637d9959943a30ec4a18921ff9c1c9444059b4134a3",
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+page.waitForFunction: Timeout 12000ms exceeded.
+    at pageFor (C:\Users\q1212\Documents\SYNK-appsscript\tests\atlas-dating-fit-smoke.mjs:43:66)
+    at async relationshipAxes (C:\Users\q1212\Documents\SYNK-appsscript\tests\atlas-dating-fit-smoke.mjs:66:16)
+    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-fit-smoke.mjs:111:147 {
+  log: [],
+  name: 'TimeoutError'
+}
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6"
+  },
+  "sourceBefore": {
+    "dating-ui.mjs": "dcf18c1baaadd7a009830ead9465c11f982617624ff8f04a85158e3b959d1d8b",
+    "dating-live.mjs": "ffff4ee3097c976c169f07a07954fc735f9467654a7ce3f02baa0ceae9e6c9fa",
+    "dating.css": "d3241785ded82a9eb57846f06a62225c5faf8859e809bdd03eb236bda97805c0",
+    "discovery.mjs": "c749e44049329aabd5151dc04009392e92c268426c3ce086eb451a6142c98219",
+    "meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+    "discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+    "dating-service.mjs": "a81cc61f38638a448d1e3637d9959943a30ec4a18921ff9c1c9444059b4134a3",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6"
+  },
+  "failure": "page.waitForFunction: Timeout 12000ms exceeded.\n    at pageFor (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-fit-smoke.mjs:43:66)\n    at async relationshipAxes (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-fit-smoke.mjs:66:16)\n    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-fit-smoke.mjs:111:147",
+  "sourceStable": true
+}
+
+Node.js v24.18.0

@@ -1,0 +1,71 @@
+{
+  "at": "2026-10-06T22:23:33.7693241Z",
+  "status": "passed",
+  "browserPaths": 52.0,
+  "modelCalls": 0,
+  "externalRequests": 0,
+  "actualUsers": 0,
+  "screenshotsVisuallyReviewed": [
+    "unknown-is-unselected-390.png",
+    "expired-answer-is-unselected-320.png",
+    "new-schedule-retained-390.png",
+    "new-version-discards-old-edit-1280.png"
+  ],
+  "results": [
+    {
+      "name": "dating-input-continuity",
+      "report": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\dating-input-continuity\\result.json",
+      "at": "2026-10-06T22:20:06.563Z",
+      "status": "passed",
+      "paths": 11,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "actualUsers": 0
+    },
+    {
+      "name": "dating-conditional-draft",
+      "report": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\dating-conditional-draft\\result.json",
+      "at": "2026-10-06T22:20:47.208Z",
+      "status": "passed",
+      "paths": 9,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "actualUsers": 0
+    },
+    {
+      "name": "dating-flexibility",
+      "report": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\dating-flexibility\\result.json",
+      "at": "2026-10-06T22:21:36.003Z",
+      "status": "passed",
+      "paths": 10,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "actualUsers": 0
+    },
+    {
+      "name": "dating",
+      "report": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\dating\\result.json",
+      "at": "2026-10-06T22:22:06.887Z",
+      "status": "passed",
+      "paths": 18,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "actualUsers": 0
+    },
+    {
+      "name": "dating-clarity",
+      "report": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\dating-clarity\\result.json",
+      "at": "2026-10-06T22:22:58.712Z",
+      "status": "passed",
+      "paths": 4,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "actualUsers": 0
+    }
+  ]
+}

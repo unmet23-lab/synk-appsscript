@@ -1,0 +1,126 @@
+{
+  "date": "2026-10-07",
+  "scope": "Relationship goal/speed separation, explicit meeting-region product layers, time-limited priorities, and thin owner declaration projection",
+  "result": "passed",
+  "sources": [
+    {
+      "path": "experiences/atlas-lab/discovery.mjs",
+      "sha256": "c749e44049329aabd5151dc04009392e92c268426c3ce086eb451a6142c98219"
+    },
+    {
+      "path": "tests/atlas-discovery-relationship.test.mjs",
+      "sha256": "eb09a8cc8617d938ac69449a23ffac54e23befd42d7ca41d1741fc94bb47ac8d"
+    },
+    {
+      "path": "tests/atlas-discovery.test.mjs",
+      "sha256": "59e332ba8ba787c70ee661413ad77c27c39d32f66c67ce5d0ca15439bb319b1c"
+    }
+  ],
+  "testSources": [
+    {
+      "path": "tests/atlas-discovery-relationship.test.mjs",
+      "sha256": "eb09a8cc8617d938ac69449a23ffac54e23befd42d7ca41d1741fc94bb47ac8d"
+    },
+    {
+      "path": "tests/atlas-discovery.test.mjs",
+      "sha256": "59e332ba8ba787c70ee661413ad77c27c39d32f66c67ce5d0ca15439bb319b1c"
+    },
+    {
+      "path": "tests/atlas-discovery-personalization.test.mjs",
+      "sha256": "a6b69b72aac44c760951736590f5640ac842b0dccbc54c0e76264bb3c6bbf493"
+    },
+    {
+      "path": "tests/atlas-discovery-insights.test.mjs",
+      "sha256": "137be1d738233fbc5526d11a413d7f2a3f97c2d1b35143e66611d858c3538a12"
+    },
+    {
+      "path": "tests/atlas-discovery-conditional.test.mjs",
+      "sha256": "e1f90cbedb52107d12418d152faf058cefae9988d18b6c6dfe5be1e49f2ad2d2"
+    },
+    {
+      "path": "tests/atlas-discovery-guidance.test.mjs",
+      "sha256": "274a5dff5401cb3e11c9256a86d3592608e3e6839f0de3e1873870476fe2a15c"
+    }
+  ],
+  "tests": {
+    "command": "node --test tests/atlas-discovery-relationship.test.mjs tests/atlas-discovery.test.mjs tests/atlas-discovery-personalization.test.mjs tests/atlas-discovery-insights.test.mjs tests/atlas-discovery-conditional.test.mjs tests/atlas-discovery-guidance.test.mjs",
+    "final": {
+      "total": 150,
+      "passed": 150,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "log": "discovery-final.log",
+      "sha256": "65bca69b6af8ef11ac8e5e23e5bb98b4c8912aada10b0e0aec09e07d52ea360b",
+      "durationMs": 152184.6766
+    },
+    "new": {
+      "total": 21,
+      "addedFile": "tests/atlas-discovery-relationship.test.mjs",
+      "includedInFinal150": true
+    },
+    "existing": {
+      "total": 129,
+      "includedInFinal150": true
+    },
+    "repeatedRunsNotAdditive": true,
+    "development": [
+      {
+        "total": 129,
+        "passed": 129,
+        "failed": 0,
+        "log": "discovery-before.log",
+        "scope": "Before this subtask changes"
+      },
+      {
+        "total": 129,
+        "passed": 127,
+        "failed": 2,
+        "log": "discovery-contract-prefail.log",
+        "causes": [
+          "Old field-count assertion expected 14 instead of current 19; updated to assert 19 including 2 historical fields",
+          "Existing self-context rejection still rejected correctly, but error-message wording changed and its regex stopped matching; compatible wording restored"
+        ],
+        "corrected": true
+      },
+      {
+        "total": 15,
+        "passed": 15,
+        "failed": 0,
+        "log": "discovery-new-first.log",
+        "scope": "Initial new-contract cases before additional strict legacy and thin-read cases"
+      }
+    ],
+    "contractRefresh": [
+      "Existing situational test now uses wants.relationshipGoal instead of historical mixed wants.purpose; all initial relationship axis values remain unfilled until direct choice",
+      "Version-one logs and 14-field historical displayed bases remain readable; new selected answers never recreate legacy mixed fields",
+      "No existing requirement is silently relaxed; explicit legacy retirement uses same active value with required false, or a required-false baseline clear for missing/expired values"
+    ]
+  },
+  "contracts": {
+    "newAxes": [
+      "self.relationshipGoal",
+      "wants.relationshipGoal",
+      "self.relationshipSpeed",
+      "wants.relationshipSpeed"
+    ],
+    "meetingRegions": "self.meetingRegions",
+    "regionKind": "regions",
+    "regionValue": "null or one-to-six validated fixed IDs",
+    "regionMatch": "exact intersection of current own private choice and currently authorized peer public choice; both unknown preserves existing flow",
+    "regionFacts": "No GPS, residence, distance, adjacency or free-text mapping; no counterpart private set accepted",
+    "priorityLifetime": "Optional until is part of explicit preview/apply/undo; ends latest target rather than reviving an older target; context expiry reveals only current baseline",
+    "thinRead": "meetingRegionDeclaration(state,{at}) reuses replay/project without Domain.decide or Ask.choose and returns only copied IDs or null under active-context/current-consent/source-deadline gates"
+  },
+  "limitations": [
+    "No actual provider, paid AI, model evaluation, participant recruitment, deployment or remote mutation",
+    "Mutual private/public meeting feasibility at service connect/accept is owned by root and verified separately",
+    "Standalone discovery lab editor presentation follow-up is owned by root; module and named unit results here cover the executed source snapshot",
+    "Actual user satisfaction and operational location availability are unverified"
+  ],
+  "engineChanges": 0,
+  "paidCalls": 0,
+  "remoteMutations": 0,
+  "deployments": 0,
+  "memoryUsed": "MEMORY.md:183: local checks do not prove production or actual user outcomes"
+}

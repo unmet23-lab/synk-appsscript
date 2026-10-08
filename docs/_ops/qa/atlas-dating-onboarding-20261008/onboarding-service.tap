@@ -1,0 +1,23 @@
+✔ HTTP fresh setup distinguishes untouched false defaults from explicitly saved all-false choices across restart (3401.9002ms)
+✔ HTTP sequential legacy-style first setup exposes exactly the remaining saved steps after reload (263.6987ms)
+✔ HTTP choosing all-false permissions before profile and declaration still counts as an explicit saved choice (175.9716ms)
+✔ HTTP atomic setup preserves declared public values, requirements and deadlines when resuming a saved profile (203.0589ms)
+✔ HTTP completing a partial setup keeps private criteria and discovery when storage remains explicitly enabled (297.4924ms)
+✔ HTTP malformed final consent rejects the whole setup without profile, adult, revision or receipt changes (127.001ms)
+✔ HTTP setup validates the same profile limits and rejects optional-field smuggling and undeclared adults atomically (502.9039ms)
+✔ HTTP pending server adult evidence rejects public setup atomically but allows an explicit private completion (189.5838ms)
+✔ HTTP verified setup retains the server assertion and only publishes the explicitly selected permissions (170.1956ms)
+✔ HTTP lost successful setup is recovered through the same receipt after restart without a second write (206.3681ms)
+✔ HTTP concurrent first setup cannot mix profile or permission choices from different revisions (142.363ms)
+✔ HTTP setup and its receipt stay bound to the authenticated account (231.7474ms)
+✔ HTTP setup respects suspended, deleted and centrally unavailable account gates (247.1135ms)
+✔ HTTP legacy completed accounts without confirmation metadata remain compatible and acquire explicit tracking on save (224.0834ms)
+✔ HTTP legacy blank and profile-only documents gain explicit incomplete tracking before individual steps advance (468.3995ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7134.4222

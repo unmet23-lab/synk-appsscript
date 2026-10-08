@@ -1,0 +1,53 @@
+{
+  "at": "2026-10-07T21:30:08.796Z",
+  "status": "passed",
+  "kind": "synthetic-readiness-browser",
+  "scope": "preparation-and-server-adult-status",
+  "actualUsers": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [
+    "the default landing leads with the name input and a collapsed saved-setup summary; adult self-declaration and optional region/introduction explanations remain at their controls, and onboarding succeeds without supplying the optional fields",
+    "required recommendation consent and availability remain needed until answered; actual eligible candidates then produce ready status while further questions stay optional without a whole-question completion count",
+    "an actual account with a required daily-contact preference and an absent counterpart public contact answer has completed its own preparation but waits on specific public comparison evidence, without asking for more own answers or weakening the stored condition",
+    "an eligible account keeps recommendation ready while a second account is still pending; only a collapsed secondary explanation names the other public-information gap and the required daily-contact standard remains unchanged",
+    "the actual conditional-contact preview is explicitly applied; a known few-days contact difference with unknown advance-notice evidence remains a soft comparison and never becomes a false missing-public-contact instruction",
+    "required server evidence distinguishes unverified, pending and unavailable own adult banners during production polls; own profile records remain editable and no counterpart verification status, issuer or provider error is exposed",
+    "a verified own account displays its confirmation and validity in settings; rotating only checkedAt through a production poll leaves revision, response banner, user notice, focused unsent own draft and recommendation unchanged",
+    "at the exact server validity boundary, a production poll replaces the own verified label with expired, turns disclosure and invitations off and removes former accepted pair content; drafts tied to the changed permissions are not restored",
+    "renewed authoritative verification requires explicit public/invitation controls, the held account reopening its bound receiving gate and a fresh acceptance by the other account; an already-open peer gate stays open and the retired accepted pair stays retired"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "first-recommendation-onboarding-320.png",
+    "required-confirmations-ready-390.png",
+    "own-ready-public-information-pending-390.png",
+    "eligible-with-other-pending-320.png",
+    "own-adult-unavailable-management-320.png",
+    "adult-expired-closes-former-introduction-390.png",
+    "adult-verified-requires-explicit-resume-390.png"
+  ],
+  "assertionProviderCalls": 100,
+  "sourceSha256": {
+    "dating-ui.mjs": "f190cc1e4b3e6b006f47246dfacd25089121a3f79b2d83947ba24aec8323b62b",
+    "dating.css": "28d130eeda73754eac3b61b5a63265bdba90e92bce29ce83991bcce6cb7d3a9a",
+    "dating-live.mjs": "b19c3c166ab75f378039d76820a972db8a42396b4f8b88742310be6f50266e5d",
+    "discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "dating-adult.mjs": "41d9db2f95edbee0842d25cbcd672cccac5b11c1c1be8bfab85aefd833076545",
+    "dating-service.mjs": "cef366d04812bfe57d1ba642afef68d49726bf8c44296286db3ef0770549ccf2",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505",
+    "dating-server.mjs": "f751e49c634a17bbd977574555b9550e802bf8cb08a8234d5d2ce9168e8641c2"
+  },
+  "sourceBefore": {
+    "dating-ui.mjs": "f190cc1e4b3e6b006f47246dfacd25089121a3f79b2d83947ba24aec8323b62b",
+    "dating.css": "28d130eeda73754eac3b61b5a63265bdba90e92bce29ce83991bcce6cb7d3a9a",
+    "dating-live.mjs": "b19c3c166ab75f378039d76820a972db8a42396b4f8b88742310be6f50266e5d",
+    "discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "dating-adult.mjs": "41d9db2f95edbee0842d25cbcd672cccac5b11c1c1be8bfab85aefd833076545",
+    "dating-service.mjs": "cef366d04812bfe57d1ba642afef68d49726bf8c44296286db3ef0770549ccf2",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505",
+    "dating-server.mjs": "f751e49c634a17bbd977574555b9550e802bf8cb08a8234d5d2ce9168e8641c2"
+  },
+  "sourceStable": true
+}

@@ -1,0 +1,10 @@
+[
+  "tests/atlas-dating-draft-basis-service.test.mjs",
+  "tests/atlas-dating-account.test.mjs",
+  "tests/atlas-dating-conditional-service.test.mjs",
+  "tests/atlas-dating-alignment-service.test.mjs",
+  "tests/atlas-dating-journey.test.mjs",
+  "tests/atlas-dating-insights.test.mjs",
+  "tests/atlas-appointments.test.mjs",
+  "tests/atlas-dating-service.test.mjs"
+]

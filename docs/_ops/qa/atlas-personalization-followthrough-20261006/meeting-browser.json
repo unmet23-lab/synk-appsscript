@@ -1,0 +1,341 @@
+{
+  "version": 1,
+  "status": "passed",
+  "at": "2026-10-06T13:39:41.165Z",
+  "kind": "fictional-meeting-browser-ux",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualMeetings": 0,
+  "deployed": false,
+  "errors": [],
+  "missing": [],
+  "failedRequests": [],
+  "externalRequests": [],
+  "unexpectedRequests": [],
+  "mockedApi": [
+    {
+      "label": "local-1280",
+      "path": "/api/computer-interpretation"
+    },
+    {
+      "label": "local-1280",
+      "path": "/api/me"
+    },
+    {
+      "label": "local-390",
+      "path": "/api/computer-interpretation"
+    },
+    {
+      "label": "local-390",
+      "path": "/api/me"
+    },
+    {
+      "label": "local-320",
+      "path": "/api/computer-interpretation"
+    },
+    {
+      "label": "local-320",
+      "path": "/api/me"
+    }
+  ],
+  "paths": [
+    {
+      "label": "local-1280",
+      "checks": [
+        "wanted-experience",
+        "view-before-accept",
+        "one-sided-hold",
+        "busy-not-dislike",
+        "both-accept",
+        "both-simulated-met",
+        "feedback-does-not-apply",
+        "private-perspective",
+        "explicit-ongoing-change",
+        "next-encounter-reason"
+      ],
+      "onboardingTrace": [
+        {
+          "person": "person-a",
+          "field": "consent",
+          "value": true
+        },
+        {
+          "person": "person-a",
+          "field": "availability",
+          "value": "weekend"
+        },
+        {
+          "person": "person-a",
+          "field": "atmosphere",
+          "value": "quiet"
+        },
+        {
+          "person": "person-a",
+          "field": "duration",
+          "value": "90"
+        },
+        {
+          "person": "person-a",
+          "field": "activity",
+          "value": "cafe"
+        }
+      ],
+      "beforeMinutes": 90,
+      "nextMinutes": 40,
+      "layout": {
+        "width": 1280,
+        "documentWidth": 1280,
+        "overflowing": []
+      },
+      "nextReasons": [
+        "내가 고른 조건과 상대가 공유한 조건을 함께 살펴봤어요.",
+        "직접 승인한 지난 만남 피드백을 반영해 ‘가볍게 40분’으로 제안했어요."
+      ]
+    },
+    {
+      "label": "desktop-extra-boundaries",
+      "checks": [
+        "once-expires",
+        "ongoing-survives",
+        "feedback-apply-once-next-only",
+        "deferred-feedback-remains-reviewable",
+        "edit-resets-both-acceptances",
+        "partial-attendance-correction-targets-next",
+        "finite-pool-blocked",
+        "optional-skip-stays-unknown-and-expires"
+      ]
+    },
+    {
+      "label": "local-390",
+      "checks": [
+        "wanted-experience",
+        "view-before-accept",
+        "one-sided-hold",
+        "busy-not-dislike",
+        "both-accept",
+        "both-simulated-met",
+        "feedback-does-not-apply",
+        "private-perspective",
+        "explicit-ongoing-change",
+        "next-encounter-reason"
+      ],
+      "onboardingTrace": [
+        {
+          "person": "person-a",
+          "field": "consent",
+          "value": true
+        },
+        {
+          "person": "person-a",
+          "field": "availability",
+          "value": "weekend"
+        },
+        {
+          "person": "person-a",
+          "field": "atmosphere",
+          "value": "quiet"
+        },
+        {
+          "person": "person-a",
+          "field": "duration",
+          "value": "90"
+        },
+        {
+          "person": "person-a",
+          "field": "activity",
+          "value": "cafe"
+        }
+      ],
+      "beforeMinutes": 90,
+      "nextMinutes": 40,
+      "layout": {
+        "width": 390,
+        "documentWidth": 390,
+        "overflowing": []
+      },
+      "nextReasons": [
+        "내가 고른 조건과 상대가 공유한 조건을 함께 살펴봤어요.",
+        "직접 승인한 지난 만남 피드백을 반영해 ‘가볍게 40분’으로 제안했어요."
+      ]
+    },
+    {
+      "label": "local-320",
+      "checks": [
+        "wanted-experience",
+        "view-before-accept",
+        "one-sided-hold",
+        "busy-not-dislike",
+        "both-accept",
+        "both-simulated-met",
+        "feedback-does-not-apply",
+        "private-perspective",
+        "explicit-ongoing-change",
+        "next-encounter-reason"
+      ],
+      "onboardingTrace": [
+        {
+          "person": "person-a",
+          "field": "consent",
+          "value": true
+        },
+        {
+          "person": "person-a",
+          "field": "availability",
+          "value": "weekend"
+        },
+        {
+          "person": "person-a",
+          "field": "atmosphere",
+          "value": "quiet"
+        },
+        {
+          "person": "person-a",
+          "field": "duration",
+          "value": "90"
+        },
+        {
+          "person": "person-a",
+          "field": "activity",
+          "value": "cafe"
+        }
+      ],
+      "beforeMinutes": 90,
+      "nextMinutes": 40,
+      "layout": {
+        "width": 320,
+        "documentWidth": 320,
+        "overflowing": []
+      },
+      "nextReasons": [
+        "내가 고른 조건과 상대가 공유한 조건을 함께 살펴봤어요.",
+        "직접 승인한 지난 만남 피드백을 반영해 ‘가볍게 40분’으로 제안했어요."
+      ]
+    },
+    {
+      "label": "file-share-390",
+      "checks": [
+        "wanted-experience",
+        "view-before-accept",
+        "one-sided-hold",
+        "busy-not-dislike",
+        "both-accept",
+        "both-simulated-met",
+        "feedback-does-not-apply",
+        "private-perspective",
+        "explicit-ongoing-change",
+        "next-encounter-reason"
+      ],
+      "onboardingTrace": [
+        {
+          "person": "person-a",
+          "field": "consent",
+          "value": true
+        },
+        {
+          "person": "person-a",
+          "field": "availability",
+          "value": "weekend"
+        },
+        {
+          "person": "person-a",
+          "field": "atmosphere",
+          "value": "quiet"
+        },
+        {
+          "person": "person-a",
+          "field": "duration",
+          "value": "90"
+        },
+        {
+          "person": "person-a",
+          "field": "activity",
+          "value": "cafe"
+        }
+      ],
+      "beforeMinutes": 90,
+      "nextMinutes": 40,
+      "layout": {
+        "width": 390,
+        "documentWidth": 390,
+        "overflowing": []
+      },
+      "nextReasons": [
+        "내가 고른 조건과 상대가 공유한 조건을 함께 살펴봤어요.",
+        "직접 승인한 지난 만남 피드백을 반영해 ‘가볍게 40분’으로 제안했어요."
+      ]
+    },
+    {
+      "label": "http-share-390",
+      "checks": [
+        "wanted-experience",
+        "view-before-accept",
+        "one-sided-hold",
+        "busy-not-dislike",
+        "both-accept",
+        "both-simulated-met",
+        "feedback-does-not-apply",
+        "private-perspective",
+        "explicit-ongoing-change",
+        "next-encounter-reason"
+      ],
+      "onboardingTrace": [
+        {
+          "person": "person-a",
+          "field": "consent",
+          "value": true
+        },
+        {
+          "person": "person-a",
+          "field": "availability",
+          "value": "weekend"
+        },
+        {
+          "person": "person-a",
+          "field": "atmosphere",
+          "value": "quiet"
+        },
+        {
+          "person": "person-a",
+          "field": "duration",
+          "value": "90"
+        },
+        {
+          "person": "person-a",
+          "field": "activity",
+          "value": "cafe"
+        }
+      ],
+      "beforeMinutes": 90,
+      "nextMinutes": 40,
+      "layout": {
+        "width": 390,
+        "documentWidth": 390,
+        "overflowing": []
+      },
+      "nextReasons": [
+        "내가 고른 조건과 상대가 공유한 조건을 함께 살펴봤어요.",
+        "직접 승인한 지난 만남 피드백을 반영해 ‘가볍게 40분’으로 제안했어요."
+      ]
+    }
+  ],
+  "screenshots": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\local-1280-private-pending.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\local-1280-explicit-change.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\local-1280-next.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\desktop-deferred-feedback.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\desktop-boundary.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\local-390-private-pending.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\local-390-explicit-change.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\local-390-next.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\local-320-private-pending.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\local-320-explicit-change.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\local-320-next.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\file-share-390-private-pending.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\file-share-390-explicit-change.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\file-share-390-next.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\http-share-390-private-pending.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\http-share-390-explicit-change.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\http-share-390-next.png"
+  ],
+  "share": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\meeting\\share.html"
+}

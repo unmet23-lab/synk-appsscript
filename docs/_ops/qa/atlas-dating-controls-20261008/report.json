@@ -1,0 +1,549 @@
+{
+  "at": "2026-10-07T17:22:24.443Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "single-public-answer-save-with-sibling-draft-preservation",
+    "current-public-profile-preview",
+    "private-candidate-bookmarks-and-current-comparison"
+  ],
+  "tests": {
+    "uniqueCases": 170,
+    "pass": 170,
+    "fail": 0,
+    "groups": [
+      {
+        "log": "public-live-regression.tap",
+        "format": "tap",
+        "sha256": "46b6416ff1d7e686b4386e0f8f296691af4bd96027f78348e3cc6c98009bc15a",
+        "tests": 77,
+        "pass": 77,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "log": "service-regression.tap",
+        "format": "tap",
+        "sha256": "1790c94d64b881c541cdb6ad4093b23251880a5aceabefad1377487487376ebc",
+        "tests": 57,
+        "pass": 57,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "log": "controls-service-tests.tap",
+        "format": "tap",
+        "sha256": "398d1745395f2ea5a011f2004a51b6b1622c54ae75d32da335eae6b32fadeffe",
+        "tests": 18,
+        "pass": 18,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "log": "public-preview-tests.tap",
+        "format": "tap",
+        "sha256": "d911787c17e0c16e767393714c325afc274a5ee9706e9b7d1611bb4756a9b4c5",
+        "tests": 18,
+        "pass": 18,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  "browserPaths": 55,
+  "browser": [
+    {
+      "name": "dating-controls",
+      "paths": 14,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "screenshots/dating-controls-single-answer-before-confirmation-390.png",
+          "width": 390,
+          "height": 9233,
+          "sha256": "225ee519fcad477e336ee4956b2134cda0fcf15fddab525724000a4b76767c2e"
+        },
+        {
+          "file": "screenshots/dating-controls-single-answer-before-confirmation-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "7c64339ae3c2f1064ef768c227511550646dd7156f2d3268eb014834c2236f2c"
+        },
+        {
+          "file": "screenshots/dating-controls-saved-preview-excludes-other-draft-320.png",
+          "width": 320,
+          "height": 10222,
+          "sha256": "7bdbce1b11d03829b3fd1ed2becd573715be8e3acf24d529161538006dfbff65"
+        },
+        {
+          "file": "screenshots/dating-controls-saved-preview-excludes-other-draft-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "1d1f2ab371b958c51e7c380a0e9738982fea547afb0a8bbcb08071f0ea612b5c"
+        },
+        {
+          "file": "screenshots/dating-controls-paused-private-off-preview-expired-required-320.png",
+          "width": 320,
+          "height": 6677,
+          "sha256": "d4996ba6af619d6d80b418eda8ef37294038a5538997470f9715cdd2442dbdfb"
+        },
+        {
+          "file": "screenshots/dating-controls-paused-private-off-preview-expired-required-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "41f2ccd3cdcd876b133980233ac7d134978ada35c3d7dbdcb266856ab86c9ab2"
+        },
+        {
+          "file": "screenshots/dating-controls-private-off-single-answer-withdrawn-390.png",
+          "width": 390,
+          "height": 6677,
+          "sha256": "41090cea0677c63a8340eec2c9d04280c6010013a83a05790bd15c7b693b8f4d"
+        },
+        {
+          "file": "screenshots/dating-controls-private-off-single-answer-withdrawn-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "42764b6dc1c18928e0526ad986141d5ab21c0b04834e1d73d1b74e01d9595977"
+        },
+        {
+          "file": "screenshots/dating-controls-live-current-public-preview-390.png",
+          "width": 390,
+          "height": 4146,
+          "sha256": "6a05d7a0cdc93c28020bc06b8d29fc194e1da6bfa390147c8c638d3074b99d47"
+        },
+        {
+          "file": "screenshots/dating-controls-live-current-public-preview-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "f1a0d242ac5e2cda289a68bc83b2251cb5069d60a24900da35ba3097c6c0adac"
+        },
+        {
+          "file": "screenshots/dating-controls-two-private-saved-candidates-390.png",
+          "width": 390,
+          "height": 3225,
+          "sha256": "2ab19839661c52eb8ff25a830394430f532900c0aa8cc0b3a2b307499b414063"
+        },
+        {
+          "file": "screenshots/dating-controls-two-private-saved-candidates-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "1c424aea1a500a59e50793fad2dcd71b8f0a5d41778762305da9578d9c06025b"
+        },
+        {
+          "file": "screenshots/dating-controls-saved-pair-opens-real-comparison-320.png",
+          "width": 320,
+          "height": 3767,
+          "sha256": "0e0e3f611a2044c6d4d528dff224de1d5d1677db01368220c343a152a440ae83"
+        },
+        {
+          "file": "screenshots/dating-controls-saved-pair-opens-real-comparison-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "d2c0981752920f994e89254cdd3766ed8f975949759204a26399f182cea368c9"
+        },
+        {
+          "file": "screenshots/dating-controls-unavailable-saved-candidate-redacted-320.png",
+          "width": 320,
+          "height": 3260,
+          "sha256": "52e561a9a049ecd0493d8394aebb0c72cdd588523052954885b7ad9779e81a84"
+        },
+        {
+          "file": "screenshots/dating-controls-unavailable-saved-candidate-redacted-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "aae087b3c7965178097d5a2dc0a5b0e6d693fd3074cf85438c907833be62d36c"
+        }
+      ]
+    },
+    {
+      "name": "dating-legibility",
+      "paths": 15,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "screenshots/dating-legibility-storage-off-settings-public-management-320.png",
+          "width": 320,
+          "height": 7314,
+          "sha256": "64c1495d4da7667385a4bc32ba5bde7c8d2c4ce1699e6d85a54341369866107a"
+        },
+        {
+          "file": "screenshots/dating-legibility-storage-off-settings-public-management-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "b03e10278a9c9dad70636e25fb9f2dd35d2d902ea165afdbba821097eadf0488"
+        },
+        {
+          "file": "screenshots/dating-legibility-storage-off-profile-preserves-expired-required-390.png",
+          "width": 390,
+          "height": 6238,
+          "sha256": "35715ed5b7a61366e309b697f2e809eafb733b53c4b33099ece57bbd61fccaf0"
+        },
+        {
+          "file": "screenshots/dating-legibility-storage-off-profile-preserves-expired-required-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "9fab76480c5bc47152c17bff1c70fd8147389dbe3253a57a9c94ef56cb3b2e52"
+        },
+        {
+          "file": "screenshots/dating-legibility-paused-storage-off-public-edit-390.png",
+          "width": 390,
+          "height": 1696,
+          "sha256": "c658618e1242409b16fa6ff460f1fc33cd0ff43bbd3104b277d540d583829d99"
+        },
+        {
+          "file": "screenshots/dating-legibility-paused-storage-off-public-edit-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "f1438905937f5bef0d16121864e5fa4a2da2225ab1d6abed1ee5a62ad877ca27"
+        },
+        {
+          "file": "screenshots/dating-legibility-home-expiry-opens-exact-public-field-390.png",
+          "width": 390,
+          "height": 8985,
+          "sha256": "7a2158ee080bd5c46325537c19d195b25746fd622d7b7feb07b2c526f450b628"
+        },
+        {
+          "file": "screenshots/dating-legibility-home-expiry-opens-exact-public-field-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "8e63ca57fbf84d3a904ba2224eda8ccafcce8d0b838bd8f3c1a4b3f084585ad8"
+        },
+        {
+          "file": "screenshots/dating-legibility-card-expiry-action-opens-public-lifetime-320.png",
+          "width": 320,
+          "height": 9155,
+          "sha256": "6011bdf422bf9e18d8518f4d80bbd22d49cec00524d9a291a40a108934c6ca40"
+        },
+        {
+          "file": "screenshots/dating-legibility-card-expiry-action-opens-public-lifetime-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "d092f46aa7b99e2b3bfee9e4e72f489382cc346b60218b974fd71d8eb1759a09"
+        },
+        {
+          "file": "screenshots/dating-legibility-priority-match-current-public-comparison-390.png",
+          "width": 390,
+          "height": 2330,
+          "sha256": "5a6f0f649e248b804782f5531bd1d362b4dc44ec5f4acb0491ce89d9c5d0cd97"
+        },
+        {
+          "file": "screenshots/dating-legibility-priority-match-current-public-comparison-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "b22f6bf028c9733a6e4a1c8a9118e5d3a818b99dcbfcb2546a111c87c688b46f"
+        },
+        {
+          "file": "screenshots/dating-legibility-priority-different-current-public-comparison-390.png",
+          "width": 390,
+          "height": 5332,
+          "sha256": "27e9979e679a4e22da329b038008698f80e9ce402ff8b1661fbe5d930030ca3f"
+        },
+        {
+          "file": "screenshots/dating-legibility-priority-different-current-public-comparison-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "c1a0dfc38612e3e8aff66958195c464ae07eaef906c9d30486ab4e74e2e11dc5"
+        },
+        {
+          "file": "screenshots/dating-legibility-priority-unknown-current-public-comparison-390.png",
+          "width": 390,
+          "height": 5332,
+          "sha256": "27e9979e679a4e22da329b038008698f80e9ce402ff8b1661fbe5d930030ca3f"
+        },
+        {
+          "file": "screenshots/dating-legibility-priority-unknown-current-public-comparison-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "29fa1ca7696ea537e204be16ab15fdf845bc37c8cf10ed2e166c5a6de1dc4096"
+        },
+        {
+          "file": "screenshots/dating-legibility-priority-conditional-current-public-comparison-390.png",
+          "width": 390,
+          "height": 5332,
+          "sha256": "27e9979e679a4e22da329b038008698f80e9ce402ff8b1661fbe5d930030ca3f"
+        },
+        {
+          "file": "screenshots/dating-legibility-priority-conditional-current-public-comparison-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "68c9edb0d685c6adbc16f9b79727cd0ab16071036f8d424eeb0a32747c3aaaf5"
+        },
+        {
+          "file": "screenshots/dating-legibility-highlight-action-opens-own-private-answer-320.png",
+          "width": 320,
+          "height": 5461,
+          "sha256": "fbd7b6ed4a2eec7c4f9e71b2c19811c18098574a86fd9e8169caf89de968d610"
+        },
+        {
+          "file": "screenshots/dating-legibility-highlight-action-opens-own-private-answer-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "ad9995954641a8104ba7c108eedfadc4251faa324252ba64ab319210646c7161"
+        },
+        {
+          "file": "screenshots/dating-legibility-pending-owner-expired-public-conditions-390.png",
+          "width": 390,
+          "height": 1286,
+          "sha256": "d7a0e7651227c3db331eee998eddce236032e510774ca82ea3761705e8d2057f"
+        },
+        {
+          "file": "screenshots/dating-legibility-pending-owner-expired-public-conditions-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "182f6d1667fd2858bc18be0fde792409709d1b6e09bcba5396916ea04ce0a96b"
+        },
+        {
+          "file": "screenshots/dating-legibility-pending-required-public-focus-320.png",
+          "width": 320,
+          "height": 9187,
+          "sha256": "6d6ef2e6fba84547e1580eec3ef0f2203d82e3d20d8fbca9df810c20c34070ba"
+        },
+        {
+          "file": "screenshots/dating-legibility-pending-required-public-focus-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "6040bca2b2ae1ab2717e67c6e34e021746e6bc16a02d0d433ff386c97a57f460"
+        },
+        {
+          "file": "screenshots/dating-legibility-pending-peer-expiry-general-guidance-320.png",
+          "width": 320,
+          "height": 1129,
+          "sha256": "6055f89f7c00ef57e283e18502bc23ebcc5aac04cb7d34c6851a13b3193d44ab"
+        },
+        {
+          "file": "screenshots/dating-legibility-pending-peer-expiry-general-guidance-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "923ca91064920429b286c6281cd5c415c51f7c2f43856b08af47a0daa04f76d0"
+        },
+        {
+          "file": "screenshots/dating-legibility-pending-current-region-difference-general-guidance-390.png",
+          "width": 390,
+          "height": 1051,
+          "sha256": "a6e570396e88e51c958e569c1dd9d96f0616bdd3417c89d2fef852e6627e5cdd"
+        },
+        {
+          "file": "screenshots/dating-legibility-pending-current-region-difference-general-guidance-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "c8f7619371ce9d5f91b672a910b6f95dda2d3ec735a89de3b766352079978e76"
+        }
+      ]
+    },
+    {
+      "name": "dating-public-expiry",
+      "paths": 8,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "screenshots/dating-public-expiry-public-deadline-review-390.png",
+          "width": 390,
+          "height": 8943,
+          "sha256": "f60c1a05f8d880a5b18d15faf553e535b74b89e1d8f99cb4941980fa9a740ae3"
+        },
+        {
+          "file": "screenshots/dating-public-expiry-public-review-viewport-390.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "a1cff5aeba605ee13f2cdaeaf245b0f1c97d18aa0ac9926474f2fa44f885e38f"
+        },
+        {
+          "file": "screenshots/dating-public-expiry-expired-disclosure-needs-confirmation-320.png",
+          "width": 320,
+          "height": 8830,
+          "sha256": "76f1f85ec5c2003503c11c7e9a91a52edd9051dd8a84aa0e3bb01e397e9c623f"
+        },
+        {
+          "file": "screenshots/dating-public-expiry-public-expired-viewport-320.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "c1dba19e36d2f5df0d4d6168609a086f792d7bd9bcfbe0b2331486c6196a8917"
+        },
+        {
+          "file": "screenshots/dating-public-expiry-explicit-public-reconfirmation-320.png",
+          "width": 320,
+          "height": 3687,
+          "sha256": "2ce83e4d9b7a0613c2fab0f4e20a208dd0936c760a8ae230a79d8802c178e678"
+        }
+      ]
+    },
+    {
+      "name": "dating",
+      "paths": 18,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "screenshots/dating-landing-320.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "f38b233c4557a312c085e8328fb84872425d79ee22bc58e87929646763bc5774"
+        },
+        {
+          "file": "screenshots/dating-recommendations-390.png",
+          "width": 390,
+          "height": 2369,
+          "sha256": "5a34cbb4f6568a4c8f233fcef3f09d72e9a27a5ef7ca019af7ba0a125adb2368"
+        },
+        {
+          "file": "screenshots/dating-preference-preview-390.png",
+          "width": 390,
+          "height": 1507,
+          "sha256": "3ff80ac36303f4b7c7b6c9f2a2a56272ce93a81dc3197d45fc6da0845bff6cb1"
+        },
+        {
+          "file": "screenshots/dating-expired-preference-390.png",
+          "width": 390,
+          "height": 4801,
+          "sha256": "54f7c6682047328ba06f9655bca3151d169c4962c7b1319f3940a7e686f50398"
+        },
+        {
+          "file": "screenshots/dating-experience-history-390.png",
+          "width": 390,
+          "height": 1829,
+          "sha256": "f7efdc3037b7669a0d4e1829b29af822856216f11476260843e02635ce838447"
+        },
+        {
+          "file": "screenshots/dating-changes-before-accept-1280.png",
+          "width": 1280,
+          "height": 1901,
+          "sha256": "61bb0e715f7c5f5db10845e8295c96e87f45e75a9d31c49b31611895e11ac028"
+        },
+        {
+          "file": "screenshots/dating-agreed-1280.png",
+          "width": 1280,
+          "height": 1901,
+          "sha256": "a017a5fb9a40e19a02b44ad6f42c893e27e209a2235d490e27af85f76a7c78bf"
+        },
+        {
+          "file": "screenshots/dating-reflection-390.png",
+          "width": 390,
+          "height": 3020,
+          "sha256": "dcf8a07f80c365ca504846c5f49ec0bf02e01e50d24320b90b91a735b0202c5f"
+        },
+        {
+          "file": "screenshots/dating-deleted-320.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "e894403812618ba48d8c89b6a268463e0a4e0bec7ff1ca65d310ec45141c71c8"
+        }
+      ]
+    }
+  ],
+  "served": [
+    {
+      "name": "public-profile-preview.mjs",
+      "sha256": "76106c8e35d25996bacc7cd0af72cb9c653225ea7934a177f8dfb4586fcd2a8f"
+    },
+    {
+      "name": "candidate-highlights.mjs",
+      "sha256": "64bca3aa0f7ed996fa6e04d410f3227f5883b899cc79ba2736d6b19c17d05882"
+    },
+    {
+      "name": "dating.html",
+      "sha256": "3d04f09caa98147ead0f9cb83f860b78971c308312d178454b25979cf8908770"
+    },
+    {
+      "name": "dating.css",
+      "sha256": "74139e1c74b0232717022fc9d12c2e953872b1a346fdd709a8c721677a0d0bb0"
+    },
+    {
+      "name": "dating-ui.mjs",
+      "sha256": "675d0aa72c8bf3fbe6485dfb6351d6c51510a8141bca4fd5670081dc3939ed0b"
+    },
+    {
+      "name": "dating-live.mjs",
+      "sha256": "33d4132e9157d27fc1c7a65b1d44a9265bf0134db0d0d01d52317ec9e811635f"
+    },
+    {
+      "name": "dating-insights.mjs",
+      "sha256": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49"
+    },
+    {
+      "name": "discovery.mjs",
+      "sha256": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a"
+    },
+    {
+      "name": "public-profile.mjs",
+      "sha256": "75a51c725459b38ca29c1c1e36e434b4b2e843635b07331dc1d7f05ed60c8245"
+    },
+    {
+      "name": "preference-deadline.mjs",
+      "sha256": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc"
+    },
+    {
+      "name": "introduction-guidance.mjs",
+      "sha256": "f5545cda2d8ef6df286bf377d2183646dce4b58b3668c5ffcd727687a1baebae"
+    },
+    {
+      "name": "meeting-regions.mjs",
+      "sha256": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017"
+    },
+    {
+      "name": "product-experience.mjs",
+      "sha256": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf"
+    },
+    {
+      "name": "discovery-guidance.mjs",
+      "sha256": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2"
+    }
+  ],
+  "syntax": [
+    "experiences/atlas-lab/public-profile-preview.mjs",
+    "experiences/atlas-lab/candidate-highlights.mjs",
+    "experiences/atlas-lab/dating-ui.mjs",
+    "experiences/atlas-lab/dating-live.mjs",
+    "experiences/atlas-lab/dating-insights.mjs",
+    "experiences/atlas-lab/discovery.mjs",
+    "experiences/atlas-lab/public-profile.mjs",
+    "experiences/atlas-lab/dating-service.mjs",
+    "experiences/atlas-lab/dating-server.mjs",
+    "experiences/atlas-lab/dating-store.mjs",
+    "experiences/atlas-lab/preference-deadline.mjs",
+    "experiences/atlas-lab/introduction-guidance.mjs",
+    "experiences/atlas-lab/meeting-regions.mjs",
+    "experiences/atlas-lab/product-experience.mjs",
+    "experiences/atlas-lab/discovery-guidance.mjs"
+  ],
+  "scopedDiffCheck": 0,
+  "engineChecks": [
+    {
+      "path": "atlas/ask.js",
+      "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "unchanged": true
+    },
+    {
+      "path": "atlas/personalization.js",
+      "sha256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+      "unchanged": true
+    },
+    {
+      "path": "atlas/conditional-preference.js",
+      "sha256": "6b814ec429c7a29643f958b6cb09ef4efc96f22913d3e873dbb095f8f09e3d4e",
+      "unchanged": true
+    }
+  ],
+  "engineCodeChangedByBatch": 0,
+  "newEngines": 0,
+  "actualUsers": 0,
+  "paidModelCalls": 0,
+  "externalApiCost": 0,
+  "publicDeployment": false,
+  "preview": "http://127.0.0.1:50572/atlas-lab/dating.html",
+  "reviewRepairs": [
+    "Single-field saves preserve unrelated unsaved public input without publishing it",
+    "Public previews use current saved public declarations only",
+    "Saved comparisons never revive unavailable candidate details"
+  ],
+  "limitations": [
+    "Synthetic local HTTP and browser checks do not verify real user satisfaction, real devices, real identity providers or deployment",
+    "Paid AI, model evaluations, tutor and participant recruitment remain deferred"
+  ],
+  "initialFixtureCorrection": "Browser rank comparison excludes the existing rotating recommendation receipt token, which is not a preference or ranking change."
+}

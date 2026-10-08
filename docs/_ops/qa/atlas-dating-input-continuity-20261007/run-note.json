@@ -1,0 +1,39 @@
+{
+  "scope": "Free completion of two approved user-input fixes; no new engine, paid requests, recruitment or deployment",
+  "beforeFix": {
+    "artifact": "experiences/atlas-lab/qa/dating-input-continuity/reproduction.json",
+    "issues": ["A null preference appeared selected as the first enum option", "All five unsent schedule fields disappeared after navigation"],
+    "mutation": "No preference declaration or appointment was sent during reproduction"
+  },
+  "browserRuns": [
+    {
+      "stage": "Initial fixed implementation",
+      "paths": 10,
+      "status": "passed",
+      "artifact": "experiences/atlas-lab/qa/dating-input-continuity/before-copy-consent-fix/result.json",
+      "note": "Superseded by the final run after independent review found the separate place/duration reuse cache boundary"
+    },
+    {
+      "stage": "After place/duration reuse cache shares the form birth key",
+      "paths": 11,
+      "status": "passed",
+      "artifact": "experiences/atlas-lab/qa/dating-input-continuity/result.json",
+      "note": "Added explicit reuse then storage-consent off/on navigation, proving the old seed does not revive"
+    }
+  ],
+  "automaticRuns": {
+    "main": { "files": 7, "pass": 107, "log": "tests-output.log", "includesNewDraftBasisChecks": 6 },
+    "service": { "files": 1, "pass": 57, "log": "tests-service.log" },
+    "combined": { "files": 8, "pass": 164, "fail": 0, "cancelled": 0, "skipped": 0 },
+    "note": "The separate initial 6-check run is not added again. Previous 647-check broad suite was not rerun or added to this total."
+  },
+  "independentReview": {
+    "service": "Actor-scoped public structure and permission generation remain separate from counterpart private feedback and settings",
+    "ui": "Found old reschedule seed cache surviving storage withdrawal or an unseen pause/resume cycle; bound it to the same new-form key and rechecked",
+    "authorization": "Cache key is only a private UI invalidation guard; original server permission and revision checks remain authoritative"
+  },
+  "paidCalls": 0,
+  "actualUsers": 0,
+  "publicDeployment": false,
+  "persistentDemoDatabaseTouched": false
+}

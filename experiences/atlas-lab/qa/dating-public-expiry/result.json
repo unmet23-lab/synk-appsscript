@@ -1,0 +1,59 @@
+{
+  "at": "2026-10-07T17:10:34.882Z",
+  "status": "passed",
+  "actualUsers": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [
+    "public deadline preview and cancel leave saved disclosure and private preferences unchanged",
+    "editing a public value or lifetime after review clears the old confirmation so a stale payload cannot be saved",
+    "today publication is explicit and uses Korean midnight in a Los Angeles browser without copying a private deadline or enabling consent",
+    "a past public deadline is rejected in the form without saving any answers",
+    "clock-only expiration removes the answer from counterpart comparison and displays own reconfirmation while preserving the private answer and saved owner history",
+    "changing an expired answer while retaining its expired lifetime is stopped locally with a concrete reconfirmation instruction",
+    "editing a profile biography after expiry round-trips the original deadline and cannot revive the public answer",
+    "restoring expired disclosure requires explicit new lifetime selection and confirmation; no old private answer or consent is copied"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "public-deadline-review-390.png",
+    "public-review-viewport-390.png",
+    "expired-disclosure-needs-confirmation-320.png",
+    "public-expired-viewport-320.png",
+    "explicit-public-reconfirmation-320.png"
+  ],
+  "sourceBefore": {
+    "public-profile.mjs": "75a51c725459b38ca29c1c1e36e434b4b2e843635b07331dc1d7f05ed60c8245",
+    "dating-ui.mjs": "675d0aa72c8bf3fbe6485dfb6351d6c51510a8141bca4fd5670081dc3939ed0b",
+    "dating-live.mjs": "33d4132e9157d27fc1c7a65b1d44a9265bf0134db0d0d01d52317ec9e811635f",
+    "dating.css": "74139e1c74b0232717022fc9d12c2e953872b1a346fdd709a8c721677a0d0bb0",
+    "discovery.mjs": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a",
+    "introduction-guidance.mjs": "f5545cda2d8ef6df286bf377d2183646dce4b58b3668c5ffcd727687a1baebae",
+    "preference-deadline.mjs": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc",
+    "meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+    "discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "dating-insights.mjs": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49",
+    "product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+    "dating-service.mjs": "b01ccda5dbd80a2bd8a50800cefe7067ecbdb090e8ec3580098dc03c5270ae44",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505"
+  },
+  "sourceSha256": {
+    "public-profile.mjs": "75a51c725459b38ca29c1c1e36e434b4b2e843635b07331dc1d7f05ed60c8245",
+    "dating-ui.mjs": "675d0aa72c8bf3fbe6485dfb6351d6c51510a8141bca4fd5670081dc3939ed0b",
+    "dating-live.mjs": "33d4132e9157d27fc1c7a65b1d44a9265bf0134db0d0d01d52317ec9e811635f",
+    "dating.css": "74139e1c74b0232717022fc9d12c2e953872b1a346fdd709a8c721677a0d0bb0",
+    "discovery.mjs": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a",
+    "introduction-guidance.mjs": "f5545cda2d8ef6df286bf377d2183646dce4b58b3668c5ffcd727687a1baebae",
+    "preference-deadline.mjs": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc",
+    "meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+    "discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "dating-insights.mjs": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49",
+    "product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+    "dating-service.mjs": "b01ccda5dbd80a2bd8a50800cefe7067ecbdb090e8ec3580098dc03c5270ae44",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505"
+  },
+  "sourceStable": true
+}

@@ -1,0 +1,671 @@
+TAP version 13
+# Subtest: new criterion keeps connection importance unchanged and records only the current confirmed own answer
+ok 1 - new criterion keeps connection importance unchanged and records only the current confirmed own answer
+  ---
+  duration_ms: 4.3325
+  type: 'test'
+  ...
+# Subtest: new criterion requires a valid explicit answer snapshot and a fixed completed proposal
+ok 2 - new criterion requires a valid explicit answer snapshot and a fixed completed proposal
+  ---
+  duration_ms: 1.04
+  type: 'test'
+  ...
+# Subtest: new criterion apply source links only the next matching delivered recommendation, with a private meeting source
+ok 3 - new criterion apply source links only the next matching delivered recommendation, with a private meeting source
+  ---
+  duration_ms: 6.273
+  type: 'test'
+  ...
+# Subtest: new criterion context, basis and source peer availability remain independent link gates
+ok 4 - new criterion context, basis and source peer availability remain independent link gates
+  ---
+  duration_ms: 1.0442
+  type: 'test'
+  ...
+# Subtest: withdrawing or replacing new reflection irreversibly invalidates followup, including same-timestamp re-entry
+ok 5 - withdrawing or replacing new reflection irreversibly invalidates followup, including same-timestamp re-entry
+  ---
+  duration_ms: 1.8558
+  type: 'test'
+  ...
+# Subtest: new criterion comparison expires at the bound declaration deadline and cannot outlive it
+ok 6 - new criterion comparison expires at the bound declaration deadline and cannot outlive it
+  ---
+  duration_ms: 1.6439
+  type: 'test'
+  ...
+# Subtest: new criterion evaluation stays prospective and unknown remains separate from failure
+ok 7 - new criterion evaluation stays prospective and unknown remains separate from failure
+  ---
+  duration_ms: 2.9504
+  type: 'test'
+  ...
+# Subtest: HTTP new criterion uses own completed appointment and confirmed answer without changing criteria or peer records
+not ok 8 - HTTP new criterion uses own completed appointment and confirmed answer without changing criteria or peer records
+  ---
+  duration_ms: 2777.7514
+  type: 'test'
+  location: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-new-criterion.test.mjs:143:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"ok":false,"error":{"code":"matching-confirmation-required"}}
+    
+    403 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 403
+  operator: 'strictEqual'
+  stack: |-
+    Object.ok (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:110:86)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async completed (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:131:21)
+    async TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:144:38)
+    async Test.run (node:internal/test_runner/test:1332:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+  ...
+# Subtest: HTTP new criterion preview reveals source and scope, needs explicit apply, and follows the next delivered result
+not ok 9 - HTTP new criterion preview reveals source and scope, needs explicit apply, and follows the next delivered result
+  ---
+  duration_ms: 3479.4408
+  type: 'test'
+  location: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-new-criterion.test.mjs:153:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"ok":false,"error":{"code":"matching-confirmation-required"}}
+    
+    403 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 403
+  operator: 'strictEqual'
+  stack: |-
+    Object.ok (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:110:86)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async completed (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:131:21)
+    async TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:154:34)
+    async Test.run (node:internal/test_runner/test:1332:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+  ...
+# Subtest: HTTP two importance slots require the owner to choose replacement and never relax a required answer
+not ok 10 - HTTP two importance slots require the owner to choose replacement and never relax a required answer
+  ---
+  duration_ms: 4011.6229
+  type: 'test'
+  location: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-new-criterion.test.mjs:168:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"ok":false,"error":{"code":"matching-confirmation-required"}}
+    
+    403 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 403
+  operator: 'strictEqual'
+  stack: |-
+    Object.ok (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:110:86)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async completed (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:131:21)
+    async TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:169:34)
+    async Test.run (node:internal/test_runner/test:1332:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+  ...
+# Subtest: HTTP current declaration changes, unknown answers and stale review source cannot authorize the old preview
+not ok 11 - HTTP current declaration changes, unknown answers and stale review source cannot authorize the old preview
+  ---
+  duration_ms: 4046.5982
+  type: 'test'
+  location: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-new-criterion.test.mjs:177:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"ok":false,"error":{"code":"matching-confirmation-required"}}
+    
+    403 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 403
+  operator: 'strictEqual'
+  stack: |-
+    Object.ok (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:110:86)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async completed (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:131:21)
+    async TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:178:34)
+    async Test.run (node:internal/test_runner/test:1332:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+  ...
+# Subtest: HTTP bounded new importance expires and a once-only own answer cannot be promoted to baseline
+not ok 12 - HTTP bounded new importance expires and a once-only own answer cannot be promoted to baseline
+  ---
+  duration_ms: 4035.4881
+  type: 'test'
+  location: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-new-criterion.test.mjs:187:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"ok":false,"error":{"code":"matching-confirmation-required"}}
+    
+    403 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 403
+  operator: 'strictEqual'
+  stack: |-
+    Object.ok (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:110:86)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async completed (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:131:21)
+    async TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:188:53)
+    async Test.run (node:internal/test_runner/test:1332:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+  ...
+# Subtest: HTTP withdrawal and peer deletion stop new criterion changes while own saved reflection can still be erased
+not ok 13 - HTTP withdrawal and peer deletion stop new criterion changes while own saved reflection can still be erased
+  ---
+  duration_ms: 3512.0835
+  type: 'test'
+  location: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-new-criterion.test.mjs:196:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"ok":false,"error":{"code":"matching-confirmation-required"}}
+    
+    403 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 403
+  operator: 'strictEqual'
+  stack: |-
+    Object.ok (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:110:86)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async completed (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:131:21)
+    async TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:197:37)
+    async Test.run (node:internal/test_runner/test:1332:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+  ...
+# Subtest: HTTP retry of applied new importance is idempotent and returns current withdrawn source without reviving it
+not ok 14 - HTTP retry of applied new importance is idempotent and returns current withdrawn source without reviving it
+  ---
+  duration_ms: 4195.8854
+  type: 'test'
+  location: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-new-criterion.test.mjs:205:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"ok":false,"error":{"code":"matching-confirmation-required"}}
+    
+    403 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 403
+  operator: 'strictEqual'
+  stack: |-
+    Object.ok (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:110:86)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async completed (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:131:21)
+    async TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-new-criterion.test.mjs:206:34)
+    async Test.run (node:internal/test_runner/test:1332:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+  ...
+# Subtest: criterion reflection uses the connection snapshot, only own completion, and an explicit priority preview without relaxing required values
+ok 15 - criterion reflection uses the connection snapshot, only own completion, and an explicit priority preview without relaxing required values
+  ---
+  duration_ms: 15733.3191
+  type: 'test'
+  ...
+# Subtest: criterion preview survives a new context only for unchanged baseline sources and never revives after redeclaration, withdrawal or deletion
+ok 16 - criterion preview survives a new context only for unchanged baseline sources and never revives after redeclaration, withdrawal or deletion
+  ---
+  duration_ms: 19234.9759
+  type: 'test'
+  ...
+# Subtest: once-only and expired criterion sources cannot be promoted to a new recommendation context
+ok 17 - once-only and expired criterion sources cannot be promoted to a new recommendation context
+  ---
+  duration_ms: 23547.7731
+  type: 'test'
+  ...
+# Subtest: worse restoration previews only the original correction, preserves later unrelated edits, and never restores selection or acceptances
+ok 18 - worse restoration previews only the original correction, preserves later unrelated edits, and never restores selection or acceptances
+  ---
+  duration_ms: 13951.2881
+  type: 'test'
+  ...
+# Subtest: worse restoration rejects same-field redeclaration, source withdrawal, current expiry and forged preview sources
+ok 19 - worse restoration rejects same-field redeclaration, source withdrawal, current expiry and forged preview sources
+  ---
+  duration_ms: 65684.3065
+  type: 'test'
+  ...
+# Subtest: priority restoration preserves field edits and is invalidated by a later priority declaration or a new context
+ok 20 - priority restoration preserves field edits and is invalidated by a later priority declaration or a new context
+  ---
+  duration_ms: 55326.4786
+  type: 'test'
+  ...
+# Subtest: separate explicit SQLite stores refuse public paths and demo/account mode reuse
+ok 21 - separate explicit SQLite stores refuse public paths and demo/account mode reuse
+  ---
+  duration_ms: 236.1192
+  type: 'test'
+  ...
+# Subtest: fictional role login is explicit; account service never accepts demo login or decode-only identities
+ok 22 - fictional role login is explicit; account service never accepts demo login or decode-only identities
+  ---
+  duration_ms: 371.8353
+  type: 'test'
+  ...
+# Subtest: central account verification forwards the exact bearer and uses only active synk_user_id
+ok 23 - central account verification forwards the exact bearer and uses only active synk_user_id
+  ---
+  duration_ms: 3.7097
+  type: 'test'
+  ...
+# Subtest: onboarding and disclosure remain separate from private preferences and self-declaration is never verified
+ok 24 - onboarding and disclosure remain separate from private preferences and self-declaration is never verified
+  ---
+  duration_ms: 556.2796
+  type: 'test'
+  ...
+# Subtest: atomic revision CAS, idempotency and actor isolation work across two SQLite connections
+ok 25 - atomic revision CAS, idempotency and actor isolation work across two SQLite connections
+  ---
+  duration_ms: 273.2864
+  type: 'test'
+  ...
+# Subtest: appointment revisions and participant-private reflection are persisted and inbox is viewer-specific
+ok 26 - appointment revisions and participant-private reflection are persisted and inbox is viewer-specific
+  ---
+  duration_ms: 7605.1113
+  type: 'test'
+  ...
+# Subtest: blocks, disclosure and adult withdrawal close every pair without restoring old acceptances
+ok 27 - blocks, disclosure and adult withdrawal close every pair without restoring old acceptances
+  ---
+  duration_ms: 40612.7349
+  type: 'test'
+  ...
+# Subtest: account pause preserves agreed appointments and private reflection while blocking new commitments
+not ok 28 - account pause preserves agreed appointments and private reflection while blocking new commitments
+  ---
+  duration_ms: 5217.2835
+  type: 'test'
+  location: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-service.test.mjs:293:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"ok":false,"error":{"code":"discovery-unavailable"}}
+    
+    403 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 403
+  operator: 'strictEqual'
+  stack: |-
+    Object.ok (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-service.test.mjs:44:108)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-service.test.mjs:297:3)
+    async Test.run (node:internal/test_runner/test:1332:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+  ...
+# Subtest: reports remain private, operators are server-granted and suspending a target closes its pairs
+ok 29 - reports remain private, operators are server-granted and suspending a target closes its pairs
+  ---
+  duration_ms: 6331.2509
+  type: 'test'
+  ...
+# Subtest: suspension revokes operator report reads as well as processing and replay never returns stale private reports
+ok 30 - suspension revokes operator report reads as well as processing and replay never returns stale private reports
+  ---
+  duration_ms: 584.8726
+  type: 'test'
+  ...
+# Subtest: deletion scrubs private rows, leaves a tombstone, and stale writes stay rejected after restart
+ok 31 - deletion scrubs private rows, leaves a tombstone, and stale writes stay rejected after restart
+  ---
+  duration_ms: 6301.5935
+  type: 'test'
+  ...
+# Subtest: account verifier runs on every request and cannot grant operator powers through client claims
+ok 32 - account verifier runs on every request and cannot grant operator powers through client claims
+  ---
+  duration_ms: 202.5146
+  type: 'test'
+  ...
+# Subtest: invalid product action rolls back the account, pair and receipt together
+ok 33 - invalid product action rolls back the account, pair and receipt together
+  ---
+  duration_ms: 5570.8704
+  type: 'test'
+  ...
+# Subtest: a failure while producing the response rolls back already-written account, pair and receipt
+ok 34 - a failure while producing the response rolls back already-written account, pair and receipt
+  ---
+  duration_ms: 8535.6278
+  type: 'test'
+  ...
+# Subtest: first discovery opens without invented answers and server-stamped actions remain immediately readable
+ok 35 - first discovery opens without invented answers and server-stamped actions remain immediately readable
+  ---
+  duration_ms: 4106.8049
+  type: 'test'
+  ...
+# Subtest: account recommendations consume only disclosed eligible profiles and survive candidate privacy withdrawal
+ok 36 - account recommendations consume only disclosed eligible profiles and survive candidate privacy withdrawal
+  ---
+  duration_ms: 3099.2271
+  type: 'test'
+  ...
+# Subtest: guessing a disclosed account ID cannot bypass fresh mutual matching prerequisites
+ok 37 - guessing a disclosed account ID cannot bypass fresh mutual matching prerequisites
+  ---
+  duration_ms: 1383.6065
+  type: 'test'
+  ...
+# Subtest: closing preserves only my readable reflection and counterpart deletion keeps my words without its profile
+ok 38 - closing preserves only my readable reflection and counterpart deletion keeps my words without its profile
+  ---
+  duration_ms: 9517.1281
+  type: 'test'
+  ...
+# Subtest: account-wide exposure balancing changes only tied priorities and records each viewer/context/candidate once
+ok 39 - account-wide exposure balancing changes only tied priorities and records each viewer/context/candidate once
+  ---
+  duration_ms: 4363.8166
+  type: 'test'
+  ...
+# Subtest: account deletion removes its exposure references and ordinary responses never include other viewers logs
+ok 40 - account deletion removes its exposure references and ordinary responses never include other viewers logs
+  ---
+  duration_ms: 1168.0763
+  type: 'test'
+  ...
+# Subtest: the persisted clock prevents expired discovery and appointment revivals after a backward-clock restart
+ok 41 - the persisted clock prevents expired discovery and appointment revivals after a backward-clock restart
+  ---
+  duration_ms: 9433.5075
+  type: 'test'
+  ...
+# Subtest: introduction delivery, mutual intent and date acceptance are separate persisted stages
+ok 42 - introduction delivery, mutual intent and date acceptance are separate persisted stages
+  ---
+  duration_ms: 7319.6964
+  type: 'test'
+  ...
+# Subtest: declined introduction cannot be resent through block/unblock, a new pair, or an old success replay
+ok 43 - declined introduction cannot be resent through block/unblock, a new pair, or an old success replay
+  ---
+  duration_ms: 8636.1993
+  type: 'test'
+  ...
+# Subtest: introduction revision conflicts are atomic and pause blocks new intent while allowing withdrawal
+ok 44 - introduction revision conflicts are atomic and pause blocks new intent while allowing withdrawal
+  ---
+  duration_ms: 7230.4208
+  type: 'test'
+  ...
+# Subtest: legacy confirmed appointments retain completion and reflection but cannot imply an introduction agreement
+ok 45 - legacy confirmed appointments retain completion and reflection but cannot imply an introduction agreement
+  ---
+  duration_ms: 11124.9006
+  type: 'test'
+  ...
+# Subtest: date decline binds the account pair and one explicit own reopening clears both gates without restoring acceptances
+ok 46 - date decline binds the account pair and one explicit own reopening clears both gates without restoring acceptances
+  ---
+  duration_ms: 11135.4396
+  type: 'test'
+  ...
+# Subtest: date expiry closes its recipient gate across restart and does not count as a decline
+ok 47 - date expiry closes its recipient gate across restart and does not count as a decline
+  ---
+  duration_ms: 7653.771
+  type: 'test'
+  ...
+# Subtest: a busy date response preserves introduction consent while cancelling unanswered requests cannot pressure-retry
+ok 48 - a busy date response preserves introduction consent while cancelling unanswered requests cannot pressure-retry
+  ---
+  duration_ms: 8797.8801
+  type: 'test'
+  ...
+# Subtest: unanswered introduction expiry is not rejection and cooldown is durable across restart
+ok 49 - unanswered introduction expiry is not rejection and cooldown is durable across restart
+  ---
+  duration_ms: 7069.264
+  type: 'test'
+  ...
+# Subtest: preview is private and does not save an answer; explicit apply checks revision, expiry and owner
+ok 50 - preview is private and does not save an answer; explicit apply checks revision, expiry and owner
+  ---
+  duration_ms: 11618.4409
+  type: 'test'
+  ...
+# Subtest: preview applies the current exposure tie order and rejects changed pool or global exposure
+ok 51 - preview applies the current exposure tie order and rejects changed pool or global exposure
+  ---
+  duration_ms: 8692.9808
+  type: 'test'
+  ...
+# Subtest: own recommendation experience requires an issued current decision and explicit delivery, never GET exposure
+ok 52 - own recommendation experience requires an issued current decision and explicit delivery, never GET exposure
+  ---
+  duration_ms: 11102.0464
+  type: 'test'
+  ...
+# Subtest: explicit result review and introduction request retain the comparison basis without recording GETs or replay duplicates
+ok 53 - explicit result review and introduction request retain the comparison basis without recording GETs or replay duplicates
+  ---
+  duration_ms: 3303.0904
+  type: 'test'
+  ...
+# Subtest: experience evaluation withdrawal is prospective on reenable and storage withdrawal removes all personal outcome data
+ok 54 - experience evaluation withdrawal is prospective on reenable and storage withdrawal removes all personal outcome data
+  ---
+  duration_ms: 5061.1299
+  type: 'test'
+  ...
+# Subtest: comfort requires own completion, is separate from reflection, and remains withdrawable after counterpart deletion
+ok 55 - comfort requires own completion, is separate from reflection, and remains withdrawable after counterpart deletion
+  ---
+  duration_ms: 8715.3887
+  type: 'test'
+  ...
+# Subtest: an answer expiring inside the five-minute preview period invalidates the reviewed result
+ok 56 - an answer expiring inside the five-minute preview period invalidates the reviewed result
+  ---
+  duration_ms: 4414.0362
+  type: 'test'
+  ...
+# Subtest: old decision reports keep their basis while withdrawn peer labels vanish; suspended users can retract consent and answers
+ok 57 - old decision reports keep their basis while withdrawn peer labels vanish; suspended users can retract consent and answers
+  ---
+  duration_ms: 3254.7406
+  type: 'test'
+  ...
+# Subtest: an explicitly reviewed correction links the next delivered recommendation privately and persists across restart
+ok 58 - an explicitly reviewed correction links the next delivered recommendation privately and persists across restart
+  ---
+  duration_ms: 17260.9304
+  type: 'test'
+  ...
+# Subtest: changing or withdrawing the source invalidates a preview and followup without reverting the chosen preferences
+ok 59 - changing or withdrawing the source invalidates a preview and followup without reverting the chosen preferences
+  ---
+  duration_ms: 14660.455
+  type: 'test'
+  ...
+# Subtest: no-op or unlinked changes never invent a correction; undo followed by re-entry cannot revive an old correction
+ok 60 - no-op or unlinked changes never invent a correction; undo followed by re-entry cannot revive an old correction
+  ---
+  duration_ms: 16790.1478
+  type: 'test'
+  ...
+# Subtest: expired correction and a newly started situation do not link the next result, while a fresh post-expiry preview remains applicable
+ok 61 - expired correction and a newly started situation do not link the next result, while a fresh post-expiry preview remains applicable
+  ---
+  duration_ms: 14687.8779
+  type: 'test'
+  ...
+# Subtest: priority corrections use the same explicit source link and storage withdrawal removes the full comparison trail
+ok 62 - priority corrections use the same explicit source link and storage withdrawal removes the full comparison trail
+  ---
+  duration_ms: 10093.0004
+  type: 'test'
+  ...
+# Subtest: baseline publication patches only explicitly selected valid self fields and never enables disclosure or copies a context answer
+ok 63 - baseline publication patches only explicitly selected valid self fields and never enables disclosure or copies a context answer
+  ---
+  duration_ms: 7987.264
+  type: 'test'
+  ...
+# Subtest: expired, cleared and missing baseline values cannot be published; deletion removes correction records
+ok 64 - expired, cleared and missing baseline values cannot be published; deletion removes correction records
+  ---
+  duration_ms: 13233.4589
+  type: 'test'
+  ...
+# Subtest: counterpart disclosure withdrawal hides correction references and suspending the owner still permits comparison withdrawal
+ok 65 - counterpart disclosure withdrawal hides correction references and suspending the owner still permits comparison withdrawal
+  ---
+  duration_ms: 7784.2233
+  type: 'test'
+  ...
+# Subtest: explicit demo start creates absent sample accounts only, while account mode never bootstraps fictional identities
+ok 66 - explicit demo start creates absent sample accounts only, while account mode never bootstraps fictional identities
+  ---
+  duration_ms: 657.9237
+  type: 'test'
+  ...
+# Subtest: the recommended demo identity is the invited identity and only its own role can accept before separate date acceptance
+ok 67 - the recommended demo identity is the invited identity and only its own role can accept before separate date acceptance
+  ---
+  duration_ms: 4651.2007
+  type: 'test'
+  ...
+# Subtest: demo visibility and reciprocal requirements use the same saved public profile; hidden IDs cannot bypass connect
+ok 68 - demo visibility and reciprocal requirements use the same saved public profile; hidden IDs cannot bypass connect
+  ---
+  duration_ms: 7277.2678
+  type: 'test'
+  ...
+# Subtest: legacy fixed-candidate discovery migrates once, preserves personal declarations and existing pairs, and never rebinds old candidate evidence
+ok 69 - legacy fixed-candidate discovery migrates once, preserves personal declarations and existing pairs, and never rebinds old candidate evidence
+  ---
+  duration_ms: 8920.0085
+  type: 'test'
+  ...
+# Subtest: a full legacy log migrates without reviving cleared mandatory values or expiring baselines, and preserves its original archive
+ok 70 - a full legacy log migrates without reviving cleared mandatory values or expiring baselines, and preserves its original archive
+  ---
+  duration_ms: 20779.5196
+  type: 'test'
+  ...
+# Subtest: schedule context reads only currently public availability and disappears when pair access is withdrawn
+ok 71 - schedule context reads only currently public availability and disappears when pair access is withdrawn
+  ---
+  duration_ms: 8937.9811
+  type: 'test'
+  ...
+# Subtest: private goal snapshot is immutable and viewing without delivery is not an observed outcome
+ok 72 - private goal snapshot is immutable and viewing without delivery is not an observed outcome
+  ---
+  duration_ms: 12.1187
+  type: 'test'
+  ...
+# Subtest: actual delivery joins own corrected responses to Temper; unknown and withdrawal are not failures
+ok 73 - actual delivery joins own corrected responses to Temper; unknown and withdrawal are not failures
+  ---
+  duration_ms: 2.6267
+  type: 'test'
+  ...
+# Subtest: evaluation consent is explicit, prospective and withdrawal cannot revive old eligibility
+ok 74 - evaluation consent is explicit, prospective and withdrawal cannot revive old eligibility
+  ---
+  duration_ms: 1.0964
+  type: 'test'
+  ...
+# Subtest: comfort is separate from intent and binds a completed proposal; no retroactive evaluation consent
+ok 75 - comfort is separate from intent and binds a completed proposal; no retroactive evaluation consent
+  ---
+  duration_ms: 1.8119
+  type: 'test'
+  ...
+# Subtest: corrections after the declared observation window remain late missing, not successes
+ok 76 - corrections after the declared observation window remain late missing, not successes
+  ---
+  duration_ms: 0.7416
+  type: 'test'
+  ...
+# Subtest: resaving the same value does not turn an on-time observation into a late correction
+ok 77 - resaving the same value does not turn an on-time observation into a late correction
+  ---
+  duration_ms: 1.8714
+  type: 'test'
+  ...
+# Subtest: explicit correction links only the next matching recommendation, requires delivery and reports comparison without causality
+ok 78 - explicit correction links only the next matching recommendation, requires delivery and reports comparison without causality
+  ---
+  duration_ms: 3.4255
+  type: 'test'
+  ...
+# Subtest: source correction or withdrawal invalidates followup irreversibly even when the same value is restored at the same timestamp
+ok 79 - source correction or withdrawal invalidates followup irreversibly even when the same value is restored at the same timestamp
+  ---
+  duration_ms: 4.7008
+  type: 'test'
+  ...
+# Subtest: changed basis, context or withdrawn source candidate never acquires a correction link
+ok 80 - changed basis, context or withdrawn source candidate never acquires a correction link
+  ---
+  duration_ms: 3.0893
+  type: 'test'
+  ...
+# Subtest: comparison consent stays prospective, unknown is separate, and withdrawing then reenabling cannot restore comparison eligibility
+ok 81 - comparison consent stays prospective, unknown is separate, and withdrawing then reenabling cannot restore comparison eligibility
+  ---
+  duration_ms: 4.3979
+  type: 'test'
+  ...
+# Subtest: legacy experience remains valid without invented correction history and malformed comparison records are rejected
+ok 82 - legacy experience remains valid without invented correction history and malformed comparison records are rejected
+  ---
+  duration_ms: 0.7547
+  type: 'test'
+  ...
+# Subtest: private criterion snapshots are fixed at connection; completed response is separate and never changes preferences
+ok 83 - private criterion snapshots are fixed at connection; completed response is separate and never changes preferences
+  ---
+  duration_ms: 5.2426
+  type: 'test'
+  ...
+# Subtest: legacy and malformed criterion histories do not infer past importance
+ok 84 - legacy and malformed criterion histories do not infer past importance
+  ---
+  duration_ms: 0.4839
+  type: 'test'
+  ...
+# Subtest: restoration requires worse on a delivered linked record and an explicit original change; withdrawal and repeat cannot revive it
+ok 85 - restoration requires worse on a delivered linked record and an explicit original change; withdrawal and repeat cannot revive it
+  ---
+  duration_ms: 4.0294
+  type: 'test'
+  ...
+1..85
+# tests 85
+# suites 0
+# pass 77
+# fail 8
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 588276.4697

@@ -1,0 +1,73 @@
+✔ checkpoint stores only a versioned actor/client-bound receipt marker, never the binding source, action, revision or credentials (14.6538ms)
+✔ matching demo actor can restore after a new fictional session; other actor, mode or client registration discards the marker (0.97ms)
+✔ expiry is exact and future or malformed cache entries cannot authorize a receipt lookup (1.7286ms)
+✖ a reload restores GET-only pending with no action/revision, never sends automatically, and applied receipt removes the marker (1.5733ms)
+✖ missing receipts and failed checks preserve reload lookup; definitive authentication rejection clears it (2.3077ms)
+✔ write/readback failures stop before POST, including a storage adapter that silently drops writes (1.8995ms)
+✖ successful send, definite action rejection, logout and identity change erase markers; uncertain retry preserves original creation time (0.5847ms)
+✔ clear during asynchronous checkpoint hashing cannot publish a late marker or dispatch a POST (0.4674ms)
+✔ binding changes and expiry stop retrying an in-memory body, and send without restore cannot overwrite another unresolved marker (1.4105ms)
+✖ failed marker cleanup reports the limitation without claiming a proven successful mutation failed (0.76ms)
+✔ a lost response keeps an immutable tab-only envelope, blocks new writes, and retries the same UUID and body only explicitly (8.7228ms)
+✔ a missing receipt is inconclusive and an exact applied receipt resolves with the latest view (1.0034ms)
+✔ receipt transport or malformed/mismatched replies preserve pending; definitive rejection clears it (1.1829ms)
+✔ repeated uncertain retries retain pending, but revision rejection clears it (0.3063ms)
+✔ identity changes and explicit lifecycle clearing discard pending and reject late private responses (0.7971ms)
+✔ concurrent checks/retries cannot launch duplicate traffic and ordinary definite failures do not leave pending (0.6457ms)
+✔ an incomplete or other actor’s action response stays unresolved instead of publishing the wrong view (0.2972ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 13
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 112.4012
+
+✖ failing tests:
+
+test at tests\atlas-dating-checkpoint.test.mjs:28:1
+✖ a reload restores GET-only pending with no action/revision, never sends automatically, and applied receipt removes the marker (1.5733ms)
+  ReferenceError: accountId is not defined
+      at ack (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-checkpoint.test.mjs:12:70)
+      at request (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-checkpoint.test.mjs:31:112)
+      at operation.checking (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-delivery.mjs:74:32)
+      at async operation (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-delivery.mjs:22:22)
+      at async TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-checkpoint.test.mjs:33:17)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+
+test at tests\atlas-dating-checkpoint.test.mjs:35:1
+✖ missing receipts and failed checks preserve reload lookup; definitive authentication rejection clears it (2.3077ms)
+  ReferenceError: accountId is not defined
+      at ack (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-checkpoint.test.mjs:12:70)
+      at request (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-checkpoint.test.mjs:37:92)
+      at operation.checking (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-delivery.mjs:74:32)
+      at async operation (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-delivery.mjs:22:22)
+      at async TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-checkpoint.test.mjs:37:285)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+
+test at tests\atlas-dating-checkpoint.test.mjs:46:1
+✖ successful send, definite action rejection, logout and identity change erase markers; uncertain retry preserves original creation time (0.5847ms)
+  ReferenceError: accountId is not defined
+      at request (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-checkpoint.test.mjs:47:316)
+      at transmit (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-delivery.mjs:35:28)
+      at file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-delivery.mjs:67:16
+      at async operation (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-delivery.mjs:22:22)
+      at async TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-checkpoint.test.mjs:48:27)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+
+test at tests\atlas-dating-checkpoint.test.mjs:60:1
+✖ failed marker cleanup reports the limitation without claiming a proven successful mutation failed (0.76ms)
+  ReferenceError: accountId is not defined
+      at request (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-checkpoint.test.mjs:61:258)
+      at transmit (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-delivery.mjs:35:28)
+      at file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-delivery.mjs:67:16
+      at async operation (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/atlas-lab/dating-delivery.mjs:22:22)
+      at async TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-checkpoint.test.mjs:61:297)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    checkpointCleanupFailed: true
+  }

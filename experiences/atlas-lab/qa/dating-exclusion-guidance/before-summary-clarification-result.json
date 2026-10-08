@@ -1,0 +1,21 @@
+{
+  "at": "2026-10-06T22:45:49.646Z",
+  "status": "passed",
+  "kind": "synthetic-exclusion-guidance-browser",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "paths": [
+    "empty-result guidance opens and focuses the current exclusion list without mutation; restoring one candidate retains the same context, all declarations, other exclusions and source history, without selection or introduction",
+    "the recommendation and preference pages reuse the same current exclusion list, without starting another context or changing answers",
+    "after public withdrawal, the focused list contains only currently authorized candidates; the withdrawn name and restore button are absent at 320px",
+    "only the separate explicit new-context action ends current-only answers and exclusions; the ongoing baseline remains and no past selection returns",
+    "an empty public pool offers refresh instead of a stale or fictional exclusion-restoration list"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "current-exclusion-list-first-390.png",
+    "authorized-exclusions-only-320.png"
+  ]
+}

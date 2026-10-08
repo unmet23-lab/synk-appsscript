@@ -1,0 +1,489 @@
+{
+  "at": "2026-10-07T18:14:37.256Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "memory-only-initial-introduction-and-choice-drafts",
+    "atomic-explicit-setup-save-with-receipt-recovery",
+    "saved-versus-unconfirmed-initial-steps"
+  ],
+  "tests": {
+    "tests": 167,
+    "pass": 167,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "uniqueCases": 167,
+    "groups": [
+      {
+        "log": "ui-contracts.tap",
+        "tests": 54,
+        "pass": 54,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "sha256": "235672e6f9bc107a78b645590ffd86698154a025906ee2273fecd9d788f7c862"
+      },
+      {
+        "log": "onboarding-service.tap",
+        "tests": 15,
+        "pass": 15,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "sha256": "922bd901d90a9c7812761f1ee5b9b384efac20d03e2900d3684d6368d11bc27a"
+      },
+      {
+        "log": "service-regression.tap",
+        "tests": 98,
+        "pass": 98,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "sha256": "00345d8bc0db751d191f372c395d247d20a15dee1dbb217c7a55d5d057d69194"
+      }
+    ],
+    "finalConsentRecheck": {
+      "log": "final-consent-regression.tap",
+      "tests": 23,
+      "pass": 23,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "sha256": "b2e6aef6495ac0125acf5388d16ab511cca73a9e8747a60efe5a782d4cfd5cf6",
+      "additionalUniqueCases": 0,
+      "reason": "The full regression began before the final legacy confirmation-marker repair; affected consent, adult and legacy tests were rerun after that repair alongside the final new onboarding tests."
+    }
+  },
+  "browserPaths": 68,
+  "browser": [
+    {
+      "name": "dating-onboarding",
+      "paths": 18,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "experiences/atlas-lab/qa/dating-onboarding/same-tab-draft-and-choices-390.png",
+          "width": 390,
+          "height": 1747,
+          "sha256": "50990118bf9e8cdc871fdff1d15b8179d48761c4df9346970855fd6e253c68e6",
+          "copy": "screenshots/same-tab-draft-and-choices-390.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-onboarding/same-tab-draft-and-choices-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "ea3e2619ae31731dd4bcd67677ee3720f08ec44f04313287f093ebad8e55c9c3",
+          "copy": "screenshots/same-tab-draft-and-choices-390-viewport.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-onboarding/private-first-setup-completed-320.png",
+          "width": 320,
+          "height": 998,
+          "sha256": "b9c58a444ce9fe4db8eb2712028845c9d6732c28d702caef3ee1a98982bd135a",
+          "copy": "screenshots/private-first-setup-completed-320.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-onboarding/private-first-setup-completed-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "acb4217628b082da9a0732ec781c6f032de5875b2bd7b603894d9d42c6b50e0e",
+          "copy": "screenshots/private-first-setup-completed-320-viewport.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-onboarding/partial-first-setup-resume-320.png",
+          "width": 320,
+          "height": 1739,
+          "sha256": "88184df4860e073f3d15d4db915c23167bb924515ba894949e9fbac9f0168fa4",
+          "copy": "screenshots/partial-first-setup-resume-320.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-onboarding/partial-first-setup-resume-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "ce1bb3eacd6b426d709b0e2d5ff3278236cfa8cfd47aa3f658858d37220f2ed6",
+          "copy": "screenshots/partial-first-setup-resume-320-viewport.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-onboarding/unreceived-first-setup-retry-390.png",
+          "width": 390,
+          "height": 2156,
+          "sha256": "c63fa3aaa5dd44fcfdec18441d3f122c0290b0bb4ca9c2c000c8ad804e9382dd",
+          "copy": "screenshots/unreceived-first-setup-retry-390.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-onboarding/unreceived-first-setup-retry-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "a30be5a51c0ffb18ed3bf09ed0a68ede12b82ab5e744bf32dc1757a083edc8b8",
+          "copy": "screenshots/unreceived-first-setup-retry-390-viewport.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-onboarding/reloaded-receipt-completes-first-setup-390.png",
+          "width": 390,
+          "height": 1923,
+          "sha256": "dee0157393d3933bfd44b8e28a87ed19532ee44cd997d080c2a6ba3f54ec193d",
+          "copy": "screenshots/reloaded-receipt-completes-first-setup-390.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-onboarding/reloaded-receipt-completes-first-setup-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "892d9673a7cbfb8fc2354fc10f8a95460588aa6f277a639bf309ea5ba3d13a50",
+          "copy": "screenshots/reloaded-receipt-completes-first-setup-390-viewport.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-onboarding/retry-conflict-unlocks-and-refreshes-390.png",
+          "width": 390,
+          "height": 1724,
+          "sha256": "d0465b3b5b874be5dfcb42cd7562b27920a675f19d0e6da284f422115ff835e3",
+          "copy": "screenshots/retry-conflict-unlocks-and-refreshes-390.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-onboarding/retry-conflict-unlocks-and-refreshes-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "ee3c0b2c90da9374d6554bdc9ead349fa6e1727d8737114ada15c2847a8dc8dc",
+          "copy": "screenshots/retry-conflict-unlocks-and-refreshes-390-viewport.png"
+        }
+      ]
+    },
+    {
+      "name": "dating-editing",
+      "paths": 23,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/navigation-retains-unsaved-profile-390.png",
+          "width": 390,
+          "height": 8247,
+          "sha256": "085078b8bad841c7d9c3a8146fe5f015fa68770c11d4cbf3b94546c5d8e20ea7"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/navigation-retains-unsaved-profile-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "179aced9ff8b824e194e97711ea1ef03394adfebf6c9a87be0f346a6d5d6fb3f"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/basic-save-retains-public-draft-320.png",
+          "width": 320,
+          "height": 6983,
+          "sha256": "f2e686583fca1d52230309077ed8972c51a0c29b8f0b14009a9e1cc9d5e17e74"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/basic-save-retains-public-draft-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "204a005e0725b7287ec34c131f78044ddfbc62c0eb1abd40873306113a2ea760"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/explicit-discard-preserves-other-draft-320.png",
+          "width": 320,
+          "height": 7280,
+          "sha256": "edd1f25f4c81021197fc3ff4fb79d5e1e97fd2f1065b27c99b9df20a2c80ed4c"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/explicit-discard-preserves-other-draft-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "4c428e1e013e10e5d57fa0e10e3e7f28e063193e13d54a9c4658d9bc8b5b3704"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/expiry-discards-stale-public-draft-390.png",
+          "width": 390,
+          "height": 6740,
+          "sha256": "d2fe4804b4dd24ac2abbdd160643505f14fa22129144d247120f1ddb0ac0ec81"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/expiry-discards-stale-public-draft-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "e2a0d5846331ae305b67b84dce00d13c5f7f9f858132aa915e8577c1f80935d9"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/required-and-custom-deadline-draft-restored-320.png",
+          "width": 320,
+          "height": 10007,
+          "sha256": "5e0ccfa5d00f2158ed1933368894daf5247e57a9a86e283912aa534c374d64ec"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/required-and-custom-deadline-draft-restored-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "7fa7b5401ac0e31cfd55f910d1b31e92d7418251ad3f844a6c02e9c55f5c7695"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/receipt-recovery-returns-to-preview-390.png",
+          "width": 390,
+          "height": 7678,
+          "sha256": "3831b7b550e677e4266b6d6d94d24d18aa07b3e4c94bee30bc3f38b87cbd39c0"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/receipt-recovery-returns-to-preview-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "0d3784d4fbbd445418ce456e2ea9058db055cd305b5e666772b8b6c8eb12ff85"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/unsaved-return-shows-saved-preview-390.png",
+          "width": 390,
+          "height": 9782,
+          "sha256": "3e52304f22acb759897c6d40d868c78972fdcd16f6f40d6c4b1652d2f7a19ac3"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/unsaved-return-shows-saved-preview-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "ef66129905d79c88595fcd8c49795f2a8e60a813fcc1706728e8e50872c3988c"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/profile-edit-returns-to-original-preview-320.png",
+          "width": 320,
+          "height": 4527,
+          "sha256": "d514cbc94f068c58198e05965bc87fab0e139c10828b36e7f9c5e4bdd1a692e4"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/profile-edit-returns-to-original-preview-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "e71ca922b3df35539af77d6d4df80ae855d98373ea309cbb69e74a18d4ac93ff"
+        }
+      ]
+    },
+    {
+      "name": "dating-readiness",
+      "paths": 9,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "experiences/atlas-lab/qa/dating-readiness/first-recommendation-onboarding-320.png",
+          "width": 320,
+          "height": 1809,
+          "sha256": "d9fdec298ac9f056967c6537029e71cee4b007090451054874719f9eabdcf366"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-readiness/required-confirmations-ready-390.png",
+          "width": 390,
+          "height": 2420,
+          "sha256": "679017179054ce126001ced1563fa288e579fa9c6d0f51e763b568d7f3fe51a8"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-readiness/own-ready-public-information-pending-390.png",
+          "width": 390,
+          "height": 1585,
+          "sha256": "4e54a271e68c52da28a2d463741458c9d536f0406b71305f336e3d3ce2794815"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-readiness/eligible-with-other-pending-320.png",
+          "width": 320,
+          "height": 2065,
+          "sha256": "85081b18605bb5db6a9dd34e9e5a0ad8524b412c884e147e477d86a9e34f970c"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-readiness/own-adult-unavailable-management-320.png",
+          "width": 320,
+          "height": 2016,
+          "sha256": "f245180c99b95b467076fa1d991d986f2c530257d49ba3741fa58255228550d5"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-readiness/adult-expired-closes-former-introduction-390.png",
+          "width": 390,
+          "height": 965,
+          "sha256": "4958e67fc2fbf35301fc14447b31f0b82fc38b0a4b6dec58341a90d3422c55f0"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-readiness/adult-verified-requires-explicit-resume-390.png",
+          "width": 390,
+          "height": 1119,
+          "sha256": "fc4246d16c8a2b07519c75d087a41c204e950c93e37e52a5f148c38dd30a2f80"
+        }
+      ]
+    },
+    {
+      "name": "dating",
+      "paths": 18,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "experiences/atlas-lab/qa/dating/landing-320.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "f38b233c4557a312c085e8328fb84872425d79ee22bc58e87929646763bc5774"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating/recommendations-390.png",
+          "width": 390,
+          "height": 2369,
+          "sha256": "79b3a456838a80a21b278d6549b0eacdcafd6bc330ece51bd8e4fb1f35d03f88"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating/preference-preview-390.png",
+          "width": 390,
+          "height": 1507,
+          "sha256": "3fac270a92978e1b9637f07ffefcd5e2faf369e151c7ab9ea9be3e88e42c4951"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating/expired-preference-390.png",
+          "width": 390,
+          "height": 4801,
+          "sha256": "4e3b2719b16c0435f85ffb9eac3893a800f4404ccca3cc92352d997b95711712"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating/experience-history-390.png",
+          "width": 390,
+          "height": 1829,
+          "sha256": "bca45afd4bf12953af3b75094c70729c4efeafd2904bee04a2246f34360d83d4"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating/changes-before-accept-1280.png",
+          "width": 1280,
+          "height": 1901,
+          "sha256": "097e26990017ea9c9ec4186ac462eaa2ec38408b33b4dfc807fe683d2522d3cd"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating/agreed-1280.png",
+          "width": 1280,
+          "height": 1901,
+          "sha256": "1ecab02017dfe4505fa0dcd131b6f83fc085fb598db70872bbc1d0b367eb562e"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating/reflection-390.png",
+          "width": 390,
+          "height": 3020,
+          "sha256": "f9f5e0f9239f42cfcbfb473eaa2c6caa4000870b6d91813c5eb532b37879b64e"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating/deleted-320.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "cc61837a41c575fcfe56ef8960aaf6ed5f59add3de2d4fb8082e8d58e4e309c9"
+        }
+      ]
+    }
+  ],
+  "served": [
+    {
+      "name": "onboarding-drafts.mjs",
+      "sha256": "befe9826c9bd6b7d27a4dbff9c924e305d1f53d25bb2781e8ae00dceec2c7940"
+    },
+    {
+      "name": "profile-editing-drafts.mjs",
+      "sha256": "ba6808e6362a2e10310c313c541e4236d65739383ba6ed243f23bae2363560f6"
+    },
+    {
+      "name": "public-profile-preview.mjs",
+      "sha256": "76106c8e35d25996bacc7cd0af72cb9c653225ea7934a177f8dfb4586fcd2a8f"
+    },
+    {
+      "name": "candidate-highlights.mjs",
+      "sha256": "64bca3aa0f7ed996fa6e04d410f3227f5883b899cc79ba2736d6b19c17d05882"
+    },
+    {
+      "name": "dating.html",
+      "sha256": "3d04f09caa98147ead0f9cb83f860b78971c308312d178454b25979cf8908770"
+    },
+    {
+      "name": "dating.css",
+      "sha256": "90a1f6dca2652d56c9a52d84ce1b3df1e37796febf7fa5b9e703e134c3363c8b"
+    },
+    {
+      "name": "dating-ui.mjs",
+      "sha256": "fa8857b40f884720c1266da958aa161a57360a5b9a84dc128e7ab5cfee31361e"
+    },
+    {
+      "name": "dating-live.mjs",
+      "sha256": "b19c3c166ab75f378039d76820a972db8a42396b4f8b88742310be6f50266e5d"
+    },
+    {
+      "name": "dating-insights.mjs",
+      "sha256": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49"
+    },
+    {
+      "name": "discovery.mjs",
+      "sha256": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a"
+    },
+    {
+      "name": "public-profile.mjs",
+      "sha256": "75a51c725459b38ca29c1c1e36e434b4b2e843635b07331dc1d7f05ed60c8245"
+    },
+    {
+      "name": "preference-deadline.mjs",
+      "sha256": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc"
+    },
+    {
+      "name": "introduction-guidance.mjs",
+      "sha256": "f5545cda2d8ef6df286bf377d2183646dce4b58b3668c5ffcd727687a1baebae"
+    },
+    {
+      "name": "meeting-regions.mjs",
+      "sha256": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017"
+    },
+    {
+      "name": "product-experience.mjs",
+      "sha256": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf"
+    },
+    {
+      "name": "discovery-guidance.mjs",
+      "sha256": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2"
+    }
+  ],
+  "syntax": [
+    "experiences/atlas-lab/onboarding-drafts.mjs",
+    "experiences/atlas-lab/profile-editing-drafts.mjs",
+    "experiences/atlas-lab/public-profile-preview.mjs",
+    "experiences/atlas-lab/candidate-highlights.mjs",
+    "experiences/atlas-lab/dating-ui.mjs",
+    "experiences/atlas-lab/dating-live.mjs",
+    "experiences/atlas-lab/dating-insights.mjs",
+    "experiences/atlas-lab/discovery.mjs",
+    "experiences/atlas-lab/public-profile.mjs",
+    "experiences/atlas-lab/dating-service.mjs",
+    "experiences/atlas-lab/dating-server.mjs",
+    "experiences/atlas-lab/dating-store.mjs",
+    "experiences/atlas-lab/preference-deadline.mjs",
+    "experiences/atlas-lab/introduction-guidance.mjs",
+    "experiences/atlas-lab/meeting-regions.mjs",
+    "experiences/atlas-lab/product-experience.mjs",
+    "experiences/atlas-lab/discovery-guidance.mjs"
+  ],
+  "scopedDiffCheck": 0,
+  "engineChecks": [
+    {
+      "path": "atlas/ask.js",
+      "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "unchanged": true
+    },
+    {
+      "path": "atlas/personalization.js",
+      "sha256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+      "unchanged": true
+    },
+    {
+      "path": "atlas/conditional-preference.js",
+      "sha256": "6b814ec429c7a29643f958b6cb09ef4efc96f22913d3e873dbb095f8f09e3d4e",
+      "unchanged": true
+    }
+  ],
+  "engineCodeChangedByBatch": 0,
+  "newEngines": 0,
+  "actualUsers": 0,
+  "paidModelCalls": 0,
+  "externalApiCost": 0,
+  "publicDeployment": false,
+  "preview": "http://127.0.0.1:54532/atlas-lab/dating.html",
+  "reviewRepairs": [
+    "A terminal retry/checkpoint failure releases pending input locks after its delivery record is cleared",
+    "Suspended accounts are not prompted to resume initial setup",
+    "Legacy incomplete documents acquire an explicit confirmation marker on their first new mutation"
+  ],
+  "limitations": [
+    "Unsent drafts remain in tab memory only and do not survive reload or tab closure; only the receipt lookup is persisted",
+    "Legacy completed accounts without the new confirmation marker keep their prior compatibility state; historical all-off intent is not inferred as newly confirmed",
+    "Synthetic local checks do not verify real user satisfaction, physical devices, real identity providers or deployment",
+    "Paid AI, model evaluation, tutor and participant recruitment remain deferred"
+  ]
+}

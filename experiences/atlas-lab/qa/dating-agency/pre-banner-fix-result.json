@@ -1,0 +1,29 @@
+{
+  "at": "2026-10-06T21:45:42.367Z",
+  "status": "passed",
+  "kind": "synthetic-dating-agency-browser",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "paths": [
+    "restore one explicit current exclusion, preserving its source history, the same context, other answers, another exclusion and a timed hide; no selection or introduction is inferred",
+    "a counterpart who withdraws public visibility is absent from the exclusion-restore UI without revealing the withdrawn profile",
+    "starting a new recommendation cannot restore a past-context exclusion, while the independent timed hide remains",
+    "only an explicitly viewed qualifying recommendation captures its allowance; older records infer nothing and the private keep response neither changes preferences nor appears to the counterpart",
+    "stop is a private reflection only; preview cancellation preserves the rule and explicit apply alone withdraws the captured layer while preserving the original daily preference, public profile and introduction state",
+    "a later explicit primary declaration invalidates an old allowance review action without reviving its source; the private response can still be withdrawn",
+    "the captured conditional allowance expires at its own deadline; the old review cannot withdraw a later rule and the original preference remains",
+    "counterpart public withdrawal disables the old source action and removes its label; own response withdrawal still works, and revoking preference storage removes the private records",
+    "the expanded optional-task guide is readable at 320 and 390px and prints a blank observation sheet; it reports no actual participants"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "individual-exclusions-390.png",
+    "remaining-exclusion-320.png",
+    "private-allowance-review-1280.png",
+    "usability-agency-guide-390.png",
+    "usability-agency-guide-320.png",
+    "usability-agency-observation-print.png"
+  ]
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "path": "atlas/ask.js",
+    "before": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+    "after": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+    "same": true
+  },
+  {
+    "path": "atlas/personalization.js",
+    "before": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+    "after": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+    "same": true
+  }
+]

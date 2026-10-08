@@ -1,0 +1,232 @@
+TAP version 13
+# Subtest: receipt checkpoint binding uses only the public registration or demo surface and excludes OAuth secrets and query parameters
+ok 1 - receipt checkpoint binding uses only the public registration or demo surface and excludes OAuth secrets and query parameters
+  ---
+  duration_ms: 50.0747
+  type: 'test'
+  ...
+# Subtest: demo credentials are memory-only, distinct from a real SYNK session
+ok 2 - demo credentials are memory-only, distinct from a real SYNK session
+  ---
+  duration_ms: 4.4
+  type: 'test'
+  ...
+# Subtest: an OAuth session is bound to its registered identity origin and product client
+ok 3 - an OAuth session is bound to its registered identity origin and product client
+  ---
+  duration_ms: 2.205
+  type: 'test'
+  ...
+# Subtest: account requests use SYNK bearer but never send private records to the identity host
+ok 4 - account requests use SYNK bearer but never send private records to the identity host
+  ---
+  duration_ms: 2.036
+  type: 'test'
+  ...
+# Subtest: revoked identity clears stored credentials and does not retry the mutation
+ok 5 - revoked identity clears stored credentials and does not retry the mutation
+  ---
+  duration_ms: 1.8558
+  type: 'test'
+  ...
+# Subtest: logout rejects a late response from the prior identity
+ok 6 - logout rejects a late response from the prior identity
+  ---
+  duration_ms: 1.9628
+  type: 'test'
+  ...
+# Subtest: dating PKCE uses its own pending namespace without overwriting platform login
+ok 7 - dating PKCE uses its own pending namespace without overwriting platform login
+  ---
+  duration_ms: 15.2653
+  type: 'test'
+  ...
+# Subtest: renewal is single-flight and a logout during refresh cannot restore a session
+ok 8 - renewal is single-flight and a logout during refresh cannot restore a session
+  ---
+  duration_ms: 2.3333
+  type: 'test'
+  ...
+# Subtest: a revoked refresh credential clears the session; a transient provider outage preserves it
+ok 9 - a revoked refresh credential clears the session; a transient provider outage preserves it
+  ---
+  duration_ms: 3.9493
+  type: 'test'
+  ...
+# Subtest: only dispatched action uncertainty is marked: transport, unreadable JSON/body and server outage; definitive rejection and GET are separate
+ok 10 - only dispatched action uncertainty is marked: transport, unreadable JSON/body and server outage; definitive rejection and GET are separate
+  ---
+  duration_ms: 8.5218
+  type: 'test'
+  ...
+# Subtest: logout or disposal during a dispatched mutation does not turn a stale response into a recoverable write
+ok 11 - logout or disposal during a dispatched mutation does not turn a stale response into a recoverable write
+  ---
+  duration_ms: 1.6774
+  type: 'test'
+  ...
+# Subtest: a malformed authentication rejection clears credentials and never remains uncertain
+ok 12 - a malformed authentication rejection clears credentials and never remains uncertain
+  ---
+  duration_ms: 2.3647
+  type: 'test'
+  ...
+# Subtest: checkpoint stores only a versioned actor/client-bound receipt marker, never the binding source, action, revision or credentials
+ok 13 - checkpoint stores only a versioned actor/client-bound receipt marker, never the binding source, action, revision or credentials
+  ---
+  duration_ms: 19.3599
+  type: 'test'
+  ...
+# Subtest: matching demo actor can restore after a new fictional session; other actor, mode or client registration discards the marker
+ok 14 - matching demo actor can restore after a new fictional session; other actor, mode or client registration discards the marker
+  ---
+  duration_ms: 3.9812
+  type: 'test'
+  ...
+# Subtest: expiry is exact and future or malformed cache entries cannot authorize a receipt lookup
+ok 15 - expiry is exact and future or malformed cache entries cannot authorize a receipt lookup
+  ---
+  duration_ms: 4.4232
+  type: 'test'
+  ...
+# Subtest: a reload restores GET-only pending with no action/revision, never sends automatically, and applied receipt removes the marker
+ok 16 - a reload restores GET-only pending with no action/revision, never sends automatically, and applied receipt removes the marker
+  ---
+  duration_ms: 4.6017
+  type: 'test'
+  ...
+# Subtest: missing receipts and failed checks preserve reload lookup; definitive authentication rejection clears it
+ok 17 - missing receipts and failed checks preserve reload lookup; definitive authentication rejection clears it
+  ---
+  duration_ms: 2.2398
+  type: 'test'
+  ...
+# Subtest: write/readback failures stop before POST, including a storage adapter that silently drops writes
+ok 18 - write/readback failures stop before POST, including a storage adapter that silently drops writes
+  ---
+  duration_ms: 12.8578
+  type: 'test'
+  ...
+# Subtest: successful send, definite action rejection, logout and identity change erase markers; uncertain retry preserves original creation time
+ok 19 - successful send, definite action rejection, logout and identity change erase markers; uncertain retry preserves original creation time
+  ---
+  duration_ms: 10.464
+  type: 'test'
+  ...
+# Subtest: clear during asynchronous checkpoint hashing cannot publish a late marker or dispatch a POST
+ok 20 - clear during asynchronous checkpoint hashing cannot publish a late marker or dispatch a POST
+  ---
+  duration_ms: 1.3265
+  type: 'test'
+  ...
+# Subtest: binding changes and expiry stop retrying an in-memory body, and send without restore cannot overwrite another unresolved marker
+ok 21 - binding changes and expiry stop retrying an in-memory body, and send without restore cannot overwrite another unresolved marker
+  ---
+  duration_ms: 5.0553
+  type: 'test'
+  ...
+# Subtest: failed marker cleanup reports the limitation without claiming a proven successful mutation failed
+ok 22 - failed marker cleanup reports the limitation without claiming a proven successful mutation failed
+  ---
+  duration_ms: 1.3317
+  type: 'test'
+  ...
+# Subtest: a lost response keeps an immutable tab-only envelope, blocks new writes, and retries the same UUID and body only explicitly
+ok 23 - a lost response keeps an immutable tab-only envelope, blocks new writes, and retries the same UUID and body only explicitly
+  ---
+  duration_ms: 3.5722
+  type: 'test'
+  ...
+# Subtest: a missing receipt is inconclusive and an exact applied receipt resolves with the latest view
+ok 24 - a missing receipt is inconclusive and an exact applied receipt resolves with the latest view
+  ---
+  duration_ms: 2.0058
+  type: 'test'
+  ...
+# Subtest: receipt transport or malformed/mismatched replies preserve pending; definitive rejection clears it
+ok 25 - receipt transport or malformed/mismatched replies preserve pending; definitive rejection clears it
+  ---
+  duration_ms: 2.6738
+  type: 'test'
+  ...
+# Subtest: repeated uncertain retries retain pending, but revision rejection clears it
+ok 26 - repeated uncertain retries retain pending, but revision rejection clears it
+  ---
+  duration_ms: 0.9175
+  type: 'test'
+  ...
+# Subtest: identity changes and explicit lifecycle clearing discard pending and reject late private responses
+ok 27 - identity changes and explicit lifecycle clearing discard pending and reject late private responses
+  ---
+  duration_ms: 0.7609
+  type: 'test'
+  ...
+# Subtest: concurrent checks/retries cannot launch duplicate traffic and ordinary definite failures do not leave pending
+ok 28 - concurrent checks/retries cannot launch duplicate traffic and ordinary definite failures do not leave pending
+  ---
+  duration_ms: 1.7626
+  type: 'test'
+  ...
+# Subtest: an incomplete or other actor’s action response stays unresolved instead of publishing the wrong view
+ok 29 - an incomplete or other actor’s action response stays unresolved instead of publishing the wrong view
+  ---
+  duration_ms: 0.7683
+  type: 'test'
+  ...
+# Subtest: lifecycle verifier is explicitly configured, server-only and constant-length digest comparison accepts only its configured token
+ok 30 - lifecycle verifier is explicitly configured, server-only and constant-length digest comparison accepts only its configured token
+  ---
+  duration_ms: 3.6714
+  type: 'test'
+  ...
+# Subtest: the actual route fails closed for absent configuration, browser origins, user credentials, foreign events and demo identities
+ok 31 - the actual route fails closed for absent configuration, browser origins, user credentials, foreign events and demo identities
+  ---
+  duration_ms: 930.6235
+  type: 'test'
+  ...
+# Subtest: central deletion reuses product erasure and preserves only the other person’s own private reflection
+ok 32 - central deletion reuses product erasure and preserves only the other person’s own private reflection
+  ---
+  duration_ms: 1887.4991
+  type: 'test'
+  ...
+# Subtest: exact duplicates keep response and revisions stable through restart while event ID content conflicts roll back
+ok 33 - exact duplicates keep response and revisions stable through restart while event ID content conflicts roll back
+  ---
+  duration_ms: 1866.2286
+  type: 'test'
+  ...
+# Subtest: delayed terminal deletion and unseen subjects create durable tombstones, while excessive future dates never erase
+ok 34 - delayed terminal deletion and unseen subjects create durable tombstones, while excessive future dates never erase
+  ---
+  duration_ms: 641.2948
+  type: 'test'
+  ...
+# Subtest: receipt storage failure rolls erasure and peer archival back atomically, then the same event can retry
+ok 35 - receipt storage failure rolls erasure and peer archival back atomically, then the same event can retry
+  ---
+  duration_ms: 1355.6218
+  type: 'test'
+  ...
+# Subtest: lifecycle and an ordinary stale CAS write cannot leave an active account, including a second SQLite connection
+ok 36 - lifecycle and an ordinary stale CAS write cannot leave an active account, including a second SQLite connection
+  ---
+  duration_ms: 288.0687
+  type: 'test'
+  ...
+# Subtest: an already deleted local account stays deleted without an extra revision and deletion bypasses a full introduction log
+ok 37 - an already deleted local account stays deleted without an extra revision and deletion bypasses a full introduction log
+  ---
+  duration_ms: 1356.1367
+  type: 'test'
+  ...
+1..37
+# tests 37
+# suites 0
+# pass 37
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 8808.2114

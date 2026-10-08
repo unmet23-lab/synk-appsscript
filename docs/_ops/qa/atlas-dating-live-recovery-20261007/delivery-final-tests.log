@@ -1,0 +1,31 @@
+✔ demo credentials are memory-only, distinct from a real SYNK session (35.4377ms)
+✔ an OAuth session is bound to its registered identity origin and product client (1.3643ms)
+✔ account requests use SYNK bearer but never send private records to the identity host (1.4526ms)
+✔ revoked identity clears stored credentials and does not retry the mutation (0.9714ms)
+✔ logout rejects a late response from the prior identity (2.004ms)
+✔ dating PKCE uses its own pending namespace without overwriting platform login (11.3029ms)
+✔ renewal is single-flight and a logout during refresh cannot restore a session (1.8615ms)
+✔ a revoked refresh credential clears the session; a transient provider outage preserves it (3.1208ms)
+✔ only dispatched action uncertainty is marked: transport, unreadable JSON/body and server outage; definitive rejection and GET are separate (5.1565ms)
+✔ logout or disposal during a dispatched mutation does not turn a stale response into a recoverable write (1.2402ms)
+✔ a malformed authentication rejection clears credentials and never remains uncertain (0.7586ms)
+✔ a lost response keeps an immutable tab-only envelope, blocks new writes, and retries the same UUID and body only explicitly (4.8723ms)
+✔ a missing receipt is inconclusive and an exact applied receipt resolves with the latest view (1.2992ms)
+✔ receipt transport or malformed/mismatched replies preserve pending; definitive rejection clears it (1.4652ms)
+✔ repeated uncertain retries retain pending, but revision rejection clears it (0.4983ms)
+✔ identity changes and explicit lifecycle clearing discard pending and reject late private responses (0.9071ms)
+✔ concurrent checks/retries cannot launch duplicate traffic and ordinary definite failures do not leave pending (0.8779ms)
+✔ an incomplete or other actor’s action response stays unresolved instead of publishing the wrong view (1.3444ms)
+✔ receipts reveal only the authenticated actor’s outcome, keep current view separate from applied revision, and never return the action body (231.5313ms)
+✔ receipt queries and methods are strict and cross-origin calls cannot read outcomes (134.4481ms)
+✔ old receipts cannot bypass current suspended/deleted account gates or revive a mutation (188.4253ms)
+✔ a missing receipt during a delayed POST never proves absence; one explicit retry commits the same envelope once (121.1548ms)
+✔ real HTTP lost response is classified by account client and resolved by delivery receipt without replaying the private mutation (110.3792ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1017.4412

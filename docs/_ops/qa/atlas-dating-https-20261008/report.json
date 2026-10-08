@@ -1,0 +1,228 @@
+{
+  "kind": "atlas-dating-https-readiness",
+  "at": "2026-10-07T20:10:07.589Z",
+  "status": "local-implementation-and-free-checks-passed",
+  "scope": [
+    "HTTPS reverse-proxy configuration with an exact public origin and explicit trusted loopback proxy",
+    "Guard public config, static resources, browser API and lifecycle before handling",
+    "Exact 22-file standalone browser surface and path/symlink checks",
+    "Cross-site public OAuth callback navigation without relaxing authenticated API origins",
+    "Hide unavailable laboratory link on the standalone product host"
+  ],
+  "units": {
+    "command": "node --test --test-reporter=tap tests/atlas-dating-runtime.test.mjs tests/atlas-dating-transport.test.mjs tests/atlas-dating-public.test.mjs tests/learning-hub-server.test.js tests/atlas-dating-account.test.mjs tests/atlas-dating-service.test.mjs tests/atlas-dating-lifecycle-service.test.mjs tests/atlas-dating-availability-service.test.mjs tests/atlas-dating-central-lifecycle.test.mjs",
+    "log": "docs/_ops/qa/atlas-dating-https-20261008/contracts.tap",
+    "exitCode": 0,
+    "passed": 128,
+    "failed": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "duplicateRunsCounted": false,
+    "files": [
+      "tests/atlas-dating-runtime.test.mjs",
+      "tests/atlas-dating-transport.test.mjs",
+      "tests/atlas-dating-public.test.mjs",
+      "tests/learning-hub-server.test.js",
+      "tests/atlas-dating-account.test.mjs",
+      "tests/atlas-dating-service.test.mjs",
+      "tests/atlas-dating-lifecycle-service.test.mjs",
+      "tests/atlas-dating-availability-service.test.mjs",
+      "tests/atlas-dating-central-lifecycle.test.mjs"
+    ]
+  },
+  "browser": {
+    "scenariosPassed": 9,
+    "https": {
+      "command": "node tests/atlas-dating-https-smoke.mjs",
+      "result": "experiences/atlas-lab/qa/dating-https/result.json",
+      "scenarios": 4,
+      "counters": {
+        "tlsRequests": 160,
+        "forwardedRequests": 160,
+        "authorize": 2,
+        "acceptedS256": 2,
+        "centralIdentityChecks": 5,
+        "productActions": 1,
+        "logout": 1
+      },
+      "crossSiteCallbacks": [
+        {
+          "method": "GET",
+          "path": "/atlas-lab/dating.html",
+          "fetchSite": "cross-site",
+          "origin": null
+        },
+        {
+          "method": "GET",
+          "path": "/atlas-lab/dating.html",
+          "fetchSite": "cross-site",
+          "origin": null
+        }
+      ],
+      "uniqueStaticFiles": 22,
+      "staticResponseRows": 24,
+      "screenshots": [
+        "https-signed-out-390.png",
+        "https-private-account-saved-390.png",
+        "https-independent-account-restored-1280.png",
+        "https-logged-out-390.png"
+      ],
+      "visualReview": "experiences/atlas-lab/qa/dating-https/visual-review.json",
+      "errors": 0,
+      "failedRequests": 0,
+      "failedResponses": 0
+    },
+    "oauth": {
+      "command": "node tests/atlas-dating-oauth-smoke.mjs",
+      "result": "experiences/atlas-lab/qa/dating-oauth/result.json",
+      "scenarios": 5,
+      "counters": {
+        "authorize": 5,
+        "decisions": 5,
+        "tokenRequests": 3,
+        "acceptedS256": 3,
+        "rejectedTokens": 0,
+        "centralIdentityChecks": 6,
+        "productActions": 1
+      },
+      "errors": 0
+    },
+    "sourceStable": true,
+    "currentSourceHashesRechecked": true,
+    "trustStoreModified": false,
+    "tlsVerificationGloballyDisabled": false,
+    "selfSignedCertificateIgnoredOnlyInFixtureBrowser": true
+  },
+  "checks": {
+    "syntaxFilesPassed": 12,
+    "readOnlyIndependentBoundaryReview": "No confirmed P1/P2 found in transport/runtime/server/public and learning-hub/server; request guard and raw-path boundary checked. This is local code review, not public deployment review.",
+    "rootViewedScreenshots": [
+      "https-private-account-saved-390.png",
+      "https-independent-account-restored-1280.png"
+    ]
+  },
+  "firstRunFindings": [
+    {
+      "area": "runtime test cleanup",
+      "observed": "New runtime integration test initially tried to remove its synthetic SQLite fixture before the server/store closed and failed with EBUSY. The test hook registration order was corrected. Final combined run passes all 128 tests."
+    },
+    {
+      "area": "HTTPS browser fixture logout",
+      "observed": "An intercepted synthetic logout 204 response was processed by the UI but Playwright reported ERR_ABORTED after reload. Final fixture uses an allowed 200 JSON success response and waits for enabled sign-in controls. Product logout code unchanged; this does not verify a real provider 204 over public HTTPS.",
+      "evidence": "experiences/atlas-lab/qa/dating-https/fixture-first-run.json"
+    }
+  ],
+  "cleanupExceptions": [
+    {
+      "directory": "C:/Users/q1212/AppData/Local/Temp/synk-dating-runtime-vGkW33",
+      "files": [
+        "account.sqlite",
+        "account.sqlite-shm",
+        "account.sqlite-wal"
+      ],
+      "contents": "Synthetic runtime fixture only",
+      "status": "Preserved because automatic approval review rejected deletion with blocked by policy. No detailed reason returned; no bypass attempted."
+    },
+    {
+      "directory": "C:/Users/q1212/AppData/Local/Temp/synk-dating-https-browser-GaRHBQ",
+      "files": [
+        "account.sqlite",
+        "account.sqlite-shm",
+        "account.sqlite-wal",
+        "fixture-cert.pem",
+        "fixture-key.pem"
+      ],
+      "contents": "Synthetic browser fixture and temporary self-signed certificate only; no real provider credentials",
+      "status": "Preserved because automatic approval review rejected deletion with blocked by policy. No detailed reason returned; no bypass attempted."
+    }
+  ],
+  "limits": {
+    "publicDeployment": false,
+    "productionConfigChanged": false,
+    "realProviderRequestsThisRun": 0,
+    "physicalDevices": 0,
+    "actualParticipants": 0,
+    "modelCalls": 0,
+    "externalApiCost": 0,
+    "satisfactionEffectVerified": false,
+    "tutorDeferred": true,
+    "recruitmentDeferred": true,
+    "realHttpsHostConfigured": false
+  },
+  "remaining": [
+    "Choose real HTTPS host, trusted certificate and same-host reverse proxy; register the exact HTTPS callback in the selected account environment",
+    "Review and publish the dedicated consent configuration when public rollout is authorized",
+    "Verify the real browser OAuth loop and a physical phone through the deployed HTTPS origin",
+    "Select and integrate the real adult verification provider",
+    "Connect central lifecycle/status delivery with the required database migration, server secret and HTTPS receiver"
+  ],
+  "previousEvidence": {
+    "actualRehearsalProvider": "docs/_ops/qa/atlas-dating-provider-20261008/report.json",
+    "note": "Previous actual-provider HTTP verification is separate and was not repeated or changed by this synthetic TLS run."
+  },
+  "publicFiles": [
+    "/atlas-lab/candidate-highlights.mjs",
+    "/atlas-lab/dating-account.mjs",
+    "/atlas-lab/dating-checkpoint.mjs",
+    "/atlas-lab/dating-delivery.mjs",
+    "/atlas-lab/dating-insights.mjs",
+    "/atlas-lab/dating-journey.mjs",
+    "/atlas-lab/dating-live.mjs",
+    "/atlas-lab/dating-ui.mjs",
+    "/atlas-lab/dating.css",
+    "/atlas-lab/dating.html",
+    "/atlas-lab/discovery-guidance.mjs",
+    "/atlas-lab/discovery.mjs",
+    "/atlas-lab/meeting-regions.mjs",
+    "/atlas-lab/onboarding-drafts.mjs",
+    "/atlas-lab/preference-deadline.mjs",
+    "/atlas-lab/profile-editing-drafts.mjs",
+    "/atlas-lab/public-profile-preview.mjs",
+    "/learning-hub/assets/SUIT-Variable.woff2",
+    "/learning-hub/assets/slab-blush-long.webp",
+    "/learning-hub/assets/slab-cream-long.webp",
+    "/synk-account/assets/sticker-person.webp",
+    "/synk-account/src/core.mjs"
+  ],
+  "sourceSha256": {
+    "experiences/atlas-lab/dating-ui.mjs": "0df15de8382dd5da39297310f10faa40454d30e6a6071125bdcd5d2a83b79bd2",
+    "experiences/atlas-lab/dating-account.mjs": "538d6643d017b61bf85444ce1609e103f7e31bfb555d0fe4ccf7290be68a3d70",
+    "experiences/atlas-lab/dating-auth.mjs": "84fc7df71c8b8539afd4fb60241093af27ba7d898d377f35cf1f0ded8f1077b8",
+    "experiences/atlas-lab/dating-server.mjs": "a79b0c5905e1129a92c477008a2473ff204668eddafc07aa16626bf35c1bbd33",
+    "experiences/atlas-lab/dating-service.mjs": "f6949079be010e21089dade41d1e29b84af48b3101320f05d0fca8459cefb6ab",
+    "experiences/atlas-lab/dating-runtime.mjs": "680323ffef08566b18afe3a0d1b1dc0c4bd97f0d6a69416ea297999f80724454",
+    "experiences/atlas-lab/dating-transport.mjs": "dfb55acffc77459e0ba6e8a29a6939fa7f7768a35e7f2a90f91a565fe67e55c8",
+    "experiences/learning-hub/server.mjs": "8c75527b18b585e539d13978b464d3f62232a897d329fd75a9d19bc7db3bee8d",
+    "experiences/atlas-lab/dating-public.mjs": "6a3f19c74db9e8163b7aaf416402d032315b329d817c98e2733351b7a6c98853",
+    "experiences/synk-account/src/core.mjs": "5c85d1d957403ba1b04795e115d9cb40f26ede59e8dbbfbaa743666ee3e1cbbd",
+    "tests/atlas-dating-https-smoke.mjs": "501d4daea482ac22a46c9a85556062dd7fa9bbf3044dbc46d3e8f6cbf22b6e7d",
+    "tests/atlas-dating-runtime.test.mjs": "f59f3a1f6a3ce3d7d1f10ef0ff146e1c75d341e7ab966022a3faf27ca04ed0e7",
+    "tests/atlas-dating-transport.test.mjs": "699c85ce387d6377e265b1b395447b685981cc6741903714f4de5faf7b50e698",
+    "tests/atlas-dating-public.test.mjs": "9e30158e2783e5af4c2908f572334702fd4df0bc5ab023e54b9688246a1b771f",
+    "tests/learning-hub-server.test.js": "e67d50e47bd41e943d2aaca96cd17ce76d6a2bba29ffc80d3de91cf325f5c4d5",
+    "tests/atlas-dating-account.test.mjs": "cb5360e1bd3ba23804207a18035870d7f0494b7c3eafe973a231cfe47bc84724",
+    "tests/atlas-dating-service.test.mjs": "bbf454f64b05a4eb8e521d1629baa63611fb0cb1616221f830244e460d218d29",
+    "tests/atlas-dating-lifecycle-service.test.mjs": "b545e1e18adb850e7f8baa88de65d21a290ada2b2af654057fc291cd54218705",
+    "tests/atlas-dating-availability-service.test.mjs": "38e9c8a4f2b0eea50254880bfa476a44c7eca5f0eba70ef806ff838c55dd6064",
+    "tests/atlas-dating-central-lifecycle.test.mjs": "b152a66b8c10d6bd4f38bf39a971e87f9db0acde2514c9542dda9c2498a7a849",
+    "experiences/atlas-lab/dating.html": "3fb4959cf182fc87a36d3beb04cb118ad8d6ac37d2ff1266c8b80644b7462fca",
+    "experiences/atlas-lab/dating.css": "90a1f6dca2652d56c9a52d84ce1b3df1e37796febf7fa5b9e703e134c3363c8b",
+    "experiences/atlas-lab/discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "experiences/atlas-lab/dating-insights.mjs": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49",
+    "experiences/atlas-lab/dating-journey.mjs": "853a07ec7e0214046836f5379069f824f92921b0372c3fd7320cfd5394d4788d",
+    "experiences/atlas-lab/dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "experiences/atlas-lab/dating-checkpoint.mjs": "ea1725c2e8da3fbe19701095b861840680d8f72c3da4769bcf3a31ba19d14812",
+    "experiences/atlas-lab/dating-live.mjs": "b19c3c166ab75f378039d76820a972db8a42396b4f8b88742310be6f50266e5d",
+    "experiences/atlas-lab/meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+    "experiences/atlas-lab/preference-deadline.mjs": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc",
+    "experiences/atlas-lab/discovery.mjs": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a",
+    "experiences/atlas-lab/candidate-highlights.mjs": "64bca3aa0f7ed996fa6e04d410f3227f5883b899cc79ba2736d6b19c17d05882",
+    "experiences/atlas-lab/public-profile-preview.mjs": "76106c8e35d25996bacc7cd0af72cb9c653225ea7934a177f8dfb4586fcd2a8f",
+    "experiences/atlas-lab/profile-editing-drafts.mjs": "ba6808e6362a2e10310c313c541e4236d65739383ba6ed243f23bae2363560f6",
+    "experiences/atlas-lab/onboarding-drafts.mjs": "befe9826c9bd6b7d27a4dbff9c924e305d1f53d25bb2781e8ae00dceec2c7940",
+    "experiences/synk-account/assets/sticker-person.webp": "b26e20a40385723a37d61c9b6632f686a7fa6cc1f71dfcc2c3000b1255b9d2ae",
+    "experiences/learning-hub/assets/SUIT-Variable.woff2": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+    "experiences/learning-hub/assets/slab-cream-long.webp": "bcbf6a82edf7d3b01a360e76e776d46e8c1a0e45cd0885581f17263b10d09db9",
+    "experiences/learning-hub/assets/slab-blush-long.webp": "0e165b76ebb8605e9472555a77c01281e1344fab590cab79d55563fe71f5caa6"
+  }
+}

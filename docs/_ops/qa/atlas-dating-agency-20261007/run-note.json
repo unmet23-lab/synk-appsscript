@@ -1,0 +1,27 @@
+{
+  "method": "Isolated synthetic SQLite databases, localhost-only browser routes, and free local Node checks; no paid model evaluation or participant recruitment.",
+  "initialChecks": [
+    {
+      "kind": "browser-fixture-selector",
+      "outcome": "An initial nested Playwright locator could not find the exclusion button. The test locator was corrected; no product error or external request was recorded.",
+      "record": "experiences/atlas-lab/qa/dating-agency/first-selector-failure.json"
+    },
+    {
+      "kind": "first-successful-browser-before-final-display-fix",
+      "outcome": "Nine flows passed. Visual review then found a previously applied recommendation summary surviving later changes, and an observation document incorrectly labelled as one sheet.",
+      "record": "experiences/atlas-lab/qa/dating-agency/pre-banner-fix-result.json",
+      "screenshots": "experiences/atlas-lab/qa/dating-agency/before-summary-fix/"
+    },
+    {
+      "kind": "unit-fixture-corrections",
+      "outcome": "An undefined helper argument, an invalid goal enum, and a convenience-question setup without an available question were corrected in new test fixtures before final reruns. These were not reported as product defects."
+    }
+  ],
+  "productCorrections": [
+    "Legacy synthetic migration now removes the restore-candidate event together with the fictional skip source.",
+    "Allowance lineage excludes question convenience settings and record-only reactions, while actual source, policy, context and selected-candidate eligibility changes still invalidate old authority.",
+    "A subsequent successful action or meaningfully changed loaded state clears the previously applied summary; applying a new preview sets its own summary.",
+    "The blank observation document is labelled one copy per participant, with multiple print pages permitted. Print CSS inspection is not a PDF pagination or real printer result."
+  ],
+  "finalEvidence": "report.json and its copied browser records contain only the completed final free runs. The main 43-file suite passed 646 checks. One own-public-visibility boundary was added after that suite loaded its test file, with no product source changes; a filtered delta run passed that additional check once. Aggregate unique checks are 647. Earlier failures and pre-fix displays are kept separately."
+}

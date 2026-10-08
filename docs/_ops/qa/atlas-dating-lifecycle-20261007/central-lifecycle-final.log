@@ -1,0 +1,16 @@
+✔ canonical deletion request, grace, cancellation and academy review never enqueue a permanent deletion (2460.5184ms)
+✔ confirmed deletion and its immutable event commit together; rollback and repeated purge cannot forge another event (2540.7472ms)
+✔ migration backfills only already confirmed deletions and rerunning preserves the same event (2517.0117ms)
+✔ delivery accepts only matching committed deletion acknowledgments and stores no credentials or profile data (2304.0855ms)
+✔ lost response retries the same event after backoff; wrong subject or generic success is never delivered (2322.0202ms)
+✔ an expired delivery lease can be recovered while a still leased event is not sent twice (2357.0333ms)
+✔ authorization and contract rejection block delivery for explicit correction; overload and server failures remain retryable (2409.8978ms)
+✔ configuration has no implicit receiver, cannot use public HTTP or redirects with credentials, and exposes no secret on failure (1.1305ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 17280.4592

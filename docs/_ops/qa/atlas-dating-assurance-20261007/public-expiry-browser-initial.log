@@ -1,0 +1,55 @@
+{
+  "at": "2026-10-07T14:01:39.529Z",
+  "status": "passed",
+  "actualUsers": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [
+    "public deadline preview and cancel leave saved disclosure and private preferences unchanged",
+    "today publication is explicit and uses Korean midnight in a Los Angeles browser without copying a private deadline or enabling consent",
+    "a past public deadline is rejected in the form without saving any answers",
+    "clock-only expiration removes the answer from counterpart comparison and displays own reconfirmation while preserving the private answer and saved owner history",
+    "editing a profile biography after expiry round-trips the original deadline and cannot revive the public answer",
+    "restoring expired disclosure requires explicit new lifetime selection and confirmation; no old private answer or consent is copied"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "public-deadline-review-390.png",
+    "expired-disclosure-needs-confirmation-320.png",
+    "explicit-public-reconfirmation-320.png"
+  ],
+  "sourceBefore": {
+    "public-profile.mjs": "75a51c725459b38ca29c1c1e36e434b4b2e843635b07331dc1d7f05ed60c8245",
+    "dating-ui.mjs": "d9dbdaa42b7c03fc29fe9b012a9d4807e2c416164521e7e7ac47882f9fa1cff8",
+    "dating-live.mjs": "bb17da22edbd39f09c44d08f0ee06cfafd0d2fee1f01a56274c2ed87ecdfbad3",
+    "dating.css": "d3241785ded82a9eb57846f06a62225c5faf8859e809bdd03eb236bda97805c0",
+    "discovery.mjs": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a",
+    "introduction-guidance.mjs": "10da87ed71b7282afa53393efbc487d8a99b3cd85f091e492c61958af51e0670",
+    "preference-deadline.mjs": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc",
+    "meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+    "discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "dating-insights.mjs": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49",
+    "product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+    "dating-service.mjs": "94a77bde4a84b879de1ba7bdcbe3622b9b3d987cb3ca9597cb06cf5707c53331",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505"
+  },
+  "sourceSha256": {
+    "public-profile.mjs": "75a51c725459b38ca29c1c1e36e434b4b2e843635b07331dc1d7f05ed60c8245",
+    "dating-ui.mjs": "d9dbdaa42b7c03fc29fe9b012a9d4807e2c416164521e7e7ac47882f9fa1cff8",
+    "dating-live.mjs": "bb17da22edbd39f09c44d08f0ee06cfafd0d2fee1f01a56274c2ed87ecdfbad3",
+    "dating.css": "d3241785ded82a9eb57846f06a62225c5faf8859e809bdd03eb236bda97805c0",
+    "discovery.mjs": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a",
+    "introduction-guidance.mjs": "10da87ed71b7282afa53393efbc487d8a99b3cd85f091e492c61958af51e0670",
+    "preference-deadline.mjs": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc",
+    "meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+    "discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "dating-insights.mjs": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49",
+    "product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+    "dating-service.mjs": "94a77bde4a84b879de1ba7bdcbe3622b9b3d987cb3ca9597cb06cf5707c53331",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505"
+  },
+  "sourceStable": true
+}

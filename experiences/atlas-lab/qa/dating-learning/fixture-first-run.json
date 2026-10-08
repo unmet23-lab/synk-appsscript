@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-06T14:51:48.151Z",
+  "status": "failed",
+  "kind": "synthetic-explicit-learning-browser",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "paths": [],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "question-value-390.png"
+  ],
+  "failure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== 1\n\n    at runQuestionValue (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-learning-smoke.mjs:101:10)\n    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-learning-smoke.mjs:227:3"
+}

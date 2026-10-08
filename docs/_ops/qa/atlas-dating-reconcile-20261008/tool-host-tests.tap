@@ -1,0 +1,214 @@
+TAP version 13
+# Subtest: actual CLI config checks are read-only and create/verify/restore preserves its sources then resumes through the existing gate
+ok 1 - actual CLI config checks are read-only and create/verify/restore preserves its sources then resumes through the existing gate
+  ---
+  duration_ms: 1781.2773
+  type: 'test'
+  ...
+# Subtest: old consistent paired backups can be archived but a stale independent latest export cannot authorize copying for resume
+ok 2 - old consistent paired backups can be archived but a stale independent latest export cannot authorize copying for resume
+  ---
+  duration_ms: 210.7312
+  type: 'test'
+  ...
+# Subtest: fresh independent deletion or a newer restriction rejects a mutually coherent older backup
+ok 3 - fresh independent deletion or a newer restriction rejects a mutually coherent older backup
+  ---
+  duration_ms: 264.3831
+  type: 'test'
+  ...
+# Subtest: actual reconciliation CLI applies a hold then reactivation without restoring public consent or changing the original backup
+ok 4 - actual reconciliation CLI applies a hold then reactivation without restoring public consent or changing the original backup
+  ---
+  duration_ms: 738.1076
+  type: 'test'
+  ...
+# Subtest: reconciliation CLI applies a terminal deletion into a separate copy before granting any resume inspection
+ok 5 - reconciliation CLI applies a terminal deletion into a separate copy before granting any resume inspection
+  ---
+  duration_ms: 517.387
+  type: 'test'
+  ...
+# Subtest: bundle manifests require an independent hash and exact inventory with unchanged payload bytes
+ok 6 - bundle manifests require an independent hash and exact inventory with unchanged payload bytes
+  ---
+  duration_ms: 248.4474
+  type: 'test'
+  ...
+# Subtest: mismatched environments and unconfirmed writers fail before any destination is created
+ok 7 - mismatched environments and unconfirmed writers fail before any destination is created
+  ---
+  duration_ms: 243.4901
+  type: 'test'
+  ...
+# Subtest: existing backup and restoration destinations are preserved instead of overwritten
+ok 8 - existing backup and restoration destinations are preserved instead of overwritten
+  ---
+  duration_ms: 176.9492
+  type: 'test'
+  ...
+# Subtest: sidecars and linked input/output paths are rejected without changing source files
+ok 9 - sidecars and linked input/output paths are rejected without changing source files
+  ---
+  duration_ms: 146.7977
+  type: 'test'
+  ...
+# Subtest: private config and outputs cannot live in either source repository and CLI errors omit paths or private data
+ok 10 - private config and outputs cannot live in either source repository and CLI errors omit paths or private data
+  ---
+  duration_ms: 366.6614
+  type: 'test'
+  ...
+# Subtest: the explicit package list covers the actual static and delayed CJS dependency graph plus every browser file
+ok 11 - the explicit package list covers the actual static and delayed CJS dependency graph plus every browser file
+  ---
+  duration_ms: 37.9625
+  type: 'test'
+  ...
+# Subtest: isolated package starts from another cwd under a module parent and serves only the reviewed surface
+ok 12 - isolated package starts from another cwd under a module parent and serves only the reviewed surface
+  ---
+  duration_ms: 1733.792
+  type: 'test'
+  ...
+# Subtest: canary operational files stay outside the allowlist and existing or in-checkout targets remain untouched
+ok 13 - canary operational files stay outside the allowlist and existing or in-checkout targets remain untouched
+  ---
+  duration_ms: 693.58
+  type: 'test'
+  ...
+# Subtest: independent manifest hash, payload integrity and exact file inventory reject tampering
+ok 14 - independent manifest hash, payload integrity and exact file inventory reject tampering
+  ---
+  duration_ms: 532.7968
+  type: 'test'
+  ...
+# Subtest: linked source roots, source ancestors and output directories are refused
+ok 15 - linked source roots, source ancestors and output directories are refused
+  ---
+  duration_ms: 701.1105
+  type: 'test'
+  ...
+# Subtest: an account host derives its fixed port from the registered callback and rejects mismatched or ephemeral ports
+ok 16 - an account host derives its fixed port from the registered callback and rejects mismatched or ephemeral ports
+  ---
+  duration_ms: 25.2476
+  type: 'test'
+  ...
+# Subtest: restore mode requires paired paths, an explicit account database and an explicit check or resume command
+ok 17 - restore mode requires paired paths, an explicit account database and an explicit check or resume command
+  ---
+  duration_ms: 7.922
+  type: 'test'
+  ...
+# Subtest: the local CLI refuses callbacks it cannot serve and account files do not fall back to demo
+ok 18 - the local CLI refuses callbacks it cannot serve and account files do not fall back to demo
+  ---
+  duration_ms: 17.3017
+  type: 'test'
+  ...
+# Subtest: HTTPS proxy configuration pins the public callback separately from its private listening port
+ok 19 - HTTPS proxy configuration pins the public callback separately from its private listening port
+  ---
+  duration_ms: 165.5891
+  type: 'test'
+  ...
+# Subtest: public transport settings cannot silently enable demo or accept ambiguous trust declarations
+ok 20 - public transport settings cannot silently enable demo or accept ambiguous trust declarations
+  ---
+  duration_ms: 4.2379
+  type: 'test'
+  ...
+# Subtest: a public host rejects a callback for another origin or page before opening storage
+ok 21 - a public host rejects a callback for another origin or page before opening storage
+  ---
+  duration_ms: 16.28
+  type: 'test'
+  ...
+# Subtest: the actual public factory guards configuration, static files and APIs before authentication
+ok 22 - the actual public factory guards configuration, static files and APIs before authentication
+  ---
+  duration_ms: 532.7791
+  type: 'test'
+  ...
+# Subtest: configuration inspection is redacted and never evaluates an adult module, opens SQLite or starts a server
+ok 23 - configuration inspection is redacted and never evaluates an adult module, opens SQLite or starts a server
+  ---
+  duration_ms: 147.2711
+  type: 'test'
+  ...
+# Subtest: only an explicit account server loads a trusted adult adapter and loading never invokes verify
+ok 24 - only an explicit account server loads a trusted adult adapter and loading never invokes verify
+  ---
+  duration_ms: 11.7361
+  type: 'test'
+  ...
+# Subtest: invalid adult adapters and private provider errors produce only fixed configuration errors
+ok 25 - invalid adult adapters and private provider errors produce only fixed configuration errors
+  ---
+  duration_ms: 41.3105
+  type: 'test'
+  ...
+# Subtest: the lifecycle receiver and CLI accept only the same 32 to 256 character contract as the central sender
+ok 26 - the lifecycle receiver and CLI accept only the same 32 to 256 character contract as the central sender
+  ---
+  duration_ms: 12.8471
+  type: 'test'
+  ...
+# Subtest: CLI malformed files and unknown arguments exit without printing private JSON or creating a database
+ok 27 - CLI malformed files and unknown arguments exit without printing private JSON or creating a database
+  ---
+  duration_ms: 499.3301
+  type: 'test'
+  ...
+# Subtest: an occupied fixed callback port stops the CLI instead of moving the account host to an unregistered port
+ok 28 - an occupied fixed callback port stops the CLI instead of moving the account host to an unregistered port
+  ---
+  duration_ms: 259.4497
+  type: 'test'
+  ...
+# Subtest: the actual CLI wires the adult and lifecycle adapters while public configuration contains neither
+ok 29 - the actual CLI wires the adult and lifecycle adapters while public configuration contains neither
+  ---
+  duration_ms: 305.9692
+  type: 'test'
+  ...
+# Subtest: shutdown lets an accepted save finish and rejects a later pipelined request before dispatch
+ok 30 - shutdown lets an accepted save finish and rejects a later pipelined request before dispatch
+  ---
+  duration_ms: 159.2922
+  type: 'test'
+  ...
+# Subtest: a bounded forced stop prevents a late authentication from writing after SQLite closes
+ok 31 - a bounded forced stop prevents a late authentication from writing after SQLite closes
+  ---
+  duration_ms: 130.78
+  type: 'test'
+  ...
+# Subtest: draining rejects public config and mutation without reading the body or invoking a handler
+ok 32 - draining rejects public config and mutation without reading the body or invoking a handler
+  ---
+  duration_ms: 0.4
+  type: 'test'
+  ...
+# Subtest: CLI signal wiring drains once and removes handlers; forced completion exits nonzero
+ok 33 - CLI signal wiring drains once and removes handlers; forced completion exits nonzero
+  ---
+  duration_ms: 0.3203
+  type: 'test'
+  ...
+# Subtest: invalid shutdown bounds fail before a listener or database is created
+ok 34 - invalid shutdown bounds fail before a listener or database is created
+  ---
+  duration_ms: 0.3377
+  type: 'test'
+  ...
+1..34
+# tests 34
+# suites 0
+# pass 34
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4847.7014

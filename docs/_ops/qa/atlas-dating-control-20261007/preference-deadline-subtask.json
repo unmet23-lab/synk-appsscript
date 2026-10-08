@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "task": "preference-deadline",
+  "scope": "Own explicit UI deadline policy from server as-of and current own upper bounds",
+  "engineSourceChanges": 0,
+  "paidCalls": 0,
+  "externalCalls": 0,
+  "tests": {
+    "total": 20,
+    "pass": 20,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "log": "preference-deadline-tests.tap"
+  },
+  "syntaxChecks": [
+    "experiences/atlas-lab/preference-deadline.mjs",
+    "tests/atlas-preference-deadline.test.mjs"
+  ],
+  "sources": [
+    {
+      "path": "experiences/atlas-lab/preference-deadline.mjs",
+      "sha256": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc"
+    },
+    {
+      "path": "tests/atlas-preference-deadline.test.mjs",
+      "sha256": "49c97b0425fb81ac39bd968ccaf102d60d77e6f393a09beeed4a6631353576d2"
+    }
+  ],
+  "limitations": [
+    "Current authenticated view, authorization, storage and final server-time revalidation are host responsibilities.",
+    "Null until preserves scope-only declaration; effectiveUntil explains existing authorized limits.",
+    "Only date input converts datetime-local to ISO in the existing UI. This helper rejects noncanonical timestamps.",
+    "This subtask verifies the pure helper, not browser integration or user satisfaction."
+  ]
+}

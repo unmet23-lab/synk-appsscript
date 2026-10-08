@@ -1,0 +1,55 @@
+{
+  "at": "2026-10-06T23:51:41.803Z",
+  "status": "failed",
+  "kind": "synthetic-dating-conditional-draft-browser",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "paths": [
+    "baseline scope and future deadline survive cancellation without writing account, public profile or rule",
+    "editing the cancelled draft and applying its new preview saves the exact selected scope and deadline",
+    "a peer change rejects stale preview application; cancelling preserves the unsubmitted own draft while its source is unchanged",
+    "starting a new recommendation context discards the old unsaved conditional draft",
+    "changing the original contact declaration and restoring its value does not resurrect the superseded conditional draft",
+    "a same-actor second surface redeclaring daily makes the reviewed preview stale; cancellation fetches the new source and drops the old draft"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "cancelled-draft-preserved-390.png",
+    "saved-scope-and-deadline-390.png",
+    "stale-preview-cancel-preserves-own-draft-390.png",
+    "same-actor-source-refresh-drops-old-draft-390.png"
+  ],
+  "observations": [
+    {
+      "behavior": "conditional preview cancellation preserves scope and deadline",
+      "source": "experiences/atlas-lab/dating-ui.mjs:527",
+      "expected": {
+        "scope": "baseline",
+        "until": "2026-10-09T18:30"
+      },
+      "actual": {
+        "scope": "baseline",
+        "until": "2026-10-09T18:30"
+      },
+      "accountRevisionBefore": 3,
+      "accountRevisionAfter": 3,
+      "profileUnchanged": true,
+      "storedRuleUnchanged": true
+    },
+    {
+      "behavior": "saved context scope and exact deadline are visible in the editor and preference summary",
+      "contactInfo": "이번 추천의 허용 조건\n\n지금 추천에 사용하고 있어요.\n\n사용 범위: 이번 추천에서만. 이번 추천이 끝나면 함께 끝나요.\n\n이 조건의 종료 시점: 2026. 10. 10. 오후 4시 40분 0초 GMT+9",
+      "summaryInfo": "이번 추천의 허용 조건\n\n지금 추천에 사용하고 있어요.\n\n사용 범위: 이번 추천에서만. 이번 추천이 끝나면 함께 끝나요.\n\n이 조건의 종료 시점: 2026. 10. 10. 오후 4시 40분 0초 GMT+9"
+    },
+    {
+      "behavior": "a same-actor second surface redeclares the same value; cancellation loads its newer source and drops the old draft",
+      "expectedRevision": 9,
+      "actualRevision": 9,
+      "oldDraftDeadline": "2026-10-14T18:50",
+      "actualDeadline": ""
+    }
+  ],
+  "failure": "locator.click: Timeout 12000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-action=\"preview-apply\"]')\u001b[22m\n\n    at click (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-conditional-draft-smoke.mjs:19:101)\n    at C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-conditional-draft-smoke.mjs:130:11"
+}

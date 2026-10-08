@@ -1,0 +1,456 @@
+{
+  "at": "2026-10-07T17:52:01.934Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "same-tab-settings-profile-and-public-answer-draft-preservation",
+    "source-and-consent-bound-draft-invalidation",
+    "public-preview-edit-save-return"
+  ],
+  "tests": {
+    "tests": 92,
+    "pass": 92,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "uniqueCases": 92,
+    "log": "unit-http.tap",
+    "sha256": "d1691d10bbbceecb49897e5791e7c93dedb74f6b701331a0b1f2a0ec7c7ba248"
+  },
+  "browserPaths": 68,
+  "browser": [
+    {
+      "name": "dating-editing",
+      "paths": 23,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/navigation-retains-unsaved-profile-390.png",
+          "width": 390,
+          "height": 8247,
+          "sha256": "360d5bd2875ff12769c2110d0ba0e70653fcafe50c68a9cafaf264774e654b6a",
+          "copy": "screenshots/navigation-retains-unsaved-profile-390.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/navigation-retains-unsaved-profile-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "65b3c578d04de01879f632ee3e0ec22c44b9c89cfa3e55819bc73d3a19c504ae",
+          "copy": "screenshots/navigation-retains-unsaved-profile-390-viewport.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/basic-save-retains-public-draft-320.png",
+          "width": 320,
+          "height": 6983,
+          "sha256": "8d17f8e9ab40bcb12030e4c7ee66049e5a686521517b46f060ae8561851eb170",
+          "copy": "screenshots/basic-save-retains-public-draft-320.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/basic-save-retains-public-draft-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "e63223ef3232a81c5d81a556686db1957d7113bd5afcc47308440af698a8a885",
+          "copy": "screenshots/basic-save-retains-public-draft-320-viewport.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/explicit-discard-preserves-other-draft-320.png",
+          "width": 320,
+          "height": 7280,
+          "sha256": "ed8a8f683fae7a4effc0f655b29687b7e74ed969c18bc2ec0cdaae442116bf50",
+          "copy": "screenshots/explicit-discard-preserves-other-draft-320.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/explicit-discard-preserves-other-draft-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "51ed0316ed850db4e72d05bedad038d720cbfc475ad2f11b672e10a91fa553f3",
+          "copy": "screenshots/explicit-discard-preserves-other-draft-320-viewport.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/expiry-discards-stale-public-draft-390.png",
+          "width": 390,
+          "height": 6740,
+          "sha256": "1b02f202ee60a6d9fcfe0ef8c6e720792ee08554bf77b1c3aa30fefb8c6170e6",
+          "copy": "screenshots/expiry-discards-stale-public-draft-390.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/expiry-discards-stale-public-draft-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "e2a0d5846331ae305b67b84dce00d13c5f7f9f858132aa915e8577c1f80935d9",
+          "copy": "screenshots/expiry-discards-stale-public-draft-390-viewport.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/required-and-custom-deadline-draft-restored-320.png",
+          "width": 320,
+          "height": 10007,
+          "sha256": "335b007c9ae5944069948783dfc8250614c9ccbab1fcf521bb467631aedfe0b1",
+          "copy": "screenshots/required-and-custom-deadline-draft-restored-320.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/required-and-custom-deadline-draft-restored-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "7fa7b5401ac0e31cfd55f910d1b31e92d7418251ad3f844a6c02e9c55f5c7695",
+          "copy": "screenshots/required-and-custom-deadline-draft-restored-320-viewport.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/receipt-recovery-returns-to-preview-390.png",
+          "width": 390,
+          "height": 7678,
+          "sha256": "a8043b61c05b253686774bbd09b862005e48ae283a2907d495f0ff7de3cbc18c",
+          "copy": "screenshots/receipt-recovery-returns-to-preview-390.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/receipt-recovery-returns-to-preview-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "0d3784d4fbbd445418ce456e2ea9058db055cd305b5e666772b8b6c8eb12ff85",
+          "copy": "screenshots/receipt-recovery-returns-to-preview-390-viewport.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/unsaved-return-shows-saved-preview-390.png",
+          "width": 390,
+          "height": 9782,
+          "sha256": "0b6b72aeaa9aef1e8ed60ef7d8c18959067fa1402edb8aeab8d41fd3de60c18d",
+          "copy": "screenshots/unsaved-return-shows-saved-preview-390.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/unsaved-return-shows-saved-preview-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "ef66129905d79c88595fcd8c49795f2a8e60a813fcc1706728e8e50872c3988c",
+          "copy": "screenshots/unsaved-return-shows-saved-preview-390-viewport.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/profile-edit-returns-to-original-preview-320.png",
+          "width": 320,
+          "height": 4527,
+          "sha256": "056048c0dac71ae5193a67c0f3c7ed35b8aa53196ce57765bf4017003ea6bb2b",
+          "copy": "screenshots/profile-edit-returns-to-original-preview-320.png"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-editing/profile-edit-returns-to-original-preview-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "e71ca922b3df35539af77d6d4df80ae855d98373ea309cbb69e74a18d4ac93ff",
+          "copy": "screenshots/profile-edit-returns-to-original-preview-320-viewport.png"
+        }
+      ]
+    },
+    {
+      "name": "dating-controls",
+      "paths": 14,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "experiences/atlas-lab/qa/dating-controls/single-answer-before-confirmation-390.png",
+          "width": 390,
+          "height": 9504,
+          "sha256": "e34d23673e5c22aeb2c211ea3ff8aa5fb910330492a8bbf290c73ba565acd9e4"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-controls/single-answer-before-confirmation-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "9163c8af8d5b885678f91122b68e73d3ed94935c688f0523812bb1955f856a28"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-controls/saved-preview-excludes-other-draft-320.png",
+          "width": 320,
+          "height": 10838,
+          "sha256": "1fa52992ce6b014cad619b84de177698f3e183e0f58e53672d481f1a5c0c9d48"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-controls/saved-preview-excludes-other-draft-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "df7cc4d1d85c1f369a464189fdc890ef0cf84b7cb780f97103b042f492fe77e1"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-controls/paused-private-off-preview-expired-required-320.png",
+          "width": 320,
+          "height": 6924,
+          "sha256": "2410302005a7e32e6611b22980f218af92878c2311919ad8b1e59356992cc369"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-controls/paused-private-off-preview-expired-required-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "2690869548bb1d967267f007a026d03ef3d17df31c1000869a8dc777cdff2bcf"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-controls/private-off-single-answer-withdrawn-390.png",
+          "width": 390,
+          "height": 6866,
+          "sha256": "54b6d34552c781a55f54343cde2abe0b33641c745d00fab45523232e7e2232a3"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-controls/private-off-single-answer-withdrawn-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "907f1aef459e50c5fe40eb92e8d3a2a8e6747b9aa1c3765487649308a46a69c5"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-controls/live-current-public-preview-390.png",
+          "width": 390,
+          "height": 4391,
+          "sha256": "719a64f84cca8b4105a2d5f0783eafca6eae66d4f8ecc7de1076648c70512520"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-controls/live-current-public-preview-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "bb6336d5b989065a8d062ff2b1d222926cae603ab379f3a4a1af40d8b66523f4"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-controls/two-private-saved-candidates-390.png",
+          "width": 390,
+          "height": 3225,
+          "sha256": "c35cf2a71a165ff3f2b3e9f95cf59164fdd43ed8f5ce2d581be1e7f5e63e7763"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-controls/two-private-saved-candidates-390-viewport.png",
+          "width": 390,
+          "height": 950,
+          "sha256": "1c424aea1a500a59e50793fad2dcd71b8f0a5d41778762305da9578d9c06025b"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-controls/saved-pair-opens-real-comparison-320.png",
+          "width": 320,
+          "height": 3767,
+          "sha256": "4ed1baeec52d496b0efa5023b5e7928f35e3ed66446f10d59420d309d008f109"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-controls/saved-pair-opens-real-comparison-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "d2c0981752920f994e89254cdd3766ed8f975949759204a26399f182cea368c9"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-controls/unavailable-saved-candidate-redacted-320.png",
+          "width": 320,
+          "height": 3260,
+          "sha256": "a2312c6d0abcce12e0530998e7b174fce7710510dc10d977983bf0eb33d228a4"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-controls/unavailable-saved-candidate-redacted-320-viewport.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "aae087b3c7965178097d5a2dc0a5b0e6d693fd3074cf85438c907833be62d36c"
+        }
+      ]
+    },
+    {
+      "name": "dating-live-recovery",
+      "paths": 13,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "experiences/atlas-lab/qa/dating-live-recovery/ordinary-response-keeps-focused-draft-390.png",
+          "width": 390,
+          "height": 2443,
+          "sha256": "576e3ccd277694b4647ff5ccab29ef6efe0724b7adeefac3bb1e63935a4c034e"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-live-recovery/public-withdrawal-preserves-only-own-draft-320.png",
+          "width": 320,
+          "height": 2460,
+          "sha256": "510cae3975ca49628a5ad4f394567de5b27aa0178c7f588c53c289e2cc305847"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-live-recovery/lost-response-keeps-draft-and-locks-mutations-390.png",
+          "width": 390,
+          "height": 2694,
+          "sha256": "a79c1379eca9213f9a5549f0427f649d3cf52ffd273b24c9d61983ee7a9d2005"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating-live-recovery/missing-receipt-stays-uncertain-320.png",
+          "width": 320,
+          "height": 3544,
+          "sha256": "8aae6a2071042e2033b3654d067988d660772edda70d8b6e1656f541d8b868b5"
+        }
+      ]
+    },
+    {
+      "name": "dating",
+      "paths": 18,
+      "errors": 0,
+      "externalRequests": 0,
+      "screenshots": [
+        {
+          "file": "experiences/atlas-lab/qa/dating/landing-320.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "f38b233c4557a312c085e8328fb84872425d79ee22bc58e87929646763bc5774"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating/recommendations-390.png",
+          "width": 390,
+          "height": 2369,
+          "sha256": "bf23efaa55c1dc06d9d2ed63c83ee74d4b99dfc6d57a39059b4de008a1f7d870"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating/preference-preview-390.png",
+          "width": 390,
+          "height": 1507,
+          "sha256": "57393b92dcb7d173465ae40adb544bb60f98dbb745e6fec3017068b4969bca59"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating/expired-preference-390.png",
+          "width": 390,
+          "height": 4801,
+          "sha256": "9a06f47e536645de4d5e4b8cc45cb3c06f84bdf752325858920d5edc8c60fbaa"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating/experience-history-390.png",
+          "width": 390,
+          "height": 1829,
+          "sha256": "d911a6ba710a2a2703d63e2d04c57aa6e34e2115c7482ce00cb85a52bf03dad8"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating/changes-before-accept-1280.png",
+          "width": 1280,
+          "height": 1901,
+          "sha256": "e5d0ccfec3d662243e7029e7ff1d6bef88eada5ed899c079eb0856c4c42bdba7"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating/agreed-1280.png",
+          "width": 1280,
+          "height": 1901,
+          "sha256": "ba41e8e6bb28a15907dd5946ebe58b647c8d02142711d9bf4de3fe0f336dddb6"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating/reflection-390.png",
+          "width": 390,
+          "height": 3020,
+          "sha256": "905f7103732c69ab46a117501840bde7480a87191f1dbd0cd9cb54bfac006e9d"
+        },
+        {
+          "file": "experiences/atlas-lab/qa/dating/deleted-320.png",
+          "width": 320,
+          "height": 950,
+          "sha256": "60e437a784e527038720279a687a0bc9b8142dd5696f32880f628f38831944d1"
+        }
+      ]
+    }
+  ],
+  "served": [
+    {
+      "name": "profile-editing-drafts.mjs",
+      "sha256": "ba6808e6362a2e10310c313c541e4236d65739383ba6ed243f23bae2363560f6"
+    },
+    {
+      "name": "public-profile-preview.mjs",
+      "sha256": "76106c8e35d25996bacc7cd0af72cb9c653225ea7934a177f8dfb4586fcd2a8f"
+    },
+    {
+      "name": "candidate-highlights.mjs",
+      "sha256": "64bca3aa0f7ed996fa6e04d410f3227f5883b899cc79ba2736d6b19c17d05882"
+    },
+    {
+      "name": "dating.html",
+      "sha256": "3d04f09caa98147ead0f9cb83f860b78971c308312d178454b25979cf8908770"
+    },
+    {
+      "name": "dating.css",
+      "sha256": "90a1f6dca2652d56c9a52d84ce1b3df1e37796febf7fa5b9e703e134c3363c8b"
+    },
+    {
+      "name": "dating-ui.mjs",
+      "sha256": "840d4fc08ff03429528f9cd291ec21f4f939e1adbcf8a3c4b0a0e9cc86222a1a"
+    },
+    {
+      "name": "dating-live.mjs",
+      "sha256": "33d4132e9157d27fc1c7a65b1d44a9265bf0134db0d0d01d52317ec9e811635f"
+    },
+    {
+      "name": "dating-insights.mjs",
+      "sha256": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49"
+    },
+    {
+      "name": "discovery.mjs",
+      "sha256": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a"
+    },
+    {
+      "name": "public-profile.mjs",
+      "sha256": "75a51c725459b38ca29c1c1e36e434b4b2e843635b07331dc1d7f05ed60c8245"
+    },
+    {
+      "name": "preference-deadline.mjs",
+      "sha256": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc"
+    },
+    {
+      "name": "introduction-guidance.mjs",
+      "sha256": "f5545cda2d8ef6df286bf377d2183646dce4b58b3668c5ffcd727687a1baebae"
+    },
+    {
+      "name": "meeting-regions.mjs",
+      "sha256": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017"
+    },
+    {
+      "name": "product-experience.mjs",
+      "sha256": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf"
+    },
+    {
+      "name": "discovery-guidance.mjs",
+      "sha256": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2"
+    }
+  ],
+  "syntax": [
+    "experiences/atlas-lab/profile-editing-drafts.mjs",
+    "experiences/atlas-lab/public-profile-preview.mjs",
+    "experiences/atlas-lab/candidate-highlights.mjs",
+    "experiences/atlas-lab/dating-ui.mjs",
+    "experiences/atlas-lab/dating-live.mjs",
+    "experiences/atlas-lab/dating-insights.mjs",
+    "experiences/atlas-lab/discovery.mjs",
+    "experiences/atlas-lab/public-profile.mjs",
+    "experiences/atlas-lab/dating-service.mjs",
+    "experiences/atlas-lab/dating-server.mjs",
+    "experiences/atlas-lab/dating-store.mjs",
+    "experiences/atlas-lab/preference-deadline.mjs",
+    "experiences/atlas-lab/introduction-guidance.mjs",
+    "experiences/atlas-lab/meeting-regions.mjs",
+    "experiences/atlas-lab/product-experience.mjs",
+    "experiences/atlas-lab/discovery-guidance.mjs"
+  ],
+  "scopedDiffCheck": 0,
+  "engineChecks": [
+    {
+      "path": "atlas/ask.js",
+      "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "unchanged": true
+    },
+    {
+      "path": "atlas/personalization.js",
+      "sha256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+      "unchanged": true
+    },
+    {
+      "path": "atlas/conditional-preference.js",
+      "sha256": "6b814ec429c7a29643f958b6cb09ef4efc96f22913d3e873dbb095f8f09e3d4e",
+      "unchanged": true
+    }
+  ],
+  "engineCodeChangedByBatch": 0,
+  "newEngines": 0,
+  "actualUsers": 0,
+  "paidModelCalls": 0,
+  "externalApiCost": 0,
+  "publicDeployment": false,
+  "preview": "http://127.0.0.1:61747/atlas-lab/dating.html",
+  "reviewRepairs": [
+    "Only the profile scopes being submitted are locked during a slow save, preventing post-submit input loss",
+    "Public custom expiration controls become editable again after busy renders",
+    "Existing concurrency fixture now changes the public value; a separate new case preserves drafts when only revision changes and requires fresh confirmation"
+  ],
+  "limitations": [
+    "Draft protection covers the settings introduction editor and public-answer rows, not the initial onboarding form",
+    "Raw drafts live only in tab memory and disappear on reload, tab close or scope invalidation",
+    "Synthetic local checks do not verify real user satisfaction, physical devices, real identity providers or deployment",
+    "Paid AI, model evaluation, tutor and participant recruitment remain deferred"
+  ]
+}

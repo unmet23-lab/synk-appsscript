@@ -1,0 +1,49 @@
+{
+  "at": "2026-10-07T10:35:47.0751375Z",
+  "sources": [
+    {
+      "path": "tests/atlas-dating-backup-restore.test.mjs",
+      "sha256": "2eadb0ce511bf75f6317244996ffd7d373a49be02a16bb967b93aa2080194235"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-store.mjs",
+      "sha256": "be7ed02c8bed2d05b2942cde64935c07e45c63afc65d00274c9ffd788894b98f"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-service.mjs",
+      "sha256": "f61245d20de9851e810c96e0e1cf71386bb5dbbcda4883bff1420cd38e06aade"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-server.mjs",
+      "sha256": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-lifecycle.mjs",
+      "sha256": "78e5b2b1a2bb44e505ac19633649390fe985d1dcabd3f86e1749532984a951f6"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-adult.mjs",
+      "sha256": "be6594cf17ec01ca0ca352f3819d8f2726a21771d681e36f729075dad8ef2555"
+    },
+    {
+      "path": "../SYNK-talk/tests/lib/account-lifecycle-fixture.js",
+      "sha256": "ba37dc9739210a9e16cd1723fe6150ad92ab9ad6e5324e1b47afa699d3e803a7"
+    },
+    {
+      "path": "../SYNK-talk/tests/lib/postgres-json-fixture.js",
+      "sha256": "3fa6f3d9b36b814712f95762ab16b97f861580c6a29bd60096cb8b395b5b248f"
+    },
+    {
+      "path": "../SYNK-talk/lib/synk-account-lifecycle.js",
+      "sha256": "5c993a74670418e97606ea4d411997d6626521bf054d5e3832436df6ce124b88"
+    },
+    {
+      "path": "../SYNK-talk/supabase/migrations/20261007020000_synk_account_lifecycle_c16.sql",
+      "sha256": "a22224fcce7ace0678b36a53ba9246aba89f1fabeb3a85016feb8dd1fc6f63a0"
+    },
+    {
+      "path": "../SYNK-talk/supabase/migrations/20261007030000_synk_account_availability_c16.sql",
+      "sha256": "550d19cbefd11a3f1c119915e167f944ba1a7f6407797ef6e7ab3f29f9a73137"
+    }
+  ]
+}
