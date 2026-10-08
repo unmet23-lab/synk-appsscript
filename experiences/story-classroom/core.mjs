@@ -14,7 +14,7 @@ export class StoryGame {
 
   get currentAct() {
     if (this.phase === 'review' || this.phase === 'complete') {
-      return { id: 'review', title: '새 글로 마지막 정리', subtitle: '그림은 같아도, 글이 바뀌면 행동이 달라져요.', missions: EPISODE.review, intro: [], outro: [] };
+      return { id: 'review', title: '마지막 정리', subtitle: '같은 교실, 다른 부탁. 한 줄씩 다시 읽어 봐요.', missions: EPISODE.review, intro: [], outro: [] };
     }
     return EPISODE.acts[this.actIndex];
   }

@@ -49,7 +49,7 @@ export function assignmentVenues(target,seen=[]){
   if(!target)return [];
   return VENUES.filter(v=>assignmentCases(v.cases,target).length).sort((a,b)=>assignmentCases(b.cases,target).filter(c=>!seen.includes(c.id)).length-assignmentCases(a.cases,target).filter(c=>!seen.includes(c.id)).length);
 }
-export function entryTargetLabel(target){return `이번 목표: 읽기 · ${SKILL_LABEL[target.skillId]||'지정 표현'} · 난도 ${target.difficulty}. 지정된 ${target.requiredAttempts}명의 손님을 확인해요.`;}
+export function entryTargetLabel(target){return `이번 목표: 읽기 · ${SKILL_LABEL[target.skillId]||'과제 표현'} · 난도 ${target.difficulty}. 과제로 받은 손님 ${target.requiredAttempts}명을 확인해요.`;}
 
 export function caseCandidates(cases) {
   return cases.map((c) => {

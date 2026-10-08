@@ -83,14 +83,14 @@ module += 'export const WORDS=' + json.dumps(words, ensure_ascii=False, separato
 module += 'export const STAGES=' + json.dumps(stages, ensure_ascii=False, separators=(',', ':')) + ';\n'
 (ROOT / 'curriculum.js').write_text(module, encoding='utf-8')
 common = {
-    'intro': '출발! 문제를 듣고, 그림이나 단어가 있는 길을 골라줘.',
-    'cue-picture': '이 단어의 그림을 찾아줘.',
-    'cue-listen': '잘 들어봐. 들리는 단어를 골라줘.',
+    'intro': '출발! 문제를 잘 듣고, 답이 있는 길로 달려 줘!',
+    'cue-picture': '이 단어에 맞는 그림을 찾아 줘.',
+    'cue-listen': '잘 들어 봐! 들리는 단어를 골라 줘.',
     'correct': '맞았어!',
     'answer': '정답은',
     'boost': '부스터!',
-    'retry': '기억하고, 다음에 다시 만나자.',
-    'finish': '완주! 오늘 만난 단어를 다시 들어볼까?',
+    'retry': '괜찮아. 다음에 또 만나면 꼭 맞히자.',
+    'finish': '완주! 수고했어. 오늘 만난 단어를 다시 들어 볼까?',
 }
 jobs = [{'id': k, 'text': v} for k, v in common.items()] + [{'id': w['id'], 'text': w['word']} for w in words]
 (ROOT / 'audio-source/jobs.json').write_text(json.dumps(jobs, ensure_ascii=False, indent=2), encoding='utf-8')

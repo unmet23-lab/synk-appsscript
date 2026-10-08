@@ -47,9 +47,9 @@ test('게임이 읽는 목록과 확인 목록에는 제작 도구·목소리 �
 
 test('결과 안내는 별 수마다 하나, 화면에는 첫 문장이 제목이고 나머지가 그 아래 한 줄', () => {
   assert.deepEqual([0, 1, 2, 3].map((s) => resultLine(s).id), ['result-0', 'result-1', 'result-2', 'result-3']);
-  assert.deepEqual([resultLine(3).title, resultLine(3).say], ['완벽해요!', '모두 받아쳤어요.']);
-  assert.deepEqual([resultLine(2).title, resultLine(2).say], ['아주 잘했어요!', '']);
-  assert.deepEqual([resultLine(0).title, resultLine(0).say], ['괜찮아요.', '다시 해 볼까요?']);
+  assert.deepEqual([resultLine(3).title, resultLine(3).say], ['완벽해요!', '하나도 안 놓쳤어요.']);
+  assert.deepEqual([resultLine(2).title, resultLine(2).say], ['아주 잘했어요!', '거의 다 받아쳤어요.']);
+  assert.deepEqual([resultLine(0).title, resultLine(0).say], ['괜찮아요.', '한 번 더 해 볼까요?']);
   assert.equal(resultLine(9).id, 'result-3'); assert.equal(resultLine(-1).id, 'result-0');
-  assert.equal(NARRATION.dailyIntro.text, '하루 도전이에요. 오늘은 모두 같은 열두 번이에요.');
+  assert.equal(NARRATION.dailyIntro.text, '하루 도전! 오늘은 모두 같은 공 열두 개예요.');
 });

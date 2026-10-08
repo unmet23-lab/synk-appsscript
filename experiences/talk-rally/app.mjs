@@ -99,7 +99,7 @@ const show = (id) => {
 function renderLobby() {
   state.run += 1; stopVoices(state.cur); sound.stopNarration(); state.cur = null; stage?.clear(); hideWait(); hideExplain(); renderCards(null);
   state.ranked = progress.plays === 0 ? null : atlas((c) => rankItems(c, ITEMS, { audioAvailable: sound.isOn() }));
-  $('#l-reason').textContent = progress.plays === 0 ? '처음이라 쉬운 말부터 시작해요. 첫 공은 연습이에요.'
+  $('#l-reason').textContent = progress.plays === 0 ? '처음이니까 쉬운 말부터 해요. 첫 공은 연습이에요.'
     : state.ranked?.reason ? `${state.ranked.reason} 그 말들을 먼저 넣었어요.` : '새 말을 섞어 한 판을 만들어요.';
   const best = progress.best;
   $('#best-line').hidden = !best; if (best) $('#best-line').textContent = `최고 ${best.score}점 · 랠리 ${best.rally}번`;
@@ -177,7 +177,7 @@ async function startRound(mode = 'normal') {
     if (!live(run)) return;
     tip(null);
   }
-  if (!progress.practiced) { state.practice = true; tip('연습이에요. 공은 고를 때까지 기다려 줘요. 빛나는 카드를 위로 긋거나 눌러 보세요.'); }
+  if (!progress.practiced) { state.practice = true; tip('연습이에요! 공은 고를 때까지 기다려 줘요. 빛나는 카드를 위로 쓸어 올리거나 눌러 보세요.'); }
   else if (opening) { tip(opening); setTimeout(() => { if (live(run) && $('#tip').textContent === opening) tip(null); }, 2600); }
   after(opening && !state.practice ? 1200 : 500, () => nextItem());
 }
@@ -506,8 +506,8 @@ function renderDailyResult(dres, s) {
 function nextLine(next) {
   if (!next?.reason) return '다음 판에는 새 말을 섞어요.';
   const first = ITEMS.find((x) => x.id === next.order?.[0]);
-  const what = first ? `${first.difficulty >= 2 ? '조금 어려운 ' : ''}‘${KIND_LABEL[first.kind]}’ 문항` : '그 말';
-  return `${next.reason} 다음 판에는 ${what}을 먼저 넣어요.`;
+  const what = first ? `${first.difficulty >= 2 ? '조금 어려운 ' : ''}‘${KIND_LABEL[first.kind]}’ 말` : '그 말';
+  return `${next.reason} 다음 판에는 ${what}부터 넣을게요.`;
 }
 
 function renderSkills(next) {
@@ -517,7 +517,7 @@ function renderSkills(next) {
   for (const r of rows) {
     const mine = state.results.filter((x) => x.skill === r.id), ok = mine.filter((x) => x.correct === true).length, focus = r.tone === 'focus';
     const li = el('li', focus ? 'focus' : r.tone === 'good' ? 'good' : '');
-    li.innerHTML = `<b>${esc(r.label)}${focus ? ' <i class="next-tag">다음 연습</i>' : ''}</b><em>이번 ${ok}/${mine.length}</em><span>${esc(r.text)}${r.n ? ` · 혼자 고른 새 문항 ${r.n}개 중 ${r.correct}개 맞힘` : ''}</span>`;
+    li.innerHTML = `<b>${esc(r.label)}${focus ? ' <i class="next-tag">다음 연습</i>' : ''}</b><em>이번 ${ok}/${mine.length}</em><span>${esc(r.text)}${r.n ? ` · 처음 들은 말 ${r.n}개 중 ${r.correct}개는 혼자 맞힘` : ''}</span>`;
     ul.append(li);
   }
 }

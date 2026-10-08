@@ -14,9 +14,9 @@ export const RESPONSE_FORMAT = 'action';
 export const FLOW_VOICE = Object.freeze({ id: 'story-classroom.voice', version: 1, target: 0.8,
   knobs: Object.freeze([Object.freeze({ id: 'voice', kind: 'support', label: '부탁 읽어 주기', values: Object.freeze(['자동', '누르면']), start: 0 })]) });
 export const SKILL_LABELS = Object.freeze({
-  'ko.reading.detail': '읽고 대상·위치 찾기',
-  'ko.reading.negation': '읽고 부정·변경 이해하기',
-  'ko.reading.sequence': '읽고 행동 순서 이해하기',
+  'ko.reading.detail': '누가·무엇을·어디에 읽기',
+  'ko.reading.negation': '“~지 말고”·“~이 아니라” 읽기',
+  'ko.reading.sequence': '“~ㄴ 뒤에” 순서 읽기',
 });
 const MAPPING = Object.freeze({
   'cleanup-snacks': ['detail', 1], 'cleanup-paper': ['negation', 2],
@@ -54,7 +54,7 @@ export function assignmentMissions(missions,target){
   if(!target)return missions;
   return missions.filter(m=>{const meta=missionMetadata(m);return meta.skillId===target.skillId&&meta.difficulty===target.difficulty&&meta.modality===target.modality&&meta.responseFormat===target.responseFormat&&target.familyKeys?.includes(meta.familyKey)&&(!target.itemKeys?.length||target.itemKeys.includes(meta.itemKey));});
 }
-export function storyTargetLabel(target){return `이번 목표: ${SKILL_LABELS[target.skillId]||'지정 부탁 읽기'} · 난도 ${target.difficulty}. 지정된 ${target.requiredAttempts}개 부탁을 행동으로 옮겨요.`;}
+export function storyTargetLabel(target){return `이번 목표: ${SKILL_LABELS[target.skillId]||'과제 부탁 읽기'} · 난도 ${target.difficulty}. 과제로 받은 부탁 ${target.requiredAttempts}개를 풀어요.`;}
 
 export function missionCandidates(missions) {
   return missions.map(mission => { const m = missionMetadata(mission); return {

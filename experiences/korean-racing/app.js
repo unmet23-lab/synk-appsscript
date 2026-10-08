@@ -52,7 +52,7 @@ function learningScope() {
   const summary = learn((c) => c.summary());
   if (!coach || !learningAvailable) return '맞춤 기록을 연결하지 못했어요. 기본 코스는 계속 플레이할 수 있어요.';
   if (!summary?.storage.available) return '저장이 제한되어 이번 페이지에서만 맞춤 기록을 유지해요.';
-  return hosted ? 'WORLD 계정의 학습 기록 · 공유와 삭제는 WORLD 계정 설정에서 관리해요' : '이 브라우저의 공통 학습 기록 · 학생 계정 연결 전';
+  return hosted ? 'WORLD 계정의 학습 기록 · 공유와 삭제는 WORLD 계정 설정에서 관리해요' : '이 기기의 학습 기록 · 아직 학생 계정과 연결 전';
 }
 // 순간 맞춤: 차가 달리는 속도와 맞춤 5문항이 고르는 문항 단계(FLOW_RACE). 레이스마다 하나, 시연·연습에는 없다. 잃어도 맞춤만 멈춘다.
 let live = null, cruise = BASE_CRUISE, flowStart = null, laterToast = null;
@@ -83,7 +83,7 @@ const assignment = () => learn((c) => c.assignment?.());
 // 듣기 목표인데 소리가 꺼져 있으면 문항이 없는 게 아니라 소리를 켜면 된다고 말한다.
 function targetUnavailable() {
   const target = assignment();
-  return target?.modality === 'listening' && soundTouched && !soundEnabled ? '이번 목표는 듣기 문항이에요. 소리를 켜면 바로 시작할 수 있어요.' : '지정 문항을 준비하지 못했어요. WORLD에서 다시 열어 주세요.';
+  return target?.modality === 'listening' && soundTouched && !soundEnabled ? '이번 목표는 듣기 문항이에요. 소리를 켜면 바로 시작할 수 있어요.' : '과제 문제를 불러오지 못했어요. WORLD에서 다시 열어 주세요.';
 }
 // SYNK WORLD 안에서는 기록이 계정의 것이다(이 브라우저가 아니라 WORLD에서 보관·삭제).
 const hosted = learn((c) => typeof c.assignment === 'function', false);
@@ -176,7 +176,7 @@ function storeGarage(value) {
   let saved = false;
   try { saved = saveGarage(value, localStorage); } catch { /* 아래에서 알린다 */ }
   renderCollection();
-  if (!saved) showToast('저장이 제한되어 이번 화면에서만 컬렉션을 유지해요.', 4);
+  if (!saved) showToast('이 기기에 저장할 수 없어서, 꾸미기는 이 화면에서만 남아요.', 4);
   return saved;
 }
 function equipmentStyle(equipment) {
@@ -595,10 +595,10 @@ function tutorialDelivered() {
 function repeatTutorial() {
   if (!tutorial || paused) return;
   const step = tutorial.step;
-  if (step === 'steer-left') tutorialSpeak(['tutorial-welcome'], '왼쪽으로 움직여 봐.');
-  else if (step === 'steer-right') tutorialSpeak(['tutorial-right'], '좋아! 이번엔 오른쪽.');
-  else if (step === 'listen' || step === 'choose') tutorialSpeak(['tutorial-listen', 'tutorial-choices'], '잘 들어봐. 사과. 왼쪽 바나나, 가운데 포도, 오른쪽 사과. 사과 쪽으로 가 봐.');
-  else if (step === 'boost-ready') tutorialSpeak(['tutorial-boost'], '정답을 맞히면 자동으로 빨라져. 부스터로 달려 보자.');
+  if (step === 'steer-left') tutorialSpeak(['tutorial-welcome'], '안녕! 먼저 왼쪽으로 움직여 볼까?');
+  else if (step === 'steer-right') tutorialSpeak(['tutorial-right'], '좋아! 이번엔 오른쪽으로!');
+  else if (step === 'listen' || step === 'choose') tutorialSpeak(['tutorial-listen', 'tutorial-choices'], '잘 들어 봐. 사과. 왼쪽은 바나나, 가운데는 포도, 오른쪽은 사과. 사과 쪽으로 가 봐!');
+  else if (step === 'boost-ready') tutorialSpeak(['tutorial-boost'], '정답을 맞히면 차가 저절로 빨라져. 부스터로 달려 보자!');
 }
 async function startTutorial() {
   if (!ready || starting) return;
@@ -640,7 +640,7 @@ function finishTutorial() {
   running = false; finished = true; inputs.left = inputs.right = false; boost = 0; velocity = 0; screenEl.classList.remove('boosting'); screenEl.classList.add('tutorial-done'); silence();
   tutorialCompleted = true;
   try { tutorialSaved = saveTutorialCompleted(localStorage); } catch { tutorialSaved = false; }
-  hud.resetLanes(); renderLobby(); tutorialSpeak(['tutorial-finish'], '좋아! 이제 레이스를 시작해 보자.'); renderTutorial();
+  hud.resetLanes(); renderLobby(); tutorialSpeak(['tutorial-finish'], '좋아, 준비 끝! 이제 진짜 레이스를 시작하자.'); renderTutorial();
 }
 function updateTutorial(dt) {
   elapsed += dt; tutorialIdle += dt;
@@ -668,15 +668,15 @@ function updateTutorial(dt) {
     questionChosen = false; laneAim = null; inputs.left = inputs.right = false;
     if (tutorial.resolveAnswer(chosen)) {
       hud.markLanes(chosen, gate.q.answer); disposeGate(); mascotMood('cheer', 3); ding(true); hud.pop('정답! 부스터', 1);
-      tutorialSpeak(['tutorial-correct', 'tutorial-boost'], '정답! 부스터가 충전됐어. 정답을 맞히면 자동으로 빨라져. 부스터로 달려 보자.');
+      tutorialSpeak(['tutorial-correct', 'tutorial-boost'], '정답! 부스터가 가득 찼어. 정답을 맞히면 차가 저절로 빨라져. 부스터로 달려 보자!');
     } else {
       if (playerS > ROAD_END - 200) { playerS = 205; camera.position.copy(roadPoint(playerS - (mobile ? 10 : 7.7), playerOffset * (mobile ? .92 : .62), mobile ? 3.75 : 3.45)); }
       makeGate(0, playerS + 35); gate.announced = true; hud.showLanes(); velocity = 0; tutorialIdle = 0; tutorialGoHint = false; ding(false);
-      tutorialSpeak(['tutorial-retry'], '사과는 오른쪽이야. 다시 가 보자.');
+      tutorialSpeak(['tutorial-retry'], '앗, 사과는 오른쪽이야. 다시 가 보자!');
     }
     renderTutorial();
   }
-  if (selecting && !questionChosen && !tutorialVoicePending && tutorialIdle > 4 && !tutorialGoHint) { tutorialGoHint = true; tutorialSpeak(['tutorial-go'], '위쪽 화살표를 눌러 출발해 봐.'); }
+  if (selecting && !questionChosen && !tutorialVoicePending && tutorialIdle > 4 && !tutorialGoHint) { tutorialGoHint = true; tutorialSpeak(['tutorial-go'], '위쪽 화살표를 눌러서 출발해 봐.'); }
   if (tutorial.step === 'boosting') { boost = Math.max(0, boost - dt); if (tutorial.tick(dt)) finishTutorial(); }
   placeCar(car, playerS, playerOffset, steering * .045); car.rotation.z = -steering * .008;
   for (const wheel of wheels) wheel.rotation.x -= velocity * dt * 2.3;
@@ -731,7 +731,7 @@ async function start(demo = false, bypassTutorial = false) {
   auto = demo; roundWasDemo = demo; questionBank = makeQuestions(selectedStage); starting = false;
   const opening = startLive();
   showRace(); reset(true); renderLobby();
-  speak(['intro'], '출발! 문제를 듣고 길을 골라줘.', 'intro');
+  speak(['intro'], '출발! 문제를 잘 듣고, 답이 있는 길로 달려 줘!', 'intro');
   if (opening) showToast(opening, 2.6);
   clock.getDelta();
 }
@@ -817,8 +817,8 @@ function resultSummary({rank,total,passed,earned,saved,flowEnd,next}){
   else if(!earned.coins)plain.push('오늘의 반복 완주 보상을 모두 받았어요.');
   if(!demo&&wishText())plain.push(wishText());
   const tuned=demo?[]:describeRace(flowStart,flowEnd?.settings?.values);
-  const learning=demo?'자동 시연이라 학습 기록에 남기지 않았어요.':[`도움·반복·조작 영향을 뺀 새 응답 ${answers.filter(a=>a.learning?.independent).length}개를 맞춤 추천에 참고해요.`,
-    tuned.length?`이번 주행에서 맞춘 것: ${tuned.join(' · ')}.`:'',saved?'직접 달린 기록은 이 브라우저에 저장했어요.':'브라우저 저장이 제한되어 이번 화면에서만 기록을 볼 수 있어요.',learningScope()].filter(Boolean).join(' ');
+  const learning=demo?'자동 시연이라 학습 기록에 남기지 않았어요.':[`도움 없이 처음 고른 답 ${answers.filter(a=>a.learning?.independent).length}개를 다음 추천에 반영해요.`,
+    tuned.length?`이번 주행에서 맞춘 것: ${tuned.join(' · ')}.`:'',saved?'직접 달린 기록은 이 브라우저에 저장했어요.':'이 기기에 저장할 수 없어서 이번 화면에서만 기록을 볼 수 있어요.',learningScope()].filter(Boolean).join(' ');
   const coinText=demo?'자동 시연은 공통 코인을 지급하지 않아요.':earned.coins?`공통 코인 +${earned.coins} · 보유 ${earned.state.coins.toLocaleString('ko-KR')}`
     :earned.reason==='duplicate-round'?'이번 완주 보상은 이미 차고에 모였어요.':'오늘의 완주 코인 10회분을 모두 받았어요.';
   const note=demo?'미리보기로 달렸어요. 기록 없이 체험했어요.':correct===total?'모두 맞혔어요! 메달 셋을 받았어요.':passed?'통과했어요! 메달 둘을 받았어요.'
@@ -874,13 +874,13 @@ function judgeGate(){
     combo=0;speak(['answer',...(gate.q.answerAudio||[gate.q.answer]),'retry'],`정답은 ${gate.q.word}. ${gate.q.explanation||''}`,'feedback');ding(false);
   }
   shield=comboShield(combo,success,shield);
-  if(success&&combo%3===0){showToast(`${combo}콤보! 다음 접촉을 막는 보호막이 생겼어요`,3);speak(['shield-ready'],'연속 정답! 보호막이 생겼어.','reward');}
+  if(success&&combo%3===0){showToast(`${combo}콤보! 한 번은 부딪혀도 괜찮은 보호막이 생겼어요`,3);speak(['shield-ready'],'연속 정답! 보호막이 생겼어.','reward');}
   setText($('combo'),[combo>=2?`${combo}콤보`:'',shield?'보호막':''].filter(Boolean).join(' · '));
   const needsPractice=!roundWasDemo&&(!success||gate.learning?.assisted);
   const reviewing=needsPractice||!!gate.recheck?.line;
   const follow=needsPractice&&gate.learning?.verdict!=='unassessed'?linkRacingRecheck(learn(c=>racingFollowUp(c,{current:gate.q,remaining:questionBank.slice(gateIndex+1),stage:selectedStage,audioAvailable:soundEnabled&&!narrationUnavailable})),gate.learning):null;
   if(follow)questionBank.splice(gateIndex+1,questionBank.length-gateIndex-1,...follow.remaining);
-  const nextNote=follow?.status==='new'?' 같은 영역의 새 문제로 확인해 봐요.':follow?.status==='unavailable'?' 같은 목표의 새 문제를 확인하지 못해 예정된 코스를 이어가요.':'';
+  const nextNote=follow?.status==='new'?' 비슷한 새 문제로 한 번 더 확인해 봐요.':follow?.status==='unavailable'?' 비슷한 새 문제가 없어서 원래 코스대로 이어 달려요.':'';
   hud.answerQuestion({ok:success,word:gate.q.word,why:[answerFeedback(gate.q,chosen),gate.recheck?.line,nextNote].filter(Boolean).join(' '),hold:reviewing?null:4200});
   gate.reviewing=reviewing;
   if(reviewing){
@@ -927,7 +927,7 @@ function updateContacts(dt,waiting,record=true){
     const p={s:playerS,offset:playerOffset,velocity};const hit=resolveContact(p,r);if(!hit)continue;playerS=p.s;playerOffset=p.offset;
     if(contactTimer===0){
       const effect=shieldContact({shield,collisions,velocity,boost},hit);if(!record)effect.collisions=collisions;({shield,collisions,velocity,boost}=effect);
-      if(effect.protected){shieldBlocked++;shieldFlash=.8;contactTimer=.45;setText($('combo'),combo>=2?`${combo}콤보`:'');showToast('보호막! 속도를 지켰어요',2);speak(['shield-block'],'보호막으로 속도를 지켰어.','reward');}
+      if(effect.protected){shieldBlocked++;shieldFlash=.8;contactTimer=.45;setText($('combo'),combo>=2?`${combo}콤보`:'');showToast('보호막! 속도를 지켰어요',2);speak(['shield-block'],'휴, 보호막 덕분에 속도가 그대로야.','reward');}
       else{contactTimer=.85;showToast(record?'톡! 부딪혀도 학습 점수는 그대로예요':'톡! 천천히 다시 달려요',1.6);contactSound();contactSparks(hit);}
     }
   }

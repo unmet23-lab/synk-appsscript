@@ -88,16 +88,16 @@ function renderLobby() {
   const venue = targetVenues[0] || venueById(rec?.venueId) || VENUES.find((v) => ids.includes(v.id) && (progress.stars[v.id] || 0) < 3) || VENUES[0];
   $('#rec-day').textContent = `${venue.day}일차`;
   $('#rec-name').textContent = venue.name;
-  $('#rec-reason').textContent = target ? (targetVenues.length?entryTargetLabel(target):'지정 손님을 준비하지 못했어요. WORLD에서 다시 열어 주세요.') : progress.plays === 0
-    ? '처음이라 가장 쉬운 하늘 수영장부터 시작해요. 안내문은 세 줄이에요.'
-    : rec?.reason ? `${rec.reason} 이 연습을 하는 손님이 가장 많은 근무지예요.` : '앞 근무지에서 별을 모아 다음 근무지를 열어요.';
+  $('#rec-reason').textContent = target ? (targetVenues.length?entryTargetLabel(target):'과제 손님을 불러오지 못했어요. WORLD에서 다시 열어 주세요.') : progress.plays === 0
+    ? '처음이니까 제일 쉬운 하늘 수영장부터 해요. 안내문이 세 줄뿐이에요.'
+    : rec?.reason ? `${rec.reason} 이 연습에 맞는 손님이 제일 많은 곳이에요.` : '앞 근무지에서 별을 모아 다음 근무지를 열어요.';
   $('#rec-start').onclick = () => startShift(venue.id);
   $('#rec-start').disabled=!!target&&!targetVenues.length;
   $('#how-tutorial').hidden=!!target;
   const warn = atlas((c) => c.summary().storage?.warning) || (!coach ? '학습 기록을 쓸 수 없어 기본 순서로 진행해요.' : null) || (!progressSaved ? '이 브라우저에 진행을 저장할 수 없어요.' : null);
   $('#storage-note').hidden = !warn; $('#storage-note').textContent = warn || '';
   $('#reset-learning').hidden = hosted;
-  if (hosted) { $('#learning-scope').textContent = 'WORLD에서 선택한 계정의 학습 기록으로 연결해요. 기록 공유와 삭제는 WORLD 계정 설정에서 관리해요.'; $('#skills-scope').textContent = 'WORLD 계정의 공통 학습 기록 중'; }
+  if (hosted) { $('#learning-scope').textContent = 'WORLD에서 선택한 계정의 학습 기록으로 연결해요. 기록 공유와 삭제는 WORLD 계정 설정에서 관리해요.'; $('#skills-scope').textContent = 'WORLD 계정에 남은'; }
   const list = $('#venues'); list.textContent = '';
   for (const v of VENUES) {
     const open = target?targetVenues.some(x=>x.id===v.id):unlocked(progress, v.id), stars = progress.stars[v.id] || 0;
@@ -160,7 +160,7 @@ function startShift(venueId, { tutorial = !progress.tutorial } = {}) {
   $('#brief-day').textContent = `${v.day}일차`;
   $('#brief-title').lastChild.textContent = ` ${v.name}`;
   $('#brief-text').textContent = v.briefing;
-  const why = target ? entryTargetLabel(target) : tut.on ? '처음이라 연수를 함께 해요. 하는 방법을 한 단계씩 알려 줄게요.'
+  const why = target ? entryTargetLabel(target) : tut.on ? '첫 근무라서 연수부터 해요. 하는 방법을 하나씩 알려 줄게요.'
     : state.ranked?.reason && progress.plays > 0 ? `오늘의 손님은 기록에 맞춰 골랐어요. ${state.ranked.reason}` : '';
   $('#brief-reason').hidden = !why; $('#brief-reason').textContent = why;
   $('#briefing').hidden = false; setOverlay(true);
@@ -290,7 +290,7 @@ async function nextGuest() {
   // 지난 손님 뒤에 돋보기 시점이 바뀌었으면 무엇이 바뀌었는지만 한 줄로 알린다.
   if (state.flowLine) { $('#dock-hint').hidden = false; $('#dock-hint').textContent = state.flowLine; announce(state.flowLine); state.flowLine = null; }
   if (state.checkNotice?.id === item.id || item.textOnly) {
-    const line = [state.checkNotice?.id === item.id ? state.checkNotice.line : '', item.textOnly ? '이 확인 손님은 음성 없이 글로 읽어요.' : ''].filter(Boolean).join(' ');
+    const line = [state.checkNotice?.id === item.id ? state.checkNotice.line : '', item.textOnly ? '이 손님은 목소리 없이 글로만 나와요.' : ''].filter(Boolean).join(' ');
     $('#dock-hint').hidden = false; $('#dock-hint').textContent += ` ${line}`; announce(line); state.checkNotice = null;
   }
   scheduleMagnifier(token);
@@ -525,7 +525,7 @@ function showFeedback(item, choice, result) {
   $('#fb-correction').hidden = !correction; $('#fb-correction').textContent = correction;
   $('#fb-recheck').hidden = !state.cur.recheck?.line; $('#fb-recheck').textContent = state.cur.recheck?.line || '';
   const followup = state.cur.followup;
-  $('#fb-followup').hidden = !followup; $('#fb-followup').textContent = followup ? `${followup.line}${followup.item?.textOnly ? ' 다음 확인은 음성 없이 글로 읽어요.' : ''}` : '';
+  $('#fb-followup').hidden = !followup; $('#fb-followup').textContent = followup ? `${followup.line}${followup.item?.textOnly ? ' 다음 손님은 목소리 없이 글로만 나와요.' : ''}` : '';
   const wrongPassOrReject = !result.correct && (choice === 'pass' || item.answer === 'pass');
   $('#fb-oops').hidden = !wrongPassOrReject; $('#fb-oops-text').textContent = item.oops;
   $('#btn-next').querySelector('span').textContent = state.index + 1 >= state.queue.length ? '근무 마치기'
@@ -597,7 +597,7 @@ function finishShift() {
   $('#r-stars').innerHTML = [1, 2, 3].map((i) => `<i class="${i <= score.stars ? 'on' : ''}"></i>`).join('');
   $('#r-stars').setAttribute('aria-label', `별 3개 중 ${score.stars}개`);
   $('#r-mongle').src = score.stars >= 2 ? 'kit/brand/mongle-smile.webp' : 'kit/brand/mongle-cheer.webp';
-  const notes = [`첫 도장으로 ${score.correct}명을 바르게 처리했어요.`];
+  const notes = [`처음 찍은 도장으로 ${score.correct}명을 바르게 맞이했어요.`];
   if (score.helped) notes.push(`돋보기를 쓴 손님은 ${score.helped}명이에요.`);
   if (score.bestRun >= 3) notes.push(`최고 ${score.bestRun}연속!`);
   if (opened.length) notes.push(`새 근무지 ‘${opened.join('’, ‘')}’${josa(opened.at(-1), '이', '가')} 열렸어요.`);
@@ -639,7 +639,7 @@ function renderSkills(score, focusId) {
     const shift = score.bySkill[s.id];
     const focus = s.id === focusId || s.tone === 'focus';
     const li = el('li', focus ? 'focus' : s.tone === 'good' ? 'good' : '');
-    li.innerHTML = `<b>${esc(s.label)}${s.id === focusId ? ' <i class="next-tag">다음 연습</i>' : ''}</b><em>${shift ? `이번 ${shift.correct}/${shift.total}` : '이번 0'}</em><span>${esc(s.text)}${s.n ? ` · 혼자 푼 새 문항 ${s.n}개 중 ${s.correct}개 맞힘` : ''}</span>`;
+    li.innerHTML = `<b>${esc(s.label)}${s.id === focusId ? ' <i class="next-tag">다음 연습</i>' : ''}</b><em>${shift ? `이번 ${shift.correct}/${shift.total}` : '이번 0'}</em><span>${esc(s.text)}${s.n ? ` · 처음 만난 손님 ${s.n}명 중 ${s.correct}명은 혼자 맞힘` : ''}</span>`;
     ul.append(li);
   }
 }

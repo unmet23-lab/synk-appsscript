@@ -29,8 +29,8 @@ try{
  for(let i=0;i<3;i++)await page.locator('#dialogue-next').click();
  assert.equal((await state(page)).dialogueIndex,3);await page.waitForTimeout(750);await picture(page,'desktop-teacher.png');
  await throughDialogue(page);await measure(page,'desktop first scene');await picture(page,'desktop-play.png');
- await page.locator('#journal').click();assert.equal(await page.locator('#modal').evaluate(e=>e.open),true);assert.match(await page.locator('#modal').textContent(),/이게 다 뭐야/);await page.keyboard.press('Escape');assert.equal(await page.locator('#modal').evaluate(e=>e.open),false);
- await move(page,'kkamong','paper','bin');let s=await state(page);assert.equal(s.scene.paper,'bin');assert.equal(record(s,'cleanup-paper').firstCorrect,false);assert.match(await page.locator('#dialogue-text').textContent(),/종이는 버릴/);await picture(page,'desktop-wrong.png');
+ await page.locator('#journal').click();assert.equal(await page.locator('#modal').evaluate(e=>e.open),true);assert.match(await page.locator('#modal').textContent(),/교실이 왜 이렇게/);await page.keyboard.press('Escape');assert.equal(await page.locator('#modal').evaluate(e=>e.open),false);
+ await move(page,'kkamong','paper','bin');let s=await state(page);assert.equal(s.scene.paper,'bin');assert.equal(record(s,'cleanup-paper').firstCorrect,false);assert.match(await page.locator('#dialogue-text').textContent(),/종이는 버리면 안 돼/);await picture(page,'desktop-wrong.png');
  await page.locator('#undo').click();s=await state(page);assert.equal(s.scene.paper,'floor');assert.equal(record(s,'cleanup-paper').firstCorrect,false);
  await move(page,'kkamong','paper','drawer');await move(page,'marin','snacks','box');assert.equal((await state(page)).phase,'outro');
  // Reopen the last successful action; the first response remains a fact.

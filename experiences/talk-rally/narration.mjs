@@ -5,14 +5,14 @@
 const line = (id, text) => ({ id, text, file: `assets/narration/${id}.mp3` });
 
 export const NARRATION = {
-  intro: line('intro', '몽글이 말을 걸어요. 알맞은 대답으로 받아쳐요!'),
-  practiceDone: line('practice-done', '좋아요! 이제 시작해요.'),
-  dailyIntro: line('daily-intro', '하루 도전이에요. 오늘은 모두 같은 열두 번이에요.'),
-  dailyBest: line('daily-best', '오늘 최고 기록이에요!'),
-  result3: line('result-3', '완벽해요! 모두 받아쳤어요.'),
-  result2: line('result-2', '아주 잘했어요!'),
-  result1: line('result-1', '잘했어요! 조금만 더 해 봐요.'),
-  result0: line('result-0', '괜찮아요. 다시 해 볼까요?'),
+  intro: line('intro', '몽글이 말을 걸어요! 알맞은 대답으로 받아쳐요!'),
+  practiceDone: line('practice-done', '좋아요! 이제 진짜 시작이에요.'),
+  dailyIntro: line('daily-intro', '하루 도전! 오늘은 모두 같은 공 열두 개예요.'),
+  dailyBest: line('daily-best', '와, 오늘 최고 기록이에요!'),
+  result3: line('result-3', '완벽해요! 하나도 안 놓쳤어요.'),
+  result2: line('result-2', '아주 잘했어요! 거의 다 받아쳤어요.'),
+  result1: line('result-1', '잘했어요! 다음엔 더 많이 받아칠 수 있어요.'),
+  result0: line('result-0', '괜찮아요. 한 번 더 해 볼까요?'),
 };
 export const NARRATION_LINES = Object.values(NARRATION);
 

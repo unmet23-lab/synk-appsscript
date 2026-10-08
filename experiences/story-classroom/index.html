@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f96859">
 <title>선생님이 돌아왔다 · SYNK LAB PLAY</title>
-<meta name="description" content="이야기를 읽고 마린, 까몽과 함께 교실의 비밀을 지키는 한국어 읽기 미니게임. TOPIK I 읽기의 대상·위치, 부정 표현, 행동 순서를 연습합니다.">
+<meta name="description" content="선생님의 부탁을 읽고 마린·까몽과 함께 엉망인 교실을 정리하는 한국어 읽기 게임. TOPIK I 읽기에 나오는 “누가·무엇을·어디에”, “~지 말고”, “~ㄴ 뒤에”를 연습해요.">
 <link rel="icon" href="kit/felt/sparkle.webp" type="image/webp">
 <link rel="preload" href="kit/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/classroom.webp" as="image">
@@ -27,8 +27,8 @@
     <div class="hero-copy">
       <span class="kicker">STORY CLASSROOM · A READING GAME</span>
       <h1>선생님이<br>돌아왔다</h1>
-      <p class="lede">이야기를 읽고,<br><span class="crayon-under">교실의 비밀</span>을 지켜 주세요!</p>
-      <p class="sub">쉬는 시간이 끝나고 선생님이 돌아왔어요. 부탁을 읽고 마린과 까몽에게 무엇을 어디로 옮길지 알려 주면, 엉망이던 교실에 숨은 비밀이 하나씩 드러나요.</p>
+      <p class="lede">부탁을 읽고,<br><span class="crayon-under">교실의 비밀</span>을 찾아 주세요!</p>
+      <p class="sub">쉬는 시간이 끝나자 선생님이 돌아왔어요. 그런데 교실이 엉망이에요! 선생님의 부탁을 읽고 마린과 까몽을 움직여 보세요. 정리할수록 숨어 있던 비밀이 하나씩 보여요.</p>
     </div>
     <figure class="hero-art" aria-hidden="true">
       <div class="hero-room"><img src="assets/classroom.webp" alt="" width="1586" height="992"></div>
@@ -47,8 +47,8 @@
       <button id="start" class="felt-cta coral" type="button"><span>이야기 시작</span><i class="disc" aria-hidden="true"></i></button>
       <button id="resume" class="felt-cta cream" type="button" hidden><span>이어 하기</span><i class="disc" aria-hidden="true"></i></button>
       <div class="start-options">
-        <button id="voice-auto" class="chip-btn" type="button" aria-pressed="true">대사 음성 자동 켜짐</button>
-        <button id="reading-mode" class="chip-btn" type="button" aria-pressed="false">글로만 연습 꺼짐</button>
+        <button id="voice-auto" class="chip-btn" type="button" aria-pressed="true">대사 읽어 주기 켜짐</button>
+        <button id="reading-mode" class="chip-btn" type="button" aria-pressed="false">소리 없이 읽기 꺼짐</button>
       </div>
       <p id="voice-note" class="fine" hidden></p>
       <p id="lobby-note" class="fine warn" hidden></p>
@@ -57,16 +57,16 @@
     <section class="paper how" aria-labelledby="how-title">
       <span class="tag" id="how-title">하는 방법</span>
       <ol class="how-steps">
-        <li><b class="num">1</b><strong>이야기 읽기</strong><span>선생님과 친구들의 대사를 천천히 읽어요. 시간 제한은 없고, 대사는 한국어 음성으로도 들려요.</span></li>
-        <li><b class="num">2</b><strong>친구 → 물건 → 놓을 곳</strong><span>부탁을 읽고 교실에서 차례로 눌러요. 친구를 고른 뒤 물건을 끌어 놓아도 돼요.</span></li>
-        <li><b class="num">3</b><strong>비밀 완성</strong><span>틀리면 교실이 정말 바뀌어요. 되돌리기로 고치고, 마지막에는 바뀐 새 글로 한 번 더 정리해요.</span></li>
+        <li><b class="num">1</b><strong>이야기 읽기</strong><span>대사를 천천히 읽어요. 서두르지 않아도 돼요. 대사는 소리로도 들을 수 있어요.</span></li>
+        <li><b class="num">2</b><strong>친구 → 물건 → 놓을 곳</strong><span>부탁을 읽고 교실에서 이 순서로 눌러요. 친구를 고른 다음 물건을 끌어다 놓아도 돼요.</span></li>
+        <li><b class="num">3</b><strong>틀려도 괜찮아요</strong><span>틀리면 교실이 정말로 바뀌어요. 되돌리기를 누르면 다시 할 수 있어요. 마지막에는 조금 바뀐 부탁으로 한 번 더 정리해요.</span></li>
       </ol>
       <p class="fine">키보드: Tab으로 이동하고 Enter나 Space로 골라요. Esc는 고른 물건을 내려놓아요.</p>
     </section>
   </section>
 
   <footer class="lobby-foot">
-    <p>TOPIK I 읽기의 대상·위치, 부정 표현, 행동 순서를 연습해요. 직접 쓴 초급 문장이라 TOPIK 점수나 급수 판정이 아니에요.</p>
+    <p>TOPIK I 읽기에 나오는 “누가·무엇을·어디에”, “~지 말고”, “~ㄴ 뒤에”를 연습해요. 우리가 직접 쓴 초급 문장이라 TOPIK 점수나 급수와는 관계없어요.</p>
     <section id="account-panel" class="account" aria-labelledby="account-title">
       <p><b id="account-title">WORLD 학습 기록</b> <span id="account-status" role="status">이 기기의 연습 기록을 저장해요.</span></p>
       <div class="account-actions">
@@ -171,7 +171,7 @@
     <article class="paper skills">
       <span class="tag">읽기 연습 기록</span>
       <ul id="r-skills"></ul>
-      <p class="fine">이번 플레이와 이 브라우저의 공통 학습 기록이에요. 글 힌트와 음성 도움 없이 처음 옮긴 부탁만 혼자 해낸 기록이 돼요. TOPIK 점수나 급수 판정이 아니에요.</p>
+      <p class="fine">이 기기에 남은 읽기 기록이에요. 힌트도 소리도 없이 한 번에 해낸 부탁만 「혼자 해냄」으로 세요. TOPIK 점수나 급수와는 관계없어요.</p>
       <a id="r-hub" class="chip-btn" href="./" hidden>다음 연습 살펴보기</a>
     </article>
     <article class="paper next">
@@ -194,8 +194,8 @@
     <button id="pause-close" class="felt-cta coral" type="button"><span>이어서 읽기</span><i class="disc" aria-hidden="true"></i></button>
     <div class="dialog-toggles">
       <button class="chip-btn" type="button" data-sound-toggle data-sound-label aria-pressed="true">소리 켜짐</button>
-      <button class="chip-btn" type="button" id="voice-auto-2" aria-pressed="true">대사 음성 자동 켜짐</button>
-      <button class="chip-btn" type="button" id="reading-mode-2" aria-pressed="false">글로만 연습 꺼짐</button>
+      <button class="chip-btn" type="button" id="voice-auto-2" aria-pressed="true">대사 읽어 주기 켜짐</button>
+      <button class="chip-btn" type="button" id="reading-mode-2" aria-pressed="false">소리 없이 읽기 꺼짐</button>
     </div>
     <button id="journal" class="chip-btn wide" type="button">이야기 수첩</button>
     <div class="dialog-row" id="restart-row">
@@ -203,7 +203,7 @@
       <button id="quit" class="chip-btn" type="button">처음으로</button>
     </div>
     <div class="restart-confirm" id="restart-confirm" hidden>
-      <p>이번 교실의 진행을 지우고 첫 장면으로 돌아가요.</p>
+      <p>지금까지 한 것을 지우고 첫 장면부터 다시 해요.</p>
       <div class="dialog-row">
         <button id="confirm-restart" class="chip-btn" type="button">다시 시작</button>
         <button id="keep-playing" class="chip-btn" type="button">그대로 하기</button>
@@ -216,9 +216,9 @@
 <dialog id="journal-dialog" class="paper lab-dialog journal" aria-labelledby="journal-title">
   <span class="kicker">OUR CLASSROOM</span>
   <h2 id="journal-title">이야기 수첩</h2>
-  <p>지금까지 읽은 이야기를 다시 볼 수 있어요.</p>
+  <p>지금까지 읽은 대사를 다시 볼 수 있어요.</p>
   <ol class="journal-lines" id="journal-lines"></ol>
-  <p class="fine">친구 → 물건 → 놓을 곳을 차례로 눌러요. 친구를 고른 뒤 물건을 끌어 놓아도 돼요. 소리를 꺼도 모든 이야기를 글로 읽고 할 수 있어요.</p>
+  <p class="fine">친구 → 물건 → 놓을 곳 순서로 눌러요. 친구를 고른 다음 물건을 끌어다 놓아도 돼요. 소리를 꺼도 글만 읽고 끝까지 할 수 있어요.</p>
   <button id="journal-close" class="felt-cta cream" type="button"><span>닫기</span><i class="disc" aria-hidden="true"></i></button>
 </dialog>
 

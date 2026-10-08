@@ -117,21 +117,21 @@ function renderLobby() {
     $('#l-reason').textContent = lobbyReason();
   }
   $('#voice-note').hidden = !(!chosenVoice && !voice.automatic && !voice.readingOnly);
-  $('#voice-note').textContent = '입구에서 고른 도움 방식대로, 부탁은 다시 듣기를 눌러야 소리로 읽어 줘요.';
+  $('#voice-note').textContent = '고른 도움 방식에 맞춰, 부탁은 「다시 듣기」를 누를 때만 소리로 읽어 줘요.';
   syncToggles(); accountStatus();
   show('lobby');
 }
 function lobbyReason() {
-  if (saved) return '지난 이야기가 저장돼 있어요. 이어 하거나 처음부터 새로 시작해요.';
+  if (saved) return '지난번에 하던 이야기가 남아 있어요. 이어서 하거나 처음부터 시작해요.';
   const focus = skillReport(learning.summary()).find((s) => ['practice', 'review'].includes(s.status));
-  if (focus) return `지난 기록에서 ‘${focus.label}’를 조금 더 연습하면 좋아요. 이번 이야기에서 다시 만나요.`;
-  return '선생님의 부탁을 읽고 두 친구를 움직여요. 마지막에는 새 글로 부탁 3개를 더 풀어요.';
+  if (focus) return `지난번에는 ‘${focus.label}’가 조금 어려웠어요. 이번 이야기에서 한 번 더 해 봐요.`;
+  return '부탁 6개를 풀면 이야기가 끝나요. 마지막에는 조금 바뀐 부탁 3개가 더 있어요.';
 }
 
 /* ── 시작·이어 하기 ── */
 async function start(resume = false) {
   const target = learning.assignment(), targetMissions = target ? assignmentMissions(ALL_MISSIONS, target) : null;
-  if (target && !targetMissions.length) { $('#lobby-note').hidden = false; $('#lobby-note').textContent = '지정 부탁을 준비하지 못했어요. WORLD에서 다시 열어 주세요.'; return; }
+  if (target && !targetMissions.length) { $('#lobby-note').hidden = false; $('#lobby-note').textContent = '과제 부탁을 불러오지 못했어요. WORLD에서 다시 열어 주세요.'; return; }
   if (target) resume = false;
   if (busy) return;
   voice.stop(); voiceKey = ''; started = true; feedback = null; activeId = null; resultsShown = false;
@@ -149,7 +149,7 @@ async function start(resume = false) {
     coinRound = globalThis.SynkPlayCollection?.roundId('story-classroom') || null;
     coinState = 'idle';
   }
-  $('#r-coins').textContent = coinState === 'done' ? '이번 완주 보상은 이미 차고에 모였어요.' : '';
+  $('#r-coins').textContent = coinState === 'done' ? '이번 판 보상은 벌써 차고에 들어갔어요.' : '';
   learning.beginRun({ restored: resume });
   if (game.phase !== 'complete') show('game');
   render();
@@ -173,7 +173,7 @@ function render() {
 
 function renderHud() {
   const p = game.phase, review = p === 'review';
-  $('#g-scene').textContent = p === 'opening' ? '시작' : p === 'ending' ? '끝' : review ? '새 글' : `${game.actIndex + 1} / 3`;
+  $('#g-scene').textContent = p === 'opening' ? '시작' : p === 'ending' ? '끝' : review ? '마지막' : `${game.actIndex + 1} / 3`;
   const pool = review ? EPISODE.review : storyPool();
   const n = pool.filter((m) => game.completedIds.includes(m.id)).length;
   const text = `${n} / ${pool.length}`;
@@ -202,7 +202,7 @@ function renderBeat() {
   const label = !last ? '다음'
     : game.phase === 'intro' ? '부탁 보기'
       : game.phase === 'outro' ? (game.actIndex < EPISODE.acts.length - 1 && !game.practice ? '다음 장면' : '다음')
-        : game.phase === 'ending' ? (game.reviewAhead ? '새 글 읽기' : '결과 보기') : '다음';
+        : game.phase === 'ending' ? (game.reviewAhead ? '마지막 정리' : '결과 보기') : '다음';
   $('#dialogue-next span').textContent = label;
   $('#dialogue-next').disabled = busy;
   $('#beat-undo').hidden = !(game.phase === 'outro' && game.canUndo);
@@ -237,7 +237,7 @@ function renderAsk() {
   const review = game.phase === 'review';
   $('#ask-kicker').textContent = done(m) ? '마친 부탁'
     : target && assignmentMissions([m], target).length ? '이번 목표'
-      : review ? '새 글' : '선생님의 부탁';
+      : review ? '바뀐 부탁' : '선생님의 부탁';
   const say = $('#ask-line');
   say.dataset.text = m.text;
   say.classList.toggle('done', done(m));
@@ -335,10 +335,10 @@ function renderNote() {
   }
 }
 function fixLine(kind) {
-  if (kind === 'actor') return '되돌리기 하거나, 맞는 친구로 옮겨요.';
-  if (kind === 'order') return '되돌리기 하고, 먼저 할 일부터 해요.';
-  if (kind === 'object') return '되돌리기 하고, 부탁 속 물건을 찾아요.';
-  return '되돌리기 하거나, 글을 다시 읽어요.';
+  if (kind === 'actor') return '되돌리기를 누르거나, 부탁에 나온 친구로 다시 옮겨요.';
+  if (kind === 'order') return '되돌리기를 누르고, 먼저 할 일부터 해요.';
+  if (kind === 'object') return '되돌리기를 누르고, 부탁에 나온 물건을 찾아요.';
+  return '되돌리기를 누르거나, 부탁을 한 번 더 읽어요.';
 }
 
 /* ── 조작 ── */
@@ -348,7 +348,7 @@ function selectActor(id) {
 }
 function selectObject(id) {
   if (busy || !playing()) return;
-  if (!game.actor) { feedback = { type: 'tip', text: '먼저 물건을 옮길 친구(마린 또는 까몽)를 골라 주세요.' }; render(); return; }
+  if (!game.actor) { feedback = { type: 'tip', text: '누가 옮길지 먼저 골라 주세요. 마린이나 까몽을 눌러요.' }; render(); return; }
   if (!game.selectObject(id)) return;
   feedback = null; followPicks(); audio.play('pickup'); render();
 }
@@ -387,7 +387,7 @@ async function place(destination) {
 function undo() {
   if (busy || !game.undo()) return;
   followPicks();   // 되돌리면 그때 고른 친구·물건이 돌아온다
-  feedback = { type: 'undo', text: '한 단계 전으로 돌아왔어요. 글을 다시 읽어 보세요.' };
+  feedback = { type: 'undo', text: '한 번 전으로 돌아왔어요. 부탁을 다시 읽어 봐요.' };
   audio.play('page'); render();
 }
 function hint() {
@@ -437,11 +437,11 @@ function replay() {
 }
 function setVoice() {
   const off = voice.readingOnly || !audio.enabled;
-  const mode = voice.readingOnly ? '글로만 연습 중' : !audio.enabled ? '소리 꺼짐' : '';
+  const mode = voice.readingOnly ? '소리 없이 읽는 중' : !audio.enabled ? '소리 꺼짐' : '';
   for (const [btn, pill] of [['#beat-replay', '#beat-mode'], ['#ask-replay', '#ask-mode']]) {
     $(btn).hidden = off; $(pill).hidden = !off; $(pill).textContent = mode;
   }
-  if (voice.readingOnly) voice.status('reading', '글로만 연습 중이에요. 음성은 쉬고 있어요.');
+  if (voice.readingOnly) voice.status('reading', '소리 없이 글만 읽는 중이에요.');
   else if (!audio.enabled) voice.status('muted', '소리가 꺼져 있어요.');
 }
 function syncToggles() {
@@ -450,8 +450,8 @@ function syncToggles() {
     if (t.hasAttribute('data-sound-label')) t.textContent = audio.enabled ? '소리 켜짐' : '소리 꺼짐';
     else t.setAttribute('aria-label', audio.enabled ? '소리 끄기' : '소리 켜기');
   }
-  for (const t of [$('#voice-auto'), $('#voice-auto-2')]) { t.setAttribute('aria-pressed', String(voice.automatic)); t.textContent = `대사 음성 자동 ${voice.automatic ? '켜짐' : '꺼짐'}`; }
-  for (const t of [$('#reading-mode'), $('#reading-mode-2')]) { t.setAttribute('aria-pressed', String(voice.readingOnly)); t.textContent = `글로만 연습 ${voice.readingOnly ? '켜짐' : '꺼짐'}`; }
+  for (const t of [$('#voice-auto'), $('#voice-auto-2')]) { t.setAttribute('aria-pressed', String(voice.automatic)); t.textContent = `대사 읽어 주기 ${voice.automatic ? '켜짐' : '꺼짐'}`; }
+  for (const t of [$('#reading-mode'), $('#reading-mode-2')]) { t.setAttribute('aria-pressed', String(voice.readingOnly)); t.textContent = `소리 없이 읽기 ${voice.readingOnly ? '켜짐' : '꺼짐'}`; }
 }
 function toggleSound() { audio.toggle(); voice.stop(); syncToggles(); setVoice(); if (started) { voiceKey = ''; render(); } }
 function toggleAuto() { voice.automatic = !voice.automatic; voice.stop(); syncToggles(); setVoice(); if (started && voice.automatic) void voice.speak(voiceLines()); }
@@ -468,10 +468,10 @@ function accountStatus() {
   $('#account-sync').hidden = !['offline', 'blocked', 'error'].includes(status.phase);
   $('#account-status').textContent = status.warning || ({
     synced: 'WORLD 계정에 학습 기록을 연결했어요.',
-    offline: `연결을 기다리는 기록 ${status.queued || 0}개를 이 기기에 보관해요.`,
-    blocked: '학습 연결을 확인하지 못했어요. WORLD 계정 상태를 확인해 주세요.',
-    local: '이 계정의 학습 기록은 이 기기에 저장해요. 이야기 진행은 이번 창에서 이어가요.',
-  }[status.phase] || '이 기기의 연습 기록을 저장해요.');
+    offline: `아직 보내지 못한 기록 ${status.queued || 0}개를 이 기기에 모아 두었어요.`,
+    blocked: '학습 기록을 보내지 못했어요. WORLD 계정을 확인해 주세요.',
+    local: '이 계정은 기록을 이 기기에만 저장해요. 이야기는 이 창에서만 이어져요.',
+  }[status.phase] || '연습 기록은 이 기기에 저장돼요.');
   if (scope.scope === 'device' && location.port === '5213') $('#account-status').textContent += ' 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요.';
   const accountUrl = location.pathname.startsWith('/story-classroom/')
     ? new URL('../synk-account/client.html?product=world', location.href)
@@ -501,8 +501,8 @@ function showResults() {
   $('#r-stars').setAttribute('aria-label', `별 3개 중 ${stars}개`);
   $('#r-mongle').src = stars >= 2 ? 'kit/brand/mongle-cheer.webp' : 'kit/brand/mongle-smile.webp';
   const story = recs.filter((r) => r.mode === 'story').length, review = recs.filter((r) => r.mode === 'review').length;
-  $('#r-kicker').textContent = review ? `이야기 속 부탁 ${story}개 · 새 글 ${review}개` : `선생님이 돌아왔다 · 부탁 ${story}개`;
-  $('#r-note').textContent = [`도움 없이 처음 해낸 부탁 ${independent}개`, `힌트 ${hinted}개`, `음성으로 들은 부탁 ${heard}개`].join(' · ');
+  $('#r-kicker').textContent = review ? `이야기 속 부탁 ${story}개 · 바뀐 부탁 ${review}개` : `선생님이 돌아왔다 · 부탁 ${story}개`;
+  $('#r-note').textContent = [`혼자 한 번에 해낸 부탁 ${independent}개`, `힌트 ${hinted}개`, `음성으로 들은 부탁 ${heard}개`].join(' · ');
   renderLog(); renderSkills();
   $('#r-hub').hidden = false;
   $('#r-hub').href = location.pathname.startsWith('/story-classroom/') ? '../learning-hub/' : 'http://127.0.0.1:4280/learning-hub/';
@@ -529,7 +529,7 @@ function renderLog() {
     log.append(li);
   }
 }
-const SKILL_SHORT = { 'ko.reading.detail': '대상·위치', 'ko.reading.negation': '부정·변경', 'ko.reading.sequence': '행동 순서' };
+const SKILL_SHORT = { 'ko.reading.detail': '누가·무엇을·어디에', 'ko.reading.negation': '~지 말고·~이 아니라', 'ko.reading.sequence': '먼저 할 일' };
 const skillName = (m) => SKILL_SHORT[missionMetadata(m).skillId] || '';
 
 function renderSkills() {
@@ -550,8 +550,8 @@ function renderSkills() {
     ul.append(li);
   }
   $('#r-next-reason').textContent = focus
-    ? `‘${focus.label}’를 조금 더 연습하면 좋아요. 한 번 더 놀면 같은 이야기 속 부탁을 다시 읽어요.`
-    : '이야기는 같아도, 처음부터 다시 읽으면 더 빨리 움직일 수 있어요. 마지막 새 글도 다시 만나요.';
+    ? `‘${focus.label}’를 한 번 더 해 보면 좋아요. 다시 하면 같은 이야기의 부탁을 처음부터 읽어요.`
+    : '같은 이야기라도 다시 읽으면 더 빨라져요. 마지막의 바뀐 부탁도 다시 나와요.';
 }
 
 /* ── 멈춤·수첩 ── */
