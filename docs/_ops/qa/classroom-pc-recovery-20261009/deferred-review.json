@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "recordDate": "2026-10-09",
+  "purpose": "교실 PC 오류 복구 시험판의 게시 후 Claude 최종 검수를 재개하기 위한 인수 기록",
+  "userAuthorization": {
+    "quote": "클로드 검수는 나중에 받을게.  저장만해주고\n일단 전부 배포하고 종료해줘",
+    "scope": "이번 교실 PC 오류 복구 설치 시험판은 검수를 뒤로 미루고 배포한다. 공통 검수 원칙 자체를 변경하는 지시로 확대하지 않는다.",
+    "reviewDeferred": true,
+    "reviewApproved": false
+  },
+  "source": {
+    "repository": "SYNK-appsscript",
+    "worktree": "C:/Users/q1212/.codex/worktrees/classroom-pc-recovery/SYNK-appsscript",
+    "branch": "codex/classroom-pc-recovery-20261009",
+    "baselineCommit": "d932e135b7cda3e3067d8a8d0e8b9e7ff05dc621",
+    "finalProductCommit": "96bbfc169977ae867665343b497c29baccb5a007",
+    "observedDocumentationHead": "8ab7a4c42d2026c6bd81743a568a64ddf3b6b580",
+    "productChangesAfterFinalCommit": false,
+    "changedPaths": [
+      "tests/classroom-auth.test.js",
+      "tests/classroom-cli.test.js",
+      "tests/classroom-guide.test.js",
+      "tests/classroom-media.test.js",
+      "tests/classroom-obs.test.js",
+      "tests/fixtures/classroom-obs.lua",
+      "tools/classroom-media/README.md",
+      "tools/classroom-media/cli.js",
+      "tools/classroom-media/obs-completed.lua",
+      "tools/classroom-media/operator-guide.js",
+      "tools/classroom-media/worker.js",
+      "tools/classroom-media/교실세팅.md"
+    ]
+  },
+  "reviewScope": [
+    "영구 동기화 충돌 및 retryable:false 응답의 작업별 syncPaused 저장, 재시작 후 요청 중단, 다른 작업 진행, confirmed-resolved를 통한 명시적 재개와 다음 실행의 정상 소유권 확인",
+    "OBS 실제 녹화 시작·종료 시각을 사용하는 완료 manifest, 예정 시각 전 종료 등록, 0초·역행 거절 시 원본과 점유 보존, 라이브 백업 녹화 시각과 방송 시각의 구분",
+    "명백한 HTTP 401에서 토큰 갱신·채널 재확인·재현 가능한 본문의 한 번 재전송, 재401 토큰 폐기, 동시 갱신 공유, 네트워크·시간초과·5xx 및 응답 분실의 비재전송",
+    "최종 96bbfc169의 인증 갱신 실패 안내를 포함한 CLI·작업자 설명과 복구 순서",
+    "확정 소스와 설치 ZIP 내용 일치, 상대 의존성, 기존 state/inbox/recordings·설정·.in-use·원본 보존 안내"
+  ],
+  "priorReviewAttempt": {
+    "record": "claude-review.json",
+    "requestedModel": "claude-opus-5-5",
+    "requestedEffort": "max",
+    "attemptedCommit": "9972ed5ac8618ad7280e940223b993809736b93e",
+    "result": "You've hit your session limit · resets 10:30am (Asia/Seoul)",
+    "is_error": true,
+    "exitCode": 1,
+    "reportedModels": [],
+    "completed": false,
+    "approved": false,
+    "finalProductCommitWasReviewed": false,
+    "note": "10:30은 당시 제한 응답의 안내이며 현재 사용 가능 여부를 확인한 기록이 아니다. subtype:success는 이 오류 응답을 승인으로 바꾸지 않는다."
+  },
+  "regressionEvidence": {
+    "testRecord": "pc-tests-final.txt",
+    "tests": 120,
+    "pass": 120,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "includes": [
+      "YouTube 인증 모의 응답 시험 22건",
+      "실제 Lua 실행 시험 14건"
+    ],
+    "verificationMethod": "기존 최종 시험 로그와 현재 확정 소스 경로를 읽어 확인했다. 이 인수 기록 작성 중 시험을 재실행하지 않았다.",
+    "doesNotProve": "실제 YouTube 계정에서 401 복구 성공, 실제 OBS·카메라·마이크 송출, 학생 단말 설치·로그인·시청 성공을 증명하지 않는다."
+  },
+  "package": {
+    "path": "C:/Users/q1212/Documents/SYNK-appsscript/.tmp/classroom-pc-recovery-20261009/synk-classroom-pc-recovery-96bbfc1.zip",
+    "sourceCommit": "96bbfc169977ae867665343b497c29baccb5a007",
+    "bytes": 81032,
+    "sha256": "6f9a6ab9ca76a1e7438efb627519e23cbe0f6f39d10af20f3a77c910ac689295",
+    "sizeAndHashRecheckedDuringHandoff": true,
+    "verificationRecord": "package-verification.json",
+    "archiveEntries": 15,
+    "sourceFiles": 12,
+    "existingVerification": {
+      "allArchiveBytesMatch": true,
+      "relativeDependenciesPresent": 4,
+      "packageHelpPassed": true,
+      "unsetExampleRejected": true,
+      "commonCredentialMarkerHits": 0
+    },
+    "note": "일반 자격증명 패턴 검사만으로 모든 종류의 비밀정보 부재를 증명하지 않는다. 실제 설정·자격증명·학생 자료와 런타임 설치 프로그램은 패키지 대상이 아니다.",
+    "artifactRole": "historical-local-candidate-before-user-review-deferral"
+  },
+  "resumeReview": {
+    "requiredInterface": "공식 Claude Code 또는 공식 Claude 앱",
+    "cliModelArguments": "--model claude-opus-5-5 --effort max",
+    "input": "기준 d932e135b7cda3e3067d8a8d0e8b9e7ff05dc621부터 최종 제품 96bbfc169977ae867665343b497c29baccb5a007까지의 전체 변경, 관련 전체 소스와 회귀 시험, publishedPackage의 최종 게시 ZIP 및 게시 검증을 검수한다. package는 이전 로컬 후보이며 최종 게시 파일이 아니다.",
+    "oldPrompt": "review-prompt.txt는 9972ed5ac 대상의 과거 자료다. 그대로 재사용해 최종 소스 검수가 됐다고 보고하지 않는다.",
+    "acceptance": "실제 모델·노력 수준·오류 여부·완료 여부·검수 대상 커밋을 기록하고, 실제 지적이 있으면 재현·수정·관련 시험·필요한 새 패키지와 후속 검수를 수행한다.",
+    "doNot": [
+      "사용량 제한 응답을 검수 승인으로 처리하지 않는다.",
+      "다른 모델로 자동 대체하지 않는다.",
+      "이 기록만으로 배포·현장 시험 완료를 주장하지 않는다."
+    ]
+  },
+  "remainingOutsideCodeVerification": [
+    "사용자가 뒤로 미룬 공식 Claude 최종 검수",
+    "실제 교실 PC·카메라·마이크·테스트 학생 계정 및 대상 반·수강생·시청기간 확정",
+    "별도 시험 기기 설치와 실제 로그인, 송출 채널·활성 스트림 송출원, 라이브·끊김 복구·복습 재생 및 미초대 계정 차단 확인"
+  ],
+  "deploymentBoundary": {
+    "publicationHandledBy": "부모 작업에서 2026-10-09 07:47 KST GitHub 비공개 설치 시험판 게시 및 5파일 다운로드 대조 완료",
+    "publicationVerifiedInThisRecord": true,
+    "appApkProductCommitUnchanged": "fc004505f7fb914330f779b6cc5efac18386476c",
+    "appOrServerChangeRequiredByThisPcFix": false,
+    "actualStudentAccessOrBroadcastActivationAuthorizedByThisRecord": false,
+    "installationNote": "기존 worker와 OBS 녹화 종료 후 프로그램을 갱신하고 Lua를 다시 불러온다. state/inbox/recordings·설정·.in-use·원본은 설치 ZIP으로 덮어쓰거나 삭제하지 않는다.",
+    "verificationRecord": "publication-published-verification.json"
+  },
+  "publishedPackage": {
+    "artifactRole": "current-published-installation-prerelease",
+    "releaseUrl": "https://github.com/unmet23-lab/SYNK-talk/releases/tag/classroom-rehearsal-20261009-pc96bbfc1",
+    "file": "synk-classroom-pc-recovery-96bbfc1.zip",
+    "bytes": 81270,
+    "sha256": "315c6779b486ebe4ced381c5d2442df295c95099b99386f2ffcdbca675e67bfc",
+    "sourceCommit": "96bbfc169977ae867665343b497c29baccb5a007",
+    "archiveEntries": 15,
+    "sourceFiles": 12,
+    "programBytesUnchanged": true,
+    "differenceFromHistoricalCandidate": "source-manifest.json과 설치준비.txt의 게시·검수연기 상태만 갱신. 프로그램 파일은 96bbfc169와 일치.",
+    "inputRecord": "publication-inputs.json",
+    "verificationRecord": "publication-published-verification.json"
+  },
+  "publicationRecordedAt": "2026-10-08T22:48:48.616Z"
+}

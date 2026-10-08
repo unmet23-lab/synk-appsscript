@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-08T22:45:13.576Z",
+  "method": "GET only individual production function metadata follow-up",
+  "functions": [
+    {
+      "slug": "classroom",
+      "version": 4,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1791495832798,
+      "created_at": 1791485341903
+    },
+    {
+      "slug": "classroom-sync",
+      "version": 4,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "updated_at": 1791495843233,
+      "created_at": 1791485344704
+    }
+  ],
+  "assessment": "Both individual production endpoints confirm version 4, ACTIVE, prior expected JWT configuration, unchanged updated_at. Full body SHA matches previously AST-validated fc00450 in server-recheck.json. Version increase cause was not established; no mutation performed."
+}

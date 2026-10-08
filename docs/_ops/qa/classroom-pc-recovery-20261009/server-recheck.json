@@ -1,0 +1,72 @@
+{
+  "at": "2026-10-08T22:44:39.774Z",
+  "method": "GET only: current Management API function metadata and full body SHA256 compared with previous fc00450 deployed source proof",
+  "expectedHead": "fc004505f7fb914330f779b6cc5efac18386476c",
+  "functions": [
+    {
+      "target": "rehearsal",
+      "slug": "classroom",
+      "retrievedAt": "2026-10-08T22:44:41.403Z",
+      "version": 3,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1791495775711,
+      "metadataEqual": true,
+      "bodyBytes": 342840,
+      "bodySha256": "3eb1b7b5a17ab07961c52dd091993ca0ac96a4f98460df23c5fcad2ab63aaeef",
+      "expectedBodySha256": "3eb1b7b5a17ab07961c52dd091993ca0ac96a4f98460df23c5fcad2ab63aaeef",
+      "bodySha256Equal": true,
+      "pass": true
+    },
+    {
+      "target": "rehearsal",
+      "slug": "classroom-sync",
+      "retrievedAt": "2026-10-08T22:44:42.804Z",
+      "version": 3,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "updated_at": 1791495784736,
+      "metadataEqual": true,
+      "bodyBytes": 325571,
+      "bodySha256": "632673a6538e90573286a8675f77356316a9630f13348c09f95295d0e22a6585",
+      "expectedBodySha256": "632673a6538e90573286a8675f77356316a9630f13348c09f95295d0e22a6585",
+      "bodySha256Equal": true,
+      "pass": true
+    },
+    {
+      "target": "production",
+      "slug": "classroom",
+      "retrievedAt": "2026-10-08T22:44:44.170Z",
+      "version": 4,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1791495832798,
+      "metadataEqual": false,
+      "bodyBytes": 342840,
+      "bodySha256": "3eb1b7b5a17ab07961c52dd091993ca0ac96a4f98460df23c5fcad2ab63aaeef",
+      "expectedBodySha256": "3eb1b7b5a17ab07961c52dd091993ca0ac96a4f98460df23c5fcad2ab63aaeef",
+      "bodySha256Equal": true,
+      "pass": false
+    },
+    {
+      "target": "production",
+      "slug": "classroom-sync",
+      "retrievedAt": "2026-10-08T22:44:45.339Z",
+      "version": 4,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "updated_at": 1791495843233,
+      "metadataEqual": false,
+      "bodyBytes": 325571,
+      "bodySha256": "632673a6538e90573286a8675f77356316a9630f13348c09f95295d0e22a6585",
+      "expectedBodySha256": "632673a6538e90573286a8675f77356316a9630f13348c09f95295d0e22a6585",
+      "bodySha256Equal": true,
+      "pass": false
+    }
+  ],
+  "limits": [
+    "No database, secret, access, function mutation performed.",
+    "Metadata and byte equality do not prove actual device broadcast or student playback."
+  ],
+  "pass": false
+}

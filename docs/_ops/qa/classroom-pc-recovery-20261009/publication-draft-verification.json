@@ -1,0 +1,78 @@
+{
+  "at": "2026-10-08T22:46:55.892Z",
+  "stage": "draft",
+  "pass": true,
+  "repo": "unmet23-lab/SYNK-talk",
+  "isPrivate": true,
+  "url": "https://github.com/unmet23-lab/SYNK-talk/releases/tag/untagged-0468c9a642697da59c7d",
+  "tag": "classroom-rehearsal-20261009-pc96bbfc1",
+  "targetCommit": "fc004505f7fb914330f779b6cc5efac18386476c",
+  "isDraft": true,
+  "isPrerelease": true,
+  "publishedAt": null,
+  "pcSourceCommit": "96bbfc169977ae867665343b497c29baccb5a007",
+  "pcBranchCommit": "8ab7a4c42d2026c6bd81743a568a64ddf3b6b580",
+  "pcCodePreserved": true,
+  "documentationOnlySincePcSource": [
+    "docs/_ops/qa/classroom-pc-recovery-20261009/README.md",
+    "docs/_ops/qa/classroom-pc-recovery-20261009/claude-review.json",
+    "docs/_ops/qa/classroom-pc-recovery-20261009/package-verification.json",
+    "docs/_ops/qa/classroom-pc-recovery-20261009/pc-tests-final.txt",
+    "docs/_ops/qa/classroom-pc-recovery-20261009/shared-source-preservation.json"
+  ],
+  "tagCommit": null,
+  "reviewCompleted": false,
+  "reviewDeferredByUser": true,
+  "files": [
+    {
+      "name": "SYNK-WORLD-classroom-rehearsal-arm64-fc00450.apk",
+      "bytes": 60976694,
+      "sha256": "4df6a9c685fb1b9e8f6f558e1d4625a5ed8dd32d3fb6b12275da30c54dc598a9",
+      "downloadedBytes": 60976694,
+      "downloadedSha256": "4df6a9c685fb1b9e8f6f558e1d4625a5ed8dd32d3fb6b12275da30c54dc598a9",
+      "remoteDigest": "sha256:4df6a9c685fb1b9e8f6f558e1d4625a5ed8dd32d3fb6b12275da30c54dc598a9",
+      "downloadUrl": "https://github.com/unmet23-lab/SYNK-talk/releases/download/untagged-0468c9a642697da59c7d/SYNK-WORLD-classroom-rehearsal-arm64-fc00450.apk",
+      "pass": true
+    },
+    {
+      "name": "synk-classroom-pc-recovery-96bbfc1.zip",
+      "bytes": 81270,
+      "sha256": "315c6779b486ebe4ced381c5d2442df295c95099b99386f2ffcdbca675e67bfc",
+      "downloadedBytes": 81270,
+      "downloadedSha256": "315c6779b486ebe4ced381c5d2442df295c95099b99386f2ffcdbca675e67bfc",
+      "remoteDigest": "sha256:315c6779b486ebe4ced381c5d2442df295c95099b99386f2ffcdbca675e67bfc",
+      "downloadUrl": "https://github.com/unmet23-lab/SYNK-talk/releases/download/untagged-0468c9a642697da59c7d/synk-classroom-pc-recovery-96bbfc1.zip",
+      "pass": true
+    },
+    {
+      "name": "INSTALL.txt",
+      "bytes": 3707,
+      "sha256": "c7f091dd7be551fd2e2291ce9f76a36d0fe19a23975e0cd931d3937302e9dec6",
+      "downloadedBytes": 3707,
+      "downloadedSha256": "c7f091dd7be551fd2e2291ce9f76a36d0fe19a23975e0cd931d3937302e9dec6",
+      "remoteDigest": "sha256:c7f091dd7be551fd2e2291ce9f76a36d0fe19a23975e0cd931d3937302e9dec6",
+      "downloadUrl": "https://github.com/unmet23-lab/SYNK-talk/releases/download/untagged-0468c9a642697da59c7d/INSTALL.txt",
+      "pass": true
+    },
+    {
+      "name": "release-manifest.json",
+      "bytes": 2454,
+      "sha256": "dcaa6695e5df547066e01fc867e2275176c84aab8b1c599c1b6c8bcd26688640",
+      "downloadedBytes": 2454,
+      "downloadedSha256": "dcaa6695e5df547066e01fc867e2275176c84aab8b1c599c1b6c8bcd26688640",
+      "remoteDigest": "sha256:dcaa6695e5df547066e01fc867e2275176c84aab8b1c599c1b6c8bcd26688640",
+      "downloadUrl": "https://github.com/unmet23-lab/SYNK-talk/releases/download/untagged-0468c9a642697da59c7d/release-manifest.json",
+      "pass": true
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 390,
+      "sha256": "67622bafc1fd779c37a550a47661199ea35227c67aba44a536631ef923317f34",
+      "downloadedBytes": 390,
+      "downloadedSha256": "67622bafc1fd779c37a550a47661199ea35227c67aba44a536631ef923317f34",
+      "remoteDigest": "sha256:67622bafc1fd779c37a550a47661199ea35227c67aba44a536631ef923317f34",
+      "downloadUrl": "https://github.com/unmet23-lab/SYNK-talk/releases/download/untagged-0468c9a642697da59c7d/SHA256SUMS.txt",
+      "pass": true
+    }
+  ]
+}

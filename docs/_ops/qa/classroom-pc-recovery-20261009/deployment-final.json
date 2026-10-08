@@ -1,0 +1,76 @@
+{
+  "at": "2026-10-08T22:48:48.626Z",
+  "status": "private-installation-prerelease-published",
+  "release": {
+    "url": "https://github.com/unmet23-lab/SYNK-talk/releases/tag/classroom-rehearsal-20261009-pc96bbfc1",
+    "tag": "classroom-rehearsal-20261009-pc96bbfc1",
+    "publishedAt": "2026-10-08T22:47:08Z",
+    "private": true,
+    "prerelease": true,
+    "isDraft": false,
+    "sourceCommit": "fc004505f7fb914330f779b6cc5efac18386476c"
+  },
+  "pc": {
+    "sourceCommit": "96bbfc169977ae867665343b497c29baccb5a007",
+    "branch": "codex/classroom-pc-recovery-20261009",
+    "artifact": "synk-classroom-pc-recovery-96bbfc1.zip",
+    "bytes": 81270,
+    "sha256": "315c6779b486ebe4ced381c5d2442df295c95099b99386f2ffcdbca675e67bfc",
+    "testRecord": "pc-tests-final.txt",
+    "tests": 120,
+    "passed": 120,
+    "failed": 0,
+    "skipped": 0,
+    "testsRerunDuringPublication": false,
+    "productCodeChangedDuringPublication": false
+  },
+  "delivery": {
+    "verification": "publication-published-verification.json",
+    "input": "publication-inputs.json",
+    "files": 5,
+    "downloadSizeAndSha256Match": true,
+    "remoteDigestsMatch": true,
+    "tagSourceMatches": true,
+    "appApkUnchanged": true,
+    "sourceBranchSavedBeforePublication": true
+  },
+  "server": {
+    "record": "server-recheck.json",
+    "followup": "server-version-followup.json",
+    "functions": 4,
+    "allBodiesMatchVerifiedFc00450": true,
+    "allActive": true,
+    "jwtSettingsPreserved": true,
+    "currentVersions": {
+      "rehearsal": 3,
+      "production": 4
+    },
+    "previousRecordedVersions": {
+      "rehearsal": 3,
+      "production": 2
+    },
+    "strictMetadataComparisonPassed": false,
+    "versionDriftCauseKnown": false,
+    "versionDriftNote": "운영 버전만 기존 v2에서 현재 v4로 다름. 개별 GET도 v4이며 본문 SHA·ACTIVE·JWT·updated_at 동일. 원인 미확인; 코드 일치와 메타데이터 비교 결과를 구분한다.",
+    "remoteMutationInThisPublication": false
+  },
+  "review": {
+    "completed": false,
+    "approved": false,
+    "deferredByUser": true,
+    "record": "deferred-review.json",
+    "authorizationScope": "이번 교실 PC 복구 설치 시험판만 검수 후행. 공통 원칙 변경 없음.",
+    "automaticReviewOrReminderScheduled": false
+  },
+  "pending": [
+    "공식 Claude 최종 검수",
+    "실제 교실 장비·대상 반·학생 계정·시청기간 확정",
+    "실제 기기 설치·로그인·송출·끊김 복구·복습·미초대 계정 차단 시험"
+  ],
+  "boundaries": [
+    "기존 비공개 설치 시험판 경로의 배포이며 스토어/OTA 배포가 아니다.",
+    "실제 교실 설치·방송·학생 권한·비밀값을 활성화하지 않았다.",
+    "기존 로컬 상태·원본·다른 작업 변경 보존; 공용 저장소 전체 커밋하지 않음."
+  ],
+  "resumeAt": "README.md"
+}
