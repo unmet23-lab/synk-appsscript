@@ -1,0 +1,96 @@
+{
+  "checkedAt": "2026-10-08T20:46:31.895Z",
+  "status": "production-sso-v8-session-and-data-accepted",
+  "manifestSHA256": "e696b9efeed78191a6e4619665bdab885abb1483dcb05cc4b5c193c44cf0fcef",
+  "image": "sha256:021805a5c67eb9942d1b6bbada9e0e21e2bfae94195e0a58015aa91c2d7f1a3e",
+  "runtimeFiles": [
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/app.js",
+      "bytes": 132007,
+      "sha256": "fd23967557e2c4fe059111c3dc22550b715fb577fb394678662d5d7e84af0d0b",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/synk-id.js",
+      "bytes": 22522,
+      "sha256": "91e5eb7f57b4b2c5ae41911ae4191107e0da9d2710d81a0e5f4049cb959ad5bc",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs",
+      "bytes": 110822,
+      "sha256": "4881a31ebf8e0c55a4829fcf3994b7903e00dc2d045f0d954f8f775a287e9ece",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/synk-identity.mjs",
+      "bytes": 25203,
+      "sha256": "d3cf2b490b7ca5ec43bb7fc4222e894173f4e56b086bc952d2cd9cc7a235092e",
+      "role": "runtime-source"
+    }
+  ],
+  "serviceAndTimers": {
+    "synk-company.service": "active",
+    "synk-company-health.timer": "active",
+    "synk-company-backup.timer": "active",
+    "synk-company-backup-watch.timer": "active"
+  },
+  "publicAssets": 17,
+  "tests": {
+    "linux": {
+      "passed": 766,
+      "failed": 0,
+      "skipped": 0
+    },
+    "windows": {
+      "passed": 764,
+      "failed": 0,
+      "skipped": 2
+    },
+    "isolatedAuthAssertions": 219,
+    "normalAuthReplacements": 4,
+    "branchIntegration": 102
+  },
+  "actualBrowser": {
+    "staffLoginRetained": true,
+    "customerLoginRetained": true,
+    "memoAttachmentAndOriginalDraftPreserved": true,
+    "newBusinessWrites": 0
+  },
+  "sessionProof": {
+    "sameSessionCsrfTTL": true,
+    "originalKeysAndDataUnchanged": true
+  },
+  "logicalComparison": {
+    "allowedChanges": {
+      "schemaChanges": 0,
+      "staffCiphertextReencryptedSamePlaintext": 1,
+      "tokensExpiredBeforeBootDeleted": 1
+    },
+    "issueCodes": [],
+    "reportWritten": true,
+    "sourceFilesUnchanged": true,
+    "status": "existing-business-data-preserved"
+  },
+  "backup": {
+    "at": "2026-10-09T05:32:00+09:00",
+    "manualRuns": 1,
+    "sha256": "afef681afdfcfd6a9a655ba6004b47b542394d4c17d27aab29329c7fa13c020f",
+    "uploadedMarkerVerified": true,
+    "sameExecutionAttributionVerified": true,
+    "independentObjectDownload": false
+  },
+  "review": {
+    "completed": false,
+    "deferredByDirectUser": true,
+    "scope": "SSO only",
+    "evidence": "../company-linux-v7/user-authorization.json"
+  },
+  "sourceCommit": "6e1855a644737616a88c1c06cc38db8fe97e06ab",
+  "sourceBranch": "codex/company-cloud-push-20261009",
+  "limitations": [
+    "Full VM reboot and physical phone/PC-off/push were not tested here.",
+    "Actual installed native Platform-to-company launch belongs to downstream web/PC owners.",
+    "Messenger send-recovery v5 is not deployed; separate exact Linux and official review gates remain."
+  ]
+}

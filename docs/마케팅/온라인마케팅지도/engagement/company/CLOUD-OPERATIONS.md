@@ -107,3 +107,12 @@ AI는 현재 OpenAI 추출 어댑터를 유지한다. **Google 크레딧으로 O
 공식 Codex heartbeat `synk-2`는 **03:55 KST 한 번만** 새 결과를 읽고 필요한 경우 기존 권한으로 GCS 객체를 읽어 대조하는 후속 작업이다. 로컬 PC와 Codex 앱이 켜져 있어야 이 후속이 실행되며, 클라우드 백업과 03:50 서버 확인기는 PC와 독립적으로 실행된다. 서비스 재시작·수동 백업·배포·정책 변경·유료 AI를 수행하는 예약이 아니며 주기 감시로 바꾸지 않는다.
 
 2026-10-09 후속 완료: 위 예약은 03:55에 실제 실행되어 진행 중인 마지막 인수에 합쳤다. 백업 확인 뒤 서비스 재시작1회와 직원 무재로그인 인수까지 완료했고, 공식 도구에서 PAUSED 처리하여 더 실행하지 않는다. 원래 일일 서버 백업·30분 감시 타이머는 계속 운영한다.
+
+
+## 10-09 05:45 통합 로그인 추가 반영 완료
+
+회사 SSO v8 `e696b9efeed7`(440파일/image `021805a5c67e…`)를 기존20fda에서 반영했다. Linux766/766·Windows764통과/2symlinkskip·인증219/4정상교체 통과. 계정 전환 중 늦은 응답의 이전 계정 자료 노출을 수정했다. 05:32 수동백업1회: 같은 boot/unit/cgroup/root PID/실행시간으로 완료 로그를 귀속하고 archive SHA·업로드 marker를 대조했다. journald의 파생 invocation 필드가 빠진 원래 실패 기록도 보존하며 중복 백업은 하지 않았다.
+
+정지 사본 대조에서 schema0변경, 기동 전 만료 token1삭제와 평문/연결이 같은 직원 암호문1재암호화만 확인했다. capture SSH 연결은 먼저 끝났지만 원격 사본·안전 재개 영수증을 회수했고, 05:45 main/3timers active·healthy, 공개17파일 SHA/MIME 일치다. 기존 직원/고객 탭 reload 후 재로그인0·원래 메모/111B Drive첨부/23:33 상담 초안 보존, 직원7/고객1의 동일session/CSRF/TTL·원키/VAPID/업무자료 대조 통과. 유료AI/BG0 유지. SSO 검수는 직접 사용자 보류 지시이며 PASS가 아니다. 메신저 복구 v5는 별도 검수·Linux 인수 중이고 아직 운영반영하지 않았다.
+
+최신 근거: `.tmp/platform-unified-login-20261009/company-linux-v8/FINAL-ACCEPTANCE.json`, `../company-linux-v7/COORDINATION.json`. 실제 새 네이티브 Platform 입구 인수는 공개 웹→PC 담당이 이어 한다. 폰/PC종료/실푸시·전체클라우드Claude·실제09시마감은 별도다.
