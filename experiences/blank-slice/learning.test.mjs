@@ -40,7 +40,8 @@ test('이전 판을 포함한 WORLD 과제는 남은 한 문항으로 조용히 
   const items = chosen.map(itemMetadata);
   const target = { ...items[0], items, requiredAttempts: 3 };
   assert.deepEqual(assignmentItems(target), chosen, '현재 판은 모두 출제한다');
-  const old = { ...target, items: items.map(m => ({ ...m, itemKey: m.itemKey.replace(/\.v2$/, '.v1') })) };
+  // 판이 2 이상인 문항(v06·v07)을 한 판 앞의 키로 바꾼 옛 과제
+  const old = { ...target, items: items.map(m => ({ ...m, itemKey: m.itemKey.replace(/\.v(\d+)$/, (s, n) => (n > 1 ? `.v${n - 1}` : s)) })) };
   assert.deepEqual(assignmentItems(old), [], '현재 남아 있는 v08 하나만 실행하면 과제를 끝낼 수 없다');
   assert.deepEqual(assignmentItems({ ...target, items: items.slice(1) }), [], '목표 수보다 적은 문항도 거절한다');
 });
@@ -126,15 +127,15 @@ const CONTENT = {
   p04: [1, 'c5f4af41e4a6'],
   v05: [1, '8f7ead7d72d5'],
   p05: [1, '55dbf3f2d14a'],
-  v06: [2, '2f890b33070c'],
-  v07: [2, 'a0d087d69f1e'],
+  v06: [3, '370cd32681e5'],
+  v07: [3, 'b522a5b239e0'],
   v08: [1, '9eb8ebb9959d'],
   g01: [1, '5e125a3d06f0'],
   g02: [1, '8496fc8d2e0d'],
-  e01: [2, '57e0ecd478c0'],
+  e01: [3, '8913f753ba8d'],
   v09: [1, '0fda09b8b43a'],
   v10: [1, 'a987cdd4911c'],
-  e02: [1, '20fb95451fd9'],
+  e02: [2, 'd9350fd68ec2'],
   v11: [1, 'b223acacf5d5'],
   v12: [1, '2d66771c5832'],
   e03: [1, '6b447533fc37'],
@@ -143,8 +144,8 @@ const CONTENT = {
   e05: [1, '6d79026fa7b5'],
   a01: [1, '7f82e1c50c50'],
   e06: [1, 'b6467f246f68'],
-  e07: [1, 'ab79a664326e'],
-  e08: [2, '87cb834d5cf4'],
+  e07: [2, '389c93441d43'],
+  e08: [3, 'b48cca394152'],
   g03: [1, '05b64b59a857'],
   e09: [1, 'eb2f92057844'],
   e10: [1, '3aad530c9105'],
