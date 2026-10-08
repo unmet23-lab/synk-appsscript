@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { createPack, decompose } from './pack.mjs';
+import { songById, tileLetters, lettersIn, cueAt } from './songs.mjs';
 import { josa } from './kit/josa.mjs';
 import { emptyProgress, readProgress, planSession, answer, meet, finishSession, view, letterOf, retryItem, nextLetters, canPlayMore, graduationReady, graduate, SETTINGS } from './core.mjs';
 
@@ -375,4 +376,29 @@ test('오답 안내의 조사는 끝 음절의 받침을 따른다 — 각이 �
   // 글자 만나기의 짝 안내는 낱자를 이름으로 읽는다: ㅂ과 ㅍ(피읖)은 짝, ㅏ(아)는
   assert.equal(josa(pack.byId.get('c-p').glyph, '은', '는'), '은');
   assert.equal(josa(pack.byId.get('v-a').glyph, '은', '는'), '는');
+});
+
+test('받침 노래: 신호가 겹치지 않고, 칸 글자는 모두 이 판의 글자이며, 결과 음절은 바탕 + 받침이다', () => {
+  const song = songById('batchim');
+  assert.ok(song && song.cues.length > 30);
+  let prev = 0;
+  for (const cue of song.cues) {
+    assert.ok(cue.t < cue.end && cue.t >= prev - 1e-6, `${cue.text} ${cue.t}~${cue.end}`);
+    prev = cue.end;
+    for (const m of (Array.isArray(cue.at) ? cue.at : [])) assert.ok(m >= cue.t && m < cue.end, `${cue.text} 표시 ${m}`);
+    const n = cue.kind === 'batchim' ? 3 : cue.kind === 'sweep' ? cue.letters.length : 0;
+    for (let i = 0; i < n; i += 1) for (const id of tileLetters(cue, i)) assert.ok(pack.byId.has(id), `${cue.text} 칸 ${i}: ${id}`);
+    if (cue.kind === 'batchim') {
+      const [c, v] = tileLetters(cue, 0);
+      const made = c && pack.byId.get(c).role === 'consonant' ? pack.syllable(c, v, cue.final) : pack.syllable(null, c, cue.final);
+      assert.equal(made, cue.made, cue.text);
+      assert.equal(pack.byId.get(cue.final).unit, 'U6');
+    }
+    if (cue.kind === 'sweep') cue.texts.forEach((ch, i) => assert.deepEqual(Object.values(pack.lettersIn(ch)).filter(Boolean), tileLetters(cue, i), ch));
+  }
+  // 회차 끝 장단 구간에 받침 넷이 다 나오고, 1절 첫 줄 「아 은 안」의 세 걸음이 노래 시각에 맞는다
+  const met = lettersIn(song, ...song.review);
+  for (const f of ['f-n', 'f-r', 'f-m', 'f-ng']) assert.ok(met.has(f), f);
+  assert.deepEqual([11.0, 11.3, 11.6].map(t => cueAt(song, t).step), [0, 1, 2]);
+  assert.equal(cueAt(song, 11.6).cue.made, '안');
 });

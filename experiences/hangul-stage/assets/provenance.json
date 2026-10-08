@@ -1,5 +1,5 @@
 {
-  "note": "바이트 그대로 가져온 사본이다. 펠트 부품(kit)은 입장 검사의 줄이고 흰 띠를 걷은 사본(빈칸 베기와 같음), 몽글·글꼴·효과음도 입장 검사 사본에서 왔다(효과음은 docs/브랜드_사운드킷 원본과 같다). 원본 키트를 고치면 docs/디자인/펠트부품/README.md 「사본 맞추기」대로 이 사본도 맞춘다. 노래(songs/)는 Suno 공식 내려받기 원본 그대로다(songs/README.md, 음악 장부). 자음 그림 연상(mnemonic/)은 Codex로 구운 펠트 판에서 오렸다(지시문은 판과 같은 곳).",
+  "note": "바이트 그대로 가져온 사본이다. 펠트 부품(kit)은 입장 검사의 줄이고 흰 띠를 걷은 사본(빈칸 베기와 같음), 몽글·글꼴·효과음도 입장 검사 사본에서 왔다(효과음은 docs/브랜드_사운드킷 원본과 같다). 원본 키트를 고치면 docs/디자인/펠트부품/README.md 「사본 맞추기」대로 이 사본도 맞춘다. 노래(songs/)는 Suno 공식 내려받기 원본 그대로다(songs/README.md, 음악 장부). 자음 그림 연상(mnemonic/)과 받침 노래 낱말 그림(words/)은 Codex로 구운 펠트 판에서 오렸다(지시문은 판과 같은 곳).",
   "files": [
     {
       "path": "brand/mongle-curious.webp",
@@ -132,6 +132,12 @@
       "from": "Suno 644b446b-0387-48f2-a6cc-58163c232f4f · 공식 내려받기 MP3 2026-10-08(유호님 「C로 가자 받아서」) · 옛 곡 61cb6e8e가 후렴에서 음절을 두 번 불러(바바·타타) 줄마다 8음절 가사(후렴 끝 「짝!」)로 다시 만든 네 후보 가운데 유호님이 고름 · 원본 Documents/synk-vendor/hangul-songs/geu-a-ga-v2_644b446b.mp3",
       "bytes": 1923668,
       "sha256": "d56d0c4e133f7e2c169a70e8e7b76ee93b4463e976d9bcc097e9e36d85b4f374"
+    },
+    {
+      "path": "songs/batchim.mp3",
+      "from": "Suno c3610361-6e52-41f7-a758-feea28b4ec09 · 공식 내려받기 MP3 2026-10-08(유호님 「A로 가자」) · 받침 하나(ㄴ·ㄹ·ㅁ·ㅇ) 가사로 만든 네 후보 가운데 유호님이 고름 · 원본 Documents/synk-vendor/hangul-songs/batchim_c3610361.mp3",
+      "bytes": 1482876,
+      "sha256": "d5fc41c339e96deaf5aa813cad629ab9b3e54da8b94fa0e40784f388db5d1c9e"
     },
     {
       "path": "mnemonic/c-g.webp",
@@ -336,6 +342,48 @@
       "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-06 · 판 Documents/synk-vendor/hangul-mnemonic/sheet6_codex_20261006.png의 alarm clock · tools/펠트부품_오리기.py로 오림(물건마다 따로 오린 뒤 흰 테 걷기, 흰 판 걷기 --고치기)",
       "bytes": 140188,
       "sha256": "89a8fcfa4745faf94fcdf95f9a813cf427006a8a203f545a387a4318dbe3a5da"
+    },
+    {
+      "path": "words/mul.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-08 · 판 Documents/synk-vendor/hangul-mnemonic/sheet13_batchim_words_codex_20261008.png의 water drop · 물건마다 같은 크기 흰 판에 옮겨 tools/펠트부품_오리기.py로 오리고 330px 안으로 줄임(webp 무손실) · 받침 노래 낱말 그림",
+      "bytes": 99208,
+      "sha256": "fcc76f18053c18df3559cf7b109b166c3f5cac40d6896b2b311857a705e0f8ba"
+    },
+    {
+      "path": "words/bam.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-08 · 판 Documents/synk-vendor/hangul-mnemonic/sheet13_batchim_words_codex_20261008.png의 chestnut · 물건마다 같은 크기 흰 판에 옮겨 tools/펠트부품_오리기.py로 오리고 330px 안으로 줄임(webp 무손실) · 받침 노래 낱말 그림",
+      "bytes": 107968,
+      "sha256": "b9f98ea0a0b9130b8398624868f3d4831354a4cf91140ca4a1d3bd9a0b4847b8"
+    },
+    {
+      "path": "words/gang.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-08 · 판 Documents/synk-vendor/hangul-mnemonic/sheet13_batchim_words_codex_20261008.png의 river · 물건마다 같은 크기 흰 판에 옮겨 tools/펠트부품_오리기.py로 오리고 330px 안으로 줄임(webp 무손실) · 받침 노래 낱말 그림",
+      "bytes": 148472,
+      "sha256": "efabe80c0a146a502d91029482a7c43d2b83c32c3f9d4763ce1510deeb9ea076"
+    },
+    {
+      "path": "words/nun.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-08 · 판 Documents/synk-vendor/hangul-mnemonic/sheet13_batchim_words_codex_20261008.png의 snowflake · 물건마다 같은 크기 흰 판에 옮겨 tools/펠트부품_오리기.py로 오리고 330px 안으로 줄임(webp 무손실) · 받침 노래 낱말 그림",
+      "bytes": 127682,
+      "sha256": "6e33b91897dbceca848b8b1f1e9d89f0996229e36db3b2b47a3ae2568d387a56"
+    },
+    {
+      "path": "words/mal.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-08 · 판 Documents/synk-vendor/hangul-mnemonic/sheet13_batchim_words_codex_20261008.png의 horse · 물건마다 같은 크기 흰 판에 옮겨 tools/펠트부품_오리기.py로 오리고 330px 안으로 줄임(webp 무손실) · 받침 노래 낱말 그림",
+      "bytes": 97330,
+      "sha256": "b2ad9685ab71017b43a2da8b083f9914f865a04c4f0833db72cb91f2b3778441"
+    },
+    {
+      "path": "words/mom.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-08 · 판 Documents/synk-vendor/hangul-mnemonic/sheet13_batchim_words_codex_20261008.png의 body · 물건마다 같은 크기 흰 판에 옮겨 tools/펠트부품_오리기.py로 오리고 330px 안으로 줄임(webp 무손실) · 받침 노래 낱말 그림",
+      "bytes": 78572,
+      "sha256": "d8cedb26d0778b935ec24d71aa0778918e7b034dd8bf82c3160af2248d12f743"
+    },
+    {
+      "path": "words/bang.webp",
+      "from": "Codex 그림 만들기(ChatGPT 구독, API 아님) 2026-10-08 · 판 Documents/synk-vendor/hangul-mnemonic/sheet13_batchim_words_codex_20261008.png의 room · 물건마다 같은 크기 흰 판에 옮겨 tools/펠트부품_오리기.py로 오리고 330px 안으로 줄임(webp 무손실) · 받침 노래 낱말 그림",
+      "bytes": 132812,
+      "sha256": "ae982eb557ff9fc4e643019334b41441d7490aff80d096a8b39840b97377a56e"
     }
   ]
 }

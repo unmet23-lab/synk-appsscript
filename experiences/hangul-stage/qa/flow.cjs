@@ -152,9 +152,9 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     const ov = await overflow(page);
     check(`${width}px 입구 넘침 없음`, ov.doc <= 0 && ov.body <= 0 && ov.vv <= 0, JSON.stringify(ov));
     await shot(page, 'home', width, { fullPage: true });
-    // 노래로 배우기: 첫 화면의 노래 두 곡. 노래 화면은 노래 시각에 맞춰 글자를 켠다.
+    // 노래로 배우기: 첫 화면의 노래 세 곡(모음 댄스 · 그 아 가 · 받침 노래). 노래 화면은 노래 시각에 맞춰 글자를 켠다.
     const songCards = await page.locator('#songs .song-card').count();
-    check(`${width}px 첫 화면에 노래 두 곡`, songCards === 2, `노래 ${songCards}`);
+    check(`${width}px 첫 화면에 노래 세 곡`, songCards === 3, `노래 ${songCards}`);
     await page.locator('#songs .song-card').nth(0).click();
     await page.waitForSelector('#song:not([hidden])');
     const v1 = await page.evaluate(() => window.__hangulQA.songAt(12.2));
@@ -197,6 +197,21 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     const stageNow = await page.textContent('#song-stage');
     check(`${width}px 재생 중 화면이 노래 시각을 따라감(17.6초로 옮기면 ㄷ + ㅏ = 다)`, stageNow.includes('ㄷ') && stageNow.includes('다'), `${await page.evaluate(() => window.__hangulQA.songTime())} ${stageNow}`);
     await page.click('#song-play');
+    await page.click('#song-close');
+    await page.waitForSelector('#home:not([hidden])');
+    // 받침 노래(10-08): 「아 + ㄴ = 안」 세 걸음(받침 칸에 받침 표시·받침 소리 「은」), 「사 + ㄴ = 산」엔 낱말 그림, 후렴은 받침 음절 줄.
+    await page.locator('#songs .song-card').nth(2).click();
+    await page.waitForSelector('#song:not([hidden])');
+    const b1 = await page.evaluate(() => window.__hangulQA.songAt(11.3));
+    const batText = await page.textContent('#song-stage .song-blend');
+    const finalMark = await page.locator('#song-stage .song-tile.final').count();
+    check(`${width}px 받침 노래 11초: 아 + ㄴ = 안 세 걸음(받침 소리 「은」)`, b1.kind === 'batchim' && b1.step === 1 && /아/.test(batText) && /ㄴ/.test(batText) && /은/.test(batText) && finalMark === 1, `${JSON.stringify(b1)} ${batText}`);
+    const b2 = await page.evaluate(() => window.__hangulQA.songAt(16.4));
+    const wordPic = await page.waitForFunction(() => { const i = document.querySelector('#song-stage .song-mn'); return !!i && i.complete && i.naturalWidth > 0; }, null, { timeout: 3000 }).then(() => true, () => false);
+    check(`${width}px 받침 노래 16초: 사 + ㄴ = 산(결과 칸 위에 낱말 그림)`, b2.kind === 'batchim' && b2.step === 2 && wordPic && (await page.textContent('#song-stage .song-blend')).includes('산'), JSON.stringify(b2));
+    if (width === 390) await shot(page, 'song-batchim', width);
+    const b3 = await page.evaluate(() => window.__hangulQA.songAt(31.0));
+    check(`${width}px 받침 노래 후렴: 안 알 암 앙 산 물 밤 강`, b3.kind === 'sweep' && (await page.textContent('#song-stage .song-row')).includes('안알암앙산물밤강'), JSON.stringify(b3));
     await page.click('#song-close');
     await page.waitForSelector('#home:not([hidden])');
     const first = await playSession(page, { width, shots: true, wrongOnce: true });
@@ -296,6 +311,8 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     check(`${width}px 받침 회차: 짝·가르쳐 주기의 시범이 한 번씩`, ['pair', 'teach'].every(t => p4.demoSeen.filter(x => x === t).length === 1), p4.demoSeen.join(','));
     check(`${width}px 받침 만나기 카드에 받침으로 끝나는 낱말 그림(책 = 채 + ㄱ)`, fourth.finalMnemonics >= 1, `그림 ${fourth.finalMnemonics}`);
     check(`${width}px 받침 회차: 받침 ㄱ·ㄷ을 만나기 카드로(아 + 받침 → 음절)`, fourth.met.some(id => U7.includes(id)) && fourth.sums >= 1, `만남 ${fourth.met.join(',')}`);
+    const finishFinal = await page.textContent('#finish-song-label');
+    check(`${width}px 받침을 다룬 날 마무리 노래는 받침 노래`, finishFinal.includes('받침 노래'), finishFinal);
     await shot(page, 'finish-finals', width);
 
     // ── 셋째 판: 된소리·겹모음(U8·U9) ──

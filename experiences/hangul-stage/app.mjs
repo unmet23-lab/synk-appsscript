@@ -52,6 +52,8 @@ function tile(l, { onTap = true } = {}) {
   if (onTap && state !== 'unmet') b.addEventListener('click', () => audio.say(l.voice));
   return b;
 }
+// 첫 화면 노래 카드의 작은 글자(그 노래가 가르치는 것)
+const SONG_GLYPHS = { 'vowel-dance': 'ㅏㅓㅗㅜ', 'geu-a-ga': 'ㄱ+ㅏ', batchim: '아+ㄴ' };
 function renderHome() {
   const at = now(), v = view(progress, pack, at);
   const more = canPlayMore(progress, at), today = sessionsToday(progress, at);
@@ -77,7 +79,7 @@ function renderHome() {
   $('amounts-block').hidden = !!v.graduated;
   // 노래로 배우기: 처음 온 사람의 입구이자 언제든 복습(조사 10-04 — 노래는 입구·복습·보상, 읽게 만드는 것은 연습).
   $('songs').replaceChildren(...SONGS.map(s => el('button', { class: 'song-card', type: 'button', 'aria-label': `${s.title} 노래 듣기`, onclick: () => openSong(s.id) },
-    el('span', { class: 'song-glyphs', 'aria-hidden': 'true' }, s.id === 'vowel-dance' ? 'ㅏㅓㅗㅜ' : 'ㄱ+ㅏ'),
+    el('span', { class: 'song-glyphs', 'aria-hidden': 'true' }, SONG_GLYPHS[s.id] || ''),
     el('span', { class: 'song-name' }, el('b', {}, s.title), el('small', {}, durationText(s.duration))))));
   $('signs').replaceChildren(...v.signs.map(s => {
     const b = el('button', { class: `sign${s.readable ? ' readable' : ''}`, type: 'button', disabled: !s.readable, 'aria-label': s.readable ? `${s.text} 간판, 눌러서 듣기` : '아직 흐린 간판' },
@@ -560,8 +562,9 @@ function endSession() {
   $('tomorrow').replaceChildren(...(v.tomorrow.length ? [el('p', {}, '다음에 만날 글자'), chipRow(v.tomorrow, v.tomorrowFinals)]
     : [el('p', {}, v.allMet ? '한글 글자를 다 만났어요.' : '')]));
   $('again').hidden = !canPlayMore(progress, at);
-  // 노래로 복습: 오늘 자음을 다뤘으면 「그 아 가」, 아니면 「모음 댄스」.
-  const songId = [...S.met, ...S.practiced].some(id => pack.byId.get(id)?.role === 'consonant') ? 'geu-a-ga' : 'vowel-dance';
+  // 노래로 복습: 오늘 받침을 다뤘으면 「받침 노래」, 자음을 다뤘으면 「그 아 가」, 아니면 「모음 댄스」.
+  const todayRoles = new Set([...S.met, ...S.practiced].map(id => pack.byId.get(id)?.role));
+  const songId = todayRoles.has('final') ? 'batchim' : todayRoles.has('consonant') ? 'geu-a-ga' : 'vowel-dance';
   $('finish-song').dataset.song = songId;
   $('finish-song-label').textContent = `노래로 복습 · ${songById(songId).title} 30초`;
   audio.effect('achieve');
@@ -624,16 +627,24 @@ function songStage(cue) {
       el('p', { class: 'song-cue' }, `${MOVE_WORD[cue.move]} ${l.voice}!`)];
   }
   if (cue.kind === 'sweep') {
-    const texts = cue.letters.map(id => (cue.syllables ? songSyllable(id) : cue.consonant ? songSyllable(cue.consonant, id) : pack.byId.get(id).glyph));
+    const texts = cue.texts || cue.letters.map(id => (cue.syllables ? songSyllable(id) : cue.consonant ? songSyllable(cue.consonant, id) : pack.byId.get(id).glyph));
     return [el('div', { class: `song-row n${texts.length}`, 'aria-label': texts.join(' ') }, texts.map((t, i) => el('span', { class: 'song-tile', 'data-i': String(i) }, t)))];
   }
+  const part = (i, glyph, sound, extra = '', pic = null) => el('span', { class: 'part', 'data-i': String(i) }, pic ? el('img', { class: 'song-mn', src: pic, alt: '' }) : null,
+    el('span', { class: `song-tile${extra}` }, glyph), el('small', {}, sound));
+  const op = sign => el('span', { class: 'op', 'aria-hidden': 'true' }, sign);
   if (cue.kind === 'blend') {
     const c = cue.consonant, v = pack.byId.get(cue.vowel), made = songSyllable(c, cue.vowel);
-    const part = (i, glyph, sound, extra = '', pic = null) => el('span', { class: 'part', 'data-i': String(i) }, pic ? el('img', { class: 'song-mn', src: pic, alt: '' }) : null,
-      el('span', { class: `song-tile${extra}` }, glyph), el('small', {}, sound));
     return [el('div', { class: 'song-blend', 'aria-label': `${consonantGlyph(c)} 더하기 ${v.glyph}는 ${made}` },
-      part(0, consonantGlyph(c), consonantSound(c), '', pack.mnemonics[c]?.img || null), el('span', { class: 'op', 'aria-hidden': 'true' }, '+'),
-      part(1, v.glyph, v.voice), el('span', { class: 'op', 'aria-hidden': 'true' }, '='), part(2, made, made, ' result'))];
+      part(0, consonantGlyph(c), consonantSound(c), '', pack.mnemonics[c]?.img || null), op('+'),
+      part(1, v.glyph, v.voice), op('='), part(2, made, made, ' result'))];
+  }
+  // 받침 합치기(받침 노래): 바탕 음절 + 받침 = 음절. 받침 칸은 받침 표시(아래 짧은 줄)와 받침 소리(은·을·음·응), 낱말이면 결과 칸 위에 그림.
+  if (cue.kind === 'batchim') {
+    const f = pack.byId.get(cue.final);
+    return [el('div', { class: 'song-blend', 'aria-label': `${cue.base}에 받침 ${f.glyph}을 붙이면 ${cue.made}` },
+      part(0, cue.base, cue.base), op('+'), part(1, f.glyph, pack.syllable(null, 'v-eu', cue.final), ' final'), op('='),
+      part(2, cue.made, cue.made, ' result', cue.pic || null))];
   }
   return [];
 }
@@ -666,7 +677,7 @@ function renderSongAt(t) {
       if (!tileLetters(cue, Number(n.dataset.i)).every(id => SP.known.has(id))) n.classList.add('unmet');
     }
     // 가사 줄은 글자가 보이는 장면(줄 켜기·합치기)에서만 — 모음·가사 장면은 이미 크게 글로 보인다.
-    $('song-line').textContent = cue && (cue.kind === 'sweep' || cue.kind === 'blend') ? cue.text : '';
+    $('song-line').textContent = cue && (cue.kind === 'sweep' || cue.kind === 'blend' || cue.kind === 'batchim') ? cue.text : '';
     // 따라 하기 안내: 모음은 몸으로(손을 뻗는다), 글자 줄·합치기는 켜진 글자를 누른다.
     $('song-hint').textContent = !cue || cue.kind === 'line' ? '' : cue.kind === 'vowel' ? '손도 같이 뻗어 봐요' : '켜진 글자를 박자에 맞춰 눌러 봐요';
   }
