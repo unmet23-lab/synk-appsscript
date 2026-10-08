@@ -47,15 +47,37 @@ export function customerIdentityConfig(env=process.env){
   return validateConfig({accountApiUrl:values[0],publishableKey:values[1],issuer:values[2],clientId:values[3],redirectUri:values[4]});
 }
 
-export function createCustomerIdentity({origin,config=null,fetch:fetcher=globalThis.fetch,now=()=>Date.now(),clientAddress=createClientAddress()}={}){
+export function createCustomerIdentity({store,origin,config=null,fetch:fetcher=globalThis.fetch,now=()=>Date.now(),clientAddress=createClientAddress()}={}){
   const originUrl=parsedUrl(origin,'고객 서비스 주소',{loopback:true});
   if(originUrl.pathname!=='/')throw Error('고객 서비스에는 경로 없는 origin을 설정해 주세요.');
   origin=originUrl.origin;config=validateConfig(config);
   if(config&&config.redirectUri!==origin+CALLBACK)throw Error('고객 SYNK ID 콜백이 현재 회사 주소와 다릅니다.');
   const enabled=Boolean(config),secure=originUrl.protocol==='https:'?'; Secure':'';
   const sessions=new Map(),flows=new Map(),attempts=new Map(),authRefs=new WeakMap(),userRefs=new WeakMap();
-  let closed=false;
-  const requireEnabled=()=>{if(!enabled||closed)throw fail(503,'NOT_CONFIGURED','고객 SYNK ID 로그인이 아직 준비되지 않았습니다.');};
+  if(!store?.db||typeof store.encrypt!=='function'||typeof store.decrypt!=='function')throw Error('고객 로그인에는 암호화 영구 저장소가 필요합니다.');
+  store.db.exec('CREATE TABLE IF NOT EXISTS customer_identity_sessions (session_hash TEXT PRIMARY KEY, expires_at INTEGER NOT NULL, ciphertext TEXT NOT NULL)');
+  const configuration=digest(JSON.stringify({origin,config}));
+  const removeRow=store.db.prepare('DELETE FROM customer_identity_sessions WHERE session_hash=?');
+  const existingRow=store.db.prepare('SELECT expires_at FROM customer_identity_sessions WHERE session_hash=?');
+  const updateRow=store.db.prepare('UPDATE customer_identity_sessions SET ciphertext=? WHERE session_hash=? AND expires_at=?');
+  let closing=false,closed=false,closeTask=null;
+  function removeSession(key){removeRow.run(key);sessions.delete(key);}
+  function encrypted(entry){return store.encrypt({version:1,configuration,hash:entry.hash,synkUserId:entry.synkUserId,name:entry.user.name,csrfToken:entry.csrfToken,createdAt:entry.createdAt,expiresAt:entry.expiresAt,accessToken:entry.accessToken,refreshToken:entry.refreshToken,accessExpiresAt:entry.accessExpiresAt,currentSessionId:entry.currentSessionId,pendingAccessToken:entry.pendingAccessToken});}
+  function persist(entry){if(!current(entry)||updateRow.run(encrypted(entry),entry.hash,entry.expiresAt).changes!==1)throw rejected();}
+  // A restored bearer never authorizes locally: the first and every later request
+  // still has to complete the central account check.
+  if(enabled){
+    store.db.prepare('DELETE FROM customer_identity_sessions WHERE expires_at<=?').run(now());
+    for(const row of store.db.prepare('SELECT * FROM customer_identity_sessions').all()){
+      try{
+        const data=store.decrypt(row.ciphertext);
+        if(sessions.size>=MAX_ENTRIES||data?.version!==1||data.configuration!==configuration||data.hash!==row.session_hash||!/^[a-f0-9]{64}$/.test(data.hash)||!UUID.test(data.synkUserId||'')||!UUID.test(data.currentSessionId||'')||!/^[A-Za-z0-9_-]{43}$/.test(data.csrfToken||'')||!Number.isSafeInteger(data.createdAt)||data.createdAt>now()||data.expiresAt!==row.expires_at||data.expiresAt!==data.createdAt+SESSION_MS||data.expiresAt<=now()||!Number.isSafeInteger(data.accessExpiresAt)||!validToken(data.accessToken)||!validToken(data.refreshToken)||data.pendingAccessToken!==null&&!validToken(data.pendingAccessToken)||typeof data.name!=='string'||data.name.length>100)throw rejected();
+        const user=Object.freeze({id:'synk:'+data.synkUserId,kind:'customer',synkUserId:data.synkUserId,name:data.name});
+        const entry={...data,user,blocked:true,checking:null};sessions.set(entry.hash,entry);userRefs.set(user,entry);
+      }catch{removeRow.run(row.session_hash);}
+    }
+  }
+  const requireEnabled=()=>{if(!enabled||closing)throw fail(503,'NOT_CONFIGURED','고객 SYNK ID 로그인이 아직 준비되지 않았습니다.');};
   const requireOrigin=req=>{if(req.headers?.origin!==origin)throw fail(403,'ORIGIN','고객 상담 화면에서 다시 시작해 주세요.');};
   const sessionHash=req=>{const value=readCookie(req,SESSION_COOKIE);return value?digest(value):null;};
   function setCookie(res,name,value,maxAge){
@@ -65,7 +87,7 @@ export function createCustomerIdentity({origin,config=null,fetch:fetcher=globalT
   }
   function prune(){
     const stamp=now();
-    for(const [key,entry]of sessions)if(entry.expiresAt<=stamp)sessions.delete(key);
+    for(const [key,entry]of sessions)if(entry.expiresAt<=stamp)removeSession(key);
     for(const [key,flow]of flows)if(flow.expiresAt<=stamp)flows.delete(key);
     for(const [key,row]of attempts)if(row.expiresAt<=stamp)attempts.delete(key);
   }
@@ -74,8 +96,8 @@ export function createCustomerIdentity({origin,config=null,fetch:fetcher=globalT
     if(!row){if(attempts.size>=MAX_ENTRIES)throw fail(429,'BUSY','로그인 요청이 많습니다. 잠시 후 다시 시도해 주세요.');row={count:0,expiresAt:now()+FLOW_MS};attempts.set(key,row);}
     if(++row.count>30)throw fail(429,'RATE_LIMITED','로그인 요청이 많습니다. 잠시 후 다시 시도해 주세요.');
   }
-  const current=entry=>Boolean(!closed&&enabled&&entry&&sessions.get(entry.hash)===entry&&entry.expiresAt>now());
-  const allowed=entry=>current(entry)&&!entry.blocked&&entry.accessExpiresAt>now();
+  const current=entry=>Boolean(!closed&&enabled&&entry&&sessions.get(entry.hash)===entry&&entry.expiresAt>now()&&existingRow.get(entry.hash)?.expires_at===entry.expiresAt);
+  const allowed=entry=>!closing&&current(entry)&&!entry.blocked&&entry.accessExpiresAt>now();
   function publicAuth(entry){const auth=Object.freeze({user:entry.user,csrfToken:entry.csrfToken,expiresAt:new Date(entry.expiresAt).toISOString()});authRefs.set(auth,entry);return auth;}
   const isCurrent=auth=>Boolean(auth&&allowed(authRefs.get(auth)));
   const isCurrentUser=user=>Boolean(user&&allowed(userRefs.get(user)));
@@ -99,10 +121,10 @@ export function createCustomerIdentity({origin,config=null,fetch:fetcher=globalT
     if(!validToken(data?.access_token)||!validToken(data?.refresh_token)||data.token_type&&String(data.token_type).toLowerCase()!=='bearer')throw rejected();
     return {accessToken:data.access_token,refreshToken:data.refresh_token};
   }
-  async function exchangeToken(body){
+  async function exchangeData(body){
     const response=await request(new URL('/auth/v1/oauth/token',config.issuer),{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded',apikey:config.publishableKey},body:new URLSearchParams(body).toString()});
     if(!response.ok)throw [400,401,403].includes(response.status)?rejected():unavailable();
-    try{return tokenSet(await response.json());}catch(error){if(error.code)throw error;throw unavailable();}
+    try{return await response.json();}catch{throw unavailable();}
   }
   function start(req,res){
     requireEnabled();requireOrigin(req);rate(req);
@@ -114,7 +136,7 @@ export function createCustomerIdentity({origin,config=null,fetch:fetcher=globalT
     url.search=new URLSearchParams({client_id:config.clientId,response_type:'code',redirect_uri:config.redirectUri,scope:'openid profile',state,code_challenge:createHash('sha256').update(verifier).digest('base64url'),code_challenge_method:'S256'}).toString();
     return {authorizationUrl:url.href,expiresAt:new Date(now()+FLOW_MS).toISOString()};
   }
-  const flowCurrent=flow=>!closed&&flows.get(flow.key)===flow&&flow.expiresAt>now()&&(!flow.previousEntry||current(flow.previousEntry));
+  const flowCurrent=flow=>!closing&&flows.get(flow.key)===flow&&flow.expiresAt>now()&&(!flow.previousEntry||current(flow.previousEntry));
   async function callback(req,res,url){
     requireEnabled();
     const permitted=['state','code','error','error_description'];
@@ -126,14 +148,18 @@ export function createCustomerIdentity({origin,config=null,fetch:fetcher=globalT
     try{
       const code=url.searchParams.get('code');
       if(!code||code.length>4000||url.searchParams.has('error'))throw fail(403,'FLOW','고객 SYNK ID 로그인을 완료하지 못했습니다.');
-      const tokens=await exchangeToken({grant_type:'authorization_code',code,client_id:config.clientId,redirect_uri:config.redirectUri,code_verifier:flow.verifier});
+      const tokens=tokenSet(await exchangeData({grant_type:'authorization_code',code,client_id:config.clientId,redirect_uri:config.redirectUri,code_verifier:flow.verifier}));
       if(!flowCurrent(flow))throw rejected();
       const identity=await verify(tokens.accessToken);
       if(!flowCurrent(flow))throw rejected();
       prune();if(sessions.size>=MAX_ENTRIES)throw fail(429,'BUSY','로그인 요청이 많습니다. 잠시 후 다시 시도해 주세요.');
-      if(flow.previousHash)sessions.delete(flow.previousHash);
       const value=random(),hash=digest(value),user=Object.freeze({id:'synk:'+identity.synkUserId,kind:'customer',synkUserId:identity.synkUserId,name:identity.name||'고객'});
-      const entry={hash,user,synkUserId:identity.synkUserId,csrfToken:random(),expiresAt:now()+SESSION_MS,accessToken:tokens.accessToken,refreshToken:tokens.refreshToken,accessExpiresAt:identity.expiresAt,currentSessionId:identity.currentSessionId,pendingAccessToken:null,blocked:false,checking:null};
+      const createdAt=now(),entry={hash,user,synkUserId:identity.synkUserId,csrfToken:random(),createdAt,expiresAt:createdAt+SESSION_MS,accessToken:tokens.accessToken,refreshToken:tokens.refreshToken,accessExpiresAt:identity.expiresAt,currentSessionId:identity.currentSessionId,pendingAccessToken:null,blocked:false,checking:null};
+      store.transaction(()=>{
+        store.db.prepare('INSERT INTO customer_identity_sessions VALUES (?,?,?)').run(hash,entry.expiresAt,encrypted(entry));
+        if(flow.previousHash)removeRow.run(flow.previousHash);
+      });
+      if(flow.previousHash)sessions.delete(flow.previousHash);
       sessions.set(hash,entry);userRefs.set(user,entry);setCookie(res,SESSION_COOKIE,value,SESSION_MS/1000);
       return {ok:true,...publicAuth(entry)};
     }finally{flows.delete(flow.key);setCookie(res,FLOW_COOKIE,'',0);}
@@ -143,28 +169,35 @@ export function createCustomerIdentity({origin,config=null,fetch:fetcher=globalT
     if(entry.checking)return entry.checking;
     entry.checking=(async()=>{
       try{
-        if(entry.pendingAccessToken&&Number(claimsOf(entry.pendingAccessToken)?.exp)*1000<=now())entry.pendingAccessToken=null;
+        if(entry.pendingAccessToken&&Number(claimsOf(entry.pendingAccessToken)?.exp)*1000<=now()){entry.pendingAccessToken=null;persist(entry);}
         if(!entry.pendingAccessToken&&entry.accessExpiresAt<=now()+REFRESH_MS){
-          const tokens=await exchangeToken({grant_type:'refresh_token',client_id:config.clientId,refresh_token:entry.refreshToken});
-          if(!current(entry)){if(entry.revoking)entry.logoutAccessToken=tokens.accessToken;return false;}
-          // Rotation is preserved even if the following central check is temporarily unavailable.
-          entry.refreshToken=tokens.refreshToken;entry.pendingAccessToken=tokens.accessToken;
+          const tokens=await exchangeData({grant_type:'refresh_token',client_id:config.clientId,refresh_token:entry.refreshToken});
+          if(!current(entry)){if(entry.revoking&&validToken(tokens?.access_token))entry.logoutAccessToken=tokens.access_token;return false;}
+          // Save a rotated refresh before inspecting the access response or making
+          // another network request. A transient failure must not lose the new key.
+          if(!validToken(tokens?.refresh_token))throw unavailable();
+          entry.refreshToken=tokens.refresh_token;persist(entry);
+          const accessExpiry=claimsOf(tokens.access_token)?.exp;
+          if(!validToken(tokens.access_token)||!Number.isSafeInteger(accessExpiry)||accessExpiry*1000<=now()||tokens.token_type&&String(tokens.token_type).toLowerCase()!=='bearer')throw unavailable();
+          entry.pendingAccessToken=tokens.access_token;persist(entry);
         }
         const candidate=entry.pendingAccessToken||entry.accessToken,identity=await verify(candidate);
         if(!current(entry))return false;
         if(identity.synkUserId!==entry.synkUserId)throw rejected();
+        const changed=entry.accessToken!==candidate||entry.pendingAccessToken!==null||entry.accessExpiresAt!==identity.expiresAt||entry.currentSessionId!==identity.currentSessionId;
         entry.accessToken=candidate;entry.pendingAccessToken=null;entry.accessExpiresAt=identity.expiresAt;entry.currentSessionId=identity.currentSessionId;entry.blocked=false;
+        if(changed)persist(entry);
         return true;
       }catch(error){
-        if(current(entry)){if(error.retryable){entry.blocked=true;throw error;}sessions.delete(entry.hash);}
+        if(current(entry)){if(error.retryable){entry.blocked=true;throw error;}removeSession(entry.hash);}
         return false;
       }finally{entry.checking=null;}
     })();return entry.checking;
   }
   async function authenticate(req){
-    if(!enabled||closed)return null;
+    if(!enabled||closing)return null;
     const key=sessionHash(req),entry=sessions.get(key);
-    if(!current(entry)){if(key)sessions.delete(key);return null;}
+    if(!current(entry)){if(key)removeSession(key);return null;}
     // No time-based authorization cache: every request must complete a central check.
     return await validate(entry)&&allowed(entry)?publicAuth(entry):null;
   }
@@ -173,7 +206,7 @@ export function createCustomerIdentity({origin,config=null,fetch:fetcher=globalT
     const key=sessionHash(req),entry=sessions.get(key);
     if(entry&&!same(req.headers?.['x-csrf-token'],entry.csrfToken))throw fail(403,'CSRF','고객 로그인 상태를 다시 확인해 주세요.');
     if(entry)entry.revoking=true;
-    if(key)sessions.delete(key);
+    if(key)removeSession(key);
     const proof=readCookie(req,FLOW_COOKIE);
     for(const [id,flow]of flows)if(flow.previousHash&&flow.previousHash===key||proof&&flow.browserHash===digest(proof))flows.delete(id);
     setCookie(res,SESSION_COOKIE,'',0);setCookie(res,FLOW_COOKIE,'',0);
@@ -187,7 +220,9 @@ export function createCustomerIdentity({origin,config=null,fetch:fetcher=globalT
     try{const response=await request(new URL('/auth/v1/logout?scope=local',config.issuer),{method:'POST',headers:headers(access)});refreshRevoked=response.ok||response.status===404||response.status===401&&serverSessionRevoked;}catch{}
     return {ok:true,localSignedOut:true,serverRevoked:serverSessionRevoked&&refreshRevoked,serverSessionRevoked,refreshRevoked};
   }
-  return {status:()=>({enabled:enabled&&!closed,browserEnabled:enabled&&!closed}),start,callback,authenticate,requireCsrf,isCurrent,isCurrentUser,logout,
-    close(){closed=true;sessions.clear();flows.clear();attempts.clear();},
+  return {status:()=>({enabled:enabled&&!closing,browserEnabled:enabled&&!closing}),start,callback,authenticate,requireCsrf,isCurrent,isCurrentUser,logout,
+    close(){if(!closeTask){closing=true;flows.clear();attempts.clear();closeTask=Promise.allSettled([...sessions.values()].map(entry=>entry.checking).filter(Boolean));}return closeTask;},
+    // Existing HTTP logout requests may finish while the listeners drain.
+    dispose(){closing=true;closed=true;sessions.clear();flows.clear();attempts.clear();},
   };
 }
