@@ -1,0 +1,98 @@
+{
+  "schema": "synk-sns-publish-plan/v1",
+  "createdAt": "2026-10-08T00:11:01.621Z",
+  "sourceRoot": "docs/마케팅/LAB_한글초보_그아가_20261008/게시",
+  "accountsFile": "docs/마케팅/sns-계정.json",
+  "accountsSha256": "828a00abe28e5f45a8bdbee70d0704a4aa7a4d84ed811489b12d985f43a046ed",
+  "reviewPolicy": {
+    "defaultReview": "final-review",
+    "allowUnreviewedPublicPublishing": false,
+    "credentialStore": "windows-credential-manager",
+    "results": "next-to-plan"
+  },
+  "items": [
+    {
+      "id": "01-lab-youtube",
+      "accountKey": "lab-youtube",
+      "brand": "LAB",
+      "platform": "youtube",
+      "platformName": "YouTube",
+      "account": "@synkkorean",
+      "format": "shorts",
+      "language": "en",
+      "title": "All 14 Korean consonants in one song! 가 나 다 라 마 바 사 아 자 차 카 타 파 하 #learnkorean",
+      "text": "Sing along with Mongle — one song, all 14 basic Korean consonants (Hangul).\n\nEvery line builds a syllable: consonant + ㅏ (a)\nㄱ + ㅏ = 가 (ga) · ㄴ + ㅏ = 나 (na) · ㄷ + ㅏ = 다 (da) · ㄹ + ㅏ = 라 (ra) …\nㅇ is silent at the start, so ㅇ + ㅏ = 아 (a) — shh!\n\nTurn on English captions (CC) for the lyrics with romanization.\n\nCan you read 가 나 다 라 마 바 사 now? Comment the one that was hardest 👇\n\nHangul for Beginners · 한글 초보단계 #2 — after the vowel song (#1).\nSYNK LAB · learn Korean the fun way, with Mongle.\n#learnkorean #hangul #koreanalphabet",
+      "alt": [
+        "A felt kid and the coral felt mascot Mongle build Korean syllables (ㄱ + ㅏ = 가) under a white card reading “All 14 Korean consonants in one song!”"
+      ],
+      "link": "",
+      "folder": "docs/마케팅/LAB_한글초보_그아가_20261008/게시/01-lab-youtube",
+      "video": "docs/마케팅/LAB_한글초보_그아가_20261008/게시/01-lab-youtube/video.mp4",
+      "images": [],
+      "thumbnail": null,
+      "document": null,
+      "subtitles": [
+        "docs/마케팅/LAB_한글초보_그아가_20261008/게시/01-lab-youtube/subtitles-en.srt"
+      ],
+      "playlist": {
+        "title": "Hangul for Beginners · 한글 초보단계",
+        "description": "Start Korean from zero: learn Hangul (the Korean alphabet) with short songs and dances from SYNK LAB and Mongle. One new video at a time.\n\n한글 초보단계 — 노래와 동작으로 한글을 처음부터.",
+        "visibility": "private",
+        "language": "en"
+      },
+      "dependencies": [
+        {
+          "role": "metadata",
+          "path": "docs/마케팅/LAB_한글초보_그아가_20261008/게시/01-lab-youtube/원고.json",
+          "bytes": 1637,
+          "sha256": "a622eda2dbb80f1ea85230cc04a38cfc81fac0f5f2f32a1b233d31a95aea1d0e",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "title",
+          "path": "docs/마케팅/LAB_한글초보_그아가_20261008/게시/01-lab-youtube/제목.txt",
+          "bytes": 107,
+          "sha256": "9a2458320099a4224ea5748dda75edde05226d5fec0d04f73068043b6cba7590",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "post-copy",
+          "path": "docs/마케팅/LAB_한글초보_그아가_20261008/게시/01-lab-youtube/게시문안.txt",
+          "bytes": 603,
+          "sha256": "7284c06ba82accc0e349587e8899a10f432a93c14c3332213dd2bfcd5d3b5907",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "video",
+          "path": "docs/마케팅/LAB_한글초보_그아가_20261008/게시/01-lab-youtube/video.mp4",
+          "bytes": 23325290,
+          "sha256": "2f60258a53439aab765982f4be18d1b81462383223d2386e43d6ac6b31c75738",
+          "mime": "video/mp4"
+        },
+        {
+          "role": "subtitle",
+          "path": "docs/마케팅/LAB_한글초보_그아가_20261008/게시/01-lab-youtube/subtitles-en.srt",
+          "bytes": 3185,
+          "sha256": "5f5907944fc7f73c8a13a0ac8f9ff4afbff3e1099aa48ae6b320edd4fc0edea2",
+          "mime": "application/x-subrip"
+        }
+      ],
+      "contentHash": "d19d8c8333426d753007a43a4bca517caac6ed98764b9ed4cf90ae0cb6855d90",
+      "publisher": "direct",
+      "connection": "connected-existing",
+      "publish": {
+        "visibility": "private",
+        "publishAt": null,
+        "notifySubscribers": false
+      },
+      "approval": {
+        "version": 2,
+        "contentHash": "d19d8c8333426d753007a43a4bca517caac6ed98764b9ed4cf90ae0cb6855d90",
+        "publicationHash": "ddd30cd03df6cc62bf65a31ad594ea68dd2200f4c825dc9b074bf39a97ac0940",
+        "approvedAt": "2026-10-08T00:11:11.786Z",
+        "note": "유호님 10-08 「웅 비공개로 재생목록에 올려줘」 — 그 아 가 영상 v3 유튜브 판 비공개 업로드·「Hangul for Beginners · 한글 초보단계」 재생목록에 넣기 승인, 공개는 확인 뒤 따로"
+      },
+      "errors": []
+    }
+  ]
+}
