@@ -37,7 +37,7 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {} }) {
   async function play(replay = false) {
     if (!check?.current || pending) return;
     const mine = ++epoch, token = check.current.token, item = check.current.item;
-    pending = true; choicesDisabled(true); $('check-replay').disabled = true; phase(check.current.answered ? 'reviewing' : 'listening'); status(check.current.answered ? '정답과 해설을 보며 다시 들어요. 재채점하지 않아요.' : '목소리를 준비하고 있어요.');
+    pending = true; choicesDisabled(true); $('check-replay').disabled = true; phase(check.current.answered ? 'reviewing' : 'listening'); status(check.current.answered ? '정답과 해설을 보며 다시 들어요. 답은 다시 채점하지 않아요.' : '목소리를 준비하고 있어요.');
     try {
       if (replay) check.replay();
       if (!context || context.state === 'closed') {
@@ -61,7 +61,7 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {} }) {
       if (check.current?.answered) { reviewReady('복습 음성을 불러오지 못했어요. 처음 고른 답과 기록은 그대로예요. 해설을 읽거나 다시 듣기를 눌러 주세요.'); return; }
       check.delivery(token, 'failed');
       if (check.current?.audio === 'completed') { ready(); return; }
-      phase('stopped'); status('음성을 불러오지 못했어요. 듣기 실력의 오답으로 기록하지 않아요.'); $('check-replay').disabled = false;
+      phase('stopped'); status('음성을 불러오지 못했어요. 이 문제는 틀린 것으로 기록하지 않아요.'); $('check-replay').disabled = false;
     }
   }
   function question(plan) {
@@ -96,7 +96,7 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {} }) {
         const selection = document.createElement('span'); selection.className = 'selection'; selection.textContent = `고른 행동: ${feedback.selectedLabel} · 맞는 행동: ${feedback.correctLabel}`; fb.append(selection);
         const explanation = document.createElement('span'); explanation.className = 'explanation'; explanation.textContent = feedback.explanation; fb.append(explanation);
         if (feedback.correction) { const correction = document.createElement('span'); correction.className = 'correction'; correction.textContent = feedback.correction; fb.append(correction); }
-        const record = document.createElement('span'); record.className = 'record'; record.textContent = result.verdict === 'unassessed' ? '기록 연결을 확인하지 못해 이해도 근거에는 넣지 않았어요.' : result.independent ? '처음 듣고 혼자 답한 기록이에요.' : result.assisted ? '다시 듣기 도움을 받은 기록이에요.' : result.exposure === 'repeat' ? '이미 만난 표현의 복습 기록이에요.' : '이전 도움·노출 여부를 확인하지 못해 독립 수행으로 세지 않았어요.'; fb.append(record);
+        const record = document.createElement('span'); record.className = 'record'; record.textContent = result.verdict === 'unassessed' ? '기록이 제대로 남았는지 확인하지 못해서 듣기 기록에는 넣지 않았어요.' : result.independent ? '처음 듣고 혼자 답한 기록이에요.' : result.assisted ? '다시 듣기 도움을 받은 기록이에요.' : result.exposure === 'repeat' ? '이미 만난 표현의 복습 기록이에요.' : '전에 도움을 받았는지, 이미 들은 문장인지 확인하지 못해서 혼자 해낸 기록으로 세지 않았어요.'; fb.append(record);
         if (recheckLine) { const recheck = document.createElement('span'); recheck.className = 'record'; recheck.textContent = recheckLine; fb.append(recheck); }
         const last = index === round.total - 1;
         if (last) { const sum = document.createElement('span'); sum.className = 'sum'; sum.textContent = `이번 확인: ${round.total}문제 중 ${rightCount}문제를 맞혔어요.`; fb.append(sum); }
