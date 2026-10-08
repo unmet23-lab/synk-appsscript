@@ -1,0 +1,98 @@
+{
+  "schema": "synk-sns-publish-plan/v1",
+  "createdAt": "2026-10-08T08:41:39.198Z",
+  "sourceRoot": "docs/마케팅/LAB_한글초보_받침_20261008/게시",
+  "accountsFile": "docs/마케팅/sns-계정.json",
+  "accountsSha256": "828a00abe28e5f45a8bdbee70d0704a4aa7a4d84ed811489b12d985f43a046ed",
+  "reviewPolicy": {
+    "defaultReview": "final-review",
+    "allowUnreviewedPublicPublishing": false,
+    "credentialStore": "windows-credential-manager",
+    "results": "next-to-plan"
+  },
+  "items": [
+    {
+      "id": "01-lab-youtube",
+      "accountKey": "lab-youtube",
+      "brand": "LAB",
+      "platform": "youtube",
+      "platformName": "YouTube",
+      "account": "@synkkorean",
+      "format": "shorts",
+      "language": "en",
+      "title": "Korean batchim (final consonants) in one song! 안 알 암 앙 산 물 밤 강 #learnkorean",
+      "text": "Sing along with Mongle — the Korean final consonants (batchim) ㄴ ㄹ ㅁ ㅇ in one song.\n\nA batchim sits at the bottom of a syllable:\n아 + ㄴ = 안 (an) · 아 + ㄹ = 알 (al) · 아 + ㅁ = 암 (am) · 아 + ㅇ = 앙 (ang)\nThen read real words: 산 (mountain) · 물 (water) · 밤 (chestnut / night) · 강 (river)\n손 (hand) · 눈 (snow) · 별 (star) · 말 (horse) · 곰 (bear) · 몸 (body) · 공 (ball) · 방 (room)\nㅇ on top makes no sound — shh! At the bottom it says \"ng\".\n\nTurn on English captions (CC) for the lyrics with romanization.\n\nWhich word could you read first? Comment it below 👇\n\nHangul for Beginners · 한글 초보단계 #3 — after the vowel song (#1) and the consonant song (#2).\nSYNK LAB · learn Korean the fun way, with Mongle.\n#learnkorean #hangul #batchim",
+      "alt": [
+        "A felt kid and the coral felt mascot Mongle build Korean syllables with a final consonant (아 + ㄴ = 안), the batchim shown in yellow, under a white card reading “Korean final consonants in one song!”"
+      ],
+      "link": "",
+      "folder": "docs/마케팅/LAB_한글초보_받침_20261008/게시/01-lab-youtube",
+      "video": "docs/마케팅/LAB_한글초보_받침_20261008/게시/01-lab-youtube/video.mp4",
+      "images": [],
+      "thumbnail": null,
+      "document": null,
+      "subtitles": [
+        "docs/마케팅/LAB_한글초보_받침_20261008/게시/01-lab-youtube/subtitles-en.srt"
+      ],
+      "playlist": {
+        "title": "Hangul for Beginners · 한글 초보단계",
+        "description": "Start Korean from zero: learn Hangul (the Korean alphabet) with short songs and dances from SYNK LAB and Mongle. One new video at a time.\n\n한글 초보단계 — 노래와 동작으로 한글을 처음부터.",
+        "visibility": "private",
+        "language": "en"
+      },
+      "dependencies": [
+        {
+          "role": "metadata",
+          "path": "docs/마케팅/LAB_한글초보_받침_20261008/게시/01-lab-youtube/원고.json",
+          "bytes": 1640,
+          "sha256": "8507c2dc786d6ab7c10d2a1047e7cbff6c083901f1c17dceb9d4160c6e161d56",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "title",
+          "path": "docs/마케팅/LAB_한글초보_받침_20261008/게시/01-lab-youtube/제목.txt",
+          "bytes": 92,
+          "sha256": "6e9361276ba2c770ed3f0fda62e1f2d1db0a1b0bcc0d1bb396e0af40a4cb9ca8",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "post-copy",
+          "path": "docs/마케팅/LAB_한글초보_받침_20261008/게시/01-lab-youtube/게시문안.txt",
+          "bytes": 808,
+          "sha256": "7e809e9d97a88d98f018082079da48a06d26437f182e297d23b848b431a963e6",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "video",
+          "path": "docs/마케팅/LAB_한글초보_받침_20261008/게시/01-lab-youtube/video.mp4",
+          "bytes": 18593387,
+          "sha256": "a9e5cb78ee06b4a588afe0ea7e8153052f69104066e0bf18f82433cd18477597",
+          "mime": "video/mp4"
+        },
+        {
+          "role": "subtitle",
+          "path": "docs/마케팅/LAB_한글초보_받침_20261008/게시/01-lab-youtube/subtitles-en.srt",
+          "bytes": 2565,
+          "sha256": "9e21e60f9b2a0ecba5f3fcd5b480946cec073838319c470f8e909e0c0a098151",
+          "mime": "application/x-subrip"
+        }
+      ],
+      "contentHash": "e5b9a466c3a01465bde30030a86f1fceea61b509cde76393cb4fa4489a919f0d",
+      "publisher": "direct",
+      "connection": "connected-existing",
+      "publish": {
+        "visibility": "private",
+        "publishAt": null,
+        "notifySubscribers": false
+      },
+      "approval": {
+        "version": 2,
+        "contentHash": "e5b9a466c3a01465bde30030a86f1fceea61b509cde76393cb4fa4489a919f0d",
+        "publicationHash": "b8dd9322c6f79acb0577f92b0cd4ea1b9f003e3fcea2368d77f6674aacdf5a71",
+        "approvedAt": "2026-10-08T08:41:44.693Z",
+        "note": "유호님 10-08 「웅 비공개로 재생목록에 올려줘」 — 받침 노래 영상 v1 유튜브 판 비공개 업로드·「Hangul for Beginners · 한글 초보단계」 재생목록에 넣기 승인, 공개는 확인 뒤 따로"
+      },
+      "errors": []
+    }
+  ]
+}

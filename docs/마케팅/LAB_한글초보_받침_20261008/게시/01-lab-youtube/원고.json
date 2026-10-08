@@ -1,0 +1,21 @@
+{
+ "id": "01-lab-youtube",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "title": "Korean batchim (final consonants) in one song! 안 알 암 앙 산 물 밤 강 #learnkorean",
+ "caption": "게시문안.txt를 쓴다",
+ "alt": [
+  "A felt kid and the coral felt mascot Mongle build Korean syllables with a final consonant (아 + ㄴ = 안), the batchim shown in yellow, under a white card reading “Korean final consonants in one song!”"
+ ],
+ "playlist": {
+  "title": "Hangul for Beginners · 한글 초보단계",
+  "description": "Start Korean from zero: learn Hangul (the Korean alphabet) with short songs and dances from SYNK LAB and Mongle. One new video at a time.\n\n한글 초보단계 — 노래와 동작으로 한글을 처음부터.",
+  "visibility": "private",
+  "language": "en"
+ },
+ "_비고": "10-08 유호님 「웅 비공개로 재생목록에 올려줘」(받침 노래 영상 v1을 보낸 뒤). video.mp4 = 받침 노래 영상 v1의 유튜브 판(첫 화면 영어 한 줄 「Korean final consonants in one song!」, SNS 키트 LAB, 61.2초 9:16 → 쇼츠). 음악은 Suno 공식 내려받기 c3610361(유호님 「A로 가자」, experiences/hangul-stage/songs/README.md). 비공개로 올리고 유호님 확인 뒤 --공개(AI 음악이 중심이라 --합성표시)로 바꾼다. 재생목록은 이미 공개라 이 영상은 비공개인 채로 같은 목록에 들어간다(보는 사람에겐 보이지 않음). 원본 Documents/synk-vendor/hangul-mascot-video/batchim-v1/. video.mp4는 *.mp4 규칙으로 git 밖이다.",
+ "version": "v1-yt"
+}
