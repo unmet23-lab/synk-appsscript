@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f96859">
 <title>빈칸 베기 · SYNK LAB PLAY</title>
-<meta name="description" content="문장을 읽고 빈칸에 맞는 낱말 조각만 베는 한국어 읽기 액션 게임. TOPIK I 읽기의 빈칸 채우기(낱말·조사·문형)를 연습합니다.">
+<meta name="description" content="문장을 읽고 빈칸에 맞는 낱말 조각을 베는 한국어 읽기 게임. TOPIK I 읽기의 빈칸 채우기(낱말·조사·문형)를 연습해요.">
 <link rel="icon" href="kit/felt/sparkle.webp" type="image/webp">
 <link rel="preload" href="kit/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="kit/lab.css">
@@ -29,7 +29,7 @@
       <span class="kicker">FILL THE BLANK · AN ACTION GAME</span>
       <h1>빈칸 베기</h1>
       <p class="lede">문장을 읽고,<br><mark class="crayon-under">빈칸에 맞는 낱말만</mark> 베어요!</p>
-      <p class="sub">낱말 조각 넷이 튀어 올라요. 맞는 조각을 손가락이나 마우스로 그어 베면 빈칸이 채워져요. 연속으로 맞힐수록 빨라져요.</p>
+      <p class="sub">낱말 조각 네 개가 튀어 올라요. 빈칸에 맞는 조각을 손가락이나 마우스로 그어서 베면 빈칸이 채워져요. 연달아 맞힐수록 조각이 빨라져요.</p>
     </div>
     <figure class="hero-art" aria-hidden="true">
       <div class="hero-sentence paper">목이 말라요. <b class="hb">물</b>을 마시고 싶어요.</div>
@@ -55,17 +55,17 @@
     <section class="paper how" aria-labelledby="how-title">
       <span class="tag" id="how-title">하는 방법</span>
       <ol class="how-steps">
-        <li><b class="num">1</b><strong>문장 읽기</strong><span>위에 빈칸이 있는 문장이 나와요.</span></li>
-        <li><b class="num">2</b><strong>맞는 조각 베기</strong><span>튀어 오르는 낱말 넷 중 빈칸에 맞는 것을 그어 베요.</span></li>
+        <li><b class="num">1</b><strong>문장 읽기</strong><span>빈칸이 있는 문장이 화면 위에 나와요.</span></li>
+        <li><b class="num">2</b><strong>맞는 조각 베기</strong><span>튀어 오르는 낱말 네 개 중에서 빈칸에 맞는 것을 그어서 베요.</span></li>
         <li><b class="num">3</b><strong>빈칸 채우기</strong><span>맞으면 빈칸이 채워지고, 틀리면 정답과 이유가 나와요.</span></li>
       </ol>
-      <p class="fine">넓은 화면에서는 조각의 번호(1~4)를 눌러도 벨 수 있어요. 두 번 던져도 못 베면 멈춘 보기에서 시간 제한 없이 답을 골라요.</p>
+      <p class="fine">컴퓨터에서는 숫자 키 1~4로도 벨 수 있어요. 조각을 두 번 다 놓치면 멈춘 화면에서 시간 제한 없이 답을 고를 수 있어요.</p>
     </section>
   </section>
 
   <footer class="lobby-foot">
-    <p>TOPIK I 읽기의 빈칸 채우기(34~39번: 낱말·조사·문형)와 같은 능력을 연습해요. 점수·별은 TOPIK 급수가 아니에요.</p>
-    <p><span id="learning-scope">학습 기록은 이 브라우저에만 남고, 같은 주소에서 연 다른 SYNK 게임과 함께 써요.</span> <button id="reset-learning" class="text-link" type="button">이 브라우저의 모든 게임 학습 기록 지우기</button></p>
+    <p>TOPIK I 읽기 34~39번처럼 빈칸에 맞는 낱말·조사·문형을 고르는 연습이에요. 점수와 별은 TOPIK 급수와 상관없어요.</p>
+    <p><span id="learning-scope">학습 기록은 이 브라우저에만 저장되고, 같은 주소에서 연 다른 SYNK 게임과 같이 써요.</span> <button id="reset-learning" class="text-link" type="button">이 브라우저의 모든 게임 학습 기록 지우기</button></p>
   </footer>
 </main>
 
@@ -94,7 +94,7 @@
       <span class="kicker ko">읽기 확인 · 시간 제한 없음</span>
       <h2 id="check-title" tabindex="-1">빈칸에 맞는 말을 골라요</h2>
       <p id="check-sentence"></p>
-      <p class="fine" id="check-note">조각은 놓쳤지만 문장에는 답할 수 있어요. 여기서 고른 답을 읽기 기록에 남겨요.</p>
+      <p class="fine" id="check-note">조각은 놓쳤어도 답은 고를 수 있어요. 여기서 고른 답이 읽기 기록에 남아요.</p>
       <div class="check-options" id="check-options"></div>
     </section>
     <section class="explain paper" id="explain" hidden>
@@ -131,7 +131,7 @@
     <article class="paper skills">
       <span class="tag">읽기 능력 기록</span>
       <ul id="r-skills"></ul>
-      <p class="fine">이 브라우저에 남은 공통 학습 기록 중 ‘보기 하나 고르기’ 응답(벤 말, 놓친 문장은 멈춘 보기에서 고른 답)만 봐요. TOPIK 급수나 합격 판정이 아니에요.</p>
+      <p class="fine">이 브라우저에 남은 학습 기록 중에서 보기를 하나 고른 답만 모아 봐요. 벤 낱말과, 놓친 문장을 멈춘 화면에서 고른 답이에요. TOPIK 급수나 합격 여부를 알려 주는 것은 아니에요.</p>
     </article>
     <article class="paper next">
       <span class="tag">다음 판</span>

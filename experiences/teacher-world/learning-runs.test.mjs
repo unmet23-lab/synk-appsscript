@@ -90,9 +90,9 @@ for(const entry of ['new','retry','active','resume'])test(`changed blank-slice i
   const first=await setup(t),a=await first.assign('blank-reading');
   const old=(await first.call('/api/world/runs/start',first.s.token,{assignmentId:a.id,revision:1,idempotencyKey:'old-start'})).run;
   const state=first.server.snapshot(),assignment=state.assignments.find(row=>row.id===a.id);
-  const current=gameItems(GAME_CONTENT.find(row=>row.id==='blank-reading')).filter(item=>['blank-slice.v06.v2','blank-slice.v07.v2','blank-slice.v08.v1'].includes(item.itemKey));
+  const current=gameItems(GAME_CONTENT.find(row=>row.id==='blank-reading')).filter(item=>['blank-slice.v06.v3','blank-slice.v07.v3','blank-slice.v08.v1'].includes(item.itemKey));
   assert.equal(current.length,3);
-  const items=current.map(item=>({...item,itemKey:item.itemKey.replace(/\.v2$/,'.v1')}));
+  const items=current.map(item=>({...item,itemKey:item.itemKey.replace(/\.v3$/,'.v2')}));
   const stale={...old.target,...items[0],items,itemKeys:items.map(item=>item.itemKey),familyKeys:items.map(item=>item.familyKey),requiredAttempts:3};
   assignment.targets[first.s.learner.id]=structuredClone(stale);
   state.learningRuns[0].target=structuredClone(stale);

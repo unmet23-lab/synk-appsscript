@@ -88,13 +88,13 @@ function renderLobby() {
   state.ranked = progress.plays === 0 ? null : atlas((c) => rankItems(c, ITEMS));
   $('#l-count').textContent = String(target ? targetItems.length : 12);
   $('#btn-start').disabled = !!target && targetItems.length === 0;
-  $('#l-reason').textContent = target && !targetItems.length ? '이 과제의 문항이 바뀌어 지금은 시작할 수 없어요. WORLD로 돌아가 선생님께 새 과제 배정을 요청해 주세요.'
-    : target ? `${assignmentLabel(target)}. 이 목표 문장에 답하면 WORLD 과제에 반영돼요. 놓친 문장은 멈춘 보기에서 답해요.` : progress.plays === 0
+  $('#l-reason').textContent = target && !targetItems.length ? '이 과제의 문항이 바뀌어서 지금은 시작할 수 없어요. WORLD로 돌아가 선생님께 새 과제를 받아 주세요.'
+    : target ? `${assignmentLabel(target)}. 이 목표 문장에 답하면 WORLD 과제에 반영돼요. 놓친 문장은 멈춘 화면에서 답을 골라요.` : progress.plays === 0
     ? '처음이라 쉬운 문장부터 시작해요. 첫 문장은 연습이에요.'
-    : state.ranked?.reason ? `${state.ranked.reason} 그 문장들을 먼저 넣었어요.` : '새 문장을 섞어 한 판을 만들어요.';
+    : state.ranked?.reason ? `${state.ranked.reason} 그래서 그런 문장을 앞쪽에 넣었어요.` : '새 문장을 섞어 한 판을 만들어요.';
   const best = progress.best;
   $('#best-line').hidden = !best; if (best) $('#best-line').textContent = `최고 ${best.score}점 · ${best.correct}/${best.total}`;
-  const warn = atlas((c) => c.summary().storage?.warning) || (!coach ? '학습 기록을 쓸 수 없어 기본 순서로 진행해요.' : null) || (!saved ? '이 브라우저에 진행을 저장할 수 없어요.' : null);
+  const warn = atlas((c) => c.summary().storage?.warning) || (!coach ? '학습 기록을 쓸 수 없어서 기본 순서로 진행해요.' : null) || (!saved ? '이 브라우저에 진행을 저장할 수 없어요.' : null);
   $('#storage-note').hidden = !warn; $('#storage-note').textContent = warn || '';
   $('#reset-learning').hidden = hosted;
   if (hosted) $('#learning-scope').textContent = 'WORLD에서 선택한 계정의 학습 기록으로 연결해요. 기록 공유와 삭제는 WORLD 계정 설정에서 관리해요.';
@@ -148,7 +148,7 @@ async function startRound() {
     // WebGL을 만들 수 없는 기기·브라우저: 빈 화면에 멈추지 않고 입구에서 알린다
     renderLobby();
     $('#storage-note').hidden = false;
-    $('#storage-note').textContent = '이 브라우저에서는 3D 화면을 만들 수 없어요. 다른 브라우저(크롬·사파리 최신판)로 열어 주세요.';
+    $('#storage-note').textContent = '이 브라우저에서는 3D 화면을 띄울 수 없어요. 크롬이나 사파리 최신판으로 열어 주세요.';
     return;
   }
   if (!live(run)) return;
@@ -197,9 +197,9 @@ function startPractice() {
   const opts = shuffled(PRACTICE.options);
   state.practice.options = opts;
   renderSentence(PRACTICE, { kicker: '연습 문장' });
-  tip('빛나는 조각이 빈칸에 맞는 말이에요. 손가락이나 마우스로 그어 베어 보세요.', { silent: true });
+  tip('빛나는 조각이 빈칸에 들어갈 말이에요. 손가락이나 마우스로 그어서 베어 보세요.', { silent: true });
   // 화면 읽기 프로그램에는 문장·보기·정답 번호까지 알린다(빛은 눈으로만 보이니까)
-  announce(`연습 문장. ${readBlank(PRACTICE.text)} 보기: ${opts.map((w, i) => `${i + 1} ${w}`).join(', ')}. 정답은 ${opts.indexOf(PRACTICE.answer) + 1}번 ${PRACTICE.answer}${josa(PRACTICE.answer, '이에요', '예요')}. 그어 베거나 숫자 키로 베어 보세요.`);
+  announce(`연습 문장. ${readBlank(PRACTICE.text)} 보기: ${opts.map((w, i) => `${i + 1} ${w}`).join(', ')}. 정답은 ${opts.indexOf(PRACTICE.answer) + 1}번 ${PRACTICE.answer}${josa(PRACTICE.answer, '이에요', '예요')}. 그어서 베거나 숫자 키로 베어 보세요.`);
   after(900, practiceToss);
 }
 function practiceToss() {
@@ -214,7 +214,7 @@ function practiceResult(correct, word, x, y) {
   if (correct) {
     stage.settle();
     after(FEEL.stop.ok, () => flyToBlank(word, x, y, () => landed(word)));
-    tip('좋아요! 이제 진짜 시작이에요. 빛나는 표시는 없어요.');
+    tip('좋아요! 이제부터 진짜예요. 빛나는 표시는 없어요.');
     progress.practiced = true; save();
     state.practice = null;
     after(1700, () => { tip(null); nextItem(); });
@@ -222,7 +222,7 @@ function practiceResult(correct, word, x, y) {
   }
   after(word ? 240 : 0, () => sound.play(sound.pick('calm1', 'calm2')));
   stage.settle({ reveal: pr.options.indexOf(PRACTICE.answer) });
-  if (pr.tries >= 3) { tip('괜찮아요. 하면서 익혀요!'); state.practice = null; progress.practiced = true; save(); after(1400, () => { tip(null); nextItem(); }); return; }
+  if (pr.tries >= 3) { tip('괜찮아요. 하다 보면 익숙해져요!'); state.practice = null; progress.practiced = true; save(); after(1400, () => { tip(null); nextItem(); }); return; }
   tip(word ? `‘${word}’${josa(word, '은', '는')} 빈칸에 맞지 않아요. 빛나는 조각을 베어 봐요.` : '조각이 떨어졌어요. 다시 던질게요!');
   after(1100, practiceToss);
 }
@@ -315,7 +315,7 @@ function showAnswerCheck(cur) {
     button.onclick = () => confirmReading(cur, word); return button;
   }));
   $('#answer-check').hidden = false; $('#check-title').focus({ preventScroll: true });
-  announce('시간 제한 없이 빈칸에 맞는 말을 골라 주세요. 아직 정답은 공개하지 않았어요.');
+  announce('시간 제한 없이 빈칸에 맞는 말을 골라 주세요. 정답은 아직 보여 주지 않았어요.');
 }
 
 /** 놓친 문장에서 멈춘 보기로 고른 답. 베기 점수·연속은 주지 않고(베지 않았으니), 읽기 기록에만 남긴 뒤 정답과 이유를 보인다. */
@@ -351,8 +351,8 @@ function onSwing({ speed, x, to }) { sound.sfx('whoosh', { power: swingPower(spe
 
 function showExplain(item, choice, readingChoice) {
   fillBlank(item.answer, 'answer');
-  $('#x-kicker').textContent = choice != null ? `정답은 ‘${item.answer}’ · 벤 말 ‘${choice}’`
-    : readingChoice === item.answer ? `놓쳤어요 · 고른 답 ‘${readingChoice}’ 맞아요` : `놓쳤어요 · 고른 답 ‘${readingChoice}’ · 정답은 ‘${item.answer}’`;
+  $('#x-kicker').textContent = choice != null ? `정답은 ‘${item.answer}’ · 내가 벤 말은 ‘${choice}’`
+    : readingChoice === item.answer ? `조각은 놓쳤지만 고른 답 ‘${readingChoice}’${josa(readingChoice, '이', '가')} 맞아요` : `조각을 놓쳤어요 · 고른 답은 ‘${readingChoice}’, 정답은 ‘${item.answer}’`;
   $('#x-sentence').innerHTML = esc(filled(item, '\u0000')).replace('\u0000', `<b>${esc(item.answer)}</b>`);
   $('#x-why').textContent = item.why;
   $('#explain').hidden = false;
@@ -459,7 +459,7 @@ function finish() {
   $('#r-mongle').src = s.stars >= 2 ? 'kit/brand/mongle-smile.webp' : 'kit/brand/mongle-cheer.webp';
   const notes = [`점수 ${s.score}점`];
   if (s.bestRun >= 3) notes.push(`최고 ${s.bestRun}연속`);
-  if (s.missed) notes.push(`놓친 문장 ${s.missed}개(멈춘 보기에서 ${state.results.filter((r) => r.correct === null && r.readingCorrect).length}개 맞힘)`);
+  if (s.missed) notes.push(`놓친 문장 ${s.missed}개(멈춘 화면에서 ${state.results.filter((r) => r.correct === null && r.readingCorrect).length}개 맞힘)`);
   $('#r-note').textContent = notes.join(' · ');
   const log = $('#r-log'); log.textContent = '';
   state.results.forEach((r) => {
@@ -468,13 +468,13 @@ function finish() {
     const mark = r.correct === true ? '맞음' : r.correct === false ? '다시 볼 것' : '놓침';
     li.innerHTML = `<img class="mark" src="${r.correct === true ? 'kit/felt/badge-check.webp' : r.correct === false ? 'assets/felt/drop.webp' : 'kit/felt/badge-cream.webp'}" alt="${mark}">
       <span class="body"><span class="sent">${esc(filled(item, '\u0000')).replace('\u0000', `<b>${esc(item.answer)}</b>`)}</span>
-      <small>${esc(KIND_LABEL[item.kind] || '')}${r.correct === false ? ` · 벤 말 ‘${esc(r.choice)}’` : ''}${r.correct === null ? ` · 놓침 · 멈춘 보기에서 고른 답 ‘${esc(r.readingChoice)}’ ${r.readingCorrect ? '맞음' : '다시 볼 것'}` : ''}</small></span>`;
+      <small>${esc(KIND_LABEL[item.kind] || '')}${r.correct === false ? ` · 내가 벤 말 ‘${esc(r.choice)}’` : ''}${r.correct === null ? ` · 놓침 · 멈춘 화면에서 고른 답 ‘${esc(r.readingChoice)}’ ${r.readingCorrect ? '맞음' : '다시 볼 것'}` : ''}</small></span>`;
     log.append(li);
   });
   const next = atlas((c) => rankItems(c, ITEMS));
   state.ranked = next;
   renderSkills(s, next);
-  $('#r-next-reason').textContent = closed ? '이 WORLD 과제는 끝났어요. 이어서 하려면 WORLD에서 다시 열어 주세요.' : target ? `${assignmentLabel(target)}. WORLD에서 읽기 수행 결과와 다음 과제를 확인해요.` : nextLine(next);
+  $('#r-next-reason').textContent = closed ? '이 WORLD 과제는 끝났어요. 이어서 하려면 WORLD에서 다시 열어 주세요.' : target ? `${assignmentLabel(target)}. WORLD에서 읽기 결과와 다음 과제를 확인해요.` : nextLine(next);
   $('#r-again span').textContent = target ? '목표 문장 다시 풀기' : '다음 판 시작';
   $('#r-again').disabled = closed;
   $('#r-hub').hidden = hosted || !location.pathname.includes('/blank-slice/');
