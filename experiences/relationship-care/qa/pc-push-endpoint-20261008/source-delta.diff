@@ -1,0 +1,113 @@
+diff --git a/lib/synk-care-push-server.js b/lib/synk-care-push-server.js
+index abd272f..351e56d 100644
+--- a/lib/synk-care-push-server.js
++++ b/lib/synk-care-push-server.js
+@@ -10,15 +10,19 @@ function validateEndpoint(value) {
+   if (typeof value !== 'string' || value.length > 2048 || !/^[\x21-\x7e]+$/.test(value)) fail(400, 'INVALID_SUBSCRIPTION');
+   let url;
+   try { url = new URL(value); } catch { fail(400, 'INVALID_SUBSCRIPTION'); }
+-  if (url.protocol !== 'https:' || url.username || url.password || url.port || url.hash || url.href !== value) fail(400, 'INVALID_SUBSCRIPTION');
++  if (url.protocol !== 'https:' || url.username || url.password || url.port || value.includes('#') || url.href !== value) fail(400, 'INVALID_SUBSCRIPTION');
+   // Edge/WNS uses one opaque token in /w/. Restrict its encoded alphabet as well
+   // as its decoded value: no extra query, nested escape, encoded delimiter or path.
+   const wns = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.notify\.windows\.com$/.test(url.hostname)
+     && url.pathname === '/w/' && /^\?token=(?:[A-Za-z0-9_+/-]|%2[bB]|%2[fF])+(?:=|%3[dD]){0,2}$/.test(url.search);
+-  const allowed = (url.hostname === 'fcm.googleapis.com' && /^\/fcm\/send\/[A-Za-z0-9_:-]+$/.test(url.pathname))
++  // Chromium defines these exact production/staging gateways; never allow arbitrary Google subdomains.
++  // https://chromium.googlesource.com/chromium/src/+/refs/tags/141.0.7390.94/components/push_messaging/push_messaging_constants.cc
++  const googlePush = (url.hostname === 'fcm.googleapis.com' && /^\/(?:fcm\/send|wp|preprod\/wp)\/[A-Za-z0-9_:-]+$/.test(url.pathname))
++    || (url.hostname === 'jmt17.google.com' && /^\/fcm\/send\/[A-Za-z0-9_:-]+$/.test(url.pathname));
++  const allowed = googlePush
+     || (url.hostname === 'updates.push.services.mozilla.com' && /^\/wpush\/v2\/[A-Za-z0-9_-]+$/.test(url.pathname))
+     || (url.hostname === 'web.push.apple.com' && /^\/[A-Za-z0-9/_=-]+$/.test(url.pathname) && url.pathname !== '/') || wns;
+-  if (!allowed || (!wns && url.search)) fail(400, 'INVALID_SUBSCRIPTION');
++  if (!allowed || (!wns && value.includes('?'))) fail(400, 'INVALID_SUBSCRIPTION');
+   return value;
+ }
+ 
+diff --git a/supabase/functions/_shared/synk-care-push-runtime.js b/supabase/functions/_shared/synk-care-push-runtime.js
+index a7a8bf3..8f3e027 100644
+--- a/supabase/functions/_shared/synk-care-push-runtime.js
++++ b/supabase/functions/_shared/synk-care-push-runtime.js
+@@ -1738,10 +1738,11 @@ var require_synk_care_push_server = __commonJS({
+       } catch {
+         fail(400, "INVALID_SUBSCRIPTION");
+       }
+-      if (url.protocol !== "https:" || url.username || url.password || url.port || url.hash || url.href !== value) fail(400, "INVALID_SUBSCRIPTION");
++      if (url.protocol !== "https:" || url.username || url.password || url.port || value.includes("#") || url.href !== value) fail(400, "INVALID_SUBSCRIPTION");
+       const wns = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.notify\.windows\.com$/.test(url.hostname) && url.pathname === "/w/" && /^\?token=(?:[A-Za-z0-9_+/-]|%2[bB]|%2[fF])+(?:=|%3[dD]){0,2}$/.test(url.search);
+-      const allowed = url.hostname === "fcm.googleapis.com" && /^\/fcm\/send\/[A-Za-z0-9_:-]+$/.test(url.pathname) || url.hostname === "updates.push.services.mozilla.com" && /^\/wpush\/v2\/[A-Za-z0-9_-]+$/.test(url.pathname) || url.hostname === "web.push.apple.com" && /^\/[A-Za-z0-9/_=-]+$/.test(url.pathname) && url.pathname !== "/" || wns;
+-      if (!allowed || !wns && url.search) fail(400, "INVALID_SUBSCRIPTION");
++      const googlePush = url.hostname === "fcm.googleapis.com" && /^\/(?:fcm\/send|wp|preprod\/wp)\/[A-Za-z0-9_:-]+$/.test(url.pathname) || url.hostname === "jmt17.google.com" && /^\/fcm\/send\/[A-Za-z0-9_:-]+$/.test(url.pathname);
++      const allowed = googlePush || url.hostname === "updates.push.services.mozilla.com" && /^\/wpush\/v2\/[A-Za-z0-9_-]+$/.test(url.pathname) || url.hostname === "web.push.apple.com" && /^\/[A-Za-z0-9/_=-]+$/.test(url.pathname) && url.pathname !== "/" || wns;
++      if (!allowed || !wns && value.includes("?")) fail(400, "INVALID_SUBSCRIPTION");
+       return value;
+     }
+     function validKey(value, length) {
+diff --git a/tests/care-push.test.js b/tests/care-push.test.js
+index 5bca81b..2d38e1c 100644
+--- a/tests/care-push.test.js
++++ b/tests/care-push.test.js
+@@ -7,7 +7,7 @@ const { createPgStore } = require('../lib/synk-store');
+ const { createCareStore } = require('../lib/synk-care-store');
+ const { createCarePushStore } = require('../lib/synk-care-push-store');
+ const { createCarePushService, validateSubscription, MAX_BODY_BYTES } = require('../lib/synk-care-push-server');
+-const { createCarePushDue } = require('../lib/synk-care-push-worker');
++const { createCarePushDue, createCarePushSender } = require('../lib/synk-care-push-worker');
+ const { validateChecksum, deriveCheckQuery } = require('../tools/마이그레이션_합본');
+ const migrationFile = path.join(__dirname, '../supabase/migrations/20261007130000_synk_care_push_c16.sql');
+ const migration = fs.readFileSync(migrationFile, 'utf8');
+@@ -143,6 +143,53 @@ test('SSRF, ambiguous URL normalization, malformed keys and extra ownership inpu
+   }
+ });
+ 
++test('all four Chromium Google gateways register, dispatch once and support device settings', async () => {
++  const bases = ['https://fcm.googleapis.com/fcm/send/', 'https://fcm.googleapis.com/wp/',
++    'https://fcm.googleapis.com/preprod/wp/', 'https://jmt17.google.com/fcm/send/'];
++  for (const base of bases) {
++    const subscription = { ...sub(), endpoint: base + 'Synthetic_token-123:Ab' };
++    assert.equal(validateSubscription(subscription).endpoint, subscription.endpoint);
++    const a = await opted(undefined, subscription), calls = [];
++    const send = createCarePushSender({ publicKey, privateKey: key.getPrivateKey().toString('base64url'), validateSubscription,
++      webpush: { async sendNotification(sent, payload) { calls.push({ sent, payload }); } } });
++    assert.equal((await a.call({ action: 'status', endpoint: subscription.endpoint })).enabled, true);
++    assert.equal((await process(a.deviceId, send)).outcome, 'sent');
++    assert.equal((await process(a.deviceId, send)).outcome, 'not-due');
++    assert.equal(calls.length, 1);
++    assert.equal(calls[0].sent.endpoint, subscription.endpoint);
++    assert.deepEqual(JSON.parse(calls[0].payload), { type: 'synk-care-digest' });
++    assert.equal((await a.call({ action: 'update', endpoint: subscription.endpoint, hour: 10, minute: 15 })).hour, 10);
++    assert.equal((await a.call({ action: 'unsubscribe', endpoint: subscription.endpoint })).enabled, false);
++  }
++});
++
++test('Google gateway compatibility keeps exact hosts, prefixes and token boundaries before external I/O', async () => {
++  const bases = ['https://fcm.googleapis.com/fcm/send/', 'https://fcm.googleapis.com/wp/',
++    'https://fcm.googleapis.com/preprod/wp/', 'https://jmt17.google.com/fcm/send/'];
++  const endpoints = [
++    'https://jmt18.google.com/fcm/send/synthetic', 'https://push.jmt17.google.com/fcm/send/synthetic',
++    'https://jmt17.google.com.evil.invalid/fcm/send/synthetic', 'https://jmt17.google.com@127.0.0.1/fcm/send/synthetic',
++    'https://jmt17.google.com/wp/synthetic', 'https://jmt17.google.com/preprod/wp/synthetic',
++    'https://fcm.googleapis.com/preprod/fcm/send/synthetic', 'https://fcm.googleapis.com/other/wp/synthetic',
++    'https://fcm.googleapis.com/wpush/synthetic', 'https://jmt17.google.com/fcm/sendish/synthetic',
++  ];
++  for (const base of bases) {
++    endpoints.push(base, ...['a/b', 'a\\b', 'a+b', 'a=b', 'a.b', 'a%2Fb', '%61mbiguous', 'a%00b', 'a%252Fb', '%2e%2e/a', 'a?', 'a#', 'a?token=x', 'a#fragment'].map(token => base + token),
++      base.replace('https:', 'http:') + 'a', base.replace('https://', 'https://user@') + 'a',
++      base.replace('.com/', '.com:443/') + 'a', base.replace('.com/', '.com:8443/') + 'a',
++      base.replace('.com/', '.com/x/../') + 'a');
++  }
++  let externalCalls = 0;
++  const send = createCarePushSender({ publicKey, privateKey: key.getPrivateKey().toString('base64url'), validateSubscription,
++    webpush: { async sendNotification() { externalCalls++; } } });
++  for (const endpoint of endpoints) {
++    const subscription = { ...sub(), endpoint };
++    assert.throws(() => validateSubscription(subscription), { code: 'INVALID_SUBSCRIPTION' }, endpoint);
++    await assert.rejects(send({ subscription }), { code: 'INVALID_SUBSCRIPTION' }, endpoint);
++  }
++  assert.equal(externalCalls, 0);
++});
++
+ test('Edge WNS accepts a single opaque base64 token only on canonical notify.windows.com gateways', () => {
+   const base = 'https://wns2-par02p.notify.windows.com/w/';
+   for (const endpoint of [base + '?token=BQYAA_synthetic-/+==', base + '?token=BQYAA%2Fsynthetic%2bvalue%3D%3d', 'https://a.notify.windows.com/w/?token=synthetic']) {

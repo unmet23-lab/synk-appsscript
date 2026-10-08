@@ -1,0 +1,51 @@
+{
+  "method": "manual-browser",
+  "fixture": "Synthetic account adapter and transport; actual public app and document-sync",
+  "pending": {
+    "importDisabled": true,
+    "importVisible": true,
+    "inert": true,
+    "mainHidden": true,
+    "refreshDisabled": true,
+    "status": "내 계정과 수첩을 불러오고 있어요."
+  },
+  "firstFailure": {
+    "busy": "false",
+    "detail": "QA_NETWORK_OFFLINE 수첩을 확인하기 전에는 내용을 바꾸거나 기기 수첩을 옮기지 않아요. 위의 ‘계정 자료 다시 불러오기’를 눌러 다시 시도해 주세요.",
+    "importDisabled": true,
+    "inert": true,
+    "mainHidden": true,
+    "refreshDisabled": false,
+    "refreshLabel": "계정 자료 다시 불러오기",
+    "status": "계정 수첩을 아직 불러오지 못했어요."
+  },
+  "retry": {
+    "hasSyntheticPerson": true,
+    "importDisabled": false,
+    "inert": false,
+    "mainHidden": false,
+    "status": "SYNK 계정에 저장했어요"
+  },
+  "idle": {
+    "homeHidden": true,
+    "inert": false,
+    "mainHidden": false,
+    "personName": "저장 대기 검증",
+    "status": "내 SYNK 계정에 연결됨",
+    "workspaceHidden": false
+  },
+  "inflightEdit": {
+    "inert": false,
+    "mainHidden": false,
+    "personName": "두 번째 저장",
+    "workspaceHidden": false
+  },
+  "saved": {
+    "inert": false,
+    "mainHidden": false,
+    "personName": "두 번째 저장",
+    "status": "SYNK 계정에 저장했어요",
+    "workspaceHidden": false
+  },
+  "limits": "Not production OAuth or a physical phone test."
+}

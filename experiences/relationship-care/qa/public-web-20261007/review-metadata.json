@@ -1,0 +1,118 @@
+{
+  "startedAt": "2026-10-06T20:33:41.661Z",
+  "sessionId": "42e9c55f-5bf5-4c20-abd8-6939cab7cc7f",
+  "requestedModel": "claude-opus-5-5",
+  "requestedEffort": "max",
+  "cli": "official Claude Code",
+  "authMethod": "claude.ai",
+  "subscriptionType": "max",
+  "tools": [
+    "Read",
+    "Glob",
+    "Grep"
+  ],
+  "scope": "read-only Care public website build and single production public client provisioning",
+  "files": [
+    {
+      "file": "tools/prepare-care-public.mjs",
+      "sha256": "85726efa55d1df0df6a2fada11140e38df1a98a09fbffaaa753bd8650ad51460",
+      "finalSha256": "85726efa55d1df0df6a2fada11140e38df1a98a09fbffaaa753bd8650ad51460"
+    },
+    {
+      "file": "experiences/relationship-care/app.mjs",
+      "sha256": "ded7c7eca072df1d94987e2aa580e60e7c0f1192a449ff745a407b574435bdbf",
+      "finalSha256": "ded7c7eca072df1d94987e2aa580e60e7c0f1192a449ff745a407b574435bdbf"
+    },
+    {
+      "file": "experiences/relationship-care/index.html",
+      "sha256": "b662110d3205396f149c75a53cbee5c9a0302e831b0242ab1f44affe4d263d29",
+      "finalSha256": "b662110d3205396f149c75a53cbee5c9a0302e831b0242ab1f44affe4d263d29"
+    },
+    {
+      "file": "experiences/relationship-care/tests/account.test.mjs",
+      "sha256": "dc18fc044f428baf0f5f71711a74eaed6f74e86b21814e228885f1a286a9d023",
+      "finalSha256": "dc18fc044f428baf0f5f71711a74eaed6f74e86b21814e228885f1a286a9d023"
+    },
+    {
+      "file": "experiences/relationship-care/tests/public-build.test.mjs",
+      "sha256": "8a4ddad65c1c9e70673b535fa02eaf5809420d071c00a804036b7cd8894b3b5d",
+      "finalSha256": "8a4ddad65c1c9e70673b535fa02eaf5809420d071c00a804036b7cd8894b3b5d"
+    },
+    {
+      "file": "experiences/synk-account/src/product-account.mjs",
+      "sha256": "b1d2d5a4c58e24d4d673b25b6a168eade10b48202387c9898839edfc2c320715",
+      "finalSha256": "b1d2d5a4c58e24d4d673b25b6a168eade10b48202387c9898839edfc2c320715"
+    },
+    {
+      "file": "tools/synk-id/care-public-provision.cjs",
+      "sha256": "0717aae801187dc6525cb3a721b88cae0ab0614d84078ee8ca99b62646a5764e",
+      "finalSha256": "0717aae801187dc6525cb3a721b88cae0ab0614d84078ee8ca99b62646a5764e"
+    },
+    {
+      "file": "tools/synk-id/registry.cjs",
+      "sha256": "4329200d149b97dfd8eeeef25c09c2f9351aee97b1b11b9aeba4d43414837f2f",
+      "finalSha256": "4329200d149b97dfd8eeeef25c09c2f9351aee97b1b11b9aeba4d43414837f2f"
+    },
+    {
+      "file": "tests/synk-id-care-public.test.cjs",
+      "sha256": "5b6c678684827c787cd886dcf0dd5a733d63ee785d47f665a584a48c7e7df03f",
+      "finalSha256": "5b6c678684827c787cd886dcf0dd5a733d63ee785d47f665a584a48c7e7df03f"
+    },
+    {
+      "file": "tools/synk-id/CARE-PUBLIC.md",
+      "sha256": "ea615c466b86e6fd76ae9cb42119a51dba17f166dbd4fa480524101d43e8417a",
+      "finalSha256": "ea615c466b86e6fd76ae9cb42119a51dba17f166dbd4fa480524101d43e8417a"
+    },
+    {
+      "file": "experiences/synk-account/src/core.mjs",
+      "sha256": "5c85d1d957403ba1b04795e115d9cb40f26ede59e8dbbfbaa743666ee3e1cbbd",
+      "finalSha256": "5c85d1d957403ba1b04795e115d9cb40f26ede59e8dbbfbaa743666ee3e1cbbd"
+    },
+    {
+      "file": "tools/synk-id/provision-apply.cjs",
+      "sha256": "f8905297dec1cf296cc0397d50fab83387423100be4b8e91da8e73ea87634d67",
+      "finalSha256": "f8905297dec1cf296cc0397d50fab83387423100be4b8e91da8e73ea87634d67"
+    },
+    {
+      "file": "tools/synk-id/provision-plan.cjs",
+      "sha256": "80522674dea89ecf63b4c92b62cfe7bd7b296b7002c6984ca201196751ef0f8f",
+      "finalSha256": "80522674dea89ecf63b4c92b62cfe7bd7b296b7002c6984ca201196751ef0f8f"
+    },
+    {
+      "file": "tools/synk-id/public-config.cjs",
+      "sha256": "532c8a770a5515cc4d04855846e17dbc3336860c34e58f6ef77dd7263aec494b",
+      "finalSha256": "532c8a770a5515cc4d04855846e17dbc3336860c34e58f6ef77dd7263aec494b"
+    },
+    {
+      "file": "tools/synk-id/prepare-portal.mjs",
+      "sha256": "001804b368be5692384f6f6600e85f9e72e5dd29fec9ba4c4fb2684e2b120a31",
+      "finalSha256": "001804b368be5692384f6f6600e85f9e72e5dd29fec9ba4c4fb2684e2b120a31"
+    }
+  ],
+  "completedAt": "2026-10-06T20:47:25.236Z",
+  "exitCode": 0,
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "isError": false,
+  "subtype": "success",
+  "terminalReason": "completed",
+  "permissionDenials": [],
+  "durationMs": 774130,
+  "usedTools": [
+    "Glob",
+    "Grep",
+    "Read"
+  ],
+  "filesUnchanged": true,
+  "changedFiles": [],
+  "conclusion": "pass-no-P0-P2",
+  "reviewerRanTests": false,
+  "remoteMutation": false,
+  "scopeLimitations": [
+    "Actual provider login and physical mobile devices were not tested.",
+    "Post-publication MIME, care path normalization, and logout CORS require separate verification.",
+    "Referenced build sources outside the 15-file snapshot require existing reviewed source manifest comparison.",
+    "Backend redeployment and full generic provision.cjs were outside reviewer scope."
+  ]
+}

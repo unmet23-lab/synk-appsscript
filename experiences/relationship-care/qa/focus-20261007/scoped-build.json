@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "index.html",
+    "style.css",
+    "app.mjs",
+    "care-account-view.mjs",
+    "care-focus.mjs"
+  ],
+  "unchanged": 35,
+  "baseline": "8239752c7626012502b0e287e1c96b312af5d712"
+}

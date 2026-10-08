@@ -1,0 +1,11 @@
+{
+  "status": 200,
+  "elapsedMs": 7356,
+  "syntheticFixture": "korean-rhythm/t0q0r",
+  "text": "내일은 바빠서 오늘 도서관에 가요. 도서관에는 오늘 가나요.",
+  "language": "ko",
+  "durationSeconds": 6.408,
+  "mode": "local-whisper",
+  "speakerSeparation": false,
+  "needsReview": true
+}

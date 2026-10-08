@@ -37,4 +37,7 @@ const CLIENTS = freeze([
 const LEGACY_CLIENT_IDS = freeze(Object.fromEntries(['production', 'rehearsal'].map(environment => [environment,
   Object.fromEntries(CLIENTS.filter(client => client.knownIds?.[environment]).map(client => [client.service, client.knownIds[environment]])),
 ])));
-module.exports = { SERVICES, CLIENTS, LEGACY_CLIENT_IDS, TOOL_REDIRECTS: CLIENTS.find(client => client.id === 'tools-legacy').redirectUris };
+// Public-site registrations do not enter the local config generators.
+// The dedicated provisioner preserves the existing loopback/native bindings.
+const PUBLIC_CARE_CLIENT = freeze({ id: 'care-public-browser', service: 'care', product: 'platform', runtime: 'browser', environment: 'production', redirectUris: ['https://synk.im/care/'] });
+module.exports = { SERVICES, CLIENTS, PUBLIC_CARE_CLIENT, LEGACY_CLIENT_IDS, TOOL_REDIRECTS: CLIENTS.find(client => client.id === 'tools-legacy').redirectUris };

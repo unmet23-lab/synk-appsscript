@@ -1,0 +1,20 @@
+✔ personal state rejects NUL and lone surrogates before PostgreSQL persistence (2.9972ms)
+✔ personal browser sends resource in GET query and POST body exclusively (63.6634ms)
+✔ native personal bridge request alias verifies its owner and fixed resource (0.8381ms)
+✔ browser and native document errors preserve only an identified missing original UUID (6.0937ms)
+✔ browser originals upload to staging without account headers and confirm the exact immutable digest (56.545ms)
+✔ read returns original bytes and strips signed addresses from the result (8.9055ms)
+✔ media failure preserves a validated missing asset id without copying provider fields (1.9638ms)
+✔ signed URL origin, owner, stage, query and redirect traps are rejected before a transfer (2.8488ms)
+✔ invalid owner, asset, upload confirmation and unchanged-length byte tampering never reach the album (4.7184ms)
+✔ stream overflow, short body and wrong MIME are rejected (4.0355ms)
+✔ late upload cannot confirm after account change and source mutations cannot alter copied bytes (5.1335ms)
+✔ media request rejects foreign routing parameters, excess size and unsupported types (2.5184ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 527.3218

@@ -1,0 +1,22 @@
+{
+  "commit": "cb4c6fc151806cf264ede6bf7815d4b6284a64d3",
+  "parent": "4a93d2737d7e08279aed50096d4f56fac675ab75",
+  "baseline": "68b4cc3b2afb758af62112b7cd31ad004b908544",
+  "candidate": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\care-push-public-20261007-v4",
+  "files": [
+    "care/app.mjs",
+    "care/assets/apple-touch-icon180.png",
+    "care/assets/icon192.png",
+    "care/assets/icon512.png",
+    "care/build-manifest.json",
+    "care/care-push.mjs",
+    "care/care-sw.js",
+    "care/index.html",
+    "care/manifest.webmanifest",
+    "care/style.css",
+    "care/vendor/account/product-account.mjs"
+  ],
+  "unchangedPublicDependencies": 36,
+  "publicFileCount": 47,
+  "rootSourceGitCommit": null
+}

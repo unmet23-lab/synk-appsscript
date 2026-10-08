@@ -1,0 +1,27 @@
+Review the scoped SYNK Care Web Push release READ ONLY in Korean. User explicitly requires official Claude Opus 5.5 maximum effort. Only use Read/Grep/Glob; do not edit, deploy, read credentials/.env/config/private records or browse. Files:
+C:\Users\q1212\Documents\SYNK-appsscript\experiences\relationship-care\app.mjs
+C:\Users\q1212\Documents\SYNK-appsscript\experiences\relationship-care\index.html
+C:\Users\q1212\Documents\SYNK-appsscript\experiences\relationship-care\style.css
+C:\Users\q1212\Documents\SYNK-appsscript\experiences\relationship-care\care-push.mjs
+C:\Users\q1212\Documents\SYNK-appsscript\experiences\relationship-care\care-sw.js
+C:\Users\q1212\Documents\SYNK-appsscript\experiences\relationship-care\manifest.webmanifest
+C:\Users\q1212\Documents\SYNK-appsscript\experiences\relationship-care\server.mjs
+C:\Users\q1212\Documents\SYNK-appsscript\experiences\relationship-care\tests\care-push.test.mjs
+C:\Users\q1212\Documents\SYNK-appsscript\experiences\relationship-care\tests\account.test.mjs
+C:\Users\q1212\Documents\SYNK-appsscript\experiences\relationship-care\tests\public-build.test.mjs
+C:\Users\q1212\Documents\SYNK-appsscript\experiences\synk-account\src\product-account.mjs
+C:\Users\q1212\Documents\SYNK-appsscript\tools\prepare-care-public.mjs
+C:\Users\q1212\Documents\SYNK-talk-care-release-20261006\lib\synk-care-push-store.js
+C:\Users\q1212\Documents\SYNK-talk-care-release-20261006\lib\synk-care-push-server.js
+C:\Users\q1212\Documents\SYNK-talk-care-release-20261006\lib\synk-care-push-worker.js
+C:\Users\q1212\Documents\SYNK-talk-care-release-20261006\tools\synk-care-push-build.js
+C:\Users\q1212\Documents\SYNK-talk-care-release-20261006\supabase\migrations\20261007130000_synk_care_push_c16.sql
+C:\Users\q1212\Documents\SYNK-talk-care-release-20261006\supabase\functions\synk-care-push\index.ts
+C:\Users\q1212\Documents\SYNK-talk-care-release-20261006\supabase\functions\synk-care-push\동봉.json
+C:\Users\q1212\Documents\SYNK-talk-care-release-20261006\supabase\functions\synk-care-push-send\index.ts
+C:\Users\q1212\Documents\SYNK-talk-care-release-20261006\supabase\functions\synk-care-push-send\동봉.json
+C:\Users\q1212\Documents\SYNK-talk-care-release-20261006\tests\care-push.test.js
+C:\Users\q1212\Documents\SYNK-talk-care-release-20261006\tests\care-push-integration.test.js
+Dependencies only if needed: C:/Users/q1212/Documents/SYNK-talk-care-release-20261006/lib/synk-store.js and synk-auth.js, C:/Users/q1212/Documents/SYNK-appsscript/experiences/relationship-care/model.mjs/care-account-view.mjs.
+Feature: account opt-in per browser; daily Korea-time generic reminder only scheduled event reminderDays or followup due exactly today. User must explicitly enable; no permission on boot. Server durable claim then lock account and recheck latest notebook + session; at most3 retry only known nonacceptance(429/5xx), 90m grace; unknown result no retry; payload fixed generic no personal names. Deleted notebook, revoked/all sessions, account deletion clears subscriptions. Same session new endpoint inherits receipt. Gateway allowlist SSRF + no redirect(web-push3.6.7). Worker service-role exact match + platform JWT verified true. Separate new funcs preserve existing Care API. Login adapter fixed route and ownership validation.
+Look for actual P0 data/auth issues, P1 broken feature/races/invalid support claims, P2 usability defects. Cite file + line + trigger for real problems; no invented findings or asking mandatory extra steps beyond user scope. Pay attention startup signed-out emitted before restoration should not unsubscribe, async account changes and late subscribe, unsubscription failures, deleted notebook stale UI, worker SQL real postgres locking, 1daily duplicate prevention, future reminders, public CSP/install manifest. Tests include PGlite real postgres serializer/security/concurrency/deletion/completion; frontend25 lifecycle/SW, core auth tests. Current UI browser control unavailable (no real push receipt claimed yet). Report uninspected scope and concise real findings; if none say no P0-P2 found. This is final pre-release code review; do not claim live delivery or real devices checked.

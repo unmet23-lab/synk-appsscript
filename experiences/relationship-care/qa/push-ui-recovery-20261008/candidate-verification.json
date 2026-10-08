@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-08T00:31:35.348Z",
+  "candidate": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\care-push-ui-candidate-20261008-v2",
+  "manifestSha256": "5b68da554931989c9835a069632d10ecb14cac75a95ae1e0d1294fab315ecf48",
+  "sourceCount": 46,
+  "fileCount": 48,
+  "publicBaseline": "b4791aebd0d1cefa7314bebb3e76a9664ca6a835",
+  "publicDelta": [
+    "app.mjs",
+    "build-manifest.json",
+    "care-push.mjs",
+    "index.html",
+    "style.css"
+  ],
+  "sourceAndArtifactHashesVerified": true
+}

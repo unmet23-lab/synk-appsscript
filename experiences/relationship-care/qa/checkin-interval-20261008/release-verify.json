@@ -1,0 +1,61 @@
+{
+  "stage": "verify",
+  "at": "2026-10-07T21:07:40.204Z",
+  "project": "Synk Core",
+  "head": "45ea9030551aeeaf7728c86c110f7ffb6c2571d0",
+  "functions": [
+    {
+      "slug": "synk-care",
+      "status": "ACTIVE",
+      "version": 11,
+      "verify_jwt": true
+    },
+    {
+      "slug": "synk-care-push",
+      "status": "ACTIVE",
+      "version": 9,
+      "verify_jwt": true
+    },
+    {
+      "slug": "synk-care-push-send",
+      "status": "ACTIVE",
+      "version": 9,
+      "verify_jwt": true
+    }
+  ],
+  "comparison": [
+    {
+      "slug": "synk-care",
+      "runtimeMatches": true,
+      "entrypointStaticComparison": "unmeasured: no Korean comment anchors",
+      "exitCode": 2
+    },
+    {
+      "slug": "synk-care-push",
+      "runtimeMatches": true,
+      "entrypointStaticComparison": "unmeasured: no Korean comment anchors",
+      "exitCode": 2
+    },
+    {
+      "slug": "synk-care-push-send",
+      "runtimeMatches": true,
+      "entrypointStaticComparison": "unmeasured: no Korean comment anchors",
+      "exitCode": 2
+    }
+  ],
+  "anonymous": [
+    {
+      "slug": "synk-care",
+      "status": 401
+    },
+    {
+      "slug": "synk-care-push",
+      "status": 401
+    },
+    {
+      "slug": "synk-care-push-send",
+      "status": 401
+    }
+  ],
+  "ok": true
+}

@@ -1,0 +1,28 @@
+✔ migration is checksum valid, idempotent, RLS closed with no direct client grants (6355.166ms)
+✔ subscribe is opt-in and status is device/account specific, with no learning grant (1026.909ms)
+✔ a notebook must be saved before enabling and there are at most ten active sessions (3199.3949ms)
+✔ endpoint rotation retains the session daily receipt and daily registration is bounded (4755.5335ms)
+✔ SSRF, ambiguous URL normalization, malformed keys and extra ownership input are rejected (126.6938ms)
+✔ Edge WNS accepts a single opaque base64 token only on canonical notify.windows.com gateways (11.9371ms)
+✔ API guards product, contract, method, path, query, body size and unavailable configuration (41.8164ms)
+✔ current JWT refresh remains bound to the canonical session issuance (440.9309ms)
+✔ same-account login status rebinds an enabled endpoint while preserving its daily receipt (1367.0691ms)
+✔ automatic status binding preserves ownership for same-second sessions; explicit update can move it (508.8884ms)
+✔ a same-account status probe never revives or rebinds an explicitly disabled endpoint (250.0075ms)
+✔ two competing workers send once and later same-day evaluation stays settled (474.1487ms)
+✔ the chosen minute, KST day and 90-minute expiry fence dispatch (648.5127ms)
+✔ retries need explicit rejection, stop at three attempts and unknown delivery is not repeated (129.6176ms)
+✔ opt-out erases delivery keys, keeps same-day receipt and gone removes endpoint (500.1662ms)
+✔ completed, postponed and no-due notebooks do not produce a generic nudge (1282.7124ms)
+✔ a save between durable claim and dispatch is read again under the account lock (422.2545ms)
+✔ revocation, global logout, account deletion and notebook erasure cancel subscriptions (815.6243ms)
+✔ revocation after claim prevents any external send (214.0088ms)
+✔ independent reproduction: old tab status must not move the newer session binding backward (800.5163ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 23568.42

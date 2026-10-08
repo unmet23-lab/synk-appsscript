@@ -1,0 +1,81 @@
+{
+  "checkedAt": "2026-10-07T19:46:15.693Z",
+  "gatePassed": true,
+  "actualModel": "claude-opus-5-5",
+  "effort": "max",
+  "officialCli": "C:/Users/q1212/.local/bin/claude.exe",
+  "argvEvidence": [
+    "--print",
+    "--model",
+    "claude-opus-5-5",
+    "--effort",
+    "max",
+    "--output-format",
+    "json",
+    "--tools",
+    "Read,Grep,Glob",
+    "--permission-mode",
+    "plan"
+  ],
+  "sourceInventory": "claude-source-inventory.json",
+  "sourceFilesVerified": 18,
+  "hashVerifiedBy": "primary agent",
+  "remainingP0P1P2": 0,
+  "resolved": [
+    "account capability forwarding",
+    "legacy local recovery conflict",
+    "recovery query failure forces recheck",
+    "withdrawal summary uses full library",
+    "legacy deletion at capacity"
+  ],
+  "releaseConditions": [
+    "backend before frontend",
+    "successful real account adapter production roundtrip and synthetic cleanup"
+  ],
+  "reviews": [
+    {
+      "file": "claude-review.json",
+      "sessionId": "efdf0e65-e7f0-4ec9-9a24-8a47f65d2349",
+      "actualModels": [
+        "claude-opus-5-5"
+      ],
+      "requestedModel": "claude-opus-5-5",
+      "effort": "max",
+      "exitCode": 0,
+      "stopReason": "end_turn"
+    },
+    {
+      "file": "claude-delta-review.json",
+      "sessionId": "de694b9b-3d88-45eb-94d5-f691ba32555b",
+      "actualModels": [
+        "claude-opus-5-5"
+      ],
+      "requestedModel": "claude-opus-5-5",
+      "effort": "max",
+      "exitCode": 0,
+      "stopReason": "end_turn"
+    },
+    {
+      "file": "claude-final-review.json",
+      "sessionId": "efdf0e65-e7f0-4ec9-9a24-8a47f65d2349",
+      "actualModels": [
+        "claude-opus-5-5"
+      ],
+      "requestedModel": "claude-opus-5-5",
+      "effort": "max",
+      "exitCode": 0,
+      "stopReason": "end_turn"
+    },
+    {
+      "file": "claude-offline-review.json",
+      "sessionId": "efdf0e65-e7f0-4ec9-9a24-8a47f65d2349",
+      "actualModels": [
+        "claude-opus-5-5"
+      ],
+      "requestedModel": "claude-opus-5-5",
+      "effort": "max",
+      "exitCode": 0,
+      "stopReason": "end_turn"
+    }
+  ]
+}

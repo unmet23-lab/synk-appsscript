@@ -1,0 +1,188 @@
+diff --git "a/docs/\355\224\214\353\240\210\354\240\200_\352\263\204\354\240\225\353\263\264\352\264\200_API.md" "b/docs/\355\224\214\353\240\210\354\240\200_\352\263\204\354\240\225\353\263\264\352\264\200_API.md"
+index f29b35d..f7edceb 100644
+--- "a/docs/\355\224\214\353\240\210\354\240\200_\352\263\204\354\240\225\353\263\264\352\264\200_API.md"
++++ "b/docs/\355\224\214\353\240\210\354\240\200_\352\263\204\354\240\225\353\263\264\352\264\200_API.md"
+@@ -11,7 +11,7 @@
+ | 요청 | 본문 | 결과 |
+ |---|---|---|
+ | GET | 없음 | 로그인한 본인의 현재 기록 조회 |
+-| POST 저장 | `{action:"save", expected_revision, state, messageLibraryVersion:1}` | 검증한 전체 기록 저장. 보관함이 없는 구자료는 표식 생략 허용 |
++| POST 저장 | `{action:"save", expected_revision, state, messageLibraryVersion:1, checkinPreferenceVersion:1}` | 검증한 전체 기록 저장. 해당 선택 필드가 없는 구자료는 그 표식 생략 허용 |
+ | POST 삭제 | `{action:"delete", expected_revision}` | 기록 내용 삭제, revision은 증가 |
+ 
+ 성공은 `{ok:true, scope:"synk-care", accountId, revision, updatedAt, state}`다. `accountId`는 서버가 정한 `synk_user_id`이며 클라이언트는 로그인한 계정과 다시 대조한다. 처음 기록이 없으면 `state:null, revision:0`이다. 상태의 정본은 형제 저장소 `experiences/relationship-care/model.mjs`의 `importBackup`이며 서버 런타임에 그대로 동봉한다.
+@@ -26,6 +26,14 @@
+ 
+ 새 클라이언트는 저장 **요청 본문**에 `messageLibraryVersion:1`을 보낸다. 이 표식은 상태나 백업에 넣지 않는다. 서버는 계정 잠금 안에서 현재 revision을 먼저 확인한 뒤, 기존 저장 자료 또는 입력 사람에 `messageLibrary` 필드가 있는데 표식이 정확히 숫자 1이 아니면 426 `CARE_CLIENT_UPDATE_REQUIRED`를 반환한다. 오류 문구는 “플레저를 새로고침한 뒤 다시 저장해 주세요. 작성한 내용은 기기에 남아 있어요.”다. 상태·revision은 바꾸지 않고, 빠진 필드를 자동 병합하지 않는다. 기존·입력 자료 모두 보관함 필드가 없는 구클라이언트 저장은 허용한다. 조회와 명시적 수첩 삭제는 이 표식 없이 기존 계약대로 동작한다.
+ 
++### 사람별 안부 주기 호환성 · 2026-10-08 로컬 변경
++
++사람의 선택 필드 `checkinIntervalDays`는 정수 `1..365`의 안부 주기 또는 일반 안부 추천을 끄는 `0`을 받는다. 필드 부재는 기존 30일 기본값을 뜻하며, 서버 정규화·조회에서 `30`을 자동으로 추가하지 않는다. 명시적 `30`과 필드 부재, 명시적 `0`을 구분해 저장한다.
++
++새 클라이언트는 저장 요청에 `checkinPreferenceVersion:1`을 보낸다. 기존 `messageLibraryVersion:1`과 별개의 지원 표식이며 상태·백업에는 포함하지 않는다. 계정 잠금과 revision 검사 뒤 기존 저장 자료 또는 입력 사람에 `checkinIntervalDays`가 있으면, 새 표식이 정확히 숫자 1인 경우에만 저장한다. 값의 참·거짓이 아닌 필드 존재를 검사해 `0`도 보호한다. 표식이 없거나 다르면 기존 426 `CARE_CLIENT_UPDATE_REQUIRED`와 같은 안내를 반환하며 저장 자료·revision은 유지한다. 보관함과 안부 주기가 모두 있으면 두 표식이 각각 필요하다.
++
++해당 필드가 없는 계정의 기존 저장은 계속 허용한다. 새 표식을 가진 클라이언트가 필드를 명시적으로 제거하면 기본 30일로 돌아가며 필드 부재를 유지한다. 빠진 값을 자동 병합하지 않는다. 조회·수첩 삭제에는 새 표식이 필요하지 않고, 오래된 revision은 426보다 먼저 기존 409를 반환한다. 최신 앱의 옛 임시기록 복구에서는 계정에 주기 필드가 있지만 임시기록에 없을 때 먼저 충돌 검토를 거쳐야 한다. 요청 표식만 추가한 뒤 옛 임시기록을 자동 저장하면 `0` 설정을 지울 수 있으므로 클라이언트의 복구 보호도 함께 필요하다.
++
+ `expected_revision`이 현재 값과 다르면 409 `REVISION_CONFLICT`와 현재 revision만 반환한다. 삭제 후에도 내용 없는 revision 행을 남겨 다른 기기의 오래된 저장이 삭제 자료를 되살리지 못하게 한다. 새 저장과 삭제는 같은 계정 잠금 안에서 검사·반영한다. 계정 자체의 삭제가 완료되면 해당 행도 지운다.
+ 
+ 잘못된 상태는 400 `INVALID_CARE_STATE`, 인증 만료/철회는 401, 사용할 수 없는 계정·제품은 403, 설정 또는 테이블이 준비되지 않았으면 503 `CARE_UNAVAILABLE`이다. 오류에 기록 원문·토큰·내부 DB 상세를 포함하지 않는다. 응답은 `Cache-Control: no-store`이다.
+@@ -34,7 +42,7 @@
+ 
+ 상태는 압축하지 않은 UTF-8 JSON 기준 4 MiB, 요청 전체는 여기에 32 KiB를 더한 크기까지 받는다. 각 컬렉션의 개수·문자 길이·참조 검사는 모델 정본을 따른다. DB JSONB는 `q.json()`으로 바인딩하며 문자열을 다시 JSON으로 인코딩하지 않는다. DB 표는 RLS를 켜고 `public/anon/authenticated/service_role` 직접 권한을 회수한다.
+ 
+-DB의 `jsonb::text` 한도는 공백 증가를 포함해 5 MiB다. 문구 보관함을 포함한 모델의 모든 컬렉션·중첩 필드를 최대 개수로 잡은 추가 공백 상한은 822,000 byte여서 4 MiB + 상한도 5,016,304 byte로 DB 한도 안이다. 모든 숫자는 10억 이하 정수라 지수 표기 확장도 없다. `tests/synk-care.test.js`는 사람별·수첩 전체 보관함 한도를 확인하고 명시 문구 1,000개를 포함한 정확히 4,194,304 byte의 상태를 실제 postgres 3.4.4 직렬화기와 PGlite로 저장하는 경계시험을 포함한다. 2026-10-08 로컬 시험에서 이 상태는 4,699,476 byte JSONB로 저장됐으며 관련 서버 시험 18개가 통과했다. 컬렉션 상한·행 필드를 바꿀 때는 이 상한 증명·경계시험을 함께 갱신한다.
++DB의 `jsonb::text` 한도는 공백 증가를 포함해 5 MiB다. 문구 보관함과 사람별 안부 주기를 포함한 모델의 모든 컬렉션·중첩 필드를 최대 개수로 잡은 추가 공백 상한은 824,000 byte여서 4 MiB + 상한도 5,018,304 byte로 DB 한도 안이다. 안부 주기 키가 사람 1,000명에게 각각 콜론·쉼표 공백 2개를 더하므로 이전 보관함 상한 822,000 byte에서 2,000 byte 증가한다. 모든 숫자는 10억 이하 정수라 지수 표기 확장도 없다. `tests/synk-care.test.js`는 사람별·수첩 전체 보관함 한도를 확인하고 명시 문구 1,000개와 사람별 주기를 포함한 정확히 4,194,304 byte의 상태를 실제 postgres 3.4.4 직렬화기와 PGlite로 저장하는 경계시험을 포함한다. 2026-10-08 로컬 시험에서 이 상태는 4,698,722 byte JSONB로 저장됐으며 관련 서버 시험 22개가 통과했다. 컬렉션 상한·행 필드를 바꿀 때는 이 상한 증명·경계시험을 함께 갱신한다.
+ 
+ 기존 `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_DB_URL`, `SYNK_OAUTH_CLIENT_PRODUCTS`와 새 기능 플래그 `SYNK_CARE_ENABLED=true`가 필요하다. OAuth 클라이언트 등록·DB 적용·함수 배포·플래그 켜기는 각각 별도 운영 단계다.
+ 
+diff --git a/lib/synk-care-server.js b/lib/synk-care-server.js
+index 636666f..65fb817 100644
+--- a/lib/synk-care-server.js
++++ b/lib/synk-care-server.js
+@@ -6,6 +6,7 @@ const fail = (status, code, extra = {}) => { throw Object.assign(new Error(code)
+ const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+ const exact = (value, keys) => object(value) && Object.keys(value).every(key => keys.includes(key));
+ const hasMessageLibrary = state => Array.isArray(state?.people) && state.people.some(person => object(person) && Object.hasOwn(person, 'messageLibrary'));
++const hasCheckinPreference = state => Array.isArray(state?.people) && state.people.some(person => object(person) && Object.hasOwn(person, 'checkinIntervalDays'));
+ const CLIENT_UPDATE_MESSAGE = '플레저를 새로고침한 뒤 다시 저장해 주세요. 작성한 내용은 기기에 남아 있어요.';
+ 
+ async function readBody(request) {
+@@ -54,7 +55,7 @@ function createCareService({ store, verify, model, enabled = () => false }) {
+       if (request.method === 'POST') {
+         body = await readBody(request);
+         if (!object(body) || !['save', 'delete'].includes(body.action)
+-          || !exact(body, body.action === 'save' ? ['action', 'expected_revision', 'state', 'messageLibraryVersion'] : ['action', 'expected_revision'])
++          || !exact(body, body.action === 'save' ? ['action', 'expected_revision', 'state', 'messageLibraryVersion', 'checkinPreferenceVersion'] : ['action', 'expected_revision'])
+           || !Number.isSafeInteger(body.expected_revision) || body.expected_revision < 0) fail(400, 'INVALID_ACTION');
+         if (body.action === 'save') {
+           if (!object(body.state)) fail(400, 'INVALID_CARE_STATE');
+@@ -64,12 +65,14 @@ function createCareService({ store, verify, model, enabled = () => false }) {
+         }
+       }
+       const data = await store.withAccount(identity, product, async context => {
+-        if (request.method === 'POST' && body.action === 'save' && body.messageLibraryVersion !== 1) {
++        if (request.method === 'POST' && body.action === 'save' && (body.messageLibraryVersion !== 1 || body.checkinPreferenceVersion !== 1)) {
+           // Check the stored payload before normalization while the account lock is held.
+           // Older clients silently discard unknown fields even after loading the latest revision.
+           const current = await context.load();
+           if (body.expected_revision !== current.revision) fail(409, 'REVISION_CONFLICT', { revision: current.revision });
+-          if (hasMessageLibrary(current.state) || hasMessageLibrary(body.state)) fail(426, 'CARE_CLIENT_UPDATE_REQUIRED');
++          if (body.messageLibraryVersion !== 1 && (hasMessageLibrary(current.state) || hasMessageLibrary(body.state))) fail(426, 'CARE_CLIENT_UPDATE_REQUIRED');
++          // Presence matters: zero explicitly disables ordinary check-in suggestions.
++          if (body.checkinPreferenceVersion !== 1 && (hasCheckinPreference(current.state) || hasCheckinPreference(body.state))) fail(426, 'CARE_CLIENT_UPDATE_REQUIRED');
+         }
+         const snapshot = request.method === 'GET' ? await context.load()
+           : body.action === 'save' ? await context.save(normalized, body.expected_revision)
+diff --git a/tests/synk-care.test.js b/tests/synk-care.test.js
+index 4056e78..fb25754 100644
+--- a/tests/synk-care.test.js
++++ b/tests/synk-care.test.js
+@@ -192,6 +192,80 @@ test('message library protection keeps stale CAS, account isolation, revocation
+   assert.equal(freshLegacy.status, 200); assert.equal(freshLegacy.revision, 3);
+ });
+ 
++test('initial explicit check-in preferences require their own capability, including zero and the default thirty days', async () => {
++  const a = await actor();
++  for (const checkinIntervalDays of [0, 1, 30, 365]) {
++    const state = sample(); state.people[0].checkinIntervalDays = checkinIntervalDays;
++    for (const checkinPreferenceVersion of [undefined, 0, '1', 2]) {
++      const result = await a.call({ action: 'save', expected_revision: 0, state, messageLibraryVersion: 1,
++        ...(checkinPreferenceVersion === undefined ? {} : { checkinPreferenceVersion }) });
++      assert.equal(result.status, 426); assert.equal(result.error.code, 'CARE_CLIENT_UPDATE_REQUIRED');
++      assert.equal(result.error.message, '플레저를 새로고침한 뒤 다시 저장해 주세요. 작성한 내용은 기기에 남아 있어요.');
++      assert.equal(result.state, undefined);
++    }
++  }
++  const read = await a.call(); assert.equal(read.revision, 0); assert.equal(read.state, null);
++});
++
++test('supported check-in preferences roundtrip exact zero and integer values without materializing a missing default', async () => {
++  const a = await actor(); let revision = 0;
++  for (const checkinIntervalDays of [0, 30, 1, 365, 0]) {
++    const state = sample(); state.people[0].checkinIntervalDays = checkinIntervalDays;
++    const saved = await a.call({ action: 'save', expected_revision: revision, state, checkinPreferenceVersion: 1 });
++    assert.equal(saved.status, 200); assert.equal(saved.revision, ++revision);
++    assert.equal(saved.state.people[0].checkinIntervalDays, checkinIntervalDays);
++    assert.equal(Object.hasOwn(saved.state, 'checkinPreferenceVersion'), false);
++    assert.deepEqual((await a.call()).state, saved.state);
++  }
++  for (const checkinIntervalDays of [-1, 366, 1.5, '30', null, false]) {
++    const state = sample(); state.people[0].checkinIntervalDays = checkinIntervalDays;
++    const invalid = await a.call({ action: 'save', expected_revision: revision, state, checkinPreferenceVersion: 1 });
++    assert.equal(invalid.status, 400); assert.equal(invalid.error.code, 'INVALID_CARE_STATE');
++    assert.equal((await a.call()).revision, revision);
++  }
++  const reset = await a.call({ action: 'save', expected_revision: revision, state: sample(), checkinPreferenceVersion: 1 });
++  assert.equal(reset.status, 200); assert.equal(reset.revision, revision + 1);
++  assert.equal(Object.hasOwn(reset.state.people[0], 'checkinIntervalDays'), false);
++  assert.equal(Object.hasOwn((await a.call()).state.people[0], 'checkinIntervalDays'), false);
++});
++
++test('a current legacy client cannot erase check-in opt-out and unrelated legacy accounts remain writable', async () => {
++  const a = await actor(), b = await actor(), state = sample(); state.people[0].checkinIntervalDays = 0;
++  const saved = await a.call({ action: 'save', expected_revision: 0, state, checkinPreferenceVersion: 1 });
++  assert.equal(saved.status, 200);
++  const stripped = structuredClone(saved.state); delete stripped.people[0].checkinIntervalDays;
++  stripped.people[0].notes = '구버전의 합성 편집';
++  const stale = await a.call({ action: 'save', expected_revision: 0, state: stripped, messageLibraryVersion: 1 });
++  assert.equal(stale.status, 409); assert.equal(stale.error.code, 'REVISION_CONFLICT'); assert.equal(stale.revision, 1);
++  for (const incoming of [stripped, model.emptyState()]) {
++    const older = await a.call({ action: 'save', expected_revision: 1, state: incoming, messageLibraryVersion: 1 });
++    assert.equal(older.status, 426); assert.equal(older.error.code, 'CARE_CLIENT_UPDATE_REQUIRED');
++  }
++  const unchanged = await a.call(); assert.equal(unchanged.revision, 1); assert.deepEqual(unchanged.state, saved.state);
++  const unrelated = await b.call({ action: 'save', expected_revision: 0, state: sample() });
++  assert.equal(unrelated.status, 200); assert.equal(Object.hasOwn(unrelated.state.people[0], 'checkinIntervalDays'), false);
++  assert.deepEqual((await a.call()).state, saved.state);
++  const deleted = await a.call({ action: 'delete', expected_revision: 1 });
++  assert.equal(deleted.status, 200); assert.equal(deleted.state, null); assert.equal(deleted.revision, 2);
++  const resurrect = await a.call({ action: 'save', expected_revision: 1, state, checkinPreferenceVersion: 1 });
++  assert.equal(resurrect.status, 409); assert.equal(resurrect.error.code, 'REVISION_CONFLICT');
++  const freshLegacy = await a.call({ action: 'save', expected_revision: 2, state: sample() });
++  assert.equal(freshLegacy.status, 200); assert.equal(freshLegacy.revision, 3);
++  assert.equal(Object.hasOwn(freshLegacy.state.people[0], 'checkinIntervalDays'), false);
++});
++
++test('message library and check-in preference capabilities protect their independent fields', async () => {
++  const a = await actor(), state = librarySample(); state.people[0].checkinIntervalDays = 0;
++  for (const capability of [{ messageLibraryVersion: 1 }, { checkinPreferenceVersion: 1 }]) {
++    const rejected = await a.call({ action: 'save', expected_revision: 0, state, ...capability });
++    assert.equal(rejected.status, 426); assert.equal(rejected.error.code, 'CARE_CLIENT_UPDATE_REQUIRED');
++  }
++  const saved = await a.call({ action: 'save', expected_revision: 0, state, messageLibraryVersion: 1, checkinPreferenceVersion: 1 });
++  assert.equal(saved.status, 200); assert.equal(saved.state.people[0].checkinIntervalDays, 0);
++  assert.deepEqual(saved.state.people[0].messageLibrary, state.people[0].messageLibrary);
++  assert.deepEqual((await a.call()).state, saved.state);
++});
++
+ test('explicit text sources, source-backed memories, plans and actual gifts survive an account roundtrip', async () => {
+   const a = await actor();
+   let data = sample();
+@@ -296,7 +370,7 @@ test('feature, contract, method, payload and UTF-8 stream limits fail before sto
+ 
+ test('largest canonical structure cannot expand past the JSONB cap and an exact 4 MiB state persists', async t => {
+   const at='2026-10-06T00:00:00.000Z',date='2000-01-01';
+-  const person=model.makePerson({id:'p',name:'x',selfTone:{source:'rule-based',observations:Array(8).fill(''),limits:Array(8).fill('')},
++  const person=model.makePerson({id:'p',name:'x',checkinIntervalDays:365,selfTone:{source:'rule-based',observations:Array(8).fill(''),limits:Array(8).fill('')},
+     recipientPreference:{avoidPhrases:[...'abcdefghijklmnopqrst']},
+     savedMessages:Object.fromEntries([...Object.keys(model.EVENT_TYPES),'checkin'].map(type=>[type,{text:'x',savedAt:at}])),messageLibrary:[]});
+   const event=model.makeEvent({id:'e',personId:'p',type:'wedding',date,reminderDays:Array.from({length:12},(_,i)=>i)});
+@@ -333,7 +407,7 @@ test('largest canonical structure cannot expand past the JSONB cap and an exact
+   // maximizes the array commas (1,000 rows in at least ten nonempty arrays).
+   const libraryInflation=notebookLibraryCap*(spaces(libraryRow)+1)-Math.ceil(notebookLibraryCap/perPersonLibraryCap);
+   const inflation=spaces(model.emptyState())+Object.entries(caps).reduce((n,[key,cap])=>n+cap*spaces(seed[key][0])+cap-1,0)+libraryInflation;
+-  assert.equal(inflation,822000);
++  assert.equal(inflation,824000);
+   assert(MAX_STATE_BYTES+inflation<5242880,'All list maxima together still fit the DB whitespace allowance');
+   // Pack the available schema shapes by space/byte density, retaining all
+   // references. Then pad a legal text field to the exact HTTP state limit.
+@@ -356,7 +430,8 @@ test('largest canonical structure cannot expand past the JSONB cap and an exact
+   assert(remaining<50000);packed.sources[0].text+='x'.repeat(remaining);
+   const canonical=model.importBackup(packed);assert.equal(bytes(canonical),MAX_STATE_BYTES);
+   assert.equal(canonical.people.reduce((total,row)=>total+(row.messageLibrary?.length||0),0),notebookLibraryCap);
+-  const a=await actor(),saved=await a.call({action:'save',expected_revision:0,state:canonical,messageLibraryVersion:1});
++  assert(canonical.people.every(row=>row.checkinIntervalDays===365));
++  const a=await actor(),saved=await a.call({action:'save',expected_revision:0,state:canonical,messageLibraryVersion:1,checkinPreferenceVersion:1});
+   assert.equal(saved.status,200);
+   const [actual]=await sql`select octet_length(payload::text) as bytes,jsonb_typeof(payload) as kind from engine.synk_care_state where synk_user_id=${saved.accountId}::uuid`;
+   assert.equal(actual.kind,'object');assert.equal(actual.bytes,MAX_STATE_BYTES+spaces(canonical));assert(actual.bytes<5242880);

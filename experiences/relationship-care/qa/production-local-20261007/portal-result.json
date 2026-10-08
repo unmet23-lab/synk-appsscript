@@ -1,0 +1,81 @@
+{
+  "at": "2026-10-06T19:37:52.572Z",
+  "mode": "anonymous-production-pkce-begin-only",
+  "checks": [
+    {
+      "name": "actual local login button sends one production PKCE authorize request",
+      "ok": true
+    },
+    {
+      "name": "authorize uses exact registered care client and callback with S256",
+      "ok": true
+    },
+    {
+      "name": "redirect reaches the production SYNK ID email login screen",
+      "ok": true
+    },
+    {
+      "name": "published config is the verified production 19-client artifact",
+      "ok": true
+    },
+    {
+      "name": "375px login view has no horizontal overflow",
+      "ok": true
+    },
+    {
+      "name": "no account input, mutation, token exchange, consent or code was produced",
+      "ok": true
+    },
+    {
+      "name": "login view has no runtime or failed resource errors",
+      "ok": true,
+      "detail": {
+        "runtimeErrors": 0,
+        "resourceErrors": 0
+      }
+    }
+  ],
+  "errors": [],
+  "resources": [],
+  "blockedMutations": [],
+  "authorizeRequests": [
+    {
+      "issuer": "https://qiwxeddwwnzkwalpsuty.supabase.co",
+      "method": "GET",
+      "clientMatchesCare": true,
+      "redirectMatchesCare": true,
+      "responseType": "code",
+      "pkceMethod": "S256",
+      "challengePresent": true,
+      "statePresent": true
+    }
+  ],
+  "tokenRequests": 0,
+  "inputsEntered": false,
+  "consentApproved": false,
+  "realAccountUsed": false,
+  "arrival": {
+    "path": "https://synk.im/id/",
+    "authorizationRequestPresent": true,
+    "codeOrTokenPresent": false
+  },
+  "ui": {
+    "title": "SYNK ID · 하나의 계정",
+    "heading": "다시 만나서 반가워요.",
+    "submit": "로그인",
+    "email": "",
+    "passwordEmpty": true,
+    "notice": "이메일로 로그인하거나 처음이라면 가입해 주세요.",
+    "width": 375,
+    "scrollWidth": 375,
+    "setupVisible": false
+  },
+  "portalConfig": {
+    "status": 200,
+    "sha256": "99ed80ba4296359c219ef7967d79ff59da3d8af3818234e9ccf3bf9edfe05445",
+    "count": 19
+  },
+  "ok": true,
+  "passed": 7,
+  "total": 7
+}

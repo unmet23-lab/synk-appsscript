@@ -1,0 +1,14 @@
+{
+  "commit": "63146086d68a20b965a18937be7777609e229bca",
+  "parent": "4919aadc30bfd3a2228ee152d2d46fad7ea286e6",
+  "baseline": "4919aadc30bfd3a2228ee152d2d46fad7ea286e6",
+  "candidate": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\care-library-public-20261008-v6",
+  "files": [
+    "care/index.html",
+    "care/build-manifest.json"
+  ],
+  "unchangedPublicDependencies": 46,
+  "publicFileCount": 48,
+  "rootSourceGitCommit": null,
+  "cacheOnlyUserReviewException": "cache-release-gate.json"
+}

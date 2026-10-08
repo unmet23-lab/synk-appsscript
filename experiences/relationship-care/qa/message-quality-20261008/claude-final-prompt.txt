@@ -1,0 +1,3 @@
+추가 변경은 방금 귀하가 제안한 P3 1줄만입니다. 전체 재검수 금지, 이 한 경로와 직접 연결된 시험만 확인하고 200단어 이내로 완료 여부를 알려 주세요. 제품수정/배포/셸/API금지.
+app.mjs preference-form submit: const keepCheckin = !$('draft-event').value && (checkinMode || currentDraft?.eventType === 'checkin'); 로 바꿨습니다. 나머지 제품 코드는 직전 검수본과 같습니다. tests/message-ui-state.test.mjs 끝에 checkinMode=false·일정0인 사람이 안부감사초안을 만든 뒤 설정저장해도 thanks와 draft가 유지되는 회귀시험을 추가했습니다. 전체 254/254 통과(experiences/relationship-care/qa/message-quality-20261008/tests-care.txt). v4 공개후보48파일 재생성, 주 에이전트가 검수후 sha256 직접 확인합니다. 최종 inventory는 experiences/relationship-care/qa/message-quality-20261008/claude-source-inventory.json, 이전것은 claude-source-inventory-v3.json입니다.
+이 좁은 변경에 남은 P0~P2 여부와 공개가능여부만 확인해 주세요. 이전 P2 두 건 해결은 유지, 사용자가 미룬 휴대폰/알림시험은 계속 제외합니다.

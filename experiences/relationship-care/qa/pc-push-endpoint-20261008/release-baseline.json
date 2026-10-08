@@ -1,0 +1,35 @@
+{
+  "stage": "baseline",
+  "at": "2026-10-07T23:14:05.741Z",
+  "project": "Synk Core",
+  "head": "45ea9030551aeeaf7728c86c110f7ffb6c2571d0",
+  "functions": [
+    {
+      "slug": "synk-care-push",
+      "status": "ACTIVE",
+      "version": 11,
+      "verify_jwt": true
+    },
+    {
+      "slug": "synk-care-push-send",
+      "status": "ACTIVE",
+      "version": 11,
+      "verify_jwt": true
+    }
+  ],
+  "comparison": [
+    {
+      "slug": "synk-care-push",
+      "runtimeMatches": true,
+      "entrypointStaticComparison": "unmeasured: no Korean comment anchors",
+      "exitCode": 2
+    },
+    {
+      "slug": "synk-care-push-send",
+      "runtimeMatches": true,
+      "entrypointStaticComparison": "unmeasured: no Korean comment anchors",
+      "exitCode": 2
+    }
+  ],
+  "ok": true
+}

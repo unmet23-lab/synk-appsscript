@@ -1,0 +1,416 @@
+check	Set up job	﻿2026-10-07T20:17:46.8581907Z Current runner version: '2.337.0'
+check	Set up job	2026-10-07T20:17:46.8604999Z ##[group]Runner Image Provisioner
+check	Set up job	2026-10-07T20:17:46.8606066Z Hosted Compute Agent
+check	Set up job	2026-10-07T20:17:46.8606764Z Version: 20261002.596
+check	Set up job	2026-10-07T20:17:46.8607476Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+check	Set up job	2026-10-07T20:17:46.8608453Z Build Date: 2026-10-02T22:28:27Z
+check	Set up job	2026-10-07T20:17:46.8609138Z Worker ID: {952e0d8a-c6a3-4059-a8e6-4c14cb8deecc}
+check	Set up job	2026-10-07T20:17:46.8609966Z Region: eastus
+check	Set up job	2026-10-07T20:17:46.8610474Z Cloud: Azure
+check	Set up job	2026-10-07T20:17:46.8610907Z ##[endgroup]
+check	Set up job	2026-10-07T20:17:46.8612364Z ##[group]Operating System
+check	Set up job	2026-10-07T20:17:46.8612898Z Ubuntu
+check	Set up job	2026-10-07T20:17:46.8613402Z 24.04.5
+check	Set up job	2026-10-07T20:17:46.8613844Z LTS
+check	Set up job	2026-10-07T20:17:46.8614273Z ##[endgroup]
+check	Set up job	2026-10-07T20:17:46.8614761Z ##[group]Runner Image
+check	Set up job	2026-10-07T20:17:46.8615256Z Image: ubuntu-24.04
+check	Set up job	2026-10-07T20:17:46.8616040Z Version: 20261004.327.1
+check	Set up job	2026-10-07T20:17:46.8616998Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+check	Set up job	2026-10-07T20:17:46.8618401Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+check	Set up job	2026-10-07T20:17:46.8619180Z ##[endgroup]
+check	Set up job	2026-10-07T20:17:46.8620352Z ##[group]GITHUB_TOKEN Permissions
+check	Set up job	2026-10-07T20:17:46.8622409Z Actions: read
+check	Set up job	2026-10-07T20:17:46.8622974Z Contents: read
+check	Set up job	2026-10-07T20:17:46.8623455Z Metadata: read
+check	Set up job	2026-10-07T20:17:46.8623942Z ##[endgroup]
+check	Set up job	2026-10-07T20:17:46.8625960Z Secret source: Actions
+check	Set up job	2026-10-07T20:17:46.8626701Z Cache mode: write
+check	Set up job	2026-10-07T20:17:46.8627512Z Prepare workflow directory
+check	Set up job	2026-10-07T20:17:46.8929563Z Prepare all required actions
+check	Set up job	2026-10-07T20:17:46.8968033Z Getting action download info
+check	Set up job	2026-10-07T20:17:47.1291558Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+check	Set up job	2026-10-07T20:17:47.5599276Z Download action repository 'actions/setup-node@v7' (SHA:820762786026740c76f36085b0efc47a31fe5020)
+check	Set up job	2026-10-07T20:17:48.1937813Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+check	Set up job	2026-10-07T20:17:48.8318025Z Complete job name: check
+check	Run actions/checkout@v7	﻿2026-10-07T20:17:48.9374051Z ##[group]Run actions/checkout@v7
+check	Run actions/checkout@v7	2026-10-07T20:17:48.9374575Z with:
+check	Run actions/checkout@v7	2026-10-07T20:17:48.9374787Z   fetch-depth: 2
+check	Run actions/checkout@v7	2026-10-07T20:17:48.9375021Z   repository: unmet23-lab/synk-policy
+check	Run actions/checkout@v7	2026-10-07T20:17:48.9377428Z   token: ***
+check	Run actions/checkout@v7	2026-10-07T20:17:48.9377651Z   ssh-strict: true
+check	Run actions/checkout@v7	2026-10-07T20:17:48.9377869Z   ssh-user: git
+check	Run actions/checkout@v7	2026-10-07T20:17:48.9378090Z   persist-credentials: true
+check	Run actions/checkout@v7	2026-10-07T20:17:48.9378339Z   clean: true
+check	Run actions/checkout@v7	2026-10-07T20:17:48.9378559Z   sparse-checkout-cone-mode: true
+check	Run actions/checkout@v7	2026-10-07T20:17:48.9378813Z   fetch-tags: false
+check	Run actions/checkout@v7	2026-10-07T20:17:48.9379023Z   show-progress: true
+check	Run actions/checkout@v7	2026-10-07T20:17:48.9379483Z   lfs: false
+check	Run actions/checkout@v7	2026-10-07T20:17:48.9379741Z   submodules: false
+check	Run actions/checkout@v7	2026-10-07T20:17:48.9379968Z   set-safe-directory: true
+check	Run actions/checkout@v7	2026-10-07T20:17:48.9380217Z   allow-unsafe-pr-checkout: false
+check	Run actions/checkout@v7	2026-10-07T20:17:48.9380683Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0183291Z Syncing repository: unmet23-lab/synk-policy
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0184957Z ##[group]Getting Git version info
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0185548Z Working directory is '/home/runner/work/synk-policy/synk-policy'
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0186491Z [command]/usr/bin/git version
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0306626Z git version 2.55.0
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0322163Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0330833Z Temporarily overriding HOME='/home/runner/work/_temp/99b39f92-627b-4d2a-976e-540de8dded74' before making global git config changes
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0332105Z Adding repository directory to the temporary git global config as a safe directory
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0336802Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/synk-policy/synk-policy
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0490271Z Deleting the contents of '/home/runner/work/synk-policy/synk-policy'
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0501535Z ##[group]Determining repository object format
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0507453Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0508037Z ##[group]Initializing the repository
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0508887Z [command]/usr/bin/git init /home/runner/work/synk-policy/synk-policy
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0607885Z hint: Using 'master' as the name for the initial branch. This default branch name
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0609144Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0610678Z hint: to use in all of your new repositories, which will suppress this warning,
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0611415Z hint: call:
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0611734Z hint:
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0612158Z hint: 	git config --global init.defaultBranch <name>
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0612569Z hint:
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0612862Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0613316Z hint: 'development'. The just-created branch can be renamed via this command:
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0613661Z hint:
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0613872Z hint: 	git branch -m <name>
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0614104Z hint:
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0614403Z hint: Disable this message with "git config set advice.defaultBranchName false"
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0640812Z Initialized empty Git repository in /home/runner/work/synk-policy/synk-policy/.git/
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0651033Z [command]/usr/bin/git remote add origin https://github.com/unmet23-lab/synk-policy
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0795804Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0796312Z ##[group]Disabling automatic garbage collection
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0799980Z [command]/usr/bin/git config --local gc.auto 0
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0932459Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0932889Z ##[group]Setting up auth
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0933310Z Removing SSH command configuration
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0938135Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+check	Run actions/checkout@v7	2026-10-07T20:17:49.0969671Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+check	Run actions/checkout@v7	2026-10-07T20:17:49.1300024Z Removing HTTP extra header
+check	Run actions/checkout@v7	2026-10-07T20:17:49.1303982Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+check	Run actions/checkout@v7	2026-10-07T20:17:49.1333846Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+check	Run actions/checkout@v7	2026-10-07T20:17:49.1517099Z Removing includeIf entries pointing to credentials config files
+check	Run actions/checkout@v7	2026-10-07T20:17:49.1520885Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+check	Run actions/checkout@v7	2026-10-07T20:17:49.1557008Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+check	Run actions/checkout@v7	2026-10-07T20:17:49.1752467Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-6611d831-118f-4b64-8c6d-78366eedb3e2.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+check	Run actions/checkout@v7	2026-10-07T20:17:49.1786599Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/synk-policy/synk-policy/.git.path /home/runner/work/_temp/git-credentials-6611d831-118f-4b64-8c6d-78366eedb3e2.config
+check	Run actions/checkout@v7	2026-10-07T20:17:49.1825236Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/synk-policy/synk-policy/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-6611d831-118f-4b64-8c6d-78366eedb3e2.config
+check	Run actions/checkout@v7	2026-10-07T20:17:49.1860964Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-6611d831-118f-4b64-8c6d-78366eedb3e2.config
+check	Run actions/checkout@v7	2026-10-07T20:17:49.1891283Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-6611d831-118f-4b64-8c6d-78366eedb3e2.config
+check	Run actions/checkout@v7	2026-10-07T20:17:49.1918335Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-07T20:17:49.1918749Z ##[group]Fetching the repository
+check	Run actions/checkout@v7	2026-10-07T20:17:49.1924780Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=2 origin +63146086d68a20b965a18937be7777609e229bca:refs/remotes/origin/main
+check	Run actions/checkout@v7	2026-10-07T20:17:54.7462593Z From https://github.com/unmet23-lab/synk-policy
+check	Run actions/checkout@v7	2026-10-07T20:17:54.7463195Z  * [new ref]         63146086d68a20b965a18937be7777609e229bca -> origin/main
+check	Run actions/checkout@v7	2026-10-07T20:17:54.7472914Z [command]/usr/bin/git branch --list --remote origin/main
+check	Run actions/checkout@v7	2026-10-07T20:17:54.7498795Z   origin/main
+check	Run actions/checkout@v7	2026-10-07T20:17:54.7510124Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+check	Run actions/checkout@v7	2026-10-07T20:17:54.7528862Z 63146086d68a20b965a18937be7777609e229bca
+check	Run actions/checkout@v7	2026-10-07T20:17:54.7535873Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-07T20:17:54.7536361Z ##[group]Determining the checkout info
+check	Run actions/checkout@v7	2026-10-07T20:17:54.7536875Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-07T20:17:54.7538074Z [command]/usr/bin/git sparse-checkout disable
+check	Run actions/checkout@v7	2026-10-07T20:17:54.7586581Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+check	Run actions/checkout@v7	2026-10-07T20:17:54.7617460Z ##[group]Checking out the ref
+check	Run actions/checkout@v7	2026-10-07T20:17:54.7632313Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+check	Run actions/checkout@v7	2026-10-07T20:17:55.3720871Z Switched to a new branch 'main'
+check	Run actions/checkout@v7	2026-10-07T20:17:55.3724318Z branch 'main' set up to track 'origin/main'.
+check	Run actions/checkout@v7	2026-10-07T20:17:55.3758092Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-07T20:17:55.3820185Z [command]/usr/bin/git log -1 --format=%H
+check	Run actions/checkout@v7	2026-10-07T20:17:55.3834338Z 63146086d68a20b965a18937be7777609e229bca
+check	Run actions/setup-node@v7	﻿2026-10-07T20:17:55.4040740Z ##[group]Run actions/setup-node@v7
+check	Run actions/setup-node@v7	2026-10-07T20:17:55.4040978Z with:
+check	Run actions/setup-node@v7	2026-10-07T20:17:55.4041147Z   node-version: 22
+check	Run actions/setup-node@v7	2026-10-07T20:17:55.4041323Z   check-latest: false
+check	Run actions/setup-node@v7	2026-10-07T20:17:55.4043537Z   token: ***
+check	Run actions/setup-node@v7	2026-10-07T20:17:55.4103917Z   package-manager-cache: true
+check	Run actions/setup-node@v7	2026-10-07T20:17:55.4104332Z ##[endgroup]
+check	Run actions/setup-node@v7	2026-10-07T20:17:55.5153910Z Found in cache @ /opt/hostedtoolcache/node/22.23.3/x64
+check	Run actions/setup-node@v7	2026-10-07T20:17:55.5156859Z ##[group]Environment details
+check	Run actions/setup-node@v7	2026-10-07T20:17:55.8923982Z node: v22.23.3
+check	Run actions/setup-node@v7	2026-10-07T20:17:55.8924412Z npm: 10.9.9
+check	Run actions/setup-node@v7	2026-10-07T20:17:55.8924712Z yarn: 1.22.22
+check	Run actions/setup-node@v7	2026-10-07T20:17:55.8925958Z ##[endgroup]
+check	플레이라이트 준비	﻿2026-10-07T20:17:55.9041250Z ##[group]Run npm install --no-save --no-package-lock playwright@1.62.1
+check	플레이라이트 준비	2026-10-07T20:17:55.9041747Z ^[[36;1mnpm install --no-save --no-package-lock playwright@1.62.1^[[0m
+check	플레이라이트 준비	2026-10-07T20:17:55.9042103Z ^[[36;1mnpx playwright install --with-deps chromium^[[0m
+check	플레이라이트 준비	2026-10-07T20:17:56.0080461Z shell: /usr/bin/bash -e {0}
+check	플레이라이트 준비	2026-10-07T20:17:56.0080754Z ##[endgroup]
+check	플레이라이트 준비	2026-10-07T20:17:58.3246046Z 
+check	플레이라이트 준비	2026-10-07T20:17:58.3254942Z added 2 packages in 2s
+check	플레이라이트 준비	2026-10-07T20:17:58.9579213Z Installing dependencies...
+check	플레이라이트 준비	2026-10-07T20:17:58.9638577Z Switching to root user to install dependencies...
+check	플레이라이트 준비	2026-10-07T20:17:59.0411274Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+check	플레이라이트 준비	2026-10-07T20:17:59.0698612Z Get:6 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+check	플레이라이트 준비	2026-10-07T20:17:59.1621020Z Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [463 kB]
+check	플레이라이트 준비	2026-10-07T20:17:59.1793734Z Get:8 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [519 kB]
+check	플레이라이트 준비	2026-10-07T20:18:10.1855878Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+check	플레이라이트 준비	2026-10-07T20:18:10.1909547Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+check	플레이라이트 준비	2026-10-07T20:18:10.2583234Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+check	플레이라이트 준비	2026-10-07T20:18:10.3067724Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+check	플레이라이트 준비	2026-10-07T20:18:10.3178270Z Get:9 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1375 kB]
+check	플레이라이트 준비	2026-10-07T20:18:10.3448053Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [306 kB]
+check	플레이라이트 준비	2026-10-07T20:18:10.3504409Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1702 kB]
+check	플레이라이트 준비	2026-10-07T20:18:10.3672738Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [341 kB]
+check	플레이라이트 준비	2026-10-07T20:18:10.3743151Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1730 kB]
+check	플레이라이트 준비	2026-10-07T20:18:10.3870960Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [396 kB]
+check	플레이라이트 준비	2026-10-07T20:18:10.3952346Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en [13.3 kB]
+check	플레이라이트 준비	2026-10-07T20:18:10.4006643Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [1073 kB]
+check	플레이라이트 준비	2026-10-07T20:18:10.4099160Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [223 kB]
+check	플레이라이트 준비	2026-10-07T20:18:10.4160034Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1218 kB]
+check	플레이라이트 준비	2026-10-07T20:18:10.4711827Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [245 kB]
+check	플레이라이트 준비	2026-10-07T20:18:10.4777574Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse Translation-en [11.6 kB]
+check	플레이라이트 준비	2026-10-07T20:18:17.7741858Z Fetched 9996 kB in 12s (835 kB/s)
+check	플레이라이트 준비	2026-10-07T20:18:18.4360407Z Reading package lists...
+check	플레이라이트 준비	2026-10-07T20:18:18.4571461Z Reading package lists...
+check	플레이라이트 준비	2026-10-07T20:18:18.6394232Z Building dependency tree...
+check	플레이라이트 준비	2026-10-07T20:18:18.6400502Z Reading state information...
+check	플레이라이트 준비	2026-10-07T20:18:18.7817983Z libasound2t64 is already the newest version (1.2.11-1ubuntu0.3).
+check	플레이라이트 준비	2026-10-07T20:18:18.7818733Z libasound2t64 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7819636Z libatk-bridge2.0-0t64 is already the newest version (2.52.0-1build1).
+check	플레이라이트 준비	2026-10-07T20:18:18.7820259Z libatk-bridge2.0-0t64 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7820819Z libatk1.0-0t64 is already the newest version (2.52.0-1build1).
+check	플레이라이트 준비	2026-10-07T20:18:18.7821322Z libatk1.0-0t64 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7821849Z libatspi2.0-0t64 is already the newest version (2.52.0-1build1).
+check	플레이라이트 준비	2026-10-07T20:18:18.7822299Z libatspi2.0-0t64 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7822741Z libcairo2 is already the newest version (1.18.0-3build1).
+check	플레이라이트 준비	2026-10-07T20:18:18.7823129Z libcairo2 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7823473Z libcups2t64 is already the newest version (2.4.7-1.2ubuntu7.14).
+check	플레이라이트 준비	2026-10-07T20:18:18.7824228Z libcups2t64 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7824573Z libdbus-1-3 is already the newest version (1.14.10-4ubuntu4.1).
+check	플레이라이트 준비	2026-10-07T20:18:18.7825034Z libdbus-1-3 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7825397Z libdrm2 is already the newest version (2.4.125-1ubuntu0.1~24.04.2).
+check	플레이라이트 준비	2026-10-07T20:18:18.7825719Z libdrm2 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7826037Z libgbm1 is already the newest version (25.2.8-0ubuntu0.24.04.4).
+check	플레이라이트 준비	2026-10-07T20:18:18.7826345Z libgbm1 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7826672Z libglib2.0-0t64 is already the newest version (2.80.0-6ubuntu3.9).
+check	플레이라이트 준비	2026-10-07T20:18:18.7827116Z libglib2.0-0t64 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7827487Z libnspr4 is already the newest version (2:4.35-1.1build1).
+check	플레이라이트 준비	2026-10-07T20:18:18.7827795Z libnspr4 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7828097Z libnss3 is already the newest version (2:3.98-1ubuntu0.2).
+check	플레이라이트 준비	2026-10-07T20:18:18.7828384Z libnss3 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7828720Z libpango-1.0-0 is already the newest version (1.52.1+ds-1build1).
+check	플레이라이트 준비	2026-10-07T20:18:18.7829042Z libpango-1.0-0 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7829488Z libx11-6 is already the newest version (2:1.8.7-1build1).
+check	플레이라이트 준비	2026-10-07T20:18:18.7829798Z libx11-6 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7830117Z libxcb1 is already the newest version (1.15-1ubuntu2).
+check	플레이라이트 준비	2026-10-07T20:18:18.7830418Z libxcb1 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7830740Z libxcomposite1 is already the newest version (1:0.4.5-1build3).
+check	플레이라이트 준비	2026-10-07T20:18:18.7831060Z libxcomposite1 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7831399Z libxdamage1 is already the newest version (1:1.1.6-1build1).
+check	플레이라이트 준비	2026-10-07T20:18:18.7831699Z libxdamage1 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7831999Z libxext6 is already the newest version (2:1.3.4-1build2).
+check	플레이라이트 준비	2026-10-07T20:18:18.7832286Z libxext6 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7832583Z libxfixes3 is already the newest version (1:6.0.0-2build1).
+check	플레이라이트 준비	2026-10-07T20:18:18.7832887Z libxfixes3 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7833380Z libxkbcommon0 is already the newest version (1.6.0-1build1).
+check	플레이라이트 준비	2026-10-07T20:18:18.7833684Z libxkbcommon0 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7833992Z libxrandr2 is already the newest version (2:1.5.2-2build1).
+check	플레이라이트 준비	2026-10-07T20:18:18.7834291Z libxrandr2 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7834603Z xvfb is already the newest version (2:21.1.12-1ubuntu1.8).
+check	플레이라이트 준비	2026-10-07T20:18:18.7835024Z fonts-noto-color-emoji is already the newest version (2.047-0ubuntu0.24.04.1).
+check	플레이라이트 준비	2026-10-07T20:18:18.7835669Z libfontconfig1 is already the newest version (2.15.0-1.1ubuntu2).
+check	플레이라이트 준비	2026-10-07T20:18:18.7836171Z libfontconfig1 set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7836663Z fonts-liberation is already the newest version (1:2.1.5-3).
+check	플레이라이트 준비	2026-10-07T20:18:18.7837142Z fonts-liberation set to manually installed.
+check	플레이라이트 준비	2026-10-07T20:18:18.7837602Z The following additional packages will be installed:
+check	플레이라이트 준비	2026-10-07T20:18:18.7837995Z   xfonts-encodings xfonts-utils
+check	플레이라이트 준비	2026-10-07T20:18:18.7838230Z Recommended packages:
+check	플레이라이트 준비	2026-10-07T20:18:18.7838472Z   fonts-ipafont-mincho fonts-tlwg-loma
+check	플레이라이트 준비	2026-10-07T20:18:18.8012218Z The following NEW packages will be installed:
+check	플레이라이트 준비	2026-10-07T20:18:18.8013036Z   fonts-freefont-ttf fonts-ipafont-gothic fonts-tlwg-loma-otf fonts-unifont
+check	플레이라이트 준비	2026-10-07T20:18:18.8017617Z   fonts-wqy-zenhei xfonts-cyrillic xfonts-encodings xfonts-scalable
+check	플레이라이트 준비	2026-10-07T20:18:18.8018220Z   xfonts-utils
+check	플레이라이트 준비	2026-10-07T20:18:18.8021818Z The following packages will be upgraded:
+check	플레이라이트 준비	2026-10-07T20:18:18.8026022Z   libfreetype6
+check	플레이라이트 준비	2026-10-07T20:18:18.8171224Z 1 upgraded, 9 newly installed, 0 to remove and 10 not upgraded.
+check	플레이라이트 준비	2026-10-07T20:18:18.8171787Z Need to get 21.5 MB of archives.
+check	플레이라이트 준비	2026-10-07T20:18:18.8172323Z After this operation, 79.5 MB of additional disk space will be used.
+check	플레이라이트 준비	2026-10-07T20:18:18.8172932Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+check	플레이라이트 준비	2026-10-07T20:18:51.9030712Z Ign:2 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-ipafont-gothic all 00303-21ubuntu1
+check	플레이라이트 준비	2026-10-07T20:19:20.5874713Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 fonts-freefont-ttf all 20211204+svn4273-2 [5641 kB]
+check	플레이라이트 준비	2026-10-07T20:19:20.8506792Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-tlwg-loma-otf all 1:0.7.3-1 [107 kB]
+check	플레이라이트 준비	2026-10-07T20:19:35.9260532Z Ign:5 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-unifont all 1:15.1.01-1build1
+check	플레이라이트 준비	2026-10-07T20:20:05.9443608Z Ign:6 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-wqy-zenhei all 0.9.45-8
+check	플레이라이트 준비	2026-10-07T20:20:35.2839284Z Get:7 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libfreetype6 amd64 2.13.2+dfsg-1ubuntu0.2 [403 kB]
+check	플레이라이트 준비	2026-10-07T20:20:35.3523813Z Get:8 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xfonts-encodings all 1:1.0.5-0ubuntu2 [578 kB]
+check	플레이라이트 준비	2026-10-07T20:20:35.3835704Z Get:9 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xfonts-utils amd64 1:7.7+6build3 [94.4 kB]
+check	플레이라이트 준비	2026-10-07T20:20:35.4001091Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 xfonts-cyrillic all 1:1.0.5+nmu1 [384 kB]
+check	플레이라이트 준비	2026-10-07T20:20:35.4188918Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xfonts-scalable all 1:1.0.3-1.3 [304 kB]
+check	플레이라이트 준비	2026-10-07T20:20:47.1484106Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-ipafont-gothic all 00303-21ubuntu1 [3513 kB]
+check	플레이라이트 준비	2026-10-07T20:20:47.2017473Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-unifont all 1:15.1.01-1build1 [2993 kB]
+check	플레이라이트 준비	2026-10-07T20:20:47.2361013Z Get:6 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-wqy-zenhei all 0.9.45-8 [7472 kB]
+check	플레이라이트 준비	2026-10-07T20:20:47.5154832Z Fetched 21.5 MB in 2min 28s (145 kB/s)
+check	플레이라이트 준비	2026-10-07T20:20:47.5345900Z Selecting previously unselected package fonts-ipafont-gothic.
+check	플레이라이트 준비	2026-10-07T20:20:47.5591197Z (Reading database ... 
+check	플레이라이트 준비	2026-10-07T20:20:47.5593254Z (Reading database ... 5%
+check	플레이라이트 준비	2026-10-07T20:20:47.5593596Z (Reading database ... 10%
+check	플레이라이트 준비	2026-10-07T20:20:47.5593910Z (Reading database ... 15%
+check	플레이라이트 준비	2026-10-07T20:20:47.5594257Z (Reading database ... 20%
+check	플레이라이트 준비	2026-10-07T20:20:47.5594856Z (Reading database ... 25%
+check	플레이라이트 준비	2026-10-07T20:20:47.5595089Z (Reading database ... 30%
+check	플레이라이트 준비	2026-10-07T20:20:47.5595277Z (Reading database ... 35%
+check	플레이라이트 준비	2026-10-07T20:20:47.5595521Z (Reading database ... 40%
+check	플레이라이트 준비	2026-10-07T20:20:47.5595807Z (Reading database ... 45%
+check	플레이라이트 준비	2026-10-07T20:20:47.5596092Z (Reading database ... 50%
+check	플레이라이트 준비	2026-10-07T20:20:47.5633574Z (Reading database ... 55%
+check	플레이라이트 준비	2026-10-07T20:20:47.7037110Z (Reading database ... 60%
+check	플레이라이트 준비	2026-10-07T20:20:47.9109298Z (Reading database ... 65%
+check	플레이라이트 준비	2026-10-07T20:20:48.1020132Z (Reading database ... 70%
+check	플레이라이트 준비	2026-10-07T20:20:48.3034111Z (Reading database ... 75%
+check	플레이라이트 준비	2026-10-07T20:20:48.4472576Z (Reading database ... 80%
+check	플레이라이트 준비	2026-10-07T20:20:48.7218861Z (Reading database ... 85%
+check	플레이라이트 준비	2026-10-07T20:20:48.8677230Z (Reading database ... 90%
+check	플레이라이트 준비	2026-10-07T20:20:49.1760468Z (Reading database ... 95%
+check	플레이라이트 준비	2026-10-07T20:20:49.1760920Z (Reading database ... 100%
+check	플레이라이트 준비	2026-10-07T20:20:49.1761279Z (Reading database ... 203191 files and directories currently installed.)
+check	플레이라이트 준비	2026-10-07T20:20:49.1802291Z Preparing to unpack .../0-fonts-ipafont-gothic_00303-21ubuntu1_all.deb ...
+check	플레이라이트 준비	2026-10-07T20:20:49.1881874Z Unpacking fonts-ipafont-gothic (00303-21ubuntu1) ...
+check	플레이라이트 준비	2026-10-07T20:20:49.4290309Z Selecting previously unselected package fonts-freefont-ttf.
+check	플레이라이트 준비	2026-10-07T20:20:49.4400366Z Preparing to unpack .../1-fonts-freefont-ttf_20211204+svn4273-2_all.deb ...
+check	플레이라이트 준비	2026-10-07T20:20:49.4406764Z Unpacking fonts-freefont-ttf (20211204+svn4273-2) ...
+check	플레이라이트 준비	2026-10-07T20:20:49.5324926Z Selecting previously unselected package fonts-tlwg-loma-otf.
+check	플레이라이트 준비	2026-10-07T20:20:49.5437239Z Preparing to unpack .../2-fonts-tlwg-loma-otf_1%3a0.7.3-1_all.deb ...
+check	플레이라이트 준비	2026-10-07T20:20:49.5451124Z Unpacking fonts-tlwg-loma-otf (1:0.7.3-1) ...
+check	플레이라이트 준비	2026-10-07T20:20:49.5632463Z Selecting previously unselected package fonts-unifont.
+check	플레이라이트 준비	2026-10-07T20:20:49.5744714Z Preparing to unpack .../3-fonts-unifont_1%3a15.1.01-1build1_all.deb ...
+check	플레이라이트 준비	2026-10-07T20:20:49.5752721Z Unpacking fonts-unifont (1:15.1.01-1build1) ...
+check	플레이라이트 준비	2026-10-07T20:20:49.7633784Z Selecting previously unselected package fonts-wqy-zenhei.
+check	플레이라이트 준비	2026-10-07T20:20:49.7745218Z Preparing to unpack .../4-fonts-wqy-zenhei_0.9.45-8_all.deb ...
+check	플레이라이트 준비	2026-10-07T20:20:49.7829765Z Unpacking fonts-wqy-zenhei (0.9.45-8) ...
+check	플레이라이트 준비	2026-10-07T20:20:50.2234910Z Preparing to unpack .../5-libfreetype6_2.13.2+dfsg-1ubuntu0.2_amd64.deb ...
+check	플레이라이트 준비	2026-10-07T20:20:50.2264199Z Unpacking libfreetype6:amd64 (2.13.2+dfsg-1ubuntu0.2) over (2.13.2+dfsg-1ubuntu0.1) ...
+check	플레이라이트 준비	2026-10-07T20:20:50.2478899Z Selecting previously unselected package xfonts-encodings.
+check	플레이라이트 준비	2026-10-07T20:20:50.2589197Z Preparing to unpack .../6-xfonts-encodings_1%3a1.0.5-0ubuntu2_all.deb ...
+check	플레이라이트 준비	2026-10-07T20:20:50.2595706Z Unpacking xfonts-encodings (1:1.0.5-0ubuntu2) ...
+check	플레이라이트 준비	2026-10-07T20:20:50.2868346Z Selecting previously unselected package xfonts-utils.
+check	플레이라이트 준비	2026-10-07T20:20:50.2978130Z Preparing to unpack .../7-xfonts-utils_1%3a7.7+6build3_amd64.deb ...
+check	플레이라이트 준비	2026-10-07T20:20:50.2985652Z Unpacking xfonts-utils (1:7.7+6build3) ...
+check	플레이라이트 준비	2026-10-07T20:20:50.3290265Z Selecting previously unselected package xfonts-cyrillic.
+check	플레이라이트 준비	2026-10-07T20:20:50.3400154Z Preparing to unpack .../8-xfonts-cyrillic_1%3a1.0.5+nmu1_all.deb ...
+check	플레이라이트 준비	2026-10-07T20:20:50.3406121Z Unpacking xfonts-cyrillic (1:1.0.5+nmu1) ...
+check	플레이라이트 준비	2026-10-07T20:20:50.3679430Z Selecting previously unselected package xfonts-scalable.
+check	플레이라이트 준비	2026-10-07T20:20:50.3787787Z Preparing to unpack .../9-xfonts-scalable_1%3a1.0.3-1.3_all.deb ...
+check	플레이라이트 준비	2026-10-07T20:20:50.3795406Z Unpacking xfonts-scalable (1:1.0.3-1.3) ...
+check	플레이라이트 준비	2026-10-07T20:20:50.4180529Z Setting up fonts-wqy-zenhei (0.9.45-8) ...
+check	플레이라이트 준비	2026-10-07T20:20:50.4279013Z Setting up fonts-freefont-ttf (20211204+svn4273-2) ...
+check	플레이라이트 준비	2026-10-07T20:20:50.4300401Z Setting up fonts-tlwg-loma-otf (1:0.7.3-1) ...
+check	플레이라이트 준비	2026-10-07T20:20:50.4338582Z Setting up libfreetype6:amd64 (2.13.2+dfsg-1ubuntu0.2) ...
+check	플레이라이트 준비	2026-10-07T20:20:50.4354489Z Setting up xfonts-encodings (1:1.0.5-0ubuntu2) ...
+check	플레이라이트 준비	2026-10-07T20:20:50.4369974Z Setting up fonts-ipafont-gothic (00303-21ubuntu1) ...
+check	플레이라이트 준비	2026-10-07T20:20:50.4427488Z update-alternatives: using /usr/share/fonts/opentype/ipafont-gothic/ipag.ttf to provide /usr/share/fonts/truetype/fonts-japanese-gothic.ttf (fonts-japanese-gothic.ttf) in auto mode
+check	플레이라이트 준비	2026-10-07T20:20:50.4441587Z Setting up fonts-unifont (1:15.1.01-1build1) ...
+check	플레이라이트 준비	2026-10-07T20:20:50.4459630Z Setting up xfonts-utils (1:7.7+6build3) ...
+check	플레이라이트 준비	2026-10-07T20:20:50.4493727Z Setting up xfonts-cyrillic (1:1.0.5+nmu1) ...
+check	플레이라이트 준비	2026-10-07T20:20:50.4736499Z Setting up xfonts-scalable (1:1.0.3-1.3) ...
+check	플레이라이트 준비	2026-10-07T20:20:50.4985673Z Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+check	플레이라이트 준비	2026-10-07T20:20:50.7210330Z Processing triggers for man-db (2.12.0-4build2) ...
+check	플레이라이트 준비	2026-10-07T20:20:50.7230008Z Not building database; man-db/auto-update is not 'true'.
+check	플레이라이트 준비	2026-10-07T20:20:50.7240236Z Processing triggers for fontconfig (2.15.0-1.1ubuntu2) ...
+check	플레이라이트 준비	2026-10-07T20:20:51.3204655Z 
+check	플레이라이트 준비	2026-10-07T20:20:51.3205260Z Running kernel seems to be up-to-date.
+check	플레이라이트 준비	2026-10-07T20:20:51.3205568Z 
+check	플레이라이트 준비	2026-10-07T20:20:51.3205704Z Restarting services...
+check	플레이라이트 준비	2026-10-07T20:20:51.3272739Z  systemctl restart php8.3-fpm.service
+check	플레이라이트 준비	2026-10-07T20:20:51.4178185Z 
+check	플레이라이트 준비	2026-10-07T20:20:51.4179788Z No containers need to be restarted.
+check	플레이라이트 준비	2026-10-07T20:20:51.4180113Z 
+check	플레이라이트 준비	2026-10-07T20:20:51.4180348Z No user sessions are running outdated binaries.
+check	플레이라이트 준비	2026-10-07T20:20:51.4180619Z 
+check	플레이라이트 준비	2026-10-07T20:20:51.4180894Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+check	플레이라이트 준비	2026-10-07T20:20:52.2394595Z Downloading Chrome for Testing 151.0.7922.34 (playwright chromium v1234) from https://cdn.playwright.dev/builds/cft/151.0.7922.34/linux64/chrome-linux64.zip
+check	플레이라이트 준비	2026-10-07T20:20:53.1708007Z |                                                                                |   0% of 184.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:53.3597113Z |■■■■■■■■                                                                        |  10% of 184.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:53.4593148Z |■■■■■■■■■■■■■■■■                                                                |  20% of 184.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:53.5089253Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 184.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:53.5578766Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 184.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:53.6024770Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 184.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:53.6531974Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 184.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:53.7046820Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 184.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:53.7580076Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 184.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:53.8175257Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 184.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:53.8659627Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 184.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:55.9616790Z Chrome for Testing 151.0.7922.34 (playwright chromium v1234) downloaded to /home/runner/.cache/ms-playwright/chromium-1234
+check	플레이라이트 준비	2026-10-07T20:20:55.9619150Z Downloading FFmpeg (playwright ffmpeg v1011) from https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip
+check	플레이라이트 준비	2026-10-07T20:20:56.8970910Z |                                                                                |   0% of 2.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:56.9375170Z |■■■■■■■■                                                                        |  10% of 2.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:56.9553803Z |■■■■■■■■■■■■■■■■                                                                |  20% of 2.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:56.9666793Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 2.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:56.9786808Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 2.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:56.9864806Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 2.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:56.9935663Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 2.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:56.9957182Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 2.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:57.0066714Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 2.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:57.0079106Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 2.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:57.0121363Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 2.3 MiB
+check	플레이라이트 준비	2026-10-07T20:20:57.0559215Z FFmpeg (playwright ffmpeg v1011) downloaded to /home/runner/.cache/ms-playwright/ffmpeg-1011
+check	플레이라이트 준비	2026-10-07T20:20:57.0562064Z Downloading Chrome Headless Shell 151.0.7922.34 (playwright chromium-headless-shell v1234) from https://cdn.playwright.dev/builds/cft/151.0.7922.34/linux64/chrome-headless-shell-linux64.zip
+check	플레이라이트 준비	2026-10-07T20:20:57.9550991Z |                                                                                |   0% of 114.7 MiB
+check	플레이라이트 준비	2026-10-07T20:20:58.0599519Z |■■■■■■■■                                                                        |  10% of 114.7 MiB
+check	플레이라이트 준비	2026-10-07T20:20:58.1178434Z |■■■■■■■■■■■■■■■■                                                                |  20% of 114.7 MiB
+check	플레이라이트 준비	2026-10-07T20:20:58.1661121Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 114.7 MiB
+check	플레이라이트 준비	2026-10-07T20:20:58.1963875Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 114.7 MiB
+check	플레이라이트 준비	2026-10-07T20:20:58.2244893Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 114.7 MiB
+check	플레이라이트 준비	2026-10-07T20:20:58.2511759Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 114.7 MiB
+check	플레이라이트 준비	2026-10-07T20:20:58.2784201Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 114.7 MiB
+check	플레이라이트 준비	2026-10-07T20:20:58.3076716Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 114.7 MiB
+check	플레이라이트 준비	2026-10-07T20:20:58.3354717Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 114.7 MiB
+check	플레이라이트 준비	2026-10-07T20:20:58.3673566Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 114.7 MiB
+check	플레이라이트 준비	2026-10-07T20:20:59.8262285Z Chrome Headless Shell 151.0.7922.34 (playwright chromium-headless-shell v1234) downloaded to /home/runner/.cache/ms-playwright/chromium_headless_shell-1234
+check	점검	﻿2026-10-07T20:20:59.8902569Z ##[group]Run node .github/site-check/check.mjs
+check	점검	2026-10-07T20:20:59.8902896Z ^[[36;1mnode .github/site-check/check.mjs^[[0m
+check	점검	2026-10-07T20:20:59.8957950Z shell: /usr/bin/bash -e {0}
+check	점검	2026-10-07T20:20:59.8958164Z env:
+check	점검	2026-10-07T20:20:59.8958338Z   SITE_BASE: https://synk.im
+check	점검	2026-10-07T20:20:59.8960908Z   GH_TOKEN: ***
+check	점검	2026-10-07T20:20:59.8961089Z ##[endgroup]
+check	점검	2026-10-07T20:21:00.2314170Z 1. synk.im 반영 기다리기
+check	점검	2026-10-07T20:21:01.1676632Z   비교: 마지막 통과 0f0c9a7부터
+check	점검	2026-10-07T20:21:02.1940446Z   바뀐 파일 15개 같음, 지운 파일 0개 404
+check	점검	2026-10-07T20:21:02.1940855Z 2. 제작 도구 이름
+check	점검	2026-10-07T20:21:02.4348404Z   파일 3211개 봄
+check	점검	2026-10-07T20:21:02.6285147Z 3. 페이지
+check	점검	2026-10-07T20:25:01.5711062Z   23쪽 × 2기기
+check	점검	2026-10-07T20:25:01.5711616Z 4. LAB 게임
+check	점검	2026-10-07T20:29:41.3410650Z   게임 8개 × 2기기
+check	점검	2026-10-07T20:29:41.3420352Z 5. 질문창
+check	점검	2026-10-07T20:29:45.5411084Z   답: SYNK 안내 SYNK LAB은 한국어 교재와 게임, 개인화 엔진 아틀라스를 넣은 학습 앱을 개발하는 에듀테…
+check	점검	2026-10-07T20:29:46.0274760Z 
+check	점검	2026-10-07T20:29:46.0275747Z ## synk.im 배포 점검 — 문제 없음
+check	점검	2026-10-07T20:29:46.0276048Z 
+check	점검	2026-10-07T20:29:46.0278080Z - 반영, 도구 이름, 페이지, LAB 게임, 질문창 모두 통과
+check	Post Run actions/setup-node@v7	﻿2026-10-07T20:29:46.0461256Z Post job cleanup.
+check	Post Run actions/checkout@v7	﻿2026-10-07T20:29:46.1532388Z Post job cleanup.
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2252821Z [command]/usr/bin/git version
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2298007Z git version 2.55.0
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2329780Z Temporarily overriding HOME='/home/runner/work/_temp/fe9e112e-2409-4d59-a3c6-e2ad16299238' before making global git config changes
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2330659Z Adding repository directory to the temporary git global config as a safe directory
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2334308Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/synk-policy/synk-policy
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2361969Z Removing SSH command configuration
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2367415Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2397931Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2609756Z Removing HTTP extra header
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2615206Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2652078Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2867307Z Removing includeIf entries pointing to credentials config files
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2873140Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2907087Z includeif.gitdir:/home/runner/work/synk-policy/synk-policy/.git.path
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2908052Z includeif.gitdir:/home/runner/work/synk-policy/synk-policy/.git/worktrees/*.path
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2908871Z includeif.gitdir:/github/workspace/.git.path
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2910024Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2916515Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/synk-policy/synk-policy/.git.path
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2940392Z /home/runner/work/_temp/git-credentials-6611d831-118f-4b64-8c6d-78366eedb3e2.config
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2950465Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/synk-policy/synk-policy/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-6611d831\-118f\-4b64\-8c6d\-78366eedb3e2\.config
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.2985312Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/synk-policy/synk-policy/.git/worktrees/*.path
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.3008373Z /home/runner/work/_temp/git-credentials-6611d831-118f-4b64-8c6d-78366eedb3e2.config
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.3024178Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/synk-policy/synk-policy/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-6611d831\-118f\-4b64\-8c6d\-78366eedb3e2\.config
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.3057702Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.3081675Z /github/runner_temp/git-credentials-6611d831-118f-4b64-8c6d-78366eedb3e2.config
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.3088351Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-6611d831\-118f\-4b64\-8c6d\-78366eedb3e2\.config
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.4578233Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.4604641Z /github/runner_temp/git-credentials-6611d831-118f-4b64-8c6d-78366eedb3e2.config
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.4611539Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-6611d831\-118f\-4b64\-8c6d\-78366eedb3e2\.config
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.4646674Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+check	Post Run actions/checkout@v7	2026-10-07T20:29:46.4838460Z Removing credentials config '/home/runner/work/_temp/git-credentials-6611d831-118f-4b64-8c6d-78366eedb3e2.config'
+check	Complete job	﻿2026-10-07T20:29:46.4966967Z Cleaning up orphan processes

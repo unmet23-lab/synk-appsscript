@@ -1,0 +1,4 @@
+[원격배포] ✅ synk-care-push-send v5 ACTIVE — 파일 2개
+   URL https://qiwxeddwwnzkwalpsuty.supabase.co/functions/v1/synk-care-push-send
+[원격배포] 대상 ▸ Synk Core  (qiwxeddwwnzkwalpsuty)
+[원격배포] 판 대조 ✅ 저장소 c16 · DB 20261007130000_synk_care_push_c16.sql

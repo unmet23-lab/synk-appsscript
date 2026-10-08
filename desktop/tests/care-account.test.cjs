@@ -45,6 +45,31 @@ test('care broker cannot dispatch account-wide deletion, sibling data, learning 
   assert.equal(calls.length,count);
 });
 
+test('Care native save forwards an explicit library capability while other operations reject it',()=>{
+  const library={...state,people:[{id:'fixture-person',messageLibrary:[]}]};
+  const request=requestSpec('careSave',{expected_revision:2,state:library,messageLibraryVersion:1},'1.0','platform','care');
+  assert.deepEqual(request,{path:'synk-care',body:{action:'save',expected_revision:2,state:library,messageLibraryVersion:1}});
+  for(const version of [0,2,'1',null,undefined,true])assert.throws(()=>requestSpec('careSave',{expected_revision:2,state:library,messageLibraryVersion:version},'1.0','platform','care'),{code:'INVALID_REQUEST'});
+  for(const operation of ['careLoad','careDelete'])assert.throws(()=>requestSpec(operation,{...(operation==='careDelete'?{expected_revision:2}:{}),messageLibraryVersion:1},'1.0','platform','care'),{code:'INVALID_REQUEST'});
+  assert.throws(()=>requestSpec('careSave',{expected_revision:2,state:library,messageLibraryVersion:1},'1.0','world','care'),{code:'INVALID_REQUEST'});
+});
+
+test('Care native save carries both capabilities and preserves an explicit disabled checkin preference',()=>{
+  const notebook={...state,people:[{id:'fixture-person',messageLibrary:[],checkinIntervalDays:0}]};
+  const params={expected_revision:3,state:notebook,messageLibraryVersion:1,checkinPreferenceVersion:1};
+  const request=requestSpec('careSave',params,'1.0','platform','care');
+  assert.deepEqual(request,{path:'synk-care',body:{action:'save',...params}});
+  notebook.people[0].checkinIntervalDays=30;
+  assert.equal(request.body.state.people[0].checkinIntervalDays,0,'the main-process request snapshots the preference');
+  const optional=requestSpec('careSave',{expected_revision:3,state,checkinPreferenceVersion:1},'1.0','platform','care');
+  assert.equal(optional.body.checkinPreferenceVersion,1);assert.equal(Object.hasOwn(optional.body,'messageLibraryVersion'),false);
+  for(const value of [0,2,-1,1.5,'1',null,undefined,true,NaN])assert.throws(()=>requestSpec('careSave',{expected_revision:3,state,checkinPreferenceVersion:value},'1.0','platform','care'),{code:'INVALID_REQUEST'});
+  for(const operation of ['careLoad','careDelete'])assert.throws(()=>requestSpec(operation,{...(operation==='careDelete'?{expected_revision:3}:{}),checkinPreferenceVersion:1},'1.0','platform','care'),{code:'INVALID_REQUEST'});
+  for(const client of [undefined,'platform','path','rehearsal','family-album'])assert.throws(()=>requestSpec('careSave',{expected_revision:3,state,checkinPreferenceVersion:1},'1.0','platform',client),{code:'INVALID_REQUEST'});
+  assert.throws(()=>requestSpec('careSave',{expected_revision:3,state,checkinPreferenceVersion:1},'1.0','world','care'),{code:'INVALID_REQUEST'});
+  assert.equal(Object.hasOwn(requestSpec('careSave',{expected_revision:3,state},'1.0','platform').body,'checkinPreferenceVersion'),false);
+});
+
 test('care IPC rejects sibling windows, child frames and different documents before dispatch',async()=>{
   const handlers=new Map(),ipcMain={removeHandler:key=>handlers.delete(key),handle:(key,fn)=>handlers.set(key,fn)};
   const frame={url:PRODUCT_PREVIEWS.care.entry},webContents={mainFrame:frame},window={webContents,isDestroyed:()=>false};

@@ -1,0 +1,17 @@
+{
+  "checkedAt": "2026-10-07",
+  "library": "web-push@3.6.7",
+  "method": "createCarePushSender -> real generateRequestDetails -> http_ece AES128GCM decrypt, synthetic locally generated VAPID and receiver keys",
+  "networkCalls": 0,
+  "aes128gcmEncrypted": true,
+  "decryptedPayload": { "type": "synk-care-digest" },
+  "vapidHeaderPresent": true,
+  "ttlSeconds": 300,
+  "topic": "synk-care-daily",
+  "plaintextAbsentFromCiphertext": true,
+  "privateKeyAbsentFromBody": true,
+  "redirectsFollowed": false,
+  "redirectEvidence": "Official v3.6.7 sendNotification creates one node:https.request and rejects every response outside 2xx, including 3xx. No Location follow-up request.",
+  "redirectSource": "https://raw.githubusercontent.com/web-push-libs/web-push/v3.6.7/src/web-push-lib.js",
+  "limitations": ["No live push gateway call", "No physical device delivery", "No runtime Edge function execution"]
+}

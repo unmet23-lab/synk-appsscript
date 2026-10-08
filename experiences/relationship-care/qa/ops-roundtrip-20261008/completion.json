@@ -1,0 +1,42 @@
+{
+  "at": "2026-10-07T15:19:42.289Z",
+  "backendCommit": "9b68b62a6bea4ca23777d6519690c446c1bf5a9e",
+  "branch": "codex/synk-care-personal-20261006",
+  "remoteCommit": "9b68b62a6bea4ca23777d6519690c446c1bf5a9e",
+  "pushed": true,
+  "frontendChanged": false,
+  "backendTests": 51,
+  "productionChecks": {
+    "before": 36,
+    "after": 36
+  },
+  "syntheticCleanup": {
+    "before": true,
+    "after": true
+  },
+  "review": {
+    "model": "claude-opus-5-5",
+    "effort": "max",
+    "unresolvedP0P1P2": 0,
+    "sourceHashesMatch": true
+  },
+  "functions": [
+    {
+      "slug": "synk-care-push",
+      "status": "ACTIVE",
+      "version": 5,
+      "verify_jwt": true
+    },
+    {
+      "slug": "synk-care-push-send",
+      "status": "ACTIVE",
+      "version": 5,
+      "verify_jwt": true
+    }
+  ],
+  "remoteRuntimeMatches": true,
+  "entrypointStaticComparison": "Unmeasured by existing tool; authenticated service and scheduled cron verified after deployment",
+  "githubActions": "No runs for this branch at completion",
+  "physicalPhoneSync": "Deferred by user",
+  "closedAppPushReceipt": "Not verified"
+}

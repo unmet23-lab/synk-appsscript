@@ -1,0 +1,94 @@
+[
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\app.mjs",
+    "sha256": "7cc68045597fc6011bd93449cff6b9eb28604c6c32c1df4839827d373fea7ac6"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\index.html",
+    "sha256": "d4d76b23b3f900ab5f6fb24abb585c23faa9a04c5e680dc1741895abe0db542b"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\style.css",
+    "sha256": "c506687f58c33e85a6289253f772a1f303c1378a47dc69ae12b6fc419b0ef377"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\care-push.mjs",
+    "sha256": "fc65a2b3ae407bb6e11a20a5764098f301e35e2b7f7ce61ca27a5538699ac621"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\care-sw.js",
+    "sha256": "56cdde3502eb7c602abe64088561491afab927c53e89ac8e2a5069cf4bd909d3"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\manifest.webmanifest",
+    "sha256": "ad8120283e9116e58791dbdbbe57114017c880667928ae54498390e8bc194603"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\server.mjs",
+    "sha256": "7aae65a4d3463d2a51643cb4c6bcd049f39c1caea8bace530dfdc14d24af79cd"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\tests\\care-push.test.mjs",
+    "sha256": "f194c412a4b48214f1edb5c8d4981dc9bc436d31072a11f00639446e0dd9ba61"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\tests\\account.test.mjs",
+    "sha256": "72867014a4d9d5e05465a7d9ce746d1065f797110b4dfc1a3110fb677b483d4a"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\tests\\public-build.test.mjs",
+    "sha256": "941f861584d66f15e60f579b7fa0dbb8db547a68d8f03b4e2b7d0cf58752db45"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\product-account.mjs",
+    "sha256": "3f0fdba8efa06161f10e0d9f52a84745b8c2211d7e904f064bc6156e486a2d76"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tools\\prepare-care-public.mjs",
+    "sha256": "c1ef0f3137699e3abdf735e850d5e03a9f9f854d9ddc0bd15e86655cec2d1177"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-talk-care-release-20261006\\lib\\synk-care-push-store.js",
+    "sha256": "6262b0928d152eba2428f2ab69a710c2b7ede6faf52dcc91e3a3375442f07b5d"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-talk-care-release-20261006\\lib\\synk-care-push-server.js",
+    "sha256": "3321c1998865d728beee6d1628ca9d748c85c16cd39d4cc6d11b48cf5b295e0b"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-talk-care-release-20261006\\lib\\synk-care-push-worker.js",
+    "sha256": "34cfaf1576cbd5bdc304ab1ff212c61a7a22a570b5d9a7cdd1ad783f92612368"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-talk-care-release-20261006\\tools\\synk-care-push-build.js",
+    "sha256": "fa82601a679fff781d20656ff2d21154549ba70894948cd22149a5498dee2a9c"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-talk-care-release-20261006\\supabase\\migrations\\20261007130000_synk_care_push_c16.sql",
+    "sha256": "788dacc7d7264dc62e75636ac0677d9c4a0cd9fbec589c266b0c6bb6de63bc0d"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-talk-care-release-20261006\\supabase\\functions\\synk-care-push\\index.ts",
+    "sha256": "b50dbf7979e72f168ba5ecefbda75fa56398b257b4191c6e01111c8a1a2a2981"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-talk-care-release-20261006\\supabase\\functions\\synk-care-push\\동봉.json",
+    "sha256": "d4a9fc62bb4e849518b35a5089609155f012157fe8f2519ce5bf04d17f8f81c7"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-talk-care-release-20261006\\supabase\\functions\\synk-care-push-send\\index.ts",
+    "sha256": "ed15c67dd10483fc88adc0cd14abf4227f6539336ef23f9cd8c61997b97486bb"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-talk-care-release-20261006\\supabase\\functions\\synk-care-push-send\\동봉.json",
+    "sha256": "d4a9fc62bb4e849518b35a5089609155f012157fe8f2519ce5bf04d17f8f81c7"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-talk-care-release-20261006\\tests\\care-push.test.js",
+    "sha256": "f5ba6a71b0210b08fa638cc61601caf5995a7b87e2d638d25882d87df08ccf70"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-talk-care-release-20261006\\tests\\care-push-integration.test.js",
+    "sha256": "13da712bab19f80fae9fe7d3de9a241a13f132e3dcd8700691994d5becf08532"
+  }
+]

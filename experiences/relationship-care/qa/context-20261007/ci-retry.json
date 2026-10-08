@@ -1,0 +1,28 @@
+{
+  "runId": 37634856605,
+  "headSha": "eb9e55b3b126dfbc45caaa176395c4a677e89f67",
+  "attempt1": {
+    "conclusion": "failure",
+    "updatedAt": "2026-10-07T14:23:59Z",
+    "changedFilesMatched": 6,
+    "pagesChecked": "23 routes x 2 viewport/device settings",
+    "pageFailures": 0,
+    "onlyFailure": "Desktop /try/order-rush/stage.js returned HTTP 503 during unrelated game check",
+    "followupHttpCheck": {
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "bytes": 22096
+    }
+  },
+  "attempt2": {
+    "conclusion": "cancelled",
+    "updatedAt": "2026-10-07T14:28:30Z",
+    "reason": "Canceling since a higher priority waiting request for site-check exists"
+  },
+  "successor": {
+    "runId": 37636908462,
+    "headSha": "ba3b77abf74ef78fe41801d4897d394712d0e253",
+    "unchangedCareTree": "a5dc27a6efddfb543881118d999c2d1b334b4f93"
+  },
+  "action": "Reran failed job once without code changes; follow-up deployment cancelled it. Successor Care tree matches our release exactly. Final state is in deployment-ci.json."
+}

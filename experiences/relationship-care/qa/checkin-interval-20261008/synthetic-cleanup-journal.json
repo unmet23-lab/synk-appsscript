@@ -1,0 +1,17 @@
+{
+  "run": "c9dd2146-6822-4332-b25b-f5ab25a8cde6",
+  "marker": "care-checkin-c9dd2146-6822-4332-b25b-f5ab25a8cde6",
+  "accounts": [
+    {
+      "email": "care-checkin-c9dd2146-6822-4332-b25b-f5ab25a8cde6-owner@example.invalid",
+      "id": "5238fa31-7e52-4947-bf2a-086e59e1d410",
+      "cleaned": true
+    },
+    {
+      "email": "care-checkin-c9dd2146-6822-4332-b25b-f5ab25a8cde6-other@example.invalid",
+      "id": "83848edf-9b92-463f-be7d-1930ea9755f9",
+      "cleaned": true
+    }
+  ],
+  "complete": true
+}

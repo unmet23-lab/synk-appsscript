@@ -1,0 +1,125 @@
+{
+  "ok": true,
+  "checkedOn": "2026-10-05",
+  "scope": "Hidden Electron: real launcher, synthetic care menu right, real local care document and production Blob download handler. No live authentication or messages.",
+  "checks": [
+    {
+      "name": "guest-only-world",
+      "ok": true
+    },
+    {
+      "name": "care-library-1280",
+      "ok": true,
+      "ids": [
+        "care"
+      ],
+      "selected": "SYNK 플레저",
+      "action": "product-preview",
+      "disabled": false,
+      "pageOverflow": 0,
+      "mainOverflow": 0,
+      "heroTextFits": true,
+      "imagesLoaded": true,
+      "screenshot": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\artifacts\\platform-care-1280.png"
+    },
+    {
+      "name": "care-library-390",
+      "ok": true,
+      "ids": [
+        "care"
+      ],
+      "selected": "SYNK 플레저",
+      "action": "product-preview",
+      "disabled": false,
+      "pageOverflow": 0,
+      "mainOverflow": 0,
+      "heroTextFits": true,
+      "imagesLoaded": true,
+      "screenshot": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\artifacts\\platform-care-390.png"
+    },
+    {
+      "name": "care-library-320",
+      "ok": true,
+      "ids": [
+        "care"
+      ],
+      "selected": "SYNK 플레저",
+      "action": "product-preview",
+      "disabled": false,
+      "pageOverflow": 0,
+      "mainOverflow": 0,
+      "heroTextFits": true,
+      "imagesLoaded": true,
+      "screenshot": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\artifacts\\platform-care-320.png"
+    },
+    {
+      "name": "care-action-uses-product-preview",
+      "ok": true
+    },
+    {
+      "name": "account-switch-hides-care",
+      "ok": true
+    },
+    {
+      "name": "care-document-isolated",
+      "ok": true
+    },
+    {
+      "name": "native-ics-save",
+      "ok": true,
+      "state": "completed",
+      "filename": "synk-care.ics"
+    },
+    {
+      "name": "native-json-save",
+      "ok": true,
+      "state": "completed",
+      "filename": "synk-care.json"
+    },
+    {
+      "name": "windows-stay-hidden",
+      "ok": true
+    },
+    {
+      "name": "no-unexpected-downloads",
+      "ok": true,
+      "denied": []
+    }
+  ],
+  "consoleErrors": [],
+  "blockedRequests": [],
+  "nativeEntry": {
+    "ok": true,
+    "url": "http://127.0.0.1:4296/",
+    "ready": true,
+    "title": "SYNK 플레저 · 소중한 사람을 기억하는 수첩",
+    "bodyCharacters": 549,
+    "node": "undefined",
+    "platformBridge": "undefined",
+    "bridgeKeys": [
+      "getEnvironment",
+      "authStatus",
+      "openInBrowser"
+    ],
+    "environment": {
+      "clientId": "care",
+      "mode": "development",
+      "platform": "win32",
+      "arch": "x64",
+      "sessionScope": "im.synk.care.preview.smoke",
+      "separateClient": true,
+      "productionReady": false,
+      "immersiveVR": false,
+      "browserVRAvailable": false
+    },
+    "auth": {
+      "configured": false,
+      "signedIn": false,
+      "status": "unconfigured",
+      "productionReady": false
+    },
+    "frames": 0,
+    "errors": [],
+    "visible": false
+  }
+}

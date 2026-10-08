@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-10-07T12:54:28.509Z",
+  "url": "https://synk.im/try/racing/atmosphere.js",
+  "status": 200,
+  "contentType": "application/javascript; charset=utf-8",
+  "publicBytes": 10042,
+  "localBytes": 10188,
+  "publicSha256": "5ee5fe59a84e429827e0c2e33a7905bb17bcfe78e1426ba80e5eb027c2393130",
+  "localSha256": "dd431696e07d1becddd768bb016234a762c46c80ae2033240f29e8745a165d4c",
+  "bytesEqual": false,
+  "policyHead": "cb4c6fc151806cf264ede6bf7815d4b6284a64d3",
+  "scope": "Read-only recheck of the isolated LAB racing asset HTTP503 from full-site CI37622432130; no changes made.",
+  "secondCheckedAt": "2026-10-07T12:54:47.763Z",
+  "secondStatus": 200,
+  "committedBytes": 10042,
+  "committedSha256": "5ee5fe59a84e429827e0c2e33a7905bb17bcfe78e1426ba80e5eb027c2393130",
+  "publicMatchesCommitted": true,
+  "localNormalizedMatchesPublic": true,
+  "localCRLFCount": 146,
+  "publicLFCount": 146
+}

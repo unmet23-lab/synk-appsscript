@@ -1,0 +1,66 @@
+{
+  "stage": "verify",
+  "at": "2026-10-07T12:42:37.171Z",
+  "project": "Synk Core",
+  "functions": [
+    {
+      "slug": "synk-care",
+      "status": "ACTIVE",
+      "version": 7,
+      "verify_jwt": true
+    },
+    {
+      "slug": "synk-care-push",
+      "status": "ACTIVE",
+      "version": 4,
+      "verify_jwt": true
+    },
+    {
+      "slug": "synk-care-push-send",
+      "status": "ACTIVE",
+      "version": 4,
+      "verify_jwt": true
+    }
+  ],
+  "database": [
+    {
+      "checksum": "a70b28ad27dc581ac153725bf698db3dfc3b46cdec4a75537a65904052944802",
+      "rls": true,
+      "subscriptions": 0,
+      "cron_active": true,
+      "policies": 0,
+      "leaked_grants": 0,
+      "vault_target": true,
+      "vault_key": true
+    }
+  ],
+  "anonymousSettings": {
+    "status": 401,
+    "body": {
+      "ok": false,
+      "error": {
+        "code": "AUTH_REQUIRED",
+        "message": "AUTH_REQUIRED"
+      }
+    }
+  },
+  "anonymousWorker": {
+    "status": 401,
+    "body": {
+      "ok": false
+    }
+  },
+  "serviceWorker": {
+    "status": 200,
+    "body": {
+      "ok": true,
+      "processed": 0,
+      "sent": 0,
+      "retry": 0,
+      "gone": 0,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "ok": true
+}

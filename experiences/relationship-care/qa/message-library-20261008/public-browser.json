@@ -1,0 +1,25 @@
+{
+  "commit":"63146086d68a20b965a18937be7777609e229bca",
+  "url":"https://synk.im/care/",
+  "environment":"IAB; same tab retained the prior unversioned cache; ordinary reload, no cache bypass",
+  "checks":[
+    "new import map and module graph accepted by CSP",
+    "24 module requests and one stylesheet request have 64-hex SHA query versions",
+    "nested account adapter and lazy core module loaded through versioned URLs",
+    "example notebook opens current zero-entry message library",
+    "saving synthetic wording displays one entry, complete preview and three actions",
+    "no copy or contact completion action used",
+    "no browser warning/error logs"
+  ],
+  "detailedLibraryUiProof":"public-browser-v5.json",
+  "runtimeAndStylesIdenticalToV5":true,
+  "publicFilesMatched":48,
+  "realUserDataChanged":false,
+  "accountLoginTest":false,
+  "syntheticProviderAccountTest":"production-roundtrip.json",
+  "physicalPhoneTest":false,
+  "pushReceiptTest":false,
+  "viewportReset":true,
+  "testTabsClosed":true,
+  "storageEnabled":false
+}

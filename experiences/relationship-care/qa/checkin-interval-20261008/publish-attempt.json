@@ -1,0 +1,221 @@
+{
+  "startedAt": "2026-10-07T21:14:15.162Z",
+  "phase": "pushed",
+  "pushed": true,
+  "policy": "C:/Users/q1212/Documents/SYNK-worktrees/synk-id-unified-20261006",
+  "candidate": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\care-checkin-preview-20261008",
+  "baseline": "63146086d68a20b965a18937be7777609e229bca",
+  "baselineCareTree": "badb435201104ea0652132d25ed29e5a589a2bf7",
+  "sourceInventoryFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\qa\\checkin-interval-20261008\\claude-source-inventory.json",
+  "userReviewExceptionFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\qa\\checkin-interval-20261008\\user-review-exception.json",
+  "userAuthorizedException": true,
+  "claudeGatePassed": false,
+  "backendVerificationFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\qa\\checkin-interval-20261008\\release-verify.json",
+  "productionRoundtripFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\qa\\checkin-interval-20261008\\production-roundtrip.json",
+  "candidateVerificationFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\qa\\checkin-interval-20261008\\candidate-verification.json",
+  "expectedManifestSha256": "d79ab832821347912b44567bef73a33d9a3f8f2717471e636c63127d75812122",
+  "files": [
+    "care/app.mjs",
+    "care/build-manifest.json",
+    "care/care-focus.mjs",
+    "care/care-sync.mjs",
+    "care/index.html",
+    "care/model.mjs",
+    "care/style.css",
+    "care/vendor/account/document-sync.mjs",
+    "care/vendor/account/product-account.mjs"
+  ],
+  "publicFileCount": 48,
+  "rootSourceGitCommit": null,
+  "parent": "9e656f7979b9f6e34344dcbfc3167542b0b3019b",
+  "commit": "5528be392c2d6180cb6a09396eccdb7281c4ccf2",
+  "candidateSources": [
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\index.html",
+      "sha256": "fd45d35cccefd0c53bd489183fa6a77c2026929755689f6e3a662ffd57a0f623"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\style.css",
+      "sha256": "087c692a69f35a3860f40365e8d8ae392f5230df4db16325e86554d51394cea8"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\app.mjs",
+      "sha256": "cd4771363cf72ec939f4feb13d95f64b99f3b37d0f7d44ae6269f58293cde32b"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\model.mjs",
+      "sha256": "272fc68a465c08f8222ea25249faa8b6c21a2394ae929b70d91e61e7b1d5007c"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\lunar.mjs",
+      "sha256": "bdb51ae8e1f5964faa6ae9ed8f0254e6f5dc2c27551f46e85ca9b528dedbb1bb"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\care-features.mjs",
+      "sha256": "705493eb07fa988001819bf6cc57a18a3e4b3fe8751f81fb6e35ab755637f075"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\care-sync.mjs",
+      "sha256": "d7249609e9b9409a9da0ddc200ee32d99ec551a4c878feefad6ee2a1c8335d23"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\account.mjs",
+      "sha256": "431f31c77db137cfb704da1c4ce2cdc7d2d024465a32521dd2be2ed04c3d8084"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\care-account-view.mjs",
+      "sha256": "23423906677f54eb80f0ec027b8bd04365e3179bff08e5a10875ae0aed584887"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\care-focus.mjs",
+      "sha256": "fb60d523d03ff77b4153b7659c483ea3d174b5f2443feb6b6432b824dfd3acf0"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\care-context.mjs",
+      "sha256": "f9ef867bcc7ca2001101ce27155db9b2f80d42e9cc5b8ba9c4fa2b9714462826"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\care-push.mjs",
+      "sha256": "b05792173d4328cc6f47a9978c128e4a79371e8f5bd0ab4f5ceec86186ab3a19"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\care-sw.js",
+      "sha256": "56cdde3502eb7c602abe64088561491afab927c53e89ac8e2a5069cf4bd909d3"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\manifest.webmanifest",
+      "sha256": "ad8120283e9116e58791dbdbbe57114017c880667928ae54498390e8bc194603"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\care-planner.mjs",
+      "sha256": "d0bc73baa6cecd141a8fe720ad0329b62929bae911cca9786578bfa3001080fe"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\care-personalization.mjs",
+      "sha256": "d7f5b9ace2ac25cd49c37cbacb5eacde7f8cbbdde9b0bf680f64ca859899ab06"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\care-support.mjs",
+      "sha256": "85735e0a55f17c8ee8f0f451209c7dfd187f04073141b930dce6c6de0b615390"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\care-outcomes.mjs",
+      "sha256": "5206d7826c5277a71e0abc9b26e16de53f5fa26f91027a3f55355d8b3b22ea69"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\memory-card.mjs",
+      "sha256": "f6660af612023a9ad14a446d4082303a906a5d7064be1c0cc380565fd746a192"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\memory-theme.mjs",
+      "sha256": "e1796bc47147001e61f3bdd1e19d12659c11158fd657efc1d6aa8feb6b1150f8"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\assets\\icon192.png",
+      "sha256": "2f109a2b463ba8402d9c86aa1cc3f7c97c26ac214c39a80400b1710d1d74a2d2"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\assets\\icon512.png",
+      "sha256": "2b741257987f1a193fd616648084d83a8f4096c324670792a970aac37b382309"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\assets\\apple-touch-icon180.png",
+      "sha256": "798397a679c978d276fa976d0bb60be89eae5d744ec30ea1138dfaa203cfcac0"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\assets\\badge-check.webp",
+      "sha256": "9cf54368ec871bc8f1b645ca2dfda0ff88d6dd565c3d27b1dd9b98dc5e2bb645"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\assets\\badge-cream.webp",
+      "sha256": "5336c1eca815b403ad0348bfde1573dda2367fab4996ea099c2daf03015f15be"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\assets\\InterTight-Bold.ttf",
+      "sha256": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\assets\\InterTight-LICENSE.txt",
+      "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\assets\\slab-blush-long.webp",
+      "sha256": "8249fb7023fd51806045e8db93999c0ae24ae9ba09d2f57e9f6712d632b9a899"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\assets\\slab-coral-long.webp",
+      "sha256": "d58a4c8912eba6972ef1a38a7f701b7d841970a164524d41f267984949686849"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\assets\\slab-cream-long.webp",
+      "sha256": "84569abd7fed8e954281cd109f19def8288321c41c8bbbe3f8804208fe43f6ac"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\assets\\sticker-check.webp",
+      "sha256": "255e2696f9c008a1d6e220d0452b03b7fe5aaf649c78095ec0c6ef738f6620b0"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\assets\\sticker-envelope.webp",
+      "sha256": "e157638a16caacb08a98131c50c6aa7024192f1b2d058b64d10e7c252504cf7f"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\assets\\sticker-person.webp",
+      "sha256": "b26e20a40385723a37d61c9b6632f686a7fa6cc1f71dfcc2c3000b1255b9d2ae"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\assets\\sticker-time.webp",
+      "sha256": "c8b0931c96f1bf654e9f05136a768ea75b96687421e701f826625db3a9906c22"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\assets\\SUIT-LICENSE.txt",
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\assets\\SUIT-Variable.woff2",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\assets\\synk-logo.svg",
+      "sha256": "cd4950d57eab280fe14b26d58cb78f416eaf5c1ae1f0fa130986dde9567f61f6"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\assets\\thread-shift.webp",
+      "sha256": "123cc5ccf392346e5beffc2f195c3b0315fddcfb24881b33fefdba110061d483"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\atlas\\domain.js",
+      "sha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\atlas\\ask.js",
+      "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\atlas\\vellum-expression.js",
+      "sha256": "a677829210a20b521aa341e0268cce4221f29ef495238e8f7ee5915a5779a237"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\atlas\\trail-followup.js",
+      "sha256": "4d0e90889fe4678e658db4a838c8d3d3190be72b12139969e9dad987266f99e1"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\atlas\\temper-outcomes.js",
+      "sha256": "a6ab147b062455c9f0df7fae662d91360d28840312d556f776fcc337c375d763"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\core.mjs",
+      "sha256": "5c85d1d957403ba1b04795e115d9cb40f26ede59e8dbbfbaa743666ee3e1cbbd"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\product-account.mjs",
+      "sha256": "4052118f01d7342c38fd06ac3303ed85f2cfc6fca1f0fbfe4b9dd484aa378cd1"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\document-sync.mjs",
+      "sha256": "7ddf305a9145955ce463f8d01cddbb8d93b4afae8e73f44622c6e87415dd0c44"
+    }
+  ],
+  "scopedSourceCount": 19,
+  "candidateSourceCount": 46,
+  "completedAt": "2026-10-07T21:14:38.882Z"
+}

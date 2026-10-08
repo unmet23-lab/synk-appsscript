@@ -1,0 +1,191 @@
+diff --git a/lib/synk-care-push-store.js b/lib/synk-care-push-store.js
+index 39b6cd9..ddc6dc5 100644
+--- a/lib/synk-care-push-store.js
++++ b/lib/synk-care-push-store.js
+@@ -4,10 +4,19 @@ const { createPgStore } = require('./synk-store.js');
+ const fail = (status, code) => { throw Object.assign(new Error(code), { status, code }); };
+ const status = row => ({ enabled: Boolean(row?.enabled), hour: Number(row?.hour ?? 9), minute: Number(row?.minute ?? 0), timeZone: 'Asia/Seoul', ...(row ? { deviceId: row.device_id } : {}) });
+ const fixedNow = value => {
++  if (typeof value === 'function') value = value();
+   const date = value === undefined ? new Date() : new Date(value);
+   if (!Number.isFinite(date.getTime())) throw new TypeError('Invalid push scheduler time');
+   return date.toISOString();
+ };
++// A committed claim cannot use push_due again: its receipt already says dispatching.
++// Keep its dispatch and retry times inside the same Korean day and 90-minute window.
++const withinDeliveryWindow = (device, day, time) => {
++  const midnight = Date.parse(`${day}T00:00:00+09:00`);
++  const start = midnight + (Number(device.hour) * 60 + Number(device.minute)) * 60_000;
++  const at = Date.parse(time);
++  return at >= start && at < Math.min(midnight + 86_400_000, start + 90 * 60_000);
++};
+ 
+ function createCarePushStore(sql) {
+   async function ready(q) {
+@@ -126,12 +135,12 @@ function createCarePushStore(sql) {
+     },
+ 
+     async processDue(deviceId, { now, shouldNotify, send }) {
+-      const time = fixedNow(now);
+       if (typeof shouldNotify !== 'function' || typeof send !== 'function') throw new TypeError('Push worker callbacks required');
+       // Commit the attempt BEFORE external I/O. A crash/unknown delivery is never retried that day.
+       // This intentionally favors no duplicates over guaranteed delivery; Web Push has no atomic DB receipt.
+       const claim = await sql.begin(async q => {
+         const locked = await lockDevice(q, deviceId); if (!locked) return null;
++        const time = fixedNow(now);
+         const [row] = await q`update engine.synk_care_push_subscriptions d set attempt_day=(${time}::timestamptz at time zone 'Asia/Seoul')::date,
+           attempt_count=case when attempt_day=(${time}::timestamptz at time zone 'Asia/Seoul')::date then attempt_count+1 else 1 end,
+           delivery_state='dispatching',next_attempt_at=null,updated_at=clock_timestamp()
+@@ -150,7 +159,10 @@ function createCarePushStore(sql) {
+             || device.hour !== claim.hour || device.minute !== claim.minute || device.p256dh !== claim.p256dh || device.auth !== claim.auth) return { outcome: 'cancelled' };
+         let outcome = 'skipped';
+         try {
+-          if (await shouldNotify(notebook.payload, { day: claim.attempt_day, now: time })) {
++          const time = fixedNow(now);
++          if (withinDeliveryWindow(device, claim.attempt_day, time)
++              && await shouldNotify(notebook.payload, { day: claim.attempt_day, now: time })
++              && withinDeliveryWindow(device, claim.attempt_day, fixedNow(now))) {
+             const result = await send({ subscription: { endpoint: device.endpoint, keys: { p256dh: device.p256dh, auth: device.auth } }, deviceId, day: claim.attempt_day, revision: Number(notebook.revision) });
+             outcome = ['sent', 'retry', 'gone', 'failed'].includes(result?.outcome) ? result.outcome : 'failed';
+           }
+@@ -158,9 +170,11 @@ function createCarePushStore(sql) {
+         if (outcome === 'gone') {
+           await q`delete from engine.synk_care_push_subscriptions where device_id=${deviceId}::uuid`;
+         } else {
+-          const retry = outcome === 'retry' && Number(claim.attempt_count) < 3;
++          const nextAttempt = outcome === 'retry' && Number(claim.attempt_count) < 3
++            ? new Date(Date.parse(fixedNow(now)) + 5 * 60_000).toISOString() : null;
++          const retry = nextAttempt !== null && withinDeliveryWindow(device, claim.attempt_day, nextAttempt);
+           await q`update engine.synk_care_push_subscriptions set delivery_state=${retry ? 'retry' : 'settled'},
+-            next_attempt_at=case when ${retry} then ${time}::timestamptz+interval '5 minutes' else null end,
++            next_attempt_at=${retry ? nextAttempt : null}::timestamptz,
+             last_outcome=${outcome},updated_at=clock_timestamp() where device_id=${deviceId}::uuid`;
+         }
+         return { outcome, day: claim.attempt_day };
+diff --git a/lib/synk-care-push-worker.js b/lib/synk-care-push-worker.js
+index 8a0da2f..607d0e3 100644
+--- a/lib/synk-care-push-worker.js
++++ b/lib/synk-care-push-worker.js
+@@ -43,10 +43,10 @@ function createCarePushWorker({ store, shouldNotify, send, enabled = () => false
+     if (!key || request.headers.get('authorization') !== `Bearer ${key}`) return reply(401, { ok: false });
+     if (enabled() !== true) return reply(503, { ok: false, error: 'PUSH_UNAVAILABLE' });
+     try {
+-      const at = now(), devices = await store.listDue({ now: at, limit: 10 });
++      const devices = await store.listDue({ now: now(), limit: 10 });
+       const counts = { processed: 0, sent: 0, retry: 0, gone: 0, failed: 0, skipped: 0 };
+       for (const deviceId of devices) {
+-        const result = await store.processDue(deviceId, { now: at, shouldNotify, send });
++        const result = await store.processDue(deviceId, { now, shouldNotify, send });
+         counts.processed++;
+         const outcome = typeof result === 'string' ? result : result?.outcome;
+         if (Object.hasOwn(counts, outcome)) counts[outcome]++; else counts.skipped++;
+diff --git a/tests/care-push-integration.test.js b/tests/care-push-integration.test.js
+index bf50a4b..8b3f79e 100644
+--- a/tests/care-push-integration.test.js
++++ b/tests/care-push-integration.test.js
+@@ -207,3 +207,105 @@ test('worker rejects a user bearer before querying and never returns gateway det
+   const failed = await call(workerKey); assert.equal(failed.status, 503); assert.equal(reads, 1);
+   assert.doesNotMatch(await failed.text(), /private|endpoint|auth detail/);
+ });
++
++test('a slow gateway cannot carry later devices past Korean midnight or the 90-minute window', async () => {
++  for (const boundary of [
++    { start: '2026-10-08T14:59:59Z', end: '2026-10-08T15:00:07Z', hour: 23, minute: 59 },
++    { start: '2026-10-08T01:29:59Z', end: '2026-10-08T01:30:07Z', hour: 9, minute: 0 },
++  ]) {
++    const first = await subscribed(), second = await subscribed();
++    const ids = [first.deviceId, second.deviceId], realStore = createCarePushStore(sql);
++    for (const a of [first, second]) await a.push({ action: 'update', endpoint: a.sub.endpoint, hour: boundary.hour, minute: boundary.minute });
++    let clock = boundary.start; const sent = [];
++    const worker = createCarePushWorker({ serviceKey: workerKey, enabled: () => true, now: () => new Date(clock),
++      store: { ...realStore, async listDue(options) {
++        const due = await realStore.listDue({ ...options, limit: 100 });
++        assert.equal(ids.every(id => due.includes(id)), true);
++        return ids;
++      } },
++      shouldNotify: createCarePushDue(model), async send({ deviceId }) {
++        sent.push(deviceId); clock = boundary.end; return { outcome: 'sent' };
++      } });
++    const response = await worker(new Request('https://synthetic.invalid/synk-care-push-send', {
++      method: 'POST', headers: { authorization: 'Bearer ' + workerKey },
++    }));
++    assert.equal(response.status, 200);
++    assert.deepEqual(sent, [first.deviceId], boundary.start);
++    assert.deepEqual(await response.json(), { ok: true, processed: 2, sent: 1, retry: 0, gone: 0, failed: 0, skipped: 1 });
++    const [receipt] = await sql`select attempt_day::text,attempt_count from engine.synk_care_push_subscriptions where device_id=${second.deviceId}::uuid`;
++    assert.equal(receipt.attempt_day, null); assert.equal(receipt.attempt_count, 0);
++  }
++});
++
++test('claim eligibility uses the time after acquiring the account lock', async () => {
++  const a = await subscribed(), capture = senderCapture();
++  let clock = '2026-10-08T01:29:59Z';
++  const intercepted = (...args) => sql(...args);
++  intercepted.begin = callback => sql.begin(q => callback(async (parts, ...values) => {
++    const rows = await q(parts, ...values);
++    if (parts[0].startsWith('select * from engine.synk_accounts')) clock = '2026-10-08T01:30:00Z';
++    return rows;
++  }));
++  const result = await processDevice(a.deviceId, capture.send, () => new Date(clock), createCarePushStore(intercepted));
++  assert.equal(result.outcome, 'not-due'); assert.equal(capture.calls.length, 0);
++  const [receipt] = await sql`select attempt_day::text,attempt_count from engine.synk_care_push_subscriptions where device_id=${a.deviceId}::uuid`;
++  assert.equal(receipt.attempt_day, null); assert.equal(receipt.attempt_count, 0);
++});
++
++test('a claim that expires before dispatch is settled without a gateway send', async () => {
++  for (const boundary of [
++    { start: '2026-10-08T14:59:59Z', end: '2026-10-08T15:00:00Z', hour: 23, minute: 59 },
++    { start: '2026-10-08T01:29:59Z', end: '2026-10-08T01:30:00Z', hour: 9, minute: 0 },
++    { start: NOW, end: '2026-10-09T00:01:00Z', hour: 9, minute: 0 },
++  ]) {
++    const a = await subscribed(), capture = senderCapture();
++    await a.push({ action: 'update', endpoint: a.sub.endpoint, hour: boundary.hour, minute: boundary.minute });
++    let clock = boundary.start, transactions = 0;
++    const intercepted = (...args) => sql(...args);
++    intercepted.begin = async callback => {
++      const value = await sql.begin(callback);
++      if (++transactions === 1) clock = boundary.end;
++      return value;
++    };
++    const result = await processDevice(a.deviceId, capture.send, () => new Date(clock), createCarePushStore(intercepted));
++    assert.equal(result.outcome, 'skipped', boundary.end); assert.equal(capture.calls.length, 0);
++    const [receipt] = await sql`select attempt_day::text,attempt_count,delivery_state,last_outcome,next_attempt_at
++      from engine.synk_care_push_subscriptions where device_id=${a.deviceId}::uuid`;
++    assert.deepEqual(receipt, { attempt_day: '2026-10-08', attempt_count: 1, delivery_state: 'settled', last_outcome: 'skipped', next_attempt_at: null });
++  }
++});
++
++test('eligibility is rechecked after an asynchronous notebook decision and immediately before send', async () => {
++  const a = await subscribed(), capture = senderCapture(), should = createCarePushDue(model);
++  let clock = '2026-10-08T01:29:59Z';
++  const result = await createCarePushStore(sql).processDue(a.deviceId, { now: () => new Date(clock), send: capture.send,
++    async shouldNotify(payload, options) {
++      const due = should(payload, options); assert.equal(due, true);
++      clock = '2026-10-08T01:30:00Z'; return due;
++    } });
++  assert.equal(result.outcome, 'skipped'); assert.equal(capture.calls.length, 0);
++  const [receipt] = await sql`select delivery_state,last_outcome from engine.synk_care_push_subscriptions where device_id=${a.deviceId}::uuid`;
++  assert.deepEqual(receipt, { delivery_state: 'settled', last_outcome: 'skipped' });
++});
++
++test('retry backoff starts at rejection time and never outlives its original dispatch window', async () => {
++  for (const boundary of [
++    { start: NOW, end: '2026-10-08T00:01:08Z', hour: 9, minute: 0, retryAt: '2026-10-08T00:06:08.000Z' },
++    { start: '2026-10-08T01:24:59Z', end: '2026-10-08T01:25:00Z', hour: 9, minute: 0, retryAt: null },
++    { start: '2026-10-08T14:54:59Z', end: '2026-10-08T14:55:00Z', hour: 23, minute: 30, retryAt: null },
++    { start: '2026-10-08T14:59:59Z', end: '2026-10-08T15:00:07Z', hour: 23, minute: 59, retryAt: null },
++  ]) {
++    const a = await subscribed(); let clock = boundary.start, calls = 0;
++    await a.push({ action: 'update', endpoint: a.sub.endpoint, hour: boundary.hour, minute: boundary.minute });
++    const result = await processDevice(a.deviceId, async () => { calls++; clock = boundary.end; return { outcome: 'retry' }; }, () => new Date(clock));
++    assert.equal(result.outcome, 'retry'); assert.equal(calls, 1);
++    const [receipt] = await sql`select delivery_state,next_attempt_at from engine.synk_care_push_subscriptions where device_id=${a.deviceId}::uuid`;
++    assert.equal(receipt.delivery_state, boundary.retryAt ? 'retry' : 'settled', boundary.end);
++    assert.equal(receipt.next_attempt_at ? new Date(receipt.next_attempt_at).toISOString() : null, boundary.retryAt);
++    if (boundary.retryAt) {
++      assert.equal((await processDevice(a.deviceId, async () => { calls++; return { outcome: 'sent' }; }, '2026-10-08T00:06:07Z')).outcome, 'not-due');
++      assert.equal((await processDevice(a.deviceId, async () => { calls++; return { outcome: 'sent' }; }, boundary.retryAt)).outcome, 'sent');
++      assert.equal(calls, 2);
++    }
++  }
++});

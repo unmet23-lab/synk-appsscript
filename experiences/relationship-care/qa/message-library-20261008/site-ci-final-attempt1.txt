@@ -1,0 +1,203 @@
+check	Set up job	﻿2026-10-07T20:05:46.2633851Z Current runner version: '2.337.0'
+check	Set up job	2026-10-07T20:05:46.2654202Z ##[group]Runner Image Provisioner
+check	Set up job	2026-10-07T20:05:46.2655041Z Hosted Compute Agent
+check	Set up job	2026-10-07T20:05:46.2655552Z Version: 20261002.596
+check	Set up job	2026-10-07T20:05:46.2656094Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+check	Set up job	2026-10-07T20:05:46.2656697Z Build Date: 2026-10-02T22:28:27Z
+check	Set up job	2026-10-07T20:05:46.2657268Z Worker ID: {b4eef70f-3427-476d-961a-6157544ccb48}
+check	Set up job	2026-10-07T20:05:46.2657874Z Region: westus3
+check	Set up job	2026-10-07T20:05:46.2658325Z Cloud: Azure
+check	Set up job	2026-10-07T20:05:46.2658782Z ##[endgroup]
+check	Set up job	2026-10-07T20:05:46.2659947Z ##[group]Operating System
+check	Set up job	2026-10-07T20:05:46.2660521Z Ubuntu
+check	Set up job	2026-10-07T20:05:46.2661001Z 24.04.5
+check	Set up job	2026-10-07T20:05:46.2661451Z LTS
+check	Set up job	2026-10-07T20:05:46.2661856Z ##[endgroup]
+check	Set up job	2026-10-07T20:05:46.2662636Z ##[group]Runner Image
+check	Set up job	2026-10-07T20:05:46.2663146Z Image: ubuntu-24.04
+check	Set up job	2026-10-07T20:05:46.2663643Z Version: 20261004.327.1
+check	Set up job	2026-10-07T20:05:46.2664537Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+check	Set up job	2026-10-07T20:05:46.2666262Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+check	Set up job	2026-10-07T20:05:46.2667068Z ##[endgroup]
+check	Set up job	2026-10-07T20:05:46.2668065Z ##[group]GITHUB_TOKEN Permissions
+check	Set up job	2026-10-07T20:05:46.2669786Z Actions: read
+check	Set up job	2026-10-07T20:05:46.2670361Z Contents: read
+check	Set up job	2026-10-07T20:05:46.2670815Z Metadata: read
+check	Set up job	2026-10-07T20:05:46.2671253Z ##[endgroup]
+check	Set up job	2026-10-07T20:05:46.2673162Z Secret source: Actions
+check	Set up job	2026-10-07T20:05:46.2673923Z Cache mode: write
+check	Set up job	2026-10-07T20:05:46.2674561Z Prepare workflow directory
+check	Set up job	2026-10-07T20:05:46.2939369Z Prepare all required actions
+check	Set up job	2026-10-07T20:05:46.2996868Z Getting action download info
+check	Set up job	2026-10-07T20:05:46.5956032Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+check	Set up job	2026-10-07T20:05:46.6952918Z Download action repository 'actions/setup-node@v7' (SHA:820762786026740c76f36085b0efc47a31fe5020)
+check	Set up job	2026-10-07T20:05:46.7985385Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+check	Set up job	2026-10-07T20:05:47.6718414Z Complete job name: check
+check	Run actions/checkout@v7	﻿2026-10-07T20:05:47.7338711Z ##[group]Run actions/checkout@v7
+check	Run actions/checkout@v7	2026-10-07T20:05:47.7339430Z with:
+check	Run actions/checkout@v7	2026-10-07T20:05:47.7339791Z   fetch-depth: 2
+check	Run actions/checkout@v7	2026-10-07T20:05:47.7340193Z   repository: unmet23-lab/synk-policy
+check	Run actions/checkout@v7	2026-10-07T20:05:47.7343823Z   token: ***
+check	Run actions/checkout@v7	2026-10-07T20:05:47.7344206Z   ssh-strict: true
+check	Run actions/checkout@v7	2026-10-07T20:05:47.7344587Z   ssh-user: git
+check	Run actions/checkout@v7	2026-10-07T20:05:47.7344984Z   persist-credentials: true
+check	Run actions/checkout@v7	2026-10-07T20:05:47.7345404Z   clean: true
+check	Run actions/checkout@v7	2026-10-07T20:05:47.7345784Z   sparse-checkout-cone-mode: true
+check	Run actions/checkout@v7	2026-10-07T20:05:47.7346231Z   fetch-tags: false
+check	Run actions/checkout@v7	2026-10-07T20:05:47.7346612Z   show-progress: true
+check	Run actions/checkout@v7	2026-10-07T20:05:47.7346999Z   lfs: false
+check	Run actions/checkout@v7	2026-10-07T20:05:47.7347362Z   submodules: false
+check	Run actions/checkout@v7	2026-10-07T20:05:47.7347761Z   set-safe-directory: true
+check	Run actions/checkout@v7	2026-10-07T20:05:47.7348242Z   allow-unsafe-pr-checkout: false
+check	Run actions/checkout@v7	2026-10-07T20:05:47.7348887Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8140704Z Syncing repository: unmet23-lab/synk-policy
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8143321Z ##[group]Getting Git version info
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8144326Z Working directory is '/home/runner/work/synk-policy/synk-policy'
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8145750Z [command]/usr/bin/git version
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8197524Z git version 2.55.0
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8216828Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8226418Z Temporarily overriding HOME='/home/runner/work/_temp/b2529550-1082-47e7-95bd-365993980c28' before making global git config changes
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8228163Z Adding repository directory to the temporary git global config as a safe directory
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8234040Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/synk-policy/synk-policy
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8274502Z Deleting the contents of '/home/runner/work/synk-policy/synk-policy'
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8277031Z ##[group]Determining repository object format
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8278247Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8278916Z ##[group]Initializing the repository
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8281890Z [command]/usr/bin/git init /home/runner/work/synk-policy/synk-policy
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8353436Z hint: Using 'master' as the name for the initial branch. This default branch name
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8354988Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8355921Z hint: to use in all of your new repositories, which will suppress this warning,
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8356560Z hint: call:
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8356919Z hint:
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8357386Z hint: 	git config --global init.defaultBranch <name>
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8357921Z hint:
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8358413Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8359218Z hint: 'development'. The just-created branch can be renamed via this command:
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8359848Z hint:
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8360202Z hint: 	git branch -m <name>
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8360611Z hint:
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8361145Z hint: Disable this message with "git config set advice.defaultBranchName false"
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8365875Z Initialized empty Git repository in /home/runner/work/synk-policy/synk-policy/.git/
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8374733Z [command]/usr/bin/git remote add origin https://github.com/unmet23-lab/synk-policy
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8413568Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8414268Z ##[group]Disabling automatic garbage collection
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8416439Z [command]/usr/bin/git config --local gc.auto 0
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8442860Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8444126Z ##[group]Setting up auth
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8444897Z Removing SSH command configuration
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8448160Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8477335Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8753141Z Removing HTTP extra header
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8758058Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8790977Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8976122Z Removing includeIf entries pointing to credentials config files
+check	Run actions/checkout@v7	2026-10-07T20:05:47.8980018Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+check	Run actions/checkout@v7	2026-10-07T20:05:47.9009515Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+check	Run actions/checkout@v7	2026-10-07T20:05:47.9198168Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-fe4d6012-8bbe-4cd9-a330-b1e1d791bac7.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+check	Run actions/checkout@v7	2026-10-07T20:05:47.9229881Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/synk-policy/synk-policy/.git.path /home/runner/work/_temp/git-credentials-fe4d6012-8bbe-4cd9-a330-b1e1d791bac7.config
+check	Run actions/checkout@v7	2026-10-07T20:05:47.9259108Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/synk-policy/synk-policy/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-fe4d6012-8bbe-4cd9-a330-b1e1d791bac7.config
+check	Run actions/checkout@v7	2026-10-07T20:05:47.9297509Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-fe4d6012-8bbe-4cd9-a330-b1e1d791bac7.config
+check	Run actions/checkout@v7	2026-10-07T20:05:47.9320586Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-fe4d6012-8bbe-4cd9-a330-b1e1d791bac7.config
+check	Run actions/checkout@v7	2026-10-07T20:05:47.9347407Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-07T20:05:47.9348178Z ##[group]Fetching the repository
+check	Run actions/checkout@v7	2026-10-07T20:05:47.9352039Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=2 origin +63146086d68a20b965a18937be7777609e229bca:refs/remotes/origin/main
+check	Run actions/checkout@v7	2026-10-07T20:05:54.3946542Z From https://github.com/unmet23-lab/synk-policy
+check	Run actions/checkout@v7	2026-10-07T20:05:54.3948034Z  * [new ref]         63146086d68a20b965a18937be7777609e229bca -> origin/main
+check	Run actions/checkout@v7	2026-10-07T20:05:54.3953574Z [command]/usr/bin/git branch --list --remote origin/main
+check	Run actions/checkout@v7	2026-10-07T20:05:54.3978586Z   origin/main
+check	Run actions/checkout@v7	2026-10-07T20:05:54.3984939Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+check	Run actions/checkout@v7	2026-10-07T20:05:54.4007084Z 63146086d68a20b965a18937be7777609e229bca
+check	Run actions/checkout@v7	2026-10-07T20:05:54.4010307Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-07T20:05:54.4010860Z ##[group]Determining the checkout info
+check	Run actions/checkout@v7	2026-10-07T20:05:54.4013223Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-07T20:05:54.4014856Z [command]/usr/bin/git sparse-checkout disable
+check	Run actions/checkout@v7	2026-10-07T20:05:54.4059533Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+check	Run actions/checkout@v7	2026-10-07T20:05:54.4088325Z ##[group]Checking out the ref
+check	Run actions/checkout@v7	2026-10-07T20:05:54.4091311Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+check	Run actions/checkout@v7	2026-10-07T20:05:55.0153330Z Switched to a new branch 'main'
+check	Run actions/checkout@v7	2026-10-07T20:05:55.0156951Z branch 'main' set up to track 'origin/main'.
+check	Run actions/checkout@v7	2026-10-07T20:05:55.0187599Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-07T20:05:55.0263076Z [command]/usr/bin/git log -1 --format=%H
+check	Run actions/checkout@v7	2026-10-07T20:05:55.0270185Z 63146086d68a20b965a18937be7777609e229bca
+check	Run actions/setup-node@v7	﻿2026-10-07T20:05:55.0473154Z ##[group]Run actions/setup-node@v7
+check	Run actions/setup-node@v7	2026-10-07T20:05:55.0473392Z with:
+check	Run actions/setup-node@v7	2026-10-07T20:05:55.0473558Z   node-version: 22
+check	Run actions/setup-node@v7	2026-10-07T20:05:55.0473737Z   check-latest: false
+check	Run actions/setup-node@v7	2026-10-07T20:05:55.0475872Z   token: ***
+check	Run actions/setup-node@v7	2026-10-07T20:05:55.0476052Z   package-manager-cache: true
+check	Run actions/setup-node@v7	2026-10-07T20:05:55.0476259Z ##[endgroup]
+check	Run actions/setup-node@v7	2026-10-07T20:05:55.1552931Z Found in cache @ /opt/hostedtoolcache/node/22.23.3/x64
+check	Run actions/setup-node@v7	2026-10-07T20:05:55.1555676Z ##[group]Environment details
+check	Run actions/setup-node@v7	2026-10-07T20:05:55.4598335Z node: v22.23.3
+check	Run actions/setup-node@v7	2026-10-07T20:05:55.4598718Z npm: 10.9.9
+check	Run actions/setup-node@v7	2026-10-07T20:05:55.4599620Z yarn: 1.22.22
+check	Run actions/setup-node@v7	2026-10-07T20:05:55.4600627Z ##[endgroup]
+check	플레이라이트 준비	﻿2026-10-07T20:05:55.4837041Z ##[group]Run npm install --no-save --no-package-lock playwright@1.62.1
+check	플레이라이트 준비	2026-10-07T20:05:55.4837533Z ^[[36;1mnpm install --no-save --no-package-lock playwright@1.62.1^[[0m
+check	플레이라이트 준비	2026-10-07T20:05:55.4837878Z ^[[36;1mnpx playwright install --with-deps chromium^[[0m
+check	플레이라이트 준비	2026-10-07T20:05:55.5520422Z shell: /usr/bin/bash -e {0}
+check	플레이라이트 준비	2026-10-07T20:05:55.5520689Z ##[endgroup]
+check	플레이라이트 준비	2026-10-07T20:05:57.1516155Z 
+check	플레이라이트 준비	2026-10-07T20:05:57.1521399Z added 2 packages in 2s
+check	플레이라이트 준비	2026-10-07T20:05:57.7671895Z Installing dependencies...
+check	플레이라이트 준비	2026-10-07T20:05:57.8012760Z Switching to root user to install dependencies...
+check	플레이라이트 준비	2026-10-07T20:05:57.8700500Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+check	플레이라이트 준비	2026-10-07T20:05:57.9347362Z Get:6 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+check	플레이라이트 준비	2026-10-07T20:05:57.9941664Z Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [463 kB]
+check	플레이라이트 준비	2026-10-07T20:05:58.0164611Z Get:8 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [519 kB]
+check	플레이라이트 준비	2026-10-07T20:06:41.1751665Z Ign:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+check	플레이라이트 준비	2026-10-07T20:06:56.4415056Z Ign:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease
+check	플레이라이트 준비	2026-10-07T20:06:56.4415676Z Ign:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease
+check	플레이라이트 준비	2026-10-07T20:06:56.4416159Z Ign:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease
+check	플레이라이트 준비	2026-10-07T20:06:56.4416597Z Ign:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+check	플레이라이트 준비	2026-10-07T20:06:56.9036429Z Hit:2 https://archive.ubuntu.com/ubuntu noble InRelease
+check	플레이라이트 준비	2026-10-07T20:06:57.4419092Z Ign:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease
+check	플레이라이트 준비	2026-10-07T20:06:57.4419986Z Ign:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease
+check	플레이라이트 준비	2026-10-07T20:06:57.4420681Z Ign:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease
+check	플레이라이트 준비	2026-10-07T20:06:57.5114175Z Get:3 https://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+check	플레이라이트 준비	2026-10-07T20:06:57.7314999Z Ign:9 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages
+check	플레이라이트 준비	2026-10-07T20:06:57.7315919Z Ign:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en
+check	플레이라이트 준비	2026-10-07T20:06:57.7317119Z Ign:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages
+check	플레이라이트 준비	2026-10-07T20:06:57.7317931Z Ign:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en
+check	플레이라이트 준비	2026-10-07T20:06:57.7318774Z Ign:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages
+check	플레이라이트 준비	2026-10-07T20:06:57.7319604Z Ign:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en
+check	플레이라이트 준비	2026-10-07T20:06:57.7320159Z Ign:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en
+check	플레이라이트 준비	2026-10-07T20:06:57.7550484Z Get:4 https://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+check	플레이라이트 준비	2026-10-07T20:06:57.9142848Z Get:5 https://archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+check	플레이라이트 준비	2026-10-07T20:17:14.6153957Z ##[error]The operation was canceled.
+check	Post Run actions/checkout@v7	﻿2026-10-07T20:17:14.6270563Z Post job cleanup.
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.6963933Z [command]/usr/bin/git version
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7006385Z git version 2.55.0
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7033079Z Temporarily overriding HOME='/home/runner/work/_temp/98da54d9-bc6f-4db6-82f2-1bbd822fb1e1' before making global git config changes
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7034318Z Adding repository directory to the temporary git global config as a safe directory
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7037119Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/synk-policy/synk-policy
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7063491Z Removing SSH command configuration
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7068776Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7097366Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7300636Z Removing HTTP extra header
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7305806Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7336318Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7543654Z Removing includeIf entries pointing to credentials config files
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7548406Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7576366Z includeif.gitdir:/home/runner/work/synk-policy/synk-policy/.git.path
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7577338Z includeif.gitdir:/home/runner/work/synk-policy/synk-policy/.git/worktrees/*.path
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7578107Z includeif.gitdir:/github/workspace/.git.path
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7578730Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7583624Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/synk-policy/synk-policy/.git.path
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7614938Z /home/runner/work/_temp/git-credentials-fe4d6012-8bbe-4cd9-a330-b1e1d791bac7.config
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7624141Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/synk-policy/synk-policy/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-fe4d6012\-8bbe\-4cd9\-a330\-b1e1d791bac7\.config
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7650647Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/synk-policy/synk-policy/.git/worktrees/*.path
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7675289Z /home/runner/work/_temp/git-credentials-fe4d6012-8bbe-4cd9-a330-b1e1d791bac7.config
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7682490Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/synk-policy/synk-policy/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-fe4d6012\-8bbe\-4cd9\-a330\-b1e1d791bac7\.config
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7721283Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7744214Z /github/runner_temp/git-credentials-fe4d6012-8bbe-4cd9-a330-b1e1d791bac7.config
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7749740Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-fe4d6012\-8bbe\-4cd9\-a330\-b1e1d791bac7\.config
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7779731Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7803173Z /github/runner_temp/git-credentials-fe4d6012-8bbe-4cd9-a330-b1e1d791bac7.config
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7808504Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-fe4d6012\-8bbe\-4cd9\-a330\-b1e1d791bac7\.config
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.7840666Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+check	Post Run actions/checkout@v7	2026-10-07T20:17:14.8029976Z Removing credentials config '/home/runner/work/_temp/git-credentials-fe4d6012-8bbe-4cd9-a330-b1e1d791bac7.config'
+check	Complete job	﻿2026-10-07T20:17:14.8165552Z Cleaning up orphan processes
+check	Complete job	2026-10-07T20:17:14.8384039Z Terminate orphan process: pid (2137) (npm exec playwright install --with-deps chromium)
+check	Complete job	2026-10-07T20:17:14.8431932Z Terminate orphan process: pid (2149) (sh)
+check	Complete job	2026-10-07T20:17:14.8450035Z Terminate orphan process: pid (2150) (node)

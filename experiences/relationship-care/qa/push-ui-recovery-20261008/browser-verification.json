@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-08T00:34:26.804Z",
+  "tool": "CUA IAB",
+  "fixture": "http://127.0.0.1:4334/fixture/",
+  "candidate": ".tmp/care-push-ui-candidate-20261008-v2",
+  "synthetic": true,
+  "realPushOrServerMutation": false,
+  "checks": {
+    "manualCancelAndLateGrantNoRegistration": true,
+    "nativePendingDoesNotStartSecondSubscribe": true,
+    "timeoutAt30SecondsAndLateCleanup": true,
+    "retryAfterCleanup": true,
+    "noCancelDuringServerRegistration": true,
+    "enableKeeps0835": true,
+    "saveKeeps1420": true,
+    "failedSaveStatusKeeps1420ShowsConfirmed0835": true,
+    "reopenKeepsDraft": true,
+    "saveAcknowledgementClearsHint": true
+  },
+  "responsive": [
+    {
+      "width": 320,
+      "clientWidth": 305,
+      "scrollWidth": 305,
+      "dialogClientWidth": 250,
+      "dialogScrollWidth": 250,
+      "statusFontPx": 16,
+      "hintFontPx": 16,
+      "cancelHeightPx": 56
+    },
+    {
+      "width": 375,
+      "clientWidth": 360,
+      "scrollWidth": 360,
+      "hintFontPx": 16
+    }
+  ],
+  "errors": [],
+  "screenshots": "Inspected inline via CUA; no local screenshot path returned",
+  "viewportRestored": true
+}

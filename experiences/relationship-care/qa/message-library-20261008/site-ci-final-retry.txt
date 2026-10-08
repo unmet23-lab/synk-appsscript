@@ -1,0 +1,937 @@
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push less than a minute ago
+
+JOBS
+* check (ID 112996384216)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push less than a minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  * Run actions/checkout@v7
+  * Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push less than a minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  * Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push less than a minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push less than a minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push less than a minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push less than a minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push less than a minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push less than a minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push less than a minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push less than a minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push less than a minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push less than a minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 1 minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 1 minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 1 minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 1 minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 1 minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 1 minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 1 minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 1 minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 1 minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 1 minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 1 minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 1 minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 1 minute ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 2 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 2 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 2 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 2 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 2 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 2 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 2 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 2 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 2 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 2 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 2 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 2 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 2 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 2 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 3 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 3 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 3 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 3 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  * 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 3 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 3 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 3 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 3 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 3 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 3 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 3 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 3 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 3 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 4 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 4 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 4 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 4 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 4 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 4 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 4 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 4 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 4 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main synk.im 배포 점검 · 37679320388
+Triggered via push about 4 minutes ago
+
+JOBS
+* check (ID 112996384216)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Run actions/setup-node@v7
+  ✓ 플레이라이트 준비
+  * 점검
+  * 문제가 난 화면 올리기
+  * Post Run actions/setup-node@v7
+  * Post Run actions/checkout@v7
+failed to get run: Get "https://api.github.com/repos/unmet23-lab/synk-policy/actions/runs/37679320388?exclude_pull_requests=true": read tcp 192.168.0.14:61286->20.200.245.245:443: wsarecv: An existing connection was forcibly closed by the remote host.

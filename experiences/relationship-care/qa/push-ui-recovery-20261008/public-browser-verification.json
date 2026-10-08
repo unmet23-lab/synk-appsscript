@@ -1,0 +1,20 @@
+{
+  "at": "2026-10-08T00:38:25.911Z",
+  "commit": "3b3aacf29448410091b141cf72af8cf0fa2b008a",
+  "url": "https://synk.im/care/",
+  "tool": "CUA IAB",
+  "method": "Normal reload of existing actual account tab, wait for account and push status, no subscription/time mutation",
+  "signedIn": true,
+  "enabledAt0900": true,
+  "newMarkupPresent": true,
+  "cancelMarkup": true,
+  "timeHintMarkup": true,
+  "hintFontPx": 16,
+  "moduleEntry": "./app.mjs?v=effa79eb48c525afb70d13dd76cb0c27bf85305a0f24b450689c87d8991684d9",
+  "realPushSent": false,
+  "realDeviceSubscriptionChanged": false,
+  "personalDataChanged": false,
+  "errors": [],
+  "physicalPhoneAndOsReceiptDeferred": true,
+  "screenshots": "Inspected inline CUA screenshot; no exported local path returned"
+}

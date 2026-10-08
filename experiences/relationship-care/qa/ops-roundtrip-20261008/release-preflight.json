@@ -1,0 +1,21 @@
+{
+  "stage": "preflight",
+  "at": "2026-10-07T15:10:02.762Z",
+  "project": "Synk Core",
+  "head": "c799f8dd90c431da059ea5b390879fdc538b9b83",
+  "functions": [
+    {
+      "slug": "synk-care-push",
+      "status": "ACTIVE",
+      "version": 4,
+      "verify_jwt": true
+    },
+    {
+      "slug": "synk-care-push-send",
+      "status": "ACTIVE",
+      "version": 4,
+      "verify_jwt": true
+    }
+  ],
+  "ok": true
+}

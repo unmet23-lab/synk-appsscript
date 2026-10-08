@@ -1,0 +1,52 @@
+[
+  {
+    "path": "experiences/relationship-care/care-focus.mjs",
+    "sha256": "0b3d419248427dba770d20347c8dbd82a3e0e18b875e060fffe6c89e5bbc7f1d",
+    "bytes": 7803
+  },
+  {
+    "path": "experiences/relationship-care/care-account-view.mjs",
+    "sha256": "94a2f34770e024468af67d3c2315abf3e850749a0c7b8c8a6d9781756fdc8dd3",
+    "bytes": 2282
+  },
+  {
+    "path": "experiences/relationship-care/app.mjs",
+    "sha256": "7d821f8edda290666ad1b5c0e4b8f9fc7b62847f53998ea806619636da370868",
+    "bytes": 122994
+  },
+  {
+    "path": "experiences/relationship-care/index.html",
+    "sha256": "442068f22bd803c7847425364225617a236cd73ca2aa4a252fdc5b23a84f2b7c",
+    "bytes": 39154
+  },
+  {
+    "path": "experiences/relationship-care/style.css",
+    "sha256": "a1bdf72dc09af59a03de7bbc7832f6d2513cbf1223896f86631f17afc69963ef",
+    "bytes": 48767
+  },
+  {
+    "path": "experiences/relationship-care/server.mjs",
+    "sha256": "2e0cb4bb23406eb416ab4c00820bb110a1148dae7256dbb5ee668aa276b4e7ef",
+    "bytes": 9986
+  },
+  {
+    "path": "tools/prepare-care-public.mjs",
+    "sha256": "b0a0815a42ee2cdc088bebf93e013e2cf82966483c7cab198f919a7f25d1396d",
+    "bytes": 6943
+  },
+  {
+    "path": "experiences/relationship-care/tests/care-focus.test.mjs",
+    "sha256": "9cc89f974809f646abfb122cad34a3eba04e914a2466b9a93b9e0f12f41c8c22",
+    "bytes": 15241
+  },
+  {
+    "path": "experiences/relationship-care/tests/care-account-view.test.mjs",
+    "sha256": "ef4a68299ee71a30f507d5f2523fb8d459df7d55d733f34b24376f9a80fa2fa0",
+    "bytes": 2294
+  },
+  {
+    "path": "experiences/relationship-care/tests/public-build.test.mjs",
+    "sha256": "f9dd3a998beba5a623ba1d998a88b34395c9004fb1bcad87bb1d775f67449c2f",
+    "bytes": 3941
+  }
+]

@@ -1,0 +1,36 @@
+{
+  "at": "2026-10-07T12:34:47.863Z",
+  "backendCommits": [
+    "c26feab424148d8954e741aea4151a0e24c22ad9",
+    "c799f8dd90c431da059ea5b390879fdc538b9b83"
+  ],
+  "events": [
+    {
+      "step": "VAPID configuration",
+      "initial": "Successful empty Management API POST response was treated as invalid JSON",
+      "resolution": "Accepted empty successful response and read back presence; did not regenerate pair"
+    },
+    {
+      "step": "Worker credential",
+      "initial": "Manual smoke used legacy service key while existing Vault uses current secret key",
+      "resolution": "Matched existing Vault value to same project Management API privileged key; set explicit SYNK_CARE_PUSH_DISPATCH_KEY without modifying Vault"
+    },
+    {
+      "step": "Worker probe headers",
+      "initial": "Legacy anon apikey plus secret Authorization rejected as conflicting",
+      "resolution": "Probe now mirrors cron Authorization-only header; authenticated worker returned200 and publickey returned401"
+    }
+  ],
+  "security": {
+    "gatewayJwtCheck": true,
+    "exactWorkerSecretCheck": true,
+    "vaultChanged": false,
+    "publicSecretExposure": false
+  },
+  "rotationNote": "When rotating the existing Vault service_role_key, update SYNK_CARE_PUSH_DISPATCH_KEY to the same verified project secret and repeat smoke.",
+  "siteCi": {
+    "initialFailure": "one transient 503 on unrelated LAB racing atmosphere.js",
+    "assetRecheck": "racing-asset-recheck.json",
+    "currentRun": 37624445760
+  }
+}

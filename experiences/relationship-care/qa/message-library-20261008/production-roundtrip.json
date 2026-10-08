@@ -1,0 +1,180 @@
+{
+  "startedAt": "2026-10-07T19:46:45.718Z",
+  "run": "1e8aa56f-c77d-4cba-85ed-cf07296c0e90",
+  "syntheticOnly": true,
+  "productionProvider": true,
+  "physicalDevices": false,
+  "pushReceipt": false,
+  "checks": [
+    {
+      "label": "correct production project"
+    },
+    {
+      "label": "care function active with JWT verification"
+    },
+    {
+      "label": "existing configured credentials available"
+    },
+    {
+      "label": "policy public care config belongs to this production project"
+    },
+    {
+      "label": "two real Auth sessions are distinct"
+    },
+    {
+      "label": "same account across two sessions starts empty"
+    },
+    {
+      "label": "other account starts isolated"
+    },
+    {
+      "label": "legacy client saves without capability"
+    },
+    {
+      "label": "second session sees exact legacy data"
+    },
+    {
+      "label": "legacy client updates before any explicit library"
+    },
+    {
+      "label": "local fixture retains legacy and multiple intent rows"
+    },
+    {
+      "label": "first explicit library without capability is rejected"
+    },
+    {
+      "label": "rejected first library write preserves legacy revision and content"
+    },
+    {
+      "label": "real browser account adapter restores the synthetic session"
+    },
+    {
+      "label": "real sync opens the current account revision"
+    },
+    {
+      "label": "real sync accepts the local library change"
+    },
+    {
+      "label": "real sync flush receives a validated save acknowledgement"
+    },
+    {
+      "label": "real account adapter forwards capability to the live save request"
+    },
+    {
+      "label": "real sync settles without a pending local draft"
+    },
+    {
+      "label": "second real session reads the browser-adapter library save exactly"
+    },
+    {
+      "label": "second session toggles an older version favorite"
+    },
+    {
+      "label": "favorite and all saved versions reach first session"
+    },
+    {
+      "label": "favorite change retains original text and timestamp"
+    },
+    {
+      "label": "older saved phrase can become the current phrase again"
+    },
+    {
+      "label": "restored older phrase reaches the second session"
+    },
+    {
+      "label": "restoring an existing version keeps all history without duplication"
+    },
+    {
+      "label": "stale legacy write remains a revision conflict"
+    },
+    {
+      "label": "latest-revision legacy write cannot drop message library"
+    },
+    {
+      "label": "blocked old client preserves favorite history and revision"
+    },
+    {
+      "label": "unrelated legacy account remains writable"
+    },
+    {
+      "label": "other account write never changes owner message library"
+    },
+    {
+      "label": "source-backed synthetic phrase is saved"
+    },
+    {
+      "label": "source withdrawal removes its saved phrase"
+    },
+    {
+      "label": "withdrawal reaches other session"
+    },
+    {
+      "label": "withdrawn source cannot survive in library or legacy mirror"
+    },
+    {
+      "label": "explicit empty library is saved"
+    },
+    {
+      "label": "explicit empty library reaches other session"
+    },
+    {
+      "label": "legacy mirror does not repopulate explicit empty library"
+    },
+    {
+      "label": "legacy client cannot discard an intentional empty library"
+    },
+    {
+      "label": "rejected empty-library downgrade preserves state"
+    },
+    {
+      "label": "explicit notebook delete works without capability"
+    },
+    {
+      "label": "notebook deletion tombstone reaches second session"
+    },
+    {
+      "label": "stale upgraded client cannot resurrect deleted notebook"
+    },
+    {
+      "label": "explicit new legacy save after deletion remains allowed"
+    },
+    {
+      "label": "fresh legacy state after tombstone reaches first session"
+    }
+  ],
+  "cleanup": true,
+  "function": {
+    "slug": "synk-care",
+    "version": 9,
+    "status": "ACTIVE",
+    "verify_jwt": true
+  },
+  "publicConfigSha256": "fe7beff798ad4b4d4c03d0c9c66b67c8d2bd9f173e209d3bd87d6c5a035a9ca8",
+  "browserAdapter": {
+    "realAccountAdapter": true,
+    "realDocumentSync": true,
+    "realFetch": true,
+    "saveRequests": 1,
+    "capabilityForwarded": true,
+    "validatedSavedCallbacks": 1
+  },
+  "ok": true,
+  "cleanupErrors": [],
+  "cleanupProof": [
+    {
+      "auth_removed": true,
+      "link_removed": true,
+      "account_removed": true,
+      "care_removed": true,
+      "subscriptions_removed": true
+    },
+    {
+      "auth_removed": true,
+      "link_removed": true,
+      "account_removed": true,
+      "care_removed": true,
+      "subscriptions_removed": true
+    }
+  ],
+  "finishedAt": "2026-10-07T19:47:54.957Z"
+}

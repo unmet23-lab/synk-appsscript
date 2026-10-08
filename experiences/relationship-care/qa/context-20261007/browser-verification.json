@@ -1,0 +1,45 @@
+{
+  "at": "2026-10-07T13:35:36.431Z",
+  "kind": "Synthetic local notebook; no production account changed",
+  "checks": {
+    "followupOpensMessage": true,
+    "focusOpensFollowupContext": true,
+    "memoryShortcutKeepsDraft": true,
+    "memoryApplyShowsReplaceConfirmation": true,
+    "cancelKeepsEditedDraft": true,
+    "copyKeepsFollowupPending": true,
+    "explicitCompleteVisibleInHistory": true,
+    "existingHistoryCompleteImmediatelyVisible": true,
+    "samePersonEditedDraftPreserved": true,
+    "accountClear": {
+      "hidden": true,
+      "people": "0",
+      "text": ""
+    },
+    "personSwitchCancelKeepsDraftAndContext": true,
+    "personSwitchClearsOtherPersonContext": true,
+    "homeCompletionUpdatesCounterAndRemovesPendingCard": true,
+    "restoredEventDraftShowsConfirmation": true,
+    "cancelRestoredEventKeepsOriginal": true,
+    "confirmTransitionsOnceToCheckin": true
+  },
+  "viewport375": {
+    "width": 375,
+    "scrollWidth": 360,
+    "fontPx": 16,
+    "summaryHeightPx": 49.5
+  },
+  "viewport320": {
+    "width": 320,
+    "scrollWidth": 305,
+    "briefWidth": 237,
+    "fontPx": 16
+  },
+  "limitations": [
+    "Chrome screenshot/mouse stalled after viewport change; IAB screenshot and UI succeeded",
+    "No actual phone or closed-app push receipt checked"
+  ],
+  "finalCandidate": "care-context-public-20261007-v6",
+  "counterAfterOneExistingActivityAndOneFollowupDone": 2,
+  "initialCandidate": "care-context-public-20261007-v2"
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "file": "experiences/relationship-care/model.mjs",
+    "sha256": "fde1cc0f3c825cdf7a4798f7f0f6e26e39621f8fb32aaa8da9bbf64edb7dcf5d"
+  },
+  {
+    "file": "experiences/relationship-care/app.mjs",
+    "sha256": "a49278acea358ccd745f0acf840f7c11a03509bd22e4e8805efa7849554d3fa1"
+  },
+  {
+    "file": "experiences/relationship-care/index.html",
+    "sha256": "a93101dfebfec71bbc41210d49067455eafe436a52c40c8b3fe657aefe78a291"
+  },
+  {
+    "file": "experiences/relationship-care/style.css",
+    "sha256": "02235428fcd7c7e26f999798255a478f3351dd88263f93137ece8bba7e5701e3"
+  },
+  {
+    "file": "experiences/relationship-care/care-support.mjs",
+    "sha256": "85735e0a55f17c8ee8f0f451209c7dfd187f04073141b930dce6c6de0b615390"
+  },
+  {
+    "file": "experiences/relationship-care/tests/message-quality.test.mjs",
+    "sha256": "2887dadec123acc6793d083db3696ae917879324caaf757c8fd3610195ec03cd"
+  },
+  {
+    "file": "experiences/relationship-care/tests/model.test.mjs",
+    "sha256": "341ed12e75fb450b4baa4192c424517221bcfebd814cd7bf73b7297cff9115ea"
+  },
+  {
+    "file": "experiences/relationship-care/tests/care-support.test.mjs",
+    "sha256": "985965a8cb42b264141ebca575143b5c976c9fcfe903b67c6f98877c6baa0f06"
+  },
+  {
+    "file": "experiences/relationship-care/tests/care-personalization.test.mjs",
+    "sha256": "8c6b2bcf5889a47f66034ad14ca8146e870a4a0d0f05ca5f2f90132ea07c8d3c"
+  },
+  {
+    "file": "experiences/relationship-care/tests/message-ui-state.test.mjs",
+    "sha256": "dc10e00fc428658f73749e0df049efca3281f54e0295d64d03f00f7d878afd7f"
+  }
+]

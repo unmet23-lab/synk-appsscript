@@ -1,0 +1,101 @@
+{
+  "checkedAt": "2026-10-07T17:56:59.169Z",
+  "surface": "Codex in-app browser via CUA",
+  "fixture": ".tmp/care-message-fixture-20261008.mjs",
+  "url": "http://127.0.0.1:4334/care/",
+  "syntheticOnly": true,
+  "checks": [
+    {
+      "name": "confirmed short preference in initial checkin",
+      "pass": true,
+      "actual": "짧은 한마디 / 민서, 문득 생각나서 안부 전해."
+    },
+    {
+      "name": "explicit reconnect intent",
+      "pass": true,
+      "actual": "민서, 오랜만이야. 잘 지내?"
+    },
+    {
+      "name": "edited text change cancelled",
+      "pass": true,
+      "actual": "edited text and reconnect intent preserved"
+    },
+    {
+      "name": "remember without clipboard or actual contact",
+      "pass": true,
+      "actual": "saved preview matches; history still has only fixture contact and memory"
+    },
+    {
+      "name": "thanks replaces draft only after confirmation",
+      "pass": true,
+      "actual": "민서, 고마워. / remembered reconnect text remains separate"
+    },
+    {
+      "name": "sensitive ignores daily salutation and bright closing",
+      "pass": true,
+      "actual": "고인을 기억하며 마음을 함께합니다. 조용히 위로의 마음을 전합니다."
+    },
+    {
+      "name": "balanced preference initial memorial",
+      "candidate": "v2",
+      "pass": true,
+      "actual": "마음을 조금 더 담아"
+    },
+    {
+      "name": "375px layout",
+      "candidate": "v1",
+      "pass": true,
+      "clientWidth": 360,
+      "scrollWidth": 360
+    },
+    {
+      "name": "320px final layout",
+      "candidate": "v2",
+      "pass": true,
+      "clientWidth": 305,
+      "scrollWidth": 305,
+      "draftFontPx": 16,
+      "intentHidden": true,
+      "previewHidden": true
+    }
+  ],
+  "limitations": [
+    "Synthetic account module replaces real account requests; no production account data changed.",
+    "375px and 320px are requested viewport widths; scrollbar consumes 15px in observed client widths.",
+    "This is responsive browser QA, not physical phone synchronization or OS notification receipt.",
+    "Real-user satisfaction and semantic AI quality are not measured."
+  ],
+  "finalCandidate": ".tmp/care-message-public-20261008-v4",
+  "finalChecks": {
+    "checkedAt": "2026-10-07T18:12:42.542Z",
+    "syntheticOnly": true,
+    "intentThanksPreservedThroughMemoryApplyAndClear": true,
+    "intentThanksPreservedThroughPreferenceSubmit": true,
+    "confirmedBalancedAppliedAfterPreferenceSubmit": true,
+    "savedTextPreservedWithoutReappendingClosing": true,
+    "newDraftConfirmationVisible": true,
+    "desktop": {
+      "clientWidth": 1265,
+      "scrollWidth": 1265,
+      "fontSize": "16px"
+    },
+    "mobile": {
+      "requestedWidth": 375,
+      "clientWidth": 360,
+      "scrollWidth": 360,
+      "fontSize": "16px",
+      "visualInspection": "CUA screenshot inspected; draft and action labels readable, no horizontal overflow"
+    },
+    "realPhone": false,
+    "osNotification": false,
+    "v3ChecksStillApply": "v4 only extends the preference keepCheckin condition; markup/style/model unchanged",
+    "v4": {
+      "checkedAt": "2026-10-07T18:18:51.211Z",
+      "syntheticPerson": "하린",
+      "path": "people list -> message tab -> generate -> thanks -> preferences -> confirm/balanced -> save",
+      "noEventsAdHocCheckinIntentPreserved": true,
+      "text": "하린님, 감사합니다. 감사한 마음을 꼭 전하고 싶었어요.",
+      "selectedPanel": "message"
+    }
+  }
+}

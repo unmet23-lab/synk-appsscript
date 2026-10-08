@@ -1,0 +1,18 @@
+[
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-talk-care-release-20261006\\lib\\synk-care-push-worker.js",
+    "sha256": "f31c84577cbcdc03ce5656a0f250368c51b92b57bc6097133e3a270a6e9b2167"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-talk-care-release-20261006\\lib\\synk-care-push-store.js",
+    "sha256": "8c47609809c953c35593c9391d4ff38fda4185453bbba0dfde8ca66aa5a8d188"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-talk-care-release-20261006\\tests\\care-push-integration.test.js",
+    "sha256": "019a8b780d101ee50c7429c4be2c7a33652f7f335e0c965458a8da06c1b55ccc"
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-talk-care-release-20261006\\supabase\\functions\\_shared\\synk-care-push-runtime.js",
+    "sha256": "afb174189c785fc5983f270d59b4cb8e40e23c52e179e02cfd11cf81c477a247"
+  }
+]

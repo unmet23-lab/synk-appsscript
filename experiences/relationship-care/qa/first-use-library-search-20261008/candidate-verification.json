@@ -1,0 +1,202 @@
+{
+  "checkedAt": "2026-10-07T22:30:14.642Z",
+  "candidate": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\care-ease-candidate-20261008",
+  "publicBaseline": "5528be392c2d6180cb6a09396eccdb7281c4ccf2",
+  "publicDelta": [
+    "app.mjs",
+    "build-manifest.json",
+    "index.html",
+    "style.css"
+  ],
+  "fileCount": 48,
+  "manifestSha256": "6f4ffdd2cf0ea57c58e0909d8c52fb60e5e5e2a1ff7d1e77129045a7b0f60b07",
+  "sourceCount": 46,
+  "checkedSources": [
+    {
+      "file": "experiences/relationship-care/index.html",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/style.css",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/app.mjs",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/model.mjs",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/lunar.mjs",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/care-features.mjs",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/care-sync.mjs",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/account.mjs",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/care-account-view.mjs",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/care-focus.mjs",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/care-context.mjs",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/care-push.mjs",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/care-sw.js",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/manifest.webmanifest",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/care-planner.mjs",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/care-personalization.mjs",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/care-support.mjs",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/care-outcomes.mjs",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/memory-card.mjs",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/memory-theme.mjs",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/icon192.png",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/icon512.png",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/apple-touch-icon180.png",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/badge-check.webp",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/badge-cream.webp",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/InterTight-Bold.ttf",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/InterTight-LICENSE.txt",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/slab-blush-long.webp",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/slab-coral-long.webp",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/slab-cream-long.webp",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/sticker-check.webp",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/sticker-envelope.webp",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/sticker-person.webp",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/sticker-time.webp",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/SUIT-LICENSE.txt",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/SUIT-Variable.woff2",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/synk-logo.svg",
+      "match": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/thread-shift.webp",
+      "match": true
+    },
+    {
+      "file": "atlas/domain.js",
+      "match": true
+    },
+    {
+      "file": "atlas/ask.js",
+      "match": true
+    },
+    {
+      "file": "atlas/vellum-expression.js",
+      "match": true
+    },
+    {
+      "file": "atlas/trail-followup.js",
+      "match": true
+    },
+    {
+      "file": "atlas/temper-outcomes.js",
+      "match": true
+    },
+    {
+      "file": "experiences/synk-account/src/core.mjs",
+      "match": true
+    },
+    {
+      "file": "experiences/synk-account/src/product-account.mjs",
+      "match": true
+    },
+    {
+      "file": "experiences/synk-account/src/document-sync.mjs",
+      "match": true
+    }
+  ],
+  "reviewInventoryCurrent": true,
+  "deployed": false
+}

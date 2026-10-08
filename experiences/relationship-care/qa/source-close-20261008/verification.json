@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-08T01:02:34.553Z",
+  "sourceTreeTested": "eb132e6b44ec7b68c6d91a31779dab39145e7e8e",
+  "remoteBaseline": "2d33ff9057078a2338840cf037ab34cf208ffc1e",
+  "passed": 403,
+  "failed": 0,
+  "tests": "Care suite, public registration, native Care account, shared product account and core",
+  "isolatedGitArchive": true,
+  "personalAccountFixtureDependenciesAdded": true,
+  "publicRelease": "3b3aacf29448410091b141cf72af8cf0fa2b008a",
+  "serverRelease": "d4acb2931964727cd057596eec62b095be426b0a",
+  "noNewDeployment": true,
+  "excludedQaImagesCalendarsBackup": 70,
+  "otherLocalCommitsNotPublished": true,
+  "deferred": [
+    "Physical phone synchronization",
+    "Actual OS notification display and click"
+  ]
+}

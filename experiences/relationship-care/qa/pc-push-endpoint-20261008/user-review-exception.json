@@ -1,0 +1,10 @@
+{
+  "authorizedAt": "2026-10-08T08:14:04.6571923+09:00",
+  "userAuthorizedException": true,
+  "userReply": "이번 알림 호환성 수정만 예외 승인·운영 반영",
+  "scope": "Google push endpoint compatibility: validator, tests, shared generated runtime; deploy synk-care-push and synk-care-push-send only",
+  "claudeGatePassed": false,
+  "inventoryFile": "claude-source-inventory.json",
+  "inventorySha256": "485edbf150247f87de36db5cc39b29fab1ba2fe10d529ab37505cf6d46c295b4",
+  "previousExceptionsReused": false
+}

@@ -15,6 +15,7 @@ export function createProductAccount({
   onStatus = () => {}, bridge,
   fetcher = globalThis.fetch, storage = globalThis.sessionStorage,
   getUrl = () => globalThis.location.href,
+  configUrl = '/api/account-config',
   replaceUrl = url => globalThis.history.replaceState(null, '', url),
   navigate = url => globalThis.location.assign(url),
   loadCore = () => import('./core.mjs'), now = Date.now, cryptoAPI,
@@ -81,11 +82,14 @@ export function createProductAccount({
   }
   function requestBody(operation, values = {}) {
     if (!OPERATIONS.has(operation) || !values || typeof values !== 'object' || Array.isArray(values)) throw fault('INVALID_REQUEST', '제품 계정 요청을 확인해 주세요.');
-    const allowed = operation === operations.load ? [] : operation === operations.save ? ['expected_revision', 'state'] : ['expected_revision'];
+    const careLibrarySave = clientKey === 'care' && endpoint === 'synk-care' && resource === null && operation === operations.save;
+    const allowed = operation === operations.load ? [] : operation === operations.save ? ['expected_revision', 'state', ...(careLibrarySave ? ['messageLibraryVersion', 'checkinPreferenceVersion'] : [])] : ['expected_revision'];
     if (Object.keys(values).some(key => !allowed.includes(key))) throw fault('INVALID_REQUEST', '제품 계정 요청을 확인해 주세요.');
+    if (Object.hasOwn(values, 'messageLibraryVersion') && (!careLibrarySave || values.messageLibraryVersion !== 1)) throw fault('INVALID_REQUEST', '문구 보관함의 저장 계약을 확인해 주세요.');
+    if (Object.hasOwn(values, 'checkinPreferenceVersion') && (!careLibrarySave || values.checkinPreferenceVersion !== 1)) throw fault('INVALID_REQUEST', '안부 설정의 저장 계약을 확인해 주세요.');
     if (operation === operations.load) return undefined;
     if (!Number.isSafeInteger(values.expected_revision) || values.expected_revision < 0) throw fault('INVALID_REQUEST', '저장할 자료의 버전을 확인해 주세요.');
-    return { action: operation === operations.save ? 'save' : 'delete', expected_revision: values.expected_revision, ...(operation === operations.save ? { state: validateState(values.state) } : {}) };
+    return { action: operation === operations.save ? 'save' : 'delete', expected_revision: values.expected_revision, ...(operation === operations.save ? { state: validateState(values.state) } : {}), ...(Object.hasOwn(values, 'messageLibraryVersion') ? { messageLibraryVersion: 1 } : {}), ...(Object.hasOwn(values, 'checkinPreferenceVersion') ? { checkinPreferenceVersion: 1 } : {}) };
   }
   function validateResponse(data, ownerId) {
     if (data?.ok !== true) throw fault(data?.error?.code || 'ACCOUNT_UNAVAILABLE', data?.error?.message || '계정 자료를 확인하지 못했어요.', { retryable: data?.error?.retryable === true, status: data?.error?.status, revision: data?.revision, ...missingAsset(data?.error) });
@@ -97,7 +101,7 @@ export function createProductAccount({
     const body = requestBody(operation, values); guard(expected);
     let data;
     if (native) {
-      const params = operation === operations.load ? {} : operation === operations.save ? { expected_revision: body.expected_revision, state: body.state } : { expected_revision: body.expected_revision };
+      const params = operation === operations.load ? {} : operation === operations.save ? { expected_revision: body.expected_revision, state: body.state, ...(Object.hasOwn(body, 'messageLibraryVersion') ? { messageLibraryVersion: body.messageLibraryVersion } : {}), ...(Object.hasOwn(body, 'checkinPreferenceVersion') ? { checkinPreferenceVersion: body.checkinPreferenceVersion } : {}) } : { expected_revision: body.expected_revision };
       data = await bridgeRequest.call(bridge, operation, params); guard(expected);
     } else {
       if (!session?.access_token) throw fault('AUTH_REQUIRED', 'SYNK ID로 로그인해 주세요.');
@@ -178,8 +182,10 @@ export function createProductAccount({
     core = await loadCore();
     const expected = epoch;
     let raw;
+    const configEndpoint = new URL(configUrl, getUrl());
+    if (configEndpoint.origin !== new URL(getUrl()).origin || configEndpoint.username || configEndpoint.password || configEndpoint.hash) throw fault('AUTH_CONFIG', '이 앱의 계정 설정 주소를 확인해 주세요.');
     const abort = new AbortController(), timer = setTimeout(() => abort.abort(), 8000); controllers.add(abort);
-    try { const response = await fetcher(new URL('/api/account-config', getUrl()).href, { cache: 'no-store', credentials: 'omit', signal: abort.signal, redirect: 'error' }); if (response.ok) raw = await response.json(); }
+    try { const response = await fetcher(configEndpoint.href, { cache: 'no-store', credentials: 'omit', signal: abort.signal, redirect: 'error' }); if (response.ok) raw = await response.json(); }
     catch { /* 설정이 없으면 로컬 수첩을 그대로 사용한다. */ }
     finally { clearTimeout(timer); controllers.delete(abort); }
     guard(expected); config = core.readConfig(raw || { version: 1 }, getUrl());
@@ -242,6 +248,37 @@ export function createProductAccount({
     try { return await (operation.startsWith('asset') ? mediaRequest(operation, values, expected, ownerId) : dispatch(operation, values, expected, ownerId)); }
     catch (error) { if (expected === epoch && (AUTH_ERRORS.has(error.code) || error.code === 'ACCOUNT_CHANGED')) clearSession(error); throw error; }
   }
+  // A fixed Care-only capability. The browser never receives credentials or chooses an API URL.
+  async function requestPush(action, values = {}) {
+    if (clientKey !== 'care' || endpoint !== 'synk-care' || native) throw fault('PUSH_UNSUPPORTED', '예약 알림은 플레저 웹에서 설정해 주세요.');
+    if (!snapshot.signedIn || !snapshot.accountId) throw fault('AUTH_REQUIRED', 'SYNK ID로 로그인한 뒤 알림을 설정해 주세요.');
+    const allowed = { status: ['endpoint'], subscribe: ['subscription', 'hour', 'minute'], update: ['endpoint', 'hour', 'minute'], unsubscribe: ['endpoint'] };
+    if (!Object.hasOwn(allowed, action) || !values || typeof values !== 'object' || Array.isArray(values) || Object.keys(values).some(key => !allowed[action].includes(key))) throw fault('INVALID_REQUEST', '알림 설정을 확인해 주세요.');
+    if (['subscribe', 'update'].includes(action) && (!Number.isInteger(values.hour) || values.hour < 0 || values.hour > 23 || !Number.isInteger(values.minute) || values.minute < 0 || values.minute > 59)) throw fault('INVALID_REQUEST', '알림 시간을 확인해 주세요.');
+    if ((action === 'update' || action === 'unsubscribe' || Object.hasOwn(values, 'endpoint')) && (typeof values.endpoint !== 'string' || values.endpoint.length > 2048 || !values.endpoint.startsWith('https://'))) throw fault('INVALID_REQUEST', '이 기기의 알림 연결을 확인해 주세요.');
+    if (action === 'subscribe' && (!values.subscription || typeof values.subscription !== 'object' || Array.isArray(values.subscription))) throw fault('INVALID_REQUEST', '이 기기의 알림 연결을 확인해 주세요.');
+    const body = { action, ...values };
+    if (new TextEncoder().encode(JSON.stringify(body)).byteLength > 8192) throw fault('INVALID_REQUEST', '알림 설정의 크기를 확인해 주세요.');
+    const expected = epoch, ownerId = snapshot.accountId;
+    try {
+      guard(expected);
+      let token = session?.access_token;
+      if (!token) throw fault('AUTH_REQUIRED', 'SYNK ID로 다시 로그인해 주세요.');
+      if (session.expires_at <= now() + 30000) token = await refresh(expected);
+      guard(expected);
+      const url = `${config.accountApiUrl.replace(/\/$/, '')}/functions/v1/synk-care-push`;
+      let result = await send(url, token, body); guard(expected);
+      if (result.response.status === 401 && session?.refresh_token) {
+        token = session.access_token !== token ? session.access_token : await refresh(expected); guard(expected);
+        result = await send(url, token, body); guard(expected);
+      }
+      const data = result.data;
+      if (!result.response.ok || data?.ok !== true) throw fault(data?.error?.code || (result.response.status === 401 ? 'AUTH_REQUIRED' : 'PUSH_UNAVAILABLE'), '예약 알림을 설정하지 못했어요. 잠시 뒤 다시 시도해 주세요.', { status: result.response.status, retryable: result.response.status === 429 || result.response.status >= 500 });
+      if (data.accountId !== ownerId) throw fault('ACCOUNT_CHANGED', '계정이 바뀌어 알림 설정을 적용하지 않았어요.');
+      if (data.scope !== 'synk-care-push' || typeof data.enabled !== 'boolean' || data.timeZone !== 'Asia/Seoul' || !Number.isInteger(data.hour) || data.hour < 0 || data.hour > 23 || !Number.isInteger(data.minute) || data.minute < 0 || data.minute > 59 || typeof data.publicKey !== 'string' || !/^[A-Za-z0-9_-]{87}$/.test(data.publicKey)) throw fault('INVALID_RESPONSE', '알림 서버의 응답을 확인하지 못했어요.');
+      return { ok: true, scope: data.scope, accountId: ownerId, enabled: data.enabled, hour: data.hour, minute: data.minute, timeZone: data.timeZone, publicKey: data.publicKey, ...(typeof data.deviceId === 'string' ? { deviceId: data.deviceId } : {}) };
+    } catch (error) { if (expected === epoch && (AUTH_ERRORS.has(error.code) || error.code === 'ACCOUNT_CHANGED')) clearSession(error); throw error; }
+  }
   function dispose() { disposed = true; epoch++; session = null; nativeIdentity = null; unsubscribe?.(); stopRequests(); }
-  return Object.freeze({ start, status, signIn, signOut, request, dispose });
+  return Object.freeze({ start, status, signIn, signOut, request, requestPush, dispose });
 }

@@ -1,0 +1,24 @@
+{
+  "commit": "4919aadc30bfd3a2228ee152d2d46fad7ea286e6",
+  "url": "https://synk.im/care/",
+  "environment": "IAB, public example data, storage off, no account login",
+  "checks": [
+    "ordinary reload after deployment reproduced old cached app with new HTML",
+    "cache-ignoring reload loaded the new app correctly",
+    "first saved wording adds one library row",
+    "second distinct wording preserves both rows",
+    "older favorite sorts before the newer row",
+    "load over edited text asks confirmation",
+    "confirmed load restores older wording and clears review checkbox",
+    "no copy or contact completion action used",
+    "browser warning/error log empty"
+  ],
+  "responsive": [
+    {"width":375,"scrollWidth":360,"previewFont":16,"selectFont":16,"actionHeights":[52,52,52]},
+    {"width":320,"scrollWidth":305}
+  ],
+  "visual": "375px library inspected through CUA screenshot; no file exported",
+  "realUserDataChanged": false,
+  "viewportReset": true,
+  "releaseCacheIssue": "Follow-up public builder change required before final release completion"
+}

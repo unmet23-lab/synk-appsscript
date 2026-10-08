@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-07T14:42:06.415Z",
+  "publicUrl": "https://synk.im/care/",
+  "publicCommit": "eb9e55b3b126dfbc45caaa176395c4a677e89f67",
+  "backendChanged": false,
+  "careTests": 228,
+  "newContextTests": 15,
+  "officialReview": {
+    "model": "claude-opus-5-5",
+    "effort": "max",
+    "complete": true,
+    "remainingP0P1P2": 0
+  },
+  "publicFiles": "48/48",
+  "pagesAndSiteCheck": "passed",
+  "siteCheckCommit": "ba3b77abf74ef78fe41801d4897d394712d0e253",
+  "sameCareTree": "a5dc27a6efddfb543881118d999c2d1b334b4f93",
+  "localBrowserEvidence": "browser-verification.json",
+  "publicBrowserEvidence": "public-browser.json",
+  "syntheticCleanup": true,
+  "realDevicePushReceipt": false,
+  "phoneSync": "deferred by user",
+  "rootSourceGitCommit": null
+}

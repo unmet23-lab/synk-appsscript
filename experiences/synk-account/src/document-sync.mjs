@@ -2,6 +2,8 @@
 const validRevision = value => Number.isSafeInteger(value) && value >= 0;
 const failure = (code, revision) => Object.assign(new Error(code), { code, ...(validRevision(revision) ? { revision } : {}) });
 const messages = {
+  CARE_CLIENT_UPDATE_REQUIRED: '더 새로운 앱에서 저장한 문구 보관함이나 안부 설정이 있어요. 현재 자료를 백업한 뒤 새로고침해 주세요.',
+  CARE_LIBRARY_RECOVERY_REVIEW: '계정 보관함의 이전 문구·즐겨찾기 또는 안부 주기 설정이 이 임시기록에는 없어요. 임시기록을 복구 파일로 백업한 뒤 계정 수첩을 선택해 주세요.',
   REVISION_CONFLICT: '다른 기기에서 기록이 바뀌었어요. 어느 기록을 사용할지 골라 주세요.',
   LOCAL_CHANGED_DURING_REFRESH: '가져오는 동안 새로 수정한 내용이 있어요. 기록을 다시 골라 주세요.',
   AUTH_REQUIRED: 'SYNK 계정에 다시 로그인해 주세요.', SESSION_REVOKED: '로그인이 종료되었어요. 다시 로그인해 주세요.',
@@ -27,8 +29,8 @@ const messages = {
 export const documentSyncErrorMessage = error => messages[error?.code] || error?.message || '계정에 저장하지 못했어요. 연결을 확인한 뒤 다시 시도해 주세요.';
 
 /** A verified account owns a separate cache and outbox. Guest state is never imported implicitly. */
-export function createDocumentSync({ transport, storage, onState = () => {}, onStatus = () => {}, onSaved = () => {}, onRemoved = () => {}, validateState, emptyState, scope, resource = null, cachePrefix, operations = { load: 'careLoad', save: 'careSave', delete: 'careDelete' } }) {
-  if (typeof validateState !== 'function' || typeof emptyState !== 'function' || !scope || !cachePrefix) throw new TypeError('제품 기록 계약이 필요해요.');
+export function createDocumentSync({ transport, storage, onState = () => {}, onStatus = () => {}, onSaved = () => {}, onRemoved = () => {}, validateState, emptyState, requiresConflictReview = () => false, scope, resource = null, cachePrefix, operations = { load: 'careLoad', save: 'careSave', delete: 'careDelete' } }) {
+  if (typeof validateState !== 'function' || typeof emptyState !== 'function' || typeof requiresConflictReview !== 'function' || !scope || !cachePrefix) throw new TypeError('제품 기록 계약이 필요해요.');
   const clone = value => validateState(value);
   const PREFIX = cachePrefix;
   if (typeof transport !== 'function') throw new TypeError('계정 저장 통로가 필요해요.');
@@ -184,7 +186,7 @@ export function createDocumentSync({ transport, storage, onState = () => {}, onS
       if (validRevision(error.revision)) context.revision = error.revision;
       persist(context); emit(context, 'conflict', error);
     } else {
-      const hard = ['AUTH_REQUIRED', 'SESSION_REVOKED', 'ACCOUNT_UNAVAILABLE', 'PRODUCT_FORBIDDEN', 'CARE_ACCOUNT_MISMATCH', 'INVALID_CARE_RESPONSE', 'INVALID_CARE_STATE', 'PAYLOAD_TOO_LARGE', 'INVALID_PERSONAL_STATE', 'PERSONAL_DATA_TOO_LARGE', 'REVISION_CAPACITY', 'ASSET_NOT_FOUND', 'ASSET_NOT_CONFIRMED', 'MEDIA_QUOTA_EXCEEDED'].includes(error?.code);
+      const hard = ['AUTH_REQUIRED', 'SESSION_REVOKED', 'ACCOUNT_UNAVAILABLE', 'PRODUCT_FORBIDDEN', 'CARE_ACCOUNT_MISMATCH', 'INVALID_CARE_RESPONSE', 'INVALID_CARE_STATE', 'CARE_CLIENT_UPDATE_REQUIRED', 'PAYLOAD_TOO_LARGE', 'INVALID_PERSONAL_STATE', 'PERSONAL_DATA_TOO_LARGE', 'REVISION_CAPACITY', 'ASSET_NOT_FOUND', 'ASSET_NOT_CONFIRMED', 'MEDIA_QUOTA_EXCEEDED'].includes(error?.code);
       emit(context, hard ? 'error' : 'offline', error);
     }
     return false;
@@ -231,8 +233,9 @@ export function createDocumentSync({ transport, storage, onState = () => {}, onS
     }
     if (mode !== 'remote' && context.pending) {
       if (context.baseRevision === null && remote.empty && remote.revision === 0) context.baseRevision = 0;
-      if (context.baseRevision !== remote.revision) {
-        context.conflict = true; persist(context); emit(context, 'conflict', failure('REVISION_CONFLICT', remote.revision)); return false;
+      const conflictCode = context.baseRevision !== remote.revision ? 'REVISION_CONFLICT' : requiresConflictReview(context.state, remote.state) ? 'CARE_LIBRARY_RECOVERY_REVIEW' : null;
+      if (conflictCode) {
+        context.conflict = true; persist(context); emit(context, 'conflict', failure(conflictCode, remote.revision)); return false;
       }
       context.conflict = false; persist(context); emit(context, 'idle'); return true;
     }
@@ -335,7 +338,9 @@ export function createDocumentSync({ transport, storage, onState = () => {}, onS
       if (!selected) { emit(context,'synced'); if(!context.localChoice&&!context.pending)await load(context); return false; }
       detachDraft(context);
       context.recovery = new Map(selected.entries); context.state = clone(selected.state);
-      context.baseRevision = selected.baseRevision; context.pending = true; context.conflict = false; context.localChoice = false; context.sequence++;
+      // A different local snapshot must pass a fresh remote check before any
+      // drain, including a retry after this selection's load failed offline.
+      context.baseRevision = selected.baseRevision; context.pending = true; context.known = false; context.conflict = false; context.localChoice = false; context.sequence++;
       emitState(context);
       try { const loaded = await load(context); if (loaded && context.pending) schedule(context); }
       catch (error) { reportFailure(context, error); }

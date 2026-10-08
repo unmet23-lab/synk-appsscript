@@ -1,0 +1,47 @@
+[플레저문구보관함운영검증] ⚠ `--운영` 으로 과녁을 갈아탔다 — `.env`(baasvefzinrxaryksayl)가 아니라 **운영 REF** 로 나갑니다.
+PASS correct production project
+PASS care function active with JWT verification
+PASS existing configured credentials available
+PASS policy public care config belongs to this production project
+PASS two real Auth sessions are distinct
+PASS same account across two sessions starts empty
+PASS other account starts isolated
+PASS legacy client saves without capability
+PASS second session sees exact legacy data
+PASS legacy client updates before any explicit library
+PASS local fixture retains legacy and multiple intent rows
+PASS first explicit library without capability is rejected
+PASS rejected first library write preserves legacy revision and content
+PASS real browser account adapter restores the synthetic session
+PASS real sync opens the current account revision
+PASS real sync accepts the local library change
+PASS real sync flush receives a validated save acknowledgement
+PASS real account adapter forwards capability to the live save request
+PASS real sync settles without a pending local draft
+PASS second real session reads the browser-adapter library save exactly
+PASS second session toggles an older version favorite
+PASS favorite and all saved versions reach first session
+PASS favorite change retains original text and timestamp
+PASS older saved phrase can become the current phrase again
+PASS restored older phrase reaches the second session
+PASS restoring an existing version keeps all history without duplication
+PASS stale legacy write remains a revision conflict
+PASS latest-revision legacy write cannot drop message library
+PASS blocked old client preserves favorite history and revision
+PASS unrelated legacy account remains writable
+PASS other account write never changes owner message library
+PASS source-backed synthetic phrase is saved
+PASS source withdrawal removes its saved phrase
+PASS withdrawal reaches other session
+PASS withdrawn source cannot survive in library or legacy mirror
+PASS explicit empty library is saved
+PASS explicit empty library reaches other session
+PASS legacy mirror does not repopulate explicit empty library
+PASS legacy client cannot discard an intentional empty library
+PASS rejected empty-library downgrade preserves state
+PASS explicit notebook delete works without capability
+PASS notebook deletion tombstone reaches second session
+PASS stale upgraded client cannot resurrect deleted notebook
+PASS explicit new legacy save after deletion remains allowed
+PASS fresh legacy state after tombstone reaches first session
+{"ok":true,"checks":45,"cleanup":true,"cleanupErrors":[],"qa":"C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\qa\\message-library-20261008"}

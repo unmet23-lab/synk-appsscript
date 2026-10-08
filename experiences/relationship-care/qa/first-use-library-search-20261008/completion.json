@@ -1,0 +1,36 @@
+{
+  "status": "public-complete",
+  "careTests": {
+    "passed": 344,
+    "failed": 0,
+    "log": "care-tests.txt"
+  },
+  "newTests": {
+    "onboarding": 11,
+    "librarySearch": 10
+  },
+  "existingCadenceUiHarnessUpdated": 11,
+  "publicCandidateFiles": 48,
+  "changedPublicFiles": [
+    "app.mjs",
+    "build-manifest.json",
+    "index.html",
+    "style.css"
+  ],
+  "claude": {
+    "requestedModel": "claude-opus-5-5",
+    "effort": "max",
+    "complete": false,
+    "status": 429,
+    "error": "usage_limit_reached",
+    "reset": "2026-10-12T19:00:00+09:00",
+    "evidence": "claude-review.json"
+  },
+  "exceptionForCurrentScope": true,
+  "deployed": true,
+  "publicCommit": "b4791aebd0d1cefa7314bebb3e76a9664ca6a835",
+  "publicFilesVerified": 48,
+  "publicBrowserVerified": true,
+  "ciPassed": 2,
+  "completedAt": "2026-10-07T22:48:13.727Z"
+}

@@ -1,0 +1,205 @@
+diff --git a/.tmp/care-push-ui-baseline-20261008/care-push.mjs b/experiences/relationship-care/care-push.mjs
+index 24af76be2..97130cd71 100644
+--- a/.tmp/care-push-ui-baseline-20261008/care-push.mjs
++++ b/experiences/relationship-care/care-push.mjs
+@@ -52,9 +52,9 @@ function bounded(promise, ms = 12000) {
+ 
+ /** Per-device opt-in only. No permission request or new subscription during preparation. */
+ export function createCarePush({ request, onState = () => {}, env = globalThis, workerUrl = new URL('./care-sw.js', import.meta.url).href, scopeUrl = new URL('./', import.meta.url).href } = {}) {
+-  let owner, epoch = 0, registration = null, subscription = null, publicKey = null, mutation = null, preparation = null, suspended = false;
++  let owner, epoch = 0, registration = null, subscription = null, publicKey = null, mutation = null, preparation = null, suspended = false, permissionAttempt = null, timeDraft = null;
+   let state = { phase: 'signed-out', enabled: false, scheduleKnown: true, hour: 9, minute: 0, timeZone: PUSH_TIME_ZONE, message: SIGNED_OUT_NOTICE };
+-  const snapshot = () => ({ ...state, busy: busyPhases.has(state.phase), signedIn: !!owner && !suspended, suppressOpenReminders: state.enabled || !!subscription || busyPhases.has(state.phase) });
++  const snapshot = () => ({ ...state, inputHour: timeDraft?.hour ?? state.hour, inputMinute: timeDraft?.minute ?? state.minute, canCancelEnable: !!permissionAttempt?.waiting && !permissionAttempt.cancelled && current(permissionAttempt.epoch), permissionPending: !!permissionAttempt, busy: busyPhases.has(state.phase), signedIn: !!owner && !suspended, suppressOpenReminders: state.enabled || !!subscription || !!permissionAttempt || busyPhases.has(state.phase) });
+   const emit = patch => { state = { ...state, ...patch }; onState(snapshot()); return snapshot(); };
+   const current = expected => expected === epoch && !!owner && !suspended;
+   const guard = expected => { if (!current(expected)) throw Object.assign(new Error('계정이 바뀌었어요.'), { code: 'ACCOUNT_CHANGED' }); };
+@@ -89,13 +89,17 @@ export function createCarePush({ request, onState = () => {}, env = globalThis,
+     }
+     guard(expected); return reg;
+   }
+-  function applyStatus(result, enabled = result.enabled === true) {
++  function applyStatus(result, enabled = result.enabled === true, acceptTime = false) {
+     const time = timeParts(result.hour ?? 9, result.minute ?? 0);
+     if (result.timeZone && result.timeZone !== PUSH_TIME_ZONE) throw new Error('알림 시간대를 확인하지 못했어요.');
++    if (acceptTime) timeDraft = null;
+     return emit({ ...time, enabled, scheduleKnown: true, phase: enabled ? 'enabled' : 'ready', message: enabled ? '챙길 일이 있는 날, 정한 시간에 하루 한 번 알려드려요.' : '알림을 켜면 앱을 닫아도 챙길 날을 알려드려요.' });
+   }
+   function prepare() {
+     if (!owner || suspended) return Promise.resolve(snapshot());
++    // A native permission prompt cannot be dismissed by the page. Keep its lock,
++    // but never queue another UI preparation behind an unanswered prompt.
++    if (permissionAttempt) return Promise.resolve(snapshot());
+     if (mutation) return mutation.then(() => prepare(), () => prepare());
+     if (preparation) return preparation;
+     const expected = epoch, capability = pushCapability(env);
+@@ -121,9 +125,11 @@ export function createCarePush({ request, onState = () => {}, env = globalThis,
+   async function setAccount(accountId) {
+     const next = typeof accountId === 'string' && accountId ? accountId : null;
+     if (next === owner && !suspended) return snapshot();
++    cancelEnable();
+     const previous = owner, expected = ++epoch, running = mutation;
+     owner = next; suspended = false; preparation = null; publicKey = null;
+-    emit({ phase: next ? 'preparing' : 'signed-out', enabled: false, scheduleKnown: true, hour: 9, minute: 0, message: next ? '이 기기의 알림 연결을 확인하고 있어요.' : SIGNED_OUT_NOTICE });
++    timeDraft = null;
++    emit({ phase: next ? permissionAttempt ? 'permission-pending' : 'preparing' : 'signed-out', enabled: false, scheduleKnown: true, hour: 9, minute: 0, message: next ? permissionAttempt ? '이전 알림 연결을 정리하고 있어요. 브라우저에 남아 있는 알림 허용 창을 닫아 주세요. 수첩은 계속 이용할 수 있어요.' : '이 기기의 알림 연결을 확인하고 있어요.' : SIGNED_OUT_NOTICE });
+     // A subscribe prompt can finish after a sign-out. That mutation removes its own
+     // subscription; wait before preparing a new account so it cannot remove theirs.
+     if (running) { try { await running; } catch { /* The stale mutation cleans up below. */ } }
+@@ -142,41 +148,64 @@ export function createCarePush({ request, onState = () => {}, env = globalThis,
+     }
+     return next ? prepare() : snapshot();
+   }
++  function cancelEnable(timedOut = false) {
++    const attempt = permissionAttempt;
++    if (!attempt?.waiting || attempt.cancelled || !current(attempt.epoch)) return snapshot();
++    attempt.cancelled = true; clearTimeout(attempt.timer);
++    return emit({ phase: 'permission-pending', enabled: false, message: `${timedOut ? '알림 허용 응답이 없어 연결을 멈췄어요.' : '앱의 알림 연결을 취소했어요.'} 브라우저의 허용 창은 직접 닫아 주세요. 창을 닫으면 다시 연결할 수 있고, 수첩은 계속 이용할 수 있어요.` });
++  }
+   function enable(hour = state.hour, minute = state.minute) {
+     const time = timeParts(hour, minute), expected = epoch;
+     guard(expected);
+     if (mutation || !registration || !publicKey || !['ready', 'error'].includes(state.phase)) return Promise.resolve(snapshot());
+     if (env.Notification.permission === 'denied') return Promise.resolve(emit({ phase: 'denied', enabled: false, message: '브라우저 사이트 설정에서 알림을 허용한 뒤 다시 확인해 주세요.' }));
+-    emit({ phase: 'enabling', enabled: false, message: '브라우저의 알림 허용을 확인하고 있어요.' });
++    timeDraft = time;
++    const attempt = { epoch: expected, waiting: true, cancelled: false, timer: null };
++    permissionAttempt = attempt;
++    emit({ phase: 'enabling', enabled: false, message: '브라우저의 알림 허용 창을 확인해 주세요. 지금 연결하지 않으려면 아래에서 취소할 수 있어요.' });
+     let prompt;
+     try {
+       // Keep this call in the original click task. Awaiting a request first loses
+       // Safari's transient user activation and can silently prevent the prompt.
+       prompt = registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: publicKey });
+-    } catch (error) { return Promise.resolve(emit({ phase: 'error', message: errorMessage(error) })); }
++    } catch (error) { permissionAttempt = null; return Promise.resolve(emit({ phase: 'error', message: errorMessage(error) })); }
++    attempt.timer = setTimeout(() => { if (permissionAttempt === attempt) cancelEnable(true); }, 30000);
+     let candidate = null;
+     const pending = (async () => {
+       try {
+-        candidate = await prompt; guard(expected); subscription = candidate;
++        candidate = await prompt;
++        attempt.waiting = false; clearTimeout(attempt.timer);
++        guard(expected);
++        if (attempt.cancelled) throw Object.assign(new Error('알림 연결 취소'), { code: 'PUSH_CANCELLED' });
++        subscription = candidate;
++        emit({ message: '허용을 확인했어요. 선택한 시간으로 알림을 연결하고 있어요.' });
+         const result = await call('subscribe', { subscription: { endpoint: candidate.endpoint, keys: candidate.toJSON().keys }, ...time }, expected);
+         if (result.enabled !== true) throw new Error('알림 등록을 확인하지 못했어요.');
+-        return applyStatus(result, true);
++        return applyStatus(result, true, true);
+       } catch (error) {
++        attempt.waiting = false; clearTimeout(attempt.timer);
+         // Includes a lost successful HTTP response: an unsubscribed endpoint can no
+         // longer display an unintended notification even if the server accepted it.
+         const removed = await removeLocal(candidate);
+-        if (current(expected)) emit({ phase: env.Notification.permission === 'denied' ? 'denied' : 'error', enabled: false, message: removed ? errorMessage(error) : '등록을 완료하지 못했고 기기 알림 해제도 확인하지 못했어요. 사이트 설정에서 알림을 끈 뒤 다시 확인해 주세요.' });
++        if (!removed) publicKey = null;
++        if (current(expected)) emit({ phase: !removed ? 'unavailable' : env.Notification.permission === 'denied' ? 'denied' : attempt.cancelled ? 'ready' : 'error', enabled: false, message: !removed ? '기기 알림 해제를 확인하지 못했어요. 알림 연결 다시 확인을 누르거나 사이트 설정에서 알림을 끈 뒤 확인해 주세요.' : attempt.cancelled ? env.Notification.permission === 'denied' ? '알림 연결을 취소했어요. 다시 켜려면 브라우저 사이트 설정에서 알림을 허용해 주세요.' : '알림 연결을 취소했어요. 선택한 시간은 유지했으니 원할 때 다시 켤 수 있어요.' : errorMessage(error) });
+         return snapshot();
+-      } finally { if (mutation === pending) mutation = null; }
++      } finally {
++        clearTimeout(attempt.timer);
++        if (permissionAttempt === attempt) permissionAttempt = null;
++        if (mutation === pending) mutation = null;
++        if (current(expected)) emit({});
++      }
+     })();
+     mutation = pending; return pending;
+   }
+   function update(hour, minute) {
+     const time = timeParts(hour, minute), expected = epoch; guard(expected);
+     if (mutation || !state.enabled || !subscription) return Promise.resolve(snapshot());
++    timeDraft = time;
+     emit({ phase: 'saving', message: '알림 시간을 저장하고 있어요.' });
+     const pending = (async () => {
+-      try { return applyStatus(await call('update', { endpoint: subscription.endpoint, ...time }, expected)); }
++      try { const result = await call('update', { endpoint: subscription.endpoint, ...time }, expected); return applyStatus(result, result.enabled === true, true); }
+       catch (error) { if (current(expected)) emit({ phase: 'unavailable', scheduleKnown: false, message: '알림 시간의 저장 결과를 확인하지 못했어요. 알림 연결 다시 확인을 눌러 실제 저장된 시간을 확인해 주세요.' }); return snapshot(); }
+       finally { if (mutation === pending) mutation = null; }
+     })();
+@@ -198,6 +227,7 @@ export function createCarePush({ request, onState = () => {}, env = globalThis,
+   async function logout() {
+     // Do not wait for an unanswered permission prompt to sign out. Its completion
+     // checks the epoch before writing and unsubscribes any late subscription.
++    cancelEnable();
+     ++epoch; suspended = true; publicKey = null; preparation = null;
+     emit({ phase: 'disabling', enabled: false, message: '이 기기의 계정 알림을 해제하고 있어요.' });
+     const reg = await existing(); let candidate = subscription;
+@@ -208,5 +238,5 @@ export function createCarePush({ request, onState = () => {}, env = globalThis,
+     const removed = await removeLocal(candidate, reg);
+     return { ok: serverRemoved || removed, serverRemoved, deviceRemoved: removed };
+   }
+-  return { snapshot, setAccount, prepare, enable, update, disable, logout };
++  return { snapshot, setAccount, prepare, enable, cancelEnable, update, disable, logout };
+ }
+
+diff --git a/.tmp/care-push-ui-baseline-20261008/app.mjs b/experiences/relationship-care/app.mjs
+index 0e119e0ea..a79dfa395 100644
+--- a/.tmp/care-push-ui-baseline-20261008/app.mjs
++++ b/experiences/relationship-care/app.mjs
+@@ -973,22 +973,26 @@ function checkReminders() {
+ }
+ 
+ function renderPushSettings() {
+-  const push = carePush.snapshot(), time = `${String(push.hour).padStart(2, '0')}:${String(push.minute).padStart(2, '0')}`;
++  const push = carePush.snapshot(), time = `${String(push.inputHour).padStart(2, '0')}:${String(push.inputMinute).padStart(2, '0')}`;
+   $('push-status').textContent = push.message;
+   $('push-status').dataset.kind = ['error', 'unavailable', 'denied'].includes(push.phase) ? 'error' : push.enabled ? 'success' : 'info';
+   $('push-settings').setAttribute('aria-busy', String(push.busy));
+   $('push-time').disabled = push.busy || !push.signedIn || !['ready', 'enabled', 'error'].includes(push.phase);
+   if (document.activeElement !== $('push-time')) $('push-time').value = time;
++  const timeChanged = push.inputHour !== push.hour || push.inputMinute !== push.minute;
++  $('push-time-hint').hidden = !push.enabled || !push.scheduleKnown || !timeChanged || push.busy;
++  $('push-time-hint').textContent = `현재 알림 시간은 ${String(push.hour).padStart(2, '0')}:${String(push.minute).padStart(2, '0')}로 저장돼 있어요. 위의 변경 시간을 적용하려면 ‘알림 시간 저장’을 눌러 주세요.`;
+   $('push-enable').hidden = push.enabled || !push.signedIn || !['ready', 'error', 'enabling'].includes(push.phase);
+   $('push-enable').disabled = push.busy;
+   $('push-enable').textContent = push.phase === 'enabling' ? '알림을 연결하고 있어요…' : '이 기기에 알림 켜기';
++  $('push-cancel').hidden = !push.canCancelEnable;
+   $('push-save').hidden = !push.enabled || !push.scheduleKnown; $('push-save').disabled = push.busy;
+   $('push-disable').hidden = !push.enabled; $('push-disable').disabled = push.busy;
+-  $('push-retry').hidden = !push.signedIn || !['unavailable', 'denied', 'unsupported', 'needs-install'].includes(push.phase);
++  $('push-retry').hidden = !push.signedIn || !['unavailable', 'denied', 'unsupported', 'needs-install', 'permission-pending'].includes(push.phase);
+   $('push-signin').hidden = push.signedIn;
+   $('push-signin').disabled = push.busy || accountStarting || !accountStatus.configured;
+   $('push-open-only').hidden = push.enabled;
+-  $('push-open-only').disabled = !('Notification' in window) || Notification.permission === 'denied';
++  $('push-open-only').disabled = push.permissionPending || !('Notification' in window) || Notification.permission === 'denied';
+   notificationStatus();
+ }
+ function pushTime() { const [hour, minute] = $('push-time').value.split(':').map(Number); return [hour, minute]; }
+@@ -1314,6 +1318,7 @@ on('close-notification-dialog', 'click', () => $('notification-dialog').close())
+ on('push-signin', 'click', async () => { $('notification-dialog').close(); try { await account.signIn(); } catch (error) { accountStatus = resumeCareLoginNavigation(accountStatus, true); renderAccount(); throw error; } });
+ on('push-retry', 'click', () => carePush.prepare());
+ on('push-enable', 'click', () => carePush.enable(...pushTime()));
++on('push-cancel', 'click', () => carePush.cancelEnable());
+ on('push-save', 'click', () => carePush.update(...pushTime()));
+ on('push-disable', 'click', () => carePush.disable());
+ on('push-open-only', 'click', async () => {
+
+diff --git a/.tmp/care-push-ui-baseline-20261008/index.html b/experiences/relationship-care/index.html
+index 7cf662694..09995ee49 100644
+--- a/.tmp/care-push-ui-baseline-20261008/index.html
++++ b/experiences/relationship-care/index.html
+@@ -155,8 +155,9 @@
+     <p class="push-intro">챙길 일이 있는 날, 하루 한 번.<br>앱을 닫아도 이 기기로 알려드려요.</p>
+     <div id="push-settings" aria-busy="false">
+       <p id="push-status" class="push-status" role="status" aria-live="polite"></p>
+-      <label class="push-time-label" for="push-time">알림 받을 시간 <span>한국 시간</span><input id="push-time" type="time" value="09:00" required></label>
+-      <div class="push-actions"><button id="push-enable" class="felt-button" type="button" hidden>이 기기에 알림 켜기</button><button id="push-save" class="felt-button" type="button" hidden>알림 시간 저장</button><button id="push-signin" class="felt-button" type="button">SYNK 계정으로 로그인</button><button id="push-retry" class="soft-button" type="button" hidden>알림 연결 다시 확인</button><button id="push-disable" class="text-button" type="button" hidden>이 기기 알림 끄기</button></div>
++      <label class="push-time-label" for="push-time">알림 받을 시간 <span>한국 시간</span><input id="push-time" type="time" value="09:00" required aria-describedby="push-time-hint"></label>
++      <p id="push-time-hint" class="push-time-hint" hidden></p>
++      <div class="push-actions"><button id="push-enable" class="felt-button" type="button" hidden>이 기기에 알림 켜기</button><button id="push-cancel" class="soft-button" type="button" hidden>알림 연결 취소</button><button id="push-save" class="felt-button" type="button" hidden>알림 시간 저장</button><button id="push-signin" class="felt-button" type="button">SYNK 계정으로 로그인</button><button id="push-retry" class="soft-button" type="button" hidden>알림 연결 다시 확인</button><button id="push-disable" class="text-button" type="button" hidden>이 기기 알림 끄기</button></div>
+     </div>
+     <p class="push-privacy">잠금 화면에는 이름이나 개인적인 이야기를 표시하지 않아요. 계정에 저장한 일정과 날짜를 정한 후속 챙김만 알려드려요. 완료·미루기는 계정 저장이 끝난 뒤 반영돼요.</p>
+     <details class="push-alternative"><summary>달력이나 앱을 열어 둔 동안만 이용하기</summary><p>일정의 ‘달력 저장’으로 내 달력에 추가할 수 있어요. 내려받은 달력은 이후 수정·완료가 자동 반영되지 않아요.</p><button id="push-open-only" class="soft-button" type="button">앱을 열어 둔 동안 알림 허용</button></details>
+
+diff --git a/.tmp/care-push-ui-baseline-20261008/style.css b/experiences/relationship-care/style.css
+index e7e675082..6e0e84b76 100644
+--- a/.tmp/care-push-ui-baseline-20261008/style.css
++++ b/experiences/relationship-care/style.css
+@@ -48,3 +48,4 @@
+ .library-search-label{display:grid;gap:8px}.draft-memory-tools #library-search{width:100%;max-width:100%;min-width:0;min-height:48px}
+ .library-search-options{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.library-search-options .check-label{min-height:48px;margin:0;flex:1 1 180px}.draft-memory-tools #library-reset{font-size:16px;min-height:48px;max-width:100%;white-space:normal;line-height:1.7}.draft-memory-tools #library-result-count{margin:0}
+ @media(max-width:680px){.library-search-options{display:grid;grid-template-columns:minmax(0,1fr)}.draft-memory-tools #library-reset{width:100%}}
++.push-time-hint{font-size:16px;line-height:1.75;color:var(--muted);margin:0 0 20px;overflow-wrap:anywhere}

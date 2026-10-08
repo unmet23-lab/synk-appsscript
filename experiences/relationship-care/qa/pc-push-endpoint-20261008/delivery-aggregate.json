@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-10-07T23:18:53.133Z",
+  "databaseObservedAt": "2026-10-07 23:18:53.065042+00",
+  "scheduledForKst": "2026-10-08T08:18:00+09:00",
+  "environment": "production",
+  "readOnly": true,
+  "counts": {
+    "subscriptions_total": 1,
+    "subscriptions_enabled": 1,
+    "evaluated_today": 1,
+    "today_sent": 1,
+    "today_failed": 0,
+    "today_skipped": 0,
+    "today_retry_pending": 0,
+    "today_dispatching": 0,
+    "dispatcher_job_active": 1
+  },
+  "interpretation": {
+    "gatewayAcceptanceObserved": true,
+    "physicalOsReceiptVerifiedByThisQuery": false,
+    "scope": "Aggregate subscription counts only; no account or endpoint attribution.",
+    "gone": "Not observable from this table: provider 404/410 deletes the subscription row. Do not interpret an absent row as a confirmed gone outcome."
+  },
+  "execution": {
+    "aggregateQueries": 1,
+    "guard": "canonical credential reader with 질의읽기:true and 질의전용(sql)",
+    "manualDispatcherInvocations": 0,
+    "databaseMutations": 0,
+    "privateIdentifiersSelected": false,
+    "secretValuesRecorded": false
+  }
+}

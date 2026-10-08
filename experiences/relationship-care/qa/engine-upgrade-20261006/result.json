@@ -1,0 +1,173 @@
+{
+  "at": "2026-10-06T14:10:11.463Z",
+  "checks": [
+    {
+      "name": "home exposes due followups before schedule",
+      "passed": true
+    },
+    {
+      "name": "home-375 fits viewport",
+      "passed": true
+    },
+    {
+      "name": "target event is ready before the first answer and no answer is discarded",
+      "passed": true,
+      "detail": [
+        "timeMinutes",
+        "attendance",
+        "budgetWon"
+      ]
+    },
+    {
+      "name": "declared preparation budget and concrete steps reach user",
+      "passed": true
+    },
+    {
+      "name": "no internal engine names in preparation product copy",
+      "passed": true
+    },
+    {
+      "name": "alternatives and recommendation evidence start collapsed",
+      "passed": true
+    },
+    {
+      "name": "preparation-375 fits viewport",
+      "passed": true
+    },
+    {
+      "name": "explicit selected plan and direct rating are saved separately from actual care",
+      "passed": true
+    },
+    {
+      "name": "selection duration measures shown-to-selected wall time",
+      "passed": true
+    },
+    {
+      "name": "preparation conditions can be restarted after choosing",
+      "passed": true
+    },
+    {
+      "name": "restarted short preparation does not retain previous budget",
+      "passed": true
+    },
+    {
+      "name": "message review identifies other recipient date promise and avoided phrase",
+      "passed": true,
+      "detail": "4곳을 직접 확인해 주세요.\n\n다른 사람 이름\n\n수첩의 다른 사람 이름과 같은 글자가 있어요. 함께 언급한 사람일 수도 있으니 받는 사람과 문맥을 확인해 주세요.\n\n“가상 서연”\n\n다르게 전하려면 · 받는 사람을 부른 문장이라면 “가상 지민”인지 확인해 주세요.\n\n일정과 다른 날짜\n\n선택한 일정의 다음 회차와 다른 날짜가 적혀 있어요. 다른 일을 설명한 날짜일 수도 있어요.\n\n“2099-01-01”\n\n다르게 전하려면 · 이번 회차를 말한 것이라면 2026-10-10인지 확인해 주세요.\n\n약속 표현 확인\n\n미래 행동을 말하는 표면 표현이 있어요. 실제로 할 수 있고 하기로 정한 약속인지 확인해 주세요.\n\n“꼭 찾아갈게”\n\n다르게 전하려면 · 확정하지 않은 약속이라면 해당 문장을 빼거나 가능한 범위를 직접 적어 주세요.\n\n저장한 피할 표현\n\n이 사람에게 피하기로 확인한 표현과 일치해요.\n\n“힘내”\n\n다르게 전하려면 · 이 표현이 들어간 문장을 직접 고치거나 빼고 문맥을 다시 확인해 주세요.\n\n어디까지 확인했나요?"
+    },
+    {
+      "name": "edit preference remains a proposal until confirmed",
+      "passed": true
+    },
+    {
+      "name": "confirmed edited style is stored explicitly",
+      "passed": true
+    },
+    {
+      "name": "expression-320 fits viewport",
+      "passed": true
+    },
+    {
+      "name": "now opens actual care input without claiming completion",
+      "passed": true
+    },
+    {
+      "name": "later leaves home today queue and retains scheduled date",
+      "passed": true
+    },
+    {
+      "name": "stopping followup can be cancelled",
+      "passed": true
+    },
+    {
+      "name": "done and stop are distinct persisted states",
+      "passed": true
+    },
+    {
+      "name": "explicit source followup remains unchecked before review",
+      "passed": true
+    },
+    {
+      "name": "confirmed source followup keeps source link and quote",
+      "passed": true
+    },
+    {
+      "name": "card starts with no private items selected",
+      "passed": true
+    },
+    {
+      "name": "memory card renders full PNG preview",
+      "passed": true
+    },
+    {
+      "name": "memory card download is PNG and excludes original source serialization",
+      "passed": true
+    },
+    {
+      "name": "card excerpt does not mutate notebook original memory",
+      "passed": true
+    },
+    {
+      "name": "memory-card-320 fits viewport",
+      "passed": true
+    },
+    {
+      "name": "optional local photo renders without storing file in notebook",
+      "passed": true
+    },
+    {
+      "name": "quiet-375 fits viewport",
+      "passed": true
+    },
+    {
+      "name": "home-1440 fits viewport",
+      "passed": true
+    },
+    {
+      "name": "preparation-1440 fits viewport",
+      "passed": true
+    },
+    {
+      "name": "editing an event refreshes preparation and removes celebratory suggestions",
+      "passed": true
+    },
+    {
+      "name": "statistics cap leaves actionable preparation visible",
+      "passed": true,
+      "detail": {
+        "status": "준비 통계 보관 한도 500개에 도달했어요. 이번 계획은 그대로 사용할 수 있어요.",
+        "count": 500,
+        "toast": ""
+      }
+    },
+    {
+      "name": "plan saves at statistics cap without deleting prior records",
+      "passed": true
+    },
+    {
+      "name": "future clock history remains usable with visible statistics caveat",
+      "passed": true
+    },
+    {
+      "name": "no uncaught browser errors or missing resources",
+      "passed": true,
+      "detail": {
+        "errors": [],
+        "missing": []
+      }
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "screenshots": [
+    "home-375",
+    "preparation-375",
+    "prepare-ready-desktop",
+    "expression-320",
+    "memory-card-320",
+    "quiet-375",
+    "home-1440",
+    "preparation-1440"
+  ],
+  "ok": true
+}

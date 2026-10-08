@@ -1,0 +1,19 @@
+{
+  "commit": "4919aadc30bfd3a2228ee152d2d46fad7ea286e6",
+  "parent": "0e8abf0e81497f8b95d6824d2f47ea474bd029b9",
+  "baseline": "0f0c9a78d613c1ba432a1d58214e9a8c6d8bb16b",
+  "candidate": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\care-library-public-20261008-v5",
+  "files": [
+    "care/app.mjs",
+    "care/build-manifest.json",
+    "care/care-sync.mjs",
+    "care/index.html",
+    "care/model.mjs",
+    "care/style.css",
+    "care/vendor/account/document-sync.mjs",
+    "care/vendor/account/product-account.mjs"
+  ],
+  "unchangedPublicDependencies": 40,
+  "publicFileCount": 48,
+  "rootSourceGitCommit": null
+}

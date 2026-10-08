@@ -1,0 +1,42 @@
+{
+  "at": "2026-10-07T12:58:43.808Z",
+  "browser": "Chrome via official CUA",
+  "public": {
+    "url": "https://synk.im/care/",
+    "guestDialogVerified": true,
+    "viewportChecks": [
+      {
+        "width": 375,
+        "documentWidth": 360,
+        "dialogWidth": 322,
+        "statusFont": "16px"
+      },
+      {
+        "width": 320,
+        "documentWidth": 305,
+        "dialogWidth": 267
+      }
+    ],
+    "screenshot": "public-dialog-final.png",
+    "preview": "public-dialog-preview.png"
+  },
+  "syntheticFixture": {
+    "url": "http://127.0.0.1:4331/fixture/",
+    "checks": [
+      "enable changes UI to enabled",
+      "18:30 schedule saved and shown",
+      "disable returns explicit disabled notice",
+      "server failure shows retry button"
+    ],
+    "viewport375": {
+      "documentWidth": 375,
+      "saveButtonHeight": 56,
+      "offButtonHeight": 44
+    },
+    "screenshot": "enabled-fixture-375.png",
+    "realNetworkPush": false
+  },
+  "physicalDeviceReceipt": false,
+  "realUserDataModified": false,
+  "viewportRestored": true
+}

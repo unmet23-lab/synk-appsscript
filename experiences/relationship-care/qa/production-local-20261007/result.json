@@ -1,0 +1,133 @@
+{
+  "at": "2026-10-06T19:34:14.253Z",
+  "mode": "production-config-local-isolated-ui",
+  "serverPid": 23384,
+  "checks": [
+    {
+      "name": "server uses the validated production config snapshot",
+      "ok": true
+    },
+    {
+      "name": "production issuer and portal",
+      "ok": true
+    },
+    {
+      "name": "19 registered clients and care-to-platform production binding",
+      "ok": true,
+      "detail": {
+        "apiProduct": "platform",
+        "appClientKey": "care",
+        "bindingMatchesConfirmedRegistration": true,
+        "mappingMatchesConfirmedRegistration": true
+      }
+    },
+    {
+      "name": "CSP permits production account endpoint and excludes rehearsal issuer",
+      "ok": true
+    },
+    {
+      "name": "localhost health endpoint responds",
+      "ok": true
+    },
+    {
+      "name": "all 7 served core files match frozen source",
+      "ok": true
+    },
+    {
+      "name": "new isolated guest home shows enabled production login",
+      "ok": true
+    },
+    {
+      "name": "375px screen has no horizontal overflow",
+      "ok": true,
+      "detail": {
+        "width": 375,
+        "scrollWidth": 375
+      }
+    },
+    {
+      "name": "visible brand images loaded",
+      "ok": true
+    },
+    {
+      "name": "initial load makes no provider request",
+      "ok": true
+    },
+    {
+      "name": "browser has no runtime or resource errors",
+      "ok": true
+    }
+  ],
+  "browserErrors": [],
+  "resourceErrors": [],
+  "externalRequests": [],
+  "loginClicked": false,
+  "tokenExchange": false,
+  "existingProfilesTouched": false,
+  "sourceChanged": false,
+  "config": {
+    "issuer": "https://qiwxeddwwnzkwalpsuty.supabase.co",
+    "portal": "https://synk.im/id/",
+    "authorizationCount": 19,
+    "careRedirect": "http://127.0.0.1:4296/",
+    "careClientIdSha256": "90a10c3a7cd3a5ae02cb1b14f030c933c79e62d1d332c10255719bfcde1794a8",
+    "snapshotSha256": "32d538b83d0c860228c88127962b55a7104b3b7242b7d1a91029fc39400ff188",
+    "snapshotUnchanged": true
+  },
+  "csp": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://qiwxeddwwnzkwalpsuty.supabase.co; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+  "servedSource": [
+    {
+      "url": "/",
+      "sha256": "9c0902d37e5b22f4888c116e38eb9ceadc5aae4b8466669228886c7d2a3e4af0",
+      "matches": true
+    },
+    {
+      "url": "/app.mjs",
+      "sha256": "4026906331397638a4df0c8c6267b6ea9a01081edd5958defa85f1aff7253d0d",
+      "matches": true
+    },
+    {
+      "url": "/style.css",
+      "sha256": "076be91058a9a1995685f80f260bf7db8b63b587e4d7112f9e3e3eabe062c7df",
+      "matches": true
+    },
+    {
+      "url": "/model.mjs",
+      "sha256": "405e8aace162ec357a1dfc6a75bacd51d2c0c4f3f9bfe766a9f0b424930b2eb5",
+      "matches": true
+    },
+    {
+      "url": "/care-personalization.mjs",
+      "sha256": "d7f5b9ace2ac25cd49c37cbacb5eacde7f8cbbdde9b0bf680f64ca859899ab06",
+      "matches": true
+    },
+    {
+      "url": "/synk-account/src/document-sync.mjs",
+      "sha256": "884acaf10998ffe246fd486eeb563572c7611bddafeed6f5df2bb92b0c90f729",
+      "matches": true
+    },
+    {
+      "url": "/synk-account/src/product-account.mjs",
+      "sha256": "1dc0a5aa23c90c01a7a3fefb8d9298b015da331f29ef702529ed4aabb9dd16a0",
+      "matches": true
+    }
+  ],
+  "ui": {
+    "title": "SYNK 플레저 · 소중한 사람을 기억하는 수첩",
+    "view": "home",
+    "status": "SYNK 계정으로 수첩 이어 보기",
+    "detail": "연결 후에는 계정 수첩을 불러와요. 지금 기기의 수첩은 직접 골라 옮길 수 있어요.",
+    "button": "SYNK 계정 연결",
+    "buttonDisabled": false,
+    "buttonHidden": false,
+    "people": 0,
+    "width": 375,
+    "scrollWidth": 375,
+    "brokenImages": [],
+    "localStorageKeys": []
+  },
+  "ok": true,
+  "passed": 11,
+  "total": 11,
+  "checkCorrection": "Initial QA assumed authorization product care. Canonical registry, confirmed production mapping and root confirm care app uses platform API product. Only the QA expectation was corrected; no product/config mutation."
+}

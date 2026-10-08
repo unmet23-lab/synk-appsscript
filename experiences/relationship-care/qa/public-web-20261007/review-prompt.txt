@@ -1,0 +1,36 @@
+SYNK 플레저 모바일 공개 웹 배포 후보의 최종 읽기 검수입니다. 한국어로 답하세요. 공식 Claude Code, Opus 5.5, effort max로 요청합니다. 공급자 접근, 이메일 발송, 실제 로그인·사용자 자료 접근, 코드·파일 수정, 명령·시험 실행은 금지합니다. Read/Glob/Grep만 사용하세요. 비밀·.env·실제 설정 파일·등록 journal/bindings 원문은 읽지 마세요. 다른 작업의 파일로 범위를 넓히지 마세요.
+
+먼저 AGENTS.md와 docs/AI_운영원칙.md의 공통 기준을 읽으세요. 이 검수는 아래 동결된 변경분만 대상으로 하며, 기능 개발 전반을 처음부터 재검수하는 작업이 아닙니다.
+
+제품/빌드 대상:
+1) tools/prepare-care-public.mjs 전체
+2) experiences/relationship-care/app.mjs: PUBLIC_WEB 선언(상단), 계정 초기화(configUrl 전달, 약 470행), capabilities/transcribe 경계(약 640~675행)와 직접 필요한 연결만. 나머지 큰 앱 기능은 기존 검수 완료 범위입니다.
+3) experiences/relationship-care/index.html: public runtime 삽입 입구, 상대경로 assets/module 및 녹음 안내 관련 부분
+4) experiences/relationship-care/tests/account.test.mjs
+5) experiences/relationship-care/tests/public-build.test.mjs
+6) experiences/synk-account/src/product-account.mjs: configUrl 입력과 init의 동원점 config 조회/검증, 기존 오류·로그인 연결에 필요한 부분
+
+별도 공개 client 등록 대상:
+7) tools/synk-id/care-public-provision.cjs 전체
+8) tools/synk-id/registry.cjs: PUBLIC_CARE_CLIENT 추가 및 기존 CLIENTS/등록 목록 보존 부분
+9) tests/synk-id-care-public.test.cjs 전체
+10) tools/synk-id/CARE-PUBLIC.md
+
+참조만 허용: experiences/synk-account/src/core.mjs의 readConfig, beginOAuth/consumeCallback; tools/synk-id/provision-apply.cjs, provision-plan.cjs, public-config.cjs, prepare-portal.mjs 중 신규 도구에서 재사용하는 provider·lock/journal·mapping digest·설정·portal 검증 계약 부분만. 파일 경로를 지정해 검색하고 저장소 전체 Grep는 하지 마세요.
+
+검증 증거(비밀 없는 요약)만 읽기:
+- tools/synk-id/qa/care-public-candidate-review-20261007.json
+- tools/synk-id/qa/care-public-candidate-preflight-20261007.json
+- experiences/relationship-care/qa/public-web-20261007/result.json
+- 필요하면 experiences/relationship-care/qa/public-web-smoke.cjs의 합성 방식만
+시험 결과는 root 실행 제품 28개 통과, 등록 신규18+기존48=66/66 통과입니다. 공개 build를 두 격리 브라우저로 열어 합성 PKCE/저장 왕복 및 원본 오디오 PC 전용 경계를 확인했습니다. 실제 공급자 인증·실물 모바일 기기 시험은 아닙니다. 당신이 시험을 돌린 것으로 쓰지 마세요.
+
+목표와 중요한 경계:
+- https://synk.im/care/에 별도 public OAuth client 한 개만 추가하고 API product는 platform입니다. 기존 운영 19개 매핑을 보존한 뒤 20개가 됩니다.
+- 기존 로컬 browser/native client, journal.bindings·attempted, 로컬 설정 3개를 덮어쓰지 않습니다. 기존 공개 /id/config.json의 19개 동의 항목을 보존하며 새 public client만 더합니다. 교사 browser 등 미구현 연결을 추가하지 않습니다.
+- dry-run은 remote mutation 없음, 실제 매핑 digest·Fortune 보존·기존 callback 정합을 읽어 확인했습니다. 실제 create/update에는 명시 --apply와 canonical shared lock/journal을 사용합니다. create ACK 또는 mapping ACK 유실 시 정확한 공급자 결과 확인 없이 중복 생성/덮어쓰지 않아야 합니다.
+- 공개 빌드는 새 .tmp 하위 디렉터리의 고정 39파일입니다. 원본/개인자료/로컬 상태/.env/서버/QA를 복사하지 않고 명시 검증한 public config만 넣습니다. 상대 import closure, /care/ 하위 URL, CSP/referrer, configUrl의 same-origin 제한을 확인하세요.
+- 공개 웹에서 녹음은 파일 선택·재생은 가능하지만 PC loopback Whisper 받아쓰기 API를 요청하지 않아야 합니다. 앱 종료 후 자체 푸시나 자동 외부 발송은 추가하지 않습니다.
+- 공개 client 매핑 secret을 바꾼 뒤 기존 검수 릴리스 adbcfa3(제품 source285bf9)와 동일 코드의 synk-account, synk-learning, synk-care, synk-personal 네 함수를 재배포할 계획입니다. 이 후보 단계에서는 신규 공개 client/secret/website의 원격 변경은 아직 없습니다. 이 검수에서 배포 명령을 실행하거나 backend를 확장해서 읽지 마세요.
+
+P0~P2 실제 문제만, 파일·줄·구체 재현 입력·깨지는 행동과 함께 보고하세요. 추측이나 범위 밖 기존 설계를 지적으로 만들지 마세요. 문제가 없으면 통과와 읽은 범위/검증 한계만 간결히 적으세요. 결론은 통과·수정 필요·검수 미완료 중 하나로 명시하세요. 실제 모델을 응답에서 확인할 수 있는 만큼 밝히고 max는 호출 인자 증거임을 구분하세요.

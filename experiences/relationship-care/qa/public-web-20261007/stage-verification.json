@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-06T20:49:30.463Z",
+  "codeReviewComplete": true,
+  "reviewedModel": "claude-opus-5-5",
+  "qaSourceFilesMatched": 37,
+  "codeDrift": false,
+  "filesCopied": 39,
+  "portalBefore": 19,
+  "portalAfter": 20,
+  "existingPortalFieldsPreserved": true,
+  "clientId": "84da5218-9e25-4ee9-a18b-e215895e182f",
+  "targetUrl": "https://synk.im/care/",
+  "portalSha256": "96c7dc22a4a9929a5353982d4639c61f04df22da1d40d83552a07d55e766f906",
+  "artifactSource": ".tmp/synk-care-public-20261007",
+  "published": false
+}

@@ -1,0 +1,21 @@
+{
+  "recordedAt": "2026-10-07T22:35:41.802Z",
+  "userAuthorizedException": true,
+  "claudeGatePassed": false,
+  "scope": "First-person registration/first greeting, saved-message full-text search/favorites filter, associated draft preservation and UI finishing only",
+  "userMessage": "이어서 해",
+  "context": "Assistant asked whether to publish this exact locally verified scope with a Claude-review exception, explained Opus5.5/max quota and that older exceptions do not cover it. User asked what remained; assistant again listed current-scope exception/publication as the actionable next step, with physical phone/push deferred. User then said 이어서 해. Assistant explicitly acknowledged this as the current-scope exception/publication instruction before proceeding.",
+  "inventoryFile": "claude-source-inventory.json",
+  "inventorySha256": "3bad61eb3b8d2b129ad2f6763c0b2154866e6dde7ac66b46eef15a1ef200d4c5",
+  "candidateManifestSha256": "6f4ffdd2cf0ea57c58e0909d8c52fb60e5e5e2a1ff7d1e77129045a7b0f60b07",
+  "publicFiles": [
+    "app.mjs",
+    "build-manifest.json",
+    "index.html",
+    "style.css"
+  ],
+  "claudeEvidence": "claude-review.json",
+  "physicalPhoneDeferred": true,
+  "osPushDeferred": true,
+  "appliesToFutureChanges": false
+}
