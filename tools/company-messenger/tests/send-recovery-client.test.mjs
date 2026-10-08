@@ -17,6 +17,31 @@ function fixture(storage=new Map()){
   return{context,run,get,nodes,storage,requests,toasts,xhrs,state:run('state')};
 }
 function clockFixture(f){let now=0,next=0;const timers=new Map();f.context.setTimeout=(callback,delay)=>{timers.set(++next,{at:now+delay,callback});return next;};f.context.clearTimeout=key=>timers.delete(key);return{advance(ms){const end=now+ms;while(true){const due=[...timers].filter(([,timer])=>timer.at<=end).sort((a,b)=>a[1].at-b[1].at)[0];if(!due)break;now=due[1].at;timers.delete(due[0]);due[1].callback();}now=end;},get size(){return timers.size;}};}
+test('integrated API waits for same-origin parent recovery and sends a mutation only once with the restored CSRF',async()=>{
+  const f=fixture();f.state.integrated.companyUserId='company-A';let release;const held=new Promise(resolve=>{release=resolve;}),calls=[];
+  f.context.window.parent={location:{origin:'http://localhost'},ensureNativeSynkCompanySession:()=>held};
+  f.context.fetch=async(url,options)=>{calls.push({url,options});return {ok:true,status:200,json:async()=>({ok:true})};};
+  const result=f.context.originalApi('/api/messages',{method:'POST',body:{body:'one original write'}});await Promise.resolve();assert.equal(calls.length,0);
+  release({companyUserId:'company-A',csrfToken:'restored-csrf'});await result;assert.equal(calls.length,1);assert.equal(calls[0].options.headers['X-CSRF-Token'],'restored-csrf');assert.equal(f.get('#composer-input').value,'보낼 원문');
+});
+for(const change of ['other company','local session changed','recovery rejected'])test('integrated API sends nothing when '+change,async()=>{
+  const f=fixture();f.state.integrated.companyUserId='company-A';let release;const held=new Promise(resolve=>{release=resolve;}),calls=[];
+  f.context.window.parent={location:{origin:'http://localhost'},ensureNativeSynkCompanySession:()=>change==='recovery rejected'?Promise.reject(Error('native unavailable')):held};
+  f.context.fetch=async()=>{calls.push(true);return {ok:true,json:async()=>({})};};
+  const pending=f.context.originalApi('/api/messages',{method:'POST',body:{body:'draft'}});const rejection=assert.rejects(pending);
+  if(change==='local session changed')f.run('resetTransfers()');release({companyUserId:change==='other company'?'company-B':'company-A',csrfToken:'new-csrf'});await rejection;assert.equal(calls.length,0);assert.equal(f.state.integrated.csrfToken,'test-csrf');
+});
+test('a prior API response cannot expire or redraw the recovered iframe session',async()=>{
+  const f=fixture();let release;f.context.fetch=()=>new Promise(resolve=>{release=resolve;});
+  const pending=f.context.originalApi('/api/channels');f.state.integrated.csrfToken='new-csrf';release({ok:false,status:401,json:async()=>({error:'old session'})});
+  await assert.rejects(pending,/로그인이 바뀌어/);assert.equal(f.state.user.id,'u1');assert.equal(f.get('#composer-input').value,'보낼 원문');
+});
+test('foreground upload waits for recovery, then uses the new CSRF exactly once',async()=>{
+  const f=fixture();f.state.integrated.companyUserId='company-A';let release;const held=new Promise(resolve=>{release=resolve;});
+  f.context.window.parent={location:{origin:'http://localhost'},ensureNativeSynkCompanySession:()=>held};f.context.file={name:'draft.txt',size:3};
+  f.run('addFiles([file])');assert.equal(f.xhrs.length,0);release({companyUserId:'company-A',csrfToken:'upload-csrf'});await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(f.xhrs.length,1);assert.equal(f.xhrs[0].headers['X-CSRF-Token'],'upload-csrf');assert.equal(f.xhrs[0].sent,f.context.file);
+});
 function focusFixture(f,kind){
   const document=f.context.document,wrap=f.get(kind==='send'?'#send-recovery':'#upload-queue'),prefix=kind==='send'?'data-send-':'data-upload-';let content=wrap.innerHTML,writes=0,controls=[];
   const originalQuery=document.querySelector;document.querySelector=selector=>selector.startsWith('['+prefix)?controls.find(button=>button.matches(selector))||null:originalQuery(selector);
@@ -227,4 +252,18 @@ test('another tab consuming a known file removes only the stale local chip',asyn
 
 test('upload completion never takes focus back after the user chooses the composer or leaves the frame',async()=>{
   for(const moved of ['composer','frame']){const f=fixture();f.context.inputFile=file;f.run('addFiles([inputFile])');f.xhrs[0].onerror();const key=f.run('queue()[0].key'),focus=focusFixture(f,'upload');focus.focus(`[data-upload-retry="${key}"]`);const retry=f.run('retryUpload(queue()[0].key)');fail(f.requests[0],404);await retry;if(moved==='composer')focus.composer.focus();else f.state.transferFocusRevision++;f.xhrs[1].onerror();assert.equal(focus.active(),moved==='composer'?focus.composer:f.context.document.body);}
+});
+
+for(const moved of ['none','composer','frame'])test('pre-XHR login recovery failure releases retry focus and respects '+moved,async()=>{
+  const f=fixture();f.context.inputFile=file;f.run('addFiles([inputFile])');f.xhrs[0].onerror();
+  const key=f.run('queue()[0].key'),selector=`[data-upload-retry="${key}"]`,focus=focusFixture(f,'upload');focus.focus(selector);
+  let reject;const held=new Promise((resolve,fail)=>{reject=fail;});
+  f.context.window.parent={location:{origin:'http://localhost'},ensureNativeSynkCompanySession:()=>held};
+  const retry=f.run('retryUpload(queue()[0].key)');fail(f.requests[0],404);
+  await new Promise(resolve=>setImmediate(resolve));
+  if(moved==='composer')focus.composer.focus();else if(moved==='frame')f.state.transferFocusRevision++;
+  reject(Error('로그인을 잠시 확인하지 못했어요.'));await retry;await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(f.xhrs.length,1);assert.equal(f.run('queue()[0].status'),'error');assert.equal(f.run('queue()[0].rawFile'),file);
+  assert.equal(focus.active(),moved==='none'?focus.wrap.querySelector(selector):moved==='composer'?focus.composer:f.context.document.body);
+  assert.equal(f.run('queue()[0].focusReturn'),null);
 });

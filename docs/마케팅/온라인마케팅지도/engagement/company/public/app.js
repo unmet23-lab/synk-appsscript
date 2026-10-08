@@ -62,6 +62,10 @@ const searchIcon = () => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="tru
 
 async function api(path, body, method = body === undefined ? 'GET' : 'POST') {
   const authStamp=companyAuthSnapshot();
+  if(authStamp.userId&&typeof ensureNativeSynkCompanySession==='function'){
+    const recovery=ensureNativeSynkCompanySession();if(recovery?.then)await recovery;
+    if(!companyAuthCurrent(authStamp))throw companyAuthChanged();
+  }
   path = demoApiUrl(path,method);
   const response = await fetch(path, { method, credentials: 'same-origin', headers: { ...(isDemoMode() && !['/api/me','/api/login','/api/logout','/api/launch'].includes(path.split('?')[0]) ? {'X-Synk-Demo':'1'} : {}), ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}), ...(method !== 'GET' && state.csrf ? { 'X-CSRF-Token': state.csrf } : {}) }, ...(body !== undefined ? { body: JSON.stringify(body) } : {}) });
   const content = await response.json().catch(() => ({}));

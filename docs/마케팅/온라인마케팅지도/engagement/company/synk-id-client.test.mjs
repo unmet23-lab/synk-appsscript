@@ -12,9 +12,55 @@ function fixture(request){
   const context=vm.createContext({window:{synkDesktop:desktop},document,state,location:{replace:value=>moves.push(value)},notify:value=>notices.push(value),setInterval:(fn,ms)=>{intervals.push({fn,ms});return intervals.length;},clearInterval:id=>cleared.push(id),setTimeout,clearTimeout});
   vm.runInContext(source,context);return {calls,notices,moves,intervals,cleared,state,document,desktop,run:code=>vm.runInContext(code,context)};
 }
+test('classic login script coexists with the non-configurable preload bridge and renders native login',async()=>{
+  const calls=[],button={disabled:true},note={textContent:''};let inserted=false;
+  const section={get isConnected(){return inserted;},querySelector:selector=>selector==='button'?button:note};
+  const form={before(value){assert.equal(value,section);inserted=true;}};
+  const desktop={companyRequest:async operation=>{calls.push(operation);return {enabled:true,browserEnabled:false};}};
+  const context=vm.createContext({desktop,document:{addEventListener(){},querySelector:selector=>selector==='#auth-form'?form:null,createElement:()=>section},fetch(){throw Error('Native login must use its bridge, not browser fetch');}});
+  // contextBridge exposes a non-configurable property on the real window/global object.
+  vm.runInContext("globalThis.window=globalThis;Object.defineProperty(globalThis,'synkDesktop',{value:desktop,writable:false,configurable:false})",context);
+  vm.runInContext(source,context,{filename:'synk-id.js'});
+  await vm.runInContext('installSynkLogin()',context);
+  assert.equal(inserted,true);assert.match(section.innerHTML,/id="synk-id-login"/);
+  assert.equal(button.disabled,false);assert.equal(typeof button.onclick,'function');
+  assert.match(note.textContent,/회사 계정에 연결한 SYNK ID/);assert.deepEqual(calls,['status']);
+  assert.equal(vm.runInContext('window.synkDesktop',context),desktop);
+  assert.equal(vm.runInContext("Object.getOwnPropertyDescriptor(window,'synkDesktop').configurable",context),false);
+});
+
 test('native session renewal is single-flight and uses the current company CSRF',async()=>{
-  let finish;const waiting=new Promise(resolve=>finish=resolve),f=fixture(operation=>operation==='status'?waiting:{ok:true});const first=f.run('renewSynkCompanySession()');await Promise.resolve();await f.run('renewSynkCompanySession()');finish({session:'synk'});await first;
+  let finish;const waiting=new Promise(resolve=>finish=resolve),f=fixture(operation=>operation==='status'?waiting:{ok:true});const first=f.run('renewSynkCompanySession()');await Promise.resolve();const concurrent=f.run('renewSynkCompanySession()');finish({session:'synk'});await Promise.all([first,concurrent]);
   assert.deepEqual(f.calls.map(row=>row.operation),['status','renew']);assert.equal(f.calls[1].params.csrfToken,'csrf-one');
+});
+
+test('an already verified native account enters the linked company without another button or login prompt',async()=>{
+  const f=fixture(operation=>operation==='challenge'?{challenge:'synthetic-challenge'}:{ok:true});f.state.user=null;
+  const button={isConnected:true},note={isConnected:true,textContent:'',append(){}};
+  f.document.querySelector=selector=>selector==='#synk-id-login'?button:note;f.document.createElement=()=>({remove(){}});f.document.createTextNode=value=>value;
+  let prompts=0;f.desktop.authStatus=async()=>({signedIn:true,status:'signed-in',sessionGeneration:7,account:{synk_user_id:'native-account'}});f.desktop.authSignIn=async()=>{prompts++;};
+  f.run('synkCompanyStatus={enabled:true}');await f.run('automaticallyEnterSynkCompany()');await f.run('automaticallyEnterSynkCompany()');
+  assert.deepEqual(f.calls.map(value=>value.operation),['challenge','exchange']);assert.equal(prompts,0);assert.deepEqual(f.moves,['/?tab=messenger']);
+});
+
+test('unlinked or denied native automatic entry stops after one attempt and never changes company membership',async()=>{
+  const f=fixture(operation=>operation==='challenge'?{challenge:'synthetic-challenge'}:{ok:false,error:{code:'SYNK_NOT_LINKED',message:'초대가 필요해요.'}});f.state.user=null;
+  const button={isConnected:true},note={isConnected:true,textContent:'',append(){}};
+  f.document.querySelector=selector=>selector==='#synk-id-login'?button:note;f.document.createElement=()=>({remove(){}});f.document.createTextNode=value=>value;
+  f.desktop.authStatus=async()=>({signedIn:true,status:'signed-in',sessionGeneration:7,account:{synk_user_id:'native-account'}});f.run('synkCompanyStatus={enabled:true}');
+  await f.run('automaticallyEnterSynkCompany()');await f.run('automaticallyEnterSynkCompany()');assert.equal(f.calls.length,2);assert.equal(f.calls[0].params.action,'login');assert.equal(f.moves.length,0);assert.match(note.textContent,/초대/);
+});
+
+test('company waits for an in-progress platform OAuth flow without cancelling it to start another',async()=>{
+  const f=fixture();let listener,announce,stopped=false;const subscribed=new Promise(resolve=>{announce=resolve;});f.desktop.authStatus=async()=>({signedIn:false,status:'signing-in'});f.desktop.onAuthChanged=fn=>{listener=fn;announce();return()=>{stopped=true;};};f.desktop.authSignIn=()=>{throw Error('must not restart');};
+  const waiting=f.run('waitForNativeSynk()');await subscribed;listener({signedIn:true,status:'signed-in',account:{synk_user_id:'same'}});assert.equal((await waiting).signedIn,true);assert.equal(stopped,true);
+});
+test('retrying a saved-login error uses native load and never starts a new OAuth transaction',async()=>{
+  const f=fixture();let loads=0,oauth=0,recovered=false;
+  f.desktop.authStatus=async()=>recovered?{signedIn:true,status:'signed-in',sessionGeneration:3,account:{synk_user_id:'saved-account'}}:{signedIn:false,status:'error',sessionGeneration:3,error:{code:'AUTH_SERVER_UNAVAILABLE',message:'temporary outage',retryable:true}};
+  f.desktop.accountRequest=async operation=>{assert.equal(operation,'load');loads++;recovered=true;return {ok:true};};
+  f.desktop.onAuthChanged=()=>()=>{};f.desktop.authSignIn=async()=>{oauth++;return {signedIn:true,status:'signed-in',sessionGeneration:4,account:{synk_user_id:'new-oauth-account'}};};
+  const restored=await f.run('waitForNativeSynk()');assert.equal(loads,1);assert.equal(oauth,0);assert.equal(restored.account.synk_user_id,'saved-account');
 });
 test('a late response from before logout or company account replacement never renews the new account',async()=>{
   for(const user of [null,{id:'company-two'}]){let finish,began;const waiting=new Promise(resolve=>finish=resolve),started=new Promise(resolve=>began=resolve),f=fixture(()=>{began();return waiting;}),pending=f.run('renewSynkCompanySession()');await started;f.state.user=user;f.state.csrf='csrf-two';finish({session:'synk'});await pending;assert.deepEqual(f.calls.map(row=>row.operation),['status']);assert.equal(f.moves.length,0);}

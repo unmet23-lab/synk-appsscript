@@ -3,7 +3,7 @@ set -euo pipefail
 source "$(dirname -- "${BASH_SOURCE[0]}")/cloud-common.sh"
 check_runtime_configuration
 check_storage
-lock_operations
+lock_operations backup
 archive_directory="$(private_archive_directory)" || fail BACKUP_ARCHIVE_DIRECTORY_INVALID
 set -o noclobber
 [[ "${SYNK_BACKUP_UPLOAD_ENABLED:-0}" = 1 ]] || fail OFFSITE_BACKUP_NOT_CONFIGURED

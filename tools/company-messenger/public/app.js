@@ -83,7 +83,20 @@ function toast(message, error = false){
   const item = document.createElement('div'); item.className = `toast${error?' error':''}`; item.textContent = message;
   $('#toasts').append(item); setTimeout(() => item.remove(),5500);
 }
+function companySessionRecovery(){
+  if(!moduleBase||window.parent===window)return null;
+  let parent;try{parent=window.parent;if(parent.location?.origin!==location.origin||typeof parent.ensureNativeSynkCompanySession!=='function')return null;}catch{return null;}
+  const owner=state.integrated?.companyUserId,context=state.user?transferContext():null,initial=state.integrated;
+  const recovery=parent.ensureNativeSynkCompanySession();if(!recovery)return null;
+  return Promise.resolve(recovery).then(session=>{
+    if(!session)return;
+    if(initial!==state.integrated||context&&!transferContextCurrent(context)||owner&&owner!==session.companyUserId||typeof session.csrfToken!=='string')throw new Error('로그인이 바뀌어 이전 요청을 종료했어요.');
+    if(state.integrated){const changed=state.integrated.csrfToken!==session.csrfToken;state.integrated.csrfToken=session.csrfToken;if(changed&&state.events)connectEvents();}
+  });
+}
 async function api(path, options = {}){
+  const recovery=companySessionRecovery();if(recovery)await recovery;
+  const identity={userId:state.user?.id,integrated:state.integrated,csrf:state.integrated?.csrfToken};
   const opts = {...options,credentials:'same-origin',headers:{...options.headers}};
   const recoveryContext=opts.recoveryContext;delete opts.recoveryContext;
   if(options.body !== undefined && typeof options.body !== 'string'){opts.body = JSON.stringify(options.body);opts.headers['Content-Type']='application/json';}
@@ -91,6 +104,7 @@ async function api(path, options = {}){
   const controller=recoveryContext&&typeof AbortController==='function'?new AbortController():null;
   if(controller)opts.signal=controller.signal;const timeout=controller?setTimeout(()=>controller.abort(),30000):null;
   let response,data;try{response=await fetch(moduleUrl(path),opts);data=await response.json().catch(()=>({}));}finally{if(controller)clearTimeout(timeout);}
+  if(identity.userId!==state.user?.id||identity.integrated!==state.integrated||identity.csrf!==state.integrated?.csrfToken)throw new Error('로그인이 바뀌어 이전 요청을 종료했어요.');
   if(recoveryContext&&!transferContextCurrent(recoveryContext))throw new Error('로그인이 바뀌어 이전 요청을 종료했어요.');
   if(!response.ok){
     if(response.status===401&&moduleBase){returnToCompanyLogin();throw new Error('회사 계정으로 다시 로그인해 주세요.');}
@@ -517,9 +531,11 @@ function addFiles(files){
 }
 function uploadCurrent(upload,channelId,context){return transferContextCurrent(context)&&!upload.cancelled&&!upload.channelUnavailable&&!state.unavailableChannels.has(channelId)&&(state.queues.get(channelId)||[]).includes(upload);}
 function uploadFailure(upload,error,code){upload.status='error';upload.error=error;upload.errorCode=code||null;upload.checking=false;}
-function uploadFile(upload,file,channelId){
+async function uploadFile(upload,file,channelId){
   if(upload.status==='uploading'||upload.checking||upload.cancelled)return;const context=transferContext();if(!uploadCurrent(upload,channelId,context))return;
   upload.status='uploading';upload.progress=0;upload.error=null;upload.errorCode=null;upload.rawFile=file;
+  try{const recovery=companySessionRecovery();if(recovery)await recovery;}catch(error){if(uploadCurrent(upload,channelId,context)){uploadFailure(upload,error.message);persistQueue(channelId);if(channelId===state.channelId){renderQueue();updateSend();}finishTransferFocus(upload.focusReturn);upload.focusReturn=null;}return;}
+  if(!uploadCurrent(upload,channelId,context))return;
   const xhr=new XMLHttpRequest();upload.xhr=xhr;xhr.open('POST',moduleUrl(`/api/channels/${id(channelId)}/files`));xhr.timeout=0;
   if(state.integrated?.csrfToken)xhr.setRequestHeader('X-CSRF-Token',state.integrated.csrfToken);xhr.setRequestHeader('Content-Type','application/octet-stream');xhr.setRequestHeader('X-File-Name',encodeURIComponent(file.name));xhr.setRequestHeader('X-Upload-Id',upload.key);
   const active=()=>upload.xhr===xhr&&uploadCurrent(upload,channelId,context);
