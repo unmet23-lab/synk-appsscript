@@ -28,7 +28,7 @@ function toneWav(text) {
   return { audio: Buffer.concat([head, data]).toString('base64'), audio_duration: seconds };
 }
 function mockTypecast() {
-  const m = { calls: 0, used: 0, plan: 200000, refuse: false, seenKeys: new Set() };
+  const m = { calls: 0, used: 0, plan: 200000, refuse: false, seenKeys: new Set(), prompts: [] };
   m.server = http.createServer(async (req, res) => {
     let raw = ''; for await (const c of req) raw += c;
     m.seenKeys.add(req.headers['x-api-key']);
@@ -39,7 +39,7 @@ function mockTypecast() {
       if (m.refuse) return send(401, { message: 'revoked' });
       const body = JSON.parse(raw);
       assert.equal(body.model, 'ssfm-v30'); assert.equal(body.output.audio_format, 'wav'); assert.match(body.voice_id, /^tc_[0-9a-f]{24}$/);
-      m.calls++; m.used += [...body.text].length;
+      m.calls++; m.used += [...body.text].length; m.prompts.push({ text: body.text, voice: body.voice_id, prompt: body.prompt });
       return send(200, { audio_format: 'wav', words: [{ text: body.text, start: 0.25, end: 1 }], ...toneWav(body.text) });
     }
     send(404, {});
@@ -101,7 +101,28 @@ test('가짜 Typecast로 처음부터 끝까지: 키 연결 → 샘플 → 다�
     // 같은 샘플을 다시 눌러도 Typecast를 다시 부르지 않는다
     await a.call('/generate', { mode: 'sample' }); s = await a.finish();
     assert.equal(mock.calls, expected.length, '다시 사지 않는다');
-    // 샘플은 게임 폴더를 건드리지 않는다(모든 음성 파일·목록의 크기·수정 시각이 그대로)
+    // 들어 보기: 먼저 어림만 → 확인하면 줄 × 목소리 × 감정마다 한 번, smart에는 앞뒤 글 → 다시 눌러도 다시 사지 않는다
+    const hana = { id: 'tc_61659cc118732016a95fe7c6', name: '하나' };
+    const audition = { mode: 'audition', name: 'flow-test', voices: [hana], emotions: ['normal', 'smart'],
+      lines: [{ game: 'talk-rally', id: 'result-0', previous: '랠리가 끝났어요.', next: '' }, { game: 'korean-racing', id: 'intro' }] };
+    const atAudition = mock.calls, quote = await a.call('/generate', audition);
+    assert.equal(quote.data.needConfirm, true, JSON.stringify(quote.data)); assert.equal(quote.data.lines, 4); assert.equal(quote.data.contextChars, [...'랠리가 끝났어요.'].length);
+    assert.equal(mock.calls, atAudition, '확인 전에는 부르지 않는다');
+    assert.equal((await a.call('/generate', { ...audition, confirmed: true })).data.started, true);
+    s = await a.finish();
+    assert.equal(s.state.phase, '끝', JSON.stringify(s.state)); assert.equal(s.state.audition.made, 4);
+    assert.equal(mock.calls - atAudition, 4);
+    const smartPrompts = mock.prompts.slice(atAudition).filter(p => p.prompt.emotion_type === 'smart');
+    assert.equal(smartPrompts.length, 2);
+    assert.deepEqual(smartPrompts.find(p => p.text.startsWith('괜찮아요')).prompt, { emotion_type: 'smart', previous_text: '랠리가 끝났어요.', next_text: '' });
+    for (const p of mock.prompts.slice(atAudition)) assert.equal(p.voice, hana.id);
+    const aIndex = JSON.parse(fs.readFileSync(path.join(vendor, 'audition', 'flow-test', 'index.json'), 'utf8'));
+    assert.equal(aIndex.length, 4);
+    for (const x of aIndex) assert.ok(fs.existsSync(path.join(vendor, 'audition', 'flow-test', ...x.file.split('/'))) && x.seconds > 0, x.file);
+    assert.ok(!fs.existsSync(path.join(vendor, 'audition-stage', 'flow-test')), '무대는 치운다');
+    await a.call('/generate', { ...audition, confirmed: true }); s = await a.finish();
+    assert.equal(mock.calls - atAudition, 4, '다시 사지 않는다');
+    // 샘플·들어 보기는 게임 폴더를 건드리지 않는다(모든 음성 파일·목록의 크기·수정 시각이 그대로)
     assert.deepEqual(gameFileStats(), statsBefore);
     // 키가 거절되면 곧바로 멈추고 연결을 지운다(후보 목소리 샘플은 새 요청이라 Typecast를 부른다)
     mock.refuse = true;

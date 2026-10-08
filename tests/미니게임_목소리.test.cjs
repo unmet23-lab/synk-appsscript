@@ -81,6 +81,36 @@ test('원본 저장소 열쇠: 목소리·설정·글이 모두 같을 때만 �
   assert.ok(!JSON.stringify(V.request(v, '출발!')).includes('KEY'), '요청 본문에 키 자리가 없다');
 });
 
+test('감정: 프리셋 요청은 모양 그대로(받아 둔 원본 열쇠 유지), smart는 앞뒤 글이 들어가고 열쇠가 다르다', async () => {
+  const job = { game: 'korean-racing', id: 'intro', role: 'narrator', context: { previous: '신호가 바뀌었어요.' } };
+  const v = V.voiceFor(casting, job);
+  assert.deepEqual(V.request(v, '출발!').prompt, { emotion_type: 'preset', emotion_preset: v.emotion, emotion_intensity: v.intensity });
+  assert.ok(!('previousText' in v), '프리셋에는 앞뒤 글이 없다');
+  const smart = extra => ({ ...casting, lines: { 'korean-racing/intro': { emotion: V.SMART, ...extra } } });
+  const s = V.voiceFor(smart(), job);
+  assert.deepEqual(V.request(s, '출발!').prompt, { emotion_type: 'smart', previous_text: '신호가 바뀌었어요.', next_text: '' });
+  assert.notEqual(V.cacheKey(s, '출발!'), V.cacheKey(v, '출발!'));
+  assert.notEqual(V.cacheKey({ ...s, previousText: '다른 앞 글' }, '출발!'), V.cacheKey(s, '출발!'), '앞 글이 다르면 다시 산다');
+  assert.equal(V.voiceFor(smart({ previousText: '줄별 앞 글' }), job).previousText, '줄별 앞 글', '줄별 설정이 게임이 준 앞뒤보다 먼저');
+  assert.deepEqual(V.castingProblems({ ...casting, defaults: { ...casting.defaults, emotion: V.SMART } }, await jobs(), catalog), [], 'smart는 ssfm-v30 모든 목소리에서');
+  if (catalog) assert.match(V.castingProblems({ ...casting, defaults: { ...casting.defaults, emotion: 'excited' } }, await jobs(), catalog).join('\n'), /감정\(excited\)을 지원하지 않음/);
+});
+
+test('들어 보기: 줄 × 목소리 × 감정마다 하나, smart에만 앞뒤 글, 모르는 줄·감정은 거절', async () => {
+  const hana = { id: 'tc_61659cc118732016a95fe7c6', name: '하나' }, sojin = { id: 'tc_666a9871abcf27a5169850d0', name: '소진' };
+  const body = { name: 'test-audition', voices: [hana, sojin], emotions: ['normal', V.SMART], lines: [{ game: 'talk-rally', id: 'result-0', previous: '앞', next: '뒤' }, { game: 'korean-racing', id: 'intro' }] };
+  const tasks = await TOOL.auditionTasks(body, casting);
+  assert.equal(tasks.length, 8);
+  assert.equal(new Set(tasks.map(t => t.job.key)).size, 8);
+  const t = tasks.find(x => x.job.id === 'result-0' && x.emotion === V.SMART && x.job.voice.voice.id === sojin.id);
+  assert.deepEqual(V.request(t.job.voice, t.job.text).prompt, { emotion_type: 'smart', previous_text: '앞', next_text: '뒤' });
+  assert.equal(t.job.voice.tempo, V.voiceFor(casting, t.job).tempo, '게임별 빠르기는 그대로(말 랠리 안내 0.94)');
+  for (const x of tasks.filter(x => x.emotion === 'normal')) assert.ok(!('previousText' in x.job.voice));
+  await assert.rejects(TOOL.auditionTasks({ ...body, lines: [{ game: 'talk-rally', id: 'nope' }] }, casting), /줄 없음/);
+  await assert.rejects(TOOL.auditionTasks({ ...body, emotions: ['excited'] }, casting), /모르는 감정/);
+  await assert.rejects(TOOL.auditionTasks({ ...body, name: '../x' }, casting), /이름/);
+});
+
 test('샘플: 배역마다 두 줄, 후보까지면 목소리마다 같은 두 줄', async () => {
   const all = await jobs(), picks = V.pickSamples(all);
   const roles = [...new Set(all.map(j => j.role))];

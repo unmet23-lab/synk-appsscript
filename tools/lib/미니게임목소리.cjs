@@ -8,6 +8,8 @@ const CASTING_FILE = path.join(G.REPO, 'tools', 'minigame-voice-casting.json');
 // 원본·샘플·무대 자리(저장소 밖). SYNK_MINIGAME_VOICE_VENDOR는 흐름 시험의 임시 폴더용.
 const VENDOR = process.env.SYNK_MINIGAME_VOICE_VENDOR ? path.resolve(process.env.SYNK_MINIGAME_VOICE_VENDOR) : path.join(os.homedir(), 'Documents', 'synk-vendor', 'minigame-voice');
 const VOICE_ID = /^tc_[0-9a-f]{24}$/;
+// 감정: 프리셋 하나(세기 0~2)를 고르거나, smart(ssfm-v30만) — 앞뒤 글(previous_text·next_text)을 읽고 감정을 스스로 정한다.
+const SMART = 'smart', PRESETS = ['normal', 'happy', 'sad', 'angry', 'whisper', 'toneup', 'tonedown'];
 const GAME_ORDER = ['korean-racing', 'entry-check', 'story-classroom', 'korean-rhythm', 'talk-rally', 'korean-runner', 'order-rush'];
 const PLAN_CREDITS = 200000;   // Typecast API Lite 월 제공(유호님 요금제, 1글자 = 1크레딧 기준)
 
@@ -22,14 +24,19 @@ function voiceFor(casting, job) {
   if (!role) throw Error(`배역 없음: ${job.role} (${job.game}/${job.id})`);
   const s = { ...casting.defaults, ...role.settings, ...(casting.games?.[job.game]?.[job.role] || {}), ...(casting.lines?.[`${job.game}/${job.id}`] || {}) };
   const voice = s.voice || role.voice;
-  return { voice: { id: voice.id, name: voice.name }, model: casting.model, language: casting.language,
+  const v = { voice: { id: voice.id, name: voice.name }, model: casting.model, language: casting.language,
     emotion: s.emotion, intensity: s.intensity, tempo: s.tempo, seed: s.seed, targetLufs: s.targetLufs };
+  // smart는 앞뒤 글이 요청에 들어간다: 줄별 설정(previousText·nextText) ← 게임이 준 앞뒤(job.context)
+  if (s.emotion === SMART) Object.assign(v, { previousText: s.previousText ?? job.context?.previous ?? '', nextText: s.nextText ?? job.context?.next ?? '' });
+  return v;
 }
 // Typecast 요청 본문(한글단계_목소리.cjs와 같은 모양). 키는 머리에만 들어가고 여기에는 없다.
+// 프리셋 요청의 모양은 그대로 두어 이미 받아 둔 원본의 열쇠가 바뀌지 않는다.
 function request(v, text) {
   return { seed: v.seed, model: v.model, voice_id: v.voice.id, text, language: v.language,
     output: { audio_format: 'wav', audio_tempo: v.tempo, target_lufs: v.targetLufs },
-    prompt: { emotion_type: 'preset', emotion_preset: v.emotion, emotion_intensity: v.intensity } };
+    prompt: v.emotion === SMART ? { emotion_type: SMART, previous_text: v.previousText || '', next_text: v.nextText || '' }
+      : { emotion_type: 'preset', emotion_preset: v.emotion, emotion_intensity: v.intensity } };
 }
 // 원본 저장소의 열쇠 = 요청 본문(목소리·설정·글) 그대로의 해시. 같은 요청은 두 번 값을 내지 않는다.
 const cacheKey = (v, text) => sha(JSON.stringify(request(v, text))).slice(0, 32);
@@ -124,8 +131,10 @@ function castingProblems(casting, jobs, catalog = null) {
       if (!VOICE_ID.test(v.id || '')) bad.push(`${role}: 목소리 id 모양이 아님 ${v.id}`);
       if (catalog) {
         const c = catalog.find(x => x.voice_id === v.id);
+        const emotion = (r.settings || {}).emotion || casting.defaults.emotion;
         if (!c) bad.push(`${role}: 목록에 없는 목소리 ${v.name} ${v.id}`);
-        else if (!c.models.some(m => m.version === casting.model && m.emotions.includes((r.settings || {}).emotion || casting.defaults.emotion))) bad.push(`${role}: ${v.name}은 ${casting.model}의 감정을 지원하지 않음`);
+        else if (emotion === SMART ? casting.model !== 'ssfm-v30' || !c.models.some(m => m.version === casting.model)
+          : !c.models.some(m => m.version === casting.model && m.emotions.includes(emotion))) bad.push(`${role}: ${v.name}은 ${casting.model}의 감정(${emotion})을 지원하지 않음`);
         else if (r.gender && c.gender !== r.gender) bad.push(`${role}: ${v.name}의 성별(${c.gender})이 배역(${r.gender})과 다름`);
       }
     }
@@ -207,5 +216,5 @@ function formatDryRun(r) {
   return lines.join('\n');
 }
 
-module.exports = { CASTING_FILE, VENDOR, VOICE_ID, GAME_ORDER, PLAN_CREDITS, loadCasting, presentGames, voiceFor, request, cacheKey, rawPath, allJobs, chars, unique,
+module.exports = { CASTING_FILE, VENDOR, VOICE_ID, SMART, PRESETS, GAME_ORDER, PLAN_CREDITS, loadCasting, presentGames, voiceFor, request, cacheKey, rawPath, allJobs, chars, unique,
   pickSamples, sampleTasks, estimateSeconds, durationRisks, castingProblems, dryRun, formatDryRun };
