@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {CafeSession,ORDERS,REVIEW,makeCup,judgeOrder} from './core.mjs';
 import {orderMetadata,chooseOrder,orderAnswer} from './learning.mjs';
 import {createRequire} from 'node:module';
+import crypto from 'node:crypto';
 const require=createRequire(import.meta.url),{createGame}=require('../../atlas/game-learning.js'),{createMap}=require('../../strata/index.js');
 const map=createMap(require('../../strata/maps/topik-i.json'));
 function actualCoach(){const data=new Map();return createGame({gameId:'order-rush',map,storage:{getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)}});}
@@ -58,4 +59,19 @@ test('a corrected serving retains the first wrong answer without counting a new 
  assert.equal(first.verdict,'incorrect');assert.equal(retry.verdict,'correct');assert.equal(retry.independent,false);
  assert.equal(coach.answer(pid,{correct:true,assessable:true,attemptNo:2}).eventId,retry.eventId);
  const skill=coach.summary().skills.find(s=>s.id==='ko.listening.detail');assert.equal(skill.n,1);assert.equal(skill.incorrect,1);assert.equal(skill.correct,0);
+});
+
+// Rewording an order or changing its cups needs a new version (learning.mjs ORDER_VERSION, learning standard §7-2).
+// After raising it, change the version and the digest (first 12 hex of [text, cups]) here too. A new order joins at version 1.
+const CONTENT={o01:[1,'7d86afb86369'],o02:[1,'0fa444cd6eba'],o03:[1,'3036233caeda'],o04:[1,'418ac35cd6e4'],o05:[1,'8ddedeedc2bf'],o06:[1,'224a17180097'],
+ o07:[1,'f624147b7079'],o08:[2,'d94520357a28'],o09:[2,'5c4e7880670f'],o10:[1,'57b46254f513'],o11:[2,'2164b75ad4e2'],o12:[1,'984db513940a'],
+ r01:[1,'48b0780da4ec'],r02:[1,'26ffda732d90'],r03:[1,'14d62d551177']};
+test('order versions: a changed sentence or cup raises the version while the family stays',()=>{
+ const all=[...ORDERS,...REVIEW],digest=o=>crypto.createHash('sha256').update(JSON.stringify([o.text,o.cups])).digest('hex').slice(0,12);
+ assert.deepEqual(Object.keys(CONTENT).sort(),all.map(o=>o.id).sort(),'a new order joins this table at version 1');
+ for(const o of all){
+  const [version,hash]=CONTENT[o.id],m=orderMetadata(o);
+  assert.equal(digest(o),hash,`${o.id}: content changed — raise ORDER_VERSION and update this table`);
+  assert.equal(m.itemKey,`order-rush.${o.id}.v${version}`,o.id);assert.equal(m.familyKey,`order-rush.${o.id}.v1`,o.id);
+ }
 });

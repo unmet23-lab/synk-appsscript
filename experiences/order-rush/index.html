@@ -29,7 +29,7 @@
       <span class="kicker">ORDER RUSH · A CAFE GAME</span>
       <h1>주문 폭주</h1>
       <p class="lede">손님 주문을 듣고,<br><span class="crayon-under">딱 맞는 음료</span>를 만들어요!</p>
-      <p class="sub">따뜻하게? 얼음 없이? 두 잔? 끝까지 듣고 컵에 담아 서빙해요. 다르게 만들면 손님이 무엇이 다른지 알려 줘요.</p>
+      <p class="sub">따뜻하게? 얼음 없이? 두 잔? 끝까지 듣고 컵에 담아 서빙해요. 주문과 다르게 만들면 손님이 어디가 다른지 말해 줘요.</p>
     </div>
     <figure class="hero-art" aria-hidden="true">
       <div class="hero-bubble paper">아이스라테 두 잔 주세요!</div>
@@ -53,7 +53,7 @@
       <button id="start" class="felt-cta coral" type="button"><span>카페 문 열기</span><i class="disc" aria-hidden="true"></i></button>
       <div class="start-options">
         <button id="flow-toggle" class="chip-btn" type="button" aria-pressed="true">나에게 맞춘 속도 켜짐</button>
-        <span class="fine" id="flow-note">하는 걸 보고 손님 속도와 주문이 바뀌어요.</span>
+        <span class="fine" id="flow-note">내가 하는 걸 보고 손님 속도와 주문이 달라져요.</span>
       </div>
       <p id="sound-note" class="fine warn" hidden>듣기 게임이에요. 소리를 켜야 손님 주문이 들리고 학습 기록에도 남아요.</p>
       <p id="storage-note" class="fine" hidden></p>
@@ -62,17 +62,17 @@
     <section class="paper how" aria-labelledby="how-title">
       <span class="tag" id="how-title">하는 방법</span>
       <ol class="how-steps">
-        <li><b class="num">1</b><strong>주문 듣기</strong><span>손님이 한국어로 주문해요. 듣는 동안은 영업 시간이 멈춰요. 다시 듣기·글로 보기도 있어요.</span></li>
-        <li><b class="num">2</b><strong>컵에 담기</strong><span>커피·차·우유·얼음·설탕을 눌러 담아요. 커피에 우유를 넣으면 라테, 얼음을 넣으면 차가워져요. 두 잔이면 컵을 하나 더!</span></li>
-        <li><b class="num">3</b><strong>서빙하기</strong><span>맞으면 손님이 받아 가요. 다르면 무엇이 다른지 말해 주니 고쳐서 다시 서빙해요.</span></li>
+        <li><b class="num">1</b><strong>주문 듣기</strong><span>손님이 한국어로 주문해요. 듣는 동안에는 영업 시간이 멈춰요. 다시 듣거나 글로 볼 수도 있어요.</span></li>
+        <li><b class="num">2</b><strong>컵에 담기</strong><span>커피·차·우유·얼음·설탕을 눌러 담아요. 커피에 우유를 넣으면 라테, 얼음을 넣으면 차가워져요. 두 잔이면 ‘컵 하나 더’를 눌러요.</span></li>
+        <li><b class="num">3</b><strong>서빙하기</strong><span>맞으면 손님이 받아 가요. 다르면 손님이 무엇이 다른지 말해 줘요. 고쳐서 다시 서빙하면 돼요.</span></li>
       </ol>
-      <p class="fine">얼음 없이 차갑게 하려면 ‘차갑게’, 넣은 재료를 다시 누르면 빠져요. 키보드로도 해요: 1~6 재료 · Q 컵 하나 더 · ⌫ 컵 빼기 · R 다시 듣기 · Space 서빙 · Esc 멈춤.</p>
+      <p class="fine">얼음 없이 차갑게 만들려면 ‘차갑게’를 눌러요. 넣은 재료를 다시 누르면 빠져요. 키보드로도 할 수 있어요: 1~6 재료 · Q 컵 하나 더 · ⌫ 컵 빼기 · R 다시 듣기 · Space 서빙 · Esc 멈춤.</p>
     </section>
   </section>
 
   <footer class="lobby-foot">
-    <p>TOPIK I 듣기처럼 생활 대화의 세부 내용(수량·온도·빼기·바꾸기)을 끝까지 듣는 연습이에요. 점수·별은 TOPIK 급수가 아니에요. 주문 음성은 합성 음성이에요.</p>
-    <p><span id="learning-scope">학습 기록은 이 브라우저에만 남고, 같은 주소에서 연 다른 SYNK 게임과 함께 써요.</span> <button id="learning-reset" class="text-link" type="button">이 브라우저의 모든 게임 학습 기록 지우기</button></p>
+    <p>TOPIK I 듣기처럼 생활 대화의 세부 내용(수량·온도·빼기·바꾸기)을 끝까지 듣는 연습이에요. 점수와 별은 TOPIK 급수와 상관없어요. 주문 음성은 합성 음성이에요.</p>
+    <p><span id="learning-scope">학습 기록은 이 브라우저에만 저장되고, 같은 주소에서 연 다른 SYNK 게임과 같이 써요.</span> <button id="learning-reset" class="text-link" type="button">이 브라우저의 모든 게임 학습 기록 지우기</button></p>
   </footer>
 </main>
 
@@ -169,13 +169,13 @@
       <span class="tag">듣기 연습 기록</span>
       <p id="result-learning" class="reason" role="status"></p>
       <section class="flow-box" id="result-flow" hidden>
-        <h3>이번 영업에서 맞춘 것</h3>
+        <h3>나에게 맞춰 바꾼 것</h3>
         <ul></ul>
-        <p class="fine">하는 모습에 맞춰 손님 속도와 주문 종류만 바꿨어요. 점수나 실력 판정이 아니에요. 다음 영업은 여기서 이어서 시작해요.</p>
+        <p class="fine">내가 하는 모습을 보고 손님 속도와 주문 종류만 바꿨어요. 점수나 실력을 매긴 것은 아니에요. 다음 영업은 여기서부터 이어서 시작해요.</p>
       </section>
       <dl class="metrics" id="result-metrics"></dl>
-      <p class="fine">첫 제출 정확도는 답한 주문 중 첫 서빙이 맞았던 비율이에요. 글로 확인한 주문도 포함돼요. 서빙 점수는 고쳐서 완료한 주문에도 쌓이며, 미응답은 따로 세요.</p>
-      <p id="result-scope" class="fine">한국어 주문 음성은 합성 음성이에요. 학습 효과는 학생 검증 전이며, 학습 기록은 이 브라우저에 저장돼요. 학생 계정과 다른 기기에는 아직 연결되지 않아요.</p>
+      <p class="fine">첫 서빙 정확도는 답한 주문 가운데 처음 서빙한 컵이 맞은 비율이에요. 글로 확인한 주문도 들어가요. 서빙 점수는 고쳐서 낸 주문에도 쌓이고, 답하지 않은 주문은 따로 세요.</p>
+      <p id="result-scope" class="fine">주문 음성은 합성 음성이에요. 학습 효과는 아직 학생들과 확인하지 않았어요. 학습 기록은 이 브라우저에만 저장되고, 학생 계정이나 다른 기기와는 아직 이어지지 않아요.</p>
     </article>
     <article class="paper next">
       <span class="tag">다음 영업</span>
