@@ -1,5 +1,19 @@
 # 검증 기록 · 2026-09-27
 
+## 메시지·첨부 전송 복구 · 2026-10-09
+
+**06:38 KST 공개 반영·기존 세션/자료 인수 완료.** 메시지 전송이 끊기면 **전송 확인 / 같은 내용 다시 보내기 / 전송 취소**로 이어간다. 같은 요청을 다시 보내도 메시지·첨부·알림을 중복 생성하지 않고, 확인하는 동안 고친 본문·답글·멘션·새 첨부를 보존한다. 실패한 첨부는 같은 창에서 원래 고른 파일로 재시도하며, 재접속·새로고침 뒤 자동으로 보내지 않는다.
+
+공개 SSO 부모e696b9ef 위444파일·메신저11변경 v6 1fa6475e97eb…를 반영했다. Windows816중814통과·실패0·심볼릭링크2skip, Linux816/816·skip0, 정확 후보 실제 Chromium35/35·수동액션20개초점·1440/390/320px6화면 통과. 부모 회사199파일과 후보444개 해시/파일 수가 전후 동일하다. [전체 검사](../../.tmp/messenger-send-recovery-20261009/release-v6/verification.json)·[Linux](../../.tmp/messenger-send-recovery-20261009/linux-v6/linux-result.json)·[브라우저](../../.tmp/messenger-send-recovery-20261009/release-v6/browser-report.json)·[증거 대조](../../.tmp/messenger-send-recovery-20261009/release-v6/evidence-audit.json).
+
+실제 Chromium XHR를60KiB/s로 제한한8MiB 합성 파일은 v5에서 진행 중120,015ms에 실패했으나 v6는136,813ms에201·파일1·POST1로 완료하고 원본 바이트 SHA가 일치했다. 2분 총시간 제한을 전송 진전 기반 무진행 감시로 바꿨으며 서버의 기존5분 요청 제한은 유지했다. 불확실한 업로드는 취소 기록으로 늦은 저장을 막고 첨부 칸을 비우되 Drive 정리 대기 기록을 보존한다. 다른 탭에서 소비한 첨부는 대화에 남기고 현재 칩만 지운다. [느린 업로드3/3](../../.tmp/messenger-send-recovery-20261009/release-v6/slow-report.json).
+
+공식 Claude Code Opus5.5/max v5 검수에서 발견한 P2세 건(느린 업로드·첨부 칩 잔류·버튼 실행 후 초점 소실)을 고쳤고,06:23:55 공식 보완 검수에서 세 건해결·새P0/P1/P2없음을 확인했다. 실제모델·completedtrue 및 후보 불변을 확인했다. 검수자가 일부 결과 작성 전 읽어 남긴 '증거 없음' 설명은 원시결과에 보존하고, 완료후 대조를 따로 남겼다. [공식 검수](../../.tmp/messenger-send-recovery-20261009/release-v6/claude-amendment-summary.json)·[시간차와 최종 증거](../../.tmp/messenger-send-recovery-20261009/release-v6/review-evidence-reconciliation.json). v1~v5는 배포하지 않았으며 실패 재현과 원시 검증을 보존한다.
+
+합성 업그레이드398항목·정상종료6회에서 기존 자료/키 보존·중복0을 확인했다. 운영은 백업/업로드 기록 확인 뒤 기존 담당이 단독 반영했고, 정지 사본 대조로 기존 두DB 자료·문서·첨부·키를 보존했다. 새 빈 전송기록3표만 추가했으며 동일평문의 직원세션 재암호화2건과 부팅 전 이미 만료된 토큰1건 삭제는 허용된 기존동작으로 구분했다. 직원7·고객1의 기존세션/CSRF/만료가 동일하고 기존 메모·첨부·고객 저장안내가 실제 화면에 보였다. [합성 업그레이드](../../.tmp/messenger-send-recovery-20261009/linux-v6/lifecycle-kit/lifecycle-result.json)·[운영 자료 대조](../../.tmp/messenger-send-recovery-20261009/linux-v6/operator-compare-1791495446489.json)·[세션/키 인수](../../.tmp/messenger-send-recovery-20261009/linux-v6/operator-proof-after-1791495496617.json).
+
+독립 공개 검사06:34:18KST에서 health200/ready 및14정적파일 SHA/MIME가 같은 후보와 일치했다. 전환 중06:33:52 첫 프로브의 연결실패도 보존했다. 실제 화면은 [직원](../../.tmp/messenger-send-recovery-20261009/linux-v6/staff-after.png)·[고객](../../.tmp/messenger-send-recovery-20261009/linux-v6/customer-after.png), [공개 대조](../../.tmp/messenger-send-recovery-20261009/public-probes/2026-10-08T21-34-18-884Z.json)·[최종 인수](../../.tmp/messenger-send-recovery-20261009/FINAL-ACCEPTANCE-V6.json). 운영 임의 메시지·기기등록/푸시 시험·유료AI호출0. 실물 iPhone/Android 푸시·PC 종료 시험은 사용자 요청대로 보류하며 화면낭독기는 미검증이다.
+
 ## 예약·마감 알림 독립 실행 · 2026-10-09
 
 01:25 KST 실제 계정 인수 완료: WORK1/BACKGROUND0/WEB_PUSH1/paidAIoff로 v2 가동, 배포 전후 두DB 전체행/스키마·원래키/설정파일 대조가 차이 없이 통과했다. 실제 직원 SYNK ID 재로그인 후 기존 본인 메모에01:22예약1개를 만들고 창을 닫았다. 알림API 조회 없이 서버 읽기 전용 확인에서01:22:01.172 전달·알림1개·미읽음을 확인했고, 다시 열어 알림함 표시→직접 읽음→배지0을 확인했다. 반복 점검 후 중복0, 기존 메모/첨부·고객 로그인/원래 상담 초안과 저장시각 보존. 마감 설정은 실행 중을 표시하고 개인 설정은 바꾸지 않았다. 운영09시 마감 도착은 미관측이며 실제 이미지 합성 시간 검증과 구분한다. 푸시 구독/큐/실물 수신0, 실물폰·PC종료 시험 보류 유지. [운영 데이터 대조](../../.tmp/company-cloud-20261008/work-v5-logical-comparison-result.json)·[실계정 인수](../../.tmp/company-cloud-20261008/work-v5-live-browser-result.json)·[창을 다시 열기 전 도착](../../.tmp/company-cloud-20261008/work-v5-reminder-delivered-before-reopen.json)·[실제 알림함](../../.tmp/company-cloud-20261008/work-v5-notification-inbox.png)·[마감 실행 화면](../../.tmp/company-cloud-20261008/work-v5-deadline-scheduler-enabled.png)·[최종 운영](../../.tmp/company-cloud-20261008/work-v5-final-runtime-snapshot.json). 시험 예약/알림 정리는 브라우저 도구 초기화 오류(`failed to write kernel assets`, os error3)로 실행하지 못했다. 재초기화와 대체 도구도 같은 오류여서 운영쓰기/직접SQL삭제는0이며, 확인된 상태는 전달1회·직접읽음·배지0이다. 원메모/첨부는 유지하고 브라우저 복구 뒤 같은 시험예약인지 재확인해 정상취소한다. [잔여 항목](../../.tmp/messenger-work-notifications-20261009/test-reminder-cleanup-status.json).

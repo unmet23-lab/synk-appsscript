@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "acceptedAt": "2026-10-08T21:39:51.549Z",
+  "status": "production-messenger-v6-session-and-data-accepted",
+  "manifestSHA256": "1fa6475e97ebac718af571e748dbb3e1c6996308c74801332a62cd5bbe31d4cf",
+  "parentManifestSHA256": "e696b9efeed78191a6e4619665bdab885abb1483dcb05cc4b5c193c44cf0fcef",
+  "image": "sha256:cb9e1c5bba1b65793a6b0f0be872dfdfbf68c9f134d31362240428a8513f863e",
+  "validation": {
+    "linux": {
+      "pass": 816,
+      "fail": 0,
+      "skip": 0
+    },
+    "windows": {
+      "pass": 814,
+      "fail": 0,
+      "skip": 2
+    },
+    "syntheticLifecycle": {
+      "checks": 398,
+      "phases": 11,
+      "normalStops": 6
+    },
+    "browser": {
+      "checks": 35,
+      "manualFocusActions": 20
+    },
+    "slowUpload": {
+      "checks": 3,
+      "elapsedMs": 136813,
+      "bytes": 8388608,
+      "shaMatched": true
+    },
+    "operatorPins": 7,
+    "operatorQaGateTests": 5,
+    "logicalComparatorTests": 20
+  },
+  "officialMessengerReview": {
+    "completed": true,
+    "model": "claude-opus-5-5",
+    "effort": "max",
+    "previousP2Resolved": 3,
+    "newP0P1P2": 0,
+    "rawResultSHA256": "ff0b72d810ce3bff4ccb295e6d5db0a603cdf2f41e6bbb955e89831244cf6e82",
+    "evidenceTimingReconciledSeparately": true
+  },
+  "sourcePush": {
+    "branch": "codex/company-cloud-push-20261009",
+    "commit": "48152ea317e8e8ad9e502cff9d13299d9deb5a38",
+    "remoteVerified": true,
+    "files": 11,
+    "tests": {
+      "tests": 83,
+      "pass": 83,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "unrelatedSentinelsPreserved": 8,
+    "productionSnapshot": false,
+    "mainBranchChanged": false,
+    "CIClaimed": false,
+    "evidence": "git-preparation/source-push-result.json"
+  },
+  "publicAssetsMatched": 14,
+  "staffSessionsPreserved": 7,
+  "customerSessionsPreserved": 1,
+  "originalDataAndKeysPreserved": true,
+  "originalMemoAttachmentDraftVisible": true,
+  "reloginClicks": 0,
+  "systemdUnitsChanged": 0,
+  "automaticRollback": false,
+  "paidAICalls": 0,
+  "pushSends": 0,
+  "physicalPhoneOrPcOffTest": false,
+  "fullCloudReview": {
+    "completed": true,
+    "unresolvedP2": 1,
+    "evidence": ".tmp/company-cloud-20261009-final-review/claude-review-summary.json"
+  },
+  "pendingFollowup": "Backup lock collision and independently reviewed native SSO recovery fixes; current v6 remains healthy.",
+  "detailedEvidence": ".tmp/messenger-send-recovery-20261009/linux-v6/FINAL-ACCEPTANCE.json"
+}
