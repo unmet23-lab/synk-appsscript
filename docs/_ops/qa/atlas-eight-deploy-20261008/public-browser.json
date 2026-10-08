@@ -1,0 +1,190 @@
+{
+  "at": "2026-10-08T01:15:52.105Z",
+  "status": "passed",
+  "scope": "local-public-candidate",
+  "paidCalls": 0,
+  "loggedIntoRealAccount": false,
+  "rows": [
+    {
+      "route": "/try/entry-check/",
+      "width": 1280,
+      "kind": "game-start-and-runtime",
+      "presentations": 1,
+      "attempts": 1,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/entry-check/atlas-learning.js?v=43f511c88e01",
+        "/try/entry-check/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/entry-check/",
+      "width": 390,
+      "kind": "game-start-and-runtime",
+      "presentations": 1,
+      "attempts": 1,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/entry-check/atlas-learning.js?v=43f511c88e01",
+        "/try/entry-check/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/brief/computer/",
+      "width": 1280,
+      "kind": "wizard-result-feedback-reopen",
+      "resultTitle": "맥 미니 · 램 16GB · SSD 512GB",
+      "events": 3,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/brief/computer/atlas-engine.js?v=80e6c7048b52",
+        "/brief/computer/atlas-engine.js?v=80e6c7048b52"
+      ]
+    },
+    {
+      "route": "/brief/meeting/",
+      "width": 1280,
+      "kind": "wizard-result-feedback-reopen",
+      "resultTitle": "이번엔 ChatGPT에 요청문 하나면 돼요",
+      "events": 3,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/brief/meeting/atlas-engine.js?v=80e6c7048b52",
+        "/brief/meeting/atlas-engine.js?v=80e6c7048b52"
+      ]
+    },
+    {
+      "route": "/builds/manual/",
+      "width": 1280,
+      "kind": "wizard-result-feedback-reopen",
+      "resultTitle": "SNS 게시물 초안, 한 줄로 맡기는 매뉴얼",
+      "events": 3,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/builds/manual/atlas-engine.js?v=80e6c7048b52",
+        "/builds/manual/atlas-engine.js?v=80e6c7048b52"
+      ]
+    },
+    {
+      "route": "/try/travel/",
+      "width": 1280,
+      "kind": "travel-preference-reopen-and-current-real-course",
+      "recommendationLength": 1885,
+      "courseStops": 3,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/travel/atlas/engine.js?v=80e6c7048b52",
+        "/try/travel/atlas/engine.js?v=80e6c7048b52"
+      ]
+    },
+    {
+      "route": "/brief/computer/",
+      "width": 390,
+      "kind": "wizard-result-feedback-reopen",
+      "resultTitle": "맥 미니 · 램 16GB · SSD 512GB",
+      "events": 3,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/brief/computer/atlas-engine.js?v=80e6c7048b52",
+        "/brief/computer/atlas-engine.js?v=80e6c7048b52"
+      ]
+    },
+    {
+      "route": "/brief/meeting/",
+      "width": 390,
+      "kind": "wizard-result-feedback-reopen",
+      "resultTitle": "이번엔 ChatGPT에 요청문 하나면 돼요",
+      "events": 3,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/brief/meeting/atlas-engine.js?v=80e6c7048b52",
+        "/brief/meeting/atlas-engine.js?v=80e6c7048b52"
+      ]
+    },
+    {
+      "route": "/builds/manual/",
+      "width": 390,
+      "kind": "wizard-result-feedback-reopen",
+      "resultTitle": "SNS 게시물 초안, 한 줄로 맡기는 매뉴얼",
+      "events": 3,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/builds/manual/atlas-engine.js?v=80e6c7048b52",
+        "/builds/manual/atlas-engine.js?v=80e6c7048b52"
+      ]
+    },
+    {
+      "route": "/try/travel/",
+      "width": 390,
+      "kind": "travel-preference-reopen-and-current-real-course",
+      "recommendationLength": 1885,
+      "courseStops": 3,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/travel/atlas/engine.js?v=80e6c7048b52",
+        "/try/travel/atlas/engine.js?v=80e6c7048b52"
+      ]
+    }
+  ],
+  "failures": []
+}

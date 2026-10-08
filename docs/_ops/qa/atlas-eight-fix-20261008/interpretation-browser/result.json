@@ -1,0 +1,103 @@
+{
+  "at": "2026-10-08T00:40:06.869Z",
+  "status": "passed",
+  "kind": "synthetic-browser-paths",
+  "paidModelCalls": 0,
+  "deployed": false,
+  "errors": [],
+  "missing": [],
+  "externalRequests": [],
+  "screens": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\interpretation-browser\\review-1280.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\interpretation-browser\\review-390.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\interpretation-browser\\review-320.png"
+  ],
+  "paths": [
+    {
+      "label": "1280",
+      "checks": [
+        "pending-no-answers",
+        "exact-quotes",
+        "confirm",
+        "correct",
+        "withdraw",
+        "reject",
+        "original-rules-result",
+        "clear-preserves-manual"
+      ]
+    },
+    {
+      "label": "1280",
+      "checks": [
+        "conflict-blocks-confirm",
+        "reject-resolves-conflict",
+        "explicit-correction",
+        "other-and-past-held",
+        "stale-response-rejected",
+        "no-overflow"
+      ]
+    },
+    {
+      "label": "390",
+      "checks": [
+        "pending-no-answers",
+        "exact-quotes",
+        "confirm",
+        "correct",
+        "withdraw",
+        "reject",
+        "original-rules-result",
+        "clear-preserves-manual"
+      ]
+    },
+    {
+      "label": "390",
+      "checks": [
+        "conflict-blocks-confirm",
+        "reject-resolves-conflict",
+        "explicit-correction",
+        "other-and-past-held",
+        "stale-response-rejected",
+        "no-overflow"
+      ]
+    },
+    {
+      "label": "320",
+      "checks": [
+        "pending-no-answers",
+        "exact-quotes",
+        "confirm",
+        "correct",
+        "withdraw",
+        "reject",
+        "original-rules-result",
+        "clear-preserves-manual"
+      ]
+    },
+    {
+      "label": "320",
+      "checks": [
+        "conflict-blocks-confirm",
+        "reject-resolves-conflict",
+        "explicit-correction",
+        "other-and-past-held",
+        "stale-response-rejected",
+        "no-overflow"
+      ]
+    },
+    {
+      "label": "file-share",
+      "checks": [
+        "pending-no-answers",
+        "exact-quotes",
+        "confirm",
+        "correct",
+        "withdraw",
+        "reject",
+        "original-rules-result",
+        "clear-preserves-manual"
+      ]
+    }
+  ],
+  "share": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\interpretation-browser\\share.html"
+}

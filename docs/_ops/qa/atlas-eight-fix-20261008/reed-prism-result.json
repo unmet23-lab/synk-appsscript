@@ -1,0 +1,115 @@
+{
+  "date": "2026-10-08",
+  "status": "passed",
+  "node": "v24.18.0",
+  "changedFiles": [
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tools\\prism래칫.js",
+      "sha256": "4f81a0268974d91cca5d98c7d1c821ce654cc8d6e82ea29116d8eff50a93a646"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\prism_접점등록.json",
+      "sha256": "653e0464bf94da20f66b6d1e1cd1ed21d36a33544422b9d9368a8f149e281fb0"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\prism범위래칫.test.js",
+      "sha256": "8251cac24d4eaaf599a5f1efcc4511e26faf7aa6e27631c1f2d087c0f31412a9"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오24_설계.md",
+      "sha256": "08dce2edbdc69704647bb045c92a0fd4054f531bf9b2050f04544dfcf0557dc4"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Reed_설계_v0.1.md",
+      "sha256": "804e97d7fb7c8aaa9a2315c5e57ba929cc89c1b3a45e73d9ef040cdd07fa6969"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_엔진_설계.md",
+      "sha256": "5b47f800f862d5639b873f6d25c366212f7403778682581702b67e6f1aef929b"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\엔진도달_설계.md",
+      "sha256": "b672040a589fcec98c0fde43ec01eda50df09e9becedcda49423e5de702a8e53"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\엔진8종_상향설계_v3.md",
+      "sha256": "ea4eaba7fbb100000831f76c910b23c9debced42fb022d00b5c608d1c5e5ea68"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.github\\workflows\\syntax-check.yml",
+      "sha256": "39861bfc3e17a5be15dcb093e3684765a6dccd94681b548209ebb4ba824be185"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-talk\\tests\\라디오곡차례.test.js",
+      "sha256": "9915345605eed645a272f0ffe3d4fa453bc21e159539a8811a49fec064f32fe5"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-talk\\lib\\라디오곡차례.js",
+      "sha256": "74fa89eb1bc6d2b6f370e360e4582aa0bf1958d5eaaf4c54dc2b3d4edf0e35c4"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-talk\\bots\\송출\\재생목록.js",
+      "sha256": "509db18618a0e3953dfa1fdc14ff21f73f15ddd189a7b6dfe7a7034ccc448b16"
+    }
+  ],
+  "commands": [
+    {
+      "command": "node --test tests/prism계약.test.js tests/prism범위래칫.test.js tests/prism래칫회귀.test.js tests/prism대장절.test.js",
+      "tests": 80,
+      "passed": 80,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0
+    },
+    {
+      "command": "node --test tests/현재곡.test.js tests/라디오송출진척.test.js tests/라디오오버레이층.test.js tests/라디오차림런타임.test.js ../SYNK-talk/tests/라디오곡차례.test.js",
+      "tests": 43,
+      "passed": 43,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0
+    }
+  ],
+  "totals": {
+    "tests": 123,
+    "passed": 123,
+    "failed": 0,
+    "skipped": 0
+  },
+  "prismScan": {
+    "종료코드": 0,
+    "출력": [
+      "범위 파일 551 · 참조 0 · 등록 소비자 0 · 학생·학부모 참조 0"
+    ],
+    "셈": {
+      "범위파일수": 551,
+      "참조수": 0,
+      "등록소비자수": 0,
+      "학생학부모참조수": 0
+    }
+  },
+  "reedDocumentLocalLinks": {
+    "checked": 42,
+    "missing": []
+  },
+  "diffCheck": {
+    "repositories": [
+      "SYNK-appsscript",
+      "SYNK-talk"
+    ],
+    "exitCode": 0
+  },
+  "implementation": [
+    "Reed independent music ordering and real ffconcat/manifest consumer regression replaces deleted quiz dependency",
+    "Prism default source scope includes root atlas experiences strata bots and detects contract-module references",
+    "Deleted consumer registry entries removed; no active aggregate consumer claimed",
+    "Reed current source documents distinguish retired learning collection from existing on-screen greetings and point to the final approved background",
+    "Loom missing README link replaced with actual scene source, server and existing QA"
+  ],
+  "limitations": [
+    "Static Prism checks do not prove permissions, complete data flow or de-identification",
+    "Tools, document-embedded scenes and sibling repositories require explicit additional scope",
+    "No live radio/server check, direct audio listening, deployment, paid calls, commit or push",
+    "Existing unrelated dirty changes preserved; shared document hashes describe this verification point"
+  ]
+}

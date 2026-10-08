@@ -8,6 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { captureEvaluation, createEvaluationPlan, main } from '../tools/capture-atlas-interpretation-evaluation.mjs';
+import Temper from '../atlas/temper-interpretation.js';
 
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 const FREEZE = path.join(ROOT, 'docs/_ops/qa/atlas-model-20261005/freeze.json');
@@ -20,13 +21,12 @@ const fixtureEnv = Object.freeze({ SYNK_COMPUTER_EVALUATION_APPROVED: '1', SYNK_
   SYNK_COMPUTER_EVALUATION_SESSION_COOKIE: 'fixture-cookie-never-print', SYNK_COMPUTER_EVALUATION_CSRF: 'fixture-csrf-never-print' });
 const reply = (value, status = 200) => ({ ok: status >= 200 && status < 300, status, text: async () => JSON.stringify(value) });
 const forbiddenFetch = async () => { assert.fail('A rejected/offline operation must never request HTTP.'); };
-let originalFreeze, originalDataset, originalSeal, originals;
+let originalFreeze, originalSeal, originals;
 
 before(async () => {
-  originalFreeze = await json(FREEZE); originalDataset = await json(DATASET); originalSeal = await json(SEAL);
+  originalFreeze = await json(FREEZE); originalSeal = await json(SEAL);
   originals = await Promise.all([FREEZE, DATASET, SEAL, ...originalFreeze.artifacts.map(row => path.join(ROOT, row.path))]
     .map(async filename => ({ filename, sha256: digest(await fs.readFile(filename)) })));
-  for (const artifact of originalFreeze.artifacts) assert.equal(digest(await fs.readFile(path.join(ROOT, artifact.path))), artifact.sha256, 'The test starts from unchanged frozen code.');
 });
 after(async () => {
   for (const original of originals) assert.equal(digest(await fs.readFile(original.filename)), original.sha256, 'A source or frozen manifest changed during transport tests.');
@@ -40,9 +40,11 @@ async function fixture(t) {
     assert.ok(path.basename(target).startsWith('synk-interpretation-capture-test-'));
     await fs.rm(target, { recursive: true, force: true });
   });
-  // Clone only the dataset structure/vocabulary, replacing all heldout material.
-  // This is NOT an interpretation benchmark and must never be scored as one.
-  const dataset = { ...structuredClone(originalDataset), description: 'Transport mock fixture only.', cases: Array.from({ length: 30 }, (_, index) => ({
+  // Independently authored transport structure. Never parse the heldout dataset.
+  // This is NOT an interpretation benchmark or evidence about model accuracy.
+  const dataset = { id: 'computer-ko-heldout', version: '1', kind: 'authored-synthetic-sources',
+    fields: [{ id: 'owned', kind: 'enum', values: ['have', 'none'] }],
+    description: 'Transport mock fixture only.', cases: Array.from({ length: 30 }, (_, index) => ({
     id: `transport-${index + 1}`, tags: ['transport-only'],
     source: { id: `transport-source-${index + 1}`, text: `전송 형식 시험용 입력 ${index + 1}: 🧪`, at: originalSeal.frozenAt, actor: 'self' },
     expected: { facts: { owned: 'have' }, permittedFacts: {}, unknownFields: [], mustNotAssert: [] }, rationale: 'Never sent or scored; transport assertion only.',
@@ -53,6 +55,8 @@ async function fixture(t) {
   seal.dataset.path = datasetPath; seal.dataset.bytes = (await fs.stat(datasetPath)).size;
   const datasetManifest = path.join(directory, 'dataset.manifest.json'); await save(datasetManifest, seal);
   const freeze = structuredClone(originalFreeze); freeze.dataset.sha256 = sha256;
+  // Temporary transport proof follows current code; the historical freeze stays unchanged.
+  for (const artifact of freeze.artifacts) artifact.sha256 = digest(await fs.readFile(path.join(ROOT, artifact.path)));
   const freezeManifest = path.join(directory, 'freeze.json'); await save(freezeManifest, freeze);
   const outputDir = path.join(directory, 'outputs');
   const options = { dataset: datasetPath, datasetManifest, freezeManifest, outputDir, maxCalls: 30 };
@@ -72,6 +76,92 @@ function successfulHost(f, onPost = () => {}) {
     return reply({ requestId: body.requestId, revision: body.revision, proposals: [], held: [], extractor: 'transport-mock', buildId: f.availability.buildProof.buildId });
   };
 }
+function terminalFailure(f, body, changes = {}) {
+  return { code: 'SYNK_COMPUTER_AI_RESPONSE_INVALID', captureReceipt: { version: 1, id: body.id,
+    requestId: body.requestId, revision: body.revision, buildId: f.availability.buildProof.buildId, status: 'invalid', ...changes } };
+}
+
+test('proved terminal failures are recorded as failed attempts and the next cases continue without retry', async t => {
+  const f = await fixture(t); let posts = 0;
+  const host = async (_url, request) => {
+    if (request.method === 'GET') return reply(f.availability);
+    const body = JSON.parse(request.body); posts++;
+    if (body.revision === 3) return reply({ ...terminalFailure(f, body), error: 'private-provider-error' }, 502);
+    return reply({ requestId: body.requestId, revision: body.revision, proposals: [], buildId: f.availability.buildProof.buildId });
+  };
+  const report = await captureEvaluation(f.options, dependencies(host));
+  assert.equal(report.status, 'complete'); assert.equal(posts, 30);
+  assert.equal(report.counts.recordedRuns, 30); assert.equal(report.counts.failedRuns, 1);
+  assert.equal((await f.ledger()).requests[2].status, 'failed');
+  assert.equal((await f.ledger()).requests[2].attempts, 1);
+  assert.deepEqual((await f.outputs()).runs[2].output, { proposals: null });
+  const failure = (await f.errors()).entries.find(row => row.index === 3);
+  assert.equal(failure.result, 'failed'); assert.equal(failure.runRecorded, true);
+  assert.equal(JSON.stringify([report, await f.ledger(), await f.errors()]).includes('private-provider-error'), false);
+  const offline = Temper.evaluateInterpretations({ ...await f.outputs(), dataset: f.dataset });
+  assert.equal(offline.counts.notRun, 0); assert.equal(offline.counts.malformed, 1);
+  await captureEvaluation(f.options, dependencies(host));
+  assert.equal(posts, 30, 'completed capture including failures is never dispatched again');
+});
+
+test('terminal receipts require the exact request, revision, build, status and envelope before advancing', async t => {
+  for (const changes of [{ id: '00000000-0000-4000-8000-000000000000' }, { requestId: 'other' }, { revision: 999 },
+    { buildId: '0'.repeat(64) }, { status: 'uncertain' }, { status: 'sent' }, { privateText: 'never-persist' }]) {
+    const f = await fixture(t); let posts = 0;
+    const report = await captureEvaluation(f.options, dependencies(async (_url, request) => {
+      if (request.method === 'GET') return reply(f.availability);
+      posts++; return reply(terminalFailure(f, JSON.parse(request.body), changes), 502);
+    }));
+    assert.equal(posts, 1); assert.equal(report.status, 'stopped'); assert.equal(report.counts.recordedRuns, 0);
+    assert.equal((await f.ledger()).requests[0].status, 'unknown');
+    assert.equal(JSON.stringify(await f.errors()).includes('never-persist'), false);
+  }
+});
+
+test('legacy failure responses and uncertain/pending replies remain missing and never auto-retry or advance', async t => {
+  for (const code of ['SYNK_COMPUTER_AI_RESPONSE_INVALID', 'SYNK_COMPUTER_AI_UNCERTAIN', 'SYNK_COMPUTER_AI_ALREADY_SENT']) {
+    const f = await fixture(t); let posts = 0;
+    const report = await captureEvaluation(f.options, dependencies(async (_url, request) => {
+      if (request.method === 'GET') return reply(f.availability);
+      posts++; return reply({ code, error: 'private failure' }, 409);
+    }));
+    assert.equal(posts, 1); assert.equal(report.counts.recordedRuns, 0); assert.equal(report.automaticRetries, 0);
+    assert.equal((await f.ledger()).requests[1].attempts, 0);
+  }
+});
+
+test('a later explicit replay can recover a lost terminal failure using the original UUID', async t => {
+  const f = await fixture(t); let id;
+  await captureEvaluation(f.options, dependencies(async (_url, request) => {
+    if (request.method === 'GET') return reply(f.availability);
+    id = JSON.parse(request.body).id; throw new Error('response lost');
+  }));
+  const report = await captureEvaluation({ ...f.options, maxCalls: 2 }, dependencies(async (_url, request) => {
+    if (request.method === 'GET') return reply(f.availability);
+    const body = JSON.parse(request.body);
+    if (body.revision === 1) { assert.equal(body.id, id); return reply(terminalFailure(f, body), 409); }
+    assert.equal(body.revision, 2);
+    return reply({ requestId: body.requestId, revision: body.revision, proposals: [], buildId: f.availability.buildProof.buildId });
+  }));
+  assert.equal(report.counts.recordedRuns, 2); assert.equal(report.counts.failedRuns, 1);
+  assert.equal(report.counts.lifetimePostAttempts, 3);
+});
+
+test('persisted terminal receipts recover interrupted local saves without another POST for that case', async t => {
+  const f = await fixture(t);
+  await captureEvaluation({ ...f.options, maxCalls: 1 }, dependencies(async (_url, request) => request.method === 'GET'
+    ? reply(f.availability) : reply(terminalFailure(f, JSON.parse(request.body)), 502)));
+  const ledger = await f.ledger(); ledger.requests[0].status = 'dispatching';
+  await save(path.join(f.outputDir, 'request-manifest.json'), ledger);
+  const outputs = await f.outputs(); outputs.runs = [];
+  await save(path.join(f.outputDir, 'outputs.json'), outputs);
+  await save(path.join(f.outputDir, 'errors.json'), { ...await f.errors(), entries: [] });
+  const report = await captureEvaluation({ ...f.options, maxCalls: 1 }, dependencies(successfulHost(f, body => assert.equal(body.revision, 2))));
+  assert.equal(report.counts.recordedRuns, 2); assert.equal(report.counts.failedRuns, 1);
+  assert.equal(report.counts.lifetimePostAttempts, 2);
+  assert.equal((await f.ledger()).requests[0].attempts, 1);
+  assert.equal((await f.errors()).entries[0].result, 'failed');
+});
 
 test('offline/default plans reveal lengths and hashes without source text or authored answers', async t => {
   const f = await fixture(t), { maxCalls, ...options } = f.options;

@@ -1,0 +1,36 @@
+{
+  "head": "ef314123fe689d0fc701b64761ded2d2813e2b66",
+  "exportedFiles": 518,
+  "output": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\push-capture-head",
+  "fullFiles": [
+    "tools/capture-atlas-interpretation-evaluation.mjs",
+    "tests/atlas-interpretation-capture.test.mjs",
+    "tests/atlas-capture-company.test.mjs",
+    "tests/atlas-computer-runtime.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/computer-interpretation-service.mjs"
+  ],
+  "partialFiles": [
+    "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/server-computer-interpretation.test.mjs"
+  ],
+  "excluded": [
+    "all practice sync source/routes/import",
+    "server static allowlist additions",
+    "workroom-practice-client.test.mjs sync wait fix because its dependency is untracked"
+  ],
+  "status": 0,
+  "tail": [
+    "  type: 'test'",
+    "  ...",
+    "1..60",
+    "# tests 60",
+    "# suites 0",
+    "# pass 60",
+    "# fail 0",
+    "# cancelled 0",
+    "# skipped 0",
+    "# todo 0",
+    "# duration_ms 22038.4478",
+    ""
+  ]
+}

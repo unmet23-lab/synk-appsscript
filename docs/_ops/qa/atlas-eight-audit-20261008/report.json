@@ -1,0 +1,277 @@
+{
+  "schema": "synk-atlas-eight-readonly-audit-1",
+  "date": "2026-10-08",
+  "at": "2026-10-08T00:21:22.949Z",
+  "timezone": "Asia/Seoul",
+  "node": "v24.18.0",
+  "conclusion": "최근 책임 설계 방향과 핵심 구현은 타당하지만, 8종 전체가 최신 사본·최적 효율·실사용 적용 준비를 모두 충족하지는 않음",
+  "scope": {
+    "canonical": "SYNK-appsscript 8종 담당 원문·원본·제품 소비처",
+    "sibling": "SYNK-talk 사본 및 Reed 회귀",
+    "changes": "감사 결과와 합성 재현 파일만 생성. 제품 원본 수정·커밋·push·배포 없음",
+    "paidModelCalls": 0,
+    "liveAccountsAccessed": false,
+    "publicOperationVerified": false,
+    "realDeviceBenchmark": false,
+    "humanEffectComparison": false
+  },
+  "engines": [
+    {
+      "name": "Core",
+      "status": "핵심 구현·다제품 로컬 적용",
+      "role": "근거 이해·선택·질문",
+      "evidence": "695개 공통/제품 회귀. Map/WeakMap 색인·동결 캐시·증분 경로",
+      "remaining": "결과 제외 후 구성공값 부활 및 속성 순서 중복 경계; 소비 어댑터 정확성; 사본 통합검사"
+    },
+    {
+      "name": "Loom",
+      "status": "공통 표현부품·소비 적용",
+      "role": "재질·배치·동작·출력",
+      "evidence": "58/58; 프레임률 독립 운동·숨김 복귀·실제 적용 확인·GPU 버퍼 재사용",
+      "remaining": "실물 모바일 장시간 성능 및 사용자 체감"
+    },
+    {
+      "name": "Vellum",
+      "status": "제한된 도움·표현·반응 구현",
+      "role": "도움 시점/양·이유·말과 행동",
+      "evidence": "학습/Town/플레저 소비 회귀",
+      "remaining": "자유 대화 전체와 효과 실증은 별도; 단일제품 공통 모듈 재사용 근거"
+    },
+    {
+      "name": "Trail",
+      "status": "학습 근거 자격 분리·증분기록 적용",
+      "role": "출처·시간·사건 연결과 자격 조회",
+      "evidence": "createPracticeOutcomeIndex 실제 Core 소비·역순 재계산·로그 압축 회귀",
+      "remaining": "구형 소비 사본 전파; 후속 날짜도구의 제품/공통 소유 적정성"
+    },
+    {
+      "name": "Prism",
+      "status": "계약·정적검사 위주, 집단 실행 경로 미완성",
+      "role": "분모·조건이 명시된 집단분포",
+      "evidence": "정적검사 대상3 참조0 등록2, 등록2개는 삭제 파일",
+      "remaining": "현재 허용 자료 생산→집계→수신자 소비 연결 및 검사 대상 갱신"
+    },
+    {
+      "name": "Temper",
+      "status": "비교·결과/정정/철회 집계 구현",
+      "role": "전달 뒤 관측 품질·차이 평가",
+      "evidence": "LAB/SHIFT/플레저 사용. 미응답과 실패·인과 주장을 구분",
+      "remaining": "동결된 모델 평가 자료 재정비; 실제 사용자 개인화 대 기본 비교"
+    },
+    {
+      "name": "Reed",
+      "status": "방송 구현 존재, 문서·회귀 정리 누락",
+      "role": "소리·편성·재생·송출",
+      "evidence": "41/42; 삭제 모듈을 참조하는 기존 시험 1실패",
+      "remaining": "삭제 기능을 가리키는 원문/테스트 정리; 현재 공개 수신·청취 검증"
+    },
+    {
+      "name": "Strata",
+      "status": "내용 지도 검증/조회와 일부 교육 지도 구현",
+      "role": "학습 항목·선수·목표 지도",
+      "evidence": "ko/TOPIK I/한글 지도 검사. 한글 소비 사본 불일치 재현",
+      "remaining": "한글 번들 갱신; ko 선수0/문법62미연결·TOPIK 선수0(한글은 선수215)·중급 지도 미완료"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "priority": "P1",
+      "type": "runtime-reproduced",
+      "title": "한글 앱이 최신 공통 학습 기록을 거부",
+      "file": "experiences/hangul-stage/atlas-learning.js",
+      "line": 199,
+      "evidence": "hangul-storage-repro.json",
+      "trigger": "같은 origin/기기 저장소에서 최신 entry-check choice 기록 저장 후 한글 구형 번들 실행",
+      "actual": "storage.available=false; 기존 기록 읽기와 지속 저장 차단",
+      "versions": {
+        "canonical": "atlas-2.4.0",
+        "hangul": "atlas-2.3.0"
+      },
+      "remedy": "원본으로 한글 번들 재생성 후 교차 제품 저장 회귀 및 전체 소비사본 검사에 포함"
+    },
+    {
+      "id": "F2",
+      "priority": "P2",
+      "type": "common-api-reproduced",
+      "title": "최신 결과 제외 후 예전 성공 근거 부활",
+      "file": "atlas/engine.js",
+      "line": 218,
+      "evidence": "core-repro-result.json",
+      "trigger": "같은 결과키의 1→0.2→최신 0.2 제외",
+      "actual": "이전1이 현재값으로 돌아오고 다음 plan.outcomeBasis unobserved→performance",
+      "limitation": "현재 제품의 outcome() 생산 호출은 확인하지 못함. 실제 운영 장애로 주장하지 않음",
+      "remedy": "최신 결과 선택 후 제외 자격 판정"
+    },
+    {
+      "id": "F3",
+      "priority": "P2",
+      "type": "common-api-reproduced",
+      "title": "같은 사건의 속성 순서 변경을 충돌로 거절",
+      "file": "atlas/engine.js",
+      "line": 121,
+      "evidence": "core-repro-result.json",
+      "actual": "Trail은 중복1건, Core는 conflicting event id; 해당 중복이 든 저장 로그 복원 실패",
+      "limitation": "정상 importEvents와 local merge는 선제 canonical 중복 제거. 정상 동기화 실패로 주장하지 않음"
+    },
+    {
+      "id": "F4",
+      "priority": "P1",
+      "type": "test-suite-failure",
+      "title": "삭제된 Reed 모듈을 요구하는 Talk 테스트",
+      "file": "../SYNK-talk/tests/라디오곡차례.test.js",
+      "line": 76,
+      "evidence": "loom-reed.json",
+      "actual": "require ../lib/라디오편성.js → MODULE_NOT_FOUND; package npm test/CI에 포함",
+      "limitation": "방송 런타임 장애 확인은 아님"
+    },
+    {
+      "id": "F5",
+      "priority": "P2",
+      "type": "product-adapter-reproduced",
+      "title": "컴퓨터 상담의 부정/과거/타인 문장 오해석",
+      "file": "experiences/atlas-lab/interpretation.mjs",
+      "line": 37,
+      "evidence": "consultation-repro.txt",
+      "actual": "제 램은 16GB가 아닙니다→current.ram=16; 8GB에서16GB로 변경→8; Tom의 작업→본인",
+      "limitation": "pending 제안으로 표시되고 사용자 확인 전 자동 적용은 하지 않음"
+    },
+    {
+      "id": "F6",
+      "priority": "P2",
+      "type": "readiness-block",
+      "title": "모델 평가 동결 해시 불일치",
+      "file": "docs/_ops/qa/atlas-model-20261005/freeze.json",
+      "evidence": "frozen-check.json",
+      "actual": "6개 동결 소스 중 atlas/domain.js만 불일치",
+      "remedy": "실제 모델 평가 전 재현 오류 정리 후 평가 묶음 재동결; 평가 데이터 본문은 읽지 않음"
+    },
+    {
+      "id": "F7",
+      "priority": "P2",
+      "type": "documentation-drift",
+      "title": "Reed 원문이 삭제된 기능을 현재 코드로 안내",
+      "file": "docs/라디오24_설계.md",
+      "line": 25,
+      "also": "docs/Reed_설계_v0.1.md:66; 라디오24:9의 승인 취소된 배경 안내"
+    },
+    {
+      "id": "F8",
+      "priority": "P2",
+      "type": "copy-drift",
+      "title": "PATH VR vendor 사본도 원본과 불일치",
+      "file": "experiences/path-vr/index.html",
+      "line": 12,
+      "actual": "vendor engine/trail/personalization이 LF 정규화 후에도 다름. engine은2.4 표기지만 이전 성공근거 판정 코드를 포함",
+      "limitation": "현재 PATH VR 소비에서 직접 사용자 장애는 재현하지 않음"
+    }
+  ],
+  "verification": {
+    "coreSuite": {
+      "tests": 695,
+      "pass": 695,
+      "fail": 0,
+      "fileCount": 61,
+      "sourceChangedDuringRun": []
+    },
+    "loom": {
+      "tests": 58,
+      "pass": 58,
+      "fail": 0
+    },
+    "vellumStrataPrism": {
+      "tests": 135,
+      "pass": 135,
+      "fail": 0
+    },
+    "townCare": {
+      "tests": 31,
+      "pass": 31,
+      "fail": 0
+    },
+    "reed": {
+      "tests": 42,
+      "pass": 41,
+      "fail": 1
+    },
+    "note": "검사 사이에 일부 중복 파일이 있어 단순 합산하지 않음",
+    "talkCopy": "sync-atlas --check passed",
+    "nineGameBundles": "build-game-learning --check passed",
+    "hangulBundle": "build-hangul-stage --check FAILED",
+    "strata": "strata-build --check passed",
+    "fidelity": {
+      "command": "node tools/probe-atlas-consultation-fidelity.mjs 1500 20261006",
+      "samples": 1500,
+      "meanAllEligibleQuestions": 9.58,
+      "meanAsked": 6.67,
+      "differentAdviceFromAllAnswers": 32,
+      "rate": 0.0213,
+      "completionReadyWhenAutoAskingStops": 79,
+      "limitations": "합성 답을 같은 제품규칙의 전체답 기준과 비교. 실제 사람 만족도/정답률이 아님"
+    }
+  },
+  "efficiency": {
+    "atlasJsFiles": 31,
+    "atlasLines": 5735,
+    "gameBundleBytes": 459511,
+    "gameBundleGzipBytes": 89101,
+    "judgment": "색인·증분계산·기록요약 등 효율 장치 존재. 파일/줄 증가만으로 비효율 판단하지 않음. 전엔진 실제 장치 성능과 비용의 최적성은 미입증",
+    "singleProductModules": [
+      "conditional-preference.js→소개팅",
+      "vellum-expression.js→플레저",
+      "trail-followup.js→플레저"
+    ],
+    "next": "제품에서 재사용 필요가 확인된 공통 기능과 단일제품 후보를 구분"
+  },
+  "priorities": [
+    "F1 한글 기록 호환과 F4 실패 회귀 정리",
+    "F2/F3 공통 경계·F5 소비 해석 보완",
+    "전체 생성/vendor/배포 사본 검사를 한 실행 목록으로 묶고 F6 재동결",
+    "Prism·Reed의 현재 담당 원문/소비 경계 정리",
+    "현재 보류 결정 유지: 플레저 개인화 대 기본 사람 비교는 참가자 모집 승인 이후"
+  ],
+  "sourceIntegrity": {
+    "head": "4aa9fad200c6f172de54073ad38c68c7f1d35a4e",
+    "canonicalChangedSinceCoreSuite": [],
+    "sourceHashes": {
+      "atlas/account-summary.js": "c6e23ac9e183973713eb9df4dc142a5d7d33f526ea2a8577c91a1efb4c40a8b8",
+      "atlas/ask.js": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "atlas/conditional-preference.js": "6b814ec429c7a29643f958b6cb09ef4efc96f22913d3e873dbb095f8f09e3d4e",
+      "atlas/domain.js": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+      "atlas/education.js": "204e3d3f499aa5467ccf6dac88626f36800a9f50ade0de88c866faa5dd36ca98",
+      "atlas/engine.js": "10e702c122ad582044468e32369872f4b1686c3c251b5c4b5e157c7d4be1285b",
+      "atlas/experiences.js": "a5849afa78a040f0d1434ab3211fb8210ba5c0208c7abb96e71cdbaafd8159e2",
+      "atlas/flow.js": "e4b29294fa3864ab6469186406712816b9bc52ca9a505f37d03e831ed18ebcab",
+      "atlas/game-browser.js": "e370dcec9b1cfe6679c9289f31035a9a6ffde2c7bf38bb2a7ba9554fad88516d",
+      "atlas/game-flow.js": "fb21280ad0d4521f8cc8d65a5721d25854d6b47dad67b8a0724ccb4f5f1cb15a",
+      "atlas/game-learning.js": "2ef932958c8ac65f936d5a95b59f0aa589640bd978a0bb9c92b2e0d48acd58f6",
+      "atlas/interpretation.js": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e",
+      "atlas/learning-ledger.js": "52cd87f2588c392bfe4dd9a13b8dceb00ffbc2b8fc540efa00d6c921bca6ee2f",
+      "atlas/learning-sync.js": "e6862f007ae8e057c5e115c9d5d63854f6b149498f1fde0cdf535e8a0fa80bd0",
+      "atlas/learning.js": "2d6df3f4e74ba0534cf0d130da7cc412bfa68c686bb0232c23c7bd30562f4858",
+      "atlas/memory-sync.js": "c3af481180851e852ea16bb39bbacdca504e4f008f1bb46860ae59c3cdb39bfd",
+      "atlas/personalization.js": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+      "atlas/preferences.js": "8d223b6c87ba712086d7839766d64e70c14c1fc3446e0f8bf5969654e48c7e5a",
+      "atlas/temper-flow.js": "467f03b4ac70ee34460574898c6f09e1e8bc79fe41ced4a1030c59fd463d096b",
+      "atlas/temper-interpretation.js": "238e3cf2b362514e002dc7c2640999b5fd8b80e03efd26962b1426af952047de",
+      "atlas/temper-outcomes.js": "a6ab147b062455c9f0df7fae662d91360d28840312d556f776fcc337c375d763",
+      "atlas/temper.js": "2ae57b120a45ccc7011edb977b504de5fa11870fc64e501b794be27ec9bd7f88",
+      "atlas/trail-followup.js": "4d0e90889fe4678e658db4a838c8d3d3190be72b12139969e9dad987266f99e1",
+      "atlas/trail-life.js": "a2045a196edde3ac986c9c2cdd952db792df7b919efc44c8811710dc777fe552",
+      "atlas/trail.js": "6e2124aa37ab3d09e47e1ca8cc35a1240d3ee77930daffb3ca910d6bfb799ffc",
+      "atlas/travel.js": "0c0c65b97addb5afd69966f9620133abae88aa2154cecf1ff322678bfdba7ef2",
+      "atlas/vellum-expression.js": "a677829210a20b521aa341e0268cce4221f29ef495238e8f7ee5915a5779a237",
+      "atlas/vellum-flow.js": "c2a890041c62735fa343784f10dd73614c39979f2bbed01ea27d2739510dc85c",
+      "atlas/vellum-life.js": "488652b0e3a2b681b91ed006bf7e3a1addba418639439a35cc75a5b344f92fe7",
+      "atlas/vellum.js": "8843fa1b034418f280e82bf356ce617587a744c6c9b81a84408d3e459ec740a6",
+      "atlas/work.js": "9ef22ff7a8e94cb7874d0f5e739b1c3d59f3243440196ce75bebed6ab78050d6"
+    }
+  },
+  "limits": [
+    "저장소 전체 모든 테스트를 실행하지 않음",
+    "모든 제품 모든 코드줄 전수감사 아님",
+    "현재 공개 운영판과 로컬 원본 일치 미확인",
+    "실제 사용자·휴대폰·공개 오디오 청취 검증 없음",
+    "기존 다수 미커밋/미추적 작업 보존"
+  ]
+}

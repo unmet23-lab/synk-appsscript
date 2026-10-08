@@ -1,0 +1,45 @@
+{
+  "method": "Downloaded deployment eszip body; exact full source comparison from embedded index.ts source map; full compiled entrypoint AST compared against native TypeScript-stripped candidate with only formatting/location metadata removed.",
+  "results": [
+    {
+      "environment": "rehearsal",
+      "slug": "synk-account",
+      "sourceMapWholeSourceEqual": true,
+      "localSourceSha256": "27c237055117480875b90249f1e9614b7d0ce4ea80718d6916beab22ccfb5b25",
+      "remoteSourceSha256": "27c237055117480875b90249f1e9614b7d0ce4ea80718d6916beab22ccfb5b25",
+      "compiledAstEqual": true,
+      "localAstSha256": "c456a43d4086afeaeaf0fc252207f3a4aa3c979fcf90805c3b0b680eec56a0c8",
+      "remoteAstSha256": "c456a43d4086afeaeaf0fc252207f3a4aa3c979fcf90805c3b0b680eec56a0c8"
+    },
+    {
+      "environment": "rehearsal",
+      "slug": "synk-learning",
+      "sourceMapWholeSourceEqual": true,
+      "localSourceSha256": "c826a3da519aff8e6366b8a669b752b02625dd4ef171a4b2ab18cfcb6e90c74d",
+      "remoteSourceSha256": "c826a3da519aff8e6366b8a669b752b02625dd4ef171a4b2ab18cfcb6e90c74d",
+      "compiledAstEqual": true,
+      "localAstSha256": "d01f69ab4b811ce43b45ce683c30fd37bf343dd03bd2f8908da6604ce4e2c46d",
+      "remoteAstSha256": "d01f69ab4b811ce43b45ce683c30fd37bf343dd03bd2f8908da6604ce4e2c46d"
+    },
+    {
+      "environment": "production",
+      "slug": "synk-account",
+      "sourceMapWholeSourceEqual": true,
+      "localSourceSha256": "27c237055117480875b90249f1e9614b7d0ce4ea80718d6916beab22ccfb5b25",
+      "remoteSourceSha256": "27c237055117480875b90249f1e9614b7d0ce4ea80718d6916beab22ccfb5b25",
+      "compiledAstEqual": true,
+      "localAstSha256": "c456a43d4086afeaeaf0fc252207f3a4aa3c979fcf90805c3b0b680eec56a0c8",
+      "remoteAstSha256": "c456a43d4086afeaeaf0fc252207f3a4aa3c979fcf90805c3b0b680eec56a0c8"
+    },
+    {
+      "environment": "production",
+      "slug": "synk-learning",
+      "sourceMapWholeSourceEqual": true,
+      "localSourceSha256": "c826a3da519aff8e6366b8a669b752b02625dd4ef171a4b2ab18cfcb6e90c74d",
+      "remoteSourceSha256": "c826a3da519aff8e6366b8a669b752b02625dd4ef171a4b2ab18cfcb6e90c74d",
+      "compiledAstEqual": true,
+      "localAstSha256": "d01f69ab4b811ce43b45ce683c30fd37bf343dd03bd2f8908da6604ce4e2c46d",
+      "remoteAstSha256": "d01f69ab4b811ce43b45ce683c30fd37bf343dd03bd2f8908da6604ce4e2c46d"
+    }
+  ]
+}

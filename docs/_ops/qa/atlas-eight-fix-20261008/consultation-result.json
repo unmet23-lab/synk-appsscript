@@ -1,0 +1,201 @@
+{
+  "task": "computer-consultation-boundaries",
+  "date": "2026-10-08",
+  "status": "locally-verified",
+  "scope": {
+    "sourceFiles": [
+      "experiences/atlas-lab/interpretation.mjs",
+      "experiences/atlas-lab/consultation.mjs",
+      "experiences/atlas-lab/lab.js",
+      "experiences/atlas-lab/build-share.mjs"
+    ],
+    "testFiles": [
+      "tests/atlas-lab-interpretation.test.js",
+      "tests/atlas-consultation-completion.test.mjs",
+      "tests/atlas-lab-completion-smoke.mjs",
+      "tests/atlas-lab-interpretation-smoke.mjs",
+      "tests/atlas-lab-model-host-smoke.mjs"
+    ],
+    "preservation": "lab.js and build-share.mjs already had unrelated working-tree changes. Existing meeting/discovery/journey/launcher/host-isolation changes were preserved. lab.js edits are consultation messages only; build-share.mjs edits bundle discovery's meeting-regions dependency and reject leftover static imports.",
+    "frozenEvaluationBodiesReadOrGenerated": false,
+    "frozenManifestsEdited": false,
+    "externalModelCalls": 0,
+    "deployed": false,
+    "committed": false
+  },
+  "changes": [
+    {
+      "kind": "local-extraction",
+      "version": "computer-explicit-ko-2",
+      "source": "experiences/atlas-lab/interpretation.mjs:29",
+      "behavior": "Match whole present self statements through their predicates instead of extracting loose keyword substrings. Explicit self or exact omitted-subject personal forms can propose supported facts. Unrecognized subjects, denial, history, transitions, uncertainty, quotation and compound clauses remain held. Quotation and unresolved subject scope survive periods; explicit self can resume matching.",
+      "positivePreserved": [
+        "video app and source resolution",
+        "web AI distinguished from installed local AI",
+        "named local tools and model size",
+        "current owned device and RAM",
+        "photo and code activity",
+        "purchase choice",
+        "OS preference",
+        "carry/home use",
+        "current budget"
+      ],
+      "limitation": "A deliberately narrow local Korean expression matcher, not general free-language understanding. Every emitted proposal still requires existing confirmation."
+    },
+    {
+      "kind": "source-edit-retirement",
+      "source": "experiences/atlas-lab/interpretation.mjs:207",
+      "behavior": "Before a text edit clears source proposals, compare active parent answers and retire manual dependent details whose parent disappeared. Re-enabling the use/device cannot revive old details. Keep independent answers and details whose parent is still manually selected."
+    },
+    {
+      "kind": "question-completion",
+      "version": "computer-question-value-4",
+      "source": "experiences/atlas-lab/consultation.mjs:145",
+      "behavior": "Ask still prioritizes positive declared question value, then the same question card requests missing or invalid required product fields. Required confirmations are not falsely assigned a recommendation value or listed as skipped. Explicit unknown stays provisional without repeated questions. Inactive branches and optional questions remain outside required completion."
+    },
+    {
+      "kind": "self-contained-share",
+      "source": "experiences/atlas-lab/build-share.mjs:58",
+      "behavior": "Bundle meeting-regions.mjs inside discovery's closure, strip its exact import, and fail the build before writing a share page if static import/export statements remain."
+    }
+  ],
+  "verification": {
+    "unit": {
+      "command": "node --test tests/atlas-lab-interpretation.test.js tests/atlas-lab-consultation.test.js tests/atlas-consultation-completion.test.mjs tests/atlas-consultation-fidelity.test.mjs",
+      "passed": 59,
+      "failed": 0,
+      "byFile": {
+        "atlas-lab-interpretation.test.js": 34,
+        "atlas-lab-consultation.test.js": 12,
+        "atlas-consultation-completion.test.mjs": 11,
+        "atlas-consultation-fidelity.test.mjs": 2
+      }
+    },
+    "fidelity": {
+      "command": "node tools/probe-atlas-consultation-fidelity.mjs 1500 20261006",
+      "questionPolicy": "computer-question-value-4",
+      "samples": 1500,
+      "seed": 20261006,
+      "meanEligibleQuestions": 9.58,
+      "value": {
+        "meanQuestionsAsked": 8.24,
+        "adviceDiffersFromFullAnswers": 4,
+        "rate": 0.0027,
+        "alsoWorseByDeclaredLoss": 0,
+        "productCompletionReadyWhenStopped": 728,
+        "differingAdviceFields": {
+          "ram": 4
+        },
+        "unaskedQuestionsInThoseCases": {
+          "multitask": 4,
+          "budget": 4,
+          "place": 2,
+          "current.kind": 2
+        }
+      },
+      "impact": {
+        "meanQuestionsAsked": 6.81,
+        "adviceDiffersFromFullAnswers": 11,
+        "rate": 0.0073,
+        "alsoWorseByDeclaredLoss": 11,
+        "productCompletionReadyWhenStopped": 87,
+        "differingAdviceFields": {
+          "ram": 11,
+          "budgetWarning": 2,
+          "budgetTight": 2,
+          "current": 1
+        },
+        "unaskedQuestionsInThoseCases": {
+          "multitask": 11,
+          "place": 11,
+          "budget": 9,
+          "photo": 7,
+          "video.load": 5,
+          "video.res": 3,
+          "video.app": 1
+        }
+      },
+      "interpretation": "Synthetic catalog answer combinations, not measured real-user quality. Four remaining whole-advice differences are RAM differences with zero worse cases under the declared policy loss."
+    },
+    "completionSimulation": {
+      "command": "node .tmp/atlas-eight-fix-20261008/consultation-completion-1500.mjs",
+      "evidence": ".tmp/atlas-eight-fix-20261008/consultation-completion-1500.json",
+      "samples": 1500,
+      "seed": 20261006,
+      "ready": 728,
+      "unknownOnly": 772,
+      "missingOrInvalid": 0,
+      "repeatedQuestion": 0,
+      "maxQuestions": 15,
+      "unknownFields": {
+        "budget": 230,
+        "localai": 255,
+        "current.os": 189,
+        "current.ram": 186,
+        "video.app": 102
+      }
+    },
+    "browser": [
+      {
+        "command": "SYNK_CONSULTATION_QA_OUTPUT=.tmp/atlas-eight-fix-20261008/consultation-browser node tests/atlas-lab-completion-smoke.mjs",
+        "evidence": ".tmp/atlas-eight-fix-20261008/consultation-browser/result.json",
+        "passedPathGroups": 8,
+        "paths": "local 1280/390/320px purchase and reuse; file share 390px purchase and reuse",
+        "checks": [
+          "required budget in same automatic card",
+          "required fields not skipped",
+          "known answers finish ready",
+          "unknown stays provisional without repeat",
+          "use-branch required details",
+          "reuse does not require purchase budget",
+          "no horizontal overflow",
+          "no external request",
+          "no browser or resource error"
+        ]
+      },
+      {
+        "command": "SYNK_INTERPRETATION_QA_OUTPUT=.tmp/atlas-eight-fix-20261008/interpretation-browser node tests/atlas-lab-interpretation-smoke.mjs",
+        "evidence": ".tmp/atlas-eight-fix-20261008/interpretation-browser/result.json",
+        "passedPathGroups": 7,
+        "paths": "local 1280/390/320px review/basic and conflict paths plus file share basic",
+        "checks": [
+          "exact source citations",
+          "confirm/correct/withdraw/reject",
+          "original recommendation parity",
+          "clear preserves independent manual",
+          "conflict review",
+          "other-person/past held",
+          "late response rejected after source edit",
+          "no overflow",
+          "no external request"
+        ]
+      },
+      {
+        "command": "SYNK_MODEL_HOST_QA_OUTPUT=.tmp/atlas-eight-fix-20261008/model-host-browser node tests/atlas-lab-model-host-smoke.mjs",
+        "evidence": ".tmp/atlas-eight-fix-20261008/model-host-browser/result.json",
+        "passedPathGroups": 3,
+        "paths": "1280/390px mock host transport paths plus unconfigured/member/share boundaries",
+        "checks": [
+          "mock transport only",
+          "explicit send and confirmation gate",
+          "no automatic retry",
+          "stale/cancelled/edited/local response isolation",
+          "delete/retention UI mock boundaries",
+          "HTTP share has no host or privacy requests"
+        ]
+      }
+    ],
+    "visualInspection": [
+      ".tmp/atlas-eight-fix-20261008/consultation-browser/local-320-purchase-provisional.png"
+    ],
+    "diffCheck": {
+      "command": "git diff --check -- experiences/atlas-lab/interpretation.mjs experiences/atlas-lab/consultation.mjs experiences/atlas-lab/lab.js experiences/atlas-lab/build-share.mjs tests/atlas-lab-interpretation.test.js tests/atlas-consultation-completion.test.mjs tests/atlas-lab-completion-smoke.mjs tests/atlas-lab-interpretation-smoke.mjs tests/atlas-lab-model-host-smoke.mjs",
+      "status": "passed",
+      "notes": "Git emitted normal LF-to-CRLF notices, no whitespace errors."
+    }
+  },
+  "remaining": [
+    "Root will update frozen source manifests after all source changes are final.",
+    "No real-provider, production deployment, or real-user outcome claim."
+  ]
+}

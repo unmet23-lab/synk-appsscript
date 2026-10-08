@@ -1,0 +1,110 @@
+{
+  "readOnly": true,
+  "requests": 8,
+  "credentialsSent": false,
+  "requestBodySent": false,
+  "results": [
+    {
+      "environment": "rehearsal",
+      "slug": "synk-account",
+      "method": "GET",
+      "status": 401,
+      "bodyBytes": 79,
+      "errorCode": "UNAUTHORIZED_NO_AUTH_HEADER",
+      "message": "Missing authorization header",
+      "allowOrigin": "*",
+      "allowMethods": null,
+      "allowHeaders": "authorization, x-client-info, apikey"
+    },
+    {
+      "environment": "rehearsal",
+      "slug": "synk-account",
+      "method": "OPTIONS",
+      "status": 204,
+      "bodyBytes": 0,
+      "errorCode": null,
+      "message": null,
+      "allowOrigin": "*",
+      "allowMethods": "GET, POST, OPTIONS",
+      "allowHeaders": "authorization, apikey, content-type, x-synk-product, x-synk-contract, x-synk-app-version"
+    },
+    {
+      "environment": "rehearsal",
+      "slug": "synk-learning",
+      "method": "GET",
+      "status": 401,
+      "bodyBytes": 79,
+      "errorCode": "UNAUTHORIZED_NO_AUTH_HEADER",
+      "message": "Missing authorization header",
+      "allowOrigin": "*",
+      "allowMethods": null,
+      "allowHeaders": "authorization, x-client-info, apikey"
+    },
+    {
+      "environment": "rehearsal",
+      "slug": "synk-learning",
+      "method": "OPTIONS",
+      "status": 204,
+      "bodyBytes": 0,
+      "errorCode": null,
+      "message": null,
+      "allowOrigin": "*",
+      "allowMethods": "GET, POST, OPTIONS",
+      "allowHeaders": "authorization, apikey, content-type, x-synk-product, x-synk-contract, x-synk-app-version"
+    },
+    {
+      "environment": "production",
+      "slug": "synk-account",
+      "method": "GET",
+      "status": 401,
+      "bodyBytes": 79,
+      "errorCode": "UNAUTHORIZED_NO_AUTH_HEADER",
+      "message": "Missing authorization header",
+      "allowOrigin": "*",
+      "allowMethods": null,
+      "allowHeaders": "authorization, x-client-info, apikey"
+    },
+    {
+      "environment": "production",
+      "slug": "synk-account",
+      "method": "OPTIONS",
+      "status": 204,
+      "bodyBytes": 0,
+      "errorCode": null,
+      "message": null,
+      "allowOrigin": "*",
+      "allowMethods": "GET, POST, OPTIONS",
+      "allowHeaders": "authorization, apikey, content-type, x-synk-product, x-synk-contract, x-synk-app-version"
+    },
+    {
+      "environment": "production",
+      "slug": "synk-learning",
+      "method": "GET",
+      "status": 401,
+      "bodyBytes": 79,
+      "errorCode": "UNAUTHORIZED_NO_AUTH_HEADER",
+      "message": "Missing authorization header",
+      "allowOrigin": "*",
+      "allowMethods": null,
+      "allowHeaders": "authorization, x-client-info, apikey"
+    },
+    {
+      "environment": "production",
+      "slug": "synk-learning",
+      "method": "OPTIONS",
+      "status": 204,
+      "bodyBytes": 0,
+      "errorCode": null,
+      "message": null,
+      "allowOrigin": "*",
+      "allowMethods": "GET, POST, OPTIONS",
+      "allowHeaders": "authorization, apikey, content-type, x-synk-product, x-synk-contract, x-synk-app-version"
+    }
+  ],
+  "scope": "Anonymous gateway protection and browser preflight only; no authenticated account access, mutation, AI call, login or learner-data retrieval.",
+  "postDeployPlan": [
+    "Repeat identical anonymous GET requests: expect 401 and no account/learning response.",
+    "Repeat identical OPTIONS preflights with Origin https://synk.im and the actual app header names; compare allow-origin, allow-methods and allow-headers to pre-deployment observations.",
+    "Run deployment source comparison and full entrypoint/source-map equality separately; anonymous checks cannot prove authenticated learning behavior."
+  ]
+}

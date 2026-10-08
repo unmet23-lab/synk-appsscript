@@ -1,0 +1,396 @@
+{
+  "at": "2026-10-08T01:13:16.117Z",
+  "status": "failed",
+  "scope": "local-public-candidate",
+  "paidCalls": 0,
+  "loggedIntoRealAccount": false,
+  "rows": [
+    {
+      "route": "/try/rhythm/",
+      "width": 1280,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/rhythm/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/racing/",
+      "width": 1280,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/racing/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/runner/",
+      "width": 1280,
+      "kind": "game-start-and-runtime",
+      "presentations": 1,
+      "attempts": 0,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/runner/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/order-rush/",
+      "width": 1280,
+      "kind": "game-start-and-runtime",
+      "presentations": 1,
+      "attempts": 0,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/order-rush/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/story-classroom/",
+      "width": 1280,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/story-classroom/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/blank-slice/",
+      "width": 1280,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/blank-slice/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/talk-rally/",
+      "width": 1280,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/talk-rally/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/racing/",
+      "width": 390,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/racing/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/rhythm/",
+      "width": 390,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/rhythm/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/runner/",
+      "width": 390,
+      "kind": "game-start-and-runtime",
+      "presentations": 1,
+      "attempts": 0,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/runner/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/order-rush/",
+      "width": 390,
+      "kind": "game-start-and-runtime",
+      "presentations": 1,
+      "attempts": 0,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/order-rush/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/story-classroom/",
+      "width": 390,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/story-classroom/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/blank-slice/",
+      "width": 390,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/blank-slice/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/try/talk-rally/",
+      "width": 390,
+      "kind": "game-start-and-runtime",
+      "presentations": 0,
+      "attempts": 0,
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/try/talk-rally/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/id/",
+      "width": 1280,
+      "kind": "anonymous-account-page-and-learning-runtime",
+      "storageAvailable": true,
+      "title": "내 SYNK로 이어가요.",
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/id/vendor/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/id-rehearsal/",
+      "width": 1280,
+      "kind": "anonymous-account-page-and-learning-runtime",
+      "storageAvailable": true,
+      "title": "어디서 시작하든,\n내 SYNK로.",
+      "layout": {
+        "width": 1280,
+        "scroll": 1280
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/id-rehearsal/vendor/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/id/",
+      "width": 390,
+      "kind": "anonymous-account-page-and-learning-runtime",
+      "storageAvailable": true,
+      "title": "내 SYNK로 이어가요.",
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/id/vendor/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/id-rehearsal/",
+      "width": 390,
+      "kind": "anonymous-account-page-and-learning-runtime",
+      "storageAvailable": true,
+      "title": "어디서 시작하든,\n내 SYNK로.",
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": [
+        "/id-rehearsal/vendor/atlas-learning.js?v=43f511c88e01"
+      ]
+    },
+    {
+      "route": "/",
+      "width": 390,
+      "kind": "preserved-home",
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": []
+    },
+    {
+      "route": "/lab/",
+      "width": 390,
+      "kind": "preserved-home",
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": []
+    },
+    {
+      "route": "/atlas/",
+      "width": 390,
+      "kind": "preserved-home",
+      "layout": {
+        "width": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "externalBlocked": [],
+      "versionedEngineRequests": []
+    }
+  ],
+  "failures": [
+    {
+      "name": "game entry-check 1280",
+      "error": "locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#feedback') to be visible\u001b[22m\n\u001b[2m    33 × locator resolved to hidden <section hidden=\"\" id=\"feedback\" class=\"feedback\">…</section>\u001b[22m\n\n    at game (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:26:329)\n    at async run (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:21:33)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:69:109\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:69:10"
+    },
+    {
+      "name": "game entry-check 390",
+      "error": "locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#feedback') to be visible\u001b[22m\n\u001b[2m    33 × locator resolved to hidden <section hidden=\"\" id=\"feedback\" class=\"feedback\">…</section>\u001b[22m\n\n    at game (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:26:329)\n    at async run (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:21:33)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:69:109\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:69:10"
+    },
+    {
+      "name": "tool brief/computer 1280",
+      "error": "AssertionError [ERR_ASSERTION]: feedback event must be saved\n    at tool (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:45:10)\n    at async run (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:21:33)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:70:103"
+    },
+    {
+      "name": "tool brief/meeting 1280",
+      "error": "AssertionError [ERR_ASSERTION]: feedback event must be saved\n    at tool (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:45:10)\n    at async run (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:21:33)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:70:103"
+    },
+    {
+      "name": "tool builds/manual 1280",
+      "error": "AssertionError [ERR_ASSERTION]: feedback event must be saved\n    at tool (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:45:10)\n    at async run (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:21:33)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:70:103"
+    },
+    {
+      "name": "travel 1280",
+      "error": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-preset=\"foodie\"]')\u001b[22m\n\n    at travel (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:55:89)\n    at async run (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:21:33)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:70:160"
+    },
+    {
+      "name": "tool brief/computer 390",
+      "error": "AssertionError [ERR_ASSERTION]: feedback event must be saved\n    at tool (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:45:10)\n    at async run (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:21:33)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:70:103"
+    },
+    {
+      "name": "tool brief/meeting 390",
+      "error": "AssertionError [ERR_ASSERTION]: feedback event must be saved\n    at tool (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:45:10)\n    at async run (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:21:33)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:70:103"
+    },
+    {
+      "name": "tool builds/manual 390",
+      "error": "AssertionError [ERR_ASSERTION]: feedback event must be saved\n    at tool (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:45:10)\n    at async run (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:21:33)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:70:103"
+    },
+    {
+      "name": "travel 390",
+      "error": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-preset=\"foodie\"]')\u001b[22m\n\n    at travel (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:55:89)\n    at async run (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:21:33)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-deploy-20261008\\public-browser.cjs:70:160"
+    }
+  ]
+}

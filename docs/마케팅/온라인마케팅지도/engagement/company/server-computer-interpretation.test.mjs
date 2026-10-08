@@ -155,6 +155,75 @@ test('missing or inconsistent usage holds the full reservation even for a syntac
   }
 });
 
+test('proved provider authentication rejection releases only its reservation and retains the UUID across restart', async t => {
+  let status = 401;
+  const secret = 'provider secret source key and private detail';
+  const f = await fixture(t, { fetchImpl: async () => new Response(JSON.stringify({ error: { type: 'invalid_request_error', code: 'invalid_api_key', message: secret, param: null } }), { status }) });
+  const requests = [];
+  for (status of [401, 403]) {
+    const body = input(); requests.push(body);
+    const failed = await f.request(endpoint, { body });
+    assert.equal(failed.status, 502); assert.equal(failed.data.code, 'SYNK_COMPUTER_AI_PROVIDER_REJECTED');
+    assert.equal(failed.data.captureReceipt, undefined); assert.equal(failed.text.includes(secret), false);
+    const row = f.ledger().at(-1);
+    assert.equal(row.status, 'rejected'); assert.equal(row.failure, 'provider-authentication-rejected'); assert.equal(row.providerStatus, status);
+    assert.ok(row.reservedMicroUSD > 0); assert.equal(row.accountedMicroUSD, 0); assert.equal(row.resultCiphertext, undefined);
+    assert.equal(JSON.stringify(row).includes(secret), false); assert.equal(JSON.stringify(row).includes(text), false);
+  }
+  const before = f.ledger(); await f.restart();
+  for (const body of requests) {
+    const replay = await f.request(endpoint, { body });
+    assert.equal(replay.status, 409); assert.equal(replay.data.code, 'SYNK_COMPUTER_AI_PROVIDER_REJECTED');
+    assert.equal((await f.request(endpoint, { body: { ...body, text: text + 'changed' } })).data.code, 'SYNK_COMPUTER_AI_CONFLICT');
+  }
+  assert.equal(f.calls.length, 2); assert.deepEqual(f.ledger(), before);
+  // Already uncertain reservations are not reclassified by a later rejection.
+  const old = before[0];
+  f.app.store.put('computerAIRequests', old.id, { ...old, status: 'uncertain', failure: 'provider-response-unconfirmed', accountedMicroUSD: old.reservedMicroUSD });
+  assert.equal((await f.request(endpoint, { body: requests[0] })).data.code, 'SYNK_COMPUTER_AI_ALREADY_SENT');
+  assert.equal(f.ledger()[0].accountedMicroUSD, old.reservedMicroUSD); assert.equal(f.calls.length, 2);
+});
+
+test('ambiguous HTTP failures including malformed authentication replies preserve every reservation', async t => {
+  let reply;
+  const errorBody = { error: { type: 'invalid_request_error', code: 'invalid_api_key', message: 'private provider message' } };
+  const f = await fixture(t, { fetchImpl: async () => new Response(reply.raw ?? JSON.stringify(reply.body), { status: reply.status }) });
+  for (reply of [
+    ...[400, 404, 408, 429, 500, 503].map(status => ({ status, body: errorBody })),
+    { status: 401, raw: 'not json' }, { status: 403, body: { error: { message: 'unknown shape' } } },
+    { status: 401, body: { ...errorBody, usage: { input_tokens: 100 } } },
+    { status: 401, body: { ...errorBody, output: [] } },
+  ]) {
+    const failed = await f.request(endpoint, { body: input() });
+    assert.equal(failed.status, 502); assert.equal(failed.data.code, 'SYNK_COMPUTER_AI_UNCERTAIN'); assert.equal(failed.data.captureReceipt, undefined);
+    const row = f.ledger().at(-1);
+    assert.equal(row.status, 'uncertain'); assert.equal(row.failure, 'provider-response-unconfirmed');
+    assert.equal(row.accountedMicroUSD, row.reservedMicroUSD);
+  }
+});
+
+test('invalid results retain distinct safe failure reasons with known usage and no provider content', async t => {
+  let value;
+  const f = await fixture(t, { fetchImpl: async () => response(value) });
+  const quote = 'invented private provider quotation';
+  for (const [overrides, failure] of [
+    [{ model: 'private unexpected model' }, 'model-mismatch'],
+    [{ status: 'incomplete', incomplete_details: { reason: 'max_output_tokens' } }, 'model-response-incomplete'],
+    [{ output: [{ type: 'message', role: 'assistant', status: 'completed', content: [{ type: 'refusal', refusal: 'private refusal text' }] }] }, 'model-refused'],
+    [{ output: [{ type: 'message', role: 'assistant', status: 'completed', content: [{ type: 'output_text', text: JSON.stringify({ proposals: [{ field: 'current.ram', value: '16', subject: 'self', stance: 'current', evidence: [{ quote, occurrence: 1 }] }], held: [] }) }] }] }, 'model-quote-invalid'],
+    [{ output: [] }, 'model-response-invalid'],
+  ]) {
+    value = payload(overrides);
+    const body = input(), result = await f.request(endpoint, { body }), row = f.ledger().at(-1);
+    assert.equal(result.status, 502); assert.equal(result.data.captureReceipt.status, 'invalid');
+    assert.equal(row.status, 'invalid'); assert.equal(row.failure, failure); assert.equal(row.accountedMicroUSD, 175);
+    assert.equal(JSON.stringify(row).includes('private'), false); assert.equal(JSON.stringify(row).includes(text), false);
+    assert.equal(result.text.includes('private'), false);
+    assert.equal((await f.request(endpoint, { body })).status, 409);
+  }
+  assert.equal(f.calls.length, 5);
+});
+
 test('invalid model output still settles known usage and cannot be retried as an unpaid validation failure', async t => {
   const f = await fixture(t, { fetchImpl: async () => response(payload({ model: 'unexpected-model' })) }), body = input();
   assert.equal((await f.request(endpoint, { body })).status, 502);
@@ -166,6 +235,7 @@ test('unexpected provider usage above the reserved bound is recorded and blocks 
   const f = await fixture(t, { fetchImpl: async () => response(payload({ usage: { input_tokens: 1000000, output_tokens: 100, total_tokens: 1000100 } })) });
   assert.equal((await f.request(endpoint, { body: input() })).status, 502);
   assert.equal(f.ledger()[0].accountedMicroUSD, 125050); assert.equal(f.ledger()[0].usageOverrun, true);
+  assert.equal(f.ledger()[0].failure, 'usage-bound-exceeded');
   assert.equal((await f.request()).data.available, false); assert.equal((await f.request(endpoint, { body: input() })).status, 429); assert.equal(f.calls.length, 1);
 });
 

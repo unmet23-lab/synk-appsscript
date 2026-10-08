@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const vm = require('node:vm');
-const { 검사 } = require('../tools/prism래칫.js');
+const { 검사, 실행 } = require('../tools/prism래칫.js');
 const { 방아쇠목록 } = require('../tools/대장동봉검사.js');
 const 저장소 = path.resolve(__dirname, '..');
 const 명부경로 = 'docs/_ops/prism_접점등록.json';
@@ -43,21 +43,22 @@ function 픽스처(t) {
 const 명부내용 = (소비자) => JSON.stringify({ 소비자 });
 const 소비자 = (경로, 갈래 = '학생') => ({ 경로, 갈래, 사유: '합성 견본' });
 
-test('실물 기본 범위는 뿌리 .js 전부이며 하위 폴더로 새지 않는다', (t) => {
+test('실물 기본 범위는 뿌리뿐 아니라 현재 공통 모듈·제품 원본까지 읽는다', (t) => {
   환경비우기(t);
   const 파일수 = fs.readdirSync(저장소, { withFileTypes: true })
     .filter((항목) => 항목.isFile() && 항목.name.endsWith('.js')).length;
   const r = 검사({});
   assert.ok(r.셈);
-  assert.equal(r.셈.범위파일수, 파일수);
+  assert.ok(r.셈.범위파일수 > 파일수);
   assert.ok(Object.values(r.셈).every(Number.isInteger));
 });
 
-test('실물 명부의 등록 소비자는 둘이고 학생·학부모 참조는 0이다', (t) => {
+test('삭제한 리포트는 실물 명부에 없고 현재 집단 산출 소비·참조는 0이다', (t) => {
   환경비우기(t);
   const r = 검사({});
   assert.equal(r.종료코드, 0);
-  assert.equal(r.셈.등록소비자수, 2);
+  assert.equal(r.셈.등록소비자수, 0);
+  assert.equal(r.셈.참조수, 0);
   assert.equal(r.셈.학생학부모참조수, 0);
 });
 
@@ -103,7 +104,7 @@ test('환경변수 명부를 못 읽으면 기본 명부로 조용히 돌아가�
   assert.equal(r.셈, null);
 });
 
-test('새 뿌리 파일은 자동 검사하고 미등록 참조만 막으며 하위 파일은 제외한다', (t) => {
+test('새 뿌리 파일은 자동 검사하고 명시한 기본 범위 밖 폴더는 추가하기 전까지 제외한다', (t) => {
   const f = 픽스처(t);
   f.쓰기(명부경로, 명부내용([]));
   f.쓰기('견본.js', '// 합성 견본');
@@ -118,6 +119,65 @@ test('새 뿌리 파일은 자동 검사하고 미등록 참조만 막으며 하
   assert.equal(참조.종료코드, 1);
   assert.equal(참조.셈.참조수, 1);
   assert.ok(참조.출력.includes('추가.js:1: prism_new'));
+});
+
+test('새 공통 모듈·제품·방송의 중첩 파일은 CLI 기본 범위에서 미등록 참조를 잡는다', (t) => {
+  const f = 픽스처(t);
+  f.쓰기(명부경로, 명부내용([]));
+  const paths = ['atlas/new.mjs', 'experiences/new/nested/app.js', 'strata/source.ts',
+    'bots/radio/report.cjs', 'experiences/new/index.html', 'experiences/new/view.tsx', 'experiences/new/view.jsx'];
+  for (const file of paths) f.쓰기(file, 'prism_new;');
+  const r = 실행([], { 루트: f.루트 });
+  assert.equal(r.종료코드, 1);
+  assert.equal(r.셈.범위파일수, paths.length);
+  assert.equal(r.셈.참조수, paths.length);
+  for (const file of paths) assert.ok(r.출력.includes(`${file}:1: prism_new`));
+});
+
+test('산출 계약을 다른 변수명으로 import해도 새 소비처를 등록해야 한다', (t) => {
+  const f = 픽스처(t);
+  f.쓰기(명부경로, 명부내용([]));
+  f.쓰기('experiences/new/report.mjs', "import aggregate from '../../tools/lib/prism계약.js';\nconst validator = require('../../tools/lib/prism계약');");
+  const denied = 검사({ 루트: f.루트 });
+  assert.equal(denied.종료코드, 1);
+  assert.ok(denied.출력.includes('experiences/new/report.mjs:1: prism계약.js'));
+  assert.ok(denied.출력.includes('experiences/new/report.mjs:2: prism계약'));
+  f.쓰기(명부경로, 명부내용([소비자('experiences/new/report.mjs', '내부')]));
+  assert.equal(검사({ 루트: f.루트 }).종료코드, 0);
+  f.쓰기(명부경로, 명부내용([소비자('experiences/new/report.mjs', '학생')]));
+  assert.equal(검사({ 루트: f.루트 }).셈.학생학부모참조수, 2);
+});
+
+test('의존성·빌드·QA·합성시험은 기본 범위 밖이고 명시한 추가 범위는 그대로 검사한다', (t) => {
+  const f = 픽스처(t);
+  f.쓰기(명부경로, 명부내용([]));
+  f.쓰기('experiences/demo/app.mjs', '// 실제 소비 코드');
+  for (const file of ['experiences/demo/node_modules/pkg/index.js', 'experiences/demo/dist/app.js',
+    'experiences/demo/qa/probe.mjs', 'experiences/demo/tests/probe.js', 'experiences/demo/model.test.mjs']) {
+    f.쓰기(file, 'prism_fixture;');
+  }
+  const base = 검사({ 루트: f.루트 });
+  assert.equal(base.종료코드, 0);
+  assert.equal(base.셈.범위파일수, 1);
+  const extra = 실행(['--범위', 'experiences/demo/qa/*.mjs'], { 루트: f.루트 });
+  assert.equal(extra.종료코드, 1);
+  assert.ok(extra.출력.includes('experiences/demo/qa/probe.mjs:1: prism_fixture'));
+});
+
+test('기본 제품 범위의 일부 폴더를 못 읽어도 뿌리 파일만 보고 통과하지 않는다', (t) => {
+  const f = 픽스처(t);
+  f.쓰기(명부경로, 명부내용([]));
+  f.쓰기('entry.js', '// 정상');
+  const file = f.쓰기('experiences/demo/app.mjs', 'prism_private;');
+  const original = fs.readdirSync;
+  t.mock.method(fs, 'readdirSync', function (directory, ...args) {
+    if (path.resolve(directory) === path.dirname(file)) throw Object.assign(new Error('합성 접근 실패'), { code: 'EACCES' });
+    return original.call(this, directory, ...args);
+  });
+  const result = 검사({ 루트: f.루트 });
+  assert.equal(result.종료코드, 2);
+  assert.equal(result.셈, null);
+  assert.match(result.출력[0], /experiences\/demo/);
 });
 
 test('부품과 명부가 모두 동봉 게이트의 방아쇠에 한 번씩 들어간다', () => {

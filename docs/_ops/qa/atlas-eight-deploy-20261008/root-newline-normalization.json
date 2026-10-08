@@ -1,0 +1,35 @@
+{
+  "path": "atlas/personalization.js",
+  "reason": "New LF gitattributes does not rewrite pre-existing checkout bytes on cherry-pick",
+  "before": {
+    "bytes": 32801,
+    "crlf": 435,
+    "sha256": "82788ca0c7852263f5df6bd68cd19546466b339f5196322efa3cd5b634df20a9"
+  },
+  "after": {
+    "bytes": 32366,
+    "crlf": 0,
+    "sha256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8"
+  },
+  "gitBlobSHA256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+  "sourceCodeChanged": false,
+  "status": "",
+  "manifest": [
+    {
+      "name": "engine.js",
+      "bytes": 35540,
+      "manifestBytes": 35540,
+      "sha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "manifestSHA256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29"
+    },
+    {
+      "name": "personalization.js",
+      "bytes": 32366,
+      "manifestBytes": 32366,
+      "sha256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+      "manifestSHA256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8"
+    }
+  ],
+  "indexRefreshed": true,
+  "indexContentChanged": false
+}

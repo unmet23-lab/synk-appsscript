@@ -1,0 +1,26 @@
+{
+  "commands": [
+    {
+      "command": "node --test tests/loom-motion.test.js tests/loom-scene.test.mjs tests/loom-life.test.js experiences/synk-town/loom-roundtrip.test.mjs tests/룸조판.test.js",
+      "tests": 58,
+      "passed": 58,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0
+    },
+    {
+      "command": "node --test tests/현재곡.test.js tests/라디오송출진척.test.js tests/라디오오버레이층.test.js tests/라디오차림런타임.test.js ../SYNK-talk/tests/라디오곡차례.test.js",
+      "tests": 42,
+      "passed": 41,
+      "failed": 1,
+      "skipped": 0,
+      "exitCode": 1
+    }
+  ],
+  "totals": {
+    "tests": 100,
+    "passed": 99,
+    "failed": 1,
+    "skipped": 0
+  }
+}

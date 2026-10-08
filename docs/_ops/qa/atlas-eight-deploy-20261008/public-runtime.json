@@ -1,0 +1,162 @@
+{
+  "status": "passed",
+  "checks": 24,
+  "learningConsumers": 10,
+  "sharedAttempts": 10,
+  "paidCalls": 0,
+  "externalCalls": 0,
+  "rows": [
+    {
+      "file": "try/racing/atlas-learning.js",
+      "kind": "shared-ledger-write",
+      "available": true,
+      "events": 4
+    },
+    {
+      "file": "try/runner/atlas-learning.js",
+      "kind": "shared-ledger-write",
+      "available": true,
+      "events": 8
+    },
+    {
+      "file": "try/rhythm/atlas-learning.js",
+      "kind": "shared-ledger-write",
+      "available": true,
+      "events": 12
+    },
+    {
+      "file": "try/order-rush/atlas-learning.js",
+      "kind": "shared-ledger-write",
+      "available": true,
+      "events": 16
+    },
+    {
+      "file": "try/story-classroom/atlas-learning.js",
+      "kind": "shared-ledger-write",
+      "available": true,
+      "events": 20
+    },
+    {
+      "file": "try/entry-check/atlas-learning.js",
+      "kind": "shared-ledger-write",
+      "available": true,
+      "events": 24
+    },
+    {
+      "file": "try/blank-slice/atlas-learning.js",
+      "kind": "shared-ledger-write",
+      "available": true,
+      "events": 28
+    },
+    {
+      "file": "try/talk-rally/atlas-learning.js",
+      "kind": "shared-ledger-write",
+      "available": true,
+      "events": 32
+    },
+    {
+      "file": "id/vendor/atlas-learning.js",
+      "kind": "shared-ledger-write",
+      "available": true,
+      "events": 36
+    },
+    {
+      "file": "id-rehearsal/vendor/atlas-learning.js",
+      "kind": "shared-ledger-write",
+      "available": true,
+      "events": 40
+    },
+    {
+      "file": "try/racing/atlas-learning.js",
+      "kind": "reopen-reordered-duplicate",
+      "available": true,
+      "attempts": 10
+    },
+    {
+      "file": "try/runner/atlas-learning.js",
+      "kind": "reopen-reordered-duplicate",
+      "available": true,
+      "attempts": 10
+    },
+    {
+      "file": "try/rhythm/atlas-learning.js",
+      "kind": "reopen-reordered-duplicate",
+      "available": true,
+      "attempts": 10
+    },
+    {
+      "file": "try/order-rush/atlas-learning.js",
+      "kind": "reopen-reordered-duplicate",
+      "available": true,
+      "attempts": 10
+    },
+    {
+      "file": "try/story-classroom/atlas-learning.js",
+      "kind": "reopen-reordered-duplicate",
+      "available": true,
+      "attempts": 10
+    },
+    {
+      "file": "try/entry-check/atlas-learning.js",
+      "kind": "reopen-reordered-duplicate",
+      "available": true,
+      "attempts": 10
+    },
+    {
+      "file": "try/blank-slice/atlas-learning.js",
+      "kind": "reopen-reordered-duplicate",
+      "available": true,
+      "attempts": 10
+    },
+    {
+      "file": "try/talk-rally/atlas-learning.js",
+      "kind": "reopen-reordered-duplicate",
+      "available": true,
+      "attempts": 10
+    },
+    {
+      "file": "id/vendor/atlas-learning.js",
+      "kind": "reopen-reordered-duplicate",
+      "available": true,
+      "attempts": 10
+    },
+    {
+      "file": "id-rehearsal/vendor/atlas-learning.js",
+      "kind": "reopen-reordered-duplicate",
+      "available": true,
+      "attempts": 10
+    },
+    {
+      "file": "try/travel/atlas/engine.js",
+      "kind": "decision-completion-feedback-replay",
+      "version": "atlas-2.4.0",
+      "events": 4,
+      "replayed": 4,
+      "support": "step"
+    },
+    {
+      "file": "brief/computer/atlas-engine.js",
+      "kind": "decision-completion-feedback-replay",
+      "version": "atlas-2.4.0",
+      "events": 4,
+      "replayed": 4,
+      "support": "step"
+    },
+    {
+      "file": "brief/meeting/atlas-engine.js",
+      "kind": "decision-completion-feedback-replay",
+      "version": "atlas-2.4.0",
+      "events": 4,
+      "replayed": 4,
+      "support": "step"
+    },
+    {
+      "file": "builds/manual/atlas-engine.js",
+      "kind": "decision-completion-feedback-replay",
+      "version": "atlas-2.4.0",
+      "events": 4,
+      "replayed": 4,
+      "support": "step"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "samples": 1500,
+  "seed": 20261006,
+  "ready": 728,
+  "unknownOnly": 772,
+  "missingOrInvalid": 0,
+  "repeatedQuestion": 0,
+  "maxQuestions": 15,
+  "unknownFields": {
+    "budget": 230,
+    "localai": 255,
+    "current.os": 189,
+    "current.ram": 186,
+    "video.app": 102
+  }
+}

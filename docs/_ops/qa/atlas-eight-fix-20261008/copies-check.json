@@ -1,0 +1,64 @@
+{
+  "ok": true,
+  "scope": "local+talk+website-staging",
+  "generatedBundles": 10,
+  "rawCopies": 22,
+  "problems": [],
+  "results": [
+    {
+      "label": "learning: 9 games",
+      "command": [
+        "node",
+        "tools/build-game-learning.js",
+        "--check"
+      ],
+      "exitCode": 0,
+      "output": "verified strata\\maps\\topik-i.json\nverified experiences\\korean-racing\\atlas-learning.js\nverified experiences\\korean-runner\\atlas-learning.js\nverified experiences\\korean-rhythm\\atlas-learning.js\nverified experiences\\order-rush\\atlas-learning.js\nverified experiences\\learning-hub\\atlas-learning.js\nverified experiences\\entry-check\\atlas-learning.js\nverified experiences\\story-classroom\\atlas-learning.js\nverified experiences\\blank-slice\\atlas-learning.js\nverified experiences\\talk-rally\\atlas-learning.js"
+    },
+    {
+      "label": "learning: Hangul",
+      "command": [
+        "node",
+        "tools/build-hangul-stage.js",
+        "--check"
+      ],
+      "exitCode": 0,
+      "output": "verified strata\\maps\\hangul.json\nverified experiences\\hangul-stage\\atlas-learning.js"
+    },
+    {
+      "label": "raw consumers and engine metadata",
+      "problems": [],
+      "changed": [],
+      "copies": 22
+    },
+    {
+      "label": "Talk app and server",
+      "command": [
+        "node",
+        "tools/sync-atlas.js",
+        "--consumer",
+        "talk",
+        "--check"
+      ],
+      "exitCode": 0,
+      "output": "verified talk"
+    },
+    {
+      "label": "Strata source map",
+      "command": [
+        "node",
+        "tools/strata-build.js",
+        "--check",
+        "--talk-root",
+        "C:\\Users\\q1212\\Documents\\SYNK-talk"
+      ],
+      "exitCode": 0,
+      "output": "strata-ko-1-b91f23e62ef678cb: 121 nodes, 23 tags (checked)"
+    }
+  ],
+  "excluded": [
+    "historical QA/release archives",
+    "retired website letter",
+    "deployed servers and public pages"
+  ]
+}
