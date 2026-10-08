@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ITEMS, PRACTICE, SKILL_LABEL } from './content.mjs';
-import { parts, filled, judge, josa, readBlank, rng, shuffled, composeRound, pointsFor, scoreRound, hangTime, readDelay, tossLayout, segmentEntry, validateItems } from './core.mjs';
+import { parts, filled, judge, readBlank, rng, shuffled, composeRound, pointsFor, scoreRound, hangTime, readDelay, tossLayout, segmentEntry, validateItems } from './core.mjs';
+import { josa } from './kit/josa.mjs';
 
 test('원고: 36문장 모두 검사 통과(빈칸 하나·보기 넷·정답 첫 보기·학습 항목·난도·설명), 연습 문장도', () => {
   assert.deepEqual(validateItems(ITEMS), []);

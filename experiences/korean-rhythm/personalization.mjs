@@ -1,4 +1,5 @@
 import {TRACKS} from './core.mjs';
+import {josa} from './kit/josa.mjs';
 const SKILLS=[['detail','detail','negation','negation','detail'],['reason','negation','reason','detail','reason'],['condition','detail','main','detail','main']];
 // The TOPIK I grammar (strata/topik-i.grammar.json) each spoken passage uses, as Strata's grammarIn
 // (strata/topik-i-forms.js) reads it: [passage, recall passage] per question. What is understood is the
@@ -29,7 +30,7 @@ export function assignmentTracks(target){
 }
 export function rhythmTargetLabel(target){return `이번 목표: 듣기 · ${{detail:'세부 내용',negation:'부정 표현',condition:'조건 표현',reason:'이유',main:'중심 내용'}[target.skillId.split('.').at(-1)]||'지정 표현'} · 난도 ${target.difficulty}. 지정된 ${target.requiredAttempts}문항에 응답해요.`;}
 // The results line naming the next song: the object particle follows the title's last syllable (‘해안선’을, ‘네 시’를).
-export function nextTrackLine(label,reason){const c=String(label).charCodeAt(String(label).length-1)-0xac00;return `다음 곡으로 ‘${label}’${c>=0&&c<=11171&&c%28?'을':'를'} 추천해요.${reason?` ${reason}`:''}`;}
+export function nextTrackLine(label,reason){return `다음 곡으로 ‘${label}’${josa(label,'을','를')} 추천해요.${reason?` ${reason}`:''}`;}
 // Preserve a complete song and its timing while selecting only authorized claim
 // variants for its target families. Other questions still belong to the song.
 export function assignmentTrack(track,target){

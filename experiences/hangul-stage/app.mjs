@@ -1,6 +1,7 @@
 // 한글 단계 MVP 화면(docs/한글단계_설계.md, 2026-10-03 한국어 MVP). 한국어만 쓰고, 글을 못 읽어도
 // 시범·그림·소리로 할 수 있게 만든다. 판단은 core.mjs, 아틀라스 기록은 learning.mjs, 소리는 audio.mjs가 맡는다.
-import { createPack, compose, decompose, josa } from './pack.mjs';
+import { createPack, compose, decompose } from './pack.mjs';
+import { josa } from './kit/josa.mjs';
 import { readProgress, planSession, answer, meet, finishSession, view, retryItem, canPlayMore, sessionsToday, letterOf, readableWords, graduationReady, graduate, SETTINGS } from './core.mjs';
 import { createCoach, isHosted, progressKey, createRecorder } from './learning.mjs';
 import * as audio from './audio.mjs';

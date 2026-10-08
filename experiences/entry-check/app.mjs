@@ -5,6 +5,7 @@ import { koreanTime, minutes, venueById, activeRules, memoActive, judge, compose
 import { GAME_ID, caseMetadata, rankCases, recommendVenue, answerPayload, skillReport, FLOW_ENTRY, magnifierAfter, FLOW_WORDS, assignmentCases, assignmentVenues, entryTargetLabel } from './learning.mjs';
 import * as sound from './audio.mjs';
 import { fitText, preloadImages } from './kit/lab.mjs';
+import { josa } from './kit/josa.mjs';
 import { choiceId, choiceCorrection, immediateCheck, followUpResult } from './correction.mjs';
 
 const $ = (s) => document.querySelector(s);
@@ -46,7 +47,6 @@ const holdInput = (ms = 450) => { state.guardUntil = performance.now() + ms; };
 const guarded = (e) => ((e && e.timeStamp) || performance.now()) < state.guardUntil;
 const setOverlay = (open) => { for (const sel of ['.booth', '.game-bar']) $(sel).inert = open; };
 const announce = (text) => { const n = $('#sr-live'); n.textContent = ''; requestAnimationFrame(() => { n.textContent = text; }); };
-const josa = (word, withBatchim, without) => { const c = word.charCodeAt(word.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? withBatchim : without; };
 const ITEM_RULE = { gimbap: 'food', snack: 'food', 'water-bottle': 'food', 'coffee-lid': 'food', 'coffee-open': 'food', 'swim-cap': 'cap', camera: 'camera', phone: 'camera', chair: 'chair', 'picnic-mat': 'chair' };
 const DOC_RULE = { kid: ['구분'], fee: ['표', '나이'], date: ['날짜'], card: ['이름'], cap: [], food: [], time: [] };
 const DOC_ICON = { card: 'assets/items/library-card.webp', 'pool-card': 'assets/items/pool-card.webp' };

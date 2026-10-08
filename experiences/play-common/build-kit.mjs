@@ -9,6 +9,9 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 export const KIT_SRC = path.join(here, 'kit');
 // 키트로 옮긴 게임. 옮길 때마다 여기에 더한다.
 export const KIT_GAMES = ['talk-rally', 'order-rush', 'story-classroom', 'korean-rhythm', 'korean-runner', 'korean-racing', 'blank-slice', 'entry-check'];
+// 키트 화면을 쓰지 않는 게임도 받침 조사는 같은 원본을 쓴다 — kit/에 josa.mjs 한 파일만 복사한다.
+export const JOSA_ONLY_GAMES = ['hangul-stage', 'daily-fortune'];
+export const JOSA_FILE = 'josa.mjs';
 
 export function kitFiles(dir = KIT_SRC, base = '') {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((d) => {
@@ -31,4 +34,14 @@ export function buildKit(games = KIT_GAMES) {
   }
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) buildKit();
+export function buildJosa(games = JOSA_ONLY_GAMES) {
+  for (const game of games) {
+    const dst = path.join(here, '..', game, 'kit');
+    if (fs.existsSync(dst)) for (const rel of kitFiles(dst)) if (rel !== JOSA_FILE) fs.rmSync(path.join(dst, rel));
+    fs.mkdirSync(dst, { recursive: true });
+    fs.copyFileSync(path.join(KIT_SRC, JOSA_FILE), path.join(dst, JOSA_FILE));
+    console.log(`${game}/kit ← ${JOSA_FILE}`);
+  }
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) { buildKit(); buildJosa(); }

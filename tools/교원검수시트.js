@@ -225,7 +225,7 @@ async function buildFeedbackReview() {
     const { FINALES } = await load('experiences/korean-racing/finales.js');
     const { WORD_BY_ID, answerFeedback } = await load('experiences/korean-racing/learning.js');
     const { racingItem, racingFollowUp } = await load('experiences/korean-racing/personalization.js');
-    const a = activity('korean-racing', '한국어 레이싱 문장 코스·피날레', ['experiences/korean-racing/campaign.js', 'experiences/korean-racing/finales.js', 'experiences/korean-racing/learning.js', 'experiences/korean-racing/personalization.js']);
+    const a = activity('korean-racing', '한국어 레이싱 문장 코스·피날레', ['experiences/korean-racing/campaign.js', 'experiences/korean-racing/finales.js', 'experiences/korean-racing/learning.js', 'experiences/korean-racing/kit/josa.mjs', 'experiences/korean-racing/personalization.js']);
     for (const stage of [...CAMPAIGN, ...FINALES]) {
       for (const item of stage.items) a.items.push({ id: item.id, metadata: racingItem(item), prompt: `${item.passage}\n${item.prompt}`, context: `${stage.title} · ${item.mode === 'reading' ? '읽기 지문 표시' : '필수 음성 완료 조건'}`, explanation: item.explanation,
         choices: item.options.map(id => ({ id, label: WORD_BY_ID[id].word, correct: id === item.answer, feedback: answerFeedback(item, id) })) });

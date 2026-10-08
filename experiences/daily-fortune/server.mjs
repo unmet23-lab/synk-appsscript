@@ -11,6 +11,7 @@ const files = new Map([
   ['/', path.join(root, 'index.html')],
   ...publicFiles.map(name => [`/${name}`, path.join(root, name)]),
   ['/synk-account/src/core.mjs', path.join(root, '../synk-account/src/core.mjs')],
+  ['/kit/josa.mjs', path.join(root, 'kit/josa.mjs')],
   ['/vendor/lunar-javascript-1.7.7/lunar.mjs', path.join(root, 'vendor/lunar-javascript-1.7.7/lunar.mjs')],
   ['/vendor/lunar-javascript-1.7.7/LICENSE', path.join(root, 'vendor/lunar-javascript-1.7.7/LICENSE')],
   ...assets.map(name => [`/assets/${name}`, path.join(root, 'assets', name)]),

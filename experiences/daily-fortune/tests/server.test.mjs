@@ -14,7 +14,7 @@ test('실제 HTTP에서 화면과 지정 자산만 제공하고 외부 통신 �
   assert.match(await page.text(), /무료 운세/);
   assert.match(page.headers.get('content-security-policy'), /connect-src 'self'\s*;/);
   assert.equal(page.headers.get('x-content-type-options'), 'nosniff');
-  for (const file of ['app.mjs', 'app.css', 'core.mjs', 'saju-core.mjs', 'insights.mjs', 'account.mjs', 'account-state.mjs', 'synk-account/src/core.mjs', 'vendor/lunar-javascript-1.7.7/lunar.mjs', 'vendor/lunar-javascript-1.7.7/LICENSE', 'assets/SUIT.woff2', 'assets/fortune-star.avif', 'assets/synk-logo.svg', 'assets/slab-cream-long.webp', 'assets/slab-blush-long.webp', 'assets/slab-coral-long.webp', 'assets/wide-butter.webp']) {
+  for (const file of ['app.mjs', 'app.css', 'core.mjs', 'saju-core.mjs', 'insights.mjs', 'kit/josa.mjs', 'account.mjs', 'account-state.mjs', 'synk-account/src/core.mjs', 'vendor/lunar-javascript-1.7.7/lunar.mjs', 'vendor/lunar-javascript-1.7.7/LICENSE', 'assets/SUIT.woff2', 'assets/fortune-star.avif', 'assets/synk-logo.svg', 'assets/slab-cream-long.webp', 'assets/slab-blush-long.webp', 'assets/slab-coral-long.webp', 'assets/wide-butter.webp']) {
     const response = await fetch(`${base}/${file}`, { method: 'HEAD' });
     assert.equal(response.status, 200, file);
     assert.ok(Number(response.headers.get('content-length')) > 0, file);
