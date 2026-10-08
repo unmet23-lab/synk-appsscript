@@ -89,6 +89,7 @@ test('entry, styles and every shipped static or dynamic module resolve to their 
     ['app.mjs', './model.mjs', 'model.mjs'],
     ['account.mjs', './vendor/account/product-account.mjs', 'vendor/account/product-account.mjs'],
     ['care-planner.mjs', './vendor/atlas/domain.js', 'vendor/atlas/domain.js'],
+    ['care-support.mjs', './care-followup.js', 'care-followup.js'],
     ['vendor/account/product-account.mjs', './core.mjs', 'vendor/account/core.mjs'],
   ]) {
     const importerUrl = new URL(imports['./' + importer], targetUrl);

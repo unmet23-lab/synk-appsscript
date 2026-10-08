@@ -1,5 +1,5 @@
 import * as expressionModule from '../../atlas/vellum-expression.js';
-import * as followupModule from '../../atlas/trail-followup.js';
+import * as followupModule from './care-followup.js';
 import { makePerson, nextOccurrence } from './model.mjs';
 
 const Vellum = expressionModule.default || globalThis.SynkVellumExpression;

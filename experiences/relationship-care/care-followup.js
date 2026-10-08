@@ -1,5 +1,7 @@
-/* Trail's optional explicit follow-up timeline. Hosts own identities, records
- * and storage. Due dates are user-confirmed plans, never predicted need or care. */
+/* Care (SYNK 플레저) explicit follow-up timeline. Moved from atlas/trail-followup.js on
+ * 2026-10-08: a single-product date helper, not Atlas Trail's record/provenance capability.
+ * VERSION and the SynkTrailFollowup global stay unchanged for stored records.
+ * Hosts own identities, records and storage. Due dates are user-confirmed plans, never predicted need or care. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.SynkTrailFollowup = factory();

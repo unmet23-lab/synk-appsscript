@@ -10,8 +10,8 @@ const require = createRequire(import.meta.url);
 const { createLocalTranscriber } = require('../../tools/patent-studio/local-transcriber.cjs');
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
 export const MAX_AUDIO_BYTES = 20 * 1024 * 1024;
-const FILES = new Set(['index.html', 'style.css', 'app.mjs', 'model.mjs', 'lunar.mjs', 'care-features.mjs', 'care-sync.mjs', 'account.mjs', 'care-account-view.mjs', 'care-focus.mjs', 'care-context.mjs', 'care-push.mjs', 'care-sw.js', 'manifest.webmanifest', 'care-planner.mjs', 'care-personalization.mjs', 'care-support.mjs', 'care-outcomes.mjs', 'memory-card.mjs', 'memory-theme.mjs']);
-const ENGINE_FILES = new Set(['domain.js', 'ask.js', 'vellum-expression.js', 'trail-followup.js', 'temper-outcomes.js']);
+const FILES = new Set(['index.html', 'style.css', 'app.mjs', 'model.mjs', 'lunar.mjs', 'care-features.mjs', 'care-sync.mjs', 'account.mjs', 'care-account-view.mjs', 'care-focus.mjs', 'care-context.mjs', 'care-push.mjs', 'care-sw.js', 'manifest.webmanifest', 'care-planner.mjs', 'care-personalization.mjs', 'care-support.mjs', 'care-followup.js', 'care-outcomes.mjs', 'memory-card.mjs', 'memory-theme.mjs']);
+const ENGINE_FILES = new Set(['domain.js', 'ask.js', 'vellum-expression.js', 'temper-outcomes.js']);
 const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.webmanifest': 'application/manifest+json', '.webp': 'image/webp', '.png': 'image/png', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.ttf': 'font/ttf' };
 const HEADERS = {
   'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer',
