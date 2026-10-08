@@ -9,7 +9,7 @@ function snapshot() {
   return { ok: true, healthy: true, checked_at: new Date().toISOString(),
     accounts: [{ username: 'yuhobuilds', connected: true, health: 'ok', token_expires_at: new Date(Date.now()+30*86400000).toISOString(), last_failure_at: null, http_status: null },
       { username: 'unconfigured', connected: false, health: 'missing' }],
-    jobs: ['synkbrief-refresh', 'synkbrief-retention'].map(jobname => ({jobname, active: true, last_run_at: new Date().toISOString(), health: 'ok', http_status: 200})) };
+    jobs: ['synkbrief-refresh', 'synkbrief-retention'].map(jobname => ({jobname, active: true, last_run_at: new Date().toISOString(), health: 'ok', http_status: 200})), queue:queueSnapshot() };
 }
 function fixture() {
   const values = new Map(Object.entries({SYNKBRIEF_OPS_MONITOR_ENABLED: '1', SYNKBRIEF_OPS_READ_KEY: KEY, SYNKBRIEF_IG_TOKEN: 'old-meta-token-remains'}));
@@ -29,6 +29,73 @@ function fixture() {
 }
 function trigger(handler, type) { return {getHandlerFunction:()=>handler,getEventType:()=>type}; }
 function breakAccount(f, health='auth-needed') { f.payload.healthy=false; f.payload.accounts[0].health=health; f.payload.accounts[0].http_status=401; }
+const QUEUE_ISSUES = ['stalled_ready','stalled_retries','stale_leases','expiry_overdue','recent_errors','cron_missing','cron_disabled','cron_duplicate','cron_failed','cron_stale'];
+function queueSnapshot(issues = {}, keyConfigured = true) {
+  const issue_counts = Object.fromEntries(QUEUE_ISSUES.map(code => [code, issues[code] || 0]));
+  return {queued:0,processing:0,done:0,expired:0,cancelled:0,error:0,ready:0,expired_leases:0,expiry_due:0,
+    rate_limited:0,eligible_ready:0,oldest_queued_at:null,oldest_pending_at:null,
+    healthy:keyConfigured && Object.values(issue_counts).every(count=>count===0),key_configured:keyConfigured,issue_counts};
+}
+
+test('정상 큐와 한도 대기는 해시를 바꾸거나 메일을 보내지 않는다',()=>{
+  const f=fixture();assert.equal(f.run().state,'baseline');const before=f.values.get('SYNKBRIEF_OPS_NOTICE');
+  f.payload.queue=queueSnapshot();f.payload.queue.queued=1200;f.payload.queue.rate_limited=1200;
+  f.payload.queue.oldest_queued_at=new Date(Date.now()-3600000).toISOString();
+  assert.equal(f.run().state,'unchanged');
+  f.payload.queue.queued=2200;f.payload.queue.rate_limited=2200;f.payload.checked_at=new Date().toISOString();
+  assert.equal(f.run().state,'unchanged');assert.equal(f.emails.length,0);assert.equal(f.values.get('SYNKBRIEF_OPS_NOTICE'),before);
+});
+
+test('고정 운영 서버의 큐 필드 누락은 기존 계정 오류 중에도 별도 경보가 된다',()=>{
+  for(const existingFailure of [false,true]){
+    const f=fixture();if(existingFailure)breakAccount(f,'send-failed');f.run();const before=f.emails.length;
+    delete f.payload.queue;assert.equal(f.run().state,'sent');assert.equal(f.emails.length,before+1);
+    assert.equal(JSON.parse(f.values.get('SYNKBRIEF_OPS_NOTICE')).healthy,false);assert.match(f.emails.at(-1).body,/synkbrief-queue \| missing/);
+    assert.equal(f.run().state,'unchanged');assert.equal(f.emails.length,before+1);
+  }
+});
+
+test('기존 계정 장애 중 새 큐 장애·오류 종류 전환·부분 복구를 알리고 건수 변화는 알리지 않는다',()=>{
+  const f=fixture();breakAccount(f,'send-failed');f.payload.queue=queueSnapshot();f.run();assert.equal(f.emails.length,1);
+  f.payload.queue=queueSnapshot({stalled_ready:1});assert.equal(f.run().state,'sent');assert.equal(f.emails.length,2);
+  assert.match(f.emails[1].body,/synkbrief-queue \| stalled_ready/);assert.match(f.emails[1].body,/@yuhobuilds \| send-failed/);
+  f.payload.queue.issue_counts.stalled_ready=990;f.payload.queue.queued=1000;assert.equal(f.run().state,'unchanged');assert.equal(f.emails.length,2);
+  f.payload.queue=queueSnapshot({cron_disabled:1});f.run();assert.equal(f.emails.length,3);assert.match(f.emails[2].body,/cron_disabled/);
+  f.payload.queue=queueSnapshot();f.run();assert.equal(f.emails.length,4);assert.equal(f.emails[3].subject,'[SYNK DM] 운영 이상');assert.doesNotMatch(f.emails[3].body,/synkbrief-queue/);
+  f.payload=snapshot();f.payload.queue=queueSnapshot();f.run();assert.equal(f.emails.length,5);assert.match(f.emails[4].subject,/복구/);
+});
+
+test('모든 알려진 큐 오류와 키 누락을 고정 코드로만 알리며 임의 원문과 필드를 노출하지 않는다',()=>{
+  for(const code of QUEUE_ISSUES){
+    const f=fixture();f.payload.queue=queueSnapshot({[code]:1});f.payload.healthy=false;
+    f.payload.queue.recipient='PRIVATE RECIPIENT';f.payload.queue.error_message='SECRET '+KEY;f.payload.queue.ciphertext='PRIVATE CIPHER';
+    f.run();f.run();assert.equal(f.emails.length,1);assert.match(f.emails[0].body,new RegExp('synkbrief-queue \\| '+code));
+    assert.doesNotMatch(JSON.stringify(f.emails)+JSON.stringify([...f.values]),/PRIVATE|SECRET/);
+  }
+  const f=fixture();breakAccount(f,'send-failed');f.payload.queue=queueSnapshot();f.run();
+  f.payload.queue=queueSnapshot({},false);f.run();assert.equal(f.emails.length,2);assert.match(f.emails[1].body,/synkbrief-queue \| key_missing/);
+  f.run();assert.equal(f.emails.length,2);
+});
+
+test('제공된 큐가 손상되거나 상태가 모순되면 형식 오류로 처리하고 읽기 키 저장도 거절한다',()=>{
+  const changes=[f=>{f.payload.queue=null;},f=>{f.payload.queue=[];},f=>{f.payload.queue.healthy='false';},
+    f=>{f.payload.queue.key_configured='SECRET';},f=>{delete f.payload.queue.key_configured;},
+    f=>{f.payload.queue.issue_counts=[];},f=>{delete f.payload.queue.issue_counts.cron_stale;},
+    f=>{f.payload.queue.issue_counts.stalled_ready='SECRET';},f=>{f.payload.queue.issue_counts.stalled_ready=-1;},
+    f=>{f.payload.queue.issue_counts.stalled_ready=1.5;},f=>{f.payload.queue.issue_counts.stalled_ready=Number.MAX_SAFE_INTEGER+1;},
+    f=>{f.payload.queue.issue_counts['SECRET '+KEY]=1;},f=>{delete f.payload.queue.issue_counts.cron_stale;f.payload.queue.issue_counts.SECRET=0;},
+    f=>{f.payload.queue.issue_counts.stalled_ready=1;},f=>{f.payload.queue.healthy=false;}];
+  for(const change of changes){const f=fixture();f.payload.queue=queueSnapshot();change(f);const before=f.values.get('SYNKBRIEF_OPS_READ_KEY');
+    assert.equal(f.run().healthy,false);assert.match(f.emails[0].body,/ops-status \| invalid_response/);assert.doesNotMatch(JSON.stringify(f.emails),/SECRET|test-only/);
+    assert.throws(()=>f.context.synkbrief운영알림키저장('a'.repeat(64)),/연결하지 못했습니다/);assert.equal(f.values.get('SYNKBRIEF_OPS_READ_KEY'),before);
+  }
+});
+
+test('큐 장애 알림 전달 미확인 뒤 건수만 늘어도 자동 재발송하지 않는다',()=>{
+  const f=fixture();f.payload.healthy=false;f.payload.queue=queueSnapshot({cron_failed:1});f.mailError=true;
+  assert.throws(()=>f.run(),/전달 여부/);f.payload.queue.issue_counts.cron_failed=20;
+  assert.equal(f.run().state,'delivery_unknown');assert.equal(f.emails.length,1);
+});
 
 test('정상 최초와 반복 점검은 메일 0통이며 읽기 키만 고정 URL로 보낸다',()=>{
   const f=fixture(); assert.equal(f.run().state,'baseline');f.payload.checked_at=new Date().toISOString();assert.equal(f.run().state,'unchanged');
