@@ -39,7 +39,8 @@ test('화면 읽기 문장은 빈칸을 ‘빈칸’으로 읽고 뒤 조사도 
   assert.equal(readBlank('목이 말라요. {}을 마시고 싶어요.'), '목이 말라요. 빈칸을 마시고 싶어요.');
   assert.equal(readBlank('{}가 있어요.'), '빈칸이 있어요.');
   assert.equal(readBlank('{}로 가요.'), '빈칸으로 가요.');
-  assert.equal(readBlank('학교{} 친구를 만나요.'), '학교빈칸 친구를 만나요.');
+  assert.equal(readBlank('학교{} 친구를 만나요.'), '학교 빈칸 친구를 만나요.');
+  assert.equal(readBlank('저는 아침에 빵{} 먹어요.'), '저는 아침에 빵 빈칸 먹어요.');
   assert.equal(readBlank('{}에서 편지를 보내요.'), '빈칸에서 편지를 보내요.');
   for (const x of [...ITEMS, PRACTICE]) assert.doesNotMatch(readBlank(x.text), /빈칸(를|가|는|와|로)(?![가-힣])/, x.id);
 });

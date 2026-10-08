@@ -160,7 +160,9 @@ async function startRound() {
 function renderSentence(item, { kicker } = {}) {
   const [a, b] = parts(item.text);
   $('#s-kicker').textContent = kicker || `${state.index + 1}번 문장`;
-  $('#s-text').innerHTML = `${esc(a)}<span class="blank" id="blank" aria-label="빈칸">&nbsp;</span>${esc(b)}`;
+  // 화면 읽기 프로그램에는 빈칸을 ‘빈칸’으로 읽고 뒤 조사도 맞춘 문장(빈칸을 마셔요)을, 눈에는 빈칸 상자 + 원래 조사를 보인다.
+  $('#s-text').dataset.text = item.text;
+  $('#s-text').innerHTML = `<span class="sr">${esc(readBlank(item.text))}</span><span aria-hidden="true">${esc(a)}<span class="blank" id="blank">&nbsp;</span>${esc(b)}</span>`;
   $('#sentence').classList.remove('done', 'miss');
 }
 const sentenceBottom = () => { const a = $('#arena').getBoundingClientRect(), s = $('#sentence').getBoundingClientRect(); return s.bottom - a.top; };
@@ -307,7 +309,7 @@ const recordedOf = (assessment) => !!assessment && assessment.verdict !== 'unass
 function hideAnswerCheck() { $('#answer-check').hidden = true; $('#check-options').replaceChildren(); }
 function showAnswerCheck(cur) {
   if (state.cur !== cur || cur.confirmed) return;
-  $('#check-sentence').textContent = cur.item.text.replace('{}', '（　　）');
+  $('#check-sentence').innerHTML = `<span class="sr">${esc(readBlank(cur.item.text))}</span><span aria-hidden="true">${esc(cur.item.text.replace('{}', '（　　）'))}</span>`;
   $('#check-options').replaceChildren(...cur.options.map((word, index) => {
     const button = el('button', 'chip-btn wide'); button.type = 'button'; button.textContent = `${index + 1}. ${word}`; button.dataset.word = word;
     button.onclick = () => confirmReading(cur, word); return button;
@@ -368,6 +370,7 @@ $('#btn-next').onclick = () => {
 function fillBlank(word, tone) {
   const b = $('#blank'); if (!b) return;
   b.textContent = word; b.classList.add('filled', tone);
+  const sr = $('#s-text .sr'); if (sr) sr.textContent = filled({ text: $('#s-text').dataset.text }, word);
   $('#sentence').classList.toggle('done', tone === 'ok');
 }
 
