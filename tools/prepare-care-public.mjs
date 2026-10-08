@@ -5,9 +5,9 @@ import { createHash } from 'node:crypto';
 import { readConfig } from '../experiences/synk-account/src/core.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const APP_FILES = ['index.html', 'style.css', 'app.mjs', 'model.mjs', 'lunar.mjs', 'care-features.mjs', 'care-sync.mjs', 'account.mjs', 'care-account-view.mjs', 'care-focus.mjs', 'care-context.mjs', 'care-push.mjs', 'care-sw.js', 'manifest.webmanifest', 'care-planner.mjs', 'care-personalization.mjs', 'care-support.mjs', 'care-outcomes.mjs', 'memory-card.mjs', 'memory-theme.mjs'];
+const APP_FILES = ['index.html', 'style.css', 'app.mjs', 'model.mjs', 'lunar.mjs', 'care-features.mjs', 'care-sync.mjs', 'account.mjs', 'care-account-view.mjs', 'care-focus.mjs', 'care-context.mjs', 'care-push.mjs', 'care-sw.js', 'manifest.webmanifest', 'care-planner.mjs', 'care-personalization.mjs', 'care-support.mjs', 'care-followup.js', 'care-outcomes.mjs', 'memory-card.mjs', 'memory-theme.mjs'];
 const ASSETS = ['icon192.png', 'icon512.png', 'apple-touch-icon180.png', 'badge-check.webp', 'badge-cream.webp', 'InterTight-Bold.ttf', 'InterTight-LICENSE.txt', 'slab-blush-long.webp', 'slab-coral-long.webp', 'slab-cream-long.webp', 'sticker-check.webp', 'sticker-envelope.webp', 'sticker-person.webp', 'sticker-time.webp', 'SUIT-LICENSE.txt', 'SUIT-Variable.woff2', 'synk-logo.svg', 'thread-shift.webp'];
-const ENGINES = ['domain.js', 'ask.js', 'vellum-expression.js', 'trail-followup.js', 'temper-outcomes.js'];
+const ENGINES = ['domain.js', 'ask.js', 'vellum-expression.js', 'temper-outcomes.js'];
 const ACCOUNT_FILES = ['core.mjs', 'product-account.mjs', 'document-sync.mjs'];
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 

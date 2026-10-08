@@ -1,9 +1,12 @@
-'use strict';
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const vm = require('node:vm');
-const Trail = require('../atlas/trail-followup');
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+import { createRequire } from 'node:module';
+
+// Moved with the module from tests/atlas-trail-followup.test.js (2026-10-08).
+const require = createRequire(import.meta.url);
+const Trail = require('../care-followup.js');
 const item = (id, dueOn, status = 'pending') => ({ id, title: 'Check the result', dueOn, status });
 
 test('timeline sorts explicit plans and keeps done and dismissed apart', () => {
@@ -36,7 +39,11 @@ test('ambiguous or invalid calendar inputs and duplicate records are rejected', 
 
 test('browser entry works without a module loader or storage', () => {
   const context = vm.createContext({});
-  vm.runInContext(fs.readFileSync(require.resolve('../atlas/trail-followup'), 'utf8'), context);
+  vm.runInContext(fs.readFileSync(require.resolve('../care-followup.js'), 'utf8'), context);
   assert.equal(context.SynkTrailFollowup.VERSION, Trail.VERSION);
   assert.equal(context.SynkTrailFollowup.summarize({ items: [item('one', '2026-10-06')], today: '2026-10-06' }).pending[0].phase, 'today');
+});
+
+test('the version recorded in Care data stays the one stored before the move', () => {
+  assert.equal(Trail.VERSION, 'trail-followup-1');
 });

@@ -114,13 +114,13 @@ test('rejects cross origin, missing custom header, host rebinding and private so
     });
     assert.equal(status, 403, JSON.stringify(badHeaders));
   }
-  for (const url of ['/server.mjs', '/tests/server.test.mjs', '/.runtime/local-stt.json', '/assets/../server.mjs', '/atlas/server.js', '/atlas/../server.mjs']) assert.equal((await fetch(base + url)).status, 404);
+  for (const url of ['/server.mjs', '/tests/server.test.mjs', '/.runtime/local-stt.json', '/assets/../server.mjs', '/atlas/server.js', '/atlas/../server.mjs', '/atlas/trail-followup.js']) assert.equal((await fetch(base + url)).status, 404);
   assert.equal(calls.length, 0);
 });
 
 test('product engine modules load through an exact public allowlist', async t => {
   const { base } = await fixture(t);
-  for (const pathname of ['/atlas/domain.js', '/atlas/ask.js', '/atlas/vellum-expression.js', '/atlas/trail-followup.js', '/atlas/temper-outcomes.js', '/care-planner.mjs', '/care-personalization.mjs', '/care-support.mjs', '/care-outcomes.mjs', '/memory-card.mjs', '/memory-theme.mjs']) {
+  for (const pathname of ['/atlas/domain.js', '/atlas/ask.js', '/atlas/vellum-expression.js', '/care-followup.js', '/atlas/temper-outcomes.js', '/care-planner.mjs', '/care-personalization.mjs', '/care-support.mjs', '/care-outcomes.mjs', '/memory-card.mjs', '/memory-theme.mjs']) {
     const response = await fetch(base + pathname);
     assert.equal(response.status, 200, pathname); assert.match(response.headers.get('content-type'), /javascript/, pathname);
   }
