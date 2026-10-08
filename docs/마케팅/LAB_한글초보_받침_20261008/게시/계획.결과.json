@@ -6,7 +6,7 @@
       "contentHash": "e5b9a466c3a01465bde30030a86f1fceea61b509cde76393cb4fa4489a919f0d",
       "publicationHash": "b8dd9322c6f79acb0577f92b0cd4ea1b9f003e3fcea2368d77f6674aacdf5a71",
       "startedAt": "2026-10-08T08:41:46.566Z",
-      "state": "private",
+      "state": "scheduled",
       "id": "Yvc3VNJOiPQ",
       "url": "https://www.youtube.com/watch?v=Yvc3VNJOiPQ",
       "thumbnail": null,
@@ -21,9 +21,14 @@
         "title": "Hangul for Beginners · 한글 초보단계",
         "created": false,
         "itemId": "UExZVDh5R2dFNDE0NC4wMTcyMDhGQUE4NTIzM0Y5",
-        "url": "https://www.youtube.com/playlist?list=PLYT8yGgE4144"
+        "url": "https://www.youtube.com/playlist?list=PLYT8yGgE4144",
+        "visibility": "public"
       },
-      "finishedAt": "2026-10-08T08:42:10.162Z"
+      "finishedAt": "2026-10-08T08:42:10.162Z",
+      "publishAt": "2026-10-10T23:00:00.000Z",
+      "scheduledAt": "2026-10-08T08:46:53.640Z",
+      "publicNote": "유호님 10-08 「10/11 오전 8시로 예약해줘」 — 받침 노래 쇼츠 공개 예약, AI 음악 표시 켬(10-08 결정)",
+      "containsSyntheticMedia": true
     }
   }
 }
