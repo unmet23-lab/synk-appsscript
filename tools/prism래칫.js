@@ -1,17 +1,18 @@
 #!/usr/bin/env node
 'use strict';
 /* Prism 접점 래칫 — 미등록 소비자와 학생·학부모 갈래 참조를 막는다.
- * 주석·문자열·선언·객체 키·호출을 가리지 않고 prism_ 이름을 모두 센다.
+ * 주석·문자열·선언·객체 키·호출을 가리지 않고 prism_ 이름과 산출 계약 모듈 참조를 센다.
  * 덜 잡아서 조용히 새는 것보다 더 잡아서 사람이 보는 것이 싸기 때문이다.
  * 한글 음절 이름도 센다. 이것은 정적 참조 검사이며 데이터 흐름의 증명이 아니다.
  *
  * node tools/prism래칫.js [--범위 <저장소 상대 glob>]... / --자가시험
- * 기본 범위는 저장소 뿌리의 *.js 전부다(하위 폴더 제외). 추가 glob은 직접 탐색하고 node:path.matchesGlob으로 맞춘다.
- * 설계 정본의 출제 가중치 입구(엔진_콘텐츠AI.js 갈래)가 옛 리포트 엔진 둘 밖이라 범위를 넓혔다.
+ * 기본 범위는 루트와 atlas/experiences/strata/bots의 JS·ESM·CJS·TS·JSX·TSX·HTML 원본이다.
+ * 의존성·빌드·QA·시험은 기본 범위에서 제외한다. --범위로 직접 추가한 glob에는 이 제외를 적용하지 않는다.
+ * 다른 저장소·tools 제작 도구·문서 안 장면은 필요할 때 --범위 또는 해당 저장소 검사로 확인한다.
  * fs.globSync는 탐색 오류를 빈 결과로 숨기므로 쓰지 않는다. 일부만 못 봐도 확인 불가다.
  * 명부·범위는 실제 파일의 상대 경로를 공유한다(Windows 대소문자·링크 별칭 포함).
  * SYNK_PRISM_명부만 바깥 파일 경로를 허용한다 — 동봉 게이트가 커밋될 명부를 임시 파일로 넘긴다.
- * 종료: 0=검사 통과, 1=금지 참조, 2=확인 불가. CI 배선은 별도 작업이다.
+ * 종료: 0=검사 통과, 1=금지 참조, 2=확인 불가. syntax-check.yml의 기존 단계가 실행한다.
  * 검사({루트, 명부, 범위}) / 실행(인자, {루트})는 임시 픽스처용 진입점이다.
  * 자가시험은 실제 범위·명부를 읽지 않고 자체 임시 뿌리를 만든 뒤 지운다.
  */
@@ -21,7 +22,10 @@ const os = require('node:os');
 const path = require('node:path');
 
 const 저장소 = path.resolve(__dirname, '..');
-const 기본범위 = ['*.js'];
+const 기본범위 = ['{*.@(js|mjs|cjs|ts|tsx|jsx|html),{atlas,experiences,strata,bots}/**/*.@(js|mjs|cjs|ts|tsx|jsx|html)}'];
+const 기본제외폴더 = new Set(['node_modules', 'dist', 'build', 'qa', 'test', 'tests', 'fixtures', 'coverage']);
+const 기본제외 = 경로 => 경로.split('/').some(부분 => 기본제외폴더.has(부분.toLowerCase()))
+  || /\.(?:test|spec)\.[^/]+$/i.test(경로);
 const 기본명부 = 'docs/_ops/prism_접점등록.json';
 const 갈래들 = new Set(['학생', '학부모', '강사', '내부']);
 const 채운문자열 = (값) => typeof 값 === 'string' && 값.trim().length > 0;
@@ -121,7 +125,7 @@ function* glob대안(패턴) {
   yield 패턴;
 }
 
-function glob찾기(뿌리, 패턴) {
+function glob찾기(뿌리, 패턴, 제외 = () => false) {
   const 후보 = new Set();
   const 디렉터리들 = new Map();
   const 목록들 = new Map();
@@ -143,6 +147,7 @@ function glob찾기(뿌리, 패턴) {
     return 목록들.get(실제);
   }
   function 탐색(부모, 토막들, 번호) {
+    if (제외(부모)) return;
     if (번호 === 토막들.length) {
       if (부모) 후보.add(부모);
       return;
@@ -157,6 +162,7 @@ function glob찾기(뿌리, 패턴) {
         // 뒤 토막이 숨김 이름을 명시한 경우에는 그 디렉터리 안쪽도 범위다.
         if (항목.name.startsWith('.') && (!다음 || !path.matchesGlob(항목.name, 다음))) continue;
         const 경로 = path.posix.join(부모, 항목.name);
+        if (제외(경로)) continue;
         // globSync의 기본 동작처럼 **는 디렉터리 링크를 재귀 추적하지 않는다.
         if (항목.isDirectory()) 탐색(경로, 토막들, 번호);
         else if (끝) 후보.add(경로);
@@ -182,6 +188,7 @@ function glob찾기(뿌리, 패턴) {
     }
     for (const 항목 of 항목들) {
       const 경로 = path.posix.join(부모, 무늬 ? 항목.name : 토막);
+      if (제외(경로)) continue;
       if (끝) 후보.add(경로);
       else if (항목.isDirectory() || (!무늬 && 항목.isSymbolicLink())) {
         탐색(경로, 토막들, 번호 + 1);
@@ -194,13 +201,13 @@ function glob찾기(뿌리, 패턴) {
   return 후보;
 }
 
-function 범위찾기(뿌리, 범위) {
+function 범위찾기(뿌리, 범위, 제외) {
   if (!Array.isArray(범위)) throw new Error('범위 배열이 필요하다');
   const 파일들 = new Set();
   for (const 원형 of 범위) {
     const 패턴 = 상대경로(원형, '범위');
     let 후보;
-    try { 후보 = glob찾기(뿌리, 패턴); }
+    try { 후보 = glob찾기(뿌리, 패턴, 제외); }
     catch (오류) { throw new Error(`범위를 펼칠 수 없다 — ${원형}: ${오류.message}`); }
     let 찾은수 = 0;
     for (const 값 of 후보) {
@@ -224,7 +231,7 @@ function 범위찾기(뿌리, 범위) {
   return [...파일들].sort();
 }
 
-function 검사({ 루트 = 저장소, 명부, 범위 = 기본범위 } = {}) {
+function 검사({ 루트 = 저장소, 명부, 범위, 추가범위 = [] } = {}) {
   try {
     let 뿌리;
     try { 뿌리 = fs.realpathSync(루트); }
@@ -234,7 +241,11 @@ function 검사({ 루트 = 저장소, 명부, 범위 = 기본범위 } = {}) {
       ? process.env.SYNK_PRISM_명부
       : 상대경로(명부 === undefined ? 기본명부 : 명부, '명부');
     const 등록 = 명부읽기(뿌리, 명부경로, 외부명부);
-    const 파일들 = 범위찾기(뿌리, 범위);
+    if (!Array.isArray(추가범위)) throw new Error('추가범위 배열이 필요하다');
+    const 파일들 = [...new Set([
+      ...범위찾기(뿌리, 범위 === undefined ? 기본범위 : 범위, 범위 === undefined ? 기본제외 : undefined),
+      ...(추가범위.length ? 범위찾기(뿌리, 추가범위) : []),
+    ])].sort();
     const 출력 = [];
     let 참조수 = 0;
     let 학생학부모수 = 0;
@@ -245,7 +256,7 @@ function 검사({ 루트 = 저장소, 명부, 범위 = 기본범위 } = {}) {
       const 갈래 = 등록.get(경로);
       const 금지갈래 = 갈래 === '학생' || 갈래 === '학부모';
       for (const [번호, 줄] of 내용.split(/\r\n|[\n\r\u2028\u2029]/).entries()) {
-        for (const [이름] of 줄.matchAll(/\bprism_[A-Za-z0-9_가-힣]+/g)) {
+        for (const [이름] of 줄.matchAll(/\bprism_[A-Za-z0-9_가-힣]+|\bprism계약(?:\.[cm]?js)?(?=$|[^A-Za-z0-9_가-힣])/g)) {
           참조수++;
           if (금지갈래) 학생학부모수++;
           if (갈래 === undefined || 금지갈래) 출력.push(`${경로}:${번호 + 1}: ${이름}`);
@@ -295,7 +306,7 @@ function 자가시험() {
 }
 
 function 실행(인자 = [], { 루트 = 저장소 } = {}) {
-  const 범위 = [...기본범위];
+  const 추가범위 = [];
   let 자체검사 = false;
   for (let i = 0; i < 인자.length; i++) {
     if (인자[i] === '--자가시험') 자체검사 = true;
@@ -304,10 +315,10 @@ function 실행(인자 = [], { 루트 = 저장소 } = {}) {
       if (!채운문자열(패턴) || 패턴.startsWith('--')) return 못잼('--범위 뒤에 glob이 필요하다');
       try { 상대경로(패턴, '범위'); }
       catch (오류) { return 못잼(오류.message); }
-      범위.push(패턴);
+      추가범위.push(패턴);
     } else return 못잼(`알 수 없는 인자 — ${인자[i]}`);
   }
-  return 자체검사 ? 자가시험() : 검사({ 루트, 범위 });
+  return 자체검사 ? 자가시험() : 검사({ 루트, 추가범위 });
 }
 
 module.exports = { 검사, 실행, 자가시험 };

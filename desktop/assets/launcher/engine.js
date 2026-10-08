@@ -40,6 +40,8 @@
   const ARMS = ['adapted', 'baseline'];
   const DAY = 86400000, RECENT = 30 * DAY;
   const copy = value => JSON.parse(JSON.stringify(value));
+  const canonical = value => JSON.stringify(value, (_key, entry) => entry && typeof entry === 'object' && !Array.isArray(entry)
+    ? Object.fromEntries(Object.keys(entry).sort().map(key => [key, entry[key]])) : entry);
   const freeze = value => {
     if (value && typeof value === 'object' && !Object.isFrozen(value)) { Object.freeze(value); for (const k of Object.keys(value)) freeze(value[k]); }
     return value;
@@ -118,7 +120,7 @@
     const find = (id, type) => { const found = lookup.byId(id); return found && (!type || found.type === type) ? found : undefined; };
     const previous = lookup.byId(event.id);
     if (previous) {
-      if (JSON.stringify(previous) !== JSON.stringify(event)) throw new Error('Atlas: conflicting event id');
+      if (canonical(previous) !== canonical(event)) throw new Error('Atlas: conflicting event id');
       return false;
     }
     if (isPractice(event)) {
@@ -214,14 +216,16 @@
     const latestOutcome = new Map();
     // The newest report per decision, measure, window and target line: a proof for one
     // line is never replaced by a report about another line or by a proofless report.
+    // Resolve the newest report before exclusion, just as for feedback and context:
+    // removing its analytical use must not restore an older success for that group.
     if (personal) for (const event of ordered) {
-      if (event.type === 'outcome.observed' && !excluded.has(event.id) && decisions.has(event.decisionId)) latestOutcome.set(`${event.decisionId}|${event.measure}|${event.window}|${event.targetLine ?? ''}`, event);
+      if (event.type === 'outcome.observed' && decisions.has(event.decisionId)) latestOutcome.set(`${event.decisionId}|${event.measure}|${event.window}|${event.targetLine ?? ''}`, event);
     }
     // A round is one finished experience. Excluding a completion removes it as evidence, not as history.
     const rounds = {};
     for (const event of ordered) if (event.type === 'experience.completed') rounds[event.experienceId] = (rounds[event.experienceId] || 0) + 1;
     const state = { version: VERSION, scope: copy(scope), asOf, recordedAsOf, context, evidence, expired,
-      feedback: [...responses.values()].filter(e => !excluded.has(e.id)), excluded: [...excluded], lines, outcomes: [...latestOutcome.values()].map(copy), rounds };
+      feedback: [...responses.values()].filter(e => !excluded.has(e.id)), excluded: [...excluded], lines, outcomes: [...latestOutcome.values()].filter(e => !excluded.has(e.id)).map(copy), rounds };
     return { state, cutoff, personal, decisions, completed };
   }
   function understand(events, scope, asOf, recordedAsOf = asOf) { return read(events, scope, asOf, recordedAsOf).state; }
@@ -266,21 +270,19 @@
     const last = mine.at(-1) ? view.decisions.get(mine.at(-1).decisionId) : null;
     let performance = false;
     const performanceProof = [];
-    const attempts = state.outcomes.some(o => o.attemptId) ? new Map(trail().summarize(events, { scope, asOf: at, recordedAsOf: recordedAt }).attempts.map(item => [item.eventId, item])) : new Map();
-    // A curriculum need is keyed by its Strata node (`need:skill.<id>` or `need:node.<id>`),
-    // so a practice attempt proves it only through the same node in its conceptIds.
-    const improved = (leverId, optionId, line) => state.outcomes.find(o => {
-      if (o.value == null || o.value < 0.8 || o.assisted !== false || o.measure !== 'independent'
-        || o.targetLine !== line.key || view.cutoff - ms(o.at) > RECENT || ms(o.at) < ms(line.at)
-        || picked(view.decisions.get(o.decisionId), leverId) !== optionId) return false;
-      const attempt = attempts.get(o.attemptId);
-      const concept = line.key.replace(/^(need|due):/, '').replace(/^(skill|node)\./, '');
-      return attempt && attempt.decisionId === o.decisionId && attempt.exposure === 'new'
-        && attempt.independent === true && attempt.assisted === false && attempt.verdict === 'correct'
-        && attempt.conceptIds.includes(concept) && ms(attempt.at) >= ms(line.at)
-        && ms(attempt.at) <= ms(o.at) && ms(attempt.recordedAt) <= ms(o.recordedAt)
-        && view.cutoff - ms(attempt.at) <= RECENT;
-    });
+    // This compatibility policy consumes qualified practice evidence. Trail's educational
+    // module owns first exposure, help, delivery and curriculum matching; Core owns the
+    // selected option and its weight. Other product outcomes use their own contract.
+    const outcomeEvidence = state.outcomes.some(o => o.attemptId)
+      ? trail().createPracticeOutcomeIndex(trail().summarize(events, { scope, asOf: at, recordedAsOf: recordedAt })) : null;
+    const improved = (leverId, optionId, line) => {
+      for (const outcome of state.outcomes) {
+        if (outcome.value == null || outcome.value < 0.8 || picked(view.decisions.get(outcome.decisionId), leverId) !== optionId) continue;
+        const proof = outcomeEvidence?.find(outcome, { targetLine: line.key, since: line.at, maxAgeMs: RECENT });
+        if (proof) return proof;
+      }
+      return null;
+    };
     const aim = (leverId, option, content, notes, proof) => {
       let total = 0, due = false;
       for (const line of usable) if (option.targets?.includes(line.key)) {
@@ -290,7 +292,7 @@
         const result = content ? improved(leverId, option.id, line) : null;
         if (result) {
           weight *= 0.5; performance = true; notes.push('outcome.improved');
-          const refs = [result.id, result.attemptId, attempts.get(result.attemptId).presentationId, ...line.evidence];
+          const refs = [...result.evidence, ...line.evidence];
           proof.push(...refs); performanceProof.push(...refs);
         }
         total += weight; notes.push(`line.${line.key}`); proof.push(...line.evidence);

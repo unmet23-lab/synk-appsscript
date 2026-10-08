@@ -130,14 +130,14 @@
     {
       "name": "engine.js",
       "source": "atlas/engine.js",
-      "bytes": 35631,
-      "sha256": "f8c38132ca967e95c91bc9bc95fd39cf33d3a9b9a643244d1262deea6047999f"
+      "bytes": 35540,
+      "sha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29"
     },
     {
       "name": "personalization.js",
       "source": "atlas/personalization.js",
-      "bytes": 19464,
-      "sha256": "d715f838bb30aaf868f8e82a335f7a513e4968644e71315bf5dfe1849b2ceb3f"
+      "bytes": 32366,
+      "sha256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8"
     },
     {
       "name": "racing.jpg",

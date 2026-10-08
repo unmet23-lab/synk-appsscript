@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "frozenAt": "2026-10-05T14:48:17.958Z",
+  "frozenAt": "2026-10-08T00:39:58.934Z",
   "dataset": {
     "id": "computer-ko-heldout",
     "version": "1",
@@ -18,7 +18,7 @@
     },
     {
       "path": "experiences/atlas-lab/interpretation.mjs",
-      "sha256": "589dc1fba5ee1020f062b9f7345b40d7755f33a810003bbf3ba19e2e585138c9"
+      "sha256": "f7f0b94c40b7b407db052a1fd561e145989d299bef334584886798899078147e"
     },
     {
       "path": "docs/마케팅/맞춤도구/computer/content.js",
@@ -30,7 +30,7 @@
     },
     {
       "path": "atlas/domain.js",
-      "sha256": "9951725913b41d97052f2f396b1ef4463c7c47e75a218f72096999d6f8d6b046"
+      "sha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f"
     },
     {
       "path": "atlas/temper-interpretation.js",

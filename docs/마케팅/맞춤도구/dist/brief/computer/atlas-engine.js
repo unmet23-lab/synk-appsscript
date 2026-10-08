@@ -15,9 +15,9 @@
   else root.SynkAtlas = factory(() => root.SynkAtlasTrail || root.SynkTrail);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (getTrail) {
   'use strict';
-  const VERSION = 'atlas-2.3.0';
+  const VERSION = 'atlas-2.4.0';
   // Decisions recorded by an earlier policy stay readable; a new plan is always stamped with VERSION.
-  const POLICIES = ['atlas-1.0.0', 'atlas-2.0.0', 'atlas-2.1.0', 'atlas-2.2.0', VERSION];
+  const POLICIES = ['atlas-1.0.0', 'atlas-2.0.0', 'atlas-2.1.0', 'atlas-2.2.0', 'atlas-2.3.0', VERSION];
   const trail = () => {
     const module = getTrail();
     if (!module || typeof module.validate !== 'function' || typeof module.checkLink !== 'function' || typeof module.summarize !== 'function') throw new Error('Atlas: Trail practice module unavailable');
@@ -40,6 +40,8 @@
   const ARMS = ['adapted', 'baseline'];
   const DAY = 86400000, RECENT = 30 * DAY;
   const copy = value => JSON.parse(JSON.stringify(value));
+  const canonical = value => JSON.stringify(value, (_key, entry) => entry && typeof entry === 'object' && !Array.isArray(entry)
+    ? Object.fromEntries(Object.keys(entry).sort().map(key => [key, entry[key]])) : entry);
   const freeze = value => {
     if (value && typeof value === 'object' && !Object.isFrozen(value)) { Object.freeze(value); for (const k of Object.keys(value)) freeze(value[k]); }
     return value;
@@ -118,7 +120,7 @@
     const find = (id, type) => { const found = lookup.byId(id); return found && (!type || found.type === type) ? found : undefined; };
     const previous = lookup.byId(event.id);
     if (previous) {
-      if (JSON.stringify(previous) !== JSON.stringify(event)) throw new Error('Atlas: conflicting event id');
+      if (canonical(previous) !== canonical(event)) throw new Error('Atlas: conflicting event id');
       return false;
     }
     if (isPractice(event)) {
@@ -199,7 +201,10 @@
       lines.push({ key: line, kind: event.kind, source: 'observed', strength: event.strength, n: event.n, sufficiency, assisted: event.assisted ?? null, at: event.at, until,
         evidence: [event.id, ...(answer ? [answer.id] : [])], status, usable: !denied && (sufficiency !== 'thin' || status === 'confirmed') });
     }
-    const completed = new Map(ordered.filter(e => e.type === 'experience.completed' && !excluded.has(e.id)).map(e => [e.id, e]));
+    const decisions = new Map(ordered.filter(e => e.type === 'decision.made' && !excluded.has(e.id)).map(e => [e.id, e]));
+    // An excluded decision invalidates its analytical descendants as well.
+    // The original completion still counts as history in `rounds` below.
+    const completed = new Map(ordered.filter(e => e.type === 'experience.completed' && !excluded.has(e.id) && decisions.has(e.decisionId)).map(e => [e.id, e]));
     const responses = new Map();
     if (personal) for (const event of ordered) {
       if (event.type !== 'feedback.given' || !completed.has(event.completionId)) continue;
@@ -208,18 +213,19 @@
       // A changed answer moves to the end, so the list stays in order of the latest response.
       if (ms(completion.at) <= ms(event.at)) { responses.delete(event.completionId); responses.set(event.completionId, copy({ ...event, experienceId: completion.experienceId, variant: completion.variant })); }
     }
-    const decisions = new Map(ordered.filter(e => e.type === 'decision.made' && !excluded.has(e.id)).map(e => [e.id, e]));
     const latestOutcome = new Map();
     // The newest report per decision, measure, window and target line: a proof for one
     // line is never replaced by a report about another line or by a proofless report.
+    // Resolve the newest report before exclusion, just as for feedback and context:
+    // removing its analytical use must not restore an older success for that group.
     if (personal) for (const event of ordered) {
-      if (event.type === 'outcome.observed' && !excluded.has(event.id) && decisions.has(event.decisionId)) latestOutcome.set(`${event.decisionId}|${event.measure}|${event.window}|${event.targetLine ?? ''}`, event);
+      if (event.type === 'outcome.observed' && decisions.has(event.decisionId)) latestOutcome.set(`${event.decisionId}|${event.measure}|${event.window}|${event.targetLine ?? ''}`, event);
     }
     // A round is one finished experience. Excluding a completion removes it as evidence, not as history.
     const rounds = {};
     for (const event of ordered) if (event.type === 'experience.completed') rounds[event.experienceId] = (rounds[event.experienceId] || 0) + 1;
     const state = { version: VERSION, scope: copy(scope), asOf, recordedAsOf, context, evidence, expired,
-      feedback: [...responses.values()].filter(e => !excluded.has(e.id)), excluded: [...excluded], lines, outcomes: [...latestOutcome.values()].map(copy), rounds };
+      feedback: [...responses.values()].filter(e => !excluded.has(e.id)), excluded: [...excluded], lines, outcomes: [...latestOutcome.values()].filter(e => !excluded.has(e.id)).map(copy), rounds };
     return { state, cutoff, personal, decisions, completed };
   }
   function understand(events, scope, asOf, recordedAsOf = asOf) { return read(events, scope, asOf, recordedAsOf).state; }
@@ -264,21 +270,19 @@
     const last = mine.at(-1) ? view.decisions.get(mine.at(-1).decisionId) : null;
     let performance = false;
     const performanceProof = [];
-    const attempts = state.outcomes.some(o => o.attemptId) ? new Map(trail().summarize(events, { scope, asOf: at, recordedAsOf: recordedAt }).attempts.map(item => [item.eventId, item])) : new Map();
-    // A curriculum need is keyed by its Strata node (`need:skill.<id>` or `need:node.<id>`),
-    // so a practice attempt proves it only through the same node in its conceptIds.
-    const improved = (leverId, optionId, line) => state.outcomes.find(o => {
-      if (o.value == null || o.value < 0.8 || o.assisted !== false || o.measure !== 'independent'
-        || o.targetLine !== line.key || view.cutoff - ms(o.at) > RECENT || ms(o.at) < ms(line.at)
-        || picked(view.decisions.get(o.decisionId), leverId) !== optionId) return false;
-      const attempt = attempts.get(o.attemptId);
-      const concept = line.key.replace(/^(need|due):/, '').replace(/^(skill|node)\./, '');
-      return attempt && attempt.decisionId === o.decisionId && attempt.exposure === 'new'
-        && attempt.independent === true && attempt.assisted === false && attempt.verdict === 'correct'
-        && attempt.conceptIds.includes(concept) && ms(attempt.at) >= ms(line.at)
-        && ms(attempt.at) <= ms(o.at) && ms(attempt.recordedAt) <= ms(o.recordedAt)
-        && view.cutoff - ms(attempt.at) <= RECENT;
-    });
+    // This compatibility policy consumes qualified practice evidence. Trail's educational
+    // module owns first exposure, help, delivery and curriculum matching; Core owns the
+    // selected option and its weight. Other product outcomes use their own contract.
+    const outcomeEvidence = state.outcomes.some(o => o.attemptId)
+      ? trail().createPracticeOutcomeIndex(trail().summarize(events, { scope, asOf: at, recordedAsOf: recordedAt })) : null;
+    const improved = (leverId, optionId, line) => {
+      for (const outcome of state.outcomes) {
+        if (outcome.value == null || outcome.value < 0.8 || picked(view.decisions.get(outcome.decisionId), leverId) !== optionId) continue;
+        const proof = outcomeEvidence?.find(outcome, { targetLine: line.key, since: line.at, maxAgeMs: RECENT });
+        if (proof) return proof;
+      }
+      return null;
+    };
     const aim = (leverId, option, content, notes, proof) => {
       let total = 0, due = false;
       for (const line of usable) if (option.targets?.includes(line.key)) {
@@ -288,7 +292,7 @@
         const result = content ? improved(leverId, option.id, line) : null;
         if (result) {
           weight *= 0.5; performance = true; notes.push('outcome.improved');
-          const refs = [result.id, result.attemptId, attempts.get(result.attemptId).presentationId, ...line.evidence];
+          const refs = [...result.evidence, ...line.evidence];
           proof.push(...refs); performanceProof.push(...refs);
         }
         total += weight; notes.push(`line.${line.key}`); proof.push(...line.evidence);
@@ -320,13 +324,14 @@
     evidence.push(...scored[0].proof);
     const bundle = { mode: { option: scored[0].item.id, basis: !adapted ? 'baseline' : scored[0].notes.length ? 'line' : recent ? 'response' : 'setting', reasons: scored[0].notes, evidence: scored[0].proof } };
     // How a way of working went for this person: helpful counts for it, not_fit against it.
-    // too_much and want_more only steer ordered amounts above. A finished round with no answer is a weak yes.
+    // too_much and want_more only steer ordered amounts above. Completion without
+    // feedback is a missing preference observation, never a weak positive vote.
     const tally = (leverId, optionId) => {
       let s = 0, f = 0, helped = 0; const proof = [];
       for (const done of mine) {
         if (view.cutoff - ms(done.at) > RECENT || picked(view.decisions.get(done.decisionId), leverId) !== optionId) continue;
         const answer = state.feedback.find(item => item.completionId === done.id);
-        if (!answer) s += 0.25; else if (answer.value === 'helpful') { s += 1; helped += 1; proof.push(answer.id, done.id); } else if (answer.value === 'not_fit') { f += 1; proof.push(answer.id, done.id); }
+        if (answer?.value === 'helpful') { s += 1; helped += 1; proof.push(answer.id, done.id); } else if (answer?.value === 'not_fit') { f += 1; proof.push(answer.id, done.id); }
       }
       return { s, f, helped, proof };
     };

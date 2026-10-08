@@ -3,7 +3,7 @@
 // One unmet condition is one policy-loss unit; capacity shortage/oversizing uses its
 // fraction of the required/recommended capacity. These weights are product policy,
 // not measured preference, money, answer likelihood or a prediction of satisfaction.
-export const QUESTION_POLICY = 'computer-question-value-3';
+export const QUESTION_POLICY = 'computer-question-value-4';
 // Product input completeness, independent of Ask's question-value stopping rule.
 export const COMPLETION_POLICY = 'computer-completion-1';
 
@@ -143,11 +143,25 @@ export function createComputerConsultation({ Ask, content, rules }) {
     return list;
   };
   const choose = answers => {
-    const available = questions(answers);
+    // Invalid/missing values are not answers. Explicit "unknown" remains an
+    // answer: keep the result provisional without asking the same thing forever.
+    const usable = Object.fromEntries(Object.entries(answers).filter(([id, value]) => ['known', 'unknown'].includes(answerState(id, value))));
+    usable.uses ||= [];
+    const available = questions(usable), progress = completion(answers);
     // No response-frequency or question-burden measurements exist here. Core uses
     // equal scenario assumptions and zero cost; no fabricated probabilities are sent.
     // For multi-select, a scenario is a complete nonempty answer combination.
-    return { ...Ask.choose({ questions: available, decide: decision, evaluate, answers, budget: 99 }), policy: QUESTION_POLICY, questions: available, completion: completion(answers) };
+    const choice = Ask.choose({ questions: available, decide: decision, evaluate, answers: usable, budget: 99 });
+    const pending = new Set(progress.unresolvedRequiredFields.filter(id => ['missing', 'invalid'].includes(answerState(id, answers[id]))));
+    // Core still orders useful questions. Only after it stops, continue the
+    // product's missing required confirmations in the same question card. A
+    // required confirmation is not assigned a fabricated recommendation value.
+    const nextRequired = progress.status !== 'not-started' && available.find(question => pending.has(question.about));
+    const ranked = choice.ranked.map(entry => pending.has(entry.about) && entry.skippable
+      ? { ...entry, skippable: false, reason: 'required-input-confirmation' } : entry);
+    const next = choice.status !== 'ask' && nextRequired ? { version: choice.version, status: 'ask', question: nextRequired,
+      reason: 'required-input-confirmation', basis: 'product-completion', impact: 0 } : choice;
+    return { ...next, ranked, policy: QUESTION_POLICY, questions: available, completion: progress };
   };
   const summary = result => [result.headline.sub,
     ...(result.current?.actions || []).filter(action => action.code !== 'monitor-memory-usage').map(action => action.t),

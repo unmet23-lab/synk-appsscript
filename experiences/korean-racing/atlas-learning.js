@@ -6469,6 +6469,7 @@ var SynkLearning = (() => {
         const ARMS = ["adapted", "baseline"];
         const DAY = 864e5, RECENT = 30 * DAY;
         const copy = (value) => JSON.parse(JSON.stringify(value));
+        const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
         const freeze = (value) => {
           if (value && typeof value === "object" && !Object.isFrozen(value)) {
             Object.freeze(value);
@@ -6561,7 +6562,7 @@ var SynkLearning = (() => {
           };
           const previous = lookup.byId(event.id);
           if (previous) {
-            if (JSON.stringify(previous) !== JSON.stringify(event)) throw new Error("Atlas: conflicting event id");
+            if (canonical(previous) !== canonical(event)) throw new Error("Atlas: conflicting event id");
             return false;
           }
           if (isPractice(event)) {
@@ -6667,7 +6668,7 @@ var SynkLearning = (() => {
           }
           const latestOutcome = /* @__PURE__ */ new Map();
           if (personal) for (const event of ordered) {
-            if (event.type === "outcome.observed" && !excluded.has(event.id) && decisions.has(event.decisionId)) latestOutcome.set(`${event.decisionId}|${event.measure}|${event.window}|${event.targetLine ?? ""}`, event);
+            if (event.type === "outcome.observed" && decisions.has(event.decisionId)) latestOutcome.set(`${event.decisionId}|${event.measure}|${event.window}|${event.targetLine ?? ""}`, event);
           }
           const rounds = {};
           for (const event of ordered) if (event.type === "experience.completed") rounds[event.experienceId] = (rounds[event.experienceId] || 0) + 1;
@@ -6682,7 +6683,7 @@ var SynkLearning = (() => {
             feedback: [...responses.values()].filter((e) => !excluded.has(e.id)),
             excluded: [...excluded],
             lines,
-            outcomes: [...latestOutcome.values()].map(copy),
+            outcomes: [...latestOutcome.values()].filter((e) => !excluded.has(e.id)).map(copy),
             rounds
           };
           return { state, cutoff, personal, decisions, completed };

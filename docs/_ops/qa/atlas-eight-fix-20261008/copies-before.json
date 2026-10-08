@@ -1,0 +1,87 @@
+{
+  "ok": false,
+  "scope": "local+talk+website-staging",
+  "generatedBundles": 10,
+  "rawCopies": 22,
+  "problems": [
+    "learning: 9 games: C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tools\\build-game-learning.js:46\r\n  if (check && !same) throw new Error(`Learning source differs: ${path.relative(root, destination)}`);\r\n                      ^\r\n\r\nError: Learning source differs: experiences\\korean-racing\\atlas-learning.js\r\n    at output (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tools\\build-game-learning.js:46:29)\r\n    at Object.<anonymous> (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tools\\build-game-learning.js:56:3)\r\n    at Module._compile (node:internal/modules/cjs/loader:1871:14)\r\n    at Object..js (node:internal/modules/cjs/loader:2002:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1594:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1396:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47\r\n\r\nNode.js v24.18.0",
+    "learning: Hangul: C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tools\\build-hangul-stage.js:28\r\n  if (check && !same) throw new Error(`Hangul stage source differs: ${path.relative(root, destination)}`);\r\n                      ^\r\n\r\nError: Hangul stage source differs: experiences\\hangul-stage\\atlas-learning.js\r\n    at output (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tools\\build-hangul-stage.js:28:29)\r\n    at Object.<anonymous> (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tools\\build-hangul-stage.js:37:1)\r\n    at Module._compile (node:internal/modules/cjs/loader:1871:14)\r\n    at Object..js (node:internal/modules/cjs/loader:2002:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1594:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1396:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47\r\n\r\nNode.js v24.18.0",
+    "experiences/path-vr/vendor/engine.js: missing or differs from canonical source",
+    "experiences/path-vr/vendor/trail.js: missing or differs from canonical source",
+    "experiences/path-vr/vendor/personalization.js: missing or differs from canonical source",
+    "desktop/assets/launcher/engine.js: missing or differs from canonical source",
+    "desktop/assets/launcher/personalization.js: missing or differs from canonical source",
+    "docs/마케팅/맞춤도구/dist/brief/computer/atlas-engine.js: missing or differs from canonical source",
+    "docs/마케팅/맞춤도구/dist/brief/meeting/atlas-engine.js: missing or differs from canonical source",
+    "docs/마케팅/맞춤도구/dist/builds/manual/atlas-engine.js: missing or differs from canonical source",
+    "website/dist/try/travel/atlas/engine.js: missing or differs from canonical source",
+    "Talk app and server: Atlas copies differ (2):\n  - SYNK-talk/lib/atlas/engine.js: differs from the canonical source\n  - SYNK-talk/lib/atlas/sync-manifest.json: out of date\nRun: node tools/sync-atlas.js --consumer talk"
+  ],
+  "results": [
+    {
+      "label": "learning: 9 games",
+      "command": [
+        "node",
+        "tools/build-game-learning.js",
+        "--check"
+      ],
+      "exitCode": 1,
+      "output": "verified strata\\maps\\topik-i.json\nC:\\Users\\q1212\\Documents\\SYNK-appsscript\\tools\\build-game-learning.js:46\r\n  if (check && !same) throw new Error(`Learning source differs: ${path.relative(root, destination)}`);\r\n                      ^\r\n\r\nError: Learning source differs: experiences\\korean-racing\\atlas-learning.js\r\n    at output (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tools\\build-game-learning.js:46:29)\r\n    at Object.<anonymous> (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tools\\build-game-learning.js:56:3)\r\n    at Module._compile (node:internal/modules/cjs/loader:1871:14)\r\n    at Object..js (node:internal/modules/cjs/loader:2002:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1594:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1396:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47\r\n\r\nNode.js v24.18.0"
+    },
+    {
+      "label": "learning: Hangul",
+      "command": [
+        "node",
+        "tools/build-hangul-stage.js",
+        "--check"
+      ],
+      "exitCode": 1,
+      "output": "verified strata\\maps\\hangul.json\nC:\\Users\\q1212\\Documents\\SYNK-appsscript\\tools\\build-hangul-stage.js:28\r\n  if (check && !same) throw new Error(`Hangul stage source differs: ${path.relative(root, destination)}`);\r\n                      ^\r\n\r\nError: Hangul stage source differs: experiences\\hangul-stage\\atlas-learning.js\r\n    at output (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tools\\build-hangul-stage.js:28:29)\r\n    at Object.<anonymous> (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tools\\build-hangul-stage.js:37:1)\r\n    at Module._compile (node:internal/modules/cjs/loader:1871:14)\r\n    at Object..js (node:internal/modules/cjs/loader:2002:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1594:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1396:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47\r\n\r\nNode.js v24.18.0"
+    },
+    {
+      "label": "raw consumers and engine metadata",
+      "problems": [
+        "experiences/path-vr/vendor/engine.js: missing or differs from canonical source",
+        "experiences/path-vr/vendor/trail.js: missing or differs from canonical source",
+        "experiences/path-vr/vendor/personalization.js: missing or differs from canonical source",
+        "desktop/assets/launcher/engine.js: missing or differs from canonical source",
+        "desktop/assets/launcher/personalization.js: missing or differs from canonical source",
+        "docs/마케팅/맞춤도구/dist/brief/computer/atlas-engine.js: missing or differs from canonical source",
+        "docs/마케팅/맞춤도구/dist/brief/meeting/atlas-engine.js: missing or differs from canonical source",
+        "docs/마케팅/맞춤도구/dist/builds/manual/atlas-engine.js: missing or differs from canonical source",
+        "website/dist/try/travel/atlas/engine.js: missing or differs from canonical source"
+      ],
+      "changed": [],
+      "copies": 22
+    },
+    {
+      "label": "Talk app and server",
+      "command": [
+        "node",
+        "tools/sync-atlas.js",
+        "--consumer",
+        "talk",
+        "--check"
+      ],
+      "exitCode": 1,
+      "output": "Atlas copies differ (2):\n  - SYNK-talk/lib/atlas/engine.js: differs from the canonical source\n  - SYNK-talk/lib/atlas/sync-manifest.json: out of date\nRun: node tools/sync-atlas.js --consumer talk"
+    },
+    {
+      "label": "Strata source map",
+      "command": [
+        "node",
+        "tools/strata-build.js",
+        "--check",
+        "--talk-root",
+        "C:\\Users\\q1212\\Documents\\SYNK-talk"
+      ],
+      "exitCode": 0,
+      "output": "strata-ko-1-b91f23e62ef678cb: 121 nodes, 23 tags (checked)"
+    }
+  ],
+  "excluded": [
+    "historical QA/release archives",
+    "retired website letter",
+    "deployed servers and public pages"
+  ]
+}

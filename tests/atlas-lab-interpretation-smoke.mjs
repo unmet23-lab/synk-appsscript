@@ -10,7 +10,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createServer } from '../experiences/learning-hub/server.mjs';
 const require = createRequire(import.meta.url);
 const { chromium } = require(require.resolve('playwright', { paths: [process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')] }));
-const output = fileURLToPath(new URL('../experiences/atlas-lab/qa/interpretation/', import.meta.url));
+const output = process.env.SYNK_INTERPRETATION_QA_OUTPUT ? path.resolve(process.env.SYNK_INTERPRETATION_QA_OUTPUT) : fileURLToPath(new URL('../experiences/atlas-lab/qa/interpretation/', import.meta.url));
 await fs.mkdir(output, { recursive: true });
 const server = createServer(); await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const origin = `http://127.0.0.1:${server.address().port}`;

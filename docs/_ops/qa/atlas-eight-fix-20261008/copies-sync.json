@@ -1,0 +1,83 @@
+{
+  "ok": true,
+  "scope": "local+talk+website-staging",
+  "generatedBundles": 10,
+  "rawCopies": 22,
+  "problems": [],
+  "results": [
+    {
+      "label": "learning: 9 games",
+      "command": [
+        "node",
+        "tools/build-game-learning.js"
+      ],
+      "exitCode": 0,
+      "output": "unchanged strata\\maps\\topik-i.json\nbuilt experiences\\korean-racing\\atlas-learning.js\nbuilt experiences\\korean-runner\\atlas-learning.js\nbuilt experiences\\korean-rhythm\\atlas-learning.js\nbuilt experiences\\order-rush\\atlas-learning.js\nbuilt experiences\\learning-hub\\atlas-learning.js\nbuilt experiences\\entry-check\\atlas-learning.js\nbuilt experiences\\story-classroom\\atlas-learning.js\nbuilt experiences\\blank-slice\\atlas-learning.js\nbuilt experiences\\talk-rally\\atlas-learning.js"
+    },
+    {
+      "label": "learning: Hangul",
+      "command": [
+        "node",
+        "tools/build-hangul-stage.js"
+      ],
+      "exitCode": 0,
+      "output": "unchanged strata\\maps\\hangul.json\nbuilt experiences\\hangul-stage\\atlas-learning.js"
+    },
+    {
+      "label": "raw consumers and engine metadata",
+      "problems": [],
+      "changed": [
+        "experiences/path-vr/vendor/engine.js",
+        "experiences/path-vr/vendor/trail.js",
+        "experiences/path-vr/vendor/personalization.js",
+        "desktop/assets/launcher/engine.js",
+        "desktop/assets/launcher/personalization.js",
+        "docs/마케팅/맞춤도구/dist/brief/computer/atlas-engine.js",
+        "docs/마케팅/맞춤도구/dist/brief/meeting/atlas-engine.js",
+        "docs/마케팅/맞춤도구/dist/builds/manual/atlas-engine.js",
+        "website/dist/try/racing/atlas-learning.js",
+        "website/dist/try/runner/atlas-learning.js",
+        "website/dist/try/rhythm/atlas-learning.js",
+        "website/dist/try/order-rush/atlas-learning.js",
+        "website/dist/try/story-classroom/atlas-learning.js",
+        "website/dist/try/entry-check/atlas-learning.js",
+        "website/dist/try/blank-slice/atlas-learning.js",
+        "website/dist/try/talk-rally/atlas-learning.js",
+        "website/dist/try/travel/atlas/engine.js",
+        "desktop/assets/launcher/sources.json",
+        "docs/마케팅/맞춤도구/dist/computer.manifest.json",
+        "docs/마케팅/맞춤도구/dist/meeting.manifest.json",
+        "docs/마케팅/맞춤도구/dist/manual.manifest.json"
+      ],
+      "copies": 22
+    },
+    {
+      "label": "Talk app and server",
+      "command": [
+        "node",
+        "tools/sync-atlas.js",
+        "--consumer",
+        "talk"
+      ],
+      "exitCode": 0,
+      "output": "unchanged SYNK-talk/lib/atlas/account-summary.js\nunchanged SYNK-talk/lib/atlas/education.js\nsynced SYNK-talk/lib/atlas/engine.js 80e6c7048b52\nunchanged SYNK-talk/lib/atlas/experiences.js\nunchanged SYNK-talk/lib/atlas/flow.js\nunchanged SYNK-talk/lib/atlas/game-flow.js\nunchanged SYNK-talk/lib/atlas/game-learning.js\nunchanged SYNK-talk/lib/atlas/learning-ledger.js\nunchanged SYNK-talk/lib/atlas/learning-sync.js\nunchanged SYNK-talk/lib/atlas/learning.js\nunchanged SYNK-talk/lib/atlas/memory-sync.js\nunchanged SYNK-talk/lib/atlas/preferences.js\nunchanged SYNK-talk/lib/atlas/strata/index.js\nunchanged SYNK-talk/lib/atlas/strata/maps/ko.json\nunchanged SYNK-talk/lib/atlas/strata/maps/topik-i.json\nunchanged SYNK-talk/lib/atlas/strata/topik-i-examples.js\nunchanged SYNK-talk/lib/atlas/strata/topik-i.situation-examples.json\nunchanged SYNK-talk/lib/atlas/temper-flow.js\nunchanged SYNK-talk/lib/atlas/temper.js\nunchanged SYNK-talk/lib/atlas/trail.js\nunchanged SYNK-talk/lib/atlas/vellum-flow.js\nunchanged SYNK-talk/lib/atlas/vellum.js\nwrote SYNK-talk/lib/atlas/sync-manifest.json (22 files)\nrebuilt SYNK-talk/supabase/functions/_shared/synk-atlas.js\nrebuilt SYNK-talk/supabase/functions/_shared/synk-atlas-summary.js"
+    },
+    {
+      "label": "Strata source map",
+      "command": [
+        "node",
+        "tools/strata-build.js",
+        "--check",
+        "--talk-root",
+        "C:\\Users\\q1212\\Documents\\SYNK-talk"
+      ],
+      "exitCode": 0,
+      "output": "strata-ko-1-b91f23e62ef678cb: 121 nodes, 23 tags (checked)"
+    }
+  ],
+  "excluded": [
+    "historical QA/release archives",
+    "retired website letter",
+    "deployed servers and public pages"
+  ]
+}

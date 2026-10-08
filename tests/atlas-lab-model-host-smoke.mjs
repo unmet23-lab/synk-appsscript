@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { createServer } from '../experiences/learning-hub/server.mjs';
 const require = createRequire(import.meta.url);
 const { chromium } = require(require.resolve('playwright', { paths: [process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')] }));
-const output = fileURLToPath(new URL('../experiences/atlas-lab/qa/model-host/', import.meta.url));
+const output = process.env.SYNK_MODEL_HOST_QA_OUTPUT ? path.resolve(process.env.SYNK_MODEL_HOST_QA_OUTPUT) : fileURLToPath(new URL('../experiences/atlas-lab/qa/model-host/', import.meta.url));
 await fs.mkdir(output, { recursive: true });
 const server = createServer(); await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const origin = `http://127.0.0.1:${server.address().port}`, browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -105,7 +105,7 @@ async function checkPage(width) {
   assert.deepEqual((await state(page)).answers, { uses: ['web'] });
   await page.locator('#interpret-ai').click(); await page.locator('#interpret-cancel').waitFor();
   await page.locator('#interpret-extract').click(); await takeLate();
-  assert.equal((await state(page)).mode, 'computer-explicit-ko-1');
+  assert.equal((await state(page)).mode, 'computer-explicit-ko-2');
   assert.deepEqual((await state(page)).answers, { uses: ['web'] });
   mode = 'success'; await page.locator('#interpret-ai').click();
   await page.locator('#interpret-status').filter({ hasText: 'AI 제안' }).waitFor();

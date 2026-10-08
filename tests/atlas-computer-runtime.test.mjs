@@ -36,6 +36,16 @@ test('fresh Node load reports exactly the five executed interpretation sources',
   assert.equal(proof.buildId, hash(JSON.stringify(proof.artifacts)));
 });
 
+test('ordinary company server import certifies all five sources before practice sync shares Domain', async () => {
+  const { stdout } = await promisify(execFile)(process.execPath, ['--input-type=module', '-e',
+    `await import('./docs/마케팅/온라인마케팅지도/engagement/company/server.mjs');
+     const m=await import('./${runtime}');console.log(JSON.stringify(m.computerRuntimeProof()));`], { cwd: root });
+  const proof = JSON.parse(stdout);
+  assert.equal(proof.runtimeAttested, true);
+  assert.deepEqual(proof.artifacts, await Promise.all(paths.map(async path => ({ path, sha256: hash(await fs.readFile(join(root, path))) }))));
+  assert.equal(proof.buildId, hash(JSON.stringify(proof.artifacts)));
+});
+
 test('editing disk after load cannot relabel the old in-memory implementation as a new build', async t => {
   const f = await fixture(t), path = 'experiences/atlas-lab/model-extraction.mjs';
   const result = await f.run(`import fs from 'node:fs'; import {createHash} from 'node:crypto';

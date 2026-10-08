@@ -10,7 +10,7 @@ import { createHash } from 'node:crypto';
 import { createCompanyApp } from '../docs/마케팅/온라인마케팅지도/engagement/company/server.mjs';
 import { captureEvaluation } from '../tools/capture-atlas-interpretation-evaluation.mjs';
 
-test('real authenticated host and capture agree on loaded build; deletion preserves billing tombstones', async t => {
+async function fixture(t, failure = null) {
   const directory = await fs.mkdtemp(join(tmpdir(), 'synk-capture-company-'));
   let app;
   t.after(async () => {
@@ -31,9 +31,12 @@ test('real authenticated host and capture agree on loaded build; deletion preser
       assert.equal(url, 'https://api.openai.com/v1/responses'); providerCalls++;
       const body = JSON.parse(options.body), input = JSON.parse(body.input[0].content[0].text);
       assert.equal(input.source_text, sourceText); assert.equal(input.expected, undefined);
+      if (failure === 'uncertain' && providerCalls === 3) throw new Error('private provider transport failure');
+      if (failure === 'rejected' && providerCalls === 3) return new Response(JSON.stringify({ error: { type: 'invalid_request_error', code: 'invalid_api_key', message: 'private provider key failure' } }), { status: 401 });
+      const quote = failure === 'invalid' && providerCalls === 3 ? 'provider invented quotation' : sourceText;
       return new Response(JSON.stringify({ status: 'completed', model: 'gpt-6-luna', usage: { input_tokens: 1200, output_tokens: 200, total_tokens: 1400 },
         output: [{ type: 'message', role: 'assistant', status: 'completed', content: [{ type: 'output_text', text: JSON.stringify({
-          proposals: [{ field: 'uses.web', value: true, subject: 'self', stance: 'current', evidence: [{ quote: sourceText, occurrence: 1 }] }], held: [],
+          proposals: [{ field: 'uses.web', value: true, subject: 'self', stance: 'current', evidence: [{ quote, occurrence: 1 }] }], held: [],
         }) }] }],
       }), { headers: { 'Content-Type': 'application/json' } });
     } });
@@ -53,27 +56,85 @@ test('real authenticated host and capture agree on loaded build; deletion preser
   const datasetBytes = JSON.stringify(dataset), sha256 = createHash('sha256').update(datasetBytes).digest('hex');
   const freeze = JSON.parse(await fs.readFile(new URL('../docs/_ops/qa/atlas-model-20261005/freeze.json', import.meta.url), 'utf8'));
   freeze.dataset.sha256 = sha256;
+  for (const artifact of freeze.artifacts) artifact.sha256 = createHash('sha256').update(await fs.readFile(new URL('../' + artifact.path, import.meta.url))).digest('hex');
   const datasetPath = join(directory, 'dataset.json'), datasetManifest = join(directory, 'seal.json'), freezeManifest = join(directory, 'freeze.json');
   await fs.writeFile(datasetPath, datasetBytes);
   await fs.writeFile(datasetManifest, JSON.stringify({ manifestVersion: 1, frozenAt: '2026-10-06T00:00:00.000Z', dataset: { id: dataset.id, version: dataset.version, sha256, caseCount: 30 } }));
   await fs.writeFile(freezeManifest, JSON.stringify(freeze));
   const options = { dataset: datasetPath, datasetManifest, freezeManifest, outputDir: join(directory, 'capture'), maxCalls: 1 };
-  const captured = await captureEvaluation(options, { env: { SYNK_COMPUTER_EVALUATION_APPROVED: '1', SYNK_COMPUTER_EVALUATION_ORIGIN: origin,
-    SYNK_COMPUTER_EVALUATION_SESSION_COOKIE: headers.Cookie, SYNK_COMPUTER_EVALUATION_CSRF: 'capture-csrf' } });
+  const dependencies = { env: { SYNK_COMPUTER_EVALUATION_APPROVED: '1', SYNK_COMPUTER_EVALUATION_ORIGIN: origin,
+    SYNK_COMPUTER_EVALUATION_SESSION_COOKIE: headers.Cookie, SYNK_COMPUTER_EVALUATION_CSRF: 'capture-csrf' } };
+  const post = async (path, data) => fetch(origin + path, { method: 'POST', headers, body: JSON.stringify(data) });
+  const ledger = async () => JSON.parse(await fs.readFile(join(options.outputDir, 'request-manifest.json'), 'utf8'));
+  return { app, options, dependencies, post, ledger, status, sourceText, providerCalls: () => providerCalls };
+}
+
+test('real authenticated host and capture agree on loaded build; deletion preserves billing tombstones', async t => {
+  const f = await fixture(t), { app, options, dependencies, post, status, sourceText } = f;
+  const captured = await captureEvaluation(options, dependencies);
   assert.equal(captured.status, 'partial-limit'); assert.equal(captured.hostPromptSnapshotAttested, true);
-  assert.equal(providerCalls, 1);
-  const manifest = JSON.parse(await fs.readFile(join(options.outputDir, 'request-manifest.json'), 'utf8'));
+  assert.equal(f.providerCalls(), 1);
+  const manifest = await f.ledger();
   assert.equal(manifest.hostBuildId, status.buildProof.buildId);
   const request = manifest.requests[0], body = { id: request.id, requestId: request.requestId, revision: request.revision,
     sourceId: request.sourceId, text: sourceText, expectedBuildId: status.buildProof.buildId };
-  const post = async (path, data) => fetch(origin + path, { method: 'POST', headers, body: JSON.stringify(data) });
   const replay = await post('/api/computer-interpretation', body);
-  assert.equal(replay.status, 200); assert.equal((await replay.json()).buildId, status.buildProof.buildId); assert.equal(providerCalls, 1);
+  assert.equal(replay.status, 200); assert.equal((await replay.json()).buildId, status.buildProof.buildId); assert.equal(f.providerCalls(), 1);
   assert.equal((await post('/api/computer-interpretation', { ...body, expectedBuildId: '0'.repeat(64) })).status, 409);
-  assert.equal(providerCalls, 1);
+  assert.equal(f.providerCalls(), 1);
   const before = app.store.all('computerAIRequests')[0];
   assert.equal((await post('/api/computer-interpretation/delete', {})).status, 200);
   const after = app.store.all('computerAIRequests')[0];
   assert.equal(after.resultCiphertext, undefined); assert.equal(after.accountedMicroUSD, before.accountedMicroUSD);
-  assert.equal((await post('/api/computer-interpretation', body)).status, 410); assert.equal(providerCalls, 1);
+  assert.equal((await post('/api/computer-interpretation', body)).status, 410); assert.equal(f.providerCalls(), 1);
+});
+
+test('a real host invalid quotation closes that evaluation case and continues without rebilling it', async t => {
+  const f = await fixture(t, 'invalid'), options = { ...f.options, maxCalls: 30 };
+  const report = await captureEvaluation(options, f.dependencies);
+  assert.equal(report.status, 'complete'); assert.equal(report.counts.recordedRuns, 30);
+  assert.equal(report.counts.failedRuns, 1); assert.equal(f.providerCalls(), 30);
+  const manifest = await f.ledger(), failed = manifest.requests[2];
+  assert.equal(failed.status, 'failed'); assert.equal(failed.attempts, 1);
+  const billed = f.app.store.all('computerAIRequests'), row = billed.find(row => row.requestUUID === failed.id);
+  assert.equal(row.status, 'invalid'); assert.equal(row.accountedMicroUSD, 250); assert.equal(row.resultCiphertext, undefined);
+  const before = billed.map(row => ({ id: row.id, accountedMicroUSD: row.accountedMicroUSD, reservedMicroUSD: row.reservedMicroUSD }));
+  const response = await f.post('/api/computer-interpretation', { id: failed.id, requestId: failed.requestId, revision: failed.revision,
+    sourceId: failed.sourceId, text: f.sourceText, expectedBuildId: f.status.buildProof.buildId });
+  assert.equal(response.status, 409);
+  const data = await response.json();
+  assert.equal(data.code, 'SYNK_COMPUTER_AI_RESPONSE_INVALID');
+  assert.deepEqual(data.captureReceipt, failed.failureReceipt);
+  assert.deepEqual(Object.keys(data.captureReceipt).sort(), ['buildId', 'id', 'requestId', 'revision', 'status', 'version']);
+  assert.equal(JSON.stringify(data).includes(f.sourceText), false);
+  assert.equal(JSON.stringify(data).includes('provider invented'), false);
+  assert.equal((await captureEvaluation(options, f.dependencies)).counts.postsThisInvocation, 0);
+  assert.equal(f.providerCalls(), 30);
+  assert.deepEqual(f.app.store.all('computerAIRequests').map(row => ({ id: row.id, accountedMicroUSD: row.accountedMicroUSD, reservedMicroUSD: row.reservedMicroUSD })), before);
+});
+
+test('real uncertain provider dispatch remains missing, reserves its cost and blocks advancement on explicit replay', async t => {
+  const f = await fixture(t, 'uncertain'), options = { ...f.options, maxCalls: 30 };
+  const report = await captureEvaluation(options, f.dependencies);
+  assert.equal(report.status, 'stopped'); assert.equal(report.counts.recordedRuns, 2); assert.equal(report.counts.failedRuns, 0);
+  assert.equal(f.providerCalls(), 3);
+  const first = await f.ledger(), held = f.app.store.all('computerAIRequests').find(row => row.requestUUID === first.requests[2].id);
+  assert.equal(held.status, 'uncertain'); assert.equal(held.accountedMicroUSD, held.reservedMicroUSD);
+  const replay = await captureEvaluation(options, f.dependencies), after = await f.ledger();
+  assert.equal(replay.status, 'stopped'); assert.equal(replay.counts.recordedRuns, 2); assert.equal(f.providerCalls(), 3);
+  assert.equal(after.requests[2].id, first.requests[2].id); assert.equal(after.requests[2].status, 'unknown');
+  assert.equal(after.requests[3].attempts, 0);
+  const unchanged = f.app.store.all('computerAIRequests').find(row => row.id === held.id);
+  assert.equal(unchanged.accountedMicroUSD, held.accountedMicroUSD); assert.equal(unchanged.reservedMicroUSD, held.reservedMicroUSD);
+});
+
+test('provider key rejection stops capture for configuration review without consuming the cost reservation or retrying', async t => {
+  const f = await fixture(t, 'rejected'), options = { ...f.options, maxCalls: 30 };
+  const report = await captureEvaluation(options, f.dependencies);
+  assert.equal(report.status, 'stopped'); assert.equal(report.counts.recordedRuns, 2); assert.equal(report.counts.failedRuns, 0);
+  const first = await f.ledger(), rejected = f.app.store.all('computerAIRequests').find(row => row.requestUUID === first.requests[2].id);
+  assert.equal(rejected.status, 'rejected'); assert.equal(rejected.accountedMicroUSD, 0); assert.ok(rejected.reservedMicroUSD > 0);
+  assert.equal((await captureEvaluation(options, f.dependencies)).status, 'stopped');
+  const after = await f.ledger();
+  assert.equal(after.requests[2].id, first.requests[2].id); assert.equal(after.requests[3].attempts, 0); assert.equal(f.providerCalls(), 3);
 });

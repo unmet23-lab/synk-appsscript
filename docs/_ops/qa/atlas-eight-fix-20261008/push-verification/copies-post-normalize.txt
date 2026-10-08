@@ -1,0 +1,21 @@
+✔ first start does not persist or personalize before consent (2.1838ms)
+✔ declared teacher purpose goes through Core and produces real catalog and presentation settings (5.8166ms)
+✔ self-selected use contexts recommend distinct spaces without enabling planned products (3.4254ms)
+✔ consented profile restores and clear deletes only this platform context (0.9406ms)
+✔ foreign product, disabled consent and sensitive injected fields cannot restore (0.7427ms)
+✔ storage failure does not claim saved or deleted preferences (0.2738ms)
+✔ copied engine and branded assets match canonical source bytes (29.1926ms)
+✔ work and creator interests only prioritize Messenger when account already has its grant (7.9503ms)
+✔ one copy check includes PATH and launcher and checks all drift without changing files (32.0107ms)
+✔ engine refresh keeps unrelated launcher and marketing manifest fields and files (20.974ms)
+✔ a new unregistered consumer is detected while historical QA and dependencies stay untouched (10.8815ms)
+✔ missing canonical files cannot cause a partial raw-copy write (5.2959ms)
+✔ the full check refuses a missing Talk server generator before changing any local copies (8.0613ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 168.085

@@ -30,7 +30,7 @@ export function measureFidelity({ samples = 1500, seed = 20261006 } = {}) {
   const uses = content.steps.find(step => step.id === 'uses').options.map(option => option.id);
   // Each rule decides which question to put next, or null to stop.
   const policies = {
-    // The current product policy: only questions with a positive declared value.
+    // The product policy: positive declared value first, then unanswered required checks.
     value: answers => { const choice = consultation.choose(answers); return choice.status === 'ask' ? choice.question : null; },
     // Core Ask without a declared evaluator: ask while some answer can change the advice.
     impact: answers => { const choice = Ask.choose({ questions: consultation.questions(answers), decide: consultation.decision, answers, budget: 99 }); return choice.status === 'ask' ? choice.question : null; },

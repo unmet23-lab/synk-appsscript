@@ -1,0 +1,18 @@
+{
+  "current": {
+    "available": true,
+    "scope": "device",
+    "warning": null
+  },
+  "hangul": {
+    "available": false,
+    "scope": "device",
+    "warning": "기록을 읽지 못해 기본 연습으로 진행해요."
+  },
+  "key": "synk.atlas.learning.v1.device",
+  "storedChoice": {
+    "selectedId": "option-2",
+    "correctId": "option-1"
+  },
+  "reproduction": true
+}

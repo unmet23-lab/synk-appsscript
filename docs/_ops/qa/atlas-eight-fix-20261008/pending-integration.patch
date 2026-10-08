@@ -1,0 +1,74 @@
+diff --git a/docs/마케팅/온라인마케팅지도/engagement/company/server.mjs b/docs/마케팅/온라인마케팅지도/engagement/company/server.mjs
+index 63fdc2500..2c5b3c3a5 100644
+--- a/docs/마케팅/온라인마케팅지도/engagement/company/server.mjs
++++ b/docs/마케팅/온라인마케팅지도/engagement/company/server.mjs
+@@ -33,7 +33,10 @@ import { receiveStudioMedia,commitStudioMedia,discardStudioMedia,serveStudioMedi
+ import { createMessenger } from '../../../../../tools/company-messenger/server.mjs';
+ import { resolvePlatformUrl } from '../../../../../tools/company-messenger/platform-navigation.mjs';
+ import { createSynkIdentity, synkIdentityConfig } from './synk-identity.mjs';
+-import { createPracticeSyncService } from './workroom-practice-sync-service.mjs';
++
++// This service also loads Domain. Wait until the interpretation runtime has
++// observed its source through the static service dependency before sharing it.
++const { createPracticeSyncService } = await import('./workroom-practice-sync-service.mjs');
+ 
+ const here=dirname(fileURLToPath(import.meta.url));
+ const metricKeys=['views','likes','comments','shares','saves','reach'];
+diff --git a/docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs b/docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs
+index 33d1538bb..5af299ece 100644
+--- a/docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs
++++ b/docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs
+@@ -7,9 +7,9 @@ import {webcrypto} from 'node:crypto';
+ const root=new URL('../../../../../',import.meta.url);
+ const shared=readFileSync(new URL('experiences/shift-workbench/model.mjs',root),'utf8');
+ const modelNames=[...shared.matchAll(/export (?:const|function) (\w+)/g)].map(m=>m[1]);
+-function fixture(){
++function fixture({crypto=webcrypto}={}){
+   const storage=new Map(),reads=[],writes=[],handlers=new Map(),nodes=new Map();let renders=0,selected=null;
+-  const context=vm.createContext({console,URL,Blob,setTimeout,clearTimeout,Date,crypto:webcrypto,TextEncoder,location:{reload(){}},state:{user:{id:'member-A'},tab:'workroom'},wr:{view:'practice'},CSS:{escape:String},
++  const context=vm.createContext({console,URL,Blob,setTimeout,clearTimeout,Date,crypto,TextEncoder,location:{reload(){}},state:{user:{id:'member-A'},tab:'workroom'},wr:{view:'practice'},CSS:{escape:String},
+     localStorage:{getItem(key){reads.push(key);return storage.get(key)||null;},setItem(key,value){writes.push(key);storage.set(key,value);},removeItem:key=>storage.delete(key)},
+     document:{activeElement:null,addEventListener(type,handler){if(!handlers.has(type))handlers.set(type,[]);handlers.get(type).push(handler);},getElementById:id=>nodes.get(id)||null,querySelector:()=>selected},
+     render(){renders++;},escape:value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),button:(label,action)=>`<button data-action="${action}">${label}</button>`});
+@@ -126,17 +126,36 @@ function syncTransport(f){
+   f.context.fetch=async(path,options)=>{requests.push({path,...options});if(options.body){const body=JSON.parse(options.body);current={revision:current.revision+1,status:'active',updatedAt:new Date().toISOString(),state:body.state};}return {ok:true,status:200,json:async()=>JSON.parse(JSON.stringify(current))};};
+   return {requests,get remote(){return current;}};
+ }
+-async function settleSync(f){for(let n=0;n<100;n++){if(!f.wp.sync?.view().busy)return;await new Promise(resolve=>setImmediate(resolve));}throw new Error('sync did not settle');}
+-test('account sync opt-in is independent of device storage and does not upload before an actual profile',async()=>{
++function enableSync(f){
++  // The UI intentionally discards enable's Promise. Observe that same operation
++  // without estimating WebCrypto completion from event-loop iteration counts.
++  const sync=f.wp.sync,enable=sync.enable;let pending;
++  sync.enable=(...args)=>pending=enable(...args);
++  try{f.emit('change',{dataset:{wpField:'sync'},checked:true});assert.ok(pending&&typeof pending.then==='function');return pending;}
++  finally{sync.enable=enable;}
++}
++test('account sync opt-in is independent of device storage and does not upload before an actual profile',{timeout:10000},async()=>{
+   const f=fixture(),transport=syncTransport(f);f.evaluate('wpCloudEnsure()');assert.equal(transport.requests.length,0);
+-  assert.match(f.evaluate('wpPanel()'),/회사 계정에 저장하고 다른 기기에서 이어가기/);f.emit('change',{dataset:{wpField:'sync'},checked:true});await settleSync(f);
++  assert.match(f.evaluate('wpPanel()'),/회사 계정에 저장하고 다른 기기에서 이어가기/);await enableSync(f);
+   assert.equal(f.wp.value.save,false);assert.equal(transport.remote.status,'empty');assert.equal(f.wp.sync.view().phase,'waiting');f.start();await f.evaluate('wp.sync.refresh()');
+   assert.equal(transport.remote.state.profile.scope.personId,'member-A');assert.equal(transport.remote.state.save,true);assert.equal(f.storage.has('synk-workroom:ai-practice:v1:member-A'),false);
+   assert.equal(JSON.parse(f.storage.get('synk-workroom:ai-practice-sync:v1:member-A')).enabled,true);f.wp.sync.dispose();
+ });
+-test('turning device storage off keeps account sync on, while turning sync off stops later uploads',async()=>{
+-  const f=fixture(),transport=syncTransport(f);f.start();f.evaluate('wpCloudEnsure()');f.emit('change',{dataset:{wpField:'sync'},checked:true});await settleSync(f);
++test('turning device storage off keeps account sync on, while turning sync off stops later uploads',{timeout:10000},async()=>{
++  const f=fixture(),transport=syncTransport(f);f.start();f.evaluate('wpCloudEnsure()');await enableSync(f);
+   f.emit('change',{dataset:{wpField:'save'},checked:true});f.emit('change',{dataset:{wpField:'save'},checked:false});assert.equal(f.wp.sync.view().enabled,true);assert.equal(f.wp.value.save,false);
+   await f.evaluate('wp.sync.refresh()');const revision=transport.remote.revision;f.emit('change',{dataset:{wpField:'sync'},checked:false});f.emit('input',{dataset:{wpField:'prompt'},value:'이후에는 이 창에서만 수정하는 요청문입니다.'});await f.evaluate('wp.sync.refresh()');
+   assert.equal(transport.remote.revision,revision);assert.equal(f.wp.value.run.prompt,'이후에는 이 창에서만 수정하는 요청문입니다.');assert.equal(f.storage.has('synk-workroom:ai-practice:v1:member-A'),false);f.wp.sync.dispose();
+ });
++
++test('the sync UI test waits for the actual hash completion even after many immediate turns',{timeout:10000},async t=>{
++  let release,started;
++  const gate=new Promise(resolve=>release=resolve),ready=new Promise(resolve=>started=resolve);
++  const f=fixture({crypto:{subtle:{async digest(...args){started();await gate;return webcrypto.subtle.digest(...args);}}}}),transport=syncTransport(f);
++  t.after(()=>{release();f.wp.sync?.dispose();});f.evaluate('wpCloudEnsure()');
++  let settled=false;const pending=enableSync(f).then(()=>{settled=true;});await ready;
++  for(let n=0;n<100;n++)await new Promise(resolve=>setImmediate(resolve));
++  assert.equal(settled,false);assert.equal(f.wp.sync.view().busy,true);assert.equal(transport.remote.status,'empty');
++  release();await pending;
++  assert.equal(f.wp.sync.view().busy,false);assert.equal(f.wp.sync.view().phase,'waiting');assert.equal(transport.requests.length,1);
++});

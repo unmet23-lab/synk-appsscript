@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-08T00:43:34.9182968Z",
+  "file": "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+  "sha256": "93ca32a0e6d8b1e8bcd3812a25a8ab8b2c67c6b19d1764ed168c96ee39d38760",
+  "productSourceChanged": false,
+  "cause": "Test helper exhausted 100 setImmediate turns before asynchronous WebCrypto digest completion; original integrated failure ended after 33.7489ms",
+  "fix": "Observe the Promise from sync.enable invoked by the actual change event; bound each async test to 10000ms",
+  "deterministicEvidence": "Hold the actual digest behind a gate: after 100 immediate turns busy is still true and enable is pending; release the gate and the same operation completes to waiting",
+  "verification": {
+    "command": "node --test --test-reporter=spec docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync-client.test.mjs",
+    "tests": 35,
+    "pass": 35,
+    "fail": 0,
+    "skipped": 0,
+    "durationMs": 347.2546
+  },
+  "externalCalls": 0,
+  "diffCheckExitCode": 0
+}
