@@ -122,7 +122,10 @@ async function initialize() {
     selectWorkspaceView(requestedView,new URLSearchParams(location.search).get('section')||params.get('section')||'',new URLSearchParams(location.search).get('teamId')||params.get('teamId')||undefined,new URLSearchParams(location.search).get('draftId')||params.get('draftId')||undefined);
     const launch = params.get('launch');
     if (launch) { history.replaceState(null, '', location.pathname + location.search); await api('/api/launch', { token: launch }); }
-    const me = await api('/api/me');
+    const synkEntry=!isDemoMode()&&typeof prepareSynkCompanyEntry==='function'?await prepareSynkCompanyEntry():true;
+    if(synkEntry===false)return;
+    const me = synkEntry?.me||await api('/api/me');
+    if(!isDemoMode()&&typeof assertSynkPlatformIdentity==='function')assertSynkPlatformIdentity(me,synkEntry);
     state.csrf = me.csrfToken || '';
     state.user = me.user;
     state.platformUrl = me.platformUrl || null;
@@ -138,7 +141,7 @@ async function initialize() {
     if (status.get('connected')) { notify('계정 연결과 첫 수집을 확인했어요. 채널별 수집 결과를 살펴보세요.'); state.tab = 'channels'; render(); }
     if (status.get('connectionError')) { notify(status.get('connectionError')); state.tab = 'channels'; render(); }
     if (status.has('connected') || status.has('connectionError')) { const resultUrl=new URL(location.href);resultUrl.searchParams.delete('connected');resultUrl.searchParams.delete('connectionError');history.replaceState(null,'',resultUrl.pathname+resultUrl.search+resultUrl.hash); }
-  } catch (err) { if(err.code==='SESSION_CHANGED')return; app.innerHTML = `<main class="initial-loading" id="main"><img class="brand-logo" src="/wordmark.svg" alt="싱ㅋ"><div class="empty"><h3>성장 현황에 연결하지 못했어요</h3><p>${escape(err.message)}</p>${button('다시 연결', 'reload', 'refresh', 'primary')}</div></main>`; }
+  } catch (err) { if(err.code==='SESSION_CHANGED')return; app.innerHTML = `<main class="initial-loading" id="main"><img class="brand-logo" src="/wordmark.svg" alt="싱ㅋ"><div class="empty"><h3>성장 현황에 연결하지 못했어요</h3><p>${escape(err.message)}</p>${button('다시 연결', 'reload', 'refresh', 'primary')}</div></main>`;if(typeof renderSynkPlatformEntryRecovery==='function')renderSynkPlatformEntryRecovery(err); }
 }
 async function loadState() {
   const authStamp=companyAuthSnapshot();if(!authStamp.userId)throw companyAuthChanged();
@@ -191,6 +194,7 @@ async function loadHype() {
 }
 
 function renderAuth() {
+  if(typeof resetNativeSynkCompanyView==='function')resetNativeSynkCompanyView();
   if(typeof wpSyncIdentity==='function')wpSyncIdentity();
   if(typeof resetMarinHome==='function')resetMarinHome();
   if(typeof hideChartLeaders==='function')hideChartLeaders(true);
@@ -601,11 +605,13 @@ document.addEventListener('submit', async event => {
       case 'assignment': { if (values.role === 'manager' && !values.teamId) throw new Error('팀장은 소속 팀을 선택해 주세요.'); const ownTeam = form.dataset.id === state.user.id && state.user.role === 'admin'; await api(`/api/members/${encodeURIComponent(form.dataset.id)}/assignment`,{teamId:values.teamId || null,role:values.role}); closeModal(); await loadState(); notify(ownTeam ? '내 소속 팀을 저장했어요.' : '크루의 팀과 역할을 저장했어요.'); break; }
       case 'channel-details': { await api(`/api/channels/${encodeURIComponent(form.dataset.id)}/details`,values); closeModal(); await loadState(); notify('채널 정보를 저장했어요.'); break; }
       case 'auth': {
+        if(!isDemoMode()&&typeof assertSynkCompanyPasswordAllowed==='function')assertSynkCompanyPasswordAllowed();
         const endpoint = state.authMode === 'join' ? '/api/join' : state.authMode === 'setup' ? '/api/setup' : '/api/login';
         if (state.authMode === 'join') values.token = state.authToken;
         if (state.authMode === 'setup') values.setupToken = state.authToken || values.setupToken;
         await api(endpoint, values); state.authMode = 'login'; state.authToken = '';
-        const me = await api('/api/me'); state.platformUrl = me.platformUrl || null; state.user = me.user; state.csrf = me.csrfToken || ''; await loadState(); if(reportTabs())await loadReport(); if(state.tab==='content')await loadContentWorkspace(); startPolling(); break;
+        const synkEntry=!isDemoMode()&&typeof prepareSynkCompanyEntry==='function'?await prepareSynkCompanyEntry():true;if(synkEntry===false)break;
+        const me = synkEntry?.me||await api('/api/me');if(!isDemoMode()&&typeof assertSynkPlatformIdentity==='function')assertSynkPlatformIdentity(me,synkEntry);state.platformUrl = me.platformUrl || null; state.user = me.user; state.csrf = me.csrfToken || ''; await loadState(); if(reportTabs())await loadReport(); if(state.tab==='content')await loadContentWorkspace(); startPolling(); break;
       }
       case 'add-channels': {
         const urls = values.urls.split(/\r?\n/).map(url => url.trim()).filter(Boolean), results = { added: [], existing: [], errors: [] };

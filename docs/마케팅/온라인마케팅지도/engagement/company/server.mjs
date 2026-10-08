@@ -432,7 +432,7 @@ export function createCompanyApp(options={}) {
     if(method==='GET'&&path==='/api/health')return send(res,ready?200:503,{ok:ready,app:'synk-company',version:1,workspaceIntegration:true,ready});
     let auth=identityControl?rawSession(req):session(req),user=auth?.user;
     if(method==='GET'&&path==='/api/synk-id/status')return send(res,200,synkIdentity.status(auth));
-    if(method==='GET'&&path==='/api/me')return send(res,200,{user:publicUser(user),csrfToken:auth?.body.csrfToken,needsSetup:store.all('users').length===0,platformUrl});
+    if(method==='GET'&&path==='/api/me')return send(res,200,{user:publicUser(user),csrfToken:auth?.body.csrfToken,synkUserId:auth?.body.synkIdentity||null,needsSetup:store.all('users').length===0,platformUrl});
     if(path==='/api/device-notifications'||path.startsWith('/api/device-notifications/')){
       if(!auth)throw httpError('회사 계정으로 로그인해 주세요.',401);
       if(url.search)throw httpError('기기 알림 주소를 확인해 주세요.');

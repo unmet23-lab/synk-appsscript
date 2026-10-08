@@ -37,10 +37,15 @@ export function createSynkIdentity({store,origin,config=null,fetch:fetcher=globa
   function requireOrigin(req){if(req.headers.origin!==origin)throw fail(403,'ORIGIN','회사 로그인 화면에서 다시 시작해 주세요.');}
   function binding(req){return cookie(req,'synk_company_flow');}
   function clearFlowCookie(res){res.setHeader('Set-Cookie',`synk_company_flow=; HttpOnly; SameSite=Lax; Path=/api/synk-id; Max-Age=0${secure}`);}
-  function status(auth){const link=auth&&byCompany(auth.user.id);return {enabled,browserEnabled:enabled&&Boolean(config.issuer&&config.clientId),linked:Boolean(link),canLink:Boolean(auth?.user?.passwordHash),session:auth?.body?.synkIdentity?'synk':'company'};}
+  function status(auth){const link=auth&&byCompany(auth.user.id),synkUserId=auth?.body?.synkIdentity&&sessionAllowed(auth)?auth.body.synkIdentity.toLowerCase():null;return {enabled,browserEnabled:enabled&&Boolean(config.issuer&&config.clientId),linked:Boolean(link),canLink:Boolean(auth?.user?.passwordHash),session:auth?.body?.synkIdentity?'synk':'company',synkUserId};}
   async function challenge(req,res,input,auth,getAuth=()=>auth){
     requireEnabled();requireOrigin(req);rate(req);
     const action=input.action;if(!['login','link','unlink'].includes(action))throw fail(400,'ACTION','로그인 동작을 확인해 주세요.');
+    let expectedAccountId=null;
+    if(Object.hasOwn(input,'expectedAccountId')){
+      if(action!=='login'||typeof input.expectedAccountId!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.expectedAccountId))throw fail(400,'EXPECTED_ACCOUNT','플랫폼에서 선택한 SYNK ID를 확인해 주세요.');
+      expectedAccountId=input.expectedAccountId.toLowerCase();
+    }
     if(action!=='login'){
       if(!auth||req.headers['x-csrf-token']!==auth.body.csrfToken)throw fail(403,'CSRF','기존 회사 계정으로 로그인한 뒤 연결해 주세요.');
       if(!auth.user.passwordHash)throw fail(409,'PASSWORD_REQUIRED','회사 비밀번호를 먼저 설정한 뒤 SYNK ID를 연결해 주세요.');
@@ -52,7 +57,7 @@ export function createSynkIdentity({store,origin,config=null,fetch:fetcher=globa
     if(flows.size>=1000)throw fail(429,'BUSY','로그인 요청이 많습니다. 잠시 후 다시 시도해 주세요.');
     const value=random(),browser=random(),expiresAt=stamp+FLOW_MS;
     // Browser proof and OAuth verifier remain ephemeral. Session credentials are encrypted separately.
-    flows.set(hash(value),{action,browserHash:hash(browser),sessionHash:auth?.hash||null,userId:auth?.user.id||null,passwordHash:auth?.user.passwordHash||null,role:auth?.user.role||null,expiresAt});
+    flows.set(hash(value),{action,expectedAccountId,browserHash:hash(browser),sessionHash:auth?.hash||null,userId:auth?.user.id||null,passwordHash:auth?.user.passwordHash||null,role:auth?.user.role||null,expiresAt});
     res.setHeader('Set-Cookie',`synk_company_flow=${browser}; HttpOnly; SameSite=Lax; Path=/api/synk-id; Max-Age=300${secure}`);
     return {challenge:value,expiresAt:new Date(expiresAt).toISOString()};
   }
@@ -146,6 +151,8 @@ export function createSynkIdentity({store,origin,config=null,fetch:fetcher=globa
   function dropUserSynkSessions(userId){for(const [sessionHash]of sessions){const row=store.db.prepare('SELECT userId FROM tokens WHERE hash=?').get(sessionHash);if(row?.userId===userId)removeSession(sessionHash);}}
   async function complete(req,res,flow,accessToken,getAuth,setSession,browserTokens=null){
     if(closing)throw unavailable();currentForFlow(flow,getAuth);const identity=await verify(accessToken);if(closing)throw unavailable();const auth=currentForFlow(flow,getAuth);
+    // The starting account is a match condition, never permission to link or replace a company user.
+    if(flow.expectedAccountId&&identity.synkUserId.toLowerCase()!==flow.expectedAccountId)throw fail(409,'PLATFORM_ACCOUNT_MISMATCH','플랫폼에서 선택한 SYNK ID와 로그인 계정이 달라요. 플랫폼에서 다시 열어 주세요.');
     let user,link;
     store.transaction(()=>{
       if(flow.action==='link'){

@@ -60,6 +60,71 @@ test('SYNK ID cannot link to two company users or silently switch an existing co
   const begin=await second.challenge();assert.equal((await second.exchange(begin.data.challenge)).status,409);
   assert.equal((await second.request('/api/me')).data.user.id,f.admin.id);
 });
+test('platform account expectation accepts only a UUID on login and never creates or changes an employee link',async t=>{
+  const f=await fixture(t),c=f.client();await c.login();
+  for(const expectedAccountId of [null,'',ids.one+' ',[],{},'not-an-account']){
+    const result=await c.challenge('login',{expectedAccountId});assert.equal(result.status,400);assert.equal(result.data.code,'SYNK_EXPECTED_ACCOUNT');
+  }
+  for(const action of ['link','unlink']){
+    const result=await c.challenge(action,{expectedAccountId:ids.one,currentPassword:password,confirm:true});assert.equal(result.status,400);assert.equal(result.data.code,'SYNK_EXPECTED_ACCOUNT');
+  }
+  assert.equal(f.app.store.db.prepare('SELECT COUNT(*) n FROM synk_identity_links').get().n,0);
+  assert.equal((await c.request('/api/me')).data.user.id,f.staff.id);
+});
+
+test('verified same-account login promotes a legacy company session without changing its employee or role',async t=>{
+  const account='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+  const f=await fixture(t,{verify:async()=>({synkUserId:account,expiresAt:Date.now()+3600_000})}),c=f.client();await c.link();await c.login();
+  const priorCookie=c.jar.get('synk_company_session'),priorLinks=f.app.store.db.prepare('SELECT * FROM synk_identity_links').all();
+  const status=(await c.request('/api/synk-id/status')).data;assert.equal(status.session,'company');assert.equal(status.synkUserId,null);assert.equal(status.linked,true);
+  const begin=await c.challenge('login',{expectedAccountId:account.toUpperCase()}),result=await c.exchange(begin.data.challenge);
+  assert.equal(result.status,200);assert.equal(result.data.user.id,f.staff.id);assert.equal(result.data.user.role,f.staff.role);
+  assert.notEqual(c.jar.get('synk_company_session'),priorCookie);assert.deepEqual(f.app.store.db.prepare('SELECT * FROM synk_identity_links').all(),priorLinks);
+  assert.equal((await c.request('/api/synk-id/status')).data.synkUserId,account);
+});
+
+test('exchange cannot replace the account expectation fixed by the starting challenge',async t=>{
+  const f=await fixture(t),owner=f.client(),c=f.client();await owner.link();await c.login(f.admin);
+  const cookie=c.jar.get('synk_company_session'),links=f.app.store.db.prepare('SELECT * FROM synk_identity_links').all(),tokens=f.app.store.db.prepare('SELECT * FROM tokens ORDER BY hash').all();
+  for(const override of [undefined,ids.one]){
+    const begin=await c.challenge('login',{expectedAccountId:ids.two});
+    const result=await c.request('/api/synk-id/exchange',{token:access.one,body:{challenge:begin.data.challenge,confirm:true,...(override?{expectedAccountId:override}:{})}});
+    assert.equal(result.status,409);assert.equal(result.data.code,'SYNK_PLATFORM_ACCOUNT_MISMATCH');
+    assert.equal(c.jar.get('synk_company_session'),cookie);assert.equal((await c.request('/api/me')).data.user.id,f.admin.id);
+  }
+  assert.deepEqual(f.app.store.db.prepare('SELECT * FROM synk_identity_links').all(),links);assert.deepEqual(f.app.store.db.prepare('SELECT * FROM tokens ORDER BY hash').all(),tokens);
+});
+
+test('a matching platform account does not silently replace a different existing company user',async t=>{
+  const f=await fixture(t),owner=f.client(),c=f.client();await owner.link();await c.login(f.admin);
+  const cookie=c.jar.get('synk_company_session'),links=f.app.store.db.prepare('SELECT * FROM synk_identity_links').all();
+  const begin=await c.challenge('login',{expectedAccountId:ids.one}),result=await c.exchange(begin.data.challenge);
+  assert.equal(result.status,409);assert.equal(result.data.code,'SYNK_ACCOUNT_CHANGED');assert.equal(c.jar.get('synk_company_session'),cookie);
+  const me=(await c.request('/api/me')).data;assert.equal(me.user.id,f.admin.id);assert.equal(me.user.role,f.admin.role);
+  assert.deepEqual(f.app.store.db.prepare('SELECT * FROM synk_identity_links').all(),links);
+});
+
+test('wrong-account browser callback rejects before session or link writes and leaves the previous company session intact',async t=>{
+  let exchanged=0;const f=await fixture(t,{browser:true,fetcher:async()=>{exchanged++;return {ok:true,json:async()=>({access_token:access.two})};}}),owner=f.client(),c=f.client();await owner.link();await c.login(f.admin);
+  const cookie=c.jar.get('synk_company_session'),links=f.app.store.db.prepare('SELECT * FROM synk_identity_links').all(),tokens=f.app.store.db.prepare('SELECT * FROM tokens ORDER BY hash').all();
+  const start=await c.request('/api/synk-id/start',{body:{action:'login',expectedAccountId:ids.one}}),authorization=new URL(start.data.authorizationUrl);
+  assert.equal(authorization.searchParams.has('expectedAccountId'),false);assert.equal(authorization.searchParams.get('code_challenge_method'),'S256');
+  const callback='/api/synk-id/callback?state='+authorization.searchParams.get('state')+'&code=synthetic-code';
+  assert.match((await c.request(callback+'&expectedAccountId='+ids.two)).headers.get('location'),/synkError=SYNK_CALLBACK/);assert.equal(exchanged,0);
+  const result=await c.request(callback);assert.match(result.headers.get('location'),/synkError=SYNK_PLATFORM_ACCOUNT_MISMATCH/);assert.equal(exchanged,1);
+  assert.equal(c.jar.get('synk_company_session'),cookie);assert.equal((await c.request('/api/me')).data.user.id,f.admin.id);
+  assert.deepEqual(f.app.store.db.prepare('SELECT * FROM synk_identity_links').all(),links);assert.deepEqual(f.app.store.db.prepare('SELECT * FROM tokens ORDER BY hash').all(),tokens);
+  assert.match((await c.request(callback)).headers.get('location'),/synkError=SYNK_FLOW/);assert.equal(exchanged,1);
+});
+
+test('status exposes an account only for the currently verified SYNK session, never a legacy link or unverified restart',async t=>{
+  const f=await fixture(t),c=f.client();assert.equal((await c.request('/api/synk-id/status')).data.synkUserId,null);
+  await c.link();assert.equal((await c.request('/api/synk-id/status')).data.synkUserId,ids.one);
+  await f.restart();assert.equal((await c.request('/api/synk-id/status')).data.synkUserId,null);
+  await c.request('/api/me');assert.equal((await c.request('/api/synk-id/status')).data.synkUserId,ids.one);
+  await c.login();const legacy=(await c.request('/api/synk-id/status')).data;assert.equal(legacy.linked,true);assert.equal(legacy.synkUserId,null);
+});
+
 test('deactivation during central verification blocks linking and session issuance',async t=>{
   let release,started;const waiting=new Promise(r=>release=r),began=new Promise(r=>started=r);
   const f=await fixture(t,{verify:async()=>{started();await waiting;return {synkUserId:ids.one,expiresAt:Date.now()+3600_000};}}),c=f.client();await c.login();const begin=await c.challenge('link',{currentPassword:password,confirm:true}),pending=c.exchange(begin.data.challenge);await began;f.app.store.put('users',f.staff.id,{...f.staff,active:false});release();assert.equal((await pending).status,409);assert.equal(f.app.store.db.prepare('SELECT COUNT(*) AS n FROM synk_identity_links').get().n,0);
