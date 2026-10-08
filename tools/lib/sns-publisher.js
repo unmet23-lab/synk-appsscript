@@ -6,6 +6,7 @@ const path = require('node:path');
 const http = require('node:http');
 const crypto = require('node:crypto');
 const { spawn, spawnSync } = require('node:child_process');
+const { normalizeDm, instagramUrl } = require('./sns-dm.js');
 
 const REPO_ROOT = path.resolve(__dirname, '../..');
 const DEFAULT_ACCOUNTS = path.join(REPO_ROOT, 'docs', '마케팅', 'sns-계정.json');
@@ -283,6 +284,8 @@ function packageFromFolder(folder, accountConfig) {
   subtitles.forEach((file) => deps.push(dependency(file, 'subtitle')));
 
   const dependencies = uniqueByPath(deps);
+  const dm = normalizeDm(raw.dm);
+  if (dm && platform !== 'instagram') throw new Error('댓글 DM 설정은 Instagram 게시 묶음에만 넣습니다.');
   const hashMaterial = {
     id: raw.id,
     accountKey,
@@ -293,6 +296,7 @@ function packageFromFolder(folder, accountConfig) {
     alt: Array.isArray(raw.alt) ? raw.alt : [],
     dependencies: dependencies.map(({ role, path: file, bytes, sha256: digest }) => ({ role, path: file, bytes, sha256: digest })),
     ...(playlist ? { playlist } : {}),
+    ...(dm ? { dm } : {}),
   };
 
   return {
@@ -315,6 +319,7 @@ function packageFromFolder(folder, accountConfig) {
     document: document ? relativeFromRepo(document) : null,
     subtitles: subtitles.map(relativeFromRepo),
     ...(playlist ? { playlist } : {}),
+    ...(dm ? { dm } : {}),
     dependencies,
     contentHash: sha256(JSON.stringify(hashMaterial)),
     publisher: account.publisher,
@@ -341,6 +346,7 @@ function scanPackages(root, accountsFile = DEFAULT_ACCOUNTS) {
 
 function validateItem(item) {
   const errors = [];
+  try { if (item.dm) { normalizeDm(item.dm); if (item.platform !== 'instagram') errors.push('DM은 Instagram만 지원'); } } catch(error) { errors.push(error.message); }
   if (!item.title) errors.push('제목 없음');
   if (!item.text) errors.push('본문 없음');
   if (item.platform === 'youtube' && !item.video) errors.push('video.mp4 없음');
@@ -394,6 +400,11 @@ function renderPlanMarkdown(plan) {
   for (const item of plan.items) {
     lines.push(`| ${item.id} | ${item.platformName} ${item.account} | ${item.format} | ${item.publisher} | ${item.connection} | ${item.errors.length ? item.errors.join(', ') : '통과'} |`);
   }
+  for (const item of plan.items.filter((entry) => entry.dm)) {
+    lines.push('', `## 댓글 DM 자료 연결 — ${item.id}`, '',
+      `게시 계정: ${item.account}. 아래 자료·문구·기한·공개 답글·FAQ 전체가 이 게시물의 승인에 포함됩니다.`, '',
+      '```json', JSON.stringify(normalizeDm(item.dm), null, 2), '```', '');
+  }
   lines.push('', '## 유호님이 실제로 하는 일', '',
     '1. 이 한 판에서 계정·본문·파일·공개범위·예약시각을 한 번 검수합니다.',
     '2. 직접 통로는 --발행으로 처리합니다. 네이버·카카오·티스토리·Substack은 --수동열기로 본문을 복사하고 공식 편집기와 자료 폴더를 엽니다.',
@@ -434,6 +445,7 @@ function publicationHash(item, account, credential = {}) {
     'subtitles', 'remoteMediaUrls', 'publish', 'dependencies']);
   // 재생목록은 있는 항목에만 넣는다 — 재생목록이 없는 기존 계획의 승인 해시가 바뀌지 않게
   if (item.playlist) itemPart.playlist = item.playlist;
+  if (item.dm) itemPart.dm = normalizeDm(item.dm);
   return sha256(stableJson({
     version: 2,
     item: itemPart,
@@ -475,7 +487,7 @@ function approvePlan(planFile, ids, note = '', { accountsFile, readCredentialImp
   for (const item of plan.items) {
     if (!selected.has(item.id)) continue;
     const account = config.accounts[item.accountKey];
-    const credential = account?.publisher.startsWith('direct')
+    const credential = account?.platform !== 'instagram' && account?.publisher.startsWith('direct')
       ? readCredentialImpl(item.accountKey, { allowLegacy: true }) : null;
     const hash = verifyPublication(item, account, credential);
     item.approval = { version: 2, contentHash: item.contentHash, publicationHash: hash, approvedAt: now, note };
@@ -1246,6 +1258,37 @@ function resultFileFor(planFile) {
   return planFile.replace(/\.json$/i, '.결과.json');
 }
 
+// A browser publication is an explicit receipt, never an API-post claim.
+function recordInstagramPublication(planFile,itemId,url,note,{accountsFile}={}) {
+  if (!String(note||'').trim()) throw new Error('게시 확인 근거가 필요합니다.');
+  const plan=readJson(planFile),item=plan.items.find(x=>x.id===itemId);
+  const config=loadAccounts(accountsFile||resolveRepoPath(plan.accountsFile));
+  if(!item||item.platform!=='instagram'||!item.dm)throw new Error('DM 설정을 승인한 Instagram 항목이 필요합니다.');
+  const approvedHash=verifyApproval(item,config.accounts[item.accountKey],null);
+  const canonical=instagramUrl(url),resultFile=resultFileFor(planFile);
+  const result=fs.existsSync(resultFile)?readJson(resultFile):{schema:'synk-sns-publish-result/v1',plan:relativeFromRepo(planFile),items:{}};
+  const previous=result.items[itemId];
+  if(previous?.publicationHash&&previous.publicationHash!==approvedHash)throw new Error('이전 게시 결과와 현재 승인이 다릅니다.');
+  if(previous?.url&&instagramUrl(previous.url)!==canonical)throw new Error('기록한 게시물 주소를 다른 게시물로 덮어쓸 수 없습니다.');
+  if(previous?.state==='browser-published')return {resultFile,item:previous};
+  const receipt={state:'browser-published',url:canonical,account:item.account,contentHash:item.contentHash,
+    publicationHash:approvedHash,confirmedAt:new Date().toISOString(),note:String(note).trim()};
+  result.items[itemId]=receipt;writeJsonAtomic(resultFile,result);return {resultFile,item:receipt};
+}
+
+function dmPublicationHandoff(planFile,itemId,{accountsFile}={}) {
+  const plan=readJson(planFile),item=plan.items.find(x=>x.id===itemId);
+  const config=loadAccounts(accountsFile||resolveRepoPath(plan.accountsFile));
+  if(!item||item.platform!=='instagram'||!item.dm)throw new Error('승인된 Instagram DM 항목이 필요합니다.');
+  const publicationHash=verifyApproval(item,config.accounts[item.accountKey],null);
+  const receipt=readJson(resultFileFor(planFile)).items?.[itemId];
+  if(!receipt||receipt.state!=='browser-published'||receipt.publicationHash!==publicationHash||receipt.contentHash!==item.contentHash||receipt.account!==item.account)
+    throw new Error('현재 승인과 일치하는 게시 확인 기록이 필요합니다.');
+  const dm=normalizeDm(item.dm),post_url=instagramUrl(receipt.url);
+  const campaign_id=dm.campaign_id||'pub-'+sha256(stableJson({folder:item.folder,item:item.id,dm,post_url})).slice(0,40);
+  return {schema_version:1,publication_hash:publicationHash,account_handle:item.account,post_url,campaign:{...dm,campaign_id},receipt_at:receipt.confirmedAt};
+}
+
 async function publishPlan(planFile, ids, { accountsFile, fetchImpl = fetch, readCredentialImpl = readCredential, force = false } = {}) {
   const plan = readJson(planFile);
   const config = loadAccounts(accountsFile || resolveRepoPath(plan.accountsFile));
@@ -1452,5 +1495,7 @@ module.exports = {
   publishItem,
   publishPlan,
   resultFileFor,
+  recordInstagramPublication,
+  dmPublicationHandoff,
   openManualItem,
 };
