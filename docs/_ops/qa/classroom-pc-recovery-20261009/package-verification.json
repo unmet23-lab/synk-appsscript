@@ -1,0 +1,33 @@
+{
+  "at": "2026-10-08T22:36:33.183893+00:00",
+  "sourceCommit": "96bbfc169977ae867665343b497c29baccb5a007",
+  "archive": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\classroom-pc-recovery-20261009\\synk-classroom-pc-recovery-96bbfc1.zip",
+  "bytes": 81032,
+  "sha256": "6f9a6ab9ca76a1e7438efb627519e23cbe0f6f39d10af20f3a77c910ac689295",
+  "zipEntryCount": 15,
+  "sourceFileCount": 12,
+  "allArchiveBytesMatch": true,
+  "relativeDependencies": [
+    {
+      "from": "tools/classroom-media/cli.js",
+      "to": "tools/classroom-media/worker.js"
+    },
+    {
+      "from": "tools/classroom-media/cli.js",
+      "to": "tools/classroom-media/preflight.js"
+    },
+    {
+      "from": "tools/classroom-media/cli.js",
+      "to": "tools/classroom-media/operator-guide.js"
+    },
+    {
+      "from": "tools/classroom-media/worker.js",
+      "to": "tools/lib/sns-publisher.js"
+    }
+  ],
+  "credentialMarkerHits": 0,
+  "packageHelpPassed": true,
+  "unsetExampleRejected": true,
+  "claudeReviewCompleted": false,
+  "published": false
+}

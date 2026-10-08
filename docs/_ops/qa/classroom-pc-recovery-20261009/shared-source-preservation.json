@@ -1,0 +1,56 @@
+{
+  "at": "2026-10-08T22:37:07.624Z",
+  "sourceCommit": "96bbfc169977ae867665343b497c29baccb5a007",
+  "baselineCommit": "d932e135b7cda3e3067d8a8d0e8b9e7ff05dc621",
+  "method": "All changed shared source paths compared with baseline after CRLF normalization before update; unrelated changes preserved",
+  "files": [
+    {
+      "file": "tests/classroom-auth.test.js",
+      "action": "add"
+    },
+    {
+      "file": "tests/classroom-cli.test.js",
+      "action": "update-baseline-match"
+    },
+    {
+      "file": "tests/classroom-guide.test.js",
+      "action": "update-baseline-match"
+    },
+    {
+      "file": "tests/classroom-media.test.js",
+      "action": "update-baseline-match"
+    },
+    {
+      "file": "tests/classroom-obs.test.js",
+      "action": "update-baseline-match"
+    },
+    {
+      "file": "tests/fixtures/classroom-obs.lua",
+      "action": "update-baseline-match"
+    },
+    {
+      "file": "tools/classroom-media/README.md",
+      "action": "update-baseline-match"
+    },
+    {
+      "file": "tools/classroom-media/cli.js",
+      "action": "update-baseline-match"
+    },
+    {
+      "file": "tools/classroom-media/obs-completed.lua",
+      "action": "update-baseline-match"
+    },
+    {
+      "file": "tools/classroom-media/operator-guide.js",
+      "action": "update-baseline-match"
+    },
+    {
+      "file": "tools/classroom-media/worker.js",
+      "action": "update-baseline-match"
+    },
+    {
+      "file": "tools/classroom-media/교실세팅.md",
+      "action": "update-baseline-match"
+    }
+  ]
+}

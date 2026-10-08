@@ -1,0 +1,10 @@
+{
+  "result": "You've hit your session limit · resets 10:30am (Asia/Seoul)",
+  "is_error": true,
+  "subtype": "success",
+  "models": [],
+  "effort_argument": "max",
+  "reviewedCommit": "9972ed5ac8618ad7280e940223b993809736b93e",
+  "exitCode": 1,
+  "duration_ms": 1813
+}
