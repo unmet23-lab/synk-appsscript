@@ -238,3 +238,7 @@ experiences/atlas-lab/qa/**/*share*.html
 
 # Local public OAuth binding for Atlas dating; use deploy/account.public.example.json.
 /experiences/atlas-lab/account.config.json
+
+# 검수 화면 캡처 PNG는 커밋하지 않고 작업본에만 둔다(유호님 10-08). 위 공유판 줄의 「화면 캡처는 남긴다」를 바꾼다.
+experiences/atlas-lab/qa/**/*.png
+docs/_ops/qa/atlas-*/**/*.png
