@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-08T00:57:12.305Z",
+  "purpose": "Preserve only own changes against preexisting dirty workroom sync implementation",
+  "sharedSourceWrites": 0,
+  "indexWrites": 0,
+  "files": [
+    {
+      "file": "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs",
+      "currentSha256": "35348cb15995160c7096620fee499173c9efdd9ec18d812d88889248d23e5ff7",
+      "beforeTextSha256": "ce177abaa2b74a531699261da1e2db8c3a45509b59d6d30c7fabb3e9f4eb460a",
+      "afterTextSha256": "13cf299e39c5d4c04c4069ea118f25b063ce3250f2be628acf1bd0c38918603b"
+    },
+    {
+      "file": "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+      "currentSha256": "93ca32a0e6d8b1e8bcd3812a25a8ab8b2c67c6b19d1764ed168c96ee39d38760",
+      "beforeTextSha256": "ea22535b8f948440b0fc1c4934325380cc056d6fdf32e8964a43a8a38a9c5ce0",
+      "afterTextSha256": "df35f2928e10c11d2327b94ef1696324880b6f01260ee2a4f9c87f37b2f11060"
+    }
+  ],
+  "patchSha256": "27903a8af5b4abb251148c8f7f282df4f68c9980efe0ee7658a021cd9f514dce",
+  "applyCheckPassed": true,
+  "appliedTextEqualsCurrentForBothFiles": true
+}

@@ -1,0 +1,27 @@
+{
+  "source": "current local atlas/engine.js",
+  "outcomeExclusion": {
+    "line": 218,
+    "original": "audit.6",
+    "correction": "audit.7",
+    "before": "unobserved",
+    "after": "performance",
+    "returnedOutcomes": [
+      {
+        "id": "audit.6",
+        "value": 1
+      }
+    ],
+    "comparableFeedbackCount": 0,
+    "expected": "After excluding the latest outcome, no earlier report for that same decision/measure/window/target becomes current."
+  },
+  "reorderedDuplicate": {
+    "line": 121,
+    "trailPresentations": 1,
+    "coreError": "Atlas: conflicting event id",
+    "productRestoreStorageAvailable": false,
+    "productRestoreWarning": "기록을 읽지 못해 기본 연습으로 진행해요.",
+    "expected": "An otherwise equal JSON event with different property order remains an idempotent replay.",
+    "limitation": "Normal game-learning importEvents and local merge already use canonical sameEvent; no normal-sync failure claimed."
+  }
+}

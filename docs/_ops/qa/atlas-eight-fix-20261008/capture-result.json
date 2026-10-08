@@ -1,0 +1,80 @@
+{
+  "at": "2026-10-08T00:40:10.8387804Z",
+  "scope": "Capture terminal invalid receipts, safe failure reasons, confirmed authentication rejection, ordinary server runtime attestation",
+  "externalRequests": 0,
+  "paidModelCalls": 0,
+  "provider": "Injected synthetic responses only; loopback company HTTP",
+  "heldoutBodyInspected": false,
+  "heldoutEvaluationRun": false,
+  "canonicalFreezeModifiedByThisAgent": false,
+  "modelIdChanged": false,
+  "limitsChanged": false,
+  "historicUncertainReservationsReleased": false,
+  "confirmedRejectionPolicy": "Only new HTTP 401/403 with bounded recognized authentication/permission error envelope settle accountedMicroUSD=0; original reservedMicroUSD and UUID stay; capture stops for configuration review",
+  "files": [
+    {
+      "path": "tools/capture-atlas-interpretation-evaluation.mjs",
+      "sha256": "c00a97da62e009aacbdbcfa46351976a510f0ae23302a4a2372a27277cf805a8"
+    },
+    {
+      "path": "tests/atlas-interpretation-capture.test.mjs",
+      "sha256": "de2ad96264494c2287deb667965e5b8b05b6fa3578c95f52c4a60c1694de7c5d"
+    },
+    {
+      "path": "tests/atlas-capture-company.test.mjs",
+      "sha256": "0a04529cd9e4a56206b820bdfbdc0cb7ab769d7cf0d270707bf50f40135a7a28"
+    },
+    {
+      "path": "tests/atlas-computer-runtime.test.mjs",
+      "sha256": "cd403c96bf09d3dd60ba2c41ffe44520b64fe93521f74ccf1eb0adfeeb28c558"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/computer-interpretation-service.mjs",
+      "sha256": "75231265c1c686d5c4905d8335e0ee9776e4aaf5acbff60917a2ec656bf52671"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs",
+      "sha256": "35348cb15995160c7096620fee499173c9efdd9ec18d812d88889248d23e5ff7"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-computer-interpretation.test.mjs",
+      "sha256": "d78523af1ed47b157f5290ae038926569035c2bd06e91ae231af8b39121d2610"
+    }
+  ],
+  "verification": [
+    {
+      "phase": "before runtime order fix",
+      "tests": 49,
+      "pass": 45,
+      "fail": 4,
+      "reason": "ordinary server import omitted Domain from observed runtime; exact same scope passed 49/49 with diagnostic official runtime preload"
+    },
+    {
+      "phase": "after runtime order fix",
+      "tests": 56,
+      "pass": 56,
+      "fail": 0,
+      "preload": false
+    },
+    {
+      "phase": "final including rejection/failure-reason and workroom integration",
+      "command": "node --test --test-reporter=spec tests/atlas-interpretation-capture.test.mjs tests/atlas-capture-company.test.mjs tests/atlas-computer-runtime.test.mjs docs/마케팅/온라인마케팅지도/engagement/company/server-computer-interpretation.test.mjs docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync.test.mjs",
+      "tests": 73,
+      "pass": 73,
+      "fail": 0,
+      "skipped": 0,
+      "durationMs": 37739.3216,
+      "preload": false
+    },
+    {
+      "phase": "scoped git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "limits": [
+    "Actual paid evaluation remains on hold",
+    "Old uncertain reservations are not retrospectively cleared",
+    "Old servers lacking exact invalid receipt continue to stop safely",
+    "Runtime proof still rejects genuinely preloaded or stale module caches"
+  ]
+}

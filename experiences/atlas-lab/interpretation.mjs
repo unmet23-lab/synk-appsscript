@@ -1,7 +1,7 @@
 // Product vocabulary and a deliberately limited, free, local expression matcher.
 // Core owns citation validation and confirmation; this adapter never treats a
 // matched phrase as a confirmed answer and makes no language-model call.
-export const COMPUTER_EXTRACTOR = 'computer-explicit-ko-1';
+export const COMPUTER_EXTRACTOR = 'computer-explicit-ko-2';
 export const MAX_COMPUTER_TEXT = 4000;
 const clone = value => JSON.parse(JSON.stringify(value));
 
@@ -26,67 +26,106 @@ export function createComputerCatalog(content) {
 export function extractComputerProposals({ source, catalog }) {
   if (!source || typeof source.id !== 'string' || typeof source.text !== 'string' || source.text.length > MAX_COMPUTER_TEXT) throw new TypeError('Computer interpretation: invalid source');
   const known = new Map(catalog.fields.map(field => [field.id, field])), proposals = [], held = [];
+  // Quotation scope survives sentence boundaries. A second sentence inside a
+  // quote must not become a self statement after the first period is split off.
+  const quoted = new Uint8Array(source.text.length), quoteStack = [];
+  const closers = new Map([['"', '"'], ["'", "'"], ['“', '”'], ['‘', '’'], ['«', '»'], ['「', '」'], ['『', '』']]);
+  for (let i = 0; i < source.text.length; i++) {
+    const char = source.text[i];
+    if (quoteStack.length) {
+      quoted[i] = 1;
+      if (char === quoteStack.at(-1)) quoteStack.pop();
+      else if (closers.has(char)) quoteStack.push(closers.get(char));
+    } else if (closers.has(char)) { quoted[i] = 1; quoteStack.push(closers.get(char)); }
+  }
+  let personalContext = true;
   for (const sentence of source.text.matchAll(/[^.!?\n]+[.!?]*/gu)) {
     const quote = sentence[0].trim();
     if (!quote) continue;
     const start = sentence.index + sentence[0].indexOf(quote), end = start + quote.length;
-    const unknownSubject = [...quote.matchAll(/(?:^|\s)([가-힣]{1,8})(?:는|은|이가|이|가)(?=\s)/gu)].some(match => !['저', '제', '나', '내', '예산', '윈도우', '맥', '노트북', '데스크톱', '컴퓨터', '램', '영상', '프로그램', '운영체제'].includes(match[1]));
-    const reason = /["'“”‘’«»]|라고|라던|라더|대요|답니다|추천글|리뷰|기사|후기|말했|적혀|인용/u.test(quote) ? '인용이나 전해 들은 말은 직접 선택으로 확인해 주세요.'
-      : unknownSubject || /친구|동료|직원|학생|부모|엄마|아빠|동생|언니|누나|남편|아내|아들|그 사람/u.test(quote)
-        || [...quote.matchAll(/([가-힣]{1,8})의\s/gu)].some(match => !['저', '나', '컴퓨터', '노트북', '데스크톱'].includes(match[1])) ? '다른 사람의 이야기일 수 있어요.'
-      : /아니|않|못|없|싫|말고|제외|(?:^|\s)안\s|안써|안해/u.test(quote) ? '부정 표현은 직접 선택으로 확인해 주세요.'
-      : /예전|과거|작년|지난|전에는|했었|썼|쓰던|하던|(?:했|였|었|았)(?:어요|습니다|고|지만|는데|던)/u.test(quote) ? '과거와 현재를 구분해서 직접 선택해 주세요.'
-      : /만약|다면|경우|가정|언젠가|나중에|미래|계획|예정|생각|수도|아마|모르|고민|할까|일까|가능하면|[?？]|(?:하|되|쓰|사|으)면/u.test(quote) ? '조건이나 불확실한 뜻은 직접 선택으로 확인해 주세요.'
-      : /무시|시스템|명령|규칙|JSON|프롬프트|confirmed|proposal|지시/iu.test(quote) ? '설정 지시문은 상담 조건으로 사용하지 않아요.' : null;
-    if (reason) { held.push({ quote, start, end, reason }); continue; }
+    if (quoted.subarray(start, end).some(value => value)) {
+      held.push({ quote, start, end, reason: '인용 안의 말은 현재 본인의 조건으로 옮기지 않아요. 아래에서 직접 골라 주세요.' });
+      personalContext = false;
+      continue;
+    }
+    // A proposal must match a WHOLE present-tense self statement, including its
+    // predicate. Unknown subjects, comparison/transition clauses and modifiers
+    // do not become facts merely because a tool name or a capacity occurs in them.
+    // Supported subjects: explicit 저/나, 제/내 possession, or an omitted subject
+    // in the exact personal-activity/device forms below. Questions, quotations,
+    // past/negative/uncertain or compound clauses remain for direct selection.
+    // Do not strip arbitrary prefixes/suffixes: that would lose who/when/negation.
+    const statement = quote.replace(/[.!]+$/u, '').trim().replace(/^(?:[\p{Extended_Pictographic}\uFE0F]\s*)+/u, '');
+    const explicitSelf = /^(?:(?:현재|지금|요즘)\s*)?(?:저는|나는|제가|내가|제\s|내\s)/u.test(statement);
+    if (explicitSelf) personalContext = true;
+    // An unsupported preceding clause may have changed its subject or time.
+    // Require an explicit self statement to resume; do not resolve pronouns or
+    // carry an omitted subject from someone else's story into personal facts.
+    const body = statement
+      .replace(/^(?:저는|나는|제가|내가)\s*/u, '')
+      .replace(/^(?:현재|지금|요즘)\s*/u, '');
+    const match = pattern => new RegExp(`^(?:${pattern})$`, 'iu').exec(body);
+    const use = '(?:써요|씁니다|사용해요|사용합니다)';
+    const run = `(?:돌려요|돌립니다|실행해요|실행합니다|${use}|설치해요|설치합니다|설치해서\\s*(?:써요|씁니다|사용해요|사용합니다))`;
+    const copula = '(?:입니다|이에요|예요)';
+    const ownDevice = '(?:(?:제|내)\\s*)?(?:컴퓨터|노트북|데스크톱)';
     const values = new Map(), add = (field, value) => { if (known.has(field)) values.set(`${field}:${value}`, { field, value }); };
-    // Match explicit activities and common polite endings, not a mere product
-    // name. The sentence-level uncertainty/subject guard still runs first.
-    if (/웹\s*AI(?:를|로)?\s*(?:(?:문서|글)(?:를|을)?\s*)?(?:써요|씁니다|사용해요|사용합니다|작성해요|작성합니다)|(?:문서|글쓰기)(?:만|를|로)?\s*(?:해요|합니다|작업해요|작업합니다|작성해요|작성합니다)|(?:ChatGPT|챗지피티|클로드|Claude|Gemini|제미나)(?:를|로)?\s*(?:써요|씁니다|사용해요|사용합니다|대화해요|대화합니다)/iu.test(quote)) add('uses.web', true);
-    if (/(?:화상회의|온라인\s*수업)(?:를|을|도)?\s*(?:해요|들어요|합니다)/u.test(quote)) add('uses.meeting', true);
-    const video = /영상(?:을)?\s*편집(?:을)?\s*(?:해요|합니다)|(?:프리미어|캡컷|다빈치\s*리졸브|파이널\s*컷)(?:로|를)[^.]{0,30}편집(?:을)?\s*(?:해요|합니다)/u.test(quote);
+    const webLocation = `(?:${ownDevice}에서\\s*)?`;
+    if (match(`${webLocation}(?:웹\\s*AI(?:를|로)?\\s*(?:(?:문서|글)(?:를|을)?\\s*)?(?:${use}|작성해요|작성합니다)|(?:문서|글쓰기)(?:만|를|로)?\\s*(?:해요|합니다|작업해요|작업합니다|작성해요|작성합니다)|(?:ChatGPT|챗지피티|클로드|Claude|Gemini|제미나이?)(?:를|로)?\\s*(?:${use}|대화해요|대화합니다))`)) add('uses.web', true);
+    if (match('(?:화상회의|온라인\\s*수업)(?:를|을|도)?\\s*(?:해요|들어요|합니다)')) add('uses.meeting', true);
+    const video = match('(?:(프리미어|캡컷|다빈치\\s*리졸브|파이널\\s*컷)(?:로|를)\\s*)?(?:(4K|FHD)\\s*)?영상(?:을)?\\s*편집(?:을)?\\s*(?:해요|합니다)');
     if (video) {
       add('uses.video', true);
-      for (const [pattern, value] of [[/프리미어/u, 'premiere'], [/캡컷/u, 'capcut'], [/다빈치\s*리졸브/u, 'resolve'], [/파이널\s*컷/u, 'fcp']]) if (pattern.test(quote)) add('video.app', value);
-      if (/4K/iu.test(quote)) add('video.res', '4k');
-      if (/FHD/iu.test(quote)) add('video.res', 'fhd');
+      const app = { 프리미어: 'premiere', 캡컷: 'capcut', 다빈치리졸브: 'resolve', 파이널컷: 'fcp' }[video[1]?.replace(/\s/gu, '')];
+      if (app) add('video.app', app);
+      if (video[2]) add('video.res', video[2].toLowerCase());
     }
-    if (/(?:포토샵|라이트룸)(?:을|으로|으로도|도|을 써서)?[^.]{0,20}(?:보정해요|작업해요|써요|사용해요)/u.test(quote)) { add('uses.photo', true); add('photo', 'adobe'); }
-    if (/(?:웹사이트|웹\s*개발)(?:를|을|도)?\s*(?:만들어요|해요)/u.test(quote)) { add('uses.code', true); add('code', 'web'); }
-    if (/(?:아이폰|모바일|안드로이드)\s*앱(?:을|도)?\s*(?:만들어요|개발해요)/u.test(quote)) { add('uses.code', true); add('code', 'mobile'); }
-    const local = /(?:로컬\s*AI|(?:내|제)\s*컴퓨터(?:에|에서)[^.]{0,20}AI|Ollama|올라마|LM\s*Studio)[^.]{0,35}(?:돌려요|돌립니다|실행해요|실행합니다|써요|씁니다|사용해요|사용합니다|설치해요|설치합니다)/iu.test(quote);
-    const image = /(?:ComfyUI|컴피유아이|Stable\s*Diffusion|FLUX)(?:를|도)?\s*(?:돌려요|돌립니다|써요|씁니다|사용해요|사용합니다|설치해요|설치합니다)/iu.test(quote);
+    if (match(`(?:포토샵|라이트룸)(?:을|으로|으로도|도|을\\s*써서)?\\s*(?:(?:사진|이미지)(?:을|를)?\\s*)?(?:보정해요|보정합니다|작업해요|작업합니다|${use})`)) { add('uses.photo', true); add('photo', 'adobe'); }
+    if (match('(?:웹사이트|웹\\s*개발)(?:를|을|도)?\\s*(?:만들어요|해요|합니다)')) { add('uses.code', true); add('code', 'web'); }
+    if (match('(?:아이폰|모바일|안드로이드)\\s*앱(?:을|도)?\\s*(?:만들어요|개발해요|개발합니다)')) { add('uses.code', true); add('code', 'mobile'); }
+    const model = '(?:(?:4|8|12|14|27|32|70)\\s*B\\s*)?';
+    const local = match(`(?:(?:로컬\\s*AI|Ollama|올라마|LM\\s*Studio)(?:로)?\\s*${model}(?:대화\\s*AI\\s*)?(?:모델)?(?:을|를|도)?\\s*${run}|(?:제|내)\\s*컴퓨터(?:에|에서)\\s*${model}(?:로컬\\s*AI|대화\\s*AI)(?:\\s*모델)?(?:을|를|도)?\\s*${run})`);
+    const image = match(`(?:ComfyUI|컴피유아이|Stable\\s*Diffusion|FLUX)(?:를|도)?\\s*${run}`);
     if (local || image) {
       add('uses.localai', true);
-      if (image || /이미지\s*생성/u.test(quote)) add('localai.image', true);
-      for (const [pattern, value] of [[/\b(?:4|8)\s*B\b/iu, 'small'], [/\b(?:12|14)\s*B\b/iu, 'mid'], [/\b(?:27|32)\s*B\b/iu, 'large'], [/\b70\s*B\b/iu, 'huge']]) if (pattern.test(quote)) add(`localai.${value}`, true);
+      if (image) add('localai.image', true);
+      for (const [pattern, value] of [[/(?:^|\D)(?:4|8)\s*B/iu, 'small'], [/(?:^|\D)(?:12|14)\s*B/iu, 'mid'], [/(?:^|\D)(?:27|32)\s*B/iu, 'large'], [/(?:^|\D)70\s*B/iu, 'huge']]) if (pattern.test(body)) add(`localai.${value}`, true);
     }
-    if (/PC\s*게임(?:을|도)?\s*(?:해요|합니다)|게임(?:을|도)?\s*할\s*거예요/iu.test(quote)) add('uses.game', true);
-    const currentRam = /(?:현재|지금|제|내)\s*(?:(?:컴퓨터|노트북|데스크톱)(?:의)?\s*)?(?:램|RAM)(?:은|이|\s*용량은)?\s*(\d+)\s*GB\b/iu.exec(quote);
-    const owned = /(?:컴퓨터|노트북|데스크톱)(?:이|가|을|를|은|는|으로)?\s*(?:있어요|있습니다|쓰고\s*있어요|사용\s*중이에요)/u.test(quote) || !!currentRam;
+    if (match('(?:PC\\s*)?게임(?:을|도)?\\s*(?:해요|합니다)')) add('uses.game', true);
+    const currentRam = match(`(?:(?:제|내)\\s*)?(?:(?:컴퓨터|노트북|데스크톱)(?:의)?\\s*)?(?:램|RAM)(?:은|이|\\s*용량은)?\\s*(\\d+)\\s*GB\\s*${copula}`);
+    const ownedDevice = match(`(?:(?:제|내)\\s*)?(?:(?:램|RAM)\\s*\\d+\\s*GB\\s*)?(?:윈도우\\s*(?:10|11)\\s*)?(?:컴퓨터|노트북|데스크톱)(?:이|가|을|를|은|는|으로)?\\s*(?:있어요|있습니다|쓰고\\s*있어요|사용\\s*중이에요)`);
+    const owned = ownedDevice || currentRam;
     if (owned) {
       add('owned', 'have');
-      if (/노트북/u.test(quote)) add('current.kind', 'laptop');
-      if (/데스크톱/u.test(quote)) add('current.kind', 'desktop');
-      for (const match of quote.matchAll(/(?:램|RAM)(?:은|이|\s*용량은)?\s*(\d+)\s*GB\b/giu)) {
-        const gb = Number(match[1]);
+      if (/노트북/u.test(body)) add('current.kind', 'laptop');
+      if (/데스크톱/u.test(body)) add('current.kind', 'desktop');
+      for (const capacity of body.matchAll(/(?:램|RAM)(?:은|이|\s*용량은)?\s*(\d+)\s*GB/giu)) {
+        const gb = Number(capacity[1]);
         // The source question's last option means "32GB or more". Keep the
         // exact quote but project only capacities represented by that catalog.
         if (Number.isSafeInteger(gb) && gb >= 32) add('current.ram', '32');
         else if ([4, 8, 16].includes(gb)) add('current.ram', String(gb));
       }
-      if (/윈도우\s*11/u.test(quote)) add('current.os', 'win11');
-      if (/윈도우\s*10/u.test(quote)) add('current.os', 'win10');
+      if (/윈도우\s*11/u.test(body)) add('current.os', 'win11');
+      if (/윈도우\s*10/u.test(body)) add('current.os', 'win10');
     }
-    if (/(?:컴퓨터|노트북|데스크톱)(?:를|을)?\s*새로\s*살\s*거예요/u.test(quote)) add('owned', 'new');
-    if (/윈도우가\s*편해요/u.test(quote)) add('os', 'win');
-    if (/맥이\s*편해요/u.test(quote)) add('os', 'mac');
-    const occasionalCarry = /가끔\s*들고\s*(?:다녀요|다닙니다|다녀야\s*(?:해요|합니다))/u.test(quote);
+    // A direct purchase choice is supported, but is never present ownership.
+    if (match('(?:컴퓨터|노트북|데스크톱)(?:를|을)?\\s*새로\\s*살\\s*거예요')) add('owned', 'new');
+    if (match('윈도우가\\s*편해요')) add('os', 'win');
+    if (match('맥이\\s*편해요')) add('os', 'mac');
+    const carry = '(?:들고\\s*(?:다녀요|다닙니다|다녀야\\s*(?:해요|합니다)))';
+    const occasionalCarry = match(`(?:${ownDevice}(?:를|을)\\s*)?가끔\\s*${carry}`);
     if (occasionalCarry) add('place', 'both');
-    else if (/(?:매일|자주)\s*들고\s*(?:다녀요|다닙니다|다녀야\s*(?:해요|합니다))|들고\s*다녀야\s*(?:해요|합니다)/u.test(quote)) add('place', 'carry');
-    if (/(?:집|책상)에서만\s*(?:써요|씁니다|사용해요|사용합니다)/u.test(quote)) add('place', 'home');
-    for (const [pattern, value] of [[/예산(?:은|이)?\s*100만\s*원\s*미만/u, 'lt100'], [/예산(?:은|이)?\s*100(?:만\s*원)?\s*(?:[~∼-]|에서)\s*150만\s*원/u, '100_150'], [/예산(?:은|이)?\s*150(?:만\s*원)?\s*(?:[~∼-]|에서)\s*250만\s*원/u, '150_250'], [/예산(?:은|이)?\s*250만\s*원\s*이상/u, 'gt250']]) if (pattern.test(quote)) add('budget', value);
-    if (!values.size) held.push({ quote, start, end, reason: '지원하는 명시 표현과 맞지 않아요. 아래에서 직접 골라 주세요.' });
+    else if (match(`(?:${ownDevice}(?:를|을)\\s*)?(?:(?:매일|자주)\\s*${carry}|들고\\s*다녀야\\s*(?:해요|합니다))`)) add('place', 'carry');
+    if (match(`(?:${ownDevice}(?:를|을)\\s*)?(?:집|책상)에서만\\s*${use}`)) add('place', 'home');
+    for (const [amount, value] of [['100만\\s*원\\s*미만', 'lt100'], ['100(?:만\\s*원)?\\s*(?:[~∼-]|에서)\\s*150만\\s*원(?:\\s*사이)?', '100_150'], ['150(?:만\\s*원)?\\s*(?:[~∼-]|에서)\\s*250만\\s*원(?:\\s*사이)?', '150_250'], ['250만\\s*원\\s*이상', 'gt250']]) {
+      if (match(`(?:(?:제|내)\\s*)?예산(?:은|이)?\\s*${amount}\\s*${copula}`)) add('budget', value);
+    }
+    if (!personalContext) values.clear();
+    if (!values.size) {
+      held.push({ quote, start, end, reason: '현재 본인에 대한 명시 문장인지 확인이 필요해요. 부정·과거·타인·불확실한 말이나 지원하지 않는 복합 문장은 아래에서 직접 골라 주세요.' });
+      if (!explicitSelf) personalContext = false;
+    }
     for (const value of values.values()) if (!proposals.some(proposal => proposal.field === value.field && proposal.value === value.value)) proposals.push({ id: `${source.id}:p${proposals.length + 1}`, ...value, subject: 'self', stance: 'current', evidence: [{ sourceId: source.id, start, end, quote }] });
   }
   return { proposals, held: held.slice(0, 100), extractor: COMPUTER_EXTRACTOR };
@@ -168,7 +207,9 @@ export function createComputerInterpretation({ Interpretation, content, scope = 
   function setText(value) {
     if (typeof value !== 'string' || value.length > MAX_COMPUTER_TEXT) throw new TypeError('Computer interpretation: text must be at most 4000 characters');
     if (text === value) return snapshot();
+    const before = snapshot().answers;
     text = value; sources = []; proposals = []; reviews = []; held = []; mode = null; request = null; revision += 1; tick();
+    retireDependentAnswers(before);
     return snapshot();
   }
   function buildExtractionRequest() {

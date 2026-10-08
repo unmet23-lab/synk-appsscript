@@ -354,7 +354,7 @@ function renderConsult() {
     : completion.path === 'reuse' ? '지금 컴퓨터를 계속 쓰거나 상태를 점검하는 안내에는 구매 예산이 필요하지 않아요.'
       : '예산 미확인 · 현재 추천은 사양 안내예요. 구입을 검토할 때는 예산을 먼저 알려 주세요.';
   $('budget-review').hidden = !answers.uses.length;
-  $('budget-status').textContent = budgetKnown ? '선택한 예산을 바꿀 수도 있어요.' : '질문 순서에서 건너뛰었어도 여기서 직접 확인할 수 있어요.';
+  $('budget-status').textContent = budgetKnown ? '선택한 예산을 바꿀 수도 있어요.' : '예산을 알게 되면 여기서 직접 확인하거나 바꿀 수 있어요.';
   $('budget-options').replaceChildren(...C.steps.find(step => step.id === 'budget').options.map(option => {
     const b = el('button', { type: 'button', class: 'slab', text: option.label, 'aria-pressed': String(answers.budget === option.id), 'data-budget': option.id });
     b.addEventListener('click', () => applyManual('budget', option.id)); return b;
@@ -367,10 +367,12 @@ function renderConsult() {
   if (!answers.uses.length) return;
   if (result.status !== 'ask') { $('ask').append(el('p', { class: 'done', text: completion.status === 'ready'
     ? '현재 기준에서 추천 조건을 더 잘 맞출 질문이 없어요. 확인된 조건의 사양과 주의사항을 함께 볼 수 있어요.'
-    : '자동 질문은 여기까지예요. 사양 안내에 필요한 필수 항목이 남아 있으니 결과의 확인 항목을 살펴봐 주세요.' })); return; }
+    : '아직 모르는 필수 항목은 임시 조건으로 남겨 두었어요. 확인되면 결과의 확인 항목에서 바꿔 주세요.' })); return; }
   const q = qs.find(item => item.id === result.question.id);
   const card = el('div', { class: 'ask-card' }, el('p', { class: 'eyebrow', text: '지금 물어볼 질문' }), el('h3', { text: q.title }),
-    el('p', { class: 'mini', text: '작업에 부족하거나 필요 이상으로 큰 사양, 놓친 확인 사항을 줄이는 데 도움이 되는 질문이에요.' }));
+    el('p', { class: 'mini', text: result.reason === 'required-input-confirmation'
+      ? '사양 안내를 마무리하기 전에 필요한 기본 조건을 확인해요. 추천 사양이 같아도 직접 확인할 항목이에요.'
+      : '작업에 부족하거나 필요 이상으로 큰 사양, 놓친 확인 사항을 줄이는 데 도움이 되는 질문이에요.' }));
   const options = el('div', { class: 'chips' });
   const multiple = q.selection === 'multiple', selected = new Set();
   const confirm = multiple ? el('button', { type: 'button', class: 'slab', text: '선택한 작업으로 확인', disabled: '' }) : null;

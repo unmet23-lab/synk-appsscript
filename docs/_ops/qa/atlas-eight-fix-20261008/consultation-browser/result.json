@@ -1,0 +1,2677 @@
+{
+  "version": 1,
+  "at": "2026-10-08T00:36:54.619Z",
+  "status": "passed",
+  "kind": "synthetic-consultation-completion-browser",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "deployed": false,
+  "errors": [],
+  "missing": [],
+  "failedRequests": [],
+  "externalRequests": [],
+  "unexpectedApiRequests": [],
+  "apiMocks": [
+    {
+      "label": "local-1280",
+      "path": "/api/computer-interpretation"
+    },
+    {
+      "label": "local-1280",
+      "path": "/api/me"
+    },
+    {
+      "label": "local-1280",
+      "path": "/api/computer-interpretation"
+    },
+    {
+      "label": "local-1280",
+      "path": "/api/me"
+    },
+    {
+      "label": "local-390",
+      "path": "/api/computer-interpretation"
+    },
+    {
+      "label": "local-390",
+      "path": "/api/me"
+    },
+    {
+      "label": "local-390",
+      "path": "/api/computer-interpretation"
+    },
+    {
+      "label": "local-390",
+      "path": "/api/me"
+    },
+    {
+      "label": "local-320",
+      "path": "/api/computer-interpretation"
+    },
+    {
+      "label": "local-320",
+      "path": "/api/me"
+    },
+    {
+      "label": "local-320",
+      "path": "/api/computer-interpretation"
+    },
+    {
+      "label": "local-320",
+      "path": "/api/me"
+    }
+  ],
+  "paths": [
+    {
+      "label": "local-1280",
+      "kind": "purchase-and-new-work",
+      "initial": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "not-started",
+          "scope": "specification-guidance",
+          "path": "undetermined",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "os"
+          ],
+          "unresolvedRequiredFields": [
+            "owned",
+            "uses",
+            "os"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": false
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": false
+          },
+          "assumptions": []
+        },
+        "answers": {
+          "uses": []
+        },
+        "statusText": "",
+        "statusAttribute": "not-started",
+        "detailsText": "",
+        "adviceScope": ""
+      },
+      "askTrace": [
+        {
+          "field": "owned",
+          "value": "new"
+        },
+        {
+          "field": "os",
+          "value": "win"
+        },
+        {
+          "field": "place",
+          "value": "home"
+        }
+      ],
+      "confirmationTrace": [
+        {
+          "field": "budget",
+          "value": "lt100"
+        }
+      ],
+      "provisional": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "budget"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home"
+        },
+        "statusText": "임시 사양 안내",
+        "statusAttribute": "provisional",
+        "detailsText": "더 확인할 항목: 예산. 아래에서 직접 답할 수 있어요.",
+        "adviceScope": "예산 미확인 · 현재 추천은 사양 안내예요. 구입을 검토할 때는 예산을 먼저 알려 주세요."
+      },
+      "provisionalLayout": {
+        "viewport": 1280,
+        "documentWidth": 1280,
+        "overflowing": []
+      },
+      "ready": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home",
+          "budget": "lt100"
+        },
+        "statusText": "필수 확인 완료",
+        "statusAttribute": "ready",
+        "detailsText": "사양 안내에 필요한 기본 조건을 확인했어요. 위의 주의사항과 아래 가정도 함께 확인해 주세요.",
+        "adviceScope": "선택한 예산 구간으로 확인한 사양 안내예요. 실제 판매 가격과 구입 조건은 별도로 확인해 주세요."
+      },
+      "unknown": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "budget"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "unknown",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "unknown",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home",
+          "budget": "unknown"
+        },
+        "statusText": "임시 사양 안내",
+        "statusAttribute": "provisional",
+        "detailsText": "더 확인할 항목: 예산. 아래에서 직접 답할 수 있어요.",
+        "adviceScope": "예산 미확인 · 현재 추천은 사양 안내예요. 구입을 검토할 때는 예산을 먼저 알려 주세요."
+      },
+      "branchMissing": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "localai",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "localai"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "localai",
+              "title": "내 컴퓨터에 AI 설치",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web",
+            "localai"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home",
+          "budget": "lt100"
+        },
+        "statusText": "임시 사양 안내",
+        "statusAttribute": "provisional",
+        "detailsText": "더 확인할 항목: 내 컴퓨터에 AI 설치. 아래에서 직접 답할 수 있어요.",
+        "adviceScope": "선택한 예산 구간으로 확인한 사양 안내예요. 실제 판매 가격과 구입 조건은 별도로 확인해 주세요."
+      },
+      "requiredTrace": [],
+      "branchReady": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "localai",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "localai",
+              "title": "내 컴퓨터에 AI 설치",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web",
+            "localai"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home",
+          "budget": "lt100",
+          "localai": [
+            "large",
+            "image"
+          ]
+        },
+        "statusText": "필수 확인 완료",
+        "statusAttribute": "ready",
+        "detailsText": "사양 안내에 필요한 기본 조건을 확인했어요. 위의 주의사항과 아래 가정도 함께 확인해 주세요.",
+        "adviceScope": "선택한 예산 구간으로 확인한 사양 안내예요. 실제 판매 가격과 구입 조건은 별도로 확인해 주세요."
+      }
+    },
+    {
+      "label": "local-1280",
+      "kind": "reuse-without-purchase-budget",
+      "askTrace": [
+        {
+          "field": "owned",
+          "value": "have"
+        },
+        {
+          "field": "current.ram",
+          "value": "32"
+        },
+        {
+          "field": "current.feel",
+          "value": "ok"
+        },
+        {
+          "field": "os",
+          "value": "any"
+        },
+        {
+          "field": "current.os",
+          "value": "win11"
+        },
+        {
+          "field": "place",
+          "value": "home"
+        }
+      ],
+      "requiredTrace": [],
+      "result": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "reuse",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "current.ram",
+            "current.os",
+            "current.feel",
+            "os"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "current.kind",
+              "title": "지금 컴퓨터 사양 · 종류",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "current.ram",
+              "title": "지금 컴퓨터 사양 · 램 용량",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "current.os",
+              "title": "지금 컴퓨터 사양 · 운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "current.feel",
+              "title": "지금 컴퓨터 사양 · 하려는 일을 해 보니",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "unknown",
+              "required": false
+            }
+          ],
+          "budget": {
+            "state": "unknown",
+            "required": false
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "have",
+          "current.ram": "32",
+          "current.feel": "ok",
+          "os": "any",
+          "current.os": "win11",
+          "place": "home",
+          "budget": "unknown"
+        },
+        "statusText": "필수 확인 완료",
+        "statusAttribute": "ready",
+        "detailsText": "사양 안내에 필요한 기본 조건을 확인했어요. 위의 주의사항과 아래 가정도 함께 확인해 주세요.",
+        "adviceScope": "지금 컴퓨터를 계속 쓰거나 상태를 점검하는 안내에는 구매 예산이 필요하지 않아요."
+      },
+      "layout": {
+        "viewport": 1280,
+        "documentWidth": 1280,
+        "overflowing": []
+      }
+    },
+    {
+      "label": "local-390",
+      "kind": "purchase-and-new-work",
+      "initial": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "not-started",
+          "scope": "specification-guidance",
+          "path": "undetermined",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "os"
+          ],
+          "unresolvedRequiredFields": [
+            "owned",
+            "uses",
+            "os"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": false
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": false
+          },
+          "assumptions": []
+        },
+        "answers": {
+          "uses": []
+        },
+        "statusText": "",
+        "statusAttribute": "not-started",
+        "detailsText": "",
+        "adviceScope": ""
+      },
+      "askTrace": [
+        {
+          "field": "owned",
+          "value": "new"
+        },
+        {
+          "field": "os",
+          "value": "win"
+        },
+        {
+          "field": "place",
+          "value": "home"
+        }
+      ],
+      "confirmationTrace": [
+        {
+          "field": "budget",
+          "value": "lt100"
+        }
+      ],
+      "provisional": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "budget"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home"
+        },
+        "statusText": "임시 사양 안내",
+        "statusAttribute": "provisional",
+        "detailsText": "더 확인할 항목: 예산. 아래에서 직접 답할 수 있어요.",
+        "adviceScope": "예산 미확인 · 현재 추천은 사양 안내예요. 구입을 검토할 때는 예산을 먼저 알려 주세요."
+      },
+      "provisionalLayout": {
+        "viewport": 390,
+        "documentWidth": 390,
+        "overflowing": []
+      },
+      "ready": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home",
+          "budget": "lt100"
+        },
+        "statusText": "필수 확인 완료",
+        "statusAttribute": "ready",
+        "detailsText": "사양 안내에 필요한 기본 조건을 확인했어요. 위의 주의사항과 아래 가정도 함께 확인해 주세요.",
+        "adviceScope": "선택한 예산 구간으로 확인한 사양 안내예요. 실제 판매 가격과 구입 조건은 별도로 확인해 주세요."
+      },
+      "unknown": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "budget"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "unknown",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "unknown",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home",
+          "budget": "unknown"
+        },
+        "statusText": "임시 사양 안내",
+        "statusAttribute": "provisional",
+        "detailsText": "더 확인할 항목: 예산. 아래에서 직접 답할 수 있어요.",
+        "adviceScope": "예산 미확인 · 현재 추천은 사양 안내예요. 구입을 검토할 때는 예산을 먼저 알려 주세요."
+      },
+      "branchMissing": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "localai",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "localai"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "localai",
+              "title": "내 컴퓨터에 AI 설치",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web",
+            "localai"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home",
+          "budget": "lt100"
+        },
+        "statusText": "임시 사양 안내",
+        "statusAttribute": "provisional",
+        "detailsText": "더 확인할 항목: 내 컴퓨터에 AI 설치. 아래에서 직접 답할 수 있어요.",
+        "adviceScope": "선택한 예산 구간으로 확인한 사양 안내예요. 실제 판매 가격과 구입 조건은 별도로 확인해 주세요."
+      },
+      "requiredTrace": [],
+      "branchReady": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "localai",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "localai",
+              "title": "내 컴퓨터에 AI 설치",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web",
+            "localai"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home",
+          "budget": "lt100",
+          "localai": [
+            "large",
+            "image"
+          ]
+        },
+        "statusText": "필수 확인 완료",
+        "statusAttribute": "ready",
+        "detailsText": "사양 안내에 필요한 기본 조건을 확인했어요. 위의 주의사항과 아래 가정도 함께 확인해 주세요.",
+        "adviceScope": "선택한 예산 구간으로 확인한 사양 안내예요. 실제 판매 가격과 구입 조건은 별도로 확인해 주세요."
+      }
+    },
+    {
+      "label": "local-390",
+      "kind": "reuse-without-purchase-budget",
+      "askTrace": [
+        {
+          "field": "owned",
+          "value": "have"
+        },
+        {
+          "field": "current.ram",
+          "value": "32"
+        },
+        {
+          "field": "current.feel",
+          "value": "ok"
+        },
+        {
+          "field": "os",
+          "value": "any"
+        },
+        {
+          "field": "current.os",
+          "value": "win11"
+        },
+        {
+          "field": "place",
+          "value": "home"
+        }
+      ],
+      "requiredTrace": [],
+      "result": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "reuse",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "current.ram",
+            "current.os",
+            "current.feel",
+            "os"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "current.kind",
+              "title": "지금 컴퓨터 사양 · 종류",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "current.ram",
+              "title": "지금 컴퓨터 사양 · 램 용량",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "current.os",
+              "title": "지금 컴퓨터 사양 · 운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "current.feel",
+              "title": "지금 컴퓨터 사양 · 하려는 일을 해 보니",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "unknown",
+              "required": false
+            }
+          ],
+          "budget": {
+            "state": "unknown",
+            "required": false
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "have",
+          "current.ram": "32",
+          "current.feel": "ok",
+          "os": "any",
+          "current.os": "win11",
+          "place": "home",
+          "budget": "unknown"
+        },
+        "statusText": "필수 확인 완료",
+        "statusAttribute": "ready",
+        "detailsText": "사양 안내에 필요한 기본 조건을 확인했어요. 위의 주의사항과 아래 가정도 함께 확인해 주세요.",
+        "adviceScope": "지금 컴퓨터를 계속 쓰거나 상태를 점검하는 안내에는 구매 예산이 필요하지 않아요."
+      },
+      "layout": {
+        "viewport": 390,
+        "documentWidth": 390,
+        "overflowing": []
+      }
+    },
+    {
+      "label": "local-320",
+      "kind": "purchase-and-new-work",
+      "initial": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "not-started",
+          "scope": "specification-guidance",
+          "path": "undetermined",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "os"
+          ],
+          "unresolvedRequiredFields": [
+            "owned",
+            "uses",
+            "os"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": false
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": false
+          },
+          "assumptions": []
+        },
+        "answers": {
+          "uses": []
+        },
+        "statusText": "",
+        "statusAttribute": "not-started",
+        "detailsText": "",
+        "adviceScope": ""
+      },
+      "askTrace": [
+        {
+          "field": "owned",
+          "value": "new"
+        },
+        {
+          "field": "os",
+          "value": "win"
+        },
+        {
+          "field": "place",
+          "value": "home"
+        }
+      ],
+      "confirmationTrace": [
+        {
+          "field": "budget",
+          "value": "lt100"
+        }
+      ],
+      "provisional": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "budget"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home"
+        },
+        "statusText": "임시 사양 안내",
+        "statusAttribute": "provisional",
+        "detailsText": "더 확인할 항목: 예산. 아래에서 직접 답할 수 있어요.",
+        "adviceScope": "예산 미확인 · 현재 추천은 사양 안내예요. 구입을 검토할 때는 예산을 먼저 알려 주세요."
+      },
+      "provisionalLayout": {
+        "viewport": 320,
+        "documentWidth": 320,
+        "overflowing": []
+      },
+      "ready": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home",
+          "budget": "lt100"
+        },
+        "statusText": "필수 확인 완료",
+        "statusAttribute": "ready",
+        "detailsText": "사양 안내에 필요한 기본 조건을 확인했어요. 위의 주의사항과 아래 가정도 함께 확인해 주세요.",
+        "adviceScope": "선택한 예산 구간으로 확인한 사양 안내예요. 실제 판매 가격과 구입 조건은 별도로 확인해 주세요."
+      },
+      "unknown": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "budget"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "unknown",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "unknown",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home",
+          "budget": "unknown"
+        },
+        "statusText": "임시 사양 안내",
+        "statusAttribute": "provisional",
+        "detailsText": "더 확인할 항목: 예산. 아래에서 직접 답할 수 있어요.",
+        "adviceScope": "예산 미확인 · 현재 추천은 사양 안내예요. 구입을 검토할 때는 예산을 먼저 알려 주세요."
+      },
+      "branchMissing": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "localai",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "localai"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "localai",
+              "title": "내 컴퓨터에 AI 설치",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web",
+            "localai"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home",
+          "budget": "lt100"
+        },
+        "statusText": "임시 사양 안내",
+        "statusAttribute": "provisional",
+        "detailsText": "더 확인할 항목: 내 컴퓨터에 AI 설치. 아래에서 직접 답할 수 있어요.",
+        "adviceScope": "선택한 예산 구간으로 확인한 사양 안내예요. 실제 판매 가격과 구입 조건은 별도로 확인해 주세요."
+      },
+      "requiredTrace": [],
+      "branchReady": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "localai",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "localai",
+              "title": "내 컴퓨터에 AI 설치",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web",
+            "localai"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home",
+          "budget": "lt100",
+          "localai": [
+            "large",
+            "image"
+          ]
+        },
+        "statusText": "필수 확인 완료",
+        "statusAttribute": "ready",
+        "detailsText": "사양 안내에 필요한 기본 조건을 확인했어요. 위의 주의사항과 아래 가정도 함께 확인해 주세요.",
+        "adviceScope": "선택한 예산 구간으로 확인한 사양 안내예요. 실제 판매 가격과 구입 조건은 별도로 확인해 주세요."
+      }
+    },
+    {
+      "label": "local-320",
+      "kind": "reuse-without-purchase-budget",
+      "askTrace": [
+        {
+          "field": "owned",
+          "value": "have"
+        },
+        {
+          "field": "current.ram",
+          "value": "32"
+        },
+        {
+          "field": "current.feel",
+          "value": "ok"
+        },
+        {
+          "field": "os",
+          "value": "any"
+        },
+        {
+          "field": "current.os",
+          "value": "win11"
+        },
+        {
+          "field": "place",
+          "value": "home"
+        }
+      ],
+      "requiredTrace": [],
+      "result": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "reuse",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "current.ram",
+            "current.os",
+            "current.feel",
+            "os"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "current.kind",
+              "title": "지금 컴퓨터 사양 · 종류",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "current.ram",
+              "title": "지금 컴퓨터 사양 · 램 용량",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "current.os",
+              "title": "지금 컴퓨터 사양 · 운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "current.feel",
+              "title": "지금 컴퓨터 사양 · 하려는 일을 해 보니",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "unknown",
+              "required": false
+            }
+          ],
+          "budget": {
+            "state": "unknown",
+            "required": false
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "have",
+          "current.ram": "32",
+          "current.feel": "ok",
+          "os": "any",
+          "current.os": "win11",
+          "place": "home",
+          "budget": "unknown"
+        },
+        "statusText": "필수 확인 완료",
+        "statusAttribute": "ready",
+        "detailsText": "사양 안내에 필요한 기본 조건을 확인했어요. 위의 주의사항과 아래 가정도 함께 확인해 주세요.",
+        "adviceScope": "지금 컴퓨터를 계속 쓰거나 상태를 점검하는 안내에는 구매 예산이 필요하지 않아요."
+      },
+      "layout": {
+        "viewport": 320,
+        "documentWidth": 320,
+        "overflowing": []
+      }
+    },
+    {
+      "label": "file-share-390",
+      "kind": "purchase-and-new-work",
+      "initial": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "not-started",
+          "scope": "specification-guidance",
+          "path": "undetermined",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "os"
+          ],
+          "unresolvedRequiredFields": [
+            "owned",
+            "uses",
+            "os"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": false
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": false
+          },
+          "assumptions": []
+        },
+        "answers": {
+          "uses": []
+        },
+        "statusText": "",
+        "statusAttribute": "not-started",
+        "detailsText": "",
+        "adviceScope": ""
+      },
+      "askTrace": [
+        {
+          "field": "owned",
+          "value": "new"
+        },
+        {
+          "field": "os",
+          "value": "win"
+        },
+        {
+          "field": "place",
+          "value": "home"
+        }
+      ],
+      "confirmationTrace": [
+        {
+          "field": "budget",
+          "value": "lt100"
+        }
+      ],
+      "provisional": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "budget"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "missing",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "missing",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home"
+        },
+        "statusText": "임시 사양 안내",
+        "statusAttribute": "provisional",
+        "detailsText": "더 확인할 항목: 예산. 아래에서 직접 답할 수 있어요.",
+        "adviceScope": "예산 미확인 · 현재 추천은 사양 안내예요. 구입을 검토할 때는 예산을 먼저 알려 주세요."
+      },
+      "provisionalLayout": {
+        "viewport": 390,
+        "documentWidth": 390,
+        "overflowing": []
+      },
+      "ready": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home",
+          "budget": "lt100"
+        },
+        "statusText": "필수 확인 완료",
+        "statusAttribute": "ready",
+        "detailsText": "사양 안내에 필요한 기본 조건을 확인했어요. 위의 주의사항과 아래 가정도 함께 확인해 주세요.",
+        "adviceScope": "선택한 예산 구간으로 확인한 사양 안내예요. 실제 판매 가격과 구입 조건은 별도로 확인해 주세요."
+      },
+      "unknown": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "budget"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "unknown",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "unknown",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home",
+          "budget": "unknown"
+        },
+        "statusText": "임시 사양 안내",
+        "statusAttribute": "provisional",
+        "detailsText": "더 확인할 항목: 예산. 아래에서 직접 답할 수 있어요.",
+        "adviceScope": "예산 미확인 · 현재 추천은 사양 안내예요. 구입을 검토할 때는 예산을 먼저 알려 주세요."
+      },
+      "branchMissing": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "provisional",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "localai",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [
+            "localai"
+          ],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "localai",
+              "title": "내 컴퓨터에 AI 설치",
+              "state": "missing",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web",
+            "localai"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home",
+          "budget": "lt100"
+        },
+        "statusText": "임시 사양 안내",
+        "statusAttribute": "provisional",
+        "detailsText": "더 확인할 항목: 내 컴퓨터에 AI 설치. 아래에서 직접 답할 수 있어요.",
+        "adviceScope": "선택한 예산 구간으로 확인한 사양 안내예요. 실제 판매 가격과 구입 조건은 별도로 확인해 주세요."
+      },
+      "requiredTrace": [],
+      "branchReady": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "purchase",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "localai",
+            "place",
+            "os",
+            "budget"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "localai",
+              "title": "내 컴퓨터에 AI 설치",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "known",
+              "required": true
+            }
+          ],
+          "budget": {
+            "state": "known",
+            "required": true
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web",
+            "localai"
+          ],
+          "owned": "new",
+          "os": "win",
+          "place": "home",
+          "budget": "lt100",
+          "localai": [
+            "large",
+            "image"
+          ]
+        },
+        "statusText": "필수 확인 완료",
+        "statusAttribute": "ready",
+        "detailsText": "사양 안내에 필요한 기본 조건을 확인했어요. 위의 주의사항과 아래 가정도 함께 확인해 주세요.",
+        "adviceScope": "선택한 예산 구간으로 확인한 사양 안내예요. 실제 판매 가격과 구입 조건은 별도로 확인해 주세요."
+      }
+    },
+    {
+      "label": "file-share-390",
+      "kind": "reuse-without-purchase-budget",
+      "askTrace": [
+        {
+          "field": "owned",
+          "value": "have"
+        },
+        {
+          "field": "current.ram",
+          "value": "32"
+        },
+        {
+          "field": "current.feel",
+          "value": "ok"
+        },
+        {
+          "field": "os",
+          "value": "any"
+        },
+        {
+          "field": "current.os",
+          "value": "win11"
+        },
+        {
+          "field": "place",
+          "value": "home"
+        }
+      ],
+      "requiredTrace": [],
+      "result": {
+        "completion": {
+          "policy": "computer-completion-1",
+          "status": "ready",
+          "scope": "specification-guidance",
+          "path": "reuse",
+          "requiredFields": [
+            "owned",
+            "uses",
+            "current.ram",
+            "current.os",
+            "current.feel",
+            "os"
+          ],
+          "unresolvedRequiredFields": [],
+          "fields": [
+            {
+              "id": "owned",
+              "title": "지금 컴퓨터 유무",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "uses",
+              "title": "하고 싶은 일",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "multitask",
+              "title": "켜 두는 개수",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "current.kind",
+              "title": "지금 컴퓨터 사양 · 종류",
+              "state": "missing",
+              "required": false
+            },
+            {
+              "id": "current.ram",
+              "title": "지금 컴퓨터 사양 · 램 용량",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "current.os",
+              "title": "지금 컴퓨터 사양 · 운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "current.feel",
+              "title": "지금 컴퓨터 사양 · 하려는 일을 해 보니",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "place",
+              "title": "들고 다니는 정도",
+              "state": "known",
+              "required": false
+            },
+            {
+              "id": "os",
+              "title": "운영체제",
+              "state": "known",
+              "required": true
+            },
+            {
+              "id": "budget",
+              "title": "예산",
+              "state": "unknown",
+              "required": false
+            }
+          ],
+          "budget": {
+            "state": "unknown",
+            "required": false
+          },
+          "assumptions": [
+            {
+              "id": "multitask",
+              "text": "동시에 켜 두는 양은 보통(탭 10~20개와 메신저)으로 가정했어요."
+            }
+          ]
+        },
+        "answers": {
+          "uses": [
+            "web"
+          ],
+          "owned": "have",
+          "current.ram": "32",
+          "current.feel": "ok",
+          "os": "any",
+          "current.os": "win11",
+          "place": "home",
+          "budget": "unknown"
+        },
+        "statusText": "필수 확인 완료",
+        "statusAttribute": "ready",
+        "detailsText": "사양 안내에 필요한 기본 조건을 확인했어요. 위의 주의사항과 아래 가정도 함께 확인해 주세요.",
+        "adviceScope": "지금 컴퓨터를 계속 쓰거나 상태를 점검하는 안내에는 구매 예산이 필요하지 않아요."
+      },
+      "layout": {
+        "viewport": 390,
+        "documentWidth": 390,
+        "overflowing": []
+      }
+    }
+  ],
+  "screenshots": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\consultation-browser\\local-1280-purchase-provisional.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\consultation-browser\\local-1280-required-multiple.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\consultation-browser\\local-1280-reuse-ready.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\consultation-browser\\local-390-purchase-provisional.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\consultation-browser\\local-390-required-multiple.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\consultation-browser\\local-390-reuse-ready.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\consultation-browser\\local-320-purchase-provisional.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\consultation-browser\\local-320-required-multiple.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\consultation-browser\\local-320-reuse-ready.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\consultation-browser\\file-share-390-purchase-provisional.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\consultation-browser\\file-share-390-required-multiple.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\consultation-browser\\file-share-390-reuse-ready.png"
+  ],
+  "share": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\atlas-eight-fix-20261008\\consultation-browser\\share.html"
+}

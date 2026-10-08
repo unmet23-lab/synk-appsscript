@@ -42,6 +42,8 @@ lab = `const FLOW_RUSH = ${JSON.stringify(FLOW_RUSH)};\nconst LEVEL_WORDS = ${JS
   + read('experiences/atlas-lab/consultation.mjs').replace(/^export /gm, '') + '\n'
   + read('experiences/atlas-lab/interpretation.mjs').replace(/^export /gm, '') + '\n'
   + read('experiences/atlas-lab/model-host.mjs').replace(/^export /gm, '') + '\n' + matching + lab;
+// New static dependencies must be bundled explicitly; never emit a broken share page.
+if (/^\s*(?:import|export)\s/m.test(lab)) throw new Error('share page has an unbundled module dependency');
 // '<\\/script' keeps the backslash in the output; '<\/script' is the same string as '</script'.
 const script = file => `<script>\n${read(file).replace(/<\/script/gi, '<\\/script')}\n</script>`;
 const page = `<title>Atlas 순간 맞춤 실험실</title>\n<style>\n${css}\n</style>\n${main}\n`

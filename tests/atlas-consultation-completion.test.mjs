@@ -9,14 +9,61 @@ const consultation = createComputerConsultation({ Ask, content, rules });
 const buying = { uses: ['web'], owned: 'new', os: 'any', place: 'home', budget: 'lt100' };
 const reuse = { uses: ['web'], owned: 'have', os: 'any', 'current.ram': '32', 'current.os': 'win11', 'current.feel': 'ok' };
 
-test('Ask can stop while the product still needs a buying budget', () => {
+test('a missing required budget continues in the same question flow after recommendation questions stop', () => {
   const answers = { ...buying }; delete answers.budget;
   const choice = consultation.choose(answers);
-  assert.equal(choice.status, 'none');
+  assert.equal(choice.status, 'ask');
+  assert.equal(choice.question.id, 'budget');
+  assert.equal(choice.reason, 'required-input-confirmation');
+  assert.equal(choice.basis, 'product-completion');
+  assert.equal(choice.value, undefined, 'required completion must not invent recommendation value');
+  assert.equal(choice.ranked.find(entry => entry.id === 'budget').skippable, false);
   assert.equal(choice.completion.status, 'provisional');
   assert.deepEqual(choice.completion.unresolvedRequiredFields, ['budget']);
   assert.deepEqual(choice.completion, consultation.completion(answers));
   assert.equal(consultation.completion(buying).status, 'ready');
+  assert.equal(consultation.choose(buying).status, 'none');
+});
+
+test('an explicit unknown remains provisional without trapping the person in a repeated required question', () => {
+  for (const budget of [undefined, null, 'invalid']) {
+    const choice = consultation.choose({ ...buying, budget });
+    assert.equal(choice.question.id, 'budget');
+  }
+  const choice = consultation.choose({ ...buying, budget: 'unknown' });
+  assert.equal(choice.status, 'none');
+  assert.equal(choice.completion.status, 'provisional');
+  assert.deepEqual(choice.completion.unresolvedRequiredFields, ['budget']);
+});
+
+test('known answers finish required confirmations without asking inactive or unnecessary fields', () => {
+  const paths = [
+    { ...buying, multitask: 'light' },
+    { ...reuse, place: 'home', multitask: 'light' },
+    { ...buying, uses: ['video'], 'video.app': 'fcp', 'video.res': '4k', 'video.load': 'light', multitask: 'light' },
+    { ...buying, uses: ['video'], 'video.app': 'capcut', 'video.res': 'fhd', 'video.load': 'light', multitask: 'light' },
+    { ...buying, uses: ['localai'], localai: ['large', 'image'], multitask: 'normal' },
+    { ...reuse, 'current.ram': '4', 'current.kind': 'desktop', place: 'home', budget: 'lt100', multitask: 'light' },
+  ];
+  for (const full of paths) {
+    const answers = { uses: full.uses }, asked = [];
+    for (let count = 0; count < 30; count++) {
+      const choice = consultation.choose(answers);
+      if (choice.status !== 'ask') break;
+      const id = choice.question.about;
+      assert.equal(asked.includes(id), false, `repeated ${id}`);
+      assert.ok(Object.hasOwn(full, id), `unexpected ${id}`);
+      assert.equal(choice.ranked.find(entry => entry.about === id).skippable, false);
+      answers[id] = full[id]; asked.push(id);
+    }
+    assert.equal(consultation.choose(answers).status, 'none');
+    assert.equal(consultation.completion(answers).status, 'ready', JSON.stringify({ full, answers }));
+    assert.equal(asked.some(id => id.startsWith('video.') && !full.uses.includes('video')), false);
+    if (full.owned === 'have' && full['current.ram'] === '32') {
+      assert.equal(asked.includes('budget'), false);
+    }
+    if (full['video.res'] === '4k') assert.equal(consultation.completion(answers).requiredFields.includes('video.load'), false);
+  }
 });
 
 test('unknown and malformed budgets cannot confirm a purchase, while any OS is a real preference', () => {

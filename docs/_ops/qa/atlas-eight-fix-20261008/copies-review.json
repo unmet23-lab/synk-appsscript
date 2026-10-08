@@ -1,0 +1,64 @@
+{
+  "reviewedAt": "2026-10-08",
+  "reviewer": "loom_reed_audit",
+  "scope": {
+    "generatedProductBundles": 10,
+    "registeredRawCopies": 22,
+    "included": [
+      "PATH VR",
+      "desktop launcher",
+      "custom-tool builds",
+      "website staging",
+      "Talk app and server"
+    ],
+    "excluded": [
+      "historical QA and release archives",
+      "deployed servers and public pages"
+    ]
+  },
+  "unresolvedFindings": 0,
+  "resolvedFindings": [
+    {
+      "id": "checkout-newline-metadata",
+      "location": "tools/lib/atlas-copies.js:76",
+      "resolution": ".gitattributes fixes LF for canonical engine/personalization, launcher copies and custom-tool atlas-engine.js; actual-byte manifest contract retained",
+      "verification": {
+        "method": "Temporary Git repository with current source, copies, manifests and .gitattributes; git init; core.autocrlf=true; git add --all; remove copied working files; git checkout-index --all --force; syncRaw(check:true)",
+        "requiredLfFiles": 7,
+        "requiredLfFilesWithCRLF": 0,
+        "rawCopiesChecked": 8,
+        "problems": 0,
+        "changed": 0,
+        "notes": "PATH copies may check out CRLF and correctly compare equal after normalization; they do not have actual-byte metadata."
+      }
+    },
+    {
+      "id": "missing-talk-server-generator",
+      "location": "tools/lib/atlas-copies.js:101-103",
+      "resolution": "runAll requires Talk server generator before bundle generation or copying; existing single-consumer legacy behavior retained",
+      "verification": {
+        "regression": "the full check refuses a missing Talk server generator before changing any local copies",
+        "checkModeRejected": true,
+        "writeModeRejected": true,
+        "existingLocalCopyPreserved": true,
+        "staleServerFixture": true
+      }
+    }
+  ],
+  "tests": [
+    {
+      "command": "node --test tests/atlas-copy-set.test.js",
+      "exitCode": 0,
+      "tests": 5,
+      "pass": 5,
+      "fail": 0,
+      "skipped": 0
+    }
+  ],
+  "remainingVerificationLimits": [
+    "No actual GitHub Actions or Linux clean checkout run by this reviewer; LF portability was verified through a Windows Git checkout simulation with core.autocrlf=true.",
+    "Full --all integration run and npm ci belong to the parent validation record and were not repeated in this independent review.",
+    "No deployment, live server or public page validation; historical QA intentionally excluded."
+  ],
+  "productFilesChangedByReview": 0
+}

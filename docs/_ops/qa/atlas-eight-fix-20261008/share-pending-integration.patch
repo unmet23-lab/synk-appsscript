@@ -1,0 +1,20 @@
+diff --git a/experiences/atlas-lab/build-share.mjs b/experiences/atlas-lab/build-share.mjs
+index 2506096..b5523d0 100644
+--- a/experiences/atlas-lab/build-share.mjs
++++ b/experiences/atlas-lab/build-share.mjs
+@@ -55,8 +55,14 @@ const meeting = `const mountMeetingLab = (() => {\nconst {createMeetingAdapter,
+ const discoveryImport = "import { createDiscoveryAdapter, DISCOVERY_FIELDS, DISCOVERY_SCENARIOS, DISCOVERY_FEEDBACK_REASONS } from './discovery.mjs';";
+ const discoveryUI = read('experiences/atlas-lab/discovery-ui.mjs');
+ if (!discoveryUI.includes(discoveryImport)) throw new Error('discovery UI import changed');
++const regionImport = "import { MEETING_REGION_OPTIONS, validateMeetingRegions, compareMeetingRegions, formatMeetingRegions } from './meeting-regions.mjs';";
++const discoverySource = read('experiences/atlas-lab/discovery.mjs');
++if (!discoverySource.includes(regionImport)) throw new Error('discovery region import changed');
+ const discovery = 'const mountDiscoveryLab = (() => {\nconst {createDiscoveryAdapter, DISCOVERY_FIELDS, DISCOVERY_SCENARIOS, DISCOVERY_FEEDBACK_REASONS} = (() => {\n'
+-  + read('experiences/atlas-lab/discovery.mjs').replace(/^export /gm, '')
++  + 'const {MEETING_REGION_OPTIONS, validateMeetingRegions, compareMeetingRegions, formatMeetingRegions} = (() => {\n'
++  + read('experiences/atlas-lab/meeting-regions.mjs').replace(/^export /gm, '')
++  + '\nreturn {MEETING_REGION_OPTIONS, validateMeetingRegions, compareMeetingRegions, formatMeetingRegions};})();\n'
++  + discoverySource.replace(regionImport, '').replace(/^export /gm, '')
+   + '\nreturn {createDiscoveryAdapter, DISCOVERY_FIELDS, DISCOVERY_SCENARIOS, DISCOVERY_FEEDBACK_REASONS};})();\n'
+   + discoveryUI.replace(discoveryImport, '').replace(/^export /gm, '') + '\nreturn mountDiscoveryLab;})();\n';
+ lab = `const FLOW_RUSH = ${JSON.stringify(FLOW_RUSH)};\nconst LEVEL_WORDS = ${JSON.stringify(LEVEL_WORDS)};\nconst FLOW_RHYTHM = ${JSON.stringify(FLOW_RHYTHM)};\n`

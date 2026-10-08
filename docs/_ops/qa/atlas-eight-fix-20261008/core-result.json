@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-08",
+  "scope": "Core record exclusion and serialization compatibility",
+  "changedFiles": [
+    "atlas/engine.js",
+    "tests/atlas-core-record-compatibility.test.js"
+  ],
+  "before": {
+    "command": "node --test --test-reporter=spec tests/atlas-core-record-compatibility.test.js",
+    "tests": 5,
+    "pass": 1,
+    "fail": 4,
+    "confirmedFailures": [
+      "excluded latest outcome restored prior success and changed actual focus",
+      "excluded latest outcome survived the as-of projection through an older report",
+      "reordered duplicate rejected by Core replay",
+      "product saved-log restoration became unavailable"
+    ]
+  },
+  "after": {
+    "command": "node --test --test-reporter=spec tests/atlas-core-record-compatibility.test.js tests/atlas.test.js tests/atlas-loop.test.js tests/atlas-practice-outcome-boundaries.test.js tests/atlas-core-boundaries.test.js tests/atlas-provenance-review.test.js",
+    "tests": 51,
+    "pass": 51,
+    "fail": 0,
+    "exitCode": 0
+  },
+  "diffCheck": {
+    "command": "git diff --check -- atlas/engine.js tests/atlas-core-record-compatibility.test.js",
+    "exitCode": 0
+  },
+  "contracts": {
+    "policy": "atlas-2.4.0",
+    "eventSchema": 1,
+    "legacyPolicyReplayVerified": "atlas-2.3.0",
+    "objectKeyOrder": "ignored for duplicate equality",
+    "arrayOrder": "preserved and differing order remains a conflict",
+    "latestOutcomeExclusion": "does not restore older report; later genuinely new reports remain eligible"
+  },
+  "sha256": {
+    "atlas/engine.js": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+    "tests/atlas-core-record-compatibility.test.js": "85ec54b57686c19640f3cf3d10a51ffd599dc637a2b65b8e0b51904472389a60"
+  },
+  "limitations": [
+    "Generated bundles and external copies are handled by parent integration.",
+    "No deployment, real-user effects, network calls, or paid model calls performed.",
+    "Earlier audit reproduction and result files are unchanged."
+  ]
+}
