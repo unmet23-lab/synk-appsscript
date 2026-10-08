@@ -37,7 +37,7 @@ const STATUS = {
   unseen: { text: '듣기 확인 기록이 아직 없어요', tone: 'quiet' },
   checking: { text: '확인하는 중이에요', tone: 'quiet' },
   practice: { text: '조금 더 연습하면 좋아요', tone: 'focus' },
-  supported: { text: '도움과 함께 해냈어요', tone: 'quiet' },
+  supported: { text: '도움을 받아 해냈어요', tone: 'quiet' },
   'recent-independent': { text: '최근 혼자 해냈어요', tone: 'good' },
   review: { text: '다시 볼 때예요', tone: 'focus' },
 };

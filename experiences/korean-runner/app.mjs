@@ -43,7 +43,7 @@ function selectInstruction(items) {
 }
 function refreshRecommendation() { if (coach) selectInstruction(INSTRUCTIONS); }
 const learningBroken = () => { const s = learn('summary'); return !coach || learningFailed || s?.storage?.available === false; };
-const reasonText = () => (learningBroken() ? '학습 기록을 저장할 수 없어 기본 부탁으로 달려요.' : nextPlan?.reason || '아직 만나지 않은 부탁부터 준비했어요.');
+const reasonText = () => (learningBroken() ? '학습 기록을 저장할 수 없어서 기본 부탁으로 달려요.' : nextPlan?.reason || '아직 안 들어 본 부탁부터 준비했어요.');
 let live = null;
 function startLive() {
   live = null;
@@ -164,7 +164,7 @@ async function start() {
     if (!voices) { starting = false; tip(null); audioFault(() => start()); return; }
   } catch {
     starting = false; renderLobby();
-    byId('storage-note').hidden = false; byId('storage-note').textContent = '이 브라우저에서는 3D 화면을 만들 수 없어요. 크롬·엣지·사파리 최신판에서 열어 주세요.';
+    byId('storage-note').hidden = false; byId('storage-note').textContent = '이 브라우저에서는 3D 화면을 띄울 수 없어요. 크롬·엣지·사파리 최신판으로 열어 주세요.';
     return;
   }
   endLive();
@@ -214,7 +214,7 @@ function handle(n) {
       recordAction(n.mission, false); sayMissed(n.mission, n.record || rec); break;
     }
     case 'earnedShield': shields += 1; SFX.shield(); setTimeout(() => { if (running && !model?.finished) popText('바람막!', 'shield'); }, 520);
-      if (shields === 1) tip('세 번 연속! 바람막이 한 번 부딪힘을 막아 줘요.', 2600); break;
+      if (shields === 1) tip('세 번 연속! 바람막이 한 번은 부딪혀도 지켜 줘요.', 2600); break;
     case 'shield': world?.knock(model); SFX.block(); popText('막았어요!', 'shield'); break;
     case 'hit': world?.knock(model); SFX.bump(); popText('쿵!', 'bump'); punch(byId('g-guard')); break;
     case 'jump': SFX.jump(); break;
@@ -425,7 +425,7 @@ function renderResults({ completed, distance, newBest }) {
   byId('r-note').textContent = notes.join(' · ');
   // 공통 코인: 끝까지 마친 판에 완주 15 + 해낸 비율 × 10(다른 게임과 같은 규칙). 부딪혀 멈춘 판·그만둔 판은 받지 않는다.
   const coinRound = collectionRoundId; collectionRoundId = null;
-  const coins = byId('r-coins'); coins.textContent = '공통 차고에 완주를 모으고 있어요.';
+  const coins = byId('r-coins'); coins.textContent = '공통 코인을 계산하고 있어요.';
   const award = globalThis.SynkPlayCollection?.award({ game: 'runner', total: s.total, correct: s.correct, completed, automatic: false, roundId: coinRound });
   if (award) award.then((result) => { coins.textContent = globalThis.SynkPlayCollection.rewardText(result); });
   else coins.textContent = '';
@@ -446,8 +446,8 @@ function renderResults({ completed, distance, newBest }) {
   byId('r-log-note').textContent = s.timing ? `동작은 맞았지만 표시선에서 조금 이르거나 늦은 곳 ${s.timing}개는 ‘타이밍 놓침’으로 남겼어요.` : '';
   byId('r-log-note').hidden = !s.timing;
   renderSkills(s);
-  byId('r-next-reason').textContent = learningBroken() ? '학습 기록을 저장할 수 없어 다음에도 기본 부탁으로 달려요.'
-    : `${nextPlan?.reason || '아직 만나지 않은 부탁부터 준비해요.'} 다음 달리기에는 그런 부탁을 먼저 넣어요.`;
+  byId('r-next-reason').textContent = learningBroken() ? '학습 기록을 저장할 수 없어서 다음에도 기본 부탁으로 달려요.'
+    : `${nextPlan?.reason || '아직 안 들어 본 부탁부터 준비해요.'} 다음 달리기에는 그런 부탁을 먼저 넣어요.`;
 }
 function renderSkills(s) {
   const ul = byId('r-skills'); ul.textContent = '';
@@ -464,7 +464,7 @@ async function preview(item) {
   cancelVoice(); const revision = previewRevision; setSound(true);
   if (!await ensureVoices()) { if (revision === previewRevision) toast('목소리를 준비하지 못했어요. 다시 듣기를 한 번 더 눌러 주세요.'); return; }
   if (revision !== previewRevision || screen !== 'results') return;
-  if (!voiceBank.play(item)) toast('목소리를 다시 준비해 주세요.');
+  if (!voiceBank.play(item)) toast('목소리를 틀지 못했어요. 다시 듣기를 한 번 더 눌러 주세요.');
 }
 byId('restart').addEventListener('click', () => { cancelVoice(); start(); });
 byId('result-home').addEventListener('click', () => { cancelVoice(); home(); });
@@ -504,7 +504,7 @@ window.addEventListener('blur', () => { keyboard.reset(); if (running && !paused
 /* ── 입구의 소리 단추 · 학습 기록 지우기 · 듣기 확인 ── */
 for (const t of document.querySelectorAll('[data-sound-toggle]')) t.addEventListener('click', () => { setSound(!sound); if (sound) { audioInit(); audio?.resume?.().catch(() => {}); tone(1046.5, 0.12, 'sine', 0.18); } });
 byId('learning-reset').hidden = hosted;
-if (hosted) byId('learning-scope').textContent = '학습 기록은 WORLD 계정에 이어져요. 기록 공유와 삭제는 WORLD 계정 설정에서 관리해요.';
+if (hosted) byId('learning-scope').textContent = '학습 기록은 WORLD 계정에 이어져요. 기록 공유와 삭제는 WORLD 계정 설정에서 할 수 있어요.';
 byId('learning-reset').addEventListener('click', () => {
   if (!coach) return;
   if (!window.confirm('같은 주소에서 연 모든 SYNK 게임의 학습 기록을 지울까요? 최고 거리는 그대로 남아요.')) return;
