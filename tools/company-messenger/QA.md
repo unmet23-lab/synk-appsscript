@@ -1,5 +1,15 @@
 # 검증 기록 · 2026-09-27
 
+## 로그인 복구 대기 중 첨부 재시도 · 2026-10-09
+
+**07:55 KST 공개 반영·기존 세션/자료 인수 완료.** 새 로그인 복구 연결에서 첨부를 키보드로 재시도한 뒤 저장 결과404와 로그인 복구 실패가 이어지면 버튼 초점이 사라지는 P2를 재현했다. 실제 Chromium의 수정 전 결과는 활성 재시도 버튼이 있어도 초점이 BODY에 남았다. 수정 전 운영 메신저 v6에는 이 신규 경로가 없어 해당 영향은 없었다. [수정 전 브라우저](../../.tmp/messenger-continuation-20261009/keyboard-before/report.json).
+
+배포 담당이 실패 처리에 기존 초점 복원과 토큰 해제를 적용하고 실제 함수 회귀44/44를 통과했다. 협동 게임 HTTPS 경로를 보존한 통합 후보 v3 `3a2f537a…`에서 독립 Chromium으로 다시 확인했다. 실패 뒤 활성 재시도 버튼으로 초점이 돌아오며, 대기 중 사용자가 입력창으로 옮겨 쓴 초안과 초점은 유지한다. 두 흐름 모두 추가 업로드POST0·오류0·외부 요청0이고 후보444파일과 manifest의 전후 SHA가 동일하다. 임시 SQLite·합성 사용자만 사용했으며 공개 자료·기기 등록·푸시·유료AI 호출은 없다. [초점 복원](../../.tmp/messenger-continuation-20261009/keyboard-after/report.json)·[입력창 이동 보존](../../.tmp/messenger-continuation-20261009/keyboard-moved-after/report.json)·[후보 대조](../../.tmp/messenger-continuation-20261009/candidate-source-after-v3.json).
+
+앞선 통합 후보 v1에서는 기존 전송 복구 브라우저35/35를 통과했다. 이 결과와 수정 v3의 두 흐름은 후보를 구분해 기록한다. [v1 전체 흐름](../../.tmp/messenger-continuation-20261009/browser/report.json)·[후보 v1 대조](../../.tmp/messenger-continuation-20261009/candidate-source-after-v1.json). 사용 안내의 개인용 시험 단계·운영 로그인 미적용·범위 없는 월0원 설명도 공개 서버와 독립 로컬 환경에 맞춰 정정했다. [사용 안내 정정](../../.tmp/messenger-continuation-20261009/readme-currentization.json). 실물 iPhone·Android 시험 보류는 유지한다.
+
+정확v3 공개17파일 SHA/MIME·health ready, 직원5/고객1의 기존 session/CSRF/만료와 업무/키/첨부를 보존했다. 기존 직원·고객 탭을 새로고침해 로그인 클릭0으로 메모·111B첨부·저장초안을 확인했다. 이번 공식 보완검수는 세션 한도로 미완료이며 직접 사용자의 검수 후행 지시에 따라 반영했다. 06:42 전체클라우드 검수 완료와 이번 정확후보 보완검수 미완료를 구분한다. [최종 인수](../../.tmp/company-final-review-fixes-20261009/FINAL-ACCEPTANCE.json)·[독립 공개 검사](../../.tmp/messenger-continuation-20261009/independent-public-acceptance.json).
+
 ## 메시지·첨부 전송 복구 · 2026-10-09
 
 **06:38 KST 공개 반영·기존 세션/자료 인수 완료.** 메시지 전송이 끊기면 **전송 확인 / 같은 내용 다시 보내기 / 전송 취소**로 이어간다. 같은 요청을 다시 보내도 메시지·첨부·알림을 중복 생성하지 않고, 확인하는 동안 고친 본문·답글·멘션·새 첨부를 보존한다. 실패한 첨부는 같은 창에서 원래 고른 파일로 재시도하며, 재접속·새로고침 뒤 자동으로 보내지 않는다.
