@@ -872,8 +872,20 @@ async function youtubeAddToPlaylist(videoId, playlist, token, fetchImpl = fetch,
   return { id, title: playlist.title, created, itemId, url: `https://www.youtube.com/playlist?list=${id}` };
 }
 
+// 2026-10-08 구글 인증이 같은 토큰에 무작위로 401을 돌려줬다(공개 전환, 그 아 가 업로드 시작·자막·재생목록 단계).
+// 401은 요청을 받아들이지 않았다는 뜻이라 같은 요청을 잠시 뒤 다시 보내도 겹쳐 만들어지지 않는다 → YouTube API(업로드 주소 포함)의 401만 다시 묻는다.
+function retryYoutube401(fetchImpl, { retries = 5, delayMs = 2000 } = {}) {
+  return async (url, options) => {
+    for (let attempt = 0; ; attempt += 1) {
+      const response = await fetchImpl(url, options);
+      if (response.status !== 401 || attempt >= retries || !/^https:\/\/www\.googleapis\.com\/(upload\/)?youtube\//.test(String(url))) return response;
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  };
+}
+
 async function youtubeUpload(item, account, credential, options = {}) {
-  const fetchImpl = options.fetchImpl || fetch;
+  const fetchImpl = retryYoutube401(options.fetchImpl || fetch, options.retry401);
   const { token, channel } = await youtubeChannel(credential, fetchImpl);
   if (!matchesYoutubeAccount(channel, account)) throw new Error(`${item.id}: YouTube 인증 채널이 다릅니다.`);
   const file = resolveRepoPath(item.video);
@@ -1318,13 +1330,7 @@ async function youtubeMakePublic(planFile, itemId, note, {
   if (!done?.id || !['private', 'unlisted', 'public', 'scheduled'].includes(done.state)) {
     throw new Error(`${itemId}는 올린 영상이 없거나 상태가 ${done?.state || '없음'}입니다.`);
   }
-  const retrying = async (url, options) => {
-    for (let attempt = 0; ; attempt += 1) {
-      const response = await fetchImpl(url, options);
-      if (response.status !== 401 || attempt >= retry401.retries || !String(url).startsWith('https://www.googleapis.com/youtube/')) return response;
-      await new Promise((resolve) => setTimeout(resolve, retry401.delayMs));
-    }
-  };
+  const retrying = retryYoutube401(fetchImpl, retry401);
   const credential = readCredentialImpl(item.accountKey, { allowLegacy: true });
   const { token, channel } = await youtubeChannel(credential, retrying);
   if (!matchesYoutubeAccount(channel, account)) throw new Error(`${itemId}: YouTube 인증 채널이 다릅니다.`);

@@ -358,6 +358,50 @@ test('YouTube 재생목록: 같은 제목이 있으면 그 목록을 쓰고 이�
   assert.equal(calls.some((c) => c.options?.method === 'POST' && /playlist/.test(c.url)), false);
 });
 
+test('YouTube 업로드: 구글의 일시 401은 업로드 시작·자막·재생목록에서 잠시 뒤 다시 묻고, 영상 바이트는 한 번만 보낸다', async () => {
+  const { dir, item } = youtubeFixture({ playlist: { title: '한글 초보단계', description: '', visibility: 'private' } });
+  const srt = path.join(dir, 'subtitles-en.srt');
+  fs.writeFileSync(srt, '1\n00:00:00,000 --> 00:00:01,000\n가\n');
+  item.subtitles = [path.relative(REPO_ROOT, srt).replaceAll('\\', '/')];
+  const calls = [];
+  const json = (body, status = 200) => new Response(JSON.stringify(body), { status });
+  const authError = () => json({ error: { code: 401, message: 'Request had invalid authentication credentials.', errors: [{ reason: 'authError' }] } }, 401);
+  const session = 'https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&upload_id=s1';
+  const responses = [
+    ...ytAuth(),
+    authError(), new Response('', { status: 200, headers: { location: session } }), // 업로드 시작: 401 → 다시
+    json({ id: 'video-1' }, 201),
+    authError(), authError(), json({ id: 'cap-en' }), // 자막: 401 두 번 → 다시
+    json({ items: [{ id: 'pl-3', snippet: { title: '한글 초보단계' } }] }),
+    authError(), json({ items: [] }), // 이미 들었나: 401 → 다시
+    json({ id: 'pli-3' }),
+  ];
+  const result = await youtubeUpload(item, { expectedChannelId: 'channel-1' }, { clientId: 'id', clientSecret: 'secret', refreshToken: 'refresh' }, {
+    fetchImpl: async (url, options) => { calls.push({ url, options }); return responses.shift(); },
+    retry401: { retries: 5, delayMs: 0 },
+  });
+  assert.equal(result.state, 'private');
+  assert.deepEqual(result.captions, [{ language: 'en', id: 'cap-en' }]);
+  assert.equal(result.playlist.id, 'pl-3');
+  assert.equal(result.playlist.itemId, 'pli-3');
+  assert.equal(calls.filter((c) => /videos\?uploadType=resumable&part=/.test(c.url)).length, 2);
+  assert.equal(calls.filter((c) => c.url === session).length, 1);
+  assert.equal(responses.length, 0);
+});
+
+test('YouTube 업로드: 401이 계속되면 다섯 번 더 물은 뒤 멈춘다(영상 만들기 전)', async () => {
+  const { item } = youtubeFixture();
+  const calls = [];
+  const authError = () => new Response(JSON.stringify({ error: { code: 401, message: 'Request had invalid authentication credentials.' } }), { status: 401 });
+  const responses = [...ytAuth(), ...Array.from({ length: 6 }, authError)];
+  await assert.rejects(youtubeUpload(item, { expectedChannelId: 'channel-1' }, { clientId: 'id', clientSecret: 'secret', refreshToken: 'refresh' }, {
+    fetchImpl: async (url, options) => { calls.push({ url, options }); return responses.shift(); },
+    retry401: { retries: 5, delayMs: 0 },
+  }), /업로드 시작 실패 401/);
+  assert.equal(calls.filter((c) => /videos\?uploadType=resumable&part=/.test(c.url)).length, 6);
+  assert.equal(responses.length, 0);
+});
+
 test('재생목록은 있는 항목만 승인 해시에 들어가고 없는 항목의 해시는 그대로다', () => {
   const { item } = youtubeFixture();
   const account = { platform: 'youtube', expectedChannelId: 'channel-1' };
