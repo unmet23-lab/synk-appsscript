@@ -1,0 +1,175 @@
+{
+  "at": "2026-10-06T14:21:51.405Z",
+  "scope": "Synthetic product UI; account transport is verified by separate tests.",
+  "checks": [
+    {
+      "name": "account storage status is visible without asking for external AI consent",
+      "passed": true
+    },
+    {
+      "name": "capture offers one dated event and source-backed preferences",
+      "passed": true
+    },
+    {
+      "name": "capture leaves every extracted item unselected until review",
+      "passed": true
+    },
+    {
+      "name": "wedding time and location are read from the source",
+      "passed": true
+    },
+    {
+      "name": "capture-review-375: no overflow, clipped fields or missing images",
+      "passed": true,
+      "detail": {
+        "viewport": 375,
+        "width": 375,
+        "font": true,
+        "images": [],
+        "clipped": []
+      }
+    },
+    {
+      "name": "reviewed event appears in the person notebook",
+      "passed": true
+    },
+    {
+      "name": "confirmed memory is visible in the notebook",
+      "passed": true
+    },
+    {
+      "name": "saved original can be opened and read",
+      "passed": true
+    },
+    {
+      "name": "saved-memory-source-375: no overflow, clipped fields or missing images",
+      "passed": true,
+      "detail": {
+        "viewport": 375,
+        "width": 375,
+        "font": true,
+        "images": [],
+        "clipped": []
+      }
+    },
+    {
+      "name": "preparation brief brings together confirmed memories, contact and separate budget and actual gifts",
+      "passed": true,
+      "detail": "이번에 챙기기 전, 우리 사이의 맥락\n\n이번 계획 · 선물 · 준비 예산 70,000원 · 좋아하는 차를 준비하기\n\n최근 연락 · 2026-10-05 · 어제 안부 전화를 나눔\n2026-10-05 · 받은 선물 30,000원 · 지난번 받은 차 선물\n커피보다 차를 좋아해요.\n답장은 천천히 해도 괜찮다는 이야기\n기록 더 보기 · 새 마음 남기기"
+    },
+    {
+      "name": "preparation-brief-375: no overflow, clipped fields or missing images",
+      "passed": true,
+      "detail": {
+        "viewport": 375,
+        "width": 375,
+        "font": true,
+        "images": [],
+        "clipped": []
+      }
+    },
+    {
+      "name": "backup keeps group, selected source and actual records apart from the plan",
+      "passed": true
+    },
+    {
+      "name": "family and friend filters use saved classifications",
+      "passed": true
+    },
+    {
+      "name": "search finds confirmed memory associated with a person",
+      "passed": true
+    },
+    {
+      "name": "empty search gives feedback",
+      "passed": true
+    },
+    {
+      "name": "month calendar opens the selected day event",
+      "passed": true
+    },
+    {
+      "name": "calendar-375: no overflow, clipped fields or missing images",
+      "passed": true,
+      "detail": {
+        "viewport": 375,
+        "width": 375,
+        "font": true,
+        "images": [],
+        "clipped": []
+      }
+    },
+    {
+      "name": "calendar month navigation changes year-month",
+      "passed": true
+    },
+    {
+      "name": "past one-time event remains discoverable until recorded",
+      "passed": true
+    },
+    {
+      "name": "past care action is prefilled with the actual occurrence",
+      "passed": true
+    },
+    {
+      "name": "recording the past occurrence clears that outstanding date",
+      "passed": true
+    },
+    {
+      "name": "backup restore preserves groups, source-backed memories, plan and actual ledger",
+      "passed": true
+    },
+    {
+      "name": "calendar-desktop: no overflow, clipped fields or missing images",
+      "passed": true,
+      "detail": {
+        "viewport": 1440,
+        "width": 1440,
+        "font": true,
+        "images": [],
+        "clipped": []
+      }
+    },
+    {
+      "name": "home-desktop: no overflow, clipped fields or missing images",
+      "passed": true,
+      "detail": {
+        "viewport": 1440,
+        "width": 1440,
+        "font": true,
+        "images": [],
+        "clipped": []
+      }
+    },
+    {
+      "name": "preparation-desktop: no overflow, clipped fields or missing images",
+      "passed": true,
+      "detail": {
+        "viewport": 1440,
+        "width": 1440,
+        "font": true,
+        "images": [],
+        "clipped": []
+      }
+    },
+    {
+      "name": "no uncaught browser errors or missing application resources",
+      "passed": true,
+      "detail": {
+        "errors": [],
+        "missing": []
+      }
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "screenshots": [
+    "capture-review-375",
+    "saved-memory-source-375",
+    "preparation-brief-375",
+    "calendar-375",
+    "calendar-desktop",
+    "home-desktop",
+    "preparation-desktop"
+  ]
+}

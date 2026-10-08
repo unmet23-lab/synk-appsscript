@@ -1,0 +1,231 @@
+{
+  "at": "2026-10-07T21:04:15.414Z",
+  "candidate": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\care-checkin-preview-20261008",
+  "sourceChecks": [
+    {
+      "file": "experiences/relationship-care/index.html",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/style.css",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/app.mjs",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/model.mjs",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/lunar.mjs",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/care-features.mjs",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/care-sync.mjs",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/account.mjs",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/care-account-view.mjs",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/care-focus.mjs",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/care-context.mjs",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/care-push.mjs",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/care-sw.js",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/manifest.webmanifest",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/care-planner.mjs",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/care-personalization.mjs",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/care-support.mjs",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/care-outcomes.mjs",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/memory-card.mjs",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/memory-theme.mjs",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/icon192.png",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/icon512.png",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/apple-touch-icon180.png",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/badge-check.webp",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/badge-cream.webp",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/InterTight-Bold.ttf",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/InterTight-LICENSE.txt",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/slab-blush-long.webp",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/slab-coral-long.webp",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/slab-cream-long.webp",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/sticker-check.webp",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/sticker-envelope.webp",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/sticker-person.webp",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/sticker-time.webp",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/SUIT-LICENSE.txt",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/SUIT-Variable.woff2",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/synk-logo.svg",
+      "matches": true
+    },
+    {
+      "file": "experiences/relationship-care/assets/thread-shift.webp",
+      "matches": true
+    },
+    {
+      "file": "atlas/domain.js",
+      "matches": true
+    },
+    {
+      "file": "atlas/ask.js",
+      "matches": true
+    },
+    {
+      "file": "atlas/vellum-expression.js",
+      "matches": true
+    },
+    {
+      "file": "atlas/trail-followup.js",
+      "matches": true
+    },
+    {
+      "file": "atlas/temper-outcomes.js",
+      "matches": true
+    },
+    {
+      "file": "experiences/synk-account/src/core.mjs",
+      "matches": true
+    },
+    {
+      "file": "experiences/synk-account/src/product-account.mjs",
+      "matches": true
+    },
+    {
+      "file": "experiences/synk-account/src/document-sync.mjs",
+      "matches": true
+    }
+  ],
+  "fileCount": 48,
+  "changedPublicFiles": [
+    {
+      "file": "app.mjs",
+      "sha256": "cd4771363cf72ec939f4feb13d95f64b99f3b37d0f7d44ae6269f58293cde32b"
+    },
+    {
+      "file": "build-manifest.json",
+      "sha256": "d79ab832821347912b44567bef73a33d9a3f8f2717471e636c63127d75812122"
+    },
+    {
+      "file": "care-focus.mjs",
+      "sha256": "f04c2c1bc68c5bc39e67b03c03bbc2cbcf1fb26b23f8fd08fc89a4277e0d55ba"
+    },
+    {
+      "file": "care-sync.mjs",
+      "sha256": "5bd43008806e714f6dd757020183a6f32068e97c61e01458df9ed0562ef07086"
+    },
+    {
+      "file": "index.html",
+      "sha256": "24babdabb687d0d07ab77a9c44800dd868c0f5f7948fe7bb39461484196cef64"
+    },
+    {
+      "file": "model.mjs",
+      "sha256": "272fc68a465c08f8222ea25249faa8b6c21a2394ae929b70d91e61e7b1d5007c"
+    },
+    {
+      "file": "style.css",
+      "sha256": "087c692a69f35a3860f40365e8d8ae392f5230df4db16325e86554d51394cea8"
+    },
+    {
+      "file": "vendor/account/document-sync.mjs",
+      "sha256": "7ddf305a9145955ce463f8d01cddbb8d93b4afae8e73f44622c6e87415dd0c44"
+    },
+    {
+      "file": "vendor/account/product-account.mjs",
+      "sha256": "4052118f01d7342c38fd06ac3303ed85f2cfc6fca1f0fbfe4b9dd484aa378cd1"
+    }
+  ],
+  "reviewedOrWaived": false,
+  "published": false
+}

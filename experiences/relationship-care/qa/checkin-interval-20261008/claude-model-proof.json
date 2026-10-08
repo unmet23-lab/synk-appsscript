@@ -1,0 +1,13 @@
+{
+  "requestedModel": "claude-opus-5-5",
+  "effort": "max",
+  "actualModel": null,
+  "gatePassed": false,
+  "isError": true,
+  "error": "usage_limit_reached",
+  "status": 429,
+  "result": "You've hit your weekly limit · resets Oct 12, 7pm (Asia/Seoul)",
+  "userExceptionApproved": true,
+  "previousCacheExceptionApplies": false,
+  "userExceptionFile": "user-review-exception.json"
+}

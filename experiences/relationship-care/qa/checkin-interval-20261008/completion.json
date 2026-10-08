@@ -1,0 +1,13 @@
+{
+  "completedAt": "2026-10-07T21:30:01.894Z",
+  "backendCommit": "45ea9030551aeeaf7728c86c110f7ffb6c2571d0",
+  "publicCommit": "5528be392c2d6180cb6a09396eccdb7281c4ccf2",
+  "localTests": 569,
+  "productionChecks": 61,
+  "publicFiles": 48,
+  "ciPassed": 2,
+  "userAuthorizedReviewException": true,
+  "claudeReviewCompleted": false,
+  "physicalPhoneDeferred": true,
+  "OSPushDeferred": true
+}

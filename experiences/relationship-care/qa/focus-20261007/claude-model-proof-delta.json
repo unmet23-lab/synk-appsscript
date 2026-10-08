@@ -1,0 +1,29 @@
+{
+  "cliVersion": "2.1.291",
+  "requestedModel": "claude-opus-5-5",
+  "effort": "max",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "subtype": "success",
+  "isError": false,
+  "processExitCode": 0,
+  "sessionId": "5ec65db6-e924-413b-845f-81e28a5ed3a0",
+  "durationMs": 475011,
+  "finishedAt": "2026-10-07T20:01:00.4057839+09:00",
+  "reviewCompleted": true,
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": 1
+  },
+  "sourcesMatchInventory": false,
+  "mismatchedFiles": [
+    "experiences/relationship-care/care-account-view.mjs",
+    "experiences/relationship-care/tests/care-account-view.test.mjs"
+  ],
+  "sourceInventory": "claude-source-inventory-delta.json",
+  "parentReportedFinalTests": 178,
+  "note": "Reviewer inspected code only. Test execution and browser QA are separate parent evidence. One desktop-only local-conflict/restoring P3 remains."
+}

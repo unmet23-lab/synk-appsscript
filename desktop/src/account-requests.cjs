@@ -33,10 +33,12 @@ function requestSpec(operation,params={},appVersion='0.1.0',product,clientKey){
     case 'memoryPost':keys(['revision','entries']);if(!Array.isArray(params.entries)||params.entries.length>256||Buffer.byteLength(JSON.stringify({revision:params.revision,memory:params.entries}))>262144)invalid();return {path:'synk-learning',body:{revision:integer(params.revision),memory:params.entries}};
     case 'careLoad':keys([]);if(product!=='platform')invalid();return {path:'synk-care'};
     case 'careSave':{
-      keys(['expected_revision','state']);
+      keys(['expected_revision','state','messageLibraryVersion','checkinPreferenceVersion']);
+      if(Object.hasOwn(params,'messageLibraryVersion')&&params.messageLibraryVersion!==1)invalid();
+      if(Object.hasOwn(params,'checkinPreferenceVersion')&&(params.checkinPreferenceVersion!==1||clientKey!=='care'))invalid();
       const state=params.state;
       if(product!=='platform'||!state||typeof state!=='object'||Array.isArray(state)||state.version!==1||Object.keys(state).some(key=>!['version','people','events','drafts','completions','sources','memories','activities','followups','preparations'].includes(key))||!['people','events','drafts','completions'].every(key=>Array.isArray(state[key]))||!['sources','memories','activities','followups','preparations'].every(key=>state[key]===undefined||Array.isArray(state[key])))invalid();
-      const body={action:'save',expected_revision:integer(params.expected_revision),state};
+      const body={action:'save',expected_revision:integer(params.expected_revision),state,...(Object.hasOwn(params,'messageLibraryVersion')?{messageLibraryVersion:1}:{}),...(Object.hasOwn(params,'checkinPreferenceVersion')?{checkinPreferenceVersion:1}:{})};
       let serialized;try{serialized=JSON.stringify(body,(_key,value)=>{if(value===undefined||typeof value==='function'||typeof value==='symbol'||typeof value==='bigint'||typeof value==='number'&&!Number.isFinite(value))invalid();return value;});}catch{invalid();}
       if(Buffer.byteLength(serialized,'utf8')>4*1024*1024+32768)invalid();
       return {path:'synk-care',body:JSON.parse(serialized)};

@@ -1,0 +1,18 @@
+{
+  "userAuthorizedException": true,
+  "claudeGatePassed": false,
+  "requestedModel": "claude-opus-5-5",
+  "effort": "max",
+  "reason": "Official Claude weekly usage limit, api_error usage_limit_reached 429",
+  "userAnswer": "이번 안부 주기 변경만 검수 예외 승인·배포",
+  "scope": "Per-person ordinary checkin interval including off/custom, account preservation capability and recovery protection, related form polish; source inventory is claude-source-inventory.json and public candidate verification is candidate-verification.json",
+  "inventoryFile": "claude-source-inventory.json",
+  "scopeExcludes": [
+    "new unrelated features",
+    "physical phone sync test",
+    "actual OS push receipt",
+    "paid AI"
+  ],
+  "inventorySha256": "2d901d57330cbad7ab7f145ffde850bb4e790684e73ecaa60276370dc58757d7",
+  "candidateManifestSha256": "d79ab832821347912b44567bef73a33d9a3f8f2717471e636c63127d75812122"
+}

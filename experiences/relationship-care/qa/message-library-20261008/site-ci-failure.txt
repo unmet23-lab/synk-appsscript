@@ -1,0 +1,26 @@
+check	점검	﻿2026-10-07T19:53:35.7575862Z ##[group]Run node .github/site-check/check.mjs
+check	점검	2026-10-07T19:53:35.7576441Z ^[[36;1mnode .github/site-check/check.mjs^[[0m
+check	점검	2026-10-07T19:53:35.7617147Z shell: /usr/bin/bash -e {0}
+check	점검	2026-10-07T19:53:35.7617572Z env:
+check	점검	2026-10-07T19:53:35.7617892Z   SITE_BASE: https://synk.im
+check	점검	2026-10-07T19:53:35.7620352Z   GH_TOKEN: ***
+check	점검	2026-10-07T19:53:35.7620700Z ##[endgroup]
+check	점검	2026-10-07T19:53:36.1692583Z 1. synk.im 반영 기다리기
+check	점검	2026-10-07T19:53:37.3936067Z   비교: 마지막 통과 0f0c9a7부터
+check	점검	2026-10-07T19:53:38.5147663Z   바뀐 파일 15개 같음, 지운 파일 0개 404
+check	점검	2026-10-07T19:53:38.5148198Z 2. 제작 도구 이름
+check	점검	2026-10-07T19:53:38.8023483Z   파일 3211개 봄
+check	점검	2026-10-07T19:53:39.0099918Z 3. 페이지
+check	점검	2026-10-07T19:55:54.3403185Z   ✗ 휴대폰 /care/: 503 /care/care-account-view.mjs | Failed to load resource: the server responded with a status of 503 ()
+check	점검	2026-10-07T19:57:53.6882527Z   23쪽 × 2기기
+check	점검	2026-10-07T19:57:53.6886713Z 4. LAB 게임
+check	점검	2026-10-07T19:59:59.6453366Z   ✗ 컴퓨터 /try/story-classroom/: 503 /try/story-classroom/assets/prop-bin.webp | Failed to load resource: the server responded with a status of 503 ()
+check	점검	2026-10-07T20:02:54.8557081Z   게임 8개 × 2기기
+check	점검	2026-10-07T20:02:54.8586699Z 5. 질문창
+check	점검	2026-10-07T20:02:59.7781801Z   답: SYNK 안내 SYNK LAB은 한국어 교재와 게임, 개인화 엔진 아틀라스를 넣은 학습 앱을 개발하는 에듀테…
+check	점검	2026-10-07T20:03:00.3747419Z 
+check	점검	2026-10-07T20:03:00.3748781Z ## synk.im 배포 점검 — 문제 2개
+check	점검	2026-10-07T20:03:00.3749229Z 
+check	점검	2026-10-07T20:03:00.3750265Z - [페이지] 휴대폰 /care/: 503 /care/care-account-view.mjs | Failed to load resource: the server responded with a status of 503 ()
+check	점검	2026-10-07T20:03:00.3752042Z - [게임] 컴퓨터 /try/story-classroom/: 503 /try/story-classroom/assets/prop-bin.webp | Failed to load resource: the server responded with a status of 503 ()
+check	점검	2026-10-07T20:03:00.3831219Z ##[error]Process completed with exit code 1.

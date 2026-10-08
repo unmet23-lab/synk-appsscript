@@ -1,0 +1,18 @@
+{
+  "gatePassed": true,
+  "actualModel": "claude-opus-5-5",
+  "effort": "max",
+  "exitCode": 0,
+  "sessionId": "d25ab3d1-d2cf-4593-8434-80d42207155c",
+  "unresolvedP0P1P2": 0,
+  "review": "claude-review.json",
+  "tests": {
+    "backend": 51
+  },
+  "at": "2026-10-07T15:11:38.876Z",
+  "limitations": [
+    "Physical phone sync deferred by user",
+    "Actual closed-app OS push receipt unverified",
+    "Delivery may arrive after server dispatch window due to network/OS/TTL"
+  ]
+}

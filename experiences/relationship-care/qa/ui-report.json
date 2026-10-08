@@ -1,0 +1,167 @@
+{
+  "checks": [
+    {
+      "name": "empty by default",
+      "passed": true
+    },
+    {
+      "name": "desktop empty has no overflow or broken images",
+      "passed": true,
+      "detail": {
+        "width": 1440,
+        "scrollWidth": 1440,
+        "images": [],
+        "font": true,
+        "clippedInputs": []
+      }
+    },
+    {
+      "name": "speaker separation does not mix recipient words",
+      "passed": true
+    },
+    {
+      "name": "tone observation displayed",
+      "passed": true
+    },
+    {
+      "name": "saved birthday shown",
+      "passed": true
+    },
+    {
+      "name": "calendar export has actual future occurrence and alarms",
+      "passed": true
+    },
+    {
+      "name": "confirmed casual emoji preference applied",
+      "passed": true
+    },
+    {
+      "name": "edited draft reviewed before copy",
+      "passed": true
+    },
+    {
+      "name": "edited draft copied",
+      "passed": true
+    },
+    {
+      "name": "completion recorded",
+      "passed": true
+    },
+    {
+      "name": "opt-in persists person and completion",
+      "passed": true
+    },
+    {
+      "name": "raw dialogue is excluded from saved state",
+      "passed": true
+    },
+    {
+      "name": "JSON contains edited message and no audio bytes",
+      "passed": true
+    },
+    {
+      "name": "mobile events 390 has no overflow or broken images",
+      "passed": true,
+      "detail": {
+        "width": 390,
+        "scrollWidth": 390,
+        "images": [],
+        "font": true,
+        "clippedInputs": []
+      }
+    },
+    {
+      "name": "mobile conversation 390 has no overflow or broken images",
+      "passed": true,
+      "detail": {
+        "width": 390,
+        "scrollWidth": 390,
+        "images": [],
+        "font": true,
+        "clippedInputs": []
+      }
+    },
+    {
+      "name": "mobile events 320 has no overflow or broken images",
+      "passed": true,
+      "detail": {
+        "width": 320,
+        "scrollWidth": 320,
+        "images": [],
+        "font": true,
+        "clippedInputs": []
+      }
+    },
+    {
+      "name": "mobile conversation 320 has no overflow or broken images",
+      "passed": true,
+      "detail": {
+        "width": 320,
+        "scrollWidth": 320,
+        "images": [],
+        "font": true,
+        "clippedInputs": []
+      }
+    },
+    {
+      "name": "delete clears data and storage",
+      "passed": true
+    },
+    {
+      "name": "demo clearly labelled",
+      "passed": true
+    },
+    {
+      "name": "recording transcribes through actual UI",
+      "passed": true
+    },
+    {
+      "name": "transcript requires speaker verification",
+      "passed": true
+    },
+    {
+      "name": "without opt-in demo does not persist",
+      "passed": true
+    },
+    {
+      "name": "deletion clears hidden conversation DOM",
+      "passed": true
+    },
+    {
+      "name": "late clipboard response cannot resurrect deleted data",
+      "passed": true
+    },
+    {
+      "name": "due reminder is delivered when permission granted",
+      "passed": true
+    },
+    {
+      "name": "persisted reminder is not redelivered on reload",
+      "passed": true
+    },
+    {
+      "name": "failed save keeps visible recovery guidance",
+      "passed": true
+    },
+    {
+      "name": "no runtime errors",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "no missing resources",
+      "passed": true,
+      "detail": []
+    }
+  ],
+  "screens": [
+    "desktop-empty",
+    "desktop-message",
+    "mobile-events-390",
+    "mobile-events-320",
+    "mobile-demo-320"
+  ],
+  "errors": [],
+  "missing": [],
+  "at": "2026-10-06T14:21:51.406Z"
+}

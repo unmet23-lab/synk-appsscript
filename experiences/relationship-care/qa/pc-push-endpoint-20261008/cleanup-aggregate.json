@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-10-08T00:15:09.853Z",
+  "databaseObservedAt": "2026-10-08 00:15:09.705996+00",
+  "environment": "production",
+  "readOnly": true,
+  "counts": {
+    "subscriptions_enabled": 1,
+    "subscriptions_enabled_at_0900_kst": 1,
+    "today_sent": 1
+  },
+  "interpretation": {
+    "scope": "Aggregate counts only; no notebook, person, follow-up, account identifier or endpoint content was selected.",
+    "enabledScheduleAt0900Confirmed": true,
+    "priorGatewayAcceptanceStillRecorded": true,
+    "physicalOsReceiptVerified": false,
+    "userOsReceiptStatus": "사용자 응답: 못 봤어요 — 실제 수신 확인은 보류",
+    "followupCompletionVerifiedByThisQuery": false,
+    "subscriptionRetained": true,
+    "notes": "Active subscription kept with 09:00 KST schedule; this is not restoration to the original unsubscribed state. Follow-up completion and saved notebook restoration are separate UI evidence."
+  },
+  "execution": {
+    "aggregateQueries": 1,
+    "guard": "canonical credential reader with 질의읽기:true and 질의전용(sql)",
+    "manualDispatcherInvocations": 0,
+    "databaseMutations": 0,
+    "retestTriggered": false,
+    "privateIdentifiersSelected": false,
+    "secretValuesRecorded": false
+  }
+}

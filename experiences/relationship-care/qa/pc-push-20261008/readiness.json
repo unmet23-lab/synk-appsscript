@@ -1,0 +1,54 @@
+{
+  "checkedAt": "2026-10-07T17:11:09.190Z",
+  "checkedAtKst": "2026-10-08T02:11:09.190+09:00",
+  "environment": "production",
+  "readOnly": true,
+  "purpose": "PC 실제 푸시 수신 검증 전 운영 구독 준비 상태 확인",
+  "execution": {
+    "cwd": "C:/Users/q1212/Documents/SYNK-appsscript",
+    "shell": "PowerShell",
+    "command": "@'\nconst credentials=require('C:/Users/q1212/Documents/SYNK-talk/lib/자격증명.js');\nprocess.env.SUPABASE_PROJECT_REF=credentials.운영REF;\nconst env=credentials.읽기('플레저PC알림읽기확인',{질의읽기:true});\nconst sql=\"select (select count(*) from engine.synk_care_push_subscriptions) as subscriptions_total,(select count(*) from engine.synk_care_push_subscriptions where enabled) as subscriptions_enabled,(select count(*) from engine.synk_care_push_subscriptions where enabled and attempt_day=(clock_timestamp() at time zone 'Asia/Seoul')::date) as evaluated_today,(select count(*) from engine.synk_care_push_subscriptions where last_outcome='sent') as latest_sent,(select count(*) from engine.synk_care_push_subscriptions where last_outcome='failed') as latest_failed,(select count(*) from engine.synk_care_push_subscriptions where last_outcome='skipped') as latest_skipped,(select count(*) from cron.job where jobname='synk-care-push-dispatch' and active) as dispatcher_job_active\";\ncredentials.질의전용(sql,'플레저PC알림읽기확인');\n(async()=>{const r=await fetch('https://api.supabase.com/v1/projects/'+env.SUPABASE_PROJECT_REF+'/database/query',{method:'POST',headers:{Authorization:'Bearer '+env.SUPABASE_ACCESS_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({query:sql}),redirect:'error',signal:AbortSignal.timeout(30000)});if(!r.ok)throw Error('MANAGEMENT_HTTP_'+r.status);console.log(JSON.stringify({at:new Date().toISOString(),readOnly:true,environment:'production',counts:await r.json()}));})().catch(e=>{console.error(e.message);process.exitCode=1;});\n'@ | node",
+    "query": "select (select count(*) from engine.synk_care_push_subscriptions) as subscriptions_total,(select count(*) from engine.synk_care_push_subscriptions where enabled) as subscriptions_enabled,(select count(*) from engine.synk_care_push_subscriptions where enabled and attempt_day=(clock_timestamp() at time zone 'Asia/Seoul')::date) as evaluated_today,(select count(*) from engine.synk_care_push_subscriptions where last_outcome='sent') as latest_sent,(select count(*) from engine.synk_care_push_subscriptions where last_outcome='failed') as latest_failed,(select count(*) from engine.synk_care_push_subscriptions where last_outcome='skipped') as latest_skipped,(select count(*) from cron.job where jobname='synk-care-push-dispatch' and active) as dispatcher_job_active",
+    "api": "Supabase Management POST /v1/projects/{productionRef}/database/query",
+    "guard": "공용 자격증명 모듈 질의읽기:true 및 질의전용(sql)을 통과한 SELECT 집계만 실행",
+    "secretHandling": "기존 공용 모듈에서 실행 중 메모리로 읽음. 자격증명 값, 계정 식별자, endpoint, 구독 키는 조회 결과나 이 문서에 기록하지 않음"
+  },
+  "counts": {
+    "subscriptions_total": 0,
+    "subscriptions_enabled": 0,
+    "evaluated_today": 0,
+    "latest_sent": 0,
+    "latest_failed": 0,
+    "latest_skipped": 0,
+    "dispatcher_job_active": 1
+  },
+  "uiObservation": {
+    "source": "같은 작업의 주 작업자 브라우저 확인 결과",
+    "surface": "Codex in-app browser",
+    "url": "https://synk.im/care/",
+    "existingSynkSsoRestored": true,
+    "existingNotebookLoaded": true,
+    "existingPersonCount": 1,
+    "pushState": "ready",
+    "visibleAction": "이 기기에 알림 켜기",
+    "visibleTime": "09:00 Asia/Seoul",
+    "limitation": "Chrome 새 탭 도구 오류로 IAB에서 확인. 실제 Chrome 알림 권한, 구독 생성, OS 수신을 확인한 결과가 아님"
+  },
+  "immediateTestNotificationAvailable": false,
+  "mutationSummary": {
+    "thisReadOnlyQuery": "서버 데이터 변경 없음",
+    "manualWorkerOrDispatcherInvocations": 0,
+    "testNotificationSent": false,
+    "userNotebookEdited": false,
+    "notificationPermissionChanged": false,
+    "note": "UI의 기존 SSO 복귀는 별도 관찰이며 로그인 과정 내부의 세션 처리를 서버 무변경 주장에 포함하지 않음"
+  },
+  "status": "deferred_by_user",
+  "userDecision": "알림은 나중에 확인",
+  "notVerified": [
+    "실제 Chrome의 알림 허용 및 구독 생성",
+    "닫힌 Care 탭의 PC OS 알림 수신",
+    "실제 시스템 알림 클릭 후 Care 이동",
+    "사용자가 보류한 휴대폰 왕복 및 알림 수신"
+  ]
+}

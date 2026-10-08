@@ -1,0 +1,26 @@
+{
+  "checkedAt": "2026-10-07T11:09:37.491Z",
+  "commit": "68b4cc3b2afb758af62112b7cd31ad004b908544",
+  "url": "https://synk.im/care/",
+  "accountStatus": "SYNK 계정에 저장했어요",
+  "focusExists": true,
+  "focusPerson": "동기화 확인용",
+  "focusReason": "아직 이 사람의 챙김 기록을 남기지 않았어요. 첫 안부부터 준비해 볼 수 있어요.",
+  "focusTitle": "오늘 챙길 한 사람",
+  "focusVisible": true,
+  "hasTestRecord": true,
+  "inert": false,
+  "mainHidden": false,
+  "layout": {
+    "buttonHeight": 56,
+    "overflow": false,
+    "reasonFont": "17px",
+    "scrollY": 632,
+    "width": 375
+  },
+  "method": "existing authenticated account, reload and read-only DOM observations",
+  "writesPerformed": false,
+  "physicalPhoneTest": false,
+  "consoleErrors": 0,
+  "consoleWarnings": 0
+}

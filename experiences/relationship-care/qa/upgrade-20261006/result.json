@@ -1,0 +1,218 @@
+{
+  "at": "2026-10-06T11:23:02.653Z",
+  "checks": [
+    {
+      "name": "starts on an empty home",
+      "passed": true
+    },
+    {
+      "name": "desktop-empty layout",
+      "passed": true,
+      "detail": {
+        "viewport": 1440,
+        "width": 1440,
+        "missing": [],
+        "font": true,
+        "clipped": []
+      }
+    },
+    {
+      "name": "two synthetic people and two home actions",
+      "passed": true
+    },
+    {
+      "name": "desktop-home layout",
+      "passed": true,
+      "detail": {
+        "viewport": 1440,
+        "width": 1440,
+        "missing": [],
+        "font": true,
+        "clipped": []
+      }
+    },
+    {
+      "name": "home-390 layout",
+      "passed": true,
+      "detail": {
+        "viewport": 390,
+        "width": 390,
+        "missing": [],
+        "font": true,
+        "clipped": []
+      }
+    },
+    {
+      "name": "home-320 layout",
+      "passed": true,
+      "detail": {
+        "viewport": 320,
+        "width": 320,
+        "missing": [],
+        "font": true,
+        "clipped": []
+      }
+    },
+    {
+      "name": "quiet event changes mood and exposes quiet completion",
+      "passed": true
+    },
+    {
+      "name": "quiet draft avoids celebratory emoji",
+      "passed": true
+    },
+    {
+      "name": "quiet-320 layout",
+      "passed": true,
+      "detail": {
+        "viewport": 320,
+        "width": 320,
+        "missing": [],
+        "font": true,
+        "clipped": []
+      }
+    },
+    {
+      "name": "quiet record is distinct from contacting",
+      "passed": true
+    },
+    {
+      "name": "home round trip preserves an unsaved draft",
+      "passed": true
+    },
+    {
+      "name": "confirmed wording changes actual draft",
+      "passed": true,
+      "detail": "지민아, 생일 축하해! 오늘 좋아하는 것들로 가득한 하루 보내.\n늘 고마워. 🎂\n답장은 편할 때 해도 괜찮아."
+    },
+    {
+      "name": "real clipboard gets reviewed text",
+      "passed": true
+    },
+    {
+      "name": "copied text is visible without being declared sent",
+      "passed": true
+    },
+    {
+      "name": "contacted record appears after manual completion",
+      "passed": true
+    },
+    {
+      "name": "history-320 layout",
+      "passed": true,
+      "detail": {
+        "viewport": 320,
+        "width": 320,
+        "missing": [],
+        "font": true,
+        "clipped": []
+      }
+    },
+    {
+      "name": "next year can reuse explicitly remembered wording",
+      "passed": true
+    },
+    {
+      "name": "saved app reopens on home with people intact",
+      "passed": true
+    },
+    {
+      "name": "history and saved wording survive reload",
+      "passed": true
+    },
+    {
+      "name": "lunar anniversary shows actual next solar date",
+      "passed": true
+    },
+    {
+      "name": "calendar export contains converted solar date",
+      "passed": true
+    },
+    {
+      "name": "editing lunar event preserves original date and calendar",
+      "passed": true
+    },
+    {
+      "name": "lunar date input accepts non-Gregorian February 30",
+      "passed": true
+    },
+    {
+      "name": "lunar-form-320 layout",
+      "passed": true,
+      "detail": {
+        "viewport": 320,
+        "width": 320,
+        "missing": [],
+        "font": true,
+        "clipped": []
+      }
+    },
+    {
+      "name": "lunar February 30 saves through real form validation",
+      "passed": true
+    },
+    {
+      "name": "backup keeps preferences history and excludes raw conversations",
+      "passed": true
+    },
+    {
+      "name": "invalid backup preserves existing persisted data",
+      "passed": true
+    },
+    {
+      "name": "failed persisted restore leaves current data intact",
+      "passed": true
+    },
+    {
+      "name": "valid backup restores people without enabling storage implicitly",
+      "passed": true
+    },
+    {
+      "name": "name and date alone reach a usable first draft",
+      "passed": true
+    },
+    {
+      "name": "desktop-message layout",
+      "passed": true,
+      "detail": {
+        "viewport": 1440,
+        "width": 1440,
+        "missing": [],
+        "font": true,
+        "clipped": []
+      }
+    },
+    {
+      "name": "desktop-home-final layout",
+      "passed": true,
+      "detail": {
+        "viewport": 1440,
+        "width": 1440,
+        "missing": [],
+        "font": true,
+        "clipped": []
+      }
+    },
+    {
+      "name": "no browser errors or missing resources",
+      "passed": true,
+      "detail": {
+        "errors": [],
+        "missing": []
+      }
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "screenshots": [
+    "desktop-empty",
+    "desktop-home",
+    "home-390",
+    "home-320",
+    "quiet-320",
+    "history-320",
+    "lunar-form-320",
+    "desktop-message",
+    "desktop-home-final"
+  ]
+}

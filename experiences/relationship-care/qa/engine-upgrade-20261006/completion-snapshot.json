@@ -1,0 +1,76 @@
+{
+  "at": "2026-10-06T13:41:31.9677128Z",
+  "scope": "Local relationship-care engine upgrade; no production activation",
+  "files": [
+    {
+      "path": "atlas/vellum-expression.js",
+      "sha256": "a677829210a20b521aa341e0268cce4221f29ef495238e8f7ee5915a5779a237"
+    },
+    {
+      "path": "atlas/trail-followup.js",
+      "sha256": "4d0e90889fe4678e658db4a838c8d3d3190be72b12139969e9dad987266f99e1"
+    },
+    {
+      "path": "atlas/temper-outcomes.js",
+      "sha256": "6673d549c63b63399e5197c76d2cc2e4196c46a273e2ffe28acd393c0766a4f9"
+    },
+    {
+      "path": "experiences/relationship-care/model.mjs",
+      "sha256": "b5d904e6478b59e1590ddaa6f1df3d5e0aca66121b750353ec0bcc91d55cb05f"
+    },
+    {
+      "path": "experiences/relationship-care/care-planner.mjs",
+      "sha256": "73103e477f236b89d71078a27c13d15b01fbf1122254704c3ae0f8640df2f105"
+    },
+    {
+      "path": "experiences/relationship-care/care-support.mjs",
+      "sha256": "0b7c36afb99f60f1df5c811b9f674b360345968f95905dd568c12db97f127eff"
+    },
+    {
+      "path": "experiences/relationship-care/care-outcomes.mjs",
+      "sha256": "5206d7826c5277a71e0abc9b26e16de53f5fa26f91027a3f55355d8b3b22ea69"
+    },
+    {
+      "path": "experiences/relationship-care/memory-card.mjs",
+      "sha256": "f6660af612023a9ad14a446d4082303a906a5d7064be1c0cc380565fd746a192"
+    },
+    {
+      "path": "experiences/relationship-care/memory-theme.mjs",
+      "sha256": "e1796bc47147001e61f3bdd1e19d12659c11158fd657efc1d6aa8feb6b1150f8"
+    },
+    {
+      "path": "experiences/relationship-care/app.mjs",
+      "sha256": "493dcd071d12cbbc785c1d273b4cb9bc6f53f17da71caa2fb4894c1a7ff99808"
+    },
+    {
+      "path": "experiences/relationship-care/index.html",
+      "sha256": "6375932ae6258d6e2bb909035b0bf36d31c07d7865ff9b7dda75b2e0818caee3"
+    },
+    {
+      "path": "experiences/relationship-care/style.css",
+      "sha256": "0605ef086d4b0500039923a91974124528f607de6a25258a22f446d0987e8fcf"
+    },
+    {
+      "path": "experiences/relationship-care/server.mjs",
+      "sha256": "d062c843a50338c4914ff770b06e683fb926063f3bc9e6583c35f4b7b3465cbb"
+    },
+    {
+      "path": "desktop/src/account-requests.cjs",
+      "sha256": "d72e27cd365c607b6d0b1ebe496005504db7293f80eb13661196765ff84e59f8"
+    },
+    {
+      "path": "desktop/src/product-preview.cjs",
+      "sha256": "e3235cfac22937695c6d8bd56921a6ade1c089b373ae7b9ea732a90f1076204d"
+    }
+  ],
+  "tests": {
+    "backend": 14,
+    "raceBrowser": 9,
+    "unit": 187,
+    "existingProductBrowser": 26,
+    "productBrowser": 35,
+    "accountBrowser": 39
+  },
+  "publicDeployment": false,
+  "realAccountRoundtrip": false
+}

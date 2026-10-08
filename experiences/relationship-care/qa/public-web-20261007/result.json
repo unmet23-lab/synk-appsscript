@@ -1,0 +1,125 @@
+{
+  "synthetic": true,
+  "at": "2026-10-06T20:30:03.150Z",
+  "checks": [
+    {
+      "name": "public web loads its local static config and enabled account entry",
+      "ok": true
+    },
+    {
+      "name": "public web disables local transcription before any file is selected",
+      "ok": true
+    },
+    {
+      "name": "public PKCE return keeps the subpath and removes code/state from URL",
+      "ok": true
+    },
+    {
+      "name": "public browser saves canonical synthetic data through the care API",
+      "ok": true
+    },
+    {
+      "name": "second isolated browser retrieves the first browser synthetic notebook",
+      "ok": true
+    },
+    {
+      "name": "explicit refresh retrieves the other browser edit",
+      "ok": true
+    },
+    {
+      "name": "public audio panel states playback-only and hides local-processing consent",
+      "ok": true
+    },
+    {
+      "name": "public home fits 320px",
+      "ok": true
+    },
+    {
+      "name": "public home fits 375px",
+      "ok": true
+    },
+    {
+      "name": "public home fits 1440px",
+      "ok": true
+    },
+    {
+      "name": "deleting only the synthetic person is visible in the other browser",
+      "ok": true
+    },
+    {
+      "name": "all app files remain under care and no local API or unrelated origin is requested",
+      "ok": true
+    },
+    {
+      "name": "public browser has no runtime errors",
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "unexpected": [],
+  "staticRequests": [
+    "/care/",
+    "/care/style.css",
+    "/care/app.mjs",
+    "/care/assets/synk-logo.svg",
+    "/care/assets/sticker-envelope.webp",
+    "/care/assets/sticker-time.webp",
+    "/care/assets/sticker-person.webp",
+    "/care/assets/sticker-check.webp",
+    "/care/assets/slab-blush-long.webp",
+    "/care/assets/slab-cream-long.webp",
+    "/care/assets/badge-cream.webp",
+    "/care/assets/SUIT-Variable.woff2",
+    "/care/assets/slab-coral-long.webp",
+    "/care/assets/InterTight-Bold.ttf",
+    "/care/model.mjs",
+    "/care/care-features.mjs",
+    "/care/care-sync.mjs",
+    "/care/account.mjs",
+    "/care/care-support.mjs",
+    "/care/care-outcomes.mjs",
+    "/care/memory-card.mjs",
+    "/care/care-planner.mjs",
+    "/care/vendor/account/product-account.mjs",
+    "/care/vendor/atlas/temper-outcomes.js",
+    "/care/lunar.mjs",
+    "/care/care-personalization.mjs",
+    "/care/vendor/account/document-sync.mjs",
+    "/care/vendor/atlas/vellum-expression.js",
+    "/care/vendor/atlas/trail-followup.js",
+    "/care/memory-theme.mjs",
+    "/care/vendor/atlas/domain.js",
+    "/care/vendor/atlas/ask.js",
+    "/care/vendor/account/core.mjs",
+    "/care/config.json"
+  ],
+  "apiActions": [
+    "load",
+    "load",
+    "save",
+    "load",
+    "load",
+    "save",
+    "load",
+    "save",
+    "load"
+  ],
+  "authorization": [
+    {
+      "clientMatches": true,
+      "callbackMatches": true,
+      "method": "S256"
+    },
+    {
+      "clientMatches": true,
+      "callbackMatches": true,
+      "method": "S256"
+    }
+  ],
+  "realProviderCalls": false,
+  "physicalTwoDevices": false,
+  "artifact": ".tmp\\synk-care-public-qa-37c865a6-3450-47e7-8531-b616f4334824",
+  "buildFiles": 39,
+  "ok": true
+}

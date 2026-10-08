@@ -1,0 +1,59 @@
+{
+  "checkedAt": "2026-10-07T18:19:13.142Z",
+  "gatePassed": true,
+  "officialCli": "C:/Users/q1212/.local/bin/claude.exe",
+  "argvEvidence": [
+    "--print",
+    "--model",
+    "claude-opus-5-5",
+    "--effort",
+    "max",
+    "--output-format",
+    "json",
+    "--tools",
+    "Read,Grep,Glob",
+    "--permission-mode",
+    "plan"
+  ],
+  "sourceInventory": "claude-source-inventory.json",
+  "sourceFilesVerified": 10,
+  "hashVerifiedBy": "primary agent",
+  "initialP2Resolved": 2,
+  "followupAdHocCheckinP3Resolved": true,
+  "remainingP0P1P2": 0,
+  "reviews": [
+    {
+      "file": "claude-review.json",
+      "sessionId": "5bcf290f-ff3d-4981-8689-fa45de249631",
+      "actualModels": [
+        "claude-opus-5-5"
+      ],
+      "requestedModel": "claude-opus-5-5",
+      "effort": "max",
+      "exitCode": 0,
+      "stopReason": "end_turn"
+    },
+    {
+      "file": "claude-delta-review.json",
+      "sessionId": "5bcf290f-ff3d-4981-8689-fa45de249631",
+      "actualModels": [
+        "claude-opus-5-5"
+      ],
+      "requestedModel": "claude-opus-5-5",
+      "effort": "max",
+      "exitCode": 0,
+      "stopReason": "end_turn"
+    },
+    {
+      "file": "claude-final-review.json",
+      "sessionId": "5bcf290f-ff3d-4981-8689-fa45de249631",
+      "actualModels": [
+        "claude-opus-5-5"
+      ],
+      "requestedModel": "claude-opus-5-5",
+      "effort": "max",
+      "exitCode": 0,
+      "stopReason": "end_turn"
+    }
+  ]
+}

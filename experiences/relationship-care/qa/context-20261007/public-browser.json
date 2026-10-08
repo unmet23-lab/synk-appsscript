@@ -1,0 +1,49 @@
+{
+  "checkedAt": "2026-10-07T14:18:56.322Z",
+  "url": "https://synk.im/care/",
+  "commit": "eb9e55b3b126dfbc45caaa176395c4a677e89f67",
+  "dataScope": "Built-in fictional examples; guest mode, browser persistence unchecked; no production account or message sent",
+  "checks": {
+    "newHeadingVisible": true,
+    "contextBeforePreparation": true,
+    "planDisclosureWorks": true,
+    "followupOpensCheckin": true,
+    "eventDraftReplacementConfirmationShownOnce": true,
+    "recentActualCareNoteVisible": true,
+    "explicitCompletionReturnsToHistory": true,
+    "completionTitleAndDateVisible": true,
+    "noDuplicateContactActivityVisible": true
+  },
+  "metrics": {
+    "contextTop": 231.078125,
+    "heading": "연락 전에, 우리 이야기",
+    "paragraphs": [
+      {
+        "font": "14px",
+        "text": "내가 정한 날 · 2026-10-07"
+      },
+      {
+        "font": "14px",
+        "text": "이 내용을 보며 아래 문구를 다듬어 주세요. 복사해도 완료되지 않아요. 실제로 챙긴 뒤 ‘이 챙김 완료’를 눌러 주세요."
+      },
+      {
+        "font": "14px",
+        "text": "2026-10-07 · 전한 마음 · 연락"
+      },
+      {
+        "font": "16px",
+        "text": "공개 화면 확인용 예시 · 함께한 주말 이야기를 나눴어요."
+      }
+    ],
+    "preparationTop": 899.234375,
+    "scrollWidth": 360,
+    "width": 375
+  },
+  "consoleErrors": [],
+  "screenshot": "public-followup-375.png",
+  "limitations": [
+    "No physical phone round-trip",
+    "No closed-app push receipt"
+  ],
+  "cleanup": "Reloaded guest page; fictional additions and sample banner gone; 0 people"
+}

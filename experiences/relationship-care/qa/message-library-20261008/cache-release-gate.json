@@ -1,0 +1,22 @@
+{
+  "inventory": [
+    {
+      "sha256": "4351c31bdeffee0bb930606c9fce6a62a7fa2ae827377a2de534456cd0bbc58f",
+      "file": "tools/prepare-care-public.mjs"
+    },
+    {
+      "sha256": "5d293e55dd85be33b42caf74bada976a0fed723fa2191ea6ee2cb1bda91d0a17",
+      "file": "experiences/relationship-care/tests/public-build.test.mjs"
+    }
+  ],
+  "scope": "public builder and corresponding test only; emitted index.html and build-manifest.json only",
+  "userInstruction": "추가 캐시 수정만 검수 예외 승인·배포",
+  "browserProof": "cache-browser-v6.json",
+  "userAuthorizedException": true,
+  "effort": "max",
+  "checkedAt": "2026-10-07T20:04:43.6503635Z",
+  "claudeGatePassed": false,
+  "claudeError": "usage_limit_reached",
+  "requestedModel": "claude-opus-5-5",
+  "localTests": "tests-public-cache.txt"
+}

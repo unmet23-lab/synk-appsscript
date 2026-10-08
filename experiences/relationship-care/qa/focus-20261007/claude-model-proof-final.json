@@ -1,0 +1,36 @@
+{
+  "cliVersion": "2.1.291",
+  "requestedModel": "claude-opus-5-5",
+  "effort": "max",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "subtype": "success",
+  "isError": false,
+  "processExitCode": 0,
+  "sessionId": "5ec65db6-e924-413b-845f-81e28a5ed3a0",
+  "durationMs": 68590,
+  "finishedAt": "2026-10-07T20:04:53.0536889+09:00",
+  "reviewCompleted": true,
+  "finalFindings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "desktopSelectionRestoringP3Resolved": true
+  },
+  "sourcesMatchInventory": true,
+  "mismatchedFiles": [],
+  "sourceInventory": "claude-source-inventory-final.json",
+  "reviewChain": [
+    "claude-review-initial.json",
+    "claude-review-delta.json",
+    "claude-review-final.json"
+  ],
+  "parentReportedFinalTests": 179,
+  "gatePassed": true,
+  "limitations": [
+    "Reviewer inspected source only; tests, browser QA, and deployment verification are separate evidence.",
+    "Esc cancellation without leaving the document was not reproduced or verified in this scoped review."
+  ],
+  "note": "Final review inspected the last two-file P3 fix after the preceding delta review cleared all P0-P2 findings. All 10 scoped source hashes were checked after completion."
+}

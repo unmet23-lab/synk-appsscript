@@ -1,0 +1,6 @@
+· synk-care  ⚠ 미측정 — 본체(index.ts)의 판을 못 가른다 · 바이트 1/1 · 본체(index.ts) 앵커 0/0 ⚠판을 못 가른다 · 시각 축 ○
+
+[배포대조] 운영 — 다름 0 · 미측정 1 · 전체 1
+[배포대조] ⚠ 이 실행이 **안 본** 판: 리허설 — 위 초록은 «운영» 하나의 초록이다. 두 판을 한 번에: node tools/배포빚.js
+[배포대조] 🔴 **운영**(Synk Core · qiwxeddwwnzkwalpsuty)을 **읽습니다** — 이 갈래로 쓰기는 못 나갑니다(쓰려면 --운영).
+[배포대조] 대상 ▸ Synk Core  (qiwxeddwwnzkwalpsuty)

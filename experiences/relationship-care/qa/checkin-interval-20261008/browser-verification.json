@@ -1,0 +1,38 @@
+{
+  "at": "2026-10-07T21:04:15.416Z",
+  "surface": "Codex IAB local guest",
+  "url": "http://127.0.0.1:4334/care/",
+  "checks": {
+    "custom45SaveAndReopen": true,
+    "invalid366BlockedAndSummary45Preserved": true,
+    "offSavedAndSummaryVisible": true,
+    "cancel14PreservesOff": true,
+    "customHiddenAndDisabledWhenOff": true,
+    "keyboardCanReachSubmit": true,
+    "existingFeltSubmitVisible": true,
+    "consoleWarningsAndErrors": 0
+  },
+  "viewports": [
+    {
+      "width": 375,
+      "height": 812,
+      "pageScrollWidth": 360,
+      "dialogClientWidth": 305,
+      "dialogScrollWidth": 305
+    },
+    {
+      "width": 320,
+      "height": 812,
+      "pageScrollWidth": 305,
+      "dialogClientWidth": 250,
+      "dialogScrollWidth": 250
+    }
+  ],
+  "selectAndHelperFontPx": 16,
+  "submitButtonHeightPx": 52,
+  "physicalPhoneTest": false,
+  "OSPushReceipt": false,
+  "realAccountWrites": false,
+  "screenshots": "Inspected via CUA tool output; no screenshot file exported.",
+  "cleanup": "Viewport reset; synthetic guest tab closed; user Meta tab untouched."
+}

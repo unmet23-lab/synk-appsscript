@@ -1,0 +1,17 @@
+{
+  "run": "08e4d0bb-6c02-4c22-b700-75786267f3af",
+  "marker": "care-ops-08e4d0bb-6c02-4c22-b700-75786267f3af",
+  "accounts": [
+    {
+      "email": "care-ops-08e4d0bb-6c02-4c22-b700-75786267f3af-owner@example.invalid",
+      "id": "2602b9fa-87b8-4ab1-a33d-44ea7b2212c1",
+      "cleaned": true
+    },
+    {
+      "email": "care-ops-08e4d0bb-6c02-4c22-b700-75786267f3af-other@example.invalid",
+      "id": "4c9fc76f-b67b-49e2-8a11-bb3979013108",
+      "cleaned": true
+    }
+  ],
+  "complete": true
+}

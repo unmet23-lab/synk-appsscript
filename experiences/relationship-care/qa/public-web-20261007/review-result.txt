@@ -1,0 +1,51 @@
+## 결론: **통과**
+
+동결된 변경 범위에서 P0~P2 문제는 찾지 못했습니다. 시험은 돌리지 않았고 Read/Grep/Glob만 썼습니다. 아래 내용은 코드를 읽은 것과 QA JSON 기록에 근거합니다.
+
+## 확인한 내용
+
+**공개 빌드 (`tools/prepare-care-public.mjs`)**
+- 파일 수는 앱 14 + 자산 15 + atlas 5 + 계정 3 + `config.json` + `build-manifest.json`으로 정확히 39개입니다. 원본·서버·시험·QA·사용자 자료·`.env`는 넣는 경로 자체가 없습니다.
+- 출력 위치는 작업 폴더의 `.tmp` 아래 새 디렉터리만 허용합니다. 이미 있으면 거부하고, 파일은 `wx`로 써서 덮어쓰지 않습니다(14–24, 64행).
+- `config.json`은 `readConfig`로 검증합니다. care callback이 대상 주소와 정확히 같을 때만 통과하고, 그 뒤 `clients.care` 하나와 `platform` 동의 항목 하나로 새로 구성합니다(30–34행). client의 다른 키나 비밀 키는 `readConfig` 단계에서 막힙니다.
+- CSP와 referrer meta는 `charset` 바로 뒤, 즉 모든 리소스보다 앞에 들어갑니다. `connect-src`는 self와 auth/API origin만 허용합니다(43–45행).
+
+**상대 import·CSP 호환성**
+- import 관계는 빠짐없이 닫혀 있습니다. 앱 모듈 12개와 vendor 8개이고, atlas 5개는 다른 파일을 import하지 않습니다.
+- `personal-media.mjs` 동적 import는 care에서는 실행되지 않습니다. 그 앞의 조건 검사에서 먼저 막힙니다(`product-account.mjs:123`).
+- 인라인 style·이벤트 핸들러·eval이 없어서 `script-src`/`style-src 'self'`와 충돌하지 않습니다.
+- `style.css`의 `url()`과 HTML·JS의 자산 경로는 모두 상대경로이고 ASSETS 목록 안에 있습니다.
+
+**configUrl** (`product-account.mjs:182–185`)
+- 다른 origin, 아이디·비밀번호가 붙은 주소, fragment가 붙은 주소는 요청을 보내기 전에 `AUTH_CONFIG`로 거부합니다.
+- 요청은 `redirect:'error'`, `credentials:'omit'`, `no-store`로 보냅니다.
+
+**녹음** (`app.mjs:643–651`, `660–662`)
+- 공개 웹에서는 첫 await보다 먼저 capabilities를 사용 불가로 고정합니다. 동의 체크는 비활성화하고 숨깁니다(`style.css:4`의 `[hidden]{display:none!important}` 덕분에 다시 보이지 않습니다).
+- `transcribe()`는 세 조건을 모두 통과해야 하므로 `/api/transcribe`를 요청하는 경로가 없습니다.
+- 파일 선택과 blob 재생은 `media-src blob:`으로 허용됩니다. 서비스 워커나 푸시는 없습니다.
+
+**등록 도구** (`care-public-provision.cjs`)
+- 기본은 dry-run입니다. `--apply`일 때만 canonical lock을 잡고 journal을 다시 읽은 뒤 진행합니다(161–163행).
+- **create 응답 유실:** 생성 요청 전에 `attempted`를 먼저 저장합니다(99행). 응답을 못 받으면 정확한 등록 이름, callback 1개, public·secret 없음 조건이 모두 맞는 등록만 채택합니다. 결과가 불명확하면 `UNCONFIRMED_CREATE_NO_RETRY`로 멈추고 다시 생성하지 않습니다(96행).
+- **매핑 응답 유실:** 쓰기 직전에 원격 매핑 지문(digest)을 대조합니다. 응답을 못 받으면 원격 지문으로 결과를 확인하고, `pendingMapping`을 저장해 둔 뒤 이어서 진행합니다(113–116행).
+- `bindings`·`attempted`의 지문과 로컬 설정 3개의 지문을 실행 전후로 비교합니다(119, 164–166행).
+- 포털은 기존 19개를 그대로 복제하고 1개만 추가한 뒤 `validatePortalConfig`로 다시 검증합니다.
+- 일반 등록 계획은 기존 매핑을 `{...source}`로 이어받기 때문에(`provision-plan.cjs:29,50`) 20번째 항목이 있어도 추가 작업 없이 통과합니다. 교사 browser는 계속 pending-adapter입니다.
+
+**QA 증거와 대조**
+- preflight: `remoteMutation:false`, 기존 등록 19개 / 매핑 19개.
+- 합성 웹 시험: 정적 요청 34개(요청되지 않은 5개를 더하면 39개)가 모두 `/care/` 아래였고, 예상 밖 요청은 0건입니다.
+- 이 시험은 앱·인증·API를 서로 다른 합성 origin으로 나눠서, CSP가 다른 origin으로 보내는 요청 경로까지 거쳤습니다.
+
+## 검증 한계
+- **시험 결과:** 28개·66/66 통과는 제가 실행한 결과가 아니라 보고받은 내용과 QA JSON 기록입니다.
+- **해시:** 해시를 계산하지 못했습니다. 그래서 review JSON의 sha256이 현재 파일과 같은지, `registry.cjs`의 CLIENTS가 HEAD와 바이트 단위로 같은지는 확인하지 못했습니다.
+- **작업본 복사:** 빌드는 작업본 파일을 그대로 복사합니다. 처음 git status 기준으로 `atlas/temper-outcomes.js` 등 빌드에 들어가는 원본 일부가 커밋되지 않은 수정 상태였습니다. 범위 밖이라 내용은 읽지 않았습니다. 게시 직전에 `build-manifest.json`의 sourceFiles sha256을 검수한 상태와 대조해야 합니다.
+- **일반 등록 도구:** `provision.cjs`가 `publicCare`·`pendingMapping` 필드를 보존하는지는 참조 허용 목록 밖이라 읽지 않았습니다. 시험 57행에서 읽기 전용으로 journal을 읽는 경우만 확인했습니다.
+- **증거 범위 밖:** 실제 공급자 로그인, 실물 모바일 기기, GitHub Pages의 `.mjs` MIME과 `/care` 주소 정규화, 로그아웃 경로(`synk-account`, `/auth/v1/logout`)의 CORS는 확인하지 않았습니다. preflight는 `synk-care`와 token 엔드포인트만 다뤘습니다.
+- 함수 재배포 절차와 backend는 읽지 않았습니다.
+
+## 모델
+- 이 응답은 시스템이 알려준 모델 정보상 **Opus 5.5 (`claude-opus-5-5`)**입니다.
+- **effort max**는 제가 실행 중에 직접 볼 수 있는 값이 아닙니다. 호출할 때 넘긴 인자(`--effort max`) 기록으로만 증명됩니다.

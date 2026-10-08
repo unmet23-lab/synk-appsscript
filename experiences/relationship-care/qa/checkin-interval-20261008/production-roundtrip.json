@@ -1,0 +1,268 @@
+{
+  "startedAt": "2026-10-07T21:10:56.748Z",
+  "run": "c9dd2146-6822-4332-b25b-f5ab25a8cde6",
+  "syntheticOnly": true,
+  "productionProvider": true,
+  "physicalDevices": false,
+  "pushReceipt": false,
+  "checks": [
+    {
+      "label": "correct production project"
+    },
+    {
+      "label": "care function active with JWT verification"
+    },
+    {
+      "label": "care function is the just-verified release"
+    },
+    {
+      "label": "existing configured credentials available"
+    },
+    {
+      "label": "policy public care config belongs to this production project"
+    },
+    {
+      "label": "two real Auth sessions are distinct"
+    },
+    {
+      "label": "same account across two sessions starts empty"
+    },
+    {
+      "label": "other account starts isolated"
+    },
+    {
+      "label": "legacy client creates a notebook without preference capability"
+    },
+    {
+      "label": "session B reads the same legacy notebook"
+    },
+    {
+      "label": "missing check-in preference stays absent in server JSON"
+    },
+    {
+      "label": "first explicit 0 without new capability is rejected"
+    },
+    {
+      "label": "rejected initial 0 preserves state and revision"
+    },
+    {
+      "label": "first explicit 365 without new capability is rejected"
+    },
+    {
+      "label": "rejected initial 365 preserves state and revision"
+    },
+    {
+      "label": "session A saves explicit zero: real browser account adapter restores the synthetic session"
+    },
+    {
+      "label": "session A saves explicit zero: real sync opens the current account revision"
+    },
+    {
+      "label": "session A saves explicit zero: real sync accepts the local check-in preference change"
+    },
+    {
+      "label": "session A saves explicit zero: real sync flush receives a validated save acknowledgement"
+    },
+    {
+      "label": "session A saves explicit zero: real account adapter forwards capability to the live save request"
+    },
+    {
+      "label": "session A saves explicit zero: real sync settles without a pending local draft"
+    },
+    {
+      "label": "session B reads exact opt-out zero"
+    },
+    {
+      "label": "zero survives model and server normalization"
+    },
+    {
+      "label": "stale legacy write receives 409 before preference guard for 0"
+    },
+    {
+      "label": "latest legacy library-capable client cannot erase 0"
+    },
+    {
+      "label": "rejected legacy removal keeps exact 0 and revision"
+    },
+    {
+      "label": "session B saves 365 days: real browser account adapter restores the synthetic session"
+    },
+    {
+      "label": "session B saves 365 days: real sync opens the current account revision"
+    },
+    {
+      "label": "session B saves 365 days: real sync accepts the local check-in preference change"
+    },
+    {
+      "label": "session B saves 365 days: real sync flush receives a validated save acknowledgement"
+    },
+    {
+      "label": "session B saves 365 days: real account adapter forwards capability to the live save request"
+    },
+    {
+      "label": "session B saves 365 days: real sync settles without a pending local draft"
+    },
+    {
+      "label": "session A reads exact 365 days"
+    },
+    {
+      "label": "maximum interval remains a number"
+    },
+    {
+      "label": "stale legacy write receives 409 before preference guard for 365"
+    },
+    {
+      "label": "latest legacy library-capable client cannot erase 365"
+    },
+    {
+      "label": "rejected legacy removal keeps exact 365 and revision"
+    },
+    {
+      "label": "unrelated legacy account still saves without capability"
+    },
+    {
+      "label": "separate account owns a separate notebook"
+    },
+    {
+      "label": "other account write cannot change owner interval"
+    },
+    {
+      "label": "session A saves explicit default thirty: real browser account adapter restores the synthetic session"
+    },
+    {
+      "label": "session A saves explicit default thirty: real sync opens the current account revision"
+    },
+    {
+      "label": "session A saves explicit default thirty: real sync accepts the local check-in preference change"
+    },
+    {
+      "label": "session A saves explicit default thirty: real sync flush receives a validated save acknowledgement"
+    },
+    {
+      "label": "session A saves explicit default thirty: real account adapter forwards capability to the live save request"
+    },
+    {
+      "label": "session A saves explicit default thirty: real sync settles without a pending local draft"
+    },
+    {
+      "label": "session B reads explicit thirty days"
+    },
+    {
+      "label": "explicit thirty stays present rather than disappearing"
+    },
+    {
+      "label": "session B intentionally removes preference: real browser account adapter restores the synthetic session"
+    },
+    {
+      "label": "session B intentionally removes preference: real sync opens the current account revision"
+    },
+    {
+      "label": "session B intentionally removes preference: real sync accepts the local check-in preference change"
+    },
+    {
+      "label": "session B intentionally removes preference: real sync flush receives a validated save acknowledgement"
+    },
+    {
+      "label": "session B intentionally removes preference: real account adapter forwards capability to the live save request"
+    },
+    {
+      "label": "session B intentionally removes preference: real sync settles without a pending local draft"
+    },
+    {
+      "label": "session A reads intentional field removal"
+    },
+    {
+      "label": "supported removal restores legacy absence without materializing thirty"
+    },
+    {
+      "label": "four actual adapter saves forward both capabilities and receive four acknowledgements"
+    },
+    {
+      "label": "explicit notebook deletion keeps its revision tombstone"
+    },
+    {
+      "label": "session B reads the empty notebook tombstone"
+    },
+    {
+      "label": "stale supported write cannot resurrect deleted preferences"
+    },
+    {
+      "label": "owner deletion leaves the other account intact"
+    }
+  ],
+  "cleanup": true,
+  "function": {
+    "slug": "synk-care",
+    "version": 11,
+    "status": "ACTIVE",
+    "verify_jwt": true
+  },
+  "publicConfigSha256": "fe7beff798ad4b4d4c03d0c9c66b67c8d2bd9f173e209d3bd87d6c5a035a9ca8",
+  "browserAdapterSaves": [
+    {
+      "step": "session A saves explicit zero",
+      "realAccountAdapter": true,
+      "realDocumentSync": true,
+      "realFetch": true,
+      "saveRequests": 1,
+      "capabilityForwarded": true,
+      "checkinCapabilityForwarded": true,
+      "validatedSavedCallbacks": 1
+    },
+    {
+      "step": "session B saves 365 days",
+      "realAccountAdapter": true,
+      "realDocumentSync": true,
+      "realFetch": true,
+      "saveRequests": 1,
+      "capabilityForwarded": true,
+      "checkinCapabilityForwarded": true,
+      "validatedSavedCallbacks": 1
+    },
+    {
+      "step": "session A saves explicit default thirty",
+      "realAccountAdapter": true,
+      "realDocumentSync": true,
+      "realFetch": true,
+      "saveRequests": 1,
+      "capabilityForwarded": true,
+      "checkinCapabilityForwarded": true,
+      "validatedSavedCallbacks": 1
+    },
+    {
+      "step": "session B intentionally removes preference",
+      "realAccountAdapter": true,
+      "realDocumentSync": true,
+      "realFetch": true,
+      "saveRequests": 1,
+      "capabilityForwarded": true,
+      "checkinCapabilityForwarded": true,
+      "validatedSavedCallbacks": 1
+    }
+  ],
+  "ok": true,
+  "cleanupErrors": [],
+  "cleanupProof": [
+    {
+      "auth_removed": true,
+      "link_removed": true,
+      "account_removed": true,
+      "care_removed": true,
+      "subscriptions_removed": true,
+      "sessions_removed": true,
+      "audit_removed": true,
+      "active_account_removed": true
+    },
+    {
+      "auth_removed": true,
+      "link_removed": true,
+      "account_removed": true,
+      "care_removed": true,
+      "subscriptions_removed": true,
+      "sessions_removed": true,
+      "audit_removed": true,
+      "active_account_removed": true
+    }
+  ],
+  "finishedAt": "2026-10-07T21:12:12.718Z"
+}

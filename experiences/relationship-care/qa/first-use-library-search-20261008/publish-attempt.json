@@ -1,0 +1,22 @@
+{
+  "startedAt": "2026-10-07T22:35:49.440Z",
+  "phase": "pushed",
+  "pushed": true,
+  "policy": "C:/Users/q1212/Documents/SYNK-worktrees/synk-id-unified-20261006",
+  "candidate": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\care-ease-candidate-20261008",
+  "baseline": "5528be392c2d6180cb6a09396eccdb7281c4ccf2",
+  "baselineCareTree": "a7c2a255235ccadbada10cb7eef3846bbd64147f",
+  "expectedManifestSha256": "6f4ffdd2cf0ea57c58e0909d8c52fb60e5e5e2a1ff7d1e77129045a7b0f60b07",
+  "publicFileCount": 48,
+  "files": [
+    "care/app.mjs",
+    "care/build-manifest.json",
+    "care/index.html",
+    "care/style.css"
+  ],
+  "userAuthorizedException": true,
+  "claudeGatePassed": false,
+  "parent": "5528be392c2d6180cb6a09396eccdb7281c4ccf2",
+  "commit": "b4791aebd0d1cefa7314bebb3e76a9664ca6a835",
+  "completedAt": "2026-10-07T22:36:13.737Z"
+}

@@ -1,0 +1,15 @@
+{
+  "environment": "IAB at http://127.0.0.1:4334/care/, frozen v6 candidate",
+  "checks": [
+    "inline import map accepted by emitted CSP",
+    "application starts after normal reload",
+    "example person opens message editor and zero-entry library",
+    "24 module requests and one stylesheet request use SHA query URLs",
+    "nested account modules and dynamically imported core module use SHA query URLs",
+    "no browser error or warning logs"
+  ],
+  "networkInspectedVia": "CUA CDP Network.requestWillBeSent, own guest preview",
+  "paidAICall": false,
+  "userDataChanged": false,
+  "publiclyDeployed": false
+}

@@ -1,0 +1,41 @@
+{
+  "checkedAt": "2026-10-07T14:12:48.155Z",
+  "gatePassed": true,
+  "officialCli": "C:/Users/q1212/.local/bin/claude.exe",
+  "argvEvidence": [
+    ".tmp/review-care-context-20261007.cjs",
+    ".tmp/review-care-context-delta-20261007.cjs"
+  ],
+  "sourceInventory": "claude-source-inventory.json",
+  "sourceFilesVerified": 9,
+  "initialFindingsResolved": 4,
+  "remainingP0P1P2": 0,
+  "reviews": [
+    {
+      "file": "claude-review.json",
+      "processFile": "claude-process.json",
+      "sessionId": "fe59d3cf-e560-4995-86a4-8de808f770ab",
+      "actualModels": [
+        "claude-opus-5-5"
+      ],
+      "requestedModel": "claude-opus-5-5",
+      "effort": "max",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T13:42:40.161Z",
+      "stopReason": "end_turn"
+    },
+    {
+      "file": "claude-delta-review.json",
+      "processFile": "claude-delta-process.json",
+      "sessionId": "fe59d3cf-e560-4995-86a4-8de808f770ab",
+      "actualModels": [
+        "claude-opus-5-5"
+      ],
+      "requestedModel": "claude-opus-5-5",
+      "effort": "max",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T14:05:19.593Z",
+      "stopReason": "end_turn"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+✔ saved birthday flows through API and SQL claim to a generic one-per-day push (4625.8249ms)
+✔ the latest saved completion, postponement and past follow-up suppress delivery (385.6265ms)
+✔ notification follows selected event reminder days and exact follow-up date (4.3037ms)
+✔ a different account cannot discover, replace or disable a known endpoint (205.6051ms)
+✔ rotated browser endpoints after repeated opt-out do not exhaust the active device allowance (751.5764ms)
+✔ revoking the canonical session between committed claim and dispatch prevents delivery (62.3223ms)
+✔ notebook erasure between claim and dispatch removes both subscription and send (44.9748ms)
+✔ concurrent worker claims send at most once through the real SQL store (115.6493ms)
+✔ 429 retries wait five minutes, stop after three attempts, and do not reopen on same-day opt-in (263.0437ms)
+✔ persisted hostile endpoints fail before gateway I/O and redirect responses are not retried (3.2445ms)
+✔ worker rejects a user bearer before querying and never returns gateway detail (3.1319ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6886.0388

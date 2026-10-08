@@ -1,0 +1,148 @@
+{
+  "startedAt": "2026-10-07T15:14:02.233Z",
+  "run": "b8424e1e-4830-4af4-acac-8ec10d4c6580",
+  "syntheticOnly": true,
+  "productionProvider": true,
+  "physicalDevices": false,
+  "pushReceipt": false,
+  "checks": [
+    {
+      "label": "correct production project"
+    },
+    {
+      "label": "existing configured credentials available"
+    },
+    {
+      "label": "two real Auth sessions distinct"
+    },
+    {
+      "label": "same account mapping across real sessions"
+    },
+    {
+      "label": "other account is isolated"
+    },
+    {
+      "label": "session A creates notebook"
+    },
+    {
+      "label": "session B loads exact object and Unicode"
+    },
+    {
+      "label": "session B updates"
+    },
+    {
+      "label": "stale A write conflicts"
+    },
+    {
+      "label": "A observes B without overwrite"
+    },
+    {
+      "label": "concurrent CAS has exactly one winner"
+    },
+    {
+      "label": "concurrent winner remains intact"
+    },
+    {
+      "label": "separate account writes never mix"
+    },
+    {
+      "label": "individual deletion reaches session B and keeps other person"
+    },
+    {
+      "label": "stale session cannot restore deleted person"
+    },
+    {
+      "label": "completed reminder saved"
+    },
+    {
+      "label": "completed follow-up no due item before registration"
+    },
+    {
+      "label": "completed follow-up registered"
+    },
+    {
+      "label": "completed follow-up real cron skipped",
+      "details": {
+        "last_outcome": "skipped",
+        "delivery_state": "settled",
+        "attempt_count": 1,
+        "attempt_day": "2026-10-08"
+      }
+    },
+    {
+      "label": "completed follow-up opt-out"
+    },
+    {
+      "label": "postponed reminder saved"
+    },
+    {
+      "label": "postponed follow-up no due item before registration"
+    },
+    {
+      "label": "postponed follow-up registered"
+    },
+    {
+      "label": "postponed follow-up real cron skipped",
+      "details": {
+        "last_outcome": "skipped",
+        "delivery_state": "settled",
+        "attempt_count": 1,
+        "attempt_day": "2026-10-08"
+      }
+    },
+    {
+      "label": "postponed follow-up opt-out"
+    },
+    {
+      "label": "synthetic opt-in for erasure test"
+    },
+    {
+      "label": "notebook tombstone reaches other session"
+    },
+    {
+      "label": "stale notebook cannot resurrect erased data"
+    },
+    {
+      "label": "notebook erasure revokes subscription"
+    },
+    {
+      "label": "cannot subscribe without saved notebook"
+    },
+    {
+      "label": "explicit fresh save after erasure works"
+    },
+    {
+      "label": "subscription for session revocation test"
+    },
+    {
+      "label": "current session listed"
+    },
+    {
+      "label": "current session revoked"
+    },
+    {
+      "label": "revoked token denied while other session remains valid"
+    },
+    {
+      "label": "revoked session removes push subscription"
+    }
+  ],
+  "cleanup": true,
+  "ok": true,
+  "cleanupErrors": [],
+  "cleanupProof": [
+    {
+      "auth_removed": true,
+      "link_removed": true,
+      "account_removed": true,
+      "subscriptions_removed": true
+    },
+    {
+      "auth_removed": true,
+      "link_removed": true,
+      "account_removed": true,
+      "subscriptions_removed": true
+    }
+  ],
+  "finishedAt": "2026-10-07T15:16:36.708Z"
+}

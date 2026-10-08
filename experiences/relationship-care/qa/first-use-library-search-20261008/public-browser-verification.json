@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-10-07T22:39:35.211Z",
+  "commit": "b4791aebd0d1cefa7314bebb3e76a9664ca6a835",
+  "url": "https://synk.im/care/",
+  "browser": "Codex IAB",
+  "guest": true,
+  "persistence": false,
+  "checks": [
+    "Existing public tab normal reload showed new collapsed date/details, first-person hint and submit wording",
+    "Name-only synthetic person opens its ordinary checkin draft and message tab immediately",
+    "Two distinct messages saved in guest notebook; customized draft retained after person relationship edit",
+    "Full-text search for suffix beyond dropdown preview returned1of2; favorites-only intersected search",
+    "Load-saved-message requested confirmation; cancel kept the customized draft",
+    "Unfavorite with favorites filter active returned0of2; clearing restored2of2; no-match explanation shown",
+    "375px registration and320px library viewed; no horizontal overflow (scrollWidths360/305), search16px, reset51.195px",
+    "No captured browser warning/error; final reload cleaned synthetic guest to0people, persistenceoff; viewport restored"
+  ],
+  "liveUserDataChanged": false,
+  "physicalPhoneDeferred": true,
+  "osPushDeferred": true,
+  "screenshots": "Viewed inline CUA screenshots; no separately exported screenshot file."
+}

@@ -1,0 +1,154 @@
+{
+  "at": "2026-10-06T15:13:37.352Z",
+  "synthetic": true,
+  "checks": [
+    {
+      "name": "home-checkin-375 fits viewport",
+      "passed": true
+    },
+    {
+      "name": "person without an event can immediately prepare everyday contact",
+      "passed": true
+    },
+    {
+      "name": "memory choice exposes exact evidence before explicit application",
+      "passed": true
+    },
+    {
+      "name": "explicit shared memory changes the actual message without whole source",
+      "passed": true
+    },
+    {
+      "name": "applying a shared memory folds its picker and focuses the actual message",
+      "passed": true
+    },
+    {
+      "name": "selected memory also changes the concrete checkin preparation",
+      "passed": true
+    },
+    {
+      "name": "checkin copies and remembered wording create no artificial event",
+      "passed": true
+    },
+    {
+      "name": "personalized-ready-desktop fits viewport",
+      "passed": true
+    },
+    {
+      "name": "personalized-message-desktop fits viewport",
+      "passed": true
+    },
+    {
+      "name": "actual everyday contact is stored separately without a fabricated event",
+      "passed": true
+    },
+    {
+      "name": "person change protects active selected memory",
+      "passed": true
+    },
+    {
+      "name": "cancel preserves the original person and selected memory",
+      "passed": true
+    },
+    {
+      "name": "clearing memory removes its automatic message insertion",
+      "passed": true
+    },
+    {
+      "name": "avoided expression remains inspectable evidence but is blocked from text",
+      "passed": true
+    },
+    {
+      "name": "other person never inherits selected memory or options",
+      "passed": true
+    },
+    {
+      "name": "explicit gift preference reaches actual preparation without promising a gift in message",
+      "passed": true
+    },
+    {
+      "name": "gift-memory-320 fits viewport",
+      "passed": true
+    },
+    {
+      "name": "deleting the selected memory invalidates its draft and live selection",
+      "passed": true
+    },
+    {
+      "name": "calendar alarm is opt-in and requires an explicit time",
+      "passed": true
+    },
+    {
+      "name": "followup-calendar-320 fits viewport",
+      "passed": true
+    },
+    {
+      "name": "followup calendar uses selected Korean time and alarm without source quote",
+      "passed": true
+    },
+    {
+      "name": "calendar export does not complete or duplicate followup",
+      "passed": true
+    },
+    {
+      "name": "source withdrawal explains stored wording and copy record removal",
+      "passed": true
+    },
+    {
+      "name": "source withdrawal removes derived saved wording and copies but preserves actual contact",
+      "passed": true
+    },
+    {
+      "name": "next checkin never revives withdrawn memory",
+      "passed": true
+    },
+    {
+      "name": "account refresh protects the selected memory and pending checkin",
+      "passed": true
+    },
+    {
+      "name": "cancelled refresh retains personalized draft",
+      "passed": true
+    },
+    {
+      "name": "confirmed remote memory edit clears previous selection and message",
+      "passed": true
+    },
+    {
+      "name": "logout protects unsaved personalized input",
+      "passed": true
+    },
+    {
+      "name": "cancelled logout retains selected memory",
+      "passed": true
+    },
+    {
+      "name": "account switch with reused person id never carries previous account memory",
+      "passed": true
+    },
+    {
+      "name": "zero-person checkin entry opens existing quick registration",
+      "passed": true
+    },
+    {
+      "name": "no browser errors or missing resources",
+      "passed": true,
+      "detail": {
+        "errors": [],
+        "missing": []
+      }
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "screenshots": [
+    "home-checkin-375",
+    "personalized-ready-desktop",
+    "personalized-message-desktop",
+    "gift-memory-320",
+    "followup-calendar-320"
+  ],
+  "ok": true,
+  "passed": 33,
+  "total": 33
+}

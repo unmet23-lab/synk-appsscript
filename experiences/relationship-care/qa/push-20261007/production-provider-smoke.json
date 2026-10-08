@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-07T12:33:53.260Z",
+  "syntheticOnly": true,
+  "pushDelivery": false,
+  "checks": [
+    "correct production",
+    "keys available",
+    "verified scheduler credential",
+    "synthetic account created",
+    "real Auth token",
+    "user JWT denied by worker",
+    "canonical empty notebook",
+    "canonical save",
+    "authenticated push config",
+    "explicit synthetic subscription",
+    "real scheduled cron evaluated empty notebook",
+    "real Edge worker",
+    "empty notebook not sent",
+    "opt-out",
+    "erase notebook",
+    "erasure revokes push"
+  ],
+  "cleanup": true,
+  "ok": true,
+  "initialCleanupFailure": "Restricted account foreign keys required explicit synthetic-only child cleanup in one transaction",
+  "cleanupProof": {
+    "auth_removed": true,
+    "link_removed": true
+  }
+}

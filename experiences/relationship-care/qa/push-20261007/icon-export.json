@@ -1,0 +1,24 @@
+{
+  "preservedApprovedLogo": true,
+  "opaqueWhiteBackground": true,
+  "files": [
+    {
+      "name": "icon192.png",
+      "width": 192,
+      "height": 192,
+      "hasAlpha": false
+    },
+    {
+      "name": "icon512.png",
+      "width": 512,
+      "height": 512,
+      "hasAlpha": false
+    },
+    {
+      "name": "apple-touch-icon180.png",
+      "width": 180,
+      "height": 180,
+      "hasAlpha": false
+    }
+  ]
+}

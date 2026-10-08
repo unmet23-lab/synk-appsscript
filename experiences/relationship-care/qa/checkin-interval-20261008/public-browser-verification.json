@@ -1,0 +1,18 @@
+{
+  "surface": "Codex IAB public guest UI",
+  "url": "https://synk.im/care/",
+  "commit": "5528be392c2d6180cb6a09396eccdb7281c4ccf2",
+  "normalReloadShowsNewIntervalForm": true,
+  "defaultThirtyVisible": true,
+  "fourteenDaySaveShowsSummary": true,
+  "reopeningRestoresFourteen": true,
+  "offSaveShowsSummary": true,
+  "reopeningRestoresOff": true,
+  "mobileViewport": {"width":375,"height":812,"pageScrollWidth":360,"dialogClientWidth":305,"dialogScrollWidth":305,"fontPx":16,"submitHeightPx":52},
+  "consoleErrorsAndWarnings": 0,
+  "realAccountDataChanged": false,
+  "physicalPhoneTest": false,
+  "OSPushReceiptTest": false,
+  "cleanup": "Viewport reset. Reloaded the ephemeral guest test, confirmed 0 people and browser persistence off. Public app tab retained as deliverable; original Meta tab untouched.",
+  "screenshots": "Observed via CUA tool output; no screenshot file exported."
+}

@@ -1,0 +1,29 @@
+{
+  "at": "2026-10-06T20:58:00.124Z",
+  "tool": "Codex in-app browser via cua_repl",
+  "url": "https://synk.im/care/",
+  "publishedCommit": "7bd9b70badad398c6781f7e8a013628deee1c025",
+  "observations": {
+    "title": "SYNK 플레저 · 소중한 사람을 기억하는 수첩",
+    "viewportWidth": 375,
+    "documentScrollWidth": 360,
+    "horizontalOverflow": false,
+    "visibleBrokenImages": 0,
+    "loginEnabled": true,
+    "accountStatus": "SYNK 계정으로 수첩 이어 보기",
+    "loginPortalOrigin": "https://synk.im",
+    "loginPortalPath": "/id/",
+    "authorizationIdParameterPresent": true,
+    "portalLoginFormVisible": true,
+    "portalConsoleErrors": 0,
+    "returnedToPublicApp": true,
+    "viewportOverrideReset": true
+  },
+  "passwordEntered": false,
+  "consentSubmitted": false,
+  "tokenExchange": false,
+  "authenticatedNotebookAccess": false,
+  "physicalPhone": false,
+  "authenticationQueryValuesSaved": false,
+  "ok": true
+}

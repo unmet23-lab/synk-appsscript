@@ -1,0 +1,110 @@
+'use strict';
+// Synthetic, isolated browser profile. No paid AI, personal conversations or external messaging.
+const { chromium } = require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const fs = require('node:fs/promises');
+const path = require('node:path');
+const assert = require('node:assert/strict');
+const out = path.join(__dirname, 'upgrade-20261006');
+const report = { at: new Date().toISOString(), checks: [], errors: [], missing: [], screenshots: [] };
+function check(name, condition, detail) { report.checks.push({ name, passed: !!condition, detail }); assert.ok(condition, name + ': ' + JSON.stringify(detail)); }
+async function downloadText(download) { const stream = await download.createReadStream(); const chunks = []; for await (const part of stream) chunks.push(part); return Buffer.concat(chunks).toString('utf8'); }
+async function capture(page, name) {
+  await page.evaluate(() => { document.getElementById('toast').hidden = true; window.scrollTo(0, 0); });
+  await page.screenshot({ path: path.join(out, name + '.png'), fullPage: true }); report.screenshots.push(name);
+  const layout = await page.evaluate(() => ({ viewport: innerWidth, width: document.documentElement.scrollWidth, missing: [...document.images].filter(i => i.offsetWidth && (!i.complete || !i.naturalWidth)).map(i => i.src), font: document.fonts.check('14px SUIT'), clipped: [...document.querySelectorAll('input:not([type=checkbox]), select, textarea')].filter(el => el.offsetWidth && el.getBoundingClientRect().right > innerWidth + 1).map(el => el.id) }));
+  check(name + ' layout', layout.width <= layout.viewport && !layout.missing.length && !layout.clipped.length && layout.font, layout);
+}
+(async () => {
+  await fs.mkdir(out, { recursive: true });
+  const browser = await chromium.launch({ channel: 'chrome', headless: true });
+  try {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, timezoneId: 'Asia/Seoul' });
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'http://127.0.0.1:4296' });
+    const page = await context.newPage();
+    await page.clock.setFixedTime(new Date('2026-10-06T03:00:00Z'));
+    page.on('pageerror', e => report.errors.push(e.message));
+    page.on('response', r => { if (r.status() >= 400) report.missing.push({ status: r.status(), url: r.url() }); });
+    await page.goto('http://127.0.0.1:4296/'); await page.waitForFunction(() => document.documentElement.dataset.ready === 'true'); await page.evaluate(() => document.fonts.ready);
+    check('starts on an empty home', await page.locator('#home-empty').isVisible());
+    await capture(page, 'desktop-empty');
+    await page.locator('#sample-button').click();
+    check('two synthetic people and two home actions', await page.locator('.home-card').count() === 2 && await page.locator('#sample-banner').isVisible());
+    await capture(page, 'desktop-home');
+    for (const width of [390, 320]) { await page.setViewportSize({ width, height: 950 }); await capture(page, 'home-' + width); }
+    await page.locator('.home-card[data-mood=quiet] [data-home-draft]').click();
+    check('quiet event changes mood and exposes quiet completion', await page.locator('body').getAttribute('data-mood') === 'quiet' && await page.locator('#remember-event').isVisible());
+    const quietDraft = await page.locator('#draft-text').inputValue();
+    check('quiet draft avoids celebratory emoji', !/🎂|💐|축하/.test(quietDraft));
+    await capture(page, 'quiet-320');
+    await page.locator('#remember-event').click();
+    check('quiet record is distinct from contacting', (await page.locator('#person-history').innerText()).includes('조용히 기억한 날'));
+    await page.locator('#show-home').click(); await page.locator('.home-card[data-mood=celebrate] [data-home-draft]').first().click();
+    const edited = '지민아, 내가 직접 고친 마음을 이대로 남길게.';
+    await page.locator('#draft-text').fill(edited); await page.locator('#show-home').click(); await page.locator('.home-card[data-mood=celebrate] [data-home-draft]').first().click();
+    check('home round trip preserves an unsaved draft', await page.locator('#draft-text').inputValue() === edited);
+    await page.locator('#tab-conversation').click();
+    await page.locator('#preference-salutation').fill('지민아'); await page.locator('#preference-avoid').fill('좋은 하루'); await page.locator('#preference-closing').fill('늘 고마워.'); await page.locator('#preference-no-reply').check(); await page.locator('#preference-confirm').check();
+    await page.locator('#preference-form button[type=submit]').click();
+    const personalized = await page.locator('#draft-text').inputValue();
+    check('confirmed wording changes actual draft', personalized.includes('지민아') && personalized.includes('늘 고마워') && !personalized.includes('좋은 하루'), personalized);
+    const sent = '지민아, 생일 축하해. 네가 좋아하는 하루 보내.';
+    await page.locator('#draft-text').fill(sent); await page.locator('#remember-draft').check(); await page.locator('#draft-confirm').check(); await page.locator('#copy-draft').click();
+    await page.waitForFunction(() => document.getElementById('toast').textContent.includes('다시 쓸'));
+    check('real clipboard gets reviewed text', await page.evaluate(() => navigator.clipboard.readText()) === sent);
+    await page.locator('#tab-history').click();
+    check('copied text is visible without being declared sent', (await page.locator('#person-history').innerText()).includes(sent) && await page.locator('.history-entry[data-kind=completed]').count() === 0);
+    await page.locator('#tab-message').click(); await page.locator('#complete-event').click();
+    check('contacted record appears after manual completion', await page.locator('.history-entry[data-kind=completed]').count() === 1);
+    await capture(page, 'history-320');
+    await page.locator('#tab-events').click(); await page.locator('[data-draft-event]').click();
+    check('next year can reuse explicitly remembered wording', await page.locator('#draft-style').inputValue() === 'saved' && (await page.locator('#draft-text').inputValue()).includes(sent));
+    await page.locator('#show-home').click(); await page.locator('#persist-toggle').check(); await page.reload(); await page.waitForFunction(() => document.documentElement.dataset.ready === 'true');
+    check('saved app reopens on home with people intact', await page.locator('#home-view').isVisible() && await page.locator('[data-person]').count() === 2);
+    await page.locator('[data-person]').first().click(); await page.locator('#tab-history').click();
+    check('history and saved wording survive reload', (await page.locator('#person-history').innerText()).includes(sent));
+    await page.locator('#tab-events').click(); await page.locator('#event-type').selectOption('memorial'); await page.locator('#event-calendar').selectOption('lunar');
+    await page.locator('#event-date').fill('1990-08-15'); await page.locator('#event-title').fill('음력 기일 예시'); await page.locator('#event-form button[type=submit]').click();
+    const lunarCard = page.locator('.event-card').filter({ hasText: '음력 기일 예시' });
+    check('lunar anniversary shows actual next solar date', (await lunarCard.innerText()).includes('2027-09-15'));
+    const icsWait = page.waitForEvent('download'); await lunarCard.locator('[data-ics]').click(); const ics = await downloadText(await icsWait);
+    check('calendar export contains converted solar date', /DTSTART;VALUE=DATE:20270915/.test(ics));
+    await lunarCard.locator('[data-edit-event]').click();
+    check('editing lunar event preserves original date and calendar', await page.locator('#event-calendar').inputValue() === 'lunar' && await page.locator('#event-date').inputValue() === '1990-08-15');
+    await page.locator('#cancel-event-edit').click();
+    await page.locator('#event-calendar').selectOption('lunar'); await page.locator('#event-date').fill('1968-02-30');
+    check('lunar date input accepts non-Gregorian February 30', await page.locator('#event-date').inputValue() === '1968-02-30');
+    await capture(page, 'lunar-form-320');
+    await page.locator('#event-title').fill('음력 2월 30일 예시'); await page.locator('#event-form button[type=submit]').click();
+    check('lunar February 30 saves through real form validation', await page.locator('.event-card').filter({ hasText: '음력 2월 30일 예시' }).count() === 1);
+    await page.locator('#show-home').click();
+    const backupWait = page.waitForEvent('download'); await page.locator('#export-data').click(); const backup = JSON.parse(await downloadText(await backupWait));
+    check('backup keeps preferences history and excludes raw conversations', backup.people.length === 2 && backup.drafts[0].text === sent && !JSON.stringify(backup).includes('상대: 고마워'));
+    const snapshot = await page.evaluate(() => localStorage.getItem('synk.care.local.v1'));
+    const invalid = { ...backup, events: [...backup.events, { ...backup.events[0], id: 'orphan', personId: 'missing' }] };
+    await page.locator('#import-data').setInputFiles({ name: 'invalid.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(invalid)) });
+    await page.waitForFunction(() => document.getElementById('import-data').value === '');
+    check('invalid backup preserves existing persisted data', await page.evaluate(() => localStorage.getItem('synk.care.local.v1')) === snapshot);
+    await page.evaluate(() => { window.originalStorageWrite = Storage.prototype.setItem; Storage.prototype.setItem = function(key, value) { if (key === 'synk.care.local.v1') throw new DOMException('Synthetic storage full', 'QuotaExceededError'); return window.originalStorageWrite.call(this, key, value); }; });
+    await page.locator('#import-data').setInputFiles({ name: 'backup.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(backup)) });
+    await page.locator('#confirm-dialog [value=confirm]').click();
+    await page.waitForFunction(() => document.getElementById('import-data').value === '');
+    check('failed persisted restore leaves current data intact', await page.evaluate(() => localStorage.getItem('synk.care.local.v1')) === snapshot && (await page.locator('#toast').innerText()).includes('현재 자료를 유지'));
+    await page.evaluate(() => { Storage.prototype.setItem = window.originalStorageWrite; delete window.originalStorageWrite; });
+    await page.locator('#delete-data').click(); await page.locator('#confirm-dialog [value=confirm]').click();
+    await page.waitForFunction(() => document.querySelectorAll('[data-person]').length === 0 && document.getElementById('home-empty').hidden === false);
+    await page.locator('#import-data').setInputFiles({ name: 'backup.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(backup)) });
+    await page.locator('#confirm-dialog [value=confirm]').click();
+    await page.waitForFunction(() => document.querySelectorAll('[data-person]').length === 2);
+    check('valid backup restores people without enabling storage implicitly', await page.locator('[data-person]').count() === 2 && !(await page.locator('#persist-toggle').isChecked()));
+    await page.locator('#home-add-person').click(); await page.locator('#new-person-name').fill('빠른 등록 예시'); await page.locator('#quick-event-date').fill('2026-10-07'); await page.locator('#person-form button[type=submit]').click();
+    check('name and date alone reach a usable first draft', await page.locator('#panel-message').isVisible() && (await page.locator('#draft-text').inputValue()).includes('축하'));
+    await page.setViewportSize({ width: 1440, height: 1000 }); await capture(page, 'desktop-message');
+    await page.locator('#show-home').click(); await capture(page, 'desktop-home-final');
+    check('no browser errors or missing resources', report.errors.length === 0 && report.missing.length === 0, { errors: report.errors, missing: report.missing });
+    await context.close();
+  } finally {
+    await fs.writeFile(path.join(out, 'result.json'), JSON.stringify(report, null, 2));
+    await browser.close();
+    console.log(JSON.stringify({ passed: report.checks.filter(x => x.passed).length, total: report.checks.length, errors: report.errors, missing: report.missing, output: out }));
+  }
+})().catch(error => { console.error(error); process.exitCode = 1; });

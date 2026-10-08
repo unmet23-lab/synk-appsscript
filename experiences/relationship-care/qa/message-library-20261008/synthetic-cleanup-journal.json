@@ -1,0 +1,17 @@
+{
+  "run": "1e8aa56f-c77d-4cba-85ed-cf07296c0e90",
+  "marker": "care-library-1e8aa56f-c77d-4cba-85ed-cf07296c0e90",
+  "accounts": [
+    {
+      "email": "care-library-1e8aa56f-c77d-4cba-85ed-cf07296c0e90-owner@example.invalid",
+      "id": "ce3355d5-688d-4745-9d79-411a69dcdf5c",
+      "cleaned": true
+    },
+    {
+      "email": "care-library-1e8aa56f-c77d-4cba-85ed-cf07296c0e90-other@example.invalid",
+      "id": "459df7b5-c85e-4b67-8910-af103000c44f",
+      "cleaned": true
+    }
+  ],
+  "complete": true
+}

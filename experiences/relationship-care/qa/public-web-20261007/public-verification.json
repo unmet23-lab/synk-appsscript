@@ -1,0 +1,391 @@
+{
+  "at": "2026-10-06T20:53:04.386Z",
+  "commit": "7bd9b70badad398c6781f7e8a013628deee1c025",
+  "target": "https://synk.im/care/",
+  "canonicalUrlsWithoutProbeQuery": true,
+  "files": [
+    {
+      "file": "index.html",
+      "status": 200,
+      "bytes": 38170,
+      "sha256": "de341794cd38a4946ad75b252ea40cf893c61ca1b20dbe47f85910e7d6f4c16a",
+      "matches": true,
+      "contentType": "text/html; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "style.css",
+      "status": 200,
+      "bytes": 45741,
+      "sha256": "076be91058a9a1995685f80f260bf7db8b63b587e4d7112f9e3e3eabe062c7df",
+      "matches": true,
+      "contentType": "text/css; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "app.mjs",
+      "status": 200,
+      "bytes": 117433,
+      "sha256": "ded7c7eca072df1d94987e2aa580e60e7c0f1192a449ff745a407b574435bdbf",
+      "matches": true,
+      "contentType": "text/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "model.mjs",
+      "status": 200,
+      "bytes": 59314,
+      "sha256": "405e8aace162ec357a1dfc6a75bacd51d2c0c4f3f9bfe766a9f0b424930b2eb5",
+      "matches": true,
+      "contentType": "text/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "lunar.mjs",
+      "status": 200,
+      "bytes": 9757,
+      "sha256": "bdb51ae8e1f5964faa6ae9ed8f0254e6f5dc2c27551f46e85ca9b528dedbb1bb",
+      "matches": true,
+      "contentType": "text/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "care-features.mjs",
+      "status": 200,
+      "bytes": 13294,
+      "sha256": "705493eb07fa988001819bf6cc57a18a3e4b3fe8751f81fb6e35ab755637f075",
+      "matches": true,
+      "contentType": "text/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "care-sync.mjs",
+      "status": 200,
+      "bytes": 324,
+      "sha256": "b449acd2bdb9183e2b9331f89e0851ed8bcb403039fdc4ccc23d2bcd05a89760",
+      "matches": true,
+      "contentType": "text/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "account.mjs",
+      "status": 200,
+      "bytes": 488,
+      "sha256": "0ef199dbcffef1b0f53c3e145920e76dcaa0693542665b21d5fb8aaa7005f9a6",
+      "matches": true,
+      "contentType": "text/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "care-planner.mjs",
+      "status": 200,
+      "bytes": 11794,
+      "sha256": "4670b159d2e1f65179a16c2717ca1498a02d35f15894d5ca505a2849467e7b2f",
+      "matches": true,
+      "contentType": "text/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "care-personalization.mjs",
+      "status": 200,
+      "bytes": 3206,
+      "sha256": "d7f5b9ace2ac25cd49c37cbacb5eacde7f8cbbdde9b0bf680f64ca859899ab06",
+      "matches": true,
+      "contentType": "text/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "care-support.mjs",
+      "status": 200,
+      "bytes": 13380,
+      "sha256": "7a896edf9dc00c94917debc843b8c20e8838e125d605d4da041c6004e6846b2c",
+      "matches": true,
+      "contentType": "text/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "care-outcomes.mjs",
+      "status": 200,
+      "bytes": 1176,
+      "sha256": "8036a7ce71bb42f4c6e929b40a109a4fcc46fd29f40251591f4f72375a13d747",
+      "matches": true,
+      "contentType": "text/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "memory-card.mjs",
+      "status": 200,
+      "bytes": 7907,
+      "sha256": "f6660af612023a9ad14a446d4082303a906a5d7064be1c0cc380565fd746a192",
+      "matches": true,
+      "contentType": "text/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "memory-theme.mjs",
+      "status": 200,
+      "bytes": 383,
+      "sha256": "e1796bc47147001e61f3bdd1e19d12659c11158fd657efc1d6aa8feb6b1150f8",
+      "matches": true,
+      "contentType": "text/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "assets/badge-check.webp",
+      "status": 200,
+      "bytes": 304354,
+      "sha256": "9cf54368ec871bc8f1b645ca2dfda0ff88d6dd565c3d27b1dd9b98dc5e2bb645",
+      "matches": true,
+      "contentType": "image/webp",
+      "moduleMime": true
+    },
+    {
+      "file": "assets/badge-cream.webp",
+      "status": 200,
+      "bytes": 99450,
+      "sha256": "5336c1eca815b403ad0348bfde1573dda2367fab4996ea099c2daf03015f15be",
+      "matches": true,
+      "contentType": "image/webp",
+      "moduleMime": true
+    },
+    {
+      "file": "assets/InterTight-Bold.ttf",
+      "status": 200,
+      "bytes": 310440,
+      "sha256": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca",
+      "matches": true,
+      "contentType": "font/ttf",
+      "moduleMime": true
+    },
+    {
+      "file": "assets/InterTight-LICENSE.txt",
+      "status": 200,
+      "bytes": 4383,
+      "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58",
+      "matches": true,
+      "contentType": "text/plain; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "assets/slab-blush-long.webp",
+      "status": 200,
+      "bytes": 402546,
+      "sha256": "8249fb7023fd51806045e8db93999c0ae24ae9ba09d2f57e9f6712d632b9a899",
+      "matches": true,
+      "contentType": "image/webp",
+      "moduleMime": true
+    },
+    {
+      "file": "assets/slab-coral-long.webp",
+      "status": 200,
+      "bytes": 479152,
+      "sha256": "d58a4c8912eba6972ef1a38a7f701b7d841970a164524d41f267984949686849",
+      "matches": true,
+      "contentType": "image/webp",
+      "moduleMime": true
+    },
+    {
+      "file": "assets/slab-cream-long.webp",
+      "status": 200,
+      "bytes": 359780,
+      "sha256": "84569abd7fed8e954281cd109f19def8288321c41c8bbbe3f8804208fe43f6ac",
+      "matches": true,
+      "contentType": "image/webp",
+      "moduleMime": true
+    },
+    {
+      "file": "assets/sticker-check.webp",
+      "status": 200,
+      "bytes": 11796,
+      "sha256": "255e2696f9c008a1d6e220d0452b03b7fe5aaf649c78095ec0c6ef738f6620b0",
+      "matches": true,
+      "contentType": "image/webp",
+      "moduleMime": true
+    },
+    {
+      "file": "assets/sticker-envelope.webp",
+      "status": 200,
+      "bytes": 7014,
+      "sha256": "e157638a16caacb08a98131c50c6aa7024192f1b2d058b64d10e7c252504cf7f",
+      "matches": true,
+      "contentType": "image/webp",
+      "moduleMime": true
+    },
+    {
+      "file": "assets/sticker-person.webp",
+      "status": 200,
+      "bytes": 12962,
+      "sha256": "b26e20a40385723a37d61c9b6632f686a7fa6cc1f71dfcc2c3000b1255b9d2ae",
+      "matches": true,
+      "contentType": "image/webp",
+      "moduleMime": true
+    },
+    {
+      "file": "assets/sticker-time.webp",
+      "status": 200,
+      "bytes": 13972,
+      "sha256": "c8b0931c96f1bf654e9f05136a768ea75b96687421e701f826625db3a9906c22",
+      "matches": true,
+      "contentType": "image/webp",
+      "moduleMime": true
+    },
+    {
+      "file": "assets/SUIT-LICENSE.txt",
+      "status": 200,
+      "bytes": 4380,
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9",
+      "matches": true,
+      "contentType": "text/plain; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "assets/SUIT-Variable.woff2",
+      "status": 200,
+      "bytes": 624536,
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "matches": true,
+      "contentType": "font/woff2",
+      "moduleMime": true
+    },
+    {
+      "file": "assets/synk-logo.svg",
+      "status": 200,
+      "bytes": 10353,
+      "sha256": "cd4950d57eab280fe14b26d58cb78f416eaf5c1ae1f0fa130986dde9567f61f6",
+      "matches": true,
+      "contentType": "image/svg+xml",
+      "moduleMime": true
+    },
+    {
+      "file": "assets/thread-shift.webp",
+      "status": 200,
+      "bytes": 159706,
+      "sha256": "123cc5ccf392346e5beffc2f195c3b0315fddcfb24881b33fefdba110061d483",
+      "matches": true,
+      "contentType": "image/webp",
+      "moduleMime": true
+    },
+    {
+      "file": "vendor/atlas/domain.js",
+      "status": 200,
+      "bytes": 19777,
+      "sha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+      "matches": true,
+      "contentType": "application/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "vendor/atlas/ask.js",
+      "status": 200,
+      "bytes": 12003,
+      "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "matches": true,
+      "contentType": "application/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "vendor/atlas/vellum-expression.js",
+      "status": 200,
+      "bytes": 6493,
+      "sha256": "a677829210a20b521aa341e0268cce4221f29ef495238e8f7ee5915a5779a237",
+      "matches": true,
+      "contentType": "application/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "vendor/atlas/trail-followup.js",
+      "status": 200,
+      "bytes": 2998,
+      "sha256": "4d0e90889fe4678e658db4a838c8d3d3190be72b12139969e9dad987266f99e1",
+      "matches": true,
+      "contentType": "application/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "vendor/atlas/temper-outcomes.js",
+      "status": 200,
+      "bytes": 19440,
+      "sha256": "a6ab147b062455c9f0df7fae662d91360d28840312d556f776fcc337c375d763",
+      "matches": true,
+      "contentType": "application/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "vendor/account/core.mjs",
+      "status": 200,
+      "bytes": 9270,
+      "sha256": "5c85d1d957403ba1b04795e115d9cb40f26ede59e8dbbfbaa743666ee3e1cbbd",
+      "matches": true,
+      "contentType": "text/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "vendor/account/product-account.mjs",
+      "status": 200,
+      "bytes": 20577,
+      "sha256": "b1d2d5a4c58e24d4d673b25b6a168eade10b48202387c9898839edfc2c320715",
+      "matches": true,
+      "contentType": "text/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "vendor/account/document-sync.mjs",
+      "status": 200,
+      "bytes": 26861,
+      "sha256": "884acaf10998ffe246fd486eeb563572c7611bddafeed6f5df2bb92b0c90f729",
+      "matches": true,
+      "contentType": "text/javascript; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "config.json",
+      "status": 200,
+      "bytes": 598,
+      "sha256": "fe7beff798ad4b4d4c03d0c9c66b67c8d2bd9f173e209d3bd87d6c5a035a9ca8",
+      "matches": true,
+      "contentType": "application/json; charset=utf-8",
+      "moduleMime": true
+    },
+    {
+      "file": "build-manifest.json",
+      "status": 200,
+      "bytes": 12092,
+      "sha256": "388572d39c390220e0fde59d7e0fb4c251ed0a2a5f61b90d2ec69419f8f777f8",
+      "matches": true,
+      "contentType": "application/json; charset=utf-8",
+      "moduleMime": true
+    }
+  ],
+  "routes": [
+    {
+      "route": "/care",
+      "status": 200,
+      "finalUrl": "https://synk.im/care/",
+      "appMarker": true,
+      "htmlMatches": true
+    },
+    {
+      "route": "/care/",
+      "status": 200,
+      "finalUrl": "https://synk.im/care/",
+      "appMarker": true,
+      "htmlMatches": true
+    },
+    {
+      "route": "/care/index.html",
+      "status": 200,
+      "finalUrl": "https://synk.im/care/index.html",
+      "appMarker": true,
+      "htmlMatches": true
+    }
+  ],
+  "portal": {
+    "status": 200,
+    "sha256": "96c7dc22a4a9929a5353982d4639c61f04df22da1d40d83552a07d55e766f906",
+    "matches": true,
+    "authorizationClients": 20
+  },
+  "actualLoginVerified": false,
+  "physicalTwoDevicesVerified": false,
+  "ok": true
+}

@@ -1,0 +1,108 @@
+{
+  "checkedAt": "2026-10-07T12:20:40.384Z",
+  "scope": "Independent delta review after Opus feedback; no source changes by auditor",
+  "findings": [],
+  "tests": {
+    "frontend": {
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0,
+      "command": "node --test experiences/relationship-care/tests/care-push.test.mjs"
+    },
+    "backend": {
+      "passed": 30,
+      "failed": 0,
+      "skipped": 0,
+      "command": "node --test tests/care-push.test.js tests/care-push-integration.test.js",
+      "note": "19 backend cases plus 11 independent integration cases; all passed after monotonic binding fix."
+    },
+    "additionalReproduction": {
+      "passedExisting": 19,
+      "passedNew": 1,
+      "failed": 0,
+      "sourceFilesModified": false,
+      "note": "Same independent memory-only reproduction that failed before now passes. Prior failed output preserved."
+    },
+    "runtime": {
+      "command": "node tools/synk-care-push-build.js --check",
+      "passed": true
+    }
+  },
+  "verifiedChanges": [
+    "Fresh signed-out tab preserves shared browser subscription; only a known owner transition removes it",
+    "unsubscribe false is checked against actual browser getSubscription state",
+    "Logout reports both server revocation and device cleanup failures",
+    "Notification click uses same-origin registration scope and ignores payload URL",
+    "Same-account enabled endpoint status rebinds to verified current canonical session while preserving delivery receipt",
+    "Disabled and foreign-account subscriptions are not revived or rebound",
+    "WNS permits one DNS label under notify.windows.com, exact /w/ and single opaque base64 token; malformed or extra URL input rejected",
+    "Older and same-second status cannot move session binding backward; explicit settings changes retain their separate user-action semantics",
+    "Signed-out copy says device notification settings are unknown until login and gives browser disable guidance",
+    "Scope isolation regression exercises explicit logout and local worker fixture without rewriting production service worker source"
+  ],
+  "sourceSha256": [
+    {
+      "workspace": "appsscript",
+      "file": "experiences/relationship-care/care-push.mjs",
+      "sha256": "b05792173d4328cc6f47a9978c128e4a79371e8f5bd0ab4f5ceec86186ab3a19"
+    },
+    {
+      "workspace": "appsscript",
+      "file": "experiences/relationship-care/care-sw.js",
+      "sha256": "56cdde3502eb7c602abe64088561491afab927c53e89ac8e2a5069cf4bd909d3"
+    },
+    {
+      "workspace": "appsscript",
+      "file": "experiences/relationship-care/app.mjs",
+      "sha256": "093d38f419801ff6e3fd054d7c64c3024f42f4214f601aa1cd121a74113b3655"
+    },
+    {
+      "workspace": "appsscript",
+      "file": "experiences/relationship-care/tests/care-push.test.mjs",
+      "sha256": "85773a1af2f8caf3ee57afa14430f6d11b95f1e8394c1f26ddccb1aaa14f96b8"
+    },
+    {
+      "workspace": "backend",
+      "file": "lib/synk-care-push-store.js",
+      "sha256": "72790555830ed1ebf3eb0203de619552b4037272ab9331676a9a02ff6a1ba76e"
+    },
+    {
+      "workspace": "backend",
+      "file": "lib/synk-care-push-server.js",
+      "sha256": "3321c1998865d728beee6d1628ca9d748c85c16cd39d4cc6d11b48cf5b295e0b"
+    },
+    {
+      "workspace": "backend",
+      "file": "tests/care-push.test.js",
+      "sha256": "bd2395a53a7688ed4fb40e85bf6230ae54ce2afb7de1404eda93aaa0dac329a7"
+    },
+    {
+      "workspace": "backend",
+      "file": "tests/care-push-integration.test.js",
+      "sha256": "13da712bab19f80fae9fe7d3de9a241a13f132e3dcd8700691994d5becf08532"
+    },
+    {
+      "workspace": "backend",
+      "file": "supabase/functions/_shared/synk-care-push-runtime.js",
+      "sha256": "06cd544becaba7167f5a678134837fc740ab130487eb0d696c2b1fb68280aff3"
+    }
+  ],
+  "limitations": [
+    "No new deployment or credentials changed",
+    "No physical device delivery tested",
+    "PGlite exercises PostgreSQL schema/SQL with synthetic identity and gateway; this is not a live gateway test"
+  ],
+  "verdict": "No unresolved P0/P1/P2 found in reviewed final deltas",
+  "resolvedFindings": [
+    {
+      "severity": "P1",
+      "status": "fixed-and-independently-retested",
+      "file": "backend/lib/synk-care-push-store.js",
+      "location": "status(endpoint) conditional rebinding",
+      "problem": "Older valid tab status moved a newer session binding backward; revoking the old session deleted the newer login subscription.",
+      "fix": "Automatic status binding now requires canonical sessionIssuedAt strictly greater than stored issued_at; old or same-second status retains binding and receipt.",
+      "beforeEvidence": "independent-old-session-reproduction.txt",
+      "afterEvidence": "independent-old-session-fixed.txt"
+    }
+  ]
+}

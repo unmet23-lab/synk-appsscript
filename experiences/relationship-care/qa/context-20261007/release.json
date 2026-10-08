@@ -1,0 +1,17 @@
+{
+  "commit": "eb9e55b3b126dfbc45caaa176395c4a677e89f67",
+  "parent": "7b4031c7c845901efc2dbc144989fc3ec72f42b6",
+  "baseline": "a227d85671269bd4ed6095c5db1545ba36bd1857",
+  "candidate": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\care-context-public-20261007-v6",
+  "files": [
+    "care/app.mjs",
+    "care/build-manifest.json",
+    "care/care-context.mjs",
+    "care/care-focus.mjs",
+    "care/index.html",
+    "care/style.css"
+  ],
+  "unchangedPublicDependencies": 42,
+  "publicFileCount": 48,
+  "rootSourceGitCommit": null
+}

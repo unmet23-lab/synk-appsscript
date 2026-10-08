@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-08T00:35:13.127Z",
+  "userExactAnswer": "이번 알림 화면 수정만 예외 승인·운영 반영",
+  "userAuthorizedException": true,
+  "claudeGatePassed": false,
+  "scope": "Only the permission wait cancellation and selected-time display polish in four frontend source files, plus generated public manifest",
+  "sourceFiles": [
+    "care-push.mjs",
+    "app.mjs",
+    "index.html",
+    "style.css"
+  ],
+  "publicFiles": [
+    "app.mjs",
+    "build-manifest.json",
+    "care-push.mjs",
+    "index.html",
+    "style.css"
+  ],
+  "candidateManifestSha256": "5b68da554931989c9835a069632d10ecb14cac75a95ae1e0d1294fab315ecf48",
+  "inventorySha256": "6a3e7eb142777f5bff84b4a4a9f882624056fafee51a96d8e12921ccec7d132a",
+  "realPushSendingAuthorized": false
+}

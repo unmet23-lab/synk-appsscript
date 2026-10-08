@@ -1,0 +1,34 @@
+{
+  "commit": "0f0c9a78d613c1ba432a1d58214e9a8c6d8bb16b",
+  "parent": "ba3b77abf74ef78fe41801d4897d394712d0e253",
+  "baseline": "eb9e55b3b126dfbc45caaa176395c4a677e89f67",
+  "candidate": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\care-message-public-20261008-v4",
+  "files": [
+    "care/app.mjs",
+    "care/build-manifest.json",
+    "care/care-support.mjs",
+    "care/index.html",
+    "care/model.mjs",
+    "care/style.css"
+  ],
+  "unchangedPublicDependencies": 42,
+  "publicFileCount": 48,
+  "rootSourceGitCommit": null,
+  "pages": {
+    "runId": 37665950683,
+    "conclusion": "success",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/37665950683"
+  },
+  "siteCI": {
+    "runId": 37665952977,
+    "status": "completed",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/37665952977",
+    "conclusion": "success"
+  },
+  "publicVerification": "public-verification.json",
+  "publicBrowser": "public-browser.json",
+  "temporaryFixtureServerStopped": true,
+  "temporaryBrowserTabsClosed": true,
+  "viewportReset": true,
+  "completedAt": "2026-10-07T18:37:39.236Z"
+}

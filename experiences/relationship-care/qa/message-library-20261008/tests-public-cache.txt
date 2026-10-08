@@ -1,0 +1,12 @@
+✔ fixed public artifact preserves brand assets and keeps all imports under its subpath (545.3618ms)
+✔ public build rejects private config, a mismatched callback and paths outside new workspace output (8.5632ms)
+✔ entry, styles and every shipped static or dynamic module resolve to their emitted SHA URLs under the existing CSP (322.7189ms)
+✔ changing a dependency or stylesheet changes its public URL and the HTML hash without editing the entry module (921.3202ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2188.0341

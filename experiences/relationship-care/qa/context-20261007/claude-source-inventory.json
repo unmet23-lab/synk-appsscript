@@ -1,0 +1,38 @@
+[
+  {
+    "file": "experiences/relationship-care/app.mjs",
+    "sha256": "bf95ccf419e17e3bf42959044c5d4bafd2812075c8dbde262a8af2b69f0d7a04"
+  },
+  {
+    "file": "experiences/relationship-care/index.html",
+    "sha256": "54db9b66ffbf2e1ed679558e63508cd45e754ebc5d36e95d2f68ce6b9abae3f6"
+  },
+  {
+    "file": "experiences/relationship-care/style.css",
+    "sha256": "118afd9abbf80013d4ad3e70d2f221c8eed0de44302bf2dec1fe94769622b63b"
+  },
+  {
+    "file": "experiences/relationship-care/care-context.mjs",
+    "sha256": "f9ef867bcc7ca2001101ce27155db9b2f80d42e9cc5b8ba9c4fa2b9714462826"
+  },
+  {
+    "file": "experiences/relationship-care/server.mjs",
+    "sha256": "f7142d8f423dedcf0810d4d7c94537b63b9287b6b3de64c14ffc127f3b54616e"
+  },
+  {
+    "file": "experiences/relationship-care/tests/care-context.test.mjs",
+    "sha256": "0a9493b01e84fb2502d9f4bd2923a86ae052b605a07eee1a71015eeb9d3fe750"
+  },
+  {
+    "file": "experiences/relationship-care/tests/public-build.test.mjs",
+    "sha256": "7015fd16c50bfc14ac25f35727b39a1c7d253e01a6de82370ab9c36ef92558e0"
+  },
+  {
+    "file": "tools/prepare-care-public.mjs",
+    "sha256": "3f02be23c221df538c15ee27354ff1f0bc3b59d65911f734ec2fc5ad04944d6e"
+  },
+  {
+    "file": "experiences/relationship-care/care-focus.mjs",
+    "sha256": "480dea09df23869223c7316f61a6dd2ab59462b607c8917ae514f596f9d958b4"
+  }
+]

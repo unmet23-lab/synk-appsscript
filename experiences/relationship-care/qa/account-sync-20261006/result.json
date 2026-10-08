@@ -1,0 +1,449 @@
+{
+  "synthetic": true,
+  "at": "2026-10-06T15:14:11.176Z",
+  "checks": [
+    {
+      "name": "guest notebook is not uploaded or shown in the account implicitly",
+      "passed": true
+    },
+    {
+      "name": "explicit device-import control remains available",
+      "passed": true
+    },
+    {
+      "name": "first device saves with the real narrow native request schema",
+      "passed": true
+    },
+    {
+      "name": "second isolated browser profile reads the same account notebook",
+      "passed": true
+    },
+    {
+      "name": "stale second-device save reports a conflict without overwriting the server",
+      "passed": true
+    },
+    {
+      "name": "explicit remote choice replaces the conflicting local notebook",
+      "passed": true
+    },
+    {
+      "name": "explicit local choice writes against the freshly checked server revision",
+      "passed": true
+    },
+    {
+      "name": "accepted conflict resolution is visible on the other device",
+      "passed": true
+    },
+    {
+      "name": "completed account copies are removed on logout",
+      "passed": true
+    },
+    {
+      "name": "logout clears account people and restores only the original guest notebook",
+      "passed": true
+    },
+    {
+      "name": "live auth callback switches to a distinct empty account",
+      "passed": true
+    },
+    {
+      "name": "second account writes cannot enter the first account",
+      "passed": true
+    },
+    {
+      "name": "switching back restores the correct account without second-account residue",
+      "passed": true
+    },
+    {
+      "name": "guest notebook is added only after explicit import confirmation",
+      "passed": true
+    },
+    {
+      "name": "account controls fit a narrow viewport",
+      "passed": true
+    },
+    {
+      "name": "account deletion writes a revisioned tombstone",
+      "passed": true
+    },
+    {
+      "name": "other device receives account deletion while unrelated account remains intact",
+      "passed": true
+    },
+    {
+      "name": "care unsubmitted conversation guards reload even after account save",
+      "passed": true
+    },
+    {
+      "name": "care unsubmitted input requires logout confirmation",
+      "passed": true
+    },
+    {
+      "name": "care cancelled input logout keeps unsaved conversation",
+      "passed": true
+    },
+    {
+      "name": "care quota failure has no recoverable device copy",
+      "passed": true
+    },
+    {
+      "name": "care pending state guards reload and closing",
+      "passed": true
+    },
+    {
+      "name": "care quota logout warns that device recovery is unavailable",
+      "passed": true
+    },
+    {
+      "name": "care cancelled quota logout preserves in-memory people",
+      "passed": true
+    },
+    {
+      "name": "care cancelled quota logout can retry latest state",
+      "passed": true
+    },
+    {
+      "name": "care completed state releases navigation guard",
+      "passed": true
+    },
+    {
+      "name": "care logout keeps pending cache and explains device retention",
+      "passed": true
+    },
+    {
+      "name": "signed-out care cannot export or clear account recovery",
+      "passed": true
+    },
+    {
+      "name": "another account cannot export or clear the first account recovery",
+      "passed": true
+    },
+    {
+      "name": "care recovery export keeps exact own pending raw",
+      "passed": true
+    },
+    {
+      "name": "care cancelled local deletion keeps outbox",
+      "passed": true
+    },
+    {
+      "name": "care explicit own-device deletion unlocks editor and preserves server and unrelated storage",
+      "passed": true
+    },
+    {
+      "name": "care owned corrupt cache survives remote read with persistent warning",
+      "passed": true
+    },
+    {
+      "name": "care owned unreadable recovery file preserves exact raw",
+      "passed": true
+    },
+    {
+      "name": "care recovery controls fit narrow viewport",
+      "passed": true
+    },
+    {
+      "name": "care owned unreadable cache is deleted only after explicit authenticated confirmation",
+      "passed": true
+    },
+    {
+      "name": "unknown-owner corrupt original cannot be exposed or removed",
+      "passed": true
+    },
+    {
+      "name": "care multiple drafts require explicit choice before editing",
+      "passed": true
+    },
+    {
+      "name": "care draft chooser fits narrow viewport and explains preservation",
+      "passed": true
+    },
+    {
+      "name": "care selected local notebook saves chosen record",
+      "passed": true
+    },
+    {
+      "name": "care chosen draft ACK preserves remaining raw and its entry point",
+      "passed": true
+    },
+    {
+      "name": "500 account preparations plus one guest preparation import successfully while preserving both people events sources and memories",
+      "passed": true,
+      "detail": {
+        "people": 2,
+        "events": 2,
+        "memories": 2,
+        "preparations": 500
+      }
+    },
+    {
+      "name": "no uncaught browser errors",
+      "passed": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "requests": [
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 0
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 0
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 0
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 0
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careSave",
+      "revision": 0
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 1
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careSave",
+      "revision": 1
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careSave",
+      "revision": 2
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 2
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careSave",
+      "revision": 2
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careSave",
+      "revision": 3
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 3
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careSave",
+      "revision": 3
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 4
+    },
+    {
+      "accountId": "synthetic-account-b",
+      "action": "careLoad",
+      "revision": 0
+    },
+    {
+      "accountId": "synthetic-account-b",
+      "action": "careLoad",
+      "revision": 0
+    },
+    {
+      "accountId": "synthetic-account-b",
+      "action": "careSave",
+      "revision": 0
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 4
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 4
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 4
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 4
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 4
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careSave",
+      "revision": 4
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 5
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careDelete",
+      "revision": 5
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 6
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 6
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 6
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careSave",
+      "revision": 6
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 6
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careSave",
+      "revision": 6
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careDelete",
+      "revision": 7
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 8
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 8
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 8
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careSave",
+      "revision": 8
+    },
+    {
+      "accountId": "synthetic-account-b",
+      "action": "careLoad",
+      "revision": 1
+    },
+    {
+      "accountId": "synthetic-account-b",
+      "action": "careLoad",
+      "revision": 1
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 8
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 8
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 8
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 8
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 8
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 8
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 8
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 8
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careLoad",
+      "revision": 8
+    },
+    {
+      "accountId": "synthetic-account-a",
+      "action": "careSave",
+      "revision": 8
+    },
+    {
+      "accountId": "synthetic-preparation-cap-owner",
+      "action": "careLoad",
+      "revision": 0
+    },
+    {
+      "accountId": "synthetic-preparation-cap-owner",
+      "action": "careLoad",
+      "revision": 0
+    },
+    {
+      "accountId": "synthetic-preparation-cap-owner",
+      "action": "careSave",
+      "revision": 0
+    }
+  ],
+  "screenshots": [
+    "conflict-desktop.png",
+    "synced-mobile.png",
+    "recovery-mobile.png",
+    "local-drafts-mobile.png"
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "synthetic": true,
+  "at": "2026-10-06T13:31:07.474Z",
+  "origin": "http://127.0.0.1:4296",
+  "checks": [
+    {
+      "name": "A card finishing after person B is selected never opens A preview",
+      "passed": true
+    },
+    {
+      "name": "switching people during card generation releases the preview button",
+      "passed": true
+    },
+    {
+      "name": "person B can create a fresh real PNG after stale person A finishes",
+      "passed": true
+    },
+    {
+      "name": "account refresh requests confirmation before replacing an unsaved follow-up",
+      "passed": true
+    },
+    {
+      "name": "follow-up remains intact while refresh confirmation is pending",
+      "passed": true
+    },
+    {
+      "name": "cancelling refresh preserves the unsaved follow-up and existing notebook",
+      "passed": true
+    },
+    {
+      "name": "confirmed refresh replaces the notebook and clears the old form",
+      "passed": true
+    },
+    {
+      "name": "account refresh also guards an unsaved memory card title",
+      "passed": true
+    },
+    {
+      "name": "no browser runtime errors in these synthetic races",
+      "passed": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "passed": 9,
+  "total": 9
+}

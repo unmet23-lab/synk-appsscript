@@ -1,0 +1,17 @@
+이전 검수(이 세션의 완료 결과)에 대한 좁은 재검수입니다. 제품 코드 읽기만, 수정/배포 금지. 전체 저장소 재탐색이나 초기 전체 검수 반복 없이 아래 변경과 관련 회귀만 확인해 주세요. 실제 재현할 수 있는 남은 P0/P1/P2와 수정완료 여부를 한국어 700단어 이내로 보고해 주세요. P3나 기존 범위 밖 문제는 배포차단과 구분하고 확장 감사하지 마세요.
+
+최종 소스 인벤토리: experiences/relationship-care/qa/message-quality-20261008/claude-source-inventory.json. 최종 전제품시험 experiences/relationship-care/qa/message-quality-20261008/tests-care.txt. 합성 UI 확인 experiences/relationship-care/qa/message-quality-20261008/browser-verification.json. 현재 변경 동결, 초기 source-inventory.json은 과거라 사용하지 마세요.
+
+이전 P2 두 항목 수정:
+1. app.mjs resetDraft({preserveIntent}), apply-personal-memory/clear-personal-memory 및 preference-form submit에서 현재 checkinIntent 유지. preference submit은 checkinMode이면 일정이 없어도 안부 화면과 재생성 유지.
+2. care-support.mjs applyPreferenceCandidate: 최초 미확인 no-emoji/avoid-phrase만 확인해도 기본 short가 확정되던 것 방지. 첫 비길이확인은 balanced, shorter는 short, 이미 confirmed된 length는 유지.
+
+관련 P3 수정:
+- changeDraft: intent 변경에서 명시한 short/warm 보존, saved일 때만 문장틀 기본 길이로 돌아감.
+- checkedDraftInput({rememberOnly}): 일정유형/사람 유효성은 유지. 날짜가 바뀌면 copy는 텍스트 삭제없이 안내, save-only는 같은유형 기억 허용.
+- model.mjs generateDraft/generateCheckinDraft: saved문구에 closingLine 자동 재추가하지 않음. 새 템플릿은 기존 설정 사용. 관련 personalization 5000/5001경계시험을 맞춤.
+- copy-draft: save() false인 경우 복사성공+저장실패를 명확히 안내하고 성공 toast로 덮지 않음.
+
+tests/message-ui-state.test.mjs는 실제 앱함수/핸들러를 VM DOM경계에서 실행하며 9개시험(위 intent, style, rollover, copy storage failure 포함). tests/care-support.test.mjs 18개. model 관련47개. 최종 전체시험 기록 확인.
+
+최종 결과에 각 P2 해결 여부, 변경으로 발생한 재현 가능한 P0~P2 유무, 공개 반영 가능 여부를 분명히 적어 주세요. 기존에 지적한 범위 밖 event-change/동일인 prepareEvent/옛 history표기 재감사는 하지 마세요. 통신/유료 API/사용자자료/OS알림 시험은 하지 마세요.

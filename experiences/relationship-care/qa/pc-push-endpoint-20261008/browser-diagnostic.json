@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-08",
+  "timeZone": "Asia/Seoul",
+  "userScope": "휴대폰은 계속 보류 — PC 쪽만 진행",
+  "physicalPhone": "deferred-by-user",
+  "permissionResponse": "사용자: 허용을 눌렀어요",
+  "accountNotebookRestored": true,
+  "fixture": {
+    "title": "PC 알림 시험 · 2026-10-08",
+    "dueDate": "2026-10-08",
+    "remoteSaveAcknowledgedBeforeEnable": true,
+    "cleanup": "후속 챙김 완료 처리 후 SYNK 계정에 저장했어요 안내 확인",
+    "actualNotificationReceived": false
+  },
+  "attemptedTimes": ["08:03", "08:10"],
+  "lastObservedUiTime": "09:00",
+  "schedulePersisted": false,
+  "networkSummary": {
+    "action": "subscribe",
+    "providerHost": "jmt17.google.com",
+    "pathPrefix": "/fcm/send/",
+    "hasQuery": false,
+    "hasFragment": false,
+    "p256dhLength": 87,
+    "authLength": 22,
+    "subscriptionFields": ["endpoint", "keys"],
+    "keysFields": ["p256dh", "auth"],
+    "httpStatus": 400,
+    "errorCodeFromUiMapping": "INVALID_SUBSCRIPTION"
+  },
+  "uiError": "이 브라우저의 알림 연결을 사용할 수 없어요. 최신 브라우저에서 다시 열거나 달력 저장을 이용해 주세요.",
+  "privacy": "Full endpoints, keys, headers, tokens, account identifiers and email were not printed or persisted. CDP network recording disabled after diagnosis.",
+  "limitations": "No closed-tab delivery or OS notification receipt was reached. Notification permission may remain granted. Fixture completion is test cleanup, not notification receipt proof."
+}

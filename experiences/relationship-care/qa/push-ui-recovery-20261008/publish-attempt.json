@@ -1,0 +1,23 @@
+{
+  "startedAt": "2026-10-08T00:35:14.837Z",
+  "phase": "pushed",
+  "pushed": true,
+  "policy": "C:/Users/q1212/Documents/SYNK-worktrees/synk-id-unified-20261006",
+  "candidate": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\care-push-ui-candidate-20261008-v2",
+  "baseline": "b4791aebd0d1cefa7314bebb3e76a9664ca6a835",
+  "baselineCareTree": "e9bfb47bd3aa549f82240116d3980d2fc037dd6d",
+  "expectedManifestSha256": "5b68da554931989c9835a069632d10ecb14cac75a95ae1e0d1294fab315ecf48",
+  "publicFileCount": 48,
+  "files": [
+    "care/app.mjs",
+    "care/build-manifest.json",
+    "care/care-push.mjs",
+    "care/index.html",
+    "care/style.css"
+  ],
+  "userAuthorizedException": true,
+  "claudeGatePassed": false,
+  "parent": "b4791aebd0d1cefa7314bebb3e76a9664ca6a835",
+  "commit": "3b3aacf29448410091b141cf72af8cf0fa2b008a",
+  "completedAt": "2026-10-08T00:35:48.098Z"
+}

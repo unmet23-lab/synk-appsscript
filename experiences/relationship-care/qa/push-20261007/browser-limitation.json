@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-07T12:20:11.665Z",
+  "attempts": [
+    "IAB existing tab: focus emulation timeout",
+    "IAB new tab: webview attach timeout",
+    "Chrome new tab: tool execution timeout",
+    "Resumed IAB fresh local QA tab: Browser webview attach timeout"
+  ],
+  "visualVerified": false,
+  "physicalPushReceipt": false,
+  "phoneSyncDeferredByUser": true
+}

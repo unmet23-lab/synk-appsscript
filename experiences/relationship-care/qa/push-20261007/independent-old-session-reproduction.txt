@@ -1,0 +1,46 @@
+✔ migration is checksum valid, idempotent, RLS closed with no direct client grants (3250.6006ms)
+✔ subscribe is opt-in and status is device/account specific, with no learning grant (460.0389ms)
+✔ a notebook must be saved before enabling and there are at most ten active sessions (469.8374ms)
+✔ endpoint rotation retains the session daily receipt and daily registration is bounded (911.4696ms)
+✔ SSRF, ambiguous URL normalization, malformed keys and extra ownership input are rejected (35.3569ms)
+✔ Edge WNS accepts a single opaque base64 token only on canonical notify.windows.com gateways (29.1708ms)
+✔ API guards product, contract, method, path, query, body size and unavailable configuration (27.6376ms)
+✔ current JWT refresh remains bound to the canonical session issuance (285.3094ms)
+✔ same-account login status rebinds an enabled endpoint while preserving its daily receipt (582.2854ms)
+✔ a same-account status probe never revives or rebinds an explicitly disabled endpoint (40.0177ms)
+✔ two competing workers send once and later same-day evaluation stays settled (138.0162ms)
+✔ the chosen minute, KST day and 90-minute expiry fence dispatch (93.5917ms)
+✔ retries need explicit rejection, stop at three attempts and unknown delivery is not repeated (243.3471ms)
+✔ opt-out erases delivery keys, keeps same-day receipt and gone removes endpoint (121.8414ms)
+✔ completed, postponed and no-due notebooks do not produce a generic nudge (227.3742ms)
+✔ a save between durable claim and dispatch is read again under the account lock (85.1628ms)
+✔ revocation, global logout, account deletion and notebook erasure cancel subscriptions (334.4683ms)
+✔ revocation after claim prevents any external send (41.3892ms)
+✖ independent reproduction: old tab status must not move the newer session binding backward (165.4466ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 18
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7590.9434
+
+✖ failing tests:
+
+test at tests\care-push.test.js:308:1
+✖ independent reproduction: old tab status must not move the newer session binding backward (165.4466ms)
+  AssertionError [ERR_ASSERTION]: newer valid login should retain the browser subscription after the older session is revoked
+  
+  false !== true
+  
+      at TestContext.<anonymous> (C:\Users\q1212\Documents\SYNK-talk-care-release-20261006\tests\care-push.test.js:314:10)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

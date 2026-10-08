@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-10-07T23:13:21.236Z",
+  "project": "Synk Core",
+  "method": "read-only GET",
+  "functions": [
+    {
+      "slug": "synk-care-push",
+      "status": "ACTIVE",
+      "version": 11,
+      "verify_jwt": true
+    },
+    {
+      "slug": "synk-care-push-send",
+      "status": "ACTIVE",
+      "version": 11,
+      "verify_jwt": true
+    }
+  ],
+  "sourceInventoryUnchanged": true,
+  "deployPerformed": false
+}

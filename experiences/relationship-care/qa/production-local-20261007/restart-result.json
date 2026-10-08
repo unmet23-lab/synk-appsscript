@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-06T20:24:36.1279232Z",
+  "pid": 19256,
+  "url": "http://127.0.0.1:4296/",
+  "method": "GET",
+  "status": 200,
+  "html": true,
+  "synkMarker": true,
+  "loopbackBinding": "127.0.0.1:4296",
+  "stderrBytes": 0,
+  "syntheticCallbackRetested": false,
+  "blockedHeaderProbeExecuted": false,
+  "actualLogin": false,
+  "tokenExchange": false,
+  "configEndpointRequested": false,
+  "familyServerRestarted": false
+}

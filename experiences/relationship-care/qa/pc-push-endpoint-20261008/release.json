@@ -1,0 +1,16 @@
+{
+  "commit": "d4acb2931964727cd057596eec62b095be426b0a",
+  "branch": "codex/synk-care-personal-20261006",
+  "pushed": true,
+  "deployedFunctions": [
+    "synk-care-push",
+    "synk-care-push-send"
+  ],
+  "version": 12,
+  "runtimeComparison": "both match",
+  "anonymousStatus": 401,
+  "userReviewException": "user-review-exception.json",
+  "sourceInventory": "claude-source-inventory.json",
+  "websiteChanged": false,
+  "databaseMigration": false
+}

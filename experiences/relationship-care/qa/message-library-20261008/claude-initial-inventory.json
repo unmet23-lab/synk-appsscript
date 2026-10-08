@@ -1,0 +1,54 @@
+[
+  {
+    "file": "C:/Users/q1212/Documents/SYNK-appsscript/experiences/relationship-care/model.mjs",
+    "sha256": "a73342da7e08425973a935f095bbc283cd37a4f2f8a1b04ad8d9273c118bafda"
+  },
+  {
+    "file": "C:/Users/q1212/Documents/SYNK-appsscript/experiences/relationship-care/app.mjs",
+    "sha256": "e0a4265b10292765bc016eb33e6f040565d4cced76589ab939f770e5475d1f3b"
+  },
+  {
+    "file": "C:/Users/q1212/Documents/SYNK-appsscript/experiences/relationship-care/index.html",
+    "sha256": "2bba9b36bb9cf4498494d5dfd141943f7c8fc9aa982e982e3d19feb1343b37c7"
+  },
+  {
+    "file": "C:/Users/q1212/Documents/SYNK-appsscript/experiences/relationship-care/style.css",
+    "sha256": "14505a3bea19d986df4d2fc1ba6cb16f77653845d34cdea2563cb49aac49f86c"
+  },
+  {
+    "file": "C:/Users/q1212/Documents/SYNK-appsscript/experiences/relationship-care/care-sync.mjs",
+    "sha256": "b60829fb72a4d30bb4d8fc4910f3b8b51ded0914b1005afbce63796b0f3ea689"
+  },
+  {
+    "file": "C:/Users/q1212/Documents/SYNK-appsscript/experiences/relationship-care/tests/message-library.test.mjs",
+    "sha256": "ca783684c2b323af44bb1a9800190b107faf69f7973119810adadb582b2fa686"
+  },
+  {
+    "file": "C:/Users/q1212/Documents/SYNK-appsscript/experiences/relationship-care/tests/message-ui-state.test.mjs",
+    "sha256": "600f277c85e858c84a685716234fee8803c70a54a351df76eaae1f284ea90c82"
+  },
+  {
+    "file": "C:/Users/q1212/Documents/SYNK-appsscript/experiences/synk-account/src/document-sync.mjs",
+    "sha256": "6a4b9253bb884325422a49c2b4d2d80d94ccf59bfe82fa5aa4770d6c25a27a94"
+  },
+  {
+    "file": "C:/Users/q1212/Documents/SYNK-talk-care-release-20261006/lib/synk-care-server.js",
+    "sha256": "56bbd3aa8bf540dca5c0d3765986a8cc550e1c0120cf22f2b5430b7eee40c879"
+  },
+  {
+    "file": "C:/Users/q1212/Documents/SYNK-talk-care-release-20261006/tests/synk-care.test.js",
+    "sha256": "329fb107c5a206fea92122f6d66824a558a9a984657273a82f32b67f21844b12"
+  },
+  {
+    "file": "C:/Users/q1212/Documents/SYNK-talk-care-release-20261006/docs/플레저_계정보관_API.md",
+    "sha256": "ffe22232adb19f751ae2dcb5e83653ed2dd1bd8854e269b8e0b7f7159dc459a8"
+  },
+  {
+    "file": "C:/Users/q1212/Documents/SYNK-talk-care-release-20261006/supabase/functions/_shared/synk-care-runtime.js",
+    "sha256": "47e70bf2070a7b7963fef862cf64052baf6d6d0990bffdc6b56e277ad2a82948"
+  },
+  {
+    "file": "C:/Users/q1212/Documents/SYNK-talk-care-release-20261006/supabase/functions/_shared/synk-care-push-runtime.js",
+    "sha256": "4e139f4353a1efd34d918a46322a7be35118ec875a9dd68c04c73da33f9411b2"
+  }
+]

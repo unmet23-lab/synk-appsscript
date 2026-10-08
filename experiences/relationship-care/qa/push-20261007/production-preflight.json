@@ -1,0 +1,25 @@
+{
+  "stage": "preflight",
+  "at": "2026-10-07T11:45:26.163Z",
+  "project": "Synk Core",
+  "functions": [
+    {
+      "slug": "synk-care",
+      "status": "ACTIVE",
+      "version": 4,
+      "verify_jwt": true
+    }
+  ],
+  "secrets": [
+    {
+      "name": "SYNK_CARE_ENABLED",
+      "present": true
+    }
+  ],
+  "database": [
+    {
+      "care_ready": true,
+      "push_ready": false
+    }
+  ]
+}

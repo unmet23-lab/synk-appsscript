@@ -1,0 +1,16 @@
+{
+  "id": "./",
+  "name": "SYNK 플레저",
+  "short_name": "플레저",
+  "description": "소중한 사람의 날을 기억하는 내 수첩",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    { "src": "assets/icon192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

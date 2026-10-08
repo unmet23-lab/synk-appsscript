@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-10-07T22:30:14.655Z",
+  "url": "http://127.0.0.1:4334/care/",
+  "browser": "Codex IAB",
+  "mode": "guest / persistence off / synthetic names",
+  "checks": [
+    "375px new dialog: only name required, optional date/details closed, full submit button visible",
+    "Name-only registration opens correct person/message tab with generated ordinary checkin draft",
+    "Existing person relationship edit keeps customized draft text, current message tab and two saved messages",
+    "Full-text search finds suffix beyond option preview; 2 scoped entries -> 1 result",
+    "Favorite -> favorites-only; unfavorite -> zero results and hidden actions, current draft unchanged",
+    "No-match search shows distinct explanation; reset restores all scoped entries and focuses search",
+    "320px and375px no horizontal overflow; computed search/help/reset16px; search/reset51.195px high",
+    "New dialog resets collapsed sections after editing; collapsed custom366 expands and native validation focuses invalid input",
+    "Cancel existing draft person-change confirmation: new person/date saved, previous draft retained, no false prepared toast",
+    "New future wedding2026-12-20 opens exact wedding selection with wedding text",
+    "Past oneoff wedding2025-01-01 saves person/date, leaves events tab and empty draft; final candidate notice points to 기억할 날",
+    "Final normal reload of final candidate; no console errors/warnings; synthetic guest state cleared to0people, persistenceoff; viewport reset"
+  ],
+  "screenshots": "Observed inline CUA screenshots at375/320; no exported screenshot file available.",
+  "notTested": [
+    "Physical phone sync and OS notification receipt deferred by user",
+    "Screen reader interaction",
+    "This new scope public deployment",
+    "New provider/account storage roundtrip; no backend/schema/account changes"
+  ],
+  "liveUserRecordsChanged": false
+}

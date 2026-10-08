@@ -1,0 +1,50 @@
+{
+  "method": "manual-browser",
+  "date": "2026-10-07",
+  "environment": "isolated local browser with synthetic notebook",
+  "reportedBy": "parent agent /root",
+  "releaseStatus": "deployed-verified",
+  "officialReviewStatus": "complete",
+  "observations": {
+    "loadingConcealsNotebookAndInputs": true,
+    "eventFollowupCheckinNavigation": true,
+    "copyAloneKeepsRecommendation": true,
+    "completedFollowupImmediatelyRecommendsHaneul": true,
+    "alternativeCycleExcludesCompletedMinseoCheckin": true,
+    "completedEventRecommendsJiu": true,
+    "completedCheckinShowsCaughtUpAndKeepsManualSelection": true,
+    "horizontalOverflow375And320": false,
+    "reasonFontPx": 17,
+    "primaryActionHeightPx": 56,
+    "v2ConsoleWarnings": 0,
+    "v2ConsoleErrors": 0,
+    "v3PostponedFollowupCheckinExcluded": true,
+    "v3AlternativeCycle": [
+      "하늘",
+      "지우",
+      "하늘"
+    ],
+    "v3HorizontalOverflow375": false,
+    "v3ReasonFontPx": 17,
+    "v3PrimaryActionHeightPx": 56,
+    "v3ConsoleWarnings": 0,
+    "v3ConsoleErrors": 0
+  },
+  "screenshots": [
+    "loading.png",
+    "focus-320.png",
+    "focus-375.png",
+    "focus-1280.png",
+    "caught-up-375.png",
+    "focus-final-375.png"
+  ],
+  "finalScreenshot": "focus-final-375.png",
+  "screenshotNote": "focus-final-375.png is V3; focus-375.png preserves V1. Later changes affect the recommendation model and followup refresh; UI styling is unchanged.",
+  "resolvedIssue": "V2 immediately suggested a general checkin for Minseo after postponing the followup to October 8. V3 defers general checkins until the chosen date; explicit event suggestions remain eligible.",
+  "limits": [
+    "No automated browser test count is claimed.",
+    "This is not proof of deployment or physical PC-to-phone use."
+  ],
+  "publicEvidence": "public-browser.json",
+  "ciEvidence": "deployment-ci.json"
+}

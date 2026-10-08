@@ -1,0 +1,41 @@
+{
+  "checkedAt": "2026-10-07T19:19:05.844Z",
+  "environment": "isolated synthetic account adapter; candidate v1; IAB",
+  "checks": [
+    "purpose-specific saved wording selected",
+    "older thanks snapshot selected and loaded",
+    "favorite sorted first without altering editor",
+    "new wording appends 3 to 4 entries",
+    "repeat save stays at 4 entries",
+    "modified editor replacement asks confirmation",
+    "cancel preserves edited text",
+    "all-checkin scope includes everyday and thanks",
+    "explicit older everyday load switches intent and clears review checkbox",
+    "save and favorite do not add copied/contact completion records; original synthetic activity only",
+    "mock account signout clears people, saved wording and editor"
+  ],
+  "responsive": [
+    {
+      "width": 375,
+      "scrollWidth": 360,
+      "previewFont": 16,
+      "selectFont": 16,
+      "actionHeights": [
+        52,
+        52,
+        52
+      ]
+    },
+    {
+      "width": 320,
+      "scrollWidth": 305
+    }
+  ],
+  "screenshots": "Visually inspected through CUA; no screenshot file exported",
+  "realUserDataChanged": false,
+  "phoneTest": false,
+  "pushReceiptTest": false,
+  "consoleErrors": [],
+  "syntheticTabClosed": true,
+  "viewportReset": true
+}

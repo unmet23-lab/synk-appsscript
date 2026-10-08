@@ -1,0 +1,24 @@
+check	점검	﻿2026-10-07T12:39:03.0341394Z ##[group]Run node .github/site-check/check.mjs
+check	점검	2026-10-07T12:39:03.0341782Z ^[[36;1mnode .github/site-check/check.mjs^[[0m
+check	점검	2026-10-07T12:39:03.0412333Z shell: /usr/bin/bash -e {0}
+check	점검	2026-10-07T12:39:03.0412611Z env:
+check	점검	2026-10-07T12:39:03.0412851Z   SITE_BASE: https://synk.im
+check	점검	2026-10-07T12:39:03.0415692Z   GH_TOKEN: ***
+check	점검	2026-10-07T12:39:03.0415919Z ##[endgroup]
+check	점검	2026-10-07T12:39:03.4795024Z 1. synk.im 반영 기다리기
+check	점검	2026-10-07T12:39:06.6869362Z   비교: 마지막 통과 4a93d27부터
+check	점검	2026-10-07T12:39:28.8850578Z   바뀐 파일 11개 같음, 지운 파일 0개 404
+check	점검	2026-10-07T12:39:28.8850989Z 2. 제작 도구 이름
+check	점검	2026-10-07T12:39:29.2031769Z   파일 3207개 봄
+check	점검	2026-10-07T12:39:29.4329798Z 3. 페이지
+check	점검	2026-10-07T12:43:50.7746247Z   23쪽 × 2기기
+check	점검	2026-10-07T12:43:50.7746686Z 4. LAB 게임
+check	점검	2026-10-07T12:47:02.5374594Z   ✗ 휴대폰 /try/racing/: 503 /try/racing/atmosphere.js | Failed to load resource: the server responded with a status of 503 ()
+check	점검	2026-10-07T12:48:29.5308274Z   게임 8개 × 2기기
+check	점검	2026-10-07T12:48:29.5341840Z 5. 질문창
+check	점검	2026-10-07T12:48:35.0248640Z   답: SYNK 안내 SYNK LAB은 한국어 교재와 게임, 개인화 엔진 아틀라스를 넣은 학습 앱을 개발하는 에듀테…
+check	점검	2026-10-07T12:48:35.6166492Z 
+check	점검	2026-10-07T12:48:35.6167487Z ## synk.im 배포 점검 — 문제 1개
+check	점검	2026-10-07T12:48:35.6167952Z 
+check	점검	2026-10-07T12:48:35.6168962Z - [게임] 휴대폰 /try/racing/: 503 /try/racing/atmosphere.js | Failed to load resource: the server responded with a status of 503 ()
+check	점검	2026-10-07T12:48:35.6300828Z ##[error]Process completed with exit code 1.

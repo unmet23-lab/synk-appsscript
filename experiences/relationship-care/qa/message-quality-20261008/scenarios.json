@@ -1,0 +1,540 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-10-07T18:01:24.813Z",
+  "dateKST": "2026-10-08",
+  "kind": "synthetic-rule-template-comparison",
+  "status": "passed",
+  "scenarioCount": 9,
+  "source": {
+    "before": {
+      "path": "C:/Users/q1212/Documents/SYNK-worktrees/synk-id-unified-20261006/care/model.mjs",
+      "sha256": "405e8aace162ec357a1dfc6a75bacd51d2c0c4f3f9bfe766a9f0b424930b2eb5",
+      "role": "public-release-checkout model, not fetched live"
+    },
+    "after": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\relationship-care\\model.mjs",
+      "sha256": "fde1cc0f3c825cdf7a4798f7f0f6e26e39621f8fb32aaa8da9bbf64edb7dcf5d",
+      "role": "local work-in-progress model"
+    }
+  },
+  "notes": [
+    "합성 인물과 합성 일정만 사용했다. 개인자료, 실제 계정, 유료 API를 사용하지 않았다.",
+    "두 모듈을 실제 import해 실행한 결과다. 사용자 만족도나 상대의 기분을 측정한 결과가 아니다.",
+    "friend-birthday-short는 같은 사람/일정에 이전 앱 첫 진입의 warm 고정과 새 defaultDraftApproach 결과를 각각 적용했다. 옵션 차이는 invokedOptions에 그대로 기록했다.",
+    "이 파일은 로컬 비교 증거다. 라이브 배포와 공개 파일 동일성 증거는 별도다."
+  ],
+  "scenarios": [
+    {
+      "id": "future-memorial",
+      "title": "아직 오지 않은 기일",
+      "person": {
+        "id": "synthetic_quality_person",
+        "name": "민수",
+        "recipientPreference": {
+          "confirmed": true,
+          "formality": "polite"
+        }
+      },
+      "event": {
+        "id": "synthetic_quality_event",
+        "personId": "synthetic_quality_person",
+        "type": "memorial",
+        "date": "2026-10-15"
+      },
+      "options": {
+        "approach": "warm"
+      },
+      "expected": "새 초안에서 보내는 날을 오늘로 단정하지 않는다.",
+      "before": {
+        "invokedOptions": {
+          "approach": "warm"
+        },
+        "text": "오늘 고인을 기억하며 마음을 함께합니다. 조용히 위로의 마음을 전합니다.",
+        "method": "template",
+        "approach": "warm",
+        "checkinIntent": null,
+        "basis": [
+          "부고·기일에는 차분하고 정중한 표현을 사용했어요.",
+          "만남·선물·송금 약속은 임의로 넣지 않았어요."
+        ],
+        "cautions": [
+          "규칙과 문구 틀로 만든 초안이에요. 보내기 전에 직접 확인해 주세요.",
+          "상대의 상황과 종교에 맞는 표현인지 확인해 주세요. 기일은 연락 자체가 편한지도 살펴 주세요. 문장의 숨은 뜻이나 농담을 판별하는 기능은 아니에요."
+        ]
+      },
+      "after": {
+        "invokedOptions": {
+          "approach": "warm"
+        },
+        "text": "고인을 기억하며 마음을 함께합니다. 조용히 위로의 마음을 전합니다.",
+        "method": "template",
+        "approach": "warm",
+        "checkinIntent": null,
+        "basis": [
+          "부고·기일에는 차분하고 정중한 표현을 사용했어요.",
+          "만남·선물·송금 약속은 임의로 넣지 않았어요."
+        ],
+        "cautions": [
+          "규칙과 문구 틀로 만든 초안이에요. 보내기 전에 직접 확인해 주세요.",
+          "상대의 상황과 종교에 맞는 표현인지 확인해 주세요. 기일은 연락 자체가 편한지도 살펴 주세요. 문장의 숨은 뜻이나 농담을 판별하는 기능은 아니에요."
+        ]
+      }
+    },
+    {
+      "id": "condolence-general-closing",
+      "title": "평소 밝은 맺음말이 있는 사람의 조문",
+      "person": {
+        "id": "synthetic_quality_person",
+        "name": "민수",
+        "recipientPreference": {
+          "confirmed": true,
+          "formality": "casual",
+          "salutation": "민수야",
+          "closingLine": "맛있는 거 먹고 즐거운 하루 보내!",
+          "allowEmoji": true
+        }
+      },
+      "event": {
+        "id": "synthetic_quality_event",
+        "personId": "synthetic_quality_person",
+        "type": "condolence",
+        "date": "2026-10-15"
+      },
+      "options": {
+        "approach": "warm"
+      },
+      "expected": "평소 호칭과 밝은 맺음말을 조문에 자동 연결하지 않는다.",
+      "before": {
+        "invokedOptions": {
+          "approach": "warm"
+        },
+        "text": "민수야, 삼가 고인의 명복을 빕니다. 깊은 위로의 마음을 전합니다.\n맛있는 거 먹고 즐거운 하루 보내!",
+        "method": "template",
+        "approach": "warm",
+        "checkinIntent": null,
+        "basis": [
+          "부고·기일에는 차분하고 정중한 표현을 사용했어요.",
+          "만남·선물·송금 약속은 임의로 넣지 않았어요.",
+          "직접 정한 호칭을 사용했어요.",
+          "직접 쓴 덧붙일 말을 연결했어요."
+        ],
+        "cautions": [
+          "규칙과 문구 틀로 만든 초안이에요. 보내기 전에 직접 확인해 주세요.",
+          "상대의 상황과 종교에 맞는 표현인지 확인해 주세요. 기일은 연락 자체가 편한지도 살펴 주세요. 문장의 숨은 뜻이나 농담을 판별하는 기능은 아니에요."
+        ]
+      },
+      "after": {
+        "invokedOptions": {
+          "approach": "warm"
+        },
+        "text": "깊은 위로의 마음을 전합니다. 마음으로 함께하겠습니다.",
+        "method": "template",
+        "approach": "warm",
+        "checkinIntent": null,
+        "basis": [
+          "부고·기일에는 차분하고 정중한 표현을 사용했어요.",
+          "만남·선물·송금 약속은 임의로 넣지 않았어요."
+        ],
+        "cautions": [
+          "규칙과 문구 틀로 만든 초안이에요. 보내기 전에 직접 확인해 주세요.",
+          "조심스러운 날에는 평소 호칭과 덧붙일 말을 자동으로 연결하지 않았어요. 상황에 맞는 표현을 직접 더해 주세요.",
+          "상대의 상황과 종교에 맞는 표현인지 확인해 주세요. 기일은 연락 자체가 편한지도 살펴 주세요. 문장의 숨은 뜻이나 농담을 판별하는 기능은 아니에요."
+        ]
+      }
+    },
+    {
+      "id": "saved-reply-line",
+      "title": "기억한 반말 안부에 답장 배려가 이미 있음",
+      "person": {
+        "id": "synthetic_quality_person",
+        "name": "민수",
+        "recipientPreference": {
+          "confirmed": true,
+          "formality": "polite",
+          "noReplyPressure": true
+        },
+        "savedMessages": {
+          "checkin": {
+            "text": "오랜만이야! 답장은 부담 갖지 말고 편할 때 줘.",
+            "savedAt": "2026-10-01T00:00:00.000Z"
+          }
+        }
+      },
+      "options": {
+        "approach": "saved"
+      },
+      "expected": "저장한 말투를 유지하며 별도 존댓말 답장 문장을 덧붙이지 않는다.",
+      "before": {
+        "invokedOptions": {
+          "approach": "saved"
+        },
+        "text": "오랜만이야! 답장은 부담 갖지 말고 편할 때 줘.\n답장은 편하실 때 하셔도 괜찮아요.",
+        "method": "saved",
+        "approach": "saved",
+        "checkinIntent": null,
+        "basis": [
+          "이 사람의 같은 종류 일정에 직접 기억해 둔 문구를 가져왔어요. 자동으로 학습한 결과가 아니에요.",
+          "답장을 재촉하지 않는 한 줄을 더했어요."
+        ],
+        "cautions": [
+          "지난 문구의 호칭·날짜·약속이 지금도 맞는지 확인해 주세요."
+        ]
+      },
+      "after": {
+        "invokedOptions": {
+          "approach": "saved"
+        },
+        "text": "오랜만이야! 답장은 부담 갖지 말고 편할 때 줘.",
+        "method": "saved",
+        "approach": "saved",
+        "checkinIntent": "everyday",
+        "basis": [
+          "이 사람의 같은 종류 일정에 직접 기억해 둔 문구를 가져왔어요. 자동으로 학습한 결과가 아니에요."
+        ],
+        "cautions": [
+          "지난 문구의 호칭·날짜·약속이 지금도 맞는지 확인해 주세요.",
+          "기억해 둔 안부 문구를 가져왔어요. 이번에 고른 안부 목적에 맞춰 문구를 자동으로 바꾸지 않았어요."
+        ]
+      }
+    },
+    {
+      "id": "friend-birthday-short",
+      "title": "친구 생일의 짧은 문구 선호",
+      "person": {
+        "id": "synthetic_quality_person",
+        "name": "민수",
+        "recipientPreference": {
+          "confirmed": true,
+          "formality": "casual",
+          "salutation": "민수야",
+          "length": "short"
+        }
+      },
+      "event": {
+        "id": "synthetic_quality_event",
+        "personId": "synthetic_quality_person",
+        "type": "birthday",
+        "date": "2026-10-15"
+      },
+      "uiEntryApproach": true,
+      "options": {},
+      "expected": "같은 입력에서 첫 진입 선택이 확인한 short 선호를 따른다.",
+      "before": {
+        "invokedOptions": {
+          "approach": "warm"
+        },
+        "text": "민수야, 생일 축하해! 오늘 좋아하는 것들로 가득한 하루 보내.",
+        "method": "template",
+        "approach": "warm",
+        "checkinIntent": null,
+        "basis": [
+          "직접 확인한 상대의 말투 선호를 반영했어요.",
+          "만남·선물·송금 약속은 임의로 넣지 않았어요.",
+          "직접 정한 호칭을 사용했어요."
+        ],
+        "cautions": [
+          "규칙과 문구 틀로 만든 초안이에요. 보내기 전에 직접 확인해 주세요."
+        ]
+      },
+      "after": {
+        "invokedOptions": {
+          "approach": "short"
+        },
+        "text": "민수야, 생일 축하해!",
+        "method": "template",
+        "approach": "short",
+        "checkinIntent": null,
+        "basis": [
+          "직접 확인한 상대의 말투 선호를 반영했어요.",
+          "만남·선물·송금 약속은 임의로 넣지 않았어요.",
+          "직접 정한 호칭을 사용했어요."
+        ],
+        "cautions": [
+          "규칙과 문구 틀로 만든 초안이에요. 보내기 전에 직접 확인해 주세요."
+        ]
+      }
+    },
+    {
+      "id": "work-polite",
+      "title": "업무 관계의 존댓말 생일",
+      "person": {
+        "id": "synthetic_quality_person",
+        "name": "민수",
+        "recipientPreference": {
+          "confirmed": true,
+          "formality": "polite",
+          "salutation": "김민수 팀장님",
+          "length": "balanced"
+        },
+        "group": "work"
+      },
+      "event": {
+        "id": "synthetic_quality_event",
+        "personId": "synthetic_quality_person",
+        "type": "birthday",
+        "date": "2026-10-15"
+      },
+      "options": {
+        "approach": "warm"
+      },
+      "expected": "직접 확인한 업무 호칭과 존댓말을 유지한다.",
+      "before": {
+        "invokedOptions": {
+          "approach": "warm"
+        },
+        "text": "김민수 팀장님, 생일 축하드려요. 기분 좋은 일들이 가득한 하루 보내세요.",
+        "method": "template",
+        "approach": "warm",
+        "checkinIntent": null,
+        "basis": [
+          "직접 확인한 상대의 말투 선호를 반영했어요.",
+          "만남·선물·송금 약속은 임의로 넣지 않았어요.",
+          "직접 정한 호칭을 사용했어요."
+        ],
+        "cautions": [
+          "규칙과 문구 틀로 만든 초안이에요. 보내기 전에 직접 확인해 주세요."
+        ]
+      },
+      "after": {
+        "invokedOptions": {
+          "approach": "warm"
+        },
+        "text": "김민수 팀장님, 생일 축하드려요. 기분 좋은 일들이 가득한 하루 보내세요.",
+        "method": "template",
+        "approach": "warm",
+        "checkinIntent": null,
+        "basis": [
+          "직접 확인한 상대의 말투 선호를 반영했어요.",
+          "만남·선물·송금 약속은 임의로 넣지 않았어요.",
+          "직접 정한 호칭을 사용했어요."
+        ],
+        "cautions": [
+          "규칙과 문구 틀로 만든 초안이에요. 보내기 전에 직접 확인해 주세요."
+        ]
+      }
+    },
+    {
+      "id": "everyday-checkin",
+      "title": "평소처럼 안부 전하기",
+      "person": {
+        "id": "synthetic_quality_person",
+        "name": "민수",
+        "recipientPreference": {
+          "confirmed": true,
+          "formality": "casual",
+          "salutation": "민수야"
+        }
+      },
+      "options": {
+        "approach": "warm",
+        "checkinIntent": "everyday"
+      },
+      "expected": "오늘이라는 전송일 단정 없이 평소 안부를 준비한다.",
+      "before": {
+        "invokedOptions": {
+          "approach": "warm",
+          "checkinIntent": "everyday"
+        },
+        "text": "민수야, 문득 생각나서 안부 전해. 오늘 편안한 하루 보내.",
+        "method": "template",
+        "approach": "warm",
+        "checkinIntent": null,
+        "basis": [
+          "직접 확인한 상대의 말투 선호를 반영했어요.",
+          "만남·선물·송금 약속은 임의로 넣지 않았어요.",
+          "직접 정한 호칭을 사용했어요."
+        ],
+        "cautions": [
+          "규칙과 문구 틀로 만든 초안이에요. 보내기 전에 직접 확인해 주세요."
+        ]
+      },
+      "after": {
+        "invokedOptions": {
+          "approach": "warm",
+          "checkinIntent": "everyday"
+        },
+        "text": "민수야, 문득 생각나서 안부 전해. 편안하게 잘 지내길 바라.",
+        "method": "template",
+        "approach": "warm",
+        "checkinIntent": "everyday",
+        "basis": [
+          "직접 확인한 상대의 말투 선호를 반영했어요.",
+          "만남·선물·송금 약속은 임의로 넣지 않았어요.",
+          "직접 정한 호칭을 사용했어요."
+        ],
+        "cautions": [
+          "규칙과 문구 틀로 만든 초안이에요. 보내기 전에 직접 확인해 주세요."
+        ]
+      }
+    },
+    {
+      "id": "reconnect-checkin",
+      "title": "직접 고른 오랜만의 연락",
+      "person": {
+        "id": "synthetic_quality_person",
+        "name": "민수",
+        "recipientPreference": {
+          "confirmed": true,
+          "formality": "casual",
+          "salutation": "민수야"
+        }
+      },
+      "options": {
+        "approach": "warm",
+        "checkinIntent": "reconnect"
+      },
+      "expected": "연락 이력을 추정하지 않고 이번 선택으로 오랜만의 문구를 준비한다.",
+      "before": {
+        "invokedOptions": {
+          "approach": "warm",
+          "checkinIntent": "reconnect"
+        },
+        "text": "민수야, 문득 생각나서 안부 전해. 오늘 편안한 하루 보내.",
+        "method": "template",
+        "approach": "warm",
+        "checkinIntent": null,
+        "basis": [
+          "직접 확인한 상대의 말투 선호를 반영했어요.",
+          "만남·선물·송금 약속은 임의로 넣지 않았어요.",
+          "직접 정한 호칭을 사용했어요."
+        ],
+        "cautions": [
+          "규칙과 문구 틀로 만든 초안이에요. 보내기 전에 직접 확인해 주세요."
+        ]
+      },
+      "after": {
+        "invokedOptions": {
+          "approach": "warm",
+          "checkinIntent": "reconnect"
+        },
+        "text": "민수야, 오랜만이야. 잘 지내? 어떻게 지내는지 궁금해서 연락했어.",
+        "method": "template",
+        "approach": "warm",
+        "checkinIntent": "reconnect",
+        "basis": [
+          "직접 확인한 상대의 말투 선호를 반영했어요.",
+          "만남·선물·송금 약속은 임의로 넣지 않았어요.",
+          "직접 정한 호칭을 사용했어요.",
+          "이번에 직접 고른 오랜만의 안부를 반영했어요. 마지막 연락일을 추정한 결과가 아니에요."
+        ],
+        "cautions": [
+          "규칙과 문구 틀로 만든 초안이에요. 보내기 전에 직접 확인해 주세요."
+        ]
+      }
+    },
+    {
+      "id": "thanks-checkin",
+      "title": "직접 고른 감사 인사",
+      "person": {
+        "id": "synthetic_quality_person",
+        "name": "민수",
+        "recipientPreference": {
+          "confirmed": true,
+          "formality": "casual",
+          "salutation": "민수야"
+        }
+      },
+      "options": {
+        "approach": "warm",
+        "checkinIntent": "thanks"
+      },
+      "expected": "고마운 이유나 약속을 지어내지 않고 감사 인사를 준비한다.",
+      "before": {
+        "invokedOptions": {
+          "approach": "warm",
+          "checkinIntent": "thanks"
+        },
+        "text": "민수야, 문득 생각나서 안부 전해. 오늘 편안한 하루 보내.",
+        "method": "template",
+        "approach": "warm",
+        "checkinIntent": null,
+        "basis": [
+          "직접 확인한 상대의 말투 선호를 반영했어요.",
+          "만남·선물·송금 약속은 임의로 넣지 않았어요.",
+          "직접 정한 호칭을 사용했어요."
+        ],
+        "cautions": [
+          "규칙과 문구 틀로 만든 초안이에요. 보내기 전에 직접 확인해 주세요."
+        ]
+      },
+      "after": {
+        "invokedOptions": {
+          "approach": "warm",
+          "checkinIntent": "thanks"
+        },
+        "text": "민수야, 고마워. 이 말은 꼭 전하고 싶었어.",
+        "method": "template",
+        "approach": "warm",
+        "checkinIntent": "thanks",
+        "basis": [
+          "직접 확인한 상대의 말투 선호를 반영했어요.",
+          "만남·선물·송금 약속은 임의로 넣지 않았어요.",
+          "직접 정한 호칭을 사용했어요.",
+          "이번에 직접 고른 감사 인사를 반영했어요. 고마웠던 이유는 임의로 넣지 않았어요."
+        ],
+        "cautions": [
+          "규칙과 문구 틀로 만든 초안이에요. 보내기 전에 직접 확인해 주세요."
+        ]
+      }
+    },
+    {
+      "id": "saved-removed-general-closing",
+      "title": "사용자가 뺀 평소 맺음말은 기억한 문구에 되붙이지 않음",
+      "person": {
+        "id": "synthetic_quality_person",
+        "name": "민수",
+        "recipientPreference": {
+          "confirmed": true,
+          "formality": "polite",
+          "salutation": "팀장님",
+          "closingLine": "즐거운 하루 보내세요!"
+        },
+        "savedMessages": {
+          "checkin": {
+            "text": "팀장님, 함께 고민해 주셔서 감사합니다. 덕분에 많이 배웠어요.",
+            "savedAt": "2026-10-08T03:00:00.000Z"
+          }
+        }
+      },
+      "options": {
+        "approach": "saved",
+        "checkinIntent": "thanks"
+      },
+      "expected": "다듬어서 기억한 문구에 평소 맺음말을 자동으로 다시 붙이지 않는다. 새 문장 틀에는 평소 맺음말을 계속 적용한다.",
+      "before": {
+        "invokedOptions": {
+          "approach": "saved",
+          "checkinIntent": "thanks"
+        },
+        "text": "팀장님, 함께 고민해 주셔서 감사합니다. 덕분에 많이 배웠어요.\n즐거운 하루 보내세요!",
+        "method": "saved",
+        "approach": "saved",
+        "checkinIntent": null,
+        "basis": [
+          "이 사람의 같은 종류 일정에 직접 기억해 둔 문구를 가져왔어요. 자동으로 학습한 결과가 아니에요.",
+          "직접 쓴 덧붙일 말을 연결했어요."
+        ],
+        "cautions": [
+          "지난 문구의 호칭·날짜·약속이 지금도 맞는지 확인해 주세요."
+        ]
+      },
+      "after": {
+        "invokedOptions": {
+          "approach": "saved",
+          "checkinIntent": "thanks"
+        },
+        "text": "팀장님, 함께 고민해 주셔서 감사합니다. 덕분에 많이 배웠어요.",
+        "method": "saved",
+        "approach": "saved",
+        "checkinIntent": "thanks",
+        "basis": [
+          "이 사람의 같은 종류 일정에 직접 기억해 둔 문구를 가져왔어요. 자동으로 학습한 결과가 아니에요."
+        ],
+        "cautions": [
+          "지난 문구의 호칭·날짜·약속이 지금도 맞는지 확인해 주세요.",
+          "기억해 둔 안부 문구를 가져왔어요. 이번에 고른 안부 목적에 맞춰 문구를 자동으로 바꾸지 않았어요."
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "run":37679320388,
+  "commit":"63146086d68a20b965a18937be7777609e229bca",
+  "firstJob":112991277908,
+  "firstAttemptIssue":"Playwright dependency installation stalled for over 10 minutes before product checks. Live GitHub UI showed repeated Ign entries for azure.archive.ubuntu.com with slow fallback to archive.ubuntu.com.",
+  "action":"Cancel stalled CI attempt and retry the same workflow/commit once in a fresh runner; no production or workflow code changes."
+}
